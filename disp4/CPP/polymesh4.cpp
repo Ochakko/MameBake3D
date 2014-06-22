@@ -1,0 +1,537 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <malloc.h>
+#include <memory.h>
+#include <math.h>
+#include <search.h>
+
+#include <windows.h>
+
+#define	DBGH
+#include <dbg.h>
+
+#include <GetMaterial.h>
+
+#include <crtdbg.h>
+
+
+#include <polymesh4.h>
+
+
+#include <mqoobject.h>
+#include <InfScope.h>
+#include <InfBone.h>
+#include <mqomaterial.h>
+#include <mqoface.h>
+#include <Bone.h>
+
+#include <dispobj.h>
+
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+
+
+
+static int sortfunc_material( void *context, const void *elem1, const void *elem2);
+
+
+
+CPolyMesh4::CPolyMesh4()
+{
+	InitParams();
+}
+CPolyMesh4::~CPolyMesh4()
+{
+	DestroyObjs();
+}
+void CPolyMesh4::InitParams()
+{
+	m_orgpointnum = 0;
+	m_orgfacenum = 0;
+	m_facenum = 0;
+
+	m_mqoface = 0;//外部メモリ
+	m_pointbuf = 0;//外部メモリ
+	m_normal = 0;//外部メモリ
+	m_uvbuf = 0;//外部メモリ
+	
+	m_normalleng = 0;
+	m_uvleng = 0;
+
+	m_triface = 0;
+
+	m_optleng = 0;
+
+	m_dispv = 0;
+	m_createoptflag = 0;
+
+	m_infbone = 0;
+	m_pm3inf = 0;
+
+	m_dispindex = 0;
+	m_orgindex = 0;
+
+	ZeroMemory( &chkalpha, sizeof( CHKALPHA ) );
+	ZeroMemory( &m_bound, sizeof( MODELBOUND ) );
+
+}
+void CPolyMesh4::DestroyObjs()
+{
+	if( m_triface ){
+		delete [] m_triface;
+		m_triface = 0;
+	}
+
+	if( m_dispv ){
+		free( m_dispv );
+		m_dispv = 0;
+	}
+
+	if( m_dispindex ){
+		free( m_dispindex );
+		m_dispindex = 0;
+	}
+
+	if( m_orgindex ){
+		free( m_orgindex );
+		m_orgindex = 0;
+	}
+
+	if( m_infbone ){
+		delete [] m_infbone;
+		m_infbone = 0;
+	}
+
+	if( m_pm3inf ){
+		free( m_pm3inf );
+		m_pm3inf = 0;
+	}
+}
+
+int sortfunc_material( void *context, const void *elem1, const void *elem2)
+{
+	CMQOFace* face1 = (CMQOFace*)elem1;
+	CMQOFace* face2 = (CMQOFace*)elem2;
+	CPolyMesh4* pm4 = (CPolyMesh4*)context;
+
+	int dvno;
+	dvno = face1->m_materialno - face2->m_materialno;
+	if( dvno > 0 ){
+		return 1;
+	}else if( dvno < 0 ){
+		return -1;
+	}else{
+		return 0;
+	}
+}
+
+
+int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, D3DXVECTOR3* pointptr, D3DXVECTOR3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
+{
+	m_orgpointnum = pointnum;
+	m_orgfacenum = facenum;
+	m_mqoface = faceptr;
+	m_pointbuf = pointptr;
+	m_normal = nptr;
+	m_uvbuf = uvptr;
+	m_normalleng = normalleng;
+	m_uvleng = uvleng;
+
+	CallF( SetTriFace( 0, &m_facenum ), return 1 );
+	if( m_facenum <= 0 ){
+		return 0;
+	}
+
+	m_triface = new CMQOFace[ m_facenum ];
+	_ASSERT( m_triface );
+	int chknum = 0;
+	CallF( SetTriFace( m_triface, &chknum ), return 1 );
+
+	if( m_facenum != chknum ){
+		_ASSERT( 0 );
+		return 1;
+	}
+
+	//qsort_s( m_triface, m_facenum, sizeof( CMQOFace ), sortfunc_material, (void*)this );
+//////////
+	int optmatnum = 0;
+	CallF( SetOptV( 0, &m_optleng, &optmatnum, srcmat ), return 1 );
+	if( (m_optleng <= 0) ){
+		_ASSERT( 0 );
+		return 0;
+	}
+	m_dispv = (PM3DISPV*)malloc( sizeof( PM3DISPV ) * m_optleng );
+	if( !m_dispv ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	ZeroMemory( m_dispv, sizeof( PM3DISPV ) * m_optleng );
+
+	m_dispindex = (int*)malloc( sizeof( int ) * m_facenum * 3 );
+	if( !m_dispindex ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	ZeroMemory( m_dispindex, sizeof( int ) * m_facenum * 3 );
+
+	m_orgindex = (int*)malloc( sizeof( int ) * m_facenum * 3 );
+	if( !m_orgindex ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	ZeroMemory( m_orgindex, sizeof( int ) * m_facenum * 3 );
+
+
+
+	int tmpleng, tmpmatnum;
+	SetOptV( m_dispv, &tmpleng, &tmpmatnum, srcmat );
+//	CallF( SetOptV( m_dispv, m_pm3inf, &tmpleng, &tmpmatnum, srcmat ), return 1 );
+	if( (tmpleng != m_optleng) ){
+		_ASSERT( 0 );
+		return 1;
+	}
+
+	CallF( CalcBound(), return 1 );
+
+	m_infbone = new CInfBone[ m_orgpointnum ];
+	if( !m_infbone ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	int opno;
+	for( opno = 0; opno < m_orgpointnum; opno++ ){
+		(m_infbone + opno)->InitParams();
+	}
+	m_pm3inf = (PM3INF*)malloc( sizeof( PM3INF ) * m_optleng );
+	if( !m_pm3inf ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
+
+	m_createoptflag = 1;
+
+	return 0;
+}
+	
+int CPolyMesh4::SetTriFace( CMQOFace* faceptr, int* numptr )
+{
+	int fno;
+	int setno = 0;
+	for( fno = 0; fno < m_orgfacenum; fno++ ){
+		CMQOFace* srcface = m_mqoface + fno;
+		if( srcface->m_pointnum == 3 ){
+			if( faceptr ){
+				CMQOFace* dstface = faceptr + setno;
+				dstface->m_bonetype = MIKOBONE_NONE;
+				dstface->m_col[0] = srcface->m_col[0];
+				dstface->m_col[1] = srcface->m_col[1];
+				dstface->m_col[2] = srcface->m_col[2];
+				dstface->m_col[3] = 0;
+				dstface->m_faceno = setno;
+				dstface->m_hasuv = srcface->m_hasuv;
+				dstface->m_index[0] = srcface->m_index[0];
+				dstface->m_index[1] = srcface->m_index[1];
+				dstface->m_index[2] = srcface->m_index[2];
+				dstface->m_index[3] = 0;
+				dstface->m_materialno = srcface->m_materialno;
+				dstface->m_pointnum = 3;
+				dstface->m_uv[0] = srcface->m_uv[0];
+				dstface->m_uv[1] = srcface->m_uv[1];
+				dstface->m_uv[2] = srcface->m_uv[2];
+				dstface->m_uv[3] = D3DXVECTOR2( 0.0f, 0.0f );
+				dstface->m_vcolsetflag = srcface->m_vcolsetflag;
+			}
+
+			setno++;
+		}else if( srcface->m_pointnum == 4 ){
+			_ASSERT( 0 );
+			return 1;
+		}
+	}
+	*numptr = setno;
+
+	return 0;
+}
+
+
+int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOMaterial*>& srcmat )
+{
+	*pleng = 0;
+	*matnum = 0;
+
+	int fno;
+	int setno = 0;
+	int curfaceno = 0;
+	int beffaceno = 0;
+	CMQOFace* curface = 0;
+	CMQOFace* befface = 0;
+	for( fno = 0; fno < m_facenum; fno++ ){
+		curface = m_triface + fno;
+		curfaceno = fno;
+
+		if( dispv ){
+			int vi[3] = {0, 2, 1};
+			int vcnt;
+			for( vcnt = 0; vcnt < 3; vcnt++ ){
+				PM3DISPV* curv = dispv + (setno * 3 + vcnt);
+				int vno = (m_triface + setno)->m_index[vi[vcnt]];
+				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
+				curv->pos.x = (m_pointbuf + vno)->x;
+				curv->pos.y = (m_pointbuf + vno)->y;
+				curv->pos.z = (m_pointbuf + vno)->z;
+				curv->pos.w = 1.0f;
+
+				*( m_orgindex + setno * 3 + vcnt ) = vno;
+
+				if( m_normal ){
+					if( m_normalleng == m_orgpointnum ){
+						curv->normal = *(m_normal + vno);
+					}else if( m_normalleng == (m_facenum * 3) ){
+						curv->normal = *(m_normal + setno * 3 + vi[vcnt]);
+					}else{
+						_ASSERT( 0 );
+					}
+				}else{
+					curv->normal = D3DXVECTOR3( 0.0f, 0.0f, 1.0f );
+					_ASSERT( 0 );
+				}
+
+				if( m_uvbuf ){
+					if( m_uvleng == m_orgpointnum ){
+						curv->uv = *(m_uvbuf + vno);
+					}else if( m_uvleng == (m_facenum * 3) ){
+						curv->uv = *(m_uvbuf + setno * 3 + vi[vcnt]);
+					}else{
+						_ASSERT( 0 );
+					}
+					curv->uv.y = 1.0f - curv->uv.y;
+				}else{
+					curv->uv = D3DXVECTOR2( 0.0f, 0.0f );
+				}
+
+				*( m_dispindex + setno * 3 + vcnt ) = setno * 3 + vcnt;
+			}
+
+		}
+		setno ++;
+
+		befface = curface;
+		beffaceno = curfaceno;
+	}
+
+	*pleng = setno * 3;
+	*matnum = 1;
+
+	return 0;
+}
+
+
+int CPolyMesh4::ChkAlphaNum( map<int,CMQOMaterial*>& srcmat )
+{
+
+	chkalpha.alphanum = 0;
+	chkalpha.notalphanum = 0;
+
+	int fno;
+	for( fno = 0; fno < m_facenum; fno++ ){//3つおきにチェック
+		CMQOFace* curface = m_triface + fno;
+		CMQOMaterial* curmat;
+		curmat = GetMaterialFromNo( srcmat, curface->m_materialno );
+		if( !curmat ){
+			continue;
+		}
+
+		if( (curmat->col.w != 1.0f) || (curmat->transparent != 0) ){
+			chkalpha.alphanum++;
+		}else{
+			chkalpha.notalphanum++;
+		}
+	}
+
+	return 0;
+}
+int CPolyMesh4::CalcBound()
+{
+
+/***
+typedef struct tag_modelbaund
+{
+	D3DXVECTOR3 min;
+	D3DXVECTOR3 max;
+	D3DXVECTOR3 center;
+	float		r;
+}MODELBAUND;
+***/
+	if( (m_orgpointnum == 0) || (m_facenum == 0) ){
+		m_bound.min = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		m_bound.max = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		m_bound.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		m_bound.r = 0.0f;
+		return 0;
+	}
+
+
+	m_bound.min = *m_pointbuf;
+	m_bound.max = *m_pointbuf;
+
+	int vno;
+	for( vno = 1; vno < m_orgpointnum; vno++ ){
+		D3DXVECTOR3 curv = *( m_pointbuf + vno );
+
+		if( m_bound.min.x > curv.x ){
+			m_bound.min.x = curv.x;
+		}
+		if( m_bound.min.y > curv.y ){
+			m_bound.min.y = curv.y;
+		}
+		if( m_bound.min.z > curv.z ){
+			m_bound.min.z = curv.z;
+		}
+
+		if( m_bound.max.x < curv.x ){
+			m_bound.max.x = curv.x;
+		}
+		if( m_bound.max.y < curv.y ){
+			m_bound.max.y = curv.y;
+		}
+		if( m_bound.max.z < curv.z ){
+			m_bound.max.z = curv.z;
+		}
+	}
+
+	m_bound.center = ( m_bound.min + m_bound.max ) * 0.5f;
+
+	D3DXVECTOR3 diff;
+	diff = m_bound.center - m_bound.min;
+	m_bound.r = D3DXVec3Length( &diff );
+
+	return 0;
+}
+
+int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
+{
+	DbgOut( L"check!!! DumpInfBone %d\r\n", srcobj->m_objectno );
+
+	int vno;
+	for( vno = 0; vno < m_orgpointnum; vno++ ){
+		CInfBone* curib = m_infbone + vno;
+		INFDATA* curid = curib->m_infdata[ srcobj ];
+		_ASSERT( curid );
+		DbgOut( L"vno %d, infnum %d\r\n", vno, curid->m_infnum );
+		int infno;
+		for( infno = 0; infno < curid->m_infnum; infno++ ){
+			INFELEM* curie = curid->m_infelem + infno;
+			int boneno = curie->boneno;
+			float dispinf = curie->dispinf;
+
+			CBone* curbone = srcbonelist[ boneno ];
+			_ASSERT( curbone );
+
+			DbgOut( L"\tinfno %d, bonename %s, dispinf %f\r\n",
+				infno, curbone->m_wbonename, dispinf );
+		}
+	}
+	DbgOut( L"checkend!!! DumpInfBone\r\n\r\n" );
+
+	return 0;
+}
+
+int CPolyMesh4::SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist )
+{
+	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
+
+	int fno;
+	int setno = 0;
+	for( fno = 0; fno < m_facenum; fno++ ){
+		if( m_pm3inf ){
+			int vi[3] = {0, 2, 1};
+			int vcnt;
+			for( vcnt = 0; vcnt < 3; vcnt++ ){
+				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
+				int vno = (m_triface + setno)->m_index[vi[vcnt]];
+				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
+				curinf->boneindex[0] = (float)( clusterno );
+				curinf->weight[0] = 1.0f;
+				curinf->boneindex[1] = 0.0f;
+				curinf->weight[1] = 0.0f;
+				curinf->boneindex[2] = 0.0f;
+				curinf->weight[2] = 0.0f;
+				curinf->boneindex[3] = 0.0f;
+				curinf->weight[3] = 0.0f;
+			}
+		}
+		setno ++;
+	}
+
+	if( (setno * 3) != m_optleng ){
+		_ASSERT( 0 );
+		return 1;
+	}
+
+	CallF( srcobj->m_dispobj->CreateDispObj( pdev, this, 1 ), return 1 );
+
+	return 0;
+}
+
+int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
+{
+	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
+
+	int fno;
+	int setno = 0;
+	for( fno = 0; fno < m_facenum; fno++ ){
+		if( m_pm3inf ){
+			int vi[3] = {0, 2, 1};
+			int vcnt;
+			for( vcnt = 0; vcnt < 3; vcnt++ ){
+				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
+				int vno = (m_triface + setno)->m_index[vi[vcnt]];
+				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
+				INFDATA* curinfdata = (m_infbone + vno)->m_infdata[ srcobj ];
+				if( curinfdata ){
+					int ieno;
+					for( ieno = 0; ieno < curinfdata->m_infnum; ieno++ ){
+						curinf->boneindex[ieno] = (float)( curinfdata->m_infelem[ieno].boneno );
+						curinf->weight[ieno] = curinfdata->m_infelem[ieno].dispinf;
+					}
+				}else{
+//					_ASSERT( 0 );
+					curinf->boneindex[0] = 0.0f;
+					curinf->weight[0] = 1.0f;
+				}
+
+			}
+		}
+
+		setno ++;
+	}
+
+	if( (setno * 3) != m_optleng ){
+		_ASSERT( 0 );
+		return 1;
+	}
+
+	return 0;
+}
+
+int CPolyMesh4::UpdateMorphBuffer( D3DXVECTOR3* mpoint )
+{
+	if( !m_dispv ){
+		_ASSERT( 0 );
+		return 1;
+	}
+
+	int vno;
+	for( vno = 0; vno < (m_facenum * 3); vno++ ){
+		int curindex = *(m_orgindex + vno);
+		PM3DISPV* curv = m_dispv + vno;
+
+		curv->pos = D3DXVECTOR4( (mpoint + curindex)->x, (mpoint + curindex)->y, (mpoint + curindex)->z, 1.0f );
+	}
+
+	return 0;
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="Shift_JIS"?>
+<CHA>
+  <FileInfo>
+    <kind>ChatCats3D_ProjectFile</kind>
+    <version>1001</version>
+    <type>0</type>
+  </FileInfo>
+  <ProjectInfo>
+    <CharaNum>1</CharaNum>
+  </ProjectInfo>
+  <GcoFile>test20140110_01.gco</GcoFile>
+  <Chara>
+    <ModelFolder>yuri_mtest2_0</ModelFolder>
+    <ModelFile>wtest20140110_01.fbx</ModelFile>
+    <ModelMult>1.000000</ModelMult>
+    <RGDMORPH>0</RGDMORPH>
+    <CURRE>0</CURRE>
+    <RGD>0</RGD>
+    <RefNum>1</RefNum>
+    <RefFile>default_ref.ref</RefFile>
+    <ImpNum>1</ImpNum>
+    <ImpFile>default_imp.imp</ImpFile>
+  </Chara>
+</CHA>

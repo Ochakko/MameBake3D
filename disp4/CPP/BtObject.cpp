@@ -1,0 +1,660 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <math.h>
+#include <string.h>
+#include <wchar.h>
+#include <ctype.h>
+#include <malloc.h>
+#include <memory.h>
+
+#include <windows.h>
+#include <crtdbg.h>
+
+#include <BtObject.h>
+
+#include <Bone.h>
+#include <quaternion.h>
+#include <RigidElem.h>
+
+#define DBGH
+#include <dbg.h>
+
+using namespace std;
+
+extern float g_miscale;
+extern float g_l_kval[3];
+extern float g_a_kval[3];
+
+CBtObject::CBtObject( CBtObject* parbt, btDynamicsWorld* btWorld )
+{
+	InitParams();
+	if( parbt ){
+		parbt->AddChild( this );
+	}
+	m_btWorld = btWorld;
+}
+
+CBtObject::~CBtObject()
+{
+	DestroyObjs();
+}
+
+int CBtObject::InitParams()
+{
+	m_dofC = 0;
+	m_staticflag = 0;
+	m_connectflag = 0;
+	m_constzrad = 0.0f;
+	D3DXMatrixIdentity( &m_transmat );
+	D3DXMatrixIdentity( &m_xworld );
+	m_btWorld = 0;
+
+	m_topflag = 0;
+	m_parbone = 0;
+	m_endbone = 0;
+	m_bone = 0;
+	m_colshape = 0;
+	m_rigidbody = 0;
+	m_constraint.clear();
+
+	m_parbt = 0;
+	m_chilbt.clear();
+
+	m_curpivot.setValue( 0.0f, 0.0f, 0.0f );
+	m_chilpivot.setValue( 0.0f, 0.0f, 0.0f );
+
+	m_FrameA.setIdentity();
+	m_FrameB.setIdentity();
+
+
+	return 0;
+}
+int CBtObject::DestroyObjs()
+{
+	int chilno;
+	for( chilno = 0; chilno < (int)m_constraint.size(); chilno++ ){
+		btTypedConstraint* constptr = m_constraint[ chilno ];
+		if( constptr ){
+			m_btWorld->removeConstraint( constptr );
+			delete constptr;
+		}
+	}
+	m_constraint.clear();
+
+	if( m_rigidbody ){
+		if( m_rigidbody->getMotionState() ){
+			delete m_rigidbody->getMotionState();
+		}
+		m_btWorld->removeRigidBody( m_rigidbody );
+		delete m_rigidbody;
+		m_rigidbody = 0;
+	}
+
+	if( m_colshape ){
+		delete m_colshape;
+		m_colshape = 0;
+	}
+
+	m_chilbt.clear();
+
+	return 0;
+}
+
+btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransform& startTransform, btCollisionShape* shape )
+{
+	_ASSERT( shape );
+
+	bool isDynamic = (curre->m_mass != 0.f);
+
+	btVector3 localInertia(0,0,0);
+	if (isDynamic)
+		shape->calculateLocalInertia( curre->m_mass, localInertia );
+
+	btDefaultMotionState* myMotionState = new btDefaultMotionState( startTransform );
+		
+	btRigidBody::btRigidBodyConstructionInfo rbInfo( curre->m_mass, myMotionState, shape, localInertia );
+	btRigidBody* body = new btRigidBody( rbInfo );
+
+	body->setRestitution( curre->m_restitution );
+	body->setFriction( curre->m_friction );
+
+	int myid = curre->m_groupid;
+	int coliid = curre->GetColiID();
+	m_btWorld->addRigidBody(body, myid, coliid);
+
+	return body;
+}
+int CBtObject::AddChild( CBtObject* addbt )
+{
+	m_chilbt.push_back( addbt );
+	return 0;
+}
+
+int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, CBone* chilbone )
+{
+	m_bone = curbone;
+	m_parbone = parbone;
+	m_parbt = parbt;
+	m_endbone = chilbone;
+
+	if( !m_bone ){
+		return 0;
+	}
+
+	if( !chilbone ){
+		return 0;
+	}
+
+	CRigidElem* curre = m_bone->m_rigidelem[ chilbone ];
+	if( !curre ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	if( curre && (curre->m_skipflag == 1) ){
+		return 0;
+	}
+
+	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
+	parposA = m_bone->m_jointfpos;
+	D3DXVec3TransformCoord( &aftparposA, &parposA, &m_bone->m_startmat2 );
+	chilposA = m_endbone->m_jointfpos;
+	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &m_endbone->m_startmat2 );
+	D3DXVECTOR3 diffA = chilposA - parposA;
+	m_boneleng = D3DXVec3Length( &diffA );
+
+	float h, r, z;
+	r = curre->m_sphr;// * 0.95f;
+	h = curre->m_cylileng;// * 0.95f;
+	z = curre->m_boxz;
+
+	if( curre->m_coltype == COL_CAPSULE_INDEX ){
+		m_colshape = new btCapsuleShape( btScalar( r ), btScalar( h ) );
+		_ASSERT( m_colshape );
+	}else if( curre->m_coltype == COL_CONE_INDEX ){
+		m_colshape = new btConeShape( btScalar( r ), btScalar( h ) );
+		_ASSERT( m_colshape );
+	}else if( curre->m_coltype == COL_SPHERE_INDEX ){
+		m_colshape = new btSphereShape( btScalar( r ) );
+		_ASSERT( m_colshape );
+	}else if( curre->m_coltype == COL_BOX_INDEX ){
+		m_colshape = new btBoxShape( btVector3( r, h, z ) );
+		_ASSERT( m_colshape );
+	}else{
+		_ASSERT( 0 );
+		return 1;
+	}
+
+
+//	if( m_boneleng < 0.00001f ){
+//		_ASSERT( 0 );
+//	}
+
+
+	D3DXMATRIX startrot = curre->m_capsulemat;
+	//m_transmat = startrot;
+
+	startrot._41 = 0.0f;
+	startrot._42 = 0.0f;
+	startrot._43 = 0.0f;
+	D3DXQUATERNION xq;
+	D3DXQuaternionRotationMatrix( &xq, &startrot );
+
+	btScalar qx = xq.x;
+	btScalar qy = xq.y;
+	btScalar qz = xq.z;
+	btScalar qw = xq.w;
+	btQuaternion btq( qx, qy, qz, qw ); 
+
+
+	centerA = ( aftparposA + aftchilposA ) * 0.5f;
+	btVector3 btv( btScalar( centerA.x ), btScalar( centerA.y ), btScalar( centerA.z ) );
+
+	btTransform transform;
+	transform.setIdentity();
+	transform.setRotation( btq );
+	transform.setOrigin( btv );
+
+
+	//-0.374995, 0.249996, 0.000000
+	D3DXMatrixIdentity( &m_cen2parY );
+	m_cen2parY._41 = 0.0f;
+	m_cen2parY._42 = -m_boneleng * 0.5f;
+	m_cen2parY._43 = 0.0f;
+//	m_cen2parY._41 = 0.0f - -0.374995f;
+//	m_cen2parY._42 = -m_boneleng * 0.5f - 0.249996f;
+//	m_cen2parY._43 = 0.0f;
+
+
+	D3DXVECTOR3 partocen = centerA - aftparposA;
+	D3DXMatrixIdentity( &m_par2cen );
+	m_par2cen._41 = partocen.x;
+	m_par2cen._42 = partocen.y;
+	m_par2cen._43 = partocen.z;
+
+	m_transmat = startrot;
+	m_transmat._41 = centerA.x;
+	m_transmat._42 = centerA.y;
+	m_transmat._43 = centerA.z;
+
+//m_transmat = curre->m_capsulemat;
+
+
+	m_rigidbody = localCreateRigidBody( curre, transform, m_colshape );
+	_ASSERT( m_rigidbody );
+
+
+	btTransform worldtra;
+	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
+	btMatrix3x3 worldmat = worldtra.getBasis();
+	btVector3 worldpos = worldtra.getOrigin();
+	btVector3 tmpcol[3];
+	int colno;
+	for( colno = 0; colno < 3; colno++ ){
+		tmpcol[colno] = worldmat.getColumn( colno );
+//		tmpcol[colno] = worldmat.getRow( colno );
+	}
+
+	D3DXMatrixIdentity( &m_xworld );
+
+	m_xworld._11 = tmpcol[0].x();
+	m_xworld._12 = tmpcol[0].y();
+	m_xworld._13 = tmpcol[0].z();
+
+	m_xworld._21 = tmpcol[1].x();
+	m_xworld._22 = tmpcol[1].y();
+	m_xworld._23 = tmpcol[1].z();
+
+	m_xworld._31 = tmpcol[2].x();
+	m_xworld._32 = tmpcol[2].y();
+	m_xworld._33 = tmpcol[2].z();
+
+	m_xworld._41 = worldpos.x();
+	m_xworld._42 = worldpos.y();
+	m_xworld._43 = worldpos.z();
+
+
+	return 0;
+}
+
+int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dsttra )
+{
+	dsttra.setIdentity();
+
+	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
+	parposA = curbto->m_bone->m_jointfpos;
+	D3DXVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->m_startmat2 );
+	chilposA = curbto->m_endbone->m_jointfpos;
+	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->m_startmat2 );
+
+	D3DXVECTOR2 dirxy, ndirxy;
+	dirxy.x = aftchilposA.x - aftparposA.x;
+	dirxy.y = aftchilposA.y - aftparposA.y;
+	float lengxy = D3DXVec2Length( &dirxy );
+	D3DXVec2Normalize( &ndirxy, &dirxy );
+
+/***
+	D3DXMATRIX startrot = curre->m_capsulemat;
+	startrot._41 = 0.0f;
+	startrot._42 = 0.0f;
+	startrot._43 = 0.0f;
+	D3DXQUATERNION xq;
+	D3DXQuaternionRotationMatrix( &xq, &startrot );
+	CQuaternion cq;
+	cq.SetParams( xq );
+
+	D3DXVECTOR3 eul;
+	cq.Q2EulBt( &eul );
+	dsttra.getBasis().setEulerZYX( eul.x, eul.y, eul.z );
+***/
+
+	D3DXVECTOR2 basex( 1.0f, 0.0f );
+	float dotx;
+	dotx = D3DXVec2Dot( &basex, &ndirxy );
+	if( dotx > 1.0f ){
+		dotx = 1.0f;
+	}
+	if( dotx < -1.0f ){
+		dotx = -1.0f;
+	}
+
+	float calcacos = (float)acos( dotx );
+	if( fabs( calcacos ) <= 0.1f * (float)DEG2PAI ){
+		m_constzrad = -90.0f * (float)DEG2PAI;
+	}else{
+		if( dirxy.y >= 0.0f ){
+			m_constzrad = -calcacos;
+		}else{
+			m_constzrad = calcacos;
+		}
+	}
+
+	if( lengxy < 0.2f ){
+		//_ASSERT( 0 );
+		m_constzrad = -90.0f * (float)DEG2PAI;
+	}
+
+/***
+	if( m_boneleng < 0.0001f ){
+		CBtObject* parbt = curbto->m_parbt;
+		if( parbt ){
+			m_constzrad = parbt->m_constzrad;
+		}else{
+			m_constzrad = -90.0f * (float)DEG2PAI;
+		}
+	}
+***/
+/***
+	float diffzrad = 0.0f;
+	CBtObject* parbt = curbto->m_parbt;
+	if( parbt ){
+		diffzrad = fabs( rad - parbt->m_constzrad );
+	}
+	if( diffzrad >= 176.0f * (float)DEG2PAI ){
+		_ASSERT( parbt );
+		m_constzrad = parbt->m_constzrad;	
+	}else{
+		m_constzrad = rad;
+	}
+***/
+
+	dsttra.getBasis().setEulerZYX( 0.0f, 0.0f, m_constzrad );
+
+	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
+	btTransform invtra = rigidtra.inverse();
+	//btVector3 localpivot;
+	if( chilflag == 0 ){
+		m_curpivot = invtra( btVector3( aftchilposA.x, aftchilposA.y, aftchilposA.z ) );
+		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
+	}else{
+		m_curpivot = invtra( btVector3( aftparposA.x, aftparposA.y, aftparposA.z ) );
+		//m_curpivot = btVector3( 0.0f, -0.5f * curbto->m_boneleng, 0.0f );
+	}
+	dsttra.setOrigin( m_curpivot );
+
+	return 0;
+}
+
+int CBtObject::CreateBtConstraint()
+{
+	if( m_topflag == 1 ){
+		return 0;
+	}
+	_ASSERT( m_btWorld );
+	_ASSERT( m_bone );
+
+	if( !m_endbone ){
+		return 0;
+	}
+
+
+	int chilno;
+	for( chilno = 0; chilno < (int)m_chilbt.size(); chilno++ ){
+		CBtObject* chilbto = m_chilbt[ chilno ];
+		if( !chilbto ){
+			continue;
+		}
+
+		m_FrameA.setIdentity();
+		m_FrameB.setIdentity();
+
+		CRigidElem* tmpre;
+		tmpre = m_bone->m_rigidelem[ m_endbone ];
+		_ASSERT( tmpre );
+		CalcConstraintTransform( 0, tmpre, this, m_FrameA );
+		tmpre = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ];
+		_ASSERT( tmpre );
+		CalcConstraintTransform( 1, tmpre, chilbto, m_FrameB );
+
+		if( m_rigidbody && chilbto->m_rigidbody ){
+
+DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n", 
+	m_bone->m_wbonename, m_endbone->m_wbonename,
+	chilbto->m_bone->m_wbonename, chilbto->m_endbone->m_wbonename );
+
+			float angPAI2, angPAI;
+			angPAI2 = 90.0f * (float)DEG2PAI;
+			angPAI = 180.0f * (float)DEG2PAI;
+
+			float lmax, lmin;
+			lmin = 1.0f;
+			lmax = -1.0f;
+
+/***
+			float lmax, lmin;
+			lmin = 0.0f;
+			lmax = 0.0f;
+***/
+			btGeneric6DofSpringConstraint* dofC;
+			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
+			_ASSERT( dofC );
+
+			dofC->setLinearLowerLimit( btVector3( lmin, lmin, lmin ) );
+			dofC->setLinearUpperLimit( btVector3( lmax, lmax, lmax ) );
+
+//			char* findpat = strstr( m_bone->m_bonename, "BT_" );
+//			if( findpat == 0 ){
+//				dofC->setAngularLowerLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
+//				dofC->setAngularUpperLimit( btVector3( angPAI, angPAI2, angPAI ) );
+//			}else{
+//				dofC->setAngularLowerLimit( btVector3( angPAI, angPAI2, angPAI ) );
+//				dofC->setAngularUpperLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
+//			}
+
+			dofC->setAngularLowerLimit( btVector3( angPAI, angPAI2, angPAI ) );
+			dofC->setAngularUpperLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
+
+
+			dofC->setBreakingImpulseThreshold( FLT_MAX );
+			//dofC->setBreakingImpulseThreshold( 1e9 );
+
+			int l_kindex = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_l_kindex;
+			int a_kindex = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_a_kindex;
+			float l_damping = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_l_damping;
+			float a_damping = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_a_damping;
+			float l_cusk = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_cus_lk;
+			float a_cusk = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_cus_ak;
+
+			int dofid;
+			for( dofid = 0; dofid < 3; dofid++ ){
+				dofC->enableSpring( dofid, true );
+				if( l_kindex <= 2 ){
+					dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
+				}else{
+					dofC->setStiffness( dofid, l_cusk );
+				}
+				dofC->setDamping( dofid, l_damping );
+			}
+			for( dofid = 3; dofid < 6; dofid++ ){
+				dofC->enableSpring( dofid, true );
+				if( a_kindex <= 2 ){
+					dofC->setStiffness( dofid, g_a_kval[ a_kindex ] );
+				}else{
+					dofC->setStiffness( dofid, a_cusk );
+				}
+				dofC->setDamping( dofid, a_damping );
+			}
+			
+			dofC->setEquilibriumPoint();
+
+
+			m_constraint.push_back( (btTypedConstraint*)dofC );
+			m_btWorld->addConstraint(dofC, true);
+			//m_btWorld->addConstraint(dofC, false);
+			m_dofC = dofC;
+		}
+	}
+
+	return 0;
+}
+
+int CBtObject::Motion2Bt()
+{
+	if( m_topflag == 1 ){
+		return 0;
+	}
+	if( !m_bone ){
+		return 0;
+	}
+	if( !m_rigidbody ){
+		return 0;
+	}
+
+	if( !m_rigidbody->getMotionState() ){
+		_ASSERT( 0 );
+		return 0;
+	}
+
+	CRigidElem* curre = m_bone->m_rigidelem[ m_endbone ];
+	if( curre ){
+		D3DXMATRIX cpslmat = curre->m_capsulemat;
+
+
+		D3DXMATRIX invfirstworld;
+		D3DXMatrixInverse( &invfirstworld, NULL, &m_bone->m_startmat2 );
+		D3DXMATRIX diffworld;
+		diffworld = invfirstworld * m_bone->m_curmp.m_worldmat;
+
+		D3DXMATRIX multmat = curre->m_firstcapsulemat * diffworld;
+
+
+
+		D3DXVECTOR3 rigidcenter;
+		D3DXVECTOR3 aftcurpos, aftchilpos;
+		D3DXVec3TransformCoord( &aftcurpos, &m_bone->m_jointfpos, &(m_bone->m_curmp.m_worldmat) );
+		D3DXVec3TransformCoord( &aftchilpos, &m_endbone->m_jointfpos, &(m_endbone->m_curmp.m_worldmat) );
+		rigidcenter = ( aftcurpos + aftchilpos ) * 0.5f;
+
+/***
+		D3DXVECTOR3 rigidcenter;
+		D3DXVECTOR3 zerovec( 0.0f, 0.0f, 0.0f );
+		D3DXVec3TransformCoord( &rigidcenter, &zerovec, &multmat );
+***/
+/***
+		D3DXVECTOR3 rigidcenter;
+		rigidcenter.x = multmat._41;
+		rigidcenter.y = multmat._42;
+		rigidcenter.z = multmat._43;
+***/
+/***
+		D3DXMATRIX newcapsulemat;
+		D3DXMATRIX tmpfirstcap, tmpdiffworld;
+		tmpfirstcap = curre->m_firstcapsulemat;
+		tmpfirstcap._41 = 0.0f;
+		tmpfirstcap._42 = 0.0f;
+		tmpfirstcap._43 = 0.0f;
+		tmpdiffworld = diffworld;
+		tmpdiffworld._41 = 0.0f;
+		tmpdiffworld._42 = 0.0f;
+		tmpdiffworld._43 = 0.0f;
+		newcapsulemat = tmpfirstcap * tmpdiffworld;
+***/
+		D3DXMATRIX newcapsulemat;
+		newcapsulemat = multmat;
+		newcapsulemat._41 = 0.0f;
+		newcapsulemat._42 = 0.0f;
+		newcapsulemat._43 = 0.0f;
+
+		D3DXQUATERNION xtmpq;
+		D3DXQuaternionRotationMatrix( &xtmpq, &newcapsulemat );
+		btQuaternion btrotq( xtmpq.x, xtmpq.y, xtmpq.z, xtmpq.w );
+
+		btTransform worldtra;
+		worldtra.setIdentity();
+		worldtra.setRotation( btrotq );
+		worldtra.setOrigin( btVector3( rigidcenter.x, rigidcenter.y, rigidcenter.z ) );
+
+		m_rigidbody->getMotionState()->setWorldTransform( worldtra );
+	}else{
+		_ASSERT( 0 );
+	}
+
+	return 0;
+}
+
+int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
+{
+	if( m_topflag == 1 ){
+		return 0;
+	}
+	if( !m_rigidbody ){
+		return 0;
+	}
+	if( !m_rigidbody->getMotionState() ){
+		_ASSERT( 0 );
+		return 0;
+	}
+
+	btTransform worldtra;
+	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
+	btMatrix3x3 worldmat = worldtra.getBasis();
+	btVector3 worldpos = worldtra.getOrigin();
+	btVector3 tmpcol[3];
+	int colno;
+	for( colno = 0; colno < 3; colno++ ){
+		tmpcol[colno] = worldmat.getColumn( colno );
+//		tmpcol[colno] = worldmat.getRow( colno );
+	}
+
+	D3DXMATRIX newxworld;
+	D3DXMatrixIdentity( &newxworld );
+
+	newxworld._11 = tmpcol[0].x();
+	newxworld._12 = tmpcol[0].y();
+	newxworld._13 = tmpcol[0].z();
+
+	newxworld._21 = tmpcol[1].x();
+	newxworld._22 = tmpcol[1].y();
+	newxworld._23 = tmpcol[1].z();
+
+	newxworld._31 = tmpcol[2].x();
+	newxworld._32 = tmpcol[2].y();
+	newxworld._33 = tmpcol[2].z();
+
+	newxworld._41 = worldpos.x();
+	newxworld._42 = worldpos.y();
+	newxworld._43 = worldpos.z();
+
+	D3DXMATRIX invxworld;
+	D3DXMatrixInverse( &invxworld, NULL, &m_xworld );
+
+	D3DXMATRIX diffxworld;
+	diffxworld = invxworld * newxworld;
+
+	D3DXMATRIX invtransmat;
+	D3DXMatrixInverse( &invtransmat, NULL, &m_transmat );
+
+	if( m_boneleng > 0.00001f ){
+		//m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * m_par2cen * invtransmat * m_cen2parY * xworld;
+		m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * diffxworld;
+	}else{
+		if( m_parbt->m_bone ){
+			//m_bone->m_curmp.m_btmat = m_bone->m_parent->m_curmp.m_btmat;
+			D3DXMATRIX invstart;
+			D3DXMatrixInverse( &invstart, NULL, &(m_parbt->m_bone->m_startmat2) );
+			D3DXMATRIX diffmat;
+			diffmat = invstart * m_parbt->m_bone->m_curmp.m_btmat;
+			m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * diffmat;
+		}else{
+			m_bone->m_curmp.m_btmat = m_bone->m_startmat2;
+		}
+/***
+		if( m_bone->m_parent ){
+			//m_bone->m_curmp.m_btmat = m_bone->m_parent->m_curmp.m_btmat;
+			D3DXMATRIX invstart;
+			D3DXMatrixInverse( &invstart, NULL, &(m_bone->m_parent->m_startmat2) );
+			D3DXMATRIX diffmat;
+			diffmat = invstart * m_bone->m_parent->m_curmp.m_btmat;
+			m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * diffmat;
+		}else{
+			m_bone->m_curmp.m_btmat = m_bone->m_startmat2;
+			_ASSERT( 0 );
+		}
+***/
+	}
+
+	m_bone->m_curmp.m_setbtflag = 1;
+
+
+	return 0;
+}
+

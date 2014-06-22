@@ -1,0 +1,320 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <math.h>
+#include <string.h>
+#include <wchar.h>
+#include <ctype.h>
+#include <malloc.h>
+#include <memory.h>
+
+#include <windows.h>
+#include <crtdbg.h>
+
+#include <ImpFile.h>
+
+#include <Model.h>
+#include <mqoobject.h>
+#include <Bone.h>
+#include <RigidElem.h>
+
+
+#define DBGH
+#include <dbg.h>
+
+#include <map>
+
+
+using namespace std;
+
+CImpFile::CImpFile()
+{
+	InitParams();
+}
+
+CImpFile::~CImpFile()
+{
+	DestroyObjs();
+}
+
+int CImpFile::InitParams()
+{
+	CXMLIO::InitParams();
+
+	m_model = 0;
+	return 0;
+}
+
+int CImpFile::DestroyObjs()
+{
+	CXMLIO::DestroyObjs();
+
+	InitParams();
+
+	return 0;
+}
+
+
+int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
+{
+	m_model = srcmodel;
+	m_mode = XMLIO_WRITE;
+
+	if( !m_model->m_topbone ){
+		return 0;
+	}
+
+	WCHAR wfilename[MAX_PATH] = {0L};
+	WCHAR* lasten;
+	lasten = wcsrchr( strpath, TEXT('\\') );
+	if( !lasten ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	wcscpy_s( wfilename, MAX_PATH, lasten + 1 );
+
+	char mfilename[MAX_PATH] = {0};
+	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
+	m_strimp = mfilename;
+
+
+	m_hfile = CreateFile( strpath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
+	if( m_hfile == INVALID_HANDLE_VALUE ){
+		DbgOut( L"ImpFile : WriteImpFile : file open error !!!\n" );
+		_ASSERT( 0 );
+		return 1;
+	}
+
+
+	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<IMPULSE>\r\n" ), return 1 );  
+	CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
+
+	WriteImpReq( m_model->m_topbone );
+
+	CallF( Write2File( "</IMPULSE>\r\n" ), return 1 );
+
+	return 0;
+}
+void CImpFile::WriteImpReq( CBone* srcbone )
+{
+	WriteImp( srcbone );
+
+	if( srcbone->m_child ){
+		WriteImpReq( srcbone->m_child );
+	}
+	if( srcbone->m_brother ){
+		WriteImpReq( srcbone->m_brother );
+	}
+}
+
+
+int CImpFile::WriteImp( CBone* srcbone )
+{
+/***
+  <Bone>
+    <Name>zentai_ido</Nama>
+    <RigidElem>
+	  <ChildName>koshi</ChildName>
+	  <ImpulseX>0.0</ImpulseX>
+	  <ImpulseY>0.0</ImpulseY>
+	  <ImpulseZ>0.0</ImpulseZ>
+    </RigidElem>
+  </Bone>
+***/
+	map<string, map<CBone*, D3DXVECTOR3>>::iterator findimpmap;
+	findimpmap = srcbone->m_impmap.find( m_strimp );
+
+	if( findimpmap == srcbone->m_impmap.end() ){
+		return 0;
+	}
+
+	map<CBone*, D3DXVECTOR3>& curmap = findimpmap->second;	
+	if( curmap.empty() ){
+		return 0;
+	}
+
+	CallF( Write2File( "  <Bone>\r\n" ), return 1);
+	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->m_bonename ), return 1);
+
+	map<CBone*,D3DXVECTOR3>::iterator itrimp;
+	for( itrimp = curmap.begin(); itrimp != curmap.end(); itrimp++ ){
+		D3DXVECTOR3 curimp = itrimp->second;
+		CallF( Write2File( "    <RigidElem>\r\n" ), return 1);
+
+		CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", itrimp->first->m_bonename ), return 1);
+		CallF( Write2File( "      <ImpulseX>%f</ImpulseX>\r\n", curimp.x ), return 1);
+		CallF( Write2File( "      <ImpulseY>%f</ImpulseY>\r\n", curimp.y ), return 1);
+		CallF( Write2File( "      <ImpulseZ>%f</ImpulseZ>\r\n", curimp.z ), return 1);
+
+		CallF( Write2File( "    </RigidElem>\r\n" ), return 1);
+	}
+
+	CallF( Write2File( "  </Bone>\r\n" ), return 1);
+
+	return 0;
+}
+
+
+
+
+int CImpFile::LoadImpFile( WCHAR* strpath, CModel* srcmodel )
+{
+	m_model = srcmodel;
+	m_mode = XMLIO_LOAD;
+
+	WCHAR wfilename[MAX_PATH] = {0L};
+	WCHAR* lasten;
+	lasten = wcsrchr( strpath, TEXT('\\') );
+	if( !lasten ){
+		_ASSERT( 0 );
+		return 1;
+	}
+	wcscpy_s( wfilename, MAX_PATH, lasten + 1 );
+
+	char mfilename[MAX_PATH] = {0};
+	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
+	m_strimp = mfilename;
+
+	m_hfile = CreateFile( strpath, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
+	if( m_hfile == INVALID_HANDLE_VALUE ){
+		_ASSERT( 0 );
+		return 1;
+	}	
+
+	CallF( SetBuffer(), return 1 );
+
+	srcmodel->CreateRigidElemReq( srcmodel->m_topbone, 0, srcmodel->m_defaultrename, 1, m_strimp );
+
+	int posstep = 0;
+//	XMLIOBUF fileinfobuf;
+//	ZeroMemory( &fileinfobuf, sizeof( XMLIOBUF ) );
+//	CallF( SetXmlIOBuf( &m_xmliobuf, "<FileInfo>", "</FileInfo>", &fileinfobuf ), return 1 );
+//	m_fileversion = CheckFileVersion( &fileinfobuf );
+//	if( m_fileversion <= 0 ){
+//		_ASSERT( 0 );
+//		return 1;
+//	}
+
+	int findflag = 1;
+	while( findflag ){
+		XMLIOBUF bonebuf;
+		ZeroMemory( &bonebuf, sizeof( XMLIOBUF ) );
+		int ret;
+		ret = SetXmlIOBuf( &m_xmliobuf, "<Bone>", "</Bone>", &bonebuf );
+		if( ret == 0 ){
+			CallF( ReadBone( &bonebuf ), return 1 );
+		}else{
+			findflag = 0;
+		}
+	}
+
+
+	srcmodel->m_impinfo.push_back( mfilename );
+	srcmodel->m_curimpindex = srcmodel->m_impinfo.size() - 1;
+
+	return 0;
+}
+
+int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
+{
+
+	char bonename[256];
+	ZeroMemory( bonename, sizeof( char ) * 256 );
+	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
+
+	CBone* curbone = m_model->m_bonename[ bonename ];
+	int findflag = 1;
+	while( findflag ){
+		XMLIOBUF rebuf;
+		ZeroMemory( &rebuf, sizeof( XMLIOBUF ) );
+		int ret;
+		ret = SetXmlIOBuf( xmliobuf, "<RigidElem>", "</RigidElem>", &rebuf );
+		if( ret == 0 ){
+			map<CBone*,D3DXVECTOR3> newimp;
+			if( curbone ){
+				curbone->m_impmap[ m_strimp ] = newimp;
+			}
+			CallF( ReadRE( &rebuf, curbone ), return 1 );
+		}else{
+			findflag = 0;
+		}
+	}
+
+	return 0;
+}
+
+int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
+{
+/***
+    <RigidElem>
+	  <ChildName>koshi</ChildName>
+	  <ImpulseX>0.0</ImpulseX>
+	  <ImpulseY>0.0</ImpulseY>
+	  <ImpulseZ>0.0</ImpulseZ>
+    </RigidElem>
+***/
+
+	char childname[256];
+	ZeroMemory( childname, sizeof( char ) * 256 );
+	CallF( Read_Str( xmlbuf, "<ChildName>", "</ChildName>", childname, 256 ), return 1 );
+
+	float impx = 0.0f;
+	CallF( Read_Float( xmlbuf, "<ImpulseX>", "</ImpulseX>", &impx ), return 1 );
+	float impy = 0.0f;
+	CallF( Read_Float( xmlbuf, "<ImpulseY>", "</ImpulseY>", &impy ), return 1 );
+	float impz = 0.0f;
+	CallF( Read_Float( xmlbuf, "<ImpulseZ>", "</ImpulseZ>", &impz ), return 1 );
+
+	D3DXVECTOR3 imp( impx, impy, impz );
+
+	if( curbone ){
+		map<CBone*,D3DXVECTOR3>& curimp = curbone->m_impmap[ m_strimp ];
+		CBone* chilbone = m_model->m_bonename[ childname ];
+		if( chilbone ){
+			curimp[ chilbone ] = imp;
+		}
+	}
+
+	return 0;
+}
+
+
+/***
+int CImpFile::CheckFileVersion( XMLIOBUF* xmlbuf )
+{
+	char kind[256];
+	char version[256];
+	char type[256];
+	ZeroMemory( kind, sizeof( char ) * 256 );
+	ZeroMemory( version, sizeof( char ) * 256 );
+	ZeroMemory( type, sizeof( char ) * 256 );
+
+	CallF( Read_Str( xmlbuf, "<kind>", "</kind>", kind, 256 ), return 1 );
+	CallF( Read_Str( xmlbuf, "<version>", "</version>", version, 256 ), return 1 );
+	CallF( Read_Str( xmlbuf, "<type>", "</type>", type, 256 ), return 1 );
+
+	int cmpkind, cmpversion1, cmpversion2, cmptype;
+	cmpkind = strcmp( kind, "OpenRDBMotionFile" );
+	cmpversion1 = strcmp( version, "1001" );
+	cmpversion2 = strcmp( version, "1002" );
+	cmptype = strcmp( type, "0" );
+
+	if( (cmpkind == 0) && (cmptype == 0) ){
+		if( cmpversion1 == 0 ){
+			return 1;
+		}else if( cmpversion2 == 0 ){
+			return 2;
+		}else{
+			return 0;
+		}
+
+		return 0;
+	}else{
+		_ASSERT( 0 );
+		return 0;
+	}
+
+	return 0;
+}
+***/
