@@ -65,11 +65,11 @@ CTexElem* CTexBank::ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent
 		CTexElem* curelem = itr->second;
 		if( curelem ){
 			int cmpname, cmppath;
-			cmpname = wcscmp( srcname, curelem->m_name );
+			cmpname = wcscmp( srcname, curelem->GetName() );
 			if( cmpname == 0 ){
-				cmppath = wcscmp( srcpath, curelem->m_path );
+				cmppath = wcscmp( srcpath, curelem->GetPath() );
 				if( cmppath == 0 ){
-					if( srctransparent == curelem->m_transparent ){
+					if( srctransparent == curelem->GetTransparent() ){
 						return curelem;
 					}
 				}
@@ -85,7 +85,7 @@ int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int sr
 	CTexElem* sameelem = 0;
 	sameelem = ExistTex( srcpath, srcname, srctransparent );
 	if( sameelem ){
-		*dstid = sameelem->m_id;
+		*dstid = sameelem->GetID();
 		return 2;
 	}
 
@@ -95,16 +95,16 @@ int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int sr
 		_ASSERT( 0 );
 		return 1;
 	}
-	wcscpy_s( newelem->m_name, MAX_PATH, srcname );
-	wcscpy_s( newelem->m_path, MAX_PATH, srcpath );
-	newelem->m_transparent = srctransparent;
-	newelem->m_pool = srcpool;
-	newelem->m_transcol = srccol;
+	newelem->SetName( srcname );
+	newelem->SetPath( srcpath );
+	newelem->SetTransparent( srctransparent );
+	newelem->SetPool( srcpool );
+	newelem->SetTransCol( srccol );
 
 	CallF( newelem->CreateTexData( m_pdev ), return 1 );
 
-	m_texmap[ newelem->m_id ] = newelem;
-	*dstid = newelem->m_id;
+	m_texmap[ newelem->GetID() ] = newelem;
+	*dstid = newelem->GetID();
 
 	return 0;
 }
@@ -114,7 +114,7 @@ int CTexBank::Invalidate( int invalmode )
 	map<int,CTexElem*>::iterator itr;
 	for( itr = m_texmap.begin(); itr != m_texmap.end(); itr++ ){
 		CTexElem* delelem = itr->second;
-		if( delelem && (invalmode == INVAL_ALL) || ((invalmode == INVAL_ONLYDEFAULT) && (delelem->m_pool == D3DPOOL_DEFAULT)) ){
+		if( delelem && (invalmode == INVAL_ALL) || ((invalmode == INVAL_ONLYDEFAULT) && (delelem->GetPool() == D3DPOOL_DEFAULT)) ){
 			delelem->InvalidateTexData();
 		}
 	}

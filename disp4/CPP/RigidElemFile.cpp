@@ -63,7 +63,7 @@ int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, float 
 	m_mode = XMLIO_WRITE;
 	m_btgscale = srcbtgscale;
 
-	if( !m_model->m_topbone ){
+	if( !m_model->GetTopBone() ){
 		return 0;
 	}
 
@@ -81,7 +81,7 @@ int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, float 
 
 	CallF( Write2File( "    <SCBTG>%f</SCBTG>\r\n", m_btgscale ), return 1 );
 
-	WriteREReq( m_model->m_topbone );
+	WriteREReq( m_model->GetTopBone() );
 
 	CallF( Write2File( "</RIGIDELEM>\r\n" ), return 1 );
 
@@ -91,11 +91,11 @@ void CRigidElemFile::WriteREReq( CBone* srcbone )
 {
 	WriteRE( srcbone );
 
-	if( srcbone->m_child ){
-		WriteREReq( srcbone->m_child );
+	if( srcbone->GetChild() ){
+		WriteREReq( srcbone->GetChild() );
 	}
-	if( srcbone->m_brother ){
-		WriteREReq( srcbone->m_brother );
+	if( srcbone->GetBrother() ){
+		WriteREReq( srcbone->GetBrother() );
 	}
 }
 
@@ -121,48 +121,48 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
     </RigidElem>
   </Bone>
 ***/
-	if( srcbone->m_rigidelem.empty() ){
+	if( srcbone->GetRigidElemSize() <= 0 ){
 		return 0;
 	}
 
 	CallF( Write2File( "  <Bone>\r\n" ), return 1);
-	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->m_bonename ), return 1);
-	CallF( Write2File( "    <BTKIN>%d</BTKIN>\r\n", srcbone->m_btforce ), return 1);
+	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
+	CallF( Write2File( "    <BTKIN>%d</BTKIN>\r\n", srcbone->GetBtForce() ), return 1);
 
 	map<CBone*,CRigidElem*>::iterator itrre;
-	for( itrre = srcbone->m_rigidelem.begin(); itrre != srcbone->m_rigidelem.end(); itrre++ ){
+	for( itrre = srcbone->GetRigidElemMapBegin(); itrre != srcbone->GetRigidElemMapEnd(); itrre++ ){
 		CRigidElem* curre = itrre->second;
 		if( curre ){
 			CallF( Write2File( "    <RigidElem>\r\n" ), return 1);
 
-			CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", itrre->first->m_bonename ), return 1);
-			CallF( Write2File( "      <ColType>%d</ColType>\r\n", curre->m_coltype ), return 1);
-			CallF( Write2File( "      <SkipFlag>%d</SkipFlag>\r\n", curre->m_skipflag ), return 1);
-			CallF( Write2File( "      <ShpRate>%f</ShpRate>\r\n", curre->m_shprate ), return 1);
-			CallF( Write2File( "      <LK>%d</LK>\r\n", curre->m_l_kindex ), return 1);
-			CallF( Write2File( "      <CUSLK>%f</CUSLK>\r\n", curre->m_cus_lk ), return 1);
-			CallF( Write2File( "      <AK>%d</AK>\r\n", curre->m_a_kindex ), return 1);
-			CallF( Write2File( "      <CUSAK>%f</CUSAK>\r\n", curre->m_cus_ak ), return 1);
-			CallF( Write2File( "      <Mass>%f</Mass>\r\n", curre->m_mass ), return 1);
-			CallF( Write2File( "      <LDMP>%f</LDMP>\r\n", curre->m_l_damping ), return 1);
-			CallF( Write2File( "      <ADMP>%f</ADMP>\r\n", curre->m_a_damping ), return 1);
-			CallF( Write2File( "      <BTG>%f</BTG>\r\n", curre->m_btg ), return 1 );
-			CallF( Write2File( "      <DMPANIML>%f</DMPANIML>\r\n", curre->m_dampanim_l ), return 1 );
-			CallF( Write2File( "      <DMPANIMA>%f</DMPANIMA>\r\n", curre->m_dampanim_a ), return 1 );
+			CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", itrre->first->GetBoneName() ), return 1);
+			CallF( Write2File( "      <ColType>%d</ColType>\r\n", curre->GetColtype() ), return 1);
+			CallF( Write2File( "      <SkipFlag>%d</SkipFlag>\r\n", curre->GetSkipflag() ), return 1);
+			CallF( Write2File( "      <ShpRate>%f</ShpRate>\r\n", curre->GetSphrate() ), return 1);
+			CallF( Write2File( "      <LK>%d</LK>\r\n", curre->GetLKindex() ), return 1);
+			CallF( Write2File( "      <CUSLK>%f</CUSLK>\r\n", curre->GetCusLk() ), return 1);
+			CallF( Write2File( "      <AK>%d</AK>\r\n", curre->GetAKindex() ), return 1);
+			CallF( Write2File( "      <CUSAK>%f</CUSAK>\r\n", curre->GetCusAk() ), return 1);
+			CallF( Write2File( "      <Mass>%f</Mass>\r\n", curre->GetMass() ), return 1);
+			CallF( Write2File( "      <LDMP>%f</LDMP>\r\n", curre->GetLDamping() ), return 1);
+			CallF( Write2File( "      <ADMP>%f</ADMP>\r\n", curre->GetADamping() ), return 1);
+			CallF( Write2File( "      <BTG>%f</BTG>\r\n", curre->GetBtg() ), return 1 );
+			CallF( Write2File( "      <DMPANIML>%f</DMPANIML>\r\n", curre->GetDampanimL() ), return 1 );
+			CallF( Write2File( "      <DMPANIMA>%f</DMPANIMA>\r\n", curre->GetDampanimA() ), return 1 );
 
 
-			CallF( Write2File( "      <GROUP>%d</GROUP>\r\n", curre->m_groupid ), return 1);
-			CallF( Write2File( "      <MYSELF>%d</MYSELF>\r\n", curre->m_myselfflag ), return 1);
+			CallF( Write2File( "      <GROUP>%d</GROUP>\r\n", curre->GetGroupid() ), return 1);
+			CallF( Write2File( "      <MYSELF>%d</MYSELF>\r\n", curre->GetMyselfflag() ), return 1);
 
-			int idnum = curre->m_coliids.size();
+			int idnum = curre->GetColiidsSize();
 			CallF( Write2File( "      <COLIIDNUM>%d</COLIIDNUM>\r\n", idnum ), return 1);
 			int ino;
 			for( ino = 0; ino < idnum; ino++ ){
-				CallF( Write2File( "      <COLIID>%d</COLIID>\r\n", curre->m_coliids[ino] ), return 1);
+				CallF( Write2File( "      <COLIID>%d</COLIID>\r\n", curre->GetColiids( ino ) ), return 1);
 			}
 
-			CallF( Write2File( "      <RESTITUTION>%f</RESTITUTION>\r\n", curre->m_restitution ), return 1);
-			CallF( Write2File( "      <FRICTION>%f</FRICTION>\r\n", curre->m_friction ), return 1);
+			CallF( Write2File( "      <RESTITUTION>%f</RESTITUTION>\r\n", curre->GetRestitution() ), return 1);
+			CallF( Write2File( "      <FRICTION>%f</FRICTION>\r\n", curre->GetFriction() ), return 1);
 
 			CallF( Write2File( "    </RigidElem>\r\n" ), return 1);
 		}
@@ -204,7 +204,11 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 	CallF( SetBuffer(), return 1 );
 
 	m_rename = mfilename;
-	srcmodel->CreateRigidElemReq( srcmodel->m_topbone, 1, m_rename, 0, srcmodel->m_defaultimpname );
+	CBone* topbone = srcmodel->GetTopBone();
+	if( topbone ){
+		srcmodel->CreateRigidElemReq( topbone, 1, m_rename, 0, srcmodel->GetDefaultImpName() );
+	}
+
 
 	REINFO reinfo;
 	ZeroMemory( &reinfo, sizeof( REINFO ) );
@@ -220,7 +224,7 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 		reinfo.btgscale = 1.0f;
 	}
 
-	srcmodel->m_btgscale = scbtg;
+	srcmodel->SetBtGScale( scbtg );
 
 	int findflag = 1;
 	while( findflag ){
@@ -235,9 +239,9 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 		}
 	}
 
-	srcmodel->m_rigideleminfo.push_back( reinfo );
+	srcmodel->PushBackRigidElemInfo( reinfo );
 
-	int reinfoindex = srcmodel->m_rigideleminfo.size() - 1;
+	int reinfoindex = srcmodel->GetRigidElemInfoSize() - 1;
 	srcmodel->SetCurrentRigidElem( reinfoindex );
 
 
@@ -255,14 +259,14 @@ int CRigidElemFile::ReadBone( XMLIOBUF* xmliobuf )
 	int kin = 0;
 	getkin = Read_Int( xmliobuf,  "<BTKIN>", "</BTKIN>", &kin );
 
-	CBone* curbone = m_model->m_bonename[ bonename ];
+	CBone* curbone = m_model->GetBoneByName( bonename );
 
 	if( curbone ){
 		if( getkin == 0 ){
-			curbone->m_btforce = kin;
+			curbone->SetBtForce( kin );
 		}else{
 			_ASSERT( 0 );
-			curbone->m_btforce = 0;
+			curbone->SetBtForce( 0 );
 		}
 	}
 
@@ -414,38 +418,32 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 
 
 	if( curbone ){
-		CBone* chilbone = m_model->m_bonename[ childname ];
+		CBone* chilbone = m_model->GetBoneByName( childname );
 		if( chilbone ){			
-			map<string, map<CBone*, CRigidElem*>>::iterator findremap;
-			findremap = curbone->m_remap.find( m_rename );
-			if( findremap == curbone->m_remap.end() ){
-				_ASSERT( 0 );
-				return 1;
-			}
-			map<CBone*, CRigidElem*>& curmap = findremap->second;
-			CRigidElem* curre = curmap[ chilbone ];
+			CRigidElem* curre;
+			curre = curbone->GetRigidElemOfMap( m_rename, chilbone );
 			if( curre ){
-				curre->m_skipflag = skipflag;
-				curre->m_shprate = rate;
-				curre->m_coltype = coltype;
-				curre->m_l_kindex = lkindex;
-				curre->m_a_kindex = akindex;
-				curre->m_cus_lk = cuslk;
-				curre->m_cus_ak = cusak;
-				curre->m_mass = mass;
-				curre->m_l_damping = ldmp;
-				curre->m_a_damping = admp;
-				curre->m_btg = btg;
+				curre->SetSkipflag( skipflag );
+				curre->SetSphrate( rate );
+				curre->SetColtype( coltype );
+				curre->SetLKindex( lkindex );
+				curre->SetAKindex( akindex );
+				curre->SetCusLk( cuslk );
+				curre->SetCusAk( cusak );
+				curre->SetMass( mass );
+				curre->SetLDamping( ldmp );
+				curre->SetADamping( admp );
+				curre->SetBtg( btg );
 
-				curre->m_groupid = gid;
-				curre->m_coliids = tmpids;
-				curre->m_myselfflag = myself;
+				curre->SetGroupid( gid );
+				curre->CopyColiids( tmpids );
+				curre->SetMyselfflag( myself );
 
-				curre->m_restitution = rest;
-				curre->m_friction = fric;
+				curre->SetRestitution( rest );
+				curre->SetFriction( fric );
 
-				curre->m_dampanim_l = dmpanimL;
-				curre->m_dampanim_a = dmpanimA;
+				curre->SetDampanimL( dmpanimL );
+				curre->SetDampanimA( dmpanimA );
 			}
 		}
 	}

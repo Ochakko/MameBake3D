@@ -29,6 +29,19 @@ private:
 	int DestroyObjs();
 
 public:
+	//accesser
+	MOTINFO GetSaveMotInfo(){
+		return m_savemotinfo;
+	};
+
+	int GetValidFlag(){
+		return m_validflag;
+	};
+	void SetValidFlag( int srcval ){
+		m_validflag = srcval;
+	};
+
+private:
 	int m_validflag;
 	MOTINFO m_savemotinfo;
 	std::map<CBone*, CMotionPoint*> m_bone2mp;

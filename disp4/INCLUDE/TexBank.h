@@ -21,13 +21,22 @@ public:
 
 	int DestroyTex( int srcid );
 
+public:
+	//accesser
+	CTexElem* GetTexElem( int srcindex ){
+		return m_texmap[ srcindex ];
+	};
+	void GetTexElem2( std::map<int,CTexElem*>& dstmap ){
+		dstmap = m_texmap;
+	};
+
 private:
 	int InitParams();
 	int DestroyObjs();
 
 	CTexElem* ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent );
 
-public:
+private:
 	LPDIRECT3DDEVICE9 m_pdev;
 	map<int, CTexElem*> m_texmap;
 };

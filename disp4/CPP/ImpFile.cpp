@@ -59,7 +59,7 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 	m_model = srcmodel;
 	m_mode = XMLIO_WRITE;
 
-	if( !m_model->m_topbone ){
+	if( !m_model->GetTopBone() ){
 		return 0;
 	}
 
@@ -89,7 +89,7 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<IMPULSE>\r\n" ), return 1 );  
 	CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
 
-	WriteImpReq( m_model->m_topbone );
+	WriteImpReq( m_model->GetTopBone() );
 
 	CallF( Write2File( "</IMPULSE>\r\n" ), return 1 );
 
@@ -99,11 +99,11 @@ void CImpFile::WriteImpReq( CBone* srcbone )
 {
 	WriteImp( srcbone );
 
-	if( srcbone->m_child ){
-		WriteImpReq( srcbone->m_child );
+	if( srcbone->GetChild() ){
+		WriteImpReq( srcbone->GetChild() );
 	}
-	if( srcbone->m_brother ){
-		WriteImpReq( srcbone->m_brother );
+	if( srcbone->GetBrother() ){
+		WriteImpReq( srcbone->GetBrother() );
 	}
 }
 
@@ -121,27 +121,27 @@ int CImpFile::WriteImp( CBone* srcbone )
     </RigidElem>
   </Bone>
 ***/
-	map<string, map<CBone*, D3DXVECTOR3>>::iterator findimpmap;
-	findimpmap = srcbone->m_impmap.find( m_strimp );
-
-	if( findimpmap == srcbone->m_impmap.end() ){
+	int impnum = 0;
+	impnum = srcbone->GetImpMapSize2( m_strimp );
+	if( impnum <= 0 ){
 		return 0;
 	}
 
-	map<CBone*, D3DXVECTOR3>& curmap = findimpmap->second;	
-	if( curmap.empty() ){
+	map<string, map<CBone*,D3DXVECTOR3>>::iterator itrcurmap;
+	itrcurmap = srcbone->FindImpMap( m_strimp );
+	if( itrcurmap == srcbone->GetImpMapEnd() ){
+		_ASSERT( 0 );
 		return 0;
 	}
-
 	CallF( Write2File( "  <Bone>\r\n" ), return 1);
-	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->m_bonename ), return 1);
+	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
 
 	map<CBone*,D3DXVECTOR3>::iterator itrimp;
-	for( itrimp = curmap.begin(); itrimp != curmap.end(); itrimp++ ){
+	for( itrimp = itrcurmap->second.begin(); itrimp != itrcurmap->second.end(); itrimp++ ){
 		D3DXVECTOR3 curimp = itrimp->second;
 		CallF( Write2File( "    <RigidElem>\r\n" ), return 1);
 
-		CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", itrimp->first->m_bonename ), return 1);
+		CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", itrimp->first->GetBoneName() ), return 1);
 		CallF( Write2File( "      <ImpulseX>%f</ImpulseX>\r\n", curimp.x ), return 1);
 		CallF( Write2File( "      <ImpulseY>%f</ImpulseY>\r\n", curimp.y ), return 1);
 		CallF( Write2File( "      <ImpulseZ>%f</ImpulseZ>\r\n", curimp.z ), return 1);
@@ -184,7 +184,11 @@ int CImpFile::LoadImpFile( WCHAR* strpath, CModel* srcmodel )
 
 	CallF( SetBuffer(), return 1 );
 
-	srcmodel->CreateRigidElemReq( srcmodel->m_topbone, 0, srcmodel->m_defaultrename, 1, m_strimp );
+
+	CBone* topbone = srcmodel->GetTopBone();
+	if( topbone ){
+		srcmodel->CreateRigidElemReq( topbone, 0, srcmodel->GetDefaultReName(), 1, m_strimp );
+	}
 
 	int posstep = 0;
 //	XMLIOBUF fileinfobuf;
@@ -210,8 +214,8 @@ int CImpFile::LoadImpFile( WCHAR* strpath, CModel* srcmodel )
 	}
 
 
-	srcmodel->m_impinfo.push_back( mfilename );
-	srcmodel->m_curimpindex = srcmodel->m_impinfo.size() - 1;
+	srcmodel->PushBackImpInfo( mfilename );
+	srcmodel->SetCurImpIndex( srcmodel->GetImpInfoSize() - 1 );
 
 	return 0;
 }
@@ -223,7 +227,7 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 	ZeroMemory( bonename, sizeof( char ) * 256 );
 	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
 
-	CBone* curbone = m_model->m_bonename[ bonename ];
+	CBone* curbone = m_model->GetBoneByName( bonename );
 	int findflag = 1;
 	while( findflag ){
 		XMLIOBUF rebuf;
@@ -233,7 +237,7 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 		if( ret == 0 ){
 			map<CBone*,D3DXVECTOR3> newimp;
 			if( curbone ){
-				curbone->m_impmap[ m_strimp ] = newimp;
+				curbone->SetImpMap2( m_strimp, newimp );
 			}
 			CallF( ReadRE( &rebuf, curbone ), return 1 );
 		}else{
@@ -269,10 +273,9 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 	D3DXVECTOR3 imp( impx, impy, impz );
 
 	if( curbone ){
-		map<CBone*,D3DXVECTOR3>& curimp = curbone->m_impmap[ m_strimp ];
-		CBone* chilbone = m_model->m_bonename[ childname ];
+		CBone* chilbone = m_model->GetBoneByName( childname );
 		if( chilbone ){
-			curimp[ chilbone ] = imp;
+			curbone->SetImpOfMap( m_strimp, chilbone, imp );
 		}
 	}
 

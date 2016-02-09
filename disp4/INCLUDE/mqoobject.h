@@ -47,7 +47,7 @@ public:
 	int Dump();
 
 	int MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial*>& srcmat );
-	int MakePolymesh4( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial*>& srcmat );
+	int MakePolymesh4( LPDIRECT3DDEVICE9 pdev );
 	int MakeExtLine();
 	int MakeDispObj( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial*>& srcmat, int hasbone );
 //	int MakeExtLine( map<int,CMQOMaterial*>& srcmat );
@@ -122,8 +122,185 @@ private:
 	int CheckMaterialSameName( int srcmatno, std::map<int, CMQOMaterial*> &srcmaterial, int* nameflag );
 	int SetXInfluenceArray( CInfBone* ibptr, int vnum, int boneserino, DWORD* vertices, float* weights, int infnum, DWORD* setnumptr );
 
-
 public:
+	//accesser
+	int GetObjFrom(){
+		return m_objfrom;
+	};
+	void SetObjFrom( int srcval ){
+		m_objfrom = srcval;
+	};
+
+	int GetObjectNo(){
+		return m_objectno;
+	};
+	void SetObjectNo( int srcval ){
+		m_objectno = srcval;
+	};
+
+	const char* GetName(){
+		return m_name;
+	};
+	void SetName( char* srcname ){
+		strcpy_s( m_name, 256, srcname );
+	};
+
+	void SetDispName( std::string srcname ){
+		m_dispname = srcname;
+	};
+
+
+	const char* GetEngName(){
+		return m_engname;
+	};
+
+	int GetVertex(){
+		return m_vertex;
+	};
+	void SetVertex( int srcval ){
+		m_vertex = srcval;
+	};
+
+	int GetFace(){
+		return m_face;
+	};
+	void SetFace( int srcval ){
+		m_face = srcval;
+	};
+
+	D3DXVECTOR3* GetPointBuf(){
+		return m_pointbuf;
+	};
+	void SetPointBuf( D3DXVECTOR3* srcbuf ){
+		m_pointbuf = srcbuf;
+	};
+
+	CMQOFace* GetFaceBuf(){
+		return m_facebuf;
+	};
+	void SetFaceBuf( CMQOFace* srcbuf ){
+		m_facebuf = srcbuf;
+	};
+
+	CPolyMesh3* GetPm3(){
+		return m_pm3;
+	};
+	void SetPm3( CPolyMesh3* srcval ){
+		m_pm3 = srcval;
+	};
+
+	CPolyMesh4* GetPm4(){
+		return m_pm4;
+	};
+	void SetPm4( CPolyMesh4* srcval ){
+		m_pm4 = srcval;
+	};
+
+	CExtLine* GetExtLine(){
+		return m_extline;
+	};
+
+	CDispObj* GetDispObj(){
+		return m_dispobj;
+	};
+	void SetDispObj( CDispObj* srcval ){
+		m_dispobj = srcval;
+	};
+
+	CDispObj* GetDispLine(){
+		return m_displine;
+	};
+	void SetDispLine( CDispObj* srcval ){
+		m_displine = srcval;
+	};
+
+	int GetDispFlag(){
+		return m_dispflag;
+	};
+	void SetDispFlag( int srcval ){
+		m_dispflag = srcval;
+	};
+
+	int GetNormalLeng(){
+		return m_normalleng;
+	};
+	void SetNormalLeng( int srcval ){
+		m_normalleng = srcval;
+	};
+
+	D3DXVECTOR3* GetNormal(){
+		return m_normal;
+	};
+	void SetNormal( D3DXVECTOR3* srcval ){
+		m_normal = srcval;
+	};
+
+	int GetUVLeng(){
+		return m_uvleng;
+	};
+	void SetUVLeng( int srcval ){
+		m_uvleng = srcval;
+	};
+
+	D3DXVECTOR2* GetUVBuf(){
+		return m_uvbuf;
+	};
+	void SetUVBuf( D3DXVECTOR2* srcval ){
+		m_uvbuf = srcval;
+	};
+
+	int GetMaterialSize(){
+		return m_material.size();
+	};
+	CMQOMaterial* GetMaterial( int srcindex ){
+		return m_material[ srcindex ];
+	};
+	std::map<int,CMQOMaterial*>::iterator GetMaterialBegin(){
+		return m_material.begin();
+	};
+	std::map<int,CMQOMaterial*>::iterator GetMaterialEnd(){
+		return m_material.end();
+	};
+	void SetMaterial( int srcindex, CMQOMaterial* srcval ){
+		m_material[ srcindex ] = srcval;
+	};
+
+	int GetClusterSize(){
+		return m_cluster.size();
+	};
+	CBone* GetCluster( int srcindex ){
+		return m_cluster[ srcindex ];
+	};
+	std::vector<CBone*>::iterator GetClusterBegin(){
+		return m_cluster.begin();
+	};
+	std::vector<CBone*>::iterator GetClusterEnd(){
+		return m_cluster.end();
+	};
+	void PushBackCluster( CBone* srcval ){
+		m_cluster.push_back( srcval );
+	};
+
+	BOOL EmptyFindShape(){
+		return m_findshape.empty();
+	};
+
+	int FindShape( std::string srcname ){
+		std::map<std::string,int>::iterator itrfind;
+		itrfind = m_findshape.find( srcname );
+		if( itrfind != m_findshape.end() ){
+			return itrfind->second;
+		}else{
+			return -1;
+		}
+	};
+
+	void GetShapeVert2( std::map<std::string,D3DXVECTOR3*>& dstmap ){
+		dstmap = m_shapevert;
+	};
+
+
+private:
 	int m_objfrom;
 
 	int m_objectno;
@@ -131,6 +308,34 @@ public:
 	std::string m_dispname;
 	char m_engname[256];
 
+	int m_vertex;
+	int m_face;
+
+	D3DXVECTOR3* m_pointbuf;
+	CMQOFace* m_facebuf;
+
+	CPolyMesh3* m_pm3;
+	CPolyMesh4* m_pm4;
+
+	CExtLine* m_extline;
+
+	CDispObj* m_dispobj;
+	CDispObj* m_displine;
+
+	int m_dispflag;
+
+	int m_normalleng;
+	D3DXVECTOR3* m_normal;
+	int m_uvleng;
+	D3DXVECTOR2* m_uvbuf;
+	std::map<int, CMQOMaterial*> m_material;
+	std::vector<CBone*> m_cluster;//中身のCBone*は外部メモリ
+
+	std::map<std::string,int> m_findshape;
+	std::map<std::string,D3DXVECTOR3*> m_shapevert;
+
+
+//以下、クラス外から参照しないのでアクセッサー無し
 	int m_patch;
 	int m_segment;
 
@@ -149,18 +354,13 @@ public:
 	int m_lathe;
 	int m_lathe_axis;
 	int m_lathe_seg;
-	int m_vertex;
-	//BVertex;
-	int m_face;
-
-	D3DXVECTOR3* m_pointbuf;
-	CMQOFace* m_facebuf;
 
 	int m_hascolor;
 	D3DXVECTOR4* m_colorbuf;
 
 	int m_vertex2;
 	int m_face2;
+
 	D3DXVECTOR3* m_pointbuf2;
 	CMQOFace* m_facebuf2;
 	D3DXVECTOR4* m_colorbuf2;
@@ -168,31 +368,12 @@ public:
 	int m_connectnum;
 	CMQOFace* m_connectface;
 
-	CPolyMesh3* m_pm3;
-	CPolyMesh4* m_pm4;
-	CExtLine* m_extline;
 	D3DXMATRIX m_multmat;
-
-	CDispObj* m_dispobj;
-	CDispObj* m_displine;
-
-	int m_dispflag;
-
-	int m_normalleng;
-	D3DXVECTOR3* m_normal;
-	int m_uvleng;
-	D3DXVECTOR2* m_uvbuf;
-	std::map<int, CMQOMaterial*> m_material;
-	std::map<std::string, CMQOMaterial*> m_namematerial;
-
-	std::vector<CBone*> m_cluster;//中身のCBone*は外部メモリ
-
-
+	//std::map<std::string, CMQOMaterial*> m_namematerial;
 	int m_shapenum;
-	std::map<std::string,int> m_findshape;
-	std::map<std::string,D3DXVECTOR3*> m_shapevert;
 	std::map<std::string,float> m_shapeweight;
 	D3DXVECTOR3* m_mpoint;
+
 };
 
 #endif

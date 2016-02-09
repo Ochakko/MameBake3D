@@ -72,8 +72,8 @@ private:
 	int GetBytes( unsigned char** dstuc, int getlen );
 
 	int ReadScene( MQOSTATE* nextstate );
-	int ReadMaterial( MQOSTATE* nextstate, map<int, CMQOMaterial*>& srcpmat );
-	int ReadObject( MQOSTATE* nextstate, map<int, CMQOObject*>& srcobj );
+	int ReadMaterial( MQOSTATE* nextstate );
+	int ReadObject( MQOSTATE* nextstate );
 	int ReadVertex( MQOSTATE* nextstate );
 	int ReadFace( MQOSTATE* nextstate );
 	int ReadBVertex( MQOSTATE* nextstate );
@@ -95,7 +95,7 @@ private:
 	int do_transform_mat();
 	int IsJoint();
 
-	int Multiple( map<int, CMQOObject*>& srcobj );
+	int Multiple();
 	int PickUpAnchor();
 
 private:

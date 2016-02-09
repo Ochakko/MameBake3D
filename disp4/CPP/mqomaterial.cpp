@@ -32,9 +32,9 @@ int CMQOMaterial::SetParams( int srcno, D3DXVECTOR4 srcsceneamb, char* srcchar, 
 
 //DbgOut( L"check!!!: mqomat : SetParams : %d, %s, %d\r\n", srcno, srcchar, srcleng );
 
-	materialno = srcno;
+	m_materialno = srcno;
 
-	sceneamb = srcsceneamb;//!!!!!!!!!!!!!!!!!
+	m_sceneamb = srcsceneamb;//!!!!!!!!!!!!!!!!!
 
 	char pat[12][20] = 
 	{
@@ -166,26 +166,26 @@ int CMQOMaterial::SetParams( int srcno, D3DXVECTOR4 srcsceneamb, char* srcchar, 
 
 int CMQOMaterial::ConvParamsTo3F()
 {
-	dif4f.w = col.w;
-	dif4f.x = col.x * dif;
-	dif4f.y = col.y * dif;
-	dif4f.z = col.z * dif;
+	m_dif4f.w = m_col.w;
+	m_dif4f.x = m_col.x * m_dif;
+	m_dif4f.y = m_col.y * m_dif;
+	m_dif4f.z = m_col.z * m_dif;
 
 //	amb3f.x = col.x * amb;
 //	amb3f.y = col.y * amb;
 //	amb3f.z = col.z * amb;
 
-	amb3f.x = sceneamb.x * amb;
-	amb3f.y = sceneamb.y * amb;
-	amb3f.z = sceneamb.z * amb;
+	m_amb3f.x = m_sceneamb.x * m_amb;
+	m_amb3f.y = m_sceneamb.y * m_amb;
+	m_amb3f.z = m_sceneamb.z * m_amb;
 
-	emi3f.x = col.x * emi;
-	emi3f.y = col.y * emi;
-	emi3f.z = col.z * emi;
+	m_emi3f.x = m_col.x * m_emi;
+	m_emi3f.y = m_col.y * m_emi;
+	m_emi3f.z = m_col.z * m_emi;
 
-	spc3f.x = col.x * spc;
-	spc3f.y = col.y * spc;
-	spc3f.z = col.z * spc;
+	m_spc3f.x = m_col.x * m_spc;
+	m_spc3f.y = m_col.y * m_spc;
+	m_spc3f.z = m_col.z * m_spc;
 
 	return 0;
 }
@@ -193,66 +193,66 @@ int CMQOMaterial::ConvParamsTo3F()
 
 int CMQOMaterial::InitParams()
 {	
-	materialno = -1;
-	ZeroMemory ( name, 256 );
+	m_materialno = -1;
+	ZeroMemory ( m_name, 256 );
 
-	col.w = 1.0f;
-	col.x = 1.0f;
-	col.y = 1.0f;
-	col.z = 1.0f;
+	m_col.w = 1.0f;
+	m_col.x = 1.0f;
+	m_col.y = 1.0f;
+	m_col.z = 1.0f;
 
-	dif = 1.0f;
-	amb = 0.25f;
-	emi = 0.0f;
-	spc = 0.0f;
-	power = 0.0f;
+	m_dif = 1.0f;
+	m_amb = 0.25f;
+	m_emi = 0.0f;
+	m_spc = 0.0f;
+	m_power = 0.0f;
 
-	ZeroMemory ( tex, 256 );
-	ZeroMemory ( alpha, 256 );
-	ZeroMemory ( bump, 256 );
+	ZeroMemory ( m_tex, 256 );
+	ZeroMemory ( m_alpha, 256 );
+	ZeroMemory ( m_bump, 256 );
 
 	//next = 0;
 
 
-	shader = 3;
+	m_shader = 3;
 
-	vcolflag = 0;
+	m_vcolflag = 0;
 
-	dif4f.w = 1.0f;
-	dif4f.x = 1.0f;
-	dif4f.y = 1.0f;
-	dif4f.z = 1.0f;
+	m_dif4f.w = 1.0f;
+	m_dif4f.x = 1.0f;
+	m_dif4f.y = 1.0f;
+	m_dif4f.z = 1.0f;
 
-	amb3f.x = 0.25f;
-	amb3f.y = 0.25f;
-	amb3f.z = 0.25f;
+	m_amb3f.x = 0.25f;
+	m_amb3f.y = 0.25f;
+	m_amb3f.z = 0.25f;
 
-	emi3f.x = 0.0f;
-	emi3f.y = 0.0f;
-	emi3f.z = 0.0f;
+	m_emi3f.x = 0.0f;
+	m_emi3f.y = 0.0f;
+	m_emi3f.z = 0.0f;
 
-	spc3f.x = 0.0f;
-	spc3f.y = 0.0f;
-	spc3f.z = 0.0f;
+	m_spc3f.x = 0.0f;
+	m_spc3f.y = 0.0f;
+	m_spc3f.z = 0.0f;
 
-	transparent = 0;
-	texrule = 0;//!!!!!!!!!
-	blendmode = 0;
+	m_transparent = 0;
+	m_texrule = 0;//!!!!!!!!!
+	m_blendmode = 0;
 
-	uanime = 0.0f;
-	vanime = 0.0f;
+	m_uanime = 0.0f;
+	m_vanime = 0.0f;
 
 
-	curtexname = 0;
+	m_curtexname = 0;
 
-	alphatest = 1;
-	alphaval = 8;
+	m_alphatest = 1;
+	m_alphaval = 8;
 
-	glowmult[0] = 1.0f;
-	glowmult[1] = 1.0f;
-	glowmult[2] = 1.0f;
+	m_glowmult[0] = 1.0f;
+	m_glowmult[1] = 1.0f;
+	m_glowmult[2] = 1.0f;
 
-	orgalpha = 1.0f;
+	m_orgalpha = 1.0f;
 
 	m_texid = -1;
 
@@ -296,9 +296,9 @@ int CMQOMaterial::SetName( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( ((step - 1) < 256) && ((step - 1) > 0) ){
-		ZeroMemory( name, sizeof( char ) * 256 );
-		strncpy_s( name, 256, srcchar + pos + 1, step - 1 );
-		name[step -1] = 0;
+		ZeroMemory( m_name, sizeof( char ) * 256 );
+		strncpy_s( m_name, 256, srcchar + pos + 1, step - 1 );
+		m_name[step -1] = 0;
 	}
 
 //	DbgOut( L"check!!! : mqomat : SetName %s, %d, %d\r\n", srcchar, pos, srcleng );
@@ -328,17 +328,17 @@ int CMQOMaterial::SetCol( char* srcchar, int pos, int srcleng, int* stepnum )
 
 		switch( cnt ){
 		case 0:
-			col.x = dstfloat;
+			m_col.x = dstfloat;
 			break;
 		case 1:
-			col.y = dstfloat;
+			m_col.y = dstfloat;
 			break;
 		case 2:
-			col.z = dstfloat;
+			m_col.z = dstfloat;
 			break;
 		case 3:
-			col.w = dstfloat;
-			orgalpha = dstfloat;
+			m_col.w = dstfloat;
+			m_orgalpha = dstfloat;
 			break;
 		default:
 			break;
@@ -364,12 +364,12 @@ int CMQOMaterial::SetDif( char* srcchar, int pos, int srcleng, int* stepnum )
 	if( ret )
 		return ret;
 
-	dif = dstfloat;
+	m_dif = dstfloat;
 
-	dif4f.w = col.w;
-	dif4f.x = col.x * dif;
-	dif4f.y = col.y * dif;
-	dif4f.z = col.z * dif;
+	m_dif4f.w = m_col.w;
+	m_dif4f.x = m_col.x * m_dif;
+	m_dif4f.y = m_col.y * m_dif;
+	m_dif4f.z = m_col.z * m_dif;
 
 
 	*stepnum += step + 1;
@@ -388,15 +388,15 @@ int CMQOMaterial::SetAmb( char* srcchar, int pos, int srcleng, int* stepnum )
 	if( ret )
 		return ret;
 
-	amb = dstfloat;
+	m_amb = dstfloat;
 
 //	amb3f.x = col.x * amb;
 //	amb3f.y = col.y * amb;
 //	amb3f.z = col.z * amb;
 
-	amb3f.x = sceneamb.x * amb;
-	amb3f.y = sceneamb.y * amb;
-	amb3f.z = sceneamb.z * amb;
+	m_amb3f.x = m_sceneamb.x * m_amb;
+	m_amb3f.y = m_sceneamb.y * m_amb;
+	m_amb3f.z = m_sceneamb.z * m_amb;
 
 	*stepnum += step + 1;
 	return 0;
@@ -413,11 +413,11 @@ int CMQOMaterial::SetEmi( char* srcchar, int pos, int srcleng, int* stepnum )
 	if( ret )
 		return ret;
 
-	emi = dstfloat;
+	m_emi = dstfloat;
 
-	emi3f.x = col.x * emi;
-	emi3f.y = col.y * emi;
-	emi3f.z = col.z * emi;
+	m_emi3f.x = m_col.x * m_emi;
+	m_emi3f.y = m_col.y * m_emi;
+	m_emi3f.z = m_col.z * m_emi;
 
 
 	*stepnum += step + 1;
@@ -436,11 +436,11 @@ int CMQOMaterial::SetSpc( char* srcchar, int pos, int srcleng, int* stepnum )
 	if( ret )
 		return ret;
 
-	spc = dstfloat;
+	m_spc = dstfloat;
 
-	spc3f.x = col.x * spc;
-	spc3f.y = col.y * spc;
-	spc3f.z = col.z * spc;
+	m_spc3f.x = m_col.x * m_spc;
+	m_spc3f.y = m_col.y * m_spc;
+	m_spc3f.z = m_col.z * m_spc;
 
 	*stepnum += step + 1;
 
@@ -458,7 +458,7 @@ int CMQOMaterial::SetPower( char* srcchar, int pos, int srcleng, int* stepnum )
 	if( ret )
 		return ret;
 
-	power = dstfloat;
+	m_power = dstfloat;
 
 	*stepnum += step + 1;
 
@@ -477,7 +477,7 @@ int CMQOMaterial::SetShader( char* srcchar, int pos, int srcleng, int* stepnum )
 	if( ret )
 		return ret;
 
-	shader = dstint;
+	m_shader = dstint;
 
 	*stepnum += step + 1;
 
@@ -496,7 +496,7 @@ int CMQOMaterial::SetVcolFlag( char* srcchar, int pos, int srcleng, int* stepnum
 	if( ret )
 		return ret;
 
-	vcolflag = dstint;
+	m_vcolflag = dstint;
 
 	*stepnum += step + 1;
 
@@ -512,8 +512,8 @@ int CMQOMaterial::SetTex( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( (step - 5 < 256) && (step - 5 > 0) ){
-		strncpy_s( tex, 256, srcchar + pos + 5, step - 5 );
-		tex[step -5] = 0;
+		strncpy_s( m_tex, 256, srcchar + pos + 5, step - 5 );
+		m_tex[step -5] = 0;
 	}
 
 	if( pos + step < srcleng )
@@ -533,8 +533,8 @@ int CMQOMaterial::SetAlpha( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( (step - 7 < 256) && (step - 7 > 0) ){
-		strncpy_s( alpha, 256, srcchar + pos + 7, step - 7 );
-		alpha[step -7] = 0;
+		strncpy_s( m_alpha, 256, srcchar + pos + 7, step - 7 );
+		m_alpha[step -7] = 0;
 	}
 
 	if( pos + step < srcleng )
@@ -553,8 +553,8 @@ int CMQOMaterial::SetBump( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( (step - 6 < 256) && (step - 6 > 0) ){
-		strncpy_s( bump, 256, srcchar + pos + 6, step - 6 );
-		bump[step -6] = 0;
+		strncpy_s( m_bump, 256, srcchar + pos + 6, step - 6 );
+		m_bump[step -6] = 0;
 	}
 
 	if( pos + step < srcleng )
@@ -649,20 +649,20 @@ int CMQOMaterial::Dump()
 	WCHAR walpha[256] = {0};
 	WCHAR wbump[256] = {0};
 
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, name, 256, wname, 256 );
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, tex, 256, wtex, 256 );
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, alpha, 256, walpha, 256 );
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, bump, 256, wbump, 256 );
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_name, 256, wname, 256 );
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_tex, 256, wtex, 256 );
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_alpha, 256, walpha, 256 );
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_bump, 256, wbump, 256 );
 
 
-	DbgOut( L"MQOMaterial %d : name %s\r\n", materialno, wname );
-	DbgOut( L"\tcol : r %f, g %f, b %f, a %f\r\n", col.x, col.y, col.z, col.w );
-	DbgOut( L"\tdif %f\r\n", dif );
-	DbgOut( L"\tamb %f\r\n", amb );
-	DbgOut( L"\temi %f\r\n", emi );
-	DbgOut( L"\tspc %f\r\n", spc );
-	DbgOut( L"\tspc3f %f, %f, %f\r\n", spc3f.x, spc3f.y, spc3f.z );
-	DbgOut( L"\tpower %f\r\n", power );
+	DbgOut( L"MQOMaterial %d : name %s\r\n", m_materialno, wname );
+	DbgOut( L"\tcol : r %f, g %f, b %f, a %f\r\n", m_col.x, m_col.y, m_col.z, m_col.w );
+	DbgOut( L"\tdif %f\r\n", m_dif );
+	DbgOut( L"\tamb %f\r\n", m_amb );
+	DbgOut( L"\temi %f\r\n", m_emi );
+	DbgOut( L"\tspc %f\r\n", m_spc );
+	DbgOut( L"\tspc3f %f, %f, %f\r\n", m_spc3f.x, m_spc3f.y, m_spc3f.z );
+	DbgOut( L"\tpower %f\r\n", m_power );
 	DbgOut( L"\ttex %s\r\n", wtex );
 	DbgOut( L"\talpha %s\r\n", walpha );
 	DbgOut( L"\tbump %s\r\n", wbump );
@@ -691,73 +691,73 @@ int CMQOMaterial::IsSame( CMQOMaterial* compmat, int compnameflag, int cmplevel 
 	int cmp;
 
 	if( compnameflag ){
-		cmp = strcmp( name, compmat->name );
+		cmp = strcmp( m_name, compmat->m_name );
 		if( cmp )
 			return 0;
 	}
 	
-	if( shader != compmat->shader )
+	if( m_shader != compmat->m_shader )
 		return 0;
 
-	if( (col.w != compmat->col.w) || (col.x != compmat->col.x) || (col.y != compmat->col.y) || (col.z != compmat->col.z) )
+	if( (m_col.w != compmat->m_col.w) || (m_col.x != compmat->m_col.x) || (m_col.y != compmat->m_col.y) || (m_col.z != compmat->m_col.z) )
 		return 0;
 
-	if( dif != compmat->dif )
+	if( m_dif != compmat->m_dif )
 		return 0;
 
-	if (amb != compmat->amb )
+	if (m_amb != compmat->m_amb )
 		return 0;
 
-	if( emi != compmat->emi )
+	if( m_emi != compmat->m_emi )
 		return 0;
 
-	if( spc != compmat->spc )
+	if( m_spc != compmat->m_spc )
 		return 0;
 
-	if( power != compmat->power )
+	if( m_power != compmat->m_power )
 		return 0;
 
-	if( *tex && *(compmat->tex) ){
-		cmp = strcmp( tex, compmat->tex );
+	if( *m_tex && *(compmat->m_tex) ){
+		cmp = strcmp( m_tex, compmat->m_tex );
 		if( cmp )
 			return 0;
 	}else{
-		if( (*tex != 0) || (*(compmat->tex) != 0) )
+		if( (*m_tex != 0) || (*(compmat->m_tex) != 0) )
 			return 0;
 	}
 
-	if( *alpha && *(compmat->alpha) ){
-		cmp = strcmp( alpha, compmat->alpha );
+	if( *m_alpha && *(compmat->m_alpha) ){
+		cmp = strcmp( m_alpha, compmat->m_alpha );
 		if( cmp )
 			return 0;
 	}else{
-		if( (*alpha != 0) || (*(compmat->alpha) != 0) )
+		if( (*m_alpha != 0) || (*(compmat->m_alpha) != 0) )
 			return 0;
 	}
 
-	if( *bump && *(compmat->bump) ){
-		cmp = strcmp( bump, compmat->bump );
+	if( *m_bump && *(compmat->m_bump) ){
+		cmp = strcmp( m_bump, compmat->m_bump );
 		if( cmp )
 			return 0;
 	}else{
-		if( (*bump != 0) || (*(compmat->bump) != 0) )
+		if( (*m_bump != 0) || (*(compmat->m_bump) != 0) )
 			return 0;
 	}
 
 	if( cmplevel == 0 ){
-		if( (dif4f.w != compmat->dif4f.w) || (dif4f.x != compmat->dif4f.x) || (dif4f.y != compmat->dif4f.y) || (dif4f.z != compmat->dif4f.z) ){
+		if( (m_dif4f.w != compmat->m_dif4f.w) || (m_dif4f.x != compmat->m_dif4f.x) || (m_dif4f.y != compmat->m_dif4f.y) || (m_dif4f.z != compmat->m_dif4f.z) ){
 			return 0;
 		}
 
-		if( (amb3f.x != compmat->amb3f.x) || (amb3f.y != compmat->amb3f.y) || (amb3f.z != compmat->amb3f.z) ){
+		if( (m_amb3f.x != compmat->m_amb3f.x) || (m_amb3f.y != compmat->m_amb3f.y) || (m_amb3f.z != compmat->m_amb3f.z) ){
 			return 0;
 		}
 
-		if( (emi3f.x != compmat->emi3f.x) || (emi3f.y != compmat->emi3f.y) || (emi3f.z != compmat->emi3f.z) ){
+		if( (m_emi3f.x != compmat->m_emi3f.x) || (m_emi3f.y != compmat->m_emi3f.y) || (m_emi3f.z != compmat->m_emi3f.z) ){
 			return 0;
 		}
 
-		if( (spc3f.x != compmat->spc3f.x) || (spc3f.y != compmat->spc3f.y) || (spc3f.z != compmat->spc3f.z) ){
+		if( (m_spc3f.x != compmat->m_spc3f.x) || (m_spc3f.y != compmat->m_spc3f.y) || (m_spc3f.z != compmat->m_spc3f.z) ){
 			return 0;
 		}
 	}
@@ -769,9 +769,9 @@ int CMQOMaterial::IsSame( CMQOMaterial* compmat, int compnameflag, int cmplevel 
 int CMQOMaterial::GetColorrefDiffuse( COLORREF* dstdiffuse )
 {
 	unsigned char tempr, tempg, tempb;
-	tempr = (unsigned char)( dif4f.x * 255.0f );
-	tempg = (unsigned char)( dif4f.y * 255.0f );
-	tempb = (unsigned char)( dif4f.z * 255.0f );
+	tempr = (unsigned char)( m_dif4f.x * 255.0f );
+	tempg = (unsigned char)( m_dif4f.y * 255.0f );
+	tempb = (unsigned char)( m_dif4f.z * 255.0f );
 
 	tempr = max( 0, tempr );
 	tempr = min( 255, tempr );
@@ -787,9 +787,9 @@ int CMQOMaterial::GetColorrefDiffuse( COLORREF* dstdiffuse )
 int CMQOMaterial::GetColorrefSpecular( COLORREF* dstspecular )
 {
 	unsigned char tempr, tempg, tempb;
-	tempr = (unsigned char)( spc3f.x * 255.0f );
-	tempg = (unsigned char)( spc3f.y * 255.0f );
-	tempb = (unsigned char)( spc3f.z * 255.0f );
+	tempr = (unsigned char)( m_spc3f.x * 255.0f );
+	tempg = (unsigned char)( m_spc3f.y * 255.0f );
+	tempb = (unsigned char)( m_spc3f.z * 255.0f );
 
 	tempr = max( 0, tempr );
 	tempr = min( 255, tempr );
@@ -805,9 +805,9 @@ int CMQOMaterial::GetColorrefSpecular( COLORREF* dstspecular )
 int CMQOMaterial::GetColorrefAmbient( COLORREF* dstambient )
 {
 	unsigned char tempr, tempg, tempb;
-	tempr = (unsigned char)( amb3f.x * 255.0f );
-	tempg = (unsigned char)( amb3f.y * 255.0f );
-	tempb = (unsigned char)( amb3f.z * 255.0f );
+	tempr = (unsigned char)( m_amb3f.x * 255.0f );
+	tempg = (unsigned char)( m_amb3f.y * 255.0f );
+	tempb = (unsigned char)( m_amb3f.z * 255.0f );
 
 	tempr = max( 0, tempr );
 	tempr = min( 255, tempr );
@@ -823,9 +823,9 @@ int CMQOMaterial::GetColorrefAmbient( COLORREF* dstambient )
 int CMQOMaterial::GetColorrefEmissive( COLORREF* dstemissive )
 {
 	unsigned char tempr, tempg, tempb;
-	tempr = (unsigned char)( emi3f.x * 255.0f );
-	tempg = (unsigned char)( emi3f.y * 255.0f );
-	tempb = (unsigned char)( emi3f.z * 255.0f );
+	tempr = (unsigned char)( m_emi3f.x * 255.0f );
+	tempg = (unsigned char)( m_emi3f.y * 255.0f );
+	tempb = (unsigned char)( m_emi3f.z * 255.0f );
 
 	tempr = max( 0, tempr );
 	tempr = min( 255, tempr );
@@ -845,10 +845,10 @@ int CMQOMaterial::CreateTexture( WCHAR* dirname, int texpool )
 	
 	WCHAR wname[256] = {0};
 
-	if( tex[0] ){
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, tex, 256, wname, 256 );
+	if( m_tex[0] ){
+		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_tex, 256, wname, 256 );
 
-		g_texbank->AddTex( dirname, wname, transparent, texpool, 0, &m_texid );
+		g_texbank->AddTex( dirname, wname, m_transparent, texpool, 0, &m_texid );
 	}
 
 	return 0;
@@ -868,7 +868,7 @@ int CMQOMaterial::AddConvName( char** ppname )
 	}
 
 	int leng;
-	leng = (int)strlen( name );
+	leng = (int)strlen( m_name );
 
 	char* newname;
 	newname = (char*)malloc( sizeof( char ) * leng + 10 );
@@ -882,9 +882,9 @@ int CMQOMaterial::AddConvName( char** ppname )
 	addno = m_convnamenum - 1;
 
 	if( addno >= 1 ){
-		sprintf_s( newname, leng + 10, "%s%02d", name, addno );
+		sprintf_s( newname, leng + 10, "%s%02d", m_name, addno );
 	}else{
-		strcpy_s( newname, leng + 10, name );
+		strcpy_s( newname, leng + 10, m_name );
 	}
 
 

@@ -20,7 +20,7 @@
 
 #include <mqoobject.h>
 #include <polymesh3.h>
-#include <InfScope.h>
+//#include <InfScope.h>
 #include <InfBone.h>
 #include <mqomaterial.h>
 #include <mqoface.h>
@@ -349,53 +349,53 @@ int CPolyMesh3::CreateN3PFromMQOFace( N3P* n3pptr, int* numptr )
 			curn3p = 0;
 		}
 
-		if( curmqof->m_pointnum == 3 ){
+		if( curmqof->GetPointNum() == 3 ){
 			if( curn3p ){
 				int indexno;
 				int seti[3] = {0, 2, 1};
 				for( indexno = 0; indexno < 3; indexno++ ){
 					(curn3p + indexno)->perface->orgfaceno = orgfno;
 					(curn3p + indexno)->perface->faceno = setno;
-					(curn3p + indexno)->perface->materialno = curmqof->m_materialno;
+					(curn3p + indexno)->perface->materialno = curmqof->GetMaterialNo();
 
 					(curn3p + indexno)->pervert->indexno = indexno;
-					(curn3p + indexno)->pervert->vno = curmqof->m_index[seti[indexno]];
+					(curn3p + indexno)->pervert->vno = curmqof->GetIndex( seti[indexno] );
 					(curn3p + indexno)->pervert->uvnum = 1;
-					(curn3p + indexno)->pervert->uv[0] = curmqof->m_uv[seti[indexno]];
-					(curn3p + indexno)->pervert->vcolflag = curmqof->m_vcolsetflag;
-					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->m_col[seti[indexno]] & 0xFFFFFFFF );
+					(curn3p + indexno)->pervert->uv[0] = curmqof->GetUV( seti[indexno] );
+					(curn3p + indexno)->pervert->vcolflag = curmqof->GetVcolSetFlag();
+					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->GetCol( seti[indexno] ) & 0xFFFFFFFF );
 				}			
 			}
 			setno++;
-		}else if( curmqof->m_pointnum == 4 ){
+		}else if( curmqof->GetPointNum() == 4 ){
 			if( curn3p ){
 				int indexno;
 				int seti[3] = {0, 2, 1};
 				for( indexno = 0; indexno < 3; indexno++ ){
 					(curn3p + indexno)->perface->orgfaceno = orgfno;
 					(curn3p + indexno)->perface->faceno = setno;
-					(curn3p + indexno)->perface->materialno = curmqof->m_materialno;
+					(curn3p + indexno)->perface->materialno = curmqof->GetMaterialNo();
 
 					(curn3p + indexno)->pervert->indexno = indexno;
-					(curn3p + indexno)->pervert->vno = curmqof->m_index[seti[indexno]];
+					(curn3p + indexno)->pervert->vno = curmqof->GetIndex( seti[indexno] );
 					(curn3p + indexno)->pervert->uvnum = 1;
-					(curn3p + indexno)->pervert->uv[0] = curmqof->m_uv[seti[indexno]];
-					(curn3p + indexno)->pervert->vcolflag = curmqof->m_vcolsetflag;
-					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->m_col[seti[indexno]] & 0xFFFFFFFF );
+					(curn3p + indexno)->pervert->uv[0] = curmqof->GetUV( seti[indexno] );
+					(curn3p + indexno)->pervert->vcolflag = curmqof->GetVcolSetFlag();
+					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->GetCol( seti[indexno] ) & 0xFFFFFFFF );
 				}			
 	
 				int seci[3] = { 0, 3, 2 };
 				for( indexno = 3; indexno < 6; indexno++ ){
 					(curn3p + indexno)->perface->orgfaceno = orgfno;
 					(curn3p + indexno)->perface->faceno = setno + 1;
-					(curn3p + indexno)->perface->materialno = curmqof->m_materialno;
+					(curn3p + indexno)->perface->materialno = curmqof->GetMaterialNo();
 
 					(curn3p + indexno)->pervert->indexno = indexno - 3;
-					(curn3p + indexno)->pervert->vno = curmqof->m_index[seci[indexno - 3]];
+					(curn3p + indexno)->pervert->vno = curmqof->GetIndex( seci[indexno - 3] );
 					(curn3p + indexno)->pervert->uvnum = 1;
-					(curn3p + indexno)->pervert->uv[0] = curmqof->m_uv[seci[indexno - 3]];
-					(curn3p + indexno)->pervert->vcolflag = curmqof->m_vcolsetflag;
-					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->m_col[seci[indexno - 3]] & 0xFFFFFFFF );
+					(curn3p + indexno)->pervert->uv[0] = curmqof->GetUV( seci[indexno - 3] );
+					(curn3p + indexno)->pervert->vcolflag = curmqof->GetVcolSetFlag();
+					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->GetCol( seci[indexno - 3] ) & 0xFFFFFFFF );
 				}			
 			}
 			setno += 2;
@@ -736,7 +736,7 @@ int CPolyMesh3::ChkAlphaNum( map<int,CMQOMaterial*>& srcmat )
 			continue;
 		}
 
-		if( (curmat->col.w != 1.0f) || (curmat->transparent != 0) ){
+		if( (curmat->GetCol().w != 1.0f) || (curmat->GetTransparent() != 0) ){
 			chkalpha.alphanum++;
 		}else{
 			chkalpha.notalphanum++;

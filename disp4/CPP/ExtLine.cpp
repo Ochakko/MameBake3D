@@ -101,21 +101,21 @@ int CExtLine::CreateBuffer( EXTLINEV* lineptr, int arrayleng, int* setnum )
 	int fno;
 	for( fno = 0; fno < m_facenum; fno++ ){
 		CMQOFace* curface = m_faceptr + fno;
-		if( curface->m_pointnum == 2 ){
+		if( curface->GetPointNum() == 2 ){
 			if( lineptr ){
 				if( *setnum >= arrayleng ){
 					DbgOut( L"extline : CreateBuffer : arrayleng error !!!\r\n" );
 					_ASSERT( 0 );
 					return 1;
 				}
-				(lineptr + *setnum * 2 )->pos.x = ( m_pointptr + curface->m_index[0] )->x;
-				(lineptr + *setnum * 2 )->pos.y = ( m_pointptr + curface->m_index[0] )->y;
-				(lineptr + *setnum * 2 )->pos.z = ( m_pointptr + curface->m_index[0] )->z;
+				(lineptr + *setnum * 2 )->pos.x = ( m_pointptr + curface->GetIndex( 0 ) )->x;
+				(lineptr + *setnum * 2 )->pos.y = ( m_pointptr + curface->GetIndex( 0 ) )->y;
+				(lineptr + *setnum * 2 )->pos.z = ( m_pointptr + curface->GetIndex( 0 ) )->z;
 				(lineptr + *setnum * 2 )->pos.w = 1.0f;
 
-				(lineptr + *setnum * 2 + 1)->pos.x = ( m_pointptr + curface->m_index[1] )->x;
-				(lineptr + *setnum * 2 + 1)->pos.y = ( m_pointptr + curface->m_index[1] )->y;
-				(lineptr + *setnum * 2 + 1)->pos.z = ( m_pointptr + curface->m_index[1] )->z;
+				(lineptr + *setnum * 2 + 1)->pos.x = ( m_pointptr + curface->GetIndex( 1 ) )->x;
+				(lineptr + *setnum * 2 + 1)->pos.y = ( m_pointptr + curface->GetIndex( 1 ) )->y;
+				(lineptr + *setnum * 2 + 1)->pos.z = ( m_pointptr + curface->GetIndex( 1 ) )->z;
 				(lineptr + *setnum * 2 + 1)->pos.w = 1.0f;
 			}
 

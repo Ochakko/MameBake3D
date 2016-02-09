@@ -26,8 +26,6 @@
 
 #include <RigidElem.h>
 
-//static int s_bonecnt = 0;
-
 using namespace std;
 using namespace OrgWinGUI;
 
@@ -72,47 +70,21 @@ int CBone::InitParams()
 	D3DXMatrixIdentity( &m_firstmat );
 	D3DXMatrixIdentity( &m_startmat2 );
 	D3DXMatrixIdentity( &m_axismat_par );
-	D3DXMatrixIdentity( &m_axismat_parY );
-
-	D3DXMatrixIdentity( &m_curfirstmat );
-	D3DXMatrixIdentity( &m_befworldmat );
 
 	m_boneno = 0;
 	m_topboneflag = 0;
 	ZeroMemory( m_bonename, sizeof( char ) * 256 );
 	ZeroMemory( m_wbonename, sizeof( WCHAR ) * 256 );
 	ZeroMemory( m_engbonename, sizeof( char ) * 256 );
-	ZeroMemory( m_vertpos, sizeof( D3DXVECTOR3 ) * BT_MAX );
-	m_faceptr = 0;
 
 	m_childworld = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	m_childscreen = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-
-	m_bonematerialno = -1;
 
 	m_parent = 0;
 	m_child = 0;
 	m_brother = 0;
 
-	m_isnum = 0;
-	ZeroMemory( m_isarray, sizeof( CInfScope* ) * INFSCOPEMAX );
-
 	m_selectflag = 0;
-
-	D3DXMatrixIdentity( &m_xoffsetmat );
-	D3DXMatrixIdentity( &m_xtransmat );
-	D3DXMatrixIdentity( &m_xconbinedtransmat );
-
-
-	m_3rdvecflag = 0;
-	m_3rdvec = D3DXVECTOR3( 0.0f, 0.0f, 1.0f );
-
-	m_kinectq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-
-
-	D3DXMatrixIdentity( &m_initmat );
-	D3DXMatrixIdentity( &m_invinitmat );
-	D3DXMatrixIdentity( &m_totalinitmat );
 
 	m_getanimflag = 0;
 
@@ -142,7 +114,7 @@ int CBone::DestroyObjs()
 			CMotionPoint* curmp = topkey;
 			CMotionPoint* nextmp = 0;
 			while( curmp ){
-				nextmp = curmp->m_next;
+				nextmp = curmp->GetNext();
 
 				delete curmp;
 
@@ -189,41 +161,27 @@ int CBone::AddChild( CBone* childptr )
 	return 0;
 }
 
-int CBone::AddInfScope( CInfScope* pinfscope )
-{
-	if( m_isnum >= INFSCOPEMAX ){
-		_ASSERT( 0 );
-		return 1;
-	}
-
-	m_isarray[ m_isnum ] = pinfscope;
-	m_isnum++;
-
-	return 0;
-}
 
 int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 {
 	int existflag = 0;
 	if( srcframe >= 0.0 ){
 		CallF( CalcFBXMotion( srcmotid, srcframe, &m_curmp, &existflag ), return 1 );
-		m_curmp.m_worldmat = m_curmp.m_worldmat * *wmat;
+		D3DXMATRIX tmpmat = m_curmp.GetWorldMat() * *wmat;
+		m_curmp.SetWorldMat( tmpmat ); 
 
-
-		D3DXVec3TransformCoord( &m_childworld, &m_jointfpos, &m_curmp.m_worldmat );
+		D3DXVec3TransformCoord( &m_childworld, &m_jointfpos, &m_curmp.GetWorldMat() );
 		D3DXVec3TransformCoord( &m_childscreen, &m_childworld, vpmat );
 	}else{
 		m_curmp.InitParams();
-		m_curmp.m_worldmat = *wmat;
+		m_curmp.SetWorldMat( *wmat );
 	}
 
-	m_curmp.MakeDispMat();
-	
 	return 0;
 }
 
 
-CMotionPoint* CBone::AddMotionPoint( int srcmotid, double srcframe, int calcflag, int* existptr )
+CMotionPoint* CBone::AddMotionPoint( int srcmotid, double srcframe, int* existptr )
 {
 	CMotionPoint* newmp = 0;
 	CMotionPoint* pbef = 0;
@@ -231,38 +189,29 @@ CMotionPoint* CBone::AddMotionPoint( int srcmotid, double srcframe, int calcflag
 	CallF( GetBefNextMP( srcmotid, srcframe, &pbef, &pnext, existptr ), return 0 );
 
 	if( *existptr ){
-		if( !calcflag ){
-			//pbef->InitParams();
-			pbef->m_frame = srcframe;
-		}
+		pbef->SetFrame( srcframe );
 		newmp = pbef;
-
 	}else{
 		newmp = new CMotionPoint();
 		if( !newmp ){
 			_ASSERT( 0 );
 			return 0;
 		}
-		newmp->m_frame = srcframe;
+		newmp->SetFrame( srcframe );
 
-		if( calcflag ){
-			//CallF( CalcFrameMP( srcframe, pbef, pnext, *existptr, newmp ), return 0 );
-		}else{
-			//newmp->InitParams();
-			newmp->m_frame = srcframe;
-		}
 		if( pbef ){
 			CallF( pbef->AddToNext( newmp ), return 0 );
 		}else{
 			m_motionkey[srcmotid] = newmp;
 			if( pnext ){
-				newmp->m_next = pnext;
+				newmp->SetNext( pnext );
 			}
 		}
 	}
 
 	return newmp;
 }
+
 
 int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr )
 {
@@ -282,21 +231,21 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 
 	while( pcur ){
 
-		if( (pcur->m_frame >= srcframe - 0.0001) && (pcur->m_frame <= srcframe + 0.0001) ){
+		if( (pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001) ){
 			*existptr = 1;
 			pbef = pcur;
 			break;
-		}else if( pcur->m_frame > srcframe ){
+		}else if( pcur->GetFrame() > srcframe ){
 			break;
 		}else{
 			pbef = pcur;
-			pcur = pcur->m_next;
+			pcur = pcur->GetNext();
 		}
 	}
 	*ppbef = pbef;
 
 	if( *existptr ){
-		*ppnext = pbef->m_next;
+		*ppnext = pbef->GetNext();
 	}else{
 		*ppnext = pcur;
 	}
@@ -312,59 +261,26 @@ int CBone::CalcFBXFrame( double srcframe, CMotionPoint* befptr, CMotionPoint* ne
 		return 0;
 	}else if( !befptr ){
 		dstmpptr->InitParams();
-		dstmpptr->m_frame = srcframe;
+		dstmpptr->SetFrame( srcframe );
 		return 0;
 	}else if( !nextptr ){
 		*dstmpptr = *befptr;
-		dstmpptr->m_frame = srcframe;
+		dstmpptr->SetFrame( srcframe );
 		return 0;
 	}else{
-		double diffframe = nextptr->m_frame - befptr->m_frame;
+		double diffframe = nextptr->GetFrame() - befptr->GetFrame();
 		_ASSERT( diffframe != 0.0 );
-		double t = ( srcframe - befptr->m_frame ) / diffframe;
+		double t = ( srcframe - befptr->GetFrame() ) / diffframe;
 
-		dstmpptr->m_worldmat = befptr->m_worldmat + (float)t * ( nextptr->m_worldmat - befptr->m_worldmat );
-		dstmpptr->m_frame = srcframe;
+		D3DXMATRIX tmpmat = befptr->GetWorldMat() + (float)t * ( nextptr->GetWorldMat() - befptr->GetWorldMat() );
+		dstmpptr->SetWorldMat( tmpmat );
+		dstmpptr->SetFrame( srcframe );
 
-		dstmpptr->m_prev = befptr;
-		dstmpptr->m_next = nextptr;
+		dstmpptr->SetPrev( befptr );
+		dstmpptr->SetNext( nextptr );
 
 		return 0;
 	}
-}
-
-
-
-int CBone::OrderMotionPoint( int srcmotid, double settime, CMotionPoint* putmp, int samedel )
-{
-	putmp->LeaveFromChain( srcmotid, this );
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-	int existflag = 0;
-	GetBefNextMP( srcmotid, settime, &pbef, &pnext, &existflag );
-
-	while( (samedel == 1) && (existflag == 1) ){
-		pbef->LeaveFromChain( srcmotid, this );
-		delete pbef;
-
-		pbef = 0;
-		pnext = 0;
-		existflag = 0;
-		GetBefNextMP( srcmotid, settime, &pbef, &pnext, &existflag );
-	}
-
-	putmp->m_frame = settime;
-
-	if( pbef ){
-		CallF( pbef->AddToNext( putmp ), return 0 );
-	}else{
-		m_motionkey[srcmotid] = putmp;
-		if( pnext ){
-			putmp->m_next = pnext;
-		}
-	}
-
-	return 0;
 }
 
 int CBone::DeleteMotion( int srcmotid )
@@ -377,7 +293,7 @@ int CBone::DeleteMotion( int srcmotid )
 			CMotionPoint* curmp = topkey;
 			CMotionPoint* nextmp = 0;
 			while( curmp ){
-				nextmp = curmp->m_next;
+				nextmp = curmp->GetNext();
 
 				delete curmp;
 
@@ -398,9 +314,9 @@ int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 	CMotionPoint* curmp = m_motionkey[ motid ];
 
 	while( curmp ){
-		CMotionPoint* nextmp = curmp->m_next;
+		CMotionPoint* nextmp = curmp->GetNext();
 
-		if( curmp->m_frame > srcleng ){
+		if( curmp->GetFrame() > srcleng ){
 			curmp->LeaveFromChain( motid, this );
 			delete curmp;
 		}
@@ -417,47 +333,6 @@ int CBone::SetName( char* srcname )
 	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_bonename, 256, m_wbonename, 256 );
 
 	return 0;
-}
-
-int CBone::MakeFirstMP( int motid )
-{
-	if( m_motionkey[motid] != NULL ){
-		_ASSERT( 0 );
-		return 1;
-	}
-
-	CMotionPoint* newmp = new CMotionPoint();
-	if( !newmp ){
-		_ASSERT( 0 );
-		return 1;
-	}
-
-	m_motionkey[motid] = newmp;
-
-	return 0;
-}
-
-CBone* CBone::GetParbone( int searchnull )
-{
-	if( !m_parent ){
-		return 0;
-	}
-
-	if( searchnull ){
-		return m_parent;
-	}else{
-		CBone* findpar = 0;
-		CBone* chkpar = m_parent;
-		while( chkpar ){
-			if( chkpar->m_type == FBXBONE_NORMAL ){
-				findpar = chkpar;
-				break;
-			}
-			chkpar = chkpar->m_parent;
-		}
-		return findpar;
-	}
-
 }
 
 int CBone::CalcAxisMatZ( D3DXVECTOR3* curpos, D3DXVECTOR3* chilpos )
@@ -627,8 +502,8 @@ int CBone::CalcAxisMatY( CBone* chilbone, D3DXMATRIX* dstmat )
 	D3DXVECTOR3 curpos;
 	D3DXVECTOR3 chilpos;
 
-	D3DXVec3TransformCoord( &curpos, &m_jointfpos, &(m_curmp.m_worldmat) );
-	D3DXVec3TransformCoord( &chilpos, &chilbone->m_jointfpos, &(chilbone->m_curmp.m_worldmat) );
+	D3DXVec3TransformCoord( &curpos, &m_jointfpos, &(m_curmp.GetWorldMat()) );
+	D3DXVec3TransformCoord( &chilpos, &chilbone->m_jointfpos, &(chilbone->m_curmp.GetWorldMat()) );
 
 	D3DXVECTOR3 diff = curpos - chilpos;
 	float leng;
@@ -720,7 +595,7 @@ int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int se
 	_ASSERT( colptr );
 	_ASSERT( chilbone );
 
-	CModel* curcoldisp = colptr[curre->m_coltype];
+	CModel* curcoldisp = colptr[curre->GetColtype()];
 	_ASSERT( curcoldisp );
 
 
@@ -728,50 +603,50 @@ int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int se
 	D3DXMatrixIdentity( &bmmat );
 
 	D3DXVECTOR3 aftbonepos;
-	D3DXVec3TransformCoord( &aftbonepos, &m_jointfpos, &(m_curmp.m_worldmat) );
+	D3DXVec3TransformCoord( &aftbonepos, &m_jointfpos, &(m_curmp.GetWorldMat()) );
 
 	D3DXVECTOR3 aftchilpos;
-	D3DXVec3TransformCoord( &aftchilpos, &chilbone->m_jointfpos, &(chilbone->m_curmp.m_worldmat) );
+	D3DXVec3TransformCoord( &aftchilpos, &chilbone->m_jointfpos, &(chilbone->m_curmp.GetWorldMat()) );
 
 	CalcAxisMatZ( &aftbonepos, &aftchilpos );
 	CalcAxisMatY( chilbone, &bmmat );			
 	D3DXVECTOR3 diffvec = aftchilpos - aftbonepos;
 	float diffleng = D3DXVec3Length( &diffvec );
 
-	float cylileng = curre->m_cylileng;
-	float sphr = curre->m_sphr;
-	float boxz = curre->m_boxz;
+	float cylileng = curre->GetCylileng();
+	float sphr = curre->GetSphr();
+	float boxz = curre->GetBoxz();
 
-	if( curre->m_coltype == COL_CAPSULE_INDEX ){
+	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
 		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->m_object.begin(); itrobj != curcoldisp->m_object.end(); itrobj++ ){
+		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
 			CMQOObject* curobj = itrobj->second;
 			_ASSERT( curobj );
-			if( strcmp( curobj->m_name, "cylinder" ) == 0 ){
+			if( strcmp( curobj->GetName(), "cylinder" ) == 0 ){
 				CallF( curobj->ScaleBtCapsule( curre, diffleng, 0, &cylileng ), return 1 );
-			}else if( strcmp( curobj->m_name, "sph_ue" ) == 0 ){
+			}else if( strcmp( curobj->GetName(), "sph_ue" ) == 0 ){
 				CallF( curobj->ScaleBtCapsule( curre, diffleng, 1, &sphr ), return 1 );
 			}else{
 				CallF( curobj->ScaleBtCapsule( curre, diffleng, 2, 0 ), return 1 );
 			}
 		}
-	}else if( curre->m_coltype == COL_CONE_INDEX ){
+	}else if( curre->GetColtype() == COL_CONE_INDEX ){
 		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->m_object.begin(); itrobj != curcoldisp->m_object.end(); itrobj++ ){
+		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
 			CMQOObject* curobj = itrobj->second;
 			_ASSERT( curobj );
 			CallF( curobj->ScaleBtCone( curre, diffleng, &cylileng, &sphr ), return 1 );
 		}
-	}else if( curre->m_coltype == COL_SPHERE_INDEX ){
+	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
 		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->m_object.begin(); itrobj != curcoldisp->m_object.end(); itrobj++ ){
+		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
 			CMQOObject* curobj = itrobj->second;
 			_ASSERT( curobj );
 			CallF( curobj->ScaleBtSphere( curre, diffleng, &cylileng, &sphr ), return 1 );
 		}
-	}else if( curre->m_coltype == COL_BOX_INDEX ){
+	}else if( curre->GetColtype() == COL_BOX_INDEX ){
 		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->m_object.begin(); itrobj != curcoldisp->m_object.end(); itrobj++ ){
+		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
 			CMQOObject* curobj = itrobj->second;
 			_ASSERT( curobj );
 			CallF( curobj->ScaleBtBox( curre, diffleng, &cylileng, &sphr, &boxz ), return 1 );
@@ -788,15 +663,13 @@ DbgOut( L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\
 	bmmat._42 = ( aftbonepos.y + aftchilpos.y ) * 0.5f;
 	bmmat._43 = ( aftbonepos.z + aftchilpos.z ) * 0.5f;
 
-	curre->m_capsulemat = bmmat;
-	curre->m_cylileng = cylileng;
-	curre->m_sphr = sphr;
-	curre->m_boxz = boxz;
-
-
+	curre->SetCapsulemat( bmmat );
+	curre->SetCylileng( cylileng );
+	curre->SetSphr( sphr );
+	curre->SetBoxz( boxz );
 
 	if( setstartflag == 1 ){
-		curre->m_firstcapsulemat = curre->m_capsulemat;
+		curre->SetFirstcapsulemat( curre->GetCapsulemat() );
 	}
 
 	return 0;
@@ -805,23 +678,18 @@ DbgOut( L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\
 int CBone::CalcAxisMat( int firstflag, float delta )
 {
 	if( firstflag == 1 ){
-		m_startmat2 = m_curmp.m_worldmat;
+		m_startmat2 = m_curmp.GetWorldMat();
 		if( m_child ){
-			m_child->m_startmat2 = m_child->m_curmp.m_worldmat;
+			m_child->m_startmat2 = m_child->m_curmp.GetWorldMat();
 			CBone* bro = m_child->m_brother;
 			while( bro ){
-				bro->m_startmat2 = bro->m_curmp.m_worldmat;
+				bro->m_startmat2 = bro->m_curmp.GetWorldMat();
 				bro = bro->m_brother;
 			}
 		}
 		
 		CalcAxisMatX();
-		//CalcAxisMatY( 0, &m_gaxismatYpar );
 	}
-
-	//if( !m_child ){
-	//	return 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//}
 
 	if( delta != 0.0f ){
 		CQuaternion multq;
@@ -870,7 +738,6 @@ int CBone::CalcLocalAxisMat( D3DXMATRIX motmat, D3DXMATRIX axismatpar, D3DXMATRI
 	D3DXMatrixInverse( &invmotmat, NULL, &motmat0 );
 
 	m_axismat_par = startpar0 * invmotmat;
-	m_axismat_parY = starty * invmotmat;
 
 	return 0;
 }
@@ -899,8 +766,8 @@ int CBone::CreateRigidElem( CBone* chil, int reflag, std::string rename, int imp
 				return 1;
 			}
 
-			curmap[ chil ]->m_bone = this;
-			curmap[ chil ]->m_endbone = chil;
+			curmap[ chil ]->SetBone( this );
+			curmap[ chil ]->SetEndbone( chil );
 
 			SetGroupNoByName( curmap[ chil ], chil );
 
@@ -915,12 +782,14 @@ int CBone::CreateRigidElem( CBone* chil, int reflag, std::string rename, int imp
 				return 1;
 			}
 
-			curmap[ chil ]->m_bone = this;
-			curmap[ chil ]->m_endbone = chil;
+			curmap[ chil ]->SetBone( this );
+			curmap[ chil ]->SetEndbone( chil );
 
 			m_remap[ rename ] = curmap;
 
 			SetGroupNoByName( curmap[ chil ], chil );
+
+			//_ASSERT( 0 );
 		}
 	}
 
@@ -963,7 +832,7 @@ int CBone::SetGroupNoByName( CRigidElem* curre, CBone* chilbone )
 				strncpy_s( strnum, 5, numstart, numleng );
 				int gno = (int)atoi( strnum );
 				if( (gno >= 1) && (gno <= COLIGROUPNUM) ){
-					curre->m_groupid = gno;
+					curre->SetGroupid( gno ); 
 				}
 			}
 		}
@@ -996,66 +865,30 @@ int CBone::SetCurrentRigidElem( std::string curname )
 	return 0;
 }
 
-CMotionPoint* CBone::AddBoneEulReq( CMotionPoint* parmp, int srcmotid, double srcframe, D3DXMATRIX srcrotmat )
-{
-
-	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, 1, &existflag );
-	if( !curmp ){
-		_ASSERT( 0 );
-		return 0;
-	}
-
-	curmp->m_befworldmat = curmp->m_worldmat;
-	if( parmp ){
-		D3DXMATRIX invbefpar;
-		D3DXMatrixInverse( &invbefpar, NULL, &parmp->m_befworldmat );
-		curmp->m_worldmat = curmp->m_worldmat * invbefpar * parmp->m_worldmat; 
-	}else{
-		//‰‰ñŒÄ‚Ño‚µ
-		D3DXMATRIX rotmat, befrot, aftrot;
-
-		D3DXVECTOR3 bonepos;
-		D3DXVec3TransformCoord( &bonepos, &m_jointfpos, &(curmp->m_worldmat) );
-
-		D3DXMatrixTranslation( &befrot, -bonepos.x, -bonepos.y, -bonepos.z );
-		D3DXMatrixTranslation( &aftrot, bonepos.x, bonepos.y, bonepos.z );
-		rotmat =  befrot * srcrotmat * aftrot;
-		curmp->m_worldmat = curmp->m_worldmat * rotmat;
-	}
-
-	if( m_child ){
-		m_child->AddBoneEulReq( curmp, srcmotid, srcframe, srcrotmat );
-	}
-	if( m_brother && parmp ){
-		m_brother->AddBoneEulReq( parmp, srcmotid, srcframe, srcrotmat );
-	}
-
-	return curmp;
-}
-
 
 CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double srcframe, D3DXVECTOR3 srctra )
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, 1, &existflag );
+	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
 	if( !curmp || !existflag ){
 		_ASSERT( 0 );
 		return 0;
 	}
 
-	curmp->m_befworldmat = curmp->m_worldmat;
+	curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if( parmp ){
 		D3DXMATRIX invbefpar;
-		D3DXMatrixInverse( &invbefpar, NULL, &parmp->m_befworldmat );
-		curmp->m_worldmat = curmp->m_worldmat * invbefpar * parmp->m_worldmat; 
+		D3DXMatrixInverse( &invbefpar, NULL, &parmp->GetBefWorldMat() );
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		curmp->SetWorldMat( tmpmat );
 	}else{
 		D3DXMATRIX tramat;
 		D3DXMatrixTranslation( &tramat, srctra.x, srctra.y, srctra.z );
-		curmp->m_worldmat = curmp->m_worldmat * tramat;
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * tramat;
+		curmp->SetWorldMat( tmpmat );
 	}
 
-	curmp->m_absmat = curmp->m_worldmat;
+	curmp->SetAbsMat( curmp->GetWorldMat() );
 
 	if( m_child ){
 		m_child->AddBoneTraReq( curmp, srcmotid, srcframe, srctra );
@@ -1074,22 +907,22 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 	//dst : curmp parmp
 
 	int existflag0 = 0;
-	CMotionPoint* srcmp = AddMotionPoint( srcmotid, srcframe, 1, &existflag0 );
+	CMotionPoint* srcmp = AddMotionPoint( srcmotid, srcframe, &existflag0 );
 	if( !existflag0 || !srcmp ){
 		_ASSERT( 0 );
 		return 0;
 	}
 
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, dstframe, 1, &existflag );
+	CMotionPoint* curmp = AddMotionPoint( srcmotid, dstframe, &existflag );
 	if( !existflag || !curmp ){
 		_ASSERT( 0 );
 		return 0;
 	}
 	
-	curmp->m_befworldmat = curmp->m_worldmat;
-	curmp->m_worldmat = srcmp->m_worldmat;
-	curmp->m_absmat = srcmp->m_absmat;
+	curmp->SetBefWorldMat( curmp->GetWorldMat() );
+	curmp->SetWorldMat( srcmp->GetWorldMat() );
+	curmp->SetAbsMat( srcmp->GetAbsMat() );
 
 	if( m_child ){
 		m_child->PasteRotReq( srcmotid, srcframe, dstframe );
@@ -1105,30 +938,32 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq )
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, 1, &existflag );
+	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
 	if( !existflag || !curmp ){
 		_ASSERT( 0 );
 		return 0;
 	}
 	
-	curmp->m_befworldmat = curmp->m_worldmat;
+	curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if( parmp ){
 		D3DXMATRIX invbefpar;
-		D3DXMatrixInverse( &invbefpar, NULL, &parmp->m_befworldmat );
-		curmp->m_worldmat = curmp->m_worldmat * invbefpar * parmp->m_worldmat; 
+		D3DXMatrixInverse( &invbefpar, NULL, &parmp->GetBefWorldMat() );
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat(); 
+		curmp->SetWorldMat( tmpmat );
 	}else{
 		//‰‰ñŒÄ‚Ño‚µ
 		D3DXVECTOR3 rotcenter;// = m_childworld;
-		D3DXVec3TransformCoord( &rotcenter, &m_jointfpos, &(curmp->m_worldmat) );
+		D3DXVec3TransformCoord( &rotcenter, &m_jointfpos, &(curmp->GetWorldMat()) );
 
 		D3DXMATRIX befrot, aftrot;
 		D3DXMatrixTranslation( &befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z );
 		D3DXMatrixTranslation( &aftrot, rotcenter.x, rotcenter.y, rotcenter.z );
 		D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-		curmp->m_worldmat = curmp->m_worldmat * rotmat;
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;
+		curmp->SetWorldMat( tmpmat );
 	}
 
-	curmp->m_absmat = curmp->m_worldmat;
+	curmp->SetAbsMat( curmp->GetWorldMat() );
 
 	if( m_child ){
 		m_child->RotBoneQReq( curmp, srcmotid, srcframe, rotq );
@@ -1142,20 +977,20 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, double firstframe )
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, 1, &existflag );
+	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
 	if( !existflag || !curmp ){
 		_ASSERT( 0 );
 		return 0;
 	}
 
 	int existflag2 = 0;
-	CMotionPoint* firstmp = AddMotionPoint( srcmotid, firstframe, 1, &existflag2 );
+	CMotionPoint* firstmp = AddMotionPoint( srcmotid, firstframe, &existflag2 );
 	if( !existflag2 || !firstmp ){
 		_ASSERT( 0 );
 		return 0;
 	}
 
-	curmp->m_worldmat = firstmp->m_absmat;
+	curmp->SetWorldMat( firstmp->GetAbsMat() );
 
 	if( m_child ){
 		m_child->SetAbsMatReq( 1, srcmotid, srcframe, firstframe );
@@ -1170,7 +1005,7 @@ int CBone::DestroyMotionKey( int srcmotid )
 {
 	CMotionPoint* curmp = m_motionkey[ srcmotid ];
 	while( curmp ){
-		CMotionPoint* nextmp = curmp->m_next;
+		CMotionPoint* nextmp = curmp->GetNext();
 		delete curmp;
 		curmp = nextmp;
 	}
@@ -1179,6 +1014,7 @@ int CBone::DestroyMotionKey( int srcmotid )
 
 	return 0;
 }
+
 
 int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double curframe, int flag )
 {
@@ -1197,15 +1033,10 @@ int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 		m_motmark[ motid ] = curmark;
 	}
 
-//	KeyInfo chkki = owpTimeline->ExistKey( curlineno, curframe );
-//	if( chkki.lineIndex < 0 ){
-//		owpTimeline->newKey( m_wbonename, curframe, 0 );
-//	}
-
 	return 0;
 }
 
-int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe, int flag )
+int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe )
 {
 	map<int, map<double, int>>::iterator itrcur;
 	itrcur = m_motmark.find( motid );
@@ -1223,10 +1054,6 @@ int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 		if( itrfind != curmark.end() ){
 			curmark.erase( itrfind );
 		}
-//		KeyInfo chkki = owpTimeline->ExistKey( curlineno, frame );
-//		if( chkki.lineIndex >= 0 ){
-//			owpTimeline->deleteKey( curlineno, frame );
-//		}
 	}
 
 	m_motmark[ motid ] = curmark;
@@ -1239,7 +1066,7 @@ int CBone::AddBoneMotMark( int motid, OWP_Timeline* owpTimeline, int curlineno, 
 	if( startframe != endframe ){
 		AddBoneMarkIfNot( motid, owpTimeline, curlineno, startframe, flag );
 		AddBoneMarkIfNot( motid, owpTimeline, curlineno, endframe, flag );
-		DelBoneMarkRange( motid, owpTimeline, curlineno, startframe, endframe, flag );
+		DelBoneMarkRange( motid, owpTimeline, curlineno, startframe, endframe );
 	}else{
 		AddBoneMarkIfNot( motid, owpTimeline, curlineno, startframe, flag );
 	}
@@ -1247,9 +1074,8 @@ int CBone::AddBoneMotMark( int motid, OWP_Timeline* owpTimeline, int curlineno, 
 	return 0;
 }
 
-int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint** ppdstmp )
+int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 {
-	*ppdstmp = 0;
 
 	int existflag = 0;
 	CMotionPoint* pbef = 0;
@@ -1265,8 +1091,8 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint** ppdstmp )
 			m_parent->GetBefNextMP( motid, frameno, &pbef1, &pnext1, &existflag1 );
 			if( existflag1 ){
 				D3DXMATRIX invpar;
-				D3DXMatrixInverse( &invpar, NULL, &(pbef1->m_worldmat) );
-				D3DXMATRIX localmat = pbef->m_worldmat * invpar;
+				D3DXMatrixInverse( &invpar, NULL, &(pbef1->GetWorldMat()) );
+				D3DXMATRIX localmat = pbef->GetWorldMat() * invpar;
 				pbef->CalcQandTra( localmat, this );
 			}else{
 				_ASSERT( 0 );
@@ -1278,7 +1104,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint** ppdstmp )
 		}
 	}else{
 		if( existflag ){
-			D3DXMATRIX localmat = pbef->m_worldmat;
+			D3DXMATRIX localmat = pbef->GetWorldMat();
 			pbef->CalcQandTra( localmat, this );
 		}else{
 			_ASSERT( 0 );
@@ -1286,7 +1112,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint** ppdstmp )
 		}
 	}
 
-	*ppdstmp = pbef;
+	*pdstmp = *pbef;
 
 	return 0;
 }

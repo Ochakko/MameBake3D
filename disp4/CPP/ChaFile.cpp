@@ -146,32 +146,32 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 
 	CModel* curmodel = srcme->modelptr;
 
-	WideCharToMultiByte( CP_ACP, 0, curmodel->m_filename, -1, filename, MAX_PATH, NULL, NULL );
-	WideCharToMultiByte( CP_ACP, 0, curmodel->m_modelfolder, -1, modelfolder, MAX_PATH, NULL, NULL );
+	WideCharToMultiByte( CP_ACP, 0, curmodel->GetFileName(), -1, filename, MAX_PATH, NULL, NULL );
+	WideCharToMultiByte( CP_ACP, 0, curmodel->GetModelFolder(), -1, modelfolder, MAX_PATH, NULL, NULL );
 
 	CallF( Write2File( "  <Chara>\r\n" ), return 1 );
 	CallF( Write2File( "    <ModelFolder>%s</ModelFolder>\r\n", modelfolder ), return 1 );
 	CallF( Write2File( "    <ModelFile>%s</ModelFile>\r\n", filename ), return 1 );
-	CallF( Write2File( "    <ModelMult>%f</ModelMult>\r\n", curmodel->m_loadmult ), return 1 );
+	CallF( Write2File( "    <ModelMult>%f</ModelMult>\r\n", curmodel->GetLoadMult() ), return 1 );
 
-	CallF( Write2File( "    <RGDMORPH>%d</RGDMORPH>\r\n", curmodel->m_rgdmorphid ), return 1 );
+	CallF( Write2File( "    <RGDMORPH>%d</RGDMORPH>\r\n", curmodel->GetRgdMorphIndex() ), return 1 );
 
-	CallF( Write2File( "    <CURRE>%d</CURRE>\r\n", curmodel->m_curreindex ), return 1 );
-	CallF( Write2File( "    <RGD>%d</RGD>\r\n", curmodel->m_rgdindex ), return 1 );
+	CallF( Write2File( "    <CURRE>%d</CURRE>\r\n", curmodel->GetCurReIndex() ), return 1 );
+	CallF( Write2File( "    <RGD>%d</RGD>\r\n", curmodel->GetRgdIndex() ), return 1 );
 
-	int refnum = curmodel->m_rigideleminfo.size();
+	int refnum = curmodel->GetRigidElemInfoSize();
 	CallF( Write2File( "    <RefNum>%d</RefNum>\r\n", refnum ), return 1 );
 	int refno;
 	for( refno = 0; refno < refnum; refno++ ){
-		REINFO currei = curmodel->m_rigideleminfo[ refno ];
+		REINFO currei = curmodel->GetRigidElemInfo( refno );
 		CallF( Write2File( "    <RefFile>%s</RefFile>\r\n", currei.filename ), return 1 );
 	}
 
-	int impnum = curmodel->m_impinfo.size();
+	int impnum = curmodel->GetImpInfoSize();
 	CallF( Write2File( "    <ImpNum>%d</ImpNum>\r\n", impnum ), return 1 );
 	int impno;
 	for( impno = 0; impno < impnum; impno++ ){
-		CallF( Write2File( "    <ImpFile>%s</ImpFile>\r\n", curmodel->m_impinfo[impno].c_str() ), return 1 );
+		CallF( Write2File( "    <ImpFile>%s</ImpFile>\r\n", curmodel->GetImpInfo( impno ).c_str() ), return 1 );
 	}
 
 /***
@@ -189,7 +189,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 //////////////
 
 	WCHAR charafolder[MAX_PATH] = {0L};
-	swprintf_s( charafolder, MAX_PATH, L"%s\\%s", m_newdirname, curmodel->m_modelfolder );
+	swprintf_s( charafolder, MAX_PATH, L"%s\\%s", m_newdirname, curmodel->GetModelFolder() );
 	DWORD fattr;
 	fattr = GetFileAttributes( charafolder );
 	if( (fattr == -1) || ((fattr & FILE_ATTRIBUTE_DIRECTORY) == 0) ){
@@ -206,10 +206,10 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	BOOL bcancel;
 	WCHAR srcpath[MAX_PATH] = {0L};
 	WCHAR dstpath[MAX_PATH] = {0L};
-	swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->m_dirname, curmodel->m_filename );
-	swprintf_s( dstpath, MAX_PATH, L"%s\\%s", charafolder, curmodel->m_filename );
+	swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), curmodel->GetFileName() );
+	swprintf_s( dstpath, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName() );
 
-	int chksame = wcscmp( curmodel->m_dirname, charafolder );
+	int chksame = wcscmp( curmodel->GetDirName(), charafolder );
 	if( chksame != 0 ){
 		bcancel = FALSE;
 		bret = CopyFileEx( srcpath, dstpath, NULL, NULL, &bcancel, 0 );
@@ -245,19 +245,19 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	
 	//FBXファイルの場合のテクスチャ
 	map<int,CMQOObject*>::iterator itrobj;
-	for( itrobj = curmodel->m_object.begin(); itrobj != curmodel->m_object.end(); itrobj++ ){
+	for( itrobj = curmodel->GetMqoObjectBegin(); itrobj != curmodel->GetMqoObjectEnd(); itrobj++ ){
 		CMQOObject* curobj = itrobj->second;
 		if( curobj ){
 			map<int,CMQOMaterial*>::iterator itr;
-			for( itr = curobj->m_material.begin(); itr != curobj->m_material.end(); itr++ ){
+			for( itr = curobj->GetMaterialBegin(); itr != curobj->GetMaterialEnd(); itr++ ){
 				CMQOMaterial* curmqomat = itr->second;
-				if( curmqomat && curmqomat->tex[0] && (curmqomat->m_texid >= 0) ){
+				if( curmqomat && *(curmqomat->GetTex()) && (curmqomat->GetTexID() >= 0) ){
 					WCHAR wtex[256] = {0L};
-					MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curmqomat->tex, 256, wtex, 256 );
-					swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->m_dirname, wtex );
+					MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curmqomat->GetTex(), 256, wtex, 256 );
+					swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), wtex );
 					swprintf_s( dstpath, MAX_PATH, L"%s\\%s", charafolder, wtex );
 
-					int chksame = wcscmp( curmodel->m_dirname, charafolder );
+					int chksame = wcscmp( curmodel->GetDirName(), charafolder );
 					if( chksame != 0 ){
 						bcancel = FALSE;
 						bret = CopyFileEx( srcpath, dstpath, NULL, NULL, &bcancel, 0 );
@@ -272,9 +272,9 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 		}
 	}
 
-	int savecurreindex = curmodel->m_curreindex;
+	int savecurreindex = curmodel->GetCurReIndex();
 	for( refno = 0; refno < refnum; refno++ ){
-		REINFO currei = curmodel->m_rigideleminfo[ refno ];
+		REINFO currei = curmodel->GetRigidElemInfo( refno );
 		WCHAR wfilename[MAX_PATH] = {0L};
 		ZeroMemory( wfilename, sizeof( WCHAR ) * 256 );
 		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, currei.filename, MAX_PATH, wfilename, MAX_PATH );
@@ -293,7 +293,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	for( impno = 0; impno < impnum; impno++ ){
 		WCHAR wfilename[MAX_PATH] = {0L};
 		ZeroMemory( wfilename, sizeof( WCHAR ) * 256 );
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curmodel->m_impinfo[impno].c_str(), -1, wfilename, MAX_PATH );
+		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curmodel->GetImpInfo( impno ).c_str(), -1, wfilename, MAX_PATH );
 
 		WCHAR wimpname[MAX_PATH] = {0L};
 		swprintf_s( wimpname, MAX_PATH, L"%s\\%s", charafolder, wfilename );

@@ -24,48 +24,73 @@ public:
 	int AddToNext( CMotionPoint* addmp );
 	int LeaveFromChain( int srcmotid = -1, CBone* boneptr = 0 );
 
-	int MakeDispMat();
 	int CopyMP( CMotionPoint* srcmp );
 
 	int CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr );
 
+	CMotionPoint CMotionPoint::operator= (CMotionPoint mp);
+
+public:
+	//accesser
+	int GetBtFlag(){ return m_setbtflag; };
+	void SetBtFlag( int srcflag ){ m_setbtflag = srcflag; };
+
+	double GetFrame(){ return m_frame; };
+	void SetFrame( double srcframe ){ m_frame = srcframe; };
+
+	D3DXVECTOR3 GetEul(){ return m_eul; };
+	void SetEul( D3DXVECTOR3 srceul ){ m_eul = srceul; };
+
+	D3DXVECTOR3 GetTra(){ return m_tra; };
+	void SetTra( D3DXVECTOR3 srctra ){ m_tra = srctra; };
+
+	CQuaternion GetQ(){ return m_q; };
+	void SetQ( CQuaternion srcq ){ m_q = srcq; };
+
+	D3DXMATRIX GetWorldMat(){ return m_worldmat; };
+	void SetWorldMat( D3DXMATRIX srcmat ){ m_worldmat = srcmat; };
+
+	D3DXMATRIX GetBtMat(){ return m_btmat; };
+	void SetBtMat( D3DXMATRIX srcmat ){ m_btmat = srcmat; };
+
+	D3DXMATRIX GetBefWorldMat(){ return m_befworldmat; };
+	void SetBefWorldMat( D3DXMATRIX srcmat ){ m_befworldmat = srcmat; };
+
+	D3DXMATRIX GetBefEditMat(){ return m_befeditmat; };
+	void SetBefEditMat( D3DXMATRIX srcmat ){ m_befeditmat = srcmat; };
+
+	D3DXMATRIX GetAbsMat(){ return m_absmat; };
+	void SetAbsMat( D3DXMATRIX srcmat ){ m_absmat = srcmat; };
+
+	CMotionPoint* GetPrev(){ return m_prev; };
+	void SetPrev( CMotionPoint* srcprev ){ m_prev = srcprev; };
+
+	CMotionPoint* GetNext(){ return m_next; };
+	void SetNext( CMotionPoint* srcnext ){ m_next = srcnext; };
+
 private:
 	int DestroyObjs();
 
-	int MakeMat( CBone* srcbone );
-	int MakeTotalMat( D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone );
-	int MakeWorldMat( D3DXMATRIX* wmat );
-
-public:
+private:
 	int m_setbtflag;
 	double m_frame;
 	D3DXVECTOR3 m_eul;
 	D3DXVECTOR3 m_tra;
 
 	CQuaternion m_q;
-	CQuaternion m_totalq;//親の影響を受けている回転情報
-	CQuaternion m_worldq;//ワールドと親の影響を受けている回転情報
 
-	D3DXMATRIX m_mat;//親の影響を受けていないマトリックス
-	D3DXMATRIX m_totalmat;//親の影響を受けているマトリックス
 	D3DXMATRIX m_worldmat;//ワールド変換と親の影響を受けたマトリックス
 	D3DXMATRIX m_btmat;
 
-	CQuaternion m_dispq;
-	CQuaternion m_orderdispq;
-	D3DXVECTOR3 m_disptra;
-	D3DXMATRIX m_dispmat;
-
 	D3DXMATRIX m_befworldmat;
+	D3DXMATRIX m_befeditmat;
+
+	D3DXMATRIX m_absmat;
 
 
 	CMotionPoint* m_prev;
 	CMotionPoint* m_next;
 
-	D3DXMATRIX m_copywmat;
-
-	D3DXMATRIX m_befeditmat;
-	D3DXMATRIX m_absmat;
 };
 
 

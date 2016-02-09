@@ -160,6 +160,8 @@ int CMQOFile::LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR
 	m_state = BEGIN_FINDCHUNK;
 
 	while( m_state != BEGIN_FINISH ){
+		//map<int, CMQOMaterial*> curmaterial;
+		//map<int, CMQOObject*> curobject;
 
 		switch( m_state ){
 		case BEGIN_FINDCHUNK:
@@ -181,10 +183,12 @@ int CMQOFile::LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR
 			m_state = BEGIN_FINDCHUNK;
 			break;
 		case BEGIN_MATERIAL:
-			CallF( ReadMaterial( &m_state, m_modelptr->m_material ), return 1 );
+			//m_modelptr->GetMQOMaterial2( curmaterial );
+			CallF( ReadMaterial( &m_state ), return 1 );
 			break;
 		case BEGIN_OBJECT://子チャンクをもつ
-			CallF( ReadObject( &m_state, m_modelptr->m_object ), return 1 );
+			//m_modelptr->GetMqoObject2( curobject );
+			CallF( ReadObject( &m_state ), return 1 );
 			break;
 		case BEGIN_VERTEX:
 			if( currentobj ){
@@ -252,13 +256,13 @@ int CMQOFile::LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR
 	}
 
 	CallF( m_modelptr->AddDefMaterial(), return 1 );
-	CallF( Multiple( m_modelptr->m_object ), return 1 );
-	//CallF( PickUpAnchor(), return 1 );
-	//CallF( m_modelptr->MakeBoneTri(), return 1 );
+
+	//map<int, CMQOObject*> curobject;
+	//m_modelptr->GetMqoObject2( curobject );
+	CallF( Multiple(), return 1 );
 	CallF( m_modelptr->MakePolyMesh3(), return 1 );
 	CallF( m_modelptr->MakeExtLine(), return 1 );
 	CallF( m_modelptr->MakeObjectName(), return 1 );
-	//CallF( m_modelptr->MakeInfScope(), return 1 );
 
 	return 0;
 }
@@ -744,7 +748,7 @@ int CMQOFile::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, in
 }
 
 
-int CMQOFile::ReadMaterial( MQOSTATE* nextstate, map<int, CMQOMaterial*>& srcmaterial )
+int CMQOFile::ReadMaterial( MQOSTATE* nextstate )
 {
 	int ret;
 	int findend = 0;
@@ -772,7 +776,7 @@ int CMQOFile::ReadMaterial( MQOSTATE* nextstate, map<int, CMQOMaterial*>& srcmat
 
 
 //DbgOut( L"MQOFile : ReadMaterial : SetParams : %s\n", m_linechar );
-			matno = srcmaterial.size();
+			matno = m_modelptr->GetMQOMaterialSize();
 			ret = newmat->SetParams( matno, m_scene_ambient, m_linechar, (int)strlen( m_linechar ) );
 			if( ret ){
 				DbgOut( L"MQOFile : ReadMaterial : newmat SetParams error !!!" );
@@ -781,7 +785,7 @@ int CMQOFile::ReadMaterial( MQOSTATE* nextstate, map<int, CMQOMaterial*>& srcmat
 				return 1;
 			}
 
-			srcmaterial[newmat->materialno] = newmat;
+			m_modelptr->SetMQOMaterial( newmat->GetMaterialNo(), newmat ); 
 		}
 	}
 	
@@ -791,7 +795,7 @@ int CMQOFile::ReadMaterial( MQOSTATE* nextstate, map<int, CMQOMaterial*>& srcmat
 }
 
 
-int CMQOFile::ReadObject( MQOSTATE* nextstate, map<int, CMQOObject*>& srcobj )
+int CMQOFile::ReadObject( MQOSTATE* nextstate )
 {
 	int ret;
 	int findend = 0;
@@ -806,8 +810,7 @@ int CMQOFile::ReadObject( MQOSTATE* nextstate, map<int, CMQOObject*>& srcobj )
 		*nextstate = BEGIN_FINISH;
 		return 1;
 	}
-	
-	srcobj[newobj->m_objectno] = newobj;
+	m_modelptr->SetMqoObject( newobj->GetObjectNo(), newobj );
 	currentobj = newobj;//!!!!
 
 	//nameのセット
@@ -1003,126 +1006,16 @@ int CMQOFile::ReadFace( MQOSTATE* nextstate )
 }
 
 
-int CMQOFile::Multiple( map<int, CMQOObject*>& srcobj )
+int CMQOFile::Multiple()
 {
 	map<int,CMQOObject*>::iterator itr;
-	for( itr = srcobj.begin(); itr != srcobj.end(); itr++ ){
+	for( itr = m_modelptr->GetMqoObjectBegin(); itr != m_modelptr->GetMqoObjectEnd(); itr++ ){
 		CMQOObject* curobj = itr->second;
 		if( curobj ){
 			CallF( curobj->MultMat( m_offsetmat ), return 1 );
 			CallF( curobj->MultVertex(), return 1; );
 		}
 	}
-
-	return 0;
-}
-
-
-int CMQOFile::PickUpAnchor()
-{
-	map<int,CMQOObject*>::iterator itrobj;
-	for( itrobj = m_modelptr->m_object.begin(); itrobj != m_modelptr->m_object.end(); itrobj++ ){
-		int curseri = itrobj->first;
-		CMQOObject* curobj = itrobj->second;
-		if( curobj ){
-			int cmp0;
-			cmp0 = strncmp( curobj->m_name, "anchor", 6 );
-			if( cmp0 == 0 ){
-				m_modelptr->m_ancobject[ curseri ] = curobj;
-			}
-		}
-	}
-	map<int,CMQOObject*>::iterator itrobj2;
-	for( itrobj2 = m_modelptr->m_ancobject.begin(); itrobj2 != m_modelptr->m_ancobject.end(); itrobj2++ ){
-		int curseri = itrobj2->first;
-		map<int,CMQOObject*>::iterator itrorgobj;
-		itrorgobj = m_modelptr->m_object.find( curseri );
-		if( itrorgobj != m_modelptr->m_object.end() ){
-			m_modelptr->m_object.erase( itrorgobj );
-		}
-	}
-
-
-
-	map<int, CMQOObject*>::iterator itranco;
-	for( itranco = m_modelptr->m_ancobject.begin(); itranco != m_modelptr->m_ancobject.end(); itranco++ ){
-		CMQOObject* curobj = itranco->second;
-		if( curobj ){
-			int faceno;
-			for( faceno = 0; faceno < curobj->m_face; faceno++ ){
-				CMQOFace* curface = curobj->m_facebuf + faceno;
-				int curmatno = curface->m_materialno;
-				if( curmatno >= 0 ){
-					map<int, CMQOMaterial*>::iterator itrmvmat;
-					itrmvmat = m_modelptr->m_material.find( curmatno );
-					if( itrmvmat != m_modelptr->m_material.end() ){
-						CMQOMaterial* matptr = itrmvmat->second;
-						m_modelptr->m_ancmaterial[ curmatno ] = matptr;
-					}
-				}
-			}
-		}
-	}
-
-
-//////// bone
-
-
-	map<int,CMQOObject*>::iterator itrobj3;
-	for( itrobj3 = m_modelptr->m_object.begin(); itrobj3 != m_modelptr->m_object.end(); itrobj3++ ){
-		int curseri = itrobj3->first;
-		CMQOObject* curobj = itrobj3->second;
-		if( curobj ){
-			int cmp0;
-			cmp0 = strncmp( curobj->m_name, "bone", 4 );
-			if( cmp0 == 0 ){
-				m_modelptr->m_boneobject[ curseri ] = curobj;
-			}
-		}
-	}
-	map<int,CMQOObject*>::iterator itrobj4;
-	for( itrobj4 = m_modelptr->m_boneobject.begin(); itrobj4 != m_modelptr->m_boneobject.end(); itrobj4++ ){
-		int curseri = itrobj4->first;
-		map<int,CMQOObject*>::iterator itrorgobj;
-		itrorgobj = m_modelptr->m_object.find( curseri );
-		if( itrorgobj != m_modelptr->m_object.end() ){
-			m_modelptr->m_object.erase( itrorgobj );
-		}
-	}
-
-
-	map<int, CMQOObject*>::iterator itranco2;
-	for( itranco2 = m_modelptr->m_boneobject.begin(); itranco2 != m_modelptr->m_boneobject.end(); itranco2++ ){
-		CMQOObject* curobj = itranco2->second;
-		if( curobj ){
-			int faceno;
-			for( faceno = 0; faceno < curobj->m_face; faceno++ ){
-				CMQOFace* curface = curobj->m_facebuf + faceno;
-				int curmatno = curface->m_materialno;
-				if( curmatno >= 0 ){
-					map<int, CMQOMaterial*>::iterator itrmvmat;
-					itrmvmat = m_modelptr->m_material.find( curmatno );
-					if( itrmvmat != m_modelptr->m_material.end() ){
-						CMQOMaterial* matptr = itrmvmat->second;
-						m_modelptr->m_ancmaterial[ curmatno ] = matptr;
-					}
-				}
-			}
-		}
-	}
-
-
-///////////
-	map<int,CMQOMaterial*>::iterator itrmat;
-	for( itrmat = m_modelptr->m_ancmaterial.begin(); itrmat != m_modelptr->m_ancmaterial.end(); itrmat++ ){
-		int curmatno = itrmat->first;
-		map<int,CMQOMaterial*>::iterator itrorgmat;
-		itrorgmat = m_modelptr->m_material.find( curmatno );
-		if( itrorgmat != m_modelptr->m_material.end() ){
-			m_modelptr->m_material.erase( itrorgmat );
-		}
-	}
-
 
 	return 0;
 }

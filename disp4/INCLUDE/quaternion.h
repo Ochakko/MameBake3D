@@ -24,6 +24,7 @@ public:
 	int CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );
 
 	//CQuaternion operator= (const CQuaternion &q) const;
+	CQuaternion CQuaternion::operator= (CQuaternion q);
 	CQuaternion operator* (float srcw) const;
 	CQuaternion &operator*= (float srcw);
 	CQuaternion operator/ (float srcw) const;

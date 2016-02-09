@@ -14,7 +14,7 @@ class CMQOObject;
 class CMQOMaterial;
 class CMQOFace;
 class CInfBone;
-class CInfScope;
+//class CInfScope;
 class CBone;
 
 class CPolyMesh3
@@ -33,7 +33,6 @@ public:
 	int CalcBound();
 
 	int CalcInfNoSkin( CBone* applybone );
-	int CalcInf( CMQOObject* thisobj, map<int, CBone*>& srcbone );
 
 	int MultScale( D3DXVECTOR3 srcscale, D3DXVECTOR3 srctra );
 
@@ -56,7 +55,6 @@ private:
 	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, map<int,CMQOMaterial*>& srcmat );
 
 
-public:
 /***
 typedef struct tag_verface
 {
@@ -126,20 +124,67 @@ typedef struct tag_pm3optv
 
 ***/
 
+public:
+	//accesser
+	int GetOrgPointNum(){
+		return m_orgpointnum;
+	};
+
+	int GetOrgFaceNum(){
+		return m_orgfacenum;
+	};
+
+	int GetFaceNum(){
+		return m_facenum;
+	};
+
+	float GetFacet(){
+		return m_facet;
+	};
+
+	CInfBone* GetInfBone(){
+		return m_infbone;
+	};
+
+	int GetOptLeng(){
+		return m_optleng;
+	};
+
+	int GetOptMatNum(){
+		return m_optmatnum;
+	};
+
+	PM3DISPV* GetDispV(){
+		return m_dispv;
+	};
+
+	int* GetDispIndex(){
+		return m_dispindex;
+	};
+
+	int GetCreateOptFlag(){
+		return m_createoptflag;
+	};
+
+	MATERIALBLOCK* GetMatBlock(){
+		return m_matblock;
+	};
+
+	MODELBOUND GetBound(){
+		return m_bound;
+	};
+
+
+private:
 	int m_orgpointnum;
 	int m_orgfacenum;
 	int m_facenum;//三角分割後の面数
 
 	float m_facet;
-	CMQOFace* m_mqoface;//外部メモリ
-	D3DXVECTOR3* m_pointbuf;//外部メモリ
-	N3P* m_n3p;
 	CInfBone* m_infbone;//orgpointnum長
 
-///////
 	int m_optleng;
 	int m_optmatnum;
-//	PM3OPTV* m_optv;
 	PM3DISPV* m_dispv;
 	int*	m_dispindex;
 	int m_createoptflag;
@@ -147,7 +192,13 @@ typedef struct tag_pm3optv
 	MATERIALBLOCK* m_matblock;
 	MODELBOUND	m_bound;
 
+
+//以下、クラス外からアクセスしないのでアクセッサー無し。
+	CMQOFace* m_mqoface;//外部メモリ
+	D3DXVECTOR3* m_pointbuf;//外部メモリ
+	N3P* m_n3p;
 	CHKALPHA chkalpha;
+
 };
 
 

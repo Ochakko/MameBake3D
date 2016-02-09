@@ -606,7 +606,8 @@ int CMQOObject::SetFaceBuf( int faceno, char* srcchar, int srcleng, int material
 	_ASSERT( dstface );
 
 	CallF( dstface->SetParams( srcchar, srcleng ), return 1 );
-	dstface->m_materialno += materialoffset;
+	int newmatno = dstface->GetMaterialNo() + materialoffset;
+	dstface->SetMaterialNo( newmatno );
 
 
 	return 0;
@@ -722,7 +723,7 @@ int CMQOObject::SetColor( char* srcchar, int srcleng )
 
 	return 0;
 }
-int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, map<int,CMQOMaterial*>& srcmaterial )
+int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial*>& srcmaterial )
 {
 	if( !m_pointbuf || !m_facebuf )
 		return 0;
@@ -791,7 +792,7 @@ int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, map<int,CMQOMaterial*>& s
 	return 0;
 }
 
-int CMQOObject::MakePolymesh4( LPDIRECT3DDEVICE9 pdev, map<int,CMQOMaterial*>& srcmaterial )
+int CMQOObject::MakePolymesh4( LPDIRECT3DDEVICE9 pdev )
 {
 	if( !m_pointbuf || !m_facebuf )
 		return 0;
@@ -869,14 +870,14 @@ int CMQOObject::MakeDispObj( LPDIRECT3DDEVICE9 pdev, map<int,CMQOMaterial*>& src
 	}
 
 
-	if( m_pm3 && m_pm3->m_createoptflag ){
+	if( m_pm3 && m_pm3->GetCreateOptFlag() ){
 		m_dispobj = new CDispObj();
 		if( !m_dispobj ){
 			_ASSERT( 0 );
 			return 1;
 		}
 		CallF( m_dispobj->CreateDispObj( pdev, m_pm3, hasbone ), return 1 );
-	}else if( m_pm4 && m_pm4->m_createoptflag ){
+	}else if( m_pm4 && m_pm4->GetCreateOptFlag() ){
 		if( hasbone ){
 			CallF( m_pm4->SetPm3Inf( this ), return 1 );
 		}
@@ -912,7 +913,7 @@ int CMQOObject::HasPolygon()
 	for( faceno = 0; faceno < m_face; faceno++ ){
 		CMQOFace* curface;
 		curface = m_facebuf + faceno;
-		switch( curface->m_pointnum ){
+		switch( curface->GetPointNum() ){
 			case 2:
 				face2++;
 				break;
@@ -942,7 +943,7 @@ int CMQOObject::HasLine()
 	for( faceno = 0; faceno < m_face; faceno++ ){
 		CMQOFace* curface;
 		curface = m_facebuf + faceno;
-		switch( curface->m_pointnum ){
+		switch( curface->GetPointNum() ){
 			case 2:
 				face2++;
 				break;
@@ -965,7 +966,7 @@ int CMQOObject::MakeLatheBuf()
 	CMQOFace* curface;
 	for( faceno = 0; faceno < m_face; faceno++ ){
 		curface = m_facebuf + faceno;
-		if( curface->m_pointnum == 2 ){
+		if( curface->GetPointNum() == 2 ){
 			linenum++;
 		}
 	}
@@ -986,7 +987,7 @@ int CMQOObject::MakeLatheBuf()
 	int lineno = 0;
 	for( faceno = 0; faceno < m_face; faceno++ ){
 		curface = m_facebuf + faceno;
-		if( curface->m_pointnum == 2 ){
+		if( curface->GetPointNum() == 2 ){
 			_ASSERT( lineno < linenum );
 			*(lineno2faceno + lineno) = faceno; 
 			lineno++;
@@ -1042,8 +1043,8 @@ int CMQOObject::MakeLatheBuf()
 	for( lineno = 0; lineno < linenum; lineno++ ){
 		faceno = *(lineno2faceno + lineno);
 		int v0, v1;
-		v0 = (m_facebuf + faceno)->m_index[0];
-		v1 = (m_facebuf + faceno)->m_index[1];
+		v0 = (m_facebuf + faceno)->GetIndex( 0 );
+		v1 = (m_facebuf + faceno)->GetIndex( 1 );
 		D3DXVECTOR3* src0 = m_pointbuf + v0;
 		D3DXVECTOR3* src1 = m_pointbuf + v1;
 		switch( m_lathe_axis ){
@@ -1172,20 +1173,20 @@ int CMQOObject::MakeLatheBuf()
 	for( lineno = 0; lineno < linenum; lineno++ ){ 
 		for( segno = 0; segno < m_lathe_seg; segno++ ){
 			CMQOFace* dstface = m_facebuf2 + m_lathe_seg * lineno + segno;
-			dstface->m_pointnum = 4;
+			dstface->SetPointNum( 4 );
 
 			if( segno != m_lathe_seg - 1 ){
-				dstface->m_index[0] = lineno * 2 * m_lathe_seg + segno;
-				dstface->m_index[1] = lineno * 2 * m_lathe_seg + m_lathe_seg + segno;
-				dstface->m_index[2] = lineno * 2 * m_lathe_seg + m_lathe_seg + 1 + segno;
-				dstface->m_index[3] = lineno * 2 * m_lathe_seg + 1 + segno;
+				dstface->SetIndex( 0, lineno * 2 * m_lathe_seg + segno );
+				dstface->SetIndex( 1, lineno * 2 * m_lathe_seg + m_lathe_seg + segno );
+				dstface->SetIndex( 2, lineno * 2 * m_lathe_seg + m_lathe_seg + 1 + segno );
+				dstface->SetIndex( 3, lineno * 2 * m_lathe_seg + 1 + segno );
 			}else{
-				dstface->m_index[0] = lineno * 2 * m_lathe_seg + segno;
-				dstface->m_index[1] = lineno * 2 * m_lathe_seg + m_lathe_seg + segno;
-				dstface->m_index[2] = lineno * 2 * m_lathe_seg + m_lathe_seg;
-				dstface->m_index[3] = lineno * 2 * m_lathe_seg;
+				dstface->SetIndex( 0, lineno * 2 * m_lathe_seg + segno );
+				dstface->SetIndex( 1, lineno * 2 * m_lathe_seg + m_lathe_seg + segno );
+				dstface->SetIndex( 2, lineno * 2 * m_lathe_seg + m_lathe_seg );
+				dstface->SetIndex( 3, lineno * 2 * m_lathe_seg );
 			}
-			dstface->m_hasuv = 0;
+			dstface->SetHasUV( 0 );
 
 		}
 	}
@@ -1393,25 +1394,25 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 			srcface = m_connectface + srcno;
 			dstface = m_facebuf2 + faceno;
 			
-			dstface->m_pointnum = 4;
-			dstface->m_materialno = srcface->m_materialno;
+			dstface->SetPointNum( 4 );
+			dstface->SetMaterialNo( srcface->GetMaterialNo() );
 			
-			dstface->m_index[0] = srcface->m_index[0];//反対向きに描画するようにセット。
-			dstface->m_index[1] = srcface->m_index[0] + befvertex;
-			dstface->m_index[2] = srcface->m_index[1] + befvertex;
-			dstface->m_index[3] = srcface->m_index[1];
+			dstface->SetIndex( 0, srcface->GetIndex( 0 ) );//反対向きに描画するようにセット。
+			dstface->SetIndex( 1, srcface->GetIndex( 0 ) + befvertex );
+			dstface->SetIndex( 2, srcface->GetIndex( 1 ) + befvertex );
+			dstface->SetIndex( 3, srcface->GetIndex( 1 ) );
 
-			dstface->m_hasuv = srcface->m_hasuv;
+			dstface->SetHasUV( srcface->GetHasUV() );
 
-			dstface->m_uv[0] = srcface->m_uv[0];
-			dstface->m_uv[1] = srcface->m_uv[0];
-			dstface->m_uv[2] = srcface->m_uv[1];
-			dstface->m_uv[3] = srcface->m_uv[1];
+			dstface->SetUV( 0, srcface->GetUV( 0 ) );
+			dstface->SetUV( 1, srcface->GetUV( 0 ) );
+			dstface->SetUV( 2, srcface->GetUV( 1 ) );
+			dstface->SetUV( 3, srcface->GetUV( 1 ) );
 
-			dstface->m_col[0] = srcface->m_col[0];
-			dstface->m_col[1] = srcface->m_col[0];
-			dstface->m_col[2] = srcface->m_col[1];
-			dstface->m_col[3] = srcface->m_col[1];
+			dstface->SetCol( 0, srcface->GetCol( 0 ) );
+			dstface->SetCol( 1, srcface->GetCol( 0 ) );
+			dstface->SetCol( 2, srcface->GetCol( 1 ) );
+			dstface->SetCol( 3, srcface->GetCol( 1 ) );
 
 			srcno++;
 		}
@@ -1434,7 +1435,7 @@ int CMQOObject::FindConnectFace( int issetface )
 	CMQOFace* chkface;
 	for( faceno = 0; faceno < m_face; faceno++ ){
 		curface = m_facebuf + faceno;
-		pointnum = curface->m_pointnum;
+		pointnum = curface->GetPointNum();
 		if( pointnum <= 2 )
 			continue;
 
@@ -1446,7 +1447,7 @@ int CMQOObject::FindConnectFace( int issetface )
 				continue;
 			chkface = m_facebuf + chkno;
 
-			if( chkface->m_pointnum <= 2 )
+			if( chkface->GetPointNum() <= 2 )
 				continue;
 
 			CallF( curface->CheckSameLine( chkface, findflag ), return 1 );
@@ -1470,18 +1471,18 @@ int CMQOObject::FindConnectFace( int issetface )
 					distok = CheckMirrorDis( m_pointbuf, curface, i, pointnum );
 					if( distok ){
 						if( issetface ){
-							(m_connectface + conno)->m_pointnum = 2;
-							(m_connectface + conno)->m_materialno = curface->m_materialno;
-							(m_connectface + conno)->m_hasuv = curface->m_hasuv;
+							(m_connectface + conno)->SetPointNum( 2 );
+							(m_connectface + conno)->SetMaterialNo( curface->GetMaterialNo() );
+							(m_connectface + conno)->SetHasUV( curface->GetHasUV() );
 
-							(m_connectface + conno)->m_index[0] = curface->m_index[i];
-							(m_connectface + conno)->m_uv[0] = curface->m_uv[i];
+							(m_connectface + conno)->SetIndex( 0, curface->GetIndex( i ) );
+							(m_connectface + conno)->SetUV( 0, curface->GetUV( i ) );
 							if( i != (pointnum - 1) ){
-								(m_connectface + conno)->m_index[1] = curface->m_index[i+1];
-								(m_connectface + conno)->m_uv[1] = curface->m_uv[i+1];
+								(m_connectface + conno)->SetIndex( 1, curface->GetIndex( i+1 ) );
+								(m_connectface + conno)->SetUV( 1, curface->GetUV( i+1 ) );
 							}else{
-								(m_connectface + conno)->m_index[1] = curface->m_index[0];
-								(m_connectface + conno)->m_uv[1] = curface->m_uv[0];
+								(m_connectface + conno)->SetIndex( 1, curface->GetIndex( 0 ) );
+								(m_connectface + conno)->SetUV( 1, curface->GetUV( 0 ) );
 							}
 
 						}
@@ -1522,8 +1523,8 @@ int CMQOObject::CheckMirrorDis( D3DXVECTOR3* pbuf, CMQOFace* fbuf, int lno, int 
 		}
 		D3DXVECTOR3* v0;
 		D3DXVECTOR3* v1;
-		v0 = pbuf + fbuf->m_index[i0];
-		v1 = pbuf + fbuf->m_index[i1];
+		v0 = pbuf + fbuf->GetIndex( i0 );
+		v1 = pbuf + fbuf->GetIndex( i1 );
 
 		float distx0, distx1;
 		int chkx = 1;
@@ -1607,7 +1608,7 @@ int CMQOObject::InitFaceDirtyFlag()
 	for( fno = 0; fno < m_face; fno++ ){
 		curface = m_facebuf + fno;
 
-		curface->m_dirtyflag = 0;
+		curface->SetDirtyFlag( 0 );
 	}
 
 	return 0;
@@ -1637,8 +1638,8 @@ int CMQOObject::CheckFaceSameChildIndex( CMQOFace* srcface, int chkno, CMQOFace*
 	for( fno = 0; fno < m_face; fno++ ){
 		curface = m_facebuf + fno;
 
-		if( (curface->m_bonetype == MIKOBONE_NORMAL) || (curface->m_bonetype == MIKOBONE_FLOAT) ){
-			if( (curface->m_childindex == chkno) && (curface != srcface) ){
+		if( (curface->GetBoneType() == MIKOBONE_NORMAL) || (curface->GetBoneType() == MIKOBONE_FLOAT) ){
+			if( (curface->GetChildIndex() == chkno) && (curface != srcface) ){
 				*ppfindface = curface;
 				break;
 			}
@@ -1663,8 +1664,8 @@ int CMQOObject::CheckMaterialSameName( int srcmatno, map<int, CMQOMaterial*> &sr
 	for( fno = 0; fno < m_face; fno++ ){
 		curface = m_facebuf + fno;
 
-		if( curface->m_bonetype == MIKOBONE_NORMAL ){
-			if( curface->m_materialno == srcmatno ){
+		if( curface->GetBoneType() == MIKOBONE_NORMAL ){
+			if( curface->GetMaterialNo() == srcmatno ){
 				samecnt++;
 
 				CMQOMaterial* curmat = GetMaterialFromNo( srcmaterial, srcmatno );
@@ -1674,7 +1675,7 @@ int CMQOObject::CheckMaterialSameName( int srcmatno, map<int, CMQOMaterial*> &sr
 					return 1;
 				}
 
-				nameptr = curmat->name;
+				nameptr = (char*)curmat->GetName();
 
 				leng = (int)strlen( nameptr );
 				if( leng > 2 ){
@@ -1705,21 +1706,21 @@ int CMQOObject::CheckMaterialSameName( int srcmatno, map<int, CMQOMaterial*> &sr
 int CMQOObject::IsSameFaceIndex( CMQOFace* face1, CMQOFace* face2 )
 {
 
-	if( face1->m_pointnum != face2->m_pointnum )
+	if( face1->GetPointNum() != face2->GetPointNum() )
 		return 0;
 
 
 	int pointnum;
-	pointnum = face1->m_pointnum;
+	pointnum = face1->GetPointNum();
 
 	int samecnt = 0;
 	int i, j;
 	int index1, index2;
 	for( i = 0; i < pointnum; i++ ){
-		index1 = face1->m_index[i];
+		index1 = face1->GetIndex( i );
 
 		for( j = 0; j < pointnum; j++ ){
-			index2 = face2->m_index[j];
+			index2 = face2->GetIndex( j );
 
 			if( index1 == index2 ){
 				samecnt++;
@@ -1749,7 +1750,7 @@ int CMQOObject::GetMaterialNoInUse( int* noptr, int arrayleng, int* getnumptr )
 	int fno;
 	for( fno = 0; fno < m_face; fno++ ){
 		CMQOFace* curface = m_facebuf + fno;
-		int curmatno = curface->m_materialno;
+		int curmatno = curface->GetMaterialNo();
 		if( curmatno >= 0 ){
 			int sameflag = 0;
 			int chki;
@@ -1797,7 +1798,7 @@ int CMQOObject::GetFaceInMaterial( int matno, CMQOFace** ppface, int arrayleng, 
 	int fno;
 	for( fno = 0; fno < m_face; fno++ ){
 		CMQOFace* curface = m_facebuf + fno;
-		int curmatno = curface->m_materialno;
+		int curmatno = curface->GetMaterialNo();
 
 		if( curmatno == matno ){
 			if( ppface ){
@@ -1847,17 +1848,17 @@ int CMQOObject::CollisionLocal_Ray( D3DXVECTOR3 startlocal, D3DXVECTOR3 dirlocal
 		hitflag = 0;
 		justflag = 0;
 		CMQOFace* curface = faceptr + fno;
-		if( curface->m_pointnum == 3 ){
-			hitflag = ChkRay( allowrev, curface->m_index[0], curface->m_index[1], curface->m_index[2], pointptr, startlocal, dirlocal, 0.01f, &justflag );
+		if( curface->GetPointNum() == 3 ){
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, 0.01f, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
-		}else if( curface->m_pointnum == 4 ){
-			hitflag = ChkRay( allowrev, curface->m_index[0], curface->m_index[1], curface->m_index[2], pointptr, startlocal, dirlocal, 0.01f, &justflag );
+		}else if( curface->GetPointNum() == 4 ){
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, 0.01f, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
-			hitflag = ChkRay( allowrev, curface->m_index[0], curface->m_index[2], curface->m_index[3], pointptr, startlocal, dirlocal, 0.01f, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 2 ), curface->GetIndex( 3 ), pointptr, startlocal, dirlocal, 0.01f, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
@@ -1872,18 +1873,18 @@ int CMQOObject::CollisionLocal_Ray( D3DXVECTOR3 startlocal, D3DXVECTOR3 dirlocal
 int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isadditive )
 {
 	CInfBone* ibptr = 0;
-	if( m_pm3 && m_pm3->m_infbone ){
-		if( (srcvno < 0) || (srcvno >= m_pm3->m_orgpointnum) ){
+	if( m_pm3 && m_pm3->GetInfBone() ){
+		if( (srcvno < 0) || (srcvno >= m_pm3->GetOrgPointNum()) ){
 			_ASSERT( 0 );
 			return 1;
 		}
-		ibptr = m_pm3->m_infbone + srcvno;
-	}else if( m_pm4 && m_pm4->m_infbone ){
-		if( (srcvno < 0) || (srcvno >= m_pm4->m_orgpointnum) ){
+		ibptr = m_pm3->GetInfBone() + srcvno;
+	}else if( m_pm4 && m_pm4->GetInfBone() ){
+		if( (srcvno < 0) || (srcvno >= m_pm4->GetOrgPointNum()) ){
 			_ASSERT( 0 );
 			return 1;
 		}
-		ibptr = m_pm4->m_infbone + srcvno;
+		ibptr = m_pm4->GetInfBone() + srcvno;
 	}else{
 		_ASSERT( 0 );
 	}
@@ -1904,12 +1905,12 @@ int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isad
 
 int CMQOObject::NormalizeInfBone()
 {
-	if( m_pm3 && m_pm3->m_infbone ){
+	if( m_pm3 && m_pm3->GetInfBone() ){
 		_ASSERT( 0 );
-	}else if( m_pm4 && m_pm4->m_infbone ){
+	}else if( m_pm4 && m_pm4->GetInfBone() ){
 		int vno;
-		for( vno = 0; vno < m_pm4->m_orgpointnum; vno++ ){
-			(m_pm4->m_infbone + vno)->NormalizeInf( this );
+		for( vno = 0; vno < m_pm4->GetOrgPointNum(); vno++ ){
+			(m_pm4->GetInfBone() + vno)->NormalizeInf( this );
 		}
 	}
 
@@ -1973,8 +1974,8 @@ int CMQOObject::ScaleBtBox( CRigidElem* reptr, float boneleng, float* cyliptr, f
 
 	sccyli = boneleng / 200.0f;
 	if( sccyli != 0.0f ){
-		scsph = reptr->m_shprate * sccyli;
-		scboxz = reptr->m_boxzrate * sccyli;
+		scsph = reptr->GetSphrate() * sccyli;
+		scboxz = reptr->GetBoxzrate() * sccyli;
 	}else{
 		scsph = 0.0f;
 		scboxz = 0.0f;
@@ -2004,7 +2005,7 @@ int CMQOObject::ScaleBtCone( CRigidElem* reptr, float boneleng, float* cyliptr, 
 
 	sccyli = boneleng / 200.0f;
 	if( sccyli != 0.0f ){
-		scsph = reptr->m_shprate * sccyli;
+		scsph = reptr->GetSphrate() * sccyli;
 	}else{
 		scsph = 0.0f;
 	}
@@ -2048,9 +2049,9 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 {
 	float sccyli, scsph;
 
-	sccyli = boneleng / ( ( 1.0f + reptr->m_shprate ) * 200.0f );
+	sccyli = boneleng / ( ( 1.0f + reptr->GetSphrate() ) * 200.0f );
 	if( sccyli != 0.0f ){
-		scsph = reptr->m_shprate * sccyli;
+		scsph = reptr->GetSphrate() * sccyli;
 	}else{
 		scsph = 0.0f;
 //		_ASSERT( 0 );

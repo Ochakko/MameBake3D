@@ -42,11 +42,10 @@ int CRigidElem::InitParams()
 
 	m_coltype = COL_CAPSULE_INDEX;
 	m_skipflag = 0;
-	m_bcone = false;
 
 	D3DXMatrixIdentity( &m_capsulemat );
 
-	m_shprate = 0.6f;
+	m_sphrate = 0.6f;
 	m_boxzrate = 0.6f;
 
 	m_cylileng = 0.0f;
@@ -69,7 +68,6 @@ int CRigidElem::InitParams()
 	m_cus_lk = g_initcuslk;
 	m_cus_ak = g_initcusak;
 
-	m_colgflag = 1;
 
 	m_groupid = 2;
 	m_coliids.clear();

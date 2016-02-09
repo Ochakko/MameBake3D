@@ -162,11 +162,7 @@ int CQuaternion::SetRotation( CQuaternion* axisq, double degx, double degy, doub
 	return 0;
 }
 
-
-
-
-//CQuaternion CQuaternion::operator= (const CQuaternion &q) const { return CQuaternion(w, x, y, z); };
-
+CQuaternion CQuaternion::operator= (CQuaternion q) { this->x = q.x; this->y = q.y; this->z = q.z; this->w = q.w; return *this; };
 CQuaternion CQuaternion::operator* (float srcw) const { return CQuaternion(this->w * srcw, this->x * srcw, this->y * srcw, this->z * srcw); }
 CQuaternion &CQuaternion::operator*= (float srcw) { *this = *this * srcw; return *this; }
 CQuaternion CQuaternion::operator/ (float srcw) const { return CQuaternion(this->w / srcw, this->x / srcw, this->y / srcw, this->z / srcw); }

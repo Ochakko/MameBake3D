@@ -105,11 +105,11 @@ int CBopFile::ReadBopElem( XMLIOBUF* xmlbuf )
 	CallF( Read_Vec3( xmlbuf, "<World>", "</World>", &wpos ), return 1 );
 	CallF( Read_Vec3( xmlbuf, "<Form>", "</Form>", &fpos ), return 1 );
 
-	CBone* curbone = m_model->m_bonename[ bonename ];
+	CBone* curbone = m_model->GetBoneByName( bonename );
 
 	if( curbone ){
-		curbone->m_jointwpos = wpos;
-		curbone->m_jointfpos = fpos;
+		curbone->SetJointWPos( wpos );
+		curbone->SetJointFPos( fpos );
 	}else{
 		_ASSERT( 0 );
 	}

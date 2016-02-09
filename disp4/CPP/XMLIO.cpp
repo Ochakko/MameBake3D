@@ -62,6 +62,22 @@ int CXMLIO::DestroyObjs()
 	return 0;
 }
 
+int CXMLIO::WriteVoid2File( void* pvoid, unsigned int srcleng )
+{
+	if( m_hfile == INVALID_HANDLE_VALUE ){
+		return 0;
+	}
+
+	DWORD writeleng = 0;
+	WriteFile( m_hfile, pvoid, srcleng, &writeleng, NULL );
+	if( srcleng != writeleng ){
+		return 1;
+	}
+
+	return 0;
+}
+
+
 int CXMLIO::Write2File( char* lpFormat, ... )
 {
 	if( m_hfile == INVALID_HANDLE_VALUE ){

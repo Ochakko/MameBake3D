@@ -24,6 +24,7 @@ using namespace std;
 extern float g_miscale;
 extern float g_l_kval[3];
 extern float g_a_kval[3];
+extern int g_previewFlag;			// プレビューフラグ
 
 CBtObject::CBtObject( CBtObject* parbt, btDynamicsWorld* btWorld )
 {
@@ -41,8 +42,6 @@ CBtObject::~CBtObject()
 
 int CBtObject::InitParams()
 {
-	m_dofC = 0;
-	m_staticflag = 0;
 	m_connectflag = 0;
 	m_constzrad = 0.0f;
 	D3DXMatrixIdentity( &m_transmat );
@@ -104,21 +103,21 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 {
 	_ASSERT( shape );
 
-	bool isDynamic = (curre->m_mass != 0.f);
+	bool isDynamic = (curre->GetMass() != 0.f);
 
 	btVector3 localInertia(0,0,0);
 	if (isDynamic)
-		shape->calculateLocalInertia( curre->m_mass, localInertia );
+		shape->calculateLocalInertia( curre->GetMass(), localInertia );
 
 	btDefaultMotionState* myMotionState = new btDefaultMotionState( startTransform );
 		
-	btRigidBody::btRigidBodyConstructionInfo rbInfo( curre->m_mass, myMotionState, shape, localInertia );
+	btRigidBody::btRigidBodyConstructionInfo rbInfo( curre->GetMass(), myMotionState, shape, localInertia );
 	btRigidBody* body = new btRigidBody( rbInfo );
 
-	body->setRestitution( curre->m_restitution );
-	body->setFriction( curre->m_friction );
+	body->setRestitution( curre->GetRestitution() );
+	body->setFriction( curre->GetFriction() );
 
-	int myid = curre->m_groupid;
+	int myid = curre->GetGroupid();
 	int coliid = curre->GetColiID();
 	m_btWorld->addRigidBody(body, myid, coliid);
 
@@ -145,38 +144,38 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 		return 0;
 	}
 
-	CRigidElem* curre = m_bone->m_rigidelem[ chilbone ];
+	CRigidElem* curre = m_bone->GetRigidElem( chilbone );
 	if( !curre ){
 		_ASSERT( 0 );
 		return 1;
 	}
-	if( curre && (curre->m_skipflag == 1) ){
+	if( curre && (curre->GetSkipflag() == 1) ){
 		return 0;
 	}
 
 	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
-	parposA = m_bone->m_jointfpos;
-	D3DXVec3TransformCoord( &aftparposA, &parposA, &m_bone->m_startmat2 );
-	chilposA = m_endbone->m_jointfpos;
-	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &m_endbone->m_startmat2 );
+	parposA = m_bone->GetJointFPos();
+	D3DXVec3TransformCoord( &aftparposA, &parposA, &m_bone->GetStartMat2() );
+	chilposA = m_endbone->GetJointFPos();
+	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &m_endbone->GetStartMat2() );
 	D3DXVECTOR3 diffA = chilposA - parposA;
 	m_boneleng = D3DXVec3Length( &diffA );
 
 	float h, r, z;
-	r = curre->m_sphr;// * 0.95f;
-	h = curre->m_cylileng;// * 0.95f;
-	z = curre->m_boxz;
+	r = curre->GetSphr();// * 0.95f;
+	h = curre->GetCylileng();// * 0.95f;
+	z = curre->GetBoxz();
 
-	if( curre->m_coltype == COL_CAPSULE_INDEX ){
+	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
 		m_colshape = new btCapsuleShape( btScalar( r ), btScalar( h ) );
 		_ASSERT( m_colshape );
-	}else if( curre->m_coltype == COL_CONE_INDEX ){
+	}else if( curre->GetColtype() == COL_CONE_INDEX ){
 		m_colshape = new btConeShape( btScalar( r ), btScalar( h ) );
 		_ASSERT( m_colshape );
-	}else if( curre->m_coltype == COL_SPHERE_INDEX ){
+	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
 		m_colshape = new btSphereShape( btScalar( r ) );
 		_ASSERT( m_colshape );
-	}else if( curre->m_coltype == COL_BOX_INDEX ){
+	}else if( curre->GetColtype() == COL_BOX_INDEX ){
 		m_colshape = new btBoxShape( btVector3( r, h, z ) );
 		_ASSERT( m_colshape );
 	}else{
@@ -190,7 +189,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 //	}
 
 
-	D3DXMATRIX startrot = curre->m_capsulemat;
+	D3DXMATRIX startrot = curre->GetCapsulemat();
 	//m_transmat = startrot;
 
 	startrot._41 = 0.0f;
@@ -280,11 +279,12 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 {
 	dsttra.setIdentity();
 
+
 	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
-	parposA = curbto->m_bone->m_jointfpos;
-	D3DXVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->m_startmat2 );
-	chilposA = curbto->m_endbone->m_jointfpos;
-	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->m_startmat2 );
+	parposA = curbto->m_bone->GetJointFPos();
+	D3DXVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
+	chilposA = curbto->m_endbone->GetJointFPos();
+	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2() );
 
 	D3DXVECTOR2 dirxy, ndirxy;
 	dirxy.x = aftchilposA.x - aftparposA.x;
@@ -398,32 +398,38 @@ int CBtObject::CreateBtConstraint()
 		m_FrameB.setIdentity();
 
 		CRigidElem* tmpre;
-		tmpre = m_bone->m_rigidelem[ m_endbone ];
+		tmpre = m_bone->GetRigidElem( m_endbone );
 		_ASSERT( tmpre );
 		CalcConstraintTransform( 0, tmpre, this, m_FrameA );
-		tmpre = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ];
+		tmpre = chilbto->m_bone->GetRigidElem( chilbto->m_endbone );
 		_ASSERT( tmpre );
 		CalcConstraintTransform( 1, tmpre, chilbto, m_FrameB );
 
 		if( m_rigidbody && chilbto->m_rigidbody ){
 
 DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n", 
-	m_bone->m_wbonename, m_endbone->m_wbonename,
-	chilbto->m_bone->m_wbonename, chilbto->m_endbone->m_wbonename );
+	   m_bone->GetWBoneName(), m_endbone->GetWBoneName(),
+	   chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName() );
 
 			float angPAI2, angPAI;
 			angPAI2 = 90.0f * (float)DEG2PAI;
 			angPAI = 180.0f * (float)DEG2PAI;
 
+			/*
 			float lmax, lmin;
 			lmin = 1.0f;
 			lmax = -1.0f;
+			*/
 
-/***
 			float lmax, lmin;
-			lmin = 0.0f;
-			lmax = 0.0f;
-***/
+			if( g_previewFlag == 4 ){
+				lmin = -0.1f;
+				lmax = 0.1f;
+			}else{
+				lmin = -0.25f;
+				lmax = 0.25f;
+			}
+
 			btGeneric6DofSpringConstraint* dofC;
 			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
 			_ASSERT( dofC );
@@ -447,21 +453,24 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 			dofC->setBreakingImpulseThreshold( FLT_MAX );
 			//dofC->setBreakingImpulseThreshold( 1e9 );
 
-			int l_kindex = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_l_kindex;
-			int a_kindex = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_a_kindex;
-			float l_damping = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_l_damping;
-			float a_damping = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_a_damping;
-			float l_cusk = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_cus_lk;
-			float a_cusk = chilbto->m_bone->m_rigidelem[ chilbto->m_endbone ]->m_cus_ak;
+			int l_kindex = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetLKindex();
+			int a_kindex = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetAKindex();
+			float l_damping = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetLDamping();
+			float a_damping = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetADamping();
+			float l_cusk = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetCusLk();
+			float a_cusk = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetCusAk();
 
 			int dofid;
 			for( dofid = 0; dofid < 3; dofid++ ){
 				dofC->enableSpring( dofid, true );
+				/*
 				if( l_kindex <= 2 ){
 					dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
 				}else{
 					dofC->setStiffness( dofid, l_cusk );
 				}
+				*/
+				dofC->setStiffness( dofid, 1.0e12 );
 				dofC->setDamping( dofid, l_damping );
 			}
 			for( dofid = 3; dofid < 6; dofid++ ){
@@ -477,10 +486,10 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 			dofC->setEquilibriumPoint();
 
 
-			m_constraint.push_back( (btTypedConstraint*)dofC );
+			m_constraint.push_back( dofC );
 			m_btWorld->addConstraint(dofC, true);
 			//m_btWorld->addConstraint(dofC, false);
-			m_dofC = dofC;
+			//m_dofC = dofC;
 		}
 	}
 
@@ -504,50 +513,25 @@ int CBtObject::Motion2Bt()
 		return 0;
 	}
 
-	CRigidElem* curre = m_bone->m_rigidelem[ m_endbone ];
+	CRigidElem* curre = m_bone->GetRigidElem( m_endbone );
 	if( curre ){
-		D3DXMATRIX cpslmat = curre->m_capsulemat;
-
+		D3DXMATRIX cpslmat = curre->GetCapsulemat();
 
 		D3DXMATRIX invfirstworld;
-		D3DXMatrixInverse( &invfirstworld, NULL, &m_bone->m_startmat2 );
+		D3DXMatrixInverse( &invfirstworld, NULL, &m_bone->GetStartMat2() );
 		D3DXMATRIX diffworld;
-		diffworld = invfirstworld * m_bone->m_curmp.m_worldmat;
+		diffworld = invfirstworld * m_bone->GetCurMp().GetWorldMat();
 
-		D3DXMATRIX multmat = curre->m_firstcapsulemat * diffworld;
+		D3DXMATRIX multmat = curre->GetFirstcapsulemat() * diffworld;
 
 
 
 		D3DXVECTOR3 rigidcenter;
 		D3DXVECTOR3 aftcurpos, aftchilpos;
-		D3DXVec3TransformCoord( &aftcurpos, &m_bone->m_jointfpos, &(m_bone->m_curmp.m_worldmat) );
-		D3DXVec3TransformCoord( &aftchilpos, &m_endbone->m_jointfpos, &(m_endbone->m_curmp.m_worldmat) );
+		D3DXVec3TransformCoord( &aftcurpos, &m_bone->GetJointFPos(), &(m_bone->GetCurMp().GetWorldMat()) );
+		D3DXVec3TransformCoord( &aftchilpos, &m_endbone->GetJointFPos(), &(m_endbone->GetCurMp().GetWorldMat()) );
 		rigidcenter = ( aftcurpos + aftchilpos ) * 0.5f;
 
-/***
-		D3DXVECTOR3 rigidcenter;
-		D3DXVECTOR3 zerovec( 0.0f, 0.0f, 0.0f );
-		D3DXVec3TransformCoord( &rigidcenter, &zerovec, &multmat );
-***/
-/***
-		D3DXVECTOR3 rigidcenter;
-		rigidcenter.x = multmat._41;
-		rigidcenter.y = multmat._42;
-		rigidcenter.z = multmat._43;
-***/
-/***
-		D3DXMATRIX newcapsulemat;
-		D3DXMATRIX tmpfirstcap, tmpdiffworld;
-		tmpfirstcap = curre->m_firstcapsulemat;
-		tmpfirstcap._41 = 0.0f;
-		tmpfirstcap._42 = 0.0f;
-		tmpfirstcap._43 = 0.0f;
-		tmpdiffworld = diffworld;
-		tmpdiffworld._41 = 0.0f;
-		tmpdiffworld._42 = 0.0f;
-		tmpdiffworld._43 = 0.0f;
-		newcapsulemat = tmpfirstcap * tmpdiffworld;
-***/
 		D3DXMATRIX newcapsulemat;
 		newcapsulemat = multmat;
 		newcapsulemat._41 = 0.0f;
@@ -571,7 +555,7 @@ int CBtObject::Motion2Bt()
 	return 0;
 }
 
-int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
+int CBtObject::SetBtMotion()
 {
 	if( m_topflag == 1 ){
 		return 0;
@@ -588,11 +572,10 @@ int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
 	btMatrix3x3 worldmat = worldtra.getBasis();
 	btVector3 worldpos = worldtra.getOrigin();
-	btVector3 tmpcol[3];
+	btVector3 tmpcol[3];//行列のカラム表現。
 	int colno;
 	for( colno = 0; colno < 3; colno++ ){
 		tmpcol[colno] = worldmat.getColumn( colno );
-//		tmpcol[colno] = worldmat.getRow( colno );
 	}
 
 	D3DXMATRIX newxworld;
@@ -620,40 +603,36 @@ int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 	D3DXMATRIX diffxworld;
 	diffxworld = invxworld * newxworld;
 
-	D3DXMATRIX invtransmat;
-	D3DXMatrixInverse( &invtransmat, NULL, &m_transmat );
-
+	CMotionPoint curmp;
 	if( m_boneleng > 0.00001f ){
-		//m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * m_par2cen * invtransmat * m_cen2parY * xworld;
-		m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * diffxworld;
+		//ボーンの親と子供が同位置ではない場合。
+		//剛体シミュレーション開始時の行列に、開始時からの変化分を掛ける。
+		curmp = m_bone->GetCurMp();
+		curmp.SetBtMat( m_bone->GetStartMat2() * diffxworld );
+		m_bone->SetCurMp( curmp );
 	}else{
+		//ボーンの親と子供が同位置の場合。
 		if( m_parbt->m_bone ){
-			//m_bone->m_curmp.m_btmat = m_bone->m_parent->m_curmp.m_btmat;
+			//親側ボーンの親ボーンがある場合。
+			//剛体シミュレーション開始時の行列に、親ボーンの変化分を掛ける。
 			D3DXMATRIX invstart;
-			D3DXMatrixInverse( &invstart, NULL, &(m_parbt->m_bone->m_startmat2) );
+			D3DXMatrixInverse( &invstart, NULL, &(m_parbt->m_bone->GetStartMat2()) );
 			D3DXMATRIX diffmat;
-			diffmat = invstart * m_parbt->m_bone->m_curmp.m_btmat;
-			m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * diffmat;
+			diffmat = invstart * m_parbt->m_bone->GetCurMp().GetBtMat();
+			curmp = m_bone->GetCurMp();
+			curmp.SetBtMat( m_bone->GetStartMat2() * diffmat );
+			m_bone->SetCurMp( curmp );
 		}else{
-			m_bone->m_curmp.m_btmat = m_bone->m_startmat2;
+			//剛体シミュレーション行列のままとする。
+			curmp = m_bone->GetCurMp();
+			curmp.SetBtMat( m_bone->GetStartMat2() );
+			m_bone->SetCurMp( curmp );
 		}
-/***
-		if( m_bone->m_parent ){
-			//m_bone->m_curmp.m_btmat = m_bone->m_parent->m_curmp.m_btmat;
-			D3DXMATRIX invstart;
-			D3DXMatrixInverse( &invstart, NULL, &(m_bone->m_parent->m_startmat2) );
-			D3DXMATRIX diffmat;
-			diffmat = invstart * m_bone->m_parent->m_curmp.m_btmat;
-			m_bone->m_curmp.m_btmat = m_bone->m_startmat2 * diffmat;
-		}else{
-			m_bone->m_curmp.m_btmat = m_bone->m_startmat2;
-			_ASSERT( 0 );
-		}
-***/
 	}
 
-	m_bone->m_curmp.m_setbtflag = 1;
-
+	curmp = m_bone->GetCurMp();
+	curmp.SetBtFlag( 1 );
+	m_bone->SetCurMp( curmp );
 
 	return 0;
 }

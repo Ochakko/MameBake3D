@@ -18,6 +18,8 @@ protected:
 	virtual int DestroyObjs();
 
 	int Write2File( char* lpFormat, ... );
+	int WriteVoid2File( void* pvoid, unsigned int srcleng );
+
 
 	int SetBuffer();
 //	int SetBuffer( CPmCipherDll* cipher, int dataindex );
@@ -33,7 +35,8 @@ protected:
 	int GetName( char* dstchar, int dstleng, char* srcchar, int pos, int srcleng );
 
 	int SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBUF* dstbuf, int delpatflag = 1 );
-public:
+
+protected:
 	int m_mode;
 	HANDLE m_hfile;
 	XMLIOBUF m_xmliobuf;

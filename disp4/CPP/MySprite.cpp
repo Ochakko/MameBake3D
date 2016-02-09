@@ -159,17 +159,12 @@ int CMySprite::OnRender( LPDIRECT3DTEXTURE9 ptex )
 	LPDIRECT3DTEXTURE9 disptex = 0;
 	if( ptex == 0 ){
 		if( m_texid >= 0 ){
-			map<int,CTexElem*>::iterator finditr;
-			finditr = g_texbank->m_texmap.find( m_texid );
-			if( finditr != g_texbank->m_texmap.end() ){
-				CTexElem* curte;
-				curte = finditr->second;
-				if( curte ){
-					disptex = curte->m_ptex;
-					_ASSERT( disptex );
-				}else{
-					_ASSERT( 0 );
-				}
+			CTexElem* findtex = g_texbank->GetTexElem( m_texid );
+			if( findtex ){
+				disptex = findtex->GetPTex();
+				_ASSERT( disptex );
+			}else{
+				_ASSERT( 0 );
 			}
 		}else{
 			_ASSERT( 0 );

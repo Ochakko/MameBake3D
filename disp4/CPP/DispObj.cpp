@@ -240,15 +240,15 @@ int CDispObj::CreateVBandIB()
 	CInfBone* pmib;
 	PM3DISPV* pmdv;
 	if( m_pm3 ){
-		pmvleng = m_pm3->m_optleng;
-		pmfleng = m_pm3->m_facenum;
-		pmib = m_pm3->m_infbone;
-		pmdv = m_pm3->m_dispv;
+		pmvleng = m_pm3->GetOptLeng();
+		pmfleng = m_pm3->GetFaceNum();
+		pmib = m_pm3->GetInfBone();
+		pmdv = m_pm3->GetDispV();
 	}else if( m_pm4 ){
-		pmvleng = m_pm4->m_optleng;
-		pmfleng = m_pm4->m_facenum;
+		pmvleng = m_pm4->GetOptLeng();
+		pmfleng = m_pm4->GetFaceNum();
 		pmib = 0;
-		pmdv = m_pm4->m_dispv;
+		pmdv = m_pm4->GetPm3Disp();
 	}
 
 
@@ -301,7 +301,7 @@ int CDispObj::CreateVBandIB()
 			return 1;
 		}
 		if( m_pm4 ){
-			memcpy( pi, m_pm4->m_pm3inf, sizeof( PM3INF ) * pmvleng );
+			memcpy( pi, m_pm4->GetPm3Inf(), sizeof( PM3INF ) * pmvleng );
 		}else{
 			_ASSERT( 0 );
 		}
@@ -315,9 +315,9 @@ int CDispObj::CreateVBandIB()
 		return 1;
 	}
 	if( m_pm3 ){
-		memcpy( pIndices, m_pm3->m_dispindex, m_pm3->m_facenum * 3 * sizeof( int ) );
+		memcpy( pIndices, m_pm3->GetDispIndex(), m_pm3->GetFaceNum() * 3 * sizeof( int ) );
 	}else if( m_pm4 ){
-		memcpy( pIndices, m_pm4->m_dispindex, m_pm4->m_facenum * 3 * sizeof( int ) );
+		memcpy( pIndices, m_pm4->GetDispIndex(), m_pm4->GetFaceNum() * 3 * sizeof( int ) );
 	}
 	m_IB->Unlock();
 
@@ -392,10 +392,11 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 	_ASSERT( curmat );
 
 	D3DXVECTOR4 diffuse;
-	diffuse.w = curmat->dif4f.w * diffusemult.w;
-	diffuse.x = curmat->dif4f.x * diffusemult.x;
-	diffuse.y = curmat->dif4f.y * diffusemult.y;
-	diffuse.z = curmat->dif4f.z * diffusemult.z;
+	D3DXVECTOR4 curdif4f = curmat->GetDif4F();
+	diffuse.w = curdif4f.w * diffusemult.w;
+	diffuse.x = curdif4f.x * diffusemult.x;
+	diffuse.y = curdif4f.y * diffusemult.y;
+	diffuse.z = curdif4f.z * diffusemult.z;
 
 
 	if( diffuse.w <= 0.99999f ){
@@ -408,13 +409,13 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 
 	hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetValue( g_hambient, &(curmat->amb3f), sizeof( D3DXVECTOR3 ) );
+	hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( D3DXVECTOR3 ) );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetValue( g_hspecular, &(curmat->spc3f), sizeof( D3DXVECTOR3 ) );
+	hr = g_pEffect->SetValue( g_hspecular, &(curmat->GetSpc3F()), sizeof( D3DXVECTOR3 ) );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetFloat( g_hpower, curmat->power );
+	hr = g_pEffect->SetFloat( g_hpower, curmat->GetPower() );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetValue( g_hemissive, &(curmat->emi3f), sizeof( D3DXVECTOR3 ) );
+	hr = g_pEffect->SetValue( g_hemissive, &(curmat->GetEmi3F()), sizeof( D3DXVECTOR3 ) );
 	_ASSERT( !hr );
 
 	if( m_hasbone ){
@@ -471,15 +472,13 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 
 	LPDIRECT3DTEXTURE9 disptex = 0;
 
-	if( curmat->m_texid >= 0 ){
-		map<int,CTexElem*>::iterator finditr;
-		finditr = g_texbank->m_texmap.find( curmat->m_texid );
-		if( finditr != g_texbank->m_texmap.end() ){
-			CTexElem* curte;
-			curte = finditr->second;
-			if( curte ){
-				disptex = curte->m_ptex;
-			}
+	if( curmat->GetTexID() >= 0 ){
+		CTexElem* findtex = g_texbank->GetTexElem( curmat->GetTexID() );
+		if( findtex ){
+			disptex = findtex->GetPTex();
+			_ASSERT( disptex );
+		}else{
+			disptex = 0;
 		}
 	}else{
 		disptex = 0;
@@ -512,9 +511,9 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 	}
 	int curnumprim;
 	if( m_pm3 ){
-		curnumprim = m_pm3->m_facenum;
+		curnumprim = m_pm3->GetFaceNum();
 	}else if( m_pm4 ){
-		curnumprim = m_pm4->m_facenum;
+		curnumprim = m_pm4->GetFaceNum();
 	}else{
 		_ASSERT( 0 );
 		return 1;
@@ -533,9 +532,9 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 
 	int rendervnum;
 	if( m_pm3 ){
-		rendervnum = m_pm3->m_optleng;
+		rendervnum = m_pm3->GetOptLeng();
 	}else if( m_pm4 ){
-		rendervnum = m_pm4->m_optleng;
+		rendervnum = m_pm4->GetOptLeng();
 	}
 	hres = m_pdev->DrawIndexedPrimitive( D3DPT_TRIANGLELIST,
 										0,
@@ -566,7 +565,7 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 	if( !m_pm3 ){
 		return 0;
 	}
-	if( m_pm3->m_createoptflag == 0 ){
+	if( m_pm3->GetCreateOptFlag() == 0 ){
 		return 0;
 	}
 
@@ -574,8 +573,8 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 
 	HRESULT hr;
 	int blno;
-	for( blno = 0; blno < m_pm3->m_optmatnum; blno++ ){
-		MATERIALBLOCK* currb = m_pm3->m_matblock + blno;
+	for( blno = 0; blno < m_pm3->GetOptMatNum(); blno++ ){
+		MATERIALBLOCK* currb = m_pm3->GetMatBlock() + blno;
 
 		CMQOMaterial* curmat;
 			curmat = currb->mqomat;
@@ -585,20 +584,21 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 		}
 
 		D3DXVECTOR4 diffuse;
-		diffuse.w = curmat->dif4f.w * diffusemult.w;
-		diffuse.x = curmat->dif4f.x * diffusemult.x;
-		diffuse.y = curmat->dif4f.y * diffusemult.y;
-		diffuse.z = curmat->dif4f.z * diffusemult.z;
+		D3DXVECTOR4 curdif4f = curmat->GetDif4F();
+		diffuse.w = curdif4f.w * diffusemult.w;
+		diffuse.x = curdif4f.x * diffusemult.x;
+		diffuse.y = curdif4f.y * diffusemult.y;
+		diffuse.z = curdif4f.z * diffusemult.z;
 
 		hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetValue( g_hambient, &(curmat->amb3f), sizeof( D3DXVECTOR3 ) );
+		hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( D3DXVECTOR3 ) );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetValue( g_hspecular, &(curmat->spc3f), sizeof( D3DXVECTOR3 ) );
+		hr = g_pEffect->SetValue( g_hspecular, &(curmat->GetSpc3F()), sizeof( D3DXVECTOR3 ) );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetFloat( g_hpower, curmat->power );
+		hr = g_pEffect->SetFloat( g_hpower, curmat->GetPower() );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetValue( g_hemissive, &(curmat->emi3f), sizeof( D3DXVECTOR3 ) );
+		hr = g_pEffect->SetValue( g_hemissive, &(curmat->GetEmi3F()), sizeof( D3DXVECTOR3 ) );
 		_ASSERT( !hr );
 
 
@@ -688,15 +688,12 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 
 
 		LPDIRECT3DTEXTURE9 disptex = 0;
-		if( curmat->m_texid >= 0 ){
-			map<int,CTexElem*>::iterator finditr;
-			finditr = g_texbank->m_texmap.find( curmat->m_texid );
-			if( finditr != g_texbank->m_texmap.end() ){
-				CTexElem* curte;
-				curte = finditr->second;
-				if( curte ){
-					disptex = curte->m_ptex;
-				}
+		if( curmat->GetTexID() >= 0 ){
+			CTexElem* findtex = g_texbank->GetTexElem( curmat->GetTexID() );
+			if( findtex ){
+				disptex = findtex->GetPTex();
+			}else{
+				disptex = 0;
 			}
 		}else{
 			disptex = 0;
@@ -742,7 +739,7 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 		hres = m_pdev->DrawIndexedPrimitive( D3DPT_TRIANGLELIST,
 											0,
 											0,
-											m_pm3->m_optleng,
+											m_pm3->GetOptLeng(),
 											currb->startface * 3,
 											curnumprim
 											);
@@ -833,19 +830,19 @@ int CDispObj::CopyDispV( CPolyMesh4* pm4 )
 {
 	m_pm4 = pm4;
 
-	if( !m_VB || !pm4->m_dispv ){
+	if( !m_VB || !pm4->GetPm3Disp() ){
 		_ASSERT( 0 );
 		return 1;
 	}
 
 	HRESULT hr;
 	PM3DISPV* pv;
-	hr = m_VB->Lock( 0, sizeof( PM3DISPV ) * m_pm4->m_optleng, (void**)&pv, 0 );
+	hr = m_VB->Lock( 0, sizeof( PM3DISPV ) * m_pm4->GetOptLeng(), (void**)&pv, 0 );
 	if( FAILED(hr) ){
 		_ASSERT( 0 );
 		return 1;
 	}
-	memcpy( pv, m_pm4->m_dispv, sizeof( PM3DISPV ) * m_pm4->m_optleng );
+	memcpy( pv, m_pm4->GetPm3Disp(), sizeof( PM3DISPV ) * m_pm4->GetOptLeng() );
 	m_VB->Unlock();
 
 	return 0;
@@ -856,19 +853,19 @@ int CDispObj::CopyDispV( CPolyMesh3* pm3 )
 
 	m_pm3 = pm3;
 
-	if( !m_VB || !pm3->m_dispv ){
+	if( !m_VB || !pm3->GetDispV() ){
 		_ASSERT( 0 );
 		return 1;
 	}
 
 	HRESULT hr;
 	PM3DISPV* pv;
-	hr = m_VB->Lock( 0, sizeof( PM3DISPV ) * m_pm3->m_optleng, (void**)&pv, 0 );
+	hr = m_VB->Lock( 0, sizeof( PM3DISPV ) * m_pm3->GetOptLeng(), (void**)&pv, 0 );
 	if( FAILED(hr) ){
 		_ASSERT( 0 );
 		return 1;
 	}
-	memcpy( pv, m_pm3->m_dispv, sizeof( PM3DISPV ) * m_pm3->m_optleng );
+	memcpy( pv, m_pm3->GetDispV(), sizeof( PM3DISPV ) * m_pm3->GetOptLeng() );
 	m_VB->Unlock();
 
 	return 0;

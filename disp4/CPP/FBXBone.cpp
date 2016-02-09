@@ -29,12 +29,12 @@ CFBXBone::~CFBXBone()
 
 int CFBXBone::InitParams()
 {
-	type = FB_NORMAL;
-	bone = 0;
-	pbe = 0;
-	skelnode = 0;
-	bunkinum = 0;
-	axisq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
+	m_type = FB_NORMAL;
+	m_bone = 0;
+	m_pbe = 0;
+	m_skelnode = 0;
+	m_bunkinum = 0;
+	m_axisq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 
 	m_parent = 0;
 	m_child = 0;

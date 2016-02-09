@@ -71,8 +71,14 @@ private:
 	int Write2File( char* lpFormat, ... );
 	int WriteTab( int tabnum );
 
-
 public:
+	//accesser
+	CBVHElem* GetBVHElem(){
+		return m_behead;
+	};
+
+
+private:
 	//file‘€ì—p
 	HANDLE m_hfile;
 	char* m_buf;

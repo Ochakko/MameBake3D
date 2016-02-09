@@ -97,7 +97,8 @@ int CTexElem::CreateTexData( LPDIRECT3DDEVICE9 pdev )
 			_ASSERT( 0 );
 		}
 	}else{
-//		_ASSERT( 0 );
+		DbgOut( L"TexElem : CreateTexData : CreateTextureFromFileEx error!!! %x, path : %s, name : %s\r\n", hr, m_path, m_name );
+		//_ASSERT( 0 );
 		m_ptex = 0;
 		return 0;
 	}

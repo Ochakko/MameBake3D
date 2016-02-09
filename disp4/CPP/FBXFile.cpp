@@ -257,7 +257,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
 int BVH2FBXFile( FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename )
 {
 	s_bvhflag = 1;
-	s_behead = pbvhfile->m_behead;
+	s_behead = pbvhfile->GetBVHElem();
 
 	s_pSdkManager = psdk;
 
@@ -369,7 +369,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
     FbxNode* lRootNode = pScene->GetRootNode();
 
 	s_fbxbone = CreateFBXBoneOfBVH( pScene );
-	lRootNode->AddChild( s_fbxbone->skelnode );
+	lRootNode->AddChild( s_fbxbone->GetSkelNode() );
 	if( !s_fbxbone ){
 		_ASSERT( 0 );
 		return 0;
@@ -438,7 +438,7 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
     FbxNode* lRootNode = pScene->GetRootNode();
 
 	s_fbxbone = CreateFBXBone(pScene, pmodel);
-	lRootNode->AddChild( s_fbxbone->skelnode );
+	lRootNode->AddChild( s_fbxbone->GetSkelNode() );
 	if( !s_fbxbone ){
 		_ASSERT( 0 );
 		return 0;
@@ -448,10 +448,10 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 	ZeroMemory( &blsindex, sizeof( BLSINDEX ) );
 	s_blsinfo.clear();
 	map<int,CMQOObject*>::iterator itrobj;
-	for( itrobj = pmodel->m_object.begin(); itrobj != pmodel->m_object.end(); itrobj++ ){
+	for( itrobj = pmodel->GetMqoObjectBegin(); itrobj != pmodel->GetMqoObjectEnd(); itrobj++ ){
 		CMQOObject* curobj = itrobj->second;
 		FbxNode* lMesh = CreateFbxMesh( pSdkManager, pScene, pmodel, curobj );
-		if( !(curobj->m_findshape.empty()) ){
+		if( !(curobj->EmptyFindShape()) ){
 			MapShapesOnMesh( pScene, lMesh, pmodel, curobj, &blsindex );
 		}
 		lRootNode->AddChild(lMesh);
@@ -492,19 +492,19 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, D3DXVECTOR3* targetv, int targetcnt )
 {
 	char shapename[256]={0};
-	sprintf_s( shapename, 256, "SHAPE_%s_%d", curobj->m_engname, targetcnt );
+	sprintf_s( shapename, 256, "SHAPE_%s_%d", curobj->GetEngName(), targetcnt );
     FbxShape* lShape = FbxShape::Create(pScene,shapename);
 
-	CPolyMesh4* basepm4 = curobj->m_pm4;
+	CPolyMesh4* basepm4 = curobj->GetPm4();
 	_ASSERT( basepm4 );
 
-	int shapevertnum = basepm4->m_facenum * 3;
+	int shapevertnum = basepm4->GetFaceNum() * 3;
 	lShape->InitControlPoints( shapevertnum );
     FbxVector4* lVector4 = lShape->GetControlPoints();
 
 	int shapevno;
 	for( shapevno = 0; shapevno < shapevertnum; shapevno++ ){
-		int orgvno = *( basepm4->m_dispindex + shapevno );
+		int orgvno = *( basepm4->GetDispIndex() + shapevno );
 
 		D3DXVECTOR3 shapev = *( targetv + orgvno );
 		lVector4[ shapevno ].Set( shapev.x, shapev.y, shapev.z, 1.0 );
@@ -518,14 +518,16 @@ int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObjec
 {
 	char blsname[256] = {0};
 	int mbno = 0;//mqo‚Å‚Â‚©‚¤
-	sprintf_s( blsname, 256, "BLS_%s_%d", curobj->m_engname, mbno );
+	sprintf_s( blsname, 256, "BLS_%s_%d", curobj->GetEngName(), mbno );
 	FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, blsname);
 
 	(blsindex->channelno) = 0;
 
 	int targetcnt = 0;
+	map<string,D3DXVECTOR3*> tmpmap;
+	curobj->GetShapeVert2( tmpmap );
 	map<string,D3DXVECTOR3*>::iterator itrshapev;
-	for( itrshapev = curobj->m_shapevert.begin(); itrshapev != curobj->m_shapevert.end(); itrshapev++ ){
+	for( itrshapev = tmpmap.begin(); itrshapev != tmpmap.end(); itrshapev++ ){
 		string targetname = itrshapev->first;
 		D3DXVECTOR3* curv = itrshapev->second;
 		if( curv ){
@@ -564,14 +566,14 @@ int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObjec
 
 FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj)
 {
-	CPolyMesh4* pm4 = curobj->m_pm4;
+	CPolyMesh4* pm4 = curobj->GetPm4();
 	_ASSERT( pm4 );
-	CMQOMaterial* mqomat = curobj->m_material.begin()->second;
+	CMQOMaterial* mqomat = curobj->GetMaterialBegin()->second;
 	_ASSERT( mqomat );
 	char meshname[256] = {0};
 
-	sprintf_s( meshname, 256, "%s", curobj->m_engname );
-	int facenum = pm4->m_facenum;
+	sprintf_s( meshname, 256, "%s", curobj->GetEngName() );
+	int facenum = pm4->GetFaceNum();
 
 	FbxMesh* lMesh = FbxMesh::Create( pScene, meshname );
 	lMesh->InitControlPoints( facenum * 3 );
@@ -586,12 +588,12 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
 	lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
 
-	_ASSERT( pm4->m_dispv );
+	_ASSERT( pm4->GetPm3Disp() );
 
 	int vsetno = 0;
 	int faceno;
 	for( faceno = 0; faceno < facenum; faceno++ ){
-		PM3DISPV* curdispv = pm4->m_dispv + faceno * 3;
+		PM3DISPV* curdispv = pm4->GetPm3Disp() + faceno * 3;
 		int vcnt;
 		for( vcnt = 0; vcnt < 3; vcnt++ ){
 			//PM3DISPV* curv = curdispv + vcnt;
@@ -648,25 +650,25 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	s_matcnt++;
 
 	char matname[256];
-	sprintf_s( matname, 256, "%s_%d", mqomat->name, s_matcnt );
+	sprintf_s( matname, 256, "%s_%d", mqomat->GetName(), s_matcnt );
 	//FbxString lMaterialName = mqomat->name;
 	FbxString lMaterialName = matname;
 	FbxString lShadingName  = "Phong";
 	FbxSurfacePhong* lMaterial = FbxSurfacePhong::Create( pScene, lMaterialName.Buffer() );
 
-	lMaterial->Diffuse.Set(FbxDouble3(mqomat->dif4f.x, mqomat->dif4f.y, mqomat->dif4f.z));
-    lMaterial->Emissive.Set(FbxDouble3(mqomat->emi3f.x, mqomat->emi3f.y, mqomat->emi3f.z));
-    lMaterial->Ambient.Set(FbxDouble3(mqomat->amb3f.x, mqomat->amb3f.y, mqomat->amb3f.z));
+	lMaterial->Diffuse.Set(FbxDouble3(mqomat->GetDif4F().x, mqomat->GetDif4F().y, mqomat->GetDif4F().z));
+    lMaterial->Emissive.Set(FbxDouble3(mqomat->GetEmi3F().x, mqomat->GetEmi3F().y, mqomat->GetEmi3F().z));
+    lMaterial->Ambient.Set(FbxDouble3(mqomat->GetAmb3F().x, mqomat->GetAmb3F().y, mqomat->GetAmb3F().z));
     lMaterial->AmbientFactor.Set(1.0);
 	FbxTexture* curtex = CreateTexture(pSdkManager, mqomat);
 	if( curtex ){
 		lMaterial->Diffuse.ConnectSrcObject( curtex );
 	}
     lMaterial->DiffuseFactor.Set(1.0);
-    lMaterial->TransparencyFactor.Set(mqomat->dif4f.w);
+    lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
     lMaterial->ShadingModel.Set(lShadingName);
     lMaterial->Shininess.Set(0.5);
-    lMaterial->Specular.Set(FbxDouble3(mqomat->spc3f.x, mqomat->spc3f.y, mqomat->spc3f.z));
+    lMaterial->Specular.Set(FbxDouble3(mqomat->GetSpc3F().x, mqomat->GetSpc3F().y, mqomat->GetSpc3F().z));
     lMaterial->SpecularFactor.Set(0.3);
 
 	lNode->AddMaterial(lMaterial);
@@ -682,17 +684,17 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 
 FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
 {
-	if( !mqomat->tex[0] ){
+	if( !*(mqomat->GetTex()) ){
 		return NULL;
 	}
 
     FbxFileTexture* lTexture = FbxFileTexture::Create(pSdkManager,"");
-    FbxString lTexPath = mqomat->tex;
+    FbxString lTexPath = mqomat->GetTex();
 
     // Set texture properties.
     lTexture->SetFileName(lTexPath.Buffer());
     //lTexture->SetName("Diffuse Texture");
-	lTexture->SetName(mqomat->tex);
+	lTexture->SetName(mqomat->GetTex());
     lTexture->SetTextureUse(FbxTexture::eStandard);
     lTexture->SetMappingType(FbxTexture::eUV);
     lTexture->SetMaterialUse(FbxFileTexture::eModelMaterial);
@@ -710,24 +712,24 @@ FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
 
 void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CModel* pmodel )
 {
-	CPolyMesh4* pm4 = curobj->m_pm4;
+	CPolyMesh4* pm4 = curobj->GetPm4();
 	_ASSERT( pm4 );
     FbxGeometry* lMeshAttribute = (FbxGeometry*)pMesh->GetNodeAttribute();
 	FbxAMatrix lXMatrix;
     FbxNode* lSkel;
 
-	if( fbxbone->type == FB_NORMAL ){
-		CBone* curbone = fbxbone->bone;
+	if( fbxbone->GetType() == FB_NORMAL ){
+		CBone* curbone = fbxbone->GetBone();
 
 		if( curbone ){
-			lSkel = fbxbone->skelnode;
+			lSkel = fbxbone->GetSkelNode();
 			if( !lSkel ){
 				_ASSERT( 0 );
 				return;
 			}
 
 			int curclusterno = -1;
-			int infdirty = ExistBoneInInf( curbone->m_boneno, curobj, &curclusterno );
+			int infdirty = ExistBoneInInf( curbone->GetBoneNo(), curobj, &curclusterno );
 
 			if( infdirty ){
 				FbxCluster *lCluster = FbxCluster::Create(pScene,"");
@@ -736,12 +738,12 @@ void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene,
 
 				int vsetno = 0;
 				int fno;
-				for( fno = 0; fno < pm4->m_facenum; fno++ ){
+				for( fno = 0; fno < pm4->GetFaceNum(); fno++ ){
 					int vcnt;
 					for( vcnt = 0; vcnt < 3; vcnt++ ){
-						int orgvno = *( pm4->m_orgindex + fno * 3 + s_invindex[vcnt] );
-						if( (orgvno >= 0) && (orgvno < pm4->m_orgpointnum) ){
-							CInfBone* curib = pm4->m_infbone + orgvno;
+						int orgvno = *( pm4->GetOrgIndex() + fno * 3 + s_invindex[vcnt] );
+						if( (orgvno >= 0) && (orgvno < pm4->GetOrgPointNum()) ){
+							CInfBone* curib = pm4->GetInfBone() + orgvno;
 							int ieno = curib->ExistBone( curobj, curclusterno );
 							if( ieno >= 0 ){
 								INFDATA* infd = curib->m_infdata[ curobj ];
@@ -781,7 +783,7 @@ void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene,
 
 				D3DXQUATERNION xq;
 				D3DXQuaternionRotationMatrix( &xq, &xmat );
-				fbxbone->axisq.SetParams( xq );
+				fbxbone->GetAxisQ().SetParams( xq );
 
 				//lXMatrix.SetIdentity();
 				//lXMatrix[3][0] = -curbone->m_vertpos[BT_PARENT].x;
@@ -799,11 +801,11 @@ void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene,
 		}
 	}
 
-	if( fbxbone->m_child ){
-		LinkMeshToSkeletonReq(fbxbone->m_child, lSkin, pScene, pMesh, curobj, pmodel);
+	if( fbxbone->GetChild() ){
+		LinkMeshToSkeletonReq(fbxbone->GetChild(), lSkin, pScene, pMesh, curobj, pmodel);
 	}
-	if( fbxbone->m_brother ){
-		LinkMeshToSkeletonReq(fbxbone->m_brother, lSkin, pScene, pMesh, curobj, pmodel);
+	if( fbxbone->GetBrother() ){
+		LinkMeshToSkeletonReq(fbxbone->GetBrother(), lSkin, pScene, pMesh, curobj, pmodel);
 	}
 
 }
@@ -841,11 +843,11 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 //	if( (fbxbone->type == FB_NORMAL) || (fbxbone->type == FB_ROOT) ){
 	if( 1 ){
-		CBVHElem* curbe = fbxbone->pbe;
+		CBVHElem* curbe = fbxbone->GetBvhElem();
 		_ASSERT( curbe );
 		if( curbe ){
 
-			lSkel = fbxbone->skelnode;
+			lSkel = fbxbone->GetSkelNode();
 			if( !lSkel ){
 				_ASSERT( 0 );
 				return;
@@ -881,24 +883,23 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 
 			int frameno;
-			CMotionPoint* calcmp;
 			D3DXVECTOR3 difftra, orgtra, settra;
-			CBVHElem* parbe = curbe->parent;
+			CBVHElem* parbe = curbe->GetParent();
 			if( parbe ){
-				if( parbe == s_fbxbone->pbe ){
-					orgtra = curbe->position;
+				if( parbe == s_fbxbone->GetBvhElem() ){
+					orgtra = curbe->GetPosition();
 				}else{
-					orgtra = curbe->position - parbe->position;
+					orgtra = curbe->GetPosition() - parbe->GetPosition();
 				}
 			}else{
-				orgtra = curbe->position - s_fbxbone->pbe->position;
+				orgtra = curbe->GetPosition() - s_fbxbone->GetBvhElem()->GetPosition();
 				topflag = 1;
 			}
 
 
 			lCurveTX = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 			lCurveTX->KeyModifyBegin();
-			for( frameno = 0; frameno <= curbe->framenum; frameno++ ){
+			for( frameno = 0; frameno <= curbe->GetFrameNum(); frameno++ ){
 				curbe->CalcDiffTra( frameno, &difftra );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveTX->KeyAdd( lTime );
@@ -909,7 +910,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 			lCurveTY = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 			lCurveTY->KeyModifyBegin();
-			for( frameno = 0; frameno <= curbe->framenum; frameno++ ){
+			for( frameno = 0; frameno <= curbe->GetFrameNum(); frameno++ ){
 				curbe->CalcDiffTra( frameno, &difftra );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveTY->KeyAdd( lTime );
@@ -920,7 +921,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 			lCurveTZ = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 			lCurveTZ->KeyModifyBegin();
-			for( frameno = 0; frameno <= curbe->framenum; frameno++ ){
+			for( frameno = 0; frameno <= curbe->GetFrameNum(); frameno++ ){
 				curbe->CalcDiffTra( frameno, &difftra );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveTZ->KeyAdd( lTime );
@@ -938,7 +939,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 			float diffval;
 
 
-			befval = (curbe->rotate + 1)->x;
+			befval = (curbe->GetRotate() + 1)->x;
 			curval = befval;
 
 			FbxAnimCurve* lCurveRX;
@@ -946,13 +947,13 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 			lCurveRX = lSkel->LclRotation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 			lCurveRX->KeyModifyBegin();
 			befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-			for( frameno = 0; frameno <= curbe->framenum; frameno++ ){
+			for( frameno = 0; frameno <= curbe->GetFrameNum(); frameno++ ){
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveRX->KeyAdd( lTime );
 
-				diffval = (curbe->rotate + frameno)->x - befval;
+				diffval = (curbe->GetRotate() + frameno)->x - befval;
 				if( fabs( diffval ) <= 30.0 ){
-					curval = (curbe->rotate + frameno)->x;
+					curval = (curbe->GetRotate() + frameno)->x;
 				}else{
 					curval = befval;
 				}
@@ -966,19 +967,19 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 			lCurveRX->KeyModifyEnd();
 
 
-			befval = (curbe->rotate + 1)->y;
+			befval = (curbe->GetRotate() + 1)->y;
 			curval = befval;
 			FbxAnimCurve* lCurveRY;
 //			lCurveRY = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Y", true);
 			lCurveRY = lSkel->LclRotation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 			lCurveRY->KeyModifyBegin();
 			befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-			for( frameno = 0; frameno <= curbe->framenum; frameno++ ){
+			for( frameno = 0; frameno <= curbe->GetFrameNum(); frameno++ ){
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveRY->KeyAdd( lTime );
-				diffval = (curbe->rotate + frameno)->y - befval;
+				diffval = (curbe->GetRotate() + frameno)->y - befval;
 				if( fabs( diffval ) <= 30.0 ){
-					curval = (curbe->rotate + frameno)->y;
+					curval = (curbe->GetRotate() + frameno)->y;
 				}else{
 					curval = befval;
 				}
@@ -992,19 +993,19 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 			lCurveRY->KeyModifyEnd();
 ///////////////
 
-			befval = (curbe->rotate + 1)->z;
+			befval = (curbe->GetRotate() + 1)->z;
 			curval = befval;
 			FbxAnimCurve* lCurveRZ;
 //			lCurveRZ = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Z", true);
 			lCurveRZ = lSkel->LclRotation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 			lCurveRZ->KeyModifyBegin();
 			befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-			for( frameno = 0; frameno <= curbe->framenum; frameno++ ){
+			for( frameno = 0; frameno <= curbe->GetFrameNum(); frameno++ ){
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveRZ->KeyAdd( lTime );
-				diffval = (curbe->rotate + frameno)->z - befval;
+				diffval = (curbe->GetRotate() + frameno)->z - befval;
 				if( fabs( diffval ) <= 30.0 ){
-					curval = (curbe->rotate + frameno)->z;
+					curval = (curbe->GetRotate() + frameno)->z;
 				}else{
 					curval = befval;
 				}
@@ -1021,11 +1022,11 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 		}
 	}
 
-	if( fbxbone->m_child ){
-		AnimateBoneOfBVHReq( fbxbone->m_child, lAnimLayer );
+	if( fbxbone->GetChild() ){
+		AnimateBoneOfBVHReq( fbxbone->GetChild(), lAnimLayer );
 	}
-	if( fbxbone->m_brother ){
-		AnimateBoneOfBVHReq( fbxbone->m_brother, lAnimLayer );
+	if( fbxbone->GetBrother() ){
+		AnimateBoneOfBVHReq( fbxbone->GetBrother(), lAnimLayer );
 	}
 
 }
@@ -1038,7 +1039,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
     FbxTime lTime;
     int lKeyIndex = 0;
 
-	int motionnum = pmodel->m_motinfo.size();
+	int motionnum = pmodel->GetMotInfoSize();
 	if( motionnum <= 0 ){
 		return;
 	}
@@ -1053,7 +1054,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 	int aino = 0;
 	map<int, MOTINFO*>::iterator itrmi;
-	for( itrmi = pmodel->m_motinfo.begin(); itrmi != pmodel->m_motinfo.end(); itrmi++ ){
+	for( itrmi = pmodel->GetMotInfoBegin(); itrmi != pmodel->GetMotInfoEnd(); itrmi++ ){
 		MOTINFO* curmi = itrmi->second;
 		(s_ai + aino)->motid = curmi->motid;
 		(s_ai + aino)->orgindex = aino;
@@ -1103,11 +1104,11 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 
 //	if( (fbxbone->type == FB_NORMAL) || (fbxbone->type == FB_ROOT) ){
 	if( 1 ){
-		CBone* curbone = fbxbone->bone;
+		CBone* curbone = fbxbone->GetBone();
 		_ASSERT( curbone );
 		if( curbone ){
 
-			lSkel = fbxbone->skelnode;
+			lSkel = fbxbone->GetSkelNode();
 			if( !lSkel ){
 				_ASSERT( 0 );
 				return;
@@ -1215,34 +1216,30 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			}
 ***/
 			int frameno;
-			CMotionPoint* calcmp;
 			D3DXVECTOR3 orgtra, settra;
-			CBone* parbone = curbone->m_parent;
+			CBone* parbone = curbone->GetParent();
 			if( parbone ){
-				if( parbone == s_fbxbone->bone ){
-					orgtra = curbone->m_jointfpos;
+				if( parbone == s_fbxbone->GetBone() ){
+					orgtra = curbone->GetJointFPos();
 				}else{
-					orgtra = curbone->m_jointfpos - parbone->m_jointfpos;
+					orgtra = curbone->GetJointFPos() - parbone->GetJointFPos();
 				}
 			}else{
-				orgtra = curbone->m_jointfpos - s_fbxbone->bone->m_jointfpos;
+				orgtra = curbone->GetJointFPos() - s_fbxbone->GetBone()->GetJointFPos();
 				topflag = 1;
 			}
 
 
+			CMotionPoint tmpmp2;
 			D3DXVECTOR3 difftra;
 
 			lCurveTX = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 			lCurveTX->KeyModifyBegin();
 			for( frameno = 0; frameno <= maxframe; frameno++ ){
-				curbone->CalcLocalInfo( curmotid, (double)frameno, &calcmp );
-				if( !calcmp ){
-					_ASSERT( 0 );
-					break;
-				}
+				curbone->CalcLocalInfo( curmotid, (double)frameno, &tmpmp2 );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveTX->KeyAdd( lTime );
-				lCurveTX->KeySetValue( lKeyIndex, calcmp->m_tra.x + orgtra.x );
+				lCurveTX->KeySetValue( lKeyIndex, tmpmp2.GetTra().x + orgtra.x );
 				lCurveTX->KeySetInterpolation( lKeyIndex, FbxAnimCurveDef::eInterpolationLinear );
 			}
 			lCurveTX->KeyModifyEnd();
@@ -1250,14 +1247,10 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			lCurveTY = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 			lCurveTY->KeyModifyBegin();
 			for( frameno = 0; frameno <= maxframe; frameno++ ){
-				curbone->CalcLocalInfo( curmotid, (double)frameno, &calcmp );
-				if( !calcmp ){
-					_ASSERT( 0 );
-					break;
-				}
+				curbone->CalcLocalInfo( curmotid, (double)frameno, &tmpmp2 );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveTY->KeyAdd( lTime );
-				lCurveTY->KeySetValue(lKeyIndex, calcmp->m_tra.y + orgtra.y);
+				lCurveTY->KeySetValue(lKeyIndex, tmpmp2.GetTra().y + orgtra.y);
 				lCurveTY->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
 			}
 			lCurveTY->KeyModifyEnd();
@@ -1265,14 +1258,10 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			lCurveTZ = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 			lCurveTZ->KeyModifyBegin();
 			for( frameno = 0; frameno <= maxframe; frameno++ ){
-				curbone->CalcLocalInfo( curmotid, (double)frameno, &calcmp );
-				if( !calcmp ){
-					_ASSERT( 0 );
-					break;
-				}
+				curbone->CalcLocalInfo( curmotid, (double)frameno, &tmpmp2 );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveTZ->KeyAdd( lTime );
-				lCurveTZ->KeySetValue(lKeyIndex, calcmp->m_tra.z + orgtra.z);
+				lCurveTZ->KeySetValue(lKeyIndex, tmpmp2.GetTra().z + orgtra.z);
 				lCurveTZ->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
 			}
 			lCurveTZ->KeyModifyEnd();
@@ -1287,13 +1276,9 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			lCurveRZ->KeyModifyBegin();
 			befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 			for( frameno = 0; frameno <= maxframe; frameno++ ){
-				curbone->CalcLocalInfo( curmotid, (double)frameno, &calcmp );
-				if( !calcmp ){
-					_ASSERT( 0 );
-					break;
-				}
+				curbone->CalcLocalInfo( curmotid, (double)frameno, &tmpmp2 );
 
-				calcmp->m_q.CalcFBXEul( 0, befeul, &cureul );
+				tmpmp2.GetQ().CalcFBXEul( 0, befeul, &cureul );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveRZ->KeyAdd( lTime );
 				lCurveRZ->KeySetValue(lKeyIndex, cureul.z);
@@ -1309,12 +1294,8 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			lCurveRX->KeyModifyBegin();
 			befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 			for( frameno = 0; frameno <= maxframe; frameno++ ){
-				curbone->CalcLocalInfo( curmotid, (double)frameno, &calcmp );
-				if( !calcmp ){
-					_ASSERT( 0 );
-					break;
-				}
-				calcmp->m_q.CalcFBXEul( 0, befeul, &cureul );
+				curbone->CalcLocalInfo( curmotid, (double)frameno, &tmpmp2 );
+				tmpmp2.GetQ().CalcFBXEul( 0, befeul, &cureul );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveRX->KeyAdd( lTime );
 				lCurveRX->KeySetValue(lKeyIndex, cureul.x);
@@ -1330,12 +1311,8 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			lCurveRY->KeyModifyBegin();
 			befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 			for( frameno = 0; frameno <= maxframe; frameno++ ){
-				curbone->CalcLocalInfo( curmotid, (double)frameno, &calcmp );
-				if( !calcmp ){
-					_ASSERT( 0 );
-					break;
-				}
-				calcmp->m_q.CalcFBXEul( 0, befeul, &cureul );
+				curbone->CalcLocalInfo( curmotid, (double)frameno, &tmpmp2 );
+				tmpmp2.GetQ().CalcFBXEul( 0, befeul, &cureul );
 				lTime.SetSecondDouble( (double)frameno / timescale );
 				lKeyIndex = lCurveRY->KeyAdd( lTime );
 				lCurveRY->KeySetValue(lKeyIndex, cureul.y);
@@ -1350,11 +1327,11 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 		}
 	}
 
-	if( fbxbone->m_child ){
-		AnimateBoneReq( fbxbone->m_child, lAnimLayer, curmotid, maxframe );
+	if( fbxbone->GetChild() ){
+		AnimateBoneReq( fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
 	}
-	if( fbxbone->m_brother ){
-		AnimateBoneReq( fbxbone->m_brother, lAnimLayer, curmotid, maxframe );
+	if( fbxbone->GetBrother() ){
+		AnimateBoneReq( fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
 	}
 }
 
@@ -1435,19 +1412,19 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 	FbxTime lTime0;
 	lTime0.SetSecondDouble( 0.0 );
 	
-	if( fbxbone->type != FB_ROOT ){
-		FbxNode* curskel = fbxbone->skelnode;
+	if( fbxbone->GetType() != FB_ROOT ){
+		FbxNode* curskel = fbxbone->GetSkelNode();
 		if( curskel ){
 			FbxAMatrix lBindMatrix = curskel->EvaluateGlobalTransform( lTime0 );
 			lPose->Add(curskel, lBindMatrix);
 		}
 	}
 
-	if( fbxbone->m_child ){
-		WriteBindPoseReq( fbxbone->m_child, lPose );
+	if( fbxbone->GetChild() ){
+		WriteBindPoseReq( fbxbone->GetChild(), lPose );
 	}
-	if( fbxbone->m_brother ){
-		WriteBindPoseReq( fbxbone->m_brother, lPose );
+	if( fbxbone->GetBrother() ){
+		WriteBindPoseReq( fbxbone->GetBrother(), lPose );
 	}
 }
 
@@ -1533,7 +1510,7 @@ int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno )
 {
 	*dstclusterno = -1;
 
-	CPolyMesh4* pm4 = srcobj->m_pm4;
+	CPolyMesh4* pm4 = srcobj->GetPm4();
 	_ASSERT( pm4 );
 
 	int dirtyflag = 0;
@@ -1541,10 +1518,10 @@ int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno )
 	int clusterno = -1;
 	CBone* chkbone;
 	int clno;
-	for( clno = 0; clno < srcobj->m_cluster.size(); clno++ ){
-		chkbone = srcobj->m_cluster[ clno ];
+	for( clno = 0; clno < srcobj->GetClusterSize(); clno++ ){
+		chkbone = srcobj->GetCluster( clno );
 		if( chkbone ){
-			if( chkbone->m_boneno == boneno ){
+			if( chkbone->GetBoneNo() == boneno ){
 				clusterno = clno;
 				break;
 			}
@@ -1558,8 +1535,8 @@ int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno )
 	*dstclusterno = clusterno;
 
 	int vno;
-	for( vno = 0; vno < pm4->m_orgpointnum; vno++ ){
-		CInfBone* curib = pm4->m_infbone + vno;
+	for( vno = 0; vno < pm4->GetOrgPointNum(); vno++ ){
+		CInfBone* curib = pm4->GetInfBone() + vno;
 		int ieno = curib->ExistBone( srcobj, clusterno );
 		if( ieno >= 0 ){
 			dirtyflag = 1;
@@ -1593,12 +1570,12 @@ int AnimateMorph(FbxScene* pScene, CModel* pmodel)
 		int curmotid = curai->motid;
 		int maxframe = curai->maxframe;
 
-		FbxAnimStack * lCurrentAnimationStack = pmodel->m_pscene->FindMember<FbxAnimStack>(pmodel->mAnimStackNameArray[curai->orgindex]->Buffer());
+		FbxAnimStack * lCurrentAnimationStack = pmodel->GetScene()->FindMember<FbxAnimStack>(pmodel->GetAnimStackName( curai->orgindex )->Buffer());
 		if (lCurrentAnimationStack == NULL){
 			_ASSERT( 0 );
 			return 1;
 		}
-		pmodel->m_pscene->GetEvaluator()->SetContext(lCurrentAnimationStack);
+		pmodel->GetScene()->GetEvaluator()->SetContext(lCurrentAnimationStack);
 
 
 		FbxAnimLayer* ldstAnimLayer = curai->animlayer;
@@ -1645,27 +1622,27 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 	}
 
 	FbxNode* lSkeletonNode;
-	FbxString lNodeName( s_behead->name );
+	FbxString lNodeName( s_behead->GetName() );
 	FbxSkeleton* lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
 	lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eRoot);
 	lSkeletonNode = FbxNode::Create(pScene,lNodeName.Buffer());
 	lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
-	lSkeletonNode->LclTranslation.Set(FbxVector4(s_behead->position.x, s_behead->position.y, s_behead->position.z));
+	lSkeletonNode->LclTranslation.Set(FbxVector4(s_behead->GetPosition().x, s_behead->GetPosition().y, s_behead->GetPosition().z));
 
 	CFBXBone* fbxbone = new CFBXBone();
 	if( !fbxbone ){
 		_ASSERT( 0 );
 		return 0;
 	}
-	fbxbone->type = FB_ROOT;
-	fbxbone->bone = 0;
-	fbxbone->pbe = s_behead;
-	fbxbone->skelnode = lSkeletonNode;
+	fbxbone->SetType( FB_ROOT );
+	fbxbone->SetBone( 0 );
+	fbxbone->SetBvhElem( s_behead );
+	fbxbone->SetSkelNode( lSkeletonNode );
 
 	s_fbxbone = fbxbone;//!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	if( s_behead->child ){
-		CreateFBXBoneOfBVHReq( pScene, s_behead->child, fbxbone );
+	if( s_behead->GetChild() ){
+		CreateFBXBoneOfBVHReq( pScene, s_behead->GetChild(), fbxbone );
 	}
 
 	return fbxbone;
@@ -1675,13 +1652,13 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 {
 	char* bunkiptr = 0;
 	D3DXVECTOR3 curpos, parpos, gparpos;
-	curpos = pbe->position;
-	CBVHElem* parbe = pbe->parent;
+	curpos = pbe->GetPosition();
+	CBVHElem* parbe = pbe->GetParent();
 	if( parbe ){
-		parpos = parbe->position;
-		CBVHElem* gparbe = parbe->parent;
+		parpos = parbe->GetPosition();
+		CBVHElem* gparbe = parbe->GetParent();
 		if( gparbe ){
-			gparpos = gparbe->position;
+			gparpos = gparbe->GetPosition();
 		}else{
 			gparpos = parpos;
 		}
@@ -1697,7 +1674,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 	}
 
 	char newname[256] = {0};
-	sprintf_s( newname, 256, "%s", pbe->name );
+	sprintf_s( newname, 256, "%s", pbe->GetName() );
 
 	FbxString lLimbNodeName1( newname );
 	FbxSkeleton* lSkeletonLimbNodeAttribute1 = FbxSkeleton::Create(pScene,lLimbNodeName1);
@@ -1705,30 +1682,30 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 	lSkeletonLimbNodeAttribute1->Size.Set(1.0);
 	FbxNode* lSkeletonLimbNode1 = FbxNode::Create(pScene,lLimbNodeName1.Buffer());
 	lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
-	if( pbe->child ){
+	if( pbe->GetChild() ){
 		lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parpos.x, curpos.y - parpos.y, curpos.z - parpos.z));
 	}else{
 		lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parpos.x - gparpos.x, parpos.y - gparpos.y, parpos.z - gparpos.z));
 	}
-	parfbxbone->skelnode->AddChild(lSkeletonLimbNode1);
+	parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode1);
 
-	fbxbone->pbe = pbe;
-	fbxbone->skelnode = lSkeletonLimbNode1;
+	fbxbone->SetBvhElem( pbe );
+	fbxbone->SetSkelNode( lSkeletonLimbNode1 );
 	parfbxbone->AddChild( fbxbone );
 
-	if( pbe->child ){
+	if( pbe->GetChild() ){
 		//bunki ˆ—íœ
-		fbxbone->type = FB_NORMAL;
+		fbxbone->SetType( FB_NORMAL );
 	}else{
 		//endjointo—Í
-		fbxbone->type = FB_ENDJOINT;
+		fbxbone->SetType( FB_ENDJOINT );
 	}
 
-	if( pbe->child ){
-		CreateFBXBoneOfBVHReq( pScene, pbe->child, fbxbone );
+	if( pbe->GetChild() ){
+		CreateFBXBoneOfBVHReq( pScene, pbe->GetChild(), fbxbone );
 	}
-	if( pbe->brother ){
-		CreateFBXBoneOfBVHReq( pScene, pbe->brother, parfbxbone );
+	if( pbe->GetBrother() ){
+		CreateFBXBoneOfBVHReq( pScene, pbe->GetBrother(), parfbxbone );
 	}
 
 }
@@ -1736,33 +1713,33 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 
 CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 {
-	CBone* topj = pmodel->m_topbone;
+	CBone* topj = pmodel->GetTopBone();
 	if( !topj ){
 		_ASSERT( 0 );
 		return 0;
 	}
 
 	FbxNode* lSkeletonNode;
-	FbxString lNodeName( topj->m_engbonename );
+	FbxString lNodeName( topj->GetEngBoneName() );
 	FbxSkeleton* lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
 	lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eRoot);
 	lSkeletonNode = FbxNode::Create(pScene,lNodeName.Buffer());
 	lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
-	lSkeletonNode->LclTranslation.Set(FbxVector4(topj->m_jointfpos.x, topj->m_jointfpos.y, topj->m_jointfpos.z));
+	lSkeletonNode->LclTranslation.Set(FbxVector4(topj->GetJointFPos().x, topj->GetJointFPos().y, topj->GetJointFPos().z));
 
 	CFBXBone* fbxbone = new CFBXBone();
 	if( !fbxbone ){
 		_ASSERT( 0 );
 		return 0;
 	}
-	fbxbone->type = FB_ROOT;
-	fbxbone->bone = topj;
-	fbxbone->skelnode = lSkeletonNode;
+	fbxbone->SetType( FB_ROOT );
+	fbxbone->SetBone( topj );
+	fbxbone->SetSkelNode( lSkeletonNode );
 
 	s_fbxbone = fbxbone;//!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	if( topj->m_child ){
-		CreateFBXBoneReq( pScene, topj->m_child, fbxbone );
+	if( topj->GetChild() ){
+		CreateFBXBoneReq( pScene, topj->GetChild(), fbxbone );
 	}
 
 	return fbxbone;
@@ -1773,13 +1750,13 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 {
 	char* bunkiptr = 0;
 	D3DXVECTOR3 curpos, parpos, gparpos;
-	curpos = pbone->m_jointfpos;
-	CBone* parbone = pbone->m_parent;
+	curpos = pbone->GetJointFPos();
+	CBone* parbone = pbone->GetParent();
 	if( parbone ){
-		parpos = parbone->m_jointfpos;
-		CBone* gparbone = parbone->m_parent;
+		parpos = parbone->GetJointFPos();
+		CBone* gparbone = parbone->GetParent();
 		if( gparbone ){
-			gparpos = gparbone->m_jointfpos;
+			gparpos = gparbone->GetJointFPos();
 		}else{
 			gparpos = parpos;
 		}
@@ -1794,10 +1771,10 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 		return;
 	}
 
-	bunkiptr = strstr( pbone->m_bonename, "_bunki" );
+	bunkiptr = strstr( (char*)pbone->GetBoneName(), "_bunki" );
 
 	char newname[256] = {0};
-	sprintf_s( newname, 256, "%s", pbone->m_engbonename );
+	sprintf_s( newname, 256, "%s", pbone->GetEngBoneName() );
 
 	FbxString lLimbNodeName1( newname );
 	FbxSkeleton* lSkeletonLimbNodeAttribute1 = FbxSkeleton::Create(pScene,lLimbNodeName1);
@@ -1805,39 +1782,39 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 	lSkeletonLimbNodeAttribute1->Size.Set(1.0);
 	FbxNode* lSkeletonLimbNode1 = FbxNode::Create(pScene,lLimbNodeName1.Buffer());
 	lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
-	if( pbone->m_child ){
+	if( pbone->GetChild() ){
 		lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parpos.x, curpos.y - parpos.y, curpos.z - parpos.z));
 	}else{
 		lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parpos.x - gparpos.x, parpos.y - gparpos.y, parpos.z - gparpos.z));
 	}
-	parfbxbone->skelnode->AddChild(lSkeletonLimbNode1);
+	parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode1);
 
-	fbxbone->bone = pbone;
-	fbxbone->skelnode = lSkeletonLimbNode1;
+	fbxbone->SetBone( pbone );
+	fbxbone->SetSkelNode( lSkeletonLimbNode1 );
 	parfbxbone->AddChild( fbxbone );
 
-	if( pbone->m_child ){
+	if( pbone->GetChild() ){
 		if( !bunkiptr ){
-			fbxbone->type = FB_NORMAL;
+			fbxbone->SetType( FB_NORMAL );
 		}else{
 			//fbxbone->type = FB_BUNKI;
 		}
 	}else{
 		//endjointo—Í
-		fbxbone->type = FB_ENDJOINT;
+		fbxbone->SetType( FB_ENDJOINT );
 	}
 
-	if( pbone->m_child ){
-		CreateFBXBoneReq( pScene, pbone->m_child, fbxbone );
+	if( pbone->GetChild() ){
+		CreateFBXBoneReq( pScene, pbone->GetChild(), fbxbone );
 	}
-	if( pbone->m_brother ){
-		CreateFBXBoneReq( pScene, pbone->m_brother, parfbxbone );
+	if( pbone->GetBrother() ){
+		CreateFBXBoneReq( pScene, pbone->GetBrother(), parfbxbone );
 	}
 }
 int DestroyFBXBoneReq( CFBXBone* fbxbone )
 {
-	CFBXBone* chilbone = fbxbone->m_child;
-	CFBXBone* brobone = fbxbone->m_brother;
+	CFBXBone* chilbone = fbxbone->GetChild();
+	CFBXBone* brobone = fbxbone->GetBrother();
 
 	delete fbxbone;
 

@@ -40,6 +40,61 @@ private:
 	char* GetChanelType( char* srcstr, int* dstint, int* dstsetflag );
 
 public:
+	//accesser
+	CBVHElem* GetParent(){
+		return parent;
+	};
+	void SetParent( CBVHElem* srcval ){
+		parent = srcval;
+	};
+
+	CBVHElem* GetChild(){
+		return child;
+	};
+	void SetChild( CBVHElem* srcval ){
+		child = srcval;
+	};
+
+	CBVHElem* GetBrother(){
+		return brother;
+	};
+	void SetBrother( CBVHElem* srcval ){
+		brother = srcval;
+	};
+
+	int GetChanelNum(){
+		return chanelnum;
+	};
+
+	CQuaternion* GetTreeQ(){
+		return treeq;
+	};
+
+	CQuaternion* GetQPtr(){
+		return qptr;
+	};
+
+	int GetSameNameBoneSeri(){
+		return samenameboneseri;
+	};
+
+	D3DXVECTOR3 GetPosition(){
+		return position;
+	};
+
+	int GetFrameNum(){
+		return framenum;
+	}
+
+	D3DXVECTOR3* GetRotate(){
+		return rotate;
+	};
+
+	const char* GetName(){
+		return name;
+	};
+
+private:
 	int isroot;
 
 	int describeno;
@@ -61,17 +116,17 @@ public:
 	CQuaternion* treeq;//親の影響を考慮したクォータニオン
 
 	D3DXVECTOR3* partransptr;
-
 	D3DXVECTOR3 position;
-
-	CBVHElem* parent;
-	CBVHElem* child;
-	CBVHElem* brother;
 
 	int samenameboneseri;//sigに、同じ名前のボーンがあった場合にselem->serialnoをセット、無かったら-1。
 
 	int rotordercnt;
 	int rotorder[ROTAXIS_MAX];
+
+	CBVHElem* parent;
+	CBVHElem* child;
+	CBVHElem* brother;
+
 };
 
 #endif

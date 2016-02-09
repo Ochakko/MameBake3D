@@ -118,7 +118,7 @@ int sortfunc_material( void *context, const void *elem1, const void *elem2)
 	CPolyMesh4* pm4 = (CPolyMesh4*)context;
 
 	int dvno;
-	dvno = face1->m_materialno - face2->m_materialno;
+	dvno = face1->GetMaterialNo() - face2->GetMaterialNo();
 	if( dvno > 0 ){
 		return 1;
 	}else if( dvno < 0 ){
@@ -223,31 +223,32 @@ int CPolyMesh4::SetTriFace( CMQOFace* faceptr, int* numptr )
 	int setno = 0;
 	for( fno = 0; fno < m_orgfacenum; fno++ ){
 		CMQOFace* srcface = m_mqoface + fno;
-		if( srcface->m_pointnum == 3 ){
+		if( srcface->GetPointNum() == 3 ){
 			if( faceptr ){
 				CMQOFace* dstface = faceptr + setno;
-				dstface->m_bonetype = MIKOBONE_NONE;
-				dstface->m_col[0] = srcface->m_col[0];
-				dstface->m_col[1] = srcface->m_col[1];
-				dstface->m_col[2] = srcface->m_col[2];
-				dstface->m_col[3] = 0;
-				dstface->m_faceno = setno;
-				dstface->m_hasuv = srcface->m_hasuv;
-				dstface->m_index[0] = srcface->m_index[0];
-				dstface->m_index[1] = srcface->m_index[1];
-				dstface->m_index[2] = srcface->m_index[2];
-				dstface->m_index[3] = 0;
-				dstface->m_materialno = srcface->m_materialno;
-				dstface->m_pointnum = 3;
-				dstface->m_uv[0] = srcface->m_uv[0];
-				dstface->m_uv[1] = srcface->m_uv[1];
-				dstface->m_uv[2] = srcface->m_uv[2];
-				dstface->m_uv[3] = D3DXVECTOR2( 0.0f, 0.0f );
-				dstface->m_vcolsetflag = srcface->m_vcolsetflag;
+				dstface->SetBoneType( MIKOBONE_NONE );
+				dstface->SetCol( 0, srcface->GetCol( 0 ) );
+				dstface->SetCol( 1, srcface->GetCol( 1 ) );
+				dstface->SetCol( 2, srcface->GetCol( 2 ) );
+				dstface->SetCol( 3, 0 );
+				dstface->SetFaceNo( setno );
+				dstface->SetHasUV( srcface->GetHasUV() );
+				dstface->SetIndex( 0, srcface->GetIndex( 0 ) );
+				dstface->SetIndex( 1, srcface->GetIndex( 1 ) );
+				dstface->SetIndex( 2, srcface->GetIndex( 2 ) );
+				dstface->SetIndex( 3, 0 );
+				dstface->SetMaterialNo( srcface->GetMaterialNo() );
+				dstface->SetPointNum( 3 );
+				dstface->SetUV( 0, srcface->GetUV( 0 ) );
+				dstface->SetUV( 1, srcface->GetUV( 1 ) );
+				dstface->SetUV( 2, srcface->GetUV( 2 ) );
+				dstface->SetUV( 3, D3DXVECTOR2( 0.0f, 0.0f ) );
+				dstface->SetVcolSetFlag( srcface->GetVcolSetFlag() );
 			}
 
 			setno++;
-		}else if( srcface->m_pointnum == 4 ){
+		}else if( srcface->GetPointNum() >= 4 ){
+			::MessageBoxA(NULL, "triangle only!! Convert to triangles and retry.", "Data Type Error!!", MB_OK);
 			_ASSERT( 0 );
 			return 1;
 		}
@@ -278,7 +279,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
 				PM3DISPV* curv = dispv + (setno * 3 + vcnt);
-				int vno = (m_triface + setno)->m_index[vi[vcnt]];
+				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
 				curv->pos.x = (m_pointbuf + vno)->x;
 				curv->pos.y = (m_pointbuf + vno)->y;
@@ -340,12 +341,12 @@ int CPolyMesh4::ChkAlphaNum( map<int,CMQOMaterial*>& srcmat )
 	for( fno = 0; fno < m_facenum; fno++ ){//3つおきにチェック
 		CMQOFace* curface = m_triface + fno;
 		CMQOMaterial* curmat;
-		curmat = GetMaterialFromNo( srcmat, curface->m_materialno );
+		curmat = GetMaterialFromNo( srcmat, curface->GetMaterialNo() );
 		if( !curmat ){
 			continue;
 		}
 
-		if( (curmat->col.w != 1.0f) || (curmat->transparent != 0) ){
+		if( (curmat->GetCol().w != 1.0f) || (curmat->GetTransparent() != 0) ){
 			chkalpha.alphanum++;
 		}else{
 			chkalpha.notalphanum++;
@@ -414,7 +415,7 @@ typedef struct tag_modelbaund
 
 int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 {
-	DbgOut( L"check!!! DumpInfBone %d\r\n", srcobj->m_objectno );
+	DbgOut( L"check!!! DumpInfBone %d\r\n", srcobj->GetObjectNo() );
 
 	int vno;
 	for( vno = 0; vno < m_orgpointnum; vno++ ){
@@ -432,7 +433,7 @@ int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 			_ASSERT( curbone );
 
 			DbgOut( L"\tinfno %d, bonename %s, dispinf %f\r\n",
-				infno, curbone->m_wbonename, dispinf );
+				infno, curbone->GetWBoneName(), dispinf );
 		}
 	}
 	DbgOut( L"checkend!!! DumpInfBone\r\n\r\n" );
@@ -452,7 +453,7 @@ int CPolyMesh4::SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
 				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
-				int vno = (m_triface + setno)->m_index[vi[vcnt]];
+				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
 				curinf->boneindex[0] = (float)( clusterno );
 				curinf->weight[0] = 1.0f;
@@ -472,7 +473,7 @@ int CPolyMesh4::SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int
 		return 1;
 	}
 
-	CallF( srcobj->m_dispobj->CreateDispObj( pdev, this, 1 ), return 1 );
+	CallF( srcobj->GetDispObj()->CreateDispObj( pdev, this, 1 ), return 1 );
 
 	return 0;
 }
@@ -489,7 +490,7 @@ int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
 				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
-				int vno = (m_triface + setno)->m_index[vi[vcnt]];
+				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
 				INFDATA* curinfdata = (m_infbone + vno)->m_infdata[ srcobj ];
 				if( curinfdata ){

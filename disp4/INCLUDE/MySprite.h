@@ -23,7 +23,7 @@ private:
 	int DestroyObjs();
 
 
-public:
+private:
 	LPDIRECT3DDEVICE9 m_pdev;
 	int m_texid;
 	SPRITEV m_v[4];

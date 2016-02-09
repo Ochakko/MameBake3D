@@ -89,7 +89,12 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 
 	}else{
 		if( type == ENGNAME_BONE ){
-			sprintf_s( dstname, dstleng, "%s_Joint", namepm );
+			char* strjoint = strstr( dstname, "_Joint" );
+			if( !strjoint ){
+				sprintf_s( dstname, dstleng, "%s_Joint", namepm );
+			}else{
+				strcpy_s( dstname, dstleng, namepm );
+			}
 		}else{
 			strcpy_s( dstname, dstleng, namepm );
 		}

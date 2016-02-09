@@ -21,15 +21,11 @@ int CMotionPoint::InitParams()
 	m_frame = 0.0;
 	m_eul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-	m_totalq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 	m_tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	D3DXMatrixIdentity( &m_mat );
-	D3DXMatrixIdentity( &m_totalmat );
 	D3DXMatrixIdentity( &m_worldmat );
 	D3DXMatrixIdentity( &m_btmat );
-	D3DXMatrixIdentity( &m_befworldmat );
-	D3DXMatrixIdentity( &m_copywmat );
 	D3DXMatrixIdentity( &m_absmat );
+	D3DXMatrixIdentity( &m_befworldmat );
 	D3DXMatrixIdentity( &m_befeditmat );
 
 	m_prev = 0;
@@ -73,64 +69,63 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 }
 
 
-int CMotionPoint::MakeMat( CBone* srcbone )
-{
-	D3DXMATRIX befrotmat, aftrotmat, rotmat, tramat;
-	D3DXMatrixIdentity( &befrotmat );
-	D3DXMatrixIdentity( &aftrotmat );
-	D3DXMatrixIdentity( &rotmat );
-	D3DXMatrixIdentity( &tramat );
+//int CMotionPoint::MakeMat( CBone* srcbone )
+//{
+//	D3DXMATRIX befrotmat, aftrotmat, rotmat, tramat;
+//	D3DXMatrixIdentity( &befrotmat );
+//	D3DXMatrixIdentity( &aftrotmat );
+//	D3DXMatrixIdentity( &rotmat );
+//	D3DXMatrixIdentity( &tramat );
+//
+//	befrotmat._41 = -srcbone->m_vertpos[ BT_PARENT ].x;
+//	befrotmat._42 = -srcbone->m_vertpos[ BT_PARENT ].y;
+//	befrotmat._43 = -srcbone->m_vertpos[ BT_PARENT ].z;
+//
+//	aftrotmat._41 = srcbone->m_vertpos[ BT_PARENT ].x;
+//	aftrotmat._42 = srcbone->m_vertpos[ BT_PARENT ].y;
+//	aftrotmat._43 = srcbone->m_vertpos[ BT_PARENT ].z;
+//
+//	rotmat = m_q.MakeRotMatX();
+//
+//	tramat._41 = m_tra.x;
+//	tramat._42 = m_tra.y;
+//	tramat._43 = m_tra.z;
+//
+//	m_mat = befrotmat * rotmat * aftrotmat * tramat;
+//
+//	return 0;
+//}
+//int CMotionPoint::MakeTotalMat( D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone )
+//{
+//
+//	MakeMat( srcbone );
+//
+//	m_totalmat = m_mat * *parmat;
+//	m_totalq = *parq * m_q;
+//
+//	return 0;
+//}
 
-	befrotmat._41 = -srcbone->m_vertpos[ BT_PARENT ].x;
-	befrotmat._42 = -srcbone->m_vertpos[ BT_PARENT ].y;
-	befrotmat._43 = -srcbone->m_vertpos[ BT_PARENT ].z;
+//int CMotionPoint::MakeWorldMat( D3DXMATRIX* wmat )
+//{
+//	m_worldmat = m_totalmat * *wmat;
+//	
+//
+//	D3DXQUATERNION tmpxq;
+//	D3DXQuaternionRotationMatrix( &tmpxq, wmat );
+//	CQuaternion wq;
+//	wq.SetParams( tmpxq );
+//	m_worldq = wq * m_totalq;
+//
+//	return 0;
+//}
 
-	aftrotmat._41 = srcbone->m_vertpos[ BT_PARENT ].x;
-	aftrotmat._42 = srcbone->m_vertpos[ BT_PARENT ].y;
-	aftrotmat._43 = srcbone->m_vertpos[ BT_PARENT ].z;
-
-	rotmat = m_q.MakeRotMatX();
-
-	tramat._41 = m_tra.x;
-	tramat._42 = m_tra.y;
-	tramat._43 = m_tra.z;
-
-	m_mat = befrotmat * rotmat * aftrotmat * tramat;
-
-	return 0;
-}
-int CMotionPoint::MakeTotalMat( D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone )
-{
-
-	MakeMat( srcbone );
-
-	m_totalmat = m_mat * *parmat;
-	m_totalq = *parq * m_q;
-
-	return 0;
-}
-
-int CMotionPoint::MakeWorldMat( D3DXMATRIX* wmat )
-{
-	m_worldmat = m_totalmat * *wmat;
-	
-
-	D3DXQUATERNION tmpxq;
-	D3DXQuaternionRotationMatrix( &tmpxq, wmat );
-	CQuaternion wq;
-	wq.SetParams( tmpxq );
-	m_worldq = wq * m_totalq;
-
-	return 0;
-}
-
-int CMotionPoint::UpdateMatrix( D3DXMATRIX* wmat, D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone )
-{
-	MakeTotalMat( parmat, parq, srcbone );
-	MakeWorldMat( wmat );
-	MakeDispMat();
-	return 0;
-}
+//int CMotionPoint::UpdateMatrix( D3DXMATRIX* wmat, D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone )
+//{
+//	MakeTotalMat( parmat, parq, srcbone );
+//	MakeWorldMat( wmat );
+//	return 0;
+//}
 
 int CMotionPoint::AddToPrev( CMotionPoint* addmp )
 {
@@ -186,36 +181,12 @@ int CMotionPoint::LeaveFromChain( int srcmotid, CBone* boneptr )
 	}
 
 	if( (srcmotid >= 0) && boneptr && !saveprev ){
-		boneptr->m_motionkey[srcmotid] = savenext;
+		boneptr->SetMotionKey( srcmotid, savenext );
 	}
 
 	return 0;
 }
 
-int CMotionPoint::MakeDispMat()
-{
-	m_disptra.x = m_worldmat._41;
-	m_disptra.y = m_worldmat._42;
-	m_disptra.z = m_worldmat._43;
-
-	D3DXMATRIX tmpwmat = m_worldmat;
-	tmpwmat._41 = 0.0f;
-	tmpwmat._42 = 0.0f;
-	tmpwmat._43 = 0.0f;
-
-	D3DXQUATERNION xtmpq;
-	D3DXQuaternionRotationMatrix( &xtmpq, &tmpwmat );
-
-	m_dispq.SetParams( xtmpq );
-	m_orderdispq = m_dispq;
-
-	m_dispmat = m_dispq.MakeRotMatX();
-	m_dispmat._41 = m_disptra.x;
-	m_dispmat._42 = m_disptra.y;
-	m_dispmat._43 = m_disptra.z;
-
-	return 0;
-}
 
 int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 {
@@ -223,14 +194,7 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	m_eul = srcmp->m_eul;
 	m_tra = srcmp->m_tra;
 	m_q = srcmp->m_q;
-	m_totalq = srcmp->m_totalq;
-	m_worldq = srcmp->m_worldq;
-	m_mat = srcmp->m_mat;
-	m_totalmat = srcmp->m_totalmat;
 	m_worldmat = srcmp->m_worldmat;
-	m_dispq = srcmp->m_dispq;
-	m_disptra = srcmp->m_disptra;
-	m_dispmat = srcmp->m_dispmat;
 
 	return 0;
 }
@@ -238,9 +202,8 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr )
 {
 	D3DXVECTOR3 aftpos;
-	D3DXVec3TransformCoord( &aftpos, &boneptr->m_jointfpos, &srcmat );
-	m_tra = aftpos - boneptr->m_jointfpos;
-
+	D3DXVec3TransformCoord( &aftpos, &boneptr->GetJointFPos(), &srcmat );
+	m_tra = aftpos - boneptr->GetJointFPos();
 
 	D3DXMATRIX tmpmat = srcmat;
 	tmpmat._41 = 0.0f;
@@ -253,25 +216,28 @@ int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr )
 	m_q.z = rotqx.z;
 	m_q.w = rotqx.w;
 
-/***
-	D3DXMATRIX beftra, afttra;
-	D3DXMatrixIdentity( &beftra );
-	D3DXMatrixTranslation( &beftra, -boneptr->m_jointfpos.x, -boneptr->m_jointfpos.y, -boneptr->m_jointfpos.z );
-	D3DXMatrixIdentity( &afttra );
-	D3DXMatrixTranslation( &afttra, -boneptr->m_jointfpos.x, -boneptr->m_jointfpos.y, -boneptr->m_jointfpos.z );
-
-	D3DXMATRIX lbase;
-	lbase = beftra * tmpmat * afttra;
-
-	D3DXMATRIX invlbase;
-	D3DXMatrixInverse( &invlbase, NULL, &lbase );
-
-	D3DXVECTOR3 zeropos( 0.0f, 0.0f, 0.0f );
-	D3DXMATRIX xmat;
-	xmat = invlbase * srcmat;
-
-	D3DXVec3TransformCoord( &m_tra, &zeropos, &xmat );
-***/
 	return 0;
 }
 
+
+CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
+{
+	m_setbtflag = mp.m_setbtflag;
+	m_frame = mp.m_frame;
+	m_eul = mp.m_eul;
+	m_tra = mp.m_tra;
+
+	m_q = mp.m_q;
+
+	m_worldmat = mp.m_worldmat;//ワールド変換と親の影響を受けたマトリックス
+	m_btmat = mp.m_btmat;
+
+	m_prev = mp.m_prev;
+	m_next = mp.m_next;
+
+	m_befeditmat = mp.m_befeditmat;
+	m_absmat = mp.m_absmat;
+
+
+	return *this;
+}

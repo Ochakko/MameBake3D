@@ -34,7 +34,7 @@ private:
 	int ReadChara( XMLIOBUF* xmliobuf );
 	//int ReadMotion( XMLIOBUF* xmliobuf, WCHAR* modelfolder, CModel* modelptr );
 
-public:
+private:
 	std::vector<MODELELEM> m_modelindex;
 	WCHAR m_newdirname[MAX_PATH];
 

@@ -38,9 +38,12 @@ private:
 //	int ReadBlendWeight( XMLIOBUF* xmliobuf, CMQOObject* setbase, CMorphKey* setmk );
 
 public:
-	CModel* m_model;
 	std::string m_rename;
 	float m_btgscale;
+
+private:
+	CModel* m_model;
+
 };
 
 #endif

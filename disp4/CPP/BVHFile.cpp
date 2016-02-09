@@ -612,24 +612,24 @@ int CBVHFile::CreateNewElem()
 
 ///////////
 
-	newbe->parent = m_parbe;
+	newbe->SetParent( m_parbe );
 	if( m_parbe ){
-		if( !m_parbe->child ){
+		if( !m_parbe->GetChild() ){
 			//子供にセット
-			m_parbe->child = newbe;
+			m_parbe->SetChild( newbe );
 		}else{
 			//最後のbrotherにセット
 			CBVHElem* lastbro;
 			CBVHElem* brobe;
-			brobe = m_parbe->child;
+			brobe = m_parbe->GetChild();
 			lastbro = brobe;
 			while( brobe ){
 				lastbro = brobe;
-				brobe = brobe->brother;
+				brobe = brobe->GetBrother();
 			}
 
 			_ASSERT( lastbro );
-			lastbro->brother = newbe;
+			lastbro->SetBrother( newbe );
 		}
 	}
 
@@ -861,7 +861,7 @@ int CBVHFile::EndBrace()
 		return 1;
 	}
 
-	m_parbe = m_curbe->parent;
+	m_parbe = m_curbe->GetParent();
 	m_curbe = m_parbe;//!!!!!!!!!!!!!!
 
 	m_pos += 1;//!!!!!!!!!!!!!!!!!!!!
@@ -955,7 +955,7 @@ int CBVHFile::LoadMotionParams()
 			_ASSERT( beptr );
 
 			int chanelnum;
-			chanelnum = beptr->chanelnum;
+			chanelnum = beptr->GetChanelNum();
 
 			int paramno;
 			for( paramno = 0; paramno < chanelnum; paramno++ ){
@@ -1108,12 +1108,12 @@ void CBVHFile::DbgOutBVHElemReq( CBVHElem* outbe, int srcdepth )
 		return;
 	}
 
-	if( outbe->child ){
-		DbgOutBVHElemReq( outbe->child, srcdepth + 1 );
+	if( outbe->GetChild() ){
+		DbgOutBVHElemReq( outbe->GetChild(), srcdepth + 1 );
 	}
 
-	if( outbe->brother ){
-		DbgOutBVHElemReq( outbe->brother, srcdepth );
+	if( outbe->GetBrother() ){
+		DbgOutBVHElemReq( outbe->GetBrother(), srcdepth );
 	}
 
 }
@@ -1129,12 +1129,12 @@ void CBVHFile::SetBVHElemPositionReq( CBVHElem* srcbe )
 		return;
 	}
 
-	if( srcbe->child ){
-		SetBVHElemPositionReq( srcbe->child );
+	if( srcbe->GetChild() ){
+		SetBVHElemPositionReq( srcbe->GetChild() );
 	}
 
-	if( srcbe->brother ){
-		SetBVHElemPositionReq( srcbe->brother );
+	if( srcbe->GetBrother() ){
+		SetBVHElemPositionReq( srcbe->GetBrother() );
 	}
 
 }
@@ -1144,13 +1144,13 @@ void CBVHFile::CountJointNumReq( CBVHElem* srcbe, int* jointnumptr, int* bonenum
 	(*jointnumptr)++;
 
 ///////////
-	if( srcbe->child ){
+	if( srcbe->GetChild() ){
 		(*bonenumptr)++;//!!!!!!!!!!!
-		CountJointNumReq( srcbe->child, jointnumptr, bonenumptr );
+		CountJointNumReq( srcbe->GetChild(), jointnumptr, bonenumptr );
 	}
-	if( srcbe->brother ){
+	if( srcbe->GetBrother() ){
 		(*bonenumptr)++;//!!!!!!!!!!!
-		CountJointNumReq( srcbe->brother, jointnumptr, bonenumptr );
+		CountJointNumReq( srcbe->GetBrother(), jointnumptr, bonenumptr );
 	}
 }
 
@@ -1166,11 +1166,11 @@ void CBVHFile::MultBVHElemReq( CBVHElem* srcbe, float srcmult )
 	}
 
 ////////
-	if( srcbe->child ){
-		MultBVHElemReq( srcbe->child, srcmult );
+	if( srcbe->GetChild() ){
+		MultBVHElemReq( srcbe->GetChild(), srcmult );
 	}
-	if( srcbe->brother ){
-		MultBVHElemReq( srcbe->brother, srcmult );
+	if( srcbe->GetBrother() ){
+		MultBVHElemReq( srcbe->GetBrother(), srcmult );
 	}
 }
 
@@ -1179,23 +1179,23 @@ void CBVHFile::CalcBVHTreeQReq( CBVHElem* srcbe )
 {
 	int fno;
 
-	if( srcbe->parent ){
+	if( srcbe->GetParent() ){
 		for( fno = 0; fno < m_frames; fno++ ){
-			*(srcbe->treeq + fno) = *(srcbe->parent->treeq + fno) * *(srcbe->qptr + fno);
+			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetParent()->GetTreeQ() + fno) * *(srcbe->GetQPtr() + fno);
 			//*(srcbe->treeq + fno) = *(srcbe->parent->treeq + fno) * *(srcbe->transpose + fno);
 		}
 	}else{
 		for( fno = 0; fno < m_frames; fno++ ){
-			*(srcbe->treeq + fno) = *(srcbe->qptr + fno);
+			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetQPtr() + fno);
 			//*(srcbe->treeq + fno) = *(srcbe->transpose + fno);
 		}
 	}
 //////////
-	if( srcbe->child ){
-		CalcBVHTreeQReq( srcbe->child );
+	if( srcbe->GetChild() ){
+		CalcBVHTreeQReq( srcbe->GetChild() );
 	}
-	if( srcbe->brother ){
-		CalcBVHTreeQReq( srcbe->brother );
+	if( srcbe->GetBrother() ){
+		CalcBVHTreeQReq( srcbe->GetBrother() );
 	}
 
 }
@@ -1261,14 +1261,14 @@ int CBVHFile::CalcMPQ( CBVHElem* beptr, int fno, CQuaternion* dstq )
 {
 	//int ret;
 
-	CBVHElem* curbe = beptr->parent;//!!!!!!!
+	CBVHElem* curbe = beptr->GetParent();//!!!!!!!
 	CBVHElem* findparbe = 0;
 	while( curbe ){
-		if( curbe->samenameboneseri > 0 ){
+		if( curbe->GetSameNameBoneSeri() > 0 ){
 			findparbe = curbe;
 			break;
 		}
-		curbe = curbe->parent;
+		curbe = curbe->GetParent();
 	}
 
 	if( findparbe ){
@@ -1276,15 +1276,15 @@ int CBVHFile::CalcMPQ( CBVHElem* beptr, int fno, CQuaternion* dstq )
 		CQuaternion parq;
 		CQuaternion invparq;
 
-		curq = *(beptr->treeq + fno);
-		parq = *(findparbe->treeq + fno);
+		curq = *(beptr->GetTreeQ() + fno);
+		parq = *(findparbe->GetTreeQ() + fno);
 		parq.inv( &invparq );
 
 		*dstq = invparq * curq;
 		//*dstq = curq * invparq;
 	
 	}else{
-		*dstq = *(beptr->treeq + fno);
+		*dstq = *(beptr->GetTreeQ() + fno);
 	}
 
 	return 0;

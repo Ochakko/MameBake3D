@@ -69,7 +69,7 @@ int CUndoMotion::DestroyObjs()
 		CMotionPoint* mpptr = itrb2mp->second;
 		CMotionPoint* nextmp = 0;
 		while( mpptr ){
-			nextmp = mpptr->m_next;
+			nextmp = mpptr->GetNext();
 			delete mpptr;
 			mpptr = nextmp;
 		}
@@ -98,23 +98,28 @@ int CUndoMotion::DestroyObjs()
 
 int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 {
-	if( !pmodel->m_curmotinfo ){
+	if( !pmodel->GetCurMotInfo() ){
 		return 0;
 	}
 
-	if( (pmodel->m_curmotinfo->motid < 0) || pmodel->m_bonelist.empty() ){
+	if( pmodel->GetCurMotInfo()->motid < 0 ){
 		return 0;
 	}
+	if( pmodel->GetBoneListSize()<= 0 ){
+		return 0;
+	}
+
+
 
 	ClearData();
 
-	int curmotid = pmodel->m_curmotinfo->motid;
+	int curmotid = pmodel->GetCurMotInfo()->motid;
 
 	map<int, CBone*>::iterator itrbone;
-	for( itrbone = pmodel->m_bonelist.begin(); itrbone != pmodel->m_bonelist.end(); itrbone++ ){
+	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
-		CMotionPoint* firstmp = curbone->m_motionkey[ curmotid ];
+		CMotionPoint* firstmp = curbone->GetMotionKey( curmotid );
 		if( firstmp ){
 			CMotionPoint* undofirstmp = new CMotionPoint();
 			if( !undofirstmp ){
@@ -124,7 +129,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 
 			undofirstmp->CopyMP( firstmp );
 
-			CMotionPoint* curmp = firstmp->m_next;
+			CMotionPoint* curmp = firstmp->GetNext();
 			CMotionPoint* befundomp = undofirstmp;
 			while( curmp ){
 				CMotionPoint* newundomp = new CMotionPoint();
@@ -136,18 +141,16 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 				befundomp->AddToNext( newundomp );
 
 				befundomp = newundomp;
-				curmp = curmp->m_next;
+				curmp = curmp->GetNext();
 			}
 			m_bone2mp[ curbone ] = undofirstmp;
 		}
 
-		map<int, map<double, int>>::iterator itrcur;
-		itrcur = curbone->m_motmark.find( curmotid );
-		if( itrcur != curbone->m_motmark.end() ){
-			map<double, int> curmark;
-			curmark = itrcur->second;
+		map<double, int> tmpmap;
+		curbone->GetMotMarkOfMap2( curmotid, tmpmap );
+		if( tmpmap.size() > 0 ){
 			(m_bonemotmark[ curbone ]).clear();
-			m_bonemotmark[ curbone ] = curmark;
+			m_bonemotmark[ curbone ] = tmpmap;
 		}else{
 			(m_bonemotmark[ curbone ]).clear();
 		}
@@ -187,7 +190,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 		}
 	}
 ***/
-	MoveMemory( &m_savemotinfo, pmodel->m_curmotinfo, sizeof( MOTINFO ) );
+	MoveMemory( &m_savemotinfo, pmodel->GetCurMotInfo(), sizeof( MOTINFO ) );
 
 	m_curboneno = curboneno;
 	m_curbaseno = curbaseno;
@@ -204,30 +207,22 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 	}
 
 	int setmotid = m_savemotinfo.motid;
-	MOTINFO* chkmotinfo = pmodel->m_motinfo[ setmotid ];
+	MOTINFO* chkmotinfo = pmodel->GetMotInfo( setmotid );
 	if( !chkmotinfo ){
 		_ASSERT( 0 );
 		return 1;
 	}
 /////// destroy
 	map<int, CBone*>::iterator itrbone;
-	for( itrbone = pmodel->m_bonelist.begin(); itrbone != pmodel->m_bonelist.end(); itrbone++ ){
+	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 		curbone->DestroyMotionKey( setmotid );
+		curbone->ClearMotMarkOfMap2( setmotid );
+	}
 
-		(curbone->m_motmark[ setmotid ]).clear();
-	}
-/***
-	map<int, CMQOObject*>::iterator itrbase;
-	for( itrbase = pmodel->m_mbaseobject.begin(); itrbase != pmodel->m_mbaseobject.end(); itrbase++ ){
-		CMQOObject* curbase = itrbase->second;
-		_ASSERT( curbase );
-		curbase->DestroyMorphKey( setmotid );
-	}
-***/
 ///////// set
-	for( itrbone = pmodel->m_bonelist.begin(); itrbone != pmodel->m_bonelist.end(); itrbone++ ){
+	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 
@@ -240,7 +235,7 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 			}
 			undofirstmp->CopyMP( firstmp );
 
-			CMotionPoint* mpptr = firstmp->m_next;
+			CMotionPoint* mpptr = firstmp->GetNext();
 			CMotionPoint* befundomp = undofirstmp;
 			while( mpptr ){
 				CMotionPoint* newundomp = new CMotionPoint();
@@ -252,51 +247,19 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 				befundomp->AddToNext( newundomp );
 
 				befundomp = newundomp;
-				mpptr = mpptr->m_next;
+				mpptr = mpptr->GetNext();
 			}
 
-			curbone->m_motionkey[ setmotid ] = undofirstmp;
+			curbone->SetMotionKey( setmotid, undofirstmp );
 		}
 
-		curbone->m_motmark[ setmotid ] = m_bonemotmark[ curbone ];
+		curbone->SetMotMarkOfMap2( setmotid, m_bonemotmark[ curbone ] );
 
 	}
 
-/***
-	for( itrbase = pmodel->m_mbaseobject.begin(); itrbase != pmodel->m_mbaseobject.end(); itrbase++ ){
-		CMQOObject* curbase = itrbase->second;
-		_ASSERT( curbase );
 
-		CMorphKey* firstmk = m_base2mk[ curbase ];
-		if( firstmk ){
-			CMorphKey* undofirstmk = new CMorphKey( curbase );
-			if( !undofirstmk ){
-				_ASSERT( 0 );
-				return 1;
-			}
-			undofirstmk->CopyMotion( firstmk );
-
-			CMorphKey* mkptr = firstmk->m_next;
-			CMorphKey* befundomk = undofirstmk;
-			while( mkptr ){
-				CMorphKey* newundomk = new CMorphKey( curbase );
-				if( !newundomk ){
-					_ASSERT( 0 );
-					return 1;
-				}
-				newundomk->CopyMotion( mkptr );
-				befundomk->AddToNext( newundomk );
-
-				befundomk = newundomk;
-				mkptr = mkptr->m_next;
-			}
-
-			curbase->m_morphkey[ setmotid ] = undofirstmk;
-		}
-	}
-***/
 	MoveMemory( chkmotinfo, &m_savemotinfo, sizeof( MOTINFO ) );
-	pmodel->m_curmotinfo = chkmotinfo;
+	pmodel->SetCurMotInfo( chkmotinfo );
 
 	*curboneno = m_curboneno;
 	*curbaseno = m_curbaseno;
