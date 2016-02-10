@@ -225,7 +225,7 @@ int CModel::DestroyAllMotionInfo()
 
 int CModel::DestroyMaterial()
 {
-/*
+
 	map<int, CMQOMaterial*>::iterator itr;
 	for( itr = m_material.begin(); itr != m_material.end(); itr++ ){
 		CMQOMaterial* delmat = itr->second;
@@ -234,7 +234,7 @@ int CModel::DestroyMaterial()
 		}
 	}
 	m_material.erase( m_material.begin(), m_material.end() );
-*/
+
 	return 0;
 }
 int CModel::DestroyObject()
