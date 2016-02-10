@@ -1,0 +1,356 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="disp4">
+      <UniqueIdentifier>{f5a1df89-47b0-4c26-8fe9-539129483bae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXUT">
+      <UniqueIdentifier>{d242f3e6-8713-402b-ac0e-33ae1d0a8f6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bullet">
+      <UniqueIdentifier>{f8a87251-394f-4377-bcba-d224f26456d0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ColiIDDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameCopyDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GColiIDDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GetDlgParams.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\BntFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\Bone.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\BtObject.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\BVHelem.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\BVHFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\ChaFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\Collision.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\dbg.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\DispObj.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\EngName.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\ExtLine.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\FBXBone.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\FBXFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\GColiFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\GetMaterial.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\ImpFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\InfBone.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\Model.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\MotionPoint.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\mqoface.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\mqofile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\mqomaterial.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\mqoobject.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\MySprite.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\OrgWindow.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\polymesh3.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\polymesh4.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\quaternion.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\RigidElem.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\RigidElemFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\TexBank.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\TexElem.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\UndoMotion.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\VecMath.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\XMLIO.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Core\DXUT.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Core\DXUTenum.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Core\DXUTmisc.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Optional\DXUTcamera.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Optional\DXUTgui.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Optional\DXUTres.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Optional\DXUTsettingsdlg.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\DXUT\Optional\SDKmisc.cpp">
+      <Filter>DXUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\BTMANAGER\BPWorld.cpp">
+      <Filter>Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\EditRange.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ColiIDDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="dlgid.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameCopyDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GColiIDDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GetDlgParams.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="RegistDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="useatl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\BntFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\Bone.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\BtObject.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\BVHelem.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\BVHFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\ChaFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\Coef.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\coef_r.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\Collision.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\dbg.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\DispObj.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\EngName.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\ExtLine.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\FBXBone.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\FBXFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\GColiFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\GetMaterial.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\ImpFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\InfBone.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\Model.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\MotionPoint.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\mqoface.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\mqofile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\mqomaterial.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\mqoobject.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\MySprite.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\OrgWindow.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\polymesh3.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\polymesh4.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\quaternion.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\RigidElem.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\RigidElemFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\TexBank.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\TexElem.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\UndoMotion.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\usercoef.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\VecMath.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\XMLIO.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Core\DXUT.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Core\DXUTenum.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Core\DXUTmisc.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Optional\DXUTcamera.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Optional\DXUTgui.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Optional\DXUTres.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Optional\DXUTsettingsdlg.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\DXUT\Optional\SDKmisc.h">
+      <Filter>DXUT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\BTMANAGER\BPWorld.h">
+      <Filter>Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\EditRange.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MameBake3D.rc">
+      <Filter>リソース ファイル</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

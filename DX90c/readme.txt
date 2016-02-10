@@ -1,0 +1,2 @@
+MicrosoftのDirectX SDKのincludeとlibをここにコピーします。
+June2010です。
