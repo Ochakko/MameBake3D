@@ -907,7 +907,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 			}
 
 
-			float filterval = 50.0f;
+			float filterval = 30.0f;
 
 			EFbxRotationOrder lRotationOrderSrc = eEulerZXY;
 			EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
@@ -1085,7 +1085,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					curbe->CalcDiffTra(frameno, &difftra);
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveTX->KeyAdd(lTime);
-					lCurveTX->KeySetValue(lKeyIndex, 0.0f);
+					lCurveTX->KeySetValue(lKeyIndex, orgtra.x);
 					lCurveTX->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
 				}
 				lCurveTX->KeyModifyEnd();
@@ -1096,7 +1096,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					curbe->CalcDiffTra(frameno, &difftra);
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveTY->KeyAdd(lTime);
-					lCurveTY->KeySetValue(lKeyIndex, 0.0f);
+					lCurveTY->KeySetValue(lKeyIndex, orgtra.y);
 					lCurveTY->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
 				}
 				lCurveTY->KeyModifyEnd();
@@ -1107,7 +1107,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					curbe->CalcDiffTra(frameno, &difftra);
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveTZ->KeyAdd(lTime);
-					lCurveTZ->KeySetValue(lKeyIndex, 0.0f);
+					lCurveTZ->KeySetValue(lKeyIndex, orgtra.z);
 					lCurveTZ->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
 				}
 				lCurveTZ->KeyModifyEnd();
