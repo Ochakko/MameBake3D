@@ -292,6 +292,10 @@ int CBVHFile::LoadBVHFile( HWND srcapphwnd, WCHAR* srcname, float srcmult )
 
 
 	if( m_behead ){
+
+		MultBVHElemReq(m_behead, srcmult);
+
+
 		SetBVHElemPositionReq( m_behead );
 		
 		int beno;
