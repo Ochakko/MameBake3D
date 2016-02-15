@@ -79,6 +79,9 @@ int CBVHElem::InitParams()
 	rotordercnt = 0;
 	ZeroMemory( rotorder, sizeof( int ) * ROTAXIS_MAX );
 
+	bonenum = 0;
+	brono = 0;
+
 	return 0;
 }
 int CBVHElem::DestroyObjs()

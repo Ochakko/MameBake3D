@@ -498,6 +498,10 @@ public:
  */
 	CBtObject* FindBtObject( int srcboneno );
 
+
+	int FillUpEmptyMotion(int motid);
+
+
 	int SetAllDampAnimData( int gid, int rgdindex, float valL, float valA );
 	int SetAllBtgData( int gid, int reindex, float btg );
 	int SetAllImpulseData( int gid, float impx, float impy, float impz );

@@ -617,8 +617,13 @@ int CBVHFile::CreateNewElem()
 		if( !m_parbe->GetChild() ){
 			//子供にセット
 			m_parbe->SetChild( newbe );
+			m_parbe->SetBoneNum( 1 );
+			newbe->SetBroNo( 0 );
 		}else{
+			m_parbe->SetBoneNum( m_parbe->GetBoneNum() + 1 );
+
 			//最後のbrotherにセット
+			int brono = 0;
 			CBVHElem* lastbro;
 			CBVHElem* brobe;
 			brobe = m_parbe->GetChild();
@@ -626,10 +631,13 @@ int CBVHFile::CreateNewElem()
 			while( brobe ){
 				lastbro = brobe;
 				brobe = brobe->GetBrother();
+				brono++;
 			}
+
 
 			_ASSERT( lastbro );
 			lastbro->SetBrother( newbe );
+			lastbro->SetBroNo( brono );
 		}
 	}
 

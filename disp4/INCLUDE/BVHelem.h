@@ -30,7 +30,6 @@ public:
 
 	int CalcDiffTra( int frameno, D3DXVECTOR3* pdifftra );
 
-
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -94,6 +93,21 @@ public:
 		return name;
 	};
 
+	int GetBoneNum(){
+		return bonenum;
+	};
+	int GetBroNo(){
+		return brono;
+	};
+	int SetBoneNum( int srcbonenum ){
+		bonenum = srcbonenum;
+		return 0;
+	};
+	int SetBroNo( int srcbrono ){
+		brono = srcbrono;
+		return 0;
+	};
+
 private:
 	int isroot;
 
@@ -126,6 +140,9 @@ private:
 	CBVHElem* parent;
 	CBVHElem* child;
 	CBVHElem* brother;
+
+	int bonenum;
+	int brono;
 
 };
 

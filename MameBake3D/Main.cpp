@@ -5544,7 +5544,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 ***/
 
-	CallF( AddMotion( 0 ), return 0 );
+	//CallF( AddMotion( 0 ), return 0 );
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
 	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
@@ -5556,16 +5556,22 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	CallF( CreateModelPanel(), return 0 );
 
 	CallF( s_model->LoadFBXAnim( s_psdk, pImporter, pScene, OnAddMotion ), return 0 );
-if( s_modelindex.size() >= 2 )
-	_ASSERT( 0 );
+	if( s_modelindex.size() >= 2 )
+		_ASSERT( 0 );
 
 
+	//if( s_model->GetMotInfoSize() >= 2 ){
+	//	OnDelMotion( 0 );//初期状態のダミーモーションを削除
+	//}
 
+	int motnum = s_model->GetMotInfoSize();
+	if (motnum == 0){
+		CallF(AddMotion(0), return 0);
+		CallF(s_model->FillUpEmptyMotion(motnum), return 0);
+		_ASSERT(0);
 
-
-	if( s_model->GetMotInfoSize() >= 2 ){
-		OnDelMotion( 0 );//初期状態のダミーモーションを削除
 	}
+
 
 	OnRgdMorphMenu( 0 );
 

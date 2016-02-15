@@ -552,7 +552,6 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 	FbxNode *pRootNode = pscene->GetRootNode();
 	CallF( CreateFBXAnim( pscene, pRootNode ), return 1 );
 
-
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
@@ -1483,10 +1482,6 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 
 	m_motinfo[newid] = newmi;
 
-	if (newid == 1){
-		_ASSERT(0);
-		FillUpEmptyKeyReq(newid, srcleng, m_topbone, 0);
-	}
 
 	*dstid = newid;
 
@@ -3520,6 +3515,21 @@ void CModel::FillUpEmptyKeyReq( int motid, int animleng, CBone* curbone, CBone* 
 	}
 
 }
+
+int CModel::FillUpEmptyMotion(int srcmotid)
+{
+
+	if ((srcmotid >= 0) && (srcmotid < GetMotInfoSize())){
+		MOTINFO* curmi = GetMotInfo( srcmotid );
+		_ASSERT(curmi);
+		FillUpEmptyKeyReq(curmi->motid, curmi->frameleng, m_topbone, 0);
+		return 0;
+	}
+	else{
+		return 1;
+	}
+}
+
 
 int CModel::SetMaterialName()
 {
