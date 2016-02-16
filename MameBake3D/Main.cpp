@@ -3619,7 +3619,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_curboneno = s_pickinfo.pickobjno;				
 
 					if( s_owpTimeline ){
-						s_owpTimeline->setCurrentLine( s_boneno2lineno[ s_curboneno ] );
+						s_owpTimeline->setCurrentLine( s_boneno2lineno[ s_curboneno ], true );
 					}
 
 					CDXUTComboBox* pComboBox;

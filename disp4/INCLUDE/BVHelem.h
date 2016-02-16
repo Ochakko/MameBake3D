@@ -3,6 +3,7 @@
 
 #include <coef.h>
 #include <D3DX9.h>
+#include <fbxsdk.h>
 
 class CQuaternion;
 
@@ -85,9 +86,51 @@ public:
 		return framenum;
 	}
 
-	D3DXVECTOR3* GetRotate(){
-		return rotate;
+	//D3DXVECTOR3* GetRotate(){
+	//	return rotate;
+	//};
+
+	float GetRotate(int srcframeno, int srcaxis)
+	{
+		if ((srcframeno >= 0) && (srcframeno < framenum)){
+			if ((srcaxis >= ROTAXIS_X) && (srcaxis <= ROTAXIS_Z)){
+				switch (srcaxis){
+				case ROTAXIS_X:
+					return (rotate + srcframeno)->x;
+					break;
+				case ROTAXIS_Y:
+					return (rotate + srcframeno)->y;
+					break;
+				case ROTAXIS_Z:
+					return (rotate + srcframeno)->z;
+					break;
+				default:
+					_ASSERT(0);
+					return 0.0f;
+					break;
+				}
+			}
+			else{
+				_ASSERT(0);
+				return 0.0f;
+			}
+		}
+		else{
+			_ASSERT(0);
+			return 0.0f;
+		}
 	};
+
+	int GetTrans(int srcframeno, D3DXVECTOR3* dsttra)
+	{
+		if ((srcframeno >= 0) && (srcframeno < framenum)){
+			*dsttra = *(trans + srcframeno);
+		}
+		else{
+			return -1;
+		}
+		return 0;
+	}
 
 	const char* GetName(){
 		return name;
@@ -108,6 +151,54 @@ public:
 		return 0;
 	};
 
+	EFbxRotationOrder GetFBXRotationOrder(){
+		if (rotorder[0] == ROTAXIS_X){
+			if (rotorder[1] == ROTAXIS_Y){
+				//return eEulerXYZ;
+				return eEulerZYX;
+			}
+			else if (rotorder[1] == ROTAXIS_Z){
+				//return eEulerXZY;
+				return eEulerYZX;
+			}
+			else{
+				_ASSERT(0);
+				return eEulerZXY;
+			}
+		}
+		else if (rotorder[0] == ROTAXIS_Y){
+			if (rotorder[1] == ROTAXIS_X){
+				//return eEulerYXZ;
+				return eEulerZXY;
+			}
+			else if (rotorder[1] == ROTAXIS_Z){
+				//return eEulerYZX;
+				return eEulerXZY;
+			}
+			else{
+				_ASSERT(0);
+				return eEulerZXY;
+			}
+		}
+		else if (rotorder[0] == ROTAXIS_Z){
+			if (rotorder[1] == ROTAXIS_X){
+				//return eEulerZXY;
+				return eEulerYXZ;
+			}
+			else if (rotorder[1] == ROTAXIS_Y){
+				//return eEulerZYX;
+				return eEulerXYZ;
+			}
+			else{
+				_ASSERT(0);
+				return eEulerZXY;
+			}
+		}
+		else{
+			_ASSERT(0);
+			return eEulerZXY;
+		}
+	};
 private:
 	int isroot;
 

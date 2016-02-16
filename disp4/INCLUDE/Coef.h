@@ -50,7 +50,8 @@ enum {
 
 enum {
 	FB_NORMAL,
-	FB_BUNKI,
+	FB_BUNKI_PAR,
+	FB_BUNKI_CHIL,
 	FB_ROOT,
 	FB_ENDJOINT,
 	FB_MAX
