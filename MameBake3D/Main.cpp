@@ -399,7 +399,7 @@ CTexBank*	g_texbank = 0;
 
 float g_tmpmqomult = 1.0f;
 WCHAR g_tmpmqopath[MULTIPATH] = {0L};
-
+float g_tmpbvhfilter = 10.0f;
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -548,6 +548,7 @@ void CALLBACK OnDestroyDevice( void* pUserContext );
 
 LRESULT CALLBACK OpenMqoDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MotPropDlgProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK OpenBvhDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -5143,8 +5144,8 @@ int BVH2FBX()
 {
 
 	int dlgret;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
-		s_mainwnd, (DLGPROC)OpenMqoDlgProc );
+	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENBVHDLG ), 
+		s_mainwnd, (DLGPROC)OpenBvhDlgProc );
 	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
 		return 0;
 	}
@@ -6671,6 +6672,73 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
             return FALSE;
     }
     return TRUE;
+}
+
+
+LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+
+	OPENFILENAME ofn;
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = hDlgWnd;
+	ofn.hInstance = 0;
+	ofn.lpstrFilter = L"BVH(*.bvh)\0*.bvh\0chara(*.fbx)\0*.fbx\0";
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxCustFilter = 0;
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = g_tmpmqopath;
+	ofn.nMaxFile = MULTIPATH;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = NULL;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.nFileOffset = 0;
+	ofn.nFileExtension = 0;
+	ofn.lpstrDefExt = NULL;
+	ofn.lCustData = NULL;
+	ofn.lpfnHook = NULL;
+	ofn.lpTemplateName = NULL;
+
+	WCHAR strmult[256];
+	wcscpy_s(strmult, 256, L"1.000");
+	WCHAR strfilter[256];
+	wcscpy_s(strfilter, 256, L"10.0");
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		g_tmpmqomult = 1.0f;
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR)* MULTIPATH);
+		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
+		SetDlgItemText(hDlgWnd, IDC_EDITFILTER, strfilter);
+		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"参照ボタンを押してファイルを指定してください。");
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			GetDlgItemText(hDlgWnd, IDC_MULT, strmult, 256);
+			g_tmpmqomult = (float)_wtof(strmult);
+			//GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
+			GetDlgItemText(hDlgWnd, IDC_EDITFILTER, strfilter, 256);
+			g_tmpbvhfilter = (float)_wtof(strfilter);
+
+			EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		case IDC_REFMQO:
+			if (GetOpenFileNameW(&ofn) == IDOK){
+				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+			}
+			break;
+		default:
+			return FALSE;
+		}
+	default:
+		return FALSE;
+	}
+	return TRUE;
 }
 
 

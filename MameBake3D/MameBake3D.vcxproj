@@ -209,6 +209,11 @@
   <ItemGroup>
     <ResourceCompile Include="MameBake3D.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameBake3D.ico" />
+    <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameMedia\boneimage.bmp" />
+    <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameMedia\boneselect.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -353,4 +353,15 @@
       <Filter>リソース ファイル</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameMedia\boneimage.bmp">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameMedia\boneselect.bmp">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameBake3D.ico">
+      <Filter>リソース ファイル</Filter>
+    </None>
+  </ItemGroup>
 </Project>
