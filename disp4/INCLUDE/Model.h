@@ -129,9 +129,10 @@ public:
  * @param (CMySprite* bcircleptr) IN ジョイント部分の表示のSprite。
  * @param (CModel* cpslptr[COL_MAX]) IN 剛体のモデル。タイプ数分。
  * @param (int selboneno) IN 選択中のボーンのID。
+ * @param (int skiptopbonemark) IN 一番親からのボーンを表示しないフラグ。
  * @return 成功したら０。
  */
-	int RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno );
+	int RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno, int skiptopbonemark = 0 );
 
 
 /**

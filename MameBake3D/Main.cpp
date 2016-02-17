@@ -82,6 +82,7 @@ extern map<CModel*,int> g_bonecntmap;
 
 
 static CFrameCopyDlg s_selbonedlg;
+static int s_allmodelbone = 0;
 
 //float g_initcamdist = 10.0f;
 //static float s_projnear = 0.01f;
@@ -2979,6 +2980,10 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 ***/
 	}
 
+/////// all model bone
+	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)){
+		s_allmodelbone = !s_allmodelbone;
+	}
 
 ///////////// undo
 	if( s_model && g_controlkey && (g_keybuf[ 'Z' ] & 0x80) && !(g_savekeybuf[ 'Z' ] & 0x80) ){
@@ -3318,15 +3323,27 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 			s_gplane->OnRender( s_pdev, 0, diffusemult );
 		}
 
-		if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
-			if( s_model && s_model->GetModelDisp() ){
-				if( s_ikkind >= 3 ){
-					s_model->RenderBoneMark( s_pdev, s_bmark, s_bcircle, s_coldisp, s_curboneno );
-				}else{
-					s_model->RenderBoneMark( s_pdev, s_bmark, s_bcircle, 0, s_curboneno );
+		if (s_allmodelbone == 0){
+			if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+				if (s_model && s_model->GetModelDisp()){
+					if (s_ikkind >= 3){
+						s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_coldisp, s_curboneno);
+					}
+					else{
+						s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+					}
 				}
 			}
 		}
+		else{
+			vector<MODELELEM>::iterator itrme;
+			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++){
+				MODELELEM curme = *itrme;
+				CModel* curmodel = curme.modelptr;
+				curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno, 1);
+			}
+		}
+
 		if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
 			if( s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) ){
 				//SetSelectCol();

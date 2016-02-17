@@ -3073,7 +3073,7 @@ int IsValidCluster( FbxCluster* cluster )
 	return findflag;
 }
 
-int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno )
+int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno, int skiptopbonemark )
 {
 	if( m_bonelist.empty() ){
 		return 0;
@@ -3113,49 +3113,65 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 		for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 			CBone* boneptr = itrbone->second;
 			if( boneptr ){
-				if( boneptr->GetChild() ){
-
-					D3DXVECTOR3 aftbonepos;
-					D3DXVec3TransformCoord( &aftbonepos, &boneptr->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()) );
-
-					D3DXVECTOR3 aftchilpos;
-					D3DXVec3TransformCoord( &aftchilpos, &boneptr->GetChild()->GetJointFPos(), &(boneptr->GetChild()->GetCurMp().GetWorldMat()) );
-
-
-					boneptr->CalcAxisMatZ( &aftbonepos, &aftchilpos );
-
-					D3DXMATRIX bmmat;
-					bmmat = boneptr->GetLAxisMat();// * boneptr->m_curmp.m_worldmat;
-
-
-					D3DXVECTOR3 diffvec = aftchilpos - aftbonepos;
-					float diffleng = D3DXVec3Length( &diffvec );
-					
-					float fscale;
-					D3DXMATRIX scalemat;
-					D3DXMatrixIdentity( &scalemat );
-					fscale = diffleng / 50.0f;
-					scalemat._11 = fscale;
-					scalemat._22 = fscale;
-					scalemat._33 = fscale;
-
-					bmmat = scalemat * bmmat;
-
-					bmmat._41 = aftbonepos.x;
-					bmmat._42 = aftbonepos.y;
-					bmmat._43 = aftbonepos.z;
-
-
-					g_pEffect->SetMatrix( g_hmWorld, &bmmat );
-					bmarkptr->UpdateMatrix( &bmmat, &m_matVP );
-					D3DXVECTOR4 difmult;
-					if( boneptr->GetSelectFlag() == 2 ){
-						difmult = D3DXVECTOR4( 1.0f, 0.0f, 0.0f, 0.5f );
-					}else{
-						difmult = D3DXVECTOR4( 0.25f, 0.5f, 0.5f, 0.5f );
+				if (boneptr->GetChild()){
+					int renderflag = 0;
+					if (skiptopbonemark == 0){
+						renderflag = 1;
 					}
-					CallF( bmarkptr->OnRender( pdev, 0, difmult ), return 1 );
-				}				
+					else{
+						CBone* parbone = boneptr->GetParent();
+						if (parbone){
+							renderflag = 1;
+						}
+						else{
+							renderflag = 0;
+						}
+					}
+					if(renderflag == 1){
+
+						D3DXVECTOR3 aftbonepos;
+						D3DXVec3TransformCoord(&aftbonepos, &boneptr->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
+
+						D3DXVECTOR3 aftchilpos;
+						D3DXVec3TransformCoord(&aftchilpos, &boneptr->GetChild()->GetJointFPos(), &(boneptr->GetChild()->GetCurMp().GetWorldMat()));
+
+
+						boneptr->CalcAxisMatZ(&aftbonepos, &aftchilpos);
+
+						D3DXMATRIX bmmat;
+						bmmat = boneptr->GetLAxisMat();// * boneptr->m_curmp.m_worldmat;
+
+
+						D3DXVECTOR3 diffvec = aftchilpos - aftbonepos;
+						float diffleng = D3DXVec3Length(&diffvec);
+
+						float fscale;
+						D3DXMATRIX scalemat;
+						D3DXMatrixIdentity(&scalemat);
+						fscale = diffleng / 50.0f;
+						scalemat._11 = fscale;
+						scalemat._22 = fscale;
+						scalemat._33 = fscale;
+
+						bmmat = scalemat * bmmat;
+
+						bmmat._41 = aftbonepos.x;
+						bmmat._42 = aftbonepos.y;
+						bmmat._43 = aftbonepos.z;
+
+
+						g_pEffect->SetMatrix(g_hmWorld, &bmmat);
+						bmarkptr->UpdateMatrix(&bmmat, &m_matVP);
+						D3DXVECTOR4 difmult;
+						if (boneptr->GetSelectFlag() == 2){
+							difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+						}
+						else{
+							difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+						}
+						CallF(bmarkptr->OnRender(pdev, 0, difmult), return 1);
+					}
+				}
 			}
 		}
 	}
