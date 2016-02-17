@@ -99,6 +99,7 @@
     <ClCompile Include="..\disp4\BTMANAGER\BPWorld.cpp" />
     <ClCompile Include="..\disp4\CPP\BntFile.cpp" />
     <ClCompile Include="..\disp4\CPP\Bone.cpp" />
+    <ClCompile Include="..\disp4\CPP\BoneProp.cpp" />
     <ClCompile Include="..\disp4\CPP\BtObject.cpp" />
     <ClCompile Include="..\disp4\CPP\BVHelem.cpp" />
     <ClCompile Include="..\disp4\CPP\BVHFile.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="..\disp4\DXUT\Optional\SDKmisc.h" />
     <ClInclude Include="..\disp4\INCLUDE\BntFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\Bone.h" />
+    <ClInclude Include="..\disp4\INCLUDE\BoneProp.h" />
     <ClInclude Include="..\disp4\INCLUDE\BtObject.h" />
     <ClInclude Include="..\disp4\INCLUDE\BVHelem.h" />
     <ClInclude Include="..\disp4\INCLUDE\BVHFile.h" />

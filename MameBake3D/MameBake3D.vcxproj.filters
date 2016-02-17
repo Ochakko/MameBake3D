@@ -177,6 +177,9 @@
     <ClCompile Include="..\disp4\CPP\EditRange.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\disp4\CPP\BoneProp.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColiIDDlg.h">
@@ -345,6 +348,9 @@
       <Filter>Bullet</Filter>
     </ClInclude>
     <ClInclude Include="..\disp4\INCLUDE\EditRange.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\BoneProp.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

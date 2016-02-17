@@ -885,16 +885,7 @@ void AnimateSkeletonOfBVH( FbxScene* pScene )
 	s_firstanimout = 1;
 	AnimateBoneOfBVHReq( s_fbxbone, lAnimLayer );
 
-	//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
-	//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, FbxNode::eDestinationPivot, 30.0, true );
-	//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, FbxNode::eSourcePivot, 30.0, true );
-
-	
-	//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStackName, s_convPivot, 30.0, true);
-	
-	
-	//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, FbxNode::eDestinationPivot, 30.0, true );
-
+	pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStackName, s_convPivot, 30.0, true);
 
 }
 void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
@@ -922,14 +913,15 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 			float filterval = g_tmpbvhfilter;
 
-			EFbxRotationOrder lRotationOrderSrc;// = eEulerXYZ;
-			EFbxRotationOrder lRotationOrderDst = eEulerZXY;
-			lRotationOrderSrc = curbe->GetFBXRotationOrder();//!!!!!!!!!!!!!!!!!
-
-			lSkel->GetRotationOrder( FbxNode::eSourcePivot, lRotationOrderSrc );
-			lSkel->GetRotationOrder( FbxNode::eDestinationPivot, lRotationOrderDst );
-			s_convPivot =  FbxNode::eSourcePivot;
-
+			EFbxRotationOrder lRotationOrderSrc = eEulerZXY;
+			EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
+			lSkel->GetRotationOrder(FbxNode::eSourcePivot, lRotationOrderSrc);
+			lSkel->GetRotationOrder(FbxNode::eDestinationPivot, lRotationOrderDst);
+			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerZXY);
+			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
+			lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
+			lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerZXY);
+			s_convPivot = FbxNode::eSourcePivot;
 
 			FbxAnimCurve* lCurveTX;
 			FbxAnimCurve* lCurveTY;
@@ -963,8 +955,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				lCurveTX = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 				lCurveTX->KeyModifyBegin();
 				for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-					curbe->CalcDiffTra(frameno, &difftra);
-					//curbe->GetTrans(frameno, &difftra);
+					//curbe->CalcDiffTra(frameno, &difftra);
+					curbe->GetTrans(frameno, &difftra);
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveTX->KeyAdd(lTime);
 					lCurveTX->KeySetValue(lKeyIndex, orgtra.x);
@@ -975,8 +967,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				lCurveTY = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 				lCurveTY->KeyModifyBegin();
 				for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-					curbe->CalcDiffTra(frameno, &difftra);
-					//curbe->GetTrans(frameno, &difftra);
+					//curbe->CalcDiffTra(frameno, &difftra);
+					curbe->GetTrans(frameno, &difftra);
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveTY->KeyAdd(lTime);
 					lCurveTY->KeySetValue(lKeyIndex, orgtra.y);
@@ -987,8 +979,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				lCurveTZ = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 				lCurveTZ->KeyModifyBegin();
 				for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-					curbe->CalcDiffTra(frameno, &difftra);
-					//curbe->GetTrans(frameno, &difftra);
+					//curbe->CalcDiffTra(frameno, &difftra);
+					curbe->GetTrans(frameno, &difftra);
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveTZ->KeyAdd(lTime);
 					lCurveTZ->KeySetValue(lKeyIndex, orgtra.z);
@@ -1069,8 +1061,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTX = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 					lCurveTX->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTX->KeyAdd(lTime);
 						lCurveTX->KeySetValue(lKeyIndex, difftra.x);
@@ -1081,8 +1073,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTY = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 					lCurveTY->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTY->KeyAdd(lTime);
 						lCurveTY->KeySetValue(lKeyIndex, difftra.y);
@@ -1093,8 +1085,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTZ = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 					lCurveTZ->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTZ->KeyAdd(lTime);
 						lCurveTZ->KeySetValue(lKeyIndex, difftra.z);
@@ -1109,7 +1101,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					float diffval;
 
 
-					befval = curbe->GetRotate(0, ROTAXIS_X);
+					befval = curbe->GetZxyRot(0, ROTAXIS_X);
 					curval = befval;
 
 					FbxAnimCurve* lCurveRX;
@@ -1119,26 +1111,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveRX->KeyAdd(lTime);
-						tmpval = curbe->GetRotate(frameno, ROTAXIS_X);
-						if (tmpval >= 180.0f){
-							tmpval -= 360.0f;
-						}
-						else if (tmpval < -180.0f){
-							tmpval += 360.0f;
-						}
-						diffval = tmpval - befval;
-						if (fabs(diffval) > filterval){
-							if (diffval > 0.0f){
-								curval = befval + filterval;
-							}
-							else{
-								curval = befval - filterval;
-							}
-						}
-						else{
-							curval = tmpval;
-						}
-						befval = curval;
+						curval = curbe->GetZxyRot(frameno, ROTAXIS_X);
 						lCurveRX->KeySetValue(lKeyIndex, curval);
 						//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 						//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1147,7 +1120,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveRX->KeyModifyEnd();
 
 
-					befval = curbe->GetRotate(0, ROTAXIS_Y);
+					befval = curbe->GetZxyRot(0, ROTAXIS_Y);
 					curval = befval;
 					FbxAnimCurve* lCurveRY;
 					//			lCurveRY = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Y", true);
@@ -1156,26 +1129,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveRY->KeyAdd(lTime);
-						tmpval = curbe->GetRotate(frameno, ROTAXIS_Y);
-						if (tmpval >= 180.0f){
-							tmpval -= 360.0f;
-						}
-						else if (tmpval < -180.0f){
-							tmpval += 360.0f;
-						}
-						diffval = tmpval - befval;
-						if (fabs(diffval) > filterval){
-							if (diffval > 0.0f){
-								curval = befval + filterval;
-							}
-							else{
-								curval = befval - filterval;
-							}
-						}
-						else{
-							curval = tmpval;
-						}
-						befval = curval;
+						curval = curbe->GetZxyRot(frameno, ROTAXIS_Y);
 						lCurveRY->KeySetValue(lKeyIndex, curval);
 						//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 						//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1184,7 +1138,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveRY->KeyModifyEnd();
 					///////////////
 
-					befval = curbe->GetRotate(0, ROTAXIS_Z);
+					befval = curbe->GetZxyRot(0, ROTAXIS_Z);
 					curval = befval;
 					FbxAnimCurve* lCurveRZ;
 					//			lCurveRZ = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Z", true);
@@ -1193,26 +1147,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveRZ->KeyAdd(lTime);
-						tmpval = curbe->GetRotate(frameno, ROTAXIS_Z);
-						if (tmpval >= 180.0f){
-							tmpval -= 360.0f;
-						}
-						else if (tmpval < -180.0f){
-							tmpval += 360.0f;
-						}
-						diffval = tmpval - befval;
-						if (fabs(diffval) > filterval){
-							if (diffval > 0.0f){
-								curval = befval + filterval;
-							}
-							else{
-								curval = befval - filterval;
-							}
-						}
-						else{
-							curval = tmpval;
-						}
-						befval = curval;
+						curval = curbe->GetZxyRot(frameno, ROTAXIS_Z);
 						lCurveRZ->KeySetValue(lKeyIndex, curval);
 						//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 						//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1225,8 +1160,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTX = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 					lCurveTX->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTX->KeyAdd(lTime);
 						lCurveTX->KeySetValue(lKeyIndex, 0.0f);
@@ -1237,8 +1172,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTY = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 					lCurveTY->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTY->KeyAdd(lTime);
 						lCurveTY->KeySetValue(lKeyIndex, 0.0f);
@@ -1249,8 +1184,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTZ = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 					lCurveTZ->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTZ->KeyAdd(lTime);
 						lCurveTZ->KeySetValue(lKeyIndex, 0.0f);
@@ -1265,7 +1200,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					float diffval;
 
 
-					befval = curbe->GetRotate(0, ROTAXIS_X);
+					befval = curbe->GetZxyRot(0, ROTAXIS_X);
 					curval = befval;
 
 					FbxAnimCurve* lCurveRX;
@@ -1275,26 +1210,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveRX->KeyAdd(lTime);
-						tmpval = curbe->GetRotate(frameno, ROTAXIS_X);
-						if (tmpval >= 180.0f){
-							tmpval -= 360.0f;
-						}
-						else if (tmpval < -180.0f){
-							tmpval += 360.0f;
-						}
-						diffval = tmpval - befval;
-						if (fabs(diffval) > filterval){
-							if (diffval > 0.0f){
-								curval = befval + filterval;
-							}
-							else{
-								curval = befval - filterval;
-							}
-						}
-						else{
-							curval = tmpval;
-						}
-						befval = curval;
+						curval = curbe->GetZxyRot(frameno, ROTAXIS_X);
 						lCurveRX->KeySetValue(lKeyIndex, 0.0f);
 						//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 						//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1303,7 +1219,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveRX->KeyModifyEnd();
 
 
-					befval = curbe->GetRotate(0, ROTAXIS_Y);
+					befval = curbe->GetZxyRot(0, ROTAXIS_Y);
 					curval = befval;
 					FbxAnimCurve* lCurveRY;
 					//			lCurveRY = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Y", true);
@@ -1312,26 +1228,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveRY->KeyAdd(lTime);
-						tmpval = curbe->GetRotate(frameno, ROTAXIS_Y);
-						if (tmpval >= 180.0f){
-							tmpval -= 360.0f;
-						}
-						else if (tmpval < -180.0f){
-							tmpval += 360.0f;
-						}
-						diffval = tmpval - befval;
-						if (fabs(diffval) > filterval){
-							if (diffval > 0.0f){
-								curval = befval + filterval;
-							}
-							else{
-								curval = befval - filterval;
-							}
-						}
-						else{
-							curval = tmpval;
-						}
-						befval = curval;
+						curval = curbe->GetZxyRot(frameno, ROTAXIS_Y);
 						lCurveRY->KeySetValue(lKeyIndex, 0.0f);
 						//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 						//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1340,7 +1237,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveRY->KeyModifyEnd();
 					///////////////
 
-					befval = curbe->GetRotate(0, ROTAXIS_Z);
+					befval = curbe->GetZxyRot(0, ROTAXIS_Z);
 					curval = befval;
 					FbxAnimCurve* lCurveRZ;
 					//			lCurveRZ = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Z", true);
@@ -1349,26 +1246,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveRZ->KeyAdd(lTime);
-						tmpval = curbe->GetRotate(frameno, ROTAXIS_Z);
-						if (tmpval >= 180.0f){
-							tmpval -= 360.0f;
-						}
-						else if (tmpval < -180.0f){
-							tmpval += 360.0f;
-						}
-						diffval = tmpval - befval;
-						if (fabs(diffval) > filterval){
-							if (diffval > 0.0f){
-								curval = befval + filterval;
-							}
-							else{
-								curval = befval - filterval;
-							}
-						}
-						else{
-							curval = tmpval;
-						}
-						befval = curval;
+						curval = curbe->GetZxyRot(frameno, ROTAXIS_Z);
 						lCurveRZ->KeySetValue(lKeyIndex, 0.0f);
 						//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 						//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1383,8 +1261,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTX = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
 					lCurveTX->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTX->KeyAdd(lTime);
 						lCurveTX->KeySetValue(lKeyIndex, difftra.x + orgtra.x);
@@ -1395,8 +1273,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTY = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y, true);
 					lCurveTY->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTY->KeyAdd(lTime);
 						lCurveTY->KeySetValue(lKeyIndex, difftra.y + orgtra.y);
@@ -1407,8 +1285,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					lCurveTZ = lSkel->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z, true);
 					lCurveTZ->KeyModifyBegin();
 					for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
-						curbe->CalcDiffTra(frameno, &difftra);
-						//curbe->GetTrans(frameno, &difftra);
+						//curbe->CalcDiffTra(frameno, &difftra);
+						curbe->GetTrans(frameno, &difftra);
 						lTime.SetSecondDouble((double)frameno / timescale);
 						lKeyIndex = lCurveTZ->KeyAdd(lTime);
 						lCurveTZ->KeySetValue(lKeyIndex, difftra.z + orgtra.z);
@@ -1423,7 +1301,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				float diffval;
 
 
-				befval = curbe->GetRotate(0, ROTAXIS_X);
+				befval = curbe->GetZxyRot(0, ROTAXIS_X);
 				curval = befval;
 
 				FbxAnimCurve* lCurveRX;
@@ -1433,26 +1311,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveRX->KeyAdd(lTime);
-					tmpval = curbe->GetRotate(frameno, ROTAXIS_X);
-					if (tmpval >= 180.0f){
-						tmpval -= 360.0f;
-					}
-					else if (tmpval < -180.0f){
-						tmpval += 360.0f;
-					}
-					diffval = tmpval - befval;
-					if (fabs(diffval) > filterval){
-						if (diffval > 0.0f){
-							curval = befval + filterval;
-						}
-						else{
-							curval = befval - filterval;
-						}
-					}
-					else{
-						curval = tmpval;
-					}
-					befval = curval;
+					curval = curbe->GetZxyRot(frameno, ROTAXIS_X);
 					lCurveRX->KeySetValue(lKeyIndex, curval);
 					//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 					//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1461,7 +1320,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				lCurveRX->KeyModifyEnd();
 
 
-				befval = curbe->GetRotate(0, ROTAXIS_Y);
+				befval = curbe->GetZxyRot(0, ROTAXIS_Y);
 				curval = befval;
 				FbxAnimCurve* lCurveRY;
 				//			lCurveRY = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Y", true);
@@ -1470,26 +1329,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveRY->KeyAdd(lTime);
-					tmpval = curbe->GetRotate(frameno, ROTAXIS_Y);
-					if (tmpval >= 180.0f){
-						tmpval -= 360.0f;
-					}
-					else if (tmpval < -180.0f){
-						tmpval += 360.0f;
-					}
-					diffval = tmpval - befval;
-					if (fabs(diffval) > filterval){
-						if (diffval > 0.0f){
-							curval = befval + filterval;
-						}
-						else{
-							curval = befval - filterval;
-						}
-					}
-					else{
-						curval = tmpval;
-					}
-					befval = curval;
+					curval = curbe->GetZxyRot(frameno, ROTAXIS_Y);
 					lCurveRY->KeySetValue(lKeyIndex, curval);
 					//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 					//lCurveRX->KeySetValue(lKeyIndex, 0.0);
@@ -1498,7 +1338,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				lCurveRY->KeyModifyEnd();
 				///////////////
 
-				befval = curbe->GetRotate(0, ROTAXIS_Z);
+				befval = curbe->GetZxyRot(0, ROTAXIS_Z);
 				curval = befval;
 				FbxAnimCurve* lCurveRZ;
 				//			lCurveRZ = lSkel->LclTranslation.GetCurve(lAnimLayer, "R_Z", true);
@@ -1507,26 +1347,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
 					lTime.SetSecondDouble((double)frameno / timescale);
 					lKeyIndex = lCurveRZ->KeyAdd(lTime);
-					tmpval = curbe->GetRotate(frameno, ROTAXIS_Z);
-					if (tmpval >= 180.0f){
-						tmpval -= 360.0f;
-					}
-					else if (tmpval < -180.0f){
-						tmpval += 360.0f;
-					}
-					diffval = tmpval - befval;
-					if (fabs(diffval) > filterval){
-						if (diffval > 0.0f){
-							curval = befval + filterval;
-						}
-						else{
-							curval = befval - filterval;
-						}
-					}
-					else{
-						curval = tmpval;
-					}
-					befval = curval;
+					curval = curbe->GetZxyRot(frameno, ROTAXIS_Z);
 					lCurveRZ->KeySetValue(lKeyIndex, curval);
 					//lCurveRX->KeySetValue(lKeyIndex, FlClamp( (curbe->rotate + frameno)->x, 0.0f, 89.0f ) );
 					//lCurveRX->KeySetValue(lKeyIndex, 0.0);

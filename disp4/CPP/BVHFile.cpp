@@ -300,12 +300,15 @@ int CBVHFile::LoadBVHFile( HWND srcapphwnd, WCHAR* srcname, float srcmult )
 		
 		int beno;
 		for( beno = 0; beno < m_benum; beno++ ){
-			ret = (*( m_bearray + beno ))->ConvertRotate2Q();
-			if( ret ){
-				DbgOut( L"bvhfile : LoadBVHFile : be ConvertRotate2Q error !!!\n" );
-				_ASSERT( 0 );
-				goto ldbvhexit;
-			}
+
+			ret = (*(m_bearray + beno))->ConvertRotate2Q();
+			_ASSERT(!ret);
+			
+			CalcBVHTreeQReq(m_behead);
+
+			ret = (*( m_bearray + beno ))->ConvZxyRot();
+			_ASSERT(!ret);
+
 
 			/////// for debug
 			//char* findname = 0;
@@ -315,13 +318,7 @@ int CBVHFile::LoadBVHFile( HWND srcapphwnd, WCHAR* srcname, float srcmult )
 			//}
 		}
 
-		CalcBVHTreeQReq( m_behead );
-
 	}
-
-
-
-
 
 	goto ldbvhexit;
 ldbvhexit:
@@ -1193,13 +1190,12 @@ void CBVHFile::CalcBVHTreeQReq( CBVHElem* srcbe )
 
 	if( srcbe->GetParent() ){
 		for( fno = 0; fno < m_frames; fno++ ){
-			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetParent()->GetTreeQ() + fno) * *(srcbe->GetQPtr() + fno);
-			//*(srcbe->treeq + fno) = *(srcbe->parent->treeq + fno) * *(srcbe->transpose + fno);
+			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetParent()->GetQPtr() + fno) * *(srcbe->GetTreeQ() + fno);
 		}
 	}else{
 		for( fno = 0; fno < m_frames; fno++ ){
-			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetQPtr() + fno);
-			//*(srcbe->treeq + fno) = *(srcbe->transpose + fno);
+			//*(srcbe->GetTreeQ() + fno) = *(srcbe->GetQPtr() + fno);
+			(srcbe->GetTreeQ() + fno)->SetParams( 1.0f, 0.0f, 0.0f, 0.0f );//自分を含まない親の影響を計算するため。axisqに使用する。
 		}
 	}
 //////////

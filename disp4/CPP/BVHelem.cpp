@@ -13,6 +13,7 @@
 #include <crtdbg.h>
 
 #include <quaternion.h>
+#include <BoneProp.h>
 #include <D3DX9.h>
 
 #define DBGH
@@ -60,6 +61,7 @@ int CBVHElem::InitParams()
 
 	trans = 0;
 	rotate = 0;
+	zxyrot = 0;
 	qptr = 0;
 	treeq = 0;
 	transpose = 0;
@@ -94,6 +96,10 @@ int CBVHElem::DestroyObjs()
 	if( rotate ){
 		delete [] rotate;
 		rotate = 0;
+	}
+	if (zxyrot){
+		delete[] zxyrot;
+		zxyrot = 0;
 	}
 
 	if( qptr ){
@@ -448,6 +454,15 @@ int CBVHElem::CreateMotionObjs( int srcframes )
 	}
 	ZeroMemory( rotate, sizeof( D3DXVECTOR3 ) * framenum );
 
+	zxyrot = new D3DXVECTOR3[framenum];
+	if (!zxyrot){
+		DbgOut(L"bvhelem : CreateMotionObjs : zxyrot alloc error !!!\n");
+		_ASSERT(0);
+		return 1;
+	}
+	ZeroMemory(zxyrot, sizeof(D3DXVECTOR3)* framenum);
+
+
 	qptr = new CQuaternion[ framenum ];
 	if( !qptr ){
 		DbgOut( L"bvhelem : CreateMotionObj : qptr alloc error !!!\n" );
@@ -627,45 +642,62 @@ int CBVHElem::ConvertRotate2Q()
 
 int CBVHElem::ConvertRotate2Q()
 {
-/***
 	int fno;
+	CQuaternion iniq;
 
-	CQuaternion y180q;
-	y180q.SetRotation( 0.0f, 180.0f, 0.0f );
+	//CQuaternion y180q;
+	//y180q.SetRotation( 0.0f, 180.0f, 0.0f );
 
 	if( qptr && trans && transpose ){
 		CQuaternion q[ ROTAXIS_MAX ];
 		CQuaternion qall;
 		for( fno = 0; fno < framenum; fno++ ){
-			q[ ROTAXIS_X ].SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-			q[ ROTAXIS_Y ].SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-			q[ ROTAXIS_Z ].SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
+			q[ROTAXIS_X].SetParams(1.0f, 0.0f, 0.0f, 0.0f );
+			q[ROTAXIS_Y].SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			q[ROTAXIS_Z].SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
-			q[ ROTAXIS_X ].SetRotation( ( rotate + fno )->x, 0.0f, 0.0f );
-			q[ ROTAXIS_Y ].SetRotation( 0.0f, ( rotate + fno )->y, 0.0f );
-			q[ ROTAXIS_Z ].SetRotation( 0.0f, 0.0f, ( rotate + fno )->z );
+			q[ROTAXIS_X].SetRotation(&iniq, (rotate + fno)->x, 0.0f, 0.0f);
+			q[ROTAXIS_Y].SetRotation(&iniq, 0.0f, (rotate + fno)->y, 0.0f);
+			q[ROTAXIS_Z].SetRotation(&iniq, 0.0f, 0.0f, (rotate + fno)->z);
 
 			qall = q[ rotorder[0] ] * q[ rotorder[1] ] * q[ rotorder[2] ];
 //			q = qz * qx * qy;
-			if( isroot ){
+			//if( isroot ){
 				//q = q * y180q;
-				qall = y180q * qall;
-			}
+			//	qall = y180q * qall;
+			//}
 
 			*( qptr + fno ) = qall;
 	///////////////
 			qall.transpose( transpose + fno );
 
 	///////////////
-			y180q.Rotate( ( trans + fno ), *( trans + fno ) );
-
-
+			//y180q.Rotate( ( trans + fno ), *( trans + fno ) );
 		}
-
 	}
-***/
 	return 0;
 }
+
+int CBVHElem::ConvZxyRot()
+{
+	int ret;
+	int frameno;
+	D3DXVECTOR3 befeul;
+	ZeroMemory(&befeul, sizeof(D3DXVECTOR3));
+	for (frameno = 0; frameno < framenum; frameno++){
+		D3DXVECTOR3 euler;
+		//qToEulerAxis( *(treeq + frameno), (qptr + frameno), &euler);
+		CQuaternion iniq;
+		qToEulerAxis(iniq, (qptr + frameno), &euler);
+		modifyEuler(&euler, &befeul);
+
+		*(zxyrot + frameno) = euler;
+		befeul = euler;
+	}
+
+	return 0;
+}
+
 
 int CBVHElem::CheckNotAlNumName( char** ppdstname )
 {

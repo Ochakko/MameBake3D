@@ -399,7 +399,7 @@ CTexBank*	g_texbank = 0;
 
 float g_tmpmqomult = 1.0f;
 WCHAR g_tmpmqopath[MULTIPATH] = {0L};
-float g_tmpbvhfilter = 10.0f;
+float g_tmpbvhfilter = 100.0f;
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -5144,8 +5144,8 @@ int BVH2FBX()
 {
 
 	int dlgret;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENBVHDLG ), 
-		s_mainwnd, (DLGPROC)OpenBvhDlgProc );
+	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
+		s_mainwnd, (DLGPROC)OpenMqoDlgProc );
 	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
 		return 0;
 	}
@@ -6703,7 +6703,7 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	WCHAR strmult[256];
 	wcscpy_s(strmult, 256, L"1.000");
 	WCHAR strfilter[256];
-	wcscpy_s(strfilter, 256, L"10.0");
+	wcscpy_s(strfilter, 256, L"100.0");
 
 	switch (msg) {
 	case WM_INITDIALOG:
