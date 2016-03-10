@@ -180,6 +180,9 @@
     <ClCompile Include="..\disp4\CPP\BoneProp.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="RMenuMain.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColiIDDlg.h">
@@ -353,6 +356,9 @@
     <ClInclude Include="..\disp4\INCLUDE\BoneProp.h">
       <Filter>disp4</Filter>
     </ClInclude>
+    <ClInclude Include="RMenuMain.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MameBake3D.rc">
@@ -367,6 +373,15 @@
       <Filter>リソース ファイル</Filter>
     </None>
     <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameBake3D.ico">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\Media\MameMedia\boneimage.bmp">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\Media\MameMedia\boneselect.bmp">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\Media\MameBake3D.ico">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>

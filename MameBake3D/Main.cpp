@@ -71,6 +71,7 @@ MameBake3Dはデフォルトで相対IKである。
 #include <BntFile.h>
 
 #include <Model.h>
+#include "RMenuMain.h"
 
 typedef struct tag_spaxis
 {
@@ -290,6 +291,19 @@ static OWP_Button* s_toolMarkB = 0;
 static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
 
+#define CONVBONEMAX		256
+static OrgWindow* s_convboneWnd = 0;
+static OWP_ScrollWnd* s_convboneSCWnd = 0;
+static int s_convbonenum = 0;
+static OWP_Button* s_cbselmodel = 0;
+static OWP_Button* s_cbselbvh = 0;
+static OWP_Label* s_convbonemidashi[2];
+static OWP_Label* s_modelbone[CONVBONEMAX];
+static OWP_Button* s_bvhbone[CONVBONEMAX];
+static OWP_Separator* s_convbonesp = 0;
+static OWP_Button* s_convboneconvert = 0;
+static CModel* s_convbone_model = 0;
+static CModel* s_convbone_bvh = 0;
 
 static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
@@ -298,6 +312,7 @@ static bool s_closeFlag = false;			// 終了フラグ
 static bool s_closetoolFlag = false;
 static bool s_closeobjFlag = false;
 static bool s_closemodelFlag = false;
+static bool s_closeconvboneFlag = false;
 static bool s_DcloseFlag = false;
 static bool s_RcloseFlag = false;
 static bool s_IcloseFlag = false;
@@ -333,6 +348,8 @@ static bool s_dispmodel = false;//!!!!!!!!!!!!!!!!!
 static bool s_dispground = true;
 static bool s_dispselect = true;
 static bool s_displightarrow = true;
+static bool s_dispconvbone = false;
+
 
 static bool s_Ldispmw = true;
 
@@ -598,6 +615,7 @@ static int DispMotionWindow();
 static int DispToolWindow();
 static int DispObjPanel();
 static int DispModelPanel();
+static int DispConvBoneWindow();
 static int EraseKeyList();
 static int DestroyTimeLine( int dellist );
 static int AddTimeLine( int newmotid );
@@ -619,6 +637,12 @@ static int SetSelectState();
 
 static int CreateModelPanel();
 static int DestroyModelPanel();
+static int CreateConvBoneWnd();
+static int DestroyConvBoneWnd();
+static int SetConvBoneModel();
+static int SetConvBoneBvh();
+static int SetConvBone( int cbno );
+
 
 static int CalcTargetPos( D3DXVECTOR3* dstpos );
 static int CalcPickRay( D3DXVECTOR3* start3d, D3DXVECTOR3* end3d );
@@ -852,6 +876,24 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 //--------------------------------------------------------------------------------------
 void InitApp()
 {
+	/*
+	#define CONVBONEMAX		256
+	static OrgWindow* s_convboneWnd = 0;
+	static int s_convbonenum = 0;
+	static OWP_Label* s_modelbone[CONVBONEMAX];
+	static OWP_Button* s_bvhbone[CONVBONEMAX];
+	static OWP_Separator* s_convbonesp = 0;
+	*/
+	int cbno;
+	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
+		s_modelbone[cbno] = 0;
+		s_bvhbone[cbno] = 0;
+	}
+	s_convbonemidashi[0] = 0;
+	s_convbonemidashi[1] = 0;
+
+
+
 	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
 
 	g_bonecntmap.clear();
@@ -1658,6 +1700,8 @@ static OWP_Button* s_dampanimB = 0;
 			s_model->SetAllImpulseData( gid, impx, impy, impz );
 		}
 	} );
+//////////
+
 
 //////////
 	s_gpWnd = new OrgWindow(
@@ -2489,6 +2533,13 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		s_dispmodel = false;
 		if( s_modelpanel.panel ){
 			s_modelpanel.panel->setVisible( 0 );
+		}
+	}
+	if (s_closeconvboneFlag){
+		s_closeconvboneFlag = false;
+		s_dispconvbone = false;
+		if (s_convboneWnd){
+			s_convboneWnd->setVisible(false);
 		}
 	}
 	if( s_DcloseFlag ){
@@ -3561,9 +3612,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				DispObjPanel();
 				return 0;
 				break;
+			case ID_DISPCONVBONE:
+				DispConvBoneWindow();
+				return 0;
+				break;
 			case ID_DISPMODELPANEL:
 				DispModelPanel();
 				return 0;
+				break;
 			case ID_DISPGROUND:
 				s_dispground = !s_dispground;
 				return 0;
@@ -4830,6 +4886,7 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 	}
 
 	DestroyModelPanel();
+	DestroyConvBoneWnd();
 
 	//DestroySdkObjects();
 
@@ -5927,6 +5984,29 @@ int DispModelPanel()
 		s_dispmodel = true;
 	}
 
+	return 0;
+}
+
+int DispConvBoneWindow()
+{
+	if (!s_model){
+		return 0;
+	}
+
+	CreateConvBoneWnd();
+
+	if (!s_convboneWnd){
+		return 0;
+	}
+
+	if (s_dispconvbone){
+		s_convboneWnd->setVisible(false);
+		s_dispconvbone = false;
+	}
+	else{
+		s_convboneWnd->setVisible(true);
+		s_dispconvbone = true;
+	}
 	return 0;
 }
 
@@ -7204,6 +7284,328 @@ int CreateModelPanel()
 
 	return 0;
 }
+
+int DestroyConvBoneWnd()
+{
+	s_convbone_model = 0;
+	s_convbone_bvh = 0;
+
+	if (s_convboneWnd){
+		s_convboneWnd->setVisible(false);
+		delete s_convboneWnd;
+		s_convboneWnd = 0;
+	}
+	if (s_convboneSCWnd){
+		delete s_convboneSCWnd;
+		s_convboneSCWnd = 0;
+	}
+
+	int cbno;
+	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
+		if (s_modelbone[cbno]){
+			delete s_modelbone[cbno];
+			s_modelbone[cbno] = 0;
+		}
+		if (s_bvhbone[cbno]){
+			delete s_bvhbone[cbno];
+			s_bvhbone[cbno] = 0;
+		}
+	}
+
+	if (s_cbselmodel){
+		delete s_cbselmodel;
+		s_cbselmodel = 0;
+	}
+	if (s_cbselbvh){
+		delete s_cbselbvh;
+		s_cbselbvh = 0;
+	}
+
+	if (s_convboneconvert){
+		delete s_convboneconvert;
+		s_convboneconvert = 0;
+	}
+
+	if (s_convbonesp){
+		delete s_convbonesp;
+		s_convbonesp = 0;
+	}
+
+	if (s_convbonemidashi[0]){
+		delete s_convbonemidashi[0];
+		s_convbonemidashi[0] = 0;
+	}
+	if (s_convbonemidashi[1]){
+		delete s_convbonemidashi[1];
+		s_convbonemidashi[1] = 0;
+	}
+
+	s_convbonenum = 0;
+
+	return 0;
+}
+
+
+int CreateConvBoneWnd()
+{
+	DestroyConvBoneWnd();
+
+	s_convbonenum = s_model->GetBoneListSize();
+	if (s_convbonenum >= CONVBONEMAX){
+		_ASSERT(0);
+		return 1;
+	}
+
+	s_convboneWnd = new OrgWindow(
+		0,
+		L"convbone0",		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(900, 200),		//位置
+		WindowSize(200, 100),	//サイズ
+		L"ConvBoneWnd",	//タイトル
+		NULL,					//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+
+	s_convboneWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+
+	s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
+	s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
+
+	s_convboneWnd->addParts(*s_convboneSCWnd);
+
+
+	WCHAR bvhbonename[MAX_PATH];
+	int cbno = 0;
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++){
+		CBone* curbone = itrbone->second;
+		if (curbone){
+			const WCHAR* wbonename = curbone->GetWBoneName();
+			_ASSERT(wbonename);
+			s_modelbone[cbno] = new OWP_Label(wbonename);
+			_ASSERT(s_modelbone[cbno]);
+			//s_modelbone[cbno]->setSize(OrgWinGUI::WindowSize(200, 16));
+
+			swprintf_s(bvhbonename, MAX_PATH, L"未設定_%03d", cbno);
+			s_bvhbone[cbno] = new OWP_Button(bvhbonename);
+			_ASSERT(s_bvhbone[cbno]);
+			//s_bvhbone[cbno]->setSize(OrgWinGUI::WindowSize(200, 16));
+
+			DbgOut(L"convbone %d : (%s,  %s)\n", cbno, wbonename, bvhbonename);
+
+			cbno++;
+		}
+	}
+	DbgOut(L"\n\n");
+	_ASSERT(cbno == s_convbonenum);
+
+
+	s_convbonesp = new OWP_Separator(true);									// セパレータ1（境界線による横方向2分割）
+
+	s_cbselmodel = new OWP_Button(L"モデルデータ選択ボタン");
+	s_cbselbvh = new OWP_Button(L"bvh選択ボタン");
+	s_convboneconvert = new OWP_Button(L"コンバートボタン");
+	s_convbonemidashi[0] = new OWP_Label(L"骨入り形状側");
+	s_convbonemidashi[1] = new OWP_Label(L"BVH側");
+
+	s_convboneSCWnd->addParts(*s_convbonesp);
+
+
+	s_convbonesp->addParts1(*s_convbonemidashi[0]);
+	s_convbonesp->addParts1(*s_cbselmodel);
+	s_convbonesp->addParts2(*s_convbonemidashi[1]);
+	s_convbonesp->addParts2(*s_cbselbvh);
+
+
+	for (cbno = 0; cbno < s_convbonenum; cbno++){
+		s_convbonesp->addParts1(*s_modelbone[cbno]);
+		s_convbonesp->addParts2(*s_bvhbone[cbno]);
+	}
+
+	s_convbonesp->addParts1(*s_convboneconvert);
+
+	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	////////////
+	s_convboneWnd->setCloseListener([](){ s_closeconvboneFlag = true; });
+
+
+	s_cbselmodel->setButtonListener([](){
+		SetConvBoneModel();
+		s_convboneWnd->callRewrite();
+	});
+	s_cbselbvh->setButtonListener([](){
+		SetConvBoneBvh();
+		s_convboneWnd->callRewrite();
+	});
+
+
+	for (cbno = 0; cbno < s_convbonenum; cbno++){
+		s_bvhbone[cbno]->setButtonListener([cbno](){
+
+			SetConvBone(cbno);
+			//CModel* curmodel = s_modelindex[modelcnt].modelptr;
+			//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+			s_convboneWnd->callRewrite();
+		});
+	}
+
+
+	return 0;
+}
+
+int SetConvBoneModel()
+{
+	int modelnum = s_modelindex.size();
+	if (modelnum <= 0){
+		return 0;
+	}
+
+	HWND parwnd;
+	parwnd = s_convboneWnd->getHWnd();
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu){
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd);
+	if (ret){
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+
+	int modelno;
+	for (modelno = 0; modelno < modelnum; modelno++){
+		CModel* curmodel = s_modelindex[modelno].modelptr;
+		if (curmodel){
+			const WCHAR* modelname = curmodel->GetFileName();
+			if (modelname){
+				int setmenuid = ID_RMENU_0 + modelno;
+				AppendMenu(submenu, MF_STRING, setmenuid, modelname);
+			}
+		}
+	}
+
+
+	POINT pt;
+	GetCursorPos(&pt);
+	//::ScreenToClient(parwnd, &pt);
+
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+	if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + modelnum))){
+		int modelindex = menuid - ID_RMENU_0;
+		s_convbone_model = s_modelindex[modelindex].modelptr;
+
+		WCHAR strmes[1024];
+		if (!s_convbone_model){
+			swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+			::MessageBox(NULL, strmes, L"check", MB_OK);
+		}
+		else{
+			swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
+			s_cbselmodel->setName(strmes);
+		}
+	}
+
+
+	rmenu->Destroy();
+	delete rmenu;
+
+
+	return 0;
+}
+int SetConvBoneBvh()
+{
+	int modelnum = s_modelindex.size();
+	if (modelnum <= 0){
+		return 0;
+	}
+
+	HWND parwnd;
+	parwnd = s_convboneWnd->getHWnd();
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu){
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd);
+	if (ret){
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+
+	int modelno;
+	for (modelno = 0; modelno < modelnum; modelno++){
+		CModel* curmodel = s_modelindex[modelno].modelptr;
+		if (curmodel){
+			const WCHAR* modelname = curmodel->GetFileName();
+			if (modelname){
+				int setmenuid = ID_RMENU_0 + modelno;
+				AppendMenu(submenu, MF_STRING, setmenuid, modelname);
+			}
+		}
+	}
+
+
+	POINT pt;
+	GetCursorPos(&pt);
+	//::ScreenToClient(parwnd, &pt);
+
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+	if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + modelnum))){
+		int modelindex = menuid - ID_RMENU_0;
+		s_convbone_bvh = s_modelindex[modelindex].modelptr;
+
+		WCHAR strmes[1024];
+		if (!s_convbone_bvh){
+			swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+			::MessageBox(NULL, strmes, L"check", MB_OK);
+		}
+		else{
+			swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
+			s_cbselbvh->setName(strmes);
+		}
+	}
+
+
+	rmenu->Destroy();
+	delete rmenu;
+
+
+	return 0;
+}
+int SetConvBone( int cbno )
+{
+	return 0;
+}
+
 
 int SetCamera6Angle()
 {

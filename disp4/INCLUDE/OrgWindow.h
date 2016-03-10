@@ -982,7 +982,7 @@ static void s_dummyfunc();
 				LineTo(hdcM.hDC, xButtonX1+1, xButtonY2-2);
 
 				//タイトル名を描画
-				hdcM.setFont(10,_T("ＭＳ ゴシック"));
+				hdcM.setFont(12,_T("ＭＳ ゴシック"));
 				SetTextColor(hdcM.hDC,RGB(240,240,240));
 				TextOut(hdcM.hDC, 10, 2, title, _tcslen(title));			//タイトル名
 			}
@@ -1091,21 +1091,25 @@ static void s_dummyfunc();
 			//全ての内部パーツの位置とサイズを自動設定
 			for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
 				itr!=partsList1.end(); itr++){
-
+				WindowSize befsize = (*itr)->getSize();
 				(*itr)->setPos(  WindowPos(  partsAreaPos1.x,  partsAreaPos1.y+currentPartsSizeY1  ) );
-				(*itr)->setSize( WindowSize( partsAreaSize1.x, partsAreaSize1.y-currentPartsSizeY1 ) );
+				//(*itr)->setSize( WindowSize( partsAreaSize1.x, partsAreaSize1.y-currentPartsSizeY1 ) );
+				(*itr)->setSize(WindowSize(partsAreaSize1.x, befsize.y));
 				(*itr)->autoResize();
 
-				currentPartsSizeY1+= (*itr)->getSize().y+1;
+				//currentPartsSizeY1+= (*itr)->getSize().y+1;
+				currentPartsSizeY1 += (*itr)->getSize().y;
 			}
 			for(std::list<OrgWindowParts*>::iterator itr=partsList2.begin();
 				itr!=partsList2.end(); itr++){
-
+				WindowSize befsize = (*itr)->getSize();
 				(*itr)->setPos(  WindowPos(  partsAreaPos2.x,  partsAreaPos2.y+currentPartsSizeY2  ) );
-				(*itr)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
+				//(*itr)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
+				(*itr)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
 				(*itr)->autoResize();
 
-				currentPartsSizeY2+= (*itr)->getSize().y+1;
+				//currentPartsSizeY2+= (*itr)->getSize().y+1;
+				currentPartsSizeY2 += (*itr)->getSize().y;
 			}
 		}
 		///	Method : 描画
@@ -1261,8 +1265,11 @@ static void s_dummyfunc();
 
 		/// Method : 仕切り線の位置を取得
 		int getCenterLinePos() const{
-			int centerPos= (int)(centerRate*(double)(divideSide?size.x:size.y));
-			centerPos= max(1, min(centerPos, (divideSide?size.x:size.y)-2));
+			int divval = divideSide ? size.x : size.y;
+			int divpos = divideSide ? pos.x : pos.y;
+
+			int centerPos= (int)(centerRate*(double)divval);
+			centerPos= max(1, min(centerPos, divval-2));
 			return centerPos;
 		}
 		/// Method : 仕切り線に触れているかどうか取得
@@ -1563,7 +1570,7 @@ static void s_dummyfunc();
 					pos1x= pos.x+NAME_POS_X1;
 					pos1y= pos.y+SIZE_CLOSE_Y/2-5;
 				}
-				hdcM->setFont(10,_T("ＭＳ ゴシック"));
+				hdcM->setFont(12,_T("ＭＳ ゴシック"));
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				SetBkColor(hdcM->hDC,RGB(baseColor.r,baseColor.g,baseColor.b));
 				SetBkMode(hdcM->hDC,OPAQUE);
@@ -1769,7 +1776,7 @@ static void s_dummyfunc();
 			//名前
 			int pos1x= pos.x+NAME_POS_X;
 			int pos1y= pos.y+size.y/2-5;
-			hdcM->setFont(10,_T("ＭＳ ゴシック"));
+			hdcM->setFont(12,_T("ＭＳ ゴシック"));
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
@@ -1786,7 +1793,7 @@ static void s_dummyfunc();
 		////////////////////////// MemberVar /////////////////////////////
 		TCHAR *name;
 
-		static const int SIZE_Y= 13;
+		static const int SIZE_Y= 15;
 		static const int NAME_POS_X= 5;
 	};
 
@@ -1822,11 +1829,17 @@ static void s_dummyfunc();
 			int pos1y= pos.y+size.y/2-BOX_WIDTH/2;
 			int pos2x= pos.x+BOX_POS_X+BOX_WIDTH-1;
 			int pos2y= pos.y+size.y/2+BOX_WIDTH/2-1;
-			if(buttonPush){		hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-			}else{				hdcM->setPenAndBrush(RGB(240,240,240),NULL); }
+			if(buttonPush){		
+				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
+			}else{				
+				hdcM->setPenAndBrush(RGB(240,240,240),NULL); 
+			}
 			Rectangle(hdcM->hDC,pos1x,pos1y,pos2x+1,pos2y+1);
-			if(!buttonPush){	hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-			}else{				hdcM->setPenAndBrush(RGB(240,240,240),NULL); }
+			if(!buttonPush){	
+				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
+			}else{				
+				hdcM->setPenAndBrush(RGB(240,240,240),NULL); 
+			}
 			MoveToEx(hdcM->hDC, pos1x,pos2y, NULL);
 			LineTo(hdcM->hDC,   pos2x,pos2y);
 			LineTo(hdcM->hDC,   pos2x,pos1y);
@@ -1834,7 +1847,7 @@ static void s_dummyfunc();
 			//名前
 			pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 			pos1y= pos.y+size.y/2-5;
-			hdcM->setFont(10,_T("ＭＳ ゴシック"));
+			hdcM->setFont(12,_T("ＭＳ ゴシック"));
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
@@ -1854,7 +1867,7 @@ static void s_dummyfunc();
 			tmpRect.right=  pos.x+size.x-1;
 			tmpRect.bottom= pos.y+size.y-1;
 			InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
-
+			draw();
 
 			//ボタンアップアニメーションのためのスレッド作成
 			_beginthread(drawButtonUpThread,0,(void *)this);
@@ -1865,7 +1878,11 @@ static void s_dummyfunc();
 		void setButtonListener(std::tr1::function<void()> listener){
 			this->buttonListener= listener;
 		}
+		void setName(TCHAR *value){
+			_tcscpy_s(name, 256, value);
 
+			callRewrite();
+		}
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		TCHAR *name;
@@ -1873,7 +1890,7 @@ static void s_dummyfunc();
 		bool buttonPush;
 		std::tr1::function<void()> buttonListener;
 
-		static const int SIZE_Y= 14;
+		static const int SIZE_Y= 15;
 		static const int BOX_POS_X= 3;
 		static const int BOX_WIDTH= 10;
 
@@ -2218,7 +2235,7 @@ static void s_dummyfunc();
 			//名前
 			pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 			pos1y= pos.y+size.y/2-5;
-			hdcM->setFont(10,_T("ＭＳ ゴシック"));
+			hdcM->setFont(12,_T("ＭＳ ゴシック"));
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
@@ -2260,7 +2277,7 @@ static void s_dummyfunc();
 		bool value;
 		std::tr1::function<void()> buttonListener;
 
-		static const int SIZE_Y= 14;
+		static const int SIZE_Y= 15;
 		static const int BOX_POS_X= 3;
 		static const int BOX_WIDTH= 10;
 	};
@@ -2306,7 +2323,7 @@ static void s_dummyfunc();
 				//名前
 				pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 				pos1y= pos.y+SIZE_Y/2-6+ SIZE_Y*i+ 2;
-				hdcM->setFont(10,_T("ＭＳ ゴシック"));
+				hdcM->setFont(12,_T("ＭＳ ゴシック"));
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				TextOut( hdcM->hDC,
 						 pos1x, pos1y,
@@ -2421,7 +2438,7 @@ static void s_dummyfunc();
 
 		std::vector< std::basic_string<TCHAR> > nameList;
 
-		static const int SIZE_Y= 12;
+		static const int SIZE_Y= 15;
 		static const int BOX_POS_X= 3;
 		static const int BOX_WIDTH= 10;
 	};
@@ -2490,7 +2507,7 @@ static void s_dummyfunc();
 			LineTo(hdcM->hDC,   pos2x+1,pos1y);
 			MoveToEx(hdcM->hDC, pos1x,pos2y, NULL);
 			LineTo(hdcM->hDC,   pos2x+1,pos2y);
-			hdcM->setFont(10,_T("ＭＳ ゴシック"));
+			hdcM->setFont(12,_T("ＭＳ ゴシック"));
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TCHAR tmpChar[20];
 			_stprintf_s(tmpChar,20,_T("% 9.3G"),value);
@@ -2662,7 +2679,7 @@ static void s_dummyfunc();
 						if( i%5==0 ){
 							TCHAR tmpChar[20];
 							_stprintf_s(tmpChar,20,_T("%.3G"),(double)i);
-							hdcM->setFont(10,_T("ＭＳ ゴシック"));
+							hdcM->setFont(12,_T("ＭＳ ゴシック"));
 							SetTextColor(hdcM->hDC,RGB(240,240,240));
 							TextOut( hdcM->hDC,
 									 xx-(int)((double)_tcslen(tmpChar)*2.0), y0,
@@ -3474,7 +3491,7 @@ static void s_dummyfunc();
 				}
 
 				//ラベル
-				hdcM->setFont(10,_T("ＭＳ ゴシック"));
+				hdcM->setFont(12,_T("ＭＳ ゴシック"));
 				if( m_nullflag == 0 ){
 					SetTextColor(hdcM->hDC,RGB(240,240,240));
 				}else{
@@ -3846,10 +3863,10 @@ static void s_dummyfunc();
 		double ghostShiftTime;
 
 
-		static const int LABEL_SIZE_Y= 13;
+		static const int LABEL_SIZE_Y= 15;
 		//static const int LABEL_SIZE_X= 75;
 				static const int LABEL_SIZE_X= 155;
-		static const int AXIS_SIZE_Y= 14;
+		static const int AXIS_SIZE_Y= 15;
 		static const int SCROLL_BAR_WIDTH= 10;
 		static const int MARGIN= 3;
 		double timeSize;
@@ -4531,7 +4548,7 @@ static void s_dummyfunc();
 				}
 
 				//ラベル
-				hdcM->setFont(10,_T("ＭＳ ゴシック"));
+				hdcM->setFont(12,_T("ＭＳ ゴシック"));
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				TextOut( hdcM->hDC,
 						 x3+2, posY+parent->LABEL_SIZE_Y/2-5,
@@ -4596,7 +4613,7 @@ static void s_dummyfunc();
 		};
 		std::vector<LineData*> lineData;
 
-		static const int LABEL_SIZE_Y= 13;
+		static const int LABEL_SIZE_Y= 15;
 		static const int SCROLL_BAR_WIDTH= 10;
 		static const int MARGIN= 3;
 		static const int NAME_POS_X= 5;
@@ -4612,6 +4629,397 @@ static void s_dummyfunc();
 
 		int mouseRBtnOnIndex;		//右クリックが押されたときの行インデックス
 	};
+
+
+	///<summary>
+	///	ウィンドウ内部品"スクロールウインドウ"クラス
+	///</summary>
+	class OWP_ScrollWnd : public OrgWindowParts{
+	public:
+		//////////////////// Constructor/Destructor //////////////////////
+		OWP_ScrollWnd(const TCHAR *_name){
+			name = new TCHAR[256];
+			_tcscpy_s(name, 256, _name);
+
+			cursorListener = [](){s_dummyfunc(); };
+			lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc(); };
+			changeVisibleListener = [](int targetIndex){s_dummyfunc(); };
+			changeLockListener = [](int targetIndex){s_dummyfunc(); };
+			callPropertyListener = [](int targetIndex){s_dummyfunc(); };
+
+			currentLine = 0;
+			showPosLine = 0;
+			lineDatasize = 0;
+
+			rewriteOnChange = true;
+			canMouseControll = true;
+
+			dragLine = false;
+			dragScrollBarLine = false;
+			dragVisibleButton = false;
+			dragLockButton = false;
+
+			mouseRBtnOnIndex = -1;
+
+			currentPartsSizeY = 0;
+			open = true;
+			canClose = true;
+
+		}
+		~OWP_ScrollWnd(){
+			delete[] name;
+		}
+
+		//////////////////////////// Method //////////////////////////////
+		///	Method : 親ウィンドウに登録
+		void regist(OrgWindow *_parentWindow,
+			WindowPos _pos, WindowSize _size,
+			HDCMaster* _hdcM,
+			unsigned char _baseR = 50, unsigned char _baseG = 70, unsigned char _baseB = 70){
+			_regist(_parentWindow, _pos, _size, _hdcM, _baseR, _baseG, _baseB);
+
+			//全てのグループ内部品を同じウィンドウに登録
+			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
+				itr != partsList.end(); itr++){
+				(*itr)->regist(parentWindow,
+					_pos, _size,
+					hdcM,
+					baseColor.r, baseColor.g, baseColor.b);
+			}
+
+			//グループボックスと内部要素の位置とサイズを自動設定
+			autoResize();
+		}
+		///	Method : グループ内部品を追加
+		void addParts(OrgWindowParts& a){
+			partsList.push_back(&a);
+
+			// グループボックスがウィンドウに登録されている場合は
+			// グループ内部品も同じウィンドウに登録する
+			if (parentWindow != NULL){
+				a.regist(parentWindow,
+					pos, size,
+					hdcM,
+					baseColor.r, baseColor.g, baseColor.b);
+
+				// グループボックスがオープン状態の時は
+				// ウィンドウ内の全パーツの位置・サイズを自動調整
+				if (open){
+					parentWindow->autoResizeAllParts();
+				}
+			}
+		}
+		
+		/// Method : 自動サイズ設定
+		void autoResize(){
+			
+			size = parentWindow->getSize();
+			pos = WindowPos(0, 0);
+
+			int showLineNum = (size.y) / (LABEL_SIZE_Y);
+
+			int x0 = pos.x + size.x - SCROLL_BAR_WIDTH - 1;
+			int x1 = x0 + SCROLL_BAR_WIDTH + 1;
+			int y0 = pos.y;
+			int y1 = pos.y + size.y;
+
+			//if (open){
+				//パーツエリアの位置とサイズを設定
+				partsAreaPos = pos;
+				partsAreaSize = WindowSize(size.x - SCROLL_BAR_WIDTH - 1, size.y);
+				currentPartsSizeY = 0;
+
+				//全ての内部パーツの位置とサイズを自動設定
+				int starty = showPosLine * (LABEL_SIZE_Y);
+				for (std::list<OrgWindowParts*>::iterator itr = partsList.begin(); itr != partsList.end(); itr++){
+					(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y - starty));
+					(*itr)->setSize(WindowSize(partsAreaSize.x, partsAreaSize.y));
+					(*itr)->autoResize();
+
+					//currentPartsSizeY += (*itr)->getSize().y;
+				}
+
+				//グループボックスのサイズを内部要素に合わせてトリミング
+				//partsAreaSize.y = currentPartsSizeY;
+				//size.y = partsAreaPos.y - pos.y + partsAreaSize.y + 3;
+
+			//}
+			//else{
+			//	size.y = SIZE_CLOSE_Y;
+			//}
+		}
+		
+		//	Method : 描画
+		void draw(){
+			drawEdge();
+
+			//全ての内部パーツを描画
+			if (open){
+				for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
+					itr != partsList.end(); itr++){
+					(*itr)->draw();
+				}
+			}
+
+			int showLineNum = (size.y) / (LABEL_SIZE_Y);
+
+			{//ラベルスクロールバー
+				int x0 = pos.x + size.x - SCROLL_BAR_WIDTH - 1;
+				int x1 = x0 + SCROLL_BAR_WIDTH + 1;
+				int y0 = pos.y;
+				int y1 = pos.y + size.y;
+
+				//枠
+				hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+				Rectangle(hdcM->hDC, x0, y0, x1, y1);
+
+				//中身
+				int barSize = (y1 - y0 - 4)*showLineNum / lineDatasize;
+				int barStart = (y1 - y0 - 4)*showPosLine / lineDatasize;
+				if (showLineNum<lineDatasize){
+					hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
+				}
+			}
+		}
+		void onLButtonDown(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+			int x0 = 0;
+			int x1 = LABEL_SIZE_Y * 2;
+			int x2 = size.x - SCROLL_BAR_WIDTH - 1;
+			int x3 = size.x;
+			int y0 = 0;
+			int y1 = size.y;
+
+			int showLineNum = (size.y) / (LABEL_SIZE_Y);
+
+			//ラインスクロールバー
+			if (x2 <= e.localX && e.localX<x3
+				&& y0 <= e.localY && e.localY<y1){
+				int showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
+				if (showLineNum<lineDatasize){
+					int barSize = (y1 - y0) * showLineNum / lineDatasize;
+
+					int movableY = y1 - y0 - barSize;
+					int movableYStart = y0 + barSize / 2;
+
+					setShowPosLine((e.localY - movableYStart)*(lineDatasize - showLineNum) / movableY);
+
+					dragScrollBarLine = true;
+				}
+			}
+			autoResize();
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+				WindowSize partsSize = (*plItr)->getSize();
+				int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+				int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+
+				MouseEvent mouseEvent;
+				mouseEvent.globalX = e.globalX;
+				mouseEvent.globalY = e.globalY;
+				mouseEvent.localX = tmpPosX;
+				mouseEvent.localY = tmpPosY;
+				mouseEvent.altKey = e.altKey;
+				mouseEvent.shiftKey = e.shiftKey;
+				mouseEvent.ctrlKey = e.ctrlKey;
+
+				(*plItr)->onLButtonDown(mouseEvent);
+			}
+
+		}
+
+
+		///	Method : 左マウスボタンアップイベント受信
+		void onLButtonUp(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+			//ドラッグフラグを初期化
+			dragLine = false;
+			dragScrollBarLine = false;
+			dragVisibleButton = false;
+			dragLockButton = false;
+
+			autoResize();
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+				WindowSize partsSize = (*plItr)->getSize();
+				int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+				int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+
+				MouseEvent mouseEvent;
+				mouseEvent.globalX = e.globalX;
+				mouseEvent.globalY = e.globalY;
+				mouseEvent.localX = tmpPosX;
+				mouseEvent.localY = tmpPosY;
+				mouseEvent.altKey = e.altKey;
+				mouseEvent.shiftKey = e.shiftKey;
+				mouseEvent.ctrlKey = e.ctrlKey;
+
+				(*plItr)->onLButtonUp(mouseEvent);
+			}
+
+			//再描画要求
+			if (rewriteOnChange){
+				callRewrite();
+			}
+		}
+		///	Method : マウス移動イベント受信
+		void onMouseMove(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+			int x0 = 0;
+			int x1 = size.x - SCROLL_BAR_WIDTH - 1;
+			int x2 = size.x;
+			int y0 = 0;
+			int y1 = size.y;
+
+			//ラベルスクロールバー
+			if (dragScrollBarLine){
+				int showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
+				int barSize = (y1 - y0) * showLineNum / lineDatasize;
+
+				int movableY = y1 - y0 - barSize;
+				int movableYStart = y0 + barSize / 2;
+
+				setShowPosLine((e.localY - movableYStart)*(lineDatasize - showLineNum) / movableY);
+			}
+
+			autoResize();
+
+		}
+		///	Method : 右マウスボタンダウンイベント受信
+		void onRButtonDown(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+		}
+		///	Method : 右マウスボタンアップイベント受信
+		void onRButtonUp(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+			mouseRBtnOnIndex = -1;
+		}
+
+
+		//////////////////////////// Accessor //////////////////////////////
+		void setLineDataSize(int srcsize){
+			lineDatasize = srcsize;
+		}
+		/// Accessor : name
+		const TCHAR* getName() const{
+			return name;
+		}
+		void setName(const TCHAR *value){
+			_tcscpy_s(name, 256, value);
+
+			//再描画要求
+			if (rewriteOnChange){
+				callRewrite();
+			}
+		}
+		/// Accessor : rewriteOnChange
+		bool getRewriteOnChangeFlag() const{
+			return rewriteOnChange;
+		}
+		void setRewriteOnChangeFlag(bool value){
+			rewriteOnChange = value;
+		}
+		//	Accessor : currentLine
+		int getCurrentLine() const{
+			return currentLine;
+		}
+		//	Accessor : showPosLine
+		int getShowPosLine() const{
+			return showPosLine;
+		}
+		void setShowPosLine(int _showPosLine){
+			int y0 = 0;
+			int y1 = size.y;
+
+			int showLineNum = (size.y) / (LABEL_SIZE_Y);
+			if (showLineNum<lineDatasize){
+				showPosLine = max(0, min(_showPosLine, lineDatasize - showLineNum));
+			}
+			else{
+				showPosLine = 0;
+			}
+
+			//再描画要求
+			if (rewriteOnChange){
+				callRewrite();
+			}
+		}
+
+		///	Accessor : cursorListener
+		void setCursorListener(std::tr1::function<void()> listener){
+			this->cursorListener = listener;
+		}
+		///	Accessor : lineShiftListener
+		void setLineShiftListener(std::tr1::function<void(int beforIndex, int afterIndex)> listener){
+			this->lineShiftListener = listener;
+		}
+		///	Accessor : changeVisibleListener
+		void setChangeVisibleListener(std::tr1::function<void(int targetIndex)> listener){
+			this->changeVisibleListener = listener;
+		}
+		///	Accessor : changeLockListener
+		void setChangeLockListener(std::tr1::function<void(int targetIndex)> listener){
+			this->changeLockListener = listener;
+		}
+		///	Accessor : callPropertyListener
+		void setCallPropertyListener(std::tr1::function<void(int targetIndex)> listener){
+			this->callPropertyListener = listener;
+		}
+
+	private:
+		////////////////////////// MemberVar /////////////////////////////
+		int currentLine, showPosLine;
+		TCHAR *name;
+		std::tr1::function<void()> cursorListener;										//カーソル位置が変更された直後に呼ばれる
+		std::tr1::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//移動が行われる直前に呼ばれる
+		std::tr1::function<void(int targetIndex)> changeVisibleListener;				//可視状態が変更された直後に呼ばれる
+		std::tr1::function<void(int targetIndex)> changeLockListener;					//ロック状態が変更された直後に呼ばれる
+		std::tr1::function<void(int targetIndex)> callPropertyListener;					//レイヤーのプロパティを呼ぶ時に呼ばれる
+
+		int lineDatasize;
+		
+		static const int LABEL_SIZE_Y = 15;
+		static const int SCROLL_BAR_WIDTH = 10;
+		static const int MARGIN = 3;
+		static const int NAME_POS_X = 5;
+
+		bool rewriteOnChange;		//キー操作時に再描画を行うか否かのフラグ
+		bool canMouseControll;		//マウスでの操作が可能か否かのフラグ
+
+		bool dragLine, dragScrollBarLine;
+		bool dragVisibleButton, dragVisibleButtonValue;
+		bool dragLockButton, dragLockButtonValue;
+
+		int shiftIndex;				//選択行のドラッグでの移動量
+
+		int mouseRBtnOnIndex;		//右クリックが押されたときの行インデックス
+
+
+		int currentPartsSizeY;
+		WindowPos  partsAreaPos;
+		WindowSize partsAreaSize;
+		std::list<OrgWindowParts*> partsList;
+
+		bool open;
+		bool canClose;
+		std::tr1::function<void()> openListener;
+
+		static const int SIZE_CLOSE_Y = 15;
+		static const int BOX_POS_X = 3;
+		static const int BOX_WIDTH = 10;
+		static const int NAME_POS_X1 = 5;
+		static const int NAME_POS_X2 = 3;
+	};
+
+
 
 void s_dummyfunc()
 {

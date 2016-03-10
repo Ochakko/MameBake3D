@@ -148,6 +148,7 @@
     <ClCompile Include="GetDlgParams.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RegistDlg.cpp" />
+    <ClCompile Include="RMenuMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\disp4\BTMANAGER\BPWorld.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="GetDlgParams.h" />
     <ClInclude Include="RegistDlg.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RMenuMain.h" />
     <ClInclude Include="useatl.h" />
   </ItemGroup>
   <ItemGroup>
@@ -215,6 +217,9 @@
     <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameBake3D.ico" />
     <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameMedia\boneimage.bmp" />
     <None Include="..\..\..\MameBake3D\MameBake3D\Media\MameMedia\boneselect.bmp" />
+    <None Include="..\Media\MameBake3D.ico" />
+    <None Include="..\Media\MameMedia\boneimage.bmp" />
+    <None Include="..\Media\MameMedia\boneselect.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
