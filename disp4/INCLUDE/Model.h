@@ -350,12 +350,13 @@ public:
  * @fn
  * FKRotate
  * @breaf 選択ボーンの選択フレームに対してFKで指定した分だけ回転する。
- * @param (CEditRange* erptr) IN 選択フレーム情報を指定する。
+ * @param (double srcframe) IN 選択フレーム情報を指定する。
  * @param (int srcboneno) IN 選択ボーンのIDを指定する。
  * @param (CQuaternion rotq) IN 回転を表すクォータニオン。
  * @return 成功したら０。
  */
-	int FKRotate( CEditRange* erptr, int srcboneno, CQuaternion rotq );
+	int FKRotate(int reqflag, CBone* bvhbone, int traflag, D3DXVECTOR3 traanim, double srcframe, int srcboneno, CQuaternion srcq);
+	//int FKRotate(double srcframe, int srcboneno, D3DXMATRIX srcmat);
 
 /**
  * @fn

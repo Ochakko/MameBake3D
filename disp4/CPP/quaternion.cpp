@@ -191,6 +191,21 @@ CQuaternion CQuaternion::normalize () const {
 
 D3DXMATRIX CQuaternion::MakeRotMatX()
 {
+	D3DXMATRIX retmat;
+
+	D3DXQUATERNION qx;
+	qx.x = x;
+	qx.y = y;
+	qx.z = z;
+	qx.w = w;
+
+	//D3DXQUATERNION invqx;
+	//D3DXQuaternionInverse(&invqx, &qx);
+	//D3DXMatrixRotationQuaternion(&retmat, &invqx);
+
+	D3DXMatrixRotationQuaternion(&retmat, &qx);
+
+	/*
 	float dat00, dat01, dat02;
 	float dat10, dat11, dat12;
 	float dat20, dat21, dat22;
@@ -212,7 +227,7 @@ D3DXMATRIX CQuaternion::MakeRotMatX()
 		dat10, dat11, dat12, 0.0f,
 		dat20, dat21, dat22, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f );
-
+	*/
 	return retmat;
 }
 

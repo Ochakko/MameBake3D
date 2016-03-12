@@ -304,6 +304,10 @@ static OWP_Separator* s_convbonesp = 0;
 static OWP_Button* s_convboneconvert = 0;
 static CModel* s_convbone_model = 0;
 static CModel* s_convbone_bvh = 0;
+static CBone* s_modelbone_bone[CONVBONEMAX];
+static CBone* s_bvhbone_bone[CONVBONEMAX];
+static map<CBone*, CBone*> s_convbonemap;
+
 
 static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
@@ -619,7 +623,7 @@ static int DispConvBoneWindow();
 static int EraseKeyList();
 static int DestroyTimeLine( int dellist );
 static int AddTimeLine( int newmotid );
-static int AddMotion( WCHAR* wfilename );
+static int AddMotion( WCHAR* wfilename, double srcleng = 0.0 );
 static int OnAnimMenu( int selindex, int saveundoflag = 1 );
 static int OnRgdMorphMenu( int selindex );
 static int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
@@ -642,6 +646,10 @@ static int DestroyConvBoneWnd();
 static int SetConvBoneModel();
 static int SetConvBoneBvh();
 static int SetConvBone( int cbno );
+static int ConvBoneConvert();
+static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone);
+static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone);
+static int CalcTMat(D3DXMATRIX rotmat, D3DXVECTOR3 jointpos, D3DXMATRIX* dstmat);
 
 
 static int CalcTargetPos( D3DXVECTOR3* dstpos );
@@ -662,6 +670,7 @@ static int PickSpAxis( POINT srcpos );
 static int InsertCopyMP( CBone* curbone, double curframe );
 static int InsertSymMP( CBone* curbone, double curframe );
 static int InitMP( CBone* curbone, double curframe );
+static void InitMPReq(CBone* curbone, double curframe);
 static int AdjustBoneTra( CBone* curbone, double frame );
 static int CreateTimeLineMark( int topboneno = -1 );
 static void CreateMarkReq( int curboneno, int broflag );
@@ -888,10 +897,12 @@ void InitApp()
 	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
 		s_modelbone[cbno] = 0;
 		s_bvhbone[cbno] = 0;
+		s_modelbone_bone[cbno] = 0;
+		s_bvhbone_bone[cbno] = 0;
 	}
 	s_convbonemidashi[0] = 0;
 	s_convbonemidashi[1] = 0;
-
+	s_convbonemap.clear();
 
 
 	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
@@ -2102,7 +2113,7 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 
     // Setup the camera's view parameters
 //	g_Camera.SetProjParams( D3DX_PI / 4, 1.0f, g_initnear, 4.0f * g_initcamdist );
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 3.0f * g_initcamdist );
+	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 
 
     D3DXVECTOR3 vecEye( 0.0f, 0.0f, g_initcamdist );
@@ -2295,7 +2306,7 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
     // Setup the camera's projection parameters
     s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
 //    g_Camera.SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 3.0f * g_initcamdist );
+	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 
     g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
 	g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
@@ -2415,7 +2426,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				if( endflag == 1 ){
 					g_previewFlag = 0;
 				}
-
+				/*
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2423,10 +2434,14 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 						curmodel->SetMotionFrame( nextframe );
 					}
 				}
+				*/
+				if (s_model){
+					s_model->SetMotionFrame(nextframe);
+				}
 				s_owpLTimeline->setCurrentTime( nextframe, false );
 			}else if( g_previewFlag == 4 ){//BTの物理
 				int endflag = 0;
-
+				/*
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2436,31 +2451,43 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					}
 					curmodel->SetMotionFrame( nextframe );
 				}
-
+				*/
+				if (s_model){
+					s_model->SetMotionFrame(nextframe);
+				}
 				int firstflag = 0;
 				if( s_savepreviewFlag != g_previewFlag ){
 					firstflag = 1;
 				}
 
 				//bullet
+				/*
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->Motion2Bt( firstflag, s_coldisp, nextframe, &mW, &mVP );
 					}
 				}
-
+				*/
+				if (s_model){
+					s_model->Motion2Bt(firstflag, s_coldisp, nextframe, &mW, &mVP);
+				}
 				//s_bpWorld->setTimeStep( 1.0f / 60.0f * g_dspeed );// seconds
 				s_bpWorld->setTimeStep( 1.0f / 60.0f );// seconds
 				//s_bpWorld->setTimeStep( 1.0f / 80.0f );// seconds
 
 				s_bpWorld->clientMoveAndDisplay();
 
+				/*
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->SetBtMotion( 0, nextframe, &mW, &mVP, difftime );
 					}
+				}
+				*/
+				if (s_model){
+					s_model->SetBtMotion(0, nextframe, &mW, &mVP, difftime);
 				}
 			}else if( g_previewFlag == 5 ){//ラグドール
 				int endflag = 0;
@@ -2469,6 +2496,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				//	g_previewFlag = 0;
 				//}
 
+				/*
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2476,17 +2504,24 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 						curmodel->SetRagdollKinFlag();
 					}
 				}
-
+				*/
+				if (s_model){
+					s_model->SetRagdollKinFlag();
+				}
 
 				s_bpWorld->setTimeStep( 1.0f / 60.0f );// seconds
 
 				s_bpWorld->clientMoveAndDisplay();
-
+				/*
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->SetBtMotion( 1, nextframe, &mW, &mVP, difftime );
 					}
+				}
+				*/
+				if (s_model){
+					s_model->SetBtMotion(1, nextframe, &mW, &mVP, difftime);
 				}
 //				_ASSERT( 0 );
 			}
@@ -2619,12 +2654,17 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 ***/		
 			if( g_previewFlag == 0 ){
 				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
+				/*
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->SetMotionFrame( curframe );
 					}
+				}
+				*/
+				if (s_model){
+					s_model->SetMotionFrame(curframe);
 				}
 			}			
 		}
@@ -3089,12 +3129,17 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 
 	if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
+		/*
 		vector<MODELELEM>::iterator itrmodel;
 		for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 			CModel* curmodel = itrmodel->modelptr;
 			if( curmodel ){
 				curmodel->UpdateMatrix( &mW, &mVP );
 			}
+		}
+		*/
+		if (s_model){
+			s_model->UpdateMatrix(&mW, &mVP);
 		}
 	}
 
@@ -3218,15 +3263,18 @@ int InitMP( CBone* curbone, double curframe )
 				D3DXMATRIX tmpmat;
 				D3DXMatrixIdentity( &tmpmat );
 				pbef->SetWorldMat( tmpmat );
+				curbone->SetInitMat(tmpmat);
 			}else{
 				if( existflag1 && pbef1 ){
 					D3DXMATRIX invfirst;
 					D3DXMatrixInverse( &invfirst, NULL, &(curbone->GetParent()->GetFirstMat()) );
 					pbef->SetWorldMat( invfirst );
+					curbone->SetInitMat(invfirst);
 				}else{
 					D3DXMATRIX tmpmat;
 					D3DXMatrixIdentity( &tmpmat );
 					pbef->SetWorldMat( tmpmat );
+					curbone->SetInitMat(tmpmat);
 				}
 			}
 		}else{
@@ -3234,14 +3282,26 @@ int InitMP( CBone* curbone, double curframe )
 				D3DXMATRIX invfirst;
 				D3DXMatrixInverse( &invfirst, NULL, &(curbone->GetParent()->GetFirstMat()) );
 				pbef->SetWorldMat( invfirst );
+				curbone->SetInitMat(invfirst);
 			}else{
 				D3DXMATRIX tmpmat;
 				D3DXMatrixIdentity( &tmpmat );
 				pbef->SetWorldMat( tmpmat );
+				curbone->SetInitMat(tmpmat);
 			}
 		}
 	}else{
-		_ASSERT( 0 );
+		CMotionPoint* curmp3 = 0;
+		int existflag3 = 0;
+		curmp3 = curbone->AddMotionPoint(s_model->GetCurMotInfo()->motid, curframe, &existflag3);
+		if (!curmp3){
+			_ASSERT(0);
+			return 1;
+		}
+		D3DXMATRIX xmat = curbone->GetFirstMat();
+		curmp3->SetWorldMat(xmat);
+		curbone->SetInitMat(xmat);
+		//_ASSERT( 0 );
 	}
 
 	return 0;
@@ -3342,7 +3402,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		D3DXVECTOR3 eyept = g_camEye;
 		V( g_pEffect->SetValue( g_hEyePos, &eyept, sizeof( D3DXVECTOR3 ) ) );
 
-
+		/*
 		vector<MODELELEM>::iterator itrmodel;
 		for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 			CModel* curmodel = itrmodel->modelptr;
@@ -3359,6 +3419,24 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 				curmodel->OnRender( s_pdev, lightflag, diffusemult, btflag );
 			}
 		}
+		*/
+		if (s_model){
+			CModel* curmodel = s_model;
+
+			if (curmodel && curmodel->GetModelDisp()){
+				int lightflag = 1;
+				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+				int btflag;
+				if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+					btflag = 0;
+				}
+				else{
+					btflag = 1;
+				}
+				curmodel->OnRender(s_pdev, lightflag, diffusemult, btflag);
+			}
+		}
+
 		if( s_ground && s_dispground ){
 			g_pEffect->SetMatrix( g_hmWorld, &mWorld );
 
@@ -3780,8 +3858,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.pickrange = 6;
 
 		s_pickinfo.pickobjno = -1;
-
-		s_pickinfo.buttonflag = PICK_CAMMOVE;
 
 	}else if( uMsg ==  WM_MOUSEMOVE ){
 		if( s_pickinfo.buttonflag == PICK_CENTER ){
@@ -5581,7 +5657,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	s_projnear = fObjectRadius * 0.01f;
 	g_initcamdist = fObjectRadius * 3.0f;
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 3.0f * g_initcamdist );
+	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 	
 	
     for( int i = 0; i < MAX_LIGHTS; i++ )
@@ -5788,6 +5864,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 
 int AddBoneEul( int kind, float adddeg )
 {
+	/*
 	if( !s_model || (s_curboneno < 0) ){
 		return 0;
 	}
@@ -5844,9 +5921,593 @@ int AddBoneEul( int kind, float adddeg )
 	//s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
 
 	s_editmotionflag = s_curboneno;
+	*/
+	return 0;
+}
+
+int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone)
+{
+	if (selfflag && !bvhbone){
+		_ASSERT(0);
+		return 0;
+	}
+	if ((selfflag == 0) && !befbvhbone){
+		_ASSERT(0);
+		return 0;
+	}
+
+	if (!s_convbone_model || !s_convbone_bvh || !srcbone){
+		_ASSERT(0);
+		return 0;
+	}
+
+	
+	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
+	int bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+	CMotionPoint bvhmp;
+	if (bvhbone){
+		CMotionPoint* pbef = 0;
+		CMotionPoint* pnext = 0;
+		int existflag = 0;
+		bvhbone->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
+		if ((existflag != 0) && pbef){
+			bvhmp = *pbef;
+		}
+		else{
+			_ASSERT(0);
+			return 0;
+		}
+	}
+	else{
+		CMotionPoint* pbef = 0;
+		CMotionPoint* pnext = 0;
+		int existflag = 0;
+		befbvhbone->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
+		if ((existflag != 0) && pbef){
+			bvhmp = *pbef;
+		}
+		else{
+			_ASSERT(0);
+			return 0;
+		}
+	}
+
+
+	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
+	int modelmotid = modelmi->motid;
+	CMotionPoint* pbef2 = 0;
+	CMotionPoint* pnext2 = 0;
+	CMotionPoint modelmp;
+	int existflag2 = 0;
+	srcbone->GetBefNextMP(modelmotid, srcframe, &pbef2, &pnext2, &existflag2);
+	if ((existflag2 != 0) && pbef2){
+		modelmp = *pbef2;
+	}
+	else{
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	s_curboneno = srcbone->GetBoneNo();
+
+	/*
+	D3DXMATRIX invfirstmodelmat = srcbone->GetInvFirstMat();
+	D3DXMATRIX befmodelmat = modelmp.GetWorldMat();
+	D3DXMATRIX befmodelrot = invfirstmodelmat * befmodelmat;
+	befmodelrot._41 = 0.0f;
+	befmodelrot._42 = 0.0f;
+	befmodelrot._43 = 0.0f;
+	D3DXQUATERNION befmodelqx;
+	D3DXQuaternionRotationMatrix(&befmodelqx, &befmodelrot);
+	CQuaternion befmodelq;
+	befmodelq.x = befmodelqx.x;
+	befmodelq.y = befmodelqx.y;
+	befmodelq.z = befmodelqx.z;
+	befmodelq.w = befmodelqx.w;
+	CQuaternion invbefmodelq;
+	befmodelq.inv(&invbefmodelq);
+	*/
+	/*
+	D3DXMATRIX totalmat;
+	D3DXMatrixIdentity(&totalmat);
+	CQuaternion totalparrotq;
+	totalparrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	CBone* bvhparbone = bvhbone->GetParent();
+	while (bvhparbone && (bvhparbone != befbvhbone)){
+		CMotionPoint tmpmp3;
+		CQuaternion rotq3;
+		bvhparbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp3);
+		rotq3 = tmpmp3.GetQ();
+
+		totalparrotq = rotq3 * totalparrotq;
+
+		bvhparbone = bvhparbone->GetParent();
+	}
+	*/
+	/*
+	D3DXVECTOR3 befeul(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 cureul(0.0f, 0.0f, 0.0f);
+
+	CMotionPoint tmpmp2;
+	CQuaternion rotq;
+	bvhbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp2);
+	//rotq = totalparrotq * tmpmp2.GetQ();
+	rotq = invbefmodelq * tmpmp2.GetQ() * befmodelq;
+	*/
+	/*
+	D3DXMATRIX bvhmat = bvhmp.GetWorldMat();
+	D3DXMATRIX bvhrotmat = bvhmat;
+	bvhrotmat._41 = 0.0f;
+	bvhrotmat._42 = 0.0f;
+	bvhrotmat._43 = 0.0f;
+	D3DXQUATERNION bvhrotqx;
+	D3DXQuaternionRotationMatrix(&bvhrotqx, &bvhrotmat);
+	CQuaternion bvhrotq;
+	bvhrotq.x = bvhrotqx.x;
+	bvhrotq.y = bvhrotqx.y;
+	bvhrotq.z = bvhrotqx.z;
+	bvhrotq.w = bvhrotqx.w;
+
+	CQuaternion rotq = invbefmodelq * bvhrotq * befmodelq;
+	*/
+	/*
+	CQuaternion rotq;
+	CMotionPoint tmpmp2;
+	if (bvhbone){
+		bvhbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp2);
+		rotq = tmpmp2.GetQ();//!!!! bvhのローカル変換  つまり、world * invpar つまり、 (init * local * par) * invpar
+	}
+	else{
+		befbvhbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp2);
+		rotq = tmpmp2.GetQ();//!!!! bvhのローカル変換  つまり、world * invpar つまり、 (init * local * par) * invpar
+	}
+	//(保留)invmodelinit * ((bvhinit * local * par) * invpar) にしておいて、RotateBoneQReqで modelinit * (invmodelinit * (bvhinit * local * par) * invpar)へと計算する。
+	*/
+	
+	/*
+	//(試す)modelの初期状態の行列 * modelの初期状態のグローバル回転のインバース * bvhのグローバル回転 ---> 回転の中心がおかしくなる部分がある。（腕ともも）
+	D3DXMATRIX modelinit = srcbone->GetInitMat();
+	
+	D3DXMATRIX invmodelinit = srcbone->GetInvInitMat();
+	CMotionPoint invmodelmp;
+	invmodelmp.CalcQandTra(invmodelinit, srcbone);
+	CQuaternion invmodelq = invmodelmp.GetQ();
+	D3DXMATRIX invmodelrotmat = invmodelq.MakeRotMatX();
+
+	D3DXMATRIX bvhmat;
+	CQuaternion bvhq;
+	D3DXMATRIX bvhrotmat;
+	D3DXMATRIX setmat;
+	if (bvhbone){
+		bvhmat = bvhmp.GetWorldMat();
+		bvhmp.CalcQandTra(bvhmat, bvhbone);
+
+		bvhq = bvhmp.GetQ();
+		bvhrotmat = bvhq.MakeRotMatX();
+		setmat = modelinit * invmodelrotmat * bvhrotmat;
+		bvhbone->SetTmpMat(setmat);
+	}
+	else{
+		setmat = befbvhbone->GetTmpMat();
+	}
+	*/
+
+	/*
+	//(試す)モデルのmodelInit= modelR * modelTと考える。bvhR * modelTを設定する。
+		//腕が異常に伸びている。スカートの位置がおかしい。
+	D3DXMATRIX modelinit = srcbone->GetInitMat();
+	CMotionPoint modelinitmp;
+	modelinitmp.CalcQandTra(modelinit, srcbone);
+	D3DXVECTOR3 modelinitT;
+	modelinitT = modelinitmp.GetTra();
+	D3DXMATRIX modelinitTmat;
+	D3DXMatrixIdentity(&modelinitTmat);
+	modelinitTmat._41 = modelinitT.x;
+	modelinitTmat._42 = modelinitT.y;
+	modelinitTmat._43 = modelinitT.z;
+
+	D3DXMATRIX bvhmat;
+	CQuaternion bvhq;
+	D3DXMATRIX bvhrotmat;
+	D3DXMATRIX setmat;
+	if (bvhbone){
+		bvhmat = bvhmp.GetWorldMat();
+		bvhmp.CalcQandTra(bvhmat, bvhbone);
+
+		bvhq = bvhmp.GetQ();
+		bvhrotmat = bvhq.MakeRotMatX();
+		setmat = bvhrotmat * modelinitTmat;
+		bvhbone->SetTmpMat(setmat);
+	}
+	else{
+		setmat = befbvhbone->GetTmpMat();
+	}
+	*/
+
+	/*
+	//(試す)モデルのmodelInit= modelR * Tmatと考える。bvhR * Tmatを設定する。Tmatは計算する（CalcTMat()）。
+		//割とめちゃくちゃ。
+	D3DXVECTOR3 jointpos = srcbone->GetJointFPos();
+
+	D3DXMATRIX bvhmat;
+	CQuaternion bvhq;
+	D3DXMATRIX bvhrotmat;
+	D3DXMATRIX Tmat;
+	D3DXMATRIX setmat;
+	if (bvhbone){
+		bvhmat = bvhmp.GetWorldMat();
+		bvhmp.CalcQandTra(bvhmat, bvhbone);
+		bvhq = bvhmp.GetQ();
+		bvhrotmat = bvhq.MakeRotMatX();
+		CalcTMat(bvhrotmat, jointpos, &Tmat);
+
+		setmat = bvhrotmat * Tmat;
+		//bvhbone->SetTmpMat(bvhrotmat);
+		bvhbone->SetTmpMat(setmat);
+	}
+	else{
+		//bvhrotmat = befbvhbone->GetTmpMat();
+		//CalcTMat(bvhrotmat, jointpos, &Tmat);
+		//setmat = bvhrotmat * Tmat;
+		setmat = befbvhbone->GetTmpMat();
+	}
+	*/
+
+
+	/*
+	//(試す)bvhの原点中心のグローバル回転の後に　回転の中心へ移動する行列をかける。
+		//異常に伸びる
+	D3DXVECTOR3 jointpos = srcbone->GetJointFPos();
+	D3DXMATRIX Tmat;
+	D3DXMatrixIdentity(&Tmat);
+	Tmat._41 = jointpos.x;
+	Tmat._42 = jointpos.y;
+	Tmat._43 = jointpos.z;
+
+	D3DXMATRIX bvhmat;
+	CQuaternion bvhq;
+	D3DXMATRIX bvhrotmat;
+	D3DXMATRIX setmat;
+	if (bvhbone){
+		bvhmat = bvhmp.GetWorldMat();
+		bvhmp.CalcQandTra(bvhmat, bvhbone);
+		bvhq = bvhmp.GetQ();
+		bvhrotmat = bvhq.MakeRotMatX();
+
+		setmat = bvhrotmat * Tmat;
+		//bvhbone->SetTmpMat(bvhrotmat);
+		bvhbone->SetTmpMat(setmat);
+	}
+	else{
+		//bvhrotmat = befbvhbone->GetTmpMat();
+		//CalcTMat(bvhrotmat, jointpos, &Tmat);
+		//setmat = bvhrotmat * Tmat;
+		setmat = befbvhbone->GetTmpMat();
+	}
+	*/
+
+	/*
+	//(試す)modelとbvhの初期位置の違いの差分移動行列をかける。
+		//初期姿勢もおかしい。
+	D3DXMATRIX setmat;
+	if (bvhbone){
+		D3DXVECTOR3 bvhbonepos;
+		D3DXMATRIX bvhmat;
+		bvhmat = bvhmp.GetWorldMat();
+		D3DXVec3TransformCoord(&bvhbonepos, &bvhbone->GetJointFPos(), &bvhmat);
+		
+		D3DXVECTOR3 curbonepos;
+		D3DXMATRIX modelworld = modelmp.GetWorldMat();
+		D3DXVec3TransformCoord(&curbonepos, &srcbone->GetJointFPos(), &modelworld);
+
+		D3DXVECTOR3 diffT;
+		diffT = curbonepos - bvhbonepos;
+		//diffT = bvhbonepos - curbonepos;
+		D3DXMATRIX diffTMat;
+		D3DXMatrixIdentity(&diffTMat);
+		D3DXMatrixTranslation(&diffTMat, diffT.x, diffT.y, diffT.z);
+
+		setmat = bvhmat * diffTMat;
+		bvhbone->SetTmpMat(setmat);
+		//bvhbone->SetTmpMat(bvhmat);
+	}
+	else{
+		//CalcTMat(bvhrotmat, jointpos, &Tmat);
+		//setmat = bvhrotmat * Tmat;
+		setmat = befbvhbone->GetTmpMat();
+	}
+	*/
+
+	/*
+	//(試す)modelとbvhのinitmatの変換行列をかける。
+		//初期姿勢はOK。下半身もまあまあ。だが腕が伸びた。
+	D3DXMATRIX setmat;
+	if (bvhbone){
+		D3DXMATRIX bvhmat;
+		bvhmat = bvhmp.GetWorldMat();
+
+		D3DXMATRIX modelinit, invmodelinit, curbvhmat;
+		//modelinit = srcbone->GetInitMat();
+		//invmodelinit = srcbone->GetInvInitMat();
+		modelinit = modelmp.GetWorldMat();
+		invmodelinit = modelmp.GetInvWorldMat();
+		curbvhmat = invmodelinit * bvhmat;
+
+		CMotionPoint curbvhrotmp;
+		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
+		CQuaternion curbvhrotq = curbvhrotmp.GetQ();
+		D3DXMATRIX curbvhrotmat = curbvhrotq.MakeRotMatX();
+
+
+		setmat = modelinit * curbvhrotmat;
+		//bvhbone->SetTmpMat(bvhmat);
+		bvhbone->SetTmpMat(setmat);
+	}
+	else{
+		setmat = befbvhbone->GetTmpMat();
+	}
+	*/
+
+	/*
+	//initmat変換とrotqとRotateBoneQReq
+		//回転のみ。ましになったが腕の回転が違うような気がする。
+	CQuaternion rotq;
+	if (bvhbone){
+		D3DXMATRIX bvhmat, localbvhmat;
+		bvhmat = bvhmp.GetWorldMat();
+		if (bvhbone->GetParent()){
+
+			CMotionPoint parbvhmp;
+			CMotionPoint* pbef = 0;
+			CMotionPoint* pnext = 0;
+			int existflag = 0;
+			bvhbone->GetParent()->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
+			if ((existflag != 0) && pbef){
+				parbvhmp = *pbef;
+			}
+			else{
+				_ASSERT(0);
+				return 0;
+			}
+			D3DXMATRIX invparbvhmat;
+			invparbvhmat = parbvhmp.GetInvWorldMat();
+			localbvhmat = bvhmat * invparbvhmat;
+		}
+		else{
+			localbvhmat = bvhmat;
+		}
+
+		D3DXMATRIX modelinit, invmodelinit, curbvhmat;
+		//modelinit = srcbone->GetInitMat();
+		//invmodelinit = srcbone->GetInvInitMat();
+		modelinit = modelmp.GetWorldMat();
+		invmodelinit = modelmp.GetInvWorldMat();
+		curbvhmat = invmodelinit * localbvhmat;
+
+		CMotionPoint curbvhrotmp;
+		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
+		rotq = curbvhrotmp.GetQ();
+	}
+	else{
+		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+	*/
+
+	D3DXMATRIX bvhmat;
+	CQuaternion rotq;
+	D3DXVECTOR3 traanim;
+	if (bvhbone){
+		D3DXMATRIX localbvhmat;
+		bvhmat = bvhmp.GetWorldMat();
+		if (bvhbone->GetParent()){
+
+			CMotionPoint parbvhmp;
+			CMotionPoint* pbef = 0;
+			CMotionPoint* pnext = 0;
+			int existflag = 0;
+			bvhbone->GetParent()->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
+			if ((existflag != 0) && pbef){
+				parbvhmp = *pbef;
+			}
+			else{
+				_ASSERT(0);
+				return 0;
+			}
+			D3DXMATRIX invparbvhmat;
+			invparbvhmat = parbvhmp.GetInvWorldMat();
+			localbvhmat = bvhmat * invparbvhmat;
+		}
+		else{
+			localbvhmat = bvhmat;
+		}
+
+
+
+		D3DXMATRIX modelinit, invmodelinit, curbvhmat;
+		modelinit = modelmp.GetWorldMat();
+		invmodelinit = modelmp.GetInvWorldMat();
+		//invmodelinit = srcbone->GetInvInitMat();
+		curbvhmat = invmodelinit * localbvhmat * modelinit;
+
+		CMotionPoint curbvhrotmp;
+		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
+		rotq = curbvhrotmp.GetQ();
+		if (!bvhbone->GetParent()){
+			CMotionPoint calctramp;
+			calctramp.CalcQandTra(bvhmat, bvhbone);
+			traanim = calctramp.GetTra();
+		}
+		else{
+			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
+	}
+	else{
+		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	}
+
+
+	/*
+	if (bvhbone->GetParent())
+	{
+		CMotionPoint* pbef4 = 0;
+		CMotionPoint* pnext4 = 0;
+		CMotionPoint bvhmp4;
+		int existflag4 = 0;
+		bvhbone->GetParent()->GetBefNextMP(bvhmotid, srcframe, &pbef4, &pnext4, &existflag4);
+		if ((existflag4 != 0) && pbef4){
+			bvhmp4 = *pbef4;
+		}
+		else{
+			_ASSERT(0);
+			return 0;
+		}
+
+		D3DXMATRIX invpar = bvhmp4.GetInvWorldMat();
+		bvhmat = bvhmat * invpar;
+	}
+	*/
+
+	/*
+	CMotionPoint convmp;
+	convmp.CalcQandTra(bvhmat, srcbone);
+	CQuaternion rotq4;
+	rotq4 = convmp.GetQ();
+	*/
+	/*
+	CMotionPoint modelinitmp;
+	modelinitmp.CalcQandTra(srcbone->GetInitMat(), srcbone);
+	CMotionPoint invmodelinitmp;
+	invmodelinitmp.CalcQandTra(srcbone->GetInvInitMat(), srcbone);
+	
+
+	CQuaternion rotq4;
+	//rotq4 = invmodelinitmp.GetQ() * convmp.GetQ() * modelinitmp.GetQ();
+	rotq4 = convmp.GetQ();
+	*/
+
+	//s_model->FKRotate(srcframe, s_curboneno, setmat);
+	//s_model->FKRotate(srcframe, s_curboneno, bvhmat);
+	//s_model->FKRotate(srcframe, s_curboneno, rotq4);
+
+
+	if (bvhbone){
+		if (!bvhbone->GetParent()){
+			s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
+		}
+		else{
+			s_model->FKRotate(1, bvhbone, 0, traanim, srcframe, s_curboneno, rotq);
+		}
+	}
+	else{
+		s_model->FKRotate(0, befbvhbone, 0, traanim, srcframe, s_curboneno, rotq);
+	}
+
 
 	return 0;
 }
+
+int CalcTMat(D3DXMATRIX rotmat, D3DXVECTOR3 jointpos, D3DXMATRIX* dstmat)
+{
+	int ret = 0;
+
+	float r11, r12, r13, r14;
+	float r21, r22, r23, r24;
+	float r31, r32, r33, r34;
+	float r41, r42, r43, r44;
+
+	float fpx, fpy, fpz;
+
+	r11 = rotmat._11;
+	r12 = rotmat._21;
+	r13 = rotmat._31;
+	r14 = rotmat._41;
+
+	r21 = rotmat._12;
+	r22 = rotmat._22;
+	r23 = rotmat._32;
+	r24 = rotmat._42;
+
+	r31 = rotmat._13;
+	r32 = rotmat._23;
+	r33 = rotmat._33;
+	r34 = rotmat._43;
+
+	r41 = rotmat._14;
+	r42 = rotmat._24;
+	r43 = rotmat._34;
+	r44 = rotmat._44;
+
+	fpx = jointpos.x;
+	fpy = jointpos.y;
+	fpz = jointpos.z;
+
+	float v1, v2, v3, v4, v6, v7, v10;
+
+	v1 = (r11 - 1.0f) * fpx + r12 * fpy + r13 * fpz + r14;
+	v2 = r21 * fpx + (r22 - 1.0f) * fpy + r23 * fpz + r24;
+	v3 = r31 * fpx + r32 * fpy + (r33 - 1.0f) * fpz + r34;
+
+	v4 = r41 * fpx + r42 * fpy + r43 * fpz + r44;
+
+	float cx6, cy6;
+	cx6 = (r11 - 1.0f) * r23 - r21 * r13;
+	cy6 = r12 * r23 - (r22 - 1.0f) * r13;
+	v6 = r23 * v1 - r13 * v2;
+
+	float cx7, cy7;
+	cx7 = (r11 - 1.0f) * (r33 - 1.0f) - r31 * r13;
+	cy7 = r12 * (r33 - 1.0f) - r32 * r13;//!!!
+	v7 = (r33 - 1.0f) * v1 - r13 * v3;
+
+	float cy10, cz10;
+	cy10 = r12 * r21 - (r22 - 1.0f) * (r11 - 1.0f);
+	cz10 = r13 * r21 - r23 * (r11 - 1.0f);//!!!
+	v10 = r21 * v1 - (r11 - 1.0f) * v2;
+
+	float x, y, z;
+	y = (cx6 * v7 - cx7 * v6) / (cy6 * cx7 - cy7 * cx6);
+	z = (-cy10 * y - v10) / cz10;
+
+	if (r11 != 0.0f){
+		x = (-v1 - r12 * y - r13 * z) / (r11 - 1.0f);
+	}
+	else if (r21 != 0.0f){
+		x = (-v2 - (r22 - 1.0f) * y - r23 * z) / r21;
+	}
+	else if (r31 != 0.0f){
+		x = (-v3 - r32 * y - (r33 - 1.0f) * z) / r31;
+	}
+	else{
+		_ASSERT(0);
+		x = 0.0f;
+		ret = 1;
+	}
+
+	float rhw;
+	rhw = r41 * x + r42 * y + r43 * z + r41 * fpx + r42 * fpy + r43 * fpz + r44;
+	if (rhw != 0.0f){
+		x /= rhw;
+		y /= rhw;
+		z /= rhw;
+	}
+	else{
+		_ASSERT(0);
+		ret = 1;
+	}
+
+	D3DXMatrixIdentity(dstmat);
+	dstmat->_41 = x;
+	dstmat->_42 = y;
+	dstmat->_43 = z;
+
+	return ret;
+}
+
+
 
 int AddBoneTra2( D3DXVECTOR3 diffvec )
 {
@@ -6021,7 +6682,7 @@ int EraseKeyList()
 	return 0;
 }
 
-int AddMotion( WCHAR* wfilename )
+int AddMotion( WCHAR* wfilename, double srcmotleng )
 {
 	int motnum = s_tlarray.size();
 	if( motnum >= MAXMOTIONNUM ){
@@ -6044,7 +6705,13 @@ int AddMotion( WCHAR* wfilename )
 	);
 
 	int newmotid = -1;
-	double motleng = 100.0;
+	double motleng;
+	if (srcmotleng == 0.0){
+		motleng = 100.0;
+	}
+	else{
+		motleng = srcmotleng;
+	}
 	CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
 
 	CallF( AddTimeLine( newmotid ), return 1 );
@@ -7289,6 +7956,7 @@ int DestroyConvBoneWnd()
 {
 	s_convbone_model = 0;
 	s_convbone_bvh = 0;
+	s_convbonemap.clear();
 
 	if (s_convboneWnd){
 		s_convboneWnd->setVisible(false);
@@ -7310,6 +7978,8 @@ int DestroyConvBoneWnd()
 			delete s_bvhbone[cbno];
 			s_bvhbone[cbno] = 0;
 		}
+		s_modelbone_bone[cbno] = 0;
+		s_bvhbone_bone[cbno] = 0;
 	}
 
 	if (s_cbselmodel){
@@ -7387,12 +8057,14 @@ int CreateConvBoneWnd()
 			_ASSERT(wbonename);
 			s_modelbone[cbno] = new OWP_Label(wbonename);
 			_ASSERT(s_modelbone[cbno]);
-			//s_modelbone[cbno]->setSize(OrgWinGUI::WindowSize(200, 16));
+			s_modelbone_bone[cbno] = curbone;
 
 			swprintf_s(bvhbonename, MAX_PATH, L"未設定_%03d", cbno);
 			s_bvhbone[cbno] = new OWP_Button(bvhbonename);
 			_ASSERT(s_bvhbone[cbno]);
-			//s_bvhbone[cbno]->setSize(OrgWinGUI::WindowSize(200, 16));
+			s_bvhbone_bone[cbno] = 0;
+
+			s_convbonemap[curbone] = 0;
 
 			DbgOut(L"convbone %d : (%s,  %s)\n", cbno, wbonename, bvhbonename);
 
@@ -7441,17 +8113,17 @@ int CreateConvBoneWnd()
 		SetConvBoneBvh();
 		s_convboneWnd->callRewrite();
 	});
-
-
 	for (cbno = 0; cbno < s_convbonenum; cbno++){
 		s_bvhbone[cbno]->setButtonListener([cbno](){
-
 			SetConvBone(cbno);
 			//CModel* curmodel = s_modelindex[modelcnt].modelptr;
 			//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
 			s_convboneWnd->callRewrite();
 		});
 	}
+	s_convboneconvert->setButtonListener([](){
+		ConvBoneConvert();
+	});
 
 
 	return 0;
@@ -7585,7 +8257,7 @@ int SetConvBoneBvh()
 
 		WCHAR strmes[1024];
 		if (!s_convbone_bvh){
-			swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+						swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
 			::MessageBox(NULL, strmes, L"check", MB_OK);
 		}
 		else{
@@ -7603,7 +8275,203 @@ int SetConvBoneBvh()
 }
 int SetConvBone( int cbno )
 {
+	int modelnum = s_modelindex.size();
+	if (modelnum <= 0){
+		return 0;
+	}
+
+	if (!s_convbone_model || !s_convbone_bvh){
+		return 0;
+	}
+
+	HWND parwnd;
+	parwnd = s_convboneWnd->getHWnd();
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu){
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd);
+	if (ret){
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+
+	int setmenuid0 = ID_RMENU_0 + 0;
+	AppendMenu(submenu, MF_STRING, setmenuid0, L"未設定");
+
+	int maxboneno = 0;
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++){
+		CBone* curbone = itrbone->second;
+		if (curbone){
+			int boneno = curbone->GetBoneNo();
+			int setmenuid = ID_RMENU_0 + boneno + 1;
+			AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
+			if (boneno > maxboneno){
+				maxboneno = boneno;
+			}
+		}
+	}
+
+	POINT pt;
+	GetCursorPos(&pt);
+	//::ScreenToClient(parwnd, &pt);
+
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+	if ((menuid >= ID_RMENU_0) && (menuid <= (ID_RMENU_0 + maxboneno + 1))){
+		if (menuid == (ID_RMENU_0 + 0)){
+			//未設定
+			s_bvhbone_bone[cbno] = 0;
+			CBone* modelbone = s_modelbone_bone[cbno];
+			s_convbonemap[modelbone] = 0;
+			s_bvhbone[cbno]->setName(L"未設定");
+		}
+		else{
+			int boneno = menuid - ID_RMENU_0 - 1;
+			CBone* curbone = s_convbone_bvh->GetBoneByID(boneno);
+			WCHAR strmes[1024];
+			if (!curbone){
+				s_bvhbone_bone[cbno] = 0;
+				CBone* modelbone = s_modelbone_bone[cbno];
+				s_convbonemap[modelbone] = 0;
+				s_bvhbone[cbno]->setName(L"未設定");
+
+				swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
+				::MessageBox(NULL, strmes, L"check", MB_OK);
+			}
+			else{
+				swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
+				s_bvhbone[cbno]->setName(strmes);
+				s_bvhbone_bone[cbno] = curbone;
+
+				CBone* modelbone = s_modelbone_bone[cbno];
+				s_convbonemap[modelbone] = curbone;
+			}
+		}
+	}
+
+	rmenu->Destroy();
+	delete rmenu;
+
 	return 0;
+}
+
+int ConvBoneConvert()
+{
+	if (!s_convbone_model || !s_convbone_bvh){
+		return 0;
+	}
+	if (s_model != s_convbone_model){
+		::MessageBox(NULL, L"モデル選択メニューで形状側のモデルを選択してから再試行してください。", L"エラー", MB_OK);
+		return 1;
+	}
+
+	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
+	double motleng = bvhmi->frameleng;
+	AddMotion(0, motleng);
+	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
+
+
+	CBone* modelbone = s_convbone_model->GetTopBone();
+
+	double frame;
+	for (frame = 0.0; frame < motleng; frame += 1.0){
+		if (modelbone){
+			s_model->SetMotionFrame(frame);
+			InitMPReq(modelbone, frame);
+		}
+	}
+
+	//s_model->FillUpEmptyMotion(modelmi->motid);
+
+	for (frame = 0.0; frame < motleng; frame += 1.0){
+		if (modelbone){
+			s_model->SetMotionFrame(frame);
+			CBone* befbvhbone = s_convbone_bvh->GetTopBone();
+			ConvBoneConvertReq(modelbone, frame, befbvhbone);
+		}
+	}
+
+	D3DXMATRIX mWorld;
+	D3DXMATRIX mView;
+	D3DXMATRIX mProj;
+	D3DXMatrixIdentity(&mWorld);
+	mProj = *g_Camera.GetProjMatrix();
+	mView = s_matView;
+	mWorld._41 = 0.0f;
+	mWorld._42 = 0.0f;
+	mWorld._43 = 0.0f;
+	D3DXMATRIXA16 mW, mVP;
+	mW = mWorld;
+	mVP = mView * mProj;
+	s_model->UpdateMatrix(&mW, &mVP);
+
+	return 0;
+}
+
+void InitMPReq(CBone* curbone, double curframe)
+{
+	if (!curbone){
+		return;
+	}
+
+	InitMP(curbone, curframe);
+
+	if (curbone->GetChild()){
+		InitMPReq(curbone->GetChild(), curframe);
+	}
+	if (curbone->GetBrother()){
+		InitMPReq(curbone->GetBrother(), curframe);
+	}
+}
+
+
+void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone)
+{
+	if (!modelbone){
+		_ASSERT(0);
+		return;
+	}
+
+	CBone* bvhbone = s_convbonemap[modelbone];
+	if (bvhbone){
+		ConvBoneRotation(1, modelbone, bvhbone, srcframe, befbvhbone);
+	}
+	else{
+		ConvBoneRotation(0, modelbone, 0, srcframe, befbvhbone);
+	}
+
+
+	if (modelbone->GetChild()){
+		if (bvhbone){
+			ConvBoneConvertReq(modelbone->GetChild(), srcframe, bvhbone);
+		}
+		else{
+			ConvBoneConvertReq(modelbone->GetChild(), srcframe, befbvhbone);
+		}
+	}
+	if (modelbone->GetBrother()){
+		//if (bvhbone){
+		//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone);
+		//}
+		//else{
+			ConvBoneConvertReq(modelbone->GetBrother(), srcframe, befbvhbone);
+		//}
+	}
+
 }
 
 

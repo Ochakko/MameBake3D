@@ -232,7 +232,12 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq );
+	CMotionPoint* RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, D3DXVECTOR3 traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+
+/**
+
+*/
+	CMotionPoint* RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, D3DXMATRIX srcmat);
 
 /**
  * @fn
@@ -300,6 +305,7 @@ public:
  */
 	int CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp );
 
+	int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
 /**
  * @fn
  * GetBoneNum
@@ -470,8 +476,21 @@ public: //accesser
 	D3DXMATRIX GetFirstMat(){ return m_firstmat; };
 	void SetFirstMat( D3DXMATRIX srcmat ){ m_firstmat = srcmat; };
 
-	D3DXMATRIX GetInvFirstMat(){ return m_invfirstmat; };
+	D3DXMATRIX GetInvFirstMat(){ D3DXMatrixInverse(&m_invfirstmat, NULL, &m_firstmat); return m_invfirstmat; };
 	void SetInvFirstMat( D3DXMATRIX srcmat ){ m_invfirstmat = srcmat; };
+
+	D3DXMATRIX GetInitMat(){ return m_initmat; };
+	void SetInitMat(D3DXMATRIX srcmat){ m_initmat = srcmat; };
+
+	D3DXMATRIX GetInvInitMat(){ D3DXMatrixInverse(&m_invinitmat, NULL, &m_initmat); return m_invinitmat; };
+	void SetInvInitMat(D3DXMATRIX srcmat){ m_invinitmat = srcmat; };
+
+	D3DXMATRIX GetTmpMat(){ return m_tmpmat; };
+	void SetTmpMat(D3DXMATRIX srcmat){ m_tmpmat = srcmat; };
+
+	CQuaternion GetTmpQ(){ return m_tmpq; };
+	void SetTmpQ(CQuaternion srcq){ m_tmpq = srcq; };
+
 
 	D3DXVECTOR3 GetJointFPos(){ return m_jointfpos; };
 	void SetJointFPos( D3DXVECTOR3 srcpos ){ m_jointfpos = srcpos; };
@@ -637,7 +656,10 @@ private:
 	D3DXVECTOR3 m_jointfpos;//ジョイントの初期位置。
 	D3DXVECTOR3 m_jointwpos;//FBXにアニメーションが入っていない時のジョイントの初期位置。
 	FbxAMatrix m_globalpos;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
-
+	D3DXMATRIX m_initmat;
+	D3DXMATRIX m_invinitmat;
+	D3DXMATRIX m_tmpmat;//一時使用目的
+	CQuaternion m_tmpq;
 
 	//CBone*は子供ジョイントのポインタ。子供の数だけエントリーがある。
 	std::map<CBone*, CRigidElem*> m_rigidelem;

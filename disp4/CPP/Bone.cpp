@@ -70,6 +70,9 @@ int CBone::InitParams()
 	D3DXMatrixIdentity( &m_firstmat );
 	D3DXMatrixIdentity( &m_startmat2 );
 	D3DXMatrixIdentity( &m_axismat_par );
+	D3DXMatrixIdentity(&m_initmat);
+	D3DXMatrixIdentity(&m_invinitmat);
+	D3DXMatrixIdentity(&m_tmpmat);
 
 	m_boneno = 0;
 	m_topboneflag = 0;
@@ -100,6 +103,8 @@ int CBone::InitParams()
 
 	m_remap.clear();
 	m_impmap.clear();
+
+	m_tmpq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
 	return 0;
 }
@@ -935,7 +940,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 }
 
 
-CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq )
+CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, D3DXVECTOR3 traanim)
 {
 	int existflag = 0;
 	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
@@ -952,6 +957,9 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 		curmp->SetWorldMat( tmpmat );
 	}else{
 		//初回呼び出し
+		D3DXMATRIX tramat;
+		D3DXMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
+
 		D3DXVECTOR3 rotcenter;// = m_childworld;
 		D3DXVec3TransformCoord( &rotcenter, &m_jointfpos, &(curmp->GetWorldMat()) );
 
@@ -959,8 +967,11 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 		D3DXMatrixTranslation( &befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z );
 		D3DXMatrixTranslation( &aftrot, rotcenter.x, rotcenter.y, rotcenter.z );
 		D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;// * tramat;
 		curmp->SetWorldMat( tmpmat );
+		if (bvhbone){
+			bvhbone->SetTmpMat(tmpmat);
+		}
 	}
 
 	curmp->SetAbsMat( curmp->GetWorldMat() );
@@ -973,6 +984,91 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 	}
 	return curmp;
 }
+
+CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, D3DXMATRIX srcmat)
+{
+	int existflag = 0;
+	CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
+	if (!existflag || !curmp){
+		_ASSERT(0);
+		return 0;
+	}
+
+	curmp->SetBefWorldMat(curmp->GetWorldMat());
+	/*
+	if (parmp){
+		D3DXMATRIX invbefpar;
+		D3DXMatrixInverse(&invbefpar, NULL, &parmp->GetBefWorldMat());
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		curmp->SetWorldMat(tmpmat);
+	}
+	else{
+		//初回呼び出し
+		//D3DXVECTOR3 rotcenter;// = m_childworld;
+		//D3DXVec3TransformCoord(&rotcenter, &m_jointfpos, &(curmp->GetWorldMat()));
+
+		//D3DXMATRIX befrot, aftrot;
+		//D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+		//D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+		//D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+		//D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;
+		curmp->SetWorldMat(srcmat);
+	}
+	*/
+	curmp->SetWorldMat(srcmat);
+
+	curmp->SetAbsMat(curmp->GetWorldMat());
+	/*
+	if (m_child){
+		m_child->RotBoneQOne(curmp, srcmotid, srcframe, srcmat);
+	}
+	if (m_brother && parmp){
+		m_brother->RotBoneQOne(parmp, srcmotid, srcframe, srcmat);
+	}
+	*/
+	return curmp;
+}
+
+/*
+CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq)
+{
+
+	//一番親から１つずつ呼び出すように使用する。
+
+	int existflag = 0;
+	CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
+	if (!existflag || !curmp){
+		_ASSERT(0);
+		return 0;
+	}
+
+	curmp->SetBefWorldMat(curmp->GetWorldMat());
+
+	//D3DXMATRIX prerotmat = curmp->GetWorldMat();
+	D3DXMATRIX prerotmat = GetInitMat();
+
+	D3DXVECTOR3 rotcenter;// = m_childworld;
+	D3DXVec3TransformCoord(&rotcenter, &m_jointfpos, &prerotmat);
+	//D3DXVECTOR3 rotcenter = m_jointfpos;
+
+	D3DXMATRIX befrot, aftrot;
+	D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+	D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+	D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+
+
+	//D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;
+	D3DXMATRIX tmpmat = GetInitMat() * rotmat;
+	//if (parmp){
+	//	tmpmat = tmpmat * parmp->GetWorldMat();
+	//}
+	curmp->SetWorldMat(tmpmat);
+
+	curmp->SetAbsMat(curmp->GetWorldMat());
+
+	return curmp;
+}
+*/
 
 CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, double firstframe )
 {
@@ -1116,6 +1212,56 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 
 	return 0;
 }
+
+int CBone::CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp)
+{
+
+	int existflag = 0;
+	CMotionPoint* pbef = 0;
+	CMotionPoint* pnext = 0;
+
+	int existflag1 = 0;
+	CMotionPoint* pbef1 = 0;
+	CMotionPoint* pnext1 = 0;
+
+	GetBefNextMP(motid, frameno, &pbef, &pnext, &existflag);
+	if (m_parent){
+		if (existflag){
+			m_parent->GetBefNextMP(motid, frameno, &pbef1, &pnext1, &existflag1);
+			if (existflag1){
+				D3DXMATRIX invpar;
+				D3DXMatrixInverse(&invpar, NULL, &(pbef1->GetWorldMat()));
+				D3DXMATRIX invinitmat = GetInvInitMat();
+				D3DXMATRIX localmat = invinitmat * pbef->GetWorldMat() * invpar;//world == init * local * parだからlocalを計算するには、invinit * world * invpar。
+				pbef->CalcQandTra(localmat, this);
+			}
+			else{
+				_ASSERT(0);
+				return 0;
+			}
+		}
+		else{
+			_ASSERT(0);
+			return 0;
+		}
+	}
+	else{
+		if (existflag){
+			D3DXMATRIX invinitmat = GetInvInitMat();
+			D3DXMATRIX localmat = invinitmat * pbef->GetWorldMat();
+			pbef->CalcQandTra(localmat, this);
+		}
+		else{
+			_ASSERT(0);
+			return 0;
+		}
+	}
+
+	*pdstmp = *pbef;
+
+	return 0;
+}
+
 
 int CBone::GetBoneNum()
 {
