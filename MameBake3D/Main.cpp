@@ -654,7 +654,6 @@ static int SetConvBone( int cbno );
 static int ConvBoneConvert();
 static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone);
 static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone);
-static int CalcTMat(D3DXMATRIX rotmat, D3DXVECTOR3 jointpos, D3DXMATRIX* dstmat);
 
 
 static int CalcTargetPos( D3DXVECTOR3* dstpos );
@@ -3848,7 +3847,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_camdist = D3DXVec3Length( &diffv );
 
 
-	}else if( uMsg == WM_MBUTTONDOWN ){
+	}else if( uMsg == WM_MBUTTONDOWN
+		){
 		SetCapture( s_mainwnd );
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
@@ -3863,7 +3863,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.pickrange = 6;
 
 		s_pickinfo.pickobjno = -1;
-
+		s_pickinfo.buttonflag = PICK_CAMMOVE;
 	}else if( uMsg ==  WM_MOUSEMOVE ){
 		if( s_pickinfo.buttonflag == PICK_CENTER ){
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
@@ -6419,105 +6419,6 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 	return 0;
 }
 
-int CalcTMat(D3DXMATRIX rotmat, D3DXVECTOR3 jointpos, D3DXMATRIX* dstmat)
-{
-	int ret = 0;
-
-	float r11, r12, r13, r14;
-	float r21, r22, r23, r24;
-	float r31, r32, r33, r34;
-	float r41, r42, r43, r44;
-
-	float fpx, fpy, fpz;
-
-	r11 = rotmat._11;
-	r12 = rotmat._21;
-	r13 = rotmat._31;
-	r14 = rotmat._41;
-
-	r21 = rotmat._12;
-	r22 = rotmat._22;
-	r23 = rotmat._32;
-	r24 = rotmat._42;
-
-	r31 = rotmat._13;
-	r32 = rotmat._23;
-	r33 = rotmat._33;
-	r34 = rotmat._43;
-
-	r41 = rotmat._14;
-	r42 = rotmat._24;
-	r43 = rotmat._34;
-	r44 = rotmat._44;
-
-	fpx = jointpos.x;
-	fpy = jointpos.y;
-	fpz = jointpos.z;
-
-	float v1, v2, v3, v4, v6, v7, v10;
-
-	v1 = (r11 - 1.0f) * fpx + r12 * fpy + r13 * fpz + r14;
-	v2 = r21 * fpx + (r22 - 1.0f) * fpy + r23 * fpz + r24;
-	v3 = r31 * fpx + r32 * fpy + (r33 - 1.0f) * fpz + r34;
-
-	v4 = r41 * fpx + r42 * fpy + r43 * fpz + r44;
-
-	float cx6, cy6;
-	cx6 = (r11 - 1.0f) * r23 - r21 * r13;
-	cy6 = r12 * r23 - (r22 - 1.0f) * r13;
-	v6 = r23 * v1 - r13 * v2;
-
-	float cx7, cy7;
-	cx7 = (r11 - 1.0f) * (r33 - 1.0f) - r31 * r13;
-	cy7 = r12 * (r33 - 1.0f) - r32 * r13;//!!!
-	v7 = (r33 - 1.0f) * v1 - r13 * v3;
-
-	float cy10, cz10;
-	cy10 = r12 * r21 - (r22 - 1.0f) * (r11 - 1.0f);
-	cz10 = r13 * r21 - r23 * (r11 - 1.0f);//!!!
-	v10 = r21 * v1 - (r11 - 1.0f) * v2;
-
-	float x, y, z;
-	y = (cx6 * v7 - cx7 * v6) / (cy6 * cx7 - cy7 * cx6);
-	z = (-cy10 * y - v10) / cz10;
-
-	if (r11 != 0.0f){
-		x = (-v1 - r12 * y - r13 * z) / (r11 - 1.0f);
-	}
-	else if (r21 != 0.0f){
-		x = (-v2 - (r22 - 1.0f) * y - r23 * z) / r21;
-	}
-	else if (r31 != 0.0f){
-		x = (-v3 - r32 * y - (r33 - 1.0f) * z) / r31;
-	}
-	else{
-		_ASSERT(0);
-		x = 0.0f;
-		ret = 1;
-	}
-
-	float rhw;
-	rhw = r41 * x + r42 * y + r43 * z + r41 * fpx + r42 * fpy + r43 * fpz + r44;
-	if (rhw != 0.0f){
-		x /= rhw;
-		y /= rhw;
-		z /= rhw;
-	}
-	else{
-		_ASSERT(0);
-		ret = 1;
-	}
-
-	D3DXMatrixIdentity(dstmat);
-	dstmat->_41 = x;
-	dstmat->_42 = y;
-	dstmat->_43 = z;
-
-	return ret;
-}
-
-
-
 int AddBoneTra2( D3DXVECTOR3 diffvec )
 {
 	if( !s_model || (s_curboneno < 0) && !s_model->GetTopBone() ){
@@ -8427,6 +8328,8 @@ int ConvBoneConvert()
 	mW = mWorld;
 	mVP = mView * mProj;
 	s_model->UpdateMatrix(&mW, &mVP);
+
+	::MessageBox(NULL, L"コンバートが終了しました。", L"完了", MB_OK);
 
 	return 0;
 }
