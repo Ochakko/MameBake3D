@@ -958,6 +958,7 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 	}else{
 		//‰‰ñŒÄ‚Ño‚µ
 		D3DXMATRIX tramat;
+		D3DXMatrixIdentity(&tramat);
 		D3DXMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
 
 		D3DXVECTOR3 rotcenter;// = m_childworld;
@@ -967,7 +968,7 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 		D3DXMatrixTranslation( &befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z );
 		D3DXMatrixTranslation( &aftrot, rotcenter.x, rotcenter.y, rotcenter.z );
 		D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;// * tramat;
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat * tramat;
 		curmp->SetWorldMat( tmpmat );
 		if (bvhbone){
 			bvhbone->SetTmpMat(tmpmat);

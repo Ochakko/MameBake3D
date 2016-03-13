@@ -16,6 +16,11 @@ MameBake3Dはデフォルトで相対IKである。
 
 #include "useatl.h"
 
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+
 #include <DXUT.h>
 #include <DXUTcamera.h>
 #include <DXUTgui.h>
@@ -6335,7 +6340,11 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		CMotionPoint curbvhrotmp;
 		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 		rotq = curbvhrotmp.GetQ();
-		if (!bvhbone->GetParent()){
+		const char* bvhbonename = bvhbone->GetBoneName();
+		const char* hipspat = strstr(bvhbonename, "Hips");
+		if (hipspat){
+		//int cmp = strcmp(bvhbonename, "Hips");
+		//if (cmp == 0){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone);
 			traanim = calctramp.GetTra();
