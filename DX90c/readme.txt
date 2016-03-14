@@ -1,2 +1,4 @@
-MicrosoftのDirectX SDKへのリンクです。
+MicrosoftのDirectX SDKのincludeとlibの格納場所です。
 June2010です。
+マイクロソフトのページから取得してincludeとlibにコピーしてください。
+

@@ -61,3 +61,40 @@ VCランタイムは2010を使用しています。
 		普段はModelメニューで選択したモデルにしかボーンは表示されません。
 		Ctrl + Aが有効の時には一番親からのボーンは表示されません。
 
+2016/03/13
+	モデルのFBXにモーションのFBXを適用する機能の追加。
+	モデルとモーションとのボーン構造が多少異なっていても対応できます。
+
+	モデルのボーンの位置にモーションのボーンの位置を合わせるような手作業は必要ありません。
+	（初期姿勢が同じ必要はあります。例えばT字型の姿勢であるとか。）
+
+	使い方の説明動画は
+		https://youtu.be/ERaqn16GsU0
+
+
+/////////// 以下、説明動画
+
+MameBake3Dの使い方。ベイクの話。
+ベイク済とは。ベイク済モーションの編集方法について。
+https://youtu.be/Z0UacTlXs7w
+
+
+MameBake3D説明動画。モデルFBXにモーションFBXを適用する話。
+https://youtu.be/ERaqn16GsU0
+
+
+MameBake3Dの使い方。BVHからFBXへの変換の話。
+オイラー角出力を抜本的に見直した結果、モーション再現率がかなり上昇しました。
+perfumeの３人が踊る動画。
+https://youtu.be/ONnB1jDVi6k
+
+
+MameBake3Dの使い方。
+(MameBake3DでbvhをFBXにしてMayaでモデルにバインドして
+再びMameBake3Dで読み込み、アニメーションを修正するまでの説明動画)
+http://youtu.be/EjGnHuXPZm0
+
+
+MameBake3Dでの物理の設定の仕方。
+http://youtu.be/56kIA5OsZ0M
+
