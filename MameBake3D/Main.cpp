@@ -989,7 +989,7 @@ void InitApp()
 
     swprintf_s( sz, 100, L"Motion Speed: %0.2f", g_dspeed );
     g_SampleUI.AddStatic( IDC_SPEED_STATIC, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_SPEED, 50, iY += addh, 100, ctrlh, 0, 300, ( int )( g_dspeed * 100.0f ) );
+    g_SampleUI.AddSlider( IDC_SPEED, 50, iY += addh, 100, ctrlh, 0, 700, ( int )( g_dspeed * 100.0f ) );
 
 	g_SampleUI.AddCheckBox( IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, 450, 16, false, 0U, false, &s_CamTargetCheckBox );
 
@@ -2430,7 +2430,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				if( endflag == 1 ){
 					g_previewFlag = 0;
 				}
-				/*
+				
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2438,14 +2438,15 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 						curmodel->SetMotionFrame( nextframe );
 					}
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->SetMotionFrame(nextframe);
 				}
+				*/
 				s_owpLTimeline->setCurrentTime( nextframe, false );
 			}else if( g_previewFlag == 4 ){//BTの物理
 				int endflag = 0;
-				/*
+				
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2455,44 +2456,47 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					}
 					curmodel->SetMotionFrame( nextframe );
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->SetMotionFrame(nextframe);
 				}
+				*/
 				int firstflag = 0;
 				if( s_savepreviewFlag != g_previewFlag ){
 					firstflag = 1;
 				}
 
 				//bullet
-				/*
+				
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->Motion2Bt( firstflag, s_coldisp, nextframe, &mW, &mVP );
 					}
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->Motion2Bt(firstflag, s_coldisp, nextframe, &mW, &mVP);
 				}
+				*/
 				//s_bpWorld->setTimeStep( 1.0f / 60.0f * g_dspeed );// seconds
 				s_bpWorld->setTimeStep( 1.0f / 60.0f );// seconds
 				//s_bpWorld->setTimeStep( 1.0f / 80.0f );// seconds
 
 				s_bpWorld->clientMoveAndDisplay();
 
-				/*
+				
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->SetBtMotion( 0, nextframe, &mW, &mVP, difftime );
 					}
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->SetBtMotion(0, nextframe, &mW, &mVP, difftime);
 				}
+				*/
 			}else if( g_previewFlag == 5 ){//ラグドール
 				int endflag = 0;
 				s_model->AdvanceTime( g_previewFlag, difftime, &nextframe, &endflag, -1 );
@@ -2500,7 +2504,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				//	g_previewFlag = 0;
 				//}
 
-				/*
+				
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2508,25 +2512,26 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 						curmodel->SetRagdollKinFlag();
 					}
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->SetRagdollKinFlag();
 				}
-
+				*/
 				s_bpWorld->setTimeStep( 1.0f / 60.0f );// seconds
 
 				s_bpWorld->clientMoveAndDisplay();
-				/*
+				
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
 					if( curmodel && curmodel->GetCurMotInfo() ){
 						curmodel->SetBtMotion( 1, nextframe, &mW, &mVP, difftime );
 					}
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->SetBtMotion(1, nextframe, &mW, &mVP, difftime);
 				}
+				*/
 //				_ASSERT( 0 );
 			}
 		}else{
@@ -2658,7 +2663,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 ***/		
 			if( g_previewFlag == 0 ){
 				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
-				/*
+				
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
@@ -2666,10 +2671,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 						curmodel->SetMotionFrame( curframe );
 					}
 				}
-				*/
+				/*
 				if (s_model){
 					s_model->SetMotionFrame(curframe);
 				}
+				*/
 			}			
 		}
 		//DbgOut( L"cursor : lineno %d, boneno %d, frame %f\r\n", curlineno, s_curboneno, s_curframe );
@@ -3133,7 +3139,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 
 	if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
-		/*
+		
 		vector<MODELELEM>::iterator itrmodel;
 		for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 			CModel* curmodel = itrmodel->modelptr;
@@ -3141,10 +3147,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				curmodel->UpdateMatrix( &mW, &mVP );
 			}
 		}
-		*/
+		/*
 		if (s_model){
 			s_model->UpdateMatrix(&mW, &mVP);
 		}
+		*/
 	}
 
 //DbgOut( L"check !!! : matWorld (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f)\r\n",
@@ -3406,7 +3413,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		D3DXVECTOR3 eyept = g_camEye;
 		V( g_pEffect->SetValue( g_hEyePos, &eyept, sizeof( D3DXVECTOR3 ) ) );
 
-		/*
+		
 		vector<MODELELEM>::iterator itrmodel;
 		for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 			CModel* curmodel = itrmodel->modelptr;
@@ -3423,7 +3430,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 				curmodel->OnRender( s_pdev, lightflag, diffusemult, btflag );
 			}
 		}
-		*/
+		/*
 		if (s_model){
 			CModel* curmodel = s_model;
 
@@ -3440,7 +3447,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 				curmodel->OnRender(s_pdev, lightflag, diffusemult, btflag);
 			}
 		}
-
+		*/
 		if( s_ground && s_dispground ){
 			g_pEffect->SetMatrix( g_hmWorld, &mWorld );
 
@@ -3846,6 +3853,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		D3DXVECTOR3 diffv = g_camEye - g_camtargetpos;
 		s_camdist = D3DXVec3Length( &diffv );
 
+		if (s_model && (s_curboneno >= 0)){
+			SetRigidLeng();
+			SetImpWndParams();
+			SetDmpWndParams();
+			RigidElem2WndParam();
+		}
 
 	}else if( uMsg == WM_MBUTTONDOWN
 		){
@@ -4385,6 +4398,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					if( s_model && (s_curboneno >= 0) ){
 						s_ikkind = 3;
 						s_rigidWnd->setVisible( 1 );
+						SetRigidLeng();
 						RigidElem2WndParam();
 					}
 					break;
@@ -8665,6 +8679,40 @@ int RigidElem2WndParam()
 				s_fricSlider->setValue( fric );
 				s_btgSlider->setValue( btg );
 			}
+			else{
+				//rigid elemが作成されていないとき
+				s_shprateSlider->setValue(1.0);
+				s_boxzSlider->setValue(1.0);
+				s_massSlider->setValue(1.0);
+				s_rigidskip->setValue(0);
+				s_colradio->setSelectIndex(0);
+				s_lkradio->setSelectIndex(0);
+				s_akradio->setSelectIndex(0);
+				s_ldmpSlider->setValue(g_l_dmp);
+				s_admpSlider->setValue(g_a_dmp);
+				s_lkSlider->setValue(g_initcuslk);
+				s_akSlider->setValue(g_initcusak);
+				s_restSlider->setValue(0.0);
+				s_fricSlider->setValue(0.0);
+				s_btgSlider->setValue(9.0);
+			}
+		}
+		else{
+			//rigid elemが作成されていないとき
+			s_shprateSlider->setValue(1.0);
+			s_boxzSlider->setValue(1.0);
+			s_massSlider->setValue(1.0);
+			s_rigidskip->setValue(0);
+			s_colradio->setSelectIndex(0);
+			s_lkradio->setSelectIndex(0);
+			s_akradio->setSelectIndex(0);
+			s_ldmpSlider->setValue(g_l_dmp);
+			s_admpSlider->setValue(g_a_dmp);
+			s_lkSlider->setValue(g_initcuslk);
+			s_akSlider->setValue(g_initcusak);
+			s_restSlider->setValue(0.0);
+			s_fricSlider->setValue(0.0);
+			s_btgSlider->setValue(9.0);
 		}
 		s_namelabel->setName( (WCHAR*)curbone->GetWBoneName() );
 	}else{

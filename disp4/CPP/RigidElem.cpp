@@ -41,7 +41,7 @@ int CRigidElem::InitParams()
 	m_dampanim_a = 0.0f;
 
 	m_coltype = COL_CAPSULE_INDEX;
-	m_skipflag = 0;
+	m_skipflag = 1;//!!!!! default‚Å„‘Ì‚ğ–³Œø‚É‚·‚éB
 
 	D3DXMatrixIdentity( &m_capsulemat );
 

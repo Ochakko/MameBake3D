@@ -397,7 +397,8 @@ int CModel::LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR
 		_ASSERT( 0 );
 		return 1;
 	}
-	
+	//_ASSERT(0);
+
 	if (pImporter->IsFBX())
     {
         // Set the import states. By default, the import states are always set to 
