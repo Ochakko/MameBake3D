@@ -515,8 +515,9 @@ public:
 	int Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP );
 	int SetRagdollKinFlag();
 	int SetCurrentRigidElem( int curindex );
-
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
+	int SetBtEquilibriumPointReq( CBone* srcbone );
+
 
 	int MultDispObj( D3DXVECTOR3 srcmult, D3DXVECTOR3 srctra );
 	MOTINFO* GetRgdMorphInfo();

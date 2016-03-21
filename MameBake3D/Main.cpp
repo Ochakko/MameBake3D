@@ -1240,11 +1240,11 @@ static OWP_Button* s_dampanimB = 0;
 	s_groupcheck = new OWP_CheckBox( L"全部設定ボタンで同グループ剛体に設定する。", 0 );
 	s_shprateSlider= new OWP_Slider(0.6,20.0,0.0);
 	s_boxzSlider= new OWP_Slider(0.6,20.0,0.0);
-	s_massSlider = new OWP_Slider( g_initmass, 3.0, 0.0 );
+	s_massSlider = new OWP_Slider( g_initmass, 30.0, 0.0 );
 	s_massB = new OWP_Button( L"全剛体に質量設定" );
 	s_rigidskip = new OWP_CheckBox( L"有効/無効", 1 );
-	s_btgSlider = new OWP_Slider(-0.09,1.0,-1.0);
-	s_btgscSlider = new OWP_Slider(9.07,10.0,0.0);
+	s_btgSlider = new OWP_Slider(-1.0,1.0,-1.0);
+	s_btgscSlider = new OWP_Slider(10.0,100.0,0.0);
 	s_btgB = new OWP_Button( L"全ての剛体にBT重力設定" );
 	s_btforce = new OWP_CheckBox( L"BTシミュ剛体にする", 0 );
 
@@ -1271,7 +1271,7 @@ static OWP_Button* s_dampanimB = 0;
 	s_lkradio->addLine( L"[位置ばね]普通こんなもんだと思う" );
 	s_lkradio->addLine( L"[位置ばね]カスタム値" );
 
-	s_lkSlider = new OWP_Slider( g_initcuslk, 6000.0f, 0.0f );
+	s_lkSlider = new OWP_Slider( g_initcuslk, 10000.0f, 0.0f );//60000
 	s_lklabel = new OWP_Label( L"位置ばね カスタム値" );
 
 	s_akradio = new OWP_RadioButton( L"[角度ばね]へなへな" );
@@ -1279,7 +1279,7 @@ static OWP_Button* s_dampanimB = 0;
 	s_akradio->addLine( L"[角度ばね]普通こんなもんだと思う" );
 	s_akradio->addLine( L"[角度ばね]カスタム値" );
 
-	s_akSlider = new OWP_Slider( g_initcusak, 300.0f, 0.0f );
+	s_akSlider = new OWP_Slider( g_initcusak, 6000.0f, 0.0f );//300
 	s_aklabel = new OWP_Label( L"角度ばね カスタム値" );
 
 	s_restSlider = new OWP_Slider( 0.5f, 1.0f, 0.0f );

@@ -983,6 +983,11 @@ DbgOut( L"check kinflag !!!! : previewflag %d, float kinflag %d, bunki kinflag %
 	Motion2BtReq( m_topbt );
 
 
+	if (m_topbone){
+		SetBtEquilibriumPointReq(m_topbone);
+	}
+
+
 	return 0;
 }
 
@@ -3621,8 +3626,24 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 //		srcbone->m_btkinflag = 0;
 		
 		int cmp0 = strncmp( srcbone->GetBoneName(), "BT_", 3 );
-		if( (cmp0 == 0) && (srcbone->GetBtForce() == 1) ){
-			srcbone->SetBtKinFlag( 0 );
+		if( (cmp0 == 0) && (srcbone->GetBtForce() == 1)){
+			if (srcbone->GetParent()){
+				CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
+				if (curre){
+					if (curre->GetSkipflag() == 0){
+						srcbone->SetBtKinFlag(0);
+					}
+					else{
+						srcbone->SetBtKinFlag(1);
+					}
+				}
+				else{
+					srcbone->SetBtKinFlag(1);
+				}
+			}
+			else{
+				srcbone->SetBtKinFlag(1);
+			}
 		}else{
 			srcbone->SetBtKinFlag( 1 );
 		}
@@ -3633,6 +3654,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 				s_rigidflag = curflag;
 				s_setrigidflag = 1;
 			}
+			//srcbto->GetRigidBody()->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
 			srcbto->GetRigidBody()->setCollisionFlags( curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
 			//srcbto->m_rigidbody->setActivationState(DISABLE_DEACTIVATION);
 			//srcbto->m_rigidbody->setActivationState(WANTS_DEACTIVATION);
@@ -3747,7 +3769,7 @@ DbgOut( L"CreateBtConnect : bto1 %s--%s, bto2 %s--%s\r\n",
 
 						int dofid;
 						for( dofid = 0; dofid < 3; dofid++ ){
-							dofC->enableSpring( dofid, true );
+							dofC->enableSpring( dofid, false );//!!!!!!!!!!!!!!!!!!!
 							//dofC->setStiffness( dofid, 1000.0f );
 							//dofC->setStiffness( dofid, 2000.0f );
 							dofC->setStiffness( dofid, 1.0e12 );
@@ -3755,7 +3777,7 @@ DbgOut( L"CreateBtConnect : bto1 %s--%s, bto2 %s--%s\r\n",
 							dofC->setDamping( dofid, 0.5f );
 						}
 						for( dofid = 3; dofid < 6; dofid++ ){
-							dofC->enableSpring( dofid, true );
+							dofC->enableSpring( dofid, false );//!!!!!!!!!!!!!!!!!
 							//dofC->setStiffness( dofid, 0.5f );
 							dofC->setStiffness( dofid, 80.0f );
 							dofC->setDamping( dofid, 0.01f );
@@ -3765,8 +3787,8 @@ DbgOut( L"CreateBtConnect : bto1 %s--%s, bto2 %s--%s\r\n",
 						dofC->setEquilibriumPoint();
 
 						bto1->PushBackConstraint( dofC );
-						m_btWorld->addConstraint(dofC, true);
-						//m_btWorld->addConstraint(dofC, false);
+						//m_btWorld->addConstraint(dofC, true);
+						m_btWorld->addConstraint(dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
 
 						bto2->SetConnectFlag( 1 );
 					}
@@ -3828,8 +3850,43 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 		SetBtKinFlagReq( m_topbt, onfirstcreate );
 	}
 
+	if (m_topbone){
+		SetBtEquilibriumPointReq(m_topbone);
+	}
+
 	return 0;
 }
+
+int CModel::SetBtEquilibriumPointReq( CBone* curbone )
+{
+
+	map<CBone*, CBtObject*>::iterator itrbto;
+	for (itrbto = curbone->GetBtObjectMapBegin(); itrbto != curbone->GetBtObjectMapEnd(); itrbto++){
+		CBtObject* curbto = itrbto->second;
+		if (curbto){
+			int lflag, aflag;
+			double curframe = m_curmotinfo->curframe;
+			if (curframe == 0.0){
+				lflag = 1;
+			}
+			else{
+				lflag = 0;
+			}
+			aflag = 1;
+			curbto->SetEquilibriumPoint( lflag, aflag );
+		}
+	}
+
+	if (curbone->GetBrother()){
+		SetBtEquilibriumPointReq(curbone->GetBrother());
+	}
+	if (curbone->GetChild()){
+		SetBtEquilibriumPointReq(curbone->GetChild());
+	}
+
+	return 0;
+}
+
 
 
 void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBone* parbone, CBone* curbone )

@@ -77,6 +77,9 @@ public:
 	int Motion2Bt();
 
 
+	int SetEquilibriumPoint( int lflag, int aflag );
+
+
 private:
 
 /**

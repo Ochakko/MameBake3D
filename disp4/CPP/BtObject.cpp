@@ -72,7 +72,8 @@ int CBtObject::DestroyObjs()
 {
 	int chilno;
 	for( chilno = 0; chilno < (int)m_constraint.size(); chilno++ ){
-		btTypedConstraint* constptr = m_constraint[ chilno ];
+		//btTypedConstraint* constptr = m_constraint[ chilno ];
+		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno];
 		if( constptr ){
 			m_btWorld->removeConstraint( constptr );
 			delete constptr;
@@ -163,7 +164,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 	float h, r, z;
 	r = curre->GetSphr();// * 0.95f;
-	h = curre->GetCylileng();// * 0.95f;
+	h = curre->GetCylileng();// *0.70f;//!!!!!!!!!!!!!
 	z = curre->GetBoxz();
 
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
@@ -422,6 +423,7 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 			*/
 
 			float lmax, lmin;
+			/*
 			if( g_previewFlag == 4 ){
 				lmin = -0.1f;
 				lmax = 0.1f;
@@ -429,6 +431,9 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 				lmin = -0.25f;
 				lmax = 0.25f;
 			}
+			*/
+			lmin = -10000.0f;
+			lmax = 10000.0f;
 
 			btGeneric6DofSpringConstraint* dofC;
 			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
@@ -463,6 +468,7 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 			int dofid;
 			for( dofid = 0; dofid < 3; dofid++ ){
 				dofC->enableSpring( dofid, true );
+				//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 				/*
 				if( l_kindex <= 2 ){
 					dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
@@ -472,24 +478,52 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 				*/
 				dofC->setStiffness( dofid, 1.0e12 );
 				dofC->setDamping( dofid, l_damping );
+				dofC->setEquilibriumPoint(dofid);
 			}
 			for( dofid = 3; dofid < 6; dofid++ ){
-				dofC->enableSpring( dofid, true );
 				if( a_kindex <= 2 ){
 					dofC->setStiffness( dofid, g_a_kval[ a_kindex ] );
 				}else{
 					dofC->setStiffness( dofid, a_cusk );
 				}
 				dofC->setDamping( dofid, a_damping );
+				dofC->setEquilibriumPoint(dofid);
+
+				dofC->enableSpring( dofid, true );
+				//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 			}
 			
-			dofC->setEquilibriumPoint();
-
 
 			m_constraint.push_back( dofC );
-			m_btWorld->addConstraint(dofC, true);
-			//m_btWorld->addConstraint(dofC, false);
+			//m_btWorld->addConstraint(dofC, true);
+			m_btWorld->addConstraint(dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
 			//m_dofC = dofC;
+
+			dofC->setEquilibriumPoint();//!!!!!!!!!!!!
+
+		}
+	}
+
+	return 0;
+}
+
+int CBtObject::SetEquilibriumPoint( int lflag, int aflag )
+{
+	int chilno;
+	for (chilno = 0; chilno < (int)m_constraint.size(); chilno++){
+		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno];
+		if (constptr){
+			int dofid;
+			if (lflag == 1){
+				for (dofid = 0; dofid < 3; dofid++){//Šp“x‚Ì‚Ý
+					constptr->setEquilibriumPoint(dofid);
+				}
+			}
+			if (aflag == 1){
+				for (dofid = 3; dofid < 6; dofid++){//Šp“x‚Ì‚Ý
+					constptr->setEquilibriumPoint(dofid);
+				}
+			}
 		}
 	}
 
