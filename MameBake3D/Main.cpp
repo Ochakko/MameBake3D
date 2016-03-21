@@ -4392,7 +4392,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				case IDC_IK_LIGHT:
 					s_ikkind = 2;
 					s_displightarrow = true;
-					s_LightCheckBox->SetChecked( true );
+					if (s_LightCheckBox){
+						s_LightCheckBox->SetChecked(true);
+					}
 					break;
 				case IDC_BT_RIGIT:
 					if( s_model && (s_curboneno >= 0) ){
@@ -6355,10 +6357,10 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 		rotq = curbvhrotmp.GetQ();
 		const char* bvhbonename = bvhbone->GetBoneName();
-		const char* hipspat = strstr(bvhbonename, "Hips");
-		if (hipspat){
-		//int cmp = strcmp(bvhbonename, "Hips");
-		//if (cmp == 0){
+		//const char* hipspat = strstr(bvhbonename, "Hips");
+		//if (hipspat){
+		int cmp = strcmp(bvhbonename, "Hips");
+		if (cmp == 0){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone);
 			traanim = calctramp.GetTra();

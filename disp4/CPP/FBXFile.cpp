@@ -946,7 +946,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 					orgtra = curbe->GetPosition() - parbe->GetPosition();
 				}
 			}else{
-				orgtra = curbe->GetPosition() - s_fbxbone->GetBvhElem()->GetPosition();
+				//orgtra = curbe->GetPosition() - s_fbxbone->GetBvhElem()->GetPosition();
+				orgtra = curbe->GetPosition();
 				topflag = 1;
 			}
 
@@ -1563,7 +1564,8 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 					orgtra = curbone->GetJointFPos() - parbone->GetJointFPos();
 				}
 			}else{
-				orgtra = curbone->GetJointFPos() - s_fbxbone->GetBone()->GetJointFPos();
+				//orgtra = curbone->GetJointFPos() - s_fbxbone->GetBone()->GetJointFPos();
+				orgtra = curbone->GetJointFPos();
 				topflag = 1;
 			}
 
@@ -2482,7 +2484,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 	FbxAMatrix lXMatrix;
 	FbxNode* lSkel;
 
-	if ((fbxbone->GetType() == FB_NORMAL) || (fbxbone->GetType() == FB_BUNKI_PAR) || (fbxbone->GetType() == FB_BUNKI_CHIL)){
+	//if ((fbxbone->GetType() == FB_NORMAL) || (fbxbone->GetType() == FB_BUNKI_PAR) || (fbxbone->GetType() == FB_BUNKI_CHIL)){
 		lSkel = fbxbone->GetSkelNode();
 		if (!lSkel){
 			_ASSERT(0);
@@ -2512,7 +2514,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 		lCluster->SetTransformLinkMatrix(lXMatrix);
 
 		lSkin->AddCluster(lCluster);
-	}
+	//}
 
 	/*
 	if (fbxbone->m_child){
