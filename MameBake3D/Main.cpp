@@ -6374,10 +6374,17 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		//const char* hipspat = strstr(bvhbonename, "Hips");
 		//if (hipspat){
 		int cmp = strcmp(bvhbonename, "Hips");
-		if (cmp == 0){
+		const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
+		if ((cmp == 0) || cmpptr){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone);
 			traanim = calctramp.GetTra();
+
+			D3DXVECTOR3 fpos, wpos;
+			fpos = srcbone->GetJointFPos();
+			wpos = srcbone->GetJointWPos();
+			_ASSERT(0);
+
 		}
 		else{
 			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
