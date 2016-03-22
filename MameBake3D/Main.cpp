@@ -2475,6 +2475,20 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					}
 				}
 				/*
+				if (nextframe == 0.0){
+				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+				CModel* curmodel = itrmodel->modelptr;
+				if (curmodel && curmodel->GetCurMotInfo()){
+				CBone* topbone = curmodel->GetTopBone();
+				if (topbone){
+				curmodel->SetBtEquilibriumPointReq(topbone);
+				}
+				}
+				}
+				}
+				*/
+
+				/*
 				if (s_model){
 					s_model->Motion2Bt(firstflag, s_coldisp, nextframe, &mW, &mVP);
 				}
@@ -8552,17 +8566,15 @@ int StartBt( int flag )
 	int createflag = 0;
 
 	if( (flag == 0) && (g_previewFlag != 4) ){
+		//F9キー
 		g_previewFlag = 4;
 		createflag = 1;
 	}else if( flag == 1 ){
+		//F10キー
 		g_previewFlag = 5;
-		//if( g_previewFlag == 4 ){
-		//	createflag = 0;
-		//}else{
-			createflag = 1;
-		//}
-
+		createflag = 1;
 	}else if( flag == 2 ){
+		//spaceキー
 		if( g_previewFlag == 4 ){
 			resetflag = 1;
 		}else if( g_previewFlag == 5 ){
@@ -8572,11 +8584,21 @@ int StartBt( int flag )
 		g_previewFlag = 0;
 	}
 
-	if( (g_previewFlag == 4) || (g_previewFlag == 5) ){
+	D3DXMATRIXA16 mW, mVP;
+	double curframe;
+	if (resetflag == 1){
+		//curframe = s_owpTimeline->getCurrentTime();//<-- preview中はタイムラインの時間は動かない。
+		s_model->GetMotionFrame(&curframe);
+	}
+	else{
+		curframe = 0.0;
+	}
+
+	if ((g_previewFlag == 4) || (g_previewFlag == 5)){
 		s_bpWorld->setGlobalERP(s_erp);// ERP
 
 		if( g_previewFlag == 4 ){
-			s_model->SetMotionFrame( 0.0 );
+			s_model->SetMotionFrame( curframe );
 
 			D3DXMATRIX mWorld;
 			D3DXMATRIX mView;
@@ -8587,7 +8609,6 @@ int StartBt( int flag )
 			mWorld._41 = 0.0f;
 			mWorld._42 = 0.0f;
 			mWorld._43 = 0.0f;
-			D3DXMATRIXA16 mW, mVP;
 			//mW = g_mCenterWorld * mWorld;
 			mW = mWorld;
 			mVP = mView * mProj;
@@ -8599,24 +8620,28 @@ int StartBt( int flag )
 					curmodel->UpdateMatrix( &mW, &mVP );
 				}
 			}
-			s_owpTimeline->setCurrentTime( 0.0, true );
 
 			s_model->SetCurrentRigidElem( s_curreindex );
 		}else if( g_previewFlag == 5 ){
 			s_model->SetCurrentRigidElem( s_rgdindex );
 		}
 
-		s_btstartframe = s_owpTimeline->getCurrentTime();// 選択時刻
+		s_btstartframe = curframe;
 
-		if( createflag == 1 ){
-			CallF( s_model->CreateBtObject( s_coldisp, 0 ), return 1 );
-		}
-		//if( resetflag == 1 ){
+		CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+		
 		if( g_previewFlag == 4 ){
 			//s_bpWorld->clientResetScene();
-			if( s_model ){
-				s_model->ResetBt();
-			}
+			//if( s_model ){
+			//	s_model->ResetBt();
+			//}
+			int firstflag = 1;
+			s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &mW, &mVP);
+			int rgdollflag = 0;
+			double difftime = 0.0;
+			s_model->SetBtMotion(rgdollflag, s_btstartframe, &mW, &mVP, difftime);
+			s_model->ResetBt();
+
 		}
 		if( g_previewFlag == 5 ){
 			s_model->SetBtImpulse();
@@ -8625,7 +8650,8 @@ int StartBt( int flag )
 		if( s_model->GetRgdMorphIndex() >= 0 ){
 			MOTINFO* morphmi = s_model->GetRgdMorphInfo();
 			if( morphmi ){
-				morphmi->curframe = 0.0;
+				//morphmi->curframe = 0.0;
+				morphmi->curframe = s_btstartframe;
 			}
 		}
 	}

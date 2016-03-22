@@ -983,9 +983,9 @@ DbgOut( L"check kinflag !!!! : previewflag %d, float kinflag %d, bunki kinflag %
 	Motion2BtReq( m_topbt );
 
 
-	if (m_topbone){
-		SetBtEquilibriumPointReq(m_topbone);
-	}
+//	if (m_topbone){
+//		SetBtEquilibriumPointReq(m_topbone);
+//	}
 
 
 	return 0;
@@ -4042,6 +4042,15 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 		}
 	}
 
+
+	if (m_topbone){
+		SetBtEquilibriumPointReq(m_topbone);
+	}
+
+
+	/*
+	//resetbt処理との問題で一時的にコメントアウト
+
 ///// morph
 
 	if( (ragdollflag == 1) && (m_rgdmorphid >= 0) ){
@@ -4084,7 +4093,7 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 			}
 		}
 	}
-
+	*/
 	return 0;
 }
 
