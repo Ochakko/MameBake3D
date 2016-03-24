@@ -2536,7 +2536,12 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 	int settopflag = 0;
 	CBone* newbone = new CBone( this );
 	_ASSERT( newbone );
-	newbone->SetName( (char*)nodename );
+
+	char newbonename[256];
+	strcpy_s(newbonename, 256, nodename);
+	TermJointRepeats(newbonename);
+	newbone->SetName(newbonename);
+	
 	newbone->SetTopBoneFlag( 0 );
 	m_bonelist[newbone->GetBoneNo()] = newbone;
 	m_bonename[ newbone->GetBoneName() ] = newbone;
@@ -2566,10 +2571,15 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 	curnode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
 
 	if( parnode ){
-		const char* parbonename = parnode->GetName();
+		//const char* parbonename = parnode->GetName();
+		char parbonename[256];
+		strcpy_s(parbonename, 256, parnode->GetName());
+		TermJointRepeats(parbonename);
+
 		CBone* parbone = m_bonename[ parbonename ];
 		if( parbone ){
 			parbone->AddChild( newbone );
+_ASSERT(0);
 		}else{
 			/***
 			FbxNodeAttribute *parattr = parnode->GetNodeAttribute();
@@ -2820,12 +2830,15 @@ int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttri
 			FbxCluster* cluster = skin->GetCluster( j );
 
 			const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
-			CBone* curbone = m_bonename[ (char*)bonename ];
+			char bonename2[256];
+			strcpy_s(bonename2, 256, bonename);
+			TermJointRepeats(bonename2);
+			CBone* curbone = m_bonename[ (char*)bonename2 ];
 
 
 WCHAR wname[256]={0L};
 ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename, 256, wname, 256 );
+MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 );
 
 
 			if( curbone && !curbone->GetGetAnimFlag()){
@@ -2916,6 +2929,10 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename, 256, wname, 256 );
 					ktime += mFrameTime;
 				}
 			}
+
+			if (!curbone){
+				_ASSERT(0);
+			}
 		}
 	}
 
@@ -2988,13 +3005,16 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 			}
 
 			const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
+			char bonename2[256];
+			strcpy_s(bonename2, 256, bonename);
+			TermJointRepeats(bonename2);
 //			int namelen = (int)strlen( clustername );
 			WCHAR wname[256];
 			ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, bonename, -1, wname, 256 );
+			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, bonename2, -1, wname, 256 );
 //			DbgOut( L"cluster (%d, %d), name : %s\r\n", i, j, wname );
 
-			CBone* curbone = m_bonename[ (char*)bonename ];
+			CBone* curbone = m_bonename[ (char*)bonename2 ];
 
 			if( curbone ){
 				int curclusterno = newobj->GetClusterSize();

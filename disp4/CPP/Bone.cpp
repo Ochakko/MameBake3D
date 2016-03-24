@@ -25,6 +25,8 @@
 #include <VecMath.h>
 
 #include <RigidElem.h>
+#include <EngName.h>
+
 
 using namespace std;
 using namespace OrgWinGUI;
@@ -335,6 +337,8 @@ int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 int CBone::SetName( char* srcname )
 {
 	strcpy_s( m_bonename, 256, srcname );
+	TermJointRepeats(m_bonename);
+
 	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_bonename, 256, m_wbonename, 256 );
 
 	return 0;

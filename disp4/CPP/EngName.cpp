@@ -15,6 +15,19 @@
 #define DBGH
 #include <dbg.h>
 
+int TermJointRepeats(char* dstname)
+{
+	char pat1[256] = "_Joint";
+	char* pat1ptr = strstr(dstname, pat1);
+	if (pat1ptr){
+		char* pat2ptr = strstr(pat1ptr + strlen(pat1), pat1);
+		if (pat2ptr){
+			*pat2ptr = 0;
+		}
+	}
+	return 0;
+}
+
 
 int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstleng )
 {
@@ -38,12 +51,14 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 	char* lptr;
 	lptr = strstr( namepm, "[L]" );
 	if( lptr ){
-		strncpy( lptr, "_L_ ", 3 );
+		int restleng = 256 - (lptr - namepm);
+		strncpy_s( lptr, restleng, "_L_ ", 3 );
 	}
 	char* rptr;
 	rptr = strstr( namepm, "[R]" );
 	if( rptr ){
-		strncpy( rptr, "_R_", 3 );
+		int restleng = 256 - (rptr - namepm);
+		strncpy_s( rptr, restleng,  "_R_", 3 );
 	}
 
 
@@ -70,11 +85,18 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 
 	if( findilleagal != 0 ){
 		if( type == ENGNAME_BONE ){
-			sprintf_s( tempname, 256, "%s%d_Joint", headname, replaceno );
+			char pat1[256] = "_Joint";
+			char* patptr = strstr(headname, pat1);
+			if (!patptr){
+				sprintf_s(tempname, 256, "%s%d_Joint", headname, replaceno);
+			}
+			else{
+				sprintf_s(tempname, 256, "%s%d", headname, replaceno);
+			}
 		}else if( type == ENGNAME_DISP ){
 			sprintf_s( tempname, 256, "%s%d", headname, replaceno );
 		}else if( type == ENGNAME_MOTION ){
-			sprintf_s( tempname, 256, "Motion_%d", replaceno );
+			sprintf_s(tempname, 256, "Motion_%d", replaceno);
 		}else{
 			_ASSERT( 0 );
 			return 1;
@@ -99,6 +121,10 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 			strcpy_s( dstname, dstleng, namepm );
 		}
 	}
+
+
+	TermJointRepeats(dstname);
+
 
 	return 0;
 }

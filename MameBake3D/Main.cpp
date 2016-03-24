@@ -492,7 +492,7 @@ WCHAR g_basedir[ MAX_PATH ] = {0};
 
 float g_ikfirst = 1.0f;
 float g_ikrate = 1.0f;
-int g_applyrate = 100;
+int g_applyrate = 50;
 
 //--------------------------------------------------------------------------------------
 // UI control IDs

@@ -25,8 +25,12 @@ enum {
 	int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstleng );
 
 
+	int TermJointRepeats(char* dstname);
+
+
 #else
 	extern int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstleng );
+	extern int TermJointRepeats(char* dstname);
 #endif
 
 #endif
