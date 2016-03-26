@@ -819,7 +819,7 @@ int CQuaternion::GetRound( float srcval )
 	}
 }
 
-int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul )
+int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone )
 {
 
 /***
@@ -850,11 +850,45 @@ int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3
 	rq.Q2Eul( 0, befeul, &tmpeul );
 	*reteul = tmpeul;
 ***/
+	int noise[4] = { 0, 1, 0, -1 };
+	static int dbgcnt = 0;
 
 	D3DXVECTOR3 tmpeul( 0.0f, 0.0f, 0.0f );
-	Q2Eul( 0, befeul, &tmpeul );
+	if (IsInit() == 0){
+		Q2Eul(0, befeul, &tmpeul);
+	}
+	else{
+		//FBX書き出しの際にアニメーションに「ある程度の大きさの変化」がないとキーが省略されてしまう。
+		//ノイズを乗せることでアニメーションがなくてもキーが省略されないようになる。
+		//ノイズを乗せるのは１つのボーンで良い。
+		if (isfirstbone == 1){
+			tmpeul.x = (float)(noise[dbgcnt % 4]) / 100.0f;//!!!!!!!!
+		}
+		else{
+			tmpeul.x = 0.0f;
+		}
+		tmpeul.y = 0.0f;
+		tmpeul.z = 0.0f;
+	}
 	*reteul = tmpeul;
+
+	dbgcnt++;
 
 	return 0;
 }
 
+int CQuaternion::IsInit()
+{
+	float dx, dy, dz, dw;
+	dx = x - 0.0f;
+	dy = y - 0.0f;
+	dz = z - 0.0f;
+	dw = w - 1.0f;
+
+	if ((fabs(dx) <= 0.000001f) && (fabs(dy) <= 0.000001f) && (fabs(dz) <= 0.000001f) && (fabs(dw) <= 0.000001f)){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}

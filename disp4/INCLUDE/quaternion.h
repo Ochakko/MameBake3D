@@ -21,7 +21,8 @@ public:
 	int SetRotation( CQuaternion* axisq, double degx, double degy, double degz );
 	int GetAxisAndRot( D3DXVECTOR3* axisvecptr, float* frad );
 	int QuaternionToAxisAngle( D3DXVECTOR3* dstaxis, float* dstrad );
-	int CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );
+	int CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone );
+	int IsInit();
 
 	//CQuaternion operator= (const CQuaternion &q) const;
 	CQuaternion CQuaternion::operator= (CQuaternion q);

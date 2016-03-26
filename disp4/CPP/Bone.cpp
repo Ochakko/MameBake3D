@@ -26,7 +26,7 @@
 
 #include <RigidElem.h>
 #include <EngName.h>
-
+#include <BoneProp.h>
 
 using namespace std;
 using namespace OrgWinGUI;
@@ -1192,14 +1192,30 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 			m_parent->GetBefNextMP( motid, frameno, &pbef1, &pnext1, &existflag1 );
 			if( existflag1 ){
 				D3DXMATRIX invpar;
-				D3DXMatrixInverse( &invpar, NULL, &(pbef1->GetWorldMat()) );
+				D3DXMatrixInverse(&invpar, NULL, &(pbef1->GetWorldMat()));
 				D3DXMATRIX localmat = pbef->GetWorldMat() * invpar;
-				pbef->CalcQandTra( localmat, this );
+				pbef->CalcQandTra(localmat, this);
+
+				int inirotcur, inirotpar;
+				inirotcur = IsInitRot(pbef->GetWorldMat());
+				inirotpar = IsInitRot(pbef1->GetWorldMat());
+				if (inirotcur && inirotpar){
+					CQuaternion iniq;
+					iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+					pbef->SetQ(iniq);
+				}
+
+				*pdstmp = *pbef;
 			}else{
+				CMotionPoint inimp;
+				*pdstmp = inimp;
 				_ASSERT( 0 );
 				return 0;
 			}
 		}else{
+			CMotionPoint inimp;
+			*pdstmp = inimp;
+
 			_ASSERT( 0 );
 			return 0;
 		}
@@ -1207,13 +1223,25 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 		if( existflag ){
 			D3DXMATRIX localmat = pbef->GetWorldMat();
 			pbef->CalcQandTra( localmat, this );
+
+			int inirotcur;
+			inirotcur = IsInitRot(pbef->GetWorldMat());
+			if (inirotcur ){
+				CQuaternion iniq;
+				iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+				pbef->SetQ(iniq);
+			}
+
+			*pdstmp = *pbef;
+
 		}else{
+			CMotionPoint inimp;
+			*pdstmp = inimp;
+
 			_ASSERT( 0 );
 			return 0;
 		}
 	}
-
-	*pdstmp = *pbef;
 
 	return 0;
 }

@@ -2521,7 +2521,20 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 				//pNode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
 				
 				DbgOut( L"CreateFBXBoneReq : skeleton : %s\r\n", wname );
-				GetFBXBone( pScene, type, pAttrib, nodename, pNode, parbonenode );
+				if (strcmp(nodename, "RootNode") != 0){
+					if (parnode && (strcmp(parnode->GetName(), "RootNode") != 0)){
+						GetFBXBone(pScene, type, pAttrib, nodename, pNode, parbonenode);
+					}
+					else{
+						GetFBXBone(pScene, type, pAttrib, nodename, pNode, 0);
+					}
+				}
+				else{
+					_ASSERT(0);
+				}
+				break;
+			case FbxSkeleton::eRoot:
+				_ASSERT(0);
 				break;
 			default:
 				break;
@@ -2936,6 +2949,7 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 					curmp->SetWorldMat( xmat );
 
 					ktime += mFrameTime;
+					//ktime = mFrameTime * framecnt;
 				}
 			}
 

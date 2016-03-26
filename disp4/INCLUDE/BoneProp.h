@@ -16,5 +16,6 @@ int vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec );
 int vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec );
 
 int GetRound( float srcval );
+int IsInitRot(D3DXMATRIX srcmat);
 
 #endif

@@ -243,4 +243,35 @@ int modifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB )
 	return 0;
 }
 
+int IsInitRot(D3DXMATRIX srcmat)
+{
+	int retval = 0;
+
+	float d11, d12, d13;
+	float d21, d22, d23;
+	float d31, d32, d33;
+
+	d11 = srcmat._11 - 1.0f;
+	d12 = srcmat._12 - 0.0f;
+	d13 = srcmat._13 - 0.0f;
+
+	d21 = srcmat._21 - 0.0f;
+	d22 = srcmat._22 - 1.0f;
+	d23 = srcmat._23 - 0.0f;
+
+	d31 = srcmat._11 - 0.0f;
+	d32 = srcmat._12 - 0.0f;
+	d33 = srcmat._13 - 1.0f;
+
+	float dmin = 0.000001f;
+
+	if ((fabs(d11) <= dmin) && (fabs(d12) <= dmin) && (fabs(d13) <= dmin) &&
+		(fabs(d21) <= dmin) && (fabs(d22) <= dmin) && (fabs(d23) <= dmin) &&
+		(fabs(d31) <= dmin) && (fabs(d32) <= dmin) && (fabs(d33) <= dmin)){
+		retval = 1;
+	}
+
+	return retval;
+}
+
 
