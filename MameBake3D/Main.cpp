@@ -5753,9 +5753,23 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	int motnum = s_model->GetMotInfoSize();
 	if (motnum == 0){
 		CallF(AddMotion(0), return 0);
+		s_modelindex[mindex].tlarray = s_tlarray;
+		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
+		s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
+
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi){
-			CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
+			//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
+			CBone* topbone = s_model->GetTopBone();
+			double motleng = curmi->frameleng;
+			//_ASSERT(0);
+			double frame;
+			for (frame = 0.0; frame < motleng; frame += 1.0){
+				if (topbone){
+					s_model->SetMotionFrame(frame);
+					InitMPReq(topbone, frame);
+				}
+			}
 		}
 		else{
 			_ASSERT(0);
@@ -6664,6 +6678,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 		motleng = srcmotleng;
 	}
 	CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
+	//_ASSERT(0);
 
 	CallF( AddTimeLine( newmotid ), return 1 );
 

@@ -1932,10 +1932,12 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 			case FbxNodeAttribute::eMesh:
 
 				newobj = GetFBXMesh( pNode, pAttrib, pNode->GetName() );     // ƒƒbƒVƒ…‚ðì¬
-				shapecnt = pNode->GetMesh()->GetShapeCount();
-				if( shapecnt > 0 ){
-					sprintf_s( mes, 256, "%s, shapecnt %d", pNode->GetName(), shapecnt );
-					MessageBoxA( NULL, mes, "check", MB_OK );
+				if (newobj){
+					shapecnt = pNode->GetMesh()->GetShapeCount();
+					if (shapecnt > 0){
+						sprintf_s(mes, 256, "%s, shapecnt %d", pNode->GetName(), shapecnt);
+						MessageBoxA(NULL, mes, "check", MB_OK);
+					}
 				}
 				break;
 //			case FbxNodeAttribute::eNURB:
@@ -1979,7 +1981,14 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, int animleng, FbxTime star
 
 CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename )
 {
+
+
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
+	if (strcmp("RootNode", pAttrib->GetName()) == 0){
+		_ASSERT(0);
+		return 0;
+	}
+
 	CMQOObject* newobj = new CMQOObject();
 	_ASSERT( newobj );
 	newobj->SetObjFrom( OBJFROM_FBX );
@@ -3561,15 +3570,17 @@ void CModel::FillUpEmptyKeyReq( int motid, int animleng, CBone* curbone, CBone* 
 int CModel::FillUpEmptyMotion(int srcmotid)
 {
 
-	if ((srcmotid >= 0) && (srcmotid < GetMotInfoSize())){
-		MOTINFO* curmi = GetMotInfo( srcmotid );
-		_ASSERT(curmi);
+	MOTINFO* curmi = GetMotInfo( srcmotid );
+	_ASSERT(curmi);
+	if (curmi){
 		FillUpEmptyKeyReq(curmi->motid, curmi->frameleng, m_topbone, 0);
 		return 0;
 	}
 	else{
+		_ASSERT(0);
 		return 1;
 	}
+
 }
 
 

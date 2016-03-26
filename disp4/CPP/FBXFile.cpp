@@ -464,6 +464,9 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 	for( itrobj = pmodel->GetMqoObjectBegin(); itrobj != pmodel->GetMqoObjectEnd(); itrobj++ ){
 		CMQOObject* curobj = itrobj->second;
 		FbxNode* lMesh = CreateFbxMesh( pSdkManager, pScene, pmodel, curobj );
+		if (!lMesh){
+			continue;//RootNode
+		}
 		if( !(curobj->EmptyFindShape()) ){
 			MapShapesOnMesh( pScene, lMesh, pmodel, curobj, &blsindex );
 		}
@@ -581,6 +584,10 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	_ASSERT( pm4 );
 	CMQOMaterial* mqomat = curobj->GetMaterialBegin()->second;
 	_ASSERT( mqomat );
+	if (!pm4->GetPm3Disp()){
+		return 0;// RootNode
+	}
+
 	char meshname[256] = {0};
 
 	sprintf_s( meshname, 256, "%s", curobj->GetEngName() );
@@ -599,7 +606,6 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
 	lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
 
-	_ASSERT( pm4->GetPm3Disp() );
 
 	int vsetno = 0;
 	int faceno;
@@ -1760,6 +1766,8 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 		return 0;
 	}
 
+
+
 	FbxNode* lSkeletonNode;
 	FbxString lNodeName( "skeletonroot" );
 	FbxSkeleton* lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
@@ -1978,10 +1986,33 @@ CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 		return 0;
 	}
 
+	//_ASSERT(0);
+
+	FbxNode* lSkeletonNode2;
+	FbxString lNodeName2("RootNode");
+	FbxSkeleton* lSkeletonNodeAttribute2 = FbxSkeleton::Create(pScene, lNodeName2);
+	lSkeletonNodeAttribute2->SetSkeletonType(FbxSkeleton::eRoot);
+	lSkeletonNodeAttribute2->Size.Set(1.0);
+	lSkeletonNode2 = FbxNode::Create(pScene, lNodeName2.Buffer());
+	lSkeletonNode2->SetNodeAttribute(lSkeletonNodeAttribute2);
+	lSkeletonNode2->LclTranslation.Set(FbxVector4(0.0f, 0.0f, 0.0f));
+
+	CFBXBone* fbxbone2 = new CFBXBone();
+	if (!fbxbone2){
+		_ASSERT(0);
+		return 0;
+	}
+	fbxbone2->SetType(FB_ROOT);
+	fbxbone2->SetBone(0);
+	fbxbone2->SetSkelNode(lSkeletonNode2);
+	s_fbxbone = fbxbone2;//!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
 	FbxNode* lSkeletonNode;
 	FbxString lNodeName( topj->GetEngBoneName() );
 	FbxSkeleton* lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
-	lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eRoot);
+	lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eLimbNode);
 
 	lSkeletonNodeAttribute->Size.Set(1.0);
 
@@ -1994,17 +2025,21 @@ CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 		_ASSERT( 0 );
 		return 0;
 	}
-	fbxbone->SetType( FB_ROOT );
+	fbxbone->SetType( FB_NORMAL );
 	fbxbone->SetBone( topj );
 	fbxbone->SetSkelNode( lSkeletonNode );
 
-	s_fbxbone = fbxbone;//!!!!!!!!!!!!!!!!!!!!!!!!!
+	fbxbone2->GetSkelNode()->AddChild(lSkeletonNode);
+	fbxbone2->AddChild(fbxbone);
+
+
+//	s_fbxbone = fbxbone;//!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	if( topj->GetChild() ){
 		CreateFBXBoneReq( pScene, topj->GetChild(), fbxbone );
 	}
 
-	return fbxbone;
+	return fbxbone2;//!!!!!!!!!!
 
 }
 
