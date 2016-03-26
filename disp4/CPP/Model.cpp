@@ -2579,7 +2579,7 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 		CBone* parbone = m_bonename[ parbonename ];
 		if( parbone ){
 			parbone->AddChild( newbone );
-_ASSERT(0);
+//_ASSERT(0);
 		}else{
 			/***
 			FbxNodeAttribute *parattr = parnode->GetNodeAttribute();

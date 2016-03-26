@@ -5753,9 +5753,13 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	int motnum = s_model->GetMotInfoSize();
 	if (motnum == 0){
 		CallF(AddMotion(0), return 0);
-		CallF(s_model->FillUpEmptyMotion(motnum), return 0);
-		_ASSERT(0);
-
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi){
+			CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
+		}
+		else{
+			_ASSERT(0);
+		}
 	}
 
 
