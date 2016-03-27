@@ -163,6 +163,7 @@ int CBone::AddChild( CBone* childptr )
 			broptr = broptr->m_brother;
 		}
 		broptr->m_brother = childptr;
+		broptr->m_brother->m_parent = this;//!!!!!!!!
 	}
 
 	return 0;

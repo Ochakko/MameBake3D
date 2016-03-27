@@ -241,6 +241,9 @@ static OWP_Button* s_restB = 0;
 static OWP_Button* s_dmpB = 0;
 static OWP_Button* s_groupB = 0;
 static OWP_Button* s_gcoliB = 0;
+static OWP_Button* s_allrigidenableB = 0;
+static OWP_Button* s_allrigiddisableB = 0;
+
 
 static OWP_Slider* s_lkSlider = 0;
 static OWP_Label* s_lklabel = 0;
@@ -762,6 +765,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 #endif
 
 	OpenDbgFile();
+//_CrtSetBreakAlloc(787);
 //_CrtSetBreakAlloc(2806);
 //_CrtSetBreakAlloc(758);
 //_CrtSetBreakAlloc(469193);
@@ -1229,7 +1233,8 @@ static OWP_Button* s_dampanimB = 0;
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							WindowPos(100, 200),		//位置
 							//WindowSize(450,880),		//サイズ
-							WindowSize(450,680),		//サイズ
+							//WindowSize(450,680),		//サイズ
+							WindowSize(450, 760),		//サイズ
 							_T("剛体設定ウィンドウ"),	//タイトル
 							s_mainwnd,	//親ウィンドウハンドル
 							false,					//表示・非表示状態
@@ -1243,6 +1248,8 @@ static OWP_Button* s_dampanimB = 0;
 	s_massSlider = new OWP_Slider( g_initmass, 30.0, 0.0 );
 	s_massB = new OWP_Button( L"全剛体に質量設定" );
 	s_rigidskip = new OWP_CheckBox( L"有効/無効", 1 );
+	s_allrigidenableB = new OWP_Button(L"全ての剛体を有効にする");
+	s_allrigiddisableB = new OWP_Button(L"全ての剛体以外を無効にする");
 	s_btgSlider = new OWP_Slider(-1.0,1.0,-1.0);
 	s_btgscSlider = new OWP_Slider(10.0,100.0,0.0);
 	s_btgB = new OWP_Button( L"全ての剛体にBT重力設定" );
@@ -1321,6 +1328,9 @@ static OWP_Button* s_dampanimB = 0;
 	s_rigidWnd->addParts(*s_massB);
 	s_rigidWnd->addParts(*s_lenglabel);
 	s_rigidWnd->addParts(*s_rigidskip);
+	s_rigidWnd->addParts(*s_allrigidenableB);
+	s_rigidWnd->addParts(*s_allrigiddisableB);
+
 	s_rigidWnd->addParts(*s_colradio);
 
 	s_rigidWnd->addParts( *s_lkradio );
@@ -1448,6 +1458,20 @@ static OWP_Button* s_dampanimB = 0;
 		}
 		s_rigidWnd->callRewrite();						//再描画
 	} );
+	s_allrigidenableB->setButtonListener([](){
+		if (s_model){
+			s_model->EnableAllRigidElem(s_curreindex);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_allrigiddisableB->setButtonListener([](){
+		if (s_model){
+			s_model->DisableAllRigidElem(s_curreindex);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+
 	s_btforce->setButtonListener( [](){
 		if( s_model && (s_curboneno >= 0) ){
 			CBone* curbone = s_model->GetBoneByID( s_curboneno );
@@ -4746,6 +4770,16 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		delete s_rigidskip;
 		s_rigidskip = 0;
 	}
+	if (s_allrigidenableB){
+		delete s_allrigidenableB;
+		s_allrigidenableB = 0;
+	}
+	if (s_allrigiddisableB){
+		delete s_allrigiddisableB;
+		s_allrigiddisableB = 0;
+	}
+
+
 	if( s_shplabel ){
 		delete s_shplabel;
 		s_shplabel = 0;

@@ -244,6 +244,7 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 	int reinfoindex = srcmodel->GetRigidElemInfoSize() - 1;
 	srcmodel->SetCurrentRigidElem( reinfoindex );
 
+	//_ASSERT(0);
 
 	return 0;
 }
@@ -254,6 +255,11 @@ int CRigidElemFile::ReadBone( XMLIOBUF* xmliobuf )
 	char bonename[256];
 	ZeroMemory( bonename, sizeof( char ) * 256 );
 	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
+
+	char* jointnameptr = strstr(bonename, "_Joint");
+	if (!jointnameptr){
+		strcat_s(bonename, 256, "_Joint");
+	}
 
 	int getkin = 0;
 	int kin = 0;
@@ -268,6 +274,9 @@ int CRigidElemFile::ReadBone( XMLIOBUF* xmliobuf )
 			_ASSERT( 0 );
 			curbone->SetBtForce( 0 );
 		}
+	}
+	else{
+		_ASSERT(0);
 	}
 
 	int findflag = 1;
@@ -418,6 +427,11 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 
 
 	if( curbone ){
+		char* jointnameptr = strstr(childname, "_Joint");
+		if (!jointnameptr){
+			strcat_s(childname, 256, "_Joint");
+		}
+
 		CBone* chilbone = m_model->GetBoneByName( childname );
 		if( chilbone ){			
 			CRigidElem* curre;
@@ -445,6 +459,12 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 				curre->SetDampanimL( dmpanimL );
 				curre->SetDampanimA( dmpanimA );
 			}
+			else{
+				_ASSERT(0);
+			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 	return 0;

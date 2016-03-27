@@ -680,7 +680,7 @@ int CBVHElem::ConvertRotate2Q()
 
 int CBVHElem::ConvZxyRot()
 {
-	int ret;
+
 	int frameno;
 	D3DXVECTOR3 befeul;
 	ZeroMemory(&befeul, sizeof(D3DXVECTOR3));

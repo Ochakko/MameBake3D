@@ -106,10 +106,13 @@ public: //accesser
 	CBone* GetEndbone(){ return m_endbone; };
 	void SetEndbone( CBone* srcbone ){ m_endbone = srcbone; };
 
+	float GetBoneLeng();
+
 private:
 	int m_coltype;
 	int m_skipflag;
 
+	float m_boneleng;
 	float m_mass;//Ž¿—Ê
 
 	float m_sphr;//‹…”¼Œa

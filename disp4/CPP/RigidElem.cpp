@@ -40,8 +40,9 @@ int CRigidElem::InitParams()
 	m_dampanim_l = 0.0f;
 	m_dampanim_a = 0.0f;
 
+	m_boneleng = 0.0f;
 	m_coltype = COL_CAPSULE_INDEX;
-	m_skipflag = 1;//!!!!! default‚Å„‘Ì‚ð–³Œø‚É‚·‚éB
+	m_skipflag = 1;
 
 	D3DXMatrixIdentity( &m_capsulemat );
 
@@ -104,4 +105,23 @@ int CRigidElem::GetColiID()
 	}
 
 	return retid;
+}
+
+float CRigidElem::GetBoneLeng()
+{
+	if (!m_bone || !m_endbone){
+		m_boneleng = 0.0f;
+		return 0.0f;
+	}
+
+	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
+	parposA = m_bone->GetJointFPos();
+	D3DXVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetInitMat());
+	chilposA = m_endbone->GetJointFPos();
+	D3DXVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetInitMat());
+	D3DXVECTOR3 diffA = chilposA - parposA;
+	m_boneleng = D3DXVec3Length(&diffA);
+
+	return m_boneleng;
+
 }

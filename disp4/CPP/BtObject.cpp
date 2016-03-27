@@ -150,17 +150,18 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 		_ASSERT( 0 );
 		return 1;
 	}
+
 	if( curre && (curre->GetSkipflag() == 1) ){
 		return 0;
 	}
 
 	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
-	D3DXVec3TransformCoord( &aftparposA, &parposA, &m_bone->GetStartMat2() );
+	D3DXVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
 	chilposA = m_endbone->GetJointFPos();
-	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &m_endbone->GetStartMat2() );
+	D3DXVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
 	D3DXVECTOR3 diffA = chilposA - parposA;
-	m_boneleng = D3DXVec3Length( &diffA );
+	m_boneleng = D3DXVec3Length(&diffA);
 
 	float h, r, z;
 	r = curre->GetSphr();// * 0.95f;

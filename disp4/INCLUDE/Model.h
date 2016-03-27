@@ -511,6 +511,8 @@ public:
 	int SetAllRestData( int gid, int reindex, float rest, float fric );
 	int SetAllMassData( int gid, int reindex, float srcmass );
 	int SetAllDmpData( int gid, int reindex, float ldmp, float admp );
+	int EnableAllRigidElem(int srcrgdindex);
+	int DisableAllRigidElem(int srcrgdindex);
 
 	int Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP );
 	int SetRagdollKinFlag();
@@ -626,6 +628,8 @@ private:
 	void SetRagdollKinFlagReq( CBtObject* srcbto );
 	void CreateBtConnectReq( CBone* curbone );
 	void SetColiIDReq( CBone* srcbone, CRigidElem* srcre );
+	void EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex);
+	void DisableAllRigidElemReq(CBone* srcbone, int srcrgdindex);
 
 	int DampAnim( MOTINFO* rgdmorphinfo );
 
