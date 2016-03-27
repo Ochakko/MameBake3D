@@ -74,7 +74,8 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 
 	char mfilename[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
-	m_strimp = mfilename;
+
+	m_strimp = m_model->GetCurImpName();
 
 
 	m_hfile = CreateFile( strpath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
@@ -124,11 +125,12 @@ int CImpFile::WriteImp( CBone* srcbone )
 	int impnum = 0;
 	impnum = srcbone->GetImpMapSize2( m_strimp );
 	if( impnum <= 0 ){
+		//_ASSERT(0);
 		return 0;
 	}
 
 	map<string, map<CBone*,D3DXVECTOR3>>::iterator itrcurmap;
-	itrcurmap = srcbone->FindImpMap( m_strimp );
+	itrcurmap = srcbone->FindImpMap(m_strimp);
 	if( itrcurmap == srcbone->GetImpMapEnd() ){
 		_ASSERT( 0 );
 		return 0;
@@ -235,10 +237,6 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 		int ret;
 		ret = SetXmlIOBuf( xmliobuf, "<RigidElem>", "</RigidElem>", &rebuf );
 		if( ret == 0 ){
-			map<CBone*,D3DXVECTOR3> newimp;
-			if( curbone ){
-				curbone->SetImpMap2( m_strimp, newimp );
-			}
 			CallF( ReadRE( &rebuf, curbone ), return 1 );
 		}else{
 			findflag = 0;

@@ -551,14 +551,47 @@ public: //accesser
 		return m_impmap.find( strname );
 	};
 	D3DXVECTOR3 GetImpMap( std::string srcstr, CBone* srcbone ){
-		std::map<CBone*, D3DXVECTOR3> curmap = m_impmap[ srcstr ];
-		return curmap[ srcbone ];
+		std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator itrimpmap;
+		itrimpmap = m_impmap.find(srcstr);
+		if (itrimpmap != m_impmap.end()){
+			std::map<CBone*, D3DXVECTOR3> curmap = itrimpmap->second;
+			std::map<CBone*, D3DXVECTOR3>::iterator itrimp;
+			itrimp = curmap.find(srcbone);
+			if (itrimp != curmap.end()){
+				return itrimp->second;
+			}
+			else{
+				//_ASSERT(0);
+				return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			}
+		}
+		else{
+			_ASSERT(0);
+			return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
 	};
 	void SetImpMap2( std::string srcstring, std::map<CBone*,D3DXVECTOR3>& srcmap ){
 		m_impmap[ srcstring ] = srcmap;
 	};
 	void SetImpOfMap( std::string srcstr, CBone* srcbone, D3DXVECTOR3 srcimp ){
-		((m_impmap[ srcstr ])[ srcbone ]) = srcimp;
+		std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator itrimpmap;
+		itrimpmap = m_impmap.find(srcstr);
+		if (itrimpmap != m_impmap.end()){
+			std::map<CBone*, D3DXVECTOR3>::iterator itrsetmap;
+			itrsetmap = itrimpmap->second.find(srcbone);
+			if (itrsetmap != itrimpmap->second.end()){
+				itrsetmap->second = srcimp;
+			}
+			else{
+				itrimpmap->second[srcbone] = srcimp;
+			}
+		}
+		else{
+			std::map<CBone*, D3DXVECTOR3> newmap;
+			newmap[srcbone] = srcimp;
+			m_impmap[srcstr] = newmap;
+		}
+		//((m_impmap[ srcstr ])[ srcbone ]) = srcimp;
 	};
 
 	int GetBtKinFlag(){ return m_btkinflag; };

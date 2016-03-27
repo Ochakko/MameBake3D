@@ -808,15 +808,13 @@ int CBone::CreateRigidElem( CBone* chil, int reflag, std::string rename, int imp
 		map<string, map<CBone*, D3DXVECTOR3>>::iterator findimpmap;
 		findimpmap = m_impmap.find( impname );
 		if( findimpmap != m_impmap.end() ){
-			map<CBone*, D3DXVECTOR3>& curmap = findimpmap->second;
-	
 			map<CBone*,D3DXVECTOR3>::iterator itrimp;
-			itrimp = curmap.find( chil );
-			if( itrimp != curmap.end() ){
+			itrimp = findimpmap->second.find( chil );
+			if( itrimp != findimpmap->second.end() ){
 				return 0;
 			}
 
-			curmap[ chil ] = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+			findimpmap->second[chil] = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 		}else{
 			map<CBone*, D3DXVECTOR3> curmap;

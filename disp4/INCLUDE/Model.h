@@ -747,6 +747,10 @@ public: //accesser
 	string GetImpInfo( int srcindex ){
 		return m_impinfo[ srcindex ];
 	};
+	string GetCurImpName(){
+		string curimpname = m_impinfo[m_curimpindex];
+		return curimpname;
+	};
 	void PushBackImpInfo( std::string srcname )
 	{
 		m_impinfo.push_back( srcname );

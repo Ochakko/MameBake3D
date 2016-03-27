@@ -3740,7 +3740,7 @@ int CModel::CreateBtConstraint()
 
 	CreateBtConstraintReq( m_topbt );
 
-	//CreateBtConnectReq( m_topbone );
+	CreateBtConnectReq( m_topbone );
 
 	return 0;
 }
@@ -4404,6 +4404,9 @@ void CModel::SetBtImpulseReq( CBone* srcbone )
 				}
 			}
 		}
+		else{
+			_ASSERT(0);
+		}
 
 		CRigidElem* curre = parbone->GetRigidElem( srcbone );
 		if( curre ){
@@ -4413,6 +4416,9 @@ void CModel::SetBtImpulseReq( CBone* srcbone )
 			if( findbto && findbto->GetRigidBody() ){
 				findbto->GetRigidBody()->applyImpulse( btVector3( imp.x, imp.y, imp.z ), btVector3( 0.0f, 0.0f, 0.0f ) );
 			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 
@@ -4685,17 +4691,28 @@ int CModel::SetImp( int srcboneno, int kind, float srcval )
 		map<CBone*,D3DXVECTOR3>::iterator itrimp;
 		itrimp = itrfindmap->second.find( curbone );
 		if( itrimp == itrfindmap->second.end() ){
-			//_ASSERT( 0 );
-			return 0;
+			if (kind == 0){
+				itrfindmap->second[curbone].x = srcval;
+			}
+			else if (kind == 1){
+				itrfindmap->second[curbone].y = srcval;
+			}
+			else if (kind == 2){
+				itrfindmap->second[curbone].z = srcval;
+			}
+		}
+		else{
+			if (kind == 0){
+				itrimp->second.x = srcval;
+			}
+			else if (kind == 1){
+				itrimp->second.y = srcval;
+			}
+			else if (kind == 2){
+				itrimp->second.z = srcval;
+			}
 		}
 	
-		if( kind == 0 ){
-			itrimp->second.x = srcval;
-		}else if( kind == 1 ){
-			itrimp->second.y = srcval;
-		}else if( kind == 2 ){
-			itrimp->second.z = srcval;
-		}
 	}else{
 		_ASSERT( 0 );
 	}

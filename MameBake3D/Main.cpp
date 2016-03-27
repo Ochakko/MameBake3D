@@ -8881,8 +8881,10 @@ int SetImpWndParams()
 			int impnum = parbone->GetImpMapSize();
 			if( (s_model->GetCurImpIndex() >= 0) && (s_model->GetCurImpIndex() < impnum) ){
 				string curimpname = s_model->GetImpInfo( s_model->GetCurImpIndex() );
-//存在しない時、まさかfeefee入ってないよね？ゼロと仮定して！！
 				setimp = parbone->GetImpMap( curimpname, curbone );
+			}
+			else{
+				_ASSERT(0);
 			}
 
 			if( s_impzSlider ){
