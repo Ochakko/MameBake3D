@@ -3807,12 +3807,14 @@ void CModel::CreateBtConnectReq(CBone* curbone)
 								for (dofid = 0; dofid < 3; dofid++){
 									dofC->enableSpring(dofid, true);//!!!!!!!!!!!!!!!!!!!
 									dofC->setStiffness(dofid, 1.0e12);
+									//dofC->setStiffness(dofid, 1.0e6);
 
 									dofC->setDamping(dofid, 0.5f);
 								}
 								for (dofid = 3; dofid < 6; dofid++){
 									dofC->enableSpring(dofid, true);//!!!!!!!!!!!!!!!!!
 									dofC->setStiffness(dofid, 80.0f);
+									//dofC->setStiffness(dofid, 1000.0f);
 									dofC->setDamping(dofid, 0.01f);
 								}
 

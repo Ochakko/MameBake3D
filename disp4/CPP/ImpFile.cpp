@@ -226,10 +226,27 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 {
 
 	char bonename[256];
-	ZeroMemory( bonename, sizeof( char ) * 256 );
+	char bonename1[256];//_Joint—L‚è
+	char bonename2[256];//_Joint–³‚µ
+	ZeroMemory(bonename, sizeof(char) * 256);
 	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
+	char* jointnameptr = strstr(bonename, "_Joint");
+	if (!jointnameptr){
+		sprintf_s(bonename1, 256, "%s_Joint", bonename);
+		strcpy_s(bonename2, 256, bonename);
+	}
+	else{
+		strcpy_s(bonename1, 256, bonename);
+		strcpy_s(bonename2, 256, bonename);
+		int headleng = jointnameptr - bonename;
+		*(bonename2 + headleng) = 0;
+	}
+	CBone* curbone = m_model->GetBoneByName(bonename1);
+	if (!curbone){
+		curbone = m_model->GetBoneByName(bonename2);
+	}
 
-	CBone* curbone = m_model->GetBoneByName( bonename );
+
 	int findflag = 1;
 	while( findflag ){
 		XMLIOBUF rebuf;
@@ -258,8 +275,26 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 ***/
 
 	char childname[256];
+	char childname1[256];
+	char childname2[256];
 	ZeroMemory( childname, sizeof( char ) * 256 );
 	CallF( Read_Str( xmlbuf, "<ChildName>", "</ChildName>", childname, 256 ), return 1 );
+	char* jointnameptr = strstr(childname, "_Joint");
+	if (!jointnameptr){
+		sprintf_s(childname1, 256, "%s_Joint", childname);
+		strcpy_s(childname2, 256, childname);
+	}
+	else{
+		strcpy_s(childname1, 256, childname);
+		strcpy_s(childname2, 256, childname);
+		int headleng = jointnameptr - childname;
+		*(childname2 + headleng) = 0;
+	}
+	CBone* chilbone = m_model->GetBoneByName(childname1);
+	if (!chilbone){
+		chilbone = m_model->GetBoneByName(childname2);
+	}
+
 
 	float impx = 0.0f;
 	CallF( Read_Float( xmlbuf, "<ImpulseX>", "</ImpulseX>", &impx ), return 1 );
@@ -271,7 +306,6 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 	D3DXVECTOR3 imp( impx, impy, impz );
 
 	if( curbone ){
-		CBone* chilbone = m_model->GetBoneByName( childname );
 		if( chilbone ){
 			curbone->SetImpOfMap( m_strimp, chilbone, imp );
 		}

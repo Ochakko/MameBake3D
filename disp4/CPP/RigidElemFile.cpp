@@ -252,20 +252,33 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 int CRigidElemFile::ReadBone( XMLIOBUF* xmliobuf )
 {
 
-	char bonename[256];
+	char bonename[256];//ファイルの記述
+	char bonename1[256];//_Joint有り
+	char bonename2[256];//_Joint無し
+
 	ZeroMemory( bonename, sizeof( char ) * 256 );
 	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
-
 	char* jointnameptr = strstr(bonename, "_Joint");
 	if (!jointnameptr){
-		strcat_s(bonename, 256, "_Joint");
+		sprintf_s(bonename1, 256, "%s_Joint", bonename);
+		strcpy_s(bonename2, 256, bonename);
 	}
+	else{
+		strcpy_s(bonename1, 256, bonename);
+		strcpy_s(bonename2, 256, bonename);
+		int headleng = jointnameptr - bonename;
+		*(bonename2 + headleng) = 0;
+	}
+	CBone* curbone = m_model->GetBoneByName(bonename1);
+	if (!curbone){
+		curbone = m_model->GetBoneByName(bonename2);
+	}
+
 
 	int getkin = 0;
 	int kin = 0;
 	getkin = Read_Int( xmliobuf,  "<BTKIN>", "</BTKIN>", &kin );
 
-	CBone* curbone = m_model->GetBoneByName( bonename );
 
 	if( curbone ){
 		if( getkin == 0 ){
@@ -299,8 +312,26 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 {
 
 	char childname[256];
+	char childname1[256];
+	char childname2[256];
 	ZeroMemory( childname, sizeof( char ) * 256 );
 	CallF( Read_Str( xmlbuf, "<ChildName>", "</ChildName>", childname, 256 ), return 1 );
+	char* jointnameptr = strstr(childname, "_Joint");
+	if (!jointnameptr){
+		sprintf_s(childname1, 256, "%s_Joint", childname);
+		strcpy_s(childname2, 256, childname);
+	}
+	else{
+		strcpy_s(childname1, 256, childname);
+		strcpy_s(childname2, 256, childname);
+		int headleng = jointnameptr - childname;
+		*(childname2 + headleng) = 0;
+	}
+	CBone* chilbone = m_model->GetBoneByName(childname1);
+	if (!chilbone){
+		chilbone = m_model->GetBoneByName(childname2);
+	}
+
 
 	int coltype = 0;
 	CallF( Read_Int( xmlbuf, "<ColType>", "</ColType>", &coltype ), return 1 );
@@ -425,14 +456,7 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 		fric = 0.5f;
 	}
 
-
 	if( curbone ){
-		char* jointnameptr = strstr(childname, "_Joint");
-		if (!jointnameptr){
-			strcat_s(childname, 256, "_Joint");
-		}
-
-		CBone* chilbone = m_model->GetBoneByName( childname );
 		if( chilbone ){			
 			CRigidElem* curre;
 			curre = curbone->GetRigidElemOfMap( m_rename, chilbone );
