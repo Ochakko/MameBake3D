@@ -2,261 +2,261 @@
 <IMPULSE>
     <FileInfo>1001-01</FileInfo>
   <Bone>
-    <Name>Hip</Name>
+    <Name>Hip_Joint</Name>
     <RigidElem>
-      <ChildName>Hip_branch</ChildName>
+      <ChildName>Hip_branch_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>Hip_branch</Name>
+    <Name>Hip_branch_Joint</Name>
     <RigidElem>
-      <ChildName>Chest_branch</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>-13.888889</ImpulseZ>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>LeftHip</ChildName>
+      <ChildName>Chest_branch_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightHip</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>0.000000</ImpulseZ>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>Chest_branch</Name>
-    <RigidElem>
-      <ChildName>LeftCollar</ChildName>
+      <ChildName>LeftHip_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>Neck</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>-1.543210</ImpulseZ>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>RightCollar</ChildName>
+      <ChildName>RightHip_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>Neck</Name>
+    <Name>Chest_branch_Joint</Name>
     <RigidElem>
-      <ChildName>Neck_branch</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>-9.259259</ImpulseZ>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>Neck_branch</Name>
-    <RigidElem>
-      <ChildName>BT_G_3_L_2</ChildName>
+      <ChildName>LeftCollar_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>Head_end</ChildName>
+      <ChildName>RightCollar_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>-1.543210</ImpulseZ>
+      <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>BT_G_3_R_2</ChildName>
+      <ChildName>Neck_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_R_2</Name>
+    <Name>Neck_Joint</Name>
     <RigidElem>
-      <ChildName>BT_G_3_R_3</ChildName>
+      <ChildName>Neck_branch_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_R_3</Name>
+    <Name>Neck_branch_Joint</Name>
     <RigidElem>
-      <ChildName>BT_G_3_R_4</ChildName>
+      <ChildName>BT_G_3_L_2_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>Head_end_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>BT_G_3_R_2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_R_4</Name>
+    <Name>BT_G_3_R_2_Joint</Name>
     <RigidElem>
-      <ChildName>BT_G_3_R_4_end</ChildName>
+      <ChildName>BT_G_3_R_3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_L_2</Name>
+    <Name>BT_G_3_R_3_Joint</Name>
     <RigidElem>
-      <ChildName>BT_G_3_L_3</ChildName>
+      <ChildName>BT_G_3_R_4_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_L_3</Name>
+    <Name>BT_G_3_R_4_Joint</Name>
     <RigidElem>
-      <ChildName>BT_G_3_L_4</ChildName>
+      <ChildName>BT_G_3_R_4_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_L_4</Name>
+    <Name>BT_G_3_L_2_Joint</Name>
     <RigidElem>
-      <ChildName>BT_G_3_L_4_end</ChildName>
+      <ChildName>BT_G_3_L_3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftCollar</Name>
+    <Name>BT_G_3_L_3_Joint</Name>
     <RigidElem>
-      <ChildName>LeftShoulder</ChildName>
+      <ChildName>BT_G_3_L_4_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftShoulder</Name>
+    <Name>BT_G_3_L_4_Joint</Name>
     <RigidElem>
-      <ChildName>LeftElbow</ChildName>
+      <ChildName>BT_G_3_L_4_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftElbow</Name>
+    <Name>LeftCollar_Joint</Name>
     <RigidElem>
-      <ChildName>LeftWrist</ChildName>
+      <ChildName>LeftShoulder_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftWrist</Name>
+    <Name>LeftShoulder_Joint</Name>
     <RigidElem>
-      <ChildName>LeftWrist_end</ChildName>
+      <ChildName>LeftElbow_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightCollar</Name>
+    <Name>LeftElbow_Joint</Name>
     <RigidElem>
-      <ChildName>RightShoulder</ChildName>
+      <ChildName>LeftWrist_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightShoulder</Name>
+    <Name>LeftWrist_Joint</Name>
     <RigidElem>
-      <ChildName>RightElbow</ChildName>
+      <ChildName>LeftWrist_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightElbow</Name>
+    <Name>RightCollar_Joint</Name>
     <RigidElem>
-      <ChildName>RightWrist</ChildName>
+      <ChildName>RightShoulder_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightWrist</Name>
+    <Name>RightShoulder_Joint</Name>
     <RigidElem>
-      <ChildName>RightWrist_end</ChildName>
+      <ChildName>RightElbow_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftHip</Name>
+    <Name>RightElbow_Joint</Name>
     <RigidElem>
-      <ChildName>LeftKnee</ChildName>
+      <ChildName>RightWrist_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftKnee</Name>
+    <Name>RightWrist_Joint</Name>
     <RigidElem>
-      <ChildName>LeftAnkle</ChildName>
+      <ChildName>RightWrist_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftAnkle</Name>
+    <Name>LeftHip_Joint</Name>
     <RigidElem>
-      <ChildName>LeftAnkle_end</ChildName>
+      <ChildName>LeftKnee_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightHip</Name>
+    <Name>LeftKnee_Joint</Name>
     <RigidElem>
-      <ChildName>RightKnee</ChildName>
+      <ChildName>LeftAnkle_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightKnee</Name>
+    <Name>LeftAnkle_Joint</Name>
     <RigidElem>
-      <ChildName>RightAnkle</ChildName>
+      <ChildName>LeftAnkle_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightAnkle</Name>
+    <Name>RightHip_Joint</Name>
     <RigidElem>
-      <ChildName>RightAnkle_end</ChildName>
+      <ChildName>RightKnee_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>RightKnee_Joint</Name>
+    <RigidElem>
+      <ChildName>RightAnkle_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>RightAnkle_Joint</Name>
+    <RigidElem>
+      <ChildName>RightAnkle_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
