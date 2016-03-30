@@ -19,7 +19,7 @@ public:
 	CRigidElemFile();
 	virtual ~CRigidElemFile();
 
-	int WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, float srcbtgscale );
+	int WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, int reindex );
 	int LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel );
 //	int LoadRigidElemFileFromPnd( CPmCipherDll* cipher, int qubindex, CModel* srcmodel, int* newid );
 

@@ -21,6 +21,9 @@
 #include <GColiFile.h>
 #include <RigidElemFile.h>
 
+#include <FBXFile.h>
+
+
 #define DBGH
 #include <dbg.h>
 
@@ -206,6 +209,8 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	BOOL bcancel;
 	WCHAR srcpath[MAX_PATH] = {0L};
 	WCHAR dstpath[MAX_PATH] = {0L};
+	/*
+	//FBXファイルのコピー
 	swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), curmodel->GetFileName() );
 	swprintf_s( dstpath, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName() );
 
@@ -218,6 +223,16 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 			return 1;
 		}
 	}
+	*/
+
+
+	WCHAR wcfbxfilename[MAX_PATH] = { 0L };//WCHAR
+	char fbxpath[MAX_PATH] = { 0 };//UTF-8
+	swprintf_s(wcfbxfilename, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName());
+	WideCharToMultiByte(CP_UTF8, 0, wcfbxfilename, -1, fbxpath, MAX_PATH, NULL, NULL);
+	int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath);
+	_ASSERT(!ret1);
+
 
 	/***
 	//mqoファイルの場合のテクスチャ
@@ -284,7 +299,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 		CallF( curmodel->SetCurrentRigidElem( refno ), return 1 );
 
 		CRigidElemFile refile;
-		CallF( refile.WriteRigidElemFile( wrefname, curmodel, currei.btgscale ), return 1 );
+		CallF( refile.WriteRigidElemFile( wrefname, curmodel, refno ), return 1 );
 
 	}
 	CallF( curmodel->SetCurrentRigidElem( savecurreindex ), return 1 );

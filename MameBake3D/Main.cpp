@@ -5353,7 +5353,7 @@ int SaveREFile()
 	}
 
 	CRigidElemFile refile;
-	CallF( refile.WriteRigidElemFile( s_REname, s_model, s_model->GetBtGScale() ), return 1 );
+	CallF( refile.WriteRigidElemFile( s_REname, s_model, s_model->GetCurReIndex() ), return 1 );
 
 	return 0;
 }
@@ -8809,7 +8809,7 @@ int RigidElem2WndParam()
 		s_namelabel->setName( noname );
 	}
 	if( s_model ){
-		s_btgscSlider->setValue( s_model->GetBtGScale() );
+		s_btgscSlider->setValue( s_model->GetBtGScale(s_model->GetCurReIndex()) );
 	}
 
 	s_rigidWnd->callRewrite();

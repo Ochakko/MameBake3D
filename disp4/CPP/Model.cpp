@@ -133,7 +133,6 @@ int CModel::InitParams()
 
 	m_rigidbone.clear();
 	//m_btg = -1.0f;
-	m_btgscale = 9.07f;
 	m_fbxobj.clear();
 	m_btWorld = 0;
 
@@ -3714,8 +3713,13 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 			if( srcbone->GetParent() ){
 				CRigidElem* curre = srcbone->GetParent()->GetRigidElem( srcbone );
 				if( curre ){
-					srcbto->GetRigidBody()->setGravity( btVector3( 0.0f, curre->GetBtg() * m_btgscale, 0.0f ) );
-					srcbto->GetRigidBody()->applyGravity();
+					if ((m_curreindex >= 0) && (m_curreindex < m_rigideleminfo.size())){
+						srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_curreindex].btgscale, 0.0f));
+						srcbto->GetRigidBody()->applyGravity();
+					}
+					else{
+						_ASSERT(0);
+					}
 				}
 			}
 		}
@@ -3822,8 +3826,8 @@ void CModel::CreateBtConnectReq(CBone* curbone)
 								dofC->setEquilibriumPoint();
 
 								bto1->PushBackConstraint(dofC);
-								//m_btWorld->addConstraint(dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
-								m_btWorld->addConstraint(dofC, true);
+								m_btWorld->addConstraint(dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
+								//m_btWorld->addConstraint(dofC, true);
 							}
 						}
 					}
@@ -4503,14 +4507,19 @@ int CModel::DisableAllRigidElem(int srcrgdindex)
 
 void CModel::EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex)
 {
-	if (srcbone->GetParent()){
-		char* filename = m_rigideleminfo[srcrgdindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
-		if (curre){
-			//if (curre->GetBoneLeng() >= 0.00001f){
+	if ((srcrgdindex >= 0) && (srcrgdindex < m_rigideleminfo.size())){
+		if (srcbone->GetParent()){
+			char* filename = m_rigideleminfo[srcrgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				//if (curre->GetBoneLeng() >= 0.00001f){
 				curre->SetSkipflag(0);
-			//}
+				//}
+			}
 		}
+	}
+	else{
+		_ASSERT(0);
 	}
 
 	if (srcbone->GetChild()){
@@ -4523,12 +4532,17 @@ void CModel::EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex)
 }
 void CModel::DisableAllRigidElemReq(CBone* srcbone, int srcrgdindex)
 {
-	if (srcbone->GetParent()){
-		char* filename = m_rigideleminfo[srcrgdindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
-		if (curre){
-			curre->SetSkipflag(1);
+	if ((srcrgdindex >= 0) && (srcrgdindex < m_rigideleminfo.size())){
+		if (srcbone->GetParent()){
+			char* filename = m_rigideleminfo[srcrgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				curre->SetSkipflag(1);
+			}
 		}
+	}
+	else{
+		_ASSERT(0);
 	}
 
 	if (srcbone->GetChild()){
@@ -4554,14 +4568,19 @@ int CModel::SetAllBtgData( int gid, int reindex, float btg )
 }
 void CModel::SetBtgDataReq( int gid, int reindex, CBone* srcbone, float btg )
 {
-	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[reindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename, srcbone );
-		if( curre ){
-			if( (gid == -1) || (gid == curre->GetGroupid()) ){
-				curre->SetBtg( btg );
+	if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+		if (srcbone->GetParent()){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					curre->SetBtg(btg);
+				}
 			}
 		}
+	}
+	else{
+		_ASSERT(0);
 	}
 
 	if( srcbone->GetChild() ){
@@ -4590,15 +4609,20 @@ void CModel::SetDampAnimDataReq( int gid, int rgdindex, CBone* srcbone, float va
 		return;
 	}
 
-	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[rgdindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename, srcbone );
-		if( curre ){
-			if( (gid == -1) || (gid == curre->GetGroupid()) ){
-				curre->SetDampanimL( valL );
-				curre->SetDampanimA( valA );
+	if ((rgdindex >= 0) && (rgdindex < m_rigideleminfo.size())){
+		if (srcbone->GetParent()){
+			char* filename = m_rigideleminfo[rgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					curre->SetDampanimL(valL);
+					curre->SetDampanimA(valA);
+				}
 			}
 		}
+	}
+	else{
+		_ASSERT(0);
 	}
 
 	if( srcbone->GetChild() ){
@@ -4624,6 +4648,10 @@ int CModel::SetAllImpulseData( int gid, float impx, float impy, float impz )
 
 void CModel::SetImpulseDataReq( int gid, CBone* srcbone, D3DXVECTOR3 srcimp )
 {
+	if ((m_rgdindex < 0) || (m_rgdindex >= m_rigideleminfo.size())){
+		return;
+	}
+
 	CBone* parbone = srcbone->GetParent();
 
 	if( parbone ){
@@ -4631,7 +4659,7 @@ void CModel::SetImpulseDataReq( int gid, CBone* srcbone, D3DXVECTOR3 srcimp )
 		int impnum = parbone->GetImpMapSize();
 		if( (m_curimpindex >= 0) && (m_curimpindex < impnum) && (m_curreindex >= 0) && (m_curreindex < renum) ){
 
-			char* filename = m_rigideleminfo[m_curreindex].filename;
+			char* filename = m_rigideleminfo[m_rgdindex].filename;//!!! rgdindex !!!
 			CRigidElem* curre = parbone->GetRigidElemOfMap( filename, srcbone );
 			if( curre ){
 				if( (gid == -1) || (gid == curre->GetGroupid()) ){
@@ -4739,13 +4767,18 @@ int CModel::SetAllDmpData( int gid, int reindex, float ldmp, float admp )
 void CModel::SetDmpDataReq( int gid, int reindex, CBone* srcbone, float ldmp, float admp )
 {
 	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[reindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename ,srcbone );
-		if( curre ){
-			if( (gid == -1) || (gid == curre->GetGroupid()) ){
-				curre->SetLDamping( ldmp );
-				curre->SetADamping( admp );
+		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					curre->SetLDamping(ldmp);
+					curre->SetADamping(admp);
+				}
 			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 
@@ -4774,13 +4807,18 @@ int CModel::SetAllRestData( int gid, int reindex, float rest, float fric )
 void CModel::SetRestDataReq( int gid, int reindex, CBone* srcbone, float rest, float fric )
 {
 	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[reindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename, srcbone );
-		if( curre ){
-			if( (gid == -1) || (gid == curre->GetGroupid()) ){
-				curre->SetRestitution( rest );
-				curre->SetFriction( fric );
+		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					curre->SetRestitution(rest);
+					curre->SetFriction(fric);
+				}
 			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 
@@ -4808,15 +4846,20 @@ int CModel::SetAllKData( int gid, int reindex, int srclk, int srcak, float srccu
 void CModel::SetKDataReq( int gid, int reindex, CBone* srcbone, int srclk, int srcak, float srccuslk, float srccusak )
 {
 	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[reindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename, srcbone );
-		if( curre ){
-			if( (gid == -1) || (gid == curre->GetGroupid()) ){
-				curre->SetLKindex( srclk );
-				curre->SetAKindex( srcak );
-				curre->SetCusLk( srccuslk );
-				curre->SetCusAk( srccusak );
+		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					curre->SetLKindex(srclk);
+					curre->SetAKindex(srcak);
+					curre->SetCusLk(srccuslk);
+					curre->SetCusAk(srccusak);
+				}
 			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 
@@ -4845,12 +4888,17 @@ int CModel::SetAllMassData( int gid, int reindex, float srcmass )
 void CModel::SetMassDataReq( int gid, int reindex, CBone* srcbone, float srcmass )
 {
 	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[reindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename, srcbone );
-		if( curre ){
-			if( (gid == -1) || (gid == curre->GetGroupid()) ){
-				curre->SetMass( srcmass );
+		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					curre->SetMass(srcmass);
+				}
 			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 
@@ -4888,8 +4936,13 @@ void CModel::SetRagdollKinFlagReq( CBtObject* srcbto )
 		if( srcbto->GetBone()->GetParent() ){
 			CRigidElem* curre = srcbto->GetBone()->GetParent()->GetRigidElem( srcbto->GetBone() );
 			if( curre ){
-				srcbto->GetRigidBody()->setGravity( btVector3( 0.0f, curre->GetBtg() * m_btgscale, 0.0f ) );
-				srcbto->GetRigidBody()->applyGravity();
+				if ((m_rgdindex >= 0) && (m_rgdindex < m_rigideleminfo.size())){
+					srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_rgdindex].btgscale, 0.0f));
+					srcbto->GetRigidBody()->applyGravity();
+				}
+				else{
+					_ASSERT(0);
+				}
 			}
 		}
 	}
@@ -4916,8 +4969,6 @@ int CModel::SetCurrentRigidElem( int curindex )
 	m_curreindex = curindex;
 
 	string curname = m_rigideleminfo[ curindex ].filename;
-	m_btgscale = m_rigideleminfo[ curindex ].btgscale;
-
 	map<int,CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
@@ -4957,12 +5008,17 @@ int CModel::SetColiIDtoGroup( CRigidElem* srcre )
 void CModel::SetColiIDReq( CBone* srcbone, CRigidElem* srcre )
 {
 	if( srcbone->GetParent() ){
-		char* filename = m_rigideleminfo[m_curreindex].filename;
-		CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap( filename, srcbone );
-		if( curre ){
-			if( curre->GetGroupid() == srcre->GetGroupid() ){
-				curre->CopyColiids( srcre );
+		if ((m_curreindex >= 0) && (m_curreindex < m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[m_curreindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if (curre->GetGroupid() == srcre->GetGroupid()){
+					curre->CopyColiids(srcre);
+				}
 			}
+		}
+		else{
+			_ASSERT(0);
 		}
 	}
 

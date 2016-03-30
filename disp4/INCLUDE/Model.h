@@ -644,6 +644,9 @@ private:
 	int AdjustBoneTra( CEditRange* erptr, CBone* lastpar );
 
 public: //accesser
+	FbxManager* GetFBXSDK(){
+		return m_psdk;
+	};
 	int GetModelNo(){ return m_modelno; };
 	void SetModelNo( int srcno ){ m_modelno = srcno; };
 
@@ -700,11 +703,22 @@ public: //accesser
 		return m_topbt;
 	};
 
-	float GetBtGScale(){
-		return m_btgscale;
+	float GetBtGScale(int srcindex){
+		if ((srcindex >= 0) && (srcindex < m_rigideleminfo.size())){
+			return m_rigideleminfo[srcindex].btgscale;
+		}
+		else{
+			_ASSERT(0);
+			return 0.0f;
+		}
 	};
-	void SetBtGScale( float srcval ){
-		m_btgscale = srcval;
+	void SetBtGScale( float srcval, int srcindex ){
+		if ((srcindex >= 0) && (srcindex < m_rigideleminfo.size())){
+			m_rigideleminfo[srcindex].btgscale = srcval;
+		}
+		else{
+			_ASSERT(0);
+		}
 	};
 
 	int GetMotInfoSize(){
@@ -851,7 +865,7 @@ private:
 
 	CBone* m_topbone;//一番親のボーン。
 	CBtObject* m_topbt;//一番親のbullet剛体オブジェクト。
-	float m_btgscale;//bulletの重力に掛け算するスケール。
+	//float m_btgscale;//bulletの重力に掛け算するスケール。--> m_rigideleminfoのbtgscaleに移動。
 
 	map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。

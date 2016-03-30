@@ -57,11 +57,16 @@ int CRigidElemFile::DestroyObjs()
 }
 
 
-int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, float srcbtgscale )
+int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, int reindex )
 {
+	if (!srcmodel){
+		_ASSERT(0);
+		return 1;
+	}
+
 	m_model = srcmodel;
 	m_mode = XMLIO_WRITE;
-	m_btgscale = srcbtgscale;
+	m_btgscale = srcmodel->GetBtGScale(reindex);
 
 	if( !m_model->GetTopBone() ){
 		return 0;
@@ -224,7 +229,6 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 		reinfo.btgscale = 1.0f;
 	}
 
-	srcmodel->SetBtGScale( scbtg );
 
 	int findflag = 1;
 	while( findflag ){
@@ -243,6 +247,9 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 
 	int reinfoindex = srcmodel->GetRigidElemInfoSize() - 1;
 	srcmodel->SetCurrentRigidElem( reinfoindex );
+
+	srcmodel->SetBtGScale(scbtg, reinfoindex);//CModel::m_rigideleminfo‚Ö‚Ìadd‚ªÏ‚ñ‚Å‚©‚çB
+
 
 	//_ASSERT(0);
 
