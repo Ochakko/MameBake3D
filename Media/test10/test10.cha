@@ -22,7 +22,7 @@
     <RefFile>test_rgd.ref</RefFile>
     <RefFile>test_bt_3.ref</RefFile>
     <ImpNum>2</ImpNum>
-    <ImpFile>yuri_mz.imp</ImpFile>
+    <ImpFile>yuri_z.imp</ImpFile>
     <ImpFile>yuri_zeroimp.imp</ImpFile>
   </Chara>
 </CHA>
