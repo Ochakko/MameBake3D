@@ -680,7 +680,12 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	FbxTexture* curtex = CreateTexture(pSdkManager, mqomat);
 	if( curtex ){
 		lMaterial->Diffuse.ConnectSrcObject( curtex );
+		lNode->SetShadingMode(FbxNode::eTextureShading);
 	}
+	else{
+		lNode->SetShadingMode(FbxNode::eHardShading);
+	}
+
     lMaterial->DiffuseFactor.Set(1.0);
     lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
     lMaterial->ShadingModel.Set(lShadingName);

@@ -2231,34 +2231,50 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 		FbxLayerElement::EMappingMode mappingMode = elem->GetMappingMode();
 		FbxLayerElement::EReferenceMode refMode = elem->GetReferenceMode();
 
-		if ( mappingMode == FbxLayerElement::eByPolygonVertex ) {
-DbgOut( L"GetFBXMesh : %s : UV : mapping eByPolygonVertex\r\n", wname );
+		if (mappingMode == FbxLayerElement::eByPolygonVertex) {
+			DbgOut(L"GetFBXMesh : %s : UV : mapping eByPolygonVertex\r\n", wname);
 
-			if ( refMode == FbxLayerElement::eDirect ) {
-DbgOut( L"GetFBXMesh : %s : UV : refMode eDirect\r\n", wname );
+			if (refMode == FbxLayerElement::eDirect) {
+				DbgOut(L"GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
 				int size = UVNum;
-				newobj->SetUVLeng( size );
-				newobj->SetUVBuf( (D3DXVECTOR2*)malloc( sizeof( D3DXVECTOR2 ) * size ) );
+				newobj->SetUVLeng(size);
+				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
 
 				// 直接取得
-				for ( int i = 0; i < size; ++i ) {
-					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt( i )[ 0 ];
-					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt( i )[ 1 ];
+				for (int i = 0; i < size; ++i) {
+					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
+					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(i)[1];
 				}
-			} else if ( refMode == FbxLayerElement::eIndexToDirect ) {
-DbgOut( L"GetFBXMesh : %s : UV : refMode eIndexToDirect\r\n", wname );
+			}
+			else if (refMode == FbxLayerElement::eIndexToDirect) {
+				DbgOut(L"GetFBXMesh : %s : UV : refMode eIndexToDirect\r\n", wname);
 				int size = indexNum;
-				newobj->SetUVLeng( size );
-				newobj->SetUVBuf( (D3DXVECTOR2*)malloc( sizeof( D3DXVECTOR2 ) * size ) );
+				newobj->SetUVLeng(size);
+				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
 
 				// インデックスから取得
-				for ( int i = 0; i < size; ++i ) {
-					int index = elem->GetIndexArray().GetAt( i );
-					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt( index )[ 0 ];
-					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt( index )[ 1 ];
+				for (int i = 0; i < size; ++i) {
+					int index = elem->GetIndexArray().GetAt(i);
+					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(index)[0];
+					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(index)[1];
 				}
-			} else {
-DbgOut( L"GetFBXMesh : %s : UV : refMode %d\r\n", wname, refMode );
+			}
+			else {
+				DbgOut(L"GetFBXMesh : %s : UV : refMode %d\r\n", wname, refMode);
+			}
+		}
+		else if (mappingMode == FbxLayerElement::eByControlPoint) {
+			if (refMode == FbxLayerElement::eDirect) {
+				DbgOut(L"GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
+				int size = UVNum;
+				newobj->SetUVLeng(size);
+				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
+
+				// 直接取得
+				for (int i = 0; i < size; ++i) {
+					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
+					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(i)[1];
+				}
 			}
 		} else {
 DbgOut( L"GetFBXMesh : %s : UV : mappingMode %d\r\n", wname, mappingMode );
