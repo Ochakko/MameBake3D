@@ -69,6 +69,9 @@ public:
  */
 	int NormalizeInf( CMQOObject* srcobj );
 
+
+	INFDATA* GetInfData(CMQOObject* srcobj);
+
 private:
 
 /**
@@ -88,8 +91,9 @@ private:
  */
 	int InitElem( INFDATA* infptr );
 
-public:
+private:
 	std::map<CMQOObject*, INFDATA*> m_infdata;//影響度データ
+
 };
 
 #endif

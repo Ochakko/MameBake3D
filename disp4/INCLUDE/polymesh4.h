@@ -50,6 +50,29 @@ public:
 		return m_orgfacenum;
 	};
 
+	D3DXVECTOR3* GetOrgPointBuf()
+	{
+		return m_pointbuf;
+	};
+
+	D3DXVECTOR3* GetOrgNormal()
+	{
+		return m_normal;
+	};
+
+	D3DXVECTOR2* GetOrgUV()
+	{
+		return m_uvbuf;
+	};
+	int GetOrgUVLeng(){
+		return m_uvleng;
+	};
+
+	CMQOFace* GetTriFace(){
+		return m_triface;
+	};
+
+
 	int GetFaceNum(){
 		return m_facenum;
 	};
@@ -111,7 +134,6 @@ private:
 	MODELBOUND	m_bound;
 
 
-//以下、クラス外からアクセスしないのでアクセッサー無し。
 	CMQOFace* m_mqoface;//外部メモリ
 	D3DXVECTOR3* m_pointbuf;//外部メモリ
 	D3DXVECTOR3* m_normal;//外部メモリ

@@ -145,7 +145,7 @@ int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng
 		return 0;
 	}
 
-	m_triface = new CMQOFace[ m_facenum ];
+	m_triface = new CMQOFace[ m_facenum ];//ŽOŠpŒ`‚¾‚¯‚ÌCMQOFace
 	_ASSERT( m_triface );
 	int chknum = 0;
 	CallF( SetTriFace( m_triface, &chknum ), return 1 );
@@ -302,6 +302,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				}
 
 				if( m_uvbuf ){
+					
 					if( m_uvleng == m_orgpointnum ){
 						curv->uv = *(m_uvbuf + vno);
 					}else if( m_uvleng == (m_facenum * 3) ){
@@ -310,6 +311,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 						_ASSERT( 0 );
 					}
 					curv->uv.y = 1.0f - curv->uv.y;
+					
 				}else{
 					curv->uv = D3DXVECTOR2( 0.0f, 0.0f );
 				}
@@ -420,7 +422,7 @@ int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 	int vno;
 	for( vno = 0; vno < m_orgpointnum; vno++ ){
 		CInfBone* curib = m_infbone + vno;
-		INFDATA* curid = curib->m_infdata[ srcobj ];
+		INFDATA* curid = curib->GetInfData(srcobj);
 		_ASSERT( curid );
 		DbgOut( L"vno %d, infnum %d\r\n", vno, curid->m_infnum );
 		int infno;
@@ -492,7 +494,7 @@ int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
 				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
 				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
-				INFDATA* curinfdata = (m_infbone + vno)->m_infdata[ srcobj ];
+				INFDATA* curinfdata = (m_infbone + vno)->GetInfData(srcobj);
 				if( curinfdata ){
 					int ieno;
 					for( ieno = 0; ieno < curinfdata->m_infnum; ieno++ ){

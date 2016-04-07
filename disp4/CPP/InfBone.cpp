@@ -37,6 +37,7 @@ CInfBone::~CInfBone()
 
 int CInfBone::InitParams()
 {
+	m_infdata.clear();
 /***
 	m_infnum = 0;
 
@@ -88,22 +89,20 @@ int CInfBone::InitElem( INFDATA* infptr )
 
 int CInfBone::ExistBone( CMQOObject* srcobj, int srcclusterno )
 {
-	int retno = -1;
-
-	INFDATA* curinf = m_infdata[ srcobj ];
-	if( !curinf ){
-		return 0;
-	}
-
-	int ieno;
-	for( ieno = 0; ieno < curinf->m_infnum; ieno++ ){
-		if( curinf->m_infelem[ ieno ].boneno == srcclusterno ){
-			retno = ieno;
-			break;
+	INFDATA* pinf = GetInfData(srcobj);
+	if (pinf){
+		int ieno;
+		for (ieno = 0; ieno < pinf->m_infnum; ieno++){
+			if (pinf->m_infelem[ieno].boneno == srcclusterno){
+				return ieno;
+			}
 		}
 	}
+	else{
+		return -1;
+	}
 
-	return retno;
+	return -1;
 }
 
 int CInfBone::AddInfElem( CMQOObject* srcobj, INFELEM srcie )
@@ -112,7 +111,7 @@ int CInfBone::AddInfElem( CMQOObject* srcobj, INFELEM srcie )
 		srcie.dispinf = srcie.orginf;
 	}
 
-	INFDATA* curinf = m_infdata[ srcobj ];
+	INFDATA* curinf = GetInfData(srcobj);
 	if( !curinf ){
 		curinf = (INFDATA*)malloc( sizeof( INFDATA ) );
 		_ASSERT( curinf );
@@ -165,7 +164,7 @@ int CInfBone::AddInfElem( CMQOObject* srcobj, INFELEM srcie )
 }
 int CInfBone::NormalizeInf( CMQOObject* srcobj )
 {
-	INFDATA* curinf = m_infdata[ srcobj ];
+	INFDATA* curinf = GetInfData(srcobj);
 	if( !curinf ){
 		return 0;
 	}
@@ -204,4 +203,21 @@ int CInfBone::NormalizeInf( CMQOObject* srcobj )
 	}
 
 	return 0;
+}
+
+
+INFDATA* CInfBone::GetInfData(CMQOObject* srcobj)
+{
+	if (m_infdata.size() <= 0){
+		return 0;
+	}
+
+	map<CMQOObject*, INFDATA*>::iterator itrinf;
+	itrinf = m_infdata.find(srcobj);
+	if (itrinf == m_infdata.end()){
+		return 0;
+	}
+	else{
+		return itrinf->second;
+	}
 }
