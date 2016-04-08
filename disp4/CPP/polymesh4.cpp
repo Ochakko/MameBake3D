@@ -310,7 +310,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 					}else{
 						_ASSERT( 0 );
 					}
-					curv->uv.y = 1.0f - curv->uv.y;
+					curv->uv.y = 1.0f - curv->uv.y;//•\Ž¦—p
 					
 				}else{
 					curv->uv = D3DXVECTOR2( 0.0f, 0.0f );
