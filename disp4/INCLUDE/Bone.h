@@ -232,7 +232,7 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, D3DXVECTOR3 traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	CMotionPoint* RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, D3DXVECTOR3 traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f), int setmatflag = 0, D3DXMATRIX* psetmat = 0);
 
 /**
 
@@ -314,6 +314,9 @@ public:
  * @detail 子供と子供の兄弟の数の合計を返す。
  */
 	int GetBoneNum();
+
+
+	int SetFirstFrameMat0(D3DXMATRIX srcfirst, D3DXMATRIX srcparfirst);
 
 
 private:
@@ -644,6 +647,31 @@ public: //accesser
 		m_motmark[ srcindex ].clear();
 	};
 
+	D3DXVECTOR3 GetFirstFrameBonePos()
+	{
+		return m_firstframebonepos;
+	};
+	D3DXMATRIX GetFirstFrameMat0()
+	{
+		return m_firstframemat0;
+	};
+	D3DXMATRIX GetInvFirstFrameMat0()
+	{
+		D3DXMATRIX invfirstframemat0;
+		D3DXMatrixInverse(&invfirstframemat0, NULL, &m_firstframemat0);
+		return invfirstframemat0;
+	};
+	D3DXMATRIX GetAnim0()
+	{
+		return m_anim0;
+	};
+	D3DXMATRIX GetInvAnim0()
+	{
+		D3DXMATRIX invanim;
+		D3DXMatrixInverse(&invanim, NULL, &m_anim0);
+		return invanim;
+	};
+
 
 	CModel* GetParModel(){ return m_parmodel; };
 	void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };
@@ -693,6 +721,11 @@ private:
 	D3DXMATRIX m_invinitmat;
 	D3DXMATRIX m_tmpmat;//一時使用目的
 	CQuaternion m_tmpq;
+
+	D3DXVECTOR3 m_firstframebonepos;
+	D3DXMATRIX m_firstframemat0;//最初のフレームのローカル姿勢
+	D3DXMATRIX m_anim0;//最初のフレームの姿勢のアニメ部分、ローカル。
+
 
 	//CBone*は子供ジョイントのポインタ。子供の数だけエントリーがある。
 	std::map<CBone*, CRigidElem*> m_rigidelem;

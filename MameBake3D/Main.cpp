@@ -6077,420 +6077,56 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		return 0;
 	}
 
+	CMotionPoint modelparmp;
+	if (srcbone->GetParent()){
+		CMotionPoint* pbef2 = 0;
+		CMotionPoint* pnext2 = 0;
+		CMotionPoint modelmp;
+		int existflag2 = 0;
+		srcbone->GetParent()->GetBefNextMP(modelmotid, srcframe, &pbef2, &pnext2, &existflag2);
+		if ((existflag2 != 0) && pbef2){
+			modelparmp = *pbef2;
+		}
+	}
+
 
 	s_curboneno = srcbone->GetBoneNo();
 
-	/*
-	D3DXMATRIX invfirstmodelmat = srcbone->GetInvFirstMat();
-	D3DXMATRIX befmodelmat = modelmp.GetWorldMat();
-	D3DXMATRIX befmodelrot = invfirstmodelmat * befmodelmat;
-	befmodelrot._41 = 0.0f;
-	befmodelrot._42 = 0.0f;
-	befmodelrot._43 = 0.0f;
-	D3DXQUATERNION befmodelqx;
-	D3DXQuaternionRotationMatrix(&befmodelqx, &befmodelrot);
-	CQuaternion befmodelq;
-	befmodelq.x = befmodelqx.x;
-	befmodelq.y = befmodelqx.y;
-	befmodelq.z = befmodelqx.z;
-	befmodelq.w = befmodelqx.w;
-	CQuaternion invbefmodelq;
-	befmodelq.inv(&invbefmodelq);
-	*/
-	/*
-	D3DXMATRIX totalmat;
-	D3DXMatrixIdentity(&totalmat);
-	CQuaternion totalparrotq;
-	totalparrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	CBone* bvhparbone = bvhbone->GetParent();
-	while (bvhparbone && (bvhparbone != befbvhbone)){
-		CMotionPoint tmpmp3;
-		CQuaternion rotq3;
-		bvhparbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp3);
-		rotq3 = tmpmp3.GetQ();
 
-		totalparrotq = rotq3 * totalparrotq;
-
-		bvhparbone = bvhparbone->GetParent();
-	}
-	*/
-	/*
-	D3DXVECTOR3 befeul(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 cureul(0.0f, 0.0f, 0.0f);
-
-	CMotionPoint tmpmp2;
-	CQuaternion rotq;
-	bvhbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp2);
-	//rotq = totalparrotq * tmpmp2.GetQ();
-	rotq = invbefmodelq * tmpmp2.GetQ() * befmodelq;
-	*/
-	/*
-	D3DXMATRIX bvhmat = bvhmp.GetWorldMat();
-	D3DXMATRIX bvhrotmat = bvhmat;
-	bvhrotmat._41 = 0.0f;
-	bvhrotmat._42 = 0.0f;
-	bvhrotmat._43 = 0.0f;
-	D3DXQUATERNION bvhrotqx;
-	D3DXQuaternionRotationMatrix(&bvhrotqx, &bvhrotmat);
-	CQuaternion bvhrotq;
-	bvhrotq.x = bvhrotqx.x;
-	bvhrotq.y = bvhrotqx.y;
-	bvhrotq.z = bvhrotqx.z;
-	bvhrotq.w = bvhrotqx.w;
-
-	CQuaternion rotq = invbefmodelq * bvhrotq * befmodelq;
-	*/
-	/*
-	CQuaternion rotq;
-	CMotionPoint tmpmp2;
-	if (bvhbone){
-		bvhbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp2);
-		rotq = tmpmp2.GetQ();//!!!! bvhのローカル変換  つまり、world * invpar つまり、 (init * local * par) * invpar
-	}
-	else{
-		befbvhbone->CalcLocalInfo(bvhmotid, srcframe, &tmpmp2);
-		rotq = tmpmp2.GetQ();//!!!! bvhのローカル変換  つまり、world * invpar つまり、 (init * local * par) * invpar
-	}
-	//(保留)invmodelinit * ((bvhinit * local * par) * invpar) にしておいて、RotateBoneQReqで modelinit * (invmodelinit * (bvhinit * local * par) * invpar)へと計算する。
-	*/
-	
-	/*
-	//(試す)modelの初期状態の行列 * modelの初期状態のグローバル回転のインバース * bvhのグローバル回転 ---> 回転の中心がおかしくなる部分がある。（腕ともも）
-	D3DXMATRIX modelinit = srcbone->GetInitMat();
-	
-	D3DXMATRIX invmodelinit = srcbone->GetInvInitMat();
-	CMotionPoint invmodelmp;
-	invmodelmp.CalcQandTra(invmodelinit, srcbone);
-	CQuaternion invmodelq = invmodelmp.GetQ();
-	D3DXMATRIX invmodelrotmat = invmodelq.MakeRotMatX();
-
-	D3DXMATRIX bvhmat;
-	CQuaternion bvhq;
-	D3DXMATRIX bvhrotmat;
-	D3DXMATRIX setmat;
-	if (bvhbone){
-		bvhmat = bvhmp.GetWorldMat();
-		bvhmp.CalcQandTra(bvhmat, bvhbone);
-
-		bvhq = bvhmp.GetQ();
-		bvhrotmat = bvhq.MakeRotMatX();
-		setmat = modelinit * invmodelrotmat * bvhrotmat;
-		bvhbone->SetTmpMat(setmat);
-	}
-	else{
-		setmat = befbvhbone->GetTmpMat();
-	}
-	*/
-
-	/*
-	//(試す)モデルのmodelInit= modelR * modelTと考える。bvhR * modelTを設定する。
-		//腕が異常に伸びている。スカートの位置がおかしい。
-	D3DXMATRIX modelinit = srcbone->GetInitMat();
-	CMotionPoint modelinitmp;
-	modelinitmp.CalcQandTra(modelinit, srcbone);
-	D3DXVECTOR3 modelinitT;
-	modelinitT = modelinitmp.GetTra();
-	D3DXMATRIX modelinitTmat;
-	D3DXMatrixIdentity(&modelinitTmat);
-	modelinitTmat._41 = modelinitT.x;
-	modelinitTmat._42 = modelinitT.y;
-	modelinitTmat._43 = modelinitT.z;
-
-	D3DXMATRIX bvhmat;
-	CQuaternion bvhq;
-	D3DXMATRIX bvhrotmat;
-	D3DXMATRIX setmat;
-	if (bvhbone){
-		bvhmat = bvhmp.GetWorldMat();
-		bvhmp.CalcQandTra(bvhmat, bvhbone);
-
-		bvhq = bvhmp.GetQ();
-		bvhrotmat = bvhq.MakeRotMatX();
-		setmat = bvhrotmat * modelinitTmat;
-		bvhbone->SetTmpMat(setmat);
-	}
-	else{
-		setmat = befbvhbone->GetTmpMat();
-	}
-	*/
-
-	/*
-	//(試す)モデルのmodelInit= modelR * Tmatと考える。bvhR * Tmatを設定する。Tmatは計算する（CalcTMat()）。
-		//割とめちゃくちゃ。
-	D3DXVECTOR3 jointpos = srcbone->GetJointFPos();
-
-	D3DXMATRIX bvhmat;
-	CQuaternion bvhq;
-	D3DXMATRIX bvhrotmat;
-	D3DXMATRIX Tmat;
-	D3DXMATRIX setmat;
-	if (bvhbone){
-		bvhmat = bvhmp.GetWorldMat();
-		bvhmp.CalcQandTra(bvhmat, bvhbone);
-		bvhq = bvhmp.GetQ();
-		bvhrotmat = bvhq.MakeRotMatX();
-		CalcTMat(bvhrotmat, jointpos, &Tmat);
-
-		setmat = bvhrotmat * Tmat;
-		//bvhbone->SetTmpMat(bvhrotmat);
-		bvhbone->SetTmpMat(setmat);
-	}
-	else{
-		//bvhrotmat = befbvhbone->GetTmpMat();
-		//CalcTMat(bvhrotmat, jointpos, &Tmat);
-		//setmat = bvhrotmat * Tmat;
-		setmat = befbvhbone->GetTmpMat();
-	}
-	*/
-
-
-	/*
-	//(試す)bvhの原点中心のグローバル回転の後に　回転の中心へ移動する行列をかける。
-		//異常に伸びる
-	D3DXVECTOR3 jointpos = srcbone->GetJointFPos();
-	D3DXMATRIX Tmat;
-	D3DXMatrixIdentity(&Tmat);
-	Tmat._41 = jointpos.x;
-	Tmat._42 = jointpos.y;
-	Tmat._43 = jointpos.z;
-
-	D3DXMATRIX bvhmat;
-	CQuaternion bvhq;
-	D3DXMATRIX bvhrotmat;
-	D3DXMATRIX setmat;
-	if (bvhbone){
-		bvhmat = bvhmp.GetWorldMat();
-		bvhmp.CalcQandTra(bvhmat, bvhbone);
-		bvhq = bvhmp.GetQ();
-		bvhrotmat = bvhq.MakeRotMatX();
-
-		setmat = bvhrotmat * Tmat;
-		//bvhbone->SetTmpMat(bvhrotmat);
-		bvhbone->SetTmpMat(setmat);
-	}
-	else{
-		//bvhrotmat = befbvhbone->GetTmpMat();
-		//CalcTMat(bvhrotmat, jointpos, &Tmat);
-		//setmat = bvhrotmat * Tmat;
-		setmat = befbvhbone->GetTmpMat();
-	}
-	*/
-
-	/*
-	//(試す)modelとbvhの初期位置の違いの差分移動行列をかける。
-		//初期姿勢もおかしい。
-	D3DXMATRIX setmat;
-	if (bvhbone){
-		D3DXVECTOR3 bvhbonepos;
-		D3DXMATRIX bvhmat;
-		bvhmat = bvhmp.GetWorldMat();
-		D3DXVec3TransformCoord(&bvhbonepos, &bvhbone->GetJointFPos(), &bvhmat);
-		
-		D3DXVECTOR3 curbonepos;
-		D3DXMATRIX modelworld = modelmp.GetWorldMat();
-		D3DXVec3TransformCoord(&curbonepos, &srcbone->GetJointFPos(), &modelworld);
-
-		D3DXVECTOR3 diffT;
-		diffT = curbonepos - bvhbonepos;
-		//diffT = bvhbonepos - curbonepos;
-		D3DXMATRIX diffTMat;
-		D3DXMatrixIdentity(&diffTMat);
-		D3DXMatrixTranslation(&diffTMat, diffT.x, diffT.y, diffT.z);
-
-		setmat = bvhmat * diffTMat;
-		bvhbone->SetTmpMat(setmat);
-		//bvhbone->SetTmpMat(bvhmat);
-	}
-	else{
-		//CalcTMat(bvhrotmat, jointpos, &Tmat);
-		//setmat = bvhrotmat * Tmat;
-		setmat = befbvhbone->GetTmpMat();
-	}
-	*/
-
-	/*
-	//(試す)modelとbvhのinitmatの変換行列をかける。
-		//初期姿勢はOK。下半身もまあまあ。だが腕が伸びた。
-	D3DXMATRIX setmat;
-	if (bvhbone){
-		D3DXMATRIX bvhmat;
-		bvhmat = bvhmp.GetWorldMat();
-
-		D3DXMATRIX modelinit, invmodelinit, curbvhmat;
-		//modelinit = srcbone->GetInitMat();
-		//invmodelinit = srcbone->GetInvInitMat();
-		modelinit = modelmp.GetWorldMat();
-		invmodelinit = modelmp.GetInvWorldMat();
-		curbvhmat = invmodelinit * bvhmat;
-
-		CMotionPoint curbvhrotmp;
-		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
-		CQuaternion curbvhrotq = curbvhrotmp.GetQ();
-		D3DXMATRIX curbvhrotmat = curbvhrotq.MakeRotMatX();
-
-
-		setmat = modelinit * curbvhrotmat;
-		//bvhbone->SetTmpMat(bvhmat);
-		bvhbone->SetTmpMat(setmat);
-	}
-	else{
-		setmat = befbvhbone->GetTmpMat();
-	}
-	*/
-
-	/*
-	//initmat変換とrotqとRotateBoneQReq
-		//回転のみ。ましになったが腕の回転が違うような気がする。
-	CQuaternion rotq;
-	if (bvhbone){
-		D3DXMATRIX bvhmat, localbvhmat;
-		bvhmat = bvhmp.GetWorldMat();
-		if (bvhbone->GetParent()){
-
-			CMotionPoint parbvhmp;
-			CMotionPoint* pbef = 0;
-			CMotionPoint* pnext = 0;
-			int existflag = 0;
-			bvhbone->GetParent()->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
-			if ((existflag != 0) && pbef){
-				parbvhmp = *pbef;
-			}
-			else{
-				_ASSERT(0);
-				return 0;
-			}
-			D3DXMATRIX invparbvhmat;
-			invparbvhmat = parbvhmp.GetInvWorldMat();
-			localbvhmat = bvhmat * invparbvhmat;
-		}
-		else{
-			localbvhmat = bvhmat;
-		}
-
-		D3DXMATRIX modelinit, invmodelinit, curbvhmat;
-		//modelinit = srcbone->GetInitMat();
-		//invmodelinit = srcbone->GetInvInitMat();
-		modelinit = modelmp.GetWorldMat();
-		invmodelinit = modelmp.GetInvWorldMat();
-		curbvhmat = invmodelinit * localbvhmat;
-
-		CMotionPoint curbvhrotmp;
-		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
-		rotq = curbvhrotmp.GetQ();
-	}
-	else{
-		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	}
-	*/
-
-	D3DXMATRIX bvhmat;
 	CQuaternion rotq;
 	D3DXVECTOR3 traanim;
+
 	if (bvhbone){
-		D3DXMATRIX localbvhmat;
-		bvhmat = bvhmp.GetWorldMat();
-		if (bvhbone->GetParent()){
-
-			CMotionPoint parbvhmp;
-			CMotionPoint* pbef = 0;
-			CMotionPoint* pnext = 0;
-			int existflag = 0;
-			bvhbone->GetParent()->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
-			if ((existflag != 0) && pbef){
-				parbvhmp = *pbef;
-			}
-			else{
-				_ASSERT(0);
-				return 0;
-			}
-			D3DXMATRIX invparbvhmat;
-			invparbvhmat = parbvhmp.GetInvWorldMat();
-			localbvhmat = bvhmat * invparbvhmat;
-		}
-		else{
-			localbvhmat = bvhmat;
-		}
-
-
-
-		D3DXMATRIX modelinit, invmodelinit, curbvhmat;
+		D3DXMATRIX modelinit, invmodelinit;
 		modelinit = modelmp.GetWorldMat();
 		invmodelinit = modelmp.GetInvWorldMat();
-		//invmodelinit = srcbone->GetInvInitMat();
-		curbvhmat = invmodelinit * localbvhmat * modelinit;
+
+		D3DXMATRIX curbvhmat;
+		D3DXMATRIX bvhmat;
+		bvhmat = bvhmp.GetWorldMat();
+		curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
 
 		CMotionPoint curbvhrotmp;
 		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 		rotq = curbvhrotmp.GetQ();
+
 		const char* bvhbonename = bvhbone->GetBoneName();
-		//const char* hipspat = strstr(bvhbonename, "Hips");
-		//if (hipspat){
 		int cmp = strcmp(bvhbonename, "Hips");
 		const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
 		if ((cmp == 0) || cmpptr){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone);
-			traanim = calctramp.GetTra();
-
-			D3DXVECTOR3 fpos, wpos;
-			fpos = srcbone->GetJointFPos();
-			wpos = srcbone->GetJointWPos();
-			_ASSERT(0);
-
+			traanim = calctramp.GetFirstFrameTra();
 		}
 		else{
 			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		}
+
 	}
 	else{
 		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	}
-
-
-	/*
-	if (bvhbone->GetParent())
-	{
-		CMotionPoint* pbef4 = 0;
-		CMotionPoint* pnext4 = 0;
-		CMotionPoint bvhmp4;
-		int existflag4 = 0;
-		bvhbone->GetParent()->GetBefNextMP(bvhmotid, srcframe, &pbef4, &pnext4, &existflag4);
-		if ((existflag4 != 0) && pbef4){
-			bvhmp4 = *pbef4;
-		}
-		else{
-			_ASSERT(0);
-			return 0;
-		}
-
-		D3DXMATRIX invpar = bvhmp4.GetInvWorldMat();
-		bvhmat = bvhmat * invpar;
-	}
-	*/
-
-	/*
-	CMotionPoint convmp;
-	convmp.CalcQandTra(bvhmat, srcbone);
-	CQuaternion rotq4;
-	rotq4 = convmp.GetQ();
-	*/
-	/*
-	CMotionPoint modelinitmp;
-	modelinitmp.CalcQandTra(srcbone->GetInitMat(), srcbone);
-	CMotionPoint invmodelinitmp;
-	invmodelinitmp.CalcQandTra(srcbone->GetInvInitMat(), srcbone);
-	
-
-	CQuaternion rotq4;
-	//rotq4 = invmodelinitmp.GetQ() * convmp.GetQ() * modelinitmp.GetQ();
-	rotq4 = convmp.GetQ();
-	*/
-
-	//s_model->FKRotate(srcframe, s_curboneno, setmat);
-	//s_model->FKRotate(srcframe, s_curboneno, bvhmat);
-	//s_model->FKRotate(srcframe, s_curboneno, rotq4);
-
 
 	if (bvhbone){
 		if (!bvhbone->GetParent()){
@@ -8395,7 +8031,10 @@ int ConvBoneConvert()
 		}
 	}
 
-	//s_model->FillUpEmptyMotion(modelmi->motid);
+	
+	s_convbone_bvh->ConvFirstFrameBase();
+
+
 
 	for (frame = 0.0; frame < motleng; frame += 1.0){
 		if (modelbone){

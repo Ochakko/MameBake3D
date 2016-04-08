@@ -22,6 +22,8 @@ int CMotionPoint::InitParams()
 	m_eul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 	m_tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	m_firstframetra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
 	D3DXMatrixIdentity( &m_worldmat );
 	D3DXMatrixIdentity( &m_btmat );
 	D3DXMatrixIdentity( &m_absmat );
@@ -205,6 +207,11 @@ int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr )
 	D3DXVec3TransformCoord( &aftpos, &boneptr->GetJointFPos(), &srcmat );
 	m_tra = aftpos - boneptr->GetJointFPos();
 
+	D3DXVECTOR3 aftpos2;
+	D3DXVec3TransformCoord(&aftpos2, &boneptr->GetFirstFrameBonePos(), &srcmat);
+	m_firstframetra = aftpos - boneptr->GetFirstFrameBonePos();
+
+
 	D3DXMATRIX tmpmat = srcmat;
 	tmpmat._41 = 0.0f;
 	tmpmat._42 = 0.0f;
@@ -241,3 +248,12 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 
 	return *this;
 }
+
+int CMotionPoint::SetFirstFrameBaseMat(D3DXMATRIX srcfirstmat)
+{
+	m_firstframebasemat = srcfirstmat;
+
+	return 0;
+}
+
+

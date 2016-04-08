@@ -108,6 +108,10 @@ int CBone::InitParams()
 
 	m_tmpq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
+	m_firstframebonepos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXMatrixIdentity(&m_firstframemat0);
+	D3DXMatrixIdentity(&m_anim0);
+
 	return 0;
 }
 int CBone::DestroyObjs()
@@ -943,7 +947,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 }
 
 
-CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, D3DXVECTOR3 traanim)
+CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, D3DXVECTOR3 traanim, int setmatflag, D3DXMATRIX* psetmat)
 {
 	int existflag = 0;
 	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
@@ -964,17 +968,26 @@ CMotionPoint* CBone::RotBoneQReq( CMotionPoint* parmp, int srcmotid, double srcf
 		D3DXMatrixIdentity(&tramat);
 		D3DXMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
 
-		D3DXVECTOR3 rotcenter;// = m_childworld;
-		D3DXVec3TransformCoord( &rotcenter, &m_jointfpos, &(curmp->GetWorldMat()) );
+		if (setmatflag == 0){
+			D3DXVECTOR3 rotcenter;// = m_childworld;
+			D3DXVec3TransformCoord(&rotcenter, &m_jointfpos, &(curmp->GetWorldMat()));
 
-		D3DXMATRIX befrot, aftrot;
-		D3DXMatrixTranslation( &befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z );
-		D3DXMatrixTranslation( &aftrot, rotcenter.x, rotcenter.y, rotcenter.z );
-		D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat * tramat;
-		curmp->SetWorldMat( tmpmat );
-		if (bvhbone){
-			bvhbone->SetTmpMat(tmpmat);
+			D3DXMATRIX befrot, aftrot;
+			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+			D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat * tramat;
+			curmp->SetWorldMat(tmpmat);
+			if (bvhbone){
+				bvhbone->SetTmpMat(tmpmat);
+			}
+		}
+		else{
+			D3DXMATRIX tmpmat = *psetmat;
+			curmp->SetWorldMat(tmpmat);
+			if (bvhbone){
+				bvhbone->SetTmpMat(tmpmat);
+			}
 		}
 	}
 
@@ -1313,3 +1326,19 @@ int CBone::GetBoneNum()
 
 	return retnum;
 }
+
+int CBone::SetFirstFrameMat0(D3DXMATRIX srcfirst, D3DXMATRIX srcparfirst)
+{
+	D3DXVECTOR3 zerovec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVec3TransformCoord(&m_firstframebonepos, &zerovec, &srcfirst);
+
+	D3DXMATRIX invpar;
+	D3DXMatrixInverse(&invpar, NULL, &srcparfirst);
+	m_firstframemat0 = srcfirst * invpar;
+
+	D3DXMATRIX invfirstmat = GetInvFirstMat();
+	m_anim0 = invfirstmat * m_firstframemat0;
+
+	return 0;
+}
+

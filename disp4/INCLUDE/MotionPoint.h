@@ -27,6 +27,9 @@ public:
 	int CopyMP( CMotionPoint* srcmp );
 
 	int CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr );
+	int SetFirstFrameBaseMat(D3DXMATRIX srcfirstmat);
+
+
 
 	CMotionPoint CMotionPoint::operator= (CMotionPoint mp);
 
@@ -43,6 +46,8 @@ public:
 
 	D3DXVECTOR3 GetTra(){ return m_tra; };
 	void SetTra( D3DXVECTOR3 srctra ){ m_tra = srctra; };
+
+	D3DXVECTOR3 GetFirstFrameTra(){ return m_firstframetra; };
 
 	CQuaternion GetQ(){ return m_q; };
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
@@ -69,6 +74,17 @@ public:
 	CMotionPoint* GetNext(){ return m_next; };
 	void SetNext( CMotionPoint* srcnext ){ m_next = srcnext; };
 
+	D3DXMATRIX GetFirstFrameBaseMat()
+	{
+		return m_firstframebasemat;
+	};
+	D3DXMATRIX GetInvFirstFrameBaseMat()
+	{
+		D3DXMATRIX invmat;
+		D3DXMatrixInverse(&invmat, NULL, &m_firstframebasemat);
+		return invmat;
+	};
+
 private:
 	int DestroyObjs();
 
@@ -77,6 +93,7 @@ private:
 	double m_frame;
 	D3DXVECTOR3 m_eul;
 	D3DXVECTOR3 m_tra;
+	D3DXVECTOR3 m_firstframetra;
 
 	CQuaternion m_q;
 
@@ -88,6 +105,7 @@ private:
 
 	D3DXMATRIX m_absmat;
 
+	D3DXMATRIX m_firstframebasemat;//最初のフレームの姿勢をinit状態としたときのローカルの姿勢。
 
 	CMotionPoint* m_prev;
 	CMotionPoint* m_next;
