@@ -805,7 +805,7 @@ FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
 
 void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag)
 {
-	FbxGeometry* lMeshAttribute;
+
 	FbxAMatrix lXMatrix;
 	FbxNode* lSkel;
 	FbxCluster *lCluster = 0;
@@ -1255,8 +1255,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				/////////////////////
 				float befval;
 				float curval;
-				float tmpval;
-				float diffval;
+
+
 
 
 				befval = curbe->GetZxyRot(0, ROTAXIS_X);
@@ -1354,8 +1354,8 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				/////////////////////
 				float befval;
 				float curval;
-				float tmpval;
-				float diffval;
+
+
 
 
 				befval = curbe->GetZxyRot(0, ROTAXIS_X);

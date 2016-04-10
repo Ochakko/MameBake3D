@@ -316,7 +316,7 @@ public:
 	int GetBoneNum();
 
 
-	int SetFirstFrameMat0(D3DXMATRIX srcfirst, D3DXMATRIX srcparfirst);
+	int CalcFirstFrameBonePos(D3DXMATRIX srcmat);
 
 
 private:
@@ -651,26 +651,6 @@ public: //accesser
 	{
 		return m_firstframebonepos;
 	};
-	D3DXMATRIX GetFirstFrameMat0()
-	{
-		return m_firstframemat0;
-	};
-	D3DXMATRIX GetInvFirstFrameMat0()
-	{
-		D3DXMATRIX invfirstframemat0;
-		D3DXMatrixInverse(&invfirstframemat0, NULL, &m_firstframemat0);
-		return invfirstframemat0;
-	};
-	D3DXMATRIX GetAnim0()
-	{
-		return m_anim0;
-	};
-	D3DXMATRIX GetInvAnim0()
-	{
-		D3DXMATRIX invanim;
-		D3DXMatrixInverse(&invanim, NULL, &m_anim0);
-		return invanim;
-	};
 
 
 	CModel* GetParModel(){ return m_parmodel; };
@@ -723,8 +703,6 @@ private:
 	CQuaternion m_tmpq;
 
 	D3DXVECTOR3 m_firstframebonepos;
-	D3DXMATRIX m_firstframemat0;//最初のフレームのローカル姿勢
-	D3DXMATRIX m_anim0;//最初のフレームの姿勢のアニメ部分、ローカル。
 
 
 	//CBone*は子供ジョイントのポインタ。子供の数だけエントリーがある。

@@ -120,6 +120,7 @@ D3DXVECTOR3 g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };
 float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };
 float g_initcuslk = 2000.0f;
+//float g_initcuslk = 100.0f;
 float g_initcusak = 70.0f;
 
 
@@ -655,8 +656,8 @@ static int SetConvBoneModel();
 static int SetConvBoneBvh();
 static int SetConvBone( int cbno );
 static int ConvBoneConvert();
-static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone);
-static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone);
+static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
+static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
 
 static int CalcTargetPos( D3DXVECTOR3* dstpos );
@@ -1278,7 +1279,7 @@ static OWP_Button* s_dampanimB = 0;
 	s_lkradio->addLine( L"[位置ばね]普通こんなもんだと思う" );
 	s_lkradio->addLine( L"[位置ばね]カスタム値" );
 
-	s_lkSlider = new OWP_Slider( g_initcuslk, 10000.0f, 0.0f );//60000
+	s_lkSlider = new OWP_Slider( g_initcuslk, 1e4, 0.0f );//60000
 	s_lklabel = new OWP_Label( L"位置ばね カスタム値" );
 
 	s_akradio = new OWP_RadioButton( L"[角度ばね]へなへな" );
@@ -6012,7 +6013,7 @@ int AddBoneEul( int kind, float adddeg )
 	return 0;
 }
 
-int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone)
+int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate)
 {
 	if (selfflag && !bvhbone){
 		_ASSERT(0);
@@ -6116,7 +6117,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		if ((cmp == 0) || cmpptr){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone);
-			traanim = calctramp.GetFirstFrameTra();
+			traanim = calctramp.GetFirstFrameTra() * hrate;//!!!!!!!
 		}
 		else{
 			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -8031,16 +8032,33 @@ int ConvBoneConvert()
 		}
 	}
 
-	
-	s_convbone_bvh->ConvFirstFrameBase();
+	HINFO bvhhi;
+	bvhhi.minh = 1e7;
+	bvhhi.maxh = -1e7;
+	bvhhi.height = 0.0f;
+	s_convbone_bvh->SetFirstFrameBonePos(&bvhhi);
 
+	HINFO modelhi;
+	modelhi.minh = 1e7;
+	modelhi.maxh = -1e7;
+	modelhi.height = 0.0f;
+	s_convbone_model->SetFirstFrameBonePos(&modelhi);
+
+	float hrate;
+	if (bvhhi.height != 0.0f){
+		hrate = modelhi.height / bvhhi.height;
+	}
+	else{
+		hrate = 0.0f;
+		_ASSERT(0);
+	}
 
 
 	for (frame = 0.0; frame < motleng; frame += 1.0){
 		if (modelbone){
 			s_model->SetMotionFrame(frame);
 			CBone* befbvhbone = s_convbone_bvh->GetTopBone();
-			ConvBoneConvertReq(modelbone, frame, befbvhbone);
+			ConvBoneConvertReq(modelbone, frame, befbvhbone, hrate);
 		}
 	}
 
@@ -8080,7 +8098,7 @@ void InitMPReq(CBone* curbone, double curframe)
 }
 
 
-void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone)
+void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate)
 {
 	if (!modelbone){
 		_ASSERT(0);
@@ -8089,27 +8107,27 @@ void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone)
 
 	CBone* bvhbone = s_convbonemap[modelbone];
 	if (bvhbone){
-		ConvBoneRotation(1, modelbone, bvhbone, srcframe, befbvhbone);
+		ConvBoneRotation(1, modelbone, bvhbone, srcframe, befbvhbone, hrate);
 	}
 	else{
-		ConvBoneRotation(0, modelbone, 0, srcframe, befbvhbone);
+		ConvBoneRotation(0, modelbone, 0, srcframe, befbvhbone, hrate);
 	}
 
 
 	if (modelbone->GetChild()){
 		if (bvhbone){
-			ConvBoneConvertReq(modelbone->GetChild(), srcframe, bvhbone);
+			ConvBoneConvertReq(modelbone->GetChild(), srcframe, bvhbone, hrate);
 		}
 		else{
-			ConvBoneConvertReq(modelbone->GetChild(), srcframe, befbvhbone);
+			ConvBoneConvertReq(modelbone->GetChild(), srcframe, befbvhbone, hrate);
 		}
 	}
 	if (modelbone->GetBrother()){
 		//if (bvhbone){
-		//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone);
+		//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone, hrate);
 		//}
 		//else{
-			ConvBoneConvertReq(modelbone->GetBrother(), srcframe, befbvhbone);
+		ConvBoneConvertReq(modelbone->GetBrother(), srcframe, befbvhbone, hrate);
 		//}
 	}
 

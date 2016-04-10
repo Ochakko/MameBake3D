@@ -6134,7 +6134,7 @@ float CModel::GetFbxTargetWeight(FbxNode* pbaseNode, FbxMesh* pbaseMesh, std::st
 
 }
 
-int CModel::ConvFirstFrameBase()
+int CModel::SetFirstFrameBonePos(HINFO* phinfo)
 {
 	int motid = m_curmotinfo->motid;
 	if (motid < 0){
@@ -6146,24 +6146,24 @@ int CModel::ConvFirstFrameBase()
 		return 0;
 	}
 
-	ConvFirstFrameBonePosReq(GetTopBone(), motid);
+	SetFirstFrameBonePosReq(GetTopBone(), motid, phinfo);
 
-
-	double frame;
-	for (frame = 0; frame < m_curmotinfo->frameleng; frame += 1.0){
-		ConvFirstFrameBaseMatReq(GetTopBone(), motid, frame);
+	if (phinfo->maxh >= phinfo->minh){
+		phinfo->height = phinfo->maxh - phinfo->minh;
 	}
+	else{
+		phinfo->height = 0.0f;
+		_ASSERT(0);
+	}
+
 
 	return 0;
 }
 
-void CModel::ConvFirstFrameBonePosReq(CBone* srcbone, int srcmotid)
+void CModel::SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo)
 {
 	if (srcbone){
 		CMotionPoint* curmp = 0;
-		CMotionPoint* parmp = 0;
-
-
 		double curframe = 0.0;
 
 		int existflag = 0;
@@ -6178,101 +6178,26 @@ void CModel::ConvFirstFrameBonePosReq(CBone* srcbone, int srcmotid)
 			curmp = 0;
 		}
 
-		if (srcbone->GetParent()){
-			int existflag2 = 0;
-			CMotionPoint* befmp2 = 0;
-			CMotionPoint* nextmp2 = 0;
-			srcbone->GetBefNextMP(srcmotid, curframe, &befmp2, &nextmp2, &existflag2);
-			if (existflag2 && befmp2){
-				parmp = befmp2;
+		if (curmp){
+			D3DXMATRIX firstmat = curmp->GetWorldMat();
+			srcbone->CalcFirstFrameBonePos(firstmat);
+			D3DXVECTOR3 firstpos = srcbone->GetFirstFrameBonePos();
+			if (firstpos.y < phinfo->minh){
+				phinfo->minh = firstpos.y;
 			}
-			else{
-				parmp = 0;
+			if (firstpos.y > phinfo->maxh){
+				phinfo->maxh = firstpos.y;
 			}
-		}
-		else{
-			parmp = 0;
-		}
-
-		if (parmp){
-			srcbone->SetFirstFrameMat0(curmp->GetWorldMat(), parmp->GetWorldMat());
-		}
-		else{
-			D3DXMATRIX inimat;
-			D3DXMatrixIdentity(&inimat);
-			srcbone->SetFirstFrameMat0(curmp->GetWorldMat(), inimat);
 		}
 	}
 
 	if (srcbone->GetChild()){
-		ConvFirstFrameBonePosReq(srcbone->GetChild(), srcmotid);
+		SetFirstFrameBonePosReq(srcbone->GetChild(), srcmotid, phinfo);
 	}
 	if (srcbone->GetBrother()){
-		ConvFirstFrameBonePosReq(srcbone->GetBrother(), srcmotid);
+		SetFirstFrameBonePosReq(srcbone->GetBrother(), srcmotid, phinfo);
 	}
 }
 
-void CModel::ConvFirstFrameBaseMatReq(CBone* srcbone, int srcmotid, double srcframe)
-{
-
-	if (srcbone){
-		CMotionPoint* curmp = 0;
-		CMotionPoint* parmp = 0;
 
 
-		int existflag = 0;
-		CMotionPoint* befmp = 0;
-		CMotionPoint* nextmp = 0;
-		srcbone->GetBefNextMP(srcmotid, srcframe, &befmp, &nextmp, &existflag);
-		if (existflag && befmp){
-			curmp = befmp;
-		}
-		else{
-			_ASSERT(0);
-			curmp = 0;
-		}
-
-		if (srcbone->GetParent()){
-			int existflag2 = 0;
-			CMotionPoint* befmp2 = 0;
-			CMotionPoint* nextmp2 = 0;
-			srcbone->GetBefNextMP(srcmotid, srcframe, &befmp2, &nextmp2, &existflag2);
-			if (existflag2 && befmp2){
-				parmp = befmp2;
-			}
-			else{
-				parmp = 0;
-			}
-		}
-		else{
-			parmp = 0;
-		}
-
-		if (parmp){
-			D3DXMATRIX invfirst0 = srcbone->GetInvFirstFrameMat0();
-			D3DXMATRIX curworld = curmp->GetWorldMat();
-			D3DXMATRIX curinvpar = parmp->GetInvWorldMat();
-			D3DXMATRIX curfirstframemat;
-
-			curfirstframemat = invfirst0 * curworld * curinvpar;
-			curmp->SetFirstFrameBaseMat(curfirstframemat);
-		}
-		else{
-			D3DXMATRIX invfirst0 = srcbone->GetInvFirstFrameMat0();
-			D3DXMATRIX curworld = curmp->GetWorldMat();
-			D3DXMATRIX curfirstframemat;
-
-			curfirstframemat = invfirst0 * curworld;
-			curmp->SetFirstFrameBaseMat(curfirstframemat);
-		}
-	}
-
-
-	if (srcbone->GetChild()){
-		ConvFirstFrameBaseMatReq(srcbone->GetChild(), srcmotid, srcframe);
-	}
-	if (srcbone->GetBrother()){
-		ConvFirstFrameBaseMatReq(srcbone->GetBrother(), srcmotid, srcframe);
-	}
-
-}

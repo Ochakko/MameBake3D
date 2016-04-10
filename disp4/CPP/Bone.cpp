@@ -109,8 +109,6 @@ int CBone::InitParams()
 	m_tmpq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
 	m_firstframebonepos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	D3DXMatrixIdentity(&m_firstframemat0);
-	D3DXMatrixIdentity(&m_anim0);
 
 	return 0;
 }
@@ -1012,37 +1010,15 @@ CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcfr
 	}
 
 	curmp->SetBefWorldMat(curmp->GetWorldMat());
-	/*
 	if (parmp){
-		D3DXMATRIX invbefpar;
-		D3DXMatrixInverse(&invbefpar, NULL, &parmp->GetBefWorldMat());
-		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
-		curmp->SetWorldMat(tmpmat);
-	}
-	else{
-		//初回呼び出し
-		//D3DXVECTOR3 rotcenter;// = m_childworld;
-		//D3DXVec3TransformCoord(&rotcenter, &m_jointfpos, &(curmp->GetWorldMat()));
-
-		//D3DXMATRIX befrot, aftrot;
-		//D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-		//D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
-		//D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-		//D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;
+		//parentの行列をセット !!!!!!!!!
+		curmp->SetWorldMat(parmp->GetWorldMat());
+	} else{
 		curmp->SetWorldMat(srcmat);
 	}
-	*/
-	curmp->SetWorldMat(srcmat);
 
 	curmp->SetAbsMat(curmp->GetWorldMat());
-	/*
-	if (m_child){
-		m_child->RotBoneQOne(curmp, srcmotid, srcframe, srcmat);
-	}
-	if (m_brother && parmp){
-		m_brother->RotBoneQOne(parmp, srcmotid, srcframe, srcmat);
-	}
-	*/
+
 	return curmp;
 }
 
@@ -1327,18 +1303,13 @@ int CBone::GetBoneNum()
 	return retnum;
 }
 
-int CBone::SetFirstFrameMat0(D3DXMATRIX srcfirst, D3DXMATRIX srcparfirst)
+int CBone::CalcFirstFrameBonePos(D3DXMATRIX srcmat)
 {
-	D3DXVECTOR3 zerovec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	D3DXVec3TransformCoord(&m_firstframebonepos, &zerovec, &srcfirst);
+	D3DXVec3TransformCoord(&m_firstframebonepos, &m_jointfpos, &srcmat);
 
-	D3DXMATRIX invpar;
-	D3DXMatrixInverse(&invpar, NULL, &srcparfirst);
-	m_firstframemat0 = srcfirst * invpar;
-
-	D3DXMATRIX invfirstmat = GetInvFirstMat();
-	m_anim0 = invfirstmat * m_firstframemat0;
-
+	//if ((m_firstframebonepos.x == 0.0f) && (m_firstframebonepos.y == 0.0f) && (m_firstframebonepos.z == 0.0f)){
+	//	_ASSERT(0);
+	//}
 	return 0;
 }
 

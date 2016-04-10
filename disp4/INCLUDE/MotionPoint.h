@@ -74,16 +74,6 @@ public:
 	CMotionPoint* GetNext(){ return m_next; };
 	void SetNext( CMotionPoint* srcnext ){ m_next = srcnext; };
 
-	D3DXMATRIX GetFirstFrameBaseMat()
-	{
-		return m_firstframebasemat;
-	};
-	D3DXMATRIX GetInvFirstFrameBaseMat()
-	{
-		D3DXMATRIX invmat;
-		D3DXMatrixInverse(&invmat, NULL, &m_firstframebasemat);
-		return invmat;
-	};
 
 private:
 	int DestroyObjs();
@@ -105,7 +95,6 @@ private:
 
 	D3DXMATRIX m_absmat;
 
-	D3DXMATRIX m_firstframebasemat;//最初のフレームの姿勢をinit状態としたときのローカルの姿勢。
 
 	CMotionPoint* m_prev;
 	CMotionPoint* m_next;

@@ -91,6 +91,13 @@ enum {
 	FUGOU_MINUS
 };
 
+typedef struct tag_hinfo
+{
+	float minh;
+	float maxh;
+	float height;
+}HINFO;
+
 typedef struct tag_reinfo
 {
 	char filename[MAX_PATH];

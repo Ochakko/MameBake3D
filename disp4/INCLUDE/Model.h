@@ -538,8 +538,7 @@ public:
 	float GetTargetWeight( int motid, double dframe, double timescale, CMQOObject* baseobj, std::string targetname );
 
 
-	//最初のフレームの姿勢を適用したボーンの位置とそれを基準にした全フレームの姿勢を計算。
-	int ConvFirstFrameBase();
+	int SetFirstFrameBonePos(HINFO* phinfo);
 
 
 	int DbgDump();
@@ -647,9 +646,7 @@ private:
 
 	int AdjustBoneTra( CEditRange* erptr, CBone* lastpar );
 
-	void ConvFirstFrameBonePosReq(CBone* srcbone, int srcmotid);
-	void ConvFirstFrameBaseMatReq(CBone* srcbone, int srcmotid, double srcframe);
-
+	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
 
 public: //accesser
 	FbxManager* GetFBXSDK(){

@@ -249,11 +249,5 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	return *this;
 }
 
-int CMotionPoint::SetFirstFrameBaseMat(D3DXMATRIX srcfirstmat)
-{
-	m_firstframebasemat = srcfirstmat;
-
-	return 0;
-}
 
 
