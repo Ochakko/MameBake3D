@@ -26,7 +26,7 @@ public:
 
 	int CopyMP( CMotionPoint* srcmp );
 
-	int CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr );
+	int CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate = 1.0f );
 	int SetFirstFrameBaseMat(D3DXMATRIX srcfirstmat);
 
 

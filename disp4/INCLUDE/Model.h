@@ -848,6 +848,9 @@ public: //accesser
 	void PlusPlusBtCnt(){
 		m_btcnt++;
 	};
+	void ZeroBtCnt(){
+		m_btcnt = 0;
+	}
 
 	void SetBtWorld( btDynamicsWorld* srcworld ){
 		m_btWorld = srcworld;

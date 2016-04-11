@@ -138,6 +138,7 @@ int CInfBone::AddInfElem( CMQOObject* srcobj, INFELEM srcie )
 	}else{
 		if( srcie.isadditive == 1 ){
 			curinf->m_infelem[ 0 ] = srcie;//Å‰‚Ì—v‘f‚Éã‘‚«IIadditive‚ÍRigidSkin‚ÌŽž‚ÉŽg‚í‚ê‚éBÅŒã‚É‘«‚³‚ê‚é‚à‚Ì‚Ì‰e‹¿‚ð‚P‚É‚·‚éB
+			curinf->m_infnum = 1;
 		}else{
 			if( curinf->m_infnum >= INFNUMMAX ){
 				int minindex = 0;

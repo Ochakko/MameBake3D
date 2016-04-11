@@ -86,7 +86,8 @@ typedef struct tag_spaxis
 
 extern map<CModel*,int> g_bonecntmap;
 
-
+static float s_selectscale = 1.0f;
+static int s_sethipstra = 0;
 static CFrameCopyDlg s_selbonedlg;
 static int s_allmodelbone = 0;
 
@@ -2480,6 +2481,9 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 						g_previewFlag = 0;
 					}
 					curmodel->SetMotionFrame( nextframe );
+				}
+				if (s_model->GetBtCnt() == 1){
+					StartBt(2);//reset bt for bvh first motion
 				}
 				/*
 				if (s_model){
@@ -6029,7 +6033,10 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		return 0;
 	}
 
-	
+	static D3DXMATRIX s_firsthipmat;
+	static D3DXMATRIX s_invfirsthipmat;
+
+
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
 	int bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -6098,26 +6105,46 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 	D3DXVECTOR3 traanim;
 
 	if (bvhbone){
+		D3DXMATRIX curbvhmat;
+		D3DXMATRIX bvhmat;
+		bvhmat = bvhmp.GetWorldMat();
+
 		D3DXMATRIX modelinit, invmodelinit;
 		modelinit = modelmp.GetWorldMat();
 		invmodelinit = modelmp.GetInvWorldMat();
 
-		D3DXMATRIX curbvhmat;
-		D3DXMATRIX bvhmat;
-		bvhmat = bvhmp.GetWorldMat();
-		curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
+		const char* bvhbonename = bvhbone->GetBoneName();
+		//int cmp = strcmp(bvhbonename, "Hips");
+		//const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
+		const char* cmpptr = strstr(bvhbonename, "Hips_bunki");//！！！　bvh側のルートにはHips_bunki**を指定すること(Hipsは原点)　！！！
+		//if (((cmp == 0) || cmpptr)){//各フレーム
+		if (cmpptr){
+			s_firsthipmat = bvhmp.GetWorldMat();
+			s_firsthipmat._41 = 0.0f;
+			s_firsthipmat._42 = 0.0f;
+			s_firsthipmat._43 = 0.0f;
+			D3DXMatrixInverse(&s_invfirsthipmat, NULL, &s_firsthipmat);
+			s_invfirsthipmat._41 = 0.0f;
+			s_invfirsthipmat._42 = 0.0f;
+			s_invfirsthipmat._43 = 0.0f;
+		}
+
+
+		//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
+		//curbvhmat = bvhbone->GetInvFirstMat() * s_invfirsthipmat * invmodelinit * bvhmat;
+		curbvhmat = s_invfirsthipmat * bvhbone->GetInvFirstMat() * s_firsthipmat * invmodelinit * bvhmat;//初期姿勢の変換にbvhの全体回転s_firsthipmatを考慮する。
 
 		CMotionPoint curbvhrotmp;
 		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 		rotq = curbvhrotmp.GetQ();
 
-		const char* bvhbonename = bvhbone->GetBoneName();
-		int cmp = strcmp(bvhbonename, "Hips");
-		const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
-		if ((cmp == 0) || cmpptr){
+		//if ((s_sethipstra == 0) && ((cmp == 0) || cmpptr)){
+		if ((s_sethipstra == 0) && cmpptr){
 			CMotionPoint calctramp;
-			calctramp.CalcQandTra(bvhmat, bvhbone);
-			traanim = calctramp.GetFirstFrameTra() * hrate;//!!!!!!!
+			calctramp.CalcQandTra(bvhmat, bvhbone, hrate);
+			//traanim = calctramp.GetFirstFrameTra() * hrate;//!!!!!!!
+			traanim = calctramp.GetFirstFrameTra();
+			s_sethipstra = 1;
 		}
 		else{
 			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -6924,22 +6951,42 @@ int RenderSelectMark()
 		cam1 = cam0 + D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
 
 		D3DXVECTOR3 sc0, sc1;
-		float selectscale;
 		D3DXVec3TransformCoord( &sc0, &cam0, &mp );
 		D3DXVec3TransformCoord( &sc1, &cam1, &mp );
 		float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
 		if( lineleng != 0.0f ){
 			lineleng = sqrt( lineleng );
-			selectscale = 0.0020f / lineleng;
-		}else{
-			selectscale = 0.0f;
+			s_selectscale = 0.0020f / lineleng;
 		}
+		else{
+			CBone* chilboneptr = curboneptr->GetChild();
+			if (chilboneptr){
+				D3DXMATRIX bonetra;
+				s_selm = chilboneptr->GetAxisMatPar() * chilboneptr->GetCurMp().GetWorldMat();
 
+				D3DXVECTOR3 orgpos = chilboneptr->GetJointFPos();
+				D3DXVECTOR3 bonepos = chilboneptr->GetChildWorld();
+
+				D3DXVECTOR3 cam0, cam1;
+				D3DXMATRIX mwv = mw * mv;
+				D3DXVec3TransformCoord(&cam0, &orgpos, &mwv);
+				cam1 = cam0 + D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+
+				D3DXVECTOR3 sc0, sc1;
+				D3DXVec3TransformCoord(&sc0, &cam0, &mp);
+				D3DXVec3TransformCoord(&sc1, &cam1, &mp);
+				float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
+				if (lineleng != 0.0f){
+					lineleng = sqrt(lineleng);
+					s_selectscale = 0.0020f / lineleng;
+				}
+			}
+		}
 		D3DXMATRIX scalemat;
 		D3DXMatrixIdentity( &scalemat );
-		scalemat._11 *= selectscale;
-		scalemat._22 *= selectscale;
-		scalemat._33 *= selectscale;
+		scalemat._11 *= s_selectscale;
+		scalemat._22 *= s_selectscale;
+		scalemat._33 *= s_selectscale;
 
 		D3DXMATRIX selworld;
 		selworld = scalemat * s_selm;
@@ -8016,6 +8063,7 @@ int ConvBoneConvert()
 		return 1;
 	}
 
+
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
 	double motleng = bvhmi->frameleng;
 	AddMotion(0, motleng);
@@ -8055,6 +8103,8 @@ int ConvBoneConvert()
 
 
 	for (frame = 0.0; frame < motleng; frame += 1.0){
+		s_sethipstra = 0;
+
 		if (modelbone){
 			s_model->SetMotionFrame(frame);
 			CBone* befbvhbone = s_convbone_bvh->GetTopBone();
@@ -8286,11 +8336,14 @@ int StartBt( int flag )
 		//F9キー
 		g_previewFlag = 4;
 		createflag = 1;
+		s_model->ZeroBtCnt();
 	}else if( flag == 1 ){
 		//F10キー
 		g_previewFlag = 5;
 		createflag = 1;
-	}else if( flag == 2 ){
+		s_model->ZeroBtCnt();
+	}
+	else if (flag == 2){
 		//spaceキー
 		if( g_previewFlag == 4 ){
 			resetflag = 1;

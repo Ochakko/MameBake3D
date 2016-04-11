@@ -3865,7 +3865,7 @@ static void s_dummyfunc();
 
 		static const int LABEL_SIZE_Y= 15;
 		//static const int LABEL_SIZE_X= 75;
-				static const int LABEL_SIZE_X= 155;
+		static const int LABEL_SIZE_X= 250;
 		static const int AXIS_SIZE_Y= 15;
 		static const int SCROLL_BAR_WIDTH= 10;
 		static const int MARGIN= 3;

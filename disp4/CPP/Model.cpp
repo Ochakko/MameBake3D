@@ -3089,6 +3089,7 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 					}
 
 					if( (lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f) ){
+					//if ((lClusterMode == FbxCluster::eAdditive)){
 						newobj->AddInfBone( curclusterno, index, weight, isadditive );
 					}
 				}
@@ -3131,6 +3132,7 @@ int IsValidCluster( FbxCluster* cluster )
 		weight = weightAry[ i2 ];
 
 		if( (lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05) ){
+		//if ((lClusterMode == FbxCluster::eAdditive)){
 			findflag = 1;
 			break;
 		}
