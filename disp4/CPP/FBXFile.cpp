@@ -1751,14 +1751,14 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 	FbxTime lTime0;
 	lTime0.SetSecondDouble( 0.0 );
 	
-	//if ((s_bvhflag != 1) || (fbxbone->GetType() != FB_ROOT)){
+	if ((s_bvhflag != 1) || (fbxbone->GetType() != FB_ROOT)){
 	//if (fbxbone->GetType() != FB_ROOT){
 		FbxNode* curskel = fbxbone->GetSkelNode();
 		if( curskel ){
 			FbxAMatrix lBindMatrix = curskel->EvaluateGlobalTransform( lTime0 );
 			lPose->Add(curskel, lBindMatrix);
 		}
-	//}
+	}
 
 	if( fbxbone->GetChild() ){
 		WriteBindPoseReq( fbxbone->GetChild(), lPose );

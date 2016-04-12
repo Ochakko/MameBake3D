@@ -6114,11 +6114,11 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		invmodelinit = modelmp.GetInvWorldMat();
 
 		const char* bvhbonename = bvhbone->GetBoneName();
-		//int cmp = strcmp(bvhbonename, "Hips");
-		//const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
-		const char* cmpptr = strstr(bvhbonename, "Hips_bunki");//！！！　bvh側のルートにはHips_bunki**を指定すること(Hipsは原点)　！！！
-		//if (((cmp == 0) || cmpptr)){//各フレーム
-		if (cmpptr){
+		int cmp = strcmp(bvhbonename, "Hips");
+		const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
+		//const char* cmpptr = strstr(bvhbonename, "Hips_bunki");//！！！　bvh側のルートにはHips_bunki**を指定すること(Hipsは原点)　！！！
+		if (((cmp == 0) || cmpptr)){//各フレーム
+		//if (cmpptr){
 			s_firsthipmat = bvhmp.GetWorldMat();
 			s_firsthipmat._41 = 0.0f;
 			s_firsthipmat._42 = 0.0f;
@@ -6138,12 +6138,12 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 		rotq = curbvhrotmp.GetQ();
 
-		//if ((s_sethipstra == 0) && ((cmp == 0) || cmpptr)){
-		if ((s_sethipstra == 0) && cmpptr){
+		if ((s_sethipstra == 0) && ((cmp == 0) || cmpptr)){
+		//if ((s_sethipstra == 0) && cmpptr){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone, hrate);
-			//traanim = calctramp.GetFirstFrameTra() * hrate;//!!!!!!!
 			traanim = calctramp.GetFirstFrameTra();
+			//traanim = calctramp.GetTra() * hrate;
 			s_sethipstra = 1;
 		}
 		else{

@@ -110,6 +110,8 @@ int CBone::InitParams()
 
 	m_firstframebonepos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
+	m_posefoundflag = false;
+
 	return 0;
 }
 int CBone::DestroyObjs()

@@ -208,13 +208,9 @@ int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate )
 	m_tra = aftpos - boneptr->GetJointFPos();
 
 
-	D3DXMATRIX scalemat;
-	D3DXMatrixIdentity(&scalemat);
-	D3DXMatrixScaling(&scalemat, hrate, hrate, hrate);
-	D3DXMATRIX transmat = scalemat * srcmat;
 	D3DXVECTOR3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
 	D3DXVECTOR3 aftpos2;
-	D3DXVec3TransformCoord(&aftpos2, &srcbonepos, &transmat);
+	D3DXVec3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
 	m_firstframetra = aftpos - srcbonepos;
 	//m_firstframetra = aftpos;
 

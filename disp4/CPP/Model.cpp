@@ -2949,10 +2949,10 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 						curbone->SetFirstMat( xmat );
 						curbone->SetInitMat( xmat );
 						D3DXMATRIX calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
-						D3DXVECTOR3 zeropos( 0.0f, 0.0f, 0.0f );
+						D3DXVECTOR3 zeropos(0.0f, 0.0f, 0.0f);
 						D3DXVECTOR3 tmppos;
-						D3DXVec3TransformCoord( &tmppos, &zeropos, &calcmat );
-						curbone->SetJointFPos( tmppos );
+						D3DXVec3TransformCoord(&tmppos, &zeropos, &calcmat);
+						curbone->SetJointFPos(tmppos);
 					}
 
 					CMotionPoint* curmp = 0;
@@ -3334,7 +3334,8 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 
 
 	FbxAMatrix lGlobalPosition;
-	bool        lPositionFound = false;
+	bool        lPositionFound = false;//バインドポーズを書き出さない場合やHipsなどの場合は０になる？
+
 
 	if( pPose ){
 		int lNodeIndex = pPose->Find(pNode);
@@ -3383,7 +3384,9 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 		// does not hold when inheritance type is other than "Parent" (RSrs).
 		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
 		lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+
 	}
+
 
 	D3DXMATRIX nodemat;
 
@@ -3407,6 +3410,7 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 	nodemat._43 = (float)lGlobalPosition.Get( 3, 2 );
 	nodemat._44 = (float)lGlobalPosition.Get( 3, 3 );
 
+	curbone->SetPositionFound(lPositionFound);//!!!
 	curbone->SetNodeMat( nodemat );
 	curbone->SetGlobalPosMat( lGlobalPosition );
 
@@ -3458,7 +3462,8 @@ int CModel::SetDefaultBonePos()
 	FbxTime pTime;
 	pTime.SetSecondDouble( 0.0 );
 
-	CBone* secbone = m_topbone->GetChild();
+	//CBone* secbone = m_topbone->GetChild();
+	CBone* secbone = m_topbone;
 
 	if( secbone ){
 		SetDefaultBonePosReq( secbone, pTime, bindpose, 0 );

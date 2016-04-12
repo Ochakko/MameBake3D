@@ -665,6 +665,14 @@ public: //accesser
 	CBone* GetBrother(){ return m_brother; };
 	void SetBrother( CBone* srcbro ){ m_brother = srcbro; };
 
+	bool GetPositionFound(){
+		return m_posefoundflag;
+	}
+	void SetPositionFound(bool foundflag){
+		m_posefoundflag = foundflag;
+	}
+
+
 private:
 	int m_type;
 	int m_selectflag;
@@ -675,6 +683,8 @@ private:
 	char m_bonename[256];
 	WCHAR m_wbonename[256];
 	char m_engbonename[256];
+
+	bool m_posefoundflag;//BindPoseの中にこのボーンの位置情報があった場合true。
 
 	D3DXVECTOR3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
 	D3DXVECTOR3 m_childscreen;//ボーンの子供のWVP適用後の座標。
