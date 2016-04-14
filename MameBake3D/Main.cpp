@@ -608,7 +608,7 @@ static int OpenGcoFile();
 int OnDelMotion( int delindex );
 int OnAddMotion( int srcmotid );
 
-static int StartBt( int flag );
+static int StartBt( int flag, int btcntzero );
 static int GetShaderHandle();
 static int SetBaseDir();
 
@@ -2374,14 +2374,14 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		s_dispselect = true;
 	}
 	if( (g_keybuf[ VK_F9 ] & 0x80) && ((g_savekeybuf[ VK_F9 ] & 0x80) == 0) ){
-		StartBt( 0 );
+		StartBt( 0, 1 );
 	}
 	if( (g_keybuf[ VK_F10 ] & 0x80) && ((g_savekeybuf[ VK_F10 ] & 0x80) == 0) ){
-		StartBt( 1 );
+		StartBt( 1, 1 );
 	}
 	if( (g_keybuf[ ' ' ] & 0x80) && ((g_savekeybuf[ ' ' ] & 0x80) == 0) ){
 		if( s_bpWorld && s_model ){
-			StartBt( 2 );
+			StartBt( 2, 1 );
 		}
 	}
 	if( g_keybuf[ VK_CONTROL ] & 0x80 ){
@@ -2483,7 +2483,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					curmodel->SetMotionFrame( nextframe );
 				}
 				if (s_model->GetBtCnt() == 1){
-					StartBt(2);//reset bt for bvh first motion
+					StartBt(2, 0);//reset bt for bvh first motion
 				}
 				/*
 				if (s_model){
@@ -3229,9 +3229,10 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		s_model->SetBtWorld( s_btWorld );
 
 		CallF( s_model->CreateBtObject( s_coldisp, 1 ), return );
+	}
+	if (s_model){
 		s_model->PlusPlusBtCnt();
 	}
-
 }
 
 int InsertCopyMP( CBone* curbone, double curframe )
@@ -8327,7 +8328,7 @@ int SetSelectCol()
 }
 ***/
 
-int StartBt( int flag )
+int StartBt(int flag, int btcntzero)
 {
 	int resetflag = 0;
 	int createflag = 0;
@@ -8336,12 +8337,16 @@ int StartBt( int flag )
 		//F9キー
 		g_previewFlag = 4;
 		createflag = 1;
-		s_model->ZeroBtCnt();
+		if (btcntzero == 1){
+			s_model->ZeroBtCnt();
+		}
 	}else if( flag == 1 ){
 		//F10キー
 		g_previewFlag = 5;
 		createflag = 1;
-		s_model->ZeroBtCnt();
+		if (btcntzero == 1){
+			s_model->ZeroBtCnt();
+		}
 	}
 	else if (flag == 2){
 		//spaceキー

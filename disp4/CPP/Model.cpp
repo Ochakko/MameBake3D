@@ -3698,7 +3698,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 //		srcbone->m_btkinflag = 0;
 		
 		int cmp0 = strncmp( srcbone->GetBoneName(), "BT_", 3 );
-		if( (cmp0 == 0) && (srcbone->GetBtForce() == 1)){
+		if( (cmp0 == 0) || (srcbone->GetBtForce() == 1)){
 			if (srcbone->GetParent()){
 				CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
 				if (curre){
@@ -3767,7 +3767,7 @@ int CModel::CreateBtConstraint()
 
 	CreateBtConstraintReq( m_topbt );
 
-	CreateBtConnectReq( m_topbone );
+	//CreateBtConnectReq( m_topbone );
 
 	return 0;
 }
