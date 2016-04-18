@@ -3338,40 +3338,10 @@ int InitMP( CBone* curbone, double curframe )
 
 		pbef->SetBefWorldMat( pbef->GetWorldMat() );
 
-		if( curbone->GetChild() ){
-			WCHAR bunkipat[256] = L"_bunki";
-			WCHAR* findpat = wcsstr( (WCHAR*)curbone->GetWBoneName(), bunkipat );
-			if( !findpat ){
-				D3DXMATRIX tmpmat;
-				D3DXMatrixIdentity( &tmpmat );
-				pbef->SetWorldMat( tmpmat );
-				curbone->SetInitMat(tmpmat);
-			}else{
-				if( existflag1 && pbef1 ){
-					D3DXMATRIX invfirst;
-					D3DXMatrixInverse( &invfirst, NULL, &(curbone->GetParent()->GetFirstMat()) );
-					pbef->SetWorldMat( invfirst );
-					curbone->SetInitMat(invfirst);
-				}else{
-					D3DXMATRIX tmpmat;
-					D3DXMatrixIdentity( &tmpmat );
-					pbef->SetWorldMat( tmpmat );
-					curbone->SetInitMat(tmpmat);
-				}
-			}
-		}else{
-			if( existflag1 && pbef1 ){
-				D3DXMATRIX invfirst;
-				D3DXMatrixInverse( &invfirst, NULL, &(curbone->GetParent()->GetFirstMat()) );
-				pbef->SetWorldMat( invfirst );
-				curbone->SetInitMat(invfirst);
-			}else{
-				D3DXMATRIX tmpmat;
-				D3DXMatrixIdentity( &tmpmat );
-				pbef->SetWorldMat( tmpmat );
-				curbone->SetInitMat(tmpmat);
-			}
-		}
+		D3DXMATRIX xmat = curbone->GetFirstMat();
+		pbef->SetWorldMat(xmat);
+		curbone->SetInitMat(xmat);
+
 	}else{
 		CMotionPoint* curmp3 = 0;
 		int existflag3 = 0;
