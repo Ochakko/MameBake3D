@@ -345,8 +345,8 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 
-static bool s_befkeyFlag = false;
-static bool s_nextkeyFlag = false;
+static bool s_firstkeyFlag = false;
+static bool s_lastkeyFlag = false;
 
 static bool s_LcloseFlag = false;
 static bool s_LnextkeyFlag = false;
@@ -1125,8 +1125,8 @@ void InitApp()
 
 	s_owpPlayerButton->setFrontPlayButtonListener( [](){ g_previewFlag = 1; } );
 	s_owpPlayerButton->setBackPlayButtonListener( [](){  g_previewFlag = -1; } );
-	s_owpPlayerButton->setFrontStepButtonListener( [](){ s_nextkeyFlag = true; } );
-	s_owpPlayerButton->setBackStepButtonListener( [](){  s_befkeyFlag = true; } );
+	s_owpPlayerButton->setFrontStepButtonListener( [](){ s_lastkeyFlag = true; } );
+	s_owpPlayerButton->setBackStepButtonListener( [](){  s_firstkeyFlag = true; } );
 	s_owpPlayerButton->setStopButtonListener( [](){  g_previewFlag = 0; } );
 	s_owpPlayerButton->setResetButtonListener( [](){ if( s_owpLTimeline ){ g_previewFlag = 0; s_owpLTimeline->setCurrentTime( 0.0, false ); } } );
 
@@ -3042,52 +3042,27 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 ***/
 	}
 
-	if( s_befkeyFlag ){
-		s_befkeyFlag = false;
-/***
-		if( s_model && s_model->m_curmotinfo ){
-			double curframe = s_owpTimeline->getCurrentTime();
-			int curline = s_owpTimeline->getCurrentLine();
-			int curboneno = s_lineno2boneno[ curline ];
-			CBone* curbone = s_model->m_bonelist[ curboneno ];
-			if( curbone ){
-				CMotionPoint* pbef = 0;
-				CMotionPoint* pnext = 0;
-				int existflag = 0;
-				curbone->GetBefNextMP( s_model->m_curmotinfo->motid, curframe, &pbef, &pnext, &existflag );
-				if( existflag ){
-					pbef = pbef->m_prev;
-				}
-				if( pbef ){
-					s_owpTimeline->setCurrentTime( pbef->m_frame );
-				}else{
-					s_owpTimeline->setCurrentTime( 0.0 );
-				}
-			}
+	if( s_firstkeyFlag ){
+		//先頭フレームへ
+		s_firstkeyFlag = false;
+		g_previewFlag = 0;
+		if (s_owpTimeline){
+			s_owpLTimeline->setCurrentTime(0.0, false);
 		}
-***/
 	}
-	if( s_nextkeyFlag ){
-		s_nextkeyFlag = false;
-/***
-		if( s_model && s_model->m_curmotinfo ){
-			double curframe = s_owpTimeline->getCurrentTime();
-			int curline = s_owpTimeline->getCurrentLine();
-			int curboneno = s_lineno2boneno[ curline ];
-			CBone* curbone = s_model->m_bonelist[ curboneno ];
-			if( curbone ){
-				CMotionPoint* pbef = 0;
-				CMotionPoint* pnext = 0;
-				int existflag = 0;
-				curbone->GetBefNextMP( s_model->m_curmotinfo->motid, curframe, &pbef, &pnext, &existflag );
-				if( pnext ){
-					s_owpTimeline->setCurrentTime( pnext->m_frame );
-				}else{
-					s_owpTimeline->setCurrentTime( s_model->m_curmotinfo->frameleng );
+	if( s_lastkeyFlag ){
+		//最終フレームへ
+		s_lastkeyFlag = false;
+		g_previewFlag = 0;
+		if (s_model){
+			if (s_owpTimeline){
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi){
+					double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
+					s_owpLTimeline->setCurrentTime(lastframe, false);
 				}
 			}
 		}
-***/
 	}
 
 	if( s_motpropFlag ){
