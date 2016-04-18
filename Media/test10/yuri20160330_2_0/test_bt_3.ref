@@ -3,10 +3,10 @@
     <FileInfo>1001-01</FileInfo>
     <SCBTG>15.240642</SCBTG>
   <Bone>
-    <Name>Hip</Name>
+    <Name>Hip_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>Hip_branch</ChildName>
+      <ChildName>Hip_branch_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>1</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -29,10 +29,54 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>Hip_branch</Name>
+    <Name>Hip_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>Chest_branch</ChildName>
+      <ChildName>LeftHip_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>10000.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>16.042780</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>RightHip_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>10000.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>16.042780</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>Chest_branch_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -53,56 +97,12 @@
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
-    <RigidElem>
-      <ChildName>LeftHip</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>10000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>16.042780</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>1.000000</FRICTION>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>RightHip</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>10000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>16.042780</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>1.000000</FRICTION>
-    </RigidElem>
   </Bone>
   <Bone>
-    <Name>Chest_branch</Name>
+    <Name>Chest_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftCollar</ChildName>
+      <ChildName>Neck_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -124,7 +124,7 @@
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
     <RigidElem>
-      <ChildName>Neck</ChildName>
+      <ChildName>LeftCollar_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -146,7 +146,7 @@
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightCollar</ChildName>
+      <ChildName>RightCollar_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -169,10 +169,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>Neck</Name>
+    <Name>Neck_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>Neck_branch</ChildName>
+      <ChildName>Neck_branch_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -195,32 +195,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>Neck_branch</Name>
-    <BTKIN>1</BTKIN>
+    <Name>Neck_branch_Joint</Name>
+    <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_L_2</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>10000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>80.213905</CUSAK>
-      <Mass>1.283422</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>3</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>Head_end</ChildName>
+      <ChildName>Head_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -242,7 +220,7 @@
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
     <RigidElem>
-      <ChildName>BT_G_3_R_2</ChildName>
+      <ChildName>BT_G_3_R_2_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -263,12 +241,34 @@
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
+    <RigidElem>
+      <ChildName>BT_G_3_L_2_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>10000.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>80.213905</CUSAK>
+      <Mass>1.283422</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>3</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+    </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_R_2</Name>
+    <Name>BT_G_3_R_2_Joint</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_R_3</ChildName>
+      <ChildName>BT_G_3_R_3_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -291,10 +291,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_R_3</Name>
+    <Name>BT_G_3_R_3_Joint</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_R_4</ChildName>
+      <ChildName>BT_G_3_R_4_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -317,10 +317,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_R_4</Name>
+    <Name>BT_G_3_R_4_Joint</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_R_4_end</ChildName>
+      <ChildName>BT_G_3_R_4_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -343,10 +343,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_L_2</Name>
+    <Name>BT_G_3_L_2_Joint</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_L_3</ChildName>
+      <ChildName>BT_G_3_L_3_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -369,10 +369,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_L_3</Name>
+    <Name>BT_G_3_L_3_Joint</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_L_4</ChildName>
+      <ChildName>BT_G_3_L_4_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -395,10 +395,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>BT_G_3_L_4</Name>
+    <Name>BT_G_3_L_4_Joint</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>BT_G_3_L_4_end</ChildName>
+      <ChildName>BT_G_3_L_4_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -421,10 +421,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftCollar</Name>
+    <Name>LeftCollar_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftShoulder</ChildName>
+      <ChildName>LeftShoulder_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -447,10 +447,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftShoulder</Name>
+    <Name>LeftShoulder_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftElbow</ChildName>
+      <ChildName>LeftElbow_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -473,10 +473,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftElbow</Name>
+    <Name>LeftElbow_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftWrist</ChildName>
+      <ChildName>LeftWrist_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -499,10 +499,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftWrist</Name>
+    <Name>LeftWrist_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftWrist_end</ChildName>
+      <ChildName>LeftWrist_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -525,10 +525,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightCollar</Name>
+    <Name>RightCollar_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightShoulder</ChildName>
+      <ChildName>RightShoulder_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -551,10 +551,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightShoulder</Name>
+    <Name>RightShoulder_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightElbow</ChildName>
+      <ChildName>RightElbow_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -577,10 +577,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightElbow</Name>
+    <Name>RightElbow_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightWrist</ChildName>
+      <ChildName>RightWrist_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -603,10 +603,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightWrist</Name>
+    <Name>RightWrist_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightWrist_end</ChildName>
+      <ChildName>RightWrist_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -629,10 +629,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftHip</Name>
+    <Name>LeftHip_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftKnee</ChildName>
+      <ChildName>LeftKnee_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -655,10 +655,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftKnee</Name>
+    <Name>LeftKnee_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftAnkle</ChildName>
+      <ChildName>LeftAnkle_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -681,10 +681,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>LeftAnkle</Name>
+    <Name>LeftAnkle_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftAnkle_end</ChildName>
+      <ChildName>LeftAnkle_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -707,10 +707,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightHip</Name>
+    <Name>RightHip_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightKnee</ChildName>
+      <ChildName>RightKnee_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -733,10 +733,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightKnee</Name>
+    <Name>RightKnee_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightAnkle</ChildName>
+      <ChildName>RightAnkle_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -759,10 +759,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>RightAnkle</Name>
+    <Name>RightAnkle_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightAnkle_end</ChildName>
+      <ChildName>RightAnkle_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
