@@ -86,6 +86,9 @@ typedef struct tag_spaxis
 
 extern map<CModel*,int> g_bonecntmap;
 
+bool g_selecttolastFlag = false;
+bool g_underselecttolast = false;
+
 static float s_selectscale = 1.0f;
 static int s_sethipstra = 0;
 static CFrameCopyDlg s_selbonedlg;
@@ -347,6 +350,7 @@ static bool s_initmpFlag = false;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
+static bool s_btresetFlag = false;
 
 static bool s_LcloseFlag = false;
 static bool s_LnextkeyFlag = false;
@@ -1129,26 +1133,52 @@ void InitApp()
 	s_owpPlayerButton->setBackStepButtonListener( [](){  s_firstkeyFlag = true; } );
 	s_owpPlayerButton->setStopButtonListener( [](){  g_previewFlag = 0; } );
 	s_owpPlayerButton->setResetButtonListener( [](){ if( s_owpLTimeline ){ g_previewFlag = 0; s_owpLTimeline->setCurrentTime( 0.0, false ); } } );
+	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
+	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
 
 	s_LtimelineWnd->setSizeMin( OrgWinGUI::WindowSize( 100, 100 ) );
 	s_LtimelineWnd->setCloseListener( [](){ s_LcloseFlag=true; } );
 	s_LtimelineWnd->setLUpListener( [](){
-		s_editrange.Clear();
-		if( s_model && s_model->GetCurMotInfo() ){
-			if( s_owpTimeline && s_owpLTimeline ){
-				int curlineno = s_owpLTimeline->getCurrentLine();
-				if( curlineno == 0 ){//move to current frame
-					s_editrange.Clear();
-				}
+		if (g_selecttolastFlag == false){
+			s_editrange.Clear();
+			if (s_model && s_model->GetCurMotInfo()){
+				if (s_owpTimeline && s_owpLTimeline){
+					int curlineno = s_owpLTimeline->getCurrentLine();
+					if (curlineno == 0){//move to current frame
+						s_editrange.Clear();
+					}
 
-				s_editrange.SetRange( s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime() );
-				int keynum;
-				double startframe, endframe, applyframe;
-				s_editrange.GetRange( &keynum, &startframe, &endframe, &applyframe );
-				//s_owpLTimeline->setCurrentTime( endframe, false );
-				s_owpLTimeline->setCurrentTime( applyframe, false );
+					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime());
+					int keynum;
+					double startframe, endframe, applyframe;
+					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+					//s_owpLTimeline->setCurrentTime( endframe, false );
+					s_owpLTimeline->setCurrentTime(applyframe, false);
+				}
 			}
 		}
+		else{
+			s_owpLTimeline->SelectToLast();
+
+			s_editrange.Clear();
+			if (s_model && s_model->GetCurMotInfo()){
+				if (s_owpTimeline && s_owpLTimeline){
+					int curlineno = s_owpLTimeline->getCurrentLine();
+					if (curlineno == 0){//move to current frame
+						s_editrange.Clear();
+					}
+
+					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime());
+					int keynum;
+					double startframe, endframe, applyframe;
+					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+					//s_owpLTimeline->setCurrentTime( endframe, false );
+					s_owpLTimeline->setCurrentTime(applyframe, false);
+				}
+			}
+			g_selecttolastFlag = false;
+		}
+
 	} );
 
 /////////
@@ -2770,7 +2800,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			list<KeyInfo>::iterator itrcp;
 			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
 				double curframe = itrcp->time;
-				
+				/*
 				int cpnum = s_selbonedlg.m_cpvec.size();
 				if( cpnum != 0 ){
 					int cpno;
@@ -2803,8 +2833,8 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 							AdjustBoneTra( curbone, curframe );
 						}
 					}
-				}else{
-					//対象ボーン未設定時は全ボーンをコピー
+				*/
+				//}else{
 					map<int,CBone*>::iterator itrbone;
 					for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
 						CBone* curbone = itrbone->second;
@@ -2813,7 +2843,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 							CreateTimeLineMark( curbone->GetBoneNo() );
 						}
 					}
-				}
+				//}
 			}
 			SetLTimelineMark( s_curboneno );
 		}
@@ -3064,6 +3094,28 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			}
 		}
 	}
+	/*
+	if (g_selecttolastFlag == true){
+		s_owpLTimeline->SelectToLast();
+
+		s_editrange.Clear();
+		if (s_model && s_model->GetCurMotInfo()){
+			if (s_owpTimeline && s_owpLTimeline){
+				int curlineno = s_owpLTimeline->getCurrentLine();
+				if (curlineno == 0){//move to current frame
+					s_editrange.Clear();
+				}
+
+				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime());
+				int keynum;
+				double startframe, endframe, applyframe;
+				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+				//s_owpLTimeline->setCurrentTime( endframe, false );
+				s_owpLTimeline->setCurrentTime(applyframe, false);
+			}
+		}
+	}
+	*/
 
 	if( s_motpropFlag ){
 		s_motpropFlag = false;

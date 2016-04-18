@@ -1,6 +1,6 @@
 
 #include <crtdbg.h>
-#include "OrgWindow.h"
+#include <OrgWindow.h>
 
 #include <windows.h>
 #include <list>
@@ -32,7 +32,7 @@ namespace OrgWinGUI{
 	///<summary>
 	///	ウィンドウ内部品"タイムラインテーブル"クラス
 	///</summary>
-	const double OWP_Timeline::LineData::TIME_ERROR_WIDTH= 0.0001;
+	//const double OWP_Timeline::LineData::TIME_ERROR_WIDTH= 0.0001;
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////

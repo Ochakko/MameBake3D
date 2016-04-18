@@ -15,6 +15,7 @@
 #include <d3dx9.h>
 
 
+
 struct KeyInfo{
 	const TCHAR *label;
 	double time;
@@ -23,6 +24,12 @@ struct KeyInfo{
 	D3DXMATRIX wmat;
 	void *object;
 };
+
+
+extern bool g_selecttolastFlag;//Main.cpp
+extern bool g_underselecttolast;//Main.cpp
+
+static double TIME_ERROR_WIDTH = 0.0001;
 
 namespace OrgWinGUI{
 
@@ -1935,7 +1942,7 @@ static void s_dummyfunc();
 			drawEdge();
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<6; i++){
+			for(int i=0; i<8; i++){
 
 				//ボタンの四隅になる座標を求める
 				int pos1x= pos.x+BOX_POS_X+BOX_WIDTH*i;
@@ -1952,6 +1959,8 @@ static void s_dummyfunc();
 				case 3: btnPrm= &stop; break;
 				case 4: btnPrm= &frontPlay; break;
 				case 5: btnPrm= &frontStep; break;
+				case 6: btnPrm = &selecttolast; break;
+				case 7: btnPrm = &btreset; break;
 				}
 
 				//枠組み描画
@@ -1973,7 +1982,7 @@ static void s_dummyfunc();
 						pos1x+4+shiftDot, pos1y+4+shiftDot,
 						pos2x-3+shiftDot, pos2y-3+shiftDot );
 					break;
-				case 1:		//一つ戻るボタン
+				case 1:		//先頭フレームジャンプボタン
 					{
 						int x1= (pos1x+pos2x)/2+2;
 						int x2= pos2x-2;
@@ -2019,7 +2028,7 @@ static void s_dummyfunc();
 							LineTo(hdcM->hDC,   x1+j+shiftDot,y2-j+shiftDot);
 						}
 					}break;
-				case 5:		//一つ進むボタン
+				case 5:		//最終フレームジャンプボタン
 					{
 						int x1= pos1x+3;
 						int x2= (pos1x+pos2x)/2-1;
@@ -2034,8 +2043,28 @@ static void s_dummyfunc();
 							LineTo(hdcM->hDC,   x3+j+shiftDot,y2-j+shiftDot);
 						}
 					}break;
-				}
+				case 6:		//最終フレームまで選択
+					{
+						int x1 = pos1x + 4;
+						int x2 = pos2x - 4;
+						int y1 = pos1y + 3;
+						int y2 = pos2y - 3;
 
+						MoveToEx(hdcM->hDC, x1, y1, NULL);
+						LineTo(hdcM->hDC, x1, y2);
+						MoveToEx(hdcM->hDC, x2, y1, NULL);
+						LineTo(hdcM->hDC, x2, y2);
+					}break;
+				case 7:		//bt reset event設定
+					{
+						int x1 = pos1x + 4;
+						int x2 = pos2x - 4;
+						int y1 = (pos1y + pos2y) / 2;
+
+						MoveToEx(hdcM->hDC, x1, y1, NULL);
+						LineTo(hdcM->hDC, x2, y1);
+					}break;
+				}
 			}
 
 		}
@@ -2043,7 +2072,7 @@ static void s_dummyfunc();
 		void onLButtonDown(const MouseEvent& e){
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<6; i++){
+			for(int i=0; i<8; i++){
 
 				//まずボタンが押されたかを確認
 				if( BOX_POS_X+BOX_WIDTH*i<=e.localX && e.localX<BOX_POS_X+BOX_WIDTH*(i+1) ){
@@ -2060,6 +2089,8 @@ static void s_dummyfunc();
 				case 3: btnPrm= &stop; break;
 				case 4: btnPrm= &frontPlay; break;
 				case 5: btnPrm= &frontStep; break;
+				case 6: btnPrm = &selecttolast; break;
+				case 7: btnPrm = &btreset; break;
 				}
 
 				//ボタンリスナーを呼ぶ
@@ -2081,6 +2112,8 @@ static void s_dummyfunc();
 				case 3: _beginthread(drawStopButtonUpThread,0,(void *)this); break;
 				case 4: _beginthread(drawFrontPlayButtonUpThread,0,(void *)this); break;
 				case 5: _beginthread(drawFrontStepButtonUpThread,0,(void *)this); break;
+				case 6: _beginthread(drawSelectToLastButtonUpThread, 0, (void *)this); break;
+				case 7: _beginthread(drawBtResetButtonUpThread, 0, (void *)this); break;
 				}
 
 				return;
@@ -2107,6 +2140,12 @@ static void s_dummyfunc();
 		void setBackStepButtonListener(std::tr1::function<void()> listener){
 			backStep.buttonListener= listener;
 		}
+		void setSelectToLastButtonListener(std::tr1::function<void()> listener){
+			selecttolast.buttonListener = listener;
+		}
+		void setBtResetButtonListener(std::tr1::function<void()> listener){
+			btreset.buttonListener = listener;
+		}
 
 		/// Accessor : ボタンサイズを変更する
 		void setButtonSize(int value){
@@ -2129,7 +2168,7 @@ static void s_dummyfunc();
 
 			bool buttonPush;
 			std::tr1::function<void()> buttonListener;
-		}frontPlay,backPlay,stop,reset,frontStep,backStep;
+		}frontPlay,backPlay,stop,reset,frontStep,backStep,selecttolast,btreset;
 		
 
 		int SIZE_Y;
@@ -2178,6 +2217,20 @@ static void s_dummyfunc();
 
 			OWP_PlayerButton *thisClass= (OWP_PlayerButton*)pParam;
 			thisClass->backStep.buttonPush=false;
+			thisClass->callRewrite();
+		}
+		static void drawSelectToLastButtonUpThread(LPVOID	pParam){
+			Sleep(100);
+
+			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+			thisClass->selecttolast.buttonPush = false;
+			thisClass->callRewrite();
+		}
+		static void drawBtResetButtonUpThread(LPVOID	pParam){
+			Sleep(100);
+
+			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+			thisClass->btreset.buttonPush = false;
 			thisClass->callRewrite();
 		}
 	};
@@ -2608,6 +2661,9 @@ static void s_dummyfunc();
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_Timeline(const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ){
+			
+			TIME_ERROR_WIDTH = 0.0001;
+
 			lineData.push_back(new LineData(0,_name,this,0));
 			maxTime= _maxTime;
 			timeSize= _timeSize;
@@ -2972,6 +3028,47 @@ static void s_dummyfunc();
 				callRewrite();
 			}
 		}
+
+		void SelectToLast()
+		{
+			double curframe = getCurrentTime();
+			double maxframe = curframe;
+
+			//for (int j = 0; j < (int)lineData.size(); j++){
+			int j = 1;
+			if (j < (int)lineData.size()){
+				LineData* curLineData = lineData[j];
+				for (int i = 0; i < (int)curLineData->key.size(); i++){
+					if (curLineData->key[i]->time >= curframe - TIME_ERROR_WIDTH){
+						curLineData->key[i]->select = true;
+						if (maxframe < curLineData->key[i]->time){
+							maxframe = curLineData->key[i]->time;
+						}
+					}
+				}
+			}
+
+			//dragSelect = true;
+			dragSelectTime1 = curframe;
+			dragSelectTime2 = maxframe;
+			showPos_time = curframe;
+			showPos_line = 0;
+			currentLine = 1;//!!!!!!!
+
+			//再描画領域
+			RECT tmpRect;
+			tmpRect.left = pos.x + 1;
+			tmpRect.top = pos.y + 1;
+			tmpRect.right = pos.x + size.x - 1;
+			tmpRect.bottom = pos.y + size.y - 1;
+			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+			//再描画要求
+			if (rewriteOnChange){
+				callRewrite();
+			}
+		}
+
 		/// Method : すべての選択されているキーを取得する
 		std::list<KeyInfo> getSelectedKey() const{
 			std::list<KeyInfo> ret;
@@ -3010,6 +3107,7 @@ static void s_dummyfunc();
 		///	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
+			if (g_underselecttolast) return;
 
 			int x0= MARGIN;
 			int x1= x0+LABEL_SIZE_X;
@@ -3088,32 +3186,45 @@ static void s_dummyfunc();
 		///	Method : 左マウスボタンアップイベント受信
 		void onLButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
+			if (g_underselecttolast){
+				g_underselecttolast = false;
+
+				//ドラッグフラグを初期化
+				dragLabel = false;
+				dragTime = false;
+				dragScrollBarLabel = false;
+				dragScrollBarTime = false;
+				dragSelect = false;
+				dragShift = false;
+
+				return;
+			}
 
 			//ドラッグ選択範囲内のキーを選択状態にする
-			if( !dragShift && !dragScrollBarLabel && !dragScrollBarTime ){
+			if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
 				selectClear(true);
-				if( dragSelect ){
-					for(int i=min(dragSelectLine1,dragSelectLine2);
-						i<=max(dragSelectLine1,dragSelectLine2) && i<(signed int)lineData.size(); i++){
-						lineData[i]->selectKey( min(dragSelectTime1,dragSelectTime2),
-												max(dragSelectTime1,dragSelectTime2) );
+				if (dragSelect){
+
+					for (int i = min(dragSelectLine1, dragSelectLine2);
+						i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
+						lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
+							max(dragSelectTime1, dragSelectTime2));
 					}
 				}
 				//リスナーコール
-				if(this->selectListener!=NULL){
+				if (this->selectListener != NULL){
 					(this->selectListener)();
 				}
 			}
 
-			//Ctrl+ドラッグによるキー移動
-			if( dragShift ){
+		//Ctrl+ドラッグによるキー移動
+			if (dragShift){
 				//リスナーコール
-				if(this->keyShiftListener!=NULL){
+				if (this->keyShiftListener != NULL){
 					(this->keyShiftListener)();
 				}
-				ghostShiftTime= 0.0;
+				ghostShiftTime = 0.0;
 			}
-
 			//ドラッグフラグを初期化
 			dragLabel= false;
 			dragTime= false;
@@ -3134,6 +3245,7 @@ static void s_dummyfunc();
 		///	Method : マウス移動イベント受信
 		void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
+			if (g_underselecttolast) return;
 
 			int x0= MARGIN;
 			int x1= x0+LABEL_SIZE_X;
@@ -3857,7 +3969,7 @@ static void s_dummyfunc();
 		private:
 			////////////////////////// MemberVar /////////////////////////////
 			OWP_Timeline *parent;
-			static const double TIME_ERROR_WIDTH;
+			//static const double TIME_ERROR_WIDTH;
 		};
 		std::vector<LineData*> lineData;
 		double ghostShiftTime;
@@ -5034,5 +5146,6 @@ void s_dummyfuncKey( KeyboardEvent& keye )
 
 
 }
+
 
 #endif
