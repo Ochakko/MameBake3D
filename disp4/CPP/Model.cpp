@@ -3167,8 +3167,10 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 
 				CBtObject* curbto = FindBtObject( selbone->GetBoneNo() );
 				if( curbto ){
-					int tmpflag = parbone->GetSelectFlag() + 4;
-					parbone->SetSelectFlag( tmpflag );
+					//int tmpflag = parbone->GetSelectFlag() + 4;
+					//parbone->SetSelectFlag( tmpflag );
+					int tmpflag = selbone->GetSelectFlag() + 4;
+					selbone->SetSelectFlag(tmpflag);
 				}
 			}
 		}
@@ -3232,7 +3234,8 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 						g_pEffect->SetMatrix(g_hmWorld, &bmmat);
 						bmarkptr->UpdateMatrix(&bmmat, &m_matVP);
 						D3DXVECTOR4 difmult;
-						if (boneptr->GetSelectFlag() == 2){
+						//if (boneptr->GetSelectFlag() == 2){
+						if (chilbone->GetSelectFlag() & 2){
 							difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
 						}
 						else{
@@ -3274,7 +3277,8 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 						g_pEffect->SetMatrix( g_hmWorld, &(curre->GetCapsulemat()) );
 						curcoldisp->UpdateMatrix( &(curre->GetCapsulemat()), &m_matVP );
 						D3DXVECTOR4 difmult;
-						if( boneptr->GetSelectFlag() & 4 ){
+						//if( boneptr->GetSelectFlag() & 4 ){
+						if (chilbone->GetSelectFlag() & 4){
 							difmult = D3DXVECTOR4( 1.0f, 0.0f, 0.0f, 0.5f );
 						}else{
 							difmult = D3DXVECTOR4( 0.25f, 0.5f, 0.5f, 0.5f );
