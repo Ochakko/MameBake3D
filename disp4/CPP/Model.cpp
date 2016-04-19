@@ -3767,7 +3767,7 @@ int CModel::CreateBtConstraint()
 
 	CreateBtConstraintReq( m_topbt );
 
-	//CreateBtConnectReq( m_topbone );
+	CreateBtConnectReq( m_topbone );
 
 	return 0;
 }

@@ -164,9 +164,10 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	m_boneleng = D3DXVec3Length(&diffA);
 
 	float h, r, z;
-	r = curre->GetSphr();// * 0.95f;
-	h = curre->GetCylileng();// *0.70f;//!!!!!!!!!!!!!
-	z = curre->GetBoxz();
+	//max : boneleng 0 対策
+	r = max(0.0001f, curre->GetSphr());// * 0.95f;
+	h = max(0.0001f, curre->GetCylileng());// *0.70f;//!!!!!!!!!!!!!
+	z = max(0.0001f, curre->GetBoxz());
 
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
 		m_colshape = new btCapsuleShape( btScalar( r ), btScalar( h ) );
@@ -639,6 +640,15 @@ int CBtObject::SetBtMotion()
 	diffxworld = invxworld * newxworld;
 
 	CMotionPoint curmp;
+	curmp = m_bone->GetCurMp();
+	curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	m_bone->SetCurMp(curmp);
+
+
+	/*
+	
+	//boneleng 0 対策はCreateObjectの剛体のサイズを決めるところで最小値を設定することにしたので、以下はコメントアウト。
+
 	if( m_boneleng > 0.00001f ){
 		//ボーンの親と子供が同位置ではない場合。
 		//剛体シミュレーション開始時の行列に、開始時からの変化分を掛ける。
@@ -664,7 +674,7 @@ int CBtObject::SetBtMotion()
 			m_bone->SetCurMp( curmp );
 		}
 	}
-
+	*/
 	curmp = m_bone->GetCurMp();
 	curmp.SetBtFlag( 1 );
 	m_bone->SetCurMp( curmp );
