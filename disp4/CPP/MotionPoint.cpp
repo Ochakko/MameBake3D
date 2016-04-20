@@ -203,17 +203,22 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 
 int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate )
 {
-	D3DXVECTOR3 aftpos;
-	D3DXVec3TransformCoord( &aftpos, &boneptr->GetJointFPos(), &srcmat );
-	m_tra = aftpos - boneptr->GetJointFPos();
+	if (boneptr){
+		D3DXVECTOR3 aftpos;
+		D3DXVec3TransformCoord(&aftpos, &boneptr->GetJointFPos(), &srcmat);
+		m_tra = aftpos - boneptr->GetJointFPos();
 
 
-	D3DXVECTOR3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
-	D3DXVECTOR3 aftpos2;
-	D3DXVec3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
-	m_firstframetra = aftpos - srcbonepos;
-	//m_firstframetra = aftpos;
-
+		D3DXVECTOR3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
+		D3DXVECTOR3 aftpos2;
+		D3DXVec3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
+		m_firstframetra = aftpos - srcbonepos;
+		//m_firstframetra = aftpos;
+	}
+	else{
+		m_tra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		m_firstframetra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	}
 
 	D3DXMATRIX tmpmat = srcmat;
 	tmpmat._41 = 0.0f;

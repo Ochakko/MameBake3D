@@ -35,6 +35,14 @@ class CMQOMaterial;
 
 #define UNDOMAX 50
 
+//Bone : m_upkind
+enum {
+	UPVEC_NONE,
+	UPVEC_X,
+	UPVEC_Y,
+	UPVEC_Z,
+	UPVEC_MAX
+};
 
 //for bvhelem
 enum {

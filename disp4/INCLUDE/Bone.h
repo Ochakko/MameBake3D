@@ -420,6 +420,10 @@ private:
  */
 	int DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe );
 
+	void SetStartMat2Req();
+	void CalcFirstAxisMatX();
+
+
 public: //accesser
 	int GetType(){ return m_type; };
 	void SetType( int srctype ){ m_type = srctype; };
@@ -466,15 +470,31 @@ public: //accesser
 
 	D3DXMATRIX GetLAxisMat(){ return m_laxismat; };
 	D3DXMATRIX GetAxisMatPar(){ return m_axismat_par; };
+	D3DXMATRIX GetInvAxisMatPar(){
+		D3DXMATRIX invaxis;
+		D3DXMatrixInverse(&invaxis, NULL, &m_axismat_par);
+		return invaxis;
+	};
 
 	D3DXMATRIX GetStartMat2(){ return m_startmat2; };
-	void SetStartMat2( D3DXMATRIX srcmat ){ m_startmat2 = srcmat; };
+	D3DXMATRIX GetInvStartMat2(){
+		D3DXMATRIX retmat;
+		D3DXMatrixInverse(&retmat, NULL, &m_startmat2);
+		return retmat;
+	};
+	void SetStartMat2(D3DXMATRIX srcmat){ m_startmat2 = srcmat; };
 
 	int GetGetAnimFlag(){ return m_getanimflag; };
 	void SetGetAnimFlag( int srcflag ){ m_getanimflag = srcflag; };
 
 	D3DXMATRIX GetNodeMat(){ return m_nodemat; };
+	D3DXMATRIX GetInvNodeMat(){
+		D3DXMATRIX retmat;
+		D3DXMatrixInverse(&retmat, NULL, &m_nodemat);
+		return retmat;
+	};
 	void SetNodeMat( D3DXMATRIX srcmat ){ m_nodemat = srcmat; };
+
 
 	D3DXMATRIX GetFirstMat(){ return m_firstmat; };
 	void SetFirstMat( D3DXMATRIX srcmat ){ m_firstmat = srcmat; };
@@ -667,11 +687,28 @@ public: //accesser
 
 	bool GetPositionFound(){
 		return m_posefoundflag;
-	}
+	};
 	void SetPositionFound(bool foundflag){
 		m_posefoundflag = foundflag;
-	}
+	};
 
+	float GetBoneLeng(){
+		CBone* parbone = GetParent();
+		if (parbone){
+			D3DXVECTOR3 bonevec = GetJointFPos() - parbone->GetJointFPos();
+			float boneleng = D3DXVec3Length(&bonevec);
+			return boneleng;
+		}
+		else{
+			return 0.0f;
+		}
+	};
+
+	D3DXMATRIX GetFirstAxisMatX()
+	{
+		CalcFirstAxisMatX();
+		return m_firstaxismatX;
+	};
 
 private:
 	int m_type;
@@ -683,6 +720,8 @@ private:
 	char m_bonename[256];
 	WCHAR m_wbonename[256];
 	char m_engbonename[256];
+
+	int m_upkind;//m_gaxismatXpar計算時のupvec
 
 	bool m_posefoundflag;//BindPoseの中にこのボーンの位置情報があった場合true。
 
@@ -697,6 +736,8 @@ private:
 	D3DXMATRIX m_gaxismatXpar;//Xボーンのグローバルのaxismat
 	D3DXMATRIX m_gaxismatYpar;//Yボーンのグローバルのaxismat
 	D3DXMATRIX m_axismat_par;//Xボーンのローカルのaxismat
+	D3DXMATRIX m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
+
 
 	D3DXMATRIX m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
 

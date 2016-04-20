@@ -58,6 +58,7 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_upkind = UPVEC_NONE;
 	m_motmark.clear();
 
 	m_parmodel = 0;
@@ -75,6 +76,7 @@ int CBone::InitParams()
 	D3DXMatrixIdentity(&m_initmat);
 	D3DXMatrixIdentity(&m_invinitmat);
 	D3DXMatrixIdentity(&m_tmpmat);
+	D3DXMatrixIdentity(&m_firstaxismatX);
 
 	m_boneno = 0;
 	m_topboneflag = 0;
@@ -477,10 +479,12 @@ int CBone::CalcAxisMatX_aft( D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX
 		upvec.x = 0.0f;
 		upvec.y = 0.0f;
 		upvec.z = 1.0f;
+		m_upkind = UPVEC_Z;//vecy1-->Y, vecz1-->Z
 	}else{
 		upvec.x = 0.0f;
 		upvec.y = 1.0f;
 		upvec.z = 0.0f;
+		m_upkind = UPVEC_Y;//vecy1-->Z, vecz1-->Y
 	}
 
 	vecx1 = bonevec;
@@ -689,18 +693,22 @@ DbgOut( L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\
 	return 0;
 }
 
+void CBone::SetStartMat2Req()
+{
+	SetStartMat2(m_curmp.GetWorldMat());
+
+	if (m_child){
+		m_child->SetStartMat2Req();
+	}
+	if (m_brother){
+		m_brother->SetStartMat2Req();
+	}
+}
+
 int CBone::CalcAxisMat( int firstflag, float delta )
 {
 	if( firstflag == 1 ){
-		m_startmat2 = m_curmp.GetWorldMat();
-		if( m_child ){
-			m_child->m_startmat2 = m_child->m_curmp.GetWorldMat();
-			CBone* bro = m_child->m_brother;
-			while( bro ){
-				bro->m_startmat2 = bro->m_curmp.GetWorldMat();
-				bro = bro->m_brother;
-			}
-		}
+		SetStartMat2Req();
 		
 		CalcAxisMatX();
 	}
@@ -1315,3 +1323,15 @@ int CBone::CalcFirstFrameBonePos(D3DXMATRIX srcmat)
 	return 0;
 }
 
+void CBone::CalcFirstAxisMatX()
+{
+	D3DXVECTOR3 curpos;
+	D3DXVECTOR3 chilpos;
+
+	if (m_child){
+		D3DXVec3TransformCoord(&curpos, &m_jointfpos, &m_firstmat);
+		D3DXVec3TransformCoord(&chilpos, &m_child->m_jointfpos, &(m_child->m_firstmat));
+
+		CalcAxisMatX_aft(curpos, chilpos, &m_firstaxismatX);
+	}
+}

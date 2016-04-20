@@ -3163,12 +3163,8 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 	
 			CBone* parbone = selbone->GetParent();
 			if( parbone ){
-//				parbone->m_selectflag = 2;
-
 				CBtObject* curbto = FindBtObject( selbone->GetBoneNo() );
 				if( curbto ){
-					//int tmpflag = parbone->GetSelectFlag() + 4;
-					//parbone->SetSelectFlag( tmpflag );
 					int tmpflag = selbone->GetSelectFlag() + 4;
 					selbone->SetSelectFlag(tmpflag);
 				}
@@ -3234,7 +3230,6 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 						g_pEffect->SetMatrix(g_hmWorld, &bmmat);
 						bmarkptr->UpdateMatrix(&bmmat, &m_matVP);
 						D3DXVECTOR4 difmult;
-						//if (boneptr->GetSelectFlag() == 2){
 						if (chilbone->GetSelectFlag() & 2){
 							difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
 						}
@@ -5382,8 +5377,6 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 
 	return 0;
 }
-
-
 int CModel::IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt )
 {
 	D3DXMATRIX selectmat = D3DXMATRIX( 0.0f, 0.0f, 0.0f, 0.0f,
@@ -5410,7 +5403,13 @@ int CModel::IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, f
 	D3DXMATRIX mat, befrotmat, rotmat, aftrotmat;
 
 	float rotrad;
-	selectmat = firstbone->GetAxisMatPar() * firstbone->GetCurMp().GetWorldMat(); 
+
+	if (firstbone->GetBoneLeng() > 0.00001f){
+		selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+	}
+	else{
+		selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+	}
 	selectmat._41 = 0.0f;
 	selectmat._42 = 0.0f;
 	selectmat._43 = 0.0f;
@@ -5702,7 +5701,12 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	D3DXVECTOR3 axis0, rotaxis;
 	D3DXMATRIX selectmat;
 
-	selectmat = curbone->GetAxisMatPar() * curbone->GetCurMp().GetWorldMat(); 
+	if (firstbone->GetBoneLeng() > 0.00001f){
+		selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+	}
+	else{
+		selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+	}
 	selectmat._41 = 0.0f;
 	selectmat._42 = 0.0f;
 	selectmat._43 = 0.0f;
