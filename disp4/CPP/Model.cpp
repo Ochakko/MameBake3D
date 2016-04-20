@@ -72,6 +72,7 @@ using namespace OrgWinGUI;
 
 static int s_alloccnt = 0;
 
+extern int g_totaldirflag;
 extern int g_previewFlag;			// プレビューフラグ
 extern WCHAR g_basedir[ MAX_PATH ];
 extern ID3DXEffect*	g_pEffect;
@@ -5399,6 +5400,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 	CBone* firstbone = curbone;
 	CBone* parbone = 0;
 	CBone* lastbone = 0;
+	CBone* topbone = GetTopBone();
 
 	int calccnt;
 	for (calccnt = 0; calccnt < calcnum; calccnt++){
@@ -5463,18 +5465,49 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			rotinvselect._42 = 0.0f;
 			rotinvselect._43 = 0.0f;
 
-			//D3DXMATRIX transmat = rotinvworld * rotinvselect * localq.MakeRotMatX() * rotselect;
-			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-			CMotionPoint transmp;
-			transmp.CalcQandTra(transmat, firstbone);
 			CQuaternion rotq;
-			rotq = transmp.GetQ();
 
 			if (keynum >= 2){
 				int keyno = 0;
 				list<KeyInfo>::iterator itrki;
 				for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
 					double curframe = itrki->time;
+
+					CMotionPoint* curtopmp;
+					curtopmp = topbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+					CMotionPoint* aplytopmp;
+					aplytopmp = topbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					if (curtopmp && aplytopmp && (g_totaldirflag == 1)){
+						D3DXMATRIX curtotalrotmat = curtopmp->GetWorldMat();
+						curtotalrotmat._41 = 0.0f;
+						curtotalrotmat._42 = 0.0f;
+						curtotalrotmat._43 = 0.0f;
+						D3DXMATRIX invcurtotalrotmat = curtopmp->GetInvWorldMat();
+						invcurtotalrotmat._41 = 0.0f;
+						invcurtotalrotmat._42 = 0.0f;
+						invcurtotalrotmat._43 = 0.0f;
+						D3DXMATRIX aplytotalrotmat = aplytopmp->GetWorldMat();
+						aplytotalrotmat._41 = 0.0f;
+						aplytotalrotmat._42 = 0.0f;
+						aplytotalrotmat._43 = 0.0f;
+						D3DXMATRIX invaplytotalrotmat = aplytopmp->GetInvWorldMat();
+						invaplytotalrotmat._41 = 0.0f;
+						invaplytotalrotmat._42 = 0.0f;
+						invaplytotalrotmat._43 = 0.0f;
+
+						D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+						D3DXMATRIX transmat2;
+						transmat2 = invcurtotalrotmat * aplytotalrotmat * transmat * invaplytotalrotmat * curtotalrotmat;
+						CMotionPoint transmp;
+						transmp.CalcQandTra(transmat2, firstbone);
+						rotq = transmp.GetQ();
+					}
+					else{
+						D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+						CMotionPoint transmp;
+						transmp.CalcQandTra(transmat, firstbone);
+						rotq = transmp.GetQ();
+					}
 
 					double changerate;
 					if (curframe <= applyframe){
@@ -5535,6 +5568,11 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			}
 			else{
+				D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+				CMotionPoint transmp;
+				transmp.CalcQandTra(transmat, firstbone);
+				rotq = transmp.GetQ();
+
 				curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
 			}
 

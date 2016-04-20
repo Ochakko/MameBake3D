@@ -710,6 +710,19 @@ public: //accesser
 		return m_firstaxismatX;
 	};
 
+	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe){
+		CMotionPoint* pbef = 0;
+		CMotionPoint* pnext = 0;
+		int existflag = 0;
+		GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, &existflag);
+		if (existflag && pbef){
+			return pbef;
+		}
+		else{
+			return 0;
+		}
+	};
+
 private:
 	int m_type;
 	int m_selectflag;
