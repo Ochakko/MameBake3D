@@ -50,6 +50,11 @@ public:
 	D3DXVECTOR3 GetFirstFrameTra(){ return m_firstframetra; };
 
 	CQuaternion GetQ(){ return m_q; };
+	CQuaternion GetInvQ(){
+		CQuaternion invq;
+		m_q.inv(&invq);
+		return invq;
+	};
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
 
 	D3DXMATRIX GetWorldMat(){ return m_worldmat; };

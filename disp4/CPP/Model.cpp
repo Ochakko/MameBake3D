@@ -5377,307 +5377,192 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 
 	return 0;
 }
-int CModel::IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt )
+
+int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt)
 {
-	D3DXMATRIX selectmat = D3DXMATRIX( 0.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 0.0f );
-	int levelcnt = 0;
-	CBone* firstbone = m_bonelist[ srcboneno ];
-	if( !firstbone ){
-		_ASSERT( 0 );
-		return 1;
-	}
 
-	CBone* curbone = firstbone;
-	SetBefEditMat( erptr, curbone, maxlevel );
+	int calcnum = 3;
 
-
-	CBone* calcrootbone = GetCalcRootBone( firstbone, maxlevel );
-	_ASSERT( calcrootbone );
-	D3DXVECTOR3 rootpos = calcrootbone->GetChildWorld();
-
-	D3DXVECTOR3 axis0;
-	D3DXVECTOR3 targetpos;
-	D3DXMATRIX mat, befrotmat, rotmat, aftrotmat;
-
-	float rotrad;
-
-	if (firstbone->GetBoneLeng() > 0.00001f){
-		selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
-	}
-	else{
-		selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
-	}
-	selectmat._41 = 0.0f;
-	selectmat._42 = 0.0f;
-	selectmat._43 = 0.0f;
-
-	if( axiskind == PICK_X ){
-		axis0 = D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
-		D3DXVec3TransformCoord( &m_ikrotaxis, &axis0, &selectmat );
-		D3DXVec3Normalize( &m_ikrotaxis, &m_ikrotaxis );
-	}else if( axiskind == PICK_Y ){
-		axis0 = D3DXVECTOR3( 0.0f, 1.0f, 0.0f );
-		D3DXVec3TransformCoord( &m_ikrotaxis, &axis0, &selectmat );
-		D3DXVec3Normalize( &m_ikrotaxis, &m_ikrotaxis );
-	}else if( axiskind == PICK_Z ){
-		axis0 = D3DXVECTOR3( 0.0f, 0.0f, 1.0f );
-		D3DXVec3TransformCoord( &m_ikrotaxis, &axis0, &selectmat );
-		D3DXVec3Normalize( &m_ikrotaxis, &m_ikrotaxis );
-	}else{
-		_ASSERT( 0 );
-		return 1;
-	}
-	rotrad = delta / 10.0f * (float)PAI / 12.0f;
-
-	if( fabs(rotrad) < (0.02f * (float)DEG2PAI) ){
+	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
 		return 0;
 	}
 
 	int keynum;
 	double startframe, endframe, applyframe;
-	erptr->GetRange( &keynum, &startframe, &endframe, &applyframe );
-	int calcnum = 3;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-	CBone* lastpar = firstbone;
-	double firstframe = 0.0;
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone){
+		return 0;
+	}
+	CBone* firstbone = curbone;
+	CBone* parbone = 0;
+	CBone* lastbone = 0;
 
-	if( (firstbone == calcrootbone) && !firstbone->GetParent() ){
-		int calccnt;
-		for( calccnt = 0; calccnt < calcnum; calccnt++ ){
-			int levelcnt = 0;
+	int calccnt;
+	for (calccnt = 0; calccnt < calcnum; calccnt++){
+		curbone = firstbone;
+		if (!curbone){
+			return 0;
+		}
+		lastbone = curbone;
 
-			float currate = 1.0f;
+		float currate = 1.0f;
 
+		double firstframe = 0.0;
+		int levelcnt = 0;
 
-			float rotrad2 = rotrad * currate;
-			if( fabs( rotrad2 ) > 1.0e-4 ){
-				CQuaternion rotq;
-				rotq.SetAxisAndRot( m_ikrotaxis, rotrad2 );
-
-				if( keynum >= 2 ){
-					int keyno = 0;
-					list<KeyInfo>::iterator itrki;
-					for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-						double curframe = itrki->time;
-						double changerate;
-						if( curframe <= applyframe ){
-							if( applyframe != startframe ){
-								changerate = 1.0 / (applyframe - startframe);
-							}else{
-								changerate = 1.0;
-							}
-						}else{
-							if( applyframe != endframe ){
-								changerate = 1.0 / (endframe - applyframe );
-							}else{
-								changerate = 0.0;
-							}
-						}
-						if( keyno == 0 ){
-							firstframe = curframe;
-						}
-						if( g_absikflag == 0 ){
-							if( g_slerpoffflag == 0 ){
-								CQuaternion endq;
-								endq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-								CQuaternion curq;
-								double currate2;
-								if( curframe <= applyframe ){
-									if( applyframe != startframe ){
-										currate2 = changerate * (curframe - startframe);
-									}else{
-										currate2 = 1.0;
-									}
-								}else{
-									currate2 = changerate * (endframe - curframe);
-								}
-								rotq.Slerp2( endq, 1.0 - currate2, &curq );
-
-								firstbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, curq );
-							}else{
-								firstbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
-							}
-						}else{
-							if( keyno == 0 ){
-								firstbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
-							}else{
-								firstbone->SetAbsMatReq( 0, m_curmotinfo->motid, curframe, firstframe );
-							}
-						}
-						keyno++;
-					}
-
-
-					if( g_applyendflag == 1 ){
-						//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚ÌŽp¨‚ð“K—p
-						int tolast;
-						for( tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++ ){
-							(m_bonelist[ 0 ])->PasteRotReq( m_curmotinfo->motid, m_curmotinfo->curframe, tolast );
-						}
-					}
-
-
-				}else{
-					firstbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
-				}
-
-				//parbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
-				UpdateMatrix( &m_matWorld, &m_matVP );
-
-				if( (calccnt == (calcnum - 1)) && g_absikflag ){
-					AdjustBoneTra( erptr, firstbone );
-				}
-			}
-		}		
-	}else{
-		D3DXVECTOR3 rcen;
-		D3DXVec3TransformCoord( &rcen, &(firstbone->GetJointFPos()), &(firstbone->GetCurMp().GetWorldMat()) );
-
-		D3DXMatrixTranslation( &befrotmat, -rootpos.x, -rootpos.y, -rootpos.z );
-		D3DXMatrixTranslation( &aftrotmat, rootpos.x, rootpos.y, rootpos.z );
-		D3DXMatrixRotationAxis( &rotmat, &m_ikrotaxis, rotrad );
-		mat = firstbone->GetCurMp().GetWorldMat() * befrotmat * rotmat * aftrotmat;
-		D3DXVec3TransformCoord( &targetpos, &firstbone->GetJointFPos(), &mat );
-
-		int calccnt;
-		for( calccnt = 0; calccnt < calcnum; calccnt++ ){
-			int levelcnt = 0;
-
-			float currate = 1.0f;
-
-			CBone* curbone = firstbone;
-			while( curbone && ((maxlevel == 0) || (levelcnt < maxlevel)) )
-			{
-				CBone* parbone = curbone->GetParent();
-				if( parbone && (curbone->GetJointFPos() != parbone->GetJointFPos()) ){
-					D3DXVECTOR3 parworld, chilworld;
-					//chilworld = firstbone->m_childworld;
-					D3DXVec3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
-					D3DXVec3TransformCoord( &parworld, &(parbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()) );
-
-					D3DXVECTOR3 parbef, chilbef, tarbef;
-					parbef = parworld;
-					CalcShadowToPlane( chilworld, m_ikrotaxis, parworld, &chilbef );
-					CalcShadowToPlane( targetpos, m_ikrotaxis, parworld, &tarbef );
-
-					D3DXVECTOR3 vec0, vec1;
-					vec0 = chilbef - parbef;
-					D3DXVec3Normalize( &vec0, &vec0 );
-					vec1 = tarbef - parbef;
-					D3DXVec3Normalize( &vec1, &vec1 );
-
-					D3DXVECTOR3 rotaxis2;
-					D3DXVec3Cross( &rotaxis2, &vec0, &vec1 );
-					D3DXVec3Normalize( &rotaxis2, &rotaxis2 );
-
-					float rotdot2, rotrad2;
-					rotdot2 = DXVec3Dot( &vec0, &vec1 );
-					rotdot2 = min( 1.0f, rotdot2 );
-					rotdot2 = max( -1.0f, rotdot2 );
-					rotrad2 = (float)acos( rotdot2 );
-					rotrad2 *= currate;
-					if( fabs( rotrad2 ) > 1.0e-4 ){
-						CQuaternion rotq;
-						rotq.SetAxisAndRot( rotaxis2, rotrad2 );
-
-						if( keynum >= 2 ){
-							int keyno = 0;
-							list<KeyInfo>::iterator itrki;
-							for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-								double curframe = itrki->time;
-
-								double changerate;
-								if( curframe <= applyframe ){
-									if( applyframe != startframe ){
-										changerate = 1.0 / (applyframe - startframe);
-									}else{
-										changerate = 1.0;
-									}
-								}else{
-									if( applyframe != endframe ){
-										changerate = 1.0 / (endframe - applyframe );
-									}else{
-										changerate = 0.0;
-									}
-								}
-
-								if( keyno == 0 ){
-									firstframe = curframe;
-								}
-								if( g_absikflag == 0 ){
-									if( g_slerpoffflag == 0 ){
-										double currate2;
-										CQuaternion endq;
-										CQuaternion curq;
-										endq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-										if( curframe <= applyframe ){
-											if( applyframe != startframe ){
-												currate2 = changerate * (curframe - startframe);
-											}else{
-												currate2 = 1.0;
-											}
-										}else{
-											currate2 = changerate * (endframe - curframe);
-										}
-										rotq.Slerp2( endq, 1.0 - currate2, &curq );
-
-										parbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, curq );
-									}else{
-										parbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
-									}
-								}else{
-									if( keyno == 0 ){
-										parbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
-									}else{
-										parbone->SetAbsMatReq( 0, m_curmotinfo->motid, curframe, firstframe );
-									}
-								}
-								keyno++;
-							}
-
-						}else{
-							parbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
-						}
-
-
-						if( g_applyendflag == 1 ){
-							//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚ÌŽp¨‚ð“K—p
-							int tolast;
-							for( tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++ ){
-								(m_bonelist[ 0 ])->PasteRotReq( m_curmotinfo->motid, m_curmotinfo->curframe, tolast );
-							}
-						}
-
-						//parbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
-						UpdateMatrix( &m_matWorld, &m_matVP );
-					}else{
-						UpdateMatrix( &m_matWorld, &m_matVP );
-					}
-				}
-
-				if( curbone->GetParent() ){
-					lastpar = curbone->GetParent();
-				}
-				curbone = curbone->GetParent();
-				levelcnt++;
-
-				currate = pow( g_ikrate, g_ikfirst * levelcnt );
-
+		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))){
+			//float rotrad2 = currate * rotrad;
+			float rotrad2 = rotrad;
+			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
+				break;
 			}
 
-			if( (calccnt == (calcnum - 1)) && g_absikflag && lastpar ){
-				AdjustBoneTra( erptr, lastpar );
+			D3DXVECTOR3 axis0;
+			CQuaternion localq;
+			if (axiskind == PICK_X){
+				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+				localq.SetAxisAndRot(axis0, rotrad2);
 			}
+			else if (axiskind == PICK_Y){
+				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+				localq.SetAxisAndRot(axis0, rotrad2);
+			}
+			else if (axiskind == PICK_Z){
+				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+				localq.SetAxisAndRot(axis0, rotrad2);
+			}
+			else{
+				_ASSERT(0);
+				return 1;
+			}
+
+			D3DXMATRIX selectmat;
+			D3DXMATRIX invselectmat;
+			if (firstbone->GetBoneLeng() > 0.00001f){
+				selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+			}
+			else{
+				selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+			}
+			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
+
+
+			D3DXMATRIX rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
+			rotinvworld._41 = 0.0f;
+			rotinvworld._42 = 0.0f;
+			rotinvworld._43 = 0.0f;
+			D3DXMATRIX rotselect = selectmat;
+			rotselect._41 = 0.0f;
+			rotselect._42 = 0.0f;
+			rotselect._43 = 0.0f;
+			D3DXMATRIX rotinvselect = invselectmat;
+			rotinvselect._41 = 0.0f;
+			rotinvselect._42 = 0.0f;
+			rotinvselect._43 = 0.0f;
+
+			//D3DXMATRIX transmat = rotinvworld * rotinvselect * localq.MakeRotMatX() * rotselect;
+			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+			CMotionPoint transmp;
+			transmp.CalcQandTra(transmat, firstbone);
+			CQuaternion rotq;
+			rotq = transmp.GetQ();
+
+			if (keynum >= 2){
+				int keyno = 0;
+				list<KeyInfo>::iterator itrki;
+				for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
+					double curframe = itrki->time;
+
+					double changerate;
+					if (curframe <= applyframe){
+						if (applyframe != startframe){
+							changerate = 1.0 / (applyframe - startframe);
+						}
+						else{
+							changerate = 1.0;
+						}
+					}
+					else{
+						if (applyframe != endframe){
+							changerate = 1.0 / (endframe - applyframe);
+						}
+						else{
+							changerate = 0.0;
+						}
+					}
+
+					if (keyno == 0){
+						firstframe = curframe;
+					}
+					if (g_absikflag == 0){
+						if (g_slerpoffflag == 0){
+							double currate2;
+							CQuaternion endq;
+							CQuaternion curq;
+							endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+							if (curframe <= applyframe){
+								if (applyframe != startframe){
+									currate2 = changerate * (curframe - startframe);
+								}
+								else{
+									currate2 = 1.0;
+								}
+							}
+							else{
+								currate2 = changerate * (endframe - curframe);
+							}
+							rotq.Slerp2(endq, 1.0 - currate2, &curq);
+
+							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
+						}
+						else{
+							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+						}
+					}
+					else{
+						if (keyno == 0){
+							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+						}
+						else{
+							curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+						}
+					}
+					keyno++;
+				}
+
+			}
+			else{
+				curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+			}
+
+
+			if (g_applyendflag == 1){
+				//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚ÌŽp¨‚ð“K—p
+				int tolast;
+				for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
+					(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+				}
+			}
+
+			currate = pow(g_ikrate, g_ikfirst * levelcnt);
+			lastbone = curbone;
+			curbone = curbone->GetParent();
+			levelcnt++;
 		}
 
+		if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone){
+		//if (g_absikflag && lastbone){
+			AdjustBoneTra(erptr, lastbone);
+		}
 	}
 
-	if( lastpar ){
-		return lastpar->GetBoneNo();
-	}else{
+	if (lastbone){
+		return lastbone->GetBoneNo();
+	}
+	else{
 		return srcboneno;
 	}
 
@@ -5700,13 +5585,14 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	float rotrad;
 	D3DXVECTOR3 axis0, rotaxis;
 	D3DXMATRIX selectmat;
-
+	D3DXMATRIX invselectmat;
 	if (firstbone->GetBoneLeng() > 0.00001f){
 		selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
 	}
 	else{
 		selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
 	}
+	D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
 	selectmat._41 = 0.0f;
 	selectmat._42 = 0.0f;
 	selectmat._43 = 0.0f;

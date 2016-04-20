@@ -3957,11 +3957,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if( g_previewFlag == 0 ){
 				float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
 				if( s_ikkind == 0 ){
-					if( s_pickinfo.buttonflag != PICK_X ){
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
-					}else{
-						s_editmotionflag = s_model->RotateXDelta( &s_editrange, s_pickinfo.pickobjno, deltax );
-					}
+					s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
 				}else{
 					AddBoneTra( s_pickinfo.buttonflag - PICK_X, deltax * 0.1f );
 				}
@@ -3983,11 +3979,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if( g_previewFlag == 0 ){
 				float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
 				if( s_ikkind == 0 ){
-					if( s_pickinfo.buttonflag != PICK_X ){
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
-					}else{
-						s_editmotionflag = s_model->RotateXDelta( &s_editrange, s_pickinfo.pickobjno, deltax );
-					}
+					s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
 				}else{
 					AddBoneTra( s_pickinfo.buttonflag - PICK_X, deltax * 0.1f );
 				}
