@@ -5199,14 +5199,49 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 				rotrad2 *= currate;
 				double firstframe = 0.0;
 				if( fabs( rotrad2 ) > 1.0e-4 ){
+					CQuaternion rotq0;
+					rotq0.SetAxisAndRot( rotaxis2, rotrad2 );
 					CQuaternion rotq;
-					rotq.SetAxisAndRot( rotaxis2, rotrad2 );
+
 					if( keynum >= 2 ){
 						int keyno = 0;
 						list<KeyInfo>::iterator itrki;
 
 						for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
 							double curframe = itrki->time;
+
+							CMotionPoint* curtopmp;
+							curtopmp = GetTopBone()->GetMotionPoint(m_curmotinfo->motid, curframe);
+							CMotionPoint* aplytopmp;
+							aplytopmp = GetTopBone()->GetMotionPoint(m_curmotinfo->motid, applyframe);
+							if (curtopmp && aplytopmp && (g_totaldirflag == 1)){
+								D3DXMATRIX curtotalrotmat = curtopmp->GetWorldMat();
+								curtotalrotmat._41 = 0.0f;
+								curtotalrotmat._42 = 0.0f;
+								curtotalrotmat._43 = 0.0f;
+								D3DXMATRIX invcurtotalrotmat = curtopmp->GetInvWorldMat();
+								invcurtotalrotmat._41 = 0.0f;
+								invcurtotalrotmat._42 = 0.0f;
+								invcurtotalrotmat._43 = 0.0f;
+								D3DXMATRIX aplytotalrotmat = aplytopmp->GetWorldMat();
+								aplytotalrotmat._41 = 0.0f;
+								aplytotalrotmat._42 = 0.0f;
+								aplytotalrotmat._43 = 0.0f;
+								D3DXMATRIX invaplytotalrotmat = aplytopmp->GetInvWorldMat();
+								invaplytotalrotmat._41 = 0.0f;
+								invaplytotalrotmat._42 = 0.0f;
+								invaplytotalrotmat._43 = 0.0f;
+
+								D3DXMATRIX transmat2;
+								transmat2 = invcurtotalrotmat * aplytotalrotmat * rotq0.MakeRotMatX() * invaplytotalrotmat * curtotalrotmat;
+								CMotionPoint transmp;
+								transmp.CalcQandTra(transmat2, firstbone);
+								rotq = transmp.GetQ();
+							}
+							else{
+								rotq = rotq0;
+							}
+
 							double changerate;
 							if( curframe <= applyframe ){
 								if( applyframe != startframe ){
@@ -5257,6 +5292,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 							keyno++;
 						}
 					}else{
+						rotq = rotq0;
 						parbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
 					}
 
