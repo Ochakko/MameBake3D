@@ -421,14 +421,14 @@ int g_applyendflag = 0;
 int g_slerpoffflag = 0;
 int g_absikflag = 0;
 int g_bonemarkflag = 1;
-int g_totaldirflag = 0;
+int g_pseudolocalflag = 1;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
-CDXUTCheckBox* s_TotalDirCheckBox = 0;
+CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -565,7 +565,7 @@ int g_applyrate = 50;
 
 #define IDC_APPLY_TO_THEEND			45
 #define IDC_BMARK					46
-#define IDC_TOTALDIR				47
+#define IDC_PSEUDOLOCAL				47
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1058,7 +1058,7 @@ void InitApp()
 	g_SampleUI.AddCheckBox( IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, 480, 16, false, 0U, false, &s_ApplyEndCheckBox );
 	g_SampleUI.AddCheckBox( IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox );
 	g_SampleUI.AddCheckBox( IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox );
-	g_SampleUI.AddCheckBox(IDC_TOTALDIR, L"全体回転反映", 25, iY += addh, 480, 16, false, 0U, false, &s_TotalDirCheckBox);
+	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
 
 
 
@@ -2439,7 +2439,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
-	g_totaldirflag = (int)s_TotalDirCheckBox->GetChecked();
+	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
 
 	s_time = fTime;
 /***

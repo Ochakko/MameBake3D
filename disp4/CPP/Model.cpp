@@ -72,7 +72,7 @@ using namespace OrgWinGUI;
 
 static int s_alloccnt = 0;
 
-extern int g_totaldirflag;
+extern int g_pseudolocalflag;
 extern int g_previewFlag;			// プレビューフラグ
 extern WCHAR g_basedir[ MAX_PATH ];
 extern ID3DXEffect*	g_pEffect;
@@ -5210,30 +5210,30 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 						for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
 							double curframe = itrki->time;
 
-							CMotionPoint* curtopmp;
-							curtopmp = GetTopBone()->GetMotionPoint(m_curmotinfo->motid, curframe);
-							CMotionPoint* aplytopmp;
-							aplytopmp = GetTopBone()->GetMotionPoint(m_curmotinfo->motid, applyframe);
-							if (curtopmp && aplytopmp && (g_totaldirflag == 1)){
-								D3DXMATRIX curtotalrotmat = curtopmp->GetWorldMat();
-								curtotalrotmat._41 = 0.0f;
-								curtotalrotmat._42 = 0.0f;
-								curtotalrotmat._43 = 0.0f;
-								D3DXMATRIX invcurtotalrotmat = curtopmp->GetInvWorldMat();
-								invcurtotalrotmat._41 = 0.0f;
-								invcurtotalrotmat._42 = 0.0f;
-								invcurtotalrotmat._43 = 0.0f;
-								D3DXMATRIX aplytotalrotmat = aplytopmp->GetWorldMat();
-								aplytotalrotmat._41 = 0.0f;
-								aplytotalrotmat._42 = 0.0f;
-								aplytotalrotmat._43 = 0.0f;
-								D3DXMATRIX invaplytotalrotmat = aplytopmp->GetInvWorldMat();
-								invaplytotalrotmat._41 = 0.0f;
-								invaplytotalrotmat._42 = 0.0f;
-								invaplytotalrotmat._43 = 0.0f;
+							CMotionPoint* curparmp;
+							curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+							CMotionPoint* aplyparmp;
+							aplyparmp = parbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+							if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
+								D3DXMATRIX curparrotmat = curparmp->GetWorldMat();
+								curparrotmat._41 = 0.0f;
+								curparrotmat._42 = 0.0f;
+								curparrotmat._43 = 0.0f;
+								D3DXMATRIX invcurparrotmat = curparmp->GetInvWorldMat();
+								invcurparrotmat._41 = 0.0f;
+								invcurparrotmat._42 = 0.0f;
+								invcurparrotmat._43 = 0.0f;
+								D3DXMATRIX aplyparrotmat = aplyparmp->GetWorldMat();
+								aplyparrotmat._41 = 0.0f;
+								aplyparrotmat._42 = 0.0f;
+								aplyparrotmat._43 = 0.0f;
+								D3DXMATRIX invaplyparrotmat = aplyparmp->GetInvWorldMat();
+								invaplyparrotmat._41 = 0.0f;
+								invaplyparrotmat._42 = 0.0f;
+								invaplyparrotmat._43 = 0.0f;
 
 								D3DXMATRIX transmat2;
-								transmat2 = invcurtotalrotmat * aplytotalrotmat * rotq0.MakeRotMatX() * invaplytotalrotmat * curtotalrotmat;
+								transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
 								CMotionPoint transmp;
 								transmp.CalcQandTra(transmat2, firstbone);
 								rotq = transmp.GetQ();
@@ -5452,8 +5452,9 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 		int levelcnt = 0;
 
 		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))){
-			//float rotrad2 = currate * rotrad;
-			float rotrad2 = rotrad;
+			parbone = curbone->GetParent();
+			float rotrad2 = currate * rotrad;
+			//float rotrad2 = rotrad;
 			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
 				break;
 			}
@@ -5509,31 +5510,33 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
 					double curframe = itrki->time;
 
-					CMotionPoint* curtopmp;
-					curtopmp = topbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-					CMotionPoint* aplytopmp;
-					aplytopmp = topbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-					if (curtopmp && aplytopmp && (g_totaldirflag == 1)){
-						D3DXMATRIX curtotalrotmat = curtopmp->GetWorldMat();
-						curtotalrotmat._41 = 0.0f;
-						curtotalrotmat._42 = 0.0f;
-						curtotalrotmat._43 = 0.0f;
-						D3DXMATRIX invcurtotalrotmat = curtopmp->GetInvWorldMat();
-						invcurtotalrotmat._41 = 0.0f;
-						invcurtotalrotmat._42 = 0.0f;
-						invcurtotalrotmat._43 = 0.0f;
-						D3DXMATRIX aplytotalrotmat = aplytopmp->GetWorldMat();
-						aplytotalrotmat._41 = 0.0f;
-						aplytotalrotmat._42 = 0.0f;
-						aplytotalrotmat._43 = 0.0f;
-						D3DXMATRIX invaplytotalrotmat = aplytopmp->GetInvWorldMat();
-						invaplytotalrotmat._41 = 0.0f;
-						invaplytotalrotmat._42 = 0.0f;
-						invaplytotalrotmat._43 = 0.0f;
+					CMotionPoint* curparmp = 0;
+					CMotionPoint* aplyparmp = 0;
+					if (parbone){
+						curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+						aplyparmp = parbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					}
+					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
+						D3DXMATRIX curparrotmat = curparmp->GetWorldMat();
+						curparrotmat._41 = 0.0f;
+						curparrotmat._42 = 0.0f;
+						curparrotmat._43 = 0.0f;
+						D3DXMATRIX invcurparrotmat = curparmp->GetInvWorldMat();
+						invcurparrotmat._41 = 0.0f;
+						invcurparrotmat._42 = 0.0f;
+						invcurparrotmat._43 = 0.0f;
+						D3DXMATRIX aplyparrotmat = aplyparmp->GetWorldMat();
+						aplyparrotmat._41 = 0.0f;
+						aplyparrotmat._42 = 0.0f;
+						aplyparrotmat._43 = 0.0f;
+						D3DXMATRIX invaplyparrotmat = aplyparmp->GetInvWorldMat();
+						invaplyparrotmat._41 = 0.0f;
+						invaplyparrotmat._42 = 0.0f;
+						invaplyparrotmat._43 = 0.0f;
 
 						D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 						D3DXMATRIX transmat2;
-						transmat2 = invcurtotalrotmat * aplytotalrotmat * transmat * invaplytotalrotmat * curtotalrotmat;
+						transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
 						CMotionPoint transmp;
 						transmp.CalcQandTra(transmat2, firstbone);
 						rotq = transmp.GetQ();
