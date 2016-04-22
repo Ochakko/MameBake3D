@@ -602,7 +602,7 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
-
+static int InitCurMotion();
 static CRigidElem* GetCurRe();
 static CRigidElem* GetCurRgdRe();
 
@@ -2801,59 +2801,21 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 			s_editrange.SetRange( s_copyKeyInfoList, s_owpTimeline->getCurrentTime() );
 			
-			//s_editrange.SetRange( s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime() );
-			//int keynum;
-			//double startframe, endframe;
-			//s_editrange.GetRange( &keynum, &startframe, &endframe );
-
+			/*
 			list<KeyInfo>::iterator itrcp;
 			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
 				double curframe = itrcp->time;
-				/*
-				int cpnum = s_selbonedlg.m_cpvec.size();
-				if( cpnum != 0 ){
-					int cpno;
-					for( cpno = 0; cpno < cpnum; cpno++ ){
-						CBone* curbone = s_selbonedlg.m_cpvec[ cpno ];
-						if( curbone ){
-							InitMP( curbone, curframe );
-							CreateTimeLineMark( curbone->GetBoneNo() );
-						}
+				map<int,CBone*>::iterator itrbone;
+				for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+					CBone* curbone = itrbone->second;
+					if( curbone ){
+						InitMP( curbone, curframe );
+						CreateTimeLineMark( curbone->GetBoneNo() );
 					}
-					for( cpno = 0; cpno < cpnum; cpno++ ){
-						CBone* curbone = s_selbonedlg.m_cpvec[ cpno ];
-						CBone* parbone = curbone->GetParent();
-						if( parbone ){
-							int findparflag = 0;
-							int chkno;
-							for( chkno = 0; chkno < cpnum; chkno++ ){
-								CBone* chkbone = s_selbonedlg.m_cpvec[chkno];
-								if( chkbone == parbone ){
-									findparflag = 1;
-									break;
-								}
-							}
-
-							if( findparflag == 0 ){
-								AdjustBoneTra( curbone, curframe );
-							}
-
-						}else{
-							AdjustBoneTra( curbone, curframe );
-						}
-					}
-				*/
-				//}else{
-					map<int,CBone*>::iterator itrbone;
-					for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-						CBone* curbone = itrbone->second;
-						if( curbone ){
-							InitMP( curbone, curframe );
-							CreateTimeLineMark( curbone->GetBoneNo() );
-						}
-					}
-				//}
+				}
 			}
+			*/
+			InitCurMotion();
 			SetLTimelineMark( s_curboneno );
 		}
 	}
@@ -3765,6 +3727,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			case ID_NEWMOT:
 				AddMotion( 0 );
+				InitCurMotion();
 				return 0;
 				break;
 			case ID_DELCURMOT:
@@ -5568,6 +5531,7 @@ CModel* OpenMQOFile()
 
 
 	CallF( AddMotion( 0 ), return 0 );
+	InitCurMotion();
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
 	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
@@ -5768,23 +5732,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
 		s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
 
-		MOTINFO* curmi = s_model->GetCurMotInfo();
-		if (curmi){
-			//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
-			CBone* topbone = s_model->GetTopBone();
-			double motleng = curmi->frameleng;
-			//_ASSERT(0);
-			double frame;
-			for (frame = 0.0; frame < motleng; frame += 1.0){
-				if (topbone){
-					s_model->SetMotionFrame(frame);
-					InitMPReq(topbone, frame);
-				}
-			}
-		}
-		else{
-			_ASSERT(0);
-		}
+		InitCurMotion();
 	}
 
 
@@ -5796,6 +5744,29 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	return newmodel;
 }
+
+int InitCurMotion()
+{
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (curmi){
+		//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
+		CBone* topbone = s_model->GetTopBone();
+		double motleng = curmi->frameleng;
+		//_ASSERT(0);
+		double frame;
+		for (frame = 0.0; frame < motleng; frame += 1.0){
+			if (topbone){
+				s_model->SetMotionFrame(frame);
+				InitMPReq(topbone, frame);
+			}
+		}
+	}
+	else{
+		_ASSERT(0);
+	}
+	return 0;
+};
+
 int AddTimeLine( int newmotid )
 {
 	//EraseKeyList();
@@ -6733,6 +6704,7 @@ int OnDelMotion( int delmenuindex )
 	int newtlnum = s_tlarray.size();
 	if( newtlnum == 0 ){
 		AddMotion( 0 );
+		InitCurMotion();
 	}else{
 		OnAnimMenu( 0 );
 	}
@@ -8022,18 +7994,12 @@ int ConvBoneConvert()
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
 	double motleng = bvhmi->frameleng;
 	AddMotion(0, motleng);
+	InitCurMotion();
+
+
 	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
-
-
 	CBone* modelbone = s_convbone_model->GetTopBone();
 
-	double frame;
-	for (frame = 0.0; frame < motleng; frame += 1.0){
-		if (modelbone){
-			s_model->SetMotionFrame(frame);
-			InitMPReq(modelbone, frame);
-		}
-	}
 
 	HINFO bvhhi;
 	bvhhi.minh = 1e7;
@@ -8056,7 +8022,7 @@ int ConvBoneConvert()
 		_ASSERT(0);
 	}
 
-
+	double frame;
 	for (frame = 0.0; frame < motleng; frame += 1.0){
 		s_sethipstra = 0;
 
