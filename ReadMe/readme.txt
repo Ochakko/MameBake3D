@@ -5,7 +5,7 @@
 DirectX9.0c(マイクロソフトの3D描画ライブラリ)
 OpenGL(３Ｄ描画ライブラリ(このプログラムではbulletからリンクされている))
 bullet(オープンソースの物理演算ライブラリ)
-FBX SDK 2013.3(Autodeskの互換用ファイル操作SDK)
+FBX SDK 2013.3(Autodeskの互換用ファイル操作SDK  http://www.autodesk.com/fbx)
 
 ソリューションファイルは
 VisualStudio 2013 Professionalで作りました。

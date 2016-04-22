@@ -223,6 +223,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
         // Write in fall back format in less no ASCII format found
         pFileFormat = pSdkManager->GetIOPluginRegistry()->GetNativeWriterFormat();
 
+		
         //Try to export in ASCII if possible
         int lFormatIndex, lFormatCount = pSdkManager->GetIOPluginRegistry()->GetWriterFormatCount();
 
@@ -239,6 +240,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
                 }
             }
         }
+		
     }
 
     // Set the export states. By default, the export states are always set to 

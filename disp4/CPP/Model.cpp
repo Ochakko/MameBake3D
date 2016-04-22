@@ -5305,12 +5305,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 						}
 					}
 
-					//parbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
-					UpdateMatrix( &m_matWorld, &m_matVP );
-				}else{
-					UpdateMatrix( &m_matWorld, &m_matVP );
 				}
-
 
 			}
 
@@ -5760,7 +5755,6 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 		curbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
 	}
 
-	UpdateMatrix( &m_matWorld, &m_matVP );
 
 	if( g_absikflag && curbone ){
 		AdjustBoneTra( erptr, curbone );
@@ -5808,34 +5802,6 @@ int CModel::FKRotate(int reqflag, CBone* bvhbone, int traflag, D3DXVECTOR3 traan
 		curbone->RotBoneQOne(parmp, m_curmotinfo->motid, srcframe, setmat);
 	}
 
-	//UpdateMatrix(&m_matWorld, &m_matVP);
-	/*
-	CBone* lastpar = curbone->GetParent();
-	double curframe = srcframe;
-	int existflag2 = 0;
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-	int curmotid = m_curmotinfo->motid;
-	lastpar->GetBefNextMP(curmotid, curframe, &pbef, &pnext, &existflag2);
-	if (existflag2){
-		D3DXVECTOR3 orgpos;
-		D3DXVec3TransformCoord(&orgpos, &(lastpar->GetJointFPos()), &(pbef->GetBefEditMat()));
-
-		D3DXVECTOR3 newpos;
-		D3DXVec3TransformCoord(&newpos, &(lastpar->GetJointFPos()), &(pbef->GetWorldMat()));
-
-		D3DXVECTOR3 diffpos;
-		diffpos = orgpos - newpos;
-
-		CEditRange tmper;
-		KeyInfo tmpki;
-		tmpki.time = curframe;
-		list<KeyInfo> tmplist;
-		tmplist.push_back(tmpki);
-		tmper.SetRange(tmplist, curframe);
-		FKBoneTra(&tmper, lastpar->GetBoneNo(), diffpos);
-	}
-	*/
 	return curbone->GetBoneNo();
 }
 
@@ -5942,7 +5908,6 @@ int CModel::FKBoneTra( CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
 	}else{
 		curbone->AddBoneTraReq( 0, m_curmotinfo->motid,  startframe, addtra );
 	}
-	UpdateMatrix( &m_matWorld, &m_matVP );
 
 
 	return curbone->GetBoneNo();
