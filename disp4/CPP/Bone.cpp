@@ -195,30 +195,32 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 }
 
 
-CMotionPoint* CBone::AddMotionPoint( int srcmotid, double srcframe, int* existptr )
+CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr)
 {
 	CMotionPoint* newmp = 0;
 	CMotionPoint* pbef = 0;
 	CMotionPoint* pnext = 0;
-	CallF( GetBefNextMP( srcmotid, srcframe, &pbef, &pnext, existptr ), return 0 );
+	CallF(GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, existptr), return 0);
 
-	if( *existptr ){
-		pbef->SetFrame( srcframe );
+	if (*existptr){
+		pbef->SetFrame(srcframe);
 		newmp = pbef;
-	}else{
+	}
+	else{
 		newmp = new CMotionPoint();
-		if( !newmp ){
-			_ASSERT( 0 );
+		if (!newmp){
+			_ASSERT(0);
 			return 0;
 		}
-		newmp->SetFrame( srcframe );
+		newmp->SetFrame(srcframe);
 
-		if( pbef ){
-			CallF( pbef->AddToNext( newmp ), return 0 );
-		}else{
+		if (pbef){
+			CallF(pbef->AddToNext(newmp), return 0);
+		}
+		else{
 			m_motionkey[srcmotid] = newmp;
-			if( pnext ){
-				newmp->SetNext( pnext );
+			if (pnext){
+				newmp->SetNext(pnext);
 			}
 		}
 	}
@@ -243,6 +245,8 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 	CMotionPoint* pbef = 0;
 	CMotionPoint* pcur = m_motionkey[srcmotid];
 
+	*existptr = 0;
+
 	while( pcur ){
 
 		if( (pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001) ){
@@ -250,6 +254,7 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 			pbef = pcur;
 			break;
 		}else if( pcur->GetFrame() > srcframe ){
+			*existptr = 0;
 			break;
 		}else{
 			pbef = pcur;
@@ -1176,34 +1181,27 @@ int CBone::AddBoneMotMark( int motid, OWP_Timeline* owpTimeline, int curlineno, 
 int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 {
 
-	int existflag = 0;
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-
-	int existflag1 = 0;
-	CMotionPoint* pbef1 = 0;
-	CMotionPoint* pnext1 = 0;
-
-	GetBefNextMP( motid, frameno, &pbef, &pnext, &existflag );
+	CMotionPoint* pcurmp = 0;
+	CMotionPoint* pparmp = 0;
+	pcurmp = GetMotionPoint(motid, frameno);
 	if( m_parent ){
-		if( existflag ){
-			m_parent->GetBefNextMP( motid, frameno, &pbef1, &pnext1, &existflag1 );
-			if( existflag1 ){
-				D3DXMATRIX invpar;
-				D3DXMatrixInverse(&invpar, NULL, &(pbef1->GetWorldMat()));
-				D3DXMATRIX localmat = pbef->GetWorldMat() * invpar;
-				pbef->CalcQandTra(localmat, this);
+		if( pcurmp ){
+			pparmp = m_parent->GetMotionPoint(motid, frameno);
+			if( pparmp ){
+				D3DXMATRIX invpar = pparmp->GetInvWorldMat();
+				D3DXMATRIX localmat = pcurmp->GetWorldMat() * invpar;
+				pcurmp->CalcQandTra(localmat, this);
 
 				int inirotcur, inirotpar;
-				inirotcur = IsInitRot(pbef->GetWorldMat());
-				inirotpar = IsInitRot(pbef1->GetWorldMat());
+				inirotcur = IsInitRot(pcurmp->GetWorldMat());
+				inirotpar = IsInitRot(pparmp->GetWorldMat());
 				if (inirotcur && inirotpar){
 					CQuaternion iniq;
 					iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-					pbef->SetQ(iniq);
+					pcurmp->SetQ(iniq);
 				}
 
-				*pdstmp = *pbef;
+				*pdstmp = *pcurmp;
 			}else{
 				CMotionPoint inimp;
 				*pdstmp = inimp;
@@ -1218,19 +1216,19 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 			return 0;
 		}
 	}else{
-		if( existflag ){
-			D3DXMATRIX localmat = pbef->GetWorldMat();
-			pbef->CalcQandTra( localmat, this );
+		if( pcurmp ){
+			D3DXMATRIX localmat = pcurmp->GetWorldMat();
+			pcurmp->CalcQandTra( localmat, this );
 
 			int inirotcur;
-			inirotcur = IsInitRot(pbef->GetWorldMat());
+			inirotcur = IsInitRot(pcurmp->GetWorldMat());
 			if (inirotcur ){
 				CQuaternion iniq;
 				iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-				pbef->SetQ(iniq);
+				pcurmp->SetQ(iniq);
 			}
 
-			*pdstmp = *pbef;
+			*pdstmp = *pcurmp;
 
 		}else{
 			CMotionPoint inimp;
@@ -1247,24 +1245,17 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 int CBone::CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp)
 {
 
-	int existflag = 0;
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-
-	int existflag1 = 0;
-	CMotionPoint* pbef1 = 0;
-	CMotionPoint* pnext1 = 0;
-
-	GetBefNextMP(motid, frameno, &pbef, &pnext, &existflag);
+	CMotionPoint* pcurmp = 0;
+	CMotionPoint* pparmp = 0;
+	pcurmp = GetMotionPoint(motid, frameno);
 	if (m_parent){
-		if (existflag){
-			m_parent->GetBefNextMP(motid, frameno, &pbef1, &pnext1, &existflag1);
-			if (existflag1){
-				D3DXMATRIX invpar;
-				D3DXMatrixInverse(&invpar, NULL, &(pbef1->GetWorldMat()));
+		if (pcurmp){
+			pparmp = GetMotionPoint(motid, frameno);
+			if (pparmp){
+				D3DXMATRIX invpar = pparmp->GetInvWorldMat();
 				D3DXMATRIX invinitmat = GetInvInitMat();
-				D3DXMATRIX localmat = invinitmat * pbef->GetWorldMat() * invpar;//world == init * local * parだからlocalを計算するには、invinit * world * invpar。
-				pbef->CalcQandTra(localmat, this);
+				D3DXMATRIX localmat = invinitmat * pcurmp->GetWorldMat() * invpar;//world == init * local * parだからlocalを計算するには、invinit * world * invpar。
+				pcurmp->CalcQandTra(localmat, this);
 			}
 			else{
 				_ASSERT(0);
@@ -1277,10 +1268,10 @@ int CBone::CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp)
 		}
 	}
 	else{
-		if (existflag){
+		if (pcurmp){
 			D3DXMATRIX invinitmat = GetInvInitMat();
-			D3DXMATRIX localmat = invinitmat * pbef->GetWorldMat();
-			pbef->CalcQandTra(localmat, this);
+			D3DXMATRIX localmat = invinitmat * pcurmp->GetWorldMat();
+			pcurmp->CalcQandTra(localmat, this);
 		}
 		else{
 			_ASSERT(0);
@@ -1288,7 +1279,7 @@ int CBone::CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp)
 		}
 	}
 
-	*pdstmp = *pbef;
+	*pdstmp = *pcurmp;
 
 	return 0;
 }

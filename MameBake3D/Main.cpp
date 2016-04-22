@@ -1,4 +1,5 @@
 /*
+2016/04/22　説明文修正
 [IKについて]
 MameBake3DのIK方法は相対IK(SlerpIK)と絶対IK(AbsIK)がある。
 
@@ -8,9 +9,14 @@ MameBake3DのIK方法は相対IK(SlerpIK)と絶対IK(AbsIK)がある。
 
 絶対IKとは
 姿勢適用ボーンの姿勢をそのまま選択フレームに反映する方法である。
+絶対IKで部分的に動かす場合、適用した部分だけ絶対的な姿勢になるので親の位置や回転の影響も受けなくなる。
 
 MameBake3Dはデフォルトで相対IKである。
+
 メインウインドウのSlerpIKを切るチェックボックスをオンにすると
+適用分の姿勢の補間が切れる。
+
+メインウインドウの絶対IKをオンにすると
 絶対IKになる。
 */
 
@@ -2928,16 +2934,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 				CMotionPoint srcmp = itrcp->second;
 				CMotionPoint* newmp = 0;
-				int existflag = 0;
 				_ASSERT( s_model->GetCurMotInfo() );
 				double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
-				int existflag2 = 0;
-				CMotionPoint* pbef = 0;
-				CMotionPoint* pnext = 0;
 				int curmotid = s_model->GetCurMotInfo()->motid;
-				srcbone->GetBefNextMP( curmotid, newframe, &pbef, &pnext, &existflag2 );
-				if( existflag2 ){
-					newmp = pbef;
+				newmp = srcbone->GetMotionPoint(curmotid, newframe);
+				if(newmp){
 					if( cptopflag == 1 ){
 						newmp->SetBefWorldMat( newmp->GetWorldMat() );
 					}
@@ -2959,15 +2960,10 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 				CMotionPoint srcmp = itrcp->second;
 				CMotionPoint* newmp = 0;
-				int existflag = 0;
 				double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
-				int existflag2 = 0;
-				CMotionPoint* pbef = 0;
-				CMotionPoint* pnext = 0;
 				int curmotid = s_model->GetCurMotInfo()->motid;
-				srcbone->GetBefNextMP( curmotid, newframe, &pbef, &pnext, &existflag2 );
-				if( existflag2 ){
-					newmp = pbef;
+				newmp = srcbone->GetMotionPoint(curmotid, newframe);
+				if(newmp){
 					if( cptopflag == 1 ){
 						D3DXVECTOR3 orgpos;
 						D3DXVec3TransformCoord( &orgpos, &(srcbone->GetJointFPos()), &(newmp->GetBefWorldMat()) );
@@ -3235,12 +3231,10 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 int InsertCopyMP( CBone* curbone, double curframe )
 {
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-	int existflag = 0;
-	curbone->GetBefNextMP( s_model->GetCurMotInfo()->motid, curframe, &pbef, &pnext, &existflag );
-	if( (existflag != 0) && pbef ){
-		CMotionPoint addmp = *pbef;
+	CMotionPoint* pcurmp = 0;
+	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
+	if(pcurmp){
+		CMotionPoint addmp = *pcurmp;
 		typedef pair <CBone*, CMotionPoint> Mp_Pair;
 		s_copymotmap.insert( Mp_Pair( curbone, addmp ) );
 	}
@@ -3255,18 +3249,16 @@ int InsertSymMP( CBone* curbone, double curframe )
 	if( symboneno >= 0 ){
 		CBone* symbone = s_model->GetBoneByID( symboneno );
 		_ASSERT( symbone );
-		int existflagsym = 0;
-		CMotionPoint* pbefsym = 0;
-		CMotionPoint* pnextsym = 0;
-		symbone->GetBefNextMP( s_model->GetCurMotInfo()->motid, curframe, &pbefsym, &pnextsym, &existflagsym );
-		_ASSERT( existflagsym && pbefsym );
+		CMotionPoint* psym = 0;
+		psym = symbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
+		_ASSERT(psym);
 
 		CQuaternion symq;
 		symq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-		D3DXMATRIX symmat0 = symq.CalcSymX( pbefsym->GetWorldMat() );
+		D3DXMATRIX symmat0 = symq.CalcSymX( psym->GetWorldMat() );
 
 		D3DXVECTOR3 sympos;
-		D3DXVec3TransformCoord( &sympos, &(symbone->GetJointFPos()), &(pbefsym->GetWorldMat()) );
+		D3DXVec3TransformCoord( &sympos, &(symbone->GetJointFPos()), &(psym->GetWorldMat()) );
 		sympos.x *= -1.0f;
 
 		D3DXVECTOR3 orgpos;
@@ -3293,24 +3285,15 @@ int InsertSymMP( CBone* curbone, double curframe )
 
 int InitMP( CBone* curbone, double curframe )
 {
-	int existflag = 0;
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-	curbone->GetBefNextMP( s_model->GetCurMotInfo()->motid, curframe, &pbef, &pnext, &existflag );
+	CMotionPoint* pcurmp = 0;
+	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
 
-	int existflag1 = 0;
-	CMotionPoint* pbef1 = 0;
-	CMotionPoint* pnext1 = 0;
-	if( curbone->GetParent() ){
-		curbone->GetParent()->GetBefNextMP( s_model->GetCurMotInfo()->motid, curframe, &pbef1, &pnext1, &existflag1 );
-	}
+	if(pcurmp){
 
-	if( existflag && pbef ){
-
-		pbef->SetBefWorldMat( pbef->GetWorldMat() );
+		pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
 
 		D3DXMATRIX xmat = curbone->GetFirstMat();
-		pbef->SetWorldMat(xmat);
+		pcurmp->SetWorldMat(xmat);
 		curbone->SetInitMat(xmat);
 
 	}else{
@@ -3332,16 +3315,14 @@ int InitMP( CBone* curbone, double curframe )
 
 int AdjustBoneTra( CBone* curbone, double curframe )
 {
-	int existflag = 0;
-	CMotionPoint* pbef = 0;
-	CMotionPoint* pnext = 0;
-	curbone->GetBefNextMP( s_model->GetCurMotInfo()->motid, curframe, &pbef, &pnext, &existflag );
-	if( existflag && pbef ){
+	CMotionPoint* pcurmp = 0;
+	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
+	if(pcurmp){
 		D3DXVECTOR3 orgpos;
-		D3DXVec3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &(pbef->GetBefWorldMat()) );
+		D3DXVec3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &(pcurmp->GetBefWorldMat()) );
 
 		D3DXVECTOR3 newpos;
-		D3DXVec3TransformCoord( &newpos, &(curbone->GetJointFPos()), &(pbef->GetWorldMat()) );
+		D3DXVec3TransformCoord( &newpos, &(curbone->GetJointFPos()), &(pcurmp->GetWorldMat()) );
 
 		D3DXVECTOR3 diffpos;
 		diffpos = orgpos - newpos;
@@ -5986,12 +5967,10 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 
 	CMotionPoint bvhmp;
 	if (bvhbone){
-		CMotionPoint* pbef = 0;
-		CMotionPoint* pnext = 0;
-		int existflag = 0;
-		bvhbone->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
-		if ((existflag != 0) && pbef){
-			bvhmp = *pbef;
+		CMotionPoint* pbvhmp = 0;
+		pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe);
+		if (pbvhmp){
+			bvhmp = *pbvhmp;
 		}
 		else{
 			_ASSERT(0);
@@ -5999,12 +5978,10 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 	}
 	else{
-		CMotionPoint* pbef = 0;
-		CMotionPoint* pnext = 0;
-		int existflag = 0;
-		befbvhbone->GetBefNextMP(bvhmotid, srcframe, &pbef, &pnext, &existflag);
-		if ((existflag != 0) && pbef){
-			bvhmp = *pbef;
+		CMotionPoint* pbvhmp = 0;
+		pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe);
+		if (pbvhmp){
+			bvhmp = *pbvhmp;
 		}
 		else{
 			_ASSERT(0);
@@ -6015,13 +5992,11 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 
 	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
 	int modelmotid = modelmi->motid;
-	CMotionPoint* pbef2 = 0;
-	CMotionPoint* pnext2 = 0;
 	CMotionPoint modelmp;
-	int existflag2 = 0;
-	srcbone->GetBefNextMP(modelmotid, srcframe, &pbef2, &pnext2, &existflag2);
-	if ((existflag2 != 0) && pbef2){
-		modelmp = *pbef2;
+	CMotionPoint* pmodelmp = 0;
+	pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe);
+	if (pmodelmp){
+		modelmp = *pmodelmp;
 	}
 	else{
 		_ASSERT(0);
@@ -6029,14 +6004,11 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 	}
 
 	CMotionPoint modelparmp;
+	CMotionPoint* pmodelparmp = 0;
 	if (srcbone->GetParent()){
-		CMotionPoint* pbef2 = 0;
-		CMotionPoint* pnext2 = 0;
-		CMotionPoint modelmp;
-		int existflag2 = 0;
-		srcbone->GetParent()->GetBefNextMP(modelmotid, srcframe, &pbef2, &pnext2, &existflag2);
-		if ((existflag2 != 0) && pbef2){
-			modelparmp = *pbef2;
+		pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe);
+		if (pmodelparmp){
+			modelparmp = *pmodelparmp;
 		}
 	}
 
@@ -6056,10 +6028,6 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		modelinit = modelmp.GetWorldMat();
 		invmodelinit = modelmp.GetInvWorldMat();
 
-		//const char* bvhbonename = bvhbone->GetBoneName();
-		//int cmp = strcmp(bvhbonename, "Hips");
-		//const char* cmpptr = strstr(bvhbonename, "Hips_Joint");
-		//if (((cmp == 0) || cmpptr)){//各フレーム
 		if (srcbone == s_model->GetTopBone()){//モデル側の最初のボーンの処理時
 			s_firsthipmat = bvhmp.GetWorldMat();
 			s_firsthipmat._41 = 0.0f;
@@ -6080,7 +6048,6 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 		rotq = curbvhrotmp.GetQ();
 
-		//if ((s_sethipstra == 0) && ((cmp == 0) || cmpptr)){
 		if ((s_sethipstra == 0) && (srcbone == s_model->GetTopBone())){
 			CMotionPoint calctramp;
 			calctramp.CalcQandTra(bvhmat, bvhbone, hrate);

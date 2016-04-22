@@ -711,11 +711,12 @@ public: //accesser
 	};
 
 	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe){
+		//ë∂ç›Ç∑ÇÈÇ∆Ç´ÇæÇØï‘Ç∑ÅB
 		CMotionPoint* pbef = 0;
 		CMotionPoint* pnext = 0;
 		int existflag = 0;
 		GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, &existflag);
-		if (existflag && pbef){
+		if (existflag == 1){
 			return pbef;
 		}
 		else{
