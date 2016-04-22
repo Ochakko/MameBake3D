@@ -2732,14 +2732,14 @@ static void s_dummyfunc();
 						MoveToEx(hdcM->hDC, xx,y1-5, NULL);
 						LineTo(hdcM->hDC,   xx,y1);
 
-						if( i%5==0 ){
+						if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))){
 							TCHAR tmpChar[20];
-							_stprintf_s(tmpChar,20,_T("%.3G"),(double)i);
-							hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
-							SetTextColor(hdcM->hDC,RGB(240,240,240));
-							TextOut( hdcM->hDC,
-									 xx-(int)((double)_tcslen(tmpChar)*2.0), y0,
-									 tmpChar, _tcslen(tmpChar));
+							_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
+							hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+							SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+							TextOut(hdcM->hDC,
+								xx - (int)((double)_tcslen(tmpChar)*2.0), y0,
+								tmpChar, _tcslen(tmpChar));
 						}
 					}
 				}
