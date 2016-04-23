@@ -25,6 +25,15 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/04/23
+	最近の動画。
+
+	MameBake3D 編集オプションの説明
+	https://youtu.be/cA7ceFJ2oLY
+
+	MameBake3D bvhそっと歩き＋物理ツインテ
+	https://youtu.be/upwvM6yBGgw
+
 2016/04/22
 	Main.cppの相対IKと絶対IKの説明文を修正しました。
 	test12の剛体パラメータでサンプルのキックのモーションを読み込んでF9したとき
@@ -177,16 +186,19 @@ MameBake3Dの使い方。ベイクの話。
 ベイク済とは。ベイク済モーションの編集方法について。
 https://youtu.be/Z0UacTlXs7w
 
+MameBake3D 編集オプションの説明
+https://youtu.be/cA7ceFJ2oLY
 
 MameBake3D説明動画。モデルFBXにモーションFBXを適用する話。
 https://youtu.be/ERaqn16GsU0
-
 
 MameBake3Dの使い方。BVHからFBXへの変換の話。
 オイラー角出力を抜本的に見直した結果、モーション再現率がかなり上昇しました。
 perfumeの３人が踊る動画。
 https://youtu.be/ONnB1jDVi6k
 
+MameBake3D bvhそっと歩き＋物理ツインテ
+https://youtu.be/upwvM6yBGgw
 
 MameBake3Dの使い方。
 (MameBake3DでbvhをFBXにしてMayaでモデルにバインドして
