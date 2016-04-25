@@ -3745,6 +3745,9 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 			}
 		}
 
+		if (srcbto->GetRigidBody()){
+			srcbto->GetRigidBody()->setDeactivationTime(0.0);
+		}
 	}
 
 	int chilno;
@@ -4948,6 +4951,8 @@ void CModel::SetRagdollKinFlagReq( CBtObject* srcbto )
 	if( srcbto->GetBone() && srcbto->GetRigidBody() ){
 		DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
 		srcbto->GetRigidBody()->setCollisionFlags( curflag & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+		srcbto->GetRigidBody()->setDeactivationTime(0.0);
+
 
 //		_ASSERT( s_setrigidflag );
 //		srcbto->m_rigidbody->setCollisionFlags( s_rigidflag );
@@ -5073,7 +5078,7 @@ void CModel::ResetBtReq( CBtObject* curbto )
 			curbto->GetRigidBody()->setInterpolationWorldTransform( myMotionState->m_startWorldTrans );
 			curbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 			curbto->GetRigidBody()->activate();
-			curbto->GetRigidBody()->setDeactivationTime(0);
+			curbto->GetRigidBody()->setDeactivationTime(0.0);
 			//colObj->setActivationState(WANTS_DEACTIVATION);
 		}
 		if (curbto->GetRigidBody() && !curbto->GetRigidBody()->isStaticObject())
