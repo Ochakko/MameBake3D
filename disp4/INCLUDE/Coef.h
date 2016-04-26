@@ -162,9 +162,18 @@ enum {
 	PICK_Z,
 	PICK_CAMMOVE,
 	PICK_CAMROT,
+	PICK_CAMDIST,
 	PICK_SPA_X,
 	PICK_SPA_Y,
-	PICK_SPA_Z
+	PICK_SPA_Z,
+	PICK_MAX
+};
+
+enum {
+	SPR_CAM_I = 0,
+	SPR_CAM_KAI = 1,
+	SPR_CAM_KAKU = 2,
+	SPR_CAM_MAX
 };
 
 typedef struct tag_pickinfo

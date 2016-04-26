@@ -88,7 +88,7 @@ typedef struct tag_spaxis
 {
 	CMySprite* sprite;
 	POINT dispcenter;
-}SPAXIS;
+}SPAXIS, SPCAM;
 
 extern map<CModel*,int> g_bonecntmap;
 
@@ -387,6 +387,7 @@ static list<KeyInfo> s_selectKeyInfoList;	// コピーされたキー情報リスト
 
 static CEditRange s_editrange;
 static SPAXIS s_spaxis[3];
+static SPCAM s_spcam[3];
 
 
 typedef struct tag_modelpanel
@@ -689,6 +690,8 @@ static int SetDmpWndParams();
 
 static int SetSpAxisParams();
 static int PickSpAxis( POINT srcpos );
+static int SetSpCamParams();
+static int PickSpCam(POINT srcpos);
 
 static int InsertCopyMP( CBone* curbone, double curframe );
 static int InsertSymMP( CBone* curbone, double curframe );
@@ -933,6 +936,7 @@ void InitApp()
 
 
 	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
+	ZeroMemory(s_spcam, sizeof(SPCAM) * 3);
 
 	g_bonecntmap.clear();
 
@@ -2322,14 +2326,23 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	s_spaxis[0].sprite = new CMySprite( s_pdev );
 	_ASSERT( s_spaxis[0].sprite );
 	CallF( s_spaxis[0].sprite->Create( mpath, L"X.png", 0, D3DPOOL_MANAGED, 0 ), return 1 );
-
 	s_spaxis[1].sprite = new CMySprite( s_pdev );
 	_ASSERT( s_spaxis[1].sprite );
 	CallF( s_spaxis[1].sprite->Create( mpath, L"Y.png", 0, D3DPOOL_MANAGED, 0 ), return 1 );
-
 	s_spaxis[2].sprite = new CMySprite( s_pdev );
 	_ASSERT( s_spaxis[2].sprite );
 	CallF( s_spaxis[2].sprite->Create( mpath, L"Z.png", 0, D3DPOOL_MANAGED, 0 ), return 1 );
+
+
+	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spcam[SPR_CAM_I].sprite);
+	CallF(s_spcam[SPR_CAM_I].sprite->Create(mpath, L"cam_i.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spcam[SPR_CAM_KAI].sprite);
+	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(mpath, L"cam_kai.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
+	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(mpath, L"cam_kaku.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
 ///////
 	s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
@@ -2393,6 +2406,7 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
     g_SampleUI.SetSize( 170, 750 );
 
 	SetSpAxisParams();
+	SetSpCamParams();
 
     return S_OK;
 }
@@ -3494,6 +3508,10 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		for( spacnt = 0; spacnt < 3; spacnt++ ){
 			s_spaxis[spacnt].sprite->OnRender();
 		}
+		int spccnt;
+		for (spccnt = 0; spccnt < 3; spccnt++){
+			s_spcam[spccnt].sprite->OnRender();
+		}
 
 		RenderText( fTime );
 
@@ -3728,6 +3746,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 	}else if( uMsg == WM_MOUSEWHEEL ){
+		/*
 		if( g_keybuf[VK_CONTROL] & 0x80 ){
 			float radstep = 0.5f * (float)DEG2PAI;
 			float delta;
@@ -3744,6 +3763,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 //s_model->CalcBtAxismat( delta );//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			}
 		}
+		*/
 	}else if( (uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK) ){
 
 		s_ikcnt = 0;
@@ -3762,10 +3782,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.pickrange = 6;
 
 		s_pickinfo.pickobjno = -1;
-					
-		if( s_model ){
+
+		int spckind = PickSpCam(ptCursor);
+		if (spckind != 0){
+			s_pickinfo.buttonflag = spckind;
+			s_pickinfo.pickobjno = -1;
+		}else if (s_model){
 			int spakind = PickSpAxis( ptCursor );
-			if( (spakind != 0) && (s_curboneno >= 0) ){
+			if ((spckind != 0) && (spakind != 0) && (s_curboneno >= 0)){
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 			}else{
@@ -3856,6 +3880,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 	}else if( uMsg == WM_MBUTTONDOWN){
+		/*
 		SetCapture( s_mainwnd );
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
@@ -3871,75 +3896,83 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		s_pickinfo.pickobjno = -1;
 		s_pickinfo.buttonflag = PICK_CAMMOVE;
-	}else if( uMsg ==  WM_MOUSEMOVE ){
-		if( s_pickinfo.buttonflag == PICK_CENTER ){
+		*/
+	}
+	else if (uMsg == WM_MOUSEMOVE){
+		if (s_pickinfo.buttonflag == PICK_CENTER){
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
-			GetCursorPos( &ptCursor );
-			::ScreenToClient( s_mainwnd, &ptCursor );
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_mainwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			D3DXVECTOR3 tmpsc;
-			s_model->TransformBone( s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen );
+			s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-			if( g_previewFlag == 0 ){
-				D3DXVECTOR3 targetpos( 0.0f, 0.0f, 0.0f );
-				CallF( CalcTargetPos( &targetpos ), return 1 );
-				if( s_ikkind == 0 ){
-					s_editmotionflag = s_model->IKRotate( &s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel );
-				}else if( s_ikkind == 1 ){
+			if (g_previewFlag == 0){
+				D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+				CallF(CalcTargetPos(&targetpos), return 1);
+				if (s_ikkind == 0){
+					s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+				}
+				else if (s_ikkind == 1){
 					D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
-					AddBoneTra2( diffvec );
+					AddBoneTra2(diffvec);
 				}
 				s_ikcnt++;
 			}
-		}else if( (s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z) ){
+		}
+		else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)){
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
-			GetCursorPos( &ptCursor );
-			::ScreenToClient( s_mainwnd, &ptCursor );
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_mainwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			D3DXVECTOR3 tmpsc;
-			s_model->TransformBone( s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen );
+			s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-			if( g_previewFlag == 0 ){
+			if (g_previewFlag == 0){
 				float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-				if( s_ikkind == 0 ){
+				if (s_ikkind == 0){
 					s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
-				}else{
-					AddBoneTra( s_pickinfo.buttonflag - PICK_X, deltax * 0.1f );
+				}
+				else{
+					AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
 				}
 				s_ikcnt++;
 			}
-		}else if( (s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z) ){
-			
+		}
+		else if ((s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z)){
+
 			s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
 
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
-			GetCursorPos( &ptCursor );
-			::ScreenToClient( s_mainwnd, &ptCursor );
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_mainwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			D3DXVECTOR3 tmpsc;
-			s_model->TransformBone( s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen );
+			s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-			if( g_previewFlag == 0 ){
+			if (g_previewFlag == 0){
 				float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-				if( s_ikkind == 0 ){
+				if (s_ikkind == 0){
 					s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
-				}else{
-					AddBoneTra( s_pickinfo.buttonflag - PICK_X, deltax * 0.1f );
+				}
+				else{
+					AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
 				}
 				s_ikcnt++;
 			}
-		}else if( s_pickinfo.buttonflag == PICK_CAMMOVE ){
+		}
+		else if (s_pickinfo.buttonflag == PICK_CAMMOVE){
 
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
-			GetCursorPos( &ptCursor );
-			::ScreenToClient( s_mainwnd, &ptCursor );
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_mainwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			D3DXVECTOR3 cammv;
@@ -3954,37 +3987,38 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			wat = g_camtargetpos;
 
 			D3DXVECTOR3 cameye, camat;
-			D3DXVec3TransformCoord( &cameye, &weye, &matview );
-			D3DXVec3TransformCoord( &camat, &wat, &matview );
+			D3DXVec3TransformCoord(&cameye, &weye, &matview);
+			D3DXVec3TransformCoord(&camat, &wat, &matview);
 
 			D3DXVECTOR3 aftcameye, aftcamat;
 			aftcameye = cameye + cammv;
 			aftcamat = camat + cammv;
 
 			D3DXMATRIX invmatview;
-			D3DXMatrixInverse( &invmatview, NULL, &matview );
+			D3DXMatrixInverse(&invmatview, NULL, &matview);
 
 			D3DXVECTOR3 neweye, newat;
-			D3DXVec3TransformCoord( &neweye, &aftcameye, &invmatview );
-			D3DXVec3TransformCoord( &newat, &aftcamat, &invmatview );
+			D3DXVec3TransformCoord(&neweye, &aftcameye, &invmatview);
+			D3DXVec3TransformCoord(&newat, &aftcamat, &invmatview);
 
-			g_Camera.SetViewParams( &neweye, &newat );
+			g_Camera.SetViewParams(&neweye, &newat);
 
 
 
 			g_camEye = neweye;
 			g_camtargetpos = newat;
-			D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			D3DXVECTOR3 diffv;
 			diffv = neweye - newat;
-			s_camdist = D3DXVec3Length( &diffv );
+			s_camdist = D3DXVec3Length(&diffv);
 
 
-		}else if( s_pickinfo.buttonflag == PICK_CAMROT ){
+		}
+		else if (s_pickinfo.buttonflag == PICK_CAMROT){
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
-			GetCursorPos( &ptCursor );
-			::ScreenToClient( s_mainwnd, &ptCursor );
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_mainwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			float roty, rotxz;
@@ -3998,84 +4032,110 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 			D3DXVECTOR3 viewvec, upvec, rotaxisy, rotaxisxz;
 			viewvec = wat - weye;
-			D3DXVec3Normalize( &viewvec, &viewvec );
-			upvec = D3DXVECTOR3( 0.000001f, 1.0f, 0.0f );
+			D3DXVec3Normalize(&viewvec, &viewvec);
+			upvec = D3DXVECTOR3(0.000001f, 1.0f, 0.0f);
 
 			float chkdot;
-			chkdot = DXVec3Dot( &viewvec, &upvec );
-			if( fabs( chkdot ) < 0.99965f ){
-				D3DXVec3Cross( &rotaxisxz, &upvec, &viewvec );
-				D3DXVec3Normalize( &rotaxisxz, &rotaxisxz );
+			chkdot = DXVec3Dot(&viewvec, &upvec);
+			if (fabs(chkdot) < 0.99965f){
+				D3DXVec3Cross(&rotaxisxz, &upvec, &viewvec);
+				D3DXVec3Normalize(&rotaxisxz, &rotaxisxz);
 
-				D3DXVec3Cross( &rotaxisy, &viewvec, &rotaxisxz );
-				D3DXVec3Normalize( &rotaxisy, &rotaxisy );
-			}else if( chkdot >= 0.99965f ){
+				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+			}
+			else if (chkdot >= 0.99965f){
 				rotaxisxz = upvec;
-				D3DXVec3Cross( &rotaxisy, &viewvec, &rotaxisxz );
-				D3DXVec3Normalize( &rotaxisy, &rotaxisy );
-				if( roty < 0.0f ){
+				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				if (roty < 0.0f){
 					roty = 0.0f;
-				}else{
 				}
-			}else{
+				else{
+				}
+			}
+			else{
 				rotaxisxz = upvec;
-				D3DXVec3Cross( &rotaxisy, &viewvec, &rotaxisxz );
-				D3DXVec3Normalize( &rotaxisy, &rotaxisy );
-				if( roty > 0.0f ){
+				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				if (roty > 0.0f){
 					roty = 0.0f;
-				}else{
+				}
+				else{
 					//rotyだけ回す。
 				}
 			}
 
 
-			if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
-				CBone* curbone = s_model->GetBoneByID( s_curboneno );
-				_ASSERT( curbone );
+			if (s_model && (s_curboneno >= 0) && s_camtargetflag){
+				CBone* curbone = s_model->GetBoneByID(s_curboneno);
+				_ASSERT(curbone);
 				g_camtargetpos = curbone->GetChildWorld();
 			}
 
 
 			D3DXMATRIX befrotmat, rotmaty, rotmatxz, aftrotmat;
-			D3DXMatrixTranslation( &befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z );
-			D3DXMatrixTranslation( &aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z );
-			D3DXMatrixRotationAxis( &rotmaty, &rotaxisy, rotxz * (float)DEG2PAI );
-			D3DXMatrixRotationAxis( &rotmatxz, &rotaxisxz, roty * (float)DEG2PAI );
+			D3DXMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
+			D3DXMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
+			D3DXMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+			D3DXMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
 
 			D3DXMATRIX mat;
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 			D3DXVECTOR3 neweye;
-			D3DXVec3TransformCoord( &neweye, &weye, &mat );
+			D3DXVec3TransformCoord(&neweye, &weye, &mat);
 
 			float chkdot2;
 			D3DXVECTOR3 newviewvec = weye - neweye;
-			D3DXVec3Normalize( &newviewvec, &newviewvec );
-			chkdot2 = DXVec3Dot( &newviewvec, &upvec );
-			if( fabs( chkdot2 ) < 0.99965f ){
-				D3DXVec3Cross( &rotaxisxz, &upvec, &viewvec );
-				D3DXVec3Normalize( &rotaxisxz, &rotaxisxz );
+			D3DXVec3Normalize(&newviewvec, &newviewvec);
+			chkdot2 = DXVec3Dot(&newviewvec, &upvec);
+			if (fabs(chkdot2) < 0.99965f){
+				D3DXVec3Cross(&rotaxisxz, &upvec, &viewvec);
+				D3DXVec3Normalize(&rotaxisxz, &rotaxisxz);
 
-				D3DXVec3Cross( &rotaxisy, &viewvec, &rotaxisxz );
-				D3DXVec3Normalize( &rotaxisy, &rotaxisy );
-			}else{
+				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+			}
+			else{
 				roty = 0.0f;
 				rotaxisxz = upvec;
-				D3DXVec3Cross( &rotaxisy, &viewvec, &rotaxisxz );
-				D3DXVec3Normalize( &rotaxisy, &rotaxisy );
+				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
 			}
-			D3DXMatrixRotationAxis( &rotmaty, &rotaxisy, rotxz * (float)DEG2PAI );
-			D3DXMatrixRotationAxis( &rotmatxz, &rotaxisxz, roty * (float)DEG2PAI );
+			D3DXMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+			D3DXMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-			D3DXVec3TransformCoord( &neweye, &weye, &mat );
+			D3DXVec3TransformCoord(&neweye, &weye, &mat);
 
-			g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+			g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 
 			g_camEye = neweye;
-			D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			D3DXVECTOR3 diffv;
 			diffv = neweye - g_camtargetpos;
-			s_camdist = D3DXVec3Length( &diffv );
+			s_camdist = D3DXVec3Length(&diffv);
 
+
+		}else if (s_pickinfo.buttonflag == PICK_CAMDIST){
+			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+			POINT ptCursor;
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_mainwnd, &ptCursor);
+			s_pickinfo.mousepos = ptCursor;
+
+			float deltadist = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+			//float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
+			//float deltadist = mdelta * s_camdist * 0.0010f;
+
+			s_camdist += deltadist;
+			if (s_camdist < 0.0001f){
+				s_camdist = 0.0001f;
+			}
+
+			D3DXVECTOR3 camvec = g_camEye - g_camtargetpos;
+			D3DXVec3Normalize(&camvec, &camvec);
+			g_camEye = g_camtargetpos + s_camdist * camvec;
+			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 		}
 
@@ -4094,7 +4154,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 
 	}else if( uMsg == WM_RBUTTONDOWN ){
-
+		/*
 		SetCapture( s_mainwnd );
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
@@ -4111,6 +4171,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.pickobjno = -1;
 
 		s_pickinfo.buttonflag = PICK_CAMROT;
+		*/
 
 	}else if( uMsg == WM_RBUTTONUP ){
 		ReleaseCapture();
@@ -4157,23 +4218,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}else if( uMsg == WM_MBUTTONDOWN ){
 	}else if( uMsg == WM_MBUTTONUP ){
 	}else if( uMsg == WM_MOUSEWHEEL ){
+		/*
 		if( (g_keybuf[VK_CONTROL] & 0x80) == 0 ){
-
-			/***
-			deltadist = (float)GET_WHEEL_DELTA_WPARAM(wParam) * -0.025f;
-			s_camdist += deltadist;
-			if( s_camdist < 1.0f ){
-				s_camdist = 1.0f;
-			}
-			***/
-
-/***
-			float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
-			deltadist = mdelta * s_camdist * 0.0001f;
-			char chkmes[256];
-			sprintf_s( chkmes, 256, "s_totalmb.r = %.5f, mdelta %.5f, deltadist %.5f", s_totalmb.r, mdelta, deltadist );
-			::MessageBoxA( NULL, chkmes, "totalmb", MB_OK );
-***/
 			float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
 			//deltadist = mdelta * s_camdist * 0.00010f;
 			deltadist = mdelta * s_camdist * 0.0010f;
@@ -4188,6 +4234,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			g_camEye = g_camtargetpos + s_camdist * camvec;
 			D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 		}
+		*/
 	}else{
 		g_Camera.HandleMessages( hWnd, uMsg, wParam, lParam );
 		if( s_ikkind == 2 ){
@@ -4949,6 +4996,15 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 			delete cursp;
 		}
 		s_spaxis[spno].sprite = 0;
+	}
+
+	int spcno;
+	for (spcno = 0; spcno < 3; spcno++){
+		CMySprite* curspc = s_spcam[spcno].sprite;
+		if (curspc){
+			delete curspc;
+		}
+		s_spcam[spcno].sprite = 0;
 	}
 
 	DestroyModelPanel();
@@ -8851,6 +8907,40 @@ int SetSpAxisParams()
 
 }
 
+int SetSpCamParams()
+{
+	if (!(s_spcam[SPR_CAM_I].sprite) || !(s_spcam[SPR_CAM_KAI].sprite) || !(s_spcam[SPR_CAM_KAKU].sprite)){
+		return 0;
+	}
+
+	float spawidth = 32.0f;
+	int spashift = 12;
+	s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
+	s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
+	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
+
+	s_spcam[1].dispcenter.x = s_spcam[0].dispcenter.x + (int)(spawidth)+spashift;
+	s_spcam[1].dispcenter.y = s_spcam[0].dispcenter.y;
+
+	s_spcam[2].dispcenter.x = s_spcam[1].dispcenter.x + (int)(spawidth)+spashift;
+	s_spcam[2].dispcenter.y = s_spcam[0].dispcenter.y;
+
+	int spacnt;
+	for (spacnt = 0; spacnt < 3; spacnt++){
+		D3DXVECTOR3 disppos;
+		disppos.x = (float)(s_spcam[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spcam[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.z = 0.0f;
+		D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+		CallF(s_spcam[spacnt].sprite->SetPos(disppos), return 1);
+		CallF(s_spcam[spacnt].sprite->SetSize(dispsize), return 1);
+	}
+
+	return 0;
+
+}
+
+
 int PickSpAxis( POINT srcpos )
 {
 	int kind = 0;
@@ -8892,6 +8982,47 @@ int PickSpAxis( POINT srcpos )
 	return kind;
 }
 
+int PickSpCam(POINT srcpos)
+{
+	int kind = 0;
+
+	int starty = s_spcam[SPR_CAM_I].dispcenter.y - 16;
+	int endy = starty + 32;
+
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
+		int spacnt;
+		for (spacnt = 0; spacnt < 3; spacnt++){
+			int startx = s_spcam[spacnt].dispcenter.x - 16;
+			int endx = startx + 32;
+
+			if ((srcpos.x >= startx) && (srcpos.x <= endx)){
+				switch (spacnt){
+				case 0:
+					kind = PICK_CAMMOVE;
+					break;
+				case 1:
+					kind = PICK_CAMROT;
+					break;
+				case 2:
+					kind = PICK_CAMDIST;
+					break;
+				}
+				break;
+			}
+		}
+	}
+
+	//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
+	//	kind, srcpos.x, srcpos.y, starty, endy );
+	//int spacnt;
+	//for( spacnt = 0; spacnt < 3; spacnt++ ){
+	//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spaxis[spacnt].dispcenter.x, s_spaxis[spacnt].dispcenter.x + 32 );
+	//}
+
+	return kind;
+}
+
+
 int SetSelectState()
 {
 	if( !s_select || !s_model || g_previewFlag ){
@@ -8927,9 +9058,13 @@ int SetSelectState()
 	pickinfo.pickobjno = -1;
 
 	int spakind = PickSpAxis( ptCursor );
-	if( spakind != 0 ){
+	int spckind = PickSpCam(ptCursor);
+	if (spakind != 0){
 		pickinfo.pickobjno = s_curboneno;
 		pickinfo.buttonflag = spakind;
+	} else if (spckind != 0){
+		pickinfo.pickobjno = s_curboneno;
+		pickinfo.buttonflag = spckind;
 	}else{
 	
 		if( g_controlkey == false ){
