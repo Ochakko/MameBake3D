@@ -96,6 +96,11 @@ D3DXMATRIX s_selectmat;
 bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 
+static int s_underselectingframe = 0;
+static double s_buttonselectstart = 0.0;
+static double s_buttonselectend = 0.0;
+
+
 static float s_selectscale = 1.0f;
 static int s_sethipstra = 0;
 static CFrameCopyDlg s_selbonedlg;
@@ -363,6 +368,9 @@ static bool s_LcloseFlag = false;
 static bool s_LnextkeyFlag = false;
 static bool s_LbefkeyFlag = false;
 static bool s_LcursorFlag = false;			// カーソル移動フラグ
+
+static bool s_timelinembuttonFlag = false;
+static bool s_timelinewheelFlag = false;
 
 
 static bool s_dispmw = true;
@@ -713,6 +721,14 @@ static HKEY s_hkey;
 static int RegistKey();
 static int IsRegist();
 
+
+static int OnTimeLineCursor(int mbuttonflag);
+static int OnTimeLineButtonSelect(int tothelastflag);
+static int OnTimeLineSelect();
+int OnTimeLineMButtonDown();
+int OnTimeLineWheel();
+
+
 int RegistKey()
 {
 /*
@@ -921,6 +937,10 @@ void InitApp()
 	static OWP_Separator* s_convbonesp = 0;
 	*/
 
+	s_underselectingframe = 0;
+	s_buttonselectstart = 0.0;
+	s_buttonselectend = 0.0;
+
 	D3DXMatrixIdentity(&s_selectmat);
 
 	int cbno;
@@ -1090,7 +1110,7 @@ void InitApp()
 	
 	// ウィンドウの閉じるボタンのイベントリスナーに
 	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
-	s_timelineWnd->setCloseListener( [](){ s_closeFlag=true; } );
+	s_timelineWnd->setCloseListener( []() { s_closeFlag=true; } );
 
 	// ウィンドウのキーボードイベントリスナーに
 	// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
@@ -1158,46 +1178,15 @@ void InitApp()
 	s_LtimelineWnd->setCloseListener( [](){ s_LcloseFlag=true; } );
 	s_LtimelineWnd->setLUpListener( [](){
 		if (g_selecttolastFlag == false){
-			s_editrange.Clear();
-			if (s_model && s_model->GetCurMotInfo()){
-				if (s_owpTimeline && s_owpLTimeline){
-					int curlineno = s_owpLTimeline->getCurrentLine();
-					if (curlineno == 0){//move to current frame
-						s_editrange.Clear();
-					}
-
-					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime());
-					int keynum;
-					double startframe, endframe, applyframe;
-					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-					//s_owpLTimeline->setCurrentTime( endframe, false );
-					s_owpLTimeline->setCurrentTime(applyframe, false);
-				}
-			}
+			OnTimeLineSelect();
 		}
 		else{
-			s_owpLTimeline->SelectToLast();
-
-			s_editrange.Clear();
-			if (s_model && s_model->GetCurMotInfo()){
-				if (s_owpTimeline && s_owpLTimeline){
-					int curlineno = s_owpLTimeline->getCurrentLine();
-					if (curlineno == 0){//move to current frame
-						s_editrange.Clear();
-					}
-
-					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime());
-					int keynum;
-					double startframe, endframe, applyframe;
-					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-					//s_owpLTimeline->setCurrentTime( endframe, false );
-					s_owpLTimeline->setCurrentTime(applyframe, false);
-				}
-			}
+			OnTimeLineButtonSelect(1);
 			g_selecttolastFlag = false;
 		}
-
 	} );
+
+
 
 /////////
 	s_dmpanimWnd = new OrgWindow(
@@ -2785,11 +2774,18 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 	if( s_LcursorFlag ){
 		s_LcursorFlag = false;
-		if( s_owpLTimeline && s_model && s_model->GetCurMotInfo() ){
-			double curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
-			s_owpTimeline->setCurrentTime( curframe, false );
-		}
+		OnTimeLineCursor(0);
 	}
+	if (s_timelinembuttonFlag){
+		s_timelinembuttonFlag = false;
+		OnTimeLineMButtonDown();
+	}
+	if (s_timelinewheelFlag){
+		s_timelinewheelFlag = false;
+		OnTimeLineWheel();
+	}
+
+
 
 	// コピー/カット/ペーストフラグを確認 ////////////////////////////////////////
 	if( s_selboneFlag ){
@@ -2852,8 +2848,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			list<KeyInfo>::iterator itrcp;
 			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
 				double curframe = itrcp->time;
-				//map<int, CBone*>::iterator itrbone;
-				//for( itrbone = s_model->m_bonelist.begin(); itrbone != s_model->m_bonelist.end(); itrbone++ ){
 				int cpnum = s_selbonedlg.m_cpvec.size();
 				if( cpnum != 0 ){
 					int cpno;
@@ -2890,8 +2884,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			list<KeyInfo>::iterator itrcp;
 			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
 				double curframe = itrcp->time;
-				//map<int, CBone*>::iterator itrbone;
-				//for( itrbone = s_model->m_bonelist.begin(); itrbone != s_model->m_bonelist.end(); itrbone++ ){
 				int cpnum = s_selbonedlg.m_cpvec.size();
 
 				if( cpnum != 0 ){
@@ -3075,28 +3067,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			}
 		}
 	}
-	/*
-	if (g_selecttolastFlag == true){
-		s_owpLTimeline->SelectToLast();
-
-		s_editrange.Clear();
-		if (s_model && s_model->GetCurMotInfo()){
-			if (s_owpTimeline && s_owpLTimeline){
-				int curlineno = s_owpLTimeline->getCurrentLine();
-				if (curlineno == 0){//move to current frame
-					s_editrange.Clear();
-				}
-
-				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime());
-				int keynum;
-				double startframe, endframe, applyframe;
-				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-				//s_owpLTimeline->setCurrentTime( endframe, false );
-				s_owpLTimeline->setCurrentTime(applyframe, false);
-			}
-		}
-	}
-	*/
 
 	if( s_motpropFlag ){
 		s_motpropFlag = false;
@@ -3747,6 +3717,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 	}else if( uMsg == WM_MOUSEWHEEL ){
 		/*
+		int delta;
+		delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		if (s_underselectingframe == 1){
+			OnTimeLineButtonSelect((double)delta, 0);
+		}
+		else{
+			OnTimeLineCursor();
+		}
+		*/
+		/*
 		if( g_keybuf[VK_CONTROL] & 0x80 ){
 			float radstep = 0.5f * (float)DEG2PAI;
 			float delta;
@@ -3881,6 +3861,19 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 	}else if( uMsg == WM_MBUTTONDOWN){
 		/*
+		if (s_underselectingframe == 0){
+			s_underselectingframe = 1;
+			if (s_owpTimeline){
+				s_buttonselectstart = s_owpTimeline->getCurrentTime();
+				OnTimeLineCursor();
+			}
+		}
+		else{
+			s_underselectingframe = 0;
+			OnTimeLineButtonSelect(0.0, 0);
+		}
+		*/
+		/*
 		SetCapture( s_mainwnd );
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
@@ -3900,71 +3893,76 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}
 	else if (uMsg == WM_MOUSEMOVE){
 		if (s_pickinfo.buttonflag == PICK_CENTER){
-			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_mainwnd, &ptCursor);
-			s_pickinfo.mousepos = ptCursor;
+			if (s_model){
+				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+				POINT ptCursor;
+				GetCursorPos(&ptCursor);
+				::ScreenToClient(s_mainwnd, &ptCursor);
+				s_pickinfo.mousepos = ptCursor;
 
-			D3DXVECTOR3 tmpsc;
-			s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+				D3DXVECTOR3 tmpsc;
+				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-			if (g_previewFlag == 0){
-				D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
-				CallF(CalcTargetPos(&targetpos), return 1);
-				if (s_ikkind == 0){
-					s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+				if (g_previewFlag == 0){
+					D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+					CallF(CalcTargetPos(&targetpos), return 1);
+					if (s_ikkind == 0){
+						s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+					}
+					else if (s_ikkind == 1){
+						D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+						AddBoneTra2(diffvec);
+					}
+					s_ikcnt++;
 				}
-				else if (s_ikkind == 1){
-					D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
-					AddBoneTra2(diffvec);
-				}
-				s_ikcnt++;
 			}
 		}
 		else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)){
-			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_mainwnd, &ptCursor);
-			s_pickinfo.mousepos = ptCursor;
+			if (s_model){
+				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+				POINT ptCursor;
+				GetCursorPos(&ptCursor);
+				::ScreenToClient(s_mainwnd, &ptCursor);
+				s_pickinfo.mousepos = ptCursor;
 
-			D3DXVECTOR3 tmpsc;
-			s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+				D3DXVECTOR3 tmpsc;
+				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-			if (g_previewFlag == 0){
-				float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-				if (s_ikkind == 0){
-					s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
+				if (g_previewFlag == 0){
+					float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+					if (s_ikkind == 0){
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
+					}
+					else{
+						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+					}
+					s_ikcnt++;
 				}
-				else{
-					AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-				}
-				s_ikcnt++;
 			}
 		}
 		else if ((s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z)){
+			if (s_model){
+				s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
 
-			s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
+				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+				POINT ptCursor;
+				GetCursorPos(&ptCursor);
+				::ScreenToClient(s_mainwnd, &ptCursor);
+				s_pickinfo.mousepos = ptCursor;
 
-			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_mainwnd, &ptCursor);
-			s_pickinfo.mousepos = ptCursor;
+				D3DXVECTOR3 tmpsc;
+				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-			D3DXVECTOR3 tmpsc;
-			s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
-			if (g_previewFlag == 0){
-				float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-				if (s_ikkind == 0){
-					s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
+				if (g_previewFlag == 0){
+					float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+					if (s_ikkind == 0){
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
+					}
+					else{
+						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+					}
+					s_ikcnt++;
 				}
-				else{
-					AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-				}
-				s_ikcnt++;
 			}
 		}
 		else if (s_pickinfo.buttonflag == PICK_CAMMOVE){
@@ -5809,36 +5807,37 @@ int AddTimeLine( int newmotid )
 	//EraseKeyList();
 
 	if( !s_owpTimeline && s_model && (s_model->GetBoneListSize() > 0) ){
-		OWP_Timeline* owpTimeline = 0;
+		//OWP_Timeline* owpTimeline = 0;
 		//タイムラインのGUIパーツを生成
-		owpTimeline= new OWP_Timeline( L"testmotion", 100.0, 4.0 );
-
-		//ウィンドウにタイムラインを関連付ける
-		s_timelineWnd->addParts(*owpTimeline);
+		s_owpTimeline= new OWP_Timeline( L"testmotion", 100.0, 4.0 );
 
 		// カーソル移動時のイベントリスナーに
 		// カーソル移動フラグcursorFlagをオンにするラムダ関数を登録する
-		owpTimeline->setCursorListener( [](){ s_cursorFlag=true; } );
+		s_owpTimeline->setCursorListener([](){ s_cursorFlag = true; });
 
 		// キー選択時のイベントリスナーに
 		// キー選択フラグselectFlagをオンにするラムダ関数を登録する
-		owpTimeline->setSelectListener( [](){ s_selectFlag=true; } );
+		s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });
 
 
 		// キー移動時のイベントリスナーに
 		// キー移動フラグkeyShiftFlagをオンにして、キー移動量をコピーするラムダ関数を登録する
-		owpTimeline->setKeyShiftListener( [](){
-			s_keyShiftFlag= true;
-			s_keyShiftTime= s_owpTimeline->getShiftKeyTime();
-		} );
+		s_owpTimeline->setKeyShiftListener([](){
+			s_keyShiftFlag = true;
+			s_keyShiftTime = s_owpTimeline->getShiftKeyTime();
+		});
 
 		// キー削除時のイベントリスナーに
 		// 削除されたキー情報をスタックするラムダ関数を登録する
-		owpTimeline->setKeyDeleteListener( [](const KeyInfo &keyInfo){
+		s_owpTimeline->setKeyDeleteListener([](const KeyInfo &keyInfo){
 			//s_deletedKeyInfoList.push_back(keyInfo);
-		} );
+		});
 
-		s_owpTimeline = owpTimeline;
+
+		//ウィンドウにタイムラインを関連付ける
+		s_timelineWnd->addParts(*s_owpTimeline);
+
+
 
 //		s_owpTimeline->timeSize = 4.0;
 //		s_owpTimeline->callRewrite();						//再描画
@@ -5861,6 +5860,12 @@ int AddTimeLine( int newmotid )
 		s_owpLTimeline= new OWP_Timeline( L"EditRangeTimeLine" );
 		s_LtimelineWnd->addParts(*s_owpLTimeline);
 		s_owpLTimeline->setCursorListener( [](){ s_LcursorFlag=true; } );
+		s_owpLTimeline->setMouseMDownListener([](){
+			s_timelinembuttonFlag = true;
+		});
+		s_owpLTimeline->setMouseWheelListener([](){
+			s_timelinewheelFlag = true;
+		});
 	}
 
 	//タイムラインのキーを設定
@@ -9537,6 +9542,107 @@ int ExportBntFile()
 
 	CBntFile bntfile;
 	CallF( bntfile.WriteBntFile( filename, wme ), return 1 );
+
+	return 0;
+}
+
+int OnTimeLineCursor(int mbuttonflag)
+{
+	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()){
+		double curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
+		s_owpTimeline->setCurrentTime(curframe, false);
+		if (s_underselectingframe == 0){
+			s_buttonselectstart = curframe;
+			s_buttonselectend = curframe;
+		}
+	}
+
+	return 0;
+}
+
+int OnTimeLineSelect()
+{
+	s_editrange.Clear();
+	if (s_model && s_model->GetCurMotInfo()){
+		if (s_owpTimeline && s_owpLTimeline){
+			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+			int keynum;
+			double startframe, endframe, applyframe;
+			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+			if (s_underselectingframe == 1){
+				if (s_buttonselectstart <= s_buttonselectend){
+					s_owpLTimeline->setCurrentTime(endframe, false);
+				}
+				else{
+					s_owpLTimeline->setCurrentTime(startframe, false);
+				}
+			}
+			else{
+				s_owpLTimeline->setCurrentTime(applyframe, false);
+			}
+		}
+	}
+
+	return 0;
+}
+
+int OnTimeLineButtonSelect(int tothelastflag)
+{
+	//_ASSERT(0);
+	s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, tothelastflag);
+
+	OnTimeLineSelect();
+
+	return 0;
+}
+
+
+int OnTimeLineMButtonDown()
+{
+	if (s_underselectingframe == 0){
+		s_underselectingframe = 1;
+		if (s_owpLTimeline){
+			s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+			s_buttonselectend = s_buttonselectstart;
+			OnTimeLineCursor(1);
+		}
+	}
+	else{
+		s_underselectingframe = 0;
+		OnTimeLineButtonSelect(0);
+	}
+
+	DbgOut(L"OnTimeLineMButtonDown : underselectingframe %d, start %lf, end %lf\r\n", s_underselectingframe, s_buttonselectstart, s_buttonselectend);
+
+	return 0;
+}
+
+
+int OnTimeLineWheel()
+{
+	
+	DbgOut(L"OnTimeLineWheel Called\r\n");
+
+	if (s_owpLTimeline){
+
+
+		//delta = 1;
+		if (s_underselectingframe == 1){
+			int delta, delta2;
+			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
+			delta2 = (int)((float)delta / 100.0f);
+			s_buttonselectend += (double)delta2;
+			DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
+
+			OnTimeLineButtonSelect(0);
+		}
+		else{
+			DbgOut(L"OnTimeLineWheel 1 : start %lf, end %lf\r\n", s_buttonselectstart, s_buttonselectend);
+
+			OnTimeLineCursor(1);
+		}
+	}
 
 	return 0;
 }

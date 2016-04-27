@@ -69,6 +69,7 @@ namespace OrgWinGUI{
 			case WM_RBUTTONUP:
 			case WM_MBUTTONUP:
 			case WM_MOUSEMOVE:
+			case WM_MOUSEWHEEL:
 				POINT tmpPoint;
 				GetCursorPos(&tmpPoint);
 
@@ -79,6 +80,7 @@ namespace OrgWinGUI{
 				mouseEvent.shiftKey= GetKeyState(VK_SHIFT)<0;
 				mouseEvent.ctrlKey= GetKeyState(VK_CONTROL)<0;
 				mouseEvent.altKey= GetKeyState(VK_MENU)<0;
+				mouseEvent.wheeldelta = GET_WHEEL_DELTA_WPARAM(wParam);
 				break;
 			case WM_KEYDOWN:
 			case WM_KEYUP:
@@ -111,6 +113,15 @@ namespace OrgWinGUI{
 				return 0;
 			case WM_MOUSEMOVE:			//マウス移動
 				owner->onMouseMove(mouseEvent);
+				return 0;
+			case WM_MBUTTONDOWN:
+				owner->onMButtonDown(mouseEvent);
+				return 0;
+			case WM_MBUTTONUP:
+				owner->onMButtonUp(mouseEvent);
+				return 0;
+			case WM_MOUSEWHEEL:
+				owner->onMouseWheel(mouseEvent);
 				return 0;
 			case WM_KEYDOWN:			//キーボードイベント
 			case WM_KEYUP:

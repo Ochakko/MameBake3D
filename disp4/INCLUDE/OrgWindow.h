@@ -160,6 +160,7 @@ static void s_dummyfunc();
 		int localX,localY;
 		int globalX,globalY;
 		bool shiftKey,ctrlKey,altKey;
+		int wheeldelta;
 	};
 
 	class KeyboardEvent{
@@ -407,6 +408,8 @@ static void s_dummyfunc();
 		}
 		//	Method : キーアップイベント受信
 		virtual void onKeyUp(const KeyboardEvent& e){
+		}
+		virtual void onMouseWheel(const MouseEvent & e){
 		}
 
 		/////////////////////////// Operator /////////////////////////////
@@ -900,9 +903,108 @@ static void s_dummyfunc();
 				}
 			}
 		}
+		void onMButtonDown(const MouseEvent& e){
+			int xButtonX1 = size.x - 1 - 2 - 9;
+			int xButtonY1 = 1 + 2;
+			int xButtonX2 = xButtonX1 + 9;
+			int xButtonY2 = xButtonY1 + 9;
+			refreshPosAndSize();
+
+			//マウスキャプチャ
+			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
+			//if (lButton) mouseCaptureFlagL = true;
+			//else		  mouseCaptureFlagR = true;
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
+				plItr != partsList.end();
+				plItr++){
+				WindowSize partsSize = (*plItr)->getSize();
+				int tmpPosX = e.localX - (*plItr)->getPos().x;
+				int tmpPosY = e.localY - (*plItr)->getPos().y;
+				if (0 <= tmpPosX && tmpPosX<partsSize.x &&
+					0 <= tmpPosY && tmpPosY<partsSize.y){
+
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = tmpPosX;
+					mouseEvent.localY = tmpPosY;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+
+					(*plItr)->onMButtonDown(mouseEvent);
+					return;
+				}
+			}
+
+		}
+		void onMButtonUp(const MouseEvent& e){
+
+			//マウスキャプチャリリース
+			//if (lButton) mouseCaptureFlagL = false;
+			//else		  mouseCaptureFlagR = false;
+			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) ReleaseCapture();
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
+				plItr != partsList.end();
+				plItr++){
+
+				MouseEvent mouseEvent;
+				mouseEvent.globalX = e.globalX;
+				mouseEvent.globalY = e.globalY;
+				mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+				mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+				mouseEvent.altKey = e.altKey;
+				mouseEvent.shiftKey = e.shiftKey;
+				mouseEvent.ctrlKey = e.ctrlKey;
+
+				(*plItr)->onMButtonUp(mouseEvent);
+			}
+		}
+		void onMouseWheel(const MouseEvent& e){
+			int xButtonX1 = size.x - 1 - 2 - 9;
+			int xButtonY1 = 1 + 2;
+			int xButtonX2 = xButtonX1 + 9;
+			int xButtonY2 = xButtonY1 + 9;
+			refreshPosAndSize();
+
+			//マウスキャプチャ
+			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
+			//if (lButton) mouseCaptureFlagL = true;
+			//else		  mouseCaptureFlagR = true;
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
+				plItr != partsList.end();
+				plItr++){
+				WindowSize partsSize = (*plItr)->getSize();
+				int tmpPosX = e.localX - (*plItr)->getPos().x;
+				int tmpPosY = e.localY - (*plItr)->getPos().y;
+				//if (0 <= tmpPosX && tmpPosX<partsSize.x &&
+				//	0 <= tmpPosY && tmpPosY<partsSize.y){
+
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = tmpPosX;
+					mouseEvent.localY = tmpPosY;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
+
+					(*plItr)->onMouseWheel(mouseEvent);
+					//return;
+				//}
+			}
+
+
+		}
 		//	Method : マウス移動イベント受信
 		void onMouseMove(const MouseEvent& e){
-
 			//右下の隅
 			if( canChangeSize && 
 				size.x-4<=e.localX && size.y-4<=e.localY ){
@@ -2095,7 +2197,7 @@ static void s_dummyfunc();
 
 				//ボタンリスナーを呼ぶ
 				if( btnPrm->buttonListener!=NULL){
-					btnPrm->buttonListener();
+					(btnPrm->buttonListener)();
 				}
 				
 				//ボタン押下状態をONにする
@@ -2669,7 +2771,9 @@ static void s_dummyfunc();
 			timeSize= _timeSize;
 			cursorListener = [](){s_dummyfunc();};
 			selectListener = [](){s_dummyfunc();};
-			keyShiftListener= [this](){
+			mouseMDownListener = [](){s_dummyfunc();};
+			mouseWheelListener = [](){s_dummyfunc();};
+			keyShiftListener = [this](){
 				shiftKeyTime(getShiftKeyTime());
 			};
 			keyDeleteListener = [](const KeyInfo& dummy){s_dummyfunc();};
@@ -2692,6 +2796,7 @@ static void s_dummyfunc();
 			dragScrollBarTime= false;
 			dragSelect= false;
 			dragShift= false;
+			wheeldelta = 0;
 		}
 		~OWP_Timeline(){
 			selectAll(true);
@@ -3029,29 +3134,63 @@ static void s_dummyfunc();
 			}
 		}
 
-		void SelectToLast()
+		void OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
-			double curframe = getCurrentTime();
-			double maxframe = curframe;
+			this->selectClear();
+
+			double tmpstart, tmpend;
+			if (tothelastflag == 0){
+				if (startframe <= endframe){
+					tmpstart = startframe;
+					tmpend = endframe;
+				}
+				else{
+					tmpstart = endframe;
+					tmpend = startframe;
+				}
+			}
+			else{
+				tmpstart = startframe;
+				tmpend = startframe;
+			}
+
+			//double curframe = getCurrentTime();
+			double maxframe = startframe;
 
 			//for (int j = 0; j < (int)lineData.size(); j++){
 			int j = 1;
 			if (j < (int)lineData.size()){
 				LineData* curLineData = lineData[j];
-				for (int i = 0; i < (int)curLineData->key.size(); i++){
-					if (curLineData->key[i]->time >= curframe - TIME_ERROR_WIDTH){
-						curLineData->key[i]->select = true;
-						if (maxframe < curLineData->key[i]->time){
-							maxframe = curLineData->key[i]->time;
+				if (tothelastflag == 1){
+
+					for (int i = 0; i < (int)curLineData->key.size(); i++){
+						if (curLineData->key[i]->time >= tmpstart - TIME_ERROR_WIDTH){
+							curLineData->key[i]->select = true;
+							if (maxframe < curLineData->key[i]->time){
+								maxframe = curLineData->key[i]->time;
+							}
+						}
+					}
+				}
+				else{
+					
+					for (int i = 0; i < (int)curLineData->key.size(); i++){
+						if ((curLineData->key[i]->time >= tmpstart - TIME_ERROR_WIDTH) &&
+							(curLineData->key[i]->time <= tmpend + TIME_ERROR_WIDTH)){
+							curLineData->key[i]->select = true;
+							if (maxframe < curLineData->key[i]->time){
+								maxframe = curLineData->key[i]->time;
+							}
 						}
 					}
 				}
 			}
 
+
 			//dragSelect = true;
-			dragSelectTime1 = curframe;
+			dragSelectTime1 = tmpstart;
 			dragSelectTime2 = maxframe;
-			showPos_time = curframe;
+			//showPos_time = tmpstart;
 			showPos_line = 0;
 			currentLine = 1;//!!!!!!!
 
@@ -3105,7 +3244,7 @@ static void s_dummyfunc();
 			}
 		}
 		///	Method : マウスダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
 			if (g_underselecttolast) return;
 
@@ -3184,7 +3323,7 @@ static void s_dummyfunc();
 
 		}
 		///	Method : 左マウスボタンアップイベント受信
-		void onLButtonUp(const MouseEvent& e){
+		virtual void onLButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
 			if (g_underselecttolast){
 				g_underselecttolast = false;
@@ -3243,7 +3382,7 @@ static void s_dummyfunc();
 
 		}
 		///	Method : マウス移動イベント受信
-		void onMouseMove(const MouseEvent& e){
+		virtual void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
 			if (g_underselecttolast) return;
 
@@ -3330,6 +3469,62 @@ static void s_dummyfunc();
 				setShowPosLine( (e.localY-movableYStart)*((int)lineData.size()-showLineNum)/movableY );
 			}
 		}
+		virtual void onMButtonDown(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+			int x0 = MARGIN;
+			int x1 = x0 + LABEL_SIZE_X;
+			int x2 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+			int x3 = size.x - MARGIN;
+			int y0 = MARGIN;
+			int y1 = y0 + AXIS_SIZE_Y + 1;
+			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
+			int y3 = size.y - MARGIN;
+
+			//ラベル
+			if (x0 <= e.localX && e.localX<x2 && y1 <= e.localY && e.localY<y2){
+				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
+
+				//dragLabel = true;
+			}
+
+			//時間軸目盛り
+			if (x1 - 2 <= e.localX && e.localX<x2 && y0 <= e.localY && e.localY<y2){
+				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
+
+				//dragTime = true;
+			}
+			if (this->mouseMDownListener != NULL){
+				(this->mouseMDownListener)();
+			}
+		}
+		virtual void onMButtonUp(const MouseEvent& e){
+			if (!canMouseControll) return;
+
+			//ドラッグフラグを初期化
+			dragLabel = false;
+			dragTime = false;
+			dragScrollBarLabel = false;
+			dragScrollBarTime = false;
+			dragSelect = false;
+			dragShift = false;
+
+			//再描画領域
+			RECT tmpRect;
+			tmpRect.left = pos.x + 1;
+			tmpRect.top = pos.y + 1;
+			tmpRect.right = pos.x + size.x - 1;
+			tmpRect.bottom = pos.y + size.y - 1;
+			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+		}
+		virtual void onMouseWheel(const MouseEvent& e){
+			wheeldelta = e.wheeldelta;
+			if (this->mouseWheelListener != NULL){
+				(this->mouseWheelListener)();
+			}
+		}
+		int getMouseWheelDelta(){ return wheeldelta; }
 		/// Method : 行インデックスを取得する
 		int getLineIndex(const std::basic_string<TCHAR>& _name) const{
 			for(int i=0; i<(int)lineData.size(); i++){
@@ -3502,6 +3697,14 @@ static void s_dummyfunc();
 		void setKeyDeleteListener(std::tr1::function<void(const KeyInfo&)> listener){
 			this->keyDeleteListener= listener;
 		}
+		void setMouseMDownListener(std::tr1::function<void()> listener){
+			this->mouseMDownListener = listener;
+		}
+		void setMouseWheelListener(std::tr1::function<void()> listener){
+			this->mouseWheelListener = listener;
+		}
+
+
 
 		KeyInfo ExistKey( int srcline, double srctime )
 		{
@@ -3530,9 +3733,12 @@ static void s_dummyfunc();
 		////////////////////////// MemberVar /////////////////////////////
 		double maxTime,currentTime,showPos_time;
 		int currentLine,showPos_line;
+		int wheeldelta;
 		std::tr1::function<void()> cursorListener;
 		std::tr1::function<void()> selectListener;
 		std::tr1::function<void()> keyShiftListener;
+		std::tr1::function<void()> mouseMDownListener;
+		std::tr1::function<void()> mouseWheelListener;
 		std::tr1::function<void(const KeyInfo&)> keyDeleteListener;
 
 		//行データクラス-------------
@@ -3712,7 +3918,7 @@ static void s_dummyfunc();
 							ki.time= key[i]->time;
 							ki.timeIndex= -1;
 							ki.object= key[i]->object;
-							parent->keyDeleteListener(ki);
+							(parent->keyDeleteListener)(ki);
 						}
 
 						key[i]->type=   _type;
@@ -3845,7 +4051,7 @@ static void s_dummyfunc();
 							ki.time= key[i]->time;
 							ki.timeIndex= -1;
 							ki.object= key[i]->object;
-							parent->keyDeleteListener(ki);
+							(parent->keyDeleteListener)(ki);
 						}
 
 						delete key[i];
@@ -3872,7 +4078,7 @@ static void s_dummyfunc();
 					ki.time= key[index]->time;
 					ki.timeIndex= -1;
 					ki.object= key[index]->object;
-					parent->keyDeleteListener(ki);
+					(parent->keyDeleteListener)(ki);
 				}
 
 				delete key[index];
@@ -3903,7 +4109,7 @@ static void s_dummyfunc();
 						ki.time= dstTime;
 						ki.timeIndex= -1;
 						ki.object= object;
-						parent->keyDeleteListener(ki);
+						(parent->keyDeleteListener)(ki);
 					}
 
 					//存在するキーの値を置き換え後のキーの値に変更
@@ -3941,7 +4147,7 @@ static void s_dummyfunc();
 							ki.time= itr->time+shiftTime;
 							ki.timeIndex= -1;
 							ki.object= itr->object;
-							parent->keyDeleteListener(ki);
+							(parent->keyDeleteListener)(ki);
 						}
 					}
 				}
@@ -5130,7 +5336,6 @@ static void s_dummyfunc();
 		static const int NAME_POS_X1 = 5;
 		static const int NAME_POS_X2 = 3;
 	};
-
 
 
 void s_dummyfunc()
