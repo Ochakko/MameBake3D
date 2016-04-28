@@ -9629,10 +9629,16 @@ int OnTimeLineWheel()
 
 		//delta = 1;
 		if (s_underselectingframe == 1){
-			int delta, delta2;
+			int delta;
+			double delta2;
 			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
-			delta2 = (int)((float)delta / 100.0f);
-			s_buttonselectend += (double)delta2;
+			if (g_controlkey == false){
+				delta2 = (double)delta / 100.0;
+			}
+			else{
+				delta2 = (double)delta / 20.0;//ctrl‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç5”{‘¬
+			}
+			s_buttonselectend += delta2;
 			DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
 
 			OnTimeLineButtonSelect(0);
