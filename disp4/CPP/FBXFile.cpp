@@ -1462,7 +1462,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 _ASSERT( motionnum == aino );
 
-	//qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );
+	qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );//モーション長が短い順に出力しないと正しく読み込めない。FBXの仕様？
 
 	s_firstoutmot = s_ai->motid;
 

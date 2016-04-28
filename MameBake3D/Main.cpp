@@ -7895,7 +7895,7 @@ int SetConvBoneBvh()
 
 		WCHAR strmes[1024];
 		if (!s_convbone_bvh){
-						swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+			swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
 			::MessageBox(NULL, strmes, L"check", MB_OK);
 		}
 		else{
