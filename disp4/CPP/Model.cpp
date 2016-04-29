@@ -198,10 +198,10 @@ int CModel::DestroyFBXSDK()
 //		m_pscene = 0;
 //	}
 
-	if( m_pimporter ){
-		m_pimporter->Destroy();// インポータの削除
-		m_pimporter = 0;
-	}
+//	if( m_pimporter ){
+//		m_pimporter->Destroy();// インポータの削除
+//		m_pimporter = 0;
+//	}
 
 	return 0;
 }
@@ -383,13 +383,19 @@ int CModel::LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR
 	FbxScene* pScene = 0;
 	FbxImporter* pImporter = 0;
 
-    pScene = FbxScene::Create(m_psdk,"");
+	char scenename[256];
+	sprintf_s(scenename, "scene_%d", s_alloccnt);
+    pScene = FbxScene::Create(m_psdk, scenename);
 
     int lFileMajor, lFileMinor, lFileRevision;
     int lSDKMajor,  lSDKMinor,  lSDKRevision;
     bool lStatus;
     FbxManager::GetFileFormatVersion(lSDKMajor, lSDKMinor, lSDKRevision);
-    pImporter = FbxImporter::Create(m_psdk,"");
+
+	char importername[256];
+	sprintf_s(importername, "importer_%d", s_alloccnt);
+	pImporter = FbxImporter::Create(m_psdk, importername);
+
     const bool lImportStatus = pImporter->Initialize(utf8path, -1, m_psdk->GetIOSettings());
     pImporter->GetFileVersion(lFileMajor, lFileMinor, lFileRevision);
     if( !lImportStatus )
@@ -447,17 +453,24 @@ int CModel::LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR
 		delete (CBone*)(m_bonelist.begin()->second);
 		m_bonelist.clear();
 		m_topbone = 0;
+		_ASSERT(0);
 	}
 	CBone* chkbone = m_bonelist[0];
 	if( !chkbone ){
 		CBone* dummybone = new CBone( this );
 		_ASSERT( dummybone );
 		dummybone->SetName( "DummyBone" );
+		m_bonelist[0] = dummybone;
+		//m_topbone = dummybone;
+		_ASSERT(0);
 	}
+
+_ASSERT(m_bonelist[0]);
 
 	CreateFBXMeshReq( pRootNode );
 
 DbgOut( L"fbx bonenum %d\r\n", m_bonelist.size() );
+_ASSERT(m_bonelist[0]);
 
 
 	D3DXMATRIX offsetmat;
@@ -474,6 +487,8 @@ DbgOut( L"fbx bonenum %d\r\n", m_bonelist.size() );
 		}
 	}
 
+_ASSERT(m_bonelist[0]);
+
 	//m_ktime0.SetTime(0, 0, 0, 1, 0, pScene->GetGlobalSettings().GetTimeMode());
 //	m_ktime0.SetSecondDouble( 1.0 / 300.0 );
 //	m_ktime0.SetSecondDouble( 1.0 / 30.0 );
@@ -488,11 +503,14 @@ DbgOut( L"fbx bonenum %d\r\n", m_bonelist.size() );
 
 	SetMaterialName();
 
+_ASSERT(m_bonelist[0]);
 
 	map<int,CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		curbone->SetBtKinFlag( 1 );
+		if (curbone){
+			curbone->SetBtKinFlag(1);
+		}
 	}
 
 
@@ -556,7 +574,9 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		curbone->CalcAxisMat( 1, 0.0f );
+		if (curbone){
+			curbone->CalcAxisMat(1, 0.0f);
+		}
 	}
 
 	return 0;
@@ -1388,16 +1408,19 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 
-		//行を追加
-		if( curbone->GetType() != FBXBONE_NULL ){
-			timeline.newLine( 0, curbone->GetWBoneName() );
-		}else{
-			timeline.newLine( 1, curbone->GetWBoneName() );
-		}
+		if (curbone){
+			//行を追加
+			if (curbone->GetType() != FBXBONE_NULL){
+				timeline.newLine(0, curbone->GetWBoneName());
+			}
+			else{
+				timeline.newLine(1, curbone->GetWBoneName());
+			}
 
-		lineno2boneno[ lineno ] = curbone->GetBoneNo();
-		boneno2lineno[ curbone->GetBoneNo() ] = lineno;
-		lineno++;
+			lineno2boneno[lineno] = curbone->GetBoneNo();
+			boneno2lineno[curbone->GetBoneNo()] = lineno;
+			lineno++;
+		}
 /***
 		_ASSERT( m_curmotinfo );
 		CMotionPoint* curmp = curbone->m_motionkey[ m_curmotinfo->motid ];
@@ -1422,6 +1445,10 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 void CModel::FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone, int* linenoptr, 
 	map<int, int>& lineno2boneno, map<int, int>& boneno2lineno, int broflag )
 {
+	if (!curbone){
+		return;
+	}
+
 	//行を追加
 	if( curbone->GetType() != FBXBONE_NULL ){
 		timeline.newLine( 0, curbone->GetWBoneName() );
@@ -1776,17 +1803,18 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, D3DXVECTOR3* world
 {					
 	CBone* curbone;
 	curbone = m_bonelist[ srcboneno ];
-	*worldptr = curbone->GetChildWorld();
-	D3DXMATRIX mWVP = curbone->GetCurMp().GetWorldMat() * m_matVP;
-	D3DXVec3TransformCoord( screenptr, &curbone->GetJointFPos(), &mWVP );
+	if (curbone){
+		*worldptr = curbone->GetChildWorld();
+		D3DXMATRIX mWVP = curbone->GetCurMp().GetWorldMat() * m_matVP;
+		D3DXVec3TransformCoord(screenptr, &curbone->GetJointFPos(), &mWVP);
 
-	float fw, fh;
-	fw = (float)winx / 2.0f;
-	fh = (float)winy / 2.0f;
-	dispptr->x = ( 1.0f + screenptr->x ) * fw;
-	dispptr->y = ( 1.0f - screenptr->y ) * fh;
-	dispptr->z = screenptr->z;
-
+		float fw, fh;
+		fw = (float)winx / 2.0f;
+		fh = (float)winy / 2.0f;
+		dispptr->x = (1.0f + screenptr->x) * fw;
+		dispptr->y = (1.0f - screenptr->y) * fh;
+		dispptr->z = screenptr->z;
+	}
 	return 0;
 }
 
@@ -3330,6 +3358,10 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 }
 void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition )
 {
+	if (!curbone){
+		return;
+	}
+
 	FbxNode* pNode = m_bone2node[ curbone ];
 
 
@@ -3555,6 +3587,10 @@ FbxAMatrix GetGeometry(FbxNode* pNode)
 
 void CModel::FillUpEmptyKeyReq( int motid, int animleng, CBone* curbone, CBone* parbone )
 {
+	if (!curbone){
+		return;
+	}
+
 	D3DXMATRIX parfirstmat, invparfirstmat;
 	D3DXMatrixIdentity( &parfirstmat );
 	D3DXMatrixIdentity( &invparfirstmat );
@@ -3648,7 +3684,9 @@ int CModel::DestroyBtObject()
 	map<int,CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		curbone->ClearBtObject();
+		if(curbone){
+			curbone->ClearBtObject();
+		}
 	}
 
 
@@ -3788,6 +3826,9 @@ void CModel::CreateBtConstraintReq( CBtObject* curbto )
 }
 void CModel::CreateBtConnectReq(CBone* curbone)
 {
+	if (!curbone){
+		return;
+	}
 	if (curbone->GetChild()){
 		CBone* brobone1 = curbone->GetChild()->GetBrother();
 		if (brobone1){
@@ -4018,6 +4059,9 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 
 int CModel::SetBtEquilibriumPointReq( CBone* curbone )
 {
+	if (!curbone){
+		return 0;
+	}
 
 	map<CBone*, CBtObject*>::iterator itrbto;
 	for (itrbto = curbone->GetBtObjectMapBegin(); itrbto != curbone->GetBtObjectMapEnd(); itrbto++){
@@ -4050,6 +4094,10 @@ int CModel::SetBtEquilibriumPointReq( CBone* curbone )
 
 void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBone* parbone, CBone* curbone )
 {
+	if (!curbone){
+		return;
+	}
+
 	map<CBone*, CRigidElem*> tmpmap;
 	curbone->GetRigidElemMap(tmpmap);
 
@@ -4095,6 +4143,9 @@ void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBon
 
 void CModel::CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, float delta )
 {
+	if (!curbone){
+		return;
+	}
 	int setstartflag;
 	if( delta == 0.0f ){
 		setstartflag = 1;
@@ -4372,6 +4423,9 @@ void CModel::SetBtMotionReq( CBtObject* curbto, D3DXMATRIX* wmat, D3DXMATRIX* vp
 
 void CModel::CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname )
 {
+	if (!curbone){
+		return;
+	}
 	CBone* parbone = curbone->GetParent();
 	if (parbone){
 		parbone->CreateRigidElem(curbone, reflag, rename, impflag, impname);
@@ -4998,7 +5052,9 @@ int CModel::SetCurrentRigidElem( int curindex )
 	map<int,CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		CallF( curbone->SetCurrentRigidElem( curname ), return 1 );
+		if (curbone){
+			CallF(curbone->SetCurrentRigidElem(curname), return 1);
+		}
 	}
 
 	return 0;
@@ -5122,16 +5178,20 @@ int CModel::SetBefEditMat( CEditRange* erptr, CBone* curbone, int maxlevel )
 
 int CModel::SetBefEditMatFK( CEditRange* erptr, CBone* curbone )
 {
-	list<KeyInfo>::iterator itrki;
-	double firstframe = 0.0;
-	for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-		double curframe = itrki->time;
-		CMotionPoint* editmp = 0;
-		editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-		if(editmp){
-			editmp->SetBefEditMat(editmp->GetWorldMat()); 
-		}else{
-			_ASSERT( 0 );
+	if (curbone){
+
+		list<KeyInfo>::iterator itrki;
+		double firstframe = 0.0;
+		for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
+			double curframe = itrki->time;
+			CMotionPoint* editmp = 0;
+			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+			if (editmp){
+				editmp->SetBefEditMat(editmp->GetWorldMat());
+			}
+			else{
+				_ASSERT(0);
+			}
 		}
 	}
 	return 0;
@@ -5609,9 +5669,12 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			if (g_applyendflag == 1){
 				//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
-				int tolast;
-				for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
-					(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+				if (m_topbone){
+					int tolast;
+					for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
+						//(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+						m_topbone->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+					}
 				}
 			}
 
@@ -5682,75 +5745,88 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	erptr->GetRange( &keynum, &startframe, &endframe, &applyframe );
 	
 	curbone = firstbone;
-	double firstframe = 0.0;
+	if (!curbone){
+		return 0;
+	}
 
-	if( keynum >= 2 ){
+	double firstframe = 0.0;
+	if (keynum >= 2){
 		int keyno = 0;
 		list<KeyInfo>::iterator itrki;
-		for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
+		for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
 			double curframe = itrki->time;
 			double changerate;
-			if( curframe <= applyframe ){
-				if( applyframe != startframe ){
+			if (curframe <= applyframe){
+				if (applyframe != startframe){
 					changerate = 1.0 / (applyframe - startframe);
-				}else{
+				}
+				else{
 					changerate = 1.0;
 				}
-			}else{
-				if( applyframe != endframe ){
-					changerate = 1.0 / (endframe - applyframe );
-				}else{
+			}
+			else{
+				if (applyframe != endframe){
+					changerate = 1.0 / (endframe - applyframe);
+				}
+				else{
 					changerate = 0.0;
 				}
 			}
 
-			if( keyno == 0 ){
+			if (keyno == 0){
 				firstframe = curframe;
 			}
-			if( g_absikflag == 0 ){
-				if( g_slerpoffflag == 0 ){
+			if (g_absikflag == 0){
+				if (g_slerpoffflag == 0){
 					double currate2;
 					CQuaternion endq;
 					CQuaternion curq;
-					endq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-					if( curframe <= applyframe ){
-						if( applyframe != startframe ){
+					endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+					if (curframe <= applyframe){
+						if (applyframe != startframe){
 							currate2 = changerate * (curframe - startframe);
-						}else{
+						}
+						else{
 							currate2 = 1.0;
 						}
-					}else{
+					}
+					else{
 						currate2 = changerate * (endframe - curframe);
 					}
-					rotq.Slerp2( endq, 1.0 - currate2, &curq );
+					rotq.Slerp2(endq, 1.0 - currate2, &curq);
 
-					curbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, curq );
-				}else{
-					curbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
+					curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 				}
-			}else{
-				if( keyno == 0 ){
-					curbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
-				}else{
-					curbone->SetAbsMatReq( 0, m_curmotinfo->motid, curframe, firstframe );
+				else{
+					curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+				}
+			}
+			else{
+				if (keyno == 0){
+					curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+				}
+				else{
+					curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
 				}
 			}
 			keyno++;
 		}
 
-		if( g_applyendflag == 1 ){
+		if (g_applyendflag == 1){
 			//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
-			int tolast;
-			for( tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++ ){
-				(m_bonelist[ 0 ])->PasteRotReq( m_curmotinfo->motid, m_curmotinfo->curframe, tolast );
+			if (m_topbone){
+				int tolast;
+				for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
+					m_topbone->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+				}
 			}
 		}
 
 
-	}else{
-		curbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
 	}
-
+	else{
+		curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+	}
 
 	if( g_absikflag && curbone ){
 		AdjustBoneTra( erptr, curbone );

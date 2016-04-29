@@ -4570,6 +4570,11 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
+			//FbxScene* pscene = curmodel->GetScene();
+			//if (pscene){
+			//	pscene->Destroy();
+			//}
+
 			delete curmodel;
 		}
 	}
@@ -6746,8 +6751,18 @@ int OnDelModel( int delmenuindex )
 		return 0;
 	}
 
+	if (mdlnum == 1){
+		OnDelAllModel();//psdk rootnode‰Šú‰»
+		return 0;
+	}
+
+
 	CModel* delmodel = s_modelindex[ delmenuindex ].modelptr;
 	if( delmodel ){
+		FbxScene* pscene = delmodel->GetScene();
+		if (pscene){
+			pscene->Destroy();
+		}
 		delete delmodel;
 	}
 
@@ -6796,26 +6811,33 @@ int OnDelAllModel()
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* delmodel = itrmodel->modelptr;
 		if( delmodel ){
+			FbxScene* pscene = delmodel->GetScene();
+			if (pscene){
+				pscene->Destroy();
+			}
 			delete delmodel;
 		}
-		itrmodel->tlarray.erase( itrmodel->tlarray.begin(), itrmodel->tlarray.end() );
-		itrmodel->boneno2lineno.erase( itrmodel->boneno2lineno.begin(), itrmodel->boneno2lineno.end() );
-		itrmodel->lineno2boneno.erase( itrmodel->lineno2boneno.begin(), itrmodel->lineno2boneno.end() );
+		itrmodel->tlarray.clear();
+		itrmodel->boneno2lineno.clear();
+		itrmodel->lineno2boneno.clear();
 	}
 
-	s_modelindex.erase( s_modelindex.begin(), s_modelindex.end() );
+	s_modelindex.clear();
 
 	s_curboneno = -1;
 	s_model = 0;
 	s_curmodelmenuindex = -1;
-	s_tlarray.erase( s_tlarray.begin(), s_tlarray.end() );
+	s_tlarray.clear();
 	s_curmotmenuindex = -1;
-	s_lineno2boneno.erase( s_lineno2boneno.begin(), s_lineno2boneno.end() );
-	s_boneno2lineno.erase( s_boneno2lineno.begin(), s_boneno2lineno.end() );
+	s_lineno2boneno.clear();
+	s_boneno2lineno.clear();
 
 	OnModelMenu( -1, 0 );
 
 	CreateModelPanel();
+
+
+
 
 	return 0;
 }
