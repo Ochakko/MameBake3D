@@ -617,7 +617,7 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
-static int InitCurMotion();
+static int InitCurMotion(int selectflag);
 static CRigidElem* GetCurRe();
 static CRigidElem* GetCurRgdRe();
 
@@ -2831,7 +2831,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				}
 			}
 			*/
-			InitCurMotion();
+			InitCurMotion(1);
 			SetLTimelineMark( s_curboneno );
 		}
 	}
@@ -3696,7 +3696,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			case ID_NEWMOT:
 				AddMotion( 0 );
-				InitCurMotion();
+				InitCurMotion(0);
 				return 0;
 				break;
 			case ID_DELCURMOT:
@@ -5571,7 +5571,7 @@ CModel* OpenMQOFile()
 
 
 	CallF( AddMotion( 0 ), return 0 );
-	InitCurMotion();
+	InitCurMotion(0);
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
 	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
@@ -5772,7 +5772,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
 		s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
 
-		InitCurMotion();
+		InitCurMotion(0);
 	}
 
 
@@ -5785,7 +5785,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	return newmodel;
 }
 
-int InitCurMotion()
+int InitCurMotion(int selectflag)
 {
 	MOTINFO* curmi = s_model->GetCurMotInfo();
 	if (curmi){
@@ -5793,11 +5793,24 @@ int InitCurMotion()
 		CBone* topbone = s_model->GetTopBone();
 		double motleng = curmi->frameleng;
 		//_ASSERT(0);
-		double frame;
-		for (frame = 0.0; frame < motleng; frame += 1.0){
-			if (topbone){
-				s_model->SetMotionFrame(frame);
-				InitMPReq(topbone, frame);
+
+		if (selectflag == 1){//called from tool panel : init selected time range
+			list<KeyInfo>::iterator itrcp;
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+				double curframe = itrcp->time;
+				if (topbone){
+					s_model->SetMotionFrame(curframe);
+					InitMPReq(topbone, curframe);
+				}
+			}
+		}
+		else{
+			double frame;
+			for (frame = 0.0; frame < motleng; frame += 1.0){
+				if (topbone){
+					s_model->SetMotionFrame(frame);
+					InitMPReq(topbone, frame);
+				}
 			}
 		}
 	}
@@ -6736,7 +6749,7 @@ int OnDelMotion( int delmenuindex )
 	int newtlnum = s_tlarray.size();
 	if( newtlnum == 0 ){
 		AddMotion( 0 );
-		InitCurMotion();
+		InitCurMotion(0);
 	}else{
 		OnAnimMenu( 0 );
 	}
@@ -8043,7 +8056,7 @@ int ConvBoneConvert()
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
 	double motleng = bvhmi->frameleng;
 	AddMotion(0, motleng);
-	InitCurMotion();
+	InitCurMotion(0);
 
 
 	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
