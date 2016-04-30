@@ -1326,3 +1326,15 @@ void CBone::CalcFirstAxisMatX()
 		CalcAxisMatX_aft(curpos, chilpos, &m_firstaxismatX);
 	}
 }
+
+int CBone::CalcBoneDepth()
+{
+	int retdepth = 0;
+	CBone* curbone = this;
+	while (curbone->GetParent()){
+		retdepth++;
+		curbone = curbone->GetParent();
+	}
+
+	return retdepth;
+}

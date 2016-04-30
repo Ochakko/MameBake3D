@@ -1409,12 +1409,14 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 		_ASSERT( curbone );
 
 		if (curbone){
+			int depth = curbone->CalcBoneDepth();
+
 			//s‚ð’Ç‰Á
 			if (curbone->GetType() != FBXBONE_NULL){
-				timeline.newLine(0, curbone->GetWBoneName());
+				timeline.newLine(depth, 0, curbone->GetWBoneName());
 			}
 			else{
-				timeline.newLine(1, curbone->GetWBoneName());
+				timeline.newLine(depth, 1, curbone->GetWBoneName());
 			}
 
 			lineno2boneno[lineno] = curbone->GetBoneNo();
@@ -1449,11 +1451,13 @@ void CModel::FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone,
 		return;
 	}
 
+	int depth = curbone->CalcBoneDepth();
+
 	//s‚ð’Ç‰Á
 	if( curbone->GetType() != FBXBONE_NULL ){
-		timeline.newLine( 0, curbone->GetWBoneName() );
+		timeline.newLine(depth, 0, curbone->GetWBoneName());
 	}else{
-		timeline.newLine( 1, curbone->GetWBoneName() );
+		timeline.newLine(depth, 1, curbone->GetWBoneName());
 	}
 
 	lineno2boneno[ *linenoptr ] = curbone->GetBoneNo();

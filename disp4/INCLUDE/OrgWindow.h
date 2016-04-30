@@ -2766,7 +2766,7 @@ static void s_dummyfunc();
 			
 			TIME_ERROR_WIDTH = 0.0001;
 
-			lineData.push_back(new LineData(0,_name,this,0));
+			lineData.push_back(new LineData(0,0,_name,this,0));
 			maxTime= _maxTime;
 			timeSize= _timeSize;
 			cursorListener = [](){s_dummyfunc();};
@@ -2957,13 +2957,13 @@ static void s_dummyfunc();
 			}
 		}
 		//	Method : 行を追加	(既に同名のキーがある場合はFalseを返す)
-		bool newLine(int nullflag, const std::basic_string<TCHAR>& _name ){
+		bool newLine(int _depth, int nullflag, const std::basic_string<TCHAR>& _name){
 			for(int i=0; i<(int)lineData.size(); i++){
 				if(lineData[i]->name==_name){
 					return false;
 				}
 			}
-			lineData.push_back(new LineData(nullflag, _name,this,lineData.size()));
+			lineData.push_back(new LineData(_depth, nullflag, _name,this,lineData.size()));
 
 			//再描画要求
 			if( rewriteOnChange ){
@@ -3744,7 +3744,8 @@ static void s_dummyfunc();
 		//行データクラス-------------
 		class LineData{
 		public:
-			LineData(int nullflag, const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex){
+			LineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex){
+				depth = _depth;
 				m_nullflag = nullflag;
 				name= _name;
 				parent= _parent;
@@ -3784,6 +3785,7 @@ static void s_dummyfunc();
 			std::basic_string<TCHAR> name;
 			std::vector<Key*> key;
 			unsigned int lineIndex;
+			int depth;
 
 			//////////////////////////// Method //////////////////////////////
 			//	Method : 描画
@@ -3815,9 +3817,21 @@ static void s_dummyfunc();
 				}else{
 					SetTextColor(hdcM->hDC,RGB(0,240,240));
 				}
-				TextOut( hdcM->hDC,
-						 posX+2, posY+parent->LABEL_SIZE_Y/2-5,
-						 name.c_str(), _tcslen(name.c_str()));
+
+				std::basic_string<TCHAR> prname;
+				int depthcnt;
+				for (depthcnt = 0; depthcnt < depth; depthcnt++){
+					prname += TEXT("  ");
+				}
+				prname += name;
+
+				TextOut(hdcM->hDC,
+					posX + 2, posY + parent->LABEL_SIZE_Y / 2 - 5,
+					prname.c_str(), _tcslen(prname.c_str()));
+
+				//TextOut( hdcM->hDC,
+				//		 posX+2, posY+parent->LABEL_SIZE_Y/2-5,
+				//		 name.c_str(), _tcslen(name.c_str()));
 
 				//枠
 				hdcM->setPenAndBrush(RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)),NULL);
@@ -4183,7 +4197,8 @@ static void s_dummyfunc();
 
 		static const int LABEL_SIZE_Y= 15;
 		//static const int LABEL_SIZE_X= 75;
-		static const int LABEL_SIZE_X= 250;
+		//static const int LABEL_SIZE_X= 250;
+		static const int LABEL_SIZE_X = 280;
 		static const int AXIS_SIZE_Y= 15;
 		static const int SCROLL_BAR_WIDTH= 10;
 		static const int MARGIN= 3;
@@ -4205,7 +4220,6 @@ static void s_dummyfunc();
 		int dragSelectLine1,dragSelectLine2;
 
 		bool dragShift;			//ドラッグでのキー移動
-
 	};
 
 	///<summary>

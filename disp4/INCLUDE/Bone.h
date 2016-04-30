@@ -318,6 +318,8 @@ public:
 
 	int CalcFirstFrameBonePos(D3DXMATRIX srcmat);
 
+	int CalcBoneDepth();
+
 
 private:
 

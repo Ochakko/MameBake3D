@@ -5892,10 +5892,10 @@ void refreshTimeline(OWP_Timeline& timeline){
 		s_owpLTimeline->deleteKey();
 		s_owpLTimeline->deleteLine();
 
-		s_owpLTimeline->newLine( 0, s_strcurrent );
+		s_owpLTimeline->newLine(0, 0, s_strcurrent);
 		//s_owpLTimeline->newKey( s_strcurrent, 0.0, 0 );
-		s_owpLTimeline->newLine( 0, s_streditrange );
-		s_owpLTimeline->newLine( 0, s_strmark );
+		s_owpLTimeline->newLine(0, 0, s_streditrange);
+		s_owpLTimeline->newLine(0, 0, s_strmark);
 		//s_owpLTimeline->newKey( s_strmark, 0.0, 0 );
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
@@ -5917,8 +5917,8 @@ void refreshTimeline(OWP_Timeline& timeline){
 		CallF( s_model->FillTimeLine( timeline, s_lineno2boneno, s_boneno2lineno ), return );
 	}else{
 		WCHAR label[256];
-		swprintf_s(label, 256, L"dummy%d", 0 );
-		timeline.newLine(0, label);
+		swprintf_s(label, 256, L"dummy%d", 0);
+		timeline.newLine(0, 0, label);
 	}
 
 	//‘I‘ðŽž‚ðÝ’è
@@ -9388,7 +9388,7 @@ int SetLTimelineMark( int curboneno )
 
 				WCHAR markname[256] = {0L};
 				swprintf_s( markname, 256, L"Mark:%s", curbone->GetWBoneName() );
-				s_owpLTimeline->newLine( 0, markname );
+				s_owpLTimeline->newLine(0, 0, markname);
 
 				double frame;
 				for( frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0 ){
