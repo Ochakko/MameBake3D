@@ -78,6 +78,8 @@ static int s_ainum = 0;
 
 static CFBXBone* s_fbxbone = 0;
 static CFBXBone* s_firsttopbone = 0;
+static int s_fbxbonenum = 0;
+
 
 static int sortfunc_leng( void *context, const void *elem1, const void *elem2);
 
@@ -140,9 +142,9 @@ static int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno );
 static int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObject* curobj, BLSINDEX* blsindex );
 static int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, D3DXVECTOR3* targetv, int targetcnt );
 
-static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* srcRootNode);
+static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, int bonecnt);
 static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene);
-static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh);
+static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt);
 
 
 #ifdef IOS_REF
@@ -420,7 +422,12 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 	}
 ***/
 
-	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lRootNode);
+	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
+	lRootNode->AddChild(lMesh);
+	FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
+	FbxSkin* lSkin = FbxSkin::Create(pScene, "");
+	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, 0);
+	lMeshAttribute->AddDeformer(lSkin);
 
 
 //    StoreRestPose(pScene, lSkeletonRoot);
@@ -514,7 +521,13 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 		lMeshAttribute->AddDeformer(lSkin);
 	}
 
-	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lRootNode);
+
+	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
+	lRootNode->AddChild(lMesh);
+	FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
+	FbxSkin* lSkin = FbxSkin::Create(pScene, "");
+	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, 0);
+	lMeshAttribute->AddDeformer(lSkin);
 
 
 //    StoreRestPose(pScene, lSkeletonRoot);
@@ -1982,6 +1995,7 @@ int AnimateMorph(FbxScene* pScene, CModel* pmodel)
 
 CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 {
+	s_fbxbonenum = 0;
 	if( !s_behead ){
 		_ASSERT( 0 );
 		return 0;
@@ -2005,7 +2019,7 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 	fbxbone->SetType( FB_ROOT );
 	fbxbone->SetBvhElem( 0 );
 	fbxbone->SetSkelNode( lSkeletonNode );
-
+	s_fbxbonenum++;
 
 	FbxNode* lSkeletonNode2;
 	FbxString lNodeName2(s_behead->GetName());
@@ -2025,6 +2039,7 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 	fbxbone2->SetSkelNode(lSkeletonNode2);
 	fbxbone->GetSkelNode()->AddChild(lSkeletonNode2);
 	fbxbone->AddChild(fbxbone2);
+	s_fbxbonenum++;
 
 
 	s_fbxbone = fbxbone;//!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2095,6 +2110,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		if (parpbe){
 			parfbxbone->SetType(FB_BUNKI_PAR);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
+		s_fbxbonenum++;
 
 		char newname[256] = { 0 };
 		sprintf_s(newname, 256, "%s", pbe->GetName());
@@ -2127,6 +2143,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 			//endjoint
 			fbxbone->SetType(FB_ENDJOINT);
 		}
+		s_fbxbonenum++;
 
 		if (pbe->GetBrother()){
 			CreateFBXBoneOfBVHReq(pScene, pbe->GetBrother(), parfbxbone);
@@ -2187,6 +2204,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 			//endjointo—Í
 			fbxbone->SetType(FB_ENDJOINT);
 		}
+		s_fbxbonenum++;
 
 		if (pbe->GetBrother()){
 			CreateFBXBoneOfBVHReq(pScene, pbe->GetBrother(), parfbxbone);
@@ -2201,6 +2219,8 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 
 CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 {
+	s_fbxbonenum = 0;
+
 	CBone* topj = pmodel->GetTopBone();
 	if( !topj ){
 		_ASSERT( 0 );
@@ -2252,6 +2272,7 @@ CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 
 	fbxbone2->GetSkelNode()->AddChild(lSkeletonNode);
 	fbxbone2->AddChild(fbxbone);
+	s_fbxbonenum++;
 
 	s_firsttopbone = fbxbone;//root‚ÌÅ‰‚ÌŽq‹Ÿ
 
@@ -2302,6 +2323,7 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 		//endjointo—Í
 		fbxbone->SetType( FB_ENDJOINT );
 	}
+	s_fbxbonenum++;
 
 	if( pbone->GetChild() ){
 		CreateFBXBoneReq( pScene, pbone->GetChild(), fbxbone );
@@ -2328,22 +2350,23 @@ int DestroyFBXBoneReq( CFBXBone* fbxbone )
 }
 
 
-void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* srcRootNode)
+void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, int bonecnt)
 {
-	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
-	srcRootNode->AddChild(lMesh);
+	//FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
+	//srcRootNode->AddChild(lMesh);
+	//FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
+	//FbxSkin* lSkin = FbxSkin::Create(pScene, "");
 
-	FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
-	FbxSkin* lSkin = FbxSkin::Create(pScene, "");
-	LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh);
-	lMeshAttribute->AddDeformer(lSkin);
+	LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);
+	//lMeshAttribute->AddDeformer(lSkin);
+	bonecnt++;
 
 	if (fbxbone->GetChild()){
-		CreateDummyInfDataReq(fbxbone->GetChild(), pSdkManager, pScene, srcRootNode);
+		CreateDummyInfDataReq(fbxbone->GetChild(), pSdkManager, pScene, lMesh, lSkin, bonecnt);
 	}
 
 	if (fbxbone->GetBrother()){
-		CreateDummyInfDataReq(fbxbone->GetBrother() , pSdkManager, pScene, srcRootNode);
+		CreateDummyInfDataReq(fbxbone->GetBrother() , pSdkManager, pScene, lMesh, lSkin, bonecnt);
 	}
 
 }
@@ -2355,7 +2378,7 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 	char meshname[256] = { 0 };
 	sprintf_s(meshname, 256, "_ND_dtri%d", s_namecnt);
 	s_namecnt++;
-	int facenum = 1;
+	int facenum = s_fbxbonenum;
 
 	FbxMesh* lMesh = FbxMesh::Create(pScene, meshname);
 	lMesh->InitControlPoints(facenum * 3);
@@ -2372,7 +2395,7 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 
 	int vsetno = 0;
 	int vcnt;
-	for (vcnt = 0; vcnt < 3; vcnt++){
+	for (vcnt = 0; vcnt < facenum * 3; vcnt++){
 		*(lcp + vsetno) = FbxVector4(0.0f, 0.0f, 0.0f, 1.0f);
 		FbxVector4 fbxn = FbxVector4(0.0f, 0.0f, -1.0f, 0.0f);
 		lElementNormal->GetDirectArray().Add(fbxn);
@@ -2384,17 +2407,20 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 	lUVDiffuseElement->GetIndexArray().SetCount(facenum * 3);
 
 	vsetno = 0;
-	lMesh->BeginPolygon(-1, -1, -1, false);
-	int i;
-	for (i = 0; i < 3; i++)
-	{
-		// Control point index
-		lMesh->AddPolygon(vsetno);
-		// update the index array of the UVs that map the texture to the face
-		lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);
-		vsetno++;
+	int faceno;
+	for (faceno = 0; faceno < facenum; faceno++){
+		lMesh->BeginPolygon(-1, -1, -1, false);
+		int i;
+		for (i = 0; i < 3; i++)
+		{
+			// Control point index
+			lMesh->AddPolygon(vsetno);
+			// update the index array of the UVs that map the texture to the face
+			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);
+			vsetno++;
+		}
+		lMesh->EndPolygon();
 	}
-	lMesh->EndPolygon();
 
 
 	// create a KFbxNode
@@ -2457,7 +2483,7 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 	return lNode;
 }
 
-void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh)
+void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt)
 {
 	FbxAMatrix lXMatrix;
 	FbxNode* lSkel;
@@ -2473,7 +2499,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 		lCluster->SetLink(lSkel);
 		lCluster->SetLinkMode(FbxCluster::eTotalOne);
 
-		int vsetno = 0;
+		int vsetno = bonecnt * 3;
 		int vcnt;
 		for (vcnt = 0; vcnt < 3; vcnt++){
 			lCluster->AddControlPointIndex(vsetno, 1.0);
