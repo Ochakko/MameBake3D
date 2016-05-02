@@ -725,7 +725,7 @@ static int RegistKey();
 static int IsRegist();
 
 
-static int OnTimeLineCursor(int mbuttonflag);
+static int OnTimeLineCursor(int mbuttonflag, double newframe);
 static int OnTimeLineButtonSelect(int tothelastflag);
 static int OnTimeLineSelect();
 int OnTimeLineMButtonDown(bool ctrlshiftflag);
@@ -2799,7 +2799,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 	if( s_LcursorFlag ){
 		s_LcursorFlag = false;
-		OnTimeLineCursor(0);
+		OnTimeLineCursor(0, 0.0);
 	}
 	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb){
 		s_timelinembuttonFlag = false;
@@ -9618,11 +9618,20 @@ int ExportBntFile()
 	return 0;
 }
 
-int OnTimeLineCursor(int mbuttonflag)
+int OnTimeLineCursor(int mbuttonflag, double newframe)
 {
 	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()){
-		double curframe = s_owpLTimeline->getCurrentTime();// ‘I‘ðŽž
-		s_owpTimeline->setCurrentTime(curframe, false);
+		double curframe;
+		if (mbuttonflag != 2){
+			curframe = s_owpLTimeline->getCurrentTime();// ‘I‘ðŽž
+			s_owpTimeline->setCurrentTime(curframe, false);
+		}
+		else{
+			s_owpLTimeline->selectClear();
+			curframe = newframe;
+			s_owpTimeline->setCurrentTime(curframe, false);
+			s_owpLTimeline->setCurrentTime(curframe, false);
+		}
 		if (s_underselectingframe == 0){
 			s_buttonselectstart = curframe;
 			s_buttonselectend = curframe;
@@ -9682,7 +9691,7 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 		if (s_owpLTimeline){
 			s_buttonselectstart = s_owpLTimeline->getCurrentTime();
 			s_buttonselectend = s_buttonselectstart;
-			OnTimeLineCursor(1);
+			OnTimeLineCursor(1, 0.0);
 		}
 	}
 	else{
@@ -9759,7 +9768,21 @@ int OnTimeLineWheel()
 		else{
 			DbgOut(L"OnTimeLineWheel 1 : start %lf, end %lf\r\n", s_buttonselectstart, s_buttonselectend);
 
-			OnTimeLineCursor(1);
+			int delta;
+			double delta2;
+			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
+			if (g_controlkey == false){
+				delta2 = (double)delta / 100.0;
+			}
+			else{
+				delta2 = (double)delta / 20.0;//ctrl‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç5”{‘¬
+			}
+			if (delta != 0){
+				double curframe = s_owpLTimeline->getCurrentTime();
+				double newframe = curframe + delta2;
+				OnTimeLineCursor(2, newframe);
+			}
+
 		}
 	}
 
