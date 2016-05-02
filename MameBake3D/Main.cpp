@@ -95,7 +95,9 @@ extern map<CModel*,int> g_bonecntmap;
 D3DXMATRIX s_selectmat;
 bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
+bool g_undereditrange = false;
 
+static int s_doneinit = 0;
 static int s_underselectingframe = 0;
 static double s_buttonselectstart = 0.0;
 static double s_buttonselectend = 0.0;
@@ -375,6 +377,8 @@ static bool s_LcursorFlag = false;			// カーソル移動フラグ
 static bool s_timelinembuttonFlag = false;
 static bool s_timelinewheelFlag = false;
 
+static bool s_prevrangeFlag = false;
+static bool s_nextrangeFlag = false;
 
 static bool s_dispmw = true;
 static bool s_disptool = true;
@@ -397,6 +401,10 @@ static list<KeyInfo> s_deletedKeyInfoList;	// 削除されたキー情報リスト
 static list<KeyInfo> s_selectKeyInfoList;	// コピーされたキー情報リスト
 
 static CEditRange s_editrange;
+static CEditRange* s_editrangehistory = 0;
+static int s_editrangehistoryno = 0;
+static int s_editrangesetindex = 0;
+static CEditRange s_previewrange;
 static SPAXIS s_spaxis[3];
 static SPCAM s_spcam[3];
 
@@ -728,8 +736,10 @@ static int IsRegist();
 static int OnTimeLineCursor(int mbuttonflag, double newframe);
 static int OnTimeLineButtonSelect(int tothelastflag);
 static int OnTimeLineSelect();
-int OnTimeLineMButtonDown(bool ctrlshiftflag);
-int OnTimeLineWheel();
+static int OnTimeLineMButtonDown(bool ctrlshiftflag);
+static int OnTimeLineWheel();
+static int AddEditRangeHistory();
+static int RollBackEditRange(int prevrangeFlag, int nextrangeFlag);
 
 
 int RegistKey()
@@ -843,7 +853,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
     // Show the cursor and clip it when in full screen
     DXUTSetCursorSettings( true, true );
 
+	s_doneinit = 0;
     InitApp();
+	if (s_doneinit != 1){
+		_ASSERT(0);
+		return 1;
+	}
 
 	IsRegist();
 
@@ -943,6 +958,20 @@ void InitApp()
 	s_underselectingframe = 0;
 	s_buttonselectstart = 0.0;
 	s_buttonselectend = 0.0;
+
+	s_editrangehistoryno = 0;
+	s_editrangesetindex = 0;
+	s_editrangehistory = new CEditRange[EDITRANGEHISTORYNUM];
+	if (!s_editrangehistory){
+		_ASSERT(0);
+		return;
+	}
+	int erhno;
+	for (erhno = 0; erhno < EDITRANGEHISTORYNUM; erhno++){
+		(s_editrangehistory + erhno)->Clear();
+	}
+
+
 
 	D3DXMatrixIdentity(&s_selectmat);
 
@@ -1172,20 +1201,32 @@ void InitApp()
 	s_owpPlayerButton->setBackPlayButtonListener( [](){  g_previewFlag = -1; } );
 	s_owpPlayerButton->setFrontStepButtonListener( [](){ s_lastkeyFlag = true; } );
 	s_owpPlayerButton->setBackStepButtonListener( [](){  s_firstkeyFlag = true; } );
-	s_owpPlayerButton->setStopButtonListener( [](){  g_previewFlag = 0; } );
+	s_owpPlayerButton->setStopButtonListener([](){  g_previewFlag = 0; });
 	s_owpPlayerButton->setResetButtonListener( [](){ if( s_owpLTimeline ){ g_previewFlag = 0; s_owpLTimeline->setCurrentTime( 0.0, false ); } } );
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
 	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
+	s_owpPlayerButton->setPrevRangeButtonListener([](){  g_undereditrange = true; s_prevrangeFlag = true; });
+	s_owpPlayerButton->setNextRangeButtonListener([](){  g_undereditrange = true; s_nextrangeFlag = true; });
 
 	s_LtimelineWnd->setSizeMin( OrgWinGUI::WindowSize( 100, 100 ) );
 	s_LtimelineWnd->setCloseListener( [](){ s_LcloseFlag=true; } );
 	s_LtimelineWnd->setLUpListener( [](){
-		if (g_selecttolastFlag == false){
-			OnTimeLineSelect();
-		}
-		else{
-			OnTimeLineButtonSelect(1);
+		if (g_previewFlag == 0){
+			if (s_prevrangeFlag || s_nextrangeFlag){
+				RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
+				s_buttonselectstart = s_editrange.m_startframe;
+				s_buttonselectend = s_editrange.m_endframe;
+				OnTimeLineButtonSelect(0);
+			}
+			else if (g_selecttolastFlag == false){
+				OnTimeLineSelect();
+			}
+			else{
+				OnTimeLineButtonSelect(1);
+			}
 			g_selecttolastFlag = false;
+			s_prevrangeFlag = false;
+			s_nextrangeFlag = false;
 		}
 	} );
 
@@ -2019,6 +2060,8 @@ static OWP_Button* s_dampanimB = 0;
 	s_modelpanel.checkvec.clear();
 	s_modelpanel.modelindex = -1;
 
+
+	s_doneinit = 1;
 }
 
 
@@ -2518,14 +2561,27 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	double difftime = fTime - savetime;
 
 	static int s_savepreviewFlag = 0;
-	s_savepreviewFlag = g_previewFlag;
 
 	double nextframe = 0.0;
 	if( g_previewFlag ){
+		if (s_savepreviewFlag == 0){
+			//preview start frame
+			s_previewrange = s_editrange;
+			double rangestart;
+			if (s_previewrange.m_startframe == s_previewrange.m_endframe){
+				rangestart = 0.0;
+			}
+			else{
+				rangestart = s_previewrange.m_startframe;
+			}
+			s_model->SetMotionFrame(rangestart);
+			difftime = 0.0;
+		}
+
 		if( s_model && s_model->GetCurMotInfo() ){
 			if( g_previewFlag <= 3 ){
 				int endflag = 0;
-				s_model->AdvanceTime( g_previewFlag, difftime, &nextframe, &endflag, -1 );
+				s_model->AdvanceTime( s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, -1 );
 				if( endflag == 1 ){
 					g_previewFlag = 0;
 				}
@@ -2549,7 +2605,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				vector<MODELELEM>::iterator itrmodel;
 				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 					CModel* curmodel = itrmodel->modelptr;
-					curmodel->AdvanceTime( g_previewFlag, difftime, &nextframe, &endflag, -1 );
+					curmodel->AdvanceTime( s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, -1);
 					if( (curmodel == s_model) && (endflag == 1) ){
 						g_previewFlag = 0;
 					}
@@ -2615,7 +2671,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				*/
 			}else if( g_previewFlag == 5 ){//ラグドール
 				int endflag = 0;
-				s_model->AdvanceTime( g_previewFlag, difftime, &nextframe, &endflag, -1 );
+				s_model->AdvanceTime( s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, -1);
 				//if( endflag == 1 ){
 				//	g_previewFlag = 0;
 				//}
@@ -3242,6 +3298,9 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (s_model){
 		s_model->PlusPlusBtCnt();
 	}
+
+	s_savepreviewFlag = g_previewFlag;
+
 }
 
 int InsertCopyMP( CBone* curbone, double curframe )
@@ -4597,6 +4656,12 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
     CDXUTDirectionWidget::StaticOnD3D9DestroyDevice();
     SAFE_RELEASE( g_pEffect );
     SAFE_RELEASE( g_pFont );
+
+	if (s_editrangehistory){
+		delete[] s_editrangehistory;
+		s_editrangehistory = 0;
+	}
+	s_editrangehistoryno = 0;
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
@@ -9666,6 +9731,7 @@ int OnTimeLineSelect()
 			}
 			else{
 				s_owpLTimeline->setCurrentTime(applyframe, false);
+				AddEditRangeHistory();
 			}
 		}
 	}
@@ -9789,6 +9855,87 @@ int OnTimeLineWheel()
 			}
 
 		}
+	}
+
+	return 0;
+}
+
+int AddEditRangeHistory()
+{
+	static int s_historycnt = 0;
+
+	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)){
+		_ASSERT(0);
+		s_editrangehistoryno = 0;
+	}
+	if ((s_editrangesetindex < 0) || (s_editrangesetindex >= EDITRANGEHISTORYNUM)){
+		_ASSERT(0);
+		s_editrangesetindex = 0;
+	}
+
+	if (s_editrange.m_startframe == s_editrange.m_endframe){
+		return 0;
+	}
+
+
+	int findflag = 0;
+	int erhno;
+	for (erhno = 0; erhno < EDITRANGEHISTORYNUM; erhno++){
+		if (*(s_editrangehistory + erhno) == s_editrange){
+			findflag++;
+			break;
+		}
+	}
+
+	if (findflag == 0){
+		*(s_editrangehistory + s_editrangesetindex) = s_editrange;
+		(s_editrangehistory + s_editrangesetindex)->m_setflag = 1;
+		(s_editrangehistory + s_editrangesetindex)->m_setcnt = s_historycnt;
+		s_historycnt++;
+
+		s_editrangesetindex += 1;
+		if (s_editrangesetindex >= EDITRANGEHISTORYNUM){
+			s_editrangesetindex = 0;
+		}
+		s_editrangehistoryno = s_editrangesetindex;
+
+	}
+	return 0;
+}
+
+int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
+{
+	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)){
+		_ASSERT(0);
+		s_editrangehistoryno = 0;
+	}
+
+	int findindex = -1;
+	int erhcnt;
+	int curindex = s_editrangehistoryno;
+	for (erhcnt = 0; erhcnt < EDITRANGEHISTORYNUM; erhcnt++){
+		if (prevrangeFlag){
+			curindex -= 1;
+		}
+		else if (nextrangeFlag){
+			curindex += 1;
+		}
+		else{
+			_ASSERT(0);
+			break;
+		}
+		if (curindex < 0){
+			curindex = EDITRANGEHISTORYNUM - 1;
+		}
+		if ((s_editrangehistory + curindex)->m_setflag == 1){
+			findindex = curindex;
+			break;
+		}
+	}
+
+	if (findindex >= 0){
+		s_editrange = *(s_editrangehistory + findindex);
+		s_editrangehistoryno = findindex;
 	}
 
 	return 0;

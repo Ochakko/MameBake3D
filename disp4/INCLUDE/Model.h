@@ -417,7 +417,7 @@ public:
  * @return 成功したら０。
  * @detail previewflagは停止中０、通常再生１、bullet物理シミュレーション４、bulletラグドールシミュレーション５。
  */
-	int AdvanceTime( int previewflag, double difftime, double* nextframeptr, int* endflagptr, int srcmotid );
+	int AdvanceTime( CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int srcmotid );
 
 /**
  * @fn

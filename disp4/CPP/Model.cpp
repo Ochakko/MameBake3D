@@ -1844,7 +1844,7 @@ int CModel::ChangeMotFrameLeng( int motid, double srcleng )
 	return 0;
 }
 
-int CModel::AdvanceTime( int previewflag, double difftime, double* nextframeptr, int* endflagptr, int srcmotid )
+int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int srcmotid)
 {
 	*endflagptr = 0;
 
@@ -1862,6 +1862,7 @@ int CModel::AdvanceTime( int previewflag, double difftime, double* nextframeptr,
 		return 0;
 	}
 
+
 	double curspeed, curframe;
 	curspeed = curmotinfo->speed;
 	curframe = curmotinfo->curframe;
@@ -1870,24 +1871,33 @@ int CModel::AdvanceTime( int previewflag, double difftime, double* nextframeptr,
 	double oneframe = 1.0 / 30.0;
 	//double oneframe = 1.0 / 300.0;
 
+	double rangestart, rangeend;
+	rangestart = srcrange.m_startframe;
+	rangeend = srcrange.m_endframe;
+	if (rangestart == rangeend){
+		rangestart = 0.0;
+		rangeend = curmotinfo->frameleng - 1.0;
+	}
+
+
 	if( previewflag > 0 ){
 		nextframe = curframe + difftime / oneframe * curspeed;
-		if( nextframe > ( curmotinfo->frameleng - 1.0 ) ){
+		if( nextframe > rangeend ){
 			if( loopflag == 0 ){
-				nextframe = curmotinfo->frameleng - 1.0;
+				nextframe = rangeend;
 				*endflagptr = 1;
 			}else{
-				nextframe = 0.0;
+				nextframe = rangestart;
 			}
 		}
 	}else{
 		nextframe = curframe - difftime / oneframe * curspeed;
-		if( nextframe < 0.0 ){
+		if( nextframe < rangestart ){
 			if( loopflag == 0 ){
-				nextframe = 0.0;
+				nextframe = rangestart;
 				*endflagptr = 1;
 			}else{
-				nextframe = curmotinfo->frameleng - 1.0;
+				nextframe = rangeend;
 			}
 		}
 	}

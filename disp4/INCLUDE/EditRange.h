@@ -67,16 +67,20 @@ public:
  */
 	int GetRange( int* numptr, double* startptr, double* endptr, double* applyptr );
 
+
+	CEditRange CEditRange::operator= (CEditRange srcrange);
+	bool CEditRange::operator== (const CEditRange &er) const { return ((m_startframe == er.m_startframe) && (m_endframe == er.m_endframe) && (m_applyframe == er.m_applyframe)); };
+	bool CEditRange::operator!= (const CEditRange &er) const { return !(*this == er); };
+
 private:
 
 /**
- * @fn
- * InitParams
- * @breaf メンバの初期化。
- * @return ０。
- */
+* @fn
+* InitParams
+* @breaf メンバの初期化。
+* @return ０。
+*/
 	int InitParams();
-
 
 /**
  * @fn
@@ -88,6 +92,8 @@ private:
 
 
 public:
+	int m_setflag;
+	int m_setcnt;
 	std::list<KeyInfo> m_ki;//編集範囲のキーの情報
 	int m_keynum;
 	double m_startframe;

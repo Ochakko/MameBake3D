@@ -32,6 +32,8 @@ CEditRange::~CEditRange()
 
 int CEditRange::InitParams()
 {
+	m_setflag = 0;
+	m_setcnt = 0;
 	m_ki.clear();
 	m_keynum = 0;
 	m_startframe = 0.0;
@@ -47,12 +49,7 @@ int CEditRange::DestroyObjs()
 
 int CEditRange::Clear()
 {
-	m_ki.clear();
-
-	m_keynum = 0;
-	m_startframe = 0.0;
-	m_endframe = 0.0;
-
+	InitParams();
 	return 0;
 }
 int CEditRange::SetRange( std::list<KeyInfo> srcki, double srcframe )
@@ -112,3 +109,17 @@ int CEditRange::GetRange( int* numptr, double* startptr, double* endptr, double*
 	return 0;
 }
 
+CEditRange CEditRange::operator= (CEditRange srcrange)
+{
+	//m_setflagとm_setcntはここではコピーしない。
+
+	m_ki = srcrange.m_ki;
+	m_keynum = srcrange.m_keynum;
+	m_startframe = srcrange.m_startframe;
+	m_endframe = srcrange.m_endframe;
+	m_applyframe = srcrange.m_applyframe;
+
+	//static double s_applyrate
+
+	return *this;
+}

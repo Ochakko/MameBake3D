@@ -28,6 +28,7 @@ struct KeyInfo{
 
 extern bool g_selecttolastFlag;//Main.cpp
 extern bool g_underselecttolast;//Main.cpp
+extern bool g_undereditrange;//Main.cpp
 
 static double TIME_ERROR_WIDTH = 0.0001;
 
@@ -2044,7 +2045,7 @@ static void s_dummyfunc();
 			drawEdge();
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<8; i++){
+			for(int i=0; i<10; i++){
 
 				//ボタンの四隅になる座標を求める
 				int pos1x= pos.x+BOX_POS_X+BOX_WIDTH*i;
@@ -2063,6 +2064,8 @@ static void s_dummyfunc();
 				case 5: btnPrm= &frontStep; break;
 				case 6: btnPrm = &selecttolast; break;
 				case 7: btnPrm = &btreset; break;
+				case 8: btnPrm = &prevrange; break;
+				case 9: btnPrm = &nextrange; break;
 				}
 
 				//枠組み描画
@@ -2166,6 +2169,42 @@ static void s_dummyfunc();
 						MoveToEx(hdcM->hDC, x1, y1, NULL);
 						LineTo(hdcM->hDC, x2, y1);
 					}break;
+				case 8:		//prev edit range
+					{
+						int x1 = pos1x + 4;
+						int x2 = (pos1x + pos2x) / 2;
+						int x3 = pos2x - 4;
+						int y1 = pos1y + 2;
+						int y2 = pos2y - 6;
+						int y3 = y1 + 4;
+						int y4 = y2 + 4;
+
+						MoveToEx(hdcM->hDC, x1, y1, NULL);
+						LineTo(hdcM->hDC, x2, y2);
+						LineTo(hdcM->hDC, x3, y1);
+
+						MoveToEx(hdcM->hDC, x1, y3, NULL);
+						LineTo(hdcM->hDC, x2, y4);
+						LineTo(hdcM->hDC, x3, y3);
+					}break;
+				case 9:		//next edit range
+					{
+						int x1 = pos1x + 4;
+						int x2 = (pos1x + pos2x) / 2;
+						int x3 = pos2x - 4;
+						int y1 = pos1y + 2;
+						int y2 = pos2y - 6;
+						int y3 = y1 + 4;
+						int y4 = y2 + 4;
+
+						MoveToEx(hdcM->hDC, x1, y2, NULL);
+						LineTo(hdcM->hDC, x2, y1);
+						LineTo(hdcM->hDC, x3, y2);
+
+						MoveToEx(hdcM->hDC, x1, y4, NULL);
+						LineTo(hdcM->hDC, x2, y3);
+						LineTo(hdcM->hDC, x3, y4);
+					}break;
 				}
 			}
 
@@ -2174,7 +2213,7 @@ static void s_dummyfunc();
 		void onLButtonDown(const MouseEvent& e){
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<8; i++){
+			for(int i=0; i<10; i++){
 
 				//まずボタンが押されたかを確認
 				if( BOX_POS_X+BOX_WIDTH*i<=e.localX && e.localX<BOX_POS_X+BOX_WIDTH*(i+1) ){
@@ -2193,6 +2232,8 @@ static void s_dummyfunc();
 				case 5: btnPrm= &frontStep; break;
 				case 6: btnPrm = &selecttolast; break;
 				case 7: btnPrm = &btreset; break;
+				case 8: btnPrm = &prevrange; break;
+				case 9: btnPrm = &nextrange; break;
 				}
 
 				//ボタンリスナーを呼ぶ
@@ -2216,6 +2257,8 @@ static void s_dummyfunc();
 				case 5: _beginthread(drawFrontStepButtonUpThread,0,(void *)this); break;
 				case 6: _beginthread(drawSelectToLastButtonUpThread, 0, (void *)this); break;
 				case 7: _beginthread(drawBtResetButtonUpThread, 0, (void *)this); break;
+				case 8: _beginthread(drawPrevRangeButtonUpThread, 0, (void *)this); break;
+				case 9: _beginthread(drawNextRangeButtonUpThread, 0, (void *)this); break;
 				}
 
 				return;
@@ -2248,6 +2291,12 @@ static void s_dummyfunc();
 		void setBtResetButtonListener(std::tr1::function<void()> listener){
 			btreset.buttonListener = listener;
 		}
+		void setPrevRangeButtonListener(std::tr1::function<void()> listener){
+			prevrange.buttonListener = listener;
+		}
+		void setNextRangeButtonListener(std::tr1::function<void()> listener){
+			nextrange.buttonListener = listener;
+		}
 
 		/// Accessor : ボタンサイズを変更する
 		void setButtonSize(int value){
@@ -2270,7 +2319,7 @@ static void s_dummyfunc();
 
 			bool buttonPush;
 			std::tr1::function<void()> buttonListener;
-		}frontPlay,backPlay,stop,reset,frontStep,backStep,selecttolast,btreset;
+		}frontPlay,backPlay,stop,reset,frontStep,backStep,selecttolast,btreset,prevrange,nextrange;
 		
 
 		int SIZE_Y;
@@ -2333,6 +2382,20 @@ static void s_dummyfunc();
 
 			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
 			thisClass->btreset.buttonPush = false;
+			thisClass->callRewrite();
+		}
+		static void drawPrevRangeButtonUpThread(LPVOID	pParam){
+			Sleep(100);
+
+			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+			thisClass->prevrange.buttonPush = false;
+			thisClass->callRewrite();
+		}
+		static void drawNextRangeButtonUpThread(LPVOID	pParam){
+			Sleep(100);
+
+			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+			thisClass->nextrange.buttonPush = false;
 			thisClass->callRewrite();
 		}
 	};
@@ -3247,6 +3310,7 @@ static void s_dummyfunc();
 		virtual void onLButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
 			if (g_underselecttolast) return;
+			if (g_undereditrange) return;
 
 			int x0= MARGIN;
 			int x1= x0+LABEL_SIZE_X;
@@ -3325,8 +3389,9 @@ static void s_dummyfunc();
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
-			if (g_underselecttolast){
+			if (g_underselecttolast || g_undereditrange){
 				g_underselecttolast = false;
+				g_undereditrange = false;
 
 				//ドラッグフラグを初期化
 				dragLabel = false;
@@ -3385,6 +3450,7 @@ static void s_dummyfunc();
 		virtual void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
 			if (g_underselecttolast) return;
+			if (g_undereditrange) return;
 
 			int x0= MARGIN;
 			int x1= x0+LABEL_SIZE_X;

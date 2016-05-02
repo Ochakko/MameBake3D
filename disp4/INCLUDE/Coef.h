@@ -13,6 +13,8 @@ class CMQOMaterial;
 #define ALIGNED		_declspec(align(16))
 #define	u_long	unsigned long
 
+#define EDITRANGEHISTORYNUM	10000
+
 #define COLIGROUPNUM	10
 
 #define PATH_LENG	2048
