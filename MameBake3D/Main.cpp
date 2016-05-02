@@ -4383,6 +4383,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		    swprintf_s( sz, 100, L"Žp¨“K—pˆÊ’u : %d “", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::s_applyrate = (double)g_applyrate;
+			OnTimeLineSelect();
             break;
 
         case IDC_SPEED:

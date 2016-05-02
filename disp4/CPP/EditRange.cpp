@@ -102,7 +102,11 @@ int CEditRange::GetRange( int* numptr, double* startptr, double* endptr, double*
 	*startptr = m_startframe;
 	*endptr = m_endframe;
 
-	m_applyframe = (double)( (int)( m_startframe + (m_endframe - m_startframe) * s_applyrate / 100.0 + 1.0 ) );
+	int offset = 0;
+	if (s_applyrate != 0.0){
+		offset = 1.0;
+	}
+	m_applyframe = (double)( (int)( m_startframe + (m_endframe - m_startframe) * s_applyrate / 100.0 + offset ) );
 	*applyptr = m_applyframe;
 
 	return 0;
