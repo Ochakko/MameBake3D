@@ -148,6 +148,9 @@ float g_a_dmp = 0.50f;
 
 
 bool g_controlkey = false;
+bool g_ctrlshiftkeyformb = false;
+static int s_akeycnt = 0;
+static int s_dkeycnt = 0;
 
 static float s_erp = 0.0f;
 //static float s_impup = 0.0f;
@@ -617,7 +620,7 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
-static int InitCurMotion(int selectflag, int expandmotion);
+static int InitCurMotion(int selectflag, double expandmotion);
 static CRigidElem* GetCurRe();
 static CRigidElem* GetCurRgdRe();
 
@@ -725,7 +728,7 @@ static int IsRegist();
 static int OnTimeLineCursor(int mbuttonflag);
 static int OnTimeLineButtonSelect(int tothelastflag);
 static int OnTimeLineSelect();
-int OnTimeLineMButtonDown();
+int OnTimeLineMButtonDown(bool ctrlshiftflag);
 int OnTimeLineWheel();
 
 
@@ -2437,6 +2440,28 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		g_controlkey = false;
 	}
 
+	if (g_ctrlshiftkeyformb == false){
+		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
+			if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)){
+				g_ctrlshiftkeyformb = true;
+				//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
+			}
+		}
+	}
+
+	if (g_keybuf['A'] & 0x80){
+		s_akeycnt++;
+	}
+	else{
+		s_akeycnt = 0;
+	}
+	if (g_keybuf['D'] & 0x80){
+		s_dkeycnt++;
+	}
+	else{
+		s_dkeycnt = 0;
+	}
+
 
 	SetCamera6Angle();
 
@@ -2776,11 +2801,12 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		s_LcursorFlag = false;
 		OnTimeLineCursor(0);
 	}
-	if (s_timelinembuttonFlag){
+	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb){
 		s_timelinembuttonFlag = false;
-		OnTimeLineMButtonDown();
+		OnTimeLineMButtonDown(g_ctrlshiftkeyformb);
+		g_ctrlshiftkeyformb = false;
 	}
-	if (s_timelinewheelFlag){
+	if (s_timelinewheelFlag || (s_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))){
 		s_timelinewheelFlag = false;
 		OnTimeLineWheel();
 	}
@@ -3079,7 +3105,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				WideCharToMultiByte( CP_ACP, 0, s_tmpmotname, -1, s_model->GetCurMotInfo()->motname, 256, NULL, NULL );
 				//s_model->m_curmotinfo->frameleng = s_tmpmotframeleng;
 				s_model->GetCurMotInfo()->loopflag = s_tmpmotloop;
-				int oldframeleng = s_model->GetCurMotInfo()->frameleng;
+				double oldframeleng = s_model->GetCurMotInfo()->frameleng;
 
 				s_owpTimeline->setMaxTime( s_tmpmotframeleng );
 				s_model->ChangeMotFrameLeng( s_model->GetCurMotInfo()->motid, s_tmpmotframeleng );//はみ出たmpも削除
@@ -5786,7 +5812,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	return newmodel;
 }
 
-int InitCurMotion(int selectflag, int expandmotion)
+int InitCurMotion(int selectflag, double expandmotion)
 {
 	MOTINFO* curmi = s_model->GetCurMotInfo();
 	if (curmi){
@@ -5806,7 +5832,7 @@ int InitCurMotion(int selectflag, int expandmotion)
 			}
 		}
 		else if (expandmotion > 0){//モーション長を長くした際に、長くなった分の初期化をする
-			int oldframeleng = expandmotion;
+			double oldframeleng = expandmotion;
 			double frame;
 			for (frame = oldframeleng; frame < motleng; frame += 1.0){
 				if (topbone){
@@ -9616,7 +9642,7 @@ int OnTimeLineSelect()
 			double startframe, endframe, applyframe;
 			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-			if (s_underselectingframe == 1){
+			if (s_underselectingframe != 0){
 				if (s_buttonselectstart <= s_buttonselectend){
 					s_owpLTimeline->setCurrentTime(endframe, false);
 				}
@@ -9644,10 +9670,15 @@ int OnTimeLineButtonSelect(int tothelastflag)
 }
 
 
-int OnTimeLineMButtonDown()
+int OnTimeLineMButtonDown(bool ctrlshiftflag)
 {
 	if (s_underselectingframe == 0){
-		s_underselectingframe = 1;
+		if (ctrlshiftflag == false){
+			s_underselectingframe = 1;
+		}
+		else{
+			s_underselectingframe = 2;
+		}
 		if (s_owpLTimeline){
 			s_buttonselectstart = s_owpLTimeline->getCurrentTime();
 			s_buttonselectend = s_buttonselectstart;
@@ -9671,10 +9702,8 @@ int OnTimeLineWheel()
 	DbgOut(L"OnTimeLineWheel Called\r\n");
 
 	if (s_owpLTimeline){
-
-
-		//delta = 1;
 		if (s_underselectingframe == 1){
+			//マウス操作 MButton and Wheel
 			int delta;
 			double delta2;
 			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
@@ -9684,10 +9713,48 @@ int OnTimeLineWheel()
 			else{
 				delta2 = (double)delta / 20.0;//ctrlを押していたら5倍速
 			}
-			s_buttonselectend += delta2;
-			DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
+			if (delta != 0){
+				s_buttonselectend += delta2;
+				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
 
-			OnTimeLineButtonSelect(0);
+				OnTimeLineButtonSelect(0);
+			}
+		}
+		else if (s_underselectingframe == 2){
+			//キー操作　Ctrl+Shift and A, D
+			int delta;
+			if (g_keybuf['A'] & 0x80){
+				if ((s_akeycnt % 10) == 0){
+					delta = -1;
+				}
+				else{
+					delta = 0;
+				}
+			}
+			else if (g_keybuf['D'] & 0x80){
+				if ((s_dkeycnt % 10) == 0){
+					delta = 1;
+				}
+				else{
+					delta = 0;
+				}
+			}
+			else{
+				delta = 0;
+			}
+			if (delta != 0){
+				double delta2;
+				if (g_controlkey == false){
+					delta2 = (double)delta;
+				}
+				else{
+					delta2 = (double)delta * 5.0;
+				}
+				s_buttonselectend += delta2;
+				DbgOut(L"OnTimeLineWheel 2 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
+
+				OnTimeLineButtonSelect(0);
+			}
 		}
 		else{
 			DbgOut(L"OnTimeLineWheel 1 : start %lf, end %lf\r\n", s_buttonselectstart, s_buttonselectend);

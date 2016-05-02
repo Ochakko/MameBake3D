@@ -1179,7 +1179,7 @@ int CModel::ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTi
 }
 ***/
 
-int CModel::GetFBXShape( FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, int animleng, FbxTime starttime, FbxTime timestep )
+int CModel::GetFBXShape( FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep )
 {
 	int lVertexCount = pMesh->GetControlPointsCount();
 	if( lVertexCount != curobj->GetVertex() ){
@@ -1200,8 +1200,8 @@ int CModel::GetFBXShape( FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panim
 			if(lChannel)
 			{
 				FbxTime curtime = starttime;
-				int framecnt;
-				for( framecnt = 0; framecnt < animleng; framecnt++ ){
+				double framecnt;
+				for( framecnt = 0.0; framecnt < animleng; framecnt+=1.0 ){
 					FbxAnimCurve* lFCurve;
 					double lWeight = 0.0;
 					lFCurve = pMesh->GetShapeChannel(lBlendShapeIndex, lChannelIndex, panimlayer);
@@ -1993,7 +1993,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 	return 0;
 }
 
-int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, int animleng, FbxTime starttime, FbxTime timestep )
+int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep )
 {
 	map<CMQOObject*,FBXOBJ>::iterator itrobjindex;
 	for( itrobjindex = m_fbxobj.begin(); itrobjindex != m_fbxobj.end(); itrobjindex++ ){
@@ -2796,7 +2796,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 //		}
 //		int animleng = fcnt;
 
-		int animleng = (int)( (mStop.GetSecondDouble() - mStart.GetSecondDouble()) * 30.0 );
+		double animleng = (int)( (mStop.GetSecondDouble() - mStart.GetSecondDouble()) * 30.0 );
 //		int animleng = (int)( (mStop.GetSecondDouble() - mStart.GetSecondDouble()) * 300.0 );
 //		_ASSERT( 0 );
 
@@ -2808,13 +2808,13 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 		//_ASSERT( 0 );
 
 
-		DbgOut( L"FBX anim %d, animleng %d\r\n", animno, animleng );
+		DbgOut( L"FBX anim %d, animleng %lf\r\n", animno, animleng );
 
 
 
 
 		int curmotid = -1;
-		AddMotion( mAnimStackNameArray[animno]->Buffer(), 0, (double)animleng, &curmotid );
+		AddMotion( mAnimStackNameArray[animno]->Buffer(), 0, animleng, &curmotid );
 
 
 		map<int,CBone*>::iterator itrbone;
@@ -2844,7 +2844,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 	return 0;
 }
 
-int CModel::CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int motid, int animleng, FbxTime mStart, FbxTime mFrameTime )
+int CModel::CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime )
 {
 	//static int dbgcnt = 0;
 
@@ -2877,7 +2877,7 @@ int CModel::CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int mo
 
 	return 0;
 }
-int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, int animleng, FbxTime mStart, FbxTime mFrameTime )
+int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime )
 {
 	FbxAMatrix pGlobalPosition;
 	pGlobalPosition.SetIdentity();
@@ -2918,8 +2918,8 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 
 				FbxAMatrix mat;
 				FbxTime ktime = mStart;
-				int framecnt;
-				for( framecnt = 0; framecnt < animleng; framecnt++ ){
+				double framecnt;
+				for( framecnt = 0.0; framecnt < animleng; framecnt+=1.0 ){
 					FbxCluster::ELinkMode lClusterMode = cluster->GetLinkMode();
 
 					FbxAMatrix lReferenceGlobalInitPosition;
@@ -2978,7 +2978,7 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 					xmat._43 = (float)mat.Get( 3, 2 );
 					xmat._44 = (float)mat.Get( 3, 3 );
 
-					if( (animno == 0) && (framecnt == 0) ){
+					if( (animno == 0) && (framecnt == 0.0) ){
 						curbone->SetFirstMat( xmat );
 						curbone->SetInitMat( xmat );
 						D3DXMATRIX calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
@@ -2990,7 +2990,7 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 
 					CMotionPoint* curmp = 0;
 					int existflag = 0;
-					curmp = curbone->AddMotionPoint( motid, (double)(framecnt), &existflag );
+					curmp = curbone->AddMotionPoint( motid, framecnt, &existflag );
 					if( !curmp ){
 						_ASSERT( 0 );
 						return 1;
@@ -3589,7 +3589,7 @@ FbxAMatrix GetGeometry(FbxNode* pNode)
 }
 
 
-void CModel::FillUpEmptyKeyReq( int motid, int animleng, CBone* curbone, CBone* parbone )
+void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parbone )
 {
 	if (!curbone){
 		return;
@@ -3611,9 +3611,9 @@ void CModel::FillUpEmptyKeyReq( int motid, int animleng, CBone* curbone, CBone* 
 		}
 	}
 
-	int framecnt;
-	for( framecnt = 0; framecnt < animleng; framecnt++ ){
-		double frame = (double)framecnt;
+	double framecnt;
+	for( framecnt = 0.0; framecnt < animleng; framecnt+=1.0 ){
+		double frame = framecnt;
 
 		D3DXMATRIX mvmat;
 		D3DXMatrixIdentity( &mvmat );

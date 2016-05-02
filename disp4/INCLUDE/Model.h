@@ -580,10 +580,10 @@ private:
 
 	int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
 	int CreateFBXMeshReq( FbxNode* pNode );
-	int CreateFBXShape( FbxAnimLayer* panimlayer, int animleng, FbxTime starttime, FbxTime timestep );
+	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
 	CMQOObject* GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename );
-	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, int animleng, FbxTime starttime, FbxTime timestep );
+	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 
@@ -591,8 +591,8 @@ private:
 	int CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
 	int GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, const char* nodename, FbxNode* curnode, FbxNode* parnode );
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode );
-	int CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int motid, int animleng, FbxTime mStart, FbxTime mFrameTime );
-	int GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, int animleng, FbxTime mStart, FbxTime mFrameTime );
+	int CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
+	int GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
 	int CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
@@ -604,7 +604,7 @@ private:
 	int SetDefaultBonePos();
 	void SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition );
 
-	void FillUpEmptyKeyReq( int motid, int animleng, CBone* curbone, CBone* parbone );
+	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parbone );
 
 	int SetMaterialName();
 
