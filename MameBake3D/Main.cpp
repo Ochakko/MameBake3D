@@ -2650,6 +2650,9 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				*/
 //				_ASSERT( 0 );
 			}
+
+			OnTimeLineCursor(0, 0.0);
+
 		}else{
 			g_previewFlag = 0;
 		}
@@ -2801,6 +2804,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		s_LcursorFlag = false;
 		OnTimeLineCursor(0, 0.0);
 	}
+
 	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb){
 		s_timelinembuttonFlag = false;
 		OnTimeLineMButtonDown(g_ctrlshiftkeyformb);
