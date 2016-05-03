@@ -1185,7 +1185,7 @@ void InitApp()
 							L"EditRangeTimeLine",				//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos( 250, 825 ),		//位置
-							WindowPos( 200, 580 ),		//位置
+							WindowPos( 200, 600 ),		//位置
 							WindowSize( 1050, 120 ),	//サイズ
 							L"EditRangeTimeLine",				//タイトル
 							s_mainwnd,					//親ウィンドウハンドル
@@ -1940,7 +1940,7 @@ static OWP_Button* s_dampanimB = 0;
 							_T("ToolWindow"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos(400, 580),		//位置
-							WindowPos(50, 580),		//位置
+							WindowPos(50, 600),		//位置
 							WindowSize(150,10),		//サイズ
 							_T("ツールウィンドウ"),	//タイトル
 							s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
@@ -1983,7 +1983,7 @@ static OWP_Button* s_dampanimB = 0;
 							_T("LayerTool"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos(800, 500),		//位置
-							WindowPos(250, 580),		//位置
+							WindowPos(250, 600),		//位置
 							WindowSize(150,200),		//サイズ
 							_T("オブジェクトパネル"),	//タイトル
 							NULL,					//親ウィンドウハンドル
