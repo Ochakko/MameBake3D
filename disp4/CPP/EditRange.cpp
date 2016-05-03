@@ -57,6 +57,7 @@ int CEditRange::SetRange( std::list<KeyInfo> srcki, double srcframe )
 	double minframe = 1e10;
 	double maxframe = -1e10;
 
+	m_ki.clear();
 	m_ki = srcki;
 
 	int num = 0;

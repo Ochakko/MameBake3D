@@ -3308,6 +3308,9 @@ static void s_dummyfunc();
 		}
 		///	Method : マウスダウンイベント受信
 		virtual void onLButtonDown(const MouseEvent& e){
+
+			selectClear(true);
+
 			if( !canMouseControll ) return;
 			if (g_underselecttolast) return;
 			if (g_undereditrange) return;

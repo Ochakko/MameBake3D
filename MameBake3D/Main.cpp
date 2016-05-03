@@ -9874,6 +9874,7 @@ int AddEditRangeHistory()
 	}
 
 	if (s_editrange.m_startframe == s_editrange.m_endframe){
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -9888,17 +9889,17 @@ int AddEditRangeHistory()
 	}
 
 	if (findflag == 0){
+		s_editrangesetindex += 1;
+		if (s_editrangesetindex >= EDITRANGEHISTORYNUM){
+			s_editrangesetindex = 0;
+		}
+
 		*(s_editrangehistory + s_editrangesetindex) = s_editrange;
 		(s_editrangehistory + s_editrangesetindex)->m_setflag = 1;
 		(s_editrangehistory + s_editrangesetindex)->m_setcnt = s_historycnt;
 		s_historycnt++;
 
-		s_editrangesetindex += 1;
-		if (s_editrangesetindex >= EDITRANGEHISTORYNUM){
-			s_editrangesetindex = 0;
-		}
 		s_editrangehistoryno = s_editrangesetindex;
-
 	}
 	return 0;
 }
@@ -9913,23 +9914,35 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 	int findindex = -1;
 	int erhcnt;
 	int curindex = s_editrangehistoryno;
-	for (erhcnt = 0; erhcnt < EDITRANGEHISTORYNUM; erhcnt++){
-		if (prevrangeFlag){
-			curindex -= 1;
-		}
-		else if (nextrangeFlag){
-			curindex += 1;
-		}
-		else{
-			_ASSERT(0);
-			break;
-		}
-		if (curindex < 0){
-			curindex = EDITRANGEHISTORYNUM - 1;
-		}
+
+	if (prevrangeFlag && (s_editrange.m_startframe == s_editrange.m_endframe)){
+		//prevボタンのとき　範囲が解除されている場合は現状復帰のためインデックスはそのまま
 		if ((s_editrangehistory + curindex)->m_setflag == 1){
 			findindex = curindex;
-			break;
+		}
+	}
+	else{
+		for (erhcnt = 0; erhcnt < EDITRANGEHISTORYNUM; erhcnt++){
+			if (prevrangeFlag){
+				curindex -= 1;
+			}
+			else if (nextrangeFlag){
+				curindex += 1;
+			}
+			else{
+				_ASSERT(0);
+				break;
+			}
+			if (curindex < 0){
+				curindex = EDITRANGEHISTORYNUM - 1;
+			}
+			if (curindex >= EDITRANGEHISTORYNUM){
+				curindex = 0;
+			}
+			if ((s_editrangehistory + curindex)->m_setflag == 1){
+				findindex = curindex;
+				break;
+			}
 		}
 	}
 
