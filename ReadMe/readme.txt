@@ -25,6 +25,10 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/05/03
+	動画。MameBake3D [新しいフレーム選択]。
+	https://youtu.be/CfaFvEL2grM
+
 2016/05/02
 	フレーム選択
 		「マウス中ボタンクリック-->マウスホイール-->マウス中ボタンクリック」
@@ -230,6 +234,9 @@ https://youtu.be/Z0UacTlXs7w
 
 MameBake3D 編集オプションの説明
 https://youtu.be/cA7ceFJ2oLY
+
+MameBake3D [新しいフレーム選択]。
+https://youtu.be/CfaFvEL2grM
 
 MameBake3D説明動画。モデルFBXにモーションFBXを適用する話。
 https://youtu.be/ERaqn16GsU0
