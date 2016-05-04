@@ -3859,7 +3859,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_pickinfo.pickobjno = -1;
 		}else if (s_model){
 			int spakind = PickSpAxis( ptCursor );
-			if ((spckind != 0) && (spakind != 0) && (s_curboneno >= 0)){
+			if ((spakind != 0) && (s_curboneno >= 0)){
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 			}else{
