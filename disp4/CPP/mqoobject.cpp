@@ -142,7 +142,7 @@ CMQOObject::~CMQOObject()
 			delete delmat;
 		}
 	}
-	m_material.erase( m_material.begin(), m_material.end() );
+	m_material.clear();
 
 }
 

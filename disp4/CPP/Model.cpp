@@ -216,7 +216,7 @@ int CModel::DestroyAllMotionInfo()
 			free( miptr );
 		}
 	}
-	m_motinfo.erase( m_motinfo.begin(), m_motinfo.end() );
+	m_motinfo.clear();
 
 	m_curmotinfo = 0;
 
@@ -233,7 +233,7 @@ int CModel::DestroyMaterial()
 			delete delmat;
 		}
 	}
-	m_material.erase( m_material.begin(), m_material.end() );
+	m_material.clear();
 
 	return 0;
 }
@@ -247,7 +247,7 @@ int CModel::DestroyObject()
 			delete delobj;
 		}
 	}
-	m_object.erase( m_object.begin(), m_object.end() );
+	m_object.clear();
 
 	return 0;
 }
@@ -261,12 +261,12 @@ int CModel::DestroyAncObj()
 			delete delbone;
 		}
 	}
-	m_bonelist.erase( m_bonelist.begin(), m_bonelist.end() );
+	m_bonelist.clear();
 
 	m_topbone = 0;
 
-	m_objectname.erase( m_objectname.begin(), m_objectname.end() );
-	m_bonename.erase( m_bonename.begin(), m_bonename.end() );
+	m_objectname.clear();
+	m_bonename.clear();
 
 	return 0;
 }
@@ -1395,8 +1395,8 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& lineno2boneno, map<int, int>& boneno2lineno )
 {
-	lineno2boneno.erase( lineno2boneno.begin(), lineno2boneno.end() );
-	boneno2lineno.erase( boneno2lineno.begin(), boneno2lineno.end() );
+	lineno2boneno.clear();
+	boneno2lineno.clear();
 
 	if( m_bonelist.empty() ){
 		return 0;

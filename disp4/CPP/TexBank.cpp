@@ -51,7 +51,7 @@ int CTexBank::DestroyObjs()
 		}
 	}
 
-	m_texmap.erase( m_texmap.begin(), m_texmap.end() );
+	m_texmap.clear();
 
 	return 0;
 }

@@ -136,7 +136,7 @@ int CBone::DestroyObjs()
 		}
 	}
 
-	m_motionkey.erase( m_motionkey.begin(), m_motionkey.end() );
+	m_motionkey.clear();
 
 	
 	map<string, std::map<CBone*, CRigidElem*>>::iterator itrmap;

@@ -3097,7 +3097,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if( s_selectFlag ){
 		s_selectFlag= false;
 		if( s_model && s_owpTimeline && s_model->GetCurMotInfo() ){
-			s_selectKeyInfoList.erase( s_selectKeyInfoList.begin(), s_selectKeyInfoList.end() );
+			s_selectKeyInfoList.clear();
 			s_selectKeyInfoList = s_owpTimeline->getSelectedKey();
 		}
 	}
@@ -4674,7 +4674,7 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 			delete curmodel;
 		}
 	}
-	s_modelindex.erase( s_modelindex.begin(), s_modelindex.end() );
+	s_modelindex.clear();
 	s_model = 0;
 
 	if( s_select ){
@@ -5128,7 +5128,7 @@ int DestroyTimeLine( int dellist )
 		EraseKeyList();
 	}
 
-	s_tlarray.erase( s_tlarray.begin(), s_tlarray.end() );
+	s_tlarray.clear();
 	
 	return 0;
 }
@@ -6029,8 +6029,8 @@ void refreshTimeline(OWP_Timeline& timeline){
 	//‚·‚×‚Ä‚Ìs‚ðƒNƒŠƒA
 	timeline.deleteLine();
 
-	s_lineno2boneno.erase( s_lineno2boneno.begin(), s_lineno2boneno.end() );
-	s_boneno2lineno.erase( s_boneno2lineno.begin(), s_boneno2lineno.end() );
+	s_lineno2boneno.clear();
+	s_boneno2lineno.clear();
 
 	if( s_model && s_model->GetTopBone() ){
 		CallF( s_model->FillTimeLine( timeline, s_lineno2boneno, s_boneno2lineno ), return );
@@ -6887,9 +6887,9 @@ int OnDelModel( int delmenuindex )
 
 	int mdlno;
 	for( mdlno = delmenuindex; mdlno < (mdlnum - 1); mdlno++ ){
-		s_modelindex[ mdlno ].tlarray.erase( s_modelindex[ mdlno ].tlarray.begin(), s_modelindex[ mdlno ].tlarray.end() );
-		s_modelindex[ mdlno ].boneno2lineno.erase( s_modelindex[ mdlno ].boneno2lineno.begin(), s_modelindex[ mdlno ].boneno2lineno.end() );
-		s_modelindex[ mdlno ].lineno2boneno.erase( s_modelindex[ mdlno ].lineno2boneno.begin(), s_modelindex[ mdlno ].lineno2boneno.end() );
+		s_modelindex[ mdlno ].tlarray.clear();
+		s_modelindex[ mdlno ].boneno2lineno.clear();
+		s_modelindex[ mdlno ].lineno2boneno.clear();
 
 		s_modelindex[ mdlno ] = s_modelindex[ mdlno + 1 ];
 	}
@@ -6899,10 +6899,10 @@ int OnDelModel( int delmenuindex )
 		s_curboneno = -1;
 		s_model = 0;
 		s_curmodelmenuindex = -1;
-		s_tlarray.erase( s_tlarray.begin(), s_tlarray.end() );
+		s_tlarray.clear();
 		s_curmotmenuindex = -1;
-		s_lineno2boneno.erase( s_lineno2boneno.begin(), s_lineno2boneno.end() );
-		s_boneno2lineno.erase( s_boneno2lineno.begin(), s_boneno2lineno.end() );
+		s_lineno2boneno.clear();
+		s_boneno2lineno.clear();
 	}else{
 		s_curboneno = -1;
 		s_model = s_modelindex[ 0 ].modelptr;
