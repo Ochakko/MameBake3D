@@ -72,6 +72,41 @@ public:
 	bool CEditRange::operator== (const CEditRange &er) const { return ((m_startframe == er.m_startframe) && (m_endframe == er.m_endframe) && (m_applyframe == er.m_applyframe)); };
 	bool CEditRange::operator!= (const CEditRange &er) const { return !(*this == er); };
 
+
+	int GetSetFlag(){ return m_setflag; };
+	int GetKeyNum(){ return m_keynum; };
+	KeyInfo GetKeyInfo(int srcindex){ 
+		KeyInfo initki;
+		if ((srcindex < 0) || (srcindex >= (int)m_ki.size())){
+			return initki;
+		}
+		int curindex = 0;
+		std::list<KeyInfo>::iterator itrki;
+		std::list<KeyInfo>::iterator findki = m_ki.end();
+		for (itrki = m_ki.begin(); itrki != m_ki.end(); itrki++){
+			if (curindex == srcindex){
+				findki = itrki;
+				break;
+			}
+			curindex++;
+		}
+		if (findki != m_ki.end()){
+			return *findki;
+		}
+		else{
+			return initki;
+		}
+	};
+	double GetStartFrame(){ return m_startframe; };
+	double GetEndFrame(){ return m_endframe; };
+	double GetApplyFrame(){ return m_applyframe; };
+	int IsSameStartAndEnd(){ return (m_startframe == m_endframe); };
+
+	void SetSetFlag(int srcflag){ m_setflag = srcflag; };
+	void SetSetCnt(int srccnt){ m_setcnt = srccnt; };
+
+	static void SetApplyRate(double srcrate){ s_applyrate = srcrate; };
+
 private:
 
 /**
@@ -91,7 +126,7 @@ private:
 	int DestroyObjs();
 
 
-public:
+private:
 	int m_setflag;
 	int m_setcnt;
 	std::list<KeyInfo> m_ki;//•ÒW”ÍˆÍ‚ÌƒL[‚Ìî•ñ

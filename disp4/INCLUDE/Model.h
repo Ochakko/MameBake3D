@@ -709,7 +709,7 @@ public: //accesser
 	};
 
 	float GetBtGScale(int srcindex){
-		if ((srcindex >= 0) && (srcindex < m_rigideleminfo.size())){
+		if ((srcindex >= 0) && (srcindex < (int)m_rigideleminfo.size())){
 			return m_rigideleminfo[srcindex].btgscale;
 		}
 		else{
@@ -718,7 +718,7 @@ public: //accesser
 		}
 	};
 	void SetBtGScale( float srcval, int srcindex ){
-		if ((srcindex >= 0) && (srcindex < m_rigideleminfo.size())){
+		if ((srcindex >= 0) && (srcindex < (int)m_rigideleminfo.size())){
 			m_rigideleminfo[srcindex].btgscale = srcval;
 		}
 		else{

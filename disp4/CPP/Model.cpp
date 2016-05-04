@@ -1872,8 +1872,8 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 	//double oneframe = 1.0 / 300.0;
 
 	double rangestart, rangeend;
-	rangestart = srcrange.m_startframe;
-	rangeend = srcrange.m_endframe;
+	rangestart = srcrange.GetStartFrame();
+	rangeend = srcrange.GetEndFrame();
 	if (rangestart == rangeend){
 		rangestart = 0.0;
 		rangeend = curmotinfo->frameleng - 1.0;
@@ -3786,7 +3786,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 			if( srcbone->GetParent() ){
 				CRigidElem* curre = srcbone->GetParent()->GetRigidElem( srcbone );
 				if( curre ){
-					if ((m_curreindex >= 0) && (m_curreindex < m_rigideleminfo.size())){
+					if ((m_curreindex >= 0) && (m_curreindex < (int)m_rigideleminfo.size())){
 						srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_curreindex].btgscale, 0.0f));
 						srcbto->GetRigidBody()->applyGravity();
 					}
@@ -4599,7 +4599,7 @@ int CModel::DisableAllRigidElem(int srcrgdindex)
 
 void CModel::EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex)
 {
-	if ((srcrgdindex >= 0) && (srcrgdindex < m_rigideleminfo.size())){
+	if ((srcrgdindex >= 0) && (srcrgdindex < (int)m_rigideleminfo.size())){
 		if (srcbone->GetParent()){
 			char* filename = m_rigideleminfo[srcrgdindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
@@ -4624,7 +4624,7 @@ void CModel::EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex)
 }
 void CModel::DisableAllRigidElemReq(CBone* srcbone, int srcrgdindex)
 {
-	if ((srcrgdindex >= 0) && (srcrgdindex < m_rigideleminfo.size())){
+	if ((srcrgdindex >= 0) && (srcrgdindex < (int)m_rigideleminfo.size())){
 		if (srcbone->GetParent()){
 			char* filename = m_rigideleminfo[srcrgdindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
@@ -4660,7 +4660,7 @@ int CModel::SetAllBtgData( int gid, int reindex, float btg )
 }
 void CModel::SetBtgDataReq( int gid, int reindex, CBone* srcbone, float btg )
 {
-	if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+	if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 		if (srcbone->GetParent()){
 			char* filename = m_rigideleminfo[reindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
@@ -4701,7 +4701,7 @@ void CModel::SetDampAnimDataReq( int gid, int rgdindex, CBone* srcbone, float va
 		return;
 	}
 
-	if ((rgdindex >= 0) && (rgdindex < m_rigideleminfo.size())){
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())){
 		if (srcbone->GetParent()){
 			char* filename = m_rigideleminfo[rgdindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
@@ -4740,7 +4740,7 @@ int CModel::SetAllImpulseData( int gid, float impx, float impy, float impz )
 
 void CModel::SetImpulseDataReq( int gid, CBone* srcbone, D3DXVECTOR3 srcimp )
 {
-	if ((m_rgdindex < 0) || (m_rgdindex >= m_rigideleminfo.size())){
+	if ((m_rgdindex < 0) || (m_rgdindex >= (int)m_rigideleminfo.size())){
 		return;
 	}
 
@@ -4859,7 +4859,7 @@ int CModel::SetAllDmpData( int gid, int reindex, float ldmp, float admp )
 void CModel::SetDmpDataReq( int gid, int reindex, CBone* srcbone, float ldmp, float admp )
 {
 	if( srcbone->GetParent() ){
-		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
 			if (curre){
@@ -4899,7 +4899,7 @@ int CModel::SetAllRestData( int gid, int reindex, float rest, float fric )
 void CModel::SetRestDataReq( int gid, int reindex, CBone* srcbone, float rest, float fric )
 {
 	if( srcbone->GetParent() ){
-		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
 			if (curre){
@@ -4938,7 +4938,7 @@ int CModel::SetAllKData( int gid, int reindex, int srclk, int srcak, float srccu
 void CModel::SetKDataReq( int gid, int reindex, CBone* srcbone, int srclk, int srcak, float srccuslk, float srccusak )
 {
 	if( srcbone->GetParent() ){
-		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
 			if (curre){
@@ -4980,7 +4980,7 @@ int CModel::SetAllMassData( int gid, int reindex, float srcmass )
 void CModel::SetMassDataReq( int gid, int reindex, CBone* srcbone, float srcmass )
 {
 	if( srcbone->GetParent() ){
-		if ((reindex >= 0) && (reindex < m_rigideleminfo.size())){
+		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
 			if (curre){
@@ -5030,7 +5030,7 @@ void CModel::SetRagdollKinFlagReq( CBtObject* srcbto )
 		if( srcbto->GetBone()->GetParent() ){
 			CRigidElem* curre = srcbto->GetBone()->GetParent()->GetRigidElem( srcbto->GetBone() );
 			if( curre ){
-				if ((m_rgdindex >= 0) && (m_rgdindex < m_rigideleminfo.size())){
+				if ((m_rgdindex >= 0) && (m_rgdindex < (int)m_rigideleminfo.size())){
 					srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_rgdindex].btgscale, 0.0f));
 					srcbto->GetRigidBody()->applyGravity();
 				}
@@ -5104,7 +5104,7 @@ int CModel::SetColiIDtoGroup( CRigidElem* srcre )
 void CModel::SetColiIDReq( CBone* srcbone, CRigidElem* srcre )
 {
 	if( srcbone->GetParent() ){
-		if ((m_curreindex >= 0) && (m_curreindex < m_rigideleminfo.size())){
+		if ((m_curreindex >= 0) && (m_curreindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[m_curreindex].filename;
 			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
 			if (curre){
@@ -5172,10 +5172,11 @@ int CModel::SetBefEditMat( CEditRange* erptr, CBone* curbone, int maxlevel )
 	int levelcnt0 = 0;
 	while( curbone && ((maxlevel == 0) || (levelcnt0 < (maxlevel+1))) )
 	{
-		list<KeyInfo>::iterator itrki;
-		double firstframe = 0.0;
-		for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-			double curframe = itrki->time;
+		int keynum;
+		double startframe, endframe, applyframe;
+		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+		double curframe;
+		for (curframe = startframe; curframe < endframe; curframe += 1.0){
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 			if(editmp){
@@ -5194,10 +5195,12 @@ int CModel::SetBefEditMatFK( CEditRange* erptr, CBone* curbone )
 {
 	if (curbone){
 
-		list<KeyInfo>::iterator itrki;
-		double firstframe = 0.0;
-		for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
-			double curframe = itrki->time;
+		int keynum;
+		double startframe, endframe, applyframe;
+		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+		double curframe;
+		for (curframe = startframe; curframe < endframe; curframe += 1.0){
+
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 			if (editmp){
@@ -5278,11 +5281,8 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 
 					if( keynum >= 2 ){
 						int keyno = 0;
-						list<KeyInfo>::iterator itrki;
-
-						for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-							double curframe = itrki->time;
-
+						double curframe;
+						for (curframe = startframe; curframe < endframe; curframe += 1.0){
 							CMotionPoint* curparmp;
 							curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 							CMotionPoint* aplyparmp;
@@ -5408,72 +5408,44 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 
 int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 {
-	if( g_applyendflag == 1 ){
-		if( lastpar && (erptr->m_ki.size() >= 2) ){
-			list<KeyInfo>::iterator itrki;
-			int keyno = 0;
-			int startframe = (int)erptr->m_ki.begin()->time;
-			int endframe = (int)m_curmotinfo->frameleng - 1;
-			double curframe;
-			for( curframe = startframe; curframe <= endframe; curframe += 1.0 ){
-				if( keyno >= 1 ){
-					CMotionPoint* pcurmp = 0;
-					int curmotid = m_curmotinfo->motid;
-					pcurmp = lastpar->GetMotionPoint(curmotid, curframe);
-					if(pcurmp){
-						D3DXVECTOR3 orgpos;
-						D3DXVec3TransformCoord( &orgpos, &(lastpar->GetJointFPos()), &(pcurmp->GetBefEditMat()) );
+	int keynum = erptr->GetKeyNum();
+	double startframe = erptr->GetStartFrame();
+	double endframe;
+	if (g_applyendflag == 1){
+		endframe = m_curmotinfo->frameleng - 1.0;
+	}
+	else{
+		endframe = erptr->GetEndFrame();
+	}
 
-						D3DXVECTOR3 newpos;
-						D3DXVec3TransformCoord( &newpos, &(lastpar->GetJointFPos()), &(pcurmp->GetWorldMat()) );
+	if( lastpar && (keynum >= 2) ){
+		int keyno = 0;
+		double curframe;
+		for( curframe = startframe; curframe <= endframe; curframe += 1.0 ){
+			if( keyno >= 1 ){
+				CMotionPoint* pcurmp = 0;
+				int curmotid = m_curmotinfo->motid;
+				pcurmp = lastpar->GetMotionPoint(curmotid, curframe);
+				if(pcurmp){
+					D3DXVECTOR3 orgpos;
+					D3DXVec3TransformCoord( &orgpos, &(lastpar->GetJointFPos()), &(pcurmp->GetBefEditMat()) );
 
-						D3DXVECTOR3 diffpos;
-						diffpos = orgpos - newpos;
+					D3DXVECTOR3 newpos;
+					D3DXVec3TransformCoord( &newpos, &(lastpar->GetJointFPos()), &(pcurmp->GetWorldMat()) );
 
-						CEditRange tmper;
-						KeyInfo tmpki;
-						tmpki.time = curframe;
-						list<KeyInfo> tmplist;
-						tmplist.push_back( tmpki );
-						tmper.SetRange( tmplist, curframe );
-						FKBoneTra( &tmper, lastpar->GetBoneNo(), diffpos );
-					}
+					D3DXVECTOR3 diffpos;
+					diffpos = orgpos - newpos;
+
+					CEditRange tmper;
+					KeyInfo tmpki;
+					tmpki.time = curframe;
+					list<KeyInfo> tmplist;
+					tmplist.push_back( tmpki );
+					tmper.SetRange( tmplist, curframe );
+					FKBoneTra( &tmper, lastpar->GetBoneNo(), diffpos );
 				}
-				keyno++;
 			}
-		}
-	}else{
-		if( lastpar && (erptr->m_ki.size() >= 2) ){
-			list<KeyInfo>::iterator itrki;
-			int keyno = 0;
-			for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-				if( keyno >= 1 ){
-					double curframe = itrki->time;
-					CMotionPoint* pcurmp = 0;
-					CMotionPoint* pnext = 0;
-					int curmotid = m_curmotinfo->motid;
-					pcurmp = lastpar->GetMotionPoint(curmotid, curframe);
-					if(pcurmp){
-						D3DXVECTOR3 orgpos;
-						D3DXVec3TransformCoord( &orgpos, &(lastpar->GetJointFPos()), &(pcurmp->GetBefEditMat()) );
-
-						D3DXVECTOR3 newpos;
-						D3DXVec3TransformCoord( &newpos, &(lastpar->GetJointFPos()), &(pcurmp->GetWorldMat()) );
-
-						D3DXVECTOR3 diffpos;
-						diffpos = orgpos - newpos;
-
-						CEditRange tmper;
-						KeyInfo tmpki;
-						tmpki.time = curframe;
-						list<KeyInfo> tmplist;
-						tmplist.push_back( tmpki );
-						tmper.SetRange( tmplist, curframe );
-						FKBoneTra( &tmper, lastpar->GetBoneNo(), diffpos );
-					}
-				}
-				keyno++;
-			}
+			keyno++;
 		}
 	}
 
@@ -5571,9 +5543,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			if (keynum >= 2){
 				int keyno = 0;
-				list<KeyInfo>::iterator itrki;
-				for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
-					double curframe = itrki->time;
+				double curframe;
+				for (curframe = startframe; curframe < endframe; curframe += 1.0){
 
 					CMotionPoint* curparmp = 0;
 					CMotionPoint* aplyparmp = 0;
@@ -5766,9 +5737,8 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	double firstframe = 0.0;
 	if (keynum >= 2){
 		int keyno = 0;
-		list<KeyInfo>::iterator itrki;
-		for (itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++){
-			double curframe = itrki->time;
+		double curframe;
+		for (curframe = startframe; curframe < endframe; curframe += 1.0){
 			double changerate;
 			if (curframe <= applyframe){
 				if (applyframe != startframe){
@@ -5913,9 +5883,8 @@ int CModel::FKBoneTra( CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
 		float changerate = 1.0f / (float)(endframe - startframe);
 
 		int keyno = 0;
-		list<KeyInfo>::iterator itrki;
-		for( itrki = erptr->m_ki.begin(); itrki != erptr->m_ki.end(); itrki++ ){
-			double curframe = itrki->time;
+		double curframe;
+		for (curframe = startframe; curframe < endframe; curframe += 1.0){
 			double changerate;
 			if( curframe <= applyframe ){
 				if( applyframe != startframe ){

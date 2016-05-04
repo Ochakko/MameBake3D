@@ -1105,7 +1105,7 @@ void InitApp()
     swprintf_s( sz, 100, L"姿勢適用位置 : %d ％", g_applyrate );
     g_SampleUI.AddStatic( IDC_STATIC_APPLYRATE, sz, 35, iY += addh, 125, ctrlh );
     g_SampleUI.AddSlider( IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate );
-	CEditRange::s_applyrate = g_applyrate;
+	CEditRange::SetApplyRate(g_applyrate);
 
 
     //swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
@@ -1214,8 +1214,8 @@ void InitApp()
 		if (g_previewFlag == 0){
 			if (s_prevrangeFlag || s_nextrangeFlag){
 				RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
-				s_buttonselectstart = s_editrange.m_startframe;
-				s_buttonselectend = s_editrange.m_endframe;
+				s_buttonselectstart = s_editrange.GetStartFrame();
+				s_buttonselectend = s_editrange.GetEndFrame();
 				OnTimeLineButtonSelect(0);
 			}
 			else if (g_selecttolastFlag == false){
@@ -2568,11 +2568,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			//preview start frame
 			s_previewrange = s_editrange;
 			double rangestart;
-			if (s_previewrange.m_startframe == s_previewrange.m_endframe){
+			if (s_previewrange.IsSameStartAndEnd()){
 				rangestart = 0.0;
 			}
 			else{
-				rangestart = s_previewrange.m_startframe;
+				rangestart = s_previewrange.GetStartFrame();
 			}
 			s_model->SetMotionFrame(rangestart);
 			difftime = 0.0;
@@ -4288,7 +4288,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
     // Pass all remaining windows messages to camera so it can respond to user input
 
-	float deltadist;
 	if( uMsg == WM_LBUTTONDOWN ){
 		g_Camera.HandleMessages( hWnd, WM_RBUTTONDOWN, wParam, lParam );
 		if( s_ikkind == 2 ){
@@ -4441,7 +4440,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             g_applyrate = g_SampleUI.GetSlider( IDC_SL_APPLYRATE )->GetValue();
 		    swprintf_s( sz, 100, L"姿勢適用位置 : %d ％", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
-			CEditRange::s_applyrate = (double)g_applyrate;
+			CEditRange::SetApplyRate((double)g_applyrate);
 			OnTimeLineSelect();
             break;
 
@@ -9873,7 +9872,7 @@ int AddEditRangeHistory()
 		s_editrangesetindex = 0;
 	}
 
-	if (s_editrange.m_startframe == s_editrange.m_endframe){
+	if (s_editrange.IsSameStartAndEnd()){
 		_ASSERT(0);
 		return 0;
 	}
@@ -9895,8 +9894,8 @@ int AddEditRangeHistory()
 		}
 
 		*(s_editrangehistory + s_editrangesetindex) = s_editrange;
-		(s_editrangehistory + s_editrangesetindex)->m_setflag = 1;
-		(s_editrangehistory + s_editrangesetindex)->m_setcnt = s_historycnt;
+		(s_editrangehistory + s_editrangesetindex)->SetSetFlag(1);
+		(s_editrangehistory + s_editrangesetindex)->SetSetCnt(s_historycnt);
 		s_historycnt++;
 
 		s_editrangehistoryno = s_editrangesetindex;
@@ -9915,9 +9914,9 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 	int erhcnt;
 	int curindex = s_editrangehistoryno;
 
-	if (prevrangeFlag && (s_editrange.m_startframe == s_editrange.m_endframe)){
+	if (prevrangeFlag && (s_editrange.IsSameStartAndEnd())){
 		//prevボタンのとき　範囲が解除されている場合は現状復帰のためインデックスはそのまま
-		if ((s_editrangehistory + curindex)->m_setflag == 1){
+		if ((s_editrangehistory + curindex)->GetSetFlag() == 1){
 			findindex = curindex;
 		}
 	}
@@ -9939,7 +9938,7 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 			if (curindex >= EDITRANGEHISTORYNUM){
 				curindex = 0;
 			}
-			if ((s_editrangehistory + curindex)->m_setflag == 1){
+			if ((s_editrangehistory + curindex)->GetSetFlag() == 1){
 				findindex = curindex;
 				break;
 			}
