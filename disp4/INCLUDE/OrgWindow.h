@@ -25,7 +25,6 @@ struct KeyInfo{
 	void *object;
 };
 
-
 extern bool g_selecttolastFlag;//Main.cpp
 extern bool g_underselecttolast;//Main.cpp
 extern bool g_undereditrange;//Main.cpp
@@ -3308,7 +3307,6 @@ static void s_dummyfunc();
 		}
 		///	Method : マウスダウンイベント受信
 		virtual void onLButtonDown(const MouseEvent& e){
-
 			selectClear(true);
 
 			if( !canMouseControll ) return;

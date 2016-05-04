@@ -1195,7 +1195,7 @@ void InitApp()
 /////////
 	s_owpPlayerButton = new OWP_PlayerButton;
 	s_owpPlayerButton->setButtonSize(20);
-	s_LtimelineWnd->addParts(*s_owpPlayerButton);
+	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timeline‚æ‚è‘O
 
 	s_owpPlayerButton->setFrontPlayButtonListener( [](){ g_previewFlag = 1; } );
 	s_owpPlayerButton->setBackPlayButtonListener( [](){  g_previewFlag = -1; } );
@@ -5983,7 +5983,7 @@ int AddTimeLine( int newmotid )
 
 	if( !s_owpLTimeline && s_model ){
 		s_owpLTimeline= new OWP_Timeline( L"EditRangeTimeLine" );
-		s_LtimelineWnd->addParts(*s_owpLTimeline);
+		s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbutton‚æ‚èŒã
 		s_owpLTimeline->setCursorListener( [](){ s_LcursorFlag=true; } );
 		s_owpLTimeline->setMouseMDownListener([](){
 			s_timelinembuttonFlag = true;
