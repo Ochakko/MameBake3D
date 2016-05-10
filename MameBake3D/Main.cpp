@@ -9803,7 +9803,7 @@ int OnTimeLineWheel()
 			//ÉLÅ[ëÄçÏÅ@Ctrl+Shift and A, D
 			int delta;
 			if (g_keybuf['A'] & 0x80){
-				if ((s_akeycnt % 10) == 0){
+				if ((s_akeycnt % 5) == 0){
 					delta = -1;
 				}
 				else{
@@ -9811,7 +9811,7 @@ int OnTimeLineWheel()
 				}
 			}
 			else if (g_keybuf['D'] & 0x80){
-				if ((s_dkeycnt % 10) == 0){
+				if ((s_dkeycnt % 5) == 0){
 					delta = 1;
 				}
 				else{
