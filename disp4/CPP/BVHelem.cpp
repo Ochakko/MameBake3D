@@ -65,6 +65,7 @@ int CBVHElem::InitParams()
 	qptr = 0;
 	treeq = 0;
 	transpose = 0;
+	transmat = 0;
 
 	partransptr = 0;
 
@@ -115,6 +116,11 @@ int CBVHElem::DestroyObjs()
 	if( transpose ){
 		delete [] transpose;
 		transpose = 0;
+	}
+
+	if (transmat){
+		delete[] transmat;
+		transmat = 0;
 	}
 
 	return 0;
@@ -484,6 +490,12 @@ int CBVHElem::CreateMotionObjs( int srcframes )
 		return 1;
 	}
 
+	transmat = new D3DXMATRIX[framenum];
+	if (!transmat){
+		DbgOut(L"bvhelem : CreateMotionObj : transmat alloc error !!!\n");
+		_ASSERT(0);
+		return 1;
+	}
 	return 0;
 }
 

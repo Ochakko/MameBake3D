@@ -72,6 +72,8 @@ using namespace OrgWinGUI;
 
 static int s_alloccnt = 0;
 
+extern int g_dbgloadcnt;
+extern int g_oldaxisflag;
 extern int g_pseudolocalflag;
 extern int g_previewFlag;			// プレビューフラグ
 extern WCHAR g_basedir[ MAX_PATH ];
@@ -2988,15 +2990,16 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 					xmat._43 = (float)mat.Get( 3, 2 );
 					xmat._44 = (float)mat.Get( 3, 3 );
 
-					if( (animno == 0) && (framecnt == 0.0) ){
-						curbone->SetFirstMat( xmat );
-						curbone->SetInitMat( xmat );
+					if ((animno == 0) && (framecnt == 0.0)){
+						curbone->SetFirstMat(xmat);
+						curbone->SetInitMat(xmat);
 						D3DXMATRIX calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
 						D3DXVECTOR3 zeropos(0.0f, 0.0f, 0.0f);
 						D3DXVECTOR3 tmppos;
 						D3DXVec3TransformCoord(&tmppos, &zeropos, &calcmat);
-						curbone->SetJointFPos(tmppos);
+						curbone->SetOldJointFPos(tmppos);
 					}
+					
 
 					CMotionPoint* curmp = 0;
 					int existflag = 0;
@@ -5517,11 +5520,28 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			D3DXMATRIX selectmat;
 			D3DXMATRIX invselectmat;
-			if (firstbone->GetBoneLeng() > 0.00001f){
-				selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+			if (g_oldaxisflag == 1){
+				//FBXの初期のボーンの向きがIdentityの場合
+				if (parbone){
+					if (curbone->GetBoneLeng() > 0.00001f){
+						selectmat = curbone->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+					}
+					else{
+						selectmat = curbone->GetCurMp().GetWorldMat();
+					}
+				}
+				else{
+					selectmat = curbone->GetCurMp().GetWorldMat();
+				}
 			}
 			else{
-				selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+				//FBXにボーンの初期の軸の向きが記録されている場合
+				if (parbone){
+					selectmat = curbone->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
+				}
+				else{
+					selectmat = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
+				}
 			}
 			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
 
@@ -5702,11 +5722,29 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	D3DXVECTOR3 axis0, rotaxis;
 	D3DXMATRIX selectmat;
 	D3DXMATRIX invselectmat;
-	if (firstbone->GetBoneLeng() > 0.00001f){
-		selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+	CBone* parbone = curbone->GetParent();
+	if (g_oldaxisflag == 1){
+		//FBXの初期のボーンの向きがIdentityの場合
+		if (parbone){
+			if (curbone->GetBoneLeng() > 0.00001f){
+				selectmat = curbone->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+			}
+			else{
+				selectmat = curbone->GetCurMp().GetWorldMat();
+			}
+		}
+		else{
+			selectmat = curbone->GetCurMp().GetWorldMat();
+		}
 	}
 	else{
-		selectmat = firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+		//FBXにボーンの初期の軸の向きが記録されている場合
+		if (parbone){
+			selectmat = curbone->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
+		}
+		else{
+			selectmat = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
+		}
 	}
 	D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
 	selectmat._41 = 0.0f;

@@ -60,6 +60,7 @@ private:
 	void MultBVHElemReq( CBVHElem* srcbe, float srcmult );
 
 	void CalcBVHTreeQReq( CBVHElem* srcbe );
+	void CalcTransMatReq(CBVHElem* srcbe);
 
 	int SetBVHSameNameBoneSeri();
 	int CalcMPQ( CBVHElem* beptr, int fno, CQuaternion* dstq );

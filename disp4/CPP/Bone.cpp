@@ -31,6 +31,8 @@
 using namespace std;
 using namespace OrgWinGUI;
 
+
+extern int g_oldaxisflag;
 map<CModel*,int> g_bonecntmap;
 
 
@@ -101,6 +103,7 @@ int CBone::InitParams()
 
 	m_jointwpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	m_jointfpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	m_oldjointfpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	D3DXMatrixIdentity( &m_laxismat );
 	D3DXMatrixIdentity( &m_gaxismatXpar );
@@ -184,7 +187,8 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 		D3DXMATRIX tmpmat = m_curmp.GetWorldMat() * *wmat;
 		m_curmp.SetWorldMat( tmpmat ); 
 
-		D3DXVec3TransformCoord( &m_childworld, &m_jointfpos, &m_curmp.GetWorldMat() );
+		D3DXVECTOR3 jpos = GetJointFPos();
+		D3DXVec3TransformCoord( &m_childworld, &jpos, &m_curmp.GetWorldMat() );
 		D3DXVec3TransformCoord( &m_childscreen, &m_childworld, vpmat );
 	}else{
 		m_curmp.InitParams();
@@ -434,17 +438,15 @@ int CBone::CalcAxisMatZ( D3DXVECTOR3* curpos, D3DXVECTOR3* chilpos )
 
 int CBone::CalcAxisMatX()
 {
-
 	D3DXVECTOR3 curpos;
 	D3DXVECTOR3 chilpos;
 
-	if( m_child ){
-		D3DXVec3TransformCoord( &curpos, &m_jointfpos, &m_startmat2 );
-		D3DXVec3TransformCoord( &chilpos, &m_child->m_jointfpos, &(m_child->m_startmat2) );
+	if (m_parent){
+		D3DXVec3TransformCoord(&curpos, &(m_parent->GetJointFPos()), &(m_parent->m_startmat2));
+		D3DXVec3TransformCoord(&chilpos, &(GetJointFPos()), &m_startmat2);
 
-		CalcAxisMatX_aft( curpos, chilpos, &m_gaxismatXpar );
+		CalcAxisMatX_aft(curpos, chilpos, &m_gaxismatXpar);
 	}
-
 
 	return 0;
 }
@@ -525,8 +527,8 @@ int CBone::CalcAxisMatY( CBone* chilbone, D3DXMATRIX* dstmat )
 	D3DXVECTOR3 curpos;
 	D3DXVECTOR3 chilpos;
 
-	D3DXVec3TransformCoord( &curpos, &m_jointfpos, &(m_curmp.GetWorldMat()) );
-	D3DXVec3TransformCoord( &chilpos, &chilbone->m_jointfpos, &(chilbone->m_curmp.GetWorldMat()) );
+	D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
+	D3DXVec3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
 
 	D3DXVECTOR3 diff = curpos - chilpos;
 	float leng;
@@ -626,10 +628,10 @@ int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int se
 	D3DXMatrixIdentity( &bmmat );
 
 	D3DXVECTOR3 aftbonepos;
-	D3DXVec3TransformCoord( &aftbonepos, &m_jointfpos, &(m_curmp.GetWorldMat()) );
+	D3DXVec3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
 
 	D3DXVECTOR3 aftchilpos;
-	D3DXVec3TransformCoord( &aftchilpos, &chilbone->m_jointfpos, &(chilbone->m_curmp.GetWorldMat()) );
+	D3DXVec3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
 
 	CalcAxisMatZ( &aftbonepos, &aftchilpos );
 	CalcAxisMatY( chilbone, &bmmat );			
@@ -721,15 +723,17 @@ int CBone::CalcAxisMat( int firstflag, float delta )
 	if( delta != 0.0f ){
 		CQuaternion multq;
 		D3DXVECTOR3 gparpos, gchilpos, gbonevec;
-		if( m_child ){
-			D3DXVec3TransformCoord( &gparpos, &m_jointfpos, &m_startmat2 );
-			D3DXVec3TransformCoord( &gchilpos, &m_child->m_jointfpos, &(m_child->m_startmat2) );
+		if (m_parent){
+			D3DXVec3TransformCoord(&gparpos, &(m_parent->GetJointFPos()), &(m_parent->m_startmat2));
+			D3DXVec3TransformCoord(&gchilpos, &(GetJointFPos()), &m_startmat2);
 			gbonevec = gchilpos - gparpos;
-			D3DXVec3Normalize( &gbonevec, &gbonevec );
-		}else{
-			_ASSERT( 0 );
+			D3DXVec3Normalize(&gbonevec, &gbonevec);
+		}
+		else{
+			_ASSERT(0);
 			return 0;
 		}
+
 
 		multq.SetAxisAndRot( gbonevec, delta );
 		D3DXMATRIX multmat = multq.MakeRotMatX();
@@ -983,7 +987,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 
 		if (setmatflag == 0){
 			D3DXVECTOR3 rotcenter;// = m_childworld;
-			D3DXVec3TransformCoord(&rotcenter, &m_jointfpos, &(curmp->GetWorldMat()));
+			D3DXVec3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
 
 			D3DXMATRIX befrot, aftrot;
 			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
@@ -1306,7 +1310,8 @@ int CBone::GetBoneNum()
 
 int CBone::CalcFirstFrameBonePos(D3DXMATRIX srcmat)
 {
-	D3DXVec3TransformCoord(&m_firstframebonepos, &m_jointfpos, &srcmat);
+	D3DXVECTOR3 jpos = GetJointFPos();
+	D3DXVec3TransformCoord(&m_firstframebonepos, &jpos, &srcmat);
 
 	//if ((m_firstframebonepos.x == 0.0f) && (m_firstframebonepos.y == 0.0f) && (m_firstframebonepos.z == 0.0f)){
 	//	_ASSERT(0);
@@ -1319,12 +1324,16 @@ void CBone::CalcFirstAxisMatX()
 	D3DXVECTOR3 curpos;
 	D3DXVECTOR3 chilpos;
 
-	if (m_child){
-		D3DXVec3TransformCoord(&curpos, &m_jointfpos, &m_firstmat);
-		D3DXVec3TransformCoord(&chilpos, &m_child->m_jointfpos, &(m_child->m_firstmat));
+	if (m_parent){
+		/*
+		D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &m_firstmat);
+		D3DXVec3TransformCoord(&chilpos, &(m_child->GetJointFPos()), &(m_child->m_firstmat));
 
 		CalcAxisMatX_aft(curpos, chilpos, &m_firstaxismatX);
+		*/
+		CalcAxisMatX_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatX);
 	}
+
 }
 
 int CBone::CalcBoneDepth()
@@ -1337,4 +1346,23 @@ int CBone::CalcBoneDepth()
 	}
 
 	return retdepth;
+}
+
+D3DXVECTOR3 CBone::GetJointFPos()
+{
+	
+	if (g_oldaxisflag == 0){
+		return m_jointfpos;
+	}
+	else{
+		return m_oldjointfpos;
+	}
+	//return m_jointfpos;
+}
+void CBone::SetJointFPos(D3DXVECTOR3 srcpos)
+{ 
+	m_jointfpos = srcpos; 
+}
+void CBone::SetOldJointFPos(D3DXVECTOR3 srcpos){
+	m_oldjointfpos = srcpos;
 }

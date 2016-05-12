@@ -74,6 +74,9 @@ public:
 	CQuaternion* GetQPtr(){
 		return qptr;
 	};
+	D3DXMATRIX* GetTransMat(){
+		return transmat;
+	};
 
 	int GetSameNameBoneSeri(){
 		return samenameboneseri;
@@ -255,6 +258,9 @@ private:
 
 	D3DXVECTOR3* partransptr;
 	D3DXVECTOR3 position;
+
+	D3DXMATRIX* transmat;//グローバルの変換行列
+
 
 	int samenameboneseri;//sigに、同じ名前のボーンがあった場合にselem->serialnoをセット、無かったら-1。
 

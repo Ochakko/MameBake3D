@@ -90,6 +90,9 @@ typedef struct tag_spaxis
 	POINT dispcenter;
 }SPAXIS, SPCAM;
 
+int g_dbgloadcnt = 0;
+int g_oldaxisflag = 0;
+
 extern map<CModel*,int> g_bonecntmap;
 
 D3DXMATRIX s_selectmat;
@@ -193,7 +196,7 @@ static int s_filterindex = 1;
 //static int s_mainheight = 620;
 static int s_mainwidth = 800;
 //static int s_mainheight = 820;
-static int s_mainheight = 540;
+static int s_mainheight = 570;
 
 static LPDIRECT3DDEVICE9 s_pdev = 0;
 
@@ -455,6 +458,7 @@ CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
+CDXUTCheckBox* s_OldAxisCheckBox = 0;
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -1121,6 +1125,7 @@ void InitApp()
 	g_SampleUI.AddCheckBox( IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox );
 	g_SampleUI.AddCheckBox( IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox );
 	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"OldAxis(旧データ互換)", 25, iY += addh, 480, 16, false, 0U, false, &s_OldAxisCheckBox);
 
 
 
@@ -1132,7 +1137,7 @@ void InitApp()
 							L"TimeLine",				//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							WindowPos(50, 0),		//位置
-							WindowSize(400,540),	//サイズ
+							WindowSize(400,570),	//サイズ
 							//WindowSize(150,540),	//サイズ
 							L"TimeLine",				//タイトル
 							s_mainwnd,					//親ウィンドウハンドル
@@ -1185,7 +1190,7 @@ void InitApp()
 							L"EditRangeTimeLine",				//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos( 250, 825 ),		//位置
-							WindowPos( 200, 600 ),		//位置
+							WindowPos( 200, 615 ),		//位置
 							WindowSize( 1050, 120 ),	//サイズ
 							L"EditRangeTimeLine",				//タイトル
 							s_mainwnd,					//親ウィンドウハンドル
@@ -1830,7 +1835,7 @@ static OWP_Button* s_dampanimB = 0;
 							1,
 							_T("GPlaneWindow"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(400, 600),		//位置
+							WindowPos(400, 615),		//位置
 							WindowSize(400,320),		//サイズ
 							//WindowSize(200,110),		//サイズ
 							_T("物理地面ウィンドウ"),	//タイトル
@@ -1940,7 +1945,7 @@ static OWP_Button* s_dampanimB = 0;
 							_T("ToolWindow"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos(400, 580),		//位置
-							WindowPos(50, 600),		//位置
+							WindowPos(50, 615),		//位置
 							WindowSize(150,10),		//サイズ
 							_T("ツールウィンドウ"),	//タイトル
 							s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
@@ -1983,7 +1988,7 @@ static OWP_Button* s_dampanimB = 0;
 							_T("LayerTool"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos(800, 500),		//位置
-							WindowPos(250, 600),		//位置
+							WindowPos(250, 615),		//位置
 							WindowSize(150,200),		//サイズ
 							_T("オブジェクトパネル"),	//タイトル
 							NULL,					//親ウィンドウハンドル
@@ -2517,6 +2522,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	g_oldaxisflag = (int)s_OldAxisCheckBox->GetChecked();
 
 	s_time = fTime;
 /***
@@ -5686,6 +5692,15 @@ CModel* OpenFBXFile( int skipdefref )
 	s_dbgcnt++;
 
 	g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	
+	/*
+	WCHAR* strbvhfbx = wcsstr(g_tmpmqopath, L".bvh.fbx");
+	if (strbvhfbx){
+		g_oldaxisflag = 1;
+		s_OldAxisCheckBox->SetChecked(true);
+		;; MessageBox(NULL, L"古いデータです。旧データ互換のチェックを入れます。", L"確認", MB_OK);
+	}
+	*/
 
 	static int modelcnt = 0;
 	WCHAR modelname[MAX_PATH] = {0L};
@@ -5877,6 +5892,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 //	SetCapture( s_mainwnd );
 
 	s_curmotid = s_model->GetCurMotInfo()->motid;
+
+	g_dbgloadcnt++;
 
 	return newmodel;
 }
@@ -6307,10 +6324,27 @@ int AddBoneTra( int kind, float srctra )
 	D3DXVECTOR3 vecy( 0.0f, 1.0f, 0.0f );
 	D3DXVECTOR3 vecz( 0.0f, 0.0f, 1.0f );
 
-	D3DXMATRIX worldrot = curbone->GetAxisMatPar() * curbone->GetCurMp().GetWorldMat();
+	D3DXMATRIX worldrot;
+	if (g_oldaxisflag == 1){
+		//FBXの初期のボーンの向きがIdentityの場合
+		if (curbone->GetBoneLeng() > 0.00001f){
+			worldrot = curbone->GetFirstAxisMatX() * curbone->GetInvFirstMat() * curbone->GetCurMp().GetWorldMat();
+		}
+		else{
+			worldrot = curbone->GetInvFirstMat() * curbone->GetCurMp().GetWorldMat();
+		}
+	}
+	else{
+		//FBXにボーンの初期の軸の向きが記録されている場合
+		//worldrot = curbone->GetNodeMat() * curbone->GetInvFirstMat() * curbone->GetCurMp().GetWorldMat();
+		worldrot = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
+	}
 	worldrot._41 = 0.0f;
 	worldrot._42 = 0.0f;
 	worldrot._43 = 0.0f;
+
+
+
 
 	if( kind == 0 ){
 		D3DXVec3TransformCoord( &basevec, &vecx, &worldrot );
@@ -7051,14 +7085,32 @@ int RenderSelectMark(int renderflag)
 
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if( curboneptr ){
-		D3DXMATRIX bonetra;
-
-		if (curboneptr->GetBoneLeng() > 0.00001f){
-			s_selm = curboneptr->GetFirstAxisMatX() * curboneptr->GetInvFirstMat() * curboneptr->GetCurMp().GetWorldMat();
+		CBone* parbone = curboneptr->GetParent();
+		if (g_oldaxisflag == 1){
+			//FBXの初期のボーンの向きがIdentityの場合
+			if (parbone){
+				if (curboneptr->GetBoneLeng() > 0.00001f){
+					s_selm = curboneptr->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+				}
+				else{
+					s_selm = curboneptr->GetCurMp().GetWorldMat();
+				}
+			}
+			else{
+				s_selm = curboneptr->GetCurMp().GetWorldMat();
+			}
 		}
 		else{
-			s_selm = curboneptr->GetInvFirstMat() * curboneptr->GetCurMp().GetWorldMat();
+			//FBXにボーンの初期の軸の向きが記録されている場合
+			if (parbone){
+				s_selm = curboneptr->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
+			}
+			else{
+				s_selm = curboneptr->GetNodeMat() * curboneptr->GetCurMp().GetWorldMat();
+			}
 		}
+
+
 		D3DXVECTOR3 orgpos = curboneptr->GetJointFPos();
 		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();
 

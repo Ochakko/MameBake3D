@@ -517,8 +517,9 @@ public: //accesser
 	void SetTmpQ(CQuaternion srcq){ m_tmpq = srcq; };
 
 
-	D3DXVECTOR3 GetJointFPos(){ return m_jointfpos; };
-	void SetJointFPos( D3DXVECTOR3 srcpos ){ m_jointfpos = srcpos; };
+	D3DXVECTOR3 GetJointFPos();
+	void SetJointFPos(D3DXVECTOR3 srcpos);
+	void SetOldJointFPos(D3DXVECTOR3 srcpos);
 
 	D3DXVECTOR3 GetJointWPos(){ return m_jointwpos; };
 	void SetJointWPos( D3DXVECTOR3 srcpos ){ m_jointwpos = srcpos; };
@@ -762,6 +763,7 @@ private:
 	D3DXMATRIX m_firstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
 	D3DXMATRIX m_invfirstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
 	D3DXVECTOR3 m_jointfpos;//ジョイントの初期位置。
+	D3DXVECTOR3 m_oldjointfpos;//ジョイント初期位置（旧データ互換）
 	D3DXVECTOR3 m_jointwpos;//FBXにアニメーションが入っていない時のジョイントの初期位置。
 	FbxAMatrix m_globalpos;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
 	D3DXMATRIX m_initmat;

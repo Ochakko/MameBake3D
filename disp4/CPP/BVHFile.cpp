@@ -309,6 +309,7 @@ int CBVHFile::LoadBVHFile( HWND srcapphwnd, WCHAR* srcname, float srcmult )
 			ret = (*( m_bearray + beno ))->ConvZxyRot();
 			_ASSERT(!ret);
 
+			CalcTransMatReq(m_behead);
 
 			/////// for debug
 			//char* findname = 0;
@@ -1190,12 +1191,11 @@ void CBVHFile::CalcBVHTreeQReq( CBVHElem* srcbe )
 
 	if( srcbe->GetParent() ){
 		for( fno = 0; fno < m_frames; fno++ ){
-			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetParent()->GetQPtr() + fno) * *(srcbe->GetTreeQ() + fno);
+			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetParent()->GetTreeQ() + fno) * *(srcbe->GetQPtr() + fno);
 		}
 	}else{
 		for( fno = 0; fno < m_frames; fno++ ){
-			//*(srcbe->GetTreeQ() + fno) = *(srcbe->GetQPtr() + fno);
-			(srcbe->GetTreeQ() + fno)->SetParams( 1.0f, 0.0f, 0.0f, 0.0f );//自分を含まない親の影響を計算するため。axisqに使用する。
+			*(srcbe->GetTreeQ() + fno) = *(srcbe->GetQPtr() + fno);
 		}
 	}
 //////////
@@ -1207,6 +1207,44 @@ void CBVHFile::CalcBVHTreeQReq( CBVHElem* srcbe )
 	}
 
 }
+
+void CBVHFile::CalcTransMatReq(CBVHElem* srcbe)
+{
+	int fno;
+
+	D3DXVECTOR3 roottra;
+	D3DXMATRIX roottramat, befrot, aftrot, rot;
+	D3DXMatrixIdentity(&roottramat);
+	D3DXMatrixIdentity(&befrot);
+	D3DXMatrixIdentity(&aftrot);
+	D3DXMatrixIdentity(&rot);
+	m_behead->GetTrans(0, &roottra);
+	D3DXMatrixTranslation(&roottramat, roottra.x, roottra.y, roottra.z);
+	D3DXMatrixTranslation(&befrot, -srcbe->GetPosition().x, -srcbe->GetPosition().y, -srcbe->GetPosition().z);
+	D3DXMatrixTranslation(&aftrot, srcbe->GetPosition().x, srcbe->GetPosition().y, srcbe->GetPosition().z);
+
+	if (srcbe->GetParent()){
+		for (fno = 0; fno < m_frames; fno++){
+			rot = (srcbe->GetQPtr() + fno)->MakeRotMatX();
+			*(srcbe->GetTransMat() + fno) = befrot * rot * aftrot * *(srcbe->GetParent()->GetTransMat() + fno);// * roottramat;
+		}
+	}
+	else{
+		for (fno = 0; fno < m_frames; fno++){
+			rot = (srcbe->GetQPtr() + fno)->MakeRotMatX();
+			*(srcbe->GetTransMat() + fno) = befrot * rot * aftrot;// *roottramat;
+		}
+	}
+	//////////
+	if (srcbe->GetChild()){
+		CalcTransMatReq(srcbe->GetChild());
+	}
+	if (srcbe->GetBrother()){
+		CalcTransMatReq(srcbe->GetBrother());
+	}
+
+}
+
 
 int CBVHFile::SetBVHSameNameBoneSeri()
 {

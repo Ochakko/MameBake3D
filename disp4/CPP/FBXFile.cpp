@@ -34,6 +34,8 @@
 
 #define KARCH_ENV_WIN
 
+extern int g_oldaxisflag;
+
 static FbxNode::EPivotSet s_convPivot;
 
 static float FlClamp( float srcval, float minval, float maxval );
@@ -145,6 +147,10 @@ static int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* p
 static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, int bonecnt);
 static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene);
 static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt);
+
+static D3DXMATRIX CalcBvhBindMatrix(CFBXBone* fbxbone);
+static FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone);
+static D3DXMATRIX CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos);
 
 
 #ifdef IOS_REF
@@ -955,6 +961,20 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 
 			lSkin->AddCluster(lCluster);
 		}
+
+		/*
+		if (lCluster){
+			FbxAMatrix lXMatrix;
+			lXMatrix.SetIdentity();
+			lCluster->SetTransformMatrix(lXMatrix);
+
+			FbxAMatrix lXMatrix2;
+			lXMatrix2 = lSkel->EvaluateGlobalTransform();
+			lCluster->SetTransformLinkMatrix(lXMatrix2);
+
+			lSkin->AddCluster(lCluster);
+		}
+		*/
 	}
 }
 
@@ -964,7 +984,6 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 {
 	_ASSERT( pm4 );
 	FbxGeometry* lMeshAttribute;
-	FbxAMatrix lXMatrix;
     FbxNode* lSkel;
 
 	lMeshAttribute = (FbxGeometry*)pMesh->GetNodeAttribute();
@@ -1047,45 +1066,15 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 					}
 
 
-					//FbxScene* lScene = pMesh->GetScene();
+					FbxAMatrix lXMatrix;
 					lXMatrix = pMesh->EvaluateGlobalTransform();
 					lCluster->SetTransformMatrix(lXMatrix);
 
-					D3DXMATRIX xmat;
-					xmat._11 = (float)lXMatrix.Get(0, 0);
-					xmat._12 = (float)lXMatrix.Get(0, 1);
-					xmat._13 = (float)lXMatrix.Get(0, 2);
-					xmat._14 = (float)lXMatrix.Get(0, 3);
 
-					xmat._21 = (float)lXMatrix.Get(1, 0);
-					xmat._22 = (float)lXMatrix.Get(1, 1);
-					xmat._23 = (float)lXMatrix.Get(1, 2);
-					xmat._24 = (float)lXMatrix.Get(1, 3);
+					FbxAMatrix lXMatrix2;
+					lXMatrix2 = lSkel->EvaluateGlobalTransform();
+					lCluster->SetTransformLinkMatrix(lXMatrix2);
 
-					xmat._31 = (float)lXMatrix.Get(2, 0);
-					xmat._32 = (float)lXMatrix.Get(2, 1);
-					xmat._33 = (float)lXMatrix.Get(2, 2);
-					xmat._34 = (float)lXMatrix.Get(2, 3);
-
-					xmat._41 = 0.0f;
-					xmat._42 = 0.0f;
-					xmat._43 = 0.0f;
-					xmat._44 = (float)lXMatrix.Get(3, 3);
-
-					D3DXQUATERNION xq;
-					D3DXQuaternionRotationMatrix(&xq, &xmat);
-					fbxbone->GetAxisQ().SetParams(xq);
-
-					//lXMatrix.SetIdentity();
-					//lXMatrix[3][0] = -curbone->m_vertpos[BT_PARENT].x;
-					//lXMatrix[3][1] = -curbone->m_vertpos[BT_PARENT].y;
-					//lXMatrix[3][2] = curbone->m_vertpos[BT_PARENT].z;
-					//lCluster->SetTransformMatrix(lXMatrix);
-
-					lXMatrix = lSkel->EvaluateGlobalTransform();
-					lCluster->SetTransformLinkMatrix(lXMatrix);
-					//lXMatrix.SetIdentity();
-					//lCluster->SetTransformLinkMatrix(lXMatrix);
 
 					lSkin->AddCluster(lCluster);
 				}
@@ -1155,8 +1144,8 @@ void AnimateSkeletonOfBVH( FbxScene* pScene )
     FbxTime lTime;
     int lKeyIndex = 0;
 
-
-	lAnimStackName = "bvh animation nyan";
+	
+	lAnimStackName = "bvh_animation_nyan";
 	FbxAnimStack* lAnimStack = FbxAnimStack::Create(pScene, lAnimStackName);
 	FbxAnimLayer* lAnimLayer = FbxAnimLayer::Create(pScene, "Base Layer");
     lAnimStack->AddMember(lAnimLayer);
@@ -1765,15 +1754,105 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 {
 	FbxTime lTime0;
 	lTime0.SetSecondDouble( 0.0 );
-	
-	if ((s_bvhflag != 1) || (fbxbone->GetType() != FB_ROOT)){
-	//if (fbxbone->GetType() != FB_ROOT){
-		FbxNode* curskel = fbxbone->GetSkelNode();
-		if( curskel ){
-			FbxAMatrix lBindMatrix = curskel->EvaluateGlobalTransform( lTime0 );
+
+	FbxAMatrix lBindMatrix;
+	lBindMatrix.SetIdentity();
+	D3DXMATRIX tramat;
+	D3DXMatrixIdentity(&tramat);
+	FbxNode* curskel = fbxbone->GetSkelNode();
+	if (fbxbone->GetType() != FB_ROOT){
+		if (curskel){
+			FbxAMatrix lBindMatrix;
+			lBindMatrix = CalcBindMatrix(fbxbone);
 			lPose->Add(curskel, lBindMatrix);
 		}
 	}
+
+
+	/*
+	if (s_bvhflag == 1){
+		if (curskel){
+			if (fbxbone->GetType() != FB_ROOT){
+				CBVHElem* curbone = fbxbone->GetBvhElem();
+				if (curbone){
+					tramat = CalcBvhBindMatrix(fbxbone);
+					lBindMatrix[0][0] = tramat._11;
+					lBindMatrix[0][1] = tramat._12;
+					lBindMatrix[0][2] = tramat._13;
+					lBindMatrix[0][3] = tramat._14;
+					lBindMatrix[1][0] = tramat._21;
+					lBindMatrix[1][1] = tramat._22;
+					lBindMatrix[1][2] = tramat._23;
+					lBindMatrix[1][3] = tramat._24;
+					lBindMatrix[2][0] = tramat._31;
+					lBindMatrix[2][1] = tramat._32;
+					lBindMatrix[2][2] = tramat._33;
+					lBindMatrix[2][3] = tramat._34;
+					lBindMatrix[3][0] = tramat._41;
+					lBindMatrix[3][1] = tramat._42;
+					lBindMatrix[3][2] = tramat._43;
+					lBindMatrix[3][3] = tramat._44;
+					lPose->Add(curskel, lBindMatrix);
+				}
+			}
+		}
+	}else if (fbxbone->GetType() != FB_ROOT){
+		if( curskel ){
+			CBone* curbone = fbxbone->GetBone();
+			if (curbone){
+				if (g_oldaxisflag == 1){
+					//lBindMatrix = CalcBindMatrix(fbxbone);
+					//lPose->Add(curskel, lBindMatrix);
+					if (curbone->GetBoneLeng() >= 0.00001f){
+						tramat = curbone->GetFirstAxisMatX();
+					}
+					tramat._41 = curbone->GetJointFPos().x;
+					tramat._42 = curbone->GetJointFPos().y;
+					tramat._43 = curbone->GetJointFPos().z;
+
+					lBindMatrix[0][0] = tramat._11;
+					lBindMatrix[0][1] = tramat._12;
+					lBindMatrix[0][2] = tramat._13;
+					lBindMatrix[0][3] = tramat._14;
+					lBindMatrix[1][0] = tramat._21;
+					lBindMatrix[1][1] = tramat._22;
+					lBindMatrix[1][2] = tramat._23;
+					lBindMatrix[1][3] = tramat._24;
+					lBindMatrix[2][0] = tramat._31;
+					lBindMatrix[2][1] = tramat._32;
+					lBindMatrix[2][2] = tramat._33;
+					lBindMatrix[2][3] = tramat._34;
+					lBindMatrix[3][0] = tramat._41;
+					lBindMatrix[3][1] = tramat._42;
+					lBindMatrix[3][2] = tramat._43;
+					lBindMatrix[3][3] = tramat._44;
+					lPose->Add(curskel, lBindMatrix);
+				}
+				else{
+					tramat = curbone->GetNodeMat();
+
+					lBindMatrix[0][0] = tramat._11;
+					lBindMatrix[0][1] = tramat._12;
+					lBindMatrix[0][2] = tramat._13;
+					lBindMatrix[0][3] = tramat._14;
+					lBindMatrix[1][0] = tramat._21;
+					lBindMatrix[1][1] = tramat._22;
+					lBindMatrix[1][2] = tramat._23;
+					lBindMatrix[1][3] = tramat._24;
+					lBindMatrix[2][0] = tramat._31;
+					lBindMatrix[2][1] = tramat._32;
+					lBindMatrix[2][2] = tramat._33;
+					lBindMatrix[2][3] = tramat._34;
+					lBindMatrix[3][0] = tramat._41;
+					lBindMatrix[3][1] = tramat._42;
+					lBindMatrix[3][2] = tramat._43;
+					lBindMatrix[3][3] = tramat._44;
+					lPose->Add(curskel, lBindMatrix);
+				}
+			}
+		}
+	}
+	*/
 
 	if( fbxbone->GetChild() ){
 		WriteBindPoseReq( fbxbone->GetChild(), lPose );
@@ -1782,6 +1861,325 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 		WriteBindPoseReq( fbxbone->GetBrother(), lPose );
 	}
 }
+
+FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
+{
+	D3DXVECTOR3 curpos, parpos;
+	if (s_bvhflag == 1){
+		CBVHElem* curbone = fbxbone->GetBvhElem();
+		curpos = curbone->GetPosition();
+		
+		CFBXBone* parfbxbone;
+		parfbxbone = fbxbone->GetParent();
+		if (parfbxbone){
+			CBVHElem* parbone = parfbxbone->GetBvhElem();
+			if (parbone){
+				parpos = parbone->GetPosition();
+			}
+			else{
+				parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			}
+		}
+		else{
+			parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
+
+	}
+	else{
+		CBone* curbone = fbxbone->GetBone();
+		curpos = curbone->GetJointFPos();
+
+		CFBXBone* parfbxbone;
+		parfbxbone = fbxbone->GetParent();
+		if (parfbxbone){
+			CBone* parbone = parfbxbone->GetBone();
+			if (parbone){
+				parpos = parbone->GetJointFPos();
+			}
+			else{
+				parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			}
+		}
+		else{
+			parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
+	}
+
+	D3DXMATRIX tramat;
+	D3DXVECTOR3 diffvec = curpos - parpos;
+	float leng = D3DXVec3Length(&diffvec);
+	if (leng >= 0.00001f){
+		tramat = CalcAxisMatX_aft(parpos, curpos);
+		//tramat._41 = parpos.x;
+		//tramat._42 = parpos.y;
+		//tramat._43 = parpos.z;
+		tramat._41 = curpos.x;
+		tramat._42 = curpos.y;
+		tramat._43 = curpos.z;
+	}
+	else{
+		D3DXMatrixIdentity(&tramat);
+		//tramat._41 = parpos.x;
+		//tramat._42 = parpos.y;
+		//tramat._43 = parpos.z;
+		tramat._41 = curpos.x;
+		tramat._42 = curpos.y;
+		tramat._43 = curpos.z;
+	}
+
+	FbxAMatrix lBindMatrix;
+	lBindMatrix[0][0] = tramat._11;
+	lBindMatrix[0][1] = tramat._12;
+	lBindMatrix[0][2] = tramat._13;
+	lBindMatrix[0][3] = tramat._14;
+	lBindMatrix[1][0] = tramat._21;
+	lBindMatrix[1][1] = tramat._22;
+	lBindMatrix[1][2] = tramat._23;
+	lBindMatrix[1][3] = tramat._24;
+	lBindMatrix[2][0] = tramat._31;
+	lBindMatrix[2][1] = tramat._32;
+	lBindMatrix[2][2] = tramat._33;
+	lBindMatrix[2][3] = tramat._34;
+	lBindMatrix[3][0] = tramat._41;
+	lBindMatrix[3][1] = tramat._42;
+	lBindMatrix[3][2] = tramat._43;
+	lBindMatrix[3][3] = tramat._44;
+
+	return lBindMatrix;
+
+}
+
+D3DXMATRIX CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos)
+{
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+	if (curpos == chilpos){
+		return retmat;
+	}
+
+	D3DXVECTOR3 startpos, endpos, upvec;
+
+	D3DXVECTOR3 vecx0, vecy0, vecz0;
+	D3DXVECTOR3 vecx1, vecy1, vecz1;
+
+	startpos = curpos;
+	endpos = chilpos;
+
+	vecx0.x = 1.0;
+	vecx0.y = 0.0;
+	vecx0.z = 0.0;
+
+	vecy0.x = 0.0;
+	vecy0.y = 1.0;
+	vecy0.z = 0.0;
+
+	vecz0.x = 0.0;
+	vecz0.y = 0.0;
+	vecz0.z = 1.0;
+
+	D3DXVECTOR3 bonevec;
+	bonevec = endpos - startpos;
+	D3DXVec3Normalize(&bonevec, &bonevec);
+
+	if ((bonevec.x != 0.0f) || (bonevec.y != 0.0f)){
+		upvec.x = 0.0f;
+		upvec.y = 0.0f;
+		upvec.z = 1.0f;
+		//m_upkind = UPVEC_Z;//vecy1-->Y, vecz1-->Z
+	}
+	else{
+		upvec.x = 0.0f;
+		upvec.y = 1.0f;
+		upvec.z = 0.0f;
+		//m_upkind = UPVEC_Y;//vecy1-->Z, vecz1-->Y
+	}
+
+	vecx1 = bonevec;
+
+	D3DXVec3Cross(&vecy1, &upvec, &vecx1);
+	D3DXVec3Normalize(&vecy1, &vecy1);
+
+	D3DXVec3Cross(&vecz1, &vecx1, &vecy1);
+	D3DXVec3Normalize(&vecy1, &vecy1);
+
+
+	retmat._11 = vecx1.x;
+	retmat._12 = vecx1.y;
+	retmat._13 = vecx1.z;
+
+	retmat._21 = vecy1.x;
+	retmat._22 = vecy1.y;
+	retmat._23 = vecy1.z;
+
+	retmat._31 = vecz1.x;
+	retmat._32 = vecz1.y;
+	retmat._33 = vecz1.z;
+
+	return retmat;
+}
+
+
+/*
+FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
+{
+	FbxAMatrix lBindMatrix;
+	FbxTime lTime0;
+	lTime0.SetSecondDouble(0.0);
+
+	FbxNode* curskel = fbxbone->GetSkelNode();
+	if (curskel){
+		lBindMatrix = curskel->EvaluateGlobalTransform(lTime0);
+	}
+	else{
+		lBindMatrix.SetIdentity();
+	}
+	return lBindMatrix;
+}
+
+
+D3DXMATRIX CalcBvhBindMatrix(CFBXBone* fbxbone)
+{
+	D3DXMATRIX axismat;
+	D3DXMATRIX oldaxismat;
+	D3DXVECTOR3 curpos, parpos;
+
+	CBVHElem* curbone = fbxbone->GetBvhElem();
+	curpos = curbone->GetPosition();
+
+	D3DXVECTOR3 roottra;
+	D3DXMATRIX roottramat;
+	s_behead->GetTrans(0, &roottra);
+	D3DXMatrixIdentity(&roottramat);
+	D3DXMatrixTranslation(&roottramat, roottra.x, roottra.y, roottra.z);
+
+	D3DXMATRIX animmat = *(curbone->GetTransMat());
+
+	D3DXVECTOR3 aftcurpos;
+	D3DXMATRIX curtransmat;
+	curtransmat = animmat * roottramat;
+	D3DXVec3TransformCoord(&aftcurpos, &curpos, &curtransmat);
+
+	D3DXMATRIX invcurtransmat;
+	D3DXMatrixInverse(&invcurtransmat, NULL, &curtransmat);
+
+	CFBXBone* parfbxbone = fbxbone->GetParent();
+	if (parfbxbone){
+		CBVHElem* parbone = parfbxbone->GetBvhElem();
+		if (parbone){
+			parpos = parbone->GetPosition();
+
+			D3DXVECTOR3 diffvec = curpos - parpos;
+			float leng = D3DXVec3Length(&diffvec);
+			if (leng >= 0.00001f){
+				//D3DXVECTOR3 aftparpos;
+				//D3DXMATRIX partransmat;
+				//partransmat = *(parbone->GetTransMat()) * roottramat;
+				//D3DXVec3TransformCoord(&aftparpos, &parpos, &partransmat);
+				//axismat = CalcAxisMatX_aft(aftparpos, aftcurpos);
+				axismat = CalcAxisMatX_aft(parpos, curpos);
+				axismat._41 = curpos.x;
+				axismat._42 = curpos.y;
+				axismat._43 = curpos.z;
+				//axismat = axismat * invcurtransmat;
+			}
+			else{
+				D3DXMatrixIdentity(&axismat);
+				axismat._41 = curpos.x;
+				axismat._42 = curpos.y;
+				axismat._43 = curpos.z;
+				//axismat = axismat * invcurtransmat;
+			}
+		}
+		else{
+			D3DXMatrixIdentity(&axismat);
+			axismat._41 = curpos.x;
+			axismat._42 = curpos.y;
+			axismat._43 = curpos.z;
+			//axismat = axismat * invcurtransmat;
+		}
+	}
+	else{
+		D3DXMatrixIdentity(&axismat);
+		axismat._41 = curpos.x;
+		axismat._42 = curpos.y;
+		axismat._43 = curpos.z;
+		//axismat = axismat * invcurtransmat;
+	}
+
+
+	return axismat;
+
+}
+
+D3DXMATRIX CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos)
+{
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+	if (curpos == chilpos){
+		return retmat;
+	}
+
+	D3DXVECTOR3 startpos, endpos, upvec;
+
+	D3DXVECTOR3 vecx0, vecy0, vecz0;
+	D3DXVECTOR3 vecx1, vecy1, vecz1;
+
+	startpos = curpos;
+	endpos = chilpos;
+
+	vecx0.x = 1.0;
+	vecx0.y = 0.0;
+	vecx0.z = 0.0;
+
+	vecy0.x = 0.0;
+	vecy0.y = 1.0;
+	vecy0.z = 0.0;
+
+	vecz0.x = 0.0;
+	vecz0.y = 0.0;
+	vecz0.z = 1.0;
+
+	D3DXVECTOR3 bonevec;
+	bonevec = endpos - startpos;
+	D3DXVec3Normalize(&bonevec, &bonevec);
+
+	if ((bonevec.x != 0.0f) || (bonevec.y != 0.0f)){
+		upvec.x = 0.0f;
+		upvec.y = 0.0f;
+		upvec.z = 1.0f;
+		//m_upkind = UPVEC_Z;//vecy1-->Y, vecz1-->Z
+	}
+	else{
+		upvec.x = 0.0f;
+		upvec.y = 1.0f;
+		upvec.z = 0.0f;
+		//m_upkind = UPVEC_Y;//vecy1-->Z, vecz1-->Y
+	}
+
+	vecx1 = bonevec;
+
+	D3DXVec3Cross(&vecy1, &upvec, &vecx1);
+	D3DXVec3Normalize(&vecy1, &vecy1);
+
+	D3DXVec3Cross(&vecz1, &vecx1, &vecy1);
+	D3DXVec3Normalize(&vecy1, &vecy1);
+
+
+	retmat._11 = vecx1.x;
+	retmat._12 = vecx1.y;
+	retmat._13 = vecx1.z;
+
+	retmat._21 = vecy1.x;
+	retmat._22 = vecy1.y;
+	retmat._23 = vecy1.z;
+
+	retmat._31 = vecz1.x;
+	retmat._32 = vecz1.y;
+	retmat._33 = vecz1.z;
+
+	return retmat;
+}
+*/
 
 /***
 void StoreBindPose(FbxScene* pScene, FbxNode* pMesh, FbxNode* pSkeletonRoot)
@@ -2485,7 +2883,6 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 
 void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt)
 {
-	FbxAMatrix lXMatrix;
 	FbxNode* lSkel;
 
 	//if ((fbxbone->GetType() == FB_NORMAL) || (fbxbone->GetType() == FB_BUNKI_PAR) || (fbxbone->GetType() == FB_BUNKI_CHIL)){
@@ -2506,19 +2903,55 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 			vsetno++;
 		}
 
-		FbxScene* lScene = pMesh->GetScene();
-		//lXMatrix = pMesh->EvaluateGlobalTransform();
-		//lCluster->SetTransformMatrix(lXMatrix);
+		/*
+		FbxAMatrix lXMatrix;
 		lXMatrix.SetIdentity();
 		lCluster->SetTransformMatrix(lXMatrix);
 
-		//lXMatrix = lSkel->EvaluateGlobalTransform();
-		//lCluster->SetTransformLinkMatrix(lXMatrix);
-		lXMatrix.SetIdentity();
-		lCluster->SetTransformLinkMatrix(lXMatrix);
+		FbxAMatrix lXMatrix2;
+		lXMatrix2 = lSkel->EvaluateGlobalTransform();
+		lCluster->SetTransformLinkMatrix(lXMatrix2);
+
 
 		lSkin->AddCluster(lCluster);
-	//}
+		*/
+
+		if (fbxbone->GetBone()){
+			CBone* curbone = fbxbone->GetBone();
+			D3DXVECTOR3 pos;
+			pos = curbone->GetJointFPos();
+
+			FbxAMatrix lXMatrix;
+			lXMatrix.SetIdentity();
+			lXMatrix[3][0] = -pos.x;
+			lXMatrix[3][1] = -pos.y;
+			lXMatrix[3][2] = -pos.z;
+			lCluster->SetTransformMatrix(lXMatrix);
+
+			lXMatrix.SetIdentity();
+			lCluster->SetTransformLinkMatrix(lXMatrix);
+
+			lSkin->AddCluster(lCluster);
+		}
+		else if (fbxbone->GetBvhElem()){
+			CBVHElem* curbone = fbxbone->GetBvhElem();
+			D3DXVECTOR3 pos;
+			pos = curbone->GetPosition();
+
+			FbxAMatrix lXMatrix;
+			lXMatrix.SetIdentity();
+			lXMatrix[3][0] = -pos.x;
+			lXMatrix[3][1] = -pos.y;
+			lXMatrix[3][2] = -pos.z;
+			lCluster->SetTransformMatrix(lXMatrix);
+
+			lXMatrix.SetIdentity();
+			lCluster->SetTransformLinkMatrix(lXMatrix);
+
+			lSkin->AddCluster(lCluster);
+		}
+
+		//}
 
 	/*
 	if (fbxbone->m_child){
@@ -2530,3 +2963,5 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 	*/
 
 }
+
+
