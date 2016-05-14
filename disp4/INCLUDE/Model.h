@@ -89,9 +89,10 @@ public:
  * @param (FbxManager* psdk) IN FBXSDKのマネージャ。
  * @param (FbxImporter** ppimporter) IN FBXSDKのインポーター。
  * @param (FbxScene** ppscene) IN FBXSDKのシーン。
+ * @param (int forcenewaxisflag) 過渡期ファイルのフラグ。
  * @return 成功したら０。
  */
-	int LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene );
+	int LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag );
 
 /**
  * @fn
@@ -856,11 +857,21 @@ public: //accesser
 		m_btWorld = srcworld;
 	};
 
+	int GetOldAxisFlagAtLoading()
+	{
+		return m_oldaxis_atloading;
+	};
+	void SetOldAxisFlagAtLoading(int srcflag)
+	{
+		m_oldaxis_atloading = srcflag;
+	};
+
 private:
 	int m_modelno;//モデルのID
 	bool m_modeldisp;//表示するかどうか
 	float m_loadmult;//表示倍率
-	
+	int m_oldaxis_atloading;//FBX読み込み時に旧データ互換チェックボックスにチェックをしていたかどうか。
+
 	WCHAR m_filename[MAX_PATH];//モデルファイル名、フルパス。
 	WCHAR m_dirname[MAX_PATH];//モデルファイルのディレクトリのパス。ファイル名の手前まで。末尾に\\無し。
 	WCHAR m_modelfolder[MAX_PATH];//モデルファイルが入っているディレクトリの名前(パスではない)。*.chaファイルがあるディレクトリの中のFBXが入っているディレクトリの名前。

@@ -32,7 +32,6 @@ using namespace std;
 using namespace OrgWinGUI;
 
 
-extern int g_oldaxisflag;
 map<CModel*,int> g_bonecntmap;
 
 
@@ -1351,13 +1350,12 @@ int CBone::CalcBoneDepth()
 D3DXVECTOR3 CBone::GetJointFPos()
 {
 	
-	if (g_oldaxisflag == 0){
+	if (m_parmodel->GetOldAxisFlagAtLoading() == 0){
 		return m_jointfpos;
 	}
 	else{
 		return m_oldjointfpos;
 	}
-	//return m_jointfpos;
 }
 void CBone::SetJointFPos(D3DXVECTOR3 srcpos)
 { 

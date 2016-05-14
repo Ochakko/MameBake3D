@@ -91,7 +91,6 @@ typedef struct tag_spaxis
 }SPAXIS, SPCAM;
 
 int g_dbgloadcnt = 0;
-int g_oldaxisflag = 0;
 
 extern map<CModel*,int> g_bonecntmap;
 
@@ -100,6 +99,7 @@ bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
 
+static int s_forcenewaxis = 0;
 static int s_doneinit = 0;
 static int s_underselectingframe = 0;
 static double s_buttonselectstart = 0.0;
@@ -458,7 +458,6 @@ CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
-CDXUTCheckBox* s_OldAxisCheckBox = 0;
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -624,6 +623,7 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
+LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 
@@ -1125,7 +1125,6 @@ void InitApp()
 	g_SampleUI.AddCheckBox( IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox );
 	g_SampleUI.AddCheckBox( IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox );
 	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"OldAxis(旧データ互換)", 25, iY += addh, 480, 16, false, 0U, false, &s_OldAxisCheckBox);
 
 
 
@@ -2522,7 +2521,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
-	g_oldaxisflag = (int)s_OldAxisCheckBox->GetChecked();
 
 	s_time = fTime;
 /***
@@ -5691,16 +5689,16 @@ CModel* OpenFBXFile( int skipdefref )
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
 
+
+	int dlgret;
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CHECKAXISTYPE),
+		s_mainwnd, (DLGPROC)CheckAxisTypeProc);
+	if (dlgret != IDOK){
+		return 0;
+	}
+
 	g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	
-	/*
-	WCHAR* strbvhfbx = wcsstr(g_tmpmqopath, L".bvh.fbx");
-	if (strbvhfbx){
-		g_oldaxisflag = 1;
-		s_OldAxisCheckBox->SetChecked(true);
-		;; MessageBox(NULL, L"古いデータです。旧データ互換のチェックを入れます。", L"確認", MB_OK);
-	}
-	*/
 
 	static int modelcnt = 0;
 	WCHAR modelname[MAX_PATH] = {0L};
@@ -5745,12 +5743,13 @@ CModel* OpenFBXFile( int skipdefref )
 		_ASSERT( 0 );
 		return 0;
 	}
+
 	newmodel->SetBtWorld( s_btWorld );
 	FbxScene* pScene = 0;
 	FbxImporter* pImporter = 0;
 
 	int ret;
-	ret = newmodel->LoadFBX( skipdefref, s_pdev, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene );
+	ret = newmodel->LoadFBX(skipdefref, s_pdev, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene, s_forcenewaxis);
 	if( ret ){
 		_ASSERT( 0 );
 		delete newmodel;
@@ -6325,24 +6324,35 @@ int AddBoneTra( int kind, float srctra )
 	D3DXVECTOR3 vecz( 0.0f, 0.0f, 1.0f );
 
 	D3DXMATRIX worldrot;
-	if (g_oldaxisflag == 1){
-		//FBXの初期のボーンの向きがIdentityの場合
-		if (curbone->GetBoneLeng() > 0.00001f){
-			worldrot = curbone->GetFirstAxisMatX() * curbone->GetInvFirstMat() * curbone->GetCurMp().GetWorldMat();
+	if (curbone){
+		CBone* parbone = curbone->GetParent();
+		if (s_model->GetOldAxisFlagAtLoading() == 1){
+			//FBXの初期のボーンの向きがIdentityの場合
+			if (parbone){
+				if (curbone->GetBoneLeng() > 0.00001f){
+					worldrot = curbone->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+				}
+				else{
+					worldrot = curbone->GetCurMp().GetWorldMat();
+				}
+			}
+			else{
+				worldrot = curbone->GetCurMp().GetWorldMat();
+			}
 		}
 		else{
-			worldrot = curbone->GetInvFirstMat() * curbone->GetCurMp().GetWorldMat();
+			//FBXにボーンの初期の軸の向きが記録されている場合
+			if (parbone){
+				worldrot = curbone->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
+			}
+			else{
+				worldrot = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
+			}
 		}
-	}
-	else{
-		//FBXにボーンの初期の軸の向きが記録されている場合
-		//worldrot = curbone->GetNodeMat() * curbone->GetInvFirstMat() * curbone->GetCurMp().GetWorldMat();
-		worldrot = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
 	}
 	worldrot._41 = 0.0f;
 	worldrot._42 = 0.0f;
 	worldrot._43 = 0.0f;
-
 
 
 
@@ -7086,7 +7096,7 @@ int RenderSelectMark(int renderflag)
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if( curboneptr ){
 		CBone* parbone = curboneptr->GetParent();
-		if (g_oldaxisflag == 1){
+		if (s_model->GetOldAxisFlagAtLoading() == 1){
 			//FBXの初期のボーンの向きがIdentityの場合
 			if (parbone){
 				if (curboneptr->GetBoneLeng() > 0.00001f){
@@ -7334,6 +7344,38 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		return FALSE;
 	}
 	return TRUE;
+}
+
+LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		SetDlgItemText(hDlgWnd, IDC_FILENAME, g_tmpmqopath);
+		SendMessage(GetDlgItem(hDlgWnd, IDC_AXISCHECK1), BM_SETCHECK, (WPARAM)0, 0L);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_AXISCHECK1) == BST_CHECKED){
+				s_forcenewaxis = 1;
+			}
+			else{
+				s_forcenewaxis = 0;
+			}
+
+			EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			return FALSE;
+		}
+	default:
+		return FALSE;
+	}
+	return TRUE;
+
 }
 
 
@@ -10004,3 +10046,5 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 
 	return 0;
 }
+
+

@@ -34,7 +34,6 @@
 
 #define KARCH_ENV_WIN
 
-extern int g_oldaxisflag;
 
 static FbxNode::EPivotSet s_convPivot;
 
@@ -386,12 +385,12 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 {
     // create scene info
     FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager,"SceneInfo");
-    sceneInfo->mTitle = "scene made by OpenRDB";
-    sceneInfo->mSubject = "skinmesh and animation";
-    sceneInfo->mAuthor = "OpenRDB user";
-    sceneInfo->mRevision = "rev. 1.0";
-    sceneInfo->mKeywords = "skinmesh animation";
-    sceneInfo->mComment = "no particular comments required.";
+	sceneInfo->mTitle = "scene made by MameBake3D";
+	sceneInfo->mSubject = "skinmesh and animation";
+	sceneInfo->mAuthor = "OchakkoLab";
+	sceneInfo->mRevision = "rev. 2.0";
+	sceneInfo->mKeywords = "skinmesh animation";
+	sceneInfo->mComment = "no particular comments required.";
 
     // we need to add the sceneInfo before calling AddThumbNailToScene because
     // that function is asking the scene for the sceneInfo.
@@ -461,10 +460,10 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 {
     // create scene info
     FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager,"SceneInfo");
-    sceneInfo->mTitle = "scene made by OpenRDB";
+    sceneInfo->mTitle = "scene made by MameBake3D";
     sceneInfo->mSubject = "skinmesh and animation";
-    sceneInfo->mAuthor = "OpenRDB user";
-    sceneInfo->mRevision = "rev. 1.0";
+    sceneInfo->mAuthor = "OchakkoLab";
+    sceneInfo->mRevision = "rev. 2.0";
     sceneInfo->mKeywords = "skinmesh animation";
     sceneInfo->mComment = "no particular comments required.";
 

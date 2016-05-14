@@ -73,7 +73,6 @@ using namespace OrgWinGUI;
 static int s_alloccnt = 0;
 
 extern int g_dbgloadcnt;
-extern int g_oldaxisflag;
 extern int g_pseudolocalflag;
 extern int g_previewFlag;			// プレビューフラグ
 extern WCHAR g_basedir[ MAX_PATH ];
@@ -122,7 +121,7 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
-
+	m_oldaxis_atloading = 0;
 	m_ikrotaxis = D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
 	m_texpool = D3DPOOL_DEFAULT;
 	m_tmpmotspeed = 1.0f;
@@ -341,7 +340,7 @@ int CModel::LoadMQO( LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, f
 }
 
 
-int CModel::LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene )
+int CModel::LoadFBX(int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag)
 {
 
 	//DestroyFBXSDK();
@@ -428,6 +427,20 @@ int CModel::LoadFBX( int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR
 		return 1;
 	}
 
+	m_oldaxis_atloading = 0;
+	if (forcenewaxisflag == 0){
+		FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
+		if (sceneinfo){
+			FbxString oldauther = "OpenRDB user";
+			if (sceneinfo->mAuthor == oldauther){
+				_ASSERT(0);
+				FbxString oldrevision = "rev. 1.0";
+				if (sceneinfo->mRevision == oldrevision){
+					m_oldaxis_atloading = 1;//!!!!!!!!!!!!!!!!!!!!
+				}
+			}
+		}
+	}
 
 //	CallF( InitFBXManager( &pSdkManager, &pImporter, &pScene, utf8path ), return 1 );
 
@@ -5520,7 +5533,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			D3DXMATRIX selectmat;
 			D3DXMATRIX invselectmat;
-			if (g_oldaxisflag == 1){
+			if (m_oldaxis_atloading == 1){
 				//FBXの初期のボーンの向きがIdentityの場合
 				if (parbone){
 					if (curbone->GetBoneLeng() > 0.00001f){
@@ -5723,7 +5736,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	D3DXMATRIX selectmat;
 	D3DXMATRIX invselectmat;
 	CBone* parbone = curbone->GetParent();
-	if (g_oldaxisflag == 1){
+	if (m_oldaxis_atloading == 1){
 		//FBXの初期のボーンの向きがIdentityの場合
 		if (parbone){
 			if (curbone->GetBoneLeng() > 0.00001f){
