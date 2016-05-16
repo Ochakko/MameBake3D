@@ -78,6 +78,7 @@ int CBone::InitParams()
 	D3DXMatrixIdentity(&m_invinitmat);
 	D3DXMatrixIdentity(&m_tmpmat);
 	D3DXMatrixIdentity(&m_firstaxismatX);
+	D3DXMatrixIdentity(&m_firstaxismatZ);
 
 	m_boneno = 0;
 	m_topboneflag = 0;
@@ -450,10 +451,13 @@ int CBone::CalcAxisMatX()
 	return 0;
 }
 
-int CBone::CalcAxisMatX_aft( D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* dstmat )
+
+int CBone::CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* dstmat)
 {
-	if( curpos == chilpos ){
-		D3DXMatrixIdentity( dstmat );
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+	if (curpos == chilpos){
+		*dstmat = retmat;
 		return 0;
 	}
 
@@ -479,46 +483,119 @@ int CBone::CalcAxisMatX_aft( D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX
 
 	D3DXVECTOR3 bonevec;
 	bonevec = endpos - startpos;
-	D3DXVec3Normalize( &bonevec, &bonevec );
+	D3DXVec3Normalize(&bonevec, &bonevec);
 
-	if( (bonevec.x != 0.0f) || (bonevec.y != 0.0f) ){
+	if ((fabs(bonevec.x) >= 0.000001f) || (fabs(bonevec.y) >= 0.000001f)){
 		upvec.x = 0.0f;
 		upvec.y = 0.0f;
 		upvec.z = 1.0f;
-		m_upkind = UPVEC_Z;//vecy1-->Y, vecz1-->Z
-	}else{
+		m_upkind = UPVEC_Z;//vecx1-->X(bone), vecy1-->Y, vecz1-->Z
+	}
+	else{
 		upvec.x = 0.0f;
 		upvec.y = 1.0f;
 		upvec.z = 0.0f;
-		m_upkind = UPVEC_Y;//vecy1-->Z, vecz1-->Y
+		m_upkind = UPVEC_Y;//vecx1-->X(bone), vecy1-->Z, vecz1-->Y
 	}
 
 	vecx1 = bonevec;
-		
-	D3DXVec3Cross( &vecy1, &upvec, &vecx1 );
-	D3DXVec3Normalize( &vecy1, &vecy1 );
 
-	D3DXVec3Cross( &vecz1, &vecx1, &vecy1 );
-	D3DXVec3Normalize( &vecy1, &vecy1 );
+	D3DXVec3Cross(&vecy1, &upvec, &vecx1);
+	D3DXVec3Normalize(&vecy1, &vecy1);
 
-	D3DXQUATERNION tmpxq;
+	D3DXVec3Cross(&vecz1, &vecx1, &vecy1);
+	D3DXVec3Normalize(&vecz1, &vecz1);
 
-	D3DXMatrixIdentity( dstmat );
-	dstmat->_11 = vecx1.x;
-	dstmat->_12 = vecx1.y;
-	dstmat->_13 = vecx1.z;
 
-	dstmat->_21 = vecy1.x;
-	dstmat->_22 = vecy1.y;
-	dstmat->_23 = vecy1.z;
+	retmat._11 = vecx1.x;
+	retmat._12 = vecx1.y;
+	retmat._13 = vecx1.z;
 
-	dstmat->_31 = vecz1.x;
-	dstmat->_32 = vecz1.y;
-	dstmat->_33 = vecz1.z;
+	retmat._21 = vecy1.x;
+	retmat._22 = vecy1.y;
+	retmat._23 = vecy1.z;
 
+	retmat._31 = vecz1.x;
+	retmat._32 = vecz1.y;
+	retmat._33 = vecz1.z;
+
+	*dstmat = retmat;
+	return 0;
+}
+
+int CBone::CalcAxisMatZ_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* dstmat)
+{
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+	if (curpos == chilpos){
+		*dstmat = retmat;
+		return 0;
+	}
+
+	D3DXVECTOR3 startpos, endpos, upvec;
+
+	D3DXVECTOR3 vecx0, vecy0, vecz0;
+	D3DXVECTOR3 vecx1, vecy1, vecz1;
+
+	startpos = curpos;
+	endpos = chilpos;
+
+	vecx0.x = 1.0;
+	vecx0.y = 0.0;
+	vecx0.z = 0.0;
+
+	vecy0.x = 0.0;
+	vecy0.y = 1.0;
+	vecy0.z = 0.0;
+
+	vecz0.x = 0.0;
+	vecz0.y = 0.0;
+	vecz0.z = 1.0;
+
+	D3DXVECTOR3 bonevec;
+	bonevec = endpos - startpos;
+	D3DXVec3Normalize(&bonevec, &bonevec);
+
+	if ((fabs(bonevec.x) >= 0.000001f) || (fabs(bonevec.z) >= 0.000001f)){
+		upvec.x = 0.0f;
+		upvec.y = 1.0f;
+		upvec.z = 0.0f;
+		m_upkind = UPVEC_Y;//vecx1-->X, vecy1-->Y, vecz1-->Z(bone)
+	}
+	else{
+		upvec.x = 1.0f;
+		upvec.y = 0.0f;
+		upvec.z = 0.0f;
+		m_upkind = UPVEC_X;//vecx1-->Y, vecy1-->X, vecz1-->Z(bone)
+	}
+
+	vecz1 = bonevec;
+
+	D3DXVec3Cross(&vecx1, &vecz1, &upvec);
+	D3DXVec3Normalize(&vecx1, &vecx1);
+
+	D3DXVec3Cross(&vecy1, &vecz1, &vecx1);
+	D3DXVec3Normalize(&vecy1, &vecy1);
+
+
+	retmat._11 = vecx1.x;
+	retmat._12 = vecx1.y;
+	retmat._13 = vecx1.z;
+
+	retmat._21 = vecy1.x;
+	retmat._22 = vecy1.y;
+	retmat._23 = vecy1.z;
+
+	retmat._31 = vecz1.x;
+	retmat._32 = vecz1.y;
+	retmat._33 = vecz1.z;
+
+	*dstmat = retmat;
 
 	return 0;
 }
+
+
 
 int CBone::CalcAxisMatY( CBone* chilbone, D3DXMATRIX* dstmat )
 {
@@ -1324,13 +1401,17 @@ void CBone::CalcFirstAxisMatX()
 	D3DXVECTOR3 chilpos;
 
 	if (m_parent){
-		/*
-		D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &m_firstmat);
-		D3DXVec3TransformCoord(&chilpos, &(m_child->GetJointFPos()), &(m_child->m_firstmat));
-
-		CalcAxisMatX_aft(curpos, chilpos, &m_firstaxismatX);
-		*/
 		CalcAxisMatX_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatX);
+	}
+
+}
+void CBone::CalcFirstAxisMatZ()
+{
+	D3DXVECTOR3 curpos;
+	D3DXVECTOR3 chilpos;
+
+	if (m_parent){
+		CalcAxisMatZ_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatZ);
 	}
 
 }

@@ -147,9 +147,7 @@ static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, F
 static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene);
 static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt);
 
-static D3DXMATRIX CalcBvhBindMatrix(CFBXBone* fbxbone);
 static FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone);
-static D3DXMATRIX CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos);
 
 
 #ifdef IOS_REF
@@ -388,7 +386,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 	sceneInfo->mTitle = "scene made by MameBake3D";
 	sceneInfo->mSubject = "skinmesh and animation";
 	sceneInfo->mAuthor = "OchakkoLab";
-	sceneInfo->mRevision = "rev. 2.0";
+	sceneInfo->mRevision = "rev. 2.1";
 	sceneInfo->mKeywords = "skinmesh animation";
 	sceneInfo->mComment = "no particular comments required.";
 
@@ -463,7 +461,7 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
     sceneInfo->mTitle = "scene made by MameBake3D";
     sceneInfo->mSubject = "skinmesh and animation";
     sceneInfo->mAuthor = "OchakkoLab";
-    sceneInfo->mRevision = "rev. 2.0";
+    sceneInfo->mRevision = "rev. 2.1";
     sceneInfo->mKeywords = "skinmesh animation";
     sceneInfo->mComment = "no particular comments required.";
 
@@ -1768,91 +1766,6 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 	}
 
 
-	/*
-	if (s_bvhflag == 1){
-		if (curskel){
-			if (fbxbone->GetType() != FB_ROOT){
-				CBVHElem* curbone = fbxbone->GetBvhElem();
-				if (curbone){
-					tramat = CalcBvhBindMatrix(fbxbone);
-					lBindMatrix[0][0] = tramat._11;
-					lBindMatrix[0][1] = tramat._12;
-					lBindMatrix[0][2] = tramat._13;
-					lBindMatrix[0][3] = tramat._14;
-					lBindMatrix[1][0] = tramat._21;
-					lBindMatrix[1][1] = tramat._22;
-					lBindMatrix[1][2] = tramat._23;
-					lBindMatrix[1][3] = tramat._24;
-					lBindMatrix[2][0] = tramat._31;
-					lBindMatrix[2][1] = tramat._32;
-					lBindMatrix[2][2] = tramat._33;
-					lBindMatrix[2][3] = tramat._34;
-					lBindMatrix[3][0] = tramat._41;
-					lBindMatrix[3][1] = tramat._42;
-					lBindMatrix[3][2] = tramat._43;
-					lBindMatrix[3][3] = tramat._44;
-					lPose->Add(curskel, lBindMatrix);
-				}
-			}
-		}
-	}else if (fbxbone->GetType() != FB_ROOT){
-		if( curskel ){
-			CBone* curbone = fbxbone->GetBone();
-			if (curbone){
-				if (g_oldaxisflag == 1){
-					//lBindMatrix = CalcBindMatrix(fbxbone);
-					//lPose->Add(curskel, lBindMatrix);
-					if (curbone->GetBoneLeng() >= 0.00001f){
-						tramat = curbone->GetFirstAxisMatX();
-					}
-					tramat._41 = curbone->GetJointFPos().x;
-					tramat._42 = curbone->GetJointFPos().y;
-					tramat._43 = curbone->GetJointFPos().z;
-
-					lBindMatrix[0][0] = tramat._11;
-					lBindMatrix[0][1] = tramat._12;
-					lBindMatrix[0][2] = tramat._13;
-					lBindMatrix[0][3] = tramat._14;
-					lBindMatrix[1][0] = tramat._21;
-					lBindMatrix[1][1] = tramat._22;
-					lBindMatrix[1][2] = tramat._23;
-					lBindMatrix[1][3] = tramat._24;
-					lBindMatrix[2][0] = tramat._31;
-					lBindMatrix[2][1] = tramat._32;
-					lBindMatrix[2][2] = tramat._33;
-					lBindMatrix[2][3] = tramat._34;
-					lBindMatrix[3][0] = tramat._41;
-					lBindMatrix[3][1] = tramat._42;
-					lBindMatrix[3][2] = tramat._43;
-					lBindMatrix[3][3] = tramat._44;
-					lPose->Add(curskel, lBindMatrix);
-				}
-				else{
-					tramat = curbone->GetNodeMat();
-
-					lBindMatrix[0][0] = tramat._11;
-					lBindMatrix[0][1] = tramat._12;
-					lBindMatrix[0][2] = tramat._13;
-					lBindMatrix[0][3] = tramat._14;
-					lBindMatrix[1][0] = tramat._21;
-					lBindMatrix[1][1] = tramat._22;
-					lBindMatrix[1][2] = tramat._23;
-					lBindMatrix[1][3] = tramat._24;
-					lBindMatrix[2][0] = tramat._31;
-					lBindMatrix[2][1] = tramat._32;
-					lBindMatrix[2][2] = tramat._33;
-					lBindMatrix[2][3] = tramat._34;
-					lBindMatrix[3][0] = tramat._41;
-					lBindMatrix[3][1] = tramat._42;
-					lBindMatrix[3][2] = tramat._43;
-					lBindMatrix[3][3] = tramat._44;
-					lPose->Add(curskel, lBindMatrix);
-				}
-			}
-		}
-	}
-	*/
-
 	if( fbxbone->GetChild() ){
 		WriteBindPoseReq( fbxbone->GetChild(), lPose );
 	}
@@ -1904,28 +1817,30 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 		}
 	}
 
+	CBone calcbone(s_model);
+
 	D3DXMATRIX tramat;
-	D3DXVECTOR3 diffvec = curpos - parpos;
-	float leng = D3DXVec3Length(&diffvec);
-	if (leng >= 0.00001f){
-		tramat = CalcAxisMatX_aft(parpos, curpos);
-		//tramat._41 = parpos.x;
-		//tramat._42 = parpos.y;
-		//tramat._43 = parpos.z;
-		tramat._41 = curpos.x;
-		tramat._42 = curpos.y;
-		tramat._43 = curpos.z;
+	D3DXMatrixIdentity(&tramat);
+	if ((s_bvhflag == 0) && fbxbone->GetBone() && (s_model->GetOldAxisFlagAtLoading() == 0)){
+		tramat = fbxbone->GetBone()->GetNodeMat();
 	}
 	else{
-		D3DXMatrixIdentity(&tramat);
-		//tramat._41 = parpos.x;
-		//tramat._42 = parpos.y;
-		//tramat._43 = parpos.z;
-		tramat._41 = curpos.x;
-		tramat._42 = curpos.y;
-		tramat._43 = curpos.z;
+		D3DXVECTOR3 diffvec = curpos - parpos;
+		float leng = D3DXVec3Length(&diffvec);
+		if (leng >= 0.00001f){
+			//tramat = CalcAxisMatX_aft(parpos, curpos);
+			calcbone.CalcAxisMatZ_aft(parpos, curpos, &tramat);
+			tramat._41 = curpos.x;
+			tramat._42 = curpos.y;
+			tramat._43 = curpos.z;
+		}
+		else{
+			D3DXMatrixIdentity(&tramat);
+			tramat._41 = curpos.x;
+			tramat._42 = curpos.y;
+			tramat._43 = curpos.z;
+		}
 	}
-
 	FbxAMatrix lBindMatrix;
 	lBindMatrix[0][0] = tramat._11;
 	lBindMatrix[0][1] = tramat._12;
@@ -1948,75 +1863,6 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 
 }
 
-D3DXMATRIX CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos)
-{
-	D3DXMATRIX retmat;
-	D3DXMatrixIdentity(&retmat);
-	if (curpos == chilpos){
-		return retmat;
-	}
-
-	D3DXVECTOR3 startpos, endpos, upvec;
-
-	D3DXVECTOR3 vecx0, vecy0, vecz0;
-	D3DXVECTOR3 vecx1, vecy1, vecz1;
-
-	startpos = curpos;
-	endpos = chilpos;
-
-	vecx0.x = 1.0;
-	vecx0.y = 0.0;
-	vecx0.z = 0.0;
-
-	vecy0.x = 0.0;
-	vecy0.y = 1.0;
-	vecy0.z = 0.0;
-
-	vecz0.x = 0.0;
-	vecz0.y = 0.0;
-	vecz0.z = 1.0;
-
-	D3DXVECTOR3 bonevec;
-	bonevec = endpos - startpos;
-	D3DXVec3Normalize(&bonevec, &bonevec);
-
-	if ((bonevec.x != 0.0f) || (bonevec.y != 0.0f)){
-		upvec.x = 0.0f;
-		upvec.y = 0.0f;
-		upvec.z = 1.0f;
-		//m_upkind = UPVEC_Z;//vecy1-->Y, vecz1-->Z
-	}
-	else{
-		upvec.x = 0.0f;
-		upvec.y = 1.0f;
-		upvec.z = 0.0f;
-		//m_upkind = UPVEC_Y;//vecy1-->Z, vecz1-->Y
-	}
-
-	vecx1 = bonevec;
-
-	D3DXVec3Cross(&vecy1, &upvec, &vecx1);
-	D3DXVec3Normalize(&vecy1, &vecy1);
-
-	D3DXVec3Cross(&vecz1, &vecx1, &vecy1);
-	D3DXVec3Normalize(&vecy1, &vecy1);
-
-
-	retmat._11 = vecx1.x;
-	retmat._12 = vecx1.y;
-	retmat._13 = vecx1.z;
-
-	retmat._21 = vecy1.x;
-	retmat._22 = vecy1.y;
-	retmat._23 = vecy1.z;
-
-	retmat._31 = vecz1.x;
-	retmat._32 = vecz1.y;
-	retmat._33 = vecz1.z;
-
-	return retmat;
-}
-
 
 /*
 FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
@@ -2036,148 +1882,6 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 }
 
 
-D3DXMATRIX CalcBvhBindMatrix(CFBXBone* fbxbone)
-{
-	D3DXMATRIX axismat;
-	D3DXMATRIX oldaxismat;
-	D3DXVECTOR3 curpos, parpos;
-
-	CBVHElem* curbone = fbxbone->GetBvhElem();
-	curpos = curbone->GetPosition();
-
-	D3DXVECTOR3 roottra;
-	D3DXMATRIX roottramat;
-	s_behead->GetTrans(0, &roottra);
-	D3DXMatrixIdentity(&roottramat);
-	D3DXMatrixTranslation(&roottramat, roottra.x, roottra.y, roottra.z);
-
-	D3DXMATRIX animmat = *(curbone->GetTransMat());
-
-	D3DXVECTOR3 aftcurpos;
-	D3DXMATRIX curtransmat;
-	curtransmat = animmat * roottramat;
-	D3DXVec3TransformCoord(&aftcurpos, &curpos, &curtransmat);
-
-	D3DXMATRIX invcurtransmat;
-	D3DXMatrixInverse(&invcurtransmat, NULL, &curtransmat);
-
-	CFBXBone* parfbxbone = fbxbone->GetParent();
-	if (parfbxbone){
-		CBVHElem* parbone = parfbxbone->GetBvhElem();
-		if (parbone){
-			parpos = parbone->GetPosition();
-
-			D3DXVECTOR3 diffvec = curpos - parpos;
-			float leng = D3DXVec3Length(&diffvec);
-			if (leng >= 0.00001f){
-				//D3DXVECTOR3 aftparpos;
-				//D3DXMATRIX partransmat;
-				//partransmat = *(parbone->GetTransMat()) * roottramat;
-				//D3DXVec3TransformCoord(&aftparpos, &parpos, &partransmat);
-				//axismat = CalcAxisMatX_aft(aftparpos, aftcurpos);
-				axismat = CalcAxisMatX_aft(parpos, curpos);
-				axismat._41 = curpos.x;
-				axismat._42 = curpos.y;
-				axismat._43 = curpos.z;
-				//axismat = axismat * invcurtransmat;
-			}
-			else{
-				D3DXMatrixIdentity(&axismat);
-				axismat._41 = curpos.x;
-				axismat._42 = curpos.y;
-				axismat._43 = curpos.z;
-				//axismat = axismat * invcurtransmat;
-			}
-		}
-		else{
-			D3DXMatrixIdentity(&axismat);
-			axismat._41 = curpos.x;
-			axismat._42 = curpos.y;
-			axismat._43 = curpos.z;
-			//axismat = axismat * invcurtransmat;
-		}
-	}
-	else{
-		D3DXMatrixIdentity(&axismat);
-		axismat._41 = curpos.x;
-		axismat._42 = curpos.y;
-		axismat._43 = curpos.z;
-		//axismat = axismat * invcurtransmat;
-	}
-
-
-	return axismat;
-
-}
-
-D3DXMATRIX CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos)
-{
-	D3DXMATRIX retmat;
-	D3DXMatrixIdentity(&retmat);
-	if (curpos == chilpos){
-		return retmat;
-	}
-
-	D3DXVECTOR3 startpos, endpos, upvec;
-
-	D3DXVECTOR3 vecx0, vecy0, vecz0;
-	D3DXVECTOR3 vecx1, vecy1, vecz1;
-
-	startpos = curpos;
-	endpos = chilpos;
-
-	vecx0.x = 1.0;
-	vecx0.y = 0.0;
-	vecx0.z = 0.0;
-
-	vecy0.x = 0.0;
-	vecy0.y = 1.0;
-	vecy0.z = 0.0;
-
-	vecz0.x = 0.0;
-	vecz0.y = 0.0;
-	vecz0.z = 1.0;
-
-	D3DXVECTOR3 bonevec;
-	bonevec = endpos - startpos;
-	D3DXVec3Normalize(&bonevec, &bonevec);
-
-	if ((bonevec.x != 0.0f) || (bonevec.y != 0.0f)){
-		upvec.x = 0.0f;
-		upvec.y = 0.0f;
-		upvec.z = 1.0f;
-		//m_upkind = UPVEC_Z;//vecy1-->Y, vecz1-->Z
-	}
-	else{
-		upvec.x = 0.0f;
-		upvec.y = 1.0f;
-		upvec.z = 0.0f;
-		//m_upkind = UPVEC_Y;//vecy1-->Z, vecz1-->Y
-	}
-
-	vecx1 = bonevec;
-
-	D3DXVec3Cross(&vecy1, &upvec, &vecx1);
-	D3DXVec3Normalize(&vecy1, &vecy1);
-
-	D3DXVec3Cross(&vecz1, &vecx1, &vecy1);
-	D3DXVec3Normalize(&vecy1, &vecy1);
-
-
-	retmat._11 = vecx1.x;
-	retmat._12 = vecx1.y;
-	retmat._13 = vecx1.z;
-
-	retmat._21 = vecy1.x;
-	retmat._22 = vecy1.y;
-	retmat._23 = vecy1.z;
-
-	retmat._31 = vecz1.x;
-	retmat._32 = vecz1.y;
-	retmat._33 = vecz1.z;
-
-	return retmat;
-}
 */
 
 /***

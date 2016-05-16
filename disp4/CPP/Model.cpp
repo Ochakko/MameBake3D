@@ -5537,7 +5537,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				//FBXの初期のボーンの向きがIdentityの場合
 				if (parbone){
 					if (curbone->GetBoneLeng() > 0.00001f){
-						selectmat = curbone->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+						selectmat = curbone->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
 					}
 					else{
 						selectmat = curbone->GetCurMp().GetWorldMat();
@@ -5740,7 +5740,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 		//FBXの初期のボーンの向きがIdentityの場合
 		if (parbone){
 			if (curbone->GetBoneLeng() > 0.00001f){
-				selectmat = curbone->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+				selectmat = curbone->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
 			}
 			else{
 				selectmat = curbone->GetCurMp().GetWorldMat();
@@ -6217,5 +6217,26 @@ void CModel::SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo
 	}
 }
 
+int CModel::RecalcBoneAxisZ()
+{
+	if (GetOldAxisFlagAtLoading() == 1){
+		_ASSERT(0);
+		return 1;
+	}
 
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
+		CBone* curbone = itrbone->second;
+		if (curbone){
+			D3DXMATRIX axismat;
+			axismat = curbone->GetFirstAxisMatZ();
+			axismat._41 = curbone->GetJointFPos().x;
+			axismat._42 = curbone->GetJointFPos().y;
+			axismat._43 = curbone->GetJointFPos().z;
+			curbone->SetNodeMat(axismat);
+		}
+	}
+
+	return 0;
+}
 

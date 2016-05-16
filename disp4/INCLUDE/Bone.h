@@ -315,6 +315,20 @@ public:
  */
 	int GetBoneNum();
 
+	/**
+	* @fn
+	* CalcAxisMatX_aft
+	* @breaf ボーンの軸のための変換行列を計算する。初期状態がX軸を向いていると仮定して計算する。
+	* @param (D3DXVECTOR3 curpos) IN ボーンの位置。
+	* @param (D3DXVECTOR3 chilpos) IN 子供のボーンの位置。
+	* @param (D3DXMATRIX* destmat) OUT 変換行列を格納するデータへのポインタ。
+	* @return 成功したら０。
+	* @detail CalcAxisMatXから呼ばれる。
+	*/
+	int CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
+
+	int CalcAxisMatZ_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
+
 
 	int CalcFirstFrameBonePos(D3DXMATRIX srcmat);
 
@@ -349,17 +363,7 @@ private:
  */
 	int CalcAxisMatX();
 
-/**
- * @fn
- * CalcAxisMatX_aft
- * @breaf ボーンの軸のための変換行列を計算する。初期状態がX軸を向いていると仮定して計算する。
- * @param (D3DXVECTOR3 curpos) IN ボーンの位置。
- * @param (D3DXVECTOR3 chilpos) IN 子供のボーンの位置。
- * @param (D3DXMATRIX* destmat) OUT 変換行列を格納するデータへのポインタ。
- * @return 成功したら０。
- * @detail CalcAxisMatXから呼ばれる。
- */
-	int CalcAxisMatX_aft( D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat );
+	int CalcAxisMatZ();
 
 
 /**
@@ -424,6 +428,7 @@ private:
 
 	void SetStartMat2Req();
 	void CalcFirstAxisMatX();
+	void CalcFirstAxisMatZ();
 
 
 public: //accesser
@@ -712,6 +717,11 @@ public: //accesser
 		CalcFirstAxisMatX();
 		return m_firstaxismatX;
 	};
+	D3DXMATRIX GetFirstAxisMatZ()
+	{
+		CalcFirstAxisMatZ();
+		return m_firstaxismatZ;
+	};
 
 	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe){
 		//存在するときだけ返す。
@@ -754,6 +764,7 @@ private:
 	D3DXMATRIX m_gaxismatYpar;//Yボーンのグローバルのaxismat
 	D3DXMATRIX m_axismat_par;//Xボーンのローカルのaxismat
 	D3DXMATRIX m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
+	D3DXMATRIX m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
 
 
 	D3DXMATRIX m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。

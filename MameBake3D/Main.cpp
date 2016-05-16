@@ -744,6 +744,7 @@ static int OnTimeLineMButtonDown(bool ctrlshiftflag);
 static int OnTimeLineWheel();
 static int AddEditRangeHistory();
 static int RollBackEditRange(int prevrangeFlag, int nextrangeFlag);
+static int RecalcBoneAxisZ();
 
 
 int RegistKey()
@@ -917,16 +918,18 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	s_modelmenu = GetSubMenu( mdlmenu, 3 );
 	_ASSERT( s_modelmenu );
 
-	s_remenu = GetSubMenu( s_mainmenu, 4 );
+	//編集メニュー　4
+
+	s_remenu = GetSubMenu( s_mainmenu, 5 );
 	_ASSERT( s_remenu );
 
-	s_rgdmenu = GetSubMenu( s_mainmenu, 5 );
+	s_rgdmenu = GetSubMenu( s_mainmenu, 6 );
 	_ASSERT( s_rgdmenu );
 
-	s_morphmenu = GetSubMenu( s_mainmenu, 6 );
+	s_morphmenu = GetSubMenu( s_mainmenu, 7 );
 	_ASSERT( s_morphmenu );
 
-	s_impmenu = GetSubMenu( s_mainmenu, 7 );
+	s_impmenu = GetSubMenu( s_mainmenu, 8 );
 	_ASSERT( s_impmenu );
 
 
@@ -3700,6 +3703,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			return 0;
 		}else{
 			switch( menuid ){
+			case ID_40047:
+				ActivatePanel(0);
+				RecalcBoneAxisZ();
+				ActivatePanel(1);
+				return 0;
+				break;
 			case 55544:
 				ActivatePanel( 0 );
 				RegistKey();
@@ -6330,7 +6339,7 @@ int AddBoneTra( int kind, float srctra )
 			//FBXの初期のボーンの向きがIdentityの場合
 			if (parbone){
 				if (curbone->GetBoneLeng() > 0.00001f){
-					worldrot = curbone->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+					worldrot = curbone->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
 				}
 				else{
 					worldrot = curbone->GetCurMp().GetWorldMat();
@@ -7100,7 +7109,7 @@ int RenderSelectMark(int renderflag)
 			//FBXの初期のボーンの向きがIdentityの場合
 			if (parbone){
 				if (curboneptr->GetBoneLeng() > 0.00001f){
-					s_selm = curboneptr->GetFirstAxisMatX() * parbone->GetCurMp().GetWorldMat();
+					s_selm = curboneptr->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
 				}
 				else{
 					s_selm = curboneptr->GetCurMp().GetWorldMat();
@@ -10047,4 +10056,16 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 	return 0;
 }
 
+
+int RecalcBoneAxisZ()
+{
+	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)){
+		::MessageBox(s_mainwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
+		return 0;
+	}
+
+	s_model->RecalcBoneAxisZ();
+
+	return 0;
+}
 

@@ -541,6 +541,8 @@ public:
 
 	int SetFirstFrameBonePos(HINFO* phinfo);
 
+	int RecalcBoneAxisZ();
+
 
 	int DbgDump();
 
