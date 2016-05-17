@@ -399,11 +399,11 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 	diffuse.z = curdif4f.z * diffusemult.z;
 
 
-	if( diffuse.w <= 0.99999f ){
-		m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-	}else{
+	//if( diffuse.w <= 0.99999f ){
+	//	m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+	//}else{
 		m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-	}
+	//}
 
 //diffuse = D3DXVECTOR4( 0.6f, 0.6f, 0.6f, 1.0f );
 
@@ -602,11 +602,11 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 		_ASSERT( !hr );
 
 
-		if( diffuse.w <= 0.99999f ){
-			m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-		}else{
+		//if( diffuse.w <= 0.99999f ){
+		//	m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+		//}else{
 			m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-		}
+		//}
 
 /***
 		if( m_hasbone ){

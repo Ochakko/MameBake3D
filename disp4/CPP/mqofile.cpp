@@ -361,8 +361,17 @@ int CMQOFile::CheckFileVersion()
 		cmp2 = strncmp( pat2, m_linechar, pat2leng );
 
 	if( cmp2 ){
-		::MessageBox( NULL, L"このfile versionには、対応していません。\n読み込めません。", L"読み込みエラー", MB_OK );
-		return 1;
+		char pat3[] = "Format Text Ver 1.1";
+		int pat3leng = (int)strlen(pat3);
+		int cmp3 = 1;//!!!
+
+		if (pat3leng <= leng2)
+			cmp3 = strncmp(pat3, m_linechar, pat3leng);
+
+		if (cmp3){
+			::MessageBox(NULL, L"このfile versionには、対応していません。\n読み込めません。", L"読み込みエラー", MB_OK);
+			return 1;
+		}
 	}
 
 

@@ -686,9 +686,10 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				PM3DISPV* curv = dispv + setno;
 				curv->pos.x = (m_pointbuf + curn3p->pervert->vno)->x;
 				curv->pos.y = (m_pointbuf + curn3p->pervert->vno)->y;
-				curv->pos.z = (m_pointbuf + curn3p->pervert->vno)->z;
+				curv->pos.z = -(m_pointbuf + curn3p->pervert->vno)->z;
 				curv->pos.w = 1.0f;
 				curv->normal = curn3p->pervert->smnormal;
+				curv->normal.z *= -1.0f;
 				curv->uv = curn3p->pervert->uv[0];
 
 				/***

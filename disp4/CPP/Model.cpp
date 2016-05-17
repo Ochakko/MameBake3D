@@ -633,9 +633,10 @@ int CModel::OnRender( LPDIRECT3DDEVICE9 pdev, int lightflag, D3DXVECTOR4 diffuse
 
 				CMQOMaterial* rmaterial = 0;
 				if( curobj->GetPm3() ){
-					g_pEffect->SetMatrix( g_hmWorld, &m_matWorld );
+					//g_pEffect->SetMatrix( g_hmWorld, &m_matWorld );
 					CallF( curobj->GetDispObj()->RenderNormalPM3( lightflag, diffusemult ), return 1 );
-				}else if( curobj->GetPm4() ){
+				}
+				else if (curobj->GetPm4()){
 					rmaterial = curobj->GetMaterialBegin()->second;
 					CallF( curobj->GetDispObj()->RenderNormal( rmaterial, lightflag, diffusemult ), return 1 );
 				}else{

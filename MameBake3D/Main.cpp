@@ -99,6 +99,23 @@ bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
 
+static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
+static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
+static CMQOMaterial* s_matblue = 0;// = s_select->GetMQOMaterialByName("matblue");
+static CMQOMaterial* s_ringblue = 0;// = s_select->GetMQOMaterialByName("ringblue");
+static CMQOMaterial* s_matgreen = 0;// = s_select->GetMQOMaterialByName("matgreen");
+static CMQOMaterial* s_ringgreen = 0;// = s_select->GetMQOMaterialByName("ringgreen");
+static CMQOMaterial* s_matyellow = 0;// = s_select->GetMQOMaterialByName("matyellow");
+static D3DXVECTOR4 s_matredmat;
+static D3DXVECTOR4 s_ringredmat;
+static D3DXVECTOR4 s_matbluemat;
+static D3DXVECTOR4 s_ringbluemat;
+static D3DXVECTOR4 s_matgreenmat;
+static D3DXVECTOR4 s_ringgreenmat;
+static D3DXVECTOR4 s_matyellowmat;
+static D3DXVECTOR4 s_ringyellowmat;
+
+
 static int s_forcenewaxis = 0;
 static int s_doneinit = 0;
 static int s_underselectingframe = 0;
@@ -390,7 +407,7 @@ static bool s_dispobj = false;
 static bool s_dispmodel = false;//!!!!!!!!!!!!!!!!!
 static bool s_dispground = true;
 static bool s_dispselect = true;
-static bool s_displightarrow = true;
+//static bool s_displightarrow = true;
 static bool s_dispconvbone = false;
 
 
@@ -452,7 +469,7 @@ int g_absikflag = 0;
 int g_bonemarkflag = 1;
 int g_pseudolocalflag = 1;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
-CDXUTCheckBox* s_LightCheckBox = 0;
+//CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
@@ -1010,7 +1027,8 @@ void InitApp()
 	}
 
     g_nActiveLight = 0;
-    g_nNumActiveLights = 1;
+	//g_nNumActiveLights = MAX_LIGHTS;
+	g_nNumActiveLights = 1;
     g_fLightScale = 1.0f;
 
     // Initialize dialogs
@@ -1100,7 +1118,7 @@ void InitApp()
 	pComboBox1->RemoveAllItems();
 	pComboBox1->AddItem( L"IK回転", ULongToPtr( IDC_IK_ROT ) );
 	pComboBox1->AddItem( L"IK移動", ULongToPtr( IDC_IK_MV ) );
-	pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
+	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
 	pComboBox1->AddItem( L"剛体設定", ULongToPtr( IDC_BT_RIGIT ) );
 	pComboBox1->AddItem( L"インパルス", ULongToPtr( IDC_BT_IMP ) );
 	pComboBox1->AddItem( L"物理地面", ULongToPtr( IDC_BT_GP ) );
@@ -2263,6 +2281,29 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	}
 	CallF( s_select->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0 ), return 1 );
 	CallF( s_select->MakeDispObj(), return 1 );
+	
+	s_matred = s_select->GetMQOMaterialByName("matred");
+	_ASSERT(s_matred);
+	s_ringred = s_select->GetMQOMaterialByName("ringred");
+	_ASSERT(s_ringred);
+	s_matblue = s_select->GetMQOMaterialByName("matblue");
+	_ASSERT(s_matblue);
+	s_ringblue = s_select->GetMQOMaterialByName("ringblue");
+	_ASSERT(s_ringblue);
+	s_matgreen = s_select->GetMQOMaterialByName("matgreen");
+	_ASSERT(s_matgreen);
+	s_ringgreen = s_select->GetMQOMaterialByName("ringgreen");
+	_ASSERT(s_ringgreen);
+	s_matyellow = s_select->GetMQOMaterialByName("matyellow");
+	_ASSERT(s_matyellow);
+
+	s_matredmat = s_matred->GetDif4F();
+	s_ringredmat = s_ringred->GetDif4F();
+	s_matbluemat = s_matblue->GetDif4F();
+	s_ringbluemat = s_ringblue->GetDif4F();
+	s_matgreenmat = s_matgreen->GetDif4F();
+	s_ringgreenmat = s_ringgreen->GetDif4F();
+	s_matyellowmat = s_matyellow->GetDif4F();
 
 
 //	s_dummytri = new CModel();
@@ -2547,8 +2588,8 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	D3DXMATRIX mWorld;
     D3DXMATRIX mView;
     D3DXMATRIX mProj;
-	//mWorld = *g_Camera.GetWorldMatrix();
-	D3DXMatrixIdentity( &mWorld );
+	mWorld = *g_Camera.GetWorldMatrix();
+	//D3DXMatrixIdentity( &mWorld );
     mProj = *g_Camera.GetProjMatrix();
     //mView = *g_Camera.GetViewMatrix();
 	mView = s_matView;
@@ -3459,8 +3500,8 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		D3DXMATRIX mWorld;
 		D3DXMATRIX mView;
 		D3DXMATRIX mProj;
-		//mWorld = *g_Camera.GetWorldMatrix();
-		D3DXMatrixIdentity( &mWorld );
+		mWorld = *g_Camera.GetWorldMatrix();
+		//D3DXMatrixIdentity( &mWorld );
 		mProj = *g_Camera.GetProjMatrix();
 		//mView = *g_Camera.GetViewMatrix();
 		mView = s_matView;
@@ -3470,13 +3511,19 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 		D3DXMATRIX mWV = mWorld * mView;
 
+		D3DXVECTOR3 lightdir0, nlightdir0;
+		lightdir0 = g_camEye;
+		D3DXVec3Normalize(&nlightdir0, &lightdir0);
+		g_LightControl[0].SetLightDirection(nlightdir0);
+
+
         // Render the light arrow so the user can visually see the light dir
         for( int i = 0; i < g_nNumActiveLights; i++ )
         {
-			if( s_displightarrow ){
-				D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
-				V( g_LightControl[i].OnRender9( arrowColor, &mView, &mProj, &g_camEye ) );
-			}
+			//if( s_displightarrow ){
+			//	D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
+			//	V( g_LightControl[i].OnRender9( arrowColor, &mView, &mProj, &g_camEye ) );
+			//}
             vLightDir[i] = g_LightControl[i].GetLightDirection();
             vLightDiffuse[i] = g_fLightScale * D3DXCOLOR( 1, 1, 1, 1 );
         }
@@ -4301,6 +4348,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
     // Pass all remaining windows messages to camera so it can respond to user input
 
+	/*
 	if( uMsg == WM_LBUTTONDOWN ){
 		g_Camera.HandleMessages( hWnd, WM_RBUTTONDOWN, wParam, lParam );
 		if( s_ikkind == 2 ){
@@ -4318,30 +4366,28 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}else if( uMsg == WM_MBUTTONDOWN ){
 	}else if( uMsg == WM_MBUTTONUP ){
 	}else if( uMsg == WM_MOUSEWHEEL ){
-		/*
-		if( (g_keybuf[VK_CONTROL] & 0x80) == 0 ){
-			float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
-			//deltadist = mdelta * s_camdist * 0.00010f;
-			deltadist = mdelta * s_camdist * 0.0010f;
-
-			s_camdist += deltadist;
-			if( s_camdist < 0.0001f ){
-				s_camdist = 0.0001f;
-			}
-
-			D3DXVECTOR3 camvec = g_camEye - g_camtargetpos;
-			D3DXVec3Normalize( &camvec, &camvec );
-			g_camEye = g_camtargetpos + s_camdist * camvec;
-			D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-		}
-		*/
+		//if( (g_keybuf[VK_CONTROL] & 0x80) == 0 ){
+		//	float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
+		//	//deltadist = mdelta * s_camdist * 0.00010f;
+		//	deltadist = mdelta * s_camdist * 0.0010f;
+		//
+		//	s_camdist += deltadist;
+		//	if( s_camdist < 0.0001f ){
+		//		s_camdist = 0.0001f;
+		//	}
+		//
+		//	D3DXVECTOR3 camvec = g_camEye - g_camtargetpos;
+		//	D3DXVec3Normalize( &camvec, &camvec );
+		//	g_camEye = g_camtargetpos + s_camdist * camvec;
+		//	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+		//}
 	}else{
 		g_Camera.HandleMessages( hWnd, uMsg, wParam, lParam );
 		if( s_ikkind == 2 ){
 			g_LightControl[g_nActiveLight].HandleMessages( hWnd, uMsg, wParam, lParam );
 		}
 	}
-
+	*/
 
 
 	if( uMsg == WM_ACTIVATE ){
@@ -4411,7 +4457,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
     switch( nControlID )
     {
-
+		/*
         case IDC_ACTIVE_LIGHT:
             if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
             {
@@ -4419,7 +4465,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
                 g_nActiveLight %= g_nNumActiveLights;
             }
             break;
-
+		
         case IDC_NUM_LIGHTS:
             if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
             {
@@ -4431,7 +4477,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
                 g_nActiveLight %= g_nNumActiveLights;
             }
             break;
-
+		*/
         case IDC_LIGHT_SCALE:
             g_fLightScale = ( float )( g_SampleUI.GetSlider( IDC_LIGHT_SCALE )->GetValue() * 0.10f );
 
@@ -4496,6 +4542,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				case IDC_IK_MV:
 					s_ikkind = 1;
 					break;
+					/*
 				case IDC_IK_LIGHT:
 					s_ikkind = 2;
 					s_displightarrow = true;
@@ -4503,6 +4550,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 						s_LightCheckBox->SetChecked(true);
 					}
 					break;
+					*/
 				case IDC_BT_RIGIT:
 					if( s_model && (s_curboneno >= 0) ){
 						s_ikkind = 3;
@@ -7102,6 +7150,7 @@ int RenderSelectMark(int renderflag)
     D3DXMATRIX mv = s_matView;
 	D3DXMATRIX mvp = mv * mp;
 
+
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if( curboneptr ){
 		CBone* parbone = curboneptr->GetParent();
@@ -7165,8 +7214,8 @@ int RenderSelectMark(int renderflag)
 
 			s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 			if (s_dispselect){
-				int lightflag = 0;
-				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.7f);
+				int lightflag = 1;
+				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 				s_select->OnRender(s_pdev, lightflag, diffusemult);
 			}
 			s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
@@ -9371,129 +9420,107 @@ int SetSelectState()
 	}
 
 	float hirate = 1.0f;
-	float lowrate = 0.3f;
+	float lowrate = 0.6f;
 
-	float hia = 1.0f;
-	float lowa = 0.7f;
+	float hia = 0.3f;
+	float lowa = 0.3f;
 
-	CMQOMaterial* matred = s_select->GetMQOMaterialByName( "matred" );
-	_ASSERT( matred );
-	CMQOMaterial* ringred = s_select->GetMQOMaterialByName( "ringred" );
-	_ASSERT( ringred );
-	CMQOMaterial* matblue = s_select->GetMQOMaterialByName( "matblue" );
-	_ASSERT( matblue );
-	CMQOMaterial* ringblue = s_select->GetMQOMaterialByName( "ringblue" );
-	_ASSERT( ringblue );
-	CMQOMaterial* matgreen = s_select->GetMQOMaterialByName( "matgreen" );
-	_ASSERT( matgreen );
-	CMQOMaterial* ringgreen = s_select->GetMQOMaterialByName( "ringgreen" );
-	_ASSERT( ringgreen );
-	CMQOMaterial* matyellow = s_select->GetMQOMaterialByName( "matyellow" );
-	_ASSERT( matyellow );
-
-
-	if( matred && ringred && matblue && ringblue && matgreen && ringgreen && matyellow ){
+	if (s_matred && s_ringred && s_matblue && s_ringblue && s_matgreen && s_ringgreen && s_matyellow){
 		if( (pickinfo.pickobjno >= 0) && (s_curboneno == pickinfo.pickobjno) ){
 			
 			if( (pickinfo.buttonflag == PICK_X) || (pickinfo.buttonflag == PICK_SPA_X) ){//red
-				matred->SetDif4F(matred->GetCol() * hirate);
-				ringred->SetDif4F(ringred->GetCol() * hirate);
-				matred->SetDif4FW(hia);
-				ringred->SetDif4FW(hia);
+				s_matred->SetDif4F(s_matredmat * hirate);
+				s_ringred->SetDif4F(s_ringredmat * hirate);
+				s_matred->SetDif4FW(hia);
+				s_ringred->SetDif4FW(hia);
 
-				matblue->SetDif4F(matblue->GetCol() * lowrate);
-				ringblue->SetDif4F(ringblue->GetCol() * lowrate);
-				matblue->SetDif4FW(lowa);
-				ringblue->SetDif4FW(lowa);
+				s_matblue->SetDif4F(s_matbluemat * lowrate);
+				s_ringblue->SetDif4F(s_ringbluemat * lowrate);
+				s_matblue->SetDif4FW(lowa);
+				s_ringblue->SetDif4FW(lowa);
 
+				s_matgreen->SetDif4F(s_matgreenmat * lowrate);
+				s_ringgreen->SetDif4F(s_ringgreenmat * lowrate);
+				s_matgreen->SetDif4FW(lowa);
+				s_ringgreen->SetDif4FW(lowa);
 
-				matgreen->SetDif4F(matgreen->GetCol() * lowrate);
-				ringgreen->SetDif4F(ringgreen->GetCol() * lowrate);
-				matgreen->SetDif4FW(lowa);
-				ringgreen->SetDif4FW(lowa);
-
-				matyellow->SetDif4F(matyellow->GetDif4F() * lowrate);
-				matyellow->SetDif4FW(lowa);
+				s_matyellow->SetDif4F(s_matyellowmat * lowrate);
+				s_matyellow->SetDif4FW(lowa);
 			}else if( (pickinfo.buttonflag == PICK_Y) || (pickinfo.buttonflag == PICK_SPA_Y) ){//green
-				matred->SetDif4F( matred->GetCol() * lowrate );
-				ringred->SetDif4F( ringred->GetCol() * lowrate );
-				matred->SetDif4FW( lowa );
-				ringred->SetDif4FW( lowa );
+				s_matred->SetDif4F(s_matredmat * lowrate);
+				s_ringred->SetDif4F(s_ringredmat * lowrate);
+				s_matred->SetDif4FW(lowa);
+				s_ringred->SetDif4FW(lowa);
 
-				matblue->SetDif4F( matblue->GetCol() * lowrate );
-				ringblue->SetDif4F( ringblue->GetCol() * lowrate );
-				matblue->SetDif4FW( lowa );
-				ringblue->SetDif4FW( lowa );
+				s_matblue->SetDif4F(s_matbluemat * lowrate);
+				s_ringblue->SetDif4F(s_ringbluemat * lowrate);
+				s_matblue->SetDif4FW(lowa);
+				s_ringblue->SetDif4FW(lowa);
 
-				matgreen->SetDif4F( matgreen->GetCol() * hirate ); 
-				ringgreen->SetDif4F( ringgreen->GetCol() * hirate );
-				matgreen->SetDif4FW( hia );
-				ringgreen->SetDif4FW( hia );
+				s_matgreen->SetDif4F(s_matgreenmat * hirate);
+				s_ringgreen->SetDif4F(s_ringgreenmat * hirate);
+				s_matgreen->SetDif4FW(hia);
+				s_ringgreen->SetDif4FW(hia);
 
-				matyellow->SetDif4F( matyellow->GetDif4F() * lowrate );
-				matyellow->SetDif4FW( lowa );
+				s_matyellow->SetDif4F(s_matyellowmat * lowrate);
+				s_matyellow->SetDif4FW(lowa);
 
 			}else if( (pickinfo.buttonflag == PICK_Z) || (pickinfo.buttonflag == PICK_SPA_Z) ){//blue
-				matred->SetDif4F( matred->GetCol() * lowrate );
-				ringred->SetDif4F( ringred->GetCol() * lowrate );
-				matred->SetDif4FW( lowa );
-				ringred->SetDif4FW( lowa );
+				s_matred->SetDif4F(s_matredmat * lowrate);
+				s_ringred->SetDif4F(s_ringredmat * lowrate);
+				s_matred->SetDif4FW(lowa);
+				s_ringred->SetDif4FW(lowa);
 
-				matblue->SetDif4F( matblue->GetCol() * hirate );
-				ringblue->SetDif4F( ringblue->GetCol() * hirate );
-				matblue->SetDif4FW( hia );
-				ringblue->SetDif4FW( hia );
+				s_matblue->SetDif4F(s_matbluemat * hirate);
+				s_ringblue->SetDif4F(s_ringbluemat * hirate);
+				s_matblue->SetDif4FW(hia);
+				s_ringblue->SetDif4FW(hia);
 
+				s_matgreen->SetDif4F(s_matgreenmat * lowrate);
+				s_ringgreen->SetDif4F(s_ringgreenmat * lowrate);
+				s_matgreen->SetDif4FW(lowa);
+				s_ringgreen->SetDif4FW(lowa);
 
-				matgreen->SetDif4F( matgreen->GetCol() * lowrate );
-				ringgreen->SetDif4F( ringgreen->GetCol() * lowrate );
-				matgreen->SetDif4FW( lowa );
-				ringgreen->SetDif4FW( lowa );
-
-				matyellow->SetDif4F( matyellow->GetDif4F() * lowrate );
-				matyellow->SetDif4FW( lowa );
+				s_matyellow->SetDif4F(s_matyellowmat * lowrate);
+				s_matyellow->SetDif4FW(lowa);
 
 			}else if( pickinfo.buttonflag == PICK_CENTER ){//yellow
-				matred->SetDif4F( matred->GetCol() * lowrate );
-				ringred->SetDif4F( ringred->GetCol() * lowrate );
-				matred->SetDif4FW( lowa );
-				ringred->SetDif4FW( lowa );
+				s_matred->SetDif4F(s_matredmat * lowrate);
+				s_ringred->SetDif4F(s_ringredmat * lowrate);
+				s_matred->SetDif4FW(lowa);
+				s_ringred->SetDif4FW(lowa);
 
-				matblue->SetDif4F( matblue->GetCol() * lowrate );
-				ringblue->SetDif4F( ringblue->GetCol() * lowrate );
-				matblue->SetDif4FW( lowa );
-				ringblue->SetDif4FW( lowa );
+				s_matblue->SetDif4F(s_matbluemat * lowrate);
+				s_ringblue->SetDif4F(s_ringbluemat * lowrate);
+				s_matblue->SetDif4FW(lowa);
+				s_ringblue->SetDif4FW(lowa);
 
+				s_matgreen->SetDif4F(s_matgreenmat * lowrate);
+				s_ringgreen->SetDif4F(s_ringgreenmat * lowrate);
+				s_matgreen->SetDif4FW(lowa);
+				s_ringgreen->SetDif4FW(lowa);
 
-				matgreen->SetDif4F( matgreen->GetCol() * lowrate );
-				ringgreen->SetDif4F( ringgreen->GetCol() * lowrate );
-				matgreen->SetDif4FW( lowa );
-				ringgreen->SetDif4FW( lowa );
-
-				matyellow->SetDif4F( matyellow->GetDif4F() * hirate );
-				matyellow->SetDif4FW( hia );
-
+				s_matyellow->SetDif4F(s_matyellowmat * hirate);
+				s_matyellow->SetDif4FW(hia);
 			}
 		}else{
-				matred->SetDif4F( matred->GetCol() * lowrate );
-				ringred->SetDif4F( ringred->GetCol() * lowrate );
-				matred->SetDif4FW( lowa );
-				ringred->SetDif4FW( lowa );
+			s_matred->SetDif4F(s_matredmat * lowrate);
+			s_ringred->SetDif4F(s_ringredmat * lowrate);
+			s_matred->SetDif4FW(lowa);
+			s_ringred->SetDif4FW(lowa);
 
-				matblue->SetDif4F( matblue->GetCol() * lowrate );
-				ringblue->SetDif4F( ringblue->GetCol() * lowrate );
-				matblue->SetDif4FW( lowa );
-				ringblue->SetDif4FW( lowa );
+			s_matblue->SetDif4F(s_matbluemat * lowrate);
+			s_ringblue->SetDif4F(s_ringbluemat * lowrate);
+			s_matblue->SetDif4FW(lowa);
+			s_ringblue->SetDif4FW(lowa);
 
+			s_matgreen->SetDif4F(s_matgreenmat * lowrate);
+			s_ringgreen->SetDif4F(s_ringgreenmat * lowrate);
+			s_matgreen->SetDif4FW(lowa);
+			s_ringgreen->SetDif4FW(lowa);
 
-				matgreen->SetDif4F( matgreen->GetCol() * lowrate );
-				ringgreen->SetDif4F( ringgreen->GetCol() * lowrate );
-				matgreen->SetDif4FW( lowa );
-				ringgreen->SetDif4FW( lowa );
-
-				matyellow->SetDif4F( matyellow->GetDif4F() * lowrate );
-				matyellow->SetDif4FW( lowa );
-
+			s_matyellow->SetDif4F(s_matyellowmat * lowrate);
+			s_matyellow->SetDif4FW(lowa);
 		}
 	}
 
