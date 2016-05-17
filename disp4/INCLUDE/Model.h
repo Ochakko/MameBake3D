@@ -868,6 +868,19 @@ public: //accesser
 		m_oldaxis_atloading = srcflag;
 	};
 
+	CMQOObject* GetObjectByName(string strname)
+	{
+		map<string, CMQOObject*>::iterator itrobjname;
+		itrobjname = m_objectname.find(strname);
+		if (itrobjname == m_objectname.end()){
+			return 0;
+		}
+		else{
+			return itrobjname->second;
+		}
+	};
+
+
 private:
 	int m_modelno;//ƒ‚ƒfƒ‹‚ÌID
 	bool m_modeldisp;//•\Ž¦‚·‚é‚©‚Ç‚¤‚©

@@ -141,7 +141,7 @@ int CMQOFile::LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR
 
 	scalemat._11 = m_multiple;
 	scalemat._22 = m_multiple;
-	scalemat._33 = -m_multiple;//!!!!!!!! ”½“]
+	scalemat._33 = m_multiple;
 
 	shiftmat._41 = offsetpos.x;
 	shiftmat._42 = offsetpos.y;

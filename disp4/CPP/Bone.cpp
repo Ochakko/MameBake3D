@@ -571,7 +571,8 @@ int CBone::CalcAxisMatZ_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX*
 
 	vecz1 = bonevec;
 
-	D3DXVec3Cross(&vecx1, &vecz1, &upvec);
+	//D3DXVec3Cross(&vecx1, &vecz1, &upvec);
+	D3DXVec3Cross(&vecx1, &upvec, &vecz1);
 	D3DXVec3Normalize(&vecx1, &vecx1);
 
 	D3DXVec3Cross(&vecy1, &vecz1, &vecx1);

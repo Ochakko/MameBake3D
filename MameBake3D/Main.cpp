@@ -2305,6 +2305,17 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	s_ringgreenmat = s_ringgreen->GetDif4F();
 	s_matyellowmat = s_matyellow->GetDif4F();
 
+	/*
+	string strobjz = "objZ";
+	CMQOObject* objz = s_select->GetObjectByName(strobjz);
+	if (objz){
+		CPolyMesh3* pm3 = objz->GetPm3();
+		if (pm3){
+			_ASSERT(0);
+		}
+	}
+	*/
+
 
 //	s_dummytri = new CModel();
 //	if( !s_dummytri ){
