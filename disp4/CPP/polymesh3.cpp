@@ -352,7 +352,8 @@ int CPolyMesh3::CreateN3PFromMQOFace( N3P* n3pptr, int* numptr )
 		if( curmqof->GetPointNum() == 3 ){
 			if( curn3p ){
 				int indexno;
-				int seti[3] = {0, 2, 1};
+				//int seti[3] = {0, 2, 1};
+				int seti[3] = { 0, 1, 2 };
 				for( indexno = 0; indexno < 3; indexno++ ){
 					(curn3p + indexno)->perface->orgfaceno = orgfno;
 					(curn3p + indexno)->perface->faceno = setno;
@@ -370,7 +371,8 @@ int CPolyMesh3::CreateN3PFromMQOFace( N3P* n3pptr, int* numptr )
 		}else if( curmqof->GetPointNum() == 4 ){
 			if( curn3p ){
 				int indexno;
-				int seti[3] = {0, 2, 1};
+				//int seti[3] = {0, 2, 1};
+				int seti[3] = { 0, 1, 2 };
 				for( indexno = 0; indexno < 3; indexno++ ){
 					(curn3p + indexno)->perface->orgfaceno = orgfno;
 					(curn3p + indexno)->perface->faceno = setno;
@@ -384,7 +386,8 @@ int CPolyMesh3::CreateN3PFromMQOFace( N3P* n3pptr, int* numptr )
 					(curn3p + indexno)->pervert->vcol = (DWORD)( curmqof->GetCol( seti[indexno] ) & 0xFFFFFFFF );
 				}			
 	
-				int seci[3] = { 0, 3, 2 };
+				//int seci[3] = { 0, 3, 2 };
+				int seci[3] = { 0, 2, 3 };
 				for( indexno = 3; indexno < 6; indexno++ ){
 					(curn3p + indexno)->perface->orgfaceno = orgfno;
 					(curn3p + indexno)->perface->faceno = setno + 1;
