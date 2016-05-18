@@ -509,6 +509,10 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 		_ASSERT(psetflag);
 		ZeroMemory(psetflag, curobj->GetPm4()->GetOrgPointNum() * sizeof(int));
 		CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
+		if (!ppsetbone){
+			_ASSERT(0);
+			return 1;
+		}
 		_ASSERT(ppsetbone);
 		ZeroMemory(ppsetbone, s_model->GetBoneListSize() * sizeof(CBone*));
 
@@ -837,130 +841,130 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 		}
 		CBone* curbone = s_firsttopbone->GetBone();
 		_ASSERT(curbone);
+		if (curbone){
 
-		map<CBone*, map<int, int>>::iterator itrlinkdirty;
-		map<int, int> mapdirty;
-		s_linkdirty[curbone] = mapdirty;
-		itrlinkdirty = s_linkdirty.find(curbone);
+			map<CBone*, map<int, int>>::iterator itrlinkdirty;
+			map<int, int> mapdirty;
+			s_linkdirty[curbone] = mapdirty;
+			itrlinkdirty = s_linkdirty.find(curbone);
 
+			FbxCluster *lCluster = 0;
+			int curclusterno = -1;
+			int infdirty = ExistBoneInInf(curbone->GetBoneNo(), curobj, &curclusterno);
 
-		FbxCluster *lCluster = 0;
-		int curclusterno = -1;
-		int infdirty = ExistBoneInInf(curbone->GetBoneNo(), curobj, &curclusterno);
+			if (infdirty){
+				lCluster = FbxCluster::Create(pScene, "");
+				lCluster->SetLink(lSkel);
+				lCluster->SetLinkMode(FbxCluster::eTotalOne);
 
-		if (infdirty){
-			lCluster = FbxCluster::Create(pScene, "");
-			lCluster->SetLink(lSkel);
-			lCluster->SetLinkMode(FbxCluster::eTotalOne);
+				//*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
 
-			//*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
+				int vsetno = 0;
+				int fno;
+				for (fno = 0; fno < pm4->GetFaceNum(); fno++){
+					CMQOFace* curface = pm4->GetTriFace() + fno;
+					int vno[3];
+					vno[0] = curface->GetIndex(0);
+					vno[2] = curface->GetIndex(2);
+					vno[1] = curface->GetIndex(1);
 
-			int vsetno = 0;
-			int fno;
-			for (fno = 0; fno < pm4->GetFaceNum(); fno++){
-				CMQOFace* curface = pm4->GetTriFace() + fno;
-				int vno[3];
-				vno[0] = curface->GetIndex(0);
-				vno[2] = curface->GetIndex(2);
-				vno[1] = curface->GetIndex(1);
+					_ASSERT((vno[0] >= 0) && (vno[0] < pm4->GetOrgPointNum()));
+					_ASSERT((vno[1] >= 0) && (vno[1] < pm4->GetOrgPointNum()));
+					_ASSERT((vno[2] >= 0) && (vno[2] < pm4->GetOrgPointNum()));
 
-				_ASSERT((vno[0] >= 0) && (vno[0] < pm4->GetOrgPointNum()));
-				_ASSERT((vno[1] >= 0) && (vno[1] < pm4->GetOrgPointNum()));
-				_ASSERT((vno[2] >= 0) && (vno[2] < pm4->GetOrgPointNum()));
-
-				int vcnt;
-				for (vcnt = 0; vcnt < 3; vcnt++){
-					CInfBone* curib = pm4->GetInfBone() + vno[vcnt];
-					int ieno = curib->ExistBone(curobj, curclusterno);
-					if (ieno >= 0){
-						map<int, int>::iterator itrmapdirty;
-						itrmapdirty = itrlinkdirty->second.find(vno[vcnt]);
-						if (itrmapdirty == itrlinkdirty->second.end()){
-							INFDATA* infd = curib->GetInfData(curobj);
-							if (infd){
-								lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+					int vcnt;
+					for (vcnt = 0; vcnt < 3; vcnt++){
+						CInfBone* curib = pm4->GetInfBone() + vno[vcnt];
+						int ieno = curib->ExistBone(curobj, curclusterno);
+						if (ieno >= 0){
+							map<int, int>::iterator itrmapdirty;
+							itrmapdirty = itrlinkdirty->second.find(vno[vcnt]);
+							if (itrmapdirty == itrlinkdirty->second.end()){
+								INFDATA* infd = curib->GetInfData(curobj);
+								if (infd){
+									lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+								}
+								*(psetflag + vno[vcnt]) = 1;
+								itrlinkdirty->second[vno[vcnt]] = 1;
 							}
-							*(psetflag + vno[vcnt]) = 1;
-							itrlinkdirty->second[vno[vcnt]] = 1;
-						}
-						else if ((int)(itrmapdirty->second) != 1){
-							INFDATA* infd = curib->GetInfData(curobj);
-							if (infd){
-								lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+							else if ((int)(itrmapdirty->second) != 1){
+								INFDATA* infd = curib->GetInfData(curobj);
+								if (infd){
+									lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+								}
+								*(psetflag + vno[vcnt]) = 1;
+								itrlinkdirty->second[vno[vcnt]] = 1;
 							}
-							*(psetflag + vno[vcnt]) = 1;
-							itrlinkdirty->second[vno[vcnt]] = 1;
 						}
+						vsetno++;
 					}
-					vsetno++;
 				}
 			}
-		}
 
-		
-		int findnotdirty = 0;
-		int chkvno;
-		for (chkvno = 0; chkvno < pm4->GetOrgPointNum(); chkvno++){
-			if (*(psetflag + chkvno) == 0){
-				findnotdirty = 1;
-				break;
-			}
-		}
 
-		if (findnotdirty == 1){
-			if (!lCluster){
-				lCluster = FbxCluster::Create(pScene, "");
-				lCluster->SetLink(lSkel);
-				lCluster->SetLinkMode(FbxCluster::eTotalOne);
-			}
-
-			int setv;
-			for (setv = 0; setv < pm4->GetOrgPointNum(); setv++){
-				if (*(psetflag + setv) == 0){
-					lCluster->AddControlPointIndex(setv, 1.0);
-					*(psetflag + setv) = 1;
+			int findnotdirty = 0;
+			int chkvno;
+			for (chkvno = 0; chkvno < pm4->GetOrgPointNum(); chkvno++){
+				if (*(psetflag + chkvno) == 0){
+					findnotdirty = 1;
+					break;
 				}
 			}
-		}
 
-		if (s_doublevertices == 1){//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			if (!lCluster){
-				lCluster = FbxCluster::Create(pScene, "");
-				lCluster->SetLink(lSkel);
-				lCluster->SetLinkMode(FbxCluster::eTotalOne);
+			if (findnotdirty == 1){
+				if (!lCluster){
+					lCluster = FbxCluster::Create(pScene, "");
+					lCluster->SetLink(lSkel);
+					lCluster->SetLinkMode(FbxCluster::eTotalOne);
+				}
+
+				int setv;
+				for (setv = 0; setv < pm4->GetOrgPointNum(); setv++){
+					if (*(psetflag + setv) == 0){
+						lCluster->AddControlPointIndex(setv, 1.0);
+						*(psetflag + setv) = 1;
+					}
+				}
 			}
 
-			int setv;
-			for (setv = 0; setv < pm4->GetOrgPointNum(); setv++){
-				lCluster->AddControlPointIndex(setv + pm4->GetOrgPointNum(), 1.0);
+			if (s_doublevertices == 1){//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				if (!lCluster){
+					lCluster = FbxCluster::Create(pScene, "");
+					lCluster->SetLink(lSkel);
+					lCluster->SetLinkMode(FbxCluster::eTotalOne);
+				}
+
+				int setv;
+				for (setv = 0; setv < pm4->GetOrgPointNum(); setv++){
+					lCluster->AddControlPointIndex(setv + pm4->GetOrgPointNum(), 1.0);
+				}
 			}
-		}
 
-		if (lCluster){
-			D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-			pos.x = s_firsttopbone->GetBone()->GetJointFPos().x;
-			pos.y = s_firsttopbone->GetBone()->GetJointFPos().y;
-			pos.z = s_firsttopbone->GetBone()->GetJointFPos().z;
+			if (lCluster){
+				D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				pos.x = s_firsttopbone->GetBone()->GetJointFPos().x;
+				pos.y = s_firsttopbone->GetBone()->GetJointFPos().y;
+				pos.z = s_firsttopbone->GetBone()->GetJointFPos().z;
 
-			//KFbxScene* lScene = pMesh->GetScene();
-			//lXMatrix = pMesh->EvaluateGlobalTransform();
-			//lCluster->SetTransformMatrix(lXMatrix);
-			lXMatrix.SetIdentity();
-			lXMatrix[3][0] = -pos.x;
-			lXMatrix[3][1] = -pos.y;
-			lXMatrix[3][2] = pos.z;
-			lCluster->SetTransformMatrix(lXMatrix);
+				//KFbxScene* lScene = pMesh->GetScene();
+				//lXMatrix = pMesh->EvaluateGlobalTransform();
+				//lCluster->SetTransformMatrix(lXMatrix);
+				lXMatrix.SetIdentity();
+				lXMatrix[3][0] = -pos.x;
+				lXMatrix[3][1] = -pos.y;
+				lXMatrix[3][2] = pos.z;
+				lCluster->SetTransformMatrix(lXMatrix);
 
-			//lXMatrix = lSkel->EvaluateGlobalTransform();
-			//lCluster->SetTransformLinkMatrix(lXMatrix);
-			lXMatrix.SetIdentity();
-			lCluster->SetTransformLinkMatrix(lXMatrix);
+				//lXMatrix = lSkel->EvaluateGlobalTransform();
+				//lCluster->SetTransformLinkMatrix(lXMatrix);
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformLinkMatrix(lXMatrix);
 
-			lSkin->AddCluster(lCluster);
-		}
+				lSkin->AddCluster(lCluster);
+			}
 
-		/*
-		if (lCluster){
+			/*
+			if (lCluster){
 			FbxAMatrix lXMatrix;
 			lXMatrix.SetIdentity();
 			lCluster->SetTransformMatrix(lXMatrix);
@@ -970,8 +974,9 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 			lCluster->SetTransformLinkMatrix(lXMatrix2);
 
 			lSkin->AddCluster(lCluster);
+			}
+			*/
 		}
-		*/
 	}
 }
 
@@ -1776,44 +1781,55 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 
 FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 {
+	int notexistflag = 0;
+
 	D3DXVECTOR3 curpos, parpos;
 	if (s_bvhflag == 1){
 		CBVHElem* curbone = fbxbone->GetBvhElem();
-		curpos = curbone->GetPosition();
-		
-		CFBXBone* parfbxbone;
-		parfbxbone = fbxbone->GetParent();
-		if (parfbxbone){
-			CBVHElem* parbone = parfbxbone->GetBvhElem();
-			if (parbone){
-				parpos = parbone->GetPosition();
+		if (curbone){
+			curpos = curbone->GetPosition();
+
+			CFBXBone* parfbxbone;
+			parfbxbone = fbxbone->GetParent();
+			if (parfbxbone){
+				CBVHElem* parbone = parfbxbone->GetBvhElem();
+				if (parbone){
+					parpos = parbone->GetPosition();
+				}
+				else{
+					parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				}
 			}
 			else{
 				parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
-			parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			notexistflag = 1;
 		}
-
 	}
 	else{
 		CBone* curbone = fbxbone->GetBone();
-		curpos = curbone->GetJointFPos();
+		if (curbone){
+			curpos = curbone->GetJointFPos();
 
-		CFBXBone* parfbxbone;
-		parfbxbone = fbxbone->GetParent();
-		if (parfbxbone){
-			CBone* parbone = parfbxbone->GetBone();
-			if (parbone){
-				parpos = parbone->GetJointFPos();
+			CFBXBone* parfbxbone;
+			parfbxbone = fbxbone->GetParent();
+			if (parfbxbone){
+				CBone* parbone = parfbxbone->GetBone();
+				if (parbone){
+					parpos = parbone->GetJointFPos();
+				}
+				else{
+					parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				}
 			}
 			else{
 				parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
-			parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			notexistflag = 1;
 		}
 	}
 
@@ -1821,6 +1837,13 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 
 	D3DXMATRIX tramat;
 	D3DXMatrixIdentity(&tramat);
+
+	if (notexistflag == 1){
+		FbxAMatrix lInitMatrix;
+		lInitMatrix.SetIdentity();
+		return lInitMatrix;//!!!!!!!!!!!!!!! curbone == NULL
+	}
+
 	if ((s_bvhflag == 0) && fbxbone->GetBone() && (s_model->GetOldAxisFlagAtLoading() == 0)){
 		tramat = fbxbone->GetBone()->GetNodeMat();
 	}
@@ -2621,36 +2644,50 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 
 		if (fbxbone->GetBone()){
 			CBone* curbone = fbxbone->GetBone();
-			D3DXVECTOR3 pos;
-			pos = curbone->GetJointFPos();
+			if (curbone){
+				D3DXVECTOR3 pos;
+				pos = curbone->GetJointFPos();
 
-			FbxAMatrix lXMatrix;
-			lXMatrix.SetIdentity();
-			lXMatrix[3][0] = -pos.x;
-			lXMatrix[3][1] = -pos.y;
-			lXMatrix[3][2] = -pos.z;
-			lCluster->SetTransformMatrix(lXMatrix);
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lXMatrix[3][0] = -pos.x;
+				lXMatrix[3][1] = -pos.y;
+				lXMatrix[3][2] = -pos.z;
+				lCluster->SetTransformMatrix(lXMatrix);
 
-			lXMatrix.SetIdentity();
-			lCluster->SetTransformLinkMatrix(lXMatrix);
-
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
+			else{
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformMatrix(lXMatrix);
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
 			lSkin->AddCluster(lCluster);
 		}
 		else if (fbxbone->GetBvhElem()){
 			CBVHElem* curbone = fbxbone->GetBvhElem();
-			D3DXVECTOR3 pos;
-			pos = curbone->GetPosition();
+			if (curbone){
+				D3DXVECTOR3 pos;
+				pos = curbone->GetPosition();
 
-			FbxAMatrix lXMatrix;
-			lXMatrix.SetIdentity();
-			lXMatrix[3][0] = -pos.x;
-			lXMatrix[3][1] = -pos.y;
-			lXMatrix[3][2] = -pos.z;
-			lCluster->SetTransformMatrix(lXMatrix);
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lXMatrix[3][0] = -pos.x;
+				lXMatrix[3][1] = -pos.y;
+				lXMatrix[3][2] = -pos.z;
+				lCluster->SetTransformMatrix(lXMatrix);
 
-			lXMatrix.SetIdentity();
-			lCluster->SetTransformLinkMatrix(lXMatrix);
-
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
+			else{
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformMatrix(lXMatrix);
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
 			lSkin->AddCluster(lCluster);
 		}
 

@@ -40,6 +40,7 @@ CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
 	InitParams();
 
 	m_parmodel = parmodel;
+	_ASSERT(m_parmodel);
 
 	map<CModel*,int>::iterator itrcnt;
 	itrcnt = g_bonecntmap.find( m_parmodel );
@@ -168,11 +169,13 @@ int CBone::AddChild( CBone* childptr )
 		m_child = childptr;
 	}else{
 		CBone* broptr = m_child;
-		while( broptr->m_brother ){
-			broptr = broptr->m_brother;
+		if (broptr){
+			while (broptr->m_brother){
+				broptr = broptr->m_brother;
+			}
+			broptr->m_brother = childptr;
+			broptr->m_brother->m_parent = this;//!!!!!!!!
 		}
-		broptr->m_brother = childptr;
-		broptr->m_brother->m_parent = this;//!!!!!!!!
 	}
 
 	return 0;
@@ -1421,11 +1424,12 @@ int CBone::CalcBoneDepth()
 {
 	int retdepth = 0;
 	CBone* curbone = this;
-	while (curbone->GetParent()){
-		retdepth++;
-		curbone = curbone->GetParent();
+	if (curbone){
+		while (curbone->GetParent()){
+			retdepth++;
+			curbone = curbone->GetParent();
+		}
 	}
-
 	return retdepth;
 }
 

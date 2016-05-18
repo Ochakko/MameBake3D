@@ -66,6 +66,11 @@ int CExtLine::CreateExtLine( int pointnum, int facenum, D3DXVECTOR3* pointptr, C
 	m_pointnum = pointnum;
 	m_facenum = facenum;
 
+	if (!m_pointptr || !m_faceptr){
+		_ASSERT(0);
+		return 1;
+	}
+
 	int lnum = 0;
 	CallF( CreateBuffer( 0, 0, &lnum ), return 1 );
 

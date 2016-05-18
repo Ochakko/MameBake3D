@@ -474,9 +474,11 @@ int CModel::LoadFBX(int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR*
 	if( !chkbone ){
 		CBone* dummybone = new CBone( this );
 		_ASSERT( dummybone );
-		dummybone->SetName( "DummyBone" );
-		m_bonelist[0] = dummybone;
-		//m_topbone = dummybone;
+		if (dummybone){
+			dummybone->SetName("DummyBone");
+			m_bonelist[0] = dummybone;
+			//m_topbone = dummybone;
+		}
 		_ASSERT(0);
 	}
 
@@ -999,8 +1001,9 @@ int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe
 				if( curre && (curre->GetSkipflag() != 1) ){
 					CBone* chilbone = itrre->first;
 					_ASSERT( chilbone );
-
-					boneptr->CalcRigidElemParams( coldisp, chilbone, firstflag );
+					if (chilbone){
+						boneptr->CalcRigidElemParams(coldisp, chilbone, firstflag);
+					}
 				}
 			}				
 		}
@@ -1454,9 +1457,10 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 	FillTimelineReq( timeline, m_topbone, &lineno, lineno2boneno, boneno2lineno, 0 );
 ***/
 
-	//選択行を設定
-	timeline.setCurrentLineName( m_topbone->GetWBoneName() );
-
+	if (m_topbone){
+		//選択行を設定
+		timeline.setCurrentLineName(m_topbone->GetWBoneName());
+	}
 	return 0;
 }
 
@@ -2632,6 +2636,10 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 	int settopflag = 0;
 	CBone* newbone = new CBone( this );
 	_ASSERT( newbone );
+	if (!newbone){
+		_ASSERT(0);
+		return 1;
+	}
 
 	char newbonename[256];
 	strcpy_s(newbonename, 256, nodename);
@@ -3321,24 +3329,27 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 					if( curre && (curre->GetSkipflag() != 1) ){
 						CBone* chilbone = itrre->first;
 						_ASSERT( chilbone );
+						if (chilbone){
+							CModel* curcoldisp = cpslptr[curre->GetColtype()];
+							_ASSERT(curcoldisp);
+							if (curcoldisp){
+								//DbgOut( L"check!!!: curbone %s, chilbone %s\r\n", boneptr->m_wbonename, chilbone->m_wbonename );
 
-						CModel* curcoldisp = cpslptr[curre->GetColtype()];
-						_ASSERT( curcoldisp );
+								boneptr->CalcRigidElemParams(cpslptr, chilbone, 0);
 
-//DbgOut( L"check!!!: curbone %s, chilbone %s\r\n", boneptr->m_wbonename, chilbone->m_wbonename );
-
-						boneptr->CalcRigidElemParams( cpslptr, chilbone, 0 );
-
-						g_pEffect->SetMatrix( g_hmWorld, &(curre->GetCapsulemat()) );
-						curcoldisp->UpdateMatrix( &(curre->GetCapsulemat()), &m_matVP );
-						D3DXVECTOR4 difmult;
-						//if( boneptr->GetSelectFlag() & 4 ){
-						if (chilbone->GetSelectFlag() & 4){
-							difmult = D3DXVECTOR4( 1.0f, 0.0f, 0.0f, 0.5f );
-						}else{
-							difmult = D3DXVECTOR4( 0.25f, 0.5f, 0.5f, 0.5f );
+								g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
+								curcoldisp->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
+								D3DXVECTOR4 difmult;
+								//if( boneptr->GetSelectFlag() & 4 ){
+								if (chilbone->GetSelectFlag() & 4){
+									difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+								}
+								else{
+									difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+								}
+								CallF(curcoldisp->OnRender(pdev, 0, difmult), return 1);
+							}
 						}
-						CallF( curcoldisp->OnRender( pdev, 0, difmult ), return 1 );
 					}
 				}
 			}
@@ -4059,21 +4070,13 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 	}
 	m_topbt->SetTopFlag( 1 );
 
-	//CBone* startbone = m_bonename[ "jiku_Joint_bunki" ];
-	//CBone* startbone = m_bonename[ "jiku_Joint" ];
 	CBone* startbone = m_topbone;
-	//CBone* startbone = m_bonename[ "Bip01" ];
 	_ASSERT( startbone );
-	CreateBtObjectReq( coldisp, m_topbt, startbone, startbone->GetChild() );
-	//CreateBtObjectReq( coldisp, m_topbt, startbone->m_parent, startbone );
-
-/***
-	CBone* brobone = GetValidBroBone( startbone );
-	if( brobone ){
-		CreateBtObjectReq( coldisp, m_topbt, brobone, brobone->m_child );
-		brobone = brobone->m_brother;
+	if (startbone){
+		CreateBtObjectReq(coldisp, m_topbt, startbone, startbone->GetChild());
+		//CreateBtObjectReq( coldisp, m_topbt, startbone->m_parent, startbone );
 	}
-***/
+
 	CreateBtConstraint();
 
 
@@ -4139,28 +4142,30 @@ void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBon
 	for (itrre = tmpmap.begin(); itrre != tmpmap.end(); itrre++){
 		CRigidElem* curre = itrre->second;
 		chilbone = itrre->first;
-		D3DXVECTOR3 diffbone = curbone->GetJointFPos() - chilbone->GetJointFPos();
-		float leng = D3DXVec3Length(&diffbone);
-		map<CBone*, CBone*>::iterator itrfind = m_rigidbone.find(chilbone);
-		if (curre && chilbone){
-			if (itrfind == m_rigidbone.end()){
-				if (curre->GetSkipflag() == 0){
-					DbgOut(L"CreateBtObject : curbone %s, chilbone %s\r\n",
-						curbone->GetWBoneName(), chilbone->GetWBoneName());
+		if (chilbone){
+			D3DXVECTOR3 diffbone = curbone->GetJointFPos() - chilbone->GetJointFPos();
+			float leng = D3DXVec3Length(&diffbone);
+			map<CBone*, CBone*>::iterator itrfind = m_rigidbone.find(chilbone);
+			if (curre && chilbone){
+				if (itrfind == m_rigidbone.end()){
+					if (curre->GetSkipflag() == 0){
+						DbgOut(L"CreateBtObject : curbone %s, chilbone %s\r\n",
+							curbone->GetWBoneName(), chilbone->GetWBoneName());
 
-					m_rigidbone[chilbone] = curbone;
-					newbto = new CBtObject(parbt, m_btWorld);
-					if (!newbto){
-						_ASSERT(0);
-						return;
+						m_rigidbone[chilbone] = curbone;
+						newbto = new CBtObject(parbt, m_btWorld);
+						if (!newbto){
+							_ASSERT(0);
+							return;
+						}
+						CallF(newbto->CreateObject(parbt, parbone, curbone, chilbone), return);
+						curbone->SetBtObject(chilbone, newbto);
 					}
-					CallF(newbto->CreateObject(parbt, parbone, curbone, chilbone), return);
-					curbone->SetBtObject(chilbone, newbto);
 				}
 			}
-		}
-		else{
-			_ASSERT(0);
+			else{
+				_ASSERT(0);
+			}
 		}
 	}
 

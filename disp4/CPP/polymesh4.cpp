@@ -433,9 +433,10 @@ int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 
 			CBone* curbone = srcbonelist[ boneno ];
 			_ASSERT( curbone );
-
-			DbgOut( L"\tinfno %d, bonename %s, dispinf %f\r\n",
-				infno, curbone->GetWBoneName(), dispinf );
+			if (curbone){
+				DbgOut(L"\tinfno %d, bonename %s, dispinf %f\r\n",
+					infno, curbone->GetWBoneName(), dispinf);
+			}
 		}
 	}
 	DbgOut( L"checkend!!! DumpInfBone\r\n\r\n" );

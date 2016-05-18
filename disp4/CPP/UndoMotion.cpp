@@ -220,8 +220,10 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
-		curbone->DestroyMotionKey( setmotid );
-		curbone->ClearMotMarkOfMap2( setmotid );
+		if (curbone){
+			curbone->DestroyMotionKey(setmotid);
+			curbone->ClearMotMarkOfMap2(setmotid);
+		}
 	}
 
 ///////// set
@@ -229,35 +231,45 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 
-		CMotionPoint* firstmp = m_bone2mp[ curbone ];
-		if( firstmp ){
-			CMotionPoint* undofirstmp = new CMotionPoint();
-			if( !undofirstmp ){
-				_ASSERT( 0 );
-				return 1;
-			}
-			undofirstmp->CopyMP( firstmp );
-
-			CMotionPoint* mpptr = firstmp->GetNext();
-			CMotionPoint* befundomp = undofirstmp;
-			while( mpptr ){
-				CMotionPoint* newundomp = new CMotionPoint();
-				if( !newundomp ){
-					_ASSERT( 0 );
+		if (curbone){
+			CMotionPoint* firstmp = m_bone2mp[curbone];
+			if (firstmp){
+				CMotionPoint* undofirstmp = new CMotionPoint();
+				if (!undofirstmp){
+					_ASSERT(0);
 					return 1;
 				}
-				newundomp->CopyMP( mpptr );
-				befundomp->AddToNext( newundomp );
+				undofirstmp->CopyMP(firstmp);
 
-				befundomp = newundomp;
-				mpptr = mpptr->GetNext();
+				CMotionPoint* mpptr = firstmp->GetNext();
+				CMotionPoint* befundomp = undofirstmp;
+				while (mpptr){
+					CMotionPoint* newundomp = new CMotionPoint();
+					if (!newundomp){
+						_ASSERT(0);
+						return 1;
+					}
+					if (newundomp){
+						newundomp->CopyMP(mpptr);
+					}
+					else{
+						_ASSERT(0);
+					}
+					if (befundomp){
+						befundomp->AddToNext(newundomp);
+					}
+					else{
+						_ASSERT(0);
+					}
+					befundomp = newundomp;
+					mpptr = mpptr->GetNext();
+				}
+
+				curbone->SetMotionKey(setmotid, undofirstmp);
 			}
 
-			curbone->SetMotionKey( setmotid, undofirstmp );
+			curbone->SetMotMarkOfMap2(setmotid, m_bonemotmark[curbone]);
 		}
-
-		curbone->SetMotMarkOfMap2( setmotid, m_bonemotmark[ curbone ] );
-
 	}
 
 

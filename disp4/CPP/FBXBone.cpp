@@ -57,10 +57,12 @@ int CFBXBone::AddChild( CFBXBone* childptr )
 		m_child = childptr;
 	}else{
 		CFBXBone* broptr = m_child;
-		while( broptr->m_brother ){
-			broptr = broptr->m_brother;
+		if (broptr){
+			while (broptr->m_brother){
+				broptr = broptr->m_brother;
+			}
+			broptr->m_brother = childptr;
 		}
-		broptr->m_brother = childptr;
 	}
 
 	return  0;

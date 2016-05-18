@@ -3074,64 +3074,66 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			for( itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++ ){
 				CBone* srcbone = itrcp->first;
 				_ASSERT( srcbone );
-
-				int cptopflag = 0;
-				multimap<CBone*,CMotionPoint>::iterator itrfind;
-				CBone* chkpar = srcbone->GetParent();
-				itrfind = s_copymotmap.find( chkpar );
-				if( itrfind == s_copymotmap.end() ){
-					cptopflag = 1;
-				}
-
-				CMotionPoint srcmp = itrcp->second;
-				CMotionPoint* newmp = 0;
-				_ASSERT( s_model->GetCurMotInfo() );
-				double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
-				int curmotid = s_model->GetCurMotInfo()->motid;
-				newmp = srcbone->GetMotionPoint(curmotid, newframe);
-				if(newmp){
-					if( cptopflag == 1 ){
-						newmp->SetBefWorldMat( newmp->GetWorldMat() );
+				if (srcbone){
+					int cptopflag = 0;
+					multimap<CBone*, CMotionPoint>::iterator itrfind;
+					CBone* chkpar = srcbone->GetParent();
+					itrfind = s_copymotmap.find(chkpar);
+					if (itrfind == s_copymotmap.end()){
+						cptopflag = 1;
 					}
-					newmp->SetWorldMat( srcmp.GetWorldMat() );
+
+					CMotionPoint srcmp = itrcp->second;
+					CMotionPoint* newmp = 0;
+					_ASSERT(s_model->GetCurMotInfo());
+					double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
+					int curmotid = s_model->GetCurMotInfo()->motid;
+					newmp = srcbone->GetMotionPoint(curmotid, newframe);
+					if (newmp){
+						if (cptopflag == 1){
+							newmp->SetBefWorldMat(newmp->GetWorldMat());
+						}
+						newmp->SetWorldMat(srcmp.GetWorldMat());
+					}
 				}
 			}
 
 			for( itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++ ){
 				CBone* srcbone = itrcp->first;
 				_ASSERT( srcbone );
+				if (srcbone){
+					int cptopflag = 0;
+					multimap<CBone*, CMotionPoint>::iterator itrfind;
+					CBone* chkpar = srcbone->GetParent();
+					itrfind = s_copymotmap.find(chkpar);
+					if (itrfind == s_copymotmap.end()){
+						cptopflag = 1;
+					}
 
-				int cptopflag = 0;
-				multimap<CBone*,CMotionPoint>::iterator itrfind;
-				CBone* chkpar = srcbone->GetParent();
-				itrfind = s_copymotmap.find( chkpar );
-				if( itrfind == s_copymotmap.end() ){
-					cptopflag = 1;
-				}
+					CMotionPoint srcmp = itrcp->second;
+					CMotionPoint* newmp = 0;
+					double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
+					int curmotid = s_model->GetCurMotInfo()->motid;
+					newmp = srcbone->GetMotionPoint(curmotid, newframe);
+					if (newmp){
+						if (cptopflag == 1){
+							D3DXVECTOR3 orgpos;
+							D3DXVec3TransformCoord(&orgpos, &(srcbone->GetJointFPos()), &(newmp->GetBefWorldMat()));
 
-				CMotionPoint srcmp = itrcp->second;
-				CMotionPoint* newmp = 0;
-				double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
-				int curmotid = s_model->GetCurMotInfo()->motid;
-				newmp = srcbone->GetMotionPoint(curmotid, newframe);
-				if(newmp){
-					if( cptopflag == 1 ){
-						D3DXVECTOR3 orgpos;
-						D3DXVec3TransformCoord( &orgpos, &(srcbone->GetJointFPos()), &(newmp->GetBefWorldMat()) );
+							D3DXVECTOR3 newpos;
+							D3DXVec3TransformCoord(&newpos, &(srcbone->GetJointFPos()), &(newmp->GetWorldMat()));
 
-						D3DXVECTOR3 newpos;
-						D3DXVec3TransformCoord( &newpos, &(srcbone->GetJointFPos()), &(newmp->GetWorldMat()) );
+							D3DXVECTOR3 diffpos;
+							diffpos = orgpos - newpos;
 
-						D3DXVECTOR3 diffpos;
-						diffpos = orgpos - newpos;
-
-						CEditRange tmper;
-						KeyInfo tmpki;
-						tmpki.time = newframe;
-						list<KeyInfo> tmplist;
-						tmplist.push_back( tmpki );
-						tmper.SetRange( tmplist, newframe );
-						s_model->FKBoneTra( &tmper, srcbone->GetBoneNo(), diffpos );
+							CEditRange tmper;
+							KeyInfo tmpki;
+							tmpki.time = newframe;
+							list<KeyInfo> tmplist;
+							tmplist.push_back(tmpki);
+							tmper.SetRange(tmplist, newframe);
+							s_model->FKBoneTra(&tmper, srcbone->GetBoneNo(), diffpos);
+						}
 					}
 				}
 			}
@@ -3382,36 +3384,37 @@ int InsertSymMP( CBone* curbone, double curframe )
 	if( symboneno >= 0 ){
 		CBone* symbone = s_model->GetBoneByID( symboneno );
 		_ASSERT( symbone );
-		CMotionPoint* psym = 0;
-		psym = symbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
-		_ASSERT(psym);
+		if (symbone){
+			CMotionPoint* psym = 0;
+			psym = symbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
+			_ASSERT(psym);
 
-		CQuaternion symq;
-		symq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-		D3DXMATRIX symmat0 = symq.CalcSymX( psym->GetWorldMat() );
+			CQuaternion symq;
+			symq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			D3DXMATRIX symmat0 = symq.CalcSymX(psym->GetWorldMat());
 
-		D3DXVECTOR3 sympos;
-		D3DXVec3TransformCoord( &sympos, &(symbone->GetJointFPos()), &(psym->GetWorldMat()) );
-		sympos.x *= -1.0f;
+			D3DXVECTOR3 sympos;
+			D3DXVec3TransformCoord(&sympos, &(symbone->GetJointFPos()), &(psym->GetWorldMat()));
+			sympos.x *= -1.0f;
 
-		D3DXVECTOR3 orgpos;
-		D3DXVec3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &symmat0 );
+			D3DXVECTOR3 orgpos;
+			D3DXVec3TransformCoord(&orgpos, &(curbone->GetJointFPos()), &symmat0);
 
-		D3DXVECTOR3 diffvec = sympos - orgpos;
+			D3DXVECTOR3 diffvec = sympos - orgpos;
 
-		D3DXMATRIX symmat;
-		symmat = symmat0;
-		symmat._41 = diffvec.x;
-		symmat._42 = diffvec.y;
-		symmat._43 = diffvec.z;
+			D3DXMATRIX symmat;
+			symmat = symmat0;
+			symmat._41 = diffvec.x;
+			symmat._42 = diffvec.y;
+			symmat._43 = diffvec.z;
 
-		CMotionPoint addmp;
-		addmp.SetFrame( curframe );
-		addmp.SetWorldMat( symmat );
+			CMotionPoint addmp;
+			addmp.SetFrame(curframe);
+			addmp.SetWorldMat(symmat);
 
-		typedef pair <CBone*, CMotionPoint> Mp_Pair;
-		s_copymotmap.insert( Mp_Pair( curbone, addmp ) );
-
+			typedef pair <CBone*, CMotionPoint> Mp_Pair;
+			s_copymotmap.insert(Mp_Pair(curbone, addmp));
+		}
 	}
 	return 0;
 }
@@ -4006,7 +4009,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
 			CBone* curbone = s_model->GetBoneByID( s_curboneno );
 			_ASSERT( curbone );
-			g_camtargetpos = curbone->GetChildWorld();
+			if (curbone){
+				g_camtargetpos = curbone->GetChildWorld();
+			}
 		}
 		g_Camera.SetViewParams( &g_camEye, &g_camtargetpos );
 		D3DXVECTOR3 diffv = g_camEye - g_camtargetpos;
@@ -4229,7 +4234,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if (s_model && (s_curboneno >= 0) && s_camtargetflag){
 				CBone* curbone = s_model->GetBoneByID(s_curboneno);
 				_ASSERT(curbone);
-				g_camtargetpos = curbone->GetChildWorld();
+				if (curbone){
+					g_camtargetpos = curbone->GetChildWorld();
+				}
 			}
 
 
@@ -4669,15 +4676,16 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
 			if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
 				CBone* curbone = s_model->GetBoneByID( s_curboneno );
-				_ASSERT( curbone );
-				g_camtargetpos = curbone->GetChildWorld();
-				g_Camera.SetViewParams( &g_camEye, &g_camtargetpos );
+				_ASSERT(curbone);
+				if (curbone){
+					g_camtargetpos = curbone->GetChildWorld();
+					g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
 
-				D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-				D3DXVECTOR3 diffv;
-				diffv = g_camEye - g_camtargetpos;
-				s_camdist = D3DXVec3Length( &diffv );
-
+					D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+					D3DXVECTOR3 diffv;
+					diffv = g_camEye - g_camtargetpos;
+					s_camdist = D3DXVec3Length(&diffv);
+				}
 			}
 			
 			break;
@@ -5971,35 +5979,37 @@ int InitCurMotion(int selectflag, double expandmotion)
 	if (curmi){
 		//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
 		CBone* topbone = s_model->GetTopBone();
-		double motleng = curmi->frameleng;
-		//_ASSERT(0);
+		if (topbone){
+			double motleng = curmi->frameleng;
+			//_ASSERT(0);
 
-		if (selectflag == 1){//called from tool panel : init selected time range
-			list<KeyInfo>::iterator itrcp;
-			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-				double curframe = itrcp->time;
-				if (topbone){
-					s_model->SetMotionFrame(curframe);
-					InitMPReq(topbone, curframe);
+			if (selectflag == 1){//called from tool panel : init selected time range
+				list<KeyInfo>::iterator itrcp;
+				for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+					double curframe = itrcp->time;
+					if (topbone){
+						s_model->SetMotionFrame(curframe);
+						InitMPReq(topbone, curframe);
+					}
 				}
 			}
-		}
-		else if (expandmotion > 0){//モーション長を長くした際に、長くなった分の初期化をする
-			double oldframeleng = expandmotion;
-			double frame;
-			for (frame = oldframeleng; frame < motleng; frame += 1.0){
-				if (topbone){
-					s_model->SetMotionFrame(frame);
-					InitMPReq(topbone, frame);
+			else if (expandmotion > 0){//モーション長を長くした際に、長くなった分の初期化をする
+				double oldframeleng = expandmotion;
+				double frame;
+				for (frame = oldframeleng; frame < motleng; frame += 1.0){
+					if (topbone){
+						s_model->SetMotionFrame(frame);
+						InitMPReq(topbone, frame);
+					}
 				}
 			}
-		}
-		else{
-			double frame;
-			for (frame = 0.0; frame < motleng; frame += 1.0){
-				if (topbone){
-					s_model->SetMotionFrame(frame);
-					InitMPReq(topbone, frame);
+			else{
+				double frame;
+				for (frame = 0.0; frame < motleng; frame += 1.0){
+					if (topbone){
+						s_model->SetMotionFrame(frame);
+						InitMPReq(topbone, frame);
+					}
 				}
 			}
 		}
@@ -6260,92 +6270,93 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 
 
 	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
-	int modelmotid = modelmi->motid;
-	CMotionPoint modelmp;
-	CMotionPoint* pmodelmp = 0;
-	pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe);
-	if (pmodelmp){
-		modelmp = *pmodelmp;
-	}
-	else{
-		_ASSERT(0);
-		return 0;
-	}
-
-	CMotionPoint modelparmp;
-	CMotionPoint* pmodelparmp = 0;
-	if (srcbone->GetParent()){
-		pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe);
-		if (pmodelparmp){
-			modelparmp = *pmodelparmp;
-		}
-	}
-
-
-	s_curboneno = srcbone->GetBoneNo();
-
-
-	CQuaternion rotq;
-	D3DXVECTOR3 traanim;
-
-	if (bvhbone){
-		D3DXMATRIX curbvhmat;
-		D3DXMATRIX bvhmat;
-		bvhmat = bvhmp.GetWorldMat();
-
-		D3DXMATRIX modelinit, invmodelinit;
-		modelinit = modelmp.GetWorldMat();
-		invmodelinit = modelmp.GetInvWorldMat();
-
-		if (srcbone == s_model->GetTopBone()){//モデル側の最初のボーンの処理時
-			s_firsthipmat = bvhmp.GetWorldMat();
-			s_firsthipmat._41 = 0.0f;
-			s_firsthipmat._42 = 0.0f;
-			s_firsthipmat._43 = 0.0f;
-			D3DXMatrixInverse(&s_invfirsthipmat, NULL, &s_firsthipmat);
-			s_invfirsthipmat._41 = 0.0f;
-			s_invfirsthipmat._42 = 0.0f;
-			s_invfirsthipmat._43 = 0.0f;
-		}
-
-
-		//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
-		//curbvhmat = bvhbone->GetInvFirstMat() * s_invfirsthipmat * invmodelinit * bvhmat;
-		curbvhmat = s_invfirsthipmat * bvhbone->GetInvFirstMat() * s_firsthipmat * invmodelinit * bvhmat;//初期姿勢の変換にbvhの全体回転s_firsthipmatを考慮する。
-
-		CMotionPoint curbvhrotmp;
-		curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
-		rotq = curbvhrotmp.GetQ();
-
-		if ((s_sethipstra == 0) && (srcbone == s_model->GetTopBone())){
-			CMotionPoint calctramp;
-			calctramp.CalcQandTra(bvhmat, bvhbone, hrate);
-			traanim = calctramp.GetFirstFrameTra();
-			//traanim = calctramp.GetTra() * hrate;
-			s_sethipstra = 1;
+	if (modelmi){
+		int modelmotid = modelmi->motid;
+		CMotionPoint modelmp;
+		CMotionPoint* pmodelmp = 0;
+		pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe);
+		if (pmodelmp){
+			modelmp = *pmodelmp;
 		}
 		else{
+			_ASSERT(0);
+			return 0;
+		}
+
+		CMotionPoint modelparmp;
+		CMotionPoint* pmodelparmp = 0;
+		if (srcbone->GetParent()){
+			pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe);
+			if (pmodelparmp){
+				modelparmp = *pmodelparmp;
+			}
+		}
+
+
+		s_curboneno = srcbone->GetBoneNo();
+
+
+		CQuaternion rotq;
+		D3DXVECTOR3 traanim;
+
+		if (bvhbone){
+			D3DXMATRIX curbvhmat;
+			D3DXMATRIX bvhmat;
+			bvhmat = bvhmp.GetWorldMat();
+
+			D3DXMATRIX modelinit, invmodelinit;
+			modelinit = modelmp.GetWorldMat();
+			invmodelinit = modelmp.GetInvWorldMat();
+
+			if (srcbone == s_model->GetTopBone()){//モデル側の最初のボーンの処理時
+				s_firsthipmat = bvhmp.GetWorldMat();
+				s_firsthipmat._41 = 0.0f;
+				s_firsthipmat._42 = 0.0f;
+				s_firsthipmat._43 = 0.0f;
+				D3DXMatrixInverse(&s_invfirsthipmat, NULL, &s_firsthipmat);
+				s_invfirsthipmat._41 = 0.0f;
+				s_invfirsthipmat._42 = 0.0f;
+				s_invfirsthipmat._43 = 0.0f;
+			}
+
+
+			//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
+			//curbvhmat = bvhbone->GetInvFirstMat() * s_invfirsthipmat * invmodelinit * bvhmat;
+			curbvhmat = s_invfirsthipmat * bvhbone->GetInvFirstMat() * s_firsthipmat * invmodelinit * bvhmat;//初期姿勢の変換にbvhの全体回転s_firsthipmatを考慮する。
+
+			CMotionPoint curbvhrotmp;
+			curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
+			rotq = curbvhrotmp.GetQ();
+
+			if ((s_sethipstra == 0) && (srcbone == s_model->GetTopBone())){
+				CMotionPoint calctramp;
+				calctramp.CalcQandTra(bvhmat, bvhbone, hrate);
+				traanim = calctramp.GetFirstFrameTra();
+				//traanim = calctramp.GetTra() * hrate;
+				s_sethipstra = 1;
+			}
+			else{
+				traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			}
+
+		}
+		else{
+			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		}
 
-	}
-	else{
-		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	}
-
-	if (bvhbone){
-		if (!bvhbone->GetParent()){
-			s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
+		if (bvhbone){
+			if (!bvhbone->GetParent()){
+				s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
+			}
+			else{
+				s_model->FKRotate(1, bvhbone, 0, traanim, srcframe, s_curboneno, rotq);
+			}
 		}
 		else{
-			s_model->FKRotate(1, bvhbone, 0, traanim, srcframe, s_curboneno, rotq);
+			s_model->FKRotate(0, befbvhbone, 0, traanim, srcframe, s_curboneno, rotq);
 		}
 	}
-	else{
-		s_model->FKRotate(0, befbvhbone, 0, traanim, srcframe, s_curboneno, rotq);
-	}
-
 
 	return 0;
 }
@@ -6990,6 +7001,12 @@ int OnDelModel( int delmenuindex )
 
 	CModel* delmodel = s_modelindex[ delmenuindex ].modelptr;
 	if( delmodel ){
+		map<CModel*, int>::iterator itrbonecnt;
+		itrbonecnt = g_bonecntmap.find(delmodel);
+		if (itrbonecnt != g_bonecntmap.end()){
+			g_bonecntmap.erase(itrbonecnt);
+		}
+
 		FbxScene* pscene = delmodel->GetScene();
 		if (pscene){
 			pscene->Destroy();
@@ -7038,6 +7055,8 @@ int OnDelAllModel()
 		return 0;
 	}
 
+	g_bonecntmap.clear();
+
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* delmodel = itrmodel->modelptr;
@@ -7066,9 +7085,6 @@ int OnDelAllModel()
 	OnModelMenu( -1, 0 );
 
 	CreateModelPanel();
-
-
-
 
 	return 0;
 }
@@ -8278,7 +8294,10 @@ int SetConvBone( int cbno )
 			//未設定
 			s_bvhbone_bone[cbno] = 0;
 			CBone* modelbone = s_modelbone_bone[cbno];
-			s_convbonemap[modelbone] = 0;
+			_ASSERT(modelbone);
+			if (modelbone){
+				s_convbonemap[modelbone] = 0;
+			}
 			s_bvhbone[cbno]->setName(L"未設定");
 		}
 		else{
@@ -8288,7 +8307,10 @@ int SetConvBone( int cbno )
 			if (!curbone){
 				s_bvhbone_bone[cbno] = 0;
 				CBone* modelbone = s_modelbone_bone[cbno];
-				s_convbonemap[modelbone] = 0;
+				_ASSERT(modelbone);
+				if (modelbone){
+					s_convbonemap[modelbone] = 0;
+				}
 				s_bvhbone[cbno]->setName(L"未設定");
 
 				swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
@@ -8300,7 +8322,9 @@ int SetConvBone( int cbno )
 				s_bvhbone_bone[cbno] = curbone;
 
 				CBone* modelbone = s_modelbone_bone[cbno];
-				s_convbonemap[modelbone] = curbone;
+				if (modelbone){
+					s_convbonemap[modelbone] = curbone;
+				}
 			}
 		}
 	}
@@ -8360,7 +8384,9 @@ int ConvBoneConvert()
 		if (modelbone){
 			s_model->SetMotionFrame(frame);
 			CBone* befbvhbone = s_convbone_bvh->GetTopBone();
-			ConvBoneConvertReq(modelbone, frame, befbvhbone, hrate);
+			if (befbvhbone){
+				ConvBoneConvertReq(modelbone, frame, befbvhbone, hrate);
+			}
 		}
 	}
 
@@ -10014,7 +10040,7 @@ int AddEditRangeHistory()
 	}
 
 	if (s_editrange.IsSameStartAndEnd()){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 

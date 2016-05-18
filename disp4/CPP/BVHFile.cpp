@@ -904,12 +904,13 @@ int CBVHFile::LoadFrames()
 	for( beno = 0; beno < m_benum; beno++ ){
 		beptr = *( m_bearray + beno );
 		_ASSERT( beptr );
-
-		ret = beptr->CreateMotionObjs( m_frames );
-		if( ret ){
-			DbgOut( L"bvhfile : LoadFrames : be CreateMotionObjs error !!!\n" );
-			_ASSERT( 0 );
-			return 1;
+		if (beptr){
+			ret = beptr->CreateMotionObjs(m_frames);
+			if (ret){
+				DbgOut(L"bvhfile : LoadFrames : be CreateMotionObjs error !!!\n");
+				_ASSERT(0);
+				return 1;
+			}
 		}
 	}
 
@@ -963,34 +964,34 @@ int CBVHFile::LoadMotionParams()
 		for( beno = 0; beno < m_benum; beno++ ){
 			beptr = *( m_bearray + beno );
 			_ASSERT( beptr );
+			if (beptr){
+				int chanelnum;
+				chanelnum = beptr->GetChanelNum();
 
-			int chanelnum;
-			chanelnum = beptr->GetChanelNum();
+				int paramno;
+				for (paramno = 0; paramno < chanelnum; paramno++){
+					if (!valuehead){
+						DbgOut(L"bvhfile : LoadMotionParams : no more params error !!!\n");
+						_ASSERT(0);
+						return 1;
+					}
 
-			int paramno;
-			for( paramno = 0; paramno < chanelnum; paramno++ ){
-				if( !valuehead ){
-					DbgOut( L"bvhfile : LoadMotionParams : no more params error !!!\n" );
-					_ASSERT( 0 );
-					return 1;
+					valuehead = GetFloat(valuehead, &(m_tempparam[paramno]), &setflag);
+					if (!setflag){
+						DbgOut(L"bvhfile : LoadMotionParams : GetFloat error !!!\n");
+						_ASSERT(0);
+						return 1;
+					}
 				}
 
-				valuehead = GetFloat( valuehead, &(m_tempparam[paramno]), &setflag );
-				if( !setflag ){
-					DbgOut( L"bvhfile : LoadMotionParams : GetFloat error !!!\n" );
-					_ASSERT( 0 );
+
+				ret = beptr->SetMotionParams(frameno, m_tempparam);
+				if (ret){
+					DbgOut(L"bvhfile : LoadMotionParams : be SetMotionParams error !!!\n");
+					_ASSERT(0);
 					return 1;
 				}
 			}
-
-
-			ret = beptr->SetMotionParams( frameno, m_tempparam );
-			if( ret ){
-				DbgOut( L"bvhfile : LoadMotionParams : be SetMotionParams error !!!\n" );
-				_ASSERT( 0 );
-				return 1;
-			}
-
 		}
 
 	}

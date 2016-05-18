@@ -104,6 +104,11 @@ int CalcShadowToPlane( D3DXVECTOR3 srcpos, D3DXVECTOR3 planedir, D3DXVECTOR3 pla
 	//–Ê‚ÆƒŒƒC‚Æ‚ÌŒð“_(shadow)‚ð‹‚ß‚éB
 	//s-->start, e-->end, b-->point on plane, n-->plane dir
 
+	if (!shadowptr){
+		_ASSERT(0);
+		return 1;
+	}
+
 	D3DXVECTOR3 sb, se, n;
 	sb = planepos - srcpos;
 	se = (srcpos + 100.0f * planedir) - srcpos;

@@ -244,6 +244,10 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 	CBone* curbone = m_model->GetBoneByName(bonename1);
 	if (!curbone){
 		curbone = m_model->GetBoneByName(bonename2);
+		if (!curbone){
+			_ASSERT(0);
+			return 0;
+		}
 	}
 
 
@@ -293,6 +297,10 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 	CBone* chilbone = m_model->GetBoneByName(childname1);
 	if (!chilbone){
 		chilbone = m_model->GetBoneByName(childname2);
+		if (!chilbone){
+			_ASSERT(0);
+			return 0;
+		}
 	}
 
 

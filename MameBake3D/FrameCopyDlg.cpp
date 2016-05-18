@@ -158,12 +158,13 @@ LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHan
 	for( itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++ ){
 		int chkboneno = itrbone->first;
 		CBone* chkbone = itrbone->second;
+		if (chkbone){
+			CBone* valbone = m_validelemmap[chkboneno];
+			CBone* invalbone = m_invalidelemmap[chkboneno];
 
-		CBone* valbone = m_validelemmap[chkboneno];
-		CBone* invalbone = m_invalidelemmap[chkboneno];
-
-		if( valbone && !invalbone ){
-			m_cpvec.push_back( chkbone );
+			if (valbone && !invalbone){
+				m_cpvec.push_back(chkbone);
+			}
 		}
 	}
 

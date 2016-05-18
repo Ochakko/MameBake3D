@@ -766,6 +766,10 @@ int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial
 		face_count = m_face;
 		faceptr = m_facebuf;
 	}
+	_ASSERT(faceptr);
+	if (!faceptr){
+		return 1;
+	}
 
 	if( m_vertex2 > 0 ){
 		vert_count = m_vertex2;
@@ -774,12 +778,20 @@ int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial
 		vert_count = m_vertex;
 		pointptr = m_pointbuf;
 	}
+	_ASSERT(pointptr);
+	if (!pointptr){
+		return 1;
+	}
 
 	if( m_colorbuf2 ){
 		colorptr = m_colorbuf2;
 	}else{
 		colorptr = m_colorbuf;
 	}
+	//_ASSERT(colorptr);
+	//if (!colorptr){
+	//	return 1;
+	//}
 
 	m_pm3 = new CPolyMesh3();
 	if( !m_pm3 ){
@@ -1831,12 +1843,21 @@ int CMQOObject::CollisionLocal_Ray( D3DXVECTOR3 startlocal, D3DXVECTOR3 dirlocal
 		face_count = m_face;
 		faceptr = m_facebuf;
 	}
+	_ASSERT(faceptr);
+	if (!faceptr){
+		return 0;
+	}
+
 	if( m_vertex2 > 0 ){
 		vert_count = m_vertex2;
 		pointptr = m_pointbuf2;
 	}else{
 		vert_count = m_vertex;
 		pointptr = m_pointbuf;
+	}
+	_ASSERT(pointptr);
+	if (!pointptr){
+		return 0;
 	}
 
 	int allowrev = 0;
