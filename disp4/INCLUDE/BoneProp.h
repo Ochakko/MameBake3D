@@ -17,5 +17,7 @@ int vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec );
 
 int GetRound( float srcval );
 int IsInitRot(D3DXMATRIX srcmat);
+int IsSameMat(D3DXMATRIX srcmat1, D3DXMATRIX srcmat2);
+int IsSameEul(D3DXVECTOR3 srceul1, D3DXVECTOR3 srceul2);
 
 #endif

@@ -2565,7 +2565,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	}
 
 
-	/*
+	
 	//Check Same Pose : WorldMat From Euler
 	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
 		if (s_model && (s_curboneno >= 0)){
@@ -2579,7 +2579,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					int paraxsiflag = 1;
 					int isfirstbone = 0;
 					cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, befeul, isfirstbone);
-
 					int localeulflag = 1;
 					curbone->SetWorldMatFromEul(localeulflag, cureul, curmi->motid, curmi->curframe);
 					::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
@@ -2587,7 +2586,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			}
 		}
 	}
-	*/
+	
 
 	SetCamera6Angle();
 
@@ -3715,9 +3714,9 @@ void RenderText( double fTime )
 				int paraxsiflag = 1;
 				int isfirstbone = 0;
 				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, befeul, isfirstbone);
-
+				curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
 				txtHelper.DrawFormattedTextLine(L"selected bone : %s", wbonename);
-				txtHelper.DrawFormattedTextLine(L"selected bone eul : (%.3f, %.3f, %.3f)",cureul.x, cureul.y, cureul.z);
+				txtHelper.DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
 			}
 		}
 	}

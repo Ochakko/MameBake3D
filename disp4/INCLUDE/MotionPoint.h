@@ -41,8 +41,6 @@ public:
 	double GetFrame(){ return m_frame; };
 	void SetFrame( double srcframe ){ m_frame = srcframe; };
 
-	D3DXVECTOR3 GetEul(){ return m_eul; };
-	void SetEul( D3DXVECTOR3 srceul ){ m_eul = srceul; };
 
 	D3DXVECTOR3 GetTra(){ return m_tra; };
 	void SetTra( D3DXVECTOR3 srctra ){ m_tra = srctra; };
@@ -79,6 +77,11 @@ public:
 	CMotionPoint* GetNext(){ return m_next; };
 	void SetNext( CMotionPoint* srcnext ){ m_next = srcnext; };
 
+	D3DXVECTOR3 GetLocalEul()
+	{
+		return m_localeul;
+	};
+	void SetLocalEul(D3DXVECTOR3 neweul);
 
 private:
 	int DestroyObjs();
@@ -86,11 +89,12 @@ private:
 private:
 	int m_setbtflag;
 	double m_frame;
-	D3DXVECTOR3 m_eul;
+	//D3DXVECTOR3 m_eul;
 	D3DXVECTOR3 m_tra;
 	D3DXVECTOR3 m_firstframetra;
 
 	CQuaternion m_q;
+	D3DXVECTOR3 m_localeul;
 
 	D3DXMATRIX m_worldmat;//ワールド変換と親の影響を受けたマトリックス
 	D3DXMATRIX m_btmat;

@@ -275,3 +275,39 @@ int IsInitRot(D3DXMATRIX srcmat)
 }
 
 
+int IsSameMat(D3DXMATRIX srcmat1, D3DXMATRIX srcmat2)
+{
+	int retval = 0;
+	D3DXMATRIX diffmat;
+	diffmat = srcmat1 - srcmat2;
+
+	float dmin = 0.000001f;
+
+	if ((fabs(diffmat._11) <= dmin) && (fabs(diffmat._12) <= dmin) && (fabs(diffmat._13) <= dmin) && (fabs(diffmat._14) <= dmin) &&
+		(fabs(diffmat._21) <= dmin) && (fabs(diffmat._22) <= dmin) && (fabs(diffmat._23) <= dmin) && (fabs(diffmat._24) <= dmin) &&
+		(fabs(diffmat._31) <= dmin) && (fabs(diffmat._32) <= dmin) && (fabs(diffmat._33) <= dmin) && (fabs(diffmat._34) <= dmin) && 
+		(fabs(diffmat._41) <= dmin) && (fabs(diffmat._42) <= dmin) && (fabs(diffmat._43) <= dmin) && (fabs(diffmat._44) <= dmin)
+		){
+		retval = 1;
+	}
+
+	return retval;
+}
+
+int IsSameEul(D3DXVECTOR3 srceul1, D3DXVECTOR3 srceul2)
+{
+	int retval = 0;
+
+	D3DXVECTOR3 diffeul;
+	diffeul = srceul1 - srceul2;
+
+	//float dmin = 0.000015f;
+	float dmin = 0.00010f;//(degree)
+
+	if ((fabs(diffeul.x) <= dmin) && (fabs(diffeul.y) <= dmin) && (fabs(diffeul.z) <= dmin)){
+		retval = 1;
+	}
+
+	return retval;
+}
+

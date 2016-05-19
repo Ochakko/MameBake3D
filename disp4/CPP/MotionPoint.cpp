@@ -2,6 +2,8 @@
 #include <MotionPoint.h>
 #include <Bone.h>
 
+#include <BoneProp.h>
+
 #include <math.h>
 #include <crtdbg.h>
 
@@ -19,10 +21,11 @@ int CMotionPoint::InitParams()
 {
 	m_setbtflag = 0;
 	m_frame = 0.0;
-	m_eul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 	m_tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	m_firstframetra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	m_localeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	D3DXMatrixIdentity( &m_worldmat );
 	D3DXMatrixIdentity( &m_btmat );
@@ -41,6 +44,14 @@ int CMotionPoint::DestroyObjs()
 	return 0;
 }
 
+void CMotionPoint::SetLocalEul(D3DXVECTOR3 neweul)
+{
+	if (IsSameEul(neweul, m_localeul) == 0){
+		m_localeul = neweul;
+	}
+};
+
+/*
 int CMotionPoint::GetEul( D3DXVECTOR3* dsteul )
 {
 	*dsteul = m_eul;
@@ -69,7 +80,7 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 
 	return 0;
 }
-
+*/
 
 //int CMotionPoint::MakeMat( CBone* srcbone )
 //{
@@ -193,10 +204,11 @@ int CMotionPoint::LeaveFromChain( int srcmotid, CBone* boneptr )
 int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 {
 	m_frame = srcmp->m_frame;
-	m_eul = srcmp->m_eul;
+	//m_eul = srcmp->m_eul;
 	m_tra = srcmp->m_tra;
 	m_q = srcmp->m_q;
 	m_worldmat = srcmp->m_worldmat;
+	m_localeul = srcmp->m_localeul;
 
 	return 0;
 }
@@ -239,10 +251,11 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 {
 	m_setbtflag = mp.m_setbtflag;
 	m_frame = mp.m_frame;
-	m_eul = mp.m_eul;
+	//m_eul = mp.m_eul;
 	m_tra = mp.m_tra;
 
 	m_q = mp.m_q;
+	m_localeul = mp.m_localeul;
 
 	m_worldmat = mp.m_worldmat;//ワールド変換と親の影響を受けたマトリックス
 	m_btmat = mp.m_btmat;

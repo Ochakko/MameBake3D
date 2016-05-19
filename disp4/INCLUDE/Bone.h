@@ -337,6 +337,7 @@ public:
 	D3DXVECTOR3 CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, D3DXVECTOR3 befeul, int isfirstbone);
 	D3DXMATRIX CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
 	int SetWorldMatFromEul(int localflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
+	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
 
 private:
 

@@ -1055,10 +1055,17 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 	
 	curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if( parmp ){
-		D3DXMATRIX invbefpar;
-		D3DXMatrixInverse( &invbefpar, NULL, &parmp->GetBefWorldMat() );
-		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat(); 
-		curmp->SetWorldMat( tmpmat );
+		D3DXMATRIX befparmat = parmp->GetBefWorldMat();
+		D3DXMATRIX newparmat = parmp->GetWorldMat();
+		if (IsSameMat(befparmat, newparmat) == 0){
+			D3DXMATRIX invbefpar;
+			D3DXMatrixInverse(&invbefpar, NULL, &befparmat);
+			D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * newparmat;
+			curmp->SetWorldMat(tmpmat);
+		}
+		else{
+			//parmat‚É•Ï‰»‚ª‚È‚¢‚Æ‚«‚Í•ÏX‚µ‚È‚¢B
+		}
 	}else{
 		//‰‰ñŒÄ‚Ño‚µ
 		D3DXMATRIX tramat;
@@ -1467,7 +1474,21 @@ D3DXVECTOR3 CBone::CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcfram
 
 	tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
 
-	return cureul;
+
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, srcframe);
+	if (curmp){
+		D3DXVECTOR3 oldeul = curmp->GetLocalEul();
+		if (IsSameEul(oldeul, cureul) == 0){
+			return cureul;
+		}
+		else{
+			return oldeul;
+		}
+	}
+	else{
+		return cureul;
+	}
 }
 
 D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe)
@@ -1560,14 +1581,6 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 
 int CBone::SetWorldMatFromEul(int localflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe)
 {
-	CQuaternion q, qx, qy, qz;
-	D3DXVECTOR3 axisX(1.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 axisY(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 axisZ(0.0f, 0.0f, 1.0f);
-	qx.SetAxisAndRot(axisX, srceul.x * (float)DEG2PAI);
-	qy.SetAxisAndRot(axisY, srceul.y * (float)DEG2PAI);
-	qz.SetAxisAndRot(axisZ, srceul.z * (float)DEG2PAI);
-
 	D3DXMATRIX axismat;
 	CQuaternion axisq;
 	int multworld = 0;//local!!!
@@ -1576,21 +1589,72 @@ int CBone::SetWorldMatFromEul(int localflag, D3DXVECTOR3 srceul, int srcmotid, d
 	CQuaternion invaxisq;
 	axisq.inv(&invaxisq);
 
-	CQuaternion newq;
-	newq = axisq * qy * qx * qz * invaxisq;
+	CQuaternion newrot;
+	newrot.SetRotation(&axisq, srceul);
 
-	CQuaternion oldq;
-	CQuaternion involdq;
+	D3DXMATRIX newlocalmat, newrotmat, befrotmat, aftrotmat;
+	newrotmat = newrot.MakeRotMatX();
+	D3DXMatrixIdentity(&befrotmat);
+	D3DXMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+	D3DXMatrixIdentity(&aftrotmat);
+	D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+	newlocalmat = befrotmat * newrotmat * aftrotmat;
+
 	CMotionPoint oldmp;
 	CalcLocalInfo(srcmotid, srcframe, &oldmp);//local!!!
-	oldq = oldmp.GetQ();
-	oldq.inv(&involdq);
+	D3DXVECTOR3 oldtravec;
+	oldtravec = oldmp.GetTra();
+	D3DXMATRIX oldtramat;
+	D3DXMatrixIdentity(&oldtramat);
+	D3DXMatrixTranslation(&oldtramat, oldtravec.x, oldtravec.y, oldtravec.z);
 
-	CQuaternion diffq;
-	diffq = newq * involdq;
+	D3DXMATRIX newmat;
+	if (m_parent){
+		CMotionPoint* parmp;
+		parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		if (parmp){
+			D3DXMATRIX parmat;
+			parmat = parmp->GetWorldMat();
+			newmat = newlocalmat * parmat;
+		}
+		else{
+			_ASSERT(0);
+			newmat = newlocalmat;
+		}
+	}
+	else{
+		newmat = newlocalmat;
+	}
 
-	CMotionPoint* firstcalcparmp = 0;
-	RotBoneQReq(firstcalcparmp, srcmotid, srcframe, diffq);
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, srcframe);
+	if (curmp){
+		curmp->SetBefWorldMat(curmp->GetWorldMat());
+		curmp->SetWorldMat(newmat);
+
+		if (m_child){
+			CQuaternion dummyq;
+			m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+		}
+	}
+	else{
+		_ASSERT(0);
+	}
 
 	return 0;
+}
+
+int CBone::SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul)
+{
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, srcframe);
+	if (!curmp){
+		_ASSERT(0);
+		return 1;
+	}
+
+	curmp->SetLocalEul(srceul);
+
+	return 0;
+
 }
