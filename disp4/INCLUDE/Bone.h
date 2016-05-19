@@ -334,6 +334,9 @@ public:
 
 	int CalcBoneDepth();
 
+	D3DXVECTOR3 CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, D3DXVECTOR3 befeul, int isfirstbone);
+	D3DXMATRIX CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
+	//CQuaternion CalcParAxisQ(int srcmotid, double srcframe);
 
 private:
 
@@ -459,7 +462,10 @@ public: //accesser
 	const char* GetEngBoneName(){ return (const char*)m_engbonename; };
 	void SetEngBoneName( char* srcname ){ strcpy_s( m_engbonename, 256, srcname ); };
 
-	D3DXVECTOR3 GetChildWorld(){ return m_childworld; };
+	D3DXVECTOR3 GetChildWorld(){ 
+		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
+		return m_childworld; 
+	};
 	void SetChildWorld( D3DXVECTOR3 srcvec ){ m_childworld = srcvec; };
 
 	D3DXVECTOR3 GetChildScreen(){ return m_childscreen; };
@@ -736,6 +742,7 @@ public: //accesser
 			return 0;
 		}
 	};
+
 
 private:
 	int m_type;

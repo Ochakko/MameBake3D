@@ -5476,6 +5476,10 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 
 int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt)
 {
+	if (!m_curmotinfo){
+		return 0;
+	}
+
 
 	int calcnum = 3;
 
@@ -5539,29 +5543,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			D3DXMATRIX selectmat;
 			D3DXMATRIX invselectmat;
-			if (m_oldaxis_atloading == 1){
-				//FBXの初期のボーンの向きがIdentityの場合
-				if (parbone){
-					if (curbone->GetBoneLeng() > 0.00001f){
-						selectmat = curbone->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
-					}
-					else{
-						selectmat = curbone->GetCurMp().GetWorldMat();
-					}
-				}
-				else{
-					selectmat = curbone->GetCurMp().GetWorldMat();
-				}
-			}
-			else{
-				//FBXにボーンの初期の軸の向きが記録されている場合
-				if (parbone){
-					selectmat = curbone->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
-				}
-				else{
-					selectmat = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
-				}
-			}
+			int multworld = 1;
+			selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
 			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
 
 
@@ -5725,6 +5708,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 {
+	if (!m_curmotinfo){
+		return 0;
+	}
+
 	CBone* firstbone = m_bonelist[ srcboneno ];
 	if( !firstbone ){
 		_ASSERT( 0 );
@@ -5742,29 +5729,8 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	D3DXMATRIX selectmat;
 	D3DXMATRIX invselectmat;
 	CBone* parbone = curbone->GetParent();
-	if (m_oldaxis_atloading == 1){
-		//FBXの初期のボーンの向きがIdentityの場合
-		if (parbone){
-			if (curbone->GetBoneLeng() > 0.00001f){
-				selectmat = curbone->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
-			}
-			else{
-				selectmat = curbone->GetCurMp().GetWorldMat();
-			}
-		}
-		else{
-			selectmat = curbone->GetCurMp().GetWorldMat();
-		}
-	}
-	else{
-		//FBXにボーンの初期の軸の向きが記録されている場合
-		if (parbone){
-			selectmat = curbone->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
-		}
-		else{
-			selectmat = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
-		}
-	}
+	int multworld = 1;
+	selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
 	D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
 	selectmat._41 = 0.0f;
 	selectmat._42 = 0.0f;

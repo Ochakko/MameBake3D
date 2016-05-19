@@ -3668,17 +3668,35 @@ void RenderText( double fTime )
     txtHelper.Begin();
     txtHelper.SetInsertionPos( 2, 0 );
     txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
-    txtHelper.DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
-    txtHelper.DrawTextLine( DXUTGetDeviceStats() );
+    //txtHelper.DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
+    //txtHelper.DrawTextLine( DXUTGetDeviceStats() );
 
     txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
     txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d", calcfps, fTime, g_previewFlag );
 
-	int tmpnum;
-	double tmpstart, tmpend, tmpapply;
-	s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
-    txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
-    txtHelper.DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
+	//int tmpnum;
+	//double tmpstart, tmpend, tmpapply;
+	//s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
+    //txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+    //txtHelper.DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
+
+	if (s_model && (s_curboneno >= 0)){
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone){
+			MOTINFO* curmi = s_model->GetCurMotInfo();
+			if (curmi){
+				const WCHAR* wbonename = curbone->GetWBoneName();
+				D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				int paraxsiflag = 1;
+				int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, befeul, isfirstbone);
+
+				txtHelper.DrawFormattedTextLine(L"selected bone : %s", wbonename);
+				txtHelper.DrawFormattedTextLine(L"selected bone eul : (%.3f, %.3f, %.3f)",cureul.x, cureul.y, cureul.z);
+			}
+		}
+	}
 
 /***
     // Draw help
@@ -7170,6 +7188,13 @@ int RenderSelectMark(int renderflag)
 	if( s_curboneno < 0 ){
 		return 0;
 	}
+	if (!s_model){
+		return 0;
+	}
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (!curmi){
+		return 0;
+	}
 
 	D3DXMATRIX mw;
 	D3DXMatrixIdentity( &mw );
@@ -7177,34 +7202,10 @@ int RenderSelectMark(int renderflag)
     D3DXMATRIX mv = s_matView;
 	D3DXMATRIX mvp = mv * mp;
 
-
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
-	if( curboneptr ){
-		CBone* parbone = curboneptr->GetParent();
-		if (s_model->GetOldAxisFlagAtLoading() == 1){
-			//FBXの初期のボーンの向きがIdentityの場合
-			if (parbone){
-				if (curboneptr->GetBoneLeng() > 0.00001f){
-					s_selm = curboneptr->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
-				}
-				else{
-					s_selm = curboneptr->GetCurMp().GetWorldMat();
-				}
-			}
-			else{
-				s_selm = curboneptr->GetCurMp().GetWorldMat();
-			}
-		}
-		else{
-			//FBXにボーンの初期の軸の向きが記録されている場合
-			if (parbone){
-				s_selm = curboneptr->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
-			}
-			else{
-				s_selm = curboneptr->GetNodeMat() * curboneptr->GetCurMp().GetWorldMat();
-			}
-		}
-
+	if (curboneptr){
+		int multworld = 1;
+		s_selm = curboneptr->CalcManipulatorMatrix(0, multworld, curmi->motid, curmi->curframe);
 
 		D3DXVECTOR3 orgpos = curboneptr->GetJointFPos();
 		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();

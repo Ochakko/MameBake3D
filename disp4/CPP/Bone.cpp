@@ -1450,3 +1450,111 @@ void CBone::SetJointFPos(D3DXVECTOR3 srcpos)
 void CBone::SetOldJointFPos(D3DXVECTOR3 srcpos){
 	m_oldjointfpos = srcpos;
 }
+
+
+D3DXVECTOR3 CBone::CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, D3DXVECTOR3 befeul, int isfirstbone)
+{
+
+	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	CMotionPoint tmpmp;
+	CalcLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
+	
+	D3DXMATRIX axismat;
+	D3DXQUATERNION axisqx;
+	CQuaternion axisq;
+	int multworld = 0;//local!!!
+	axismat = CalcManipulatorMatrix(0, multworld, srcmotid, srcframe);
+	axisq.RotationMatrix(axismat);
+
+	tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
+
+	return cureul;
+}
+
+D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe)
+{
+	D3DXMATRIX selm;
+	D3DXMatrixIdentity(&selm);
+
+	CMotionPoint* pcurmp = 0;
+	CMotionPoint* pparmp = 0;
+	pcurmp = GetMotionPoint(srcmotid, srcframe);
+	if (!pcurmp){
+		_ASSERT(0);
+		return selm;
+	}
+	if (m_parent){
+		pparmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		if (!pparmp){
+			_ASSERT(0);
+			return selm;
+		}
+	}
+
+	if (m_parmodel->GetOldAxisFlagAtLoading() == 1){
+		//FBXの初期のボーンの向きがIdentityの場合
+		if (m_parent){
+			if (GetBoneLeng() > 0.00001f){
+				if (multworld == 1){
+					selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+				}
+				else{
+					selm = GetFirstAxisMatZ();
+				}
+			}
+			else{
+				if (multworld == 1){
+					selm = pcurmp->GetWorldMat();
+				}
+				else{
+					D3DXMatrixIdentity(&selm);
+				}
+			}
+		}
+		else{
+			if (multworld == 1){
+				selm = pcurmp->GetWorldMat();
+			}
+			else{
+				D3DXMatrixIdentity(&selm);
+			}
+		}
+	}
+	else{
+		//FBXにボーンの初期の軸の向きが記録されている場合
+		if (m_parent){
+			if (multworld == 1){
+				selm = GetNodeMat() * pparmp->GetWorldMat();
+			}
+			else{
+				selm = GetNodeMat();
+			}
+		}
+		else{
+			if (multworld == 1){
+				selm = GetNodeMat() * pcurmp->GetWorldMat();
+			}
+			else{
+				selm = GetNodeMat();
+			}
+		}
+	}
+
+	if (settraflag == 0){
+		selm._41 = 0.0f;
+		selm._42 = 0.0f;
+		selm._43 = 0.0f;
+	}
+	else{
+		D3DXVECTOR3 aftjpos;
+		D3DXVec3TransformCoord(&aftjpos, &(GetJointFPos()), &(pcurmp->GetWorldMat()));
+
+		selm._41 = aftjpos.x;
+		selm._42 = aftjpos.y;
+		selm._43 = aftjpos.z;
+	}
+
+
+	return selm;
+}
+

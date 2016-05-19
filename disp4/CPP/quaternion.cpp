@@ -822,40 +822,13 @@ int CQuaternion::GetRound( float srcval )
 int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone )
 {
 
-/***
-	D3DXMATRIX rightmat;
-	rightmat = MakeRotMatX();
-
-	rightmat._31 *= -1;
-	rightmat._32 *= -1;
-	rightmat._34 *= -1;
-	rightmat._13 *= -1;
-	rightmat._23 *= -1;
-	rightmat._43 *= -1;
-
-	D3DXQUATERNION rqx;
-	D3DXQuaternionRotationMatrix( &rqx, &rightmat );
-
-
-	CQuaternion rq;
-	rq.x = rqx.x;
-	rq.y = rqx.y;
-	rq.z = rqx.z;
-	rq.w = rqx.w;
-
-//	qToEulerAxis( axisq, &rq, reteul );
-//	modifyEuler( reteul, &befeul );
-
-	D3DXVECTOR3 tmpeul( 0.0f, 0.0f, 0.0f );
-	rq.Q2Eul( 0, befeul, &tmpeul );
-	*reteul = tmpeul;
-***/
 	int noise[4] = { 0, 1, 0, -1 };
 	static int dbgcnt = 0;
 
 	D3DXVECTOR3 tmpeul( 0.0f, 0.0f, 0.0f );
 	if (IsInit() == 0){
-		Q2Eul(0, befeul, &tmpeul);
+		//Q2Eul(0, befeul, &tmpeul);
+		Q2Eul(axisq, befeul, &tmpeul);
 	}
 	else{
 		//FBX書き出しの際にアニメーションに「ある程度の大きさの変化」がないとキーが省略されてしまう。

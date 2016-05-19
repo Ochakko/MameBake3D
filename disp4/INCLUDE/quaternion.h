@@ -71,6 +71,19 @@ public:
 	int Q2Eul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );
 	int Q2EulBt( D3DXVECTOR3* reteul );
 
+	void RotationMatrix(D3DXMATRIX srcmat)
+	{
+		D3DXMATRIX tmpmat;
+		tmpmat = srcmat;
+		tmpmat._41 = 0.0f;
+		tmpmat._42 = 0.0f;
+		tmpmat._43 = 0.0f;
+
+		D3DXQUATERNION qx;
+		D3DXQuaternionRotationMatrix(&qx, &tmpmat);
+		SetParams(qx);
+	};
+
 private:
 
 	float vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 );
