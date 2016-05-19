@@ -1460,7 +1460,6 @@ D3DXVECTOR3 CBone::CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcfram
 	CalcLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
 	
 	D3DXMATRIX axismat;
-	D3DXQUATERNION axisqx;
 	CQuaternion axisq;
 	int multworld = 0;//local!!!
 	axismat = CalcManipulatorMatrix(0, multworld, srcmotid, srcframe);
@@ -1558,3 +1557,40 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 	return selm;
 }
 
+
+int CBone::SetWorldMatFromEul(int localflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe)
+{
+	CQuaternion q, qx, qy, qz;
+	D3DXVECTOR3 axisX(1.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 axisY(0.0f, 1.0f, 0.0f);
+	D3DXVECTOR3 axisZ(0.0f, 0.0f, 1.0f);
+	qx.SetAxisAndRot(axisX, srceul.x * (float)DEG2PAI);
+	qy.SetAxisAndRot(axisY, srceul.y * (float)DEG2PAI);
+	qz.SetAxisAndRot(axisZ, srceul.z * (float)DEG2PAI);
+
+	D3DXMATRIX axismat;
+	CQuaternion axisq;
+	int multworld = 0;//local!!!
+	axismat = CalcManipulatorMatrix(0, multworld, srcmotid, srcframe);
+	axisq.RotationMatrix(axismat);
+	CQuaternion invaxisq;
+	axisq.inv(&invaxisq);
+
+	CQuaternion newq;
+	newq = axisq * qy * qx * qz * invaxisq;
+
+	CQuaternion oldq;
+	CQuaternion involdq;
+	CMotionPoint oldmp;
+	CalcLocalInfo(srcmotid, srcframe, &oldmp);//local!!!
+	oldq = oldmp.GetQ();
+	oldq.inv(&involdq);
+
+	CQuaternion diffq;
+	diffq = newq * involdq;
+
+	CMotionPoint* firstcalcparmp = 0;
+	RotBoneQReq(firstcalcparmp, srcmotid, srcframe, diffq);
+
+	return 0;
+}

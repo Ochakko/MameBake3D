@@ -673,13 +673,9 @@ int CBVHElem::ConvertRotate2Q()
 			q[ROTAXIS_Z].SetRotation(&iniq, 0.0f, 0.0f, (rotate + fno)->z);
 
 			qall = q[ rotorder[0] ] * q[ rotorder[1] ] * q[ rotorder[2] ];
-//			q = qz * qx * qy;
-			//if( isroot ){
-				//q = q * y180q;
-			//	qall = y180q * qall;
-			//}
-
+			//qall = qy * qx * qz;//Z, X, YÇÃéûÅ@ÅF matrixÇ…íºÇ∑Ç∆matz * matx * maty
 			*( qptr + fno ) = qall;
+
 	///////////////
 			qall.transpose( transpose + fno );
 

@@ -2565,6 +2565,30 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	}
 
 
+	/*
+	//Check Same Pose : WorldMat From Euler
+	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
+		if (s_model && (s_curboneno >= 0)){
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone){
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi){
+					const WCHAR* wbonename = curbone->GetWBoneName();
+					D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+					D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+					int paraxsiflag = 1;
+					int isfirstbone = 0;
+					cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, befeul, isfirstbone);
+
+					int localeulflag = 1;
+					curbone->SetWorldMatFromEul(localeulflag, cureul, curmi->motid, curmi->curframe);
+					::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
+				}
+			}
+		}
+	}
+	*/
+
 	SetCamera6Angle();
 
 /***
