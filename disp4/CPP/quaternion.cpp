@@ -468,13 +468,7 @@ int CQuaternion::transpose( CQuaternion* dstq )
 	D3DXMATRIX tmatx;
 	D3DXMatrixTranspose( &tmatx, &matx );
 
-	D3DXQUATERNION qx;
-	D3DXQuaternionRotationMatrix( &qx, &tmatx );
-
-	dstq->x = qx.x;	
-	dstq->y = qx.y;	
-	dstq->z = qx.z;	
-	dstq->w = qx.w;	
+	dstq->RotationMatrix(tmatx);
 
 	return 0;
 }

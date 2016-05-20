@@ -413,7 +413,6 @@ int CBone::CalcAxisMatZ( D3DXVECTOR3* curpos, D3DXVECTOR3* chilpos )
 	D3DXVec3Cross( &vecy1, &vecz1, &vecx1 );
 	D3DXVec3Normalize( &vecy1, &vecy1 );
 
-	D3DXQUATERNION tmpxq;
 
 	D3DXMatrixIdentity( &m_laxismat );
 	m_laxismat._11 = vecx1.x;
@@ -428,13 +427,7 @@ int CBone::CalcAxisMatZ( D3DXVECTOR3* curpos, D3DXVECTOR3* chilpos )
 	m_laxismat._32 = vecz1.y;
 	m_laxismat._33 = vecz1.z;
 
-
-	D3DXQuaternionRotationMatrix( &tmpxq, &m_laxismat );
-
-	m_axisq.x = tmpxq.x;
-	m_axisq.y = tmpxq.y;
-	m_axisq.z = tmpxq.z;
-	m_axisq.w = tmpxq.w;
+	m_axisq.RotationMatrix(m_laxismat);
 
 	return 0;
 }

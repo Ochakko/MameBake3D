@@ -232,16 +232,8 @@ int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate )
 		m_firstframetra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	}
 
-	D3DXMATRIX tmpmat = srcmat;
-	tmpmat._41 = 0.0f;
-	tmpmat._42 = 0.0f;
-	tmpmat._43 = 0.0f;
-	D3DXQUATERNION rotqx;
-	D3DXQuaternionRotationMatrix( &rotqx, &tmpmat );
-	m_q.x = rotqx.x;
-	m_q.y = rotqx.y;
-	m_q.z = rotqx.z;
-	m_q.w = rotqx.w;
+
+	m_q.RotationMatrix(srcmat);
 
 	return 0;
 }
