@@ -3887,7 +3887,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				DispObjPanel();
 				return 0;
 				break;
-			case ID_DISPCONVBONE:
+			case ID_40048:
 				DispConvBoneWindow();
 				return 0;
 				break;
@@ -8063,7 +8063,7 @@ int CreateConvBoneWnd()
 	s_cbselbvh = new OWP_Button(L"bvh選択ボタン");
 	s_convboneconvert = new OWP_Button(L"コンバートボタン");
 	s_convbonemidashi[0] = new OWP_Label(L"骨入り形状側");
-	s_convbonemidashi[1] = new OWP_Label(L"BVH側");
+	s_convbonemidashi[1] = new OWP_Label(L"モーション側");
 
 	s_convboneSCWnd->addParts(*s_convbonesp);
 
