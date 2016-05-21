@@ -589,7 +589,7 @@ int g_applyrate = 50;
 #define IDC_IK_ROT				28
 #define IDC_IK_MV				29
 #define IDC_IK_LIGHT			30
-#define IDC_BT_RIGIT			31
+#define IDC_BT_RIGID			31
 #define IDC_BT_IMP				32
 #define IDC_BT_GP				33
 #define IDC_BT_DAMP				34
@@ -1119,7 +1119,7 @@ void InitApp()
 	pComboBox1->AddItem( L"IK回転", ULongToPtr( IDC_IK_ROT ) );
 	pComboBox1->AddItem( L"IK移動", ULongToPtr( IDC_IK_MV ) );
 	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
-	pComboBox1->AddItem( L"剛体設定", ULongToPtr( IDC_BT_RIGIT ) );
+	pComboBox1->AddItem( L"剛体設定", ULongToPtr( IDC_BT_RIGID ) );
 	pComboBox1->AddItem( L"インパルス", ULongToPtr( IDC_BT_IMP ) );
 	pComboBox1->AddItem( L"物理地面", ULongToPtr( IDC_BT_GP ) );
 	pComboBox1->AddItem( L"減衰率アニメ", ULongToPtr( IDC_BT_DAMP ) );
@@ -4610,8 +4610,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					}
 					break;
 					*/
-				case IDC_BT_RIGIT:
+				case IDC_BT_RIGID:
 					if( s_model && (s_curboneno >= 0) ){
+						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+
 						s_ikkind = 3;
 						s_rigidWnd->setVisible( 1 );
 						SetRigidLeng();
@@ -4620,6 +4622,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					break;
 				case IDC_BT_IMP:
 					if( s_model && (s_curboneno >= 0) ){
+						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+
 						s_ikkind = 4;
 						s_impWnd->setVisible( 1 );
 
@@ -4629,6 +4633,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					break;
 				case IDC_BT_GP:
 					if( s_bpWorld ){
+						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+
 						s_ikkind = 5;
 						s_gpWnd->setVisible( 1 );
 
@@ -4638,6 +4644,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					break;
 				case IDC_BT_DAMP:
 					if( s_bpWorld ){
+						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+
 						s_ikkind = 6;
 						s_dmpanimWnd->setVisible( 1 );
 
