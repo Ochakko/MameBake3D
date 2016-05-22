@@ -3030,7 +3030,16 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 						_ASSERT( 0 );
 						return 1;
 					}
-					curmp->SetWorldMat( xmat );
+					curmp->SetWorldMat(xmat);//anglelimit無し
+					curmp->SetBefWorldMat(xmat);
+
+					//オイラー角初期化
+					D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+					int paraxsiflag = 1;
+					int isfirstbone = 0;
+					cureul = curbone->CalcLocalEulZXY(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO, isfirstbone);
+					curbone->SetLocalEul(motid, (double)framecnt, cureul);
+
 
 					ktime += mFrameTime;
 					//ktime = mFrameTime * framecnt;
@@ -3670,7 +3679,16 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 				int exist3 = 0;
 				CMotionPoint* parmp = parbone->AddMotionPoint( motid, frame, &exist3 );
 				D3DXMATRIX tmpmat = parbone->GetInvFirstMat() * parmp->GetWorldMat();//!!!!!!!!!!!!!!!!!! endjointはこれでうまく行くが、floatと分岐が不動になる。
-				newmp->SetWorldMat( tmpmat );
+				newmp->SetBefWorldMat(tmpmat);
+				newmp->SetWorldMat(tmpmat);//anglelimit無し
+
+				//オイラー角初期化
+				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				int paraxsiflag = 1;
+				int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulZXY(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO, isfirstbone);
+				curbone->SetLocalEul(motid, (double)framecnt, cureul);
+
 			}
 		}
 	}

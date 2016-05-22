@@ -37,6 +37,22 @@ class CMQOMaterial;
 
 #define UNDOMAX 50
 
+enum tag_befeulkind
+{
+	BEFEUL_ZERO,
+	BEFEUL_BEFFRAME
+};
+
+
+enum tag_axiskind
+{
+	AXIS_X = 0,
+	AXIS_Y = 1,
+	AXIS_Z = 2,
+	AXIS_MAX = 3
+};
+
+
 //Bone : m_upkind
 enum {
 	UPVEC_NONE,
@@ -100,6 +116,16 @@ enum {
 	FUGOU_PLUS,
 	FUGOU_MINUS
 };
+
+typedef struct tag_anglelimmit
+{
+	int limitoff[AXIS_MAX];
+
+	//from -180 to 180 : the case lower -180 and upper 180, limit is off.
+	int lower[AXIS_MAX];
+	int upper[AXIS_MAX];
+}ANGLELIMIT;
+
 
 typedef struct tag_hinfo
 {

@@ -12,6 +12,7 @@
 #include <string>
 
 #include <orgwindow.h>
+#include <Coef.h>
 
 class CMQOFace;
 class CMotionPoint;
@@ -334,10 +335,13 @@ public:
 
 	int CalcBoneDepth();
 
-	D3DXVECTOR3 CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, D3DXVECTOR3 befeul, int isfirstbone);
+	D3DXVECTOR3 CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone);
 	D3DXMATRIX CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
-	int SetWorldMatFromEul(int localflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
+	int SetWorldMatFromEul(D3DXVECTOR3 srceul, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
+	void InitAngleLimit();
+	void SetWorldMat(int srcmotid, double srcframe, D3DXMATRIX srcmat);
+	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
 
 private:
 
@@ -433,7 +437,8 @@ private:
 	void SetStartMat2Req();
 	void CalcFirstAxisMatX();
 	void CalcFirstAxisMatZ();
-
+	void SetAngleLimitOff();
+	float LimitAngle(enum tag_axiskind srckind, float srcval);
 
 public: //accesser
 	int GetType(){ return m_type; };
@@ -744,6 +749,41 @@ public: //accesser
 		}
 	};
 
+	ANGLELIMIT GetAngleLimit()
+	{
+		SetAngleLimitOff();
+		return m_anglelimit;
+	};
+	void SetAngleLimit(ANGLELIMIT srclimit)
+	{
+		m_anglelimit = srclimit;
+
+		int axiskind;
+		for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
+			if (m_anglelimit.lower[axiskind] < -180){
+				m_anglelimit.lower[axiskind] = -180;
+			}
+			else if (m_anglelimit.lower[axiskind] > 180){
+				m_anglelimit.lower[axiskind] = 180;
+			}
+
+			if (m_anglelimit.upper[axiskind] < -180){
+				m_anglelimit.upper[axiskind] = -180;
+			}
+			else if (m_anglelimit.upper[axiskind] > 180){
+				m_anglelimit.upper[axiskind] = 180;
+			}
+
+			if (m_anglelimit.lower[axiskind] > m_anglelimit.upper[axiskind]){
+				_ASSERT(0);
+				//swap
+				int tmpval = m_anglelimit.lower[axiskind];
+				m_anglelimit.lower[axiskind] = m_anglelimit.upper[axiskind];
+				m_anglelimit.upper[axiskind] = tmpval;
+			}
+		}
+		SetAngleLimitOff();
+	};
 
 private:
 	int m_type;
@@ -792,6 +832,7 @@ private:
 
 	D3DXVECTOR3 m_firstframebonepos;
 
+	ANGLELIMIT m_anglelimit;
 
 	//CBone*は子供ジョイントのポインタ。子供の数だけエントリーがある。
 	std::map<CBone*, CRigidElem*> m_rigidelem;

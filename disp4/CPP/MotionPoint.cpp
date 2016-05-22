@@ -262,5 +262,3 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	return *this;
 }
 
-
-

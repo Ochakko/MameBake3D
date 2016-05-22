@@ -2565,7 +2565,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	}
 
 
-	
 	//Check Same Pose : WorldMat From Euler
 	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
 		if (s_model && (s_curboneno >= 0)){
@@ -2574,13 +2573,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
 					const WCHAR* wbonename = curbone->GetWBoneName();
-					D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 					D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 					int paraxsiflag = 1;
 					int isfirstbone = 0;
-					cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, befeul, isfirstbone);
-					int localeulflag = 1;
-					curbone->SetWorldMatFromEul(localeulflag, cureul, curmi->motid, curmi->curframe);
+					cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+					curbone->SetWorldMatFromEul(cureul, curmi->motid, curmi->curframe);
 					::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
 				}
 			}
@@ -3113,10 +3110,18 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					int curmotid = s_model->GetCurMotInfo()->motid;
 					newmp = srcbone->GetMotionPoint(curmotid, newframe);
 					if (newmp){
-						if (cptopflag == 1){
-							newmp->SetBefWorldMat(newmp->GetWorldMat());
-						}
-						newmp->SetWorldMat(srcmp.GetWorldMat());
+						//if (cptopflag == 1){
+						//	newmp->SetBefWorldMat(newmp->GetWorldMat());
+						//}
+						newmp->SetWorldMat(srcmp.GetWorldMat());//anglelimit無し
+
+						//オイラー角初期化
+						D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						int paraxsiflag = 1;
+						int isfirstbone = 0;
+						cureul = srcbone->CalcLocalEulZXY(paraxsiflag, curmotid, newframe, BEFEUL_ZERO, isfirstbone);
+						srcbone->SetLocalEul(curmotid, newframe, cureul);
+
 					}
 				}
 			}
@@ -3435,8 +3440,16 @@ int InsertSymMP( CBone* curbone, double curframe )
 			addmp.SetFrame(curframe);
 			addmp.SetWorldMat(symmat);
 
+
 			typedef pair <CBone*, CMotionPoint> Mp_Pair;
 			s_copymotmap.insert(Mp_Pair(curbone, addmp));
+
+			//オイラー角初期化
+			D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			int paraxsiflag = 1;
+			int isfirstbone = 0;
+			cureul = curbone->CalcLocalEulZXY(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO, isfirstbone);
+			curbone->SetLocalEul(s_model->GetCurMotInfo()->motid, curframe, cureul);
 		}
 	}
 	return 0;
@@ -3449,7 +3462,7 @@ int InitMP( CBone* curbone, double curframe )
 
 	if(pcurmp){
 
-		pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
+		//pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
 
 		D3DXMATRIX xmat = curbone->GetFirstMat();
 		pcurmp->SetWorldMat(xmat);
@@ -3468,6 +3481,14 @@ int InitMP( CBone* curbone, double curframe )
 		curbone->SetInitMat(xmat);
 		//_ASSERT( 0 );
 	}
+
+	//オイラー角初期化
+	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	int paraxsiflag = 1;
+	int isfirstbone = 0;
+	cureul = curbone->CalcLocalEulZXY(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO, isfirstbone);
+	curbone->SetLocalEul(s_model->GetCurMotInfo()->motid, curframe, cureul);
+
 
 	return 0;
 }
@@ -3709,12 +3730,11 @@ void RenderText( double fTime )
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi){
 				const WCHAR* wbonename = curbone->GetWBoneName();
-				D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag = 1;
 				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, befeul, isfirstbone);
-				curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
+				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+				//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
 				txtHelper.DrawFormattedTextLine(L"selected bone : %s", wbonename);
 				txtHelper.DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
 			}

@@ -56,7 +56,7 @@ public:
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
 
 	D3DXMATRIX GetWorldMat(){ return m_worldmat; };
-	void SetWorldMat( D3DXMATRIX srcmat ){ m_worldmat = srcmat; };
+	void SetWorldMat(D3DXMATRIX srcmat){ m_worldmat = srcmat; };
 	D3DXMATRIX GetInvWorldMat(){ D3DXMATRIX invmat; D3DXMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
 	D3DXMATRIX GetBtMat(){ return m_btmat; };
