@@ -4,6 +4,7 @@
 class CQuaternion;
 
 #include <d3dx9.h>
+#include <Coef.h>
 
 int qToEulerAxis( CQuaternion axisQ, CQuaternion* srcq, D3DXVECTOR3* Euler );
 int modifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB );// new, old
@@ -19,5 +20,8 @@ int GetRound( float srcval );
 int IsInitRot(D3DXMATRIX srcmat);
 int IsSameMat(D3DXMATRIX srcmat1, D3DXMATRIX srcmat2);
 int IsSameEul(D3DXVECTOR3 srceul1, D3DXVECTOR3 srceul2);
+
+void InitAngleLimit(ANGLELIMIT* dstal);
+void SetAngleLimitOff(ANGLELIMIT* dstal);
 
 #endif

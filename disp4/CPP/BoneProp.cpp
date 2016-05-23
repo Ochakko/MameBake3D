@@ -311,3 +311,31 @@ int IsSameEul(D3DXVECTOR3 srceul1, D3DXVECTOR3 srceul2)
 	return retval;
 }
 
+void SetAngleLimitOff(ANGLELIMIT* dstal)
+{
+	if (dstal){
+		int axiskind;
+		for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
+			if ((dstal->lower[axiskind] == -180) && (dstal->upper[axiskind] == 180)){
+				dstal->limitoff[axiskind] = 1;
+			}
+			else{
+				dstal->limitoff[axiskind] = 0;
+			}
+		}
+	}
+}
+
+void InitAngleLimit(ANGLELIMIT* dstal)
+{
+	if (dstal){
+		int axiskind;
+		for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
+			dstal->limitoff[axiskind] = 0;
+			dstal->lower[axiskind] = -180;
+			dstal->upper[axiskind] = 180;
+		}
+		SetAngleLimitOff(dstal);
+	}
+}
+

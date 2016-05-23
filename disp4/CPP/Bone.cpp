@@ -124,30 +124,9 @@ int CBone::InitParams()
 
 void CBone::InitAngleLimit()
 {
-	int axiskind;
-	for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
-		m_anglelimit.limitoff[axiskind] = 0;
-		m_anglelimit.lower[axiskind] = -180;
-		m_anglelimit.upper[axiskind] = 180;
-//		m_anglelimit.lower[axiskind] = 0;
-//		m_anglelimit.upper[axiskind] = 90;
-	}
-
-	SetAngleLimitOff();
+	::InitAngleLimit(&m_anglelimit);
 }
 
-void CBone::SetAngleLimitOff()
-{
-	int axiskind;
-	for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
-		if ((m_anglelimit.lower[axiskind] == -180) && (m_anglelimit.upper[axiskind] == 180)){
-			m_anglelimit.limitoff[axiskind] = 1;
-		}
-		else{
-			m_anglelimit.limitoff[axiskind] = 0;
-		}
-	}
-}
 
 
 int CBone::DestroyObjs()
@@ -1803,7 +1782,7 @@ int CBone::ChkMovableEul(D3DXVECTOR3 srceul)
 
 float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 {
-	SetAngleLimitOff();
+	SetAngleLimitOff(&m_anglelimit);
 	if (m_anglelimit.limitoff[srckind] == 1){
 		return srcval;
 	}
@@ -1826,4 +1805,41 @@ D3DXVECTOR3 CBone::LimitEul(D3DXVECTOR3 srceul)
 
 	return reteul;
 }
+
+ANGLELIMIT CBone::GetAngleLimit()
+{
+	::SetAngleLimitOff(&m_anglelimit);
+	return m_anglelimit;
+};
+void CBone::SetAngleLimit(ANGLELIMIT srclimit)
+{
+	m_anglelimit = srclimit;
+
+	int axiskind;
+	for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
+		if (m_anglelimit.lower[axiskind] < -180){
+			m_anglelimit.lower[axiskind] = -180;
+		}
+		else if (m_anglelimit.lower[axiskind] > 180){
+			m_anglelimit.lower[axiskind] = 180;
+		}
+
+		if (m_anglelimit.upper[axiskind] < -180){
+			m_anglelimit.upper[axiskind] = -180;
+		}
+		else if (m_anglelimit.upper[axiskind] > 180){
+			m_anglelimit.upper[axiskind] = 180;
+		}
+
+		if (m_anglelimit.lower[axiskind] > m_anglelimit.upper[axiskind]){
+			_ASSERT(0);
+			//swap
+			int tmpval = m_anglelimit.lower[axiskind];
+			m_anglelimit.lower[axiskind] = m_anglelimit.upper[axiskind];
+			m_anglelimit.upper[axiskind] = tmpval;
+		}
+	}
+	SetAngleLimitOff(&m_anglelimit);
+};
+
 

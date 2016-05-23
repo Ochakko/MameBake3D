@@ -339,10 +339,7 @@ public:
 	D3DXMATRIX CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
 	int SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
-	void InitAngleLimit();
 	int SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
-	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
-	int ChkMovableEul(D3DXVECTOR3 srceul);
 
 private:
 
@@ -438,8 +435,11 @@ private:
 	void SetStartMat2Req();
 	void CalcFirstAxisMatX();
 	void CalcFirstAxisMatZ();
-	void SetAngleLimitOff();
+
+	void InitAngleLimit();
+	int ChkMovableEul(D3DXVECTOR3 srceul);
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
+	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
 
 public: //accesser
 	int GetType(){ return m_type; };
@@ -750,41 +750,8 @@ public: //accesser
 		}
 	};
 
-	ANGLELIMIT GetAngleLimit()
-	{
-		SetAngleLimitOff();
-		return m_anglelimit;
-	};
-	void SetAngleLimit(ANGLELIMIT srclimit)
-	{
-		m_anglelimit = srclimit;
-
-		int axiskind;
-		for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
-			if (m_anglelimit.lower[axiskind] < -180){
-				m_anglelimit.lower[axiskind] = -180;
-			}
-			else if (m_anglelimit.lower[axiskind] > 180){
-				m_anglelimit.lower[axiskind] = 180;
-			}
-
-			if (m_anglelimit.upper[axiskind] < -180){
-				m_anglelimit.upper[axiskind] = -180;
-			}
-			else if (m_anglelimit.upper[axiskind] > 180){
-				m_anglelimit.upper[axiskind] = 180;
-			}
-
-			if (m_anglelimit.lower[axiskind] > m_anglelimit.upper[axiskind]){
-				_ASSERT(0);
-				//swap
-				int tmpval = m_anglelimit.lower[axiskind];
-				m_anglelimit.lower[axiskind] = m_anglelimit.upper[axiskind];
-				m_anglelimit.upper[axiskind] = tmpval;
-			}
-		}
-		SetAngleLimitOff();
-	};
+	ANGLELIMIT GetAngleLimit();
+	void SetAngleLimit(ANGLELIMIT srclimit);
 
 private:
 	int m_type;

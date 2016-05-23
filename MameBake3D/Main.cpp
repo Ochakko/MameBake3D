@@ -83,6 +83,8 @@ MameBake3Dはデフォルトで相対IKである。
 
 #include <Model.h>
 #include "RMenuMain.h"
+#include <BoneProp.h>
+
 
 typedef struct tag_spaxis
 {
@@ -115,6 +117,9 @@ static D3DXVECTOR4 s_ringgreenmat;
 static D3DXVECTOR4 s_matyellowmat;
 static D3DXVECTOR4 s_ringyellowmat;
 
+static bool s_dispanglelimit = false;
+static ANGLELIMIT s_anglelimit;
+static CBone* s_anglelimitbone = 0;
 
 static int s_forcenewaxis = 0;
 static int s_doneinit = 0;
@@ -641,7 +646,7 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
-
+LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 
@@ -685,6 +690,12 @@ static int DispToolWindow();
 static int DispObjPanel();
 static int DispModelPanel();
 static int DispConvBoneWindow();
+static int DispAngleLimitDlg();
+static int Bone2AngleLimit();
+static int AngleLimit2Bone();
+static int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit);
+static int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr);
+
 static int EraseKeyList();
 static int DestroyTimeLine( int dellist );
 static int AddTimeLine( int newmotid );
@@ -3909,6 +3920,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			case ID_40048:
 				DispConvBoneWindow();
+				return 0;
+				break;
+			case ID_40049:
+				DispAngleLimitDlg();
 				return 0;
 				break;
 			case ID_DISPMODELPANEL:
@@ -10185,3 +10200,177 @@ int RecalcBoneAxisZ()
 	return 0;
 }
 
+
+
+int DispAngleLimitDlg()
+{
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	if (s_model->GetOldAxisFlagAtLoading() == 1){
+		::MessageBox(s_mainwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		return 0;
+	}
+
+
+	Bone2AngleLimit();
+
+	int dlgret;
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG),
+		s_mainwnd, (DLGPROC)AngleLimitDlgProc);
+	if (dlgret != IDOK){
+		return 0;
+	}
+
+	AngleLimit2Bone();
+
+	return 0;
+}
+
+int Bone2AngleLimit()
+{
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	s_anglelimitbone = s_model->GetBoneByID(s_curboneno);
+	if (s_anglelimitbone){
+		s_anglelimit = s_anglelimitbone->GetAngleLimit();
+	}
+	else{
+		_ASSERT(0);
+		InitAngleLimit(&s_anglelimit);
+	}
+
+	return 0;
+}
+
+int AngleLimit2Bone()
+{
+	if (!s_model){
+		return 0;
+	}
+	if (!s_anglelimitbone){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	if (s_anglelimitbone){
+		s_anglelimitbone->SetAngleLimit(s_anglelimit);
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit)
+{
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETRANGEMIN, (WPARAM)TRUE, (LPARAM)-180);
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETRANGEMAX, (WPARAM)TRUE, (LPARAM)180);
+
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_CLEARTICS, 0, 0);
+	int tickcnt;
+	for (tickcnt = 0; tickcnt <= 36; tickcnt++){
+		int tickval = -180 + 10 * tickcnt;
+		SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETTIC, 1, (LPARAM)(LONG)tickval);
+	}
+
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)srclimit);
+
+	WCHAR strval[256] = {0L};
+	swprintf_s(strval, 256, L"%d", srclimit);
+	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
+
+	return 0;
+}
+
+int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr)
+{
+	int curval = (int)SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_GETPOS, 0, 0);
+	*dstptr = curval;
+	WCHAR strval[256];
+	swprintf_s(strval, 256, L"%d", curval);
+	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
+
+	return 0;
+}
+
+
+LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		{
+			if (s_anglelimitbone){
+				SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
+				
+				InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
+				InitAngleLimitSlider(hDlgWnd, IDC_SLXU, IDC_XUVAL, s_anglelimit.upper[AXIS_X]);
+
+				InitAngleLimitSlider(hDlgWnd, IDC_SLYL, IDC_YLVAL, s_anglelimit.lower[AXIS_Y]);
+				InitAngleLimitSlider(hDlgWnd, IDC_SLYU, IDC_YUVAL, s_anglelimit.upper[AXIS_Y]);
+
+				InitAngleLimitSlider(hDlgWnd, IDC_SLZL, IDC_ZLVAL, s_anglelimit.lower[AXIS_Z]);
+				InitAngleLimitSlider(hDlgWnd, IDC_SLZU, IDC_ZUVAL, s_anglelimit.upper[AXIS_Z]);
+			}
+			return FALSE;
+		}
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			return FALSE;
+		}
+	case WM_HSCROLL:
+		{
+			HWND ctrlwnd;
+			ctrlwnd = (HWND)lp;
+
+			if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLXL)){
+				GetAngleLimitSliderVal(hDlgWnd, IDC_SLXL, IDC_XLVAL, &(s_anglelimit.lower[AXIS_X]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLXU)){
+				GetAngleLimitSliderVal(hDlgWnd, IDC_SLXU, IDC_XUVAL, &(s_anglelimit.upper[AXIS_X]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLYL)){
+				GetAngleLimitSliderVal(hDlgWnd, IDC_SLYL, IDC_YLVAL, &(s_anglelimit.lower[AXIS_Y]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLYU)){
+				GetAngleLimitSliderVal(hDlgWnd, IDC_SLYU, IDC_YUVAL, &(s_anglelimit.upper[AXIS_Y]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLZL)){
+				GetAngleLimitSliderVal(hDlgWnd, IDC_SLZL, IDC_ZLVAL, &(s_anglelimit.lower[AXIS_Z]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLZU)){
+				GetAngleLimitSliderVal(hDlgWnd, IDC_SLZU, IDC_ZUVAL, &(s_anglelimit.upper[AXIS_Z]));
+			}
+		}
+		break;
+	default:
+		return FALSE;
+	}
+	return TRUE;
+
+}
