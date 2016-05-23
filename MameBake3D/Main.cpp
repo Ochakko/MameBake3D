@@ -2577,7 +2577,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					int paraxsiflag = 1;
 					int isfirstbone = 0;
 					cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-					curbone->SetWorldMatFromEul(cureul, curmi->motid, curmi->curframe);
+					curbone->SetWorldMatFromEul(1, cureul, curmi->motid, curmi->curframe);
 					::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
 				}
 			}

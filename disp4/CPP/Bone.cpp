@@ -129,6 +129,8 @@ void CBone::InitAngleLimit()
 		m_anglelimit.limitoff[axiskind] = 0;
 		m_anglelimit.lower[axiskind] = -180;
 		m_anglelimit.upper[axiskind] = 180;
+//		m_anglelimit.lower[axiskind] = 0;
+//		m_anglelimit.upper[axiskind] = 90;
 	}
 
 	SetAngleLimitOff();
@@ -1005,26 +1007,28 @@ CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double sr
 		return 0;
 	}
 
+	int moveflag = 0;
+
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if( parmp ){
 		D3DXMATRIX invbefpar;
 		D3DXMatrixInverse( &invbefpar, NULL, &parmp->GetBefWorldMat() );
 		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
-		SetWorldMat( srcmotid, srcframe, tmpmat );
+		moveflag = SetWorldMat( 0, srcmotid, srcframe, tmpmat );
 	}else{
 		D3DXMATRIX tramat;
 		D3DXMatrixTranslation( &tramat, srctra.x, srctra.y, srctra.z );
 		D3DXMATRIX tmpmat = curmp->GetWorldMat() * tramat;
-		SetWorldMat( srcmotid, srcframe, tmpmat );
+		moveflag = SetWorldMat( 0, srcmotid, srcframe, tmpmat );
 	}
 
 	curmp->SetAbsMat( curmp->GetWorldMat() );
 
-	if( m_child ){
-		m_child->AddBoneTraReq( curmp, srcmotid, srcframe, srctra );
+	if (m_child){
+		m_child->AddBoneTraReq(curmp, srcmotid, srcframe, srctra);
 	}
-	if( m_brother && parmp ){
-		m_brother->AddBoneTraReq( parmp, srcmotid, srcframe, srctra );
+	if (m_brother && parmp){
+		m_brother->AddBoneTraReq(parmp, srcmotid, srcframe, srctra);
 	}
 
 	return curmp;
@@ -1083,20 +1087,26 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 		return 0;
 	}
 	
+	int moveflag = 0;
+
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
-	if( parmp ){
+	if (parmp){
 		D3DXMATRIX befparmat = parmp->GetBefWorldMat();
 		D3DXMATRIX newparmat = parmp->GetWorldMat();
 		if (IsSameMat(befparmat, newparmat) == 0){
 			D3DXMATRIX invbefpar;
 			D3DXMatrixInverse(&invbefpar, NULL, &befparmat);
 			D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * newparmat;
-			SetWorldMat(srcmotid, srcframe, tmpmat);
+			//moveflag = SetWorldMat(0, srcmotid, srcframe, tmpmat);
+			curmp->SetBefWorldMat( curmp->GetWorldMat() );
+			curmp->SetWorldMat(tmpmat);
 		}
 		else{
 			//parmatに変化がないときは変更しない。
+			curmp->SetBefWorldMat( curmp->GetWorldMat() );
 		}
-	}else{
+	}
+	else{
 		//初回呼び出し
 		D3DXMATRIX tramat;
 		D3DXMatrixIdentity(&tramat);
@@ -1111,27 +1121,28 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
 			D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat * tramat;
-			SetWorldMat(srcmotid, srcframe, tmpmat);
+			moveflag = SetWorldMat(0, srcmotid, srcframe, tmpmat);
 			if (bvhbone){
 				bvhbone->SetTmpMat(tmpmat);
 			}
 		}
 		else{
 			D3DXMATRIX tmpmat = *psetmat;
-			SetWorldMat(srcmotid, srcframe, tmpmat);
+			moveflag = SetWorldMat(0, srcmotid, srcframe, tmpmat);
 			if (bvhbone){
 				bvhbone->SetTmpMat(tmpmat);
 			}
 		}
 	}
 
-	curmp->SetAbsMat( curmp->GetWorldMat() );
 
-	if( m_child ){
-		m_child->RotBoneQReq( curmp, srcmotid, srcframe, rotq );
+	curmp->SetAbsMat(curmp->GetWorldMat());
+
+	if (m_child){
+		m_child->RotBoneQReq(curmp, srcmotid, srcframe, rotq);
 	}
-	if( m_brother && parmp ){
-		m_brother->RotBoneQReq( parmp, srcmotid, srcframe, rotq );
+	if (m_brother && parmp){
+		m_brother->RotBoneQReq(parmp, srcmotid, srcframe, rotq);
 	}
 	return curmp;
 }
@@ -1148,9 +1159,9 @@ CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcfr
 	//curmp->SetBefWorldMat(curmp->GetWorldMat());
 	if (parmp){
 		//parentの行列をセット !!!!!!!!!
-		SetWorldMat(srcmotid, srcframe, parmp->GetWorldMat());
+		SetWorldMat(0, srcmotid, srcframe, parmp->GetWorldMat());
 	} else{
-		SetWorldMat(srcmotid, srcframe, srcmat);
+		SetWorldMat(0, srcmotid, srcframe, srcmat);
 	}
 
 	curmp->SetAbsMat(curmp->GetWorldMat());
@@ -1215,7 +1226,7 @@ CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, d
 		return 0;
 	}
 
-	SetWorldMat( srcmotid, srcframe, firstmp->GetAbsMat() );
+	SetWorldMat( 0, srcmotid, srcframe, firstmp->GetAbsMat() );
 
 	if( m_child ){
 		m_child->SetAbsMatReq( 1, srcmotid, srcframe, firstframe );
@@ -1556,15 +1567,25 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 		}
 	}
 
-	if (m_parmodel->GetOldAxisFlagAtLoading() == 1){
-		//FBXの初期のボーンの向きがIdentityの場合
-		if (m_parent){
-			if (GetBoneLeng() > 0.00001f){
-				if (multworld == 1){
-					selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+	if (m_child){
+		if (m_parmodel->GetOldAxisFlagAtLoading() == 1){
+			//FBXの初期のボーンの向きがIdentityの場合
+			if (m_parent){
+				if (GetBoneLeng() > 0.00001f){
+					if (multworld == 1){
+						selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+					}
+					else{
+						selm = GetFirstAxisMatZ();
+					}
 				}
 				else{
-					selm = GetFirstAxisMatZ();
+					if (multworld == 1){
+						selm = pcurmp->GetWorldMat();
+					}
+					else{
+						D3DXMatrixIdentity(&selm);
+					}
 				}
 			}
 			else{
@@ -1577,6 +1598,35 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 			}
 		}
 		else{
+			//FBXにボーンの初期の軸の向きが記録されている場合
+			if (m_parent){
+				if (multworld == 1){
+					selm = GetNodeMat() * pparmp->GetWorldMat();
+				}
+				else{
+					selm = GetNodeMat();
+				}
+			}
+			else{
+				if (multworld == 1){
+					selm = GetNodeMat() * pcurmp->GetWorldMat();
+				}
+				else{
+					selm = GetNodeMat();
+				}
+			}
+		}
+	}
+	else{
+		if (m_parent){
+			if (multworld == 1){
+				selm = pparmp->GetWorldMat();
+			}
+			else{
+				D3DXMatrixIdentity(&selm);
+			}
+		}
+		else{
 			if (multworld == 1){
 				selm = pcurmp->GetWorldMat();
 			}
@@ -1585,26 +1635,6 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 			}
 		}
 	}
-	else{
-		//FBXにボーンの初期の軸の向きが記録されている場合
-		if (m_parent){
-			if (multworld == 1){
-				selm = GetNodeMat() * pparmp->GetWorldMat();
-			}
-			else{
-				selm = GetNodeMat();
-			}
-		}
-		else{
-			if (multworld == 1){
-				selm = GetNodeMat() * pcurmp->GetWorldMat();
-			}
-			else{
-				selm = GetNodeMat();
-			}
-		}
-	}
-
 	if (settraflag == 0){
 		selm._41 = 0.0f;
 		selm._42 = 0.0f;
@@ -1624,7 +1654,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 }
 
 
-int CBone::SetWorldMatFromEul(D3DXVECTOR3 srceul, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 
@@ -1676,13 +1706,15 @@ int CBone::SetWorldMatFromEul(D3DXVECTOR3 srceul, int srcmotid, double srcframe)
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
 	if (curmp){
-		//curmp->SetBefWorldMat(curmp->GetWorldMat());
+		curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newmat);
 		curmp->SetLocalEul(srceul);
 
-		if (m_child){
-			CQuaternion dummyq;
-			m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+		if (setchildflag == 1){
+			if (m_child){
+				CQuaternion dummyq;
+				m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+			}
 		}
 	}
 	else{
@@ -1707,14 +1739,16 @@ int CBone::SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul)
 
 }
 
-void CBone::SetWorldMat(int srcmotid, double srcframe, D3DXMATRIX srcmat)
+int CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat)
 {
+	//if pose is change, return 1 else return 0
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
 	if (!curmp){
-		return;
+		return 0;
 	}
-	curmp->SetBefWorldMat(curmp->GetWorldMat());
+	D3DXMATRIX saveworldmat;
+	saveworldmat = curmp->GetWorldMat();
 
 	D3DXVECTOR3 oldeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
@@ -1722,21 +1756,50 @@ void CBone::SetWorldMat(int srcmotid, double srcframe, D3DXMATRIX srcmat)
 	oldeul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 
-	curmp->SetWorldMat(srcmat);
+	curmp->SetWorldMat(srcmat);//tmp time
 	D3DXVECTOR3 neweul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	neweul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
-	D3DXVECTOR3 limitedeul;
-	limitedeul = LimitEul(neweul);
+	curmp->SetWorldMat(saveworldmat);
 
-
-	if (IsSameEul(oldeul, limitedeul)){
-		curmp->SetWorldMat(curmp->GetBefWorldMat());//古い姿勢を復元
+	int ismovable = ChkMovableEul(neweul);
+	if (ismovable == 1){
+		if (IsSameEul(oldeul, neweul) == 0){
+			SetWorldMatFromEul(setchildflag, neweul, srcmotid, srcframe);
+			return 1;
+		}
+		else{
+			curmp->SetBefWorldMat(curmp->GetWorldMat());
+			return 0;
+		}
 	}
 	else{
-		SetWorldMatFromEul(limitedeul, srcmotid, srcframe);
+		curmp->SetBefWorldMat(curmp->GetWorldMat());
+		return 0;
 	}
 }
+
+int CBone::ChkMovableEul(D3DXVECTOR3 srceul)
+{
+	int dontmove = 0;
+	if ((m_anglelimit.lower[AXIS_X] >(int)srceul.x) || (m_anglelimit.upper[AXIS_X] < (int)srceul.x)){
+		dontmove = 1;
+	}
+	if ((m_anglelimit.lower[AXIS_Y] >(int)srceul.y) || (m_anglelimit.upper[AXIS_Y] < (int)srceul.y)){
+		dontmove = 1;
+	}
+	if ((m_anglelimit.lower[AXIS_Z] >(int)srceul.z) || (m_anglelimit.upper[AXIS_Z] < (int)srceul.z)){
+		dontmove = 1;
+	}
+
+	if (dontmove == 1){
+		return 0;
+	}
+	else{
+		return 1;//movable
+	}
+}
+
 
 float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 {
@@ -1745,10 +1808,10 @@ float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 		return srcval;
 	}
 	else{
-		float retval;
-		retval = min(srcval, (float)m_anglelimit.upper[srckind]);
-		retval = max(srcval, (float)m_anglelimit.lower[srckind]);
-		return retval;
+		int newval;
+		newval = min((int)srcval, m_anglelimit.upper[srckind]);
+		newval = max(newval, m_anglelimit.lower[srckind]);
+		return (float)newval;
 	}
 }
 

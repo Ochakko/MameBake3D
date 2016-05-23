@@ -337,11 +337,12 @@ public:
 
 	D3DXVECTOR3 CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone);
 	D3DXMATRIX CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
-	int SetWorldMatFromEul(D3DXVECTOR3 srceul, int srcmotid, double srcframe);
+	int SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
 	void InitAngleLimit();
-	void SetWorldMat(int srcmotid, double srcframe, D3DXMATRIX srcmat);
+	int SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
 	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
+	int ChkMovableEul(D3DXVECTOR3 srceul);
 
 private:
 
