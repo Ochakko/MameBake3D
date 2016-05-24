@@ -328,6 +328,8 @@ void SetAngleLimitOff(ANGLELIMIT* dstal)
 
 void InitAngleLimit(ANGLELIMIT* dstal)
 {
+	dstal->boneaxiskind = BONEAXIS_CURRENT;
+
 	if (dstal){
 		int axiskind;
 		for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){

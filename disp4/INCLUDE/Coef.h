@@ -117,9 +117,18 @@ enum {
 	FUGOU_MINUS
 };
 
+enum {
+	BONEAXIS_CURRENT = 0,
+	BONEAXIS_PARENT = 1,
+	BONEAXIS_GLOBAL = 2,
+	BONEAXIS_MAX
+};
+
 typedef struct tag_anglelimmit
 {
 	int limitoff[AXIS_MAX];
+
+	int boneaxiskind;//BONEAXIS_CURRENT or BONEAXIS_PARENT or BONEAXIS_GLOBAL
 
 	//from -180 to 180 : the case lower -180 and upper 180, limit is off.
 	int lower[AXIS_MAX];

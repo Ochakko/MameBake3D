@@ -1043,7 +1043,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
-	cureul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	cureul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 	SetLocalEul(srcmotid, srcframe, cureul);
 
 
@@ -1480,8 +1480,9 @@ void CBone::SetOldJointFPos(D3DXVECTOR3 srcpos){
 }
 
 
-D3DXVECTOR3 CBone::CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone)
+D3DXVECTOR3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone)
 {
+	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
 	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -1508,8 +1509,20 @@ D3DXVECTOR3 CBone::CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcfram
 	axismat = CalcManipulatorMatrix(0, multworld, srcmotid, srcframe);
 	axisq.RotationMatrix(axismat);
 
-	tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
-
+	if (axiskind == -1){
+		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
+			tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
+		}
+		else{
+			tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+		}
+	}
+	else if (axiskind != BONEAXIS_GLOBAL){
+		tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
+	}
+	else{
+		tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+	}
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
@@ -1732,7 +1745,12 @@ int CBone::SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid
 	axisq.inv(&invaxisq);
 
 	CQuaternion newrot;
-	newrot.SetRotation(&axisq, srceul);
+	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
+		newrot.SetRotation(&axisq, srceul);
+	}
+	else{
+		newrot.SetRotation(0, srceul);
+	}
 
 	D3DXMATRIX newlocalmat, newrotmat, befrotmat, aftrotmat;
 	newrotmat = newrot.MakeRotMatX();
@@ -1818,12 +1836,12 @@ int CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATR
 	D3DXVECTOR3 oldeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
-	oldeul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	oldeul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 
 	curmp->SetWorldMat(srcmat);//tmp time
 	D3DXVECTOR3 neweul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	neweul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	neweul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 	curmp->SetWorldMat(saveworldmat);
 

@@ -659,6 +659,8 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
+static int ChangeCurrentBone();
+
 static int InitCurMotion(int selectflag, double expandmotion);
 static CRigidElem* GetCurRe();
 static CRigidElem* GetCurRgdRe();
@@ -2924,24 +2926,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 				SetLTimelineMark( s_curboneno );
 
-				if( s_model ){
-					CDXUTComboBox* pComboBox;
-					pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-					CBone* pBone;
-					pBone = s_model->GetBoneByID( s_curboneno );
-					if( pBone ){
-						pComboBox->SetSelectedByData( ULongToPtr( s_curboneno ) );
-					}
-
-					SetRigidLeng();
-					SetImpWndParams();
-					SetDmpWndParams();
-					RigidElem2WndParam();
-					if (s_anglelimitdlg){
-						Bone2AngleLimit();
-						AngleLimit2Dlg(s_anglelimitdlg);
-					}
-				}
+				ChangeCurrentBone();
 
 			}else{
 				s_curboneno = -1;
@@ -4054,13 +4039,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						s_owpTimeline->setCurrentLine( s_boneno2lineno[ s_curboneno ], true );
 					}
 
-					CDXUTComboBox* pComboBox;
-					pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-					CBone* pBone;
-					pBone = s_model->GetBoneByID( s_curboneno );
-					if( pBone ){
-						pComboBox->SetSelectedByData( ULongToPtr( s_curboneno ) );
-					}
+					ChangeCurrentBone();
 
 					s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
 
@@ -10378,6 +10357,18 @@ int AngleLimit2Dlg(HWND hDlgWnd)
 	if (s_anglelimitbone){
 		SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
 
+
+		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_RESETCONTENT, 0, 0);
+		WCHAR strcombo[256];
+		wcscpy_s(strcombo, 256, L"CurrentBoneAxis");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
+		wcscpy_s(strcombo, 256, L"ParentBoneAxis");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
+		wcscpy_s(strcombo, 256, L"GlobalBoneAxis");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
+		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_SETCURSEL, s_anglelimit.boneaxiskind, 0);
+
+
 		InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
 		InitAngleLimitSlider(hDlgWnd, IDC_SLXU, IDC_XUVAL, s_anglelimit.upper[AXIS_X]);
 
@@ -10405,6 +10396,14 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
+		case IDC_BONEAXIS:
+			{
+				int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_GETCURSEL, 0, 0);
+				if ((combono >= BONEAXIS_CURRENT) && (combono <= BONEAXIS_GLOBAL)){
+					s_anglelimit.boneaxiskind = combono;
+				}
+			}
+			break;
 		case IDOK:
 			AngleLimit2Bone();
 			//EndDialog(hDlgWnd, IDOK);
@@ -10451,3 +10450,35 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	return TRUE;
 
 }
+
+int ChangeCurrentBone()
+{
+	if (s_model){
+		CDXUTComboBox* pComboBox;
+		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
+		CBone* pBone;
+		pBone = s_model->GetBoneByID(s_curboneno);
+		if (pBone){
+			pComboBox->SetSelectedByData(ULongToPtr(s_curboneno));
+		}
+
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone){
+			CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+			ANGLELIMIT anglelimit = curbone->GetAngleLimit();
+			pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
+			g_boneaxis = anglelimit.boneaxiskind;
+		}
+
+		SetRigidLeng();
+		SetImpWndParams();
+		SetDmpWndParams();
+		RigidElem2WndParam();
+		if (s_anglelimitdlg){
+			Bone2AngleLimit();
+			AngleLimit2Dlg(s_anglelimitdlg);
+		}
+	}
+	return 0;
+}
+

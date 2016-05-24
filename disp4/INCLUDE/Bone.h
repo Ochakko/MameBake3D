@@ -335,7 +335,7 @@ public:
 
 	int CalcBoneDepth();
 
-	D3DXVECTOR3 CalcLocalEulZXY(int paraxisflag, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone);
+	D3DXVECTOR3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	D3DXMATRIX CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
 	int SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);

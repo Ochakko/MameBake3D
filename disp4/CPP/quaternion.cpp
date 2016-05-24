@@ -821,7 +821,6 @@ int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3
 
 	D3DXVECTOR3 tmpeul( 0.0f, 0.0f, 0.0f );
 	if (IsInit() == 0){
-		//Q2Eul(0, befeul, &tmpeul);
 		Q2Eul(axisq, befeul, &tmpeul);
 	}
 	else{
