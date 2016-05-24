@@ -475,10 +475,9 @@ int g_slerpoffflag = 0;
 int g_absikflag = 0;
 int g_bonemarkflag = 1;
 int g_pseudolocalflag = 1;
-int g_currentaxisflag = 1;
+int g_boneaxis = 0;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
-CDXUTCheckBox* s_CurrentAxisCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
@@ -621,6 +620,8 @@ int g_applyrate = 50;
 #define IDC_APPLY_TO_THEEND			45
 #define IDC_BMARK					46
 #define IDC_PSEUDOLOCAL				47
+
+#define IDC_COMBO_BONEAXIS			48
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1067,7 +1068,6 @@ void InitApp()
     g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
 
 	g_SampleUI.AddCheckBox( IDC_BMARK, L"ボーンを表示する", 25, iY += addh, 480, 16, true, 0U, false, &s_BoneMarkCheckBox );
-	g_SampleUI.AddCheckBox(IDC_BMARK, L"カレント座標系", 25, iY += addh, 480, 16, true, 0U, false, &s_CurrentAxisCheckBox);
 
 /***
     swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
@@ -1087,6 +1087,23 @@ void InitApp()
 	iY += addh;
 ***/
 	//iY += 24;
+	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, 35, iY += addh, 125, ctrlh);
+	CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+	pComboBox3->RemoveAllItems();
+	WCHAR straxis[256];
+	ULONG boneaxisindex;
+	swprintf_s(straxis, 256, L"CurrentBoneAxis");
+	boneaxisindex = 0;
+	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+	swprintf_s(straxis, 256, L"ParentBoneAxis");
+	boneaxisindex = 1;
+	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+	swprintf_s(straxis, 256, L"GlobalBoneAxis");
+	boneaxisindex = 2;
+	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+	pComboBox3->SetSelectedByData(ULongToPtr(0L));
+
+
 	g_SampleUI.AddComboBox( IDC_COMBO_BONE, 35, iY += addh, 125, ctrlh );
 
 /***
@@ -2614,7 +2631,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
-	g_currentaxisflag = (int)s_CurrentAxisCheckBox->GetChecked();
 
 	s_time = fTime;
 /***
@@ -4629,6 +4645,12 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
             break;
 
+		case IDC_COMBO_BONEAXIS:
+			if (s_model){
+				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+				g_boneaxis = (int)PtrToUlong(pComboBox->GetSelectedData());
+			}
+			break;
 		case IDC_COMBO_BONE:
 			if( s_model ){
 				pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
