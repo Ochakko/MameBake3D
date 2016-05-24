@@ -96,7 +96,8 @@ int g_dbgloadcnt = 0;
 
 extern map<CModel*,int> g_bonecntmap;
 
-D3DXMATRIX s_selectmat;
+D3DXMATRIX s_selectmat;//for display manipulator
+D3DXMATRIX s_ikselectmat;//for ik, fk
 bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
@@ -474,8 +475,10 @@ int g_slerpoffflag = 0;
 int g_absikflag = 0;
 int g_bonemarkflag = 1;
 int g_pseudolocalflag = 1;
+int g_currentaxisflag = 1;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
+CDXUTCheckBox* s_CurrentAxisCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
@@ -1064,6 +1067,7 @@ void InitApp()
     g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
 
 	g_SampleUI.AddCheckBox( IDC_BMARK, L"ボーンを表示する", 25, iY += addh, 480, 16, true, 0U, false, &s_BoneMarkCheckBox );
+	g_SampleUI.AddCheckBox(IDC_BMARK, L"カレント座標系", 25, iY += addh, 480, 16, true, 0U, false, &s_CurrentAxisCheckBox);
 
 /***
     swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
@@ -2610,6 +2614,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	g_currentaxisflag = (int)s_CurrentAxisCheckBox->GetChecked();
 
 	s_time = fTime;
 /***
@@ -4091,12 +4096,19 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
 		}
 
-
-		if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
+		D3DXMatrixIdentity(&s_ikselectmat);
+		if( s_model && (s_curboneno >= 0) ){
 			CBone* curbone = s_model->GetBoneByID( s_curboneno );
 			_ASSERT( curbone );
 			if (curbone){
-				g_camtargetpos = curbone->GetChildWorld();
+				if (s_camtargetflag){
+					g_camtargetpos = curbone->GetChildWorld();
+				}
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi){
+					int multworld = 1;
+					s_ikselectmat = curbone->CalcManipulatorMatrix(0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
+				}
 			}
 		}
 		g_Camera.SetViewParams( &g_camEye, &g_camtargetpos );
@@ -4183,7 +4195,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				if (g_previewFlag == 0){
 					float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
 					if (s_ikkind == 0){
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					}
 					else{
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -4208,7 +4220,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				if (g_previewFlag == 0){
 					float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
 					if (s_ikkind == 0){
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt);
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					}
 					else{
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);

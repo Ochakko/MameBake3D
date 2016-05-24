@@ -33,6 +33,7 @@ using namespace OrgWinGUI;
 
 
 map<CModel*,int> g_bonecntmap;
+extern int g_currentaxisflag;
 
 
 CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
@@ -1552,7 +1553,12 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 			if (m_parent){
 				if (GetBoneLeng() > 0.00001f){
 					if (multworld == 1){
-						selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+						if (g_currentaxisflag == 0){
+							selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+						}
+						else{
+							selm = GetFirstAxisMatZ() * pcurmp->GetWorldMat();
+						}
 					}
 					else{
 						selm = GetFirstAxisMatZ();
@@ -1580,7 +1586,12 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 			//FBX‚Éƒ{[ƒ“‚Ì‰Šú‚ÌŽ²‚ÌŒü‚«‚ª‹L˜^‚³‚ê‚Ä‚¢‚éê‡
 			if (m_parent){
 				if (multworld == 1){
-					selm = GetNodeMat() * pparmp->GetWorldMat();
+					if (g_currentaxisflag == 0){
+						selm = GetNodeMat() * pparmp->GetWorldMat();
+					}
+					else{
+						selm = GetNodeMat() * pcurmp->GetWorldMat();
+					}
 				}
 				else{
 					selm = GetNodeMat();
@@ -1599,7 +1610,12 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int settraflag, int multworld, int srcmo
 	else{
 		if (m_parent){
 			if (multworld == 1){
-				selm = pparmp->GetWorldMat();
+				if (g_currentaxisflag == 0){
+					selm = pparmp->GetWorldMat();
+				}
+				else{
+					selm = pcurmp->GetWorldMat();
+				}
 			}
 			else{
 				D3DXMatrixIdentity(&selm);

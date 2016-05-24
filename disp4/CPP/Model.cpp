@@ -5492,7 +5492,7 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 	return 0;
 }
 
-int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt)
+int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat)
 {
 	if (!m_curmotinfo){
 		return 0;
@@ -5559,10 +5559,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				return 1;
 			}
 
-			D3DXMATRIX selectmat;
+			//D3DXMATRIX selectmat;
 			D3DXMATRIX invselectmat;
-			int multworld = 1;
-			selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
+			//int multworld = 1;
+			//selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
 			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
 
 
