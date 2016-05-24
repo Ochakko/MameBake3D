@@ -118,6 +118,7 @@ static D3DXVECTOR4 s_matyellowmat;
 static D3DXVECTOR4 s_ringyellowmat;
 
 static bool s_dispanglelimit = false;
+static HWND s_anglelimitdlg = 0;
 static ANGLELIMIT s_anglelimit;
 static CBone* s_anglelimitbone = 0;
 
@@ -693,8 +694,10 @@ static int DispConvBoneWindow();
 static int DispAngleLimitDlg();
 static int Bone2AngleLimit();
 static int AngleLimit2Bone();
+static int AngleLimit2Dlg(HWND hDlgWnd);
 static int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit);
 static int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr);
+
 
 static int EraseKeyList();
 static int DestroyTimeLine( int dellist );
@@ -2913,6 +2916,10 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 					SetImpWndParams();
 					SetDmpWndParams();
 					RigidElem2WndParam();
+					if (s_anglelimitdlg){
+						Bone2AngleLimit();
+						AngleLimit2Dlg(s_anglelimitdlg);
+					}
 				}
 
 			}else{
@@ -3792,6 +3799,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
                           void* pUserContext )
 {
 //	DbgOut( L"msgproc!!! %d, %d\r\n", uMsg, WM_LBUTTONDOWN );
+	//if(s_anglelimitdlg && IsDialogMessage(s_anglelimitdlg, &msg))
+
+
 
 	if( uMsg == WM_COMMAND ){
 
@@ -4825,6 +4835,11 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		s_editrangehistory = 0;
 	}
 	s_editrangehistoryno = 0;
+
+	if (s_anglelimitdlg){
+		DestroyWindow(s_anglelimitdlg);
+		s_anglelimitdlg = 0;
+	}
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
@@ -10204,6 +10219,10 @@ int RecalcBoneAxisZ()
 
 int DispAngleLimitDlg()
 {
+	if (s_anglelimitdlg){
+		//already opened
+		return 0;
+	}
 	if (!s_model){
 		return 0;
 	}
@@ -10222,14 +10241,23 @@ int DispAngleLimitDlg()
 
 	Bone2AngleLimit();
 
+	/*
 	int dlgret;
 	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG),
 		s_mainwnd, (DLGPROC)AngleLimitDlgProc);
 	if (dlgret != IDOK){
 		return 0;
 	}
+	*/
+	s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_mainwnd, (DLGPROC)AngleLimitDlgProc);
+	if (!s_anglelimitdlg){
+		_ASSERT(0);
+		return 1;
+	}
+	ShowWindow(s_anglelimitdlg, SW_SHOW);
+	UpdateWindow(s_anglelimitdlg);
 
-	AngleLimit2Bone();
+	//AngleLimit2Bone();
 
 	return 0;
 }
@@ -10311,38 +10339,53 @@ int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr)
 	return 0;
 }
 
+int AngleLimit2Dlg(HWND hDlgWnd)
+{
+	if (s_anglelimitbone){
+		SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
+
+		InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
+		InitAngleLimitSlider(hDlgWnd, IDC_SLXU, IDC_XUVAL, s_anglelimit.upper[AXIS_X]);
+
+		InitAngleLimitSlider(hDlgWnd, IDC_SLYL, IDC_YLVAL, s_anglelimit.lower[AXIS_Y]);
+		InitAngleLimitSlider(hDlgWnd, IDC_SLYU, IDC_YUVAL, s_anglelimit.upper[AXIS_Y]);
+
+		InitAngleLimitSlider(hDlgWnd, IDC_SLZL, IDC_ZLVAL, s_anglelimit.lower[AXIS_Z]);
+		InitAngleLimitSlider(hDlgWnd, IDC_SLZU, IDC_ZUVAL, s_anglelimit.upper[AXIS_Z]);
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+}
 
 LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
 		{
-			if (s_anglelimitbone){
-				SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
-				
-				InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
-				InitAngleLimitSlider(hDlgWnd, IDC_SLXU, IDC_XUVAL, s_anglelimit.upper[AXIS_X]);
-
-				InitAngleLimitSlider(hDlgWnd, IDC_SLYL, IDC_YLVAL, s_anglelimit.lower[AXIS_Y]);
-				InitAngleLimitSlider(hDlgWnd, IDC_SLYU, IDC_YUVAL, s_anglelimit.upper[AXIS_Y]);
-
-				InitAngleLimitSlider(hDlgWnd, IDC_SLZL, IDC_ZLVAL, s_anglelimit.lower[AXIS_Z]);
-				InitAngleLimitSlider(hDlgWnd, IDC_SLZU, IDC_ZUVAL, s_anglelimit.upper[AXIS_Z]);
-			}
+			AngleLimit2Dlg(hDlgWnd);
 			return FALSE;
 		}
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
-			EndDialog(hDlgWnd, IDOK);
+			AngleLimit2Bone();
+			//EndDialog(hDlgWnd, IDOK);
 			break;
 		case IDCANCEL:
-			EndDialog(hDlgWnd, IDCANCEL);
+			//EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
 			return FALSE;
 		}
+		break;
+	case WM_CLOSE:
+		DestroyWindow(s_anglelimitdlg);
+		s_anglelimitdlg = 0;
+		break;
 	case WM_HSCROLL:
 		{
 			HWND ctrlwnd;
