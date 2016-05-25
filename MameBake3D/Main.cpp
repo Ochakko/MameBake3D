@@ -10406,6 +10406,11 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			break;
 		case IDOK:
 			AngleLimit2Bone();
+			
+			//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
+			Bone2AngleLimit();
+			AngleLimit2Dlg(s_anglelimitdlg);
+
 			//EndDialog(hDlgWnd, IDOK);
 			break;
 		case IDCANCEL:
