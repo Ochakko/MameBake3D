@@ -123,6 +123,10 @@ static HWND s_anglelimitdlg = 0;
 static ANGLELIMIT s_anglelimit;
 static CBone* s_anglelimitbone = 0;
 
+static HWND s_rotaxisdlg = 0;
+static int s_rotaxiskind = AXIS_X;
+static float s_rotaxisdeg = 0.0f;
+
 static int s_forcenewaxis = 0;
 static int s_doneinit = 0;
 static int s_underselectingframe = 0;
@@ -635,8 +639,7 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_D
                                 void* pUserContext );
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext );
 void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext );
-LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing,
-                          void* pUserContext );
+LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing, void* pUserContext );
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext );
 void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext );
 void CALLBACK OnLostDevice( void* pUserContext );
@@ -652,7 +655,7 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
-
+LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 void InitApp();
@@ -698,12 +701,17 @@ static int DispObjPanel();
 static int DispModelPanel();
 static int DispConvBoneWindow();
 static int DispAngleLimitDlg();
+static int DispRotAxisDlg();
+
+//angle limit dlg
 static int Bone2AngleLimit();
 static int AngleLimit2Bone();
 static int AngleLimit2Dlg(HWND hDlgWnd);
 static int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit);
 static int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr);
 
+static int InitRotAxis();
+static int RotAxis(HWND hDlgWnd);
 
 static int EraseKeyList();
 static int DestroyTimeLine( int dellist );
@@ -781,7 +789,7 @@ static int OnTimeLineMButtonDown(bool ctrlshiftflag);
 static int OnTimeLineWheel();
 static int AddEditRangeHistory();
 static int RollBackEditRange(int prevrangeFlag, int nextrangeFlag);
-static int RecalcBoneAxisZ();
+static int RecalcBoneAxisZ(CBone* srcbone);
 
 
 int RegistKey()
@@ -3854,7 +3862,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			switch( menuid ){
 			case ID_40047:
 				ActivatePanel(0);
-				RecalcBoneAxisZ();
+				RecalcBoneAxisZ(0);
 				ActivatePanel(1);
 				return 0;
 				break;
@@ -3940,6 +3948,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			case ID_40049:
 				DispAngleLimitDlg();
+				return 0;
+				break;
+			case ID_40050:
+				DispRotAxisDlg();
 				return 0;
 				break;
 			case ID_DISPMODELPANEL:
@@ -6079,6 +6091,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 //	SetCapture( s_mainwnd );
 
 	s_curmotid = s_model->GetCurMotInfo()->motid;
+
+	s_model->CalcBoneEul(-1);
 
 	g_dbgloadcnt++;
 
@@ -10216,14 +10230,14 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 }
 
 
-int RecalcBoneAxisZ()
+int RecalcBoneAxisZ(CBone* srcbone)
 {
 	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)){
 		::MessageBox(s_mainwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
 		return 0;
 	}
 
-	s_model->RecalcBoneAxisZ();
+	s_model->RecalcBoneAxisZ(srcbone);
 
 	return 0;
 }
@@ -10421,8 +10435,10 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		}
 		break;
 	case WM_CLOSE:
-		DestroyWindow(s_anglelimitdlg);
-		s_anglelimitdlg = 0;
+		if (s_anglelimitdlg){
+			DestroyWindow(s_anglelimitdlg);
+			s_anglelimitdlg = 0;
+		}
 		break;
 	case WM_HSCROLL:
 		{
@@ -10455,6 +10471,217 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	return TRUE;
 
 }
+
+int DispRotAxisDlg()
+{
+	if (s_rotaxisdlg){
+		//already opened
+		return 0;
+	}
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	if (s_model->GetOldAxisFlagAtLoading() == 1){
+		::MessageBox(s_mainwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		return 0;
+	}
+
+
+	s_rotaxisdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ROTAXISDLG), s_mainwnd, (DLGPROC)RotAxisDlgProc);
+	if (!s_rotaxisdlg){
+		_ASSERT(0);
+		return 1;
+	}
+	ShowWindow(s_rotaxisdlg, SW_SHOW);
+	UpdateWindow(s_rotaxisdlg);
+
+	return 0;
+}
+
+int InitRotAxis()
+{
+	if (!s_rotaxisdlg){
+		return 0;
+	}
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (curbone){
+		RecalcBoneAxisZ(curbone);
+	}
+
+	return 0;
+}
+
+int RotAxis(HWND hDlgWnd)
+{
+	if (!s_rotaxisdlg){
+		return 0;
+	}
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (!curbone){
+		return 0;
+	}
+
+	UINT checkflagX;
+	checkflagX = IsDlgButtonChecked(hDlgWnd, IDC_RADIO1);
+	if (checkflagX == BST_CHECKED){
+		s_rotaxiskind = AXIS_X;
+	}
+	else{
+		UINT checkflagY;
+		checkflagY = IsDlgButtonChecked(hDlgWnd, IDC_RADIO2);
+		if (checkflagY == BST_CHECKED){
+			s_rotaxiskind = AXIS_Y;
+		}
+		else{
+			UINT checkflagZ;
+			checkflagZ = IsDlgButtonChecked(hDlgWnd, IDC_RADIO3);
+			if (checkflagZ == BST_CHECKED){
+				s_rotaxiskind = AXIS_Z;
+			}
+		}
+	}
+
+	WCHAR strdeg[256] = { 0L };
+	GetWindowText(GetDlgItem(hDlgWnd, IDC_EDITDEG), strdeg, 256);
+	unsigned int len = wcslen(strdeg);
+	//_ASSERT(0);
+	if ((len > 0) && (len < 256)){
+		s_rotaxisdeg = (float)_wtof(strdeg);
+		//_ASSERT(0);
+		if ((s_rotaxisdeg >= -360.0f) && (s_rotaxisdeg <= 360.0f)){
+			float rotrad = s_rotaxisdeg * (float)DEG2PAI;
+			D3DXVECTOR3 axis0;
+			CQuaternion rotq;
+			if (s_rotaxiskind == AXIS_X){
+				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+				rotq.SetAxisAndRot(axis0, rotrad);
+			}
+			else if (s_rotaxiskind == AXIS_Y){
+				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+				rotq.SetAxisAndRot(axis0, rotrad);
+			}
+			else if (s_rotaxiskind == AXIS_Z){
+				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+				rotq.SetAxisAndRot(axis0, rotrad);
+			}
+			else{
+				_ASSERT(0);
+				return 1;
+			}
+
+			D3DXMATRIX nodemat = curbone->GetNodeMat();
+			CQuaternion noderot;
+			noderot.RotationMatrix(nodemat);
+			CQuaternion invnoderot;
+			noderot.inv(&invnoderot);
+
+			D3DXMATRIX newnodemat;
+			newnodemat = nodemat * invnoderot.MakeRotMatX() * rotq.MakeRotMatX() * noderot.MakeRotMatX();
+
+			D3DXVECTOR3 bonepos = curbone->GetJointFPos();
+			newnodemat._41 = bonepos.x;
+			newnodemat._42 = bonepos.y;
+			newnodemat._43 = bonepos.z;
+
+			curbone->SetNodeMat(newnodemat);
+
+			MOTINFO* mi = s_model->GetCurMotInfo();
+			if (mi){
+				s_model->CalcBoneEul(mi->motid);
+			}
+			//WCHAR strmes[256];
+			//swprintf_s(strmes, 256, L"rotaxis %d, rotdeg %.3f", s_rotaxiskind, s_rotaxisdeg);
+			//::MessageBox(hDlgWnd, strmes, L"Check!!!", MB_OK);
+		}
+	}
+
+	return 0;
+}
+
+LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		CheckRadioButton(hDlgWnd, IDC_RADIO1, IDC_RADIO3, IDC_RADIO1);
+		s_rotaxiskind = AXIS_X;
+		WCHAR strdeg[256];
+		swprintf_s(strdeg, 256, L"0");
+		SetWindowText(GetDlgItem(hDlgWnd, IDC_EDITDEG), strdeg);
+
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone){
+			SetWindowText(GetDlgItem(hDlgWnd, IDC_BONENAME), curbone->GetWBoneName());
+		}
+		return FALSE;
+	}
+	break;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			//EndDialog(hDlgWnd, IDOK);
+			if (s_rotaxisdlg){
+				DestroyWindow(s_rotaxisdlg);
+				s_anglelimitdlg = 0;
+			}
+			break;
+		case IDCANCEL:
+			//EndDialog(hDlgWnd, IDCANCEL);
+			if (s_rotaxisdlg){
+				DestroyWindow(s_rotaxisdlg);
+				s_anglelimitdlg = 0;
+			}
+			break;
+		case IDC_INITROT:
+			InitRotAxis();
+			break;
+		case IDC_ROTATE:
+			RotAxis(hDlgWnd);
+			break;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_CLOSE:
+		if (s_rotaxisdlg){
+			DestroyWindow(s_rotaxisdlg);
+			s_anglelimitdlg = 0;
+		}
+		break;
+	default:
+		return FALSE;
+	}
+	return TRUE;
+
+}
+
 
 int ChangeCurrentBone()
 {

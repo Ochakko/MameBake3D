@@ -3033,14 +3033,6 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 					curmp->SetWorldMat(xmat);//anglelimit–³‚µ
 					curmp->SetBefWorldMat(xmat);
 
-					//ƒIƒCƒ‰[Šp‰Šú‰»
-					D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-					int paraxsiflag = 1;
-					int isfirstbone = 0;
-					cureul = curbone->CalcLocalEulZXY(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO, isfirstbone);
-					curbone->SetLocalEul(motid, (double)framecnt, cureul);
-
-
 					ktime += mFrameTime;
 					//ktime = mFrameTime * framecnt;
 				}
@@ -6207,26 +6199,80 @@ void CModel::SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo
 	}
 }
 
-int CModel::RecalcBoneAxisZ()
+int CModel::RecalcBoneAxisZ(CBone* srcbone)
 {
 	if (GetOldAxisFlagAtLoading() == 1){
 		_ASSERT(0);
 		return 1;
 	}
 
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
-		CBone* curbone = itrbone->second;
-		if (curbone){
-			D3DXMATRIX axismat;
-			axismat = curbone->GetFirstAxisMatZ();
-			axismat._41 = curbone->GetJointFPos().x;
-			axismat._42 = curbone->GetJointFPos().y;
-			axismat._43 = curbone->GetJointFPos().z;
-			curbone->SetNodeMat(axismat);
+	if (!srcbone){
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
+			CBone* curbone = itrbone->second;
+			if (curbone){
+				D3DXMATRIX axismat;
+				axismat = curbone->GetFirstAxisMatZ();
+				axismat._41 = curbone->GetJointFPos().x;
+				axismat._42 = curbone->GetJointFPos().y;
+				axismat._43 = curbone->GetJointFPos().z;
+				curbone->SetNodeMat(axismat);
+			}
 		}
+	}
+	else{
+		D3DXMATRIX axismat;
+		axismat = srcbone->GetFirstAxisMatZ();
+		axismat._41 = srcbone->GetJointFPos().x;
+		axismat._42 = srcbone->GetJointFPos().y;
+		axismat._43 = srcbone->GetJointFPos().z;
+		srcbone->SetNodeMat(axismat);
 	}
 
 	return 0;
 }
 
+void CModel::CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe)
+{
+	if (!curbone){
+		return;
+	}
+
+	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	int paraxsiflag = 1;
+	int isfirstbone = 0;
+	cureul = curbone->CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	curbone->SetLocalEul(srcmotid, srcframe, cureul);
+
+	if (curbone->GetChild()){
+		CalcBoneEulReq(curbone->GetChild(), srcmotid, srcframe);
+	}
+	if (curbone->GetBrother()){
+		CalcBoneEulReq(curbone->GetBrother(), srcmotid, srcframe);
+	}
+}
+
+
+int CModel::CalcBoneEul(int srcmotid)
+{
+	if (srcmotid >= 0){
+		MOTINFO* mi = GetMotInfo(srcmotid);
+		if (mi){
+			double frame;
+			for (frame = 0.0; frame < mi->frameleng; frame += 1.0){
+				CalcBoneEulReq(GetTopBone(), mi->motid, frame);
+			}
+		}
+	}
+	else{
+		map<int, MOTINFO*>::iterator itrmi;
+		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++){
+			int motid = itrmi->first;
+			if (motid >= 0){
+				CalcBoneEul(motid);
+			}
+		}
+	}
+
+	return 0;
+}

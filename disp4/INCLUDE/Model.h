@@ -541,8 +541,10 @@ public:
 
 	int SetFirstFrameBonePos(HINFO* phinfo);
 
-	int RecalcBoneAxisZ();
+	int RecalcBoneAxisZ(CBone* srcbone);
 
+	int CalcBoneEul(int srcmotid);
+	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
 
 	int DbgDump();
 
