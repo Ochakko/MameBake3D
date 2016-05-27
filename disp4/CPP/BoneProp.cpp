@@ -334,6 +334,7 @@ void InitAngleLimit(ANGLELIMIT* dstal)
 		int axiskind;
 		for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
 			dstal->limitoff[axiskind] = 0;
+			dstal->via180flag[axiskind] = 0;
 			dstal->lower[axiskind] = -180;
 			dstal->upper[axiskind] = 180;
 		}

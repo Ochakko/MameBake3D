@@ -34,7 +34,7 @@ using namespace OrgWinGUI;
 
 map<CModel*,int> g_bonecntmap;
 extern int g_boneaxis;
-
+extern bool g_limitdegflag;
 
 CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
 {
@@ -1864,18 +1864,32 @@ int CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATR
 
 int CBone::ChkMovableEul(D3DXVECTOR3 srceul)
 {
-	int dontmove = 0;
-	if ((m_anglelimit.lower[AXIS_X] >(int)srceul.x) || (m_anglelimit.upper[AXIS_X] < (int)srceul.x)){
-		dontmove = 1;
-	}
-	if ((m_anglelimit.lower[AXIS_Y] >(int)srceul.y) || (m_anglelimit.upper[AXIS_Y] < (int)srceul.y)){
-		dontmove = 1;
-	}
-	if ((m_anglelimit.lower[AXIS_Z] >(int)srceul.z) || (m_anglelimit.upper[AXIS_Z] < (int)srceul.z)){
-		dontmove = 1;
+	if (g_limitdegflag == false){
+		return 1;//movable
 	}
 
-	if (dontmove == 1){
+	int dontmove = 0;
+	int axiskind;
+
+	float chkval[3];
+	chkval[0] = srceul.x;
+	chkval[1] = srceul.y;
+	chkval[2] = srceul.z;
+
+	for (axiskind = AXIS_X; axiskind <= AXIS_Z; axiskind++){
+		if (m_anglelimit.via180flag[axiskind] == 0){
+			if ((m_anglelimit.lower[axiskind] > (int)chkval[axiskind]) || (m_anglelimit.upper[axiskind] < (int)chkval[axiskind])){
+				dontmove++;
+			}
+		}
+		else{
+			if ((m_anglelimit.lower[axiskind] <= (int)chkval[axiskind]) && (m_anglelimit.upper[axiskind] >= (int)chkval[axiskind])){
+				dontmove++;
+			}
+		}
+	}
+
+	if (dontmove != 0){
 		return 0;
 	}
 	else{

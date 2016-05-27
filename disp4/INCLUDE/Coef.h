@@ -127,6 +127,7 @@ enum {
 typedef struct tag_anglelimmit
 {
 	int limitoff[AXIS_MAX];
+	int via180flag[AXIS_MAX];// if flag is 1, movable range is "lower --> -180(+180) --> upper"
 
 	int boneaxiskind;//BONEAXIS_CURRENT or BONEAXIS_PARENT or BONEAXIS_GLOBAL
 

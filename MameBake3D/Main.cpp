@@ -102,6 +102,8 @@ bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
 
+bool g_limitdegflag = true;
+
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
 static CMQOMaterial* s_matblue = 0;// = s_select->GetMQOMaterialByName("matblue");
@@ -224,7 +226,7 @@ static int s_filterindex = 1;
 //static int s_mainheight = 620;
 static int s_mainwidth = 800;
 //static int s_mainheight = 820;
-static int s_mainheight = 570;
+static int s_mainheight = 600;
 
 static LPDIRECT3DDEVICE9 s_pdev = 0;
 
@@ -487,6 +489,7 @@ CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
+CDXUTCheckBox* s_LimitDegCheckBox = 0;
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -626,6 +629,8 @@ int g_applyrate = 50;
 #define IDC_PSEUDOLOCAL				47
 
 #define IDC_COMBO_BONEAXIS			48
+#define IDC_LIMITDEG				49
+
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1191,7 +1196,7 @@ void InitApp()
 	g_SampleUI.AddCheckBox( IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox );
 	g_SampleUI.AddCheckBox( IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox );
 	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-
+	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, 480, 16, true, 0U, false, &s_LimitDegCheckBox);
 
 
 //#define IDC_SL_IKFIRST		37
@@ -1202,7 +1207,7 @@ void InitApp()
 							L"TimeLine",				//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							WindowPos(50, 0),		//位置
-							WindowSize(400,570),	//サイズ
+							WindowSize(400,630),	//サイズ
 							//WindowSize(150,540),	//サイズ
 							L"TimeLine",				//タイトル
 							s_mainwnd,					//親ウィンドウハンドル
@@ -1255,7 +1260,7 @@ void InitApp()
 							L"EditRangeTimeLine",				//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos( 250, 825 ),		//位置
-							WindowPos( 200, 615 ),		//位置
+							WindowPos( 200, 645 ),		//位置
 							WindowSize( 1050, 120 ),	//サイズ
 							L"EditRangeTimeLine",				//タイトル
 							s_mainwnd,					//親ウィンドウハンドル
@@ -1900,7 +1905,7 @@ static OWP_Button* s_dampanimB = 0;
 							1,
 							_T("GPlaneWindow"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(400, 615),		//位置
+							WindowPos(400, 645),		//位置
 							WindowSize(400,320),		//サイズ
 							//WindowSize(200,110),		//サイズ
 							_T("物理地面ウィンドウ"),	//タイトル
@@ -2010,7 +2015,7 @@ static OWP_Button* s_dampanimB = 0;
 							_T("ToolWindow"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos(400, 580),		//位置
-							WindowPos(50, 615),		//位置
+							WindowPos(50, 645),		//位置
 							WindowSize(150,10),		//サイズ
 							_T("ツールウィンドウ"),	//タイトル
 							s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
@@ -2053,7 +2058,7 @@ static OWP_Button* s_dampanimB = 0;
 							_T("LayerTool"),		//ウィンドウクラス名
 							GetModuleHandle(NULL),	//インスタンスハンドル
 							//WindowPos(800, 500),		//位置
-							WindowPos(250, 615),		//位置
+							WindowPos(250, 645),		//位置
 							WindowSize(150,200),		//サイズ
 							_T("オブジェクトパネル"),	//タイトル
 							NULL,					//親ウィンドウハンドル
@@ -2641,6 +2646,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	g_limitdegflag = (int)s_LimitDegCheckBox->GetChecked();
 
 	s_time = fTime;
 /***
@@ -4864,6 +4870,10 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 	if (s_anglelimitdlg){
 		DestroyWindow(s_anglelimitdlg);
 		s_anglelimitdlg = 0;
+	}
+	if (s_rotaxisdlg){
+		DestroyWindow(s_rotaxisdlg);
+		s_rotaxisdlg = 0;
 	}
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -10419,6 +10429,25 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			}
 			break;
 		case IDOK:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKX) == BST_CHECKED){
+				s_anglelimit.via180flag[AXIS_X] = 1;
+			}
+			else{
+				s_anglelimit.via180flag[AXIS_X] = 0;
+			}
+			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKY) == BST_CHECKED){
+				s_anglelimit.via180flag[AXIS_Y] = 1;
+			}
+			else{
+				s_anglelimit.via180flag[AXIS_Y] = 0;
+			}
+			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKZ) == BST_CHECKED){
+				s_anglelimit.via180flag[AXIS_Z] = 1;
+			}
+			else{
+				s_anglelimit.via180flag[AXIS_Z] = 0;
+			}
+
 			AngleLimit2Bone();
 			
 			//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
