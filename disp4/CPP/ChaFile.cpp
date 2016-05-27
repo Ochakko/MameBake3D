@@ -22,7 +22,7 @@
 #include <RigidElemFile.h>
 
 #include <FBXFile.h>
-
+#include <lmtFile.h>
 
 #define DBGH
 #include <dbg.h>
@@ -234,6 +234,13 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	_ASSERT(!ret1);
 
 
+	if (curmodel->GetOldAxisFlagAtLoading() == 0){
+		WCHAR lmtname[MAX_PATH] = { 0L };
+		swprintf_s(lmtname, MAX_PATH, L"%s\\%s.lmt", charafolder, curmodel->GetFileName());
+		CLmtFile lmtfile;
+		lmtfile.WriteLmtFile(lmtname, curmodel);
+	}
+
 	/***
 	//mqoファイルの場合のテクスチャ
 	map<int, CMQOMaterial*>::iterator itrmat;
@@ -316,6 +323,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 		CImpFile impfile;
 		CallF( impfile.WriteImpFile( wimpname, curmodel ), return 1 );
 	}
+
 
 	CallF( Write2File( "  </Chara>\r\n" ), return 1 );
 

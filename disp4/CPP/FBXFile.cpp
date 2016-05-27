@@ -31,7 +31,6 @@
 #include <bvhelem.h>
 #include <bvhfile.h>
 
-
 #define KARCH_ENV_WIN
 
 
@@ -376,6 +375,7 @@ int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename )
 		s_fbxbone = 0;
 	}
 
+
 	return 0;
 }
 
@@ -386,8 +386,8 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 	sceneInfo->mTitle = "scene made by MameBake3D";
 	sceneInfo->mSubject = "skinmesh and animation";
 	sceneInfo->mAuthor = "OchakkoLab";
-	sceneInfo->mRevision = "rev. 2.1";
-	sceneInfo->mKeywords = "skinmesh animation";
+	sceneInfo->mRevision = "rev. 2.2";
+	sceneInfo->mKeywords = "BVH animation";
 	sceneInfo->mComment = "no particular comments required.";
 
     // we need to add the sceneInfo before calling AddThumbNailToScene because
@@ -461,7 +461,7 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
     sceneInfo->mTitle = "scene made by MameBake3D";
     sceneInfo->mSubject = "skinmesh and animation";
     sceneInfo->mAuthor = "OchakkoLab";
-    sceneInfo->mRevision = "rev. 2.1";
+    sceneInfo->mRevision = "rev. 2.2";
     sceneInfo->mKeywords = "skinmesh animation";
     sceneInfo->mComment = "no particular comments required.";
 

@@ -116,6 +116,7 @@
     <ClCompile Include="..\disp4\CPP\GetMaterial.cpp" />
     <ClCompile Include="..\disp4\CPP\ImpFile.cpp" />
     <ClCompile Include="..\disp4\CPP\InfBone.cpp" />
+    <ClCompile Include="..\disp4\CPP\lmtFile.cpp" />
     <ClCompile Include="..\disp4\CPP\Model.cpp" />
     <ClCompile Include="..\disp4\CPP\MotionPoint.cpp" />
     <ClCompile Include="..\disp4\CPP\mqoface.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="..\disp4\INCLUDE\GetMaterial.h" />
     <ClInclude Include="..\disp4\INCLUDE\ImpFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\InfBone.h" />
+    <ClInclude Include="..\disp4\INCLUDE\lmtFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\Model.h" />
     <ClInclude Include="..\disp4\INCLUDE\MotionPoint.h" />
     <ClInclude Include="..\disp4\INCLUDE\mqoface.h" />

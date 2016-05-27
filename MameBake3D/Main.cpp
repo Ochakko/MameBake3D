@@ -84,7 +84,7 @@ MameBake3Dはデフォルトで相対IKである。
 #include <Model.h>
 #include "RMenuMain.h"
 #include <BoneProp.h>
-
+#include <lmtFile.h>
 
 typedef struct tag_spaxis
 {
@@ -6102,6 +6102,14 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	s_curmotid = s_model->GetCurMotInfo()->motid;
 
+
+	if (s_model->GetOldAxisFlagAtLoading() == 0){
+		CLmtFile lmtfile;
+		WCHAR lmtname[MAX_PATH];
+		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
+		lmtfile.LoadLmtFile(lmtname, s_model);
+	}
+
 	s_model->CalcBoneEul(-1);
 
 	g_dbgloadcnt++;
@@ -9885,6 +9893,15 @@ int ExportFBXFile()
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
 	CallF( WriteFBXFile( s_psdk, s_model, fbxpath ), return 1 );
 
+
+	if (s_model->GetOldAxisFlagAtLoading() == 0){
+		WCHAR lmtname[MAX_PATH] = { 0L };
+		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", filename);
+		CLmtFile lmtfile;
+		lmtfile.WriteLmtFile(lmtname, s_model);
+	}
+
+
 	return 0;
 }
 
@@ -10401,6 +10418,25 @@ int AngleLimit2Dlg(HWND hDlgWnd)
 
 		InitAngleLimitSlider(hDlgWnd, IDC_SLZL, IDC_ZLVAL, s_anglelimit.lower[AXIS_Z]);
 		InitAngleLimitSlider(hDlgWnd, IDC_SLZU, IDC_ZUVAL, s_anglelimit.upper[AXIS_Z]);
+
+		if (s_anglelimit.via180flag[0] == 1){
+			CheckDlgButton(hDlgWnd, IDC_CHECKX, BST_CHECKED);
+		}
+		else{
+			CheckDlgButton(hDlgWnd, IDC_CHECKX, BST_UNCHECKED);
+		}
+		if (s_anglelimit.via180flag[1] == 1){
+			CheckDlgButton(hDlgWnd, IDC_CHECKY, BST_CHECKED);
+		}
+		else{
+			CheckDlgButton(hDlgWnd, IDC_CHECKY, BST_UNCHECKED);
+		}
+		if (s_anglelimit.via180flag[2] == 1){
+			CheckDlgButton(hDlgWnd, IDC_CHECKZ, BST_CHECKED);
+		}
+		else{
+			CheckDlgButton(hDlgWnd, IDC_CHECKZ, BST_UNCHECKED);
+		}
 	}
 	else{
 		_ASSERT(0);
@@ -10452,7 +10488,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			
 			//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
 			Bone2AngleLimit();
-			AngleLimit2Dlg(s_anglelimitdlg);
+			//AngleLimit2Dlg(s_anglelimitdlg);
+			ChangeCurrentBone();
 
 			//EndDialog(hDlgWnd, IDOK);
 			break;

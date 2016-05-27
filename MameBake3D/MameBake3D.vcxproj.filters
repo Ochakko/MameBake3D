@@ -183,6 +183,9 @@
     <ClCompile Include="RMenuMain.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\disp4\CPP\lmtFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColiIDDlg.h">
@@ -358,6 +361,9 @@
     </ClInclude>
     <ClInclude Include="RMenuMain.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\lmtFile.h">
+      <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
