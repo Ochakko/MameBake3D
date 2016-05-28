@@ -697,6 +697,14 @@ static int OnFrameUndo();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 
+static int OnRenderSetShaderConst();
+static int OnRenderModel();
+static int OnRenderGround();
+static int OnRenderBoneMark();
+static int OnRenderSelect();
+static int OnRenderSprite();
+static int OnRenderUtDialog(float fElapsedTime);
+
 static int ChangeCurrentBone();
 
 static int InitCurMotion(int selectflag, double expandmotion);
@@ -1551,8 +1559,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	s_matWorld._43 = 0.0f;
 	s_matW = s_matWorld;
 	s_matVP = s_matView * s_matProj;
-	g_pEffect->SetMatrix(g_hmVP, &s_matVP);
-	g_pEffect->SetMatrix(g_hmWorld, &s_matW);
 
 
 	double nextframe = 0.0;
@@ -1733,11 +1739,6 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
         return;
     }
 
-    D3DXVECTOR3 vLightDir[MAX_LIGHTS];
-    D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
-    D3DXMATRIXA16 mView;
-    D3DXMATRIXA16 mProj;
-
     // Clear the render target and the zbuffer 
     V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
                           0 ) );
@@ -1749,124 +1750,15 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
     // Render the scene
     if( SUCCEEDED( pd3dDevice->BeginScene() ) )
     {
-        // Get the projection & view matrix from the camera class
+		OnRenderSetShaderConst();
 
-		D3DXVECTOR3 lightdir0, nlightdir0;
-		lightdir0 = g_camEye;
-		D3DXVec3Normalize(&nlightdir0, &lightdir0);
-		g_LightControl[0].SetLightDirection(nlightdir0);
+		OnRenderModel();
+		OnRenderGround();
+		OnRenderBoneMark();
+		OnRenderSelect();
+		OnRenderUtDialog(fElapsedTime);
 
-
-        // Render the light arrow so the user can visually see the light dir
-        for( int i = 0; i < g_nNumActiveLights; i++ )
-        {
-			//if( s_displightarrow ){
-			//	D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
-			//	V( g_LightControl[i].OnRender9( arrowColor, &mView, &mProj, &g_camEye ) );
-			//}
-            vLightDir[i] = g_LightControl[i].GetLightDirection();
-            vLightDiffuse[i] = g_fLightScale * D3DXCOLOR( 1, 1, 1, 1 );
-        }
-		D3DXVECTOR3 lightamb( 1.0f, 1.0f, 1.0f );
-
-        V( g_pEffect->SetValue( g_hLightDir, vLightDir, sizeof( D3DXVECTOR3 ) * MAX_LIGHTS ) );
-        V( g_pEffect->SetValue( g_hLightDiffuse, vLightDiffuse, sizeof( D3DXVECTOR4 ) * MAX_LIGHTS ) );
-		D3DXVECTOR3 eyept = g_camEye;
-		V( g_pEffect->SetValue( g_hEyePos, &eyept, sizeof( D3DXVECTOR3 ) ) );
-
-		
-		vector<MODELELEM>::iterator itrmodel;
-		for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-			CModel* curmodel = itrmodel->modelptr;
-
-			if( curmodel && curmodel->GetModelDisp() ){
-				int lightflag = 1;
-				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-				int btflag;
-				if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
-					btflag = 0;
-				}else{
-					btflag = 1;
-				}
-				curmodel->OnRender( s_pdev, lightflag, diffusemult, btflag );
-			}
-		}
-		/*
-		if (s_model){
-			CModel* curmodel = s_model;
-
-			if (curmodel && curmodel->GetModelDisp()){
-				int lightflag = 1;
-				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-				int btflag;
-				if ((g_previewFlag != 4) && (g_previewFlag != 5)){
-					btflag = 0;
-				}
-				else{
-					btflag = 1;
-				}
-				curmodel->OnRender(s_pdev, lightflag, diffusemult, btflag);
-			}
-		}
-		*/
-		if( s_ground && s_dispground ){
-			g_pEffect->SetMatrix( g_hmWorld, &s_matWorld );
-
-			D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-			s_ground->OnRender( s_pdev, 0, diffusemult );
-		}
-		if( s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp ){
-			D3DXMATRIX gpmat = s_inimat;
-			gpmat._42 = s_bpWorld->m_gplaneh;
-			g_pEffect->SetMatrix( g_hmWorld, &gpmat );
-
-			D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-			s_gplane->OnRender( s_pdev, 0, diffusemult );
-		}
-
-		if (s_allmodelbone == 0){
-			if ((g_previewFlag != 4) && (g_previewFlag != 5)){
-				if (s_model && s_model->GetModelDisp()){
-					if (s_ikkind >= 3){
-						s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_coldisp, s_curboneno);
-					}
-					else{
-						s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
-					}
-				}
-			}
-		}
-		else{
-			vector<MODELELEM>::iterator itrme;
-			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++){
-				MODELELEM curme = *itrme;
-				CModel* curmodel = curme.modelptr;
-				curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno, 1);
-			}
-		}
-
-		if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
-			if( s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) ){
-				//SetSelectCol();
-				SetSelectState();
-				RenderSelectMark(1);
-			}
-		}
-
-		if( g_previewFlag != 3 ){
-			//g_HUD.OnRender( fElapsedTime );
-			g_SampleUI.OnRender( fElapsedTime );
-		}
-
-		int spacnt;
-		for( spacnt = 0; spacnt < 3; spacnt++ ){
-			s_spaxis[spacnt].sprite->OnRender();
-		}
-		int spccnt;
-		for (spccnt = 0; spccnt < 3; spccnt++){
-			s_spcam[spccnt].sprite->OnRender();
-		}
-
+		OnRenderSprite();
 		RenderText( fTime );
 
         V( pd3dDevice->EndScene() );
@@ -10746,4 +10638,147 @@ int CreateLayerWnd()
 
 	return 0;
 
+}
+
+int OnRenderModel()
+{
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+
+		if (curmodel && curmodel->GetModelDisp()){
+			int lightflag = 1;
+			D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+			int btflag;
+			if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+				btflag = 0;
+			}
+			else{
+				btflag = 1;
+			}
+			curmodel->OnRender(s_pdev, lightflag, diffusemult, btflag);
+		}
+	}
+
+	return 0;
+}
+
+int OnRenderGround()
+{
+	if (s_ground && s_dispground){
+		g_pEffect->SetMatrix(g_hmWorld, &s_matWorld);
+
+		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+		s_ground->OnRender(s_pdev, 0, diffusemult);
+	}
+	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
+		D3DXMATRIX gpmat = s_inimat;
+		gpmat._42 = s_bpWorld->m_gplaneh;
+		g_pEffect->SetMatrix(g_hmWorld, &gpmat);
+
+		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+		s_gplane->OnRender(s_pdev, 0, diffusemult);
+	}
+
+	return 0;
+}
+
+int OnRenderBoneMark()
+{
+	if (s_allmodelbone == 0){
+		if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+			if (s_model && s_model->GetModelDisp()){
+				if (s_ikkind >= 3){
+					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_coldisp, s_curboneno);
+				}
+				else{
+					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+				}
+			}
+		}
+	}
+	else{
+		vector<MODELELEM>::iterator itrme;
+		for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++){
+			MODELELEM curme = *itrme;
+			CModel* curmodel = curme.modelptr;
+			curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno, 1);
+		}
+	}
+
+	return 0;
+}
+int OnRenderSelect()
+{
+	if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp())){
+			//SetSelectCol();
+			SetSelectState();
+			RenderSelectMark(1);
+		}
+	}
+
+	return 0;
+}
+
+int OnRenderSprite()
+{
+	int spacnt;
+	for (spacnt = 0; spacnt < 3; spacnt++){
+		s_spaxis[spacnt].sprite->OnRender();
+	}
+	int spccnt;
+	for (spccnt = 0; spccnt < 3; spccnt++){
+		s_spcam[spccnt].sprite->OnRender();
+	}
+
+	return 0;
+}
+
+int OnRenderSetShaderConst()
+{
+	HRESULT hr;
+
+	D3DXVECTOR3 vLightDir[MAX_LIGHTS];
+	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
+
+	// Get the projection & view matrix from the camera class
+	g_pEffect->SetMatrix(g_hmVP, &s_matVP);
+	g_pEffect->SetMatrix(g_hmWorld, &s_matW);
+
+
+	D3DXVECTOR3 lightdir0, nlightdir0;
+	lightdir0 = g_camEye;
+	D3DXVec3Normalize(&nlightdir0, &lightdir0);
+	g_LightControl[0].SetLightDirection(nlightdir0);
+
+	// Render the light arrow so the user can visually see the light dir
+	for (int i = 0; i < g_nNumActiveLights; i++)
+	{
+		//if( s_displightarrow ){
+		//	D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
+		//	V( g_LightControl[i].OnRender9( arrowColor, &mView, &mProj, &g_camEye ) );
+		//}
+		vLightDir[i] = g_LightControl[i].GetLightDirection();
+		vLightDiffuse[i] = g_fLightScale * D3DXCOLOR(1, 1, 1, 1);
+	}
+	D3DXVECTOR3 lightamb(1.0f, 1.0f, 1.0f);
+
+	V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(D3DXVECTOR3) * MAX_LIGHTS));
+	V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(D3DXVECTOR4) * MAX_LIGHTS));
+	D3DXVECTOR3 eyept = g_camEye;
+	V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(D3DXVECTOR3)));
+
+
+	return 0;
+}
+
+int OnRenderUtDialog(float fElapsedTime)
+{
+	if (g_previewFlag != 3){
+		//g_HUD.OnRender( fElapsedTime );
+		g_SampleUI.OnRender(fElapsedTime);
+	}
+
+	return 0;
 }
