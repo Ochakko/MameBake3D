@@ -19,6 +19,7 @@ CMotionPoint::~CMotionPoint()
 
 int CMotionPoint::InitParams()
 {
+	m_undovalidflag = 0;
 	m_setbtflag = 0;
 	m_frame = 0.0;
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );

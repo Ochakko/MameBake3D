@@ -35,7 +35,7 @@ class CMQOMaterial;
 #define COLOF_CHARA_0	(CGP_GROUND | CGP_CHARA)
 #define COLOF_CHARA_1	CGP_CHARA
 
-#define UNDOMAX 50
+#define UNDOMAX 200
 
 enum tag_befeulkind
 {

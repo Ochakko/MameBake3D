@@ -83,10 +83,20 @@ public:
 	};
 	void SetLocalEul(D3DXVECTOR3 neweul);
 
+	int GetUndoValidFlag()
+	{
+		return m_undovalidflag;
+	};
+	void SetUndoValidFlag(int srcflag)
+	{
+		m_undovalidflag = srcflag;
+	};
+
 private:
 	int DestroyObjs();
 
 private:
+	int m_undovalidflag;
 	int m_setbtflag;
 	double m_frame;
 	//D3DXVECTOR3 m_eul;

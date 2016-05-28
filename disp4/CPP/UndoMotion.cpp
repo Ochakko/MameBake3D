@@ -121,26 +121,31 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 		_ASSERT( curbone );
 		if (curbone){
 			CMotionPoint* firstmp = curbone->GetMotionKey(curmotid);
+
+			CMotionPoint* undofirstmp = 0;
+			map<CBone*, CMotionPoint*>::iterator itrbone2mp;
+			itrbone2mp = m_bone2mp.find(curbone);
+			if (itrbone2mp != m_bone2mp.end()){
+				undofirstmp = itrbone2mp->second;
+			}
+
 			if (firstmp){
-				CMotionPoint* undofirstmp = 0;
-				map<CBone*, CMotionPoint*>::iterator itrbone2mp;
-				itrbone2mp = m_bone2mp.find(curbone);
-				if (itrbone2mp == m_bone2mp.end()){
+				if (!undofirstmp){
 					undofirstmp = new CMotionPoint();
 					if (!undofirstmp){
 						_ASSERT(0);
 						return 1;
 					}
+					m_bone2mp[curbone] = undofirstmp;
 				}
-				else{
-					undofirstmp = itrbone2mp->second;
-				}
+
 				undofirstmp->CopyMP(firstmp);
+				undofirstmp->SetUndoValidFlag(1);
 
 				CMotionPoint* curmp = firstmp->GetNext();
 				CMotionPoint* befundomp = undofirstmp;
+				CMotionPoint* newundomp = befundomp->GetNext();
 				while (curmp){
-					CMotionPoint* newundomp = befundomp->GetNext();
 					if (!newundomp){
 						newundomp = new CMotionPoint();
 						if (!newundomp){
@@ -151,10 +156,26 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 					}
 
 					newundomp->CopyMP(curmp);
+					newundomp->SetUndoValidFlag(1);
+
 					befundomp = newundomp;
 					curmp = curmp->GetNext();
+					newundomp = befundomp->GetNext();
 				}
-				m_bone2mp[curbone] = undofirstmp;
+
+				while (newundomp){
+					newundomp->SetUndoValidFlag(0);
+					newundomp = newundomp->GetNext();
+				}
+			}
+			else{
+				if (undofirstmp){
+					CMotionPoint* newundomp = undofirstmp;
+					while (newundomp){
+						newundomp->SetUndoValidFlag(0);
+						newundomp = newundomp->GetNext();
+					}
+				}
 			}
 
 			map<double, int> tmpmap;
@@ -247,7 +268,7 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 		if (curbone){
 			CMotionPoint* srcmp = m_bone2mp[curbone];
 			CMotionPoint* dstmp = curbone->GetMotionKey(setmotid);
-			while (srcmp && dstmp){
+			while (srcmp && (srcmp->GetUndoValidFlag() == 1) && dstmp){
 				dstmp->CopyMP(srcmp);
 
 				srcmp = srcmp->GetNext();
