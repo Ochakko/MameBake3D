@@ -210,6 +210,7 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	m_q = srcmp->m_q;
 	m_worldmat = srcmp->m_worldmat;
 	m_localeul = srcmp->m_localeul;
+	m_absmat = srcmp->m_absmat;
 
 	return 0;
 }

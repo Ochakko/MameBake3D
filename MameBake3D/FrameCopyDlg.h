@@ -85,6 +85,12 @@ private:
 
 	int CreateCombo();
 
+public:
+	std::vector<CBone*> GetCpVec()
+	{
+		return m_cpvec;
+	}
+
 private:
 	int m_samemodelflag;
 

@@ -192,6 +192,7 @@ static float s_erp = 0.0f;
 
 
 int g_previewFlag = 0;			// プレビューフラグ
+static int s_savepreviewFlag = 0;
 double s_btstartframe = 0.0;
 
 static FbxManager* s_psdk = 0;
@@ -242,6 +243,10 @@ static CMySprite* s_kinsprite = 0;
 
 static int s_fbxbunki = 1;
 
+
+static D3DXMATRIX s_matWorld;
+static D3DXMATRIX s_matProj;
+static D3DXMATRIXA16 s_matW, s_matVP;
 static D3DXMATRIX s_matView;
 static D3DXVECTOR3 s_camUpVec = D3DXVECTOR3( 0.00001f, 1.0f, 0.0f );
 static float s_camdist = g_initcamdist;
@@ -666,6 +671,21 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
+
+static int OnFrameKeyboard();
+static int OnFrameUtCheckBox();
+static int OnFramePreviewStop();
+static int OnFramePreviewNormal(double* pnextframe, double* pdifftime);
+static int OnFramePreviewBt(double* pnextframe, double* pdifftime);
+static int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime);
+static int OnFrameCloseFlag();
+static int OnFrameTimeLineWnd();
+static int OnFrameMouseButton();
+static int OnFrameToolWnd();
+static int OnFramePlayButton();
+static int OnFrameUndo();
+static int OnFrameUpdateGround();
+static int OnFrameInitBtWorld();
 
 static int ChangeCurrentBone();
 
@@ -2564,867 +2584,59 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
-	MoveMemory( g_savekeybuf, g_keybuf, sizeof( BYTE ) * 256 );
-
 	static double savetime = 0.0;
 	static int capcnt = 0;
 
-	GetKeyboardState( (PBYTE)g_keybuf );
-	if( g_keybuf[ VK_SHIFT ] & 0x80 ){
-		s_dispselect = false;
-	}else{
-		s_dispselect = true;
-	}
-	if( (g_keybuf[ VK_F9 ] & 0x80) && ((g_savekeybuf[ VK_F9 ] & 0x80) == 0) ){
-		StartBt( 0, 1 );
-	}
-	if( (g_keybuf[ VK_F10 ] & 0x80) && ((g_savekeybuf[ VK_F10 ] & 0x80) == 0) ){
-		StartBt( 1, 1 );
-	}
-	if( (g_keybuf[ ' ' ] & 0x80) && ((g_savekeybuf[ ' ' ] & 0x80) == 0) ){
-		if( s_bpWorld && s_model ){
-			StartBt( 2, 1 );
-		}
-	}
-	if( g_keybuf[ VK_CONTROL ] & 0x80 ){
-		g_controlkey = true;
-	}else{
-		g_controlkey = false;
-	}
-
-	if (g_ctrlshiftkeyformb == false){
-		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
-			if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)){
-				g_ctrlshiftkeyformb = true;
-				//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
-			}
-		}
-	}
-
-	if (g_keybuf['A'] & 0x80){
-		s_akeycnt++;
-	}
-	else{
-		s_akeycnt = 0;
-	}
-	if (g_keybuf['D'] & 0x80){
-		s_dkeycnt++;
-	}
-	else{
-		s_dkeycnt = 0;
-	}
-
-
-	//Check Same Pose : WorldMat From Euler
-	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
-		if (s_model && (s_curboneno >= 0)){
-			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			if (curbone){
-				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi){
-					const WCHAR* wbonename = curbone->GetWBoneName();
-					D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-					int paraxsiflag = 1;
-					int isfirstbone = 0;
-					cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-					curbone->SetWorldMatFromEul(1, cureul, curmi->motid, curmi->curframe);
-					::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
-				}
-			}
-		}
-	}
-	
-
+	OnFrameUtCheckBox();
 	SetCamera6Angle();
 
-/***
-	s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
-	s_displightarrow = s_LightCheckBox->GetChecked();
-***/
-	g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
-	g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
-	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
-	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
-	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
-	g_limitdegflag = (int)s_LimitDegCheckBox->GetChecked();
+	OnFrameKeyboard();
+	OnFrameTimeLineWnd();
+	OnFramePlayButton();
+	OnFrameMouseButton();
 
 	s_time = fTime;
-/***
-	CDXUTRadioButton* pRadioButton = g_SampleUI.GetRadioButton( IDC_IK_ROT );
-	int chkrot = pRadioButton->GetChecked();
-	if( chkrot ){
-		s_ikkind = 0;
-	}else{
-		CDXUTRadioButton* pRadioButtonMV = g_SampleUI.GetRadioButton( IDC_IK_MV );
-		int chkmv = pRadioButtonMV->GetChecked();
-		if( chkmv ){
-			s_ikkind = 1;
-		}else{
-			s_ikkind = 2;
-			s_displightarrow = true;
-			s_LightCheckBox->SetChecked( true );
-		}
-	}
-***/
-
-	D3DXMATRIX mWorld;
-    D3DXMATRIX mView;
-    D3DXMATRIX mProj;
-	mWorld = *g_Camera.GetWorldMatrix();
-	//D3DXMatrixIdentity( &mWorld );
-    mProj = *g_Camera.GetProjMatrix();
-    //mView = *g_Camera.GetViewMatrix();
-	mView = s_matView;
-
-	mWorld._41 = 0.0f;
-	mWorld._42 = 0.0f;
-	mWorld._43 = 0.0f;
-
-	D3DXMATRIXA16 mW, mVP;
-	//mW = g_mCenterWorld * mWorld;
-	mW = mWorld;
-	mVP = mView * mProj;
-
-    // Update the camera's position based on user input 
     g_Camera.FrameMove( fElapsedTime );
-
 	double difftime = fTime - savetime;
 
-	static int s_savepreviewFlag = 0;
+	s_matWorld = *g_Camera.GetWorldMatrix();
+	s_matProj = *g_Camera.GetProjMatrix();
+	s_matWorld._41 = 0.0f;
+	s_matWorld._42 = 0.0f;
+	s_matWorld._43 = 0.0f;
+	s_matW = s_matWorld;
+	s_matVP = s_matView * s_matProj;
+	g_pEffect->SetMatrix(g_hmVP, &s_matVP);
+	g_pEffect->SetMatrix(g_hmWorld, &s_matW);
+
 
 	double nextframe = 0.0;
 	if( g_previewFlag ){
-		if (s_savepreviewFlag == 0){
-			//preview start frame
-			s_previewrange = s_editrange;
-			double rangestart;
-			if (s_previewrange.IsSameStartAndEnd()){
-				rangestart = 0.0;
-			}
-			else{
-				rangestart = s_previewrange.GetStartFrame();
-			}
-			s_model->SetMotionFrame(rangestart);
-			difftime = 0.0;
-		}
-
 		if( s_model && s_model->GetCurMotInfo() ){
 			if( g_previewFlag <= 3 ){
-				int endflag = 0;
-				s_model->AdvanceTime( s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, -1 );
-				if( endflag == 1 ){
-					g_previewFlag = 0;
-				}
-				
-				vector<MODELELEM>::iterator itrmodel;
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					if( curmodel && curmodel->GetCurMotInfo() ){
-						curmodel->SetMotionFrame( nextframe );
-					}
-				}
-				/*
-				if (s_model){
-					s_model->SetMotionFrame(nextframe);
-				}
-				*/
-				s_owpLTimeline->setCurrentTime( nextframe, false );
+				OnFramePreviewNormal(&nextframe, &difftime);
 			}else if( g_previewFlag == 4 ){//BTの物理
-				int endflag = 0;
-				
-				vector<MODELELEM>::iterator itrmodel;
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					curmodel->AdvanceTime( s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, -1);
-					if( (curmodel == s_model) && (endflag == 1) ){
-						g_previewFlag = 0;
-					}
-					curmodel->SetMotionFrame( nextframe );
-				}
-				if (s_model->GetBtCnt() == 1){
-					StartBt(2, 0);//reset bt for bvh first motion
-				}
-				/*
-				if (s_model){
-					s_model->SetMotionFrame(nextframe);
-				}
-				*/
-				int firstflag = 0;
-				if( s_savepreviewFlag != g_previewFlag ){
-					firstflag = 1;
-				}
-
-				//bullet
-				
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					if( curmodel && curmodel->GetCurMotInfo() ){
-						curmodel->Motion2Bt( firstflag, s_coldisp, nextframe, &mW, &mVP );
-					}
-				}
-				/*
-				if (nextframe == 0.0){
-				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-				CModel* curmodel = itrmodel->modelptr;
-				if (curmodel && curmodel->GetCurMotInfo()){
-				CBone* topbone = curmodel->GetTopBone();
-				if (topbone){
-				curmodel->SetBtEquilibriumPointReq(topbone);
-				}
-				}
-				}
-				}
-				*/
-
-				/*
-				if (s_model){
-					s_model->Motion2Bt(firstflag, s_coldisp, nextframe, &mW, &mVP);
-				}
-				*/
-				//s_bpWorld->setTimeStep( 1.0f / 60.0f * g_dspeed );// seconds
-				s_bpWorld->setTimeStep( 1.0f / 60.0f );// seconds
-				//s_bpWorld->setTimeStep( 1.0f / 80.0f );// seconds
-
-				s_bpWorld->clientMoveAndDisplay();
-
-				
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					if( curmodel && curmodel->GetCurMotInfo() ){
-						curmodel->SetBtMotion( 0, nextframe, &mW, &mVP, difftime );
-					}
-				}
-				/*
-				if (s_model){
-					s_model->SetBtMotion(0, nextframe, &mW, &mVP, difftime);
-				}
-				*/
+				OnFramePreviewBt(&nextframe, &difftime);
 			}else if( g_previewFlag == 5 ){//ラグドール
-				int endflag = 0;
-				s_model->AdvanceTime( s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, -1);
-				//if( endflag == 1 ){
-				//	g_previewFlag = 0;
-				//}
-
-				
-				vector<MODELELEM>::iterator itrmodel;
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					if( curmodel && curmodel->GetCurMotInfo() ){
-						curmodel->SetRagdollKinFlag();
-					}
-				}
-				/*
-				if (s_model){
-					s_model->SetRagdollKinFlag();
-				}
-				*/
-				s_bpWorld->setTimeStep( 1.0f / 60.0f );// seconds
-
-				s_bpWorld->clientMoveAndDisplay();
-				
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					if( curmodel && curmodel->GetCurMotInfo() ){
-						curmodel->SetBtMotion( 1, nextframe, &mW, &mVP, difftime );
-					}
-				}
-				/*
-				if (s_model){
-					s_model->SetBtMotion(1, nextframe, &mW, &mVP, difftime);
-				}
-				*/
-//				_ASSERT( 0 );
+				OnFramePreviewRagdoll(&nextframe, &difftime);
 			}
-
 			OnTimeLineCursor(0, 0.0);
-
 		}else{
 			g_previewFlag = 0;
 		}
 	}
+	else{
+		OnFramePreviewStop();
+	}
 	s_difftime = difftime;
 	savetime = fTime;
 
-	// 終了フラグを確認 //////////////////////////////////////////////////////////
-	if( s_closeFlag ){
-		s_closeFlag= false;
-		s_dispmw = false;
-		if( s_timelineWnd ){
-			s_timelineWnd->setVisible( 0 );
-		}
-
-	}
-	if( s_LcloseFlag ){
-		s_LcloseFlag= false;
-		s_Ldispmw = false;
-		if( s_LtimelineWnd ){
-			s_LtimelineWnd->setVisible( 0 );
-		}
-
-	}
-	if( s_closetoolFlag ){
-		s_closetoolFlag= false;
-		s_disptool = false;
-		if( s_toolWnd ){
-			s_toolWnd->setVisible( 0 );
-		}
-	}
-	if( s_closeobjFlag ){
-		s_closeobjFlag= false;
-		s_dispobj = false;
-		if( s_layerWnd ){
-			s_layerWnd->setVisible( 0 );
-		}
-	}
-	if( s_closemodelFlag ){
-		s_closemodelFlag = false;
-		s_dispmodel = false;
-		if( s_modelpanel.panel ){
-			s_modelpanel.panel->setVisible( 0 );
-		}
-	}
-	if (s_closeconvboneFlag){
-		s_closeconvboneFlag = false;
-		s_dispconvbone = false;
-		if (s_convboneWnd){
-			s_convboneWnd->setVisible(false);
-		}
-	}
-	if( s_DcloseFlag ){
-		s_DcloseFlag = false;
-		s_dmpanimWnd->setVisible( 0 );
-		if( s_bpWorld ){
-			s_bpWorld->setGlobalERP( s_erp );
-		}
-		if( s_model ){
-			CallF( s_model->CreateBtObject( s_coldisp, 0 ), return );
-		}
-	}
-	if( s_RcloseFlag ){
-		s_RcloseFlag = false;
-		s_rigidWnd->setVisible( 0 );
-		if( s_bpWorld ){
-			s_bpWorld->setGlobalERP( s_erp );
-		}
-		if( s_model ){
-			CallF( s_model->CreateBtObject( s_coldisp, 0 ), return );
-		}
-	}
-	if( s_IcloseFlag ){
-		s_IcloseFlag = false;
-		s_impWnd->setVisible( 0 );
-		if( s_bpWorld ){
-			s_bpWorld->setGlobalERP( s_erp );
-		}
-		if( s_model ){
-			CallF( s_model->CreateBtObject( s_coldisp, 0 ), return );
-		}
-	}
-	if( s_GcloseFlag ){
-		s_GcloseFlag = false;
-		s_gpWnd->setVisible( 0 );
-	}
-
-
-	// カーソル移動フラグを確認 //////////////////////////////////////////////////
-
-	if( s_cursorFlag ){
-		s_cursorFlag= false;
-
-		// カーソル位置をコンソールに出力
-		if( s_owpTimeline && s_model && s_model->GetCurMotInfo() ){
-			int curlineno = s_owpTimeline->getCurrentLine();// 選択行
-			if( curlineno >= 0 ){
-				s_curboneno = s_lineno2boneno[ curlineno ];
-
-				SetLTimelineMark( s_curboneno );
-
-				ChangeCurrentBone();
-
-			}else{
-				s_curboneno = -1;
-			}
-
-/***
-			double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
-			if( curframe >= s_model->m_curmotinfo->frameleng ){
-				curframe = s_model->m_curmotinfo->frameleng - 1.0;
-				s_owpTimeline->setCurrentTime( curframe, true );
-			}
-***/		
-			if( g_previewFlag == 0 ){
-				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
-				
-				vector<MODELELEM>::iterator itrmodel;
-				for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-					CModel* curmodel = itrmodel->modelptr;
-					if( curmodel && curmodel->GetCurMotInfo() ){
-						curmodel->SetMotionFrame( curframe );
-					}
-				}
-				/*
-				if (s_model){
-					s_model->SetMotionFrame(curframe);
-				}
-				*/
-			}			
-		}
-		//DbgOut( L"cursor : lineno %d, boneno %d, frame %f\r\n", curlineno, s_curboneno, s_curframe );
-	}
-
-	if( s_LcursorFlag ){
-		s_LcursorFlag = false;
-		OnTimeLineCursor(0, 0.0);
-	}
-
-	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb){
-		s_timelinembuttonFlag = false;
-		OnTimeLineMButtonDown(g_ctrlshiftkeyformb);
-		g_ctrlshiftkeyformb = false;
-	}
-	if (s_timelinewheelFlag || (s_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))){
-		s_timelinewheelFlag = false;
-		OnTimeLineWheel();
-	}
-
-
-
-	// コピー/カット/ペーストフラグを確認 ////////////////////////////////////////
-	if( s_selboneFlag ){
-		s_selboneFlag = false;
-		if( s_model && s_owpTimeline && s_owpLTimeline ){
-			s_selbonedlg.SetModel( s_model );
-			s_selbonedlg.DoModal();
-		}
-	}
-
-	if( s_markFlag ){
-		s_markFlag = false;
-
-		if( s_model && s_owpTimeline && s_owpLTimeline ){
-			double curltime = s_owpLTimeline->getCurrentTime();
-			KeyInfo ki = s_owpLTimeline->ExistKey( 2, curltime );			
-			if( ki.lineIndex < 0 ){
-				s_owpLTimeline->newKey( s_strmark, curltime, 0 );
-			}
-		}
-	}
-
-	if( s_initmpFlag ){
-		s_initmpFlag= false;
-
-		if( s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
-			s_copymotmap.clear();
-			s_copyKeyInfoList.clear();
-			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-			s_editrange.SetRange( s_copyKeyInfoList, s_owpTimeline->getCurrentTime() );
-			
-			/*
-			list<KeyInfo>::iterator itrcp;
-			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
-				double curframe = itrcp->time;
-				map<int,CBone*>::iterator itrbone;
-				for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-					CBone* curbone = itrbone->second;
-					if( curbone ){
-						InitMP( curbone, curframe );
-						CreateTimeLineMark( curbone->GetBoneNo() );
-					}
-				}
-			}
-			*/
-			InitCurMotion(1, 0);
-			SetLTimelineMark( s_curboneno );
-		}
-	}
-
-	if( s_copyFlag ){
-		s_copyFlag= false;
-		s_undersymcopyFlag = false;
-
-		if( s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
-			s_copymotmap.clear();
-			s_copyKeyInfoList.clear();
-			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-
-			list<KeyInfo>::iterator itrcp;
-			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
-				double curframe = itrcp->time;
-				int cpnum = s_selbonedlg.m_cpvec.size();
-				if( cpnum != 0 ){
-					int cpno;
-					for( cpno = 0; cpno < cpnum; cpno++ ){
-						CBone* curbone = s_selbonedlg.m_cpvec[ cpno ];
-						if( curbone ){
-							InsertCopyMP( curbone, curframe );
-						}
-					}
-				}else{
-					//対象ボーン未設定時は全ボーンをコピー
-					map<int,CBone*>::iterator itrbone;
-					for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-						CBone* curbone = itrbone->second;
-						if( curbone ){
-							InsertCopyMP( curbone, curframe );
-						}
-					}
-				}
-			}
-			s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
-		}
-	}
-
-	if( s_symcopyFlag ){
-		s_symcopyFlag = false;
-		s_undersymcopyFlag = true;
-
-		if( s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo() ){
-			s_copymotmap.clear();
-			s_copyKeyInfoList.clear();
-			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-
-			list<KeyInfo>::iterator itrcp;
-			for( itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++ ){
-				double curframe = itrcp->time;
-				int cpnum = s_selbonedlg.m_cpvec.size();
-
-				if( cpnum != 0 ){
-					int cpno;
-					for( cpno = 0; cpno < cpnum; cpno++ ){
-						CBone* curbone = s_selbonedlg.m_cpvec[ cpno ];
-						if( curbone ){
-							InsertSymMP( curbone, curframe );
-						}
-					}
-				}else{
-					//対象ボーン未設定時は全ボーンをコピー
-					map<int,CBone*>::iterator itrbone;
-					for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-						CBone* curbone = itrbone->second;
-						if( curbone ){
-							InsertSymMP( curbone, curframe );
-						}
-					}
-				}
-			}
-		}
-	}
-
-
-	if( s_pasteFlag ){
-		s_pasteFlag= false;
-
-		if( s_model && s_owpTimeline && s_model->GetCurMotInfo() && !s_copymotmap.empty() ){
-
-			//double curmaxframe = s_model->m_curmotinfo->frameleng;
-
-			//コピーされたキーの先頭時刻を求める
-			double copyStartTime= DBL_MAX;
-			multimap<CBone*, CMotionPoint>::iterator itrcp;
-			for( itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++ ){
-				if( itrcp->second.GetFrame() <= copyStartTime ){
-					copyStartTime = itrcp->second.GetFrame();
-				}
-			}
-
-			//ペーストする
-			for( itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++ ){
-				CBone* srcbone = itrcp->first;
-				_ASSERT( srcbone );
-				if (srcbone){
-					int cptopflag = 0;
-					multimap<CBone*, CMotionPoint>::iterator itrfind;
-					CBone* chkpar = srcbone->GetParent();
-					itrfind = s_copymotmap.find(chkpar);
-					if (itrfind == s_copymotmap.end()){
-						cptopflag = 1;
-					}
-
-					CMotionPoint srcmp = itrcp->second;
-					CMotionPoint* newmp = 0;
-					_ASSERT(s_model->GetCurMotInfo());
-					double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
-					int curmotid = s_model->GetCurMotInfo()->motid;
-					newmp = srcbone->GetMotionPoint(curmotid, newframe);
-					if (newmp){
-						//if (cptopflag == 1){
-						//	newmp->SetBefWorldMat(newmp->GetWorldMat());
-						//}
-						newmp->SetWorldMat(srcmp.GetWorldMat());//anglelimit無し
-
-						//オイラー角初期化
-						D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-						int paraxsiflag = 1;
-						int isfirstbone = 0;
-						cureul = srcbone->CalcLocalEulZXY(paraxsiflag, curmotid, newframe, BEFEUL_ZERO, isfirstbone);
-						srcbone->SetLocalEul(curmotid, newframe, cureul);
-
-					}
-				}
-			}
-
-			for( itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++ ){
-				CBone* srcbone = itrcp->first;
-				_ASSERT( srcbone );
-				if (srcbone){
-					int cptopflag = 0;
-					multimap<CBone*, CMotionPoint>::iterator itrfind;
-					CBone* chkpar = srcbone->GetParent();
-					itrfind = s_copymotmap.find(chkpar);
-					if (itrfind == s_copymotmap.end()){
-						cptopflag = 1;
-					}
-
-					CMotionPoint srcmp = itrcp->second;
-					CMotionPoint* newmp = 0;
-					double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
-					int curmotid = s_model->GetCurMotInfo()->motid;
-					newmp = srcbone->GetMotionPoint(curmotid, newframe);
-					if (newmp){
-						if (cptopflag == 1){
-							D3DXVECTOR3 orgpos;
-							D3DXVec3TransformCoord(&orgpos, &(srcbone->GetJointFPos()), &(newmp->GetBefWorldMat()));
-
-							D3DXVECTOR3 newpos;
-							D3DXVec3TransformCoord(&newpos, &(srcbone->GetJointFPos()), &(newmp->GetWorldMat()));
-
-							D3DXVECTOR3 diffpos;
-							diffpos = orgpos - newpos;
-
-							CEditRange tmper;
-							KeyInfo tmpki;
-							tmpki.time = newframe;
-							list<KeyInfo> tmplist;
-							tmplist.push_back(tmpki);
-							tmper.SetRange(tmplist, newframe);
-							s_model->FKBoneTra(&tmper, srcbone->GetBoneNo(), diffpos);
-						}
-					}
-				}
-			}
-		}
-		s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
-	}
-
-
-
-	if( s_deleteFlag ){
-		s_deleteFlag = false;
-/***
-		if( s_model && s_owpTimeline && s_model->m_curmotinfo){
-			s_owpTimeline->deleteKey();
-			//motionpointのdeleteはdelete Listenerでする。
-			s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
-		}
-***/
-	}
-
-	// キー選択フラグを確認 ///////////////////////////////////////////////////////
-	if( s_selectFlag ){
-		s_selectFlag= false;
-		if( s_model && s_owpTimeline && s_model->GetCurMotInfo() ){
-			s_selectKeyInfoList.clear();
-			s_selectKeyInfoList = s_owpTimeline->getSelectedKey();
-		}
-	}
-	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
-	if( s_keyShiftFlag ){
-		s_keyShiftFlag= false;
-/***
-		if( (s_keyShiftTime != 0.0) && s_model && s_owpTimeline && s_model->m_curmotinfo){
-
-			// 移動量をコンソールに出力
-			//printf_s("ShiftTime:%5f\n",s_keyShiftTime);
-
-			list<KeyInfo>::iterator itrsel;
-			for( itrsel = s_selectKeyInfoList.begin(); itrsel != s_selectKeyInfoList.end(); itrsel++ ){
-				CMotionPoint* mpptr = (CMotionPoint*)(itrsel->object);
-
-				CBone* boneptr = s_model->m_bonelist[ s_lineno2boneno[ itrsel->lineIndex ] ];
-				boneptr->OrderMotionPoint( s_model->m_curmotinfo->motid, itrsel->time + s_keyShiftTime, mpptr, 0 );
-			}
-
-
-			// 選択しているキーを全て移動
-			// この処理のみを行うラムダ関数がデフォルトで設定されている
-			s_owpTimeline->shiftKeyTime( s_keyShiftTime );
-
-		}
-		s_selectKeyInfoList.erase( s_selectKeyInfoList.begin(), s_selectKeyInfoList.end() );
-		if( s_owpTimeline ){
-			s_selectKeyInfoList = s_owpTimeline->getSelectedKey();
-		}
-***/
-	}
-
-	if( s_firstkeyFlag ){
-		//先頭フレームへ
-		s_firstkeyFlag = false;
-		g_previewFlag = 0;
-		if (s_owpTimeline){
-			s_owpLTimeline->setCurrentTime(0.0, false);
-		}
-	}
-	if( s_lastkeyFlag ){
-		//最終フレームへ
-		s_lastkeyFlag = false;
-		g_previewFlag = 0;
-		if (s_model){
-			if (s_owpTimeline){
-				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi){
-					double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
-					s_owpLTimeline->setCurrentTime(lastframe, false);
-				}
-			}
-		}
-	}
-
-	if( s_motpropFlag ){
-		s_motpropFlag = false;
-
-		if( s_model && s_model->GetCurMotInfo() ){
-			int dlgret;
-			dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_MOTPROPDLG ), 
-				s_mainwnd, (DLGPROC)MotPropDlgProc );
-			if( (dlgret == IDOK) && s_tmpmotname[0] ){
-				WideCharToMultiByte( CP_ACP, 0, s_tmpmotname, -1, s_model->GetCurMotInfo()->motname, 256, NULL, NULL );
-				//s_model->m_curmotinfo->frameleng = s_tmpmotframeleng;
-				s_model->GetCurMotInfo()->loopflag = s_tmpmotloop;
-				double oldframeleng = s_model->GetCurMotInfo()->frameleng;
-
-				s_owpTimeline->setMaxTime( s_tmpmotframeleng );
-				s_model->ChangeMotFrameLeng( s_model->GetCurMotInfo()->motid, s_tmpmotframeleng );//はみ出たmpも削除
-				InitCurMotion(0, oldframeleng);
-
-				//メニュー書き換え
-				OnAnimMenu( s_curmotmenuindex );
-			}
-		}
-	}
-
-	// 削除されたキー情報のスタックを確認 ////////////////////////////////////////////
-	for(; s_deletedKeyInfoList.begin()!=s_deletedKeyInfoList.end();
-		s_deletedKeyInfoList.pop_front()){
-/***
-		CMotionPoint* mpptr = (CMotionPoint*)( s_deletedKeyInfoList.begin()->object );
-		CBone* boneptr = s_model->m_bonelist[ s_lineno2boneno[ s_deletedKeyInfoList.begin()->lineIndex ] ];
-		mpptr->LeaveFromChain( s_model->m_curmotinfo->motid, boneptr );
-//_ASSERT( 0 );
-		delete mpptr;
-***/
-	}
-
-/////// all model bone
-	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)){
-		s_allmodelbone = !s_allmodelbone;
-	}
-
-///////////// undo
-	if( s_model && g_controlkey && (g_keybuf[ 'Z' ] & 0x80) && !(g_savekeybuf[ 'Z' ] & 0x80) ){
-		
-		if( g_keybuf[ VK_SHIFT ] & 0x80 ){
-			s_model->RollBackUndoMotion( 1, &s_curboneno, &s_curbaseno );//!!!!!!!!!!!
-		}else{
-			s_model->RollBackUndoMotion( 0, &s_curboneno, &s_curbaseno );//!!!!!!!!!!!
-		}
-
-		//s_copyKeyInfoList.clear();
-		//s_deletedKeyInfoList.clear();
-		//s_selectKeyInfoList.clear();
-
-		if( s_model->GetCurMotInfo()->motid != s_curmotid ){
-			int chkcnt = 0;
-			int findflag = 0;
-			map<int, MOTINFO*>::iterator itrmi;
-			for( itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++ ){
-				MOTINFO* curmi = itrmi->second;
-				_ASSERT( curmi );
-				if( curmi == s_model->GetCurMotInfo() ){
-					findflag = 1;
-					break;
-				}
-				chkcnt++;
-			}
-
-			if( findflag == 1 ){
-				int selindex;
-				selindex = chkcnt;
-				OnAnimMenu( selindex, 0 );
-			}
-		}
-
-		int curlineno = s_boneno2lineno[ s_curboneno ];
-		if( s_owpTimeline ){
-			s_owpTimeline->setCurrentLine( curlineno, true );
-		}
-
-		SetTimelineMark();
-		SetLTimelineMark( s_curboneno );
-
-		Sleep( 500 );
-	}
-
-
-/////////////
-
-	g_pEffect->SetMatrix( g_hmVP, &mVP );
-	g_pEffect->SetMatrix( g_hmWorld, &mW );
-
-
-	if( (g_previewFlag != 4) && (g_previewFlag != 5) ){
-		
-		vector<MODELELEM>::iterator itrmodel;
-		for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-			CModel* curmodel = itrmodel->modelptr;
-			if( curmodel ){
-				curmodel->UpdateMatrix( &mW, &mVP );
-			}
-		}
-		/*
-		if (s_model){
-			s_model->UpdateMatrix(&mW, &mVP);
-		}
-		*/
-	}
-
-//DbgOut( L"check !!! : matWorld (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f)\r\n",
-//	mW._11, mW._12, mW._13, mW._14,
-//	mW._21, mW._22, mW._23, mW._24,
-//	mW._31, mW._32, mW._33, mW._34,
-//	mW._41, mW._42, mW._43, mW._44 );
-
-	if( s_ground ){
-		s_ground->UpdateMatrix( &mWorld, &mVP );
-	}
-
-	if( s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG ){
-		D3DXMATRIX gpmat = s_inimat;
-		gpmat._42 = s_bpWorld->m_gplaneh;
-		s_gplane->UpdateMatrix( &gpmat, &mVP );
-	}
-
-	if( s_model && (s_model->GetBtCnt() == 0) ){
-		if( !s_bpWorld ){
-			s_bpWorld = new BPWorld( mWorld, "BtPiyo", // ウィンドウのタイトル
-							460, 460,         // ウィンドウの幅と高さ [pixels]
-							NULL );    // モニタリング用関数へのポインタ  
-			_ASSERT( s_bpWorld );
-		}
-		//s_bpWorld->enableFixedTimeStep(true);
-		s_bpWorld->enableFixedTimeStep(false);
-		//s_bpWorld->setTimeStep(0.015);// seconds
-		s_bpWorld->setGlobalERP(s_erp);// ERP
-		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
-		s_btWorld = s_bpWorld->getDynamicsWorld();
-		s_model->SetBtWorld( s_btWorld );
-
-		CallF( s_model->CreateBtObject( s_coldisp, 1 ), return );
-	}
-	if (s_model){
-		s_model->PlusPlusBtCnt();
-	}
+	OnFrameCloseFlag();
+	OnFrameToolWnd();
+	OnFrameUndo();
+
+	OnFrameUpdateGround();
+	OnFrameInitBtWorld();
 
 	s_savepreviewFlag = g_previewFlag;
 
@@ -3593,19 +2805,6 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
     if( SUCCEEDED( pd3dDevice->BeginScene() ) )
     {
         // Get the projection & view matrix from the camera class
-		D3DXMATRIX mWorld;
-		D3DXMATRIX mView;
-		D3DXMATRIX mProj;
-		mWorld = *g_Camera.GetWorldMatrix();
-		//D3DXMatrixIdentity( &mWorld );
-		mProj = *g_Camera.GetProjMatrix();
-		//mView = *g_Camera.GetViewMatrix();
-		mView = s_matView;
-		mWorld._41 = 0.0f;
-		mWorld._42 = 0.0f;
-		mWorld._43 = 0.0f;
-
-		D3DXMATRIX mWV = mWorld * mView;
 
 		D3DXVECTOR3 lightdir0, nlightdir0;
 		lightdir0 = g_camEye;
@@ -3666,7 +2865,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		}
 		*/
 		if( s_ground && s_dispground ){
-			g_pEffect->SetMatrix( g_hmWorld, &mWorld );
+			g_pEffect->SetMatrix( g_hmWorld, &s_matWorld );
 
 			D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 			s_ground->OnRender( s_pdev, 0, diffusemult );
@@ -8517,19 +7716,7 @@ int ConvBoneConvert()
 		}
 	}
 
-	D3DXMATRIX mWorld;
-	D3DXMATRIX mView;
-	D3DXMATRIX mProj;
-	D3DXMatrixIdentity(&mWorld);
-	mProj = *g_Camera.GetProjMatrix();
-	mView = s_matView;
-	mWorld._41 = 0.0f;
-	mWorld._42 = 0.0f;
-	mWorld._43 = 0.0f;
-	D3DXMATRIXA16 mW, mVP;
-	mW = mWorld;
-	mVP = mView * mProj;
-	s_model->UpdateMatrix(&mW, &mVP);
+	s_model->UpdateMatrix(&s_matW, &s_matVP);
 
 	::MessageBox(NULL, L"コンバートが終了しました。", L"完了", MB_OK);
 
@@ -8763,7 +7950,6 @@ int StartBt(int flag, int btcntzero)
 		g_previewFlag = 0;
 	}
 
-	D3DXMATRIXA16 mW, mVP;
 	double curframe;
 	if (resetflag == 1){
 		//curframe = s_owpTimeline->getCurrentTime();//<-- preview中はタイムラインの時間は動かない。
@@ -8779,24 +7965,11 @@ int StartBt(int flag, int btcntzero)
 		if( g_previewFlag == 4 ){
 			s_model->SetMotionFrame( curframe );
 
-			D3DXMATRIX mWorld;
-			D3DXMATRIX mView;
-			D3DXMATRIX mProj;
-			D3DXMatrixIdentity( &mWorld );
-			mProj = *g_Camera.GetProjMatrix();
-			mView = s_matView;
-			mWorld._41 = 0.0f;
-			mWorld._42 = 0.0f;
-			mWorld._43 = 0.0f;
-			//mW = g_mCenterWorld * mWorld;
-			mW = mWorld;
-			mVP = mView * mProj;
-
 			vector<MODELELEM>::iterator itrmodel;
 			for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 				CModel* curmodel = itrmodel->modelptr;
 				if( curmodel ){
-					curmodel->UpdateMatrix( &mW, &mVP );
+					curmodel->UpdateMatrix( &s_matW, &s_matVP );
 				}
 			}
 
@@ -8815,10 +7988,10 @@ int StartBt(int flag, int btcntzero)
 			//	s_model->ResetBt();
 			//}
 			int firstflag = 1;
-			s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &mW, &mVP);
+			s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &s_matW, &s_matVP);
 			int rgdollflag = 0;
 			double difftime = 0.0;
-			s_model->SetBtMotion(rgdollflag, s_btstartframe, &mW, &mVP, difftime);
+			s_model->SetBtMotion(rgdollflag, s_btstartframe, &s_matW, &s_matVP, difftime);
 			s_model->ResetBt();
 
 		}
@@ -9827,19 +9000,6 @@ int ExportFBXFile()
 		return 0;
 	}
 
-	D3DXMATRIX mWorld;
-    D3DXMATRIX mView;
-    D3DXMATRIX mProj;
-	D3DXMatrixIdentity( &mWorld );
-    mProj = *g_Camera.GetProjMatrix();
-	mView = s_matView;
-	mWorld._41 = 0.0f;
-	mWorld._42 = 0.0f;
-	mWorld._43 = 0.0f;
-	D3DXMATRIXA16 mW, mVP;
-	mW = mWorld;
-	mVP = mView * mProj;
-
 	g_previewFlag = 0; 
 	s_owpLTimeline->setCurrentTime( 0.0, false );
 
@@ -9854,11 +9014,9 @@ int ExportFBXFile()
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
-			curmodel->UpdateMatrix( &mW, &mVP );
+			curmodel->UpdateMatrix( &s_matW, &s_matVP );
 		}
 	}
-
-
 
 	WCHAR filename[MAX_PATH]={0L};
 	OPENFILENAME ofn1;
@@ -9912,19 +9070,6 @@ int ExportBntFile()
 		return 0;
 	}
 
-	D3DXMATRIX mWorld;
-    D3DXMATRIX mView;
-    D3DXMATRIX mProj;
-	D3DXMatrixIdentity( &mWorld );
-    mProj = *g_Camera.GetProjMatrix();
-	mView = s_matView;
-	mWorld._41 = 0.0f;
-	mWorld._42 = 0.0f;
-	mWorld._43 = 0.0f;
-	D3DXMATRIXA16 mW, mVP;
-	mW = mWorld;
-	mVP = mView * mProj;
-
 	g_previewFlag = 0; 
 	s_owpLTimeline->setCurrentTime( 0.0, false );
 
@@ -9939,7 +9084,7 @@ int ExportBntFile()
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
-			curmodel->UpdateMatrix( &mW, &mVP );
+			curmodel->UpdateMatrix( &s_matW, &s_matVP );
 		}
 	}
 
@@ -10780,3 +9925,766 @@ int ChangeCurrentBone()
 	return 0;
 }
 
+int OnFrameKeyboard()
+{
+	MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
+
+
+	GetKeyboardState((PBYTE)g_keybuf);
+	if (g_keybuf[VK_SHIFT] & 0x80){
+		s_dispselect = false;
+	}
+	else{
+		s_dispselect = true;
+	}
+	if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)){
+		StartBt(0, 1);
+	}
+	if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)){
+		StartBt(1, 1);
+	}
+	if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)){
+		if (s_bpWorld && s_model){
+			StartBt(2, 1);
+		}
+	}
+	if (g_keybuf[VK_CONTROL] & 0x80){
+		g_controlkey = true;
+	}
+	else{
+		g_controlkey = false;
+	}
+
+	if (g_ctrlshiftkeyformb == false){
+		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
+			if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)){
+				g_ctrlshiftkeyformb = true;
+				//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
+			}
+		}
+	}
+
+	if (g_keybuf['A'] & 0x80){
+		s_akeycnt++;
+	}
+	else{
+		s_akeycnt = 0;
+	}
+	if (g_keybuf['D'] & 0x80){
+		s_dkeycnt++;
+	}
+	else{
+		s_dkeycnt = 0;
+	}
+
+	/////// all model bone
+	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)){
+		s_allmodelbone = !s_allmodelbone;
+	}
+
+	return 0;
+}
+
+int OnFrameUtCheckBox()
+{
+	g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
+	g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
+	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
+	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
+	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	g_limitdegflag = (int)s_LimitDegCheckBox->GetChecked();
+
+	return 0;
+}
+
+int OnFramePreviewStop()
+{
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel){
+			curmodel->UpdateMatrix(&s_matW, &s_matVP);
+		}
+	}
+
+	return 0;
+}
+
+int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
+{
+	if (g_previewFlag != 0){
+		if (s_savepreviewFlag == 0){
+			//preview start frame
+			s_previewrange = s_editrange;
+			double rangestart;
+			if (s_previewrange.IsSameStartAndEnd()){
+				rangestart = 0.0;
+			}
+			else{
+				rangestart = s_previewrange.GetStartFrame();
+			}
+			s_model->SetMotionFrame(rangestart);
+			*pdifftime = 0.0;
+		}
+	}
+
+	int endflag = 0;
+	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+	if (endflag == 1){
+		g_previewFlag = 0;
+	}
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel && curmodel->GetCurMotInfo()){
+			curmodel->SetMotionFrame(*pnextframe);
+		}
+	}
+	s_owpLTimeline->setCurrentTime(*pnextframe, false);
+
+
+
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel){
+			curmodel->UpdateMatrix(&s_matW, &s_matVP);
+		}
+	}
+
+
+	return 0;
+}
+
+int OnFramePreviewBt(double* pnextframe, double* pdifftime)
+{
+	int endflag = 0;
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+		if ((curmodel == s_model) && (endflag == 1)){
+			g_previewFlag = 0;
+		}
+		curmodel->SetMotionFrame(*pnextframe);
+	}
+	if (s_model->GetBtCnt() == 1){
+		StartBt(2, 0);//reset bt for bvh first motion
+	}
+
+	int firstflag = 0;
+	if (s_savepreviewFlag != g_previewFlag){
+		firstflag = 1;
+	}
+
+	//bullet
+
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel && curmodel->GetCurMotInfo()){
+			curmodel->Motion2Bt(firstflag, s_coldisp, *pnextframe, &s_matW, &s_matVP);
+		}
+	}
+
+	//s_bpWorld->setTimeStep( 1.0f / 60.0f * g_dspeed );// seconds
+	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
+	//s_bpWorld->setTimeStep( 1.0f / 80.0f );// seconds
+
+	s_bpWorld->clientMoveAndDisplay();
+
+
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel && curmodel->GetCurMotInfo()){
+			curmodel->SetBtMotion(0, *pnextframe, &s_matW, &s_matVP, *pdifftime);
+		}
+	}
+
+
+	return 0;
+}
+
+int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
+{
+
+	int endflag = 0;
+	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel && curmodel->GetCurMotInfo()){
+			curmodel->SetRagdollKinFlag();
+		}
+	}
+
+	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
+
+	s_bpWorld->clientMoveAndDisplay();
+
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel && curmodel->GetCurMotInfo()){
+			curmodel->SetBtMotion(1, *pnextframe, &s_matW, &s_matVP, *pdifftime);
+		}
+	}
+
+
+	return 0;
+}
+
+int OnFrameCloseFlag()
+{
+	// 終了フラグを確認
+
+	if (s_closeFlag){
+		s_closeFlag = false;
+		s_dispmw = false;
+		if (s_timelineWnd){
+			s_timelineWnd->setVisible(0);
+		}
+
+	}
+	if (s_LcloseFlag){
+		s_LcloseFlag = false;
+		s_Ldispmw = false;
+		if (s_LtimelineWnd){
+			s_LtimelineWnd->setVisible(0);
+		}
+
+	}
+	if (s_closetoolFlag){
+		s_closetoolFlag = false;
+		s_disptool = false;
+		if (s_toolWnd){
+			s_toolWnd->setVisible(0);
+		}
+	}
+	if (s_closeobjFlag){
+		s_closeobjFlag = false;
+		s_dispobj = false;
+		if (s_layerWnd){
+			s_layerWnd->setVisible(0);
+		}
+	}
+	if (s_closemodelFlag){
+		s_closemodelFlag = false;
+		s_dispmodel = false;
+		if (s_modelpanel.panel){
+			s_modelpanel.panel->setVisible(0);
+		}
+	}
+	if (s_closeconvboneFlag){
+		s_closeconvboneFlag = false;
+		s_dispconvbone = false;
+		if (s_convboneWnd){
+			s_convboneWnd->setVisible(false);
+		}
+	}
+	if (s_DcloseFlag){
+		s_DcloseFlag = false;
+		s_dmpanimWnd->setVisible(0);
+		if (s_bpWorld){
+			s_bpWorld->setGlobalERP(s_erp);
+		}
+		if (s_model){
+			CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+		}
+	}
+	if (s_RcloseFlag){
+		s_RcloseFlag = false;
+		s_rigidWnd->setVisible(0);
+		if (s_bpWorld){
+			s_bpWorld->setGlobalERP(s_erp);
+		}
+		if (s_model){
+			CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+		}
+	}
+	if (s_IcloseFlag){
+		s_IcloseFlag = false;
+		s_impWnd->setVisible(0);
+		if (s_bpWorld){
+			s_bpWorld->setGlobalERP(s_erp);
+		}
+		if (s_model){
+			CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+		}
+	}
+	if (s_GcloseFlag){
+		s_GcloseFlag = false;
+		s_gpWnd->setVisible(0);
+	}
+
+	return 0;
+}
+
+int OnFrameTimeLineWnd()
+{
+	// カーソル移動フラグを確認 //////////////////////////////////////////////////
+
+	if (s_cursorFlag){
+		s_cursorFlag = false;
+
+		// カーソル位置をコンソールに出力
+		if (s_owpTimeline && s_model && s_model->GetCurMotInfo()){
+			int curlineno = s_owpTimeline->getCurrentLine();// 選択行
+			if (curlineno >= 0){
+				s_curboneno = s_lineno2boneno[curlineno];
+				SetLTimelineMark(s_curboneno);
+				ChangeCurrentBone();
+			}
+			else{
+				s_curboneno = -1;
+			}
+
+			if (g_previewFlag == 0){
+				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
+
+				vector<MODELELEM>::iterator itrmodel;
+				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+					CModel* curmodel = itrmodel->modelptr;
+					if (curmodel && curmodel->GetCurMotInfo()){
+						curmodel->SetMotionFrame(curframe);
+					}
+				}
+			}
+		}
+		//DbgOut( L"cursor : lineno %d, boneno %d, frame %f\r\n", curlineno, s_curboneno, s_curframe );
+	}
+
+	if (s_LcursorFlag){
+		s_LcursorFlag = false;
+		OnTimeLineCursor(0, 0.0);
+	}
+
+	// キー選択フラグを確認 ///////////////////////////////////////////////////////
+	if (s_selectFlag){
+		s_selectFlag = false;
+		if (s_model && s_owpTimeline && s_model->GetCurMotInfo()){
+			s_selectKeyInfoList.clear();
+			s_selectKeyInfoList = s_owpTimeline->getSelectedKey();
+		}
+	}
+	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
+	if (s_keyShiftFlag){
+		s_keyShiftFlag = false;
+	}
+
+	return 0;
+}
+
+int OnFrameMouseButton()
+{
+	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb){
+		s_timelinembuttonFlag = false;
+		OnTimeLineMButtonDown(g_ctrlshiftkeyformb);
+		g_ctrlshiftkeyformb = false;
+	}
+	if (s_timelinewheelFlag || (s_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))){
+		s_timelinewheelFlag = false;
+		OnTimeLineWheel();
+	}
+
+	return 0;
+}
+
+int OnFrameToolWnd()
+{
+	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
+
+	if (s_selboneFlag){
+		s_selboneFlag = false;
+		if (s_model && s_owpTimeline && s_owpLTimeline){
+			s_selbonedlg.SetModel(s_model);
+			s_selbonedlg.DoModal();
+		}
+	}
+
+	if (s_markFlag){
+		s_markFlag = false;
+
+		if (s_model && s_owpTimeline && s_owpLTimeline){
+			double curltime = s_owpLTimeline->getCurrentTime();
+			KeyInfo ki = s_owpLTimeline->ExistKey(2, curltime);
+			if (ki.lineIndex < 0){
+				s_owpLTimeline->newKey(s_strmark, curltime, 0);
+			}
+		}
+	}
+
+	if (s_initmpFlag){
+		s_initmpFlag = false;
+
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+			s_copymotmap.clear();
+			s_copyKeyInfoList.clear();
+			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+			s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+
+			InitCurMotion(1, 0);
+			SetLTimelineMark(s_curboneno);
+		}
+	}
+
+	if (s_copyFlag){
+		s_copyFlag = false;
+		s_undersymcopyFlag = false;
+
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+			s_copymotmap.clear();
+			s_copyKeyInfoList.clear();
+			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+
+			list<KeyInfo>::iterator itrcp;
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+				double curframe = itrcp->time;
+				int cpnum = s_selbonedlg.m_cpvec.size();
+				if (cpnum != 0){
+					int cpno;
+					for (cpno = 0; cpno < cpnum; cpno++){
+						CBone* curbone = s_selbonedlg.m_cpvec[cpno];
+						if (curbone){
+							InsertCopyMP(curbone, curframe);
+						}
+					}
+				}
+				else{
+					//対象ボーン未設定時は全ボーンをコピー
+					map<int, CBone*>::iterator itrbone;
+					for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++){
+						CBone* curbone = itrbone->second;
+						if (curbone){
+							InsertCopyMP(curbone, curframe);
+						}
+					}
+				}
+			}
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+		}
+	}
+
+	if (s_symcopyFlag){
+		s_symcopyFlag = false;
+		s_undersymcopyFlag = true;
+
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+			s_copymotmap.clear();
+			s_copyKeyInfoList.clear();
+			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+
+			list<KeyInfo>::iterator itrcp;
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+				double curframe = itrcp->time;
+				int cpnum = s_selbonedlg.m_cpvec.size();
+
+				if (cpnum != 0){
+					int cpno;
+					for (cpno = 0; cpno < cpnum; cpno++){
+						CBone* curbone = s_selbonedlg.m_cpvec[cpno];
+						if (curbone){
+							InsertSymMP(curbone, curframe);
+						}
+					}
+				}
+				else{
+					//対象ボーン未設定時は全ボーンをコピー
+					map<int, CBone*>::iterator itrbone;
+					for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++){
+						CBone* curbone = itrbone->second;
+						if (curbone){
+							InsertSymMP(curbone, curframe);
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	if (s_pasteFlag){
+		s_pasteFlag = false;
+
+		if (s_model && s_owpTimeline && s_model->GetCurMotInfo() && !s_copymotmap.empty()){
+
+			//double curmaxframe = s_model->m_curmotinfo->frameleng;
+
+			//コピーされたキーの先頭時刻を求める
+			double copyStartTime = DBL_MAX;
+			multimap<CBone*, CMotionPoint>::iterator itrcp;
+			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+				if (itrcp->second.GetFrame() <= copyStartTime){
+					copyStartTime = itrcp->second.GetFrame();
+				}
+			}
+
+			//ペーストする
+			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+				CBone* srcbone = itrcp->first;
+				_ASSERT(srcbone);
+				if (srcbone){
+					int cptopflag = 0;
+					multimap<CBone*, CMotionPoint>::iterator itrfind;
+					CBone* chkpar = srcbone->GetParent();
+					itrfind = s_copymotmap.find(chkpar);
+					if (itrfind == s_copymotmap.end()){
+						cptopflag = 1;
+					}
+
+					CMotionPoint srcmp = itrcp->second;
+					CMotionPoint* newmp = 0;
+					_ASSERT(s_model->GetCurMotInfo());
+					double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
+					int curmotid = s_model->GetCurMotInfo()->motid;
+					newmp = srcbone->GetMotionPoint(curmotid, newframe);
+					if (newmp){
+						//if (cptopflag == 1){
+						//	newmp->SetBefWorldMat(newmp->GetWorldMat());
+						//}
+						newmp->SetWorldMat(srcmp.GetWorldMat());//anglelimit無し
+
+						//オイラー角初期化
+						D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						int paraxsiflag = 1;
+						int isfirstbone = 0;
+						cureul = srcbone->CalcLocalEulZXY(paraxsiflag, curmotid, newframe, BEFEUL_ZERO, isfirstbone);
+						srcbone->SetLocalEul(curmotid, newframe, cureul);
+
+					}
+				}
+			}
+
+			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+				CBone* srcbone = itrcp->first;
+				_ASSERT(srcbone);
+				if (srcbone){
+					int cptopflag = 0;
+					multimap<CBone*, CMotionPoint>::iterator itrfind;
+					CBone* chkpar = srcbone->GetParent();
+					itrfind = s_copymotmap.find(chkpar);
+					if (itrfind == s_copymotmap.end()){
+						cptopflag = 1;
+					}
+
+					CMotionPoint srcmp = itrcp->second;
+					CMotionPoint* newmp = 0;
+					double newframe = srcmp.GetFrame() - copyStartTime + s_owpLTimeline->getCurrentTime();
+					int curmotid = s_model->GetCurMotInfo()->motid;
+					newmp = srcbone->GetMotionPoint(curmotid, newframe);
+					if (newmp){
+						if (cptopflag == 1){
+							D3DXVECTOR3 orgpos;
+							D3DXVec3TransformCoord(&orgpos, &(srcbone->GetJointFPos()), &(newmp->GetBefWorldMat()));
+
+							D3DXVECTOR3 newpos;
+							D3DXVec3TransformCoord(&newpos, &(srcbone->GetJointFPos()), &(newmp->GetWorldMat()));
+
+							D3DXVECTOR3 diffpos;
+							diffpos = orgpos - newpos;
+
+							CEditRange tmper;
+							KeyInfo tmpki;
+							tmpki.time = newframe;
+							list<KeyInfo> tmplist;
+							tmplist.push_back(tmpki);
+							tmper.SetRange(tmplist, newframe);
+							s_model->FKBoneTra(&tmper, srcbone->GetBoneNo(), diffpos);
+						}
+					}
+				}
+			}
+		}
+		s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+	}
+
+	if (s_motpropFlag){
+		s_motpropFlag = false;
+
+		if (s_model && s_model->GetCurMotInfo()){
+			int dlgret;
+			dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_MOTPROPDLG),
+				s_mainwnd, (DLGPROC)MotPropDlgProc);
+			if ((dlgret == IDOK) && s_tmpmotname[0]){
+				WideCharToMultiByte(CP_ACP, 0, s_tmpmotname, -1, s_model->GetCurMotInfo()->motname, 256, NULL, NULL);
+				//s_model->m_curmotinfo->frameleng = s_tmpmotframeleng;
+				s_model->GetCurMotInfo()->loopflag = s_tmpmotloop;
+				double oldframeleng = s_model->GetCurMotInfo()->frameleng;
+
+				s_owpTimeline->setMaxTime(s_tmpmotframeleng);
+				s_model->ChangeMotFrameLeng(s_model->GetCurMotInfo()->motid, s_tmpmotframeleng);//はみ出たmpも削除
+				InitCurMotion(0, oldframeleng);
+
+				//メニュー書き換え
+				OnAnimMenu(s_curmotmenuindex);
+			}
+		}
+	}
+
+	/*
+	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
+	if (s_model && (s_curboneno >= 0)){
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (curbone){
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (curmi){
+	const WCHAR* wbonename = curbone->GetWBoneName();
+	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	int paraxsiflag = 1;
+	int isfirstbone = 0;
+	cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+	curbone->SetWorldMatFromEul(1, cureul, curmi->motid, curmi->curframe);
+	::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
+	}
+	}
+	}
+	}
+	*/
+
+
+	if (s_deleteFlag){
+		s_deleteFlag = false;
+		/***
+		if( s_model && s_owpTimeline && s_model->m_curmotinfo){
+		s_owpTimeline->deleteKey();
+		//motionpointのdeleteはdelete Listenerでする。
+		s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
+		}
+		***/
+	}
+
+
+	// 削除されたキー情報のスタックを確認 ////////////////////////////////////////////
+	for (; s_deletedKeyInfoList.begin() != s_deletedKeyInfoList.end();
+		s_deletedKeyInfoList.pop_front()){
+		/***
+		CMotionPoint* mpptr = (CMotionPoint*)( s_deletedKeyInfoList.begin()->object );
+		CBone* boneptr = s_model->m_bonelist[ s_lineno2boneno[ s_deletedKeyInfoList.begin()->lineIndex ] ];
+		mpptr->LeaveFromChain( s_model->m_curmotinfo->motid, boneptr );
+		//_ASSERT( 0 );
+		delete mpptr;
+		***/
+	}
+
+	return 0;
+}
+
+int OnFramePlayButton()
+{
+	if (s_firstkeyFlag){
+		//先頭フレームへ
+		s_firstkeyFlag = false;
+		g_previewFlag = 0;
+		if (s_owpTimeline){
+			s_owpLTimeline->setCurrentTime(0.0, false);
+		}
+	}
+	if (s_lastkeyFlag){
+		//最終フレームへ
+		s_lastkeyFlag = false;
+		g_previewFlag = 0;
+		if (s_model){
+			if (s_owpTimeline){
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi){
+					double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
+					s_owpLTimeline->setCurrentTime(lastframe, false);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+
+int OnFrameUndo()
+{
+	///////////// undo
+	if (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80)){
+
+		if (g_keybuf[VK_SHIFT] & 0x80){
+			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
+		}
+		else{
+			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
+		}
+
+		//s_copyKeyInfoList.clear();
+		//s_deletedKeyInfoList.clear();
+		//s_selectKeyInfoList.clear();
+
+		if (s_model->GetCurMotInfo()->motid != s_curmotid){
+			int chkcnt = 0;
+			int findflag = 0;
+			map<int, MOTINFO*>::iterator itrmi;
+			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++){
+				MOTINFO* curmi = itrmi->second;
+				_ASSERT(curmi);
+				if (curmi == s_model->GetCurMotInfo()){
+					findflag = 1;
+					break;
+				}
+				chkcnt++;
+			}
+
+			if (findflag == 1){
+				int selindex;
+				selindex = chkcnt;
+				OnAnimMenu(selindex, 0);
+			}
+		}
+
+		int curlineno = s_boneno2lineno[s_curboneno];
+		if (s_owpTimeline){
+			s_owpTimeline->setCurrentLine(curlineno, true);
+		}
+
+		SetTimelineMark();
+		SetLTimelineMark(s_curboneno);
+
+		Sleep(500);
+	}
+
+	return 0;
+}
+
+int OnFrameUpdateGround()
+{
+
+	if (s_ground){
+		s_ground->UpdateMatrix(&s_matW, &s_matVP);
+	}
+
+	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG){
+		D3DXMATRIX gpmat = s_inimat;
+		gpmat._42 = s_bpWorld->m_gplaneh;
+		s_gplane->UpdateMatrix(&gpmat, &s_matVP);
+	}
+	return 0;
+}
+
+int OnFrameInitBtWorld()
+{
+
+	if (s_model && (s_model->GetBtCnt() == 0)){
+		if (!s_bpWorld){
+			s_bpWorld = new BPWorld(s_matWorld, "BtPiyo", // ウィンドウのタイトル
+				460, 460,         // ウィンドウの幅と高さ [pixels]
+				NULL);    // モニタリング用関数へのポインタ  
+			_ASSERT(s_bpWorld);
+		}
+		//s_bpWorld->enableFixedTimeStep(true);
+		s_bpWorld->enableFixedTimeStep(false);
+		//s_bpWorld->setTimeStep(0.015);// seconds
+		s_bpWorld->setGlobalERP(s_erp);// ERP
+		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
+		s_btWorld = s_bpWorld->getDynamicsWorld();
+		s_model->SetBtWorld(s_btWorld);
+
+		CallF(s_model->CreateBtObject(s_coldisp, 1), return 1);
+	}
+	if (s_model){
+		s_model->PlusPlusBtCnt();
+	}
+	return 0;
+}
