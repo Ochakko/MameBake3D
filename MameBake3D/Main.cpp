@@ -672,6 +672,16 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
+static int CreateUtDialog();
+static int CreateTimelineWnd();
+static int CreateLongTimelineWnd();
+static int CreateDmpAnimWnd();
+static int CreateRigidWnd();
+static int CreateImpulseWnd();
+static int CreateGPlaneWnd();
+static int CreateToolWnd();
+static int CreateLayerWnd();
+
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
 static int OnFramePreviewStop();
@@ -1023,15 +1033,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 //--------------------------------------------------------------------------------------
 void InitApp()
 {
-	/*
-	#define CONVBONEMAX		256
-	static OrgWindow* s_convboneWnd = 0;
-	static int s_convbonenum = 0;
-	static OWP_Label* s_modelbone[CONVBONEMAX];
-	static OWP_Button* s_bvhbone[CONVBONEMAX];
-	static OWP_Separator* s_convbonesp = 0;
-	*/
-
 	s_underselectingframe = 0;
 	s_buttonselectstart = 0.0;
 	s_buttonselectend = 0.0;
@@ -1048,9 +1049,8 @@ void InitApp()
 		(s_editrangehistory + erhno)->Clear();
 	}
 
-
-
 	D3DXMatrixIdentity(&s_selectmat);
+	D3DXMatrixIdentity(&s_ikselectmat);
 
 	int cbno;
 	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
@@ -1080,1072 +1080,18 @@ void InitApp()
 	}
 
     g_nActiveLight = 0;
-	//g_nNumActiveLights = MAX_LIGHTS;
 	g_nNumActiveLights = 1;
     g_fLightScale = 1.0f;
 
-    // Initialize dialogs
-    g_SettingsDlg.Init( &g_DialogResourceManager );
-    g_SampleUI.Init( &g_DialogResourceManager );
-
-	int iY;
-    g_SampleUI.SetCallback( OnGUIEvent ); iY = 0;
-
-	int ctrlh = 25;
-	int addh = ctrlh + 2;
-
-    WCHAR sz[100];
-
-
-    //iY += 24;
-    swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
-    g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
-
-	g_SampleUI.AddCheckBox( IDC_BMARK, L"ボーンを表示する", 25, iY += addh, 480, 16, true, 0U, false, &s_BoneMarkCheckBox );
-
-/***
-    swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
-    g_SampleUI.AddStatic( IDC_NUM_LIGHTS_STATIC, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_NUM_LIGHTS, 50, iY += addh, 100, ctrlh, 1, MAX_LIGHTS, g_nNumActiveLights );
-
-    //iY += 24;
-    swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
-    g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
-
-    //iY += 24;
-    g_SampleUI.AddButton( IDC_ACTIVE_LIGHT, L"Change active light (K)", 35, iY += addh, 125, ctrlh, 'K' );
-
-	g_SampleUI.AddCheckBox( IDC_LIGHT_DISP, L"ライト矢印を表示する", 25, iY += addh, 450, 16, true, 0U, false, &s_LightCheckBox );
-
-	iY += addh;
-***/
-	//iY += 24;
-	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, 35, iY += addh, 125, ctrlh);
-	CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
-	pComboBox3->RemoveAllItems();
-	WCHAR straxis[256];
-	ULONG boneaxisindex;
-	swprintf_s(straxis, 256, L"CurrentBoneAxis");
-	boneaxisindex = 0;
-	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	swprintf_s(straxis, 256, L"ParentBoneAxis");
-	boneaxisindex = 1;
-	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	swprintf_s(straxis, 256, L"GlobalBoneAxis");
-	boneaxisindex = 2;
-	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	pComboBox3->SetSelectedByData(ULongToPtr(0L));
-
-
-	g_SampleUI.AddComboBox( IDC_COMBO_BONE, 35, iY += addh, 125, ctrlh );
-
-/***
-	g_SampleUI.AddButton( IDC_FK_XP, L"Rot X+", 35, iY += addh, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_FK_XM, L"Rot X-", 100, iY, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_FK_YP, L"Rot Y+", 35, iY += addh, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_FK_YM, L"Rot Y-", 100, iY, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_FK_ZP, L"Rot Z+", 35, iY += addh, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_FK_ZM, L"Rot Z-",100, iY, 60, ctrlh );
-***/
-/***
-	iY += addh;
-
-	g_SampleUI.AddButton( IDC_T_XP, L"Tra X+", 35, iY += addh, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_T_XM, L"Tra X-", 100, iY, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_T_YP, L"Tra Y+", 35, iY += addh, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_T_YM, L"Tra Y-", 100, iY, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_T_ZP, L"Tra Z+", 35, iY += addh, 60, ctrlh );
-	g_SampleUI.AddButton( IDC_T_ZM, L"Tra Z-",100, iY, 60, ctrlh );
-***/
-	//iY += addh;
-
-    swprintf_s( sz, 100, L"Motion Speed: %0.2f", g_dspeed );
-    g_SampleUI.AddStatic( IDC_SPEED_STATIC, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_SPEED, 50, iY += addh, 100, ctrlh, 0, 700, ( int )( g_dspeed * 100.0f ) );
-
-	g_SampleUI.AddCheckBox( IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, 450, 16, false, 0U, false, &s_CamTargetCheckBox );
-
-
-	//iY += addh;
-
-	g_SampleUI.AddComboBox( IDC_COMBO_IKLEVEL, 35, iY += addh, 125, ctrlh );
-    CDXUTComboBox* pComboBox0 = g_SampleUI.GetComboBox( IDC_COMBO_IKLEVEL );
-	pComboBox0->RemoveAllItems();
-	int level;
-	for( level = 0; level < 15; level++ ){
-		ULONG levelval = (ULONG)level;
-		WCHAR strlevel[256];
-		swprintf_s( strlevel, 256, L"%02d", level );
-		pComboBox0->AddItem( strlevel, ULongToPtr( levelval ) );
-	}
-	pComboBox0->SetSelectedByData( ULongToPtr( 1 ) );
-
-
-	g_SampleUI.AddComboBox( IDC_COMBO_EDITMODE, 35, iY += addh, 125, ctrlh );
-    CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox( IDC_COMBO_EDITMODE );
-	pComboBox1->RemoveAllItems();
-	pComboBox1->AddItem( L"IK回転", ULongToPtr( IDC_IK_ROT ) );
-	pComboBox1->AddItem( L"IK移動", ULongToPtr( IDC_IK_MV ) );
-	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
-	pComboBox1->AddItem( L"剛体設定", ULongToPtr( IDC_BT_RIGID ) );
-	pComboBox1->AddItem( L"インパルス", ULongToPtr( IDC_BT_IMP ) );
-	pComboBox1->AddItem( L"物理地面", ULongToPtr( IDC_BT_GP ) );
-	pComboBox1->AddItem( L"減衰率アニメ", ULongToPtr( IDC_BT_DAMP ) );
-
-	pComboBox1->SetSelectedByData( ULongToPtr( 0 ) );
-
-
-    swprintf_s( sz, 100, L"姿勢適用位置 : %d ％", g_applyrate );
-    g_SampleUI.AddStatic( IDC_STATIC_APPLYRATE, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate );
-	CEditRange::SetApplyRate(g_applyrate);
-
-
-    //swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
-	swprintf_s( sz, 100, L"IK 次数の係数 : %f", g_ikfirst );
-    g_SampleUI.AddStatic( IDC_STATIC_IKFIRST, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)( g_ikfirst * 25.0f ) );
-
-    swprintf_s( sz, 100, L"IK 伝達係数 : %f", g_ikrate );
-    g_SampleUI.AddStatic( IDC_STATIC_IKRATE, sz, 35, iY += addh, 125, ctrlh );
-    g_SampleUI.AddSlider( IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)( g_ikrate * 100.0f ) );
-
-	g_SampleUI.AddCheckBox( IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, 480, 16, false, 0U, false, &s_ApplyEndCheckBox );
-	g_SampleUI.AddCheckBox( IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox );
-	g_SampleUI.AddCheckBox( IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox );
-	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, 480, 16, true, 0U, false, &s_LimitDegCheckBox);
-
-
-//#define IDC_SL_IKFIRST		37
-//#define IDC_SL_IKRATE			38
-
-	s_timelineWnd = new OrgWindow(
-							0,
-							L"TimeLine",				//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(50, 0),		//位置
-							WindowSize(400,630),	//サイズ
-							//WindowSize(150,540),	//サイズ
-							L"TimeLine",				//タイトル
-							s_mainwnd,					//親ウィンドウハンドル
-							true,					//表示・非表示状態
-							70,50,70 );				//カラー
-
-	
-	// ウィンドウの閉じるボタンのイベントリスナーに
-	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
-	s_timelineWnd->setCloseListener( []() { s_closeFlag=true; } );
-
-	// ウィンドウのキーボードイベントリスナーに
-	// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
-	// コピー等のキーボードを使用する処理はキーボードイベントリスナーを使用しなくても
-	// メインループ内でマイフレームキー状態を監視することで作成可能である。
-	s_timelineWnd->setKeyboardEventListener( [](const KeyboardEvent &e){
-		if( e.ctrlKey && !e.repeat && e.onDown ){
-			switch( e.keyCode ){
-			case 'C': 
-				s_copyFlag=true; 
-				break;
-			case 'B':
-				s_symcopyFlag=true;
-				break;
-			case 'X': 
-				s_cutFlag=true; 
-				break;
-			case 'V': 
-				s_pasteFlag=true; 
-				break;
-			case 'P': 
-				g_previewFlag=1;
-				break;
-			case 'S': 
-				g_previewFlag=0; 
-				break;
-			case 'D':
-				s_deleteFlag=true;
-				break;
-			default:
-				break;
-			}
-		}
-	} );
-
-//////////
-///////// Long Timeline
-	s_LtimelineWnd = new OrgWindow(
-							0,
-							L"EditRangeTimeLine",				//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							//WindowPos( 250, 825 ),		//位置
-							WindowPos( 200, 645 ),		//位置
-							WindowSize( 1050, 120 ),	//サイズ
-							L"EditRangeTimeLine",				//タイトル
-							s_mainwnd,					//親ウィンドウハンドル
-							true,					//表示・非表示状態
-							70,50,70 );				//カラー
-
-/////////
-	s_owpPlayerButton = new OWP_PlayerButton;
-	s_owpPlayerButton->setButtonSize(20);
-	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
-
-	s_owpPlayerButton->setFrontPlayButtonListener( [](){ g_previewFlag = 1; } );
-	s_owpPlayerButton->setBackPlayButtonListener( [](){  g_previewFlag = -1; } );
-	s_owpPlayerButton->setFrontStepButtonListener( [](){ s_lastkeyFlag = true; } );
-	s_owpPlayerButton->setBackStepButtonListener( [](){  s_firstkeyFlag = true; } );
-	s_owpPlayerButton->setStopButtonListener([](){  g_previewFlag = 0; });
-	s_owpPlayerButton->setResetButtonListener( [](){ if( s_owpLTimeline ){ g_previewFlag = 0; s_owpLTimeline->setCurrentTime( 0.0, false ); } } );
-	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
-	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
-	s_owpPlayerButton->setPrevRangeButtonListener([](){  g_undereditrange = true; s_prevrangeFlag = true; });
-	s_owpPlayerButton->setNextRangeButtonListener([](){  g_undereditrange = true; s_nextrangeFlag = true; });
-
-	s_LtimelineWnd->setSizeMin( OrgWinGUI::WindowSize( 100, 100 ) );
-	s_LtimelineWnd->setCloseListener( [](){ s_LcloseFlag=true; } );
-	s_LtimelineWnd->setLUpListener( [](){
-		if (g_previewFlag == 0){
-			if (s_prevrangeFlag || s_nextrangeFlag){
-				RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
-				s_buttonselectstart = s_editrange.GetStartFrame();
-				s_buttonselectend = s_editrange.GetEndFrame();
-				OnTimeLineButtonSelect(0);
-			}
-			else if (g_selecttolastFlag == false){
-				OnTimeLineSelect();
-			}
-			else{
-				OnTimeLineButtonSelect(1);
-			}
-			g_selecttolastFlag = false;
-			s_prevrangeFlag = false;
-			s_nextrangeFlag = false;
-		}
-	} );
-
-
-
-/////////
-	s_dmpanimWnd = new OrgWindow(
-							1,
-							_T("dampAnimWindow"),		//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(0, 400),		//位置
-							//WindowSize(450,880),		//サイズ
-							WindowSize(500,120),		//サイズ
-							_T("減衰率アニメウィンドウ"),	//タイトル
-							s_mainwnd,	//親ウィンドウハンドル
-							false,					//表示・非表示状態
-							70,50,70,				//カラー
-							true,					//閉じられるか否か
-							true);					//サイズ変更の可否
-
-	s_dmpgroupcheck = new OWP_CheckBox( L"全部設定ボタンで同グループ剛体に設定する。", 0 );
-	s_dmpanimLlabel = new OWP_Label( L"１フレームあたりの位置ばね減衰率の減少率" );
-	s_dmpanimLSlider= new OWP_Slider(0.0,1.0,0.0);
-	s_dmpanimAlabel = new OWP_Label( L"１フレームあたりの角度ばね減衰率の減少率" );
-	s_dmpanimASlider= new OWP_Slider(0.0,1.0,0.0);
-	s_dmpanimB = new OWP_Button( L"全ての剛体に設定" );
-
-	int slw2 = 500;
-	s_dmpanimLSlider->setSize( WindowSize( slw2, 40 ) );
-	s_dmpanimASlider->setSize( WindowSize( slw2, 40 ) );
-
-	s_dmpanimWnd->addParts(*s_dmpgroupcheck);
-	s_dmpanimWnd->addParts(*s_dmpanimLlabel);
-	s_dmpanimWnd->addParts(*s_dmpanimLSlider);
-	s_dmpanimWnd->addParts(*s_dmpanimAlabel);
-	s_dmpanimWnd->addParts(*s_dmpanimASlider);
-	s_dmpanimWnd->addParts(*s_dmpanimB);
-
-	s_dmpanimWnd->setCloseListener( [](){ s_DcloseFlag=true; } );
-
-	s_dmpanimLSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRgdRe();
-		if( curre ){
-			float val = (float)s_dmpanimLSlider->getValue();
-			curre->SetDampanimL( val );
-		}
-		s_dmpanimWnd->callRewrite();						//再描画
-	} );
-	s_dmpanimASlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRgdRe();
-		if( curre ){
-			float val = (float)s_dmpanimASlider->getValue();
-			curre->SetDampanimA( val );
-		}
-		s_dmpanimWnd->callRewrite();						//再描画
-	} );
-	s_dmpanimB->setButtonListener( [](){
-		if( s_model && (s_rgdindex >= 0) ){
-			float valL = (float)s_dmpanimLSlider->getValue();
-			float valA = (float)s_dmpanimASlider->getValue();
-			int chkg = (int)s_dmpgroupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRgdRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllDampAnimData( gid, s_rgdindex, valL, valA );
-		}
-	} );
-
-/***	
-static OrgWindow* s_dmpanimWnd = 0;
-static OWP_CheckBox* s_dmpgroupcheck = 0;
-static OWP_Label* s_dmpanimlabel = 0;
-static OWP_Slider* s_dmpanimSlider = 0;
-static OWP_Button* s_dampanimB = 0;
-***/
-
-/////////
-	s_rigidWnd = new OrgWindow(
-							1,
-							_T("RigidWindow"),		//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(100, 200),		//位置
-							//WindowSize(450,880),		//サイズ
-							//WindowSize(450,680),		//サイズ
-							WindowSize(450, 760),		//サイズ
-							_T("剛体設定ウィンドウ"),	//タイトル
-							s_mainwnd,	//親ウィンドウハンドル
-							false,					//表示・非表示状態
-							70,50,70,				//カラー
-							true,					//閉じられるか否か
-							true);					//サイズ変更の可否
-
-	s_groupcheck = new OWP_CheckBox( L"全部設定ボタンで同グループ剛体に設定する。", 0 );
-	s_shprateSlider= new OWP_Slider(0.6,20.0,0.0);
-	s_boxzSlider= new OWP_Slider(0.6,20.0,0.0);
-	s_massSlider = new OWP_Slider( g_initmass, 30.0, 0.0 );
-	s_massB = new OWP_Button( L"全剛体に質量設定" );
-	s_rigidskip = new OWP_CheckBox( L"有効/無効", 1 );
-	s_allrigidenableB = new OWP_Button(L"全ての剛体を有効にする");
-	s_allrigiddisableB = new OWP_Button(L"全ての剛体以外を無効にする");
-	s_btgSlider = new OWP_Slider(-1.0,1.0,-1.0);
-	s_btgscSlider = new OWP_Slider(10.0,100.0,0.0);
-	s_btgB = new OWP_Button( L"全ての剛体にBT重力設定" );
-	s_btforce = new OWP_CheckBox( L"BTシミュ剛体にする", 0 );
-
-	s_shplabel = new OWP_Label( L"剛体の太さ" );
-	s_boxzlabel = new OWP_Label( L"直方体の奥行き" );
-	s_massSLlabel = new OWP_Label( L"剛体の質量" );
-	s_btglabel = new OWP_Label( L"BT剛体の重力" );
-	s_btgsclabel = new OWP_Label( L"BT剛体の重力のスケール" );
-
-	s_namelabel = new OWP_Label( L"ボーン名:????" );
-	s_lenglabel = new OWP_Label( L"ボーン長:*****[m]" );
-
-
-	s_kB = new OWP_Button( L"全ての剛体にばねパラメータ設定" );
-	s_restB = new OWP_Button( L"全ての剛体に弾性と摩擦設定" );
-
-	s_colradio = new OWP_RadioButton( L"コーン形状" );
-	s_colradio->addLine( L"カプセル形状" );
-	s_colradio->addLine( L"球形状" );
-	s_colradio->addLine( L"直方体形状" );
-
-	s_lkradio = new OWP_RadioButton( L"[位置ばね]へなへな" );
-	s_lkradio->addLine( L"[位置ばね]結構ゆるい" );
-	s_lkradio->addLine( L"[位置ばね]普通こんなもんだと思う" );
-	s_lkradio->addLine( L"[位置ばね]カスタム値" );
-
-	s_lkSlider = new OWP_Slider( g_initcuslk, 1e4, 0.0f );//60000
-	s_lklabel = new OWP_Label( L"位置ばね カスタム値" );
-
-	s_akradio = new OWP_RadioButton( L"[角度ばね]へなへな" );
-	s_akradio->addLine( L"[角度ばね]結構ゆるい" );
-	s_akradio->addLine( L"[角度ばね]普通こんなもんだと思う" );
-	s_akradio->addLine( L"[角度ばね]カスタム値" );
-
-	s_akSlider = new OWP_Slider( g_initcusak, 6000.0f, 0.0f );//300
-	s_aklabel = new OWP_Label( L"角度ばね カスタム値" );
-
-	s_restSlider = new OWP_Slider( 0.5f, 1.0f, 0.0f );
-	s_restlabel = new OWP_Label( L"剛体の弾性" );
-	s_fricSlider = new OWP_Slider( 0.5f, 1.0f, 0.0f );
-	s_friclabel = new OWP_Label( L"剛体の摩擦" );
-
-
-	s_ldmplabel = new OWP_Label( L"[位置ばね]減衰率" );
-	s_admplabel = new OWP_Label( L"[角度ばね]減衰率" );
-	s_ldmpSlider = new OWP_Slider( g_l_dmp, 1.0, 0.0 );
-	s_admpSlider = new OWP_Slider( g_a_dmp, 1.0, 0.0 );
-	s_dmpB = new OWP_Button( L"全剛体に減衰率設定" );
-	s_groupB = new OWP_Button( L"剛体の衝突グループID設定" );
-	s_gcoliB = new OWP_Button( L"地面の衝突グループID設定" );
-
-	int slw = 350;
-
-	s_shprateSlider->setSize( WindowSize( slw, 40 ) );
-	s_boxzSlider->setSize( WindowSize( slw, 40 ) );
-	s_massSlider->setSize( WindowSize( slw, 40 ) );
-	s_btgSlider->setSize( WindowSize( slw, 40 ) );
-	s_btgscSlider->setSize( WindowSize( slw, 40 ) );
-	s_ldmpSlider->setSize( WindowSize( slw, 40 ) );
-	s_admpSlider->setSize( WindowSize( slw, 40 ) );
-	s_lkSlider->setSize( WindowSize( slw, 40 ) );
-	s_akSlider->setSize( WindowSize( slw, 40 ) );
-	s_restSlider->setSize( WindowSize( slw, 40 ) );
-	s_fricSlider->setSize( WindowSize( slw, 40 ) );
-
-	s_rigidWnd->addParts(*s_namelabel);
-	s_rigidWnd->addParts(*s_groupcheck);
-	s_rigidWnd->addParts( *s_shplabel );
-	s_rigidWnd->addParts(*s_shprateSlider);
-	s_rigidWnd->addParts( *s_boxzlabel );
-	s_rigidWnd->addParts(*s_boxzSlider);
-	s_rigidWnd->addParts( *s_massSLlabel );
-	s_rigidWnd->addParts(*s_massSlider);
-	s_rigidWnd->addParts(*s_massB);
-	s_rigidWnd->addParts(*s_lenglabel);
-	s_rigidWnd->addParts(*s_rigidskip);
-	s_rigidWnd->addParts(*s_allrigidenableB);
-	s_rigidWnd->addParts(*s_allrigiddisableB);
-
-	s_rigidWnd->addParts(*s_colradio);
-
-	s_rigidWnd->addParts( *s_lkradio );
-	s_rigidWnd->addParts( *s_lklabel );
-	s_rigidWnd->addParts( *s_lkSlider );
-	s_rigidWnd->addParts( *s_akradio );
-	s_rigidWnd->addParts( *s_aklabel );
-	s_rigidWnd->addParts( *s_akSlider );
-	s_rigidWnd->addParts( *s_kB );
-	
-	s_rigidWnd->addParts( *s_restlabel );
-	s_rigidWnd->addParts( *s_restSlider );
-	s_rigidWnd->addParts( *s_friclabel );
-	s_rigidWnd->addParts( *s_fricSlider );
-	s_rigidWnd->addParts( *s_restB );
-
-
-	s_rigidWnd->addParts(*s_ldmplabel);
-	s_rigidWnd->addParts(*s_ldmpSlider);
-	s_rigidWnd->addParts(*s_admplabel);
-	s_rigidWnd->addParts(*s_admpSlider);
-	s_rigidWnd->addParts(*s_dmpB);
-
-	s_rigidWnd->addParts( *s_btglabel );
-	s_rigidWnd->addParts( *s_btgSlider );
-	s_rigidWnd->addParts( *s_btgB );
-	s_rigidWnd->addParts( *s_btgsclabel );
-	s_rigidWnd->addParts( *s_btgscSlider );
-	s_rigidWnd->addParts( *s_btforce );
-
-	s_rigidWnd->addParts(*s_groupB);
-	s_rigidWnd->addParts(*s_gcoliB);
-
-
-	s_rigidWnd->setCloseListener( [](){ s_RcloseFlag=true; } );
-
-	s_shprateSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_shprateSlider->getValue();
-			curre->SetSphrate( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_boxzSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_boxzSlider->getValue();
-			curre->SetBoxzrate( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_massSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_massSlider->getValue();
-			curre->SetMass( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_ldmpSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_ldmpSlider->getValue();
-			curre->SetLDamping( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_admpSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_admpSlider->getValue();
-			curre->SetADamping( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_lkSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_lkSlider->getValue();
-			curre->SetCusLk( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_akSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_akSlider->getValue();
-			curre->SetCusAk( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-
-	s_restSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_restSlider->getValue();
-			curre->SetRestitution( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_fricSlider->setCursorListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			float val = (float)s_fricSlider->getValue();
-			curre->SetFriction( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-
-	s_rigidskip->setButtonListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			bool validflag = s_rigidskip->getValue();
-			if( validflag == false ){
-				curre->SetSkipflag( 1 );
-			}else{
-				curre->SetSkipflag( 0 );
-			}
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_allrigidenableB->setButtonListener([](){
-		if (s_model){
-			s_model->EnableAllRigidElem(s_curreindex);
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	});
-	s_allrigiddisableB->setButtonListener([](){
-		if (s_model){
-			s_model->DisableAllRigidElem(s_curreindex);
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	});
-
-
-	s_btforce->setButtonListener( [](){
-		if( s_model && (s_curboneno >= 0) ){
-			CBone* curbone = s_model->GetBoneByID( s_curboneno );
-			if( curbone ){
-				CBone* parbone = curbone->GetParent();
-				if( parbone ){
-					bool kinflag = s_btforce->getValue();
-					if( kinflag == false ){
-						parbone->SetBtForce( 0 );
-					}else{
-						parbone->SetBtForce( 1 );
-					}
-				}
-			}
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_btgSlider->setCursorListener( [](){
-		float btg = (float)s_btgSlider->getValue();
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			curre->SetBtg( btg );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_btgscSlider->setCursorListener( [](){
-		float btgsc = (float)s_btgscSlider->getValue();
-		if( s_model && (s_curreindex >= 0) ){
-			REINFO tmpinfo = s_model->GetRigidElemInfo( s_curreindex );
-			tmpinfo.btgscale = btgsc;
-			s_model->SetRigidElemInfo( s_curreindex, tmpinfo );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_colradio->setSelectListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			int val = s_colradio->getSelectIndex();
-			curre->SetColtype( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_lkradio->setSelectListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			int val = s_lkradio->getSelectIndex();
-			curre->SetLKindex( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-	s_akradio->setSelectListener( [](){
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			int val = s_akradio->getSelectIndex();
-			curre->SetAKindex( val );
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	} );
-
-	s_kB->setButtonListener( [](){
-		if( s_model ){
-			int lindex = s_lkradio->getSelectIndex();
-			int aindex = s_akradio->getSelectIndex();
-			float cuslk = (float)s_lkSlider->getValue();
-			float cusak = (float)s_akSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllKData( gid, s_curreindex, lindex, aindex, cuslk, cusak );
-		}
-	} );
-	s_restB->setButtonListener( [](){
-		if( s_model ){
-			float rest = (float)s_restSlider->getValue();
-			float fric = (float)s_fricSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllRestData( gid, s_curreindex, rest, fric );
-		}
-	} );
-	s_dmpB->setButtonListener( [](){ 
-		if( s_model ){
-			float ldmp = (float)s_ldmpSlider->getValue();
-			float admp = (float)s_admpSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllDmpData( gid, s_curreindex, ldmp, admp );
-		}
-	} );
-
-	s_groupB->setButtonListener( [](){ 
-		CRigidElem* curre = GetCurRe();
-		if( curre ){
-			CColiIDDlg dlg( curre );
-			dlg.DoModal();
-
-			if( dlg.m_setgroup == 1 ){
-				if( s_model ){
-					s_model->SetColiIDtoGroup( curre );
-				}
-			}
-		}
-	} );
-	s_gcoliB->setButtonListener( [](){ 
-		if( s_bpWorld ){
-			CGColiIDDlg dlg( s_bpWorld->m_coliids, s_bpWorld->m_myselfflag );
-			int dlgret = (int)dlg.DoModal();
-			if( dlgret == IDOK ){
-				s_bpWorld->m_coliids = dlg.m_coliids;
-				s_bpWorld->m_myselfflag = dlg.m_myself;
-				s_bpWorld->RemakeG();
-			}
-		}
-	} );
-
-	s_massB->setButtonListener( [](){ 
-		if( s_model ){
-			float mass = (float)s_massSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllMassData( gid, s_curreindex, mass );
-		}
-//		_ASSERT( 0 );
-	} );
-	s_btgB->setButtonListener( [](){ 
-		if( s_model ){
-			float btg = (float)s_btgSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllBtgData( gid, s_curreindex, btg );
-		}
-	} );
-
-
-	s_rigidWnd->callRewrite();						//再描画
-
-//////////
-	s_impWnd= new OrgWindow(
-							1,
-							_T("ImpulseWindow"),		//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(400, 400),		//位置
-							WindowSize(400,200),		//サイズ
-							//WindowSize(200,110),		//サイズ
-							_T("剛体ウィンドウ"),	//タイトル
-							s_mainwnd,	//親ウィンドウハンドル
-							false,					//表示・非表示状態
-							70,50,70,				//カラー
-							true,					//閉じられるか否か
-							true);					//サイズ変更の可否
-
-	s_impgroupcheck = new OWP_CheckBox( L"全部に設定ボタンで同じ剛体グループに設定", 0 );
-
-	s_impxSlider = new OWP_Slider(0.0,50.0,-50.0);
-	s_impySlider = new OWP_Slider(0.0,50.0,-50.0);
-	s_impzSlider= new OWP_Slider(0.0,50.0,-50.0);
-	s_impscaleSlider = new OWP_Slider(1.0,10.0,0.0);
-	s_impxlabel = new OWP_Label( L"インパルスのX" );
-	s_impylabel = new OWP_Label( L"インパルスのY" );
-	s_impzlabel = new OWP_Label( L"インパルスのZ" );
-	s_impscalelabel = new OWP_Label( L"インパルスのスケール" );
-	s_impallB = new OWP_Button( L"全ての剛体にインパルスをセット" );
-
-	slw = 300;
-
-	s_impzSlider->setSize( WindowSize( slw, 40 ) );
-	s_impySlider->setSize( WindowSize( slw, 40 ) );
-
-	s_impWnd->addParts( *s_impgroupcheck );
-	s_impWnd->addParts( *s_impxlabel );
-	s_impWnd->addParts(*s_impxSlider);
-	s_impWnd->addParts( *s_impylabel );
-	s_impWnd->addParts(*s_impySlider);
-	s_impWnd->addParts( *s_impzlabel );
-	s_impWnd->addParts(*s_impzSlider);
-	s_impWnd->addParts( *s_impscalelabel );
-	s_impWnd->addParts(*s_impscaleSlider);
-	s_impWnd->addParts(*s_impallB);
-
-	s_impWnd->setCloseListener( [](){ s_IcloseFlag=true; } );
-
-	s_impzSlider->setCursorListener( [](){
-		float val = (float)s_impzSlider->getValue();
-		if( s_model ){
-			s_model->SetImp( s_curboneno, 2, val );
-		}
-		s_impWnd->callRewrite();						//再描画
-	} );
-	s_impySlider->setCursorListener( [](){
-		float val = (float)s_impySlider->getValue();
-		if( s_model ){
-			s_model->SetImp( s_curboneno, 1, val );
-		}
-		s_impWnd->callRewrite();						//再描画
-	} );
-	s_impxSlider->setCursorListener( [](){
-		float val = (float)s_impxSlider->getValue();
-		if( s_model ){
-			s_model->SetImp( s_curboneno, 0, val );
-		}
-		s_impWnd->callRewrite();						//再描画
-	} );
-	s_impscaleSlider->setCursorListener( [](){
-		float scale = (float)s_impscaleSlider->getValue();
-		g_impscale = scale;
-		s_impWnd->callRewrite();						//再描画
-	} );
-	s_impallB->setButtonListener( [](){ 
-		if( s_model ){
-			float impx = (float)s_impxSlider->getValue();
-			float impy = (float)s_impySlider->getValue();
-			float impz = (float)s_impzSlider->getValue();
-			int chkg = (int)s_impgroupcheck->getValue();
-			int gid = -1;
-			if( chkg ){
-				CRigidElem* curre = GetCurRgdRe();
-				if( curre ){
-					gid = curre->GetGroupid();
-				}else{
-					gid = -1;
-				}
-			}
-			s_model->SetAllImpulseData( gid, impx, impy, impz );
-		}
-	} );
-//////////
-
-
-//////////
-	s_gpWnd = new OrgWindow(
-							1,
-							_T("GPlaneWindow"),		//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							WindowPos(400, 645),		//位置
-							WindowSize(400,320),		//サイズ
-							//WindowSize(200,110),		//サイズ
-							_T("物理地面ウィンドウ"),	//タイトル
-							s_mainwnd,	//親ウィンドウハンドル
-							false,					//表示・非表示状態
-							70,50,70,				//カラー
-							true,					//閉じられるか否か
-							true);					//サイズ変更の可否
-
-	s_ghSlider = new OWP_Slider(-1.5,5.0,-15.0);
-	s_gsizexSlider = new OWP_Slider(5.0,50.0,-50.0);
-	s_gsizezSlider = new OWP_Slider(5.0,50.0,-50.0);
-	s_ghlabel = new OWP_Label( L"物理地面の高さ" );
-	s_gsizexlabel = new OWP_Label( L"X方向のサイズ" );
-	s_gsizezlabel = new OWP_Label( L"Z方向のサイズ" );
-	s_gpdisp = new OWP_CheckBox( L"表示する", 1 );
-
-	s_grestSlider = new OWP_Slider(0.5,1.0,0.0);
-	s_gfricSlider = new OWP_Slider(0.5,1.0,0.0);
-	s_grestlabel = new OWP_Label( L"地面の弾性" );
-	s_gfriclabel = new OWP_Label( L"地面の摩擦" );
-
-
-	slw = 300;
-
-	s_ghSlider->setSize( WindowSize( slw, 40 ) );
-	s_gsizexSlider->setSize( WindowSize( slw, 40 ) );
-	s_gsizezSlider->setSize( WindowSize( slw, 40 ) );
-	s_grestSlider->setSize( WindowSize( slw, 40 ) );
-	s_gfricSlider->setSize( WindowSize( slw, 40 ) );
-
-	s_gpWnd->addParts(*s_ghlabel);
-	s_gpWnd->addParts(*s_ghSlider);
-	s_gpWnd->addParts(*s_gsizexlabel);
-	s_gpWnd->addParts(*s_gsizexSlider);
-	s_gpWnd->addParts(*s_gsizezlabel);
-	s_gpWnd->addParts(*s_gsizezSlider);
-	s_gpWnd->addParts(*s_gpdisp);
-
-	s_gpWnd->addParts(*s_grestlabel);
-	s_gpWnd->addParts(*s_grestSlider);
-	s_gpWnd->addParts(*s_gfriclabel);
-	s_gpWnd->addParts(*s_gfricSlider);
-
-	s_gpWnd->setCloseListener( [](){ s_GcloseFlag=true; } );
-
-	s_ghSlider->setCursorListener( [](){
-		if( s_bpWorld ){
-			s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
-			s_bpWorld->RemakeG();
-
-			D3DXVECTOR3 tra( 0.0f, 0.0f, 0.0f );
-			D3DXVECTOR3 mult( s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y );
-			CallF( s_gplane->MultDispObj( mult, tra ), return );
-
-			s_gpWnd->callRewrite();						//再描画
-		}
-	} );
-	s_gsizexSlider->setCursorListener( [](){
-		if( s_bpWorld && s_gplane ){
-			s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
-
-			D3DXVECTOR3 tra( 0.0f, 0.0f, 0.0f );
-			D3DXVECTOR3 mult( s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y );
-			CallF( s_gplane->MultDispObj( mult, tra ), return );
-			s_gpWnd->callRewrite();						//再描画
-		}
-	} );
-	s_gsizezSlider->setCursorListener( [](){
-		if( s_bpWorld && s_gplane ){
-			s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
-
-			D3DXVECTOR3 tra( 0.0f, 0.0f, 0.0f );
-			D3DXVECTOR3 mult( s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y );
-			CallF( s_gplane->MultDispObj( mult, tra ), return );
-			s_gpWnd->callRewrite();						//再描画
-		}
-	} );
-	s_gpdisp->setButtonListener( [](){
-		if( s_bpWorld ){
-			bool dispflag = s_gpdisp->getValue();
-			s_bpWorld->m_gplanedisp = (int)dispflag;
-			s_gpWnd->callRewrite();						//再描画
-		}
-	} );
-	s_grestSlider->setCursorListener( [](){
-		if( s_bpWorld && s_gplane ){
-			s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
-			s_bpWorld->RemakeG();
-			
-			s_gpWnd->callRewrite();						//再描画
-		}
-	} );
-	s_gfricSlider->setCursorListener( [](){
-		if( s_bpWorld && s_gplane ){
-			s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
-			s_bpWorld->RemakeG();
-			
-			s_gpWnd->callRewrite();						//再描画
-		}
-	} );
-
-/////////
-	// ツールウィンドウを作成してボタン類を追加
-	s_toolWnd= new OrgWindow(
-							1,
-							_T("ToolWindow"),		//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							//WindowPos(400, 580),		//位置
-							WindowPos(50, 645),		//位置
-							WindowSize(150,10),		//サイズ
-							_T("ツールウィンドウ"),	//タイトル
-							s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
-							true,					//表示・非表示状態
-							70,50,70,				//カラー
-							true,					//閉じられるか否か
-							false);					//サイズ変更の可否
-
-	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン"));
-	s_toolCopyB = new OWP_Button(_T("コピー"));
-	s_toolSymCopyB = new OWP_Button(_T("対称コピー"));
-	//s_toolCutB = new OWP_Button(_T("カット"));
-	s_toolPasteB = new OWP_Button(_T("ペースト"));
-	s_toolInitMPB = new OWP_Button(_T("姿勢初期化"));
-	//s_toolDeleteB = new OWP_Button(_T("削除"));
-	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
-	s_toolMotPropB = new OWP_Button(_T("プロパティ"));
-
-	s_toolWnd->addParts(*s_toolSelBoneB);
-	s_toolWnd->addParts(*s_toolCopyB);
-	s_toolWnd->addParts(*s_toolSymCopyB);
-	s_toolWnd->addParts(*s_toolPasteB);
-	s_toolWnd->addParts(*s_toolInitMPB);
-	//s_toolWnd->addParts(*s_toolMarkB);
-	s_toolWnd->addParts(*s_toolMotPropB);
-
-	s_toolWnd->setCloseListener( [](){ s_closetoolFlag=true; } );
-	s_toolCopyB->setButtonListener( [](){ s_copyFlag = true; } );
-	s_toolSymCopyB->setButtonListener( [](){ s_symcopyFlag = true; } );
-	s_toolPasteB->setButtonListener( [](){ s_pasteFlag = true; } );
-	s_toolMotPropB->setButtonListener( [](){ s_motpropFlag = true; } );
-	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
-	s_toolSelBoneB->setButtonListener( [](){ s_selboneFlag = true; } );
-	s_toolInitMPB->setButtonListener( [](){ s_initmpFlag = true; } );
-
-////
-	// ウィンドウを作成
-	s_layerWnd = new OrgWindow(
-							1,
-							_T("LayerTool"),		//ウィンドウクラス名
-							GetModuleHandle(NULL),	//インスタンスハンドル
-							//WindowPos(800, 500),		//位置
-							WindowPos(250, 645),		//位置
-							WindowSize(150,200),		//サイズ
-							_T("オブジェクトパネル"),	//タイトル
-							NULL,					//親ウィンドウハンドル
-							//true,					//表示・非表示状態
-							false,					//表示・非表示状態
-							70,50,70,				//カラー
-							true,					//閉じられるか否か
-							true);					//サイズ変更の可否
-
-	// レイヤーウィンドウパーツを作成
-	s_owpLayerTable= new OWP_LayerTable(_T("レイヤーテーブル"));
-	WCHAR label[256];
-	wcscpy_s( label, 256, L"dummy name" );
-	s_owpLayerTable->newLine( label, 0 );
-
-	// ウィンドウにウィンドウパーツを登録
-	s_layerWnd->addParts(*s_owpLayerTable);
-
-
-	s_layerWnd->setCloseListener( [](){ s_closeobjFlag=true; } );
-
-	//レイヤーのカーソルリスナー
-	s_owpLayerTable->setCursorListener( [](){
-		//_tprintf_s( _T("CurrentLayer: Index=%3d Name=%s\n"),
-		//			owpLayerTable->getCurrentLine(),
-		//			owpLayerTable->getCurrentLineName().c_str() );
-	} );
-
-	//レイヤーの移動リスナー
-	s_owpLayerTable->setLineShiftListener( [](int from, int to){
-		//_tprintf_s( _T("ShiftLayer: fromIndex=%3d toIndex=%3d\n"), from, to );
-	} );
-
-	//レイヤーの可視状態変更リスナー
-	s_owpLayerTable->setChangeVisibleListener( [](int index){
-		if( s_model ){
-			CMQOObject* curobj = (CMQOObject*)( s_owpLayerTable->getObj(index) );
-			if( curobj ){
-				if( s_owpLayerTable->getVisible(index) ){
-					curobj->SetDispFlag( 1 );				
-				}else{
-					curobj->SetDispFlag( 0 );
-				}
-			}
-		}
-	} );
-
-	//レイヤーのロック状態変更リスナー
-	s_owpLayerTable->setChangeLockListener( [](int index){
-		//if( owpLayerTable->getLock(index) ){
-		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='True'  Name=%s\n"),
-		//				index,
-		//				owpLayerTable->getName(index).c_str() );
-		//}else{
-		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='False' Name=%s\n"),
-		//				index,
-		//				owpLayerTable->getName(index).c_str() );
-		//}
-	} );
-
-	//レイヤーのプロパティコールリスナー
-	s_owpLayerTable->setCallPropertyListener( [](int index){
-		//_tprintf_s( _T("CallProperty: Index=%3d Name=%s\n"),
-		//			index,
-		//			owpLayerTable->getName(index).c_str() );
-	} );
-
+	CreateUtDialog();
+	CreateTimelineWnd();
+	CreateLongTimelineWnd();
+	CreateDmpAnimWnd();
+	CreateRigidWnd();
+	CreateImpulseWnd();
+	CreateGPlaneWnd();
+	CreateToolWnd();
+	CreateLayerWnd();
 //////////
 	ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
 
@@ -2154,7 +1100,6 @@ static OWP_Button* s_dampanimB = 0;
 	s_modelpanel.separator = 0;
 	s_modelpanel.checkvec.clear();
 	s_modelpanel.modelindex = -1;
-
 
 	s_doneinit = 1;
 }
@@ -10687,4 +9632,1118 @@ int OnFrameInitBtWorld()
 		s_model->PlusPlusBtCnt();
 	}
 	return 0;
+}
+
+
+int CreateUtDialog()
+{
+
+	// Initialize dialogs
+	g_SettingsDlg.Init(&g_DialogResourceManager);
+	g_SampleUI.Init(&g_DialogResourceManager);
+
+	int iY;
+	g_SampleUI.SetCallback(OnGUIEvent); iY = 0;
+
+	int ctrlh = 25;
+	int addh = ctrlh + 2;
+
+	WCHAR sz[100];
+
+
+	//iY += 24;
+	swprintf_s(sz, 100, L"Light scale: %0.2f", g_fLightScale);
+	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, 125, ctrlh);
+	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
+
+	g_SampleUI.AddCheckBox(IDC_BMARK, L"ボーンを表示する", 25, iY += addh, 480, 16, true, 0U, false, &s_BoneMarkCheckBox);
+
+	/***
+	swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
+	g_SampleUI.AddStatic( IDC_NUM_LIGHTS_STATIC, sz, 35, iY += addh, 125, ctrlh );
+	g_SampleUI.AddSlider( IDC_NUM_LIGHTS, 50, iY += addh, 100, ctrlh, 1, MAX_LIGHTS, g_nNumActiveLights );
+
+	//iY += 24;
+	swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
+	g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY += addh, 125, ctrlh );
+	g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
+
+	//iY += 24;
+	g_SampleUI.AddButton( IDC_ACTIVE_LIGHT, L"Change active light (K)", 35, iY += addh, 125, ctrlh, 'K' );
+
+	g_SampleUI.AddCheckBox( IDC_LIGHT_DISP, L"ライト矢印を表示する", 25, iY += addh, 450, 16, true, 0U, false, &s_LightCheckBox );
+
+	iY += addh;
+	***/
+	//iY += 24;
+	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, 35, iY += addh, 125, ctrlh);
+	CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+	pComboBox3->RemoveAllItems();
+	WCHAR straxis[256];
+	ULONG boneaxisindex;
+	swprintf_s(straxis, 256, L"CurrentBoneAxis");
+	boneaxisindex = 0;
+	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+	swprintf_s(straxis, 256, L"ParentBoneAxis");
+	boneaxisindex = 1;
+	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+	swprintf_s(straxis, 256, L"GlobalBoneAxis");
+	boneaxisindex = 2;
+	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+	pComboBox3->SetSelectedByData(ULongToPtr(0L));
+
+
+	g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, 125, ctrlh);
+
+	/***
+	g_SampleUI.AddButton( IDC_FK_XP, L"Rot X+", 35, iY += addh, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_FK_XM, L"Rot X-", 100, iY, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_FK_YP, L"Rot Y+", 35, iY += addh, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_FK_YM, L"Rot Y-", 100, iY, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_FK_ZP, L"Rot Z+", 35, iY += addh, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_FK_ZM, L"Rot Z-",100, iY, 60, ctrlh );
+	***/
+	/***
+	iY += addh;
+
+	g_SampleUI.AddButton( IDC_T_XP, L"Tra X+", 35, iY += addh, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_T_XM, L"Tra X-", 100, iY, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_T_YP, L"Tra Y+", 35, iY += addh, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_T_YM, L"Tra Y-", 100, iY, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_T_ZP, L"Tra Z+", 35, iY += addh, 60, ctrlh );
+	g_SampleUI.AddButton( IDC_T_ZM, L"Tra Z-",100, iY, 60, ctrlh );
+	***/
+	//iY += addh;
+
+	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
+	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddSlider(IDC_SPEED, 50, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+
+	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, 450, 16, false, 0U, false, &s_CamTargetCheckBox);
+
+
+	//iY += addh;
+
+	g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, 35, iY += addh, 125, ctrlh);
+	CDXUTComboBox* pComboBox0 = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
+	pComboBox0->RemoveAllItems();
+	int level;
+	for (level = 0; level < 15; level++){
+		ULONG levelval = (ULONG)level;
+		WCHAR strlevel[256];
+		swprintf_s(strlevel, 256, L"%02d", level);
+		pComboBox0->AddItem(strlevel, ULongToPtr(levelval));
+	}
+	pComboBox0->SetSelectedByData(ULongToPtr(1));
+
+
+	g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, 125, ctrlh);
+	CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
+	pComboBox1->RemoveAllItems();
+	pComboBox1->AddItem(L"IK回転", ULongToPtr(IDC_IK_ROT));
+	pComboBox1->AddItem(L"IK移動", ULongToPtr(IDC_IK_MV));
+	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
+	pComboBox1->AddItem(L"剛体設定", ULongToPtr(IDC_BT_RIGID));
+	pComboBox1->AddItem(L"インパルス", ULongToPtr(IDC_BT_IMP));
+	pComboBox1->AddItem(L"物理地面", ULongToPtr(IDC_BT_GP));
+	pComboBox1->AddItem(L"減衰率アニメ", ULongToPtr(IDC_BT_DAMP));
+
+	pComboBox1->SetSelectedByData(ULongToPtr(0));
+
+
+	swprintf_s(sz, 100, L"姿勢適用位置 : %d ％", g_applyrate);
+	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
+	CEditRange::SetApplyRate(g_applyrate);
+
+
+	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
+	swprintf_s(sz, 100, L"IK 次数の係数 : %f", g_ikfirst);
+	g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddSlider(IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikfirst * 25.0f));
+
+	swprintf_s(sz, 100, L"IK 伝達係数 : %f", g_ikrate);
+	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+
+	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, 480, 16, false, 0U, false, &s_ApplyEndCheckBox);
+	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox);
+	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox);
+	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, 480, 16, true, 0U, false, &s_LimitDegCheckBox);
+
+	return 0;
+
+}
+
+int CreateTimelineWnd()
+{
+	s_timelineWnd = new OrgWindow(
+		0,
+		L"TimeLine",				//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(50, 0),		//位置
+		WindowSize(400, 630),	//サイズ
+		//WindowSize(150,540),	//サイズ
+		L"TimeLine",				//タイトル
+		s_mainwnd,					//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		70, 50, 70);				//カラー
+
+
+	// ウィンドウの閉じるボタンのイベントリスナーに
+	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
+	s_timelineWnd->setCloseListener([]() { s_closeFlag = true; });
+
+	// ウィンドウのキーボードイベントリスナーに
+	// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
+	// コピー等のキーボードを使用する処理はキーボードイベントリスナーを使用しなくても
+	// メインループ内でマイフレームキー状態を監視することで作成可能である。
+	s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent &e){
+		if (e.ctrlKey && !e.repeat && e.onDown){
+			switch (e.keyCode){
+			case 'C':
+				s_copyFlag = true;
+				break;
+			case 'B':
+				s_symcopyFlag = true;
+				break;
+			case 'X':
+				s_cutFlag = true;
+				break;
+			case 'V':
+				s_pasteFlag = true;
+				break;
+			case 'P':
+				g_previewFlag = 1;
+				break;
+			case 'S':
+				g_previewFlag = 0;
+				break;
+			case 'D':
+				s_deleteFlag = true;
+				break;
+			default:
+				break;
+			}
+		}
+	});
+
+	return 0;
+}
+
+int CreateLongTimelineWnd()
+{
+
+	//////////
+	///////// Long Timeline
+	s_LtimelineWnd = new OrgWindow(
+		0,
+		L"EditRangeTimeLine",				//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		//WindowPos( 250, 825 ),		//位置
+		WindowPos(200, 645),		//位置
+		WindowSize(1050, 120),	//サイズ
+		L"EditRangeTimeLine",				//タイトル
+		s_mainwnd,					//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		70, 50, 70);				//カラー
+
+	/////////
+	s_owpPlayerButton = new OWP_PlayerButton;
+	s_owpPlayerButton->setButtonSize(20);
+	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
+
+	s_owpPlayerButton->setFrontPlayButtonListener([](){ g_previewFlag = 1; });
+	s_owpPlayerButton->setBackPlayButtonListener([](){  g_previewFlag = -1; });
+	s_owpPlayerButton->setFrontStepButtonListener([](){ s_lastkeyFlag = true; });
+	s_owpPlayerButton->setBackStepButtonListener([](){  s_firstkeyFlag = true; });
+	s_owpPlayerButton->setStopButtonListener([](){  g_previewFlag = 0; });
+	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ g_previewFlag = 0; s_owpLTimeline->setCurrentTime(0.0, false); } });
+	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
+	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
+	s_owpPlayerButton->setPrevRangeButtonListener([](){  g_undereditrange = true; s_prevrangeFlag = true; });
+	s_owpPlayerButton->setNextRangeButtonListener([](){  g_undereditrange = true; s_nextrangeFlag = true; });
+
+	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
+	s_LtimelineWnd->setCloseListener([](){ s_LcloseFlag = true; });
+	s_LtimelineWnd->setLUpListener([](){
+		if (g_previewFlag == 0){
+			if (s_prevrangeFlag || s_nextrangeFlag){
+				RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
+				s_buttonselectstart = s_editrange.GetStartFrame();
+				s_buttonselectend = s_editrange.GetEndFrame();
+				OnTimeLineButtonSelect(0);
+			}
+			else if (g_selecttolastFlag == false){
+				OnTimeLineSelect();
+			}
+			else{
+				OnTimeLineButtonSelect(1);
+			}
+			g_selecttolastFlag = false;
+			s_prevrangeFlag = false;
+			s_nextrangeFlag = false;
+		}
+	});
+
+	return 0;
+}
+
+int CreateDmpAnimWnd()
+{
+
+	/////////
+	s_dmpanimWnd = new OrgWindow(
+		1,
+		_T("dampAnimWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(0, 400),		//位置
+		//WindowSize(450,880),		//サイズ
+		WindowSize(500, 120),		//サイズ
+		_T("減衰率アニメウィンドウ"),	//タイトル
+		s_mainwnd,	//親ウィンドウハンドル
+		false,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+
+	s_dmpgroupcheck = new OWP_CheckBox(L"全部設定ボタンで同グループ剛体に設定する。", 0);
+	s_dmpanimLlabel = new OWP_Label(L"１フレームあたりの位置ばね減衰率の減少率");
+	s_dmpanimLSlider = new OWP_Slider(0.0, 1.0, 0.0);
+	s_dmpanimAlabel = new OWP_Label(L"１フレームあたりの角度ばね減衰率の減少率");
+	s_dmpanimASlider = new OWP_Slider(0.0, 1.0, 0.0);
+	s_dmpanimB = new OWP_Button(L"全ての剛体に設定");
+
+	int slw2 = 500;
+	s_dmpanimLSlider->setSize(WindowSize(slw2, 40));
+	s_dmpanimASlider->setSize(WindowSize(slw2, 40));
+
+	s_dmpanimWnd->addParts(*s_dmpgroupcheck);
+	s_dmpanimWnd->addParts(*s_dmpanimLlabel);
+	s_dmpanimWnd->addParts(*s_dmpanimLSlider);
+	s_dmpanimWnd->addParts(*s_dmpanimAlabel);
+	s_dmpanimWnd->addParts(*s_dmpanimASlider);
+	s_dmpanimWnd->addParts(*s_dmpanimB);
+
+	s_dmpanimWnd->setCloseListener([](){ s_DcloseFlag = true; });
+
+	s_dmpanimLSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRgdRe();
+		if (curre){
+			float val = (float)s_dmpanimLSlider->getValue();
+			curre->SetDampanimL(val);
+		}
+		s_dmpanimWnd->callRewrite();						//再描画
+	});
+	s_dmpanimASlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRgdRe();
+		if (curre){
+			float val = (float)s_dmpanimASlider->getValue();
+			curre->SetDampanimA(val);
+		}
+		s_dmpanimWnd->callRewrite();						//再描画
+	});
+	s_dmpanimB->setButtonListener([](){
+		if (s_model && (s_rgdindex >= 0)){
+			float valL = (float)s_dmpanimLSlider->getValue();
+			float valA = (float)s_dmpanimASlider->getValue();
+			int chkg = (int)s_dmpgroupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRgdRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllDampAnimData(gid, s_rgdindex, valL, valA);
+		}
+	});
+
+	return 0;
+}
+
+int CreateRigidWnd()
+{
+
+	/////////
+	s_rigidWnd = new OrgWindow(
+		1,
+		_T("RigidWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(100, 200),		//位置
+		//WindowSize(450,880),		//サイズ
+		//WindowSize(450,680),		//サイズ
+		WindowSize(450, 760),		//サイズ
+		_T("剛体設定ウィンドウ"),	//タイトル
+		s_mainwnd,	//親ウィンドウハンドル
+		false,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+
+	s_groupcheck = new OWP_CheckBox(L"全部設定ボタンで同グループ剛体に設定する。", 0);
+	s_shprateSlider = new OWP_Slider(0.6, 20.0, 0.0);
+	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
+	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
+	s_massB = new OWP_Button(L"全剛体に質量設定");
+	s_rigidskip = new OWP_CheckBox(L"有効/無効", 1);
+	s_allrigidenableB = new OWP_Button(L"全ての剛体を有効にする");
+	s_allrigiddisableB = new OWP_Button(L"全ての剛体以外を無効にする");
+	s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
+	s_btgscSlider = new OWP_Slider(10.0, 100.0, 0.0);
+	s_btgB = new OWP_Button(L"全ての剛体にBT重力設定");
+	s_btforce = new OWP_CheckBox(L"BTシミュ剛体にする", 0);
+
+	s_shplabel = new OWP_Label(L"剛体の太さ");
+	s_boxzlabel = new OWP_Label(L"直方体の奥行き");
+	s_massSLlabel = new OWP_Label(L"剛体の質量");
+	s_btglabel = new OWP_Label(L"BT剛体の重力");
+	s_btgsclabel = new OWP_Label(L"BT剛体の重力のスケール");
+
+	s_namelabel = new OWP_Label(L"ボーン名:????");
+	s_lenglabel = new OWP_Label(L"ボーン長:*****[m]");
+
+
+	s_kB = new OWP_Button(L"全ての剛体にばねパラメータ設定");
+	s_restB = new OWP_Button(L"全ての剛体に弾性と摩擦設定");
+
+	s_colradio = new OWP_RadioButton(L"コーン形状");
+	s_colradio->addLine(L"カプセル形状");
+	s_colradio->addLine(L"球形状");
+	s_colradio->addLine(L"直方体形状");
+
+	s_lkradio = new OWP_RadioButton(L"[位置ばね]へなへな");
+	s_lkradio->addLine(L"[位置ばね]結構ゆるい");
+	s_lkradio->addLine(L"[位置ばね]普通こんなもんだと思う");
+	s_lkradio->addLine(L"[位置ばね]カスタム値");
+
+	s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 0.0f);//60000
+	s_lklabel = new OWP_Label(L"位置ばね カスタム値");
+
+	s_akradio = new OWP_RadioButton(L"[角度ばね]へなへな");
+	s_akradio->addLine(L"[角度ばね]結構ゆるい");
+	s_akradio->addLine(L"[角度ばね]普通こんなもんだと思う");
+	s_akradio->addLine(L"[角度ばね]カスタム値");
+
+	s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
+	s_aklabel = new OWP_Label(L"角度ばね カスタム値");
+
+	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
+	s_restlabel = new OWP_Label(L"剛体の弾性");
+	s_fricSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
+	s_friclabel = new OWP_Label(L"剛体の摩擦");
+
+
+	s_ldmplabel = new OWP_Label(L"[位置ばね]減衰率");
+	s_admplabel = new OWP_Label(L"[角度ばね]減衰率");
+	s_ldmpSlider = new OWP_Slider(g_l_dmp, 1.0, 0.0);
+	s_admpSlider = new OWP_Slider(g_a_dmp, 1.0, 0.0);
+	s_dmpB = new OWP_Button(L"全剛体に減衰率設定");
+	s_groupB = new OWP_Button(L"剛体の衝突グループID設定");
+	s_gcoliB = new OWP_Button(L"地面の衝突グループID設定");
+
+	int slw = 350;
+
+	s_shprateSlider->setSize(WindowSize(slw, 40));
+	s_boxzSlider->setSize(WindowSize(slw, 40));
+	s_massSlider->setSize(WindowSize(slw, 40));
+	s_btgSlider->setSize(WindowSize(slw, 40));
+	s_btgscSlider->setSize(WindowSize(slw, 40));
+	s_ldmpSlider->setSize(WindowSize(slw, 40));
+	s_admpSlider->setSize(WindowSize(slw, 40));
+	s_lkSlider->setSize(WindowSize(slw, 40));
+	s_akSlider->setSize(WindowSize(slw, 40));
+	s_restSlider->setSize(WindowSize(slw, 40));
+	s_fricSlider->setSize(WindowSize(slw, 40));
+
+	s_rigidWnd->addParts(*s_namelabel);
+	s_rigidWnd->addParts(*s_groupcheck);
+	s_rigidWnd->addParts(*s_shplabel);
+	s_rigidWnd->addParts(*s_shprateSlider);
+	s_rigidWnd->addParts(*s_boxzlabel);
+	s_rigidWnd->addParts(*s_boxzSlider);
+	s_rigidWnd->addParts(*s_massSLlabel);
+	s_rigidWnd->addParts(*s_massSlider);
+	s_rigidWnd->addParts(*s_massB);
+	s_rigidWnd->addParts(*s_lenglabel);
+	s_rigidWnd->addParts(*s_rigidskip);
+	s_rigidWnd->addParts(*s_allrigidenableB);
+	s_rigidWnd->addParts(*s_allrigiddisableB);
+
+	s_rigidWnd->addParts(*s_colradio);
+
+	s_rigidWnd->addParts(*s_lkradio);
+	s_rigidWnd->addParts(*s_lklabel);
+	s_rigidWnd->addParts(*s_lkSlider);
+	s_rigidWnd->addParts(*s_akradio);
+	s_rigidWnd->addParts(*s_aklabel);
+	s_rigidWnd->addParts(*s_akSlider);
+	s_rigidWnd->addParts(*s_kB);
+
+	s_rigidWnd->addParts(*s_restlabel);
+	s_rigidWnd->addParts(*s_restSlider);
+	s_rigidWnd->addParts(*s_friclabel);
+	s_rigidWnd->addParts(*s_fricSlider);
+	s_rigidWnd->addParts(*s_restB);
+
+
+	s_rigidWnd->addParts(*s_ldmplabel);
+	s_rigidWnd->addParts(*s_ldmpSlider);
+	s_rigidWnd->addParts(*s_admplabel);
+	s_rigidWnd->addParts(*s_admpSlider);
+	s_rigidWnd->addParts(*s_dmpB);
+
+	s_rigidWnd->addParts(*s_btglabel);
+	s_rigidWnd->addParts(*s_btgSlider);
+	s_rigidWnd->addParts(*s_btgB);
+	s_rigidWnd->addParts(*s_btgsclabel);
+	s_rigidWnd->addParts(*s_btgscSlider);
+	s_rigidWnd->addParts(*s_btforce);
+
+	s_rigidWnd->addParts(*s_groupB);
+	s_rigidWnd->addParts(*s_gcoliB);
+
+
+	s_rigidWnd->setCloseListener([](){ s_RcloseFlag = true; });
+
+	s_shprateSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_shprateSlider->getValue();
+			curre->SetSphrate(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_boxzSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_boxzSlider->getValue();
+			curre->SetBoxzrate(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_massSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_massSlider->getValue();
+			curre->SetMass(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_ldmpSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_ldmpSlider->getValue();
+			curre->SetLDamping(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_admpSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_admpSlider->getValue();
+			curre->SetADamping(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_lkSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_lkSlider->getValue();
+			curre->SetCusLk(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_akSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_akSlider->getValue();
+			curre->SetCusAk(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+
+	s_restSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_restSlider->getValue();
+			curre->SetRestitution(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_fricSlider->setCursorListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			float val = (float)s_fricSlider->getValue();
+			curre->SetFriction(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+
+	s_rigidskip->setButtonListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			bool validflag = s_rigidskip->getValue();
+			if (validflag == false){
+				curre->SetSkipflag(1);
+			}
+			else{
+				curre->SetSkipflag(0);
+			}
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_allrigidenableB->setButtonListener([](){
+		if (s_model){
+			s_model->EnableAllRigidElem(s_curreindex);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_allrigiddisableB->setButtonListener([](){
+		if (s_model){
+			s_model->DisableAllRigidElem(s_curreindex);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+
+	s_btforce->setButtonListener([](){
+		if (s_model && (s_curboneno >= 0)){
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone){
+				CBone* parbone = curbone->GetParent();
+				if (parbone){
+					bool kinflag = s_btforce->getValue();
+					if (kinflag == false){
+						parbone->SetBtForce(0);
+					}
+					else{
+						parbone->SetBtForce(1);
+					}
+				}
+			}
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_btgSlider->setCursorListener([](){
+		float btg = (float)s_btgSlider->getValue();
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			curre->SetBtg(btg);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_btgscSlider->setCursorListener([](){
+		float btgsc = (float)s_btgscSlider->getValue();
+		if (s_model && (s_curreindex >= 0)){
+			REINFO tmpinfo = s_model->GetRigidElemInfo(s_curreindex);
+			tmpinfo.btgscale = btgsc;
+			s_model->SetRigidElemInfo(s_curreindex, tmpinfo);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_colradio->setSelectListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			int val = s_colradio->getSelectIndex();
+			curre->SetColtype(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_lkradio->setSelectListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			int val = s_lkradio->getSelectIndex();
+			curre->SetLKindex(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_akradio->setSelectListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			int val = s_akradio->getSelectIndex();
+			curre->SetAKindex(val);
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+
+	s_kB->setButtonListener([](){
+		if (s_model){
+			int lindex = s_lkradio->getSelectIndex();
+			int aindex = s_akradio->getSelectIndex();
+			float cuslk = (float)s_lkSlider->getValue();
+			float cusak = (float)s_akSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllKData(gid, s_curreindex, lindex, aindex, cuslk, cusak);
+		}
+	});
+	s_restB->setButtonListener([](){
+		if (s_model){
+			float rest = (float)s_restSlider->getValue();
+			float fric = (float)s_fricSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllRestData(gid, s_curreindex, rest, fric);
+		}
+	});
+	s_dmpB->setButtonListener([](){
+		if (s_model){
+			float ldmp = (float)s_ldmpSlider->getValue();
+			float admp = (float)s_admpSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllDmpData(gid, s_curreindex, ldmp, admp);
+		}
+	});
+
+	s_groupB->setButtonListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			CColiIDDlg dlg(curre);
+			dlg.DoModal();
+
+			if (dlg.m_setgroup == 1){
+				if (s_model){
+					s_model->SetColiIDtoGroup(curre);
+				}
+			}
+		}
+	});
+	s_gcoliB->setButtonListener([](){
+		if (s_bpWorld){
+			CGColiIDDlg dlg(s_bpWorld->m_coliids, s_bpWorld->m_myselfflag);
+			int dlgret = (int)dlg.DoModal();
+			if (dlgret == IDOK){
+				s_bpWorld->m_coliids = dlg.m_coliids;
+				s_bpWorld->m_myselfflag = dlg.m_myself;
+				s_bpWorld->RemakeG();
+			}
+		}
+	});
+
+	s_massB->setButtonListener([](){
+		if (s_model){
+			float mass = (float)s_massSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllMassData(gid, s_curreindex, mass);
+		}
+		//		_ASSERT( 0 );
+	});
+	s_btgB->setButtonListener([](){
+		if (s_model){
+			float btg = (float)s_btgSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllBtgData(gid, s_curreindex, btg);
+		}
+	});
+
+
+	s_rigidWnd->callRewrite();						//再描画
+
+	return 0;
+}
+
+int CreateImpulseWnd()
+{
+
+	//////////
+	s_impWnd = new OrgWindow(
+		1,
+		_T("ImpulseWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(400, 400),		//位置
+		WindowSize(400, 200),		//サイズ
+		//WindowSize(200,110),		//サイズ
+		_T("剛体ウィンドウ"),	//タイトル
+		s_mainwnd,	//親ウィンドウハンドル
+		false,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+
+	s_impgroupcheck = new OWP_CheckBox(L"全部に設定ボタンで同じ剛体グループに設定", 0);
+
+	s_impxSlider = new OWP_Slider(0.0, 50.0, -50.0);
+	s_impySlider = new OWP_Slider(0.0, 50.0, -50.0);
+	s_impzSlider = new OWP_Slider(0.0, 50.0, -50.0);
+	s_impscaleSlider = new OWP_Slider(1.0, 10.0, 0.0);
+	s_impxlabel = new OWP_Label(L"インパルスのX");
+	s_impylabel = new OWP_Label(L"インパルスのY");
+	s_impzlabel = new OWP_Label(L"インパルスのZ");
+	s_impscalelabel = new OWP_Label(L"インパルスのスケール");
+	s_impallB = new OWP_Button(L"全ての剛体にインパルスをセット");
+
+	int slw = 300;
+
+	s_impzSlider->setSize(WindowSize(slw, 40));
+	s_impySlider->setSize(WindowSize(slw, 40));
+
+	s_impWnd->addParts(*s_impgroupcheck);
+	s_impWnd->addParts(*s_impxlabel);
+	s_impWnd->addParts(*s_impxSlider);
+	s_impWnd->addParts(*s_impylabel);
+	s_impWnd->addParts(*s_impySlider);
+	s_impWnd->addParts(*s_impzlabel);
+	s_impWnd->addParts(*s_impzSlider);
+	s_impWnd->addParts(*s_impscalelabel);
+	s_impWnd->addParts(*s_impscaleSlider);
+	s_impWnd->addParts(*s_impallB);
+
+	s_impWnd->setCloseListener([](){ s_IcloseFlag = true; });
+
+	s_impzSlider->setCursorListener([](){
+		float val = (float)s_impzSlider->getValue();
+		if (s_model){
+			s_model->SetImp(s_curboneno, 2, val);
+		}
+		s_impWnd->callRewrite();						//再描画
+	});
+	s_impySlider->setCursorListener([](){
+		float val = (float)s_impySlider->getValue();
+		if (s_model){
+			s_model->SetImp(s_curboneno, 1, val);
+		}
+		s_impWnd->callRewrite();						//再描画
+	});
+	s_impxSlider->setCursorListener([](){
+		float val = (float)s_impxSlider->getValue();
+		if (s_model){
+			s_model->SetImp(s_curboneno, 0, val);
+		}
+		s_impWnd->callRewrite();						//再描画
+	});
+	s_impscaleSlider->setCursorListener([](){
+		float scale = (float)s_impscaleSlider->getValue();
+		g_impscale = scale;
+		s_impWnd->callRewrite();						//再描画
+	});
+	s_impallB->setButtonListener([](){
+		if (s_model){
+			float impx = (float)s_impxSlider->getValue();
+			float impy = (float)s_impySlider->getValue();
+			float impz = (float)s_impzSlider->getValue();
+			int chkg = (int)s_impgroupcheck->getValue();
+			int gid = -1;
+			if (chkg){
+				CRigidElem* curre = GetCurRgdRe();
+				if (curre){
+					gid = curre->GetGroupid();
+				}
+				else{
+					gid = -1;
+				}
+			}
+			s_model->SetAllImpulseData(gid, impx, impy, impz);
+		}
+	});
+	//////////
+
+	return 0;
+}
+
+int CreateGPlaneWnd()
+{
+
+	//////////
+	s_gpWnd = new OrgWindow(
+		1,
+		_T("GPlaneWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(400, 645),		//位置
+		WindowSize(400, 320),		//サイズ
+		//WindowSize(200,110),		//サイズ
+		_T("物理地面ウィンドウ"),	//タイトル
+		s_mainwnd,	//親ウィンドウハンドル
+		false,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+
+	s_ghSlider = new OWP_Slider(-1.5, 5.0, -15.0);
+	s_gsizexSlider = new OWP_Slider(5.0, 50.0, -50.0);
+	s_gsizezSlider = new OWP_Slider(5.0, 50.0, -50.0);
+	s_ghlabel = new OWP_Label(L"物理地面の高さ");
+	s_gsizexlabel = new OWP_Label(L"X方向のサイズ");
+	s_gsizezlabel = new OWP_Label(L"Z方向のサイズ");
+	s_gpdisp = new OWP_CheckBox(L"表示する", 1);
+
+	s_grestSlider = new OWP_Slider(0.5, 1.0, 0.0);
+	s_gfricSlider = new OWP_Slider(0.5, 1.0, 0.0);
+	s_grestlabel = new OWP_Label(L"地面の弾性");
+	s_gfriclabel = new OWP_Label(L"地面の摩擦");
+
+
+	int slw = 300;
+
+	s_ghSlider->setSize(WindowSize(slw, 40));
+	s_gsizexSlider->setSize(WindowSize(slw, 40));
+	s_gsizezSlider->setSize(WindowSize(slw, 40));
+	s_grestSlider->setSize(WindowSize(slw, 40));
+	s_gfricSlider->setSize(WindowSize(slw, 40));
+
+	s_gpWnd->addParts(*s_ghlabel);
+	s_gpWnd->addParts(*s_ghSlider);
+	s_gpWnd->addParts(*s_gsizexlabel);
+	s_gpWnd->addParts(*s_gsizexSlider);
+	s_gpWnd->addParts(*s_gsizezlabel);
+	s_gpWnd->addParts(*s_gsizezSlider);
+	s_gpWnd->addParts(*s_gpdisp);
+
+	s_gpWnd->addParts(*s_grestlabel);
+	s_gpWnd->addParts(*s_grestSlider);
+	s_gpWnd->addParts(*s_gfriclabel);
+	s_gpWnd->addParts(*s_gfricSlider);
+
+	s_gpWnd->setCloseListener([](){ s_GcloseFlag = true; });
+
+	s_ghSlider->setCursorListener([](){
+		if (s_bpWorld){
+			s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
+			s_bpWorld->RemakeG();
+
+			D3DXVECTOR3 tra(0.0f, 0.0f, 0.0f);
+			D3DXVECTOR3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+			CallF(s_gplane->MultDispObj(mult, tra), return);
+
+			s_gpWnd->callRewrite();						//再描画
+		}
+	});
+	s_gsizexSlider->setCursorListener([](){
+		if (s_bpWorld && s_gplane){
+			s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
+
+			D3DXVECTOR3 tra(0.0f, 0.0f, 0.0f);
+			D3DXVECTOR3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+			CallF(s_gplane->MultDispObj(mult, tra), return);
+			s_gpWnd->callRewrite();						//再描画
+		}
+	});
+	s_gsizezSlider->setCursorListener([](){
+		if (s_bpWorld && s_gplane){
+			s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
+
+			D3DXVECTOR3 tra(0.0f, 0.0f, 0.0f);
+			D3DXVECTOR3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+			CallF(s_gplane->MultDispObj(mult, tra), return);
+			s_gpWnd->callRewrite();						//再描画
+		}
+	});
+	s_gpdisp->setButtonListener([](){
+		if (s_bpWorld){
+			bool dispflag = s_gpdisp->getValue();
+			s_bpWorld->m_gplanedisp = (int)dispflag;
+			s_gpWnd->callRewrite();						//再描画
+		}
+	});
+	s_grestSlider->setCursorListener([](){
+		if (s_bpWorld && s_gplane){
+			s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
+			s_bpWorld->RemakeG();
+
+			s_gpWnd->callRewrite();						//再描画
+		}
+	});
+	s_gfricSlider->setCursorListener([](){
+		if (s_bpWorld && s_gplane){
+			s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
+			s_bpWorld->RemakeG();
+
+			s_gpWnd->callRewrite();						//再描画
+		}
+	});
+
+	return 0;
+}
+
+int CreateToolWnd()
+{
+
+	/////////
+	// ツールウィンドウを作成してボタン類を追加
+	s_toolWnd = new OrgWindow(
+		1,
+		_T("ToolWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		//WindowPos(400, 580),		//位置
+		WindowPos(50, 645),		//位置
+		WindowSize(150, 10),		//サイズ
+		_T("ツールウィンドウ"),	//タイトル
+		s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		false);					//サイズ変更の可否
+
+	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン"));
+	s_toolCopyB = new OWP_Button(_T("コピー"));
+	s_toolSymCopyB = new OWP_Button(_T("対称コピー"));
+	//s_toolCutB = new OWP_Button(_T("カット"));
+	s_toolPasteB = new OWP_Button(_T("ペースト"));
+	s_toolInitMPB = new OWP_Button(_T("姿勢初期化"));
+	//s_toolDeleteB = new OWP_Button(_T("削除"));
+	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
+	s_toolMotPropB = new OWP_Button(_T("プロパティ"));
+
+	s_toolWnd->addParts(*s_toolSelBoneB);
+	s_toolWnd->addParts(*s_toolCopyB);
+	s_toolWnd->addParts(*s_toolSymCopyB);
+	s_toolWnd->addParts(*s_toolPasteB);
+	s_toolWnd->addParts(*s_toolInitMPB);
+	//s_toolWnd->addParts(*s_toolMarkB);
+	s_toolWnd->addParts(*s_toolMotPropB);
+
+	s_toolWnd->setCloseListener([](){ s_closetoolFlag = true; });
+	s_toolCopyB->setButtonListener([](){ s_copyFlag = true; });
+	s_toolSymCopyB->setButtonListener([](){ s_symcopyFlag = true; });
+	s_toolPasteB->setButtonListener([](){ s_pasteFlag = true; });
+	s_toolMotPropB->setButtonListener([](){ s_motpropFlag = true; });
+	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
+	s_toolSelBoneB->setButtonListener([](){ s_selboneFlag = true; });
+	s_toolInitMPB->setButtonListener([](){ s_initmpFlag = true; });
+
+	return 0;
+
+}
+
+int CreateLayerWnd()
+{
+	////
+	// ウィンドウを作成
+	s_layerWnd = new OrgWindow(
+		1,
+		_T("LayerTool"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		//WindowPos(800, 500),		//位置
+		WindowPos(250, 645),		//位置
+		WindowSize(150, 200),		//サイズ
+		_T("オブジェクトパネル"),	//タイトル
+		NULL,					//親ウィンドウハンドル
+		//true,					//表示・非表示状態
+		false,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+
+	// レイヤーウィンドウパーツを作成
+	s_owpLayerTable = new OWP_LayerTable(_T("レイヤーテーブル"));
+	WCHAR label[256];
+	wcscpy_s(label, 256, L"dummy name");
+	s_owpLayerTable->newLine(label, 0);
+
+	// ウィンドウにウィンドウパーツを登録
+	s_layerWnd->addParts(*s_owpLayerTable);
+
+
+	s_layerWnd->setCloseListener([](){ s_closeobjFlag = true; });
+
+	//レイヤーのカーソルリスナー
+	s_owpLayerTable->setCursorListener([](){
+		//_tprintf_s( _T("CurrentLayer: Index=%3d Name=%s\n"),
+		//			owpLayerTable->getCurrentLine(),
+		//			owpLayerTable->getCurrentLineName().c_str() );
+	});
+
+	//レイヤーの移動リスナー
+	s_owpLayerTable->setLineShiftListener([](int from, int to){
+		//_tprintf_s( _T("ShiftLayer: fromIndex=%3d toIndex=%3d\n"), from, to );
+	});
+
+	//レイヤーの可視状態変更リスナー
+	s_owpLayerTable->setChangeVisibleListener([](int index){
+		if (s_model){
+			CMQOObject* curobj = (CMQOObject*)(s_owpLayerTable->getObj(index));
+			if (curobj){
+				if (s_owpLayerTable->getVisible(index)){
+					curobj->SetDispFlag(1);
+				}
+				else{
+					curobj->SetDispFlag(0);
+				}
+			}
+		}
+	});
+
+	//レイヤーのロック状態変更リスナー
+	s_owpLayerTable->setChangeLockListener([](int index){
+		//if( owpLayerTable->getLock(index) ){
+		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='True'  Name=%s\n"),
+		//				index,
+		//				owpLayerTable->getName(index).c_str() );
+		//}else{
+		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='False' Name=%s\n"),
+		//				index,
+		//				owpLayerTable->getName(index).c_str() );
+		//}
+	});
+
+	//レイヤーのプロパティコールリスナー
+	s_owpLayerTable->setCallPropertyListener([](int index){
+		//_tprintf_s( _T("CallProperty: Index=%3d Name=%s\n"),
+		//			index,
+		//			owpLayerTable->getName(index).c_str() );
+	});
+
+
+	return 0;
+
 }
