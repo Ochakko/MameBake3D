@@ -5208,7 +5208,7 @@ int CModel::SetBefEditMat( CEditRange* erptr, CBone* curbone, int maxlevel )
 		double startframe, endframe, applyframe;
 		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 		double curframe;
-		for (curframe = startframe; curframe < endframe; curframe += 1.0){
+		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 			if(editmp){
@@ -5231,7 +5231,7 @@ int CModel::SetBefEditMatFK( CEditRange* erptr, CBone* curbone )
 		double startframe, endframe, applyframe;
 		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 		double curframe;
-		for (curframe = startframe; curframe < endframe; curframe += 1.0){
+		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
@@ -5314,7 +5314,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 					if( keynum >= 2 ){
 						int keyno = 0;
 						double curframe;
-						for (curframe = startframe; curframe < endframe; curframe += 1.0){
+						for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 							CMotionPoint* curparmp;
 							curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 							CMotionPoint* aplyparmp;
@@ -5349,17 +5349,9 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 
 							double changerate;
 							if( curframe <= applyframe ){
-								if( applyframe != startframe ){
-									changerate = 1.0 / (applyframe - startframe);
-								}else{
-									changerate = 1.0;
-								}
+								changerate = 1.0 / (applyframe - startframe + 1);
 							}else{
-								if( applyframe != endframe ){
-									changerate = 1.0 / (endframe - applyframe );
-								}else{
-									changerate = 0.0;
-								}
+								changerate = 1.0 / (endframe - applyframe + 1);
 							}
 
 
@@ -5373,13 +5365,9 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 									CQuaternion curq;
 									double currate2;
 									if( curframe <= applyframe ){
-										if( applyframe != startframe ){
-											currate2 = changerate * (curframe - startframe);
-										}else{
-											currate2 = 1.0;
-										}
+										currate2 = changerate * (curframe - startframe + 1);
 									}else{
-										currate2 = changerate * (endframe - curframe);
+										currate2 = changerate * (endframe - curframe + 1);
 									}
 									rotq.Slerp2( endq, 1.0 - currate2, &curq );
 
@@ -5576,7 +5564,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			if (keynum >= 2){
 				int keyno = 0;
 				double curframe;
-				for (curframe = startframe; curframe < endframe; curframe += 1.0){
+				for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 
 					CMotionPoint* curparmp = 0;
 					CMotionPoint* aplyparmp = 0;
@@ -5618,20 +5606,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 					double changerate;
 					if (curframe <= applyframe){
-						if (applyframe != startframe){
-							changerate = 1.0 / (applyframe - startframe);
-						}
-						else{
-							changerate = 1.0;
-						}
+						changerate = 1.0 / (applyframe - startframe + 1);
 					}
 					else{
-						if (applyframe != endframe){
-							changerate = 1.0 / (endframe - applyframe);
-						}
-						else{
-							changerate = 0.0;
-						}
+						changerate = 1.0 / (endframe - applyframe + 1);
 					}
 
 					if (keyno == 0){
@@ -5644,17 +5622,14 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							CQuaternion curq;
 							endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 							if (curframe <= applyframe){
-								if (applyframe != startframe){
-									currate2 = changerate * (curframe - startframe);
-								}
-								else{
-									currate2 = 1.0;
-								}
+								currate2 = changerate * (curframe - startframe + 1);
 							}
 							else{
-								currate2 = changerate * (endframe - curframe);
+								currate2 = changerate * (endframe - curframe + 1);
 							}
 							rotq.Slerp2(endq, 1.0 - currate2, &curq);
+
+							_ASSERT(0);
 
 							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 						}
@@ -5771,23 +5746,13 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	if (keynum >= 2){
 		int keyno = 0;
 		double curframe;
-		for (curframe = startframe; curframe < endframe; curframe += 1.0){
+		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 			double changerate;
 			if (curframe <= applyframe){
-				if (applyframe != startframe){
-					changerate = 1.0 / (applyframe - startframe);
-				}
-				else{
-					changerate = 1.0;
-				}
+				changerate = 1.0 / (applyframe - startframe + 1);
 			}
 			else{
-				if (applyframe != endframe){
-					changerate = 1.0 / (endframe - applyframe);
-				}
-				else{
-					changerate = 0.0;
-				}
+				changerate = 1.0 / (endframe - applyframe + 1);
 			}
 
 			if (keyno == 0){
@@ -5800,15 +5765,10 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 					CQuaternion curq;
 					endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 					if (curframe <= applyframe){
-						if (applyframe != startframe){
-							currate2 = changerate * (curframe - startframe);
-						}
-						else{
-							currate2 = 1.0;
-						}
+						currate2 = changerate * (curframe - startframe + 1);
 					}
 					else{
-						currate2 = changerate * (endframe - curframe);
+						currate2 = changerate * (endframe - curframe + 1);
 					}
 					rotq.Slerp2(endq, 1.0 - currate2, &curq);
 
@@ -5913,24 +5873,16 @@ int CModel::FKBoneTra( CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
 	double firstframe = 0.0;
 
 	if( keynum >= 2 ){
-		float changerate = 1.0f / (float)(endframe - startframe);
+		float changerate = 1.0f / (float)(endframe - startframe + 1);
 
 		int keyno = 0;
 		double curframe;
-		for (curframe = startframe; curframe < endframe; curframe += 1.0){
+		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 			double changerate;
 			if( curframe <= applyframe ){
-				if( applyframe != startframe ){
-					changerate = 1.0 / (applyframe - startframe);
-				}else{
-					changerate = 1.0;
-				}
+				changerate = 1.0 / (applyframe - startframe + 1);
 			}else{
-				if( applyframe != endframe ){
-					changerate = 1.0 / (endframe - applyframe );
-				}else{
-					changerate = 0.0;
-				}
+				changerate = 1.0 / (endframe - applyframe + 1);
 			}
 
 			if( keyno == 0 ){
@@ -5940,13 +5892,9 @@ int CModel::FKBoneTra( CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
 				if( g_slerpoffflag == 0 ){
 					double currate2;
 					if( curframe <= applyframe ){
-						if( applyframe != startframe ){
-							currate2 = changerate * (curframe - startframe);
-						}else{
-							currate2 = 1.0;
-						}
+						currate2 = changerate * (curframe - startframe + 1);
 					}else{
-						currate2 = changerate * (endframe - curframe);
+						currate2 = changerate * (endframe - curframe + 1);
 					}
 					D3DXVECTOR3 curtra;
 					curtra = (float)currate2 * addtra;
