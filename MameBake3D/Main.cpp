@@ -806,8 +806,13 @@ static int PickSpCam(POINT srcpos);
 
 static int InsertCopyMP( CBone* curbone, double curframe );
 static int InsertSymMP( CBone* curbone, double curframe );
+
+static int InitMpFromTool();
 static int InitMP( CBone* curbone, double curframe );
 static void InitMPReq(CBone* curbone, double curframe);
+static int InitMpByEul(CBone* curbone, int srcmotid, double srcframe);
+static void InitMpByEulReq(CBone* curbone, int srcmotid, double srcframe);
+
 static int AdjustBoneTra( CBone* curbone, double frame );
 static int CreateTimeLineMark( int topboneno = -1 );
 static void CreateMarkReq( int curboneno, int broflag );
@@ -9154,15 +9159,7 @@ int OnFrameToolWnd()
 	if (s_initmpFlag){
 		s_initmpFlag = false;
 
-		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
-			s_copymotmap.clear();
-			s_copyKeyInfoList.clear();
-			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-			s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
-
-			InitCurMotion(1, 0);
-			SetLTimelineMark(s_curboneno);
-		}
+		InitMpFromTool();
 	}
 
 	if (s_copyFlag){
@@ -10781,4 +10778,134 @@ int OnRenderUtDialog(float fElapsedTime)
 	}
 
 	return 0;
+}
+
+
+int InitMpFromTool()
+{
+	int modelnum = s_modelindex.size();
+	if (modelnum <= 0){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model){
+		return 0;
+	}
+	if (!s_owpTimeline || !s_owpLTimeline){
+		return 0;
+	}
+	MOTINFO* mi = s_model->GetCurMotInfo();
+	if (!mi){
+		return 0;
+	}
+
+
+	HWND parwnd;
+	parwnd = s_mainwnd;
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_MENU3);
+	if (!rmenu){
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd);
+	if (ret){
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+	POINT pt;
+	GetCursorPos(&pt);
+	//::ScreenToClient(parwnd, &pt);
+
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+	if (menuid == ID_RMENU2_40051){
+		//全ボーン
+		s_copymotmap.clear();
+		s_copyKeyInfoList.clear();
+		s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+		s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+
+		//InitCurMotion(1, 0);
+
+		list<KeyInfo>::iterator itrcp;
+		for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+			double curframe = itrcp->time;
+			CBone* topbone = s_model->GetTopBone();
+			if (topbone){
+				InitMpByEulReq(topbone, mi->motid, curframe);
+			}
+		}
+	}
+	else if (menuid == ID_RMENU2_40052){
+		//選択ボーン1つ
+		s_copymotmap.clear();
+		s_copyKeyInfoList.clear();
+		s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+		s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone){
+			list<KeyInfo>::iterator itrcp;
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+				double curframe = itrcp->time;
+				InitMpByEul(curbone, mi->motid, curframe);
+			}
+		}
+	}
+	else if (menuid == ID_RMENU2_40053){
+		//選択ボーンと子供ボーン
+		s_copymotmap.clear();
+		s_copyKeyInfoList.clear();
+		s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+		s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone){
+			list<KeyInfo>::iterator itrcp;
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+				double curframe = itrcp->time;
+				InitMpByEulReq(curbone, mi->motid, curframe);
+			}
+		}
+	}
+
+
+	rmenu->Destroy();
+	delete rmenu;
+
+	return 0;
+}
+
+int InitMpByEul(CBone* curbone, int srcmotid, double srcframe)
+{
+	if (curbone){
+		if (curbone->GetChild()){
+			D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			int paraxsiflag = 1;
+			int isfirstbone = 0;
+			curbone->SetWorldMatFromEul(1, cureul, srcmotid, srcframe);
+		}
+	}
+	return 0;
+}
+
+void InitMpByEulReq(CBone* curbone, int srcmotid, double srcframe)
+{
+	if (!curbone){
+		return;
+	}
+
+	InitMpByEul(curbone, srcmotid, srcframe);
+
+	if (curbone->GetChild()){
+		InitMpByEulReq(curbone->GetChild(), srcmotid, srcframe);
+	}
+	if (curbone->GetBrother()){
+		InitMpByEulReq(curbone->GetBrother(), srcmotid, srcframe);
+	}
 }
