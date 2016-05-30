@@ -10,6 +10,9 @@
 
 #include <quaternion.h>
 
+#include <Model.h>
+#include <Bone.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -342,3 +345,112 @@ void InitAngleLimit(ANGLELIMIT* dstal)
 	}
 }
 
+void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno)
+{
+	ZeroMemory(dstcr, sizeof(CUSTOMRIG));
+
+
+	dstcr->rigboneno = -1;
+	int rigelemno;
+	for (rigelemno = 0; rigelemno < MAXRIGELEMNUM; rigelemno++){
+		dstcr->rigelem[rigelemno].boneno = -1;
+	}
+
+
+	if ((rigno >= 0) && (rigno < MAXRIGNUM)){
+		dstcr->rigno = rigno;
+		if (parbone){
+			swprintf_s(dstcr->rigname, 256, L"%s_Rig%d", parbone->GetWBoneName(), rigno);
+		}
+		else{
+			swprintf_s(dstcr->rigname, 256, L"Rig%d", rigno);
+		}
+	}
+	else{
+		_ASSERT(0);
+		dstcr->rigno = 0;
+		swprintf_s(dstcr->rigname, 256, L"RigName_00");
+	}
+
+	if (parbone){
+		dstcr->rigboneno = parbone->GetBoneNo();
+		dstcr->elemnum = 1;
+		dstcr->rigelem[0].boneno = parbone->GetBoneNo();
+	}
+}
+
+
+int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone)
+{
+	/*
+	typedef struct tag_rigtrans
+	{
+	int axiskind;
+	float applyrate;
+	}RIGTRANS;
+
+	typedef struct tag_rigelem
+	{
+	int boneno;
+	RIGTRANS transuv[2];
+	}RIGELEM;
+
+	typedef struct tag_customrig
+	{
+	int useflag;//0 : free, 1 : rental, 2 : valid and in use
+	int rigno;//CUSTOMRIGを配列で持つ側のためのCUSTOMRIGのindex
+	int rigboneno;
+	int elemnum;
+	RIGELEM rigelem[4];
+	}CUSTOMRIG;
+	*/
+	
+	if (parbone && (srccr.rigboneno != parbone->GetBoneNo())){
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。rigboneno : %d", srccr.rigboneno);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+	if ((srccr.rigno < 0) || (srccr.rigno >= MAXRIGNUM)){
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。rigno : %d", srccr.rigno);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+	if ((srccr.elemnum < 1) || (srccr.elemnum > MAXRIGELEMNUM)){
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。elemnum : %d", srccr.elemnum);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+
+	int elemno;
+	for (elemno = 0; elemno < srccr.elemnum; elemno++){
+		RIGELEM currigelem = srccr.rigelem[elemno];
+		CBone* chkbone = srcmodel->GetBoneByID(currigelem.boneno);
+		if (!chkbone){
+			WCHAR strerr[256];
+			swprintf_s(strerr, 256, L"エラー。elem %d : boneno : %d", elemno, currigelem.boneno);
+			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+			return 0;
+		}
+		int uvno;
+		for (uvno = 0; uvno < 2; uvno++){
+			RIGTRANS currigtrans = currigelem.transuv[uvno];
+			if ((currigtrans.axiskind < AXIS_X) || (currigtrans.axiskind > AXIS_Z)){
+				WCHAR strerr[256];
+				swprintf_s(strerr, 256, L"エラー。elem %d : UV %d : axiskind : %d", elemno, uvno, currigtrans.axiskind);
+				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				return 0;
+			}
+			if ((currigtrans.applyrate < -100.0f) || (currigtrans.applyrate > 100.0f)){
+				WCHAR strerr[256];
+				swprintf_s(strerr, 256, L"エラー。elem %d : UV %d : applyrate : %f", elemno, uvno,  currigtrans.applyrate);
+				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				return 0;
+			}
+		}
+	}
+
+	return 1;
+}

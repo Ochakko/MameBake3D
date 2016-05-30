@@ -440,6 +440,7 @@ private:
 	int ChkMovableEul(D3DXVECTOR3 srceul);
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
 	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
+	int InitCustomRig();
 
 public: //accesser
 	int GetType(){ return m_type; };
@@ -753,6 +754,11 @@ public: //accesser
 	ANGLELIMIT GetAngleLimit();
 	void SetAngleLimit(ANGLELIMIT srclimit);
 
+	int GetFreeCustomRigNo();
+	CUSTOMRIG CBone::GetFreeCustomRig();
+	CUSTOMRIG GetCustomRig(int rigno);
+	void SetCustomRig(CUSTOMRIG srccr);
+
 private:
 	int m_type;
 	int m_selectflag;
@@ -801,6 +807,9 @@ private:
 	D3DXVECTOR3 m_firstframebonepos;
 
 	ANGLELIMIT m_anglelimit;
+
+	int m_initcustomrigflag;
+	CUSTOMRIG m_customrig[MAXRIGNUM];
 
 	//CBone*は子供ジョイントのポインタ。子供の数だけエントリーがある。
 	std::map<CBone*, CRigidElem*> m_rigidelem;

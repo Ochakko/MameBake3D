@@ -61,6 +61,9 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_initcustomrigflag = 0;
+	//InitCustomRig();//<-- after set name
+
 	InitAngleLimit();
 	m_upkind = UPVEC_NONE;
 	m_motmark.clear();
@@ -120,6 +123,16 @@ int CBone::InitParams()
 
 	m_posefoundflag = false;
 
+
+	return 0;
+}
+
+int CBone::InitCustomRig()
+{
+	int rigno;
+	for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+		::InitCustomRig(&(m_customrig[rigno]), this, rigno);
+	}
 	return 0;
 }
 
@@ -369,6 +382,11 @@ int CBone::SetName( char* srcname )
 	TermJointRepeats(m_bonename);
 
 	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_bonename, 256, m_wbonename, 256 );
+
+	if (m_initcustomrigflag == 0){
+		InitCustomRig();
+		m_initcustomrigflag = 1;
+	}
 
 	return 0;
 }
@@ -1961,3 +1979,62 @@ void CBone::SetAngleLimit(ANGLELIMIT srclimit)
 };
 
 
+int CBone::GetFreeCustomRigNo()
+{
+	int rigno;
+	int findrigno = -1;
+	for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+		if (m_customrig[rigno].useflag == 0){//0 : free mark
+			findrigno = rigno;
+			break;
+		}
+	}
+	
+	if (findrigno == -1){
+		//free‚ª‚È‚©‚Á‚½ê‡Arental‚©‚ç
+		for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+			if (m_customrig[rigno].useflag == 1){//1 : rental mark
+				findrigno = rigno;
+				break;
+			}
+		}
+	}
+
+	return findrigno;
+}
+CUSTOMRIG CBone::GetFreeCustomRig()
+{
+	int freerigno = GetFreeCustomRigNo();
+	if ((freerigno >= 0) && (freerigno < MAXRIGNUM)){
+		m_customrig[freerigno].useflag = 1;//1 : rental mark
+		//_ASSERT(0);
+		return m_customrig[freerigno];
+	}
+	else{
+		_ASSERT(0);
+		CUSTOMRIG dummycr;
+		::InitCustomRig(&dummycr, 0, 0);
+		return dummycr;
+	}
+}
+
+CUSTOMRIG CBone::GetCustomRig(int rigno)
+{
+	if ((rigno >= 0) && (rigno < MAXRIGNUM)){
+		return m_customrig[rigno];
+	}
+	else{
+		_ASSERT(0);
+		CUSTOMRIG dummycr;
+		::InitCustomRig(&dummycr, 0, 0);
+		return dummycr;
+	}
+}
+void CBone::SetCustomRig(CUSTOMRIG srccr)
+{
+	int isvalid = IsValidCustomRig(m_parmodel, srccr, this);
+	if (isvalid == 1){
+		m_customrig[srccr.rigno] = srccr;
+		m_customrig[srccr.rigno].useflag = 2;//2 : valid mark
+	}
+}

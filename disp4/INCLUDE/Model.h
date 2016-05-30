@@ -676,7 +676,15 @@ public: //accesser
 		return m_object.size();
 	};
 	CMQOObject* GetMqoObject( int srcobjno ){
-		return m_object[ srcobjno ];
+		map<int, CMQOObject*>::iterator itrobj;
+		itrobj = m_object.find(srcobjno);
+		if (itrobj != m_object.end()){
+			return itrobj->second;
+		}
+		else{
+			return 0;
+		}
+		//return m_object[ srcobjno ];
 	};
 	std::map<int,CMQOObject*>::iterator GetMqoObjectBegin(){
 		return m_object.begin();
@@ -689,7 +697,15 @@ public: //accesser
 	};
 
 	CBone* GetBoneByName( string srcname ){
-		return m_bonename[ srcname ];
+		map<string, CBone*>::iterator itrbone;
+		itrbone = m_bonename.find(srcname);
+		if (itrbone != m_bonename.end()){
+			return itrbone->second;
+		}
+		else{
+			return 0;
+		}
+		//return m_bonename[ srcname ];
 	};
 
 	int GetBoneListSize(){
@@ -702,7 +718,15 @@ public: //accesser
 		return m_bonelist.end();
 	};
 	CBone* GetBoneByID( int srcid ){
-		return m_bonelist[ srcid ];
+		map<int, CBone*>::iterator itrbone;
+		itrbone = m_bonelist.find(srcid);
+		if (itrbone != m_bonelist.end()){
+			return itrbone->second;
+		}
+		else{
+			return 0;
+		}
+		//return m_bonelist[ srcid ];
 	};
 
 	CBone* GetTopBone(){

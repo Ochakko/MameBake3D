@@ -129,6 +129,11 @@ static HWND s_rotaxisdlg = 0;
 static int s_rotaxiskind = AXIS_X;
 static float s_rotaxisdeg = 0.0f;
 
+static HWND s_customrigdlg = 0;
+static CUSTOMRIG s_customrig;
+static CBone* s_customrigbone = 0;
+static map<int, int> s_customrigmenuindex;
+
 static int s_forcenewaxis = 0;
 static int s_doneinit = 0;
 static int s_underselectingframe = 0;
@@ -412,6 +417,7 @@ static bool s_LnextkeyFlag = false;
 static bool s_LbefkeyFlag = false;
 static bool s_LcursorFlag = false;			// カーソル移動フラグ
 
+static bool s_timelineRUpFlag = false;
 static bool s_timelinembuttonFlag = false;
 static bool s_timelinewheelFlag = false;
 
@@ -666,7 +672,7 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
-
+LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
@@ -745,6 +751,16 @@ static int DispModelPanel();
 static int DispConvBoneWindow();
 static int DispAngleLimitDlg();
 static int DispRotAxisDlg();
+static int DispCustomRigDlg(int rigno);
+static int BoneRClick(int srcboneno);
+
+//CustomRigDlg
+int Bone2CustomRig(int rigno);
+int CustomRig2Bone();
+int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr);
+int CustomRig2Dlg(HWND hDlgWnd);
+int SetCustomRigDlgLevel(int levelnum);
+
 
 //angle limit dlg
 static int Bone2AngleLimit();
@@ -2472,27 +2488,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 
 	}else if( uMsg == WM_RBUTTONDOWN ){
-		/*
-		SetCapture( s_mainwnd );
-		POINT ptCursor;
-		GetCursorPos( &ptCursor );
-		::ScreenToClient( s_mainwnd, &ptCursor );
-		s_pickinfo.clickpos = ptCursor;
-		s_pickinfo.mousepos = ptCursor;
-		s_pickinfo.mousebefpos = ptCursor;
-		s_pickinfo.diffmouse = D3DXVECTOR2( 0.0f, 0.0f );
-
-		s_pickinfo.winx = (int)DXUTGetWindowWidth();
-		s_pickinfo.winy = (int)DXUTGetWindowHeight();
-		s_pickinfo.pickrange = 6;
-
-		s_pickinfo.pickobjno = -1;
-
-		s_pickinfo.buttonflag = PICK_CAMROT;
-		*/
+		
+		BoneRClick(-1);
 
 	}else if( uMsg == WM_RBUTTONUP ){
-		ReleaseCapture();
+		//ReleaseCapture();
 		s_pickinfo.buttonflag = 0;
 	}else if( uMsg == WM_MBUTTONUP ){
 		ReleaseCapture();
@@ -2915,6 +2915,10 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 	if (s_rotaxisdlg){
 		DestroyWindow(s_rotaxisdlg);
 		s_rotaxisdlg = 0;
+	}
+	if (s_customrigdlg){
+		DestroyWindow(s_customrigdlg);
+		s_customrigdlg = 0;
 	}
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -4222,6 +4226,7 @@ int AddTimeLine( int newmotid )
 		// キー選択フラグselectFlagをオンにするラムダ関数を登録する
 		s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });
 
+		s_owpTimeline->setMouseRUpListener([]() {s_timelineRUpFlag = true; });
 
 		// キー移動時のイベントリスナーに
 		// キー移動フラグkeyShiftFlagをオンにして、キー移動量をコピーするラムダ関数を登録する
@@ -9062,6 +9067,23 @@ int OnFrameCloseFlag()
 	return 0;
 }
 
+int GetCurrentBoneFromTimeline(int* dstboneno)
+{
+	if (s_model && s_owpTimeline){
+		int curlineno = s_owpTimeline->getCurrentLine();// 選択行
+		if (curlineno >= 0){
+			*dstboneno = s_lineno2boneno[curlineno];
+			SetLTimelineMark(s_curboneno);
+			ChangeCurrentBone();
+		}
+		else{
+			*dstboneno = -1;
+		}
+	}
+	return 0;
+}
+
+
 int OnFrameTimeLineWnd()
 {
 	// カーソル移動フラグを確認 //////////////////////////////////////////////////
@@ -9069,18 +9091,10 @@ int OnFrameTimeLineWnd()
 	if (s_cursorFlag){
 		s_cursorFlag = false;
 
+		GetCurrentBoneFromTimeline(&s_curboneno);
+
 		// カーソル位置をコンソールに出力
 		if (s_owpTimeline && s_model && s_model->GetCurMotInfo()){
-			int curlineno = s_owpTimeline->getCurrentLine();// 選択行
-			if (curlineno >= 0){
-				s_curboneno = s_lineno2boneno[curlineno];
-				SetLTimelineMark(s_curboneno);
-				ChangeCurrentBone();
-			}
-			else{
-				s_curboneno = -1;
-			}
-
 			if (g_previewFlag == 0){
 				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
 
@@ -9127,6 +9141,15 @@ int OnFrameMouseButton()
 	if (s_timelinewheelFlag || (s_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))){
 		s_timelinewheelFlag = false;
 		OnTimeLineWheel();
+	}
+
+	if (s_timelineRUpFlag){//s_timelineWnd
+		s_timelineRUpFlag = false;
+
+		GetCurrentBoneFromTimeline(&s_curboneno);
+		if (s_curboneno > 0){
+			BoneRClick(s_curboneno);
+		}
 	}
 
 	return 0;
@@ -9683,6 +9706,7 @@ int CreateTimelineWnd()
 	// ウィンドウの閉じるボタンのイベントリスナーに
 	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
 	s_timelineWnd->setCloseListener([]() { s_closeFlag = true; });
+
 
 	// ウィンドウのキーボードイベントリスナーに
 	// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
@@ -10908,4 +10932,437 @@ void InitMpByEulReq(CBone* curbone, int srcmotid, double srcframe)
 	if (curbone->GetBrother()){
 		InitMpByEulReq(curbone->GetBrother(), srcmotid, srcframe);
 	}
+}
+
+/// CustomRigDlg
+int DispCustomRigDlg(int rigno)
+{
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+	if (s_model->GetOldAxisFlagAtLoading() == 1){
+		::MessageBox(s_mainwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		return 0;
+	}
+
+	Bone2CustomRig(rigno);
+
+	if (!s_customrigdlg){
+		s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_mainwnd, (DLGPROC)CustomRigDlgProc);
+		if (!s_customrigdlg){
+			_ASSERT(0);
+			return 1;
+		}
+	}
+	else{
+		CustomRig2Dlg(s_customrigdlg);
+	}
+	
+	ShowWindow(s_customrigdlg, SW_SHOW);
+	UpdateWindow(s_customrigdlg);
+	
+	return 0;
+}
+
+int Bone2CustomRig(int rigno)
+{
+	if (!s_model){
+		return 0;
+	}
+	if (s_curboneno < 0){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	s_customrigbone = s_model->GetBoneByID(s_curboneno);
+	if (s_customrigbone){
+		if ((rigno >= 0) && (rigno < MAXRIGNUM)){
+			s_customrig = s_customrigbone->GetCustomRig(rigno);
+		}
+		else{
+			s_customrig = s_customrigbone->GetFreeCustomRig();
+		}
+		if (s_customrig.rigboneno <= 0){
+			_ASSERT(0);
+		}
+	}
+	else{
+		_ASSERT(0);
+		InitCustomRig(&s_customrig, 0, 0);
+	}
+
+	return 0;
+}
+
+int CustomRig2Bone()
+{
+	if (!s_model){
+		return 0;
+	}
+	if (!s_customrigbone){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	if (s_customrigbone){
+		int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
+		if (isvalid == 0){
+			::MessageBox(s_mainwnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
+			return 0;
+		}
+		s_customrigbone->SetCustomRig(s_customrig);
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
+int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr)
+{
+	WCHAR strval[256] = { 0L };
+	GetDlgItemText(hDlgWnd, resid, strval, 256);
+	float tmpval;
+	tmpval = (float)_wtof(strval);
+	if ((tmpval < -100.0f) || (tmpval > 100.0f)){
+		::MessageBox(hDlgWnd, L"倍率は-100.0から100.0までです。", L"倍率範囲エラー", MB_OK);
+		*dstptr = 0.0f;
+		return 1;
+	}
+
+	*dstptr = tmpval;
+	return 0;
+}
+
+int CustomRig2Dlg(HWND hDlgWnd)
+{
+	if (s_customrigbone){
+		SetDlgItemText(hDlgWnd, IDC_RIGNAME, (LPCWSTR)s_customrig.rigname);
+		SetDlgItemText(hDlgWnd, IDC_RIGBONENAME, (LPCWSTR)s_customrigbone->GetWBoneName());
+
+		int elemnum = s_customrig.elemnum;
+		SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_RESETCONTENT, 0, 0);
+		WCHAR strcombo[256];
+		int elemno;
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
+			swprintf_s(strcombo, 256, L"%d", elemno + 1);//from 1 to MAXRIGELEMNUM
+			SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_ADDSTRING, 0, (LPARAM)strcombo);
+		}
+		if (elemnum < 1){
+			_ASSERT(0);
+			elemnum = 1;
+			s_customrig.rigelem[0].boneno = s_customrigbone->GetBoneNo();
+		}
+		SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_SETCURSEL, elemnum - 1, 0);
+
+
+		int gpboxid[5] = {IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5};
+		int axisuid[5] = {IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5};
+		int axisvid[5] = {IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5};
+		int rateuid[5] = {IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5};
+		int ratevid[5] = {IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5};
+
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
+			RIGELEM currigelem = s_customrig.rigelem[elemno];
+			if (elemno < elemnum){
+				CBone* curbone = s_model->GetBoneByID(currigelem.boneno);
+				if (curbone){
+					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)curbone->GetWBoneName());
+				}
+				else{
+					_ASSERT(0);
+					return 1;
+				}
+			}
+			else{
+				SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
+			}
+			WCHAR strcombo[256];
+			WCHAR strval[256];
+
+			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_RESETCONTENT, 0, 0);
+			wcscpy_s(strcombo, 256, L"X");
+			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			wcscpy_s(strcombo, 256, L"Y");
+			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			wcscpy_s(strcombo, 256, L"Z");
+			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			if ((currigelem.transuv[0].axiskind >= AXIS_X) && (currigelem.transuv[0].axiskind <= AXIS_Z)){
+				SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_SETCURSEL, currigelem.transuv[0].axiskind, 0);
+			}
+			swprintf_s(strval, 256, L"%f", currigelem.transuv[0].applyrate);
+			SetDlgItemText(hDlgWnd, rateuid[elemno], (LPCWSTR)strval);
+
+
+			SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_RESETCONTENT, 0, 0);
+			wcscpy_s(strcombo, 256, L"X");
+			SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			wcscpy_s(strcombo, 256, L"Y");
+			SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			wcscpy_s(strcombo, 256, L"Z");
+			SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			if ((currigelem.transuv[0].axiskind >= AXIS_X) && (currigelem.transuv[0].axiskind <= AXIS_Z)){
+				SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_SETCURSEL, currigelem.transuv[1].axiskind, 0);
+			}
+			swprintf_s(strval, 256, L"%f", currigelem.transuv[1].applyrate);
+			SetDlgItemText(hDlgWnd, ratevid[elemno], (LPCWSTR)strval);
+
+		}
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
+LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		CustomRig2Dlg(hDlgWnd);
+		return FALSE;
+	}
+	break;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDC_CHILNUM:
+		{
+			int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_GETCURSEL, 0, 0);
+			if ((combono >= 0) && (combono < MAXRIGELEMNUM)){
+				SetCustomRigDlgLevel(combono + 1);
+			}
+		}
+		break;
+		case IDOK:
+		{
+			WCHAR strrigname[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_RIGNAME, strrigname, 256);
+			wcscpy_s(s_customrig.rigname, 256, strrigname);
+
+			int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
+			int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
+			int rateuid[5] = { IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5 };
+			int ratevid[5] = { IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5 };
+
+			int elemno;
+			for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
+				int combono;
+				combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_GETCURSEL, 0, 0);
+				if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
+					s_customrig.rigelem[elemno].transuv[0].axiskind = combono;
+				}
+				combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_GETCURSEL, 0, 0);
+				if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
+					s_customrig.rigelem[elemno].transuv[1].axiskind = combono;
+				}
+
+				int ret;
+				float tmprate;
+				ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
+				if (ret){
+					::MessageBox(hDlgWnd, L"横倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+					return 0;
+				}
+				s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
+
+				ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
+				if (ret){
+					::MessageBox(hDlgWnd, L"縦倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+					return 0;
+				}
+				s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
+			}
+
+
+			int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
+			if (isvalid == 0){
+				::MessageBox(hDlgWnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
+				return 0;
+			}
+
+			CustomRig2Bone();
+
+			//EndDialog(hDlgWnd, IDOK);
+		}
+			break;
+		case IDCANCEL:
+			//EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_CLOSE:
+		if (s_customrigdlg){
+			DestroyWindow(s_customrigdlg);
+			s_customrigdlg = 0;
+		}
+		break;
+	default:
+		return FALSE;
+	}
+	return TRUE;
+
+}
+
+int BoneRClick(int srcboneno)
+{
+	if (!s_model){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+
+	if (srcboneno < 0){
+		s_ikcnt = 0;
+		//SetCapture(s_mainwnd);
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_mainwnd, &ptCursor);
+		s_pickinfo.clickpos = ptCursor;
+		s_pickinfo.mousepos = ptCursor;
+		s_pickinfo.mousebefpos = ptCursor;
+		s_pickinfo.diffmouse = D3DXVECTOR2(0.0f, 0.0f);
+		s_pickinfo.firstdiff = D3DXVECTOR2(0.0f, 0.0f);
+
+		s_pickinfo.winx = (int)DXUTGetWindowWidth();
+		s_pickinfo.winy = (int)DXUTGetWindowHeight();
+		s_pickinfo.pickrange = 6;
+
+		s_pickinfo.pickobjno = -1;
+
+		CallF(s_model->PickBone(&s_pickinfo), return 1);
+		if (s_pickinfo.pickobjno >= 0){
+			s_curboneno = s_pickinfo.pickobjno;
+		}
+	}
+
+	if (s_curboneno > 0){
+		if (s_owpTimeline){
+			s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+		}
+
+		ChangeCurrentBone();
+
+		if (s_curboneno >= 0){
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone){
+				HWND parwnd;
+				parwnd = s_mainwnd;
+
+				CRMenuMain* rmenu;
+				rmenu = new CRMenuMain(IDR_RMENU);
+				if (!rmenu){
+					return 1;
+				}
+				int ret;
+				ret = rmenu->Create(parwnd);
+				if (ret){
+					return 1;
+				}
+
+				HMENU submenu = rmenu->GetSubMenu();
+
+				int menunum;
+				menunum = GetMenuItemCount(submenu);
+				int menuno;
+				for (menuno = 0; menuno < menunum; menuno++)
+				{
+					RemoveMenu(submenu, 0, MF_BYPOSITION);
+				}
+				s_customrigmenuindex.clear();
+
+
+				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"新規Rig");
+				int setmenuno = 1;
+				int rigno;
+				for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
+					if (currig.useflag == 2){
+						int setmenuid = ID_RMENU_0 + setmenuno;
+						AppendMenu(submenu, MF_STRING, setmenuid, currig.rigname);
+						s_customrigmenuindex[setmenuid] = rigno;
+						setmenuno++;
+					}
+				}
+
+
+				POINT pt;
+				GetCursorPos(&pt);
+				//::ScreenToClient(parwnd, &pt);
+
+				int currigno = -1;
+				int menuid;
+				menuid = rmenu->TrackPopupMenu(pt);
+				if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + MAXRIGNUM))){
+					if (menuid == ID_RMENU_0){
+						currigno = -1;
+					}
+					else{
+						currigno = s_customrigmenuindex[menuid];
+						if ((currigno < 0) || (currigno >= MAXRIGNUM)){
+							currigno = -1;
+						}
+					}
+
+					DispCustomRigDlg(currigno);
+				}
+				rmenu->Destroy();
+				delete rmenu;
+
+			}
+		}
+	}
+
+	return 0;
+}
+
+int SetCustomRigDlgLevel(int levelnum)
+{
+	if (!s_model){
+		return 0;
+	}
+	if (!s_customrigbone){
+		return 0;
+	}
+	if (!s_model->GetTopBone()){
+		return 0;
+	}
+	if (!s_customrigdlg){
+		return 0;
+	}
+
+	if ((levelnum >= 1) && (levelnum <= MAXRIGELEMNUM)){
+		int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+
+		int parno = 1;
+		CBone* parbone = s_customrigbone->GetParent();
+		while (parbone && (parno < MAXRIGELEMNUM) && (parno < levelnum)){
+			SetDlgItemText(s_customrigdlg, gpboxid[parno], (LPCWSTR)parbone->GetWBoneName());
+			s_customrig.rigelem[parno].boneno = parbone->GetBoneNo();
+			parbone = parbone->GetParent();
+			parno++;
+		}
+
+		int newlevelnum = parno;
+		s_customrig.elemnum = levelnum;
+		SendMessage(GetDlgItem(s_customrigdlg, IDC_CHILNUM), CB_SETCURSEL, newlevelnum - 1, 0);
+	}
+
+
+	return 0;
 }

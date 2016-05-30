@@ -37,6 +37,10 @@ class CMQOMaterial;
 
 #define UNDOMAX 200
 
+//boneÇ≤Ç∆ÇÃRIGîzóÒí∑
+#define MAXRIGNUM	10
+#define MAXRIGELEMNUM	5
+
 enum tag_befeulkind
 {
 	BEFEUL_ZERO,
@@ -136,6 +140,27 @@ typedef struct tag_anglelimmit
 	int upper[AXIS_MAX];
 }ANGLELIMIT;
 
+typedef struct tag_rigtrans
+{
+	int axiskind;
+	float applyrate;// from -100.0f to 100.0f
+}RIGTRANS;
+
+typedef struct tag_rigelem
+{
+	int boneno;
+	RIGTRANS transuv[2];
+}RIGELEM;
+
+typedef struct tag_customrig
+{
+	int useflag;//0 : free, 1 : rental, 2 : valid and in use
+	int rigno;//CUSTOMRIGÇîzóÒÇ≈éùÇ¬ë§ÇÃÇΩÇﬂÇÃCUSTOMRIGÇÃindex
+	int rigboneno;
+	int elemnum;
+	WCHAR rigname[256];
+	RIGELEM rigelem[MAXRIGELEMNUM];
+}CUSTOMRIG;
 
 typedef struct tag_hinfo
 {

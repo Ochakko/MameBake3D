@@ -499,6 +499,7 @@ static void s_dummyfunc();
 			closeListener = [](){s_dummyfunc();};
 			keyboardListener = [](const KeyboardEvent &e){s_dummyfunc();};
 			lupListener = [](){s_dummyfunc();};
+			rupListener = [](){s_dummyfunc();};
 
 			//マウスキャプチャ用のフラグ
 			mouseCaptureFlagL=mouseCaptureFlagR=false;
@@ -686,6 +687,9 @@ static void s_dummyfunc();
 		void setLUpListener(std::tr1::function<void()> listener){
 			this->lupListener= listener;
 		}
+		void setRUpListener(std::tr1::function<void()> listener){
+			this->rupListener= listener;
+		}
 		/// Accessor : keyboardListener
 		void setKeyboardEventListener(std::tr1::function<void(const KeyboardEvent&)> listener){
 			this->keyboardListener= listener;
@@ -731,6 +735,7 @@ static void s_dummyfunc();
 		//ユーザーイベントリスナー
 		std::tr1::function<void()> closeListener;
 		std::tr1::function<void()> lupListener;
+		std::tr1::function<void()> rupListener;
 		std::tr1::function<void(const KeyboardEvent&)> keyboardListener;
 
 		//マウスキャプチャ用のフラグ
@@ -874,6 +879,9 @@ static void s_dummyfunc();
 		}
 		void onRButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,false);
+			if (this->rupListener != NULL){
+				(this->rupListener)();
+			}
 		}
 		void onLRButtonUp(const MouseEvent& e, bool lButton){
 
@@ -896,7 +904,7 @@ static void s_dummyfunc();
 				mouseEvent.shiftKey= e.shiftKey;
 				mouseEvent.ctrlKey= e.ctrlKey;
 
-				if( lButton ){
+				if(lButton){
 					(*plItr)->onLButtonUp(mouseEvent);
 				}else{
 					(*plItr)->onRButtonUp(mouseEvent);
@@ -2835,6 +2843,8 @@ static void s_dummyfunc();
 			selectListener = [](){s_dummyfunc();};
 			mouseMDownListener = [](){s_dummyfunc();};
 			mouseWheelListener = [](){s_dummyfunc();};
+			mouseRUpListener = [](){s_dummyfunc();};
+
 			keyShiftListener = [this](){
 				shiftKeyTime(getShiftKeyTime());
 			};
@@ -3447,6 +3457,154 @@ static void s_dummyfunc();
 			InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
 
 		}
+		virtual void onRButtonDown(const MouseEvent& e){
+			selectClear(true);
+
+			if (!canMouseControll) return;
+			if (g_underselecttolast) return;
+			if (g_undereditrange) return;
+
+			int x0 = MARGIN;
+			int x1 = x0 + LABEL_SIZE_X;
+			int x2 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+			int x3 = size.x - MARGIN;
+			int y0 = MARGIN;
+			int y1 = y0 + AXIS_SIZE_Y + 1;
+			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
+			int y3 = size.y - MARGIN;
+
+			//ラベル
+			if (x0 <= e.localX && e.localX<x2
+				&& y1 <= e.localY && e.localY<y2){
+				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
+
+				//dragLabel = true;
+			}
+
+			/*
+			//時間軸目盛り
+			if (x1 - 2 <= e.localX && e.localX<x2
+				&& y0 <= e.localY && e.localY<y2){
+				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
+
+				dragTime = true;
+			}
+
+			{//ドラッグでの範囲選択
+				dragSelectTime1 = currentTime;
+				dragSelectLine1 = currentLine;
+			}
+
+			//時間軸スクロールバー
+			if (x1 <= e.localX && e.localX<x2
+				&& y2 <= e.localY && e.localY<y3){
+				int xx0 = MARGIN + LABEL_SIZE_X;
+				int xx1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+
+				double showTimeLength = ((double)(xx1 - xx0 - 3)) / timeSize;
+				if (showTimeLength<maxTime){
+					double barSize = ((double)(xx1 - xx0 - 4))*showTimeLength / maxTime;
+
+					int movableX = xx1 - xx0 - (int)barSize;
+					int movableXStart = xx0 + (int)barSize / 2;
+
+					setShowPosTime(((double)(e.localX - movableXStart))*(maxTime - showTimeLength) / (double)movableX);
+
+					dragScrollBarTime = true;
+				}
+			}
+
+			//ラベルスクロールバー
+			if (x2 <= e.localX && e.localX<x3
+				&& y1 <= e.localY && e.localY<y2){
+				int yy0 = MARGIN + AXIS_SIZE_Y;
+				int yy1 = size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
+
+				int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
+				if (showLineNum<(int)lineData.size()){
+					int barSize = (yy1 - yy0 - 4)*showLineNum / (int)lineData.size();
+
+					int movableY = yy1 - yy0 - barSize;
+					int movableYStart = yy0 + barSize / 2;
+
+					setShowPosLine((e.localY - movableYStart)*((int)lineData.size() - showLineNum) / movableY);
+
+					dragScrollBarLabel = true;
+				}
+			}
+
+			//Ctrl+ドラッグによるキー移動
+			if (e.ctrlKey && !dragScrollBarTime && !dragScrollBarLabel){
+				dragShift = true;
+			}
+			*/
+		}
+		///	Method : 左マウスボタンアップイベント受信
+		virtual void onRButtonUp(const MouseEvent& e){
+			if (!canMouseControll) return;
+			if (g_underselecttolast || g_undereditrange){
+				g_underselecttolast = false;
+				g_undereditrange = false;
+
+				//ドラッグフラグを初期化
+				dragLabel = false;
+				dragTime = false;
+				dragScrollBarLabel = false;
+				dragScrollBarTime = false;
+				dragSelect = false;
+				dragShift = false;
+
+				return;
+			}
+
+			/*
+			//ドラッグ選択範囲内のキーを選択状態にする
+			if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
+				selectClear(true);
+				if (dragSelect){
+
+					for (int i = min(dragSelectLine1, dragSelectLine2);
+						i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
+						lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
+							max(dragSelectTime1, dragSelectTime2));
+					}
+				}
+				//リスナーコール
+				if (this->selectListener != NULL){
+					(this->selectListener)();
+				}
+			}
+
+			//Ctrl+ドラッグによるキー移動
+			if (dragShift){
+				//リスナーコール
+				if (this->keyShiftListener != NULL){
+					(this->keyShiftListener)();
+				}
+				ghostShiftTime = 0.0;
+			}
+			*/
+			//ドラッグフラグを初期化
+			dragLabel = false;
+			dragTime = false;
+			dragScrollBarLabel = false;
+			dragScrollBarTime = false;
+			dragSelect = false;
+			dragShift = false;
+
+			//再描画領域
+			RECT tmpRect;
+			tmpRect.left = pos.x + 1;
+			tmpRect.top = pos.y + 1;
+			tmpRect.right = pos.x + size.x - 1;
+			tmpRect.bottom = pos.y + size.y - 1;
+			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+			if (this->mouseRUpListener != NULL){
+				(this->mouseRUpListener)();
+			}
+		}
+
 		///	Method : マウス移動イベント受信
 		virtual void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
@@ -3770,7 +3928,9 @@ static void s_dummyfunc();
 		void setMouseWheelListener(std::tr1::function<void()> listener){
 			this->mouseWheelListener = listener;
 		}
-
+		void setMouseRUpListener(std::tr1::function<void()> listener){
+			this->mouseRUpListener = listener;
+		}
 
 
 		KeyInfo ExistKey( int srcline, double srctime )
@@ -3806,6 +3966,7 @@ static void s_dummyfunc();
 		std::tr1::function<void()> keyShiftListener;
 		std::tr1::function<void()> mouseMDownListener;
 		std::tr1::function<void()> mouseWheelListener;
+		std::tr1::function<void()> mouseRUpListener;
 		std::tr1::function<void(const KeyInfo&)> keyDeleteListener;
 
 		//行データクラス-------------

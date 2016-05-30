@@ -6,6 +6,9 @@ class CQuaternion;
 #include <d3dx9.h>
 #include <Coef.h>
 
+class CBone;
+class CModel;
+
 int qToEulerAxis( CQuaternion axisQ, CQuaternion* srcq, D3DXVECTOR3* Euler );
 int modifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB );// new, old
 
@@ -23,5 +26,9 @@ int IsSameEul(D3DXVECTOR3 srceul1, D3DXVECTOR3 srceul2);
 
 void InitAngleLimit(ANGLELIMIT* dstal);
 void SetAngleLimitOff(ANGLELIMIT* dstal);
+
+void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
+int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
+void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
 
 #endif
