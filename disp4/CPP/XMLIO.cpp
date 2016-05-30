@@ -11,6 +11,8 @@
 #include <crtdbg.h>
 
 #include <XMLIO.h>
+#include <Model.h>
+#include <Bone.h>
 #include <quaternion.h>
 
 #define DBGH
@@ -561,4 +563,36 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBU
 	dstbuf->isend = 0;
 
 	return 0;
+}
+
+CBone* CXMLIO::FindBoneByName(CModel* srcmodel, char* bonename, int srcleng)
+{
+	if (srcleng > 256){
+		_ASSERT(0);
+		return 0;
+	}
+	char bonename1[256] = { 0 };
+	char bonename2[256] = { 0 };
+
+	char* jointnameptr = strstr(bonename, "_Joint");
+	if (!jointnameptr){
+		sprintf_s(bonename1, 256, "%s_Joint", bonename);
+		strcpy_s(bonename2, 256, bonename);
+	}
+	else{
+		strcpy_s(bonename1, 256, bonename);
+		strcpy_s(bonename2, 256, bonename);
+		int headleng = jointnameptr - bonename;
+		*(bonename2 + headleng) = 0;
+	}
+	CBone* curbone = srcmodel->GetBoneByName(bonename1);
+	if (!curbone){
+		curbone = srcmodel->GetBoneByName(bonename2);
+		if (!curbone){
+			_ASSERT(0);
+			return 0;
+		}
+	}
+
+	return curbone;
 }

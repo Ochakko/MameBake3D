@@ -85,6 +85,7 @@ MameBake3Dはデフォルトで相対IKである。
 #include "RMenuMain.h"
 #include <BoneProp.h>
 #include <lmtFile.h>
+#include <RigFile.h>
 
 typedef struct tag_spaxis
 {
@@ -4153,6 +4154,11 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		WCHAR lmtname[MAX_PATH];
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
 		lmtfile.LoadLmtFile(lmtname, s_model);
+
+		WCHAR rigname[MAX_PATH] = { 0L };
+		swprintf_s(rigname, MAX_PATH, L"%s.rig", g_tmpmqopath);
+		CRigFile rigfile;
+		rigfile.LoadRigFile(rigname, s_model);
 	}
 
 	s_model->CalcBoneEul(-1);
@@ -7904,6 +7910,12 @@ int ExportFBXFile()
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", filename);
 		CLmtFile lmtfile;
 		lmtfile.WriteLmtFile(lmtname, s_model);
+
+		WCHAR rigname[MAX_PATH] = { 0L };
+		swprintf_s(rigname, MAX_PATH, L"%s.rig", filename);
+		CRigFile rigfile;
+		rigfile.WriteRigFile(rigname, s_model);
+
 	}
 
 

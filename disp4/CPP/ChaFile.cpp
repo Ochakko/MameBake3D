@@ -23,6 +23,7 @@
 
 #include <FBXFile.h>
 #include <lmtFile.h>
+#include <RigFile.h>
 
 #define DBGH
 #include <dbg.h>
@@ -239,6 +240,12 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 		swprintf_s(lmtname, MAX_PATH, L"%s\\%s.lmt", charafolder, curmodel->GetFileName());
 		CLmtFile lmtfile;
 		lmtfile.WriteLmtFile(lmtname, curmodel);
+
+
+		WCHAR rigname[MAX_PATH] = { 0L };
+		swprintf_s(rigname, MAX_PATH, L"%s\\%s.rig", charafolder, curmodel->GetFileName());
+		CRigFile rigfile;
+		rigfile.WriteRigFile(rigname, curmodel);
 	}
 
 	/***

@@ -5,7 +5,8 @@
 #include <coef.h>
 
 class CQuaternion;
-//class CPmCipherDll;
+class CModel;
+class CBone;
 
 class CXMLIO
 {
@@ -35,6 +36,8 @@ protected:
 	int GetName( char* dstchar, int dstleng, char* srcchar, int pos, int srcleng );
 
 	int SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBUF* dstbuf, int delpatflag = 1 );
+	
+	CBone* FindBoneByName(CModel* srcmodel, char* bonename, int srcleng);
 
 protected:
 	int m_mode;

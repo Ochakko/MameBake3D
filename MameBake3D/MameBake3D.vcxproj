@@ -128,6 +128,7 @@
     <ClCompile Include="..\disp4\CPP\polymesh3.cpp" />
     <ClCompile Include="..\disp4\CPP\polymesh4.cpp" />
     <ClCompile Include="..\disp4\CPP\quaternion.cpp" />
+    <ClCompile Include="..\disp4\CPP\RigFile.cpp" />
     <ClCompile Include="..\disp4\CPP\RigidElem.cpp" />
     <ClCompile Include="..\disp4\CPP\RigidElemFile.cpp" />
     <ClCompile Include="..\disp4\CPP\TexBank.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="..\disp4\INCLUDE\polymesh3.h" />
     <ClInclude Include="..\disp4\INCLUDE\polymesh4.h" />
     <ClInclude Include="..\disp4\INCLUDE\quaternion.h" />
+    <ClInclude Include="..\disp4\INCLUDE\RigFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\RigidElem.h" />
     <ClInclude Include="..\disp4\INCLUDE\RigidElemFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\TexBank.h" />
