@@ -546,6 +546,8 @@ public:
 	int CalcBoneEul(int srcmotid);
 	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
 
+	int RigControl(CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
+
 	int DbgDump();
 
 private:

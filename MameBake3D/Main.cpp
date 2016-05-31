@@ -132,7 +132,9 @@ static float s_rotaxisdeg = 0.0f;
 
 static HWND s_customrigdlg = 0;
 static CUSTOMRIG s_customrig;
+static CUSTOMRIG s_ikcustomrig;
 static CBone* s_customrigbone = 0;
+static int s_customrigno = 0;
 static map<int, int> s_customrigmenuindex;
 
 static int s_forcenewaxis = 0;
@@ -243,6 +245,8 @@ static CModel* s_bmark = NULL;
 static CModel* s_coldisp[ COL_MAX ];
 static CModel* s_ground = NULL;
 static CModel* s_gplane = NULL;
+static CModel* s_rigmark = NULL;
+
 //static CModel* s_dummytri = NULL;
 static CMySprite* s_bcircle = 0;
 static CMySprite* s_kinsprite = 0;
@@ -1372,6 +1376,15 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 //	CallF( s_dummytri->MakeDispObj(), return 1 );
 
 
+	s_rigmark = new CModel();
+	if (!s_rigmark){
+		_ASSERT(0);
+		return 1;
+	}
+	CallF(s_rigmark->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_rigmark->MakeDispObj(), return 1);
+
+
 	s_bmark = new CModel();
 	if( !s_bmark ){
 		_ASSERT( 0 );
@@ -2105,57 +2118,76 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 			}else{
-				if( g_controlkey == false ){
-					CallF( s_model->PickBone( &s_pickinfo ), return 1 );
-				}
-				if( s_pickinfo.pickobjno >= 0 ){
-					s_curboneno = s_pickinfo.pickobjno;				
-
-					if( s_owpTimeline ){
-						s_owpTimeline->setCurrentLine( s_boneno2lineno[ s_curboneno ], true );
+				if (!s_customrigdlg){
+					if (g_controlkey == false){
+						CallF(s_model->PickBone(&s_pickinfo), return 1);
 					}
+					if (s_pickinfo.pickobjno >= 0){
+						s_curboneno = s_pickinfo.pickobjno;
 
-					ChangeCurrentBone();
-
-					s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
-
-					s_pickinfo.firstdiff.x = (float)s_pickinfo.clickpos.x - s_pickinfo.objscreen.x;
-					s_pickinfo.firstdiff.y = (float)s_pickinfo.clickpos.y - s_pickinfo.objscreen.y;
-
-				}else{
-					if( s_dispselect ){
-						int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
-						colliobjx = s_select->CollisionNoBoneObj_Mouse( &s_pickinfo, "objX" );
-						colliobjy = s_select->CollisionNoBoneObj_Mouse( &s_pickinfo, "objY" );
-						colliobjz = s_select->CollisionNoBoneObj_Mouse( &s_pickinfo, "objZ" );
-						if( s_ikkind == 0 ){
-							colliringx = s_select->CollisionNoBoneObj_Mouse( &s_pickinfo, "ringX" );
-							colliringy = s_select->CollisionNoBoneObj_Mouse( &s_pickinfo, "ringY" );
-							colliringz = s_select->CollisionNoBoneObj_Mouse( &s_pickinfo, "ringZ" );
-						}else{
-							colliringx = 0;
-							colliringy = 0;
-							colliringz = 0;
+						if (s_owpTimeline){
+							s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
 						}
 
-						if( colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz ){
-							s_pickinfo.pickobjno = s_curboneno;
-						}
+						ChangeCurrentBone();
 
-						if( colliobjx || colliringx ){
-							s_pickinfo.buttonflag = PICK_X;
-						}else if( colliobjy || colliringy ){
-							s_pickinfo.buttonflag = PICK_Y;
-						}else if( colliobjz || colliringz ){
-							s_pickinfo.buttonflag = PICK_Z;
-						}else{
-							ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
+						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
+
+						s_pickinfo.firstdiff.x = (float)s_pickinfo.clickpos.x - s_pickinfo.objscreen.x;
+						s_pickinfo.firstdiff.y = (float)s_pickinfo.clickpos.y - s_pickinfo.objscreen.y;
+
+					}
+					else{
+						if (s_dispselect){
+							int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
+							colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
+							colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY");
+							colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ");
+							if (s_ikkind == 0){
+								colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX");
+								colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY");
+								colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ");
+							}
+							else{
+								colliringx = 0;
+								colliringy = 0;
+								colliringz = 0;
+							}
+
+							if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz){
+								s_pickinfo.pickobjno = s_curboneno;
+							}
+
+							if (colliobjx || colliringx){
+								s_pickinfo.buttonflag = PICK_X;
+							}
+							else if (colliobjy || colliringy){
+								s_pickinfo.buttonflag = PICK_Y;
+							}
+							else if (colliobjz || colliringz){
+								s_pickinfo.buttonflag = PICK_Z;
+							}
+							else{
+								ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+							}
 						}
-					}else{
-						ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
+						else{
+							ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+						}
 					}
 				}
-
+				else{
+					int colliobj;
+					colliobj = s_rigmark->CollisionNoBoneObj_Mouse(&s_pickinfo, "obj1");
+					if (colliobj){
+						s_pickinfo.buttonflag = PICK_CENTER;
+						s_pickinfo.pickobjno = s_curboneno;
+						//_ASSERT(0);
+					}
+					else{
+						ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+					}
+				}
 				if( s_owpLTimeline && s_model && s_model->GetCurMotInfo() ){
 					int curlineno = s_owpLTimeline->getCurrentLine();
 					if( curlineno == 1 ){
@@ -2178,7 +2210,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
 					int multworld = 1;
-					s_ikselectmat = curbone->CalcManipulatorMatrix(0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
+					s_ikselectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
 				}
 			}
 		}
@@ -2239,16 +2271,32 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 				if (g_previewFlag == 0){
-					D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
-					CallF(CalcTargetPos(&targetpos), return 1);
-					if (s_ikkind == 0){
-						s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+					if (s_model){
+						if (!s_customrigdlg){
+							D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+							CallF(CalcTargetPos(&targetpos), return 1);
+							if (s_ikkind == 0){
+								s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+							}
+							else if (s_ikkind == 1){
+								D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+								AddBoneTra2(diffvec);
+							}
+						}
+						else{
+							if (s_customrigbone){
+								float deltau = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) * 0.5f;
+								float deltav = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+
+								s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
+
+								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
+								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
+								s_editmotionflag = s_curboneno;
+							}
+						}
+						s_ikcnt++;
 					}
-					else if (s_ikkind == 1){
-						D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
-						AddBoneTra2(diffvec);
-					}
-					s_ikcnt++;
 				}
 			}
 		}
@@ -2264,7 +2312,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 				if (g_previewFlag == 0){
-					float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
 					if (s_ikkind == 0){
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					}
@@ -2289,7 +2337,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 				if (g_previewFlag == 0){
-					float deltax = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
 					if (s_ikkind == 0){
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					}
@@ -2941,7 +2989,11 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		delete s_select;
 		s_select = 0;
 	}
-	if( s_ground ){
+	if (s_rigmark){
+		delete s_rigmark;
+		s_rigmark = 0;
+	}
+	if (s_ground){
 		delete s_ground;
 		s_ground = 0;
 	}
@@ -5383,7 +5435,7 @@ int RenderSelectMark(int renderflag)
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if (curboneptr){
 		int multworld = 1;
-		s_selm = curboneptr->CalcManipulatorMatrix(0, multworld, curmi->motid, curmi->curframe);
+		s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
 
 		D3DXVECTOR3 orgpos = curboneptr->GetJointFPos();
 		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();
@@ -5400,6 +5452,9 @@ int RenderSelectMark(int renderflag)
 		if( lineleng > 0.00001f ){
 			lineleng = sqrt( lineleng );
 			s_selectscale = 0.0020f / lineleng;
+			if (s_customrigdlg){
+				s_selectscale *= 0.25f;
+			}
 		}
 		else{
 			//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
@@ -5416,13 +5471,22 @@ int RenderSelectMark(int renderflag)
 		if (renderflag){
 			g_pEffect->SetMatrix(g_hmVP, &mvp);
 			g_pEffect->SetMatrix(g_hmWorld, &s_selectmat);
-			s_select->UpdateMatrix(&s_selectmat, &mvp);
 
-			s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-			if (s_dispselect){
+			if (!s_customrigdlg){
+				s_select->UpdateMatrix(&s_selectmat, &mvp);
+				s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+				if (s_dispselect){
+					int lightflag = 1;
+					D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+					s_select->OnRender(s_pdev, lightflag, diffusemult);
+				}
+			}
+			else{
+				s_rigmark->UpdateMatrix(&s_selectmat, &mvp);
+				s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 				int lightflag = 1;
 				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-				s_select->OnRender(s_pdev, lightflag, diffusemult);
+				s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
 			}
 			s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 		}
@@ -11005,6 +11069,7 @@ int Bone2CustomRig(int rigno)
 		if (s_customrig.rigboneno <= 0){
 			_ASSERT(0);
 		}
+		s_customrigno = s_customrig.rigno;
 	}
 	else{
 		_ASSERT(0);
