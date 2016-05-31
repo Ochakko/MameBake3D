@@ -97,8 +97,8 @@ int g_dbgloadcnt = 0;
 
 extern map<CModel*,int> g_bonecntmap;
 
-D3DXMATRIX s_selectmat;//for display manipulator
-D3DXMATRIX s_ikselectmat;//for ik, fk
+D3DXMATRIXA16 s_selectmat;//for display manipulator
+D3DXMATRIXA16 s_ikselectmat;//for ik, fk
 bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
@@ -254,10 +254,10 @@ static CMySprite* s_kinsprite = 0;
 static int s_fbxbunki = 1;
 
 
-static D3DXMATRIX s_matWorld;
-static D3DXMATRIX s_matProj;
+static D3DXMATRIXA16 s_matWorld;
+static D3DXMATRIXA16 s_matProj;
 static D3DXMATRIXA16 s_matW, s_matVP;
-static D3DXMATRIX s_matView;
+static D3DXMATRIXA16 s_matView;
 static D3DXVECTOR3 s_camUpVec = D3DXVECTOR3( 0.00001f, 1.0f, 0.0f );
 static float s_camdist = g_initcamdist;
 
@@ -794,6 +794,8 @@ static int OnDelModel( int delindex );
 static int OnDelAllModel();
 static int refreshModelPanel();
 static int RenderSelectMark(int renderflag);
+static int RenderSelectFunc();
+static int RenderRigMarkFunc();
 static int SetSelectState();
 
 static int CreateModelPanel();
@@ -5426,12 +5428,6 @@ int RenderSelectMark(int renderflag)
 		return 0;
 	}
 
-	D3DXMATRIX mw;
-	D3DXMatrixIdentity( &mw );
-    D3DXMATRIX mp = *g_Camera.GetProjMatrix();
-    D3DXMATRIX mv = s_matView;
-	D3DXMATRIX mvp = mv * mp;
-
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if (curboneptr){
 		int multworld = 1;
@@ -5441,18 +5437,18 @@ int RenderSelectMark(int renderflag)
 		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();
 
 		D3DXVECTOR3 cam0, cam1;
-		D3DXMATRIX mwv = mw * mv;
+		D3DXMATRIX mwv = s_matW * s_matView;
 		D3DXVec3TransformCoord( &cam0, &orgpos, &mwv );
 		cam1 = cam0 + D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
 
 		D3DXVECTOR3 sc0, sc1;
-		D3DXVec3TransformCoord( &sc0, &cam0, &mp );
-		D3DXVec3TransformCoord( &sc1, &cam1, &mp );
+		D3DXVec3TransformCoord( &sc0, &cam0, &s_matProj );
+		D3DXVec3TransformCoord( &sc1, &cam1, &s_matProj );
 		float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
 		if( lineleng > 0.00001f ){
 			lineleng = sqrt( lineleng );
 			s_selectscale = 0.0020f / lineleng;
-			if (s_customrigdlg){
+			if (s_customrigdlg && (curboneptr == s_customrigbone)){
 				s_selectscale *= 0.25f;
 			}
 		}
@@ -5469,24 +5465,19 @@ int RenderSelectMark(int renderflag)
 		s_selectmat._43 = bonepos.z;
 
 		if (renderflag){
-			g_pEffect->SetMatrix(g_hmVP, &mvp);
+			g_pEffect->SetMatrix(g_hmVP, &s_matVP);
 			g_pEffect->SetMatrix(g_hmWorld, &s_selectmat);
 
 			if (!s_customrigdlg){
-				s_select->UpdateMatrix(&s_selectmat, &mvp);
-				s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-				if (s_dispselect){
-					int lightflag = 1;
-					D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-					s_select->OnRender(s_pdev, lightflag, diffusemult);
-				}
+				RenderSelectFunc();
 			}
 			else{
-				s_rigmark->UpdateMatrix(&s_selectmat, &mvp);
-				s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-				int lightflag = 1;
-				D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
-				s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
+				if (curboneptr == s_customrigbone){
+					RenderRigMarkFunc();
+				}
+				else{
+					RenderSelectFunc();
+				}
 			}
 			s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 		}
@@ -5495,6 +5486,32 @@ int RenderSelectMark(int renderflag)
 	return 0;
 }
 
+int RenderSelectFunc()
+{
+	s_select->UpdateMatrix(&s_selectmat, &s_matVP);
+	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	if (s_dispselect){
+		int lightflag = 1;
+		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+		s_select->OnRender(s_pdev, lightflag, diffusemult);
+	}
+	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+
+	return 0;
+
+}
+
+int RenderRigMarkFunc()
+{
+	s_rigmark->UpdateMatrix(&s_selectmat, &s_matVP);
+	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	int lightflag = 1;
+	D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
+	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+
+	return 0;
+}
 int CalcTargetPos( D3DXVECTOR3* dstpos )
 {
 	D3DXVECTOR3 start3d, end3d;
