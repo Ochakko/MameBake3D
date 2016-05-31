@@ -2293,6 +2293,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 								s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
 								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
+								s_model->UpdateMatrix(&s_matW, &s_matVP);
 								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
 								s_editmotionflag = s_curboneno;
 							}
