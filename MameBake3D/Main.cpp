@@ -1356,27 +1356,6 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	s_ringgreenmat = s_ringgreen->GetDif4F();
 	s_matyellowmat = s_matyellow->GetDif4F();
 
-	/*
-	string strobjz = "objZ";
-	CMQOObject* objz = s_select->GetObjectByName(strobjz);
-	if (objz){
-		CPolyMesh3* pm3 = objz->GetPm3();
-		if (pm3){
-			_ASSERT(0);
-		}
-	}
-	*/
-
-
-//	s_dummytri = new CModel();
-//	if( !s_dummytri ){
-//		_ASSERT( 0 );
-//		return 1;
-//	}
-//	CallF( s_dummytri->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\dummytri.mqo", 0, 1.0f, 1 ), return 1 );
-//	CallF( s_dummytri->CalcInf(), return 1 );
-//	CallF( s_dummytri->MakeDispObj(), return 1 );
-
 
 	s_rigmark = new CModel();
 	if (!s_rigmark){
@@ -2229,36 +2208,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 	}else if( uMsg == WM_MBUTTONDOWN){
-		/*
-		if (s_underselectingframe == 0){
-			s_underselectingframe = 1;
-			if (s_owpTimeline){
-				s_buttonselectstart = s_owpTimeline->getCurrentTime();
-				OnTimeLineCursor();
-			}
-		}
-		else{
-			s_underselectingframe = 0;
-			OnTimeLineButtonSelect(0.0, 0);
-		}
-		*/
-		/*
-		SetCapture( s_mainwnd );
-		POINT ptCursor;
-		GetCursorPos( &ptCursor );
-		::ScreenToClient( s_mainwnd, &ptCursor );
-		s_pickinfo.clickpos = ptCursor;
-		s_pickinfo.mousepos = ptCursor;
-		s_pickinfo.mousebefpos = ptCursor;
-		s_pickinfo.diffmouse = D3DXVECTOR2( 0.0f, 0.0f );
 
-		s_pickinfo.winx = (int)DXUTGetWindowWidth();
-		s_pickinfo.winy = (int)DXUTGetWindowHeight();
-		s_pickinfo.pickrange = 6;
-
-		s_pickinfo.pickobjno = -1;
-		s_pickinfo.buttonflag = PICK_CAMMOVE;
-		*/
 	}
 	else if (uMsg == WM_MOUSEMOVE){
 		if (s_pickinfo.buttonflag == PICK_CENTER){
@@ -2295,6 +2245,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
 								s_model->UpdateMatrix(&s_matW, &s_matVP);
 								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
+								s_model->UpdateMatrix(&s_matW, &s_matVP);
 								s_editmotionflag = s_curboneno;
 							}
 						}
@@ -3000,10 +2951,6 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		delete s_ground;
 		s_ground = 0;
 	}
-//	if( s_dummytri ){
-//		delete s_dummytri;
-//		s_dummytri = 0;
-//	}
 	if( s_gplane ){
 		delete s_gplane;
 		s_gplane = 0;
@@ -3477,12 +3424,6 @@ int GetShaderHandle()
 	_ASSERT( g_hRenderLine );
 	g_hRenderSprite = g_pEffect->GetTechniqueByName( "RenderSprite" );
 	_ASSERT( g_hRenderSprite );
-
-
-//	g_hmBoneQ = g_pEffect->GetParameterByName( NULL, "g_mBoneQ" );
-//	_ASSERT( g_hmBoneQ );
-//	g_hmBoneTra = g_pEffect->GetParameterByName( NULL, "g_mBoneTra" );
-//	_ASSERT( g_hmBoneTra );
 
 	g_hm3x4Mat = g_pEffect->GetParameterByName( NULL, "g_m3x4Mat" );
 	_ASSERT( g_hm3x4Mat );
@@ -4145,28 +4086,6 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	g_camtargetpos = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, -0.0f );
 	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 
-/***
-	s_projnear = fObjectRadius * 0.01f;
-	g_initcamdist = fObjectRadius * 8.0f;
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 3.0f * g_initcamdist );
-	
-	
-    for( int i = 0; i < MAX_LIGHTS; i++ )
-		g_LightControl[i].SetRadius( fObjectRadius );
-
-
-    D3DXVECTOR3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    D3DXVECTOR3 vecAt ( 0.0f, 0.0f, -0.0f );
-    g_Camera.SetViewParams( &vecEye, &vecAt );
-    g_Camera.SetRadius( fObjectRadius * 10.0f, fObjectRadius * 0.5f, fObjectRadius * 12.0f );
-
-	s_camdist = fObjectRadius * 4.0f;
-	g_camEye = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
-	g_camtargetpos = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-***/
-
-	//CallF( AddMotion( 0 ), return 0 );
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
 	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
@@ -4410,64 +4329,6 @@ void refreshTimeline(OWP_Timeline& timeline){
 
 int AddBoneEul( int kind, float adddeg )
 {
-	/*
-	if( !s_model || (s_curboneno < 0) ){
-		return 0;
-	}
-
-	CBone* curbone = s_model->GetBoneByID( s_curboneno );
-	if( !curbone ){
-		_ASSERT( 0 );
-		return 0;
-	}
-
-	D3DXVECTOR3 basevec;
-	D3DXVECTOR3 vecx( 1.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 vecy( 0.0f, 1.0f, 0.0f );
-	D3DXVECTOR3 vecz( 0.0f, 0.0f, 1.0f );
-
-	D3DXMATRIX worldrot = curbone->GetAxisMatPar() * curbone->GetCurMp().GetWorldMat();
-	worldrot._41 = 0.0f;
-	worldrot._42 = 0.0f;
-	worldrot._43 = 0.0f;
-
-	if( kind == 0 ){
-		D3DXVec3TransformCoord( &basevec, &vecx, &worldrot );
-	}else if( kind == 1 ){
-		D3DXVec3TransformCoord( &basevec, &vecy, &worldrot );
-	}else if( kind == 2 ){
-		D3DXVec3TransformCoord( &basevec, &vecz, &worldrot );
-	}else{
-		_ASSERT( 0 );
-		D3DXVec3TransformCoord( &basevec, &vecx, &worldrot );
-	}
-
-	D3DXVec3Normalize( &basevec, &basevec );
-
-	D3DXMATRIX rotmat;
-	D3DXMatrixRotationAxis( &rotmat, &basevec, adddeg * (float)DEG2PAI );
-
-	D3DXQUATERNION rotqx;
-	D3DXQuaternionRotationMatrix( &rotqx, &rotmat );
-
-	CQuaternion rotq;
-	rotq.x = rotqx.x;
-	rotq.y = rotqx.y;
-	rotq.z = rotqx.z;
-	rotq.w = rotqx.w;
-
-	//int curmotid = s_model->GetCurMotInfo()->motid;
-	//double curframe = s_owpTimeline->getCurrentTime();
-	s_model->FKRotate( &s_editrange, s_curboneno, rotq );
-
-//	if( (existflag == 0) && newmp ){
-//		s_owpTimeline->newKey( curbone->m_wbonename, s_owpTimeline->getCurrentTime(), (void*)newmp );
-//	}
-
-	//s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
-
-	s_editmotionflag = s_curboneno;
-	*/
 	return 0;
 }
 
@@ -6799,60 +6660,6 @@ int OnAddMotion( int srcmotid )
 
 }
 
-/***
-int SetSelectCol()
-{
-	if( !s_select || !s_model || g_previewFlag ){
-		return 0;
-	}
-
-//	s_select->SetDispFlag( "ringX", 0 );
-//	s_select->SetDispFlag( "ringY", 0 );
-//	s_select->SetDispFlag( "ringZ", 0 );
-////////
-
-	float hirate = 1.0f;
-	float lowrate = 0.3f;
-
-	float hia = 1.0f;
-	float lowa = 0.7f;
-
-	CMQOMaterial* matred = s_select->m_materialname[ "matred" ];
-	_ASSERT( matred );
-	CMQOMaterial* ringred = s_select->m_materialname[ "ringred" ];
-	_ASSERT( ringred );
-	CMQOMaterial* matblue = s_select->m_materialname[ "matblue" ];
-	_ASSERT( matblue );
-	CMQOMaterial* ringblue = s_select->m_materialname[ "ringblue" ];
-	_ASSERT( ringblue );
-	CMQOMaterial* matgreen = s_select->m_materialname[ "matgreen" ];
-	_ASSERT( matgreen );
-	CMQOMaterial* ringgreen = s_select->m_materialname[ "ringgreen" ];
-	_ASSERT( ringgreen );
-	CMQOMaterial* matyellow = s_select->m_materialname[ "matyellow" ];
-	_ASSERT( matyellow );
-
-
-	D3DXVECTOR4 colr( 1.0f, 0.0f, 0.0f, 0.7f );
-	D3DXVECTOR4 colg( 0.0f, 1.0f, 0.0f, 0.7f );
-	D3DXVECTOR4 colb( 0.0f, 0.0f, 1.0f, 0.7f );
-	D3DXVECTOR4 coly( 1.0f, 0.949f, 0.0f, 0.7f );
-
-
-	matred->dif4f = colr;
-	ringred->dif4f = colr;
-
-	matblue->dif4f = colb;
-	ringblue->dif4f = colb;
-
-	matgreen->dif4f = colg;
-	ringgreen->dif4f = colg;
-
-	matyellow->dif4f = coly;
-
-	return 0;
-}
-***/
 
 int StartBt(int flag, int btcntzero)
 {
