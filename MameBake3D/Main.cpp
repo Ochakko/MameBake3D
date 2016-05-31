@@ -8783,14 +8783,14 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			//EndDialog(hDlgWnd, IDOK);
 			if (s_rotaxisdlg){
 				DestroyWindow(s_rotaxisdlg);
-				s_anglelimitdlg = 0;
+				s_rotaxisdlg = 0;
 			}
 			break;
 		case IDCANCEL:
 			//EndDialog(hDlgWnd, IDCANCEL);
 			if (s_rotaxisdlg){
 				DestroyWindow(s_rotaxisdlg);
-				s_anglelimitdlg = 0;
+				s_rotaxisdlg = 0;
 			}
 			break;
 		case IDC_INITROT:
@@ -8806,7 +8806,7 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_CLOSE:
 		if (s_rotaxisdlg){
 			DestroyWindow(s_rotaxisdlg);
-			s_anglelimitdlg = 0;
+			s_rotaxisdlg = 0;
 		}
 		break;
 	default:
