@@ -25,6 +25,10 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/06/01 その２
+　　【使い方説明】 MameBake3D 【Rig機能が付いちゃいました】
+　　https://youtu.be/gkqCJNsUsKE
+
 2016/06/01 その１
 	Rigのテストのためのサンプルデータをaddしました。
 	Media/RigTest6/RigTest6.chaです。
@@ -454,6 +458,9 @@ VCランタイムは2010を使用しています。
 
 
 /////////// 以下、説明動画
+
+【使い方説明】 MameBake3D 【Rig機能が付いちゃいました】
+https://youtu.be/gkqCJNsUsKE
 
 MameBake3D CustomRig ダイジェスト動画。
 https://youtu.be/o7UUAqea6io
