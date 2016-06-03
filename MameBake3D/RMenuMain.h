@@ -8,6 +8,7 @@ public:
 	~CRMenuMain();
 
 	int Create( HWND srchwnd );
+	int CreatePopupMenu(HWND srchwnd, HMENU parmenu, WCHAR* partitle);
 	int Destroy();
 
 	HMENU GetSubMenu();

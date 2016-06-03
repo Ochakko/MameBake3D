@@ -11276,6 +11276,10 @@ int BoneRClick(int srcboneno)
 
 				HMENU submenu = rmenu->GetSubMenu();
 
+				CRMenuMain* rsubmenu[MAXRIGNUM];
+				ZeroMemory(rsubmenu, sizeof(CRMenuMain*) * MAXRIGNUM);
+
+
 				int menunum;
 				menunum = GetMenuItemCount(submenu);
 				int menuno;
@@ -11293,8 +11297,32 @@ int BoneRClick(int srcboneno)
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
 					if (currig.useflag == 2){
 						int setmenuid = ID_RMENU_0 + setmenuno;
-						AppendMenu(submenu, MF_STRING, setmenuid, currig.rigname);
-						s_customrigmenuindex[setmenuid] = rigno;
+
+						//AppendMenu(submenu, MF_STRING, setmenuid, currig.rigname);
+						s_customrigmenuindex[setmenuno] = rigno;
+
+						rsubmenu[rigno] = new CRMenuMain(IDR_RMENU);
+						if (!rsubmenu[rigno]){
+							return 1;
+						}
+						ret = rsubmenu[rigno]->CreatePopupMenu(parwnd, submenu, currig.rigname);
+						if (ret){
+							return 1;
+						}
+						HMENU subsubmenu = rsubmenu[rigno]->GetSubMenu();
+						int subsubmenunum;
+						subsubmenunum = GetMenuItemCount(subsubmenu);
+						int subsubmenuno;
+						for (subsubmenuno = 0; subsubmenuno < subsubmenunum; subsubmenuno++)
+						{
+							RemoveMenu(subsubmenu, 0, MF_BYPOSITION);
+						}
+
+						int subsubid1 = setmenuid + MAXRIGNUM;
+						int subsubid2 = setmenuid + MAXRIGNUM * 2;
+						AppendMenu(subsubmenu, MF_STRING, subsubid1, L"Rig設定");
+						AppendMenu(subsubmenu, MF_STRING, subsubid2, L"Rig実行");
+
 						setmenuno++;
 					}
 				}
@@ -11307,43 +11335,34 @@ int BoneRClick(int srcboneno)
 				int currigno = -1;
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
-				if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + MAXRIGNUM))){
-					if (menuid == ID_RMENU_0){
-						currigno = -1;
-					}
-					else{
-						currigno = s_customrigmenuindex[menuid];
-						if ((currigno < 0) || (currigno >= MAXRIGNUM)){
-							currigno = -1;
-						}
-					}
-
-
-					CRMenuMain* rmenu2;
-					rmenu2 = new CRMenuMain(IDR_MENU4);
-					if (!rmenu2){
-						return 1;
-					}
-					ret = rmenu2->Create(parwnd);
-					if (ret){
-						return 1;
-					}
-					GetCursorPos(&pt);
-					int menuid2 = rmenu2->TrackPopupMenu(pt);
-					if (menuid2 == ID_RMENU3_RIG40055){
-						//設定
-						DispCustomRigDlg(currigno);
-					}
-					else if (menuid2 == ID_RMENU3_RIG40056){
-						//実行
-						Bone2CustomRig(currigno);
-						if (s_customrigbone){
-							s_oprigflag = 1;
-						}
-					}
-					rmenu2->Destroy();
-					delete rmenu2;
+				if (menuid == ID_RMENU_0){
+					//新規
+					currigno = -1;
+					DispCustomRigDlg(currigno);
 				}
+				else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 2))){
+					//設定
+					currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM)];
+					DispCustomRigDlg(currigno);
+
+				}
+				else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 2)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 3))){
+					//実行
+					currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM * 2)];
+					Bone2CustomRig(currigno);
+					if (s_customrigbone){
+						s_oprigflag = 1;
+					}
+				}
+				
+				for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+					CRMenuMain* curmenu = rsubmenu[rigno];
+					if (curmenu){
+						curmenu->Destroy();
+						delete curmenu;
+					}
+				}
+
 				rmenu->Destroy();
 				delete rmenu;
 
