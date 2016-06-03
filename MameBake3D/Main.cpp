@@ -11318,7 +11318,31 @@ int BoneRClick(int srcboneno)
 						}
 					}
 
-					DispCustomRigDlg(currigno);
+
+					CRMenuMain* rmenu2;
+					rmenu2 = new CRMenuMain(IDR_MENU4);
+					if (!rmenu2){
+						return 1;
+					}
+					ret = rmenu2->Create(parwnd);
+					if (ret){
+						return 1;
+					}
+					GetCursorPos(&pt);
+					int menuid2 = rmenu2->TrackPopupMenu(pt);
+					if (menuid2 == ID_RMENU3_RIG40055){
+						//Ý’è
+						DispCustomRigDlg(currigno);
+					}
+					else if (menuid2 == ID_RMENU3_RIG40056){
+						//ŽÀs
+						Bone2CustomRig(currigno);
+						if (s_customrigbone){
+							s_oprigflag = 1;
+						}
+					}
+					rmenu2->Destroy();
+					delete rmenu2;
 				}
 				rmenu->Destroy();
 				delete rmenu;
@@ -11372,9 +11396,11 @@ int ToggleRig()
 		if (s_oprigflag == 0){
 			s_oprigflag = 1;
 			s_curboneno = s_customrigbone->GetBoneNo();
+			s_pickinfo.buttonflag = PICK_CENTER;
 		}
 		else{
 			s_oprigflag = 0;
+			s_pickinfo.buttonflag = 0;
 		}
 	}
 	else{
@@ -11383,6 +11409,7 @@ int ToggleRig()
 			DestroyWindow(s_customrigdlg);
 			s_customrigdlg = 0;
 		}
+		s_pickinfo.buttonflag = 0;
 	}
 	return 0;
 }
