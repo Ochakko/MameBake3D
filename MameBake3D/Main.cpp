@@ -91,7 +91,7 @@ typedef struct tag_spaxis
 {
 	CMySprite* sprite;
 	POINT dispcenter;
-}SPAXIS, SPCAM;
+}SPAXIS, SPCAM, SPELEM;
 
 int g_dbgloadcnt = 0;
 
@@ -456,7 +456,8 @@ static int s_editrangesetindex = 0;
 static CEditRange s_previewrange;
 static SPAXIS s_spaxis[3];
 static SPCAM s_spcam[3];
-
+static SPELEM s_sprig;
+static int s_oprigflag = 0;
 
 typedef struct tag_modelpanel
 {
@@ -707,6 +708,7 @@ static int OnFramePlayButton();
 static int OnFrameUndo();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
+static int ToggleRig();
 
 static int OnRenderSetShaderConst();
 static int OnRenderModel();
@@ -826,6 +828,9 @@ static int SetSpAxisParams();
 static int PickSpAxis( POINT srcpos );
 static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
+static int SetSpRigParams();
+static int PickSpRig(POINT srcpos);
+
 
 static int InsertCopyMP( CBone* curbone, double curframe );
 static int InsertSymMP( CBone* curbone, double curframe );
@@ -1069,6 +1074,9 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 //--------------------------------------------------------------------------------------
 void InitApp()
 {
+	s_customrigbone = 0;
+	s_customrigdlg = 0;
+
 	s_underselectingframe = 0;
 	s_buttonselectstart = 0.0;
 	s_buttonselectend = 0.0;
@@ -1102,6 +1110,8 @@ void InitApp()
 
 	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
 	ZeroMemory(s_spcam, sizeof(SPCAM) * 3);
+	ZeroMemory(&s_sprig, sizeof(SPELEM));
+
 
 	g_bonecntmap.clear();
 
@@ -1477,6 +1487,11 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
 	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(mpath, L"cam_kaku.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
+	s_sprig.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_sprig.sprite);
+	CallF(s_sprig.sprite->Create(mpath, L"ToggleRig.png", 0, D3DPOOL_MANAGED, 0), return 1);
+
+
 ///////
 	s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
 	s_pdev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
@@ -1540,6 +1555,7 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
 
 	SetSpAxisParams();
 	SetSpCamParams();
+	SetSpRigParams();
 
     return S_OK;
 }
@@ -1604,6 +1620,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 	OnFrameUpdateGround();
 	OnFrameInitBtWorld();
+
 
 	s_savepreviewFlag = g_previewFlag;
 
@@ -2095,11 +2112,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_pickinfo.pickobjno = -1;
 		}else if (s_model){
 			int spakind = PickSpAxis( ptCursor );
+			int pickrigflag = PickSpRig(ptCursor);
 			if ((spakind != 0) && (s_curboneno >= 0)){
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
+			} else if (pickrigflag == 1){
+				ToggleRig();
 			}else{
-				if (!s_customrigdlg){
+				if (s_oprigflag == 0){
 					if (g_controlkey == false){
 						CallF(s_model->PickBone(&s_pickinfo), return 1);
 					}
@@ -2224,7 +2244,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 				if (g_previewFlag == 0){
 					if (s_model){
-						if (!s_customrigdlg){
+						if (s_oprigflag == 0){
 							D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
 							CallF(CalcTargetPos(&targetpos), return 1);
 							if (s_ikkind == 0){
@@ -2923,6 +2943,8 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
 	}
+	s_oprigflag = 0;
+	s_customrigbone = 0;
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
@@ -3367,6 +3389,14 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		}
 		s_spcam[spcno].sprite = 0;
 	}
+
+	CMySprite* cursp = s_sprig.sprite;
+	if (cursp){
+		delete cursp;
+	}
+	s_sprig.sprite = 0;
+
+
 
 	DestroyModelPanel();
 	DestroyConvBoneWnd();
@@ -4852,6 +4882,22 @@ int OnAnimMenu( int selindex, int saveundoflag )
 
 int OnModelMenu( int selindex, int callbymenu )
 {
+	s_customrigbone = 0;
+	
+	if (s_anglelimitdlg){
+		DestroyWindow(s_anglelimitdlg);
+		s_anglelimitdlg = 0;
+	}
+	if (s_rotaxisdlg){
+		DestroyWindow(s_rotaxisdlg);
+		s_rotaxisdlg = 0;
+	}
+	if (s_customrigdlg){
+		DestroyWindow(s_customrigdlg);
+		s_customrigdlg = 0;
+	}
+	s_oprigflag = 0;
+
 	if( callbymenu == 1 ){
 		if( s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0) ){
 			s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
@@ -5310,7 +5356,7 @@ int RenderSelectMark(int renderflag)
 		if( lineleng > 0.00001f ){
 			lineleng = sqrt( lineleng );
 			s_selectscale = 0.0020f / lineleng;
-			if (s_customrigdlg && (curboneptr == s_customrigbone)){
+			if ((s_oprigflag == 1) && (curboneptr == s_customrigbone)){
 				s_selectscale *= 0.25f;
 			}
 		}
@@ -5330,7 +5376,7 @@ int RenderSelectMark(int renderflag)
 			g_pEffect->SetMatrix(g_hmVP, &s_matVP);
 			g_pEffect->SetMatrix(g_hmWorld, &s_selectmat);
 
-			if (!s_customrigdlg){
+			if (s_oprigflag == 0){
 				RenderSelectFunc();
 			}
 			else{
@@ -7317,6 +7363,29 @@ int SetSpCamParams()
 
 }
 
+int SetSpRigParams()
+{
+	if (!(s_sprig.sprite)){
+		return 0;
+	}
+
+	float spawidth = 32.0f;
+	int spashift = 12;
+	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
+	s_sprig.dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
+	s_sprig.dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
+
+	D3DXVECTOR3 disppos;
+	disppos.x = (float)(s_sprig.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_sprig.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+	CallF(s_sprig.sprite->SetPos(disppos), return 1);
+	CallF(s_sprig.sprite->SetSize(dispsize), return 1);
+
+	return 0;
+
+}
 
 int PickSpAxis( POINT srcpos )
 {
@@ -7397,6 +7466,30 @@ int PickSpCam(POINT srcpos)
 	//}
 
 	return kind;
+}
+
+
+int PickSpRig(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_sprig.sprite == 0){
+		return 0;
+	}
+
+	int starty = s_sprig.dispcenter.y - 16;
+	int endy = starty + 32;
+
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
+		int startx = s_sprig.dispcenter.x - 16;
+		int endx = startx + 32;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
 }
 
 
@@ -10654,6 +10747,8 @@ int OnRenderSprite()
 		s_spcam[spccnt].sprite->OnRender();
 	}
 
+	s_sprig.sprite->OnRender();
+
 	return 0;
 }
 
@@ -10868,6 +10963,8 @@ int DispCustomRigDlg(int rigno)
 	ShowWindow(s_customrigdlg, SW_SHOW);
 	UpdateWindow(s_customrigdlg);
 	
+	s_oprigflag = 1;
+
 	return 0;
 }
 
@@ -11266,5 +11363,26 @@ int SetCustomRigDlgLevel(int levelnum)
 	}
 
 
+	return 0;
+}
+
+int ToggleRig()
+{
+	if (s_customrigbone){
+		if (s_oprigflag == 0){
+			s_oprigflag = 1;
+			s_curboneno = s_customrigbone->GetBoneNo();
+		}
+		else{
+			s_oprigflag = 0;
+		}
+	}
+	else{
+		s_oprigflag = 0;
+		if (s_customrigdlg){
+			DestroyWindow(s_customrigdlg);
+			s_customrigdlg = 0;
+		}
+	}
 	return 0;
 }
