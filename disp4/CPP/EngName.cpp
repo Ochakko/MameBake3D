@@ -51,13 +51,13 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 	char* lptr;
 	lptr = strstr( namepm, "[L]" );
 	if( lptr ){
-		int restleng = 256 - (lptr - namepm);
+		int restleng = 256 - (int)(lptr - namepm);
 		strncpy_s( lptr, restleng, "_L_ ", 3 );
 	}
 	char* rptr;
 	rptr = strstr( namepm, "[R]" );
 	if( rptr ){
-		int restleng = 256 - (rptr - namepm);
+		int restleng = 256 - (int)(rptr - namepm);
 		strncpy_s( rptr, restleng,  "_R_", 3 );
 	}
 

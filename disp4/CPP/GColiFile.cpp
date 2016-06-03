@@ -80,7 +80,7 @@ int CGColiFile::WriteColiID()
 	CallF( Write2File( "    <GROUP>%d</GROUP>\r\n", m_bpw->m_groupid ), return 1);
 	CallF( Write2File( "    <MYSELF>%d</MYSELF>\r\n", m_bpw->m_myselfflag ), return 1);
 
-	int idnum = m_bpw->m_coliids.size();
+	int idnum = (int)m_bpw->m_coliids.size();
 	CallF( Write2File( "    <COLIIDNUM>%d</COLIIDNUM>\r\n", idnum ), return 1);
 	int ino;
 	for( ino = 0; ino < idnum; ino++ ){

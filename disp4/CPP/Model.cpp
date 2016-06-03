@@ -440,7 +440,7 @@ int CModel::LoadFBX(int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR*
 	m_topbone = 0;
 
 	CreateFBXBoneReq( pScene, pRootNode, 0 );
-	if( m_bonelist.size() <= 1 ){
+	if ((int)m_bonelist.size() <= 1){
 		_ASSERT( 0 );
 		delete (CBone*)(m_bonelist.begin()->second);
 		m_bonelist.clear();
@@ -463,7 +463,7 @@ _ASSERT(m_bonelist[0]);
 
 	CreateFBXMeshReq( pRootNode );
 
-DbgOut( L"fbx bonenum %d\r\n", m_bonelist.size() );
+	DbgOut(L"fbx bonenum %d\r\n", (int)m_bonelist.size());
 _ASSERT(m_bonelist[0]);
 
 
@@ -1910,7 +1910,7 @@ int CModel::AddDefMaterial()
 		return 1;
 	}
 
-	int defmaterialno = m_material.size();
+	int defmaterialno = (int)m_material.size();
 	dummymat->SetMaterialNo( defmaterialno );
 	dummymat->SetName( "dummyMaterial" );
 
@@ -4255,7 +4255,7 @@ MOTINFO* CModel::GetRgdMorphInfo()
 {
 	MOTINFO* retmi = 0;
 
-	int motionnum = m_motinfo.size();
+	int motionnum = (int)m_motinfo.size();
 	if( m_rgdmorphid < motionnum ){
 		map<int,MOTINFO*>::iterator itrmi;
 		itrmi = m_motinfo.begin();
@@ -4595,7 +4595,7 @@ void CModel::SetImpulseDataReq( int gid, CBone* srcbone, D3DXVECTOR3 srcimp )
 	CBone* parbone = srcbone->GetParent();
 
 	if( parbone ){
-		int renum = m_rigideleminfo.size();
+		int renum = (int)m_rigideleminfo.size();
 		int impnum = parbone->GetImpMapSize();
 		if( (m_curimpindex >= 0) && (m_curimpindex < impnum) && (m_curreindex >= 0) && (m_curreindex < renum) ){
 

@@ -2647,7 +2647,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 	WCHAR sz[100];
 	D3DXVECTOR3 weye;
 	float trastep = s_totalmb.r * 0.05f;
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	int modelno;
 	int tmpikindex;
 
@@ -3903,7 +3903,7 @@ CModel* OpenMQOFile()
 	CallF( s_model->DbgDump(), return 0 );
 
 	int mindex;
-	mindex = s_modelindex.size();
+	mindex = (int)s_modelindex.size();
 	MODELELEM modelelem;
 	modelelem.modelptr = s_model;
 	modelelem.motmenuindex = 0;
@@ -4055,7 +4055,7 @@ CModel* OpenFBXFile( int skipdefref )
 
 
 	int mindex;
-	mindex = s_modelindex.size();
+	mindex = (int)s_modelindex.size();
 	MODELELEM modelelem;
 	modelelem.modelptr = s_model;
 	modelelem.motmenuindex = 0;
@@ -4134,7 +4134,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	CallF( CreateModelPanel(), return 0 );
 
 	CallF( s_model->LoadFBXAnim( s_psdk, pImporter, pScene, OnAddMotion ), return 0 );
-	if( s_modelindex.size() >= 2 )
+	if( (int)s_modelindex.size() >= 2 )
 		_ASSERT( 0 );
 
 
@@ -4271,7 +4271,7 @@ int AddTimeLine( int newmotid )
 
 	if( s_owpTimeline && (s_model->GetBoneListSize() > 0) ){
 		int nextindex;
-		nextindex = s_tlarray.size();
+		nextindex = (int)s_tlarray.size();
 
 		TLELEM newtle;
 		newtle.menuindex = nextindex;
@@ -4713,7 +4713,7 @@ int EraseKeyList()
 
 int AddMotion( WCHAR* wfilename, double srcmotleng )
 {
-	int motnum = s_tlarray.size();
+	int motnum = (int)s_tlarray.size();
 	if( motnum >= MAXMOTIONNUM ){
 		MessageBox( s_mainwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
 		return 0;
@@ -4746,7 +4746,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 
 	CallF( AddTimeLine( newmotid ), return 1 );
 
-	int selindex = s_tlarray.size() - 1;
+	int selindex = (int)s_tlarray.size() - 1;
 	CallF( OnAnimMenu( selindex ), return 1 );
 
 
@@ -4775,7 +4775,7 @@ int OnRgdMorphMenu( int selindex )
 	}
 
 
-	cAnimSets = s_tlarray.size();
+	cAnimSets = (int)s_tlarray.size();
 
 	if( cAnimSets <= 0 ){
 		return 0;//!!!!!!!!!!!!!!!!!!!
@@ -4828,7 +4828,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 		return 0;//!!!!!!!!!!!!!!!!!!
 	}
 
-	cAnimSets = s_tlarray.size();
+	cAnimSets = (int)s_tlarray.size();
 
 	if( cAnimSets <= 0 ){
 		if( s_owpTimeline ){
@@ -4933,7 +4933,7 @@ int OnModelMenu( int selindex, int callbymenu )
 		return 0;//!!!!!!!!!
 	}
 
-	cMdlSets = s_modelindex.size();
+	cMdlSets = (int)s_modelindex.size();
 	if( cMdlSets <= 0 ){
 		s_model = 0;
 		if( s_owpTimeline ){
@@ -5125,7 +5125,7 @@ int OnImpMenu( int selindex )
 
 int OnDelMotion( int delmenuindex )
 {
-	int tlnum = s_tlarray.size();
+	int tlnum = (int)s_tlarray.size();
 	if( (tlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= tlnum) ){
 		return 0;
 	}
@@ -5140,7 +5140,7 @@ int OnDelMotion( int delmenuindex )
 	}
 	s_tlarray.pop_back();
 
-	int newtlnum = s_tlarray.size();
+	int newtlnum = (int)s_tlarray.size();
 	if( newtlnum == 0 ){
 		AddMotion( 0 );
 		InitCurMotion(0, 0);
@@ -5153,7 +5153,7 @@ int OnDelMotion( int delmenuindex )
 
 int OnDelModel( int delmenuindex )
 {
-	int mdlnum = s_modelindex.size();
+	int mdlnum = (int)s_modelindex.size();
 	if( (mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum) ){
 		return 0;
 	}
@@ -5215,7 +5215,7 @@ int OnDelModel( int delmenuindex )
 
 int OnDelAllModel()
 {
-	int mdlnum = s_modelindex.size();
+	int mdlnum = (int)s_modelindex.size();
 	if( mdlnum <= 0 ){
 		return 0;
 	}
@@ -5320,7 +5320,7 @@ int refreshModelPanel()
 		s_owpLayerTable->newLine( label, 0 );
 	}
 
-	if( s_modelpanel.radiobutton && (s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0) ){
+	if( s_modelpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0) ){
 		if( s_curmodelmenuindex >= 0 ){
 			s_modelpanel.modelindex = s_curmodelmenuindex;
 			s_modelpanel.radiobutton->setSelectIndex( s_modelpanel.modelindex );
@@ -5991,7 +5991,7 @@ int DestroyModelPanel()
 		s_modelpanel.separator = 0;
 	}
 	if( !(s_modelpanel.checkvec.empty()) ){
-		int checknum = s_modelpanel.checkvec.size();
+		int checknum = (int)s_modelpanel.checkvec.size();
 		int checkno;
 		for( checkno = 0; checkno < checknum; checkno++ ){
 			delete s_modelpanel.checkvec[checkno];
@@ -6008,7 +6008,7 @@ int CreateModelPanel()
 {
 	DestroyModelPanel();
 
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	if( modelnum <= 0 ){
 		return 0;
 	}
@@ -6264,7 +6264,7 @@ int CreateConvBoneWnd()
 
 int SetConvBoneModel()
 {
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	if (modelnum <= 0){
 		return 0;
 	}
@@ -6336,7 +6336,7 @@ int SetConvBoneModel()
 }
 int SetConvBoneBvh()
 {
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	if (modelnum <= 0){
 		return 0;
 	}
@@ -6408,7 +6408,7 @@ int SetConvBoneBvh()
 }
 int SetConvBone( int cbno )
 {
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	if (modelnum <= 0){
 		return 0;
 	}
@@ -6706,7 +6706,7 @@ int OnAddMotion( int srcmotid )
 
 	CallF( AddTimeLine( srcmotid ), return 1 );
 
-	int selindex = s_tlarray.size() - 1;
+	int selindex = (int)s_tlarray.size() - 1;
 	CallF( OnAnimMenu( selindex ), return 1 );
 
 	return 0;
@@ -8634,7 +8634,7 @@ int RotAxis(HWND hDlgWnd)
 
 	WCHAR strdeg[256] = { 0L };
 	GetWindowText(GetDlgItem(hDlgWnd, IDC_EDITDEG), strdeg, 256);
-	unsigned int len = wcslen(strdeg);
+	unsigned int len = (unsigned int)wcslen(strdeg);
 	//_ASSERT(0);
 	if ((len > 0) && (len < 256)){
 		s_rotaxisdeg = (float)_wtof(strdeg);
@@ -9203,7 +9203,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
-				int cpnum = s_selbonedlg.m_cpvec.size();
+				int cpnum = (int)s_selbonedlg.m_cpvec.size();
 				if (cpnum != 0){
 					int cpno;
 					for (cpno = 0; cpno < cpnum; cpno++){
@@ -9240,7 +9240,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
-				int cpnum = s_selbonedlg.m_cpvec.size();
+				int cpnum = (int)s_selbonedlg.m_cpvec.size();
 
 				if (cpnum != 0){
 					int cpno;
@@ -10815,7 +10815,7 @@ int OnRenderUtDialog(float fElapsedTime)
 
 int InitMpFromTool()
 {
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	if (modelnum <= 0){
 		return 0;
 	}

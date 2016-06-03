@@ -180,7 +180,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 
 			map<double, int> tmpmap;
 			curbone->GetMotMarkOfMap2(curmotid, tmpmap);
-			if (tmpmap.size() > 0){
+			if ((int)tmpmap.size() > 0){
 				(m_bonemotmark[curbone]).clear();
 				m_bonemotmark[curbone] = tmpmap;
 			}

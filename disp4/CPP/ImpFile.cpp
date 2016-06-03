@@ -238,7 +238,7 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 	else{
 		strcpy_s(bonename1, 256, bonename);
 		strcpy_s(bonename2, 256, bonename);
-		int headleng = jointnameptr - bonename;
+		int headleng = (int)(jointnameptr - bonename);
 		*(bonename2 + headleng) = 0;
 	}
 	CBone* curbone = m_model->GetBoneByName(bonename1);
@@ -291,7 +291,7 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 	else{
 		strcpy_s(childname1, 256, childname);
 		strcpy_s(childname2, 256, childname);
-		int headleng = jointnameptr - childname;
+		int headleng = (int)(jointnameptr - childname);
 		*(childname2 + headleng) = 0;
 	}
 	CBone* chilbone = m_model->GetBoneByName(childname1);

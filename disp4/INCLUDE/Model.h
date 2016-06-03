@@ -675,7 +675,7 @@ public: //accesser
 	const char* GetDefaultImpName(){ return m_defaultimpname; };
 
 	int GetMqoObjectSize(){
-		return m_object.size();
+		return (int)m_object.size();
 	};
 	CMQOObject* GetMqoObject( int srcobjno ){
 		map<int, CMQOObject*>::iterator itrobj;
@@ -711,7 +711,7 @@ public: //accesser
 	};
 
 	int GetBoneListSize(){
-		return m_bonelist.size();
+		return (int)m_bonelist.size();
 	};
 	std::map<int,CBone*>::iterator GetBoneListBegin(){
 		return m_bonelist.begin();
@@ -758,7 +758,7 @@ public: //accesser
 	};
 
 	int GetMotInfoSize(){
-		return m_motinfo.size();
+		return (int)m_motinfo.size();
 	};
 	MOTINFO* GetMotInfo( int srcid ){
 		return m_motinfo[ srcid ];
@@ -779,7 +779,7 @@ public: //accesser
 
 
 	int GetRigidElemInfoSize(){
-		return m_rigideleminfo.size();
+		return (int)m_rigideleminfo.size();
 	};
 	REINFO GetRigidElemInfo( int srcindex ){
 		return m_rigideleminfo[ srcindex ];
@@ -792,7 +792,7 @@ public: //accesser
 	};
 
 	int GetImpInfoSize(){
-		return m_impinfo.size();
+		return (int)m_impinfo.size();
 	};
 	string GetImpInfo( int srcindex ){
 		return m_impinfo[ srcindex ];
@@ -838,7 +838,7 @@ public: //accesser
 	};
 
 	int GetMQOMaterialSize(){
-		return m_material.size();
+		return (int)m_material.size();
 	};
 	CMQOMaterial* GetMQOMaterial( int srcindex ){
 		return m_material[ srcindex ];

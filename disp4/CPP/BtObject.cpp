@@ -391,7 +391,7 @@ int CBtObject::CreateBtConstraint()
 
 
 	int chilno;
-	for( chilno = 0; chilno < (int)m_chilbt.size(); chilno++ ){
+	for (chilno = 0; chilno < (int)m_chilbt.size(); chilno++){
 		CBtObject* chilbto = m_chilbt[ chilno ];
 		if( !chilbto ){
 			continue;
@@ -437,72 +437,75 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 			lmin = -10000.0f;
 			lmax = 10000.0f;
 
-			btGeneric6DofSpringConstraint* dofC;
+			btGeneric6DofSpringConstraint* dofC = 0;
 			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
 			_ASSERT( dofC );
+			if (dofC){
 
-			dofC->setLinearLowerLimit( btVector3( lmin, lmin, lmin ) );
-			dofC->setLinearUpperLimit( btVector3( lmax, lmax, lmax ) );
+				dofC->setLinearLowerLimit(btVector3(lmin, lmin, lmin));
+				dofC->setLinearUpperLimit(btVector3(lmax, lmax, lmax));
 
-//			char* findpat = strstr( m_bone->m_bonename, "BT_" );
-//			if( findpat == 0 ){
-//				dofC->setAngularLowerLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
-//				dofC->setAngularUpperLimit( btVector3( angPAI, angPAI2, angPAI ) );
-//			}else{
-//				dofC->setAngularLowerLimit( btVector3( angPAI, angPAI2, angPAI ) );
-//				dofC->setAngularUpperLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
-//			}
+				//			char* findpat = strstr( m_bone->m_bonename, "BT_" );
+				//			if( findpat == 0 ){
+				//				dofC->setAngularLowerLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
+				//				dofC->setAngularUpperLimit( btVector3( angPAI, angPAI2, angPAI ) );
+				//			}else{
+				//				dofC->setAngularLowerLimit( btVector3( angPAI, angPAI2, angPAI ) );
+				//				dofC->setAngularUpperLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
+				//			}
 
-			dofC->setAngularLowerLimit( btVector3( angPAI, angPAI2, angPAI ) );
-			dofC->setAngularUpperLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
+				dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+				dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
 
 
-			dofC->setBreakingImpulseThreshold( FLT_MAX );
-			//dofC->setBreakingImpulseThreshold( 1e9 );
+				dofC->setBreakingImpulseThreshold(FLT_MAX);
+				//dofC->setBreakingImpulseThreshold( 1e9 );
 
-			int l_kindex = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetLKindex();
-			int a_kindex = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetAKindex();
-			float l_damping = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetLDamping();
-			float a_damping = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetADamping();
-			float l_cusk = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetCusLk();
-			float a_cusk = chilbto->m_bone->GetRigidElem( chilbto->m_endbone )->GetCusAk();
+				int l_kindex = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetLKindex();
+				int a_kindex = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetAKindex();
+				float l_damping = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetLDamping();
+				float a_damping = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetADamping();
+				float l_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusLk();
+				float a_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusAk();
 
-			int dofid;
-			for( dofid = 0; dofid < 3; dofid++ ){
-				dofC->enableSpring( dofid, true );
-				//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
-				/*
-				if( l_kindex <= 2 ){
+				int dofid;
+				for (dofid = 0; dofid < 3; dofid++){
+					dofC->enableSpring(dofid, true);
+					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+					/*
+					if( l_kindex <= 2 ){
 					dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
-				}else{
+					}else{
 					dofC->setStiffness( dofid, l_cusk );
+					}
+					*/
+					dofC->setStiffness(dofid, 1.0e12);
+					dofC->setDamping(dofid, l_damping);
+					dofC->setEquilibriumPoint(dofid);
 				}
-				*/
-				dofC->setStiffness( dofid, 1.0e12 );
-				dofC->setDamping( dofid, l_damping );
-				dofC->setEquilibriumPoint(dofid);
-			}
-			for( dofid = 3; dofid < 6; dofid++ ){
-				if( a_kindex <= 2 ){
-					dofC->setStiffness( dofid, g_a_kval[ a_kindex ] );
-				}else{
-					dofC->setStiffness( dofid, a_cusk );
+				for (dofid = 3; dofid < 6; dofid++){
+					if (a_kindex <= 2){
+						dofC->setStiffness(dofid, g_a_kval[a_kindex]);
+					}
+					else{
+						dofC->setStiffness(dofid, a_cusk);
+					}
+					dofC->setDamping(dofid, a_damping);
+					dofC->setEquilibriumPoint(dofid);
+
+					dofC->enableSpring(dofid, true);
+					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 				}
-				dofC->setDamping( dofid, a_damping );
-				dofC->setEquilibriumPoint(dofid);
 
-				dofC->enableSpring( dofid, true );
-				//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+
+				m_constraint.push_back(dofC);
+				//m_btWorld->addConstraint(dofC, true);
+				m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
+				//m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
+				//m_dofC = dofC;
+
+				dofC->setEquilibriumPoint();//!!!!!!!!!!!!
 			}
-			
-
-			m_constraint.push_back( dofC );
-			//m_btWorld->addConstraint(dofC, true);
-			m_btWorld->addConstraint(dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
-			//m_dofC = dofC;
-
-			dofC->setEquilibriumPoint();//!!!!!!!!!!!!
-
 		}
 	}
 

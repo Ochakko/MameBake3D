@@ -33,7 +33,8 @@ int CRMenuMain::InitParams()
 int CRMenuMain::Create(HWND srchwnd)
 {
 	m_menuwnd = srchwnd;
-	m_rmenu = LoadMenu( (HINSTANCE)GetWindowLong( m_menuwnd, GWL_HINSTANCE ), MAKEINTRESOURCE( m_menuid ) );
+	//m_rmenu = LoadMenu( (HINSTANCE)GetWindowLong( m_menuwnd, GWL_HINSTANCE ), MAKEINTRESOURCE( m_menuid ) );
+	m_rmenu = LoadMenu((HINSTANCE)GetClassLongPtr(m_menuwnd, GCLP_HMODULE), MAKEINTRESOURCE(m_menuid));
 	m_rsubmenu = ::GetSubMenu( m_rmenu, 0 );
 
 	return 0;
@@ -41,9 +42,7 @@ int CRMenuMain::Create(HWND srchwnd)
 
 int CRMenuMain::CreatePopupMenu(HWND srchwnd, HMENU parmenu, WCHAR* partitle)
 {
-	m_menuwnd = srchwnd;
-	m_rmenu = LoadMenu((HINSTANCE)GetWindowLong(m_menuwnd, GWL_HINSTANCE), MAKEINTRESOURCE(m_menuid));
-	m_rsubmenu = ::GetSubMenu(m_rmenu, 0);
+	Create(srchwnd);
 
 	if (parmenu){
 		AppendMenu(parmenu, MF_STRING | MF_POPUP, (UINT_PTR)m_rsubmenu, partitle);

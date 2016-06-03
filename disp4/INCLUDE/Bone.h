@@ -479,7 +479,7 @@ public: //accesser
 	D3DXVECTOR3 GetChildScreen(){ return m_childscreen; };
 	void SetChildScreen( D3DXVECTOR3 srcvec ){ m_childscreen = srcvec; };
 
-	int GetMotionKeySize(){ return m_motionkey.size(); };
+	int GetMotionKeySize(){ return (int)m_motionkey.size(); };
 	CMotionPoint* GetMotionKey( int srccookie ){ return m_motionkey[ srccookie ]; };
 	void SetMotionKey( int srccookie, CMotionPoint* srcmk ){ m_motionkey[ srccookie ] = srcmk; };
 
@@ -546,7 +546,7 @@ public: //accesser
 	FbxAMatrix GetGlobalPosMat(){ return m_globalpos; };
 	void SetGlobalPosMat( FbxAMatrix srcmat ){ m_globalpos = srcmat; };
 
-	int GetRigidElemSize(){ return m_rigidelem.size(); };
+	int GetRigidElemSize(){ return (int)m_rigidelem.size(); };
 	void GetRigidElemMap( std::map<CBone*, CRigidElem*>& dstmap ){
 		dstmap = m_rigidelem;
 	};
@@ -560,10 +560,10 @@ public: //accesser
 	void SetRigidElem( CBone* srcbone, CRigidElem* srcre ){ m_rigidelem[ srcbone ] = srcre; };
 
 
-	int GetReMapSize(){ return m_remap.size(); };
-	int GetReMapSize2( std::string srcstring ){ 
+	int GetReMapSize(){ return (int)m_remap.size(); };
+	int GetReMapSize2(std::string srcstring){
 		std::map<CBone*, CRigidElem*> curmap = m_remap[ srcstring ];
-		return curmap.size();
+		return (int)curmap.size();
 	};
 	CRigidElem* GetRigidElemOfMap( std::string srcstr, CBone* srcbone ){
 		std::map<CBone*, CRigidElem*> curmap = m_remap[ srcstr ];
@@ -581,10 +581,10 @@ public: //accesser
 	};
 
 
-	int GetImpMapSize(){ return m_impmap.size(); };
-	int GetImpMapSize2( std::string srcstring ){ 
+	int GetImpMapSize(){ return (int)m_impmap.size(); };
+	int GetImpMapSize2(std::string srcstring){
 		std::map<CBone*, D3DXVECTOR3> curmap = m_impmap[ srcstring ];
-		return curmap.size();
+		return (int)curmap.size();
 	};
 	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator GetImpMapBegin(){
 		return m_impmap.begin();
@@ -645,7 +645,7 @@ public: //accesser
 	int GetBtForce(){ return m_btforce; };
 	void SetBtForce( int srcval ){ m_btforce = srcval; };
 
-	int GetBtObjectSize(){ return m_btobject.size(); };
+	int GetBtObjectSize(){ return (int)m_btobject.size(); };
 	CBtObject* GetBtObject( CBone* srcbone ){ return m_btobject[ srcbone ]; };
 	std::map<CBone*, CBtObject*>::iterator GetBtObjectMapBegin(){
 		return m_btobject.begin();
@@ -658,10 +658,10 @@ public: //accesser
 	void ClearBtObject(){ m_btobject.clear(); };
 
 
-	int GetMotMarkSize(){ return m_motmark.size(); };
-	int GetMotMarkSize2( int srcindex ){ 
+	int GetMotMarkSize(){ return (int)m_motmark.size(); };
+	int GetMotMarkSize2(int srcindex){
 		std::map<double, int> curmap = m_motmark[ srcindex ];
-		return curmap.size();
+		return (int)curmap.size();
 	};
 	int GetMotMarkOfMap( int srcindex, double srcframe ){
 		std::map<double,int> curmap = m_motmark[ srcindex ];

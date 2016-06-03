@@ -295,7 +295,7 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	else{
 		strcpy_s(bonename1, 256, bonename);
 		strcpy_s(bonename2, 256, bonename);
-		int headleng = jointnameptr - bonename;
+		int headleng = (int)(jointnameptr - bonename);
 		*(bonename2 + headleng) = 0;
 	}
 	CBone* curbone = m_model->GetBoneByName(bonename1);

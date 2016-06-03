@@ -1101,7 +1101,7 @@ static void s_dummyfunc();
 				//タイトル名を描画
 				hdcM.setFont(12,_T("ＭＳ ゴシック"));
 				SetTextColor(hdcM.hDC,RGB(240,240,240));
-				TextOut(hdcM.hDC, 10, 2, title, _tcslen(title));			//タイトル名
+				TextOut(hdcM.hDC, 10, 2, title, (int)_tcslen(title));			//タイトル名
 			}
 		}
 	};
@@ -1694,7 +1694,7 @@ static void s_dummyfunc();
 				ExtTextOut( hdcM->hDC,
 							pos1x, pos1y,
 							ETO_OPAQUE, NULL,
-							name, _tcslen(name), NULL);
+							name, (int)_tcslen(name), NULL);
 				SetBkMode(hdcM->hDC,TRANSPARENT);
 			}
 
@@ -1897,7 +1897,7 @@ static void s_dummyfunc();
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
-					 name, _tcslen(name));
+					 name, (int)_tcslen(name));
 		}
 		/// Method : 内容変更
 		void setName( TCHAR *value ){
@@ -1968,7 +1968,7 @@ static void s_dummyfunc();
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
-					 name, _tcslen(name));
+					 name, (int)_tcslen(name));
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
@@ -2464,7 +2464,7 @@ static void s_dummyfunc();
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
-					 name, _tcslen(name));
+					 name, (int)_tcslen(name));
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
@@ -2525,7 +2525,7 @@ static void s_dummyfunc();
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
 		void autoResize(){
-			size.y= SIZE_Y*nameList.size()+4;
+			size.y = SIZE_Y*(int)nameList.size() + 4;
 		}
 		///	Method : 描画
 		void draw(){
@@ -2552,7 +2552,7 @@ static void s_dummyfunc();
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				TextOut( hdcM->hDC,
 						 pos1x, pos1y,
-						 nameList[i].c_str(), _tcslen(nameList[i].c_str()));
+						 nameList[i].c_str(), (int)_tcslen(nameList[i].c_str()));
 			}
 		}
 		///	Method : マウスダウンイベント受信
@@ -2575,11 +2575,11 @@ static void s_dummyfunc();
 		bool deleteLine(){
 
 			//2つ以上の項目がある場合は最後の項目を削除
-			if( nameList.size()!=1 ){
+			if ((int)nameList.size() != 1){
 				nameList.pop_back();
 
 				//消した項目を選択していた場合は最後の項目を選択
-				if( selectIndex==nameList.size() ){
+				if (selectIndex == (int)nameList.size()){
 					setSelectIndex(selectIndex-1);
 				}
 
@@ -2595,7 +2595,7 @@ static void s_dummyfunc();
 		bool deleteLine(int index){
 
 			//2つ以上の項目がある場合は指定したインデックスの項目を削除
-			if( nameList.size()!=1
+			if ((int)nameList.size() != 1
 			 && 0<=index && index<(int)nameList.size() ){
 				for( int i=index; i<(int)nameList.size()-1; i++ ){
 					nameList[i]= nameList[i+1];
@@ -2621,7 +2621,7 @@ static void s_dummyfunc();
 		bool deleteLine( const TCHAR *name ){
 
 			//2つ以上の項目がある場合は最初に名前が一致した項目を削除
-			if( nameList.size()!=1 ){
+			if ((int)nameList.size() != 1){
 				for( int i=0; i<(int)nameList.size(); i++ ){
 					if( nameList[i]==name ){
 						return deleteLine(i);
@@ -2738,7 +2738,7 @@ static void s_dummyfunc();
 			_stprintf_s(tmpChar,20,_T("% 9.3G"),value);
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
-					 tmpChar, _tcslen(tmpChar));
+					 tmpChar, (int)_tcslen(tmpChar));
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
@@ -2916,7 +2916,7 @@ static void s_dummyfunc();
 							SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 							TextOut(hdcM->hDC,
 								xx - (int)((double)_tcslen(tmpChar)*2.0), y0,
-								tmpChar, _tcslen(tmpChar));
+								tmpChar, (int)_tcslen(tmpChar));
 						}
 					}
 				}
@@ -3035,7 +3035,7 @@ static void s_dummyfunc();
 					return false;
 				}
 			}
-			lineData.push_back(new LineData(_depth, nullflag, _name,this,lineData.size()));
+			lineData.push_back(new LineData(_depth, nullflag, _name, this, (int)lineData.size()));
 
 			//再描画要求
 			if( rewriteOnChange ){
@@ -3077,7 +3077,7 @@ static void s_dummyfunc();
 			return true;
 		}
 		bool deleteLine(int index){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if((unsigned int)lineData.size()<=(unsigned int)index) return false;
 
 			bool ret= deleteLine(lineData[index]->name);
 
@@ -3134,7 +3134,7 @@ static void s_dummyfunc();
 			return false;
 		}
 		bool deleteKey(int lineIndex, double time){
-			if(lineData.size()<=(unsigned int)lineIndex) return false;
+			if((unsigned int)lineData.size()<=(unsigned int)lineIndex) return false;
 
 			selectClear();
 			bool ret= lineData[lineIndex]->selectKey(time);
@@ -3148,7 +3148,7 @@ static void s_dummyfunc();
 			return ret;
 		}
 		bool deleteKey(int lineIndex, int keyIndex){
-			if(lineData.size()<=(unsigned int)lineIndex) return false;
+			if((unsigned int)lineData.size()<=(unsigned int)lineIndex) return false;
 
 			bool ret= lineData[lineIndex]->deleteKey(keyIndex);
 
@@ -4055,7 +4055,7 @@ static void s_dummyfunc();
 
 				TextOut(hdcM->hDC,
 					posX + 2, posY + parent->LABEL_SIZE_Y / 2 - 5,
-					prname.c_str(), _tcslen(prname.c_str()));
+					prname.c_str(), (int)_tcslen(prname.c_str()));
 
 				//TextOut( hdcM->hDC,
 				//		 posX+2, posY+parent->LABEL_SIZE_Y/2-5,
@@ -4189,15 +4189,15 @@ static void s_dummyfunc();
 				}
 
 				if(key.size()!=0){
-					int pushPos=key.size();
+					int pushPos=(int)key.size();
 					for(int i=0; i<(int)key.size(); i++){
 						if(_time <= key[i]->time){
 							pushPos=i;
 							break;
 						}
 					}
-					key.push_back(key[key.size()-1]);
-					for(int i=key.size()-2; i>pushPos; i--){
+					key.push_back(key[(int)key.size()-1]);
+					for(int i=(int)key.size()-2; i>pushPos; i--){
 						key[i]=key[i-1];
 					}
 					key[pushPos]= new Key(_time,_type,_object,_length,_select);
@@ -4283,7 +4283,7 @@ static void s_dummyfunc();
 			unsigned int deleteKey(bool noCallListener=false){
 
 				unsigned int deleteNum=0;
-				for(unsigned int i=0; i<key.size(); i++){
+				for(unsigned int i=0; i<(int)key.size(); i++){
 					if( key[i]->select ){
 						//リスナーコール
 						if( !noCallListener && parent->keyDeleteListener!=NULL ){
@@ -4310,7 +4310,7 @@ static void s_dummyfunc();
 			}
 			//	Method : 指定されたキーを削除する
 			bool deleteKey(int index, bool noCallListener=false){
-				if( key.size()<=(unsigned int)index ) return false;
+				if( (unsigned int)key.size()<=(unsigned int)index ) return false;
 
 				//リスナーコール
 				if( !noCallListener && parent->keyDeleteListener!=NULL ){
@@ -4589,7 +4589,7 @@ static void s_dummyfunc();
 			return true;
 		}
 		bool deleteLine(int index){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if((unsigned int)lineData.size()<=(unsigned int)index) return false;
 
 			bool ret= deleteLine(lineData[index]->name);
 
@@ -4614,7 +4614,7 @@ static void s_dummyfunc();
 			if( x0<=e.localX && e.localX<x1
 			 && y0<=e.localY && e.localY<y1 ){
 				unsigned int targetIndex= showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1);
-				if( targetIndex<=lineData.size()-1 ){
+				if( targetIndex<=(unsigned int)lineData.size()-1 ){
 					//可視・不可視ボタン
 					if( e.localX<x0+LABEL_SIZE_Y ){
 						lineData[targetIndex]->visible= !lineData[targetIndex]->visible;
@@ -4923,12 +4923,12 @@ static void s_dummyfunc();
 			return false;
 		}
 		bool getVisible(int index){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if((unsigned int)lineData.size()<=(unsigned int)index) return false;
 
 			return lineData[index]->visible;
 		}
 		bool setVisible(const std::basic_string<TCHAR> &_name, bool value, bool noCallListener=false){
-			for(unsigned int i=0; i<lineData.size(); i++){
+			for(unsigned int i=0; i<(unsigned int)lineData.size(); i++){
 				if( lineData[i]->name==_name ){
 
 					//セットする値が現在の値と異なるときのみ変更する
@@ -4987,7 +4987,7 @@ static void s_dummyfunc();
 			return lineData[index]->lock;
 		}
 		bool setLock(const std::basic_string<TCHAR> &_name, bool value, bool noCallListener=false){
-			for(unsigned int i=0; i<lineData.size(); i++){
+			for(unsigned int i=0; i<(unsigned int)lineData.size(); i++){
 				if( lineData[i]->name==_name ){
 
 					//セットする値が現在の値と異なるときのみ変更する
@@ -5112,7 +5112,7 @@ static void s_dummyfunc();
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				TextOut( hdcM->hDC,
 						 x3+2, posY+parent->LABEL_SIZE_Y/2-5,
-						 name.c_str(), _tcslen(name.c_str()));
+						 name.c_str(), (int)_tcslen(name.c_str()));
 
 				{//可視・不可視
 					if( visible ){

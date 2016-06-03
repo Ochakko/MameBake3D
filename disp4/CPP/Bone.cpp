@@ -955,7 +955,7 @@ int CBone::SetGroupNoByName( CRigidElem* curre, CBone* chilbone )
 		char* numstart = groupmark + 3;
 		char* numend = strstr( numstart, "_" );
 		if( numend ){
-			int numleng = numend - numstart;
+			int numleng = (int)(numend - numstart);
 			if( (numleng > 0) && (numleng <= 2) ){
 				char strnum[5];
 				ZeroMemory( strnum, sizeof( char ) * 5 );
@@ -1364,7 +1364,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 			CMotionPoint inimp;
 			*pdstmp = inimp;
 
-			_ASSERT( 0 );
+			//_ASSERT( 0 );
 			return 0;
 		}
 	}
@@ -1567,7 +1567,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 	CMotionPoint* pparmp = 0;
 	pcurmp = GetMotionPoint(srcmotid, srcframe);
 	if (!pcurmp){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return selm;
 	}
 	if (m_parent){

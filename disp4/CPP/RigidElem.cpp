@@ -92,7 +92,7 @@ int CRigidElem::GetColiID()
 {
 	int retid = 0;
 
-	int idnum = m_coliids.size();
+	int idnum = (int)m_coliids.size();
 	int ino;
 	for( ino = 0; ino < idnum; ino++ ){
 		int curid = 1 << (m_coliids[ ino ] - 1);

@@ -250,7 +250,7 @@ public:
 	};
 
 	int GetMaterialSize(){
-		return m_material.size();
+		return (int)m_material.size();
 	};
 	CMQOMaterial* GetMaterial( int srcindex ){
 		return m_material[ srcindex ];
@@ -266,7 +266,7 @@ public:
 	};
 
 	int GetClusterSize(){
-		return m_cluster.size();
+		return (int)m_cluster.size();
 	};
 	CBone* GetCluster( int srcindex ){
 		return m_cluster[ srcindex ];

@@ -665,7 +665,7 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				(m_matblock + materialcnt)->materialno = curmaterialno;
 				CMQOMaterial* setmqomat = GetMaterialFromNo( srcmat, curmaterialno );
 				if( !setmqomat ){
-					int defmatno = srcmat.size() - 1;
+					int defmatno = (int)srcmat.size() - 1;
 					_ASSERT( defmatno >= 0 );
 					setmqomat = GetMaterialFromNo( srcmat, defmatno );
 					_ASSERT( setmqomat );

@@ -506,7 +506,7 @@ int CXMLIO::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, int*
 	ZeroMemory( tempchar, sizeof( char ) * 256 );
 
 	int leng;
-	leng = endptr - startptr;
+	leng = (int)(endptr - startptr);
 	if( leng <= 0 ){
 		_ASSERT( 0 );
 		return 1;
@@ -582,7 +582,7 @@ CBone* CXMLIO::FindBoneByName(CModel* srcmodel, char* bonename, int srcleng)
 	else{
 		strcpy_s(bonename1, 256, bonename);
 		strcpy_s(bonename2, 256, bonename);
-		int headleng = jointnameptr - bonename;
+		int headleng = (int)(jointnameptr - bonename);
 		*(bonename2 + headleng) = 0;
 	}
 	CBone* curbone = srcmodel->GetBoneByName(bonename1);

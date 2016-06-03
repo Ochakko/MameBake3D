@@ -77,7 +77,7 @@ public: //accesser
 	int GetGroupid(){ return m_groupid; };
 	void SetGroupid( int srcid ){ m_groupid = srcid; };
 
-	int GetColiidsSize(){ return m_coliids.size(); };
+	int GetColiidsSize(){ return (int)m_coliids.size(); };
 	int GetColiids( int srcindex ){ return m_coliids[ srcindex ]; };
 	void PushBackColiids( int srcid ){ m_coliids.push_back( srcid ); };
 	void CopyColiids( CRigidElem* srcre ){ m_coliids = srcre->m_coliids; };

@@ -151,7 +151,7 @@ LRESULT CGColiIDDlg::OnAdd(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHand
 }
 LRESULT CGColiIDDlg::OnDel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
-	int idnum = m_coliids.size();
+	int idnum = (int)m_coliids.size();
 
 	if( idnum <= 0 ){
 		return 0;

@@ -119,7 +119,7 @@ int CChaFile::WriteChaFile( BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, st
 	CallF( gcofile.WriteGColiFile( wgconame, srcbpw ), return 1 );
 
 
-	int modelnum = m_modelindex.size();
+	int modelnum = (int)m_modelindex.size();
 	int modelcnt;
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		MODELELEM curme = m_modelindex[ modelcnt ];
@@ -137,7 +137,7 @@ int CChaFile::WriteFileInfo()
 	CallF( Write2File( "  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1001</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n" ), return 1 );
 
 	CallF( Write2File( "  <ProjectInfo>\r\n" ), return 1 );
-	CallF( Write2File( "    <CharaNum>%d</CharaNum>\r\n", m_modelindex.size() ), return 1 );
+	CallF(Write2File("    <CharaNum>%d</CharaNum>\r\n", (int)m_modelindex.size()), return 1);
 	CallF( Write2File( "  </ProjectInfo>\r\n" ), return 1 );
 
 	return 0;

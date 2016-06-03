@@ -172,7 +172,7 @@ public: //accesser
 	CBtObject* GetParBt(){ return m_parbt; };
 	void SetParBt( CBtObject* srcbt ){ m_parbt = srcbt; };
 
-	int GetChilBtSize(){ return m_chilbt.size(); };
+	int GetChilBtSize(){ return (int)m_chilbt.size(); };
 	void PushBackChilBt( CBtObject* srcchil ){ m_chilbt.push_back( srcchil ); };
 	CBtObject* GetChilBt( int srcindex ){ return m_chilbt[ srcindex ]; };
 	void CopyChilBt( std::vector<CBtObject*>& dstbt ){ dstbt = m_chilbt; };
@@ -201,11 +201,16 @@ public: //accesser
 	void SetXWorld( D3DXMATRIX srcworld ){ m_xworld = srcworld; };
 
 	int GetConstraintSize(){
-		return m_constraint.size();
+		return (int)m_constraint.size();
 	};
 	void PushBackConstraint( btGeneric6DofSpringConstraint* srcconstraint ){ m_constraint.push_back( srcconstraint ); };
 	btGeneric6DofSpringConstraint* GetConstraint( int srcindex ){
-		return m_constraint[ srcindex ];
+		if ((srcindex >= 0) && (srcindex < (int)m_constraint.size())){
+			return m_constraint[srcindex];
+		}
+		else{
+			return 0;
+		}
 	};
 
 private:

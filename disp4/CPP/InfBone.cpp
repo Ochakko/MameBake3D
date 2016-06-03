@@ -209,7 +209,7 @@ int CInfBone::NormalizeInf( CMQOObject* srcobj )
 
 INFDATA* CInfBone::GetInfData(CMQOObject* srcobj)
 {
-	if (m_infdata.size() <= 0){
+	if ((int)m_infdata.size() <= 0){
 		return 0;
 	}
 
