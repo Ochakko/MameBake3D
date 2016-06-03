@@ -456,7 +456,7 @@ static int s_editrangesetindex = 0;
 static CEditRange s_previewrange;
 static SPAXIS s_spaxis[3];
 static SPCAM s_spcam[3];
-static SPELEM s_sprig;
+static SPELEM s_sprig[2];//inactive, active
 static int s_oprigflag = 0;
 
 typedef struct tag_modelpanel
@@ -1110,7 +1110,7 @@ void InitApp()
 
 	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
 	ZeroMemory(s_spcam, sizeof(SPCAM) * 3);
-	ZeroMemory(&s_sprig, sizeof(SPELEM));
+	ZeroMemory(s_sprig, sizeof(SPELEM) * 2);
 
 
 	g_bonecntmap.clear();
@@ -1487,9 +1487,12 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
 	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(mpath, L"cam_kaku.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
-	s_sprig.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_sprig.sprite);
-	CallF(s_sprig.sprite->Create(mpath, L"ToggleRig.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	s_sprig[0].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_sprig[0].sprite);
+	CallF(s_sprig[0].sprite->Create(mpath, L"ToggleRig.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	s_sprig[1].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_sprig[1].sprite);
+	CallF(s_sprig[1].sprite->Create(mpath, L"ToggleRigActive.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
 
 ///////
@@ -3390,11 +3393,15 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		s_spcam[spcno].sprite = 0;
 	}
 
-	CMySprite* cursp = s_sprig.sprite;
-	if (cursp){
-		delete cursp;
+
+	int sprno;
+	for (sprno = 0; sprno < 2; sprno++){
+		CMySprite* cursp = s_sprig[sprno].sprite;
+		if (cursp){
+			delete cursp;
+		}
+		s_sprig[sprno].sprite = 0;
 	}
-	s_sprig.sprite = 0;
 
 
 
@@ -7365,23 +7372,28 @@ int SetSpCamParams()
 
 int SetSpRigParams()
 {
-	if (!(s_sprig.sprite)){
+	if (!(s_sprig[0].sprite) || !(s_sprig[1].sprite)){
 		return 0;
 	}
 
 	float spawidth = 32.0f;
 	int spashift = 12;
 	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
-	s_sprig.dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
-	s_sprig.dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
+	s_sprig[0].dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
+	s_sprig[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
+
+	s_sprig[1].dispcenter = s_sprig[0].dispcenter;
+
 
 	D3DXVECTOR3 disppos;
-	disppos.x = (float)(s_sprig.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
-	disppos.y = -((float)(s_sprig.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.x = (float)(s_sprig[0].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_sprig[0].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
 	D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
-	CallF(s_sprig.sprite->SetPos(disppos), return 1);
-	CallF(s_sprig.sprite->SetSize(dispsize), return 1);
+	CallF(s_sprig[0].sprite->SetPos(disppos), return 1);
+	CallF(s_sprig[0].sprite->SetSize(dispsize), return 1);
+	CallF(s_sprig[1].sprite->SetPos(disppos), return 1);
+	CallF(s_sprig[1].sprite->SetSize(dispsize), return 1);
 
 	return 0;
 
@@ -7473,15 +7485,15 @@ int PickSpRig(POINT srcpos)
 {
 	int pickflag = 0;
 
-	if (s_sprig.sprite == 0){
+	if (s_sprig[0].sprite == 0){
 		return 0;
 	}
 
-	int starty = s_sprig.dispcenter.y - 16;
+	int starty = s_sprig[0].dispcenter.y - 16;
 	int endy = starty + 32;
 
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
-		int startx = s_sprig.dispcenter.x - 16;
+		int startx = s_sprig[0].dispcenter.x - 16;
 		int endx = startx + 32;
 
 		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
@@ -10747,7 +10759,7 @@ int OnRenderSprite()
 		s_spcam[spccnt].sprite->OnRender();
 	}
 
-	s_sprig.sprite->OnRender();
+	s_sprig[s_oprigflag].sprite->OnRender();
 
 	return 0;
 }
