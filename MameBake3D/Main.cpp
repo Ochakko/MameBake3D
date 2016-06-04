@@ -104,6 +104,8 @@ bool g_underselecttolast = false;
 bool g_undereditrange = false;
 
 bool g_limitdegflag = true;
+bool g_wmatDirectSetFlag = false;
+bool g_underRetargetFlag = false;
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -4482,7 +4484,6 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 				calctramp.CalcQandTra(bvhmat, bvhbone, hrate);
 				traanim = calctramp.GetFirstFrameTra();
 				//traanim = calctramp.GetTra() * hrate;
-				s_sethipstra = 1;
 			}
 			else{
 				traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -4495,7 +4496,9 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 
 		if (bvhbone){
-			if (!bvhbone->GetParent()){
+			//if (!bvhbone->GetParent()){
+			if ((s_sethipstra == 0) && (srcbone == s_model->GetTopBone())){
+				s_sethipstra = 1;
 				s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
 			}
 			else{
@@ -6520,6 +6523,7 @@ int ConvBoneConvert()
 		return 1;
 	}
 
+	g_underRetargetFlag = true;//!!!!!!!!!!!!
 
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
 	double motleng = bvhmi->frameleng;
@@ -6566,6 +6570,8 @@ int ConvBoneConvert()
 	}
 
 	s_model->UpdateMatrix(&s_matW, &s_matVP);
+
+	g_underRetargetFlag = false;//!!!!!!!!!!!!
 
 	::MessageBox(NULL, L"コンバートが終了しました。", L"完了", MB_OK);
 

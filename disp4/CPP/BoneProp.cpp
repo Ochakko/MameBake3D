@@ -16,6 +16,9 @@
 #define DBGH
 #include <dbg.h>
 
+extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
+
+
 float vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
 {
 	return ( vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z );
@@ -280,6 +283,7 @@ int IsInitRot(D3DXMATRIX srcmat)
 
 int IsSameMat(D3DXMATRIX srcmat1, D3DXMATRIX srcmat2)
 {
+
 	int retval = 0;
 	D3DXMATRIX diffmat;
 	diffmat = srcmat1 - srcmat2;

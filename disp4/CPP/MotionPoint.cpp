@@ -208,7 +208,7 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	//m_eul = srcmp->m_eul;
 	m_tra = srcmp->m_tra;
 	m_q = srcmp->m_q;
-	m_worldmat = srcmp->m_worldmat;
+	SetWorldMat(srcmp->m_worldmat);
 	m_localeul = srcmp->m_localeul;
 	m_absmat = srcmp->m_absmat;
 
@@ -251,7 +251,7 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	m_q = mp.m_q;
 	m_localeul = mp.m_localeul;
 
-	m_worldmat = mp.m_worldmat;//ワールド変換と親の影響を受けたマトリックス
+	SetWorldMat(mp.m_worldmat);
 	m_btmat = mp.m_btmat;
 
 	m_prev = mp.m_prev;
