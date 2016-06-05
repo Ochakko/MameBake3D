@@ -172,13 +172,13 @@
   <Bone>
     <Name>Neck1_Head_Joint</Name>
     <RigidElem>
-      <ChildName>Head_Site19_Joint</ChildName>
+      <ChildName>Head_Twin_R_1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>Head_Twin_R_1_Joint</ChildName>
+      <ChildName>Head_Site19_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>

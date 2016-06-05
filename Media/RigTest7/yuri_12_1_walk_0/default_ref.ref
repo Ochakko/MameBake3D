@@ -510,7 +510,7 @@
     <Name>Neck1_Head_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>Head_Site19_Joint</ChildName>
+      <ChildName>Head_Twin_R_1_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>1</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -532,7 +532,7 @@
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
     <RigidElem>
-      <ChildName>Head_Twin_R_1_Joint</ChildName>
+      <ChildName>Head_Site19_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>1</SkipFlag>
       <ShpRate>0.600000</ShpRate>
