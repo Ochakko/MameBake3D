@@ -1218,7 +1218,9 @@ CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, d
 		return 0;
 	}
 
-	SetWorldMat( 0, srcmotid, srcframe, firstmp->GetAbsMat() );
+	g_wmatDirectSetFlag = true;
+	SetWorldMat(0, srcmotid, srcframe, firstmp->GetAbsMat());
+	g_wmatDirectSetFlag = false;
 
 	if( m_child ){
 		m_child->SetAbsMatReq( 1, srcmotid, srcframe, firstframe );
