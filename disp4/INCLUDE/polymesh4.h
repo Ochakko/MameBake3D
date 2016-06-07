@@ -113,6 +113,9 @@ public:
 		return m_optleng;
 	};
 
+	D3DXVECTOR3 GetNormalByControlPointNo(int vno);
+	D3DXVECTOR2 GetUVByControlPointNo(int vno);
+
 private:
 	int m_orgpointnum;
 	int m_orgfacenum;
@@ -129,6 +132,7 @@ private:
 	PM3INF* m_pm3inf;
 	int*	m_dispindex;
 	int*	m_orgindex;
+	int*	m_fbxindex;
 	int m_createoptflag;
 
 	MODELBOUND	m_bound;

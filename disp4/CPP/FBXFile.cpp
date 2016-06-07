@@ -668,53 +668,52 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 
 	FbxGeometryElementUV* lUVDiffuseElement = lMesh->CreateElementUV( "DiffuseUV");
 	_ASSERT( lUVDiffuseElement != NULL);
-	lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
-	lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eDirect);
+	//lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
+	//lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eDirect);
+	lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
+	lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
 
 	int vsetno = 0;
 	for (vsetno = 0; vsetno < pm4->GetOrgPointNum(); vsetno++){
 		D3DXVECTOR3* curv = pm4->GetOrgPointBuf() + vsetno;
 		*(lcp + vsetno) = FbxVector4(curv->x, curv->y, curv->z, 1.0f);
 
-		D3DXVECTOR3* curn = pm4->GetOrgNormal() + vsetno;
-		FbxVector4 fbxn = FbxVector4(curn->x, curn->y, curn->z, 0.0f);
+		D3DXVECTOR3 curn = pm4->GetNormalByControlPointNo(vsetno);
+		FbxVector4 fbxn = FbxVector4(curn.x, curn.y, curn.z, 0.0f);
 		lElementNormal->GetDirectArray().Add(fbxn);
 
-		if (vsetno < pm4->GetOrgUVLeng()){
-			D3DXVECTOR2* curuv = pm4->GetOrgUV() + vsetno;
-			FbxVector2 fbxuv = FbxVector2(curuv->x, curuv->y);
-			lUVDiffuseElement->GetDirectArray().Add(fbxuv);
-		}
-		else{
-			FbxVector2 fbxuv = FbxVector2(0.0f, 0.0f);
-			lUVDiffuseElement->GetDirectArray().Add(fbxuv);
-		}
 	}
 	if (s_doublevertices == 1){
 		for (vsetno = 0; vsetno < pm4->GetOrgPointNum(); vsetno++){
 			D3DXVECTOR3* curv = pm4->GetOrgPointBuf() + vsetno;
 			*(lcp + vsetno + pm4->GetOrgPointNum()) = FbxVector4(curv->x, curv->y, curv->z, 1.0f);
 
-			D3DXVECTOR3* curn = pm4->GetOrgNormal() + vsetno;
-			FbxVector4 fbxn = FbxVector4(curn->x, curn->y, curn->z, 0.0f);
+			D3DXVECTOR3 curn = pm4->GetNormalByControlPointNo(vsetno);
+			FbxVector4 fbxn = FbxVector4(curn.x, curn.y, curn.z, 0.0f);
 			lElementNormal->GetDirectArray().Add(fbxn);
-
-			if (vsetno < pm4->GetOrgUVLeng()){
-				D3DXVECTOR2* curuv = pm4->GetOrgUV() + vsetno;
-				FbxVector2 fbxuv = FbxVector2(curuv->x, curuv->y);
-				lUVDiffuseElement->GetDirectArray().Add(fbxuv);
-			}
-			else{
-				FbxVector2 fbxuv = FbxVector2(0.0f, 0.0f);
-				lUVDiffuseElement->GetDirectArray().Add(fbxuv);
-			}
 		}
 	}
 
-	//lUVDiffuseElement->GetIndexArray().SetCount(facenum * 3);
 
 	vsetno = 0;
 	int faceno;
+	for (faceno = 0; faceno < facenum; faceno++){
+		PM3DISPV* curdispv = pm4->GetPm3Disp() + faceno * 3;
+		int vcnt;
+		for (vcnt = 0; vcnt < 3; vcnt++){
+			//PM3DISPV* curv = curdispv + vcnt;
+			PM3DISPV* curv = curdispv + s_invindex[vcnt];
+			FbxVector2 fbxuv = FbxVector2(curv->uv.x, 1.0f - curv->uv.y);
+			//FbxVector2 fbxuv = FbxVector2(curv->uv.x, curv->uv.y);
+			lUVDiffuseElement->GetDirectArray().Add(fbxuv);
+
+			vsetno++;
+		}
+	}
+	lUVDiffuseElement->GetIndexArray().SetCount(facenum * 3);
+
+
+	vsetno = 0;
 	for( faceno = 0; faceno < facenum; faceno++ ){
 		CMQOFace* curface = pm4->GetTriFace() + faceno;
 		int vno[3];
@@ -731,6 +730,7 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 		int vcnt;
 		for( vcnt = 0; vcnt < 3; vcnt++ ){
 			lMesh->AddPolygon(vno[vcnt]);
+			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);
 			vsetno++;
 		}
 		lMesh->EndPolygon ();
@@ -793,7 +793,8 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	// We are in eByPolygon, so there's only need for index (a plane has 1 polygon).
 	lMaterialElement->GetIndexArray().SetCount( lMesh->GetPolygonCount() );
 	// Set the Index to the material
-	for(int i=0; i<lMesh->GetPolygonCount(); ++i){
+	//for(int i=0; i<lMesh->GetPolygonCount(); ++i){
+	for (int i = 0; i<lMesh->GetPolygonCount(); i++){
 		lMaterialElement->GetIndexArray().SetAt(i,0);
 	}
 
@@ -2600,7 +2601,8 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 	// We are in eBY_POLYGON, so there's only need for index (a plane has 1 polygon).
 	lMaterialElement->GetIndexArray().SetCount(lMesh->GetPolygonCount());
 	// Set the Index to the material
-	for (int i = 0; i<lMesh->GetPolygonCount(); ++i){
+	//for (int i = 0; i<lMesh->GetPolygonCount(); ++i){
+	for (int i = 0; i<lMesh->GetPolygonCount(); i++){
 		lMaterialElement->GetIndexArray().SetAt(i, 0);
 	}
 

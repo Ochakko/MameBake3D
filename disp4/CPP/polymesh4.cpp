@@ -73,6 +73,7 @@ void CPolyMesh4::InitParams()
 
 	m_dispindex = 0;
 	m_orgindex = 0;
+	m_fbxindex = 0;
 
 	ZeroMemory( &chkalpha, sizeof( CHKALPHA ) );
 	ZeroMemory( &m_bound, sizeof( MODELBOUND ) );
@@ -98,6 +99,10 @@ void CPolyMesh4::DestroyObjs()
 	if( m_orgindex ){
 		free( m_orgindex );
 		m_orgindex = 0;
+	}
+	if (m_fbxindex){
+		free(m_fbxindex);
+		m_fbxindex = 0;
 	}
 
 	if( m_infbone ){
@@ -184,6 +189,12 @@ int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng
 	}
 	ZeroMemory( m_orgindex, sizeof( int ) * m_facenum * 3 );
 
+	m_fbxindex = (int*)malloc(sizeof(int) * m_facenum * 3);
+	if (!m_fbxindex){
+		_ASSERT(0);
+		return 1;
+	}
+	ZeroMemory(m_fbxindex, sizeof(int) * m_facenum * 3);
 
 
 	int tmpleng, tmpmatnum;
@@ -286,7 +297,8 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				curv->pos.z = (m_pointbuf + vno)->z;
 				curv->pos.w = 1.0f;
 
-				*( m_orgindex + setno * 3 + vcnt ) = vno;
+				*(m_orgindex + setno * 3 + vi[vcnt]) = vno;
+				//*(m_fbxindex + setno * 3 + vi[vcnt]) = vno;
 
 				if( m_normal ){
 					if( m_normalleng == m_orgpointnum ){
@@ -302,16 +314,18 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				}
 
 				if( m_uvbuf ){
-					
-					if( m_uvleng == m_orgpointnum ){
-						curv->uv = *(m_uvbuf + vno);
-					}else if( m_uvleng == (m_facenum * 3) ){
+					if (m_uvleng == (m_facenum * 3)){
 						curv->uv = *(m_uvbuf + setno * 3 + vi[vcnt]);
-					}else{
-						_ASSERT( 0 );
 					}
+					else if(m_uvleng >= m_orgpointnum){//m_orgpointnum‚Ì‚Æ‚«‚Æm_orgpointnum * 2‚Ì‚Æ‚«
+						curv->uv = *(m_uvbuf + vno);
+					}
+					else{
+						_ASSERT(0);
+					}
+
 					curv->uv.y = 1.0f - curv->uv.y;//•\Ž¦—p
-					
+
 				}else{
 					curv->uv = D3DXVECTOR2( 0.0f, 0.0f );
 				}
@@ -538,4 +552,101 @@ int CPolyMesh4::UpdateMorphBuffer( D3DXVECTOR3* mpoint )
 	}
 
 	return 0;
+}
+
+D3DXVECTOR3 CPolyMesh4::GetNormalByControlPointNo(int vno)
+{
+	if (m_normalleng == (m_facenum * 3)){
+		int findindex = -1;
+		int chki;
+		for (chki = 0; chki < (m_facenum * 3); chki++){
+			int curvno = *(m_orgindex + chki);
+			if (vno == curvno){
+				findindex = chki;
+				break;
+			}
+		}
+		if (findindex >= 0){
+			return *(m_normal + findindex);
+		}
+		else{
+			_ASSERT(0);
+			return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
+	}
+	else if(m_normalleng >= m_orgpointnum){
+		return *(m_normal + vno);
+	}
+	else{
+		_ASSERT(0);
+		return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	}
+}
+D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
+{
+	/*
+	if (m_uvleng == (m_facenum * 3)){
+		curv->uv = *(m_uvbuf + setno * 3 + vi[vcnt]);
+	}
+	else if (m_uvleng >= m_orgpointnum){//m_orgpointnum‚Ì‚Æ‚«‚Æm_orgpointnum * 2‚Ì‚Æ‚«
+		curv->uv = *(m_uvbuf + vno);
+	}
+	*/
+
+	/*
+	if (m_uvleng == (m_facenum * 3)){
+		int findindex = -1;
+		int chki;
+		for (chki = 0; chki < (m_facenum * 3); chki++){
+			int curvno = *(m_orgindex + chki);
+			if (vno == curvno){
+				findindex = chki;
+				break;
+			}
+		}
+		if (findindex >= 0){
+			return *(m_uvbuf + findindex);
+		}
+		else{
+			_ASSERT(0);
+			return D3DXVECTOR2(0.0f, 0.0f);
+		}
+	}
+	else if (m_uvleng >= m_orgpointnum){
+		return *(m_uvbuf + vno);
+	}
+	else{
+		_ASSERT(0);
+		return D3DXVECTOR2(0.0f, 0.0f);
+	}
+	*/
+	if (m_uvleng == (m_facenum * 3)){
+		int findindex = -1;
+		int chki;
+		for (chki = 0; chki < (m_facenum * 3); chki++){
+			int curvno = *(m_orgindex + chki);
+			if (vno == curvno){
+				findindex = chki;
+				break;
+			}
+		}
+		if (findindex >= 0){
+			return *(m_uvbuf + findindex);
+		}
+		else{
+			_ASSERT(0);
+			return D3DXVECTOR2(0.0f, 0.0f);
+		}
+	}
+	else if (m_uvleng >= m_orgpointnum){
+		return *(m_uvbuf + vno);
+	}
+	else{
+		_ASSERT(0);
+		return D3DXVECTOR2(0.0f, 0.0f);
+	}
+
+	//m_dispv = (PM3DISPV*)malloc(sizeof(PM3DISPV) * m_optleng);
+
+
 }

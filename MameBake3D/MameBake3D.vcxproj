@@ -159,7 +159,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -174,7 +174,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\DX90c\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\lib\vs2010\x64;..\btlib;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxerr.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;winmm.lib;comctl32.lib;fbxsdk-2013.3.lib;wininet.lib;opengl32.lib;glew64s.lib;glut64.lib;..\btlib\OpenGLSupport_x64.lib;..\btlib\LinearMath_x64.lib;..\btlib\BulletCollision_x64.lib;..\btlib\BulletDynamics_x64.lib;..\btlib\BulletSoftBody_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxerr.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;winmm.lib;comctl32.lib;fbxsdk-2013.3-md.lib;wininet.lib;opengl32.lib;glew64s.lib;glut64.lib;..\btlib\OpenGLSupport_x64.lib;..\btlib\LinearMath_x64.lib;..\btlib\BulletCollision_x64.lib;..\btlib\BulletDynamics_x64.lib;..\btlib\BulletSoftBody_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
     <ResourceCompile>

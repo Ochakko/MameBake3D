@@ -2020,7 +2020,8 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 		// マテリアルの数
 		int materialNum_ = node->GetMaterialCount();
 		// マテリアル情報を取得
-		for( int i = 0; i < materialNum_; ++i ) {
+		//for( int i = 0; i < materialNum_; ++i ) {
+		for (int i = 0; i < materialNum_; i++) {
 			FbxSurfaceMaterial* material = node->GetMaterial( i );
 			if ( material != 0 ) {
 				CMQOMaterial* newmqomat = new CMQOMaterial();
@@ -2030,6 +2031,9 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 
 				SetMQOMaterial( newmqomat, material );
 
+				//const char* texname = newmqomat->GetTex();
+				//const char* nodename = node->GetName();
+				//_ASSERT(0);
 			}
 		}
 	}
@@ -2042,10 +2046,13 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 	int controlNum = pMesh->GetControlPointsCount();   // 頂点数
 	FbxVector4* src = pMesh->GetControlPoints();    // 頂点座標配列
 
+	DbgOut(L"LDCheck : GetFBXMesh : nodename %s, controlnum %d, polygonnum %d, polygonvertexnum %d\r\n", wname, controlNum, PolygonNum, PolygonVertexNum);
+
 	// コピー
 	newobj->SetVertex( controlNum );
 	newobj->SetPointBuf( (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * controlNum ) );
-	for ( int i = 0; i < controlNum; ++i ) {
+	//for ( int i = 0; i < controlNum; ++i ) {
+	for (int i = 0; i < controlNum; i++) {
 		D3DXVECTOR3* curctrl = newobj->GetPointBuf() + i;
 		curctrl->x = (float)src[ i ][ 0 ];
 		curctrl->y = (float)src[ i ][ 1 ];
@@ -2141,7 +2148,8 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 
 //法線
 	int layerNum = pMesh->GetLayerCount();
-	for ( int i = 0; i < layerNum; ++i ) {
+	//for ( int i = 0; i < layerNum; ++i ) {
+	for (int i = 0; i < layerNum; i++) {
 	   FbxLayer* layer = pMesh->GetLayer( i );
 	   FbxLayerElementNormal* normalElem = layer->GetNormals();
 	   if ( normalElem == 0 ) {
@@ -2168,7 +2176,8 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 				newobj->SetNormal( (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * normalNum ) );
 
 				// 直接取得
-			  for ( int i = 0; i < normalNum; ++i ) {
+			  //for ( int i = 0; i < normalNum; ++i ) {
+				for (int i = 0; i < normalNum; i++) {
 				D3DXVECTOR3* curn = newobj->GetNormal() + i;
 				curn->x = (float)normalElem->GetDirectArray().GetAt( i )[ 0 ];
 				curn->y = (float)normalElem->GetDirectArray().GetAt( i )[ 1 ];
@@ -2202,7 +2211,8 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 				newobj->SetNormal( (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * normalNum ) );
 
 				// 直接取得
-				for ( int i = 0; i < normalNum; ++i ) {
+				//for ( int i = 0; i < normalNum; ++i ) {
+				for (int i = 0; i < normalNum; i++) {
 					D3DXVECTOR3* curn = newobj->GetNormal() + i;
 					curn->x = (float)normalElem->GetDirectArray().GetAt( i )[ 0 ];
 					curn->y = (float)normalElem->GetDirectArray().GetAt( i )[ 1 ];
@@ -2238,7 +2248,8 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 		FbxLayerElement::EReferenceMode refMode = elem->GetReferenceMode();
 
 		if (mappingMode == FbxLayerElement::eByPolygonVertex) {
-			DbgOut(L"GetFBXMesh : %s : UV : mapping eByPolygonVertex\r\n", wname);
+			DbgOut(L"\r\n\r\n");
+			DbgOut(L"check !!! GetFBXMesh : %s : UV : mapping eByPolygonVertex\r\n", wname);
 
 			if (refMode == FbxLayerElement::eDirect) {
 				DbgOut(L"GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
@@ -2247,44 +2258,60 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
 
 				// 直接取得
-				for (int i = 0; i < size; ++i) {
+				//for (int i = 0; i < size; ++i) {
+				for (int i = 0; i < size; i++) {
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
 					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(i)[1];
+					DbgOut(L"direct %d, u : %f, v : %f\r\n", i, (newobj->GetUVBuf() + i)->x, (newobj->GetUVBuf() + i)->y);
 				}
+				DbgOut(L"\r\n\r\n");
 			}
 			else if (refMode == FbxLayerElement::eIndexToDirect) {
-				DbgOut(L"GetFBXMesh : %s : UV : refMode eIndexToDirect\r\n", wname);
+				DbgOut(L"\r\n\r\n");
+				DbgOut(L"Check !!! GetFBXMesh : %s : UV : refMode eIndexToDirect\r\n", wname);
 				int size = indexNum;
 				newobj->SetUVLeng(size);
 				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
 
 				// インデックスから取得
-				for (int i = 0; i < size; ++i) {
+				//for (int i = 0; i < size; ++i) {
+				for (int i = 0; i < size; i++) {
 					int index = elem->GetIndexArray().GetAt(i);
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(index)[0];
 					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(index)[1];
+					DbgOut(L"direct %d, u : %f, v : %f\r\n", i, (newobj->GetUVBuf() + i)->x, (newobj->GetUVBuf() + i)->y);
 				}
+				DbgOut(L"\r\n\r\n");
 			}
 			else {
 				DbgOut(L"GetFBXMesh : %s : UV : refMode %d\r\n", wname, refMode);
+				_ASSERT(0);
 			}
 		}
 		else if (mappingMode == FbxLayerElement::eByControlPoint) {
 			if (refMode == FbxLayerElement::eDirect) {
-				DbgOut(L"GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
+				DbgOut(L"\r\n\r\n");
+				DbgOut(L"check !!! GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
 				int size = UVNum;
 				newobj->SetUVLeng(size);
-				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
+				D3DXVECTOR2* newuv = (D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size);
+				_ASSERT(newuv);
+				newobj->SetUVBuf(newuv);
+				//newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
 
 				// 直接取得
-				for (int i = 0; i < size; ++i) {
+				//for (int i = 0; i < size; ++i) {
+				for (int i = 0; i < size; i++) {
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
 					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(i)[1];
+					DbgOut(L"direct %d, u : %f, v : %f\r\n", i, (newobj->GetUVBuf() + i)->x, (newobj->GetUVBuf() + i)->y);
 				}
 			}
+			DbgOut(L"\r\n\r\n");
 		} else {
 DbgOut( L"GetFBXMesh : %s : UV : mappingMode %d\r\n", wname, mappingMode );
 DbgOut( L"GetFBXMesh : %s : UV : refMode %d\r\n", wname, refMode );
+_ASSERT(0);
 		}
 		break;
 	}
@@ -2848,7 +2875,8 @@ int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttri
 	// スキンの数を取得
 	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
 
-	for ( int i = 0; i < skinCount; ++i ) {
+	//for ( int i = 0; i < skinCount; ++i ) {
+	for (int i = 0; i < skinCount; i++) {
 		// i番目のスキンを取得
 		FbxSkin* skin = (FbxSkin*)( pMesh->GetDeformer( i, FbxDeformer::eSkin ) );
 
@@ -3020,7 +3048,8 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
 
 	int makecnt = 0;
-	for ( int i = 0; i < skinCount; ++i ) {
+	//for ( int i = 0; i < skinCount; ++i ) {
+	for (int i = 0; i < skinCount; i++) {
 		// i番目のスキンを取得
 		FbxSkin* skin = (FbxSkin*)( pMesh->GetDeformer( i, FbxDeformer::eSkin ) );
 

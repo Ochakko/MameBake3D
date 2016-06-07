@@ -36,7 +36,10 @@ sampler_state
     MagFilter = LINEAR;
 };
 
-
+//AddressU = Clamp;
+//AddressV = Clamp;
+//AddressU = Wrap;
+//AddressV = Wrap;
 
 //--------------------------------------------------------------------------------------
 // Vertex shader output structure
