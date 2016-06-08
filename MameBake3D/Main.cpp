@@ -196,7 +196,8 @@ float g_a_dmp = 0.50f;
 
 
 bool g_controlkey = false;
-bool g_ctrlshiftkeyformb = false;
+bool g_shiftkey = false;
+bool g_ctrlshiftkeyformb = false;//ForMiddleButton
 static int s_akeycnt = 0;
 static int s_dkeycnt = 0;
 
@@ -2128,7 +2129,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				ToggleRig();
 			}else{
 				if (s_oprigflag == 0){
-					if (g_controlkey == false){
+					if (g_shiftkey == false){
 						CallF(s_model->PickBone(&s_pickinfo), return 1);
 					}
 					if (s_pickinfo.pickobjno >= 0){
@@ -2267,6 +2268,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							if (s_customrigbone){
 								float deltau = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) * 0.5f;
 								float deltav = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+								if (g_controlkey == true){
+									deltau *= 0.250f;
+									deltav *= 0.250f;
+								}
 
 								s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
@@ -2295,6 +2300,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 				if (g_previewFlag == 0){
 					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+					if (g_controlkey == true){
+						deltax *= 0.250f;
+					}
 					if (s_ikkind == 0){
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					}
@@ -2320,6 +2328,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 				if (g_previewFlag == 0){
 					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+					if (g_controlkey == true){
+						deltax *= 0.250f;
+					}
+
 					if (s_ikkind == 0){
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					}
@@ -2342,6 +2354,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			cammv.x = ((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * -s_cammvstep;
 			cammv.y = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * s_cammvstep;
 			cammv.z = 0.0f;
+			if (g_controlkey == true){
+				cammv *= 0.250f;
+			}
+
 
 			D3DXMATRIX matview;
 			D3DXVECTOR3 weye, wat;
@@ -2387,6 +2403,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			float roty, rotxz;
 			rotxz = -((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * 250.0f;
 			roty = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * 250.0f;
+			if (g_controlkey == true){
+				rotxz *= 0.250f;
+				roty *= 0.250f;
+			}
 
 			D3DXMATRIX matview;
 			D3DXVECTOR3 weye, wat;
@@ -2491,6 +2511,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			float deltadist = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
 			//float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
 			//float deltadist = mdelta * s_camdist * 0.0010f;
+			if (g_controlkey == true){
+				deltadist *= 0.250f;
+			}
 
 			s_camdist += deltadist;
 			if (s_camdist < 0.0001f){
@@ -7558,7 +7581,7 @@ int SetSelectState()
 		pickinfo.buttonflag = spckind;
 	}else{
 	
-		if( g_controlkey == false ){
+		if( g_shiftkey == false ){
 			CallF( s_model->PickBone( &pickinfo ), return 1 );
 		}
 
@@ -8097,10 +8120,10 @@ int OnTimeLineWheel()
 			double delta2;
 			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
 			if (g_controlkey == false){
-				delta2 = (double)delta / 100.0;
+				delta2 = (double)delta / 20.0;
 			}
 			else{
-				delta2 = (double)delta / 20.0;//ctrl‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç5”{‘¬
+				delta2 = (double)delta / 100.0;//ctrl‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç[slowly]
 			}
 			if (delta != 0){
 				s_buttonselectend += delta2;
@@ -8134,10 +8157,10 @@ int OnTimeLineWheel()
 			if (delta != 0){
 				double delta2;
 				if (g_controlkey == false){
-					delta2 = (double)delta;
+					delta2 = (double)delta * 5.0;
 				}
 				else{
-					delta2 = (double)delta * 5.0;
+					delta2 = (double)delta;
 				}
 				s_buttonselectend += delta2;
 				DbgOut(L"OnTimeLineWheel 2 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
@@ -8152,10 +8175,10 @@ int OnTimeLineWheel()
 			double delta2;
 			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
 			if (g_controlkey == false){
-				delta2 = (double)delta / 100.0;
+				delta2 = (double)delta / 20.0;
 			}
 			else{
-				delta2 = (double)delta / 20.0;//ctrl‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç5”{‘¬
+				delta2 = (double)delta / 100.0;//ctrl‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç[slowly]
 			}
 			if (delta != 0){
 				double curframe = s_owpLTimeline->getCurrentTime();
@@ -8816,6 +8839,13 @@ int OnFrameKeyboard()
 	else{
 		g_controlkey = false;
 	}
+	if (g_keybuf[VK_SHIFT] & 0x80){
+		g_shiftkey = true;
+	}
+	else{
+		g_shiftkey = false;
+	}
+
 
 	if (g_ctrlshiftkeyformb == false){
 		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
