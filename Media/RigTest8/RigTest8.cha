@@ -8,7 +8,7 @@
   <ProjectInfo>
     <CharaNum>1</CharaNum>
   </ProjectInfo>
-  <GcoFile>RigTest7.gco</GcoFile>
+  <GcoFile>RigTest8.gco</GcoFile>
   <Chara>
     <ModelFolder>yuri_12_1_walk_0</ModelFolder>
     <ModelFile>yuri_12_1_walk.fbx</ModelFile>
