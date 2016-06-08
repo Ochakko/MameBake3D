@@ -2,6 +2,33 @@
 <RIGFILE>
     <FileInfo>1001-01</FileInfo>
   <Bone>
+    <RigName>Rig1</RigName>
+    <OwnerBone>LeftElbow_branch_Joint</OwnerBone>
+    <RigNumber>0</RigNumber>
+    <ElemNum>3</ElemNum>
+    <RigElem>
+      <BoneName>LeftElbow_branch_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>LeftElbow_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>-1.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>LeftShoulder_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>-1.000000</RateU>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
+    </RigElem>
+  </Bone>
+  <Bone>
     <RigName>Close</RigName>
     <OwnerBone>LeftThumbDistal_end_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
@@ -172,6 +199,33 @@
     </RigElem>
   </Bone>
   <Bone>
+    <RigName>Rig1</RigName>
+    <OwnerBone>RightElbow_branch_Joint</OwnerBone>
+    <RigNumber>0</RigNumber>
+    <ElemNum>3</ElemNum>
+    <RigElem>
+      <BoneName>RightElbow_branch_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>RightElbow_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>1.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>RightShoulder_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>1.000000</RateU>
+      <AxisV>Z</AxisV>
+      <RateV>1.000000</RateV>
+    </RigElem>
+  </Bone>
+  <Bone>
     <RigName>Close</RigName>
     <OwnerBone>RightThumbDistal_end_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
@@ -339,6 +393,114 @@
       <RateU>-1.000000</RateU>
       <AxisV>X</AxisV>
       <RateV>0.000000</RateV>
+    </RigElem>
+  </Bone>
+  <Bone>
+    <RigName>Front</RigName>
+    <OwnerBone>LeftAnkle_Joint</OwnerBone>
+    <RigNumber>0</RigNumber>
+    <ElemNum>3</ElemNum>
+    <RigElem>
+      <BoneName>LeftAnkle_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>LeftKnee_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>1.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>LeftHip_Joint</BoneName>
+      <AxisU>Y</AxisU>
+      <RateU>1.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>-1.000000</RateV>
+    </RigElem>
+  </Bone>
+  <Bone>
+    <RigName>Back</RigName>
+    <OwnerBone>LeftAnkle_Joint</OwnerBone>
+    <RigNumber>1</RigNumber>
+    <ElemNum>3</ElemNum>
+    <RigElem>
+      <BoneName>LeftAnkle_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>LeftKnee_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>2.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>LeftHip_Joint</BoneName>
+      <AxisU>Y</AxisU>
+      <RateU>1.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>1.000000</RateV>
+    </RigElem>
+  </Bone>
+  <Bone>
+    <RigName>Front</RigName>
+    <OwnerBone>RightAnkle_Joint</OwnerBone>
+    <RigNumber>0</RigNumber>
+    <ElemNum>3</ElemNum>
+    <RigElem>
+      <BoneName>RightAnkle_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>RightKnee_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>1.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>RightHip_Joint</BoneName>
+      <AxisU>Y</AxisU>
+      <RateU>1.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>-1.000000</RateV>
+    </RigElem>
+  </Bone>
+  <Bone>
+    <RigName>Back</RigName>
+    <OwnerBone>RightAnkle_Joint</OwnerBone>
+    <RigNumber>1</RigNumber>
+    <ElemNum>3</ElemNum>
+    <RigElem>
+      <BoneName>RightAnkle_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>RightKnee_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>2.000000</RateV>
+    </RigElem>
+    <RigElem>
+      <BoneName>RightHip_Joint</BoneName>
+      <AxisU>Y</AxisU>
+      <RateU>1.000000</RateU>
+      <AxisV>X</AxisV>
+      <RateV>1.000000</RateV>
     </RigElem>
   </Bone>
 </RIGFILE>

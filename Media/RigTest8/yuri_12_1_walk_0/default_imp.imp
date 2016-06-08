@@ -19,13 +19,13 @@
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightHip_Joint</ChildName>
+      <ChildName>LeftHip_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>LeftHip_Joint</ChildName>
+      <ChildName>RightHip_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
@@ -166,12 +166,6 @@
   <Bone>
     <Name>LeftElbow_branch_Joint</Name>
     <RigidElem>
-      <ChildName>LeftMiddleProximal_Joint</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>0.000000</ImpulseZ>
-    </RigidElem>
-    <RigidElem>
       <ChildName>LeftIndexProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
@@ -179,6 +173,12 @@
     </RigidElem>
     <RigidElem>
       <ChildName>LeftThumbProximal_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>LeftMiddleProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
@@ -361,13 +361,19 @@
   <Bone>
     <Name>RightElbow_branch_Joint</Name>
     <RigidElem>
+      <ChildName>RightThumbProximal_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+    <RigidElem>
       <ChildName>RightIndexProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightThumbProximal_Joint</ChildName>
+      <ChildName>RightLittleProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
@@ -380,12 +386,6 @@
     </RigidElem>
     <RigidElem>
       <ChildName>RightRingProximal_Joint</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>0.000000</ImpulseZ>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>RightLittleProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
