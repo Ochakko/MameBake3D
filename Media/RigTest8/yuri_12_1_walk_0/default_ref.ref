@@ -8,7 +8,7 @@
     <RigidElem>
       <ChildName>Hip_branch_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -34,7 +34,7 @@
     <RigidElem>
       <ChildName>Chest_branch_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -56,7 +56,7 @@
     <RigidElem>
       <ChildName>LeftHip_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -78,7 +78,7 @@
     <RigidElem>
       <ChildName>RightHip_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -104,7 +104,7 @@
     <RigidElem>
       <ChildName>Neck_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -126,7 +126,7 @@
     <RigidElem>
       <ChildName>LeftCollar_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -148,7 +148,7 @@
     <RigidElem>
       <ChildName>RightCollar_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -174,7 +174,7 @@
     <RigidElem>
       <ChildName>Neck_branch_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -200,7 +200,7 @@
     <RigidElem>
       <ChildName>Head_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -222,7 +222,7 @@
     <RigidElem>
       <ChildName>Twin_R_2_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -244,7 +244,7 @@
     <RigidElem>
       <ChildName>Twin_L_2_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -270,7 +270,7 @@
     <RigidElem>
       <ChildName>Twin_R_3_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -296,7 +296,7 @@
     <RigidElem>
       <ChildName>BT_G_3_R_4_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -322,7 +322,7 @@
     <RigidElem>
       <ChildName>BT_G_3_R_4_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -348,7 +348,7 @@
     <RigidElem>
       <ChildName>Twin_L_3_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -374,7 +374,7 @@
     <RigidElem>
       <ChildName>BT_G_3_L_4_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -400,7 +400,7 @@
     <RigidElem>
       <ChildName>BT_G_3_L_4_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -426,7 +426,7 @@
     <RigidElem>
       <ChildName>LeftShoulder_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -452,7 +452,7 @@
     <RigidElem>
       <ChildName>LeftElbow_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -478,7 +478,7 @@
     <RigidElem>
       <ChildName>LeftElbow_branch_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -502,31 +502,9 @@
     <Name>LeftElbow_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftIndexProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>2</LK>
-      <CUSLK>2000.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>70.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-    </RigidElem>
-    <RigidElem>
       <ChildName>LeftThumbProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -546,9 +524,9 @@
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
     <RigidElem>
-      <ChildName>LeftMiddleProximal_Joint</ChildName>
+      <ChildName>LeftIndexProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -570,7 +548,29 @@
     <RigidElem>
       <ChildName>LeftRingProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>2</LK>
+      <CUSLK>2000.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>70.000000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>LeftMiddleProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -592,7 +592,7 @@
     <RigidElem>
       <ChildName>LeftLittleProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -618,7 +618,7 @@
     <RigidElem>
       <ChildName>LeftThumbIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -644,7 +644,7 @@
     <RigidElem>
       <ChildName>LeftThumbDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -670,7 +670,7 @@
     <RigidElem>
       <ChildName>LeftThumbDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -696,7 +696,7 @@
     <RigidElem>
       <ChildName>LeftIndexIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -722,7 +722,7 @@
     <RigidElem>
       <ChildName>LeftIndexDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -748,7 +748,7 @@
     <RigidElem>
       <ChildName>LeftIndexDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -774,7 +774,7 @@
     <RigidElem>
       <ChildName>LeftMiddleIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -800,7 +800,7 @@
     <RigidElem>
       <ChildName>LeftMiddleDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -826,7 +826,7 @@
     <RigidElem>
       <ChildName>LeftMiddleDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -852,7 +852,7 @@
     <RigidElem>
       <ChildName>LeftRingIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -878,7 +878,7 @@
     <RigidElem>
       <ChildName>LeftRingDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -904,7 +904,7 @@
     <RigidElem>
       <ChildName>LeftRingDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -930,7 +930,7 @@
     <RigidElem>
       <ChildName>LeftLittleIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -956,7 +956,7 @@
     <RigidElem>
       <ChildName>LeftLittleDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -982,7 +982,7 @@
     <RigidElem>
       <ChildName>LeftLittleDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1008,7 +1008,7 @@
     <RigidElem>
       <ChildName>RightShoulder_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1034,7 +1034,7 @@
     <RigidElem>
       <ChildName>RightElbow_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1060,7 +1060,7 @@
     <RigidElem>
       <ChildName>RightElbow_branch_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1084,31 +1084,9 @@
     <Name>RightElbow_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightThumbProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>2</LK>
-      <CUSLK>2000.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>70.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-    </RigidElem>
-    <RigidElem>
       <ChildName>RightIndexProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1128,9 +1106,9 @@
       <FRICTION>0.500000</FRICTION>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightLittleProximal_Joint</ChildName>
+      <ChildName>RightThumbProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1152,7 +1130,7 @@
     <RigidElem>
       <ChildName>RightMiddleProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1174,7 +1152,29 @@
     <RigidElem>
       <ChildName>RightRingProximal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>2</LK>
+      <CUSLK>2000.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>70.000000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>RightLittleProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1200,7 +1200,7 @@
     <RigidElem>
       <ChildName>RightThumbIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1226,7 +1226,7 @@
     <RigidElem>
       <ChildName>RightThumbDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1252,7 +1252,7 @@
     <RigidElem>
       <ChildName>RightThumbDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1278,7 +1278,7 @@
     <RigidElem>
       <ChildName>RightIndexIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1304,7 +1304,7 @@
     <RigidElem>
       <ChildName>RightIndexDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1330,7 +1330,7 @@
     <RigidElem>
       <ChildName>RightIndexDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1356,7 +1356,7 @@
     <RigidElem>
       <ChildName>RightMiddleIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1382,7 +1382,7 @@
     <RigidElem>
       <ChildName>RightMiddleDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1408,7 +1408,7 @@
     <RigidElem>
       <ChildName>RightMiddleDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1434,7 +1434,7 @@
     <RigidElem>
       <ChildName>RightRingIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1460,7 +1460,7 @@
     <RigidElem>
       <ChildName>RightRingDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1486,7 +1486,7 @@
     <RigidElem>
       <ChildName>RightRingDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1512,7 +1512,7 @@
     <RigidElem>
       <ChildName>RightLittleIntermediate_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1538,7 +1538,7 @@
     <RigidElem>
       <ChildName>RightLittleDistal_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1564,7 +1564,7 @@
     <RigidElem>
       <ChildName>RightLittleDistal_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1590,7 +1590,7 @@
     <RigidElem>
       <ChildName>LeftKnee_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1616,7 +1616,7 @@
     <RigidElem>
       <ChildName>LeftAnkle_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1642,7 +1642,7 @@
     <RigidElem>
       <ChildName>LeftAnkle_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1668,7 +1668,7 @@
     <RigidElem>
       <ChildName>RightKnee_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1694,7 +1694,7 @@
     <RigidElem>
       <ChildName>RightAnkle_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
@@ -1720,7 +1720,7 @@
     <RigidElem>
       <ChildName>RightAnkle_end_Joint</ChildName>
       <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
+      <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>2</LK>
       <CUSLK>2000.000000</CUSLK>
