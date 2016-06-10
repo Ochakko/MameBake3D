@@ -341,7 +341,7 @@ public:
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
 	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
 	D3DXMATRIX CalcSymXMat(int srcmotid, double srcframe);
-	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe);
+	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	D3DXMATRIX GetWorldMat(int srcmotid, double srcframe);
 	CQuaternion CalcSymRotQ(int srcmotid, double srcframe);
 

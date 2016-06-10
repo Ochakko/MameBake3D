@@ -41,6 +41,15 @@ class CMQOMaterial;
 #define MAXRIGNUM	10
 #define MAXRIGELEMNUM	5
 
+enum
+{
+	//for bit mask operation
+	SYMROOTBONE_SAMEORG = 0,
+	SYMROOTBONE_SYMDIR = 1,
+	SYMROOTBONE_SYMPOS = 2
+};
+
+
 enum tag_befeulkind
 {
 	BEFEUL_ZERO,

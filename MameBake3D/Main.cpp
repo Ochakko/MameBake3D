@@ -845,9 +845,9 @@ static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
 
 
-static int InsertCopyMP( CBone* curbone, double curframe );
-static int InsertSymMP( CBone* curbone, double curframe );
-static void InsertSymMPReq(CBone* curbone, double curframe);
+static int InsertCopyMP(CBone* curbone, double curframe);
+static int InsertSymMP(CBone* curbone, double curframe, int symrootmode);
+static void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode);
 
 static int InitMpFromTool();
 static int InitMP( CBone* curbone, double curframe );
@@ -881,6 +881,7 @@ static int AddEditRangeHistory();
 static int RollBackEditRange(int prevrangeFlag, int nextrangeFlag);
 static int RecalcBoneAxisZ(CBone* srcbone);
 
+static int GetSymRootMode();
 
 int RegistKey()
 {
@@ -1670,22 +1671,22 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	return 0;
 }
 
-void InsertSymMPReq(CBone* curbone, double curframe)
+void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode)
 {
 	if (curbone){
-		InsertSymMP(curbone, curframe);
+		InsertSymMP(curbone, curframe, symrootmode);
 
 		if (curbone->GetChild()){
-			InsertSymMPReq(curbone->GetChild(), curframe);
+			InsertSymMPReq(curbone->GetChild(), curframe, symrootmode);
 		}
 		if (curbone->GetBrother()){
-			InsertSymMPReq(curbone->GetBrother(), curframe);
+			InsertSymMPReq(curbone->GetBrother(), curframe, symrootmode);
 		}
 	}
 }
-int InsertSymMP( CBone* curbone, double curframe )
+int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
 {
-	D3DXMATRIX symmat = curbone->CalcSymXMat2(s_model->GetCurMotInfo()->motid, curframe);
+	D3DXMATRIX symmat = curbone->CalcSymXMat2(s_model->GetCurMotInfo()->motid, curframe, symrootmode);
 
 	CPELEM cpelem;
 	ZeroMemory(&cpelem, sizeof(CPELEM));
@@ -9271,6 +9272,8 @@ int OnFrameToolWnd()
 		s_undersymcopyFlag = true;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+			int symrootmode = GetSymRootMode();
+
 			s_copymotmap.clear();
 			s_copyKeyInfoList.clear();
 			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
@@ -9278,7 +9281,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
-				InsertSymMPReq(s_model->GetTopBone(), curframe);
+				InsertSymMPReq(s_model->GetTopBone(), curframe, symrootmode);
 			}
 		}
 	}
@@ -9435,26 +9438,13 @@ int OnFrameToolWnd()
 					if (newmp){
 
 						if (noparflag == 1){
-							CMotionPoint* notmvmp = 0;
-							notmvmp = srcbone->GetMotionPoint(curmotid, newframe);
+							int setmatflag1 = 1;
+							CQuaternion dummyq;
+							D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+							D3DXMATRIX setmat = srcbone->GetParent()->GetWorldMat(curmotid, newframe);
 
-							D3DXVECTOR3 orgpos;
-							D3DXVec3TransformCoord(&orgpos, &(srcbone->GetJointFPos()), &(notmvmp->GetBefWorldMat()));
+							srcbone->RotBoneQReq(0, curmotid, newframe, dummyq, 0, dummytra, setmatflag1, &setmat);
 
-							D3DXVECTOR3 newpos;
-							D3DXVec3TransformCoord(&newpos, &(srcbone->GetJointFPos()), &(notmvmp->GetWorldMat()));
-
-							D3DXVECTOR3 diffpos;
-							diffpos = orgpos - newpos;
-
-							CEditRange tmper;
-							KeyInfo tmpki;
-							tmpki.time = newframe;
-							list<KeyInfo> tmplist;
-							tmplist.push_back(tmpki);
-							tmper.SetRange(tmplist, newframe);
-							int onlyoneflag1 = 1;
-							s_model->FKBoneTra(onlyoneflag1, &tmper, srcbone->GetBoneNo(), diffpos);
 						}
 
 						//オイラー角初期化
@@ -11554,4 +11544,87 @@ int ToggleRig()
 		s_pickinfo.buttonflag = 0;
 	}
 	return 0;
+}
+
+int GetSymRootMode()
+{
+	/*
+	enum
+	{
+		//for bit mask operation
+		SYMROOTBONE_SAMEORG = 0,
+		SYMROOTBONE_SYMDIR = 1,
+		SYMROOTBONE_SYMPOS = 2
+	};
+	*/
+
+	int modelnum = (int)s_modelindex.size();
+	if (modelnum <= 0){
+		return 0;
+	}
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu){
+		return 0;
+	}
+	int ret;
+	ret = rmenu->Create(s_mainwnd);
+	if (ret){
+		return 0;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+
+
+	int setmenuid;
+	setmenuid = ID_RMENU_0;
+	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンはコピー元と同じ");
+	setmenuid = ID_RMENU_0 + 1;
+	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンは位置と向き共対称");
+	setmenuid = ID_RMENU_0 + 2;
+	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンは向きだけ対称");
+	setmenuid = ID_RMENU_0 + 3;
+	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンは位置だけ対称");
+
+
+	POINT pt;
+	GetCursorPos(&pt);
+
+	int retmode = 0;
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+	if ((menuid >= ID_RMENU_0) && (menuid <= (ID_RMENU_0 + 3))){
+		switch(menuid){
+		case (ID_RMENU_0) :
+			retmode = SYMROOTBONE_SAMEORG;
+			break;
+		case (ID_RMENU_0 + 1) :
+			retmode = SYMROOTBONE_SYMDIR | SYMROOTBONE_SYMPOS;
+			break;
+		case (ID_RMENU_0 + 2) :
+			retmode = SYMROOTBONE_SYMDIR;
+			break;
+		case (ID_RMENU_0 + 3) :
+			retmode = SYMROOTBONE_SYMPOS;
+			break;
+		default:
+			retmode = SYMROOTBONE_SYMDIR | SYMROOTBONE_SYMPOS;
+			break;
+		}
+	}
+
+	rmenu->Destroy();
+	delete rmenu;
+
+
+	return retmode;
 }
