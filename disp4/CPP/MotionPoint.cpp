@@ -19,6 +19,7 @@ CMotionPoint::~CMotionPoint()
 
 int CMotionPoint::InitParams()
 {
+	m_localmatflag = 0;
 	m_undovalidflag = 0;
 	m_setbtflag = 0;
 	m_frame = 0.0;
@@ -211,6 +212,7 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	SetWorldMat(srcmp->m_worldmat);
 	m_localeul = srcmp->m_localeul;
 	m_absmat = srcmp->m_absmat;
+	m_localmatflag = srcmp->m_localmatflag;
 
 	return 0;
 }
@@ -243,6 +245,7 @@ int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate )
 
 CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 {
+	m_localmatflag = mp.m_localmatflag;
 	m_setbtflag = mp.m_setbtflag;
 	m_frame = mp.m_frame;
 	//m_eul = mp.m_eul;
@@ -251,7 +254,10 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	m_q = mp.m_q;
 	m_localeul = mp.m_localeul;
 
-	SetWorldMat(mp.m_worldmat);
+	//SetWorldMat(mp.m_worldmat);
+	m_worldmat = mp.m_worldmat;
+	m_befworldmat = mp.m_befworldmat;//!!!!!!!!!!
+
 	m_btmat = mp.m_btmat;
 
 	m_prev = mp.m_prev;

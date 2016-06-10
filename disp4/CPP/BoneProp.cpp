@@ -265,9 +265,9 @@ int IsInitRot(D3DXMATRIX srcmat)
 	d22 = srcmat._22 - 1.0f;
 	d23 = srcmat._23 - 0.0f;
 
-	d31 = srcmat._11 - 0.0f;
-	d32 = srcmat._12 - 0.0f;
-	d33 = srcmat._13 - 1.0f;
+	d31 = srcmat._31 - 0.0f;
+	d32 = srcmat._32 - 0.0f;
+	d33 = srcmat._33 - 1.0f;
 
 	float dmin = 0.000001f;
 

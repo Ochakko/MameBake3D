@@ -473,76 +473,29 @@ int CQuaternion::transpose( CQuaternion* dstq )
 	return 0;
 }
 
-D3DXMATRIX CQuaternion::CalcSymX( D3DXMATRIX srcmat )
+D3DXMATRIX CQuaternion::CalcSymX2()
 {
-	int deginvflag = 1;
+	CQuaternion tmpq;
+	tmpq = *this;
+	tmpq.x *= -1.0f;
+	//tmpq.y *= -1.0f;
+	//tmpq.z *= -1.0f;
+	tmpq.w *= -1.0f;
 
-	D3DXMATRIX mat0 = srcmat;
-	mat0._41 = 0.0f;
-	mat0._42 = 0.0f;
-	mat0._43 = 0.0f;
-
-	D3DXQUATERNION qx0;
-	D3DXQuaternionRotationMatrix( &qx0, &mat0 );
-
-	D3DXVECTOR3 symmaxis;
-	float symmangle;
-	D3DXQuaternionToAxisAngle( &qx0, &symmaxis, &symmangle );		
-	if( deginvflag != 0 ){
-		symmangle *= -1.0f;//!!!
-	}
-
-	if( (symmaxis.x == 0.0f) && (symmaxis.y == 0.0f) && (symmaxis.z == 0.0f) ){
-		return mat0;//!!!!!!!!!!!!
-	}
-	if( (symmangle >= -100.0f) && (symmangle <= 100.0f) ){
-		symmaxis.x *= -1.0f;
-
-		D3DXQUATERNION newxq;
-		D3DXQuaternionRotationAxis( &newxq, &symmaxis, symmangle );
-
-		w = newxq.w;
-		x = newxq.x;
-		y = newxq.y;
-		z = newxq.z;
-
-		return MakeRotMatX();
-	}else{
-		//symmangleが非数値の時のフォロー
-		return mat0;
-	}
+	return tmpq.MakeRotMatX();
 }
-
 
 
 int CQuaternion::CalcSym( CQuaternion* dstq )
 {
-	int deginvflag = 1;
+	CQuaternion tmpq;
+	tmpq = *this;
+	tmpq.x *= -1.0f;
+	//tmpq.y *= -1.0f;
+	//tmpq.z *= -1.0f;
+	tmpq.w *= -1.0f;
 
-	D3DXQUATERNION symmxq;
-	symmxq.w = w;
-	symmxq.x = x;
-	symmxq.y = y;
-	symmxq.z = z;
-
-	D3DXVECTOR3 symmaxis;
-	float symmangle;
-
-	D3DXQuaternionToAxisAngle( &symmxq, &symmaxis, &symmangle );		
-
-	if( deginvflag != 0 ){
-		symmangle *= -1.0f;//!!!
-	}
-
-	symmaxis.x *= -1.0f;
-
-	D3DXQUATERNION newxq;
-	D3DXQuaternionRotationAxis( &newxq, &symmaxis, symmangle );
-
-	dstq->w = newxq.w;
-	dstq->x = newxq.x;
-	dstq->y = newxq.y;
-	dstq->z = newxq.z;
+	*dstq = tmpq;
 
 	return 0;
 }

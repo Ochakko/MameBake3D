@@ -66,7 +66,8 @@ public:
 	int transpose( CQuaternion* dstq );
 
 	int CalcSym( CQuaternion* dstq );
-	D3DXMATRIX CalcSymX( D3DXMATRIX srcmat );
+	D3DXMATRIX CalcSymX2();
+
 
 	int Q2Eul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );
 	int Q2EulBt( D3DXVECTOR3* reteul );

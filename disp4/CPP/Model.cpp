@@ -1611,10 +1611,12 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 		}
 	}
 
-	if( findflag == 0 ){
-		*dstboneno = srcboneno;
-		*existptr = 0;
-	}else{
+	int setflag = 0;
+	//if( findflag == 0 ){
+	//	*dstboneno = srcboneno;
+	//	*existptr = 0;
+	//}else{
+	if (findflag != 0){
 		CBone* dstbone = 0;
 		map<int, CBone*>::iterator itrbone;
 		for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
@@ -1627,14 +1629,78 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 		if( dstbone ){
 			*dstboneno = dstbone->GetBoneNo();
 			*existptr = 1;
-		}else{
+			setflag = 1;
+		}
+		//else{
+		//	*dstboneno = srcboneno;
+		//	*existptr = 0;
+		//}
+	}
+
+	if (setflag == 0){
+		CBone* symposbone = GetSymPosBone(srcbone);
+		if (symposbone){
+			*dstboneno = symposbone->GetBoneNo();
+			*existptr = 1;
+		}
+		else{
 			*dstboneno = srcboneno;
 			*existptr = 0;
 		}
 	}
 
+
 	return 0;
 }
+
+CBone* CModel::GetSymPosBone(CBone* srcbone)
+{
+	if (!srcbone){
+		return 0;
+	}
+
+	CBone* findbone = 0;
+	D3DXVECTOR3 srcpos = srcbone->GetJointFPos();
+	srcpos.x *= -1.0f;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	float mindist = FLT_MAX;
+	float matchdist;
+
+	//MODELBOUND mb;
+	//GetModelBound(&mb);
+	//matchdist = mb.r * 0.001f;
+	matchdist = 0.30f;
+
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
+		CBone* curbone = itrbone->second;
+		if (curbone){
+			D3DXVECTOR3 curpos = curbone->GetJointFPos();
+			D3DXVECTOR3 diffpos = curpos - srcpos;
+			float curdist = D3DXVec3Length(&diffpos);
+			if ((curdist <= mindist) && (curdist <= matchdist) && (curbone != srcbone)){
+				//同一位置のボーンが存在する場合があるので、親もチェックする。
+				CBone* srcparbone = srcbone->GetParent();
+				CBone* curparbone = curbone->GetParent();
+				if (srcparbone && curparbone){
+					D3DXVECTOR3 srcparpos = srcparbone->GetJointFPos();
+					srcparpos.x *= -1.0f;
+					D3DXVECTOR3 curparpos = curparbone->GetJointFPos();
+					D3DXVECTOR3 pardiffpos = srcparpos - curparpos;
+					float pardist = D3DXVec3Length(&pardiffpos);
+					if (pardist <= matchdist)
+					{
+						findbone = curbone;
+						mindist = curdist;
+					}
+				}
+			}
+		}
+	}
+
+	return findbone;
+}
+
 
 int CModel::PickBone( PICKINFO* pickinfo )
 {
@@ -5307,7 +5373,7 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 					list<KeyInfo> tmplist;
 					tmplist.push_back( tmpki );
 					tmper.SetRange( tmplist, curframe );
-					FKBoneTra( &tmper, lastpar->GetBoneNo(), diffpos );
+					FKBoneTra( 0, &tmper, lastpar->GetBoneNo(), diffpos );
 				}
 			}
 			keyno++;
@@ -5903,7 +5969,7 @@ int CModel::FKRotate(int reqflag, CBone* bvhbone, int traflag, D3DXVECTOR3 traan
 	return curbone->GetBoneNo();
 }
 
-int CModel::FKBoneTra( CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
+int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
 {
 
 	if( srcboneno < 0 ){

@@ -339,7 +339,11 @@ public:
 	D3DXMATRIX CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	int SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
-	int SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
+	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
+	D3DXMATRIX CalcSymXMat(int srcmotid, double srcframe);
+	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe);
+	D3DXMATRIX GetWorldMat(int srcmotid, double srcframe);
+	CQuaternion CalcSymRotQ(int srcmotid, double srcframe);
 
 private:
 
@@ -759,6 +763,15 @@ public: //accesser
 	CUSTOMRIG GetCustomRig(int rigno);
 	void SetCustomRig(CUSTOMRIG srccr);
 
+	D3DXMATRIX GetTmpSymMat()
+	{
+		return m_tmpsymmat;
+	};
+	void SetTmpSymMat(D3DXMATRIX srcmat)
+	{
+		m_tmpsymmat = srcmat;
+	};
+
 private:
 	int m_type;
 	int m_selectflag;
@@ -803,6 +816,8 @@ private:
 	D3DXMATRIX m_invinitmat;
 	D3DXMATRIX m_tmpmat;//ˆêŽžŽg—p–Ú“I
 	CQuaternion m_tmpq;
+	D3DXMATRIX m_tmpsymmat;
+
 
 	D3DXVECTOR3 m_firstframebonepos;
 

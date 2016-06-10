@@ -91,7 +91,14 @@ public:
 	{
 		m_undovalidflag = srcflag;
 	};
-
+	int GetLocalMatFlag()
+	{
+		return m_localmatflag;
+	};
+	void SetLocalMatFlag(int srcflag)
+	{
+		m_localmatflag = srcflag;
+	};
 private:
 	int DestroyObjs();
 
@@ -99,6 +106,7 @@ private:
 	int m_undovalidflag;
 	int m_setbtflag;
 	double m_frame;
+	int m_localmatflag;
 	//D3DXVECTOR3 m_eul;
 	D3DXVECTOR3 m_tra;
 	D3DXVECTOR3 m_firstframetra;

@@ -52,9 +52,9 @@ int CFBXBone::DestroyObjs()
 int CFBXBone::AddChild( CFBXBone* childptr )
 {
 
-	childptr->m_parent = this;
 	if( !m_child ){
 		m_child = childptr;
+		m_child->m_parent = this;
 	}else{
 		CFBXBone* broptr = m_child;
 		if (broptr){
@@ -62,6 +62,7 @@ int CFBXBone::AddChild( CFBXBone* childptr )
 				broptr = broptr->m_brother;
 			}
 			broptr->m_brother = childptr;
+			broptr->m_brother->m_parent = this;
 		}
 	}
 

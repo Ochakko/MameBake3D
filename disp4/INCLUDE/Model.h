@@ -368,7 +368,7 @@ public:
  * @param (D3DXVECTOR3 addtra) IN 移動分のベクトル。
  * @return 成功したら０。
  */
-	int FKBoneTra( CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra );
+	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra );
 
 /**
  * @fn
@@ -549,6 +549,8 @@ public:
 	int RigControl(CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();
+
+	CBone* GetSymPosBone(CBone* srcbone);
 
 private:
 	int InitParams();
