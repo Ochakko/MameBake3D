@@ -8114,56 +8114,66 @@ int OnTimeLineWheel()
 	DbgOut(L"OnTimeLineWheel Called\r\n");
 
 	if (s_owpLTimeline){
-		if (s_underselectingframe == 1){
-			//マウス操作 MButton and Wheel
-			int delta;
-			double delta2;
-			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
-			if (g_controlkey == false){
-				delta2 = (double)delta / 20.0;
-			}
-			else{
-				delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
-			}
-			if (delta != 0){
-				s_buttonselectend += delta2;
-				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
+		if ((s_underselectingframe == 1) || (s_underselectingframe == 2)){
+			int delta = 0;
+			double delta2 = 0;
 
-				OnTimeLineButtonSelect(0);
-			}
-		}
-		else if (s_underselectingframe == 2){
-			//キー操作　Ctrl+Shift and A, D
-			int delta;
+			int adkeyflag = 0;
+
+			//A D key
 			if (g_keybuf['A'] & 0x80){
+				adkeyflag = 1;
 				if ((s_akeycnt % 5) == 0){
-					delta = -1;
+					if (g_controlkey == false){
+						delta2 = -5;
+					}
+					else{
+						delta2 = -1;
+					}
 				}
 				else{
-					delta = 0;
+					delta2 = 0;
 				}
 			}
 			else if (g_keybuf['D'] & 0x80){
+				adkeyflag = 1;
 				if ((s_dkeycnt % 5) == 0){
-					delta = 1;
+					if (g_controlkey == false){
+						delta2 = 5;
+					}
+					else{
+						delta2 = 1;
+					}
 				}
 				else{
-					delta = 0;
+					delta2 = 0;
 				}
 			}
-			else{
-				delta = 0;
-			}
-			if (delta != 0){
-				double delta2;
+
+			if (adkeyflag == 0){//timelineのwheeldeltaはホイールを回していない間は更新されずに値が残るため、ホイールだけを扱うこと(キー処理中ではないこと)を明示的に確認する。
+				//マウス操作 MButton and Wheel, A D key
+				delta = (int)(s_owpLTimeline->getMouseWheelDelta());
 				if (g_controlkey == false){
-					delta2 = (double)delta * 5.0;
+					delta2 = (double)delta / 20.0;
 				}
 				else{
-					delta2 = (double)delta;
+					//delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
+					if (delta > 0){
+						delta2 = 1;
+					}
+					else if (delta < 0){
+						delta2 = -1;
+					}
+					else{
+						delta2 = 0;
+					}
 				}
+			}
+
+			//timeline
+			if (delta2 != 0.0){
 				s_buttonselectend += delta2;
-				DbgOut(L"OnTimeLineWheel 2 : start %lf, end %lf, delta %d\r\n", s_buttonselectstart, s_buttonselectend, delta);
+				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %lf\r\n", s_buttonselectstart, s_buttonselectend, delta2);
 
 				OnTimeLineButtonSelect(0);
 			}
@@ -8171,16 +8181,25 @@ int OnTimeLineWheel()
 		else{
 			DbgOut(L"OnTimeLineWheel 1 : start %lf, end %lf\r\n", s_buttonselectstart, s_buttonselectend);
 
-			int delta;
-			double delta2;
+			int delta = 0;
+			double delta2 = 0;
 			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
 			if (g_controlkey == false){
 				delta2 = (double)delta / 20.0;
 			}
 			else{
-				delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
+				//delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
+				if (delta > 0){
+					delta2 = 1;
+				}
+				else if (delta < 0){
+					delta2 = -1;
+				}
+				else{
+					delta2 = 0;
+				}
 			}
-			if (delta != 0){
+			if (delta2 != 0.0){
 				double curframe = s_owpLTimeline->getCurrentTime();
 				double newframe = curframe + delta2;
 				OnTimeLineCursor(2, newframe);
