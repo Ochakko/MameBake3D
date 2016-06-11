@@ -340,10 +340,13 @@ public:
 	int SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
 	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
+	D3DXMATRIX GetWorldMat(int srcmotid, double srcframe);
+	D3DXVECTOR3 CalcLocalTraAnim(int srcmotid, double srcframe);
+	D3DXMATRIX CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);
+	D3DXMATRIX CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe);
 	D3DXMATRIX CalcSymXMat(int srcmotid, double srcframe);
 	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
-	D3DXMATRIX GetWorldMat(int srcmotid, double srcframe);
-	CQuaternion CalcSymRotQ(int srcmotid, double srcframe);
+	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
 private:
 

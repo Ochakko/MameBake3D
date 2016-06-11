@@ -2230,22 +2230,6 @@ D3DXMATRIX CBone::CalcSymXMat(int srcmotid, double srcframe)
 
 D3DXMATRIX CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 {
-	D3DXMATRIX directsetmat;
-	D3DXMatrixIdentity(&directsetmat);
-
-	D3DXMATRIX symrotmat;
-	D3DXVECTOR3 bonepos;
-	D3DXMATRIX befrotmat, aftrotmat;
-	bonepos = GetJointFPos();
-	D3DXMatrixIdentity(&befrotmat);
-	D3DXMatrixIdentity(&aftrotmat);
-	befrotmat._41 = -bonepos.x;
-	befrotmat._42 = -bonepos.y;
-	befrotmat._43 = -bonepos.z;
-	aftrotmat._41 = bonepos.x;
-	aftrotmat._42 = bonepos.y;
-	aftrotmat._43 = bonepos.z;
-
 	/*
 	enum
 	{
@@ -2256,105 +2240,50 @@ D3DXMATRIX CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 	};
 	*/
 
-	int symboneno = 0;
-	int existflag = 0;
-	m_parmodel->GetSymBoneNo(GetBoneNo(), &symboneno, &existflag);
-	if (symboneno >= 0){
-		CBone* symbone = m_parmodel->GetBoneByID(symboneno);
-		_ASSERT(symbone);
-		if (symbone){
+	D3DXMATRIX directsetmat;
+	D3DXMatrixIdentity(&directsetmat);
 
-			//if (symbone == this){
-			//	WCHAR dbgmes[1024];
-			//	swprintf_s(dbgmes, 1024, L"CalcSymRotQ : frame %lf : samebone : this[%s]--sym[%s]", srcframe, GetWBoneName(), symbone->GetWBoneName());
-			//	::MessageBox(NULL, dbgmes, L"check", MB_OK);
-			//}
-
-			if (GetParent()){
-				CMotionPoint symlocalmp;
-				symbone->CalcLocalInfo(srcmotid, srcframe, &symlocalmp);
-				symrotmat = symlocalmp.GetQ().CalcSymX2();
-			}
-			else{
-				//root bone
-				if (symrootmode == SYMROOTBONE_SAMEORG){
-					directsetmat = GetWorldMat(srcmotid, srcframe);
-					return directsetmat;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				}else if (symrootmode & SYMROOTBONE_SYMDIR){
-					CMotionPoint symlocalmp;
-					symbone->CalcLocalInfo(srcmotid, srcframe, &symlocalmp);
-					symrotmat = symlocalmp.GetQ().CalcSymX2();
-				}
-				else{
-					CMotionPoint curlocalmp;
-					CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
-					symrotmat = curlocalmp.GetQ().MakeRotMatX();
-				}
-			}
-			symrotmat._41 = 0.0f;
-			symrotmat._42 = 0.0f;
-			symrotmat._43 = 0.0f;
-
-			directsetmat = befrotmat * symrotmat * aftrotmat;
-
-		////tra anim
-			D3DXMATRIX curmat;
-			curmat = GetWorldMat(srcmotid, srcframe);
-			CMotionPoint curlocalmp;
-			CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
-			D3DXMATRIX curlocalrotmat;
-			curlocalrotmat = curlocalmp.GetQ().MakeRotMatX();
-			D3DXMATRIX curglobalrotmat = befrotmat * curlocalrotmat * aftrotmat;
-			if (GetParent()){
-				curglobalrotmat = curglobalrotmat * GetParent()->GetWorldMat(srcmotid, srcframe);
-			}
-			D3DXVECTOR3 currotpos, curpos;
-			D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &curmat);
-			D3DXVec3TransformCoord(&currotpos, &(GetJointFPos()), &curglobalrotmat);
-			D3DXVECTOR3 curanimtra = curpos - currotpos;
-
-			if (GetParent()){
-				directsetmat._41 += -curanimtra.x;//inv signe
-				directsetmat._42 += curanimtra.y;
-				directsetmat._43 += curanimtra.z;
-			}
-			else{
-				//root bone
-				if (symrootmode & SYMROOTBONE_SYMPOS){
-					directsetmat._41 += -curanimtra.x;//inv signe
-					directsetmat._42 += curanimtra.y;
-					directsetmat._43 += curanimtra.z;
-				}
-				else{
-					directsetmat._41 += curanimtra.x;//same signe
-					directsetmat._42 += curanimtra.y;
-					directsetmat._43 += curanimtra.z;
-				}
-			}
-
-
-			return directsetmat;
-		}
-		else{
-			CMotionPoint curlocalmp;
-			CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
-			symrotmat = curlocalmp.GetQ().MakeRotMatX();
-			directsetmat = befrotmat * symrotmat * aftrotmat;
-			_ASSERT(0);
-
-			return directsetmat;
-		}
+	int rotcenterflag1 = 1;
+	if (GetParent()){
+		directsetmat = CalcLocalSymRotMat(rotcenterflag1, srcmotid, srcframe);
 	}
 	else{
-		CMotionPoint curlocalmp;
-		CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
-		symrotmat = curlocalmp.GetQ().MakeRotMatX();
-		directsetmat = befrotmat * symrotmat * aftrotmat;
-		_ASSERT(0);
-
-		return directsetmat;
-
+		//root bone
+		if (symrootmode == SYMROOTBONE_SAMEORG){
+			directsetmat = GetWorldMat(srcmotid, srcframe);
+			return directsetmat;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		}
+		else if(symrootmode & SYMROOTBONE_SYMDIR){
+			directsetmat = CalcLocalSymRotMat(rotcenterflag1, srcmotid, srcframe);
+		}
+		else{
+			directsetmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+		}
 	}
+
+////tra anim
+	D3DXVECTOR3 curanimtra = CalcLocalTraAnim(srcmotid, srcframe);
+
+	if (GetParent()){
+		directsetmat._41 += -curanimtra.x;//inv signe
+		directsetmat._42 += curanimtra.y;
+		directsetmat._43 += curanimtra.z;
+	}
+	else{
+		//root bone
+		if (symrootmode & SYMROOTBONE_SYMPOS){
+			directsetmat._41 += -curanimtra.x;//inv signe
+			directsetmat._42 += curanimtra.y;
+			directsetmat._43 += curanimtra.z;
+		}
+		else{
+			directsetmat._41 += curanimtra.x;//same signe
+			directsetmat._42 += curanimtra.y;
+			directsetmat._43 += curanimtra.z;
+		}
+	}
+
+	return directsetmat;
 }
 
 
@@ -2368,4 +2297,139 @@ D3DXMATRIX CBone::GetWorldMat(int srcmotid, double srcframe)
 		curmat = curmp->GetWorldMat();
 	}
 	return curmat;
+}
+
+D3DXMATRIX CBone::CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe)
+{
+	D3DXMATRIX curmat;
+	curmat = GetWorldMat(srcmotid, srcframe);
+	CMotionPoint curlocalmp;
+	CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
+	D3DXMATRIX currotmat;
+	currotmat = curlocalmp.GetQ().MakeRotMatX();
+
+	currotmat._41 = 0.0f;
+	currotmat._42 = 0.0f;
+	currotmat._43 = 0.0f;
+
+	if (rotcenterflag == 1){
+		D3DXMATRIX befrotmat, aftrotmat;
+		D3DXMatrixIdentity(&befrotmat);
+		D3DXMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+		D3DXMatrixIdentity(&aftrotmat);
+		D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+		currotmat = befrotmat * currotmat * aftrotmat;
+	}
+
+	return currotmat;
+}
+
+
+D3DXMATRIX CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe)
+{
+	D3DXMATRIX retmat;
+
+	int symboneno = 0;
+	int existflag = 0;
+	m_parmodel->GetSymBoneNo(GetBoneNo(), &symboneno, &existflag);
+	if (symboneno >= 0){
+		CBone* symbone = m_parmodel->GetBoneByID(symboneno);
+		_ASSERT(symbone);
+		if (symbone){
+			//if (symbone == this){
+			//	WCHAR dbgmes[1024];
+			//	swprintf_s(dbgmes, 1024, L"CalcLocalSymRotMat : frame %lf : samebone : this[%s]--sym[%s]", srcframe, GetWBoneName(), symbone->GetWBoneName());
+			//	::MessageBox(NULL, dbgmes, L"check", MB_OK);
+			//}
+
+			CMotionPoint symlocalmp;
+			symbone->CalcLocalInfo(srcmotid, srcframe, &symlocalmp);
+			retmat = symlocalmp.GetQ().CalcSymX2();
+
+			retmat._41 = 0.0f;
+			retmat._42 = 0.0f;
+			retmat._43 = 0.0f;
+
+			if (rotcenterflag == 1){
+				D3DXMATRIX befrotmat, aftrotmat;
+				D3DXMatrixIdentity(&befrotmat);
+				D3DXMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+				D3DXMatrixIdentity(&aftrotmat);
+				D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+				retmat = befrotmat * retmat * aftrotmat;
+			}
+		}
+		else{
+			retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
+			_ASSERT(0);
+		}
+	}
+	else{
+		retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
+		_ASSERT(0);
+	}
+
+	return retmat;
+}
+
+D3DXVECTOR3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
+{
+
+	D3DXMATRIX curmat;
+	curmat = GetWorldMat(srcmotid, srcframe);
+
+	int rotcenterflag1 = 1;
+	D3DXMATRIX curglobalrotmat;
+	curglobalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+	if (GetParent()){
+		curglobalrotmat = curglobalrotmat * GetParent()->GetWorldMat(srcmotid, srcframe);
+	}
+
+	D3DXVECTOR3 currotpos, curpos;
+	D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &curmat);
+	D3DXVec3TransformCoord(&currotpos, &(GetJointFPos()), &curglobalrotmat);
+	D3DXVECTOR3 curanimtra = curpos - currotpos;
+
+	return curanimtra;
+}
+
+
+int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
+{
+	CMotionPoint* newmp = 0;
+	newmp = GetMotionPoint(srcmotid, srcframe);
+	if (newmp){
+		if (srcmp.GetLocalMatFlag() == 0){
+			newmp->SetWorldMat(srcmp.GetWorldMat());//anglelimitñ≥Çµ
+		}
+		else{
+			//sym copyÇÃèÍçá
+			int setmatflag1 = 1;
+			CQuaternion dummyq;
+			D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+			D3DXMATRIX setmat = srcmp.GetWorldMat();
+
+			CBone* parbone = GetParent();
+			if (parbone){
+				CMotionPoint* parmp = parbone->GetMotionPoint(srcmotid, srcframe);
+				if (parmp){
+					setmat = setmat * parmp->GetWorldMat();
+				}
+			}
+
+			RotBoneQReq(0, srcmotid, srcframe, dummyq, 0, dummytra, setmatflag1, &setmat);
+
+		}
+
+		//ÉIÉCÉâÅ[äpèâä˙âª
+		D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		int paraxsiflag = 1;
+		int isfirstbone = 0;
+		cureul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		SetLocalEul(srcmotid, srcframe, cureul);
+
+	}
+
+	return 0;
 }

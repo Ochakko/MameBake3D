@@ -9345,7 +9345,6 @@ int OnFrameToolWnd()
 				_ASSERT(srcbone);
 
 				int docopyflag = 0;
-				int noparflag = 1;
 				if (cpnum != 0){
 					//selected bone at selbonedlg
 					int cpno;
@@ -9353,65 +9352,21 @@ int OnFrameToolWnd()
 						CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
 						if (chkbone == srcbone){
 							docopyflag = 1;
-
-							CBone* parbone = srcbone->GetParent();
-							if (parbone){
-								int cpno2;
-								for (cpno2 = 0; cpno2 < cpnum; cpno2++){
-									CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
-									if (chkparbone == parbone){
-										noparflag = 0;
-									}
-								}
-							}
 							break;
 						}
 					}
 				}
 				else{
 					docopyflag = 1;// all bone
-					noparflag = 0;
 				}
 
 				if (srcbone && (docopyflag == 1)){
-					CMotionPoint srcmp = itrcp->mp;
-					CMotionPoint* newmp = 0;
 					_ASSERT(s_model->GetCurMotInfo());
+					CMotionPoint srcmp = itrcp->mp;
 					double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + pastestartframe + 0.1));//!!!!!!!!!!!!!!!!!!
 					int curmotid = s_model->GetCurMotInfo()->motid;
-					newmp = srcbone->GetMotionPoint(curmotid, newframe);
-					if (newmp){
-						if (srcmp.GetLocalMatFlag() == 0){
-							newmp->SetWorldMat(srcmp.GetWorldMat());//anglelimit–³‚µ
-						}
-						else{
-							//sym copy‚Ìê‡
-							int setmatflag1 = 1;
-							CQuaternion dummyq;
-							D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
-							D3DXMATRIX setmat = srcmp.GetWorldMat();
-
-							CBone* parbone = srcbone->GetParent();
-							if (parbone){
-								CMotionPoint* parmp = parbone->GetMotionPoint(curmotid, newframe);
-								if (parmp){
-									setmat = setmat * parmp->GetWorldMat();
-								}
-							}
-
-							srcbone->RotBoneQReq(0, curmotid, newframe, dummyq, 0, dummytra, setmatflag1, &setmat);
-
-						}
-
-						//ƒIƒCƒ‰[Šp‰Šú‰»
-						D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-						int paraxsiflag = 1;
-						int isfirstbone = 0;
-						cureul = srcbone->CalcLocalEulZXY(paraxsiflag, curmotid, newframe, BEFEUL_ZERO, isfirstbone);
-						srcbone->SetLocalEul(curmotid, newframe, cureul);
-
-					}
+					srcbone->PasteMotionPoint(curmotid, newframe, srcmp);
 				}
 			}
 
