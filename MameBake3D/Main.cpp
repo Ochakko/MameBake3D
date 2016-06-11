@@ -160,7 +160,7 @@ float g_initcamdist = 50.0f;
 static float s_projnear = 0.001f;
 static float s_fAspectRatio = 1.0f;
 static float s_cammvstep = 100.0f;
-static int s_editmotionflag = 0;
+static int s_editmotionflag = -1;
 
 static WCHAR s_strcurrent[256] = L"Move To Current Frame";
 static WCHAR s_streditrange[256] = L"Drag Edit Range";
@@ -2262,6 +2262,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							else if (s_ikkind == 1){
 								D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
 								AddBoneTra2(diffvec);
+								s_editmotionflag = s_curboneno;
 							}
 						}
 						else{
@@ -2308,6 +2309,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 					else{
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						s_editmotionflag = s_curboneno;
 					}
 					s_ikcnt++;
 				}
@@ -2337,6 +2339,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 					else{
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						s_editmotionflag = s_curboneno;
 					}
 					s_ikcnt++;
 				}
@@ -2532,13 +2535,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.buttonflag = 0;
 		s_ikcnt = 0;
 
-		if( s_editmotionflag > 0 ){
+		if( s_editmotionflag >= 0 ){
 			if( s_model ){
 				CreateTimeLineMark();
 				SetLTimelineMark( s_curboneno );
 				s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
 			}
-			s_editmotionflag = 0;
+			s_editmotionflag = -1;
 		}
 
 	}else if( uMsg == WM_RBUTTONDOWN ){
