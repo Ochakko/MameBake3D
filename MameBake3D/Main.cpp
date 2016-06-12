@@ -4443,16 +4443,13 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 			curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
 			rotq = curbvhrotmp.GetQ();
 
-			if ((s_sethipstra == 0) && (srcbone == s_model->GetTopBone())){
-				CMotionPoint calctramp;
-				calctramp.CalcQandTra(bvhmat, bvhbone, hrate);
-				traanim = calctramp.GetFirstFrameTra();
-				//traanim = calctramp.GetTra() * hrate;
+			traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);
+			if (!bvhbone->GetParent()){
+				D3DXVECTOR3 bvhbonepos = bvhbone->GetJointFPos();
+				D3DXVECTOR3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
+				D3DXVECTOR3 firstdiff = firstframebonepos - bvhbonepos;
+				traanim -= firstdiff;
 			}
-			else{
-				traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-			}
-
 		}
 		else{
 			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -4460,14 +4457,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 
 		if (bvhbone){
-			//if (!bvhbone->GetParent()){
-			if ((s_sethipstra == 0) && (srcbone == s_model->GetTopBone())){
-				s_sethipstra = 1;
-				s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
-			}
-			else{
-				s_model->FKRotate(1, bvhbone, 0, traanim, srcframe, s_curboneno, rotq);
-			}
+			s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
 		}
 		else{
 			s_model->FKRotate(0, befbvhbone, 0, traanim, srcframe, s_curboneno, rotq);
