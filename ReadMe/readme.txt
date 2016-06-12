@@ -25,6 +25,10 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/06/12 その２
+	【リターゲット】 MameBake3D 【改良しました】 動画
+　　https://youtu.be/JYT5BAdj5Q4
+
 2016/06/12
 	主に移動アニメについてのソースを整理しました。
 
@@ -553,6 +557,9 @@ VCランタイムは2010を使用しています。
 
 
 /////////// 以下、説明動画
+
+【リターゲット】 MameBake3D 【改良しました】 動画
+https://youtu.be/JYT5BAdj5Q4
 
 【使い方説明】 MameBake3D 【Rig機能が付いちゃいました】
 https://youtu.be/gkqCJNsUsKE
