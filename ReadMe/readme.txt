@@ -25,6 +25,11 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/06/13 その１
+【モーション】 MameBake3D 【対称コピー】動画
+https://youtu.be/YeM43To-xCg
+
+
 2016/06/12 その２
 	【リターゲット】 MameBake3D 【改良しました】 動画
 　　https://youtu.be/JYT5BAdj5Q4
@@ -557,6 +562,8 @@ VCランタイムは2010を使用しています。
 
 
 /////////// 以下、説明動画
+【モーション】 MameBake3D 【対称コピー】動画
+https://youtu.be/YeM43To-xCg
 
 【リターゲット】 MameBake3D 【改良しました】 動画
 https://youtu.be/JYT5BAdj5Q4
