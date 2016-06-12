@@ -4450,6 +4450,8 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 				D3DXVECTOR3 firstdiff = firstframebonepos - bvhbonepos;
 				traanim -= firstdiff;
 			}
+			traanim = traanim * hrate;
+
 		}
 		else{
 			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);

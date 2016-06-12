@@ -5736,6 +5736,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					if (keyno == 0){
 						firstframe = curframe;
 					}
+
 					if (g_absikflag == 0){
 						if (g_slerpoffflag == 0){
 							double currate2;
@@ -5751,6 +5752,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							rotq.Slerp2(endq, 1.0 - currate2, &curq);
 
 							_ASSERT(0);
+
 
 							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 						}

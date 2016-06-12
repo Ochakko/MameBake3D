@@ -1106,7 +1106,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 			g_wmatDirectSetFlag = true;
 			SetWorldMat(0, srcmotid, srcframe, tmpmat);
 			g_wmatDirectSetFlag = false;
-		//}
+			//}
 		//else{
 			//parmatに変化がないときは変更しない。
 		//	curmp->SetBefWorldMat( curmp->GetWorldMat() );
@@ -1136,6 +1136,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 				D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 				D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
 				D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat * tramat;
+				//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
 				SetWorldMat(0, srcmotid, srcframe, tmpmat);
 				if (bvhbone){
 					bvhbone->SetTmpMat(tmpmat);
@@ -1947,13 +1948,11 @@ int CBone::SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid
 	D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
 	newlocalmat = befrotmat * newrotmat * aftrotmat;
 
-	CMotionPoint oldmp;
-	CalcLocalInfo(srcmotid, srcframe, &oldmp);//local!!!
-	D3DXVECTOR3 oldtravec;
-	oldtravec = oldmp.GetTra();
-	D3DXMATRIX oldtramat;
-	D3DXMatrixIdentity(&oldtramat);
-	D3DXMatrixTranslation(&oldtramat, oldtravec.x, oldtravec.y, oldtravec.z);
+	D3DXVECTOR3 traanim = CalcLocalTraAnim(srcmotid, srcframe);
+	D3DXMATRIX tramat;
+	D3DXMatrixIdentity(&tramat);
+	D3DXMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
+	newlocalmat = newlocalmat * tramat;
 
 	D3DXMATRIX newmat;
 	if (m_parent){
