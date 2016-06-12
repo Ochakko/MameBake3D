@@ -43,7 +43,7 @@ CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
 	InitParams();
 
 	m_parmodel = parmodel;
-	_ASSERT(m_parmodel);
+	//_ASSERT(m_parmodel);
 
 	map<CModel*,int>::iterator itrcnt;
 	itrcnt = g_bonecntmap.find( m_parmodel );
@@ -2433,3 +2433,43 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 
 	return 0;
 }
+
+D3DXVECTOR3 CBone::CalcFBXEul(int srcmotid, double srcframe)
+{
+	CMotionPoint tmpmp;
+	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+	int isfirstbone;
+	if (GetParent()){
+		isfirstbone = 0;
+	}
+	else{
+		isfirstbone = 1;
+	}
+
+	D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+
+	return cureul;
+
+}
+D3DXVECTOR3 CBone::CalcFBXTra(int srcmotid, double srcframe)
+{
+	CMotionPoint tmpmp;
+	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+
+	D3DXVECTOR3 orgtra;
+	CBone* parbone = GetParent();
+	if (parbone){
+		orgtra = GetJointFPos() - parbone->GetJointFPos();
+	}
+	else{
+		orgtra = GetJointFPos();
+	}
+
+	D3DXVECTOR3 fbxtra = orgtra + tmpmp.GetTra();
+	return fbxtra;
+
+}
+
+

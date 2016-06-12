@@ -348,6 +348,9 @@ public:
 	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
+	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe);
+	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
+
 private:
 
 /**
