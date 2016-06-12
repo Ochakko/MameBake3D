@@ -760,7 +760,6 @@ static int SaveGcoFile();
 static int ExportFBXFile();
 
 static void refreshTimeline( OWP_Timeline& timeline );
-static int AddBoneEul( int kind, float adddeg );
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( D3DXVECTOR3 diffvec );
 
@@ -2835,66 +2834,6 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_IKLEVEL );
 			s_iklevel = (int)PtrToUlong( pComboBox->GetSelectedData() );
 			break;
-		case IDC_FK_XP:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneEul( 0, 10.0f );
-			}
-			break;
-		case IDC_FK_XM:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneEul( 0, -10.0f );
-			}
-			break;
-		case IDC_FK_YP:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneEul( 1, 10.0f );
-			}
-			break;
-		case IDC_FK_YM:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneEul( 1, -10.0f );
-			}
-			break;
-		case IDC_FK_ZP:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneEul( 2, 10.0f );
-			}
-			break;
-		case IDC_FK_ZM:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneEul( 2, -10.0f );
-			}
-			break;
-		case IDC_T_XP:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneTra( 0, trastep );
-			}
-			break;
-		case IDC_T_XM:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneTra( 0, -trastep );
-			}
-			break;
-		case IDC_T_YP:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneTra( 1, trastep );
-			}
-			break;
-		case IDC_T_YM:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneTra( 1, -trastep );
-			}
-			break;
-		case IDC_T_ZP:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneTra( 2, trastep );
-			}
-			break;
-		case IDC_T_ZM:
-			if( s_model && (s_curboneno >= 0) ){
-				AddBoneTra( 2, -trastep );
-			}
-			break;
 		case IDC_CAMTARGET:
 			s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
 			if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
@@ -4395,10 +4334,6 @@ void refreshTimeline(OWP_Timeline& timeline){
 	}
 }
 
-int AddBoneEul( int kind, float adddeg )
-{
-	return 0;
-}
 
 int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate)
 {
@@ -4554,11 +4489,7 @@ int AddBoneTra2( D3DXVECTOR3 diffvec )
 		return 0;
 	}
 
-	//int curmotid = s_model->GetCurMotInfo()->motid;
-	//double curframe = s_owpTimeline->getCurrentTime();
 	s_model->FKBoneTra( 0, &s_editrange, s_curboneno, diffvec );
-
-	//s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
 
 	s_editmotionflag = s_curboneno;
 
@@ -4578,66 +4509,8 @@ int AddBoneTra( int kind, float srctra )
 		return 0;
 	}
 
-	D3DXVECTOR3 basevec;
-	D3DXVECTOR3 vecx( 1.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 vecy( 0.0f, 1.0f, 0.0f );
-	D3DXVECTOR3 vecz( 0.0f, 0.0f, 1.0f );
+	s_model->FKBoneTraAxis(0, &s_editrange, s_curboneno, kind, srctra);
 
-	D3DXMATRIX worldrot;
-	if (curbone){
-		CBone* parbone = curbone->GetParent();
-		if (s_model->GetOldAxisFlagAtLoading() == 1){
-			//FBXの初期のボーンの向きがIdentityの場合
-			if (parbone){
-				if (curbone->GetBoneLeng() > 0.00001f){
-					worldrot = curbone->GetFirstAxisMatZ() * parbone->GetCurMp().GetWorldMat();
-				}
-				else{
-					worldrot = curbone->GetCurMp().GetWorldMat();
-				}
-			}
-			else{
-				worldrot = curbone->GetCurMp().GetWorldMat();
-			}
-		}
-		else{
-			//FBXにボーンの初期の軸の向きが記録されている場合
-			if (parbone){
-				worldrot = curbone->GetNodeMat() * parbone->GetCurMp().GetWorldMat();
-			}
-			else{
-				worldrot = curbone->GetNodeMat() * curbone->GetCurMp().GetWorldMat();
-			}
-		}
-	}
-	worldrot._41 = 0.0f;
-	worldrot._42 = 0.0f;
-	worldrot._43 = 0.0f;
-
-
-
-	if( kind == 0 ){
-		D3DXVec3TransformCoord( &basevec, &vecx, &worldrot );
-	}else if( kind == 1 ){
-		D3DXVec3TransformCoord( &basevec, &vecy, &worldrot );
-	}else if( kind == 2 ){
-		D3DXVec3TransformCoord( &basevec, &vecz, &worldrot );
-	}else{
-		_ASSERT( 0 );
-		D3DXVec3TransformCoord( &basevec, &vecx, &worldrot );
-	}
-
-	D3DXVec3Normalize( &basevec, &basevec );
-
-	D3DXVECTOR3 addtra;
-	addtra = basevec * srctra;
-
-
-	//int curmotid = s_model->GetCurMotInfo()->motid;
-	//double curframe = s_owpTimeline->getCurrentTime();
-	s_model->FKBoneTra( 0, &s_editrange, s_curboneno, addtra );
-
-//	s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
 
 	s_editmotionflag = s_curboneno;
 

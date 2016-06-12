@@ -370,6 +370,9 @@ public:
  */
 	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra );
 
+	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta);
+
+
 /**
  * @fn
  * CollisionNoBoneObj_Mouse

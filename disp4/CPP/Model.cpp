@@ -5969,6 +5969,51 @@ int CModel::FKRotate(int reqflag, CBone* bvhbone, int traflag, D3DXVECTOR3 traan
 	return curbone->GetBoneNo();
 }
 
+
+int CModel::FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta)
+{
+	if ((srcboneno < 0) && !GetTopBone()){
+		return 0;
+	}
+
+	CBone* curbone = GetBoneByID(srcboneno);
+	if (!curbone){
+		_ASSERT(0);
+		return 0;
+	}
+
+	D3DXVECTOR3 basevec;
+	D3DXVECTOR3 vecx(1.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 vecy(0.0f, 1.0f, 0.0f);
+	D3DXVECTOR3 vecz(0.0f, 0.0f, 1.0f);
+
+	int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	D3DXMATRIX selectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
+
+	if (axiskind == 0){
+		D3DXVec3TransformCoord(&basevec, &vecx, &selectmat);
+	}
+	else if (axiskind == 1){
+		D3DXVec3TransformCoord(&basevec, &vecy, &selectmat);
+	}
+	else if (axiskind == 2){
+		D3DXVec3TransformCoord(&basevec, &vecz, &selectmat);
+	}
+	else{
+		_ASSERT(0);
+		D3DXVec3TransformCoord(&basevec, &vecx, &selectmat);
+	}
+
+	D3DXVec3Normalize(&basevec, &basevec);
+
+	D3DXVECTOR3 addtra;
+	addtra = basevec * delta;
+
+	FKBoneTra(0, erptr, srcboneno, addtra);
+
+	return 0;
+}
+
 int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra )
 {
 
