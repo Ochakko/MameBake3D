@@ -9270,6 +9270,7 @@ int OnFrameToolWnd()
 					noparflag = 0;
 				}
 
+
 				if (srcbone && (docopyflag == 1)){
 					CMotionPoint srcmp = itrcp->mp;
 					CMotionPoint* newmp = 0;
@@ -9278,26 +9279,21 @@ int OnFrameToolWnd()
 					int curmotid = s_model->GetCurMotInfo()->motid;
 					newmp = srcbone->GetMotionPoint(curmotid, newframe);
 					if (newmp){
-
 						if (noparflag == 1){
-							int setmatflag1 = 1;
-							CQuaternion dummyq;
-							D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-							D3DXMATRIX setmat = srcbone->GetParent()->GetWorldMat(curmotid, newframe);
+							CBone* parbone = srcbone->GetParent();
+							if (parbone){
+								D3DXMATRIX parwmat = parbone->GetWorldMat(curmotid, newframe);
 
-							srcbone->RotBoneQReq(0, curmotid, newframe, dummyq, 0, dummytra, setmatflag1, &setmat);
+								int setmatflag1 = 1;
+								CQuaternion dummyq;
+								D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
+								parbone->RotBoneQReq(0, curmotid, newframe, dummyq, 0, dummytra, setmatflag1, &parwmat);
+							}
 						}
-
-						//ƒIƒCƒ‰[Šp‰Šú‰»
-						D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-						int paraxsiflag = 1;
-						int isfirstbone = 0;
-						cureul = srcbone->CalcLocalEulZXY(paraxsiflag, curmotid, newframe, BEFEUL_ZERO, isfirstbone);
-						srcbone->SetLocalEul(curmotid, newframe, cureul);
-
 					}
 				}
+
 			}
 			
 		}
