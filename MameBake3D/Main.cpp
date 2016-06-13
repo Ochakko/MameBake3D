@@ -851,8 +851,8 @@ static void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode);
 static int InitMpFromTool();
 static int InitMP( CBone* curbone, double curframe );
 static void InitMPReq(CBone* curbone, double curframe);
-static int InitMpByEul(CBone* curbone, int srcmotid, double srcframe);
-static void InitMpByEulReq(CBone* curbone, int srcmotid, double srcframe);
+static int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe);
+static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe);
 
 static int AdjustBoneTra( CBone* curbone, double frame );
 static int CreateTimeLineMark( int topboneno = -1 );
@@ -10777,7 +10777,7 @@ int InitMpFromTool()
 	parwnd = s_mainwnd;
 
 	CRMenuMain* rmenu;
-	rmenu = new CRMenuMain(IDR_MENU3);
+	rmenu = new CRMenuMain(IDR_RMENU);
 	if (!rmenu){
 		return 1;
 	}
@@ -10790,61 +10790,107 @@ int InitMpFromTool()
 	HMENU submenu = rmenu->GetSubMenu();
 	POINT pt;
 	GetCursorPos(&pt);
-	//::ScreenToClient(parwnd, &pt);
 
+
+	CRMenuMain* rsubmenu[3];
+	ZeroMemory(rsubmenu, sizeof(CRMenuMain*) * 3);
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+	s_customrigmenuindex.clear();
+
+	int subnum = 3;
+	int subsubnum = 3;
+	int setmenuid;
+	
+	WCHAR strinitmpsub[3][20] = { L"全ボーン", L"選択ボーン１つ", L"選択ボーンと子供ボーン" };
+	WCHAR strinitmpsubsub[3][20] = { L"回転と移動を初期化", L"回転を初期化", L"移動を初期化" };
+
+	int subno;
+	for (subno = 0; subno < 3; subno++){
+		setmenuid = ID_RMENU_0 + subno * 3;
+
+		rsubmenu[subno] = new CRMenuMain(IDR_RMENU);
+		if (!rsubmenu[subno]){
+			return 1;
+		}
+		ret = rsubmenu[subno]->CreatePopupMenu(parwnd, submenu, strinitmpsub[subno]);
+		if (ret){
+			return 1;
+		}
+		HMENU subsubmenu = rsubmenu[subno]->GetSubMenu();
+		int subsubmenunum;
+		subsubmenunum = GetMenuItemCount(subsubmenu);
+		int subsubmenuno;
+		for (subsubmenuno = 0; subsubmenuno < subsubmenunum; subsubmenuno++)
+		{
+			RemoveMenu(subsubmenu, 0, MF_BYPOSITION);
+		}
+
+		int subsubno;
+		for (subsubno = 0; subsubno < 3; subsubno++){
+			int subsubid = setmenuid + subsubno;
+			AppendMenu(subsubmenu, MF_STRING, subsubid, strinitmpsubsub[subsubno]);
+
+		}
+	}
+
+/////////////
+	int initmode = -1;
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
-	if (menuid == ID_RMENU2_40051){
-		//全ボーン
+	if ((menuid >= ID_RMENU_0) && (menuid <= (ID_RMENU_0 + 3 * 3))){
+		int subid = (menuid - ID_RMENU_0) / 3;
+		int initmode = (menuid - ID_RMENU_0) - subid * 3;
+
 		s_copymotmap.clear();
 		s_copyKeyInfoList.clear();
 		s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 		s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
 
-		//InitCurMotion(1, 0);
-
-		list<KeyInfo>::iterator itrcp;
-		for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-			double curframe = itrcp->time;
-			CBone* topbone = s_model->GetTopBone();
-			if (topbone){
-				InitMpByEulReq(topbone, mi->motid, curframe);
-			}
-		}
-	}
-	else if (menuid == ID_RMENU2_40052){
-		//選択ボーン1つ
-		s_copymotmap.clear();
-		s_copyKeyInfoList.clear();
-		s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-		s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
-
-		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone){
+		if (subid == 0){
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
-				InitMpByEul(curbone, mi->motid, curframe);
+				CBone* topbone = s_model->GetTopBone();
+				if (topbone){
+					InitMpByEulReq(initmode, topbone, mi->motid, curframe);//topbone req
+				}
+			}
+		}
+		else if (subid == 1){
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone){
+				list<KeyInfo>::iterator itrcp;
+				for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+					double curframe = itrcp->time;
+					InitMpByEul(initmode, curbone, mi->motid, curframe);//curbone
+				}
+			}
+		}
+		else if (subid == 2){
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone){
+				list<KeyInfo>::iterator itrcp;
+				for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+					double curframe = itrcp->time;
+					InitMpByEulReq(initmode, curbone, mi->motid, curframe);//curbone req
+				}
 			}
 		}
 	}
-	else if (menuid == ID_RMENU2_40053){
-		//選択ボーンと子供ボーン
-		s_copymotmap.clear();
-		s_copyKeyInfoList.clear();
-		s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-		s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
 
-		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone){
-			list<KeyInfo>::iterator itrcp;
-			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-				double curframe = itrcp->time;
-				InitMpByEulReq(curbone, mi->motid, curframe);
-			}
+	for (subno = 0; subno < 3; subno++){
+		CRMenuMain* delsubmenu = rsubmenu[subno];
+		if (delsubmenu){
+			delete delsubmenu;
 		}
 	}
-
 
 	rmenu->Destroy();
 	delete rmenu;
@@ -10852,32 +10898,50 @@ int InitMpFromTool()
 	return 0;
 }
 
-int InitMpByEul(CBone* curbone, int srcmotid, double srcframe)
+int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
 	if (curbone){
 		if (curbone->GetChild()){
-			D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-			//int paraxsiflag = 1;
-			//int isfirstbone = 0;
-			curbone->SetWorldMatFromEul(1, cureul, srcmotid, srcframe);
+			if (initmode == INITMP_ROTTRA){
+				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				int inittraflag1 = 1;
+				int setchildflag1 = 1;
+				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe);
+			}
+			else if (initmode == INITMP_ROT){
+				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				int inittraflag0 = 0;
+				int setchildflag1 = 1;
+				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, cureul, srcmotid, srcframe);
+			}
+			else if (initmode == INITMP_TRA){
+				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				int paraxsiflag1 = 1;
+				int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulZXY(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+
+				int inittraflag1 = 1;
+				int setchildflag1 = 1;
+				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe);
+			}
 		}
 	}
 	return 0;
 }
 
-void InitMpByEulReq(CBone* curbone, int srcmotid, double srcframe)
+void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
 	if (!curbone){
 		return;
 	}
 
-	InitMpByEul(curbone, srcmotid, srcframe);
+	InitMpByEul(initmode, curbone, srcmotid, srcframe);
 
 	if (curbone->GetChild()){
-		InitMpByEulReq(curbone->GetChild(), srcmotid, srcframe);
+		InitMpByEulReq(initmode, curbone->GetChild(), srcmotid, srcframe);
 	}
 	if (curbone->GetBrother()){
-		InitMpByEulReq(curbone->GetBrother(), srcmotid, srcframe);
+		InitMpByEulReq(initmode, curbone->GetBrother(), srcmotid, srcframe);
 	}
 }
 

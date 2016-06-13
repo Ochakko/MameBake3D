@@ -1917,7 +1917,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 }
 
 
-int CBone::SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 	if (!m_child){
@@ -1948,11 +1948,13 @@ int CBone::SetWorldMatFromEul(int setchildflag, D3DXVECTOR3 srceul, int srcmotid
 	D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
 	newlocalmat = befrotmat * newrotmat * aftrotmat;
 
-	D3DXVECTOR3 traanim = CalcLocalTraAnim(srcmotid, srcframe);
-	D3DXMATRIX tramat;
-	D3DXMatrixIdentity(&tramat);
-	D3DXMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
-	newlocalmat = newlocalmat * tramat;
+	if (inittraflag == 0){
+		D3DXVECTOR3 traanim = CalcLocalTraAnim(srcmotid, srcframe);
+		D3DXMATRIX tramat;
+		D3DXMatrixIdentity(&tramat);
+		D3DXMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
+		newlocalmat = newlocalmat * tramat;
+	}
 
 	D3DXMATRIX newmat;
 	if (m_parent){
@@ -2036,7 +2038,8 @@ void CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMAT
 		int ismovable = ChkMovableEul(neweul);
 		if (ismovable == 1){
 			if (IsSameEul(oldeul, neweul) == 0){
-				SetWorldMatFromEul(setchildflag, neweul, srcmotid, srcframe);//setchildflag有り!!!!
+				int inittraflag0 = 0;
+				SetWorldMatFromEul(inittraflag0, setchildflag, neweul, srcmotid, srcframe);//setchildflag有り!!!!
 			}
 			else{
 				curmp->SetBefWorldMat(curmp->GetWorldMat());

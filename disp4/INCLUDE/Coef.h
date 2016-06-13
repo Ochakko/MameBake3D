@@ -43,6 +43,14 @@ class CMQOMaterial;
 
 enum
 {
+	INITMP_ROTTRA,
+	INITMP_ROT,
+	INITMP_TRA,
+	INITMP_MAX
+};
+
+enum
+{
 	//for bit mask operation
 	SYMROOTBONE_SAMEORG = 0,
 	SYMROOTBONE_SYMDIR = 1,
