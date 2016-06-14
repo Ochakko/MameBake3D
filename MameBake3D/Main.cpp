@@ -9283,13 +9283,23 @@ int OnFrameToolWnd()
 					int curmotid = s_model->GetCurMotInfo()->motid;
 
 					if ((hasNotMvParFlag == 1) && (srcmp.GetLocalMatFlag() == 0)){
-						notmvparmat = srcbone->GetParent()->GetMotionPoint(curmotid, srcmp.GetFrame())->GetWorldMat();//srcmp.GetFrame
+						D3DXMatrixIdentity(&notmvparmat);
+						vector<CPELEM>::iterator itrcp2;
+						for (itrcp2 = s_copymotmap.begin(); itrcp2 != s_copymotmap.end(); itrcp2++){
+							CBone* chkparbone2 = itrcp2->bone;
+							if (chkparbone2 && (chkparbone2 == srcbone->GetParent())){
+								notmvparmat = itrcp2->mp.GetWorldMat();
+								break;
+							}
+						}
 					}
 
 					srcbone->PasteMotionPoint(curmotid, newframe, srcmp);
 
 					if ((hasNotMvParFlag == 1) && (srcmp.GetLocalMatFlag() == 0)){
-						srcbone->GetParent()->GetMotionPoint(curmotid, newframe)->SetBefWorldMat(notmvparmat);//newframe
+						if (srcbone->GetParent()){
+							srcbone->GetParent()->GetMotionPoint(curmotid, newframe)->SetBefWorldMat(notmvparmat);//newframe
+						}
 					}
 				}
 			}
