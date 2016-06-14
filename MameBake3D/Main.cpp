@@ -9364,7 +9364,7 @@ int OnFrameToolWnd()
 				s_model->ChangeMotFrameLeng(s_model->GetCurMotInfo()->motid, s_tmpmotframeleng);//はみ出たmpも削除
 				InitCurMotion(0, oldframeleng);
 
-				//メニュー書き換え
+				//メニュー書き換え, timeline update
 				OnAnimMenu(s_curmotmenuindex);
 			}
 		}
@@ -9456,6 +9456,7 @@ int OnFrameUndo()
 		}
 		else{
 			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
+
 		}
 
 		//s_copyKeyInfoList.clear();
@@ -9481,6 +9482,10 @@ int OnFrameUndo()
 				selindex = chkcnt;
 				OnAnimMenu(selindex, 0);
 			}
+		}
+		else{
+			//メニュー書き換え, timeline update
+			OnAnimMenu(s_curmotmenuindex, 0);
 		}
 
 		int curlineno = s_boneno2lineno[s_curboneno];
