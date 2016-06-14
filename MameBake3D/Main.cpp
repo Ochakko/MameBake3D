@@ -1662,6 +1662,7 @@ void InsertCopyMPReq(CBone* curbone, double curframe)
 
 int InsertCopyMP( CBone* curbone, double curframe )
 {
+	/*
 	CMotionPoint* pcurmp = 0;
 	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
 	if(pcurmp){
@@ -1673,6 +1674,22 @@ int InsertCopyMP( CBone* curbone, double curframe )
 		cpelem.mp.SetLocalMatFlag(0);//!!!!!!!!!!
 		s_copymotmap.push_back(cpelem);
 	}
+	*/
+	int rotcenterflag1 = 1;
+	D3DXMATRIX localmat = curbone->CalcLocalRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
+	D3DXVECTOR3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
+	localmat._41 += curanimtra.x;
+	localmat._42 += curanimtra.y;
+	localmat._43 += curanimtra.z;
+
+	CPELEM cpelem;
+	ZeroMemory(&cpelem, sizeof(CPELEM));
+	cpelem.bone = curbone;
+	cpelem.mp.SetFrame(curframe);
+	cpelem.mp.SetWorldMat(localmat);
+	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
+	s_copymotmap.push_back(cpelem);
+
 	return 0;
 }
 
@@ -9269,6 +9286,9 @@ int OnFrameToolWnd()
 
 							break;
 						}
+						else{
+							hasNotMvParFlag = 0;
+						}
 					}
 				}
 				else{
@@ -9282,25 +9302,7 @@ int OnFrameToolWnd()
 					double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + pastestartframe + 0.1));//!!!!!!!!!!!!!!!!!!
 					int curmotid = s_model->GetCurMotInfo()->motid;
 
-					if ((hasNotMvParFlag == 1) && (srcmp.GetLocalMatFlag() == 0)){
-						D3DXMatrixIdentity(&notmvparmat);
-						vector<CPELEM>::iterator itrcp2;
-						for (itrcp2 = s_copymotmap.begin(); itrcp2 != s_copymotmap.end(); itrcp2++){
-							CBone* chkparbone2 = itrcp2->bone;
-							if (chkparbone2 && (chkparbone2 == srcbone->GetParent())){
-								notmvparmat = itrcp2->mp.GetWorldMat();
-								break;
-							}
-						}
-					}
-
 					srcbone->PasteMotionPoint(curmotid, newframe, srcmp);
-
-					if ((hasNotMvParFlag == 1) && (srcmp.GetLocalMatFlag() == 0)){
-						if (srcbone->GetParent()){
-							srcbone->GetParent()->GetMotionPoint(curmotid, newframe)->SetBefWorldMat(notmvparmat);//newframe
-						}
-					}
 				}
 			}
 
@@ -9339,6 +9341,9 @@ int OnFrameToolWnd()
 
 							break;
 						}
+						else{
+							hasNotMvParFlag = 0;
+						}
 					}
 				}
 				else{
@@ -9369,8 +9374,7 @@ int OnFrameToolWnd()
 					}
 				}
 
-			}
-			
+			}			
 		}
 		s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
 	}

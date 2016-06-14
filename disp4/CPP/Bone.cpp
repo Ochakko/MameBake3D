@@ -2403,14 +2403,11 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	if (newmp){
 		D3DXMATRIX setmat = srcmp.GetWorldMat();
 
-		if (srcmp.GetLocalMatFlag() == 1){
-			//sym copy�̏ꍇ
-			CBone* parbone = GetParent();
-			if (parbone){
-				CMotionPoint* parmp = parbone->GetMotionPoint(srcmotid, srcframe);
-				if (parmp){
-					setmat = setmat * parmp->GetWorldMat();
-				}
+		CBone* parbone = GetParent();
+		if (parbone){
+			CMotionPoint* parmp = parbone->GetMotionPoint(srcmotid, srcframe);
+			if (parmp){
+				setmat = setmat * parmp->GetWorldMat();
 			}
 		}
 
