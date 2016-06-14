@@ -2401,17 +2401,10 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	CMotionPoint* newmp = 0;
 	newmp = GetMotionPoint(srcmotid, srcframe);
 	if (newmp){
-		if (srcmp.GetLocalMatFlag() == 0){
-			newmp->SetWorldMat(srcmp.GetWorldMat());//anglelimit–³‚µ
-		}
-		else{
+		D3DXMATRIX setmat = srcmp.GetWorldMat();
+
+		if (srcmp.GetLocalMatFlag() == 1){
 			//sym copy‚Ìê‡
-			int setmatflag1 = 1;
-			CQuaternion dummyq;
-			D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-
-			D3DXMATRIX setmat = srcmp.GetWorldMat();
-
 			CBone* parbone = GetParent();
 			if (parbone){
 				CMotionPoint* parmp = parbone->GetMotionPoint(srcmotid, srcframe);
@@ -2419,10 +2412,12 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 					setmat = setmat * parmp->GetWorldMat();
 				}
 			}
-
-			RotBoneQReq(0, srcmotid, srcframe, dummyq, 0, dummytra, setmatflag1, &setmat);
-
 		}
+
+		int setmatflag1 = 1;
+		CQuaternion dummyq;
+		D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		RotBoneQReq(0, srcmotid, srcframe, dummyq, 0, dummytra, setmatflag1, &setmat);
 
 		//ƒIƒCƒ‰[Šp‰Šú‰»
 		D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
