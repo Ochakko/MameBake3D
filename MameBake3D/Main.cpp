@@ -269,6 +269,7 @@ static float s_camdist = g_initcamdist;
 
 static int s_curmotid = -1;
 static int s_curboneno = -1;
+static int s_saveboneno = -1;
 static int s_curbaseno = -1;
 static int s_ikcnt = 0;
 static D3DXMATRIX s_selm = D3DXMATRIX( 0.0f, 0.0f, 0.0f, 0.0f,
@@ -696,6 +697,8 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
+
+static int RollbackCurBoneNo();
 
 static int CreateUtDialog();
 static int CreateTimelineWnd();
@@ -2096,6 +2099,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 		*/
 	}else if( (uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK) ){
+		if (s_curboneno >= 0){
+			s_saveboneno = s_curboneno;
+		}
+		s_curboneno = -1;
 
 		s_ikcnt = 0;
 		SetCapture( s_mainwnd );
@@ -2118,13 +2125,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		if (spckind != 0){
 			s_pickinfo.buttonflag = spckind;
 			s_pickinfo.pickobjno = -1;
+			RollbackCurBoneNo();
 		}else if (s_model){
 			int spakind = PickSpAxis( ptCursor );
 			int pickrigflag = PickSpRig(ptCursor);
-			if ((spakind != 0) && (s_curboneno >= 0)){
+			if ((spakind != 0) && (s_saveboneno >= 0)){
+				RollbackCurBoneNo();
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 			} else if (pickrigflag == 1){
+				RollbackCurBoneNo();
 				ToggleRig();
 			}else{
 				if (s_oprigflag == 0){
@@ -2164,6 +2174,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							}
 
 							if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz){
+								RollbackCurBoneNo();
 								s_pickinfo.pickobjno = s_curboneno;
 							}
 
@@ -2189,6 +2200,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					int colliobj;
 					colliobj = s_rigmark->CollisionNoBoneObj_Mouse(&s_pickinfo, "obj1");
 					if (colliobj){
+						RollbackCurBoneNo();
 						s_pickinfo.buttonflag = PICK_CENTER;
 						s_pickinfo.pickobjno = s_curboneno;
 						//_ASSERT(0);
@@ -2213,6 +2225,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			CBone* curbone = s_model->GetBoneByID( s_curboneno );
 			_ASSERT( curbone );
 			if (curbone){
+				s_saveboneno = s_curboneno;
+
 				if (s_camtargetflag){
 					g_camtargetpos = curbone->GetChildWorld();
 				}
@@ -2664,6 +2678,14 @@ void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUse
     }
 }
 
+int RollbackCurBoneNo()
+{
+	if ((s_curboneno < 0) && (s_saveboneno >= 0)){
+		s_curboneno = s_saveboneno;
+	}
+	return 0;
+}
+
 
 //--------------------------------------------------------------------------------------
 // Handles the GUI events
@@ -2705,24 +2727,28 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
 		*/
         case IDC_LIGHT_SCALE:
-            g_fLightScale = ( float )( g_SampleUI.GetSlider( IDC_LIGHT_SCALE )->GetValue() * 0.10f );
+			RollbackCurBoneNo();
+			g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
 
             swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
             g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
             break;
 
         case IDC_SL_IKFIRST:
-            g_ikfirst = ( float )( g_SampleUI.GetSlider( IDC_SL_IKFIRST )->GetValue() ) * 0.04f;
+			RollbackCurBoneNo();
+			g_ikfirst = (float)(g_SampleUI.GetSlider(IDC_SL_IKFIRST)->GetValue()) * 0.04f;
 		    swprintf_s( sz, 100, L"IK ŽŸ”‚ÌŒW” : %f", g_ikfirst );
             g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
             break;
         case IDC_SL_IKRATE:
-            g_ikrate = ( float )( g_SampleUI.GetSlider( IDC_SL_IKRATE )->GetValue() ) * 0.01f;
+			RollbackCurBoneNo();
+			g_ikrate = (float)(g_SampleUI.GetSlider(IDC_SL_IKRATE)->GetValue()) * 0.01f;
 		    swprintf_s( sz, 100, L"IK “`’BŒW” : %f", g_ikrate );
             g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
             break;
         case IDC_SL_APPLYRATE:
-            g_applyrate = g_SampleUI.GetSlider( IDC_SL_APPLYRATE )->GetValue();
+			RollbackCurBoneNo();
+			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
 		    swprintf_s( sz, 100, L"Žp¨“K—pˆÊ’u : %d “", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
@@ -2730,7 +2756,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
 
         case IDC_SPEED:
-            g_dspeed = ( float )( g_SampleUI.GetSlider( IDC_SPEED )->GetValue() * 0.010f );
+			RollbackCurBoneNo();
+			g_dspeed = (float)(g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010f);
 			for( modelno = 0; modelno < modelnum; modelno++ ){
 				s_modelindex[modelno].modelptr->SetMotionSpeed( g_dspeed );
 			}
@@ -2740,13 +2767,15 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
 
 		case IDC_COMBO_BONEAXIS:
+			RollbackCurBoneNo();
 			if (s_model){
 				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
 				g_boneaxis = (int)PtrToUlong(pComboBox->GetSelectedData());
 			}
 			break;
 		case IDC_COMBO_BONE:
-			if( s_model ){
+			RollbackCurBoneNo();
+			if (s_model){
 				pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
 				tmpboneno = (int)PtrToUlong( pComboBox->GetSelectedData() );
 				tmpbone = s_model->GetBoneByID( tmpboneno );
@@ -2765,7 +2794,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
 		case IDC_COMBO_EDITMODE:
 			if( s_model ){
-				pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_EDITMODE );
+				RollbackCurBoneNo();
+				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
 				tmpikindex = (int)PtrToUlong( pComboBox->GetSelectedData() );
 				switch( tmpikindex ){
 				case IDC_IK_ROT:
@@ -2831,10 +2861,12 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			break;
 
 		case IDC_COMBO_IKLEVEL:
-			pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_IKLEVEL );
+			RollbackCurBoneNo();
+			pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
 			s_iklevel = (int)PtrToUlong( pComboBox->GetSelectedData() );
 			break;
 		case IDC_CAMTARGET:
+			RollbackCurBoneNo();
 			s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
 			if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
 				CBone* curbone = s_model->GetBoneByID( s_curboneno );
@@ -2849,8 +2881,23 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					s_camdist = D3DXVec3Length(&diffv);
 				}
 			}
-			
 			break;
+		case IDC_APPLY_TO_THEEND:
+			RollbackCurBoneNo();
+			break;
+		case IDC_SLERP_OFF:
+			RollbackCurBoneNo();
+			break;
+		case IDC_ABS_IK:
+			RollbackCurBoneNo();
+			break;
+		case IDC_PSEUDOLOCAL:
+			RollbackCurBoneNo();
+			break;
+		case IDC_LIMITDEG:
+			RollbackCurBoneNo();
+			break;
+
 		default:
 			break;
 	
