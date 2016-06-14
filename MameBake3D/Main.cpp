@@ -11482,6 +11482,11 @@ int ToggleRig()
 		else{
 			s_oprigflag = 0;
 			s_pickinfo.buttonflag = 0;
+
+			if (s_customrigdlg){
+				DestroyWindow(s_customrigdlg);
+				s_customrigdlg = 0;
+			}
 		}
 	}
 	else{
