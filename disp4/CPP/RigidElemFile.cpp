@@ -111,7 +111,7 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
   <Bone>
     <Name>zentai_ido</Nama>
     <RigidElem>
-	  <ChildName>koshi</ChildName>
+      <ChildName>koshi</ChildName>
 	  <SkipFlag>0</SkipFlag>
 	  <BCone>0</BCone>
 	  <ShpRate>0.2</ShpRate>

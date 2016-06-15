@@ -777,11 +777,13 @@ static int DispCustomRigDlg(int rigno);
 static int BoneRClick(int srcboneno);
 
 //CustomRigDlg
-int Bone2CustomRig(int rigno);
-int CustomRig2Bone();
-int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr);
-int CustomRig2Dlg(HWND hDlgWnd);
-int SetCustomRigDlgLevel(int levelnum);
+static int Bone2CustomRig(int rigno);
+static int CustomRig2Bone();
+static int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr);
+static int CustomRig2Dlg(HWND hDlgWnd);
+static int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum);
+static int SetRigRigCombo(HWND hDlgWnd, int elemno);
+static int CheckRigRigCombo(HWND hDlgWnd, int elemno);
 
 
 //angle limit dlg
@@ -2309,9 +2311,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 								s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
-								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
+								s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
 								s_model->UpdateMatrix(&s_matW, &s_matVP);
-								s_model->RigControl(&s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
+								s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
 								s_model->UpdateMatrix(&s_matW, &s_matVP);
 								s_editmotionflag = s_curboneno;
 							}
@@ -11151,7 +11153,10 @@ int CustomRig2Dlg(HWND hDlgWnd)
 
 		int elemnum = s_customrig.elemnum;
 		SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_RESETCONTENT, 0, 0);
+
 		WCHAR strcombo[256];
+		WCHAR strval[256];
+
 		int elemno;
 		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
 			swprintf_s(strcombo, 256, L"%d", elemno + 1);//from 1 to MAXRIGELEMNUM
@@ -11170,25 +11175,32 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		int axisvid[5] = {IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5};
 		int rateuid[5] = {IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5};
 		int ratevid[5] = {IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5};
+		int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
+
 
 		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
 			RIGELEM currigelem = s_customrig.rigelem[elemno];
+			CBone* curbone = 0;
 			if (elemno < elemnum){
-				CBone* curbone = s_model->GetBoneByID(currigelem.boneno);
+				curbone = s_model->GetBoneByID(currigelem.boneno);
 				if (curbone){
 					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)curbone->GetWBoneName());
 				}
 				else{
 					_ASSERT(0);
-					return 1;
+					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
+					//return 1;
 				}
+
+
 			}
 			else{
 				SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
 			}
-			WCHAR strcombo[256];
-			WCHAR strval[256];
 
+			SetRigRigCombo(hDlgWnd, elemno);
+
+			
 			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_RESETCONTENT, 0, 0);
 			wcscpy_s(strcombo, 256, L"X");
 			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
@@ -11225,8 +11237,95 @@ int CustomRig2Dlg(HWND hDlgWnd)
 	return 0;
 }
 
+int CheckRigRigCombo(HWND hDlgWnd, int elemno)
+{
+	//_ASSERT(0);
+	//初期化
+	int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
+	int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+	s_customrig.rigelem[elemno].rigrigboneno = -1;
+	s_customrig.rigelem[elemno].rigrigno = -1;
+	CBone* levelbone = s_model->GetBoneByID(s_customrig.rigelem[elemno].boneno);
+	if (levelbone){
+		SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)levelbone->GetWBoneName());
+	}
+	else{
+		SetDlgItemText(hDlgWnd, gpboxid[elemno], L"未設定");
+	}
+
+
+	//チェック　アンド　セット
+	int combono;
+	combono = (int)SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_GETCURSEL, 0, 0);
+	s_customrig.rigelem[elemno].rigrigboneno = -1;
+	s_customrig.rigelem[elemno].rigrigno = -1;
+	if ((combono != 0) && (combono != CB_ERR)){
+		WCHAR combolabel[256];
+		ZeroMemory(combolabel, sizeof(WCHAR) * 256);
+		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_GETLBTEXT, combono, (LPARAM)combolabel);
+//{
+//	WCHAR strdbg[256];
+//	swprintf_s(strdbg, 256, L"elemno %d, combolabel %s", elemno, combolabel);
+//	::MessageBox(hDlgWnd, strdbg, L"combolabel", MB_OK);
+//}
+		size_t labellen = wcslen(combolabel);
+		if ((labellen > 0) && (labellen < 256)){
+			//format    [rigrigno]rigrigbonename[|]rigname
+			if (combolabel[0] == L'['){
+				WCHAR* prigrignoend = wcsstr(combolabel, L"]");
+				if (prigrignoend){
+					WCHAR strrigrigno[256];
+					ZeroMemory(strrigrigno, sizeof(WCHAR) * 256);
+					wcsncpy_s(strrigrigno, 256, combolabel + 1, (size_t)(prigrignoend - (combolabel + 1)));
+					int rigrigno = _wtoi(strrigrigno);
+//{
+//	WCHAR strdbg[256];
+//	swprintf_s(strdbg, 256, L"rigrigno %d", rigrigno);
+//	::MessageBox(hDlgWnd, strdbg, L"rigrigno", MB_OK);
+//}
+					if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
+						s_customrig.rigelem[elemno].rigrigno = rigrigno;
+
+						WCHAR* pbonenameend = wcsstr(combolabel, L"[|]");
+						if (pbonenameend){
+							WCHAR rigrigbonename[256];
+							ZeroMemory(rigrigbonename, sizeof(WCHAR) * 256);
+							wcsncpy_s(rigrigbonename, 256, prigrignoend + 1, (size_t)(pbonenameend - (prigrignoend + 1)));
+//{
+//	WCHAR strdbg[256];
+//	swprintf_s(strdbg, 256, L"rigrigbonename %s", rigrigbonename);
+//	::MessageBox(hDlgWnd, strdbg, L"rigrigbonename", MB_OK);
+//}
+							CBone* rigrigbone = s_model->GetBoneByWName(rigrigbonename);
+							if (rigrigbone){
+								s_customrig.rigelem[elemno].rigrigboneno = rigrigbone->GetBoneNo();
+
+//{
+//	WCHAR strdbg[256];
+//	swprintf_s(strdbg, 256, L"rigrigboneno %d", s_customrig.rigelem[elemno].rigrigboneno);
+//	::MessageBox(hDlgWnd, strdbg, L"rigrigboneno", MB_OK);
+//}
+								int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+								SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)rigrigbone->GetWBoneName());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+
+}
+
+
+
 LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
+
+	int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
+
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
@@ -11235,72 +11334,98 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 	break;
 	case WM_COMMAND:
-		switch (LOWORD(wp)) {
-		case IDC_CHILNUM:
-		{
-			int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_GETCURSEL, 0, 0);
-			if ((combono >= 0) && (combono < MAXRIGELEMNUM)){
-				SetCustomRigDlgLevel(combono + 1);
+		if (HIWORD(wp) == CBN_SELCHANGE){
+			switch (LOWORD(wp)) {
+			case IDC_COMBO1:
+				CheckRigRigCombo(hDlgWnd, 0);
+				break;
+			case IDC_COMBO2:
+				CheckRigRigCombo(hDlgWnd, 1);
+				break;
+			case IDC_COMBO3:
+				CheckRigRigCombo(hDlgWnd, 2);
+				break;
+			case IDC_COMBO4:
+				CheckRigRigCombo(hDlgWnd, 3);
+				break;
+			case IDC_COMBO5:
+				CheckRigRigCombo(hDlgWnd, 4);
+				break;
+			case IDC_CHILNUM:
+			{
+				int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_GETCURSEL, 0, 0);
+				if ((combono >= 0) && (combono < MAXRIGELEMNUM)){
+					SetCustomRigDlgLevel(hDlgWnd, combono + 1);
+				}
+			}
+			break;
+			default:
+				break;
 			}
 		}
-		break;
-		case IDOK:
-		{
-			WCHAR strrigname[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_RIGNAME, strrigname, 256);
-			wcscpy_s(s_customrig.rigname, 256, strrigname);
+		else{
+			switch (LOWORD(wp)) {
+			case IDOK:
+			{
+				WCHAR strrigname[256] = { 0L };
+				GetDlgItemText(hDlgWnd, IDC_RIGNAME, strrigname, 256);
+				wcscpy_s(s_customrig.rigname, 256, strrigname);
 
-			int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
-			int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
-			int rateuid[5] = { IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5 };
-			int ratevid[5] = { IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5 };
+				int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
+				int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
+				int rateuid[5] = { IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5 };
+				int ratevid[5] = { IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5 };
 
-			int elemno;
-			for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
-				int combono;
-				combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_GETCURSEL, 0, 0);
-				if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
-					s_customrig.rigelem[elemno].transuv[0].axiskind = combono;
+				int elemno;
+				for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
+
+					CheckRigRigCombo(hDlgWnd, elemno);
+
+
+					int combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_GETCURSEL, 0, 0);
+					if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
+						s_customrig.rigelem[elemno].transuv[0].axiskind = combono;
+					}
+					combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_GETCURSEL, 0, 0);
+					if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
+						s_customrig.rigelem[elemno].transuv[1].axiskind = combono;
+					}
+
+					int ret;
+					float tmprate;
+					ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
+					if (ret){
+						::MessageBox(hDlgWnd, L"横倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+						return 0;
+					}
+					s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
+
+					ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
+					if (ret){
+						::MessageBox(hDlgWnd, L"縦倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+						return 0;
+					}
+					s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
 				}
-				combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_GETCURSEL, 0, 0);
-				if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
-					s_customrig.rigelem[elemno].transuv[1].axiskind = combono;
-				}
 
-				int ret;
-				float tmprate;
-				ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
-				if (ret){
-					::MessageBox(hDlgWnd, L"横倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+
+				int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
+				if (isvalid == 0){
+					::MessageBox(hDlgWnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
 					return 0;
 				}
-				s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
 
-				ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
-				if (ret){
-					::MessageBox(hDlgWnd, L"縦倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
-					return 0;
-				}
-				s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
+				CustomRig2Bone();
+
+				//EndDialog(hDlgWnd, IDOK);
 			}
-
-
-			int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
-			if (isvalid == 0){
-				::MessageBox(hDlgWnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
-				return 0;
+			break;
+			case IDCANCEL:
+				//EndDialog(hDlgWnd, IDCANCEL);
+				break;
+			default:
+				return FALSE;
 			}
-
-			CustomRig2Bone();
-
-			//EndDialog(hDlgWnd, IDOK);
-		}
-			break;
-		case IDCANCEL:
-			//EndDialog(hDlgWnd, IDCANCEL);
-			break;
-		default:
-			return FALSE;
 		}
 		break;
 	case WM_CLOSE:
@@ -11472,7 +11597,62 @@ int BoneRClick(int srcboneno)
 	return 0;
 }
 
-int SetCustomRigDlgLevel(int levelnum)
+int SetRigRigCombo(HWND hDlgWnd, int elemno)
+{
+	int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+	int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
+
+	WCHAR strcombo[256];
+
+	SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
+	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_RESETCONTENT, 0, 0);
+	wcscpy_s(strcombo, 256, L"通常ボーン");
+	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_SETCURSEL, 0, 0);
+
+
+	if (elemno < s_customrig.elemnum){
+		RIGELEM currigelem = s_customrig.rigelem[elemno];
+		int selrigrigcombono = 0;
+		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_RESETCONTENT, 0, 0);
+		wcscpy_s(strcombo, 256, L"通常ボーン");
+		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+		int setcombono = 1;
+
+		CBone* rigrigbone = s_model->GetBoneByID(currigelem.rigrigboneno);
+		CBone* currigrigbone;
+		map<int, CBone*>::iterator itrcurrigrigbone;
+		for (itrcurrigrigbone = s_model->GetBoneListBegin(); itrcurrigrigbone != s_model->GetBoneListEnd(); itrcurrigrigbone++){
+			currigrigbone = itrcurrigrigbone->second;
+			if (currigrigbone){
+				WCHAR rigrigbonename[256];
+				ZeroMemory(rigrigbonename, sizeof(WCHAR) * 256);
+				wcscpy_s(rigrigbonename, 256, currigrigbone->GetWBoneName());
+				int rigrigno;
+				for (rigrigno = 0; rigrigno < MAXRIGNUM; rigrigno++){
+					CUSTOMRIG rigrig = currigrigbone->GetCustomRig(rigrigno);
+					if (rigrig.useflag == 2){
+						int isvalid = IsValidCustomRig(s_model, rigrig, currigrigbone);
+						if (isvalid == 1){
+							swprintf_s(strcombo, 256, L"[%d]%s[|]%s", rigrigno, rigrigbonename, rigrig.rigname);
+							SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
+							if (rigrigbone && (currigrigbone == rigrigbone) && (rigrigno == currigelem.rigrigno)){
+								selrigrigcombono = setcombono;
+								SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)rigrigbone->GetWBoneName());
+							}
+							setcombono++;
+						}
+					}
+				}
+			}
+		}
+		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_SETCURSEL, selrigrigcombono, 0);
+	}
+
+	return 0;
+}
+
+int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 {
 	if (!s_model){
 		return 0;
@@ -11499,9 +11679,15 @@ int SetCustomRigDlgLevel(int levelnum)
 			parno++;
 		}
 
-		int newlevelnum = parno;
+		//int newlevelnum = parno;
+		//s_customrig.elemnum = levelnum;
+		//SendMessage(GetDlgItem(s_customrigdlg, IDC_CHILNUM), CB_SETCURSEL, newlevelnum - 1, 0);
 		s_customrig.elemnum = levelnum;
-		SendMessage(GetDlgItem(s_customrigdlg, IDC_CHILNUM), CB_SETCURSEL, newlevelnum - 1, 0);
+
+		int elemno;
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
+			SetRigRigCombo(hDlgWnd, elemno);
+		}
 	}
 
 

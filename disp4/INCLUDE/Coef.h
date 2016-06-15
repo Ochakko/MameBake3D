@@ -165,6 +165,8 @@ typedef struct tag_rigtrans
 
 typedef struct tag_rigelem
 {
+	int rigrigboneno;
+	int rigrigno;
 	int boneno;
 	RIGTRANS transuv[2];
 }RIGELEM;

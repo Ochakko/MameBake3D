@@ -5383,8 +5383,14 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 	return 0;
 }
 
-int CModel::RigControl(CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig)
+int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig)
 {
+	depthcnt++;
+	if (depthcnt >= 10){
+		_ASSERT(0);
+		return 0;//!!!!!!!!!!!!!!!!!
+	}
+
 	if (!m_curmotinfo){
 		return 0;
 	}
@@ -5414,174 +5420,188 @@ int CModel::RigControl(CEditRange* erptr, int srcboneno, int uvno, float srcdelt
 		int elemno;
 		for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++){
 			RIGELEM currigelem = ikcustomrig.rigelem[elemno];
-			curbone = GetBoneByID(currigelem.boneno);
-			if (curbone){
-				lastbone = curbone;
-				parbone = curbone->GetParent();
-				int axiskind = currigelem.transuv[uvno].axiskind;
-				float rotrad2 = rotrad * currigelem.transuv[uvno].applyrate;
-				if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
-					continue;
-				}
-
-				D3DXVECTOR3 axis0;
-				CQuaternion localq;
-				if (axiskind == AXIS_X){
-					axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
-					localq.SetAxisAndRot(axis0, rotrad2);
-				}
-				else if (axiskind == AXIS_Y){
-					axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-					localq.SetAxisAndRot(axis0, rotrad2);
-				}
-				else if (axiskind == AXIS_Z){
-					axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
-					localq.SetAxisAndRot(axis0, rotrad2);
-				}
-				else{
-					_ASSERT(0);
-					return 1;
-				}
-				
-				D3DXMATRIX selectmat;
-				D3DXMATRIX invselectmat;
-				//selectmat = elemaxismat[elemno];
-				int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
-				selectmat = curbone->CalcManipulatorMatrix(1, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
-				D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
-
-				D3DXMATRIX rotinvworld = curbone->GetCurMp().GetInvWorldMat();
-				rotinvworld._41 = 0.0f;
-				rotinvworld._42 = 0.0f;
-				rotinvworld._43 = 0.0f;
-				D3DXMATRIX rotselect = selectmat;
-				rotselect._41 = 0.0f;
-				rotselect._42 = 0.0f;
-				rotselect._43 = 0.0f;
-				D3DXMATRIX rotinvselect = invselectmat;
-				rotinvselect._41 = 0.0f;
-				rotinvselect._42 = 0.0f;
-				rotinvselect._43 = 0.0f;
-				
-
-				CQuaternion rotq;
-
-				if (keynum >= 2){
-					int keyno = 0;
-					double curframe;
-					for (curframe = startframe; curframe <= endframe; curframe += 1.0){
-						
-						CMotionPoint* curparmp = 0;
-						CMotionPoint* aplyparmp = 0;
-						if (parbone){
-							curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-							aplyparmp = parbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-						}
-						if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
-							D3DXMATRIX curparrotmat = curparmp->GetWorldMat();
-							curparrotmat._41 = 0.0f;
-							curparrotmat._42 = 0.0f;
-							curparrotmat._43 = 0.0f;
-							D3DXMATRIX invcurparrotmat = curparmp->GetInvWorldMat();
-							invcurparrotmat._41 = 0.0f;
-							invcurparrotmat._42 = 0.0f;
-							invcurparrotmat._43 = 0.0f;
-							D3DXMATRIX aplyparrotmat = aplyparmp->GetWorldMat();
-							aplyparrotmat._41 = 0.0f;
-							aplyparrotmat._42 = 0.0f;
-							aplyparrotmat._43 = 0.0f;
-							D3DXMATRIX invaplyparrotmat = aplyparmp->GetInvWorldMat();
-							invaplyparrotmat._41 = 0.0f;
-							invaplyparrotmat._42 = 0.0f;
-							invaplyparrotmat._43 = 0.0f;
-
-							D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-							D3DXMATRIX transmat2;
-							transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
-							CMotionPoint transmp;
-							transmp.CalcQandTra(transmat2, curbone);
-							rotq = transmp.GetQ();
-						}
-						else{
-							D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-							CMotionPoint transmp;
-							transmp.CalcQandTra(transmat, curbone);
-							rotq = transmp.GetQ();
-						}
-						
-						double changerate;
-						if (curframe <= applyframe){
-							changerate = 1.0 / (applyframe - startframe + 1);
-						}
-						else{
-							changerate = 1.0 / (endframe - applyframe + 1);
-						}
-
-						if (keyno == 0){
-							firstframe = curframe;
-						}
-						if (g_absikflag == 0){
-							if (g_slerpoffflag == 0){
-								double currate2;
-								CQuaternion endq;
-								CQuaternion curq;
-								endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-								if (curframe <= applyframe){
-									currate2 = changerate * (curframe - startframe + 1);
-								}
-								else{
-									currate2 = changerate * (endframe - curframe + 1);
-								}
-								rotq.Slerp2(endq, 1.0 - currate2, &curq);
-								curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
-							}
-							else{
-								curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
-							}
-						}
-						else{
-							if (keyno == 0){
-								curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
-							}
-							else{
-								curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
-							}
-						}
-						keyno++;
-					}
-
-				}
-				else{
-					D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-					CMotionPoint transmp;
-					transmp.CalcQandTra(transmat, curbone);
-					rotq = transmp.GetQ();
-
-					curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
-					
-				}
-
-
-				if (g_applyendflag == 1){
-					//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚ÌŽp¨‚ð“K—p
-					if (m_topbone){
-						int tolast;
-						for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
-							//(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
-							m_topbone->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
-						}
+			if (currigelem.rigrigboneno >= 0){
+				//rig‚Ìrig
+				CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
+				if (rigrigbone){
+					int rigrigno = currigelem.rigrigno;
+					if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
+						CUSTOMRIG rigrig = rigrigbone->GetCustomRig(rigrigno);
+						RigControl(depthcnt, erptr, rigrigbone->GetBoneNo(), uvno, srcdelta * currigelem.transuv[uvno].applyrate, rigrig);
 					}
 				}
 			}
 			else{
-				_ASSERT(0);
+				//rigelem
+				curbone = GetBoneByID(currigelem.boneno);
+				if (curbone){
+					lastbone = curbone;
+					parbone = curbone->GetParent();
+					int axiskind = currigelem.transuv[uvno].axiskind;
+					float rotrad2 = rotrad * currigelem.transuv[uvno].applyrate;
+					if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
+						continue;
+					}
+
+					D3DXVECTOR3 axis0;
+					CQuaternion localq;
+					if (axiskind == AXIS_X){
+						axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+						localq.SetAxisAndRot(axis0, rotrad2);
+					}
+					else if (axiskind == AXIS_Y){
+						axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+						localq.SetAxisAndRot(axis0, rotrad2);
+					}
+					else if (axiskind == AXIS_Z){
+						axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+						localq.SetAxisAndRot(axis0, rotrad2);
+					}
+					else{
+						_ASSERT(0);
+						return 1;
+					}
+
+					D3DXMATRIX selectmat;
+					D3DXMATRIX invselectmat;
+					//selectmat = elemaxismat[elemno];
+					int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+					selectmat = curbone->CalcManipulatorMatrix(1, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
+					D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
+
+					D3DXMATRIX rotinvworld = curbone->GetCurMp().GetInvWorldMat();
+					rotinvworld._41 = 0.0f;
+					rotinvworld._42 = 0.0f;
+					rotinvworld._43 = 0.0f;
+					D3DXMATRIX rotselect = selectmat;
+					rotselect._41 = 0.0f;
+					rotselect._42 = 0.0f;
+					rotselect._43 = 0.0f;
+					D3DXMATRIX rotinvselect = invselectmat;
+					rotinvselect._41 = 0.0f;
+					rotinvselect._42 = 0.0f;
+					rotinvselect._43 = 0.0f;
+
+
+					CQuaternion rotq;
+
+					if (keynum >= 2){
+						int keyno = 0;
+						double curframe;
+						for (curframe = startframe; curframe <= endframe; curframe += 1.0){
+
+							CMotionPoint* curparmp = 0;
+							CMotionPoint* aplyparmp = 0;
+							if (parbone){
+								curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+								aplyparmp = parbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+							}
+							if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
+								D3DXMATRIX curparrotmat = curparmp->GetWorldMat();
+								curparrotmat._41 = 0.0f;
+								curparrotmat._42 = 0.0f;
+								curparrotmat._43 = 0.0f;
+								D3DXMATRIX invcurparrotmat = curparmp->GetInvWorldMat();
+								invcurparrotmat._41 = 0.0f;
+								invcurparrotmat._42 = 0.0f;
+								invcurparrotmat._43 = 0.0f;
+								D3DXMATRIX aplyparrotmat = aplyparmp->GetWorldMat();
+								aplyparrotmat._41 = 0.0f;
+								aplyparrotmat._42 = 0.0f;
+								aplyparrotmat._43 = 0.0f;
+								D3DXMATRIX invaplyparrotmat = aplyparmp->GetInvWorldMat();
+								invaplyparrotmat._41 = 0.0f;
+								invaplyparrotmat._42 = 0.0f;
+								invaplyparrotmat._43 = 0.0f;
+
+								D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+								D3DXMATRIX transmat2;
+								transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
+								CMotionPoint transmp;
+								transmp.CalcQandTra(transmat2, curbone);
+								rotq = transmp.GetQ();
+							}
+							else{
+								D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+								CMotionPoint transmp;
+								transmp.CalcQandTra(transmat, curbone);
+								rotq = transmp.GetQ();
+							}
+
+							double changerate;
+							if (curframe <= applyframe){
+								changerate = 1.0 / (applyframe - startframe + 1);
+							}
+							else{
+								changerate = 1.0 / (endframe - applyframe + 1);
+							}
+
+							if (keyno == 0){
+								firstframe = curframe;
+							}
+							if (g_absikflag == 0){
+								if (g_slerpoffflag == 0){
+									double currate2;
+									CQuaternion endq;
+									CQuaternion curq;
+									endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+									if (curframe <= applyframe){
+										currate2 = changerate * (curframe - startframe + 1);
+									}
+									else{
+										currate2 = changerate * (endframe - curframe + 1);
+									}
+									rotq.Slerp2(endq, 1.0 - currate2, &curq);
+									curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
+								}
+								else{
+									curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+								}
+							}
+							else{
+								if (keyno == 0){
+									curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+								}
+								else{
+									curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+								}
+							}
+							keyno++;
+						}
+
+					}
+					else{
+						D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+						CMotionPoint transmp;
+						transmp.CalcQandTra(transmat, curbone);
+						rotq = transmp.GetQ();
+
+						curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+
+					}
+
+
+					if (g_applyendflag == 1){
+						//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚ÌŽp¨‚ð“K—p
+						if (m_topbone){
+							int tolast;
+							for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
+								//(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+								m_topbone->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+							}
+						}
+					}
+				}
+				else{
+					_ASSERT(0);
+				}
 			}
 		}
 
 		//if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone){
-		if (g_absikflag && lastbone){
-				AdjustBoneTra(erptr, lastbone);
-		}
+		//if (g_absikflag && lastbone){
+		//		AdjustBoneTra(erptr, lastbone);
+		//}
 	//}
 
 	if (lastbone){

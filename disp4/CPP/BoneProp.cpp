@@ -19,6 +19,10 @@
 extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
 
 
+static int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
+
+
+
 float vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
 {
 	return ( vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z );
@@ -358,6 +362,8 @@ void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno)
 	int rigelemno;
 	for (rigelemno = 0; rigelemno < MAXRIGELEMNUM; rigelemno++){
 		dstcr->rigelem[rigelemno].boneno = -1;
+		dstcr->rigelem[rigelemno].rigrigboneno = -1;
+		dstcr->rigelem[rigelemno].rigrigno = -1;
 	}
 
 
@@ -408,7 +414,13 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone)
 	RIGELEM rigelem[4];
 	}CUSTOMRIG;
 	*/
-	
+	if (!parbone){
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。ownerbone NULL");
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+
 	if (parbone && (srccr.rigboneno != parbone->GetBoneNo())){
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。rigboneno : %d", srccr.rigboneno);
@@ -431,25 +443,61 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone)
 	int elemno;
 	for (elemno = 0; elemno < srccr.elemnum; elemno++){
 		RIGELEM currigelem = srccr.rigelem[elemno];
-		CBone* chkbone = srcmodel->GetBoneByID(currigelem.boneno);
+		int isvalid = IsValidRigElem(srcmodel, currigelem);
+		if (isvalid == 0){
+			WCHAR strerr[256];
+			swprintf_s(strerr, 256, L"エラー。bonename %s, elem %d", parbone->GetWBoneName(), elemno);
+			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+
+			return 0;//!!!!!!!!!!!!!
+		}
+	}
+
+	return 1;
+}
+
+
+int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
+{
+	if (srcrigelem.rigrigboneno >= 0){
+		CBone* ownerbone = srcmodel->GetBoneByID(srcrigelem.rigrigboneno);
+		if (ownerbone){
+			CUSTOMRIG curcr = ownerbone->GetCustomRig(srcrigelem.rigrigno);
+			int isvalid = IsValidCustomRig(srcmodel, curcr, ownerbone);
+			if (isvalid == 0){
+				WCHAR strerr[256];
+				swprintf_s(strerr, 256, L"エラー。ownerbone %s, rigrigno %d", ownerbone->GetWBoneName(), srcrigelem.rigrigno);
+				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				return 0;
+			}
+		}
+		else{
+			WCHAR strerr[256];
+			swprintf_s(strerr, 256, L"エラー。ownerbone NULL");
+			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+			return 0;
+		}
+	}
+	else{
+		CBone* chkbone = srcmodel->GetBoneByID(srcrigelem.boneno);
 		if (!chkbone){
 			WCHAR strerr[256];
-			swprintf_s(strerr, 256, L"エラー。elem %d : boneno : %d", elemno, currigelem.boneno);
+			swprintf_s(strerr, 256, L"エラー。boneno : %d", srcrigelem.boneno);
 			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 			return 0;
 		}
 		int uvno;
 		for (uvno = 0; uvno < 2; uvno++){
-			RIGTRANS currigtrans = currigelem.transuv[uvno];
+			RIGTRANS currigtrans = srcrigelem.transuv[uvno];
 			if ((currigtrans.axiskind < AXIS_X) || (currigtrans.axiskind > AXIS_Z)){
 				WCHAR strerr[256];
-				swprintf_s(strerr, 256, L"エラー。elem %d : UV %d : axiskind : %d", elemno, uvno, currigtrans.axiskind);
+				swprintf_s(strerr, 256, L"エラー。UV %d : axiskind : %d", uvno, currigtrans.axiskind);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 				return 0;
 			}
 			if ((currigtrans.applyrate < -100.0f) || (currigtrans.applyrate > 100.0f)){
 				WCHAR strerr[256];
-				swprintf_s(strerr, 256, L"エラー。elem %d : UV %d : applyrate : %f", elemno, uvno,  currigtrans.applyrate);
+				swprintf_s(strerr, 256, L"エラー。UV %d : applyrate : %f", uvno, currigtrans.applyrate);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 				return 0;
 			}

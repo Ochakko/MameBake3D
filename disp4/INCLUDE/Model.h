@@ -549,7 +549,7 @@ public:
 	int CalcBoneEul(int srcmotid);
 	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
 
-	int RigControl(CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
+	int RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();
 
@@ -713,6 +713,21 @@ public: //accesser
 			return 0;
 		}
 		//return m_bonename[ srcname ];
+	};
+
+	CBone* GetBoneByWName(WCHAR* srcname){
+		if (!srcname){
+			return 0;
+		}
+		size_t namelen = wcslen(srcname);
+		if ((namelen > 0) && (namelen < 256)){
+			char mbname[1024] = { 0 };
+			WideCharToMultiByte(CP_ACP, 0, srcname, -1, mbname, 1024, NULL, NULL);
+			return GetBoneByName(mbname);
+		}
+		else{
+			return 0;
+		}
 	};
 
 	int GetBoneListSize(){

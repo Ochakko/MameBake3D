@@ -116,6 +116,8 @@ int CRigFile::WriteRig(CBone* srcbone)
 	<RigNumber>0</RigNumber>
 	<ElemNum>3</ElemNum>
     <RigElem>
+      <RigRigName>Lte</RigRigName>
+      <RigRigNo>0</RigRigNo>
 	  <BoneName>koshi</BoneName>
 	  <AxisU>X</AxisU>
 	  <RateU>1.0000</RateU>
@@ -123,6 +125,8 @@ int CRigFile::WriteRig(CBone* srcbone)
 	  <RateV>1.0000</RateV>
 	</RigElem>
 	<RigElem>
+	  <RigRigName>Rte</RigRigName>
+	  <RigRigNo>0</RigRigNo>
 	  <BoneName>mune</BoneName>
 	  <AxisU>X</AxisU>
 	  <RateU>1.0000</RateU>
@@ -133,7 +137,7 @@ int CRigFile::WriteRig(CBone* srcbone)
 ***/
 
 	CallF(Write2File("  <Bone>\r\n" ), return 1);
-	
+
 	char mrigname[256];
 	WideCharToMultiByte(CP_ACP, 0, m_customrig.rigname, -1, mrigname, 256, NULL, NULL);
 	CallF(Write2File("    <RigName>%s</RigName>\r\n", mrigname ), return 1);
@@ -155,6 +159,17 @@ int CRigFile::WriteRig(CBone* srcbone)
 		RIGELEM currigelem = m_customrig.rigelem[elemno];
 
 		CallF(Write2File("    <RigElem>\r\n"), return 1);
+
+
+		char mrigrigname[256] = "!noname!";
+		if (currigelem.rigrigboneno >= 0){
+			CBone* rigrigbone = m_model->GetBoneByID(currigelem.rigrigboneno);
+			if (rigrigbone){
+				strcpy_s(mrigrigname, 256, rigrigbone->GetBoneName());
+			}
+		}
+		CallF(Write2File("    <RigRigName>%s</RigRigName>\r\n", mrigrigname), return 1);		
+		CallF(Write2File("    <RigRigNo>%d</RigRigNo>\r\n", currigelem.rigrigno), return 1);
 
 		CBone* rigelembone = m_model->GetBoneByID(currigelem.boneno);
 		if (!rigelembone){
@@ -238,6 +253,8 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 	  <RigNumber>0</RigNumber>
 	  <ElemNum>3</ElemNum>
 	  <RigElem>
+        <RigRigName>Lte</RigRigName>
+	    <RigRigNo>0</RigRigNo>
 	    <BoneName>koshi</BoneName>
 	    <AxisU>X</AxisU>
 	    <RateU>1.0000</RateU>
@@ -245,6 +262,8 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 	    <RateV>1.0000</RateV>
 	  </RigElem>
 	  <RigElem>
+	    <RigRigName>Rte</RigRigName>
+	    <RigRigNo>0</RigRigNo>
 	    <BoneName>mune</BoneName>
 	    <AxisU>X</AxisU>
 	    <RateU>1.0000</RateU>
@@ -326,7 +345,9 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 {
 	/*
 	<RigElem>
-  	  <BoneName>koshi</BoneName>
+	  <RigRigName>Rte</RigRigName>
+	  <RigRigNo>0</RigRigNo>
+	  <BoneName>koshi</BoneName>
 	  <AxisU>X</AxisU>
 	  <RateU>1.0000</RateU>
 	  <AxisV>X</AxisV>
@@ -339,6 +360,47 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 		return 1;
 	}
 	RIGELEM* dstrigelem = &(m_customrig.rigelem[elemno]);
+
+	int ret, ret2;
+
+	char rigrigname[256] = { 0 };
+	ret = Read_Str(xmlbuf, "<RigRigName>", "</RigRigName>", rigrigname, 256);
+	if (ret == 0){
+		int cmp0 = strcmp("!noname!", rigrigname);
+		if (cmp0 == 0){
+			dstrigelem->rigrigboneno = -1;
+			dstrigelem->rigrigno = -1;
+		}
+		else{
+			CBone* rigrigbone = 0;
+			rigrigbone = m_model->GetBoneByName(rigrigname);
+			if (rigrigbone){
+				dstrigelem->rigrigboneno = rigrigbone->GetBoneNo();
+
+				int rigrigno = -1;
+				ret2 = Read_Int(xmlbuf, "<RigRigNo>", "</RigRigNo>", &rigrigno);
+				if (ret2 == 0){
+					if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
+						dstrigelem->rigrigno = rigrigno;
+					}
+					else{
+						dstrigelem->rigrigno = -1;
+					}
+				}
+				else{
+					dstrigelem->rigrigno = -1;
+				}
+			}
+			else{
+				dstrigelem->rigrigboneno = -1;
+				dstrigelem->rigrigno = -1;
+			}
+		}
+	}
+	else{
+		dstrigelem->rigrigboneno = -1;
+		dstrigelem->rigrigno = -1;
+	}
 
 	char bonename[256] = { 0 };
 	CallF( Read_Str( xmlbuf, "<BoneName>", "</BoneName>", bonename, 256 ), return 1 );
