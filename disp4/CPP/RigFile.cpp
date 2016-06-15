@@ -121,8 +121,10 @@ int CRigFile::WriteRig(CBone* srcbone)
 	  <BoneName>koshi</BoneName>
 	  <AxisU>X</AxisU>
 	  <RateU>1.0000</RateU>
+	  <EnableU>1</EnableU>
 	  <AxisV>X</AxisV>
 	  <RateV>1.0000</RateV>
+	  <EnableV>1</EnableV>
 	</RigElem>
 	<RigElem>
 	  <RigRigName>Rte</RigRigName>
@@ -130,8 +132,10 @@ int CRigFile::WriteRig(CBone* srcbone)
 	  <BoneName>mune</BoneName>
 	  <AxisU>X</AxisU>
 	  <RateU>1.0000</RateU>
+	  <EnableU>1</EnableU>
 	  <AxisV>X</AxisV>
 	  <RateV>1.0000</RateV>
+	  <EnableV>1</EnableV>
 	</RigElem>
   </Bone>
 ***/
@@ -188,6 +192,7 @@ int CRigFile::WriteRig(CBone* srcbone)
 		}
 		CallF(Write2File("      <AxisU>%s</AxisU>\r\n", straxis[axiskind]), return 1);
 		CallF(Write2File("      <RateU>%f</RateU>\r\n", currigelem.transuv[0].applyrate), return 1);
+		CallF(Write2File("      <EnableU>%d</EnableU>\r\n", currigelem.transuv[0].enable), return 1);
 
 		axiskind = currigelem.transuv[1].axiskind;
 		if ((axiskind < AXIS_X) || (axiskind > AXIS_Z)){
@@ -196,6 +201,7 @@ int CRigFile::WriteRig(CBone* srcbone)
 		}
 		CallF(Write2File("      <AxisV>%s</AxisV>\r\n", straxis[axiskind]), return 1);
 		CallF(Write2File("      <RateV>%f</RateV>\r\n", currigelem.transuv[1].applyrate), return 1);
+		CallF(Write2File("      <EnableV>%d</EnableV>\r\n", currigelem.transuv[1].enable), return 1);
 
 		CallF(Write2File("    </RigElem>\r\n"), return 1);
 	}
@@ -350,8 +356,10 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 	  <BoneName>koshi</BoneName>
 	  <AxisU>X</AxisU>
 	  <RateU>1.0000</RateU>
+	  <EnableU>1</EnableU>
 	  <AxisV>X</AxisV>
 	  <RateV>1.0000</RateV>
+	  <EnableV>1</EnableV>
 	</RigElem>
 	*/
 
@@ -416,6 +424,8 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 	char str_endaxis[2][10] = { "</AxisU>", "</AxisV>" };
 	char str_startrate[2][10] = { "<RateU>", "<RateV>" };
 	char str_endrate[2][10] = { "</RateU>", "</RateV>" };
+	char str_startenable[2][15] = { "<EnableU>", "<EnableV>" };
+	char str_endenable[2][15] = { "</EnableU>", "</EnableV>" };
 
 	int uvno;
 	for (uvno = 0; uvno < 2; uvno++){
@@ -437,6 +447,18 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 		float rate;
 		CallF(Read_Float(xmlbuf, str_startrate[uvno], str_endrate[uvno], &rate), return 1);
 		dstrigelem->transuv[uvno].applyrate = rate;
+		int ret;
+		int enable;
+		ret = Read_Int(xmlbuf, str_startenable[uvno], str_endenable[uvno], &enable);
+		if (ret != 0){
+			enable = 1;
+		}
+		else{
+			if ((enable != 0) && (enable != 1)){
+				enable = 0;
+			}
+		}
+		dstrigelem->transuv[uvno].enable = enable;
 	}
 
 

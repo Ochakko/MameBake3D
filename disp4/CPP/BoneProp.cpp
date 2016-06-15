@@ -364,6 +364,10 @@ void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno)
 		dstcr->rigelem[rigelemno].boneno = -1;
 		dstcr->rigelem[rigelemno].rigrigboneno = -1;
 		dstcr->rigelem[rigelemno].rigrigno = -1;
+		int uvno;
+		for (uvno = 0; uvno < 2; uvno++){
+			dstcr->rigelem[rigelemno].transuv[uvno].enable = 1;
+		}
 	}
 
 
@@ -498,6 +502,12 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 			if ((currigtrans.applyrate < -100.0f) || (currigtrans.applyrate > 100.0f)){
 				WCHAR strerr[256];
 				swprintf_s(strerr, 256, L"エラー。UV %d : applyrate : %f", uvno, currigtrans.applyrate);
+				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				return 0;
+			}
+			if ((currigtrans.enable != 0) && (currigtrans.enable != 1)){
+				WCHAR strerr[256];
+				swprintf_s(strerr, 256, L"エラー。UV %d : enable : %d", uvno, currigtrans.enable);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 				return 0;
 			}

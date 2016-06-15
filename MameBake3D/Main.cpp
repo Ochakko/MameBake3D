@@ -784,7 +784,7 @@ static int CustomRig2Dlg(HWND hDlgWnd);
 static int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum);
 static int SetRigRigCombo(HWND hDlgWnd, int elemno);
 static int CheckRigRigCombo(HWND hDlgWnd, int elemno);
-
+static int EnableRigAxisUV(HWND hDlgWnd);
 
 //angle limit dlg
 static int Bone2AngleLimit();
@@ -11175,6 +11175,8 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		int axisvid[5] = {IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5};
 		int rateuid[5] = {IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5};
 		int ratevid[5] = {IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5};
+		int enableuid[5] = { IDC_ENABLEU1, IDC_ENABLEU2, IDC_ENABLEU3, IDC_ENABLEU4, IDC_ENABLEU5};
+		int enablevid[5] = { IDC_ENABLEV1, IDC_ENABLEV2, IDC_ENABLEV3, IDC_ENABLEV4, IDC_ENABLEV5 };
 		int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
 
 
@@ -11191,8 +11193,6 @@ int CustomRig2Dlg(HWND hDlgWnd)
 					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"ñ¢ê›íË");
 					//return 1;
 				}
-
-
 			}
 			else{
 				SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"ñ¢ê›íË");
@@ -11228,7 +11228,24 @@ int CustomRig2Dlg(HWND hDlgWnd)
 			swprintf_s(strval, 256, L"%f", currigelem.transuv[1].applyrate);
 			SetDlgItemText(hDlgWnd, ratevid[elemno], (LPCWSTR)strval);
 
+			//int enableuid[5] = { IDC_ENABLEU1, IDC_ENABLEU2, IDC_ENABLEU3, IDC_ENABLEU4, IDC_ENABLEU5 };
+			//int enablevid[5] = { IDC_ENABLEV1, IDC_ENABLEV2, IDC_ENABLEV3, IDC_ENABLEV4, IDC_ENABLEV5 };
+			if (currigelem.transuv[0].enable == 1){
+				CheckDlgButton(hDlgWnd, enableuid[elemno], BST_CHECKED);
+			}
+			else{
+				CheckDlgButton(hDlgWnd, enableuid[elemno], BST_UNCHECKED);
+			}
+
+			if (currigelem.transuv[1].enable == 1){
+				CheckDlgButton(hDlgWnd, enablevid[elemno], BST_CHECKED);
+			}
+			else{
+				CheckDlgButton(hDlgWnd, enablevid[elemno], BST_UNCHECKED);
+			}
+
 		}
+		EnableRigAxisUV(hDlgWnd);
 	}
 	else{
 		_ASSERT(0);
@@ -11315,6 +11332,8 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 		}
 	}
 
+	EnableRigAxisUV(hDlgWnd);
+
 	return 0;
 
 }
@@ -11375,6 +11394,8 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
 				int rateuid[5] = { IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5 };
 				int ratevid[5] = { IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5 };
+				int enableuid[5] = { IDC_ENABLEU1, IDC_ENABLEU2, IDC_ENABLEU3, IDC_ENABLEU4, IDC_ENABLEU5 };
+				int enablevid[5] = { IDC_ENABLEV1, IDC_ENABLEV2, IDC_ENABLEV3, IDC_ENABLEV4, IDC_ENABLEV5 };
 
 				int elemno;
 				for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
@@ -11406,6 +11427,22 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
+
+
+					if (IsDlgButtonChecked(hDlgWnd, enableuid[elemno]) == BST_CHECKED){
+						s_customrig.rigelem[elemno].transuv[0].enable = 1;
+					}
+					else{
+						s_customrig.rigelem[elemno].transuv[0].enable = 0;
+					}
+
+					if (IsDlgButtonChecked(hDlgWnd, enablevid[elemno]) == BST_CHECKED){
+						s_customrig.rigelem[elemno].transuv[1].enable = 1;
+					}
+					else{
+						s_customrig.rigelem[elemno].transuv[1].enable = 0;
+					}
+
 				}
 
 
@@ -11597,6 +11634,28 @@ int BoneRClick(int srcboneno)
 	return 0;
 }
 
+int EnableRigAxisUV(HWND hDlgWnd)
+{
+	int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
+	int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
+	int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
+
+	int elemno;
+	for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
+		RIGELEM currigelem = s_customrig.rigelem[elemno];
+		if (currigelem.rigrigboneno >= 0){
+			EnableWindow(GetDlgItem(hDlgWnd, axisuid[elemno]), false);
+			EnableWindow(GetDlgItem(hDlgWnd, axisvid[elemno]), false);
+		}
+		else{
+			EnableWindow(GetDlgItem(hDlgWnd, axisuid[elemno]), true);
+			EnableWindow(GetDlgItem(hDlgWnd, axisvid[elemno]), true);
+		}
+	}
+
+	return 0;
+}
+
 int SetRigRigCombo(HWND hDlgWnd, int elemno)
 {
 	int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
@@ -11689,6 +11748,8 @@ int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 			SetRigRigCombo(hDlgWnd, elemno);
 		}
 	}
+
+	EnableRigAxisUV(hDlgWnd);
 
 
 	return 0;

@@ -161,6 +161,7 @@ typedef struct tag_rigtrans
 {
 	int axiskind;
 	float applyrate;// from -100.0f to 100.0f
+	int enable;//enable 1, disable 0
 }RIGTRANS;
 
 typedef struct tag_rigelem
