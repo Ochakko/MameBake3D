@@ -25,6 +25,11 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/06/15 その３
+	【RigのRig】 MameBake3D 【peace!】
+	https://youtu.be/B_zkbayPECc
+
+
 2016/06/15 その２
 	RigのRigのサンプルを作りました。
 	Media/RigTest8/RigTest8.chaを読み込むと指のRigが読み込まれます。
@@ -615,6 +620,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【RigのRig】 MameBake3D 【peace!】
+https://youtu.be/B_zkbayPECc
+
 【モーション】 MameBake3D 【対称コピー】動画
 https://youtu.be/YeM43To-xCg
 
