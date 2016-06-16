@@ -85,6 +85,9 @@ public:
 		SetParams(qx);
 	};
 
+	//inout : srcdstq
+	int InOrder(CQuaternion* srcdstq);
+
 private:
 
 	float vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 );

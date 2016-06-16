@@ -61,7 +61,8 @@ enum
 enum tag_befeulkind
 {
 	BEFEUL_ZERO,
-	BEFEUL_BEFFRAME
+	BEFEUL_BEFFRAME,
+	BEFEUL_DIRECT
 };
 
 

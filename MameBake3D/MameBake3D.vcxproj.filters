@@ -189,6 +189,12 @@
     <ClCompile Include="..\disp4\CPP\RigFile.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\disp4\CPP\FilterDlg.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\disp4\CPP\MotFilter.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColiIDDlg.h">
@@ -369,6 +375,15 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\disp4\INCLUDE\RigFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\FilterDlg.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\MotFilter.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\FilterType.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

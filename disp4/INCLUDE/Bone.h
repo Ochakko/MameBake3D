@@ -335,9 +335,10 @@ public:
 
 	int CalcBoneDepth();
 
-	D3DXVECTOR3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	D3DXVECTOR3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, D3DXVECTOR3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	D3DXMATRIX CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
+	int SetWorldMatFromEulAndTra(int setchildflag, D3DXVECTOR3 srceul, D3DXVECTOR3 srctra, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
 	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
 	D3DXMATRIX GetWorldMat(int srcmotid, double srcframe);
@@ -348,8 +349,9 @@ public:
 	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe);
+	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
 	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
+	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
 
 private:
 

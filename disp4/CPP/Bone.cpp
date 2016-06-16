@@ -1504,7 +1504,7 @@ void CBone::SetOldJointFPos(D3DXVECTOR3 srcpos){
 }
 
 
-D3DXVECTOR3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone)
+D3DXVECTOR3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, D3DXVECTOR3* directbefeul)
 {
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
@@ -1527,6 +1527,9 @@ D3DXVECTOR3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, 
 				befeul = befmp->GetLocalEul();
 			}
 		}
+	}
+	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
+		befeul = *directbefeul;
 	}
 
 	CMotionPoint tmpmp;
@@ -1782,41 +1785,21 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				}
 				else{
 					//FBXにボーンの初期の軸の向きが記録されている場合
-					if (m_parent){
-						if (multworld == 1){
-							selm = GetNodeMat() * pcurmp->GetWorldMat();
-						}
-						else{
-							selm = GetNodeMat();
-						}
+					if (multworld == 1){
+						selm = GetNodeMat() * pcurmp->GetWorldMat();
 					}
 					else{
-						if (multworld == 1){
-							selm = GetNodeMat() * pcurmp->GetWorldMat();
-						}
-						else{
-							selm = GetNodeMat();
-						}
+						selm = GetNodeMat();
 					}
 				}
 			}
 			else{
 				//endjoint
-				if (m_parent){
-					if (multworld == 1){
-						selm = pcurmp->GetWorldMat();
-					}
-					else{
-						D3DXMatrixIdentity(&selm);
-					}
+				if (multworld == 1){
+					selm = pcurmp->GetWorldMat();
 				}
 				else{
-					if (multworld == 1){
-						selm = pcurmp->GetWorldMat();
-					}
-					else{
-						D3DXMatrixIdentity(&selm);
-					}
+					D3DXMatrixIdentity(&selm);
 				}
 			}
 		}
@@ -1929,8 +1912,6 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 src
 	int multworld = 0;//local!!!
 	axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
 	axisq.RotationMatrix(axismat);
-	CQuaternion invaxisq;
-	axisq.inv(&invaxisq);
 
 	CQuaternion newrot;
 	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
@@ -1939,6 +1920,10 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 src
 	else{
 		newrot.SetRotation(0, srceul);
 	}
+
+
+	QuaternionInOrder(srcmotid, srcframe, &newrot);
+
 
 	D3DXMATRIX newlocalmat, newrotmat, befrotmat, aftrotmat;
 	newrotmat = newrot.MakeRotMatX();
@@ -1994,6 +1979,83 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 src
 
 	return 0;
 }
+
+int CBone::SetWorldMatFromEulAndTra(int setchildflag, D3DXVECTOR3 srceul, D3DXVECTOR3 srctra, int srcmotid, double srcframe)
+{
+	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
+	if (!m_child){
+		return 0;
+	}
+
+	D3DXMATRIX axismat;
+	CQuaternion axisq;
+	int multworld = 0;//local!!!
+	axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
+	axisq.RotationMatrix(axismat);
+	CQuaternion invaxisq;
+	axisq.inv(&invaxisq);
+
+	CQuaternion newrot;
+	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
+		newrot.SetRotation(&axisq, srceul);
+	}
+	else{
+		newrot.SetRotation(0, srceul);
+	}
+
+	D3DXMATRIX newlocalmat, newrotmat, befrotmat, aftrotmat;
+	newrotmat = newrot.MakeRotMatX();
+	D3DXMatrixIdentity(&befrotmat);
+	D3DXMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+	D3DXMatrixIdentity(&aftrotmat);
+	D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+	newlocalmat = befrotmat * newrotmat * aftrotmat;
+
+	D3DXMATRIX tramat;
+	D3DXMatrixIdentity(&tramat);
+	D3DXMatrixTranslation(&tramat, srctra.x, srctra.y, srctra.z);
+	newlocalmat = newlocalmat * tramat;
+
+
+	D3DXMATRIX newmat;
+	if (m_parent){
+		CMotionPoint* parmp;
+		parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		if (parmp){
+			D3DXMATRIX parmat;
+			parmat = parmp->GetWorldMat();
+			newmat = newlocalmat * parmat;
+		}
+		else{
+			_ASSERT(0);
+			newmat = newlocalmat;
+		}
+	}
+	else{
+		newmat = newlocalmat;
+	}
+
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, srcframe);
+	if (curmp){
+		//curmp->SetBefWorldMat(curmp->GetWorldMat());
+		curmp->SetWorldMat(newmat);
+		curmp->SetLocalEul(srceul);
+
+		if (setchildflag == 1){
+			if (m_child){
+				CQuaternion dummyq;
+				m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+			}
+		}
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
 
 int CBone::SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul)
 {
@@ -2428,7 +2490,7 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	return 0;
 }
 
-D3DXVECTOR3 CBone::CalcFBXEul(int srcmotid, double srcframe)
+D3DXVECTOR3 CBone::CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr)
 {
 	CMotionPoint tmpmp;
 	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
@@ -2442,6 +2504,10 @@ D3DXVECTOR3 CBone::CalcFBXEul(int srcmotid, double srcframe)
 
 	D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	if (befeulptr){
+		befeul = *befeulptr;
+	}
+
 	tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
 
 	return cureul;
@@ -2466,4 +2532,19 @@ D3DXVECTOR3 CBone::CalcFBXTra(int srcmotid, double srcframe)
 
 }
 
+int CBone::QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq)
+{
+	CQuaternion beflocalq;
+	CMotionPoint befmp;
+	double befframe = srcframe - 1.0;
+	if (befframe >= 0.0001){
+		CalcLocalInfo(srcmotid, befframe, &befmp);
+		beflocalq = befmp.GetQ();
+	}
+
+	beflocalq.InOrder(srcdstq);
+
+	return 0;
+
+}
 

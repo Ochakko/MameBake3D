@@ -89,6 +89,7 @@ MameBake3Dはデフォルトで相対IKです。
 #include <BoneProp.h>
 #include <lmtFile.h>
 #include <RigFile.h>
+#include <MotFilter.h>
 
 typedef struct tag_spaxis
 {
@@ -375,6 +376,7 @@ static OWP_Button* s_toolMotPropB = 0;
 static OWP_Button* s_toolMarkB = 0;
 static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
+static OWP_Button* s_toolFilterB = 0;
 
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
@@ -419,6 +421,7 @@ static bool s_motpropFlag = false;
 static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
+static bool s_filterFlag = false;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -3103,6 +3106,10 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 	if( s_toolInitMPB ){
 		delete s_toolInitMPB;
 		s_toolInitMPB = 0;
+	}
+	if (s_toolFilterB){
+		delete s_toolFilterB;
+		s_toolFilterB = 0;
 	}
 
 	if( s_owpTimeline ){
@@ -9424,6 +9431,39 @@ int OnFrameToolWnd()
 	}
 	*/
 
+	if (s_filterFlag == true){
+		s_filterFlag = false;
+
+		if (s_model){
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+		}
+
+		s_editrange.Clear();
+		if (s_model && s_model->GetCurMotInfo()){
+			if (s_owpTimeline && s_owpLTimeline){
+				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+				int keynum;
+				double startframe, endframe, applyframe;
+				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+				if (keynum >= 2){
+					CMotFilter motfilter;
+					motfilter.Filter(s_model, s_model->GetCurMotInfo()->motid, (int)startframe, (int)endframe);
+
+					if (s_model){
+						s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+					}
+				}
+				else{
+					::MessageBox(s_mainwnd, L"フレーム範囲を指定してから再試行してください。", L"選択エラー", MB_OK);
+				}
+			}
+		}
+
+
+	}
+
+
 
 	if (s_deleteFlag){
 		s_deleteFlag = false;
@@ -10587,6 +10627,8 @@ int CreateToolWnd()
 	//s_toolDeleteB = new OWP_Button(_T("削除"));
 	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
 	s_toolMotPropB = new OWP_Button(_T("プロパティ"));
+	s_toolFilterB = new OWP_Button(_T("平滑化"));
+
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolCopyB);
@@ -10595,6 +10637,7 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolInitMPB);
 	//s_toolWnd->addParts(*s_toolMarkB);
 	s_toolWnd->addParts(*s_toolMotPropB);
+	s_toolWnd->addParts(*s_toolFilterB);
 
 	s_toolWnd->setCloseListener([](){ s_closetoolFlag = true; });
 	s_toolCopyB->setButtonListener([](){ s_copyFlag = true; });
@@ -10604,6 +10647,7 @@ int CreateToolWnd()
 	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
 	s_toolSelBoneB->setButtonListener([](){ s_selboneFlag = true; });
 	s_toolInitMPB->setButtonListener([](){ s_initmpFlag = true; });
+	s_toolFilterB->setButtonListener([](){ s_filterFlag = true; });
 
 	return 0;
 
