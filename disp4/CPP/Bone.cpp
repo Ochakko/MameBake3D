@@ -2443,16 +2443,23 @@ D3DXVECTOR3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	curmat = GetWorldMat(srcmotid, srcframe);
 
 	int rotcenterflag1 = 1;
-	D3DXMATRIX curglobalrotmat;
-	curglobalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+	D3DXMATRIX curlocalrotmat, invcurlocalrotmat;
+	curlocalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+	D3DXMatrixInverse(&invcurlocalrotmat, NULL, &curlocalrotmat);
+	D3DXMATRIX parmat, invparmat;
+	D3DXMatrixIdentity(&parmat);
+	invparmat = parmat;
 	if (GetParent()){
-		curglobalrotmat = curglobalrotmat * GetParent()->GetWorldMat(srcmotid, srcframe);
+		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		D3DXMatrixInverse(&invparmat, NULL, &parmat);
 	}
 
-	D3DXVECTOR3 currotpos, curpos;
-	D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &curmat);
-	D3DXVec3TransformCoord(&currotpos, &(GetJointFPos()), &curglobalrotmat);
-	D3DXVECTOR3 curanimtra = curpos - currotpos;
+	D3DXMATRIX curmvmat;
+	curmvmat = invcurlocalrotmat * curmat * invparmat;
+
+	D3DXVECTOR3 zeropos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 curanimtra;
+	D3DXVec3TransformCoord(&curanimtra, &zeropos, &curmvmat);
 
 	return curanimtra;
 }
@@ -2476,7 +2483,9 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 		int setmatflag1 = 1;
 		CQuaternion dummyq;
 		D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_underRetargetFlag = true;
 		RotBoneQReq(0, srcmotid, srcframe, dummyq, 0, dummytra, setmatflag1, &setmat);
+		g_underRetargetFlag = false;
 
 		//ÉIÉCÉâÅ[äpèâä˙âª
 		D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);

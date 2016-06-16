@@ -1971,17 +1971,17 @@ HRESULT WINAPI DXUTCreateDevice( bool bWindowed, int nSuggestedWidth, int nSugge
 
     if( GetDXUTState().GetOverrideForcePureHWVP() )
     {
-        deviceSettings.d3d9.BehaviorFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE;
+		deviceSettings.d3d9.BehaviorFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE | D3DCREATE_FPU_PRESERVE;
         matchOptions.eVertexProcessing = DXUTMT_PRESERVE_INPUT;
     }
     else if( GetDXUTState().GetOverrideForceHWVP() )
     {
-        deviceSettings.d3d9.BehaviorFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+		deviceSettings.d3d9.BehaviorFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE;
         matchOptions.eVertexProcessing = DXUTMT_PRESERVE_INPUT;
     }
     else if( GetDXUTState().GetOverrideForceSWVP() )
     {
-        deviceSettings.d3d9.BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		deviceSettings.d3d9.BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE;
         matchOptions.eVertexProcessing = DXUTMT_PRESERVE_INPUT;
     }
 
@@ -2757,19 +2757,22 @@ void DXUTUpdateDeviceSettingsWithOverrides( DXUTDeviceSettings* pDeviceSettings 
             pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_SOFTWARE_VERTEXPROCESSING;
             pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
             pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_PUREDEVICE;
+			pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_FPU_PRESERVE;
         }
         else if( GetDXUTState().GetOverrideForceHWVP() )
         {
             pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_SOFTWARE_VERTEXPROCESSING;
             pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_PUREDEVICE;
             pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
-        }
+			pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_FPU_PRESERVE;
+		}
         else if( GetDXUTState().GetOverrideForceSWVP() )
         {
             pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_HARDWARE_VERTEXPROCESSING;
             pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_PUREDEVICE;
             pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-        }
+			pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_FPU_PRESERVE;
+		}
     }
     else
     {

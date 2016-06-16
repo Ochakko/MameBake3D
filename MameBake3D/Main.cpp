@@ -1877,9 +1877,12 @@ void RenderText( double fTime )
 				int paraxsiflag = 1;
 				int isfirstbone = 0;
 				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+				D3DXVECTOR3 curtra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
 				//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
 				txtHelper.DrawFormattedTextLine(L"selected bone : %s", wbonename);
 				txtHelper.DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
+				txtHelper.DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
 			}
 		}
 	}
@@ -9379,6 +9382,7 @@ int OnFrameToolWnd()
 
 								parmp->SetBefWorldMat(parmp->GetWorldMat());
 								srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
+_ASSERT(0);
 							}
 						}
 					}
