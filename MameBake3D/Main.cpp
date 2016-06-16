@@ -9377,6 +9377,7 @@ int OnFrameToolWnd()
 								CQuaternion dummyq;
 								D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
+								parmp->SetBefWorldMat(parmp->GetWorldMat());
 								srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
 							}
 						}
