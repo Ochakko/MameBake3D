@@ -25,6 +25,10 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/06/18 その２
+	【ガウシアンで】 MameBake3D 【平滑化】
+	https://youtu.be/6iUwef1ZiYM
+
 2016/06/18 その１
 	平滑化機能のデバッグをしました。
 	平滑化のフィルタータイプとフィルターサイズをセットし忘れているバグがありました。
@@ -665,6 +669,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【ガウシアンで】 MameBake3D 【平滑化】
+https://youtu.be/6iUwef1ZiYM
+
 【補間で】 MameBake3D 【ノイズ除去】
 https://youtu.be/l4EuXXCwXcw
 
