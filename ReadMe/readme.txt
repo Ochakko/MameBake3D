@@ -25,6 +25,11 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/06/17 その５
+	【補間で】 MameBake3D 【ノイズ除去】
+	https://youtu.be/l4EuXXCwXcw
+
+
 2016/06/17 その４
 	ツールウインドウに「補間」ボタンを追加しました。
 	選択フレーム範囲の最初のフレームと最後のフレームの姿勢を保ちつつその間の姿勢を補間します。
@@ -653,6 +658,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【補間で】 MameBake3D 【ノイズ除去】
+https://youtu.be/l4EuXXCwXcw
+
 【RigのRig】 MameBake3D 【peace!】
 https://youtu.be/B_zkbayPECc
 
