@@ -59,6 +59,7 @@
 
 #include <collision.h>
 #include <EditRange.h>
+#include <BoneProp.h>
 
 #include "btBulletDynamicsCommon.h"
 #include "LinearMath/btIDebugDraw.h"
@@ -5628,7 +5629,7 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 	if (!srcbone){
 		return;
 	}
-	if ((srcstartframe < 0.0) || (srcendframe < 0.0) || (srcendframe < srcstartframe)){
+	if ((srcstartframe < 0.0) || (srcendframe < 0.0) || (srcendframe <= srcstartframe)){
 		return;
 	}
 	if (!GetCurMotInfo()){
@@ -5652,10 +5653,19 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 			double slerpt;
 			CQuaternion setq;
 			D3DXVECTOR3 settra;
-			slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe + 1);
-			startq.Slerp2(endq, slerpt, &setq);
-			settra = starttra + slerpt * (endtra - starttra);
-
+			if (IsTimeEqual(frame, srcstartframe)){
+				setq = startq;
+				settra = starttra;
+			}
+			else if (IsTimeEqual(frame, srcendframe)){
+				setq = endq;
+				settra = endtra;
+			}
+			else{
+				slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframe‚Í–`“ª‚Åreturn‚µ‚Ä‚¢‚éB
+				startq.Slerp2(endq, slerpt, &setq);
+				settra = starttra + slerpt * (endtra - starttra);
+			}
 			int setchildflag1 = 1;
 			CQuaternion iniq;
 			srcbone->SetWorldMatFromQAndTra(setchildflag1, iniq, setq, settra, curmotid, frame);

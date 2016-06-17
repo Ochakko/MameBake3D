@@ -516,3 +516,15 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 
 	return 1;
 }
+
+
+bool IsTimeEqual(double srctime1, double srctime2)
+{
+	double difftime = srctime1 - srctime2;
+	if ((difftime >= -0.0001) && (difftime <= 0.0001)){
+		return true;
+	}
+	else{
+		return false;
+	}
+}

@@ -31,4 +31,6 @@ void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
 int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
 void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
 
+bool IsTimeEqual(double srctime1, double srctime2);
+
 #endif
