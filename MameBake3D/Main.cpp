@@ -737,6 +737,11 @@ static int OnRenderSelect();
 static int OnRenderSprite();
 static int OnRenderUtDialog(float fElapsedTime);
 
+static int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
+static int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
+static int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe);
+static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
+
 static int ChangeCurrentBone();
 
 static int InitCurMotion(int selectflag, double expandmotion);
@@ -9241,16 +9246,15 @@ int OnFrameToolWnd()
 		if (s_model && s_owpTimeline && s_model->GetCurMotInfo() && !s_copymotmap.empty()){
 
 			int cpnum = (int)s_selbonedlg.m_cpvec.size();
+			int keynum = 0;
+			double startframe, endframe, applyframe;
 
 			double pastestartframe = 0.0;
 			s_editrange.Clear();
 			if (s_model && s_model->GetCurMotInfo()){
 				if (s_owpTimeline && s_owpLTimeline){
 					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-					int keynum;
-					double startframe, endframe, applyframe;
 					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-					pastestartframe = startframe;//!!!!!!!!!!!!!!
 				}
 			}
 
@@ -9258,137 +9262,35 @@ int OnFrameToolWnd()
 
 			//コピーされたキーの先頭時刻を求める
 			double copyStartTime = DBL_MAX;
+			double copyEndTime = 0;
 			vector<CPELEM>::iterator itrcp;
 			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
 				if (itrcp->mp.GetFrame() <= copyStartTime){
 					copyStartTime = itrcp->mp.GetFrame();
 				}
-			}
-
-			//ペーストする
-			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
-				CBone* srcbone = itrcp->bone;
-				_ASSERT(srcbone);
-
-				int docopyflag = 0;
-				int hasNotMvParFlag = 1;
-				D3DXMATRIX notmvparmat;
-				D3DXMatrixIdentity(&notmvparmat);
-				if (cpnum != 0){
-					//selected bone at selbonedlg
-					int cpno;
-					for (cpno = 0; cpno < cpnum; cpno++){
-						CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
-						if (chkbone == srcbone){
-							docopyflag = 1;
-
-							CBone* parbone = srcbone->GetParent();
-							if (parbone){
-								int cpno2;
-								for (cpno2 = 0; cpno2 < cpnum; cpno2++){
-									CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
-									if (chkparbone == parbone){
-										hasNotMvParFlag = 0;
-									}
-								}
-							}
-							else{
-								hasNotMvParFlag = 0;
-							}
-
-							break;
-						}
-						else{
-							hasNotMvParFlag = 0;
-						}
-					}
-				}
-				else{
-					docopyflag = 1;// all bone
-					hasNotMvParFlag = 0;
-				}
-
-				if (srcbone && (docopyflag == 1)){
-					_ASSERT(s_model->GetCurMotInfo());
-					CMotionPoint srcmp = itrcp->mp;
-					double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + pastestartframe + 0.1));//!!!!!!!!!!!!!!!!!!
-					int curmotid = s_model->GetCurMotInfo()->motid;
-
-					srcbone->PasteMotionPoint(curmotid, newframe, srcmp);
+				if (itrcp->mp.GetFrame() >= copyEndTime){
+					copyEndTime = itrcp->mp.GetFrame();
 				}
 			}
 
-			
-			//移動しないボーンのための処理
-			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
-				CBone* srcbone = itrcp->bone;
-				_ASSERT(srcbone);
-
-				int docopyflag = 0;
-				int hasNotMvParFlag = 1;
-				D3DXMATRIX notmvparmat;
-				D3DXMatrixIdentity(&notmvparmat);
-
-				if (cpnum != 0){
-					//selected bone at selbonedlg
-					int cpno;
-					for (cpno = 0; cpno < cpnum; cpno++){
-						CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
-						if (chkbone == srcbone){
-							docopyflag = 1;
-
-							CBone* parbone = srcbone->GetParent();
-							if (parbone){
-								int cpno2;
-								for (cpno2 = 0; cpno2 < cpnum; cpno2++){
-									CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
-									if (chkparbone == parbone){
-										hasNotMvParFlag = 0;
-									}
-								}
-							}
-							else{
-								hasNotMvParFlag = 0;
-							}
-
-							break;
-						}
-						else{
-							hasNotMvParFlag = 0;
-						}
-					}
+			if (keynum >= 0){
+				if (keynum == 0){
+					double motleng = s_model->GetCurMotInfo()->frameleng - 1;
+					double srcendframe = min(motleng, startframe + (copyEndTime - copyStartTime));
+					srcendframe = max(srcendframe, 0.0);
+					PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, srcendframe);
 				}
 				else{
-					docopyflag = 1;// all bone
-					hasNotMvParFlag = 0;
-				}
+					if (keynum <= (int)(copyEndTime - copyStartTime + 1.0 + 0.1)){
+						PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
+					}else{
+						PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
 
-
-				if (srcbone && (docopyflag == 1)){
-					CMotionPoint srcmp = itrcp->mp;
-					CMotionPoint* newmp = 0;
-					_ASSERT(s_model->GetCurMotInfo());
-					double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + pastestartframe + 0.1));//!!!!!!!!!!!!!!!!!!
-					int curmotid = s_model->GetCurMotInfo()->motid;
-					newmp = srcbone->GetMotionPoint(curmotid, newframe);
-					if (newmp){
-						if (hasNotMvParFlag == 1){
-							CBone* parbone = srcbone->GetParent();
-							if (parbone){
-								CMotionPoint* parmp = parbone->GetMotionPoint(curmotid, newframe);
-								int setmatflag1 = 1;
-								CQuaternion dummyq;
-								D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-
-								parmp->SetBefWorldMat(parmp->GetWorldMat());
-								srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
-_ASSERT(0);
-							}
-						}
+						//コピー元の最終フレームの姿勢をコピー先の残りのフレームにペースト
+						PasteMotionPointAfterCopyEnd(copyStartTime, copyEndTime, startframe, endframe);
 					}
 				}
-
-			}			
+			}
 		}
 		s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
 	}
@@ -9492,6 +9394,191 @@ _ASSERT(0);
 		//_ASSERT( 0 );
 		delete mpptr;
 		***/
+	}
+
+	return 0;
+}
+
+int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
+{
+	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+
+	int docopyflag = 0;
+	int hasNotMvParFlag = 1;
+	D3DXMATRIX notmvparmat;
+	D3DXMatrixIdentity(&notmvparmat);
+	if (cpnum != 0){
+		//selected bone at selbonedlg
+		int cpno;
+		for (cpno = 0; cpno < cpnum; cpno++){
+			CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
+			if (chkbone == srcbone){
+				docopyflag = 1;
+
+				CBone* parbone = srcbone->GetParent();
+				if (parbone){
+					int cpno2;
+					for (cpno2 = 0; cpno2 < cpnum; cpno2++){
+						CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
+						if (chkparbone == parbone){
+							hasNotMvParFlag = 0;
+						}
+					}
+				}
+				else{
+					hasNotMvParFlag = 0;
+				}
+
+				break;
+			}
+			else{
+				hasNotMvParFlag = 0;
+			}
+		}
+	}
+	else{
+		docopyflag = 1;// all bone
+		hasNotMvParFlag = 0;
+	}
+
+	if (srcbone && (docopyflag == 1)){
+		_ASSERT(s_model->GetCurMotInfo());
+		int curmotid = s_model->GetCurMotInfo()->motid;
+		srcbone->PasteMotionPoint(curmotid, newframe, srcmp);
+	}
+
+	return 0;
+}
+
+int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
+{
+	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+
+
+	int docopyflag = 0;
+	int hasNotMvParFlag = 1;
+	D3DXMATRIX notmvparmat;
+	D3DXMatrixIdentity(&notmvparmat);
+
+	if (cpnum != 0){
+		//selected bone at selbonedlg
+		int cpno;
+		for (cpno = 0; cpno < cpnum; cpno++){
+			CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
+			if (chkbone == srcbone){
+				docopyflag = 1;
+
+				CBone* parbone = srcbone->GetParent();
+				if (parbone){
+					int cpno2;
+					for (cpno2 = 0; cpno2 < cpnum; cpno2++){
+						CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
+						if (chkparbone == parbone){
+							hasNotMvParFlag = 0;
+						}
+					}
+				}
+				else{
+					hasNotMvParFlag = 0;
+				}
+
+				break;
+			}
+			else{
+				hasNotMvParFlag = 0;
+			}
+		}
+	}
+	else{
+		docopyflag = 1;// all bone
+		hasNotMvParFlag = 0;
+	}
+
+
+	if (srcbone && (docopyflag == 1)){
+		CMotionPoint* newmp = 0;
+		_ASSERT(s_model->GetCurMotInfo());
+		int curmotid = s_model->GetCurMotInfo()->motid;
+		newmp = srcbone->GetMotionPoint(curmotid, newframe);
+		if (newmp){
+			if (hasNotMvParFlag == 1){
+				CBone* parbone = srcbone->GetParent();
+				if (parbone){
+					CMotionPoint* parmp = parbone->GetMotionPoint(curmotid, newframe);
+					int setmatflag1 = 1;
+					CQuaternion dummyq;
+					D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+					parmp->SetBefWorldMat(parmp->GetWorldMat());
+					srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
+					_ASSERT(0);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe)
+{
+	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+
+	vector<CPELEM>::iterator itrcp;
+	for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+		CBone* srcbone = itrcp->bone;
+		if (srcbone){
+			CMotionPoint srcmp = itrcp->mp;
+			double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + startframe + 0.1));//!!!!!!!!!!!!!!!!!!
+			if ((newframe >= startframe) && (newframe <= endframe)){
+				PasteMotionPoint(srcbone, srcmp, newframe);
+			}
+		}
+	}
+
+	//移動しないボーンのための処理
+	for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+		CBone* srcbone = itrcp->bone;
+		if (srcbone){
+			CMotionPoint srcmp = itrcp->mp;
+			double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + startframe + 0.1));//!!!!!!!!!!!!!!!!!!
+			if ((newframe >= startframe) && (newframe <= endframe)){
+				PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
+			}
+		}
+	}
+
+	return 0;
+}
+
+int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe)
+{
+	vector<CPELEM>::iterator itrcp;
+
+	double newframe;
+	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
+		for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+			CBone* srcbone = itrcp->bone;
+			if (srcbone){
+				CMotionPoint srcmp = itrcp->mp;
+				if (itrcp->mp.GetFrame() == copyEndTime){
+					PasteMotionPoint(srcbone, srcmp, newframe);
+				}
+			}
+		}
+	}
+
+	//移動しないボーンのための処理
+	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
+		for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+			CBone* srcbone = itrcp->bone;
+			if (srcbone){
+				CMotionPoint srcmp = itrcp->mp;
+				if (itrcp->mp.GetFrame() == copyEndTime){
+					PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
+				}
+			}
+		}
 	}
 
 	return 0;
