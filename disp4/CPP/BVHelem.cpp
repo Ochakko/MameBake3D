@@ -692,11 +692,10 @@ int CBVHElem::ConvZxyRot()
 	int frameno;
 	D3DXVECTOR3 befeul;
 	ZeroMemory(&befeul, sizeof(D3DXVECTOR3));
-	CQuaternion* befq = 0;
+	CQuaternion befq;
+	befq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 	for (frameno = 0; frameno < framenum; frameno++){
-		if (befq){
-			befq->InOrder(qptr + frameno);
-		}
+		befq.InOrder(qptr + frameno);
 
 		D3DXVECTOR3 euler;
 		//qToEulerAxis( *(treeq + frameno), (qptr + frameno), &euler);
@@ -705,8 +704,9 @@ int CBVHElem::ConvZxyRot()
 		modifyEuler(&euler, &befeul);
 
 		*(zxyrot + frameno) = euler;
+
 		befeul = euler;
-		befq = qptr + frameno;
+		befq.SetRotation(0, *(zxyrot + frameno));
 	}
 
 	return 0;

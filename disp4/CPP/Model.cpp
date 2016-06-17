@@ -5612,6 +5612,63 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 	}
 }
 
+int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe)
+{
+	if (!GetCurMotInfo()){
+		return 0;
+	}
+
+	InterpolateBetweenSelectionReq(GetTopBone(), srcstartframe, srcendframe);
+
+	return 0;
+}
+
+void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe)
+{
+	if (!srcbone){
+		return;
+	}
+	if ((srcstartframe < 0.0) || (srcendframe < 0.0) || (srcendframe < srcstartframe)){
+		return;
+	}
+	if (!GetCurMotInfo()){
+		return;
+	}
+
+	if (srcbone){
+		int curmotid = GetCurMotInfo()->motid;
+		CMotionPoint startmp, endmp;
+		srcbone->CalcLocalInfo(curmotid, srcstartframe, &startmp);
+		srcbone->CalcLocalInfo(curmotid, srcendframe, &endmp);
+		CQuaternion startq, endq;
+		D3DXVECTOR3 starttra, endtra;
+		startq = startmp.GetQ();
+		endq = endmp.GetQ();
+		starttra = srcbone->CalcLocalTraAnim(curmotid, srcstartframe);
+		endtra = srcbone->CalcLocalTraAnim(curmotid, srcendframe);
+
+		double frame;
+		for (frame = srcstartframe; frame <= srcendframe; frame += 1.0){
+			double slerpt;
+			CQuaternion setq;
+			D3DXVECTOR3 settra;
+			slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe + 1);
+			startq.Slerp2(endq, slerpt, &setq);
+			settra = starttra + slerpt * (endtra - starttra);
+
+			int setchildflag1 = 1;
+			CQuaternion iniq;
+			srcbone->SetWorldMatFromQAndTra(setchildflag1, iniq, setq, settra, curmotid, frame);
+		}
+
+		if (srcbone->GetChild()){
+			InterpolateBetweenSelectionReq(srcbone->GetChild(), srcstartframe, srcendframe);
+		}
+		if (srcbone->GetBrother()){
+			InterpolateBetweenSelectionReq(srcbone->GetBrother(), srcstartframe, srcendframe);
+		}
+	}
+}
 
 int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat)
 {

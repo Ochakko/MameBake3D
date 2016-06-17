@@ -555,6 +555,8 @@ public:
 
 	CBone* GetSymPosBone(CBone* srcbone);
 
+	int InterpolateBetweenSelection(double srcstartframe, double srcendframe);
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -659,6 +661,7 @@ private:
 	int AdjustBoneTra( CEditRange* erptr, CBone* lastpar );
 
 	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
+	void InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe);
 
 public: //accesser
 	FbxManager* GetFBXSDK(){

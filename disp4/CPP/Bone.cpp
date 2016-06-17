@@ -1980,6 +1980,75 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 src
 	return 0;
 }
 
+int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, D3DXVECTOR3 srctra, int srcmotid, double srcframe)
+{
+	if (!m_child){
+		return 0;
+	}
+
+	CQuaternion invaxisq;
+	axisq.inv(&invaxisq);
+	CQuaternion newrot = invaxisq * srcq * axisq;
+
+	D3DXMATRIX newlocalmat, newrotmat, befrotmat, aftrotmat;
+	newrotmat = newrot.MakeRotMatX();
+	D3DXMatrixIdentity(&befrotmat);
+	D3DXMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+	D3DXMatrixIdentity(&aftrotmat);
+	D3DXMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+	newlocalmat = befrotmat * newrotmat * aftrotmat;
+
+	D3DXMATRIX tramat;
+	D3DXMatrixIdentity(&tramat);
+	D3DXMatrixTranslation(&tramat, srctra.x, srctra.y, srctra.z);
+	newlocalmat = newlocalmat * tramat;
+
+
+	D3DXMATRIX newmat;
+	if (m_parent){
+		CMotionPoint* parmp;
+		parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		if (parmp){
+			D3DXMATRIX parmat;
+			parmat = parmp->GetWorldMat();
+			newmat = newlocalmat * parmat;
+		}
+		else{
+			_ASSERT(0);
+			newmat = newlocalmat;
+		}
+	}
+	else{
+		newmat = newlocalmat;
+	}
+
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, srcframe);
+	if (curmp){
+		//curmp->SetBefWorldMat(curmp->GetWorldMat());
+		curmp->SetWorldMat(newmat);
+		D3DXVECTOR3 neweul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
+		curmp->SetLocalEul(neweul);
+
+		if (setchildflag == 1){
+			if (m_child){
+				CQuaternion dummyq;
+				m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+			}
+		}
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+
+
+
+
+}
+
+
 int CBone::SetWorldMatFromEulAndTra(int setchildflag, D3DXVECTOR3 srceul, D3DXVECTOR3 srctra, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。

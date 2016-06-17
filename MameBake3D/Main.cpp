@@ -377,6 +377,7 @@ static OWP_Button* s_toolMarkB = 0;
 static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
 static OWP_Button* s_toolFilterB = 0;
+static OWP_Button* s_toolInterpolateB = 0;
 
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
@@ -422,6 +423,7 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static bool s_filterFlag = false;
+static bool s_interpolateFlag = false;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -3118,6 +3120,10 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 	if (s_toolFilterB){
 		delete s_toolFilterB;
 		s_toolFilterB = 0;
+	}
+	if (s_toolInterpolateB){
+		delete s_toolInterpolateB;
+		s_toolInterpolateB = 0;
 	}
 
 	if( s_owpTimeline ){
@@ -9201,6 +9207,25 @@ int OnFrameToolWnd()
 		InitMpFromTool();
 	}
 
+	if (s_interpolateFlag){
+		s_interpolateFlag = false;
+
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+
+			int keynum;
+			double startframe, endframe, applyframe;
+			s_editrange.Clear();
+			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+			s_model->InterpolateBetweenSelection(startframe, endframe);
+
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+		}
+
+	}
+
 	if (s_copyFlag){
 		s_copyFlag = false;
 		s_undersymcopyFlag = false;
@@ -10720,7 +10745,7 @@ int CreateToolWnd()
 	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
 	s_toolMotPropB = new OWP_Button(_T("プロパティ"));
 	s_toolFilterB = new OWP_Button(_T("平滑化"));
-
+	s_toolInterpolateB = new OWP_Button(_T("補間"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolCopyB);
@@ -10730,6 +10755,7 @@ int CreateToolWnd()
 	//s_toolWnd->addParts(*s_toolMarkB);
 	s_toolWnd->addParts(*s_toolMotPropB);
 	s_toolWnd->addParts(*s_toolFilterB);
+	s_toolWnd->addParts(*s_toolInterpolateB);
 
 	s_toolWnd->setCloseListener([](){ s_closetoolFlag = true; });
 	s_toolCopyB->setButtonListener([](){ s_copyFlag = true; });
@@ -10740,6 +10766,7 @@ int CreateToolWnd()
 	s_toolSelBoneB->setButtonListener([](){ s_selboneFlag = true; });
 	s_toolInitMPB->setButtonListener([](){ s_initmpFlag = true; });
 	s_toolFilterB->setButtonListener([](){ s_filterFlag = true; });
+	s_toolInterpolateB->setButtonListener([](){ s_interpolateFlag = true; });
 
 	return 0;
 

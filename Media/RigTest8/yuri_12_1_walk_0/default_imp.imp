@@ -34,13 +34,13 @@
   <Bone>
     <Name>Chest_branch_Joint</Name>
     <RigidElem>
-      <ChildName>Neck_Joint</ChildName>
+      <ChildName>LeftCollar_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>LeftCollar_Joint</ChildName>
+      <ChildName>Neck_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
@@ -64,6 +64,12 @@
   <Bone>
     <Name>Neck_branch_Joint</Name>
     <RigidElem>
+      <ChildName>Twin_L_2_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+    <RigidElem>
       <ChildName>Head_end_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
@@ -71,12 +77,6 @@
     </RigidElem>
     <RigidElem>
       <ChildName>Twin_R_2_Joint</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>0.000000</ImpulseZ>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>Twin_L_2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
@@ -166,12 +166,6 @@
   <Bone>
     <Name>LeftElbow_branch_Joint</Name>
     <RigidElem>
-      <ChildName>LeftMiddleProximal_Joint</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>0.000000</ImpulseZ>
-    </RigidElem>
-    <RigidElem>
       <ChildName>LeftThumbProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
@@ -179,6 +173,12 @@
     </RigidElem>
     <RigidElem>
       <ChildName>LeftIndexProximal_Joint</ChildName>
+      <ImpulseX>0.000000</ImpulseX>
+      <ImpulseY>0.000000</ImpulseY>
+      <ImpulseZ>0.000000</ImpulseZ>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>LeftMiddleProximal_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
