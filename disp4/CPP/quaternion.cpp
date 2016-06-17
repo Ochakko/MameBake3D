@@ -743,8 +743,8 @@ int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
 	tmpZ1 = eulerA->z + 360.0f * GetRound((eulerB->z - eulerA->z) / 360.0f);
 
 	//—\‘z‚³‚ê‚éŠp“x2
-	//tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound((eulerB->x + eulerA->x - 180.0f) / 360.0f);
-	tmpX2 = eulerA->x + 180.0f + 360.0f * GetRound((eulerB->x - eulerA->x - 180.0f) / 360.0f);
+	tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound((eulerB->x + eulerA->x - 180.0f) / 360.0f);
+	//tmpX2 = eulerA->x + 180.0f + 360.0f * GetRound((eulerB->x - eulerA->x - 180.0f) / 360.0f);
 	tmpY2 = eulerA->y + 180.0f + 360.0f * GetRound((eulerB->y - eulerA->y - 180.0f) / 360.0f);
 	tmpZ2 = eulerA->z + 180.0f + 360.0f * GetRound((eulerB->z - eulerA->z - 180.0f) / 360.0f);
 	//tmpZ2 = 180.0f - eulerA->z + 360.0f * GetRound((eulerB->z + eulerA->z - 180.0f) / 360.0f);
