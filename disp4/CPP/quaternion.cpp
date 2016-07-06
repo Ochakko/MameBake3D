@@ -162,6 +162,8 @@ int CQuaternion::SetRotation( CQuaternion* axisq, double degx, double degy, doub
 	return 0;
 }
 
+
+
 CQuaternion CQuaternion::operator= (CQuaternion q) { this->x = q.x; this->y = q.y; this->z = q.z; this->w = q.w; return *this; };
 CQuaternion CQuaternion::operator* (float srcw) const { return CQuaternion(this->w * srcw, this->x * srcw, this->y * srcw, this->z * srcw); }
 CQuaternion &CQuaternion::operator*= (float srcw) { *this = *this * srcw; return *this; }
@@ -230,6 +232,62 @@ D3DXMATRIX CQuaternion::MakeRotMatX()
 	*/
 	return retmat;
 }
+
+
+void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
+{
+	CQuaternion tmpq;
+	int i, maxi;
+	FLOAT maxdiag, S, trace;
+
+	trace = srcmat.m[0][0] + srcmat.m[1][1] + srcmat.m[2][2] + 1.0f;
+	if (trace > 0.0f)
+	{
+		tmpq.x = (srcmat.m[1][2] - srcmat.m[2][1]) / (2.0f * sqrt(trace));
+		tmpq.y = (srcmat.m[2][0] - srcmat.m[0][2]) / (2.0f * sqrt(trace));
+		tmpq.z = (srcmat.m[0][1] - srcmat.m[1][0]) / (2.0f * sqrt(trace));
+		tmpq.w = sqrt(trace) / 2.0f;
+		*this = tmpq;
+		return;
+	}
+	maxi = 0;
+	maxdiag = srcmat.m[0][0];
+	for (i = 1; i<3; i++)
+	{
+		if (srcmat.m[i][i] > maxdiag)
+		{
+			maxi = i;
+			maxdiag = srcmat.m[i][i];
+		}
+	}
+	switch (maxi)
+	{
+	case 0:
+		S = 2.0f * sqrt(1.0f + srcmat.m[0][0] - srcmat.m[1][1] - srcmat.m[2][2]);
+		tmpq.x = 0.25f * S;
+		tmpq.y = (srcmat.m[0][1] + srcmat.m[1][0]) / S;
+		tmpq.z = (srcmat.m[0][2] + srcmat.m[2][0]) / S;
+		tmpq.w = (srcmat.m[1][2] - srcmat.m[2][1]) / S;
+		break;
+	case 1:
+		S = 2.0f * sqrt(1.0f + srcmat.m[1][1] - srcmat.m[0][0] - srcmat.m[2][2]);
+		tmpq.x = (srcmat.m[0][1] + srcmat.m[1][0]) / S;
+		tmpq.y = 0.25f * S;
+		tmpq.z = (srcmat.m[1][2] + srcmat.m[2][1]) / S;
+		tmpq.w = (srcmat.m[2][0] - srcmat.m[0][2]) / S;
+		break;
+	case 2:
+		S = 2.0f * sqrt(1.0f + srcmat.m[2][2] - srcmat.m[0][0] - srcmat.m[1][1]);
+		tmpq.x = (srcmat.m[0][2] + srcmat.m[2][0]) / S;
+		tmpq.y = (srcmat.m[1][2] + srcmat.m[2][1]) / S;
+		tmpq.z = 0.25f * S;
+		tmpq.w = (srcmat.m[0][1] - srcmat.m[1][0]) / S;
+		break;
+	}
+
+	*this = tmpq;
+}
+
 
 
 float CQuaternion::DotProduct( CQuaternion srcq )
@@ -866,3 +924,4 @@ int CQuaternion::InOrder(CQuaternion* srcdstq)
 
 	return 0;
 }
+

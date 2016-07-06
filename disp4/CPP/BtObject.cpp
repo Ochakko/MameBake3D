@@ -195,16 +195,14 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	D3DXMATRIX startrot = curre->GetCapsulemat();
 	//m_transmat = startrot;
 
-	startrot._41 = 0.0f;
-	startrot._42 = 0.0f;
-	startrot._43 = 0.0f;
-	D3DXQUATERNION xq;
-	D3DXQuaternionRotationMatrix( &xq, &startrot );
 
-	btScalar qx = xq.x;
-	btScalar qy = xq.y;
-	btScalar qz = xq.z;
-	btScalar qw = xq.w;
+	CQuaternion startrotq;
+	startrotq.RotationMatrix(startrot);
+
+	btScalar qx = startrotq.x;
+	btScalar qy = startrotq.y;
+	btScalar qz = startrotq.z;
+	btScalar qw = startrotq.w;
 	btQuaternion btq( qx, qy, qz, qw ); 
 
 
@@ -577,9 +575,9 @@ int CBtObject::Motion2Bt()
 		newcapsulemat._42 = 0.0f;
 		newcapsulemat._43 = 0.0f;
 
-		D3DXQUATERNION xtmpq;
-		D3DXQuaternionRotationMatrix( &xtmpq, &newcapsulemat );
-		btQuaternion btrotq( xtmpq.x, xtmpq.y, xtmpq.z, xtmpq.w );
+		CQuaternion tmpq;
+		tmpq.RotationMatrix(newcapsulemat);
+		btQuaternion btrotq( tmpq.x, tmpq.y, tmpq.z, tmpq.w );
 
 		btTransform worldtra;
 		worldtra.setIdentity();
