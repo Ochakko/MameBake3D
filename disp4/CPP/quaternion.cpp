@@ -201,91 +201,24 @@ D3DXMATRIX CQuaternion::MakeRotMatX()
 	qx.z = z;
 	qx.w = w;
 
-	//D3DXQUATERNION invqx;
-	//D3DXQuaternionInverse(&invqx, &qx);
-	//D3DXMatrixRotationQuaternion(&retmat, &invqx);
 
 	D3DXMatrixRotationQuaternion(&retmat, &qx);
 
-	/*
-	float dat00, dat01, dat02;
-	float dat10, dat11, dat12;
-	float dat20, dat21, dat22;
-
-	dat00 = w * w + x * x - y * y - z * z;
-	dat01 = 2.0f * ( x * y + w * z );
-	dat02 = 2.0f * ( x * z - w * y );
-
-	dat10 = 2.0f * ( x * y - w * z );
-	dat11 = w * w - x * x + y * y - z * z;
-	dat12 = 2.0f * ( y * z + w * x );
-
-	dat20 = 2.0f * ( x * z + w * y );
-	dat21 = 2.0f * ( y * z - w * x );
-	dat22 = w * w - x * x - y * y + z * z;
-
-	D3DXMATRIX retmat(
-		dat00, dat01, dat02, 0.0f,
-		dat10, dat11, dat12, 0.0f,
-		dat20, dat21, dat22, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f );
-	*/
 	return retmat;
 }
 
 
 void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
 {
-	CQuaternion tmpq;
-	int i, maxi;
-	FLOAT maxdiag, S, trace;
+	D3DXMATRIX tmpmat;
+	tmpmat = srcmat;
+	tmpmat._41 = 0.0f;
+	tmpmat._42 = 0.0f;
+	tmpmat._43 = 0.0f;
 
-	trace = srcmat.m[0][0] + srcmat.m[1][1] + srcmat.m[2][2] + 1.0f;
-	if (trace > 0.0f)
-	{
-		tmpq.x = (srcmat.m[1][2] - srcmat.m[2][1]) / (2.0f * sqrt(trace));
-		tmpq.y = (srcmat.m[2][0] - srcmat.m[0][2]) / (2.0f * sqrt(trace));
-		tmpq.z = (srcmat.m[0][1] - srcmat.m[1][0]) / (2.0f * sqrt(trace));
-		tmpq.w = sqrt(trace) / 2.0f;
-		*this = tmpq;
-		return;
-	}
-	maxi = 0;
-	maxdiag = srcmat.m[0][0];
-	for (i = 1; i<3; i++)
-	{
-		if (srcmat.m[i][i] > maxdiag)
-		{
-			maxi = i;
-			maxdiag = srcmat.m[i][i];
-		}
-	}
-	switch (maxi)
-	{
-	case 0:
-		S = 2.0f * sqrt(1.0f + srcmat.m[0][0] - srcmat.m[1][1] - srcmat.m[2][2]);
-		tmpq.x = 0.25f * S;
-		tmpq.y = (srcmat.m[0][1] + srcmat.m[1][0]) / S;
-		tmpq.z = (srcmat.m[0][2] + srcmat.m[2][0]) / S;
-		tmpq.w = (srcmat.m[1][2] - srcmat.m[2][1]) / S;
-		break;
-	case 1:
-		S = 2.0f * sqrt(1.0f + srcmat.m[1][1] - srcmat.m[0][0] - srcmat.m[2][2]);
-		tmpq.x = (srcmat.m[0][1] + srcmat.m[1][0]) / S;
-		tmpq.y = 0.25f * S;
-		tmpq.z = (srcmat.m[1][2] + srcmat.m[2][1]) / S;
-		tmpq.w = (srcmat.m[2][0] - srcmat.m[0][2]) / S;
-		break;
-	case 2:
-		S = 2.0f * sqrt(1.0f + srcmat.m[2][2] - srcmat.m[0][0] - srcmat.m[1][1]);
-		tmpq.x = (srcmat.m[0][2] + srcmat.m[2][0]) / S;
-		tmpq.y = (srcmat.m[1][2] + srcmat.m[2][1]) / S;
-		tmpq.z = 0.25f * S;
-		tmpq.w = (srcmat.m[0][1] - srcmat.m[1][0]) / S;
-		break;
-	}
-
-	*this = tmpq;
+	D3DXQUATERNION qx;
+	D3DXQuaternionRotationMatrix(&qx, &tmpmat);
+	SetParams(qx);
 }
 
 
