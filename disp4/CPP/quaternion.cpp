@@ -1,6 +1,7 @@
 #include <windows.h>
-#include <quaternion.h>
 #include <math.h>
+#include <quaternion.h>
+#include <BoneProp.h>
 #include <crtdbg.h>
 
 
@@ -187,41 +188,195 @@ CQuaternion CQuaternion::normalize () const {
 	if( mag != 0.0f )
 		return (*this)*(1.0f/(float)::sqrt(mag));
 	else
-		return CQuaternion( 1e6, 1e6, 1e6, 1e6 );
+		return CQuaternion( 1.0f, 0.0f, 0.0f, 0.0f );
 }
 
 
 D3DXMATRIX CQuaternion::MakeRotMatX()
 {
-	D3DXMATRIX retmat;
+	normalize();
 
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+
+	//“]’u
+	retmat._11 = 1.0 - 2.0 * (y * y + z * z);
+	retmat._21 = 2.0 * (x * y - z * w);
+	retmat._31 = 2.0 * (z * x + w * y);
+
+	retmat._12 = 2.0 * (x * y + z * w);
+	retmat._22 = 1.0 - 2.0 * (z * z + x * x);
+	retmat._32 = 2.0 * (y * z - w * x);
+
+	retmat._13 = 2.0 * (z * x - w * y);
+	retmat._23 = 2.0 * (y * z + x * w);
+	retmat._33 = 1.0 - 2.0 * (y * y + x * x);
+
+	/*
+	retmat._11 = 1.0 - 2.0 * (y * y + z * z);
+	retmat._12 = 2.0 * (x * y - z * w);
+	retmat._13 = 2.0 * (z * x + w * y);
+
+	retmat._21 = 2.0 * (x * y + z * w);
+	retmat._22 = 1.0 - 2.0 * (z * z + x * x);
+	retmat._23 = 2.0 * (y * z - w * x);
+
+	retmat._31 = 2.0 * (z * x - w * y);
+	retmat._32 = 2.0 * (y * z + x * w);
+	retmat._33 = 1.0 - 2.0 * (y * y + x * x);
+	*/
+	
+	/*
 	D3DXQUATERNION qx;
 	qx.x = x;
 	qx.y = y;
 	qx.z = z;
 	qx.w = w;
-
-
 	D3DXMatrixRotationQuaternion(&retmat, &qx);
-
+	*/
 	return retmat;
 }
 
 
 void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
 {
-	D3DXMATRIX tmpmat;
-	tmpmat = srcmat;
-	tmpmat._41 = 0.0f;
-	tmpmat._42 = 0.0f;
-	tmpmat._43 = 0.0f;
+	//“]’u‘Oƒo[ƒWƒ‡ƒ“
 
-	D3DXQUATERNION qx;
-	D3DXQuaternionRotationMatrix(&qx, &tmpmat);
-	SetParams(qx);
+	//CQuaternion‚Í gpar * par * cur‚Ì‡‚ÅŠ|‚¯‚éŒn
+	//D3DXMATRIX‚Í cur * par * gpar‚Ì‡‚ÅŠ|‚¯‚éŒn
+	//CQuaternion‚ÌŽž‚É“]’u‚µ‚ÄD3DXMATRIX‚Ì‚Æ‚«‚É‚»‚Ì‚Ü‚Ü‚ÅŒvŽZ‚ª‡‚¤B
+	
+	CQuaternion tmpq;
+
+	//ƒXƒP[ƒ‹‚ÉŠÖ‚µ‚Ä³‹K‰»‚µ‚½‰ñ“]‚©‚çQuaternion‚ð‹‚ß‚éB‚»‚Ì‚½‚ß‚ÉSRT‚É•ª‰ð‚·‚éB
+	D3DXVECTOR3 svec, tvec;
+	D3DXMATRIX rmat;
+	GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+
+	int i, maxi;
+	FLOAT maxdiag, S, trace;
+	
+	trace = rmat.m[0][0] + rmat.m[1][1] + rmat.m[2][2] + 1.0f;
+	if (trace > 0.0f)
+	{
+		tmpq.x = (rmat.m[1][2] - rmat.m[2][1]) / (2.0f * sqrt(trace));
+		tmpq.y = (rmat.m[2][0] - rmat.m[0][2]) / (2.0f * sqrt(trace));
+		tmpq.z = (rmat.m[0][1] - rmat.m[1][0]) / (2.0f * sqrt(trace));
+		tmpq.w = sqrt(trace) / 2.0f;
+		*this = tmpq;
+		return;
+	}
+	maxi = 0;
+	maxdiag = rmat.m[0][0];
+	for (i = 1; i<3; i++)
+	{
+		if (rmat.m[i][i] > maxdiag)
+		{
+			maxi = i;
+			maxdiag = rmat.m[i][i];
+		}
+	}
+	switch (maxi)
+	{
+	case 0:
+		S = 2.0f * sqrt(1.0f + rmat.m[0][0] - rmat.m[1][1] - rmat.m[2][2]);
+		tmpq.x = 0.25f * S;
+		tmpq.y = (rmat.m[0][1] + rmat.m[1][0]) / S;
+		tmpq.z = (rmat.m[0][2] + rmat.m[2][0]) / S;
+		tmpq.w = (rmat.m[1][2] - rmat.m[2][1]) / S;
+		break;
+	case 1:
+		S = 2.0f * sqrt(1.0f + rmat.m[1][1] - rmat.m[0][0] - rmat.m[2][2]);
+		tmpq.x = (rmat.m[0][1] + rmat.m[1][0]) / S;
+		tmpq.y = 0.25f * S;
+		tmpq.z = (rmat.m[1][2] + rmat.m[2][1]) / S;
+		tmpq.w = (rmat.m[2][0] - rmat.m[0][2]) / S;
+		break;
+	case 2:
+		S = 2.0f * sqrt(1.0f + rmat.m[2][2] - rmat.m[0][0] - rmat.m[1][1]);
+		tmpq.x = (rmat.m[0][2] + rmat.m[2][0]) / S;
+		tmpq.y = (rmat.m[1][2] + rmat.m[2][1]) / S;
+		tmpq.z = 0.25f * S;
+		tmpq.w = (rmat.m[0][1] - rmat.m[1][0]) / S;
+		break;
+	}
+	*this = tmpq;
+
+	
+	//D3DXMATRIX tmpmat;
+	//tmpmat = srcmat;
+	//tmpmat._41 = 0.0f;
+	//tmpmat._42 = 0.0f;
+	//tmpmat._43 = 0.0f;
+
+	//D3DXQUATERNION qx;
+	//D3DXQuaternionRotationMatrix(&qx, &tmpmat);
+	//SetParams(qx);
 }
 
+/*
+void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
+{
+//“]’uŒãƒo[ƒWƒ‡ƒ“
 
+CQuaternion tmpq;
+
+//ƒXƒP[ƒ‹‚ÉŠÖ‚µ‚Ä³‹K‰»‚µ‚½‰ñ“]‚©‚çQuaternion‚ð‹‚ß‚éB‚»‚Ì‚½‚ß‚ÉSRT‚É•ª‰ð‚·‚éB
+D3DXVECTOR3 svec, tvec;
+D3DXMATRIX rmat;
+GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+
+int i, maxi;
+FLOAT maxdiag, S, trace;
+
+trace = rmat.m[0][0] + rmat.m[1][1] + rmat.m[2][2] + 1.0f;
+if (trace > 0.0f)
+{
+tmpq.x = (rmat.m[2][1] - rmat.m[1][2]) / (2.0f * sqrt(trace));
+tmpq.y = (rmat.m[0][2] - rmat.m[2][0]) / (2.0f * sqrt(trace));
+tmpq.z = (rmat.m[1][0] - rmat.m[0][1]) / (2.0f * sqrt(trace));
+tmpq.w = sqrt(trace) / 2.0f;
+*this = tmpq;
+return;
+}
+maxi = 0;
+maxdiag = rmat.m[0][0];
+for (i = 1; i<3; i++)
+{
+if (rmat.m[i][i] > maxdiag)
+{
+maxi = i;
+maxdiag = rmat.m[i][i];
+}
+}
+switch (maxi)
+{
+case 0:
+S = 2.0f * sqrt(1.0f + rmat.m[0][0] - rmat.m[1][1] - rmat.m[2][2]);
+tmpq.x = 0.25f * S;
+tmpq.y = (rmat.m[1][0] + rmat.m[0][1]) / S;
+tmpq.z = (rmat.m[2][0] + rmat.m[0][2]) / S;
+tmpq.w = (rmat.m[2][1] - rmat.m[1][2]) / S;
+break;
+case 1:
+S = 2.0f * sqrt(1.0f + rmat.m[1][1] - rmat.m[0][0] - rmat.m[2][2]);
+tmpq.x = (rmat.m[1][0] + rmat.m[0][1]) / S;
+tmpq.y = 0.25f * S;
+tmpq.z = (rmat.m[2][1] + rmat.m[1][2]) / S;
+tmpq.w = (rmat.m[0][2] - rmat.m[2][0]) / S;
+break;
+case 2:
+S = 2.0f * sqrt(1.0f + rmat.m[2][2] - rmat.m[0][0] - rmat.m[1][1]);
+tmpq.x = (rmat.m[2][0] + rmat.m[0][2]) / S;
+tmpq.y = (rmat.m[2][1] + rmat.m[1][2]) / S;
+tmpq.z = 0.25f * S;
+tmpq.w = (rmat.m[1][0] - rmat.m[0][1]) / S;
+break;
+}
+*this = tmpq;
+
+}
+*/
 
 float CQuaternion::DotProduct( CQuaternion srcq )
 {

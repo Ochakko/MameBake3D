@@ -16,10 +16,8 @@
     <RGDMORPH>0</RGDMORPH>
     <CURRE>0</CURRE>
     <RGD>0</RGD>
-    <RefNum>2</RefNum>
+    <RefNum>1</RefNum>
     <RefFile>default_ref.ref</RefFile>
-    <RefFile>yuri12_1_walk.ref</RefFile>
-    <ImpNum>1</ImpNum>
-    <ImpFile>default_imp.imp</ImpFile>
+    <ImpNum>0</ImpNum>
   </Chara>
 </CHA>

@@ -528,3 +528,91 @@ bool IsTimeEqual(double srctime1, double srctime2)
 		return false;
 	}
 }
+
+float VecLength(D3DXVECTOR3 srcvec)
+{
+	double tmpval = srcvec.x * srcvec.x + srcvec.y * srcvec.y + srcvec.z * srcvec.z;
+	if (tmpval > 0.0){
+		return (float)sqrt(tmpval);
+	}
+	else{
+		return 0.0f;
+	}
+}
+
+
+void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, D3DXVECTOR3* tvecptr)
+{
+	*svecptr = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+	D3DXMatrixIdentity(rmatptr);
+	*tvecptr = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	D3DXMATRIX tmpmat1 = srcmat;
+
+	tvecptr->x = tmpmat1._41;
+	tvecptr->y = tmpmat1._42;
+	tvecptr->z = tmpmat1._43;
+
+	tmpmat1._41 = 0.0f;
+	tmpmat1._42 = 0.0f;
+	tmpmat1._43 = 0.0f;
+
+	D3DXVECTOR3 vec1, vec2, vec3;
+	vec1.x = tmpmat1._11;
+	vec1.y = tmpmat1._12;
+	vec1.z = tmpmat1._13;
+
+	vec2.x = tmpmat1._21;
+	vec2.y = tmpmat1._22;
+	vec2.z = tmpmat1._23;
+
+	vec3.x = tmpmat1._31;
+	vec3.y = tmpmat1._32;
+	vec3.z = tmpmat1._33;
+
+	float len1, len2, len3;
+	len1 = VecLength(vec1);
+	len2 = VecLength(vec2);
+	len3 = VecLength(vec3);
+
+	svecptr->x = len1;
+	svecptr->y = len2;
+	svecptr->z = len3;
+
+	if (len1 != 0.0f){
+		rmatptr->_11 = tmpmat1._11 / len1;
+		rmatptr->_12 = tmpmat1._12 / len1;
+		rmatptr->_13 = tmpmat1._13 / len1;
+	}
+	else{
+		rmatptr->_11 = 1.0f;
+		rmatptr->_12 = 0.0f;
+		rmatptr->_13 = 0.0f;
+	}
+
+	if (len2 != 0.0f){
+		rmatptr->_21 = tmpmat1._21 / len2;
+		rmatptr->_22 = tmpmat1._22 / len2;
+		rmatptr->_23 = tmpmat1._23 / len2;
+	}
+	else{
+		rmatptr->_21 = 0.0f;
+		rmatptr->_22 = 1.0f;
+		rmatptr->_23 = 0.0f;
+	}
+
+	if (len3 != 0.0f){
+		rmatptr->_31 = tmpmat1._31 / len3;
+		rmatptr->_32 = tmpmat1._32 / len3;
+		rmatptr->_33 = tmpmat1._33 / len3;
+	}
+	else{
+		rmatptr->_31 = 0.0f;
+		rmatptr->_32 = 0.0f;
+		rmatptr->_33 = 1.0f;
+	}
+
+
+}
+
+

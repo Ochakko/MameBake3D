@@ -33,4 +33,7 @@ void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
 
 bool IsTimeEqual(double srctime1, double srctime2);
 
+float VecLength(D3DXVECTOR3 srcvec);
+void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, D3DXVECTOR3* tvecptr);
+
 #endif
