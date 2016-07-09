@@ -34,6 +34,7 @@ int CMotionPoint::InitParams()
 	D3DXMatrixIdentity( &m_absmat );
 	D3DXMatrixIdentity( &m_befworldmat );
 	D3DXMatrixIdentity( &m_befeditmat );
+	D3DXMatrixIdentity(&m_befbtmat);
 
 	m_prev = 0;
 	m_next = 0;
@@ -259,6 +260,8 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	m_befworldmat = mp.m_befworldmat;//!!!!!!!!!!
 
 	m_btmat = mp.m_btmat;
+	m_befbtmat = mp.m_befbtmat;//!!!!!!!!!
+	
 
 	m_prev = mp.m_prev;
 	m_next = mp.m_next;

@@ -59,9 +59,15 @@ public:
 	void SetWorldMat(D3DXMATRIX srcmat){ SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
 	D3DXMATRIX GetInvWorldMat(){ D3DXMATRIX invmat; D3DXMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
+	D3DXMATRIX GetBefBtMat(){ return m_befbtmat; };
+	void SetBefBtMat(D3DXMATRIX srcmat){ m_befbtmat = srcmat; };
 	D3DXMATRIX GetBtMat(){ return m_btmat; };
-	void SetBtMat( D3DXMATRIX srcmat ){ m_btmat = srcmat; };
-
+	void SetBtMat(D3DXMATRIX srcmat){ 
+		if (GetBtFlag() == 0){ 
+			SetBefBtMat(m_btmat); 
+		}
+		m_btmat = srcmat; 
+	};
 	D3DXMATRIX GetBefWorldMat(){ return m_befworldmat; };
 	void SetBefWorldMat( D3DXMATRIX srcmat ){ m_befworldmat = srcmat; };
 
@@ -119,8 +125,10 @@ private:
 
 	D3DXMATRIX m_befworldmat;
 	D3DXMATRIX m_befeditmat;
+	D3DXMATRIX m_befbtmat;
 
 	D3DXMATRIX m_absmat;
+
 
 
 	CMotionPoint* m_prev;

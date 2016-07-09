@@ -14,6 +14,13 @@
 class CBone;
 class CRigidElem;
 
+typedef struct tag_constraintelem
+{
+	CBone* centerbone;
+	btGeneric6DofSpringConstraint* constraint;
+} CONSTRAINTELEM;
+
+
 class CBtObject
 {
 public:
@@ -76,9 +83,20 @@ public:
  */
 	int Motion2Bt();
 
+/**
+ * @fn
+ * AddChild
+ * @breaf 剛体の階層構造を設定する。
+ * @param (CBtObject* addbt) IN 子供にするCBtObjectへのポインタ。
+ * @return 成功したら０。
+ * @detail 子供の配列に加えるだけ。broは無い。
+ */
+	int AddChild(CBtObject* addbt);
+
+
 
 	int SetEquilibriumPoint( int lflag, int aflag );
-
+	int EnableSpring(bool angleflag, bool linearflag);
 
 private:
 
@@ -110,15 +128,6 @@ private:
 	btRigidBody* localCreateRigidBody( CRigidElem* curre, const btTransform& startTransform, btCollisionShape* shape );
 
 
-/**
- * @fn
- * AddChild
- * @breaf 剛体の階層構造を設定する。
- * @param (CBtObject* addbt) IN 子供にするCBtObjectへのポインタ。
- * @return 成功したら０。
- * @detail 子供の配列に加えるだけ。broは無い。
- */
-	int AddChild( CBtObject* addbt );
 
 /**
  * @fn
@@ -203,12 +212,15 @@ public: //accesser
 	int GetConstraintSize(){
 		return (int)m_constraint.size();
 	};
-	void PushBackConstraint( btGeneric6DofSpringConstraint* srcconstraint ){ m_constraint.push_back( srcconstraint ); };
-	btGeneric6DofSpringConstraint* GetConstraint( int srcindex ){
+	void PushBackConstraint( CONSTRAINTELEM srcconstraint ){ m_constraint.push_back( srcconstraint ); };
+	btGeneric6DofSpringConstraint* GetConstraint(int srcindex){
 		if ((srcindex >= 0) && (srcindex < (int)m_constraint.size())){
-			return m_constraint[srcindex];
+			return m_constraint[srcindex].constraint;
 		}
 		else{
+			//CONSTRAINTELEM initelem;
+			//ZeroMemory(&initelem, sizeof(CONSTRAINTELEM));
+			//return initelem;
 			return 0;
 		}
 	};
@@ -231,7 +243,7 @@ private:
 	btRigidBody* m_rigidbody;//ブレットの剛体データ。
 	
 
-	std::vector<btGeneric6DofSpringConstraint*> m_constraint;//thisと子供のBtObjectをつなぐコンストレイントのvector。
+	std::vector<CONSTRAINTELEM> m_constraint;//thisと子供のBtObjectをつなぐコンストレイントのvector。
 
 
 	CBtObject* m_parbt;//親のCBtObject

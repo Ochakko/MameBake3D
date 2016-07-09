@@ -6767,6 +6767,7 @@ int StartBt(int flag, int btcntzero)
 
 		CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
 		
+		/*
 		if( g_previewFlag == 4 ){
 			//s_bpWorld->clientResetScene();
 			//if( s_model ){
@@ -6784,6 +6785,7 @@ int StartBt(int flag, int btcntzero)
 			s_model->SetBtImpulse();
 		}
 
+		*/
 		if( s_model->GetRgdMorphIndex() >= 0 ){
 			MOTINFO* morphmi = s_model->GetRgdMorphInfo();
 			if( morphmi ){
@@ -6791,6 +6793,7 @@ int StartBt(int flag, int btcntzero)
 				morphmi->curframe = s_btstartframe;
 			}
 		}
+		
 	}
 
 	return 0;
@@ -8960,6 +8963,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
 	//s_bpWorld->setTimeStep( 1.0f / 80.0f );// seconds
 
+
+
 	s_bpWorld->clientMoveAndDisplay();
 
 
@@ -8986,6 +8991,14 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		if (curmodel && curmodel->GetCurMotInfo()){
 			curmodel->SetRagdollKinFlag();
 		}
+	}
+
+	int firstflag = 0;
+	if (s_savepreviewFlag != g_previewFlag){
+		firstflag = 1;
+	}
+	if ((g_previewFlag == 5) && (firstflag == 1)){
+		s_model->SetBtImpulse();
 	}
 
 	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
@@ -10122,7 +10135,7 @@ int CreateRigidWnd()
 	s_lkradio->addLine(L"[位置ばね]普通こんなもんだと思う");
 	s_lkradio->addLine(L"[位置ばね]カスタム値");
 
-	s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 0.0f);//60000
+	s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 0.0f);//60000
 	s_lklabel = new OWP_Label(L"位置ばね カスタム値");
 
 	s_akradio = new OWP_RadioButton(L"[角度ばね]へなへな");

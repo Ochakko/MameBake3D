@@ -575,7 +575,8 @@ private:
 	int SetFaceOfShape( CMQOFace** ppface, int facenum, int shapeno, CMQOFace** ppface2, int setfacenum );
 
 	int CreateBtConstraint();
-	void CreateBtConstraintReq( CBtObject* curbto );
+	//void CreateBtConstraintReq( CBtObject* curbto );
+	void CreateBtConstraintReq(CBone* curbone);
 
 
 	int DbgDumpBoneReq( CBone* boneptr, int broflag );

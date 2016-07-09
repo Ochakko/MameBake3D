@@ -29,9 +29,9 @@ extern int g_previewFlag;			// プレビューフラグ
 CBtObject::CBtObject( CBtObject* parbt, btDynamicsWorld* btWorld )
 {
 	InitParams();
-	if( parbt ){
-		parbt->AddChild( this );
-	}
+	//if( parbt ){
+	//	parbt->AddChild( this );
+	//}
 	m_btWorld = btWorld;
 }
 
@@ -73,7 +73,7 @@ int CBtObject::DestroyObjs()
 	int chilno;
 	for( chilno = 0; chilno < (int)m_constraint.size(); chilno++ ){
 		//btTypedConstraint* constptr = m_constraint[ chilno ];
-		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno];
+		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno].constraint;
 		if( constptr ){
 			m_btWorld->removeConstraint( constptr );
 			delete constptr;
@@ -140,8 +140,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	if( !m_bone ){
 		return 0;
 	}
-
-	if( !chilbone ){
+	if( !m_endbone ){
 		return 0;
 	}
 
@@ -408,7 +407,7 @@ int CBtObject::CreateBtConstraint()
 
 		if( m_rigidbody && chilbto->m_rigidbody ){
 
-DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n", 
+DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n", 
 	   m_bone->GetWBoneName(), m_endbone->GetWBoneName(),
 	   chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName() );
 
@@ -434,14 +433,29 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 			*/
 			lmin = -10000.0f;
 			lmax = 10000.0f;
+			//lmin = -1.0f;
+			//lmax = 1.0f;
+			//lmin = -1.0e-3;
+			//lmax = 1.0e-3;
+			//lmin = 0.0f;
+			//lmax = 0.0f;
+			//lmin = -1.0f;
+			//lmax = 1.0f;
+
 
 			btGeneric6DofSpringConstraint* dofC = 0;
 			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
 			_ASSERT( dofC );
 			if (dofC){
+				btTransform worldtra;
+				m_rigidbody->getMotionState()->getWorldTransform(worldtra);
+				btMatrix3x3 worldmat = worldtra.getBasis();
+				btVector3 worldpos = worldtra.getOrigin();
 
-				dofC->setLinearLowerLimit(btVector3(lmin, lmin, lmin));
-				dofC->setLinearUpperLimit(btVector3(lmax, lmax, lmax));
+				dofC->setLinearLowerLimit(btVector3(worldpos.x() + lmin, worldpos.y() + lmin, worldpos.z() + lmin));
+				dofC->setLinearUpperLimit(btVector3(worldpos.x() + lmax, worldpos.y() + lmax, worldpos.z() + lmax));
+				//dofC->setLinearLowerLimit(btVector3(lmax, lmax, lmax)); 
+				//dofC->setLinearUpperLimit(btVector3(lmin, lmin, lmin));
 
 				//			char* findpat = strstr( m_bone->m_bonename, "BT_" );
 				//			if( findpat == 0 ){
@@ -458,6 +472,8 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 
 				dofC->setBreakingImpulseThreshold(FLT_MAX);
 				//dofC->setBreakingImpulseThreshold( 1e9 );
+				//dofC->setBreakingImpulseThreshold(0.0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				//dofC->setBreakingImpulseThreshold(1e7);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 				int l_kindex = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetLKindex();
 				int a_kindex = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetAKindex();
@@ -466,20 +482,28 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 				float l_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusLk();
 				float a_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusAk();
 
+
 				int dofid;
+				/*
 				for (dofid = 0; dofid < 3; dofid++){
-					dofC->enableSpring(dofid, true);
-					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
-					/*
+					dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+				}
+				for (dofid = 3; dofid < 6; dofid++){
+					dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+				}
+				*/
+				for (dofid = 0; dofid < 3; dofid++){
 					if( l_kindex <= 2 ){
-					dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
+						dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
 					}else{
-					dofC->setStiffness( dofid, l_cusk );
+						dofC->setStiffness( dofid, l_cusk );
 					}
-					*/
-					dofC->setStiffness(dofid, 1.0e12);
+					//dofC->setStiffness(dofid, 1.0e12);
 					dofC->setDamping(dofid, l_damping);
 					dofC->setEquilibriumPoint(dofid);
+
+					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+					dofC->enableSpring(dofid, true);
 				}
 				for (dofid = 3; dofid < 6; dofid++){
 					if (a_kindex <= 2){
@@ -495,14 +519,21 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 				}
 
+				CONSTRAINTELEM addelem;
+				addelem.constraint = dofC;
+				addelem.centerbone = m_endbone;
+				m_constraint.push_back(addelem);
 
-				m_constraint.push_back(dofC);
+				DbgOut(L"CreateBtConstraint (aft) : curbto %s---%s, chilbto %s---%s\r\n",
+					m_bone->GetWBoneName(), m_endbone->GetWBoneName(),
+					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
+
 				//m_btWorld->addConstraint(dofC, true);
-				m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
-				//m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
+				//m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
+				m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
 				//m_dofC = dofC;
 
-				dofC->setEquilibriumPoint();//!!!!!!!!!!!!
+				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
 			}
 		}
 	}
@@ -510,12 +541,50 @@ DbgOut( L"CreateBtConstraint : curbto %s---%s, chilbto %s---%s\r\n",
 	return 0;
 }
 
+int CBtObject::EnableSpring(bool angleflag, bool linearflag)
+{
+	int constraintnum = m_constraint.size();
+	int constno;
+	for (constno = 0; constno < constraintnum; constno++){
+		btGeneric6DofSpringConstraint* curconst = m_constraint[constno].constraint;
+		if (curconst){
+			int dofid;
+			for (dofid = 0; dofid < 3; dofid++){
+				curconst->enableSpring(dofid, linearflag);
+			}
+			for (dofid = 3; dofid < 6; dofid++){
+				curconst->enableSpring(dofid, angleflag);
+			}
+		}
+	}
+
+	return 0;
+}
+
+
 int CBtObject::SetEquilibriumPoint( int lflag, int aflag )
 {
 	int chilno;
 	for (chilno = 0; chilno < (int)m_constraint.size(); chilno++){
-		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno];
-		if (constptr){
+		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno].constraint;
+		CBone* centerbone = m_constraint[chilno].centerbone;
+		if (constptr && centerbone){
+			D3DXVECTOR3 centerpos = centerbone->GetBtParPos();
+
+			DbgOut(L"checkbt !!! : btobject : SetEquilibriumPoint : chilno %d, centerbone %s, centerpos (%.4f, %.4f, %.4f)\r\n",
+				chilno, centerbone->GetWBoneName(), centerpos.x, centerpos.y, centerpos.z);
+
+			//float lmin = -0.15f;
+			//float lmax = 0.15f;
+			float lmin = -100.0f;//
+			float lmax = 100.0f;
+			//float lmin = -10.0f;//少し　移動すると　破たん
+			//float lmax = 10.0f;
+
+
+			constptr->setLinearLowerLimit(btVector3(centerpos.x + lmin, centerpos.y + lmin, centerpos.z + lmin));
+			constptr->setLinearUpperLimit(btVector3(centerpos.x + lmax, centerpos.y + lmax, centerpos.z + lmax));
+
 			int dofid;
 			if (lflag == 1){
 				for (dofid = 0; dofid < 3; dofid++){//角度のみ
@@ -529,7 +598,6 @@ int CBtObject::SetEquilibriumPoint( int lflag, int aflag )
 			}
 		}
 	}
-
 	return 0;
 }
 
@@ -549,11 +617,17 @@ int CBtObject::Motion2Bt()
 		_ASSERT( 0 );
 		return 0;
 	}
+	if (!GetBone() || !GetEndBone()){
+		return 0;
+	}
+
 
 	CRigidElem* curre = m_bone->GetRigidElem( m_endbone );
 	if( curre ){
-		D3DXMATRIX cpslmat = curre->GetCapsulemat();
-
+		D3DXMATRIX newrotmat;
+		D3DXVECTOR3 newrigidpos;
+		GetBone()->CalcNewBtMat(curre, GetEndBone(), &newrotmat, &newrigidpos);
+		/*
 		D3DXMATRIX invfirstworld;
 		D3DXMatrixInverse( &invfirstworld, NULL, &m_bone->GetStartMat2() );
 		D3DXMATRIX diffworld;
@@ -561,28 +635,28 @@ int CBtObject::Motion2Bt()
 
 		D3DXMATRIX multmat = curre->GetFirstcapsulemat() * diffworld;
 
-
-
 		D3DXVECTOR3 rigidcenter;
 		D3DXVECTOR3 aftcurpos, aftchilpos;
 		D3DXVec3TransformCoord( &aftcurpos, &m_bone->GetJointFPos(), &(m_bone->GetCurMp().GetWorldMat()) );
 		D3DXVec3TransformCoord( &aftchilpos, &m_endbone->GetJointFPos(), &(m_endbone->GetCurMp().GetWorldMat()) );
 		rigidcenter = ( aftcurpos + aftchilpos ) * 0.5f;
+		
 
 		D3DXMATRIX newcapsulemat;
-		newcapsulemat = multmat;
+		newcapsulemat = newrotmat;
 		newcapsulemat._41 = 0.0f;
 		newcapsulemat._42 = 0.0f;
 		newcapsulemat._43 = 0.0f;
+		*/
 
 		CQuaternion tmpq;
-		tmpq.RotationMatrix(newcapsulemat);
+		tmpq.RotationMatrix(newrotmat);
 		btQuaternion btrotq( tmpq.x, tmpq.y, tmpq.z, tmpq.w );
 
 		btTransform worldtra;
 		worldtra.setIdentity();
 		worldtra.setRotation( btrotq );
-		worldtra.setOrigin( btVector3( rigidcenter.x, rigidcenter.y, rigidcenter.z ) );
+		worldtra.setOrigin(btVector3(newrigidpos.x, newrigidpos.y, newrigidpos.z));
 
 		m_rigidbody->getMotionState()->setWorldTransform( worldtra );
 	}else{
@@ -643,6 +717,7 @@ int CBtObject::SetBtMotion()
 	CMotionPoint curmp;
 	curmp = m_bone->GetCurMp();
 	curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	curmp.SetBtFlag(1);
 	m_bone->SetCurMp(curmp);
 
 
@@ -675,10 +750,11 @@ int CBtObject::SetBtMotion()
 			m_bone->SetCurMp( curmp );
 		}
 	}
-	*/
+
 	curmp = m_bone->GetCurMp();
 	curmp.SetBtFlag( 1 );
 	m_bone->SetCurMp( curmp );
+	*/
 
 	return 0;
 }

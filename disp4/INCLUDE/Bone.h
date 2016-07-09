@@ -188,7 +188,7 @@ public:
  * @fn
  * CreateRigidElem
  * @breaf 剛体シミュレーション用のパラメータを保持するCRigidElemを作成する。指定ボーンに関するCRigidElemを作成する。
- * @param (CBone* chil) IN 自分自身とここで指定する子供ジョイントで定義されるボーンに関するCRigidElemを作成する。
+ * @param (CBone* parbone) IN 自分自身とここで指定する親ジョイントで定義されるボーンに関するCRigidElemを作成する。
  * @param (int reflag) IN CRigidElemを作成する場合に１、しない場合に０を指定。
  * @param (std::string rename) IN reflagが１のとき、refファイルのファイル名を指定する。
  * @param (int impflag) IN インパルスを与えるための設定を作成する場合に１、しない場合に０を指定。
@@ -196,7 +196,8 @@ public:
  * @return 成功したら０。
  * @detail インパルス設定データも作成する。
  */
-	int CreateRigidElem( CBone* chil, int reflag, std::string rename, int impflag, std::string impname );
+	//int CreateRigidElem( CBone* chil, int reflag, std::string rename, int impflag, std::string impname );
+	int CreateRigidElem(CBone* parbone, int reflag, std::string rename, int impflag, std::string impname);
 
 
 /**
@@ -353,6 +354,7 @@ public:
 	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
 	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
+	int CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
 
 private:
 
@@ -454,7 +456,6 @@ private:
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
 	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
 	int InitCustomRig();
-
 public: //accesser
 	int GetType(){ return m_type; };
 	void SetType( int srctype ){ m_type = srctype; };
@@ -572,7 +573,9 @@ public: //accesser
 	};
 	void SetRigidElem( CBone* srcbone, CRigidElem* srcre ){ m_rigidelem[ srcbone ] = srcre; };
 
-
+	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator FindRigidElemOfMap(std::string srcname){
+		return m_remap.find(srcname);
+	};
 	int GetReMapSize(){ return (int)m_remap.size(); };
 	int GetReMapSize2(std::string srcstring){
 		std::map<CBone*, CRigidElem*> curmap = m_remap[ srcstring ];
@@ -593,7 +596,9 @@ public: //accesser
 		((m_remap[ srcstr ])[ srcbone ]) = srcre;
 	};
 
-
+	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator FindImpMap(std::string srcname){
+		return m_impmap.find(srcname);
+	};
 	int GetImpMapSize(){ return (int)m_impmap.size(); };
 	int GetImpMapSize2(std::string srcstring){
 		std::map<CBone*, D3DXVECTOR3> curmap = m_impmap[ srcstring ];
@@ -604,9 +609,6 @@ public: //accesser
 	};
 	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator GetImpMapEnd(){
 		return m_impmap.end();
-	};
-	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator FindImpMap( std::string strname ){
-		return m_impmap.find( strname );
 	};
 	D3DXVECTOR3 GetImpMap( std::string srcstr, CBone* srcbone ){
 		std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator itrimpmap;
@@ -780,6 +782,18 @@ public: //accesser
 	{
 		m_tmpsymmat = srcmat;
 	};
+	D3DXVECTOR3 GetBtParPos(){
+		return m_btparpos;
+	};
+	D3DXVECTOR3 GetBtChilPos(){
+		return m_btchilpos;
+	};
+	D3DXMATRIX GetBtDiffMat(){
+		return m_btdiffmat;
+	};
+	void SetBtDiffMat(D3DXMATRIX srcmat){
+		m_btdiffmat = srcmat;
+	};
 
 private:
 	int m_type;
@@ -826,6 +840,10 @@ private:
 	D3DXMATRIX m_tmpmat;//一時使用目的
 	CQuaternion m_tmpq;
 	D3DXMATRIX m_tmpsymmat;
+
+	D3DXVECTOR3 m_btparpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	D3DXVECTOR3 m_btchilpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	D3DXMATRIX m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
 
 
 	D3DXVECTOR3 m_firstframebonepos;

@@ -65,6 +65,10 @@ int CBone::InitParams()
 {
 	D3DXMatrixIdentity(&m_tmpsymmat);
 
+	m_btparpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_btchilpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXMatrixIdentity(&m_btdiffmat);
+
 	m_initcustomrigflag = 0;
 	//InitCustomRig();//<-- after set name
 
@@ -215,7 +219,7 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 	int existflag = 0;
 	if( srcframe >= 0.0 ){
 		CallF( CalcFBXMotion( srcmotid, srcframe, &m_curmp, &existflag ), return 1 );
-		D3DXMATRIX tmpmat = m_curmp.GetWorldMat() * *wmat;
+		D3DXMATRIX tmpmat = m_curmp.GetWorldMat();// **wmat;
 		m_curmp.SetWorldMat( tmpmat ); 
 
 		D3DXVECTOR3 jpos = GetJointFPos();
@@ -879,52 +883,54 @@ int CBone::CalcLocalAxisMat( D3DXMATRIX motmat, D3DXMATRIX axismatpar, D3DXMATRI
 	return 0;
 }
 
-int CBone::CreateRigidElem( CBone* chil, int reflag, std::string rename, int impflag, std::string impname )
+int CBone::CreateRigidElem( CBone* parbone, int reflag, std::string rename, int impflag, std::string impname )
 {
-	_ASSERT( chil );
+	if (!parbone){
+		return 0;
+	}
 
 	if( reflag ){
 		map<string, map<CBone*, CRigidElem*>>::iterator findremap;
-		findremap = m_remap.find( rename );
-		if( findremap != m_remap.end() ){
-			map<CBone*, CRigidElem*>& curmap = findremap->second;
+		findremap = parbone->FindRigidElemOfMap( rename );
+		if( findremap != parbone->GetRigidElemOfMapEnd() ){
+			//map<CBone*, CRigidElem*> curmap = findremap->second;
 	
-	DbgOut( L"CreateRigidElem : map exist : curbone %s, chilbone %s\r\n", m_wbonename, chil->m_wbonename );
+	DbgOut( L"CreateRigidElem : map exist : parbone %s, curbone %s\r\n", parbone->m_wbonename, m_wbonename );
 
-			CRigidElem* chkre = curmap[ chil ];
+			CRigidElem* chkre = findremap->second[this];
 			if( chkre ){
 	DbgOut( L"CreateRigidElem : chkre return !!!\r\n" );
 				return 0;
 			}
 
-			curmap[ chil ] = new CRigidElem();
-			if( !curmap[ chil ] ){
+			findremap->second[this] = new CRigidElem();
+			if (!findremap->second[this]){
 				_ASSERT( 0 );
 				return 1;
 			}
 
-			curmap[ chil ]->SetBone( this );
-			curmap[ chil ]->SetEndbone( chil );
+			findremap->second[this]->SetBone(parbone);
+			findremap->second[this]->SetEndbone(this);
 
-			SetGroupNoByName( curmap[ chil ], chil );
+			SetGroupNoByName(findremap->second[this], this);
 
 		}else{
 			map<CBone*, CRigidElem*> curmap;
 
-	DbgOut( L"CreateRigidElem : map [not] exist : curbone %s, chilbone %s\r\n", m_wbonename, chil->m_wbonename );
+	DbgOut( L"CreateRigidElem : map [not] exist : curbone %s, chilbone %s\r\n", parbone->m_wbonename, m_wbonename );
 
-			curmap[ chil ] = new CRigidElem();
-			if( !curmap[ chil ] ){
+			curmap[this] = new CRigidElem();
+			if( !curmap[this] ){
 				_ASSERT( 0 );
 				return 1;
 			}
 
-			curmap[ chil ]->SetBone( this );
-			curmap[ chil ]->SetEndbone( chil );
+			curmap[this]->SetBone(parbone);
+			curmap[this]->SetEndbone(this);
 
-			m_remap[ rename ] = curmap;
+			parbone->m_remap[rename] = curmap;
 
-			SetGroupNoByName( curmap[ chil ], chil );
+			SetGroupNoByName(curmap[this], this);
 
 			//_ASSERT( 0 );
 		}
@@ -933,21 +939,19 @@ int CBone::CreateRigidElem( CBone* chil, int reflag, std::string rename, int imp
 //////////////
 	if( impflag ){
 		map<string, map<CBone*, D3DXVECTOR3>>::iterator findimpmap;
-		findimpmap = m_impmap.find( impname );
-		if( findimpmap != m_impmap.end() ){
-			map<CBone*,D3DXVECTOR3>::iterator itrimp;
-			itrimp = findimpmap->second.find( chil );
-			if( itrimp != findimpmap->second.end() ){
+		findimpmap = parbone->FindImpMap(impname);
+		if (findimpmap != parbone->GetImpMapEnd()){
+			map<CBone*, D3DXVECTOR3>::iterator itrimp;
+			itrimp = findimpmap->second.find(this);
+			if (itrimp != findimpmap->second.end()){
 				return 0;
 			}
-
-			findimpmap->second[chil] = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-
+			findimpmap->second[this] = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		}else{
 			map<CBone*, D3DXVECTOR3> curmap;
 
-			curmap[ chil ] = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-			m_impmap[ impname ] = curmap;
+			curmap[this] = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+			parbone->m_impmap[impname] = curmap;
 		}
 	}
 	return 0;
@@ -2626,3 +2630,160 @@ int CBone::QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq
 
 }
 
+int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
+{
+	D3DXMatrixIdentity(dstmat);
+	*dstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	if (!chilbone || !dstmat || !dstpos){
+		return 1;
+	}
+
+	D3DXMATRIX invfirstworld;
+	D3DXMATRIX diffworld;
+	D3DXMATRIX pardiff;
+	D3DXVECTOR3 rigidcenter;
+	D3DXMATRIX multmat;
+
+
+	//親のモーションの変化分
+	if (GetParent()){
+		if (GetParent()->GetBtKinFlag() == 1){
+			if (GetBtKinFlag() == 1){
+				//親、カレントともモーション
+				D3DXMatrixIdentity(&pardiff);
+			}
+			else{
+				//親がモーションでカレントがbt simu
+				D3DXMATRIX befpar, invbefpar;
+				//befpar = GetParent()->GetCurMp().GetBefWorldMat();
+				befpar = GetParent()->GetStartMat2();
+				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
+				pardiff = invbefpar * GetParent()->GetCurMp().GetWorldMat();
+			}
+		}
+		else{
+			//親、カレントともbt simu
+			if (GetParent()->GetParent()){
+				D3DXMATRIX gpardiff = GetParent()->GetParent()->GetBtDiffMat();
+				D3DXMATRIX befpar, invbefpar;
+				//befpar = GetParent()->GetCurMp().GetBefBtMat();
+				befpar = GetParent()->GetStartMat2();
+				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
+				pardiff = invbefpar * GetParent()->GetCurMp().GetBtMat() * gpardiff;
+			}
+			else{
+				D3DXMATRIX befpar, invbefpar;
+				//befpar = GetParent()->GetCurMp().GetBefBtMat();
+				befpar = GetParent()->GetStartMat2();
+				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
+				pardiff = invbefpar * GetParent()->GetCurMp().GetBtMat();
+			}
+		}
+		GetParent()->SetBtDiffMat(pardiff);//!!!!!!!!!
+	}
+	else{
+		D3DXMatrixIdentity(&pardiff);
+	}
+
+	/*
+	//モーションによる親の変化分
+	if (GetParent()){
+		pardiff = GetParent()->GetBtDiffMat();
+	}
+	else{
+		D3DXMatrixIdentity(&pardiff);
+	}
+
+
+	//モーションの変化分
+	D3DXMATRIX curdiff;
+	if (GetBtKinFlag() == 1){
+		D3DXMATRIX befcur, invbefcur;
+		befcur = GetCurMp().GetBefWorldMat();
+		D3DXMatrixInverse(&invbefcur, NULL, &befcur);
+		curdiff = invbefcur * GetCurMp().GetWorldMat();
+	}
+	else{
+		if (GetParent()){
+			curdiff = GetParent()->GetBtDiffMat();
+		}
+		else{
+			D3DXMatrixIdentity(&curdiff);
+		}
+	}
+	SetBtDiffMat(curdiff);
+	*/
+
+
+	if (GetBtKinFlag() == 1){
+		//bt simu OFF
+		D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetWorldMat()));
+		D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+		diffworld = invfirstworld * GetCurMp().GetWorldMat();
+		multmat = srcre->GetFirstcapsulemat() * diffworld;
+
+		if (chilbone->GetBtKinFlag() == 1){
+			//子供のbt simu OFF
+			D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+			rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+		}
+		else{
+			//子供のbt simu ON
+			if (chilbone->GetCurMp().GetBtFlag() == 0){
+				//子供　未計算
+				D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+			else{
+				//子供　計算履歴あり
+				D3DXMATRIX newchilmat;
+				newchilmat = chilbone->GetCurMp().GetBtMat();// *diffworld;
+				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &newchilmat);
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+		}
+	}
+	else{
+		//bt simu ON
+		if (GetCurMp().GetBtFlag() == 0){
+			//計算履歴無し
+			D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetWorldMat()));
+			D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+			diffworld = invfirstworld * GetCurMp().GetWorldMat();
+			multmat = srcre->GetFirstcapsulemat() * diffworld;
+
+			//子供も計算履歴無し
+			D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+			rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+
+		}
+		else{
+			//計算履歴あり
+			if (GetParent()){
+				D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+				diffworld = invfirstworld * GetCurMp().GetBtMat() * pardiff;//!!!!!!!!!!!!
+				multmat = srcre->GetFirstcapsulemat() * diffworld;
+
+				D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetBtMat() * pardiff));
+				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetCurMp().GetBtMat() * pardiff));
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+			else{
+				D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+				diffworld = invfirstworld * GetCurMp().GetBtMat();
+				multmat = srcre->GetFirstcapsulemat() * diffworld;
+		
+				D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetBtMat()));
+				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetCurMp().GetBtMat()));
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+
+		}
+	}
+
+	*dstmat = multmat;
+	*dstpos = rigidcenter;
+
+	return 0;
+}
