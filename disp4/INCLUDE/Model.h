@@ -522,7 +522,7 @@ public:
 	int SetRagdollKinFlag();
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
-	int SetBtEquilibriumPointReq( CBone* srcbone );
+	int SetBtEquilibriumPointReq( CBtObject* srcbto );
 
 
 	int MultDispObj( D3DXVECTOR3 srcmult, D3DXVECTOR3 srctra );
@@ -575,11 +575,10 @@ private:
 	int SetFaceOfShape( CMQOFace** ppface, int facenum, int shapeno, CMQOFace** ppface2, int setfacenum );
 
 	int CreateBtConstraint();
-	//void CreateBtConstraintReq( CBtObject* curbto );
-	void CreateBtConstraintReq(CBone* curbone);
+	void CreateBtConstraintReq( CBtObject* curbto );
+	//void CreateBtConstraintReq(CBone* curbone);
 
 
-	int DbgDumpBoneReq( CBone* boneptr, int broflag );
 
 	void UpdateMatrixReq( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat, 
 		D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
@@ -663,6 +662,11 @@ private:
 
 	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
 	void InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe);
+
+
+	int DbgDumpBoneReq(CBone* boneptr, int broflag);
+	void DumpBtObjectReq(CBtObject* srcbto, int srcdepth);
+	void DumpBtConstraintReq(CBtObject* srcbto, int srcdepth);
 
 public: //accesser
 	FbxManager* GetFBXSDK(){

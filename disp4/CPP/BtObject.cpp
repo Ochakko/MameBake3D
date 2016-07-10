@@ -522,6 +522,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				CONSTRAINTELEM addelem;
 				addelem.constraint = dofC;
 				addelem.centerbone = m_endbone;
+				addelem.childbto = chilbto;
 				m_constraint.push_back(addelem);
 
 				DbgOut(L"CreateBtConstraint (aft) : curbto %s---%s, chilbto %s---%s\r\n",

@@ -8,18 +8,13 @@
 #include <map>
 #include <vector>
 
+#include <ConstraintElem.h>
+
 #include "btBulletDynamicsCommon.h"
 #include "LinearMath/btIDebugDraw.h"
 
 class CBone;
 class CRigidElem;
-
-typedef struct tag_constraintelem
-{
-	CBone* centerbone;
-	btGeneric6DofSpringConstraint* constraint;
-} CONSTRAINTELEM;
-
 
 class CBtObject
 {
@@ -224,6 +219,17 @@ public: //accesser
 			return 0;
 		}
 	};
+	CONSTRAINTELEM GetConstraintElem(int srcindex){
+		if ((srcindex >= 0) && (srcindex < (int)m_constraint.size())){
+			return m_constraint[srcindex];
+		}
+		else{
+			CONSTRAINTELEM initelem;
+			ZeroMemory(&initelem, sizeof(CONSTRAINTELEM));
+			return initelem;
+		}
+	};
+
 
 private:
 	btDynamicsWorld* m_btWorld;

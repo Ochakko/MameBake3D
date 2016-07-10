@@ -184,7 +184,8 @@ D3DXVECTOR3 g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 
 float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };
 float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };
-float g_initcuslk = 2000.0f;
+float g_initcuslk = 1e4;
+//float g_initcuslk = 2000.0f;
 //float g_initcuslk = 100.0f;
 float g_initcusak = 70.0f;
 
@@ -6706,6 +6707,10 @@ int OnAddMotion( int srcmotid )
 
 int StartBt(int flag, int btcntzero)
 {
+	if (!s_model){
+		return 0;
+	}
+
 	int resetflag = 0;
 	int createflag = 0;
 
@@ -10135,7 +10140,7 @@ int CreateRigidWnd()
 	s_lkradio->addLine(L"[位置ばね]普通こんなもんだと思う");
 	s_lkradio->addLine(L"[位置ばね]カスタム値");
 
-	s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 0.0f);//60000
+	s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 1e4);//60000
 	s_lklabel = new OWP_Label(L"位置ばね カスタム値");
 
 	s_akradio = new OWP_RadioButton(L"[角度ばね]へなへな");
