@@ -25,6 +25,10 @@ VCランタイムは2010を使用しています。
 
 
 ＃＃＃
+2016/07/11 その２
+	【物理が】 MameBake3D 【使えそうな？】
+	https://youtu.be/gh_ymrdA8tM
+
 2016/07/11 その１
 	CBtObject周りの検証と調整をしました。
 
@@ -711,6 +715,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【物理が】 MameBake3D 【使えそうな？】
+https://youtu.be/gh_ymrdA8tM
+
 【ガウシアンで】 MameBake3D 【平滑化】
 https://youtu.be/6iUwef1ZiYM
 
