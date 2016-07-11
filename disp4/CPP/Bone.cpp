@@ -1351,7 +1351,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 			CMotionPoint inimp;
 			*pdstmp = inimp;
 
-			_ASSERT( 0 );
+			//_ASSERT( 0 );
 			return 0;
 		}
 	}else{
@@ -1374,7 +1374,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 			CMotionPoint inimp;
 			*pdstmp = inimp;
 
-			_ASSERT( 0 );
+			//_ASSERT( 0 );
 			return 0;
 		}
 	}

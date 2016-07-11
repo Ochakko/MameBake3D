@@ -117,6 +117,8 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	m_loadedflag = false;
+	m_createbtflag = false;
 	m_oldaxis_atloading = 0;
 	m_ikrotaxis = D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
 	m_texpool = D3DPOOL_DEFAULT;
@@ -951,6 +953,10 @@ int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe
 	if (!m_topbt){
 		return 0;
 	}
+	if (!m_btWorld){
+		return 0;
+	}
+
 
 	if( m_topbt ){
 		SetBtKinFlagReq( m_topbt, 0 );
@@ -4052,6 +4058,10 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 	if( !m_topbone ){
 		return 0;
 	}
+	if (!m_btWorld){
+		return 0;
+	}
+
 
 	CalcBtAxismatReq( coldisp, m_topbone, 0.0f );//!!!!!!!!!!!!!
 	
@@ -4089,6 +4099,9 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 	DbgOut(L"\r\n\r\n");
 	DumpBtConstraintReq(m_topbt, 0);
 	DbgOut(L"\r\n\r\n");
+
+
+	SetCreateBtFlag(true);
 
 	return 0;          
 }
@@ -4201,7 +4214,7 @@ DbgOut( L"check!!!!:CalcBtAxismatReq : %s, %s\r\n", curbone->GetWBoneName(), cur
 	}
 }
 
-int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat, double difftime )
+int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 {
 	m_matWorld = *wmat;
 	m_matVP = *vpmat;
@@ -4210,7 +4223,9 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 		_ASSERT( 0 );
 		return 0;
 	}
-
+	if (!m_btWorld){
+		return 0;
+	}
 	if( !m_curmotinfo ){
 		_ASSERT( 0 );
 		return 0;//!!!!!!!!!!!!
@@ -4814,7 +4829,7 @@ int CModel::SetImp( int srcboneno, int kind, float srcval )
 
 	int impnum = parbone->GetImpMapSize();
 	if( m_curimpindex >= impnum ){
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 0;
 	}
 

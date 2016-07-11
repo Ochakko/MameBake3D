@@ -732,6 +732,7 @@ static int OnFrameUndo();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
+static void UpdateBtSimu(double nextframe, CModel* curmodel);
 
 static int OnRenderSetShaderConst();
 static int OnRenderModel();
@@ -1178,6 +1179,21 @@ void InitApp()
 	s_modelpanel.separator = 0;
 	s_modelpanel.checkvec.clear();
 	s_modelpanel.modelindex = -1;
+
+
+	{
+		s_bpWorld = new BPWorld(s_matWorld, "BtPiyo", // ウィンドウのタイトル
+			460, 460,         // ウィンドウの幅と高さ [pixels]
+			NULL);    // モニタリング用関数へのポインタ  
+		_ASSERT(s_bpWorld);
+
+		s_bpWorld->enableFixedTimeStep(true);
+		//s_bpWorld->enableFixedTimeStep(false);
+		//s_bpWorld->setTimeStep(0.015);// seconds
+		s_bpWorld->setGlobalERP(s_erp);// ERP
+		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
+		s_btWorld = s_bpWorld->getDynamicsWorld();
+	}
 
 	s_doneinit = 1;
 }
@@ -4100,6 +4116,7 @@ CModel* OpenFBXFile( int skipdefref )
 		return 0;
 	}
 
+	_ASSERT(s_btWorld);
 	newmodel->SetBtWorld( s_btWorld );
 	FbxScene* pScene = 0;
 	FbxImporter* pImporter = 0;
@@ -4240,6 +4257,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	}
 
 	s_model->CalcBoneEul(-1);
+
+	s_model->SetLoadedFlag(true);
 
 	g_dbgloadcnt++;
 
@@ -6720,93 +6739,116 @@ int StartBt(int flag, int btcntzero)
 	int resetflag = 0;
 	int createflag = 0;
 
-	if( (flag == 0) && (g_previewFlag != 4) ){
+
+	if ((flag == 0) && (g_previewFlag != 4)){
 		//F9キー
 		g_previewFlag = 4;
 		createflag = 1;
-		if (btcntzero == 1){
-			s_model->ZeroBtCnt();
-		}
-	}else if( flag == 1 ){
+	}
+	else if (flag == 1){
 		//F10キー
 		g_previewFlag = 5;
 		createflag = 1;
-		if (btcntzero == 1){
-			s_model->ZeroBtCnt();
-		}
 	}
 	else if (flag == 2){
 		//spaceキー
-		if( g_previewFlag == 4 ){
-			resetflag = 1;
-		}else if( g_previewFlag == 5 ){
+		if (g_previewFlag == 4){
 			resetflag = 1;
 		}
-	}else{
+		else if (g_previewFlag == 5){
+			resetflag = 1;
+		}
+	}
+	else{
 		g_previewFlag = 0;
 	}
 
-	double curframe;
-	if (resetflag == 1){
-		//curframe = s_owpTimeline->getCurrentTime();//<-- preview中はタイムラインの時間は動かない。
-		s_model->GetMotionFrame(&curframe);
-	}
-	else{
-		curframe = 0.0;
-	}
 
-	if ((g_previewFlag == 4) || (g_previewFlag == 5)){
-		s_bpWorld->setGlobalERP(s_erp);// ERP
 
-		if( g_previewFlag == 4 ){
-			s_model->SetMotionFrame( curframe );
+	//vector<MODELELEM>::iterator itrmodel;
+	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		//CModel* curmodel = itrmodel->modelptr;
+	CModel* curmodel = s_model;
+	if (curmodel){
+		if ((flag == 0) && (g_previewFlag != 4)){
+			//F9キー
+			if (btcntzero == 1){
+				curmodel->ZeroBtCnt();
+			}
+		}
+		else if (flag == 1){
+			//F10キー
+			if (btcntzero == 1){
+				curmodel->ZeroBtCnt();
+			}
+		}
 
-			vector<MODELELEM>::iterator itrmodel;
-			for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-				CModel* curmodel = itrmodel->modelptr;
-				if( curmodel ){
-					curmodel->UpdateMatrix( &s_matW, &s_matVP );
+
+		double curframe;
+		if (resetflag == 1){
+			curframe = s_owpTimeline->getCurrentTime();
+			//curmodel->GetMotionFrame(&curframe);
+		}
+		else{
+			curframe = 0.0;
+			s_owpLTimeline->setCurrentTime(curframe, false);
+		}
+
+		if ((g_previewFlag == 4) || (g_previewFlag == 5)){
+			s_bpWorld->setGlobalERP(s_erp);// ERP
+
+			if (g_previewFlag == 4){
+				curmodel->SetMotionFrame(curframe);
+
+				vector<MODELELEM>::iterator itrmodel;
+				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+					CModel* curmodel = itrmodel->modelptr;
+					if (curmodel){
+						curmodel->UpdateMatrix(&s_matW, &s_matVP);
+					}
+				}
+
+				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
+			}
+			else if (g_previewFlag == 5){
+				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
+			}
+
+			s_btstartframe = curframe;
+
+			CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
+
+			
+			if( g_previewFlag == 4 ){
+				//s_bpWorld->clientResetScene();
+				//if( s_model ){
+				//	s_model->ResetBt();
+				//}
+				//int firstflag = 1;
+				//s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &s_matW, &s_matVP);
+				//int rgdollflag = 0;
+				//double difftime = 0.0;
+				//s_model->SetBtMotion(rgdollflag, s_btstartframe, &s_matW, &s_matVP);
+				//s_model->ResetBt();
+				UpdateBtSimu(curframe, curmodel);
+			}
+			
+			if( g_previewFlag == 5 ){
+				s_model->SetBtImpulse();
+			}
+
+			
+			if (curmodel->GetRgdMorphIndex() >= 0){
+				MOTINFO* morphmi = curmodel->GetRgdMorphInfo();
+				if (morphmi){
+					//morphmi->curframe = 0.0;
+					morphmi->curframe = s_btstartframe;
 				}
 			}
 
-			s_model->SetCurrentRigidElem( s_curreindex );
-		}else if( g_previewFlag == 5 ){
-			s_model->SetCurrentRigidElem( s_rgdindex );
 		}
-
-		s_btstartframe = curframe;
-
-		CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
-		
-		/*
-		if( g_previewFlag == 4 ){
-			//s_bpWorld->clientResetScene();
-			//if( s_model ){
-			//	s_model->ResetBt();
-			//}
-			int firstflag = 1;
-			s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &s_matW, &s_matVP);
-			int rgdollflag = 0;
-			double difftime = 0.0;
-			s_model->SetBtMotion(rgdollflag, s_btstartframe, &s_matW, &s_matVP, difftime);
-			s_model->ResetBt();
-
-		}
-		if( g_previewFlag == 5 ){
-			s_model->SetBtImpulse();
-		}
-
-		*/
-		if( s_model->GetRgdMorphIndex() >= 0 ){
-			MOTINFO* morphmi = s_model->GetRgdMorphInfo();
-			if( morphmi ){
-				//morphmi->curframe = 0.0;
-				morphmi->curframe = s_btstartframe;
-			}
-		}
-		
 	}
-
+	//}
 	return 0;
 }
 
@@ -6979,7 +7021,7 @@ int SetImpWndParams()
 				setimp = parbone->GetImpMap( curimpname, curbone );
 			}
 			else{
-				_ASSERT(0);
+				//_ASSERT(0);
 			}
 
 			if( s_impzSlider ){
@@ -8947,86 +8989,90 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 {
 	int endflag = 0;
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		CModel* curmodel = itrmodel->modelptr;
-		curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
-		if ((curmodel == s_model) && (endflag == 1)){
-			g_previewFlag = 0;
-		}
-		curmodel->SetMotionFrame(*pnextframe);
-	}
-	if (s_model->GetBtCnt() == 1){
-		StartBt(2, 0);//reset bt for bvh first motion
+	if (!s_model){
+		return 0;
 	}
 
+	CModel* curmodel = s_model;
+	curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+	if ((curmodel == s_model) && (endflag == 1)){
+		g_previewFlag = 0;
+	}
+	if (s_savepreviewFlag != g_previewFlag){
+		*pnextframe = 0.0;//キー入力後の初回は時間を進めない。
+	}
+
+	curmodel->SetMotionFrame(*pnextframe);
+	if (IsTimeEqual(*pnextframe, 0.0)){
+		curmodel->ZeroBtCnt();
+	}
+
+	if ((curmodel->GetBtCnt() == 0) || (curmodel->GetBtCnt() == 1) || (curmodel->GetBtCnt() == 2)){
+		StartBt(2, 0);
+	}
+
+	UpdateBtSimu(*pnextframe, curmodel);
+
+	return 0;
+}
+
+void UpdateBtSimu(double nextframe, CModel* curmodel)
+{
+	if (!curmodel){
+		return;
+	}
 	int firstflag = 0;
 	if (s_savepreviewFlag != g_previewFlag){
 		firstflag = 1;
 	}
-
-	//bullet
-
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && curmodel->GetCurMotInfo()){
-			curmodel->Motion2Bt(firstflag, s_coldisp, *pnextframe, &s_matW, &s_matVP);
-		}
+	if (curmodel && curmodel->GetCurMotInfo()){
+		curmodel->Motion2Bt(firstflag, s_coldisp, nextframe, &s_matW, &s_matVP);
 	}
-
-	//s_bpWorld->setTimeStep( 1.0f / 60.0f * g_dspeed );// seconds
 	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
-	//s_bpWorld->setTimeStep( 1.0f / 80.0f );// seconds
-
-
-
 	s_bpWorld->clientMoveAndDisplay();
-
-
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && curmodel->GetCurMotInfo()){
-			curmodel->SetBtMotion(0, *pnextframe, &s_matW, &s_matVP, *pdifftime);
-		}
+	if (curmodel && curmodel->GetCurMotInfo()){
+		curmodel->SetBtMotion(0, nextframe, &s_matW, &s_matVP);
 	}
-
-
-	return 0;
 }
 
 int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 {
 
 	int endflag = 0;
-	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		CModel* curmodel = itrmodel->modelptr;
+	if (!s_model){
+		return 0;
+	}
+	CModel* curmodel = s_model;
+
+	curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+
+	//vector<MODELELEM>::iterator itrmodel;
+	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	//	CModel* curmodel = itrmodel->modelptr;
 		if (curmodel && curmodel->GetCurMotInfo()){
 			curmodel->SetRagdollKinFlag();
 		}
-	}
+	//}
 
 	int firstflag = 0;
 	if (s_savepreviewFlag != g_previewFlag){
 		firstflag = 1;
 	}
 	if ((g_previewFlag == 5) && (firstflag == 1)){
-		s_model->SetBtImpulse();
+		curmodel->SetBtImpulse();
 	}
 
 	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
 
 	s_bpWorld->clientMoveAndDisplay();
 
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		CModel* curmodel = itrmodel->modelptr;
+	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	//	CModel* curmodel = itrmodel->modelptr;
 		if (curmodel && curmodel->GetCurMotInfo()){
-			curmodel->SetBtMotion(1, *pnextframe, &s_matW, &s_matVP, *pdifftime);
+			curmodel->SetBtMotion(1, *pnextframe, &s_matW, &s_matVP);
 		}
-	}
-
+	//}
 
 	return 0;
 }
@@ -9738,27 +9784,24 @@ int OnFrameUpdateGround()
 
 int OnFrameInitBtWorld()
 {
+	if (!s_model || !s_btWorld){
+		return 0;
+	}
 
-	if (s_model && (s_model->GetBtCnt() == 0)){
-		if (!s_bpWorld){
-			s_bpWorld = new BPWorld(s_matWorld, "BtPiyo", // ウィンドウのタイトル
-				460, 460,         // ウィンドウの幅と高さ [pixels]
-				NULL);    // モニタリング用関数へのポインタ  
-			_ASSERT(s_bpWorld);
+	CModel* curmodel = s_model;
+
+
+	//vector<MODELELEM>::iterator itrmodel;
+	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		//CModel* curmodel = itrmodel->modelptr;
+		if (curmodel && (curmodel->GetLoadedFlag() == true) && (curmodel->GetCreateBtFlag() == false)){
+			curmodel->SetBtWorld(s_btWorld);
+			CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
 		}
-		//s_bpWorld->enableFixedTimeStep(true);
-		s_bpWorld->enableFixedTimeStep(false);
-		//s_bpWorld->setTimeStep(0.015);// seconds
-		s_bpWorld->setGlobalERP(s_erp);// ERP
-		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
-		s_btWorld = s_bpWorld->getDynamicsWorld();
-		s_model->SetBtWorld(s_btWorld);
 
-		CallF(s_model->CreateBtObject(s_coldisp, 1), return 1);
-	}
-	if (s_model){
-		s_model->PlusPlusBtCnt();
-	}
+		curmodel->PlusPlusBtCnt();
+
+	//}
 	return 0;
 }
 

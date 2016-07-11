@@ -463,7 +463,7 @@ public:
  * @return 成功したら０。
  * @detail bulletシミュレーション時には、CModel::Motion2Bt-->BPWorld::clientMoveAndDisplay-->CModel::SetBtMotionという流れで呼び出す。
  */
-	int SetBtMotion( int rgdollflag, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat, double difftime );
+	int SetBtMotion( int rgdollflag, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
 
 /**
  * @fn
@@ -936,7 +936,22 @@ public: //accesser
 		}
 	};
 
-
+	bool GetCreateBtFlag()
+	{
+		return m_createbtflag;
+	};
+	void SetCreateBtFlag(bool srcflag)
+	{
+		m_createbtflag = srcflag;
+	};
+	bool GetLoadedFlag()
+	{
+		return m_loadedflag;
+	};
+	void SetLoadedFlag(bool srcflag)
+	{
+		m_loadedflag = srcflag;
+	};
 private:
 	int m_modelno;//モデルのID
 	bool m_modeldisp;//表示するかどうか
@@ -1004,7 +1019,8 @@ private:
 	D3DXVECTOR3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。
 	CUndoMotion m_undomotion[ UNDOMAX ];//アンドゥー機能のためのCUndoMotionの配列。CUndoMotionの１つのインスタンスは１フレーム分のモーションを保存する。
 	int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
-
+	bool m_createbtflag;//CreateBtObjectを読んだことがあればtrue。
+	bool m_loadedflag;//初期の読み込み処理が終了したらtrue;
 };
 
 #endif
