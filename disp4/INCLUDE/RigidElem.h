@@ -108,6 +108,16 @@ public: //accesser
 
 	float GetBoneLeng();
 
+	int GetForbidRotFlag(){ return m_forbidrotflag; };
+	void SetForbidRotFlag(int srcflag){
+		if ((srcflag == 0) || (srcflag == 1)){
+			m_forbidrotflag = srcflag;
+		}
+		else{
+			m_forbidrotflag = 0;
+		}
+	};
+
 private:
 	int m_coltype;
 	int m_skipflag;
@@ -141,6 +151,7 @@ private:
 	float m_restitution;
 	float m_friction;
 
+	int m_forbidrotflag;
 
 	D3DXMATRIX m_capsulemat;
 	D3DXMATRIX m_firstcapsulemat;

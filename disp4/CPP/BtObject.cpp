@@ -415,33 +415,9 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 			angPAI2 = 90.0f * (float)DEG2PAI;
 			angPAI = 180.0f * (float)DEG2PAI;
 
-			/*
 			float lmax, lmin;
-			lmin = 1.0f;
-			lmax = -1.0f;
-			*/
-
-			float lmax, lmin;
-			/*
-			if( g_previewFlag == 4 ){
-				lmin = -0.1f;
-				lmax = 0.1f;
-			}else{
-				lmin = -0.25f;
-				lmax = 0.25f;
-			}
-			*/
 			lmin = -10000.0f;
 			lmax = 10000.0f;
-			//lmin = -1.0f;
-			//lmax = 1.0f;
-			//lmin = -1.0e-3;
-			//lmax = 1.0e-3;
-			//lmin = 0.0f;
-			//lmax = 0.0f;
-			//lmin = -1.0f;
-			//lmax = 1.0f;
-
 
 			btGeneric6DofSpringConstraint* dofC = 0;
 			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
@@ -454,20 +430,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 
 				dofC->setLinearLowerLimit(btVector3(worldpos.x() + lmin, worldpos.y() + lmin, worldpos.z() + lmin));
 				dofC->setLinearUpperLimit(btVector3(worldpos.x() + lmax, worldpos.y() + lmax, worldpos.z() + lmax));
-				//dofC->setLinearLowerLimit(btVector3(lmax, lmax, lmax)); 
-				//dofC->setLinearUpperLimit(btVector3(lmin, lmin, lmin));
 
-				//			char* findpat = strstr( m_bone->m_bonename, "BT_" );
-				//			if( findpat == 0 ){
-				//				dofC->setAngularLowerLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
-				//				dofC->setAngularUpperLimit( btVector3( angPAI, angPAI2, angPAI ) );
-				//			}else{
-				//				dofC->setAngularLowerLimit( btVector3( angPAI, angPAI2, angPAI ) );
-				//				dofC->setAngularUpperLimit( btVector3( -angPAI, -angPAI2, -angPAI ) );
-				//			}
 
-				dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
-				dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
 
 
 				dofC->setBreakingImpulseThreshold(FLT_MAX);
@@ -481,7 +445,15 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				float a_damping = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetADamping();
 				float l_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusLk();
 				float a_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusAk();
+				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
 
+				if (forbidrotflag == 0){
+					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+					dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
+				} else{
+					dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+					dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+				}
 
 				int dofid;
 				/*

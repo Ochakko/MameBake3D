@@ -303,6 +303,7 @@ static OWP_Slider* s_boxzSlider = 0;
 static OWP_Slider* s_massSlider = 0;
 static OWP_Button* s_massB = 0;
 static OWP_CheckBox* s_rigidskip = 0;
+static OWP_CheckBox* s_forbidrot = 0;
 static OWP_Label* s_shplabel = 0;
 static OWP_Label* s_boxzlabel = 0;
 static OWP_RadioButton* s_colradio = 0;
@@ -3185,6 +3186,11 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		delete s_rigidskip;
 		s_rigidskip = 0;
 	}
+	if (s_forbidrot){
+		delete s_forbidrot;
+		s_forbidrot = 0;
+	}
+
 	if (s_allrigidenableB){
 		delete s_allrigidenableB;
 		s_allrigidenableB = 0;
@@ -6836,11 +6842,13 @@ int RigidElem2WndParam()
 				float rest = curre->GetRestitution();
 				float fric = curre->GetFriction();
 				float btg = curre->GetBtg();
+				int forbidrot = curre->GetForbidRotFlag();
 
 				s_shprateSlider->setValue( rate );
 				s_boxzSlider->setValue( boxz );
 				s_massSlider->setValue( mass );
 				s_rigidskip->setValue( skipflag );
+				s_forbidrot->setValue(forbidrot);
 				s_colradio->setSelectIndex( colindex );
 				s_lkradio->setSelectIndex( lkindex );
 				s_akradio->setSelectIndex( akindex );
@@ -6858,6 +6866,7 @@ int RigidElem2WndParam()
 				s_boxzSlider->setValue(1.0);
 				s_massSlider->setValue(1.0);
 				s_rigidskip->setValue(0);
+				s_forbidrot->setValue(0);
 				s_colradio->setSelectIndex(0);
 				s_lkradio->setSelectIndex(0);
 				s_akradio->setSelectIndex(0);
@@ -6876,6 +6885,7 @@ int RigidElem2WndParam()
 			s_boxzSlider->setValue(1.0);
 			s_massSlider->setValue(1.0);
 			s_rigidskip->setValue(0);
+			s_forbidrot->setValue(0);
 			s_colradio->setSelectIndex(0);
 			s_lkradio->setSelectIndex(0);
 			s_akradio->setSelectIndex(0);
@@ -10096,7 +10106,8 @@ int CreateRigidWnd()
 		WindowPos(100, 200),		//位置
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450,680),		//サイズ
-		WindowSize(450, 760),		//サイズ
+		//WindowSize(450, 760),		//サイズ
+		WindowSize(450, 780),		//サイズ
 		_T("剛体設定ウィンドウ"),	//タイトル
 		s_mainwnd,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
@@ -10110,6 +10121,7 @@ int CreateRigidWnd()
 	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
 	s_massB = new OWP_Button(L"全剛体に質量設定");
 	s_rigidskip = new OWP_CheckBox(L"有効/無効", 1);
+	s_forbidrot = new OWP_CheckBox(L"回転禁止", 0);
 	s_allrigidenableB = new OWP_Button(L"全ての剛体を有効にする");
 	s_allrigiddisableB = new OWP_Button(L"全ての剛体以外を無効にする");
 	s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
@@ -10190,6 +10202,7 @@ int CreateRigidWnd()
 	s_rigidWnd->addParts(*s_massB);
 	s_rigidWnd->addParts(*s_lenglabel);
 	s_rigidWnd->addParts(*s_rigidskip);
+	s_rigidWnd->addParts(*s_forbidrot);
 	s_rigidWnd->addParts(*s_allrigidenableB);
 	s_rigidWnd->addParts(*s_allrigiddisableB);
 
@@ -10317,6 +10330,19 @@ int CreateRigidWnd()
 			}
 			else{
 				curre->SetSkipflag(0);
+			}
+		}
+		s_rigidWnd->callRewrite();						//再描画
+	});
+	s_forbidrot->setButtonListener([](){
+		CRigidElem* curre = GetCurRe();
+		if (curre){
+			bool validflag = s_forbidrot->getValue();
+			if (validflag == false){
+				curre->SetForbidRotFlag(0);
+			}
+			else{
+				curre->SetForbidRotFlag(1);
 			}
 		}
 		s_rigidWnd->callRewrite();						//再描画

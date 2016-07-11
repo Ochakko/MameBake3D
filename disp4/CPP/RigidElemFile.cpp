@@ -116,6 +116,7 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 	  <BCone>0</BCone>
 	  <ShpRate>0.2</ShpRate>
 	  <Mitusdo>5.0</Mitusdo>
+	  <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
 	  <ChildName>mune</ChildName>
@@ -123,7 +124,8 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 	  <BCone>0</BCone>
 	  <ShpRate>0.2</ShpRate>
 	  <Mitsudo>5.0</Mitsudo>
-    </RigidElem>
+	  <FORBIDROT>1</FORBIDROT>
+	  </RigidElem>
   </Bone>
 ***/
 	if( srcbone->GetRigidElemSize() <= 0 ){
@@ -168,6 +170,8 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 
 			CallF( Write2File( "      <RESTITUTION>%f</RESTITUTION>\r\n", curre->GetRestitution() ), return 1);
 			CallF( Write2File( "      <FRICTION>%f</FRICTION>\r\n", curre->GetFriction() ), return 1);
+
+			CallF(Write2File("      <FORBIDROT>%d</FORBIDROT>\r\n", curre->GetForbidRotFlag()), return 1);
 
 			CallF( Write2File( "    </RigidElem>\r\n" ), return 1);
 		}
@@ -471,6 +475,14 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 		fric = 0.5f;
 	}
 
+	int forbidrot = 0;
+	int retforbidrot = Read_Int(xmlbuf, "<FORBIDROT>", "</FORBIDROT>", &forbidrot);
+	if (retforbidrot || ((forbidrot != 0) && (forbidrot != 1))){
+		forbidrot = 0;
+	}
+
+
+
 	if( curbone ){
 		if( chilbone ){			
 			CRigidElem* curre;
@@ -494,6 +506,8 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 
 				curre->SetRestitution( rest );
 				curre->SetFriction( fric );
+
+				curre->SetForbidRotFlag(forbidrot);
 
 				curre->SetDampanimL( dmpanimL );
 				curre->SetDampanimA( dmpanimA );

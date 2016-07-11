@@ -37,6 +37,8 @@ CRigidElem::~CRigidElem()
 
 int CRigidElem::InitParams()
 {
+	m_forbidrotflag = 0;
+
 	m_dampanim_l = 0.0f;
 	m_dampanim_a = 0.0f;
 
