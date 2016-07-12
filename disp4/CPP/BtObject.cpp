@@ -150,9 +150,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 		return 1;
 	}
 
-	//if( curre && (curre->GetSkipflag() == 1) ){
-	//	return 0;
-	//}
+	if( curre && (curre->GetSkipflag() == 1) ){
+		return 0;
+	}
 
 	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
@@ -359,21 +359,15 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 
 	dsttra.getBasis().setEulerZYX( 0.0f, 0.0f, m_constzrad );
 
-	if (curbto->m_rigidbody){
-		btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
-		btTransform invtra = rigidtra.inverse();
-		//btVector3 localpivot;
-		if (chilflag == 0){
-			m_curpivot = invtra(btVector3(aftchilposA.x, aftchilposA.y, aftchilposA.z));
-			//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
-		}
-		else{
-			m_curpivot = invtra(btVector3(aftparposA.x, aftparposA.y, aftparposA.z));
-			//m_curpivot = btVector3( 0.0f, -0.5f * curbto->m_boneleng, 0.0f );
-		}
-	}
-	else{
-		m_curpivot = btVector3(0.0, 0.0, 0.0);
+	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
+	btTransform invtra = rigidtra.inverse();
+	//btVector3 localpivot;
+	if( chilflag == 0 ){
+		m_curpivot = invtra( btVector3( aftchilposA.x, aftchilposA.y, aftchilposA.z ) );
+		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
+	}else{
+		m_curpivot = invtra( btVector3( aftparposA.x, aftparposA.y, aftparposA.z ) );
+		//m_curpivot = btVector3( 0.0f, -0.5f * curbto->m_boneleng, 0.0f );
 	}
 	dsttra.setOrigin( m_curpivot );
 
