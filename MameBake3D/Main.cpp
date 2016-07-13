@@ -4135,7 +4135,6 @@ CModel* OpenFBXFile( int skipdefref )
 	}
 
 	CallF( s_model->MakeDispObj(), return 0 );
-	CallF( s_model->DbgDump(), return 0 );
 
 
 	int mindex;
@@ -4259,6 +4258,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	s_model->CalcBoneEul(-1);
 
 	s_model->SetLoadedFlag(true);
+
+	CallF(s_model->DbgDump(), return 0);
 
 	g_dbgloadcnt++;
 

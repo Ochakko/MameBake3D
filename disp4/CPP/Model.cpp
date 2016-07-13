@@ -549,6 +549,7 @@ _ASSERT(m_bonelist[0]);
 	m_pimporter = pImporter;
 	m_pscene = pScene;
 
+
 	return 0;
 }
 
@@ -575,6 +576,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 			curbone->CalcAxisMat(1, 0.0f);
 		}
 	}
+
 
 	return 0;
 }
@@ -817,7 +819,7 @@ int CModel::MakeObjectName()
 
 int CModel::DbgDump()
 {
-	DbgOut( L"######start DbgDump\r\n" );
+	DbgOut( L"######start DbgDump %s\r\n", GetFileName() );
 
 	DbgOut( L"Dump Bone And InfScope\r\n" );
 
@@ -3552,15 +3554,17 @@ int CModel::SetDefaultBonePos()
 
 	FbxPose* bindpose = 0;
 	FbxPose* curpose = m_pscene->GetPose( 0 );
+	
 	int curpindex = 1;
 	while( curpose ){
 		if( curpose->IsBindPose() ){
-			bindpose = curpose;
-			break;
+			bindpose = curpose;//最後のバインドポーズ
+			//break;
 		}
 		curpose = m_pscene->GetPose( curpindex );
 		curpindex++;
 	}
+	
 
 	if( !bindpose ){
 		::MessageBoxA( NULL, "バインドポーズがありません。", "警告", MB_OK );

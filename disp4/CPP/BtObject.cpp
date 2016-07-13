@@ -240,7 +240,10 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 	m_rigidbody = localCreateRigidBody( curre, transform, m_colshape );
 	_ASSERT( m_rigidbody );
-
+	if (!m_rigidbody){
+		_ASSERT(0);
+		return 1;
+	}
 
 	btTransform worldtra;
 	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
@@ -279,6 +282,9 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 {
 	dsttra.setIdentity();
 
+	if (!m_rigidbody){
+		return 1;
+	}
 
 	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
 	parposA = curbto->m_bone->GetJointFPos();
@@ -383,9 +389,11 @@ int CBtObject::CreateBtConstraint()
 	_ASSERT( m_bone );
 
 	if( !m_endbone ){
-		return 0;
+		return 1;
 	}
-
+	if (!m_rigidbody){
+		return 1;
+	}
 
 	int chilno;
 	for (chilno = 0; chilno < (int)m_chilbt.size(); chilno++){
