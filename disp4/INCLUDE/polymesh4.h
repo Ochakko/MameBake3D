@@ -39,11 +39,13 @@ private:
 
 	int SetTriFace( CMQOFace* faceptr, int* numptr );
 	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, map<int,CMQOMaterial*>& srcmat );
+	int SetLastValidVno();
 
 public:
 	//accesser
 	int GetOrgPointNum(){
-		return m_orgpointnum;
+		//return m_orgpointnum;
+		return (m_lastvalidvno + 1);
 	};
 
 	int GetOrgFaceNum(){
@@ -137,6 +139,8 @@ private:
 
 	MODELBOUND	m_bound;
 
+	int*	m_dirtyflag;
+	int		m_lastvalidvno;
 
 	CMQOFace* m_mqoface;//ŠO•”ƒƒ‚ƒŠ
 	D3DXVECTOR3* m_pointbuf;//ŠO•”ƒƒ‚ƒŠ

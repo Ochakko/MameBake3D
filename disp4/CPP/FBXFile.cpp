@@ -654,21 +654,14 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 
 	sprintf_s( meshname, 256, "%s", curobj->GetEngName() );
 	int facenum = pm4->GetFaceNum();
-
-	FbxMesh* lMesh = FbxMesh::Create( pScene, meshname );
-	if (pm4->GetOrgPointNum() < (facenum * 3)){
-		s_doublevertices = 1;
-		lMesh->InitControlPoints(pm4->GetOrgPointNum() * 2);
-	}
-	else{
-		s_doublevertices = 0;
-		lMesh->InitControlPoints(pm4->GetOrgPointNum());
-	}
+	s_doublevertices = 0;
+	FbxMesh* lMesh = FbxMesh::Create(pScene, meshname);
+	lMesh->InitControlPoints(pm4->GetOrgPointNum());
 
 
 	FbxVector4* lcp = lMesh->GetControlPoints();
 
-	FbxGeometryElementNormal* lElementNormal= lMesh->CreateElementNormal();
+	FbxGeometryElementNormal* lElementNormal = lMesh->CreateElementNormal();
 	lElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
 	lElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
 
@@ -688,16 +681,6 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 		FbxVector4 fbxn = FbxVector4(curn.x, curn.y, curn.z, 0.0f);
 		lElementNormal->GetDirectArray().Add(fbxn);
 
-	}
-	if (s_doublevertices == 1){
-		for (vsetno = 0; vsetno < pm4->GetOrgPointNum(); vsetno++){
-			D3DXVECTOR3* curv = pm4->GetOrgPointBuf() + vsetno;
-			*(lcp + vsetno + pm4->GetOrgPointNum()) = FbxVector4(curv->x, curv->y, curv->z, 1.0f);
-
-			D3DXVECTOR3 curn = pm4->GetNormalByControlPointNo(vsetno);
-			FbxVector4 fbxn = FbxVector4(curn.x, curn.y, curn.z, 0.0f);
-			lElementNormal->GetDirectArray().Add(fbxn);
-		}
 	}
 
 
@@ -736,7 +719,8 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 		int vcnt;
 		for( vcnt = 0; vcnt < 3; vcnt++ ){
 			lMesh->AddPolygon(vno[vcnt]);
-			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);
+			//lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vcnt);//vertex, vcnt
+			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);//vertex, vcnt
 			vsetno++;
 		}
 		lMesh->EndPolygon ();
@@ -934,18 +918,6 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 				}
 			}
 
-			if (s_doublevertices == 1){//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				if (!lCluster){
-					lCluster = FbxCluster::Create(pScene, "");
-					lCluster->SetLink(lSkel);
-					lCluster->SetLinkMode(FbxCluster::eTotalOne);
-				}
-
-				int setv;
-				for (setv = 0; setv < pm4->GetOrgPointNum(); setv++){
-					lCluster->AddControlPointIndex(setv + pm4->GetOrgPointNum(), 1.0);
-				}
-			}
 
 			if (lCluster){
 				D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -2199,8 +2171,8 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 		{
 			// Control point index
 			lMesh->AddPolygon(vsetno);
-			// update the index array of the UVs that map the texture to the face
-			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);
+			//lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vcnt);//vertex, vcnt
+			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);//vertex, vcnt
 			vsetno++;
 		}
 		lMesh->EndPolygon();

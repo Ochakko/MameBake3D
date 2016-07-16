@@ -78,6 +78,10 @@ void CPolyMesh4::InitParams()
 	ZeroMemory( &chkalpha, sizeof( CHKALPHA ) );
 	ZeroMemory( &m_bound, sizeof( MODELBOUND ) );
 
+	m_dirtyflag = 0;
+	m_lastvalidvno = 0;
+
+
 }
 void CPolyMesh4::DestroyObjs()
 {
@@ -113,6 +117,11 @@ void CPolyMesh4::DestroyObjs()
 	if( m_pm3inf ){
 		free( m_pm3inf );
 		m_pm3inf = 0;
+	}
+
+	if (m_dirtyflag){
+		free(m_dirtyflag);
+		m_dirtyflag = 0;
 	}
 }
 
@@ -196,6 +205,13 @@ int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng
 	}
 	ZeroMemory(m_fbxindex, sizeof(int) * m_facenum * 3);
 
+	m_dirtyflag = (int*)malloc(sizeof(int) * m_orgpointnum);
+	if (!m_dirtyflag){
+		_ASSERT(0);
+		return 1;
+	}
+	ZeroMemory(m_dirtyflag, sizeof(int) * m_orgpointnum);
+
 
 	int tmpleng, tmpmatnum;
 	SetOptV( m_dispv, &tmpleng, &tmpmatnum, srcmat );
@@ -206,6 +222,7 @@ int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng
 	}
 
 	CallF( CalcBound(), return 1 );
+
 
 	m_infbone = new CInfBone[ m_orgpointnum ];
 	if( !m_infbone ){
@@ -222,6 +239,10 @@ int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng
 		return 1;
 	}
 	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
+
+
+	SetLastValidVno();
+
 
 	m_createoptflag = 1;
 
@@ -296,6 +317,8 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				curv->pos.y = (m_pointbuf + vno)->y;
 				curv->pos.z = (m_pointbuf + vno)->z;
 				curv->pos.w = 1.0f;
+
+				*(m_dirtyflag + vno) = 1;//!!!!!!!!!!
 
 				*(m_orgindex + setno * 3 + vi[vcnt]) = vno;
 				//*(m_fbxindex + setno * 3 + vi[vcnt]) = vno;
@@ -650,3 +673,18 @@ D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
 
 
 }
+
+int CPolyMesh4::SetLastValidVno()
+{
+	int vno;
+	m_lastvalidvno = -1;
+
+	for (vno = 0; vno < m_orgpointnum; vno++){
+		if (*(m_dirtyflag + vno) == 1){
+			m_lastvalidvno = vno;
+		}
+	}
+
+	return 0;
+}
+
