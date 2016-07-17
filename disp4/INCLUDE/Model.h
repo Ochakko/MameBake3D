@@ -667,6 +667,7 @@ private:
 	int DbgDumpBoneReq(CBone* boneptr, int broflag);
 	void DumpBtObjectReq(CBtObject* srcbto, int srcdepth);
 	void DumpBtConstraintReq(CBtObject* srcbto, int srcdepth);
+	FbxPose* GetBindPose();
 
 public: //accesser
 	FbxManager* GetFBXSDK(){

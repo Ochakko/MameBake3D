@@ -2891,10 +2891,10 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 			}
 		}
 
-
         //FbxPose* pPose = pScene->GetPose( animno );
 		//FbxPose* pPose = pScene->GetPose( 10 );
-		FbxPose* pPose = NULL;
+		FbxPose* pPose = GetBindPose();
+		//FbxPose* pPose = NULL;
 		CreateFBXAnimReq( animno, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2 );	
 
 		FillUpEmptyKeyReq( curmotid, animleng, m_topbone, 0 );
@@ -3545,6 +3545,25 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 
 }
 
+FbxPose* CModel::GetBindPose()
+{
+	FbxPose* bindpose = 0;
+	FbxPose* curpose = m_pscene->GetPose(0);
+	int curpindex = 1;
+	while (curpose){
+		if (curpose->IsBindPose()){
+			bindpose = curpose;//最後のバインドポーズ
+		}
+		curpose = m_pscene->GetPose(curpindex);
+		curpindex++;
+	}
+	if (!bindpose){
+		//::MessageBoxA(NULL, "バインドポーズがありません。", "警告", MB_OK);
+		bindpose = m_pscene->GetPose(0);
+	}
+	return bindpose;
+}
+
 
 int CModel::SetDefaultBonePos()
 {
@@ -3552,24 +3571,7 @@ int CModel::SetDefaultBonePos()
 		return 0;
 	}
 
-	FbxPose* bindpose = 0;
-	FbxPose* curpose = m_pscene->GetPose( 0 );
-	
-	int curpindex = 1;
-	while( curpose ){
-		if( curpose->IsBindPose() ){
-			bindpose = curpose;//最後のバインドポーズ
-			//break;
-		}
-		curpose = m_pscene->GetPose( curpindex );
-		curpindex++;
-	}
-	
-
-	if( !bindpose ){
-		::MessageBoxA( NULL, "バインドポーズがありません。", "警告", MB_OK );
-		bindpose = m_pscene->GetPose( 0 );
-	}
+	FbxPose* bindpose = GetBindPose();
 
 	FbxTime pTime;
 	pTime.SetSecondDouble( 0.0 );
