@@ -999,8 +999,10 @@ int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe
 
 	Motion2BtReq( m_topbt );
 
-	if (m_topbt){
-		SetBtEquilibriumPointReq(m_topbt);
+	if (g_previewFlag == 5){
+		if (m_topbt){
+			SetBtEquilibriumPointReq(m_topbt);
+		}
 	}
 
 
@@ -2893,8 +2895,12 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 
         //FbxPose* pPose = pScene->GetPose( animno );
 		//FbxPose* pPose = pScene->GetPose( 10 );
-		FbxPose* pPose = GetBindPose();
-		//FbxPose* pPose = NULL;
+		
+//!!!!!!!!!!!!!!!!!!!!!		
+		//FbxPose* pPose = GetBindPose();
+		FbxPose* pPose = NULL;
+		
+		
 		CreateFBXAnimReq( animno, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2 );	
 
 		FillUpEmptyKeyReq( curmotid, animleng, m_topbone, 0 );
@@ -4310,8 +4316,10 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 		}
 	}
 
-	if (m_topbt){
-		SetBtEquilibriumPointReq(m_topbt);
+	if (g_previewFlag == 5){
+		if (m_topbt){
+			SetBtEquilibriumPointReq(m_topbt);
+		}
 	}
 
 

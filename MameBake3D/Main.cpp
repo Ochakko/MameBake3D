@@ -98,6 +98,7 @@ typedef struct tag_spaxis
 }SPAXIS, SPCAM, SPELEM;
 
 int g_dbgloadcnt = 0;
+double g_calcfps = 60.0;
 
 extern map<CModel*,int> g_bonecntmap;
 
@@ -182,8 +183,8 @@ D3DXVECTOR3 g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), powf( 10.0f, 3.3f ) };
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), 1000.0f };
 
-float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };
-float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };
+float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };//
+float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };//
 float g_initcuslk = 1e4;
 //float g_initcuslk = 2000.0f;
 //float g_initcuslk = 100.0f;
@@ -1187,7 +1188,7 @@ void InitApp()
 			NULL);    // モニタリング用関数へのポインタ  
 		_ASSERT(s_bpWorld);
 
-		s_bpWorld->enableFixedTimeStep(true);
+		s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
 		s_bpWorld->setGlobalERP(s_erp);// ERP
@@ -1867,7 +1868,7 @@ void RenderText( double fTime )
 {
 	static double s_savetime = 0.0;
 
-	double calcfps = 1.0 / (fTime - s_savetime);
+	double g_calcfps = 1.0 / (fTime - s_savetime);
 
     // The helper object simply helps keep track of text position, and color
     // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
@@ -1884,7 +1885,7 @@ void RenderText( double fTime )
     //txtHelper.DrawTextLine( DXUTGetDeviceStats() );
 
     txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d", calcfps, fTime, g_previewFlag );
+    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag );
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -9029,7 +9030,7 @@ void UpdateBtSimu(double nextframe, CModel* curmodel)
 	if (curmodel && curmodel->GetCurMotInfo()){
 		curmodel->Motion2Bt(firstflag, s_coldisp, nextframe, &s_matW, &s_matVP);
 	}
-	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
+	s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
 	s_bpWorld->clientMoveAndDisplay();
 	if (curmodel && curmodel->GetCurMotInfo()){
 		curmodel->SetBtMotion(0, nextframe, &s_matW, &s_matVP);
@@ -9064,7 +9065,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		curmodel->SetBtImpulse();
 	}
 
-	s_bpWorld->setTimeStep(1.0f / 60.0f);// seconds
+	s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
 
 	s_bpWorld->clientMoveAndDisplay();
 
@@ -10196,7 +10197,9 @@ int CreateRigidWnd()
 	s_lkradio->addLine(L"[位置ばね]普通こんなもんだと思う");
 	s_lkradio->addLine(L"[位置ばね]カスタム値");
 
-	s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 1e4);//60000
+	//s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 1e4);//60000
+	//s_lkSlider = new OWP_Slider(g_initcuslk, 1e10, 1e8);//60000
+	s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 1e2);//60000
 	s_lklabel = new OWP_Label(L"位置ばね カスタム値");
 
 	s_akradio = new OWP_RadioButton(L"[角度ばね]へなへな");
@@ -10204,7 +10207,9 @@ int CreateRigidWnd()
 	s_akradio->addLine(L"[角度ばね]普通こんなもんだと思う");
 	s_akradio->addLine(L"[角度ばね]カスタム値");
 
-	s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
+	//s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
+	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
+	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
 	s_aklabel = new OWP_Label(L"角度ばね カスタム値");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
