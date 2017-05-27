@@ -1,0 +1,93 @@
+剛体パラメータ設定　2017/05/08
+
+BPWorld.cppのタイムステップに関わる部分の解釈と変更をした。
+
+最初の時間設定は以下。
+
+m_dynamicsWorld->stepSimulation(0.016, 150, 0.016 / 150.0);
+
+３つの引数の意味は以下。
+
+//１、simulation time : 前回と今回の呼び出しの時間間隔、実際の値を入れる？
+//２、MaxTimes : 計算の最大回数
+//３、FixedTime : 物理計算1回あたりの時間（実時間ではなく計算上の時間だと思われる）
+
+設定におけるダイナミックレンジを増やすにあたり、まず半分の計算回数でそれなりにバランスを取った。
+時間設定を以下の様にした。
+
+_dynamicsWorld->stepSimulation(0.016, 75, 0.016 / 75.0);
+
+半分の計算回数だとかなりプルンプルンと動いた。
+とにかく破綻しない様になるべくなめらかを目指して調整した。（それでもプルンプルンだった）
+
+全般的にパラメータの値は桁が変わるほど小さくなった。
+
+SetEquilibrium呼び出しは、CreateBT…の時とラグドールの時だけにした。
+この変更をしないとツインテールの付け根がどんどん垂れ下がっていった。
+
+
+調整後計算回数を元に戻した。
+
+m_dynamicsWorld->stepSimulation(0.016, 150, 0.008 / 75.0);
+
+最初と値は同じだが意味合いが変わった。
+
+そしてまた破綻しない様に調整した。
+
+以前よりもパラメータの変更による効果が分かりやすくなりいじれる値の範囲も扱いやすくなった。
+
+/////////////////////////////
+
+
+BTGScaleは以下のようである。
+
+    <SCBTG>9.893048</SCBTG>
+
+ツインテールの枝分かれに関わる４つの剛体以外の剛体の設定は以下のようである。
+
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>9497.058594</CUSLK>
+      <AK>3</AK>
+      <CUSAK>30.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>1.000000</LDMP>
+      <ADMP>0.946524</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.005348</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+
+
+ツインテールの枝分かれ部の４つの剛体の設定は以下のようである。
+
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>10000.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>2952.353027</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>3</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.048128</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+
+
