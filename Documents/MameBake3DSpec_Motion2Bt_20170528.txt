@@ -1,0 +1,176 @@
+Motion2Btの仕様　2017/05/28 化け猫
+
+bulletで例えばツインテールに対して物理演算する場合
+キャラクター自体にもアニメーションがついているはずであるから
+キャラクター自体のアニメーションを物理演算の剛体にセットしてあげる必要が生じる。
+
+このときの計算方法（仕様）をメモする。
+ここではCbtObject::Motion2Bt()について説明する。
+
+キャラクターのアニメーションによる剛体の新しい位置と回転行列を
+CBone::CalcNewBtMatにて求める。
+
+CalcNewBtMatの計算は以下のようである。
+
+int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
+{
+	D3DXMatrixIdentity(dstmat);
+	*dstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	if (!chilbone || !dstmat || !dstpos){
+		return 1;
+	}
+
+	D3DXMATRIX invfirstworld;
+	D3DXMATRIX diffworld;
+	D3DXMATRIX pardiff;
+	D3DXVECTOR3 rigidcenter;
+	D3DXMATRIX multmat;
+
+
+	//親のモーションの変化分
+	if (GetParent()){
+		if (GetParent()->GetBtKinFlag() == 1){
+			if (GetBtKinFlag() == 1){
+				//親、カレントともモーション
+				D3DXMatrixIdentity(&pardiff);
+			}
+			else{
+				//親がモーションでカレントがbt simu
+				D3DXMATRIX befpar, invbefpar;
+				//befpar = GetParent()->GetCurMp().GetBefWorldMat();
+				befpar = GetParent()->GetStartMat2();
+				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
+				pardiff = invbefpar * GetParent()->GetCurMp().GetWorldMat();
+			}
+		}
+		else{
+			//親、カレントともbt simu
+			if (GetParent()->GetParent()){
+				D3DXMATRIX gpardiff = GetParent()->GetParent()->GetBtDiffMat();
+				D3DXMATRIX befpar, invbefpar;
+				//befpar = GetParent()->GetCurMp().GetBefBtMat();
+				befpar = GetParent()->GetStartMat2();
+				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
+				pardiff = invbefpar * GetParent()->GetCurMp().GetBtMat() * gpardiff;
+			}
+			else{
+				D3DXMATRIX befpar, invbefpar;
+				//befpar = GetParent()->GetCurMp().GetBefBtMat();
+				befpar = GetParent()->GetStartMat2();
+				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
+				pardiff = invbefpar * GetParent()->GetCurMp().GetBtMat();
+			}
+		}
+		GetParent()->SetBtDiffMat(pardiff);//!!!!!!!!!
+	}
+	else{
+		D3DXMatrixIdentity(&pardiff);
+	}
+
+
+	if (GetBtKinFlag() == 1){
+		//bt simu OFF
+		D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetWorldMat()));
+		D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+		diffworld = invfirstworld * GetCurMp().GetWorldMat();
+		multmat = srcre->GetFirstcapsulemat() * diffworld;
+
+		if (chilbone->GetBtKinFlag() == 1){
+			//子供のbt simu OFF
+			D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+			rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+		}
+		else{
+			//子供のbt simu ON
+			if (chilbone->GetCurMp().GetBtFlag() == 0){
+				//子供　未計算
+				D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+			else{
+				//子供　計算履歴あり
+				D3DXMATRIX newchilmat;
+				newchilmat = chilbone->GetCurMp().GetBtMat();// *diffworld;
+				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &newchilmat);
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+		}
+	}
+	else{
+		//bt simu ON
+		if (GetCurMp().GetBtFlag() == 0){
+			//計算履歴無し
+			D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetWorldMat()));
+			D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+			diffworld = invfirstworld * GetCurMp().GetWorldMat();
+			multmat = srcre->GetFirstcapsulemat() * diffworld;
+
+			//子供も計算履歴無し
+			D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+			rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+
+		}
+		else{
+			//計算履歴あり
+			if (GetParent()){
+				D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+				diffworld = invfirstworld * GetCurMp().GetBtMat() * pardiff;//!!!!!!!!!!!!
+				multmat = srcre->GetFirstcapsulemat() * diffworld;
+
+				D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetBtMat() * pardiff));
+				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetCurMp().GetBtMat() * pardiff));
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+			else{
+				D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
+				diffworld = invfirstworld * GetCurMp().GetBtMat();
+				multmat = srcre->GetFirstcapsulemat() * diffworld;
+		
+				D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetBtMat()));
+				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetCurMp().GetBtMat()));
+				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+			}
+
+		}
+	}
+
+	*dstmat = multmat;
+	*dstpos = rigidcenter;
+
+	return 0;
+}
+
+上記関数をみてもらえば分かると思うが
+条件分けが必要である。
+〇計算対象の剛体の親側のボーンのさらに親のボーンがあるかどうか。
+〇剛体を構成するボーン（親と子のボーン）が
+　物理シミュレートモードなのかキャラクター自体のアニメーションモードなのか。
+〇計算履歴が無いのか（シミュレーションの初回計算）、計算履歴が存在するのか（2回目以降の計算）なのか。
+主に上にあげた条件による条件分けが必要である。
+
+
+計算の最初の方でpardiffという行列を求めている。
+これは親のボーンの行列の、一回前の行列からの行列の変化分である。
+なぜ変化分で計算するかというと
+ボーンと剛体とで初期行列が異なっているからである。
+初期行列が異なっていてもボーンと剛体とで同じ姿勢をとっているのであれば
+その変化分はボーンと剛体とで等しいはずであることを利用して計算するのである。
+
+後半では
+剛体の回転を取得するための変換行列multmatと剛体の位置のためのrigidcenterを計算している。
+
+剛体の位置の設定には親のボーンと子供のボーンの中心の座標を使用する。
+注意したいのは剛体の中心は剛体の中央であるが
+剛体の回転の中心は剛体の両端に対応付けするコンストレイントの座標であるということである。
+つまり、ボーンの回転の中心と剛体の回転の中心は同じといえる。
+
+剛体を構成するボーンがキャラクター自体のアニメーションモードの場合には
+アニメーションの位置を設定するように計算する。
+剛体を構成するボーンが物理シミュレーションモードの場合には
+物理シミュレーションとキャラクタアニメーションの境目のボーンの変化分を考慮するように計算する。
+
+
+
+
+
