@@ -1,0 +1,50 @@
+MameBake3Dの仕様　2016/04/21
+化け猫
+
+○マニピュレータ表示用の行列について
+マニピュレータはジョイントの位置に、子供へのジョイントの向きがX軸になるように表示する。
+
+まず、firstmat（アニメがないときはNodeのグローバル位置行列、アニメがあるときは最初のアニメの最初のフレームの行列）によって
+ジョイントの位置をtransformし、その向きがマニピュレータのX軸になるような変換行列を求めておく。
+この行列はbone->GetFirstAxisMatX()で取得する。
+
+マニピュレータ用の変換行列をselectmatとすると
+selectmatはfirstmatの時の行列から、適用される側のボーンの姿勢に応じた変換行列を求めれば良い。
+つまり式にすると次式のようになる。
+
+selectmat = firstbone->GetFirstAxisMatX() * firstbone->GetInvFirstMat() * firstbone->GetCurMp().GetWorldMat();
+
+
+
+○マニピュレータの軸に関する回転を加える場合について
+マニピュレータ用の変換行列は上記で求める。
+この行列の逆行列も求める。
+そして移動成分をゼロにしたものがそれぞれrotselect, rotinvselectである。
+このとき現在のWorldMatの後ろに付加する変換を計算する。
+
+D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+
+上の式のtransmatの回転だけを求める。
+ジョイントの位置で求めた回転をする行列を現在のWorldMatの後ろに掛ける。
+
+そのジョイントの子供に対して
+worldmat = worldmat * involdparmat * newparmat
+を再帰的に計算する。
+involdparmatとはこの処理を行う前の親の行列の逆行列であり、newparmatはこの処理により変更された新しい親の行列である。
+
+
+
+○PseudoLocal(疑似ローカル)について
+上記の方法では
+複数フレームに対して処理を行う際に、加える回転の向きがフレームをまたぐ体の向きの変更や親の回転の変化に対応していない。
+そこで姿勢を決定したフレームをaplyframe、処理を行うフレームをcurframeとしたとき
+次式の変換を行うことで疑似的なローカル処理を実現した。
+
+transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
+
+上の式でinvは逆行列、aplyは姿勢決定フレーム、rotは位置成分をゼロ、parは親を表す。
+そしてrotq0とは
+「マニピュレータの軸に関する回転を加える場合について」で求めたtransmatの回転分である。
+
+
+

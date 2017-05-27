@@ -1,0 +1,145 @@
+MameBake3Dの仕様　2016/04/06
+化け猫
+
+
+＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃
+
+以下のメモ中に頂点数を2倍する記述がある。
+ログとして残すことにしたが
+その後、
+UVやマテリアルのモード別の読み込みをデバッグしたところ
+頂点を　* 2しないでも正常に読み書きできるようになった。
+
+＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃
+
+
+FBX SDKを使用してスムージングした法線を出力させる方法を模索した。
+見つけた方法を書き記す。
+
+マッピングモードは以下のようにした。
+{
+	lMesh->InitControlPoints(pm2->optpleng * 2);
+
+	lElementNormal->SetMappingMode(KFbxGeometryElement::eBY_CONTROL_POINT);
+	lElementNormal->SetReferenceMode(KFbxGeometryElement::eDIRECT);
+
+	lUVDiffuseElement->SetMappingMode(KFbxGeometryElement::eBY_CONTROL_POINT);
+	lUVDiffuseElement->SetReferenceMode(KFbxGeometryElement::eDIRECT);
+
+	lMaterialElement->SetMappingMode(KFbxGeometryElement::eBY_POLYGON);
+	lMaterialElement->SetReferenceMode(KFbxGeometryElement::eINDEX_TO_DIRECT);
+}
+
+コントロールポイントの数は使用する頂点の数である。
+実際に必要なのはpm2->optplengである。
+しかし、pm2->optplengで組み立てると自前の読み込みでは正常に読み込めるFBXを出力できるものの
+Maya2013のFBXの読み込みでは、最後の方のインデックス部分の影響度設定が反映されなかった。
+そこで、pm2->optpleng * 2の頂点を用意して描画に使用する頂点はpm2->optplengというようにしたところ
+Maya2013のFBX読み込みもほぼ正常になった。
+ほぼと書いたのは、影響度が少しおかしい部分がまだあったからである。
+（buch.sig＋idle.quaを書き出した時に、左足のもものソックスとの境界部分がおかしい。）
+
+まだ改良の余地があるのかもしれない。
+自前読み込みではきれいに再現できるのであるが
+自前読み込みで違う部分があるとすれば、
+自前読み込みではRootNode(skeletonのeRoot)を読み込み時にスキップしているところであろうか？
+つまり、不具合はRootNode関係かもしれない。
+
+次に影響度の設定部分の仕様。
+LinkMeshToSkeletonPM2Reqで影響度の設定をする。
+この関数はfbxボーンをたどって再帰的に実行される。
+関数中で
+if ((fbxbone != s_fbxbone) && (fbxbone != s_firsttopbone) && ((fbxbone->type == FB_NORMAL) || (fbxbone->type == FB_BUNKI_CHIL))){
+の条件のときに設定を行う。
+理由は以下のようである。
+１、RootNodeの設定をしないため。MayaでRootNodeが問題になっている可能性があったため。
+２、最初の有効なボーンをスキップしているのは、
+　　影響度を設定した後で、影響ボーンが設定されなかった頂点に対して
+　　最初の有効なボーンの影響度を設定するからである。
+３、FB_ENDJOINTを条件からはずしたのは
+　　FB_ENDJOINTのときのfbxbone->selemにはFB_NORMALに含まれるfbxbone->selemと被るからである。
+　　被るだけでなく回転の中心が異なるからである。
+　　そしてENDJOINTにはアニメがないからである。
+
+
+実際の設定部分の一部を書き出すと以下のようである。
+{
+	int vsetno = 0;
+	int fno;
+	int setfaceno = totalfacenum;
+	for (fno = pmb->startface; fno < pmb->endface; fno++){
+		int vno[3];
+		vno[0] = *(pm2->m_optindexbuf2 + fno * 3);
+		vno[2] = *(pm2->m_optindexbuf2 + fno * 3 + 1);
+		vno[1] = *(pm2->m_optindexbuf2 + fno * 3 + 2);
+
+		int valid0, valid1, valid2;
+		valid0 = ValidatePm2Index(pm2, vno[0]);
+		valid1 = ValidatePm2Index(pm2, vno[1]);
+		valid2 = ValidatePm2Index(pm2, vno[2]);
+		_ASSERT((valid0 == 1) && (valid1 == 1) && (valid2 == 1));
+
+		int vcnt;
+		for (vcnt = 0; vcnt < 3; vcnt++){
+			CInfElem* curie = pm2->m_IE + vno[vcnt];
+			int ieno = curie->GetInfElemByBone(curbone->serialno);
+			if (ieno >= 0){
+				lCluster->AddControlPointIndex(vno[vcnt], (double)((curie->ie + ieno)->dispinf));
+				//lCluster->AddControlPointIndex(vsetno, (double)((curie->ie + ieno)->dispinf));
+				(fbxbone->m_boneinfcnt)++;
+				*(psetflag + vno[vcnt]) = 1;
+			}
+			vsetno++;
+		}
+		setfaceno++;
+	}
+}					
+
+描画範囲の面の頂点インデックスvnoを計算する。
+その頂点に対してfbxbone->selemのボーンが影響していれば影響度を設定する。
+その際には頂点のインデックスと影響度を指定する。
+
+psetflagとppsetboneは設定済かどうかのダーティフラグの役割である。
+
+この設定が終わったらLinkToTopBoneで未設定部分の処理を行う。
+メッシュの頂点には未使用頂点がありうる。
+未使用頂点に対して影響度を設定しないでいるとMayaで読み込んだ時に
+SkinのClusterが足りませんとエラーが出る。
+未使用頂点に対して最後に適当なボーンの影響度を設定すれば良いのであるが
+すでに同じメッシュにそのボーンのclusterが存在すると不具合になりうる。
+そこで最初の有効なボーンを選び、そのボーンの影響を受けている頂点と
+未使用頂点との両方に対してLinkToTopBoneで影響度の設定を行う。
+
+
+更に、モデル全体に対して頂点の影響度に含まれないボーンが存在することがある。
+ボーンの位置を他のソフトで表示したい場合に問題になる可能性がある。
+そこで、Dummyと名前の付いた関数で
+位置がゼロの三角形に対して影響を与えなかったボーンのダミーの影響度を設定する。
+
+
+これらがMameBake3DのFBXへの影響度設定の概略である。
+
+///////////////
+2016/04/06 pm10:15追記
+
+Mayaで読み込んだ時に影響度がおかしくなることがある問題が解決した。
+原因は同じボーンに対して同じ頂点番号で影響度を設定したことである。
+自前のプログラムでは同じ頂点に対する影響度は上書きしたが
+FBXの場合は加算された可能性がある。
+解決方法としては、map<CShdElem*, map<int, int>>のダーティフラグ用のデータを新設して
+ボーンに対するmap<vertno, dirtyflag>を記録しながら多重設定しないように設定した。
+このようにしたところ、Maya2013のFBX読み込みでも影響度は正常に読み込まれた。
+その後、optpleng * 2の* 2もはずすことができるかどうか試したが
+* 2して頂点を増やさないと影響度がうまく設定されない部分があった。
+
+
+//////////////////////////////
+
+＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃
+
+その後
+UVやマテリアルのモード別の読み込みをデバッグしたところ
+頂点を　* 2しないでも正常に読み書きできるようになった。
+
+＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃＃
+

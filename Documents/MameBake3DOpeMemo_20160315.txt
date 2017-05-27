@@ -1,0 +1,27 @@
+MameBake3D　操作メモ　20160315 化け猫
+
+bvhモーションコンバート　メニュー実行時の設定例
+モデル　yuri20160313.fbx
+モーション　nocchi.bvh.fbx
+
+ModelRoot	Hips
+Top zentai	Hips_bunki
+mune		Chest4
+
+FLOAT kata	(LR)Collar
+kata		(LR)Shoulder
+ude		(LR)Elbow
+te		(LR)Wrist
+te end		L --> Site_2, R --> Site_1
+
+FLOAT atama	Chest4_bunki
+
+momo		(LR)Hips
+sune		(LR)Knee
+ashi		(LR)Ankle
+ashi end	(LR)Toe
+
+残りは未設定
+
+
+

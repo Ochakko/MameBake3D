@@ -1,0 +1,76 @@
+MameBake3D仕様　20160315 化け猫
+
+主に機能追加した部分などについて仕様として書き記す。
+
+
+クォータニオンの演算方向
+	parentQ * currentQの順に掛ける。
+	localQを計算するときには　invparentQ * totalQを計算する。
+
+行列の演算方向
+	currentMat * parentMatの順に掛ける。
+	localMatを計算するときには　worldMat * invparentMatを計算する。
+
+
+変換姿勢の設定（異なるFBXの姿勢を変換して設定）
+	初期行列が異なるので回転と移動に分ける方法を採った。
+	移動は一番親の移動しか適用していない。
+	
+	まずローカルの姿勢を求める。
+		localmat = worldmat * invparmat
+	座標系の変換をする。
+		curmat = invmodelinit * localmat * modelinit;
+		ここでmodelinitとは設定される側の現在のworldmatである。
+	curmatの回転成分を取り出す。
+		移動成分に０を設定して回転のクォータニオンに変換する。
+	設定する。
+		該当するボーンの姿勢として
+		curmp->SetBefWorldMat( curmp->GetWorldMat() );
+		D3DXVECTOR3 rotcenter;
+		D3DXVec3TransformCoord( &rotcenter, &m_jointfpos, &(curmp->GetWorldMat()) );
+
+		D3DXMATRIX befrot, aftrot;
+		D3DXMatrixTranslation( &befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z );
+		D3DXMatrixTranslation( &aftrot, rotcenter.x, rotcenter.y, rotcenter.z );
+		D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * rotmat;// * tramat;
+		更に子供方向に向かってこの設定を再帰的に適用する。
+		curmp->SetBefWorldMat( curmp->GetWorldMat() );
+		D3DXMATRIX invbefpar;
+		D3DXMatrixInverse( &invbefpar, NULL, &parmp->GetBefWorldMat() );
+		D3DXMATRIX tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat(); 
+		curmp->SetWorldMat( tmpmat );
+
+
+変換姿勢の設定（異なるFBXの姿勢を変換して設定）のバージョンアップ(2016/04/09 GitHubにpush)
+	bvhの最初のフレームのポーズと形状側の最初のポーズが同じであっても
+	bvhの最初のフレームにモーションが設定してある場合に、上記の方法ではうまくいかなかったので方法を変更した。
+
+	bvhの姿勢をmodelの初期姿勢への演算としてあらわすことができれば解決すると考えた。
+	つまり、
+	bvhfirst0 * bvhanim * bvhpar = modelinit * bvhfirst0 * modelanim
+	の式におけるmodelanimを求めればよい。
+	modelanim = invbvhfirst0 * invmodelinit * (bvhfirst0 * bvhanim * bvhpar)
+		  = invbvhfirst0 * invmodelinit * bvhmat
+	この式におけるmodelanimを求めた後、その回転を抽出してから
+	modelmat = modelmat0 * modelanim
+	を計算してモーションポイントにセットした。
+
+	bvhの最初のフレームのポーズと形状側の最初のポーズが同じであれば
+	bvhの最初のフレームにモーションが設定してあってもうまく変換できるようになった。
+
+	実際のコードでは
+	modelinitは初期状態のworldmatであり、bvhfirst0は初期状態のbvhmatであるから
+	modelmat = modelmat0 * invbvhmat0 * invmodelmat0 * bvhmat
+	ということである。
+
+
+変換姿勢の設定（異なるFBXの姿勢を変換して設定）のバージョンアップ(2016/04/11 GitHubにpush)
+	上記の方法でbvhとモデル側の初期姿勢の違いをコンバートした。
+	しかし、モデル全体が一回転するような場合などに足がクロスしたりしてうまくいかなかった。
+	コンバートのための行列にモデル全体の回転を考慮する必要があった。
+	bvhのHipsの各フレームのworldmatをbvhfirstmpmatとすると
+	modelmat = modelmat0 * invbvhfirsthipmat * invbvhmat0 * bvhfirsthipmat * invmodelmat0 * bvhmat
+	のようになった。
+	モデル全体が一回転しても初期姿勢のコンバートがうまくいくようになった。
+
