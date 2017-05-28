@@ -170,7 +170,3 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 剛体を構成するボーンが物理シミュレーションモードの場合には
 物理シミュレーションとキャラクタアニメーションの境目のボーンの変化分を考慮するように計算する。
 
-
-
-
-
