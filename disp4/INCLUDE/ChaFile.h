@@ -33,6 +33,8 @@ private:
 	int ReadProjectInfo( XMLIOBUF* xmliobuf, int* charanumptr );
 	int ReadChara( XMLIOBUF* xmliobuf );
 	//int ReadMotion( XMLIOBUF* xmliobuf, WCHAR* modelfolder, CModel* modelptr );
+	int ReadWall(XMLIOBUF* xmliobuf);
+
 
 private:
 	std::vector<MODELELEM> m_modelindex;

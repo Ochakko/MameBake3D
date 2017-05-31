@@ -404,6 +404,12 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref
 		CallF( ReadChara( &charabuf ), return 1 );
 	}
 
+	m_xmliobuf.pos = 0;
+	XMLIOBUF wallbuf;
+	ZeroMemory(&wallbuf, sizeof(XMLIOBUF));
+	CallF(SetXmlIOBuf(&m_xmliobuf, "<Wall>", "</Wall>", &wallbuf), return 1);
+	CallF(ReadWall(&wallbuf), return 1);
+
 	return 0;
 }
 
@@ -553,4 +559,28 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 	CallF( (this->m_ImpMenu)( 0 ), return 1 );
 
 	return 0;
+}
+
+
+int CChaFile::ReadWall(XMLIOBUF* xmlbuf)
+{
+	float boxsize = 1.0f;
+	int wallw = 1;
+	int wallh = 1;
+	float wallx = 0.0f;
+	float wally = 0.0f;
+	float wallz = 0.0f;
+	float wallrot = 0.0f;
+
+	CallF(Read_Float(xmlbuf, "<BOXSIZE>", "</BOXSIZE>", &boxsize), return 1);
+	CallF(Read_Int(xmlbuf, "<WALLW>", "</WALLW>", &wallw), return 1);
+	CallF(Read_Int(xmlbuf, "<WALLH>", "</WALLH>", &wallh), return 1);
+	CallF(Read_Float(xmlbuf, "<WALLPOSX>", "</WALLPOSX>", &wallx), return 1);
+	CallF(Read_Float(xmlbuf, "<WALLPOSY>", "</WALLPOSY>", &wally), return 1);
+	CallF(Read_Float(xmlbuf, "<WALLPOSZ>", "</WALLPOSZ>", &wallz), return 1);
+	CallF(Read_Float(xmlbuf, "<WALLROT>", "</WALLROT>", &wallrot), return 1);
+
+
+	return 0;
+
 }

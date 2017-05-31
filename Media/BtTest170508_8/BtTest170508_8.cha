@@ -22,4 +22,13 @@
     <RefFile>yuri_12_1_rgd.ref</RefFile>
     <ImpNum>0</ImpNum>
   </Chara>
+  <Wall>
+  	<BOXSIZE>0.5</BOXSIZE>
+  	<WALLW>10</WALLW>
+  	<WALLH>5</WALLH>
+  	<WALLPOSX>15.0</WALLPOSX>
+  	<WALLPOSY>0.0</WALLPOSY>
+  	<WALLPOSZ>0.0</WALLPOSZ>
+  	<WALLROT>90.0</WALLROT>
+  </Wall>
 </CHA>
