@@ -3884,7 +3884,8 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 		}
 
 		if (srcbto->GetRigidBody()){
-			srcbto->GetRigidBody()->setDeactivationTime(0.0);
+			//srcbto->GetRigidBody()->setDeactivationTime(0.0);
+			srcbto->GetRigidBody()->setDeactivationTime(0.016 / 150.0);
 		}
 	}
 

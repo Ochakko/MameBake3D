@@ -185,7 +185,7 @@ D3DXVECTOR3 g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 
 float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };//
 float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };//
-float g_initcuslk = 1e4;
+float g_initcuslk = 1e2;
 //float g_initcuslk = 2000.0f;
 //float g_initcuslk = 100.0f;
 float g_initcusak = 70.0f;
@@ -204,7 +204,7 @@ bool g_ctrlshiftkeyformb = false;//ForMiddleButton
 static int s_akeycnt = 0;
 static int s_dkeycnt = 0;
 
-static float s_erp = 0.0f;
+static float s_erp = 0.5f;
 //static float s_impup = 0.0f;
 
 
@@ -6797,9 +6797,9 @@ int StartBt(int flag, int btcntzero)
 		}
 
 		if ((g_previewFlag == 4) || (g_previewFlag == 5)){
-			s_bpWorld->setGlobalERP(s_erp);// ERP
 
 			if (g_previewFlag == 4){
+				s_bpWorld->setGlobalERP(s_erp);// ERP
 				curmodel->SetMotionFrame(curframe);
 
 				vector<MODELELEM>::iterator itrmodel;
@@ -6813,6 +6813,12 @@ int StartBt(int flag, int btcntzero)
 				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
 			}
 			else if (g_previewFlag == 5){
+				//ラグドールの時のjERPは0.0
+				s_bpWorld->setGlobalERP(0.0);// ERP
+				
+				//ラグドールの時のバネは決め打ち
+				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+				
 				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
 			}
 

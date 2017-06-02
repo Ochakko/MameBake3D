@@ -8,14 +8,14 @@
   <ProjectInfo>
     <CharaNum>1</CharaNum>
   </ProjectInfo>
-  <GcoFile>BtTest160717_8.gco</GcoFile>
+  <GcoFile>BtTest170602_7.gco</GcoFile>
   <Chara>
     <ModelFolder>yuri_12_1_walk_0</ModelFolder>
     <ModelFile>yuri_12_1_walk.fbx</ModelFile>
     <ModelMult>1.000000</ModelMult>
     <RGDMORPH>0</RGDMORPH>
     <CURRE>1</CURRE>
-    <RGD>1</RGD>
+    <RGD>2</RGD>
     <RefNum>3</RefNum>
     <RefFile>default_ref.ref</RefFile>
     <RefFile>yuri_12_1_walk.ref</RefFile>

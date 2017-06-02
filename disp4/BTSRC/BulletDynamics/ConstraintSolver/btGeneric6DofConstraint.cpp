@@ -786,7 +786,7 @@ void btGeneric6DofConstraint::calculateLinearInfo()
 		int testret;
 		testret = m_linearLimits.testLimitValue(i, m_calculatedLinearDiff[i]);
 		if( testret != 0 ){
-			m_savedcnt = 1;
+			//m_savedcnt = 1;
 		}
 	}
 }

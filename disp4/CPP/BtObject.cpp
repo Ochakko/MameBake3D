@@ -510,8 +510,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
 
 				//m_btWorld->addConstraint(dofC, true);
-				//m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
-				m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
+				m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
+				//m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
 				//m_dofC = dofC;
 
 				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable

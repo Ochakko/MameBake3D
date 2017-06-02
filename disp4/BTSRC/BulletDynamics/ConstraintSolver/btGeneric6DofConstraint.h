@@ -73,6 +73,8 @@ public:
         m_maxLimitForce = 300.0f;
         m_loLimit = 1.0f;
         m_hiLimit = -1.0f;
+		//m_loLimit = -0.001f;
+		//m_hiLimit = 0.001f;
 		m_normalCFM = 0.f;
 		m_stopERP = 0.2f;
 		m_stopCFM = 0.f;
