@@ -54,6 +54,8 @@ CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
 	int curno = g_bonecntmap[ m_parmodel ]; 
 	m_boneno = curno;
 	g_bonecntmap[ m_parmodel ] = m_boneno + 1;
+
+
 }
 
 CBone::~CBone()
@@ -217,6 +219,7 @@ int CBone::AddChild( CBone* childptr )
 int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 {
 	int existflag = 0;
+
 	if( srcframe >= 0.0 ){
 		CallF( CalcFBXMotion( srcmotid, srcframe, &m_curmp, &existflag ), return 1 );
 		D3DXMATRIX tmpmat = m_curmp.GetWorldMat();// **wmat;
@@ -2639,151 +2642,57 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 		return 1;
 	}
 
+	D3DXVECTOR3 jointfpos;
+	D3DXMATRIX firstworld;
 	D3DXMATRIX invfirstworld;
+	D3DXMATRIX curworld;
+	D3DXMATRIX befworld;
+	D3DXMATRIX invbefworld;
 	D3DXMATRIX diffworld;
-	D3DXMATRIX pardiff;
 	D3DXVECTOR3 rigidcenter;
 	D3DXMATRIX multmat;
+	D3DXMATRIX tramat;
 
 
-	//親のモーションの変化分
-	if (GetParent()){
-		if (GetParent()->GetBtKinFlag() == 1){
-			if (GetBtKinFlag() == 1){
-				//親、カレントともモーション
-				D3DXMatrixIdentity(&pardiff);
-			}
-			else{
-				//親がモーションでカレントがbt simu
-				D3DXMATRIX befpar, invbefpar;
-				//befpar = GetParent()->GetCurMp().GetBefWorldMat();
-				befpar = GetParent()->GetStartMat2();
-				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
-				pardiff = invbefpar * GetParent()->GetCurMp().GetWorldMat();
-			}
-		}
-		else{
-			//親、カレントともbt simu
-			if (GetParent()->GetParent()){
-				D3DXMATRIX gpardiff = GetParent()->GetParent()->GetBtDiffMat();
-				D3DXMATRIX befpar, invbefpar;
-				//befpar = GetParent()->GetCurMp().GetBefBtMat();
-				befpar = GetParent()->GetStartMat2();
-				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
-				pardiff = invbefpar * GetParent()->GetCurMp().GetBtMat() * gpardiff;
-			}
-			else{
-				D3DXMATRIX befpar, invbefpar;
-				//befpar = GetParent()->GetCurMp().GetBefBtMat();
-				befpar = GetParent()->GetStartMat2();
-				D3DXMatrixInverse(&invbefpar, NULL, &befpar);
-				pardiff = invbefpar * GetParent()->GetCurMp().GetBtMat();
-			}
-		}
-		GetParent()->SetBtDiffMat(pardiff);//!!!!!!!!!
-	}
-	else{
-		D3DXMatrixIdentity(&pardiff);
-	}
-
-	/*
-	//モーションによる親の変化分
-	if (GetParent()){
-		pardiff = GetParent()->GetBtDiffMat();
-	}
-	else{
-		D3DXMatrixIdentity(&pardiff);
-	}
+	firstworld = GetStartMat2();
+	D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
 
 
-	//モーションの変化分
-	D3DXMATRIX curdiff;
+	//current
 	if (GetBtKinFlag() == 1){
-		D3DXMATRIX befcur, invbefcur;
-		befcur = GetCurMp().GetBefWorldMat();
-		D3DXMatrixInverse(&invbefcur, NULL, &befcur);
-		curdiff = invbefcur * GetCurMp().GetWorldMat();
-	}
-	else{
-		if (GetParent()){
-			curdiff = GetParent()->GetBtDiffMat();
-		}
-		else{
-			D3DXMatrixIdentity(&curdiff);
-		}
-	}
-	SetBtDiffMat(curdiff);
-	*/
-
-
-	if (GetBtKinFlag() == 1){
-		//bt simu OFF
-		D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetWorldMat()));
-		D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
 		diffworld = invfirstworld * GetCurMp().GetWorldMat();
-		multmat = srcre->GetFirstcapsulemat() * diffworld;
-
-		if (chilbone->GetBtKinFlag() == 1){
-			//子供のbt simu OFF
-			D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
-			rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-		}
-		else{
-			//子供のbt simu ON
-			if (chilbone->GetCurMp().GetBtFlag() == 0){
-				//子供　未計算
-				D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
-				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-			}
-			else{
-				//子供　計算履歴あり
-				D3DXMATRIX newchilmat;
-				newchilmat = chilbone->GetCurMp().GetBtMat();// *diffworld;
-				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &newchilmat);
-				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-			}
-		}
+		tramat = GetCurMp().GetWorldMat();
 	}
 	else{
-		//bt simu ON
 		if (GetCurMp().GetBtFlag() == 0){
-			//計算履歴無し
-			D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetWorldMat()));
-			D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
 			diffworld = invfirstworld * GetCurMp().GetWorldMat();
-			multmat = srcre->GetFirstcapsulemat() * diffworld;
-
-			//子供も計算履歴無し
-			D3DXVec3TransformCoord(&m_btchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
-			rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-
+			tramat = GetCurMp().GetWorldMat();
 		}
 		else{
-			//計算履歴あり
-			if (GetParent()){
-				D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
-				diffworld = invfirstworld * GetCurMp().GetBtMat() * pardiff;//!!!!!!!!!!!!
-				multmat = srcre->GetFirstcapsulemat() * diffworld;
-
-				D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetBtMat() * pardiff));
-				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetCurMp().GetBtMat() * pardiff));
-				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-			}
-			else{
-				D3DXMatrixInverse(&invfirstworld, NULL, &GetStartMat2());
-				diffworld = invfirstworld * GetCurMp().GetBtMat();
-				multmat = srcre->GetFirstcapsulemat() * diffworld;
-		
-				D3DXVec3TransformCoord(&m_btparpos, &GetJointFPos(), &(GetCurMp().GetBtMat()));
-				D3DXVec3TransformCoord(&m_btchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetCurMp().GetBtMat()));
-				rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-			}
-
+			curworld = GetCurMp().GetWorldMat();
+			befworld = GetCurMp().GetBefWorldMat();
+			D3DXMatrixInverse(&invbefworld, NULL, &befworld);
+			//ここでのBtMatは一回前の姿勢。
+			diffworld = invfirstworld * GetCurMp().GetBtMat() * invbefworld * curworld;
+			tramat = GetCurMp().GetWorldMat();
 		}
 	}
+	jointfpos = GetJointFPos();
+	D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+
+	//child
+	jointfpos = chilbone->GetJointFPos();
+	D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+
+
+
+	multmat = srcre->GetFirstcapsulemat() * diffworld;
+	rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+
 
 	*dstmat = multmat;
 	*dstpos = rigidcenter;
 
 	return 0;
 }
+

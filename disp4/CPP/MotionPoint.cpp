@@ -214,6 +214,8 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	m_localeul = srcmp->m_localeul;
 	m_absmat = srcmp->m_absmat;
 	m_localmatflag = srcmp->m_localmatflag;
+	m_btmat = srcmp->m_btmat;
+	m_setbtflag = srcmp->m_setbtflag;
 
 	return 0;
 }

@@ -42,6 +42,8 @@ CBtObject::~CBtObject()
 
 int CBtObject::InitParams()
 {
+	m_btpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
 	m_connectflag = 0;
 	m_constzrad = 0.0f;
 	D3DXMatrixIdentity( &m_transmat );
@@ -442,7 +444,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 
 
 
-				dofC->setBreakingImpulseThreshold(FLT_MAX);
+				//dofC->setBreakingImpulseThreshold(FLT_MAX);
 				//dofC->setBreakingImpulseThreshold( 1e9 );
 				//dofC->setBreakingImpulseThreshold(0.0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//dofC->setBreakingImpulseThreshold(1e7);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -608,27 +610,6 @@ int CBtObject::Motion2Bt()
 		D3DXMATRIX newrotmat;
 		D3DXVECTOR3 newrigidpos;
 		GetBone()->CalcNewBtMat(curre, GetEndBone(), &newrotmat, &newrigidpos);
-		/*
-		D3DXMATRIX invfirstworld;
-		D3DXMatrixInverse( &invfirstworld, NULL, &m_bone->GetStartMat2() );
-		D3DXMATRIX diffworld;
-		diffworld = invfirstworld * m_bone->GetCurMp().GetWorldMat();
-
-		D3DXMATRIX multmat = curre->GetFirstcapsulemat() * diffworld;
-
-		D3DXVECTOR3 rigidcenter;
-		D3DXVECTOR3 aftcurpos, aftchilpos;
-		D3DXVec3TransformCoord( &aftcurpos, &m_bone->GetJointFPos(), &(m_bone->GetCurMp().GetWorldMat()) );
-		D3DXVec3TransformCoord( &aftchilpos, &m_endbone->GetJointFPos(), &(m_endbone->GetCurMp().GetWorldMat()) );
-		rigidcenter = ( aftcurpos + aftchilpos ) * 0.5f;
-		
-
-		D3DXMATRIX newcapsulemat;
-		newcapsulemat = newrotmat;
-		newcapsulemat._41 = 0.0f;
-		newcapsulemat._42 = 0.0f;
-		newcapsulemat._43 = 0.0f;
-		*/
 
 		CQuaternion tmpq;
 		tmpq.RotationMatrix(newrotmat);
@@ -636,10 +617,13 @@ int CBtObject::Motion2Bt()
 
 		btTransform worldtra;
 		worldtra.setIdentity();
-		worldtra.setRotation( btrotq );
+		worldtra.setRotation(btrotq);
 		worldtra.setOrigin(btVector3(newrigidpos.x, newrigidpos.y, newrigidpos.z));
 
 		m_rigidbody->getMotionState()->setWorldTransform( worldtra );
+
+		m_btpos = D3DXVECTOR3(newrigidpos.x, newrigidpos.y, newrigidpos.z);
+
 	}else{
 		_ASSERT( 0 );
 	}

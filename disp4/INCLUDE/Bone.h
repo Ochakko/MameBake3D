@@ -456,6 +456,8 @@ private:
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
 	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
 	int InitCustomRig();
+	void CalcBtRootDiffMatFunc(CBone* srcbone);
+
 public: //accesser
 	int GetType(){ return m_type; };
 	void SetType( int srctype ){ m_type = srctype; };
@@ -499,6 +501,10 @@ public: //accesser
 
 	CMotionPoint GetCurMp(){ return m_curmp; };
 	void SetCurMp( CMotionPoint srcmp ){ m_curmp = srcmp; };
+
+	//CMotionPoint GetBefMp(){ return m_befmp; };
+	//void SetBefMp(CMotionPoint srcmp){ m_befmp = srcmp; };
+
 
 	CQuaternion GetAxisQ(){ return m_axisq; };
 	void SetAxisQ( CQuaternion srcq ){ m_axisq = srcq; };
@@ -791,9 +797,6 @@ public: //accesser
 	D3DXMATRIX GetBtDiffMat(){
 		return m_btdiffmat;
 	};
-	void SetBtDiffMat(D3DXMATRIX srcmat){
-		m_btdiffmat = srcmat;
-	};
 
 private:
 	int m_type;
@@ -815,6 +818,8 @@ private:
 
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。
+	CMotionPoint m_befmp;//一回前の姿勢データ。
+
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
 
 	D3DXMATRIX m_laxismat;//Zボーンのaxismat
@@ -872,6 +877,7 @@ private:
 	//タイムラインのモーション編集マーク
 	//最初のintはmotid。次のmapはframenoと更新フラグ。更新フラグは読み込み時のマークは０、それ以後の編集マークは１にする予定。色を変えるかも。
 	std::map<int, std::map<double,int>> m_motmark;
+
 
 	CModel* m_parmodel;
 

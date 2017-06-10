@@ -626,7 +626,7 @@ private:
 	void DestroyBtObjectReq( CBtObject* curbt );
 	void CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBone* parbone, CBone* curbone );
 
-	void CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, float delta );
+	void CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, int onfirstcreate );
 	void SetBtMotionReq( CBtObject* curbto, D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
 
 	void FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppret );

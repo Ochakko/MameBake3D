@@ -1,4 +1,93 @@
+Motion2Btの仕様　2017/06/10 化け猫
+
+CalcNewBtMatは以下のように修正した。
+
+int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
+{
+	D3DXMatrixIdentity(dstmat);
+	*dstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	if (!chilbone || !dstmat || !dstpos){
+		return 1;
+	}
+
+	D3DXVECTOR3 jointfpos;
+	D3DXMATRIX firstworld;
+	D3DXMATRIX invfirstworld;
+	D3DXMATRIX curworld;
+	D3DXMATRIX befworld;
+	D3DXMATRIX invbefworld;
+	D3DXMATRIX diffworld;
+	D3DXVECTOR3 rigidcenter;
+	D3DXMATRIX multmat;
+	D3DXMATRIX tramat;
+
+
+	firstworld = GetStartMat2();
+	D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+
+
+	//current
+	if (GetBtKinFlag() == 1){
+		diffworld = invfirstworld * GetCurMp().GetWorldMat();
+		tramat = GetCurMp().GetWorldMat();
+	}
+	else{
+		if (GetCurMp().GetBtFlag() == 0){
+			diffworld = invfirstworld * GetCurMp().GetWorldMat();
+			tramat = GetCurMp().GetWorldMat();
+		}
+		else{
+			curworld = GetCurMp().GetWorldMat();
+			befworld = GetCurMp().GetBefWorldMat();
+			D3DXMatrixInverse(&invbefworld, NULL, &befworld);
+			//ここでのBtMatは一回前の姿勢。
+			diffworld = invfirstworld * GetCurMp().GetBtMat() * invbefworld * curworld;
+			tramat = GetCurMp().GetWorldMat();
+		}
+	}
+	jointfpos = GetJointFPos();
+	D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+
+	//child
+	jointfpos = chilbone->GetJointFPos();
+	D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+
+
+
+	multmat = srcre->GetFirstcapsulemat() * diffworld;
+	rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+
+
+	*dstmat = multmat;
+	*dstpos = rigidcenter;
+
+	return 0;
+}
+
+
+
+キャラクタアニメーションと物理の組み合わせ再生の際には
+以下の３つの手順を踏む。
+１、Motion2Bt
+２、bullet physics simulation
+３、SetBtMotion
+
+Motion2Btとは、キャラクターのアニメーションを剛体の姿勢にセットすることである。
+SetBtMotionとは、物理で計算した結果を表示用のデータに取り込むことである。
+
+CalcNewBtMatはMotion2Btの一部である。
+CalcNewBtMat呼び出し時にはGetCurMp().GetBtMat()の内容は
+一回前のシミュレーション結果を格納していることに注意する。
+
+
+
+################################
+######     以下、以前の仕様
+################################
+
 Motion2Btの仕様　2017/05/28 化け猫
+
 
 bulletで例えばツインテールに対して物理演算する場合
 キャラクター自体にもアニメーションがついているはずであるから

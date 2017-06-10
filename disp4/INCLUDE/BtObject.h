@@ -230,6 +230,10 @@ public: //accesser
 		}
 	};
 
+	D3DXVECTOR3 GetBtPos()
+	{
+		return m_btpos;
+	}
 
 private:
 	btDynamicsWorld* m_btWorld;
@@ -264,6 +268,8 @@ private:
 	btTransform m_FrameA;//剛体設定時のA側変換行列。
 	btTransform m_FrameB;//剛体設定時のB側変換行列。
 
+
+	D3DXVECTOR3 m_btpos;//Motion2Btで計算した剛体の位置
 };
 
 

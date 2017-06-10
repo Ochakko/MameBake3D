@@ -995,9 +995,58 @@ int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe
 			}
 		}
 	}
-	
+
+
 
 	Motion2BtReq( m_topbt );
+
+	/*
+	//map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
+		CBone* curbone = itrbone->second;
+		if (curbone){
+			if ((curbone->GetBtKinFlag() == 0) && curbone->GetParent() && (curbone->GetParent()->GetBtKinFlag() == 1)){
+				map<CBone*, CBtObject*>::iterator itrbto;
+				for (itrbto = curbone->GetBtObjectMapBegin(); itrbto != curbone->GetBtObjectMapEnd(); itrbto++){
+					CBtObject* curbto = itrbto->second;
+					if (curbto){
+						CBtObject* parbto = itrbto->second->GetParBt();
+						if (parbto){
+							int constraintnum = parbto->GetConstraintSize();
+							int cno;
+							for (cno = 0; cno < constraintnum; cno++){
+								CONSTRAINTELEM ce = parbto->GetConstraintElem(cno);
+								if (ce.centerbone == curbone){
+									btGeneric6DofSpringConstraint* dofC = ce.constraint;
+									if (dofC){
+										int dofid;
+										for (dofid = 0; dofid < 3; dofid++){
+											dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+											//dofC->enableSpring(dofid, true);
+										}
+										for (dofid = 3; dofid < 6; dofid++){
+											//dofC->enableSpring(dofid, true);
+											dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+										}
+										//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+										//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+
+										//D3DXVECTOR3 bonepos = parbto->GetParBone()->GetBtChilPos();
+										//D3DXVECTOR3 bonepos = curbone->GetParent()->GetBtChilPos();
+										D3DXVECTOR3 bonepos = curbone->GetBtParPos();
+
+										dofC->setLinearLowerLimit(btVector3(bonepos.x, bonepos.y, bonepos.z));
+										dofC->setLinearUpperLimit(btVector3(bonepos.x, bonepos.y, bonepos.z));
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	*/
 
 	if (g_previewFlag == 5){
 		if (m_topbt){
@@ -3841,6 +3890,8 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 					//else{
 					//	srcbone->SetBtKinFlag(1);
 					//}
+
+
 				}
 				else{
 					srcbone->SetBtKinFlag(1);
@@ -3852,6 +3903,115 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 		}else{
 			srcbone->SetBtKinFlag( 1 );
 		}
+
+		/*
+		if ((srcbone->GetBtKinFlag() == 0) && srcbone->GetParent() && (srcbone->GetParent()->GetBtKinFlag() == 1)){
+			CBtObject* parbto = srcbto->GetParBt();
+			if (parbto){
+				int constraintnum = parbto->GetConstraintSize();
+				int cno;
+				for (cno = 0; cno < constraintnum; cno++){
+					CONSTRAINTELEM ce = parbto->GetConstraintElem(cno);
+					if (ce.centerbone == srcbone){
+						btGeneric6DofSpringConstraint* dofC = ce.constraint;
+						if (dofC){
+							//int dofid;
+							//for (dofid = 0; dofid < 3; dofid++){
+							//	dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+							//dofC->enableSpring(dofid, true);
+							//}
+							//for (dofid = 3; dofid < 6; dofid++){
+							//dofC->enableSpring(dofid, true);
+							//	dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+							//}
+							//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+							//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+
+							D3DXVECTOR3 aftbonepos;
+							D3DXVec3TransformCoord(&aftbonepos, &srcbone->GetJointFPos(), &(srcbone->GetCurMp().GetWorldMat()));
+
+							dofC->setLinearLowerLimit(btVector3(aftbonepos.x, aftbonepos.y, aftbonepos.z));
+							dofC->setLinearUpperLimit(btVector3(aftbonepos.x, aftbonepos.y, aftbonepos.z));
+						}
+					}
+				}
+			}
+		}
+		*/
+		/*
+		else{
+			int constraintnum = srcbto->GetConstraintSize();
+			int cno;
+			for (cno = 0; cno < constraintnum; cno++){
+				CONSTRAINTELEM ce = srcbto->GetConstraintElem(cno);
+				if (ce.centerbone != srcbone){
+					btGeneric6DofSpringConstraint* dofC = ce.constraint;
+					if (dofC){
+						int dofid;
+						for (dofid = 0; dofid < 3; dofid++){
+							//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+							dofC->enableSpring(dofid, true);
+						}
+						for (dofid = 3; dofid < 6; dofid++){
+							dofC->enableSpring(dofid, true);
+							//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+						}
+						//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+						//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+						//dofC->setLinearLowerLimit(btVector3(0.0, 0.0, 0.0));
+						//dofC->setLinearUpperLimit(btVector3(0.0, 0.0, 0.0));
+					}
+				}
+			}
+		}
+		*/
+		
+		/*
+		if ((srcbone->GetBtKinFlag() == 1) && srcbone->GetParent() && (srcbone->GetParent()->GetBtKinFlag() == 1)){
+			int constraintnum = srcbto->GetConstraintSize();
+			int cno;
+			for (cno = 0; cno < constraintnum; cno++){
+				btGeneric6DofSpringConstraint* dofC = srcbto->GetConstraint(cno);
+				if (dofC){
+					int dofid;
+					for (dofid = 0; dofid < 3; dofid++){
+						dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+						//dofC->enableSpring(dofid, true);
+					}
+					for (dofid = 3; dofid < 6; dofid++){
+						//dofC->enableSpring(dofid, true);
+						dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+					}
+					dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+					dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+					dofC->setLinearLowerLimit(btVector3(0.0, 0.0, 0.0));
+					dofC->setLinearUpperLimit(btVector3(0.0, 0.0, 0.0));
+				}
+			}
+		}
+		else{
+			int constraintnum = srcbto->GetConstraintSize();
+			int cno;
+			for (cno = 0; cno < constraintnum; cno++){
+				btGeneric6DofSpringConstraint* dofC = srcbto->GetConstraint(cno);
+				if (dofC){
+					int dofid;
+					for (dofid = 0; dofid < 3; dofid++){
+						//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+						dofC->enableSpring(dofid, true);
+					}
+					for (dofid = 3; dofid < 6; dofid++){
+						dofC->enableSpring(dofid, true);
+						//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+					}
+
+				}
+			}
+		}
+		*/
+
+
+
 
 		if( (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody()) ){
 			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
@@ -4075,9 +4235,7 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 		return 0;
 	}
 
-
-	CalcBtAxismatReq( coldisp, m_topbone, 0.0f );//!!!!!!!!!!!!!
-	
+	CalcBtAxismatReq(coldisp, m_topbone, onfirstcreate);//!!!!!!!!!!!!!
 
 
 	m_topbt = new CBtObject( 0, m_btWorld );
@@ -4194,36 +4352,33 @@ void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBon
 	}
 }
 
-void CModel::CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, float delta )
+void CModel::CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, int onfirstcreate )
 {
 	if (!curbone){
 		return;
 	}
 	int setstartflag;
-	if( delta == 0.0f ){
-		setstartflag = 1;
+	if( onfirstcreate == 1 ){
 		curbone->SetStartMat2( curbone->GetCurMp().GetWorldMat() );
-	}else{
-		setstartflag = 0;
 	}
 
 	if( curbone->GetChild() ){
 		//curbone->CalcAxisMat( firstflag, delta );
-		curbone->CalcRigidElemParams( coldisp, curbone->GetChild(), setstartflag );
+		curbone->CalcRigidElemParams(coldisp, curbone->GetChild(), onfirstcreate);
 		CBone* bro = curbone->GetChild()->GetBrother();
 		while( bro ){
-			curbone->CalcRigidElemParams( coldisp, bro, setstartflag );
+			curbone->CalcRigidElemParams(coldisp, bro, onfirstcreate);
 			bro = bro->GetBrother();
 		}
-DbgOut( L"check!!!!:CalcBtAxismatReq : %s, %s\r\n", curbone->GetWBoneName(), curbone->GetChild()->GetWBoneName() );
+//DbgOut( L"check!!!!:CalcBtAxismatReq : %s, %s\r\n", curbone->GetWBoneName(), curbone->GetChild()->GetWBoneName() );
 
 	}
 
 	if( curbone->GetChild() ){
-		CalcBtAxismatReq( coldisp, curbone->GetChild(), delta );
+		CalcBtAxismatReq(coldisp, curbone->GetChild(), onfirstcreate);
 	}
 	if( curbone->GetBrother() ){
-		CalcBtAxismatReq( coldisp, curbone->GetBrother(), delta );
+		CalcBtAxismatReq(coldisp, curbone->GetBrother(), onfirstcreate);
 	}
 }
 
@@ -4263,31 +4418,11 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 	}
 
 	SetBtMotionReq( m_topbt, wmat, vpmat );
-
+	/*
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 		CBone* curbone = itrbone->second;
 		if (curbone && (curbone->GetCurMp().GetBtFlag() == 0)){
 			if (g_previewFlag == 4){
-				/*
-				if (curbone->GetBtKinFlag() == 0){
-					if (curbone->GetParent()){
-						//curbone->m_curmp.m_btmat = curbone->m_parent->m_curmp.m_btmat;
-						D3DXMATRIX invstart;
-						D3DXMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
-						D3DXMATRIX diffmat;
-						diffmat = invstart * curbone->GetParent()->GetCurMp().GetBtMat();
-						CMotionPoint curmp = curbone->GetCurMp();
-						curmp.SetBtMat(curbone->GetStartMat2() * diffmat);
-						curmp.SetBtFlag(1);
-						curbone->SetCurMp(curmp);
-					}
-					else{
-						CMotionPoint curmp = curbone->GetCurMp();
-						curmp.SetBtMat(curbone->GetStartMat2());
-						curbone->SetCurMp(curmp);
-					}
-				}
-				*/
 				if(curbone->GetBtKinFlag() == 1){
 					CMotionPoint curmp = curbone->GetCurMp();
 					curmp.SetBtMat(curmp.GetWorldMat());
@@ -4316,7 +4451,7 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 			}
 		}
 	}
-
+	*/
 	if (g_previewFlag == 5){
 		if (m_topbt){
 			SetBtEquilibriumPointReq(m_topbt);
@@ -4463,21 +4598,83 @@ MOTINFO* CModel::GetRgdMorphInfo()
 
 void CModel::SetBtMotionReq( CBtObject* curbto, D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 {
-	if( g_previewFlag == 4 ){
-		if( (curbto->GetTopFlag() == 0) && curbto->GetBone() && (curbto->GetBone()->GetBtKinFlag() == 0) ){
-			if (curbto->GetParBt() && (curbto->GetParBt()->GetBone()->GetBtKinFlag() == 1) && (curbto->GetParBt()->GetBone()->GetCurMp().GetBtFlag() == 0)){
-				//KinFlagの変わり目部分に対応。
-				//変わり目部分が枝分かれの時はまた後で、、、
-				curbto->GetParBt()->SetBtMotion();
+	/*
+	if (curbone && (curbone->GetCurMp().GetBtFlag() == 0)){
+		if (g_previewFlag == 4){
+			if (curbone->GetBtKinFlag() == 1){
+				CMotionPoint curmp = curbone->GetCurMp();
+				curmp.SetBtMat(curmp.GetWorldMat());
+				curmp.SetBtFlag(1);
+				curbone->SetCurMp(curmp);
 			}
-			curbto->SetBtMotion();
 		}
-	}else if( g_previewFlag == 5 ){
-		if( (curbto->GetTopFlag() == 0) && curbto->GetBone() ){
-			curbto->SetBtMotion();
+		else if (g_previewFlag == 5){
+			if (curbone->GetParent()){
+				//curbone->m_curmp.m_btmat = curbone->m_parent->m_curmp.m_btmat;
+				D3DXMATRIX invstart;
+				D3DXMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
+				D3DXMATRIX diffmat;
+				diffmat = invstart * curbone->GetParent()->GetCurMp().GetBtMat();
+				CMotionPoint curmp = curbone->GetCurMp();
+				curmp.SetBtMat(curbone->GetStartMat2() * diffmat);
+				curmp.SetBtFlag(1);
+				curbone->SetCurMp(curmp);
+			}
+			else{
+				CMotionPoint curmp = curbone->GetCurMp();
+				curmp.SetBtMat(curbone->GetStartMat2());
+				curmp.SetBtFlag(1);
+				curbone->SetCurMp(curmp);
+			}
 		}
 	}
+	*/
 
+	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()){
+		CBone* curbone = curbto->GetBone();
+		if (curbone){
+			if (g_previewFlag == 4){
+				if (curbone->GetBtKinFlag() == 0){
+					//if (curbto->GetParBt() && (curbto->GetParBt()->GetBone()->GetBtKinFlag() == 1) && (curbto->GetParBt()->GetBone()->GetCurMp().GetBtFlag() == 0)){
+					//	//KinFlagの変わり目部分に対応。
+					//	//変わり目部分が枝分かれの時はまた後で、、、
+					//	curbto->GetParBt()->SetBtMotion();
+					//}
+					curbto->SetBtMotion();
+				}
+				else if (curbone->GetBtKinFlag() == 1){
+					CMotionPoint curmp = curbone->GetCurMp();
+					curmp.SetBtMat(curmp.GetWorldMat());
+					curmp.SetBtFlag(1);
+					curbone->SetCurMp(curmp);
+				}
+			}
+			else if (g_previewFlag == 5){
+
+				curbto->SetBtMotion();
+
+				if (curbone->GetCurMp().GetBtFlag() == 0){
+					if (curbone->GetParent()){
+						D3DXMATRIX invstart;
+						D3DXMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
+						D3DXMATRIX diffmat;
+						diffmat = invstart * curbone->GetParent()->GetCurMp().GetBtMat();
+						CMotionPoint curmp = curbone->GetCurMp();
+						curmp.SetBtMat(curbone->GetStartMat2() * diffmat);
+						curmp.SetBtFlag(1);
+						curbone->SetCurMp(curmp);
+					}
+					else{
+						CMotionPoint curmp = curbone->GetCurMp();
+						curmp.SetBtMat(curbone->GetStartMat2());
+						curmp.SetBtFlag(1);
+						curbone->SetCurMp(curmp);
+					}
+				}
+
+			}
+		}
+	}
 	int chilno;
 	for( chilno = 0; chilno < curbto->GetChilBtSize(); chilno++ ){
 		CBtObject* chilbto = curbto->GetChilBt( chilno );

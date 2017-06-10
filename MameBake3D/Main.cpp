@@ -204,7 +204,10 @@ bool g_ctrlshiftkeyformb = false;//ForMiddleButton
 static int s_akeycnt = 0;
 static int s_dkeycnt = 0;
 
-static float s_erp = 0.5f;
+//static float s_erp = 0.99f;
+//static float s_erp = 0.75f;
+//static float s_erp = 0.5f;
+static float s_erp = 0.2f;
 //static float s_impup = 0.0f;
 
 
@@ -1183,7 +1186,7 @@ void InitApp()
 
 
 	{
-		s_bpWorld = new BPWorld(s_matWorld, "BtPiyo", // ウィンドウのタイトル
+		s_bpWorld = new BPWorld(NULL, s_matWorld, "BtPiyo", // ウィンドウのタイトル
 			460, 460,         // ウィンドウの幅と高さ [pixels]
 			NULL);    // モニタリング用関数へのポインタ  
 		_ASSERT(s_bpWorld);
@@ -6824,7 +6827,8 @@ int StartBt(int flag, int btcntzero)
 
 			s_btstartframe = curframe;
 
-			CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
+			//CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
+			CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
 
 			
 			if( g_previewFlag == 4 ){
@@ -7279,9 +7283,9 @@ int OpenChaFile()
 	if( !s_bpWorld ){
 		D3DXMATRIX inimat;
 		D3DXMatrixIdentity( &inimat );
-		s_bpWorld = new BPWorld( inimat, "BtPiyo", // ウィンドウのタイトル
+		s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ウィンドウのタイトル
 						460, 460,         // ウィンドウの幅と高さ [pixels]
-						NULL );    // モニタリング用関数へのポインタ  
+						NULL);    // モニタリング用関数へのポインタ  
 		_ASSERT( s_bpWorld );
 	}
 
