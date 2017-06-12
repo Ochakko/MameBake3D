@@ -108,7 +108,8 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 
 	bool isDynamic = (curre->GetMass() != 0.f);
 
-	btVector3 localInertia(0,0,0);
+	//btVector3 localInertia(0,0,0);
+	btVector3 localInertia(0, -m_boneleng * 0.5f, 0);
 	if (isDynamic)
 		shape->calculateLocalInertia( curre->GetMass(), localInertia );
 
@@ -207,7 +208,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	btQuaternion btq( qx, qy, qz, qw ); 
 
 
-	centerA = ( aftparposA + aftchilposA ) * 0.5f;
+	//centerA = ( aftparposA + aftchilposA ) * 0.5f;
+	centerA = aftparposA;
 	btVector3 btv( btScalar( centerA.x ), btScalar( centerA.y ), btScalar( centerA.z ) );
 
 	btTransform transform;
@@ -219,7 +221,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	//-0.374995, 0.249996, 0.000000
 	D3DXMatrixIdentity( &m_cen2parY );
 	m_cen2parY._41 = 0.0f;
-	m_cen2parY._42 = -m_boneleng * 0.5f;
+	//m_cen2parY._42 = -m_boneleng * 0.5f;
+	m_cen2parY._42 = 0.0f;
 	m_cen2parY._43 = 0.0f;
 //	m_cen2parY._41 = 0.0f - -0.374995f;
 //	m_cen2parY._42 = -m_boneleng * 0.5f - 0.249996f;

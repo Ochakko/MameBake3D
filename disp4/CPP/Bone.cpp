@@ -797,9 +797,14 @@ DbgOut( L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\
 		return 1;
 	}
 			
-	bmmat._41 = ( aftbonepos.x + aftchilpos.x ) * 0.5f;
-	bmmat._42 = ( aftbonepos.y + aftchilpos.y ) * 0.5f;
-	bmmat._43 = ( aftbonepos.z + aftchilpos.z ) * 0.5f;
+	//bmmat._41 = ( aftbonepos.x + aftchilpos.x ) * 0.5f;
+	//bmmat._42 = ( aftbonepos.y + aftchilpos.y ) * 0.5f;
+	//bmmat._43 = ( aftbonepos.z + aftchilpos.z ) * 0.5f;
+
+	bmmat._41 = aftbonepos.x;
+	bmmat._42 = aftbonepos.y;
+	bmmat._43 = aftbonepos.z;
+
 
 	curre->SetCapsulemat( bmmat );
 	curre->SetCylileng( cylileng );
@@ -2687,7 +2692,8 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 
 
 	multmat = srcre->GetFirstcapsulemat() * diffworld;
-	rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+	//rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+	rigidcenter = m_btparpos;
 
 
 	*dstmat = multmat;

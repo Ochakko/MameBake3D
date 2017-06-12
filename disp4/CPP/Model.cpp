@@ -1048,11 +1048,11 @@ int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe
 	}
 	*/
 
-	if (g_previewFlag == 5){
-		if (m_topbt){
-			SetBtEquilibriumPointReq(m_topbt);
-		}
-	}
+	//if (g_previewFlag == 5){
+	//	if (m_topbt){
+	//		SetBtEquilibriumPointReq(m_topbt);
+	//	}
+	//}
 
 
 	return 0;
@@ -4452,11 +4452,11 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 		}
 	}
 	*/
-	if (g_previewFlag == 5){
-		if (m_topbt){
-			SetBtEquilibriumPointReq(m_topbt);
-		}
-	}
+	//if (g_previewFlag == 5){
+	//	if (m_topbt){
+	//		SetBtEquilibriumPointReq(m_topbt);
+	//	}
+	//}
 
 
 	/*

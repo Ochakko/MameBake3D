@@ -97,6 +97,8 @@ typedef struct tag_spaxis
 	POINT dispcenter;
 }SPAXIS, SPCAM, SPELEM;
 
+
+double g_btcalccnt = 3.0;
 int g_dbgloadcnt = 0;
 double g_calcfps = 60.0;
 
@@ -111,6 +113,7 @@ bool g_undereditrange = false;
 bool g_limitdegflag = true;
 bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
+
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -204,10 +207,11 @@ bool g_ctrlshiftkeyformb = false;//ForMiddleButton
 static int s_akeycnt = 0;
 static int s_dkeycnt = 0;
 
+static double s_erp = 1.0;
 //static float s_erp = 0.99f;
 //static float s_erp = 0.75f;
-//static float s_erp = 0.5f;
-static float s_erp = 0.2f;
+//static double s_erp = 0.5;
+//static float s_erp = 0.2f;
 //static float s_impup = 0.0f;
 
 
@@ -569,7 +573,7 @@ float                       g_fLightScale;
 int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
-double						g_dspeed = 1.0;
+double						g_dspeed = 3.0;
 
 D3DXHANDLE g_hRenderBoneL0 = 0;
 D3DXHANDLE g_hRenderBoneL1 = 0;
@@ -673,6 +677,10 @@ int g_applyrate = 50;
 #define IDC_COMBO_BONEAXIS			48
 #define IDC_LIMITDEG				49
 
+#define IDC_STATIC_BTCALCCNT		50
+#define IDC_BTCALCCNT				51
+#define IDC_STATIC_ERP				52
+#define IDC_ERP						53
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1605,9 +1613,12 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
 	s_mainheight = pBackBufferSurfaceDesc->Height;
 
     //g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 550 );
-	g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
-    g_SampleUI.SetSize( 170, 750 );
+	//g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    //g_SampleUI.SetSize( 170, 750 );
 
+	g_SampleUI.SetLocation( 0, 0 );
+	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
+	
 	SetSpAxisParams();
 	SetSpCamParams();
 	SetSpRigParams();
@@ -1888,7 +1899,7 @@ void RenderText( double fTime )
     //txtHelper.DrawTextLine( DXUTGetDeviceStats() );
 
     txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag );
+    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.1f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -2822,6 +2833,22 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             swprintf_s( sz, 100, L"Motion Speed: %0.4f", g_dspeed );
             g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
             break;
+
+		case IDC_BTCALCCNT:
+			RollbackCurBoneNo();
+			g_btcalccnt = (double)(g_SampleUI.GetSlider(IDC_BTCALCCNT)->GetValue());
+
+			swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
+			g_SampleUI.GetStatic(IDC_STATIC_BTCALCCNT)->SetText(sz);
+			break;
+
+		case IDC_ERP:
+			RollbackCurBoneNo();
+			s_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.10);
+
+			swprintf_s(sz, 100, L"BT ERP: %0.2f", s_erp);
+			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
+			break;
 
 		case IDC_COMBO_BONEAXIS:
 			RollbackCurBoneNo();
@@ -4262,6 +4289,10 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	s_model->CalcBoneEul(-1);
 
 	s_model->SetLoadedFlag(true);
+
+
+	s_model->SetMotionSpeed(g_dspeed);
+
 
 	CallF(s_model->DbgDump(), return 0);
 
@@ -8895,6 +8926,33 @@ int OnFrameKeyboard()
 		g_shiftkey = false;
 	}
 
+	if (g_controlkey == false){
+		if (g_keybuf[VK_ADD] & 0x80){
+			g_btcalccnt += 1.0;
+			Sleep(200);
+		}
+		else if (g_keybuf[VK_SUBTRACT] & 0x80){
+			if (g_btcalccnt >= 2.0){
+				g_btcalccnt -= 1.0;
+				Sleep(200);
+			}
+		}
+	}
+	else{
+		if (g_keybuf[VK_ADD] & 0x80){
+			if (s_erp <= 0.9){
+				s_erp += 0.1;
+				Sleep(200);
+			}
+		}
+		else if (g_keybuf[VK_SUBTRACT] & 0x80){
+			if (s_erp >= 0.1){
+				s_erp -= 0.1;
+				Sleep(200);
+			}
+		}
+	}
+
 
 	if (g_ctrlshiftkeyformb == false){
 		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
@@ -9826,40 +9884,44 @@ int CreateUtDialog()
 	g_SampleUI.Init(&g_DialogResourceManager);
 
 	int iY;
-	g_SampleUI.SetCallback(OnGUIEvent); iY = 0;
+	g_SampleUI.SetCallback(OnGUIEvent); 
+	iY = 60;
 
 	int ctrlh = 25;
 	int addh = ctrlh + 2;
+
+	int ctrlxlen = 120;
+	int checkboxxlen = 120;
 
 	WCHAR sz[100];
 
 
 	//iY += 24;
 	swprintf_s(sz, 100, L"Light scale: %0.2f", g_fLightScale);
-	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, 125, ctrlh);
+	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 
-	g_SampleUI.AddCheckBox(IDC_BMARK, L"ボーンを表示する", 25, iY += addh, 480, 16, true, 0U, false, &s_BoneMarkCheckBox);
+	g_SampleUI.AddCheckBox(IDC_BMARK, L"ボーンを表示する", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
 
 	/***
 	swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
-	g_SampleUI.AddStatic( IDC_NUM_LIGHTS_STATIC, sz, 35, iY += addh, 125, ctrlh );
+	g_SampleUI.AddStatic( IDC_NUM_LIGHTS_STATIC, sz, 35, iY += addh, ctrlxlen, ctrlh );
 	g_SampleUI.AddSlider( IDC_NUM_LIGHTS, 50, iY += addh, 100, ctrlh, 1, MAX_LIGHTS, g_nNumActiveLights );
 
 	//iY += 24;
 	swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
-	g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY += addh, 125, ctrlh );
+	g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY += addh, ctrlxlen, ctrlh );
 	g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
 
 	//iY += 24;
-	g_SampleUI.AddButton( IDC_ACTIVE_LIGHT, L"Change active light (K)", 35, iY += addh, 125, ctrlh, 'K' );
+	g_SampleUI.AddButton( IDC_ACTIVE_LIGHT, L"Change active light (K)", 35, iY += addh, ctrlxlen, ctrlh, 'K' );
 
 	g_SampleUI.AddCheckBox( IDC_LIGHT_DISP, L"ライト矢印を表示する", 25, iY += addh, 450, 16, true, 0U, false, &s_LightCheckBox );
 
 	iY += addh;
 	***/
 	//iY += 24;
-	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, 35, iY += addh, ctrlxlen, ctrlh);
 	CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
 	pComboBox3->RemoveAllItems();
 	WCHAR straxis[256];
@@ -9876,7 +9938,7 @@ int CreateUtDialog()
 	pComboBox3->SetSelectedByData(ULongToPtr(0L));
 
 
-	g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, ctrlxlen, ctrlh);
 
 	/***
 	g_SampleUI.AddButton( IDC_FK_XP, L"Rot X+", 35, iY += addh, 60, ctrlh );
@@ -9898,16 +9960,13 @@ int CreateUtDialog()
 	***/
 	//iY += addh;
 
-	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
-	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, 35, iY += addh, 125, ctrlh);
-	g_SampleUI.AddSlider(IDC_SPEED, 50, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
 
 	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, 450, 16, false, 0U, false, &s_CamTargetCheckBox);
 
 
 	//iY += addh;
 
-	g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, 35, iY += addh, ctrlxlen, ctrlh);
 	CDXUTComboBox* pComboBox0 = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
 	pComboBox0->RemoveAllItems();
 	int level;
@@ -9920,7 +9979,7 @@ int CreateUtDialog()
 	pComboBox0->SetSelectedByData(ULongToPtr(1));
 
 
-	g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, ctrlxlen, ctrlh);
 	CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
 	pComboBox1->RemoveAllItems();
 	pComboBox1->AddItem(L"IK回転", ULongToPtr(IDC_IK_ROT));
@@ -9935,25 +9994,50 @@ int CreateUtDialog()
 
 
 	swprintf_s(sz, 100, L"姿勢適用位置 : %d ％", g_applyrate);
-	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
 	CEditRange::SetApplyRate(g_applyrate);
 
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
 	swprintf_s(sz, 100, L"IK 次数の係数 : %f", g_ikfirst);
-	g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikfirst * 25.0f));
 
 	swprintf_s(sz, 100, L"IK 伝達係数 : %f", g_ikrate);
-	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, 125, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
 
-	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, 480, 16, false, 0U, false, &s_ApplyEndCheckBox);
-	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, 480, 16, false, 0U, false, &s_SlerpOffCheckBox);
-	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, 480, 16, false, 0U, false, &s_AbsIKCheckBox);
-	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, 480, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, 480, 16, true, 0U, false, &s_LimitDegCheckBox);
+	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
+	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
+	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
+	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
+
+
+
+	//Right Bottom
+	iY = s_mainheight - 170;
+	int startx = s_mainwidth - 130;
+
+	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
+	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
+
+	swprintf_s(sz, 100, L"BT ERP: %0.2f", s_erp);
+	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 10, (int)(s_erp * 10.0 + 0.4));
+
+	
+
+	//Center Bottom
+	iY = s_mainheight - 170;
+	startx = s_mainwidth / 2 - 50;
+
+	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
+	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+
 
 	return 0;
 
