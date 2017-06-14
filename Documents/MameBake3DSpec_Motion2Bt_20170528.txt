@@ -1,3 +1,85 @@
+Motion2Btの仕様　2017/06/15 化け猫
+
+CalcNewBtMatは以下のように修正した。
+
+
+int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
+{
+	D3DXMatrixIdentity(dstmat);
+	*dstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	if (!chilbone || !dstmat || !dstpos){
+		return 1;
+	}
+
+	D3DXVECTOR3 jointfpos;
+	D3DXMATRIX firstworld;
+	D3DXMATRIX invfirstworld;
+	D3DXMATRIX curworld;
+	D3DXMATRIX befworld;
+	D3DXMATRIX invbefworld;
+	D3DXMATRIX diffworld;
+	D3DXVECTOR3 rigidcenter;
+	D3DXMATRIX multmat;
+	D3DXMATRIX tramat;
+
+
+	firstworld = GetStartMat2();
+	D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+
+
+	//current
+	if (GetBtKinFlag() == 1){
+		diffworld = invfirstworld * GetCurMp().GetWorldMat();
+		tramat = GetCurMp().GetWorldMat();
+	}
+	else{
+		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
+		if (GetCurMp().GetBtFlag() == 0){
+			diffworld = invfirstworld * GetCurMp().GetWorldMat();
+			tramat = GetCurMp().GetWorldMat();
+		}
+		else{
+			//ここでのBtMatは一回前の姿勢。
+			diffworld = invfirstworld * GetCurMp().GetBtMat();
+			tramat = GetCurMp().GetBtMat();
+		}
+	}
+	jointfpos = GetJointFPos();
+	D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+
+	//child
+	jointfpos = chilbone->GetJointFPos();
+	D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+
+
+
+	multmat = srcre->GetFirstcapsulemat() * diffworld;
+	//rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+	rigidcenter = m_btparpos;
+
+
+	*dstmat = multmat;
+	*dstpos = rigidcenter;
+
+	return 0;
+}
+
+
+今回の方針はシンプルである。
+キネマティクス指定剛体にはアニメーションの行列を設定し
+シミュレーション剛体にはシミュレーション結果そのままを設定するものである。
+
+あとはbullet physicsにお任せしてしまう。
+
+この方法の方が安定しているようだ。
+
+
+################################
+######     以下、以前の仕様
+################################
+
+
 Motion2Btの仕様　2017/06/10 化け猫
 
 CalcNewBtMatは以下のように修正した。

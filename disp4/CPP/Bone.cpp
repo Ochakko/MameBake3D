@@ -2669,17 +2669,15 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 		tramat = GetCurMp().GetWorldMat();
 	}
 	else{
+		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
 		if (GetCurMp().GetBtFlag() == 0){
 			diffworld = invfirstworld * GetCurMp().GetWorldMat();
 			tramat = GetCurMp().GetWorldMat();
 		}
 		else{
-			curworld = GetCurMp().GetWorldMat();
-			befworld = GetCurMp().GetBefWorldMat();
-			D3DXMatrixInverse(&invbefworld, NULL, &befworld);
 			//ここでのBtMatは一回前の姿勢。
-			diffworld = invfirstworld * GetCurMp().GetBtMat() * invbefworld * curworld;
-			tramat = GetCurMp().GetWorldMat();
+			diffworld = invfirstworld * GetCurMp().GetBtMat();
+			tramat = GetCurMp().GetBtMat();
 		}
 	}
 	jointfpos = GetJointFPos();
