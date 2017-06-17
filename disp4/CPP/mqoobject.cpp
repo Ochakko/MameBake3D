@@ -2078,6 +2078,7 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 //		_ASSERT( 0 );
 	}
 
+	/*
 	D3DXVECTOR3 scale;
 	D3DXVECTOR3 tra;
 	if( srctype == 0 ){
@@ -2101,6 +2102,35 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 		}
 	}
 	MultScale( scale, tra );
+	*/
+
+	D3DXVECTOR3 scale;
+	D3DXVECTOR3 tra;
+	if (srctype == 0){
+		//cylinder
+		scale = D3DXVECTOR3(scsph, sccyli, scsph);
+		tra = D3DXVECTOR3(0.0f, 100.0f * (scsph - sccyli), 0.0f);
+		if (lengptr){
+			*lengptr = sccyli * 200.0f;
+		}
+	}
+	else if (srctype == 1){
+		//upper sphere
+		scale = D3DXVECTOR3(scsph, scsph, scsph);
+		tra = D3DXVECTOR3(0.0f, -300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f);
+		if (lengptr){
+			*lengptr = scsph * 100.0f;
+		}
+	}
+	else{
+		//lower sphere
+		scale = D3DXVECTOR3(scsph, scsph, scsph);
+		tra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		if (lengptr){
+			*lengptr = scsph * 100.0f;
+		}
+	}
+	MultScale(scale, tra);
 
 	return 0;
 }
