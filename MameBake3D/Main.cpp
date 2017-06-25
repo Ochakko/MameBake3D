@@ -9077,7 +9077,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		curmodel->ZeroBtCnt();
 	}
 
-	if ((curmodel->GetBtCnt() == 0) || (curmodel->GetBtCnt() == 1) || (curmodel->GetBtCnt() == 2)){
+	//if ((curmodel->GetBtCnt() == 0) || (curmodel->GetBtCnt() == 1) || (curmodel->GetBtCnt() == 2)){
+	if (curmodel->GetBtCnt() == 0){
 		StartBt(2, 0);
 	}
 

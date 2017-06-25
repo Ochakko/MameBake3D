@@ -108,8 +108,8 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 
 	bool isDynamic = (curre->GetMass() != 0.f);
 
-	//btVector3 localInertia(0,0,0);
-	btVector3 localInertia(0, -m_boneleng * 0.5f, 0);
+	btVector3 localInertia(0,0,0);
+	//btVector3 localInertia(0, -m_boneleng * 0.5f, 0);
 	if (isDynamic)
 		shape->calculateLocalInertia( curre->GetMass(), localInertia );
 
