@@ -208,8 +208,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	btQuaternion btq( qx, qy, qz, qw ); 
 
 
-	//centerA = ( aftparposA + aftchilposA ) * 0.5f;
-	centerA = aftparposA;
+	centerA = ( aftparposA + aftchilposA ) * 0.5f;
+	//centerA = aftparposA;
 	btVector3 btv( btScalar( centerA.x ), btScalar( centerA.y ), btScalar( centerA.z ) );
 
 	btTransform transform;
@@ -254,6 +254,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
 	btMatrix3x3 worldmat = worldtra.getBasis();
 	btVector3 worldpos = worldtra.getOrigin();
+	
 	btVector3 tmpcol[3];
 	int colno;
 	for( colno = 0; colno < 3; colno++ ){
@@ -653,13 +654,13 @@ int CBtObject::SetBtMotion()
 	btVector3 worldpos = worldtra.getOrigin();
 	btVector3 tmpcol[3];//行列のカラム表現。
 	int colno;
-	for( colno = 0; colno < 3; colno++ ){
-		tmpcol[colno] = worldmat.getColumn( colno );
+	for (colno = 0; colno < 3; colno++){
+		tmpcol[colno] = worldmat.getColumn(colno);
+		//		tmpcol[colno] = worldmat.getRow( colno );
 	}
 
 	D3DXMATRIX newxworld;
-	D3DXMatrixIdentity( &newxworld );
-
+	D3DXMatrixIdentity(&newxworld);
 	newxworld._11 = tmpcol[0].x();
 	newxworld._12 = tmpcol[0].y();
 	newxworld._13 = tmpcol[0].z();
@@ -685,6 +686,8 @@ int CBtObject::SetBtMotion()
 	CMotionPoint curmp;
 	curmp = m_bone->GetCurMp();
 	curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	//curmp.SetBtMat(newxworld);
+	//m_bone->GetCurMp().SetBtMat(m_bone->GetStartMat2() * diffxworld);
 	curmp.SetBtFlag(1);
 	m_bone->SetCurMp(curmp);
 

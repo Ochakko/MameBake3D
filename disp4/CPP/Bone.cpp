@@ -2638,6 +2638,7 @@ int CBone::QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq
 
 }
 
+/*
 int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
 {
 	D3DXMatrixIdentity(dstmat);
@@ -2693,6 +2694,104 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 	//rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
 	rigidcenter = m_btparpos;
 
+
+	*dstmat = multmat;
+	*dstpos = rigidcenter;
+
+	return 0;
+}
+*/
+
+int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
+{
+	D3DXMatrixIdentity(dstmat);
+	*dstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	if (!chilbone || !dstmat || !dstpos){
+		return 1;
+	}
+
+	D3DXVECTOR3 jointfpos;
+	D3DXMATRIX firstworld;
+	D3DXMATRIX invfirstworld;
+	D3DXMATRIX curworld;
+	D3DXMATRIX befworld;
+	D3DXMATRIX invbefworld;
+	D3DXMATRIX diffworld;
+	D3DXVECTOR3 rigidcenter;
+	D3DXMATRIX multmat;
+	D3DXMATRIX tramat;
+
+
+	firstworld = GetStartMat2();
+	D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+
+
+	//current
+	if (GetBtKinFlag() == 1){
+		diffworld = invfirstworld * GetCurMp().GetWorldMat();
+		tramat = GetCurMp().GetWorldMat();
+
+		jointfpos = GetJointFPos();
+		D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+		jointfpos = chilbone->GetJointFPos();
+		D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+
+	}
+	else{
+		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
+		if (GetCurMp().GetBtFlag() == 0){
+			diffworld = invfirstworld * GetCurMp().GetWorldMat();
+			tramat = GetCurMp().GetWorldMat();
+
+			jointfpos = GetJointFPos();
+			D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+			jointfpos = chilbone->GetJointFPos();
+			D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+		}
+		else{
+			if (GetParent() && (GetParent()->GetBtKinFlag() == 1)){
+				//ここでのBtMatは一回前の姿勢。
+
+				//BtMatにアニメーションの移動成分のみを掛けたものを新しい姿勢行列として子供ジョイント位置を計算してシミュレーションに使用する。
+				curworld = GetCurMp().GetWorldMat();
+				befworld = GetCurMp().GetBefWorldMat();
+
+				D3DXVECTOR3 befparpos, curparpos;
+				jointfpos = GetJointFPos();
+				D3DXVec3TransformCoord(&befparpos, &jointfpos, &befworld);
+				D3DXVec3TransformCoord(&curparpos, &jointfpos, &curworld);
+				D3DXVECTOR3 diffmv = curparpos - befparpos;
+
+				D3DXMATRIX diffmvmat;
+				D3DXMatrixIdentity(&diffmvmat);
+				D3DXMatrixTranslation(&diffmvmat, diffmv.x, diffmv.y, diffmv.z);
+
+				D3DXMATRIX befbtmat;
+				befbtmat = GetCurMp().GetBtMat();
+				D3DXMatrixInverse(&invbefworld, NULL, &befworld);
+				D3DXMATRIX newtramat = befbtmat * diffmvmat;
+
+				diffworld = invfirstworld * newtramat;
+
+				m_btparpos = curparpos;
+				jointfpos = chilbone->GetJointFPos();
+				D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &befbtmat);
+			}
+			else{
+				diffworld = invfirstworld * GetCurMp().GetBtMat();
+				tramat = GetCurMp().GetBtMat();
+
+				jointfpos = GetJointFPos();
+				D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+				jointfpos = chilbone->GetJointFPos();
+				D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+			}
+		}
+	}
+
+	multmat = srcre->GetFirstcapsulemat() * diffworld;
+	rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
 
 	*dstmat = multmat;
 	*dstpos = rigidcenter;

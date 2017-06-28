@@ -6810,12 +6810,14 @@ int StartBt(int flag, int btcntzero)
 			//F9キー
 			if (btcntzero == 1){
 				curmodel->ZeroBtCnt();
+				curmodel->SetCreateBtFlag(false);
 			}
 		}
 		else if (flag == 1){
 			//F10キー
 			if (btcntzero == 1){
 				curmodel->ZeroBtCnt();
+				curmodel->SetCreateBtFlag(false);
 			}
 		}
 
@@ -9865,10 +9867,10 @@ int OnFrameInitBtWorld()
 	//vector<MODELELEM>::iterator itrmodel;
 	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		//CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && (curmodel->GetLoadedFlag() == true) && (curmodel->GetCreateBtFlag() == false)){
+		//if (curmodel && (curmodel->GetLoadedFlag() == true) && (curmodel->GetCreateBtFlag() == false)){
 			curmodel->SetBtWorld(s_btWorld);
-			CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
-		}
+		//	CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
+		//}
 
 		curmodel->PlusPlusBtCnt();
 
