@@ -8,9 +8,9 @@
   <ProjectInfo>
     <CharaNum>1</CharaNum>
   </ProjectInfo>
-  <GcoFile>BtTest170615_2_at30fps_calc20_speed3.gco</GcoFile>
+  <GcoFile>BtTest170701_3_30fps_BtCalcCnt4_Speed3.gco</GcoFile>
   <Chara>
-    <ModelFolder>yuri_12_1_walk_0</ModelFolder>
+    <ModelFolder>yuri_12_1_walk_2</ModelFolder>
     <ModelFile>yuri_12_1_walk.fbx</ModelFile>
     <ModelMult>1.000000</ModelMult>
     <RGDMORPH>0</RGDMORPH>

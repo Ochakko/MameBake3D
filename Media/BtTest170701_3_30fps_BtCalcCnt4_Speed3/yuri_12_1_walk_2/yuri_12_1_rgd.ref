@@ -214,7 +214,7 @@
     <Name>Neck_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>Head_end_Joint</ChildName>
+      <ChildName>Twin_R_2_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -238,7 +238,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>Twin_R_2_Joint</ChildName>
+      <ChildName>Head_end_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -542,30 +542,6 @@
     <Name>LeftElbow_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftIndexProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>10000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>10.000000</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.066845</LDMP>
-      <ADMP>0.072193</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>2</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <COLIID>3</COLIID>
-      <RESTITUTION>0.491979</RESTITUTION>
-      <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>LeftThumbProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
@@ -614,7 +590,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>LeftRingProximal_Joint</ChildName>
+      <ChildName>LeftIndexProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -639,6 +615,30 @@
     </RigidElem>
     <RigidElem>
       <ChildName>LeftLittleProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>10000.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>10.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.072193</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>2</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <COLIID>3</COLIID>
+      <RESTITUTION>0.491979</RESTITUTION>
+      <FRICTION>0.491979</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>LeftRingProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1170,6 +1170,30 @@
     <Name>RightElbow_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
+      <ChildName>RightThumbProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>10000.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>10.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.072193</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>2</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <COLIID>3</COLIID>
+      <RESTITUTION>0.491979</RESTITUTION>
+      <FRICTION>0.491979</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
       <ChildName>RightIndexProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
@@ -1194,7 +1218,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightThumbProximal_Joint</ChildName>
+      <ChildName>RightRingProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1243,30 +1267,6 @@
     </RigidElem>
     <RigidElem>
       <ChildName>RightLittleProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>10000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>10.000000</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.066845</LDMP>
-      <ADMP>0.072193</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>2</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <COLIID>3</COLIID>
-      <RESTITUTION>0.491979</RESTITUTION>
-      <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>RightRingProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <RIGIDELEM>
     <FileInfo>1001-01</FileInfo>
-    <SCBTG>0.802139</SCBTG>
+    <SCBTG>97.326202</SCBTG>
   <Bone>
     <Name>Hip_Joint</Name>
     <BTKIN>0</BTKIN>
@@ -11,13 +11,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -38,13 +38,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -61,13 +61,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -84,13 +84,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -111,13 +111,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -134,13 +134,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -157,13 +157,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -184,13 +184,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -206,41 +206,18 @@
     <Name>Neck_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>Head_end_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>3</GROUP>
-      <MYSELF>0</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.491979</RESTITUTION>
-      <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>Twin_R_2_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -252,18 +229,41 @@
       <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
+      <ChildName>Head_end_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>311.764709</CUSLK>
+      <AK>3</AK>
+      <CUSAK>30.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>3</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.491979</RESTITUTION>
+      <FRICTION>0.491979</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
       <ChildName>Twin_L_2_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>10000.000000</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -284,13 +284,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>1132.352905</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>61.764706</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -311,13 +311,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>1132.352905</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>61.764706</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -338,13 +338,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>1132.352905</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>61.764706</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -365,13 +365,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>1132.352905</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>61.764706</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -392,13 +392,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>1132.352905</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>61.764706</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -419,13 +419,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>1132.352905</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>61.764706</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>3</GROUP>
@@ -446,13 +446,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -473,13 +473,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -500,13 +500,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -522,41 +522,18 @@
     <Name>LeftElbow_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>LeftIndexProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.005348</RESTITUTION>
-      <FRICTION>1.000000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>LeftThumbProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -573,13 +550,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -591,18 +568,18 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>LeftRingProximal_Joint</ChildName>
+      <ChildName>LeftIndexProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -619,13 +596,36 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.005348</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>LeftRingProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>311.764709</CUSLK>
+      <AK>3</AK>
+      <CUSAK>30.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -646,13 +646,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -673,13 +673,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -700,13 +700,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -727,13 +727,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -754,13 +754,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -781,13 +781,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -808,13 +808,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -835,13 +835,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -862,13 +862,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -889,13 +889,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -916,13 +916,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -943,13 +943,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -970,13 +970,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -997,13 +997,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1024,13 +1024,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1051,13 +1051,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1078,13 +1078,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1105,13 +1105,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1127,41 +1127,18 @@
     <Name>RightElbow_branch_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>RightIndexProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.005348</RESTITUTION>
-      <FRICTION>1.000000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>RightThumbProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1173,41 +1150,18 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>RightMiddleProximal_Joint</ChildName>
+      <ChildName>RightIndexProximal_Joint</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.005348</RESTITUTION>
-      <FRICTION>1.000000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>RightLittleProximal_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
-      <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1224,13 +1178,59 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.005348</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>RightMiddleProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>311.764709</CUSLK>
+      <AK>3</AK>
+      <CUSAK>30.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.005348</RESTITUTION>
+      <FRICTION>1.000000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>RightLittleProximal_Joint</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <LK>3</LK>
+      <CUSLK>311.764709</CUSLK>
+      <AK>3</AK>
+      <CUSAK>30.000000</CUSAK>
+      <Mass>0.080214</Mass>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1251,13 +1251,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1278,13 +1278,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1305,13 +1305,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1332,13 +1332,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1359,13 +1359,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1386,13 +1386,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1413,13 +1413,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1440,13 +1440,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1467,13 +1467,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1494,13 +1494,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1521,13 +1521,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1548,13 +1548,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1575,13 +1575,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1602,13 +1602,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1629,13 +1629,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1656,13 +1656,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1683,13 +1683,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1710,13 +1710,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1737,13 +1737,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1764,13 +1764,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1791,13 +1791,13 @@
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
       <LK>3</LK>
-      <CUSLK>1000.000000</CUSLK>
+      <CUSLK>311.764709</CUSLK>
       <AK>3</AK>
-      <CUSAK>117.352943</CUSAK>
+      <CUSAK>30.000000</CUSAK>
       <Mass>0.080214</Mass>
-      <LDMP>0.601604</LDMP>
-      <ADMP>0.914438</ADMP>
-      <BTG>-1.000000</BTG>
+      <LDMP>0.066845</LDMP>
+      <ADMP>0.109626</ADMP>
+      <BTG>-0.122995</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
