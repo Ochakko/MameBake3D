@@ -4550,46 +4550,12 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, D3DXMATRIX* wmat, D3D
 	}
 
 	SetBtMotionReq( m_topbt, wmat, vpmat );
-	/*
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
-		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetCurMp().GetBtFlag() == 0)){
-			if (g_previewFlag == 4){
-				if(curbone->GetBtKinFlag() == 1){
-					CMotionPoint curmp = curbone->GetCurMp();
-					curmp.SetBtMat(curmp.GetWorldMat());
-					curmp.SetBtFlag(1);
-					curbone->SetCurMp(curmp);
-				}
-			}
-			else if (g_previewFlag == 5){
-				if (curbone->GetParent()){
-					//curbone->m_curmp.m_btmat = curbone->m_parent->m_curmp.m_btmat;
-					D3DXMATRIX invstart;
-					D3DXMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
-					D3DXMATRIX diffmat;
-					diffmat = invstart * curbone->GetParent()->GetCurMp().GetBtMat();
-					CMotionPoint curmp = curbone->GetCurMp();
-					curmp.SetBtMat(curbone->GetStartMat2() * diffmat);
-					curmp.SetBtFlag(1);
-					curbone->SetCurMp(curmp);
-				}
-				else{
-					CMotionPoint curmp = curbone->GetCurMp();
-					curmp.SetBtMat(curbone->GetStartMat2());
-					curmp.SetBtFlag(1);
-					curbone->SetCurMp(curmp);
-				}
-			}
-		}
-	}
-	*/
+
 	//if (g_previewFlag == 5){
 	//	if (m_topbt){
 	//		SetBtEquilibriumPointReq(m_topbt);
 	//	}
 	//}
-
 
 	/*
 	//resetbt処理との問題で一時的にコメントアウト
@@ -5386,49 +5352,6 @@ int CModel::SetRagdollKinFlag(int selectbone)
 }
 void CModel::SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone )
 {
-
-	/*
-	if( srcbto->GetBone() && srcbto->GetRigidBody() ){
-		DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
-
-		CBone* curbone;
-		curbone = srcbto->GetBone();
-
-		int curboneno = curbone->GetBoneNo();
-		//if (curboneno != selectbone){
-			srcbto->GetRigidBody()->setCollisionFlags(curflag & ~btCollisionObject::CF_KINEMATIC_OBJECT);
-			curbone->SetBtKinFlag(0);
-		//}
-		//else{
-		//	srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
-		//	curbone->SetBtKinFlag(1);
-		//}
-
-
-		//srcbto->GetRigidBody()->setDeactivationTime(0.0);
-		srcbto->GetRigidBody()->setDeactivationTime(30000.0);
-
-
-//		_ASSERT( s_setrigidflag );
-//		srcbto->m_rigidbody->setCollisionFlags( s_rigidflag );
-//		srcbto->m_rigidbody->setCollisionFlags( s_rigidflag  | btCollisionObject::CF_STATIC_OBJECT);
-//		srcbto->m_rigidbody->setActivationState(DISABLE_DEACTIVATION);
-
-		if( curbone ){
-			CRigidElem* curre = curbone->GetRigidElem( srcbto->GetEndBone() );
-			if( curre ){
-				if ((m_rgdindex >= 0) && (m_rgdindex < (int)m_rigideleminfo.size())){
-					//srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_rgdindex].btgscale, 0.0f));
-					srcbto->GetRigidBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-					srcbto->GetRigidBody()->applyGravity();
-				}
-				else{
-					_ASSERT(0);
-				}
-			}
-		}
-	}
-	*/
 
 	CBone* srcbone = srcbto->GetBone();
 	if (srcbone){
