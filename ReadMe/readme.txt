@@ -56,6 +56,24 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+
+2017/07/09_1
+	readme.txt更新。
+	2017/07/08のアップデートでモーションスピードのデフォルト値が０になっていますが
+	これは無重力IKのテストのためです（F10キーで開始）。
+
+	最近の動画を紹介します。
+	
+	動画　【まめばけ３D】バネモデルIK
+　　　　https://youtu.be/puPVYJrn0gs
+
+	動画　【まめばけ３D】30fps物理パフォーマンス改善
+	https://youtu.be/lIvNlK7rlqI
+
+	動画　【まめばけ３D】30fpsで破綻しない物理
+	https://youtu.be/eLM-ha3nQdI
+
+
 2017/07/08_1, 2
 	`無重力ラグドールIK機能作成スタート。
 	F10キーを押すと無重力ラグドール状態になります。
@@ -878,6 +896,16 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+まめばけ３D】バネモデルIK
+https://youtu.be/puPVYJrn0gs
+
+【まめばけ３D】30fps物理パフォーマンス改善
+https://youtu.be/lIvNlK7rlqI
+
+【まめばけ３D】30fpsで破綻しない物理
+https://youtu.be/eLM-ha3nQdI
+
 【物理が】 MameBake3D 【使えそうな？】
 https://youtu.be/gh_ymrdA8tM
 
