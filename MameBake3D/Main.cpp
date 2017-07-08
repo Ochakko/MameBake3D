@@ -114,6 +114,7 @@ bool g_limitdegflag = true;
 bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 
+static int s_onragdollik = 0;
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -573,7 +574,8 @@ float                       g_fLightScale;
 int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
-double						g_dspeed = 3.0;
+//double						g_dspeed = 3.0;
+double						g_dspeed = 0.0;
 
 D3DXHANDLE g_hRenderBoneL0 = 0;
 D3DXHANDLE g_hRenderBoneL1 = 0;
@@ -717,6 +719,7 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
+static void OnUserFrameMove(int callfromik, double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
 
 static int CreateUtDialog();
@@ -734,7 +737,7 @@ static int OnFrameUtCheckBox();
 static int OnFramePreviewStop();
 static int OnFramePreviewNormal(double* pnextframe, double* pdifftime);
 static int OnFramePreviewBt(double* pnextframe, double* pdifftime);
-static int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime);
+static int OnFramePreviewRagdoll(int onikflag, double* pnextframe, double* pdifftime);
 static int OnFrameCloseFlag();
 static int OnFrameTimeLineWnd();
 static int OnFrameMouseButton();
@@ -1635,6 +1638,10 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
+	int callfromik = 0;
+	OnUserFrameMove(callfromik, fTime, fElapsedTime);
+
+
 	static double savetime = 0.0;
 	static int capcnt = 0;
 
@@ -1667,7 +1674,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			}else if( g_previewFlag == 4 ){//BTの物理
 				OnFramePreviewBt(&nextframe, &difftime);
 			}else if( g_previewFlag == 5 ){//ラグドール
-				OnFramePreviewRagdoll(&nextframe, &difftime);
+				OnFramePreviewRagdoll(s_onragdollik, &nextframe, &difftime);
 			}
 			OnTimeLineCursor(0, 0.0);
 		}else{
@@ -1691,6 +1698,76 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	s_savepreviewFlag = g_previewFlag;
 
 }
+
+void OnUserFrameMove(int callfromik, double fTime, float fElapsedTime)
+{
+
+	static double savetime = 0.0;
+	static int capcnt = 0;
+
+	if ((g_previewFlag == 5) && (callfromik == 0)){
+		//RagdollIK中はMsgzProcから呼び出すので、通常の呼び出しはreturnする。
+		return;
+	}
+
+
+
+	OnFrameUtCheckBox();
+	SetCamera6Angle();
+
+	OnFrameKeyboard();
+	OnFrameTimeLineWnd();
+	OnFramePlayButton();
+	OnFrameMouseButton();
+
+	s_time = fTime;
+	g_Camera.FrameMove(fElapsedTime);
+	double difftime = fTime - savetime;
+
+	s_matWorld = *g_Camera.GetWorldMatrix();
+	s_matProj = *g_Camera.GetProjMatrix();
+	s_matWorld._41 = 0.0f;
+	s_matWorld._42 = 0.0f;
+	s_matWorld._43 = 0.0f;
+	s_matW = s_matWorld;
+	s_matVP = s_matView * s_matProj;
+
+
+	double nextframe = 0.0;
+	if (g_previewFlag){
+		if (s_model && s_model->GetCurMotInfo()){
+			if (g_previewFlag <= 3){
+				OnFramePreviewNormal(&nextframe, &difftime);
+			}
+			else if (g_previewFlag == 4){//BTの物理
+				OnFramePreviewBt(&nextframe, &difftime);
+			}
+			else if (g_previewFlag == 5){//ラグドール
+				OnFramePreviewRagdoll(s_onragdollik, &nextframe, &difftime);
+			}
+			OnTimeLineCursor(0, 0.0);
+		}
+		else{
+			g_previewFlag = 0;
+		}
+	}
+	else{
+		OnFramePreviewStop();
+	}
+	s_difftime = difftime;
+	savetime = fTime;
+
+	OnFrameCloseFlag();
+	OnFrameToolWnd();
+	OnFrameUndo();
+
+	OnFrameUpdateGround();
+	OnFrameInitBtWorld();
+
+
+	s_savepreviewFlag = g_previewFlag;
+}
+
 void InsertCopyMPReq(CBone* curbone, double curframe)
 {
 	if (curbone){
@@ -2225,35 +2302,40 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 					}
 					else{
-						if (s_dispselect){
-							int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
-							colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
-							colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY");
-							colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ");
-							if (s_ikkind == 0){
-								colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX");
-								colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY");
-								colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ");
-							}
-							else{
-								colliringx = 0;
-								colliringy = 0;
-								colliringz = 0;
-							}
+						if (g_previewFlag != 5){
+							if (s_dispselect){
+								int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
+								colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
+								colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY");
+								colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ");
+								if (s_ikkind == 0){
+									colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX");
+									colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY");
+									colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ");
+								}
+								else{
+									colliringx = 0;
+									colliringy = 0;
+									colliringz = 0;
+								}
 
-							if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz){
-								RollbackCurBoneNo();
-								s_pickinfo.pickobjno = s_curboneno;
-							}
+								if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz){
+									RollbackCurBoneNo();
+									s_pickinfo.pickobjno = s_curboneno;
+								}
 
-							if (colliobjx || colliringx){
-								s_pickinfo.buttonflag = PICK_X;
-							}
-							else if (colliobjy || colliringy){
-								s_pickinfo.buttonflag = PICK_Y;
-							}
-							else if (colliobjz || colliringz){
-								s_pickinfo.buttonflag = PICK_Z;
+								if (colliobjx || colliringx){
+									s_pickinfo.buttonflag = PICK_X;
+								}
+								else if (colliobjy || colliringy){
+									s_pickinfo.buttonflag = PICK_Y;
+								}
+								else if (colliobjz || colliringz){
+									s_pickinfo.buttonflag = PICK_Z;
+								}
+								else{
+									ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+								}
 							}
 							else{
 								ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
@@ -2366,6 +2448,38 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						}
 						s_ikcnt++;
 					}
+				}
+				else if (g_previewFlag == 5){
+					if (s_model){
+
+						//RagdollIK時には時間０（とりあえず）
+						s_editrange.SetRangeOne(0.0);
+
+						D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+						CallF(CalcTargetPos(&targetpos), return 1);
+
+						s_onragdollik = 1;
+
+						int ikmaxlevel = 0;
+						s_model->IKRotateRagdoll(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+						CBone* curbone = s_model->GetBoneByID(s_curboneno);
+						CBone* parbone = curbone->GetParent();
+						if (parbone){
+							s_editmotionflag = parbone->GetBoneNo();
+						}
+						else{
+							s_editmotionflag = s_curboneno;
+						}
+						s_ikcnt++;
+
+						double tmpnext = 0.0;
+						double tmpdiff = 0.0;
+						int callfromik = 1;
+						OnUserFrameMove(callfromik, 0.0, 0.016f);
+						//OnFramePreviewRagdoll(s_onragdollik, &tmpnext, &tmpdiff);
+
+					}
+
 				}
 			}
 		}
@@ -2615,6 +2729,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		ReleaseCapture();
 		s_pickinfo.buttonflag = 0;
 		s_ikcnt = 0;
+		s_onragdollik = 0;
 
 		if( s_editmotionflag >= 0 ){
 			if( s_model ){
@@ -6792,7 +6907,7 @@ int StartBt(int flag, int btcntzero)
 			resetflag = 1;
 		}
 		else if (g_previewFlag == 5){
-			resetflag = 1;
+			//resetflag = 1;
 		}
 	}
 	else{
@@ -6835,6 +6950,7 @@ int StartBt(int flag, int btcntzero)
 		if ((g_previewFlag == 4) || (g_previewFlag == 5)){
 
 			if (g_previewFlag == 4){
+				s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
 				s_bpWorld->setGlobalERP(s_erp);// ERP
 				curmodel->SetMotionFrame(curframe);
 
@@ -6850,11 +6966,22 @@ int StartBt(int flag, int btcntzero)
 			}
 			else if (g_previewFlag == 5){
 				//ラグドールの時のjERPは0.0
-				s_bpWorld->setGlobalERP(0.0);// ERP
+				//s_bpWorld->setGlobalERP(0.0);// ERP
+				//s_bpWorld->setGlobalERP(0.001);// ERP
 				
 				//ラグドールの時のバネは決め打ち
-				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
-				
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+
+				curmodel->SetMotionFrame(curframe);
+
+
+
+				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
+				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
+				//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
+				s_model->SetAllMassData(-1, s_rgdindex, 0.5);
+
+
 				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
 			}
 
@@ -7498,6 +7625,11 @@ int PickSpAxis( POINT srcpos )
 {
 	int kind = 0;
 
+	if (g_previewFlag == 5){
+		return 0;
+	}
+
+
 	int starty = s_spaxis[0].dispcenter.y - 16;
 	int endy = starty + 32;
 
@@ -7539,6 +7671,11 @@ int PickSpCam(POINT srcpos)
 {
 	int kind = 0;
 
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+
 	int starty = s_spcam[SPR_CAM_I].dispcenter.y - 16;
 	int endy = starty + 32;
 
@@ -7579,6 +7716,11 @@ int PickSpCam(POINT srcpos)
 int PickSpRig(POINT srcpos)
 {
 	int pickflag = 0;
+
+	if (g_previewFlag == 5){
+		return 0;
+	}
+
 
 	if (s_sprig[0].sprite == 0){
 		return 0;
@@ -8928,6 +9070,8 @@ int OnFrameKeyboard()
 		g_shiftkey = false;
 	}
 
+
+	/*
 	if (g_controlkey == false){
 		if (g_keybuf[VK_ADD] & 0x80){
 			g_btcalccnt += 1.0;
@@ -8954,7 +9098,7 @@ int OnFrameKeyboard()
 			}
 		}
 	}
-
+	*/
 
 	if (g_ctrlshiftkeyformb == false){
 		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
@@ -9086,6 +9230,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 	UpdateBtSimu(*pnextframe, curmodel);
 
+	curmodel->PlusPlusBtCnt();
 	return 0;
 }
 
@@ -9099,16 +9244,16 @@ void UpdateBtSimu(double nextframe, CModel* curmodel)
 		firstflag = 1;
 	}
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->Motion2Bt(firstflag, s_coldisp, nextframe, &s_matW, &s_matVP);
+		curmodel->Motion2Bt(firstflag, s_coldisp, nextframe, &s_matW, &s_matVP, s_curboneno);
 	}
-	s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
+	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
 	s_bpWorld->clientMoveAndDisplay();
 	if (curmodel && curmodel->GetCurMotInfo()){
 		curmodel->SetBtMotion(0, nextframe, &s_matW, &s_matVP);
 	}
 }
 
-int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
+int OnFramePreviewRagdoll(int onikflag, double* pnextframe, double* pdifftime)
 {
 
 	int endflag = 0;
@@ -9118,13 +9263,19 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	}
 	CModel* curmodel = s_model;
 
-	curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+//ragdoll IK時には時間を進めない
+	//curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+
+	//RadgollIK時には時間０（とりあえず）
+	curmodel->SetMotionFrame(0.0);
+	*pnextframe = 0.0;//!!!!!!!!!!!!!!!!
+
 
 	//vector<MODELELEM>::iterator itrmodel;
 	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 	//	CModel* curmodel = itrmodel->modelptr;
 		if (curmodel && curmodel->GetCurMotInfo()){
-			curmodel->SetRagdollKinFlag();
+			curmodel->SetRagdollKinFlag(s_curboneno);
 		}
 	//}
 
@@ -9132,20 +9283,50 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	if (s_savepreviewFlag != g_previewFlag){
 		firstflag = 1;
 	}
-	if ((g_previewFlag == 5) && (firstflag == 1)){
-		curmodel->SetBtImpulse();
+	//if ((g_previewFlag == 5) && (firstflag == 1)){
+	//	curmodel->SetBtImpulse();
+	//}
+
+	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
+
+	//if (onikflag == 0){
+		s_bpWorld->setGlobalERP(0.001);// ERP
+		//s_bpWorld->setGlobalERP(1.0);// ERP
+	//}
+	//else{
+	//	s_bpWorld->setGlobalERP(0.0);// ERP
+	//}
+
+	//UpdateBtSimu(*pnextframe, curmodel);
+	
+
+	//if (curmodel && curmodel->GetCurMotInfo()){
+	//	curmodel->Motion2Bt(firstflag, s_coldisp, *pnextframe, &s_matW, &s_matVP, s_curboneno);
+	//}
+
+
+	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
+	s_bpWorld->clientMoveAndDisplay();
+	if (curmodel && curmodel->GetCurMotInfo()){
+		curmodel->SetBtMotion(1, *pnextframe, &s_matW, &s_matVP);
 	}
+	s_model->UpdateMatrix(&s_matW, &s_matVP);
 
-	s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
-
+	/*
 	s_bpWorld->clientMoveAndDisplay();
 
 	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 	//	CModel* curmodel = itrmodel->modelptr;
 		if (curmodel && curmodel->GetCurMotInfo()){
 			curmodel->SetBtMotion(1, *pnextframe, &s_matW, &s_matVP);
+
+			//RagdollIK時のボーン選択対策
+			s_model->UpdateMatrix(&s_matW, &s_matVP);
 		}
 	//}
+	*/
+
+	s_model->PlusPlusBtCnt();
 
 	return 0;
 }
@@ -9872,7 +10053,7 @@ int OnFrameInitBtWorld()
 		//	CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
 		//}
 
-		curmodel->PlusPlusBtCnt();
+		//curmodel->PlusPlusBtCnt();
 
 	//}
 	return 0;
@@ -9964,7 +10145,7 @@ int CreateUtDialog()
 	//iY += addh;
 
 
-	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, 450, 16, false, 0U, false, &s_CamTargetCheckBox);
+	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
 
 
 	//iY += addh;
@@ -11091,14 +11272,15 @@ int OnRenderGround()
 int OnRenderBoneMark()
 {
 	if (s_allmodelbone == 0){
-		if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+		if (g_previewFlag != 4){
+		//if ((g_previewFlag != 4) && (g_previewFlag != 5)){
 			if (s_model && s_model->GetModelDisp()){
-				if (s_ikkind >= 3){
+				//if (s_ikkind >= 3){
 					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_coldisp, s_curboneno);
-				}
-				else{
-					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
-				}
+				//}
+				//else{
+				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+				//}
 			}
 		}
 	}

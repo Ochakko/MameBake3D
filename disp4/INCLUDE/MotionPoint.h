@@ -35,8 +35,6 @@ public:
 
 public:
 	//accesser
-	int GetBtFlag(){ return m_setbtflag; };
-	void SetBtFlag( int srcflag ){ m_setbtflag = srcflag; };
 
 	double GetFrame(){ return m_frame; };
 	void SetFrame( double srcframe ){ m_frame = srcframe; };
@@ -59,15 +57,16 @@ public:
 	void SetWorldMat(D3DXMATRIX srcmat){ SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
 	D3DXMATRIX GetInvWorldMat(){ D3DXMATRIX invmat; D3DXMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
-	D3DXMATRIX GetBefBtMat(){ return m_befbtmat; };
-	void SetBefBtMat(D3DXMATRIX srcmat){ m_befbtmat = srcmat; };
-	D3DXMATRIX GetBtMat(){ return m_btmat; };
-	void SetBtMat(D3DXMATRIX srcmat){ 
-		if (GetBtFlag() == 0){ 
-			SetBefBtMat(m_btmat); 
-		}
-		m_btmat = srcmat; 
-	};
+
+//btmat, btflagはCBoneに移動
+	//D3DXMATRIX GetBefBtMat();
+	//void SetBefBtMat(D3DXMATRIX srcmat);
+	//D3DXMATRIX GetBtMat();
+	//void SetBtMat(D3DXMATRIX srcmat);
+	//int GetBtFlag();
+	//void SetBtFlag(int srcflag);
+
+
 	D3DXMATRIX GetBefWorldMat(){ return m_befworldmat; };
 	void SetBefWorldMat( D3DXMATRIX srcmat ){ m_befworldmat = srcmat; };
 
@@ -110,7 +109,6 @@ private:
 
 private:
 	int m_undovalidflag;
-	int m_setbtflag;
 	double m_frame;
 	int m_localmatflag;
 	//D3DXVECTOR3 m_eul;
@@ -121,14 +119,17 @@ private:
 	D3DXVECTOR3 m_localeul;
 
 	D3DXMATRIX m_worldmat;//ワールド変換と親の影響を受けたマトリックス
-	D3DXMATRIX m_btmat;
 
 	D3DXMATRIX m_befworldmat;
 	D3DXMATRIX m_befeditmat;
-	D3DXMATRIX m_befbtmat;
 
 	D3DXMATRIX m_absmat;
 
+
+	//btmatはCBoneに移動
+	//D3DXMATRIX m_btmat;
+	//D3DXMATRIX m_befbtmat;
+	//int m_setbtflag;
 
 
 	CMotionPoint* m_prev;

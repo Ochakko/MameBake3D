@@ -12,6 +12,7 @@
 
 #include <BtObject.h>
 
+#include <Model.h>
 #include <Bone.h>
 #include <quaternion.h>
 #include <RigidElem.h>
@@ -106,7 +107,8 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 {
 	_ASSERT( shape );
 
-	bool isDynamic = (curre->GetMass() != 0.f);
+	//bool isDynamic = (curre->GetMass() != 0.f);
+	bool isDynamic = true;
 
 	btVector3 localInertia(0,0,0);
 	//btVector3 localInertia(0, -m_boneleng * 0.5f, 0);
@@ -171,17 +173,20 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	h = max(0.0001f, curre->GetCylileng());// *0.70f;//!!!!!!!!!!!!!
 	z = max(0.0001f, curre->GetBoxz());
 
+	double lengrate = 0.95;
+
+
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
-		m_colshape = new btCapsuleShape( btScalar( r ), btScalar( h ) );
+		m_colshape = new btCapsuleShape(btScalar(r), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_CONE_INDEX ){
-		m_colshape = new btConeShape( btScalar( r ), btScalar( h ) );
+		m_colshape = new btConeShape(btScalar(r), btScalar(h * lengrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
-		m_colshape = new btSphereShape( btScalar( r ) );
+		m_colshape = new btSphereShape(btScalar(r * lengrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_BOX_INDEX ){
-		m_colshape = new btBoxShape( btVector3( r, h, z ) );
+		m_colshape = new btBoxShape(btVector3(r, h * lengrate, z));
 		_ASSERT( m_colshape );
 	}else{
 		_ASSERT( 0 );
@@ -588,7 +593,7 @@ int CBtObject::SetEquilibriumPoint( int lflag, int aflag )
 	return 0;
 }
 
-int CBtObject::Motion2Bt()
+int CBtObject::Motion2Bt(CModel* srcmodel)
 {
 	if( m_topflag == 1 ){
 		return 0;
@@ -613,7 +618,7 @@ int CBtObject::Motion2Bt()
 	if( curre ){
 		D3DXMATRIX newrotmat;
 		D3DXVECTOR3 newrigidpos;
-		GetBone()->CalcNewBtMat(curre, GetEndBone(), &newrotmat, &newrigidpos);
+		GetBone()->CalcNewBtMat(srcmodel, curre, GetEndBone(), &newrotmat, &newrigidpos);
 
 		CQuaternion tmpq;
 		tmpq.RotationMatrix(newrotmat);
@@ -683,13 +688,13 @@ int CBtObject::SetBtMotion()
 	D3DXMATRIX diffxworld;
 	diffxworld = invxworld * newxworld;
 
-	CMotionPoint curmp;
-	curmp = m_bone->GetCurMp();
-	curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	//CMotionPoint curmp;
+	//curmp = m_bone->GetCurMp();
+	m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 	//curmp.SetBtMat(newxworld);
 	//m_bone->GetCurMp().SetBtMat(m_bone->GetStartMat2() * diffxworld);
-	curmp.SetBtFlag(1);
-	m_bone->SetCurMp(curmp);
+	m_bone->SetBtFlag(1);
+	//m_bone->SetCurMp(curmp);
 
 
 	/*
@@ -726,6 +731,68 @@ int CBtObject::SetBtMotion()
 	curmp.SetBtFlag( 1 );
 	m_bone->SetCurMp( curmp );
 	*/
+
+	return 0;
+}
+
+int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
+{
+	if (m_topflag == 1){
+		return 0;
+	}
+	if (!m_rigidbody){
+		return 0;
+	}
+	if (!m_rigidbody->getMotionState()){
+		_ASSERT(0);
+		return 0;
+	}
+
+	btTransform worldtra;
+	m_rigidbody->getMotionState()->getWorldTransform(worldtra);
+	btMatrix3x3 worldmat = worldtra.getBasis();
+	btVector3 worldpos = worldtra.getOrigin();
+	btVector3 tmpcol[3];//行列のカラム表現。
+	int colno;
+	for (colno = 0; colno < 3; colno++){
+		tmpcol[colno] = worldmat.getColumn(colno);
+		//		tmpcol[colno] = worldmat.getRow( colno );
+	}
+
+	D3DXMATRIX newxworld;
+	D3DXMatrixIdentity(&newxworld);
+	newxworld._11 = tmpcol[0].x();
+	newxworld._12 = tmpcol[0].y();
+	newxworld._13 = tmpcol[0].z();
+
+	newxworld._21 = tmpcol[1].x();
+	newxworld._22 = tmpcol[1].y();
+	newxworld._23 = tmpcol[1].z();
+
+	newxworld._31 = tmpcol[2].x();
+	newxworld._32 = tmpcol[2].y();
+	newxworld._33 = tmpcol[2].z();
+
+	newxworld._41 = worldpos.x();
+	newxworld._42 = worldpos.y();
+	newxworld._43 = worldpos.z();
+
+	D3DXMATRIX invxworld;
+	D3DXMatrixInverse(&invxworld, NULL, &m_xworld);
+
+	D3DXMATRIX diffxworld;
+	diffxworld = invxworld * newxworld;
+
+	//CMotionPoint curmp;
+	//curmp = m_bone->GetCurMp();
+	//curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	//curmp.SetBtFlag(1);
+	//m_bone->SetCurMp(curmp);
+
+	D3DXMATRIX newcapsulemat;
+	newcapsulemat = srcre->GetFirstcapsulemat() * diffxworld;
+	srcre->SetCapsulemat(newcapsulemat);
+
 
 	return 0;
 }

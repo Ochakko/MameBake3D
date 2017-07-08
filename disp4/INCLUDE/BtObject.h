@@ -13,6 +13,7 @@
 #include "btBulletDynamicsCommon.h"
 #include "LinearMath/btIDebugDraw.h"
 
+class CModel;
 class CBone;
 class CRigidElem;
 
@@ -68,6 +69,9 @@ public:
  */
 	int SetBtMotion();
 
+	int SetCapsuleBtMotion(CRigidElem* srcre);
+
+
 
 /**
  * @fn
@@ -76,7 +80,7 @@ public:
  * @return ¬Œ÷‚µ‚½‚ç‚OB
  * @detail Motion2Bt‚ğŒÄ‚ñ‚Å‚©‚çSetBtMotion‚ğŒÄ‚ÔB
  */
-	int Motion2Bt();
+	int Motion2Bt(CModel* srcmodel);
 
 /**
  * @fn

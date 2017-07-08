@@ -43,6 +43,8 @@ public:
 	int SetRange( std::list<KeyInfo> srcki, double srcframe );
 
 
+	int SetRangeOne(double srcframe);
+
 /**
  * @fn
  * GetRange

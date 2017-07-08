@@ -21,7 +21,6 @@ int CMotionPoint::InitParams()
 {
 	m_localmatflag = 0;
 	m_undovalidflag = 0;
-	m_setbtflag = 0;
 	m_frame = 0.0;
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 	m_tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
@@ -30,11 +29,9 @@ int CMotionPoint::InitParams()
 	m_localeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	D3DXMatrixIdentity( &m_worldmat );
-	D3DXMatrixIdentity( &m_btmat );
 	D3DXMatrixIdentity( &m_absmat );
 	D3DXMatrixIdentity( &m_befworldmat );
 	D3DXMatrixIdentity( &m_befeditmat );
-	D3DXMatrixIdentity(&m_befbtmat);
 
 	m_prev = 0;
 	m_next = 0;
@@ -214,8 +211,6 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	m_localeul = srcmp->m_localeul;
 	m_absmat = srcmp->m_absmat;
 	m_localmatflag = srcmp->m_localmatflag;
-	m_btmat = srcmp->m_btmat;
-	m_setbtflag = srcmp->m_setbtflag;
 
 	return 0;
 }
@@ -249,7 +244,6 @@ int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate )
 CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 {
 	m_localmatflag = mp.m_localmatflag;
-	m_setbtflag = mp.m_setbtflag;
 	m_frame = mp.m_frame;
 	//m_eul = mp.m_eul;
 	m_tra = mp.m_tra;
@@ -260,9 +254,6 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	//SetWorldMat(mp.m_worldmat);
 	m_worldmat = mp.m_worldmat;
 	m_befworldmat = mp.m_befworldmat;//!!!!!!!!!!
-
-	m_btmat = mp.m_btmat;
-	m_befbtmat = mp.m_befbtmat;//!!!!!!!!!
 	
 
 	m_prev = mp.m_prev;

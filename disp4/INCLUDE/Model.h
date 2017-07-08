@@ -136,6 +136,10 @@ public:
 	int RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno, int skiptopbonemark = 0 );
 
 
+	void RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto, CModel* cpslptr[COL_MAX]);
+
+	void RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr);
+
 /**
  * @fn
  * GetModelBound
@@ -319,6 +323,9 @@ public:
  * @detail MameBake3Dにおいては、マニピュレータの中央の黄色をドラッグした時に呼ばれる。
  */
 	int IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel );
+
+	int IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
+
 
 /**
  * @fn
@@ -518,8 +525,8 @@ public:
 	int EnableAllRigidElem(int srcrgdindex);
 	int DisableAllRigidElem(int srcrgdindex);
 
-	int Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP );
-	int SetRagdollKinFlag();
+	int Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
+	int SetRagdollKinFlag(int selectbone);
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );
@@ -642,7 +649,7 @@ private:
 	void SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag );
 	void Motion2BtReq( CBtObject* srcbto );
 	void SetBtGravityReq( CBtObject* srcbto );
-	void SetRagdollKinFlagReq( CBtObject* srcbto );
+	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone );
 	void CreateBtConnectReq( CBone* curbone );
 	void SetColiIDReq( CBone* srcbone, CRigidElem* srcre );
 	void EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex);

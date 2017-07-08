@@ -52,6 +52,17 @@ int CEditRange::Clear()
 	InitParams();
 	return 0;
 }
+
+int CEditRange::SetRangeOne(double srcframe)
+{
+	m_ki.clear();
+
+	m_startframe = (double)((int)(srcframe + 0.49));
+	m_endframe = (double)((int)(srcframe + 0.49));
+	return 0;
+}
+
+
 int CEditRange::SetRange( std::list<KeyInfo> srcki, double srcframe )
 {
 	double minframe = 1e10;

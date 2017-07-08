@@ -24,6 +24,10 @@ class CBone
 {
 public:
 
+	D3DXVECTOR3 m_btparpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	D3DXVECTOR3 m_btchilpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	D3DXMATRIX m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
+
 /**
  * @fn
  * CBone
@@ -354,7 +358,7 @@ public:
 	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
 	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
-	int CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
+	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
 
 private:
 
@@ -486,10 +490,7 @@ public: //accesser
 	const char* GetEngBoneName(){ return (const char*)m_engbonename; };
 	void SetEngBoneName( char* srcname ){ strcpy_s( m_engbonename, 256, srcname ); };
 
-	D3DXVECTOR3 GetChildWorld(){ 
-		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
-		return m_childworld; 
-	};
+	D3DXVECTOR3 GetChildWorld();
 	void SetChildWorld( D3DXVECTOR3 srcvec ){ m_childworld = srcvec; };
 
 	D3DXVECTOR3 GetChildScreen(){ return m_childscreen; };
@@ -798,6 +799,21 @@ public: //accesser
 		return m_btdiffmat;
 	};
 
+
+	D3DXMATRIX GetBefBtMat(){ return m_befbtmat; };
+	void SetBefBtMat(D3DXMATRIX srcmat){ m_befbtmat = srcmat; };
+	D3DXMATRIX GetBtMat(){ return m_btmat; };
+	void SetBtMat(D3DXMATRIX srcmat){
+		//if (GetBtFlag() == 0){
+			SetBefBtMat(m_btmat);
+		//}
+		m_btmat = srcmat;
+	};
+
+	int GetBtFlag(){ return m_setbtflag; };
+	void SetBtFlag(int srcflag){ m_setbtflag = srcflag; };
+
+
 private:
 	int m_type;
 	int m_selectflag;
@@ -846,9 +862,10 @@ private:
 	CQuaternion m_tmpq;
 	D3DXMATRIX m_tmpsymmat;
 
-	D3DXVECTOR3 m_btparpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
-	D3DXVECTOR3 m_btchilpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
-	D3DXMATRIX m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
+
+	D3DXMATRIX m_btmat;
+	D3DXMATRIX m_befbtmat;
+	int m_setbtflag;
 
 
 	D3DXVECTOR3 m_firstframebonepos;

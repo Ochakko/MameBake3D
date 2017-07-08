@@ -37,6 +37,7 @@ extern int g_boneaxis;
 extern bool g_limitdegflag;
 extern bool g_wmatDirectSetFlag;
 extern bool g_underRetargetFlag;
+extern int g_previewFlag;
 
 CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
 {
@@ -66,6 +67,11 @@ CBone::~CBone()
 int CBone::InitParams()
 {
 	D3DXMatrixIdentity(&m_tmpsymmat);
+
+	D3DXMatrixIdentity(&m_btmat);
+	D3DXMatrixIdentity(&m_befbtmat);
+	m_setbtflag = 0;
+
 
 	m_btparpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	m_btchilpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -220,19 +226,29 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 {
 	int existflag = 0;
 
-	if( srcframe >= 0.0 ){
-		CallF( CalcFBXMotion( srcmotid, srcframe, &m_curmp, &existflag ), return 1 );
-		D3DXMATRIX tmpmat = m_curmp.GetWorldMat();// **wmat;
-		m_curmp.SetWorldMat( tmpmat ); 
+	if (g_previewFlag != 5){
 
-		D3DXVECTOR3 jpos = GetJointFPos();
-		D3DXVec3TransformCoord( &m_childworld, &jpos, &m_curmp.GetWorldMat() );
-		D3DXVec3TransformCoord( &m_childscreen, &m_childworld, vpmat );
-	}else{
-		m_curmp.InitParams();
-		m_curmp.SetWorldMat( *wmat );
+
+		if (srcframe >= 0.0){
+			CallF(CalcFBXMotion(srcmotid, srcframe, &m_curmp, &existflag), return 1);
+			D3DXMATRIX tmpmat = m_curmp.GetWorldMat();// **wmat;
+			m_curmp.SetWorldMat(tmpmat);
+
+			D3DXVECTOR3 jpos = GetJointFPos();
+			D3DXVec3TransformCoord(&m_childworld, &jpos, &m_curmp.GetWorldMat());
+			D3DXVec3TransformCoord(&m_childscreen, &m_childworld, vpmat);
+		}
+		else{
+			m_curmp.InitParams();
+			m_curmp.SetWorldMat(*wmat);
+		}
 	}
-
+	else{
+		//RagdollIK時のボーン選択対策
+		D3DXVECTOR3 jpos = GetJointFPos();
+		D3DXVec3TransformCoord(&m_childworld, &jpos, &(GetBtMat()));
+		D3DXVec3TransformCoord(&m_childscreen, &m_childworld, vpmat);
+	}
 	return 0;
 }
 
@@ -2702,7 +2718,7 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 }
 */
 
-int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
+int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos)
 {
 	D3DXMatrixIdentity(dstmat);
 	*dstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -2726,6 +2742,15 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 	firstworld = GetStartMat2();
 	D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
 
+	D3DXMATRIX befbtmat;
+	if (GetBtFlag() == 0){
+		//再起処理中のまだ未セットの状態の場合
+		befbtmat = GetBtMat();
+	}
+	else{
+		//再起処理中のすでにセットした状態の場合
+		befbtmat = GetBefBtMat();
+	}
 
 	//current
 	if (GetBtKinFlag() == 1){
@@ -2740,7 +2765,7 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 	}
 	else{
 		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
-		if (GetCurMp().GetBtFlag() == 0){
+		if (srcmodel->GetBtCnt() == 0){
 			diffworld = invfirstworld * GetCurMp().GetWorldMat();
 			tramat = GetCurMp().GetWorldMat();
 
@@ -2767,8 +2792,6 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 				D3DXMatrixIdentity(&diffmvmat);
 				D3DXMatrixTranslation(&diffmvmat, diffmv.x, diffmv.y, diffmv.z);
 
-				D3DXMATRIX befbtmat;
-				befbtmat = GetCurMp().GetBtMat();
 				D3DXMatrixInverse(&invbefworld, NULL, &befworld);
 				D3DXMATRIX newtramat = befbtmat * diffmvmat;
 
@@ -2779,8 +2802,8 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 				D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &befbtmat);
 			}
 			else{
-				diffworld = invfirstworld * GetCurMp().GetBtMat();
-				tramat = GetCurMp().GetBtMat();
+				diffworld = invfirstworld * befbtmat;
+				tramat = befbtmat;
 
 				jointfpos = GetJointFPos();
 				D3DXVec3TransformCoord(&m_btparpos, &jointfpos, &tramat);
@@ -2799,3 +2822,13 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, 
 	return 0;
 }
 
+
+D3DXVECTOR3 CBone::GetChildWorld(){
+	if (g_previewFlag != 5){
+		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
+	}
+	else{
+		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &(GetBtMat()));
+	}
+	return m_childworld;
+};
