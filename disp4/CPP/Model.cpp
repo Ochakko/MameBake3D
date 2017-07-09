@@ -4415,9 +4415,10 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 		return 0;
 	}
 
+	//`角度、位置
 	srcbto->EnableSpring(true, true);
 	//srcbto->EnableSpring(false, true);
-	//curbto->EnableSpring(true, false);
+	//srcbto->EnableSpring(true, false);
 
 	int lflag, aflag;
 	aflag = 1;
@@ -5348,6 +5349,9 @@ int CModel::SetRagdollKinFlag(int selectbone)
 
 	SetRagdollKinFlagReq( m_topbt, selectbone );
 
+	
+
+
 	return 0;
 }
 void CModel::SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone )
@@ -5955,7 +5959,6 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 						//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 						//setbto->GetRigidBody()->setDeactivationTime(30000.0);
 					}
-
 
 					//IKボーンはKINEMATICだから。
 					parbone->GetCurMp().SetWorldMat(newbtmat);

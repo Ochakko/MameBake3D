@@ -173,20 +173,22 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	h = max(0.0001f, curre->GetCylileng());// *0.70f;//!!!!!!!!!!!!!
 	z = max(0.0001f, curre->GetBoxz());
 
-	double lengrate = 0.95;
+	//double lengrate = 1.0;
+	//double lengrate = 0.95;
+	double lengrate = 0.20;
 
 
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
-		m_colshape = new btCapsuleShape(btScalar(r), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		m_colshape = new btCapsuleShape(btScalar(r * lengrate), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_CONE_INDEX ){
-		m_colshape = new btConeShape(btScalar(r), btScalar(h * lengrate));
+		m_colshape = new btConeShape(btScalar(r * lengrate), btScalar(h * lengrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
 		m_colshape = new btSphereShape(btScalar(r * lengrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_BOX_INDEX ){
-		m_colshape = new btBoxShape(btVector3(r, h * lengrate, z));
+		m_colshape = new btBoxShape(btVector3(r * lengrate, h * lengrate, z));
 		_ASSERT( m_colshape );
 	}else{
 		_ASSERT( 0 );
@@ -521,8 +523,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
 
 				//m_btWorld->addConstraint(dofC, true);
-				m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
-				//m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
+				//m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
+				m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
 				//m_dofC = dofC;
 
 				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
@@ -579,7 +581,7 @@ int CBtObject::SetEquilibriumPoint( int lflag, int aflag )
 
 			int dofid;
 			if (lflag == 1){
-				for (dofid = 0; dofid < 3; dofid++){//Šp“x‚Ì‚Ý
+				for (dofid = 0; dofid < 3; dofid++){//ˆÊ’u‚Ì‚Ý
 					constptr->setEquilibriumPoint(dofid);
 				}
 			}

@@ -684,6 +684,9 @@ int g_applyrate = 50;
 #define IDC_STATIC_ERP				52
 #define IDC_ERP						53
 
+#define IDC_GZERO_IK				54
+
+
 //--------------------------------------------------------------------------------------
 // Forward declarations 
 //--------------------------------------------------------------------------------------
@@ -1913,7 +1916,7 @@ void RenderText( double fTime )
     //txtHelper.DrawTextLine( DXUTGetDeviceStats() );
 
     txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.1f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
+    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -2848,6 +2851,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             }
             break;
 		*/
+		case IDC_GZERO_IK:
+			StartBt(1, 1);
+			break;
+
         case IDC_LIGHT_SCALE:
 			RollbackCurBoneNo();
 			g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
@@ -2898,9 +2905,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
 		case IDC_ERP:
 			RollbackCurBoneNo();
-			s_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.10);
+			s_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.0002);
 
-			swprintf_s(sz, 100, L"BT ERP: %0.2f", s_erp);
+			swprintf_s(sz, 100, L"BT ERP: %0.5f", s_erp);
 			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
 			break;
 
@@ -6904,22 +6911,29 @@ int StartBt(int flag, int btcntzero)
 				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
 			}
 			else if (g_previewFlag == 5){
-				//ラグドールの時のjERPは0.0
+
+			//ラグドールの時のERPは決め打ち
 				//s_bpWorld->setGlobalERP(0.0);// ERP
+				//s_bpWorld->setGlobalERP(1.0);// ERP
+				//s_bpWorld->setGlobalERP(0.2);// ERP
 				//s_bpWorld->setGlobalERP(0.001);// ERP
-				
-				//ラグドールの時のバネは決め打ち
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+				//s_bpWorld->setGlobalERP(1.0e-8);// ERP
+				s_bpWorld->setGlobalERP(0.00020);// ERP
+
 
 				curmodel->SetMotionFrame(curframe);
 
 
-
-				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
+			//ラグドールの時のバネは決め打ち
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 30.0);
+				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
+				
 				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 				//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
 				s_model->SetAllMassData(-1, s_rgdindex, 0.5);
-
 
 				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
 			}
@@ -9245,7 +9259,8 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	//	curmodel->SetBtImpulse();
 	//}
 
-	s_bpWorld->setGlobalERP(0.001);// ERP
+	//s_bpWorld->setGlobalERP(0.001);// ERP
+	//s_bpWorld->setGlobalERP(0.1);// ERP
 	//s_bpWorld->setGlobalERP(1.0);// ERP
 
 	s_bpWorld->clientMoveAndDisplay();
@@ -10136,9 +10151,9 @@ int CreateUtDialog()
 	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
 
-	swprintf_s(sz, 100, L"BT ERP: %0.2f", s_erp);
+	swprintf_s(sz, 100, L"BT ERP: %0.5f", s_erp);
 	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 10, (int)(s_erp * 10.0 + 0.4));
+	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(s_erp * 5000.0 + 0.4));
 
 	
 
@@ -10149,6 +10164,9 @@ int CreateUtDialog()
 	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
 	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+
+	iY += 25;
+	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero IK start", startx, iY += addh, 100, ctrlh);
 
 
 	return 0;
