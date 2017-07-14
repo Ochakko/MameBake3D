@@ -6876,7 +6876,6 @@ int StartBt(int flag, int btcntzero)
 			else if (g_previewFlag == 5){
 				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 
-
 			//ラグドールの時のERPは決め打ち
 				//s_bpWorld->setGlobalERP(0.0);// ERP
 				//s_bpWorld->setGlobalERP(1.0);// ERP
@@ -6894,20 +6893,29 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 30.0);
+<<<<<<< HEAD
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 400.0, 10.0);
 				
+=======
+				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
+				
+				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
+>>>>>>> 3b7e137b9dc06637a77def3dbb1e21acebabef4d
 				//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
 				//s_model->SetAllMassData(-1, s_rgdindex, 0.5);
 				//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
+<<<<<<< HEAD
 				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 				s_model->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
 
+=======
+>>>>>>> 3b7e137b9dc06637a77def3dbb1e21acebabef4d
 				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
 			}
 

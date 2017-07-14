@@ -179,6 +179,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 	//double lengrate = 1.0;
 	//double lengrate = 0.95;
+
 	double lengrate;
 
 	if (g_previewFlag == 5){
