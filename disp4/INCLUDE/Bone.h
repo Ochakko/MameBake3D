@@ -156,13 +156,12 @@ public:
  * @fn
  * CalcRigidElemParams
  * @breaf 剛体表示用のデータを剛体のパラメータに従ってスケールするための変換行列を求めてスケールする。
- * @param (CModel* cpslptr[COL_MAX]) INOUT　剛体の基本形状。カプセル、ボックス、球、コーンの種類がある。
  * @param (CBone* chilbone) IN　剛体を指定するための子供ボーン。
  * @param (int setstartflag) IN　剛体シミュレーション開始時の呼び出し時に１をセットする。
  * @return 成功したら０。
  * @detail 剛体をボーンの位置に表示するために、剛体表示用の形状をスケールするために呼ぶ。剛体はボーンの子供ジョイントと１対１で対応するため、指定にchilboneを使う。
  */
-	int CalcRigidElemParams( CModel* cpslptr[COL_MAX], CBone* chilbone, int setstartflag );
+	int CalcRigidElemParams( CBone* chilbone, int setstartflag );
 
 /**
  * @fn
@@ -359,6 +358,8 @@ public:
 	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
+
+	int CBone::LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev);
 
 private:
 
@@ -813,8 +814,13 @@ public: //accesser
 	int GetBtFlag(){ return m_setbtflag; };
 	void SetBtFlag(int srcflag){ m_setbtflag = srcflag; };
 
+	CModel* GetCurColDisp(CBone* childbone);
+	void SetFirstCalcRigid(bool srcflag){
+		m_firstcalcrigid = srcflag;
+	};
 
 private:
+	bool m_firstcalcrigid;
 	int m_type;
 	int m_selectflag;
 	int m_bonecnt;
@@ -895,6 +901,7 @@ private:
 	//最初のintはmotid。次のmapはframenoと更新フラグ。更新フラグは読み込み時のマークは０、それ以後の編集マークは１にする予定。色を変えるかも。
 	std::map<int, std::map<double,int>> m_motmark;
 
+	CModel* m_coldisp[COL_MAX];
 
 	CModel* m_parmodel;
 

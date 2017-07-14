@@ -33,6 +33,7 @@ using namespace OrgWinGUI;
 
 
 map<CModel*,int> g_bonecntmap;
+extern WCHAR g_basedir[MAX_PATH];
 extern int g_boneaxis;
 extern bool g_limitdegflag;
 extern bool g_wmatDirectSetFlag;
@@ -56,6 +57,7 @@ CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
 	m_boneno = curno;
 	g_bonecntmap[ m_parmodel ] = m_boneno + 1;
 
+	m_firstcalcrigid = true;
 
 }
 
@@ -66,6 +68,8 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
+
 	D3DXMatrixIdentity(&m_tmpsymmat);
 
 	D3DXMatrixIdentity(&m_btmat);
@@ -161,6 +165,17 @@ void CBone::InitAngleLimit()
 
 int CBone::DestroyObjs()
 {
+	int colindex;
+	for (colindex = 0; colindex < COL_MAX; colindex++){
+		CModel* curcol = m_coldisp[colindex];
+		if (curcol){
+			delete curcol;
+			m_coldisp[colindex] = 0;
+		}
+	}
+
+
+
 	m_motmark.clear();
 
 	map<int, CMotionPoint*>::iterator itrmp;
@@ -657,7 +672,8 @@ int CBone::CalcAxisMatY( CBone* chilbone, D3DXMATRIX* dstmat )
 	D3DXVECTOR3 chilpos;
 
 	D3DXVec3TransformCoord(&curpos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-	D3DXVec3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
+	//D3DXVec3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
+	D3DXVec3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
 
 	D3DXVECTOR3 diff = curpos - chilpos;
 	float leng;
@@ -737,8 +753,9 @@ int CBone::CalcAxisMatY( CBone* chilbone, D3DXMATRIX* dstmat )
 	return 0;
 }
 
-int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int setstartflag )
+int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 {
+
 
 	CRigidElem* curre = m_rigidelem[ chilbone ];
 	if( !curre ){
@@ -749,7 +766,7 @@ int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int se
 	_ASSERT( colptr );
 	_ASSERT( chilbone );
 
-	CModel* curcoldisp = colptr[curre->GetColtype()];
+	CModel* curcoldisp = m_coldisp[curre->GetColtype()];
 	_ASSERT( curcoldisp );
 
 
@@ -757,11 +774,27 @@ int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int se
 	D3DXMatrixIdentity( &bmmat );
 
 	D3DXVECTOR3 aftbonepos;
-	D3DXVec3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-
 	D3DXVECTOR3 aftchilpos;
-	D3DXVec3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
-
+	if (g_previewFlag != 5){
+		D3DXVec3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
+		D3DXVec3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+	}
+	else{
+		if (setstartflag == 1){
+			D3DXVec3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
+			D3DXVec3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+		}
+		else{
+			if (GetParent()){
+				D3DXVec3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
+				D3DXVec3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(GetBtMat()));
+			}
+			else{
+				D3DXVec3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
+				D3DXVec3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetBtMat()));
+			}
+		}
+	}
 	CalcAxisMatZ( &aftbonepos, &aftchilpos );
 	CalcAxisMatY( chilbone, &bmmat );			
 	D3DXVECTOR3 diffvec = aftchilpos - aftbonepos;
@@ -771,48 +804,56 @@ int CBone::CalcRigidElemParams( CModel* colptr[COL_MAX], CBone* chilbone, int se
 	float sphr = curre->GetSphr();
 	float boxz = curre->GetBoxz();
 
-	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
-		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
-			CMQOObject* curobj = itrobj->second;
-			_ASSERT( curobj );
-			if( strcmp( curobj->GetName(), "cylinder" ) == 0 ){
-				CallF( curobj->ScaleBtCapsule( curre, diffleng, 0, &cylileng ), return 1 );
-			}else if( strcmp( curobj->GetName(), "sph_ue" ) == 0 ){
-				CallF( curobj->ScaleBtCapsule( curre, diffleng, 1, &sphr ), return 1 );
-			}else{
-				CallF( curobj->ScaleBtCapsule( curre, diffleng, 2, 0 ), return 1 );
+	if ((setstartflag == 1) || (m_firstcalcrigid == true)){
+		if (curre->GetColtype() == COL_CAPSULE_INDEX){
+			map<int, CMQOObject*>::iterator itrobj;
+			for (itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++){
+				CMQOObject* curobj = itrobj->second;
+				_ASSERT(curobj);
+				if (strcmp(curobj->GetName(), "cylinder") == 0){
+					CallF(curobj->ScaleBtCapsule(curre, diffleng, 0, &cylileng), return 1);
+				}
+				else if (strcmp(curobj->GetName(), "sph_ue") == 0){
+					CallF(curobj->ScaleBtCapsule(curre, diffleng, 1, &sphr), return 1);
+				}
+				else{
+					CallF(curobj->ScaleBtCapsule(curre, diffleng, 2, 0), return 1);
+				}
 			}
 		}
-	}else if( curre->GetColtype() == COL_CONE_INDEX ){
-		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
-			CMQOObject* curobj = itrobj->second;
-			_ASSERT( curobj );
-			CallF( curobj->ScaleBtCone( curre, diffleng, &cylileng, &sphr ), return 1 );
+		else if (curre->GetColtype() == COL_CONE_INDEX){
+			map<int, CMQOObject*>::iterator itrobj;
+			for (itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++){
+				CMQOObject* curobj = itrobj->second;
+				_ASSERT(curobj);
+				CallF(curobj->ScaleBtCone(curre, diffleng, &cylileng, &sphr), return 1);
+			}
 		}
-	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
-		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
-			CMQOObject* curobj = itrobj->second;
-			_ASSERT( curobj );
-			CallF( curobj->ScaleBtSphere( curre, diffleng, &cylileng, &sphr ), return 1 );
+		else if (curre->GetColtype() == COL_SPHERE_INDEX){
+			map<int, CMQOObject*>::iterator itrobj;
+			for (itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++){
+				CMQOObject* curobj = itrobj->second;
+				_ASSERT(curobj);
+				CallF(curobj->ScaleBtSphere(curre, diffleng, &cylileng, &sphr), return 1);
+			}
 		}
-	}else if( curre->GetColtype() == COL_BOX_INDEX ){
-		map<int,CMQOObject*>::iterator itrobj;
-		for( itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++ ){
-			CMQOObject* curobj = itrobj->second;
-			_ASSERT( curobj );
-			CallF( curobj->ScaleBtBox( curre, diffleng, &cylileng, &sphr, &boxz ), return 1 );
+		else if (curre->GetColtype() == COL_BOX_INDEX){
+			map<int, CMQOObject*>::iterator itrobj;
+			for (itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++){
+				CMQOObject* curobj = itrobj->second;
+				_ASSERT(curobj);
+				CallF(curobj->ScaleBtBox(curre, diffleng, &cylileng, &sphr, &boxz), return 1);
 
-DbgOut( L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\n", cylileng, sphr, boxz );
+				DbgOut(L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\n", cylileng, sphr, boxz);
 
+			}
 		}
-	}else{
-		_ASSERT( 0 );
-		return 1;
+		else{
+			_ASSERT(0);
+			return 1;
+		}
 	}
-			
+
 	//bmmat._41 = ( aftbonepos.x + aftchilpos.x ) * 0.5f;
 	//bmmat._42 = ( aftbonepos.y + aftchilpos.y ) * 0.5f;
 	//bmmat._43 = ( aftbonepos.z + aftchilpos.z ) * 0.5f;
@@ -830,6 +871,9 @@ DbgOut( L"bonecpp : calcrigidelemparams : BOX : cylileng %f, sphr %f, boxz %f\r\
 	if( setstartflag == 1 ){
 		curre->SetFirstcapsulemat( curre->GetCapsulemat() );
 	}
+
+
+	m_firstcalcrigid = false;
 
 	return 0;
 }
@@ -2799,7 +2843,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3
 
 				m_btparpos = curparpos;
 				jointfpos = chilbone->GetJointFPos();
-				D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &befbtmat);
+				//D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &befbtmat);
+				D3DXVec3TransformCoord(&m_btchilpos, &jointfpos, &newtramat);
 			}
 			else{
 				diffworld = invfirstworld * befbtmat;
@@ -2832,3 +2877,78 @@ D3DXVECTOR3 CBone::GetChildWorld(){
 	}
 	return m_childworld;
 };
+
+int CBone::LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev)
+{
+	WCHAR wfilename[MAX_PATH];
+	WCHAR mpath[MAX_PATH];
+
+	wcscpy_s(mpath, MAX_PATH, g_basedir);
+	WCHAR* lasten = 0;
+	WCHAR* last2en = 0;
+	lasten = wcsrchr(mpath, TEXT('\\'));
+	if (lasten){
+		*lasten = 0L;
+		last2en = wcsrchr(mpath, TEXT('\\'));
+		if (last2en){
+			*last2en = 0L;
+			wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia");
+		}
+	}
+
+	m_coldisp[COL_CONE_INDEX] = new CModel();
+	if (!m_coldisp[COL_CONE_INDEX]){
+		_ASSERT(0);
+		return 1;
+	}
+
+	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"cone_dirY.mqo");
+	CallF(m_coldisp[COL_CONE_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1);
+
+	m_coldisp[COL_CAPSULE_INDEX] = new CModel();
+	if (!m_coldisp[COL_CAPSULE_INDEX]){
+		_ASSERT(0);
+		return 1;
+	}
+	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"capsule_dirY.mqo");
+	CallF(m_coldisp[COL_CAPSULE_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1);
+
+	m_coldisp[COL_SPHERE_INDEX] = new CModel();
+	if (!m_coldisp[COL_SPHERE_INDEX]){
+		_ASSERT(0);
+		return 1;
+	}
+	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"sphere_dirY.mqo");
+	CallF(m_coldisp[COL_SPHERE_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1);
+
+	m_coldisp[COL_BOX_INDEX] = new CModel();
+	if (!m_coldisp[COL_BOX_INDEX]){
+		_ASSERT(0);
+		return 1;
+	}
+	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"box.mqo");
+	CallF(m_coldisp[COL_BOX_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1);
+
+	return 0;
+}
+
+CModel* CBone::GetCurColDisp(CBone* childbone)
+{
+	CRigidElem* curre = m_rigidelem[childbone];
+	if (!curre){
+		_ASSERT(0);
+		return 0;
+	}
+
+	_ASSERT(colptr);
+	_ASSERT(childbone);
+
+	CModel* curcoldisp = m_coldisp[curre->GetColtype()];
+	_ASSERT(curcoldisp);
+
+	return curcoldisp;
+}

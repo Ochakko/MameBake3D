@@ -128,15 +128,14 @@ public:
  * @param (LPDIRECT3DDEVICE9 pdev) IN Direct3DのDevice。
  * @param (CModel* bmarkptr) IN ボーンマークのモデルデータ。
  * @param (CMySprite* bcircleptr) IN ジョイント部分の表示のSprite。
- * @param (CModel* cpslptr[COL_MAX]) IN 剛体のモデル。タイプ数分。
  * @param (int selboneno) IN 選択中のボーンのID。
  * @param (int skiptopbonemark) IN 一番親からのボーンを表示しないフラグ。
  * @return 成功したら０。
  */
-	int RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno, int skiptopbonemark = 0 );
+	int RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark = 0 );
 
 
-	void RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto, CModel* cpslptr[COL_MAX]);
+	void RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto);
 
 	void RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr);
 
@@ -451,12 +450,11 @@ public:
  * @fn
  * CreateBtObject
  * @breaf bulletシミュレーション用のオブジェクトを作成する。
- * @param (CModel* coldisp[COL_MAX]) IN 剛体のタイプ分のモデルデータ。
  * @param (int onfirstcreate) IN 一番最初の呼び出し時にだけ１を指定する。
  * @return 成功したら０。
  * @detail シミュレーション開始のたびに呼ぶ。一番最初の呼び出しだけonfirstcreateを１にする。
  */
-	int CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate );
+	int CreateBtObject( int onfirstcreate );
 
 /**
  * @fn
@@ -521,11 +519,13 @@ public:
 	int SetAllKData( int gid, int reindex, int srclk, int srcak, float srccuslk, float srccusak );
 	int SetAllRestData( int gid, int reindex, float rest, float fric );
 	int SetAllMassData( int gid, int reindex, float srcmass );
+	int SetAllMassDataByBoneLeng(int gid, int reindex, float srcmass);
+
 	int SetAllDmpData( int gid, int reindex, float ldmp, float admp );
 	int EnableAllRigidElem(int srcrgdindex);
 	int DisableAllRigidElem(int srcrgdindex);
 
-	int Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
+	int Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
 	int SetRagdollKinFlag(int selectbone);
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
@@ -631,9 +631,9 @@ private:
 
 	int DestroyBtObject();
 	void DestroyBtObjectReq( CBtObject* curbt );
-	void CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBone* parbone, CBone* curbone );
+	void CreateBtObjectReq( CBtObject* parbt, CBone* parbone, CBone* curbone );
 
-	void CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, int onfirstcreate );
+	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
 	void SetBtMotionReq( CBtObject* curbto, D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
 
 	void FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppret );
@@ -646,7 +646,9 @@ private:
 	void SetRestDataReq( int gid, int reindex, CBone* srcbone, float rest, float fric );
 	void SetDmpDataReq( int gid, int reindex, CBone* srcbone, float ldmp, float admp );
 	void SetMassDataReq( int gid, int reindex, CBone* srcbone, float srcmass );
-	void SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag );
+	void SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, float srcmass);
+
+	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );
 	void SetBtGravityReq( CBtObject* srcbto );
 	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone );

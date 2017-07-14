@@ -457,6 +457,8 @@ int CModel::LoadFBX(int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR*
 		if (dummybone){
 			dummybone->SetName("DummyBone");
 			m_bonelist[0] = dummybone;
+			dummybone->LoadCapsuleShape(m_pdev);
+
 			//m_topbone = dummybone;
 		}
 		_ASSERT(0);
@@ -947,7 +949,7 @@ int CModel::MakeDispObj()
 	return 0;
 }
 
-int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno )
+int CModel::Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno )
 {
 	UpdateMatrix( mW, mVP );
 
@@ -994,7 +996,7 @@ int CModel::Motion2Bt( int firstflag, CModel* coldisp[COL_MAX], double nextframe
 					CBone* chilbone = itrre->first;
 					_ASSERT(chilbone);
 					if (chilbone){
-						boneptr->CalcRigidElemParams(coldisp, chilbone, firstflag);
+						boneptr->CalcRigidElemParams(chilbone, firstflag);
 					}
 				}
 			}
@@ -2755,6 +2757,7 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 		_ASSERT(0);
 		return 1;
 	}
+	newbone->LoadCapsuleShape(m_pdev);
 
 	char newbonename[256];
 	strcpy_s(newbonename, 256, nodename);
@@ -3313,7 +3316,7 @@ int IsValidCluster( FbxCluster* cluster )
 	return findflag;
 }
 
-int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, CModel* cpslptr[COL_MAX], int selboneno, int skiptopbonemark )
+int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark )
 {
 	if( m_bonelist.empty() ){
 		return 0;
@@ -3374,7 +3377,8 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 							D3DXVec3TransformCoord(&aftbonepos, &boneptr->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
 
 							D3DXVECTOR3 aftchilpos;
-							D3DXVec3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+							//D3DXVec3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+							D3DXVec3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
 
 
 							boneptr->CalcAxisMatZ(&aftbonepos, &aftchilpos);
@@ -3423,50 +3427,44 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 
 
 	//ボーンの剛体表示
-	if( cpslptr ){
-		if ((g_previewFlag != 5) && (g_previewFlag != 4)){
-			map<int, CBone*>::iterator itrbone;
-			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
-				CBone* boneptr = itrbone->second;
-				if (boneptr){
-					map<CBone*, CRigidElem*> tmpmap;
-					boneptr->GetRigidElemMap(tmpmap);
-					map<CBone*, CRigidElem*>::iterator itrre;
-					for (itrre = tmpmap.begin(); itrre != tmpmap.end(); itrre++){
-						CRigidElem* curre = itrre->second;
-						//if( curre && (curre->GetSkipflag() != 1) ){
-						if (curre){
-							CBone* chilbone = itrre->first;
-							_ASSERT(chilbone);
-							if (chilbone){
-								CModel* curcoldisp = cpslptr[curre->GetColtype()];
-								_ASSERT(curcoldisp);
-								if (curcoldisp){
-									//DbgOut( L"check!!!: curbone %s, chilbone %s\r\n", boneptr->m_wbonename, chilbone->m_wbonename );
-									boneptr->CalcRigidElemParams(cpslptr, chilbone, 0);
-									g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
-									curcoldisp->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
-									D3DXVECTOR4 difmult;
-									//if( boneptr->GetSelectFlag() & 4 ){
-									if (chilbone->GetSelectFlag() & 4){
-										difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
-									}
-									else{
-										difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
-									}
-									CallF(curcoldisp->OnRender(pdev, 0, difmult), return 1);
-								}
+	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
+			CBone* boneptr = itrbone->second;
+			if (boneptr){
+				map<CBone*, CRigidElem*> tmpmap;
+				boneptr->GetRigidElemMap(tmpmap);
+				map<CBone*, CRigidElem*>::iterator itrre;
+				for (itrre = tmpmap.begin(); itrre != tmpmap.end(); itrre++){
+					CRigidElem* curre = itrre->second;
+					//if( curre && (curre->GetSkipflag() != 1) ){
+					if (curre){
+						CBone* chilbone = itrre->first;
+						_ASSERT(chilbone);
+						if (chilbone){
+							//DbgOut( L"check!!!: curbone %s, chilbone %s\r\n", boneptr->m_wbonename, chilbone->m_wbonename );
+							boneptr->CalcRigidElemParams(chilbone, 0);
+							g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
+							boneptr->GetCurColDisp(chilbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
+							D3DXVECTOR4 difmult;
+							//if( boneptr->GetSelectFlag() & 4 ){
+							if (chilbone->GetSelectFlag() & 4){
+								difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
 							}
+							else{
+								difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+							}
+							CallF(boneptr->GetCurColDisp(chilbone)->OnRender(pdev, 0, difmult), return 1);
 						}
 					}
 				}
 			}
 		}
-		else{
-			RenderCapsuleReq(pdev, m_topbt, cpslptr);
-		}
-	
 	}
+	else{
+		RenderCapsuleReq(pdev, m_topbt);
+	}
+	
 
 	//ボーンのサークル表示
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
@@ -3523,7 +3521,7 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 
 
 
-void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto, CModel* cpslptr[COL_MAX])
+void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto)
 {
 	CBone* srcbone = srcbto->GetBone();
 	CBone* chilbone = srcbto->GetEndBone();
@@ -3532,23 +3530,20 @@ void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto, CModel*
 			//CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
 		CRigidElem* curre = srcbone->GetRigidElem(chilbone);
 		if (curre){
-			CModel* curcoldisp = cpslptr[curre->GetColtype()];
-			if (curcoldisp){
-				srcbone->CalcRigidElemParams(cpslptr, chilbone, 0);//形状データのスケールのために呼ぶ。ここでのカプセルマットは次のSetCapsuleBtMotionで上書きされる。
-				srcbto->SetCapsuleBtMotion(curre);
+			srcbone->CalcRigidElemParams(chilbone, 0);//形状データのスケールのために呼ぶ。ここでのカプセルマットは次のSetCapsuleBtMotionで上書きされる。
+			srcbto->SetCapsuleBtMotion(curre);
 
-				g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
-				curcoldisp->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
-				D3DXVECTOR4 difmult;
-				//if( boneptr->GetSelectFlag() & 4 ){
-				if (chilbone->GetSelectFlag() & 4){
-					difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
-				}
-				else{
-					difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
-				}
-				CallF(curcoldisp->OnRender(pdev, 0, difmult), return);
+			g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
+			srcbone->GetCurColDisp(chilbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
+			D3DXVECTOR4 difmult;
+			//if( boneptr->GetSelectFlag() & 4 ){
+			if (chilbone->GetSelectFlag() & 4){
+				difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
 			}
+			else{
+				difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+			}
+			CallF(srcbone->GetCurColDisp(chilbone)->OnRender(pdev, 0, difmult), return);
 		}
 		//}
 	}
@@ -3556,7 +3551,7 @@ void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto, CModel*
 	int chilno;
 	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
 		CBtObject* chilbto = srcbto->GetChilBt(chilno);
-		RenderCapsuleReq(pdev, chilbto, cpslptr);
+		RenderCapsuleReq(pdev, chilbto);
 	}
 
 }
@@ -4347,7 +4342,7 @@ void CModel::CreateBtConnectReq(CBone* curbone)
 */
 
 
-int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
+int CModel::CreateBtObject( int onfirstcreate )
 {
 
 	DestroyBtObject();
@@ -4359,7 +4354,7 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 		return 0;
 	}
 
-	CalcBtAxismatReq(coldisp, m_topbone, onfirstcreate);//!!!!!!!!!!!!!
+	CalcBtAxismatReq(m_topbone, 1);//!!!!!!!!!!!!!
 
 
 	m_topbt = new CBtObject( 0, m_btWorld );
@@ -4368,14 +4363,16 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 		return 1;
 	}
 	m_topbt->SetTopFlag( 1 );
+	//m_topbt->CreateObject(NULL, NULL, m_topbone, m_topbone->GetChild());
+
 
 	m_rigidbone.clear();
 
 	CBone* startbone = m_topbone;
 	_ASSERT( startbone );
 	if (startbone){
-		CreateBtObjectReq(coldisp, m_topbt, startbone, startbone->GetChild());
-		//CreateBtObjectReq( coldisp, m_topbt, startbone->m_parent, startbone );
+		CreateBtObjectReq(m_topbt, startbone, startbone->GetChild());
+		//CreateBtObjectReq(NULL, startbone, startbone->GetChild());
 	}
 
 	CreateBtConstraint();
@@ -4386,7 +4383,7 @@ int CModel::CreateBtObject( CModel* coldisp[COL_MAX], int onfirstcreate )
 	//}
 
 	if (g_previewFlag != 5){
-		SetBtKinFlagReq(m_topbt, onfirstcreate);
+		SetBtKinFlagReq(m_topbt, 1);
 	}
 	else{
 		SetRagdollKinFlagReq(m_topbt, -1);
@@ -4415,9 +4412,10 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 		return 0;
 	}
 
+	//`角度、位置
 	srcbto->EnableSpring(true, true);
 	//srcbto->EnableSpring(false, true);
-	//curbto->EnableSpring(true, false);
+	//srcbto->EnableSpring(true, false);
 
 	int lflag, aflag;
 	aflag = 1;
@@ -4437,7 +4435,7 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 
 
 
-void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBone* parbone, CBone* curbone )
+void CModel::CreateBtObjectReq( CBtObject* parbt, CBone* parbone, CBone* curbone )
 {
 	if (!curbone){
 		return;
@@ -4459,8 +4457,15 @@ void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBon
 			_ASSERT(0);
 			return;
 		}
+
+		//if (!m_topbt){
+		//	m_topbt = newbto;
+		//	m_topbt->SetTopFlag( 1 );
+		//}
+
 		if (parbt){
 			parbt->AddChild(newbto);
+
 
 			CallF(newbto->CreateObject(parbt, parbone->GetParent(), parbone, curbone), return);
 			parbone->SetBtObject(curbone, newbto);
@@ -4472,45 +4477,33 @@ void CModel::CreateBtObjectReq( CModel* cpslptr[COL_MAX], CBtObject* parbt, CBon
 			//}
 
 			if (curbone->GetChild()){
-				CreateBtObjectReq(cpslptr, newbto, curbone, curbone->GetChild());
+				CreateBtObjectReq(newbto, curbone, curbone->GetChild());
 			}
 			if (curbone->GetBrother()){
-				CreateBtObjectReq(cpslptr, parbt, parbone, curbone->GetBrother());
+				CreateBtObjectReq(parbt, parbone, curbone->GetBrother());
 			}
-		}
-		else{
-			_ASSERT(0);
 		}
 	}
 }
 
-void CModel::CalcBtAxismatReq( CModel* coldisp[COL_MAX], CBone* curbone, int onfirstcreate )
+void CModel::CalcBtAxismatReq( CBone* curbone, int onfirstcreate )
 {
 	if (!curbone){
 		return;
 	}
 	int setstartflag;
 	if( onfirstcreate == 1 ){
+		if (curbone->GetParent()){
+			curbone->GetParent()->CalcRigidElemParams(curbone, 1);//firstflag 1
+		}
 		curbone->SetStartMat2( curbone->GetCurMp().GetWorldMat() );
 	}
 
 	if( curbone->GetChild() ){
-		//curbone->CalcAxisMat( firstflag, delta );
-		curbone->CalcRigidElemParams(coldisp, curbone->GetChild(), onfirstcreate);
-		CBone* bro = curbone->GetChild()->GetBrother();
-		while( bro ){
-			curbone->CalcRigidElemParams(coldisp, bro, onfirstcreate);
-			bro = bro->GetBrother();
-		}
-//DbgOut( L"check!!!!:CalcBtAxismatReq : %s, %s\r\n", curbone->GetWBoneName(), curbone->GetChild()->GetWBoneName() );
-
-	}
-
-	if( curbone->GetChild() ){
-		CalcBtAxismatReq(coldisp, curbone->GetChild(), onfirstcreate);
+		CalcBtAxismatReq(curbone->GetChild(), onfirstcreate);
 	}
 	if( curbone->GetBrother() ){
-		CalcBtAxismatReq(coldisp, curbone->GetBrother(), onfirstcreate);
+		CalcBtAxismatReq(curbone->GetBrother(), onfirstcreate);
 	}
 }
 
@@ -5339,6 +5332,52 @@ void CModel::SetMassDataReq( int gid, int reindex, CBone* srcbone, float srcmass
 	}
 }
 
+int CModel::SetAllMassDataByBoneLeng(int gid, int reindex, float srcmass)
+{
+	if (!m_topbone){
+		return 0;
+	}
+	if (reindex < 0){
+		return 0;
+	}
+
+	SetMassDataByBoneLengReq(gid, reindex, m_topbone, srcmass);
+
+
+	return 0;
+}
+void CModel::SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, float srcmass)
+{
+	if (srcbone->GetParent()){
+		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				if ((gid == -1) || (gid == curre->GetGroupid())){
+					D3DXVECTOR3 parpos, curpos, diffpos;
+					parpos = srcbone->GetParent()->GetJointFPos();
+					curpos = srcbone->GetJointFPos();
+					diffpos = curpos - parpos;
+					float leng = D3DXVec3Length(&diffpos);
+					float setmass = srcmass * leng;
+
+					curre->SetMass(setmass);
+				}
+			}
+		}
+		else{
+			_ASSERT(0);
+		}
+	}
+
+	if (srcbone->GetChild()){
+		SetMassDataByBoneLengReq(gid, reindex, srcbone->GetChild(), srcmass);
+	}
+	if (srcbone->GetBrother()){
+		SetMassDataByBoneLengReq(gid, reindex, srcbone->GetBrother(), srcmass);
+	}
+}
+
 int CModel::SetRagdollKinFlag(int selectbone)
 {
 
@@ -5347,6 +5386,9 @@ int CModel::SetRagdollKinFlag(int selectbone)
 	}
 
 	SetRagdollKinFlagReq( m_topbt, selectbone );
+
+	
+
 
 	return 0;
 }
@@ -5628,8 +5670,9 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 			CBone* parbone = curbone->GetParent();
 			if( parbone && (curbone->GetJointFPos() != parbone->GetJointFPos()) ){
 				D3DXVECTOR3 parworld, chilworld;
-				D3DXVec3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
+				//D3DXVec3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
 				D3DXVec3TransformCoord( &parworld, &(parbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()) );
+				D3DXVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()));
 
 				D3DXVECTOR3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -5801,7 +5844,8 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 	for (calccnt = 0; calccnt < calcnum; calccnt++){
 		int levelcnt = 0;
 
-		float currate = 0.3f;
+		//float currate = 0.3f;
+		float currate = 0.5f;
 
 		CBone* curbone = firstbone;
 		//while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel)))
@@ -5814,8 +5858,9 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 			CBone* parbone = curbone->GetParent();
 			if (parbone && (curbone->GetJointFPos() != parbone->GetJointFPos())){
 				D3DXVECTOR3 parworld, chilworld;
-				D3DXVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
 				D3DXVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+				//D3DXVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+				D3DXVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(parbone->GetBtMat()));
 
 				D3DXVECTOR3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -5955,7 +6000,6 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 						//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 						//setbto->GetRigidBody()->setDeactivationTime(30000.0);
 					}
-
 
 					//IKボーンはKINEMATICだから。
 					parbone->GetCurMp().SetWorldMat(newbtmat);

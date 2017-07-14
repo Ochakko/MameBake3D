@@ -259,7 +259,7 @@ static LPDIRECT3DDEVICE9 s_pdev = 0;
 static CModel* s_model = NULL;
 static CModel* s_select = NULL;
 static CModel* s_bmark = NULL;
-static CModel* s_coldisp[ COL_MAX ];
+//static CModel* s_coldisp[ COL_MAX ];
 static CModel* s_ground = NULL;
 static CModel* s_gplane = NULL;
 static CModel* s_rigmark = NULL;
@@ -574,8 +574,8 @@ float                       g_fLightScale;
 int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
-//double						g_dspeed = 3.0;
-double						g_dspeed = 0.0;
+double						g_dspeed = 3.0;
+//double						g_dspeed = 0.0;
 
 D3DXHANDLE g_hRenderBoneL0 = 0;
 D3DXHANDLE g_hRenderBoneL1 = 0;
@@ -683,6 +683,9 @@ int g_applyrate = 50;
 #define IDC_BTCALCCNT				51
 #define IDC_STATIC_ERP				52
 #define IDC_ERP						53
+
+#define IDC_GZERO_IK				54
+
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1163,7 +1166,6 @@ void InitApp()
 
 	g_bonecntmap.clear();
 
-	ZeroMemory( s_coldisp, sizeof( CModel* ) * COL_MAX );
 	D3DXMatrixIdentity( &s_inimat );
 
     g_bEnablePreshader = true;
@@ -1448,37 +1450,6 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	CallF( s_bmark->MakeDispObj(), return 1 );
 
 
-	s_coldisp[COL_CONE_INDEX] = new CModel();
-	if( !s_coldisp[COL_CONE_INDEX] ){
-		_ASSERT( 0 );
-		return 1;
-	}
-	CallF( s_coldisp[COL_CONE_INDEX]->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\cone_dirY.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1 );
-
-	s_coldisp[COL_CAPSULE_INDEX] = new CModel();
-	if( !s_coldisp[COL_CAPSULE_INDEX] ){
-		_ASSERT( 0 );
-		return 1;
-	}
-	CallF( s_coldisp[COL_CAPSULE_INDEX]->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\capsule_dirY.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1 );
-
-	s_coldisp[COL_SPHERE_INDEX] = new CModel();
-	if( !s_coldisp[COL_SPHERE_INDEX] ){
-		_ASSERT( 0 );
-		return 1;
-	}
-	CallF( s_coldisp[COL_SPHERE_INDEX]->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\sphere_dirY.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1 );
-
-	s_coldisp[COL_BOX_INDEX] = new CModel();
-	if( !s_coldisp[COL_BOX_INDEX] ){
-		_ASSERT( 0 );
-		return 1;
-	}
-	CallF( s_coldisp[COL_BOX_INDEX]->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\box.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1 );
 
 
 	s_ground = new CModel();
@@ -1913,7 +1884,7 @@ void RenderText( double fTime )
     //txtHelper.DrawTextLine( DXUTGetDeviceStats() );
 
     txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.1f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
+    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -2848,6 +2819,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             }
             break;
 		*/
+		case IDC_GZERO_IK:
+			StartBt(1, 1);
+			break;
+
         case IDC_LIGHT_SCALE:
 			RollbackCurBoneNo();
 			g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
@@ -2898,9 +2873,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
 		case IDC_ERP:
 			RollbackCurBoneNo();
-			s_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.10);
+			s_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.0002);
 
-			swprintf_s(sz, 100, L"BT ERP: %0.2f", s_erp);
+			swprintf_s(sz, 100, L"BT ERP: %0.5f", s_erp);
 			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
 			break;
 
@@ -2953,7 +2928,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					*/
 				case IDC_BT_RIGID:
 					if( s_model && (s_curboneno >= 0) ){
-						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+						CallF(s_model->CreateBtObject(0), return);
 
 						s_ikkind = 3;
 						s_rigidWnd->setVisible( 1 );
@@ -2963,7 +2938,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					break;
 				case IDC_BT_IMP:
 					if( s_model && (s_curboneno >= 0) ){
-						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+						CallF(s_model->CreateBtObject(0), return);
 
 						s_ikkind = 4;
 						s_impWnd->setVisible( 1 );
@@ -2974,7 +2949,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					break;
 				case IDC_BT_GP:
 					if( s_bpWorld ){
-						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+						CallF(s_model->CreateBtObject(0), return);
 
 						s_ikkind = 5;
 						s_gpWnd->setVisible( 1 );
@@ -2985,7 +2960,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					break;
 				case IDC_BT_DAMP:
 					if( s_bpWorld ){
-						CallF(s_model->CreateBtObject(s_coldisp, 0), return);
+						CallF(s_model->CreateBtObject(0), return);
 
 						s_ikkind = 6;
 						s_dmpanimWnd->setVisible( 1 );
@@ -3140,14 +3115,6 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		s_bmark = 0;
 	}
 
-	int colindex;
-	for( colindex = 0; colindex < COL_MAX; colindex++ ){
-		CModel* curcol = s_coldisp[ colindex ];
-		if( curcol ){
-			delete curcol;
-			s_coldisp[ colindex ] = 0;
-		}
-	}
 
 	if( s_bcircle ){
 		delete s_bcircle;
@@ -3667,65 +3634,68 @@ int GetShaderHandle()
 
 int SetBaseDir()
 {
-	WCHAR filename[MAX_PATH] = {0};
+	WCHAR filename[MAX_PATH] = { 0 };
 	WCHAR* endptr = 0;
 
 	int ret;
-	ret = GetModuleFileNameW( NULL, filename, MAX_PATH );
-	if( ret == 0 ){
-		_ASSERT( 0 );
+	ret = GetModuleFileNameW(NULL, filename, MAX_PATH);
+	if (ret == 0){
+		_ASSERT(0);
 		return 1;
 	}
 
 
-    WCHAR* lasten = NULL;
-    lasten = wcsrchr( filename, TEXT( '\\' ) );
-	if( !lasten ){
-		_ASSERT( 0 );
-		DbgOut( L"SetMediaDir : strrchr error !!!\n" );
+	WCHAR* lasten = NULL;
+	lasten = wcsrchr(filename, TEXT('\\'));
+	if (!lasten){
+		_ASSERT(0);
+		DbgOut(L"SetMediaDir : strrchr error !!!\n");
 		return 1;
 	}
 
+	//*.exeの頭
 	*lasten = 0;
 
 	WCHAR* last2en = 0;
 	WCHAR* last3en = 0;
-	last2en = wcsrchr( filename, TEXT( '\\' ) );
-	if( last2en ){
+	WCHAR* last4en = 0;
+	last2en = wcsrchr(filename, TEXT('\\'));//Release, Debugの頭の円かどうか調べる
+	if (last2en){
 		*last2en = 0;
-		last3en = wcsrchr( filename, TEXT( '\\' ) );
-		if( last3en ){
-			if( (wcscmp( last2en + 1, L"debug" ) == 0) ||
-				(wcscmp( last2en + 1, L"Debug" ) == 0) ||
-				(wcscmp( last2en + 1, L"DEBUG" ) == 0) ||
-				(wcscmp( last2en + 1, L"release" ) == 0) ||
-				(wcscmp( last2en + 1, L"Release" ) == 0) ||
-				(wcscmp( last2en + 1, L"RELEASE" ) == 0)
+		last3en = wcsrchr(filename, TEXT('\\'));//Release, Debugかどうか調べるフォルダの前にフォルダがあるかどうか
+		if (last3en){
+			if ((wcscmp(last2en + 1, L"debug") == 0) ||
+				(wcscmp(last2en + 1, L"Debug") == 0) ||
+				(wcscmp(last2en + 1, L"DEBUG") == 0) ||
+				(wcscmp(last2en + 1, L"release") == 0) ||
+				(wcscmp(last2en + 1, L"Release") == 0) ||
+				(wcscmp(last2en + 1, L"RELEASE") == 0)
 				){
 
-				endptr = last2en;
-			}else{
-				endptr = lasten;
+				*last3en = 0;
+				last4en = wcsrchr(filename, TEXT('\\'));//x64かどうか調べるフォルダの前にフォルダがあるかどうか
+				if (last4en){
+					if (wcscmp(last3en + 1, L"x64") != 0){
+						*last3en = TEXT('\\');
+					}
+				}
 			}
-		}else{
-			endptr = lasten;
+			else{
+				*last2en = TEXT('\\');
+			}
 		}
-	}else{
-		endptr = lasten;
 	}
 
-	*lasten = TEXT( '\\' );
-	if( last2en )
-		*last2en = TEXT( '\\' );
-	if( last3en )
-		*last3en = TEXT( '\\' );
-
 	int leng;
-	ZeroMemory( g_basedir, sizeof( WCHAR ) * MAX_PATH );
-	leng = (int)( endptr - filename + 1 );
-	wcsncpy_s( g_basedir, MAX_PATH, filename, leng );
+	ZeroMemory(g_basedir, sizeof(WCHAR)* MAX_PATH);
+	wcscpy_s(g_basedir, MAX_PATH, filename);
+	leng = wcslen(g_basedir);
+	if (wcscmp(g_basedir + leng - 1, L"\\") != 0){
+		wcscat_s(g_basedir, MAX_PATH, L"\\");
+	}
 
-	DbgOut( L"SetBaseDir : %s\r\n", g_basedir );
+
+	DbgOut(L"SetBaseDir : %s\r\n", g_basedir);
 
 	return 0;
 }
@@ -6904,22 +6874,39 @@ int StartBt(int flag, int btcntzero)
 				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
 			}
 			else if (g_previewFlag == 5){
-				//ラグドールの時のjERPは0.0
+				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
+
+
+			//ラグドールの時のERPは決め打ち
 				//s_bpWorld->setGlobalERP(0.0);// ERP
+				//s_bpWorld->setGlobalERP(1.0);// ERP
+				//s_bpWorld->setGlobalERP(0.2);// ERP
 				//s_bpWorld->setGlobalERP(0.001);// ERP
-				
-				//ラグドールの時のバネは決め打ち
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+				//s_bpWorld->setGlobalERP(1.0e-8);// ERP
+				s_bpWorld->setGlobalERP(0.00020);// ERP
+
 
 				curmodel->SetMotionFrame(curframe);
 
 
-
-				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
-				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
+			//ラグドールの時のバネは決め打ち
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 30.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 400.0, 10.0);
+				
 				//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
-				s_model->SetAllMassData(-1, s_rgdindex, 0.5);
+				//s_model->SetAllMassData(-1, s_rgdindex, 0.5);
+				//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
+				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
+				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
+				//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
+				//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+				s_model->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
 
 				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
 			}
@@ -6927,7 +6914,7 @@ int StartBt(int flag, int btcntzero)
 			s_btstartframe = curframe;
 
 			//CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
-			CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
+			CallF(curmodel->CreateBtObject(1), return 1);
 
 			
 			if( g_previewFlag == 4 ){
@@ -9183,7 +9170,7 @@ void UpdateBtSimu(double nextframe, CModel* curmodel)
 		firstflag = 1;
 	}
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->Motion2Bt(firstflag, s_coldisp, nextframe, &s_matW, &s_matVP, s_curboneno);
+		curmodel->Motion2Bt(firstflag, nextframe, &s_matW, &s_matVP, s_curboneno);
 	}
 	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
 	s_bpWorld->clientMoveAndDisplay();
@@ -9245,7 +9232,8 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	//	curmodel->SetBtImpulse();
 	//}
 
-	s_bpWorld->setGlobalERP(0.001);// ERP
+	//s_bpWorld->setGlobalERP(0.001);// ERP
+	//s_bpWorld->setGlobalERP(0.1);// ERP
 	//s_bpWorld->setGlobalERP(1.0);// ERP
 
 	s_bpWorld->clientMoveAndDisplay();
@@ -9314,7 +9302,7 @@ int OnFrameCloseFlag()
 			s_bpWorld->setGlobalERP(s_erp);
 		}
 		if (s_model){
-			CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+			CallF(s_model->CreateBtObject(0), return 1);
 		}
 	}
 	if (s_RcloseFlag){
@@ -9324,7 +9312,7 @@ int OnFrameCloseFlag()
 			s_bpWorld->setGlobalERP(s_erp);
 		}
 		if (s_model){
-			CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+			CallF(s_model->CreateBtObject(0), return 1);
 		}
 	}
 	if (s_IcloseFlag){
@@ -9334,7 +9322,7 @@ int OnFrameCloseFlag()
 			s_bpWorld->setGlobalERP(s_erp);
 		}
 		if (s_model){
-			CallF(s_model->CreateBtObject(s_coldisp, 0), return 1);
+			CallF(s_model->CreateBtObject(0), return 1);
 		}
 	}
 	if (s_GcloseFlag){
@@ -10136,9 +10124,9 @@ int CreateUtDialog()
 	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
 
-	swprintf_s(sz, 100, L"BT ERP: %0.2f", s_erp);
+	swprintf_s(sz, 100, L"BT ERP: %0.5f", s_erp);
 	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 10, (int)(s_erp * 10.0 + 0.4));
+	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(s_erp * 5000.0 + 0.4));
 
 	
 
@@ -10149,6 +10137,9 @@ int CreateUtDialog()
 	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
 	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+
+	iY += 25;
+	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero IK start", startx, iY += addh, 100, ctrlh);
 
 
 	return 0;
@@ -10415,7 +10406,8 @@ int CreateRigidWnd()
 
 	//s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
-	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
+	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
+	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300
 	s_aklabel = new OWP_Label(L"角度ばね カスタム値");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
@@ -11204,7 +11196,7 @@ int OnRenderBoneMark()
 		//if ((g_previewFlag != 4) && (g_previewFlag != 5)){
 			if (s_model && s_model->GetModelDisp()){
 				//if (s_ikkind >= 3){
-					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_coldisp, s_curboneno);
+					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);
 				//}
 				//else{
 				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
@@ -11217,7 +11209,7 @@ int OnRenderBoneMark()
 		for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++){
 			MODELELEM curme = *itrme;
 			CModel* curmodel = curme.modelptr;
-			curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno, 1);
+			curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
 		}
 	}
 
