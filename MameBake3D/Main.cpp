@@ -685,6 +685,7 @@ int g_applyrate = 50;
 #define IDC_ERP						53
 
 #define IDC_GZERO_IK				54
+#define IDC_BTSTART					55
 
 
 //--------------------------------------------------------------------------------------
@@ -724,6 +725,8 @@ void RenderText( double fTime );
 
 static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
+
+static void AutoCameraTarget();
 
 static int CreateUtDialog();
 static int CreateTimelineWnd();
@@ -1622,6 +1625,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 	OnFrameUtCheckBox();
 	SetCamera6Angle();
+	AutoCameraTarget();
 
 	OnFrameKeyboard();
 	OnFrameTimeLineWnd();
@@ -2819,6 +2823,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             }
             break;
 		*/
+		case IDC_BTSTART:
+			StartBt(0, 1);
+			break;
 		case IDC_GZERO_IK:
 			StartBt(1, 1);
 			break;
@@ -2980,20 +2987,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			break;
 		case IDC_CAMTARGET:
 			RollbackCurBoneNo();
-			s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
-			if( s_model && (s_curboneno >= 0) && s_camtargetflag ){
-				CBone* curbone = s_model->GetBoneByID( s_curboneno );
-				_ASSERT(curbone);
-				if (curbone){
-					g_camtargetpos = curbone->GetChildWorld();
-					g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
+			AutoCameraTarget();
 
-					D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-					D3DXVECTOR3 diffv;
-					diffv = g_camEye - g_camtargetpos;
-					s_camdist = D3DXVec3Length(&diffv);
-				}
-			}
 			break;
 		case IDC_APPLY_TO_THEEND:
 			RollbackCurBoneNo();
@@ -6893,29 +6888,20 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 30.0);
-<<<<<<< HEAD
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 400.0, 10.0);
 				
-=======
-				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
-				
-				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
->>>>>>> 3b7e137b9dc06637a77def3dbb1e21acebabef4d
 				//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
 				//s_model->SetAllMassData(-1, s_rgdindex, 0.5);
 				//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
-<<<<<<< HEAD
-				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
+				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 				s_model->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
 
-=======
->>>>>>> 3b7e137b9dc06637a77def3dbb1e21acebabef4d
 				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
 			}
 
@@ -10125,7 +10111,7 @@ int CreateUtDialog()
 
 
 	//Right Bottom
-	iY = s_mainheight - 170;
+	iY = s_mainheight - 180;
 	int startx = s_mainwidth - 130;
 
 	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
@@ -10139,14 +10125,16 @@ int CreateUtDialog()
 	
 
 	//Center Bottom
-	iY = s_mainheight - 170;
+	iY = s_mainheight - 180;
 	startx = s_mainwidth / 2 - 50;
 
 	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
 	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
 
-	iY += 25;
+	iY += 10;
+	g_SampleUI.AddButton(IDC_BTSTART, L"BT start", startx, iY += addh, 100, ctrlh);
+	iY += 5;
 	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero IK start", startx, iY += addh, 100, ctrlh);
 
 
@@ -12328,4 +12316,22 @@ int GetSymRootMode()
 
 
 	return retmode;
+}
+
+void AutoCameraTarget()
+{
+	s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
+	if (s_model && (s_curboneno >= 0) && s_camtargetflag){
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		_ASSERT(curbone);
+		if (curbone){
+			g_camtargetpos = curbone->GetChildWorld();
+			g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
+
+			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			D3DXVECTOR3 diffv;
+			diffv = g_camEye - g_camtargetpos;
+			s_camdist = D3DXVec3Length(&diffv);
+		}
+	}
 }
