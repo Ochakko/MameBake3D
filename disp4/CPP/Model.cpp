@@ -5907,15 +5907,23 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 						D3DXMatrixIdentity(&gparrotmat);
 						D3DXMatrixIdentity(&invgparrotmat);
 					}
+					D3DXMATRIX parrotmat, invparrotmat;
+					parrotmat = parbone->GetBtMat();
+					D3DXMatrixInverse(&invparrotmat, NULL, &parrotmat);
 
 
 					D3DXMATRIX transmat2;
-					transmat2 = invgparrotmat * rotq0.MakeRotMatX() * gparrotmat;
+
+					//‚±‚ê‚Å‚Í‘Ì‘S‘Ì‚ª”½‘Î‚ğŒü‚¢‚½‚Æ‚«‚É‰ñ“]•ûŒü‚ª”½‘ÎŒü‚«‚É‚È‚éB
+					//transmat2 = invgparrotmat * rotq0.MakeRotMatX() * gparrotmat;
+
+
+					//ˆÈ‰º‚Ì‚æ‚¤‚É‚·‚ê‚Î‘Ì‘S‘Ì‚ª‰ñ“]‚µ‚½‚É‚à³í‚É“®‚­
+					transmat2 = invgparrotmat * parrotmat * rotq0.MakeRotMatX() * invparrotmat * gparrotmat;
+					
 					CMotionPoint transmp;
 					transmp.CalcQandTra(transmat2, parbone);
 					rotq = transmp.GetQ();
-
-
 
 
 					//D3DXMATRIX parbtmat;
