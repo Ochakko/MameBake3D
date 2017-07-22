@@ -87,7 +87,7 @@ extern int g_slerpoffflag;
 extern int g_absikflag;
 extern int g_applyendflag;
 extern int g_bonemarkflag;
-
+extern float g_gzeromvrate;
 
 extern D3DXVECTOR3 g_camEye;
 extern D3DXVECTOR3 g_camtargetpos;
@@ -5378,21 +5378,21 @@ void CModel::SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, floa
 	}
 }
 
-int CModel::SetRagdollKinFlag(int selectbone)
+int CModel::SetRagdollKinFlag(int selectbone, int gzeromvkind)
 {
 
 	if( !m_topbt ){
 		return 0;
 	}
 
-	SetRagdollKinFlagReq( m_topbt, selectbone );
+	SetRagdollKinFlagReq( m_topbt, selectbone, gzeromvkind );
 
 	
 
 
 	return 0;
 }
-void CModel::SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone )
+void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int gzeromvkind)
 {
 
 	CBone* srcbone = srcbto->GetBone();
@@ -5416,6 +5416,7 @@ void CModel::SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone )
 			srcbone->SetBtKinFlag(0);
 		}
 
+		//if ((gzeromvkind == 0) && (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
 		if ((srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
 			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
 			if (s_setrigidflag == 0){
@@ -5817,7 +5818,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 }
 
 
-int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel)
+int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel)
 {
 
 	CBone* firstbone = m_bonelist[srcboneno];
@@ -5837,30 +5838,22 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 	CBone* curbone = firstbone;
 	SetBefEditMat(erptr, curbone, maxlevel);
 
-	CBone* lastpar = firstbone->GetParent();
-	curbone = firstbone;
-	int calcnum = 1;
-	int calccnt;
-	for (calccnt = 0; calccnt < calcnum; calccnt++){
-		int levelcnt = 0;
+	float currate = g_gzeromvrate;
+	int isfirst = 1;
 
-		//float currate = 0.3f;
-		float currate = 0.5f;
+	CBone* parbone = curbone->GetParent();
+	if (parbone){
+		if (!parbone->GetParent()){
+			//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
+			return 0;
+		}
+		CBone* childbone = parbone->GetChild();
+		while (childbone){
 
-		CBone* curbone = firstbone;
-		//while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel)))
-		//{
-
-
-			//boneptr->CalcRigidElemParams(coldisp, chilbone, firstflag);
-
-
-			CBone* parbone = curbone->GetParent();
-			if (parbone && (curbone->GetJointFPos() != parbone->GetJointFPos())){
+			if (childbone->GetJointFPos() != parbone->GetJointFPos()){
 				D3DXVECTOR3 parworld, chilworld;
 				D3DXVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-				//D3DXVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
-				D3DXVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(parbone->GetBtMat()));
+				D3DXVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
 
 				D3DXVECTOR3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -5913,39 +5906,19 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 
 
 					D3DXMATRIX transmat2;
-
 					//これでは体全体が反対を向いたときに回転方向が反対向きになる。
 					//transmat2 = invgparrotmat * rotq0.MakeRotMatX() * gparrotmat;
 
-
 					//以下のようにすれば体全体が回転した時にも正常に動く
 					transmat2 = invgparrotmat * parrotmat * rotq0.MakeRotMatX() * invparrotmat * gparrotmat;
-					
+
 					CMotionPoint transmp;
 					transmp.CalcQandTra(transmat2, parbone);
 					rotq = transmp.GetQ();
 
 
-					//D3DXMATRIX parbtmat;
-					//parbtmat = parbone->GetCurMp().GetBtMat();
-					//D3DXMATRIX invparbtmat;
-					//D3DXMatrixInverse(&invparbtmat, NULL, &parbtmat);
-					//D3DXMATRIX gparmat, invgparmat;
-					//if (parbone->GetParent()){
-					//	gparmat = parbone->GetParent()->GetCurMp().GetBtMat();
-					//	D3DXMatrixInverse(&invgparmat, NULL, &gparmat);
-					//}
-					//else{
-					//	D3DXMatrixIdentity(&gparmat);
-					//	D3DXMatrixIdentity(&invgparmat);
-					//}
-
-
 					D3DXMATRIX newbtmat;
-					//newbtmat = parbone->GetCurMp().GetBtMat() * invgparmat * rotmatbt * gparmat;
-					//newbtmat = parbone->GetCurMp().GetBtMat() * rotmatbt;
 					D3DXVECTOR3 rotcenter;// = m_childworld;
-					////D3DXVec3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
 					rotcenter = parworld;
 
 					D3DXMATRIX befrot, aftrot;
@@ -5956,21 +5929,12 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 					//newbtmat = parbone->GetCurMp().GetBtMat() * rotq.MakeRotMatX();// *tramat;
 
 
-					//CMotionPoint curmp;
-					//curmp = curbone->GetCurMp();
-					//curmp.SetBtMat(newbtmat);
-					////curmp.SetBtMat(newxworld);
-					////m_bone->GetCurMp().SetBtMat(m_bone->GetStartMat2() * diffxworld);
-					//curmp.SetBtFlag(1);
-					//curbone->SetCurMp(curmp);
-
-
 					D3DXMATRIX firstworld = parbone->GetStartMat2();
 					D3DXMATRIX invfirstworld;
 					D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
 
 					D3DXMATRIX diffworld = invfirstworld * newbtmat;
-					CRigidElem* curre = parbone->GetRigidElem(curbone);
+					CRigidElem* curre = parbone->GetRigidElem(childbone);
 					D3DXMATRIX newrigidmat;
 					if (curre){
 						newrigidmat = curre->GetFirstcapsulemat() * diffworld;
@@ -5985,10 +5949,9 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 					D3DXVECTOR3 jointfpos;
 					jointfpos = parbone->GetJointFPos();
 					D3DXVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
-					jointfpos = curbone->GetJointFPos();
+					jointfpos = childbone->GetJointFPos();
 					D3DXVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
 
-					//multmat = srcre->GetFirstcapsulemat() * diffworld;
 					D3DXVECTOR3 rigidcenter = (newparpos + newchilpos) * 0.5f;
 
 
@@ -6002,44 +5965,137 @@ int CModel::IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 target
 					worldtra.setRotation(btrotq);
 					worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
 
-					CBtObject* setbto = parbone->GetBtObject(curbone);
+					CBtObject* setbto = parbone->GetBtObject(childbone);
 					if (setbto){
 						setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
 						//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 						//setbto->GetRigidBody()->setDeactivationTime(30000.0);
 					}
 
-					//IKボーンはKINEMATICだから。
-					parbone->GetCurMp().SetWorldMat(newbtmat);
-
+					if (isfirst == 1){
+						parbone->SetBtMat(newbtmat);
+						//IKボーンはKINEMATICだから。
+						parbone->GetCurMp().SetWorldMat(newbtmat);
+						isfirst = 0;
+					}
 				}
 
 			}
 
-
-			if (curbone->GetParent()){
-				lastpar = curbone->GetParent();
-			}
-			curbone = curbone->GetParent();
-
-			levelcnt++;
-
-			currate = pow(g_ikrate, g_ikfirst * levelcnt);
-		//}
-
-		//if ((calccnt == (calcnum - 1)) && g_absikflag && lastpar){
-		//	AdjustBoneTra(erptr, lastpar);
-		//}
+			childbone = childbone->GetBrother();
+		}
 	}
-
-	if (lastpar){
-		return lastpar->GetBoneNo();
-	}
-	else{
-		return srcboneno;
-	}
+	return srcboneno;
 
 }
+
+
+int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
+{
+
+	CBone* firstbone = m_bonelist[srcboneno];
+	if (!firstbone){
+		_ASSERT(0);
+		return -1;
+	}
+
+
+	D3DXVECTOR3 ikaxis = g_camtargetpos - g_camEye;
+	D3DXVec3Normalize(&ikaxis, &ikaxis);
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+	CBone* curbone = firstbone;
+	SetBefEditMat(erptr, curbone, 0);
+
+
+	D3DXVECTOR3 mvvec = diffvec * g_gzeromvrate;
+
+	D3DXMATRIX mvmat;
+	D3DXMatrixIdentity(&mvmat);
+	D3DXMatrixTranslation(&mvmat, mvvec.x, mvvec.y, mvvec.z);
+
+	int isfirst = 1;
+
+
+	//親のボーンのすべての子供ボーンについて設定する。
+	CBone* parbone = curbone->GetParent();
+	if (parbone){
+
+		if (!parbone->GetParent()){
+			//grand parrentがルートボーンの場合、まだうまくいかないのでスキップ。
+			return 0;
+		}
+
+
+		CBone* childbone = parbone->GetChild();
+		while (childbone){
+			D3DXMATRIX newbtmat;
+			newbtmat = parbone->GetBtMat() * mvmat;// *tramat;
+
+			D3DXMATRIX firstworld = parbone->GetStartMat2();
+			D3DXMATRIX invfirstworld;
+			D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+
+			D3DXMATRIX diffworld = invfirstworld * newbtmat;
+			CRigidElem* curre = parbone->GetRigidElem(childbone);
+			D3DXMATRIX newrigidmat;
+			if (curre){
+				newrigidmat = curre->GetFirstcapsulemat() * diffworld;
+			}
+			else{
+				::MessageBoxA(NULL, "IKTraRagdoll : curre NULL !!!!", "check", MB_OK);
+			}
+
+			D3DXVECTOR3 newparpos, newchilpos;
+			D3DXVECTOR3 jointfpos;
+			jointfpos = parbone->GetJointFPos();
+			D3DXVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+			jointfpos = childbone->GetJointFPos();
+			D3DXVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+
+			D3DXVECTOR3 rigidcenter;
+			rigidcenter = (newparpos + newchilpos) * 0.5f;
+
+
+			CQuaternion tmpq;
+			tmpq.RotationMatrix(newrigidmat);
+			btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
+
+
+			btTransform worldtra;
+			worldtra.setIdentity();
+			worldtra.setRotation(btrotq);
+			worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+
+			CBtObject* setbto = parbone->GetBtObject(childbone);
+			if (setbto){
+				setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+			}
+			else{
+				::MessageBoxA(NULL, "IKTraRagdoll : setbto NULL !!!!", "check", MB_OK);
+			}
+
+			if (isfirst == 1){
+				parbone->SetBtMat(newbtmat);
+				//IKボーンはKINEMATICだから。
+				parbone->GetCurMp().SetWorldMat(newbtmat);
+			}
+
+			isfirst = 0;
+
+			childbone = childbone->GetBrother();
+		}
+	}
+
+
+	return srcboneno;
+
+}
+
+
 
 int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 {
@@ -6885,6 +6941,48 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVE
 	return curbone->GetBoneNo();
 }
 
+/*
+int CModel::ImpulseBoneRagdoll(int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra)
+{
+
+	if (srcboneno < 0){
+		_ASSERT(0);
+		return 1;
+	}
+
+	CBone* firstbone = m_bonelist[srcboneno];
+	if (!firstbone){
+		_ASSERT(0);
+		return 1;
+	}
+
+	CBone* curbone = firstbone;
+	SetBefEditMatFK(erptr, curbone);
+
+	CBone* lastpar = firstbone->GetParent();
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+	curbone = firstbone;
+	double firstframe = 0.0;
+
+	D3DXVECTOR3 impulse = addtra * g_gzeromvrate;
+	//D3DXVECTOR3 impulse = D3DXVECTOR3(100.0f, 0.0f ,0.0f);
+
+	CBone* parbone = curbone->GetParent();
+	if (parbone){
+		CBtObject* findbto = parbone->GetBtObject(curbone);
+		if (findbto && findbto->GetRigidBody()){
+			findbto->GetRigidBody()->applyImpulse(btVector3(impulse.x, impulse.y, impulse.z), btVector3(0.0f, 0.0f, 0.0f));
+		}
+	}
+
+	return curbone->GetBoneNo();
+}
+*/
+
 int CModel::InitUndoMotion( int saveflag )
 {
 	int undono;
@@ -7273,4 +7371,21 @@ void CModel::DumpBtConstraintReq(CBtObject* srcbto, int srcdepth)
 			}
 		}
 	}
+}
+
+int CModel::CreateGZeroPosConstraint(CBone* srcbone)
+{
+	if (!srcbone){
+		return 0;
+	}
+
+	CBone* parbone = srcbone->GetParent();
+	if (parbone){
+		CBtObject* curbto = parbone->GetBtObject(srcbone);
+		if (curbto){
+			curbto->CreateGZeroPosConstraint();
+		}
+	}
+
+	return 0;
 }

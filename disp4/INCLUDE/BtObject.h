@@ -97,6 +97,9 @@ public:
 	int SetEquilibriumPoint( int lflag, int aflag );
 	int EnableSpring(bool angleflag, bool linearflag);
 
+
+	int CreateGZeroPosConstraint();
+
 private:
 
 /**
@@ -140,6 +143,9 @@ private:
  * @detail 親側のコンストレイントと子供側のコンストレイントと別々に両方呼び出す。
  */
 	int CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dstmat );
+
+
+	void DestroyGZObj();
 
 
 public: //accesser
@@ -253,11 +259,16 @@ private:
 	CBone* m_bone;//剛体の親側のボーン
 	CBone* m_parbone;//m_boneの親のボーン
 	CBone* m_endbone;//剛体の子供側のボーン
-	btCollisionShape* m_colshape;//bulletのあたり判定形状データ。
-	btRigidBody* m_rigidbody;//ブレットの剛体データ。
-	
 
+
+	btCollisionShape* m_colshape;//bulletのあたり判定形状データ。
+	btRigidBody* m_rigidbody;//ブレットの剛体データ。	
 	std::vector<CONSTRAINTELEM> m_constraint;//thisと子供のBtObjectをつなぐコンストレイントのvector。
+	
+	btCollisionShape* m_gz_colshape;//bulletのあたり判定形状データ。
+	btRigidBody* m_gz_rigidbody;//ブレットの剛体データ。	
+	CONSTRAINTELEM m_gz_constraint;//thisと子供のBtObjectをつなぐコンストレイントのvector。
+
 
 
 	CBtObject* m_parbt;//親のCBtObject

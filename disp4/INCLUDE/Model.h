@@ -323,9 +323,10 @@ public:
  */
 	int IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel );
 
-	int IKRotateRagdoll(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
 
-
+	int GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
+	int GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec);
+	int CreateGZeroPosConstraint(CBone* srcbone);
 /**
  * @fn
  * IKRotateAxisDelta
@@ -526,7 +527,7 @@ public:
 	int DisableAllRigidElem(int srcrgdindex);
 
 	int Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
-	int SetRagdollKinFlag(int selectbone);
+	int SetRagdollKinFlag(int selectbone, int gzeromvkind = 0);
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );
@@ -651,7 +652,7 @@ private:
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );
 	void SetBtGravityReq( CBtObject* srcbto );
-	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone );
+	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int gzeromvkind = 0 );
 	void CreateBtConnectReq( CBone* curbone );
 	void SetColiIDReq( CBone* srcbone, CRigidElem* srcre );
 	void EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex);

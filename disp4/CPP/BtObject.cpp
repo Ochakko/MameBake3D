@@ -59,6 +59,12 @@ int CBtObject::InitParams()
 	m_rigidbody = 0;
 	m_constraint.clear();
 
+	m_gz_colshape = 0;
+	m_gz_rigidbody = 0;
+	ZeroMemory(&m_gz_constraint, sizeof(CONSTRAINTELEM));
+
+
+
 	m_parbt = 0;
 	m_chilbt.clear();
 
@@ -98,35 +104,86 @@ int CBtObject::DestroyObjs()
 		m_colshape = 0;
 	}
 
+	DestroyGZObj();
+
+
 	m_chilbt.clear();
 
 	return 0;
 }
 
+void CBtObject::DestroyGZObj()
+{
+	btGeneric6DofSpringConstraint* constptr = m_gz_constraint.constraint;
+	if (constptr){
+		m_btWorld->removeConstraint(constptr);
+		delete constptr;
+	}
+	ZeroMemory(&m_gz_constraint, sizeof(CONSTRAINTELEM));
+
+	if (m_gz_rigidbody){
+		if (m_gz_rigidbody->getMotionState()){
+			delete m_gz_rigidbody->getMotionState();
+		}
+		m_btWorld->removeRigidBody(m_gz_rigidbody);
+		delete m_gz_rigidbody;
+		m_gz_rigidbody = 0;
+	}
+
+	if (m_gz_colshape){
+		delete m_gz_colshape;
+		m_gz_colshape = 0;
+	}
+}
+
+
 btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransform& startTransform, btCollisionShape* shape )
 {
 	_ASSERT( shape );
 
-	//bool isDynamic = (curre->GetMass() != 0.f);
-	bool isDynamic = true;
+	btRigidBody* body = 0;
 
-	btVector3 localInertia(0,0,0);
-	//btVector3 localInertia(0, -m_boneleng * 0.5f, 0);
-	if (isDynamic)
-		shape->calculateLocalInertia( curre->GetMass(), localInertia );
+	if (curre){
+		//bool isDynamic = (curre->GetMass() != 0.f);
+		bool isDynamic = true;
+		btVector3 localInertia(0, 0, 0);
+		//btVector3 localInertia(0, -m_boneleng * 0.5f, 0);
+		if (isDynamic)
+			shape->calculateLocalInertia(curre->GetMass(), localInertia);
 
-	btDefaultMotionState* myMotionState = new btDefaultMotionState( startTransform );
-		
-	btRigidBody::btRigidBodyConstructionInfo rbInfo( curre->GetMass(), myMotionState, shape, localInertia );
-	btRigidBody* body = new btRigidBody( rbInfo );
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 
-	body->setRestitution( curre->GetRestitution() );
-	body->setFriction( curre->GetFriction() );
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(curre->GetMass(), myMotionState, shape, localInertia);
+		body = new btRigidBody(rbInfo);
 
-	int myid = curre->GetGroupid();
-	int coliid = curre->GetColiID();
-	m_btWorld->addRigidBody(body, myid, coliid);
+		body->setRestitution(curre->GetRestitution());
+		body->setFriction(curre->GetFriction());
 
+		int myid = curre->GetGroupid();
+		int coliid = curre->GetColiID();
+		m_btWorld->addRigidBody(body, myid, coliid);
+	}
+	else{
+		bool isDynamic = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		btScalar setmass = 0.0;
+
+		btVector3 localInertia(0, 0, 0);
+		//if (isDynamic)
+			shape->calculateLocalInertia(setmass, localInertia);
+
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(setmass, myMotionState, shape, localInertia);
+		body = new btRigidBody(rbInfo);
+
+		body->setRestitution(0.0);
+		body->setFriction(1.0);
+
+		int myid = 999;
+		int coliid = 0;
+		m_btWorld->addRigidBody(body, myid, coliid);
+
+	}
 	return body;
 }
 int CBtObject::AddChild( CBtObject* addbt )
@@ -301,6 +358,10 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 	return 0;
 }
+
+
+
+
 
 int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dsttra )
 {
@@ -810,3 +871,112 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	return 0;
 }
 
+int CBtObject::CreateGZeroPosConstraint()
+{
+
+
+	DestroyGZObj();
+
+
+//////////////
+////////////// mass zero rigidbody
+	float h, r, z;
+	//max : boneleng 0 対策
+	r = 1.0f;
+	h = 1.0f;
+	z = 1.0f;
+
+	m_gz_colshape = new btSphereShape(btScalar(r));
+
+	D3DXVECTOR3 endpos, aftendpos;
+	endpos = m_endbone->GetJointFPos();
+	D3DXMATRIX endmat;
+	if (g_previewFlag == 5){
+
+		endmat = m_endbone->GetBtMat();
+	}
+	else{
+		endmat = m_endbone->GetCurMp().GetWorldMat();
+	}
+	D3DXVec3TransformCoord(&aftendpos, &endpos, &endmat);
+
+	btVector3 btv(btScalar(aftendpos.x), btScalar(aftendpos.y), btScalar(aftendpos.z));
+
+	btTransform transform;
+	transform.setIdentity();
+	//transform.setRotation(btq);
+	transform.setOrigin(btv);
+
+	m_gz_rigidbody = localCreateRigidBody(0, transform, m_gz_colshape);
+	_ASSERT(m_gz_rigidbody);
+	if (!m_gz_rigidbody){
+		_ASSERT(0);
+		return 1;
+	}
+//////////////////
+////////////////// constraint
+	if (m_topflag == 1){
+		return 0;
+	}
+	_ASSERT(m_btWorld);
+	_ASSERT(m_bone);
+
+	if (!m_endbone){
+		return 1;
+	}
+	if (!m_gz_rigidbody){
+		return 1;
+	}
+
+
+	btTransform FrameA;//剛体設定時のA側変換行列。
+	btTransform FrameB;//剛体設定時のB側変換行列。
+	FrameA.setIdentity();
+	FrameB.setIdentity();
+
+	//CRigidElem* tmpre;
+	//tmpre = m_bone->GetRigidElem(m_endbone);
+	//_ASSERT(tmpre);
+	//CalcConstraintTransform(0, tmpre, this, m_FrameA);
+	//tmpre = chilbto->m_bone->GetRigidElem(chilbto->m_endbone);
+	//_ASSERT(tmpre);
+	//CalcConstraintTransform(1, tmpre, chilbto, m_FrameB);
+
+
+	float angPAI2, angPAI;
+	angPAI2 = 90.0f * (float)DEG2PAI;
+	angPAI = 180.0f * (float)DEG2PAI;
+
+	float lmax, lmin;
+	lmin = -10000.0f;
+	lmax = 10000.0f;
+
+	btGeneric6DofSpringConstraint* dofC = 0;
+	dofC = new btGeneric6DofSpringConstraint(*m_rigidbody, *m_gz_rigidbody, m_FrameA, m_FrameB, true);
+	_ASSERT(dofC);
+	if (dofC){
+		int dofid;
+		for (dofid = 0; dofid < 3; dofid++){
+			dofC->setEquilibriumPoint(dofid);
+			dofC->enableSpring(dofid, true);
+		}
+		for (dofid = 3; dofid < 6; dofid++){
+			dofC->setEquilibriumPoint(dofid);
+			dofC->enableSpring(dofid, true);
+		}
+
+		m_gz_constraint.constraint = dofC;//!!!!!!!!!!!!!!!!!!!!!!
+		m_gz_constraint.centerbone = m_endbone;
+		m_gz_constraint.childbto = NULL;
+
+		//m_btWorld->addConstraint(dofC, true);
+		//m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
+		m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
+		//m_dofC = dofC;
+
+		dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+	}
+
+
+	return 0;
+}

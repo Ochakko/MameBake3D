@@ -115,6 +115,7 @@ bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 
 static int s_onragdollik = 0;
+static int s_gzerokind = 0;
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -614,10 +615,14 @@ WCHAR g_basedir[ MAX_PATH ] = {0};
 float g_ikfirst = 1.0f;
 float g_ikrate = 1.0f;
 int g_applyrate = 50;
+float g_gzeromvrate = 1.0f;
 
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
+#define ID_RMENU_GZEROCONSTRAINT	(ID_RMENU_0 - 100)
+
+
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
 #define IDC_CHANGEDEVICE        4
@@ -686,6 +691,9 @@ int g_applyrate = 50;
 
 #define IDC_GZERO_IK				54
 #define IDC_BTSTART					55
+#define IDC_GZERO_MV_IK				56
+#define IDC_GZERO_MV_SLIDER			57
+#define IDC_STATIC_GZERO_MV_SLIDER	58
 
 
 //--------------------------------------------------------------------------------------
@@ -799,6 +807,7 @@ static int ExportFBXFile();
 static void refreshTimeline( OWP_Timeline& timeline );
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( D3DXVECTOR3 diffvec );
+static int AddBoneTraGZero(D3DXVECTOR3 diffvec);
 
 static int DispMotionWindow();
 static int DispToolWindow();
@@ -2827,7 +2836,18 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			StartBt(0, 1);
 			break;
 		case IDC_GZERO_IK:
+			s_gzerokind = 0;
 			StartBt(1, 1);
+			break;
+		case IDC_GZERO_MV_IK:
+			s_gzerokind = 1;
+			StartBt(1, 1);
+			break;
+		case IDC_GZERO_MV_SLIDER:
+			RollbackCurBoneNo();
+			g_gzeromvrate = (float)(g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->GetValue()) * 0.01f;
+			swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
+			g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
 			break;
 
         case IDC_LIGHT_SCALE:
@@ -4659,6 +4679,26 @@ int AddBoneTra2( D3DXVECTOR3 diffvec )
 	return 0;
 }
 
+/*
+int ImpulseBoneGZero(D3DXVECTOR3 diffvec)
+{
+	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()){
+		return 0;
+	}
+
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (!curbone){
+		_ASSERT(0);
+		return 0;
+	}
+
+	s_model->ImpulseBoneRagdoll(0, &s_editrange, s_curboneno, diffvec);
+
+	s_editmotionflag = s_curboneno;
+
+	return 0;
+}
+*/
 
 int AddBoneTra( int kind, float srctra )
 {
@@ -6877,7 +6917,11 @@ int StartBt(int flag, int btcntzero)
 				//s_bpWorld->setGlobalERP(0.2);// ERP
 				//s_bpWorld->setGlobalERP(0.001);// ERP
 				//s_bpWorld->setGlobalERP(1.0e-8);// ERP
+				
+				
 				s_bpWorld->setGlobalERP(0.00020);// ERP
+				//s_bpWorld->setGlobalERP(s_erp);// ERP
+
 
 
 				curmodel->SetMotionFrame(curframe);
@@ -6896,7 +6940,27 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
-				s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+				if (s_gzerokind == 0){
+					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+
+					g_gzeromvrate = 1.0f;
+					g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->SetValue((int)(g_gzeromvrate * 100.0f));
+					WCHAR sz[100];
+					swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
+					g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
+				}
+				else{
+					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
+
+					g_gzeromvrate = 1.0f;
+					g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->SetValue((int)(g_gzeromvrate * 100.0f));
+					WCHAR sz[100];
+					swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
+					g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
+				}
+
+
+
 				//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
@@ -6925,9 +6989,9 @@ int StartBt(int flag, int btcntzero)
 				UpdateBtSimu(curframe, curmodel);
 			}
 			
-			if( g_previewFlag == 5 ){
-				s_model->SetBtImpulse();
-			}
+			//if( g_previewFlag == 5 ){
+			//	s_model->SetBtImpulse();
+			//}
 
 			
 			if (curmodel->GetRgdMorphIndex() >= 0){
@@ -9183,6 +9247,10 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	}
 	CModel* curmodel = s_model;
 
+	if (curmodel && curmodel->GetCurMotInfo()){
+		curmodel->SetRagdollKinFlag(s_curboneno, s_gzerokind);
+	}
+
 	if (s_onragdollik == 1){
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
@@ -9199,8 +9267,15 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
 		CallF(CalcTargetPos(&targetpos), return 1);
 
-		int ikmaxlevel = 0;
-		curmodel->IKRotateRagdoll(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+		if (s_gzerokind == 0){
+			int ikmaxlevel = 0;
+			curmodel->GZeroRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+		}
+		else{
+			int ikmaxlevel = 0;
+			D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+			curmodel->GZeroMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
+		}
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		CBone* parbone = curbone->GetParent();
 		if (parbone){
@@ -9218,9 +9293,9 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	*pnextframe = 0.0;//!!!!!!!!!!!!!!!!
 
 
-	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->SetRagdollKinFlag(s_curboneno);
-	}
+//	if (curmodel && curmodel->GetCurMotInfo()){
+//		curmodel->SetRagdollKinFlag(s_curboneno, s_gzerokind);
+//	}
 
 	//if ((g_previewFlag == 5) && (firstflag == 1)){
 	//	curmodel->SetBtImpulse();
@@ -10111,8 +10186,8 @@ int CreateUtDialog()
 
 
 	//Right Bottom
-	iY = s_mainheight - 180;
-	int startx = s_mainwidth - 130;
+	iY = s_mainheight - 200;
+	int startx = s_mainwidth - 120;
 
 	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
 	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
@@ -10125,7 +10200,7 @@ int CreateUtDialog()
 	
 
 	//Center Bottom
-	iY = s_mainheight - 180;
+	iY = s_mainheight - 200;
 	startx = s_mainwidth / 2 - 50;
 
 	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
@@ -10134,8 +10209,20 @@ int CreateUtDialog()
 
 	iY += 10;
 	g_SampleUI.AddButton(IDC_BTSTART, L"BT start", startx, iY += addh, 100, ctrlh);
+
+
+	//CenterRight Bottom
+	iY = s_mainheight - 200;
+	startx = s_mainwidth / 2 - 50 + 130 ;
+
+	swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
+	g_SampleUI.AddStatic(IDC_STATIC_GZERO_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddSlider(IDC_GZERO_MV_SLIDER, startx, iY += addh, 100, ctrlh, 0, 100, (int)(g_gzeromvrate * 100.0f));
+
+	iY += 10;
+	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero Rot start", startx, iY += addh, 100, ctrlh);
 	iY += 5;
-	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero IK start", startx, iY += addh, 100, ctrlh);
+	g_SampleUI.AddButton(IDC_GZERO_MV_IK, L"GZero MV start", startx, iY += addh, 100, ctrlh);
 
 
 	return 0;
@@ -12002,6 +12089,8 @@ int BoneRClick(int srcboneno)
 				s_customrigmenuindex.clear();
 
 
+				AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos Constraint");
+
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"êVãKRig");
 				int setmenuno = 1;
 				int rigno;
@@ -12047,7 +12136,10 @@ int BoneRClick(int srcboneno)
 				int currigno = -1;
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
-				if (menuid == ID_RMENU_0){
+				if (menuid == ID_RMENU_GZEROCONSTRAINT){
+					s_model->CreateGZeroPosConstraint(curbone);
+				}
+				else if (menuid == ID_RMENU_0){
 					//êVãK
 					currigno = -1;
 					DispCustomRigDlg(currigno);
