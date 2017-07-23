@@ -5989,7 +5989,6 @@ int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, in
 
 }
 
-
 int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 {
 
@@ -6094,6 +6093,7 @@ int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 	return srcboneno;
 
 }
+
 
 
 
