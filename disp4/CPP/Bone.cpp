@@ -251,7 +251,11 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 
 			D3DXVECTOR3 jpos = GetJointFPos();
 			D3DXVec3TransformCoord(&m_childworld, &jpos, &m_curmp.GetWorldMat());
+
+			D3DXMATRIX wvpmat = m_curmp.GetWorldMat() * *vpmat;
+
 			D3DXVec3TransformCoord(&m_childscreen, &m_childworld, vpmat);
+			//D3DXVec3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
 		}
 		else{
 			m_curmp.InitParams();
@@ -261,8 +265,22 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 	else{
 		//RagdollIKŽž‚Ìƒ{[ƒ“‘I‘ð‘Îô
 		D3DXVECTOR3 jpos = GetJointFPos();
-		D3DXVec3TransformCoord(&m_childworld, &jpos, &(GetBtMat()));
+
+		D3DXMATRIX wmat, wvpmat;
+		if (m_parent){
+			wmat = m_parent->GetBtMat();
+		}
+		else{
+			wmat = GetBtMat();
+		}
+		wvpmat = wmat * *vpmat;
+
+		//D3DXVec3TransformCoord(&m_childworld, &jpos, &(GetBtMat()));
 		D3DXVec3TransformCoord(&m_childscreen, &m_childworld, vpmat);
+
+		D3DXVec3TransformCoord(&m_childworld, &jpos, &wmat);
+		//D3DXVec3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
+
 	}
 	return 0;
 }
@@ -2873,7 +2891,16 @@ D3DXVECTOR3 CBone::GetChildWorld(){
 		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
 	}
 	else{
-		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &(GetBtMat()));
+		D3DXMATRIX wmat;
+		if (m_parent){
+			wmat = m_parent->GetBtMat();
+		}
+		else{
+			wmat = GetBtMat();
+		}
+
+		//D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &(GetBtMat()));
+		D3DXVec3TransformCoord(&m_childworld, &m_jointfpos, &wmat);
 	}
 	return m_childworld;
 };

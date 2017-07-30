@@ -1915,7 +1915,13 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, D3DXVECTOR3* world
 			mW = curbone->GetCurMp().GetWorldMat();
 		}
 		else{
-			mW = curbone->GetBtMat();
+			CBone* parbone = curbone->GetParent();
+			if (parbone){
+				mW = parbone->GetBtMat();//endjoint‚Ìbtmat‚ª‚¨‚©‚µ‚¢‰Â”\«‚ª‚ ‚é‚½‚ßB
+			}
+			else{
+				mW = curbone->GetBtMat();
+			}
 		}
 
 		D3DXVec3TransformCoord(worldptr, &curbone->GetJointFPos(), &mW);
@@ -3566,16 +3572,22 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 		if (curre){
 			if (chilbone && (chilbone->GetType() == FBXBONE_NORMAL)){
 
-				D3DXMATRIX capsulemat;
-				capsulemat = curre->GetCapsulemat();
-				//CBone* parbone = boneptr->GetParent();
-				//CBone* chilbone = boneptr->GetChild();
-				D3DXMATRIX transmat = capsulemat * m_matVP;
-				D3DXVECTOR3 scpos;
-				D3DXVECTOR3 firstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				//D3DXMATRIX capsulemat;
+				//capsulemat = curre->GetCapsulemat();
+				////CBone* parbone = boneptr->GetParent();
+				////CBone* chilbone = boneptr->GetChild();
+				//D3DXMATRIX transmat = capsulemat * m_matVP;
+				//D3DXVECTOR3 scpos;
+				//D3DXVECTOR3 firstpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				//
+				//D3DXVec3TransformCoord(&scpos, &firstpos, &transmat);
 
+				D3DXMATRIX transmat = srcbone->GetBtMat() * m_matVP;
+				D3DXVECTOR3 firstpos = chilbone->GetJointFPos();
+				D3DXVECTOR3 scpos;
 				D3DXVec3TransformCoord(&scpos, &firstpos, &transmat);
 				scpos.z = 0.0f;
+
 				bcircleptr->SetPos(scpos);
 				D3DXVECTOR2 bsize;
 				if (chilbone->GetSelectFlag() & 2){
@@ -3589,7 +3601,7 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 					bcircleptr->SetSize(bsize);
 				}
 				else{
-					bcircleptr->SetColor(D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.7f));
+					bcircleptr->SetColor(D3DXVECTOR4(0.8f, 0.8f, 0.8f, 0.7f));
 					bsize = D3DXVECTOR2(0.025f, 0.025f);
 					bcircleptr->SetSize(bsize);
 				}
