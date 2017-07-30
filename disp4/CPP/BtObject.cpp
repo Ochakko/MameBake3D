@@ -160,7 +160,14 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 		body->setFriction(curre->GetFriction());
 
 		int myid = curre->GetGroupid();
-		int coliid = curre->GetColiID();
+		//int coliid = curre->GetColiID();
+		int coliid;
+		if (g_previewFlag == 5){
+			coliid = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		}
+		else{
+			coliid = curre->GetColiID();
+		}
 		m_btWorld->addRigidBody(body, myid, coliid);
 	}
 	else{
@@ -238,25 +245,33 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	//double lengrate = 0.95;
 
 	double lengrate;
+	double rrate;
 
 	if (g_previewFlag == 5){
-		lengrate = 0.30;
+		//lengrate = 0.90;
+		//rrate = 0.30;
+		//rrate = 0.1;
+
+		lengrate = 0.90;
+		rrate = 0.050;
 	}
 	else{
 		lengrate = 0.90;
+		rrate = 0.90;
 	}
 
+
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
-		m_colshape = new btCapsuleShape(btScalar(r * lengrate), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		m_colshape = new btCapsuleShape(btScalar(r * rrate), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_CONE_INDEX ){
-		m_colshape = new btConeShape(btScalar(r * lengrate), btScalar(h * lengrate));
+		m_colshape = new btConeShape(btScalar(r * rrate), btScalar(h * lengrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
-		m_colshape = new btSphereShape(btScalar(r * lengrate));
+		m_colshape = new btSphereShape(btScalar(r * rrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_BOX_INDEX ){
-		m_colshape = new btBoxShape(btVector3(r * lengrate, h * lengrate, z));
+		m_colshape = new btBoxShape(btVector3(r * rrate, h * lengrate, z * rrate));
 		_ASSERT( m_colshape );
 	}else{
 		_ASSERT( 0 );
@@ -565,10 +580,11 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					}
 					//dofC->setStiffness(dofid, 1.0e12);
 					dofC->setDamping(dofid, l_damping);
-					dofC->setEquilibriumPoint(dofid);
-
 					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 					dofC->enableSpring(dofid, true);
+
+					//dofC->setEquilibriumPoint(dofid);
+
 				}
 				for (dofid = 3; dofid < 6; dofid++){
 					if (a_kindex <= 2){
@@ -578,10 +594,12 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						dofC->setStiffness(dofid, a_cusk);
 					}
 					dofC->setDamping(dofid, a_damping);
-					dofC->setEquilibriumPoint(dofid);
-
-					dofC->enableSpring(dofid, true);
 					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+					dofC->enableSpring(dofid, true);
+
+
+					//dofC->setEquilibriumPoint(dofid);
+
 				}
 
 				CONSTRAINTELEM addelem;
@@ -594,12 +612,18 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					m_bone->GetWBoneName(), m_endbone->GetWBoneName(),
 					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
 
-				//m_btWorld->addConstraint(dofC, true);
+				
+				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+
+
+				//m_btWorld->addConstraint(dofC, false);
+				m_btWorld->addConstraint(dofC, true);
 				//m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
-				m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
+				//m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
 				//m_dofC = dofC;
 
-				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+				//dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+
 			}
 		}
 	}

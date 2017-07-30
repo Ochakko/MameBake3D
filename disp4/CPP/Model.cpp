@@ -4414,6 +4414,7 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 
 	//`Šp“xAˆÊ’u
 	srcbto->EnableSpring(true, true);
+
 	//srcbto->EnableSpring(false, true);
 	//srcbto->EnableSpring(true, false);
 
@@ -5211,6 +5212,52 @@ void CModel::SetDmpDataReq( int gid, int reindex, CBone* srcbone, float ldmp, fl
 		SetDmpDataReq( gid, reindex, srcbone->GetBrother(), ldmp, admp );
 	}
 }
+
+int CModel::SetColTypeAll(int reindex, int srctype)
+{
+	if (!m_topbone){
+		return 0;
+	}
+	if (reindex < 0){
+		return 0;
+	}
+
+	if ((srctype >= COL_CONE_INDEX) && (srctype < COL_MAX)){
+		SetColTypeReq(reindex, m_topbone, srctype);
+	}
+	else{
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
+void CModel::SetColTypeReq(int reindex, CBone* srcbone, int srctype)
+{
+	if (srcbone->GetParent()){
+		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
+			char* filename = m_rigideleminfo[reindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre){
+				curre->SetColtype(srctype);
+				curre->SetColtype(srctype);
+			}
+		}
+		else{
+			_ASSERT(0);
+		}
+	}
+
+	if (srcbone->GetChild()){
+		SetColTypeReq(reindex, srcbone->GetChild(), srctype);
+	}
+	if (srcbone->GetBrother()){
+		SetColTypeReq(reindex, srcbone->GetBrother(), srctype);
+	}
+}
+
+
 
 int CModel::SetAllRestData( int gid, int reindex, float rest, float fric )
 {

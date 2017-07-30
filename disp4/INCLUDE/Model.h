@@ -526,6 +526,8 @@ public:
 	int EnableAllRigidElem(int srcrgdindex);
 	int DisableAllRigidElem(int srcrgdindex);
 
+	int SetColTypeAll(int reindex, int srctype);
+
 	int Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
 	int SetRagdollKinFlag(int selectbone, int gzeromvkind = 0);
 	int SetCurrentRigidElem( int curindex );
@@ -648,6 +650,7 @@ private:
 	void SetDmpDataReq( int gid, int reindex, CBone* srcbone, float ldmp, float admp );
 	void SetMassDataReq( int gid, int reindex, CBone* srcbone, float srcmass );
 	void SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, float srcmass);
+	void SetColTypeReq(int reindex, CBone* srcbone, int srctype);
 
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );

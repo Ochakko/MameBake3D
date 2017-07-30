@@ -6927,6 +6927,9 @@ int StartBt(int flag, int btcntzero)
 				curmodel->SetMotionFrame(curframe);
 
 
+				curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 			//ラグドールの時のバネは決め打ち
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
@@ -6940,8 +6943,10 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
+
 				if (s_gzerokind == 0){
-					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
 
 					g_gzeromvrate = 1.0f;
 					g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->SetValue((int)(g_gzeromvrate * 100.0f));
@@ -6950,7 +6955,12 @@ int StartBt(int flag, int btcntzero)
 					g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
 				}
 				else{
-					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 2000.0, 60.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 10000.0, 60.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 13000.0, 200.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 40000.0, 100.0);
+					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
 
 					g_gzeromvrate = 1.0f;
 					g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->SetValue((int)(g_gzeromvrate * 100.0f));
