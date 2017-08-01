@@ -1004,3 +1004,9 @@ int CBtObject::CreateGZeroPosConstraint()
 
 	return 0;
 }
+
+int CBtObject::DestroyGZeroPosConstraint()
+{
+	DestroyGZObj();
+	return 0;
+}

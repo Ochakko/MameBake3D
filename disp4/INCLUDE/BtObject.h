@@ -99,6 +99,7 @@ public:
 
 
 	int CreateGZeroPosConstraint();
+	int DestroyGZeroPosConstraint();
 
 private:
 

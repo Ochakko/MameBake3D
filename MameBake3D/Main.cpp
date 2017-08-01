@@ -12147,7 +12147,13 @@ int BoneRClick(int srcboneno)
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
 				if (menuid == ID_RMENU_GZEROCONSTRAINT){
-					s_model->CreateGZeroPosConstraint(curbone);
+					//toggle
+					if (curbone->GetPosConstraint() == 0){
+						s_model->CreateGZeroPosConstraint(curbone);
+					}
+					else{
+						s_model->DestroyGZeroPosConstraint(curbone);
+					}
 				}
 				else if (menuid == ID_RMENU_0){
 					//V‹K

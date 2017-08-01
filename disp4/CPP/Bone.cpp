@@ -68,6 +68,7 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_posconstraint = 0;
 	ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
 
 	D3DXMatrixIdentity(&m_tmpsymmat);

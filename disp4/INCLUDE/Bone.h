@@ -359,8 +359,7 @@ public:
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
 
-	int CBone::LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev);
-
+	int LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev);
 private:
 
 /**
@@ -819,7 +818,15 @@ public: //accesser
 		m_firstcalcrigid = srcflag;
 	};
 
+	void SetPosConstraint(int srcval){
+		m_posconstraint = srcval;
+	};
+	int GetPosConstraint(){
+		return m_posconstraint;
+	};
+
 private:
+	int m_posconstraint;
 	bool m_firstcalcrigid;
 	int m_type;
 	int m_selectflag;

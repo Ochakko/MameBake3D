@@ -327,6 +327,8 @@ public:
 	int GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
 	int GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec);
 	int CreateGZeroPosConstraint(CBone* srcbone);
+	int DestroyGZeroPosConstraint(CBone* srcbone);
+
 /**
  * @fn
  * IKRotateAxisDelta
@@ -681,6 +683,8 @@ private:
 	void DumpBtObjectReq(CBtObject* srcbto, int srcdepth);
 	void DumpBtConstraintReq(CBtObject* srcbto, int srcdepth);
 	FbxPose* GetBindPose();
+
+	void CreateGZeroPosConstraintReq(CBone* srcbone);
 
 public: //accesser
 	FbxManager* GetFBXSDK(){
