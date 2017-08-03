@@ -56,6 +56,11 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+2017/08/03_2
+	ReadMe.txt
+		動画　【まめばけ３D】編集に使える(or Not?)無重力IK
+		https://youtu.be/EU9owDSkDtw
+
 2017/08/03_1
 	GZeroMV(無重力k移動)を修正しました。
 		編集可能にすることに重きを置いて修正しました。
@@ -986,6 +991,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+【まめばけ３D】編集に使える(or Not?)無重力IK
+https://youtu.be/EU9owDSkDtw
 
 【まめばけ３D】そっと位置コンストレイント実験中
 https://youtu.be/LgX_15AMt1o
