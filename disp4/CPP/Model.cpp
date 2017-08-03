@@ -6073,86 +6073,13 @@ int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 
 	D3DXVECTOR3 mvvec = diffvec * g_gzeromvrate;
 
-	D3DXMATRIX mvmat;
-	D3DXMatrixIdentity(&mvmat);
-	D3DXMatrixTranslation(&mvmat, mvvec.x, mvvec.y, mvvec.z);
 
 	int isfirst = 1;
 
-	////一番親あるいは位置コンストレイントの手前のボーンのMVの設定をする。
-	while (curbone && (curbone->GetPosConstraint() == 0)){
-		CBone* parbone = curbone->GetParent();
-		if (!parbone){
-			break;
-		}
+	GZeroMVReq(m_topbone, mvvec);
 
-
-		//while (curbone && (curbone->GetPosConstraint() == 0)){
-
-		//親のボーンのすべての子供ボーンについて設定する。
-		//CBone* parbone = curbone->GetParent();
-		if (parbone){
-
-			isfirst = 1;
-
-			if (!parbone->GetParent()){
-				//grand parrentがルートボーンの場合、まだうまくいかないのでスキップ。
-				return 0;
-			}
-
-
-			CBone* childbone = parbone->GetChild();
-			while (childbone){
-
-				childbone->SetBtKinFlag(1);
-				CBtObject* srcbto = parbone->GetBtObject(childbone);
-				if (srcbto){
-					DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
-					srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
-					if (srcbto->GetRigidBody()){
-						srcbto->GetRigidBody()->setDeactivationTime(0.0);
-					}
-
-
-					D3DXMATRIX newbtmat;
-					newbtmat = parbone->GetBtMat() * mvmat;// *tramat;
-
-					btTransform worldtra;
-					srcbto->GetRigidBody()->getMotionState()->getWorldTransform(worldtra);
-					btMatrix3x3 worldmat = worldtra.getBasis();
-					btVector3 worldpos = worldtra.getOrigin();
-
-
-					btTransform setworldtra;
-					setworldtra.setIdentity();
-					setworldtra.setBasis(worldmat);
-					setworldtra.setOrigin(btVector3(worldpos.x() + mvvec.x, worldpos.y() + mvvec.y, worldpos.z() + mvvec.z));
-					if (srcbto){
-						srcbto->GetRigidBody()->getMotionState()->setWorldTransform(setworldtra);
-					}
-					else{
-						::MessageBoxA(NULL, "IKTraRagdoll : setbto NULL !!!!", "check", MB_OK);
-					}
-
-					//if (isfirst == 1){
-					//	parbone->SetBtMat(newbtmat);
-					//	//	//IKボーンはKINEMATICだから。
-					//	parbone->GetCurMp().SetWorldMat(newbtmat);
-					//	isfirst = 0;
-					//}
-
-					//childbone->SetBtMat(newbtmat);
-					//IKボーンはKINEMATICだから。
-					//childbone->GetCurMp().SetWorldMat(newbtmat);
-				}
-
-				childbone = childbone->GetBrother();
-			}
-		}
-		curbone = curbone->GetParent();
-	}
-	if (curbone){
-		return curbone->GetBoneNo();
+	if (m_topbone){
+		return m_topbone->GetBoneNo();
 	}
 	else{
 		return srcboneno;
@@ -6160,157 +6087,82 @@ int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 
 }
 
-
-/*
-int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
+int CModel::WithConstraint(CBone* srcbone)
 {
+	if (srcbone){
 
-	CBone* firstbone = m_bonelist[srcboneno];
-	if (!firstbone){
-		_ASSERT(0);
-		return -1;
+		CBone* curbone = srcbone;
+		while (curbone){
+			if (curbone->GetPosConstraint() == 1){
+				return 1;
+			}
+			curbone = curbone->GetParent();
+		}
+	}
+	else{
+		return 0;
 	}
 
-
-	D3DXVECTOR3 ikaxis = g_camtargetpos - g_camEye;
-	D3DXVec3Normalize(&ikaxis, &ikaxis);
-
-	int keynum;
-	double startframe, endframe, applyframe;
-	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
-
-	CBone* curbone = firstbone;
-	SetBefEditMat(erptr, curbone, 0);
+	return 0;
+}
 
 
-	D3DXVECTOR3 mvvec = diffvec * g_gzeromvrate;
-
-	D3DXMATRIX mvmat;
-	D3DXMatrixIdentity(&mvmat);
-	D3DXMatrixTranslation(&mvmat, mvvec.x, mvvec.y, mvvec.z);
-
-	int isfirst = 1;
-	
-	////一番親あるいは位置コンストレイントの手前のボーンのMVの設定をする。
-	//CBone* setbone = 0;
-	//while (curbone && (curbone->GetPosConstraint() == 0)){
-	//	CBone* parbone = curbone->GetParent();
-	//	if (parbone){
-	//		setbone = curbone;
-	//	}
-	//	else{
-	//		break;
-	//	}
-	//	curbone = curbone->GetParent();
-	//}
-	//curbone = setbone;
-	//if (curbone){
-	
-	//while (curbone && (curbone->GetPosConstraint() == 0)){
-
-		//親のボーンのすべての子供ボーンについて設定する。
+void CModel::GZeroMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
+{
+	if (srcbone){
+		CBone* curbone = srcbone;
 		CBone* parbone = curbone->GetParent();
-		if (parbone){
 
-			isfirst = 1;
-
-			if (!parbone->GetParent()){
-				//grand parrentがルートボーンの場合、まだうまくいかないのでスキップ。
-				return 0;
-			}
+		D3DXMATRIX mvmat;
+		D3DXMatrixIdentity(&mvmat);
+		D3DXMatrixTranslation(&mvmat, mvvec.x, mvvec.y, mvvec.z);
 
 
-			CBone* childbone = parbone->GetChild();
-			while (childbone){
+		if (parbone && (WithConstraint(curbone) == 0)){
+				
+			CBone* childbone = curbone;
 
-				childbone->SetBtKinFlag(1);
-				CBtObject* srcbto = parbone->GetBtObject(childbone);
-				if (srcbto){
-					DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
-					srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
-					if (srcbto->GetRigidBody()){
-						srcbto->GetRigidBody()->setDeactivationTime(0.0);
-					}
+			childbone->SetBtKinFlag(1);
+			CBtObject* srcbto = parbone->GetBtObject(childbone);
+			if (srcbto){
+				DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
+				srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
+				if (srcbto->GetRigidBody()){
+					srcbto->GetRigidBody()->setDeactivationTime(0.0);
 				}
 
 
 				D3DXMATRIX newbtmat;
 				newbtmat = parbone->GetBtMat() * mvmat;// *tramat;
 
-				D3DXMATRIX firstworld = parbone->GetStartMat2();
-				D3DXMATRIX invfirstworld;
-				D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
-
-				D3DXMATRIX diffworld = invfirstworld * newbtmat;
-				CRigidElem* curre = parbone->GetRigidElem(childbone);
-				D3DXMATRIX newrigidmat;
-				if (curre){
-					newrigidmat = curre->GetFirstcapsulemat() * diffworld;
-				}
-				else{
-					::MessageBoxA(NULL, "IKTraRagdoll : curre NULL !!!!", "check", MB_OK);
-				}
-
-				D3DXVECTOR3 newparpos, newchilpos;
-				D3DXVECTOR3 jointfpos;
-				jointfpos = parbone->GetJointFPos();
-				D3DXVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
-				//D3DXMATRIX befbtmat = parbone->GetBtMat();
-				//D3DXVec3TransformCoord(&newparpos, &jointfpos, &befbtmat);
-
-				jointfpos = childbone->GetJointFPos();
-				D3DXVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
-
-				D3DXVECTOR3 rigidcenter;
-				rigidcenter = (newparpos + newchilpos) * 0.5f;
-
-
-				CQuaternion tmpq;
-				tmpq.RotationMatrix(newrigidmat);
-				btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
-
-
 				btTransform worldtra;
-				worldtra.setIdentity();
-				worldtra.setRotation(btrotq);
-				worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+				srcbto->GetRigidBody()->getMotionState()->getWorldTransform(worldtra);
+				btMatrix3x3 worldmat = worldtra.getBasis();
+				btVector3 worldpos = worldtra.getOrigin();
 
-				CBtObject* setbto = parbone->GetBtObject(childbone);
-				if (setbto){
-					setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+
+				btTransform setworldtra;
+				setworldtra.setIdentity();
+				setworldtra.setBasis(worldmat);
+				setworldtra.setOrigin(btVector3(worldpos.x() + mvvec.x, worldpos.y() + mvvec.y, worldpos.z() + mvvec.z));
+				if (srcbto){
+					srcbto->GetRigidBody()->getMotionState()->setWorldTransform(setworldtra);
 				}
 				else{
 					::MessageBoxA(NULL, "IKTraRagdoll : setbto NULL !!!!", "check", MB_OK);
 				}
 
-				if (isfirst == 1){
-					parbone->SetBtMat(newbtmat);
-				//	//IKボーンはKINEMATICだから。
-					parbone->GetCurMp().SetWorldMat(newbtmat);
-				}
-
-				//childbone->SetBtMat(newbtmat);
-				//IKボーンはKINEMATICだから。
-				//childbone->GetCurMp().SetWorldMat(newbtmat);
-
-
-				isfirst = 0;
-
-				childbone = childbone->GetBrother();
 			}
-		//}
-		//curbone = curbone->GetParent();
-	}
+		}
 
-	if (curbone){
-		return curbone->GetBoneNo();
-	}else{
-		return srcboneno;
+		if (curbone->GetChild()){
+			GZeroMVReq(curbone->GetChild(), mvvec);
+		}
+		if (curbone->GetBrother()){
+			GZeroMVReq(curbone->GetBrother(), mvvec);
+		}
 	}
-
 }
-*/
-
 
 
 int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )

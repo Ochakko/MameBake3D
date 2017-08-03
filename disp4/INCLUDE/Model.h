@@ -686,6 +686,8 @@ private:
 
 	void CreateGZeroPosConstraintReq(CBone* srcbone);
 
+	void GZeroMVReq(CBone* srcbone, D3DXVECTOR3 diffvec);
+	int WithConstraint(CBone* srcbone);
 public: //accesser
 	FbxManager* GetFBXSDK(){
 		return m_psdk;
