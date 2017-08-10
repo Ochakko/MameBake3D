@@ -6685,7 +6685,7 @@ void CModel::GZeroMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
 		D3DXMatrixTranslation(&mvmat, mvvec.x, mvvec.y, mvvec.z);
 
 
-		if (parbone && (WithConstraint(curbone) == 0)){
+		if (parbone && (WithConstraint(curbone) == 0) && (parbone->GetExcludeMv() == 0)){
 				
 			CBone* childbone = curbone;
 

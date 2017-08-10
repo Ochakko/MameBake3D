@@ -832,9 +832,18 @@ public: //accesser
 		return m_mass0;
 	};
 
+	void SetExcludeMv(int srcval){
+		m_excludemv = srcval;
+	};
+	int GetExcludeMv(){
+		return m_excludemv;
+	};
+
+
 private:
 	int m_posconstraint;
 	int m_mass0;
+	int m_excludemv;
 	bool m_firstcalcrigid;
 	int m_type;
 	int m_selectflag;

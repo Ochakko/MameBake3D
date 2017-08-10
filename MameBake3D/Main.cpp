@@ -623,6 +623,7 @@ float g_gzeromvrate = 1.0f;
 //--------------------------------------------------------------------------------------
 #define ID_RMENU_GZEROCONSTRAINT	(ID_RMENU_0 - 100)
 #define ID_RMENU_MASS0			(ID_RMENU_GZEROCONSTRAINT + 1)
+#define ID_RMENU_EXCLUDE_MV		(ID_RMENU_GZEROCONSTRAINT + 2)
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -12261,12 +12262,21 @@ int BoneRClick(int srcboneno)
 				else{
 					AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos Constraint解除");
 				}
+
 				if (curbone->GetMass0() == 0){
 					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"一時Mass0設定");
 				}
 				else{
 					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"一時Mass0解除");
 				}
+
+				if (curbone->GetExcludeMv() == 0){
+					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"MV除外設定");
+				}
+				else{
+					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"MV除外解除");
+				}
+
 
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"新規Rig");
 				int setmenuno = 1;
@@ -12331,6 +12341,16 @@ int BoneRClick(int srcboneno)
 						s_model->RestoreMass(curbone);
 					}
 				}
+				else if (menuid == ID_RMENU_EXCLUDE_MV){
+					//toggle
+					if (curbone->GetExcludeMv() == 0){
+						curbone->SetExcludeMv(1);
+					}
+					else{
+						curbone->SetExcludeMv(0);
+					}
+				}
+
 				else if (menuid == ID_RMENU_0){
 					//新規
 					currigno = -1;

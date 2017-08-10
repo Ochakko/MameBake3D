@@ -68,6 +68,7 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_excludemv = 0;
 	m_mass0 = 0;
 	m_posconstraint = 0;
 	ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
