@@ -1439,6 +1439,9 @@
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btVector3.h">
       <Filter>BulletLinearMath</Filter>
     </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\ConstraintElem.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MameBake3D.rc">

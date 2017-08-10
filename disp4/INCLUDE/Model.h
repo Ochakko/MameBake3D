@@ -328,7 +328,8 @@ public:
 	int GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec);
 	int CreateGZeroPosConstraint(CBone* srcbone);
 	int DestroyGZeroPosConstraint(CBone* srcbone);
-
+	int SetMass0(CBone* srcbone);
+	int RestoreMass(CBone* srcbone);
 /**
  * @fn
  * IKRotateAxisDelta
@@ -343,6 +344,10 @@ public:
  * @detail MameBake3Dにおいては、マニピュレータのリングまたは球をドラッグした時に呼ばれる。
  */
 	int IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat );
+
+	int GZeroRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat);
+	int SetDofRotAxis(int srcaxiskind);
+
 
 /**
  * @fn
@@ -535,6 +540,7 @@ public:
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );
+	void SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind);
 
 
 	int MultDispObj( D3DXVECTOR3 srcmult, D3DXVECTOR3 srctra );
@@ -562,12 +568,17 @@ public:
 	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
 
 	int RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
+	int GZeroRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();
 
 	CBone* GetSymPosBone(CBone* srcbone);
 
 	int InterpolateBetweenSelection(double srcstartframe, double srcendframe);
+
+	int BulletSimulationStop();
+	int BulletSimulationStart();
+	int ApplyBtToMotion();
 
 private:
 	int InitParams();
@@ -685,9 +696,14 @@ private:
 	FbxPose* GetBindPose();
 
 	void CreateGZeroPosConstraintReq(CBone* srcbone);
+	void SetMass0Req(CBone* srcbone);
 
 	void GZeroMVReq(CBone* srcbone, D3DXVECTOR3 diffvec);
 	int WithConstraint(CBone* srcbone);
+	void BulletSimulationStopReq(CBtObject* srcbto);
+	void BulletSimulationStartReq(CBtObject* srcbto);
+	void ApplyBtToMotionReq(CBone* srcbone);
+
 public: //accesser
 	FbxManager* GetFBXSDK(){
 		return m_psdk;

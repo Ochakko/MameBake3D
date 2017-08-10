@@ -3,13 +3,13 @@
 
 class CBtObject;
 class CBone;
-class btGeneric6DofSpringConstraint;
+class btConeTwistConstraint;
 
 typedef struct tag_constraintelem
 {
 	CBtObject* childbto;
 	CBone* centerbone;
-	btGeneric6DofSpringConstraint* constraint;
+	btConeTwistConstraint* constraint;
 } CONSTRAINTELEM;
 
 

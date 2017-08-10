@@ -825,8 +825,16 @@ public: //accesser
 		return m_posconstraint;
 	};
 
+	void SetMass0(int srcval){
+		m_mass0 = srcval;
+	};
+	int GetMass0(){
+		return m_mass0;
+	};
+
 private:
 	int m_posconstraint;
+	int m_mass0;
 	bool m_firstcalcrigid;
 	int m_type;
 	int m_selectflag;

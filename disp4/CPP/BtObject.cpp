@@ -82,7 +82,7 @@ int CBtObject::DestroyObjs()
 	int chilno;
 	for( chilno = 0; chilno < (int)m_constraint.size(); chilno++ ){
 		//btTypedConstraint* constptr = m_constraint[ chilno ];
-		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno].constraint;
+		btConeTwistConstraint* constptr = m_constraint[chilno].constraint;
 		if( constptr ){
 			m_btWorld->removeConstraint( constptr );
 			delete constptr;
@@ -104,7 +104,7 @@ int CBtObject::DestroyObjs()
 		m_colshape = 0;
 	}
 
-	DestroyGZObj();
+	DestroyGZeroPosConstraint();
 
 
 	m_chilbt.clear();
@@ -114,7 +114,7 @@ int CBtObject::DestroyObjs()
 
 void CBtObject::DestroyGZObj()
 {
-	btGeneric6DofSpringConstraint* constptr = m_gz_constraint.constraint;
+	btConeTwistConstraint* constptr = m_gz_constraint.constraint;
 	if (constptr){
 		m_btWorld->removeConstraint(constptr);
 		delete constptr;
@@ -527,8 +527,9 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 			lmin = -10000.0f;
 			lmax = 10000.0f;
 
-			btGeneric6DofSpringConstraint* dofC = 0;
-			dofC = new btGeneric6DofSpringConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
+			btConeTwistConstraint* dofC = 0;
+			//dofC = new btConeTwistConstraint( *m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB, true );
+			dofC = new btConeTwistConstraint(*m_rigidbody, *(chilbto->m_rigidbody), m_FrameA, m_FrameB);
 			_ASSERT( dofC );
 			if (dofC){
 				btTransform worldtra;
@@ -536,8 +537,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				btMatrix3x3 worldmat = worldtra.getBasis();
 				btVector3 worldpos = worldtra.getOrigin();
 
-				dofC->setLinearLowerLimit(btVector3(worldpos.x() + lmin, worldpos.y() + lmin, worldpos.z() + lmin));
-				dofC->setLinearUpperLimit(btVector3(worldpos.x() + lmax, worldpos.y() + lmax, worldpos.z() + lmax));
+				//##dofC->setLinearLowerLimit(btVector3(worldpos.x() + lmin, worldpos.y() + lmin, worldpos.z() + lmin));
+				//##dofC->setLinearUpperLimit(btVector3(worldpos.x() + lmax, worldpos.y() + lmax, worldpos.z() + lmax));
 
 
 
@@ -556,11 +557,11 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
 
 				if (forbidrotflag == 0){
-					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
-					dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
+					//##dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+					//##dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
 				} else{
-					dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-					dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+					//##dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+					//##dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
 				}
 
 				int dofid;
@@ -572,35 +573,35 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 				}
 				*/
-				for (dofid = 0; dofid < 3; dofid++){
-					if( l_kindex <= 2 ){
-						dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
-					}else{
-						dofC->setStiffness( dofid, l_cusk );
-					}
+				//##for (dofid = 0; dofid < 3; dofid++){
+				//##if( l_kindex <= 2 ){
+						//##dofC->setStiffness( dofid, g_l_kval[ l_kindex ] );
+				//##}else{
+						//##dofC->setStiffness( dofid, l_cusk );
+				//##}
 					//dofC->setStiffness(dofid, 1.0e12);
-					dofC->setDamping(dofid, l_damping);
+				//##dofC->setDamping(dofid, l_damping);
 					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
-					dofC->enableSpring(dofid, true);
+				//##dofC->enableSpring(dofid, true);
 
 					//dofC->setEquilibriumPoint(dofid);
 
-				}
-				for (dofid = 3; dofid < 6; dofid++){
-					if (a_kindex <= 2){
-						dofC->setStiffness(dofid, g_a_kval[a_kindex]);
-					}
-					else{
-						dofC->setStiffness(dofid, a_cusk);
-					}
-					dofC->setDamping(dofid, a_damping);
-					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
-					dofC->enableSpring(dofid, true);
+				//##}
+				//##for (dofid = 3; dofid < 6; dofid++){
+				//##if (a_kindex <= 2){
+				//##	dofC->setStiffness(dofid, g_a_kval[a_kindex]);
+				//##}
+				//##else{
+				//##	dofC->setStiffness(dofid, a_cusk);
+				//##}
+				//##dofC->setDamping(dofid, a_damping);
+				//##//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
+				//##dofC->enableSpring(dofid, true);
 
 
-					//dofC->setEquilibriumPoint(dofid);
+				//##//dofC->setEquilibriumPoint(dofid);
 
-				}
+				//##}
 
 				CONSTRAINTELEM addelem;
 				addelem.constraint = dofC;
@@ -613,7 +614,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
 
 				
-				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+				//##dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
 
 
 				//m_btWorld->addConstraint(dofC, false);
@@ -633,61 +634,94 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 
 int CBtObject::EnableSpring(bool angleflag, bool linearflag)
 {
+	/*
 	int constraintnum = m_constraint.size();
 	int constno;
 	for (constno = 0; constno < constraintnum; constno++){
-		btGeneric6DofSpringConstraint* curconst = m_constraint[constno].constraint;
-		if (curconst){
-			int dofid;
-			for (dofid = 0; dofid < 3; dofid++){
-				curconst->enableSpring(dofid, linearflag);
+		btConeTwistConstraint* curconst = m_constraint[constno].constraint;
+		//##if (curconst){
+		//##int dofid;
+		//##for (dofid = 0; dofid < 3; dofid++){
+		//##	curconst->enableSpring(dofid, linearflag);
+		//##}
+		//##for (dofid = 3; dofid < 6; dofid++){
+		//##	curconst->enableSpring(dofid, angleflag);
+		//##}
+		//##}
+	}
+	*/
+	return 0;
+}
+
+int CBtObject::SetDofRotAxis(int srcaxiskind)
+{
+	/*
+	float angPAI4, angPAI2, angPAI, ang5;
+	angPAI4 = 45.0f * (float)DEG2PAI;
+	angPAI2 = 90.0f * (float)DEG2PAI;
+	angPAI = 180.0f * (float)DEG2PAI;
+	ang5 = 5.0f * (float)DEG2PAI;
+
+	int constraintnum = m_constraint.size();
+	int constno;
+	for (constno = 0; constno < constraintnum; constno++){
+		btConeTwistConstraint* dofC = m_constraint[constno].constraint;
+		if (dofC){
+			if (srcaxiskind == PICK_CENTER){
+				dofC->setLimit(angPAI, angPAI, angPAI2);
 			}
-			for (dofid = 3; dofid < 6; dofid++){
-				curconst->enableSpring(dofid, angleflag);
+			else if (srcaxiskind == PICK_X){
+				dofC->setLimit(angPAI, 0.0, 0.0);
+			}
+			else if (srcaxiskind == PICK_Y){
+				dofC->setLimit(0.0, 0.0, angPAI2);
+			}
+			else if (srcaxiskind == PICK_Z){
+				dofC->setLimit(0.0, angPAI, 0.0);
+
 			}
 		}
 	}
+
+	//btConeTwistConstraint* gzdofC = m_gz_constraint.constraint;
+	//if (gzdofC){
+		//if (srcaxiskind == PICK_CENTER){
+		//gzdofC->setLimit(angPAI, angPAI, angPAI);
+		//}
+		//else if (srcaxiskind == PICK_X){
+		//	gzdofC->setLimit(angPAI, 0.0, 0.0);
+		//}
+		//else if (srcaxiskind == PICK_Y){
+		//	gzdofC->setLimit(0.0, 0.0, angPAI2);
+		//}
+		//else if (srcaxiskind == PICK_Z){
+		//	gzdofC->setLimit(0.0, angPAI, 0.0);
+		//}
+	//}
+	*/
 
 	return 0;
 }
 
 
-int CBtObject::SetEquilibriumPoint( int lflag, int aflag )
+int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 {
-	int chilno;
-	for (chilno = 0; chilno < (int)m_constraint.size(); chilno++){
-		btGeneric6DofSpringConstraint* constptr = m_constraint[chilno].constraint;
-		CBone* centerbone = m_constraint[chilno].centerbone;
-		if (constptr && centerbone){
-			D3DXVECTOR3 centerpos = centerbone->GetBtParPos();
+	/*
+	float angPAI = 180.0f * (float)DEG2PAI;
+	float angPAI2 = 90.0f * (float)DEG2PAI;
+	float angPAI4 = 45.0f * (float)DEG2PAI;
+	float ang5 = 5.0f * (float)DEG2PAI;
 
-			DbgOut(L"checkbt !!! : btobject : SetEquilibriumPoint : chilno %d, centerbone %s, centerpos (%.4f, %.4f, %.4f)\r\n",
-				chilno, centerbone->GetWBoneName(), centerpos.x, centerpos.y, centerpos.z);
-
-			//float lmin = -0.15f;
-			//float lmax = 0.15f;
-			float lmin = -100.0f;//
-			float lmax = 100.0f;
-			//float lmin = -10.0f;//­‚µ@ˆÚ“®‚·‚é‚Æ@”j‚½‚ñ
-			//float lmax = 10.0f;
-
-
-			constptr->setLinearLowerLimit(btVector3(centerpos.x + lmin, centerpos.y + lmin, centerpos.z + lmin));
-			constptr->setLinearUpperLimit(btVector3(centerpos.x + lmax, centerpos.y + lmax, centerpos.z + lmax));
-
-			int dofid;
-			if (lflag == 1){
-				for (dofid = 0; dofid < 3; dofid++){//ˆÊ’u‚Ì‚Ý
-					constptr->setEquilibriumPoint(dofid);
-				}
-			}
-			if (aflag == 1){
-				for (dofid = 3; dofid < 6; dofid++){//Šp“x‚Ì‚Ý
-					constptr->setEquilibriumPoint(dofid);
-				}
-			}
+	int constraintnum = m_constraint.size();
+	int constno;
+	for (constno = 0; constno < constraintnum; constno++){
+		btConeTwistConstraint* dofC = m_constraint[constno].constraint;
+		if (dofC){
+			dofC->setLimit(angPAI, angPAI, angPAI);
 		}
 	}
+	*/
+
 	return 0;
 }
 
@@ -975,19 +1009,20 @@ int CBtObject::CreateGZeroPosConstraint()
 	lmin = -10000.0f;
 	lmax = 10000.0f;
 
-	btGeneric6DofSpringConstraint* dofC = 0;
-	dofC = new btGeneric6DofSpringConstraint(*m_rigidbody, *m_gz_rigidbody, m_FrameA, m_FrameB, true);
+	btConeTwistConstraint* dofC = 0;
+	//dofC = new btConeTwistConstraint(*m_rigidbody, *m_gz_rigidbody, m_FrameA, m_FrameB, true);
+	dofC = new btConeTwistConstraint(*m_rigidbody, *m_gz_rigidbody, m_FrameA, m_FrameB);
 	_ASSERT(dofC);
 	if (dofC){
-		int dofid;
-		for (dofid = 0; dofid < 3; dofid++){
-			dofC->setEquilibriumPoint(dofid);
-			dofC->enableSpring(dofid, true);
-		}
-		for (dofid = 3; dofid < 6; dofid++){
-			dofC->setEquilibriumPoint(dofid);
-			dofC->enableSpring(dofid, true);
-		}
+		//##int dofid;
+		//##for (dofid = 0; dofid < 3; dofid++){
+		//##dofC->setEquilibriumPoint(dofid);
+		//##dofC->enableSpring(dofid, true);
+		//##}
+		//##for (dofid = 3; dofid < 6; dofid++){
+		//##dofC->setEquilibriumPoint(dofid);
+		//##dofC->enableSpring(dofid, true);
+		//##}
 
 		m_gz_constraint.constraint = dofC;//!!!!!!!!!!!!!!!!!!!!!!
 		m_gz_constraint.centerbone = m_endbone;
@@ -998,7 +1033,7 @@ int CBtObject::CreateGZeroPosConstraint()
 		m_btWorld->addConstraint((btTypedConstraint*)dofC, true);//!!!!!!!!!!!! disable collision between linked bodies
 		//m_dofC = dofC;
 
-		dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+		//##dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
 	}
 
 

@@ -488,6 +488,7 @@ static CEditRange s_previewrange;
 static SPAXIS s_spaxis[3];
 static SPCAM s_spcam[3];
 static SPELEM s_sprig[2];//inactive, active
+static SPELEM s_spbt;
 static int s_oprigflag = 0;
 
 typedef struct tag_modelpanel
@@ -621,7 +622,7 @@ float g_gzeromvrate = 1.0f;
 // UI control IDs
 //--------------------------------------------------------------------------------------
 #define ID_RMENU_GZEROCONSTRAINT	(ID_RMENU_0 - 100)
-
+#define ID_RMENU_MASS0			(ID_RMENU_GZEROCONSTRAINT + 1)
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -694,7 +695,8 @@ float g_gzeromvrate = 1.0f;
 #define IDC_GZERO_MV_IK				56
 #define IDC_GZERO_MV_SLIDER			57
 #define IDC_STATIC_GZERO_MV_SLIDER	58
-
+//#define IDC_APPLY_BT				59
+#define IDC_STOP_BT					60
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -890,6 +892,8 @@ static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
+static int SetSpBtParams();
+static int PickSpBt(POINT srcpos);
 
 
 static int InsertCopyMP(CBone* curbone, double curframe);
@@ -1174,7 +1178,7 @@ void InitApp()
 	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
 	ZeroMemory(s_spcam, sizeof(SPCAM) * 3);
 	ZeroMemory(s_sprig, sizeof(SPELEM) * 2);
-
+	ZeroMemory(&s_spbt, sizeof(SPELEM));
 
 	g_bonecntmap.clear();
 
@@ -1540,6 +1544,9 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	_ASSERT(s_sprig[1].sprite);
 	CallF(s_sprig[1].sprite->Create(mpath, L"ToggleRigActive.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
+	s_spbt.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spbt.sprite);
+	CallF(s_spbt.sprite->Create(mpath, L"BtApply.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
 ///////
 	s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
@@ -1608,6 +1615,7 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
 	SetSpAxisParams();
 	SetSpCamParams();
 	SetSpRigParams();
+	SetSpBtParams();
 
     return S_OK;
 }
@@ -2223,7 +2231,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 					}
 					else{
-						if (g_previewFlag != 5){
+						//if (g_previewFlag != 5){
 							if (s_dispselect){
 								int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
 								colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
@@ -2260,11 +2268,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							}
 							else{
 								ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+								s_pickinfo.pickobjno = -1;
 							}
-						}
-						else{
-							ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
-						}
+						//}
+						//else{
+						//	ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+						//}
 					}
 				}
 				else{
@@ -2278,6 +2287,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 					else{
 						ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+						s_pickinfo.pickobjno = -1;
 					}
 				}
 				if( s_owpLTimeline && s_model && s_model->GetCurMotInfo() ){
@@ -2289,6 +2299,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}else{
 			ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
+			s_pickinfo.pickobjno = -1;
 		}
 
 		D3DXMatrixIdentity(&s_ikselectmat);
@@ -2319,6 +2330,20 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			RigidElem2WndParam();
 		}
 
+
+		if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
+			if (PickSpBt(ptCursor) == 0){
+				StartBt(1, 1);
+				//s_model->BulletSimulationStart();
+			}
+			else{
+				if (s_model){
+					s_model->BulletSimulationStop();
+					g_previewFlag = 0;
+					s_model->ApplyBtToMotion();
+				}
+			}
+		}
 
 	}else if( uMsg == WM_MBUTTONDOWN){
 
@@ -2374,92 +2399,78 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				else if (g_previewFlag == 5){
 					if (s_model){
 						s_onragdollik = 1;
-
-						/*
-						//RagdollIKŽž‚É‚ÍŽžŠÔ‚Oi‚Æ‚è‚ ‚¦‚¸j
-						s_editrange.SetRangeOne(0.0);
-
-						D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
-						CallF(CalcTargetPos(&targetpos), return 1);
-
-
-						int ikmaxlevel = 0;
-						s_model->IKRotateRagdoll(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
-						CBone* curbone = s_model->GetBoneByID(s_curboneno);
-						CBone* parbone = curbone->GetParent();
-						if (parbone){
-							s_editmotionflag = parbone->GetBoneNo();
-						}
-						else{
-							s_editmotionflag = s_curboneno;
-						}
-						s_ikcnt++;
-
-						double tmpnext = 0.0;
-						double tmpdiff = 0.0;
-						int callfromik = 1;
-						OnUserFrameMove(callfromik, 0.0, 0.016f);
-						//OnFramePreviewRagdoll(s_onragdollik, &tmpnext, &tmpdiff);
-						*/
 					}
-
 				}
 			}
 		}
 		else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)){
 			if (s_model){
-				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-				POINT ptCursor;
-				GetCursorPos(&ptCursor);
-				::ScreenToClient(s_mainwnd, &ptCursor);
-				s_pickinfo.mousepos = ptCursor;
-
-				D3DXVECTOR3 tmpsc;
-				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
 				if (g_previewFlag == 0){
-					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
-					if (g_controlkey == true){
-						deltax *= 0.250f;
+					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+					POINT ptCursor;
+					GetCursorPos(&ptCursor);
+					::ScreenToClient(s_mainwnd, &ptCursor);
+					s_pickinfo.mousepos = ptCursor;
+
+					D3DXVECTOR3 tmpsc;
+					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+
+					if (g_previewFlag == 0){
+						float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+						if (g_controlkey == true){
+							deltax *= 0.250f;
+						}
+						if (s_ikkind == 0){
+							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+						}
+						else{
+							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+							s_editmotionflag = s_curboneno;
+						}
+						s_ikcnt++;
 					}
-					if (s_ikkind == 0){
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+				}
+				else if (g_previewFlag == 5){
+					if (s_model){
+						s_onragdollik = 2;
 					}
-					else{
-						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-						s_editmotionflag = s_curboneno;
-					}
-					s_ikcnt++;
 				}
 			}
 		}
 		else if ((s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z)){
 			if (s_model){
-				s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
-
-				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-				POINT ptCursor;
-				GetCursorPos(&ptCursor);
-				::ScreenToClient(s_mainwnd, &ptCursor);
-				s_pickinfo.mousepos = ptCursor;
-
-				D3DXVECTOR3 tmpsc;
-				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
 				if (g_previewFlag == 0){
-					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
-					if (g_controlkey == true){
-						deltax *= 0.250f;
-					}
+					s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
 
-					if (s_ikkind == 0){
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+					POINT ptCursor;
+					GetCursorPos(&ptCursor);
+					::ScreenToClient(s_mainwnd, &ptCursor);
+					s_pickinfo.mousepos = ptCursor;
+
+					D3DXVECTOR3 tmpsc;
+					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+
+					if (g_previewFlag == 0){
+						float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+						if (g_controlkey == true){
+							deltax *= 0.250f;
+						}
+
+						if (s_ikkind == 0){
+							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+						}
+						else{
+							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+							s_editmotionflag = s_curboneno;
+						}
+						s_ikcnt++;
 					}
-					else{
-						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-						s_editmotionflag = s_curboneno;
+				}
+				else if (g_previewFlag == 5){
+					if (s_model){
+						s_onragdollik = 3;
 					}
-					s_ikcnt++;
 				}
 			}
 		}
@@ -2649,6 +2660,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 
 	}else if( uMsg == WM_LBUTTONUP ){
+		if (s_model && (s_onragdollik != 0)){
+			s_model->BulletSimulationStop();
+		}
+
 		ReleaseCapture();
 		s_pickinfo.buttonflag = 0;
 		s_ikcnt = 0;
@@ -2848,6 +2863,16 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			g_gzeromvrate = (float)(g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->GetValue()) * 0.01f;
 			swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
 			g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
+			break;
+		//case IDC_APPLY_BT:
+		//	if (s_model){
+		//		s_model->BulletSimulationStop();
+		//		g_previewFlag = 0;
+		//		s_model->ApplyBtToMotion();
+		//	}
+		//	break;
+		case IDC_STOP_BT:
+			g_previewFlag = 0;
 			break;
 
         case IDC_LIGHT_SCALE:
@@ -3552,6 +3577,12 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 		}
 		s_sprig[sprno].sprite = 0;
 	}
+
+	CMySprite* cursp = s_spbt.sprite;
+	if (cursp){
+		delete cursp;
+	}
+	s_spbt.sprite = 0;
 
 
 
@@ -6947,12 +6978,6 @@ int StartBt(int flag, int btcntzero)
 				if (s_gzerokind == 0){
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
-
-					g_gzeromvrate = 1.0f;
-					g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->SetValue((int)(g_gzeromvrate * 100.0f));
-					WCHAR sz[100];
-					swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
-					g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
 				}
 				else{
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
@@ -6961,15 +6986,7 @@ int StartBt(int flag, int btcntzero)
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 13000.0, 200.0);
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 40000.0, 100.0);
 					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
-
-					g_gzeromvrate = 1.0f;
-					g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->SetValue((int)(g_gzeromvrate * 100.0f));
-					WCHAR sz[100];
-					swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
-					g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
 				}
-
-
 
 				//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
 				//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
@@ -6985,7 +7002,11 @@ int StartBt(int flag, int btcntzero)
 			CallF(curmodel->CreateBtObject(1), return 1);
 
 			
-			if( g_previewFlag == 4 ){
+			//if( g_previewFlag == 4 ){
+
+				curmodel->BulletSimulationStart();
+
+
 				//s_bpWorld->clientResetScene();
 				//if( s_model ){
 				//	s_model->ResetBt();
@@ -6997,7 +7018,7 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetBtMotion(rgdollflag, s_btstartframe, &s_matW, &s_matVP);
 				//s_model->ResetBt();
 				UpdateBtSimu(curframe, curmodel);
-			}
+			//}
 			
 			//if( g_previewFlag == 5 ){
 			//	s_model->SetBtImpulse();
@@ -7615,13 +7636,40 @@ int SetSpRigParams()
 
 }
 
+int SetSpBtParams()
+{
+	if (!s_spbt.sprite){
+		return 0;
+	}
+
+	float spawidth = 32.0f;
+	int spashift = 12;
+	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
+	s_spbt.dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
+	s_spbt.dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));// *2);
+
+
+	D3DXVECTOR3 disppos;
+	disppos.x = (float)(s_spbt.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spbt.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+	CallF(s_spbt.sprite->SetPos(disppos), return 1);
+	CallF(s_spbt.sprite->SetSize(dispsize), return 1);
+
+	return 0;
+
+}
+
+
+
 int PickSpAxis( POINT srcpos )
 {
 	int kind = 0;
 
-	if (g_previewFlag == 5){
-		return 0;
-	}
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
 
 
 	int starty = s_spaxis[0].dispcenter.y - 16;
@@ -7711,9 +7759,9 @@ int PickSpRig(POINT srcpos)
 {
 	int pickflag = 0;
 
-	if (g_previewFlag == 5){
-		return 0;
-	}
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
 
 
 	if (s_sprig[0].sprite == 0){
@@ -7736,9 +7784,38 @@ int PickSpRig(POINT srcpos)
 }
 
 
+int PickSpBt(POINT srcpos)
+{
+	int pickflag = 0;
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+
+	if (s_spbt.sprite == 0){
+		return 0;
+	}
+
+	int starty = s_spbt.dispcenter.y - 16;
+	int endy = starty + 32;
+
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
+		int startx = s_spbt.dispcenter.x - 16;
+		int endx = startx + 32;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+
 int SetSelectState()
 {
-	if( !s_select || !s_model || g_previewFlag ){
+	//if( !s_select || !s_model || g_previewFlag ){
+	if (!s_select || !s_model || (g_previewFlag == 4)){
 		return 0;
 	}
 
@@ -9249,6 +9326,8 @@ void UpdateBtSimu(double nextframe, CModel* curmodel)
 
 int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 {
+	static int s_underikflag = 0;
+	static int s_befunderikflag = 0;
 
 	int endflag = 0;
 
@@ -9257,11 +9336,18 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	}
 	CModel* curmodel = s_model;
 
+
 	if (curmodel && curmodel->GetCurMotInfo()){
+		//if (s_onragdollik != 0){
+		//	if (s_underikflag == 0){
+		//		curmodel->BulletSimulationStop();
+		//		s_underikflag = 1;
+		//	}
+		//}
 		curmodel->SetRagdollKinFlag(s_curboneno, s_gzerokind);
 	}
 
-	if (s_onragdollik == 1){
+	if (s_onragdollik != 0){
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
 		GetCursorPos(&ptCursor);
@@ -9274,18 +9360,41 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//RagdollIKŽž‚É‚ÍŽžŠÔ‚Oi‚Æ‚è‚ ‚¦‚¸j
 		s_editrange.SetRangeOne(0.0);
 
-		D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
-		CallF(CalcTargetPos(&targetpos), return 1);
+		if (s_oprigflag == 0){//Rig‘€ì‚Å‚Í‚È‚¢‚Æ‚«
+			D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+			CallF(CalcTargetPos(&targetpos), return 1);
 
-		if (s_gzerokind == 0){
-			int ikmaxlevel = 0;
-			curmodel->GZeroRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+			s_model->SetDofRotAxis(s_pickinfo.buttonflag);//!!!!!!!!!!!!!!!!!!!!!!!
+
+
+			if (s_gzerokind == 0){
+				if (s_onragdollik == 1){
+					int ikmaxlevel = 0;
+
+					curmodel->GZeroRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+				}
+				else if ((s_onragdollik == 2) || (s_onragdollik == 3)){
+					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+					if (g_controlkey == true){
+						deltax *= 0.250f;
+					}
+					s_editmotionflag = s_model->GZeroRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					s_ikcnt++;
+				}
+
+				//if (s_curboneno <= 0){
+				//	::MessageBoxA(NULL, "OnFramePreviewRagdoll : curboneno error", "check", MB_OK);
+				//}
+
+			}
+			else{
+				int ikmaxlevel = 0;
+				D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+				curmodel->GZeroMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
+			}
 		}
-		else{
-			int ikmaxlevel = 0;
-			D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
-			curmodel->GZeroMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
-		}
+
+
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		CBone* parbone = curbone->GetParent();
 		if (parbone){
@@ -9295,25 +9404,55 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			s_editmotionflag = s_curboneno;
 		}
 		s_ikcnt++;
+
+
+	}
+	//else{
+	//	if (s_underikflag == 1){
+	//		curmodel->BulletSimulationStop();
+	//		s_underikflag = 0;
+	//	}
+	//}
+
+	/*
+	if (s_oprigflag == 0){
+	D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+	CallF(CalcTargetPos(&targetpos), return 1);
+	if (s_ikkind == 0){
+	s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+	}
+	else if (s_ikkind == 1){
+	D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+	AddBoneTra2(diffvec);
+	s_editmotionflag = s_curboneno;
+	}
+	}
+	else{
+	if (s_customrigbone){
+	float deltau = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) * 0.5f;
+	float deltav = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+	if (g_controlkey == true){
+	deltau *= 0.250f;
+	deltav *= 0.250f;
 	}
 
+	s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
+	s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
+	s_model->UpdateMatrix(&s_matW, &s_matVP);
+	s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
+	s_model->UpdateMatrix(&s_matW, &s_matVP);
+	s_editmotionflag = s_curboneno;
+	}
+	}
+	*/
+
+
+	
 	//RadgollIKŽž‚É‚ÍŽžŠÔ‚Oi‚Æ‚è‚ ‚¦‚¸j
 	curmodel->SetMotionFrame(0.0);
 	*pnextframe = 0.0;//!!!!!!!!!!!!!!!!
 
-
-//	if (curmodel && curmodel->GetCurMotInfo()){
-//		curmodel->SetRagdollKinFlag(s_curboneno, s_gzerokind);
-//	}
-
-	//if ((g_previewFlag == 5) && (firstflag == 1)){
-	//	curmodel->SetBtImpulse();
-	//}
-
-	//s_bpWorld->setGlobalERP(0.001);// ERP
-	//s_bpWorld->setGlobalERP(0.1);// ERP
-	//s_bpWorld->setGlobalERP(1.0);// ERP
 
 	s_bpWorld->clientMoveAndDisplay();
 
@@ -9322,6 +9461,9 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		curmodel->UpdateMatrix(&s_matW, &s_matVP);
 		curmodel->PlusPlusBtCnt();
 	}
+	
+
+	s_befunderikflag = s_underikflag;
 
 	return 0;
 }
@@ -10210,7 +10352,7 @@ int CreateUtDialog()
 	
 
 	//Center Bottom
-	iY = s_mainheight - 200;
+	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50;
 
 	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
@@ -10219,10 +10361,12 @@ int CreateUtDialog()
 
 	iY += 10;
 	g_SampleUI.AddButton(IDC_BTSTART, L"BT start", startx, iY += addh, 100, ctrlh);
+	iY += 5;
+	g_SampleUI.AddButton(IDC_STOP_BT, L"STOP BT", startx, iY += addh, 100, ctrlh);
 
 
 	//CenterRight Bottom
-	iY = s_mainheight - 200;
+	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50 + 130 ;
 
 	swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
@@ -10233,6 +10377,8 @@ int CreateUtDialog()
 	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero Rot start", startx, iY += addh, 100, ctrlh);
 	iY += 5;
 	g_SampleUI.AddButton(IDC_GZERO_MV_IK, L"GZero MV start", startx, iY += addh, 100, ctrlh);
+	//iY += 5;
+	//g_SampleUI.AddButton(IDC_APPLY_BT, L"Apply BT", startx, iY += addh, 100, ctrlh);
 
 
 	return 0;
@@ -11317,6 +11463,14 @@ int OnRenderSelect()
 			RenderSelectMark(1);
 		}
 	}
+	//else if ((g_previewFlag == 5) && (s_oprigflag == 1)){
+	else if (g_previewFlag == 5){
+		if (s_select && (s_curboneno >= 0) && (s_model && s_model->GetModelDisp())){
+			//SetSelectCol();
+			SetSelectState();
+			RenderSelectMark(1);
+		}
+	}
 
 	return 0;
 }
@@ -11333,6 +11487,9 @@ int OnRenderSprite()
 	}
 
 	s_sprig[s_oprigflag].sprite->OnRender();
+
+	s_spbt.sprite->OnRender();
+
 
 	return 0;
 }
@@ -12098,8 +12255,18 @@ int BoneRClick(int srcboneno)
 				}
 				s_customrigmenuindex.clear();
 
-
-				AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos Constraint");
+				if (curbone->GetPosConstraint() == 0){
+					AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos ConstraintÝ’è");
+				}
+				else{
+					AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos Constraint‰ðœ");
+				}
+				if (curbone->GetMass0() == 0){
+					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"ˆêŽžMass0Ý’è");
+				}
+				else{
+					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"ˆêŽžMass0‰ðœ");
+				}
 
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"V‹KRig");
 				int setmenuno = 1;
@@ -12153,6 +12320,15 @@ int BoneRClick(int srcboneno)
 					}
 					else{
 						s_model->DestroyGZeroPosConstraint(curbone);
+					}
+				}
+				else if (menuid == ID_RMENU_MASS0){
+					//toggle
+					if (curbone->GetMass0() == 0){
+						s_model->SetMass0(curbone);
+					}
+					else{
+						s_model->RestoreMass(curbone);
 					}
 				}
 				else if (menuid == ID_RMENU_0){

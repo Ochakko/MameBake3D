@@ -610,6 +610,7 @@
     <ClInclude Include="..\disp4\INCLUDE\Coef.h" />
     <ClInclude Include="..\disp4\INCLUDE\coef_r.h" />
     <ClInclude Include="..\disp4\INCLUDE\Collision.h" />
+    <ClInclude Include="..\disp4\INCLUDE\ConstraintElem.h" />
     <ClInclude Include="..\disp4\INCLUDE\dbg.h" />
     <ClInclude Include="..\disp4\INCLUDE\DispObj.h" />
     <ClInclude Include="..\disp4\INCLUDE\EditRange.h" />

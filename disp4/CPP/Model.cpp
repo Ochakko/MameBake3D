@@ -92,6 +92,9 @@ extern float g_gzeromvrate;
 extern D3DXVECTOR3 g_camEye;
 extern D3DXVECTOR3 g_camtargetpos;
 
+extern bool g_wmatDirectSetFlag;
+
+
 int g_dbgflag = 0;
 
 
@@ -4152,7 +4155,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 			//srcbto->GetRigidBody()->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
 			srcbto->GetRigidBody()->setCollisionFlags( curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
 			//srcbto->m_rigidbody->setActivationState(DISABLE_DEACTIVATION);
-			//srcbto->m_rigidbody->setActivationState(WANTS_DEACTIVATION);
+			//srcbto->GetRigidBody()->setActivationState(WANTS_DEACTIVATION);
 			//srcbto->m_rigidbody->setActivationState(DISABLE_SIMULATION);
 			//CF_STATIC_OBJECT
 		}else if( srcbto->GetRigidBody() ){
@@ -4176,7 +4179,8 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 		if (srcbto->GetRigidBody()){
 			//srcbto->GetRigidBody()->setDeactivationTime(0.0);
 			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 150.0);
-			srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+			//srcbto->GetRigidBody()->activate();
+			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 		}
 	}
 
@@ -4186,6 +4190,57 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 		SetBtKinFlagReq( chilbto, oncreateflag );
 	}
 }
+
+
+int CModel::BulletSimulationStop()
+{
+	BulletSimulationStopReq(m_topbt);
+	return 0;
+}
+
+void CModel::BulletSimulationStopReq(CBtObject* srcbto)
+{
+	if (!srcbto)
+		return;
+
+	if (srcbto->GetRigidBody()){
+		srcbto->GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+	}
+
+	int chilno;
+	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
+		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+		BulletSimulationStopReq(chilbto);
+	}
+
+}
+
+int CModel::BulletSimulationStart()
+{
+	BulletSimulationStartReq(m_topbt);
+	return 0;
+}
+
+void CModel::BulletSimulationStartReq(CBtObject* srcbto)
+{
+	if (!srcbto)
+		return;
+
+	if (srcbto->GetRigidBody()){
+		srcbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+		srcbto->GetRigidBody()->activate();
+		//###curbto->GetRigidBody()->setDeactivationTime(0.0);
+		srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+	}
+
+	int chilno;
+	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
+		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+		BulletSimulationStartReq(chilbto);
+	}
+
+}
+
 
 int CModel::CreateBtConstraint()
 {
@@ -4400,6 +4455,7 @@ int CModel::CreateBtObject( int onfirstcreate )
 	else{
 		SetRagdollKinFlagReq(m_topbt, -1);
 		CreateGZeroPosConstraintReq(m_topbone);
+		SetMass0Req(m_topbone);
 	}
 
 
@@ -4446,6 +4502,37 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 	}
 
 	return 0;
+}
+
+
+int CModel::SetDofRotAxis(int srcaxiskind)
+{
+	if (m_topbt){
+		SetDofRotAxisReq(m_topbt, srcaxiskind);
+	}
+	return 0;
+
+}
+
+void CModel::SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind)
+{
+	if (!srcbto){
+		return;
+	}
+
+	//`角度、位置
+	srcbto->SetDofRotAxis(srcaxiskind);
+
+
+	int childno;
+	for (childno = 0; childno < srcbto->GetChilBtSize(); childno++){
+		CBtObject* childbto = srcbto->GetChilBt(childno);
+		if (childbto){
+			SetDofRotAxisReq(childbto, srcaxiskind);
+		}
+	}
+
+	return;
 }
 
 
@@ -4655,16 +4742,16 @@ int CModel::DampAnim( MOTINFO* rgdmorphinfo )
 						int constraintnum = curbto->GetConstraintSize();
 						int constraintno;
 						for( constraintno = 0; constraintno < constraintnum; constraintno++ ){
-							btGeneric6DofSpringConstraint* curct = curbto->GetConstraint( constraintno );
-							if( curct ){
-								int dofid;
-								for( dofid = 0; dofid < 3; dofid++ ){
-									curct->setDamping( dofid, newdampl );
-								}
-								for( dofid = 3; dofid < 6; dofid++ ){
-									curct->setDamping( dofid, newdampa );
-								}
-							}
+							btConeTwistConstraint* curct = curbto->GetConstraint(constraintno);
+							//##if( curct ){
+							//##	int dofid;
+							//##for( dofid = 0; dofid < 3; dofid++ ){
+							//##	curct->setDamping( dofid, newdampl );
+							//##}
+							//##for( dofid = 3; dofid < 6; dofid++ ){
+							//##	curct->setDamping( dofid, newdampa );
+							//##}
+							//##}
 						}
 					}
 
@@ -5511,7 +5598,10 @@ void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int gzeromv
 		}
 
 		if (srcbto->GetRigidBody()){
-			srcbto->GetRigidBody()->setDeactivationTime(0.0);
+			//srcbto->GetRigidBody()->activate();
+			//###srcbto->GetRigidBody()->setDeactivationTime(0.0);
+			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+
 			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 150.0);
 			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 		}
@@ -5626,7 +5716,9 @@ void CModel::ResetBtReq( CBtObject* curbto )
 			curbto->GetRigidBody()->setInterpolationWorldTransform( myMotionState->m_startWorldTrans );
 			curbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 			curbto->GetRigidBody()->activate();
-			curbto->GetRigidBody()->setDeactivationTime(0.0);
+			//###curbto->GetRigidBody()->setDeactivationTime(0.0);
+			curbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+
 			//colObj->setActivationState(WANTS_DEACTIVATION);
 		}
 		if (curbto->GetRigidBody() && !curbto->GetRigidBody()->isStaticObject())
@@ -5900,7 +5992,6 @@ int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, in
 	SetBefEditMat(erptr, curbone, maxlevel);
 
 	float currate = g_gzeromvrate;
-	int isfirst = 1;
 
 	CBone* parbone = curbone->GetParent();
 	if (parbone){
@@ -5909,6 +6000,7 @@ int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, in
 			return 0;
 		}
 		CBone* childbone = parbone->GetChild();
+		int isfirst = 1;
 		while (childbone){
 
 			if (childbone->GetJointFPos() != parbone->GetJointFPos()){
@@ -6050,6 +6142,481 @@ int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, in
 
 }
 
+int CModel::GZeroRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat)
+{
+	if (!m_curmotinfo){
+		return 0;
+	}
+
+
+	int calcnum = 3;
+
+	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
+		return 0;
+	}
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+
+
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone){
+		return 0;
+	}
+	SetBefEditMat(erptr, curbone, maxlevel);//!!!!!!!!!!!!
+
+
+	CBone* parbone = curbone->GetParent();
+	//CBone* parbone = curbone;
+	if (parbone){
+		if (!parbone->GetParent()){
+			//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
+			return 0;
+		}
+		CBone* childbone = parbone->GetChild();
+		int isfirst = 1;
+		float currate = 1.0f;
+		double firstframe = 0.0;
+		int levelcnt = 0;
+
+		while (childbone){
+			float rotrad2 = currate * rotrad;
+			//float rotrad2 = rotrad;
+			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
+				continue;
+			}
+
+			D3DXVECTOR3 axis0;
+			CQuaternion localq;
+			if (axiskind == PICK_X){
+				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+				localq.SetAxisAndRot(axis0, rotrad2);
+			}
+			else if (axiskind == PICK_Y){
+				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+				localq.SetAxisAndRot(axis0, rotrad2);
+			}
+			else if (axiskind == PICK_Z){
+				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+				localq.SetAxisAndRot(axis0, rotrad2);
+			}
+			else{
+				_ASSERT(0);
+				return 1;
+			}
+
+			D3DXMATRIX invselectmat;
+			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
+			D3DXMATRIX rotselect = selectmat;
+			rotselect._41 = 0.0f;
+			rotselect._42 = 0.0f;
+			rotselect._43 = 0.0f;
+			D3DXMATRIX rotinvselect = invselectmat;
+			rotinvselect._41 = 0.0f;
+			rotinvselect._42 = 0.0f;
+			rotinvselect._43 = 0.0f;
+
+			D3DXMATRIX gparrotmat, invgparrotmat;
+			if (parbone->GetParent()){
+				gparrotmat = parbone->GetParent()->GetBtMat();
+				D3DXMatrixInverse(&invgparrotmat, NULL, &gparrotmat);
+
+				gparrotmat._41 = 0.0f;
+				gparrotmat._42 = 0.0f;
+				gparrotmat._43 = 0.0f;
+
+				invgparrotmat._41 = 0.0f;
+				invgparrotmat._42 = 0.0f;
+				invgparrotmat._43 = 0.0f;
+			}
+			else{
+				D3DXMatrixIdentity(&gparrotmat);
+				D3DXMatrixIdentity(&invgparrotmat);
+			}
+			D3DXMATRIX parrotmat, invparrotmat;
+			parrotmat = parbone->GetBtMat();
+			D3DXMatrixInverse(&invparrotmat, NULL, &parrotmat);
+			
+
+			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+			D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
+
+			CMotionPoint transmp;
+			transmp.CalcQandTra(transmat2, parbone);
+			CQuaternion rotq;
+			rotq = transmp.GetQ();
+
+
+			D3DXVECTOR3 parworld, chilworld;
+			D3DXVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+			D3DXVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+
+
+			D3DXMATRIX newbtmat;
+			D3DXVECTOR3 rotcenter;// = m_childworld;
+			rotcenter = parworld;
+
+			D3DXMATRIX befrot, aftrot;
+			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+			newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
+			//newbtmat = parbone->GetCurMp().GetBtMat() * rotq.MakeRotMatX();// *tramat;
+
+
+			D3DXMATRIX firstworld = parbone->GetStartMat2();
+			D3DXMATRIX invfirstworld;
+			D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+
+			D3DXMATRIX diffworld = invfirstworld * newbtmat;
+			CRigidElem* curre = parbone->GetRigidElem(childbone);
+			D3DXMATRIX newrigidmat;
+			if (curre){
+				newrigidmat = curre->GetFirstcapsulemat() * diffworld;
+			}
+			else{
+				::MessageBoxA(NULL, "GZeroRotAxisDelta : curre NULL error", "error", MB_OK);
+				return -1;
+			}
+
+
+			D3DXVECTOR3 newparpos, newchilpos;
+			D3DXVECTOR3 jointfpos;
+			jointfpos = parbone->GetJointFPos();
+			D3DXVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+			jointfpos = childbone->GetJointFPos();
+			D3DXVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+
+			D3DXVECTOR3 rigidcenter = (newparpos + newchilpos) * 0.5f;
+
+
+			CQuaternion tmpq;
+			tmpq.RotationMatrix(newrigidmat);
+			btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
+
+
+			btTransform worldtra;
+			worldtra.setIdentity();
+			worldtra.setRotation(btrotq);
+			worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+
+			CBtObject* setbto = parbone->GetBtObject(childbone);
+			if (setbto){
+				setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+				//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+				//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+			}
+
+			if (isfirst == 1){
+				parbone->SetBtMat(newbtmat);
+				//IKボーンはKINEMATICだから。
+				parbone->GetCurMp().SetWorldMat(newbtmat);
+				isfirst = 0;
+			}
+
+			childbone = childbone->GetBrother();
+			}
+	}
+
+	if (curbone){
+		return curbone->GetBoneNo();
+	}
+	else{
+		return srcboneno;
+	}
+
+}
+
+
+
+int CModel::GZeroRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig)
+{
+	if (depthcnt >= 10){
+		_ASSERT(0);
+		return 0;//!!!!!!!!!!!!!!!!!
+	}
+	depthcnt++;
+
+	if (!m_curmotinfo){
+		return 0;
+	}
+
+	int calcnum = 3;
+
+	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	//if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
+	//	return 0;
+	//}
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone){
+		return 0;
+	}
+	CBone* parbone = 0;
+	CBone* lastbone = 0;
+
+	//int calccnt;
+	//for (calccnt = 0; calccnt < calcnum; calccnt++){
+	double firstframe = 0.0;
+
+	int elemno;
+	for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++){
+		RIGELEM currigelem = ikcustomrig.rigelem[elemno];
+		if (currigelem.rigrigboneno >= 0){
+			//rigのrig
+			CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
+			if (rigrigbone){
+				int rigrigno = currigelem.rigrigno;
+				if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
+					if (currigelem.transuv[uvno].enable == 1){
+						CUSTOMRIG rigrig = rigrigbone->GetCustomRig(rigrigno);
+						GZeroRigControl(depthcnt, erptr, rigrigbone->GetBoneNo(), uvno, srcdelta * currigelem.transuv[uvno].applyrate, rigrig);
+					}
+				}
+			}
+		}
+		else{
+			//rigelem
+			curbone = GetBoneByID(currigelem.boneno);
+			if (curbone){
+				lastbone = curbone;
+				parbone = curbone->GetParent();
+				if (parbone){
+					int isfirst = 1;
+
+					//CBone* childbone = curbone;
+					//CBone* childbone = parbone->GetChild();
+					//while (childbone){
+
+						int axiskind = currigelem.transuv[uvno].axiskind;
+						float rotrad2 = rotrad * currigelem.transuv[uvno].applyrate;
+
+						//float rotrad2;
+						//rotrad2 = rotrad;
+
+
+						//char str1[256];
+						//sprintf_s(str1, 256, "AXIS_KIND %d, rotrad %f, rotrad2 %f", axiskind, rotrad, rotrad2);
+						//::MessageBoxA(NULL, str1, "check", MB_OK);
+
+						if (currigelem.transuv[uvno].enable == 1){
+							if (fabs(rotrad2) >= (0.02f * (float)DEG2PAI)){
+								D3DXVECTOR3 axis0;
+								CQuaternion localq;
+								
+								if (axiskind == AXIS_X){
+									axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+									localq.SetAxisAndRot(axis0, rotrad2);
+								}
+								else if (axiskind == AXIS_Y){
+									axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+									localq.SetAxisAndRot(axis0, rotrad2);
+								}
+								else if (axiskind == AXIS_Z){
+									axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+									localq.SetAxisAndRot(axis0, rotrad2);
+								}
+								else{
+									_ASSERT(0);
+									return 1;
+								}
+								
+								//axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+								///localq.SetAxisAndRot(axis0, 0.0697 * 0.50);
+
+
+								/*
+								D3DXMATRIX selectmat;
+								D3DXMATRIX invselectmat;
+								//selectmat = elemaxismat[elemno];
+								int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+								selectmat = childbone->CalcManipulatorMatrix(1, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
+								D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
+
+								D3DXMATRIX rotinvworld = childbone->GetCurMp().GetInvWorldMat();
+								rotinvworld._41 = 0.0f;
+								rotinvworld._42 = 0.0f;
+								rotinvworld._43 = 0.0f;
+								D3DXMATRIX rotselect = selectmat;
+								rotselect._41 = 0.0f;
+								rotselect._42 = 0.0f;
+								rotselect._43 = 0.0f;
+								D3DXMATRIX rotinvselect = invselectmat;
+								rotinvselect._41 = 0.0f;
+								rotinvselect._42 = 0.0f;
+								rotinvselect._43 = 0.0f;
+
+
+								CQuaternion rotq;
+
+
+								D3DXMATRIX gparrotmat, invgparrotmat;
+								if (parbone->GetParent()){
+									gparrotmat = parbone->GetParent()->GetBtMat();
+									D3DXMatrixInverse(&invgparrotmat, NULL, &gparrotmat);
+
+									gparrotmat._41 = 0.0f;
+									gparrotmat._42 = 0.0f;
+									gparrotmat._43 = 0.0f;
+
+									invgparrotmat._41 = 0.0f;
+									invgparrotmat._42 = 0.0f;
+									invgparrotmat._43 = 0.0f;
+								}
+								else{
+									D3DXMatrixIdentity(&gparrotmat);
+									D3DXMatrixIdentity(&invgparrotmat);
+								}
+								D3DXMATRIX parrotmat, invparrotmat;
+								parrotmat = parbone->GetBtMat();
+								D3DXMatrixInverse(&invparrotmat, NULL, &parrotmat);
+
+								*/
+								D3DXMATRIX transmat2;
+								//これでは体全体が反対を向いたときに回転方向が反対向きになる。
+								//transmat2 = invgparrotmat * rotq0.MakeRotMatX() * gparrotmat;
+
+								//D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+								D3DXMATRIX transmat = localq.MakeRotMatX();
+								//以下のようにすれば体全体が回転した時にも正常に動く
+								//transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
+								//CMotionPoint transmp;
+								//transmp.CalcQandTra(transmat2, parbone);
+								//rotq = transmp.GetQ();
+
+								D3DXMATRIX rotmat2;
+								//rotmat2 = rotq.MakeRotMatX();
+								rotmat2 = transmat;
+
+								CBone* childbone = curbone->GetChild();
+								while (childbone){
+									btTransform curworldtra;
+									CBtObject* setbto = curbone->GetBtObject(childbone);
+									if (setbto){
+										curworldtra = setbto->GetRigidBody()->getWorldTransform();
+										btMatrix3x3 curworldmat = curworldtra.getBasis();
+
+										btMatrix3x3 rotworldmat;
+										rotworldmat.setIdentity();
+										rotworldmat.setValue(
+											rotmat2._11, rotmat2._12, rotmat2._13,
+											rotmat2._21, rotmat2._22, rotmat2._23,
+											rotmat2._31, rotmat2._32, rotmat2._33);
+
+										btMatrix3x3 setrotmat;
+										setrotmat = curworldmat * rotworldmat;
+
+										curworldtra.setBasis(setrotmat);
+										setbto->GetRigidBody()->getMotionState()->setWorldTransform(curworldtra);
+									}
+									childbone = childbone->GetBrother();
+								}
+
+
+								/*
+								D3DXVECTOR3 parworld, chilworld;
+								D3DXVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+								D3DXVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+
+								D3DXMATRIX newbtmat;
+								D3DXVECTOR3 rotcenter;// = m_childworld;
+								rotcenter = parworld;
+
+								D3DXMATRIX befrot, aftrot;
+								D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+								D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+								D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+								newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
+								//newbtmat = parbone->GetCurMp().GetBtMat() * rotq.MakeRotMatX();// *tramat;
+
+
+								D3DXMATRIX firstworld = parbone->GetStartMat2();
+								D3DXMATRIX invfirstworld;
+								D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+
+								D3DXMATRIX diffworld = invfirstworld * newbtmat;
+								CRigidElem* curre = parbone->GetRigidElem(childbone);
+								D3DXMATRIX newrigidmat;
+								if (curre){
+									newrigidmat = curre->GetFirstcapsulemat() * diffworld;
+								}
+								else{
+									::MessageBoxA(NULL, "IKRotateRagdoll : curre NULL error", "error", MB_OK);
+									return -1;
+								}
+
+
+								D3DXVECTOR3 newparpos, newchilpos;
+								D3DXVECTOR3 jointfpos;
+								jointfpos = parbone->GetJointFPos();
+								D3DXVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+								jointfpos = childbone->GetJointFPos();
+								D3DXVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+
+								D3DXVECTOR3 rigidcenter = (newparpos + newchilpos) * 0.5f;
+
+
+								CQuaternion tmpq;
+								tmpq.RotationMatrix(newrigidmat);
+								btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
+
+
+								btTransform worldtra;
+								worldtra.setIdentity();
+								worldtra.setRotation(btrotq);
+								worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+
+								CBtObject* setbto = parbone->GetBtObject(childbone);
+								if (setbto){
+									setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+									//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+									//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+								}
+
+								if (isfirst == 1){
+									parbone->SetBtMat(newbtmat);
+									//IKボーンはKINEMATICだから。
+									parbone->GetCurMp().SetWorldMat(newbtmat);
+									isfirst = 0;
+								}
+								*/
+
+							}
+						}
+
+						//childbone = childbone->GetBrother();
+					//}
+				}
+			}
+			else{
+				_ASSERT(0);
+			}
+		}
+	}
+
+	//if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone){
+	//if (g_absikflag && lastbone){
+	//		AdjustBoneTra(erptr, lastbone);
+	//}
+	//}
+
+	if (lastbone){
+		return lastbone->GetBoneNo();
+	}
+	else{
+		return srcboneno;
+	}
+}
+
+
+
 int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 {
 
@@ -6128,7 +6695,8 @@ void CModel::GZeroMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
 				DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
 				srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
 				if (srcbto->GetRigidBody()){
-					srcbto->GetRigidBody()->setDeactivationTime(0.0);
+					//###srcbto->GetRigidBody()->setDeactivationTime(0.0);
+					srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 				}
 
 
@@ -7492,3 +8060,102 @@ void CModel::CreateGZeroPosConstraintReq(CBone* srcbone)
 		}
 	}
 }
+
+
+int CModel::SetMass0(CBone* srcbone)
+{
+	if (!srcbone){
+		return 0;
+	}
+
+	CBone* parbone = srcbone->GetParent();
+	if (parbone){
+		CBtObject* curbto = parbone->GetBtObject(srcbone);
+		if (curbto){
+			btVector3 localInertia(0, 0, 0);
+			curbto->GetRigidBody()->setMassProps(0.0, localInertia);
+			srcbone->SetMass0(1);
+		}
+	}
+	return 0;
+}
+int CModel::RestoreMass(CBone* srcbone)
+{
+	if (!srcbone){
+		return 0;
+	}
+
+	CBone* parbone = srcbone->GetParent();
+	if (parbone){
+		btScalar setmass = 0.0;
+		CRigidElem* curre = parbone->GetRigidElem(srcbone);
+		if (curre){
+			setmass = curre->GetMass();
+		}
+
+		CBtObject* curbto = parbone->GetBtObject(srcbone);
+		if (curbto){
+			btVector3 localInertia(0, 0, 0);
+			curbto->GetRigidBody()->setMassProps(setmass, localInertia);
+			srcbone->SetMass0(0);
+		}
+	}
+	return 0;
+
+}
+
+void CModel::SetMass0Req(CBone* srcbone)
+{
+	if (srcbone){
+		if (srcbone->GetMass0() == 1){
+			SetMass0(srcbone);
+		}
+
+		if (srcbone->GetChild()){
+			SetMass0Req(srcbone->GetChild());
+		}
+		if (srcbone->GetBrother()){
+			SetMass0Req(srcbone->GetBrother());
+		}
+	}
+}
+
+int CModel::ApplyBtToMotion()
+{
+	ApplyBtToMotionReq(m_topbone);
+
+	return 0;
+}
+
+void CModel::ApplyBtToMotionReq(CBone* srcbone)
+{
+	if (!srcbone)
+		return;
+
+	if (!m_curmotinfo)
+		return;
+
+	if (srcbone->GetParent()){
+		D3DXMATRIX setmat;
+		if (srcbone->GetChild()){
+			setmat = srcbone->GetBtMat();
+		}
+		else{
+			setmat = srcbone->GetParent()->GetBtMat();
+		}
+
+		g_wmatDirectSetFlag = true;
+		srcbone->SetWorldMat(0, m_curmotinfo->motid, m_curmotinfo->curframe, setmat);
+		g_wmatDirectSetFlag = false;
+
+	}
+
+	if (srcbone->GetChild()){
+		ApplyBtToMotionReq(srcbone->GetChild());
+	}
+	if (srcbone->GetBrother()){
+		ApplyBtToMotionReq(srcbone->GetBrother());
+	}
+
+}
+

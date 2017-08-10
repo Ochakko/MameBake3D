@@ -96,6 +96,7 @@ public:
 
 	int SetEquilibriumPoint( int lflag, int aflag );
 	int EnableSpring(bool angleflag, bool linearflag);
+	int SetDofRotAxis(int srcaxiskind);
 
 
 	int CreateGZeroPosConstraint();
@@ -219,7 +220,7 @@ public: //accesser
 		return (int)m_constraint.size();
 	};
 	void PushBackConstraint( CONSTRAINTELEM srcconstraint ){ m_constraint.push_back( srcconstraint ); };
-	btGeneric6DofSpringConstraint* GetConstraint(int srcindex){
+	btConeTwistConstraint* GetConstraint(int srcindex){
 		if ((srcindex >= 0) && (srcindex < (int)m_constraint.size())){
 			return m_constraint[srcindex].constraint;
 		}

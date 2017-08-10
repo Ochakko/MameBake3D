@@ -68,6 +68,7 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_mass0 = 0;
 	m_posconstraint = 0;
 	ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
 
@@ -1683,6 +1684,31 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 		}
 	}
 
+	D3DXMATRIX worldmat, parworldmat;
+	if (pcurmp){
+		if (g_previewFlag != 5){
+			worldmat = pcurmp->GetWorldMat();
+		}
+		else{
+			worldmat = GetBtMat();
+		}
+	}
+	else{
+		D3DXMatrixIdentity(&worldmat);
+	}
+	if (pparmp){
+		if (g_previewFlag != 5){
+			parworldmat = pparmp->GetWorldMat();
+		}
+		else{
+			parworldmat = m_parent->GetBtMat();
+		}
+	}
+	else{
+		D3DXMatrixIdentity(&parworldmat);
+	}
+
+
 	if (anglelimitaxisflag == 0){
 		if (g_boneaxis == 2){
 			//global axis
@@ -1696,7 +1722,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					if (m_parent){
 						if (GetBoneLeng() > 0.00001f){
 							if (multworld == 1){
-								selm = GetFirstAxisMatZ() * pcurmp->GetWorldMat();
+								selm = GetFirstAxisMatZ() * worldmat;
 							}
 							else{
 								selm = GetFirstAxisMatZ();
@@ -1724,7 +1750,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					//FBXにボーンの初期の軸の向きが記録されている場合
 					if (m_parent){
 						if (multworld == 1){
-							selm = GetNodeMat() * pcurmp->GetWorldMat();
+							selm = GetNodeMat() * worldmat;
 						}
 						else{
 							selm = GetNodeMat();
@@ -1732,7 +1758,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					}
 					else{
 						if (multworld == 1){
-							selm = GetNodeMat() * pcurmp->GetWorldMat();
+							selm = GetNodeMat() * worldmat;
 						}
 						else{
 							selm = GetNodeMat();
@@ -1768,7 +1794,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					if (m_parent){
 						if (GetBoneLeng() > 0.00001f){
 							if (multworld == 1){
-								selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+								selm = GetFirstAxisMatZ() * parworldmat;
 							}
 							else{
 								selm = GetFirstAxisMatZ();
@@ -1796,7 +1822,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					//FBXにボーンの初期の軸の向きが記録されている場合
 					if (m_parent){
 						if (multworld == 1){
-							selm = GetNodeMat() * pparmp->GetWorldMat();
+							selm = GetNodeMat() * parworldmat;
 						}
 						else{
 							selm = GetNodeMat();
@@ -1804,7 +1830,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					}
 					else{
 						if (multworld == 1){
-							selm = GetNodeMat() * pcurmp->GetWorldMat();
+							selm = GetNodeMat() * worldmat;
 						}
 						else{
 							selm = GetNodeMat();
@@ -1816,7 +1842,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				//endjoint
 				if (m_parent){
 					if (multworld == 1){
-						selm = pparmp->GetWorldMat();
+						selm = parworldmat;
 					}
 					else{
 						D3DXMatrixIdentity(&selm);
@@ -1824,7 +1850,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				}
 				else{
 					if (multworld == 1){
-						selm = pcurmp->GetWorldMat();
+						selm = worldmat;
 					}
 					else{
 						D3DXMatrixIdentity(&selm);
@@ -1850,7 +1876,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					if (m_parent){
 						if (GetBoneLeng() > 0.00001f){
 							if (multworld == 1){
-								selm = GetFirstAxisMatZ() * pcurmp->GetWorldMat();
+								selm = GetFirstAxisMatZ() * worldmat;
 							}
 							else{
 								selm = GetFirstAxisMatZ();
@@ -1858,7 +1884,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 						}
 						else{
 							if (multworld == 1){
-								selm = pcurmp->GetWorldMat();
+								selm = worldmat;
 							}
 							else{
 								D3DXMatrixIdentity(&selm);
@@ -1867,7 +1893,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					}
 					else{
 						if (multworld == 1){
-							selm = pcurmp->GetWorldMat();
+							selm = worldmat;
 						}
 						else{
 							D3DXMatrixIdentity(&selm);
@@ -1877,7 +1903,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				else{
 					//FBXにボーンの初期の軸の向きが記録されている場合
 					if (multworld == 1){
-						selm = GetNodeMat() * pcurmp->GetWorldMat();
+						selm = GetNodeMat() * worldmat;
 					}
 					else{
 						selm = GetNodeMat();
@@ -1887,7 +1913,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 			else{
 				//endjoint
 				if (multworld == 1){
-					selm = pcurmp->GetWorldMat();
+					selm = worldmat;
 				}
 				else{
 					D3DXMatrixIdentity(&selm);
@@ -1902,7 +1928,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					if (m_parent){
 						if (GetBoneLeng() > 0.00001f){
 							if (multworld == 1){
-								selm = GetFirstAxisMatZ() * pparmp->GetWorldMat();
+								selm = GetFirstAxisMatZ() * parworldmat;
 							}
 							else{
 								selm = GetFirstAxisMatZ();
@@ -1910,7 +1936,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 						}
 						else{
 							if (multworld == 1){
-								selm = pcurmp->GetWorldMat();
+								selm = worldmat;
 							}
 							else{
 								D3DXMatrixIdentity(&selm);
@@ -1919,7 +1945,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					}
 					else{
 						if (multworld == 1){
-							selm = pcurmp->GetWorldMat();
+							selm = worldmat;
 						}
 						else{
 							D3DXMatrixIdentity(&selm);
@@ -1930,7 +1956,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					//FBXにボーンの初期の軸の向きが記録されている場合
 					if (m_parent){
 						if (multworld == 1){
-							selm = GetNodeMat() * pparmp->GetWorldMat();
+							selm = GetNodeMat() * parworldmat;
 						}
 						else{
 							selm = GetNodeMat();
@@ -1938,7 +1964,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 					}
 					else{
 						if (multworld == 1){
-							selm = GetNodeMat() * pcurmp->GetWorldMat();
+							selm = GetNodeMat() * parworldmat;
 						}
 						else{
 							selm = GetNodeMat();
@@ -1950,7 +1976,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				//endjoint
 				if (m_parent){
 					if (multworld == 1){
-						selm = pparmp->GetWorldMat();
+						selm = parworldmat;
 					}
 					else{
 						D3DXMatrixIdentity(&selm);
@@ -1958,7 +1984,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				}
 				else{
 					if (multworld == 1){
-						selm = pcurmp->GetWorldMat();
+						selm = worldmat;
 					}
 					else{
 						D3DXMatrixIdentity(&selm);
@@ -1979,7 +2005,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 	}
 	else{
 		D3DXVECTOR3 aftjpos;
-		D3DXVec3TransformCoord(&aftjpos, &(GetJointFPos()), &(pcurmp->GetWorldMat()));
+		D3DXVec3TransformCoord(&aftjpos, &(GetJointFPos()), &worldmat);
 
 		selm._41 = aftjpos.x;
 		selm._42 = aftjpos.y;
