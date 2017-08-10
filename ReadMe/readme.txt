@@ -56,6 +56,11 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+2017/08/10_3
+	ReadMe.txt
+		動画　【物理コンストレイント】しゃがんだりかかとを上げたり
+　　　　　　　　https://youtu.be/JIXG7u1RciU
+
 2017/08/10_2
 	ボーン右クリックメニューに「除外MV」メニューを追加
 
@@ -1033,6 +1038,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+【物理コンストレイント】しゃがんだりかかとを上げたり
+https://youtu.be/JIXG7u1RciU
 
 【まめばけ３D】編集に使える(or Not?)無重力IK
 https://youtu.be/EU9owDSkDtw
