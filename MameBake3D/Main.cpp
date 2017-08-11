@@ -115,7 +115,7 @@ bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 
 static int s_onragdollik = 0;
-static int s_gzerokind = 0;
+static int s_physicskind = 0;
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -616,14 +616,14 @@ WCHAR g_basedir[ MAX_PATH ] = {0};
 float g_ikfirst = 1.0f;
 float g_ikrate = 1.0f;
 int g_applyrate = 50;
-float g_gzeromvrate = 1.0f;
+float g_physicsmvrate = 1.0f;
 
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
-#define ID_RMENU_GZEROCONSTRAINT	(ID_RMENU_0 - 100)
-#define ID_RMENU_MASS0			(ID_RMENU_GZEROCONSTRAINT + 1)
-#define ID_RMENU_EXCLUDE_MV		(ID_RMENU_GZEROCONSTRAINT + 2)
+#define ID_RMENU_PHYSICSCONSTRAINT	(ID_RMENU_0 - 100)
+#define ID_RMENU_MASS0			(ID_RMENU_PHYSICSCONSTRAINT + 1)
+#define ID_RMENU_EXCLUDE_MV		(ID_RMENU_PHYSICSCONSTRAINT + 2)
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -691,11 +691,11 @@ float g_gzeromvrate = 1.0f;
 #define IDC_STATIC_ERP				52
 #define IDC_ERP						53
 
-#define IDC_GZERO_IK				54
+#define IDC_PHYSICS_IK				54
 #define IDC_BTSTART					55
-#define IDC_GZERO_MV_IK				56
-#define IDC_GZERO_MV_SLIDER			57
-#define IDC_STATIC_GZERO_MV_SLIDER	58
+#define IDC_PHYSICS_MV_IK				56
+#define IDC_PHYSICS_MV_SLIDER			57
+#define IDC_STATIC_PHYSICS_MV_SLIDER	58
 //#define IDC_APPLY_BT				59
 #define IDC_STOP_BT					60
 
@@ -810,7 +810,7 @@ static int ExportFBXFile();
 static void refreshTimeline( OWP_Timeline& timeline );
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( D3DXVECTOR3 diffvec );
-static int AddBoneTraGZero(D3DXVECTOR3 diffvec);
+static int AddBoneTraPhysics(D3DXVECTOR3 diffvec);
 
 static int DispMotionWindow();
 static int DispToolWindow();
@@ -2851,19 +2851,19 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_BTSTART:
 			StartBt(0, 1);
 			break;
-		case IDC_GZERO_IK:
-			s_gzerokind = 0;
+		case IDC_PHYSICS_IK:
+			s_physicskind = 0;
 			StartBt(1, 1);
 			break;
-		case IDC_GZERO_MV_IK:
-			s_gzerokind = 1;
+		case IDC_PHYSICS_MV_IK:
+			s_physicskind = 1;
 			StartBt(1, 1);
 			break;
-		case IDC_GZERO_MV_SLIDER:
+		case IDC_PHYSICS_MV_SLIDER:
 			RollbackCurBoneNo();
-			g_gzeromvrate = (float)(g_SampleUI.GetSlider(IDC_GZERO_MV_SLIDER)->GetValue()) * 0.01f;
-			swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
-			g_SampleUI.GetStatic(IDC_STATIC_GZERO_MV_SLIDER)->SetText(sz);
+			g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
+			swprintf_s(sz, 100, L"Physics Edit Rate : %.3f", g_physicsmvrate);
+			g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
 			break;
 		//case IDC_APPLY_BT:
 		//	if (s_model){
@@ -4712,7 +4712,7 @@ int AddBoneTra2( D3DXVECTOR3 diffvec )
 }
 
 /*
-int ImpulseBoneGZero(D3DXVECTOR3 diffvec)
+int ImpulseBonePhysics(D3DXVECTOR3 diffvec)
 {
 	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()){
 		return 0;
@@ -6976,7 +6976,7 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
 
-				if (s_gzerokind == 0){
+				if (s_physicskind == 0){
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
 				}
@@ -9345,7 +9345,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//		s_underikflag = 1;
 		//	}
 		//}
-		curmodel->SetRagdollKinFlag(s_curboneno, s_gzerokind);
+		curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
 	}
 
 	if (s_onragdollik != 0){
@@ -9368,18 +9368,18 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			s_model->SetDofRotAxis(s_pickinfo.buttonflag);//!!!!!!!!!!!!!!!!!!!!!!!
 
 
-			if (s_gzerokind == 0){
+			if (s_physicskind == 0){
 				if (s_onragdollik == 1){
 					int ikmaxlevel = 0;
 
-					curmodel->GZeroRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+					curmodel->PhysicsRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
 				}
 				else if ((s_onragdollik == 2) || (s_onragdollik == 3)){
 					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
 					if (g_controlkey == true){
 						deltax *= 0.250f;
 					}
-					s_editmotionflag = s_model->GZeroRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					s_ikcnt++;
 				}
 
@@ -9391,7 +9391,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			else{
 				int ikmaxlevel = 0;
 				D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
-				curmodel->GZeroMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
+				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
 			}
 		}
 
@@ -10370,14 +10370,14 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50 + 130 ;
 
-	swprintf_s(sz, 100, L"GZero Edit Rate : %.3f", g_gzeromvrate);
-	g_SampleUI.AddStatic(IDC_STATIC_GZERO_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddSlider(IDC_GZERO_MV_SLIDER, startx, iY += addh, 100, ctrlh, 0, 100, (int)(g_gzeromvrate * 100.0f));
+	swprintf_s(sz, 100, L"Physics Edit Rate : %.3f", g_physicsmvrate);
+	g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddSlider(IDC_PHYSICS_MV_SLIDER, startx, iY += addh, 100, ctrlh, 0, 100, (int)(g_physicsmvrate * 100.0f));
 
 	iY += 10;
-	g_SampleUI.AddButton(IDC_GZERO_IK, L"GZero Rot start", startx, iY += addh, 100, ctrlh);
+	g_SampleUI.AddButton(IDC_PHYSICS_IK, L"Physics Rot start", startx, iY += addh, 100, ctrlh);
 	iY += 5;
-	g_SampleUI.AddButton(IDC_GZERO_MV_IK, L"GZero MV start", startx, iY += addh, 100, ctrlh);
+	g_SampleUI.AddButton(IDC_PHYSICS_MV_IK, L"Physics MV start", startx, iY += addh, 100, ctrlh);
 	//iY += 5;
 	//g_SampleUI.AddButton(IDC_APPLY_BT, L"Apply BT", startx, iY += addh, 100, ctrlh);
 
@@ -12257,10 +12257,10 @@ int BoneRClick(int srcboneno)
 				s_customrigmenuindex.clear();
 
 				if (curbone->GetPosConstraint() == 0){
-					AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos ConstraintÝ’è");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos ConstraintÝ’è");
 				}
 				else{
-					AppendMenu(submenu, MF_STRING, ID_RMENU_GZEROCONSTRAINT, L"GZero Pos Constraint‰ðœ");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint‰ðœ");
 				}
 
 				if (curbone->GetMass0() == 0){
@@ -12323,13 +12323,13 @@ int BoneRClick(int srcboneno)
 				int currigno = -1;
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
-				if (menuid == ID_RMENU_GZEROCONSTRAINT){
+				if (menuid == ID_RMENU_PHYSICSCONSTRAINT){
 					//toggle
 					if (curbone->GetPosConstraint() == 0){
-						s_model->CreateGZeroPosConstraint(curbone);
+						s_model->CreatePhysicsPosConstraint(curbone);
 					}
 					else{
-						s_model->DestroyGZeroPosConstraint(curbone);
+						s_model->DestroyPhysicsPosConstraint(curbone);
 					}
 				}
 				else if (menuid == ID_RMENU_MASS0){

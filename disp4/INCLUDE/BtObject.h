@@ -99,8 +99,8 @@ public:
 	int SetDofRotAxis(int srcaxiskind);
 
 
-	int CreateGZeroPosConstraint();
-	int DestroyGZeroPosConstraint();
+	int CreatePhysicsPosConstraint();
+	int DestroyPhysicsPosConstraint();
 
 private:
 

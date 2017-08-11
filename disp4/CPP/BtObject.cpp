@@ -104,7 +104,7 @@ int CBtObject::DestroyObjs()
 		m_colshape = 0;
 	}
 
-	DestroyGZeroPosConstraint();
+	DestroyPhysicsPosConstraint();
 
 
 	m_chilbt.clear();
@@ -601,7 +601,12 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 
 				//##//dofC->setEquilibriumPoint(dofid);
 
-				//##}
+				//##}				
+
+				//dofC->setDamping(a_damping);
+
+				dofC->setDamping(0.0);
+
 
 				CONSTRAINTELEM addelem;
 				addelem.constraint = dofC;
@@ -721,6 +726,24 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 		}
 	}
 	*/
+
+
+	float angPAI4, angPAI2, angPAI, ang5;
+	angPAI4 = 45.0f * (float)DEG2PAI;
+	angPAI2 = 90.0f * (float)DEG2PAI;
+	angPAI = 180.0f * (float)DEG2PAI;
+	ang5 = 5.0f * (float)DEG2PAI;
+
+	int constraintnum = m_constraint.size();
+	int constno;
+	for (constno = 0; constno < constraintnum; constno++){
+		btConeTwistConstraint* dofC = m_constraint[constno].constraint;
+		if (dofC){
+			dofC->setLimit(angPAI, angPAI, angPAI, 0.8, 0.0, 0.5);
+		}
+	}
+
+
 
 	return 0;
 }
@@ -929,7 +952,7 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	return 0;
 }
 
-int CBtObject::CreateGZeroPosConstraint()
+int CBtObject::CreatePhysicsPosConstraint()
 {
 
 
@@ -1040,7 +1063,7 @@ int CBtObject::CreateGZeroPosConstraint()
 	return 0;
 }
 
-int CBtObject::DestroyGZeroPosConstraint()
+int CBtObject::DestroyPhysicsPosConstraint()
 {
 	DestroyGZObj();
 	return 0;

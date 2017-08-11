@@ -87,7 +87,7 @@ extern int g_slerpoffflag;
 extern int g_absikflag;
 extern int g_applyendflag;
 extern int g_bonemarkflag;
-extern float g_gzeromvrate;
+extern float g_physicsmvrate;
 
 extern D3DXVECTOR3 g_camEye;
 extern D3DXVECTOR3 g_camtargetpos;
@@ -4454,7 +4454,7 @@ int CModel::CreateBtObject( int onfirstcreate )
 	}
 	else{
 		SetRagdollKinFlagReq(m_topbt, -1);
-		CreateGZeroPosConstraintReq(m_topbone);
+		CreatePhysicsPosConstraintReq(m_topbone);
 		SetMass0Req(m_topbone);
 	}
 
@@ -4752,6 +4752,9 @@ int CModel::DampAnim( MOTINFO* rgdmorphinfo )
 							//##	curct->setDamping( dofid, newdampa );
 							//##}
 							//##}
+
+							//curct->setDamping( newdampa );
+
 						}
 					}
 
@@ -5526,21 +5529,21 @@ void CModel::SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, floa
 	}
 }
 
-int CModel::SetRagdollKinFlag(int selectbone, int gzeromvkind)
+int CModel::SetRagdollKinFlag(int selectbone, int physicsmvkind)
 {
 
 	if( !m_topbt ){
 		return 0;
 	}
 
-	SetRagdollKinFlagReq( m_topbt, selectbone, gzeromvkind );
+	SetRagdollKinFlagReq( m_topbt, selectbone, physicsmvkind );
 
 	
 
 
 	return 0;
 }
-void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int gzeromvkind)
+void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physicsmvkind)
 {
 
 	CBone* srcbone = srcbto->GetBone();
@@ -5564,7 +5567,7 @@ void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int gzeromv
 			srcbone->SetBtKinFlag(0);
 		}
 
-		//if ((gzeromvkind == 0) && (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
+		//if ((physicsmvkind == 0) && (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
 		if ((srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
 			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
 			if (s_setrigidflag == 0){
@@ -5971,7 +5974,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, i
 }
 
 
-int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel)
+int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel)
 {
 
 	CBone* firstbone = m_bonelist[srcboneno];
@@ -5991,7 +5994,7 @@ int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, in
 	CBone* curbone = firstbone;
 	SetBefEditMat(erptr, curbone, maxlevel);
 
-	float currate = g_gzeromvrate;
+	float currate = g_physicsmvrate;
 
 	CBone* parbone = curbone->GetParent();
 	if (parbone){
@@ -6142,7 +6145,7 @@ int CModel::GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, in
 
 }
 
-int CModel::GZeroRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat)
+int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat)
 {
 	if (!m_curmotinfo){
 		return 0;
@@ -6278,7 +6281,7 @@ int CModel::GZeroRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				newrigidmat = curre->GetFirstcapsulemat() * diffworld;
 			}
 			else{
-				::MessageBoxA(NULL, "GZeroRotAxisDelta : curre NULL error", "error", MB_OK);
+				::MessageBoxA(NULL, "PhysicsRotAxisDelta : curre NULL error", "error", MB_OK);
 				return -1;
 			}
 
@@ -6332,7 +6335,7 @@ int CModel::GZeroRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 
 
-int CModel::GZeroRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig)
+int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig)
 {
 	if (depthcnt >= 10){
 		_ASSERT(0);
@@ -6377,7 +6380,7 @@ int CModel::GZeroRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int 
 				if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
 					if (currigelem.transuv[uvno].enable == 1){
 						CUSTOMRIG rigrig = rigrigbone->GetCustomRig(rigrigno);
-						GZeroRigControl(depthcnt, erptr, rigrigbone->GetBoneNo(), uvno, srcdelta * currigelem.transuv[uvno].applyrate, rigrig);
+						PhysicsRigControl(depthcnt, erptr, rigrigbone->GetBoneNo(), uvno, srcdelta * currigelem.transuv[uvno].applyrate, rigrig);
 					}
 				}
 			}
@@ -6617,7 +6620,7 @@ int CModel::GZeroRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int 
 
 
 
-int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
+int CModel::PhysicsMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 {
 
 	CBone* firstbone = m_bonelist[srcboneno];
@@ -6638,12 +6641,12 @@ int CModel::GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec)
 	SetBefEditMat(erptr, curbone, 0);
 
 
-	D3DXVECTOR3 mvvec = diffvec * g_gzeromvrate;
+	D3DXVECTOR3 mvvec = diffvec * g_physicsmvrate;
 
 
 	int isfirst = 1;
 
-	GZeroMVReq(m_topbone, mvvec);
+	PhysicsMVReq(m_topbone, mvvec);
 
 	if (m_topbone){
 		return m_topbone->GetBoneNo();
@@ -6674,7 +6677,7 @@ int CModel::WithConstraint(CBone* srcbone)
 }
 
 
-void CModel::GZeroMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
+void CModel::PhysicsMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
 {
 	if (srcbone){
 		CBone* curbone = srcbone;
@@ -6724,10 +6727,10 @@ void CModel::GZeroMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
 		}
 
 		if (curbone->GetChild()){
-			GZeroMVReq(curbone->GetChild(), mvvec);
+			PhysicsMVReq(curbone->GetChild(), mvvec);
 		}
 		if (curbone->GetBrother()){
-			GZeroMVReq(curbone->GetBrother(), mvvec);
+			PhysicsMVReq(curbone->GetBrother(), mvvec);
 		}
 	}
 }
@@ -7604,7 +7607,7 @@ int CModel::ImpulseBoneRagdoll(int onlyoneflag, CEditRange* erptr, int srcboneno
 	curbone = firstbone;
 	double firstframe = 0.0;
 
-	D3DXVECTOR3 impulse = addtra * g_gzeromvrate;
+	D3DXVECTOR3 impulse = addtra * g_physicsmvrate;
 	//D3DXVECTOR3 impulse = D3DXVECTOR3(100.0f, 0.0f ,0.0f);
 
 	CBone* parbone = curbone->GetParent();
@@ -8009,7 +8012,7 @@ void CModel::DumpBtConstraintReq(CBtObject* srcbto, int srcdepth)
 	}
 }
 
-int CModel::CreateGZeroPosConstraint(CBone* srcbone)
+int CModel::CreatePhysicsPosConstraint(CBone* srcbone)
 {
 	if (!srcbone){
 		return 0;
@@ -8019,7 +8022,7 @@ int CModel::CreateGZeroPosConstraint(CBone* srcbone)
 	if (parbone){
 		CBtObject* curbto = parbone->GetBtObject(srcbone);
 		if (curbto){
-			curbto->CreateGZeroPosConstraint();
+			curbto->CreatePhysicsPosConstraint();
 			srcbone->SetPosConstraint(1);
 		}
 	}
@@ -8027,7 +8030,7 @@ int CModel::CreateGZeroPosConstraint(CBone* srcbone)
 	return 0;
 }
 
-int CModel::DestroyGZeroPosConstraint(CBone* srcbone)
+int CModel::DestroyPhysicsPosConstraint(CBone* srcbone)
 {
 	if (!srcbone){
 		return 0;
@@ -8037,7 +8040,7 @@ int CModel::DestroyGZeroPosConstraint(CBone* srcbone)
 	if (parbone){
 		CBtObject* curbto = parbone->GetBtObject(srcbone);
 		if (curbto){
-			curbto->DestroyGZeroPosConstraint();
+			curbto->DestroyPhysicsPosConstraint();
 			srcbone->SetPosConstraint(0);
 		}
 	}
@@ -8045,18 +8048,18 @@ int CModel::DestroyGZeroPosConstraint(CBone* srcbone)
 	return 0;
 }
 
-void CModel::CreateGZeroPosConstraintReq(CBone* srcbone)
+void CModel::CreatePhysicsPosConstraintReq(CBone* srcbone)
 {
 	if (srcbone){
 		if (srcbone->GetPosConstraint() == 1){
-			CreateGZeroPosConstraint(srcbone);
+			CreatePhysicsPosConstraint(srcbone);
 		}
 
 		if (srcbone->GetChild()){
-			CreateGZeroPosConstraintReq(srcbone->GetChild());
+			CreatePhysicsPosConstraintReq(srcbone->GetChild());
 		}
 		if (srcbone->GetBrother()){
-			CreateGZeroPosConstraintReq(srcbone->GetBrother());
+			CreatePhysicsPosConstraintReq(srcbone->GetBrother());
 		}
 	}
 }

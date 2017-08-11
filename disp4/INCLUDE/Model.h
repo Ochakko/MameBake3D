@@ -324,10 +324,10 @@ public:
 	int IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel );
 
 
-	int GZeroRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
-	int GZeroMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec);
-	int CreateGZeroPosConstraint(CBone* srcbone);
-	int DestroyGZeroPosConstraint(CBone* srcbone);
+	int PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
+	int PhysicsMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec);
+	int CreatePhysicsPosConstraint(CBone* srcbone);
+	int DestroyPhysicsPosConstraint(CBone* srcbone);
 	int SetMass0(CBone* srcbone);
 	int RestoreMass(CBone* srcbone);
 /**
@@ -345,7 +345,7 @@ public:
  */
 	int IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat );
 
-	int GZeroRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat);
+	int PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat);
 	int SetDofRotAxis(int srcaxiskind);
 
 
@@ -536,7 +536,7 @@ public:
 	int SetColTypeAll(int reindex, int srctype);
 
 	int Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
-	int SetRagdollKinFlag(int selectbone, int gzeromvkind = 0);
+	int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );
@@ -568,7 +568,7 @@ public:
 	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
 
 	int RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
-	int GZeroRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
+	int PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();
 
@@ -668,7 +668,7 @@ private:
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );
 	void SetBtGravityReq( CBtObject* srcbto );
-	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int gzeromvkind = 0 );
+	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int physicsmvkind = 0 );
 	void CreateBtConnectReq( CBone* curbone );
 	void SetColiIDReq( CBone* srcbone, CRigidElem* srcre );
 	void EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex);
@@ -695,10 +695,10 @@ private:
 	void DumpBtConstraintReq(CBtObject* srcbto, int srcdepth);
 	FbxPose* GetBindPose();
 
-	void CreateGZeroPosConstraintReq(CBone* srcbone);
+	void CreatePhysicsPosConstraintReq(CBone* srcbone);
 	void SetMass0Req(CBone* srcbone);
 
-	void GZeroMVReq(CBone* srcbone, D3DXVECTOR3 diffvec);
+	void PhysicsMVReq(CBone* srcbone, D3DXVECTOR3 diffvec);
 	int WithConstraint(CBone* srcbone);
 	void BulletSimulationStopReq(CBtObject* srcbto);
 	void BulletSimulationStartReq(CBtObject* srcbto);
