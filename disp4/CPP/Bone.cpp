@@ -784,7 +784,7 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 		return 0;
 	}
 
-	_ASSERT( colptr );
+	//_ASSERT( colptr );
 	_ASSERT( chilbone );
 
 	CModel* curcoldisp = m_coldisp[curre->GetColtype()];
@@ -1636,17 +1636,17 @@ D3DXVECTOR3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, 
 
 	if (axiskind == -1){
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
-			tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
+			tmpmp.GetQ().CalcFBXEulZXY(&axisq, befeul, &cureul, isfirstbone);
 		}
 		else{
-			tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+			tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
 		}
 	}
 	else if (axiskind != BONEAXIS_GLOBAL){
-		tmpmp.GetQ().CalcFBXEul(&axisq, befeul, &cureul, isfirstbone);
+		tmpmp.GetQ().CalcFBXEulZXY(&axisq, befeul, &cureul, isfirstbone);
 	}
 	else{
-		tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+		tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
 	}
 
 	CMotionPoint* curmp;
@@ -2704,7 +2704,32 @@ D3DXVECTOR3 CBone::CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeul
 		befeul = *befeulptr;
 	}
 
+	//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
 	tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+
+	return cureul;
+
+}
+D3DXVECTOR3 CBone::CalcFBXEulZXY(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr)
+{
+	CMotionPoint tmpmp;
+	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+	int isfirstbone;
+	if (GetParent()){
+		isfirstbone = 0;
+	}
+	else{
+		isfirstbone = 1;
+	}
+
+	D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	if (befeulptr){
+		befeul = *befeulptr;
+	}
+
+	//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+	tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
 
 	return cureul;
 
@@ -2999,7 +3024,7 @@ CModel* CBone::GetCurColDisp(CBone* childbone)
 		return 0;
 	}
 
-	_ASSERT(colptr);
+	//_ASSERT(colptr);
 	_ASSERT(childbone);
 
 	CModel* curcoldisp = m_coldisp[curre->GetColtype()];

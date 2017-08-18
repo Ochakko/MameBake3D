@@ -1259,6 +1259,7 @@ _ASSERT( motionnum == aino );
 
 void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe )
 {
+
 	static int s_dbgcnt = 0;
 
     int lKeyIndex = 0;
@@ -1269,19 +1270,26 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 		if( curbone ){
 
 			lSkel = fbxbone->GetSkelNode();
-			if( !lSkel ){
+			if (!lSkel){
 				_ASSERT( 0 );
 				return;
 			}
 			
-			EFbxRotationOrder lRotationOrderSrc = eEulerZXY;
-			EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
-			lSkel->GetRotationOrder( FbxNode::eSourcePivot, lRotationOrderSrc );
-			lSkel->GetRotationOrder( FbxNode::eDestinationPivot, lRotationOrderDst );
+			//EFbxRotationOrder lRotationOrderSrc = eEulerZXY;
+			//EFbxRotationOrder lRotationOrderSrc = eEulerXYZ;
+			//EFbxRotationOrder lRotationOrderSrc = eEulerYXZ;
+			//EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
+			//EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
+
+			//lSkel->GetRotationOrder( FbxNode::eSourcePivot, lRotationOrderSrc );
+			//lSkel->GetRotationOrder( FbxNode::eDestinationPivot, lRotationOrderDst );
 
 			
 			lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ );
-			lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerZXY );
+			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerYXZ );
+			lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
+			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerZXY);
+			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
 			s_convPivot =  FbxNode::eSourcePivot;
 			s_dbgcnt++;
 
@@ -1291,9 +1299,17 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+
 			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
+			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
 		}
 	}
@@ -1305,7 +1321,6 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 		AnimateBoneReq( fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
 	}
 }
-
 
 
 /***
@@ -2447,7 +2462,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		lCurve = lSkel->LclRotation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			cureul = curbone->CalcFBXEul(curmotid, frameno, &befeul);
+			cureul = curbone->CalcFBXEulZXY(curmotid, frameno, &befeul);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 

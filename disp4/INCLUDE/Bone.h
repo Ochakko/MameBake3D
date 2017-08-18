@@ -355,6 +355,7 @@ public:
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
 	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
+	D3DXVECTOR3 CalcFBXEulZXY(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
 	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);

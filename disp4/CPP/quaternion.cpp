@@ -796,6 +796,167 @@ int CQuaternion::Q2EulBt( D3DXVECTOR3* reteul )
 	return 0;
 }
 
+int CQuaternion::Q2EulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+{
+	return Q2Eul(axisq, befeul, reteul);
+}
+
+int CQuaternion::Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+{
+
+	CQuaternion axisQ, invaxisQ, EQ;
+	if (axisq){
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+		EQ = invaxisQ * *this * axisQ;
+	}
+	else{
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		EQ = *this;
+	}
+
+	D3DXVECTOR3 Euler;
+
+
+	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
+	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
+
+	D3DXVECTOR3 targetVec, shadowVec;
+	D3DXVECTOR3 tmpVec;
+
+	EQ.Rotate(&targetVec, axisYVec);
+	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
+	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
+	shadowVec.z = 0.0f;
+	if (lengthVec(&shadowVec) == 0.0f){
+		Euler.z = 90.0f;
+	}
+	else{
+		Euler.z = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+	}
+	if (vecDotVec(&shadowVec, &axisXVec) > 0.0f){
+		Euler.z = -Euler.z;
+	}
+
+	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
+	shadowVec.x = 0.0f;
+	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0f){
+		Euler.x = 90.0f;
+	}
+	else{
+		Euler.x = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+	}
+	if (vecDotVec(&shadowVec, &axisZVec) < 0.0f){
+		Euler.x = -Euler.x;
+	}
+
+
+	EQ.Rotate(&targetVec, axisZVec);
+	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
+	targetVec = tmpVec;
+	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
+	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.y = 0.0f;
+	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0f){
+		Euler.y = 90.0f;
+	}
+	else{
+		Euler.y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+	}
+	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f){
+		Euler.y = -Euler.y;
+	}
+
+	ModifyEuler(&Euler, &befeul);
+	*reteul = Euler;
+
+	return 0;
+}
+
+
+int CQuaternion::Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+{
+
+	CQuaternion axisQ, invaxisQ, EQ;
+	if (axisq){
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+		EQ = invaxisQ * *this * axisQ;
+	}
+	else{
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		EQ = *this;
+	}
+
+	D3DXVECTOR3 Euler;
+
+
+	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
+	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
+
+	D3DXVECTOR3 targetVec, shadowVec;
+	D3DXVECTOR3 tmpVec;
+
+	EQ.Rotate(&targetVec, axisXVec);
+	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
+	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
+	shadowVec.z = 0.0f;
+	if (lengthVec(&shadowVec) == 0.0f){
+		Euler.z = 90.0f;
+	}
+	else{
+		Euler.z = aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
+	}
+	if (vecDotVec(&shadowVec, &axisYVec) < 0.0f){
+		Euler.z = -Euler.z;
+	}
+
+	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
+	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.y = 0.0f;
+	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0f){
+		Euler.y = 90.0f;
+	}
+	else{
+		Euler.y = aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
+	}
+	if (vecDotVec(&shadowVec, &axisZVec) > 0.0f){
+		Euler.y = -Euler.y;
+	}
+
+
+	EQ.Rotate(&targetVec, axisZVec);
+	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
+	targetVec = tmpVec;
+	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
+	shadowVec.x = 0.0f;
+	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0f){
+		Euler.x = 90.0f;
+	}
+	else{
+		Euler.x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+	}
+	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f){
+		Euler.x = -Euler.x;
+	}
+
+	ModifyEuler(&Euler, &befeul);
+	*reteul = Euler;
+
+	return 0;
+}
+
+
 
 int CQuaternion::Q2Eul(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
 {
@@ -962,7 +1123,43 @@ int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3
 
 	D3DXVECTOR3 tmpeul( 0.0f, 0.0f, 0.0f );
 	if (IsInit() == 0){
-		Q2Eul(axisq, befeul, &tmpeul);
+		//Q2Eul(axisq, befeul, &tmpeul);
+		Q2EulXYZ(axisq, befeul, &tmpeul);
+		//Q2EulYXZ(axisq, befeul, &tmpeul);
+		//Q2EulZXY(axisq, befeul, &tmpeul);
+	}
+	else{
+		//FBX書き出しの際にアニメーションに「ある程度の大きさの変化」がないとキーが省略されてしまう。
+		//ノイズを乗せることでアニメーションがなくてもキーが省略されないようになる。
+		//ノイズを乗せるのは１つのボーンで良い。
+		if (isfirstbone == 1){
+			tmpeul.x = (float)(noise[dbgcnt % 4]) / 100.0f;//!!!!!!!!
+		}
+		else{
+			tmpeul.x = 0.0f;
+		}
+		tmpeul.y = 0.0f;
+		tmpeul.z = 0.0f;
+	}
+	*reteul = tmpeul;
+
+	dbgcnt++;
+
+	return 0;
+}
+
+int CQuaternion::CalcFBXEulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone)
+{
+
+	int noise[4] = { 0, 1, 0, -1 };
+	static int dbgcnt = 0;
+
+	D3DXVECTOR3 tmpeul(0.0f, 0.0f, 0.0f);
+	if (IsInit() == 0){
+		//Q2Eul(axisq, befeul, &tmpeul);
+		//Q2EulXYZ(axisq, befeul, &tmpeul);
+		//Q2EulYXZ(axisq, befeul, &tmpeul);
+		Q2EulZXY(axisq, befeul, &tmpeul);
 	}
 	else{
 		//FBX書き出しの際にアニメーションに「ある程度の大きさの変化」がないとキーが省略されてしまう。

@@ -22,6 +22,7 @@ public:
 	int GetAxisAndRot( D3DXVECTOR3* axisvecptr, float* frad );
 	int QuaternionToAxisAngle( D3DXVECTOR3* dstaxis, float* dstrad );
 	int CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone );
+	int CalcFBXEulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone);
 	int IsInit();
 
 
@@ -69,6 +70,12 @@ public:
 
 	int CalcSym( CQuaternion* dstq );
 	D3DXMATRIX CalcSymX2();
+
+
+	//ç∂ÇÀÇ∂
+	int Q2EulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
+	int Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
+	int Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
 
 
 	int Q2Eul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );
