@@ -330,7 +330,7 @@ public:
 	* @return 成功したら０。
 	* @detail CalcAxisMatXから呼ばれる。
 	*/
-	int CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
+	//int CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
 
 	int CalcAxisMatZ_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
 
@@ -387,7 +387,9 @@ private:
  * @return 成功したら０。
  * @detail CalcAxisMatから呼ばれる。
  */
-	int CalcAxisMatX();
+	//int CalcAxisMatX();
+	int CalcAxisMatX(CBone* childbone, D3DXMATRIX* dstmat);
+
 
 	int CalcAxisMatZ();
 
@@ -453,7 +455,7 @@ private:
 	int DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe );
 
 	void SetStartMat2Req();
-	void CalcFirstAxisMatX();
+	//void CalcFirstAxisMatX();
 	void CalcFirstAxisMatZ();
 
 	void InitAngleLimit();
@@ -748,12 +750,13 @@ public: //accesser
 			return 0.0f;
 		}
 	};
-
+	/*
 	D3DXMATRIX GetFirstAxisMatX()
 	{
 		CalcFirstAxisMatX();
 		return m_firstaxismatX;
 	};
+	*/
 	D3DXMATRIX GetFirstAxisMatZ()
 	{
 		CalcFirstAxisMatZ();
@@ -870,10 +873,10 @@ private:
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
 
 	D3DXMATRIX m_laxismat;//Zボーンのaxismat
-	D3DXMATRIX m_gaxismatXpar;//Xボーンのグローバルのaxismat
+	//D3DXMATRIX m_gaxismatXpar;//Xボーンのグローバルのaxismat
 	D3DXMATRIX m_gaxismatYpar;//Yボーンのグローバルのaxismat
 	D3DXMATRIX m_axismat_par;//Xボーンのローカルのaxismat
-	D3DXMATRIX m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
+	//D3DXMATRIX m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
 	D3DXMATRIX m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
 
 

@@ -574,6 +574,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 	FbxNode *pRootNode = pscene->GetRootNode();
 	CallF( CreateFBXAnim( pscene, pRootNode ), return 1 );
 
+	/*
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
@@ -581,6 +582,8 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 			curbone->CalcAxisMat(1, 0.0f);
 		}
 	}
+	*/
+	CalcBtAxismatReq(m_topbone, 1);
 
 
 	return 0;
@@ -4229,8 +4232,8 @@ void CModel::BulletSimulationStartReq(CBtObject* srcbto)
 	if (srcbto->GetRigidBody()){
 		srcbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 		srcbto->GetRigidBody()->activate();
-		//###curbto->GetRigidBody()->setDeactivationTime(0.0);
-		srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+		srcbto->GetRigidBody()->setDeactivationTime(0.0);
+		//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 	}
 
 	int chilno;
@@ -5719,8 +5722,8 @@ void CModel::ResetBtReq( CBtObject* curbto )
 			curbto->GetRigidBody()->setInterpolationWorldTransform( myMotionState->m_startWorldTrans );
 			curbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 			curbto->GetRigidBody()->activate();
-			//###curbto->GetRigidBody()->setDeactivationTime(0.0);
-			curbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+			curbto->GetRigidBody()->setDeactivationTime(0.0);
+			//curbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 
 			//colObj->setActivationState(WANTS_DEACTIVATION);
 		}
@@ -5983,6 +5986,16 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 		return -1;
 	}
 
+	CBone* curbone = firstbone;
+	CBone* parbone = curbone->GetParent();
+	if (!parbone){
+		return 0;
+	}
+	if (!parbone->GetParent()){
+		//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
+		return 0;
+	}
+
 
 	D3DXVECTOR3 ikaxis = g_camtargetpos - g_camEye;
 	D3DXVec3Normalize(&ikaxis, &ikaxis);
@@ -5991,17 +6004,11 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 	double startframe, endframe, applyframe;
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-	CBone* curbone = firstbone;
 	SetBefEditMat(erptr, curbone, maxlevel);
 
 	float currate = g_physicsmvrate;
 
-	CBone* parbone = curbone->GetParent();
 	if (parbone){
-		if (!parbone->GetParent()){
-			//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
-			return 0;
-		}
 		CBone* childbone = parbone->GetChild();
 		int isfirst = 1;
 		while (childbone){
@@ -6126,6 +6133,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 						setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
 						//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 						//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+						setbto->GetRigidBody()->setDeactivationTime(0.0);
 					}
 
 					if (isfirst == 1){
@@ -6152,6 +6160,20 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	}
 
 
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone){
+		return 0;
+	}
+	CBone* parbone = curbone->GetParent();
+	if (!parbone){
+		return 0;
+	}
+	if (!parbone->GetParent()){
+		//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
+		return 0;
+	}
+
+
 	int calcnum = 3;
 
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
@@ -6163,22 +6185,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	double startframe, endframe, applyframe;
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-
-
-	CBone* curbone = m_bonelist[srcboneno];
-	if (!curbone){
-		return 0;
-	}
 	SetBefEditMat(erptr, curbone, maxlevel);//!!!!!!!!!!!!
 
-
-	CBone* parbone = curbone->GetParent();
-	//CBone* parbone = curbone;
 	if (parbone){
-		if (!parbone->GetParent()){
-			//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
-			return 0;
-		}
 		CBone* childbone = parbone->GetChild();
 		int isfirst = 1;
 		float currate = 1.0f;
@@ -6196,15 +6205,15 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 			CQuaternion localq;
 			if (axiskind == PICK_X){
 				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
-				localq.SetAxisAndRot(axis0, rotrad2);
+				localq.SetAxisAndRot(axis0, -rotrad2);
 			}
 			else if (axiskind == PICK_Y){
 				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-				localq.SetAxisAndRot(axis0, rotrad2);
+				localq.SetAxisAndRot(axis0, -rotrad2);
 			}
 			else if (axiskind == PICK_Z){
 				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
-				localq.SetAxisAndRot(axis0, rotrad2);
+				localq.SetAxisAndRot(axis0, -rotrad2);
 			}
 			else{
 				_ASSERT(0);
@@ -6245,7 +6254,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 			
 
 			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-			D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
+			//D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
+			D3DXMATRIX transmat2 = invgparrotmat * invparrotmat * transmat * parrotmat * gparrotmat;
 
 			CMotionPoint transmp;
 			transmp.CalcQandTra(transmat2, parbone);
@@ -6698,8 +6708,8 @@ void CModel::PhysicsMVReq(CBone* srcbone, D3DXVECTOR3 mvvec)
 				DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
 				srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
 				if (srcbto->GetRigidBody()){
-					//###srcbto->GetRigidBody()->setDeactivationTime(0.0);
-					srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+					srcbto->GetRigidBody()->setDeactivationTime(0.0);
+					//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 				}
 
 

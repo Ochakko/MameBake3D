@@ -156,8 +156,15 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(curre->GetMass(), myMotionState, shape, localInertia);
 		body = new btRigidBody(rbInfo);
 
-		body->setRestitution(curre->GetRestitution());
-		body->setFriction(curre->GetFriction());
+		//body->setRestitution(curre->GetRestitution());
+		//body->setFriction(curre->GetFriction());
+		body->setRestitution(0.0);
+		body->setFriction(1.0);
+		//if (g_previewFlag != 5){
+			body->setDamping(0.3, 0.6);
+		//}else{
+		//	body->setDamping(0.3, 1.0);
+		//}
 
 		int myid = curre->GetGroupid();
 		//int coliid = curre->GetColiID();
@@ -185,6 +192,7 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 
 		body->setRestitution(0.0);
 		body->setFriction(1.0);
+		//body->setDamping(0.3, 0.6);
 
 		int myid = 999;
 		int coliid = 0;
@@ -605,7 +613,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 
 				//dofC->setDamping(a_damping);
 
-				dofC->setDamping(0.0);
+				dofC->setDamping(1.0);
 
 
 				CONSTRAINTELEM addelem;
@@ -739,7 +747,18 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 	for (constno = 0; constno < constraintnum; constno++){
 		btConeTwistConstraint* dofC = m_constraint[constno].constraint;
 		if (dofC){
-			dofC->setLimit(angPAI, angPAI, angPAI, 0.8, 0.0, 0.5);
+			//dofC->setLimit(angPAI, angPAI, angPAI, 0.8, 0.0, 0.5);
+			//dofC->setLimit(angPAI, angPAI, angPAI2);
+			//dofC->setLimit(angPAI2, angPAI2, angPAI2);
+			//dofC->setLimit(angPAI2, angPAI2, angPAI4, 0.8, 0.0, 0.5);
+			//dofC->setLimit(angPAI2, angPAI2, angPAI4, 0.8, 0.3, 0.8);
+			//dofC->setLimit(angPAI2, angPAI2, angPAI4);
+			if (g_previewFlag != 5){
+				dofC->setLimit(angPAI4, angPAI4, angPAI4);
+			}
+			else{
+				dofC->setLimit(angPAI, angPAI, angPAI);
+			}
 		}
 	}
 

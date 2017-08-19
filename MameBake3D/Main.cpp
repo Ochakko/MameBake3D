@@ -2316,7 +2316,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
 					int multworld = 1;
-					s_ikselectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
+					//s_ikselectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
+					s_ikselectmat = s_selm;
+					s_ikselectmat._41 = 0.0f;
+					s_ikselectmat._42 = 0.0f;
+					s_ikselectmat._43 = 0.0f;
 				}
 			}
 		}
@@ -5485,8 +5489,10 @@ int RenderSelectMark(int renderflag)
 
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if (curboneptr){
-		int multworld = 1;
-		s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
+		if (s_onragdollik == 0){
+			int multworld = 1;
+			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
+		}
 
 		D3DXVECTOR3 orgpos = curboneptr->GetJointFPos();
 		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();

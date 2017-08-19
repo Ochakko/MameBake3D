@@ -2009,7 +2009,8 @@ int CMQOObject::ScaleBtBox( CRigidElem* reptr, float boneleng, float* cyliptr, f
 
 	D3DXVECTOR3 scale;
 	D3DXVECTOR3 tra;
-	scale = D3DXVECTOR3( scsph, sccyli, scboxz );
+	//scale = D3DXVECTOR3( scsph, sccyli, scboxz );
+	scale = D3DXVECTOR3(sccyli, scsph, scboxz);
 	tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 
 
@@ -2037,8 +2038,9 @@ int CMQOObject::ScaleBtCone( CRigidElem* reptr, float boneleng, float* cyliptr, 
 
 	D3DXVECTOR3 scale;
 	D3DXVECTOR3 tra;
-	scale = D3DXVECTOR3( scsph, sccyli, scsph );
-	tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	//scale = D3DXVECTOR3( scsph, sccyli, scsph );
+	scale = D3DXVECTOR3(sccyli, scsph, scsph); 
+	tra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 
 	MultScale( scale, tra );
@@ -2108,16 +2110,20 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 	D3DXVECTOR3 tra;
 	if (srctype == 0){
 		//cylinder
-		scale = D3DXVECTOR3(scsph, sccyli, scsph);
-		tra = D3DXVECTOR3(0.0f, 100.0f * (scsph - sccyli), 0.0f);
+		//scale = D3DXVECTOR3(scsph, sccyli, scsph);
+		//tra = D3DXVECTOR3(0.0f, 100.0f * (scsph - sccyli), 0.0f);
+		scale = D3DXVECTOR3(sccyli, scsph, scsph);
+		tra = D3DXVECTOR3(100.0f * (scsph - sccyli), 0.0f, 0.0f);
 		if (lengptr){
 			*lengptr = sccyli * 200.0f;
 		}
 	}
 	else if (srctype == 1){
 		//upper sphere
+		//scale = D3DXVECTOR3(scsph, scsph, scsph);
+		//tra = D3DXVECTOR3(0.0f, -300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f);
 		scale = D3DXVECTOR3(scsph, scsph, scsph);
-		tra = D3DXVECTOR3(0.0f, -300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f);
+		tra = D3DXVECTOR3(-300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f, 0.0f);
 		if (lengptr){
 			*lengptr = scsph * 100.0f;
 		}
