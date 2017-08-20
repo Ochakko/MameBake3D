@@ -173,7 +173,8 @@ public:
  * @detail 計算したデータは、ボーンの位置にマニピュレータを表示するための変換行列に使用する。現在はCalcAxisMatZ関数でボーンの変換行列を計算している。
  */
 	int CalcAxisMat( int firstflag, float delta );
-	
+	float CalcAxisMatX(CBone* childbone, D3DXMATRIX* dstmat, int setstartflag);
+
 
 /**
  * @fn
@@ -388,7 +389,6 @@ private:
  * @detail CalcAxisMatから呼ばれる。
  */
 	//int CalcAxisMatX();
-	int CalcAxisMatX(CBone* childbone, D3DXMATRIX* dstmat);
 
 
 	int CalcAxisMatZ();
@@ -807,6 +807,7 @@ public: //accesser
 	D3DXMATRIX GetBefBtMat(){ return m_befbtmat; };
 	void SetBefBtMat(D3DXMATRIX srcmat){ m_befbtmat = srcmat; };
 	D3DXMATRIX GetBtMat(){ return m_btmat; };
+	D3DXMATRIX GetInvBtMat(){ D3DXMATRIX retmat; D3DXMatrixInverse(&retmat, NULL, &m_btmat); return retmat; };
 	void SetBtMat(D3DXMATRIX srcmat){
 		//if (GetBtFlag() == 0){
 			SetBefBtMat(m_btmat);

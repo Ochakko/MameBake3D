@@ -120,6 +120,7 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	m_initaxismatx = 0;
 	m_loadedflag = false;
 	m_createbtflag = false;
 	m_oldaxis_atloading = 0;
@@ -583,7 +584,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 		}
 	}
 	*/
-	CalcBtAxismatReq(m_topbone, 1);
+	//CalcBtAxismatReq(m_topbone, 1);
 
 
 	return 0;
@@ -4591,6 +4592,13 @@ void CModel::CreateBtObjectReq( CBtObject* parbt, CBone* parbone, CBone* curbone
 	}
 }
 
+void CModel::CalcBtAxismat(int onfirstcreate)
+{
+	CalcBtAxismatReq(m_topbone, onfirstcreate);
+	return;
+}
+
+
 void CModel::CalcBtAxismatReq( CBone* curbone, int onfirstcreate )
 {
 	if (!curbone){
@@ -7854,7 +7862,7 @@ void CModel::SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo
 	}
 }
 
-int CModel::RecalcBoneAxisZ(CBone* srcbone)
+int CModel::RecalcBoneAxisX(CBone* srcbone)
 {
 	if (GetOldAxisFlagAtLoading() == 1){
 		_ASSERT(0);
@@ -7867,7 +7875,13 @@ int CModel::RecalcBoneAxisZ(CBone* srcbone)
 			CBone* curbone = itrbone->second;
 			if (curbone){
 				D3DXMATRIX axismat;
-				axismat = curbone->GetFirstAxisMatZ();
+				//axismat = curbone->GetFirstAxisMatZ();
+				if (curbone->GetParent()){
+					curbone->GetParent()->CalcAxisMatX(curbone, &axismat, 1);
+				}
+				else{
+					D3DXMatrixIdentity(&axismat);
+				}
 				axismat._41 = curbone->GetJointFPos().x;
 				axismat._42 = curbone->GetJointFPos().y;
 				axismat._43 = curbone->GetJointFPos().z;
@@ -7877,7 +7891,13 @@ int CModel::RecalcBoneAxisZ(CBone* srcbone)
 	}
 	else{
 		D3DXMATRIX axismat;
-		axismat = srcbone->GetFirstAxisMatZ();
+		//axismat = srcbone->GetFirstAxisMatZ();
+		if (srcbone->GetParent()){
+			srcbone->GetParent()->CalcAxisMatX(srcbone, &axismat, 1);
+		}
+		else{
+			D3DXMatrixIdentity(&axismat);
+		}
 		axismat._41 = srcbone->GetJointFPos().x;
 		axismat._42 = srcbone->GetJointFPos().y;
 		axismat._43 = srcbone->GetJointFPos().z;

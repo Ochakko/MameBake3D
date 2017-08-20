@@ -562,7 +562,7 @@ public:
 
 	int SetFirstFrameBonePos(HINFO* phinfo);
 
-	int RecalcBoneAxisZ(CBone* srcbone);
+	int RecalcBoneAxisX(CBone* srcbone);
 
 	int CalcBoneEul(int srcmotid);
 	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
@@ -579,6 +579,7 @@ public:
 	int BulletSimulationStop();
 	int BulletSimulationStart();
 	int ApplyBtToMotion();
+	void CalcBtAxismat(int onfirstcreate);
 
 private:
 	int InitParams();
@@ -988,7 +989,14 @@ public: //accesser
 	{
 		m_loadedflag = srcflag;
 	};
+	int GetInitAxisMatX(){
+		return m_initaxismatx;
+	};
+	void SetInitAxisMatX(int srcval){
+		m_initaxismatx = srcval;
+	};
 private:
+	int m_initaxismatx;
 	int m_modelno;//ƒ‚ƒfƒ‹‚ÌID
 	bool m_modeldisp;//•\Ž¦‚·‚é‚©‚Ç‚¤‚©
 	float m_loadmult;//•\Ž¦”{—¦

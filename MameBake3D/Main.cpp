@@ -932,7 +932,7 @@ static int OnTimeLineMButtonDown(bool ctrlshiftflag);
 static int OnTimeLineWheel();
 static int AddEditRangeHistory();
 static int RollBackEditRange(int prevrangeFlag, int nextrangeFlag);
-static int RecalcBoneAxisZ(CBone* srcbone);
+static int RecalcBoneAxisX(CBone* srcbone);
 
 static int GetSymRootMode();
 
@@ -2023,7 +2023,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			switch( menuid ){
 			case ID_40047:
 				ActivatePanel(0);
-				RecalcBoneAxisZ(0);
+				RecalcBoneAxisX(0);
 				ActivatePanel(1);
 				return 0;
 				break;
@@ -2224,6 +2224,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						}
 
 						ChangeCurrentBone();
+
+						if (s_model->GetInitAxisMatX() == 0){
+							//ここでAxisMatXの初期化
+							s_model->CreateBtObject(1);
+							s_model->CalcBtAxismat(1);
+							s_model->SetInitAxisMatX(1);
+						}
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
 
@@ -4360,6 +4367,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		CRigFile rigfile;
 		rigfile.LoadRigFile(rigname, s_model);
 	}
+
 
 	s_model->CalcBoneEul(-1);
 
@@ -8589,14 +8597,14 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 }
 
 
-int RecalcBoneAxisZ(CBone* srcbone)
+int RecalcBoneAxisX(CBone* srcbone)
 {
 	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)){
 		::MessageBox(s_mainwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
 		return 0;
 	}
 
-	s_model->RecalcBoneAxisZ(srcbone);
+	s_model->RecalcBoneAxisX(srcbone);
 
 	return 0;
 }
@@ -8920,7 +8928,7 @@ int InitRotAxis()
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone){
-		RecalcBoneAxisZ(curbone);
+		RecalcBoneAxisX(curbone);
 	}
 
 	return 0;

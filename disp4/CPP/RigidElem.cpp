@@ -47,6 +47,8 @@ int CRigidElem::InitParams()
 	m_skipflag = 1;
 
 	D3DXMatrixIdentity( &m_capsulemat );
+	D3DXMatrixIdentity(&m_firstcapsulemat);
+	D3DXMatrixIdentity(&m_firstworldmat);
 
 	m_sphrate = 0.6f;
 	m_boxzrate = 0.6f;
