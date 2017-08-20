@@ -7875,13 +7875,13 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 			CBone* curbone = itrbone->second;
 			if (curbone){
 				D3DXMATRIX axismat;
-				//axismat = curbone->GetFirstAxisMatZ();
-				if (curbone->GetParent()){
-					curbone->GetParent()->CalcAxisMatX(curbone, &axismat, 1);
-				}
-				else{
-					D3DXMatrixIdentity(&axismat);
-				}
+				axismat = curbone->GetFirstAxisMatZ();
+				//if (curbone->GetParent()){
+				//	curbone->GetParent()->CalcAxisMatX(curbone, &axismat, 1);
+				//}
+				//else{
+				//	D3DXMatrixIdentity(&axismat);
+				//}
 				axismat._41 = curbone->GetJointFPos().x;
 				axismat._42 = curbone->GetJointFPos().y;
 				axismat._43 = curbone->GetJointFPos().z;
@@ -7891,13 +7891,13 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 	}
 	else{
 		D3DXMATRIX axismat;
-		//axismat = srcbone->GetFirstAxisMatZ();
-		if (srcbone->GetParent()){
-			srcbone->GetParent()->CalcAxisMatX(srcbone, &axismat, 1);
-		}
-		else{
-			D3DXMatrixIdentity(&axismat);
-		}
+		axismat = srcbone->GetFirstAxisMatZ();
+		//if (srcbone->GetParent()){
+		//	srcbone->GetParent()->CalcAxisMatX(srcbone, &axismat, 1);
+		//}
+		//else{
+		//	D3DXMatrixIdentity(&axismat);
+		//}
 		axismat._41 = srcbone->GetJointFPos().x;
 		axismat._42 = srcbone->GetJointFPos().y;
 		axismat._43 = srcbone->GetJointFPos().z;

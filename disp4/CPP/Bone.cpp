@@ -1034,7 +1034,7 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 
 	D3DXMATRIX bmmat;
 	D3DXMatrixIdentity(&bmmat);
-	//CalcAxisMatZ( &aftbonepos, &aftchilpos );
+	CalcAxisMatZ( &aftbonepos, &aftchilpos );
 	//CalcAxisMatY( chilbone, &bmmat );			
 	float diffleng = CalcAxisMatX(chilbone, &bmmat, 1);
 
