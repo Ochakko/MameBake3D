@@ -2022,6 +2022,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}else{
 			switch( menuid ){
 			case ID_40047:
+				// "編集・変換"
+				// "ボーン軸をZに再計算"
 				ActivatePanel(0);
 				RecalcBoneAxisX(0);
 				ActivatePanel(1);
@@ -2226,9 +2228,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						ChangeCurrentBone();
 
 						if (s_model->GetInitAxisMatX() == 0){
+							s_owpLTimeline->setCurrentTime(0.0, false);
+							s_model->SetMotionFrame(0.0);
+							s_model->UpdateMatrix(&s_matW, &s_matVP);
+
+
 							//ここでAxisMatXの初期化
 							s_model->CreateBtObject(1);
-							s_model->CalcBtAxismat(1);
+							s_model->CalcBtAxismat(2);//2
 							s_model->SetInitAxisMatX(1);
 						}
 
@@ -7330,6 +7337,24 @@ int SaveProject()
 		return 0;
 	}
 
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel){
+			s_owpLTimeline->setCurrentTime(0.0, false);
+			curmodel->SetMotionFrame(0.0);
+			s_model->UpdateMatrix(&s_matW, &s_matVP);
+
+			//ここでAxisMatXの初期化
+			curmodel->CreateBtObject(1);
+			curmodel->CalcBtAxismat(2);//2
+			curmodel->SetInitAxisMatX(1);
+		}
+	}
+
+
+
 	CChaFile chafile;
 	CallF( chafile.WriteChaFile( s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed ), return 1 );
 
@@ -8217,6 +8242,19 @@ int ExportFBXFile()
 	
 	char fbxpath[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_UTF8, 0, filename, -1, fbxpath, MAX_PATH, NULL, NULL );	
+
+
+	{
+		s_owpLTimeline->setCurrentTime(0.0, false);
+		s_model->SetMotionFrame(0.0);
+		s_model->UpdateMatrix(&s_matW, &s_matVP);
+
+		//ここでAxisMatXの初期化
+		s_model->CreateBtObject(1);
+		s_model->CalcBtAxismat(2);//2
+		s_model->SetInitAxisMatX(1);
+	}
+
 
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
 	CallF( WriteFBXFile( s_psdk, s_model, fbxpath ), return 1 );

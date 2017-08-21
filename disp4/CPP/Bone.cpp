@@ -1034,7 +1034,7 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 
 	D3DXMATRIX bmmat;
 	D3DXMatrixIdentity(&bmmat);
-	CalcAxisMatZ( &aftbonepos, &aftchilpos );
+	//CalcAxisMatZ( &aftbonepos, &aftchilpos );
 	//CalcAxisMatY( chilbone, &bmmat );			
 	float diffleng = CalcAxisMatX(chilbone, &bmmat, 1);
 
@@ -1043,7 +1043,7 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 	float sphr = curre->GetSphr();
 	float boxz = curre->GetBoxz();
 
-	if ((setstartflag == 1) || (m_firstcalcrigid == true)){
+	if ((setstartflag != 0) || (m_firstcalcrigid == true)){
 		if (curre->GetColtype() == COL_CAPSULE_INDEX){
 			map<int, CMQOObject*>::iterator itrobj;
 			for (itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++){
@@ -1107,10 +1107,14 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 	curre->SetSphr( sphr );
 	curre->SetBoxz( boxz );
 
-	if( setstartflag == 1 ){
+	if( setstartflag != 0 ){
 		curre->SetFirstcapsulemat( bmmat );
 		curre->SetFirstWorldmat(chilbone->GetCurMp().GetWorldMat());
 		//curre->SetFirstWorldmat(GetCurMp().GetWorldMat());
+
+		//if (setstartflag == 2){
+		//	chilbone->SetNodeMat(bmmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//}
 	}
 
 
