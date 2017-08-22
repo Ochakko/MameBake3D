@@ -6263,7 +6263,14 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 			//D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
-			D3DXMATRIX transmat2 = invgparrotmat * invparrotmat * transmat * parrotmat * gparrotmat;
+			
+			
+			//parentŒn‚ÌŽž
+			//D3DXMATRIX transmat2 = invgparrotmat * invparrotmat * transmat * parrotmat * gparrotmat;
+
+			//currentŒn‚ÌŽž
+			D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat;
+
 
 			CMotionPoint transmp;
 			transmp.CalcQandTra(transmat2, parbone);
