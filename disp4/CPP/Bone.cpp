@@ -1955,18 +1955,11 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 			//diffworld = worldmat * pparmp->GetInvWorldMat();
 		}
 		else{
-			if (!m_child && m_parent){
-				worldmat = m_parent->GetBtMat();
-			}
-			else{
-				worldmat = GetBtMat();
-			}
+			worldmat = GetBtMat();
 			//diffworld = worldmat * m_parent->GetInvBtMat();
 		}
-
 		diffworld = curre->GetInvFirstWorldmat() * worldmat;
 		//D3DXMatrixIdentity(&diffworld);
-
 	}
 	else{
 		D3DXMatrixIdentity(&worldmat);
@@ -1981,9 +1974,9 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 		else{
 			parworldmat = m_parent->GetBtMat();
 		}
-		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
+		pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
-		D3DXMatrixIdentity(&pardiffworld);
+		//D3DXMatrixIdentity(&pardiffworld);
 	}
 	else{
 		D3DXMatrixIdentity(&parworldmat);
@@ -1995,16 +1988,22 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 	//parcapsulemat = capsulemat;
 	//curcapsulemat = capsulemat * curre->GetFirstWorldmat();
 
-
+	/*
 	if (g_boneaxis == 2){
 		//global axis
 		D3DXMatrixIdentity(&selm);
 	}
 	else if (g_boneaxis == 0){
+	*/
 		//current bone axis
 		if (GetBoneLeng() > 0.00001f){
 			if (multworld == 1){
-				selm = capsulemat * worldmat;
+				if (m_child){
+					selm = capsulemat * diffworld;
+				}
+				else{
+					selm = capsulemat * pardiffworld;
+				}
 			}
 			else{
 				selm = capsulemat;
@@ -2012,12 +2011,18 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 		}
 		else{
 			if (multworld == 1){
-				selm = diffworld;
+				if (m_child){
+					selm = diffworld;
+				}
+				else{
+					selm = pardiffworld;
+				}
 			}
 			else{
 				D3DXMatrixIdentity(&selm);
 			}
 		}
+/*
 	}
 	else if (g_boneaxis == 1){
 		//parent bone axis
@@ -2042,7 +2047,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 		_ASSERT(0);
 		D3DXMatrixIdentity(&selm);
 	}
-
+*/
 	if (settraflag == 0){
 		selm._41 = 0.0f;
 		selm._42 = 0.0f;
@@ -2774,9 +2779,9 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
-	//if (!m_child){
-	//	return 0;
-	//}
+	if (!m_child){
+		return 0;
+	}
 
 	D3DXMATRIX axismat;
 	CQuaternion axisq;
@@ -2853,9 +2858,9 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 src
 
 int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, D3DXVECTOR3 srctra, int srcmotid, double srcframe)
 {
-	//if (!m_child){
-	//	return 0;
-	//}
+	if (!m_child){
+		return 0;
+	}
 
 	CQuaternion invaxisq;
 	axisq.inv(&invaxisq);
@@ -2923,9 +2928,9 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 int CBone::SetWorldMatFromEulAndTra(int setchildflag, D3DXVECTOR3 srceul, D3DXVECTOR3 srctra, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
-	//if (!m_child){
-	//	return 0;
-	//}
+	if (!m_child){
+		return 0;
+	}
 
 	D3DXMATRIX axismat;
 	CQuaternion axisq;
