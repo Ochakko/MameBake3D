@@ -68,6 +68,7 @@ using namespace OrgWinGUI;
 
 static int s_alloccnt = 0;
 
+extern int g_boneaxis;
 extern int g_dbgloadcnt;
 extern int g_pseudolocalflag;
 extern int g_previewFlag;			// プレビューフラグ
@@ -6263,12 +6264,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 			//D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
-			
-			
-			//parent系の時
 			//D3DXMATRIX transmat2 = invgparrotmat * invparrotmat * transmat * parrotmat * gparrotmat;
 
-			//current系の時
 			D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat;
 
 

@@ -9141,9 +9141,10 @@ int ChangeCurrentBone()
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		if (curbone){
 			CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
-			ANGLELIMIT anglelimit = curbone->GetAngleLimit();
-			pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
-			g_boneaxis = anglelimit.boneaxiskind;
+			//ANGLELIMIT anglelimit = curbone->GetAngleLimit();
+			//pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
+			//g_boneaxis = anglelimit.boneaxiskind;
+			g_boneaxis = (int)PtrToUlong(pComboBox3->GetSelectedData());
 		}
 
 		SetRigidLeng();

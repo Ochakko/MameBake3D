@@ -1988,13 +1988,12 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 	//parcapsulemat = capsulemat;
 	//curcapsulemat = capsulemat * curre->GetFirstWorldmat();
 
-	/*
+
 	if (g_boneaxis == 2){
 		//global axis
 		D3DXMatrixIdentity(&selm);
 	}
 	else if (g_boneaxis == 0){
-	*/
 		//current bone axis
 		if (GetBoneLeng() > 0.00001f){
 			if (multworld == 1){
@@ -2022,7 +2021,6 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 				D3DXMatrixIdentity(&selm);
 			}
 		}
-/*
 	}
 	else if (g_boneaxis == 1){
 		//parent bone axis
@@ -2047,7 +2045,7 @@ D3DXMATRIX CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, 
 		_ASSERT(0);
 		D3DXMatrixIdentity(&selm);
 	}
-*/
+
 	if (settraflag == 0){
 		selm._41 = 0.0f;
 		selm._42 = 0.0f;
