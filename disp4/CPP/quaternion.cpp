@@ -1050,12 +1050,15 @@ int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
 	tmpZ1 = eulerA->z + 360.0f * GetRound((eulerB->z - eulerA->z) / 360.0f);
 
 	//予想される角度2
+		//クォータニオンは１８０°で一回転する。
+		//横軸が２シータ、縦軸がcos2シータのグラフにおいて、newシータ　=　180 - oldシータのcos2シータの値は等しい。
+		//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
+		//この場合、３つの軸のうち１つの軸の角度(ここではX軸)だけが反転する。
+		//ということだと思う。テストすると合っている。
 	tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound((eulerB->x + eulerA->x - 180.0f) / 360.0f);
-	//tmpX2 = eulerA->x + 180.0f + 360.0f * GetRound((eulerB->x - eulerA->x - 180.0f) / 360.0f);
-	//tmpY2 = 180.0f - eulerA->y + 360.0f * GetRound((eulerB->y + eulerA->y - 180.0f) / 360.0f);
 	tmpY2 = eulerA->y + 180.0f + 360.0f * GetRound((eulerB->y - eulerA->y - 180.0f) / 360.0f);
-	//tmpZ2 = 180.0f - eulerA->z + 360.0f * GetRound((eulerB->z + eulerA->z - 180.0f) / 360.0f);
 	tmpZ2 = eulerA->z + 180.0f + 360.0f * GetRound((eulerB->z - eulerA->z - 180.0f) / 360.0f);
+
 
 	//角度変化の大きさ
 	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
