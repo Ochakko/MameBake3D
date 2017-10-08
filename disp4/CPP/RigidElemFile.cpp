@@ -136,13 +136,17 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
 	CallF( Write2File( "    <BTKIN>%d</BTKIN>\r\n", srcbone->GetBtForce() ), return 1);
 
-	map<CBone*,CRigidElem*>::iterator itrre;
-	for( itrre = srcbone->GetRigidElemMapBegin(); itrre != srcbone->GetRigidElemMapEnd(); itrre++ ){
-		CRigidElem* curre = itrre->second;
+	//map<CBone*,CRigidElem*>::iterator itrre;
+	//for( itrre = srcbone->GetRigidElemMapBegin(); itrre != srcbone->GetRigidElemMapEnd(); itrre++ ){
+	//	CRigidElem* curre = itrre->second;
+	CBone* childbone = srcbone->GetChild();
+	while (childbone){
+		CRigidElem* curre = srcbone->GetRigidElem(childbone);
+
 		if( curre ){
 			CallF( Write2File( "    <RigidElem>\r\n" ), return 1);
 
-			CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", itrre->first->GetBoneName() ), return 1);
+			CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", childbone->GetBoneName() ), return 1);
 			CallF( Write2File( "      <ColType>%d</ColType>\r\n", curre->GetColtype() ), return 1);
 			CallF( Write2File( "      <SkipFlag>%d</SkipFlag>\r\n", curre->GetSkipflag() ), return 1);
 			CallF( Write2File( "      <ShpRate>%f</ShpRate>\r\n", curre->GetSphrate() ), return 1);
@@ -175,6 +179,7 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 
 			CallF( Write2File( "    </RigidElem>\r\n" ), return 1);
 		}
+		childbone = childbone->GetBrother();
 	}
 
 	CallF( Write2File( "  </Bone>\r\n" ), return 1);

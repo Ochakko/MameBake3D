@@ -93,7 +93,7 @@ int CBone::InitParams()
 
 	m_parmodel = 0;
 	m_validflag = 1;
-	m_rigidelem.clear();
+	m_rigidelemname.clear();
 	m_btobject.clear();
 	m_btkinflag = 1;
 	m_btforce = 0;
@@ -202,18 +202,19 @@ int CBone::DestroyObjs()
 	
 	map<string, std::map<CBone*, CRigidElem*>>::iterator itrmap;
 	for( itrmap = m_remap.begin(); itrmap != m_remap.end(); itrmap++ ){
-		map<CBone*, CRigidElem*> &curmap = itrmap->second;
 		map<CBone*, CRigidElem*>::iterator itrre;
-		for( itrre = curmap.begin(); itrre != curmap.end(); itrre++ ){
+		for( itrre = itrmap->second.begin(); itrre != itrmap->second.end(); itrre++ ){
 			CRigidElem* curre = itrre->second;
-			delete curre;
+			if (curre){
+				delete curre;
+			}
 		}
-		curmap.clear();
+		itrmap->second.clear();
 	}
 	m_remap.clear();
 	m_impmap.clear();
 
-	m_rigidelem.clear();
+	m_rigidelemname.clear();
 
 	return 0;
 }
@@ -1018,7 +1019,7 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 {
 
 
-	CRigidElem* curre = m_rigidelem[ chilbone ];
+	CRigidElem* curre = GetRigidElem(chilbone);
 	if( !curre ){
 		_ASSERT( 0 );
 		return 0;
@@ -1203,51 +1204,16 @@ int CBone::CreateRigidElem( CBone* parbone, int reflag, std::string rename, int 
 		return 0;
 	}
 
-	if( reflag ){
-		map<string, map<CBone*, CRigidElem*>>::iterator findremap;
-		findremap = parbone->FindRigidElemOfMap( rename );
-		if( findremap != parbone->GetRigidElemOfMapEnd() ){
-			//map<CBone*, CRigidElem*> curmap = findremap->second;
-	
-	DbgOut( L"CreateRigidElem : map exist : parbone %s, curbone %s\r\n", parbone->m_wbonename, m_wbonename );
-
-			CRigidElem* chkre = findremap->second[this];
-			if( chkre ){
-	DbgOut( L"CreateRigidElem : chkre return !!!\r\n" );
-				return 0;
-			}
-
-			findremap->second[this] = new CRigidElem();
-			if (!findremap->second[this]){
-				_ASSERT( 0 );
-				return 1;
-			}
-
-			findremap->second[this]->SetBone(parbone);
-			findremap->second[this]->SetEndbone(this);
-
-			SetGroupNoByName(findremap->second[this], this);
-
-		}else{
-			map<CBone*, CRigidElem*> curmap;
-
-	DbgOut( L"CreateRigidElem : map [not] exist : curbone %s, chilbone %s\r\n", parbone->m_wbonename, m_wbonename );
-
-			curmap[this] = new CRigidElem();
-			if( !curmap[this] ){
-				_ASSERT( 0 );
-				return 1;
-			}
-
-			curmap[this]->SetBone(parbone);
-			curmap[this]->SetEndbone(this);
-
-			parbone->m_remap[rename] = curmap;
-
-			SetGroupNoByName(curmap[this], this);
-
-			//_ASSERT( 0 );
+	if (reflag){
+		CRigidElem* newre = new CRigidElem();
+		if (!newre){
+			_ASSERT(0);
+			return 1;
 		}
+		newre->SetBone(parbone);
+		newre->SetEndbone(this);
+		SetGroupNoByName(newre, this);
+		parbone->SetRigidElemOfMap(rename, this, newre);
 	}
 
 //////////////
@@ -1300,6 +1266,9 @@ int CBone::SetGroupNoByName( CRigidElem* curre, CBone* chilbone )
 
 int CBone::SetCurrentRigidElem( std::string curname )
 {
+	m_rigidelemname = curname;
+
+	/*
 	m_rigidelem.clear();
 
 	if( !m_child ){
@@ -1310,10 +1279,13 @@ int CBone::SetCurrentRigidElem( std::string curname )
 	itrmap = m_remap.find( curname );
 	if( itrmap == m_remap.end() ){
 		_ASSERT( 0 );
+		::MessageBoxA(NULL, "CBone SetCurrentRigidElem : map not found", "error", MB_OK);
 		return 1;
 	}
 
 	m_rigidelem = itrmap->second;
+	*/
+
 
 	return 0;
 }
@@ -3774,7 +3746,7 @@ int CBone::LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev)
 
 CModel* CBone::GetCurColDisp(CBone* childbone)
 {
-	CRigidElem* curre = m_rigidelem[childbone];
+	CRigidElem* curre = GetRigidElem(childbone);
 	if (!curre){
 		_ASSERT(0);
 		return 0;
@@ -3787,4 +3759,34 @@ CModel* CBone::GetCurColDisp(CBone* childbone)
 	_ASSERT(curcoldisp);
 
 	return curcoldisp;
+}
+
+void CBone::SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* srcre){
+	
+	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator itrremap;
+	itrremap = m_remap.find(srcstr);
+	if (itrremap != m_remap.end()){
+
+		//itrremap->second[srcbone] = srcre;
+
+		std::map<CBone*, CRigidElem*>::iterator itrsetmap;
+		itrsetmap = itrremap->second.find(srcbone);
+		if (itrsetmap != itrremap->second.end()){
+			if (itrsetmap->second){
+				delete itrsetmap->second;
+				itrsetmap->second = 0;
+			}
+			itrsetmap->second = srcre;
+		}
+		else{
+			itrremap->second[srcbone] = srcre;
+		}
+	}
+	else{
+		std::map<CBone*, CRigidElem*> newmap;
+		newmap[srcbone] = srcre;
+		m_remap[srcstr] = newmap;
+	}
+	
+	//((m_remap[ srcstr ])[ srcbone ]) = srcre;
 }

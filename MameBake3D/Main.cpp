@@ -2338,16 +2338,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				}
 			}
 		}
+
 		g_Camera.SetViewParams( &g_camEye, &g_camtargetpos );
 		D3DXVECTOR3 diffv = g_camEye - g_camtargetpos;
 		s_camdist = D3DXVec3Length( &diffv );
-
-		if (s_model && (s_curboneno >= 0)){
-			SetRigidLeng();
-			SetImpWndParams();
-			SetDmpWndParams();
-			RigidElem2WndParam();
-		}
 
 
 		if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
@@ -2362,6 +2356,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_model->ApplyBtToMotion();
 				}
 			}
+		}
+
+
+		if (s_model && (s_curboneno >= 0)){
+			SetRigidLeng();
+			SetImpWndParams();
+			SetDmpWndParams();
+			RigidElem2WndParam();
 		}
 
 	}else if( uMsg == WM_MBUTTONDOWN){
@@ -2417,6 +2419,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				}
 				else if (g_previewFlag == 5){
 					if (s_model){
+						//if (s_onragdollik == 0){
+						//	StartBt(1, 1);
+						//}
 						s_onragdollik = 1;
 					}
 				}
@@ -2681,6 +2686,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}else if( uMsg == WM_LBUTTONUP ){
 		if (s_model && (s_onragdollik != 0)){
 			s_model->BulletSimulationStop();
+			//s_model->SetBtKinFlagReq(s_model->GetTopBt(), 1);
 		}
 
 		ReleaseCapture();
@@ -2999,7 +3005,11 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					*/
 				case IDC_BT_RIGID:
 					if( s_model && (s_curboneno >= 0) ){
-						CallF(s_model->CreateBtObject(0), return);
+						
+						s_model->SetCurrentRigidElem(s_curreindex);
+
+						//CallF(s_model->CreateBtObject(0), return);
+						CallF(s_model->CreateBtObject(1), return);
 
 						s_ikkind = 3;
 						s_rigidWnd->setVisible( 1 );
@@ -6884,6 +6894,7 @@ int StartBt(int flag, int btcntzero)
 		return 0;
 	}
 
+
 	int resetflag = 0;
 	int createflag = 0;
 
@@ -6918,20 +6929,20 @@ int StartBt(int flag, int btcntzero)
 		//CModel* curmodel = itrmodel->modelptr;
 	CModel* curmodel = s_model;
 	if (curmodel){
-		if ((flag == 0) && (g_previewFlag != 4)){
+		//if ((flag == 0) && (g_previewFlag != 4)){
 			//F9キー
 			if (btcntzero == 1){
 				curmodel->ZeroBtCnt();
 				curmodel->SetCreateBtFlag(false);
 			}
-		}
-		else if (flag == 1){
-			//F10キー
-			if (btcntzero == 1){
-				curmodel->ZeroBtCnt();
-				curmodel->SetCreateBtFlag(false);
-			}
-		}
+		//}
+		//else if (flag == 1){
+		//	//F10キー
+		//	if (btcntzero == 1){
+		//		curmodel->ZeroBtCnt();
+		//		curmodel->SetCreateBtFlag(false);
+		//	}
+		//}
 
 
 		double curframe;
@@ -6947,6 +6958,8 @@ int StartBt(int flag, int btcntzero)
 		if ((g_previewFlag == 4) || (g_previewFlag == 5)){
 
 			if (g_previewFlag == 4){
+				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
+
 				s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
 				s_bpWorld->setGlobalERP(s_erp);// ERP
 				curmodel->SetMotionFrame(curframe);
@@ -6959,9 +6972,13 @@ int StartBt(int flag, int btcntzero)
 					}
 				}
 
-				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
+				//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！reの内容を変えてから呼ぶ
+				//s_curreindex = 1;
+				curmodel->SetMotionSpeed(g_dspeed);
 			}
 			else if (g_previewFlag == 5){
+				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
+
 				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 
 			//ラグドールの時のERPは決め打ち
@@ -6978,6 +6995,7 @@ int StartBt(int flag, int btcntzero)
 
 
 				curmodel->SetMotionFrame(curframe);
+
 
 
 				curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -7015,7 +7033,7 @@ int StartBt(int flag, int btcntzero)
 				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 				s_model->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
 
-				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
+				curmodel->SetMotionSpeed(g_dspeed);
 			}
 
 			s_btstartframe = curframe;
@@ -7066,6 +7084,10 @@ int RigidElem2WndParam()
 	if( s_curboneno < 0 ){
 		return 0;
 	}
+
+
+	//ダイアログの数値はメニューで選択中のもの
+	s_model->SetCurrentRigidElem(s_curreindex);
 
 
 	CBone* curbone = s_model->GetBoneByID( s_curboneno );
@@ -7159,6 +7181,18 @@ int RigidElem2WndParam()
 	}
 
 	s_rigidWnd->callRewrite();
+
+
+
+	//再生中、シミュレーション中への対応。元の状態に戻す。
+	if (g_previewFlag != 5){
+		s_model->SetCurrentRigidElem(s_curreindex);
+	}
+	else{
+		s_model->SetCurrentRigidElem(s_rgdindex);
+	}
+
+
 
 	return 0;
 }

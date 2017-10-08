@@ -18,6 +18,7 @@ public:
 
 	int GetColiID();
 
+
 private:
 	int InitParams();
 	int DestroyObjs();

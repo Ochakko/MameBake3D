@@ -993,15 +993,20 @@ int CModel::Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATR
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 		CBone* boneptr = itrbone->second;
+		if (boneptr->GetParent()){
+			CRigidElem* curre = boneptr->GetParent()->GetRigidElem(boneptr);
+			if (curre){
+				boneptr->GetParent()->CalcRigidElemParams(boneptr, firstflag);
+			}
+		}
+
+		/*
 		if (boneptr){
-			std::map<CBone*, CRigidElem*> tmpmap;
-			boneptr->GetRigidElemMap(tmpmap);
-			map<CBone*, CRigidElem*>::iterator itrre;
-			for (itrre = tmpmap.begin(); itrre != tmpmap.end(); itrre++){
-				CRigidElem* curre = itrre->second;
-				//if( curre && (curre->GetSkipflag() != 1) ){
+			std::map<CBone*, CRigidElem*>::iterator itrtmpmap;
+			for (itrtmpmap = boneptr->GetRigidElemMapBegin(); itrtmpmap != boneptr->GetRigidElemMapEnd(); itrtmpmap++){
+				CRigidElem* curre = itrtmpmap->second;
 				if (curre){
-					CBone* chilbone = itrre->first;
+					CBone* chilbone = itrtmpmap->first;
 					_ASSERT(chilbone);
 					if (chilbone){
 						boneptr->CalcRigidElemParams(chilbone, firstflag);
@@ -1009,6 +1014,7 @@ int CModel::Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATR
 				}
 			}
 		}
+		*/
 	}
 
 
@@ -3446,14 +3452,35 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 			CBone* boneptr = itrbone->second;
 			if (boneptr){
-				map<CBone*, CRigidElem*> tmpmap;
-				boneptr->GetRigidElemMap(tmpmap);
-				map<CBone*, CRigidElem*>::iterator itrre;
-				for (itrre = tmpmap.begin(); itrre != tmpmap.end(); itrre++){
-					CRigidElem* curre = itrre->second;
-					//if( curre && (curre->GetSkipflag() != 1) ){
+				CBone* childbone = boneptr->GetChild();
+				while (childbone){
+					CRigidElem* curre = boneptr->GetRigidElem(childbone);
 					if (curre){
-						CBone* chilbone = itrre->first;
+						boneptr->CalcRigidElemParams(childbone, 0);
+						g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
+						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
+						D3DXVECTOR4 difmult;
+						//if( boneptr->GetSelectFlag() & 4 ){
+						if (childbone->GetSelectFlag() & 4){
+							difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+						}
+						else{
+							difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+						}
+						CallF(boneptr->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return 1);
+					}
+
+					childbone = childbone->GetBrother();
+				}
+
+
+
+				/*
+				std::map<CBone*, CRigidElem*>::iterator itrtmpmap;
+				for (itrtmpmap = boneptr->GetRigidElemMapBegin(); itrtmpmap != boneptr->GetRigidElemMapEnd(); itrtmpmap++){
+					CRigidElem* curre = itrtmpmap->second;
+					if (curre){
+						CBone* chilbone = itrtmpmap->first;
 						_ASSERT(chilbone);
 						if (chilbone){
 							//DbgOut( L"check!!!: curbone %s, chilbone %s\r\n", boneptr->m_wbonename, chilbone->m_wbonename );
@@ -3472,6 +3499,7 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 						}
 					}
 				}
+				*/
 			}
 		}
 	}
@@ -4456,6 +4484,7 @@ int CModel::CreateBtObject( int onfirstcreate )
 
 	if (g_previewFlag != 5){
 		SetBtKinFlagReq(m_topbt, 1);
+		 //RestoreMassReq(m_topbone);
 	}
 	else{
 		SetRagdollKinFlagReq(m_topbt, -1);
@@ -4550,15 +4579,13 @@ void CModel::CreateBtObjectReq( CBtObject* parbt, CBone* parbone, CBone* curbone
 	if (!parbone){
 		return;
 	}
-	map<CBone*, CRigidElem*> tmpmap;
-	parbone->GetRigidElemMap(tmpmap);
+	CRigidElem* curre;
+	curre = parbone->GetRigidElem(curbone);
 
 	CBtObject* newbto = 0;
 	CBone* chilbone = 0;
 
-	map<CBone*, CRigidElem*>::iterator itrre;
-	itrre = tmpmap.find(curbone);
-	if (itrre != tmpmap.end()){
+	if (curre){
 		newbto = new CBtObject(parbt, m_btWorld);
 		if (!newbto){
 			_ASSERT(0);
@@ -5646,6 +5673,12 @@ int CModel::SetCurrentRigidElem( int curindex )
 	m_curreindex = curindex;
 
 	string curname = m_rigideleminfo[ curindex ].filename;
+
+
+	SetCurrentRigidElemReq(m_topbone, curname);
+
+
+	/*
 	map<int,CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
@@ -5653,9 +5686,28 @@ int CModel::SetCurrentRigidElem( int curindex )
 			CallF(curbone->SetCurrentRigidElem(curname), return 1);
 		}
 	}
-
+	*/
 	return 0;
 }
+
+
+void CModel::SetCurrentRigidElemReq(CBone* srcbone, string curname)
+{
+	if (srcbone){
+
+		srcbone->SetCurrentRigidElem(curname);
+
+
+		if (srcbone->GetChild()){
+			SetCurrentRigidElemReq(srcbone->GetChild(), curname);
+		}
+		if (srcbone->GetBrother()){
+			SetCurrentRigidElemReq(srcbone->GetBrother(), curname);
+		}
+
+	}
+}
+
 
 int CModel::MultDispObj( D3DXVECTOR3 srcmult, D3DXVECTOR3 srctra )
 {
@@ -8156,6 +8208,21 @@ void CModel::SetMass0Req(CBone* srcbone)
 		}
 	}
 }
+
+void CModel::RestoreMassReq(CBone* srcbone)
+{
+	if (srcbone){
+		RestoreMass(srcbone);
+
+		if (srcbone->GetChild()){
+			RestoreMassReq(srcbone->GetChild());
+		}
+		if (srcbone->GetBrother()){
+			RestoreMassReq(srcbone->GetBrother());
+		}
+	}
+}
+
 
 int CModel::ApplyBtToMotion()
 {

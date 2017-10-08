@@ -580,6 +580,7 @@ public:
 	int BulletSimulationStart();
 	int ApplyBtToMotion();
 	void CalcBtAxismat(int onfirstcreate);
+	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 
 private:
 	int InitParams();
@@ -666,7 +667,7 @@ private:
 	void SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, float srcmass);
 	void SetColTypeReq(int reindex, CBone* srcbone, int srctype);
 
-	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
+	//void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );
 	void SetBtGravityReq( CBtObject* srcbto );
 	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int physicsmvkind = 0 );
@@ -698,12 +699,17 @@ private:
 
 	void CreatePhysicsPosConstraintReq(CBone* srcbone);
 	void SetMass0Req(CBone* srcbone);
+	void RestoreMassReq(CBone* srcbone);
 
 	void PhysicsMVReq(CBone* srcbone, D3DXVECTOR3 diffvec);
 	int WithConstraint(CBone* srcbone);
 	void BulletSimulationStopReq(CBtObject* srcbto);
 	void BulletSimulationStartReq(CBtObject* srcbto);
 	void ApplyBtToMotionReq(CBone* srcbone);
+
+	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
+
+
 
 public: //accesser
 	FbxManager* GetFBXSDK(){

@@ -570,41 +570,73 @@ public: //accesser
 	FbxAMatrix GetGlobalPosMat(){ return m_globalpos; };
 	void SetGlobalPosMat( FbxAMatrix srcmat ){ m_globalpos = srcmat; };
 
-	int GetRigidElemSize(){ return (int)m_rigidelem.size(); };
-	void GetRigidElemMap( std::map<CBone*, CRigidElem*>& dstmap ){
-		dstmap = m_rigidelem;
+	int GetRigidElemSize(){
+		std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator itrremap;
+		itrremap = m_remap.find(m_rigidelemname);
+		if (itrremap != m_remap.end()){
+			return (int)itrremap->second.size();
+		}
+		else{
+			return 0;
+		}
 	};
-	CRigidElem* GetRigidElem( CBone* srcbone ){ return m_rigidelem[ srcbone ]; };
-	std::map<CBone*, CRigidElem*>::iterator GetRigidElemMapBegin(){
-		return m_rigidelem.begin();
+		
+	CRigidElem* GetRigidElem( CBone* srcbone ){ 
+		return GetRigidElemOfMap(m_rigidelemname, srcbone);
 	};
-	std::map<CBone*, CRigidElem*>::iterator GetRigidElemMapEnd(){
-		return m_rigidelem.end();
+	//std::map<CBone*, CRigidElem*>::iterator GetRigidElemMapBegin(){
+	//	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator itrremap;
+	//	itrremap = m_remap.find(m_rigidelemname);
+	//	if (itrremap != m_remap.end()){
+	//		return itrremap->second.begin();
+	//	}
+	//	else{
+	//		return itrremap->second.end();
+	//	}
+	//};
+	//std::map<CBone*, CRigidElem*>::iterator GetRigidElemMapEnd(){
+	//	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator itrremap;
+	//	itrremap = m_remap.find(m_rigidelemname);
+	//	return itrremap->second.end();
+	//};
+	void SetRigidElem( CBone* srcbone, CRigidElem* srcre ){ 
+		SetRigidElemOfMap(m_rigidelemname, srcbone, srcre);
 	};
-	void SetRigidElem( CBone* srcbone, CRigidElem* srcre ){ m_rigidelem[ srcbone ] = srcre; };
 
-	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator FindRigidElemOfMap(std::string srcname){
-		return m_remap.find(srcname);
-	};
+	//std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator FindRigidElemOfMap(std::string srcname){
+	//	return m_remap.find(srcname);
+	//};
 	int GetReMapSize(){ return (int)m_remap.size(); };
 	int GetReMapSize2(std::string srcstring){
 		std::map<CBone*, CRigidElem*> curmap = m_remap[ srcstring ];
 		return (int)curmap.size();
 	};
 	CRigidElem* GetRigidElemOfMap( std::string srcstr, CBone* srcbone ){
-		std::map<CBone*, CRigidElem*> curmap = m_remap[ srcstr ];
-		return curmap[ srcbone ];
+		std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator itrremap;
+		itrremap = m_remap.find(srcstr);
+		if (itrremap != m_remap.end()){
+			//itrremap->second[srcbone];
+			std::map<CBone*, CRigidElem*>::iterator itrmap2;
+			itrmap2 = itrremap->second.find(srcbone);
+			if (itrmap2 != itrremap->second.end()){
+				return itrmap2->second;
+			}
+			else{
+				return 0;
+			}
+		}
+		else{
+			return 0;
+		}
 	};
-	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator GetRigidElemOfMapBegin(){
-		return m_remap.begin();
-	};
-	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator GetRigidElemOfMapEnd(){
-		return m_remap.end();
-	};
+	//std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator GetRigidElemOfMapBegin(){
+	//	return m_remap.begin();
+	//};
+	//std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator GetRigidElemOfMapEnd(){
+	//	return m_remap.end();
+	//};
 
-	void SetRigidElemOfMap( std::string srcstr, CBone* srcbone, CRigidElem* srcre ){
-		((m_remap[ srcstr ])[ srcbone ]) = srcre;
-	};
+	void SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* srcre);
 
 	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator FindImpMap(std::string srcname){
 		return m_impmap.find(srcname);
@@ -911,7 +943,8 @@ private:
 	CUSTOMRIG m_customrig[MAXRIGNUM];
 
 	//CBone*は子供ジョイントのポインタ。子供の数だけエントリーがある。
-	std::map<CBone*, CRigidElem*> m_rigidelem;
+	//std::map<CBone*, CRigidElem*> m_rigidelem;
+	std::string m_rigidelemname;
 
 
 	//m_remapは、jointの名前でセットすればmap<string,CRigidElem*>で済む。
