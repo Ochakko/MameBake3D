@@ -526,6 +526,7 @@ int CBone::CalcAxisMatZ( D3DXVECTOR3* curpos, D3DXVECTOR3* chilpos )
 }
 
 
+
 float CBone::CalcAxisMatX(CBone* chilbone, D3DXMATRIX* dstmat, int setstartflag)
 {
 	D3DXVECTOR3 aftbonepos;

@@ -6962,6 +6962,13 @@ int StartBt(int flag, int btcntzero)
 
 				s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // d—Í‰Á‘¬“x‚ÌÝ’è
 				s_bpWorld->setGlobalERP(s_erp);// ERP
+
+
+
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
+				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
+
+
 				curmodel->SetMotionFrame(curframe);
 
 				vector<MODELELEM>::iterator itrmodel;

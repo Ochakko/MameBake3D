@@ -4781,16 +4781,16 @@ int CModel::DampAnim( MOTINFO* rgdmorphinfo )
 						int constraintnum = curbto->GetConstraintSize();
 						int constraintno;
 						for( constraintno = 0; constraintno < constraintnum; constraintno++ ){
-							btConeTwistConstraint* curct = curbto->GetConstraint(constraintno);
-							//##if( curct ){
-							//##	int dofid;
-							//##for( dofid = 0; dofid < 3; dofid++ ){
-							//##	curct->setDamping( dofid, newdampl );
-							//##}
-							//##for( dofid = 3; dofid < 6; dofid++ ){
-							//##	curct->setDamping( dofid, newdampa );
-							//##}
-							//##}
+							btGeneric6DofSpringConstraint* curct = curbto->GetConstraint(constraintno);
+							if( curct ){
+								int dofid;
+							for( dofid = 0; dofid < 3; dofid++ ){
+								curct->setDamping( dofid, newdampl );
+							}
+							for( dofid = 3; dofid < 6; dofid++ ){
+								curct->setDamping( dofid, newdampa );
+							}
+							}
 
 							//curct->setDamping( newdampa );
 
