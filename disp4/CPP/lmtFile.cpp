@@ -76,7 +76,7 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel )
 	char mfilename[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
 
-	m_hfile = CreateFile( strpath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+	m_hfile = CreateFile(strpath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		DbgOut( L"LmtFile : WriteLmtFile : file open error !!! %s\n", strpath );
@@ -210,7 +210,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel )
 	char mfilename[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
 
-	m_hfile = CreateFile( strpath, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+	m_hfile = CreateFile(strpath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		_ASSERT( 0 );

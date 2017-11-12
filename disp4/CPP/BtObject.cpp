@@ -471,7 +471,9 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 	}
 ***/
 
-	dsttra.getBasis().setEulerZYX( 0.0f, 0.0f, m_constzrad );
+	dsttra.getBasis().setEulerZYX(0.0f, 0.0f, m_constzrad);
+	//dsttra.getBasis().setEulerZYX(m_constzrad, 0.0f, 0.0f);
+	//dsttra.getBasis().setEulerZYX(0.0, 0.0f, 0.0f);
 
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
 	btTransform invtra = rigidtra.inverse();
@@ -563,6 +565,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				float l_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusLk();
 				float a_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusAk();
 				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
+				ANGLELIMIT anglelimit = chilbto->m_bone->GetAngleLimit();
 
 				if (forbidrotflag == 0){
 					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
@@ -769,6 +772,29 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 	//		}
 	//	}
 	//}
+
+	for (constno = 0; constno < constraintnum; constno++){
+		btGeneric6DofSpringConstraint* dofC = m_constraint[constno].constraint;
+		CBtObject* childbto = m_constraint[constno].childbto;
+		if (childbto && childbto->m_bone){
+			ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
+			int forbidrotflag = childbto->m_bone->GetRigidElem(childbto->m_endbone)->GetForbidRotFlag();
+
+			if (forbidrotflag == 0){
+				//ZYX
+				dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
+				dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
+			}
+			else{
+				dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+				dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+			}
+		}
+	}
+
+
+
+
 
 
 
