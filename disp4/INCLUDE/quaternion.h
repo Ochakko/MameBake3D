@@ -76,6 +76,7 @@ public:
 	int Q2EulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
 	int Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
 	int Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
+	int Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
 
 
 	int Q2Eul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );

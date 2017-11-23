@@ -530,7 +530,7 @@ int g_slerpoffflag = 0;
 int g_absikflag = 0;
 int g_bonemarkflag = 1;
 int g_pseudolocalflag = 1;
-int g_boneaxis = 0;
+int g_boneaxis = 1;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
@@ -7025,6 +7025,7 @@ int StartBt(int flag, int btcntzero)
 				if (s_physicskind == 0){
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1600.0, 20.0);
 				}
 				else{
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
@@ -10351,7 +10352,7 @@ int CreateUtDialog()
 	swprintf_s(straxis, 256, L"GlobalBoneAxis");
 	boneaxisindex = 2;
 	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	pComboBox3->SetSelectedByData(ULongToPtr(0L));
+	pComboBox3->SetSelectedByData(ULongToPtr(1L));
 
 
 	g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, ctrlxlen, ctrlh);

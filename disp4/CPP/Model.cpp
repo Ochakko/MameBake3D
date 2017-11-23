@@ -6069,7 +6069,12 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 
 	float currate = g_physicsmvrate;
 
+
+
+
+
 	if (parbone){
+		CBone* gparbone = parbone->GetParent();
 		CBone* childbone = parbone->GetChild();
 		int isfirst = 1;
 		while (childbone){
@@ -6108,6 +6113,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 
 
 					D3DXMATRIX gparrotmat, invgparrotmat;
+					CQuaternion gparrotq;
 					if (parbone->GetParent()){
 						gparrotmat = parbone->GetParent()->GetBtMat();
 						D3DXMatrixInverse(&invgparrotmat, NULL, &gparrotmat);
@@ -6119,10 +6125,16 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 						invgparrotmat._41 = 0.0f;
 						invgparrotmat._42 = 0.0f;
 						invgparrotmat._43 = 0.0f;
+
+						CMotionPoint tmpmp;
+						tmpmp.CalcQandTra(gparrotmat, 0);
+						gparrotq = tmpmp.GetQ();
+
 					}
 					else{
 						D3DXMatrixIdentity(&gparrotmat);
 						D3DXMatrixIdentity(&invgparrotmat);
+						gparrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 					}
 					D3DXMATRIX parrotmat, invparrotmat;
 					parrotmat = parbone->GetBtMat();
@@ -6181,6 +6193,8 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 
 					CQuaternion tmpq;
 					tmpq.RotationMatrix(newrigidmat);
+
+
 					btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
 
 
@@ -6189,19 +6203,75 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 					worldtra.setRotation(btrotq);
 					worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
 
-					CBtObject* setbto = parbone->GetBtObject(childbone);
-					if (setbto){
-						setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
-						//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
-						//setbto->GetRigidBody()->setDeactivationTime(30000.0);
-						setbto->GetRigidBody()->setDeactivationTime(0.0);
-					}
+//角度制限　ここから
+					if (gparbone){
+						CBtObject* parbto = gparbone->GetBtObject(parbone);
+						if (parbto){
+							CBtObject* setbto = parbone->GetBtObject(childbone);
+							if (setbto){
+								btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
 
-					if (isfirst == 1){
-						parbone->SetBtMat(newbtmat);
-						//IKボーンはKINEMATICだから。
-						parbone->GetCurMp().SetWorldMat(newbtmat);
-						isfirst = 0;
+								btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parbone, childbone);
+								if (dofC){
+
+									//constraint変化分　以下3行　　CreateBtObjectをしたときの状態を基準にした角度になっている。つまりシミュ開始時が０度。
+									//btTransform contraA = dofC->getCalculatedTransformA();
+									//btTransform contraB = dofC->getCalculatedTransformB();
+									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * contraB.getBasis() * contraA.getBasis();
+
+
+									////親ボーンとの角度がオイラー角に入る
+									//btTransform contraA = dofC->getCalculatedTransformA();
+									//btTransform contraB = dofC->getCalculatedTransformB();
+									//btTransform parworldtra;
+									//parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
+									//btMatrix3x3 diffmat = worldtra.getBasis() * parworldtra.getBasis().inverse();
+									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
+
+									btTransform contraA = dofC->getCalculatedTransformA();
+									btTransform contraB = dofC->getCalculatedTransformB();
+									btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
+									btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
+
+
+
+									btScalar eulz = 0.0;
+									btScalar euly = 0.0;
+									btScalar eulx = 0.0;
+									D3DXVECTOR3 eul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+									//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+									eulmat.getEulerZYX(eulz, euly, eulx, 1);
+									eul.x = eulx * 180.0 / PAI;
+									eul.y = euly * 180.0 / PAI;
+									eul.z = eulz * 180.0 / PAI;
+
+									int ismovable = parbone->ChkMovableEul(eul);
+									char strmsg[256];
+									//sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : dof [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, dofx, dofy, dofz, ismovable);
+									sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
+									OutputDebugStringA(strmsg);
+									if (ismovable != 1){
+										childbone = childbone->GetBrother();
+										continue;
+									}
+
+									setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+									//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+									//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+									setbto->GetRigidBody()->setDeactivationTime(0.0);
+
+									if (isfirst == 1){
+										parbone->SetBtMat(newbtmat);
+										//IKボーンはKINEMATICだから。
+										parbone->GetCurMp().SetWorldMat(newbtmat);
+										isfirst = 0;
+									}
+
+								}
+							}
+						}
+//角度制限　ここまで
+
 					}
 				}
 

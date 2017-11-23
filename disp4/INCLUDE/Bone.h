@@ -362,6 +362,9 @@ public:
 	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
 
 	int LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev);
+
+	int ChkMovableEul(D3DXVECTOR3 srceul);
+
 private:
 
 /**
@@ -459,7 +462,6 @@ private:
 	void CalcFirstAxisMatZ();
 
 	void InitAngleLimit();
-	int ChkMovableEul(D3DXVECTOR3 srceul);
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
 	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
 	int InitCustomRig();

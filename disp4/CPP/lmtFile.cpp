@@ -210,7 +210,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel )
 	char mfilename[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
 
-	m_hfile = CreateFile(strpath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+	m_hfile = CreateFile(strpath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		_ASSERT( 0 );

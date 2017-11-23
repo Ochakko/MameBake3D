@@ -73,6 +73,7 @@ int CBtObject::InitParams()
 
 	m_FrameA.setIdentity();
 	m_FrameB.setIdentity();
+	m_firstTransformMat.setIdentity();//bto->GetRigidBody()‚ÌCreateBtObjectŽž‚ÌWorldTransform->getBasis
 
 
 	return 0;
@@ -353,6 +354,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	btMatrix3x3 worldmat = worldtra.getBasis();
 	btVector3 worldpos = worldtra.getOrigin();
 	
+	m_firstTransformMat = worldmat;//bto->GetRigidBody()‚ÌCreateBtObjectŽž‚ÌWorldTransform->getBasis
+
+
 	btVector3 tmpcol[3];
 	int colno;
 	for( colno = 0; colno < 3; colno++ ){

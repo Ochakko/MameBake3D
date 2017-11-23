@@ -213,6 +213,10 @@ public: //accesser
 	void SetFrameB( btTransform& srcval ){ m_FrameB = srcval; };
 
 
+	btMatrix3x3 GetFirstTransformMat(){
+		return 	m_firstTransformMat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
+	};
+
 	D3DXMATRIX GetXWorld(){ return m_xworld; };
 	void SetXWorld( D3DXMATRIX srcworld ){ m_xworld = srcworld; };
 
@@ -241,6 +245,25 @@ public: //accesser
 			return initelem;
 		}
 	};
+
+	btGeneric6DofSpringConstraint* FindConstraint(CBone* srcchildbone, CBone* srcchildendbone){
+		//コンストレイント行列は子供のBtObjectのm_boneとm_endboneのベクトルに依存している。
+		//つまりコンストレイントを取得する場合はまず子供Btoを持っているクラス(this)にアクセスして、ChildBtoのm_boneとm_endboneに相当するボーンを指定して取得する。
+
+		int num = GetConstraintSize();
+		int conno;
+		for (conno = 0; conno < num; conno++){
+			CONSTRAINTELEM chkelem = GetConstraintElem(conno);
+			if (chkelem.centerbone == srcchildbone){
+				CBtObject* chkbto = chkelem.childbto;
+				if (chkbto->m_endbone == srcchildendbone){
+					return chkelem.constraint;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				}
+			}
+		}
+		return 0;
+	};
+
 
 	D3DXVECTOR3 GetBtPos()
 	{
@@ -285,6 +308,7 @@ private:
 	btTransform m_FrameA;//剛体設定時のA側変換行列。
 	btTransform m_FrameB;//剛体設定時のB側変換行列。
 
+	btMatrix3x3 m_firstTransformMat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
 
 	D3DXVECTOR3 m_btpos;//Motion2Btで計算した剛体の位置
 };
