@@ -5,6 +5,10 @@
 #include <D3DX9.h>
 #include <coef.h>
 
+#include "btBulletDynamicsCommon.h"
+#include "LinearMath/btIDebugDraw.h"
+
+
 class CQuaternion
 {
 public:
@@ -25,7 +29,7 @@ public:
 	int CalcFBXEulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone);
 	int IsInit();
 
-
+	void MakeFromBtMat3x3(btMatrix3x3 eulmat);
 
 	//CQuaternion operator= (const CQuaternion &q) const;
 	CQuaternion CQuaternion::operator= (CQuaternion q);

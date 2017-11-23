@@ -6250,6 +6250,19 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 									//sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : dof [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, dofx, dofy, dofz, ismovable);
 									sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
 									OutputDebugStringA(strmsg);
+
+
+									//Q2EulZYXbtのテスト　以下8行
+									CQuaternion eulq;
+									eulq.MakeFromBtMat3x3(eulmat);
+									int needmodifyflag = 0;
+									D3DXVECTOR3 testbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+									D3DXVECTOR3 testeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+									eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
+									sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
+									OutputDebugStringA(strmsg);
+
+
 									if (ismovable != 1){
 										childbone = childbone->GetBrother();
 										continue;

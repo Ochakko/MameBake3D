@@ -1034,7 +1034,7 @@ int CQuaternion::Q2Eul(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* rete
 
 	return 0;
 }
-/*
+
 //bulletäpìxÇOÇÃé≤Çí≤êÆ
 int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
 {
@@ -1091,86 +1091,6 @@ int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 
 
 
 	EQ.Rotate(&targetVec, axisXVec);
-	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	targetVec = tmpVec;
-	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
-	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f){
-		Euler.z = 90.0f;
-	}
-	else{
-		Euler.z = aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
-	}
-	if (vecDotVec(&shadowVec, &axisYVec) < 0.0f){
-		Euler.z = -Euler.z;
-	}
-
-	if (needmodifyflag == 1){
-		ModifyEuler(&Euler, &befeul);
-	}
-	*reteul = Euler;
-
-	return 0;
-}
-*/
-
-int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
-{
-
-	CQuaternion axisQ, invaxisQ, EQ;
-	if (axisq){
-		axisQ = *axisq;
-		axisQ.inv(&invaxisQ);
-		EQ = invaxisQ * *this * axisQ;
-	}
-	else{
-		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		EQ = *this;
-	}
-
-	D3DXVECTOR3 Euler;
-
-
-	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
-
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
-
-	EQ.Rotate(&targetVec, axisZVec);
-	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
-	shadowVec.z = vecDotVec(&targetVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f){
-		Euler.x = 90.0f;
-	}
-	else{
-		Euler.x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
-	}
-	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f){
-		Euler.x = -Euler.x;
-	}
-
-	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
-	shadowVec.y = 0;
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f){
-		Euler.y = 90.0f;
-	}
-	else{
-		Euler.y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
-	}
-	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f){
-		Euler.y = -Euler.y;
-	}
-
-
-	EQ.Rotate(&targetVec, axisYVec);
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
 	targetVec = tmpVec;
 	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
@@ -1374,3 +1294,29 @@ int CQuaternion::InOrder(CQuaternion* srcdstq)
 	return 0;
 }
 
+void CQuaternion::MakeFromBtMat3x3(btMatrix3x3 eulmat)
+{
+	btVector3 tmpcol[3];
+	int colno;
+	for (colno = 0; colno < 3; colno++){
+		tmpcol[colno] = eulmat.getColumn(colno);
+	}
+
+	D3DXMATRIX xmat;
+	D3DXMatrixIdentity(&xmat);
+
+	xmat._11 = tmpcol[0].x();
+	xmat._12 = tmpcol[0].y();
+	xmat._13 = tmpcol[0].z();
+
+	xmat._21 = tmpcol[1].x();
+	xmat._22 = tmpcol[1].y();
+	xmat._23 = tmpcol[1].z();
+
+	xmat._31 = tmpcol[2].x();
+	xmat._32 = tmpcol[2].y();
+	xmat._33 = tmpcol[2].z();
+
+	this->RotationMatrix(xmat);
+
+}
