@@ -12,6 +12,7 @@
 
 #include <RigidElem.h>
 //#include <Bone.h>
+#include <quaternion.h>
 
 #define DBGH
 #include <dbg.h>
@@ -120,9 +121,9 @@ float CRigidElem::GetBoneLeng()
 
 	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
-	D3DXVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetInitMat());
+	D3DVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetInitMat());
 	chilposA = m_endbone->GetJointFPos();
-	D3DXVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetInitMat());
+	D3DVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetInitMat());
 	D3DXVECTOR3 diffA = chilposA - parposA;
 	m_boneleng = D3DXVec3Length(&diffA);
 

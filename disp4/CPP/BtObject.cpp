@@ -238,9 +238,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
-	D3DXVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
+	D3DVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
 	chilposA = m_endbone->GetJointFPos();
-	D3DXVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
+	D3DVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
 	D3DXVECTOR3 diffA = chilposA - parposA;
 	m_boneleng = D3DXVec3Length(&diffA);
 
@@ -400,9 +400,9 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 
 	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
 	parposA = curbto->m_bone->GetJointFPos();
-	D3DXVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
+	D3DVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
 	chilposA = curbto->m_endbone->GetJointFPos();
-	D3DXVec3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2() );
+	D3DVec3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2() );
 
 	D3DXVECTOR2 dirxy, ndirxy;
 	dirxy.x = aftchilposA.x - aftparposA.x;
@@ -1036,7 +1036,7 @@ int CBtObject::CreatePhysicsPosConstraint()
 	else{
 		endmat = m_endbone->GetCurMp().GetWorldMat();
 	}
-	D3DXVec3TransformCoord(&aftendpos, &endpos, &endmat);
+	D3DVec3TransformCoord(&aftendpos, &endpos, &endmat);
 
 	btVector3 btv(btScalar(aftendpos.x), btScalar(aftendpos.y), btScalar(aftendpos.z));
 

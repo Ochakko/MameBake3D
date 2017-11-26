@@ -1,8 +1,33 @@
+#define QUATERNIONCPP
+
 #include <windows.h>
 #include <math.h>
 #include <quaternion.h>
 #include <BoneProp.h>
 #include <crtdbg.h>
+
+
+void D3DVec3TransformCoord(D3DXVECTOR3* dstvec, D3DXVECTOR3* srcvec, D3DXMATRIX* srcmat)
+{
+	double tmpx, tmpy, tmpz, tmpw;
+	tmpx = srcmat->_11 * srcvec->x + srcmat->_21 * srcvec->y + srcmat->_31 * srcvec->z + srcmat->_41;
+	tmpy = srcmat->_12 * srcvec->x + srcmat->_22 * srcvec->y + srcmat->_32 * srcvec->z + srcmat->_42;
+	tmpz = srcmat->_13 * srcvec->x + srcmat->_23 * srcvec->y + srcmat->_33 * srcvec->z + srcmat->_43;
+	tmpw = srcmat->_14 * srcvec->x + srcmat->_24 * srcvec->y + srcmat->_34 * srcvec->z + srcmat->_44;
+
+	if (tmpw != 0.0){
+		dstvec->x = tmpx / tmpw;
+		dstvec->y = tmpy / tmpw;
+		dstvec->z = tmpz / tmpw;
+	}
+	else{
+		dstvec->x = 0.0f;
+		dstvec->y = 0.0f;
+		dstvec->z = 0.0f;
+	}
+}
+
+
 
 
 CQuaternion::CQuaternion()
@@ -111,12 +136,12 @@ int CQuaternion::SetRotation( CQuaternion* axisq, D3DXVECTOR3 srcdeg )
 	float cosx, sinx, cosy, siny, cosz, sinz;
 	float fDeg2Pai = (float)DEG2PAI;
 
-	cosx = (float)cos( srcdeg.x * 0.5f * fDeg2Pai );
-	sinx = (float)sin( srcdeg.x * 0.5f * fDeg2Pai );
-	cosy = (float)cos( srcdeg.y * 0.5f * fDeg2Pai );
-	siny = (float)sin( srcdeg.y * 0.5f * fDeg2Pai );
-	cosz = (float)cos( srcdeg.z * 0.5f * fDeg2Pai );
-	sinz = (float)sin( srcdeg.z * 0.5f * fDeg2Pai );
+	cosx = (float)cos( srcdeg.x * 0.5 * fDeg2Pai );
+	sinx = (float)sin( srcdeg.x * 0.5 * fDeg2Pai );
+	cosy = (float)cos( srcdeg.y * 0.5 * fDeg2Pai );
+	siny = (float)sin( srcdeg.y * 0.5 * fDeg2Pai );
+	cosz = (float)cos( srcdeg.z * 0.5 * fDeg2Pai );
+	sinz = (float)sin( srcdeg.z * 0.5 * fDeg2Pai );
 
 	qx.SetParams( cosx, sinx, 0.0f, 0.0f );
 	qy.SetParams( cosy, 0.0f, siny, 0.0f );
@@ -175,20 +200,48 @@ CQuaternion &CQuaternion::operator+= (const CQuaternion &q) { *this = *this + q;
 CQuaternion CQuaternion::operator- (const CQuaternion &q) const { return CQuaternion(w - q.w, x - q.x, y - q.y, z - q.z); }
 CQuaternion &CQuaternion::operator-= (const CQuaternion &q) { *this = *this - q; return *this; }
 CQuaternion CQuaternion::operator* (const CQuaternion &q) const {
-	return CQuaternion(
-		w * q.w - x * q.x - y * q.y - z * q.z,
-		w * q.x + q.w * x + y * q.z - z * q.y,
-		w * q.y + q.w * y + z * q.x - x * q.z,
-		w * q.z + q.w * z + x * q.y - y * q.x ).normalize();
+	//return CQuaternion(
+	//	w * q.w - x * q.x - y * q.y - z * q.z,
+	//	w * q.x + q.w * x + y * q.z - z * q.y,
+	//	w * q.y + q.w * y + z * q.x - x * q.z,
+	//	w * q.z + q.w * z + x * q.y - y * q.x ).normalize();
+	double tmpx, tmpy, tmpz, tmpw;
+	tmpw = w * q.w - x * q.x - y * q.y - z * q.z;
+	tmpx = w * q.x + q.w * x + y * q.z - z * q.y;
+	tmpy = w * q.y + q.w * y + z * q.x - x * q.z;
+	tmpz = w * q.z + q.w * z + x * q.y - y * q.x;
+	CQuaternion retq;
+	retq.x = (float)tmpx;
+	retq.y = (float)tmpy;
+	retq.z = (float)tmpz;
+	retq.w = (float)tmpw;
+	return retq.normalize();
 }
 CQuaternion &CQuaternion::operator*= (const CQuaternion &q) { *this = *this * q; return *this; }
 CQuaternion CQuaternion::operator- () const { return *this * -1.0f; }
-CQuaternion CQuaternion::normalize () const { 
-	float mag = w*w+x*x+y*y+z*z;
-	if( mag != 0.0f )
-		return (*this)*(1.0f/(float)::sqrt(mag));
-	else
-		return CQuaternion( 1.0f, 0.0f, 0.0f, 0.0f );
+CQuaternion CQuaternion::normalize (){ 
+	//float mag = w*w+x*x+y*y+z*z;
+	//if( mag != 0.0f )
+	//	return (*this)*(1.0f/(float)::sqrt(mag));
+	//else
+	//	return CQuaternion( 1.0f, 0.0f, 0.0f, 0.0f );
+
+	double mag = w*w+x*x+y*y+z*z;
+	if (mag != 0.0){
+		double divval = ::sqrt(mag);
+		double tmpx = x / divval;
+		double tmpy = y / divval;
+		double tmpz = z / divval;
+		double tmpw = w / divval;
+		this->x = (float)tmpx;
+		this->y = (float)tmpy;
+		this->z = (float)tmpz;
+		this->w = (float)tmpw;
+		return *this;
+	}
+	else{
+		return CQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
+	}
 }
 
 
@@ -200,17 +253,30 @@ D3DXMATRIX CQuaternion::MakeRotMatX()
 	D3DXMatrixIdentity(&retmat);
 
 	//転置
-	retmat._11 = 1.0 - 2.0 * (y * y + z * z);
-	retmat._21 = 2.0 * (x * y - z * w);
-	retmat._31 = 2.0 * (z * x + w * y);
+	double _11 = 1.0 - 2.0 * (y * y + z * z);
+	double _21 = 2.0 * (x * y - z * w);
+	double _31 = 2.0 * (z * x + w * y);
 
-	retmat._12 = 2.0 * (x * y + z * w);
-	retmat._22 = 1.0 - 2.0 * (z * z + x * x);
-	retmat._32 = 2.0 * (y * z - w * x);
+	double _12 = 2.0 * (x * y + z * w);
+	double _22 = 1.0 - 2.0 * (z * z + x * x);
+	double _32 = 2.0 * (y * z - w * x);
 
-	retmat._13 = 2.0 * (z * x - w * y);
-	retmat._23 = 2.0 * (y * z + x * w);
-	retmat._33 = 1.0 - 2.0 * (y * y + x * x);
+	double _13 = 2.0 * (z * x - w * y);
+	double _23 = 2.0 * (y * z + x * w);
+	double _33 = 1.0 - 2.0 * (y * y + x * x);
+
+	retmat._11 = (float)_11;
+	retmat._21 = (float)_21;
+	retmat._31 = (float)_31;
+
+	retmat._12 = (float)_12;
+	retmat._22 = (float)_22;
+	retmat._32 = (float)_32;
+
+	retmat._13 = (float)_13;
+	retmat._23 = (float)_23;
+	retmat._33 = (float)_33;
+
 
 	/*
 	retmat._11 = 1.0 - 2.0 * (y * y + z * z);
@@ -587,7 +653,7 @@ int CQuaternion::Rotate( D3DXVECTOR3* dstvec, D3DXVECTOR3 srcvec )
 
 	mat = MakeRotMatX();
 
-	D3DXVec3TransformCoord( dstvec, &srcvec, &mat );
+	D3DVec3TransformCoord( dstvec, &srcvec, &mat );
 	
 	return 0;
 }
@@ -648,7 +714,8 @@ int CQuaternion::CalcSym( CQuaternion* dstq )
 
 float CQuaternion::vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
 {
-	return ( vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z );
+	double tmpval = vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z;
+	return (float)tmpval;
 }
 
 float CQuaternion::lengthVec( D3DXVECTOR3* vec )
@@ -688,13 +755,21 @@ int CQuaternion::vec3RotateY( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcve
 	CQuaternion dirq;
 	D3DXMATRIX	dirm;
 
+	D3DXVECTOR3 tmpsrcvec = *srcvec;
+
+
 	ret = dirq.SetRotation( 0, 0, deg, 0 );
 	_ASSERT( !ret );
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = dirm._11 * srcvec->x + dirm._21 * srcvec->y + dirm._31 * srcvec->z + dirm._41;
-	dstvec->y = dirm._12 * srcvec->x + dirm._22 * srcvec->y + dirm._32 * srcvec->z + dirm._42;
-	dstvec->z = dirm._13 * srcvec->x + dirm._23 * srcvec->y + dirm._33 * srcvec->z + dirm._43;
+	double tmpx, tmpy, tmpz;
+	tmpx = dirm._11 * tmpsrcvec.x + dirm._21 * tmpsrcvec.y + dirm._31 * tmpsrcvec.z + dirm._41;
+	tmpy = dirm._12 * tmpsrcvec.x + dirm._22 * tmpsrcvec.y + dirm._32 * tmpsrcvec.z + dirm._42;
+	tmpz = dirm._13 * tmpsrcvec.x + dirm._23 * tmpsrcvec.y + dirm._33 * tmpsrcvec.z + dirm._43;
+
+	dstvec->x = (float)tmpx;
+	dstvec->y = (float)tmpy;
+	dstvec->z = (float)tmpz;
 
 	return 0;
 }
@@ -705,13 +780,22 @@ int CQuaternion::vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcve
 	CQuaternion dirq;
 	D3DXMATRIX	dirm;
 
+	D3DXVECTOR3 tmpsrcvec = *srcvec;
+
 	ret = dirq.SetRotation( 0, deg, 0, 0 );
 	_ASSERT( !ret );
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = dirm._11 * srcvec->x + dirm._21 * srcvec->y + dirm._31 * srcvec->z + dirm._41;
-	dstvec->y = dirm._12 * srcvec->x + dirm._22 * srcvec->y + dirm._32 * srcvec->z + dirm._42;
-	dstvec->z = dirm._13 * srcvec->x + dirm._23 * srcvec->y + dirm._33 * srcvec->z + dirm._43;
+	float tmpx, tmpy, tmpz;
+
+	tmpx = dirm._11 * tmpsrcvec.x + dirm._21 * tmpsrcvec.y + dirm._31 * tmpsrcvec.z + dirm._41;
+	tmpy = dirm._12 * tmpsrcvec.x + dirm._22 * tmpsrcvec.y + dirm._32 * tmpsrcvec.z + dirm._42;
+	tmpz = dirm._13 * tmpsrcvec.x + dirm._23 * tmpsrcvec.y + dirm._33 * tmpsrcvec.z + dirm._43;
+
+	dstvec->x = (float)tmpx;
+	dstvec->y = (float)tmpy;
+	dstvec->z = (float)tmpz;
+
 
 	return 0;
 }
@@ -722,13 +806,21 @@ int CQuaternion::vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcve
 	CQuaternion dirq;
 	D3DXMATRIX	dirm;
 
+	D3DXVECTOR3 tmpsrcvec = *srcvec;
+
 	ret = dirq.SetRotation( 0, 0, 0, deg );
 	_ASSERT( !ret );
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = dirm._11 * srcvec->x + dirm._21 * srcvec->y + dirm._31 * srcvec->z + dirm._41;
-	dstvec->y = dirm._12 * srcvec->x + dirm._22 * srcvec->y + dirm._32 * srcvec->z + dirm._42;
-	dstvec->z = dirm._13 * srcvec->x + dirm._23 * srcvec->y + dirm._33 * srcvec->z + dirm._43;
+	float tmpx, tmpy, tmpz;
+
+	tmpx = dirm._11 * tmpsrcvec.x + dirm._21 * tmpsrcvec.y + dirm._31 * tmpsrcvec.z + dirm._41;
+	tmpy = dirm._12 * tmpsrcvec.x + dirm._22 * tmpsrcvec.y + dirm._32 * tmpsrcvec.z + dirm._42;
+	tmpz = dirm._13 * tmpsrcvec.x + dirm._23 * tmpsrcvec.y + dirm._33 * tmpsrcvec.z + dirm._43;
+
+	dstvec->x = (float)tmpx;
+	dstvec->y = (float)tmpy;
+	dstvec->z = (float)tmpz;
 
 	return 0;
 }
@@ -1035,10 +1127,8 @@ int CQuaternion::Q2Eul(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* rete
 	return 0;
 }
 
-//bullet角度０の軸を調整
-int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
 {
-
 	CQuaternion axisQ, invaxisQ, EQ;
 	if (axisq){
 		axisQ = *axisq;
@@ -1069,7 +1159,7 @@ int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 
 		Euler.x = 90.0f;
 	}
 	else{
-		Euler.x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.x = (float)((double)aCos(vecDotVec(&shadowVec, &axisZVec) / (double)lengthVec(&shadowVec)));
 	}
 	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f){
 		Euler.x = -Euler.x;
@@ -1083,7 +1173,7 @@ int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 
 		Euler.y = 90.0f;
 	}
 	else{
-		Euler.y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.y = (float)((double)aCos(vecDotVec(&shadowVec, &axisZVec) / (double)lengthVec(&shadowVec)));
 	}
 	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f){
 		Euler.y = -Euler.y;
@@ -1101,7 +1191,7 @@ int CQuaternion::Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 
 		Euler.z = 90.0f;
 	}
 	else{
-		Euler.z = aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
+		Euler.z = (float)((double)aCos(vecDotVec(&shadowVec, &axisXVec) / (double)lengthVec(&shadowVec)));
 	}
 	if (vecDotVec(&shadowVec, &axisYVec) < 0.0f){
 		Euler.z = -Euler.z;
@@ -1121,14 +1211,14 @@ int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
 {
 
 	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
-	float tmpX1, tmpY1, tmpZ1;
-	float tmpX2, tmpY2, tmpZ2;
-	float s1, s2;
+	double tmpX1, tmpY1, tmpZ1;
+	double tmpX2, tmpY2, tmpZ2;
+	double s1, s2;
 
 	//予想される角度1
-	tmpX1 = eulerA->x + 360.0f * GetRound((eulerB->x - eulerA->x) / 360.0f);
-	tmpY1 = eulerA->y + 360.0f * GetRound((eulerB->y - eulerA->y) / 360.0f);
-	tmpZ1 = eulerA->z + 360.0f * GetRound((eulerB->z - eulerA->z) / 360.0f);
+	tmpX1 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
+	tmpY1 = eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y) / 360.0);
+	tmpZ1 = eulerA->z + 360.0 * GetRound((eulerB->z - eulerA->z) / 360.0);
 
 	//予想される角度2
 		//クォータニオンは１８０°で一回転する。
@@ -1136,9 +1226,9 @@ int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
 		//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
 		//この場合、３つの軸のうち１つだけの軸の角度の符号(ここではX軸)が反転する。
 		//ということだと思う。テストすると合っている。
-	tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound((eulerB->x + eulerA->x - 180.0f) / 360.0f);
-	tmpY2 = eulerA->y + 180.0f + 360.0f * GetRound((eulerB->y - eulerA->y - 180.0f) / 360.0f);
-	tmpZ2 = eulerA->z + 180.0f + 360.0f * GetRound((eulerB->z - eulerA->z - 180.0f) / 360.0f);
+	tmpX2 = 180.0 - eulerA->x + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
+	tmpY2 = eulerA->y + 180.0 + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
+	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
 
 
 	//角度変化の大きさ
@@ -1147,10 +1237,10 @@ int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
 
 	//変化の少ない方に修正
 	if (s1 < s2){
-		eulerA->x = tmpX1; eulerA->y = tmpY1; eulerA->z = tmpZ1;
+		eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
 	}
 	else{
-		eulerA->x = tmpX2; eulerA->y = tmpY2; eulerA->z = tmpZ2;
+		eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
 	}
 
 	return 0;
@@ -1193,9 +1283,9 @@ int CQuaternion::ModifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB )
 int CQuaternion::GetRound( float srcval )
 {
 	if( srcval > 0.0f ){
-		return (int)( srcval + 0.5f );
+		return (int)( srcval + 0.5 );
 	}else{
-		return (int)( srcval - 0.5f );
+		return (int)( srcval - 0.5 );
 	}
 }
 

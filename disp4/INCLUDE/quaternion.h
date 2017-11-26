@@ -9,6 +9,12 @@
 #include "LinearMath/btIDebugDraw.h"
 
 
+#ifdef QUATERNIONCPP
+void D3DVec3TransformCoord(D3DXVECTOR3* dstvec, D3DXVECTOR3* srcvec, D3DXMATRIX* srcmat);
+#else
+extern void D3DVec3TransformCoord(D3DXVECTOR3* dstvec, D3DXVECTOR3* srcvec, D3DXMATRIX* srcmat);
+#endif
+
 class CQuaternion
 {
 public:
@@ -47,7 +53,7 @@ public:
 	CQuaternion &operator/= (const CQuaternion &q);
 	CQuaternion operator- () const;
 	//CQuaternion inv () const;
-	CQuaternion normalize () const;
+	CQuaternion normalize ();
 	
 	int CQuaternion::inv( CQuaternion* dstq ); 
 	
@@ -79,8 +85,8 @@ public:
 	//ç∂ÇÀÇ∂
 	int Q2EulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
 	int Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
-	int Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
-	int Q2EulZYXbt(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
+	int Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);//bulletÇ‡XYZÇÃèá
+	int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
 
 
 	int Q2Eul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );

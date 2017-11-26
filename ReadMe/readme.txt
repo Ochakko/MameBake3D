@@ -56,6 +56,13 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+2017/11/26_1
+	bullet physicsのオイラー角計算結果とMameBake3Dのオイラー角計算結果の比較検証をしました。
+		いろいろなボーンと姿勢でテストした結果、bullet physicsの回転順序はZYXではなくXYZのようです。
+		PhysicsRotの際のbullet physicsの計算結果とQ2EulXYZの結果を比べた結果ほぼ一致しました。
+		その誤差は大抵は小数点以下6位のdegreeの誤差程度でした（たまに小数点以下３位の誤差になることもありました）。
+
+
 2017/11/24_1
 	CQuaternion::Q2EulZYXbtの修正とbullet physicsのオイラー角計算との比較
 		PhysicsRotのIK時にオイラー角を比較した。

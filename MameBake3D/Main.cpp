@@ -1816,10 +1816,10 @@ int AdjustBoneTra( CBone* curbone, double curframe )
 	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
 	if(pcurmp){
 		D3DXVECTOR3 orgpos;
-		D3DXVec3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &(pcurmp->GetBefWorldMat()) );
+		D3DVec3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &(pcurmp->GetBefWorldMat()) );
 
 		D3DXVECTOR3 newpos;
-		D3DXVec3TransformCoord( &newpos, &(curbone->GetJointFPos()), &(pcurmp->GetWorldMat()) );
+		D3DVec3TransformCoord( &newpos, &(curbone->GetJointFPos()), &(pcurmp->GetWorldMat()) );
 
 		D3DXVECTOR3 diffpos;
 		diffpos = orgpos - newpos;
@@ -2522,8 +2522,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			wat = g_camtargetpos;
 
 			D3DXVECTOR3 cameye, camat;
-			D3DXVec3TransformCoord(&cameye, &weye, &matview);
-			D3DXVec3TransformCoord(&camat, &wat, &matview);
+			D3DVec3TransformCoord(&cameye, &weye, &matview);
+			D3DVec3TransformCoord(&camat, &wat, &matview);
 
 			D3DXVECTOR3 aftcameye, aftcamat;
 			aftcameye = cameye + cammv;
@@ -2533,8 +2533,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			D3DXMatrixInverse(&invmatview, NULL, &matview);
 
 			D3DXVECTOR3 neweye, newat;
-			D3DXVec3TransformCoord(&neweye, &aftcameye, &invmatview);
-			D3DXVec3TransformCoord(&newat, &aftcamat, &invmatview);
+			D3DVec3TransformCoord(&neweye, &aftcameye, &invmatview);
+			D3DVec3TransformCoord(&newat, &aftcamat, &invmatview);
 
 			g_Camera.SetViewParams(&neweye, &newat);
 
@@ -2624,7 +2624,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			D3DXMATRIX mat;
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 			D3DXVECTOR3 neweye;
-			D3DXVec3TransformCoord(&neweye, &weye, &mat);
+			D3DVec3TransformCoord(&neweye, &weye, &mat);
 
 			float chkdot2;
 			D3DXVECTOR3 newviewvec = weye - neweye;
@@ -2646,7 +2646,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			D3DXMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
 			D3DXMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-			D3DXVec3TransformCoord(&neweye, &weye, &mat);
+			D3DVec3TransformCoord(&neweye, &weye, &mat);
 
 			g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 
@@ -5524,12 +5524,12 @@ int RenderSelectMark(int renderflag)
 
 		D3DXVECTOR3 cam0, cam1;
 		D3DXMATRIX mwv = s_matW * s_matView;
-		D3DXVec3TransformCoord( &cam0, &orgpos, &mwv );
+		D3DVec3TransformCoord( &cam0, &orgpos, &mwv );
 		cam1 = cam0 + D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
 
 		D3DXVECTOR3 sc0, sc1;
-		D3DXVec3TransformCoord( &sc0, &cam0, &s_matProj );
-		D3DXVec3TransformCoord( &sc1, &cam1, &s_matProj );
+		D3DVec3TransformCoord( &sc0, &cam0, &s_matProj );
+		D3DVec3TransformCoord( &sc1, &cam1, &s_matProj );
 		float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
 		if( lineleng > 0.00001f ){
 			lineleng = sqrt( lineleng );
@@ -5642,8 +5642,8 @@ int CalcPickRay( D3DXVECTOR3* startptr, D3DXVECTOR3* endptr )
 	mVP = mView * mProj;
 	D3DXMatrixInverse( &invmVP, NULL, &mVP );
 
-	D3DXVec3TransformCoord( startptr, &startsc, &invmVP );
-	D3DXVec3TransformCoord( endptr, &endsc, &invmVP );
+	D3DVec3TransformCoord( startptr, &startsc, &invmVP );
+	D3DVec3TransformCoord( endptr, &endsc, &invmVP );
 
 	return 0;
 }
