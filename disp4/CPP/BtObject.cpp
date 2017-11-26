@@ -389,7 +389,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 
 
-
+/*
 int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dsttra )
 {
 	dsttra.setIdentity();
@@ -410,20 +410,6 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 	float lengxy = D3DXVec2Length( &dirxy );
 	D3DXVec2Normalize( &ndirxy, &dirxy );
 
-/***
-	D3DXMATRIX startrot = curre->m_capsulemat;
-	startrot._41 = 0.0f;
-	startrot._42 = 0.0f;
-	startrot._43 = 0.0f;
-	D3DXQUATERNION xq;
-	D3DXQuaternionRotationMatrix( &xq, &startrot );
-	CQuaternion cq;
-	cq.SetParams( xq );
-
-	D3DXVECTOR3 eul;
-	cq.Q2EulBt( &eul );
-	dsttra.getBasis().setEulerZYX( eul.x, eul.y, eul.z );
-***/
 
 	D3DXVECTOR2 basex( 1.0f, 0.0f );
 	float dotx;
@@ -451,29 +437,6 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 		m_constzrad = -90.0f * (float)DEG2PAI;
 	}
 
-/***
-	if( m_boneleng < 0.0001f ){
-		CBtObject* parbt = curbto->m_parbt;
-		if( parbt ){
-			m_constzrad = parbt->m_constzrad;
-		}else{
-			m_constzrad = -90.0f * (float)DEG2PAI;
-		}
-	}
-***/
-/***
-	float diffzrad = 0.0f;
-	CBtObject* parbt = curbto->m_parbt;
-	if( parbt ){
-		diffzrad = fabs( rad - parbt->m_constzrad );
-	}
-	if( diffzrad >= 176.0f * (float)DEG2PAI ){
-		_ASSERT( parbt );
-		m_constzrad = parbt->m_constzrad;	
-	}else{
-		m_constzrad = rad;
-	}
-***/
 
 	dsttra.getBasis().setEulerZYX(0.0f, 0.0f, m_constzrad);
 	//dsttra.getBasis().setEulerZYX(m_constzrad, 0.0f, 0.0f);
@@ -493,6 +456,57 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 
 	return 0;
 }
+*/
+
+int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dsttra)
+{
+	dsttra.setIdentity();
+
+	if (!m_rigidbody){
+		return 1;
+	}
+
+	D3DXMATRIX transmatx;
+	D3DXMatrixIdentity(&transmatx);
+	int setstartflag = 1;
+
+	curbto->m_bone->CalcAxisMatX(curbto->m_endbone, &transmatx, setstartflag);
+
+	CQuaternion rotq;
+	rotq.RotationMatrix(transmatx);
+	CQuaternion invrotq;
+	rotq.inv(&invrotq);
+
+	D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 eul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	invrotq.Q2EulXYZ(0, befeul, &eul);
+	//rotq.Q2EulZYX(0, 0, befeul, &eul);
+
+	dsttra.getBasis().setEulerZYX(eul.x * PAI / 180.0, eul.y * PAI / 180.0, eul.z * PAI / 180.0);
+
+	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
+	btTransform invtra = rigidtra.inverse();
+
+	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
+	parposA = curbto->m_bone->GetJointFPos();
+	D3DVec3TransformCoord(&aftparposA, &parposA, &curbto->m_bone->GetStartMat2());
+	chilposA = curbto->m_endbone->GetJointFPos();
+	D3DVec3TransformCoord(&aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2());
+	if (chilflag == 0){
+		m_curpivot = invtra(btVector3(aftchilposA.x, aftchilposA.y, aftchilposA.z));
+		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
+	}
+	else{
+		m_curpivot = invtra(btVector3(aftparposA.x, aftparposA.y, aftparposA.z));
+		//m_curpivot = btVector3( 0.0f, -0.5f * curbto->m_boneleng, 0.0f );
+	}
+
+
+	dsttra.setOrigin(m_curpivot);
+
+	return 0;
+}
+
 
 int CBtObject::CreateBtConstraint()
 {
@@ -526,6 +540,7 @@ int CBtObject::CreateBtConstraint()
 		tmpre = chilbto->m_bone->GetRigidElem( chilbto->m_endbone );
 		_ASSERT( tmpre );
 		CalcConstraintTransform( 1, tmpre, chilbto, m_FrameB );
+		//CalcConstraintTransform(1, tmpre, chilbto, m_FrameB);
 
 		if( m_rigidbody && chilbto->m_rigidbody ){
 
