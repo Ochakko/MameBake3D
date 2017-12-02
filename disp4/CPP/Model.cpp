@@ -6150,15 +6150,18 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 
 
 					D3DXMATRIX newbtmat;
-					D3DXVECTOR3 rotcenter;// = m_childworld;
-					rotcenter = parworld;
+					D3DXVECTOR3 rotcenter;
+					//rotcenter = parworld;
+					rotcenter = parbone->GetJointFPos();
 
 					D3DXMATRIX befrot, aftrot;
 					D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 					D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 					D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
 					//newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
-					newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
+					//newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
+					newbtmat = rotmat * parbone->GetBtMat();// *tramat;
+
 
 
 					D3DXMATRIX firstworld = parbone->GetStartMat2();
@@ -6400,17 +6403,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 
 			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-			//D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
-			//D3DXMATRIX transmat2 = invgparrotmat * invparrotmat * transmat * parrotmat * gparrotmat;
-
-			//D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat;
-			//D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat * invgparrotmat;
-			//D3DXMATRIX transmat2 = transmat * parrotmat * invgparrotmat;
-			D3DXMATRIX transmat2 = transmat;
-
 
 			CMotionPoint transmp;
-			transmp.CalcQandTra(transmat2, parbone);
+			transmp.CalcQandTra(transmat, parbone);
 			CQuaternion rotq;
 			rotq = transmp.GetQ();
 
@@ -6421,17 +6416,15 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 
 			D3DXMATRIX newbtmat;
-			D3DXVECTOR3 rotcenter;// = m_childworld;
-			rotcenter = parworld;
+			D3DXVECTOR3 rotcenter;
+			//rotcenter = parworld;
+			rotcenter = parbone->GetJointFPos();
 
 			D3DXMATRIX befrot, aftrot;
 			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-			//newbtmat = gparbone->GetBtMat() * rotmat;// *tramat;
-			//newbtmat = rotmat * gparbone->GetBtMat();// *tramat;
-			newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
-			//newbtmat = parbone->GetCurMp().GetBtMat() * rotq.MakeRotMatX();// *tramat;
+			newbtmat = rotmat * parbone->GetBtMat();
 
 
 			D3DXMATRIX firstworld = parbone->GetStartMat2();

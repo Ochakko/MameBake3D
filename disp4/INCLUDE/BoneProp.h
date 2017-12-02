@@ -36,4 +36,6 @@ bool IsTimeEqual(double srctime1, double srctime2);
 float VecLength(D3DXVECTOR3 srcvec);
 void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, D3DXVECTOR3* tvecptr);
 
+D3DXMATRIX TransZeroMat(D3DXMATRIX srcmat);
+
 #endif

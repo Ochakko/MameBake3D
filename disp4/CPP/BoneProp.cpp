@@ -615,4 +615,14 @@ void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, 
 
 }
 
+D3DXMATRIX TransZeroMat(D3DXMATRIX srcmat)
+{
+	D3DXMATRIX retmat;
+	retmat = srcmat;
+	retmat._41 = 0.0f;
+	retmat._42 = 0.0f;
+	retmat._43 = 0.0f;
+
+	return retmat;
+}
 

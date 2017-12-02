@@ -487,12 +487,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-15</Lower_X>
-      <Upper_X>15</Upper_X>
-      <Lower_Y>-15</Lower_Y>
-      <Upper_Y>15</Upper_Y>
-      <Lower_Z>-15</Lower_Z>
-      <Upper_Z>15</Upper_Z>
+      <Lower_X>-60</Lower_X>
+      <Upper_X>60</Upper_X>
+      <Lower_Y>-60</Lower_Y>
+      <Upper_Y>60</Upper_Y>
+      <Lower_Z>-60</Lower_Z>
+      <Upper_Z>60</Upper_Z>
   </Bone>
   <Bone>
     <Name>LeftElbow_branch_Joint</Name>
@@ -516,12 +516,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-15</Lower_X>
-      <Upper_X>15</Upper_X>
-      <Lower_Y>-15</Lower_Y>
-      <Upper_Y>15</Upper_Y>
-      <Lower_Z>-15</Lower_Z>
-      <Upper_Z>15</Upper_Z>
+      <Lower_X>-60</Lower_X>
+      <Upper_X>60</Upper_X>
+      <Lower_Y>-60</Lower_Y>
+      <Upper_Y>60</Upper_Y>
+      <Lower_Z>-60</Lower_Z>
+      <Upper_Z>60</Upper_Z>
   </Bone>
   <Bone>
     <Name>LeftThumbProximal_Joint</Name>
@@ -1183,12 +1183,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-15</Lower_X>
-      <Upper_X>15</Upper_X>
-      <Lower_Y>-15</Lower_Y>
-      <Upper_Y>15</Upper_Y>
-      <Lower_Z>-15</Lower_Z>
-      <Upper_Z>15</Upper_Z>
+      <Lower_X>-60</Lower_X>
+      <Upper_X>60</Upper_X>
+      <Lower_Y>-60</Lower_Y>
+      <Upper_Y>60</Upper_Y>
+      <Lower_Z>-60</Lower_Z>
+      <Upper_Z>60</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightElbow_branch_Joint</Name>
@@ -1212,12 +1212,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-15</Lower_X>
-      <Upper_X>15</Upper_X>
-      <Lower_Y>-15</Lower_Y>
-      <Upper_Y>15</Upper_Y>
-      <Lower_Z>-15</Lower_Z>
-      <Upper_Z>15</Upper_Z>
+      <Lower_X>-60</Lower_X>
+      <Upper_X>60</Upper_X>
+      <Lower_Y>-60</Lower_Y>
+      <Upper_Y>60</Upper_Y>
+      <Lower_Z>-60</Lower_Z>
+      <Upper_Z>60</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightThumbProximal_Joint</Name>
