@@ -799,8 +799,17 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 			ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
 			int forbidrotflag = childbto->m_bone->GetRigidElem(childbto->m_endbone)->GetForbidRotFlag();
 
+			//if (forbidrotflag == 0){
+			//	dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+			//	dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
+			//}
+			//else{
+			//	dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+			//	dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+			//}
+
 			if (forbidrotflag == 0){
-				//ZYX
+				//XYZ
 				dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
 				dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
 			}

@@ -6142,11 +6142,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 
 
 					D3DXMATRIX transmat2;
-					//これでは体全体が反対を向いたときに回転方向が反対向きになる。
-					//transmat2 = invgparrotmat * rotq0.MakeRotMatX() * gparrotmat;
-
-					//以下のようにすれば体全体が回転した時にも正常に動く
-					transmat2 = invgparrotmat * parrotmat * rotq0.MakeRotMatX() * invparrotmat * gparrotmat;
+					transmat2 = rotq0.MakeRotMatX();
 
 					CMotionPoint transmp;
 					transmp.CalcQandTra(transmat2, parbone);
@@ -6161,8 +6157,8 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 					D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 					D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 					D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-					newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
-					//newbtmat = parbone->GetCurMp().GetBtMat() * rotq.MakeRotMatX();// *tramat;
+					//newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
+					newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
 
 
 					D3DXMATRIX firstworld = parbone->GetStartMat2();
@@ -6215,6 +6211,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 								if (dofC){
 
 									//constraint変化分　以下3行　　CreateBtObjectをしたときの状態を基準にした角度になっている。つまりシミュ開始時が０度。
+									dofC->calculateTransforms();
 									//btTransform contraA = dofC->getCalculatedTransformA();
 									//btTransform contraB = dofC->getCalculatedTransformB();
 									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * contraB.getBasis() * contraA.getBasis();
@@ -6397,13 +6394,19 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 			D3DXMATRIX parrotmat, invparrotmat;
 			parrotmat = parbone->GetBtMat();
 			D3DXMatrixInverse(&invparrotmat, NULL, &parrotmat);
-			
+			parrotmat._41 = 0.0f;
+			parrotmat._42 = 0.0f;
+			parrotmat._43 = 0.0f;
+
 
 			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 			//D3DXMATRIX transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
 			//D3DXMATRIX transmat2 = invgparrotmat * invparrotmat * transmat * parrotmat * gparrotmat;
 
-			D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat;
+			//D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat;
+			//D3DXMATRIX transmat2 = invparrotmat * transmat * parrotmat * invgparrotmat;
+			//D3DXMATRIX transmat2 = transmat * parrotmat * invgparrotmat;
+			D3DXMATRIX transmat2 = transmat;
 
 
 			CMotionPoint transmp;
@@ -6425,7 +6428,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-			newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
+			//newbtmat = gparbone->GetBtMat() * rotmat;// *tramat;
+			//newbtmat = rotmat * gparbone->GetBtMat();// *tramat;
+			newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
 			//newbtmat = parbone->GetCurMp().GetBtMat() * rotq.MakeRotMatX();// *tramat;
 
 
