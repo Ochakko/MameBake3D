@@ -36,6 +36,7 @@ public:
 	int IsInit();
 
 	void MakeFromBtMat3x3(btMatrix3x3 eulmat);
+	void MakeFromD3DXMat(D3DXMATRIX eulmat);
 
 	//CQuaternion operator= (const CQuaternion &q) const;
 	CQuaternion CQuaternion::operator= (CQuaternion q);

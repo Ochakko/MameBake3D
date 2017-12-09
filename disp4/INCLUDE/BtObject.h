@@ -216,6 +216,12 @@ public: //accesser
 	btMatrix3x3 GetFirstTransformMat(){
 		return 	m_firstTransformMat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
 	};
+	D3DXMATRIX GetFirstTransformMatX(){
+		return m_firstTransformMatX;
+	};
+	btTransform GetFirstTransform(){
+		return m_firstTransform;
+	};
 
 	D3DXMATRIX GetXWorld(){ return m_xworld; };
 	void SetXWorld( D3DXMATRIX srcworld ){ m_xworld = srcworld; };
@@ -309,6 +315,9 @@ private:
 	btTransform m_FrameB;//剛体設定時のB側変換行列。
 
 	btMatrix3x3 m_firstTransformMat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
+	D3DXMATRIX m_firstTransformMatX;
+	btTransform m_firstTransform;
+
 
 	D3DXVECTOR3 m_btpos;//Motion2Btで計算した剛体の位置
 };

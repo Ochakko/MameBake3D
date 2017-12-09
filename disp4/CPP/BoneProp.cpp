@@ -13,6 +13,14 @@
 #include <Model.h>
 #include <Bone.h>
 
+
+#include "btBulletDynamicsCommon.h"
+#include "LinearMath/btIDebugDraw.h"
+
+#define BONEPROPCPP
+#include <BoneProp.h>
+
+
 #define DBGH
 #include <dbg.h>
 
@@ -625,4 +633,70 @@ D3DXMATRIX TransZeroMat(D3DXMATRIX srcmat)
 
 	return retmat;
 }
+
+D3DXMATRIX D3DXMatrixFromBtMat3x3(btMatrix3x3 srcmat3x3)
+{
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+
+	btVector3 tmpcol[3];
+	int colno;
+	for (colno = 0; colno < 3; colno++){
+		tmpcol[colno] = srcmat3x3.getColumn(colno);
+		//tmpcol[colno] = worldmat.getRow( colno );
+	}
+
+	retmat._11 = tmpcol[0].x();
+	retmat._12 = tmpcol[0].y();
+	retmat._13 = tmpcol[0].z();
+
+	retmat._21 = tmpcol[1].x();
+	retmat._22 = tmpcol[1].y();
+	retmat._23 = tmpcol[1].z();
+
+	retmat._31 = tmpcol[2].x();
+	retmat._32 = tmpcol[2].y();
+	retmat._33 = tmpcol[2].z();
+
+	return retmat;
+}
+
+D3DXMATRIX D3DXMatrixFromBtTransform(btMatrix3x3 srcmat3x3, btVector3 srcpivot)
+{
+	D3DXMATRIX retmat;
+	D3DXMatrixIdentity(&retmat);
+
+	btVector3 tmpcol[3];
+	int colno;
+	for (colno = 0; colno < 3; colno++){
+		tmpcol[colno] = srcmat3x3.getColumn(colno);
+		//tmpcol[colno] = worldmat.getRow( colno );
+	}
+
+	retmat._11 = tmpcol[0].x();
+	retmat._12 = tmpcol[0].y();
+	retmat._13 = tmpcol[0].z();
+
+	retmat._21 = tmpcol[1].x();
+	retmat._22 = tmpcol[1].y();
+	retmat._23 = tmpcol[1].z();
+
+	retmat._31 = tmpcol[2].x();
+	retmat._32 = tmpcol[2].y();
+	retmat._33 = tmpcol[2].z();
+
+	retmat._41 = srcpivot.x();
+	retmat._42 = srcpivot.y();
+	retmat._43 = srcpivot.z();
+
+	return retmat;
+}
+
+D3DXMATRIX D3DXMatrixInv(D3DXMATRIX srcmat)
+{
+	D3DXMATRIX retmat;
+	D3DXMatrixInverse(&retmat, NULL, &srcmat);
+	return retmat;
+}
+
 

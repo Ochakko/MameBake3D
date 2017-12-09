@@ -54,6 +54,10 @@
 #include <fbxsdk/scene/shading/fbxlayeredtexture.h>
 
 
+#include "btBulletDynamicsCommon.h"
+#include "LinearMath/btIDebugDraw.h"
+
+
 #include <BopFile.h>
 #include <BtObject.h>
 
@@ -61,8 +65,6 @@
 #include <EditRange.h>
 #include <BoneProp.h>
 
-#include "btBulletDynamicsCommon.h"
-#include "LinearMath/btIDebugDraw.h"
 
 using namespace OrgWinGUI;
 
@@ -6347,129 +6349,21 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 				continue;
 			}
 
-			D3DXVECTOR3 axis0;
-			CQuaternion localq;
-			if (axiskind == PICK_X){
-				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
-				localq.SetAxisAndRot(axis0, -rotrad2);
-			}
-			else if (axiskind == PICK_Y){
-				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-				localq.SetAxisAndRot(axis0, -rotrad2);
-			}
-			else if (axiskind == PICK_Z){
-				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
-				localq.SetAxisAndRot(axis0, -rotrad2);
-			}
-			else{
-				_ASSERT(0);
-				return 1;
-			}
 
-			D3DXMATRIX invselectmat;
-			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
-			D3DXMATRIX rotselect = selectmat;
-			rotselect._41 = 0.0f;
-			rotselect._42 = 0.0f;
-			rotselect._43 = 0.0f;
-			D3DXMATRIX rotinvselect = invselectmat;
-			rotinvselect._41 = 0.0f;
-			rotinvselect._42 = 0.0f;
-			rotinvselect._43 = 0.0f;
-
-			D3DXMATRIX gparrotmat, invgparrotmat;
-			if (parbone->GetParent()){
-				gparrotmat = parbone->GetParent()->GetBtMat();
-				D3DXMatrixInverse(&invgparrotmat, NULL, &gparrotmat);
-
-				gparrotmat._41 = 0.0f;
-				gparrotmat._42 = 0.0f;
-				gparrotmat._43 = 0.0f;
-
-				invgparrotmat._41 = 0.0f;
-				invgparrotmat._42 = 0.0f;
-				invgparrotmat._43 = 0.0f;
-			}
-			else{
-				D3DXMatrixIdentity(&gparrotmat);
-				D3DXMatrixIdentity(&invgparrotmat);
-			}
-			D3DXMATRIX parrotmat, invparrotmat;
-			parrotmat = parbone->GetBtMat();
-			D3DXMatrixInverse(&invparrotmat, NULL, &parrotmat);
-			parrotmat._41 = 0.0f;
-			parrotmat._42 = 0.0f;
-			parrotmat._43 = 0.0f;
-
-
-			D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-
-			CMotionPoint transmp;
-			transmp.CalcQandTra(transmat, parbone);
-			CQuaternion rotq;
-			rotq = transmp.GetQ();
-
-
-			D3DXVECTOR3 parworld, chilworld;
-			D3DVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-			D3DVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
-
-
-			D3DXMATRIX newbtmat;
-			D3DXVECTOR3 rotcenter;
-			//rotcenter = parworld;
-			rotcenter = parbone->GetJointFPos();
-
-			D3DXMATRIX befrot, aftrot;
-			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
-			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-			newbtmat = rotmat * parbone->GetBtMat();
-
-
-			D3DXMATRIX firstworld = parbone->GetStartMat2();
-			D3DXMATRIX invfirstworld;
-			D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
-
-			D3DXMATRIX diffworld = invfirstworld * newbtmat;
-			CRigidElem* curre = parbone->GetRigidElem(childbone);
-			D3DXMATRIX newrigidmat;
-			if (curre){
-				newrigidmat = curre->GetFirstcapsulemat() * diffworld;
-			}
-			else{
-				::MessageBoxA(NULL, "PhysicsRotAxisDelta : curre NULL error", "error", MB_OK);
-				return -1;
-			}
-
-
-			D3DXVECTOR3 newparpos, newchilpos;
-			D3DXVECTOR3 jointfpos;
-			jointfpos = parbone->GetJointFPos();
-			D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
-			jointfpos = childbone->GetJointFPos();
-			D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
-
-			D3DXVECTOR3 rigidcenter = (newparpos + newchilpos) * 0.5f;
-
-
-			CQuaternion tmpq;
-			tmpq.RotationMatrix(newrigidmat);
-			btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
-
-
-			btTransform worldtra;
-			worldtra.setIdentity();
-			worldtra.setRotation(btrotq);
-			worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
-
-//角度制限　ここから
+			//角度制限　ここから
 			if (gparbone){
 				CBtObject* parbto = gparbone->GetBtObject(parbone);
 				if (parbto){
 					CBtObject* setbto = parbone->GetBtObject(childbone);
 					if (setbto){
-						btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
+						//btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
+						btTransform firstworldtra = setbto->GetFirstTransform();
+						btTransform invfirstworldtra = firstworldtra.inverse();
+						D3DXMATRIX firstworldmatx = setbto->GetFirstTransformMatX();
+
+						D3DXMATRIX firstlocalmat = setbto->GetFirstTransformMatX() * D3DXMatrixInv(parbto->GetFirstTransformMatX());
+						CQuaternion firstlocalq;
+						firstlocalq.MakeFromD3DXMat(firstlocalmat);
 
 						btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parbone, childbone);
 						if (dofC){
@@ -6488,63 +6382,201 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//btMatrix3x3 diffmat = worldtra.getBasis() * parworldtra.getBasis().inverse();
 							//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
 
+//// 新しい回転を求める　ここから
+							dofC->calculateTransforms();
 							btTransform contraA = dofC->getCalculatedTransformA();
 							btTransform contraB = dofC->getCalculatedTransformB();
-							btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
-							btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
 
+							btTransform curworldtra;
+							curworldtra.setIdentity();
+							setbto->GetRigidBody()->getMotionState()->getWorldTransform(curworldtra);
+							btTransform parworldtra;
+							parworldtra.setIdentity();
+							parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
 
+							D3DXMATRIX curlocalmat;
+							curlocalmat = D3DXMatrixFromBtMat3x3(curworldtra.getBasis()) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+							D3DXMATRIX eulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * curlocalmat;
 
-							btScalar eulz = 0.0;
-							btScalar euly = 0.0;
-							btScalar eulx = 0.0;
+							double eulz = 0.0;
+							double euly = 0.0;
+							double eulx = 0.0;
+							D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 							D3DXVECTOR3 eul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 							//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-							eulmat.getEulerZYX(eulz, euly, eulx, 1);
+							//eulmat.getEulerZYX(eulz, euly, eulx, 1);
+
+
+							CQuaternion eulq;
+							eulq.MakeFromD3DXMat(eulmat);
+							btTransform eultra;
+							eultra.setIdentity();
+							btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
+							eultra.setRotation(bteulq);
+							eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+
+							//CQuaternion eulq;
+							//eulq.MakeFromD3DXMat(eulmat);
+							//int needmodifyflag = 0;
+							//eulq.Q2EulXYZ(0, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+
 							eul.x = eulx * 180.0 / PAI;
 							eul.y = euly * 180.0 / PAI;
 							eul.z = eulz * 180.0 / PAI;
 
-							int ismovable = parbone->ChkMovableEul(eul);
+							//eulx = eul.x * PAI / 180.0;
+							//euly = eul.y * PAI / 180.0;
+							//eulz = eul.z * PAI / 180.0;
+
+							if (axiskind == PICK_X){
+								eulx +=  -rotrad2;
+								eul.x += -rotrad2 * 180.0 / PAI;
+							}
+							else if (axiskind == PICK_Y){
+								euly += -rotrad2;
+								eul.y += -rotrad2 * 180.0 / PAI;
+							}
+							else if (axiskind == PICK_Z){
+								eulz += -rotrad2;
+								eul.z += -rotrad2 * 180.0 / PAI;
+							}
+
 							char strmsg[256];
-							//sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : dof [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, dofx, dofy, dofz, ismovable);
-							sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
+							sprintf_s(strmsg, 256, "%s : cureul [%f, %f, %f]\n", parbone->GetBoneName(), eul.x, eul.y, eul.z);
 							OutputDebugStringA(strmsg);
 
 
-							//Q2EulZYXbtのテスト　以下8行
-							CQuaternion eulq;
-							eulq.MakeFromBtMat3x3(eulmat);
-							int needmodifyflag = 0;
-							D3DXVECTOR3 testbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-							D3DXVECTOR3 testeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-							//eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
-							eulq.Q2EulXYZ(0, testbefeul, &testeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-							sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
+							btTransform newworldtra;
+							newworldtra.setIdentity();
+							//newworldtra.getBasis().setEulerZYX(eul.x, eul.y, eul.z);
+							CQuaternion currotx;
+							CQuaternion curroty;
+							CQuaternion currotz;
+							currotx.SetAxisAndRot(D3DXVECTOR3(1.0f, 0.0f, 0.0f), eulx);
+							curroty.SetAxisAndRot(D3DXVECTOR3(0.0f, 1.0f, 0.0f), euly);
+							currotz.SetAxisAndRot(D3DXVECTOR3(0.0f, 0.0f, 1.0f), eulz);
+							CQuaternion contraArot;
+							CQuaternion contrainvArot;
+							CQuaternion firstworldrot;
+							contraArot.MakeFromBtMat3x3(contraA.getBasis());
+							contrainvArot.MakeFromBtMat3x3(contraA.getBasis().inverse());
+							firstworldrot.MakeFromBtMat3x3(firstworldtra.getBasis());
+							CQuaternion parrotq;
+							parrotq.MakeFromBtMat3x3(parworldtra.getBasis());
+
+							CQuaternion newrotq;
+							newrotq = parrotq * currotz * curroty * currotx * firstlocalq;
+
+							btQuaternion btrotq(newrotq.x, newrotq.y, newrotq.z, newrotq.w);
+							newworldtra.setRotation(btrotq);
+
+
+							D3DXMATRIX newlocalrotmat;
+							newlocalrotmat = D3DXMatrixFromBtMat3x3(newworldtra.getBasis()) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+
+							D3DXMATRIX invcurlocalmat;
+							D3DXMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
+
+							D3DXMATRIX difflocalrotmat;
+							difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
+							difflocalrotmat = TransZeroMat(difflocalrotmat);
+
+////// 新しい回転を求める　ここまで
+//
+//// 新しいbtmatを求める　ここから
+
+							D3DXVECTOR3 curparpos;
+							//D3DXVec3TransformCoord(&curparpos, &parbone->GetJointFPos(), &gparbone->GetBtMat());
+							D3DXVec3TransformCoord(&curparpos, &parbone->GetJointFPos(), &parbone->GetBtMat());
+
+							D3DXMATRIX newbtmat;
+							D3DXVECTOR3 rotcenter;
+							//rotcenter = parbone->GetJointFPos();
+							rotcenter = curparpos;//!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+							D3DXMATRIX befrot, aftrot;
+							D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+							D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+							D3DXMATRIX rotmat = befrot * difflocalrotmat * aftrot;
+							//newbtmat = rotmat * parbone->GetBtMat();
+							newbtmat = parbone->GetBtMat() * rotmat;
+
+
+//// 新しいbtmatを求める　ここまで
+
+//// 新しい剛体の中心を求める　ここから
+
+							D3DXVECTOR3 newparpos, newchilpos;
+							D3DXVECTOR3 jointfpos;
+							jointfpos = parbone->GetJointFPos();
+							D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+							jointfpos = childbone->GetJointFPos();
+							D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+							D3DXVECTOR3 rigidcenter = (newparpos + newchilpos) * 0.5f;
+
+							newworldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+							//newworldtra.setOrigin(btVector3(newparpos.x, newparpos.y, newparpos.z));
+
+
+							//btTransform invtra = newworldtra.inverse();
+							//btVector3 pivotpos = invtra(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+							//newworldtra.setOrigin(pivotpos);
+
+							sprintf_s(strmsg, 256, "%s : newworldtra Origin [%f, %f, %f]\n", parbone->GetBoneName(), rigidcenter.x, rigidcenter.y, rigidcenter.z);
 							OutputDebugStringA(strmsg);
 
+//// 新しい剛体の中心を求める　ここまで
+
+////　角度制限をする　ここから
+							D3DXMATRIX chkeulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * newlocalrotmat;
+
+							//D3DXVECTOR3 chkbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+							D3DXVECTOR3 chkeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+							//CQuaternion chkeulq;
+							//chkeulq.MakeFromD3DXMat(chkeulmat);
+							//chkeulq.Q2EulXYZ(0, chkbefeul, &chkeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+
+							btScalar chkeulx, chkeuly, chkeulz;
+
+							CQuaternion chkeulq;
+							chkeulq.MakeFromD3DXMat(chkeulmat);
+							btTransform chkeultra;
+							chkeultra.setIdentity();
+							btQuaternion chkbteulq(chkeulq.x, chkeulq.y, chkeulq.z, chkeulq.w);
+							chkeultra.setRotation(chkbteulq);
+							chkeultra.getBasis().getEulerZYX(chkeulz, chkeuly, chkeulx, 1);
+
+							chkeul.x = chkeulx * 180.0 / PAI;
+							chkeul.y = chkeuly * 180.0 / PAI;
+							chkeul.z = chkeulz * 180.0 / PAI;
+
+							int ismovable = parbone->ChkMovableEul(chkeul);
+							sprintf_s(strmsg, 256, "%s : neweul [%f, %f, %f] : ismovable %d\n", parbone->GetBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
+							OutputDebugStringA(strmsg);
 
 							if (ismovable != 1){
 								childbone = childbone->GetBrother();
 								continue;
 							}
+//// 角度制限をする　ここまで
 
-							setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+//// 設定をする　ここから
+							setbto->GetRigidBody()->getMotionState()->setWorldTransform(newworldtra);
 							//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
 							//setbto->GetRigidBody()->setDeactivationTime(30000.0);
 							setbto->GetRigidBody()->setDeactivationTime(0.0);
 
-							if (isfirst == 1){
-								parbone->SetBtMat(newbtmat);
-								//IKボーンはKINEMATICだから。
-								parbone->GetCurMp().SetWorldMat(newbtmat);
-								isfirst = 0;
-							}
+							//if (isfirst == 1){
+							//	parbone->SetBtMat(newbtmat);
+							//	//IKボーンはKINEMATICだから。
+							//	parbone->GetCurMp().SetWorldMat(newbtmat);
+							//	isfirst = 0;
+							//}
+//// 設定をする　ここまで
 
 						}
 					}
 				}
-//角度制限　ここまで
 			}
 			childbone = childbone->GetBrother();
 		}
@@ -6559,6 +6591,269 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 }
 
+//int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat)
+//{
+//	if (!m_curmotinfo){
+//		return 0;
+//	}
+//
+//
+//	CBone* curbone = m_bonelist[srcboneno];
+//	if (!curbone){
+//		return 0;
+//	}
+//	CBone* parbone = curbone->GetParent();
+//	if (!parbone){
+//		return 0;
+//	}
+//	if (!parbone->GetParent()){
+//		//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
+//		return 0;
+//	}
+//
+//
+//	int calcnum = 3;
+//
+//	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+//	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
+//		return 0;
+//	}
+//
+//	int keynum;
+//	double startframe, endframe, applyframe;
+//	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+//
+//	SetBefEditMat(erptr, curbone, maxlevel);//!!!!!!!!!!!!
+//
+//	if (parbone){
+//		CBone* gparbone = parbone->GetParent();
+//		CBone* childbone = parbone->GetChild();
+//		int isfirst = 1;
+//		float currate = 1.0f;
+//		double firstframe = 0.0;
+//		int levelcnt = 0;
+//
+//		while (childbone){
+//			float rotrad2 = currate * rotrad;
+//			//float rotrad2 = rotrad;
+//			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
+//				continue;
+//			}
+//
+//			D3DXVECTOR3 axis0;
+//			CQuaternion localq;
+//			if (axiskind == PICK_X){
+//				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+//				localq.SetAxisAndRot(axis0, -rotrad2);
+//			}
+//			else if (axiskind == PICK_Y){
+//				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+//				localq.SetAxisAndRot(axis0, -rotrad2);
+//			}
+//			else if (axiskind == PICK_Z){
+//				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+//				localq.SetAxisAndRot(axis0, -rotrad2);
+//			}
+//			else{
+//				_ASSERT(0);
+//				return 1;
+//			}
+//
+//			D3DXMATRIX invselectmat;
+//			D3DXMatrixInverse(&invselectmat, NULL, &selectmat);
+//			D3DXMATRIX rotselect = selectmat;
+//			rotselect._41 = 0.0f;
+//			rotselect._42 = 0.0f;
+//			rotselect._43 = 0.0f;
+//			D3DXMATRIX rotinvselect = invselectmat;
+//			rotinvselect._41 = 0.0f;
+//			rotinvselect._42 = 0.0f;
+//			rotinvselect._43 = 0.0f;
+//
+//			D3DXMATRIX gparrotmat, invgparrotmat;
+//			if (parbone->GetParent()){
+//				gparrotmat = parbone->GetParent()->GetBtMat();
+//				D3DXMatrixInverse(&invgparrotmat, NULL, &gparrotmat);
+//
+//				gparrotmat._41 = 0.0f;
+//				gparrotmat._42 = 0.0f;
+//				gparrotmat._43 = 0.0f;
+//
+//				invgparrotmat._41 = 0.0f;
+//				invgparrotmat._42 = 0.0f;
+//				invgparrotmat._43 = 0.0f;
+//			}
+//			else{
+//				D3DXMatrixIdentity(&gparrotmat);
+//				D3DXMatrixIdentity(&invgparrotmat);
+//			}
+//			D3DXMATRIX parrotmat, invparrotmat;
+//			parrotmat = parbone->GetBtMat();
+//			D3DXMatrixInverse(&invparrotmat, NULL, &parrotmat);
+//			parrotmat._41 = 0.0f;
+//			parrotmat._42 = 0.0f;
+//			parrotmat._43 = 0.0f;
+//
+//
+//			//D3DXMATRIX transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+//			D3DXMATRIX transmat = rotselect * localq.MakeRotMatX() * rotinvselect;
+//
+//			CMotionPoint transmp;
+//			transmp.CalcQandTra(transmat, parbone);
+//			CQuaternion rotq;
+//			rotq = transmp.GetQ();
+//
+//
+//			D3DXVECTOR3 parworld, chilworld;
+//			D3DVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+//			D3DVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+//
+//
+//			D3DXMATRIX newbtmat;
+//			D3DXVECTOR3 rotcenter;
+//			//rotcenter = parworld;
+//			rotcenter = parbone->GetJointFPos();
+//
+//			D3DXMATRIX befrot, aftrot;
+//			D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+//			D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+//			D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+//			newbtmat = rotmat * parbone->GetBtMat();
+//
+//
+//			D3DXMATRIX firstworld = parbone->GetStartMat2();
+//			D3DXMATRIX invfirstworld;
+//			D3DXMatrixInverse(&invfirstworld, NULL, &firstworld);
+//
+//			D3DXMATRIX diffworld = invfirstworld * newbtmat;
+//			CRigidElem* curre = parbone->GetRigidElem(childbone);
+//			D3DXMATRIX newrigidmat;
+//			if (curre){
+//				newrigidmat = curre->GetFirstcapsulemat() * diffworld;
+//			}
+//			else{
+//				::MessageBoxA(NULL, "PhysicsRotAxisDelta : curre NULL error", "error", MB_OK);
+//				return -1;
+//			}
+//
+//
+//			D3DXVECTOR3 newparpos, newchilpos;
+//			D3DXVECTOR3 jointfpos;
+//			jointfpos = parbone->GetJointFPos();
+//			D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+//			jointfpos = childbone->GetJointFPos();
+//			D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+//
+//			D3DXVECTOR3 rigidcenter = (newparpos + newchilpos) * 0.5f;
+//
+//
+//			CQuaternion tmpq;
+//			tmpq.RotationMatrix(newrigidmat);
+//			btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
+//
+//
+//			btTransform worldtra;
+//			worldtra.setIdentity();
+//			worldtra.setRotation(btrotq);
+//			worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+//
+////角度制限　ここから
+//			if (gparbone){
+//				CBtObject* parbto = gparbone->GetBtObject(parbone);
+//				if (parbto){
+//					CBtObject* setbto = parbone->GetBtObject(childbone);
+//					if (setbto){
+//						btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
+//
+//						btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parbone, childbone);
+//						if (dofC){
+//
+//							//constraint変化分　以下3行　　CreateBtObjectをしたときの状態を基準にした角度になっている。つまりシミュ開始時が０度。
+//							//btTransform contraA = dofC->getCalculatedTransformA();
+//							//btTransform contraB = dofC->getCalculatedTransformB();
+//							//btMatrix3x3 eulmat = contraA.getBasis().inverse() * contraB.getBasis() * contraA.getBasis();
+//
+//
+//							////親ボーンとの角度がオイラー角に入る
+//							//btTransform contraA = dofC->getCalculatedTransformA();
+//							//btTransform contraB = dofC->getCalculatedTransformB();
+//							//btTransform parworldtra;
+//							//parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
+//							//btMatrix3x3 diffmat = worldtra.getBasis() * parworldtra.getBasis().inverse();
+//							//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
+//
+//							btTransform contraA = dofC->getCalculatedTransformA();
+//							btTransform contraB = dofC->getCalculatedTransformB();
+//							btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
+//							btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
+//							//btMatrix3x3 eulmat = contraA.getBasis() * diffmat * contraA.getBasis().inverse();
+//
+//
+//
+//							btScalar eulz = 0.0;
+//							btScalar euly = 0.0;
+//							btScalar eulx = 0.0;
+//							D3DXVECTOR3 eul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+//							//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+//							eulmat.getEulerZYX(eulz, euly, eulx, 1);
+//							eul.x = eulx * 180.0 / PAI;
+//							eul.y = euly * 180.0 / PAI;
+//							eul.z = eulz * 180.0 / PAI;
+//
+//							int ismovable = parbone->ChkMovableEul(eul);
+//							char strmsg[256];
+//							//sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : dof [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, dofx, dofy, dofz, ismovable);
+//							sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
+//							OutputDebugStringA(strmsg);
+//
+//
+//							//Q2EulZYXbtのテスト　以下8行
+//							CQuaternion eulq;
+//							eulq.MakeFromBtMat3x3(eulmat);
+//							int needmodifyflag = 0;
+//							D3DXVECTOR3 testbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+//							D3DXVECTOR3 testeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+//							//eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
+//							eulq.Q2EulXYZ(0, testbefeul, &testeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+//							sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
+//							OutputDebugStringA(strmsg);
+//
+//
+//							if (ismovable != 1){
+//								childbone = childbone->GetBrother();
+//								continue;
+//							}
+//
+//							setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+//							//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+//							//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+//							setbto->GetRigidBody()->setDeactivationTime(0.0);
+//
+//							if (isfirst == 1){
+//								parbone->SetBtMat(newbtmat);
+//								//IKボーンはKINEMATICだから。
+//								parbone->GetCurMp().SetWorldMat(newbtmat);
+//								isfirst = 0;
+//							}
+//
+//						}
+//					}
+//				}
+////角度制限　ここまで
+//			}
+//			childbone = childbone->GetBrother();
+//		}
+//	}
+//
+//	if (curbone){
+//		return curbone->GetBoneNo();
+//	}
+//	else{
+//		return srcboneno;
+//	}
+//
+//}
+//
 
 
 int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig)

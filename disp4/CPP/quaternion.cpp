@@ -1410,3 +1410,8 @@ void CQuaternion::MakeFromBtMat3x3(btMatrix3x3 eulmat)
 	this->RotationMatrix(xmat);
 
 }
+
+void CQuaternion::MakeFromD3DXMat(D3DXMATRIX eulmat)
+{
+	this->RotationMatrix(eulmat);
+}

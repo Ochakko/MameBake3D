@@ -17,6 +17,9 @@
 #include <quaternion.h>
 #include <RigidElem.h>
 
+
+#include <BoneProp.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -43,6 +46,9 @@ CBtObject::~CBtObject()
 
 int CBtObject::InitParams()
 {
+	D3DXMatrixIdentity(&m_firstTransformMatX);
+	m_firstTransform.setIdentity();
+
 	m_btpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	m_connectflag = 0;
@@ -354,8 +360,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	btMatrix3x3 worldmat = worldtra.getBasis();
 	btVector3 worldpos = worldtra.getOrigin();
 	
+	m_firstTransform = worldtra;
 	m_firstTransformMat = worldmat;//bto->GetRigidBody()‚ÌCreateBtObjectŽž‚ÌWorldTransform->getBasis
-
+	m_firstTransformMatX = D3DXMatrixFromBtTransform(worldtra.getBasis(), worldtra.getOrigin());
 
 	btVector3 tmpcol[3];
 	int colno;
@@ -799,24 +806,24 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 			ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
 			int forbidrotflag = childbto->m_bone->GetRigidElem(childbto->m_endbone)->GetForbidRotFlag();
 
-			//if (forbidrotflag == 0){
-			//	dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
-			//	dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
-			//}
-			//else{
-			//	dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-			//	dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
-			//}
-
 			if (forbidrotflag == 0){
-				//XYZ
-				dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
-				dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
+				dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+				dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
 			}
 			else{
 				dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
 				dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
 			}
+
+			//if (forbidrotflag == 0){
+			//	//XYZ
+			//	dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
+			//	dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
+			//}
+			//else{
+			//	dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+			//	dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+			//}
 		}
 	}
 
