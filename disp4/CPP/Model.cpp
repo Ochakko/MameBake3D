@@ -6162,7 +6162,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 					D3DXMATRIX rotmat = befrot * rotq.MakeRotMatX() * aftrot;
 					//newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
 					//newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
-					newbtmat = rotmat * parbone->GetBtMat();// *tramat;
+					newbtmat = rotmat * parbone->GetBtMat();// parbone->GetBtMat() * (invBtMat * rotmat * BtMat) --> rotmat * BtMat
 
 
 
@@ -6478,7 +6478,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							D3DXMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
 
 							D3DXMATRIX difflocalrotmat;
-							difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
+							//difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
+							difflocalrotmat = newlocalrotmat * invcurlocalmat;//!!!!!!!!!!!!
 							difflocalrotmat = TransZeroMat(difflocalrotmat);
 
 ////// 新しい回転を求める　ここまで
@@ -6486,20 +6487,24 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //// 新しいbtmatを求める　ここから
 
 							D3DXVECTOR3 curparpos;
-							//D3DXVec3TransformCoord(&curparpos, &parbone->GetJointFPos(), &gparbone->GetBtMat());
 							D3DXVec3TransformCoord(&curparpos, &parbone->GetJointFPos(), &parbone->GetBtMat());
 
 							D3DXMATRIX newbtmat;
+							//newbtmat = rotmat * parbone->GetBtMat();
+							//newbtmat = parbone->GetBtMat() * rotmat;
+
 							D3DXVECTOR3 rotcenter;
-							//rotcenter = parbone->GetJointFPos();
-							rotcenter = curparpos;//!!!!!!!!!!!!!!!!!!!!!!!!!!!
+							rotcenter = parbone->GetJointFPos();
 
 							D3DXMATRIX befrot, aftrot;
 							D3DXMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 							D3DXMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 							D3DXMATRIX rotmat = befrot * difflocalrotmat * aftrot;
-							//newbtmat = rotmat * parbone->GetBtMat();
-							newbtmat = parbone->GetBtMat() * rotmat;
+
+
+							//befrot * difflocalrotmat aftrot* curlocalmat * parmat --> rotmat * BtMat
+							newbtmat = rotmat * parbone->GetBtMat();
+
 
 
 //// 新しいbtmatを求める　ここまで
