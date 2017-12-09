@@ -6230,10 +6230,28 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 									//btMatrix3x3 diffmat = worldtra.getBasis() * parworldtra.getBasis().inverse();
 									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
 
-									btTransform contraA = dofC->getCalculatedTransformA();
-									btTransform contraB = dofC->getCalculatedTransformB();
-									btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
-									btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
+
+									D3DXMATRIX firstlocalmat = setbto->GetFirstTransformMatX() * D3DXMatrixInv(parbto->GetFirstTransformMatX());
+									CQuaternion firstlocalq;
+									firstlocalq.MakeFromD3DXMat(firstlocalmat);
+									CQuaternion invfirstlocalq;
+									firstlocalq.inv(&invfirstlocalq);
+
+									btTransform curworldtra;
+									curworldtra.setIdentity();
+									setbto->GetRigidBody()->getMotionState()->getWorldTransform(curworldtra);
+									btTransform parworldtra;
+									parworldtra.setIdentity();
+									parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
+
+
+									//btTransform contraA = dofC->getCalculatedTransformA();
+									//btTransform contraB = dofC->getCalculatedTransformB();
+									//btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
+									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
+									D3DXMATRIX newlocalmat;
+									newlocalmat = D3DXMatrixFromBtMat3x3(worldtra.getBasis()) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+									D3DXMATRIX eulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * newlocalmat;
 
 
 
@@ -6242,7 +6260,14 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 									btScalar eulx = 0.0;
 									D3DXVECTOR3 eul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 									//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-									eulmat.getEulerZYX(eulz, euly, eulx, 1);
+									//eulmat.getEulerZYX(eulz, euly, eulx, 1);
+									CQuaternion eulq;
+									eulq.MakeFromD3DXMat(eulmat);
+									btTransform eultra;
+									eultra.setIdentity();
+									btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
+									eultra.setRotation(bteulq);
+									eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
 									eul.x = eulx * 180.0 / PAI;
 									eul.y = euly * 180.0 / PAI;
 									eul.z = eulz * 180.0 / PAI;
@@ -6254,16 +6279,16 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, 
 									OutputDebugStringA(strmsg);
 
 
-									//Q2EulZYXbtのテスト　以下8行
-									CQuaternion eulq;
-									eulq.MakeFromBtMat3x3(eulmat);
-									int needmodifyflag = 0;
-									D3DXVECTOR3 testbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-									D3DXVECTOR3 testeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-									//eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
-									eulq.Q2EulXYZ(0, testbefeul, &testeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-									sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
-									OutputDebugStringA(strmsg);
+									////Q2EulZYXbtのテスト　以下8行
+									//CQuaternion eulq;
+									//eulq.MakeFromBtMat3x3(eulmat);
+									//int needmodifyflag = 0;
+									//D3DXVECTOR3 testbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+									//D3DXVECTOR3 testeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+									////eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
+									//eulq.Q2EulXYZ(0, testbefeul, &testeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+									//sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
+									//OutputDebugStringA(strmsg);
 
 
 									if (ismovable != 1){
@@ -6364,6 +6389,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 						D3DXMATRIX firstlocalmat = setbto->GetFirstTransformMatX() * D3DXMatrixInv(parbto->GetFirstTransformMatX());
 						CQuaternion firstlocalq;
 						firstlocalq.MakeFromD3DXMat(firstlocalmat);
+						CQuaternion invfirstlocalq;
+						firstlocalq.inv(&invfirstlocalq);
 
 						btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parbone, childbone);
 						if (dofC){
@@ -6397,6 +6424,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							D3DXMATRIX curlocalmat;
 							curlocalmat = D3DXMatrixFromBtMat3x3(curworldtra.getBasis()) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
 							D3DXMATRIX eulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * curlocalmat;
+							//D3DXMATRIX eulmat = D3DXMatrixFromBtMat3x3(contraA.getBasis()) * curlocalmat * D3DXMatrixFromBtMat3x3(contraA.getBasis().inverse());
 
 							double eulz = 0.0;
 							double euly = 0.0;
@@ -6465,7 +6493,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							parrotq.MakeFromBtMat3x3(parworldtra.getBasis());
 
 							CQuaternion newrotq;
-							newrotq = parrotq * currotz * curroty * currotx * firstlocalq;
+							newrotq = parrotq  * currotz * curroty * currotx * firstlocalq;
 
 							btQuaternion btrotq(newrotq.x, newrotq.y, newrotq.z, newrotq.w);
 							newworldtra.setRotation(btrotq);
@@ -6534,6 +6562,11 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 ////　角度制限をする　ここから
 							D3DXMATRIX chkeulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * newlocalrotmat;
+							//D3DXMATRIX chkeulmat = TransZeroMat(firstlocalmat) * newlocalrotmat * TransZeroMat(D3DXMatrixInv(firstlocalmat));
+							//D3DXMATRIX chkeulmat = TransZeroMat(firstlocalmat) * D3DXMatrixFromBtMat3x3(newworldtra.getBasis()) * TransZeroMat(D3DXMatrixInv(firstlocalmat)) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+							//D3DXMATRIX chkeulmat = D3DXMatrixFromBtMat3x3(contraA.getBasis()) * D3DXMatrixFromBtMat3x3(newworldtra.getBasis()) * D3DXMatrixFromBtMat3x3(contraA.getBasis().inverse()) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+							//D3DXMATRIX chkeulmat = D3DXMatrixFromBtMat3x3(contraA.getBasis()) * newlocalrotmat * D3DXMatrixFromBtMat3x3(contraA.getBasis().inverse());
+
 
 							//D3DXVECTOR3 chkbefeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 							D3DXVECTOR3 chkeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
