@@ -6423,8 +6423,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 							D3DXMATRIX curlocalmat;
 							curlocalmat = D3DXMatrixFromBtMat3x3(curworldtra.getBasis()) * D3DXMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
-							D3DXMATRIX eulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * curlocalmat;
 							//D3DXMATRIX eulmat = D3DXMatrixFromBtMat3x3(contraA.getBasis()) * curlocalmat * D3DXMatrixFromBtMat3x3(contraA.getBasis().inverse());
+							D3DXMATRIX eulmat = TransZeroMat(D3DXMatrixInv(firstlocalmat)) * curlocalmat;
+
 
 							double eulz = 0.0;
 							double euly = 0.0;
@@ -6491,6 +6492,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							firstworldrot.MakeFromBtMat3x3(firstworldtra.getBasis());
 							CQuaternion parrotq;
 							parrotq.MakeFromBtMat3x3(parworldtra.getBasis());
+							CQuaternion invparrotq;
+							parrotq.inv(&invparrotq);
 
 							CQuaternion newrotq;
 							newrotq = parrotq  * currotz * curroty * currotx * firstlocalq;

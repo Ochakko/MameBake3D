@@ -19,15 +19,35 @@ VCランタイムは2010を使用しています。
 今後、VisualStudioの新バージョンに移行する可能性もありますが未定です。
 
 
-
-2017/06/10コミット分から
-bullet physicsのバージョンが2.85になりました。
+2017/12/17コミット分から
+bullet physicsのバージョンが2.86になりました。
 プロジェクトファイルにbullet physicsのファイルをアッドしていますが
 本レポジトリにはファイルはアップしません。
 bullet physicsは下記サイトからDLして使用してください。
 http://bulletphysics.org/wordpress/
 
+bullet physicsを少しだけ編集しましたので明記します。
+btSimulationIslandManageMt.cppの
+btSimulationIslandManagerMt::Island* btSimulationIslandManagerMt::getIsland( int id )
+{
+関数の先頭に以下の3行を加えました。
+
+if (id < 0){
+
+	return NULL;//!!!!!!!!!!
+
+}
+
+
+（2017/06/10コミット分から2017/12/17まではbullet physicsのバージョンは2.85でした。）
 （2017/06/10以前のコミットで使用していたbullet physicsのバージョンは2.80です。）
+
+
+2017/12/17コミット分からIntel TBBを使用しました。
+https://www.threadingbuildingblocks.org/
+(何か問題が起きたとしてもIntelは責任を負いません。)
+TBBの4.3をVisual Studio 2010の６４ビットでビルドして使用しました。
+
 
 
 ######メタセコイアのFBX読み込み########
@@ -56,6 +76,16 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+2017/12/17_1
+	Bullet Physicsのバージョンを上げてマルチスレッドで利用しました。
+		TBB利用などについては上記参照のこと。
+
+		物理シミュレーションがマルチスレッドで動くようになりました。
+		こちらの環境で４コアでテストしたところ、デフォルトの状態ではCPU0 --> 70%, CPU1--> 20%, CPU2,3 --> 10%という状況でしたが
+		計算回数のスライダーで計算回数を多くしたところ、CPU0-->70%, CPU1,2,3 --> 30%のような利用状態になりました。
+		（マルチスレッド版以前のもので調べると、CPU0-->80%, CPU1,2,3-->10%という状態でした。）
+
+
 2017/12/09_5
 	PhysicsRotとPhysicsRotAxisDeltaの姿勢計算を修正しました。
 	

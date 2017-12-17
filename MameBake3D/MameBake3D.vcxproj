@@ -109,8 +109,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\tbb43\include;..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -120,8 +120,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\DX90c\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\lib\vs2010\x64;..\btlib;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxerr.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;winmm.lib;comctl32.lib;fbxsdk-2013.3.lib;wininet.lib;opengl32.lib;glew64s.lib;glut64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\tbb43\build\vs2010\intel64\Release;..\DX90c\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\lib\vs2010\x64;..\btlib;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxerr.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;winmm.lib;comctl32.lib;fbxsdk-2013.3.lib;wininet.lib;opengl32.lib;glew64s.lib;glut64.lib;tbb.lib;tbbmalloc.lib;tbbmalloc_proxy.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -160,8 +160,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\tbb43\include;..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -175,8 +175,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\DX90c\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\lib\vs2010\x64;..\btlib;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxerr.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;winmm.lib;comctl32.lib;fbxsdk-2013.3.lib;wininet.lib;Bullet2FileLoader.lib;BulletExampleBrowserLib.lib;BulletFileLoader.lib;BulletInverseDynamics.lib;BulletInverseDynamicsUtils.lib;BulletSoftBody.lib;BulletWorldImporter.lib;BulletXmlWorldImporter.lib;BussIK.lib;ConvexDecomposition.lib;GIMPACTUtils.lib;gtest.lib;gwen.lib;HACD.lib;OpenGLWindow.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\tbb43\build\vs2010\intel64\Release;..\DX90c\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\lib\vs2010\x64;..\btlib;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxerr.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;winmm.lib;comctl32.lib;fbxsdk-2013.3.lib;wininet.lib;GIMPACTUtils.lib;gtest.lib;gwen.lib;HACD.lib;OpenGLWindow.lib;opengl32.lib;LinearMath.lib;;glu32.lib;tbb.lib;tbbmalloc.lib;tbbmalloc_proxy.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
     <ResourceCompile>
@@ -191,7 +191,6 @@
     <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btDbvt.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btDbvtBroadphase.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btDispatcher.cpp" />
-    <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btMultiSapBroadphase.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCache.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btQuantizedBvh.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btSimpleBroadphase.cpp" />
@@ -298,8 +297,10 @@
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\ConstraintSolver\btTypedConstraint.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\ConstraintSolver\btUniversalConstraint.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btRigidBody.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btSimpleDynamicsWorld.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btSimulationIslandManagerMt.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Featherstone\btMultiBody.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraint.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.cpp" />
@@ -314,6 +315,15 @@
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\MLCPSolvers\btMLCPSolver.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Vehicle\btRaycastVehicle.cpp" />
     <ClCompile Include="..\disp4\BTSRC\BulletDynamics\Vehicle\btWheelInfo.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btDefaultSoftBodySolver.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftBody.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyHelpers.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftMultiBodyDynamicsWorld.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftRigidCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftRigidDynamicsWorld.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\BulletSoftBody\btSoftSoftCollisionAlgorithm.cpp" />
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btAlignedAllocator.cpp" />
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btConvexHull.cpp" />
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btConvexHullComputer.cpp" />
@@ -321,6 +331,7 @@
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btPolarDecomposition.cpp" />
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btQuickprof.cpp" />
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btSerializer.cpp" />
+    <ClCompile Include="..\disp4\BTSRC\LinearMath\btThreads.cpp" />
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btVector3.cpp" />
     <ClCompile Include="..\disp4\CPP\BntFile.cpp" />
     <ClCompile Include="..\disp4\CPP\Bone.cpp" />
@@ -371,6 +382,7 @@
     <ClCompile Include="..\disp4\DXUT\Optional\DXUTres.cpp" />
     <ClCompile Include="..\disp4\DXUT\Optional\DXUTsettingsdlg.cpp" />
     <ClCompile Include="..\disp4\DXUT\Optional\SDKmisc.cpp" />
+    <ClCompile Include="..\disp4\examples\MultiThreadedDemo\CommonRigidBodyMTBase.cpp" />
     <ClCompile Include="ColiIDDlg.cpp" />
     <ClCompile Include="FrameCopyDlg.cpp" />
     <ClCompile Include="GColiIDDlg.cpp" />
@@ -388,7 +400,6 @@
     <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btDbvt.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btDbvtBroadphase.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btDispatcher.h" />
-    <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btMultiSapBroadphase.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCache.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCallback.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletCollision\BroadphaseCollision\btQuantizedBvh.h" />
@@ -536,9 +547,11 @@
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\ConstraintSolver\btUniversalConstraint.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btActionInterface.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btDynamicsWorld.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btRigidBody.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btSimpleDynamicsWorld.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Dynamics\btSimulationIslandManagerMt.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Featherstone\btMultiBody.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraint.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.h" />
@@ -563,6 +576,20 @@
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Vehicle\btRaycastVehicle.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Vehicle\btVehicleRaycaster.h" />
     <ClInclude Include="..\disp4\BTSRC\BulletDynamics\Vehicle\btWheelInfo.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btDefaultSoftBodySolver.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBody.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyData.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyHelpers.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyInternals.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodySolvers.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftBodySolverVertexBuffer.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftMultiBodyDynamicsWorld.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftRigidCollisionAlgorithm.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftRigidDynamicsWorld.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSoftSoftCollisionAlgorithm.h" />
+    <ClInclude Include="..\disp4\BTSRC\BulletSoftBody\btSparseSDF.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btAabbUtil2.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btAlignedAllocator.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btAlignedObjectArray.h" />
@@ -589,6 +616,7 @@
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btSerializer.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btSpatialAlgebra.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btStackAlloc.h" />
+    <ClInclude Include="..\disp4\BTSRC\LinearMath\btThreads.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btTransform.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btTransformUtil.h" />
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btVector3.h" />
@@ -600,6 +628,8 @@
     <ClInclude Include="..\disp4\DXUT\Optional\DXUTres.h" />
     <ClInclude Include="..\disp4\DXUT\Optional\DXUTsettingsdlg.h" />
     <ClInclude Include="..\disp4\DXUT\Optional\SDKmisc.h" />
+    <ClInclude Include="..\disp4\examples\MultiThreadedDemo\CommonRigidBodyMTBase.h" />
+    <ClInclude Include="..\disp4\examples\MultiThreadedDemo\ParallelFor.h" />
     <ClInclude Include="..\disp4\INCLUDE\BntFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\Bone.h" />
     <ClInclude Include="..\disp4\INCLUDE\BoneProp.h" />
