@@ -1,0 +1,70 @@
+TBB導入メモ20171221
+
+Intel TBBはスレッド関係のライブラリである。
+bullet physicsはTBBとリンクして物理シミュレーションをマルチスレッド化するオプションを持っている。
+
+以下、bullet physicsへのTBBの導入時のメモを残す。
+
+bullet physicsのバージョンは2.86
+Intel TBBのバージョンは4.3
+
+Intel TBBのライセンスはApache2.0である。
+https://www.threadingbuildingblocks.org/
+
+
+TBB4.3のソースをDLした。
+Windowsの環境変数に次の２つを追加して再起動した。
+TBB_ARCH_PLATFORM	/intel64/vc10
+TBB43_INSTALL_DIR	C:/....../tbb43
+
+TBB4.3のソースにはVS2010のプロジェクトファイルが入っていた。
+tbb43/build/vs2010/makefile.sln
+vs2010のソリューションファイルでビルドを行った。
+
+TBB2017やTBB2018はVS2013以降からの対応のようである。
+TBB2017,2018にcmakeでvs2010を指定するとバージョンエラーが出てソリューション作成に失敗した。
+
+
+ビルドしたTBBをbullet physicsからリンクすればよい
+次の２つの方法が考えられる。
+１、bullet physicsを使用プログラムとは別にビルドする場合
+２、bullet physicsのソースを使用プログラムにaddして一緒にビルドする場合
+
+１，２それぞれについて説明する。
+（今回、MameBake3Dでは２の方法を選んだ。）
+
+１、bullet physicsのcmakeのときにTBB設定が必要である。
+　bullet2_thread_lockedというような項目が出てくるバージョンでしかTBBは使用できないようである。
+　lockedの項目にチェックを入れる。再びConfigureを押す。
+　TBBのINSTALL DIRやLIBのDIRやINCLUDE DIRなどを指定する。
+　INSTALL　DIRはTBBのベースのディレクトリである。
+　Generateボタンを押して出来たソリューションをビルドする。
+　
+２、bullet2のソースを使用プログラムのソリューションのソリューションブラウザにAddする。
+　プリプロセッサにBT_USE_TBBとBT_THREADSAFEを追加する。
+　ソリューションでbullet physicsのexamplesのMultiThreadedDemoのソースを使用する。
+　CommonRigidBodyMTBaseのヘッダとCPPをAddしてMultiThreadedDemo.cppのようにそれを使用する。
+
+　MameBake3DではMultiTheadDemo.cppをBPWorld.cppにマージした。
+　
+　btSimulationIslandManageMt.cppの
+　btSimulationIslandManagerMt::Island* btSimulationIslandManagerMt::getIsland( int id )
+　関数の先頭に以下の3行を加える。
+if (id < 0){
+	return NULL;//!!!!!!!!!!
+}
+　
+　CommonRigidBodyMTBase.cppのgSliderNumThreadsに4.0をセットして
+　createEmptyDynamicsWorld()内で
+　gTaskMgr.setNumThreads(int(gSliderNumThreads));を呼ぶ。
+
+
+　
+　linkのところにTBBのlibを指定する。
+
+　
+
+１、２、ともビルドしたexeと同じディレクトリにTBBのDLLを置いておくことが必要である。
+
+　
+
