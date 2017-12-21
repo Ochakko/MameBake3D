@@ -1001,6 +1001,23 @@ public: //accesser
 	void SetInitAxisMatX(int srcval){
 		m_initaxismatx = srcval;
 	};
+
+	void SetModelPosition(D3DXVECTOR3 srcpos){
+		m_modelposition = srcpos;
+	};
+	D3DXVECTOR3 GetModelPosition(){
+		return m_modelposition;
+	};
+	void SetWorldMatFromCamera(D3DXMATRIX srcmat){
+		m_worldmat = srcmat;
+		m_worldmat._41 = m_modelposition.x;
+		m_worldmat._42 = m_modelposition.y;
+		m_worldmat._43 = m_modelposition.z;
+	};
+	D3DXMATRIX GetWorldMat()
+	{
+		return m_worldmat;
+	};
 private:
 	int m_initaxismatx;
 	int m_modelno;//モデルのID
@@ -1071,6 +1088,9 @@ private:
 	int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
 	bool m_createbtflag;//CreateBtObjectを読んだことがあればtrue。
 	bool m_loadedflag;//初期の読み込み処理が終了したらtrue;
+
+	D3DXMATRIX m_worldmat;
+	D3DXVECTOR3 m_modelposition;
 };
 
 #endif

@@ -250,7 +250,8 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 
 		if (srcframe >= 0.0){
 			CallF(CalcFBXMotion(srcmotid, srcframe, &m_curmp, &existflag), return 1);
-			D3DXMATRIX tmpmat = m_curmp.GetWorldMat();// **wmat;
+			//D3DXMATRIX tmpmat = m_curmp.GetWorldMat();// **wmat;
+			D3DXMATRIX tmpmat = m_curmp.GetWorldMat() * *wmat;
 			m_curmp.SetWorldMat(tmpmat);
 
 			D3DXVECTOR3 jpos = GetJointFPos();
@@ -270,20 +271,23 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMA
 		//RagdollIKŽž‚Ìƒ{[ƒ“‘I‘ð‘Îô
 		D3DXVECTOR3 jpos = GetJointFPos();
 
-		D3DXMATRIX wmat, wvpmat;
+		D3DXMATRIX wmat2, wvpmat;
 		if (m_parent){
-			wmat = m_parent->GetBtMat();
+			wmat2 = m_parent->GetBtMat();// **wmat;
 		}
 		else{
-			wmat = GetBtMat();
+			wmat2 = GetBtMat();// **wmat;
 		}
-		wvpmat = wmat * *vpmat;
+		wvpmat = wmat2 * *vpmat;
+
+
+		//D3DVec3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
+		//D3DVec3TransformCoord(&m_childworld, &jpos, &wmat);
+		D3DVec3TransformCoord(&m_childworld, &jpos, &wmat2);
 
 		//D3DVec3TransformCoord(&m_childworld, &jpos, &(GetBtMat()));
 		D3DVec3TransformCoord(&m_childscreen, &m_childworld, vpmat);
 
-		D3DVec3TransformCoord(&m_childworld, &jpos, &wmat);
-		//D3DVec3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
 
 	}
 	return 0;

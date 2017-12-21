@@ -274,7 +274,8 @@ static int s_fbxbunki = 1;
 
 static D3DXMATRIXA16 s_matWorld;
 static D3DXMATRIXA16 s_matProj;
-static D3DXMATRIXA16 s_matW, s_matVP;
+//static D3DXMATRIXA16 s_matW, s_matVP;
+static D3DXMATRIXA16 s_matVP;
 static D3DXMATRIXA16 s_matView;
 static D3DXVECTOR3 s_camUpVec = D3DXVECTOR3( 0.00001f, 1.0f, 0.0f );
 static float s_camdist = g_initcamdist;
@@ -1659,9 +1660,14 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	s_matWorld._41 = 0.0f;
 	s_matWorld._42 = 0.0f;
 	s_matWorld._43 = 0.0f;
-	s_matW = s_matWorld;
+	//s_matW = s_matWorld;
 	s_matVP = s_matView * s_matProj;
 
+	int modelno;
+	int modelnum = (int)s_modelindex.size();
+	for (modelno = 0; modelno < modelnum; modelno++){
+		s_modelindex[modelno].modelptr->SetWorldMatFromCamera(s_matWorld);
+	}
 
 	double nextframe = 0.0;
 	if (g_previewFlag){
@@ -2230,7 +2236,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						if (s_model->GetInitAxisMatX() == 0){
 							s_owpLTimeline->setCurrentTime(0.0, false);
 							s_model->SetMotionFrame(0.0);
-							s_model->UpdateMatrix(&s_matW, &s_matVP);
+							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 
 
 							//ここでAxisMatXの初期化
@@ -2408,9 +2414,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 								s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
 								s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
-								s_model->UpdateMatrix(&s_matW, &s_matVP);
+								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 								s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
-								s_model->UpdateMatrix(&s_matW, &s_matVP);
+								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 								s_editmotionflag = s_curboneno;
 							}
 						}
@@ -5523,7 +5529,7 @@ int RenderSelectMark(int renderflag)
 		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();
 
 		D3DXVECTOR3 cam0, cam1;
-		D3DXMATRIX mwv = s_matW * s_matView;
+		D3DXMATRIX mwv = s_model->GetWorldMat() * s_matView;
 		D3DVec3TransformCoord( &cam0, &orgpos, &mwv );
 		cam1 = cam0 + D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
 
@@ -6737,7 +6743,7 @@ int ConvBoneConvert()
 		}
 	}
 
-	s_model->UpdateMatrix(&s_matW, &s_matVP);
+	s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 
 	g_underRetargetFlag = false;//!!!!!!!!!!!!
 
@@ -6924,166 +6930,166 @@ int StartBt(int flag, int btcntzero)
 
 
 
-	//vector<MODELELEM>::iterator itrmodel;
-	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		//CModel* curmodel = itrmodel->modelptr;
-	CModel* curmodel = s_model;
-	if (curmodel){
-		//if ((flag == 0) && (g_previewFlag != 4)){
-			//F9キー
-			if (btcntzero == 1){
-				curmodel->ZeroBtCnt();
-				curmodel->SetCreateBtFlag(false);
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		//CModel* curmodel = s_model;
+		if (curmodel){
+			//if ((flag == 0) && (g_previewFlag != 4)){
+				//F9キー
+				if (btcntzero == 1){
+					curmodel->ZeroBtCnt();
+					curmodel->SetCreateBtFlag(false);
+				}
+			//}
+			//else if (flag == 1){
+			//	//F10キー
+			//	if (btcntzero == 1){
+			//		curmodel->ZeroBtCnt();
+			//		curmodel->SetCreateBtFlag(false);
+			//	}
+			//}
+
+
+			double curframe;
+			if (resetflag == 1){
+				curframe = s_owpTimeline->getCurrentTime();
+				//curmodel->GetMotionFrame(&curframe);
 			}
-		//}
-		//else if (flag == 1){
-		//	//F10キー
-		//	if (btcntzero == 1){
-		//		curmodel->ZeroBtCnt();
-		//		curmodel->SetCreateBtFlag(false);
-		//	}
-		//}
+			else{
+				curframe = 0.0;
+				s_owpLTimeline->setCurrentTime(curframe, false);
+			}
 
+			if ((g_previewFlag == 4) || (g_previewFlag == 5)){
 
-		double curframe;
-		if (resetflag == 1){
-			curframe = s_owpTimeline->getCurrentTime();
-			//curmodel->GetMotionFrame(&curframe);
-		}
-		else{
-			curframe = 0.0;
-			s_owpLTimeline->setCurrentTime(curframe, false);
-		}
+				if (g_previewFlag == 4){
+					curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
 
-		if ((g_previewFlag == 4) || (g_previewFlag == 5)){
-
-			if (g_previewFlag == 4){
-				curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
-
-				s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
-				s_bpWorld->setGlobalERP(s_erp);// ERP
+					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
+					s_bpWorld->setGlobalERP(s_erp);// ERP
 
 
 
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
 
 
-				curmodel->SetMotionFrame(curframe);
+					curmodel->SetMotionFrame(curframe);
 
-				vector<MODELELEM>::iterator itrmodel;
-				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-					CModel* curmodel = itrmodel->modelptr;
-					if (curmodel){
-						curmodel->UpdateMatrix(&s_matW, &s_matVP);
+					vector<MODELELEM>::iterator itrmodel;
+					for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+						CModel* curmodel = itrmodel->modelptr;
+						if (curmodel){
+							curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
+						}
+					}
+
+					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！reの内容を変えてから呼ぶ
+					//s_curreindex = 1;
+					curmodel->SetMotionSpeed(g_dspeed);
+				}
+				else if (g_previewFlag == 5){
+					curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
+
+					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
+
+				//ラグドールの時のERPは決め打ち
+					//s_bpWorld->setGlobalERP(0.0);// ERP
+					//s_bpWorld->setGlobalERP(1.0);// ERP
+					//s_bpWorld->setGlobalERP(0.2);// ERP
+					//s_bpWorld->setGlobalERP(0.001);// ERP
+					//s_bpWorld->setGlobalERP(1.0e-8);// ERP
+				
+				
+					s_bpWorld->setGlobalERP(0.00020);// ERP
+					//s_bpWorld->setGlobalERP(s_erp);// ERP
+
+
+
+					curmodel->SetMotionFrame(curframe);
+
+
+
+					curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+				//ラグドールの時のバネは決め打ち
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 30.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 400.0, 10.0);
+				
+					//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
+					//s_model->SetAllMassData(-1, s_rgdindex, 0.5);
+					//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
+					//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
+
+
+					if (s_physicskind == 0){
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+						curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1600.0, 20.0);
+					}
+					else{
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 2000.0, 60.0);
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 10000.0, 60.0);
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 13000.0, 200.0);
+						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 40000.0, 100.0);
+						curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
+					}
+
+					//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
+					//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
+					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+					curmodel->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
+
+					curmodel->SetMotionSpeed(g_dspeed);
+				}
+
+				s_btstartframe = curframe;
+
+				//CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
+				CallF(curmodel->CreateBtObject(1), return 1);
+
+			
+				//if( g_previewFlag == 4 ){
+
+					curmodel->BulletSimulationStart();
+
+
+					//s_bpWorld->clientResetScene();
+					//if( s_model ){
+					//	s_model->ResetBt();
+					//}
+					//int firstflag = 1;
+					//s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &s_matW, &s_matVP);
+					//int rgdollflag = 0;
+					//double difftime = 0.0;
+					//s_model->SetBtMotion(rgdollflag, s_btstartframe, &s_matW, &s_matVP);
+					//s_model->ResetBt();
+					UpdateBtSimu(curframe, curmodel);
+				//}
+			
+				//if( g_previewFlag == 5 ){
+				//	s_model->SetBtImpulse();
+				//}
+
+			
+				if (curmodel->GetRgdMorphIndex() >= 0){
+					MOTINFO* morphmi = curmodel->GetRgdMorphInfo();
+					if (morphmi){
+						//morphmi->curframe = 0.0;
+						morphmi->curframe = s_btstartframe;
 					}
 				}
 
-				//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！reの内容を変えてから呼ぶ
-				//s_curreindex = 1;
-				curmodel->SetMotionSpeed(g_dspeed);
 			}
-			else if (g_previewFlag == 5){
-				curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
-
-				s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
-
-			//ラグドールの時のERPは決め打ち
-				//s_bpWorld->setGlobalERP(0.0);// ERP
-				//s_bpWorld->setGlobalERP(1.0);// ERP
-				//s_bpWorld->setGlobalERP(0.2);// ERP
-				//s_bpWorld->setGlobalERP(0.001);// ERP
-				//s_bpWorld->setGlobalERP(1.0e-8);// ERP
-				
-				
-				s_bpWorld->setGlobalERP(0.00020);// ERP
-				//s_bpWorld->setGlobalERP(s_erp);// ERP
-
-
-
-				curmodel->SetMotionFrame(curframe);
-
-
-
-				curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-			//ラグドールの時のバネは決め打ち
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 30.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 10.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 400.0, 10.0);
-				
-				//s_model->SetAllMassData(-1, s_rgdindex, 1e-9);
-				//s_model->SetAllMassData(-1, s_rgdindex, 0.5);
-				//s_model->SetAllMassData(-1, s_rgdindex, 1.0);
-				//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
-
-
-				if (s_physicskind == 0){
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
-					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1600.0, 20.0);
-				}
-				else{
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 2000.0, 60.0);
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 10000.0, 60.0);
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 13000.0, 200.0);
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 40000.0, 100.0);
-					s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
-				}
-
-				//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
-				//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
-				//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
-				s_model->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
-
-				curmodel->SetMotionSpeed(g_dspeed);
-			}
-
-			s_btstartframe = curframe;
-
-			//CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
-			CallF(curmodel->CreateBtObject(1), return 1);
-
-			
-			//if( g_previewFlag == 4 ){
-
-				curmodel->BulletSimulationStart();
-
-
-				//s_bpWorld->clientResetScene();
-				//if( s_model ){
-				//	s_model->ResetBt();
-				//}
-				//int firstflag = 1;
-				//s_model->Motion2Bt(firstflag, s_coldisp, s_btstartframe, &s_matW, &s_matVP);
-				//int rgdollflag = 0;
-				//double difftime = 0.0;
-				//s_model->SetBtMotion(rgdollflag, s_btstartframe, &s_matW, &s_matVP);
-				//s_model->ResetBt();
-				UpdateBtSimu(curframe, curmodel);
-			//}
-			
-			//if( g_previewFlag == 5 ){
-			//	s_model->SetBtImpulse();
-			//}
-
-			
-			if (curmodel->GetRgdMorphIndex() >= 0){
-				MOTINFO* morphmi = curmodel->GetRgdMorphInfo();
-				if (morphmi){
-					//morphmi->curframe = 0.0;
-					morphmi->curframe = s_btstartframe;
-				}
-			}
-
 		}
 	}
-	//}
 	return 0;
 }
 
@@ -7386,7 +7392,7 @@ int SaveProject()
 		if (curmodel){
 			s_owpLTimeline->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
-			s_model->UpdateMatrix(&s_matW, &s_matVP);
+			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 
 			//ここでAxisMatXの初期化
 			curmodel->CreateBtObject(1);
@@ -8251,7 +8257,7 @@ int ExportFBXFile()
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
-			curmodel->UpdateMatrix( &s_matW, &s_matVP );
+			curmodel->UpdateMatrix( &curmodel->GetWorldMat(), &s_matVP );
 		}
 	}
 
@@ -8289,7 +8295,7 @@ int ExportFBXFile()
 	{
 		s_owpLTimeline->setCurrentTime(0.0, false);
 		s_model->SetMotionFrame(0.0);
-		s_model->UpdateMatrix(&s_matW, &s_matVP);
+		s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 
 		//ここでAxisMatXの初期化
 		s_model->CreateBtObject(1);
@@ -8340,7 +8346,7 @@ int ExportBntFile()
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
-			curmodel->UpdateMatrix( &s_matW, &s_matVP );
+			curmodel->UpdateMatrix( &curmodel->GetWorldMat(), &s_matVP );
 		}
 	}
 
@@ -9315,7 +9321,7 @@ int OnFramePreviewStop()
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
-			curmodel->UpdateMatrix(&s_matW, &s_matVP);
+			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		}
 	}
 
@@ -9360,7 +9366,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
-			curmodel->UpdateMatrix(&s_matW, &s_matVP);
+			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		}
 	}
 
@@ -9376,28 +9382,54 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		return 0;
 	}
 
-	CModel* curmodel = s_model;
-	curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
-	if ((curmodel == s_model) && (endflag == 1)){
-		g_previewFlag = 0;
-	}
-	if (s_savepreviewFlag != g_previewFlag){
-		*pnextframe = 0.0;//キー入力後の初回は時間を進めない。
+	//CModel* curmodel = s_model;
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel){
+			curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+			if ((curmodel == s_model) && (endflag == 1)){
+				g_previewFlag = 0;
+			}
+			if (s_savepreviewFlag != g_previewFlag){
+				*pnextframe = 0.0;//キー入力後の初回は時間を進めない。
+			}
+
+			curmodel->SetMotionFrame(*pnextframe);
+			if (IsTimeEqual(*pnextframe, 0.0)){
+				curmodel->ZeroBtCnt();
+			}
+
+			//if ((curmodel->GetBtCnt() == 0) || (curmodel->GetBtCnt() == 1) || (curmodel->GetBtCnt() == 2)){
+			if (curmodel->GetBtCnt() == 0){
+				StartBt(2, 0);
+			}
+
+			//UpdateBtSimu(*pnextframe, curmodel);
+
+			int firstflag = 0;
+			if (s_savepreviewFlag != g_previewFlag){
+				firstflag = 1;
+			}
+			if (curmodel && curmodel->GetCurMotInfo()){
+				curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
+			}
+
+			curmodel->PlusPlusBtCnt();
+		}
 	}
 
-	curmodel->SetMotionFrame(*pnextframe);
-	if (IsTimeEqual(*pnextframe, 0.0)){
-		curmodel->ZeroBtCnt();
+	s_bpWorld->clientMoveAndDisplay();
+
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel){
+			if (curmodel && curmodel->GetCurMotInfo()){
+				curmodel->SetBtMotion(0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+			}
+		}
 	}
 
-	//if ((curmodel->GetBtCnt() == 0) || (curmodel->GetBtCnt() == 1) || (curmodel->GetBtCnt() == 2)){
-	if (curmodel->GetBtCnt() == 0){
-		StartBt(2, 0);
-	}
-
-	UpdateBtSimu(*pnextframe, curmodel);
-
-	curmodel->PlusPlusBtCnt();
 	return 0;
 }
 
@@ -9411,12 +9443,12 @@ void UpdateBtSimu(double nextframe, CModel* curmodel)
 		firstflag = 1;
 	}
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->Motion2Bt(firstflag, nextframe, &s_matW, &s_matVP, s_curboneno);
+		curmodel->Motion2Bt(firstflag, nextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
 	}
 	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
 	s_bpWorld->clientMoveAndDisplay();
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->SetBtMotion(0, nextframe, &s_matW, &s_matVP);
+		curmodel->SetBtMotion(0, nextframe, &curmodel->GetWorldMat(), &s_matVP);
 	}
 }
 
@@ -9553,8 +9585,8 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	s_bpWorld->clientMoveAndDisplay();
 
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->SetBtMotion(1, *pnextframe, &s_matW, &s_matVP);
-		curmodel->UpdateMatrix(&s_matW, &s_matVP);
+		curmodel->SetBtMotion(1, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+		curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		curmodel->PlusPlusBtCnt();
 	}
 	
@@ -10258,7 +10290,7 @@ int OnFrameUpdateGround()
 {
 
 	if (s_ground){
-		s_ground->UpdateMatrix(&s_matW, &s_matVP);
+		s_ground->UpdateMatrix(&s_ground->GetWorldMat(), &s_matVP);
 	}
 
 	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG){
@@ -11599,7 +11631,7 @@ int OnRenderSetShaderConst()
 
 	// Get the projection & view matrix from the camera class
 	g_pEffect->SetMatrix(g_hmVP, &s_matVP);
-	g_pEffect->SetMatrix(g_hmWorld, &s_matW);
+	//g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelへ
 
 
 	D3DXVECTOR3 lightdir0, nlightdir0;

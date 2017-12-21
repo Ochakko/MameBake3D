@@ -123,6 +123,8 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	D3DXMatrixIdentity(&m_worldmat);
+	m_modelposition = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	m_initaxismatx = 0;
 	m_loadedflag = false;
 	m_createbtflag = false;
@@ -1376,6 +1378,9 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 	if( !m_topbone ){
 		return 0;//!!!!!!!!!!!
 	}
+
+	g_pEffect->SetMatrix(g_hmWorld, &m_worldmat);
+
 
 	float set3x4[MAXCLUSTERNUM][12];
 	ZeroMemory( set3x4, sizeof( float ) * 12 * MAXCLUSTERNUM );

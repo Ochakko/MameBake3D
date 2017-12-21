@@ -158,6 +158,10 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	CallF( Write2File( "    <ModelFile>%s</ModelFile>\r\n", filename ), return 1 );
 	CallF( Write2File( "    <ModelMult>%f</ModelMult>\r\n", curmodel->GetLoadMult() ), return 1 );
 
+	CallF(Write2File("    <ModelPositionX>%f</ModelPositionX>\r\n", curmodel->GetModelPosition().x), return 1);
+	CallF(Write2File("    <ModelPositionY>%f</ModelPositionY>\r\n", curmodel->GetModelPosition().y), return 1);
+	CallF(Write2File("    <ModelPositionZ>%f</ModelPositionZ>\r\n", curmodel->GetModelPosition().z), return 1);
+
 	CallF( Write2File( "    <RGDMORPH>%d</RGDMORPH>\r\n", curmodel->GetRgdMorphIndex() ), return 1 );
 
 	CallF( Write2File( "    <CURRE>%d</CURRE>\r\n", curmodel->GetCurReIndex() ), return 1 );
@@ -485,8 +489,18 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 	int rgd = 0;
 	int morphindex = -1;
 
+	float posx = 0.0f;
+	float posy = 0.0f;
+	float posz = 0.0f;
+
 	CallF( Read_Str( xmlbuf, "<ModelFolder>", "</ModelFolder>", modelfolder, MAX_PATH ), return 1 );
 	CallF( Read_Str( xmlbuf, "<ModelFile>", "</ModelFile>", filename, MAX_PATH ), return 1 );
+
+	//modelposÇÕïKê{Ç≈ÇÕÇ»Ç¢
+	Read_Float(xmlbuf, "<ModelPositionX>", "</ModelPositionX>", &posx);
+	Read_Float(xmlbuf, "<ModelPositionY>", "</ModelPositionY>", &posy);
+	Read_Float(xmlbuf, "<ModelPositionZ>", "</ModelPositionZ>", &posz);
+
 	CallF( Read_Float( xmlbuf, "<ModelMult>", "</ModelMult>", &modelmult ), return 1 );
 
 	CallF( Read_Int( xmlbuf, "<CURRE>", "</CURRE>", &curre ), return 1 );
@@ -516,6 +530,9 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 	_ASSERT( newmodel );
 
 	//newmodel->m_tmpmotspeed = m_motspeed;
+
+	newmodel->SetModelPosition(D3DXVECTOR3(posx, posy, posz));
+
 
 	if( refnum > 0 ){
 		int refcnt;
