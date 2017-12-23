@@ -39,6 +39,40 @@ if (id < 0){
 }
 
 
+CommonRigidBodyMTBase.cppも少し変えました。
+
+static int gNumIslands = 0;
+を
+
+int gNumIslands = 0;
+にしました。
+
+static bool gMultithreadedWorld = false;
+を
+static bool gMultithreadedWorld = true;
+にしました。
+
+static btScalar gSliderNumThreads = 1.0f; 
+を
+btScalar gSliderNumThreads = 64.0f; 
+にしました。
+
+コンストラクタの
+m_multithreadedWorld = false;
+m_multithreadCapable = false;
+を
+m_multithreadedWorld = true;m_multithreadCapable = true;
+にしました。
+
+
+createEmptyDynamicsWorld関数に
+gTaskMgr.setNumThreads(int(gSliderNumThreads));
+を加えました。
+
+createDefaultParameters()関数の中身を全てコメントアウトしました。
+
+
+
 （2017/06/10コミット分から2017/12/17まではbullet physicsのバージョンは2.85でした。）
 （2017/06/10以前のコミットで使用していたbullet physicsのバージョンは2.80です。）
 
@@ -76,6 +110,29 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+2017/12/23_1
+	bullet physicsのファイルへの変更部分を書きました（上記）。
+
+	プロジェクトファイル(chaファイル)の読み込み時にはマウスカーソルを砂時計にしました。
+
+	メインウインドウにスレッド数のスライダーを追加しました。
+		＃＃＃＃＃
+			スレッド数のスライダーを動かす際にはbtStopボタンを押してシミュレーションを停止してからにしてください。
+		＃＃＃＃＃
+
+	６０ｆｐｓのサンプルプロジェクトファイルに
+	3chara, 6chara, 9chara, 12charaの複数キャラクター読み込み用のファイルを加えました。
+		ロード時間はexeを直に起動したほうが速いです（待ち時間がかなり違います）。
+		exeはx64フォルダの１つ上の階層のフォルダにコピーしてからダブルクリックで起動します。
+		ｆｐｓが小さくなるとメインウインドウのbtCalcCnt（計算回数）のスライダーの値を大きくする必要があります。
+			計算回数を増やさないとツインテールなどの物理部分が不自然に伸びたりします。
+			３０ｆｐｓより遅くなると制御は難しいです。
+		こちらでテストしたところ、１２キャラクター読み込みをして６４スレッドで計算回数１２回の場合
+			３０ｆｐｓほどで動作し、４つのCPUに負荷が分散されました。
+			１２キャラの読み込み時間は１分弱でした。
+
+
+
 2017/12/22_1
 	chaファイルにキャラクターの位置情報を追加。
 	サンプルのchaファイルで複数キャラのテスト。

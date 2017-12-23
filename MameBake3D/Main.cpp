@@ -97,12 +97,15 @@ typedef struct tag_spaxis
 	POINT dispcenter;
 }SPAXIS, SPCAM, SPELEM;
 
-
+int	g_numthread = 64;
 double g_btcalccnt = 3.0;
 int g_dbgloadcnt = 0;
 double g_calcfps = 60.0;
 
 extern map<CModel*,int> g_bonecntmap;
+extern int gNumIslands;
+
+
 
 D3DXMATRIXA16 s_selectmat;//for display manipulator
 D3DXMATRIXA16 s_ikselectmat;//for ik, fk
@@ -699,6 +702,9 @@ float g_physicsmvrate = 1.0f;
 #define IDC_STATIC_PHYSICS_MV_SLIDER	58
 //#define IDC_APPLY_BT				59
 #define IDC_STOP_BT					60
+
+#define IDC_SL_NUMTHREAD			61
+#define IDC_STATIC_NUMTHREAD		62
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1640,6 +1646,10 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 	static double savetime = 0.0;
 	static int capcnt = 0;
+
+	WCHAR sz[100];
+	swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
+	g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 
 
 	OnFrameUtCheckBox();
@@ -2926,7 +2936,14 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		    swprintf_s( sz, 100, L"IK 伝達係数 : %f", g_ikrate );
             g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
             break;
-        case IDC_SL_APPLYRATE:
+		case IDC_SL_NUMTHREAD:
+			RollbackCurBoneNo();
+			g_numthread = (int)(g_SampleUI.GetSlider(IDC_SL_NUMTHREAD)->GetValue());
+			swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
+			g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
+			s_bpWorld->setNumThread(g_numthread);
+			break;
+		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
 		    swprintf_s( sz, 100, L"姿勢適用位置 : %d ％", g_applyrate );
@@ -4198,12 +4215,12 @@ CModel* OpenFBXFile( int skipdefref )
 	s_dbgcnt++;
 
 
-	int dlgret;
-	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CHECKAXISTYPE),
-		s_mainwnd, (DLGPROC)CheckAxisTypeProc);
-	if (dlgret != IDOK){
-		return 0;
-	}
+	//int dlgret;
+	//dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CHECKAXISTYPE),
+	//	s_mainwnd, (DLGPROC)CheckAxisTypeProc);
+	//if (dlgret != IDOK){
+	//	return 0;
+	//}
 
 	g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
 	
@@ -7552,8 +7569,13 @@ int OpenChaFile()
 		_ASSERT( s_bpWorld );
 	}
 
+	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
 	CChaFile chafile;
 	CallF( chafile.LoadChaFile( g_tmpmqopath, OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu ), return 1 );
+
+	SetCursor(oldcursor);
+
 
 	return 0;
 }
@@ -10464,10 +10486,18 @@ int CreateUtDialog()
 	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 
 
+	//Left Bottom
+	iY = s_mainheight - 210;
+	int startx = s_mainwidth / 2 - 180;
+
+	swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
+	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 64, g_numthread);
+
 
 	//Right Bottom
-	iY = s_mainheight - 200;
-	int startx = s_mainwidth - 120;
+	iY = s_mainheight - 210;
+	startx = s_mainwidth - 120;
 
 	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
 	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
