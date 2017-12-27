@@ -110,6 +110,18 @@ F9の途中でF10を押すとラグドールします。
 
 
 ＃＃＃
+2017/12/27
+	動画紹介
+		動画　【まめばけ３D】物理シミュレーションのマルチスレッド化
+　　　　　　　　（今回はしゃべりました）
+　　　　　　　　https://youtu.be/cW7TWNiX-uk
+
+		動画　【まめばけ３D】大きな揺れを制限角度で小さな揺れに
+		https://youtu.be/3GxO7jPOdlY
+
+		動画　【まめばけ】角度制限ファイルを物理に適用
+		https://youtu.be/q0bY6-jNk20
+
 2017/12/23_1
 	bullet physicsのファイルへの変更部分を書きました（上記）。
 
@@ -1318,6 +1330,18 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+【まめばけ３D】物理シミュレーションのマルチスレッド化
+（今回はしゃべりました）
+https://youtu.be/cW7TWNiX-uk
+
+動画　【まめばけ３D】大きな揺れを制限角度で小さな揺れに
+https://youtu.be/3GxO7jPOdlY
+
+【まめばけ】角度制限ファイルを物理に適用
+https://youtu.be/q0bY6-jNk20
+
+
 
 【物理コンストレイント】しゃがんだりかかとを上げたり
 https://youtu.be/JIXG7u1RciU
