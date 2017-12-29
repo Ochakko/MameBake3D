@@ -904,6 +904,8 @@ private:
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。
 	CMotionPoint m_befmp;//一回前の姿勢データ。
+	CMotionPoint* m_cachebefmp;
+
 
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
 

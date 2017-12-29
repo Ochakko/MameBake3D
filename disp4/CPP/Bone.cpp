@@ -145,7 +145,7 @@ int CBone::InitParams()
 	m_firstframebonepos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	m_posefoundflag = false;
-
+	m_cachebefmp = 0;
 
 	return 0;
 }
@@ -168,6 +168,8 @@ void CBone::InitAngleLimit()
 
 int CBone::DestroyObjs()
 {
+	m_cachebefmp = 0;
+
 	int colindex;
 	for (colindex = 0; colindex < COL_MAX; colindex++){
 		CModel* curcol = m_coldisp[colindex];
@@ -346,6 +348,13 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 
 	*existptr = 0;
 
+	//キャッシュをチェックする
+	if (m_cachebefmp && (m_cachebefmp->GetFrame() <= (srcframe + 0.0001))){
+		//高速化のため途中からの検索にする
+		pcur = m_cachebefmp;
+	}
+
+
 	while( pcur ){
 
 		if( (pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001) ){
@@ -367,6 +376,9 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 	}else{
 		*ppnext = pcur;
 	}
+
+	m_cachebefmp = pbef;
+
 
 	return 0;
 }
