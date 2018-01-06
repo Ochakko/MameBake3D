@@ -98,8 +98,8 @@ int CBopFile::ReadBopElem( XMLIOBUF* xmlbuf )
 //    <MPNum>2</MPNum>
 
 	char bonename[256] = {0};
-	D3DXVECTOR3 wpos;
-	D3DXVECTOR3 fpos;
+	ChaVector3 wpos;
+	ChaVector3 fpos;
 
 	CallF( Read_Str( xmlbuf, "<JointName>", "</JointName>", bonename, 256 ), return 1 );
 	CallF( Read_Vec3( xmlbuf, "<World>", "</World>", &wpos ), return 1 );

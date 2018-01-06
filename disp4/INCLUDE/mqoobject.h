@@ -55,8 +55,8 @@ public:
 	int HasPolygon();
 	int HasLine();
 
-	int MultMat( D3DXMATRIX multmat );
-	int Shift( D3DXVECTOR3 shiftvec );
+	int MultMat( ChaMatrix multmat );
+	int Shift( ChaVector3 shiftvec );
 	int Multiple( float multiple );
 	int MultVertex();
 
@@ -73,7 +73,7 @@ public:
 
 	int GetMaterialNoInUse( int* noptr, int arrayleng, int* getnumptr );
 	int GetFaceInMaterial( int matno, CMQOFace** ppface, int arrayleng, int* getnumptr );
-	int CollisionLocal_Ray( D3DXVECTOR3 startlocal, D3DXVECTOR3 dirlocal );
+	int CollisionLocal_Ray( ChaVector3 startlocal, ChaVector3 dirlocal );
 
 	int MakeXBoneno2wno( int arrayleng, int* boneno2wno, int* infnumptr );
 	int GetSkinMeshHeader( int leng, int* maxpervert, int* maxperface );
@@ -88,7 +88,7 @@ public:
 	int ScaleBtBox( CRigidElem* reptr, float boneleng, float* cyliptr, float* sphptr, float* boxz );
 	int ScaleBtSphere( CRigidElem* reptr, float boneleng, float* cyliptr, float* sphptr );
 
-	int MultScale( D3DXVECTOR3 srcscale, D3DXVECTOR3 srctra );
+	int MultScale( ChaVector3 srcscale, ChaVector3 srctra );
 
 	int DestroyShapeObj();
 	int InitShapeWeight();
@@ -96,7 +96,7 @@ public:
 	int AddShapeName( char* nameptr );
 
 	int ExistShape( char* nameptr );
-	int SetShapeVert( char* nameptr, int vno, D3DXVECTOR3 srcv );
+	int SetShapeVert( char* nameptr, int vno, ChaVector3 srcv );
 
 private:
 	void InitParams();
@@ -111,7 +111,7 @@ private:
 	int FindConnectFace( int issetface );
 	int MakeMirrorPointAndFace( int axis, int doconnect );
 
-	int CheckMirrorDis( D3DXVECTOR3* pbuf, CMQOFace* fbuf, int lno, int pnum );
+	int CheckMirrorDis( ChaVector3* pbuf, CMQOFace* fbuf, int lno, int pnum );
 
 	int CheckFaceSameChildIndex( CMQOFace* srcface, int chkno, CMQOFace** ppfindface );
 	int FindFaceSameParentIndex( CMQOFace* srcface, int chkno, CMQOFace** ppfindface, int* findnum, int maxnum );
@@ -168,10 +168,10 @@ public:
 		m_face = srcval;
 	};
 
-	D3DXVECTOR3* GetPointBuf(){
+	ChaVector3* GetPointBuf(){
 		return m_pointbuf;
 	};
-	void SetPointBuf( D3DXVECTOR3* srcbuf ){
+	void SetPointBuf( ChaVector3* srcbuf ){
 		m_pointbuf = srcbuf;
 	};
 
@@ -228,10 +228,10 @@ public:
 		m_normalleng = srcval;
 	};
 
-	D3DXVECTOR3* GetNormal(){
+	ChaVector3* GetNormal(){
 		return m_normal;
 	};
-	void SetNormal( D3DXVECTOR3* srcval ){
+	void SetNormal( ChaVector3* srcval ){
 		m_normal = srcval;
 	};
 
@@ -295,7 +295,7 @@ public:
 		}
 	};
 
-	void GetShapeVert2( std::map<std::string,D3DXVECTOR3*>& dstmap ){
+	void GetShapeVert2( std::map<std::string,ChaVector3*>& dstmap ){
 		dstmap = m_shapevert;
 	};
 
@@ -311,7 +311,7 @@ private:
 	int m_vertex;
 	int m_face;
 
-	D3DXVECTOR3* m_pointbuf;
+	ChaVector3* m_pointbuf;
 	CMQOFace* m_facebuf;
 
 	CPolyMesh3* m_pm3;
@@ -325,14 +325,14 @@ private:
 	int m_dispflag;
 
 	int m_normalleng;
-	D3DXVECTOR3* m_normal;
+	ChaVector3* m_normal;
 	int m_uvleng;
 	D3DXVECTOR2* m_uvbuf;
 	std::map<int, CMQOMaterial*> m_material;
 	std::vector<CBone*> m_cluster;//中身のCBone*は外部メモリ
 
 	std::map<std::string,int> m_findshape;
-	std::map<std::string,D3DXVECTOR3*> m_shapevert;
+	std::map<std::string,ChaVector3*> m_shapevert;
 
 
 //以下、クラス外から参照しないのでアクセッサー無し
@@ -361,18 +361,18 @@ private:
 	int m_vertex2;
 	int m_face2;
 
-	D3DXVECTOR3* m_pointbuf2;
+	ChaVector3* m_pointbuf2;
 	CMQOFace* m_facebuf2;
 	D3DXVECTOR4* m_colorbuf2;
 
 	int m_connectnum;
 	CMQOFace* m_connectface;
 
-	D3DXMATRIX m_multmat;
+	ChaMatrix m_multmat;
 	//std::map<std::string, CMQOMaterial*> m_namematerial;
 	int m_shapenum;
 	std::map<std::string,float> m_shapeweight;
-	D3DXVECTOR3* m_mpoint;
+	ChaVector3* m_mpoint;
 
 };
 

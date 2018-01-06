@@ -15,30 +15,30 @@
 #define DBGH
 #include <dbg.h>
 
-#include <VecMath.h>
+#include <ChaVecCalc.h>
 
-int ChkRay( int allowrev, int i1, int i2, int i3, D3DXVECTOR3* pointbuf, D3DXVECTOR3 startpos, D3DXVECTOR3 dir, float justval, int* justptr )
+int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, float justval, int* justptr )
 {
-	D3DXVECTOR3 v1;
+	ChaVector3 v1;
 	v1 = startpos;
 
-	D3DXVECTOR3 v;
+	ChaVector3 v;
 	v = dir;
 
-	D3DXVECTOR3 e;
-	DXVec3Normalize( &e, &v );
+	ChaVector3 e;
+	ChaVector3Normalize( &e, &v );
 
-	D3DXVECTOR3 s, t;
+	ChaVector3 s, t;
 	s = *( pointbuf + i2 ) - *( pointbuf + i1 );
 	t = *( pointbuf + i3 ) - *( pointbuf + i1 );
-	D3DXVECTOR3 abc;
-	DXVec3Cross( &abc, &s, &t );
-	DXVec3Normalize( &abc, &abc );
+	ChaVector3 abc;
+	ChaVector3Cross( &abc, &s, &t );
+	ChaVector3Normalize( &abc, &abc );
 
 	float d;
-	d = -DXVec3Dot( &abc, (pointbuf + i1) );
+	d = -ChaVector3Dot( &abc, (pointbuf + i1) );
 
-	float dotface = DXVec3Dot( &abc, &e );
+	float dotface = ChaVector3Dot( &abc, &e );
 	if( dotface == 0.0f ){
 //		_ASSERT( 0 );
 		return 0;
@@ -49,7 +49,7 @@ int ChkRay( int allowrev, int i1, int i2, int i3, D3DXVECTOR3* pointbuf, D3DXVEC
 	}
 
 	float k;
-	k = -( (DXVec3Dot( &abc, &v1 ) + d) / DXVec3Dot( &abc, &e ) );
+	k = -( (ChaVector3Dot( &abc, &v1 ) + d) / ChaVector3Dot( &abc, &e ) );
 	if( fabs( k ) <= justval ){
 		(*justptr)++;
 		return 0;
@@ -58,31 +58,31 @@ int ChkRay( int allowrev, int i1, int i2, int i3, D3DXVECTOR3* pointbuf, D3DXVEC
 		return 0;
 	}
 
-	D3DXVECTOR3 q;
-	q = v1 + k * e;
+	ChaVector3 q;
+	q = v1 + e * k;
 
-	D3DXVECTOR3 g0, g1, cA, cB, cC;
+	ChaVector3 g0, g1, cA, cB, cC;
 	
 	g1 = *(pointbuf + i2) - *(pointbuf + i1);
 	g0 = q - *(pointbuf + i1);
-	DXVec3Cross( &cA, &g0, &g1 );
-	DXVec3Normalize( &cA, &cA );
+	ChaVector3Cross( &cA, &g0, &g1 );
+	ChaVector3Normalize( &cA, &cA );
 
 	g1 = *(pointbuf + i3) - *(pointbuf + i2);
 	g0 = q - *(pointbuf + i2);
-	DXVec3Cross( &cB, &g0, &g1 );
-	DXVec3Normalize( &cB, &cB );
+	ChaVector3Cross( &cB, &g0, &g1 );
+	ChaVector3Normalize( &cB, &cB );
 
 	g1 = *(pointbuf + i1) - *(pointbuf + i3);
 	g0 = q - *(pointbuf + i3);
-	DXVec3Cross( &cC, &g0, &g1 );
-	DXVec3Normalize( &cC, &cC );
+	ChaVector3Cross( &cC, &g0, &g1 );
+	ChaVector3Normalize( &cC, &cC );
 
 
 	float dota, dotb, dotc;
-	dota = DXVec3Dot( &abc, &cA );
-	dotb = DXVec3Dot( &abc, &cB );
-	dotc = DXVec3Dot( &abc, &cC );
+	dota = ChaVector3Dot( &abc, &cA );
+	dotb = ChaVector3Dot( &abc, &cB );
+	dotc = ChaVector3Dot( &abc, &cC );
 
 	int zeroflag;
 	zeroflag = (fabs(dota) < 0.05f) && (fabs(dotb) < 0.05f) && (fabs(dotc) < 0.05f);
@@ -99,7 +99,7 @@ int ChkRay( int allowrev, int i1, int i2, int i3, D3DXVECTOR3* pointbuf, D3DXVEC
 	}
 
 }
-int CalcShadowToPlane( D3DXVECTOR3 srcpos, D3DXVECTOR3 planedir, D3DXVECTOR3 planepos, D3DXVECTOR3* shadowptr )
+int CalcShadowToPlane( ChaVector3 srcpos, ChaVector3 planedir, ChaVector3 planepos, ChaVector3* shadowptr )
 {
 	//–Ê‚ÆƒŒƒC‚Æ‚ÌŒð“_(shadow)‚ð‹‚ß‚éB
 	//s-->start, e-->end, b-->point on plane, n-->plane dir
@@ -109,14 +109,14 @@ int CalcShadowToPlane( D3DXVECTOR3 srcpos, D3DXVECTOR3 planedir, D3DXVECTOR3 pla
 		return 1;
 	}
 
-	D3DXVECTOR3 sb, se, n;
+	ChaVector3 sb, se, n;
 	sb = planepos - srcpos;
-	se = (srcpos + 100.0f * planedir) - srcpos;
+	se = (srcpos + planedir * 100.0f) - srcpos;
 	n = planedir;
 
 	float t;
-	t = D3DXVec3Dot( &sb, &n ) / D3DXVec3Dot( &se, &n );
+	t = ChaVector3Dot( &sb, &n ) / ChaVector3Dot( &se, &n );
 
-	*shadowptr = ( 1.0f - t ) * srcpos + t * (srcpos + 100.0f * planedir);
+	*shadowptr = srcpos * (1.0f - t) + (srcpos + planedir * 100.0f) * t;
 	return 0;
 }

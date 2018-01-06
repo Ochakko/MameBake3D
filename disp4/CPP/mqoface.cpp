@@ -443,7 +443,7 @@ int CMQOFace::SetMikoBoneName( char* srcname, int lrflag )
 	return 0;
 }
 
-int CMQOFace::CheckLRFlag( D3DXVECTOR3* pointptr, int* lrflagptr )
+int CMQOFace::CheckLRFlag( ChaVector3* pointptr, int* lrflagptr )
 {
 	if( (m_bonetype != MIKOBONE_NORMAL) && (m_bonetype != MIKOBONE_FLOAT) ){
 		DbgOut( L"mqoface : CheckLRFlag : mikobonetype error !!!\n" );
@@ -457,8 +457,8 @@ int CMQOFace::CheckLRFlag( D3DXVECTOR3* pointptr, int* lrflagptr )
 		return 1;
 	}
 
-	D3DXVECTOR3* parp;
-	D3DXVECTOR3* chilp;
+	ChaVector3* parp;
+	ChaVector3* chilp;
 	float centerx;
 
 	parp = pointptr + m_parentindex;

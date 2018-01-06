@@ -178,24 +178,24 @@ public:
 		m_dif4f.w = srcval;
 	};
 
-	D3DXVECTOR3 GetAmb3F(){
+	ChaVector3 GetAmb3F(){
 		return m_amb3f;
 	};
-	void SetAmb3F( D3DXVECTOR3 srcval ){
+	void SetAmb3F( ChaVector3 srcval ){
 		m_amb3f = srcval;
 	};
 
-	D3DXVECTOR3 GetEmi3F(){
+	ChaVector3 GetEmi3F(){
 		return m_emi3f;
 	};
-	void SetEmi3F( D3DXVECTOR3 srcval ){
+	void SetEmi3F( ChaVector3 srcval ){
 		m_emi3f = srcval;
 	};
 
-	D3DXVECTOR3 GetSpc3F(){
+	ChaVector3 GetSpc3F(){
 		return m_spc3f;
 	};
-	void SetSpc3F( D3DXVECTOR3 srcval ){
+	void SetSpc3F( ChaVector3 srcval ){
 		m_spc3f = srcval;
 	};
 
@@ -274,9 +274,9 @@ private:
 
 ////
 	D3DXVECTOR4 m_dif4f;
-	D3DXVECTOR3 m_amb3f;
-	D3DXVECTOR3 m_emi3f;
-	D3DXVECTOR3 m_spc3f;
+	ChaVector3 m_amb3f;
+	ChaVector3 m_emi3f;
+	ChaVector3 m_spc3f;
 	D3DXVECTOR4 m_sceneamb;
 
 	int m_transparent;

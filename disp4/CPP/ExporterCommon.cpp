@@ -17,7 +17,9 @@
 #include <polymesh3.h>
 #include <MqoMaterial.h>
 
-#include <VecMath.h>
+//#include <VecMath.h>
+#include <ChaCalc.h>
+
 
 #include <crtdbg.h>
 
@@ -492,7 +494,7 @@ bool RDBPlgMeshes::Create() {
 						RDBPlgVertex *vert = mesh->AddVertex();
 						vert->SetRDBVertexNo( vertno );
 						RDBPoint vpos;
-						D3DXVECTOR3 pos0 = (pm3->m_dispv + vertno)->pos;
+						ChaVector3 pos0 = (pm3->m_dispv + vertno)->pos;
 						vpos.x = pos0.x;
 						vpos.y = pos0.y;
 						vpos.z = pos0.z;
@@ -950,7 +952,7 @@ bool RDBPlgJoints::Create() {
 				}
 
 				/* マトリクス */
-				D3DXMATRIX offmat = curbone->m_xoffsetmat;
+				ChaMatrix offmat = curbone->m_xoffsetmat;
 				offsetmat._11 = offmat._11;
 				offsetmat._12 = offmat._12;
 				offsetmat._13 = offmat._13 * -1.0f;

@@ -27,7 +27,7 @@ protected:
 
 	int Read_Int( XMLIOBUF* xmliobuf, char* startpat, char* endpat, int* dstint );
 	int Read_Float( XMLIOBUF* xmliobuf, char* startpat, char* endpat, float* dstfloat );
-	int Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, D3DXVECTOR3* dstvec );
+	int Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, ChaVector3* dstvec );
 	int Read_Q( XMLIOBUF* xmliobuf, char* startpat, char* endpat, CQuaternion* dstq );
 	int Read_Str( XMLIOBUF* xmliobuf, char* startpat, char* endpat, char* dststr, int arrayleng );
 

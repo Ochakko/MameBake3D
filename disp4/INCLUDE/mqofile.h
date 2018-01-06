@@ -52,13 +52,13 @@ public:
 	~CMQOFile();
 
 	int LoadMQOFile( LPDIRECT3DDEVICE9 pdev, float multiple, WCHAR* filename, 
-		D3DXVECTOR3 offsetpos, D3DXVECTOR3 rot, 
+		ChaVector3 offsetpos, ChaVector3 rot, 
 		CModel* srcmodel );
 
 private:
 /// for load
 
-	int LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR3 rot );
+	int LoadMQOFile_aft( float multiple, ChaVector3 offsetpos, ChaVector3 rot );
 	
 	void InitLoadParams();
 
@@ -119,7 +119,7 @@ private:
 
 	float m_multiple;
 
-	D3DXMATRIX m_offsetmat;
+	ChaMatrix m_offsetmat;
 
 	D3DXVECTOR4 m_scene_ambient;
 };

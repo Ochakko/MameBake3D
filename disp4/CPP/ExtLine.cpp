@@ -58,7 +58,7 @@ int CExtLine::DestroyObjs()
 }
 
 
-int CExtLine::CreateExtLine( int pointnum, int facenum, D3DXVECTOR3* pointptr, CMQOFace* faceptr, D3DXVECTOR4 srccol )
+int CExtLine::CreateExtLine( int pointnum, int facenum, ChaVector3* pointptr, CMQOFace* faceptr, D3DXVECTOR4 srccol )
 {
 	m_pointptr = pointptr;
 	m_faceptr = faceptr;
@@ -134,9 +134,9 @@ int CExtLine::CreateBuffer( EXTLINEV* lineptr, int arrayleng, int* setnum )
 int CExtLine::CalcBound()
 {
 	if( m_linenum <= 0 ){
-		m_bound.min = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-		m_bound.max = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-		m_bound.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		m_bound.min = ChaVector3( 0.0f, 0.0f, 0.0f );
+		m_bound.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+		m_bound.center = ChaVector3( 0.0f, 0.0f, 0.0f );
 		m_bound.r = 0.0f;
 		return 0;
 	}
@@ -147,7 +147,7 @@ int CExtLine::CalcBound()
 
 	int vno;
 	for( vno = 1; vno < m_pointnum; vno++ ){
-		D3DXVECTOR3 curv = *( m_pointptr + vno );
+		ChaVector3 curv = *( m_pointptr + vno );
 
 		if( m_bound.min.x > curv.x ){
 			m_bound.min.x = curv.x;
@@ -172,9 +172,9 @@ int CExtLine::CalcBound()
 
 	m_bound.center = ( m_bound.min + m_bound.max ) * 0.5f;
 
-	D3DXVECTOR3 diff;
+	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = D3DXVec3Length( &diff );
+	m_bound.r = ChaVector3Length( &diff );
 
 	return 0;
 }

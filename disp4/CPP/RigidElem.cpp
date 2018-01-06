@@ -47,9 +47,9 @@ int CRigidElem::InitParams()
 	m_coltype = COL_CAPSULE_INDEX;
 	m_skipflag = 1;
 
-	D3DXMatrixIdentity( &m_capsulemat );
-	D3DXMatrixIdentity(&m_firstcapsulemat);
-	D3DXMatrixIdentity(&m_firstworldmat);
+	ChaMatrixIdentity( &m_capsulemat );
+	ChaMatrixIdentity(&m_firstcapsulemat);
+	ChaMatrixIdentity(&m_firstworldmat);
 
 	m_sphrate = 0.6f;
 	m_boxzrate = 0.6f;
@@ -58,7 +58,7 @@ int CRigidElem::InitParams()
 	m_sphr = 0.0f;
 	m_boxz = 0.0f;
 
-	//m_impulse = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	//m_impulse = ChaVector3( 0.0f, 0.0f, 0.0f );
 	
 	m_l_kindex = 2;
 	m_a_kindex = 2;
@@ -119,13 +119,13 @@ float CRigidElem::GetBoneLeng()
 		return 0.0f;
 	}
 
-	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
+	ChaVector3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
 	D3DVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetInitMat());
 	chilposA = m_endbone->GetJointFPos();
 	D3DVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetInitMat());
-	D3DXVECTOR3 diffA = chilposA - parposA;
-	m_boneleng = D3DXVec3Length(&diffA);
+	ChaVector3 diffA = chilposA - parposA;
+	m_boneleng = ChaVector3Length(&diffA);
 
 	return m_boneleng;
 

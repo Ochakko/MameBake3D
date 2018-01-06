@@ -210,8 +210,8 @@ int sortfunc_order0( void *context, const void *elem1, const void *elem2)
 
 
 
-int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, D3DXVECTOR3* pointptr, CMQOFace* faceptr, 
-	map<int,CMQOMaterial*>& srcmat, D3DXMATRIX multmat )
+int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
+	map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat )
 {
 	m_orgpointnum = pointnum;
 	m_orgfacenum = facenum;
@@ -324,12 +324,12 @@ int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, D3DXVECTOR3* 
 	return 0;
 }
 
-int CPolyMesh3::MultVert( D3DXMATRIX multmat )
+int CPolyMesh3::MultVert( ChaMatrix multmat )
 {
 	int pno;
 	for( pno = 0; pno < m_orgpointnum; pno++ ){
-		D3DXVECTOR3 tmpv;
-		D3DXVec3TransformCoord( &tmpv, m_pointbuf + pno, &multmat );
+		ChaVector3 tmpv;
+		ChaVector3TransformCoord( &tmpv, m_pointbuf + pno, &multmat );
 		*( m_pointbuf + pno ) = tmpv;
 	}
 	return 0;
@@ -417,14 +417,14 @@ int CPolyMesh3::CalcOrgNormal()
 		int n3p = fno * 3;
 		N3P* curn3p = m_n3p + n3p;
 
-		D3DXVECTOR3 vpos[3];
+		ChaVector3 vpos[3];
 		int indexno;
 		for( indexno = 0; indexno < 3; indexno++ ){
 			int vertno = (curn3p + indexno)->pervert->vno;
 			vpos[indexno] = *( m_pointbuf + vertno );
 		}
 
-		D3DXVECTOR3 nvec;
+		ChaVector3 nvec;
 		CalcNormal( &nvec, vpos, vpos + 2, vpos + 1 );
 
 		for( indexno = 0; indexno < 3; indexno++ ){
@@ -437,9 +437,9 @@ int CPolyMesh3::CalcOrgNormal()
 }
 
 
-int CPolyMesh3::CalcNormal( D3DXVECTOR3* newn, D3DXVECTOR3* curp, D3DXVECTOR3* aftp1, D3DXVECTOR3* aftp2 )
+int CPolyMesh3::CalcNormal( ChaVector3* newn, ChaVector3* curp, ChaVector3* aftp1, ChaVector3* aftp2 )
 {
-	D3DXVECTOR3 vec1, vec2, crossvec;
+	ChaVector3 vec1, vec2, crossvec;
 
 	vec1 = *aftp1 - *curp;
 	vec2 = *aftp2 - *curp;
@@ -455,9 +455,9 @@ int CPolyMesh3::CalcNormal( D3DXVECTOR3* newn, D3DXVECTOR3* curp, D3DXVECTOR3* a
 	return 0;
 }
 
-int CPolyMesh3::Vec3Cross( D3DXVECTOR3* pOut, D3DXVECTOR3* pV1, D3DXVECTOR3* pV2 )
+int CPolyMesh3::Vec3Cross( ChaVector3* pOut, ChaVector3* pV1, ChaVector3* pV2 )
 {
-	//D3DXVECTOR3 v;
+	//ChaVector3 v;
 	
 	float x1, y1, z1, x2, y2, z2;
 	x1 = pV1->x; y1 = pV1->y; z1 = pV1->z;
@@ -470,7 +470,7 @@ int CPolyMesh3::Vec3Cross( D3DXVECTOR3* pOut, D3DXVECTOR3* pV1, D3DXVECTOR3* pV2
 	return 0;
 }
 
-int CPolyMesh3::Vec3Normalize( D3DXVECTOR3* retvec, D3DXVECTOR3* srcvec )
+int CPolyMesh3::Vec3Normalize( ChaVector3* retvec, ChaVector3* srcvec )
 {
 	float mag;
 	float srcx, srcy, srcz;
@@ -543,7 +543,7 @@ int CPolyMesh3::SetSMFace()
 						if( n1 == n2 ){
 							continue;
 						}
-						float chkdot = D3DXVec3Dot( &(n3p1->perface->facenormal), &(n3p2->perface->facenormal) );
+						float chkdot = ChaVector3Dot( &(n3p1->perface->facenormal), &(n3p2->perface->facenormal) );
 						if( chkdot >= basedot ){
 							CallF( AddSmFace( n3p1, n3p2 ), return 1 );
 						}
@@ -574,7 +574,7 @@ int CPolyMesh3::SetSMFace()
 						}
 					}
 				}
-				D3DXVec3Normalize( &(curn3p->pervert->smnormal), &(curn3p->pervert->smnormal) );
+				ChaVector3Normalize( &(curn3p->pervert->smnormal), &(curn3p->pervert->smnormal) );
 			}
 
 			int i2;
@@ -754,16 +754,16 @@ int CPolyMesh3::CalcBound()
 /***
 typedef struct tag_modelbaund
 {
-	D3DXVECTOR3 min;
-	D3DXVECTOR3 max;
-	D3DXVECTOR3 center;
+	ChaVector3 min;
+	ChaVector3 max;
+	ChaVector3 center;
 	float		r;
 }MODELBAUND;
 ***/
 	if( (m_orgpointnum == 0) || (m_facenum == 0) ){
-		m_bound.min = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-		m_bound.max = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-		m_bound.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		m_bound.min = ChaVector3( 0.0f, 0.0f, 0.0f );
+		m_bound.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+		m_bound.center = ChaVector3( 0.0f, 0.0f, 0.0f );
 		m_bound.r = 0.0f;
 		return 0;
 	}
@@ -774,7 +774,7 @@ typedef struct tag_modelbaund
 
 	int vno;
 	for( vno = 1; vno < m_orgpointnum; vno++ ){
-		D3DXVECTOR3 curv = *( m_pointbuf + vno );
+		ChaVector3 curv = *( m_pointbuf + vno );
 
 		if( m_bound.min.x > curv.x ){
 			m_bound.min.x = curv.x;
@@ -799,20 +799,20 @@ typedef struct tag_modelbaund
 
 	m_bound.center = ( m_bound.min + m_bound.max ) * 0.5f;
 
-	D3DXVECTOR3 diff;
+	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = D3DXVec3Length( &diff );
+	m_bound.r = ChaVector3Length( &diff );
 
 	return 0;
 }
 
-int CPolyMesh3::MultScale( D3DXVECTOR3 srcscale, D3DXVECTOR3 srctra )
+int CPolyMesh3::MultScale( ChaVector3 srcscale, ChaVector3 srctra )
 {
 	int vno;
 	for( vno = 0; vno < m_optleng; vno++ ){
 		N3P* curn3p = m_n3p + vno;
 		int orgvno = curn3p->pervert->vno;
-		D3DXVECTOR3* srcv = m_pointbuf + orgvno;
+		ChaVector3* srcv = m_pointbuf + orgvno;
 		PM3DISPV* curv = m_dispv + vno;
 		curv->pos = D3DXVECTOR4( srcv->x * srcscale.x + srctra.x, srcv->y * srcscale.y + srctra.y, srcv->z * srcscale.z + srctra.z, 1.0f );
 	}

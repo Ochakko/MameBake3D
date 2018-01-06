@@ -340,6 +340,7 @@
     <ClCompile Include="..\disp4\CPP\BVHelem.cpp" />
     <ClCompile Include="..\disp4\CPP\BVHFile.cpp" />
     <ClCompile Include="..\disp4\CPP\ChaFile.cpp" />
+    <ClCompile Include="..\disp4\CPP\ChaVecCalc.cpp" />
     <ClCompile Include="..\disp4\CPP\Collision.cpp" />
     <ClCompile Include="..\disp4\CPP\dbg.cpp" />
     <ClCompile Include="..\disp4\CPP\DispObj.cpp" />
@@ -372,7 +373,6 @@
     <ClCompile Include="..\disp4\CPP\TexBank.cpp" />
     <ClCompile Include="..\disp4\CPP\TexElem.cpp" />
     <ClCompile Include="..\disp4\CPP\UndoMotion.cpp" />
-    <ClCompile Include="..\disp4\CPP\VecMath.cpp" />
     <ClCompile Include="..\disp4\CPP\XMLIO.cpp" />
     <ClCompile Include="..\disp4\DXUT\Core\DXUT.cpp" />
     <ClCompile Include="..\disp4\DXUT\Core\DXUTenum.cpp" />
@@ -637,6 +637,7 @@
     <ClInclude Include="..\disp4\INCLUDE\BVHelem.h" />
     <ClInclude Include="..\disp4\INCLUDE\BVHFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\ChaFile.h" />
+    <ClInclude Include="..\disp4\INCLUDE\ChaVecCalc.h" />
     <ClInclude Include="..\disp4\INCLUDE\Coef.h" />
     <ClInclude Include="..\disp4\INCLUDE\coef_r.h" />
     <ClInclude Include="..\disp4\INCLUDE\Collision.h" />
@@ -674,7 +675,6 @@
     <ClInclude Include="..\disp4\INCLUDE\TexElem.h" />
     <ClInclude Include="..\disp4\INCLUDE\UndoMotion.h" />
     <ClInclude Include="..\disp4\INCLUDE\usercoef.h" />
-    <ClInclude Include="..\disp4\INCLUDE\VecMath.h" />
     <ClInclude Include="..\disp4\INCLUDE\XMLIO.h" />
     <ClInclude Include="ColiIDDlg.h" />
     <ClInclude Include="dlgid.h" />

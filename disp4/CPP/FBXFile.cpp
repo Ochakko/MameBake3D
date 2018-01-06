@@ -140,7 +140,7 @@ static FbxTexture*  CreateTexture( FbxManager* pSdkManager, CMQOMaterial* mqomat
 static int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno );
 
 static int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObject* curobj, BLSINDEX* blsindex );
-static int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, D3DXVECTOR3* targetv, int targetcnt );
+static int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, ChaVector3* targetv, int targetcnt );
 
 static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, int bonecnt);
 static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene);
@@ -565,7 +565,7 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 
 //void MapBoxShape(FbxScene* pScene, FbxBlendShapeChannel* lBlendShapeChannel)
 //int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, CMQOObject* curtarget, MATERIALBLOCK* pmb, int mbno )
-int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, D3DXVECTOR3* targetv, int targetcnt )
+int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, ChaVector3* targetv, int targetcnt )
 {
 	char shapename[256]={0};
 	sprintf_s( shapename, 256, "SHAPE_%s_%d", curobj->GetEngName(), targetcnt );
@@ -582,7 +582,7 @@ int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, 
 	for( shapevno = 0; shapevno < shapevertnum; shapevno++ ){
 		int orgvno = *( basepm4->GetDispIndex() + shapevno );
 
-		D3DXVECTOR3 shapev = *( targetv + orgvno );
+		ChaVector3 shapev = *( targetv + orgvno );
 		lVector4[ shapevno ].Set( shapev.x, shapev.y, shapev.z, 1.0 );
 	}
 	lBlendShapeChannel->AddTargetShape(lShape);
@@ -600,12 +600,12 @@ int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObjec
 	(blsindex->channelno) = 0;
 
 	int targetcnt = 0;
-	map<string,D3DXVECTOR3*> tmpmap;
+	map<string,ChaVector3*> tmpmap;
 	curobj->GetShapeVert2( tmpmap );
-	map<string,D3DXVECTOR3*>::iterator itrshapev;
+	map<string,ChaVector3*>::iterator itrshapev;
 	for( itrshapev = tmpmap.begin(); itrshapev != tmpmap.end(); itrshapev++ ){
 		string targetname = itrshapev->first;
-		D3DXVECTOR3* curv = itrshapev->second;
+		ChaVector3* curv = itrshapev->second;
 		if( curv ){
 			string curshapename = itrshapev->first;
 
@@ -674,10 +674,10 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 
 	int vsetno = 0;
 	for (vsetno = 0; vsetno < pm4->GetOrgPointNum(); vsetno++){
-		D3DXVECTOR3* curv = pm4->GetOrgPointBuf() + vsetno;
+		ChaVector3* curv = pm4->GetOrgPointBuf() + vsetno;
 		*(lcp + vsetno) = FbxVector4(curv->x, curv->y, curv->z, 1.0f);
 
-		D3DXVECTOR3 curn = pm4->GetNormalByControlPointNo(vsetno);
+		ChaVector3 curn = pm4->GetNormalByControlPointNo(vsetno);
 		FbxVector4 fbxn = FbxVector4(curn.x, curn.y, curn.z, 0.0f);
 		lElementNormal->GetDirectArray().Add(fbxn);
 
@@ -920,7 +920,7 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 
 
 			if (lCluster){
-				D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				ChaVector3 pos = ChaVector3(0.0f, 0.0f, 0.0f);
 				pos.x = s_firsttopbone->GetBone()->GetJointFPos().x;
 				pos.y = s_firsttopbone->GetBone()->GetJointFPos().y;
 				pos.z = s_firsttopbone->GetBone()->GetJointFPos().z;
@@ -1406,8 +1406,8 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 
 	FbxAMatrix lBindMatrix;
 	lBindMatrix.SetIdentity();
-	D3DXMATRIX tramat;
-	D3DXMatrixIdentity(&tramat);
+	ChaMatrix tramat;
+	ChaMatrixIdentity(&tramat);
 	FbxNode* curskel = fbxbone->GetSkelNode();
 	if (fbxbone->GetType() != FB_ROOT){
 		if (curskel){
@@ -1430,7 +1430,7 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 {
 	int notexistflag = 0;
 
-	D3DXVECTOR3 curpos, parpos;
+	ChaVector3 curpos, parpos;
 	if (s_bvhflag == 1){
 		CBVHElem* curbone = fbxbone->GetBvhElem();
 		if (curbone){
@@ -1444,11 +1444,11 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 					parpos = parbone->GetPosition();
 				}
 				else{
-					parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+					parpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				}
 			}
 			else{
-				parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				parpos = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
@@ -1468,11 +1468,11 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 					parpos = parbone->GetJointFPos();
 				}
 				else{
-					parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+					parpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				}
 			}
 			else{
-				parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				parpos = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
@@ -1482,8 +1482,8 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 
 	CBone calcbone(s_model);
 
-	D3DXMATRIX tramat;
-	D3DXMatrixIdentity(&tramat);
+	ChaMatrix tramat;
+	ChaMatrixIdentity(&tramat);
 
 	if (notexistflag == 1){
 		FbxAMatrix lInitMatrix;
@@ -1495,8 +1495,8 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 		tramat = fbxbone->GetBone()->GetNodeMat();
 	}
 	else{
-		D3DXVECTOR3 diffvec = curpos - parpos;
-		float leng = D3DXVec3Length(&diffvec);
+		ChaVector3 diffvec = curpos - parpos;
+		float leng = ChaVector3Length(&diffvec);
 		if (leng >= 0.00001f){
 			//tramat = CalcAxisMatX_aft(parpos, curpos);
 			calcbone.CalcAxisMatZ_aft(parpos, curpos, &tramat);
@@ -1505,7 +1505,7 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 			tramat._43 = curpos.z;
 		}
 		else{
-			D3DXMatrixIdentity(&tramat);
+			ChaMatrixIdentity(&tramat);
 			tramat._41 = curpos.x;
 			tramat._42 = curpos.y;
 			tramat._43 = curpos.z;
@@ -1842,13 +1842,13 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		parpbe = 0;
 	}
 
-	D3DXVECTOR3 curpos, parpos, gparpos;
+	ChaVector3 curpos, parpos, gparpos;
 	curpos = pbe->GetPosition();
 	if (parpbe){
 		parpos = parpbe->GetPosition();
 	}
 	else{
-		parpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		parpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
 
@@ -2057,13 +2057,13 @@ CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 
 void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 {
-	D3DXVECTOR3 curpos, parpos, gparpos;
+	ChaVector3 curpos, parpos, gparpos;
 	curpos = pbone->GetJointFPos();
 	CBone* parbone = pbone->GetParent();
 	if( parbone ){
 		parpos = parbone->GetJointFPos();
 	}else{
-		parpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		parpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	}
 
 	CFBXBone* fbxbone = new CFBXBone();
@@ -2293,7 +2293,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 		if (fbxbone->GetBone()){
 			CBone* curbone = fbxbone->GetBone();
 			if (curbone){
-				D3DXVECTOR3 pos;
+				ChaVector3 pos;
 				pos = curbone->GetJointFPos();
 
 				FbxAMatrix lXMatrix;
@@ -2317,7 +2317,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 		else if (fbxbone->GetBvhElem()){
 			CBVHElem* curbone = fbxbone->GetBvhElem();
 			if (curbone){
-				D3DXVECTOR3 pos;
+				ChaVector3 pos;
 				pos = curbone->GetPosition();
 
 				FbxAMatrix lXMatrix;
@@ -2389,7 +2389,7 @@ static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 			break;
 		}
 
-		D3DXVECTOR3 fbxtra;
+		ChaVector3 fbxtra;
 		lCurve = lSkel->LclTranslation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++){
@@ -2456,8 +2456,8 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		}
 
 
-		D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 		lCurve = lSkel->LclRotation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
@@ -2505,7 +2505,7 @@ int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiski
 			_ASSERT(0);
 			return 1;
 		}
-		D3DXVECTOR3 difftra, orgtra, settra;
+		ChaVector3 difftra, orgtra, settra;
 		CBVHElem* parbe;// = curbe->GetParent();
 		if (fbxbone->GetParent()){
 			parbe = fbxbone->GetParent()->GetBvhElem();

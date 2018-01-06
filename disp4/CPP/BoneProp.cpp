@@ -31,12 +31,12 @@ static int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 
 
-float vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
+float vecDotVec( ChaVector3* vec1, ChaVector3* vec2 )
 {
 	return ( vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z );
 }
 
-float lengthVec( D3DXVECTOR3* vec )
+float lengthVec( ChaVector3* vec )
 {
 	double mag;
 	float leng;
@@ -66,13 +66,13 @@ float aCos( float dot )
 	return degree;
 }
 
-int vec3RotateY( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
+int vec3RotateY( ChaVector3* dstvec, float deg, ChaVector3* srcvec )
 {
 
 	int ret;
 	CQuaternion iniq;
 	CQuaternion dirq;
-	D3DXMATRIX	dirm;
+	ChaMatrix	dirm;
 
 	ret = dirq.SetRotation( &iniq, 0, deg, 0 );
 	_ASSERT( !ret );
@@ -84,13 +84,13 @@ int vec3RotateY( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
 
 	return 0;
 }
-int vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
+int vec3RotateX( ChaVector3* dstvec, float deg, ChaVector3* srcvec )
 {
 
 	int ret;
 	CQuaternion iniq; 
 	CQuaternion dirq;
-	D3DXMATRIX	dirm;
+	ChaMatrix	dirm;
 
 	ret = dirq.SetRotation( &iniq, deg, 0, 0 );
 	_ASSERT( !ret );
@@ -102,13 +102,13 @@ int vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
 
 	return 0;
 }
-int vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
+int vec3RotateZ( ChaVector3* dstvec, float deg, ChaVector3* srcvec )
 {
 
 	int ret;
 	CQuaternion iniq;
 	CQuaternion dirq;
-	D3DXMATRIX	dirm;
+	ChaMatrix	dirm;
 
 	ret = dirq.SetRotation( &iniq, 0, 0, deg );
 	_ASSERT( !ret );
@@ -122,7 +122,7 @@ int vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
 }
 
 
-int qToEulerAxis( CQuaternion axisQ, CQuaternion* srcq, D3DXVECTOR3* Euler )
+int qToEulerAxis( CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler )
 {
 
 	int ret;
@@ -132,12 +132,12 @@ int qToEulerAxis( CQuaternion axisQ, CQuaternion* srcq, D3DXVECTOR3* Euler )
 	EQ = invaxisQ * *srcq * axisQ;
 
 
-	D3DXVECTOR3 axisXVec( 1.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 axisYVec( 0.0f, 1.0f, 0.0f );
-	D3DXVECTOR3 axisZVec( 0.0f, 0.0f, 1.0f );
+	ChaVector3 axisXVec( 1.0f, 0.0f, 0.0f );
+	ChaVector3 axisYVec( 0.0f, 1.0f, 0.0f );
+	ChaVector3 axisZVec( 0.0f, 0.0f, 1.0f );
 
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
+	ChaVector3 targetVec, shadowVec;
+	ChaVector3 tmpVec;
 
 	EQ.Rotate( &targetVec, axisZVec );
 	shadowVec.x = vecDotVec( &targetVec, &axisXVec );
@@ -229,7 +229,7 @@ int GetRound( float srcval )
 	}
 }
 
-int modifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB )
+int modifyEuler( ChaVector3* eulerA, ChaVector3* eulerB )
 {
 
 	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
@@ -261,7 +261,7 @@ int modifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB )
 	return 0;
 }
 
-int IsInitRot(D3DXMATRIX srcmat)
+int IsInitRot(ChaMatrix srcmat)
 {
 	int retval = 0;
 
@@ -293,11 +293,11 @@ int IsInitRot(D3DXMATRIX srcmat)
 }
 
 
-int IsSameMat(D3DXMATRIX srcmat1, D3DXMATRIX srcmat2)
+int IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 {
 
 	int retval = 0;
-	D3DXMATRIX diffmat;
+	ChaMatrix diffmat;
 	diffmat = srcmat1 - srcmat2;
 
 	float dmin = 0.000001f;
@@ -313,11 +313,11 @@ int IsSameMat(D3DXMATRIX srcmat1, D3DXMATRIX srcmat2)
 	return retval;
 }
 
-int IsSameEul(D3DXVECTOR3 srceul1, D3DXVECTOR3 srceul2)
+int IsSameEul(ChaVector3 srceul1, ChaVector3 srceul2)
 {
 	int retval = 0;
 
-	D3DXVECTOR3 diffeul;
+	ChaVector3 diffeul;
 	diffeul = srceul1 - srceul2;
 
 	//float dmin = 0.000015f;
@@ -537,7 +537,7 @@ bool IsTimeEqual(double srctime1, double srctime2)
 	}
 }
 
-float VecLength(D3DXVECTOR3 srcvec)
+float VecLength(ChaVector3 srcvec)
 {
 	double tmpval = srcvec.x * srcvec.x + srcvec.y * srcvec.y + srcvec.z * srcvec.z;
 	if (tmpval > 0.0){
@@ -549,13 +549,13 @@ float VecLength(D3DXVECTOR3 srcvec)
 }
 
 
-void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, D3DXVECTOR3* tvecptr)
+void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr)
 {
-	*svecptr = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-	D3DXMatrixIdentity(rmatptr);
-	*tvecptr = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	*svecptr = ChaVector3(1.0f, 1.0f, 1.0f);
+	ChaMatrixIdentity(rmatptr);
+	*tvecptr = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	D3DXMATRIX tmpmat1 = srcmat;
+	ChaMatrix tmpmat1 = srcmat;
 
 	tvecptr->x = tmpmat1._41;
 	tvecptr->y = tmpmat1._42;
@@ -565,7 +565,7 @@ void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, 
 	tmpmat1._42 = 0.0f;
 	tmpmat1._43 = 0.0f;
 
-	D3DXVECTOR3 vec1, vec2, vec3;
+	ChaVector3 vec1, vec2, vec3;
 	vec1.x = tmpmat1._11;
 	vec1.y = tmpmat1._12;
 	vec1.z = tmpmat1._13;
@@ -623,9 +623,9 @@ void GetSRTMatrix(D3DXMATRIX srcmat, D3DXVECTOR3* svecptr, D3DXMATRIX* rmatptr, 
 
 }
 
-D3DXMATRIX TransZeroMat(D3DXMATRIX srcmat)
+ChaMatrix TransZeroMat(ChaMatrix srcmat)
 {
-	D3DXMATRIX retmat;
+	ChaMatrix retmat;
 	retmat = srcmat;
 	retmat._41 = 0.0f;
 	retmat._42 = 0.0f;
@@ -634,10 +634,10 @@ D3DXMATRIX TransZeroMat(D3DXMATRIX srcmat)
 	return retmat;
 }
 
-D3DXMATRIX D3DXMatrixFromBtMat3x3(btMatrix3x3 srcmat3x3)
+ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3 srcmat3x3)
 {
-	D3DXMATRIX retmat;
-	D3DXMatrixIdentity(&retmat);
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
 
 	btVector3 tmpcol[3];
 	int colno;
@@ -661,10 +661,10 @@ D3DXMATRIX D3DXMatrixFromBtMat3x3(btMatrix3x3 srcmat3x3)
 	return retmat;
 }
 
-D3DXMATRIX D3DXMatrixFromBtTransform(btMatrix3x3 srcmat3x3, btVector3 srcpivot)
+ChaMatrix ChaMatrixFromBtTransform(btMatrix3x3 srcmat3x3, btVector3 srcpivot)
 {
-	D3DXMATRIX retmat;
-	D3DXMatrixIdentity(&retmat);
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
 
 	btVector3 tmpcol[3];
 	int colno;
@@ -692,10 +692,10 @@ D3DXMATRIX D3DXMatrixFromBtTransform(btMatrix3x3 srcmat3x3, btVector3 srcpivot)
 	return retmat;
 }
 
-D3DXMATRIX D3DXMatrixInv(D3DXMATRIX srcmat)
+ChaMatrix ChaMatrixInv(ChaMatrix srcmat)
 {
-	D3DXMATRIX retmat;
-	D3DXMatrixInverse(&retmat, NULL, &srcmat);
+	ChaMatrix retmat;
+	ChaMatrixInverse(&retmat, NULL, &srcmat);
 	return retmat;
 }
 

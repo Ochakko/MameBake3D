@@ -52,7 +52,7 @@ int CBVHElem::InitParams()
 	serialno = 0;
 
 	ZeroMemory( name, sizeof( char ) * PATH_LENG );
-	ZeroMemory( &offset, sizeof( D3DXVECTOR3 ) );
+	ZeroMemory( &offset, sizeof( ChaVector3 ) );
 	chanelnum = 0;
 	ZeroMemory( chanels, sizeof( int ) * CHANEL_MAX );
 
@@ -73,7 +73,7 @@ int CBVHElem::InitParams()
 	child = 0;
 	brother = 0;
 
-	ZeroMemory( &position, sizeof( D3DXVECTOR3 ) );
+	ZeroMemory( &position, sizeof( ChaVector3 ) );
 
 	mqono = 0;
 
@@ -443,30 +443,30 @@ int CBVHElem::CreateMotionObjs( int srcframes )
 
 	framenum = srcframes;
 
-	trans = new D3DXVECTOR3[ framenum ];
+	trans = new ChaVector3[ framenum ];
 	if( !trans ){
 		DbgOut( L"bvhelem : CreateMotionObjs : trans alloc error !!!\n" );
 		_ASSERT( 0 );
 		return 1;
 	}
-	ZeroMemory( trans, sizeof( D3DXVECTOR3 ) * framenum );
+	ZeroMemory( trans, sizeof( ChaVector3 ) * framenum );
 
 
-	rotate = new D3DXVECTOR3[ framenum ];
+	rotate = new ChaVector3[ framenum ];
 	if( !rotate ){
 		DbgOut( L"bvhelem : CreateMotionObjs : rotate alloc error !!!\n" );
 		_ASSERT( 0 );
 		return 1;
 	}
-	ZeroMemory( rotate, sizeof( D3DXVECTOR3 ) * framenum );
+	ZeroMemory( rotate, sizeof( ChaVector3 ) * framenum );
 
-	zxyrot = new D3DXVECTOR3[framenum];
+	zxyrot = new ChaVector3[framenum];
 	if (!zxyrot){
 		DbgOut(L"bvhelem : CreateMotionObjs : zxyrot alloc error !!!\n");
 		_ASSERT(0);
 		return 1;
 	}
-	ZeroMemory(zxyrot, sizeof(D3DXVECTOR3)* framenum);
+	ZeroMemory(zxyrot, sizeof(ChaVector3)* framenum);
 
 
 	qptr = new CQuaternion[ framenum ];
@@ -490,7 +490,7 @@ int CBVHElem::CreateMotionObjs( int srcframes )
 		return 1;
 	}
 
-	transmat = new D3DXMATRIX[framenum];
+	transmat = new ChaMatrix[framenum];
 	if (!transmat){
 		DbgOut(L"bvhelem : CreateMotionObj : transmat alloc error !!!\n");
 		_ASSERT(0);
@@ -579,7 +579,7 @@ int CBVHElem::DbgOutBVHElem( int srcdepth, int outmotionflag )
 int CBVHElem::SetPosition()
 {
 
-	D3DXVECTOR3 parpos;
+	ChaVector3 parpos;
 	if( parent ){
 		parpos = parent->position;
 
@@ -620,19 +620,19 @@ int CBVHElem::ConvertRotate2Q()
 {
 	int fno;
 
-	D3DXMATRIX matx, maty, matz;
-	D3DXMATRIX tmatx, tmaty, tmatz;
-	D3DXMATRIX mat;
+	ChaMatrix matx, maty, matz;
+	ChaMatrix tmatx, tmaty, tmatz;
+	ChaMatrix mat;
 	D3DXQUATERNION q;
 
 	for( fno = 0; fno < framenum; fno++ ){
-		D3DXMatrixRotationX( &matx, ( rotate + fno )->x * (float)DEG2PAI );
-		D3DXMatrixRotationY( &maty, ( rotate + fno )->y * (float)DEG2PAI );
-		D3DXMatrixRotationZ( &matz, ( rotate + fno )->z * (float)DEG2PAI );
+		ChaMatrixRotationX( &matx, ( rotate + fno )->x * (float)DEG2PAI );
+		ChaMatrixRotationY( &maty, ( rotate + fno )->y * (float)DEG2PAI );
+		ChaMatrixRotationZ( &matz, ( rotate + fno )->z * (float)DEG2PAI );
 
-		D3DXMatrixTranspose( &tmatx, &matx );
-		D3DXMatrixTranspose( &tmaty, &maty );
-		D3DXMatrixTranspose( &tmatz, &matz );
+		ChaMatrixTranspose( &tmatx, &matx );
+		ChaMatrixTranspose( &tmaty, &maty );
+		ChaMatrixTranspose( &tmatz, &matz );
 
 		mat = tmatz * tmatx * tmaty;
 		//mat = tmaty * tmatx * tmatz;
@@ -690,14 +690,14 @@ int CBVHElem::ConvZxyRot()
 {
 
 	int frameno;
-	D3DXVECTOR3 befeul;
-	ZeroMemory(&befeul, sizeof(D3DXVECTOR3));
+	ChaVector3 befeul;
+	ZeroMemory(&befeul, sizeof(ChaVector3));
 	CQuaternion befq;
 	befq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 	for (frameno = 0; frameno < framenum; frameno++){
 		befq.InOrder(qptr + frameno);
 
-		D3DXVECTOR3 euler;
+		ChaVector3 euler;
 		//qToEulerAxis( *(treeq + frameno), (qptr + frameno), &euler);
 		CQuaternion iniq;
 		qToEulerAxis(iniq, (qptr + frameno), &euler);
@@ -742,16 +742,16 @@ int CBVHElem::CheckNotAlNumName( char** ppdstname )
 }
 
 
-int CBVHElem::CalcDiffTra( int frameno, D3DXVECTOR3* pdifftra )
+int CBVHElem::CalcDiffTra( int frameno, ChaVector3* pdifftra )
 {
 
-	D3DXMATRIX rotmat = (qptr + frameno)->MakeRotMatX();
+	ChaMatrix rotmat = (qptr + frameno)->MakeRotMatX();
 	rotmat._41 += (trans + frameno)->x;
 	rotmat._42 += (trans + frameno)->y;
 	rotmat._43 += (trans + frameno)->z;
 
-	D3DXVECTOR3 aftpos( 0.0f, 0.0f, 0.0f );
-	D3DXVec3TransformCoord( &aftpos, &position, &rotmat );
+	ChaVector3 aftpos( 0.0f, 0.0f, 0.0f );
+	ChaVector3TransformCoord( &aftpos, &position, &rotmat );
 
 	*pdifftra = aftpos - position;
 

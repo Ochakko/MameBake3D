@@ -29,7 +29,7 @@ public:
 	int ConvertRotate2Q();
 	int CheckNotAlNumName( char** ppdstname );
 
-	int CalcDiffTra( int frameno, D3DXVECTOR3* pdifftra );
+	int CalcDiffTra( int frameno, ChaVector3* pdifftra );
 	int ConvZxyRot();
 
 private:
@@ -74,7 +74,7 @@ public:
 	CQuaternion* GetQPtr(){
 		return qptr;
 	};
-	D3DXMATRIX* GetTransMat(){
+	ChaMatrix* GetTransMat(){
 		return transmat;
 	};
 
@@ -82,7 +82,7 @@ public:
 		return samenameboneseri;
 	};
 
-	D3DXVECTOR3 GetPosition(){
+	ChaVector3 GetPosition(){
 		return position;
 	};
 
@@ -90,7 +90,7 @@ public:
 		return framenum;
 	}
 
-	//D3DXVECTOR3* GetRotate(){
+	//ChaVector3* GetRotate(){
 	//	return rotate;
 	//};
 
@@ -156,7 +156,7 @@ public:
 		}
 	};
 
-	int GetTrans(int srcframeno, D3DXVECTOR3* dsttra)
+	int GetTrans(int srcframeno, ChaVector3* dsttra)
 	{
 		if ((srcframeno >= 0) && (srcframeno < framenum)){
 			*dsttra = *(trans + srcframeno);
@@ -242,24 +242,24 @@ private:
 	int mqono;
 
 	char name[ PATH_LENG ];
-	D3DXVECTOR3 offset;
+	ChaVector3 offset;
 	int chanelnum;
 	int chanels[ CHANEL_MAX ];
 
 	int framenum;
 	float frametime;
 
-	D3DXVECTOR3* trans;
-	D3DXVECTOR3* rotate;
-	D3DXVECTOR3* zxyrot;
+	ChaVector3* trans;
+	ChaVector3* rotate;
+	ChaVector3* zxyrot;
 	CQuaternion* qptr;
 	CQuaternion* transpose;//転置後のクォータニオン
 	CQuaternion* treeq;//親の影響を考慮したクォータニオン。自分を含まず。
 
-	D3DXVECTOR3* partransptr;
-	D3DXVECTOR3 position;
+	ChaVector3* partransptr;
+	ChaVector3 position;
 
-	D3DXMATRIX* transmat;//グローバルの変換行列
+	ChaMatrix* transmat;//グローバルの変換行列
 
 
 	int samenameboneseri;//sigに、同じ名前のボーンがあった場合にselem->serialnoをセット、無かったら-1。

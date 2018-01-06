@@ -13,15 +13,15 @@
 
 
 #include <d3dx9.h>
-
+#include <ChaVecCalc.h>
 
 
 struct KeyInfo{
 	const TCHAR *label;
 	double time;
 	int timeIndex,lineIndex;
-	//D3DXVECTOR3 eul, tra;
-	D3DXMATRIX wmat;
+	//ChaVector3 eul, tra;
+	ChaMatrix wmat;
 	void *object;
 };
 

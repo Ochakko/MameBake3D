@@ -143,7 +143,7 @@ int sortfunc_material( void *context, const void *elem1, const void *elem2)
 }
 
 
-int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, D3DXVECTOR3* pointptr, D3DXVECTOR3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
+int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
 {
 	m_orgpointnum = pointnum;
 	m_orgfacenum = facenum;
@@ -332,7 +332,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 						_ASSERT( 0 );
 					}
 				}else{
-					curv->normal = D3DXVECTOR3( 0.0f, 0.0f, 1.0f );
+					curv->normal = ChaVector3( 0.0f, 0.0f, 1.0f );
 					_ASSERT( 0 );
 				}
 
@@ -400,16 +400,16 @@ int CPolyMesh4::CalcBound()
 /***
 typedef struct tag_modelbaund
 {
-	D3DXVECTOR3 min;
-	D3DXVECTOR3 max;
-	D3DXVECTOR3 center;
+	ChaVector3 min;
+	ChaVector3 max;
+	ChaVector3 center;
 	float		r;
 }MODELBAUND;
 ***/
 	if( (m_orgpointnum == 0) || (m_facenum == 0) ){
-		m_bound.min = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-		m_bound.max = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-		m_bound.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		m_bound.min = ChaVector3( 0.0f, 0.0f, 0.0f );
+		m_bound.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+		m_bound.center = ChaVector3( 0.0f, 0.0f, 0.0f );
 		m_bound.r = 0.0f;
 		return 0;
 	}
@@ -420,7 +420,7 @@ typedef struct tag_modelbaund
 
 	int vno;
 	for( vno = 1; vno < m_orgpointnum; vno++ ){
-		D3DXVECTOR3 curv = *( m_pointbuf + vno );
+		ChaVector3 curv = *( m_pointbuf + vno );
 
 		if( m_bound.min.x > curv.x ){
 			m_bound.min.x = curv.x;
@@ -445,9 +445,9 @@ typedef struct tag_modelbaund
 
 	m_bound.center = ( m_bound.min + m_bound.max ) * 0.5f;
 
-	D3DXVECTOR3 diff;
+	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = D3DXVec3Length( &diff );
+	m_bound.r = ChaVector3Length( &diff );
 
 	return 0;
 }
@@ -559,7 +559,7 @@ int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
 	return 0;
 }
 
-int CPolyMesh4::UpdateMorphBuffer( D3DXVECTOR3* mpoint )
+int CPolyMesh4::UpdateMorphBuffer( ChaVector3* mpoint )
 {
 	if( !m_dispv ){
 		_ASSERT( 0 );
@@ -577,7 +577,7 @@ int CPolyMesh4::UpdateMorphBuffer( D3DXVECTOR3* mpoint )
 	return 0;
 }
 
-D3DXVECTOR3 CPolyMesh4::GetNormalByControlPointNo(int vno)
+ChaVector3 CPolyMesh4::GetNormalByControlPointNo(int vno)
 {
 	if (m_normalleng == (m_facenum * 3)){
 		int findindex = -1;
@@ -594,7 +594,7 @@ D3DXVECTOR3 CPolyMesh4::GetNormalByControlPointNo(int vno)
 		}
 		else{
 			_ASSERT(0);
-			return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			return ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 	}
 	else if(m_normalleng >= m_orgpointnum){
@@ -602,7 +602,7 @@ D3DXVECTOR3 CPolyMesh4::GetNormalByControlPointNo(int vno)
 	}
 	else{
 		_ASSERT(0);
-		return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		return ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 }
 D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)

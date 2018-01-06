@@ -10,9 +10,9 @@
 
 
 #ifdef QUATERNIONCPP
-void D3DVec3TransformCoord(D3DXVECTOR3* dstvec, D3DXVECTOR3* srcvec, D3DXMATRIX* srcmat);
+void D3DVec3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix* srcmat);
 #else
-extern void D3DVec3TransformCoord(D3DXVECTOR3* dstvec, D3DXVECTOR3* srcvec, D3DXMATRIX* srcmat);
+extern void D3DVec3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix* srcmat);
 #endif
 
 class CQuaternion
@@ -24,19 +24,19 @@ public:
 	int SetParams( float srcw, float srcx, float srcy, float srcz );
 	int SetParams( D3DXQUATERNION srcxq );
 
-	int SetAxisAndRot( D3DXVECTOR3 srcaxis, float phai );
-	int SetAxisAndRot( D3DXVECTOR3 srcaxis, double phai );
+	int SetAxisAndRot( ChaVector3 srcaxis, float phai );
+	int SetAxisAndRot( ChaVector3 srcaxis, double phai );
 
-	int SetRotation( CQuaternion* axisq, D3DXVECTOR3 srcdeg );
+	int SetRotation( CQuaternion* axisq, ChaVector3 srcdeg );
 	int SetRotation( CQuaternion* axisq, double degx, double degy, double degz );
-	int GetAxisAndRot( D3DXVECTOR3* axisvecptr, float* frad );
-	int QuaternionToAxisAngle( D3DXVECTOR3* dstaxis, float* dstrad );
-	int CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone );
-	int CalcFBXEulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone);
+	int GetAxisAndRot( ChaVector3* axisvecptr, float* frad );
+	int QuaternionToAxisAngle( ChaVector3* dstaxis, float* dstrad );
+	int CalcFBXEul( CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone );
+	int CalcFBXEulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone);
 	int IsInit();
 
 	void MakeFromBtMat3x3(btMatrix3x3 eulmat);
-	void MakeFromD3DXMat(D3DXMATRIX eulmat);
+	void MakeFromD3DXMat(ChaMatrix eulmat);
 
 	//CQuaternion operator= (const CQuaternion &q) const;
 	CQuaternion CQuaternion::operator= (CQuaternion q);
@@ -69,10 +69,10 @@ public:
 
 	int Squad( CQuaternion q0, CQuaternion q1, CQuaternion q2, CQuaternion q3, float t );
 	
-	D3DXMATRIX MakeRotMatX();
+	ChaMatrix MakeRotMatX();
 
-	int RotationArc( D3DXVECTOR3 srcvec0, D3DXVECTOR3 srcvec1 );
-	int Rotate( D3DXVECTOR3* dstvec, D3DXVECTOR3 srcvec );
+	int RotationArc( ChaVector3 srcvec0, ChaVector3 srcvec1 );
+	int Rotate( ChaVector3* dstvec, ChaVector3 srcvec );
 
 	int Q2X( D3DXQUATERNION* dstx );
 	int Q2X( D3DXQUATERNION* dstx, CQuaternion srcq );
@@ -80,34 +80,34 @@ public:
 	int transpose( CQuaternion* dstq );
 
 	int CalcSym( CQuaternion* dstq );
-	D3DXMATRIX CalcSymX2();
+	ChaMatrix CalcSymX2();
 
 
 	//ç∂ÇÀÇ∂
-	int Q2EulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
-	int Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
-	int Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);//bulletÇ‡XYZÇÃèá
-	int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul);
+	int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
+	int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
+	int Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);//bulletÇ‡XYZÇÃèá
+	int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 
 
-	int Q2Eul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul );
-	int Q2EulBt( D3DXVECTOR3* reteul );
+	int Q2Eul( CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul );
+	int Q2EulBt( ChaVector3* reteul );
 
-	void RotationMatrix(D3DXMATRIX srcmat);
+	void RotationMatrix(ChaMatrix srcmat);
 
 	//inout : srcdstq
 	int InOrder(CQuaternion* srcdstq);
 
 private:
 
-	float vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 );
-	float lengthVec( D3DXVECTOR3* vec );
+	float vecDotVec( ChaVector3* vec1, ChaVector3* vec2 );
+	float lengthVec( ChaVector3* vec );
 	float aCos( float dot );
-	int vec3RotateY( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec );
-	int vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec );
-	int vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec );
+	int vec3RotateY( ChaVector3* dstvec, float deg, ChaVector3* srcvec );
+	int vec3RotateX( ChaVector3* dstvec, float deg, ChaVector3* srcvec );
+	int vec3RotateZ( ChaVector3* dstvec, float deg, ChaVector3* srcvec );
 
-	int ModifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB );
+	int ModifyEuler( ChaVector3* eulerA, ChaVector3* eulerB );
 	int GetRound( float srcval );	
 
 

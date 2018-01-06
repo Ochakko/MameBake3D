@@ -15,15 +15,15 @@
 
 
 
-float DXVec3Dot( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
+float ChaVector3Dot( ChaVector3* vec1, ChaVector3* vec2 )
 {
 	float retval;
 	retval = vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z;
 	return retval;
 }
-int DXVec3Cross( D3DXVECTOR3* outvec, D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
+int ChaVector3Cross( ChaVector3* outvec, ChaVector3* vec1, ChaVector3* vec2 )
 {
-	D3DXVECTOR3 v1, v2;
+	ChaVector3 v1, v2;
 	v1 = *vec1;
 	v2 = *vec2;
 
@@ -33,7 +33,7 @@ int DXVec3Cross( D3DXVECTOR3* outvec, D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
 	return 0;
 }
 
-float DXVec3Length( D3DXVECTOR3* v )
+float ChaVector3Length( ChaVector3* v )
 {
 	float leng;
 	float mag;
@@ -46,14 +46,14 @@ float DXVec3Length( D3DXVECTOR3* v )
 	return leng;
 }
 
-int DXVec3Normalize( D3DXVECTOR3* outv, D3DXVECTOR3* inv )
+int ChaVector3Normalize( ChaVector3* outv, ChaVector3* inv )
 {
-	D3DXVECTOR3 tmpv = *inv;
-	float leng = DXVec3Length( &tmpv );
+	ChaVector3 tmpv = *inv;
+	float leng = ChaVector3Length( &tmpv );
 	if( leng != 0.0f ){
 		*outv = tmpv / leng;
 	}else{
-		*outv = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		*outv = ChaVector3( 0.0f, 0.0f, 0.0f );
 	}
 	return 0;
 }

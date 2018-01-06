@@ -409,13 +409,13 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 
 	hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( D3DXVECTOR3 ) );
+	hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( ChaVector3 ) );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetValue( g_hspecular, &(curmat->GetSpc3F()), sizeof( D3DXVECTOR3 ) );
+	hr = g_pEffect->SetValue( g_hspecular, &(curmat->GetSpc3F()), sizeof( ChaVector3 ) );
 	_ASSERT( !hr );
 	hr = g_pEffect->SetFloat( g_hpower, curmat->GetPower() );
 	_ASSERT( !hr );
-	hr = g_pEffect->SetValue( g_hemissive, &(curmat->GetEmi3F()), sizeof( D3DXVECTOR3 ) );
+	hr = g_pEffect->SetValue( g_hemissive, &(curmat->GetEmi3F()), sizeof( ChaVector3 ) );
 	_ASSERT( !hr );
 
 	if( m_hasbone ){
@@ -592,13 +592,13 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 
 		hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( D3DXVECTOR3 ) );
+		hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( ChaVector3 ) );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetValue( g_hspecular, &(curmat->GetSpc3F()), sizeof( D3DXVECTOR3 ) );
+		hr = g_pEffect->SetValue( g_hspecular, &(curmat->GetSpc3F()), sizeof( ChaVector3 ) );
 		_ASSERT( !hr );
 		hr = g_pEffect->SetFloat( g_hpower, curmat->GetPower() );
 		_ASSERT( !hr );
-		hr = g_pEffect->SetValue( g_hemissive, &(curmat->GetEmi3F()), sizeof( D3DXVECTOR3 ) );
+		hr = g_pEffect->SetValue( g_hemissive, &(curmat->GetEmi3F()), sizeof( ChaVector3 ) );
 		_ASSERT( !hr );
 
 

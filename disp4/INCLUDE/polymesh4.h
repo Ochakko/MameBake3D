@@ -22,13 +22,13 @@ public:
 	CPolyMesh4();
 	~CPolyMesh4();
 
-	int CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, D3DXVECTOR3* pointptr, D3DXVECTOR3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
+	int CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
 	
 	int ChkAlphaNum( map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
 
 	int SetPm3Inf( CMQOObject* srcobj );
-	int UpdateMorphBuffer( D3DXVECTOR3* mpoint );
+	int UpdateMorphBuffer( ChaVector3* mpoint );
 
 	int DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist );
 	int SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist );
@@ -52,12 +52,12 @@ public:
 		return m_orgfacenum;
 	};
 
-	D3DXVECTOR3* GetOrgPointBuf()
+	ChaVector3* GetOrgPointBuf()
 	{
 		return m_pointbuf;
 	};
 
-	D3DXVECTOR3* GetOrgNormal()
+	ChaVector3* GetOrgNormal()
 	{
 		return m_normal;
 	};
@@ -115,7 +115,7 @@ public:
 		return m_optleng;
 	};
 
-	D3DXVECTOR3 GetNormalByControlPointNo(int vno);
+	ChaVector3 GetNormalByControlPointNo(int vno);
 	D3DXVECTOR2 GetUVByControlPointNo(int vno);
 
 private:
@@ -143,8 +143,8 @@ private:
 	int		m_lastvalidvno;
 
 	CMQOFace* m_mqoface;//外部メモリ
-	D3DXVECTOR3* m_pointbuf;//外部メモリ
-	D3DXVECTOR3* m_normal;//外部メモリ
+	ChaVector3* m_pointbuf;//外部メモリ
+	ChaVector3* m_normal;//外部メモリ
 	D3DXVECTOR2* m_uvbuf;//外部メモリ
 	CMQOFace* m_triface;
 

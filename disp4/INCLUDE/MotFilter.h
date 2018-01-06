@@ -23,10 +23,10 @@ private:
 	int m_filtertype;
 	int m_filtersize;
 
-	D3DXVECTOR3* m_eul;
-	D3DXVECTOR3* m_smootheul;
-	D3DXVECTOR3* m_tra;
-	D3DXVECTOR3* m_smoothtra;
+	ChaVector3* m_eul;
+	ChaVector3* m_smootheul;
+	ChaVector3* m_tra;
+	ChaVector3* m_smoothtra;
 
 };
 

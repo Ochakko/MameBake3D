@@ -32,12 +32,12 @@ public:
  * @breaf 線分データを作成する。
  * @param (int pointnum) IN 頂点データpointptrの頂点数。
  * @param (int facenum) IN 面データfaceptrの面数。
- * @param (D3DXVECTOR3* pointptr) IN 頂点データ。
+ * @param (ChaVector3* pointptr) IN 頂点データ。
  * @param (CMQOFace* faceptr) IN 面データ。
  * @param (D3DXVECTOR4 srccol) IN 線分の色。
  * @return 成功したら０。
  */
-	int CreateExtLine( int pointnum, int facenum, D3DXVECTOR3* pointptr, CMQOFace* faceptr, D3DXVECTOR4 srccol );
+	int CreateExtLine( int pointnum, int facenum, ChaVector3* pointptr, CMQOFace* faceptr, D3DXVECTOR4 srccol );
 
 
 /**
@@ -91,7 +91,7 @@ private:
 	//以下、MQOObjectでアロケートした外部ポインタとデータ。
 	int m_pointnum;//頂点数。
 	int m_facenum;//面（線分）の数。
-	D3DXVECTOR3* m_pointptr;//頂点データ。
+	ChaVector3* m_pointptr;//頂点データ。
 	CMQOFace* m_faceptr;//面(線分)データ。
 };
 

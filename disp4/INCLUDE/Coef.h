@@ -2,6 +2,8 @@
 #define		COEFH
 
 #include <D3DX9.h>
+#include <ChaVecCalc.h>
+
 #include <usercoef.h>
 
 #include <vector>
@@ -273,16 +275,16 @@ typedef struct tag_pickinfo
 	int winy;
 	int pickrange;
 	int pickobjno;
-	D3DXVECTOR3 objscreen;
-	D3DXVECTOR3 objworld;
+	ChaVector3 objscreen;
+	ChaVector3 objworld;
 }PICKINFO;
 
 typedef struct tag_cpmot
 {
 	int boneno;
 	double frame;
-	D3DXVECTOR3 eul;
-	D3DXVECTOR3 tra;
+	ChaVector3 eul;
+	ChaVector3 tra;
 }CPMOT;
 
 typedef struct tag_motinfo
@@ -299,7 +301,7 @@ typedef struct tag_motinfo
 
 typedef struct tag_texv
 {
-	D3DXVECTOR3 pos;
+	ChaVector3 pos;
 	D3DXVECTOR2 uv;
 }TEXV;
 
@@ -476,7 +478,7 @@ typedef struct tag_verface
 	int			faceno;
 	int			orgfaceno;
 	int			materialno;
-	D3DXVECTOR3	facenormal;
+	ChaVector3	facenormal;
 }PERFACE;
 
 typedef struct tag_pervert
@@ -487,7 +489,7 @@ typedef struct tag_pervert
 	D3DXVECTOR2		uv[2];
 	int				vcolflag;
 	DWORD			vcol;
-	D3DXVECTOR3 smnormal;
+	ChaVector3 smnormal;
 
 	int				createflag;
 		//í∏ì_ÇçÏê¨ÇµÇ»Ç¢èÍçáÇO
@@ -513,9 +515,9 @@ typedef struct tag_pm3optv
 {
 	int orgvno;
 	int orgfaceno;
-	D3DXVECTOR3 pos;
+	ChaVector3 pos;
 	int materialno;
-	D3DXVECTOR3 normal;
+	ChaVector3 normal;
 	int				uvnum;
 	D3DXVECTOR2		uv[2];
 	int				vcolflag;
@@ -525,7 +527,7 @@ typedef struct tag_pm3optv
 typedef struct tag_pm3dispv
 {
 	D3DXVECTOR4		pos;
-	D3DXVECTOR3		normal;
+	ChaVector3		normal;
 	D3DXVECTOR2		uv;
 }PM3DISPV;
 
@@ -543,9 +545,9 @@ typedef struct tag_extlinev
 
 typedef struct tag_modelbound
 {
-	D3DXVECTOR3 min;
-	D3DXVECTOR3 max;
-	D3DXVECTOR3 center;
+	ChaVector3 min;
+	ChaVector3 max;
+	ChaVector3 center;
 	float		r;
 }MODELBOUND;
 

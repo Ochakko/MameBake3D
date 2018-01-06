@@ -23,15 +23,15 @@ int CMotionPoint::InitParams()
 	m_undovalidflag = 0;
 	m_frame = 0.0;
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
-	m_tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	m_firstframetra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_tra = ChaVector3( 0.0f, 0.0f, 0.0f );
+	m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	m_localeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_localeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	D3DXMatrixIdentity( &m_worldmat );
-	D3DXMatrixIdentity( &m_absmat );
-	D3DXMatrixIdentity( &m_befworldmat );
-	D3DXMatrixIdentity( &m_befeditmat );
+	ChaMatrixIdentity( &m_worldmat );
+	ChaMatrixIdentity( &m_absmat );
+	ChaMatrixIdentity( &m_befworldmat );
+	ChaMatrixIdentity( &m_befeditmat );
 
 	m_prev = 0;
 	m_next = 0;
@@ -44,7 +44,7 @@ int CMotionPoint::DestroyObjs()
 	return 0;
 }
 
-void CMotionPoint::SetLocalEul(D3DXVECTOR3 neweul)
+void CMotionPoint::SetLocalEul(ChaVector3 neweul)
 {
 	if (IsSameEul(neweul, m_localeul) == 0){
 		m_localeul = neweul;
@@ -52,13 +52,13 @@ void CMotionPoint::SetLocalEul(D3DXVECTOR3 neweul)
 };
 
 /*
-int CMotionPoint::GetEul( D3DXVECTOR3* dsteul )
+int CMotionPoint::GetEul( ChaVector3* dsteul )
 {
 	*dsteul = m_eul;
 
 	return 0;
 }
-int CMotionPoint::SetEul( CQuaternion* axisq, D3DXVECTOR3 srceul )
+int CMotionPoint::SetEul( CQuaternion* axisq, ChaVector3 srceul )
 {
 	m_eul = srceul;
 	m_q.SetRotation( axisq, srceul );
@@ -69,11 +69,11 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 {
 	m_q = newq;
 
-	D3DXVECTOR3 befeul;
+	ChaVector3 befeul;
 	if( m_prev ){
 		befeul = m_prev->m_eul;
 	}else{
-		befeul = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		befeul = ChaVector3( 0.0f, 0.0f, 0.0f );
 	}
 	
 	m_q.Q2Eul( axisq, befeul, &m_eul );
@@ -84,11 +84,11 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 
 //int CMotionPoint::MakeMat( CBone* srcbone )
 //{
-//	D3DXMATRIX befrotmat, aftrotmat, rotmat, tramat;
-//	D3DXMatrixIdentity( &befrotmat );
-//	D3DXMatrixIdentity( &aftrotmat );
-//	D3DXMatrixIdentity( &rotmat );
-//	D3DXMatrixIdentity( &tramat );
+//	ChaMatrix befrotmat, aftrotmat, rotmat, tramat;
+//	ChaMatrixIdentity( &befrotmat );
+//	ChaMatrixIdentity( &aftrotmat );
+//	ChaMatrixIdentity( &rotmat );
+//	ChaMatrixIdentity( &tramat );
 //
 //	befrotmat._41 = -srcbone->m_vertpos[ BT_PARENT ].x;
 //	befrotmat._42 = -srcbone->m_vertpos[ BT_PARENT ].y;
@@ -108,7 +108,7 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 //
 //	return 0;
 //}
-//int CMotionPoint::MakeTotalMat( D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone )
+//int CMotionPoint::MakeTotalMat( ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone )
 //{
 //
 //	MakeMat( srcbone );
@@ -119,7 +119,7 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 //	return 0;
 //}
 
-//int CMotionPoint::MakeWorldMat( D3DXMATRIX* wmat )
+//int CMotionPoint::MakeWorldMat( ChaMatrix* wmat )
 //{
 //	m_worldmat = m_totalmat * *wmat;
 //	
@@ -133,7 +133,7 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 //	return 0;
 //}
 
-//int CMotionPoint::UpdateMatrix( D3DXMATRIX* wmat, D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone )
+//int CMotionPoint::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone )
 //{
 //	MakeTotalMat( parmat, parq, srcbone );
 //	MakeWorldMat( wmat );
@@ -215,23 +215,23 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 	return 0;
 }
 
-int CMotionPoint::CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate )
+int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 {
 	if (boneptr){
-		D3DXVECTOR3 aftpos;
-		D3DXVec3TransformCoord(&aftpos, &boneptr->GetJointFPos(), &srcmat);
+		ChaVector3 aftpos;
+		ChaVector3TransformCoord(&aftpos, &boneptr->GetJointFPos(), &srcmat);
 		m_tra = aftpos - boneptr->GetJointFPos();
 
 
-		D3DXVECTOR3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
-		D3DXVECTOR3 aftpos2;
-		D3DXVec3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
+		ChaVector3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
+		ChaVector3 aftpos2;
+		ChaVector3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
 		m_firstframetra = aftpos - srcbonepos;
 		//m_firstframetra = aftpos;
 	}
 	else{
-		m_tra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		m_firstframetra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		m_tra = ChaVector3(0.0f, 0.0f, 0.0f);
+		m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
 

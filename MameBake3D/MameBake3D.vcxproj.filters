@@ -147,9 +147,6 @@
     <ClCompile Include="..\disp4\CPP\UndoMotion.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
-    <ClCompile Include="..\disp4\CPP\VecMath.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
     <ClCompile Include="..\disp4\CPP\XMLIO.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
@@ -648,6 +645,9 @@
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btVector3.cpp">
       <Filter>BulletSrc</Filter>
     </ClCompile>
+    <ClCompile Include="..\disp4\CPP\ChaVecCalc.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColiIDDlg.h">
@@ -780,9 +780,6 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\disp4\INCLUDE\usercoef.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
-    <ClInclude Include="..\disp4\INCLUDE\VecMath.h">
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\disp4\INCLUDE\XMLIO.h">
@@ -1528,6 +1525,9 @@
     </ClInclude>
     <ClInclude Include="..\disp4\BTSRC\LinearMath\btAabbUtil2.h">
       <Filter>BulletSrc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\disp4\INCLUDE\ChaVecCalc.h">
+      <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

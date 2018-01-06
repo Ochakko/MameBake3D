@@ -23,8 +23,8 @@ public:
 	CPolyMesh3();
 	~CPolyMesh3();
 
-	int CreatePM3( int pointnum, int facenum, float facet, D3DXVECTOR3* pointptr, CMQOFace* faceptr, 
-		map<int,CMQOMaterial*>& srcmat, D3DXMATRIX multmat );
+	int CreatePM3( int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
+		map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat );
 	
 	int SetIndexBuf();	
 	int InvIndexBuf();
@@ -34,19 +34,19 @@ public:
 
 	int CalcInfNoSkin( CBone* applybone );
 
-	int MultScale( D3DXVECTOR3 srcscale, D3DXVECTOR3 srctra );
+	int MultScale( ChaVector3 srcscale, ChaVector3 srctra );
 
 private:
 	void InitParams();
 	void DestroyObjs();
 
-	int MultVert( D3DXMATRIX multmat );
+	int MultVert( ChaMatrix multmat );
 	int CreateN3PFromMQOFace( N3P* n3pptr, int* numptr );
 
 	int CalcOrgNormal();
-	int CalcNormal( D3DXVECTOR3* newn, D3DXVECTOR3* curp, D3DXVECTOR3* aftp1, D3DXVECTOR3* aftp2 );
-	int Vec3Cross( D3DXVECTOR3* pOut, D3DXVECTOR3* pV1, D3DXVECTOR3* pV2 );
-	int Vec3Normalize( D3DXVECTOR3* retvec, D3DXVECTOR3* srcvec );
+	int CalcNormal( ChaVector3* newn, ChaVector3* curp, ChaVector3* aftp1, ChaVector3* aftp2 );
+	int Vec3Cross( ChaVector3* pOut, ChaVector3* pV1, ChaVector3* pV2 );
+	int Vec3Normalize( ChaVector3* retvec, ChaVector3* srcvec );
 
 	int SetSMFace();
 	int AddSmFace( N3P* n3p1, N3P* n3p2 );
@@ -61,7 +61,7 @@ typedef struct tag_verface
 	int			faceno;
 	int			orgfaceno;
 	int			materialno;
-	D3DXVECTOR3	facenormal;
+	ChaVector3	facenormal;
 }PERFACE;
 
 typedef struct tag_pervert
@@ -72,7 +72,7 @@ typedef struct tag_pervert
 	D3DXVECTOR2		uv[2];
 	int				vcolflag;
 	DWORD			vcol;
-	D3DXVECTOR3 smnormal;
+	ChaVector3 smnormal;
 
 	int				createflag;
 		//頂点を作成しない場合０
@@ -112,9 +112,9 @@ typedef struct tag_pm3optv
 {
 	int orgvno;
 	int orgfaceno;
-	D3DXVECTOR3 pos;
+	ChaVector3 pos;
 	int materialno;
-	D3DXVECTOR3 normal;
+	ChaVector3 normal;
 	int				uvnum;
 	D3DXVECTOR2		uv[2];
 	int				vcolflag;
@@ -195,7 +195,7 @@ private:
 
 //以下、クラス外からアクセスしないのでアクセッサー無し。
 	CMQOFace* m_mqoface;//外部メモリ
-	D3DXVECTOR3* m_pointbuf;//外部メモリ
+	ChaVector3* m_pointbuf;//外部メモリ
 	N3P* m_n3p;
 	CHKALPHA chkalpha;
 

@@ -7,7 +7,7 @@
 #include <crtdbg.h>
 
 
-void D3DVec3TransformCoord(D3DXVECTOR3* dstvec, D3DXVECTOR3* srcvec, D3DXMATRIX* srcmat)
+void D3DVec3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix* srcmat)
 {
 	double tmpx, tmpy, tmpz, tmpw;
 	tmpx = srcmat->_11 * srcvec->x + srcmat->_21 * srcvec->y + srcmat->_31 * srcvec->z + srcmat->_41;
@@ -68,7 +68,7 @@ int CQuaternion::SetParams( D3DXQUATERNION srcxq )
 }
 
 
-int CQuaternion::SetAxisAndRot( D3DXVECTOR3 srcaxis, float phai )
+int CQuaternion::SetAxisAndRot( ChaVector3 srcaxis, float phai )
 {
 	float phai2;
 	float cos_phai2, sin_phai2;
@@ -84,7 +84,7 @@ int CQuaternion::SetAxisAndRot( D3DXVECTOR3 srcaxis, float phai )
 
 	return 0;
 }
-int CQuaternion::SetAxisAndRot( D3DXVECTOR3 srcaxis, double phai )
+int CQuaternion::SetAxisAndRot( ChaVector3 srcaxis, double phai )
 {
 	double phai2;
 	double cos_phai2, sin_phai2;
@@ -101,24 +101,24 @@ int CQuaternion::SetAxisAndRot( D3DXVECTOR3 srcaxis, double phai )
 	return 0;
 }
 
-int CQuaternion::GetAxisAndRot( D3DXVECTOR3* axisvecptr, float* frad )
-{
-	D3DXQUATERNION tempq;
+//int CQuaternion::GetAxisAndRot( ChaVector3* axisvecptr, float* frad )
+//{
+//	D3DXQUATERNION tempq;
+//
+//	tempq.x = x;
+//	tempq.y = y;
+//	tempq.z = z;
+//	tempq.w = w;
+//
+//	D3DXQuaternionToAxisAngle( &tempq, &(axisvecptr->D3DX()), frad );
+//	
+//	ChaVector3Normalize( axisvecptr, axisvecptr );
+//
+//	return 0;
+//}
 
-	tempq.x = x;
-	tempq.y = y;
-	tempq.z = z;
-	tempq.w = w;
 
-	D3DXQuaternionToAxisAngle( &tempq, axisvecptr, frad );
-	
-	D3DXVec3Normalize( axisvecptr, axisvecptr );
-
-	return 0;
-}
-
-
-int CQuaternion::SetRotation( CQuaternion* axisq, D3DXVECTOR3 srcdeg )
+int CQuaternion::SetRotation( CQuaternion* axisq, ChaVector3 srcdeg )
 {
 	// Z軸、X軸、Y軸の順番で、回転する、クォータニオンをセットする。
 
@@ -245,12 +245,12 @@ CQuaternion CQuaternion::normalize (){
 }
 
 
-D3DXMATRIX CQuaternion::MakeRotMatX()
+ChaMatrix CQuaternion::MakeRotMatX()
 {
 	normalize();
 
-	D3DXMATRIX retmat;
-	D3DXMatrixIdentity(&retmat);
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
 
 	//転置
 	double _11 = 1.0 - 2.0 * (y * y + z * z);
@@ -298,78 +298,97 @@ D3DXMATRIX CQuaternion::MakeRotMatX()
 	qx.y = y;
 	qx.z = z;
 	qx.w = w;
-	D3DXMatrixRotationQuaternion(&retmat, &qx);
+	ChaMatrixRotationQuaternion(&retmat, &qx);
 	*/
 	return retmat;
 }
 
 
-void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
+void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 {
 	//転置前バージョン
 
 	//CQuaternionは gpar * par * curの順で掛ける系
-	//D3DXMATRIXは cur * par * gparの順で掛ける系
-	//CQuaternionの時に転置してD3DXMATRIXのときにそのままで計算が合う。
+	//ChaMatrixは cur * par * gparの順で掛ける系
+	//CQuaternionの時に転置してChaMatrixのときにそのままで計算が合う。
 	
 	CQuaternion tmpq;
 
 	//スケールに関して正規化した回転からQuaternionを求める。そのためにSRTに分解する。
-	D3DXVECTOR3 svec, tvec;
-	D3DXMATRIX rmat;
+	ChaVector3 svec, tvec;
+	ChaMatrix rmat;
 	GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+
+	float m[4][4];
+
+	m[0][0] = rmat._11;
+	m[0][1] = rmat._12;
+	m[0][2] = rmat._13;
+	m[0][3] = rmat._14;
+	m[1][0] = rmat._21;
+	m[1][1] = rmat._22;
+	m[1][2] = rmat._23;
+	m[1][3] = rmat._24;
+	m[2][0] = rmat._31;
+	m[2][1] = rmat._32;
+	m[2][2] = rmat._33;
+	m[2][3] = rmat._34;
+	m[3][0] = rmat._41;
+	m[3][1] = rmat._42;
+	m[3][2] = rmat._43;
+	m[3][3] = rmat._44;
 
 	int i, maxi;
 	FLOAT maxdiag, S, trace;
 	
-	trace = rmat.m[0][0] + rmat.m[1][1] + rmat.m[2][2] + 1.0f;
+	trace = m[0][0] + m[1][1] + m[2][2] + 1.0f;
 	if (trace > 0.0f)
 	{
-		tmpq.x = (rmat.m[1][2] - rmat.m[2][1]) / (2.0f * sqrt(trace));
-		tmpq.y = (rmat.m[2][0] - rmat.m[0][2]) / (2.0f * sqrt(trace));
-		tmpq.z = (rmat.m[0][1] - rmat.m[1][0]) / (2.0f * sqrt(trace));
+		tmpq.x = (m[1][2] - m[2][1]) / (2.0f * sqrt(trace));
+		tmpq.y = (m[2][0] - m[0][2]) / (2.0f * sqrt(trace));
+		tmpq.z = (m[0][1] - m[1][0]) / (2.0f * sqrt(trace));
 		tmpq.w = sqrt(trace) / 2.0f;
 		*this = tmpq;
 		return;
 	}
 	maxi = 0;
-	maxdiag = rmat.m[0][0];
+	maxdiag = m[0][0];
 	for (i = 1; i<3; i++)
 	{
-		if (rmat.m[i][i] > maxdiag)
+		if (m[i][i] > maxdiag)
 		{
 			maxi = i;
-			maxdiag = rmat.m[i][i];
+			maxdiag = m[i][i];
 		}
 	}
 	switch (maxi)
 	{
 	case 0:
-		S = 2.0f * sqrt(1.0f + rmat.m[0][0] - rmat.m[1][1] - rmat.m[2][2]);
+		S = 2.0f * sqrt(1.0f + m[0][0] - m[1][1] - m[2][2]);
 		tmpq.x = 0.25f * S;
-		tmpq.y = (rmat.m[0][1] + rmat.m[1][0]) / S;
-		tmpq.z = (rmat.m[0][2] + rmat.m[2][0]) / S;
-		tmpq.w = (rmat.m[1][2] - rmat.m[2][1]) / S;
+		tmpq.y = (m[0][1] + m[1][0]) / S;
+		tmpq.z = (m[0][2] + m[2][0]) / S;
+		tmpq.w = (m[1][2] - m[2][1]) / S;
 		break;
 	case 1:
-		S = 2.0f * sqrt(1.0f + rmat.m[1][1] - rmat.m[0][0] - rmat.m[2][2]);
-		tmpq.x = (rmat.m[0][1] + rmat.m[1][0]) / S;
+		S = 2.0f * sqrt(1.0f + m[1][1] - m[0][0] - m[2][2]);
+		tmpq.x = (m[0][1] + m[1][0]) / S;
 		tmpq.y = 0.25f * S;
-		tmpq.z = (rmat.m[1][2] + rmat.m[2][1]) / S;
-		tmpq.w = (rmat.m[2][0] - rmat.m[0][2]) / S;
+		tmpq.z = (m[1][2] + m[2][1]) / S;
+		tmpq.w = (m[2][0] - m[0][2]) / S;
 		break;
 	case 2:
-		S = 2.0f * sqrt(1.0f + rmat.m[2][2] - rmat.m[0][0] - rmat.m[1][1]);
-		tmpq.x = (rmat.m[0][2] + rmat.m[2][0]) / S;
-		tmpq.y = (rmat.m[1][2] + rmat.m[2][1]) / S;
+		S = 2.0f * sqrt(1.0f + m[2][2] - m[0][0] - m[1][1]);
+		tmpq.x = (m[0][2] + m[2][0]) / S;
+		tmpq.y = (m[1][2] + m[2][1]) / S;
 		tmpq.z = 0.25f * S;
-		tmpq.w = (rmat.m[0][1] - rmat.m[1][0]) / S;
+		tmpq.w = (m[0][1] - m[1][0]) / S;
 		break;
 	}
 	*this = tmpq;
 
 	
-	//D3DXMATRIX tmpmat;
+	//ChaMatrix tmpmat;
 	//tmpmat = srcmat;
 	//tmpmat._41 = 0.0f;
 	//tmpmat._42 = 0.0f;
@@ -381,15 +400,15 @@ void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
 }
 
 /*
-void CQuaternion::RotationMatrix(D3DXMATRIX srcmat)
+void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 {
 //転置後バージョン
 
 CQuaternion tmpq;
 
 //スケールに関して正規化した回転からQuaternionを求める。そのためにSRTに分解する。
-D3DXVECTOR3 svec, tvec;
-D3DXMATRIX rmat;
+ChaVector3 svec, tvec;
+ChaMatrix rmat;
 GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
 
 int i, maxi;
@@ -627,14 +646,14 @@ int CQuaternion::inv( CQuaternion* dstq )
 	return 0;
 }
 
-int CQuaternion::RotationArc( D3DXVECTOR3 srcvec0, D3DXVECTOR3 srcvec1 )
+int CQuaternion::RotationArc( ChaVector3 srcvec0, ChaVector3 srcvec1 )
 {
 	//srcvec0, srcvec1は、normalizeされているとする。
 
-	D3DXVECTOR3 c;
-	D3DXVec3Cross( &c, &srcvec0, &srcvec1 );
+	ChaVector3 c;
+	ChaVector3Cross( &c, &srcvec0, &srcvec1 );
 	float d;
-	d = D3DXVec3Dot( &srcvec0, &srcvec1 );
+	d = ChaVector3Dot( &srcvec0, &srcvec1 );
 	float s;
 	s = (float)sqrt( (1 + d) * 2.0f );
 
@@ -647,9 +666,9 @@ int CQuaternion::RotationArc( D3DXVECTOR3 srcvec0, D3DXVECTOR3 srcvec1 )
 }
 
 
-int CQuaternion::Rotate( D3DXVECTOR3* dstvec, D3DXVECTOR3 srcvec )
+int CQuaternion::Rotate( ChaVector3* dstvec, ChaVector3 srcvec )
 {
-	D3DXMATRIX mat;
+	ChaMatrix mat;
 
 	mat = MakeRotMatX();
 
@@ -658,34 +677,34 @@ int CQuaternion::Rotate( D3DXVECTOR3* dstvec, D3DXVECTOR3 srcvec )
 	return 0;
 }
 
-int CQuaternion::QuaternionToAxisAngle( D3DXVECTOR3* dstaxis, float* dstrad )
-{
-	D3DXQUATERNION xq;
-
-	int ret;
-	ret = Q2X( &xq );
-	_ASSERT( !ret );
-
-	D3DXQuaternionToAxisAngle( &xq, dstaxis, dstrad );
-
-	return 0;
-}
+//int CQuaternion::QuaternionToAxisAngle( ChaVector3* dstaxis, float* dstrad )
+//{
+//	D3DXQUATERNION xq;
+//
+//	int ret;
+//	ret = Q2X( &xq );
+//	_ASSERT( !ret );
+//
+//	D3DXQuaternionToAxisAngle( &xq, &(dstaxis->D3DX()), dstrad );
+//
+//	return 0;
+//}
 
 int CQuaternion::transpose( CQuaternion* dstq )
 {
-	D3DXMATRIX matx;
+	ChaMatrix matx;
 
 	matx = MakeRotMatX();
 
-	D3DXMATRIX tmatx;
-	D3DXMatrixTranspose( &tmatx, &matx );
+	ChaMatrix tmatx;
+	ChaMatrixTranspose( &tmatx, &matx );
 
 	dstq->RotationMatrix(tmatx);
 
 	return 0;
 }
 
-D3DXMATRIX CQuaternion::CalcSymX2()
+ChaMatrix CQuaternion::CalcSymX2()
 {
 	CQuaternion tmpq;
 	tmpq = *this;
@@ -712,13 +731,13 @@ int CQuaternion::CalcSym( CQuaternion* dstq )
 	return 0;
 }
 
-float CQuaternion::vecDotVec( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 )
+float CQuaternion::vecDotVec( ChaVector3* vec1, ChaVector3* vec2 )
 {
 	double tmpval = vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z;
 	return (float)tmpval;
 }
 
-float CQuaternion::lengthVec( D3DXVECTOR3* vec )
+float CQuaternion::lengthVec( ChaVector3* vec )
 {
 	double mag;
 	float leng;
@@ -748,14 +767,14 @@ float CQuaternion::aCos( float dot )
 	return degree;
 }
 
-int CQuaternion::vec3RotateY( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
+int CQuaternion::vec3RotateY( ChaVector3* dstvec, float deg, ChaVector3* srcvec )
 {
 
 	int ret;
 	CQuaternion dirq;
-	D3DXMATRIX	dirm;
+	ChaMatrix	dirm;
 
-	D3DXVECTOR3 tmpsrcvec = *srcvec;
+	ChaVector3 tmpsrcvec = *srcvec;
 
 
 	ret = dirq.SetRotation( 0, 0, deg, 0 );
@@ -773,14 +792,14 @@ int CQuaternion::vec3RotateY( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcve
 
 	return 0;
 }
-int CQuaternion::vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
+int CQuaternion::vec3RotateX( ChaVector3* dstvec, float deg, ChaVector3* srcvec )
 {
 
 	int ret;
 	CQuaternion dirq;
-	D3DXMATRIX	dirm;
+	ChaMatrix	dirm;
 
-	D3DXVECTOR3 tmpsrcvec = *srcvec;
+	ChaVector3 tmpsrcvec = *srcvec;
 
 	ret = dirq.SetRotation( 0, deg, 0, 0 );
 	_ASSERT( !ret );
@@ -799,14 +818,14 @@ int CQuaternion::vec3RotateX( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcve
 
 	return 0;
 }
-int CQuaternion::vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcvec )
+int CQuaternion::vec3RotateZ( ChaVector3* dstvec, float deg, ChaVector3* srcvec )
 {
 
 	int ret;
 	CQuaternion dirq;
-	D3DXMATRIX	dirm;
+	ChaMatrix	dirm;
 
-	D3DXVECTOR3 tmpsrcvec = *srcvec;
+	ChaVector3 tmpsrcvec = *srcvec;
 
 	ret = dirq.SetRotation( 0, 0, 0, deg );
 	_ASSERT( !ret );
@@ -825,17 +844,17 @@ int CQuaternion::vec3RotateZ( D3DXVECTOR3* dstvec, float deg, D3DXVECTOR3* srcve
 	return 0;
 }
 
-int CQuaternion::Q2EulBt( D3DXVECTOR3* reteul )
+int CQuaternion::Q2EulBt( ChaVector3* reteul )
 {
-	D3DXVECTOR3 Euler;
+	ChaVector3 Euler;
 
 
-	D3DXVECTOR3 axisXVec( 1.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 axisYVec( 0.0f, 1.0f, 0.0f );
-	D3DXVECTOR3 axisZVec( 0.0f, 0.0f, 1.0f );
+	ChaVector3 axisXVec( 1.0f, 0.0f, 0.0f );
+	ChaVector3 axisYVec( 0.0f, 1.0f, 0.0f );
+	ChaVector3 axisZVec( 0.0f, 0.0f, 1.0f );
 
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
+	ChaVector3 targetVec, shadowVec;
+	ChaVector3 tmpVec;
 
 	Rotate( &targetVec, axisZVec );
 	shadowVec.x = 0.0f;
@@ -888,12 +907,12 @@ int CQuaternion::Q2EulBt( D3DXVECTOR3* reteul )
 	return 0;
 }
 
-int CQuaternion::Q2EulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+int CQuaternion::Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul)
 {
 	return Q2Eul(axisq, befeul, reteul);
 }
 
-int CQuaternion::Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+int CQuaternion::Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul)
 {
 
 	CQuaternion axisQ, invaxisQ, EQ;
@@ -908,15 +927,15 @@ int CQuaternion::Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* r
 		EQ = *this;
 	}
 
-	D3DXVECTOR3 Euler;
+	ChaVector3 Euler;
 
 
-	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
+	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
+	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
+	ChaVector3 axisZVec(0.0f, 0.0f, 1.0f);
 
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
+	ChaVector3 targetVec, shadowVec;
+	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisYVec);
 	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
@@ -971,7 +990,7 @@ int CQuaternion::Q2EulYXZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* r
 }
 
 
-int CQuaternion::Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul)
 {
 
 	CQuaternion axisQ, invaxisQ, EQ;
@@ -986,15 +1005,15 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* r
 		EQ = *this;
 	}
 
-	D3DXVECTOR3 Euler;
+	ChaVector3 Euler;
 
 
-	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
+	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
+	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
+	ChaVector3 axisZVec(0.0f, 0.0f, 1.0f);
 
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
+	ChaVector3 targetVec, shadowVec;
+	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
@@ -1050,7 +1069,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* r
 
 
 
-int CQuaternion::Q2Eul(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+int CQuaternion::Q2Eul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul)
 {
 
 	CQuaternion axisQ, invaxisQ, EQ;
@@ -1065,15 +1084,15 @@ int CQuaternion::Q2Eul(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* rete
 		EQ = *this;
 	}
 
-	D3DXVECTOR3 Euler;
+	ChaVector3 Euler;
 
 
-	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
+	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
+	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
+	ChaVector3 axisZVec(0.0f, 0.0f, 1.0f);
 
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
+	ChaVector3 targetVec, shadowVec;
+	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisZVec);
 	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
@@ -1127,7 +1146,7 @@ int CQuaternion::Q2Eul(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* rete
 	return 0;
 }
 
-int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul)
+int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul)
 {
 	CQuaternion axisQ, invaxisQ, EQ;
 	if (axisq){
@@ -1141,15 +1160,15 @@ int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 be
 		EQ = *this;
 	}
 
-	D3DXVECTOR3 Euler;
+	ChaVector3 Euler;
 
 
-	D3DXVECTOR3 axisXVec(1.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 axisYVec(0.0f, 1.0f, 0.0f);
-	D3DXVECTOR3 axisZVec(0.0f, 0.0f, 1.0f);
+	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
+	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
+	ChaVector3 axisZVec(0.0f, 0.0f, 1.0f);
 
-	D3DXVECTOR3 targetVec, shadowVec;
-	D3DXVECTOR3 tmpVec;
+	ChaVector3 targetVec, shadowVec;
+	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisZVec);
 	shadowVec.x = 0.0f;
@@ -1207,7 +1226,7 @@ int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, D3DXVECTOR3 be
 
 
 
-int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
+int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 {
 
 	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
@@ -1248,7 +1267,7 @@ int CQuaternion::ModifyEuler(D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB)
 
 
 /*
-int CQuaternion::ModifyEuler( D3DXVECTOR3* eulerA, D3DXVECTOR3* eulerB )
+int CQuaternion::ModifyEuler( ChaVector3* eulerA, ChaVector3* eulerB )
 {
 
 	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
@@ -1289,13 +1308,13 @@ int CQuaternion::GetRound( float srcval )
 	}
 }
 
-int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone )
+int CQuaternion::CalcFBXEul( CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone )
 {
 
 	int noise[4] = { 0, 1, 0, -1 };
 	static int dbgcnt = 0;
 
-	D3DXVECTOR3 tmpeul( 0.0f, 0.0f, 0.0f );
+	ChaVector3 tmpeul( 0.0f, 0.0f, 0.0f );
 	if (IsInit() == 0){
 		//Q2Eul(axisq, befeul, &tmpeul);
 		Q2EulXYZ(axisq, befeul, &tmpeul);
@@ -1322,13 +1341,13 @@ int CQuaternion::CalcFBXEul( CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3
 	return 0;
 }
 
-int CQuaternion::CalcFBXEulZXY(CQuaternion* axisq, D3DXVECTOR3 befeul, D3DXVECTOR3* reteul, int isfirstbone)
+int CQuaternion::CalcFBXEulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone)
 {
 
 	int noise[4] = { 0, 1, 0, -1 };
 	static int dbgcnt = 0;
 
-	D3DXVECTOR3 tmpeul(0.0f, 0.0f, 0.0f);
+	ChaVector3 tmpeul(0.0f, 0.0f, 0.0f);
 	if (IsInit() == 0){
 		//Q2Eul(axisq, befeul, &tmpeul);
 		//Q2EulXYZ(axisq, befeul, &tmpeul);
@@ -1392,8 +1411,8 @@ void CQuaternion::MakeFromBtMat3x3(btMatrix3x3 eulmat)
 		tmpcol[colno] = eulmat.getColumn(colno);
 	}
 
-	D3DXMATRIX xmat;
-	D3DXMatrixIdentity(&xmat);
+	ChaMatrix xmat;
+	ChaMatrixIdentity(&xmat);
 
 	xmat._11 = tmpcol[0].x();
 	xmat._12 = tmpcol[0].y();
@@ -1411,7 +1430,7 @@ void CQuaternion::MakeFromBtMat3x3(btMatrix3x3 eulmat)
 
 }
 
-void CQuaternion::MakeFromD3DXMat(D3DXMATRIX eulmat)
+void CQuaternion::MakeFromD3DXMat(ChaMatrix eulmat)
 {
 	this->RotationMatrix(eulmat);
 }

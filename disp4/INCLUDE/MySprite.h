@@ -13,7 +13,7 @@ public:
 
 	int Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DCOLOR srccol );
 	int CreateDecl();
-	int SetPos( D3DXVECTOR3 srcpos );
+	int SetPos( ChaVector3 srcpos );
 	int SetSize( D3DXVECTOR2 srcsize );
 	int SetColor( D3DXVECTOR4 srccol );
 	int OnRender( LPDIRECT3DTEXTURE9 ptex = 0 );
@@ -29,7 +29,7 @@ private:
 	SPRITEV m_v[4];
 	IDirect3DVertexDeclaration9* m_decl;
 
-	D3DXVECTOR3 m_pos;
+	ChaVector3 m_pos;
 	D3DXVECTOR2 m_size;
 	D3DXVECTOR4 m_col;
 };

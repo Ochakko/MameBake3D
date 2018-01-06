@@ -531,7 +531,7 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 
 	//newmodel->m_tmpmotspeed = m_motspeed;
 
-	newmodel->SetModelPosition(D3DXVECTOR3(posx, posy, posz));
+	newmodel->SetModelPosition(ChaVector3(posx, posy, posz));
 
 
 	if( refnum > 0 ){

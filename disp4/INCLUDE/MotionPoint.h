@@ -2,6 +2,7 @@
 #define MOTIONPOINTH
 
 #include <coef.h>
+#include <ChaVecCalc.h>
 #include <quaternion.h>
 
 class CBone;
@@ -14,11 +15,11 @@ public:
 
 	int InitParams();
 
-	int GetEul( D3DXVECTOR3* dsteul );
-	int SetEul( CQuaternion* axisq, D3DXVECTOR3 srceul );
+	int GetEul( ChaVector3* dsteul );
+	int SetEul( CQuaternion* axisq, ChaVector3 srceul );
 	int SetQ( CQuaternion* axisq, CQuaternion newq );
 
-	int UpdateMatrix( D3DXMATRIX* wmat, D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone );
+	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone );
 
 	int AddToPrev( CMotionPoint* addmp );
 	int AddToNext( CMotionPoint* addmp );
@@ -26,8 +27,8 @@ public:
 
 	int CopyMP( CMotionPoint* srcmp );
 
-	int CalcQandTra( D3DXMATRIX srcmat, CBone* boneptr, float hrate = 1.0f );
-	int SetFirstFrameBaseMat(D3DXMATRIX srcfirstmat);
+	int CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate = 1.0f );
+	int SetFirstFrameBaseMat(ChaMatrix srcfirstmat);
 
 
 
@@ -40,10 +41,10 @@ public:
 	void SetFrame( double srcframe ){ m_frame = srcframe; };
 
 
-	D3DXVECTOR3 GetTra(){ return m_tra; };
-	void SetTra( D3DXVECTOR3 srctra ){ m_tra = srctra; };
+	ChaVector3 GetTra(){ return m_tra; };
+	void SetTra( ChaVector3 srctra ){ m_tra = srctra; };
 
-	D3DXVECTOR3 GetFirstFrameTra(){ return m_firstframetra; };
+	ChaVector3 GetFirstFrameTra(){ return m_firstframetra; };
 
 	CQuaternion GetQ(){ return m_q; };
 	CQuaternion GetInvQ(){
@@ -53,28 +54,28 @@ public:
 	};
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
 
-	D3DXMATRIX GetWorldMat(){ return m_worldmat; };
-	void SetWorldMat(D3DXMATRIX srcmat){ SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
-	D3DXMATRIX GetInvWorldMat(){ D3DXMATRIX invmat; D3DXMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
+	ChaMatrix GetWorldMat(){ return m_worldmat; };
+	void SetWorldMat(ChaMatrix srcmat){ SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
+	ChaMatrix GetInvWorldMat(){ ChaMatrix invmat; ChaMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
 
 //btmat, btflagはCBoneに移動
-	//D3DXMATRIX GetBefBtMat();
-	//void SetBefBtMat(D3DXMATRIX srcmat);
-	//D3DXMATRIX GetBtMat();
-	//void SetBtMat(D3DXMATRIX srcmat);
+	//ChaMatrix GetBefBtMat();
+	//void SetBefBtMat(ChaMatrix srcmat);
+	//ChaMatrix GetBtMat();
+	//void SetBtMat(ChaMatrix srcmat);
 	//int GetBtFlag();
 	//void SetBtFlag(int srcflag);
 
 
-	D3DXMATRIX GetBefWorldMat(){ return m_befworldmat; };
-	void SetBefWorldMat( D3DXMATRIX srcmat ){ m_befworldmat = srcmat; };
+	ChaMatrix GetBefWorldMat(){ return m_befworldmat; };
+	void SetBefWorldMat( ChaMatrix srcmat ){ m_befworldmat = srcmat; };
 
-	D3DXMATRIX GetBefEditMat(){ return m_befeditmat; };
-	void SetBefEditMat( D3DXMATRIX srcmat ){ m_befeditmat = srcmat; };
+	ChaMatrix GetBefEditMat(){ return m_befeditmat; };
+	void SetBefEditMat( ChaMatrix srcmat ){ m_befeditmat = srcmat; };
 
-	D3DXMATRIX GetAbsMat(){ return m_absmat; };
-	void SetAbsMat( D3DXMATRIX srcmat ){ m_absmat = srcmat; };
+	ChaMatrix GetAbsMat(){ return m_absmat; };
+	void SetAbsMat( ChaMatrix srcmat ){ m_absmat = srcmat; };
 
 	CMotionPoint* GetPrev(){ return m_prev; };
 	void SetPrev( CMotionPoint* srcprev ){ m_prev = srcprev; };
@@ -82,11 +83,11 @@ public:
 	CMotionPoint* GetNext(){ return m_next; };
 	void SetNext( CMotionPoint* srcnext ){ m_next = srcnext; };
 
-	D3DXVECTOR3 GetLocalEul()
+	ChaVector3 GetLocalEul()
 	{
 		return m_localeul;
 	};
-	void SetLocalEul(D3DXVECTOR3 neweul);
+	void SetLocalEul(ChaVector3 neweul);
 
 	int GetUndoValidFlag()
 	{
@@ -111,24 +112,24 @@ private:
 	int m_undovalidflag;
 	double m_frame;
 	int m_localmatflag;
-	//D3DXVECTOR3 m_eul;
-	D3DXVECTOR3 m_tra;
-	D3DXVECTOR3 m_firstframetra;
+	//ChaVector3 m_eul;
+	ChaVector3 m_tra;
+	ChaVector3 m_firstframetra;
 
 	CQuaternion m_q;
-	D3DXVECTOR3 m_localeul;
+	ChaVector3 m_localeul;
 
-	D3DXMATRIX m_worldmat;//ワールド変換と親の影響を受けたマトリックス
+	ChaMatrix m_worldmat;//ワールド変換と親の影響を受けたマトリックス
 
-	D3DXMATRIX m_befworldmat;
-	D3DXMATRIX m_befeditmat;
+	ChaMatrix m_befworldmat;
+	ChaMatrix m_befeditmat;
 
-	D3DXMATRIX m_absmat;
+	ChaMatrix m_absmat;
 
 
 	//btmatはCBoneに移動
-	//D3DXMATRIX m_btmat;
-	//D3DXMATRIX m_befbtmat;
+	//ChaMatrix m_btmat;
+	//ChaMatrix m_befbtmat;
 	//int m_setbtflag;
 
 

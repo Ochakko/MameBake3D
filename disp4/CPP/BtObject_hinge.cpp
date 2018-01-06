@@ -37,7 +37,7 @@ CBtObject::~CBtObject()
 
 int CBtObject::InitParams()
 {
-	D3DXMatrixIdentity( &m_transmat );
+	ChaMatrixIdentity( &m_transmat );
 	m_btWorld = 0;
 
 	m_topflag = 0;
@@ -154,7 +154,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone )
 //	}
 
 	//if( m_mass != 0.0f ){
-		D3DXMATRIX startrot = curbone->m_rigidelem->m_axismat_parY * curbone->m_rigidelem->m_startmat;
+		ChaMatrix startrot = curbone->m_rigidelem->m_axismat_parY * curbone->m_rigidelem->m_startmat;
 		m_transmat = startrot;
 
 		startrot._41 = 0.0f;
@@ -173,11 +173,11 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone )
 //  Set the matrix from euler angles YPR around ZYX axes. 
  
 
-		D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
+		ChaVector3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 		parposA = m_bone->m_jointfpos;
-		D3DXVec3TransformCoord( &aftparposA, &parposA, &m_bone->m_rigidelem->m_startmat );
+		ChaVector3TransformCoord( &aftparposA, &parposA, &m_bone->m_rigidelem->m_startmat );
 		chilposA = m_bone->m_child->m_jointfpos;
-		D3DXVec3TransformCoord( &aftchilposA, &chilposA, &m_bone->m_child->m_rigidelem->m_startmat );
+		ChaVector3TransformCoord( &aftchilposA, &chilposA, &m_bone->m_child->m_rigidelem->m_startmat );
 		centerA = ( aftparposA + aftchilposA ) * 0.5f;
 		btVector3 btv( btScalar( centerA.x ), btScalar( centerA.y ), btScalar( centerA.z ) );
 
@@ -186,17 +186,17 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone )
 		transform.setRotation( btq );
 		transform.setOrigin( btv );
 
-		D3DXVECTOR3 diffA = chilposA - parposA;
-		m_boneleng = D3DXVec3Length( &diffA );
+		ChaVector3 diffA = chilposA - parposA;
+		m_boneleng = ChaVector3Length( &diffA );
 
-		D3DXMatrixIdentity( &m_cen2parY );
+		ChaMatrixIdentity( &m_cen2parY );
 		m_cen2parY._41 = 0.0f;
 		m_cen2parY._42 = -m_boneleng * 0.5f;
 		m_cen2parY._43 = 0.0f;
 
 
-		D3DXVECTOR3 partocen = centerA - aftparposA;
-		D3DXMatrixIdentity( &m_par2cen );
+		ChaVector3 partocen = centerA - aftparposA;
+		ChaMatrixIdentity( &m_par2cen );
 		m_par2cen._41 = partocen.x;
 		m_par2cen._42 = partocen.y;
 		m_par2cen._43 = partocen.z;
@@ -237,19 +237,19 @@ int CBtObject::CreateBtConstraint()
 			continue;
 		}
 
-		D3DXVECTOR3 centerposA, parposA, chilposA, aftparposA, aftchilposA;
+		ChaVector3 centerposA, parposA, chilposA, aftparposA, aftchilposA;
 		parposA = m_bone->m_jointfpos;
-		D3DXVec3TransformCoord( &aftparposA, &parposA, &m_bone->m_rigidelem->m_startmat );
+		ChaVector3TransformCoord( &aftparposA, &parposA, &m_bone->m_rigidelem->m_startmat );
 		chilposA = chilbto->m_bone->m_jointfpos;
-		D3DXVec3TransformCoord( &aftchilposA, &chilposA, &chilbto->m_bone->m_rigidelem->m_startmat );
+		ChaVector3TransformCoord( &aftchilposA, &chilposA, &chilbto->m_bone->m_rigidelem->m_startmat );
 		centerposA = ( aftparposA + aftchilposA ) * 0.5f;
-		D3DXVECTOR3 pivotA;
+		ChaVector3 pivotA;
 		pivotA = aftchilposA - centerposA;
 		btVector3 btpivotA;
 		btpivotA.setValue( btScalar(pivotA.x), btScalar(pivotA.y), btScalar(pivotA.z) );
 
 		btTransform localA, localB;
-		D3DXMATRIX axisA, axisB;
+		ChaMatrix axisA, axisB;
 		axisA = m_bone->m_rigidelem->m_axismat_par * m_bone->m_rigidelem->m_startmat;
 		axisA._41 = 0.0f;
 		axisA._42 = 0.0f;
@@ -261,13 +261,13 @@ int CBtObject::CreateBtConstraint()
 			//CBtObject* magobto = chilbto->m_chilbt[ 0 ];
 			//_ASSERT( magobto );
 
-			D3DXVECTOR3 centerposB, parposB, chilposB, aftparposB, aftchilposB;
+			ChaVector3 centerposB, parposB, chilposB, aftparposB, aftchilposB;
 			parposB = chilbto->m_bone->m_jointfpos;
-			D3DXVec3TransformCoord( &aftparposB, &parposB, &chilbto->m_bone->m_rigidelem->m_startmat );
+			ChaVector3TransformCoord( &aftparposB, &parposB, &chilbto->m_bone->m_rigidelem->m_startmat );
 			chilposB = chilbto->m_bone->m_child->m_jointfpos;
-			D3DXVec3TransformCoord( &aftchilposB, &chilposB, &chilbto->m_bone->m_child->m_rigidelem->m_startmat );
+			ChaVector3TransformCoord( &aftchilposB, &chilposB, &chilbto->m_bone->m_child->m_rigidelem->m_startmat );
 			centerposB = ( aftparposB + aftchilposB ) * 0.5f;
-			D3DXVECTOR3 pivotB;
+			ChaVector3 pivotB;
 			pivotB = aftparposB - centerposB;
 			btVector3 btpivotB;
 			btpivotB.setValue( btScalar(pivotB.x), btScalar(pivotB.y), btScalar(pivotB.z) );
@@ -279,41 +279,41 @@ int CBtObject::CreateBtConstraint()
 			axisB._43 = 0.0f;
 
 			/***
-			D3DXVECTOR3 basez( 0.0f, 0.0f, 1.0f );
-			D3DXVECTOR3 basex( 1.0f, 0.0f, 0.0f );
-			D3DXVECTOR3 axis1, axis2;
-			D3DXVec3TransformCoord( &axis1, &basez, &axisA );
-			D3DXVec3Normalize( &axis1, &axis1 );
-			D3DXVec3TransformCoord( &axis2, &basex, &axisA );
-			D3DXVec3Normalize( &axis2, &axis2 );
+			ChaVector3 basez( 0.0f, 0.0f, 1.0f );
+			ChaVector3 basex( 1.0f, 0.0f, 0.0f );
+			ChaVector3 axis1, axis2;
+			ChaVector3TransformCoord( &axis1, &basez, &axisA );
+			ChaVector3Normalize( &axis1, &axis1 );
+			ChaVector3TransformCoord( &axis2, &basex, &axisA );
+			ChaVector3Normalize( &axis2, &axis2 );
 			btVector3 btaxis1, btaxis2;
 			btaxis1.setValue( btScalar( axis1.x ), btScalar( axis1.y ), btScalar( axis1.z ) );
 			btaxis2.setValue( btScalar( axis2.x ), btScalar( axis2.y ), btScalar( axis2.z ) );
 			***/
 
-			D3DXVECTOR3 basez( 0.0f, 0.0f, 1.0f );
+			ChaVector3 basez( 0.0f, 0.0f, 1.0f );
 			btVector3 btaxisA( btScalar( 0.0f ), btScalar( 0.0f ), btScalar( 1.0f ) );
 			
-			D3DXVECTOR3 axiszB;
-			D3DXVec3TransformCoord( &axiszB, &basez, &axisB );
-			D3DXVec3Normalize( &axiszB, &axiszB );
+			ChaVector3 axiszB;
+			ChaVector3TransformCoord( &axiszB, &basez, &axisB );
+			ChaVector3Normalize( &axiszB, &axiszB );
 			btVector3 btaxisB( btScalar( axiszB.x ), btScalar( axiszB.y ), btScalar( axiszB.z ) );
 
 			/***
-			D3DXMATRIX invA;
-			D3DXMatrixInverse( &invA, NULL, &axisA );
-			D3DXVECTOR3 axiszB;
-			D3DXVec3TransformCoord( &axiszB, &basez, &invA );
-			D3DXVECTOR3 finaxiszB;
-			D3DXVec3TransformCoord( &finaxiszB, &axiszB, &axisB );
-			D3DXVec3Normalize( &finaxiszB, &finaxiszB );
+			ChaMatrix invA;
+			ChaMatrixInverse( &invA, NULL, &axisA );
+			ChaVector3 axiszB;
+			ChaVector3TransformCoord( &axiszB, &basez, &invA );
+			ChaVector3 finaxiszB;
+			ChaVector3TransformCoord( &finaxiszB, &axiszB, &axisB );
+			ChaVector3Normalize( &finaxiszB, &finaxiszB );
 			btVector3 btaxisB( btScalar( finaxiszB.x ), btScalar( finaxiszB.y ), btScalar( finaxiszB.z ) );
 			***/
 
 //			if( m_bone->m_rigidelem->m_bcone == false ){
 				btHingeConstraint* hingeC;
 
-				//D3DXVECTOR3 axiszA, axiszB;
+				//ChaVector3 axiszA, axiszB;
 				if( m_rigidbody && chilbto->m_rigidbody ){
 
 					_ASSERT( m_rigidbody );
@@ -367,7 +367,7 @@ int CBtObject::CreateBtConstraint()
 	return 0;
 }
 
-int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
+int CBtObject::SetBtMotion( ChaMatrix* wmat, ChaMatrix* vpmat )
 {
 	if( m_topflag == 1 ){
 		return 0;
@@ -393,8 +393,8 @@ int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 //		tmpcol[colno] = worldmat.getRow( colno );
 	}
 
-	D3DXMATRIX xworld;
-	D3DXMatrixIdentity( &xworld );
+	ChaMatrix xworld;
+	ChaMatrixIdentity( &xworld );
 
 	xworld._11 = tmpcol[0].x();
 	xworld._12 = tmpcol[0].y();
@@ -412,8 +412,8 @@ int CBtObject::SetBtMotion( D3DXMATRIX* wmat, D3DXMATRIX* vpmat )
 	xworld._42 = worldpos.y();
 	xworld._43 = worldpos.z();
 
-	D3DXMATRIX invtransmat;
-	D3DXMatrixInverse( &invtransmat, NULL, &m_transmat );
+	ChaMatrix invtransmat;
+	ChaMatrixInverse( &invtransmat, NULL, &m_transmat );
 
 	//m_bone->m_curmp.m_btmat = m_bone->m_rigidelem->m_startmat * invtransmat * xworld;
 	//m_bone->m_curmp.m_btmat = invtransmat * m_cen2par * xworld;

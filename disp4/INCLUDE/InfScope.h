@@ -16,7 +16,7 @@ public:
 	~CInfScope();
 
 	int CalcCenter();
-	int CheckInCnt( D3DXVECTOR3* vptr, int* incntptr, int* justptr );
+	int CheckInCnt( ChaVector3* vptr, int* incntptr, int* justptr );
 
 private:
 	int InitParams();
@@ -31,20 +31,20 @@ public:
 	CMQOFace** m_ppface;
 
 	int m_vnum;
-	D3DXVECTOR3* m_pvert;
+	ChaVector3* m_pvert;
 
 	int m_applyboneno;
 	CMQOObject* m_targetobj;
 	CBone* m_tmpappbone;
 
-	D3DXVECTOR3 m_minv;
-	D3DXVECTOR3 m_maxv;
-	D3DXVECTOR3 m_center;
+	ChaVector3 m_minv;
+	ChaVector3 m_maxv;
+	ChaVector3 m_center;
 
 	int m_settminmax;
-	D3DXVECTOR3 m_tminv;
-	D3DXVECTOR3 m_tmaxv;
-	D3DXVECTOR3 m_tcenter;
+	ChaVector3 m_tminv;
+	ChaVector3 m_tmaxv;
+	ChaVector3 m_tcenter;
 	float m_tmaxdist;
 
 };

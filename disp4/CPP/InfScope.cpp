@@ -21,7 +21,9 @@
 #include <Bone.h>
 #include <MQOFace.h>
 
-#include <VecMath.h>
+//#include <VecMath.h>
+#include <ChaCalc.h>
+
 #include <Collision.h>
 
 static int s_alloccnt = 0;
@@ -53,14 +55,14 @@ int CInfScope::InitParams()
 	m_applyboneno = -1;
 	m_targetobj = 0;
 
-	m_minv = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	m_maxv = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	m_center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	m_minv = ChaVector3( 0.0f, 0.0f, 0.0f );
+	m_maxv = ChaVector3( 0.0f, 0.0f, 0.0f );
+	m_center = ChaVector3( 0.0f, 0.0f, 0.0f );
 
 	m_settminmax = 0;
-	m_tminv = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	m_tmaxv = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	m_tcenter = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	m_tminv = ChaVector3( 0.0f, 0.0f, 0.0f );
+	m_tmaxv = ChaVector3( 0.0f, 0.0f, 0.0f );
+	m_tcenter = ChaVector3( 0.0f, 0.0f, 0.0f );
 	m_tmaxdist = 1.0f;
 
 	m_tmpappbone = 0;
@@ -86,8 +88,8 @@ int CInfScope::CalcCenter()
 		return 0;
 	}
 
-	D3DXVECTOR3 minv( 0.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 maxv( 0.0f, 0.0f, 0.0f );
+	ChaVector3 minv( 0.0f, 0.0f, 0.0f );
+	ChaVector3 maxv( 0.0f, 0.0f, 0.0f );
 
 	int firstflag = 1;
 
@@ -96,7 +98,7 @@ int CInfScope::CalcCenter()
 		CMQOFace* curface = *( m_ppface + fno );
 		int fi;
 		for( fi = 0; fi < curface->m_pointnum; fi++ ){
-			D3DXVECTOR3* chkv = m_pvert + curface->m_index[ fi ];
+			ChaVector3* chkv = m_pvert + curface->m_index[ fi ];
 
 			if( firstflag == 1 ){
 				minv = *chkv;
@@ -133,12 +135,12 @@ int CInfScope::CalcCenter()
 	return 0;
 }
 
-int CInfScope::CheckInCnt( D3DXVECTOR3* vptr, int* incntptr, int* justptr )
+int CInfScope::CheckInCnt( ChaVector3* vptr, int* incntptr, int* justptr )
 {
 	*incntptr = 0;
 	*justptr = 0;
 
-	D3DXVECTOR3 dir = D3DXVECTOR3( 0.987f, 1.765f, -1.567f );
+	ChaVector3 dir = ChaVector3( 0.987f, 1.765f, -1.567f );
 	int allowrev = 1;
 
 	int fno;

@@ -10,6 +10,8 @@
 
 #include <ConstraintElem.h>
 
+#include <ChaVecCalc.h>
+
 #include "btBulletDynamicsCommon.h"
 #include "LinearMath/btIDebugDraw.h"
 
@@ -160,14 +162,14 @@ public: //accesser
 	float GetBoneLeng(){ return m_boneleng; };
 	void SetBoneLeng( float srcleng ){ m_boneleng = srcleng; };
 
-	D3DXMATRIX GetTransMat(){ return m_transmat; };
-	void SetTransMat( D3DXMATRIX srcmat ){ m_transmat = srcmat; };
+	ChaMatrix GetTransMat(){ return m_transmat; };
+	void SetTransMat( ChaMatrix srcmat ){ m_transmat = srcmat; };
 
-	D3DXMATRIX GetPar2Cen(){ return m_par2cen; };
-	void SetPar2Cen( D3DXMATRIX srcvec ){ m_par2cen = srcvec; };
+	ChaMatrix GetPar2Cen(){ return m_par2cen; };
+	void SetPar2Cen( ChaMatrix srcvec ){ m_par2cen = srcvec; };
 
-	D3DXMATRIX GetCen2ParY(){ return m_cen2parY; };
-	void SetCen2ParY( D3DXMATRIX srcvec ){ m_cen2parY = srcvec; };
+	ChaMatrix GetCen2ParY(){ return m_cen2parY; };
+	void SetCen2ParY( ChaMatrix srcvec ){ m_cen2parY = srcvec; };
 
 	CBone* GetBone(){ return m_bone; };
 	void SetBone( CBone* srcbone ){ m_bone = srcbone; };
@@ -216,15 +218,15 @@ public: //accesser
 	btMatrix3x3 GetFirstTransformMat(){
 		return 	m_firstTransformMat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
 	};
-	D3DXMATRIX GetFirstTransformMatX(){
+	ChaMatrix GetFirstTransformMatX(){
 		return m_firstTransformMatX;
 	};
 	btTransform GetFirstTransform(){
 		return m_firstTransform;
 	};
 
-	D3DXMATRIX GetXWorld(){ return m_xworld; };
-	void SetXWorld( D3DXMATRIX srcworld ){ m_xworld = srcworld; };
+	ChaMatrix GetXWorld(){ return m_xworld; };
+	void SetXWorld( ChaMatrix srcworld ){ m_xworld = srcworld; };
 
 	int GetConstraintSize(){
 		return (int)m_constraint.size();
@@ -271,7 +273,7 @@ public: //accesser
 	};
 
 
-	D3DXVECTOR3 GetBtPos()
+	ChaVector3 GetBtPos()
 	{
 		return m_btpos;
 	}
@@ -282,10 +284,10 @@ private:
 	int m_topflag;
 	float m_boneleng;
 
-	D3DXMATRIX m_transmat;//Y軸平行な剛体をボーンに合わせるための変換行列。
-	D3DXMATRIX m_par2cen;//parent to centerのベクトル。
-	D3DXMATRIX m_cen2parY;//center to parentのベクトル。剛体の初期状態がY軸に平行と仮定。
-	D3DXMATRIX m_xworld;//bulletの剛体に設定された変換行列。
+	ChaMatrix m_transmat;//Y軸平行な剛体をボーンに合わせるための変換行列。
+	ChaMatrix m_par2cen;//parent to centerのベクトル。
+	ChaMatrix m_cen2parY;//center to parentのベクトル。剛体の初期状態がY軸に平行と仮定。
+	ChaMatrix m_xworld;//bulletの剛体に設定された変換行列。
 
 	CBone* m_bone;//剛体の親側のボーン
 	CBone* m_parbone;//m_boneの親のボーン
@@ -315,11 +317,11 @@ private:
 	btTransform m_FrameB;//剛体設定時のB側変換行列。
 
 	btMatrix3x3 m_firstTransformMat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
-	D3DXMATRIX m_firstTransformMatX;
+	ChaMatrix m_firstTransformMatX;
 	btTransform m_firstTransform;
 
 
-	D3DXVECTOR3 m_btpos;//Motion2Btで計算した剛体の位置
+	ChaVector3 m_btpos;//Motion2Btで計算した剛体の位置
 };
 
 

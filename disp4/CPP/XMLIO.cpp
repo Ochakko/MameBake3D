@@ -294,7 +294,7 @@ int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, char* startpat, char* endpat, float*
 
 	return 0;
 }
-int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, D3DXVECTOR3* dstvec )
+int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, ChaVector3* dstvec )
 {
 	int ret;
 	char* startptr;

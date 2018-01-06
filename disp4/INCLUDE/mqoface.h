@@ -25,7 +25,7 @@ public:
 	int SetInvFace( CMQOFace* srcface, int offset );
 
 	int SetMikoBoneName( char* srcname, int lrflag );
-	int CheckLRFlag( D3DXVECTOR3* pointptr, int* lrflagptr );
+	int CheckLRFlag( ChaVector3* pointptr, int* lrflagptr );
 
 private:
 	void InitParams();

@@ -208,8 +208,8 @@ int CGColiFile::ReadColiID( XMLIOBUF* xmlbuf )
 
 	m_bpw->RemakeG();
 
-	D3DXVECTOR3 tra( 0.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 mult( m_bpw->m_gplanesize.x, 1.0f, m_bpw->m_gplanesize.y );
+	ChaVector3 tra( 0.0f, 0.0f, 0.0f );
+	ChaVector3 mult( m_bpw->m_gplanesize.x, 1.0f, m_bpw->m_gplanesize.y );
 	CallF( m_model->MultDispObj( mult, tra ), return 1 );
 
 	return 0;

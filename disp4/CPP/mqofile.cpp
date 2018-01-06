@@ -67,7 +67,7 @@ void CMQOFile::InitLoadParams()
 	m_multiple = 1.0f;
 	m_groundflag = 0;
 
-	D3DXMatrixIdentity( &m_offsetmat );
+	ChaMatrixIdentity( &m_offsetmat );
 
 
 	m_pdev = 0;
@@ -75,7 +75,7 @@ void CMQOFile::InitLoadParams()
 
 
 int CMQOFile::LoadMQOFile( LPDIRECT3DDEVICE9 pdev, float multiple, WCHAR* filename, 
-	D3DXVECTOR3 offsetpos, D3DXVECTOR3 rot, CModel* srcmodel )
+	ChaVector3 offsetpos, ChaVector3 rot, CModel* srcmodel )
 {
 	m_pdev = pdev;
 	m_modelptr = srcmodel;
@@ -127,17 +127,17 @@ int CMQOFile::LoadMQOFile( LPDIRECT3DDEVICE9 pdev, float multiple, WCHAR* filena
 }
 
 
-int CMQOFile::LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR3 rot )
+int CMQOFile::LoadMQOFile_aft( float multiple, ChaVector3 offsetpos, ChaVector3 rot )
 {
 	int ret = 0;
 	m_multiple = multiple;
 
-	D3DXMATRIX scalemat, rotxmat, rotymat, rotzmat, shiftmat;
-	D3DXMatrixIdentity( &scalemat );
-	D3DXMatrixIdentity( &rotxmat );
-	D3DXMatrixIdentity( &rotymat );
-	D3DXMatrixIdentity( &rotzmat );
-	D3DXMatrixIdentity( &shiftmat );
+	ChaMatrix scalemat, rotxmat, rotymat, rotzmat, shiftmat;
+	ChaMatrixIdentity( &scalemat );
+	ChaMatrixIdentity( &rotxmat );
+	ChaMatrixIdentity( &rotymat );
+	ChaMatrixIdentity( &rotzmat );
+	ChaMatrixIdentity( &shiftmat );
 
 	scalemat._11 = m_multiple;
 	scalemat._22 = m_multiple;
@@ -147,9 +147,9 @@ int CMQOFile::LoadMQOFile_aft( float multiple, D3DXVECTOR3 offsetpos, D3DXVECTOR
 	shiftmat._42 = offsetpos.y;
 	shiftmat._43 = offsetpos.z;
 
-	D3DXMatrixRotationX( &rotxmat, rot.x * (float)DEG2PAI );
-	D3DXMatrixRotationY( &rotymat, rot.y * (float)DEG2PAI );
-	D3DXMatrixRotationZ( &rotzmat, rot.z * (float)DEG2PAI );
+	//ChaMatrixRotationX( &rotxmat, rot.x * (float)DEG2PAI );
+	//ChaMatrixRotationY( &rotymat, rot.y * (float)DEG2PAI );
+	//ChaMatrixRotationZ( &rotzmat, rot.z * (float)DEG2PAI );
 
 	m_offsetmat = scalemat * rotzmat * rotymat * rotxmat * shiftmat;
 

@@ -46,15 +46,15 @@ CBtObject::~CBtObject()
 
 int CBtObject::InitParams()
 {
-	D3DXMatrixIdentity(&m_firstTransformMatX);
+	ChaMatrixIdentity(&m_firstTransformMatX);
 	m_firstTransform.setIdentity();
 
-	m_btpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_btpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	m_connectflag = 0;
 	m_constzrad = 0.0f;
-	D3DXMatrixIdentity( &m_transmat );
-	D3DXMatrixIdentity( &m_xworld );
+	ChaMatrixIdentity( &m_transmat );
+	ChaMatrixIdentity( &m_xworld );
 	m_btWorld = 0;
 
 	m_topflag = 0;
@@ -242,13 +242,13 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 		return 0;
 	}
 
-	D3DXVECTOR3 centerA, parposA, chilposA, aftparposA, aftchilposA;
+	ChaVector3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
 	D3DVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
 	chilposA = m_endbone->GetJointFPos();
 	D3DVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
-	D3DXVECTOR3 diffA = chilposA - parposA;
-	m_boneleng = D3DXVec3Length(&diffA);
+	ChaVector3 diffA = chilposA - parposA;
+	m_boneleng = ChaVector3Length(&diffA);
 
 	float h, r, z;
 	//max : boneleng 0 対策
@@ -299,7 +299,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 //	}
 
 
-	D3DXMATRIX startrot = curre->GetCapsulemat();
+	ChaMatrix startrot = curre->GetCapsulemat();
 	//m_transmat = startrot;
 
 
@@ -324,7 +324,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 
 	//-0.374995, 0.249996, 0.000000
-	D3DXMatrixIdentity( &m_cen2parY );
+	ChaMatrixIdentity( &m_cen2parY );
 	m_cen2parY._41 = 0.0f;
 	//m_cen2parY._42 = -m_boneleng * 0.5f;
 	m_cen2parY._42 = 0.0f;
@@ -334,8 +334,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 //	m_cen2parY._43 = 0.0f;
 
 
-	D3DXVECTOR3 partocen = centerA - aftparposA;
-	D3DXMatrixIdentity( &m_par2cen );
+	ChaVector3 partocen = centerA - aftparposA;
+	ChaMatrixIdentity( &m_par2cen );
 	m_par2cen._41 = partocen.x;
 	m_par2cen._42 = partocen.y;
 	m_par2cen._43 = partocen.z;
@@ -362,7 +362,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	
 	m_firstTransform = worldtra;
 	m_firstTransformMat = worldmat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
-	m_firstTransformMatX = D3DXMatrixFromBtTransform(worldtra.getBasis(), worldtra.getOrigin());
+	m_firstTransformMatX = ChaMatrixFromBtTransform(worldtra.getBasis(), worldtra.getOrigin());
 
 	btVector3 tmpcol[3];
 	int colno;
@@ -371,7 +371,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 //		tmpcol[colno] = worldmat.getRow( colno );
 	}
 
-	D3DXMatrixIdentity( &m_xworld );
+	ChaMatrixIdentity( &m_xworld );
 
 	m_xworld._11 = tmpcol[0].x();
 	m_xworld._12 = tmpcol[0].y();
@@ -405,7 +405,7 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 		return 1;
 	}
 
-	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
+	ChaVector3 parposA, chilposA, aftparposA, aftchilposA;
 	parposA = curbto->m_bone->GetJointFPos();
 	D3DVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
 	chilposA = curbto->m_endbone->GetJointFPos();
@@ -473,8 +473,8 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 		return 1;
 	}
 
-	D3DXMATRIX transmatx;
-	D3DXMatrixIdentity(&transmatx);
+	ChaMatrix transmatx;
+	ChaMatrixIdentity(&transmatx);
 	int setstartflag = 1;
 
 	curbto->m_bone->CalcAxisMatX(curbto->m_endbone, &transmatx, setstartflag);
@@ -484,8 +484,8 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	CQuaternion invrotq;
 	rotq.inv(&invrotq);
 
-	D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 eul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 eul = ChaVector3(0.0f, 0.0f, 0.0f);
 	invrotq.Q2EulXYZ(0, befeul, &eul);
 	//rotq.Q2EulZYX(0, 0, befeul, &eul);
 
@@ -494,7 +494,7 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
 	btTransform invtra = rigidtra.inverse();
 
-	D3DXVECTOR3 parposA, chilposA, aftparposA, aftchilposA;
+	ChaVector3 parposA, chilposA, aftparposA, aftchilposA;
 	parposA = curbto->m_bone->GetJointFPos();
 	D3DVec3TransformCoord(&aftparposA, &parposA, &curbto->m_bone->GetStartMat2());
 	chilposA = curbto->m_endbone->GetJointFPos();
@@ -859,8 +859,8 @@ int CBtObject::Motion2Bt(CModel* srcmodel)
 
 	CRigidElem* curre = m_bone->GetRigidElem( m_endbone );
 	if( curre ){
-		D3DXMATRIX newrotmat;
-		D3DXVECTOR3 newrigidpos;
+		ChaMatrix newrotmat;
+		ChaVector3 newrigidpos;
 		GetBone()->CalcNewBtMat(srcmodel, curre, GetEndBone(), &newrotmat, &newrigidpos);
 
 		CQuaternion tmpq;
@@ -874,7 +874,7 @@ int CBtObject::Motion2Bt(CModel* srcmodel)
 
 		m_rigidbody->getMotionState()->setWorldTransform( worldtra );
 
-		m_btpos = D3DXVECTOR3(newrigidpos.x, newrigidpos.y, newrigidpos.z);
+		m_btpos = ChaVector3(newrigidpos.x, newrigidpos.y, newrigidpos.z);
 
 	}else{
 		_ASSERT( 0 );
@@ -907,8 +907,8 @@ int CBtObject::SetBtMotion()
 		//		tmpcol[colno] = worldmat.getRow( colno );
 	}
 
-	D3DXMATRIX newxworld;
-	D3DXMatrixIdentity(&newxworld);
+	ChaMatrix newxworld;
+	ChaMatrixIdentity(&newxworld);
 	newxworld._11 = tmpcol[0].x();
 	newxworld._12 = tmpcol[0].y();
 	newxworld._13 = tmpcol[0].z();
@@ -925,10 +925,10 @@ int CBtObject::SetBtMotion()
 	newxworld._42 = worldpos.y();
 	newxworld._43 = worldpos.z();
 
-	D3DXMATRIX invxworld;
-	D3DXMatrixInverse( &invxworld, NULL, &m_xworld );
+	ChaMatrix invxworld;
+	ChaMatrixInverse( &invxworld, NULL, &m_xworld );
 
-	D3DXMATRIX diffxworld;
+	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
 
 	//CMotionPoint curmp;
@@ -955,9 +955,9 @@ int CBtObject::SetBtMotion()
 		if( m_parbt->m_bone ){
 			//親側ボーンの親ボーンがある場合。
 			//剛体シミュレーション開始時の行列に、親ボーンの変化分を掛ける。
-			D3DXMATRIX invstart;
-			D3DXMatrixInverse( &invstart, NULL, &(m_parbt->m_bone->GetStartMat2()) );
-			D3DXMATRIX diffmat;
+			ChaMatrix invstart;
+			ChaMatrixInverse( &invstart, NULL, &(m_parbt->m_bone->GetStartMat2()) );
+			ChaMatrix diffmat;
 			diffmat = invstart * m_parbt->m_bone->GetCurMp().GetBtMat();
 			curmp = m_bone->GetCurMp();
 			curmp.SetBtMat( m_bone->GetStartMat2() * diffmat );
@@ -1002,8 +1002,8 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 		//		tmpcol[colno] = worldmat.getRow( colno );
 	}
 
-	D3DXMATRIX newxworld;
-	D3DXMatrixIdentity(&newxworld);
+	ChaMatrix newxworld;
+	ChaMatrixIdentity(&newxworld);
 	newxworld._11 = tmpcol[0].x();
 	newxworld._12 = tmpcol[0].y();
 	newxworld._13 = tmpcol[0].z();
@@ -1020,10 +1020,10 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	newxworld._42 = worldpos.y();
 	newxworld._43 = worldpos.z();
 
-	D3DXMATRIX invxworld;
-	D3DXMatrixInverse(&invxworld, NULL, &m_xworld);
+	ChaMatrix invxworld;
+	ChaMatrixInverse(&invxworld, NULL, &m_xworld);
 
-	D3DXMATRIX diffxworld;
+	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
 
 	//CMotionPoint curmp;
@@ -1032,7 +1032,7 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	//curmp.SetBtFlag(1);
 	//m_bone->SetCurMp(curmp);
 
-	D3DXMATRIX newcapsulemat;
+	ChaMatrix newcapsulemat;
 	newcapsulemat = srcre->GetFirstcapsulemat() * diffxworld;
 	srcre->SetCapsulemat(newcapsulemat);
 
@@ -1057,9 +1057,9 @@ int CBtObject::CreatePhysicsPosConstraint()
 
 	m_gz_colshape = new btSphereShape(btScalar(r));
 
-	D3DXVECTOR3 endpos, aftendpos;
+	ChaVector3 endpos, aftendpos;
 	endpos = m_endbone->GetJointFPos();
-	D3DXMATRIX endmat;
+	ChaMatrix endmat;
 	if (g_previewFlag == 5){
 
 		endmat = m_endbone->GetBtMat();

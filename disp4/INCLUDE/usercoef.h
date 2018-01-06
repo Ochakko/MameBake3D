@@ -3,6 +3,7 @@
 
 #ifndef COEFH
 #include <d3dx9.h>
+#include <ChaVecCalc.h>
 #endif
 
 #define PI          3.14159265358979323846f
@@ -129,7 +130,7 @@ typedef struct tag_rpselem
 	int framecnt;
 	int skelno;
 	float confidence;
-	D3DXVECTOR3 pos;
+	ChaVector3 pos;
 	int twistflag;
 }RPSELEM;
 

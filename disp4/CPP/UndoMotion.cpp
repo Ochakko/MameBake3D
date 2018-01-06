@@ -20,7 +20,8 @@
 
 #include <MotionPoint.h>
 #include <quaternion.h>
-#include <VecMath.h>
+//#include <VecMath.h>
+#include <ChaVecCalc.h>
 
 #include <string>
 

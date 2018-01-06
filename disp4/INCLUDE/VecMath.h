@@ -3,9 +3,9 @@
 
 #include <d3dx9.h>
 
-float DXVec3Dot( D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 );
-int DXVec3Cross( D3DXVECTOR3* outvec, D3DXVECTOR3* vec1, D3DXVECTOR3* vec2 );
-float DXVec3Length( D3DXVECTOR3* v );
-int DXVec3Normalize( D3DXVECTOR3* outv, D3DXVECTOR3* inv );
+float ChaVector3Dot( ChaVector3* vec1, ChaVector3* vec2 );
+int ChaVector3Cross( ChaVector3* outvec, ChaVector3* vec1, ChaVector3* vec2 );
+float ChaVector3Length( ChaVector3* v );
+int ChaVector3Normalize( ChaVector3* outv, ChaVector3* inv );
 
 #endif

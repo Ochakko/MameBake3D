@@ -13,6 +13,7 @@
 
 #include <orgwindow.h>
 #include <Coef.h>
+#include <ChaVecCalc.h>
 
 class CMQOFace;
 class CMotionPoint;
@@ -24,9 +25,9 @@ class CBone
 {
 public:
 
-	D3DXVECTOR3 m_btparpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
-	D3DXVECTOR3 m_btchilpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
-	D3DXMATRIX m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
+	ChaVector3 m_btparpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	ChaVector3 m_btchilpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	ChaMatrix m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
 
 /**
  * @fn
@@ -71,12 +72,12 @@ public:
  * @breaf ボーンの現在の姿勢を計算する。
  * @param (int srcmotid) IN モーションのIDを指定する。
  * @param (double srcframe) IN モーションのフレーム（時間）を指定する。
- * @param (D3DXMATRIX* wmat) IN ワールド座標系の変換行列を指定する。
- * @param (D3DXMATRIX* vpmat) IN カメラプロジェクション座標系の変換行列を指定する。
+ * @param (ChaMatrix* wmat) IN ワールド座標系の変換行列を指定する。
+ * @param (ChaMatrix* vpmat) IN カメラプロジェクション座標系の変換行列を指定する。
  * @return 成功したら０。
  * @detail 指定モーションの指定時間の姿勢を計算する。グローバルな姿勢の計算である。
  */
-	int UpdateMatrix( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
+	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
 
 /**
  * @fn
@@ -173,19 +174,19 @@ public:
  * @detail 計算したデータは、ボーンの位置にマニピュレータを表示するための変換行列に使用する。現在はCalcAxisMatZ関数でボーンの変換行列を計算している。
  */
 	int CalcAxisMat( int firstflag, float delta );
-	float CalcAxisMatX(CBone* childbone, D3DXMATRIX* dstmat, int setstartflag);
+	float CalcAxisMatX(CBone* childbone, ChaMatrix* dstmat, int setstartflag);
 
 
 /**
  * @fn
  * CalcAxisMatZ
  * @breaf ボーンの親と子供の位置を指定して、その軸の変換行列を計算する。
- * @param (D3DXVECTOR3* srccur) IN ボーンの親の座標を指定する。
- * @param (D3DXVECTOR3* srcchil) IN ボーンの子供の座標を指定する。
+ * @param (ChaVector3* srccur) IN ボーンの親の座標を指定する。
+ * @param (ChaVector3* srcchil) IN ボーンの子供の座標を指定する。
  * @return 成功したら０。
  * @detail 初期状態がZ軸を向いていると仮定して計算する。ボーンの位置にマニピュレータを表示するために使用する。
  */
-	int CalcAxisMatZ( D3DXVECTOR3* srccur, D3DXVECTOR3* srcchil );
+	int CalcAxisMatZ( ChaVector3* srccur, ChaVector3* srcchil );
 
 
 /**
@@ -221,11 +222,11 @@ public:
  * @param (CMotionPoint* parmp) IN ０を指定した時は自分の姿勢を計算する。０以外の親を指定した場合は子供方向に姿勢の変更を伝えていく。
  * @param (int srcmotid) IN モーションのIDを指定する。
  * @param (double srcframe) IN モーションのフレーム（時間）を指定する。
- * @param (D3DXVECTOR3 srctra) IN 移動ベクトルを指定する。
+ * @param (ChaVector3 srctra) IN 移動ベクトルを指定する。
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double srcframe, D3DXVECTOR3 srctra );
+	CMotionPoint* AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra );
 
 /**
  * @fn
@@ -238,12 +239,12 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, D3DXVECTOR3 traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f), int setmatflag = 0, D3DXMATRIX* psetmat = 0);
+	CMotionPoint* RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
 /**
 
 */
-	CMotionPoint* RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, D3DXMATRIX srcmat);
+	CMotionPoint* RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, ChaMatrix srcmat);
 
 /**
  * @fn
@@ -325,45 +326,45 @@ public:
 	* @fn
 	* CalcAxisMatX_aft
 	* @breaf ボーンの軸のための変換行列を計算する。初期状態がX軸を向いていると仮定して計算する。
-	* @param (D3DXVECTOR3 curpos) IN ボーンの位置。
-	* @param (D3DXVECTOR3 chilpos) IN 子供のボーンの位置。
-	* @param (D3DXMATRIX* destmat) OUT 変換行列を格納するデータへのポインタ。
+	* @param (ChaVector3 curpos) IN ボーンの位置。
+	* @param (ChaVector3 chilpos) IN 子供のボーンの位置。
+	* @param (ChaMatrix* destmat) OUT 変換行列を格納するデータへのポインタ。
 	* @return 成功したら０。
 	* @detail CalcAxisMatXから呼ばれる。
 	*/
-	//int CalcAxisMatX_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
+	//int CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* destmat);
 
-	int CalcAxisMatZ_aft(D3DXVECTOR3 curpos, D3DXVECTOR3 chilpos, D3DXMATRIX* destmat);
+	int CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* destmat);
 
 
-	int CalcFirstFrameBonePos(D3DXMATRIX srcmat);
+	int CalcFirstFrameBonePos(ChaMatrix srcmat);
 
 	int CalcBoneDepth();
 
-	D3DXVECTOR3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, D3DXVECTOR3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-	D3DXMATRIX CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
-	int SetWorldMatFromEul(int inittraflag, int setchildflag, D3DXVECTOR3 srceul, int srcmotid, double srcframe);
-	int SetWorldMatFromEulAndTra(int setchildflag, D3DXVECTOR3 srceul, D3DXVECTOR3 srctra, int srcmotid, double srcframe);
-	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, D3DXVECTOR3 srctra, int srcmotid, double srcframe);
-	int SetLocalEul(int srcmotid, double srcframe, D3DXVECTOR3 srceul);
-	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, D3DXMATRIX srcmat);
-	D3DXMATRIX GetWorldMat(int srcmotid, double srcframe);
-	D3DXVECTOR3 CalcLocalTraAnim(int srcmotid, double srcframe);
-	D3DXMATRIX CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);
-	D3DXMATRIX CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe);
-	D3DXMATRIX CalcSymXMat(int srcmotid, double srcframe);
-	D3DXMATRIX CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
+	ChaVector3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
+	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe);
+	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
+	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
+	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
+	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat);
+	ChaMatrix GetWorldMat(int srcmotid, double srcframe);
+	ChaVector3 CalcLocalTraAnim(int srcmotid, double srcframe);
+	ChaMatrix CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);
+	ChaMatrix CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe);
+	ChaMatrix CalcSymXMat(int srcmotid, double srcframe);
+	ChaMatrix CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	D3DXVECTOR3 CalcFBXEul(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
-	D3DXVECTOR3 CalcFBXEulZXY(int srcmotid, double srcframe, D3DXVECTOR3* befeulptr = 0);
-	D3DXVECTOR3 CalcFBXTra(int srcmotid, double srcframe);
+	ChaVector3 CalcFBXEul(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);
+	ChaVector3 CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);
+	ChaVector3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
-	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, D3DXMATRIX* dstmat, D3DXVECTOR3* dstpos);
+	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, ChaVector3* dstpos);
 
 	int LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev);
 
-	int ChkMovableEul(D3DXVECTOR3 srceul);
+	int ChkMovableEul(ChaVector3 srceul);
 
 private:
 
@@ -402,22 +403,22 @@ private:
  * CalcAxisMatY
  * @breaf ボーンの軸のための変換行列を計算する。初期状態がZ軸を向いていると仮定して計算する。
  * @param (CBone* chilbone) IN 子供のボーン。
- * @param (D3DXMATRIX* dstmat) OUT 変換行列を格納するデータへのポインタ。
+ * @param (ChaMatrix* dstmat) OUT 変換行列を格納するデータへのポインタ。
  * @return 成功したら０。
  */
-	int CalcAxisMatY( CBone* chilbone, D3DXMATRIX* dstmat );
+	int CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat );
 
 /**
  * @fn
  * CalcLocalAxisMat
  * @breaf ローカルなボーン軸の変換行列を計算する。
- * @param (D3DXMATRIX motmat) IN グローバルな姿勢行列。
- * @param (D3DXMATRIX axismatpar) IN グローバルなボーン軸変換行列。X軸基準。
- * @param (D3DXMATRIX gaxisy) IN グローバルなボーン軸変換行列。Y軸基準。
+ * @param (ChaMatrix motmat) IN グローバルな姿勢行列。
+ * @param (ChaMatrix axismatpar) IN グローバルなボーン軸変換行列。X軸基準。
+ * @param (ChaMatrix gaxisy) IN グローバルなボーン軸変換行列。Y軸基準。
  * @return 成功したら０。
  * @detail 計算結果はGetAxisMatPar()で取得する。
  */
-	int CalcLocalAxisMat( D3DXMATRIX motmat, D3DXMATRIX axismatpar, D3DXMATRIX gaxisy );
+	int CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy );
 
 /**
  * @fn
@@ -463,7 +464,7 @@ private:
 
 	void InitAngleLimit();
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
-	D3DXVECTOR3 LimitEul(D3DXVECTOR3 srceul);
+	ChaVector3 LimitEul(ChaVector3 srceul);
 	int InitCustomRig();
 	void CalcBtRootDiffMatFunc(CBone* srcbone);
 
@@ -495,11 +496,11 @@ public: //accesser
 	const char* GetEngBoneName(){ return (const char*)m_engbonename; };
 	void SetEngBoneName( char* srcname ){ strcpy_s( m_engbonename, 256, srcname ); };
 
-	D3DXVECTOR3 GetChildWorld();
-	void SetChildWorld( D3DXVECTOR3 srcvec ){ m_childworld = srcvec; };
+	ChaVector3 GetChildWorld();
+	void SetChildWorld( ChaVector3 srcvec ){ m_childworld = srcvec; };
 
-	D3DXVECTOR3 GetChildScreen(){ return m_childscreen; };
-	void SetChildScreen( D3DXVECTOR3 srcvec ){ m_childscreen = srcvec; };
+	ChaVector3 GetChildScreen(){ return m_childscreen; };
+	void SetChildScreen( ChaVector3 srcvec ){ m_childscreen = srcvec; };
 
 	int GetMotionKeySize(){ return (int)m_motionkey.size(); };
 	CMotionPoint* GetMotionKey( int srccookie ){ return m_motionkey[ srccookie ]; };
@@ -515,59 +516,59 @@ public: //accesser
 	CQuaternion GetAxisQ(){ return m_axisq; };
 	void SetAxisQ( CQuaternion srcq ){ m_axisq = srcq; };
 
-	D3DXMATRIX GetLAxisMat(){ return m_laxismat; };
-	D3DXMATRIX GetAxisMatPar(){ return m_axismat_par; };
-	D3DXMATRIX GetInvAxisMatPar(){
-		D3DXMATRIX invaxis;
-		D3DXMatrixInverse(&invaxis, NULL, &m_axismat_par);
+	ChaMatrix GetLAxisMat(){ return m_laxismat; };
+	ChaMatrix GetAxisMatPar(){ return m_axismat_par; };
+	ChaMatrix GetInvAxisMatPar(){
+		ChaMatrix invaxis;
+		ChaMatrixInverse(&invaxis, NULL, &m_axismat_par);
 		return invaxis;
 	};
 
-	D3DXMATRIX GetStartMat2(){ return m_startmat2; };
-	D3DXMATRIX GetInvStartMat2(){
-		D3DXMATRIX retmat;
-		D3DXMatrixInverse(&retmat, NULL, &m_startmat2);
+	ChaMatrix GetStartMat2(){ return m_startmat2; };
+	ChaMatrix GetInvStartMat2(){
+		ChaMatrix retmat;
+		ChaMatrixInverse(&retmat, NULL, &m_startmat2);
 		return retmat;
 	};
-	void SetStartMat2(D3DXMATRIX srcmat){ m_startmat2 = srcmat; };
+	void SetStartMat2(ChaMatrix srcmat){ m_startmat2 = srcmat; };
 
 	int GetGetAnimFlag(){ return m_getanimflag; };
 	void SetGetAnimFlag( int srcflag ){ m_getanimflag = srcflag; };
 
-	D3DXMATRIX GetNodeMat(){ return m_nodemat; };
-	D3DXMATRIX GetInvNodeMat(){
-		D3DXMATRIX retmat;
-		D3DXMatrixInverse(&retmat, NULL, &m_nodemat);
+	ChaMatrix GetNodeMat(){ return m_nodemat; };
+	ChaMatrix GetInvNodeMat(){
+		ChaMatrix retmat;
+		ChaMatrixInverse(&retmat, NULL, &m_nodemat);
 		return retmat;
 	};
-	void SetNodeMat( D3DXMATRIX srcmat ){ m_nodemat = srcmat; };
+	void SetNodeMat( ChaMatrix srcmat ){ m_nodemat = srcmat; };
 
 
-	D3DXMATRIX GetFirstMat(){ return m_firstmat; };
-	void SetFirstMat( D3DXMATRIX srcmat ){ m_firstmat = srcmat; };
+	ChaMatrix GetFirstMat(){ return m_firstmat; };
+	void SetFirstMat( ChaMatrix srcmat ){ m_firstmat = srcmat; };
 
-	D3DXMATRIX GetInvFirstMat(){ D3DXMatrixInverse(&m_invfirstmat, NULL, &m_firstmat); return m_invfirstmat; };
-	void SetInvFirstMat( D3DXMATRIX srcmat ){ m_invfirstmat = srcmat; };
+	ChaMatrix GetInvFirstMat(){ ChaMatrixInverse(&m_invfirstmat, NULL, &m_firstmat); return m_invfirstmat; };
+	void SetInvFirstMat( ChaMatrix srcmat ){ m_invfirstmat = srcmat; };
 
-	D3DXMATRIX GetInitMat(){ return m_initmat; };
-	void SetInitMat(D3DXMATRIX srcmat){ m_initmat = srcmat; };
+	ChaMatrix GetInitMat(){ return m_initmat; };
+	void SetInitMat(ChaMatrix srcmat){ m_initmat = srcmat; };
 
-	D3DXMATRIX GetInvInitMat(){ D3DXMatrixInverse(&m_invinitmat, NULL, &m_initmat); return m_invinitmat; };
-	void SetInvInitMat(D3DXMATRIX srcmat){ m_invinitmat = srcmat; };
+	ChaMatrix GetInvInitMat(){ ChaMatrixInverse(&m_invinitmat, NULL, &m_initmat); return m_invinitmat; };
+	void SetInvInitMat(ChaMatrix srcmat){ m_invinitmat = srcmat; };
 
-	D3DXMATRIX GetTmpMat(){ return m_tmpmat; };
-	void SetTmpMat(D3DXMATRIX srcmat){ m_tmpmat = srcmat; };
+	ChaMatrix GetTmpMat(){ return m_tmpmat; };
+	void SetTmpMat(ChaMatrix srcmat){ m_tmpmat = srcmat; };
 
 	CQuaternion GetTmpQ(){ return m_tmpq; };
 	void SetTmpQ(CQuaternion srcq){ m_tmpq = srcq; };
 
 
-	D3DXVECTOR3 GetJointFPos();
-	void SetJointFPos(D3DXVECTOR3 srcpos);
-	void SetOldJointFPos(D3DXVECTOR3 srcpos);
+	ChaVector3 GetJointFPos();
+	void SetJointFPos(ChaVector3 srcpos);
+	void SetOldJointFPos(ChaVector3 srcpos);
 
-	D3DXVECTOR3 GetJointWPos(){ return m_jointwpos; };
-	void SetJointWPos( D3DXVECTOR3 srcpos ){ m_jointwpos = srcpos; };
+	ChaVector3 GetJointWPos(){ return m_jointwpos; };
+	void SetJointWPos( ChaVector3 srcpos ){ m_jointwpos = srcpos; };
 
 	FbxAMatrix GetGlobalPosMat(){ return m_globalpos; };
 	void SetGlobalPosMat( FbxAMatrix srcmat ){ m_globalpos = srcmat; };
@@ -640,48 +641,48 @@ public: //accesser
 
 	void SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* srcre);
 
-	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator FindImpMap(std::string srcname){
+	std::map<std::string, std::map<CBone*, ChaVector3>>::iterator FindImpMap(std::string srcname){
 		return m_impmap.find(srcname);
 	};
 	int GetImpMapSize(){ return (int)m_impmap.size(); };
 	int GetImpMapSize2(std::string srcstring){
-		std::map<CBone*, D3DXVECTOR3> curmap = m_impmap[ srcstring ];
+		std::map<CBone*, ChaVector3> curmap = m_impmap[ srcstring ];
 		return (int)curmap.size();
 	};
-	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator GetImpMapBegin(){
+	std::map<std::string, std::map<CBone*, ChaVector3>>::iterator GetImpMapBegin(){
 		return m_impmap.begin();
 	};
-	std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator GetImpMapEnd(){
+	std::map<std::string, std::map<CBone*, ChaVector3>>::iterator GetImpMapEnd(){
 		return m_impmap.end();
 	};
-	D3DXVECTOR3 GetImpMap( std::string srcstr, CBone* srcbone ){
-		std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator itrimpmap;
+	ChaVector3 GetImpMap( std::string srcstr, CBone* srcbone ){
+		std::map<std::string, std::map<CBone*, ChaVector3>>::iterator itrimpmap;
 		itrimpmap = m_impmap.find(srcstr);
 		if (itrimpmap != m_impmap.end()){
-			std::map<CBone*, D3DXVECTOR3> curmap = itrimpmap->second;
-			std::map<CBone*, D3DXVECTOR3>::iterator itrimp;
+			std::map<CBone*, ChaVector3> curmap = itrimpmap->second;
+			std::map<CBone*, ChaVector3>::iterator itrimp;
 			itrimp = curmap.find(srcbone);
 			if (itrimp != curmap.end()){
 				return itrimp->second;
 			}
 			else{
 				//_ASSERT(0);
-				return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				return ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
 			_ASSERT(0);
-			return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			return ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 	};
-	void SetImpMap2( std::string srcstring, std::map<CBone*,D3DXVECTOR3>& srcmap ){
+	void SetImpMap2( std::string srcstring, std::map<CBone*,ChaVector3>& srcmap ){
 		m_impmap[ srcstring ] = srcmap;
 	};
-	void SetImpOfMap( std::string srcstr, CBone* srcbone, D3DXVECTOR3 srcimp ){
-		std::map<std::string, std::map<CBone*, D3DXVECTOR3>>::iterator itrimpmap;
+	void SetImpOfMap( std::string srcstr, CBone* srcbone, ChaVector3 srcimp ){
+		std::map<std::string, std::map<CBone*, ChaVector3>>::iterator itrimpmap;
 		itrimpmap = m_impmap.find(srcstr);
 		if (itrimpmap != m_impmap.end()){
-			std::map<CBone*, D3DXVECTOR3>::iterator itrsetmap;
+			std::map<CBone*, ChaVector3>::iterator itrsetmap;
 			itrsetmap = itrimpmap->second.find(srcbone);
 			if (itrsetmap != itrimpmap->second.end()){
 				itrsetmap->second = srcimp;
@@ -691,7 +692,7 @@ public: //accesser
 			}
 		}
 		else{
-			std::map<CBone*, D3DXVECTOR3> newmap;
+			std::map<CBone*, ChaVector3> newmap;
 			newmap[srcbone] = srcimp;
 			m_impmap[srcstr] = newmap;
 		}
@@ -748,7 +749,7 @@ public: //accesser
 		m_motmark[ srcindex ].clear();
 	};
 
-	D3DXVECTOR3 GetFirstFrameBonePos()
+	ChaVector3 GetFirstFrameBonePos()
 	{
 		return m_firstframebonepos;
 	};
@@ -776,8 +777,8 @@ public: //accesser
 	float GetBoneLeng(){
 		CBone* parbone = GetParent();
 		if (parbone){
-			D3DXVECTOR3 bonevec = GetJointFPos() - parbone->GetJointFPos();
-			float boneleng = D3DXVec3Length(&bonevec);
+			ChaVector3 bonevec = GetJointFPos() - parbone->GetJointFPos();
+			float boneleng = ChaVector3Length(&bonevec);
 			return boneleng;
 		}
 		else{
@@ -785,13 +786,13 @@ public: //accesser
 		}
 	};
 	/*
-	D3DXMATRIX GetFirstAxisMatX()
+	ChaMatrix GetFirstAxisMatX()
 	{
 		CalcFirstAxisMatX();
 		return m_firstaxismatX;
 	};
 	*/
-	D3DXMATRIX GetFirstAxisMatZ()
+	ChaMatrix GetFirstAxisMatZ()
 	{
 		CalcFirstAxisMatZ();
 		return m_firstaxismatZ;
@@ -819,30 +820,30 @@ public: //accesser
 	CUSTOMRIG GetCustomRig(int rigno);
 	void SetCustomRig(CUSTOMRIG srccr);
 
-	D3DXMATRIX GetTmpSymMat()
+	ChaMatrix GetTmpSymMat()
 	{
 		return m_tmpsymmat;
 	};
-	void SetTmpSymMat(D3DXMATRIX srcmat)
+	void SetTmpSymMat(ChaMatrix srcmat)
 	{
 		m_tmpsymmat = srcmat;
 	};
-	D3DXVECTOR3 GetBtParPos(){
+	ChaVector3 GetBtParPos(){
 		return m_btparpos;
 	};
-	D3DXVECTOR3 GetBtChilPos(){
+	ChaVector3 GetBtChilPos(){
 		return m_btchilpos;
 	};
-	D3DXMATRIX GetBtDiffMat(){
+	ChaMatrix GetBtDiffMat(){
 		return m_btdiffmat;
 	};
 
 
-	D3DXMATRIX GetBefBtMat(){ return m_befbtmat; };
-	void SetBefBtMat(D3DXMATRIX srcmat){ m_befbtmat = srcmat; };
-	D3DXMATRIX GetBtMat(){ return m_btmat; };
-	D3DXMATRIX GetInvBtMat(){ D3DXMATRIX retmat; D3DXMatrixInverse(&retmat, NULL, &m_btmat); return retmat; };
-	void SetBtMat(D3DXMATRIX srcmat){
+	ChaMatrix GetBefBtMat(){ return m_befbtmat; };
+	void SetBefBtMat(ChaMatrix srcmat){ m_befbtmat = srcmat; };
+	ChaMatrix GetBtMat(){ return m_btmat; };
+	ChaMatrix GetInvBtMat(){ ChaMatrix retmat; ChaMatrixInverse(&retmat, NULL, &m_btmat); return retmat; };
+	void SetBtMat(ChaMatrix srcmat){
 		//if (GetBtFlag() == 0){
 			SetBefBtMat(m_btmat);
 		//}
@@ -898,8 +899,8 @@ private:
 
 	bool m_posefoundflag;//BindPoseの中にこのボーンの位置情報があった場合true。
 
-	D3DXVECTOR3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
-	D3DXVECTOR3 m_childscreen;//ボーンの子供のWVP適用後の座標。
+	ChaVector3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
+	ChaVector3 m_childscreen;//ボーンの子供のWVP適用後の座標。
 
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。
@@ -909,37 +910,37 @@ private:
 
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
 
-	D3DXMATRIX m_laxismat;//Zボーンのaxismat
-	//D3DXMATRIX m_gaxismatXpar;//Xボーンのグローバルのaxismat
-	D3DXMATRIX m_gaxismatYpar;//Yボーンのグローバルのaxismat
-	D3DXMATRIX m_axismat_par;//Xボーンのローカルのaxismat
-	//D3DXMATRIX m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
-	D3DXMATRIX m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
+	ChaMatrix m_laxismat;//Zボーンのaxismat
+	//ChaMatrix m_gaxismatXpar;//Xボーンのグローバルのaxismat
+	ChaMatrix m_gaxismatYpar;//Yボーンのグローバルのaxismat
+	ChaMatrix m_axismat_par;//Xボーンのローカルのaxismat
+	//ChaMatrix m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
+	ChaMatrix m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
 
 
-	D3DXMATRIX m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
+	ChaMatrix m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
 
 	int m_getanimflag;//FBXファイルを読み込む際にアニメーションを読み込んだら１。
-	D3DXMATRIX m_nodemat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
-	D3DXMATRIX m_firstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
-	D3DXMATRIX m_invfirstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
-	D3DXVECTOR3 m_jointfpos;//ジョイントの初期位置。
-	D3DXVECTOR3 m_oldjointfpos;//ジョイント初期位置（旧データ互換）
-	D3DXVECTOR3 m_jointwpos;//FBXにアニメーションが入っていない時のジョイントの初期位置。
+	ChaMatrix m_nodemat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
+	ChaMatrix m_firstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
+	ChaMatrix m_invfirstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
+	ChaVector3 m_jointfpos;//ジョイントの初期位置。
+	ChaVector3 m_oldjointfpos;//ジョイント初期位置（旧データ互換）
+	ChaVector3 m_jointwpos;//FBXにアニメーションが入っていない時のジョイントの初期位置。
 	FbxAMatrix m_globalpos;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
-	D3DXMATRIX m_initmat;
-	D3DXMATRIX m_invinitmat;
-	D3DXMATRIX m_tmpmat;//一時使用目的
+	ChaMatrix m_initmat;
+	ChaMatrix m_invinitmat;
+	ChaMatrix m_tmpmat;//一時使用目的
 	CQuaternion m_tmpq;
-	D3DXMATRIX m_tmpsymmat;
+	ChaMatrix m_tmpsymmat;
 
 
-	D3DXMATRIX m_btmat;
-	D3DXMATRIX m_befbtmat;
+	ChaMatrix m_btmat;
+	ChaMatrix m_befbtmat;
 	int m_setbtflag;
 
 
-	D3DXVECTOR3 m_firstframebonepos;
+	ChaVector3 m_firstframebonepos;
 
 	ANGLELIMIT m_anglelimit;
 
@@ -956,7 +957,7 @@ private:
 	//そのため子供のボーンの名前とCRigidElemのセットを使う。
 	//m_impmapについても同様のことがいえる。
 	std::map<std::string, std::map<CBone*, CRigidElem*>> m_remap;//map<設定ファイル名, map<子供ボーン, 剛体設定>>
-	std::map<std::string, std::map<CBone*, D3DXVECTOR3>> m_impmap;//map<設定ファイル名, map<子供ボーン, インパルス設定>>
+	std::map<std::string, std::map<CBone*, ChaVector3>> m_impmap;//map<設定ファイル名, map<子供ボーン, インパルス設定>>
 
 
 	int m_btkinflag;//bullet kinematic flag。剛体シミュレーションの根元のボーンが固定モーションに追随する際は０を指定する。その他は１。

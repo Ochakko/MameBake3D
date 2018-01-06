@@ -95,15 +95,15 @@ public: //accesser
 	float GetFriction(){ return m_friction; };
 	void SetFriction( float srcval ){ m_friction = srcval; };
 
-	D3DXMATRIX GetCapsulemat(){ return m_capsulemat; };
-	void SetCapsulemat( D3DXMATRIX srcmat ){ m_capsulemat = srcmat; };
+	ChaMatrix GetCapsulemat(){ return m_capsulemat; };
+	void SetCapsulemat( ChaMatrix srcmat ){ m_capsulemat = srcmat; };
 
-	D3DXMATRIX GetFirstcapsulemat(){ return m_firstcapsulemat; };
-	void SetFirstcapsulemat( D3DXMATRIX srcmat ){ m_firstcapsulemat = srcmat; };
+	ChaMatrix GetFirstcapsulemat(){ return m_firstcapsulemat; };
+	void SetFirstcapsulemat( ChaMatrix srcmat ){ m_firstcapsulemat = srcmat; };
 
-	D3DXMATRIX GetFirstWorldmat() { return m_firstworldmat; };
-	D3DXMATRIX GetInvFirstWorldmat() { D3DXMATRIX retmat; D3DXMatrixInverse(&retmat, NULL, &m_firstworldmat); return retmat; };
-	void SetFirstWorldmat(D3DXMATRIX srcmat){ m_firstworldmat = srcmat; };
+	ChaMatrix GetFirstWorldmat() { return m_firstworldmat; };
+	ChaMatrix GetInvFirstWorldmat() { ChaMatrix retmat; ChaMatrixInverse(&retmat, NULL, &m_firstworldmat); return retmat; };
+	void SetFirstWorldmat(ChaMatrix srcmat){ m_firstworldmat = srcmat; };
 
 	CBone* GetBone(){ return m_bone; };
 	void SetBone( CBone* srcbone ){ m_bone = srcbone; };
@@ -158,9 +158,9 @@ private:
 
 	int m_forbidrotflag;
 
-	D3DXMATRIX m_capsulemat;
-	D3DXMATRIX m_firstcapsulemat;
-	D3DXMATRIX m_firstworldmat;//m_firstcapsulematê›íËéûÇÃworldmat
+	ChaMatrix m_capsulemat;
+	ChaMatrix m_firstcapsulemat;
+	ChaMatrix m_firstworldmat;//m_firstcapsulematê›íËéûÇÃworldmat
 
 
 	CBone* m_bone;

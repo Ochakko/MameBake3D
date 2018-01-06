@@ -1213,16 +1213,16 @@ void CBVHFile::CalcTransMatReq(CBVHElem* srcbe)
 {
 	int fno;
 
-	D3DXVECTOR3 roottra;
-	D3DXMATRIX roottramat, befrot, aftrot, rot;
-	D3DXMatrixIdentity(&roottramat);
-	D3DXMatrixIdentity(&befrot);
-	D3DXMatrixIdentity(&aftrot);
-	D3DXMatrixIdentity(&rot);
+	ChaVector3 roottra;
+	ChaMatrix roottramat, befrot, aftrot, rot;
+	ChaMatrixIdentity(&roottramat);
+	ChaMatrixIdentity(&befrot);
+	ChaMatrixIdentity(&aftrot);
+	ChaMatrixIdentity(&rot);
 	m_behead->GetTrans(0, &roottra);
-	D3DXMatrixTranslation(&roottramat, roottra.x, roottra.y, roottra.z);
-	D3DXMatrixTranslation(&befrot, -srcbe->GetPosition().x, -srcbe->GetPosition().y, -srcbe->GetPosition().z);
-	D3DXMatrixTranslation(&aftrot, srcbe->GetPosition().x, srcbe->GetPosition().y, srcbe->GetPosition().z);
+	ChaMatrixTranslation(&roottramat, roottra.x, roottra.y, roottra.z);
+	ChaMatrixTranslation(&befrot, -srcbe->GetPosition().x, -srcbe->GetPosition().y, -srcbe->GetPosition().z);
+	ChaMatrixTranslation(&aftrot, srcbe->GetPosition().x, srcbe->GetPosition().y, srcbe->GetPosition().z);
 
 	if (srcbe->GetParent()){
 		for (fno = 0; fno < m_frames; fno++){
@@ -1413,14 +1413,14 @@ int CBVHFile::WriteBVHMotion( int* wno2seri, int motid, float srcmult )
 		return 1;
 	}
 
-	D3DXVECTOR3* befeul;
-	befeul = new D3DXVECTOR3[ m_writenum ];
+	ChaVector3* befeul;
+	befeul = new ChaVector3[ m_writenum ];
 	if( !befeul ){
 		DbgOut( L"bvhfile : WriteBVHMotion : befuel alloc error !!!\n" );
 		_ASSERT( 0 );
 		return 1;
 	}
-	ZeroMemory( befeul, sizeof( D3DXVECTOR3 ) * m_writenum );
+	ZeroMemory( befeul, sizeof( ChaVector3 ) * m_writenum );
 
 
 
@@ -1466,7 +1466,7 @@ int CBVHFile::WriteBVHMotion( int* wno2seri, int motid, float srcmult )
 					return 1;
 				}
 								
-				D3DXVECTOR3 neweul;
+				ChaVector3 neweul;
 				ret = qToEulerYXZ( selem, &mp.m_q, &neweul );
 				_ASSERT( !ret );
 				ret = modifyEuler( &neweul, &(befeul[wno]) );

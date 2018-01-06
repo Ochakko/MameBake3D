@@ -117,23 +117,23 @@ int CMotFilter::Filter(CModel* srcmodel, int srcmotid, int srcstartframe, int sr
 
 	int frameleng = srcendframe - srcstartframe + 1;
 
-	m_eul = new D3DXVECTOR3[frameleng];//frame番号でアクセスする
+	m_eul = new ChaVector3[frameleng];//frame番号でアクセスする
 	if (!m_eul){
 		_ASSERT(0);
 		return 1;
 	}
-	m_smootheul = new D3DXVECTOR3[frameleng];
+	m_smootheul = new ChaVector3[frameleng];
 	if (!m_smootheul){
 		_ASSERT(0);
 		return 1;
 	}
 
-	m_tra = new D3DXVECTOR3[frameleng];
+	m_tra = new ChaVector3[frameleng];
 	if (!m_tra){
 		_ASSERT(0);
 		return 1;
 	}
-	m_smoothtra = new D3DXVECTOR3[frameleng];
+	m_smoothtra = new ChaVector3[frameleng];
 	if (!m_smoothtra){
 		_ASSERT(0);
 		return 1;
@@ -155,24 +155,24 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 	int frameleng = srcendframe - srcstartframe + 1;
 	int half_filtersize = m_filtersize / 2;
 
-	D3DXVECTOR3 tmp_vec3;
-	D3DXVECTOR3 tmp_pos3;
+	ChaVector3 tmp_vec3;
+	ChaVector3 tmp_pos3;
 
 	int frame;
 
 	if (curbone){
-		ZeroMemory(m_eul, sizeof(D3DXVECTOR3) * frameleng);
-		ZeroMemory(m_smootheul, sizeof(D3DXVECTOR3) * frameleng);
-		ZeroMemory(m_tra, sizeof(D3DXVECTOR3) * frameleng);
-		ZeroMemory(m_smoothtra, sizeof(D3DXVECTOR3) * frameleng);
+		ZeroMemory(m_eul, sizeof(ChaVector3) * frameleng);
+		ZeroMemory(m_smootheul, sizeof(ChaVector3) * frameleng);
+		ZeroMemory(m_tra, sizeof(ChaVector3) * frameleng);
+		ZeroMemory(m_smoothtra, sizeof(ChaVector3) * frameleng);
 
-		D3DXVECTOR3 befeul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		for (frame = srcstartframe; frame <= srcendframe; frame++){
 			CMotionPoint curmp;
 			curbone->CalcLocalInfo(srcmotid, (double)frame, &curmp);
-			D3DXVECTOR3 cureul = curbone->CalcLocalEulZXY(-1, srcmotid, (double)frame, BEFEUL_DIRECT, 0, &befeul);// axiskind = -1 --> m_anglelimitの座標系
-			//D3DXVECTOR3 cureul = curbone->CalcLocalEulZXY(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimitの座標系
-			D3DXVECTOR3 curtra = curbone->CalcLocalTraAnim(srcmotid, (double)frame);
+			ChaVector3 cureul = curbone->CalcLocalEulZXY(-1, srcmotid, (double)frame, BEFEUL_DIRECT, 0, &befeul);// axiskind = -1 --> m_anglelimitの座標系
+			//ChaVector3 cureul = curbone->CalcLocalEulZXY(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimitの座標系
+			ChaVector3 curtra = curbone->CalcLocalTraAnim(srcmotid, (double)frame);
 
 			*(m_eul + frame - srcstartframe) = cureul;
 			*(m_tra + frame - srcstartframe) = curtra;
@@ -183,8 +183,8 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 		//平滑化処理
 		switch (m_filtertype) {
 		case AVGF_NONE:							//平滑処理なし
-			MoveMemory((void*)m_smootheul, (void*)m_eul, sizeof(D3DXVECTOR3) * frameleng);
-			MoveMemory((void*)m_smoothtra, (void*)m_tra, sizeof(D3DXVECTOR3) * frameleng);
+			MoveMemory((void*)m_smootheul, (void*)m_eul, sizeof(ChaVector3) * frameleng);
+			MoveMemory((void*)m_smoothtra, (void*)m_tra, sizeof(ChaVector3) * frameleng);
 			break;
 		case AVGF_MOVING:					//移動平均
 			//平滑化処理

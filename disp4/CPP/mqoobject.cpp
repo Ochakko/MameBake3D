@@ -148,9 +148,9 @@ CMQOObject::~CMQOObject()
 
 int CMQOObject::DestroyShapeObj()
 {
-	map<string,D3DXVECTOR3*>::iterator itrshape;
+	map<string,ChaVector3*>::iterator itrshape;
 	for( itrshape = m_shapevert.begin(); itrshape != m_shapevert.end(); itrshape++ ){
-		D3DXVECTOR3* curshape = itrshape->second;
+		ChaVector3* curshape = itrshape->second;
 		if( curshape ){
 			free( curshape );
 		}
@@ -215,7 +215,7 @@ void CMQOObject::InitParams()
 	m_pm3 = 0;
 	m_pm4 = 0;
 	m_extline = 0;
-	D3DXMatrixIdentity( &m_multmat );
+	ChaMatrixIdentity( &m_multmat );
 
 	m_dispobj = 0;
 	m_displine = 0;
@@ -492,12 +492,12 @@ int CMQOObject::SetVertex( int* vertnum, char* srcchar, int srcleng )
 	DbgOut( L"MQOObject : SetVertex : vertex %d\r\n", m_vertex );
 
 
-	m_pointbuf = (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * m_vertex );
+	m_pointbuf = (ChaVector3*)malloc( sizeof( ChaVector3 ) * m_vertex );
 	if( !m_pointbuf ){
 		_ASSERT( 0 );
 		return 1;
 	}
-	ZeroMemory( m_pointbuf, sizeof( D3DXVECTOR3 ) * m_vertex );
+	ZeroMemory( m_pointbuf, sizeof( ChaVector3 ) * m_vertex );
 
 
 	return 0;
@@ -524,7 +524,7 @@ int CMQOObject::SetPointBuf( int vertno, char* srcchar, int srcleng )
 	}
 
 
-	D3DXVECTOR3* dstvec;
+	ChaVector3* dstvec;
 	dstvec = m_pointbuf + vertno;
 	int pos, stepnum;
 	pos = 0;
@@ -639,7 +639,7 @@ int CMQOObject::Dump()
 
 	DbgOut( L"\tvertex %d\r\n", m_vertex );
 	int vertno;
-	D3DXVECTOR3* curvec = m_pointbuf;
+	ChaVector3* curvec = m_pointbuf;
 	for( vertno = 0; vertno < m_vertex; vertno++ ){
 		DbgOut( L"\t\t%f %f %f\r\n", curvec->x, curvec->y, curvec->z );
 		curvec++;
@@ -755,7 +755,7 @@ int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial
 	// –Ê‚Æ’¸“_‚Ì”‚ðŽæ“¾
 	int face_count;
 	int vert_count;
-	D3DXVECTOR3* pointptr;
+	ChaVector3* pointptr;
 	CMQOFace* faceptr;
 	D3DXVECTOR4* colorptr;
 
@@ -1011,13 +1011,13 @@ int CMQOObject::MakeLatheBuf()
 		return 1;
 	}
 	m_vertex2 = m_lathe_seg * 2 * linenum;
-	m_pointbuf2 = (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * m_vertex2 );
+	m_pointbuf2 = (ChaVector3*)malloc( sizeof( ChaVector3 ) * m_vertex2 );
 	if( !m_pointbuf2 ){
 		DbgOut( L"MQOObject : MakeLatheBuf : pointbuf2 alloc error !!!\r\n" );
 		_ASSERT( 0 );
 		return 1;			
 	}
-	ZeroMemory( m_pointbuf2, sizeof( D3DXVECTOR3 ) * m_vertex2 );
+	ZeroMemory( m_pointbuf2, sizeof( ChaVector3 ) * m_vertex2 );
 
 	if( m_colorbuf ){
 		if( m_colorbuf2 ){
@@ -1057,8 +1057,8 @@ int CMQOObject::MakeLatheBuf()
 		int v0, v1;
 		v0 = (m_facebuf + faceno)->GetIndex( 0 );
 		v1 = (m_facebuf + faceno)->GetIndex( 1 );
-		D3DXVECTOR3* src0 = m_pointbuf + v0;
-		D3DXVECTOR3* src1 = m_pointbuf + v1;
+		ChaVector3* src0 = m_pointbuf + v0;
+		ChaVector3* src1 = m_pointbuf + v1;
 		switch( m_lathe_axis ){
 		case 0://X
 			elem[0].height = src0->x;
@@ -1078,8 +1078,8 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				D3DXVECTOR3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
-				D3DXVECTOR3* dst1 = dst0 + m_lathe_seg;
+				ChaVector3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
+				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].height;
 				dst0->y = elem[0].dist * (float)cos( rad * segno );
@@ -1117,8 +1117,8 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				D3DXVECTOR3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
-				D3DXVECTOR3* dst1 = dst0 + m_lathe_seg;
+				ChaVector3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
+				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].dist * (float)cos( rad * segno );
 				dst0->y = elem[0].height;
@@ -1155,8 +1155,8 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				D3DXVECTOR3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
-				D3DXVECTOR3* dst1 = dst0 + m_lathe_seg;
+				ChaVector3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
+				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].dist * (float)cos( rad * segno );
 				dst0->y = elem[0].dist * (float)sin( rad * segno );
@@ -1279,20 +1279,20 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 		m_face2 = befface * 2;
 
 	if( m_pointbuf2 ){
-		m_pointbuf2 = (D3DXVECTOR3*)realloc( m_pointbuf2, sizeof( D3DXVECTOR3 ) * m_vertex2 );
+		m_pointbuf2 = (ChaVector3*)realloc( m_pointbuf2, sizeof( ChaVector3 ) * m_vertex2 );
 		if( !m_pointbuf2 ){
 			DbgOut( L"MQOObject : MakeMirrorPointAndFace : pointbuf2 realloc error !!!\r\n" );
 			_ASSERT( 0 );
 			return 1;
 		}
 	}else{
-		m_pointbuf2 = (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * m_vertex2 );
+		m_pointbuf2 = (ChaVector3*)malloc( sizeof( ChaVector3 ) * m_vertex2 );
 		if( !m_pointbuf2 ){
 			DbgOut( L"MQOObject : MakeMirrorPointAndFace : pointbuf2 alloc error !!!\r\n" );
 			_ASSERT( 0 );
 			return 1;
 		}
-		MoveMemory( m_pointbuf2, m_pointbuf, sizeof( D3DXVECTOR3 ) * befvertex );
+		MoveMemory( m_pointbuf2, m_pointbuf, sizeof( ChaVector3 ) * befvertex );
 	}
 
 	if( m_colorbuf ){
@@ -1338,8 +1338,8 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 
 
 	int vertno;
-	D3DXVECTOR3* srcvec;
-	D3DXVECTOR3* dstvec;
+	ChaVector3* srcvec;
+	ChaVector3* dstvec;
 	switch( axis ){
 	case 1://X
 		for( vertno = 0; vertno < befvertex; vertno++ ){
@@ -1516,7 +1516,7 @@ int CMQOObject::FindConnectFace( int issetface )
 }
 
 
-int CMQOObject::CheckMirrorDis( D3DXVECTOR3* pbuf, CMQOFace* fbuf, int lno, int pnum )
+int CMQOObject::CheckMirrorDis( ChaVector3* pbuf, CMQOFace* fbuf, int lno, int pnum )
 {
 	if( m_issetmirror_dis == 0 ){
 		return 1;
@@ -1533,8 +1533,8 @@ int CMQOObject::CheckMirrorDis( D3DXVECTOR3* pbuf, CMQOFace* fbuf, int lno, int 
 		}else{
 			i1 = lno + 1;
 		}
-		D3DXVECTOR3* v0;
-		D3DXVECTOR3* v1;
+		ChaVector3* v0;
+		ChaVector3* v1;
 		v0 = pbuf + fbuf->GetIndex( i0 );
 		v1 = pbuf + fbuf->GetIndex( i1 );
 
@@ -1584,7 +1584,7 @@ int CMQOObject::CheckMirrorDis( D3DXVECTOR3* pbuf, CMQOFace* fbuf, int lno, int 
 
 }
 
-int CMQOObject::MultMat( D3DXMATRIX multmat )
+int CMQOObject::MultMat( ChaMatrix multmat )
 {
 	m_multmat = multmat;
 	return 0;
@@ -1595,10 +1595,10 @@ int CMQOObject::MultVertex()
 {
 	int pno;
 	for( pno = 0; pno < m_vertex; pno++ ){
-		D3DXVECTOR3* curp = m_pointbuf + pno;
-		D3DXVECTOR3 srcv = *curp;
+		ChaVector3* curp = m_pointbuf + pno;
+		ChaVector3 srcv = *curp;
 
-		D3DXVec3TransformCoord( curp, &srcv, &m_multmat );
+		ChaVector3TransformCoord( curp, &srcv, &m_multmat );
 
 	}
 	return 0;
@@ -1606,7 +1606,7 @@ int CMQOObject::MultVertex()
 
 int CMQOObject::Multiple( float multiple )
 {
-	D3DXMatrixIdentity( &m_multmat );
+	ChaMatrixIdentity( &m_multmat );
 	m_multmat._11 = multiple;
 	m_multmat._22 = multiple;
 	m_multmat._33 = -multiple;
@@ -1829,11 +1829,11 @@ int CMQOObject::GetFaceInMaterial( int matno, CMQOFace** ppface, int arrayleng, 
 	return 0;
 }
 
-int CMQOObject::CollisionLocal_Ray( D3DXVECTOR3 startlocal, D3DXVECTOR3 dirlocal )
+int CMQOObject::CollisionLocal_Ray( ChaVector3 startlocal, ChaVector3 dirlocal )
 {
 	int face_count;
 	int vert_count;
-	D3DXVECTOR3* pointptr;
+	ChaVector3* pointptr;
 	CMQOFace* faceptr;
 
 	if( m_face2 > 0 ){
@@ -1950,9 +1950,9 @@ int CMQOObject::UpdateMorphBuffer()
 		return 0;
 	}
 
-	MoveMemory( m_mpoint, m_pointbuf, sizeof( D3DXVECTOR3 ) * m_vertex );
+	MoveMemory( m_mpoint, m_pointbuf, sizeof( ChaVector3 ) * m_vertex );
 
-	D3DXVECTOR3 diffpoint;
+	ChaVector3 diffpoint;
 	map<string,float>::iterator itrweight;
 	for( itrweight = m_shapeweight.begin(); itrweight != m_shapeweight.end(); itrweight++ ){
 		string curname = itrweight->first;
@@ -1966,14 +1966,14 @@ int CMQOObject::UpdateMorphBuffer()
 //DbgOut( L"updatemorph : objname %s, targetname %s, weight %f\r\n",
 //	   wobjname, wcurname, itrweight->second );
 
-		D3DXVECTOR3* curshape = m_shapevert[ curname ];
+		ChaVector3* curshape = m_shapevert[ curname ];
 		if( curshape ){
 			float curweight = itrweight->second * 0.01f;
 			if( curweight != 0.0f ){
 				int vno;
 				for( vno = 0; vno < m_vertex; vno++ ){
-					D3DXVECTOR3 targetv = *( curshape + vno );
-					D3DXVECTOR3 orgv = *(m_pointbuf + vno);
+					ChaVector3 targetv = *( curshape + vno );
+					ChaVector3 orgv = *(m_pointbuf + vno);
 					diffpoint = (targetv - orgv) * curweight;
 					*(m_mpoint + vno) += diffpoint;
 				}
@@ -2007,11 +2007,11 @@ int CMQOObject::ScaleBtBox( CRigidElem* reptr, float boneleng, float* cyliptr, f
 	*boxzptr = scboxz * 100.0f;
 
 
-	D3DXVECTOR3 scale;
-	D3DXVECTOR3 tra;
-	//scale = D3DXVECTOR3( scsph, sccyli, scboxz );
-	scale = D3DXVECTOR3(sccyli, scsph, scboxz);
-	tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	ChaVector3 scale;
+	ChaVector3 tra;
+	//scale = ChaVector3( scsph, sccyli, scboxz );
+	scale = ChaVector3(sccyli, scsph, scboxz);
+	tra = ChaVector3( 0.0f, 0.0f, 0.0f );
 
 
 	MultScale( scale, tra );
@@ -2036,11 +2036,11 @@ int CMQOObject::ScaleBtCone( CRigidElem* reptr, float boneleng, float* cyliptr, 
 	*sphptr = scsph * 100.0f;
 
 
-	D3DXVECTOR3 scale;
-	D3DXVECTOR3 tra;
-	//scale = D3DXVECTOR3( scsph, sccyli, scsph );
-	scale = D3DXVECTOR3(sccyli, scsph, scsph); 
-	tra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	ChaVector3 scale;
+	ChaVector3 tra;
+	//scale = ChaVector3( scsph, sccyli, scsph );
+	scale = ChaVector3(sccyli, scsph, scsph); 
+	tra = ChaVector3(0.0f, 0.0f, 0.0f);
 
 
 	MultScale( scale, tra );
@@ -2058,10 +2058,10 @@ int CMQOObject::ScaleBtSphere( CRigidElem* reptr, float boneleng, float* cyliptr
 	*sphptr = sccyli * 100.0f;
 
 
-	D3DXVECTOR3 scale;
-	D3DXVECTOR3 tra;
-	scale = D3DXVECTOR3( sccyli, sccyli, sccyli );
-	tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	ChaVector3 scale;
+	ChaVector3 tra;
+	scale = ChaVector3( sccyli, sccyli, sccyli );
+	tra = ChaVector3( 0.0f, 0.0f, 0.0f );
 
 	MultScale( scale, tra );
 
@@ -2081,24 +2081,24 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 	}
 
 	/*
-	D3DXVECTOR3 scale;
-	D3DXVECTOR3 tra;
+	ChaVector3 scale;
+	ChaVector3 tra;
 	if( srctype == 0 ){
-		//scale = D3DXVECTOR3( scsph, scsph, sccyli );
-		scale = D3DXVECTOR3( scsph, sccyli, scsph );
-		tra = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+		//scale = ChaVector3( scsph, scsph, sccyli );
+		scale = ChaVector3( scsph, sccyli, scsph );
+		tra = ChaVector3( 0.0f, 0.0f, 0.0f );
 		if( lengptr ){
 			*lengptr = sccyli * 200.0f;
 		}
 	}else if( srctype == 1 ){
-		scale = D3DXVECTOR3( scsph, scsph, scsph );
-		tra = D3DXVECTOR3( 0.0f, 100.0f * ( sccyli - scsph ), 0.0f );
+		scale = ChaVector3( scsph, scsph, scsph );
+		tra = ChaVector3( 0.0f, 100.0f * ( sccyli - scsph ), 0.0f );
 		if( lengptr ){
 			*lengptr = scsph * 100.0f;
 		}
 	}else{
-		scale = D3DXVECTOR3( scsph, scsph, scsph );
-		tra = D3DXVECTOR3( 0.0f, 100.0f * ( scsph - sccyli ), 0.0f );
+		scale = ChaVector3( scsph, scsph, scsph );
+		tra = ChaVector3( 0.0f, 100.0f * ( scsph - sccyli ), 0.0f );
 		if( lengptr ){
 			*lengptr = scsph * 100.0f;
 		}
@@ -2106,32 +2106,32 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 	MultScale( scale, tra );
 	*/
 
-	D3DXVECTOR3 scale;
-	D3DXVECTOR3 tra;
+	ChaVector3 scale;
+	ChaVector3 tra;
 	if (srctype == 0){
 		//cylinder
-		//scale = D3DXVECTOR3(scsph, sccyli, scsph);
-		//tra = D3DXVECTOR3(0.0f, 100.0f * (scsph - sccyli), 0.0f);
-		scale = D3DXVECTOR3(sccyli, scsph, scsph);
-		tra = D3DXVECTOR3(100.0f * (scsph - sccyli), 0.0f, 0.0f);
+		//scale = ChaVector3(scsph, sccyli, scsph);
+		//tra = ChaVector3(0.0f, 100.0f * (scsph - sccyli), 0.0f);
+		scale = ChaVector3(sccyli, scsph, scsph);
+		tra = ChaVector3(100.0f * (scsph - sccyli), 0.0f, 0.0f);
 		if (lengptr){
 			*lengptr = sccyli * 200.0f;
 		}
 	}
 	else if (srctype == 1){
 		//upper sphere
-		//scale = D3DXVECTOR3(scsph, scsph, scsph);
-		//tra = D3DXVECTOR3(0.0f, -300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f);
-		scale = D3DXVECTOR3(scsph, scsph, scsph);
-		tra = D3DXVECTOR3(-300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f, 0.0f);
+		//scale = ChaVector3(scsph, scsph, scsph);
+		//tra = ChaVector3(0.0f, -300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f);
+		scale = ChaVector3(scsph, scsph, scsph);
+		tra = ChaVector3(-300.0f * scsph + 100.0f * (scsph + 2.0f * sccyli), 0.0f, 0.0f);
 		if (lengptr){
 			*lengptr = scsph * 100.0f;
 		}
 	}
 	else{
 		//lower sphere
-		scale = D3DXVECTOR3(scsph, scsph, scsph);
-		tra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		scale = ChaVector3(scsph, scsph, scsph);
+		tra = ChaVector3(0.0f, 0.0f, 0.0f);
 		if (lengptr){
 			*lengptr = scsph * 100.0f;
 		}
@@ -2142,7 +2142,7 @@ int CMQOObject::ScaleBtCapsule( CRigidElem* reptr, float boneleng, int srctype, 
 }
 
 
-int CMQOObject::MultScale( D3DXVECTOR3 srcscale, D3DXVECTOR3 srctra )
+int CMQOObject::MultScale( ChaVector3 srcscale, ChaVector3 srctra )
 {
 	if( m_pm3 ){
 		m_pm3->MultScale( srcscale, srctra );
@@ -2174,12 +2174,12 @@ int CMQOObject::SetShapeWeight( char* nameptr, float srcweight )
 int CMQOObject::AddShapeName( char* nameptr )
 {
 	if( !m_mpoint ){
-		m_mpoint = (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * m_vertex );
+		m_mpoint = (ChaVector3*)malloc( sizeof( ChaVector3 ) * m_vertex );
 		if( !m_mpoint ){
 			_ASSERT( 0 );
 			return 1;
 		}
-		ZeroMemory( m_mpoint, sizeof( D3DXVECTOR3 ) * m_vertex );
+		ZeroMemory( m_mpoint, sizeof( ChaVector3 ) * m_vertex );
 	}
 
 	map<string,int>::iterator itrfind;
@@ -2187,12 +2187,12 @@ int CMQOObject::AddShapeName( char* nameptr )
 	if( itrfind == m_findshape.end() ){
 		m_findshape[ nameptr ] = 1;
 
-		D3DXVECTOR3* newshape = (D3DXVECTOR3*)malloc( sizeof( D3DXVECTOR3 ) * m_vertex );
+		ChaVector3* newshape = (ChaVector3*)malloc( sizeof( ChaVector3 ) * m_vertex );
 		if( !newshape ){
 			_ASSERT( 0 );
 			return 1;
 		}
-		ZeroMemory( newshape, sizeof( D3DXVECTOR3 ) * m_vertex );
+		ZeroMemory( newshape, sizeof( ChaVector3 ) * m_vertex );
 
 		m_shapevert[ nameptr ] = newshape;
 
@@ -2213,9 +2213,9 @@ int CMQOObject::ExistShape( char* nameptr )
 	}
 }
 
-int CMQOObject::SetShapeVert( char* nameptr, int vno, D3DXVECTOR3 srcv )
+int CMQOObject::SetShapeVert( char* nameptr, int vno, ChaVector3 srcv )
 {
-	D3DXVECTOR3* curshape = m_shapevert[ nameptr ];
+	ChaVector3* curshape = m_shapevert[ nameptr ];
 	if( curshape ){
 		if( (vno < 0) || (vno >= m_vertex) ){
 			_ASSERT( 0 );

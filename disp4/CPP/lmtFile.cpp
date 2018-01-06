@@ -151,7 +151,7 @@ int CLmtFile::WriteLmt( CBone* srcbone )
 		CallF(Write2File("    <BoneAxisType>%s</BoneAxisType>\r\n", strboneaxistype[anglelimit.boneaxiskind]), return 1);
 	}
 
-	D3DXMATRIX nodemat = srcbone->GetNodeMat();
+	ChaMatrix nodemat = srcbone->GetNodeMat();
 	CallF(Write2File("      <NodeMatrix_11>%f</NodeMatrix_11>\r\n", nodemat._11), return 1);
 	CallF(Write2File("      <NodeMatrix_12>%f</NodeMatrix_12>\r\n", nodemat._12), return 1);
 	CallF(Write2File("      <NodeMatrix_13>%f</NodeMatrix_13>\r\n", nodemat._13), return 1);
@@ -334,8 +334,8 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 		}
 	}
 
-	D3DXMATRIX nodemat;
-	D3DXMatrixIdentity(&nodemat);
+	ChaMatrix nodemat;
+	ChaMatrixIdentity(&nodemat);
 
 	CallF(Read_Float(xmliobuf, "<NodeMatrix_11>", "</NodeMatrix_11>", &nodemat._11), return 1);
 	CallF(Read_Float(xmliobuf, "<NodeMatrix_12>", "</NodeMatrix_12>", &nodemat._12), return 1);

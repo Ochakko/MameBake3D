@@ -49,7 +49,7 @@ int CMySprite::InitParams()
 	m_texid = -1;
 	m_decl = 0;
 
-	m_pos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	m_pos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	m_size = D3DXVECTOR2( 1.0f, 1.0f );
 	m_col = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
 
@@ -115,7 +115,7 @@ int CMySprite::Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int s
 
 	return 0;
 }
-int CMySprite::SetPos( D3DXVECTOR3 srcpos )
+int CMySprite::SetPos( ChaVector3 srcpos )
 {
 	m_pos = srcpos;
 

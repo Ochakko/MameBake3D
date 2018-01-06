@@ -51,7 +51,7 @@ MameBake3Dはデフォルトで相対IKです。
 
 #include <shlobj.h> //shell
 #include <Commdlg.h>
-#include <VecMath.h>
+#include <ChaVecCalc.h>
 
 #include <mqomaterial.h>
 
@@ -107,8 +107,10 @@ extern int gNumIslands;
 
 
 
-D3DXMATRIXA16 s_selectmat;//for display manipulator
-D3DXMATRIXA16 s_ikselectmat;//for ik, fk
+//ChaMatrixA16 s_selectmat;//for display manipulator
+//ChaMatrixA16 s_ikselectmat;//for ik, fk
+ChaMatrix s_selectmat;//for display manipulator
+ChaMatrix s_ikselectmat;//for ik, fk
 bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
@@ -179,8 +181,8 @@ static WCHAR s_strmark[256] = L"Mark Key Line";
 float g_impscale = 1.0f;
 float g_initmass = 1.0f;
 
-D3DXVECTOR3 g_camEye = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-D3DXVECTOR3 g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+ChaVector3 g_camEye = ChaVector3( 0.0f, 0.0f, 0.0f );
+ChaVector3 g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 
 
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), powf( 10.0f, 3.2f ) };
@@ -230,7 +232,7 @@ static btDynamicsWorld* s_btWorld = 0;
 
 using namespace OrgWinGUI;
 
-static D3DXMATRIX s_inimat;
+static ChaMatrix s_inimat;
 static double s_time = 0.0;
 static double s_difftime = 0.0;
 static int s_ikkind = 0;
@@ -275,12 +277,16 @@ static CMySprite* s_kinsprite = 0;
 static int s_fbxbunki = 1;
 
 
-static D3DXMATRIXA16 s_matWorld;
-static D3DXMATRIXA16 s_matProj;
-//static D3DXMATRIXA16 s_matW, s_matVP;
-static D3DXMATRIXA16 s_matVP;
-static D3DXMATRIXA16 s_matView;
-static D3DXVECTOR3 s_camUpVec = D3DXVECTOR3( 0.00001f, 1.0f, 0.0f );
+//static ChaMatrixA16 s_matWorld;
+//static ChaMatrixA16 s_matProj;
+////static ChaMatrixA16 s_matW, s_matVP;
+//static ChaMatrixA16 s_matVP;
+//static ChaMatrixA16 s_matView;
+static ChaMatrix s_matWorld;
+static ChaMatrix s_matProj;
+static ChaMatrix s_matVP;
+static ChaMatrix s_matView;
+static ChaVector3 s_camUpVec = ChaVector3(0.00001f, 1.0f, 0.0f);
 static float s_camdist = g_initcamdist;
 
 static int s_curmotid = -1;
@@ -288,7 +294,7 @@ static int s_curboneno = -1;
 static int s_saveboneno = -1;
 static int s_curbaseno = -1;
 static int s_ikcnt = 0;
-static D3DXMATRIX s_selm = D3DXMATRIX( 0.0f, 0.0f, 0.0f, 0.0f,
+static ChaMatrix s_selm = ChaMatrix( 0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f
@@ -547,7 +553,7 @@ CDXUTCheckBox* s_LimitDegCheckBox = 0;
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
 
-D3DXVECTOR3 g_vCenter( 0.0f, 0.0f, 0.0f );
+ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 CTexBank*	g_texbank = 0;
 
 float g_tmpmqomult = 1.0f;
@@ -572,7 +578,8 @@ CD3DSettingsDlg             g_SettingsDlg;          // Device settings dialog
 CDXUTDialog                 g_HUD;                  // manages the 3D UI
 CDXUTDialog                 g_SampleUI;             // dialog for sample specific controls
 bool                        g_bEnablePreshader;     // if TRUE, then D3DXSHADER_NO_PRESHADER is used when compiling the shader
-D3DXMATRIXA16               g_mCenterWorld;
+//ChaMatrixA16               g_mCenterWorld;
+ChaMatrix               g_mCenterWorld;
 
 #define MAX_LIGHTS 3
 CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
@@ -816,8 +823,8 @@ static int ExportFBXFile();
 
 static void refreshTimeline( OWP_Timeline& timeline );
 static int AddBoneTra( int kind, float srctra );
-static int AddBoneTra2( D3DXVECTOR3 diffvec );
-static int AddBoneTraPhysics(D3DXVECTOR3 diffvec);
+static int AddBoneTra2( ChaVector3 diffvec );
+static int AddBoneTraPhysics(ChaVector3 diffvec);
 
 static int DispMotionWindow();
 static int DispToolWindow();
@@ -882,8 +889,8 @@ static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhb
 static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
 
-static int CalcTargetPos( D3DXVECTOR3* dstpos );
-static int CalcPickRay( D3DXVECTOR3* start3d, D3DXVECTOR3* end3d );
+static int CalcTargetPos( ChaVector3* dstpos );
+static int CalcPickRay( ChaVector3* start3d, ChaVector3* end3d );
 static void ActivatePanel( int state );
 static int SetCamera6Angle();
 
@@ -1168,8 +1175,8 @@ void InitApp()
 		(s_editrangehistory + erhno)->Clear();
 	}
 
-	D3DXMatrixIdentity(&s_selectmat);
-	D3DXMatrixIdentity(&s_ikselectmat);
+	ChaMatrixIdentity(&s_selectmat);
+	ChaMatrixIdentity(&s_ikselectmat);
 
 	int cbno;
 	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
@@ -1190,7 +1197,7 @@ void InitApp()
 
 	g_bonecntmap.clear();
 
-	D3DXMatrixIdentity( &s_inimat );
+	ChaMatrixIdentity( &s_inimat );
 
     g_bEnablePreshader = true;
 
@@ -1343,13 +1350,13 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 							  L"MS ゴシック", &g_pFont ) );
                               //L"Arial", &g_pFont ) );
 
-	s_totalmb.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.max = D3DXVECTOR3( 5.0f, 5.0f, 5.0f );
-	s_totalmb.min = D3DXVECTOR3( -5.0f, -5.0f, -5.0f );
-	s_totalmb.r = D3DXVec3Length( &s_totalmb.max );
+	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.max = ChaVector3( 5.0f, 5.0f, 5.0f );
+	s_totalmb.min = ChaVector3( -5.0f, -5.0f, -5.0f );
+	s_totalmb.r = ChaVector3Length( &s_totalmb.max );
 	g_vCenter = s_totalmb.center;
 	float fObjectRadius = s_totalmb.r;
-    //D3DXMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
+    //ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
 
     V_RETURN( CDXUTDirectionWidget::StaticOnD3D9CreateDevice( pd3dDevice ) );
     for( int i = 0; i < MAX_LIGHTS; i++ )
@@ -1404,17 +1411,18 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 
 
-    D3DXVECTOR3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    D3DXVECTOR3 vecAt ( 0.0f, 0.0f, -0.0f );
-    g_Camera.SetViewParams( &vecEye, &vecAt );
+    ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
+    ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
+	g_Camera.SetViewParams(&(vecEye.D3DX()), &(vecAt.D3DX()));
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
 
 
 	s_camdist = g_initcamdist;
-	g_camEye = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
-	g_camtargetpos = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-    D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-
+	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
+	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
+	D3DXMATRIX tmpview;
+	D3DXMatrixLookAtRH(&tmpview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+	s_matView = tmpview;
 
 	if( !g_texbank ){
 		g_texbank = new CTexBank( s_pdev );
@@ -1491,8 +1499,8 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	}
 	CallF( s_gplane->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0, D3DPOOL_MANAGED ), return 1 );
 	CallF( s_gplane->MakeDispObj(), return 1 );
-	D3DXVECTOR3 tra( 0.0f, 0.0, 0.0f );
-	D3DXVECTOR3 mult( 5.0f, 1.0f, 5.0f );
+	ChaVector3 tra( 0.0f, 0.0, 0.0f );
+	ChaVector3 mult( 5.0f, 1.0f, 5.0f );
 	CallF( s_gplane->MultDispObj( mult, tra ), return 1 );
 
 
@@ -1665,8 +1673,8 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	g_Camera.FrameMove(fElapsedTime);
 	double difftime = fTime - savetime;
 
-	s_matWorld = *g_Camera.GetWorldMatrix();
-	s_matProj = *g_Camera.GetProjMatrix();
+	s_matWorld = ChaMatrix(*g_Camera.GetWorldMatrix());
+	s_matProj = ChaMatrix(*g_Camera.GetProjMatrix());
 	s_matWorld._41 = 0.0f;
 	s_matWorld._42 = 0.0f;
 	s_matWorld._43 = 0.0f;
@@ -1744,8 +1752,8 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	}
 	*/
 	int rotcenterflag1 = 1;
-	D3DXMATRIX localmat = curbone->CalcLocalRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
-	D3DXVECTOR3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
+	ChaMatrix localmat = curbone->CalcLocalRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
+	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
 	localmat._41 += curanimtra.x;
 	localmat._42 += curanimtra.y;
 	localmat._43 += curanimtra.z;
@@ -1776,7 +1784,7 @@ void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode)
 }
 int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
 {
-	D3DXMATRIX symmat = curbone->CalcSymXMat2(s_model->GetCurMotInfo()->motid, curframe, symrootmode);
+	ChaMatrix symmat = curbone->CalcSymXMat2(s_model->GetCurMotInfo()->motid, curframe, symrootmode);
 
 	CPELEM cpelem;
 	ZeroMemory(&cpelem, sizeof(CPELEM));
@@ -1798,7 +1806,7 @@ int InitMP( CBone* curbone, double curframe )
 
 		//pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
 
-		D3DXMATRIX xmat = curbone->GetFirstMat();
+		ChaMatrix xmat = curbone->GetFirstMat();
 		pcurmp->SetWorldMat(xmat);
 		curbone->SetInitMat(xmat);
 
@@ -1810,14 +1818,14 @@ int InitMP( CBone* curbone, double curframe )
 			_ASSERT(0);
 			return 1;
 		}
-		D3DXMATRIX xmat = curbone->GetFirstMat();
+		ChaMatrix xmat = curbone->GetFirstMat();
 		curmp3->SetWorldMat(xmat);
 		curbone->SetInitMat(xmat);
 		//_ASSERT( 0 );
 	}
 
 	//オイラー角初期化
-	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
 	cureul = curbone->CalcLocalEulZXY(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO, isfirstbone);
@@ -1831,13 +1839,13 @@ int AdjustBoneTra( CBone* curbone, double curframe )
 	CMotionPoint* pcurmp = 0;
 	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
 	if(pcurmp){
-		D3DXVECTOR3 orgpos;
-		D3DVec3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &(pcurmp->GetBefWorldMat()) );
+		ChaVector3 orgpos;
+		ChaVector3TransformCoord( &orgpos, &(curbone->GetJointFPos()), &(pcurmp->GetBefWorldMat()) );
 
-		D3DXVECTOR3 newpos;
-		D3DVec3TransformCoord( &newpos, &(curbone->GetJointFPos()), &(pcurmp->GetWorldMat()) );
+		ChaVector3 newpos;
+		ChaVector3TransformCoord( &newpos, &(curbone->GetJointFPos()), &(pcurmp->GetWorldMat()) );
 
-		D3DXVECTOR3 diffpos;
+		ChaVector3 diffpos;
 		diffpos = orgpos - newpos;
 
 		CEditRange tmper;
@@ -1936,11 +1944,11 @@ void RenderText( double fTime )
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi){
 				const WCHAR* wbonename = curbone->GetWBoneName();
-				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag = 1;
 				int isfirstbone = 0;
 				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-				D3DXVECTOR3 curtra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
 				curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
 				//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
 				txtHelper.DrawFormattedTextLine(L"selected bone : %s", wbonename);
@@ -2333,7 +2341,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_pickinfo.pickobjno = -1;
 		}
 
-		D3DXMatrixIdentity(&s_ikselectmat);
+		ChaMatrixIdentity(&s_ikselectmat);
 		if( s_model && (s_curboneno >= 0) ){
 			CBone* curbone = s_model->GetBoneByID( s_curboneno );
 			_ASSERT( curbone );
@@ -2355,9 +2363,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
-		g_Camera.SetViewParams( &g_camEye, &g_camtargetpos );
-		D3DXVECTOR3 diffv = g_camEye - g_camtargetpos;
-		s_camdist = D3DXVec3Length( &diffv );
+		g_Camera.SetViewParams(&(g_camEye.D3DX()), &(g_camtargetpos.D3DX()));
+		ChaVector3 diffv = g_camEye - g_camtargetpos;
+		s_camdist = ChaVector3Length( &diffv );
 
 
 		if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
@@ -2396,18 +2404,18 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					::ScreenToClient(s_mainwnd, &ptCursor);
 					s_pickinfo.mousepos = ptCursor;
 
-					D3DXVECTOR3 tmpsc;
+					ChaVector3 tmpsc;
 					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 					if (s_model){
 						if (s_oprigflag == 0){
-							D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+							ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 							CallF(CalcTargetPos(&targetpos), return 1);
 							if (s_ikkind == 0){
 								s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
 							}
 							else if (s_ikkind == 1){
-								D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+								ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
 								AddBoneTra2(diffvec);
 								s_editmotionflag = s_curboneno;
 							}
@@ -2452,7 +2460,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					::ScreenToClient(s_mainwnd, &ptCursor);
 					s_pickinfo.mousepos = ptCursor;
 
-					D3DXVECTOR3 tmpsc;
+					ChaVector3 tmpsc;
 					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 					if (g_previewFlag == 0){
@@ -2488,7 +2496,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					::ScreenToClient(s_mainwnd, &ptCursor);
 					s_pickinfo.mousepos = ptCursor;
 
-					D3DXVECTOR3 tmpsc;
+					ChaVector3 tmpsc;
 					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 					if (g_previewFlag == 0){
@@ -2522,7 +2530,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			::ScreenToClient(s_mainwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
-			D3DXVECTOR3 cammv;
+			ChaVector3 cammv;
 			cammv.x = ((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * -s_cammvstep;
 			cammv.y = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * s_cammvstep;
 			cammv.z = 0.0f;
@@ -2531,37 +2539,39 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 
 
-			D3DXMATRIX matview;
-			D3DXVECTOR3 weye, wat;
+			ChaMatrix matview;
+			ChaVector3 weye, wat;
 			matview = s_matView;
 			weye = g_camEye;
 			wat = g_camtargetpos;
 
-			D3DXVECTOR3 cameye, camat;
-			D3DVec3TransformCoord(&cameye, &weye, &matview);
-			D3DVec3TransformCoord(&camat, &wat, &matview);
+			ChaVector3 cameye, camat;
+			ChaVector3TransformCoord(&cameye, &weye, &matview);
+			ChaVector3TransformCoord(&camat, &wat, &matview);
 
-			D3DXVECTOR3 aftcameye, aftcamat;
+			ChaVector3 aftcameye, aftcamat;
 			aftcameye = cameye + cammv;
 			aftcamat = camat + cammv;
 
-			D3DXMATRIX invmatview;
-			D3DXMatrixInverse(&invmatview, NULL, &matview);
+			ChaMatrix invmatview;
+			ChaMatrixInverse(&invmatview, NULL, &matview);
 
-			D3DXVECTOR3 neweye, newat;
-			D3DVec3TransformCoord(&neweye, &aftcameye, &invmatview);
-			D3DVec3TransformCoord(&newat, &aftcamat, &invmatview);
+			ChaVector3 neweye, newat;
+			ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
+			ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
 
-			g_Camera.SetViewParams(&neweye, &newat);
+			g_Camera.SetViewParams(&(neweye.D3DX()), &(newat.D3DX()));
 
 
 
 			g_camEye = neweye;
 			g_camtargetpos = newat;
-			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-			D3DXVECTOR3 diffv;
+			D3DXMATRIX tmpview;
+			D3DXMatrixLookAtRH(&tmpview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+			s_matView = tmpview;
+			ChaVector3 diffv;
 			diffv = neweye - newat;
-			s_camdist = D3DXVec3Length(&diffv);
+			s_camdist = ChaVector3Length(&diffv);
 
 
 		}
@@ -2580,29 +2590,29 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				roty *= 0.250f;
 			}
 
-			D3DXMATRIX matview;
-			D3DXVECTOR3 weye, wat;
+			ChaMatrix matview;
+			ChaVector3 weye, wat;
 			weye = g_camEye;
 			wat = g_camtargetpos;
 
-			D3DXVECTOR3 viewvec, upvec, rotaxisy, rotaxisxz;
+			ChaVector3 viewvec, upvec, rotaxisy, rotaxisxz;
 			viewvec = wat - weye;
-			D3DXVec3Normalize(&viewvec, &viewvec);
-			upvec = D3DXVECTOR3(0.000001f, 1.0f, 0.0f);
+			ChaVector3Normalize(&viewvec, &viewvec);
+			upvec = ChaVector3(0.000001f, 1.0f, 0.0f);
 
 			float chkdot;
-			chkdot = DXVec3Dot(&viewvec, &upvec);
+			chkdot = ChaVector3Dot(&viewvec, &upvec);
 			if (fabs(chkdot) < 0.99965f){
-				D3DXVec3Cross(&rotaxisxz, &upvec, &viewvec);
-				D3DXVec3Normalize(&rotaxisxz, &rotaxisxz);
+				ChaVector3Cross(&rotaxisxz, &upvec, &viewvec);
+				ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
 
-				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
-				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 			}
 			else if (chkdot >= 0.99965f){
 				rotaxisxz = upvec;
-				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
-				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 				if (roty < 0.0f){
 					roty = 0.0f;
 				}
@@ -2611,8 +2621,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 			else{
 				rotaxisxz = upvec;
-				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
-				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 				if (roty > 0.0f){
 					roty = 0.0f;
 				}
@@ -2631,46 +2641,48 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 
 
-			D3DXMATRIX befrotmat, rotmaty, rotmatxz, aftrotmat;
-			D3DXMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
-			D3DXMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
-			D3DXMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-			D3DXMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+			ChaMatrix befrotmat, rotmaty, rotmatxz, aftrotmat;
+			ChaMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
+			ChaMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
+			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+			ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
 
-			D3DXMATRIX mat;
+			ChaMatrix mat;
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-			D3DXVECTOR3 neweye;
-			D3DVec3TransformCoord(&neweye, &weye, &mat);
+			ChaVector3 neweye;
+			ChaVector3TransformCoord(&neweye, &weye, &mat);
 
 			float chkdot2;
-			D3DXVECTOR3 newviewvec = weye - neweye;
-			D3DXVec3Normalize(&newviewvec, &newviewvec);
-			chkdot2 = DXVec3Dot(&newviewvec, &upvec);
+			ChaVector3 newviewvec = weye - neweye;
+			ChaVector3Normalize(&newviewvec, &newviewvec);
+			chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
 			if (fabs(chkdot2) < 0.99965f){
-				D3DXVec3Cross(&rotaxisxz, &upvec, &viewvec);
-				D3DXVec3Normalize(&rotaxisxz, &rotaxisxz);
+				ChaVector3Cross(&rotaxisxz, &upvec, &viewvec);
+				ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
 
-				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
-				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 			}
 			else{
 				roty = 0.0f;
 				rotaxisxz = upvec;
-				D3DXVec3Cross(&rotaxisy, &viewvec, &rotaxisxz);
-				D3DXVec3Normalize(&rotaxisy, &rotaxisy);
+				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 			}
-			D3DXMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-			D3DXMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+			ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-			D3DVec3TransformCoord(&neweye, &weye, &mat);
+			ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-			g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+			g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 
 			g_camEye = neweye;
-			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-			D3DXVECTOR3 diffv;
+			D3DXMATRIX tempview;
+			D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+			s_matView = tempview;
+			ChaVector3 diffv;
 			diffv = neweye - g_camtargetpos;
-			s_camdist = D3DXVec3Length(&diffv);
+			s_camdist = ChaVector3Length(&diffv);
 
 
 		}else if (s_pickinfo.buttonflag == PICK_CAMDIST){
@@ -2692,11 +2704,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_camdist = 0.0001f;
 			}
 
-			D3DXVECTOR3 camvec = g_camEye - g_camtargetpos;
-			D3DXVec3Normalize(&camvec, &camvec);
-			g_camEye = g_camtargetpos + s_camdist * camvec;
-			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-
+			ChaVector3 camvec = g_camEye - g_camtargetpos;
+			ChaVector3Normalize(&camvec, &camvec);
+			g_camEye = g_camtargetpos + camvec * s_camdist;
+			D3DXMATRIX tempview;
+			D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+			s_matView = tempview;
 		}
 
 	}else if( uMsg == WM_LBUTTONUP ){
@@ -2778,8 +2791,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//		s_camdist = 0.0001f;
 		//	}
 		//
-		//	D3DXVECTOR3 camvec = g_camEye - g_camtargetpos;
-		//	D3DXVec3Normalize( &camvec, &camvec );
+		//	ChaVector3 camvec = g_camEye - g_camtargetpos;
+		//	ChaVector3Normalize( &camvec, &camvec );
 		//	g_camEye = g_camtargetpos + s_camdist * camvec;
 		//	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 		//}
@@ -2855,11 +2868,11 @@ int RollbackCurBoneNo()
 void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext )
 {
     CDXUTComboBox* pComboBox;
-	D3DXVECTOR3 cureul, neweul;
+	ChaVector3 cureul, neweul;
 	int tmpboneno;
 	CBone* tmpbone;
 	WCHAR sz[100];
-	D3DXVECTOR3 weye;
+	ChaVector3 weye;
 	float trastep = s_totalmb.r * 0.05f;
 	int modelnum = (int)s_modelindex.size();
 	int modelno;
@@ -3815,8 +3828,8 @@ int OpenGcoFile()
 	CallF( gcofile.LoadGColiFile( s_gplane, g_tmpmqopath, s_bpWorld ), return 1 );
 
 	s_bpWorld->RemakeG();
-	D3DXVECTOR3 tra( 0.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 mult( s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y );
+	ChaVector3 tra( 0.0f, 0.0f, 0.0f );
+	ChaVector3 mult( s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y );
 	CallF( s_gplane->MultDispObj( mult, tra ), return 1 );
 
 	return 0;
@@ -4161,9 +4174,9 @@ CModel* OpenMQOFile()
 		}
 	}
 
-	s_totalmb.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.max = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.min = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
 	s_totalmb.r = 0.0f;
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -4178,22 +4191,23 @@ CModel* OpenMQOFile()
 	g_vCenter = s_totalmb.center;
 	fObjectRadius = s_totalmb.r;
 
-    //D3DXMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
+    //ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
 
     for( int i = 0; i < MAX_LIGHTS; i++ )
 		g_LightControl[i].SetRadius( fObjectRadius );
 
 
-    D3DXVECTOR3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    D3DXVECTOR3 vecAt ( 0.0f, 0.0f, -0.0f );
-    g_Camera.SetViewParams( &vecEye, &vecAt );
+    ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
+    ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
+	g_Camera.SetViewParams(&(vecEye.D3DX()), &(vecAt.D3DX()));
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
 
 	s_camdist = g_initcamdist;
-	g_camEye = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
-	g_camtargetpos = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-
+	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
+	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
+	D3DXMATRIX tempview;
+	D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+	s_matView = tempview;
 
 	CallF( AddMotion( 0 ), return 0 );
 	InitCurMotion(0, 0);
@@ -4222,7 +4236,7 @@ CModel* OpenFBXFile( int skipdefref )
 	//	return 0;
 	//}
 
-	g_camtargetpos = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	
 
 	static int modelcnt = 0;
@@ -4312,9 +4326,9 @@ CModel* OpenFBXFile( int skipdefref )
 		}
 	}
 
-	s_totalmb.center = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.max = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.min = D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+	s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
 	s_totalmb.r = 0.0f;
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -4349,15 +4363,17 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		g_LightControl[i].SetRadius( fObjectRadius );
 
 
-    D3DXVECTOR3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    D3DXVECTOR3 vecAt ( 0.0f, 0.0f, -0.0f );
-    g_Camera.SetViewParams( &vecEye, &vecAt );
+    ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
+    ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
+	g_Camera.SetViewParams(&(vecEye.D3DX()), &(vecAt.D3DX()));
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
 
 	s_camdist = fObjectRadius * 4.0f;
-	g_camEye = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
-	g_camtargetpos = D3DXVECTOR3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
+	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
+	D3DXMATRIX tempview;
+	D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+	s_matView = tempview;
 
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
@@ -4626,8 +4642,8 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		return 0;
 	}
 
-	static D3DXMATRIX s_firsthipmat;
-	static D3DXMATRIX s_invfirsthipmat;
+	static ChaMatrix s_firsthipmat;
+	static ChaMatrix s_invfirsthipmat;
 
 
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
@@ -4687,14 +4703,14 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 
 
 		CQuaternion rotq;
-		D3DXVECTOR3 traanim;
+		ChaVector3 traanim;
 
 		if (bvhbone){
-			D3DXMATRIX curbvhmat;
-			D3DXMATRIX bvhmat;
+			ChaMatrix curbvhmat;
+			ChaMatrix bvhmat;
 			bvhmat = bvhmp.GetWorldMat();
 
-			D3DXMATRIX modelinit, invmodelinit;
+			ChaMatrix modelinit, invmodelinit;
 			modelinit = modelmp.GetWorldMat();
 			invmodelinit = modelmp.GetInvWorldMat();
 
@@ -4703,7 +4719,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 				s_firsthipmat._41 = 0.0f;
 				s_firsthipmat._42 = 0.0f;
 				s_firsthipmat._43 = 0.0f;
-				D3DXMatrixInverse(&s_invfirsthipmat, NULL, &s_firsthipmat);
+				ChaMatrixInverse(&s_invfirsthipmat, NULL, &s_firsthipmat);
 				s_invfirsthipmat._41 = 0.0f;
 				s_invfirsthipmat._42 = 0.0f;
 				s_invfirsthipmat._43 = 0.0f;
@@ -4720,9 +4736,9 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 
 			traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);
 			if (!bvhbone->GetParent()){
-				D3DXVECTOR3 bvhbonepos = bvhbone->GetJointFPos();
-				D3DXVECTOR3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
-				D3DXVECTOR3 firstdiff = firstframebonepos - bvhbonepos;
+				ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
+				ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
+				ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
 				traanim -= firstdiff;
 			}
 			traanim = traanim * hrate;
@@ -4730,7 +4746,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 		else{
 			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-			traanim = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			traanim = ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 
 		if (bvhbone){
@@ -4744,7 +4760,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 	return 0;
 }
 
-int AddBoneTra2( D3DXVECTOR3 diffvec )
+int AddBoneTra2( ChaVector3 diffvec )
 {
 	if( !s_model || (s_curboneno < 0) && !s_model->GetTopBone() ){
 		return 0;
@@ -4764,7 +4780,7 @@ int AddBoneTra2( D3DXVECTOR3 diffvec )
 }
 
 /*
-int ImpulseBonePhysics(D3DXVECTOR3 diffvec)
+int ImpulseBonePhysics(ChaVector3 diffvec)
 {
 	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()){
 		return 0;
@@ -5450,8 +5466,8 @@ int OnDelAllModel()
 
 int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb )
 {
-	D3DXVECTOR3 newmin = mb->min;
-	D3DXVECTOR3 newmax = mb->max;
+	ChaVector3 newmin = mb->min;
+	ChaVector3 newmax = mb->max;
 
 	if( newmin.x > addmb->min.x ){
 		newmin.x = addmb->min.x;
@@ -5477,9 +5493,9 @@ int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb )
 	mb->min = newmin;
 	mb->max = newmax;
 
-	D3DXVECTOR3 diff;
+	ChaVector3 diff;
 	diff = mb->center - newmin;
-	mb->r = D3DXVec3Length( &diff );
+	mb->r = ChaVector3Length( &diff );
 
 	return 0;
 }
@@ -5542,17 +5558,17 @@ int RenderSelectMark(int renderflag)
 			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
 		}
 
-		D3DXVECTOR3 orgpos = curboneptr->GetJointFPos();
-		D3DXVECTOR3 bonepos = curboneptr->GetChildWorld();
+		ChaVector3 orgpos = curboneptr->GetJointFPos();
+		ChaVector3 bonepos = curboneptr->GetChildWorld();
 
-		D3DXVECTOR3 cam0, cam1;
-		D3DXMATRIX mwv = s_model->GetWorldMat() * s_matView;
-		D3DVec3TransformCoord( &cam0, &orgpos, &mwv );
-		cam1 = cam0 + D3DXVECTOR3( 1.0f, 0.0f, 0.0f );
+		ChaVector3 cam0, cam1;
+		ChaMatrix mwv = s_model->GetWorldMat() * s_matView;
+		ChaVector3TransformCoord( &cam0, &orgpos, &mwv );
+		cam1 = cam0 + ChaVector3( 1.0f, 0.0f, 0.0f );
 
-		D3DXVECTOR3 sc0, sc1;
-		D3DVec3TransformCoord( &sc0, &cam0, &s_matProj );
-		D3DVec3TransformCoord( &sc1, &cam1, &s_matProj );
+		ChaVector3 sc0, sc1;
+		ChaVector3TransformCoord( &sc0, &cam0, &s_matProj );
+		ChaVector3TransformCoord( &sc1, &cam1, &s_matProj );
 		float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
 		if( lineleng > 0.00001f ){
 			lineleng = sqrt( lineleng );
@@ -5564,9 +5580,9 @@ int RenderSelectMark(int renderflag)
 		else{
 			//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
 		}
-		D3DXMATRIX scalemat;
-		D3DXMatrixIdentity( &scalemat );
-		D3DXMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
+		ChaMatrix scalemat;
+		ChaMatrixIdentity( &scalemat );
+		ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
 		s_selectmat = scalemat * s_selm;
 		s_selectmat._41 = bonepos.x;
@@ -5574,8 +5590,8 @@ int RenderSelectMark(int renderflag)
 		s_selectmat._43 = bonepos.z;
 
 		if (renderflag){
-			g_pEffect->SetMatrix(g_hmVP, &s_matVP);
-			g_pEffect->SetMatrix(g_hmWorld, &s_selectmat);
+			g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
+			g_pEffect->SetMatrix(g_hmWorld, &(s_selectmat.D3DX()));
 
 			if (s_oprigflag == 0){
 				RenderSelectFunc();
@@ -5621,52 +5637,52 @@ int RenderRigMarkFunc()
 
 	return 0;
 }
-int CalcTargetPos( D3DXVECTOR3* dstpos )
+int CalcTargetPos( ChaVector3* dstpos )
 {
-	D3DXVECTOR3 start3d, end3d;
+	ChaVector3 start3d, end3d;
 	CalcPickRay( &start3d, &end3d );
 
 	//カメラの面とレイとの交点(targetpos)を求める。
-	D3DXVECTOR3 sb, se, n;
+	ChaVector3 sb, se, n;
 	sb = s_pickinfo.objworld - start3d;
 	se = end3d - start3d;
 	n = g_camtargetpos - g_camEye;
 
 	float t;
-	t = D3DXVec3Dot( &sb, &n ) / D3DXVec3Dot( &se, &n );
+	t = ChaVector3Dot( &sb, &n ) / ChaVector3Dot( &se, &n );
 
-	*dstpos = ( 1.0f - t ) * start3d + t * end3d;
+	*dstpos = start3d * (1.0f - t) + end3d * t;
 	return 0;
 }
 
-int CalcPickRay( D3DXVECTOR3* startptr, D3DXVECTOR3* endptr )
+int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 {
 	s_pickinfo.diffmouse.x = (float)( s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x );
 	s_pickinfo.diffmouse.y = (float)( s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y );
 
-	D3DXVECTOR3 mousesc;
+	ChaVector3 mousesc;
 	mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
 	mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
 	mousesc.z = s_pickinfo.objscreen.z;
 
-	D3DXVECTOR3 startsc, endsc;
+	ChaVector3 startsc, endsc;
 	float rayx, rayy;
 	rayx = mousesc.x / (s_pickinfo.winx / 2.0f) - 1.0f;
 	rayy = 1.0f - mousesc.y / (s_pickinfo.winy / 2.0f);
 
-	startsc = D3DXVECTOR3( rayx, rayy, 0.0f );
-	endsc = D3DXVECTOR3( rayx, rayy, 1.0f );
+	startsc = ChaVector3( rayx, rayy, 0.0f );
+	endsc = ChaVector3( rayx, rayy, 1.0f );
 	
-    D3DXMATRIX mView;
-    D3DXMATRIX mProj;
+    ChaMatrix mView;
+    ChaMatrix mProj;
     mProj = *g_Camera.GetProjMatrix();
     mView = s_matView;
-	D3DXMATRIX mVP, invmVP;
+	ChaMatrix mVP, invmVP;
 	mVP = mView * mProj;
-	D3DXMatrixInverse( &invmVP, NULL, &mVP );
+	ChaMatrixInverse( &invmVP, NULL, &mVP );
 
-	D3DVec3TransformCoord( startptr, &startsc, &invmVP );
-	D3DVec3TransformCoord( endptr, &endsc, &invmVP );
+	ChaVector3TransformCoord( startptr, &startsc, &invmVP );
+	ChaVector3TransformCoord( endptr, &endsc, &invmVP );
 
 	return 0;
 }
@@ -6825,12 +6841,12 @@ void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, fl
 int SetCamera6Angle()
 {
 
-	D3DXVECTOR3 weye, wdiff;
+	ChaVector3 weye, wdiff;
 	weye = g_camEye;
 	wdiff = g_camtargetpos - weye;
-	float camdist = D3DXVec3Length( &wdiff );
+	float camdist = ChaVector3Length( &wdiff );
 
-	D3DXVECTOR3 neweye;
+	ChaVector3 neweye;
 	float delta = 0.10f;
 
 	if( g_keybuf[ VK_F1 ] & 0x80 ){
@@ -6838,57 +6854,70 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z - camdist;
 
-		g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 
 		g_camEye = neweye;
-		D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+		D3DXMATRIX tempview;
+		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+		s_matView = tempview;
 
 	}else if( g_keybuf[ VK_F2 ] & 0x80 ){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z + camdist;
 
-		g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-
+		D3DXMATRIX tempview;
+		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+		s_matView = tempview;
 	}else if( g_keybuf[ VK_F3 ] & 0x80 ){
 		neweye.x = g_camtargetpos.x - camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+		D3DXMATRIX tempview;
+		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+		s_matView = tempview;
 	}else if( g_keybuf[ VK_F4 ] & 0x80 ){
 		neweye.x = g_camtargetpos.x + camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-	}else if( g_keybuf[ VK_F5 ] & 0x80 ){
+		D3DXMATRIX tempview;
+		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+		s_matView = tempview;
+	}
+	else if (g_keybuf[VK_F5] & 0x80){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y + camdist;
 		neweye.z = g_camtargetpos.z + delta;
 
-		g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
-	}else if( g_keybuf[ VK_F6 ] & 0x80 ){
+		D3DXMATRIX tempview;
+		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+		s_matView = tempview;
+	}
+	else if (g_keybuf[VK_F6] & 0x80){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y - camdist;
 		neweye.z = g_camtargetpos.z - delta;
 
-		g_Camera.SetViewParams( &neweye, &g_camtargetpos );
+		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+		D3DXMATRIX tempview;
+		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+		s_matView = tempview;
 	}
 
-	D3DXVECTOR3 diffv;
+	ChaVector3 diffv;
 	diffv = g_camEye - g_camtargetpos;
-	s_camdist = D3DXVec3Length( &diffv );
+	s_camdist = ChaVector3Length( &diffv );
 
 	return 0;
 }
@@ -7286,7 +7315,7 @@ int SetImpWndParams()
 	if( curbone ){
 		CBone* parbone = curbone->GetParent();
 		if( parbone ){
-			D3DXVECTOR3 setimp( 0.0f, 0.0f, 0.0f );
+			ChaVector3 setimp( 0.0f, 0.0f, 0.0f );
 
 
 			int impnum = parbone->GetImpMapSize();
@@ -7561,8 +7590,8 @@ int OpenChaFile()
 	}
 
 	if( !s_bpWorld ){
-		D3DXMATRIX inimat;
-		D3DXMatrixIdentity( &inimat );
+		ChaMatrix inimat;
+		ChaMatrixIdentity( &inimat );
 		s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ウィンドウのタイトル
 						460, 460,         // ウィンドウの幅と高さ [pixels]
 						NULL);    // モニタリング用関数へのポインタ  
@@ -7671,7 +7700,7 @@ int SetSpAxisParams()
 
 	int spacnt;
 	for( spacnt = 0; spacnt < 3; spacnt++ ){
-		D3DXVECTOR3 disppos;
+		ChaVector3 disppos;
 		disppos.x = (float)( s_spaxis[spacnt].dispcenter.x ) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)( s_spaxis[spacnt].dispcenter.y ) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
@@ -7704,7 +7733,7 @@ int SetSpCamParams()
 
 	int spacnt;
 	for (spacnt = 0; spacnt < 3; spacnt++){
-		D3DXVECTOR3 disppos;
+		ChaVector3 disppos;
 		disppos.x = (float)(s_spcam[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spcam[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
@@ -7732,7 +7761,7 @@ int SetSpRigParams()
 	s_sprig[1].dispcenter = s_sprig[0].dispcenter;
 
 
-	D3DXVECTOR3 disppos;
+	ChaVector3 disppos;
 	disppos.x = (float)(s_sprig[0].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_sprig[0].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
@@ -7759,7 +7788,7 @@ int SetSpBtParams()
 	s_spbt.dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));// *2);
 
 
-	D3DXVECTOR3 disppos;
+	ChaVector3 disppos;
 	disppos.x = (float)(s_spbt.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_spbt.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
@@ -9091,18 +9120,18 @@ int RotAxis(HWND hDlgWnd)
 		//_ASSERT(0);
 		if ((s_rotaxisdeg >= -360.0f) && (s_rotaxisdeg <= 360.0f)){
 			float rotrad = s_rotaxisdeg * (float)DEG2PAI;
-			D3DXVECTOR3 axis0;
+			ChaVector3 axis0;
 			CQuaternion rotq;
 			if (s_rotaxiskind == AXIS_X){
-				axis0 = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+				axis0 = ChaVector3(1.0f, 0.0f, 0.0f);
 				rotq.SetAxisAndRot(axis0, rotrad);
 			}
 			else if (s_rotaxiskind == AXIS_Y){
-				axis0 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+				axis0 = ChaVector3(0.0f, 1.0f, 0.0f);
 				rotq.SetAxisAndRot(axis0, rotrad);
 			}
 			else if (s_rotaxiskind == AXIS_Z){
-				axis0 = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+				axis0 = ChaVector3(0.0f, 0.0f, 1.0f);
 				rotq.SetAxisAndRot(axis0, rotrad);
 			}
 			else{
@@ -9110,16 +9139,16 @@ int RotAxis(HWND hDlgWnd)
 				return 1;
 			}
 
-			D3DXMATRIX nodemat = curbone->GetNodeMat();
+			ChaMatrix nodemat = curbone->GetNodeMat();
 			CQuaternion noderot;
 			noderot.RotationMatrix(nodemat);
 			CQuaternion invnoderot;
 			noderot.inv(&invnoderot);
 
-			D3DXMATRIX newnodemat;
+			ChaMatrix newnodemat;
 			newnodemat = nodemat * invnoderot.MakeRotMatX() * rotq.MakeRotMatX() * noderot.MakeRotMatX();
 
-			D3DXVECTOR3 bonepos = curbone->GetJointFPos();
+			ChaVector3 bonepos = curbone->GetJointFPos();
 			newnodemat._41 = bonepos.x;
 			newnodemat._42 = bonepos.y;
 			newnodemat._43 = bonepos.z;
@@ -9504,14 +9533,14 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		::ScreenToClient(s_mainwnd, &ptCursor);
 		s_pickinfo.mousepos = ptCursor;
 
-		D3DXVECTOR3 tmpsc;
+		ChaVector3 tmpsc;
 		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 		//RagdollIK時には時間０（とりあえず）
 		s_editrange.SetRangeOne(0.0);
 
 		if (s_oprigflag == 0){//Rig操作ではないとき
-			D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 			CallF(CalcTargetPos(&targetpos), return 1);
 
 			s_model->SetDofRotAxis(s_pickinfo.buttonflag);//!!!!!!!!!!!!!!!!!!!!!!!
@@ -9539,7 +9568,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			}
 			else{
 				int ikmaxlevel = 0;
-				D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+				ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
 				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
 			}
 		}
@@ -9566,13 +9595,13 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 	/*
 	if (s_oprigflag == 0){
-	D3DXVECTOR3 targetpos(0.0f, 0.0f, 0.0f);
+	ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 	CallF(CalcTargetPos(&targetpos), return 1);
 	if (s_ikkind == 0){
 	s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
 	}
 	else if (s_ikkind == 1){
-	D3DXVECTOR3 diffvec = targetpos - s_pickinfo.objworld;
+	ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
 	AddBoneTra2(diffvec);
 	s_editmotionflag = s_curboneno;
 	}
@@ -9966,7 +9995,7 @@ int OnFrameToolWnd()
 	MOTINFO* curmi = s_model->GetCurMotInfo();
 	if (curmi){
 	const WCHAR* wbonename = curbone->GetWBoneName();
-	D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
 	cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
@@ -10045,8 +10074,8 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 
 	int docopyflag = 0;
 	int hasNotMvParFlag = 1;
-	D3DXMATRIX notmvparmat;
-	D3DXMatrixIdentity(&notmvparmat);
+	ChaMatrix notmvparmat;
+	ChaMatrixIdentity(&notmvparmat);
 	if (cpnum != 0){
 		//selected bone at selbonedlg
 		int cpno;
@@ -10097,8 +10126,8 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 	int docopyflag = 0;
 	int hasNotMvParFlag = 1;
-	D3DXMATRIX notmvparmat;
-	D3DXMatrixIdentity(&notmvparmat);
+	ChaMatrix notmvparmat;
+	ChaMatrixIdentity(&notmvparmat);
 
 	if (cpnum != 0){
 		//selected bone at selbonedlg
@@ -10147,7 +10176,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 					CMotionPoint* parmp = parbone->GetMotionPoint(curmotid, newframe);
 					int setmatflag1 = 1;
 					CQuaternion dummyq;
-					D3DXVECTOR3 dummytra = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+					ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
 
 					parmp->SetBefWorldMat(parmp->GetWorldMat());
 					srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
@@ -10316,7 +10345,7 @@ int OnFrameUpdateGround()
 	}
 
 	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG){
-		D3DXMATRIX gpmat = s_inimat;
+		ChaMatrix gpmat = s_inimat;
 		gpmat._42 = s_bpWorld->m_gplaneh;
 		s_gplane->UpdateMatrix(&gpmat, &s_matVP);
 	}
@@ -11350,8 +11379,8 @@ int CreateGPlaneWnd()
 			s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
 			s_bpWorld->RemakeG();
 
-			D3DXVECTOR3 tra(0.0f, 0.0f, 0.0f);
-			D3DXVECTOR3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+			ChaVector3 tra(0.0f, 0.0f, 0.0f);
+			ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
 			CallF(s_gplane->MultDispObj(mult, tra), return);
 
 			s_gpWnd->callRewrite();						//再描画
@@ -11361,8 +11390,8 @@ int CreateGPlaneWnd()
 		if (s_bpWorld && s_gplane){
 			s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
 
-			D3DXVECTOR3 tra(0.0f, 0.0f, 0.0f);
-			D3DXVECTOR3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+			ChaVector3 tra(0.0f, 0.0f, 0.0f);
+			ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
 			CallF(s_gplane->MultDispObj(mult, tra), return);
 			s_gpWnd->callRewrite();						//再描画
 		}
@@ -11371,8 +11400,8 @@ int CreateGPlaneWnd()
 		if (s_bpWorld && s_gplane){
 			s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
 
-			D3DXVECTOR3 tra(0.0f, 0.0f, 0.0f);
-			D3DXVECTOR3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+			ChaVector3 tra(0.0f, 0.0f, 0.0f);
+			ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
 			CallF(s_gplane->MultDispObj(mult, tra), return);
 			s_gpWnd->callRewrite();						//再描画
 		}
@@ -11569,15 +11598,15 @@ int OnRenderModel()
 int OnRenderGround()
 {
 	if (s_ground && s_dispground){
-		g_pEffect->SetMatrix(g_hmWorld, &s_matWorld);
+		g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_ground->OnRender(s_pdev, 0, diffusemult);
 	}
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
-		D3DXMATRIX gpmat = s_inimat;
+		ChaMatrix gpmat = s_inimat;
 		gpmat._42 = s_bpWorld->m_gplaneh;
-		g_pEffect->SetMatrix(g_hmWorld, &gpmat);
+		g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
 		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_gplane->OnRender(s_pdev, 0, diffusemult);
@@ -11660,14 +11689,14 @@ int OnRenderSetShaderConst()
 	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
-	g_pEffect->SetMatrix(g_hmVP, &s_matVP);
+	g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
 	//g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelへ
 
 
-	D3DXVECTOR3 lightdir0, nlightdir0;
+	ChaVector3 lightdir0, nlightdir0;
 	lightdir0 = g_camEye;
-	D3DXVec3Normalize(&nlightdir0, &lightdir0);
-	g_LightControl[0].SetLightDirection(nlightdir0);
+	ChaVector3Normalize(&nlightdir0, &lightdir0);
+	g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
 
 	// Render the light arrow so the user can visually see the light dir
 	for (int i = 0; i < g_nNumActiveLights; i++)
@@ -11679,12 +11708,12 @@ int OnRenderSetShaderConst()
 		vLightDir[i] = g_LightControl[i].GetLightDirection();
 		vLightDiffuse[i] = g_fLightScale * D3DXCOLOR(1, 1, 1, 1);
 	}
-	D3DXVECTOR3 lightamb(1.0f, 1.0f, 1.0f);
+	ChaVector3 lightamb(1.0f, 1.0f, 1.0f);
 
-	V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(D3DXVECTOR3) * MAX_LIGHTS));
+	V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
 	V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(D3DXVECTOR4) * MAX_LIGHTS));
-	D3DXVECTOR3 eyept = g_camEye;
-	V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(D3DXVECTOR3)));
+	ChaVector3 eyept = g_camEye;
+	V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(ChaVector3)));
 
 
 	return 0;
@@ -11852,19 +11881,19 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 	if (curbone){
 		if (curbone->GetChild()){
 			if (initmode == INITMP_ROTTRA){
-				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
 				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe);
 			}
 			else if (initmode == INITMP_ROT){
-				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag0 = 0;
 				int setchildflag1 = 1;
 				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, cureul, srcmotid, srcframe);
 			}
 			else if (initmode == INITMP_TRA){
-				D3DXVECTOR3 cureul = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				int isfirstbone = 0;
 				cureul = curbone->CalcLocalEulZXY(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
@@ -12787,12 +12816,14 @@ void AutoCameraTarget()
 		_ASSERT(curbone);
 		if (curbone){
 			g_camtargetpos = curbone->GetChildWorld();
-			g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
+			g_Camera.SetViewParams(&(g_camEye.D3DX()), &(g_camtargetpos.D3DX()));
 
-			D3DXMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-			D3DXVECTOR3 diffv;
+			D3DXMATRIX tempview;
+			D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
+			s_matView = tempview;
+			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
-			s_camdist = D3DXVec3Length(&diffv);
+			s_camdist = ChaVector3Length(&diffv);
 		}
 	}
 }

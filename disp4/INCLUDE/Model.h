@@ -8,6 +8,7 @@
 #include <map>
 
 #include <OrgWindow.h>
+#include <ChaVecCalc.h>
 
 #include <fbxsdk.h>
 
@@ -192,11 +193,11 @@ public:
  * @fn
  * UpdateMatrix
  * @breaf アニメーションデータを適用する。現在の時間の姿勢をセットする。モーフアニメがあればモーフアニメも適用する。
- * @param (D3DXMATRIX* wmat) IN ワールド変換行列。
- * @param (D3DXMATRIX* vpmat) IN View * Projection変換行列。
+ * @param (ChaMatrix* wmat) IN ワールド変換行列。
+ * @param (ChaMatrix* vpmat) IN View * Projection変換行列。
  * @return 成功したら０。
  */
-	int UpdateMatrix( D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
+	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat );
 
 /**
  * @fn
@@ -316,16 +317,16 @@ public:
  * @breaf 選択ボーンの選択フレームに対してIKで姿勢を回転する。
  * @param (CEditRange* erptr) IN 選択フレーム情報を指定する。
  * @param (int srcboneno) IN 選択ボーンのIDを指定する。
- * @param (D3DXVECTOR3 targetpos) IN 選択ボーンの目標座標を指定する。
+ * @param (ChaVector3 targetpos) IN 選択ボーンの目標座標を指定する。
  * @param (int maxlevel) IN IK計算で何階層親までさかのぼるかを指定する。
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータの中央の黄色をドラッグした時に呼ばれる。
  */
-	int IKRotate( CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel );
+	int IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel );
 
 
-	int PhysicsRot(CEditRange* erptr, int srcboneno, D3DXVECTOR3 targetpos, int maxlevel);
-	int PhysicsMV(CEditRange* erptr, int srcboneno, D3DXVECTOR3 diffvec);
+	int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
+	int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
 	int CreatePhysicsPosConstraint(CBone* srcbone);
 	int DestroyPhysicsPosConstraint(CBone* srcbone);
 	int SetMass0(CBone* srcbone);
@@ -343,9 +344,9 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータのリングまたは球をドラッグした時に呼ばれる。
  */
-	int IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat );
+	int IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat );
 
-	int PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, D3DXMATRIX selectmat);
+	int PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
 	int SetDofRotAxis(int srcaxiskind);
 
 
@@ -370,8 +371,8 @@ public:
  * @param (CQuaternion rotq) IN 回転を表すクォータニオン。
  * @return 成功したら０。
  */
-	int FKRotate(int reqflag, CBone* bvhbone, int traflag, D3DXVECTOR3 traanim, double srcframe, int srcboneno, CQuaternion srcq, int setmatflag = 0, D3DXMATRIX* psetmat = 0);
-	//int FKRotate(double srcframe, int srcboneno, D3DXMATRIX srcmat);
+	int FKRotate(int reqflag, CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, CQuaternion srcq, int setmatflag = 0, ChaMatrix* psetmat = 0);
+	//int FKRotate(double srcframe, int srcboneno, ChaMatrix srcmat);
 
 /**
  * @fn
@@ -379,10 +380,10 @@ public:
  * @breaf 選択ボーンの選択フレームに対してFKで指定した分だけ移動する。
  * @param (CEditRange* erptr) IN 選択フレーム情報を指定する。
  * @param (int srcboneno) IN 選択ボーンのIDを指定する。
- * @param (D3DXVECTOR3 addtra) IN 移動分のベクトル。
+ * @param (ChaVector3 addtra) IN 移動分のベクトル。
  * @return 成功したら０。
  */
-	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, D3DXVECTOR3 addtra );
+	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra );
 
 	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta);
 
@@ -404,13 +405,13 @@ public:
  * @param (int winx) IN ３D表示ウインドウの幅
  * @param (int winy) IN ３D表示ウインドウの高さ
  * @param (int srcboneno) IN ボーンのID。
- * @param (D3DXVECTOR3* worldptr) OUT ワールド座標系の変換結果。
- * @param (D3DXVECTOR3* screenptr) OUT *worldptrに更にView Projectionを適用した座標。
- * @param (D3DXVECTOR3* dispptr) OUT *screenptrを-WindowSize/2から+WindowSize/2までの２D座標にしたもの。
+ * @param (ChaVector3* worldptr) OUT ワールド座標系の変換結果。
+ * @param (ChaVector3* screenptr) OUT *worldptrに更にView Projectionを適用した座標。
+ * @param (ChaVector3* dispptr) OUT *screenptrを-WindowSize/2から+WindowSize/2までの２D座標にしたもの。
  * @return 成功したら０。
  * @detail CBoneのUpdateMatrixが呼ばれた後で呼び出されることを想定している。(CBone::m_childworldを使用している。)
  */
-	int TransformBone( int winx, int winy, int srcboneno, D3DXVECTOR3* worldptr, D3DXVECTOR3* screenptr, D3DXVECTOR3* dispptr );
+	int TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldptr, ChaVector3* screenptr, ChaVector3* dispptr );
 
 /**
  * @fn
@@ -470,13 +471,13 @@ public:
  * @breaf bulletシミュレーション結果を適用する。
  * @param (int rgdollflag) IN ラグドール時に１。
  * @param (double srcframe) IN モーションのフレーム。
- * @param (D3DXMATRIX* wmat) IN ワールド変換行列。
- * @param (D3DXMATRIX* vpmat) IN ViewProj変換行列。
+ * @param (ChaMatrix* wmat) IN ワールド変換行列。
+ * @param (ChaMatrix* vpmat) IN ViewProj変換行列。
  * @param (double difftime) IN 前回の描画からの時間。
  * @return 成功したら０。
  * @detail bulletシミュレーション時には、CModel::Motion2Bt-->BPWorld::clientMoveAndDisplay-->CModel::SetBtMotionという流れで呼び出す。
  */
-	int SetBtMotion( int rgdollflag, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
+	int SetBtMotion( int rgdollflag, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
 
 /**
  * @fn
@@ -535,7 +536,7 @@ public:
 
 	int SetColTypeAll(int reindex, int srctype);
 
-	int Motion2Bt( int firstflag, double nextframe, D3DXMATRIX* mW, D3DXMATRIX* mVP, int selectboneno );
+	int Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix* mVP, int selectboneno );
 	int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
@@ -543,7 +544,7 @@ public:
 	void SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind);
 
 
-	int MultDispObj( D3DXVECTOR3 srcmult, D3DXVECTOR3 srctra );
+	int MultDispObj( ChaVector3 srcmult, ChaVector3 srctra );
 	MOTINFO* GetRgdMorphInfo();
 
 	int SetColiIDtoGroup( CRigidElem* curre );
@@ -594,7 +595,7 @@ private:
 	int DestroyAncObj();
 	int DestroyAllMotionInfo();
 
-	void MakeBoneReq( CBone* parbone, CMQOFace* curface, D3DXVECTOR3* pointptr, int broflag, int* errcntptr );
+	void MakeBoneReq( CBone* parbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
 	int SetShapeNoReq( CMQOFace** ppface, int facenum, int searchp, int shapeno, int* setfacenum);
 	int SetFaceOfShape( CMQOFace** ppface, int facenum, int shapeno, CMQOFace** ppface2, int setfacenum );
@@ -605,16 +606,16 @@ private:
 
 
 
-	void UpdateMatrixReq( int srcmotid, double srcframe, D3DXMATRIX* wmat, D3DXMATRIX* vpmat, 
-		D3DXMATRIX* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
+	void UpdateMatrixReq( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, 
+		ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
 
 	void FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone, int* linenoptr, 
 		map<int, int>& lineno2boneno, map<int, int>& boneno2lineno, int broflag );
 
 	void SetSelectFlagReq( CBone* boneptr, int broflag );
-	int CalcMouseLocalRay( PICKINFO* pickinfo, D3DXVECTOR3* startptr, D3DXVECTOR3* dirptr );
+	int CalcMouseLocalRay( PICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr );
 	CBone* GetCalcRootBone( CBone* firstbone, int maxlevel );
-	void CalcXTransformMatrixReq( CBone* srcbone, D3DXMATRIX parenttra, float mult );
+	void CalcXTransformMatrixReq( CBone* srcbone, ChaMatrix parenttra, float mult );
 
 
 	int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
@@ -652,10 +653,10 @@ private:
 	void CreateBtObjectReq( CBtObject* parbt, CBone* parbone, CBone* curbone );
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
-	void SetBtMotionReq( CBtObject* curbto, D3DXMATRIX* wmat, D3DXMATRIX* vpmat );
+	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );
 
 	void FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppret );
-	void SetImpulseDataReq( int gid, CBone* srcbone, D3DXVECTOR3 srcimp );
+	void SetImpulseDataReq( int gid, CBone* srcbone, ChaVector3 srcimp );
 	void SetBtImpulseReq( CBone* srcbone );
 	
 	void SetDampAnimDataReq( int gid, int rgdindex, CBone* srcbone, float valL, float valA );
@@ -701,7 +702,7 @@ private:
 	void SetMass0Req(CBone* srcbone);
 	void RestoreMassReq(CBone* srcbone);
 
-	void PhysicsMVReq(CBone* srcbone, D3DXVECTOR3 diffvec);
+	void PhysicsMVReq(CBone* srcbone, ChaVector3 diffvec);
 	int WithConstraint(CBone* srcbone);
 	void BulletSimulationStopReq(CBtObject* srcbto);
 	void BulletSimulationStartReq(CBtObject* srcbto);
@@ -1002,19 +1003,19 @@ public: //accesser
 		m_initaxismatx = srcval;
 	};
 
-	void SetModelPosition(D3DXVECTOR3 srcpos){
+	void SetModelPosition(ChaVector3 srcpos){
 		m_modelposition = srcpos;
 	};
-	D3DXVECTOR3 GetModelPosition(){
+	ChaVector3 GetModelPosition(){
 		return m_modelposition;
 	};
-	void SetWorldMatFromCamera(D3DXMATRIX srcmat){
+	void SetWorldMatFromCamera(ChaMatrix srcmat){
 		m_worldmat = srcmat;
 		m_worldmat._41 = m_modelposition.x;
 		m_worldmat._42 = m_modelposition.y;
 		m_worldmat._43 = m_modelposition.z;
 	};
-	D3DXMATRIX GetWorldMat()
+	ChaMatrix GetWorldMat()
 	{
 		return m_worldmat;
 	};
@@ -1068,8 +1069,8 @@ private:
 	FbxManager* m_psdk;//外部メモリ。FBX SDKのマネージャ。
 	FbxImporter* m_pimporter;//FBX SDKのインポーター。CModel内でアロケート。
 
-	D3DXMATRIX m_matWorld;//ワールド変換行列。
-	D3DXMATRIX m_matVP;//View * Projection 変換行列。
+	ChaMatrix m_matWorld;//ワールド変換行列。
+	ChaMatrix m_matVP;//View * Projection 変換行列。
 
 	map<CMQOObject*, FBXOBJ> m_fbxobj;//FbxNodeのラッパークラスとCMQOObjectとのmap。
 	map<string, CMQOObject*> m_objectname;//CMQOObjectを名前で検索するためのmap。
@@ -1083,14 +1084,14 @@ private:
 	map<CBone*,CBone*> m_rigidbone;//剛体１つはボーン１つに対応している。ボーンは親のジョイントと子供のジョイントからなる。ジョイントとボーンは同じように呼ぶことがある。剛体の親ボーンを子供ボーンからけんさくすることに使用する。
 
 	int m_texpool;//Direct3Dのテクスチャ作成プール（場所）。システムメモリかビデオメモリかマネージドか選ぶ。通常はD3DPOOL_DEFAULTでビデオメモリを指定する。
-	D3DXVECTOR3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。
+	ChaVector3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。
 	CUndoMotion m_undomotion[ UNDOMAX ];//アンドゥー機能のためのCUndoMotionの配列。CUndoMotionの１つのインスタンスは１フレーム分のモーションを保存する。
 	int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
 	bool m_createbtflag;//CreateBtObjectを読んだことがあればtrue。
 	bool m_loadedflag;//初期の読み込み処理が終了したらtrue;
 
-	D3DXMATRIX m_worldmat;
-	D3DXVECTOR3 m_modelposition;
+	ChaMatrix m_worldmat;
+	ChaVector3 m_modelposition;
 };
 
 #endif
