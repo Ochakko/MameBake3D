@@ -27,15 +27,6 @@ ChaVector3::~ChaVector3()
 
 }
 
-D3DXVECTOR3 ChaVector3::D3DX()
-{
-	D3DXVECTOR3 retv;
-	retv.x = x;
-	retv.y = y;
-	retv.z = z;
-	return retv;
-}
-
 
 ChaVector3 ChaVector3::operator= (ChaVector3 v) { this->x = v.x; this->y = v.y; this->z = v.z; return *this; };
 ChaVector3 ChaVector3::operator* (float srcw) const { return ChaVector3(this->x * srcw, this->y * srcw, this->z * srcw); }
@@ -49,6 +40,41 @@ ChaVector3 &ChaVector3::operator-= (const ChaVector3 &v) { *this = *this - v; re
 
 ChaVector3 ChaVector3::operator- () const { return *this * -1.0f; }
 
+
+
+ChaVector4::ChaVector4()
+{
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+	w = 0.0f;
+}
+
+ChaVector4::ChaVector4(float srcx, float srcy, float srcz, float srcw)
+{
+	x = srcx;
+	y = srcy;
+	z = srcz;
+	w = srcw;
+}
+
+ChaVector4::~ChaVector4()
+{
+
+}
+
+
+ChaVector4 ChaVector4::operator= (ChaVector4 v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; return *this; };
+ChaVector4 ChaVector4::operator* (float srcw) const { return ChaVector4(this->x * srcw, this->y * srcw, this->z * srcw, this->w * srcw); }
+ChaVector4 &ChaVector4::operator*= (float srcw) { *this = *this * srcw; return *this; }
+ChaVector4 ChaVector4::operator/ (float srcw) const { return ChaVector4(this->x / srcw, this->y / srcw, this->z / srcw, this->w / srcw); }
+ChaVector4 &ChaVector4::operator/= (float srcw) { *this = *this / srcw; return *this; }
+ChaVector4 ChaVector4::operator+ (const ChaVector4 &v) const { return ChaVector4(x + v.x, y + v.y, z + v.z, w + v.w); }
+ChaVector4 &ChaVector4::operator+= (const ChaVector4 &v) { *this = *this + v; return *this; }
+ChaVector4 ChaVector4::operator- (const ChaVector4 &v) const { return ChaVector4(x - v.x, y - v.y, z - v.z, w - v.w); }
+ChaVector4 &ChaVector4::operator-= (const ChaVector4 &v) { *this = *this - v; return *this; }
+
+ChaVector4 ChaVector4::operator- () const { return *this * -1.0f; }
 
 
 ChaMatrix::ChaMatrix()
@@ -131,55 +157,6 @@ ChaMatrix ChaMatrix::operator= (ChaMatrix m) {
 	return *this;
 };
 
-ChaMatrix ChaMatrix::operator= (D3DXMATRIX m) {
-	this->_11 = m._11;
-	this->_12 = m._12;
-	this->_13 = m._13;
-	this->_14 = m._14;
-
-	this->_21 = m._21;
-	this->_22 = m._22;
-	this->_23 = m._23;
-	this->_24 = m._24;
-
-	this->_31 = m._31;
-	this->_32 = m._32;
-	this->_33 = m._33;
-	this->_34 = m._34;
-
-	this->_41 = m._41;
-	this->_42 = m._42;
-	this->_43 = m._43;
-	this->_44 = m._44;
-
-	return *this;
-};
-
-D3DXMATRIX ChaMatrix::D3DX()
-{
-	D3DXMATRIX retm;
-	retm._11 = _11;
-	retm._12 = _12;
-	retm._13 = _13;
-	retm._14 = _14;
-
-	retm._21 = _21;
-	retm._22 = _22;
-	retm._23 = _23;
-	retm._24 = _24;
-
-	retm._31 = _31;
-	retm._32 = _32;
-	retm._33 = _33;
-	retm._34 = _34;
-
-	retm._41 = _41;
-	retm._42 = _42;
-	retm._43 = _43;
-	retm._44 = _44;
-
-	return retm;
-}
 
 
 ChaMatrix ChaMatrix::operator* (float srcw) const { return ChaMatrix(this->_11 * srcw, this->_12 * srcw, this->_13 * srcw, this->_14 * srcw,
@@ -241,82 +218,6 @@ ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
 
 	return res;
 }
-
-
-//ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
-//	//*this * m
-//	ChaMatrix res;
-//	res._11 = m._11 * _11 + m._21 * _12 + m._31 * _13 + m._41 * _14;
-//	res._12 = m._11 * _21 + m._21 * _22 + m._31 * _23 + m._41 * _24;
-//	res._13 = m._11 * _31 + m._21 * _32 + m._31 * _33 + m._41 * _34;
-//	res._14 = m._11 * _41 + m._21 * _42 + m._31 * _43 + m._41 * _44;
-//
-//	res._21 = m._12 * _11 + m._22 * _12 + m._32 * _13 + m._42 * _14;
-//	res._22 = m._12 * _21 + m._22 * _22 + m._32 * _23 + m._42 * _24;
-//	res._23 = m._12 * _31 + m._22 * _32 + m._32 * _33 + m._42 * _34;
-//	res._24 = m._12 * _41 + m._22 * _42 + m._32 * _43 + m._42 * _44;
-//
-//	res._31 = m._13 * _11 + m._23 * _12 + m._33 * _13 + m._43 * _14;
-//	res._32 = m._13 * _21 + m._23 * _22 + m._33 * _23 + m._43 * _24;
-//	res._33 = m._13 * _31 + m._23 * _32 + m._33 * _33 + m._43 * _34;
-//	res._34 = m._13 * _41 + m._23 * _42 + m._33 * _43 + m._43 * _44;
-//
-//	res._41 = m._14 * _11 + m._24 * _12 + m._34 * _13 + m._44 * _14;
-//	res._42 = m._14 * _21 + m._24 * _22 + m._34 * _23 + m._44 * _24;
-//	res._43 = m._14 * _31 + m._24 * _32 + m._34 * _33 + m._44 * _34;
-//	res._44 = m._14 * _41 + m._24 * _42 + m._34 * _43 + m._44 * _44;
-//
-//	ChaMatrix res2;
-//	ChaMatrixTranspose(&res2, &res);
-//	return res2;
-//}
-
-//ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
-//	//*this * m
-//	D3DXMATRIX res;
-//	D3DXMATRIX thism;
-//	D3DXMATRIX srcm;
-//
-//	thism._11 = _11;
-//	thism._12 = _12;
-//	thism._13 = _13;
-//	thism._14 = _14;
-//	thism._21 = _21;
-//	thism._22 = _22;
-//	thism._23 = _23;
-//	thism._24 = _24;
-//	thism._31 = _31;
-//	thism._32 = _32;
-//	thism._33 = _33;
-//	thism._34 = _34;
-//	thism._41 = _41;
-//	thism._42 = _42;
-//	thism._43 = _43;
-//	thism._44 = _44;
-//
-//
-//	srcm._11 = m._11;
-//	srcm._12 = m._12;
-//	srcm._13 = m._13;
-//	srcm._14 = m._14;
-//	srcm._21 = m._21;
-//	srcm._22 = m._22;
-//	srcm._23 = m._23;
-//	srcm._24 = m._24;
-//	srcm._31 = m._31;
-//	srcm._32 = m._32;
-//	srcm._33 = m._33;
-//	srcm._34 = m._34;
-//	srcm._41 = m._41;
-//	srcm._42 = m._42;
-//	srcm._43 = m._43;
-//	srcm._44 = m._44;
-//
-//	res = thism * srcm;
-//
-//	return res;
-//}
-
 
 ChaMatrix &ChaMatrix::operator*= (const ChaMatrix &m) { *this = *this * m; return *this; }
 ChaMatrix ChaMatrix::operator- () const { return *this * -1.0f; }
@@ -610,3 +511,77 @@ void ChaMatrixScaling(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 	pdst->_22 = srcy;
 	pdst->_33 = srcz;
 }
+
+
+
+#ifdef CONVD3DX9
+D3DXVECTOR3 ChaVector3::D3DX()
+{
+	D3DXVECTOR3 retv;
+	retv.x = x;
+	retv.y = y;
+	retv.z = z;
+	return retv;
+}
+
+D3DXVECTOR4 ChaVector4::D3DX()
+{
+	D3DXVECTOR4 retv;
+	retv.x = x;
+	retv.y = y;
+	retv.z = z;
+	retv.w = w;
+	return retv;
+}
+
+
+ChaMatrix ChaMatrix::operator= (D3DXMATRIX m) {
+	this->_11 = m._11;
+	this->_12 = m._12;
+	this->_13 = m._13;
+	this->_14 = m._14;
+
+	this->_21 = m._21;
+	this->_22 = m._22;
+	this->_23 = m._23;
+	this->_24 = m._24;
+
+	this->_31 = m._31;
+	this->_32 = m._32;
+	this->_33 = m._33;
+	this->_34 = m._34;
+
+	this->_41 = m._41;
+	this->_42 = m._42;
+	this->_43 = m._43;
+	this->_44 = m._44;
+
+	return *this;
+};
+
+D3DXMATRIX ChaMatrix::D3DX()
+{
+	D3DXMATRIX retm;
+	retm._11 = _11;
+	retm._12 = _12;
+	retm._13 = _13;
+	retm._14 = _14;
+
+	retm._21 = _21;
+	retm._22 = _22;
+	retm._23 = _23;
+	retm._24 = _24;
+
+	retm._31 = _31;
+	retm._32 = _32;
+	retm._33 = _33;
+	retm._34 = _34;
+
+	retm._41 = _41;
+	retm._42 = _42;
+	retm._43 = _43;
+	retm._44 = _44;
+
+	return retm;
+}
+#endif

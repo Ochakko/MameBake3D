@@ -814,7 +814,7 @@ int CPolyMesh3::MultScale( ChaVector3 srcscale, ChaVector3 srctra )
 		int orgvno = curn3p->pervert->vno;
 		ChaVector3* srcv = m_pointbuf + orgvno;
 		PM3DISPV* curv = m_dispv + vno;
-		curv->pos = D3DXVECTOR4( srcv->x * srcscale.x + srctra.x, srcv->y * srcscale.y + srctra.y, srcv->z * srcscale.z + srctra.z, 1.0f );
+		curv->pos = ChaVector4( srcv->x * srcscale.x + srctra.x, srcv->y * srcscale.y + srctra.y, srcv->z * srcscale.z + srctra.z, 1.0f );
 	}
 
 	return 0;

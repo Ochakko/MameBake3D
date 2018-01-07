@@ -1,7 +1,7 @@
 #ifndef MODELH
 #define MODELH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
 #include <wchar.h>
 #include <Coef.h>
 #include <string>
@@ -115,11 +115,11 @@ public:
  * @breaf モデルデータを描画する。
  * @param (LPDIRECT3DDEVICE9 pdev) IN Direct3DのDevice。
  * @param (int lightflag) IN 照光処理をするかどうかのフラグ。
- * @param (D3DXVECTOR4 diffusemult) IN ディフューズ(拡散光)に乗算するRGBAの値。ライトを変えなくても明るさを変えることが出来る。
+ * @param (ChaVector4 diffusemult) IN ディフューズ(拡散光)に乗算するRGBAの値。ライトを変えなくても明るさを変えることが出来る。
  * @param (int btflag = 0) IN bulletのシミュレーション中であるかどうかのフラグ。
  * @return 成功したら０。
  */
-	int OnRender( LPDIRECT3DDEVICE9 pdev, int lightflag, D3DXVECTOR4 diffusemult, int btflag = 0 );
+	int OnRender( LPDIRECT3DDEVICE9 pdev, int lightflag, ChaVector4 diffusemult, int btflag = 0 );
 
 
 /**

@@ -14,7 +14,8 @@
 
 #include <quaternion.h>
 #include <BoneProp.h>
-#include <D3DX9.h>
+//#include <D3DX9.h>
+#include <ChaVecCalc.h>
 
 #define DBGH
 #include <dbg.h>

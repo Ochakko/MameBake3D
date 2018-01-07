@@ -3,7 +3,8 @@
 
 #include <coef.h>
 
-#include <D3DX9.h>
+//#include <D3DX9.h>
+#include <ChaVecCalc.h>
 #include <crtdbg.h>
 #include <fbxsdk.h>
 #include <quaternion.h>

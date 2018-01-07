@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <d3dx9.h>
-
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <coef.h>
 
 #define DBGH
@@ -19,7 +19,7 @@ public:
 	CMQOMaterial();
 	~CMQOMaterial();
 
-	int SetParams( int srcno, D3DXVECTOR4 srcsceneamb, char* srcchar, int srcleng );
+	int SetParams( int srcno, ChaVector4 srcsceneamb, char* srcchar, int srcleng );
 
 
 	int SetName( char* srcchar, int pos, int srcleng, int* stepnum );
@@ -80,10 +80,10 @@ public:
 		strcpy_s( m_name, 256, srcname );
 	};
 
-	D3DXVECTOR4 GetCol(){
+	ChaVector4 GetCol(){
 		return m_col;
 	};
-	void SetCol( D3DXVECTOR4 srcval ){
+	void SetCol( ChaVector4 srcval ){
 		m_col = srcval;
 	};
 
@@ -168,10 +168,10 @@ public:
 	};
 
 
-	D3DXVECTOR4 GetDif4F(){
+	ChaVector4 GetDif4F(){
 		return m_dif4f;
 	};
-	void SetDif4F( D3DXVECTOR4 srcval ){
+	void SetDif4F( ChaVector4 srcval ){
 		m_dif4f = srcval;
 	};
 	void SetDif4FW( float srcval ){
@@ -199,10 +199,10 @@ public:
 		m_spc3f = srcval;
 	};
 
-	D3DXVECTOR4 GetSceneAmb(){
+	ChaVector4 GetSceneAmb(){
 		return m_sceneamb;
 	};
-	void SetSceneAmb( D3DXVECTOR4 srcval ){
+	void SetSceneAmb( ChaVector4 srcval ){
 		m_sceneamb = srcval;
 	};
 	
@@ -256,7 +256,7 @@ private:
 	int m_materialno;
 	char m_name[256];
 
-	D3DXVECTOR4 m_col;
+	ChaVector4 m_col;
 	float m_dif;
 	float m_amb;
 	float m_emi;
@@ -273,11 +273,11 @@ private:
 	int m_shader;
 
 ////
-	D3DXVECTOR4 m_dif4f;
+	ChaVector4 m_dif4f;
 	ChaVector3 m_amb3f;
 	ChaVector3 m_emi3f;
 	ChaVector3 m_spc3f;
-	D3DXVECTOR4 m_sceneamb;
+	ChaVector4 m_sceneamb;
 
 	int m_transparent;
 	int m_texrule;

@@ -109,7 +109,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\tbb43\include;..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -160,7 +160,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\tbb43\include;..\DX90c\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2013.3\include;..\..\bullet-2.80\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>

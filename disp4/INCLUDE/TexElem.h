@@ -1,7 +1,8 @@
 #ifndef TEXELEMH
 #define TEXELEMH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <wchar.h>
 
 class CTexElem

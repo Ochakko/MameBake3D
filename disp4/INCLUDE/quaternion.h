@@ -2,7 +2,8 @@
 
 #define QUATERNIONH
 
-#include <D3DX9.h>
+//#include <D3DX9.h>
+#include <ChaVecCalc.h>
 #include <coef.h>
 
 #include "btBulletDynamicsCommon.h"

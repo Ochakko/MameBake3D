@@ -1,7 +1,8 @@
 #ifndef XMLIOFILEH
 #define XMLIOFILEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <coef.h>
 
 class CQuaternion;

@@ -2,7 +2,7 @@
 #define USERCOEFH
 
 #ifndef COEFH
-#include <d3dx9.h>
+//#include <d3dx9.h>
 #include <ChaVecCalc.h>
 #endif
 

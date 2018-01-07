@@ -1,7 +1,8 @@
 #ifndef IMPFILEH
 #define IMPFILEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <coef.h>
 #include <XMLIO.h>
 

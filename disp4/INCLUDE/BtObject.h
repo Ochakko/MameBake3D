@@ -1,7 +1,7 @@
 #ifndef BTOBJECTH
 #define BTOBJECTH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
 #include <wchar.h>
 #include <Coef.h>
 #include <string>

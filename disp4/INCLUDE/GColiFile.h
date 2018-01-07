@@ -1,7 +1,8 @@
 #ifndef GCOLIFILEH
 #define GCOLIFILEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <coef.h>
 #include <XMLIO.h>
 

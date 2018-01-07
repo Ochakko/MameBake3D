@@ -1,7 +1,8 @@
 #ifndef DISPOBJH
 #define DISPOBJH
 
-#include <D3DX9.h>
+//#include <D3DX9.h>
+#include <ChaVecCalc.h>
 
 class CMQOMaterial;
 class CPolyMesh3;
@@ -68,30 +69,30 @@ public:
  * @breaf 通常のベーシックな方法で３D描画をする。
  * @param (CMQOMaterial* rmaterial) IN 材質へのポインタ。
  * @param (int lightflag) IN 照光処理するときは１、しないときは０。
- * @param (D3DXVECTOR4 diffusemult) IN ディフューズ色に掛け算する比率。
+ * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  */
-	int RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 diffusemult );
+	int RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult );
 
 /**
  * @fn
  * RenderNormalPM3
  * @breaf 通常のベーシックな方法でメタセコイアデータを３D表示する。
  * @param (int lightflag) IN 照光処理するときは１、しないときは０。
- * @param (D3DXVECTOR4 diffusemult) IN ディフューズ色に掛け算する比率。
+ * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  * @detail FBXデータは１オブジェクトにつき１マテリアル(材質)だが、メタセコイアデータは１オブジェクトに複数マテリアルが設定されていることが多い。
  */
-	int RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult );
+	int RenderNormalPM3( int lightflag, ChaVector4 diffusemult );
 
 /**
  * @fn
  * RenderLine
  * @breaf 線分データを表示する。
- * @param (D3DXVECTOR4 diffusemult) IN ディフューズ色に掛け算する比率。
+ * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  */
-	int RenderLine( D3DXVECTOR4 diffusemult );
+	int RenderLine( ChaVector4 diffusemult );
 
 /**
  * @fn

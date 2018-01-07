@@ -1,7 +1,8 @@
 #ifndef TEXBANKH
 #define TEXBANKH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <wchar.h>
 #include <map>
 using namespace std;

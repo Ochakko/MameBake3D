@@ -676,14 +676,14 @@ int CMQOObject::CreateColor()
 		return 1;
 	}
 
-	m_colorbuf = (D3DXVECTOR4*)malloc( sizeof( D3DXVECTOR4 ) * m_vertex );
+	m_colorbuf = (ChaVector4*)malloc( sizeof( ChaVector4 ) * m_vertex );
 	if( !m_colorbuf ){
 		DbgOut( L"MQOObject : CreateColor : colorbuf alloc error !!!\r\n" );
 		_ASSERT( 0 );
 		return 1;
 	}
 
-	ZeroMemory( m_colorbuf, sizeof( D3DXVECTOR4 ) * m_vertex );
+	ZeroMemory( m_colorbuf, sizeof( ChaVector4 ) * m_vertex );
 
 	m_hascolor = 1;
 
@@ -714,7 +714,7 @@ int CMQOObject::SetColor( char* srcchar, int srcleng )
 	dwg = (col & 0x0000FF00) >> 8;
 	dwb = (col & 0x00FF0000) >> 16;
 
-	D3DXVECTOR4* dstcol = m_colorbuf + pointno;
+	ChaVector4* dstcol = m_colorbuf + pointno;
 	dstcol->x = (float)dwr / 255.0f;
 	dstcol->y = (float)dwg / 255.0f;
 	dstcol->z = (float)dwb / 255.0f;
@@ -757,7 +757,7 @@ int CMQOObject::MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial
 	int vert_count;
 	ChaVector3* pointptr;
 	CMQOFace* faceptr;
-	D3DXVECTOR4* colorptr;
+	ChaVector4* colorptr;
 
 	if( m_face2 > 0 ){
 		face_count = m_face2;
@@ -1024,14 +1024,14 @@ int CMQOObject::MakeLatheBuf()
 			_ASSERT( 0 );
 			return 1;
 		}
-		m_colorbuf2 = (D3DXVECTOR4*)malloc( sizeof( D3DXVECTOR4 ) * m_vertex2 );
+		m_colorbuf2 = (ChaVector4*)malloc( sizeof( ChaVector4 ) * m_vertex2 );
 		if( !m_colorbuf2 ){
 			DbgOut( L"MQOObject : MakeLatheBuf : colorbuf2 alloc error !!!\r\n" );
 			_ASSERT( 0 );
 			return 1;			
 		}
 		//ZeroMemory( colorbuf2, sizeof( ARGBF ) * vertex2 );
-		MoveMemory( m_colorbuf2, m_colorbuf, sizeof( D3DXVECTOR4 ) * m_vertex );
+		MoveMemory( m_colorbuf2, m_colorbuf, sizeof( ChaVector4 ) * m_vertex );
 	}
 
 	if( m_facebuf2 ){
@@ -1090,8 +1090,8 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].dist * (float)sin( rad * segno );
 
 				if( m_colorbuf2 ){
-					D3DXVECTOR4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
-					D3DXVECTOR4* dstcol1 = dstcol0 + m_lathe_seg;
+					ChaVector4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
+					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 
 					*dstcol0 = *(m_colorbuf + v0);
 					*dstcol1 = *(m_colorbuf + v1);
@@ -1129,8 +1129,8 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].dist * (float)sin( rad * segno );
 
 				if( m_colorbuf2 ){
-					D3DXVECTOR4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
-					D3DXVECTOR4* dstcol1 = dstcol0 + m_lathe_seg;
+					ChaVector4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
+					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 
 					*dstcol0 = *(m_colorbuf + v0);
 					*dstcol1 = *(m_colorbuf + v1);
@@ -1167,8 +1167,8 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].height;
 
 				if( m_colorbuf2 ){
-					D3DXVECTOR4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
-					D3DXVECTOR4* dstcol1 = dstcol0 + m_lathe_seg;
+					ChaVector4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
+					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 
 					*dstcol0 = *(m_colorbuf + v0);
 					*dstcol1 = *(m_colorbuf + v1);
@@ -1297,20 +1297,20 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 
 	if( m_colorbuf ){
 		if( m_colorbuf2 ){
-			m_colorbuf2 = (D3DXVECTOR4*)realloc( m_colorbuf2, sizeof( D3DXVECTOR4 ) * m_vertex2 );
+			m_colorbuf2 = (ChaVector4*)realloc( m_colorbuf2, sizeof( ChaVector4 ) * m_vertex2 );
 			if( !m_colorbuf2 ){
 				DbgOut( L"MQOObject : MakeMirrorPointAndFace : colorbuf2 realloc error !!!\r\n" );
 				_ASSERT( 0 );
 				return 1;
 			}
 		}else{
-			m_colorbuf2 = (D3DXVECTOR4*)malloc( sizeof( D3DXVECTOR4 ) * m_vertex2 );
+			m_colorbuf2 = (ChaVector4*)malloc( sizeof( ChaVector4 ) * m_vertex2 );
 			if( !m_colorbuf2 ){
 				DbgOut( L"MQOObject : MakeMirrorPointAndFace : colorbuf2 alloc error !!!\r\n" );
 				_ASSERT( 0 );
 				return 1;
 			}
-			MoveMemory( m_colorbuf2, m_colorbuf, sizeof( D3DXVECTOR4 ) * befvertex );
+			MoveMemory( m_colorbuf2, m_colorbuf, sizeof( ChaVector4 ) * befvertex );
 		}
 	}
 
@@ -1378,8 +1378,8 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 	}
 
 	if( m_colorbuf2 ){
-		D3DXVECTOR4* srccol;
-		D3DXVECTOR4* dstcol;
+		ChaVector4* srccol;
+		ChaVector4* dstcol;
 		for( vertno = 0; vertno < befvertex; vertno++ ){
 			srccol = m_colorbuf2 + vertno;
 			dstcol = m_colorbuf2 + vertno + befvertex;

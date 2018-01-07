@@ -1,7 +1,9 @@
 #ifndef RIGIDELEMH
 #define RIGIDELEMH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
+
 #include <wchar.h>
 #include <Coef.h>
 #include <string>

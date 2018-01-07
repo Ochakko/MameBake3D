@@ -1,7 +1,8 @@
 #ifndef MQOFILEH
 #define MQOFILEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -121,7 +122,7 @@ private:
 
 	ChaMatrix m_offsetmat;
 
-	D3DXVECTOR4 m_scene_ambient;
+	ChaVector4 m_scene_ambient;
 };
 
 

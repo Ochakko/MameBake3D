@@ -189,7 +189,7 @@ typedef struct tag_bntobjinfo
 
 typedef struct tag_bntvertex
 {
-	D3DXVECTOR4		pos;
+	ChaVector4		pos;
 	ChaVector3		normal;
 	D3DXVECTOR2		uv;
 	float weight[4];
@@ -255,7 +255,7 @@ typedef struct tag_bntmaterial
 	int materialno;
 	char name[256];
 
-	D3DXVECTOR4 dif4f;
+	ChaVector4 dif4f;
 	ChaVector3 amb3f;
 	ChaVector3 emi3f;
 	ChaVector3 spc3f;

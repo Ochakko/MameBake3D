@@ -2,7 +2,8 @@
 #define EXTLINEH
 
 #include <coef.h>
-#include <D3DX9.h>
+//#include <D3DX9.h>
+#include <ChaVecCalc.h>
 
 class CMQOFace;
 
@@ -34,10 +35,10 @@ public:
  * @param (int facenum) IN 面データfaceptrの面数。
  * @param (ChaVector3* pointptr) IN 頂点データ。
  * @param (CMQOFace* faceptr) IN 面データ。
- * @param (D3DXVECTOR4 srccol) IN 線分の色。
+ * @param (ChaVector4 srccol) IN 線分の色。
  * @return 成功したら０。
  */
-	int CreateExtLine( int pointnum, int facenum, ChaVector3* pointptr, CMQOFace* faceptr, D3DXVECTOR4 srccol );
+	int CreateExtLine( int pointnum, int facenum, ChaVector3* pointptr, CMQOFace* faceptr, ChaVector4 srccol );
 
 
 /**
@@ -84,7 +85,7 @@ private:
 public:
 	int m_linenum;//線分の数。
 	EXTLINEV* m_linev;//頂点データ。
-	D3DXVECTOR4 m_color;//線分の色
+	ChaVector4 m_color;//線分の色
 	MODELBOUND	m_bound;//線分を囲い込むバウンダリーデータ。
 
 private:

@@ -1,14 +1,17 @@
 #ifndef ChaCalcH
 #define ChaCalcH
 
+#ifdef CONVD3DX9
 #include <d3dx9.h>
-
+#endif
 
 class ChaMatrix
 {
 public:
 	ChaMatrix();
 	ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44);
+
+#ifdef CONVD3DX9
 	ChaMatrix::ChaMatrix(D3DXMATRIX m){
 		_11 = m._11;
 		_12 = m._12;
@@ -30,10 +33,15 @@ public:
 		_43 = m._43;
 		_44 = m._44;
 	};
+#endif
+
 	~ChaMatrix();
 
 	ChaMatrix ChaMatrix::operator= (ChaMatrix m);
+#ifdef CONVD3DX9
 	ChaMatrix ChaMatrix::operator= (D3DXMATRIX m);
+#endif
+
 	ChaMatrix operator* (float srcw) const;
 	ChaMatrix &operator*= (float srcw);
 	ChaMatrix operator/ (float srcw) const;
@@ -60,7 +68,9 @@ public:
 		return !(*this == m);
 	};
 
+#ifdef CONVD3DX9
 	D3DXMATRIX D3DX();
+#endif
 
 public:
 	float _11;
@@ -112,13 +122,51 @@ public:
 	bool operator== (const ChaVector3 &v) const { return x == v.x && y == v.y && z == v.z; };
 	bool operator!= (const ChaVector3 &v) const { return !(*this == v); };
 
-
+#ifdef CONVD3DX9
 	D3DXVECTOR3 D3DX();
+#endif
 
 public:
 	float x;
 	float y;
 	float z;
+
+};
+
+
+class ChaVector4
+{
+public:
+
+	ChaVector4();
+	ChaVector4(float srcx, float srcy, float srcz, float srcw);
+	~ChaVector4();
+
+	ChaVector4 ChaVector4::operator= (ChaVector4 v);
+	ChaVector4 operator* (float srcw) const;
+	ChaVector4 &operator*= (float srcw);
+	ChaVector4 operator/ (float srcw) const;
+	ChaVector4 &operator/= (float srcw);
+	ChaVector4 operator+ (const ChaVector4 &v) const;
+	ChaVector4 &operator+= (const ChaVector4 &v);
+	ChaVector4 operator- (const ChaVector4 &v) const;
+	ChaVector4 &operator-= (const ChaVector4 &v);
+	ChaVector4 operator* (const ChaVector4 &v) const;
+	ChaVector4 &operator*= (const ChaVector4 &v);
+	ChaVector4 operator- () const;
+
+	bool operator== (const ChaVector4 &v) const { return x == v.x && y == v.y && z == v.z && w == v.w; };
+	bool operator!= (const ChaVector4 &v) const { return !(*this == v); };
+
+#ifdef CONVD3DX9
+	D3DXVECTOR4 D3DX();
+#endif
+
+public:
+	float x;
+	float y;
+	float z;
+	float w;
 
 };
 

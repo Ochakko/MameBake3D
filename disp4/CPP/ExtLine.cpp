@@ -30,7 +30,7 @@ int CExtLine::InitParams()
 {
 	m_linenum = 0;
 	m_linev = 0;
-	m_color = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
+	m_color = ChaVector4( 1.0f, 1.0f, 1.0f, 1.0f );
 
 	m_pointnum = 0;
 	m_facenum = 0;
@@ -58,7 +58,7 @@ int CExtLine::DestroyObjs()
 }
 
 
-int CExtLine::CreateExtLine( int pointnum, int facenum, ChaVector3* pointptr, CMQOFace* faceptr, D3DXVECTOR4 srccol )
+int CExtLine::CreateExtLine( int pointnum, int facenum, ChaVector3* pointptr, CMQOFace* faceptr, ChaVector4 srccol )
 {
 	m_pointptr = pointptr;
 	m_faceptr = faceptr;

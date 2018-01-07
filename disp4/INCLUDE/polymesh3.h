@@ -2,7 +2,8 @@
 #define POLYMESH3H
 
 #include <coef.h>
-#include <D3DX9.h>
+//#include <D3DX9.h>
+#include <ChaVecCalc.h>
 
 #include <crtdbg.h>
 //#include <infelem.h>

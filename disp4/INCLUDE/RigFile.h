@@ -1,7 +1,8 @@
 #ifndef RIGFILEH
 #define RIGFILEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <Coef.h>
 #include <XMLIO.h>
 

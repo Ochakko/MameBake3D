@@ -25,7 +25,7 @@ CMQOMaterial::~CMQOMaterial()
 	DestroyObjs();
 }
 
-int CMQOMaterial::SetParams( int srcno, D3DXVECTOR4 srcsceneamb, char* srcchar, int srcleng )
+int CMQOMaterial::SetParams( int srcno, ChaVector4 srcsceneamb, char* srcchar, int srcleng )
 {
 	//"îßêF" col(1.000 0.792 0.651 1.000) dif(0.490) amb(0.540) emi(0.530) spc(0.020) power(0.00)
 

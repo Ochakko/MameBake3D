@@ -10,7 +10,8 @@
 #define DBGH
 #include <dbg.h>
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 
 #include <string>
 #include <map>
@@ -344,7 +345,7 @@ private:
 
 	int m_shading;
 	float m_facet;
-	D3DXVECTOR4 m_color;
+	ChaVector4 m_color;
 	int m_color_type;
 	int m_mirror;
 	int m_mirror_axis;
@@ -356,14 +357,14 @@ private:
 	int m_lathe_seg;
 
 	int m_hascolor;
-	D3DXVECTOR4* m_colorbuf;
+	ChaVector4* m_colorbuf;
 
 	int m_vertex2;
 	int m_face2;
 
 	ChaVector3* m_pointbuf2;
 	CMQOFace* m_facebuf2;
-	D3DXVECTOR4* m_colorbuf2;
+	ChaVector4* m_colorbuf2;
 
 	int m_connectnum;
 	CMQOFace* m_connectface;

@@ -1,7 +1,7 @@
 #ifndef COEFH
 #define		COEFH
 
-#include <D3DX9.h>
+//#include <D3DX9.h>
 #include <ChaVecCalc.h>
 
 #include <usercoef.h>
@@ -468,7 +468,7 @@ typedef struct tag_tlvertex {
 } TLVERTEX;
 
 typedef struct tag_spritev {
-	D3DXVECTOR4 pos;
+	ChaVector4 pos;
 	D3DXVECTOR2 uv;
 } SPRITEV;
 
@@ -526,7 +526,7 @@ typedef struct tag_pm3optv
 
 typedef struct tag_pm3dispv
 {
-	D3DXVECTOR4		pos;
+	ChaVector4		pos;
 	ChaVector3		normal;
 	D3DXVECTOR2		uv;
 }PM3DISPV;
@@ -539,7 +539,7 @@ typedef struct tag_pm3inf
 
 typedef struct tag_extlinev
 {
-	D3DXVECTOR4 pos;
+	ChaVector4 pos;
 }EXTLINEV;
 
 

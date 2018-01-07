@@ -3,7 +3,7 @@
 
 class CQuaternion;
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
 #include <Coef.h>
 #include <ChaVecCalc.h>
 

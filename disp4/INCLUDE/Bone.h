@@ -1,7 +1,7 @@
 #ifndef BONEH
 #define BONEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
 #include <Coef.h>
 #include <MotionPoint.h>
 #include <quaternion.h>

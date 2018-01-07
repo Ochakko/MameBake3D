@@ -380,7 +380,7 @@ int CDispObj::CreateVBandIBLine()
 
 
 
-int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 diffusemult )
+int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult )
 {
 	if( !m_pm3 && !m_pm4 ){
 		return 0;
@@ -391,8 +391,8 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 	CMQOMaterial* curmat = rmaterial;
 	_ASSERT( curmat );
 
-	D3DXVECTOR4 diffuse;
-	D3DXVECTOR4 curdif4f = curmat->GetDif4F();
+	ChaVector4 diffuse;
+	ChaVector4 curdif4f = curmat->GetDif4F();
 	diffuse.w = curdif4f.w * diffusemult.w;
 	diffuse.x = curdif4f.x * diffusemult.x;
 	diffuse.y = curdif4f.y * diffusemult.y;
@@ -405,9 +405,9 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 		m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
 	//}
 
-//diffuse = D3DXVECTOR4( 0.6f, 0.6f, 0.6f, 1.0f );
+//diffuse = ChaVector4( 0.6f, 0.6f, 0.6f, 1.0f );
 
-	hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
+	hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( ChaVector4 ) );
 	_ASSERT( !hr );
 	hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( ChaVector3 ) );
 	_ASSERT( !hr );
@@ -560,7 +560,7 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, D3DXVECTOR4 
 	return 0;
 }
 
-int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
+int CDispObj::RenderNormalPM3( int lightflag, ChaVector4 diffusemult )
 {
 	if( !m_pm3 ){
 		return 0;
@@ -583,14 +583,14 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 			return 1;
 		}
 
-		D3DXVECTOR4 diffuse;
-		D3DXVECTOR4 curdif4f = curmat->GetDif4F();
+		ChaVector4 diffuse;
+		ChaVector4 curdif4f = curmat->GetDif4F();
 		diffuse.w = curdif4f.w * diffusemult.w;
 		diffuse.x = curdif4f.x * diffusemult.x;
 		diffuse.y = curdif4f.y * diffusemult.y;
 		diffuse.z = curdif4f.z * diffusemult.z;
 
-		hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
+		hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( ChaVector4 ) );
 		_ASSERT( !hr );
 		hr = g_pEffect->SetValue( g_hambient, &(curmat->GetAmb3F()), sizeof( ChaVector3 ) );
 		_ASSERT( !hr );
@@ -761,7 +761,7 @@ int CDispObj::RenderNormalPM3( int lightflag, D3DXVECTOR4 diffusemult )
 }
 
 
-int CDispObj::RenderLine( D3DXVECTOR4 diffusemult )
+int CDispObj::RenderLine( ChaVector4 diffusemult )
 {
 	if( !m_extline ){
 		return 0;
@@ -772,13 +772,13 @@ int CDispObj::RenderLine( D3DXVECTOR4 diffusemult )
 
 	HRESULT hr;
 
-	D3DXVECTOR4 diffuse;
+	ChaVector4 diffuse;
 	diffuse.w = m_extline->m_color.w * diffusemult.w;
 	diffuse.x = m_extline->m_color.x * diffusemult.x;
 	diffuse.y = m_extline->m_color.y * diffusemult.y;
 	diffuse.z = m_extline->m_color.z * diffusemult.z;
 
-	hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( D3DXVECTOR4 ) );
+	hr = g_pEffect->SetValue( g_hdiffuse, &diffuse, sizeof( ChaVector4 ) );
 	_ASSERT( !hr );
 
 	hr = g_pEffect->SetTechnique( g_hRenderLine );

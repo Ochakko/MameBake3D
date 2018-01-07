@@ -51,12 +51,12 @@ int CMySprite::InitParams()
 
 	m_pos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	m_size = D3DXVECTOR2( 1.0f, 1.0f );
-	m_col = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
+	m_col = ChaVector4( 1.0f, 1.0f, 1.0f, 1.0f );
 
-	m_v[0].pos = D3DXVECTOR4( -1.0f, +1.0f, 0.0f, 1.0f );
-	m_v[1].pos = D3DXVECTOR4( +1.0f, +1.0f, 0.0f, 1.0f );
-	m_v[2].pos = D3DXVECTOR4( +1.0f, -1.0f, 0.0f, 1.0f );
-	m_v[3].pos = D3DXVECTOR4( -1.0f, -1.0f, 0.0f, 1.0f );
+	m_v[0].pos = ChaVector4( -1.0f, +1.0f, 0.0f, 1.0f );
+	m_v[1].pos = ChaVector4( +1.0f, +1.0f, 0.0f, 1.0f );
+	m_v[2].pos = ChaVector4( +1.0f, -1.0f, 0.0f, 1.0f );
+	m_v[3].pos = ChaVector4( -1.0f, -1.0f, 0.0f, 1.0f );
 
 	m_v[0].uv = D3DXVECTOR2( 0.0f, 0.0f );
 	m_v[1].uv = D3DXVECTOR2( 1.0f, 0.0f );
@@ -127,7 +127,7 @@ int CMySprite::SetSize( D3DXVECTOR2 srcsize )
 
 	return 0;
 }
-int CMySprite::SetColor( D3DXVECTOR4 srccol )
+int CMySprite::SetColor( ChaVector4 srccol )
 {
 	m_col = srccol;
 	return 0;
@@ -146,13 +146,13 @@ int CMySprite::OnRender( LPDIRECT3DTEXTURE9 ptex )
 	maxy = m_pos.y + 0.5f * m_size.y;
 	miny = m_pos.y - 0.5f * m_size.y;
 
-	renderv[0].pos = D3DXVECTOR4( minx, maxy, m_pos.z, 1.0f );
-	renderv[1].pos = D3DXVECTOR4( maxx, maxy, m_pos.z, 1.0f );
-	renderv[2].pos = D3DXVECTOR4( maxx, miny, m_pos.z, 1.0f );
-	renderv[3].pos = D3DXVECTOR4( minx, miny, m_pos.z, 1.0f );
+	renderv[0].pos = ChaVector4( minx, maxy, m_pos.z, 1.0f );
+	renderv[1].pos = ChaVector4( maxx, maxy, m_pos.z, 1.0f );
+	renderv[2].pos = ChaVector4( maxx, miny, m_pos.z, 1.0f );
+	renderv[3].pos = ChaVector4( minx, miny, m_pos.z, 1.0f );
 
 	HRESULT hr;
-	hr = g_pEffect->SetValue( g_hdiffuse, &m_col, sizeof( D3DXVECTOR4 ) );
+	hr = g_pEffect->SetValue( g_hdiffuse, &m_col, sizeof( ChaVector4 ) );
 	_ASSERT( !hr );
 
 

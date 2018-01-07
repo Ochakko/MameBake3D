@@ -29,8 +29,8 @@
 
 //#include <BoneProp.h>
 
-#include <d3dx9.h>
-
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 
 #define DBGH
 #include <dbg.h>

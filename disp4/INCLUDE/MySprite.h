@@ -1,7 +1,8 @@
 #ifndef MYSPRITEH
 #define MYSPRITEH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <ChaVecCalc.h>
 #include <Coef.h>
 
 
@@ -15,7 +16,7 @@ public:
 	int CreateDecl();
 	int SetPos( ChaVector3 srcpos );
 	int SetSize( D3DXVECTOR2 srcsize );
-	int SetColor( D3DXVECTOR4 srccol );
+	int SetColor( ChaVector4 srccol );
 	int OnRender( LPDIRECT3DTEXTURE9 ptex = 0 );
 
 private:
@@ -31,7 +32,7 @@ private:
 
 	ChaVector3 m_pos;
 	D3DXVECTOR2 m_size;
-	D3DXVECTOR4 m_col;
+	ChaVector4 m_col;
 };
 
 #endif

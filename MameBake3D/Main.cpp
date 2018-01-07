@@ -129,14 +129,14 @@ static CMQOMaterial* s_ringblue = 0;// = s_select->GetMQOMaterialByName("ringblu
 static CMQOMaterial* s_matgreen = 0;// = s_select->GetMQOMaterialByName("matgreen");
 static CMQOMaterial* s_ringgreen = 0;// = s_select->GetMQOMaterialByName("ringgreen");
 static CMQOMaterial* s_matyellow = 0;// = s_select->GetMQOMaterialByName("matyellow");
-static D3DXVECTOR4 s_matredmat;
-static D3DXVECTOR4 s_ringredmat;
-static D3DXVECTOR4 s_matbluemat;
-static D3DXVECTOR4 s_ringbluemat;
-static D3DXVECTOR4 s_matgreenmat;
-static D3DXVECTOR4 s_ringgreenmat;
-static D3DXVECTOR4 s_matyellowmat;
-static D3DXVECTOR4 s_ringyellowmat;
+static ChaVector4 s_matredmat;
+static ChaVector4 s_ringredmat;
+static ChaVector4 s_matbluemat;
+static ChaVector4 s_ringbluemat;
+static ChaVector4 s_matgreenmat;
+static ChaVector4 s_ringgreenmat;
+static ChaVector4 s_matyellowmat;
+static ChaVector4 s_ringyellowmat;
 
 static bool s_dispanglelimit = false;
 static HWND s_anglelimitdlg = 0;
@@ -950,6 +950,11 @@ static int RecalcBoneAxisX(CBone* srcbone);
 
 static int GetSymRootMode();
 
+
+static void XMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec);
+
+
+
 int RegistKey()
 {
 /*
@@ -1420,9 +1425,7 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	D3DXMATRIX tmpview;
-	D3DXMatrixLookAtRH(&tmpview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-	s_matView = tmpview;
+	XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	if( !g_texbank ){
 		g_texbank = new CTexBank( s_pdev );
@@ -2566,9 +2569,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 			g_camEye = neweye;
 			g_camtargetpos = newat;
-			D3DXMATRIX tmpview;
-			D3DXMatrixLookAtRH(&tmpview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-			s_matView = tmpview;
+			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = neweye - newat;
 			s_camdist = ChaVector3Length(&diffv);
@@ -2677,9 +2678,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 
 			g_camEye = neweye;
-			D3DXMATRIX tempview;
-			D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-			s_matView = tempview;
+			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = neweye - g_camtargetpos;
 			s_camdist = ChaVector3Length(&diffv);
@@ -2707,9 +2706,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaVector3 camvec = g_camEye - g_camtargetpos;
 			ChaVector3Normalize(&camvec, &camvec);
 			g_camEye = g_camtargetpos + camvec * s_camdist;
-			D3DXMATRIX tempview;
-			D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-			s_matView = tempview;
+			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		}
 
 	}else if( uMsg == WM_LBUTTONUP ){
@@ -4205,9 +4202,7 @@ CModel* OpenMQOFile()
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	D3DXMATRIX tempview;
-	D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-	s_matView = tempview;
+	XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	CallF( AddMotion( 0 ), return 0 );
 	InitCurMotion(0, 0);
@@ -4371,9 +4366,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	s_camdist = fObjectRadius * 4.0f;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	D3DXMATRIX tempview;
-	D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-	s_matView = tempview;
+	XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
@@ -5617,7 +5610,7 @@ int RenderSelectFunc()
 	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	if (s_dispselect){
 		int lightflag = 1;
-		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_select->OnRender(s_pdev, lightflag, diffusemult);
 	}
 	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
@@ -5631,7 +5624,7 @@ int RenderRigMarkFunc()
 	s_rigmark->UpdateMatrix(&s_selectmat, &s_matVP);
 	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	int lightflag = 1;
-	D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
 	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
@@ -6857,9 +6850,7 @@ int SetCamera6Angle()
 		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 
 		g_camEye = neweye;
-		D3DXMATRIX tempview;
-		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-		s_matView = tempview;
+		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	}else if( g_keybuf[ VK_F2 ] & 0x80 ){
 		neweye.x = g_camtargetpos.x;
@@ -6868,29 +6859,25 @@ int SetCamera6Angle()
 
 		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMATRIX tempview;
-		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-		s_matView = tempview;
-	}else if( g_keybuf[ VK_F3 ] & 0x80 ){
+		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	}
+	else if (g_keybuf[VK_F3] & 0x80){
 		neweye.x = g_camtargetpos.x - camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
 		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMATRIX tempview;
-		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-		s_matView = tempview;
-	}else if( g_keybuf[ VK_F4 ] & 0x80 ){
+		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	}
+	else if (g_keybuf[VK_F4] & 0x80){
 		neweye.x = g_camtargetpos.x + camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
 		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMATRIX tempview;
-		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-		s_matView = tempview;
+		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F5] & 0x80){
 		neweye.x = g_camtargetpos.x;
@@ -6899,9 +6886,7 @@ int SetCamera6Angle()
 
 		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMATRIX tempview;
-		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-		s_matView = tempview;
+		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F6] & 0x80){
 		neweye.x = g_camtargetpos.x;
@@ -6910,9 +6895,7 @@ int SetCamera6Angle()
 
 		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
 		g_camEye = neweye;
-		D3DXMATRIX tempview;
-		D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-		s_matView = tempview;
+		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 
 	ChaVector3 diffv;
@@ -11580,7 +11563,7 @@ int OnRenderModel()
 
 		if (curmodel && curmodel->GetModelDisp()){
 			int lightflag = 1;
-			D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 			int btflag;
 			if ((g_previewFlag != 4) && (g_previewFlag != 5)){
 				btflag = 0;
@@ -11600,7 +11583,7 @@ int OnRenderGround()
 	if (s_ground && s_dispground){
 		g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
-		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_ground->OnRender(s_pdev, 0, diffusemult);
 	}
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
@@ -11608,7 +11591,7 @@ int OnRenderGround()
 		gpmat._42 = s_bpWorld->m_gplaneh;
 		g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
-		D3DXVECTOR4 diffusemult = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_gplane->OnRender(s_pdev, 0, diffusemult);
 	}
 
@@ -11711,7 +11694,7 @@ int OnRenderSetShaderConst()
 	ChaVector3 lightamb(1.0f, 1.0f, 1.0f);
 
 	V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
-	V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(D3DXVECTOR4) * MAX_LIGHTS));
+	V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(ChaVector4) * MAX_LIGHTS));
 	ChaVector3 eyept = g_camEye;
 	V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(ChaVector3)));
 
@@ -12818,12 +12801,25 @@ void AutoCameraTarget()
 			g_camtargetpos = curbone->GetChildWorld();
 			g_Camera.SetViewParams(&(g_camEye.D3DX()), &(g_camtargetpos.D3DX()));
 
-			D3DXMATRIX tempview;
-			D3DXMatrixLookAtRH(&tempview, &(g_camEye.D3DX()), &(g_camtargetpos.D3DX()), &(s_camUpVec.D3DX()));
-			s_matView = tempview;
+			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
 			s_camdist = ChaVector3Length(&diffv);
 		}
 	}
 }
+
+
+void XMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec)
+{
+	//‚Æ‚è‚ ‚¦‚¸DirectX9‚ÅŽg‚¦‚é‚æ‚¤‚É‚µ‚Ä‚¨‚­B
+
+#ifdef CONVD3DX9
+	D3DXMATRIX tempview;
+	D3DXMatrixLookAtRH(&tempview, &(camEye->D3DX()), &(camtar->D3DX()), &(camUpVec->D3DX()));
+	*dstviewmat = tempview;
+#else
+	_ASSERT(0);
+#endif
+}
+

@@ -620,7 +620,7 @@ int CModel::CreateMaterialTexture()
 	return 0;
 }
 
-int CModel::OnRender( LPDIRECT3DDEVICE9 pdev, int lightflag, D3DXVECTOR4 diffusemult, int btflag )
+int CModel::OnRender( LPDIRECT3DDEVICE9 pdev, int lightflag, ChaVector4 diffusemult, int btflag )
 {
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
@@ -2530,7 +2530,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 		//strcpy_s( newmqomat->tex, 256, diffusetex );
 		DbgOut( L"SetMQOMaterial : diffusetexture find\r\n" );
 	}
-	D3DXVECTOR4 tmpdif;
+	ChaVector4 tmpdif;
 	tmpdif.x = (float)lDiffuse[0];
 	tmpdif.y = (float)lDiffuse[1];
 	tmpdif.z = (float)lDiffuse[2];
@@ -3434,12 +3434,12 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 
 							g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 							bmarkptr->UpdateMatrix(&bmmat, &m_matVP);
-							D3DXVECTOR4 difmult;
+							ChaVector4 difmult;
 							if (chilbone->GetSelectFlag() & 2){
-								difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+								difmult = ChaVector4(1.0f, 0.0f, 0.0f, 0.5f);
 							}
 							else{
-								difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+								difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 							}
 							CallF(bmarkptr->OnRender(pdev, 0, difmult), return 1);
 						}
@@ -3466,13 +3466,13 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 						boneptr->CalcRigidElemParams(childbone, 0);
 						g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
 						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
-						D3DXVECTOR4 difmult;
+						ChaVector4 difmult;
 						//if( boneptr->GetSelectFlag() & 4 ){
 						if (childbone->GetSelectFlag() & 4){
-							difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+							difmult = ChaVector4(1.0f, 0.0f, 0.0f, 0.5f);
 						}
 						else{
-							difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+							difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 						}
 						CallF(boneptr->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return 1);
 					}
@@ -3494,13 +3494,13 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 							boneptr->CalcRigidElemParams(chilbone, 0);
 							g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat()));
 							boneptr->GetCurColDisp(chilbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
-							D3DXVECTOR4 difmult;
+							ChaVector4 difmult;
 							//if( boneptr->GetSelectFlag() & 4 ){
 							if (chilbone->GetSelectFlag() & 4){
-								difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+								difmult = ChaVector4(1.0f, 0.0f, 0.0f, 0.5f);
 							}
 							else{
-								difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+								difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 							}
 							CallF(boneptr->GetCurColDisp(chilbone)->OnRender(pdev, 0, difmult), return 1);
 						}
@@ -3537,17 +3537,17 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 					bcircleptr->SetPos(scpos);
 					D3DXVECTOR2 bsize;
 					if (boneptr->GetSelectFlag() & 2){
-						bcircleptr->SetColor(D3DXVECTOR4(0.0f, 0.0f, 1.0f, 0.7f));
+						bcircleptr->SetColor(ChaVector4(0.0f, 0.0f, 1.0f, 0.7f));
 						bsize = D3DXVECTOR2(0.050f, 0.050f);
 						bcircleptr->SetSize(bsize);
 					}
 					else if (boneptr->GetSelectFlag() & 1){
-						bcircleptr->SetColor(D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.7f));
+						bcircleptr->SetColor(ChaVector4(1.0f, 0.0f, 0.0f, 0.7f));
 						bsize = D3DXVECTOR2(0.025f, 0.025f);
 						bcircleptr->SetSize(bsize);
 					}
 					else{
-						bcircleptr->SetColor(D3DXVECTOR4(1.0f, 1.0f, 1.0f, 0.7f));
+						bcircleptr->SetColor(ChaVector4(1.0f, 1.0f, 1.0f, 0.7f));
 						bsize = D3DXVECTOR2(0.025f, 0.025f);
 						bcircleptr->SetSize(bsize);
 					}
@@ -3584,13 +3584,13 @@ void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto)
 
 			g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
 			srcbone->GetCurColDisp(chilbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
-			D3DXVECTOR4 difmult;
+			ChaVector4 difmult;
 			//if( boneptr->GetSelectFlag() & 4 ){
 			if (chilbone->GetSelectFlag() & 4){
-				difmult = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.5f);
+				difmult = ChaVector4(1.0f, 0.0f, 0.0f, 0.5f);
 			}
 			else{
-				difmult = D3DXVECTOR4(0.25f, 0.5f, 0.5f, 0.5f);
+				difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 			}
 			CallF(srcbone->GetCurColDisp(chilbone)->OnRender(pdev, 0, difmult), return);
 		}
@@ -3634,17 +3634,17 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 				bcircleptr->SetPos(scpos);
 				D3DXVECTOR2 bsize;
 				if (chilbone->GetSelectFlag() & 2){
-					bcircleptr->SetColor(D3DXVECTOR4(0.0f, 0.0f, 1.0f, 0.7f));
+					bcircleptr->SetColor(ChaVector4(0.0f, 0.0f, 1.0f, 0.7f));
 					bsize = D3DXVECTOR2(0.050f, 0.050f);
 					bcircleptr->SetSize(bsize);
 				}
 				else if (chilbone->GetSelectFlag() & 1){
-					bcircleptr->SetColor(D3DXVECTOR4(1.0f, 0.0f, 0.0f, 0.7f));
+					bcircleptr->SetColor(ChaVector4(1.0f, 0.0f, 0.0f, 0.7f));
 					bsize = D3DXVECTOR2(0.025f, 0.025f);
 					bcircleptr->SetSize(bsize);
 				}
 				else{
-					bcircleptr->SetColor(D3DXVECTOR4(0.8f, 0.8f, 0.8f, 0.7f));
+					bcircleptr->SetColor(ChaVector4(0.8f, 0.8f, 0.8f, 0.7f));
 					bsize = D3DXVECTOR2(0.025f, 0.025f);
 					bcircleptr->SetSize(bsize);
 				}

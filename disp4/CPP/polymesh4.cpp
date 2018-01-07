@@ -571,7 +571,7 @@ int CPolyMesh4::UpdateMorphBuffer( ChaVector3* mpoint )
 		int curindex = *(m_orgindex + vno);
 		PM3DISPV* curv = m_dispv + vno;
 
-		curv->pos = D3DXVECTOR4( (mpoint + curindex)->x, (mpoint + curindex)->y, (mpoint + curindex)->z, 1.0f );
+		curv->pos = ChaVector4( (mpoint + curindex)->x, (mpoint + curindex)->y, (mpoint + curindex)->z, 1.0f );
 	}
 
 	return 0;
