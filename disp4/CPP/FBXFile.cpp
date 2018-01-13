@@ -268,7 +268,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
     if(lExporter->Initialize(pFilename, pFileFormat, pSdkManager->GetIOSettings()) == false)
     {
         printf("Call to FbxExporter::Initialize() failed.\n");
-        printf("Error returned: %s\n\n", lExporter->GetLastErrorString());
+        //printf("Error returned: %s\n\n", lExporter->GetLastErrorString());
         return false;
     }
 
@@ -1134,7 +1134,8 @@ void AnimateSkeletonOfBVH( FbxScene* pScene )
 	s_firstanimout = 1;
 	AnimateBoneOfBVHReq( s_fbxbone, lAnimLayer );
 
-	pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStackName, s_convPivot, 30.0, true);
+	//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStackName, s_convPivot, 30.0, true);
+	pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);
 
 }
 void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
@@ -1251,8 +1252,9 @@ _ASSERT( motionnum == aino );
 		s_firstanimout = 1;
 		AnimateBoneReq( s_fbxbone, lAnimLayer, curmotid, maxframe );
 
-		pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
-		//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, FbxNode::eDestinationPivot, 30.0, true );
+		//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
+		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);
+
 	}
 
 }
@@ -1368,26 +1370,42 @@ int WriteBindPose(FbxScene* pScene, CModel* pmodel)
 
 int WriteBindPose(FbxScene* pScene, int bvhflag)
 {
+	/*
+	FbxObject* FindMember	(	const FbxCriteria & 	pCriteria,
+	const char * 	pName
+	)		const
+	*/
+
 
 	FbxPose* lPose = FbxPose::Create(pScene,"BindPose0");
 	lPose->SetIsBindPose(true);
 
+
 	if( s_firstoutmot >= 0 ){
 		FbxAnimStack * lCurrentAnimationStack;
-		if (bvhflag == 0){
-			lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), s_ai->engmotname);
-		}
-		else{
-			lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), "bvh_animation_nyan");
-		}
+		//lCurrentAnimationStack = pScene->GetMember(FBX_TYPE(FbxAnimStack), s_ai->motid);
+		lCurrentAnimationStack = pScene->GetSrcObject<FbxAnimStack>(s_ai->motid);
+
+		//if (bvhflag == 0){
+		//	lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), s_ai->engmotname);
+		//}
+		//else{
+		//	lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), "bvh_animation_nyan");
+		//}
 		if (lCurrentAnimationStack == NULL)
 		{
 			_ASSERT( 0 );
 			return 1;
 		}
-		FbxAnimLayer * mCurrentAnimLayer;
-		mCurrentAnimLayer = lCurrentAnimationStack->GetMember(FBX_TYPE(FbxAnimLayer), 0);
-		pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
+		//FbxAnimLayer * mCurrentAnimLayer;
+		////mCurrentAnimLayer = lCurrentAnimationStack->GetMember(FBX_TYPE(FbxAnimLayer), 0);
+		//mCurrentAnimLayer = lCurrentAnimationStack->GetSrcObject<FbxAnimLayer>(0);
+		//pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
+		//
+
+		//gSceneContext->SetCurrentAnimStack(s_ai->motid);
+		//pScene->SetCurrentAnimStack(s_ai->motid);
+		pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
 	}else{
 		_ASSERT( 0 );
 	}
@@ -1725,7 +1743,9 @@ int AnimateMorph(FbxScene* pScene, CModel* pmodel)
 			_ASSERT( 0 );
 			return 1;
 		}
-		pmodel->GetScene()->GetEvaluator()->SetContext(lCurrentAnimationStack);
+		//pmodel->GetScene()->GetEvaluator()->SetContext(lCurrentAnimationStack);
+		pmodel->GetScene()->SetCurrentAnimationStack(lCurrentAnimationStack);
+
 
 
 		FbxAnimLayer* ldstAnimLayer = curai->animlayer;
