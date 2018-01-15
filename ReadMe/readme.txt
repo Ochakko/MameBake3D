@@ -135,13 +135,31 @@ D3DXVECTOR3 --> ChaVector3
 D3DXMATRIX --> ChaMatrix
 D3DXVec3 --> ChaVector3
 ChaMatrixA16 --> ChaMatrix
+D3DXQUATERNION --> CQuaternion
+LH( --> RH(
+
+ChaMatrixMultiplyの部分を　A = B * C;形式に書き換えます。
+ChaVector3Subtractの部分を　A = B - C;形式に書き換えます。
+
+CQuaternionRotationMatrixの部分は
+quaternion.RotationMatrix(matrix);形式に書き換えます。
+
+DXUTmisc.cpp のDXUTTrace関数のreturn文のところをreturn hr;にします。
+
+DXUT.cppのCreate関数の
+m_state.m_OverrideForceVsyncの値を= 0にします。
+
 
 そしてどうしてもD3DXが必要な部分はそのようにキャストします。
 例えばSetMatrix((D3DXMATRIX*)&srcchamatrix);のようにキャストします。
+(const D3DXMATRIX*)などのようにconstが必要な場所もありますがそれはVisual Studioのエラーを読んで対応してください。
 メンバ変数が同じなのでキャストしてもちゃんと動きます。
 
 
 ＃＃＃
+2018/01/16_1
+	readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
+
 2018/01/15_1
 	D3DXをChaVecCalcに更に置き換え。
 		DXUT部分にも適用。（適用の仕方はこのテキスト上方の外部ライブラリのソースの場所の部分に書きました）
