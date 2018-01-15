@@ -3,17 +3,18 @@
 
 //#include <d3dx9.h>
 #include <wchar.h>
-#include <Coef.h>
 #include <string>
 #include <map>
 
+#include <Coef.h>
 #include <OrgWindow.h>
+
 #include <ChaVecCalc.h>
+#include "btBulletDynamicsCommon.h"
+#include "LinearMath/btIDebugDraw.h"
 
 #include <fbxsdk.h>
 
-#include "btBulletDynamicsCommon.h"
-#include "LinearMath/btIDebugDraw.h"
 
 #include <UndoMotion.h>
 

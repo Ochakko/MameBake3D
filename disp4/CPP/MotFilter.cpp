@@ -16,7 +16,7 @@
 #include <Model.h>
 #include <MotionPoint.h>
 #include <Bone.h>
-#include <BoneProp.h>
+//#include <BoneProp.h>
 
 #include <FilterType.h>
 #include <FilterDlg.h>

@@ -70,7 +70,7 @@ typedef struct tag_pervert
 	int				indexno;//3äpÇÃèáî‘
 	int				vno;
 	int				uvnum;
-	D3DXVECTOR2		uv[2];
+	ChaVector2		uv[2];
 	int				vcolflag;
 	DWORD			vcol;
 	ChaVector3 smnormal;
@@ -117,7 +117,7 @@ typedef struct tag_pm3optv
 	int materialno;
 	ChaVector3 normal;
 	int				uvnum;
-	D3DXVECTOR2		uv[2];
+	ChaVector2		uv[2];
 	int				vcolflag;
 	DWORD		vcol;
 }PM3OPTV;

@@ -7,7 +7,7 @@
 #include <ChaVecCalc.h>
 #include <crtdbg.h>
 #include <fbxsdk.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 
 class CBone;
 class CBVHElem;

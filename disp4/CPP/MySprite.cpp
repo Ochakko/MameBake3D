@@ -50,7 +50,7 @@ int CMySprite::InitParams()
 	m_decl = 0;
 
 	m_pos = ChaVector3( 0.0f, 0.0f, 0.0f );
-	m_size = D3DXVECTOR2( 1.0f, 1.0f );
+	m_size = ChaVector2( 1.0f, 1.0f );
 	m_col = ChaVector4( 1.0f, 1.0f, 1.0f, 1.0f );
 
 	m_v[0].pos = ChaVector4( -1.0f, +1.0f, 0.0f, 1.0f );
@@ -58,10 +58,10 @@ int CMySprite::InitParams()
 	m_v[2].pos = ChaVector4( +1.0f, -1.0f, 0.0f, 1.0f );
 	m_v[3].pos = ChaVector4( -1.0f, -1.0f, 0.0f, 1.0f );
 
-	m_v[0].uv = D3DXVECTOR2( 0.0f, 0.0f );
-	m_v[1].uv = D3DXVECTOR2( 1.0f, 0.0f );
-	m_v[2].uv = D3DXVECTOR2( 1.0f, 1.0f );
-	m_v[3].uv = D3DXVECTOR2( 0.0f, 1.0f );
+	m_v[0].uv = ChaVector2( 0.0f, 0.0f );
+	m_v[1].uv = ChaVector2( 1.0f, 0.0f );
+	m_v[2].uv = ChaVector2( 1.0f, 1.0f );
+	m_v[3].uv = ChaVector2( 0.0f, 1.0f );
 
 	return 0;
 }
@@ -121,7 +121,7 @@ int CMySprite::SetPos( ChaVector3 srcpos )
 
 	return 0;
 }
-int CMySprite::SetSize( D3DXVECTOR2 srcsize )
+int CMySprite::SetSize( ChaVector2 srcsize )
 {
 	m_size = srcsize;
 

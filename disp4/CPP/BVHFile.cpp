@@ -15,7 +15,7 @@
 //#include <motionctrl.h>
 //#include <motioninfo.h>
 //#include <motionpoint2.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 
 //#include <treehandler2.h>
 //#include <treeelem2.h>
@@ -27,7 +27,7 @@
 #include <mqofile.h>
 //#include <bonefile.h>
 
-//#include <BoneProp.h>
+////#include <BoneProp.h>
 
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>

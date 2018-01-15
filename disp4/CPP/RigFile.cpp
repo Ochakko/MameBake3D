@@ -14,7 +14,7 @@
 
 #include <Model.h>
 #include <Bone.h>
-#include <BoneProp.h>
+//#include <BoneProp.h>
 
 #define DBGH
 #include <dbg.h>
@@ -22,6 +22,16 @@
 #include <vector>
 
 using namespace std;
+
+
+
+extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
+extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
+//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
+extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
+
+
+
 
 CRigFile::CRigFile()
 {

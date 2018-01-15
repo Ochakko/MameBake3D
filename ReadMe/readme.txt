@@ -110,7 +110,45 @@ F9の途中でF10を押すとラグドールします。
 
 
 
+＃＃＃　外部ライブラリのソースの場所
+
+まめばけ３Dでは
+外部ライブラリのソースをプロジェクトに追加しています。
+
+その部分について少しメモしておきます。
+
+まずBullet Physicsのソース
+AMDのサイトからBullet Physics 2.86をダウンロードします。
+解凍します。
+data, docs, examples, Extras, src, testのフォルダをまめばけ３Dのdisp4のフォルダの中にコピーします。
+そしてsrcのフォルダの名前をBTSRCにリネームします。
+
+
+次にDXUTのソースについて
+DXUTのソースはDirectXのSDKに入っています。
+DXUTのフォルダ（中にCoreフォルダとOptionalフォルダが入っている）をまめばけ３Dのdisp4のフォルダにコピーします。
+
+DXUTのD3DXの部分をChaVecCalcで置き換えます。
+手順としては
+以下の文字列置き換えをします。
+D3DXVECTOR3 --> ChaVector3
+D3DXMATRIX --> ChaMatrix
+D3DXVec3 --> ChaVector3
+ChaMatrixA16 --> ChaMatrix
+
+そしてどうしてもD3DXが必要な部分はそのようにキャストします。
+例えばSetMatrix((D3DXMATRIX*)&srcchamatrix);のようにキャストします。
+メンバ変数が同じなのでキャストしてもちゃんと動きます。
+
+
 ＃＃＃
+2018/01/15_1
+	D3DXをChaVecCalcに更に置き換え。
+		DXUT部分にも適用。（適用の仕方はこのテキスト上方の外部ライブラリのソースの場所の部分に書きました）
+
+	CQuaternionとBonePropはChaVecCalcに統合しました。
+
+
 2018/01/13_2
 	2018/01/13_1の更新のソースをGitHubにアップ
 

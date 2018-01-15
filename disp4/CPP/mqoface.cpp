@@ -43,7 +43,7 @@ void CMQOFace::InitParams()
 	m_materialno = -1;
 
 	m_hasuv = 0;
-	ZeroMemory( m_uv, sizeof( D3DXVECTOR2 ) * 4 );
+	ZeroMemory( m_uv, sizeof( ChaVector2 ) * 4 );
 
 	m_dirtyflag = 0;
 

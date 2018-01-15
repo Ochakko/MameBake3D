@@ -143,7 +143,7 @@ int sortfunc_material( void *context, const void *elem1, const void *elem2)
 }
 
 
-int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
+int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
 {
 	m_orgpointnum = pointnum;
 	m_orgfacenum = facenum;
@@ -274,7 +274,7 @@ int CPolyMesh4::SetTriFace( CMQOFace* faceptr, int* numptr )
 				dstface->SetUV( 0, srcface->GetUV( 0 ) );
 				dstface->SetUV( 1, srcface->GetUV( 1 ) );
 				dstface->SetUV( 2, srcface->GetUV( 2 ) );
-				dstface->SetUV( 3, D3DXVECTOR2( 0.0f, 0.0f ) );
+				dstface->SetUV( 3, ChaVector2( 0.0f, 0.0f ) );
 				dstface->SetVcolSetFlag( srcface->GetVcolSetFlag() );
 			}
 
@@ -350,7 +350,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 					curv->uv.y = 1.0f - curv->uv.y;//•\Ž¦—p
 
 				}else{
-					curv->uv = D3DXVECTOR2( 0.0f, 0.0f );
+					curv->uv = ChaVector2( 0.0f, 0.0f );
 				}
 
 				*( m_dispindex + setno * 3 + vcnt ) = setno * 3 + vcnt;
@@ -605,7 +605,7 @@ ChaVector3 CPolyMesh4::GetNormalByControlPointNo(int vno)
 		return ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 }
-D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
+ChaVector2 CPolyMesh4::GetUVByControlPointNo(int vno)
 {
 	/*
 	if (m_uvleng == (m_facenum * 3)){
@@ -632,7 +632,7 @@ D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
 		}
 		else{
 			_ASSERT(0);
-			return D3DXVECTOR2(0.0f, 0.0f);
+			return ChaVector2(0.0f, 0.0f);
 		}
 	}
 	else if (m_uvleng >= m_orgpointnum){
@@ -640,7 +640,7 @@ D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
 	}
 	else{
 		_ASSERT(0);
-		return D3DXVECTOR2(0.0f, 0.0f);
+		return ChaVector2(0.0f, 0.0f);
 	}
 	*/
 	if (m_uvleng == (m_facenum * 3)){
@@ -658,7 +658,7 @@ D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
 		}
 		else{
 			_ASSERT(0);
-			return D3DXVECTOR2(0.0f, 0.0f);
+			return ChaVector2(0.0f, 0.0f);
 		}
 	}
 	else if (m_uvleng >= m_orgpointnum){
@@ -666,7 +666,7 @@ D3DXVECTOR2 CPolyMesh4::GetUVByControlPointNo(int vno)
 	}
 	else{
 		_ASSERT(0);
-		return D3DXVECTOR2(0.0f, 0.0f);
+		return ChaVector2(0.0f, 0.0f);
 	}
 
 	//m_dispv = (PM3DISPV*)malloc(sizeof(PM3DISPV) * m_optleng);

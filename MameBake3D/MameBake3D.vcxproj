@@ -335,7 +335,6 @@
     <ClCompile Include="..\disp4\BTSRC\LinearMath\btVector3.cpp" />
     <ClCompile Include="..\disp4\CPP\BntFile.cpp" />
     <ClCompile Include="..\disp4\CPP\Bone.cpp" />
-    <ClCompile Include="..\disp4\CPP\BoneProp.cpp" />
     <ClCompile Include="..\disp4\CPP\BtObject.cpp" />
     <ClCompile Include="..\disp4\CPP\BVHelem.cpp" />
     <ClCompile Include="..\disp4\CPP\BVHFile.cpp" />
@@ -366,7 +365,6 @@
     <ClCompile Include="..\disp4\CPP\OrgWindow.cpp" />
     <ClCompile Include="..\disp4\CPP\polymesh3.cpp" />
     <ClCompile Include="..\disp4\CPP\polymesh4.cpp" />
-    <ClCompile Include="..\disp4\CPP\quaternion.cpp" />
     <ClCompile Include="..\disp4\CPP\RigFile.cpp" />
     <ClCompile Include="..\disp4\CPP\RigidElem.cpp" />
     <ClCompile Include="..\disp4\CPP\RigidElemFile.cpp" />
@@ -632,7 +630,6 @@
     <ClInclude Include="..\disp4\examples\MultiThreadedDemo\ParallelFor.h" />
     <ClInclude Include="..\disp4\INCLUDE\BntFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\Bone.h" />
-    <ClInclude Include="..\disp4\INCLUDE\BoneProp.h" />
     <ClInclude Include="..\disp4\INCLUDE\BtObject.h" />
     <ClInclude Include="..\disp4\INCLUDE\BVHelem.h" />
     <ClInclude Include="..\disp4\INCLUDE\BVHFile.h" />
@@ -667,7 +664,6 @@
     <ClInclude Include="..\disp4\INCLUDE\OrgWindow.h" />
     <ClInclude Include="..\disp4\INCLUDE\polymesh3.h" />
     <ClInclude Include="..\disp4\INCLUDE\polymesh4.h" />
-    <ClInclude Include="..\disp4\INCLUDE\quaternion.h" />
     <ClInclude Include="..\disp4\INCLUDE\RigFile.h" />
     <ClInclude Include="..\disp4\INCLUDE\RigidElem.h" />
     <ClInclude Include="..\disp4\INCLUDE\RigidElemFile.h" />

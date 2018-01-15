@@ -15,7 +15,7 @@ public:
 	int Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DCOLOR srccol );
 	int CreateDecl();
 	int SetPos( ChaVector3 srcpos );
-	int SetSize( D3DXVECTOR2 srcsize );
+	int SetSize( ChaVector2 srcsize );
 	int SetColor( ChaVector4 srccol );
 	int OnRender( LPDIRECT3DTEXTURE9 ptex = 0 );
 
@@ -31,7 +31,7 @@ private:
 	IDirect3DVertexDeclaration9* m_decl;
 
 	ChaVector3 m_pos;
-	D3DXVECTOR2 m_size;
+	ChaVector2 m_size;
 	ChaVector4 m_col;
 };
 

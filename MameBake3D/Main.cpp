@@ -86,7 +86,7 @@ MameBake3Dはデフォルトで相対IKです。
 
 #include <Model.h>
 #include "RMenuMain.h"
-#include <BoneProp.h>
+//#include <BoneProp.h>
 #include <lmtFile.h>
 #include <RigFile.h>
 #include <MotFilter.h>
@@ -104,6 +104,10 @@ double g_calcfps = 60.0;
 
 extern map<CModel*,int> g_bonecntmap;
 extern int gNumIslands;
+extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
+extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
+//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
+extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 
 
@@ -748,6 +752,7 @@ void InitApp();
 HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
+
 static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
 
@@ -951,7 +956,6 @@ static int RecalcBoneAxisX(CBone* srcbone);
 static int GetSymRootMode();
 
 
-static void XMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec);
 
 
 
@@ -1207,7 +1211,7 @@ void InitApp()
     g_bEnablePreshader = true;
 
     for( int i = 0; i < MAX_LIGHTS; i++ ){
-        g_LightControl[i].SetLightDirection( D3DXVECTOR3( sinf( D3DX_PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - D3DX_PI / 6 ),
+        g_LightControl[i].SetLightDirection( ChaVector3( sinf( D3DX_PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - D3DX_PI / 6 ),
                                                           0, -cosf( D3DX_PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - D3DX_PI / 6 ) ) );
 	}
 
@@ -1418,14 +1422,14 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 
     ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
     ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera.SetViewParams(&(vecEye.D3DX()), &(vecAt.D3DX()));
+	g_Camera.SetViewParams(&vecEye, &vecAt);
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
 
 
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	if( !g_texbank ){
 		g_texbank = new CTexBank( s_pdev );
@@ -2216,8 +2220,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.clickpos = ptCursor;
 		s_pickinfo.mousepos = ptCursor;
 		s_pickinfo.mousebefpos = ptCursor;
-		s_pickinfo.diffmouse = D3DXVECTOR2( 0.0f, 0.0f );
-		s_pickinfo.firstdiff = D3DXVECTOR2( 0.0f, 0.0f );
+		s_pickinfo.diffmouse = ChaVector2( 0.0f, 0.0f );
+		s_pickinfo.firstdiff = ChaVector2( 0.0f, 0.0f );
 
 		s_pickinfo.winx = (int)DXUTGetWindowWidth();
 		s_pickinfo.winy = (int)DXUTGetWindowHeight();
@@ -2366,7 +2370,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
-		g_Camera.SetViewParams(&(g_camEye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
 		s_camdist = ChaVector3Length( &diffv );
 
@@ -2563,13 +2567,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
 			ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
 
-			g_Camera.SetViewParams(&(neweye.D3DX()), &(newat.D3DX()));
+			g_Camera.SetViewParams(&neweye, &newat);
 
 
 
 			g_camEye = neweye;
 			g_camtargetpos = newat;
-			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = neweye - newat;
 			s_camdist = ChaVector3Length(&diffv);
@@ -2675,10 +2679,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 			ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-			g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+			g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 
 			g_camEye = neweye;
-			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = neweye - g_camtargetpos;
 			s_camdist = ChaVector3Length(&diffv);
@@ -2706,7 +2710,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaVector3 camvec = g_camEye - g_camtargetpos;
 			ChaVector3Normalize(&camvec, &camvec);
 			g_camEye = g_camtargetpos + camvec * s_camdist;
-			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		}
 
 	}else if( uMsg == WM_LBUTTONUP ){
@@ -2791,7 +2795,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//	ChaVector3 camvec = g_camEye - g_camtargetpos;
 		//	ChaVector3Normalize( &camvec, &camvec );
 		//	g_camEye = g_camtargetpos + s_camdist * camvec;
-		//	D3DXMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
+		//	ChaMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 		//}
 	}else{
 		g_Camera.HandleMessages( hWnd, uMsg, wParam, lParam );
@@ -4196,13 +4200,13 @@ CModel* OpenMQOFile()
 
     ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
     ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera.SetViewParams(&(vecEye.D3DX()), &(vecAt.D3DX()));
+	g_Camera.SetViewParams(&vecEye, &vecAt);
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
 
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	CallF( AddMotion( 0 ), return 0 );
 	InitCurMotion(0, 0);
@@ -4360,13 +4364,13 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
     ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
     ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera.SetViewParams(&(vecEye.D3DX()), &(vecAt.D3DX()));
+	g_Camera.SetViewParams(&vecEye, &vecAt);
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
 
 	s_camdist = fObjectRadius * 4.0f;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
@@ -6847,55 +6851,55 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z - camdist;
 
-		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 
 		g_camEye = neweye;
-		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	}else if( g_keybuf[ VK_F2 ] & 0x80 ){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z + camdist;
 
-		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 		g_camEye = neweye;
-		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F3] & 0x80){
 		neweye.x = g_camtargetpos.x - camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 		g_camEye = neweye;
-		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F4] & 0x80){
 		neweye.x = g_camtargetpos.x + camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 		g_camEye = neweye;
-		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F5] & 0x80){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y + camdist;
 		neweye.z = g_camtargetpos.z + delta;
 
-		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 		g_camEye = neweye;
-		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F6] & 0x80){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y - camdist;
 		neweye.z = g_camtargetpos.z - delta;
 
-		g_Camera.SetViewParams(&(neweye.D3DX()), &(g_camtargetpos.D3DX()));
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 		g_camEye = neweye;
-		XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 
 	ChaVector3 diffv;
@@ -7687,7 +7691,7 @@ int SetSpAxisParams()
 		disppos.x = (float)( s_spaxis[spacnt].dispcenter.x ) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)( s_spaxis[spacnt].dispcenter.y ) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		D3DXVECTOR2 dispsize = D3DXVECTOR2( spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f );
+		ChaVector2 dispsize = ChaVector2( spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f );
 		CallF( s_spaxis[spacnt].sprite->SetPos( disppos ), return 1 );
 		CallF( s_spaxis[spacnt].sprite->SetSize( dispsize ), return 1 );
 	}
@@ -7720,7 +7724,7 @@ int SetSpCamParams()
 		disppos.x = (float)(s_spcam[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spcam[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+		ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
 		CallF(s_spcam[spacnt].sprite->SetPos(disppos), return 1);
 		CallF(s_spcam[spacnt].sprite->SetSize(dispsize), return 1);
 	}
@@ -7748,7 +7752,7 @@ int SetSpRigParams()
 	disppos.x = (float)(s_sprig[0].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_sprig[0].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
-	D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+	ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
 	CallF(s_sprig[0].sprite->SetPos(disppos), return 1);
 	CallF(s_sprig[0].sprite->SetSize(dispsize), return 1);
 	CallF(s_sprig[1].sprite->SetPos(disppos), return 1);
@@ -7775,7 +7779,7 @@ int SetSpBtParams()
 	disppos.x = (float)(s_spbt.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_spbt.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
-	D3DXVECTOR2 dispsize = D3DXVECTOR2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+	ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
 	CallF(s_spbt.sprite->SetPos(disppos), return 1);
 	CallF(s_spbt.sprite->SetSize(dispsize), return 1);
 
@@ -7959,7 +7963,7 @@ int SetSelectState()
 	pickinfo.clickpos = ptCursor;
 	pickinfo.mousepos = ptCursor;
 	pickinfo.mousebefpos = ptCursor;
-	pickinfo.diffmouse = D3DXVECTOR2( 0.0f, 0.0f );
+	pickinfo.diffmouse = ChaVector2( 0.0f, 0.0f );
 
 	pickinfo.winx = (int)DXUTGetWindowWidth();
 	pickinfo.winy = (int)DXUTGetWindowHeight();
@@ -11668,7 +11672,7 @@ int OnRenderSetShaderConst()
 {
 	HRESULT hr;
 
-	D3DXVECTOR3 vLightDir[MAX_LIGHTS];
+	ChaVector3 vLightDir[MAX_LIGHTS];
 	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
@@ -11679,7 +11683,7 @@ int OnRenderSetShaderConst()
 	ChaVector3 lightdir0, nlightdir0;
 	lightdir0 = g_camEye;
 	ChaVector3Normalize(&nlightdir0, &lightdir0);
-	g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
+	g_LightControl[0].SetLightDirection(nlightdir0);
 
 	// Render the light arrow so the user can visually see the light dir
 	for (int i = 0; i < g_nNumActiveLights; i++)
@@ -12371,8 +12375,8 @@ int BoneRClick(int srcboneno)
 		s_pickinfo.clickpos = ptCursor;
 		s_pickinfo.mousepos = ptCursor;
 		s_pickinfo.mousebefpos = ptCursor;
-		s_pickinfo.diffmouse = D3DXVECTOR2(0.0f, 0.0f);
-		s_pickinfo.firstdiff = D3DXVECTOR2(0.0f, 0.0f);
+		s_pickinfo.diffmouse = ChaVector2(0.0f, 0.0f);
+		s_pickinfo.firstdiff = ChaVector2(0.0f, 0.0f);
 
 		s_pickinfo.winx = (int)DXUTGetWindowWidth();
 		s_pickinfo.winy = (int)DXUTGetWindowHeight();
@@ -12799,9 +12803,9 @@ void AutoCameraTarget()
 		_ASSERT(curbone);
 		if (curbone){
 			g_camtargetpos = curbone->GetChildWorld();
-			g_Camera.SetViewParams(&(g_camEye.D3DX()), &(g_camtargetpos.D3DX()));
+			g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
 
-			XMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
 			s_camdist = ChaVector3Length(&diffv);
@@ -12809,17 +12813,4 @@ void AutoCameraTarget()
 	}
 }
 
-
-void XMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec)
-{
-	//とりあえずDirectX9で使えるようにしておく。
-
-#ifdef CONVD3DX9
-	D3DXMATRIX tempview;
-	D3DXMatrixLookAtRH(&tempview, &(camEye->D3DX()), &(camtar->D3DX()), &(camUpVec->D3DX()));
-	*dstviewmat = tempview;
-#else
-	_ASSERT(0);
-#endif
-}
 

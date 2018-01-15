@@ -1,10 +1,13 @@
 #ifndef USERCOEFH
 #define USERCOEFH
 
+
+
 #ifndef COEFH
-//#include <d3dx9.h>
-#include <ChaVecCalc.h>
+#include <d3dx9.h>
 #endif
+
+
 
 #define PI          3.14159265358979323846f
 #define	PAI			3.14159265359
@@ -21,6 +24,8 @@
 
 //#define MAXBONENUM	81
 #define MAXCLUSTERNUM	70
+
+
 
 enum {
 	INDX,
@@ -125,14 +130,6 @@ enum {
 };
 
 
-typedef struct tag_rpselem
-{
-	int framecnt;
-	int skelno;
-	float confidence;
-	ChaVector3 pos;
-	int twistflag;
-}RPSELEM;
 
 typedef struct tag_tselem
 {

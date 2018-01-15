@@ -2,18 +2,20 @@
 #define BONEH
 
 //#include <d3dx9.h>
-#include <Coef.h>
-#include <MotionPoint.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 
 #include <fbxsdk.h>
 
 #include <map>
 #include <string>
 
-#include <orgwindow.h>
 #include <Coef.h>
+
+#include <orgwindow.h>
+
 #include <ChaVecCalc.h>
+
+#include <MotionPoint.h>
 
 class CMQOFace;
 class CMotionPoint;

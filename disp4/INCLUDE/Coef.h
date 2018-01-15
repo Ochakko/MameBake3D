@@ -1,8 +1,7 @@
 #ifndef COEFH
 #define		COEFH
 
-//#include <D3DX9.h>
-#include <ChaVecCalc.h>
+#include <D3DX9.h>
 
 #include <usercoef.h>
 
@@ -262,30 +261,6 @@ enum {
 	SPR_CAM_MAX
 };
 
-typedef struct tag_pickinfo
-{
-	int buttonflag;//WM_LBUTTONDOWN-->PICK_L, WM_RBUTTONDOWN-->PICK_R, WM_MBUTTONDOWN-->PICK_M。押していないとき-->PICK_NONE。
-	//以下、buttonflagがPICK_NONE以外の時に意味を持つ。
-	POINT mousepos;
-	POINT mousebefpos;
-	POINT clickpos;
-	D3DXVECTOR2 diffmouse;
-	D3DXVECTOR2 firstdiff;
-	int winx;
-	int winy;
-	int pickrange;
-	int pickobjno;
-	ChaVector3 objscreen;
-	ChaVector3 objworld;
-}PICKINFO;
-
-typedef struct tag_cpmot
-{
-	int boneno;
-	double frame;
-	ChaVector3 eul;
-	ChaVector3 tra;
-}CPMOT;
 
 typedef struct tag_motinfo
 {
@@ -299,11 +274,6 @@ typedef struct tag_motinfo
 	int loopflag;
 }MOTINFO;
 
-typedef struct tag_texv
-{
-	ChaVector3 pos;
-	D3DXVECTOR2 uv;
-}TEXV;
 
 #define INFSCOPEMAX	10
 #define INFNUMMAX	4
@@ -467,69 +437,13 @@ typedef struct tag_tlvertex {
 	float tex[2];
 } TLVERTEX;
 
-typedef struct tag_spritev {
-	ChaVector4 pos;
-	D3DXVECTOR2 uv;
-} SPRITEV;
-
-
-typedef struct tag_verface
-{
-	int			faceno;
-	int			orgfaceno;
-	int			materialno;
-	ChaVector3	facenormal;
-}PERFACE;
-
-typedef struct tag_pervert
-{
-	int				indexno;//3角の順番
-	int				vno;
-	int				uvnum;
-	D3DXVECTOR2		uv[2];
-	int				vcolflag;
-	DWORD			vcol;
-	ChaVector3 smnormal;
-
-	int				createflag;
-		//頂点を作成しない場合０
-		//UV, VCOL, Materialnoの違いにより作成する場合は１を足す
-		//normalにより作成する場合は２を足す
-
-}PERVERT;
-
 typedef struct tag_n3sm
 {
 	int smfacenum;
 	void** ppsmface;//N3Pのポインタの配列
 }N3SM;
 
-typedef struct tag_n3p
-{
-	PERFACE*	perface;
-	PERVERT*	pervert;
-	N3SM*		n3sm;
-}N3P;//n*3
 
-typedef struct tag_pm3optv
-{
-	int orgvno;
-	int orgfaceno;
-	ChaVector3 pos;
-	int materialno;
-	ChaVector3 normal;
-	int				uvnum;
-	D3DXVECTOR2		uv[2];
-	int				vcolflag;
-	DWORD			vcol;
-}PM3OPTV;
-
-typedef struct tag_pm3dispv
-{
-	ChaVector4		pos;
-	ChaVector3		normal;
-	D3DXVECTOR2		uv;
-}PM3DISPV;
 
 typedef struct tag_pm3inf
 {
@@ -537,19 +451,6 @@ typedef struct tag_pm3inf
 	float boneindex[4];
 }PM3INF;
 
-typedef struct tag_extlinev
-{
-	ChaVector4 pos;
-}EXTLINEV;
-
-
-typedef struct tag_modelbound
-{
-	ChaVector3 min;
-	ChaVector3 max;
-	ChaVector3 center;
-	float		r;
-}MODELBOUND;
 
 // error code
 // d3dapp.h から移動。
@@ -653,6 +554,7 @@ enum _motiontype {
 
 	MOTIONTYPEMAX
 };
+
 
 
 ////////////////////

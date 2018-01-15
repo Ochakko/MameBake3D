@@ -14,11 +14,11 @@
 
 #include <Model.h>
 #include <Bone.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 #include <RigidElem.h>
 
 
-#include <BoneProp.h>
+//#include <BoneProp.h>
 
 #define DBGH
 #include <dbg.h>
@@ -244,9 +244,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 	ChaVector3 centerA, parposA, chilposA, aftparposA, aftchilposA;
 	parposA = m_bone->GetJointFPos();
-	D3DVec3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
+	ChaVector3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
 	chilposA = m_endbone->GetJointFPos();
-	D3DVec3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
+	ChaVector3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
 	ChaVector3 diffA = chilposA - parposA;
 	m_boneleng = ChaVector3Length(&diffA);
 
@@ -362,7 +362,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	
 	m_firstTransform = worldtra;
 	m_firstTransformMat = worldmat;//bto->GetRigidBody()‚ÌCreateBtObjectŽž‚ÌWorldTransform->getBasis
-	m_firstTransformMatX = ChaMatrixFromBtTransform(worldtra.getBasis(), worldtra.getOrigin());
+	m_firstTransformMatX = ChaMatrixFromBtTransform(&worldtra.getBasis(), &worldtra.getOrigin());
 
 	btVector3 tmpcol[3];
 	int colno;
@@ -407,18 +407,18 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 
 	ChaVector3 parposA, chilposA, aftparposA, aftchilposA;
 	parposA = curbto->m_bone->GetJointFPos();
-	D3DVec3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
+	ChaVector3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
 	chilposA = curbto->m_endbone->GetJointFPos();
-	D3DVec3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2() );
+	ChaVector3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2() );
 
-	D3DXVECTOR2 dirxy, ndirxy;
+	ChaVector2 dirxy, ndirxy;
 	dirxy.x = aftchilposA.x - aftparposA.x;
 	dirxy.y = aftchilposA.y - aftparposA.y;
 	float lengxy = D3DXVec2Length( &dirxy );
 	D3DXVec2Normalize( &ndirxy, &dirxy );
 
 
-	D3DXVECTOR2 basex( 1.0f, 0.0f );
+	ChaVector2 basex( 1.0f, 0.0f );
 	float dotx;
 	dotx = D3DXVec2Dot( &basex, &ndirxy );
 	if( dotx > 1.0f ){
@@ -496,9 +496,9 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 
 	ChaVector3 parposA, chilposA, aftparposA, aftchilposA;
 	parposA = curbto->m_bone->GetJointFPos();
-	D3DVec3TransformCoord(&aftparposA, &parposA, &curbto->m_bone->GetStartMat2());
+	ChaVector3TransformCoord(&aftparposA, &parposA, &curbto->m_bone->GetStartMat2());
 	chilposA = curbto->m_endbone->GetJointFPos();
-	D3DVec3TransformCoord(&aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2());
+	ChaVector3TransformCoord(&aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2());
 	if (chilflag == 0){
 		m_curpivot = invtra(btVector3(aftchilposA.x, aftchilposA.y, aftchilposA.z));
 		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
@@ -1067,7 +1067,7 @@ int CBtObject::CreatePhysicsPosConstraint()
 	else{
 		endmat = m_endbone->GetCurMp().GetWorldMat();
 	}
-	D3DVec3TransformCoord(&aftendpos, &endpos, &endmat);
+	ChaVector3TransformCoord(&aftendpos, &endpos, &endmat);
 
 	btVector3 btv(btScalar(aftendpos.x), btScalar(aftendpos.y), btScalar(aftendpos.z));
 

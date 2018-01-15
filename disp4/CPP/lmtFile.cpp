@@ -17,7 +17,7 @@
 #include <mqoobject.h>
 #include <Bone.h>
 
-#include <BoneProp.h>
+//#include <BoneProp.h>
 
 #define DBGH
 #include <dbg.h>

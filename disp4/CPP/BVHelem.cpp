@@ -12,8 +12,8 @@
 #include <bvhelem.h>
 #include <crtdbg.h>
 
-#include <quaternion.h>
-#include <BoneProp.h>
+//#include <quaternion.h>
+//#include <BoneProp.h>
 //#include <D3DX9.h>
 #include <ChaVecCalc.h>
 

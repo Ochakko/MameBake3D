@@ -63,7 +63,7 @@ typedef struct tag_bntvertex
 /*
 	ChaVector4		pos;
 	ChaVector3		normal;
-	D3DXVECTOR2		uv;
+	ChaVector2		uv;
 */
 	PM3DISPV dispv;
 /*

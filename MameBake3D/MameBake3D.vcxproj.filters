@@ -129,9 +129,6 @@
     <ClCompile Include="..\disp4\CPP\polymesh4.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
-    <ClCompile Include="..\disp4\CPP\quaternion.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
     <ClCompile Include="..\disp4\CPP\RigidElem.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
@@ -178,9 +175,6 @@
       <Filter>Bullet</Filter>
     </ClCompile>
     <ClCompile Include="..\disp4\CPP\EditRange.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
-    <ClCompile Include="..\disp4\CPP\BoneProp.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
     <ClCompile Include="RMenuMain.cpp">
@@ -761,9 +755,6 @@
     <ClInclude Include="..\disp4\INCLUDE\polymesh4.h">
       <Filter>disp4</Filter>
     </ClInclude>
-    <ClInclude Include="..\disp4\INCLUDE\quaternion.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
     <ClInclude Include="..\disp4\INCLUDE\RigidElem.h">
       <Filter>disp4</Filter>
     </ClInclude>
@@ -813,9 +804,6 @@
       <Filter>Bullet</Filter>
     </ClInclude>
     <ClInclude Include="..\disp4\INCLUDE\EditRange.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
-    <ClInclude Include="..\disp4\INCLUDE\BoneProp.h">
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="RMenuMain.h">

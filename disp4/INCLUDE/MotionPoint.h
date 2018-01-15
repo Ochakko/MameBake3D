@@ -3,7 +3,7 @@
 
 #include <coef.h>
 #include <ChaVecCalc.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 
 class CBone;
 

@@ -7,6 +7,8 @@
 #include <coef.h>
 //#include <basedat.h>
 
+#include <ChaVecCalc.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -77,14 +79,14 @@ public:
 		m_hasuv = srcval;
 	};
 
-	D3DXVECTOR2 GetUV( int srci ){
+	ChaVector2 GetUV( int srci ){
 		if( (srci >= 0) && (srci < 4) ){
 			return m_uv[ srci ];
 		}else{
-			return D3DXVECTOR2( 0.0f, 0.0f );
+			return ChaVector2( 0.0f, 0.0f );
 		}
 	};
-	void SetUV( int srci, D3DXVECTOR2 srcval ){
+	void SetUV( int srci, ChaVector2 srcval ){
 		if( (srci >= 0) && (srci < 4) ){
 			m_uv[ srci ] = srcval;
 		}
@@ -170,7 +172,7 @@ private:
 	int m_materialno;
 	
 	int m_hasuv;
-	D3DXVECTOR2 m_uv[4];
+	ChaVector2 m_uv[4];
 
 	__int64 m_col[4];
 	int m_vcolsetflag;

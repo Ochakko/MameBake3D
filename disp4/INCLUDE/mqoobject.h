@@ -243,10 +243,10 @@ public:
 		m_uvleng = srcval;
 	};
 
-	D3DXVECTOR2* GetUVBuf(){
+	ChaVector2* GetUVBuf(){
 		return m_uvbuf;
 	};
-	void SetUVBuf( D3DXVECTOR2* srcval ){
+	void SetUVBuf( ChaVector2* srcval ){
 		m_uvbuf = srcval;
 	};
 
@@ -328,7 +328,7 @@ private:
 	int m_normalleng;
 	ChaVector3* m_normal;
 	int m_uvleng;
-	D3DXVECTOR2* m_uvbuf;
+	ChaVector2* m_uvbuf;
 	std::map<int, CMQOMaterial*> m_material;
 	std::vector<CBone*> m_cluster;//’†g‚ÌCBone*‚ÍŠO•”ƒƒ‚ƒŠ
 

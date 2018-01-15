@@ -13,7 +13,7 @@
 #include <XMLIO.h>
 #include <Model.h>
 #include <Bone.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 
 #define DBGH
 #include <dbg.h>

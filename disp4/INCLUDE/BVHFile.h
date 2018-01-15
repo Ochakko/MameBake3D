@@ -2,13 +2,15 @@
 #define BVHFILEH
 
 #include <coef.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 //#include <basedat.h>
 //#include <matrix2.h>
 //#include "motionpoint2.h"
 
 
+
 class CBVHElem;
+class CQuaternion;
 
 //class CTreeHandler2;
 //class CShdHandler;

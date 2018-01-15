@@ -2,7 +2,7 @@
 #include <MotionPoint.h>
 #include <Bone.h>
 
-#include <BoneProp.h>
+//#include <BoneProp.h>
 
 #include <math.h>
 #include <crtdbg.h>

@@ -201,7 +201,7 @@ int CGColiFile::ReadColiID( XMLIOBUF* xmlbuf )
 
 	m_bpw->m_gplaneh = gh;
 	m_bpw->m_gdisph = gdisph;
-	m_bpw->m_gplanesize = D3DXVECTOR2( sizex, sizez );
+	m_bpw->m_gplanesize = ChaVector2( sizex, sizez );
 	m_bpw->m_gplanedisp = dflag;
 	m_bpw->m_restitution = rest;
 	m_bpw->m_friction = fric;

@@ -39,7 +39,7 @@
 #include <MySprite.h>
 
 #include <MotionPoint.h>
-#include <quaternion.h>
+//#include <quaternion.h>
 #include <ChaVecCalc.h>
 
 #include <Collision.h>
@@ -63,7 +63,7 @@
 
 #include <collision.h>
 #include <EditRange.h>
-#include <BoneProp.h>
+//#include <BoneProp.h>
 
 
 using namespace OrgWinGUI;
@@ -107,6 +107,7 @@ static int IsValidCluster( FbxCluster* pcluster );
 static FbxAMatrix GetGlobalPosition(FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = NULL );
 static FbxAMatrix GetPoseMatrix(FbxPose* pPose, int pNodeIndex);
 static FbxAMatrix GetGeometry(FbxNode* pNode);
+
 
 static int s_setrigidflag = 0;
 static DWORD s_rigidflag = 0;
@@ -1896,8 +1897,8 @@ int CModel::CalcMouseLocalRay( PICKINFO* pickinfo, ChaVector3* startptr, ChaVect
 
 	ChaVector3 startlocal, endlocal;
 
-	D3DVec3TransformCoord( &startlocal, &startsc, &invmWVP );
-	D3DVec3TransformCoord( &endlocal, &endsc, &invmWVP );
+	ChaVector3TransformCoord( &startlocal, &startsc, &invmWVP );
+	ChaVector3TransformCoord( &endlocal, &endsc, &invmWVP );
 
 	ChaVector3 dirlocal = endlocal - startlocal;
 	ChaVector3Normalize( &dirlocal, &dirlocal );
@@ -1945,9 +1946,9 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 			}
 		}
 
-		D3DVec3TransformCoord(worldptr, &curbone->GetJointFPos(), &mW);
+		ChaVector3TransformCoord(worldptr, &curbone->GetJointFPos(), &mW);
 		mWVP = mW * m_matVP;
-		D3DVec3TransformCoord(screenptr, &curbone->GetJointFPos(), &mWVP);
+		ChaVector3TransformCoord(screenptr, &curbone->GetJointFPos(), &mWVP);
 
 		float fw, fh;
 		fw = (float)winx / 2.0f;
@@ -2429,7 +2430,7 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 				DbgOut(L"GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
 				int size = UVNum;
 				newobj->SetUVLeng(size);
-				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
+				newobj->SetUVBuf((ChaVector2*)malloc(sizeof(ChaVector2) * size));
 
 				// 直接取得
 				//for (int i = 0; i < size; ++i) {
@@ -2445,7 +2446,7 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 				DbgOut(L"Check !!! GetFBXMesh : %s : UV : refMode eIndexToDirect\r\n", wname);
 				int size = indexNum;
 				newobj->SetUVLeng(size);
-				newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
+				newobj->SetUVBuf((ChaVector2*)malloc(sizeof(ChaVector2) * size));
 
 				// インデックスから取得
 				//for (int i = 0; i < size; ++i) {
@@ -2468,10 +2469,10 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 				DbgOut(L"check !!! GetFBXMesh : %s : UV : refMode eDirect\r\n", wname);
 				int size = UVNum;
 				newobj->SetUVLeng(size);
-				D3DXVECTOR2* newuv = (D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size);
+				ChaVector2* newuv = (ChaVector2*)malloc(sizeof(ChaVector2) * size);
 				_ASSERT(newuv);
 				newobj->SetUVBuf(newuv);
-				//newobj->SetUVBuf((D3DXVECTOR2*)malloc(sizeof(D3DXVECTOR2) * size));
+				//newobj->SetUVBuf((ChaVector2*)malloc(sizeof(ChaVector2) * size));
 
 				// 直接取得
 				//for (int i = 0; i < size; ++i) {
@@ -3151,7 +3152,7 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 						ChaMatrix calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
 						ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
 						ChaVector3 tmppos;
-						D3DVec3TransformCoord(&tmppos, &zeropos, &calcmat);
+						ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
 						curbone->SetOldJointFPos(tmppos);
 					}
 					
@@ -3402,11 +3403,11 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 						if (renderflag == 1){
 
 							ChaVector3 aftbonepos;
-							D3DVec3TransformCoord(&aftbonepos, &boneptr->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
+							ChaVector3TransformCoord(&aftbonepos, &boneptr->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
 
 							ChaVector3 aftchilpos;
-							//D3DVec3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
-							D3DVec3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
+							//ChaVector3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(chilbone->GetCurMp().GetWorldMat()));
+							ChaVector3TransformCoord(&aftchilpos, &chilbone->GetJointFPos(), &(boneptr->GetCurMp().GetWorldMat()));
 
 
 							boneptr->CalcAxisMatZ(&aftbonepos, &aftchilpos);
@@ -3533,23 +3534,23 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 					ChaVector3 scpos;
 					ChaVector3 firstpos = boneptr->GetJointFPos();
 
-					D3DVec3TransformCoord(&scpos, &firstpos, &transmat);
+					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 					scpos.z = 0.0f;
 					bcircleptr->SetPos(scpos);
-					D3DXVECTOR2 bsize;
+					ChaVector2 bsize;
 					if (boneptr->GetSelectFlag() & 2){
 						bcircleptr->SetColor(ChaVector4(0.0f, 0.0f, 1.0f, 0.7f));
-						bsize = D3DXVECTOR2(0.050f, 0.050f);
+						bsize = ChaVector2(0.050f, 0.050f);
 						bcircleptr->SetSize(bsize);
 					}
 					else if (boneptr->GetSelectFlag() & 1){
 						bcircleptr->SetColor(ChaVector4(1.0f, 0.0f, 0.0f, 0.7f));
-						bsize = D3DXVECTOR2(0.025f, 0.025f);
+						bsize = ChaVector2(0.025f, 0.025f);
 						bcircleptr->SetSize(bsize);
 					}
 					else{
 						bcircleptr->SetColor(ChaVector4(1.0f, 1.0f, 1.0f, 0.7f));
-						bsize = D3DXVECTOR2(0.025f, 0.025f);
+						bsize = ChaVector2(0.025f, 0.025f);
 						bcircleptr->SetSize(bsize);
 					}
 					CallF(bcircleptr->OnRender(), return 1);
@@ -3624,29 +3625,29 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 				//ChaVector3 scpos;
 				//ChaVector3 firstpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				//
-				//D3DVec3TransformCoord(&scpos, &firstpos, &transmat);
+				//ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 
 				ChaMatrix transmat = srcbone->GetBtMat() * m_matVP;
 				ChaVector3 firstpos = chilbone->GetJointFPos();
 				ChaVector3 scpos;
-				D3DVec3TransformCoord(&scpos, &firstpos, &transmat);
+				ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 				scpos.z = 0.0f;
 
 				bcircleptr->SetPos(scpos);
-				D3DXVECTOR2 bsize;
+				ChaVector2 bsize;
 				if (chilbone->GetSelectFlag() & 2){
 					bcircleptr->SetColor(ChaVector4(0.0f, 0.0f, 1.0f, 0.7f));
-					bsize = D3DXVECTOR2(0.050f, 0.050f);
+					bsize = ChaVector2(0.050f, 0.050f);
 					bcircleptr->SetSize(bsize);
 				}
 				else if (chilbone->GetSelectFlag() & 1){
 					bcircleptr->SetColor(ChaVector4(1.0f, 0.0f, 0.0f, 0.7f));
-					bsize = D3DXVECTOR2(0.025f, 0.025f);
+					bsize = ChaVector2(0.025f, 0.025f);
 					bcircleptr->SetSize(bsize);
 				}
 				else{
 					bcircleptr->SetColor(ChaVector4(0.8f, 0.8f, 0.8f, 0.7f));
-					bsize = D3DXVECTOR2(0.025f, 0.025f);
+					bsize = ChaVector2(0.025f, 0.025f);
 					bcircleptr->SetSize(bsize);
 				}
 				CallF(bcircleptr->OnRender(), return);
@@ -3755,7 +3756,7 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 
 	ChaVector3 zeropos( 0.0f, 0.0f, 0.0f );
 	ChaVector3 tmppos;
-	D3DVec3TransformCoord( &tmppos, &zeropos, &(curbone->GetNodeMat()) );
+	ChaVector3TransformCoord( &tmppos, &zeropos, &(curbone->GetNodeMat()) );
 	curbone->SetJointWPos( tmppos );
 	curbone->SetJointFPos( tmppos );
 
@@ -4102,7 +4103,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 							//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
 
 							ChaVector3 aftbonepos;
-							D3DVec3TransformCoord(&aftbonepos, &srcbone->GetJointFPos(), &(srcbone->GetCurMp().GetWorldMat()));
+							ChaVector3TransformCoord(&aftbonepos, &srcbone->GetJointFPos(), &(srcbone->GetCurMp().GetWorldMat()));
 
 							dofC->setLinearLowerLimit(btVector3(aftbonepos.x, aftbonepos.y, aftbonepos.z));
 							dofC->setLinearUpperLimit(btVector3(aftbonepos.x, aftbonepos.y, aftbonepos.z));
@@ -5899,9 +5900,9 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 			CBone* parbone = curbone->GetParent();
 			if( parbone && (curbone->GetJointFPos() != parbone->GetJointFPos()) ){
 				ChaVector3 parworld, chilworld;
-				//D3DVec3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
-				D3DVec3TransformCoord( &parworld, &(parbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()) );
-				D3DVec3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()));
+				//ChaVector3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
+				ChaVector3TransformCoord( &parworld, &(parbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()) );
+				ChaVector3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()));
 
 				ChaVector3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -6089,8 +6090,8 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 			if (childbone->GetJointFPos() != parbone->GetJointFPos()){
 				ChaVector3 parworld, chilworld;
-				D3DVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-				D3DVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+				ChaVector3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
 
 				ChaVector3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -6191,9 +6192,9 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					ChaVector3 newparpos, newchilpos;
 					ChaVector3 jointfpos;
 					jointfpos = parbone->GetJointFPos();
-					D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+					ChaVector3TransformCoord(&newparpos, &jointfpos, &newbtmat);
 					jointfpos = childbone->GetJointFPos();
-					D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+					ChaVector3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
 
 					ChaVector3 rigidcenter = (newparpos + newchilpos) * 0.5f;
 
@@ -6256,7 +6257,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									//btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
 									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
 									ChaMatrix newlocalmat;
-									newlocalmat = ChaMatrixFromBtMat3x3(worldtra.getBasis()) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+									newlocalmat = ChaMatrixFromBtMat3x3(&worldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 									ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat;
 
 
@@ -6428,7 +6429,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
 
 							ChaMatrix curlocalmat;
-							curlocalmat = ChaMatrixFromBtMat3x3(curworldtra.getBasis()) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+							curlocalmat = ChaMatrixFromBtMat3x3(&curworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 							//ChaMatrix eulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * curlocalmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
 							ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat;
 
@@ -6493,11 +6494,11 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							CQuaternion contraArot;
 							CQuaternion contrainvArot;
 							CQuaternion firstworldrot;
-							contraArot.MakeFromBtMat3x3(contraA.getBasis());
-							contrainvArot.MakeFromBtMat3x3(contraA.getBasis().inverse());
-							firstworldrot.MakeFromBtMat3x3(firstworldtra.getBasis());
+							contraArot = QMakeFromBtMat3x3(&contraA.getBasis());
+							contrainvArot = QMakeFromBtMat3x3(&contraA.getBasis().inverse());
+							firstworldrot = QMakeFromBtMat3x3(&firstworldtra.getBasis());
 							CQuaternion parrotq;
-							parrotq.MakeFromBtMat3x3(parworldtra.getBasis());
+							parrotq = QMakeFromBtMat3x3(&parworldtra.getBasis());
 							CQuaternion invparrotq;
 							parrotq.inv(&invparrotq);
 
@@ -6509,7 +6510,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 
 							ChaMatrix newlocalrotmat;
-							newlocalrotmat = ChaMatrixFromBtMat3x3(newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
+							newlocalrotmat = ChaMatrixFromBtMat3x3(&newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 
 							ChaMatrix invcurlocalmat;
 							ChaMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
@@ -6551,9 +6552,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaVector3 newparpos, newchilpos;
 							ChaVector3 jointfpos;
 							jointfpos = parbone->GetJointFPos();
-							D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+							ChaVector3TransformCoord(&newparpos, &jointfpos, &newbtmat);
 							jointfpos = childbone->GetJointFPos();
-							D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+							ChaVector3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
 							ChaVector3 rigidcenter = (newparpos + newchilpos) * 0.5f;
 
 							newworldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
@@ -6752,8 +6753,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //
 //
 //			ChaVector3 parworld, chilworld;
-//			D3DVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-//			D3DVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+//			ChaVector3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+//			ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
 //
 //
 //			ChaMatrix newbtmat;
@@ -6787,9 +6788,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //			ChaVector3 newparpos, newchilpos;
 //			ChaVector3 jointfpos;
 //			jointfpos = parbone->GetJointFPos();
-//			D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+//			ChaVector3TransformCoord(&newparpos, &jointfpos, &newbtmat);
 //			jointfpos = childbone->GetJointFPos();
-//			D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+//			ChaVector3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
 //
 //			ChaVector3 rigidcenter = (newparpos + newchilpos) * 0.5f;
 //
@@ -6856,7 +6857,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //
 //							//Q2EulZYXbtのテスト　以下8行
 //							CQuaternion eulq;
-//							eulq.MakeFromBtMat3x3(eulmat);
+//							eulq = QMakeFromBtMat3x3(eulmat);
 //							int needmodifyflag = 0;
 //							ChaVector3 testbefeul = ChaVector3(0.0f, 0.0f, 0.0f);
 //							ChaVector3 testeul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -7093,8 +7094,8 @@ int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, in
 
 								/*
 								ChaVector3 parworld, chilworld;
-								D3DVec3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-								D3DVec3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+								ChaVector3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+								ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
 
 								ChaMatrix newbtmat;
 								ChaVector3 rotcenter;// = m_childworld;
@@ -7127,9 +7128,9 @@ int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, in
 								ChaVector3 newparpos, newchilpos;
 								ChaVector3 jointfpos;
 								jointfpos = parbone->GetJointFPos();
-								D3DVec3TransformCoord(&newparpos, &jointfpos, &newbtmat);
+								ChaVector3TransformCoord(&newparpos, &jointfpos, &newbtmat);
 								jointfpos = childbone->GetJointFPos();
-								D3DVec3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
+								ChaVector3TransformCoord(&newchilpos, &jointfpos, &newbtmat);
 
 								ChaVector3 rigidcenter = (newparpos + newchilpos) * 0.5f;
 
@@ -7326,10 +7327,10 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 				pcurmp = lastpar->GetMotionPoint(curmotid, curframe);
 				if(pcurmp){
 					ChaVector3 orgpos;
-					D3DVec3TransformCoord( &orgpos, &(lastpar->GetJointFPos()), &(pcurmp->GetBefEditMat()) );
+					ChaVector3TransformCoord( &orgpos, &(lastpar->GetJointFPos()), &(pcurmp->GetBefEditMat()) );
 
 					ChaVector3 newpos;
-					D3DVec3TransformCoord( &newpos, &(lastpar->GetJointFPos()), &(pcurmp->GetWorldMat()) );
+					ChaVector3TransformCoord( &newpos, &(lastpar->GetJointFPos()), &(pcurmp->GetWorldMat()) );
 
 					ChaVector3 diffpos;
 					diffpos = orgpos - newpos;
@@ -7898,7 +7899,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	selectmat._43 = 0.0f;
 
 	axis0 = ChaVector3( 1.0f, 0.0f, 0.0f );
-	D3DVec3TransformCoord( &rotaxis, &axis0, &selectmat );
+	ChaVector3TransformCoord( &rotaxis, &axis0, &selectmat );
 	ChaVector3Normalize( &rotaxis, &rotaxis );
 	rotrad = delta / 10.0f * (float)PAI / 12.0f;
 
@@ -8046,17 +8047,17 @@ int CModel::FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int
 	ChaMatrix selectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
 
 	if (axiskind == 0){
-		D3DVec3TransformCoord(&basevec, &vecx, &selectmat);
+		ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
 	}
 	else if (axiskind == 1){
-		D3DVec3TransformCoord(&basevec, &vecy, &selectmat);
+		ChaVector3TransformCoord(&basevec, &vecy, &selectmat);
 	}
 	else if (axiskind == 2){
-		D3DVec3TransformCoord(&basevec, &vecz, &selectmat);
+		ChaVector3TransformCoord(&basevec, &vecz, &selectmat);
 	}
 	else{
 		_ASSERT(0);
-		D3DVec3TransformCoord(&basevec, &vecx, &selectmat);
+		ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
 	}
 
 	ChaVector3Normalize(&basevec, &basevec);

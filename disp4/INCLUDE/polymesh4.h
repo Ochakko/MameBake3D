@@ -23,7 +23,7 @@ public:
 	CPolyMesh4();
 	~CPolyMesh4();
 
-	int CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, D3DXVECTOR2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
+	int CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
 	
 	int ChkAlphaNum( map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
@@ -63,7 +63,7 @@ public:
 		return m_normal;
 	};
 
-	D3DXVECTOR2* GetOrgUV()
+	ChaVector2* GetOrgUV()
 	{
 		return m_uvbuf;
 	};
@@ -117,7 +117,7 @@ public:
 	};
 
 	ChaVector3 GetNormalByControlPointNo(int vno);
-	D3DXVECTOR2 GetUVByControlPointNo(int vno);
+	ChaVector2 GetUVByControlPointNo(int vno);
 
 private:
 	int m_orgpointnum;
@@ -146,7 +146,7 @@ private:
 	CMQOFace* m_mqoface;//外部メモリ
 	ChaVector3* m_pointbuf;//外部メモリ
 	ChaVector3* m_normal;//外部メモリ
-	D3DXVECTOR2* m_uvbuf;//外部メモリ
+	ChaVector2* m_uvbuf;//外部メモリ
 	CMQOFace* m_triface;
 
 	CHKALPHA chkalpha;
