@@ -56,7 +56,9 @@ public:
 	int GetColorrefAmbient( COLORREF* dstambient );
 	int GetColorrefEmissive( COLORREF* dstemissive );
 
-	int CreateTexture( WCHAR* dirname, int texpool = D3DPOOL_DEFAULT );
+	//int CreateTexture( WCHAR* dirname, int texpool = 0 );
+	int CreateTexture(WCHAR* dirname, int texpool = 0);//!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 private:
 	int InitParams();

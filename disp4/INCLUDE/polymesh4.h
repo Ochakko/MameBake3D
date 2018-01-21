@@ -32,7 +32,7 @@ public:
 	int UpdateMorphBuffer( ChaVector3* mpoint );
 
 	int DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist );
-	int SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist );
+	int SetPm3InfNoSkin( ID3D10Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist );
 
 private:
 	void InitParams();

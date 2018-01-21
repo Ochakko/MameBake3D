@@ -68,7 +68,7 @@ typedef struct tag_bntvertex
 	PM3DISPV dispv;
 /*
 	float weight[4];
-	float boneindex[4];
+	int boneindex[4];
 */
 	PM3INF inf;
 }BNTVERTEX;

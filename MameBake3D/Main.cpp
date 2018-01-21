@@ -97,7 +97,7 @@ typedef struct tag_spaxis
 	POINT dispcenter;
 }SPAXIS, SPCAM, SPELEM;
 
-int	g_numthread = 64;
+int	g_numthread = 3;
 double g_btcalccnt = 3.0;
 int g_dbgloadcnt = 0;
 double g_calcfps = 60.0;
@@ -109,10 +109,11 @@ extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
 //void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
 extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
+extern void DXUTSetOverrideSize(int srcw, int srch);
 
 
-//ChaMatrixA16 s_selectmat;//for display manipulator
-//ChaMatrixA16 s_ikselectmat;//for ik, fk
+//ChaMatrix s_selectmat;//for display manipulator
+//ChaMatrix s_ikselectmat;//for ik, fk
 ChaMatrix s_selectmat;//for display manipulator
 ChaMatrix s_ikselectmat;//for ik, fk
 bool g_selecttolastFlag = false;
@@ -263,8 +264,10 @@ static int s_filterindex = 1;
 static int s_mainwidth = 800;
 //static int s_mainheight = 820;
 static int s_mainheight = 600;
+static int s_bufwidth = 800;
+static int s_bufheight = 600;
 
-static LPDIRECT3DDEVICE9 s_pdev = 0;
+static ID3D10Device* s_pdev = 0;
 
 static CModel* s_model = NULL;
 static CModel* s_select = NULL;
@@ -281,11 +284,11 @@ static CMySprite* s_kinsprite = 0;
 static int s_fbxbunki = 1;
 
 
-//static ChaMatrixA16 s_matWorld;
-//static ChaMatrixA16 s_matProj;
-////static ChaMatrixA16 s_matW, s_matVP;
-//static ChaMatrixA16 s_matVP;
-//static ChaMatrixA16 s_matView;
+//static ChaMatrix s_matWorld;
+//static ChaMatrix s_matProj;
+////static ChaMatrix s_matW, s_matVP;
+//static ChaMatrix s_matVP;
+//static ChaMatrix s_matView;
 static ChaMatrix s_matWorld;
 static ChaMatrix s_matProj;
 static ChaMatrix s_matVP;
@@ -567,22 +570,25 @@ float g_tmpbvhfilter = 100.0f;
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
-ID3DXFont*                  g_pFont = NULL;         // Font for drawing text
-ID3DXSprite*                g_pSprite = NULL;       // Sprite for batching draw text calls
+ID3DX10Font*                  g_pFont = NULL;         // Font for drawing text
+ID3DX10Sprite*                g_pSprite = NULL;       // Sprite for batching draw text calls
+CDXUTTextHelper*              g_pTxtHelper = NULL;
+
 bool                        g_bShowHelp = true;     // If true, it renders the UI control text
 CModelViewerCamera          g_Camera;               // A model viewing camera
-ID3DXEffect*                g_pEffect = NULL;       // D3DX effect interface
+ID3D10Effect*                g_pEffect = NULL;       // D3DX effect interface
 //ID3DXMesh*                  g_pMesh = NULL;         // Mesh object
-//IDirect3DTexture9*          g_pMeshTexture = NULL;  // Mesh texture
 
+//IDirect3DTexture10*          g_pMeshTexture = NULL;  // Mesh texture
+LPD3DXFONT                  g_pFont9 = NULL;         // Font for drawing text
 
 
 CDXUTDialogResourceManager  g_DialogResourceManager; // manager for shared resources of dialogs
-CD3DSettingsDlg             g_SettingsDlg;          // Device settings dialog
+//CD3DSettingsDlg             g_SettingsDlg;          // Device settings dialog
 CDXUTDialog                 g_HUD;                  // manages the 3D UI
 CDXUTDialog                 g_SampleUI;             // dialog for sample specific controls
 bool                        g_bEnablePreshader;     // if TRUE, then D3DXSHADER_NO_PRESHADER is used when compiling the shader
-//ChaMatrixA16               g_mCenterWorld;
+//ChaMatrix               g_mCenterWorld;
 ChaMatrix               g_mCenterWorld;
 
 #define MAX_LIGHTS 3
@@ -594,34 +600,38 @@ int                         g_nActiveLight;
 double						g_dspeed = 3.0;
 //double						g_dspeed = 0.0;
 
-D3DXHANDLE g_hRenderBoneL0 = 0;
-D3DXHANDLE g_hRenderBoneL1 = 0;
-D3DXHANDLE g_hRenderBoneL2 = 0;
-D3DXHANDLE g_hRenderBoneL3 = 0;
-D3DXHANDLE g_hRenderNoBoneL0 = 0;
-D3DXHANDLE g_hRenderNoBoneL1 = 0;
-D3DXHANDLE g_hRenderNoBoneL2 = 0;
-D3DXHANDLE g_hRenderNoBoneL3 = 0;
-D3DXHANDLE g_hRenderLine = 0;
-D3DXHANDLE g_hRenderSprite = 0;
+ID3D10EffectTechnique* g_hRenderBoneL0 = 0;
+ID3D10EffectTechnique* g_hRenderBoneL1 = 0;
+ID3D10EffectTechnique* g_hRenderBoneL2 = 0;
+ID3D10EffectTechnique* g_hRenderBoneL3 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL0 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL1 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL2 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL3 = 0;
+ID3D10EffectTechnique* g_hRenderLine = 0;
+ID3D10EffectTechnique* g_hRenderSprite = 0;
 
-//D3DXHANDLE g_hmBoneQ = 0;
-//D3DXHANDLE g_hmBoneTra = 0;
-D3DXHANDLE g_hm3x4Mat = 0;
-D3DXHANDLE g_hmWorld = 0;
-D3DXHANDLE g_hmVP = 0;
-D3DXHANDLE g_hEyePos = 0;
-D3DXHANDLE g_hnNumLight = 0;
-D3DXHANDLE g_hLightDir = 0;
-D3DXHANDLE g_hLightDiffuse = 0;
-D3DXHANDLE g_hLightAmbient = 0;
+ID3D10EffectMatrixVariable* g_hm4x4Mat = 0;
+ID3D10EffectMatrixVariable* g_hmWorld = 0;
+ID3D10EffectMatrixVariable* g_hmVP = 0;
 
-D3DXHANDLE g_hdiffuse = 0;
-D3DXHANDLE g_hambient = 0;
-D3DXHANDLE g_hspecular = 0;
-D3DXHANDLE g_hpower = 0;
-D3DXHANDLE g_hemissive = 0;
-D3DXHANDLE g_hMeshTexture = 0;
+ID3D10EffectVectorVariable* g_hEyePos = 0;
+ID3D10EffectScalarVariable* g_hnNumLight = 0;
+ID3D10EffectVectorVariable* g_hLightDir = 0;
+ID3D10EffectVectorVariable* g_hLightDiffuse = 0;
+ID3D10EffectVectorVariable* g_hLightAmbient = 0;
+ID3D10EffectVectorVariable* g_hSpriteOffset = 0;
+ID3D10EffectVectorVariable* g_hSpriteScale = 0;
+ID3D10EffectVectorVariable* g_hPm3Scale = 0;
+ID3D10EffectVectorVariable* g_hPm3Offset = 0;
+
+
+ID3D10EffectVectorVariable* g_hdiffuse = 0;
+ID3D10EffectVectorVariable* g_hambient = 0;
+ID3D10EffectVectorVariable* g_hspecular = 0;
+ID3D10EffectScalarVariable* g_hpower = 0;
+ID3D10EffectVectorVariable* g_hemissive = 0;
+ID3D10EffectShaderResourceVariable* g_hMeshTexture = 0;
 
 BYTE g_keybuf[256];
 BYTE g_savekeybuf[256];
@@ -720,20 +730,80 @@ float g_physicsmvrate = 1.0f;
 //--------------------------------------------------------------------------------------
 // Forward declarations 
 //--------------------------------------------------------------------------------------
-bool CALLBACK IsDeviceAcceptable( D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed,
-                                  void* pUserContext );
-bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext );
-HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
-                                 void* pUserContext );
-HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
-                                void* pUserContext );
-void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext );
-void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext );
-LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing, void* pUserContext );
-void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext );
-void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext );
-void CALLBACK OnLostDevice( void* pUserContext );
-void CALLBACK OnDestroyDevice( void* pUserContext );
+//bool CALLBACK IsDeviceAcceptable( D3DCAPS10* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed,
+//                                  void* pUserContext );
+//bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext );
+//HRESULT CALLBACK OnCreateDevice( ID3D10Device* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+//                                 void* pUserContext );
+//HRESULT CALLBACK OnResetDevice( ID3D10Device* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+//                                void* pUserContext );
+//void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext );
+//void CALLBACK OnFrameRender( ID3D10Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext );
+//LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing, void* pUserContext );
+//void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext );
+//void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext );
+//void CALLBACK OnLostDevice( void* pUserContext );
+//void CALLBACK OnDestroyDevice( void* pUserContext );
+
+//--------------------------------------------------------------------------------------
+// Forward declarations 
+//--------------------------------------------------------------------------------------
+bool CALLBACK ModifyDeviceSettings(DXUTDeviceSettings* pDeviceSettings, void* pUserContext);
+void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext);
+LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing,
+	void* pUserContext);
+void CALLBACK OnKeyboard(UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext);
+void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext);
+
+//bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat,
+//	bool bWindowed, void* pUserContext) {
+//	return false;
+//};
+//HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice,
+//	const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext)
+//{
+//	return -1;
+//};
+//HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+//	void* pUserContext) 
+//{
+//	return -1;
+//};
+//void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime,
+//	void* pUserContext)
+//{
+//	return;
+//};
+//void CALLBACK OnD3D9LostDevice(void* pUserContext)
+//{
+//	return;
+//};
+//void CALLBACK OnD3D9DestroyDevice(void* pUserContext)
+//{
+//	return;
+//};
+bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat,
+	bool bWindowed, void* pUserContext);
+HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice,
+	const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
+HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+	void* pUserContext);
+void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime,
+	void* pUserContext);
+void CALLBACK OnD3D9LostDevice(void* pUserContext);
+void CALLBACK OnD3D9DestroyDevice(void* pUserContext);
+
+
+bool CALLBACK IsD3D10DeviceAcceptable(UINT Adapter, UINT Output, D3D10_DRIVER_TYPE DeviceType,
+	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext);
+HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
+	void* pUserContext);
+HRESULT CALLBACK OnD3D10ResizedSwapChain(ID3D10Device* pd3dDevice, IDXGISwapChain* pSwapChain,
+	const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
+void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext);
+void CALLBACK OnD3D10DestroyDevice(void* pUserContext);
+void CALLBACK OnD3D10FrameRender(ID3D10Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext);
+
 
 LRESULT CALLBACK OpenMqoDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MotPropDlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -748,8 +818,10 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
+
+
 void InitApp();
-HRESULT LoadMesh( IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
+HRESULT LoadMesh( ID3D10Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
 
@@ -1039,6 +1111,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 //_CrtSetBreakAlloc(1750750);
 //_CrtSetBreakAlloc(602);
 
+//_CrtSetBreakAlloc(65234);
+//_CrtSetBreakAlloc(1526483);
+
+
 	SetBaseDir();
 	
 	
@@ -1048,27 +1124,28 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	s_selectKeyInfoList.clear();	// コピーされたキー情報リスト
 
 
-    // Set the callback functions. These functions allow DXUT to notify
-    // the application about device changes, user input, and windows messages.  The 
-    // callbacks are optional so you need only set callbacks for events you're interested 
-    // in. However, if you don't handle the device reset/lost callbacks then the sample 
-    // framework won't be able to reset your device since the application must first 
-    // release all device resources before resetting.  Likewise, if you don't handle the 
-    // device created/destroyed callbacks then DXUT won't be able to 
-    // recreate your device resources.
-    DXUTSetCallbackD3D9DeviceAcceptable( IsDeviceAcceptable );
-    DXUTSetCallbackD3D9DeviceCreated( OnCreateDevice );
-    DXUTSetCallbackD3D9DeviceReset( OnResetDevice );
-    DXUTSetCallbackD3D9FrameRender( OnFrameRender );
-    DXUTSetCallbackD3D9DeviceLost( OnLostDevice );
-    DXUTSetCallbackD3D9DeviceDestroyed( OnDestroyDevice );
-    DXUTSetCallbackMsgProc( MsgProc );
-    DXUTSetCallbackKeyboard( KeyboardProc );
-    DXUTSetCallbackFrameMove( OnFrameMove );
-    DXUTSetCallbackDeviceChanging( ModifyDeviceSettings );
+	DXUTSetCallbackDeviceChanging(ModifyDeviceSettings);
+	DXUTSetCallbackMsgProc(MsgProc);
+	DXUTSetCallbackKeyboard(OnKeyboard);
+	DXUTSetCallbackFrameMove(OnFrameMove);
 
-    // Show the cursor and clip it when in full screen
-    DXUTSetCursorSettings( true, true );
+	//DXUTSetCallbackD3D9DeviceAcceptable(IsD3D9DeviceAcceptable);
+	//DXUTSetCallbackD3D9DeviceCreated(OnD3D9CreateDevice);
+	//DXUTSetCallbackD3D9DeviceReset(OnD3D9ResetDevice);
+	//DXUTSetCallbackD3D9FrameRender(OnD3D9FrameRender);
+	//DXUTSetCallbackD3D9DeviceLost(OnD3D9LostDevice);
+	//DXUTSetCallbackD3D9DeviceDestroyed(OnD3D9DestroyDevice);
+
+
+	DXUTSetCallbackD3D10DeviceAcceptable(IsD3D10DeviceAcceptable);
+	DXUTSetCallbackD3D10DeviceCreated(OnD3D10CreateDevice);
+	DXUTSetCallbackD3D10SwapChainResized(OnD3D10ResizedSwapChain);
+	DXUTSetCallbackD3D10FrameRender(OnD3D10FrameRender);
+	DXUTSetCallbackD3D10SwapChainReleasing(OnD3D10ReleasingSwapChain);
+	DXUTSetCallbackD3D10DeviceDestroyed(OnD3D10DestroyDevice);
+
+
+
 
 	s_doneinit = 0;
     InitApp();
@@ -1077,7 +1154,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		return 1;
 	}
 
-	IsRegist();
+	//IsRegist();
 
 
 	s_mainmenu = LoadMenuW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDR_MENU1 ) );
@@ -1086,39 +1163,79 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		return 1;
 	}
 
-    s_psdk = FbxManager::Create();
-    if (!s_psdk)
-    {
-		_ASSERT( 0 );
-		return 1;
-	}
-	FbxIOSettings * ios = FbxIOSettings::Create(s_psdk, IOSROOT );
-	s_psdk->SetIOSettings(ios);
-	// Load plugins from the executable directory
-	FbxString lPath = FbxGetApplicationDirectory();
-#if defined(KARCH_ENV_WIN)
-	FbxString lExtension = "dll";
-#elif defined(KARCH_ENV_MACOSX)
-	FbxString lExtension = "dylib";
-#elif defined(KARCH_ENV_LINUX)
-	FbxString lExtension = "so";
-#endif
-	s_psdk->LoadPluginsDirectory(lPath.Buffer(), "dll");
-
 
 
     // Initialize DXUT and create the desired Win32 window and Direct3D 
     // device for the application. Calling each of these functions is optional, but they
     // allow you to set several options which control the behavior of the framework.
-    DXUTInit( true, true ); // Parse the command line and show msgboxes
-    DXUTSetHotkeyHandling( true, true, true );
-    DXUTCreateWindow( L"MameBake3D", 0, 0, s_mainmenu );
-	DXUTCreateDevice( true, s_mainwidth, s_mainheight );
-	s_mainwnd = DXUTGetHWND();
-	_ASSERT( s_mainwnd );
-	ShowWindow( s_mainwnd, SW_SHOW );
-	SetWindowPos( s_mainwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE ); 
+	HRESULT hr;
+	// Initialize DXUT and create the desired Win32 window and Direct3D 
+	// device for the application. Calling each of these functions is optional, but they
+	// allow you to set several options which control the behavior of the framework.
+	//DXUTInit(true, true); // Parse the command line and show msgboxes
+	//DXUTSetHotkeyHandling(true, true, true);
+	//DXUTCreateWindow(L"MameBake3D", 0, 0, s_mainmenu);
+	//DXUTCreateDevice(true, s_mainwidth, s_mainheight);
+	//s_mainwnd = DXUTGetHWND();
+	//_ASSERT(s_mainwnd);
+	//ShowWindow(s_mainwnd, SW_SHOW);
+	//SetWindowPos(s_mainwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE);
 
+
+	//InitApp();
+	//DXUTInit(true, true, NULL); // Parse the command line, show msgboxes on error, no extra command line params
+	//DXUTSetCursorSettings(true, true); // Show the cursor and clip it when in full screen
+	//DXUTCreateWindow(L"BasicHLSL10");
+	//DXUTCreateDevice(true, 640, 480);
+	//DXUTMainLoop(); // Enter into the DXUT render loop
+
+	hr = DXUTInit( true, true ); // Parse the command line and show msgboxes
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	// Show the cursor and clip it when in full screen
+	//DXUTSetCursorSettings(true, true);
+	DXUTSetCursorSettings(false, false);
+
+	//DXUTSetHotkeyHandling( true, true, true );
+	DXUTSetHotkeyHandling(false, false, false);
+
+	DXUTSetOverrideSize(s_mainwidth, s_mainheight);
+	//GetDXUTState().SetOverrideWidth(s_mainwidth);
+	//GetDXUTState().SetOverrideHeight(s_mainwidth);
+
+	HICON appicon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_ICON1));
+	hr = DXUTCreateWindow(L"MameBake3D", 0, appicon, s_mainmenu, 450, 0);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	s_mainwnd = DXUTGetHWND();
+	_ASSERT(s_mainwnd);
+	RECT clientrect;
+	GetClientRect(s_mainwnd, &clientrect);
+	s_bufwidth = clientrect.right;
+	s_bufheight = clientrect.bottom;
+
+	hr = DXUTCreateDevice(true);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	s_mainwnd = DXUTGetHWND();
+	_ASSERT(s_mainwnd);
+	RECT clientrect2;
+	GetClientRect(s_mainwnd, &clientrect2);
+
+
+	//RECT clientrect;
+	//GetClientRect(s_mainwnd, &clientrect);
+	//s_mainwidth = clientrect.right;
+	//s_mainheight = clientrect.bottom;
+	//ShowWindow( s_mainwnd, SW_SHOW );
+	//SetWindowPos( s_mainwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE ); 
 
 	//animmenu
 	HMENU motmenu;
@@ -1146,6 +1263,26 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 
 	//CallF( InitializeSdkObjects(), return 1 );
+
+	s_psdk = FbxManager::Create();
+	if (!s_psdk)
+	{
+		_ASSERT(0);
+		return 1;
+	}
+	FbxIOSettings * ios = FbxIOSettings::Create(s_psdk, IOSROOT);
+	s_psdk->SetIOSettings(ios);
+	// Load plugins from the executable directory
+	FbxString lPath = FbxGetApplicationDirectory();
+#if defined(KARCH_ENV_WIN)
+	FbxString lExtension = "dll";
+#elif defined(KARCH_ENV_MACOSX)
+	FbxString lExtension = "dylib";
+#elif defined(KARCH_ENV_LINUX)
+	FbxString lExtension = "so";
+#endif
+	s_psdk->LoadPluginsDirectory(lPath.Buffer(), "dll");
+
 
 
 	// Pass control to DXUT for handling the message pump and 
@@ -1199,7 +1336,7 @@ void InitApp()
 	s_convbonemap.clear();
 
 
-	ZeroMemory( s_spaxis, sizeof( SPAXIS ) * 3 );
+	ZeroMemory(s_spaxis, sizeof( SPAXIS ) * 3);
 	ZeroMemory(s_spcam, sizeof(SPCAM) * 3);
 	ZeroMemory(s_sprig, sizeof(SPELEM) * 2);
 	ZeroMemory(&s_spbt, sizeof(SPELEM));
@@ -1244,209 +1381,289 @@ void InitApp()
 			NULL);    // モニタリング用関数へのポインタ  
 		_ASSERT(s_bpWorld);
 
+
 		s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
 		s_bpWorld->setGlobalERP(s_erp);// ERP
 		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
 		s_btWorld = s_bpWorld->getDynamicsWorld();
+		s_bpWorld->setNumThread(g_numthread);
 	}
 
 	s_doneinit = 1;
 }
+
+//--------------------------------------------------------------------------------------
+// Called right before creating a D3D9 or D3D10 device, allowing the app to modify the device settings as needed
+//--------------------------------------------------------------------------------------
+bool CALLBACK ModifyDeviceSettings(DXUTDeviceSettings* pDeviceSettings, void* pUserContext)
+{
+	if (DXUT_D3D9_DEVICE == pDeviceSettings->ver)
+	{
+		D3DCAPS9 Caps;
+		IDirect3D9* pD3D = DXUTGetD3D9Object();
+		pD3D->GetDeviceCaps(pDeviceSettings->d3d9.AdapterOrdinal, pDeviceSettings->d3d9.DeviceType, &Caps);
+
+		// If device doesn't support HW T&L or doesn't support 1.1 vertex shaders in HW 
+		// then switch to SWVP.
+		if ((Caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) == 0 ||
+			Caps.VertexShaderVersion < D3DVS_VERSION(1, 1))
+		{
+			pDeviceSettings->d3d9.BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		}
+
+		// Debugging vertex shaders requires either REF or software vertex processing 
+		// and debugging pixel shaders requires REF.  
+#ifdef DEBUG_VS
+		if (pDeviceSettings->d3d9.DeviceType != D3DDEVTYPE_REF)
+		{
+			pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_HARDWARE_VERTEXPROCESSING;
+			pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_PUREDEVICE;
+			pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		}
+#endif
+#ifdef DEBUG_PS
+		pDeviceSettings->d3d9.DeviceType = D3DDEVTYPE_REF;
+#endif
+	}
+	else
+	{
+		// Uncomment this to get debug information from D3D10
+		//pDeviceSettings->d3d10.CreateFlags |= D3D10_CREATE_DEVICE_DEBUG;
+	}
+
+	// For the first device created if its a REF device, optionally display a warning dialog box
+	static bool s_bFirstTime = true;
+	if (s_bFirstTime)
+	{
+		s_bFirstTime = false;
+		if ((DXUT_D3D9_DEVICE == pDeviceSettings->ver && pDeviceSettings->d3d9.DeviceType == D3DDEVTYPE_REF) ||
+			(DXUT_D3D10_DEVICE == pDeviceSettings->ver &&
+				pDeviceSettings->d3d10.DriverType == D3D10_DRIVER_TYPE_REFERENCE))
+			DXUTDisplaySwitchingToREFWarning(pDeviceSettings->ver);
+	}
+
+	return true;
+}
+
 
 
 //--------------------------------------------------------------------------------------
 // Called during device initialization, this code checks the device for some 
 // minimum set of capabilities, and rejects those that don't pass by returning E_FAIL.
 //------------------------------------------------
-bool CALLBACK IsDeviceAcceptable( D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
-                                  D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
+bool CALLBACK IsD3D10DeviceAcceptable(UINT Adapter, UINT Output, D3D10_DRIVER_TYPE DeviceType,
+	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
 {
-    // No fallback defined by this app, so reject any device that 
-    // doesn't support at least ps2.0
-    if( pCaps->PixelShaderVersion < D3DPS_VERSION( 3, 0 ) )
-        return false;
+ //   // No fallback defined by this app, so reject any device that 
+ //   // doesn't support at least ps2.0
+ //   if( pCaps->PixelShaderVersion < D3DPS_VERSION( 3, 0 ) )
+ //       return false;
 
-	if( pCaps->MaxVertexIndex <= 0x0000FFFF ){
-		return false;
-	}
+	//if( pCaps->MaxVertexIndex <= 0x0000FFFF ){
+	//	return false;
+	//}
 
-    // Skip backbuffer formats that don't support alpha blending
-    IDirect3D9* pD3D = DXUTGetD3D9Object();
-    if( FAILED( pD3D->CheckDeviceFormat( pCaps->AdapterOrdinal, pCaps->DeviceType,
-                                         AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
-                                         D3DRTYPE_TEXTURE, BackBufferFormat ) ) )
-        return false;
+ //   // Skip backbuffer formats that don't support alpha blending
+ //   IDirect3D10* pD3D = DXUTGetD3D10Object();
+ //   if( FAILED( pD3D->CheckDeviceFormat( pCaps->AdapterOrdinal, pCaps->DeviceType,
+ //                                        AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
+ //                                        D3DRTYPE_TEXTURE, BackBufferFormat ) ) )
+ //       return false;
 
     return true;
 }
 
 
 //--------------------------------------------------------------------------------------
-// This callback function is called immediately before a device is created to allow the 
-// application to modify the device settings. The supplied pDeviceSettings parameter 
-// contains the settings that the framework has selected for the new device, and the 
-// application can make any desired changes directly to this structure.  Note however that 
-// DXUT will not correct invalid device settings so care must be taken 
-// to return valid device settings, otherwise IDirect3D9::CreateDevice() will fail.  
+// Create any D3D10 resources that aren't dependant on the back buffer
 //--------------------------------------------------------------------------------------
-bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext )
+HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
+	void* pUserContext)
 {
-    assert( DXUT_D3D9_DEVICE == pDeviceSettings->ver );
-
-    HRESULT hr;
-    IDirect3D9* pD3D = DXUTGetD3D9Object();
-    D3DCAPS9 caps;
-
-    V( pD3D->GetDeviceCaps( pDeviceSettings->d3d9.AdapterOrdinal,
-                            pDeviceSettings->d3d9.DeviceType,
-                            &caps ) );
-
-    // If device doesn't support HW T&L or doesn't support 1.1 vertex shaders in HW 
-    // then switch to SWVP.
-    if( ( caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT ) == 0 ||
-        caps.VertexShaderVersion < D3DVS_VERSION( 1, 1 ) )
-    {
-        pDeviceSettings->d3d9.BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-    }
-
-    // Debugging vertex shaders requires either REF or software vertex processing 
-    // and debugging pixel shaders requires REF.  
-#ifdef DEBUG_VS
-    if( pDeviceSettings->d3d9.DeviceType != D3DDEVTYPE_REF )
-    {
-        pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_HARDWARE_VERTEXPROCESSING;
-        pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_PUREDEVICE;
-        pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-    }
-#endif
-#ifdef DEBUG_PS
-    pDeviceSettings->d3d9.DeviceType = D3DDEVTYPE_REF;
-#endif
-    // For the first device created if its a REF device, optionally display a warning dialog box
-    static bool s_bFirstTime = true;
-    if( s_bFirstTime )
-    {
-        s_bFirstTime = false;
-        if( pDeviceSettings->d3d9.DeviceType == D3DDEVTYPE_REF )
-            DXUTDisplaySwitchingToREFWarning( pDeviceSettings->ver );
-    }
-
-    return true;
-}
-
-
-//--------------------------------------------------------------------------------------
-// This callback function will be called immediately after the Direct3D device has been 
-// created, which will happen during application initialization and windowed/full screen 
-// toggles. This is the best location to create D3DPOOL_MANAGED resources since these 
-// resources need to be reloaded whenever the device is destroyed. Resources created  
-// here should be released in the OnDestroyDevice callback. 
-//--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
-                                 void* pUserContext )
-{
-    HRESULT hr;
+	HRESULT hr;
 
 	s_pdev = pd3dDevice;
 
-    V_RETURN( g_DialogResourceManager.OnD3D9CreateDevice( pd3dDevice ) );
-    V_RETURN( g_SettingsDlg.OnD3D9CreateDevice( pd3dDevice ) );
-    // Initialize the font
-    V_RETURN( D3DXCreateFont( pd3dDevice, 18, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-                              OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-							  L"MS ゴシック", &g_pFont ) );
-                              //L"Arial", &g_pFont ) );
+	hr = g_DialogResourceManager.OnD3D10CreateDevice(pd3dDevice);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return hr;
+	}
+	//hr = g_SettingsDlg.OnD3D10CreateDevice(pd3dDevice);
+	//if (FAILED(hr)) {
+	//	_ASSERT(0);
+	//	return hr;
+	//}
+	hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+		L"MS ゴシック", &g_pFont);
+		//L"Arial", &g_pFont10);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return hr;
+	}
 
-	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.max = ChaVector3( 5.0f, 5.0f, 5.0f );
-	s_totalmb.min = ChaVector3( -5.0f, -5.0f, -5.0f );
-	s_totalmb.r = ChaVector3Length( &s_totalmb.max );
+	hr = D3DX10CreateSprite(pd3dDevice, 512, &g_pSprite);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return hr;
+	}
+	g_pTxtHelper = new CDXUTTextHelper(NULL, NULL, g_pFont, g_pSprite, 15);
+
+	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
+	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
+	s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
+	s_totalmb.r = ChaVector3Length(&s_totalmb.max);
 	g_vCenter = s_totalmb.center;
 	float fObjectRadius = s_totalmb.r;
-    //ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
+	//ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
 
-    V_RETURN( CDXUTDirectionWidget::StaticOnD3D9CreateDevice( pd3dDevice ) );
-    for( int i = 0; i < MAX_LIGHTS; i++ )
-		g_LightControl[i].SetRadius( fObjectRadius );
- 
-    // Define DEBUG_VS and/or DEBUG_PS to debug vertex and/or pixel shaders with the 
-    // shader debugger. Debugging vertex shaders requires either REF or software vertex 
-    // processing, and debugging pixel shaders requires REF.  The 
-    // D3DXSHADER_FORCE_*_SOFTWARE_NOOPT flag improves the debug experience in the 
-    // shader debugger.  It enables source level debugging, prevents instruction 
-    // reordering, prevents dead code elimination, and forces the compiler to compile 
-    // against the next higher available software target, which ensures that the 
-    // unoptimized shaders do not exceed the shader model limitations.  Setting these 
-    // flags will cause slower rendering since the shaders will be unoptimized and 
-    // forced into software.  See the DirectX documentation for more information about 
-    // using the shader debugger.
-    DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE;
+	hr = CDXUTDirectionWidget::StaticOnD3D10CreateDevice(pd3dDevice);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return hr;
+	}
+	for (int i = 0; i < MAX_LIGHTS; i++)
+		g_LightControl[i].SetRadius(fObjectRadius);
+
+//	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+//#if defined( DEBUG ) || defined( _DEBUG )
+//	// Set the D3D10_SHADER_DEBUG flag to embed debug information in the shaders.
+//	// Setting this flag improves the shader debugging experience, but still allows 
+//	// the shaders to be optimized and to run exactly the way they will run in 
+//	// the release configuration of this program.
+//	dwShaderFlags |= D3D10_SHADER_DEBUG;
+//#endif
+
+	DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE;
 
 #if defined( DEBUG ) || defined( _DEBUG )
-    // Set the D3DXSHADER_DEBUG flag to embed debug information in the shaders.
-    // Setting this flag improves the shader debugging experience, but still allows 
-    // the shaders to be optimized and to run exactly the way they will run in 
-    // the release configuration of this program.
-    dwShaderFlags |= D3DXSHADER_DEBUG;
-    #endif
+	// Set the D3DXSHADER_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows 
+	// the shaders to be optimized and to run exactly the way they will run in 
+	// the release configuration of this program.
+	dwShaderFlags |= D3DXSHADER_DEBUG;
+#endif
 
 #ifdef DEBUG_VS
-        dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
-    #endif
+	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
+#endif
 #ifdef DEBUG_PS
-        dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
-    #endif
+	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
+#endif
 
-    // Preshaders are parts of the shader that the effect system pulls out of the 
-    // shader and runs on the host CPU. They should be used if you are GPU limited. 
-    // The D3DXSHADER_NO_PRESHADER flag disables preshaders.
-    if( !g_bEnablePreshader )
-        dwShaderFlags |= D3DXSHADER_NO_PRESHADER;
-
-    // Read the D3DX effect file
-    WCHAR str[MAX_PATH];
-    V_RETURN( DXUTFindDXSDKMediaFileCch( str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fx" ) );
-
-    // If this fails, there should be debug output as to 
-    // why the .fx file failed to compile
-    V_RETURN( D3DXCreateEffectFromFile( pd3dDevice, str, NULL, NULL, dwShaderFlags, NULL, &g_pEffect, NULL ) );
-
-	CallF( GetShaderHandle(), return 1 );
-
-    // Setup the camera's view parameters
-//	g_Camera.SetProjParams( D3DX_PI / 4, 1.0f, g_initnear, 4.0f * g_initcamdist );
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+	// Preshaders are parts of the shader that the effect system pulls out of the 
+	// shader and runs on the host CPU. They should be used if you are GPU limited. 
+	// The D3DXSHADER_NO_PRESHADER flag disables preshaders.
+	if (!g_bEnablePreshader)
+		dwShaderFlags |= D3DXSHADER_NO_PRESHADER;
 
 
-    ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
+	// Read the D3DX effect file
+	WCHAR str[MAX_PATH];
+	hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fx");
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return hr;
+	}
+	//ID3D10Blob*	l_pBlob_Effect = NULL;
+	//ID3D10Blob*	l_pBlob_Errors = NULL;
+	//hr = D3DX10CompileEffectFromFile(str, NULL, NULL,
+	//	D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL,
+	//	&l_pBlob_Effect, &l_pBlob_Errors);
+	//if (FAILED(hr)) {
+	//	LPVOID l_pError = NULL;
+	//	if (l_pBlob_Errors)
+	//	{
+	//		l_pError = l_pBlob_Errors->GetBufferPointer();
+	//		// then cast to a char* to see it in the locals window
+	//	}
+
+	//	LPVOID l_pErrorEffect = NULL;
+	//	if (l_pBlob_Effect)
+	//	{
+	//		l_pErrorEffect = l_pBlob_Effect->GetBufferPointer();
+	//		// then cast to a char* to see it in the locals window
+	//	}
+
+	//	_ASSERT(0);
+	//	return hr;
+	//}
+
+
+	/*
+	HRESULT D3DX10CreateEffectFromFile(
+	  LPCTSTR pFileName,
+	  CONST D3D10_SHADER_MACRO *pDefines,
+	  ID3D10Include *pInclude,
+	  LPCSTR pProfile,
+	  UINT HLSLFlags,
+	  UINT FXFlags,
+	  ID3D10Device *pDevice,
+	  ID3D10EffectPool *pEffectPool,
+	  ID3DX10ThreadPump *pPump,
+	  ID3D10Effect **ppEffect,
+	  ID3D10Blob **ppErrors,
+	  HRESULT *pHResult
+	);*/
+
+	//D3DX10CreateEffectFromFile(str, NULL, NULL, "fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL,
+	//	NULL, &g_pEffect10, NULL, NULL);
+
+
+	ID3D10Blob*	l_pBlob_Errors = NULL;
+	hr = D3DX10CreateEffectFromFile(str, NULL, NULL,
+		"fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL, NULL,
+		&g_pEffect, &l_pBlob_Errors, NULL);
+	if (FAILED(hr)) {
+		LPVOID l_pError = NULL;
+		if (l_pBlob_Errors)
+		{
+			l_pError = l_pBlob_Errors->GetBufferPointer();
+			// then cast to a char* to see it in the locals window
+		}
+		_ASSERT(0);
+		return hr;
+	}
+
+
+	CallF(GetShaderHandle(), return 1);
+
+
+	// Setup the camera's view parameters
+	//	g_Camera.SetProjParams( D3DX_PI / 4, 1.0f, g_initnear, 4.0f * g_initcamdist );
+	g_Camera.SetProjParams(D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist);
+
+
+	ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
+	ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
 	g_Camera.SetViewParams(&vecEye, &vecAt);
-    g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
+	g_Camera.SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 
 	s_camdist = g_initcamdist;
-	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
-	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
+	g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, g_initcamdist);
+	g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
 	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
-	if( !g_texbank ){
-		g_texbank = new CTexBank( s_pdev );
-		if( !g_texbank ){
-			_ASSERT( 0 );
+	if (!g_texbank) {
+		g_texbank = new CTexBank(s_pdev);
+		if (!g_texbank) {
+			_ASSERT(0);
 			return 0;
 		}
 	}
 
 	s_select = new CModel();
-	if( !s_select ){
-		_ASSERT( 0 );
+	if (!s_select) {
+		_ASSERT(0);
 		return 1;
 	}
-	CallF( s_select->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_select->MakeDispObj(), return 1 );
-	
+	CallF(s_select->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_select->MakeDispObj(), return 1);
+
 	s_matred = s_select->GetMQOMaterialByName("matred");
 	_ASSERT(s_matred);
 	s_ringred = s_select->GetMQOMaterialByName("ringred");
@@ -1472,7 +1689,7 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 
 
 	s_rigmark = new CModel();
-	if (!s_rigmark){
+	if (!s_rigmark) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -1481,73 +1698,73 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 
 
 	s_bmark = new CModel();
-	if( !s_bmark ){
-		_ASSERT( 0 );
+	if (!s_bmark) {
+		_ASSERT(0);
 		return 1;
 	}
-	CallF( s_bmark->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_bmark->MakeDispObj(), return 1 );
+	CallF(s_bmark->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_bmark->MakeDispObj(), return 1);
 
 
 
 
 	s_ground = new CModel();
-	if( !s_ground ){
-		_ASSERT( 0 );
+	if (!s_ground) {
+		_ASSERT(0);
 		return 1;
 	}
-	CallF( s_ground->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0 ), return 1 );
-	CallF( s_ground->MakeDispObj(), return 1 );
+	CallF(s_ground->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_ground->MakeDispObj(), return 1);
 
 	s_gplane = new CModel();
-	if( !s_gplane ){
-		_ASSERT( 0 );
+	if (!s_gplane) {
+		_ASSERT(0);
 		return 1;
 	}
-	CallF( s_gplane->LoadMQO( s_pdev, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0, D3DPOOL_MANAGED ), return 1 );
-	CallF( s_gplane->MakeDispObj(), return 1 );
-	ChaVector3 tra( 0.0f, 0.0, 0.0f );
-	ChaVector3 mult( 5.0f, 1.0f, 5.0f );
-	CallF( s_gplane->MultDispObj( mult, tra ), return 1 );
+	CallF(s_gplane->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0, D3DPOOL_MANAGED), return 1);
+	CallF(s_gplane->MakeDispObj(), return 1);
+	ChaVector3 tra(0.0f, 0.0, 0.0f);
+	ChaVector3 mult(5.0f, 1.0f, 5.0f);
+	CallF(s_gplane->MultDispObj(mult, tra), return 1);
 
 
-	s_bcircle = new CMySprite( s_pdev );
-	if( !s_bcircle ){
-		_ASSERT( 0 );
+	s_bcircle = new CMySprite(s_pdev);
+	if (!s_bcircle) {
+		_ASSERT(0);
 		return 1;
 	}
 
 	WCHAR path[MAX_PATH];
-	wcscpy_s( path, MAX_PATH, g_basedir );
+	wcscpy_s(path, MAX_PATH, g_basedir);
 	WCHAR* lasten = 0;
 	WCHAR* last2en = 0;
-	lasten = wcsrchr( path, TEXT( '\\' ) );
+	lasten = wcsrchr(path, TEXT('\\'));
 	*lasten = 0L;
-	last2en = wcsrchr( path, TEXT( '\\' ) );
+	last2en = wcsrchr(path, TEXT('\\'));
 	*last2en = 0L;
-	wcscat_s( path, MAX_PATH, L"\\Media\\MameMedia\\" );
-	CallF( s_bcircle->Create( path, L"bonecircle.dds", 0, D3DPOOL_MANAGED, 0 ), return 1 );
+	wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
+	CallF(s_bcircle->Create(path, L"bonecircle.dds", 0, D3DPOOL_MANAGED, 0), return 1);
 
-///////
+	///////
 	WCHAR mpath[MAX_PATH];
-	wcscpy_s( mpath, MAX_PATH, g_basedir );
+	wcscpy_s(mpath, MAX_PATH, g_basedir);
 	lasten = 0;
 	last2en = 0;
-	lasten = wcsrchr( mpath, TEXT( '\\' ) );
+	lasten = wcsrchr(mpath, TEXT('\\'));
 	*lasten = 0L;
-	last2en = wcsrchr( mpath, TEXT( '\\' ) );
+	last2en = wcsrchr(mpath, TEXT('\\'));
 	*last2en = 0L;
-	wcscat_s( mpath, MAX_PATH, L"\\Media\\MameMedia\\" );
+	wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
 
-	s_spaxis[0].sprite = new CMySprite( s_pdev );
-	_ASSERT( s_spaxis[0].sprite );
-	CallF( s_spaxis[0].sprite->Create( mpath, L"X.png", 0, D3DPOOL_MANAGED, 0 ), return 1 );
-	s_spaxis[1].sprite = new CMySprite( s_pdev );
-	_ASSERT( s_spaxis[1].sprite );
-	CallF( s_spaxis[1].sprite->Create( mpath, L"Y.png", 0, D3DPOOL_MANAGED, 0 ), return 1 );
-	s_spaxis[2].sprite = new CMySprite( s_pdev );
-	_ASSERT( s_spaxis[2].sprite );
-	CallF( s_spaxis[2].sprite->Create( mpath, L"Z.png", 0, D3DPOOL_MANAGED, 0 ), return 1 );
+	s_spaxis[0].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spaxis[0].sprite);
+	CallF(s_spaxis[0].sprite->Create(mpath, L"X.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	s_spaxis[1].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spaxis[1].sprite);
+	CallF(s_spaxis[1].sprite->Create(mpath, L"Y.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	s_spaxis[2].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spaxis[2].sprite);
+	CallF(s_spaxis[2].sprite->Create(mpath, L"Z.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
 
 	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
@@ -1571,77 +1788,649 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	_ASSERT(s_spbt.sprite);
 	CallF(s_spbt.sprite->Create(mpath, L"BtApply.png", 0, D3DPOOL_MANAGED, 0), return 1);
 
-///////
-	s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-	s_pdev->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
-	s_pdev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-	s_pdev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-	s_pdev->SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
-	s_pdev->SetRenderState( D3DRS_ALPHAREF, 0x00 );
-	s_pdev->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL );
+	///////
+	//s_pdev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	//s_pdev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	//s_pdev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	//s_pdev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	//s_pdev->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+	//s_pdev->SetRenderState(D3DRS_ALPHAREF, 0x00);
+	//s_pdev->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
 
-    return S_OK;
+	return S_OK;
 }
 
 
+////--------------------------------------------------------------------------------------
+//// This callback function will be called immediately after the Direct3D device has been 
+//// reset, which will happen after a lost device scenario. This is the best location to 
+//// create 0 resources since these resources need to be reloaded whenever 
+//// the device is lost. Resources created here should be released in the OnLostDevice 
+//// callback. 
+////--------------------------------------------------------------------------------------
+//HRESULT CALLBACK OnResetDevice( ID3D10Device* pd3dDevice,
+//                                const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
+//{
+//    HRESULT hr;
+//
+//    V_RETURN( g_DialogResourceManager.OnD3D10ResetDevice() );
+//    V_RETURN( g_SettingsDlg.OnD3D10ResetDevice() );
+//
+//    // Create a sprite to help batch calls when drawing many lines of text
+//    V_RETURN( D3DXCreateSprite( pd3dDevice, &g_pSprite ) );
+//
+//    if( g_pFont )
+//        V_RETURN( g_pFont->OnResetDevice() );
+//    if( g_pEffect )
+//        V_RETURN( g_pEffect->OnResetDevice() );
+//
+//
+//	if( g_texbank ){
+//		CallF( g_texbank->Invalidate( INVAL_ONLYDEFAULT ), return 1 );
+//		CallF( g_texbank->Restore(), return 1 );
+//	}
+//
+//    for( int i = 0; i < MAX_LIGHTS; i++ )
+//        g_LightControl[i].OnD3D10ResetDevice( pBackBufferSurfaceDesc );
+//
+//    // Setup the camera's projection parameters
+//    s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+////    g_Camera.SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
+//	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+//
+//    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+//	g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
+//
+//	s_mainwidth = pBackBufferSurfaceDesc->Width;
+//	s_mainheight = pBackBufferSurfaceDesc->Height;
+//
+//    //g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 550 );
+//	//g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+//    //g_SampleUI.SetSize( 170, 750 );
+//
+//	g_SampleUI.SetLocation( 0, 0 );
+//	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
+//	
+//	SetSpAxisParams();
+//	SetSpCamParams();
+//	SetSpRigParams();
+//	SetSpBtParams();
+//
+//    return S_OK;
+//}
+
 //--------------------------------------------------------------------------------------
-// This callback function will be called immediately after the Direct3D device has been 
-// reset, which will happen after a lost device scenario. This is the best location to 
-// create D3DPOOL_DEFAULT resources since these resources need to be reloaded whenever 
-// the device is lost. Resources created here should be released in the OnLostDevice 
-// callback. 
+// Create any D3D10 resources that depend on the back buffer
 //--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
-                                const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
+HRESULT CALLBACK OnD3D10ResizedSwapChain(ID3D10Device* pd3dDevice, IDXGISwapChain* pSwapChain,
+	const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext)
 {
-    HRESULT hr;
+	HRESULT hr;
 
-    V_RETURN( g_DialogResourceManager.OnD3D9ResetDevice() );
-    V_RETURN( g_SettingsDlg.OnD3D9ResetDevice() );
+	V_RETURN(g_DialogResourceManager.OnD3D10ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
+	//V_RETURN(g_SettingsDlg.OnD3D10ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
 
-    // Create a sprite to help batch calls when drawing many lines of text
-    V_RETURN( D3DXCreateSprite( pd3dDevice, &g_pSprite ) );
-
-    if( g_pFont )
-        V_RETURN( g_pFont->OnResetDevice() );
-    if( g_pEffect )
-        V_RETURN( g_pEffect->OnResetDevice() );
-
-
-	if( g_texbank ){
-		CallF( g_texbank->Invalidate( INVAL_ONLYDEFAULT ), return 1 );
-		CallF( g_texbank->Restore(), return 1 );
-	}
-
-    for( int i = 0; i < MAX_LIGHTS; i++ )
-        g_LightControl[i].OnD3D9ResetDevice( pBackBufferSurfaceDesc );
-
-    // Setup the camera's projection parameters
-    s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+	// Setup the camera's projection parameters
+	s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
 //    g_Camera.SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
 	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+	
+	g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
 	g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
-
-	s_mainwidth = pBackBufferSurfaceDesc->Width;
-	s_mainheight = pBackBufferSurfaceDesc->Height;
-
-    //g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 550 );
+	
+	s_bufwidth = pBackBufferSurfaceDesc->Width;
+	s_bufheight = pBackBufferSurfaceDesc->Height;
+	
+	//g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 550 );
 	//g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
-    //g_SampleUI.SetSize( 170, 750 );
-
+	//g_SampleUI.SetSize( 170, 750 );
+	
 	g_SampleUI.SetLocation( 0, 0 );
 	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
-	
+		
 	SetSpAxisParams();
 	SetSpCamParams();
 	SetSpRigParams();
 	SetSpBtParams();
+	
+	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
+	//g_HUD.SetSize(170, 170);
 
-    return S_OK;
+	return S_OK;
 }
+
+//--------------------------------------------------------------------------------------
+// Release D3D10 resources created in OnD3D10ResizedSwapChain 
+//--------------------------------------------------------------------------------------
+void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext)
+{
+	g_DialogResourceManager.OnD3D10ReleasingSwapChain();
+}
+
+
+//--------------------------------------------------------------------------------------
+// Release D3D10 resources created in OnD3D10CreateDevice 
+//--------------------------------------------------------------------------------------
+void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
+{
+	g_DialogResourceManager.OnD3D10DestroyDevice();
+	//g_SettingsDlg.OnD3D10DestroyDevice();
+	CDXUTDirectionWidget::StaticOnD3D10DestroyDevice();
+	DXUTGetGlobalResourceCache().OnDestroyDevice();
+	SAFE_DELETE(g_pTxtHelper);
+	SAFE_RELEASE(g_pFont);
+	SAFE_RELEASE(g_pSprite);
+	SAFE_RELEASE(g_pEffect);
+	//SAFE_RELEASE(g_pVertexLayout);
+	//g_Mesh10.Destroy();
+
+	if (s_editrangehistory) {
+		delete[] s_editrangehistory;
+		s_editrangehistory = 0;
+	}
+	s_editrangehistoryno = 0;
+
+	if (s_anglelimitdlg) {
+		DestroyWindow(s_anglelimitdlg);
+		s_anglelimitdlg = 0;
+	}
+	if (s_rotaxisdlg) {
+		DestroyWindow(s_rotaxisdlg);
+		s_rotaxisdlg = 0;
+	}
+	if (s_customrigdlg) {
+		DestroyWindow(s_customrigdlg);
+		s_customrigdlg = 0;
+	}
+	s_oprigflag = 0;
+	s_customrigbone = 0;
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel) {
+			//FbxScene* pscene = curmodel->GetScene();
+			//if (pscene){
+			//	pscene->Destroy();
+			//}
+
+			delete curmodel;
+		}
+	}
+	s_modelindex.clear();
+	s_model = 0;
+
+	if (s_select) {
+		delete s_select;
+		s_select = 0;
+	}
+	if (s_rigmark) {
+		delete s_rigmark;
+		s_rigmark = 0;
+	}
+	if (s_ground) {
+		delete s_ground;
+		s_ground = 0;
+	}
+	if (s_gplane) {
+		delete s_gplane;
+		s_gplane = 0;
+	}
+	if (s_bmark) {
+		delete s_bmark;
+		s_bmark = 0;
+	}
+
+
+	if (s_bcircle) {
+		delete s_bcircle;
+		s_bcircle = 0;
+	}
+	if (s_kinsprite) {
+		delete s_kinsprite;
+		s_kinsprite = 0;
+	}
+
+	if (g_texbank) {
+		delete g_texbank;
+		g_texbank = 0;
+	}
+
+	if (s_mainmenu) {
+		DestroyMenu(s_mainmenu);
+		s_mainmenu = 0;
+	}
+
+	DestroyTimeLine(1);
+
+	if (s_timelineWnd) {
+		delete s_timelineWnd;
+		s_timelineWnd = 0;
+	}
+	if (s_LtimelineWnd) {
+		delete s_LtimelineWnd;
+		s_LtimelineWnd = 0;
+	}
+
+	if (s_toolWnd) {
+		delete s_toolWnd;
+		s_toolWnd = 0;
+	}
+
+	if (s_toolCopyB) {
+		delete s_toolCopyB;
+		s_toolCopyB = 0;
+	}
+	if (s_toolSymCopyB) {
+		delete s_toolSymCopyB;
+		s_toolSymCopyB = 0;
+	}
+	if (s_toolCutB) {
+		delete s_toolCutB;
+		s_toolCutB = 0;
+	}
+	if (s_toolPasteB) {
+		delete s_toolPasteB;
+		s_toolPasteB = 0;
+	}
+	if (s_toolDeleteB) {
+		delete s_toolDeleteB;
+		s_toolDeleteB = 0;
+	}
+	if (s_toolMotPropB) {
+		delete s_toolMotPropB;
+		s_toolMotPropB = 0;
+	}
+	if (s_toolMarkB) {
+		delete s_toolMarkB;
+		s_toolMarkB = 0;
+	}
+	if (s_toolSelBoneB) {
+		delete s_toolSelBoneB;
+		s_toolSelBoneB = 0;
+	}
+	if (s_toolInitMPB) {
+		delete s_toolInitMPB;
+		s_toolInitMPB = 0;
+	}
+	if (s_toolFilterB) {
+		delete s_toolFilterB;
+		s_toolFilterB = 0;
+	}
+	if (s_toolInterpolateB) {
+		delete s_toolInterpolateB;
+		s_toolInterpolateB = 0;
+	}
+
+	if (s_owpTimeline) {
+		delete s_owpTimeline;
+		s_owpTimeline = 0;
+	}
+	if (s_owpPlayerButton) {
+		delete s_owpPlayerButton;
+		s_owpPlayerButton = 0;
+	}
+	if (s_owpLTimeline) {
+		delete s_owpLTimeline;
+		s_owpLTimeline = 0;
+	}
+
+	if (s_layerWnd) {
+		delete s_layerWnd;
+		s_layerWnd = 0;
+	}
+	if (s_owpLayerTable) {
+		delete s_owpLayerTable;
+		s_owpLayerTable = 0;
+	}
+
+	if (s_shprateSlider) {
+		delete s_shprateSlider;
+		s_shprateSlider = 0;
+	}
+	if (s_boxzSlider) {
+		delete s_boxzSlider;
+		s_boxzSlider = 0;
+	}
+	if (s_boxzlabel) {
+		delete s_boxzlabel;
+		s_boxzlabel = 0;
+	}
+	if (s_massSlider) {
+		delete s_massSlider;
+		s_massSlider = 0;
+	}
+	if (s_massSLlabel) {
+		delete s_massSLlabel;
+		s_massSLlabel = 0;
+	}
+	if (s_massB) {
+		delete s_massB;
+		s_massB = 0;
+	}
+	if (s_namelabel) {
+		delete s_namelabel;
+		s_namelabel = 0;
+	}
+	if (s_lenglabel) {
+		delete s_lenglabel;
+		s_lenglabel = 0;
+	}
+	if (s_rigidskip) {
+		delete s_rigidskip;
+		s_rigidskip = 0;
+	}
+	if (s_forbidrot) {
+		delete s_forbidrot;
+		s_forbidrot = 0;
+	}
+
+	if (s_allrigidenableB) {
+		delete s_allrigidenableB;
+		s_allrigidenableB = 0;
+	}
+	if (s_allrigiddisableB) {
+		delete s_allrigiddisableB;
+		s_allrigiddisableB = 0;
+	}
+
+
+	if (s_shplabel) {
+		delete s_shplabel;
+		s_shplabel = 0;
+	}
+	if (s_colradio) {
+		delete s_colradio;
+		s_colradio = 0;
+	}
+	if (s_lkradio) {
+		delete s_lkradio;
+		s_lkradio = 0;
+	}
+	if (s_lkSlider) {
+		delete s_lkSlider;
+		s_lkSlider = 0;
+	}
+	if (s_lklabel) {
+		delete s_lklabel;
+		s_lklabel = 0;
+	}
+	if (s_akradio) {
+		delete s_akradio;
+		s_akradio = 0;
+	}
+	if (s_akSlider) {
+		delete s_akSlider;
+		s_akSlider = 0;
+	}
+	if (s_aklabel) {
+		delete s_aklabel;
+		s_aklabel = 0;
+	}
+	if (s_restSlider) {
+		delete s_restSlider;
+		s_restSlider = 0;
+	}
+	if (s_restlabel) {
+		delete s_restlabel;
+		s_restlabel = 0;
+	}
+	if (s_fricSlider) {
+		delete s_fricSlider;
+		s_fricSlider = 0;
+	}
+	if (s_friclabel) {
+		delete s_friclabel;
+		s_friclabel = 0;
+	}
+	if (s_ldmpSlider) {
+		delete s_ldmpSlider;
+		s_ldmpSlider = 0;
+	}
+	if (s_admpSlider) {
+		delete s_admpSlider;
+		s_admpSlider = 0;
+	}
+	if (s_kB) {
+		delete s_kB;
+		s_kB = 0;
+	}
+	if (s_restB) {
+		delete s_restB;
+		s_restB = 0;
+	}
+	if (s_ldmplabel) {
+		delete s_ldmplabel;
+		s_ldmplabel = 0;
+	}
+	if (s_admplabel) {
+		delete s_admplabel;
+		s_admplabel = 0;
+	}
+	if (s_dmpB) {
+		delete s_dmpB;
+		s_dmpB = 0;
+	}
+	if (s_groupB) {
+		delete s_groupB;
+		s_groupB = 0;
+	}
+	if (s_gcoliB) {
+		delete s_gcoliB;
+		s_gcoliB = 0;
+	}
+	if (s_btgSlider) {
+		delete s_btgSlider;
+		s_btgSlider = 0;
+	}
+	if (s_btglabel) {
+		delete s_btglabel;
+		s_btglabel = 0;
+	}
+	if (s_btgscSlider) {
+		delete s_btgscSlider;
+		s_btgscSlider = 0;
+	}
+	if (s_btgsclabel) {
+		delete s_btgsclabel;
+		s_btgsclabel = 0;
+	}
+	if (s_btforce) {
+		delete s_btforce;
+		s_btforce = 0;
+	}
+	if (s_groupcheck) {
+		delete s_groupcheck;
+		s_groupcheck = 0;
+	}
+	if (s_btgB) {
+		delete s_btgB;
+		s_btgB = 0;
+	}
+	if (s_rigidWnd) {
+		delete s_rigidWnd;
+		s_rigidWnd = 0;
+	}
+
+	if (s_dmpgroupcheck) {
+		delete s_dmpgroupcheck;
+		s_dmpgroupcheck = 0;
+	}
+	if (s_dmpanimLlabel) {
+		delete s_dmpanimLlabel;
+		s_dmpanimLlabel = 0;
+	}
+	if (s_dmpanimLSlider) {
+		delete s_dmpanimLSlider;
+		s_dmpanimLSlider = 0;
+	}
+	if (s_dmpanimAlabel) {
+		delete s_dmpanimAlabel;
+		s_dmpanimAlabel = 0;
+	}
+	if (s_dmpanimASlider) {
+		delete s_dmpanimASlider;
+		s_dmpanimASlider = 0;
+	}
+	if (s_dmpanimB) {
+		delete s_dmpanimB;
+		s_dmpanimB = 0;
+	}
+	if (s_dmpanimWnd) {
+		delete s_dmpanimWnd;
+		s_dmpanimWnd = 0;
+	}
+
+
+	if (s_impgroupcheck) {
+		delete s_impgroupcheck;
+		s_impgroupcheck = 0;
+	}
+	if (s_impzSlider) {
+		delete s_impzSlider;
+		s_impzSlider = 0;
+	}
+	if (s_impySlider) {
+		delete s_impySlider;
+		s_impySlider = 0;
+	}
+	if (s_impxSlider) {
+		delete s_impxSlider;
+		s_impxSlider = 0;
+	}
+	if (s_impzlabel) {
+		delete s_impzlabel;
+		s_impzlabel = 0;
+	}
+	if (s_impylabel) {
+		delete s_impylabel;
+		s_impylabel = 0;
+	}
+	if (s_impxlabel) {
+		delete s_impxlabel;
+		s_impxlabel = 0;
+	}
+	if (s_impscaleSlider) {
+		delete s_impscaleSlider;
+		s_impscaleSlider = 0;
+	}
+	if (s_impscalelabel) {
+		delete s_impscalelabel;
+		s_impscalelabel = 0;
+	}
+	if (s_impallB) {
+		delete s_impallB;
+		s_impallB = 0;
+	}
+	if (s_impWnd) {
+		delete s_impWnd;
+		s_impWnd = 0;
+	}
+	if (s_gpWnd) {
+		delete s_gpWnd;
+		s_gpWnd = 0;
+	}
+	if (s_ghSlider) {
+		delete s_ghSlider;
+		s_ghSlider = 0;
+	}
+	if (s_gsizexSlider) {
+		delete s_gsizexSlider;
+		s_gsizexSlider = 0;
+	}
+	if (s_gsizezSlider) {
+		delete s_gsizezSlider;
+		s_gsizezSlider = 0;
+	}
+	if (s_ghlabel) {
+		delete s_ghlabel;
+		s_ghlabel = 0;
+	}
+	if (s_gsizexlabel) {
+		delete s_gsizexlabel;
+		s_gsizexlabel = 0;
+	}
+	if (s_gsizezlabel) {
+		delete s_gsizezlabel;
+		s_gsizezlabel = 0;
+	}
+	if (s_gpdisp) {
+		delete s_gpdisp;
+		s_gpdisp = 0;
+	}
+	if (s_grestSlider) {
+		delete s_grestSlider;
+		s_grestSlider = 0;
+	}
+	if (s_grestlabel) {
+		delete s_grestlabel;
+		s_grestlabel = 0;
+	}
+	if (s_gfricSlider) {
+		delete s_gfricSlider;
+		s_gfricSlider = 0;
+	}
+	if (s_gfriclabel) {
+		delete s_gfriclabel;
+		s_gfriclabel = 0;
+	}
+
+	//static SPAXIS s_spaxis[3];
+	int spno;
+	for (spno = 0; spno < 3; spno++) {
+		CMySprite* cursp = s_spaxis[spno].sprite;
+		if (cursp) {
+			delete cursp;
+		}
+		s_spaxis[spno].sprite = 0;
+	}
+
+	int spcno;
+	for (spcno = 0; spcno < 3; spcno++) {
+		CMySprite* curspc = s_spcam[spcno].sprite;
+		if (curspc) {
+			delete curspc;
+		}
+		s_spcam[spcno].sprite = 0;
+	}
+
+
+	int sprno;
+	for (sprno = 0; sprno < 2; sprno++) {
+		CMySprite* cursp = s_sprig[sprno].sprite;
+		if (cursp) {
+			delete cursp;
+		}
+		s_sprig[sprno].sprite = 0;
+	}
+
+	CMySprite* cursp = s_spbt.sprite;
+	if (cursp) {
+		delete cursp;
+	}
+	s_spbt.sprite = 0;
+
+
+
+	DestroyModelPanel();
+	DestroyConvBoneWnd();
+
+	//DestroySdkObjects();
+
+	if (s_psdk) {
+		s_psdk->Destroy();
+		s_psdk = 0;
+	}
+
+	if (s_bpWorld) {
+		delete s_bpWorld;
+		s_bpWorld = 0;
+	}
+
+
+}
+
 
 
 //--------------------------------------------------------------------------------------
@@ -1874,123 +2663,191 @@ int AdjustBoneTra( CBone* curbone, double curframe )
 // repainted. After this function has returned, DXUT will call 
 // IDirect3DDevice9::Present to display the contents of the next buffer in the swap chain
 //--------------------------------------------------------------------------------------
-void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext )
+void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext )
 {
     HRESULT hr;
 
     // If the settings dialog is being shown, then
     // render it instead of rendering the app's scene
-    if( g_SettingsDlg.IsActive() )
-    {
-        g_SettingsDlg.OnRender( fElapsedTime );
-        return;
-    }
+    //if( g_SettingsDlg.IsActive() )
+    //{
+    //    g_SettingsDlg.OnRender( fElapsedTime );
+    //    return;
+    //}
 
-    // Clear the render target and the zbuffer 
-    V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
-                          0 ) );
+    //// Clear the render target and the zbuffer 
+    //V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
+    //                      0 ) );
 
-	s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-	s_pdev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-	s_pdev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+	// Clear the render target and depth stencil
+	float ClearColor[4] = { 0.0f, 0.25f, 0.25f, 0.55f };
+	ID3D10RenderTargetView* pRTV = DXUTGetD3D10RenderTargetView();
+	pd3dDevice->ClearRenderTargetView(pRTV, ClearColor);
+	ID3D10DepthStencilView* pDSV = DXUTGetD3D10DepthStencilView();
+	pd3dDevice->ClearDepthStencilView(pDSV, D3D10_CLEAR_DEPTH, 1.0, 0);
 
-    // Render the scene
-    if( SUCCEEDED( pd3dDevice->BeginScene() ) )
-    {
-		OnRenderSetShaderConst();
 
-		OnRenderModel();
-		OnRenderGround();
-		OnRenderBoneMark();
-		OnRenderSelect();
-		OnRenderUtDialog(fElapsedTime);
+	ChaMatrix mWorldViewProjection;
+	ChaVector3 vLightDir[MAX_LIGHTS];
+	ChaVector4 vLightDiffuse[MAX_LIGHTS];
+	ChaMatrix mWorld;
+	ChaMatrix mView;
+	ChaMatrix mProj;
 
-		OnRenderSprite();
-		RenderText( fTime );
+	// Get the projection & view matrix from the camera class
+//	mWorld = g_mCenterMesh * *g_Camera.GetWorldMatrix();
+	mWorld = *g_Camera.GetWorldMatrix();
+	mProj = *g_Camera.GetProjMatrix();
+	mView = *g_Camera.GetViewMatrix();
 
-        V( pd3dDevice->EndScene() );
-    }
+	mWorldViewProjection = mWorld * mView * mProj;
+
+	// Render the light arrow so the user can visually see the light dir
+	for (int i = 0; i < g_nNumActiveLights; i++)
+	{
+		D3DXCOLOR arrowColor = (i == g_nActiveLight) ? D3DXCOLOR(1, 1, 0, 1) : D3DXCOLOR(1, 1, 1, 1);
+		//V(g_LightControl[i].OnRender10(arrowColor, &mView, &mProj, g_Camera.GetEyePt()));
+		vLightDir[i] = g_LightControl[i].GetLightDirection();
+		vLightDiffuse[i] = ChaVector4(1, 1, 1, 1) * g_fLightScale;
+	}
+
+	//V(g_pLightDir->SetRawValue(vLightDir, 0, sizeof(ChaVector3) * MAX_LIGHTS));
+	//V(g_pLightDiffuse->SetFloatVectorArray((float*)vLightDiffuse, 0, MAX_LIGHTS));
+	//V(g_pmWorldViewProjection->SetMatrix((float*)&mWorldViewProjection));
+	//V(g_pmWorld->SetMatrix((float*)&mWorld));
+	//V(g_pfTime->SetFloat((float)fTime));
+	//V(g_pnNumLights->SetInt(g_nNumActiveLights));
+
+	//// Render the scene with this technique as defined in the .fx file
+	//ID3D10EffectTechnique* pRenderTechnique;
+	//switch (g_nNumActiveLights)
+	//{
+	//case 1:
+	//	pRenderTechnique = g_pTechRenderSceneWithTexture1Light;
+	//	break;
+	//case 2:
+	//	pRenderTechnique = g_pTechRenderSceneWithTexture2Light;
+	//	break;
+	//case 3:
+	//	pRenderTechnique = g_pTechRenderSceneWithTexture3Light;
+	//	break;
+	//default:
+	//	pRenderTechnique = g_pTechRenderSceneWithTexture1Light;
+	//	break;
+	//}
+
+
+
+	//s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+	//s_pdev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+	//s_pdev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+
+
+	OnRenderSetShaderConst();
+
+	OnRenderModel();
+	OnRenderGround();
+	OnRenderBoneMark();
+	OnRenderSelect();
+	//OnRenderUtDialog(fElapsedTime);
+
+	OnRenderSprite();
+	RenderText( fTime );
+
+
+
+	//DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
+	////g_HUD.OnRender(fElapsedTime);
+	g_SampleUI.OnRender(fElapsedTime);
+	//DXUT_EndPerfEvent();
+
 }
 
 //--------------------------------------------------------------------------------------
-// Render the help and statistics text. This function uses the ID3DXFont interface for 
+// Render the help and statistics text. This function uses the ID3DX10Font interface for 
 // efficient text rendering.
 //--------------------------------------------------------------------------------------
 void RenderText( double fTime )
 {
 	static double s_savetime = 0.0;
-
-	double g_calcfps = 1.0 / (fTime - s_savetime);
+	double g_calcfps;
+	if (fTime != s_savetime) {
+		g_calcfps = 1.0 / (fTime - s_savetime);
+	}
+	else {
+		g_calcfps = 100.0;
+	}
 
     // The helper object simply helps keep track of text position, and color
     // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
     // If NULL is passed in as the sprite object, then it will work fine however the 
     // pFont->DrawText() will not be batched together.  Batching calls will improves perf.
     //CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 15 );
-	CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 18 );
+	//CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 18 );
 
     // Output statistics
-    txtHelper.Begin();
-    txtHelper.SetInsertionPos( 2, 0 );
-    txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
-    //txtHelper.DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
-    //txtHelper.DrawTextLine( DXUTGetDeviceStats() );
+    g_pTxtHelper->Begin();
+    g_pTxtHelper->SetInsertionPos( 2, 0 );
+    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+    //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
+    //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
-    txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    txtHelper.DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
+    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+    g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
 	//s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
-    //txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
-    //txtHelper.DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
+    //g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+    //g_pTxtHelper->DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
 
-	if (s_model && (s_curboneno >= 0)){
-		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone){
-			MOTINFO* curmi = s_model->GetCurMotInfo();
-			if (curmi){
-				const WCHAR* wbonename = curbone->GetWBoneName();
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int paraxsiflag = 1;
-				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-				ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
-				curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
-				//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
-				txtHelper.DrawFormattedTextLine(L"selected bone : %s", wbonename);
-				txtHelper.DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
-				txtHelper.DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
-			}
-		}
-	}
+	//if (s_model && (s_curboneno >= 0)){
+	//	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	//	if (curbone){
+	//		MOTINFO* curmi = s_model->GetCurMotInfo();
+	//		if (curmi){
+	//			const WCHAR* wbonename = curbone->GetWBoneName();
+	//			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//			int paraxsiflag = 1;
+	//			int isfirstbone = 0;
+	//			cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+	//			ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
+	//			curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
+	//			//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
+	//			g_pTxtHelper->DrawFormattedTextLine(L"selected bone : %s", wbonename);
+	//			g_pTxtHelper->DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
+	//			g_pTxtHelper->DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
+	//		}
+	//	}
+	//}
 
 /***
     // Draw help
     if( g_bShowHelp )
     {
-        const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D9BackBufferSurfaceDesc();
-        txtHelper.SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
-        txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
-        txtHelper.DrawTextLine( L"Controls:" );
+        const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D10BackBufferSurfaceDesc();
+        g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
+        g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
+        g_pTxtHelper->DrawTextLine( L"Controls:" );
 
-        txtHelper.SetInsertionPos( 20, pd3dsdBackBuffer->Height - 15 * 5 );
-        txtHelper.DrawTextLine( L"Rotate model: Left mouse button\n"
+        g_pTxtHelper->SetInsertionPos( 20, pd3dsdBackBuffer->Height - 15 * 5 );
+        g_pTxtHelper->DrawTextLine( L"Rotate model: Left mouse button\n"
                                 L"Rotate light: Right mouse button\n"
                                 L"Rotate camera: Middle mouse button\n"
                                 L"Zoom camera: Mouse wheel scroll\n" );
 
-        txtHelper.SetInsertionPos( 250, pd3dsdBackBuffer->Height - 15 * 5 );
-        txtHelper.DrawTextLine( L"Hide help: F1\n"
+        g_pTxtHelper->SetInsertionPos( 250, pd3dsdBackBuffer->Height - 15 * 5 );
+        g_pTxtHelper->DrawTextLine( L"Hide help: F1\n"
                                 L"Quit: ESC\n" );
     }
     else
     {
-        txtHelper.SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-        txtHelper.DrawTextLine( L"Press F1 for help" );
+        g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+        g_pTxtHelper->DrawTextLine( L"Press F1 for help" );
     }
 ***/
-    txtHelper.End();
+    g_pTxtHelper->End();
+
 
 	s_savetime = fTime;
 }
@@ -2747,20 +3604,26 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
     // Always allow dialog resource manager calls to handle global messages
     // so GUI state is updated correctly
+	//g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
     *pbNoFurtherProcessing = g_DialogResourceManager.MsgProc( hWnd, uMsg, wParam, lParam );
-    if( *pbNoFurtherProcessing )
-        return 0;
+	if (*pbNoFurtherProcessing) {
+		//_ASSERT(0);
+		return 0;
+	}
 
-    if( g_SettingsDlg.IsActive() )
-    {
-        g_SettingsDlg.MsgProc( hWnd, uMsg, wParam, lParam );
-        return 0;
-    }
+    //if( g_SettingsDlg.IsActive() )
+    //{
+    //    g_SettingsDlg.MsgProc( hWnd, uMsg, wParam, lParam );
+    //    //return 0;
+    //}
 
     // Give the dialogs a chance to handle the message first
+	//g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
     *pbNoFurtherProcessing = g_SampleUI.MsgProc( hWnd, uMsg, wParam, lParam );
-    if( *pbNoFurtherProcessing )
-        return 0;
+	if (*pbNoFurtherProcessing) {
+		//_ASSERT(0);
+		return 0;
+	}
 
     // Pass all remaining windows messages to camera so it can respond to user input
 
@@ -2812,7 +3675,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ActivatePanel( 1 );
 		}
 	}
-
 	if( uMsg == WM_SYSCOMMAND ){
 		switch( wParam ){
 		case SC_CLOSE:
@@ -2842,7 +3704,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 // messages to the application.  The framework does not remove the underlying keystroke 
 // messages, which are still passed to the application's MsgProc callback.
 //--------------------------------------------------------------------------------------
-void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
+//void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
+void CALLBACK OnKeyboard(UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext)
 {
     if( bKeyDown )
     {
@@ -2868,6 +3731,8 @@ int RollbackCurBoneNo()
 //--------------------------------------------------------------------------------------
 void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext )
 {
+
+
     CDXUTComboBox* pComboBox;
 	ChaVector3 cureul, neweul;
 	int tmpboneno;
@@ -3125,30 +3990,30 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 }
 
 
-//--------------------------------------------------------------------------------------
-// This callback function will be called immediately after the Direct3D device has 
-// entered a lost state and before IDirect3DDevice9::Reset is called. Resources created
-// in the OnResetDevice callback should be released here, which generally includes all 
-// D3DPOOL_DEFAULT resources. See the "Lost Devices" section of the documentation for 
-// information about lost devices.
-//--------------------------------------------------------------------------------------
-void CALLBACK OnLostDevice( void* pUserContext )
-{
-    g_DialogResourceManager.OnD3D9LostDevice();
-    g_SettingsDlg.OnD3D9LostDevice();
-    CDXUTDirectionWidget::StaticOnD3D9LostDevice();
-    if( g_pFont )
-        g_pFont->OnLostDevice();
-    if( g_pEffect )
-        g_pEffect->OnLostDevice();
-    SAFE_RELEASE( g_pSprite );
-
-	if( g_texbank ){
-		CallF( g_texbank->Invalidate( INVAL_ONLYDEFAULT ), return );
-	}
-
-}
-
+////--------------------------------------------------------------------------------------
+//// This callback function will be called immediately after the Direct3D device has 
+//// entered a lost state and before IDirect3DDevice9::Reset is called. Resources created
+//// in the OnResetDevice callback should be released here, which generally includes all 
+//// 0 resources. See the "Lost Devices" section of the documentation for 
+//// information about lost devices.
+////--------------------------------------------------------------------------------------
+//void CALLBACK OnLostDevice( void* pUserContext )
+//{
+//    g_DialogResourceManager.OnD3D10LostDevice();
+//    g_SettingsDlg.OnD3D10LostDevice();
+//    CDXUTDirectionWidget::StaticOnD3D10LostDevice();
+//    if( g_pFont )
+//        g_pFont->OnLostDevice();
+//    if( g_pEffect )
+//        g_pEffect->OnLostDevice();
+//    SAFE_RELEASE( g_pSprite );
+//
+//	if( g_texbank ){
+//		CallF( g_texbank->Invalidate( INVAL_ONLYDEFAULT ), return );
+//	}
+//
+//}
+//
 
 //--------------------------------------------------------------------------------------
 // This callback function will be called immediately after the Direct3D device has 
@@ -3156,517 +4021,517 @@ void CALLBACK OnLostDevice( void* pUserContext )
 // windowed/full screen toggles. Resources created in the OnCreateDevice callback 
 // should be released here, which generally includes all D3DPOOL_MANAGED resources. 
 //--------------------------------------------------------------------------------------
-void CALLBACK OnDestroyDevice( void* pUserContext )
-{
-    g_DialogResourceManager.OnD3D9DestroyDevice();
-    g_SettingsDlg.OnD3D9DestroyDevice();
-    CDXUTDirectionWidget::StaticOnD3D9DestroyDevice();
-    SAFE_RELEASE( g_pEffect );
-    SAFE_RELEASE( g_pFont );
-
-	if (s_editrangehistory){
-		delete[] s_editrangehistory;
-		s_editrangehistory = 0;
-	}
-	s_editrangehistoryno = 0;
-
-	if (s_anglelimitdlg){
-		DestroyWindow(s_anglelimitdlg);
-		s_anglelimitdlg = 0;
-	}
-	if (s_rotaxisdlg){
-		DestroyWindow(s_rotaxisdlg);
-		s_rotaxisdlg = 0;
-	}
-	if (s_customrigdlg){
-		DestroyWindow(s_customrigdlg);
-		s_customrigdlg = 0;
-	}
-	s_oprigflag = 0;
-	s_customrigbone = 0;
-
-	vector<MODELELEM>::iterator itrmodel;
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-		CModel* curmodel = itrmodel->modelptr;
-		if( curmodel ){
-			//FbxScene* pscene = curmodel->GetScene();
-			//if (pscene){
-			//	pscene->Destroy();
-			//}
-
-			delete curmodel;
-		}
-	}
-	s_modelindex.clear();
-	s_model = 0;
-
-	if( s_select ){
-		delete s_select;
-		s_select = 0;
-	}
-	if (s_rigmark){
-		delete s_rigmark;
-		s_rigmark = 0;
-	}
-	if (s_ground){
-		delete s_ground;
-		s_ground = 0;
-	}
-	if( s_gplane ){
-		delete s_gplane;
-		s_gplane = 0;
-	}
-	if( s_bmark ){
-		delete s_bmark;
-		s_bmark = 0;
-	}
-
-
-	if( s_bcircle ){
-		delete s_bcircle;
-		s_bcircle = 0;
-	}
-	if( s_kinsprite ){
-		delete s_kinsprite;
-		s_kinsprite = 0;
-	}
-
-	if( g_texbank ){
-		delete g_texbank;
-		g_texbank = 0;
-	}
-
-	if( s_mainmenu ){
-		DestroyMenu( s_mainmenu );
-		s_mainmenu = 0;
-	}
-
-	DestroyTimeLine( 1 );
-
-	if( s_timelineWnd ){
-		delete s_timelineWnd;
-		s_timelineWnd = 0;
-	}
-	if( s_LtimelineWnd ){
-		delete s_LtimelineWnd;
-		s_LtimelineWnd = 0;
-	}
-
-	if( s_toolWnd ){
-		delete s_toolWnd;
-		s_toolWnd = 0;
-	}
-
-	if( s_toolCopyB ){
-		delete s_toolCopyB;
-		s_toolCopyB = 0;
-	}
-	if( s_toolSymCopyB ){
-		delete s_toolSymCopyB;
-		s_toolSymCopyB = 0;
-	}
-	if( s_toolCutB ){
-		delete s_toolCutB;
-		s_toolCutB = 0;
-	}
-	if( s_toolPasteB ){
-		delete s_toolPasteB;
-		s_toolPasteB = 0;
-	}
-	if( s_toolDeleteB ){
-		delete s_toolDeleteB;
-		s_toolDeleteB = 0;
-	}
-	if( s_toolMotPropB ){
-		delete s_toolMotPropB;
-		s_toolMotPropB = 0;
-	}
-	if( s_toolMarkB ){
-		delete s_toolMarkB;
-		s_toolMarkB = 0;
-	}
-	if( s_toolSelBoneB ){
-		delete s_toolSelBoneB;
-		s_toolSelBoneB = 0;
-	}
-	if( s_toolInitMPB ){
-		delete s_toolInitMPB;
-		s_toolInitMPB = 0;
-	}
-	if (s_toolFilterB){
-		delete s_toolFilterB;
-		s_toolFilterB = 0;
-	}
-	if (s_toolInterpolateB){
-		delete s_toolInterpolateB;
-		s_toolInterpolateB = 0;
-	}
-
-	if( s_owpTimeline ){
-		delete s_owpTimeline;
-		s_owpTimeline = 0;
-	}
-	if( s_owpPlayerButton ){
-		delete s_owpPlayerButton;
-		s_owpPlayerButton = 0;
-	}
-	if( s_owpLTimeline ){
-		delete s_owpLTimeline;
-		s_owpLTimeline = 0;
-	}
-
-	if( s_layerWnd ){
-		delete s_layerWnd;
-		s_layerWnd = 0;
-	}
-	if( s_owpLayerTable ){
-		delete s_owpLayerTable;
-		s_owpLayerTable = 0;
-	}
-
-	if( s_shprateSlider ){
-		delete s_shprateSlider;
-		s_shprateSlider = 0;
-	}
-	if( s_boxzSlider ){
-		delete s_boxzSlider;
-		s_boxzSlider = 0;
-	}
-	if( s_boxzlabel ){
-		delete s_boxzlabel;
-		s_boxzlabel = 0;
-	}
-	if( s_massSlider ){
-		delete s_massSlider;
-		s_massSlider = 0;
-	}
-	if( s_massSLlabel ){
-		delete s_massSLlabel;
-		s_massSLlabel = 0;
-	}
-	if( s_massB ){
-		delete s_massB;
-		s_massB = 0;
-	}
-	if( s_namelabel ){
-		delete s_namelabel;
-		s_namelabel = 0;
-	}
-	if( s_lenglabel ){
-		delete s_lenglabel;
-		s_lenglabel = 0;
-	}
-	if( s_rigidskip ){
-		delete s_rigidskip;
-		s_rigidskip = 0;
-	}
-	if (s_forbidrot){
-		delete s_forbidrot;
-		s_forbidrot = 0;
-	}
-
-	if (s_allrigidenableB){
-		delete s_allrigidenableB;
-		s_allrigidenableB = 0;
-	}
-	if (s_allrigiddisableB){
-		delete s_allrigiddisableB;
-		s_allrigiddisableB = 0;
-	}
-
-
-	if( s_shplabel ){
-		delete s_shplabel;
-		s_shplabel = 0;
-	}
-	if( s_colradio ){
-		delete s_colradio;
-		s_colradio = 0;
-	}
-	if( s_lkradio ){
-		delete s_lkradio;
-		s_lkradio = 0;
-	}
-	if( s_lkSlider ){
-		delete s_lkSlider;
-		s_lkSlider = 0;
-	}
-	if( s_lklabel ){
-		delete s_lklabel;
-		s_lklabel = 0;
-	}
-	if( s_akradio ){
-		delete s_akradio;
-		s_akradio = 0;
-	}
-	if( s_akSlider ){
-		delete s_akSlider;
-		s_akSlider = 0;
-	}
-	if( s_aklabel ){
-		delete s_aklabel;
-		s_aklabel = 0;
-	}
-	if( s_restSlider ){
-		delete s_restSlider;
-		s_restSlider = 0;
-	}
-	if( s_restlabel ){
-		delete s_restlabel;
-		s_restlabel = 0;
-	}
-	if( s_fricSlider ){
-		delete s_fricSlider;
-		s_fricSlider = 0;
-	}
-	if( s_friclabel ){
-		delete s_friclabel;
-		s_friclabel = 0;
-	}
-	if( s_ldmpSlider ){
-		delete s_ldmpSlider;
-		s_ldmpSlider = 0;
-	}
-	if( s_admpSlider ){
-		delete s_admpSlider;
-		s_admpSlider = 0;
-	}
-	if( s_kB ){
-		delete s_kB;
-		s_kB = 0;
-	}
-	if( s_restB ){
-		delete s_restB;
-		s_restB = 0;
-	}
-	if( s_ldmplabel ){
-		delete s_ldmplabel;
-		s_ldmplabel = 0;
-	}
-	if( s_admplabel ){
-		delete s_admplabel;
-		s_admplabel = 0;
-	}
-	if( s_dmpB ){
-		delete s_dmpB;
-		s_dmpB = 0;
-	}
-	if( s_groupB ){
-		delete s_groupB;
-		s_groupB = 0;
-	}
-	if( s_gcoliB ){
-		delete s_gcoliB;
-		s_gcoliB = 0;
-	}
-	if( s_btgSlider ){
-		delete s_btgSlider;
-		s_btgSlider = 0;
-	}
-	if( s_btglabel ){
-		delete s_btglabel;
-		s_btglabel = 0;
-	}
-	if( s_btgscSlider ){
-		delete s_btgscSlider;
-		s_btgscSlider = 0;
-	}
-	if( s_btgsclabel ){
-		delete s_btgsclabel;
-		s_btgsclabel = 0;
-	}
-	if( s_btforce ){
-		delete s_btforce;
-		s_btforce = 0;
-	}
-	if( s_groupcheck ){
-		delete s_groupcheck;
-		s_groupcheck = 0;
-	}
-	if( s_btgB ){
-		delete s_btgB;
-		s_btgB = 0;
-	}
-	if( s_rigidWnd ){
-		delete s_rigidWnd;
-		s_rigidWnd = 0;
-	}
-
-	if( s_dmpgroupcheck ){
-		delete s_dmpgroupcheck;
-		s_dmpgroupcheck = 0;
-	}
-	if( s_dmpanimLlabel ){
-		delete s_dmpanimLlabel;
-		s_dmpanimLlabel = 0;
-	}
-	if( s_dmpanimLSlider ){
-		delete s_dmpanimLSlider;
-		s_dmpanimLSlider = 0;
-	}
-	if( s_dmpanimAlabel ){
-		delete s_dmpanimAlabel;
-		s_dmpanimAlabel = 0;
-	}
-	if( s_dmpanimASlider ){
-		delete s_dmpanimASlider;
-		s_dmpanimASlider = 0;
-	}
-	if( s_dmpanimB ){
-		delete s_dmpanimB;
-		s_dmpanimB = 0;
-	}
-	if( s_dmpanimWnd ){
-		delete s_dmpanimWnd;
-		s_dmpanimWnd = 0;
-	}
-
-
-	if( s_impgroupcheck ){
-		delete s_impgroupcheck;
-		s_impgroupcheck = 0;
-	}
-	if( s_impzSlider ){
-		delete s_impzSlider;
-		s_impzSlider = 0;
-	}
-	if( s_impySlider ){
-		delete s_impySlider;
-		s_impySlider = 0;
-	}
-	if( s_impxSlider ){
-		delete s_impxSlider;
-		s_impxSlider = 0;
-	}
-	if( s_impzlabel ){
-		delete s_impzlabel;
-		s_impzlabel = 0;
-	}
-	if( s_impylabel ){
-		delete s_impylabel;
-		s_impylabel = 0;
-	}
-	if( s_impxlabel ){
-		delete s_impxlabel;
-		s_impxlabel = 0;
-	}
-	if( s_impscaleSlider ){
-		delete s_impscaleSlider;
-		s_impscaleSlider = 0;
-	}
-	if( s_impscalelabel ){
-		delete s_impscalelabel;
-		s_impscalelabel = 0;
-	}
-	if( s_impallB ){
-		delete s_impallB;
-		s_impallB = 0;
-	}
-	if( s_impWnd ){
-		delete s_impWnd;
-		s_impWnd = 0;
-	}
-	if( s_gpWnd ){
-		delete s_gpWnd;
-		s_gpWnd = 0;
-	}
-	if( s_ghSlider ){
-		delete s_ghSlider;
-		s_ghSlider = 0;
-	}
-	if( s_gsizexSlider ){
-		delete s_gsizexSlider;
-		s_gsizexSlider = 0;
-	}
-	if( s_gsizezSlider ){
-		delete s_gsizezSlider;
-		s_gsizezSlider = 0;
-	}
-	if( s_ghlabel ){
-		delete s_ghlabel;
-		s_ghlabel = 0;
-	}
-	if( s_gsizexlabel ){
-		delete s_gsizexlabel;
-		s_gsizexlabel = 0;
-	}
-	if( s_gsizezlabel ){
-		delete s_gsizezlabel;
-		s_gsizezlabel = 0;
-	}
-	if( s_gpdisp ){
-		delete s_gpdisp;
-		s_gpdisp = 0;
-	}
-	if( s_grestSlider ){
-		delete s_grestSlider;
-		s_grestSlider = 0;
-	}
-	if( s_grestlabel ){
-		delete s_grestlabel;
-		s_grestlabel = 0;
-	}
-	if( s_gfricSlider ){
-		delete s_gfricSlider;
-		s_gfricSlider = 0;
-	}
-	if( s_gfriclabel ){
-		delete s_gfriclabel;
-		s_gfriclabel = 0;
-	}
-
-//static SPAXIS s_spaxis[3];
-	int spno;
-	for( spno = 0; spno < 3; spno++ ){
-		CMySprite* cursp = s_spaxis[spno].sprite;
-		if( cursp ){
-			delete cursp;
-		}
-		s_spaxis[spno].sprite = 0;
-	}
-
-	int spcno;
-	for (spcno = 0; spcno < 3; spcno++){
-		CMySprite* curspc = s_spcam[spcno].sprite;
-		if (curspc){
-			delete curspc;
-		}
-		s_spcam[spcno].sprite = 0;
-	}
-
-
-	int sprno;
-	for (sprno = 0; sprno < 2; sprno++){
-		CMySprite* cursp = s_sprig[sprno].sprite;
-		if (cursp){
-			delete cursp;
-		}
-		s_sprig[sprno].sprite = 0;
-	}
-
-	CMySprite* cursp = s_spbt.sprite;
-	if (cursp){
-		delete cursp;
-	}
-	s_spbt.sprite = 0;
-
-
-
-	DestroyModelPanel();
-	DestroyConvBoneWnd();
-
-	//DestroySdkObjects();
-
-	if( s_psdk ){
-		s_psdk->Destroy();
-		s_psdk = 0;
-	}
-
-	if( s_bpWorld ){
-		delete s_bpWorld;
-		s_bpWorld = 0;
-	}
-}
+//void CALLBACK OnDestroyDevice( void* pUserContext )
+//{
+//    g_DialogResourceManager.OnD3D10DestroyDevice();
+//    g_SettingsDlg.OnD3D10DestroyDevice();
+//    CDXUTDirectionWidget::StaticOnD3D10DestroyDevice();
+//    SAFE_RELEASE( g_pEffect );
+//    SAFE_RELEASE( g_pFont );
+//
+//	if (s_editrangehistory){
+//		delete[] s_editrangehistory;
+//		s_editrangehistory = 0;
+//	}
+//	s_editrangehistoryno = 0;
+//
+//	if (s_anglelimitdlg){
+//		DestroyWindow(s_anglelimitdlg);
+//		s_anglelimitdlg = 0;
+//	}
+//	if (s_rotaxisdlg){
+//		DestroyWindow(s_rotaxisdlg);
+//		s_rotaxisdlg = 0;
+//	}
+//	if (s_customrigdlg){
+//		DestroyWindow(s_customrigdlg);
+//		s_customrigdlg = 0;
+//	}
+//	s_oprigflag = 0;
+//	s_customrigbone = 0;
+//
+//	vector<MODELELEM>::iterator itrmodel;
+//	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
+//		CModel* curmodel = itrmodel->modelptr;
+//		if( curmodel ){
+//			//FbxScene* pscene = curmodel->GetScene();
+//			//if (pscene){
+//			//	pscene->Destroy();
+//			//}
+//
+//			delete curmodel;
+//		}
+//	}
+//	s_modelindex.clear();
+//	s_model = 0;
+//
+//	if( s_select ){
+//		delete s_select;
+//		s_select = 0;
+//	}
+//	if (s_rigmark){
+//		delete s_rigmark;
+//		s_rigmark = 0;
+//	}
+//	if (s_ground){
+//		delete s_ground;
+//		s_ground = 0;
+//	}
+//	if( s_gplane ){
+//		delete s_gplane;
+//		s_gplane = 0;
+//	}
+//	if( s_bmark ){
+//		delete s_bmark;
+//		s_bmark = 0;
+//	}
+//
+//
+//	if( s_bcircle ){
+//		delete s_bcircle;
+//		s_bcircle = 0;
+//	}
+//	if( s_kinsprite ){
+//		delete s_kinsprite;
+//		s_kinsprite = 0;
+//	}
+//
+//	if( g_texbank ){
+//		delete g_texbank;
+//		g_texbank = 0;
+//	}
+//
+//	if( s_mainmenu ){
+//		DestroyMenu( s_mainmenu );
+//		s_mainmenu = 0;
+//	}
+//
+//	DestroyTimeLine( 1 );
+//
+//	if( s_timelineWnd ){
+//		delete s_timelineWnd;
+//		s_timelineWnd = 0;
+//	}
+//	if( s_LtimelineWnd ){
+//		delete s_LtimelineWnd;
+//		s_LtimelineWnd = 0;
+//	}
+//
+//	if( s_toolWnd ){
+//		delete s_toolWnd;
+//		s_toolWnd = 0;
+//	}
+//
+//	if( s_toolCopyB ){
+//		delete s_toolCopyB;
+//		s_toolCopyB = 0;
+//	}
+//	if( s_toolSymCopyB ){
+//		delete s_toolSymCopyB;
+//		s_toolSymCopyB = 0;
+//	}
+//	if( s_toolCutB ){
+//		delete s_toolCutB;
+//		s_toolCutB = 0;
+//	}
+//	if( s_toolPasteB ){
+//		delete s_toolPasteB;
+//		s_toolPasteB = 0;
+//	}
+//	if( s_toolDeleteB ){
+//		delete s_toolDeleteB;
+//		s_toolDeleteB = 0;
+//	}
+//	if( s_toolMotPropB ){
+//		delete s_toolMotPropB;
+//		s_toolMotPropB = 0;
+//	}
+//	if( s_toolMarkB ){
+//		delete s_toolMarkB;
+//		s_toolMarkB = 0;
+//	}
+//	if( s_toolSelBoneB ){
+//		delete s_toolSelBoneB;
+//		s_toolSelBoneB = 0;
+//	}
+//	if( s_toolInitMPB ){
+//		delete s_toolInitMPB;
+//		s_toolInitMPB = 0;
+//	}
+//	if (s_toolFilterB){
+//		delete s_toolFilterB;
+//		s_toolFilterB = 0;
+//	}
+//	if (s_toolInterpolateB){
+//		delete s_toolInterpolateB;
+//		s_toolInterpolateB = 0;
+//	}
+//
+//	if( s_owpTimeline ){
+//		delete s_owpTimeline;
+//		s_owpTimeline = 0;
+//	}
+//	if( s_owpPlayerButton ){
+//		delete s_owpPlayerButton;
+//		s_owpPlayerButton = 0;
+//	}
+//	if( s_owpLTimeline ){
+//		delete s_owpLTimeline;
+//		s_owpLTimeline = 0;
+//	}
+//
+//	if( s_layerWnd ){
+//		delete s_layerWnd;
+//		s_layerWnd = 0;
+//	}
+//	if( s_owpLayerTable ){
+//		delete s_owpLayerTable;
+//		s_owpLayerTable = 0;
+//	}
+//
+//	if( s_shprateSlider ){
+//		delete s_shprateSlider;
+//		s_shprateSlider = 0;
+//	}
+//	if( s_boxzSlider ){
+//		delete s_boxzSlider;
+//		s_boxzSlider = 0;
+//	}
+//	if( s_boxzlabel ){
+//		delete s_boxzlabel;
+//		s_boxzlabel = 0;
+//	}
+//	if( s_massSlider ){
+//		delete s_massSlider;
+//		s_massSlider = 0;
+//	}
+//	if( s_massSLlabel ){
+//		delete s_massSLlabel;
+//		s_massSLlabel = 0;
+//	}
+//	if( s_massB ){
+//		delete s_massB;
+//		s_massB = 0;
+//	}
+//	if( s_namelabel ){
+//		delete s_namelabel;
+//		s_namelabel = 0;
+//	}
+//	if( s_lenglabel ){
+//		delete s_lenglabel;
+//		s_lenglabel = 0;
+//	}
+//	if( s_rigidskip ){
+//		delete s_rigidskip;
+//		s_rigidskip = 0;
+//	}
+//	if (s_forbidrot){
+//		delete s_forbidrot;
+//		s_forbidrot = 0;
+//	}
+//
+//	if (s_allrigidenableB){
+//		delete s_allrigidenableB;
+//		s_allrigidenableB = 0;
+//	}
+//	if (s_allrigiddisableB){
+//		delete s_allrigiddisableB;
+//		s_allrigiddisableB = 0;
+//	}
+//
+//
+//	if( s_shplabel ){
+//		delete s_shplabel;
+//		s_shplabel = 0;
+//	}
+//	if( s_colradio ){
+//		delete s_colradio;
+//		s_colradio = 0;
+//	}
+//	if( s_lkradio ){
+//		delete s_lkradio;
+//		s_lkradio = 0;
+//	}
+//	if( s_lkSlider ){
+//		delete s_lkSlider;
+//		s_lkSlider = 0;
+//	}
+//	if( s_lklabel ){
+//		delete s_lklabel;
+//		s_lklabel = 0;
+//	}
+//	if( s_akradio ){
+//		delete s_akradio;
+//		s_akradio = 0;
+//	}
+//	if( s_akSlider ){
+//		delete s_akSlider;
+//		s_akSlider = 0;
+//	}
+//	if( s_aklabel ){
+//		delete s_aklabel;
+//		s_aklabel = 0;
+//	}
+//	if( s_restSlider ){
+//		delete s_restSlider;
+//		s_restSlider = 0;
+//	}
+//	if( s_restlabel ){
+//		delete s_restlabel;
+//		s_restlabel = 0;
+//	}
+//	if( s_fricSlider ){
+//		delete s_fricSlider;
+//		s_fricSlider = 0;
+//	}
+//	if( s_friclabel ){
+//		delete s_friclabel;
+//		s_friclabel = 0;
+//	}
+//	if( s_ldmpSlider ){
+//		delete s_ldmpSlider;
+//		s_ldmpSlider = 0;
+//	}
+//	if( s_admpSlider ){
+//		delete s_admpSlider;
+//		s_admpSlider = 0;
+//	}
+//	if( s_kB ){
+//		delete s_kB;
+//		s_kB = 0;
+//	}
+//	if( s_restB ){
+//		delete s_restB;
+//		s_restB = 0;
+//	}
+//	if( s_ldmplabel ){
+//		delete s_ldmplabel;
+//		s_ldmplabel = 0;
+//	}
+//	if( s_admplabel ){
+//		delete s_admplabel;
+//		s_admplabel = 0;
+//	}
+//	if( s_dmpB ){
+//		delete s_dmpB;
+//		s_dmpB = 0;
+//	}
+//	if( s_groupB ){
+//		delete s_groupB;
+//		s_groupB = 0;
+//	}
+//	if( s_gcoliB ){
+//		delete s_gcoliB;
+//		s_gcoliB = 0;
+//	}
+//	if( s_btgSlider ){
+//		delete s_btgSlider;
+//		s_btgSlider = 0;
+//	}
+//	if( s_btglabel ){
+//		delete s_btglabel;
+//		s_btglabel = 0;
+//	}
+//	if( s_btgscSlider ){
+//		delete s_btgscSlider;
+//		s_btgscSlider = 0;
+//	}
+//	if( s_btgsclabel ){
+//		delete s_btgsclabel;
+//		s_btgsclabel = 0;
+//	}
+//	if( s_btforce ){
+//		delete s_btforce;
+//		s_btforce = 0;
+//	}
+//	if( s_groupcheck ){
+//		delete s_groupcheck;
+//		s_groupcheck = 0;
+//	}
+//	if( s_btgB ){
+//		delete s_btgB;
+//		s_btgB = 0;
+//	}
+//	if( s_rigidWnd ){
+//		delete s_rigidWnd;
+//		s_rigidWnd = 0;
+//	}
+//
+//	if( s_dmpgroupcheck ){
+//		delete s_dmpgroupcheck;
+//		s_dmpgroupcheck = 0;
+//	}
+//	if( s_dmpanimLlabel ){
+//		delete s_dmpanimLlabel;
+//		s_dmpanimLlabel = 0;
+//	}
+//	if( s_dmpanimLSlider ){
+//		delete s_dmpanimLSlider;
+//		s_dmpanimLSlider = 0;
+//	}
+//	if( s_dmpanimAlabel ){
+//		delete s_dmpanimAlabel;
+//		s_dmpanimAlabel = 0;
+//	}
+//	if( s_dmpanimASlider ){
+//		delete s_dmpanimASlider;
+//		s_dmpanimASlider = 0;
+//	}
+//	if( s_dmpanimB ){
+//		delete s_dmpanimB;
+//		s_dmpanimB = 0;
+//	}
+//	if( s_dmpanimWnd ){
+//		delete s_dmpanimWnd;
+//		s_dmpanimWnd = 0;
+//	}
+//
+//
+//	if( s_impgroupcheck ){
+//		delete s_impgroupcheck;
+//		s_impgroupcheck = 0;
+//	}
+//	if( s_impzSlider ){
+//		delete s_impzSlider;
+//		s_impzSlider = 0;
+//	}
+//	if( s_impySlider ){
+//		delete s_impySlider;
+//		s_impySlider = 0;
+//	}
+//	if( s_impxSlider ){
+//		delete s_impxSlider;
+//		s_impxSlider = 0;
+//	}
+//	if( s_impzlabel ){
+//		delete s_impzlabel;
+//		s_impzlabel = 0;
+//	}
+//	if( s_impylabel ){
+//		delete s_impylabel;
+//		s_impylabel = 0;
+//	}
+//	if( s_impxlabel ){
+//		delete s_impxlabel;
+//		s_impxlabel = 0;
+//	}
+//	if( s_impscaleSlider ){
+//		delete s_impscaleSlider;
+//		s_impscaleSlider = 0;
+//	}
+//	if( s_impscalelabel ){
+//		delete s_impscalelabel;
+//		s_impscalelabel = 0;
+//	}
+//	if( s_impallB ){
+//		delete s_impallB;
+//		s_impallB = 0;
+//	}
+//	if( s_impWnd ){
+//		delete s_impWnd;
+//		s_impWnd = 0;
+//	}
+//	if( s_gpWnd ){
+//		delete s_gpWnd;
+//		s_gpWnd = 0;
+//	}
+//	if( s_ghSlider ){
+//		delete s_ghSlider;
+//		s_ghSlider = 0;
+//	}
+//	if( s_gsizexSlider ){
+//		delete s_gsizexSlider;
+//		s_gsizexSlider = 0;
+//	}
+//	if( s_gsizezSlider ){
+//		delete s_gsizezSlider;
+//		s_gsizezSlider = 0;
+//	}
+//	if( s_ghlabel ){
+//		delete s_ghlabel;
+//		s_ghlabel = 0;
+//	}
+//	if( s_gsizexlabel ){
+//		delete s_gsizexlabel;
+//		s_gsizexlabel = 0;
+//	}
+//	if( s_gsizezlabel ){
+//		delete s_gsizezlabel;
+//		s_gsizezlabel = 0;
+//	}
+//	if( s_gpdisp ){
+//		delete s_gpdisp;
+//		s_gpdisp = 0;
+//	}
+//	if( s_grestSlider ){
+//		delete s_grestSlider;
+//		s_grestSlider = 0;
+//	}
+//	if( s_grestlabel ){
+//		delete s_grestlabel;
+//		s_grestlabel = 0;
+//	}
+//	if( s_gfricSlider ){
+//		delete s_gfricSlider;
+//		s_gfricSlider = 0;
+//	}
+//	if( s_gfriclabel ){
+//		delete s_gfriclabel;
+//		s_gfriclabel = 0;
+//	}
+//
+////static SPAXIS s_spaxis[3];
+//	int spno;
+//	for( spno = 0; spno < 3; spno++ ){
+//		CMySprite* cursp = s_spaxis[spno].sprite;
+//		if( cursp ){
+//			delete cursp;
+//		}
+//		s_spaxis[spno].sprite = 0;
+//	}
+//
+//	int spcno;
+//	for (spcno = 0; spcno < 3; spcno++){
+//		CMySprite* curspc = s_spcam[spcno].sprite;
+//		if (curspc){
+//			delete curspc;
+//		}
+//		s_spcam[spcno].sprite = 0;
+//	}
+//
+//
+//	int sprno;
+//	for (sprno = 0; sprno < 2; sprno++){
+//		CMySprite* cursp = s_sprig[sprno].sprite;
+//		if (cursp){
+//			delete cursp;
+//		}
+//		s_sprig[sprno].sprite = 0;
+//	}
+//
+//	CMySprite* cursp = s_spbt.sprite;
+//	if (cursp){
+//		delete cursp;
+//	}
+//	s_spbt.sprite = 0;
+//
+//
+//
+//	DestroyModelPanel();
+//	DestroyConvBoneWnd();
+//
+//	//DestroySdkObjects();
+//
+//	if( s_psdk ){
+//		s_psdk->Destroy();
+//		s_psdk = 0;
+//	}
+//
+//	if( s_bpWorld ){
+//		delete s_bpWorld;
+//		s_bpWorld = 0;
+//	}
+//}
 
 int DestroyTimeLine( int dellist )
 {
@@ -3709,37 +4574,85 @@ int GetShaderHandle()
 	g_hRenderSprite = g_pEffect->GetTechniqueByName( "RenderSprite" );
 	_ASSERT( g_hRenderSprite );
 
-	g_hm3x4Mat = g_pEffect->GetParameterByName( NULL, "g_m3x4Mat" );
-	_ASSERT( g_hm3x4Mat );
-	g_hmWorld = g_pEffect->GetParameterByName( NULL, "g_mWorld" );
+
+
+	g_hm4x4Mat = g_pEffect->GetVariableByName("g_m4x4Mat")->AsMatrix();
+	_ASSERT( g_hm4x4Mat );
+	g_hmWorld = g_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
 	_ASSERT( g_hmWorld );
-	g_hmVP = g_pEffect->GetParameterByName( NULL, "g_mVP" );
+	g_hmVP = g_pEffect->GetVariableByName("g_mVP")->AsMatrix();
 	_ASSERT( g_hmVP );
-	g_hEyePos = g_pEffect->GetParameterByName( NULL, "g_EyePos" );
+	g_hEyePos = g_pEffect->GetVariableByName("g_EyePos")->AsVector();
 	_ASSERT( g_hEyePos );
 
 
-//	g_hnNumLight = g_pEffect->GetParameterByName( NULL, "g_nNumLights" );
+//	g_hnNumLight = g_pEffect->GetVariableByName("g_nNumLights" );
 //	_ASSERT( g_hnNumLight );
-	g_hLightDir = g_pEffect->GetParameterByName( NULL, "g_LightDir" );
+	g_hLightDir = g_pEffect->GetVariableByName("g_LightDir")->AsVector();
 	_ASSERT( g_hLightDir );
-	g_hLightDiffuse = g_pEffect->GetParameterByName( NULL, "g_LightDiffuse" );
+	g_hLightDiffuse = g_pEffect->GetVariableByName("g_LightDiffuse")->AsVector();
 	_ASSERT( g_hLightDiffuse );
-//	g_hLightAmbient = g_pEffect->GetParameterByName( NULL, "g_LightAmbient" );
+//	g_hLightAmbient = g_pEffect->GetVariableByName("g_LightAmbient" );
 //	_ASSERT( g_hLightAmbient );
+	g_hSpriteOffset = g_pEffect->GetVariableByName("g_spriteoffset")->AsVector();
+	_ASSERT(g_hSpriteOffset);
+	g_hSpriteScale = g_pEffect->GetVariableByName("g_spritescale")->AsVector();
+	_ASSERT(g_hSpriteScale);
 
-	g_hdiffuse = g_pEffect->GetParameterByName( NULL, "g_diffuse" );
+	g_hPm3Offset = g_pEffect->GetVariableByName("g_pm3offset")->AsVector();
+	_ASSERT(g_hPm3Offset);
+	g_hPm3Scale = g_pEffect->GetVariableByName("g_pm3scale")->AsVector();
+	_ASSERT(g_hPm3Scale);
+
+	g_hdiffuse = g_pEffect->GetVariableByName("g_diffuse")->AsVector();
 	_ASSERT( g_hdiffuse );
-	g_hambient = g_pEffect->GetParameterByName( NULL, "g_ambient" );
+	g_hambient = g_pEffect->GetVariableByName("g_ambient")->AsVector();
 	_ASSERT( g_hambient );
-	g_hspecular = g_pEffect->GetParameterByName( NULL, "g_specular" );
+	g_hspecular = g_pEffect->GetVariableByName("g_specular")->AsVector();
 	_ASSERT( g_hspecular );
-	g_hpower = g_pEffect->GetParameterByName( NULL, "g_power" );
+	g_hpower = g_pEffect->GetVariableByName("g_power")->AsScalar();
 	_ASSERT( g_hpower );
-	g_hemissive = g_pEffect->GetParameterByName( NULL, "g_emissive" );
+	g_hemissive = g_pEffect->GetVariableByName("g_emissive")->AsVector();
 	_ASSERT( g_hemissive );
-	g_hMeshTexture = g_pEffect->GetParameterByName( NULL, "g_MeshTexture" );
+	g_hMeshTexture = g_pEffect->GetVariableByName("g_MeshTexture")->AsShaderResource();
 	_ASSERT( g_hMeshTexture );
+
+
+/*
+// Obtain variables
+g_ptxDiffuse = g_pEffect10->GetVariableByName("g_MeshTexture")->AsShaderResource();
+g_pLightDir = g_pEffect10->GetVariableByName("g_LightDir")->AsVector();
+g_pLightDiffuse = g_pEffect10->GetVariableByName("g_LightDiffuse")->AsVector();
+g_pmWorldViewProjection = g_pEffect10->GetVariableByName("g_mWorldViewProjection")->AsMatrix();
+g_pmWorld = g_pEffect10->GetVariableByName("g_mWorld")->AsMatrix();
+g_pfTime = g_pEffect10->GetVariableByName("g_fTime")->AsScalar();
+g_pMaterialAmbientColor = g_pEffect10->GetVariableByName("g_MaterialAmbientColor")->AsVector();
+g_pMaterialDiffuseColor = g_pEffect10->GetVariableByName("g_MaterialDiffuseColor")->AsVector();
+g_pnNumLights = g_pEffect10->GetVariableByName("g_nNumLights")->AsScalar();
+
+// Create our vertex input layout
+const D3D10_INPUT_ELEMENT_DESC layout[] =
+{
+{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D10_INPUT_PER_VERTEX_DATA, 0 },
+{ "NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D10_INPUT_PER_VERTEX_DATA, 0 },
+{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D10_INPUT_PER_VERTEX_DATA, 0 },
+};
+
+D3D10_PASS_DESC PassDesc;
+V_RETURN(g_pTechRenderSceneWithTexture1Light->GetPassByIndex(0)->GetDesc(&PassDesc));
+V_RETURN(pd3dDevice->CreateInputLayout(layout, 3, PassDesc.pIAInputSignature,
+PassDesc.IAInputSignatureSize, &g_pVertexLayout));
+
+// Load the mesh
+V_RETURN(g_Mesh10.Create(pd3dDevice, L"tiny\\tiny.sdkmesh", true));
+
+// Set effect variables as needed
+D3DXCOLOR colorMtrlDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+D3DXCOLOR colorMtrlAmbient(0.35f, 0.35f, 0.35f, 0);
+V_RETURN(g_pMaterialAmbientColor->SetFloatVector((float*)&colorMtrlAmbient));
+V_RETURN(g_pMaterialDiffuseColor->SetFloatVector((float*)&colorMtrlDiffuse));
+
+*/
 
 	return 0;
 }
@@ -5587,8 +6500,10 @@ int RenderSelectMark(int renderflag)
 		s_selectmat._43 = bonepos.z;
 
 		if (renderflag){
-			g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
-			g_pEffect->SetMatrix(g_hmWorld, &(s_selectmat.D3DX()));
+			g_hmVP->SetMatrix((float*)&s_matVP);
+			//g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
+			g_hmWorld->SetMatrix((float*)&s_selectmat);
+			//g_pEffect->SetMatrix(g_hmWorld, &(s_selectmat.D3DX()));
 
 			if (s_oprigflag == 0){
 				RenderSelectFunc();
@@ -5601,7 +6516,7 @@ int RenderSelectMark(int renderflag)
 					RenderSelectFunc();
 				}
 			}
-			s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+			//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 		}
 	}
 
@@ -5611,13 +6526,13 @@ int RenderSelectMark(int renderflag)
 int RenderSelectFunc()
 {
 	s_select->UpdateMatrix(&s_selectmat, &s_matVP);
-	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	if (s_dispselect){
 		int lightflag = 1;
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_select->OnRender(s_pdev, lightflag, diffusemult);
 	}
-	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
 	return 0;
 
@@ -5626,11 +6541,11 @@ int RenderSelectFunc()
 int RenderRigMarkFunc()
 {
 	s_rigmark->UpdateMatrix(&s_selectmat, &s_matVP);
-	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	int lightflag = 1;
 	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
-	s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
 	return 0;
 }
@@ -7577,12 +8492,27 @@ int OpenChaFile()
 	}
 
 	if( !s_bpWorld ){
-		ChaMatrix inimat;
-		ChaMatrixIdentity( &inimat );
-		s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ウィンドウのタイトル
-						460, 460,         // ウィンドウの幅と高さ [pixels]
-						NULL);    // モニタリング用関数へのポインタ  
-		_ASSERT( s_bpWorld );
+		//ChaMatrix inimat;
+		//ChaMatrixIdentity( &inimat );
+		//s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ウィンドウのタイトル
+		//				460, 460,         // ウィンドウの幅と高さ [pixels]
+		//				NULL);    // モニタリング用関数へのポインタ  
+		//_ASSERT( s_bpWorld );
+
+		s_bpWorld = new BPWorld(NULL, s_matWorld, "BtPiyo", // ウィンドウのタイトル
+			460, 460,         // ウィンドウの幅と高さ [pixels]
+			NULL);    // モニタリング用関数へのポインタ  
+		_ASSERT(s_bpWorld);
+
+
+		s_bpWorld->enableFixedTimeStep(false);
+		//s_bpWorld->enableFixedTimeStep(false);
+		//s_bpWorld->setTimeStep(0.015);// seconds
+		s_bpWorld->setGlobalERP(s_erp);// ERP
+									   //s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
+		s_btWorld = s_bpWorld->getDynamicsWorld();
+		s_bpWorld->setNumThread(g_numthread);
+
 	}
 
 	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -10367,7 +11297,7 @@ int CreateUtDialog()
 {
 
 	// Initialize dialogs
-	g_SettingsDlg.Init(&g_DialogResourceManager);
+	//g_SettingsDlg.Init(&g_DialogResourceManager);
 	g_SampleUI.Init(&g_DialogResourceManager);
 
 	int iY;
@@ -11585,7 +12515,8 @@ int OnRenderModel()
 int OnRenderGround()
 {
 	if (s_ground && s_dispground){
-		g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
+		g_hmWorld->SetMatrix((float*)&s_matWorld);
+		//g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_ground->OnRender(s_pdev, 0, diffusemult);
@@ -11593,7 +12524,8 @@ int OnRenderGround()
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
 		ChaMatrix gpmat = s_inimat;
 		gpmat._42 = s_bpWorld->m_gplaneh;
-		g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
+		g_hmWorld->SetMatrix((float*)&gpmat);
+		//g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_gplane->OnRender(s_pdev, 0, diffusemult);
@@ -11676,8 +12608,9 @@ int OnRenderSetShaderConst()
 	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
-	g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
-	//g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelへ
+	g_hmVP->SetMatrix((float*)&s_matVP);
+	//g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
+	////g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelへ
 
 
 	ChaVector3 lightdir0, nlightdir0;
@@ -11690,18 +12623,20 @@ int OnRenderSetShaderConst()
 	{
 		//if( s_displightarrow ){
 		//	D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
-		//	V( g_LightControl[i].OnRender9( arrowColor, &mView, &mProj, &g_camEye ) );
+		//	V( g_LightControl[i].OnRender10( arrowColor, &mView, &mProj, &g_camEye ) );
 		//}
 		vLightDir[i] = g_LightControl[i].GetLightDirection();
 		vLightDiffuse[i] = g_fLightScale * D3DXCOLOR(1, 1, 1, 1);
 	}
 	ChaVector3 lightamb(1.0f, 1.0f, 1.0f);
 
-	V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
-	V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(ChaVector4) * MAX_LIGHTS));
+	g_hLightDir->SetRawValue(vLightDir, 0, sizeof(ChaVector3) * MAX_LIGHTS);
+	//V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
+	g_hLightDiffuse->SetRawValue(vLightDiffuse, 0, sizeof(ChaVector4) * MAX_LIGHTS);
+	//V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(ChaVector4) * MAX_LIGHTS));
 	ChaVector3 eyept = g_camEye;
-	V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(ChaVector3)));
-
+	g_hEyePos->SetRawValue(&eyept, 0, sizeof(ChaVector3));
+	//V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(ChaVector3)));
 
 	return 0;
 }
@@ -12813,4 +13748,327 @@ void AutoCameraTarget()
 	}
 }
 
+
+/////// for directx9
+
+//--------------------------------------------------------------------------------------
+// Rejects any D3D9 devices that aren't acceptable to the app by returning false
+//--------------------------------------------------------------------------------------
+bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
+	D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
+{
+	// No fallback defined by this app, so reject any device that doesn't support at least ps2.0
+	if (pCaps->PixelShaderVersion < D3DPS_VERSION(2, 0))
+		return false;
+
+	// Skip backbuffer formats that don't support alpha blending
+	IDirect3D9* pD3D = DXUTGetD3D9Object();
+	if (FAILED(pD3D->CheckDeviceFormat(pCaps->AdapterOrdinal, pCaps->DeviceType,
+		AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
+		D3DRTYPE_TEXTURE, BackBufferFormat)))
+		return false;
+
+	return true;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Create any D3D9 resources that will live through a device reset (D3DPOOL_MANAGED)
+// and aren't tied to the back buffer size 
+//--------------------------------------------------------------------------------------
+HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+	void* pUserContext)
+{
+	HRESULT hr;
+
+	V_RETURN(g_DialogResourceManager.OnD3D9CreateDevice(pd3dDevice));
+	//V_RETURN(g_SettingsDlg.OnD3D9CreateDevice(pd3dDevice));
+
+	// Initialize the font
+	V_RETURN(D3DXCreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+		L"Arial", &g_pFont9));
+
+	//// Load the mesh
+	//V_RETURN(LoadMesh(pd3dDevice, L"tiny\\tiny.x", &g_pMesh9));
+
+	g_SampleUI.GetStatic(IDC_NUM_LIGHTS_STATIC)->SetVisible(true);
+	g_SampleUI.GetSlider(IDC_NUM_LIGHTS)->SetVisible(true);
+	g_SampleUI.GetButton(IDC_ACTIVE_LIGHT)->SetVisible(true);
+
+	//ChaVector3* pData;
+	//ChaVector3 vCenter;
+	FLOAT fObjectRadius = 5.0f;
+	//V(g_pMesh9->LockVertexBuffer(0, (LPVOID*)&pData));
+	//V(D3DXComputeBoundingSphere(pData, g_pMesh9->GetNumVertices(),
+	//	D3DXGetFVFVertexSize(g_pMesh9->GetFVF()), &vCenter, &fObjectRadius));
+	//V(g_pMesh9->UnlockVertexBuffer());
+
+	//ChaMatrixTranslation(&g_mCenterMesh, -vCenter.x, -vCenter.y, -vCenter.z);
+	//ChaMatrix m;
+	//ChaMatrixRotationY(&m, D3DX_PI);
+	//g_mCenterMesh *= m;
+	//ChaMatrixRotationX(&m, D3DX_PI / 2.0f);
+	//g_mCenterMesh *= m;
+
+	V_RETURN(CDXUTDirectionWidget::StaticOnD3D9CreateDevice(pd3dDevice));
+	for (int i = 0; i < MAX_LIGHTS; i++)
+		g_LightControl[i].SetRadius(fObjectRadius);
+
+	// Read the D3DX effect file
+	WCHAR str[MAX_PATH];
+	DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_NO_PRESHADER | D3DXFX_LARGEADDRESSAWARE;
+#ifdef DEBUG_VS
+	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
+#endif
+#ifdef DEBUG_PS
+	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
+#endif
+	//V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"BasicHLSL.fx"));
+	//V_RETURN(D3DXCreateEffectFromFile(pd3dDevice, str, NULL, NULL, dwShaderFlags, NULL, &g_pEffect9, NULL));
+
+	//// Create the mesh texture from a file
+	//V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"tiny\\tiny_skin.dds"));
+
+	//V_RETURN(D3DXCreateTextureFromFileEx(pd3dDevice, str, D3DX_DEFAULT, D3DX_DEFAULT,
+	//	D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED,
+	//	D3DX_DEFAULT, D3DX_DEFAULT, 0,
+	//	NULL, NULL, &g_pMeshTexture9));
+
+	//// Set effect variables as needed
+	//D3DXCOLOR colorMtrlDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+	//D3DXCOLOR colorMtrlAmbient(0.35f, 0.35f, 0.35f, 0);
+
+	//D3DXHANDLE hMaterialAmbientColor = g_pEffect9->GetParameterByName(NULL, "g_MaterialAmbientColor");
+	//D3DXHANDLE hMaterialDiffuseColor = g_pEffect9->GetParameterByName(NULL, "g_MaterialDiffuseColor");
+	//D3DXHANDLE hMeshTexture = g_pEffect9->GetParameterByName(NULL, "g_MeshTexture");
+
+	//V_RETURN(g_pEffect9->SetValue(hMaterialAmbientColor, &colorMtrlAmbient, sizeof(D3DXCOLOR)));
+	//V_RETURN(g_pEffect9->SetValue(hMaterialDiffuseColor, &colorMtrlDiffuse, sizeof(D3DXCOLOR)));
+	//V_RETURN(g_pEffect9->SetTexture(hMeshTexture, g_pMeshTexture9));
+
+	//g_hLightDir = g_pEffect9->GetParameterByName(NULL, "g_LightDir");
+	//g_hLightDiffuse = g_pEffect9->GetParameterByName(NULL, "g_LightDiffuse");
+	//g_hmWorldViewProjection = g_pEffect9->GetParameterByName(NULL, "g_mWorldViewProjection");
+	//g_hmWorld = g_pEffect9->GetParameterByName(NULL, "g_mWorld");
+	//g_hMaterialDiffuseColor = g_pEffect9->GetParameterByName(NULL, "g_MaterialDiffuseColor");
+	//g_hfTime = g_pEffect9->GetParameterByName(NULL, "g_fTime");
+	//g_hnNumLights = g_pEffect9->GetParameterByName(NULL, "g_nNumLights");
+	//g_hRenderSceneWithTexture1Light = g_pEffect9->GetTechniqueByName("RenderSceneWithTexture1Light");
+	//g_hRenderSceneWithTexture2Light = g_pEffect9->GetTechniqueByName("RenderSceneWithTexture2Light");
+	//g_hRenderSceneWithTexture3Light = g_pEffect9->GetTechniqueByName("RenderSceneWithTexture3Light");
+
+	// Setup the camera's view parameters
+	ChaVector3 vecEye(0.0f, 0.0f, -15.0f);
+	ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
+	g_Camera.SetViewParams(&vecEye, &vecAt);
+	//g_Camera.SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f);
+
+	return S_OK;
+}
+
+
+//--------------------------------------------------------------------------------------
+// This function loads the mesh and ensures the mesh has normals; it also optimizes the 
+// mesh for the graphics card's vertex cache, which improves performance by organizing 
+// the internal triangle list for less cache misses.
+//--------------------------------------------------------------------------------------
+HRESULT LoadMesh(IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh)
+{
+	//ID3DXMesh* pMesh = NULL;
+	//WCHAR str[MAX_PATH];
+	//HRESULT hr;
+
+	//// Load the mesh with D3DX and get back a ID3DXMesh*.  For this
+	//// sample we'll ignore the X file's embedded materials since we know 
+	//// exactly the model we're loading.  See the mesh samples such as
+	//// "OptimizedMesh" for a more generic mesh loading example.
+	//V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, strFileName));
+	//V_RETURN(D3DXLoadMeshFromX(str, D3DXMESH_MANAGED, pd3dDevice, NULL, NULL, NULL, NULL, &pMesh));
+
+	//DWORD* rgdwAdjacency = NULL;
+
+	//// Make sure there are normals which are required for lighting
+	//if (!(pMesh->GetFVF() & D3DFVF_NORMAL))
+	//{
+	//	ID3DXMesh* pTempMesh;
+	//	V(pMesh->CloneMeshFVF(pMesh->GetOptions(), pMesh->GetFVF() | D3DFVF_NORMAL, pd3dDevice, &pTempMesh));
+	//	V(D3DXComputeNormals(pTempMesh, NULL));
+
+	//	SAFE_RELEASE(pMesh);
+	//	pMesh = pTempMesh;
+	//}
+
+	//// Optimize the mesh for this graphics card's vertex cache 
+	//// so when rendering the mesh's triangle list the vertices will 
+	//// cache hit more often so it won't have to re-execute the vertex shader 
+	//// on those vertices so it will improve perf.     
+	//rgdwAdjacency = new DWORD[pMesh->GetNumFaces() * 3];
+	//if (rgdwAdjacency == NULL)
+	//	return E_OUTOFMEMORY;
+	//V(pMesh->GenerateAdjacency(1e-6f, rgdwAdjacency));
+	//V(pMesh->OptimizeInplace(D3DXMESHOPT_VERTEXCACHE, rgdwAdjacency, NULL, NULL, NULL));
+	//delete[]rgdwAdjacency;
+
+	//*ppMesh = pMesh;
+
+	return S_OK;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Create any D3D9 resources that won't live through a device reset (D3DPOOL_DEFAULT) 
+// or that are tied to the back buffer size 
+//--------------------------------------------------------------------------------------
+HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice,
+	const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext)
+{
+	HRESULT hr;
+
+	V_RETURN(g_DialogResourceManager.OnD3D9ResetDevice());
+	//V_RETURN(g_SettingsDlg.OnD3D9ResetDevice());
+
+	if (g_pFont9) V_RETURN(g_pFont9->OnResetDevice());
+	//if (g_pEffect9) V_RETURN(g_pEffect9->OnResetDevice());
+
+	// Create a sprite to help batch calls when drawing many lines of text
+	//V_RETURN(D3DXCreateSprite(pd3dDevice, &g_pSprite9));
+	//g_pTxtHelper = new CDXUTTextHelper(g_pFont, g_pSprite9, NULL, NULL, 15);
+
+	for (int i = 0; i < MAX_LIGHTS; i++)
+		g_LightControl[i].OnD3D9ResetDevice(pBackBufferSurfaceDesc);
+
+	// Setup the camera's projection parameters
+	float fAspectRatio = pBackBufferSurfaceDesc->Width / (FLOAT)pBackBufferSurfaceDesc->Height;
+	g_Camera.SetProjParams(D3DX_PI / 4, fAspectRatio, 2.0f, 4000.0f);
+	g_Camera.SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
+	g_Camera.SetButtonMasks(MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON);
+
+	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
+	//g_HUD.SetSize(170, 170);
+	g_SampleUI.SetLocation(pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300);
+	g_SampleUI.SetSize(170, 300);
+
+	return S_OK;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Render the scene using the D3D9 device
+//--------------------------------------------------------------------------------------
+void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext)
+{
+	// If the settings dialog is being shown, then render it instead of rendering the app's scene
+	//if (g_SettingsDlg.IsActive())
+	//{
+	//	g_SettingsDlg.OnRender(fElapsedTime);
+	//	return;
+	//}
+
+	HRESULT hr;
+	ChaMatrix mWorldViewProjection;
+	ChaVector3 vLightDir[MAX_LIGHTS];
+	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
+	UINT iPass, cPasses;
+	ChaMatrix mWorld;
+	ChaMatrix mView;
+	ChaMatrix mProj;
+
+	// Clear the render target and the zbuffer 
+	V(pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR(0.0f, 0.25f, 0.25f, 0.55f), 1.0f,
+		0));
+
+	//// Render the scene
+	if (SUCCEEDED(pd3dDevice->BeginScene()))
+	{
+	//	// Get the projection & view matrix from the camera class
+	//	mWorld = g_mCenterMesh * *g_Camera.GetWorldMatrix();
+	//	mProj = *g_Camera.GetProjMatrix();
+	//	mView = *g_Camera.GetViewMatrix();
+
+	//	mWorldViewProjection = mWorld * mView * mProj;
+
+	//	// Render the light arrow so the user can visually see the light dir
+	//	for (int i = 0; i < g_nNumActiveLights; i++)
+	//	{
+	//		D3DXCOLOR arrowColor = (i == g_nActiveLight) ? D3DXCOLOR(1, 1, 0, 1) : D3DXCOLOR(1, 1, 1, 1);
+	//		V(g_LightControl[i].OnRender9(arrowColor, &mView, &mProj, g_Camera.GetEyePt()));
+	//		vLightDir[i] = g_LightControl[i].GetLightDirection();
+	//		vLightDiffuse[i] = g_fLightScale * D3DXCOLOR(1, 1, 1, 1);
+	//	}
+
+	//	V(g_pEffect9->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
+	//	V(g_pEffect9->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(ChaVector4) * MAX_LIGHTS));
+
+	//	// Update the effect's variables.  Instead of using strings, it would 
+	//	// be more efficient to cache a handle to the parameter by calling 
+	//	// ID3DXEffect::GetParameterByName
+	//	V(g_pEffect9->SetMatrix(g_hmWorldViewProjection, &mWorldViewProjection));
+	//	V(g_pEffect9->SetMatrix(g_hmWorld, &mWorld));
+
+	//	D3DXCOLOR vWhite = D3DXCOLOR(1, 1, 1, 1);
+	//	V(g_pEffect9->SetValue(g_hMaterialDiffuseColor, &vWhite, sizeof(D3DXCOLOR)));
+	//	V(g_pEffect9->SetFloat(g_hfTime, (float)fTime));
+	//	V(g_pEffect9->SetInt(g_hnNumLights, g_nNumActiveLights));
+
+	//	// Render the scene with this technique as defined in the .fx file
+	//	switch (g_nNumActiveLights)
+	//	{
+	//	case 1:
+	//		V(g_pEffect9->SetTechnique(g_hRenderSceneWithTexture1Light)); break;
+	//	case 2:
+	//		V(g_pEffect9->SetTechnique(g_hRenderSceneWithTexture2Light)); break;
+	//	case 3:
+	//		V(g_pEffect9->SetTechnique(g_hRenderSceneWithTexture3Light)); break;
+	//	}
+
+	//	// Apply the technique contained in the effect and render the mesh
+	//	V(g_pEffect9->Begin(&cPasses, 0));
+	//	for (iPass = 0; iPass < cPasses; iPass++)
+	//	{
+	//		V(g_pEffect9->BeginPass(iPass));
+	//		V(g_pMesh9->DrawSubset(0));
+	//		V(g_pEffect9->EndPass());
+	//	}
+	//	V(g_pEffect9->End());
+
+	//	g_HUD.OnRender(fElapsedTime);
+		g_SampleUI.OnRender(fElapsedTime);
+
+		//RenderText();
+
+		V(pd3dDevice->EndScene());
+	}
+}
+
+
+//--------------------------------------------------------------------------------------
+// Release D3D9 resources created in the OnD3D9ResetDevice callback 
+//--------------------------------------------------------------------------------------
+void CALLBACK OnD3D9LostDevice(void* pUserContext)
+{
+	g_DialogResourceManager.OnD3D9LostDevice();
+	//g_SettingsDlg.OnD3D9LostDevice();
+	CDXUTDirectionWidget::StaticOnD3D9LostDevice();
+	if (g_pFont9) g_pFont9->OnLostDevice();
+	//if (g_pEffect9) g_pEffect9->OnLostDevice();
+	SAFE_RELEASE(g_pSprite);
+	//SAFE_DELETE(g_pTxtHelper);
+
+}
+
+
+//--------------------------------------------------------------------------------------
+// Release D3D9 resources created in the OnD3D9CreateDevice callback 
+//--------------------------------------------------------------------------------------
+void CALLBACK OnD3D9DestroyDevice(void* pUserContext)
+{
+	g_DialogResourceManager.OnD3D9DestroyDevice();
+	//g_SettingsDlg.OnD3D9DestroyDevice();
+	CDXUTDirectionWidget::StaticOnD3D9DestroyDevice();
+	//SAFE_RELEASE(g_pEffect);
+	SAFE_RELEASE(g_pFont9);
+	//SAFE_RELEASE(g_pMesh);
+	//SAFE_RELEASE(g_pMeshTexture);
+}
 

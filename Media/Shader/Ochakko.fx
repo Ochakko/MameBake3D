@@ -7,34 +7,52 @@
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
-texture g_MeshTexture;              // Color texture for mesh
 
-float4 g_diffuse;
-float3 g_ambient;
-float3 g_specular;
-float  g_power;
-float3 g_emissive;
+cbuffer Variable
+{
+	float4 g_diffuse;
+	float3 g_ambient;
+	float3 g_specular;
+	float  g_power;
+	float3 g_emissive;
 
-float3 g_LightDir[3];               // Light's direction in world space
-float4 g_LightDiffuse[3];           // Light's diffuse color
+	float3 g_LightDir[3];               // Light's direction in world space
+	float4 g_LightDiffuse[3];           // Light's diffuse color
 
-float4x4 g_mWorld;                  // World matrix for object
-float4x4 g_mVP;    // View * Projection matrix
-float3	 g_EyePos;
+	matrix g_mWorld;                  // World matrix for object
+	matrix g_mVP;    // View * Projection matrix
+	float3	 g_EyePos;
 
-float4 g_m3x4Mat[70][3];
+	float3 g_spriteoffset;
+	float2 g_spritescale;
+	float3 g_pm3offset;
+	float3 g_pm3scale;
+
+	matrix g_m4x4Mat[70];
+};
+
+Texture2D <float4> g_MeshTexture;
 
 //--------------------------------------------------------------------------------------
 // Texture samplers
 //--------------------------------------------------------------------------------------
-sampler MeshTextureSampler = 
-sampler_state
+SamplerState MeshTextureSampler
 {
-    Texture = <g_MeshTexture>;
-    MipFilter = LINEAR;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
+	Filter = MIN_MAG_MIP_LINEAR;
+	AddressU = Wrap;
+	AddressV = Wrap;
 };
+
+//Output.RGBColor = g_MeshTexture.Sample(MeshTextureSampler, In.TextureUV) * In.Diffuse;
+
+//sampler MeshTextureSampler = 
+//sampler_state
+//{
+//    Texture = <g_MeshTexture>;
+//    MipFilter = LINEAR;
+//    MinFilter = LINEAR;
+//    MagFilter = LINEAR;
+//};
 
 //AddressU = Clamp;
 //AddressV = Clamp;
@@ -46,7 +64,7 @@ sampler_state
 //--------------------------------------------------------------------------------------
 struct VS_OUTPUT
 {
-    float4 Position   : POSITION;   // vertex position 
+    float4 Position   : SV_POSITION;   // vertex position 
     float4 Diffuse    : COLOR0;     // vertex diffuse color (note that COLOR0 is clamped from 0..1)
 	float3 Specular	  : TEXCOORD0;
     float2 TextureUV  : TEXCOORD1;  // vertex texture coords 
@@ -54,41 +72,47 @@ struct VS_OUTPUT
 
 struct VS_LINEOUTPUT
 {
-    float4 Position   : POSITION;   // vertex position 
+    float4 Position   : SV_POSITION;   // vertex position 
     float4 Diffuse    : COLOR0;     // vertex diffuse color (note that COLOR0 is clamped from 0..1)
 };
 
 struct VS_SPRITEOUTPUT
 {
-    float4 Position   : POSITION;   // vertex position 
+    float4 Position   : SV_POSITION;   // vertex position 
     float4 Diffuse    : COLOR0;     // vertex diffuse color (note that COLOR0 is clamped from 0..1)
-    float2 TextureUV  : TEXCOORD1;  // vertex texture coords 
+    float2 TextureUV  : TEXCOORD0;  // vertex texture coords 
 };
+
+//--------------------------------------------------------------------------------------
+// DepthStates
+//--------------------------------------------------------------------------------------
+DepthStencilState EnableDepth
+{
+	DepthEnable = TRUE;
+	DepthWriteMask = ALL;
+	DepthFunc = LESS_EQUAL;
+};
+
 
 //--------------------------------------------------------------------------------------
 // This shader computes standard transform and lighting
 //--------------------------------------------------------------------------------------
-VS_OUTPUT RenderSceneBoneVS( float4 vPos : POSITION, 
+VS_OUTPUT RenderSceneBoneVS( float4 vPos : SV_POSITION, 
                          float3 vNormal : NORMAL,
                          float2 vTexCoord0 : TEXCOORD0,
 						 float4 bweight : BLENDWEIGHT,
-						 float4 bindices : BLENDINDICES,
+						 int4 bindices : BLENDINDICES,
                          uniform int nNumLights )
 {
     VS_OUTPUT Output;
     float4 wPos;
 
-	int bi[4] = { bindices.x, bindices.y, bindices.z, bindices.w };
+	int bi[4] = { bindices.r, bindices.g, bindices.b, bindices.a };
 	float bw[4] = { bweight.x, bweight.y, bweight.z, bweight.w };
 
-	float4x4 finalmat = 0;
+	matrix finalmat = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     for(int i=0; i<4; i++ ){
-		float4x4 addmat;
-		addmat = float4x4(
-			g_m3x4Mat[bi[i]][0].x, g_m3x4Mat[bi[i]][0].y, g_m3x4Mat[bi[i]][0].z, 0.0f,
-			g_m3x4Mat[bi[i]][0].w, g_m3x4Mat[bi[i]][1].x, g_m3x4Mat[bi[i]][1].y, 0.0f,
-			g_m3x4Mat[bi[i]][1].z, g_m3x4Mat[bi[i]][1].w, g_m3x4Mat[bi[i]][2].x, 0.0f,
-			g_m3x4Mat[bi[i]][2].y, g_m3x4Mat[bi[i]][2].z, g_m3x4Mat[bi[i]][2].w, 1.0f );
+		matrix addmat = g_m4x4Mat[bi[i]];
 		finalmat += bw[i] * addmat;
 	}	
 	
@@ -103,22 +127,21 @@ VS_OUTPUT RenderSceneBoneVS( float4 vPos : POSITION,
     float3 totalspecular = float3(0,0,0);
 	float calcpower = g_power * 0.1f;
 
-    for(int i=0; i<nNumLights; i++ ){
+    for(int j=0; j<nNumLights; j++ ){
 		float nl;
 		float3 h;
 		float nh;	
 		float4 tmplight;
 		
-		nl = dot( wNormal, g_LightDir[i] );
-		h = normalize( ( g_LightDir[i] + g_EyePos - wPos.xyz ) * 0.5f );
+		nl = dot( wNormal, g_LightDir[j] );
+		h = normalize( ( g_LightDir[j] + g_EyePos - wPos.xyz ) * 0.5f );
 		nh = dot( wNormal, h );
 
-        totaldiffuse += g_LightDiffuse[i] * max(0,dot(wNormal, g_LightDir[i]));
+        totaldiffuse += g_LightDiffuse[j].xyz * max(0,dot(wNormal, g_LightDir[j]));
 		totalspecular +=  ((nl) < 0) || ((nh) < 0) ? 0 : ((nh) * calcpower);
 	}
 
-    Output.Diffuse.rgb = g_diffuse.rgb * totaldiffuse.rgb 
-		+ g_ambient + g_emissive;   
+    Output.Diffuse.rgb = g_diffuse.rgb * totaldiffuse.rgb + g_ambient + g_emissive;   
     Output.Diffuse.a = g_diffuse.a; 
     
 	Output.Specular = g_specular * totalspecular;
@@ -127,26 +150,21 @@ VS_OUTPUT RenderSceneBoneVS( float4 vPos : POSITION,
     
     return Output;    
 }
-VS_OUTPUT RenderSceneBoneNLightVS( float4 vPos : POSITION, 
+VS_OUTPUT RenderSceneBoneNLightVS( float4 vPos : SV_POSITION,
                          float3 vNormal : NORMAL,
                          float2 vTexCoord0 : TEXCOORD0,
 						 float4 bweight : BLENDWEIGHT,
-						 float4 bindices : BLENDINDICES )
+						 int4 bindices : BLENDINDICES )
 {
     VS_OUTPUT Output;
     float4 wPos;
 
-	int bi[4] = { bindices.x, bindices.y, bindices.z, bindices.w };
+	uint bi[4] = { bindices.r, bindices.g, bindices.b, bindices.a };
 	float bw[4] = { bweight.x, bweight.y, bweight.z, bweight.w };
 
-	float4x4 finalmat = 0;
-    for(int i=0; i<4; i++ ){
-		float4x4 addmat;
-		addmat = float4x4(
-			g_m3x4Mat[bi[i]][0].x, g_m3x4Mat[bi[i]][0].y, g_m3x4Mat[bi[i]][0].z, 0.0f,
-			g_m3x4Mat[bi[i]][0].w, g_m3x4Mat[bi[i]][1].x, g_m3x4Mat[bi[i]][1].y, 0.0f,
-			g_m3x4Mat[bi[i]][1].z, g_m3x4Mat[bi[i]][1].w, g_m3x4Mat[bi[i]][2].x, 0.0f,
-			g_m3x4Mat[bi[i]][2].y, g_m3x4Mat[bi[i]][2].z, g_m3x4Mat[bi[i]][2].w, 1.0f );
+	matrix finalmat = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	for(int i=0; i<4; i++ ){
+		matrix addmat = g_m4x4Mat[bi[i]];
 		finalmat += bw[i] * addmat;
 	}	
 
@@ -167,17 +185,23 @@ VS_OUTPUT RenderSceneBoneNLightVS( float4 vPos : POSITION,
     return Output;    
 }
 
-VS_OUTPUT RenderSceneNoBoneVS( float4 vPos : POSITION, 
+VS_OUTPUT RenderSceneNoBoneVS( float4 vPos : SV_POSITION,
                          float3 vNormal : NORMAL,
                          float2 vTexCoord0 : TEXCOORD0,
                          uniform int nNumLights )
 {
     VS_OUTPUT Output;
+	float4 scalepos;
     float4 wPos;
+	matrix finalmat = g_mWorld;
 
-	float4x4 finalmat = g_mWorld;
+	scalepos.x = (vPos.x - g_pm3offset.x) * g_pm3scale.x + g_pm3offset.x;
+	scalepos.y = (vPos.y - g_pm3offset.y) * g_pm3scale.y + g_pm3offset.y;
+	scalepos.z = (vPos.z - g_pm3offset.z) * g_pm3scale.z + g_pm3offset.z;
+	scalepos.w = 1.0f;
 
-	wPos = mul( vPos, finalmat );
+	wPos = mul(scalepos, finalmat);
+
 	Output.Position = mul( wPos, g_mVP );
 	wPos /= wPos.w;
     
@@ -198,12 +222,11 @@ VS_OUTPUT RenderSceneNoBoneVS( float4 vPos : POSITION,
 		h = normalize( ( g_LightDir[i] + g_EyePos - wPos.xyz ) * 0.5f );
 		nh = dot( wNormal, h );
 
-        totaldiffuse += g_LightDiffuse[i] * max(0,dot(wNormal, g_LightDir[i]));
+        totaldiffuse += g_LightDiffuse[i].xyz * max(0,dot(wNormal, g_LightDir[i]));
 		totalspecular +=  ((nl) < 0) || ((nh) < 0) ? 0 : ((nh) * calcpower);
 	}
 
-    Output.Diffuse.rgb = g_diffuse.rgb * totaldiffuse.rgb 
-		+ g_ambient + g_emissive;   
+    Output.Diffuse.rgb = g_diffuse.rgb * totaldiffuse.rgb + g_ambient + g_emissive;   
     Output.Diffuse.a = g_diffuse.a; 
     
 	Output.Specular = g_specular * totalspecular;
@@ -213,16 +236,23 @@ VS_OUTPUT RenderSceneNoBoneVS( float4 vPos : POSITION,
     return Output;    
 }
 
-VS_OUTPUT RenderSceneNoBoneNLightVS( float4 vPos : POSITION, 
+VS_OUTPUT RenderSceneNoBoneNLightVS( float4 vPos : SV_POSITION,
                          float3 vNormal : NORMAL,
                          float2 vTexCoord0 : TEXCOORD0 )
 {
     VS_OUTPUT Output;
-    float4 wPos;
+	float4 scalepos;
+	float4 wPos;
 
-	float4x4 finalmat = g_mWorld;
+	matrix finalmat = g_mWorld;
 
-	wPos = mul( vPos, finalmat );
+	scalepos.x = (vPos.x - g_pm3offset.x) * g_pm3scale.x + g_pm3offset.x;
+	scalepos.y = (vPos.y - g_pm3offset.y) * g_pm3scale.y + g_pm3offset.y;
+	scalepos.z = (vPos.z - g_pm3offset.z) * g_pm3scale.z + g_pm3offset.z;
+	scalepos.w = 1.0f;
+
+	wPos = mul(scalepos, finalmat);
+
 	Output.Position = mul( wPos, g_mVP );
 	wPos /= wPos.w;
     
@@ -241,12 +271,12 @@ VS_OUTPUT RenderSceneNoBoneNLightVS( float4 vPos : POSITION,
 }
 
 
-VS_LINEOUTPUT RenderSceneLineVS( float4 vPos : POSITION )
+VS_LINEOUTPUT RenderSceneLineVS( float4 vPos : SV_POSITION )
 {
     VS_LINEOUTPUT Output;
     float4 wPos;
 
-	float4x4 finalmat = g_mWorld;
+	matrix finalmat = g_mWorld;
 
 	wPos = mul( vPos, finalmat );
 	Output.Position = mul( wPos, g_mVP );
@@ -259,11 +289,19 @@ VS_LINEOUTPUT RenderSceneLineVS( float4 vPos : POSITION )
 }
 
 
-VS_SPRITEOUTPUT RenderSceneSpriteVS( float4 vPos : POSITION, 
+VS_SPRITEOUTPUT RenderSceneSpriteVS( float4 vPos : SV_POSITION,
                          float2 vTexCoord0 : TEXCOORD0 )
 {
     VS_SPRITEOUTPUT Output;
-	Output.Position = vPos;
+
+	float4 outv = vPos;
+	outv.x *= g_spritescale.x;
+	outv.y *= g_spritescale.y;
+	outv.x += g_spriteoffset.x;
+	outv.y += g_spriteoffset.y;
+	outv.z = g_spriteoffset.z;//!!!! =
+	Output.Position = outv;
+
     Output.Diffuse.rgb = g_diffuse.rgb;   
     Output.Diffuse.a = g_diffuse.a; 
     Output.TextureUV = vTexCoord0; 
@@ -278,7 +316,7 @@ VS_SPRITEOUTPUT RenderSceneSpriteVS( float4 vPos : POSITION,
 //--------------------------------------------------------------------------------------
 struct PS_OUTPUT
 {
-    float4 RGBColor : COLOR0;  // Pixel color    
+    float4 RGBColor : SV_Target;  // Pixel color    
 };
 
 
@@ -289,7 +327,8 @@ struct PS_OUTPUT
 PS_OUTPUT RenderScenePSTex( VS_OUTPUT In ) 
 { 
     PS_OUTPUT Output;
-    Output.RGBColor = tex2D(MeshTextureSampler, In.TextureUV) * In.Diffuse + float4( In.Specular, 0 );
+	Output.RGBColor = g_MeshTexture.Sample(MeshTextureSampler, In.TextureUV) * In.Diffuse + float4(In.Specular, 0);
+    //Output.RGBColor = tex2D(MeshTextureSampler, In.TextureUV) * In.Diffuse + float4( In.Specular, 0 );
     return Output;
 }
 
@@ -310,7 +349,8 @@ PS_OUTPUT RenderScenePSLine( VS_LINEOUTPUT In )
 PS_OUTPUT RenderScenePSSprite( VS_SPRITEOUTPUT In ) 
 { 
     PS_OUTPUT Output;
-    Output.RGBColor = tex2D(MeshTextureSampler, In.TextureUV) * In.Diffuse;
+	Output.RGBColor = g_MeshTexture.Sample(MeshTextureSampler, In.TextureUV) * In.Diffuse;
+    //Output.RGBColor = tex2D(MeshTextureSampler, In.TextureUV) * In.Diffuse;
     return Output;
 }
 
@@ -318,141 +358,178 @@ PS_OUTPUT RenderScenePSSprite( VS_SPRITEOUTPUT In )
 //--------------------------------------------------------------------------------------
 // Renders scene to render target
 //--------------------------------------------------------------------------------------
-technique RenderBoneL0
+
+technique10 RenderBoneL0
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneNLightVS();
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+        SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneNLightVS()));
+		SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneNLightVS();
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneNLightVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderBoneL1
+technique10 RenderBoneL1
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneVS( 1 );
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 1 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneVS( 1 );
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 1 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderBoneL2
+technique10 RenderBoneL2
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneVS( 2 );
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 2 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneVS( 2 );
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 2 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderBoneL3
+technique10 RenderBoneL3
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneVS( 3 );
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 3 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneBoneVS( 3 );
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 3 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderNoBoneL0
+technique10 RenderNoBoneL0
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneNLightVS();
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneNLightVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneNLightVS();
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneNLightVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
 
-technique RenderNoBoneL1
+technique10 RenderNoBoneL1
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneVS( 1 );
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 1 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneVS( 1 );
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 1 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderNoBoneL2
+technique10 RenderNoBoneL2
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneVS( 2 );
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 2 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneVS( 2 );
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 2 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderNoBoneL3
+technique10 RenderNoBoneL3
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneVS( 3 );
-        PixelShader  = compile ps_3_0 RenderScenePSTex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 3 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
     pass P1
     {          
-        VertexShader = compile vs_3_0 RenderSceneNoBoneVS( 3 );
-        PixelShader  = compile ps_3_0 RenderScenePSNotex();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 3 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 
 }
 
-technique RenderLine
+technique10 RenderLine
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneLineVS();
-        PixelShader  = compile ps_3_0 RenderScenePSLine();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneLineVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSLine()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 }
 
-technique RenderSprite
+technique10 RenderSprite
 {
     pass P0
     {          
-        VertexShader = compile vs_3_0 RenderSceneSpriteVS();
-        PixelShader  = compile ps_3_0 RenderScenePSSprite();
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneSpriteVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSSprite()));
+		//SetDepthStencilState(EnableDepth, 0);
     }
 }

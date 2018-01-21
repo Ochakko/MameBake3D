@@ -11,7 +11,7 @@ public:
 	CTexElem();
 	~CTexElem();
 
-	int CreateTexData( LPDIRECT3DDEVICE9 pdev );
+	int CreateTexData( ID3D10Device* pdev );
 	int InvalidateTexData();
 
 private:
@@ -19,8 +19,8 @@ private:
 	int DestroyObjs();
 
 public:
-	LPDIRECT3DTEXTURE9 GetPTex(){
-		return m_ptex;
+	ID3D10ShaderResourceView* GetPTex(){
+		return m_ResView;
 	};
 
 	int GetID(){
@@ -58,7 +58,7 @@ public:
 		m_pool = srcval;
 	};
 
-	void SetTransCol( D3DCOLOR srcval ){
+	void SetTransCol( D3DXCOLOR srcval ){
 		m_transcol = srcval;
 	};
 
@@ -70,8 +70,9 @@ private:
 	int m_pool;
 	int m_orgheight, m_orgwidth;
 	int m_height, m_width;
-	D3DCOLOR m_transcol;
-	LPDIRECT3DTEXTURE9 m_ptex;
+	D3DXCOLOR m_transcol;
+	ID3D10Resource* m_ptex;
+	ID3D10ShaderResourceView* m_ResView;
 
 };
 

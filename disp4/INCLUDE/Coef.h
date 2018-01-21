@@ -1,7 +1,12 @@
 #ifndef COEFH
 #define		COEFH
 
-#include <D3DX9.h>
+#include <d3dcommon.h>
+#include <dxgi.h>
+#include <d3d10_1.h>
+#include <d3d10.h>
+#include <d3dcompiler.h>
+#include <d3dx10.h>
 
 #include <usercoef.h>
 
@@ -448,7 +453,7 @@ typedef struct tag_n3sm
 typedef struct tag_pm3inf
 {
 	float weight[4];
-	float boneindex[4];
+	int boneindex[4];
 }PM3INF;
 
 

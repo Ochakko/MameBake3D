@@ -23,7 +23,7 @@
 
 extern WCHAR g_basedir[ MAX_PATH ];
 
-CTexBank::CTexBank( LPDIRECT3DDEVICE9 pdev )
+CTexBank::CTexBank( ID3D10Device* pdev )
 {
 	InitParams();
 	m_pdev = pdev;
@@ -80,8 +80,10 @@ CTexElem* CTexBank::ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent
 	return 0;
 }
 
-int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DCOLOR srccol, int* dstid )
+int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol, int* dstid )
 {
+	*dstid = -1;
+
 	CTexElem* sameelem = 0;
 	sameelem = ExistTex( srcpath, srcname, srctransparent );
 	if( sameelem ){
@@ -99,8 +101,9 @@ int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int sr
 	newelem->SetPath( srcpath );
 	newelem->SetTransparent( srctransparent );
 	newelem->SetPool( srcpool );
-	newelem->SetTransCol( srccol );
-
+	if (srccol) {
+		newelem->SetTransCol(*srccol);
+	}
 	CallF( newelem->CreateTexData( m_pdev ), return 1 );
 
 	m_texmap[ newelem->GetID() ] = newelem;
@@ -114,7 +117,7 @@ int CTexBank::Invalidate( int invalmode )
 	map<int,CTexElem*>::iterator itr;
 	for( itr = m_texmap.begin(); itr != m_texmap.end(); itr++ ){
 		CTexElem* delelem = itr->second;
-		if( delelem && (invalmode == INVAL_ALL) || ((invalmode == INVAL_ONLYDEFAULT) && (delelem->GetPool() == D3DPOOL_DEFAULT)) ){
+		if( delelem && (invalmode == INVAL_ALL) || ((invalmode == INVAL_ONLYDEFAULT) && (delelem->GetPool() == 0)) ){
 			delelem->InvalidateTexData();
 		}
 	}

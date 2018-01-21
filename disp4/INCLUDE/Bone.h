@@ -364,7 +364,7 @@ public:
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, ChaVector3* dstpos);
 
-	int LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev);
+	int LoadCapsuleShape(ID3D10Device* pdev);
 
 	int ChkMovableEul(ChaVector3 srceul);
 

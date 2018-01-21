@@ -129,6 +129,8 @@ DXUTのソースはDirectXのSDKに入っています。
 DXUTのフォルダ（中にCoreフォルダとOptionalフォルダが入っている）をまめばけ３Dのdisp4のフォルダにコピーします。
 
 DXUTのD3DXの部分をChaVecCalcで置き換えます。
+[ DXUTの中の必要なヘッダファイルでChaVecCalc.hをインクルードします。 ]
+
 手順としては
 以下の文字列置き換えをします。
 D3DXVECTOR3 --> ChaVector3
@@ -155,8 +157,25 @@ m_state.m_OverrideForceVsyncの値を= 0にします。
 (const D3DXMATRIX*)などのようにconstが必要な場所もありますがそれはVisual Studioのエラーを読んで対応してください。
 メンバ変数が同じなのでキャストしてもちゃんと動きます。
 
+2018/01/21にDXUT.hとDXUT.cppに
+DXUTSetOverrideSize関数を足しました。
+中でDXUTGetState().SetOverrideWidthとDXUTGetState().SetOverrideHeightを呼び出しています。
+DXUTSetOverrideSize関数はまめばけ３DのMain.cppから呼び出しています。
+
 
 ＃＃＃
+2018/01/21_1
+	DirectX10への対応を開始。[まだ途中です。]
+		とりあえずDX10で動いています。
+		シェーダーはfx_4_0です。
+
+		Lineの描画がまだです。
+		SetRenderStateの代わりの手段もまだやっていません。
+		現在、メインウインドウのGUI部品をクリックすると画面がブリンクするバグがあります。
+		tgaファイルの読み込みサポートがなくなったのでリソースの修正も必要です（ボーンの丸マーク）。
+
+	readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
+
 2018/01/16_1
 	readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
 

@@ -52,7 +52,7 @@ public:
 	CMQOFile();
 	~CMQOFile();
 
-	int LoadMQOFile( LPDIRECT3DDEVICE9 pdev, float multiple, WCHAR* filename, 
+	int LoadMQOFile( ID3D10Device* pdev, float multiple, WCHAR* filename, 
 		ChaVector3 offsetpos, ChaVector3 rot, 
 		CModel* srcmodel );
 
@@ -105,7 +105,7 @@ private:
 	char m_linechar[ LINECHARLENG ];
 	WCHAR m_wline[ LINECHARLENG ];
 
-	LPDIRECT3DDEVICE9 m_pdev;
+	ID3D10Device* m_pdev;
 
 	MQOSTATE m_state;
 	MQOBUF mqobuf;	

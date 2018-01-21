@@ -3880,7 +3880,7 @@ ChaVector3 CBone::GetChildWorld(){
 	return m_childworld;
 };
 
-int CBone::LoadCapsuleShape(LPDIRECT3DDEVICE9 pdev)
+int CBone::LoadCapsuleShape(ID3D10Device* pdev)
 {
 	WCHAR wfilename[MAX_PATH];
 	WCHAR mpath[MAX_PATH];

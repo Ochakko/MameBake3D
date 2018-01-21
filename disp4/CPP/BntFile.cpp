@@ -194,7 +194,7 @@ typedef struct tag_bntvertex
 	ChaVector3		normal;
 	ChaVector2		uv;
 	float weight[4];
-	float boneindex[4];
+	int boneindex[4];
 }BNTVERTEX;
 */
 

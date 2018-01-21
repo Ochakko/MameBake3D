@@ -1,7 +1,7 @@
 #ifndef VECMATHH
 #define VECMATHH
 
-#include <d3dx9.h>
+#include <d3dx10.h>
 
 float ChaVector3Dot( ChaVector3* vec1, ChaVector3* vec2 );
 int ChaVector3Cross( ChaVector3* outvec, ChaVector3* vec1, ChaVector3* vec2 );

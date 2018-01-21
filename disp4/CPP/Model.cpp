@@ -75,9 +75,37 @@ extern int g_dbgloadcnt;
 extern int g_pseudolocalflag;
 extern int g_previewFlag;			// プレビューフラグ
 extern WCHAR g_basedir[ MAX_PATH ];
-extern ID3DXEffect*	g_pEffect;
-extern D3DXHANDLE g_hm3x4Mat;
-extern D3DXHANDLE g_hmWorld;
+
+extern ID3D10Effect*		g_pEffect;
+extern ID3D10EffectTechnique* g_hRenderBoneL0;
+extern ID3D10EffectTechnique* g_hRenderBoneL1;
+extern ID3D10EffectTechnique* g_hRenderBoneL2;
+extern ID3D10EffectTechnique* g_hRenderBoneL3;
+extern ID3D10EffectTechnique* g_hRenderNoBoneL0;
+extern ID3D10EffectTechnique* g_hRenderNoBoneL1;
+extern ID3D10EffectTechnique* g_hRenderNoBoneL2;
+extern ID3D10EffectTechnique* g_hRenderNoBoneL3;
+extern ID3D10EffectTechnique* g_hRenderLine;
+extern ID3D10EffectTechnique* g_hRenderSprite;
+
+extern ID3D10EffectMatrixVariable* g_hm4x4Mat;
+extern ID3D10EffectMatrixVariable* g_hmWorld;
+extern ID3D10EffectMatrixVariable* g_hmVP;
+
+extern ID3D10EffectVectorVariable* g_hEyePos;
+extern ID3D10EffectScalarVariable* g_hnNumLight;
+extern ID3D10EffectVectorVariable* g_hLightDir;
+extern ID3D10EffectVectorVariable* g_hLightDiffuse;
+extern ID3D10EffectVectorVariable* g_hLightAmbient;
+
+extern ID3D10EffectVectorVariable*g_hdiffuse;
+extern ID3D10EffectVectorVariable* g_hambient;
+extern ID3D10EffectVectorVariable* g_hspecular;
+extern ID3D10EffectScalarVariable* g_hpower;
+extern ID3D10EffectVectorVariable* g_hemissive;
+extern ID3D10EffectShaderResourceVariable* g_hMeshTexture;
+
+
 extern float g_impscale;
 extern btScalar G_ACC; // 重力加速度 : BPWorld.cpp
 
@@ -131,7 +159,7 @@ int CModel::InitParams()
 	m_createbtflag = false;
 	m_oldaxis_atloading = 0;
 	m_ikrotaxis = ChaVector3( 1.0f, 0.0f, 0.0f );
-	m_texpool = D3DPOOL_DEFAULT;
+	m_texpool = 0;
 	m_tmpmotspeed = 1.0f;
 
 	m_curreindex = 0;
@@ -280,7 +308,7 @@ int CModel::DestroyAncObj()
 	return 0;
 }
 
-int CModel::LoadMQO( LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, int ismedia, int texpool )
+int CModel::LoadMQO( ID3D10Device* pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, int ismedia, int texpool )
 {
 	if( modelfolder ){
 		wcscpy_s( m_modelfolder, MAX_PATH, modelfolder );
@@ -343,7 +371,7 @@ int CModel::LoadMQO( LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, f
 }
 
 
-int CModel::LoadFBX(int skipdefref, LPDIRECT3DDEVICE9 pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag)
+int CModel::LoadFBX(int skipdefref, ID3D10Device* pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag)
 {
 
 	//DestroyFBXSDK();
@@ -621,7 +649,7 @@ int CModel::CreateMaterialTexture()
 	return 0;
 }
 
-int CModel::OnRender( LPDIRECT3DDEVICE9 pdev, int lightflag, ChaVector4 diffusemult, int btflag )
+int CModel::OnRender( ID3D10Device* pdev, int lightflag, ChaVector4 diffusemult, int btflag )
 {
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
@@ -1380,11 +1408,12 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		return 0;//!!!!!!!!!!!
 	}
 
-	g_pEffect->SetMatrix(g_hmWorld, &(m_worldmat.D3DX()));
+	g_hmWorld->SetMatrix((float*)&m_worldmat);
+	//g_pEffect->SetMatrix(g_hmWorld, &(m_worldmat.D3DX()));
 
 
-	float set3x4[MAXCLUSTERNUM][12];
-	ZeroMemory( set3x4, sizeof( float ) * 12 * MAXCLUSTERNUM );
+	ChaMatrix set4x4[MAXCLUSTERNUM];
+	ZeroMemory( &set4x4[0], sizeof( ChaMatrix ) * MAXCLUSTERNUM );
 
 	int setclcnt = 0;
 	int clcnt;
@@ -1398,51 +1427,27 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 		CMotionPoint tmpmp = curbone->GetCurMp();
 		if( btflag == 0 ){
-
-			set3x4[clcnt][0] = tmpmp.GetWorldMat()._11;
-			set3x4[clcnt][1] = tmpmp.GetWorldMat()._12;
-			set3x4[clcnt][2] = tmpmp.GetWorldMat()._13;
-
-			set3x4[clcnt][3] = tmpmp.GetWorldMat()._21;
-			set3x4[clcnt][4] = tmpmp.GetWorldMat()._22;
-			set3x4[clcnt][5] = tmpmp.GetWorldMat()._23;
-
-			set3x4[clcnt][6] = tmpmp.GetWorldMat()._31;
-			set3x4[clcnt][7] = tmpmp.GetWorldMat()._32;
-			set3x4[clcnt][8] = tmpmp.GetWorldMat()._33;
-
-			set3x4[clcnt][9] = tmpmp.GetWorldMat()._41;
-			set3x4[clcnt][10] = tmpmp.GetWorldMat()._42;
-			set3x4[clcnt][11] = tmpmp.GetWorldMat()._43;
+			set4x4[clcnt] = tmpmp.GetWorldMat();
 		}else{
-			set3x4[clcnt][0] = curbone->GetBtMat()._11;
-			set3x4[clcnt][1] = curbone->GetBtMat()._12;
-			set3x4[clcnt][2] = curbone->GetBtMat()._13;
-
-			set3x4[clcnt][3] = curbone->GetBtMat()._21;
-			set3x4[clcnt][4] = curbone->GetBtMat()._22;
-			set3x4[clcnt][5] = curbone->GetBtMat()._23;
-
-			set3x4[clcnt][6] = curbone->GetBtMat()._31;
-			set3x4[clcnt][7] = curbone->GetBtMat()._32;
-			set3x4[clcnt][8] = curbone->GetBtMat()._33;
-
-			set3x4[clcnt][9] = curbone->GetBtMat()._41;
-			set3x4[clcnt][10] = curbone->GetBtMat()._42;
-			set3x4[clcnt][11] = curbone->GetBtMat()._43;
+			set4x4[clcnt] = curbone->GetBtMat();
 		}
 		setclcnt++;
-
 	}
 
-	if( setclcnt > 0 ){
-		HRESULT hr;
-		hr = g_pEffect->SetValue( g_hm3x4Mat, (void*)set3x4, sizeof( float ) * 12 * MAXCLUSTERNUM );
-		if( hr != D3D_OK ){
+	//if(setclcnt > 0 ){
+		_ASSERT(setclcnt <= MAXCLUSTERNUM);
+
+		HRESULT hr = S_OK;
+		hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, setclcnt);
+		//hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, MAXCLUSTERNUM);
+		//hr = g_hm4x4Mat->SetRawValue((float*)(&set4x4[0]), 0, sizeof(float) * 16 * MAXCLUSTERNUM);
+		//hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, MAXCLUSTERNUM);
+		//hr = g_pEffect->SetValue( g_hm4x4Mat, (void*)set3x4, sizeof( float ) * 12 * MAXCLUSTERNUM );
+		if(FAILED(hr)){
 			_ASSERT( 0 );
 			return 1;
 		}
-	}
+	//}
 
 	return 0;
 }
@@ -3345,7 +3350,7 @@ int IsValidCluster( FbxCluster* cluster )
 	return findflag;
 }
 
-int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark )
+int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark )
 {
 	if( m_bonelist.empty() ){
 		return 0;
@@ -3376,7 +3381,7 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 		}
 	}
 
-	pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
+	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
 
 	//ボーンの三角錐表示
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
@@ -3433,8 +3438,8 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 							bmmat._42 = aftbonepos.y;
 							bmmat._43 = aftbonepos.z;
 
-
-							g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
+							g_hmWorld->SetMatrix((float*)&bmmat);
+							//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 							bmarkptr->UpdateMatrix(&bmmat, &m_matVP);
 							ChaVector4 difmult;
 							if (chilbone->GetSelectFlag() & 2){
@@ -3466,7 +3471,8 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 					CRigidElem* curre = boneptr->GetRigidElem(childbone);
 					if (curre){
 						boneptr->CalcRigidElemParams(childbone, 0);
-						g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
+						g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat()));
+						//g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
 						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
 						ChaVector4 difmult;
 						//if( boneptr->GetSelectFlag() & 4 ){
@@ -3565,14 +3571,14 @@ int CModel::RenderBoneMark( LPDIRECT3DDEVICE9 pdev, CModel* bmarkptr, CMySprite*
 		}
 	}
 
-	pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
 
 	return 0;
 }
 
 
 
-void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto)
+void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 {
 	CBone* srcbone = srcbto->GetBone();
 	CBone* chilbone = srcbto->GetEndBone();
@@ -3584,7 +3590,8 @@ void CModel::RenderCapsuleReq(LPDIRECT3DDEVICE9 pdev, CBtObject* srcbto)
 			srcbone->CalcRigidElemParams(chilbone, 0);//形状データのスケールのために呼ぶ。ここでのカプセルマットは次のSetCapsuleBtMotionで上書きされる。
 			srcbto->SetCapsuleBtMotion(curre);
 
-			g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
+			g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat()));
+			//g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
 			srcbone->GetCurColDisp(chilbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
 			ChaVector4 difmult;
 			//if( boneptr->GetSelectFlag() & 4 ){

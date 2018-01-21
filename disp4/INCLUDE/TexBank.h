@@ -12,10 +12,10 @@ class CTexElem;
 class CTexBank
 {
 public:
-	CTexBank( LPDIRECT3DDEVICE9 pdev );
+	CTexBank( ID3D10Device* pdev );
 	~CTexBank();
 
-	int AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DCOLOR srccol, int* dstid );
+	int AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol, int* dstid );
 
 	int Invalidate( int invalmode );
 	int Restore();
@@ -38,7 +38,7 @@ private:
 	CTexElem* ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent );
 
 private:
-	LPDIRECT3DDEVICE9 m_pdev;
+	ID3D10Device* m_pdev;
 	map<int, CTexElem*> m_texmap;
 };
 #endif

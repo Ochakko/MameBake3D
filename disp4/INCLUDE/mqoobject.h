@@ -47,10 +47,10 @@ public:
 
 	int Dump();
 
-	int MakePolymesh3( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial*>& srcmat );
-	int MakePolymesh4( LPDIRECT3DDEVICE9 pdev );
+	int MakePolymesh3( ID3D10Device* pdev, std::map<int,CMQOMaterial*>& srcmat );
+	int MakePolymesh4( ID3D10Device* pdev );
 	int MakeExtLine();
-	int MakeDispObj( LPDIRECT3DDEVICE9 pdev, std::map<int,CMQOMaterial*>& srcmat, int hasbone );
+	int MakeDispObj( ID3D10Device* pdev, std::map<int,CMQOMaterial*>& srcmat, int hasbone );
 //	int MakeExtLine( map<int,CMQOMaterial*>& srcmat );
 
 	int HasPolygon();

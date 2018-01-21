@@ -481,7 +481,7 @@ int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 	return 0;
 }
 
-int CPolyMesh4::SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist )
+int CPolyMesh4::SetPm3InfNoSkin( ID3D10Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist )
 {
 	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
 
@@ -495,13 +495,13 @@ int CPolyMesh4::SetPm3InfNoSkin( LPDIRECT3DDEVICE9 pdev, CMQOObject* srcobj, int
 				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
 				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
-				curinf->boneindex[0] = (float)( clusterno );
+				curinf->boneindex[0] = clusterno;
 				curinf->weight[0] = 1.0f;
-				curinf->boneindex[1] = 0.0f;
+				curinf->boneindex[1] = 0;
 				curinf->weight[1] = 0.0f;
-				curinf->boneindex[2] = 0.0f;
+				curinf->boneindex[2] = 0;
 				curinf->weight[2] = 0.0f;
-				curinf->boneindex[3] = 0.0f;
+				curinf->boneindex[3] = 0;
 				curinf->weight[3] = 0.0f;
 			}
 		}
@@ -536,12 +536,12 @@ int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
 				if( curinfdata ){
 					int ieno;
 					for( ieno = 0; ieno < curinfdata->m_infnum; ieno++ ){
-						curinf->boneindex[ieno] = (float)( curinfdata->m_infelem[ieno].boneno );
+						curinf->boneindex[ieno] = curinfdata->m_infelem[ieno].boneno;
 						curinf->weight[ieno] = curinfdata->m_infelem[ieno].dispinf;
 					}
 				}else{
 //					_ASSERT( 0 );
-					curinf->boneindex[0] = 0.0f;
+					curinf->boneindex[0] = 0;
 					curinf->weight[0] = 1.0f;
 				}
 
