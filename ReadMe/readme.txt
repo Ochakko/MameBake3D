@@ -162,8 +162,25 @@ DXUTSetOverrideSize関数を足しました。
 中でDXUTGetState().SetOverrideWidthとDXUTGetState().SetOverrideHeightを呼び出しています。
 DXUTSetOverrideSize関数はまめばけ３DのMain.cppから呼び出しています。
 
+2018/01/22にDXUTgui.cppを調整しました。
+メインう移動のスライダーとチェックボックスをクリックするとその範囲外をクリックするまで
+GUIが表示されない不具合を解消するための編集をしました。
+DXUTgui.cppのCDXUTSlider::HandleMouseとCDXUTCheckBox::HandleMouseの
+以下の2行をコメントアウトしました。
+if(!m_HasFocus)
+	m_pDialog->RequestFocus(this);
+上記２行をコメントアウトすることでGUIが消える症状がなくなりました。
+
+
 
 ＃＃＃
+2018/01/22_1
+	DirectX10対応の続き。
+		Shader(Media/Ochakko.fx)のテクニック部分でZバッファを有効にしました。
+
+	メインウインドウのスライダーとチェックボックスをクリックしたときにGUIが消える症状を解消しました。
+		readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
+
 2018/01/21_1
 	DirectX10への対応を開始。[まだ途中です。]
 		とりあえずDX10で動いています。

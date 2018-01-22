@@ -1135,6 +1135,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//DXUTSetCallbackD3D9FrameRender(OnD3D9FrameRender);
 	//DXUTSetCallbackD3D9DeviceLost(OnD3D9LostDevice);
 	//DXUTSetCallbackD3D9DeviceDestroyed(OnD3D9DestroyDevice);
+	DXUTSetCallbackD3D9DeviceAcceptable(IsD3D9DeviceAcceptable);
+	DXUTSetCallbackD3D9DeviceCreated(NULL);
+	DXUTSetCallbackD3D9DeviceReset(NULL);
+	DXUTSetCallbackD3D9FrameRender(NULL);
+	DXUTSetCallbackD3D9DeviceLost(NULL);
+	DXUTSetCallbackD3D9DeviceDestroyed(NULL);
 
 
 	DXUTSetCallbackD3D10DeviceAcceptable(IsD3D10DeviceAcceptable);
@@ -1879,16 +1885,14 @@ HRESULT CALLBACK OnD3D10ResizedSwapChain(ID3D10Device* pd3dDevice, IDXGISwapChai
 	g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
 	g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 	
-	s_bufwidth = pBackBufferSurfaceDesc->Width;
-	s_bufheight = pBackBufferSurfaceDesc->Height;
+	s_mainwidth = pBackBufferSurfaceDesc->Width;
+	s_mainheight = pBackBufferSurfaceDesc->Height;
 	
-	//g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 550 );
-	//g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
-	//g_SampleUI.SetSize( 170, 750 );
 	
-	g_SampleUI.SetLocation( 0, 0 );
+	g_SampleUI.SetLocation(0, 0);
 	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
-		
+
+
 	SetSpAxisParams();
 	SetSpCamParams();
 	SetSpRigParams();
@@ -2679,12 +2683,15 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
     //V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
     //                      0 ) );
 
+
 	// Clear the render target and depth stencil
 	float ClearColor[4] = { 0.0f, 0.25f, 0.25f, 0.55f };
 	ID3D10RenderTargetView* pRTV = DXUTGetD3D10RenderTargetView();
 	pd3dDevice->ClearRenderTargetView(pRTV, ClearColor);
 	ID3D10DepthStencilView* pDSV = DXUTGetD3D10DepthStencilView();
 	pd3dDevice->ClearDepthStencilView(pDSV, D3D10_CLEAR_DEPTH, 1.0, 0);
+
+
 
 
 	ChaMatrix mWorldViewProjection;
@@ -2750,16 +2757,13 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	OnRenderBoneMark();
 	OnRenderSelect();
 	//OnRenderUtDialog(fElapsedTime);
-
 	OnRenderSprite();
-	RenderText( fTime );
 
-
-
-	//DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
+	DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
 	////g_HUD.OnRender(fElapsedTime);
 	g_SampleUI.OnRender(fElapsedTime);
-	//DXUT_EndPerfEvent();
+	RenderText(fTime);
+	DXUT_EndPerfEvent();
 
 }
 
@@ -2864,6 +2868,31 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 //	DbgOut( L"msgproc!!! %d, %d\r\n", uMsg, WM_LBUTTONDOWN );
 	//if(s_anglelimitdlg && IsDialogMessage(s_anglelimitdlg, &msg))
 
+	// Always allow dialog resource manager calls to handle global messages
+	// so GUI state is updated correctly
+	//g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
+	*pbNoFurtherProcessing = g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
+	if (*pbNoFurtherProcessing) {
+		//_ASSERT(0);
+		return 0;
+	}
+
+	//if( g_SettingsDlg.IsActive() )
+	//{
+	//    g_SettingsDlg.MsgProc( hWnd, uMsg, wParam, lParam );
+	//    //return 0;
+	//}
+
+	// Give the dialogs a chance to handle the message first
+	g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
+	*pbNoFurtherProcessing = g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
+	if (*pbNoFurtherProcessing) {
+		//_ASSERT(0);
+		return 0;
+	}
+
+	// Pass all remaining windows messages to camera so it can respond to user input
+	//g_Camera.HandleMessages(hWnd, uMsg, wParam, lParam);
 
 
 	if( uMsg == WM_COMMAND ){
@@ -3602,30 +3631,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.buttonflag = 0;
 	}
 
-    // Always allow dialog resource manager calls to handle global messages
-    // so GUI state is updated correctly
-	//g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
-    *pbNoFurtherProcessing = g_DialogResourceManager.MsgProc( hWnd, uMsg, wParam, lParam );
-	if (*pbNoFurtherProcessing) {
-		//_ASSERT(0);
-		return 0;
-	}
-
-    //if( g_SettingsDlg.IsActive() )
-    //{
-    //    g_SettingsDlg.MsgProc( hWnd, uMsg, wParam, lParam );
-    //    //return 0;
-    //}
-
-    // Give the dialogs a chance to handle the message first
-	//g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
-    *pbNoFurtherProcessing = g_SampleUI.MsgProc( hWnd, uMsg, wParam, lParam );
-	if (*pbNoFurtherProcessing) {
-		//_ASSERT(0);
-		return 0;
-	}
-
-    // Pass all remaining windows messages to camera so it can respond to user input
 
 	/*
 	if( uMsg == WM_LBUTTONDOWN ){
@@ -3732,7 +3737,6 @@ int RollbackCurBoneNo()
 void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext )
 {
 
-
     CDXUTComboBox* pComboBox;
 	ChaVector3 cureul, neweul;
 	int tmpboneno;
@@ -3746,27 +3750,25 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
     switch( nControlID )
     {
-		/*
-        case IDC_ACTIVE_LIGHT:
-            if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
-            {
-                g_nActiveLight++;
-                g_nActiveLight %= g_nNumActiveLights;
-            }
-            break;
-		
-        case IDC_NUM_LIGHTS:
-            if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
-            {
-                WCHAR sz[100];
-                swprintf_s( sz, 100, L"# Lights: %d", g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue() );
-                g_SampleUI.GetStatic( IDC_NUM_LIGHTS_STATIC )->SetText( sz );
+  //      case IDC_ACTIVE_LIGHT:
+  //          if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
+  //          {
+  //              g_nActiveLight++;
+  //              g_nActiveLight %= g_nNumActiveLights;
+  //          }
+  //          break;
+		//
+  //      case IDC_NUM_LIGHTS:
+  //          if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
+  //          {
+  //              WCHAR sz[100];
+  //              swprintf_s( sz, 100, L"# Lights: %d", g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue() );
+  //              g_SampleUI.GetStatic( IDC_NUM_LIGHTS_STATIC )->SetText( sz );
 
-                g_nNumActiveLights = g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue();
-                g_nActiveLight %= g_nNumActiveLights;
-            }
-            break;
-		*/
+  //              g_nNumActiveLights = g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue();
+  //              g_nActiveLight %= g_nNumActiveLights;
+  //          }
+  //          break;
 		case IDC_BTSTART:
 			StartBt(0, 1);
 			break;
@@ -3896,15 +3898,13 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				case IDC_IK_MV:
 					s_ikkind = 1;
 					break;
-					/*
-				case IDC_IK_LIGHT:
-					s_ikkind = 2;
-					s_displightarrow = true;
-					if (s_LightCheckBox){
-						s_LightCheckBox->SetChecked(true);
-					}
-					break;
-					*/
+				//case IDC_IK_LIGHT:
+				//	s_ikkind = 2;
+				//	s_displightarrow = true;
+				//	if (s_LightCheckBox){
+				//		s_LightCheckBox->SetChecked(true);
+				//	}
+				//	break;
 				case IDC_BT_RIGID:
 					if( s_model && (s_curboneno >= 0) ){
 						
@@ -13757,18 +13757,19 @@ void AutoCameraTarget()
 bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
 	D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
 {
-	// No fallback defined by this app, so reject any device that doesn't support at least ps2.0
-	if (pCaps->PixelShaderVersion < D3DPS_VERSION(2, 0))
-		return false;
+	//// No fallback defined by this app, so reject any device that doesn't support at least ps2.0
+	//if (pCaps->PixelShaderVersion < D3DPS_VERSION(2, 0))
+	//	return false;
 
-	// Skip backbuffer formats that don't support alpha blending
-	IDirect3D9* pD3D = DXUTGetD3D9Object();
-	if (FAILED(pD3D->CheckDeviceFormat(pCaps->AdapterOrdinal, pCaps->DeviceType,
-		AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
-		D3DRTYPE_TEXTURE, BackBufferFormat)))
-		return false;
+	//// Skip backbuffer formats that don't support alpha blending
+	//IDirect3D9* pD3D = DXUTGetD3D9Object();
+	//if (FAILED(pD3D->CheckDeviceFormat(pCaps->AdapterOrdinal, pCaps->DeviceType,
+	//	AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
+	//	D3DRTYPE_TEXTURE, BackBufferFormat)))
+	//	return false;
 
-	return true;
+	//return true;
+	return false;
 }
 
 
@@ -13946,8 +13947,11 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice,
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
 	//g_HUD.SetSize(170, 170);
-	g_SampleUI.SetLocation(pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300);
-	g_SampleUI.SetSize(170, 300);
+	//g_SampleUI.SetLocation(pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300);
+	//g_SampleUI.SetSize(170, 300);
+	g_SampleUI.SetLocation(0, 0);
+	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
+
 
 	return S_OK;
 }
