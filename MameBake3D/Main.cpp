@@ -97,6 +97,11 @@ typedef struct tag_spaxis
 	POINT dispcenter;
 }SPAXIS, SPCAM, SPELEM;
 
+
+ID3D10DepthStencilState *g_pDSStateZCmp = 0;
+ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
+
+
 int	g_numthread = 3;
 double g_btcalccnt = 3.0;
 int g_dbgloadcnt = 0;
@@ -1804,6 +1809,57 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 	//s_pdev->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
 
+	D3D10_DEPTH_STENCIL_DESC dsDescNormal;
+	// Depth test parameters
+	dsDescNormal.DepthEnable = true;
+	dsDescNormal.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
+	dsDescNormal.DepthFunc = D3D10_COMPARISON_LESS;
+	// Stencil test parameters
+	dsDescNormal.StencilEnable = true;
+	dsDescNormal.StencilReadMask = 0xFF;
+	dsDescNormal.StencilWriteMask = 0xFF;
+	// Stencil operations if pixel is front-facing
+	dsDescNormal.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+	dsDescNormal.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
+	dsDescNormal.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+	dsDescNormal.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	// Stencil operations if pixel is back-facing
+	dsDescNormal.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+	dsDescNormal.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
+	dsDescNormal.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+	dsDescNormal.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	// Create depth stencil state
+	//ID3D10DepthStencilState * pDSState;
+	s_pdev->CreateDepthStencilState(&dsDescNormal, &g_pDSStateZCmp);
+
+
+	D3D10_DEPTH_STENCIL_DESC dsDescZCmpAlways;
+	// Depth test parameters
+	dsDescZCmpAlways.DepthEnable = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	dsDescZCmpAlways.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
+	dsDescZCmpAlways.DepthFunc = D3D10_COMPARISON_LESS;
+	// Stencil test parameters
+	dsDescZCmpAlways.StencilEnable = true;
+	dsDescZCmpAlways.StencilReadMask = 0xFF;
+	dsDescZCmpAlways.StencilWriteMask = 0xFF;
+	// Stencil operations if pixel is front-facing
+	dsDescZCmpAlways.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
+	dsDescZCmpAlways.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	// Stencil operations if pixel is back-facing
+	dsDescZCmpAlways.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
+	dsDescZCmpAlways.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	// Create depth stencil state
+	//ID3D10DepthStencilState * pDSState;
+	s_pdev->CreateDepthStencilState(&dsDescZCmpAlways, &g_pDSStateZCmpAlways);
+
+
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+
+
 	return S_OK;
 }
 
@@ -1918,6 +1974,15 @@ void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext)
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 {
+	if (g_pDSStateZCmp) {
+		g_pDSStateZCmp->Release();
+		g_pDSStateZCmp = 0;
+	}
+	if (g_pDSStateZCmpAlways) {
+		g_pDSStateZCmpAlways->Release();
+		g_pDSStateZCmpAlways = 0;
+	}
+
 	g_DialogResourceManager.OnD3D10DestroyDevice();
 	//g_SettingsDlg.OnD3D10DestroyDevice();
 	CDXUTDirectionWidget::StaticOnD3D10DestroyDevice();
@@ -6517,6 +6582,8 @@ int RenderSelectMark(int renderflag)
 				}
 			}
 			//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+			s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+
 		}
 	}
 
@@ -6527,12 +6594,13 @@ int RenderSelectFunc()
 {
 	s_select->UpdateMatrix(&s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect){
 		int lightflag = 1;
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_select->OnRender(s_pdev, lightflag, diffusemult);
 	}
-	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 
@@ -6542,10 +6610,12 @@ int RenderRigMarkFunc()
 {
 	s_rigmark->UpdateMatrix(&s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	int lightflag = 1;
 	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 }

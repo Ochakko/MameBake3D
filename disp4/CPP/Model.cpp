@@ -70,6 +70,9 @@ using namespace OrgWinGUI;
 
 static int s_alloccnt = 0;
 
+extern ID3D10DepthStencilState *g_pDSStateZCmp;
+extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;
+
 extern int g_boneaxis;
 extern int g_dbgloadcnt;
 extern int g_pseudolocalflag;
@@ -3382,6 +3385,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 	}
 
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
+	pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 
 	//ボーンの三角錐表示
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
@@ -3572,6 +3576,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 	}
 
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+	pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 }

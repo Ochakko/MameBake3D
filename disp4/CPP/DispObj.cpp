@@ -34,6 +34,9 @@
 
 using namespace std;
 
+extern ID3D10DepthStencilState *g_pDSStateZCmp;
+extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;
+
 extern int g_dbgflag;
 extern CTexBank* g_texbank;
 
@@ -547,26 +550,26 @@ int CDispObj::CreateVBandIBLine()
 	}
 
 
-	//IndexBuffer
-	D3D10_BUFFER_DESC IndexBufferDesc;
-	D3D10_SUBRESOURCE_DATA SubDataIndex;
+	////IndexBuffer
+	//D3D10_BUFFER_DESC IndexBufferDesc;
+	//D3D10_SUBRESOURCE_DATA SubDataIndex;
 
-	IndexBufferDesc.Usage = D3D10_USAGE_DEFAULT;//D3D10_USAGE_DYNAMIC;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	IndexBufferDesc.BindFlags = D3D10_BIND_INDEX_BUFFER;
-	IndexBufferDesc.CPUAccessFlags = 0;//D3D10_CPU_ACCESS_WRITE;
-	IndexBufferDesc.MiscFlags = 0;
+	//IndexBufferDesc.Usage = D3D10_USAGE_DEFAULT;//D3D10_USAGE_DYNAMIC;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//IndexBufferDesc.BindFlags = D3D10_BIND_INDEX_BUFFER;
+	//IndexBufferDesc.CPUAccessFlags = 0;//D3D10_CPU_ACCESS_WRITE;
+	//IndexBufferDesc.MiscFlags = 0;
 
-	SubDataIndex.SysMemPitch = 0;
-	SubDataIndex.SysMemSlicePitch = 0;
+	//SubDataIndex.SysMemPitch = 0;
+	//SubDataIndex.SysMemSlicePitch = 0;
 
-	IndexBufferDesc.ByteWidth = m_extline->m_linenum * 2 * sizeof(int);
-	SubDataIndex.pSysMem = m_extline->m_linev;
+	//IndexBufferDesc.ByteWidth = m_extline->m_linenum * 2 * sizeof(int);
+	//SubDataIndex.pSysMem = m_extline->m_linev;
 
-	hr = m_pdev->CreateBuffer(&IndexBufferDesc, &SubDataIndex, &m_IB);
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		return 1;
-	}
+	//hr = m_pdev->CreateBuffer(&IndexBufferDesc, &SubDataIndex, &m_IB);
+	//if (FAILED(hr)) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
 
 
 	return 0;
@@ -593,11 +596,13 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 d
 	diffuse.z = curdif4f.z * diffusemult.z;
 
 
-	//if( diffuse.w <= 0.99999f ){
-	//	//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-	//}else{
+	if( diffuse.w <= 0.99999f ){
+		//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+		m_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	}else{
 		//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-	//}
+		m_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	}
 
 //diffuse = ChaVector4( 0.6f, 0.6f, 0.6f, 1.0f );
 
@@ -811,11 +816,14 @@ int CDispObj::RenderNormalPM3( int lightflag, ChaVector4 diffusemult )
 
 
 
-		//if( diffuse.w <= 0.99999f ){
-		//	//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-		//}else{
+		if (diffuse.w <= 0.99999f) {
+			//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+			m_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+		}
+		else {
 			//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-		//}
+			m_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+		}
 
 		m_pdev->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -914,46 +922,47 @@ int CDispObj::RenderNormalPM3( int lightflag, ChaVector4 diffusemult )
 
 int CDispObj::RenderLine( ChaVector4 diffusemult )
 {
-	//if( !m_extline ){
-	//	return 0;
-	//}
-	//if( m_extline->m_linenum <= 0 ){
-	//	return 0;
-	//}
+	if( !m_extline ){
+		return 0;
+	}
+	if( m_extline->m_linenum <= 0 ){
+		return 0;
+	}
 
-	//HRESULT hr;
+	HRESULT hr;
 
-	//ChaVector4 diffuse;
-	//diffuse.w = m_extline->m_color.w * diffusemult.w;
-	//diffuse.x = m_extline->m_color.x * diffusemult.x;
-	//diffuse.y = m_extline->m_color.y * diffusemult.y;
-	//diffuse.z = m_extline->m_color.z * diffusemult.z;
+	ChaVector4 diffuse;
+	diffuse.w = m_extline->m_color.w * diffusemult.w;
+	diffuse.x = m_extline->m_color.x * diffusemult.x;
+	diffuse.y = m_extline->m_color.y * diffusemult.y;
+	diffuse.z = m_extline->m_color.z * diffusemult.z;
 
-	//hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
-	//_ASSERT(!hr);
+	hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
+	_ASSERT(!hr);
 
-	//m_pdev->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+	m_pdev->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	//ID3D10EffectTechnique* curtech = g_hRenderLine;
-	//m_pdev->IASetInputLayout(m_layoutLine);
+	ID3D10EffectTechnique* curtech = g_hRenderLine;
+	m_pdev->IASetInputLayout(m_layoutLine);
 
-	//UINT vbstride = sizeof(EXTLINEV);
-	//UINT offset = 0;
-	//m_pdev->IASetVertexBuffers(0, 1, &m_VB, &vbstride, &offset);
+	UINT vbstride = sizeof(EXTLINEV);
+	UINT offset = 0;
+	m_pdev->IASetVertexBuffers(0, 1, &m_VB, &vbstride, &offset);
 	//m_pdev->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, 0);
 
-	//int curnumprim;
-	//curnumprim = m_extline->m_linenum;
+	int curnumprim;
+	curnumprim = m_extline->m_linenum;
 
 
-	//D3D10_TECHNIQUE_DESC techDesc;
-	//curtech->GetDesc(&techDesc);
-	//UINT p = 0;
-	////for (UINT p = 0; p < techDesc.Passes; ++p)
-	////{
-	//	curtech->GetPassByIndex(p)->Apply(0);
-	//	m_pdev->DrawIndexed(curnumprim * 2, 0, 0);
-	////}
+	D3D10_TECHNIQUE_DESC techDesc;
+	curtech->GetDesc(&techDesc);
+	UINT p = 0;
+	//for (UINT p = 0; p < techDesc.Passes; ++p)
+	//{
+		curtech->GetPassByIndex(p)->Apply(0);
+		//m_pdev->DrawIndexed(curnumprim * 2, 0, 0);
+		m_pdev->Draw(curnumprim * 2, 0);
+	//}
 
 
 	return 0;
