@@ -113,7 +113,7 @@
       <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\tbb2018\include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/D "_ITERATOR_DEBUG_LEVEL"=0 %(AdditionalOptions)</AdditionalOptions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -162,10 +162,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_DOUBLE_PRECISION;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\tbb2018\include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\include;..\disp4\INCLUDE;..\disp4\DXUT\Core;..\disp4\DXUT\Optional;..\disp4\BTMANAGER;..\disp4\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <WholeProgramOptimization>false</WholeProgramOptimization>

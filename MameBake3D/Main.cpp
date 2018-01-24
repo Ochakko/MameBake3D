@@ -100,7 +100,7 @@ typedef struct tag_spaxis
 
 ID3D10DepthStencilState *g_pDSStateZCmp = 0;
 ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
-
+ID3D10ShaderResourceView* g_presview = 0;
 
 int	g_numthread = 3;
 double g_btcalccnt = 3.0;
@@ -223,6 +223,10 @@ bool g_shiftkey = false;
 bool g_ctrlshiftkeyformb = false;//ForMiddleButton
 static int s_akeycnt = 0;
 static int s_dkeycnt = 0;
+static int s_1keycnt = 0;
+
+static bool s_dispsampleui = true;
+
 
 static double s_erp = 1.0;
 //static float s_erp = 0.99f;
@@ -2822,11 +2826,15 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	OnRenderBoneMark();
 	OnRenderSelect();
 	//OnRenderUtDialog(fElapsedTime);
-	OnRenderSprite();
+	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
+		OnRenderSprite();
+	}
 
 	DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
 	////g_HUD.OnRender(fElapsedTime);
-	g_SampleUI.OnRender(fElapsedTime);
+	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
+		g_SampleUI.OnRender(fElapsedTime);
+	}
 	RenderText(fTime);
 	DXUT_EndPerfEvent();
 
@@ -3559,15 +3567,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			float chkdot;
 			chkdot = ChaVector3Dot(&viewvec, &upvec);
 			if (fabs(chkdot) < 0.99965f){
-				ChaVector3Cross(&rotaxisxz, &upvec, &viewvec);
+				ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
 				ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
 
-				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 			}
 			else if (chkdot >= 0.99965f){
 				rotaxisxz = upvec;
-				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 				if (roty < 0.0f){
 					roty = 0.0f;
@@ -3577,7 +3585,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 			else{
 				rotaxisxz = upvec;
-				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 				if (roty > 0.0f){
 					roty = 0.0f;
@@ -3613,16 +3621,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaVector3Normalize(&newviewvec, &newviewvec);
 			chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
 			if (fabs(chkdot2) < 0.99965f){
-				ChaVector3Cross(&rotaxisxz, &upvec, &viewvec);
+				ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
 				ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
 
-				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 			}
 			else{
 				roty = 0.0f;
 				rotaxisxz = upvec;
-				ChaVector3Cross(&rotaxisy, &viewvec, &rotaxisxz);
+				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 				ChaVector3Normalize(&rotaxisy, &rotaxisy);
 			}
 			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
@@ -5803,9 +5811,11 @@ int DispMotionWindow()
 
 	if( s_dispmw ){
 		s_timelineWnd->setVisible( false );
+		s_LtimelineWnd->setVisible(false);
 		s_dispmw = false;
 	}else{
 		s_timelineWnd->setVisible( true );
+		s_LtimelineWnd->setVisible(true);
 		s_dispmw = true;
 	}
 
@@ -10333,10 +10343,24 @@ int OnFrameKeyboard()
 		s_dkeycnt = 0;
 	}
 
+	if (g_keybuf['1'] & 0x80) {//num
+		s_1keycnt++;
+	}
+	else {
+		s_1keycnt = 0;
+	}
+
+
+
 	/////// all model bone
 	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)){
 		s_allmodelbone = !s_allmodelbone;
 	}
+
+	if (g_controlkey && (s_1keycnt == 1)) {
+		s_dispsampleui = !s_dispsampleui;
+	}
+
 
 	return 0;
 }
@@ -12607,8 +12631,7 @@ int OnRenderGround()
 int OnRenderBoneMark()
 {
 	if (s_allmodelbone == 0){
-		if (g_previewFlag != 4){
-		//if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+		if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
 			if (s_model && s_model->GetModelDisp()){
 				//if (s_ikkind >= 3){
 					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);

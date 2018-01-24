@@ -32,7 +32,7 @@ int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVecto
 	s = *( pointbuf + i2 ) - *( pointbuf + i1 );
 	t = *( pointbuf + i3 ) - *( pointbuf + i1 );
 	ChaVector3 abc;
-	ChaVector3Cross( &abc, &s, &t );
+	ChaVector3Cross( &abc, (const ChaVector3*)&s, (const ChaVector3*)&t );
 	ChaVector3Normalize( &abc, &abc );
 
 	float d;
@@ -65,17 +65,17 @@ int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVecto
 	
 	g1 = *(pointbuf + i2) - *(pointbuf + i1);
 	g0 = q - *(pointbuf + i1);
-	ChaVector3Cross( &cA, &g0, &g1 );
+	ChaVector3Cross( &cA, (const ChaVector3*)&g0, (const ChaVector3*)&g1 );
 	ChaVector3Normalize( &cA, &cA );
 
 	g1 = *(pointbuf + i3) - *(pointbuf + i2);
 	g0 = q - *(pointbuf + i2);
-	ChaVector3Cross( &cB, &g0, &g1 );
+	ChaVector3Cross( &cB, (const ChaVector3*)&g0, (const ChaVector3*)&g1 );
 	ChaVector3Normalize( &cB, &cB );
 
 	g1 = *(pointbuf + i1) - *(pointbuf + i3);
 	g0 = q - *(pointbuf + i3);
-	ChaVector3Cross( &cC, &g0, &g1 );
+	ChaVector3Cross( &cC, (const ChaVector3*)&g0, (const ChaVector3*)&g1 );
 	ChaVector3Normalize( &cC, &cC );
 
 

@@ -36,6 +36,7 @@ using namespace std;
 
 extern ID3D10DepthStencilState *g_pDSStateZCmp;
 extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;
+extern ID3D10ShaderResourceView* g_presview;
 
 extern int g_dbgflag;
 extern CTexBank* g_texbank;
@@ -724,7 +725,7 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 d
 		texresview = 0;
 	}
 
-	if(texresview){
+	if(texresview && (texresview != g_presview)){
 		g_hMeshTexture->SetResource(texresview);
 	}else{
 		//g_hMeshTexture->SetResource(NULL);
@@ -757,8 +758,8 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 d
 		return 1;
 	}
 
-	D3D10_TECHNIQUE_DESC techDesc;
-	curtech->GetDesc(&techDesc);
+	//D3D10_TECHNIQUE_DESC techDesc;
+	//curtech->GetDesc(&techDesc);
 	//for (UINT p = 0; p < techDesc.Passes; ++p)
 	//{
 		curtech->GetPassByIndex(p)->Apply(0);
@@ -877,7 +878,7 @@ int CDispObj::RenderNormalPM3( int lightflag, ChaVector4 diffusemult )
 			texresview = 0;
 		}
 
-		if (texresview) {
+		if (texresview && (texresview != g_presview)) {
 			g_hMeshTexture->SetResource(texresview);
 		}
 		else {
@@ -905,8 +906,8 @@ int CDispObj::RenderNormalPM3( int lightflag, ChaVector4 diffusemult )
 		int curnumprim;
 		curnumprim = currb->endface - currb->startface + 1;
 
-		D3D10_TECHNIQUE_DESC techDesc;
-		curtech->GetDesc(&techDesc);
+		//D3D10_TECHNIQUE_DESC techDesc;
+		//curtech->GetDesc(&techDesc);
 		//UINT p = 0;
 		//for (UINT p = 0; p < techDesc.Passes; ++p)
 		//{
@@ -954,8 +955,8 @@ int CDispObj::RenderLine( ChaVector4 diffusemult )
 	curnumprim = m_extline->m_linenum;
 
 
-	D3D10_TECHNIQUE_DESC techDesc;
-	curtech->GetDesc(&techDesc);
+	//D3D10_TECHNIQUE_DESC techDesc;
+	//curtech->GetDesc(&techDesc);
 	UINT p = 0;
 	//for (UINT p = 0; p < techDesc.Passes; ++p)
 	//{

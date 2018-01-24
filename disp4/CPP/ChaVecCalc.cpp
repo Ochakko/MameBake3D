@@ -772,26 +772,64 @@ ChaMatrix &ChaMatrix::operator-= (const ChaMatrix &m) { *this = *this - m; retur
 
 ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
 	//*this * m
+	float m_11 = m._11;
+	float m_12 = m._12;
+	float m_13 = m._13;
+	float m_14 = m._14;
+	float m_21 = m._21;
+	float m_22 = m._22;
+	float m_23 = m._23;
+	float m_24 = m._24;
+	float m_31 = m._31;
+	float m_32 = m._32;
+	float m_33 = m._33;
+	float m_34 = m._34;
+	float m_41 = m._41;
+	float m_42 = m._42;
+	float m_43 = m._43;
+	float m_44 = m._44;
+
 	ChaMatrix res;
-	res._11 = m._11 * _11 + m._21 * _12 + m._31 * _13 + m._41 * _14;
-	res._21 = m._11 * _21 + m._21 * _22 + m._31 * _23 + m._41 * _24;
-	res._31 = m._11 * _31 + m._21 * _32 + m._31 * _33 + m._41 * _34;
-	res._41 = m._11 * _41 + m._21 * _42 + m._31 * _43 + m._41 * _44;
+	res._11 = m_11 * _11 + m_21 * _12 + m_31 * _13 + m_41 * _14;
+	res._21 = m_11 * _21 + m_21 * _22 + m_31 * _23 + m_41 * _24;
+	res._31 = m_11 * _31 + m_21 * _32 + m_31 * _33 + m_41 * _34;
+	res._41 = m_11 * _41 + m_21 * _42 + m_31 * _43 + m_41 * _44;
 
-	res._12 = m._12 * _11 + m._22 * _12 + m._32 * _13 + m._42 * _14;
-	res._22 = m._12 * _21 + m._22 * _22 + m._32 * _23 + m._42 * _24;
-	res._32 = m._12 * _31 + m._22 * _32 + m._32 * _33 + m._42 * _34;
-	res._42 = m._12 * _41 + m._22 * _42 + m._32 * _43 + m._42 * _44;
+	res._12 = m_12 * _11 + m_22 * _12 + m_32 * _13 + m_42 * _14;
+	res._22 = m_12 * _21 + m_22 * _22 + m_32 * _23 + m_42 * _24;
+	res._32 = m_12 * _31 + m_22 * _32 + m_32 * _33 + m_42 * _34;
+	res._42 = m_12 * _41 + m_22 * _42 + m_32 * _43 + m_42 * _44;
 
-	res._13 = m._13 * _11 + m._23 * _12 + m._33 * _13 + m._43 * _14;
-	res._23 = m._13 * _21 + m._23 * _22 + m._33 * _23 + m._43 * _24;
-	res._33 = m._13 * _31 + m._23 * _32 + m._33 * _33 + m._43 * _34;
-	res._43 = m._13 * _41 + m._23 * _42 + m._33 * _43 + m._43 * _44;
+	res._13 = m_13 * _11 + m_23 * _12 + m_33 * _13 + m_43 * _14;
+	res._23 = m_13 * _21 + m_23 * _22 + m_33 * _23 + m_43 * _24;
+	res._33 = m_13 * _31 + m_23 * _32 + m_33 * _33 + m_43 * _34;
+	res._43 = m_13 * _41 + m_23 * _42 + m_33 * _43 + m_43 * _44;
 
-	res._14 = m._14 * _11 + m._24 * _12 + m._34 * _13 + m._44 * _14;
-	res._24 = m._14 * _21 + m._24 * _22 + m._34 * _23 + m._44 * _24;
-	res._34 = m._14 * _31 + m._24 * _32 + m._34 * _33 + m._44 * _34;
-	res._44 = m._14 * _41 + m._24 * _42 + m._34 * _43 + m._44 * _44;
+	res._14 = m_14 * _11 + m_24 * _12 + m_34 * _13 + m_44 * _14;
+	res._24 = m_14 * _21 + m_24 * _22 + m_34 * _23 + m_44 * _24;
+	res._34 = m_14 * _31 + m_24 * _32 + m_34 * _33 + m_44 * _34;
+	res._44 = m_14 * _41 + m_24 * _42 + m_34 * _43 + m_44 * _44;
+
+	//ChaMatrix res;
+	//res._11 = m._11 * _11 + m._21 * _12 + m._31 * _13 + m._41 * _14;
+	//res._21 = m._11 * _21 + m._21 * _22 + m._31 * _23 + m._41 * _24;
+	//res._31 = m._11 * _31 + m._21 * _32 + m._31 * _33 + m._41 * _34;
+	//res._41 = m._11 * _41 + m._21 * _42 + m._31 * _43 + m._41 * _44;
+
+	//res._12 = m._12 * _11 + m._22 * _12 + m._32 * _13 + m._42 * _14;
+	//res._22 = m._12 * _21 + m._22 * _22 + m._32 * _23 + m._42 * _24;
+	//res._32 = m._12 * _31 + m._22 * _32 + m._32 * _33 + m._42 * _34;
+	//res._42 = m._12 * _41 + m._22 * _42 + m._32 * _43 + m._42 * _44;
+
+	//res._13 = m._13 * _11 + m._23 * _12 + m._33 * _13 + m._43 * _14;
+	//res._23 = m._13 * _21 + m._23 * _22 + m._33 * _23 + m._43 * _24;
+	//res._33 = m._13 * _31 + m._23 * _32 + m._33 * _33 + m._43 * _34;
+	//res._43 = m._13 * _41 + m._23 * _42 + m._33 * _43 + m._43 * _44;
+
+	//res._14 = m._14 * _11 + m._24 * _12 + m._34 * _13 + m._44 * _14;
+	//res._24 = m._14 * _21 + m._24 * _22 + m._34 * _23 + m._44 * _24;
+	//res._34 = m._14 * _31 + m._24 * _32 + m._34 * _33 + m._44 * _34;
+	//res._44 = m._14 * _41 + m._24 * _42 + m._34 * _43 + m._44 * _44;
 
 	return res;
 }
@@ -1426,7 +1464,7 @@ int CQuaternion::RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1)
 	//srcvec0, srcvec1‚ÍAnormalize‚³‚ê‚Ä‚¢‚é‚Æ‚·‚éB
 
 	ChaVector3 c;
-	ChaVector3Cross(&c, &srcvec0, &srcvec1);
+	ChaVector3Cross(&c, (const ChaVector3*)&srcvec0, (const ChaVector3*)&srcvec1);
 	float d;
 	d = ChaVector3Dot(&srcvec0, &srcvec1);
 	float s;
@@ -2461,13 +2499,16 @@ void ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3
 		return;
 	}
 
-	ChaVector3 v1, v2;
-	v1 = *psrc1;
-	v2 = *psrc2;
+	//ChaVector3 v1, v2;
+	//v1 = *psrc1;
+	//v2 = *psrc2;
 
-	pdst->x = v1.y * v2.z - v1.z * v2.y;
-	pdst->y = v1.z * v2.x - v1.x * v2.z;
-	pdst->z = v1.x * v2.y - v1.y * v2.x;
+	//pdst->x = v1.y * v2.z - v1.z * v2.y;
+	//pdst->y = v1.z * v2.x - v1.x * v2.z;
+	//pdst->z = v1.x * v2.y - v1.y * v2.x;
+	pdst->x = psrc1->y * psrc2->z - psrc1->z * psrc2->y;
+	pdst->y = psrc1->z * psrc2->x - psrc1->x * psrc2->z;
+	pdst->z = psrc1->x * psrc2->y - psrc1->y * psrc2->x;
 }
 
 
@@ -2603,10 +2644,10 @@ xaxis.z           yaxis.z           zaxis.z          0
 	zaxis = *camEye - *camtar;
 	ChaVector3Normalize(&zaxis, &zaxis);
 
-	ChaVector3Cross(&xaxis, camUpVec, &zaxis);
+	ChaVector3Cross(&xaxis, (const ChaVector3*)camUpVec, (const ChaVector3*)&zaxis);
 	ChaVector3Normalize(&xaxis, &xaxis);
 
-	ChaVector3Cross(&yaxis, &zaxis, &xaxis);
+	ChaVector3Cross(&yaxis, (const ChaVector3*)&zaxis, (const ChaVector3*)&xaxis);
 	ChaVector3Normalize(&yaxis, &yaxis);
 
 

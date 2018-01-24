@@ -23,6 +23,7 @@
 #include <iterator>
 using namespace std;
 
+extern ID3D10ShaderResourceView* g_presview;
 extern CTexBank* g_texbank;
 extern WCHAR g_basedir[ MAX_PATH ];
 
@@ -245,7 +246,7 @@ int CMySprite::OnRender( ID3D10Resource* ptex )
 	else {
 		texresview = 0;
 	}
-	if (texresview) {
+	if (texresview && (texresview != g_presview)) {
 		g_hMeshTexture->SetResource(texresview);
 	}
 	else {
@@ -258,8 +259,8 @@ int CMySprite::OnRender( ID3D10Resource* ptex )
 	m_pdev->IASetVertexBuffers(0, 1, &m_VB, &vbstride, &offset);
 
 
-	D3D10_TECHNIQUE_DESC techDesc;
-	g_hRenderSprite->GetDesc(&techDesc);
+	//D3D10_TECHNIQUE_DESC techDesc;
+	//g_hRenderSprite->GetDesc(&techDesc);
 	UINT p = 0;
 	//for (UINT p = 0; p < techDesc.Passes; ++p)
 	//{

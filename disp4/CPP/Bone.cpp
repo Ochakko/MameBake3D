@@ -554,8 +554,13 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 		*ppnext = pcur;
 	}
 
-	m_cachebefmp = pbef;
-
+	//m_cachebefmp = pbef;
+	if (pbef) {
+		m_cachebefmp = pbef->GetPrev();
+	}
+	else {
+		m_cachebefmp = m_motionkey[srcmotid];
+	}
 
 	return 0;
 }
@@ -693,10 +698,10 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* chilpos )
 
 	vecz1 = bonevec;
 		
-	ChaVector3Cross( &vecx1, &upvec, &vecz1 );
+	ChaVector3Cross( &vecx1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecz1 );
 	ChaVector3Normalize( &vecx1, &vecx1 );
 
-	ChaVector3Cross( &vecy1, &vecz1, &vecx1 );
+	ChaVector3Cross( &vecy1, (const ChaVector3*)&vecz1, (const ChaVector3*)&vecx1 );
 	ChaVector3Normalize( &vecy1, &vecy1 );
 
 
@@ -832,7 +837,7 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	if ((fabs(bonevec.x) <= 0.000001f) && (fabs(bonevec.y) <= 0.000001f)){
 		//bonevec‚ªŽÀŽ¿ZŽ²
 		//if (bonevec.z >= 0.0f){
-			ChaVector3Cross(&vecy1, &upvec, &vecx1);
+			ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 		//}
 		//else{
 		//	ChaVector3Cross(&vecy1, &vecx1, &upvec);
@@ -841,16 +846,16 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	else if ((fabs(bonevec.x) <= 0.000001f) && (fabs(bonevec.z) <= 0.000001f)){
 		//bonevec‚ªŽÀŽ¿YŽ²
 		if (bonevec.y >= 0.0f){
-			ChaVector3Cross(&vecy1, &vecx1, &upvec);
+			ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
 		}
 		else{
-			ChaVector3Cross(&vecy1, &upvec, &vecx1);
+			ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 		}
 	}
 	else{
 		float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
 		//if (dotbonex >= 0.0f){
-			ChaVector3Cross(&vecy1, &upvec, &vecx1);
+			ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 		//}
 		//else{
 		//	ChaVector3Cross(&vecy1, &vecx1, &upvec);
@@ -864,7 +869,7 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	}
 	else{
 		//bonevec‚ªYŽ²
-		ChaVector3Cross(&vecy1, &vecx1, &upvec);
+		ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
 	}
 	*/
 
@@ -879,7 +884,7 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	if ((fabs(bonevec.x) <= 0.000001f) && (fabs(bonevec.y) <= 0.000001f)){
 		//bonevec‚ªŽÀŽ¿ZŽ²
 		//if (bonevec.z >= 0.0f){
-			ChaVector3Cross(&vecz1, &vecx1, &vecy1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		//}
 		//else{
 		//	ChaVector3Cross(&vecz1, &vecy1, &vecx1);
@@ -888,16 +893,16 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	else if ((fabs(bonevec.x) <= 0.000001f) && (fabs(bonevec.z) <= 0.000001f)){
 		//bonevec‚ªŽÀŽ¿YŽ²
 		if (bonevec.y >= 0.0f){
-			ChaVector3Cross(&vecz1, &vecy1, &vecx1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
 		}
 		else{
-			ChaVector3Cross(&vecz1, &vecx1, &vecy1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		}
 	}
 	else{
 		float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
 		//if (dotbonex >= 0.0f){
-			ChaVector3Cross(&vecz1, &vecx1, &vecy1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		//}
 		//else{
 		//	ChaVector3Cross(&vecz1, &vecy1, &vecx1);
@@ -908,16 +913,16 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	/*
 	if ((fabs(bonevec.x) >= 0.000001f) || (fabs(bonevec.z) >= 0.000001f)){
 		if (fabs(bonevec.y) >= 0.000001f){
-			ChaVector3Cross(&vecz1, &vecx1, &vecy1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		}
 		else{
 			//bonevec‚ªZŽ²
-			ChaVector3Cross(&vecz1, &vecy1, &vecx1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
 		}
 	}
 	else{
 		//bonevec‚ªYŽ²
-		ChaVector3Cross(&vecz1, &vecy1, &vecx1);
+		ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
 	}
 	*/
 	ChaVector3Normalize(&vecz1, &vecz1);
@@ -1013,7 +1018,7 @@ int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 
 	vecx1 = bonevec;
 
-	ChaVector3Cross(&vecy1, &upvec, &vecx1);
+	ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 
 	int illeagalflag = 0;
 	float crleng = ChaVector3Length(&vecy1);
@@ -1023,7 +1028,7 @@ int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 	ChaVector3Normalize(&vecy1, &vecy1);
 
 
-	ChaVector3Cross(&vecz1, &vecx1, &vecy1);
+	ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 	ChaVector3Normalize(&vecz1, &vecz1);
 
 
@@ -1095,10 +1100,10 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 	vecz1 = bonevec;
 
 	//ChaVector3Cross(&vecx1, &vecz1, &upvec);
-	ChaVector3Cross(&vecx1, &upvec, &vecz1);
+	ChaVector3Cross(&vecx1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecz1);
 	ChaVector3Normalize(&vecx1, &vecx1);
 
-	ChaVector3Cross(&vecy1, &vecz1, &vecx1);
+	ChaVector3Cross(&vecy1, (const ChaVector3*)&vecz1, (const ChaVector3*)&vecx1);
 	ChaVector3Normalize(&vecy1, &vecy1);
 
 
@@ -1176,7 +1181,7 @@ int CBone::CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat )
 
 	vecy1 = bonevec;
 		
-	ChaVector3Cross( &vecx1, &vecy1, &upvec );
+	ChaVector3Cross( &vecx1, (const ChaVector3*)&vecy1, (const ChaVector3*)&upvec );
 
 	int illeagalflag = 0;
 	float crleng = ChaVector3Length( &vecx1 );
@@ -1186,7 +1191,7 @@ int CBone::CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat )
 
 	ChaVector3Normalize( &vecx1, &vecx1 );
 
-	ChaVector3Cross( &vecz1, &vecx1, &vecy1 );
+	ChaVector3Cross( &vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1 );
 	ChaVector3Normalize( &vecy1, &vecy1 );
 
 	D3DXQUATERNION tmpxq;

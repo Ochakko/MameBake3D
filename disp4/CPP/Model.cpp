@@ -1416,7 +1416,7 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 
 	ChaMatrix set4x4[MAXCLUSTERNUM];
-	ZeroMemory( &set4x4[0], sizeof( ChaMatrix ) * MAXCLUSTERNUM );
+	//ZeroMemory( &set4x4[0], sizeof( ChaMatrix ) * MAXCLUSTERNUM );
 
 	int setclcnt = 0;
 	int clcnt;
@@ -1437,7 +1437,7 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		setclcnt++;
 	}
 
-	//if(setclcnt > 0 ){
+	if(setclcnt > 0 ){
 		_ASSERT(setclcnt <= MAXCLUSTERNUM);
 
 		HRESULT hr = S_OK;
@@ -1450,7 +1450,7 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 			_ASSERT( 0 );
 			return 1;
 		}
-	//}
+	}
 
 	return 0;
 }
@@ -5928,7 +5928,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 				ChaVector3Normalize( &vec1, &vec1 );
 
 				ChaVector3 rotaxis2;
-				ChaVector3Cross( &rotaxis2, &vec0, &vec1 );
+				ChaVector3Cross( &rotaxis2, (const ChaVector3*)&vec0, (const ChaVector3*)&vec1 );
 				ChaVector3Normalize( &rotaxis2, &rotaxis2 );
 
 				float rotdot2, rotrad2;
@@ -6117,7 +6117,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 				ChaVector3Normalize(&vec1, &vec1);
 
 				ChaVector3 rotaxis2;
-				ChaVector3Cross(&rotaxis2, &vec0, &vec1);
+				ChaVector3Cross(&rotaxis2, (const ChaVector3*)&vec0, (const ChaVector3*)&vec1);
 				ChaVector3Normalize(&rotaxis2, &rotaxis2);
 
 				float rotdot2, rotrad2;
@@ -6446,9 +6446,12 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat;
 
 
-							double eulz = 0.0;
-							double euly = 0.0;
-							double eulx = 0.0;
+							//double eulz = 0.0;
+							//double euly = 0.0;
+							//double eulx = 0.0;
+							btScalar eulz = 0.0;
+							btScalar euly = 0.0;
+							btScalar eulx = 0.0;
 							ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 							ChaVector3 eul = ChaVector3(0.0f, 0.0f, 0.0f);
 							//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
