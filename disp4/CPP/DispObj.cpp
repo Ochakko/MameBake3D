@@ -727,6 +727,7 @@ int CDispObj::RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 d
 
 	if(texresview && (texresview != g_presview)){
 		g_hMeshTexture->SetResource(texresview);
+		g_presview = texresview;
 	}else{
 		//g_hMeshTexture->SetResource(NULL);
 	}
@@ -880,6 +881,7 @@ int CDispObj::RenderNormalPM3( int lightflag, ChaVector4 diffusemult )
 
 		if (texresview && (texresview != g_presview)) {
 			g_hMeshTexture->SetResource(texresview);
+			g_presview = texresview;
 		}
 		else {
 			//g_hMeshTexture->SetResource(NULL);

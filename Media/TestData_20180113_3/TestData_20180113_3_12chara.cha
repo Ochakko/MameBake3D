@@ -105,7 +105,6 @@
     <RefFile>yuri_12_1_rgd.ref</RefFile>
     <ImpNum>0</ImpNum>
   </Chara>
-
   <Chara>
     <ModelFolder>yuri_12_1_walk_0</ModelFolder>
     <ModelFile>yuri_12_1_walk.fbx</ModelFile>
@@ -202,7 +201,4 @@
     <RefFile>yuri_12_1_rgd.ref</RefFile>
     <ImpNum>0</ImpNum>
   </Chara>
-
-
-
 </CHA>

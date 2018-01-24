@@ -248,6 +248,7 @@ int CMySprite::OnRender( ID3D10Resource* ptex )
 	}
 	if (texresview && (texresview != g_presview)) {
 		g_hMeshTexture->SetResource(texresview);
+		g_presview = texresview;
 	}
 	else {
 		//g_hMeshTexture->SetResource(NULL);
