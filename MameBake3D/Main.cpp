@@ -23,6 +23,7 @@ MameBake3Dはデフォルトで相対IKです。
 絶対IKになる。
 */
 
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -7985,7 +7986,7 @@ int StartBt(int flag, int btcntzero)
 				//curmodel->GetMotionFrame(&curframe);
 			}
 			else{
-				curframe = 0.0;
+				curframe = 1.0;//!!!!!!!!!!
 				s_owpLTimeline->setCurrentTime(curframe, false);
 			}
 
@@ -10398,7 +10399,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 			s_previewrange = s_editrange;
 			double rangestart;
 			if (s_previewrange.IsSameStartAndEnd()){
-				rangestart = 0.0;
+				rangestart = 1.0;
 			}
 			else{
 				rangestart = s_previewrange.GetStartFrame();
@@ -10458,7 +10459,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			}
 
 			curmodel->SetMotionFrame(*pnextframe);
-			if (IsTimeEqual(*pnextframe, 0.0)){
+			if (IsTimeEqual(*pnextframe, 1.0)){
 				curmodel->ZeroBtCnt();
 			}
 
@@ -10548,7 +10549,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
 		//RagdollIK時には時間０（とりあえず）
-		s_editrange.SetRangeOne(0.0);
+		//s_editrange.SetRangeOne(1.0);
 
 		if (s_oprigflag == 0){//Rig操作ではないとき
 			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
@@ -10640,8 +10641,10 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 	
 	//RadgollIK時には時間０（とりあえず）
-	curmodel->SetMotionFrame(0.0);
-	*pnextframe = 0.0;//!!!!!!!!!!!!!!!!
+	//curmodel->SetMotionFrame(0.0);
+	//*pnextframe = 0.0;//!!!!!!!!!!!!!!!!
+	curmodel->SetMotionFrame(s_editrange.GetStartFrame());
+	*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
 
 
 	s_bpWorld->clientMoveAndDisplay();

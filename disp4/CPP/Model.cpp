@@ -2021,7 +2021,7 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 	rangestart = srcrange.GetStartFrame();
 	rangeend = srcrange.GetEndFrame();
 	if (rangestart == rangeend){
-		rangestart = 0.0;
+		rangestart = 1.0;
 		rangeend = curmotinfo->frameleng - 1.0;
 	}
 
