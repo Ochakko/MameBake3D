@@ -170,7 +170,7 @@ static int s_doneinit = 0;
 static int s_underselectingframe = 0;
 static double s_buttonselectstart = 0.0;
 static double s_buttonselectend = 0.0;
-
+static int s_buttonselecttothelast = 0;
 
 static float s_selectscale = 1.0f;
 static int s_sethipstra = 0;
@@ -472,9 +472,12 @@ static bool s_LcloseFlag = false;
 static bool s_LnextkeyFlag = false;
 static bool s_LbefkeyFlag = false;
 static bool s_LcursorFlag = false;			// カーソル移動フラグ
+static bool s_LstartFlag = false;
+static bool s_LstopFlag = false;
 
 static bool s_timelineRUpFlag = false;
 static bool s_timelinembuttonFlag = false;
+static int s_mbuttoncnt = 1;
 static bool s_timelinewheelFlag = false;
 
 static bool s_prevrangeFlag = false;
@@ -1027,8 +1030,8 @@ static int IsRegist();
 
 
 static int OnTimeLineCursor(int mbuttonflag, double newframe);
-static int OnTimeLineButtonSelect(int tothelastflag);
-static int OnTimeLineSelect();
+static int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag);
+static int OnTimeLineSelectFormSelectedKey();
 static int OnTimeLineMButtonDown(bool ctrlshiftflag);
 static int OnTimeLineWheel();
 static int AddEditRangeHistory();
@@ -3142,7 +3145,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		int delta;
 		delta = GET_WHEEL_DELTA_WPARAM(wParam);
 		if (s_underselectingframe == 1){
-			OnTimeLineButtonSelect((double)delta, 0);
+			OnTimeLineButtonSelectFromSelectStartEnd((double)delta, 0);
 		}
 		else{
 			OnTimeLineCursor();
@@ -3296,12 +3299,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						s_pickinfo.pickobjno = -1;
 					}
 				}
-				if( s_owpLTimeline && s_model && s_model->GetCurMotInfo() ){
-					int curlineno = s_owpLTimeline->getCurrentLine();
-					if( curlineno == 1 ){
-						s_editrange.SetRange( s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime() );
-					}
-				}
+				//if( s_owpLTimeline && s_model && s_model->GetCurMotInfo() ){
+				//	int curlineno = s_owpLTimeline->getCurrentLine();
+				//	if( curlineno == 1 ){
+				//		s_editrange.SetRange( s_owpLTimeline->getSelectedKey(), s_owpTimeline->getCurrentTime() );
+				//	}
+				//}
 			}
 		}else{
 			ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
@@ -3904,7 +3907,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		    swprintf_s( sz, 100, L"姿勢適用位置 : %d ％", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
-			OnTimeLineSelect();
+			OnTimeLineSelectFormSelectedKey();
             break;
 
         case IDC_SPEED:
@@ -5486,7 +5489,7 @@ int AddTimeLine( int newmotid )
 
 		// キー選択時のイベントリスナーに
 		// キー選択フラグselectFlagをオンにするラムダ関数を登録する
-		s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });
+		//s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });//LTimelineへ移動
 
 		s_owpTimeline->setMouseRUpListener([]() {s_timelineRUpFlag = true; });
 
@@ -5529,13 +5532,21 @@ int AddTimeLine( int newmotid )
 	if( !s_owpLTimeline && s_model ){
 		s_owpLTimeline= new OWP_Timeline( L"EditRangeTimeLine" );
 		s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
-		s_owpLTimeline->setCursorListener( [](){ s_LcursorFlag=true; } );
-		s_owpLTimeline->setMouseMDownListener([](){
+		s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
+		s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
+		s_owpLTimeline->setMouseMDownListener([]() {
 			s_timelinembuttonFlag = true;
+			if (s_mbuttoncnt == 0) {
+				s_mbuttoncnt = 1;
+			}
+			else {
+				s_mbuttoncnt = 0;
+			}
 		});
-		s_owpLTimeline->setMouseWheelListener([](){
+		s_owpLTimeline->setMouseWheelListener([]() {
 			s_timelinewheelFlag = true;
 		});
+
 	}
 
 	//タイムラインのキーを設定
@@ -5543,6 +5554,7 @@ int AddTimeLine( int newmotid )
 		refreshTimeline(*s_owpTimeline);
 	}
 
+	s_owpLTimeline->selectClear();
 
 	return 0;
 }
@@ -6077,6 +6089,8 @@ int OnAnimMenu( int selindex, int saveundoflag )
 			s_owpLTimeline->setCurrentTime( curframe, false );
 		}
 	}
+
+	s_owpLTimeline->selectClear();
 
 	return 0;
 }
@@ -9446,196 +9460,9 @@ int ExportBntFile()
 	return 0;
 }
 
-int OnTimeLineCursor(int mbuttonflag, double newframe)
-{
-	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()){
-		double curframe;
-		if (mbuttonflag != 2){
-			curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
-			s_owpTimeline->setCurrentTime(curframe, false);
-		}
-		else{
-			s_owpLTimeline->selectClear();
-			curframe = newframe;
-			s_owpTimeline->setCurrentTime(curframe, false);
-			s_owpLTimeline->setCurrentTime(curframe, false);
-		}
-		if (s_underselectingframe == 0){
-			s_buttonselectstart = curframe;
-			s_buttonselectend = curframe;
-		}
-	}
-
-	return 0;
-}
-
-int OnTimeLineSelect()
-{
-	s_editrange.Clear();
-	if (s_model && s_model->GetCurMotInfo()){
-		if (s_owpTimeline && s_owpLTimeline){
-			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-			int keynum;
-			double startframe, endframe, applyframe;
-			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-
-			if (s_underselectingframe != 0){
-				if (s_buttonselectstart <= s_buttonselectend){
-					s_owpLTimeline->setCurrentTime(endframe, false);
-				}
-				else{
-					s_owpLTimeline->setCurrentTime(startframe, false);
-				}
-			}
-			else{
-				s_owpLTimeline->setCurrentTime(applyframe, false);
-				AddEditRangeHistory();
-			}
-		}
-	}
-
-	return 0;
-}
-
-int OnTimeLineButtonSelect(int tothelastflag)
-{
-	//_ASSERT(0);
-	s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, tothelastflag);
-
-	OnTimeLineSelect();
-
-	return 0;
-}
 
 
-int OnTimeLineMButtonDown(bool ctrlshiftflag)
-{
-	if (s_underselectingframe == 0){
-		if (ctrlshiftflag == false){
-			s_underselectingframe = 1;
-		}
-		else{
-			s_underselectingframe = 2;
-		}
-		if (s_owpLTimeline){
-			s_buttonselectstart = s_owpLTimeline->getCurrentTime();
-			s_buttonselectend = s_buttonselectstart;
-			OnTimeLineCursor(1, 0.0);
-		}
-	}
-	else{
-		s_underselectingframe = 0;
-		OnTimeLineButtonSelect(0);
-	}
 
-	DbgOut(L"OnTimeLineMButtonDown : underselectingframe %d, start %lf, end %lf\r\n", s_underselectingframe, s_buttonselectstart, s_buttonselectend);
-
-	return 0;
-}
-
-
-int OnTimeLineWheel()
-{
-	
-	DbgOut(L"OnTimeLineWheel Called\r\n");
-
-	if (s_owpLTimeline){
-		if ((s_underselectingframe == 1) || (s_underselectingframe == 2)){
-			int delta = 0;
-			double delta2 = 0;
-
-			int adkeyflag = 0;
-
-			//A D key
-			if (g_keybuf['A'] & 0x80){
-				adkeyflag = 1;
-				if ((s_akeycnt % 5) == 0){
-					if (g_controlkey == false){
-						delta2 = -5;
-					}
-					else{
-						delta2 = -1;
-					}
-				}
-				else{
-					delta2 = 0;
-				}
-			}
-			else if (g_keybuf['D'] & 0x80){
-				adkeyflag = 1;
-				if ((s_dkeycnt % 5) == 0){
-					if (g_controlkey == false){
-						delta2 = 5;
-					}
-					else{
-						delta2 = 1;
-					}
-				}
-				else{
-					delta2 = 0;
-				}
-			}
-
-			if (adkeyflag == 0){//timelineのwheeldeltaはホイールを回していない間は更新されずに値が残るため、ホイールだけを扱うこと(キー処理中ではないこと)を明示的に確認する。
-				//マウス操作 MButton and Wheel, A D key
-				delta = (int)(s_owpLTimeline->getMouseWheelDelta());
-				if (g_controlkey == false){
-					delta2 = (double)delta / 20.0;
-				}
-				else{
-					//delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
-					if (delta > 0){
-						delta2 = 1;
-					}
-					else if (delta < 0){
-						delta2 = -1;
-					}
-					else{
-						delta2 = 0;
-					}
-				}
-			}
-
-			//timeline
-			if (delta2 != 0.0){
-				s_buttonselectend += delta2;
-				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %lf\r\n", s_buttonselectstart, s_buttonselectend, delta2);
-
-				OnTimeLineButtonSelect(0);
-			}
-		}
-		else{
-			DbgOut(L"OnTimeLineWheel 1 : start %lf, end %lf\r\n", s_buttonselectstart, s_buttonselectend);
-
-			int delta = 0;
-			double delta2 = 0;
-			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
-			if (g_controlkey == false){
-				delta2 = (double)delta / 20.0;
-			}
-			else{
-				//delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
-				if (delta > 0){
-					delta2 = 1;
-				}
-				else if (delta < 0){
-					delta2 = -1;
-				}
-				else{
-					delta2 = 0;
-				}
-			}
-			if (delta2 != 0.0){
-				double curframe = s_owpLTimeline->getCurrentTime();
-				double newframe = curframe + delta2;
-				OnTimeLineCursor(2, newframe);
-			}
-
-		}
-	}
-
-	return 0;
-}
 
 int AddEditRangeHistory()
 {
@@ -10380,6 +10207,7 @@ int OnFrameUtCheckBox()
 
 int OnFramePreviewStop()
 {
+
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
@@ -10455,7 +10283,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				g_previewFlag = 0;
 			}
 			if (s_savepreviewFlag != g_previewFlag){
-				*pnextframe = 0.0;//キー入力後の初回は時間を進めない。
+				*pnextframe =1.0;//キー入力後の初回は時間を進めない。
 			}
 
 			curmodel->SetMotionFrame(*pnextframe);
@@ -10790,19 +10618,28 @@ int OnFrameTimeLineWnd()
 		//DbgOut( L"cursor : lineno %d, boneno %d, frame %f\r\n", curlineno, s_curboneno, s_curframe );
 	}
 
-	if (s_LcursorFlag){
-		s_LcursorFlag = false;
-		OnTimeLineCursor(0, 0.0);
-	}
+	if (s_LcursorFlag) {
+		static int s_cnt = 0;
+		s_cnt++;
 
-	// キー選択フラグを確認 ///////////////////////////////////////////////////////
-	if (s_selectFlag){
-		s_selectFlag = false;
-		if (s_model && s_owpTimeline && s_model->GetCurMotInfo()){
-			s_selectKeyInfoList.clear();
-			s_selectKeyInfoList = s_owpTimeline->getSelectedKey();
+		s_LcursorFlag = false;
+
+		if (s_underselectingframe == 0) {
+			//これがないとモーション停止ボタンを押した後にselect表示されない。
+			s_buttonselectstart = s_editrange.GetStartFrame();
+			s_buttonselectend = s_editrange.GetEndFrame();
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
+		}
+
+		s_underselectingframe = 1;
+		OnTimeLineCursor(0, 0.0);
+
+		if (g_previewFlag != 0) {
+			//これがないとモーション再生中にselectが表示されない。
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
 		}
 	}
+
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
 	if (s_keyShiftFlag){
 		s_keyShiftFlag = false;
@@ -11274,7 +11111,7 @@ int OnFramePlayButton()
 		s_firstkeyFlag = false;
 		g_previewFlag = 0;
 		if (s_owpTimeline){
-			s_owpLTimeline->setCurrentTime(0.0, false);
+			s_owpLTimeline->setCurrentTime(1.0, false);
 		}
 	}
 	if (s_lastkeyFlag){
@@ -11665,17 +11502,39 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setButtonSize(20);
 	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
 
-	s_owpPlayerButton->setFrontPlayButtonListener([](){ g_previewFlag = 1; });
-	s_owpPlayerButton->setBackPlayButtonListener([](){  g_previewFlag = -1; });
-	s_owpPlayerButton->setFrontStepButtonListener([](){ s_lastkeyFlag = true; });
-	s_owpPlayerButton->setBackStepButtonListener([](){  s_firstkeyFlag = true; });
-	s_owpPlayerButton->setStopButtonListener([](){  g_previewFlag = 0; });
-	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ g_previewFlag = 0; s_owpLTimeline->setCurrentTime(0.0, false); } });
+	s_owpPlayerButton->setFrontPlayButtonListener([]() { s_LstartFlag = true; g_previewFlag = 1; });
+	s_owpPlayerButton->setBackPlayButtonListener([](){  s_LstartFlag = true; g_previewFlag = -1; });
+	s_owpPlayerButton->setFrontStepButtonListener([](){ s_LstartFlag = true; s_lastkeyFlag = true; });
+	s_owpPlayerButton->setBackStepButtonListener([](){  s_LstartFlag = true; s_firstkeyFlag = true; });
+	s_owpPlayerButton->setStopButtonListener([]() {  s_LstopFlag = true; g_previewFlag = 0; });
+	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, false); } });
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
 	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
 	s_owpPlayerButton->setPrevRangeButtonListener([](){  g_undereditrange = true; s_prevrangeFlag = true; });
 	s_owpPlayerButton->setNextRangeButtonListener([](){  g_undereditrange = true; s_nextrangeFlag = true; });
 
+
+	//###################################
+	//s_owpLTimelineの関連ラムダをコメントとしてコピペ
+	//###################################
+	//s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
+	//s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
+	//s_owpLTimeline->setMouseMDownListener([]() {
+	//	s_timelinembuttonFlag = true;
+	//	if (s_mbuttoncnt == 0) {
+	//		s_mbuttoncnt = 1;
+	//	}
+	//	else {
+	//		s_mbuttoncnt = 0;
+	//	}
+	//});
+	//s_owpLTimeline->setMouseWheelListener([]() {
+	//	s_timelinewheelFlag = true;
+	//});
+
+	//####################################
+	//s_LtimelineWndのラムダ　s_owpLTimelineではない。
+	//####################################
 	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
 	s_LtimelineWnd->setCloseListener([](){ s_LcloseFlag = true; });
 	s_LtimelineWnd->setLUpListener([](){
@@ -11684,18 +11543,67 @@ int CreateLongTimelineWnd()
 				RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
 				s_buttonselectstart = s_editrange.GetStartFrame();
 				s_buttonselectend = s_editrange.GetEndFrame();
-				OnTimeLineButtonSelect(0);
+
+				s_underselectingframe = 0;
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
 			}
 			else if (g_selecttolastFlag == false){
-				OnTimeLineSelect();
+
+				if (!s_LstopFlag) {
+					if (s_selectFlag) {
+						s_selectFlag = false;
+						s_selectKeyInfoList.clear();
+						s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
+						s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+						s_buttonselectstart = s_editrange.GetStartFrame();
+						s_buttonselectend = s_editrange.GetEndFrame();
+						s_underselectingframe = 0;
+						//_ASSERT(0);
+					}
+					else {
+						s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+						s_buttonselectend = s_owpLTimeline->getCurrentTime();
+						s_underselectingframe = 0;
+						//_ASSERT(0);
+					}
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+				}
+				else {
+					//停止ボタンが押されたとき
+					//_ASSERT(0);
+					s_buttonselectstart = s_editrange.GetStartFrame();
+					s_buttonselectend = s_editrange.GetEndFrame();
+					s_underselectingframe = 0;
+					//_ASSERT(0);
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+					//_ASSERT(0);
+				}
+
 			}
 			else{
-				OnTimeLineButtonSelect(1);
+				//ToTheLastFrame
+				OnTimeLineButtonSelectFromSelectStartEnd(1);
 			}
-			g_selecttolastFlag = false;
-			s_prevrangeFlag = false;
-			s_nextrangeFlag = false;
 		}
+		else {
+			//再生ボタンが押されたとき
+			//_ASSERT(0);
+			s_buttonselectstart = s_editrange.GetStartFrame();
+			s_buttonselectend = s_editrange.GetEndFrame();
+			s_underselectingframe = 0;
+			//_ASSERT(0);
+
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+		}
+
+		s_LstartFlag = false;
+		s_LstopFlag = false;
+		g_selecttolastFlag = false;
+		s_prevrangeFlag = false;
+		s_nextrangeFlag = false;
+
+
 	});
 
 	return 0;
@@ -13869,306 +13777,197 @@ bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
 }
 
 
-//--------------------------------------------------------------------------------------
-// Create any D3D9 resources that will live through a device reset (D3DPOOL_MANAGED)
-// and aren't tied to the back buffer size 
-//--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
-	void* pUserContext)
+//////////////////////////////////////////
+int OnTimeLineSelectFormSelectedKey()
 {
-	HRESULT hr;
+	s_editrange.Clear();
+	if (s_model && s_model->GetCurMotInfo()) {
+		if (s_owpTimeline && s_owpLTimeline) {
+			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+			int keynum;
+			double startframe, endframe, applyframe;
+			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-	V_RETURN(g_DialogResourceManager.OnD3D9CreateDevice(pd3dDevice));
-	//V_RETURN(g_SettingsDlg.OnD3D9CreateDevice(pd3dDevice));
-
-	// Initialize the font
-	V_RETURN(D3DXCreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-		L"Arial", &g_pFont9));
-
-	//// Load the mesh
-	//V_RETURN(LoadMesh(pd3dDevice, L"tiny\\tiny.x", &g_pMesh9));
-
-	g_SampleUI.GetStatic(IDC_NUM_LIGHTS_STATIC)->SetVisible(true);
-	g_SampleUI.GetSlider(IDC_NUM_LIGHTS)->SetVisible(true);
-	g_SampleUI.GetButton(IDC_ACTIVE_LIGHT)->SetVisible(true);
-
-	//ChaVector3* pData;
-	//ChaVector3 vCenter;
-	FLOAT fObjectRadius = 5.0f;
-	//V(g_pMesh9->LockVertexBuffer(0, (LPVOID*)&pData));
-	//V(D3DXComputeBoundingSphere(pData, g_pMesh9->GetNumVertices(),
-	//	D3DXGetFVFVertexSize(g_pMesh9->GetFVF()), &vCenter, &fObjectRadius));
-	//V(g_pMesh9->UnlockVertexBuffer());
-
-	//ChaMatrixTranslation(&g_mCenterMesh, -vCenter.x, -vCenter.y, -vCenter.z);
-	//ChaMatrix m;
-	//ChaMatrixRotationY(&m, D3DX_PI);
-	//g_mCenterMesh *= m;
-	//ChaMatrixRotationX(&m, D3DX_PI / 2.0f);
-	//g_mCenterMesh *= m;
-
-	V_RETURN(CDXUTDirectionWidget::StaticOnD3D9CreateDevice(pd3dDevice));
-	for (int i = 0; i < MAX_LIGHTS; i++)
-		g_LightControl[i].SetRadius(fObjectRadius);
-
-	// Read the D3DX effect file
-	WCHAR str[MAX_PATH];
-	DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_NO_PRESHADER | D3DXFX_LARGEADDRESSAWARE;
-#ifdef DEBUG_VS
-	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
-#endif
-#ifdef DEBUG_PS
-	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
-#endif
-	//V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"BasicHLSL.fx"));
-	//V_RETURN(D3DXCreateEffectFromFile(pd3dDevice, str, NULL, NULL, dwShaderFlags, NULL, &g_pEffect9, NULL));
-
-	//// Create the mesh texture from a file
-	//V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"tiny\\tiny_skin.dds"));
-
-	//V_RETURN(D3DXCreateTextureFromFileEx(pd3dDevice, str, D3DX_DEFAULT, D3DX_DEFAULT,
-	//	D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED,
-	//	D3DX_DEFAULT, D3DX_DEFAULT, 0,
-	//	NULL, NULL, &g_pMeshTexture9));
-
-	//// Set effect variables as needed
-	//D3DXCOLOR colorMtrlDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
-	//D3DXCOLOR colorMtrlAmbient(0.35f, 0.35f, 0.35f, 0);
-
-	//D3DXHANDLE hMaterialAmbientColor = g_pEffect9->GetParameterByName(NULL, "g_MaterialAmbientColor");
-	//D3DXHANDLE hMaterialDiffuseColor = g_pEffect9->GetParameterByName(NULL, "g_MaterialDiffuseColor");
-	//D3DXHANDLE hMeshTexture = g_pEffect9->GetParameterByName(NULL, "g_MeshTexture");
-
-	//V_RETURN(g_pEffect9->SetValue(hMaterialAmbientColor, &colorMtrlAmbient, sizeof(D3DXCOLOR)));
-	//V_RETURN(g_pEffect9->SetValue(hMaterialDiffuseColor, &colorMtrlDiffuse, sizeof(D3DXCOLOR)));
-	//V_RETURN(g_pEffect9->SetTexture(hMeshTexture, g_pMeshTexture9));
-
-	//g_hLightDir = g_pEffect9->GetParameterByName(NULL, "g_LightDir");
-	//g_hLightDiffuse = g_pEffect9->GetParameterByName(NULL, "g_LightDiffuse");
-	//g_hmWorldViewProjection = g_pEffect9->GetParameterByName(NULL, "g_mWorldViewProjection");
-	//g_hmWorld = g_pEffect9->GetParameterByName(NULL, "g_mWorld");
-	//g_hMaterialDiffuseColor = g_pEffect9->GetParameterByName(NULL, "g_MaterialDiffuseColor");
-	//g_hfTime = g_pEffect9->GetParameterByName(NULL, "g_fTime");
-	//g_hnNumLights = g_pEffect9->GetParameterByName(NULL, "g_nNumLights");
-	//g_hRenderSceneWithTexture1Light = g_pEffect9->GetTechniqueByName("RenderSceneWithTexture1Light");
-	//g_hRenderSceneWithTexture2Light = g_pEffect9->GetTechniqueByName("RenderSceneWithTexture2Light");
-	//g_hRenderSceneWithTexture3Light = g_pEffect9->GetTechniqueByName("RenderSceneWithTexture3Light");
-
-	// Setup the camera's view parameters
-	ChaVector3 vecEye(0.0f, 0.0f, -15.0f);
-	ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
-	g_Camera.SetViewParams(&vecEye, &vecAt);
-	//g_Camera.SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f);
-
-	return S_OK;
-}
-
-
-//--------------------------------------------------------------------------------------
-// This function loads the mesh and ensures the mesh has normals; it also optimizes the 
-// mesh for the graphics card's vertex cache, which improves performance by organizing 
-// the internal triangle list for less cache misses.
-//--------------------------------------------------------------------------------------
-HRESULT LoadMesh(IDirect3DDevice9* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh)
-{
-	//ID3DXMesh* pMesh = NULL;
-	//WCHAR str[MAX_PATH];
-	//HRESULT hr;
-
-	//// Load the mesh with D3DX and get back a ID3DXMesh*.  For this
-	//// sample we'll ignore the X file's embedded materials since we know 
-	//// exactly the model we're loading.  See the mesh samples such as
-	//// "OptimizedMesh" for a more generic mesh loading example.
-	//V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, strFileName));
-	//V_RETURN(D3DXLoadMeshFromX(str, D3DXMESH_MANAGED, pd3dDevice, NULL, NULL, NULL, NULL, &pMesh));
-
-	//DWORD* rgdwAdjacency = NULL;
-
-	//// Make sure there are normals which are required for lighting
-	//if (!(pMesh->GetFVF() & D3DFVF_NORMAL))
-	//{
-	//	ID3DXMesh* pTempMesh;
-	//	V(pMesh->CloneMeshFVF(pMesh->GetOptions(), pMesh->GetFVF() | D3DFVF_NORMAL, pd3dDevice, &pTempMesh));
-	//	V(D3DXComputeNormals(pTempMesh, NULL));
-
-	//	SAFE_RELEASE(pMesh);
-	//	pMesh = pTempMesh;
-	//}
-
-	//// Optimize the mesh for this graphics card's vertex cache 
-	//// so when rendering the mesh's triangle list the vertices will 
-	//// cache hit more often so it won't have to re-execute the vertex shader 
-	//// on those vertices so it will improve perf.     
-	//rgdwAdjacency = new DWORD[pMesh->GetNumFaces() * 3];
-	//if (rgdwAdjacency == NULL)
-	//	return E_OUTOFMEMORY;
-	//V(pMesh->GenerateAdjacency(1e-6f, rgdwAdjacency));
-	//V(pMesh->OptimizeInplace(D3DXMESHOPT_VERTEXCACHE, rgdwAdjacency, NULL, NULL, NULL));
-	//delete[]rgdwAdjacency;
-
-	//*ppMesh = pMesh;
-
-	return S_OK;
-}
-
-
-//--------------------------------------------------------------------------------------
-// Create any D3D9 resources that won't live through a device reset (D3DPOOL_DEFAULT) 
-// or that are tied to the back buffer size 
-//--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice,
-	const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext)
-{
-	HRESULT hr;
-
-	V_RETURN(g_DialogResourceManager.OnD3D9ResetDevice());
-	//V_RETURN(g_SettingsDlg.OnD3D9ResetDevice());
-
-	if (g_pFont9) V_RETURN(g_pFont9->OnResetDevice());
-	//if (g_pEffect9) V_RETURN(g_pEffect9->OnResetDevice());
-
-	// Create a sprite to help batch calls when drawing many lines of text
-	//V_RETURN(D3DXCreateSprite(pd3dDevice, &g_pSprite9));
-	//g_pTxtHelper = new CDXUTTextHelper(g_pFont, g_pSprite9, NULL, NULL, 15);
-
-	for (int i = 0; i < MAX_LIGHTS; i++)
-		g_LightControl[i].OnD3D9ResetDevice(pBackBufferSurfaceDesc);
-
-	// Setup the camera's projection parameters
-	float fAspectRatio = pBackBufferSurfaceDesc->Width / (FLOAT)pBackBufferSurfaceDesc->Height;
-	g_Camera.SetProjParams(D3DX_PI / 4, fAspectRatio, 2.0f, 4000.0f);
-	g_Camera.SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
-	g_Camera.SetButtonMasks(MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON);
-
-	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
-	//g_HUD.SetSize(170, 170);
-	//g_SampleUI.SetLocation(pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300);
-	//g_SampleUI.SetSize(170, 300);
-	g_SampleUI.SetLocation(0, 0);
-	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
-
-
-	return S_OK;
-}
-
-
-//--------------------------------------------------------------------------------------
-// Render the scene using the D3D9 device
-//--------------------------------------------------------------------------------------
-void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext)
-{
-	// If the settings dialog is being shown, then render it instead of rendering the app's scene
-	//if (g_SettingsDlg.IsActive())
-	//{
-	//	g_SettingsDlg.OnRender(fElapsedTime);
-	//	return;
-	//}
-
-	HRESULT hr;
-	ChaMatrix mWorldViewProjection;
-	ChaVector3 vLightDir[MAX_LIGHTS];
-	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
-	UINT iPass, cPasses;
-	ChaMatrix mWorld;
-	ChaMatrix mView;
-	ChaMatrix mProj;
-
-	// Clear the render target and the zbuffer 
-	V(pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR(0.0f, 0.25f, 0.25f, 0.55f), 1.0f,
-		0));
-
-	//// Render the scene
-	if (SUCCEEDED(pd3dDevice->BeginScene()))
-	{
-	//	// Get the projection & view matrix from the camera class
-	//	mWorld = g_mCenterMesh * *g_Camera.GetWorldMatrix();
-	//	mProj = *g_Camera.GetProjMatrix();
-	//	mView = *g_Camera.GetViewMatrix();
-
-	//	mWorldViewProjection = mWorld * mView * mProj;
-
-	//	// Render the light arrow so the user can visually see the light dir
-	//	for (int i = 0; i < g_nNumActiveLights; i++)
-	//	{
-	//		D3DXCOLOR arrowColor = (i == g_nActiveLight) ? D3DXCOLOR(1, 1, 0, 1) : D3DXCOLOR(1, 1, 1, 1);
-	//		V(g_LightControl[i].OnRender9(arrowColor, &mView, &mProj, g_Camera.GetEyePt()));
-	//		vLightDir[i] = g_LightControl[i].GetLightDirection();
-	//		vLightDiffuse[i] = g_fLightScale * D3DXCOLOR(1, 1, 1, 1);
-	//	}
-
-	//	V(g_pEffect9->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
-	//	V(g_pEffect9->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(ChaVector4) * MAX_LIGHTS));
-
-	//	// Update the effect's variables.  Instead of using strings, it would 
-	//	// be more efficient to cache a handle to the parameter by calling 
-	//	// ID3DXEffect::GetParameterByName
-	//	V(g_pEffect9->SetMatrix(g_hmWorldViewProjection, &mWorldViewProjection));
-	//	V(g_pEffect9->SetMatrix(g_hmWorld, &mWorld));
-
-	//	D3DXCOLOR vWhite = D3DXCOLOR(1, 1, 1, 1);
-	//	V(g_pEffect9->SetValue(g_hMaterialDiffuseColor, &vWhite, sizeof(D3DXCOLOR)));
-	//	V(g_pEffect9->SetFloat(g_hfTime, (float)fTime));
-	//	V(g_pEffect9->SetInt(g_hnNumLights, g_nNumActiveLights));
-
-	//	// Render the scene with this technique as defined in the .fx file
-	//	switch (g_nNumActiveLights)
-	//	{
-	//	case 1:
-	//		V(g_pEffect9->SetTechnique(g_hRenderSceneWithTexture1Light)); break;
-	//	case 2:
-	//		V(g_pEffect9->SetTechnique(g_hRenderSceneWithTexture2Light)); break;
-	//	case 3:
-	//		V(g_pEffect9->SetTechnique(g_hRenderSceneWithTexture3Light)); break;
-	//	}
-
-	//	// Apply the technique contained in the effect and render the mesh
-	//	V(g_pEffect9->Begin(&cPasses, 0));
-	//	for (iPass = 0; iPass < cPasses; iPass++)
-	//	{
-	//		V(g_pEffect9->BeginPass(iPass));
-	//		V(g_pMesh9->DrawSubset(0));
-	//		V(g_pEffect9->EndPass());
-	//	}
-	//	V(g_pEffect9->End());
-
-	//	g_HUD.OnRender(fElapsedTime);
-		g_SampleUI.OnRender(fElapsedTime);
-
-		//RenderText();
-
-		V(pd3dDevice->EndScene());
+			if (s_underselectingframe != 0) {
+				if (s_buttonselectstart <= s_buttonselectend) {
+					s_owpLTimeline->setCurrentTime(endframe, false);
+				}
+				else {
+					s_owpLTimeline->setCurrentTime(startframe, false);
+				}
+			}
+			else {
+				s_owpLTimeline->setCurrentTime(applyframe, false);
+				AddEditRangeHistory();
+			}
+		}
 	}
+
+	return 0;
+}
+
+int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
+{
+	s_buttonselecttothelast = tothelastflag;
+	if (s_owpLTimeline) {
+		s_owpLTimeline->selectClear(false);
+		if (s_buttonselectstart != s_buttonselectend) {
+			s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
+		}
+	}
+
+	OnTimeLineSelectFormSelectedKey();
+
+	return 0;
+}
+
+int OnTimeLineCursor(int mbuttonflag, double newframe)
+{
+	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
+		double curframe;
+		if (mbuttonflag != 2) {
+			curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
+			s_owpTimeline->setCurrentTime(curframe, false);
+		}
+		else {
+			curframe = newframe;
+			s_owpTimeline->setCurrentTime(curframe, false);
+			s_owpLTimeline->setCurrentTime(curframe, false);
+		}
+	}
+
+	return 0;
+}
+
+int OnTimeLineMButtonDown(bool ctrlshiftflag)
+{
+	//if (s_underselectingframe == 0){
+	if (s_mbuttoncnt == 0) {
+		if (ctrlshiftflag == false) {
+			s_underselectingframe = 1;
+		}
+		else {
+			s_underselectingframe = 2;
+		}
+		if (g_previewFlag == 0) {
+			if (s_owpLTimeline) {
+				s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+				s_buttonselectend = s_buttonselectstart;
+				OnTimeLineCursor(1, 0.0);
+			}
+		}
+	}
+	else {
+		s_underselectingframe = 0;
+		OnTimeLineButtonSelectFromSelectStartEnd(0);
+	}
+
+	DbgOut(L"OnTimeLineMButtonDown : underselectingframe %d, start %lf, end %lf\r\n", s_underselectingframe, s_buttonselectstart, s_buttonselectend);
+
+	return 0;
 }
 
 
-//--------------------------------------------------------------------------------------
-// Release D3D9 resources created in the OnD3D9ResetDevice callback 
-//--------------------------------------------------------------------------------------
-void CALLBACK OnD3D9LostDevice(void* pUserContext)
+int OnTimeLineWheel()
 {
-	g_DialogResourceManager.OnD3D9LostDevice();
-	//g_SettingsDlg.OnD3D9LostDevice();
-	CDXUTDirectionWidget::StaticOnD3D9LostDevice();
-	if (g_pFont9) g_pFont9->OnLostDevice();
-	//if (g_pEffect9) g_pEffect9->OnLostDevice();
-	SAFE_RELEASE(g_pSprite);
-	//SAFE_DELETE(g_pTxtHelper);
 
-}
+	DbgOut(L"OnTimeLineWheel Called\r\n");
 
+	if (s_owpLTimeline) {
+		if ((s_underselectingframe == 1) || (s_underselectingframe == 2)) {
+			int delta = 0;
+			double delta2 = 0;
 
-//--------------------------------------------------------------------------------------
-// Release D3D9 resources created in the OnD3D9CreateDevice callback 
-//--------------------------------------------------------------------------------------
-void CALLBACK OnD3D9DestroyDevice(void* pUserContext)
-{
-	g_DialogResourceManager.OnD3D9DestroyDevice();
-	//g_SettingsDlg.OnD3D9DestroyDevice();
-	CDXUTDirectionWidget::StaticOnD3D9DestroyDevice();
-	//SAFE_RELEASE(g_pEffect);
-	SAFE_RELEASE(g_pFont9);
-	//SAFE_RELEASE(g_pMesh);
-	//SAFE_RELEASE(g_pMeshTexture);
+			int adkeyflag = 0;
+
+			//A D key
+			if (g_keybuf['A'] & 0x80) {
+				adkeyflag = 1;
+				if ((s_akeycnt % 5) == 0) {
+					if (g_controlkey == false) {
+						delta2 = -5;
+					}
+					else {
+						delta2 = -1;
+					}
+				}
+				else {
+					delta2 = 0;
+				}
+			}
+			else if (g_keybuf['D'] & 0x80) {
+				adkeyflag = 1;
+				if ((s_dkeycnt % 5) == 0) {
+					if (g_controlkey == false) {
+						delta2 = 5;
+					}
+					else {
+						delta2 = 1;
+					}
+				}
+				else {
+					delta2 = 0;
+				}
+			}
+
+			if (adkeyflag == 0) {//timelineのwheeldeltaはホイールを回していない間は更新されずに値が残るため、ホイールだけを扱うこと(キー処理中ではないこと)を明示的に確認する。
+								 //マウス操作 MButton and Wheel, A D key
+				delta = (int)(s_owpLTimeline->getMouseWheelDelta());
+				if (g_controlkey == false) {
+					delta2 = (double)delta / 20.0;
+				}
+				else {
+					//delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
+					if (delta > 0) {
+						delta2 = 1;
+					}
+					else if (delta < 0) {
+						delta2 = -1;
+					}
+					else {
+						delta2 = 0;
+					}
+				}
+			}
+
+			//timeline
+			if (delta2 != 0.0) {
+				s_buttonselectend += delta2;
+				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %lf\r\n", s_buttonselectstart, s_buttonselectend, delta2);
+
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
+			}
+		}
+		else {
+			DbgOut(L"OnTimeLineWheel 1 : start %lf, end %lf\r\n", s_buttonselectstart, s_buttonselectend);
+
+			int delta = 0;
+			double delta2 = 0;
+			delta = (int)(s_owpLTimeline->getMouseWheelDelta());
+			if (g_controlkey == false) {
+				delta2 = (double)delta / 20.0;
+			}
+			else {
+				//delta2 = (double)delta / 100.0;//ctrlを押していたら[slowly]
+				if (delta > 0) {
+					delta2 = 1;
+				}
+				else if (delta < 0) {
+					delta2 = -1;
+				}
+				else {
+					delta2 = 0;
+				}
+			}
+			if (delta2 != 0.0) {
+				double curframe = s_owpLTimeline->getCurrentTime();
+				double newframe = curframe + delta2;
+				OnTimeLineCursor(2, newframe);
+			}
+
+		}
+	}
+
+	return 0;
 }
 

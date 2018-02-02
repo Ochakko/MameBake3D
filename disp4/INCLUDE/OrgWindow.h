@@ -3275,19 +3275,22 @@ static void s_dummyfunc();
 			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
 			//再描画要求
-			if (rewriteOnChange){
+			//if (rewriteOnChange){
 				callRewrite();
-			}
+			//}
 		}
 
 		/// Method : すべての選択されているキーを取得する
 		std::list<KeyInfo> getSelectedKey() const{
 			std::list<KeyInfo> ret;
+			ret.clear();
 
 			for(int i=0; i<(int)lineData.size(); i++){
 				LineData *curLineData= lineData[i];
 
-				for(int j=0; j<(int)curLineData->key.size(); j++){
+				int curkeynum = (int)curLineData->key.size();
+
+				for(int j=0; j<curkeynum; j++){
 					LineData::Key *curKey= lineData[i]->key[j];
 
 					if( curKey->select ){
@@ -3302,6 +3305,13 @@ static void s_dummyfunc();
 				}
 			}
 
+			if ((ret.size() == 1) && ((*ret.begin()).time != currentTime)) {
+				//初期状態。セレクトではない。
+				(lineData[(*ret.begin()).lineIndex])->key[(*ret.begin()).timeIndex]->select = false;
+				ret.clear();
+			}
+
+//_ASSERT(0);
 			return ret;
 		}
 		/// Method : 全ての選択されているキーを移動する
