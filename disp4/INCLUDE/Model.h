@@ -433,11 +433,12 @@ public:
  * @param (double difftime) IN 前回描画してからの時間を指定。
  * @param (double* nextframeptr) OUT 次に描画するフレーム。
  * @param (int* endflagptr) OUT 繰り返し再生ではないモーションの最終フレームに達したかどうか。
+ * @param (int* loopstartflag) 繰り返しにより最初のフレームに戻ったかどうか。
  * @param (int srcmotid) IN モーションのID。
  * @return 成功したら０。
  * @detail previewflagは停止中０、通常再生１、bullet物理シミュレーション４、bulletラグドールシミュレーション５。
  */
-	int AdvanceTime( CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int srcmotid );
+	int AdvanceTime(CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int* loopstartflag, int srcmotid);
 
 /**
  * @fn

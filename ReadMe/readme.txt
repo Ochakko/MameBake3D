@@ -6,7 +6,7 @@
 
 
 ‚±‚ÌƒvƒƒOƒ‰ƒ€‚ÍŠO•”‚Ìƒ‰ƒCƒuƒ‰ƒŠ‚ðŽg—p‚µ‚Ä‚¢‚Ü‚·B
-DirectX9.0c(ƒ}ƒCƒNƒƒ\ƒtƒg‚Ì3D•`‰æƒ‰ƒCƒuƒ‰ƒŠ)
+Microsoft DirectX SDK (June 2010) (ƒ}ƒCƒNƒƒ\ƒtƒg‚Ì3D•`‰æƒ‰ƒCƒuƒ‰ƒŠ)
 OpenGL(‚R‚c•`‰æƒ‰ƒCƒuƒ‰ƒŠ(‚±‚ÌƒvƒƒOƒ‰ƒ€‚Å‚Íbullet‚©‚çƒŠƒ“ƒN‚³‚ê‚Ä‚¢‚é))
 bullet physics(ƒI[ƒvƒ“ƒ\[ƒX‚Ì•¨—‰‰ŽZƒ‰ƒCƒuƒ‰ƒŠ http://bulletphysics.org/wordpress/)
 FBX SDK 2018.1.1(Autodesk‚ÌŒÝŠ·—pƒtƒ@ƒCƒ‹‘€ìSDK  http://www.autodesk.com/fbx)
@@ -129,7 +129,7 @@ data, docs, examples, Extras, src, test‚ÌƒtƒHƒ‹ƒ_‚ð‚Ü‚ß‚Î‚¯‚RD‚Ìdisp4‚ÌƒtƒHƒ‹ƒ_‚
 
 
 ŽŸ‚ÉDXUT‚Ìƒ\[ƒX‚É‚Â‚¢‚Ä
-DXUT‚Ìƒ\[ƒX‚ÍDirectX‚ÌSDK‚É“ü‚Á‚Ä‚¢‚Ü‚·B
+DXUT‚Ìƒ\[ƒX‚ÍDirectX‚ÌSDK (Microsoft DirectX SDK (June 2010))‚É“ü‚Á‚Ä‚¢‚Ü‚·B
 DXUT‚ÌƒtƒHƒ‹ƒ_i’†‚ÉCoreƒtƒHƒ‹ƒ_‚ÆOptionalƒtƒHƒ‹ƒ_‚ª“ü‚Á‚Ä‚¢‚éj‚ð‚Ü‚ß‚Î‚¯‚RD‚Ìdisp4‚ÌƒtƒHƒ‹ƒ_‚ÉƒRƒs[‚µ‚Ü‚·B
 
 DXUT‚ÌD3DX‚Ì•”•ª‚ðChaVecCalc‚Å’u‚«Š·‚¦‚Ü‚·B
@@ -178,6 +178,15 @@ if(!m_HasFocus)
 
 
 ”””
+2018/02/04_1
+	ƒtƒŒ[ƒ€‘I‘ð”ÍˆÍ‚ÌŠÔ‚ðŒJ‚è•Ô‚µ•¨—ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚·‚é‚±‚Æ‚ª‰Â”\‚É‚È‚è‚Ü‚µ‚½B
+		•¨—IK‚Ì‚Æ‚«‚Ì”ÍˆÍl—¶‚ÍŽŸ‰ñˆÈ~‘Î‰ž—\’èB
+
+	Žg—p‚µ‚Ä‚¢‚éDirectX SDK‚Ìƒo[ƒWƒ‡ƒ“‚ÍMicrosoft DirectX SDK (June 2010)‚Å‚·B
+
+	‚¨‚¿‚á‚Á‚±LAB (https://moo-ochakkolab.ssl-lolipop.jp/)‚É‚ÄƒoƒCƒiƒŠ‚ð”z•z‚µ‚Ä‚¢‚Ü‚·B
+
+
 2018/02/03_1
 	ƒtƒŒ[ƒ€‘I‘ð‚Ì‰ü—Ç‚ð‚µ‚Ü‚µ‚½B
 		ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶‚É‚æ‚Á‚ÄƒtƒŒ[ƒ€‘I‘ð‚ª‰ðœ‚³‚ê‚È‚¢‚æ‚¤‚É‚µ‚Ü‚µ‚½B

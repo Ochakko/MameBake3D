@@ -8000,7 +8000,17 @@ int StartBt(int flag, int btcntzero)
 				//curmodel->GetMotionFrame(&curframe);
 			}
 			else{
-				curframe = 1.0;//!!!!!!!!!!
+				s_previewrange = s_editrange;
+				double rangestart;
+				if (s_previewrange.IsSameStartAndEnd()) {
+					//rangestart = 1.0;
+					curframe = 1.0;
+				}
+				else {
+					//rangestart = s_previewrange.GetStartFrame();
+					curframe = s_previewrange.GetStartFrame();
+				}
+				//curframe = 1.0;//!!!!!!!!!!
 				s_owpLTimeline->setCurrentTime(curframe, false);
 			}
 
@@ -10238,7 +10248,8 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 	}
 
 	int endflag = 0;
-	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
+	int loopstartflag = 0;
+	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
 	if (endflag == 1){
 		g_previewFlag = 0;
 	}
@@ -10267,10 +10278,38 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 
 int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 {
-	int endflag = 0;
+	//int endflag = 0;
+
+	static double rangestart = 1.0;//!!!!!!!!
+
 
 	if (!s_model){
 		return 0;
+	}
+
+	if (g_previewFlag != 0) {
+		if (s_savepreviewFlag == 0) {
+			//preview start frame
+			s_previewrange = s_editrange;
+			if (s_previewrange.IsSameStartAndEnd()) {
+				rangestart = 1.0;
+			}
+			else {
+				rangestart = s_previewrange.GetStartFrame();
+			}
+			s_model->SetMotionFrame(rangestart);
+			*pdifftime = 0.0;
+		}
+	}
+
+	int endflag = 0;
+	int loopstartflag = 0;
+	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+	s_owpLTimeline->setCurrentTime(*pnextframe, false);
+	if (endflag == 1) {
+		g_previewFlag = 0;
+		_ASSERT(0);
+
 	}
 
 	//CModel* curmodel = s_model;
@@ -10278,16 +10317,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
-			curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, -1);
-			if ((curmodel == s_model) && (endflag == 1)){
-				g_previewFlag = 0;
-			}
-			if (s_savepreviewFlag != g_previewFlag){
-				*pnextframe =1.0;//キー入力後の初回は時間を進めない。
-			}
-
 			curmodel->SetMotionFrame(*pnextframe);
-			if (IsTimeEqual(*pnextframe, 1.0)){
+			if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
 				curmodel->ZeroBtCnt();
 			}
 
