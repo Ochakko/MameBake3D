@@ -624,7 +624,7 @@ private:
 	int CreateFBXMeshReq( FbxNode* pNode );
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
-	CMQOObject* GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename );
+	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename );
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
@@ -1074,7 +1074,7 @@ private:
 	ChaMatrix m_matWorld;//ワールド変換行列。
 	ChaMatrix m_matVP;//View * Projection 変換行列。
 
-	map<CMQOObject*, FBXOBJ> m_fbxobj;//FbxNodeのラッパークラスとCMQOObjectとのmap。
+	map<CMQOObject*, FBXOBJ*> m_fbxobj;//FbxNodeのラッパークラスとCMQOObjectとのmap。
 	map<string, CMQOObject*> m_objectname;//CMQOObjectを名前で検索するためのmap。
 
 

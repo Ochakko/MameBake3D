@@ -87,7 +87,7 @@ public:
 #endif
 
 public:
-	float _11;
+	 float _11;
 	float _12;
 	float _13;
 	float _14;
@@ -141,7 +141,7 @@ public:
 #endif
 
 public:
-	float x;
+	 float x;
 	float y;
 
 };
@@ -178,7 +178,7 @@ public:
 #endif
 
 public:
-	float x;
+	 float x;
 	float y;
 	float z;
 
@@ -216,7 +216,7 @@ public:
 #endif
 
 public:
-	float x;
+	 float x;
 	float y;
 	float z;
 	float w;
@@ -320,7 +320,10 @@ private:
 
 
 public:
-	float x, y, z, w;
+	 float x;
+	float y;
+	float z;
+	float w;
 };
 
 
@@ -452,7 +455,7 @@ extern CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 
 //struct
 
-typedef struct tag_rpselem
+typedef  struct tag_rpselem
 {
 	int framecnt;
 	int skelno;
@@ -462,7 +465,7 @@ typedef struct tag_rpselem
 }RPSELEM;
 
 
-typedef struct tag_pickinfo
+typedef  struct tag_pickinfo
 {
 	int buttonflag;//WM_LBUTTONDOWN-->PICK_L, WM_RBUTTONDOWN-->PICK_R, WM_MBUTTONDOWN-->PICK_M。押していないとき-->PICK_NONE。
 				   //以下、buttonflagがPICK_NONE以外の時に意味を持つ。
@@ -479,7 +482,7 @@ typedef struct tag_pickinfo
 	ChaVector3 objworld;
 }PICKINFO;
 
-typedef struct tag_cpmot
+typedef  struct tag_cpmot
 {
 	int boneno;
 	double frame;
@@ -488,13 +491,13 @@ typedef struct tag_cpmot
 }CPMOT;
 
 
-typedef struct tag_texv
+typedef  struct tag_texv
 {
 	ChaVector3 pos;
 	ChaVector2 uv;
 }TEXV;
 
-typedef struct tag_spritev {
+typedef struct  tag_spritev {
 	ChaVector4 pos;
 	ChaVector2 uv;
 } SPRITEV;
@@ -508,7 +511,7 @@ typedef struct tag_verface
 	ChaVector3	facenormal;
 }PERFACE;
 
-typedef struct tag_pervert
+typedef  struct tag_pervert
 {
 	int				indexno;//3角の順番
 	int				vno;
@@ -525,7 +528,7 @@ typedef struct tag_pervert
 
 }PERVERT;
 
-typedef struct tag_pm3optv
+typedef  struct tag_pm3optv
 {
 	int orgvno;
 	int orgfaceno;
@@ -538,20 +541,20 @@ typedef struct tag_pm3optv
 	DWORD			vcol;
 }PM3OPTV;
 
-typedef struct tag_pm3dispv
+typedef  struct tag_pm3dispv
 {
 	ChaVector4		pos;
 	ChaVector3		normal;
 	ChaVector2		uv;
 }PM3DISPV;
 
-typedef struct tag_extlinev
+typedef  struct tag_extlinev
 {
 	ChaVector4 pos;
 }EXTLINEV;
 
 
-typedef struct tag_modelbound
+typedef  struct tag_modelbound
 {
 	ChaVector3 min;
 	ChaVector3 max;
@@ -559,7 +562,7 @@ typedef struct tag_modelbound
 	float		r;
 }MODELBOUND;
 
-typedef struct tag_n3p
+typedef  struct tag_n3p
 {
 	PERFACE*	perface;
 	PERVERT*	pervert;

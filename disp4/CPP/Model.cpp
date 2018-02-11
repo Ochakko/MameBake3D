@@ -303,6 +303,17 @@ int CModel::DestroyAncObj()
 	}
 	m_bonelist.clear();
 
+
+	map<CMQOObject*, FBXOBJ*>::iterator itrobjindex;
+	for (itrobjindex = m_fbxobj.begin(); itrobjindex != m_fbxobj.end(); itrobjindex++) {
+		FBXOBJ* curfbxobj = itrobjindex->second;
+		if (curfbxobj) {
+			free(curfbxobj);
+		}
+	}
+	m_fbxobj.clear();
+
+
 	m_topbone = 0;
 
 	m_objectname.clear();
@@ -2111,10 +2122,14 @@ int CModel::AddDefMaterial()
 
 int CModel::CreateFBXMeshReq( FbxNode* pNode )
 {
+	if (!pNode) {
+		return 0;
+	}
+
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
 		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
-        FbxGeometryConverter lConverter(pNode->GetFbxManager());
+        //FbxGeometryConverter lConverter(pNode->GetFbxManager());
 
 		char mes[256];
 
@@ -2149,7 +2164,9 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
 		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
-		CreateFBXMeshReq( pChild );
+		if (pChild) {
+			CreateFBXMeshReq(pChild);
+		}
 	}
 
 	return 0;
@@ -2157,15 +2174,17 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 
 int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep )
 {
-	map<CMQOObject*,FBXOBJ>::iterator itrobjindex;
+	map<CMQOObject*,FBXOBJ*>::iterator itrobjindex;
 	for( itrobjindex = m_fbxobj.begin(); itrobjindex != m_fbxobj.end(); itrobjindex++ ){
-		FBXOBJ curfbxobj = itrobjindex->second;
-		FbxMesh* curmesh = curfbxobj.mesh;
-		CMQOObject* curobj = itrobjindex->first;
-		if( curmesh && curobj ){
-			int shapecnt = curmesh->GetShapeCount();
-			if( shapecnt > 0 ){
-				CallF( GetFBXShape( curmesh, curobj, panimlayer, animleng, starttime, timestep ), return 1 );
+		FBXOBJ* curfbxobj = itrobjindex->second;
+		if (curfbxobj) {
+			const FbxMesh* curmesh = curfbxobj->mesh;
+			CMQOObject* curobj = itrobjindex->first;
+			if (curmesh && curobj) {
+				int shapecnt = curmesh->GetShapeCount();
+				if (shapecnt > 0) {
+					CallF(GetFBXShape((FbxMesh*)curmesh, curobj, panimlayer, animleng, starttime, timestep), return 1);
+				}
 			}
 		}
 	}
@@ -2173,9 +2192,12 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 }
 
 
-CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename )
+CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename )
 {
-
+	if (!pNode || !pAttrib || !nodename) {
+		_ASSERT(0);
+		return 0;
+	}
 
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
 	if (strcmp("RootNode", pAttrib->GetName()) == 0){
@@ -2185,18 +2207,26 @@ CMQOObject* CModel::GetFBXMesh( FbxNode* pNode, FbxNodeAttribute *pAttrib, const
 
 	CMQOObject* newobj = new CMQOObject();
 	_ASSERT( newobj );
+	if (!newobj) {
+		_ASSERT(0);
+		return 0;
+	}
 	newobj->SetObjFrom( OBJFROM_FBX );
 	newobj->SetName( (char*)nodename );
 	m_object[ newobj->GetObjectNo() ] = newobj;
 
-	WCHAR wname[256];
-	ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nodename, 256, wname, 256 );
+	WCHAR wname[256] = L"none for debug";
+	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nodename, 256, wname, 256 );//複数キャラ読み込み時に落ちることがある？？
 
 
-	FBXOBJ fbxobj;
-	fbxobj.node = pNode;
-	fbxobj.mesh = pMesh;
+	FBXOBJ* fbxobj = (FBXOBJ*)malloc(sizeof(FBXOBJ));
+	if (!fbxobj) {
+		_ASSERT(0);
+		return 0;
+	}
+	fbxobj->node = pNode;
+	fbxobj->mesh = pMesh;
 	m_fbxobj[newobj] = fbxobj;
 
 //shape
@@ -2767,7 +2797,7 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 					}
 				}
 				else{
-					_ASSERT(0);
+					//_ASSERT(0);
 				}
 				break;
 			case FbxSkeleton::eRoot:
@@ -2864,10 +2894,10 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 		}
 	}else{
 		if( settopflag == 0 ){
-			_ASSERT( 0 );
+			//_ASSERT( 0 );
 			m_topbone->AddChild( newbone );
 		}else{
-			_ASSERT(0);
+			//_ASSERT(0);
 			//::MessageBoxA( NULL, "GetFBXBone : parbone NULL error ", nodename, MB_OK );
 		}
 	}
@@ -8332,7 +8362,9 @@ float CModel::GetTargetWeight( int motid, double srcframe, double srctimescale, 
 	FbxTime lTime;
 	lTime.SetSecondDouble( srcframe / srctimescale );
 
-	return GetFbxTargetWeight( m_fbxobj[srcbaseobj].node, m_fbxobj[srcbaseobj].mesh, srctargetname, lTime, curanimlayer, srcbaseobj );
+	//m_fbxobj end iterator check必要？
+	//return GetFbxTargetWeight( (FbxNode*)m_fbxobj[srcbaseobj].node, (FbxMesh*)m_fbxobj[srcbaseobj].mesh, srctargetname, lTime, curanimlayer, srcbaseobj );
+	return 1.0f;
 }
 
 float CModel::GetFbxTargetWeight(FbxNode* pbaseNode, FbxMesh* pbaseMesh, std::string targetname, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* baseobj )
