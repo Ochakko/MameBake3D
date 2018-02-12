@@ -1331,12 +1331,12 @@ int CModel::GetFBXShape( FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panim
 					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1ではない！！！！！！！！！！！！！！！！
 					if(lShape)
 					{		
-						const char* nameptr = lChannel->GetName();
+						//const char* nameptr = lChannel->GetName();
 						int existshape = 0;
-						existshape = curobj->ExistShape( (char*)nameptr );
+						existshape = curobj->ExistShape( (char*)lChannel->GetName());
 						if( existshape == 0 ){
 
-							curobj->AddShapeName( (char*)nameptr );
+							curobj->AddShapeName( (char*)lChannel->GetName());
 
 							FbxVector4* shapev = lShape->GetControlPoints();
 							_ASSERT( shapev );
@@ -1346,7 +1346,7 @@ int CModel::GetFBXShape( FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panim
 								xv.x = (float)shapev[j][0];
 								xv.y = (float)shapev[j][1];
 								xv.z = (float)shapev[j][2];
-								curobj->SetShapeVert( (char*)nameptr, j, xv );
+								curobj->SetShapeVert( (char*)lChannel->GetName(), j, xv );
 							}						
 						}
 					}
@@ -1381,7 +1381,7 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 			if(lChannel)
 			{
 
-				const char* nameptr = lChannel->GetName();
+				//const char* nameptr = lChannel->GetName();
 				// Get the percentage of influence of the shape.
 				FbxAnimCurve* lFCurve;
 				double lWeight = 0.0;
@@ -1405,7 +1405,9 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1ではない！！！！！！！！！！！！！！！！
 					if(lShape)
 					{	
-						curobj->SetShapeWeight( (char*)nameptr, (float)lWeight );
+						char tmpname[512];
+						strcpy_s(tmpname, 512, lChannel->GetName());
+						curobj->SetShapeWeight( tmpname, (float)lWeight );
 					}
 				}//For each target shape
 			}//If lChannel is valid
@@ -2140,7 +2142,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 		{
 			case FbxNodeAttribute::eMesh:
 
-				newobj = GetFBXMesh( pNode, pAttrib, pNode->GetName() );     // メッシュを作成
+				newobj = GetFBXMesh( pNode, pAttrib );     // メッシュを作成
 				if (newobj){
 					shapecnt = pNode->GetMesh()->GetShapeCount();
 					if (shapecnt > 0){
@@ -2192,11 +2194,14 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 }
 
 
-CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename )
+CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 {
-	if (!pNode || !pAttrib || !nodename) {
+	if (!pNode || !pAttrib) {
 		_ASSERT(0);
 		return 0;
+	}
+	if (!pNode->GetName()) {
+		_ASSERT(0);
 	}
 
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
@@ -2212,12 +2217,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, const 
 		return 0;
 	}
 	newobj->SetObjFrom( OBJFROM_FBX );
-	newobj->SetName( (char*)nodename );
+	newobj->SetName( (char*)pNode->GetName() );
 	m_object[ newobj->GetObjectNo() ] = newobj;
 
 	WCHAR wname[256] = L"none for debug";
 	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nodename, 256, wname, 256 );//複数キャラ読み込み時に落ちることがある？？
+	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), 256, wname, 256 );//複数キャラ読み込み時に落ちることがある？？
 
 
 	FBXOBJ* fbxobj = (FBXOBJ*)malloc(sizeof(FBXOBJ));
@@ -2265,7 +2270,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, const 
 	int controlNum = pMesh->GetControlPointsCount();   // 頂点数
 	FbxVector4* src = pMesh->GetControlPoints();    // 頂点座標配列
 
-	DbgOut(L"LDCheck : GetFBXMesh : nodename %s, controlnum %d, polygonnum %d, polygonvertexnum %d\r\n", wname, controlNum, PolygonNum, PolygonVertexNum);
+	//DbgOut(L"LDCheck : GetFBXMesh : nodename %s, controlnum %d, polygonnum %d, polygonvertexnum %d\r\n", wname, controlNum, PolygonNum, PolygonVertexNum);
 
 	// コピー
 	newobj->SetVertex( controlNum );
@@ -2540,7 +2545,9 @@ _ASSERT(0);
 
 int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMaterial )
 {
-	newmqomat->SetName( (char*)pMaterial->GetName() );
+	char tmpname[512];
+	strcpy_s(tmpname, 512, pMaterial->GetName());
+	newmqomat->SetName( tmpname );
 
 	char* emitex = 0;
     const FbxDouble3 lEmissive = GetMaterialProperty(pMaterial,
@@ -2616,10 +2623,10 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
             int lNbTextures = lLayeredTexture->GetSrcObjectCount<FbxTexture>();
             for(int k =0; k<lNbTextures; ++k)
             {
-                char* nameptr = (char*)lLayeredTexture->GetName();
-				if( nameptr ){
+                //char* nameptr = (char*)lLayeredTexture->GetName();
+				if(lLayeredTexture->GetName()){
 					char tempname[256];
-					strcpy_s( tempname, 256, nameptr );
+					strcpy_s( tempname, 256, lLayeredTexture->GetName());
 					char* lastslash = strrchr( tempname, '/' );
 					if( !lastslash ){
 						lastslash = strrchr( tempname, '\\' );
@@ -2728,9 +2735,9 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
 		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
-		const char* nodename = pNode->GetName();
+		//const char* nodename = pNode->GetName();
 		WCHAR wname[256];
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nodename, -1, wname, 256 );
+		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), -1, wname, 256 );
 		if( type == FbxNodeAttribute::eSkeleton ){
 			DbgOut( L"CreateFbxBoneReq : pNode %s : type : skeleton\r\n", wname );
 		}else if( type == FbxNodeAttribute::eNull ){
@@ -2745,9 +2752,9 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 			FbxNodeAttribute *parattr = parnode->GetNodeAttribute();
 			if ( parattr ) {
 				FbxNodeAttribute::EType partype = parattr->GetAttributeType();
-				const char* parnodename = parnode->GetName();
+				//const char* parnodename = parnode->GetName();
 				WCHAR parwname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnodename, -1, parwname, 256 );
+				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
 				if( partype == FbxNodeAttribute::eSkeleton ){
 					DbgOut( L"CreateFbxBoneReq : parnode %s : type : skeleton\r\n", parwname );
 				}else if( type == FbxNodeAttribute::eNull ){
@@ -2767,9 +2774,9 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 						break;
 				}
 			}else{
-				const char* parnodename = parnode->GetName();
+				//const char* parnodename = parnode->GetName();
 				WCHAR parwname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnodename, -1, parwname, 256 );
+				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
 				DbgOut( L"CreateFbxBoneReq : %s : parnode name %s : parattr NULL!!!!!\r\n", wname, parwname );
 			}
 		}else{
@@ -2788,12 +2795,12 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 				//pNode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
 				
 				DbgOut( L"CreateFBXBoneReq : skeleton : %s\r\n", wname );
-				if (strcmp(nodename, "RootNode") != 0){
+				if (strcmp(pNode->GetName(), "RootNode") != 0){
 					if (parnode && (strcmp(parnode->GetName(), "RootNode") != 0)){
-						GetFBXBone(pScene, type, pAttrib, nodename, pNode, parbonenode);
+						GetFBXBone(pScene, type, pAttrib, pNode, parbonenode);
 					}
 					else{
-						GetFBXBone(pScene, type, pAttrib, nodename, pNode, 0);
+						GetFBXBone(pScene, type, pAttrib, pNode, 0);
 					}
 				}
 				else{
@@ -2820,7 +2827,7 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 	return 0;
 }
 
-int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, const char* nodename, FbxNode* curnode, FbxNode* parnode )
+int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
 {
 	int settopflag = 0;
 	CBone* newbone = new CBone( this );
@@ -2832,7 +2839,7 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 	newbone->LoadCapsuleShape(m_pdev);
 
 	char newbonename[256];
-	strcpy_s(newbonename, 256, nodename);
+	strcpy_s(newbonename, 256, curnode->GetName());
 	TermJointRepeats(newbonename);
 	newbone->SetName(newbonename);
 	
@@ -3112,9 +3119,9 @@ int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttri
 			// j番目のクラスタを取得
 			FbxCluster* cluster = skin->GetCluster( j );
 
-			const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
+			//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
 			char bonename2[256];
-			strcpy_s(bonename2, 256, bonename);
+			strcpy_s(bonename2, 256, ((FbxNode*)cluster->GetLink())->GetName());
 			TermJointRepeats(bonename2);
 			CBone* curbone = m_bonename[ (char*)bonename2 ];
 
@@ -3258,11 +3265,11 @@ int CModel::CreateFBXSkinReq( FbxNode* pNode )
 }
 int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 {
-	const char* nodename = pNode->GetName();
+	//const char* nodename = pNode->GetName();
 
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
 	CMQOObject* newobj = 0;
-	newobj = m_objectname[ nodename ];
+	newobj = m_objectname[ pNode->GetName() ];
 	if( !newobj ){
 		_ASSERT( 0 );
 		return 1;
@@ -3291,9 +3298,9 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 				continue;
 			}
 
-			const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
+			//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
 			char bonename2[256];
-			strcpy_s(bonename2, 256, bonename);
+			strcpy_s(bonename2, 256, ((FbxNode*)cluster->GetLink())->GetName());
 			TermJointRepeats(bonename2);
 //			int namelen = (int)strlen( clustername );
 			WCHAR wname[256];
@@ -8385,9 +8392,9 @@ float CModel::GetFbxTargetWeight(FbxNode* pbaseNode, FbxMesh* pbaseMesh, std::st
 			FbxBlendShapeChannel* lChannel = lBlendShape->GetBlendShapeChannel(lChannelIndex);
 			if(lChannel)
 			{
-				const char* nameptr = lChannel->GetName();
+				//const char* nameptr = lChannel->GetName();
 				int cmp0;
-				cmp0 = strcmp( nameptr, targetname.c_str() );
+				cmp0 = strcmp(lChannel->GetName(), targetname.c_str() );
 				if( cmp0 == 0 ){
 					FbxAnimCurve* lFCurve;
 					double lWeight = 0.0;

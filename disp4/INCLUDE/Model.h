@@ -624,14 +624,14 @@ private:
 	int CreateFBXMeshReq( FbxNode* pNode );
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
-	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, const char* nodename );
+	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib );
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 
 	int SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* material );
 	int CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
-	int GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, const char* nodename, FbxNode* curnode, FbxNode* parnode );
+	int GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode );
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode );
 	int CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
 	int GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
