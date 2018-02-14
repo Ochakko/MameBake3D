@@ -1023,7 +1023,7 @@ static int ExportBntFile();
 static const int s_appindex = 1;
 
 
-static int s_registflag = 0;
+static int s_registflag = 1;//!!!!!!!!!!!
 static HKEY s_hkey;
 static int RegistKey();
 static int IsRegist();
@@ -12587,24 +12587,27 @@ int OnRenderGround()
 
 int OnRenderBoneMark()
 {
-	if (s_allmodelbone == 0){
-		if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
-			if (s_model && s_model->GetModelDisp()){
+	if (g_bonemarkflag) {
+
+		if (s_allmodelbone == 0) {
+			//if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
+			if (s_model && s_model->GetModelDisp()) {
 				//if (s_ikkind >= 3){
-					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);
+				s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);
 				//}
 				//else{
 				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
 				//}
 			}
+		//}
 		}
-	}
-	else{
-		vector<MODELELEM>::iterator itrme;
-		for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++){
-			MODELELEM curme = *itrme;
-			CModel* curmodel = curme.modelptr;
-			curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+		else {
+			vector<MODELELEM>::iterator itrme;
+			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++) {
+				MODELELEM curme = *itrme;
+				CModel* curmodel = curme.modelptr;
+				curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+			}
 		}
 	}
 
