@@ -1384,7 +1384,13 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 	if( s_firstoutmot >= 0 ){
 		FbxAnimStack * lCurrentAnimationStack;
 		//lCurrentAnimationStack = pScene->GetMember(FBX_TYPE(FbxAnimStack), s_ai->motid);
-		lCurrentAnimationStack = pScene->GetSrcObject<FbxAnimStack>(s_ai->motid);
+
+		if (bvhflag == 0) {
+			lCurrentAnimationStack = pScene->GetSrcObject<FbxAnimStack>(s_ai->motid);
+		}
+		else {
+			lCurrentAnimationStack = pScene->GetSrcObject<FbxAnimStack>(0);
+		}
 
 		//if (bvhflag == 0){
 		//	lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), s_ai->engmotname);

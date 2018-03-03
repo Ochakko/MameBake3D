@@ -1023,7 +1023,7 @@ static int ExportBntFile();
 static const int s_appindex = 1;
 
 
-static int s_registflag = 0;
+static int s_registflag = 1;//!!!!!!!!!!!
 static HKEY s_hkey;
 static int RegistKey();
 static int IsRegist();
@@ -1220,7 +1220,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//DXUTSetHotkeyHandling( true, true, true );
 	DXUTSetHotkeyHandling(false, false, false);
 
-	DXUTSetOverrideSize(s_mainwidth, s_mainheight);
+	//DXUTSetOverrideSize(s_mainwidth, s_mainheight);//mac + VM Fusion‚Ìê‡‚Í‚±‚±‚ðŽÀs‚·‚é
+
 	//GetDXUTState().SetOverrideWidth(s_mainwidth);
 	//GetDXUTState().SetOverrideHeight(s_mainwidth);
 
@@ -1244,8 +1245,9 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//int bufwidth = s_mainwidth;
 	//int bufheight = s_mainheight - cycaption - cymenu - cyborder;
 
-	hr = DXUTCreateDevice(true);
+	//hr = DXUTCreateDevice(true);//mac + VM Fusion‚Ìê‡‚Í‚±‚Á‚¿
 	//hr = DXUTCreateDevice(true, bufwidth, bufheight);
+	hr = DXUTCreateDevice(true, s_mainwidth, s_mainheight);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;
@@ -12587,24 +12589,27 @@ int OnRenderGround()
 
 int OnRenderBoneMark()
 {
-	if (s_allmodelbone == 0){
-		if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
-			if (s_model && s_model->GetModelDisp()){
+	if (g_bonemarkflag) {
+
+		if (s_allmodelbone == 0) {
+			//if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
+			if (s_model && s_model->GetModelDisp()) {
 				//if (s_ikkind >= 3){
-					s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);
+				s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);
 				//}
 				//else{
 				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
 				//}
 			}
+		//}
 		}
-	}
-	else{
-		vector<MODELELEM>::iterator itrme;
-		for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++){
-			MODELELEM curme = *itrme;
-			CModel* curmodel = curme.modelptr;
-			curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+		else {
+			vector<MODELELEM>::iterator itrme;
+			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++) {
+				MODELELEM curme = *itrme;
+				CModel* curmodel = curme.modelptr;
+				curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+			}
 		}
 	}
 
