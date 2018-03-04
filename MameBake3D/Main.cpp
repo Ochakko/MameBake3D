@@ -133,6 +133,7 @@ bool g_underRetargetFlag = false;
 static int s_onragdollik = 0;
 static int s_physicskind = 0;
 
+
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
 static CMQOMaterial* s_matblue = 0;// = s_select->GetMQOMaterialByName("matblue");
@@ -739,6 +740,8 @@ float g_physicsmvrate = 1.0f;
 
 #define IDC_SL_NUMTHREAD			61
 #define IDC_STATIC_NUMTHREAD		62
+
+
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -2970,7 +2973,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	//}
 
 	// Give the dialogs a chance to handle the message first
-	g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
+	//g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
 	*pbNoFurtherProcessing = g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
 	if (*pbNoFurtherProcessing) {
 		//_ASSERT(0);
@@ -3976,7 +3979,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			if( s_model ){
 				RollbackCurBoneNo();
 				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
-				tmpikindex = (int)PtrToUlong( pComboBox->GetSelectedData() );
+				tmpikindex = (int)PtrToUlong(pComboBox->GetSelectedData());
+
 				switch( tmpikindex ){
 				case IDC_IK_ROT:
 					s_ikkind = 0;
@@ -11386,7 +11390,6 @@ int CreateUtDialog()
 	pComboBox1->AddItem(L"減衰率アニメ", ULongToPtr(IDC_BT_DAMP));
 
 	pComboBox1->SetSelectedByData(ULongToPtr(0));
-
 
 	swprintf_s(sz, 100, L"姿勢適用位置 : %d ％", g_applyrate);
 	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
