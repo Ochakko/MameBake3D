@@ -4985,6 +4985,7 @@ int BVH2FBX()
 {
 
 	int dlgret;
+	s_filterindex = 5;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
 		s_mainwnd, (DLGPROC)OpenMqoDlgProc );
 	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
@@ -5020,6 +5021,7 @@ int BVH2FBX()
 int OpenFile()
 {
 	int dlgret;
+	s_filterindex = 1;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
 		s_mainwnd, (DLGPROC)OpenMqoDlgProc );
 	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
