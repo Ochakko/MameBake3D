@@ -52,7 +52,8 @@ MameBake3Dはデフォルトで相対IKです。
 
 #include <shlobj.h> //shell
 #include <Commdlg.h>
-#include <ChaVecCalc.h>
+//#include <ChaVecCalc.h>
+#include <GlobalVar.h>
 
 #include <mqomaterial.h>
 
@@ -98,7 +99,7 @@ typedef struct tag_spaxis
 	POINT dispcenter;
 }SPAXIS, SPCAM, SPELEM;
 
-
+/*
 ID3D10DepthStencilState *g_pDSStateZCmp = 0;
 ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
 ID3D10ShaderResourceView* g_presview = 0;
@@ -107,6 +108,103 @@ int	g_numthread = 3;
 double g_btcalccnt = 3.0;
 int g_dbgloadcnt = 0;
 double g_calcfps = 60.0;
+
+bool g_selecttolastFlag = false;
+bool g_underselecttolast = false;
+bool g_undereditrange = false;
+
+bool g_limitdegflag = true;
+bool g_wmatDirectSetFlag = false;
+bool g_underRetargetFlag = false;
+
+float g_impscale = 1.0f;
+float g_initmass = 1.0f;
+
+ChaVector3 g_camEye = ChaVector3( 0.0f, 0.0f, 0.0f );
+ChaVector3 g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
+
+float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };//
+float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };//
+float g_initcuslk = 1e2;
+//float g_initcuslk = 2000.0f;
+//float g_initcuslk = 100.0f;
+float g_initcusak = 70.0f;
+
+
+//float g_l_dmp = 0.75f;
+//float g_a_dmp = 0.50f;
+
+float g_l_dmp = 0.50f;
+float g_a_dmp = 0.50f;
+
+int g_previewFlag = 0;			// プレビューフラグ
+
+int g_applyendflag = 0;
+int g_slerpoffflag = 0;
+int g_absikflag = 0;
+int g_bonemarkflag = 1;
+int g_pseudolocalflag = 1;
+int g_boneaxis = 1;
+
+CTexBank*	g_texbank = 0;
+
+float g_tmpmqomult = 1.0f;
+WCHAR g_tmpmqopath[MULTIPATH] = {0L};
+float g_tmpbvhfilter = 100.0f;
+
+ID3D10EffectTechnique* g_hRenderBoneL0 = 0;
+ID3D10EffectTechnique* g_hRenderBoneL1 = 0;
+ID3D10EffectTechnique* g_hRenderBoneL2 = 0;
+ID3D10EffectTechnique* g_hRenderBoneL3 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL0 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL1 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL2 = 0;
+ID3D10EffectTechnique* g_hRenderNoBoneL3 = 0;
+ID3D10EffectTechnique* g_hRenderLine = 0;
+ID3D10EffectTechnique* g_hRenderSprite = 0;
+
+ID3D10EffectMatrixVariable* g_hm4x4Mat = 0;
+ID3D10EffectMatrixVariable* g_hmWorld = 0;
+ID3D10EffectMatrixVariable* g_hmVP = 0;
+
+ID3D10EffectVectorVariable* g_hEyePos = 0;
+ID3D10EffectScalarVariable* g_hnNumLight = 0;
+ID3D10EffectVectorVariable* g_hLightDir = 0;
+ID3D10EffectVectorVariable* g_hLightDiffuse = 0;
+ID3D10EffectVectorVariable* g_hLightAmbient = 0;
+ID3D10EffectVectorVariable* g_hSpriteOffset = 0;
+ID3D10EffectVectorVariable* g_hSpriteScale = 0;
+ID3D10EffectVectorVariable* g_hPm3Scale = 0;
+ID3D10EffectVectorVariable* g_hPm3Offset = 0;
+
+
+ID3D10EffectVectorVariable* g_hdiffuse = 0;
+ID3D10EffectVectorVariable* g_hambient = 0;
+ID3D10EffectVectorVariable* g_hspecular = 0;
+ID3D10EffectScalarVariable* g_hpower = 0;
+ID3D10EffectVectorVariable* g_hemissive = 0;
+ID3D10EffectShaderResourceVariable* g_hMeshTexture = 0;
+
+BYTE g_keybuf[256];
+BYTE g_savekeybuf[256];
+
+WCHAR g_basedir[ MAX_PATH ] = {0};
+
+double						g_dspeed = 3.0;
+//double						g_dspeed = 0.0;
+
+
+float g_ikfirst = 1.0f;
+float g_ikrate = 1.0f;
+int g_applyrate = 50;
+float g_physicsmvrate = 1.0f;
+
+
+float                       g_fLightScale;
+int                         g_nNumActiveLights;
+int                         g_nActiveLight;
+
+*/
 
 extern map<CModel*,int> g_bonecntmap;
 extern int gNumIslands;
@@ -122,13 +220,6 @@ extern void DXUTSetOverrideSize(int srcw, int srch);
 //ChaMatrix s_ikselectmat;//for ik, fk
 ChaMatrix s_selectmat;//for display manipulator
 ChaMatrix s_ikselectmat;//for ik, fk
-bool g_selecttolastFlag = false;
-bool g_underselecttolast = false;
-bool g_undereditrange = false;
-
-bool g_limitdegflag = true;
-bool g_wmatDirectSetFlag = false;
-bool g_underRetargetFlag = false;
 
 static int s_onragdollik = 0;
 static int s_physicskind = 0;
@@ -190,11 +281,6 @@ static WCHAR s_strcurrent[256] = L"Move To Current Frame";
 static WCHAR s_streditrange[256] = L"Drag Edit Range";
 static WCHAR s_strmark[256] = L"Mark Key Line";
 
-float g_impscale = 1.0f;
-float g_initmass = 1.0f;
-
-ChaVector3 g_camEye = ChaVector3( 0.0f, 0.0f, 0.0f );
-ChaVector3 g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 
 
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), powf( 10.0f, 3.2f ) };
@@ -204,20 +290,6 @@ ChaVector3 g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), powf( 10.0f, 3.27f ) };
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), powf( 10.0f, 3.3f ) };
 //float g_l_kval[3] = { powf( 10.0f, 2.0f ), powf( 10.0f, 2.61f ), 1000.0f };
-
-float g_l_kval[3] = { 1.0f, powf( 10.0f, 2.61f ), 2000.0f };//
-float g_a_kval[3] = { 0.1f, powf( 10.0f, 0.3f ), 70.0f };//
-float g_initcuslk = 1e2;
-//float g_initcuslk = 2000.0f;
-//float g_initcuslk = 100.0f;
-float g_initcusak = 70.0f;
-
-
-//float g_l_dmp = 0.75f;
-//float g_a_dmp = 0.50f;
-
-float g_l_dmp = 0.50f;
-float g_a_dmp = 0.50f;
 
 
 bool g_controlkey = false;
@@ -238,7 +310,6 @@ static double s_erp = 1.0;
 //static float s_impup = 0.0f;
 
 
-int g_previewFlag = 0;			// プレビューフラグ
 static int s_savepreviewFlag = 0;
 double s_btstartframe = 0.0;
 
@@ -556,12 +627,6 @@ static WCHAR s_Impname[MAX_PATH] = {0L};
 static WCHAR s_Gconame[MAX_PATH] = {0L};
 
 static int s_camtargetflag = 0;
-int g_applyendflag = 0;
-int g_slerpoffflag = 0;
-int g_absikflag = 0;
-int g_bonemarkflag = 1;
-int g_pseudolocalflag = 1;
-int g_boneaxis = 1;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
@@ -575,11 +640,6 @@ CDXUTCheckBox* s_LimitDegCheckBox = 0;
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
 
 ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
-CTexBank*	g_texbank = 0;
-
-float g_tmpmqomult = 1.0f;
-WCHAR g_tmpmqopath[MULTIPATH] = {0L};
-float g_tmpbvhfilter = 100.0f;
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -605,57 +665,9 @@ bool                        g_bEnablePreshader;     // if TRUE, then D3DXSHADER_
 //ChaMatrix               g_mCenterWorld;
 ChaMatrix               g_mCenterWorld;
 
+
 #define MAX_LIGHTS 3
 CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
-float                       g_fLightScale;
-int                         g_nNumActiveLights;
-int                         g_nActiveLight;
-
-double						g_dspeed = 3.0;
-//double						g_dspeed = 0.0;
-
-ID3D10EffectTechnique* g_hRenderBoneL0 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL1 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL2 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL3 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL0 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL1 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL2 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL3 = 0;
-ID3D10EffectTechnique* g_hRenderLine = 0;
-ID3D10EffectTechnique* g_hRenderSprite = 0;
-
-ID3D10EffectMatrixVariable* g_hm4x4Mat = 0;
-ID3D10EffectMatrixVariable* g_hmWorld = 0;
-ID3D10EffectMatrixVariable* g_hmVP = 0;
-
-ID3D10EffectVectorVariable* g_hEyePos = 0;
-ID3D10EffectScalarVariable* g_hnNumLight = 0;
-ID3D10EffectVectorVariable* g_hLightDir = 0;
-ID3D10EffectVectorVariable* g_hLightDiffuse = 0;
-ID3D10EffectVectorVariable* g_hLightAmbient = 0;
-ID3D10EffectVectorVariable* g_hSpriteOffset = 0;
-ID3D10EffectVectorVariable* g_hSpriteScale = 0;
-ID3D10EffectVectorVariable* g_hPm3Scale = 0;
-ID3D10EffectVectorVariable* g_hPm3Offset = 0;
-
-
-ID3D10EffectVectorVariable* g_hdiffuse = 0;
-ID3D10EffectVectorVariable* g_hambient = 0;
-ID3D10EffectVectorVariable* g_hspecular = 0;
-ID3D10EffectScalarVariable* g_hpower = 0;
-ID3D10EffectVectorVariable* g_hemissive = 0;
-ID3D10EffectShaderResourceVariable* g_hMeshTexture = 0;
-
-BYTE g_keybuf[256];
-BYTE g_savekeybuf[256];
-
-WCHAR g_basedir[ MAX_PATH ] = {0};
-
-float g_ikfirst = 1.0f;
-float g_ikrate = 1.0f;
-int g_applyrate = 50;
-float g_physicsmvrate = 1.0f;
 
 //--------------------------------------------------------------------------------------
 // UI control IDs

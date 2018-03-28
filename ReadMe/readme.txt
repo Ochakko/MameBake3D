@@ -31,11 +31,16 @@ MicrosoftのサイトでMSDNサブスクリプションの契約することにより使用可能です。
 個別に買うより安いです。
 ）
 
+
+MameBake3D.exeと同じディレクトリに以下の４つのDLLを置く必要があります。
+libfbxsdk.dll (FBX SDK)
+tbb.dll (Intel TBB)
+tbbmalloc.dll (Intel TBB)
+tbbmalloc_proxy.dll (Intel TBB)
+
+
 2017/12/17コミット分から
 bullet physicsのバージョンが2.86になりました。
-プロジェクトファイルにbullet physicsのファイルをアッドしていますが
-本レポジトリにはファイルはアップしません。
-bullet physicsは下記サイトからDLして使用してください。
 http://bulletphysics.org/wordpress/
 
 bullet physicsを少しだけ編集しましたので明記します。
@@ -173,6 +178,18 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2018/03/29
+	静的リンク用ライブラリとしてまめばけ３Dの機能をまとめました（MameBake3DLib.lib）。
+		まだインターフェイスなどそのままでとりあえずライブラリにしました。
+		MameBake3DLib.libをLGPLのライブラリとして使用する他のライセンス形式のアプリ作成が可能です。
+			ただしMameBake3DLib.libの内容に手を加える場合にはLGPLになります。
+
+	MameBake3D.exeと同じディレクトリに以下の４つのDLLを置く必要があります。
+		libfbxsdk.dll (FBX SDK)
+		tbb.dll (Intel TBB)
+		tbbmalloc.dll (Intel TBB)
+		tbbmalloc_proxy.dll (Intel TBB)
+
 2018/03/07_1
 	bvh2FBXのファイル選択ダイアログでbvhの拡張子のフィルターを選択するようにしました。
 
