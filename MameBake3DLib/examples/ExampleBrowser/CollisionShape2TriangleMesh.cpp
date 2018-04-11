@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "CollisionShape2TriangleMesh.h"
 

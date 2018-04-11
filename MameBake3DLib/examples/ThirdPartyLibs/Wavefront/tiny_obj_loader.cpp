@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 // Copyright 2012-2013, Syoyo Fujita.
 // 

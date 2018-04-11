@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 // Copyright (c) 2011 Andreas Krinke andreas.krinke@gmx.de
 // Copyright (c) 2009 Mikko Mononen memon@inside.org

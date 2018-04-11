@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3Clock.h"
 
 template <class T>

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /////////////////////////////
 // In the header file
 

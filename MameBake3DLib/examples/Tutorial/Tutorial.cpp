@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "Tutorial.h"
 #include "../CommonInterfaces/CommonGraphicsAppInterface.h"

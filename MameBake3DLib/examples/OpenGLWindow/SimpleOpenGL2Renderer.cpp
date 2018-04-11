@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "SimpleOpenGL2Renderer.h"
 #include "OpenGL2Include.h"

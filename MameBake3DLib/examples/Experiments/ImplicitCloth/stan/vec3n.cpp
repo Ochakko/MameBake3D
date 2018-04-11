@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 // Big Vector and Sparse Matrix Classes
 // 

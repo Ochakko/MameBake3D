@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3PrefixScanCL.h"
 #include "b3FillCL.h"
 #define B3_PREFIXSCAN_PROG_PATH "src/Bullet3OpenCL/ParallelPrimitives/kernels/PrefixScanKernels.cl"

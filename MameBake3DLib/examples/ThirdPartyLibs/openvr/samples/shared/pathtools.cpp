@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //========= Copyright Valve Corporation ============//
 #include "pathtools.h"
 //#include "hmdplatform_private.h"

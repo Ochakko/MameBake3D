@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "b3FixedConstraint.h"
 #include "Bullet3Collision/NarrowPhaseCollision/shared/b3RigidBodyData.h"

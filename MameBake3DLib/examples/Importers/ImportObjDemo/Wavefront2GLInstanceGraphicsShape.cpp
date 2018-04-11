@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Wavefront2GLInstanceGraphicsShape.h"
 
 #include "../../OpenGLWindow/GLInstancingRenderer.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "tiny_obj_loader.h"
 
 #include <cstdio>

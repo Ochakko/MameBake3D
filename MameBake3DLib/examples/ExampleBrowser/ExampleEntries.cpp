@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ExampleEntries.h"
 
 #include "LinearMath/btAlignedObjectArray.h"

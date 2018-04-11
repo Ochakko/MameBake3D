@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MyMultiBodyCreator.h"
 
 #include "../../CommonInterfaces/CommonGUIHelperInterface.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsDirect.h"
 
 #include "PhysicsClientSharedMemory.h"

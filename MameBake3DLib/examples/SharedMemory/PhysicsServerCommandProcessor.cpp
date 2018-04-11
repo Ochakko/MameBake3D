@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsServerCommandProcessor.h"
 
 #include "../Importers/ImportURDFDemo/BulletUrdfImporter.h"

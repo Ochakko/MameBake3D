@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GColiIDDlg.h"
 #include "GetDlgParams.h"
 

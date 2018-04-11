@@ -1,3 +1,4 @@
+#include "stdafx.h"
 // Test of kinematic consistency: check if finite differences of velocities, accelerations
 // match positions
 

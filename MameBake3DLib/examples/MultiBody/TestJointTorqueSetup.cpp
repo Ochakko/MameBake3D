@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //test addJointTorque
 #include "TestJointTorqueSetup.h"
 

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 
 //todo(erwincoumans): re-use the upcoming b3RobotSimAPI here

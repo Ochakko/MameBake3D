@@ -1,6 +1,9 @@
 #ifndef MQOFILEH
 #define MQOFILEH
 
+//class ID3D10Device;
+
+
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
 
@@ -15,6 +18,8 @@
 #include <map>
 
 using namespace std;
+
+//class ID3D10Device;
 
 class CModel;
 class CMQOMaterial;

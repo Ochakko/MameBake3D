@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TinyRenderer.h"
 
 #include <vector>

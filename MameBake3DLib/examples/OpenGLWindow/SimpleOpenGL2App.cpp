@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SimpleOpenGL2App.h"
 #define USE_OPENGL2
 #include "OpenGLInclude.h"

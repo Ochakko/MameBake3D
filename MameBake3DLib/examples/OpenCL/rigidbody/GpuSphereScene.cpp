@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GpuSphereScene.h"
 #include "GpuRigidBodyDemo.h"
 #include "OpenGLWindow/ShapeData.h"

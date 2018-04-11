@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifndef NO_OPENGL3
 #include "opengl_fontstashcallbacks.h"
 #include "../OpenGLWindow/GLPrimitiveRenderer.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 // FilterDlg.cpp : CFilterDlg のインプリメンテーション
 //#include "stdafx.h"
 

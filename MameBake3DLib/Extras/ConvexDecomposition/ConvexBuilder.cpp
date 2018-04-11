@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "float_math.h"
 #include "ConvexBuilder.h"
 #include "meshvolume.h"

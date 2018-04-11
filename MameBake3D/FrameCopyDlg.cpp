@@ -1,3 +1,4 @@
+#include "stdafx.h"
 // FrameCopyDlg.cpp : CFrameCopyDlg のインプリメンテーション
 #include "FrameCopyDlg.h"
 #include <Model.h>

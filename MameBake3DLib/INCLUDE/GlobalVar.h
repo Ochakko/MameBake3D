@@ -1,6 +1,19 @@
 #ifndef GLOBALVARH
 #define GLOBALVARH
 
+#include <Windows.h>
+
+
+//class ID3D10DepthStencilState;
+//class ID3D10ShaderResourceView;
+//class ID3D10EffectTechnique;
+//class ID3D10EffectMatrixVariable;
+//class ID3D10EffectVectorVariable;
+//class ID3D10EffectScalarVariable;
+//class ID3D10EffectShaderResourceVariable;
+
+
+
 //#include <d3dx10.h>
 #include <ChaVecCalc.h>
 #include <TexBank.h>

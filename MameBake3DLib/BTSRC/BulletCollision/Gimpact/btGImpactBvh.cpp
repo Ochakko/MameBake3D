@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*! \file gim_box_set.h
 \author Francisco Leon Najera
 */

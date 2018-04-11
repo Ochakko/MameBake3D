@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ImportSTLSetup.h"
 #include <vector>
 #include "../OpenGLWindow/GLInstancingRenderer.h"

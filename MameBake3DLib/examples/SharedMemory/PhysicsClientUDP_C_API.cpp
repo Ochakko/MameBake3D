@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "PhysicsClientUDP_C_API.h"
 #include "PhysicsClientUDP.h"

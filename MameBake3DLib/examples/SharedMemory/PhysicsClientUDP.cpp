@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsClientUDP.h"
 #include <enet/enet.h>
 #include <stdio.h>

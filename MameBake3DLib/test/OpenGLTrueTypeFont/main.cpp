@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Copyright (c) 2012 Advanced Micro Devices, Inc.  
 

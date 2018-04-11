@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 //  Test_v3interp.cpp
 //  BulletTest

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "b3GpuJacobiContactSolver.h"
 #include "Bullet3Collision/NarrowPhaseCollision/b3Contact4.h"

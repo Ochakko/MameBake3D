@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GwenProfileWindow.h"
 #include "gwenUserInterface.h"
 #include "gwenInternalData.h"

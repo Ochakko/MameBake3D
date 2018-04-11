@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /* Copyright (c) 2011 Khaled Mamou (kmamou at gmail dot com)
  All rights reserved.
  

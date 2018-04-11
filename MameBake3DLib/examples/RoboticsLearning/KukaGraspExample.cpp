@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "KukaGraspExample.h"
 #include "../SharedMemory/IKTrajectoryHelper.h"

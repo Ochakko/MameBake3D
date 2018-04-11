@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /// create a bullet btMultiBody model of a tree structured multibody system,
 /// convert that model to a MultiBodyTree model.
 /// Then - run inverse dynamics on random input data (q, u, dot_u) to get forces

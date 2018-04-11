@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifdef _WIN32
 #include "Win32SharedMemory.h"
 #include "Bullet3Common/b3Logging.h"

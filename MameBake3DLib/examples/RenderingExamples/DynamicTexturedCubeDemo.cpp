@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "DynamicTexturedCubeDemo.h"
 #include "Bullet3Common/b3Logging.h"

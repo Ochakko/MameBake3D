@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,9 +102,9 @@ int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int sr
 	newelem->SetPath( srcpath );
 	newelem->SetTransparent( srctransparent );
 	newelem->SetPool( srcpool );
-	if (srccol) {
-		newelem->SetTransCol(*srccol);
-	}
+	//if (srccol) {
+	//	newelem->SetTransCol(*srccol);
+	//}
 	CallF( newelem->CreateTexData( m_pdev ), return 1 );
 
 	m_texmap[ newelem->GetID() ] = newelem;

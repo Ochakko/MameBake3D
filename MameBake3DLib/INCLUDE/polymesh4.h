@@ -1,6 +1,9 @@
 #ifndef POLYMESH4H
 #define POLYMESH4H
 
+//class ID3D10Device;
+
+
 #include <coef.h>
 //#include <D3DX9.h>
 #include <ChaVecCalc.h>

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PosixSharedMemory.h"
 #include "Bullet3Common/b3Logging.h"
 #include "LinearMath/btScalar.h" //for btAssert

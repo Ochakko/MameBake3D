@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 /*! \file gim_tri_collision.h
 \author Francisco Leon Najera

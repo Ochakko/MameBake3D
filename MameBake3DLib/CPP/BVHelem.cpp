@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //#include <stdafx.h> //É_É~Å[
 
 

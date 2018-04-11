@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "IKTrajectoryHelper.h"
 #include "BussIK/Node.h"
 #include "BussIK/Tree.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Bullet Continuous Collision Detection and Physics Library, http://bulletphysics.org
 Copyright (C) 2006 - 2011 Sony Computer Entertainment Inc.

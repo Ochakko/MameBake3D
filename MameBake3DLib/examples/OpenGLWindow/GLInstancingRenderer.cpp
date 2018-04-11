@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifndef NO_OPENGL3
 /*
 Copyright (c) 2012 Advanced Micro Devices, Inc.

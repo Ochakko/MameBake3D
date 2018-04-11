@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 //  Test_quat_aos_neon.cpp
 //  BulletTest

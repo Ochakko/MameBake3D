@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SerializeSetup.h"
 #include "../Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h"
 

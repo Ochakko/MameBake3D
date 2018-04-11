@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsDirectC_API.h"
 
 #include "PhysicsDirect.h"

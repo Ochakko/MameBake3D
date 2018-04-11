@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TimeSeriesFontData.h"
 
 unsigned char sTimeSeriesFontData[] = 

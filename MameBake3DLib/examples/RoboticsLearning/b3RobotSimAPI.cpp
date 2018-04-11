@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3RobotSimAPI.h"
 
 //#include "../CommonInterfaces/CommonGraphicsAppInterface.h"

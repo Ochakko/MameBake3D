@@ -19,8 +19,9 @@ Mac(ちくわ)とBootCampとWindows10 Pro で開発しています。
 このプログラムは外部のライブラリを使用しています。
 Microsoft DirectX SDK (June 2010) (マイクロソフトの3D描画ライブラリ)
 OpenGL(３Ｄ描画ライブラリ(このプログラムではbulletからリンクされている))
-bullet physics(オープンソースの物理演算ライブラリ http://bulletphysics.org/wordpress/)
+bullet physics(AMDのオープンソースの物理演算ライブラリ http://bulletphysics.org/wordpress/)
 FBX SDK 2018.1.1(Autodeskの互換用ファイル操作SDK  http://www.autodesk.com/fbx)
+Intel TBB(Intelのスレッド操作用のライブラリ　https://www.threadingbuildingblocks.org/)
 
 VisualStudioのバージョンは2015 (VC 14)です。
 
@@ -178,6 +179,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2018/04/12_1
+	MameBake3DLibにstdafx.hを導入しました。
+		MameBake3DLibのビルド時の4005番のワーニングがstdafx.cppでしか出なくなりました。
+		MameBake3D本体のほうはstdafx.hの設定をしていないのでプロジェクトの設定で4005番を無視するようにしています。
+
+
 2018/03/29_2
 	制限角度ファイル(fbxファイルと同じディレクトリ内の拡張子がlmtのファイル)を編集しました。
 		ツインテール以外は自由に動くようにしました。

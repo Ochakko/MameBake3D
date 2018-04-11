@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /* server.cpp */
 #include <stdio.h>
 #include <enet/enet.h>

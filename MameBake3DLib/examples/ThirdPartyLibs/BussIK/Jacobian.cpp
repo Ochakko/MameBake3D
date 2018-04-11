@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 *
 * Inverse Kinematics software, with several solvers including

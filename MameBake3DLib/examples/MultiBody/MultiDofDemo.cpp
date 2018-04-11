@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MultiDofDemo.h"
 #include "../OpenGLWindow/SimpleOpenGL3App.h"
 #include "btBulletDynamicsCommon.h"

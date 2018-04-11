@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GraphingTexture.h"
 #include "../OpenGLWindow/OpenGLInclude.h"
 #include <assert.h>

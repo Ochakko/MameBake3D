@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 bParse
 Copyright (c) 2006-2010 Erwin Coumans  http://gamekit.googlecode.com

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #define BLAAT
 #include "RealTimeBullet3CollisionSdk.h"
 #include "Bullet3Common/b3AlignedObjectArray.h"

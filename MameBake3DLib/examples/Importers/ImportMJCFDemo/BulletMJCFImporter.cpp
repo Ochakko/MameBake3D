@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "BulletMJCFImporter.h"
 #include "../../ThirdPartyLibs/tinyxml/tinyxml.h"
 #include "Bullet3Common/b3FileUtils.h"

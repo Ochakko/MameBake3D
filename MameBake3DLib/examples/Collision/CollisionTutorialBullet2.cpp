@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "CollisionTutorialBullet2.h"
 #include "../CommonInterfaces/CommonGraphicsAppInterface.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsLoopBack.h"
 #include "PhysicsServerSharedMemory.h"
 #include "PhysicsClientSharedMemory.h"

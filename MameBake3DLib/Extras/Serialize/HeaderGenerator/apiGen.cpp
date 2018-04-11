@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /* Copyright (C) 2006 Charlie C
 *
 * This software is provided 'as-is', without any express or implied

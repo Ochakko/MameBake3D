@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "SharedMemoryInProcessPhysicsC_API.h"
 #include "../Utils/b3Clock.h"

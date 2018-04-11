@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "PhysicsClientSharedMemory2.h"
 #include "PosixSharedMemory.h"

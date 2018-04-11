@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "btFractureBody.h"
 #include "BulletCollision/CollisionDispatch/btCollisionWorld.h"

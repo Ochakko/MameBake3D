@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ColiIDDlg.h"
 #include "GetDlgParams.h"
 

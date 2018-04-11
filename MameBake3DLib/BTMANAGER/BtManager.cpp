@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "BPWorld.h" // BPWorldを使うため
 #include <cstdio>

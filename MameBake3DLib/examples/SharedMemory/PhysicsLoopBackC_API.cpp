@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsLoopBackC_API.h"
 
 #include "PhysicsLoopBack.h"

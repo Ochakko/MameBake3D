@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "ImportURDFSetup.h"
 #include "BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h"

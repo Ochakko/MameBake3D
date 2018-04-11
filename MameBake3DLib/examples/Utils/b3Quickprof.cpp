@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Copyright (c) 2003-2013 Erwin Coumans  http://bulletphysics.org
 

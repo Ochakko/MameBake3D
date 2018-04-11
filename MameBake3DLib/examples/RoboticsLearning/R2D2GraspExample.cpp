@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "R2D2GraspExample.h"
 

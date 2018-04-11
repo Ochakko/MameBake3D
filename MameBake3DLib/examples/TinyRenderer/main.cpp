@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "OpenGLWindow/SimpleOpenGL3App.h"
 #include "Bullet3Common/b3Quaternion.h"
 #include "Bullet3Common/b3CommandLineArgs.h"

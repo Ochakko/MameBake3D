@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  Copyright (c) 2011-213 Apple Inc. http://bulletphysics.org
 

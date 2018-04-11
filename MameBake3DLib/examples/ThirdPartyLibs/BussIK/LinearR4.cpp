@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 *
 * Mathematics Subpackage (VrMath)

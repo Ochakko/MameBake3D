@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "vec3n.h"
 //#include "console.h"
 

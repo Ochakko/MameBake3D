@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "OpenGLExampleBrowser.h"
 #include "LinearMath/btQuickprof.h"
 #include "../OpenGLWindow/OpenGLInclude.h"

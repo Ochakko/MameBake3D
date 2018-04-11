@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3ResourcePath.h"
 #include "Bullet3Common/b3Logging.h"
 #ifdef __APPLE__

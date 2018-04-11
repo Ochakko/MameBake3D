@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "UnitTest.h"
 #include "Gwen/Controls/TabControl.h"
 #include "Gwen/Controls/RadioButtonController.h"

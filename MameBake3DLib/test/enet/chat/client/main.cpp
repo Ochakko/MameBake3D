@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 /* client.cpp */
 #include <stdio.h>

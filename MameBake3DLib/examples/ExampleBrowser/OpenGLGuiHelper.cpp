@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "OpenGLGuiHelper.h"
 
 #include "btBulletDynamicsCommon.h"

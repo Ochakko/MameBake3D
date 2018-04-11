@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SharedMemoryCommandProcessor.h"
 
 #include "PosixSharedMemory.h"

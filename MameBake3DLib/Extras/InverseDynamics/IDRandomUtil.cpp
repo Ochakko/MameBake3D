@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <cmath>
 #include <cstdlib>
 #include <ctime>

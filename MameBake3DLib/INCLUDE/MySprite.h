@@ -1,6 +1,13 @@
 #ifndef MYSPRITEH
 #define MYSPRITEH
 
+//class ID3D10Device;
+//struct D3D10_BUFFER_DESC;
+//class ID3D10InputLayout;
+//class ID3D10Buffer;//表示用頂点バッファ。
+//class ID3D10Resource;
+//class D3DXCOLOR;
+
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
 #include <Coef.h>
@@ -29,7 +36,7 @@ private:
 	int m_texid;
 	SPRITEV m_v[6];
 
-	D3D10_BUFFER_DESC m_BufferDesc;
+	D3D10_BUFFER_DESC* m_BufferDesc;
 	ID3D10InputLayout* m_layout;
 	ID3D10Buffer* m_VB;//表示用頂点バッファ。
 

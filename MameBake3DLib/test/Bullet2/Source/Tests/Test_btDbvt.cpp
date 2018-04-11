@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 //  Test_btDbvt.cpp
 //  BulletTest

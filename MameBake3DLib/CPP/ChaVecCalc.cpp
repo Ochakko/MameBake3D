@@ -1,5 +1,16 @@
+#include "stdafx.h"
 #include <windows.h>
 #include <math.h>
+
+
+//#ifdef CONVD3DX9
+//#include <d3dcommon.h>
+//#include <dxgi.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3dcompiler.h>
+//#include <d3dx10.h>
+//#endif
 
 #define CHACALCCPP
 #include <ChaVecCalc.h>
@@ -701,6 +712,31 @@ ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, floa
 	_44 = m44;
 
 }
+
+#ifdef CONVD3DX9
+ChaMatrix::ChaMatrix(D3DXMATRIX m) {
+	_11 = m._11;
+	_12 = m._12;
+	_13 = m._13;
+	_14 = m._14;
+
+	_21 = m._21;
+	_22 = m._22;
+	_23 = m._23;
+	_24 = m._24;
+
+	_31 = m._31;
+	_32 = m._32;
+	_33 = m._33;
+	_34 = m._34;
+
+	_41 = m._41;
+	_42 = m._42;
+	_43 = m._43;
+	_44 = m._44;
+};
+#endif
+
 
 ChaMatrix::~ChaMatrix()
 {

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "User2InternalIndex.hpp"
 
 namespace btInverseDynamics {

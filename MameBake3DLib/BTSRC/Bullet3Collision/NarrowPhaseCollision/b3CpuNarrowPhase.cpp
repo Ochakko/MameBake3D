@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3CpuNarrowPhase.h"
 #include "Bullet3Collision/NarrowPhaseCollision/b3ConvexUtility.h"
 #include "Bullet3Collision/NarrowPhaseCollision/b3Config.h"

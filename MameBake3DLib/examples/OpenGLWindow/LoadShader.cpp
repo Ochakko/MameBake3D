@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "LoadShader.h"
 #include "OpenGLInclude.h"
 #include <assert.h>

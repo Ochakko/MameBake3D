@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /// Current makesdna.cpp is a from Blender, but we will completely rewrite it in C++ under a ZLib license
 /// The Original version is at https://svn.blender.org/svnroot/bf-blender/trunk/blender/source/blender/makesdna/intern/makesdna.c
 

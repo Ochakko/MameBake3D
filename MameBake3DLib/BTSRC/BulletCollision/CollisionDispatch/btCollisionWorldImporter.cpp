@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2014 Erwin Coumans  http://bulletphysics.org

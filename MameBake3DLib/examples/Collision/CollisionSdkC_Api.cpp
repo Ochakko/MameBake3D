@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "CollisionSdkC_Api.h"
 #include "Internal/CollisionSdkInterface.h"
 #include "Internal/Bullet2CollisionSdk.h"

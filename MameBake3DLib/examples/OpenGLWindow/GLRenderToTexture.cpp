@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifndef NO_OPENGL3
 
 ///See http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/

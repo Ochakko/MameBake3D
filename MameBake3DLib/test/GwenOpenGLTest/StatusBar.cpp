@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "UnitTest.h"
 #include "Gwen/Controls/StatusBar.h"
 #include "Gwen/Controls/Label.h"

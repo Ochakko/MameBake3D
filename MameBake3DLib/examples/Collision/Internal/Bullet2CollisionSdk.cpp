@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Bullet2CollisionSdk.h"
 #include "btBulletCollisionCommon.h"
 

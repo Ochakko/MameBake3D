@@ -1,6 +1,9 @@
 #ifndef MODELH
 #define MODELH
 
+
+//class ID3D10Device;
+
 //#include <d3dx9.h>
 #include <wchar.h>
 #include <string>

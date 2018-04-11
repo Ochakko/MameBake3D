@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "ChromeTraceUtil.h"
 #include "b3Clock.h"

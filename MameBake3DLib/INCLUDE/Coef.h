@@ -1,12 +1,15 @@
 #ifndef COEFH
 #define		COEFH
 
-#include <d3dcommon.h>
-#include <dxgi.h>
-#include <d3d10_1.h>
-#include <d3d10.h>
-#include <d3dcompiler.h>
-#include <d3dx10.h>
+#include <Windows.h>
+
+//#include <d3dcommon.h>
+//#include <dxgi.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3dcompiler.h>
+//#include <d3dx10.h>
+
 
 #include <usercoef.h>
 

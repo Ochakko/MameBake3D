@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*! \file btGenericPoolAllocator.cpp
 \author Francisco Leon Najera. email projectileman@yahoo.com
 

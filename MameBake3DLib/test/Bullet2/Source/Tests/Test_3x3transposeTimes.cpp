@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 //  Test_3x3transposeTimes.cpp
 //  BulletTest

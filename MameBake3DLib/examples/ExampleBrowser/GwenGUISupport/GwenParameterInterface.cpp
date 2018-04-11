@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GwenParameterInterface.h"
 #include "gwenInternalData.h"
 

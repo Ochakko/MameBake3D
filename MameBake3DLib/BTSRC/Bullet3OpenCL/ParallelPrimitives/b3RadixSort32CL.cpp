@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "b3RadixSort32CL.h"
 #include "b3LauncherCL.h"

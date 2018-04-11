@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * PURPOSE:
  *   Class representing an articulated rigid body. Stores the body's

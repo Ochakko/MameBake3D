@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3CpuRigidBodyPipeline.h"
 
 #include "Bullet3Dynamics/shared/b3IntegrateTransforms.h"

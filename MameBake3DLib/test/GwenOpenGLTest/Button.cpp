@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "UnitTest.h"
 
 using namespace Gwen;

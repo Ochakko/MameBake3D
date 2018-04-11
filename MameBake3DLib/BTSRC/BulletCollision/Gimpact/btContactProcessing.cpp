@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 /*
 This source file is part of GIMPACT Library.

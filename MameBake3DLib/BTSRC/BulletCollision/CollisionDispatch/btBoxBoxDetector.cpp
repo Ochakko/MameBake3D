@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * Box-Box collision detection re-distributed under the ZLib license with permission from Russell L. Smith
  * Original version is from Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.

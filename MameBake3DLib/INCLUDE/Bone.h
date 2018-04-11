@@ -1,6 +1,9 @@
 #ifndef BONEH
 #define BONEH
 
+//class ID3D10Device;
+
+
 //#include <d3dx9.h>
 //#include <quaternion.h>
 

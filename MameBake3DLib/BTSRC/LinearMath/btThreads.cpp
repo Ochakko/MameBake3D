@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Copyright (c) 2003-2014 Erwin Coumans  http://bullet.googlecode.com
 

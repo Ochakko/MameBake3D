@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //*****************************************//
 //  cmidiin.cpp
 //  by Gary Scavone, 2003-2004.

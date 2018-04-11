@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 bool searchIncremental3dSapOnGpu = true;
 #include <limits.h>

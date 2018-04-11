@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GpuConvexScene.h"
 
 #include "GpuRigidBodyDemo.h"

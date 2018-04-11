@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //those header files need to be at the top, because of conflict __global and STL
 
 #include "PairBench.h"

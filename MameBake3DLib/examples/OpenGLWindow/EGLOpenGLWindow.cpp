@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 // portions of this file are copied from GLFW egl_context.c/egl_context.h
 

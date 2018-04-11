@@ -72,8 +72,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -85,8 +84,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;_DEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -94,10 +92,11 @@
       <AdditionalIncludeDirectories>..\..\..\tbb2018\include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <DisableSpecificWarnings>4005;4305;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4305;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,15 +105,14 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\tbb2018\lib\intel64\vc14;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\lib\vs2015\x64\release;..\Glut;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;d3dx9.lib;d3dx10.lib;d3d9.lib;d3d10.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;tbb.lib;tbbmalloc.lib;tbbmalloc_proxy.lib;</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;d3dx9d.lib;d3dx10d.lib;d3d9.lib;d3d10.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;tbb.lib;tbbmalloc.lib;tbbmalloc_proxy.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -130,9 +128,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;NDEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -140,7 +137,7 @@
       <AdditionalIncludeDirectories>..\..\..\tbb2018\include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <DisableSpecificWarnings>4005;4305;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4305;</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -346,6 +343,12 @@
     <ClCompile Include="..\CPP\RigFile.cpp" />
     <ClCompile Include="..\CPP\RigidElem.cpp" />
     <ClCompile Include="..\CPP\RigidElemFile.cpp" />
+    <ClCompile Include="..\CPP\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\CPP\TexBank.cpp" />
     <ClCompile Include="..\CPP\TexElem.cpp" />
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
@@ -605,6 +608,7 @@
     <ClInclude Include="..\INCLUDE\FilterType.h" />
     <ClInclude Include="..\INCLUDE\GColiFile.h" />
     <ClInclude Include="..\INCLUDE\GetMaterial.h" />
+    <ClInclude Include="..\INCLUDE\GlobalVar.h" />
     <ClInclude Include="..\INCLUDE\ImpFile.h" />
     <ClInclude Include="..\INCLUDE\InfBone.h" />
     <ClInclude Include="..\INCLUDE\lmtFile.h" />
@@ -622,6 +626,7 @@
     <ClInclude Include="..\INCLUDE\RigFile.h" />
     <ClInclude Include="..\INCLUDE\RigidElem.h" />
     <ClInclude Include="..\INCLUDE\RigidElemFile.h" />
+    <ClInclude Include="..\INCLUDE\stdafx.h" />
     <ClInclude Include="..\INCLUDE\TexBank.h" />
     <ClInclude Include="..\INCLUDE\TexElem.h" />
     <ClInclude Include="..\INCLUDE\UndoMotion.h" />

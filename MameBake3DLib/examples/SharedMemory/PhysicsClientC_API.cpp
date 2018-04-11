@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsClientC_API.h"
 #include "PhysicsClientSharedMemory.h"
 #include "Bullet3Common/b3Scalar.h"

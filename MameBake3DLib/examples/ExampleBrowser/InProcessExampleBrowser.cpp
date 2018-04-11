@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "InProcessExampleBrowser.h"
 
 //#define EXAMPLE_CONSOLE_ONLY

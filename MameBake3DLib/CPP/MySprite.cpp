@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>
@@ -24,6 +25,16 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+
+
+
+//#include <d3dcommon.h>
+//#include <dxgi.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3dcompiler.h>
+//#include <d3dx10.h>
+
 using namespace std;
 
 /*
@@ -69,7 +80,8 @@ int CMySprite::InitParams()
 	m_pdev = 0;
 	m_texid = -1;
 
-	ZeroMemory(&m_BufferDesc, sizeof(D3D10_BUFFER_DESC));
+	m_BufferDesc = (D3D10_BUFFER_DESC*)malloc(sizeof(D3D10_BUFFER_DESC));
+	ZeroMemory(m_BufferDesc, sizeof(D3D10_BUFFER_DESC));
 	m_layout = 0;
 	m_VB = 0;
 
@@ -106,11 +118,21 @@ int CMySprite::DestroyObjs()
 		m_VB->Release();
 		m_VB = 0;
 	}
+	if (m_BufferDesc) {
+		free(m_BufferDesc);
+		m_BufferDesc = 0;
+	}
+
 	return 0;
 }
 
 int CMySprite::CreateDecl()
 {
+	if (!m_BufferDesc) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	D3D10_INPUT_ELEMENT_DESC decl[] = {
 		//pos[4]
 		{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0 },
@@ -136,18 +158,18 @@ int CMySprite::CreateDecl()
 	}
 
 
-	m_BufferDesc.ByteWidth = 6 * sizeof(SPRITEV);
-	m_BufferDesc.Usage = D3D10_USAGE_DYNAMIC;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	m_BufferDesc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
-	m_BufferDesc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
-	m_BufferDesc.MiscFlags = 0;
+	m_BufferDesc->ByteWidth = 6 * sizeof(SPRITEV);
+	m_BufferDesc->Usage = D3D10_USAGE_DYNAMIC;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	m_BufferDesc->BindFlags = D3D10_BIND_VERTEX_BUFFER;
+	m_BufferDesc->CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+	m_BufferDesc->MiscFlags = 0;
 
 
 	D3D10_SUBRESOURCE_DATA SubData;
 	SubData.pSysMem = m_v;
 	SubData.SysMemPitch = 0;
 	SubData.SysMemSlicePitch = 0;
-	hr = m_pdev->CreateBuffer(&m_BufferDesc, &SubData, &m_VB);
+	hr = m_pdev->CreateBuffer(m_BufferDesc, &SubData, &m_VB);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;

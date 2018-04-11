@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifndef NO_OPENGL3
 
 #include "SimpleOpenGL3App.h"

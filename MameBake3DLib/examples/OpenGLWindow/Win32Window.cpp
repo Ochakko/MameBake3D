@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifdef _WIN32
 /*
 Copyright (c) 2012 Advanced Micro Devices, Inc.  

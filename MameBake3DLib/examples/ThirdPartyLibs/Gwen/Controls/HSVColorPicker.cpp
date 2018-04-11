@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 	GWEN
 	Copyright (c) 2010 Facepunch Studios

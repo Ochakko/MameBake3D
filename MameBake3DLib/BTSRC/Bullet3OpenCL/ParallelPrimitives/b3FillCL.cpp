@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3FillCL.h"
 #include "Bullet3OpenCL/Initialize/b3OpenCLUtils.h"
 #include "b3BufferInfoCL.h"

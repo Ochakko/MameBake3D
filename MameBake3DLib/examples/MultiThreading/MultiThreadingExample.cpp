@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "MultiThreadingExample.h"
 #include "../CommonInterfaces/CommonGraphicsAppInterface.h"

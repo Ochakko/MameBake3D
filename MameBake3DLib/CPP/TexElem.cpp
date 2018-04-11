@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //#include <stdafx.h> //É_É~Å[
 
 #include <stdio.h>
@@ -17,6 +18,15 @@
 
 
 #include <TexElem.h>
+
+//#include <d3dcommon.h>
+//#include <dxgi.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3dcompiler.h>
+//#include <d3dx10.h>
+
+
 
 static int s_alloccnt = 0;
 
@@ -44,7 +54,7 @@ int CTexElem::InitParams()
 	m_orgwidth = 0;
 	m_height = 0;
 	m_width = 0;
-m_transcol = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
+//m_transcol = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
 m_ptex = 0;
 m_ResView = 0;
 return 0;

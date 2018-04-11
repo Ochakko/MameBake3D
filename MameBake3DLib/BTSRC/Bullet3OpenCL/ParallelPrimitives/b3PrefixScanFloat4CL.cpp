@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3PrefixScanFloat4CL.h"
 #include "b3FillCL.h"
 #define B3_PREFIXSCAN_FLOAT4_PROG_PATH "src/Bullet3OpenCL/ParallelPrimitives/kernels/PrefixScanFloat4Kernels.cl"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "b3GpuGridBroadphase.h"
 #include "Bullet3Geometry/b3AabbUtil.h"

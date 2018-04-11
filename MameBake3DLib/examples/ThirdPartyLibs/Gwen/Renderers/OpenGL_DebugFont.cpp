@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "OpenGL_DebugFont.h"
 #include "Gwen/Utility.h"

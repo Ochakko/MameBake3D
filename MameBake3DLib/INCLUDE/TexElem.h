@@ -1,6 +1,11 @@
 #ifndef TEXELEMH
 #define TEXELEMH
 
+//class ID3D10Device;
+//class ID3D10ShaderResourceView;
+//class ID3D10Resource;
+//class D3DXCOLOR;
+
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
 #include <wchar.h>
@@ -58,9 +63,9 @@ public:
 		m_pool = srcval;
 	};
 
-	void SetTransCol( D3DXCOLOR srcval ){
-		m_transcol = srcval;
-	};
+	//void SetTransCol( D3DXCOLOR srcval ){
+	//	m_transcol = srcval;
+	//};
 
 private:
 	int m_id;
@@ -70,7 +75,7 @@ private:
 	int m_pool;
 	int m_orgheight, m_orgwidth;
 	int m_height, m_width;
-	D3DXCOLOR m_transcol;
+	//D3DXCOLOR* m_transcol;
 	ID3D10Resource* m_ptex;
 	ID3D10ShaderResourceView* m_ResView;
 

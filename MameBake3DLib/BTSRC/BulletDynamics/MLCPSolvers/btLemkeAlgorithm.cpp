@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /* Copyright (C) 2004-2013 MBSim Development Team
 
 Code was converted for the Bullet Continuous Collision Detection and Physics Library

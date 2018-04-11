@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "LoadMeshFromObj.h"
 #include"../../ThirdPartyLibs/Wavefront/tiny_obj_loader.h"
 #include "../../OpenGLWindow/GLInstanceGraphicsShape.h"

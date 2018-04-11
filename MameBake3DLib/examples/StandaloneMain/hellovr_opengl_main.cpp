@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifdef BT_ENABLE_VR
 #ifdef BT_USE_CUSTOM_PROFILER
 #endif

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifndef RENDER_INSTANCING_DEMO_H
 #define RENDER_INSTANCING_DEMO_H
 

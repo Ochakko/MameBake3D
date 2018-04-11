@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Copyright (c) 2011 Ole Kniemeyer, MAXON, www.maxon.net
 
@@ -1943,7 +1944,7 @@ class pointCmp
 
 void btConvexHullInternal::compute(const void* coords, bool doubleCoords, int stride, int count)
 {
-	btVector3 min(btScalar(1e30), btScalar(1e30), btScalar(1e30)), max(btScalar(-1e30), btScalar(-1e30), btScalar(-1e30));
+	btVector3 minvec(btScalar(1e30), btScalar(1e30), btScalar(1e30)), maxvec(btScalar(-1e30), btScalar(-1e30), btScalar(-1e30));
 	const char* ptr = (const char*) coords;
 	if (doubleCoords)
 	{
@@ -1952,8 +1953,8 @@ void btConvexHullInternal::compute(const void* coords, bool doubleCoords, int st
 			const double* v = (const double*) ptr;
 			btVector3 p((btScalar) v[0], (btScalar) v[1], (btScalar) v[2]);
 			ptr += stride;
-			min.setMin(p);
-			max.setMax(p);
+			minvec.setMin(p);
+			maxvec.setMax(p);
 		}
 	}
 	else
@@ -1963,12 +1964,12 @@ void btConvexHullInternal::compute(const void* coords, bool doubleCoords, int st
 			const float* v = (const float*) ptr;
 			btVector3 p(v[0], v[1], v[2]);
 			ptr += stride;
-			min.setMin(p);
-			max.setMax(p);
+			minvec.setMin(p);
+			maxvec.setMax(p);
 		}
 	}
 
-	btVector3 s = max - min;
+	btVector3 s = maxvec - minvec;
 	maxAxis = s.maxAxis();
 	minAxis = s.minAxis();
 	if (minAxis == maxAxis)
@@ -1997,7 +1998,7 @@ void btConvexHullInternal::compute(const void* coords, bool doubleCoords, int st
 		s[2] = btScalar(1) / s[2];
 	}
 
-	center = (min + max) * btScalar(0.5);
+	center = (minvec + maxvec) * btScalar(0.5);
 
 	btAlignedObjectArray<Point32> points;
 	points.resize(count);

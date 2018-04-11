@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "RobotLoggingUtil.h"
 #include <stdio.h>
 #include "LinearMath/btAlignedObjectArray.h"

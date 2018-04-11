@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SimpleCamera.h"
 
 #include "Bullet3Common/b3Vector3.h"

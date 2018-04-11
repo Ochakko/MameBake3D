@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MultiBodyConstraintFeedback.h"
 
 #include "BulletDynamics/Featherstone/btMultiBodyLinkCollider.h"

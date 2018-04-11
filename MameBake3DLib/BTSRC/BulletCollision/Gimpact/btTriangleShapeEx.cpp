@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*! \file btGImpactTriangleShape.h
 \author Francisco Leon Najera
 */

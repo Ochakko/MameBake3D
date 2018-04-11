@@ -7,6 +7,9 @@
 #include <map>
 using namespace std;
 
+
+//class ID3D10Device;
+//class D3DXCOLOR;
 class CTexElem;
 
 class CTexBank

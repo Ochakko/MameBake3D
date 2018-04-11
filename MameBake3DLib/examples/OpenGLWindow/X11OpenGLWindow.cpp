@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "X11OpenGLWindow.h"
 #include "OpenGLInclude.h"
 

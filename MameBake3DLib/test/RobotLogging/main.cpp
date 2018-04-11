@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Utils/RobotLoggingUtil.h"
 
 #ifndef ENABLE_GTEST

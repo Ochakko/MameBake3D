@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "CoordinateSystemDemo.h"
 #include "../CommonInterfaces/CommonGraphicsAppInterface.h"

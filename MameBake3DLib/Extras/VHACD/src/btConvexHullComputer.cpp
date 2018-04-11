@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Copyright (c) 2011 Ole Kniemeyer, MAXON, www.maxon.net
 

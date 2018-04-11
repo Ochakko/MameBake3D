@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "BulletDataExtractor.h"
 #include "../BulletFileLoader/btBulletFile.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 bool gUseLargeBatches = false;
 bool gCpuBatchContacts = false;

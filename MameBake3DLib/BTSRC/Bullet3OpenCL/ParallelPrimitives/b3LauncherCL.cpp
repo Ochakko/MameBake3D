@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "b3LauncherCL.h"
 
 bool gDebugLauncherCL = false;

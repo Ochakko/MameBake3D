@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
 Bullet Collision Detection and Physics Library http://bulletphysics.org
 This file is Copyright (c) 2014 Google Inc. 

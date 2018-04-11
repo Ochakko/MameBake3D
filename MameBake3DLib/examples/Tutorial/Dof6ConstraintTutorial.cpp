@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Dof6ConstraintTutorial.h"
 
 #include "btBulletDynamicsCommon.h"

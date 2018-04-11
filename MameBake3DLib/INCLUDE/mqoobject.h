@@ -1,6 +1,8 @@
 #ifndef MQOOBJECTH
 #define MQOOBJECTH
 
+//class ID3D10Device;
+
 #include <stdio.h>
 #include <stdarg.h>
 

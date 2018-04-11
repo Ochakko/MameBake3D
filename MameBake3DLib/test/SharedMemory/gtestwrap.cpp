@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <gtest/gtest.h>
 #include "test.c"
 #include "Bullet3Common/b3Logging.h"

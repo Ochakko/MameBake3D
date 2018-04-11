@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "UrdfParser.h"
 
 #include "../../ThirdPartyLibs/tinyxml/tinyxml.h"

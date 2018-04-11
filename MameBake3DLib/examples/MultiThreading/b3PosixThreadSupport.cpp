@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #ifndef _WIN32
 /*
 Bullet Continuous Collision Detection and Physics Library

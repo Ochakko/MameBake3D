@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TimeSeriesCanvas.h"
 #include "../CommonInterfaces/Common2dCanvasInterface.h"
 #include "LinearMath/btAlignedObjectArray.h"

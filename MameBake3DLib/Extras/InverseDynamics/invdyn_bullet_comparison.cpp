@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "invdyn_bullet_comparison.hpp"
 #include <cmath>
 #include "BulletInverseDynamics/IDConfig.hpp"

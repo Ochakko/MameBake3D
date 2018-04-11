@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "DillCreator.hpp"
 #include <cmath>
 namespace btInverseDynamics {

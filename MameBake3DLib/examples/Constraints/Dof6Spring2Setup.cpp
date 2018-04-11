@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Dof6Spring2Setup.h"
 
 #include "btBulletDynamicsCommon.h"

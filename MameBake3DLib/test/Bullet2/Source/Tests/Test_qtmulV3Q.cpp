@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //
 //  Test_qtmulV3Q.cpp
 //  BulletTest

@@ -3,14 +3,14 @@
 
 
 
-#ifndef COEFH
-#include <d3dcommon.h>
-#include <dxgi.h>
-#include <d3d10_1.h>
-#include <d3d10.h>
-#include <d3dcompiler.h>
-#include <d3dx10.h>
-#endif
+//#ifndef COEFH
+//#include <d3dcommon.h>
+//#include <dxgi.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3dcompiler.h>
+//#include <d3dx10.h>
+//#endif
 
 
 

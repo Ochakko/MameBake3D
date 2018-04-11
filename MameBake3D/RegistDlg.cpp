@@ -1,3 +1,4 @@
+#include "stdafx.h"
 // EditAlpDlg.cpp : CRegistDlg のインプリメンテーション
 //#include "stdafx.h"
 #include "RegistDlg.h"
