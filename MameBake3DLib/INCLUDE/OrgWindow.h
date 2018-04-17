@@ -534,6 +534,7 @@ static void s_dummyfunc();
 			//ウィンドウ表示
 			ShowWindow(hWnd, SW_SHOW);
 
+
 			beginPaint();
 				paintTitleBar();
 			endPaint();
@@ -762,16 +763,36 @@ static void s_dummyfunc();
 		}
 		//	Method : ウィンドウ作成
 		void create(){
-			if( istopmost ){
-				hWnd=CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,szclassName,title,WS_POPUP,
-					pos.x,  pos.y,
-					size.x, size.y,
-					hWndParent,NULL,hInstance,NULL);
-			}else{
-				hWnd=CreateWindowEx(WS_EX_TOOLWINDOW,szclassName,title,WS_POPUP,
-					pos.x,  pos.y,
-					size.x, size.y,
-					hWndParent,NULL,hInstance,NULL);
+			if (hWndParent != NULL) {
+				if (istopmost) {
+					hWnd = CreateWindowEx(//WS_EX_TOOLWINDOW|WS_EX_TOPMOST,szclassName,title,WS_POPUP,
+						WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+						pos.x, pos.y,
+						size.x, size.y,
+						hWndParent, NULL, hInstance, NULL);
+				}
+				else {
+					hWnd = CreateWindowEx(
+						WS_EX_LEFT, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+						pos.x, pos.y,
+						size.x, size.y,
+						hWndParent, NULL, hInstance, NULL);
+				}
+				SetParent(hWnd, hWndParent);
+			}
+			else {
+				if (istopmost) {
+					hWnd = CreateWindowEx(WS_EX_LEFT | WS_EX_TOPMOST,szclassName,title,WS_POPUP,
+						pos.x, pos.y,
+						size.x, size.y,
+						hWndParent, NULL, hInstance, NULL);
+				}
+				else {
+					hWnd = CreateWindowEx(WS_EX_LEFT,szclassName,title,WS_POPUP,
+						pos.x, pos.y,
+						size.x, size.y,
+						hWndParent, NULL, hInstance, NULL);
+				}
 			}
 			hdcM.setHWnd(hWnd);
 

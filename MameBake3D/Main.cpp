@@ -94,6 +94,9 @@ MameBake3Dはデフォルトで相対IKです。
 #include <RigFile.h>
 #include <MotFilter.h>
 
+
+#define WINDOWS_CLASS_NAME TEXT("OchakkoLab.MameBake3D.Window")
+
 typedef struct tag_spaxis
 {
 	CMySprite* sprite;
@@ -222,6 +225,9 @@ extern void DXUTSetOverrideSize(int srcw, int srch);
 ChaMatrix s_selectmat;//for display manipulator
 ChaMatrix s_ikselectmat;//for ik, fk
 
+
+static HWND s_mainhwnd = NULL;
+
 static int s_onragdollik = 0;
 static int s_physicskind = 0;
 
@@ -332,7 +338,7 @@ static int s_curmotmenuindex = -1;
 static int s_curreindex = -1;
 static int s_rgdindex = -1;
 
-static HWND		s_mainwnd = 0;
+static HWND		s_3dwnd = 0;
 static HMENU	s_mainmenu = 0;
 static HMENU	s_animmenu = 0;
 static HMENU	s_morphmenu = 0;
@@ -755,6 +761,12 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_STATIC_NUMTHREAD		62
 
 
+
+
+LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int InitializeMainWindow(CREATESTRUCT* createWindowArgs);
+static HWND CreateMainWindow();
+static HWND Create3DWnd();
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1211,10 +1223,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//DXUTSetHotkeyHandling(true, true, true);
 	//DXUTCreateWindow(L"MameBake3D", 0, 0, s_mainmenu);
 	//DXUTCreateDevice(true, s_mainwidth, s_mainheight);
-	//s_mainwnd = DXUTGetHWND();
-	//_ASSERT(s_mainwnd);
-	//ShowWindow(s_mainwnd, SW_SHOW);
-	//SetWindowPos(s_mainwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE);
+	//s_3dwnd = DXUTGetHWND();
+	//_ASSERT(s_3dwnd);
+	//ShowWindow(s_3dwnd, SW_SHOW);
+	//SetWindowPos(s_3dwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE);
 
 
 	//InitApp();
@@ -1224,11 +1236,19 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//DXUTCreateDevice(true, 640, 480);
 	//DXUTMainLoop(); // Enter into the DXUT render loop
 
+	s_mainhwnd = CreateMainWindow();
+	if (s_mainhwnd == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	hr = DXUTInit( true, true ); // Parse the command line and show msgboxes
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;
 	}
+
 	// Show the cursor and clip it when in full screen
 	//DXUTSetCursorSettings(true, true);
 	DXUTSetCursorSettings(false, false);
@@ -1241,69 +1261,23 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//GetDXUTState().SetOverrideWidth(s_mainwidth);
 	//GetDXUTState().SetOverrideHeight(s_mainwidth);
 
-	HICON appicon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_ICON1));
-	hr = DXUTCreateWindow(L"MameBake3D", 0, appicon, s_mainmenu, 450, 0);
-	if (FAILED(hr)) {
+	CreateUtDialog();
+
+
+	if (!Create3DWnd()) {
 		_ASSERT(0);
 		return 1;
 	}
 
-	s_mainwnd = DXUTGetHWND();
-	_ASSERT(s_mainwnd);
-	RECT clientrect;
-	GetClientRect(s_mainwnd, &clientrect);
-	s_bufwidth = clientrect.right;
-	s_bufheight = clientrect.bottom;
 
-	//int cycaption = GetSystemMetrics(SM_CYCAPTION);
-	//int cymenu = GetSystemMetrics(SM_CYMENU);
-	//int cyborder = GetSystemMetrics(SM_CYBORDER);
-	//int bufwidth = s_mainwidth;
-	//int bufheight = s_mainheight - cycaption - cymenu - cyborder;
-
-	//hr = DXUTCreateDevice(true);//mac + VM Fusionの場合はこっち
-	//hr = DXUTCreateDevice(true, bufwidth, bufheight);
-	hr = DXUTCreateDevice(true, s_mainwidth, s_mainheight);
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_mainwnd = DXUTGetHWND();
-	_ASSERT(s_mainwnd);
-	RECT clientrect2;
-	GetClientRect(s_mainwnd, &clientrect2);
-
-
-	//RECT clientrect;
-	//GetClientRect(s_mainwnd, &clientrect);
-	//s_mainwidth = clientrect.right;
-	//s_mainheight = clientrect.bottom;
-	//ShowWindow( s_mainwnd, SW_SHOW );
-	//SetWindowPos( s_mainwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE ); 
-
-	//animmenu
-	HMENU motmenu;
-	motmenu = GetSubMenu( s_mainmenu, 2 );
-	s_animmenu = GetSubMenu( motmenu, 3 );
-	_ASSERT( s_animmenu );
-
-	HMENU mdlmenu = GetSubMenu( s_mainmenu, 3 );
-	s_modelmenu = GetSubMenu( mdlmenu, 3 );
-	_ASSERT( s_modelmenu );
-
-	//編集メニュー　4
-
-	s_remenu = GetSubMenu( s_mainmenu, 5 );
-	_ASSERT( s_remenu );
-
-	s_rgdmenu = GetSubMenu( s_mainmenu, 6 );
-	_ASSERT( s_rgdmenu );
-
-	s_morphmenu = GetSubMenu( s_mainmenu, 7 );
-	_ASSERT( s_morphmenu );
-
-	s_impmenu = GetSubMenu( s_mainmenu, 8 );
-	_ASSERT( s_impmenu );
+	CreateTimelineWnd();
+	CreateToolWnd();
+	CreateLongTimelineWnd();
+	CreateDmpAnimWnd();
+	CreateRigidWnd();
+	CreateImpulseWnd();
+	CreateGPlaneWnd();
+	CreateLayerWnd();
 
 
 	//CallF( InitializeSdkObjects(), return 1 );
@@ -1326,8 +1300,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	FbxString lExtension = "so";
 #endif
 	s_psdk->LoadPluginsDirectory(lPath.Buffer(), "dll");
-
-
 
 	// Pass control to DXUT for handling the message pump and 
     // dispatching render calls. DXUT will call your FrameMove 
@@ -1400,15 +1372,9 @@ void InitApp()
 	g_nNumActiveLights = 1;
     g_fLightScale = 1.0f;
 
-	CreateUtDialog();
-	CreateTimelineWnd();
-	CreateLongTimelineWnd();
-	CreateDmpAnimWnd();
-	CreateRigidWnd();
-	CreateImpulseWnd();
-	CreateGPlaneWnd();
-	CreateToolWnd();
-	CreateLayerWnd();
+	//CreateUtDialog();
+
+
 //////////
 	ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
 
@@ -3201,10 +3167,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_curboneno = -1;
 
 		s_ikcnt = 0;
-		SetCapture( s_mainwnd );
+		SetCapture( s_3dwnd );
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
-		::ScreenToClient( s_mainwnd, &ptCursor );
+		::ScreenToClient( s_3dwnd, &ptCursor );
 		s_pickinfo.clickpos = ptCursor;
 		s_pickinfo.mousepos = ptCursor;
 		s_pickinfo.mousebefpos = ptCursor;
@@ -3396,7 +3362,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 					POINT ptCursor;
 					GetCursorPos(&ptCursor);
-					::ScreenToClient(s_mainwnd, &ptCursor);
+					::ScreenToClient(s_3dwnd, &ptCursor);
 					s_pickinfo.mousepos = ptCursor;
 
 					ChaVector3 tmpsc;
@@ -3452,7 +3418,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 					POINT ptCursor;
 					GetCursorPos(&ptCursor);
-					::ScreenToClient(s_mainwnd, &ptCursor);
+					::ScreenToClient(s_3dwnd, &ptCursor);
 					s_pickinfo.mousepos = ptCursor;
 
 					ChaVector3 tmpsc;
@@ -3488,7 +3454,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 					POINT ptCursor;
 					GetCursorPos(&ptCursor);
-					::ScreenToClient(s_mainwnd, &ptCursor);
+					::ScreenToClient(s_3dwnd, &ptCursor);
 					s_pickinfo.mousepos = ptCursor;
 
 					ChaVector3 tmpsc;
@@ -3522,7 +3488,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
 			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_mainwnd, &ptCursor);
+			::ScreenToClient(s_3dwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			ChaVector3 cammv;
@@ -3572,7 +3538,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
 			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_mainwnd, &ptCursor);
+			::ScreenToClient(s_3dwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			float roty, rotxz;
@@ -3680,7 +3646,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 			POINT ptCursor;
 			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_mainwnd, &ptCursor);
+			::ScreenToClient(s_3dwnd, &ptCursor);
 			s_pickinfo.mousepos = ptCursor;
 
 			float deltadist = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
@@ -3793,7 +3759,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			break;
 		case SC_MAXIMIZE:
 			DbgOut( L"%f, syscommand maximize\r\n", s_time );
-			DefWindowProc( s_mainwnd, uMsg, wParam, lParam );
+			DefWindowProc( s_3dwnd, uMsg, wParam, lParam );
 			ActivatePanel( 1 );
 			return 1;//!!!!!!!!!!!!!
 			break;
@@ -4894,7 +4860,7 @@ int OpenREFile()
 	}
 
 	if( s_model->GetRigidElemInfoSize() >= (MAXRENUM - 1) ){
-		::MessageBox( s_mainwnd, L"これ以上読み込めません。", L"制限数オーバー(９９個まで)", MB_OK );
+		::MessageBox( s_3dwnd, L"これ以上読み込めません。", L"制限数オーバー(９９個まで)", MB_OK );
 		return 0;
 	}
 
@@ -4922,7 +4888,7 @@ int SaveGcoFile()
 
 	int dlgret;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVEGCODLG ), 
-		s_mainwnd, (DLGPROC)SaveGcoDlgProc );
+		s_3dwnd, (DLGPROC)SaveGcoDlgProc );
 	if( (dlgret != IDOK) || !s_Gconame[0] ){
 		return 0;
 	}
@@ -4944,14 +4910,14 @@ int SaveImpFile()
 		return 0;
 	}
 	if( s_rgdindex < 0 ){
-		::MessageBox( s_mainwnd, L"ラグドール設定のimpulseしか保存できません。\nラグドール設定してから再試行してください。", L"準備エラー", MB_OK );
+		::MessageBox( s_3dwnd, L"ラグドール設定のimpulseしか保存できません。\nラグドール設定してから再試行してください。", L"準備エラー", MB_OK );
 		return 0;
 	}
 
 
 	int dlgret;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVEIMPDLG ), 
-		s_mainwnd, (DLGPROC)SaveImpDlgProc );
+		s_3dwnd, (DLGPROC)SaveImpDlgProc );
 	if( (dlgret != IDOK) || !s_Impname[0] ){
 		return 0;
 	}
@@ -4982,7 +4948,7 @@ int SaveREFile()
 
 	int dlgret;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVEREDLG ), 
-		s_mainwnd, (DLGPROC)SaveREDlgProc );
+		s_3dwnd, (DLGPROC)SaveREDlgProc );
 	if( (dlgret != IDOK) || !s_REname[0] ){
 		return 0;
 	}
@@ -5000,7 +4966,7 @@ int BVH2FBX()
 	int dlgret;
 	s_filterindex = 5;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
-		s_mainwnd, (DLGPROC)OpenMqoDlgProc );
+		s_3dwnd, (DLGPROC)OpenMqoDlgProc );
 	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
 		return 0;
 	}
@@ -5014,7 +4980,7 @@ int BVH2FBX()
 	//bvhファイルを読み込む
 	CBVHFile bvhfile;
 	int ret;
-	ret = bvhfile.LoadBVHFile( s_mainwnd, g_tmpmqopath, g_tmpmqomult );
+	ret = bvhfile.LoadBVHFile( s_3dwnd, g_tmpmqopath, g_tmpmqomult );
 	if( ret ){
 		_ASSERT( 0 );
 		return 1;
@@ -5036,7 +5002,7 @@ int OpenFile()
 	int dlgret;
 	s_filterindex = 1;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
-		s_mainwnd, (DLGPROC)OpenMqoDlgProc );
+		s_3dwnd, (DLGPROC)OpenMqoDlgProc );
 	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
 		return 0;
 	}
@@ -5248,7 +5214,7 @@ CModel* OpenFBXFile( int skipdefref )
 
 	//int dlgret;
 	//dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CHECKAXISTYPE),
-	//	s_mainwnd, (DLGPROC)CheckAxisTypeProc);
+	//	s_3dwnd, (DLGPROC)CheckAxisTypeProc);
 	//if (dlgret != IDOK){
 	//	return 0;
 	//}
@@ -5422,7 +5388,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	OnRgdMorphMenu( 0 );
 
-//	SetCapture( s_mainwnd );
+//	SetCapture( s_3dwnd );
 
 	s_curmotid = s_model->GetCurMotInfo()->motid;
 
@@ -5949,7 +5915,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 {
 	int motnum = (int)s_tlarray.size();
 	if( motnum >= MAXMOTIONNUM ){
-		MessageBox( s_mainwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
+		MessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
 		return 0;
 	}
 
@@ -7195,6 +7161,10 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 void ActivatePanel( int state )
 {
+	if (!s_timelineWnd || !s_toolWnd || !s_layerWnd || !s_modelpanel.panel)
+		return;
+
+
 	if( state == 1 ){
 		if( s_dispmw ){
 			s_timelineWnd->setVisible( false );
@@ -7263,7 +7233,7 @@ int CreateModelPanel()
 	swprintf_s( clsname, 256, L"ModelPanel%d", classcnt );
 
 	s_modelpanel.panel = new OrgWindow(
-		1,
+		0,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(900, 0),		//位置
@@ -8463,7 +8433,7 @@ int SaveProject()
 
 	int dlgret;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVECHADLG ), 
-		s_mainwnd, (DLGPROC)SaveChaDlgProc );
+		s_3dwnd, (DLGPROC)SaveChaDlgProc );
 	if( (dlgret != IDOK) || !s_projectname[0] || !s_projectdir[0] ){
 		return 0;
 	}
@@ -8524,7 +8494,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						IMalloc *pMalloc;
 						SHGetMalloc( &pMalloc );
 
-						if( SUCCEEDED(SHGetSpecialFolderLocation( s_mainwnd, CSIDL_DESKTOPDIRECTORY, &pidl )) )
+						if( SUCCEEDED(SHGetSpecialFolderLocation( s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl )) )
 						{ 
 							// パスに変換する
 							SHGetPathFromIDList( pidl, s_projectdir );
@@ -9024,7 +8994,7 @@ int SetSelectState()
 	ZeroMemory( &pickinfo, sizeof( PICKINFO ) );
 	POINT ptCursor;
 	GetCursorPos( &ptCursor );
-	::ScreenToClient( s_mainwnd, &ptCursor );
+	::ScreenToClient( s_3dwnd, &ptCursor );
 	pickinfo.clickpos = ptCursor;
 	pickinfo.mousepos = ptCursor;
 	pickinfo.mousebefpos = ptCursor;
@@ -9367,7 +9337,7 @@ int ExportFBXFile()
 	WCHAR filename[MAX_PATH]={0L};
 	OPENFILENAME ofn1;
 	ofn1.lStructSize = sizeof(OPENFILENAME);
-	ofn1.hwndOwner = s_mainwnd;
+	ofn1.hwndOwner = s_3dwnd;
 	ofn1.hInstance = 0;
 	ofn1.lpstrFilter = L"FBX file(*.fbx)\0";
 	ofn1.lpstrCustomFilter = NULL;
@@ -9457,7 +9427,7 @@ int ExportBntFile()
 	WCHAR filename[MAX_PATH]={0L};
 	OPENFILENAME ofn1;
 	ofn1.lStructSize = sizeof(OPENFILENAME);
-	ofn1.hwndOwner = s_mainwnd;
+	ofn1.hwndOwner = s_3dwnd;
 	ofn1.hInstance = 0;
 	ofn1.lpstrFilter = L"BNT file(*.bnt)\0";
 	ofn1.lpstrCustomFilter = NULL;
@@ -9602,7 +9572,7 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 int RecalcBoneAxisX(CBone* srcbone)
 {
 	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)){
-		::MessageBox(s_mainwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
 		return 0;
 	}
 
@@ -9630,7 +9600,7 @@ int DispAngleLimitDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_mainwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
 		return 0;
 	}
 
@@ -9640,12 +9610,12 @@ int DispAngleLimitDlg()
 	/*
 	int dlgret;
 	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG),
-		s_mainwnd, (DLGPROC)AngleLimitDlgProc);
+		s_3dwnd, (DLGPROC)AngleLimitDlgProc);
 	if (dlgret != IDOK){
 		return 0;
 	}
 	*/
-	s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_mainwnd, (DLGPROC)AngleLimitDlgProc);
+	s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_3dwnd, (DLGPROC)AngleLimitDlgProc);
 	if (!s_anglelimitdlg){
 		_ASSERT(0);
 		return 1;
@@ -9897,12 +9867,12 @@ int DispRotAxisDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_mainwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
 		return 0;
 	}
 
 
-	s_rotaxisdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ROTAXISDLG), s_mainwnd, (DLGPROC)RotAxisDlgProc);
+	s_rotaxisdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ROTAXISDLG), s_3dwnd, (DLGPROC)RotAxisDlgProc);
 	if (!s_rotaxisdlg){
 		_ASSERT(0);
 		return 1;
@@ -10433,7 +10403,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
 		GetCursorPos(&ptCursor);
-		::ScreenToClient(s_mainwnd, &ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
 		s_pickinfo.mousepos = ptCursor;
 
 		ChaVector3 tmpsc;
@@ -10884,7 +10854,7 @@ int OnFrameToolWnd()
 		if (s_model && s_model->GetCurMotInfo()){
 			int dlgret;
 			dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_MOTPROPDLG),
-				s_mainwnd, (DLGPROC)MotPropDlgProc);
+				s_3dwnd, (DLGPROC)MotPropDlgProc);
 			if ((dlgret == IDOK) && s_tmpmotname[0]){
 				WideCharToMultiByte(CP_ACP, 0, s_tmpmotname, -1, s_model->GetCurMotInfo()->motname, 256, NULL, NULL);
 				//s_model->m_curmotinfo->frameleng = s_tmpmotframeleng;
@@ -10945,7 +10915,7 @@ int OnFrameToolWnd()
 					}
 				}
 				else{
-					::MessageBox(s_mainwnd, L"フレーム範囲を指定してから再試行してください。", L"選択エラー", MB_OK);
+					::MessageBox(s_3dwnd, L"フレーム範囲を指定してから再試行してください。", L"選択エラー", MB_OK);
 				}
 			}
 		}
@@ -11491,14 +11461,15 @@ int CreateTimelineWnd()
 		0,
 		L"TimeLine",				//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(50, 0),		//位置
-		WindowSize(400, 630),	//サイズ
+		WindowPos(0, 0),		//位置
+		WindowSize(400, 620),	//サイズ
 		//WindowSize(150,540),	//サイズ
 		L"TimeLine",				//タイトル
-		s_mainwnd,					//親ウィンドウハンドル
+		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
 		70, 50, 70);				//カラー
 
+	s_timelineWnd->callRewrite();
 
 	// ウィンドウの閉じるボタンのイベントリスナーに
 	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
@@ -11553,12 +11524,14 @@ int CreateLongTimelineWnd()
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos( 250, 825 ),		//位置
 		//WindowPos(200, 645),		//位置
-		WindowPos(200, 660),		//位置
-		WindowSize(1050, 120),	//サイズ
+		WindowPos(150, 620),		//位置
+		WindowSize(1070, 170),	//サイズ
 		L"EditRangeTimeLine",				//タイトル
-		s_mainwnd,					//親ウィンドウハンドル
+		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
 		70, 50, 70);				//カラー
+
+	s_LtimelineWnd->callRewrite();
 
 	/////////
 	s_owpPlayerButton = new OWP_PlayerButton;
@@ -11601,63 +11574,65 @@ int CreateLongTimelineWnd()
 	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
 	s_LtimelineWnd->setCloseListener([](){ s_LcloseFlag = true; });
 	s_LtimelineWnd->setLUpListener([](){
-		if (g_previewFlag == 0){
-			if (s_prevrangeFlag || s_nextrangeFlag){
-				RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
-				s_buttonselectstart = s_editrange.GetStartFrame();
-				s_buttonselectend = s_editrange.GetEndFrame();
+		if (s_owpLTimeline) {
+			if (g_previewFlag == 0) {
+				if (s_prevrangeFlag || s_nextrangeFlag) {
+					RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
+					s_buttonselectstart = s_editrange.GetStartFrame();
+					s_buttonselectend = s_editrange.GetEndFrame();
 
-				s_underselectingframe = 0;
-				OnTimeLineButtonSelectFromSelectStartEnd(0);
-			}
-			else if (g_selecttolastFlag == false){
+					s_underselectingframe = 0;
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+				}
+				else if (g_selecttolastFlag == false) {
 
-				if (!s_LstopFlag) {
-					if (s_selectFlag) {
-						s_selectFlag = false;
-						s_selectKeyInfoList.clear();
-						s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
-						s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+					if (!s_LstopFlag) {
+						if (s_selectFlag) {
+							s_selectFlag = false;
+							s_selectKeyInfoList.clear();
+							s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
+							s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+							s_buttonselectstart = s_editrange.GetStartFrame();
+							s_buttonselectend = s_editrange.GetEndFrame();
+							s_underselectingframe = 0;
+							//_ASSERT(0);
+						}
+						else {
+							s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+							s_buttonselectend = s_owpLTimeline->getCurrentTime();
+							s_underselectingframe = 0;
+							//_ASSERT(0);
+						}
+						OnTimeLineButtonSelectFromSelectStartEnd(0);
+					}
+					else {
+						//停止ボタンが押されたとき
+						//_ASSERT(0);
 						s_buttonselectstart = s_editrange.GetStartFrame();
 						s_buttonselectend = s_editrange.GetEndFrame();
 						s_underselectingframe = 0;
 						//_ASSERT(0);
-					}
-					else {
-						s_buttonselectstart = s_owpLTimeline->getCurrentTime();
-						s_buttonselectend = s_owpLTimeline->getCurrentTime();
-						s_underselectingframe = 0;
+						OnTimeLineButtonSelectFromSelectStartEnd(0);
 						//_ASSERT(0);
 					}
-					OnTimeLineButtonSelectFromSelectStartEnd(0);
+
 				}
 				else {
-					//停止ボタンが押されたとき
-					//_ASSERT(0);
-					s_buttonselectstart = s_editrange.GetStartFrame();
-					s_buttonselectend = s_editrange.GetEndFrame();
-					s_underselectingframe = 0;
-					//_ASSERT(0);
-					OnTimeLineButtonSelectFromSelectStartEnd(0);
-					//_ASSERT(0);
+					//ToTheLastFrame
+					OnTimeLineButtonSelectFromSelectStartEnd(1);
 				}
+			}
+			else {
+				//再生ボタンが押されたとき
+				//_ASSERT(0);
+				s_buttonselectstart = s_editrange.GetStartFrame();
+				s_buttonselectend = s_editrange.GetEndFrame();
+				s_underselectingframe = 0;
+				//_ASSERT(0);
+
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
 
 			}
-			else{
-				//ToTheLastFrame
-				OnTimeLineButtonSelectFromSelectStartEnd(1);
-			}
-		}
-		else {
-			//再生ボタンが押されたとき
-			//_ASSERT(0);
-			s_buttonselectstart = s_editrange.GetStartFrame();
-			s_buttonselectend = s_editrange.GetEndFrame();
-			s_underselectingframe = 0;
-			//_ASSERT(0);
-
-			OnTimeLineButtonSelectFromSelectStartEnd(0);
-
 		}
 
 		s_LstartFlag = false;
@@ -11677,14 +11652,14 @@ int CreateDmpAnimWnd()
 
 	/////////
 	s_dmpanimWnd = new OrgWindow(
-		1,
+		0,
 		_T("dampAnimWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(0, 400),		//位置
 		//WindowSize(450,880),		//サイズ
 		WindowSize(500, 120),		//サイズ
 		_T("減衰率アニメウィンドウ"),	//タイトル
-		s_mainwnd,	//親ウィンドウハンドル
+		NULL,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
@@ -11753,7 +11728,7 @@ int CreateRigidWnd()
 
 	/////////
 	s_rigidWnd = new OrgWindow(
-		1,
+		0,
 		_T("RigidWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(100, 200),		//位置
@@ -11762,7 +11737,7 @@ int CreateRigidWnd()
 		//WindowSize(450, 760),		//サイズ
 		WindowSize(450, 780),		//サイズ
 		_T("剛体設定ウィンドウ"),	//タイトル
-		s_mainwnd,	//親ウィンドウハンドル
+		NULL,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
@@ -12211,14 +12186,14 @@ int CreateImpulseWnd()
 
 	//////////
 	s_impWnd = new OrgWindow(
-		1,
+		0,
 		_T("ImpulseWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(400, 400),		//位置
 		WindowSize(400, 200),		//サイズ
 		//WindowSize(200,110),		//サイズ
 		_T("剛体ウィンドウ"),	//タイトル
-		s_mainwnd,	//親ウィンドウハンドル
+		NULL,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
@@ -12309,7 +12284,7 @@ int CreateGPlaneWnd()
 
 	//////////
 	s_gpWnd = new OrgWindow(
-		1,
+		0,
 		_T("GPlaneWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos(400, 645),		//位置
@@ -12317,7 +12292,7 @@ int CreateGPlaneWnd()
 		WindowSize(400, 320),		//サイズ
 		//WindowSize(200,110),		//サイズ
 		_T("物理地面ウィンドウ"),	//タイトル
-		s_mainwnd,	//親ウィンドウハンドル
+		NULL,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
@@ -12425,19 +12400,23 @@ int CreateToolWnd()
 	/////////
 	// ツールウィンドウを作成してボタン類を追加
 	s_toolWnd = new OrgWindow(
-		1,
-		_T("ToolWindow"),		//ウィンドウクラス名
+		0,
+		_T("ToolWindow_"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos(400, 580),		//位置
 		//WindowPos(50, 645),		//位置
-		WindowPos(50, 660),		//位置
-		WindowSize(150, 10),		//サイズ
+		WindowPos(0, 620),		//位置
+		WindowSize(150, 170),		//サイズ
 		_T("ツールウィンドウ"),	//タイトル
-		s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
+		//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
+		s_mainhwnd,
 		true,					//表示・非表示状態
-		70, 50, 70,				//カラー
-		true,					//閉じられるか否か
-		false);					//サイズ変更の可否
+		70, 50, 70);// ,				//カラー
+	//	true);// ,					//閉じられるか否か
+	//	false);					//サイズ変更の可否
+
+	s_toolWnd->callRewrite();
+
 
 	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン"));
 	s_toolCopyB = new OWP_Button(_T("コピー"));
@@ -12472,6 +12451,8 @@ int CreateToolWnd()
 	s_toolFilterB->setButtonListener([](){ s_filterFlag = true; });
 	s_toolInterpolateB->setButtonListener([](){ s_interpolateFlag = true; });
 
+
+
 	return 0;
 
 }
@@ -12481,7 +12462,7 @@ int CreateLayerWnd()
 	////
 	// ウィンドウを作成
 	s_layerWnd = new OrgWindow(
-		1,
+		0,
 		_T("LayerTool"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos(800, 500),		//位置
@@ -12747,7 +12728,7 @@ int InitMpFromTool()
 
 
 	HWND parwnd;
-	parwnd = s_mainwnd;
+	parwnd = s_3dwnd;
 
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
@@ -12931,14 +12912,14 @@ int DispCustomRigDlg(int rigno)
 		return 0;
 	}
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_mainwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
 		return 0;
 	}
 
 	Bone2CustomRig(rigno);
 
 	if (!s_customrigdlg){
-		s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_mainwnd, (DLGPROC)CustomRigDlgProc);
+		s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_3dwnd, (DLGPROC)CustomRigDlgProc);
 		if (!s_customrigdlg){
 			_ASSERT(0);
 			return 1;
@@ -13004,7 +12985,7 @@ int CustomRig2Bone()
 	if (s_customrigbone){
 		int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 		if (isvalid == 0){
-			::MessageBox(s_mainwnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
+			::MessageBox(s_3dwnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
 			return 0;
 		}
 		s_customrigbone->SetCustomRig(s_customrig);
@@ -13376,10 +13357,10 @@ int BoneRClick(int srcboneno)
 
 	if (srcboneno < 0){
 		s_ikcnt = 0;
-		//SetCapture(s_mainwnd);
+		//SetCapture(s_3dwnd);
 		POINT ptCursor;
 		GetCursorPos(&ptCursor);
-		::ScreenToClient(s_mainwnd, &ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
 		s_pickinfo.clickpos = ptCursor;
 		s_pickinfo.mousepos = ptCursor;
 		s_pickinfo.mousebefpos = ptCursor;
@@ -13409,7 +13390,7 @@ int BoneRClick(int srcboneno)
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
 			if (curbone){
 				HWND parwnd;
-				parwnd = s_mainwnd;
+				parwnd = s_3dwnd;
 
 				CRMenuMain* rmenu;
 				rmenu = new CRMenuMain(IDR_RMENU);
@@ -13743,7 +13724,7 @@ int GetSymRootMode()
 		return 0;
 	}
 	int ret;
-	ret = rmenu->Create(s_mainwnd);
+	ret = rmenu->Create(s_3dwnd);
 	if (ret){
 		return 0;
 	}
@@ -14040,3 +14021,169 @@ int OnTimeLineWheel()
 	return 0;
 }
 
+
+
+int InitializeMainWindow(CREATESTRUCT* createWindowArgs)
+{
+	//TCHAR message[1024];
+	//int messageResult;
+	//wsprintf(message,
+	//	TEXT("ウィンドウクラス:%s\nタイトル:%s\nウィンドウを生成しますか？"),
+	//	createWindowArgs->lpszClass, createWindowArgs->lpszName
+	//);
+
+	//messageResult = MessageBox(NULL, message, TEXT("確認"), MB_YESNO | MB_ICONINFORMATION);
+
+	//if (messageResult == IDNO)
+	//	return -1;
+	return 0;
+}
+
+LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	case WM_CREATE:
+		return InitializeMainWindow((CREATESTRUCT*)lParam);
+	default:
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	}
+
+	return 0;
+}
+
+HWND CreateMainWindow()
+{
+	s_mainhwnd = NULL;
+
+
+	HWND window;
+	WNDCLASSEX wcx;
+	int returnCode = 0;
+
+	wcx.cbSize = sizeof(WNDCLASSEX);
+	wcx.style = CS_HREDRAW | CS_VREDRAW;
+	wcx.lpfnWndProc = MainWindowProc;
+	wcx.cbClsExtra = 0;
+	wcx.cbWndExtra = 0;
+	wcx.hInstance = (HINSTANCE)GetModuleHandle(NULL);
+	wcx.hIcon = NULL;
+	wcx.hCursor = NULL;
+	wcx.hbrBackground = (HBRUSH)COLOR_BACKGROUND + 1;
+	wcx.lpszMenuName = NULL;
+	wcx.lpszClassName = WINDOWS_CLASS_NAME;
+	wcx.hIconSm = NULL;
+
+	if (!RegisterClassEx(&wcx))
+	{
+		OutputDebugString(TEXT("Error: ウィンドウクラスの登録ができません。\n"));
+		return NULL;
+	}
+
+	window = CreateWindowEx(
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("Window Title"),
+		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		0, 0, 1240, 830,
+		NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), NULL
+	);
+	if (!window)
+	{
+		OutputDebugString(TEXT("Error: ウィンドウが作成できません。\n"));
+		return NULL;
+	}
+
+	s_mainhwnd = window;
+	return window;
+
+}
+
+HWND Create3DWnd()
+{
+	HRESULT hr;
+
+	HICON appicon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_ICON1));
+	hr = DXUTCreateWindow(L"MameBake3D", 0, appicon, s_mainmenu, 450, 0);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	s_3dwnd = DXUTGetHWND();
+	_ASSERT(s_3dwnd);
+	RECT clientrect;
+	GetClientRect(s_3dwnd, &clientrect);
+	s_bufwidth = clientrect.right;
+	s_bufheight = clientrect.bottom;
+
+
+	SetParent(s_3dwnd, s_mainhwnd);
+
+
+	//int cycaption = GetSystemMetrics(SM_CYCAPTION);
+	//int cymenu = GetSystemMetrics(SM_CYMENU);
+	//int cyborder = GetSystemMetrics(SM_CYBORDER);
+	//int bufwidth = s_mainwidth;
+	//int bufheight = s_mainheight - cycaption - cymenu - cyborder;
+
+	//hr = DXUTCreateDevice(true);//mac + VM Fusionの場合はこっち
+	//hr = DXUTCreateDevice(true, bufwidth, bufheight);
+	hr = DXUTCreateDevice(true, s_mainwidth, s_mainheight);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 0;
+	}
+	s_3dwnd = DXUTGetHWND();
+	_ASSERT(s_3dwnd);
+	RECT clientrect2;
+	GetClientRect(s_3dwnd, &clientrect2);
+
+
+	//RECT clientrect;
+	//GetClientRect(s_3dwnd, &clientrect);
+	//s_mainwidth = clientrect.right;
+	//s_mainheight = clientrect.bottom;
+	//ShowWindow( s_3dwnd, SW_SHOW );
+	//SetWindowPos( s_3dwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE ); 
+
+	//animmenu
+	HMENU motmenu;
+	motmenu = GetSubMenu(s_mainmenu, 2);
+	s_animmenu = GetSubMenu(motmenu, 3);
+	_ASSERT(s_animmenu);
+
+	HMENU mdlmenu = GetSubMenu(s_mainmenu, 3);
+	s_modelmenu = GetSubMenu(mdlmenu, 3);
+	_ASSERT(s_modelmenu);
+
+	//編集メニュー　4
+
+	s_remenu = GetSubMenu(s_mainmenu, 5);
+	_ASSERT(s_remenu);
+
+	s_rgdmenu = GetSubMenu(s_mainmenu, 6);
+	_ASSERT(s_rgdmenu);
+
+	s_morphmenu = GetSubMenu(s_mainmenu, 7);
+	_ASSERT(s_morphmenu);
+
+	s_impmenu = GetSubMenu(s_mainmenu, 8);
+	_ASSERT(s_impmenu);
+
+	RECT winrect;
+	::GetWindowRect(s_3dwnd, &winrect);
+	::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
+
+
+
+	//最大化してから元に戻すことにより
+	//バックバッファの大きさ問題（メニューやキャプションがあるときのずれ）が解消される。
+	::ShowWindow(s_3dwnd, SW_MAXIMIZE);
+	::ShowWindow(s_3dwnd, SW_SHOWNORMAL);
+
+
+	return s_3dwnd;
+}
