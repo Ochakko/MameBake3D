@@ -1204,11 +1204,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//IsRegist();
 
 
-	s_mainmenu = LoadMenuW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDR_MENU1 ) );
-	if( s_mainmenu == NULL ){
-		_ASSERT( 0 );
-		return 1;
-	}
 
 
 
@@ -11409,7 +11404,7 @@ int CreateUtDialog()
 
 	//Right Bottom
 	iY = s_mainheight - 210;
-	startx = s_mainwidth - 120;
+	startx = s_mainwidth - 150;
 
 	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
 	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
@@ -11462,7 +11457,7 @@ int CreateTimelineWnd()
 		L"TimeLine",				//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(0, 0),		//位置
-		WindowSize(400, 620),	//サイズ
+		WindowSize(400, 600),	//サイズ
 		//WindowSize(150,540),	//サイズ
 		L"TimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
@@ -11524,8 +11519,8 @@ int CreateLongTimelineWnd()
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos( 250, 825 ),		//位置
 		//WindowPos(200, 645),		//位置
-		WindowPos(150, 620),		//位置
-		WindowSize(1070, 170),	//サイズ
+		WindowPos(150, 600),		//位置
+		WindowSize(1050, 170),	//サイズ
 		L"EditRangeTimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
@@ -12405,7 +12400,7 @@ int CreateToolWnd()
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos(400, 580),		//位置
 		//WindowPos(50, 645),		//位置
-		WindowPos(0, 620),		//位置
+		WindowPos(0, 600),		//位置
 		WindowSize(150, 170),		//サイズ
 		_T("ツールウィンドウ"),	//タイトル
 		//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
@@ -14041,13 +14036,193 @@ int InitializeMainWindow(CREATESTRUCT* createWindowArgs)
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	WORD menuid;
+	menuid = LOWORD(wParam);
+
+
 	switch (uMsg)
 	{
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
+		break;
 	case WM_CREATE:
 		return InitializeMainWindow((CREATESTRUCT*)lParam);
+		break;
+	case WM_COMMAND:
+	{
+		if ((menuid >= 59900) && (menuid <= (59900 + MAXMOTIONNUM))) {
+			ActivatePanel(0);
+			int selindex = menuid - 59900;
+			OnAnimMenu(selindex);
+			ActivatePanel(1);
+			return 0;
+		}
+		else if ((menuid >= 61000) && (menuid <= (61000 + MAXMODELNUM))) {
+			ActivatePanel(0);
+			int selindex = menuid - 61000;
+			OnModelMenu(selindex, 1);
+			ActivatePanel(1);
+			return 0;
+		}
+		else if ((menuid >= 62000) && (menuid <= (62000 + MAXRENUM))) {
+			ActivatePanel(0);
+			int selindex = menuid - 62000;
+			OnREMenu(selindex, 1);
+			ActivatePanel(1);
+			return 0;
+		}
+		else if ((menuid >= 63000) && (menuid <= (63000 + MAXRENUM))) {
+			ActivatePanel(0);
+			int selindex = menuid - 63000;
+			OnRgdMenu(selindex, 1);
+			ActivatePanel(1);
+			return 0;
+		}
+		else if ((menuid >= 64000) && (menuid <= (64000 + MAXMOTIONNUM))) {
+			ActivatePanel(0);
+			int selindex = menuid - 64000;
+			OnRgdMorphMenu(selindex);
+			ActivatePanel(1);
+			return 0;
+		}
+		else if ((menuid >= 64500) && (menuid <= (64500 + MAXMOTIONNUM))) {
+			ActivatePanel(0);
+			int selindex = menuid - 64500;
+			OnImpMenu(selindex);
+			ActivatePanel(1);
+			return 0;
+		}
+		else {
+			switch (menuid) {
+			case ID_40047:
+				// "編集・変換"
+				// "ボーン軸をZに再計算"
+				ActivatePanel(0);
+				RecalcBoneAxisX(0);
+				ActivatePanel(1);
+				return 0;
+				break;
+			case 55544:
+				ActivatePanel(0);
+				RegistKey();
+				ActivatePanel(1);
+				return 0;
+				break;
+			case ID_FILE_EXPORTBNT:
+				ActivatePanel(0);
+				ExportBntFile();
+				ActivatePanel(1);
+				return 0;
+				break;
+			case ID_FILE_OPEN40001:
+				ActivatePanel(0);
+				OpenFile();
+				ActivatePanel(1);
+				return 0;
+				break;
+			case ID_FILE_BVH2FBX:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					BVH2FBX();
+					ActivatePanel(1);
+				}
+				return 0;
+				break;
+			case ID_SAVE_FBX40039:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					ExportFBXFile();
+					ActivatePanel(1);
+				}
+				break;
+			case ID_SAVEPROJ_40035:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					SaveProject();
+					ActivatePanel(1);
+				}
+				break;
+			case ID_RESAVE_40028:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					SaveREFile();
+					ActivatePanel(1);
+				}
+				return 0;
+				break;
+			case ID_IMPSAVE_40030:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					SaveImpFile();
+					ActivatePanel(1);
+				}
+				return 0;
+				break;
+			case ID_SAVEGCOLI_40033:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					SaveGcoFile();
+					ActivatePanel(1);
+				}
+				return 0;
+				break;
+			case ID_DISPMW40002:
+				DispMotionWindow();
+				return 0;
+				break;
+			case 4007:
+				DispToolWindow();
+				return 0;
+				break;
+			case 40012:
+				DispObjPanel();
+				return 0;
+				break;
+			case ID_40048:
+				DispConvBoneWindow();
+				return 0;
+				break;
+			case ID_40049:
+				DispAngleLimitDlg();
+				return 0;
+				break;
+			case ID_40050:
+				DispRotAxisDlg();
+				return 0;
+				break;
+			case ID_DISPMODELPANEL:
+				DispModelPanel();
+				return 0;
+				break;
+			case ID_DISPGROUND:
+				s_dispground = !s_dispground;
+				return 0;
+				break;
+			case ID_NEWMOT:
+				AddMotion(0);
+				InitCurMotion(0, 0);
+				return 0;
+				break;
+			case ID_DELCURMOT:
+				OnDelMotion(s_curmotmenuindex);
+				return 0;
+				break;
+			case ID_DELMODEL:
+				OnDelModel(s_curmodelmenuindex);
+				return 0;
+				break;
+			case ID_DELALLMODEL:
+				OnDelAllModel();
+				return 0;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+		break;
+
 	default:
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
@@ -14083,12 +14258,47 @@ HWND CreateMainWindow()
 		return NULL;
 	}
 
+	HICON appicon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_ICON1));
+
+	s_mainmenu = LoadMenuW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU1));
+	if (s_mainmenu == NULL) {
+		_ASSERT(0);
+		return NULL;
+	}
+
+	//animmenu
+	HMENU motmenu;
+	motmenu = GetSubMenu(s_mainmenu, 2);
+	s_animmenu = GetSubMenu(motmenu, 3);
+	_ASSERT(s_animmenu);
+
+	HMENU mdlmenu = GetSubMenu(s_mainmenu, 3);
+	s_modelmenu = GetSubMenu(mdlmenu, 3);
+	_ASSERT(s_modelmenu);
+
+	//編集メニュー　4
+
+	s_remenu = GetSubMenu(s_mainmenu, 5);
+	_ASSERT(s_remenu);
+
+	s_rgdmenu = GetSubMenu(s_mainmenu, 6);
+	_ASSERT(s_rgdmenu);
+
+	s_morphmenu = GetSubMenu(s_mainmenu, 7);
+	_ASSERT(s_morphmenu);
+
+	s_impmenu = GetSubMenu(s_mainmenu, 8);
+	_ASSERT(s_impmenu);
+
+
+
+
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("Window Title"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-		0, 0, 1240, 830,
-		NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), NULL
+		0, 0, 1216, 830,
+		NULL, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
 	);
 	if (!window)
 	{
@@ -14105,8 +14315,7 @@ HWND Create3DWnd()
 {
 	HRESULT hr;
 
-	HICON appicon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_ICON1));
-	hr = DXUTCreateWindow(L"MameBake3D", 0, appicon, s_mainmenu, 450, 0);
+	hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, 450, 0);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 0;
@@ -14118,6 +14327,11 @@ HWND Create3DWnd()
 	GetClientRect(s_3dwnd, &clientrect);
 	s_bufwidth = clientrect.right;
 	s_bufheight = clientrect.bottom;
+
+
+	LONG winstyle = ::GetWindowLong(s_3dwnd, GWL_STYLE);
+	winstyle &= ~WS_CAPTION;
+	::SetWindowLong(s_3dwnd, GWL_STYLE, winstyle);
 
 
 	SetParent(s_3dwnd, s_mainhwnd);
@@ -14149,40 +14363,19 @@ HWND Create3DWnd()
 	//ShowWindow( s_3dwnd, SW_SHOW );
 	//SetWindowPos( s_3dwnd, HWND_TOP, 450, 0, s_mainwidth, s_mainheight, SWP_NOSIZE ); 
 
-	//animmenu
-	HMENU motmenu;
-	motmenu = GetSubMenu(s_mainmenu, 2);
-	s_animmenu = GetSubMenu(motmenu, 3);
-	_ASSERT(s_animmenu);
-
-	HMENU mdlmenu = GetSubMenu(s_mainmenu, 3);
-	s_modelmenu = GetSubMenu(mdlmenu, 3);
-	_ASSERT(s_modelmenu);
-
-	//編集メニュー　4
-
-	s_remenu = GetSubMenu(s_mainmenu, 5);
-	_ASSERT(s_remenu);
-
-	s_rgdmenu = GetSubMenu(s_mainmenu, 6);
-	_ASSERT(s_rgdmenu);
-
-	s_morphmenu = GetSubMenu(s_mainmenu, 7);
-	_ASSERT(s_morphmenu);
-
-	s_impmenu = GetSubMenu(s_mainmenu, 8);
-	_ASSERT(s_impmenu);
-
 	RECT winrect;
 	::GetWindowRect(s_3dwnd, &winrect);
-	::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
+	//::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
+	::MoveWindow(s_3dwnd, 400, 0, s_mainwidth, s_mainheight, TRUE);
 
 
-
+	//#############################################################################
+	//次のコメントアウトブロックはDXUTのウインドウにメニューを付けるときに使用する。
+	//#############################################################################
 	//最大化してから元に戻すことにより
 	//バックバッファの大きさ問題（メニューやキャプションがあるときのずれ）が解消される。
-	::ShowWindow(s_3dwnd, SW_MAXIMIZE);
-	::ShowWindow(s_3dwnd, SW_SHOWNORMAL);
+	//::ShowWindow(s_3dwnd, SW_MAXIMIZE);
+	//::ShowWindow(s_3dwnd, SW_SHOWNORMAL);
 
 
 	return s_3dwnd;
