@@ -402,7 +402,8 @@ static OWP_PlayerButton* s_owpPlayerButton = 0;
 
 static OrgWindow* s_LtimelineWnd = 0;
 static OWP_Timeline* s_owpLTimeline = 0;
-
+static OWP_EulerGraph* s_owpEulerGraph = 0;
+static OWP_Separator* s_LTSeparator = 0;
 
 static OrgWindow* s_dmpanimWnd = 0;
 static OWP_CheckBox* s_dmpgroupcheck = 0;
@@ -553,6 +554,9 @@ static bool s_LbefkeyFlag = false;
 static bool s_LcursorFlag = false;			// カーソル移動フラグ
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
+
+static bool s_EcursorFlag = false;			// カーソル移動フラグ
+
 
 static bool s_timelineRUpFlag = false;
 static bool s_timelinembuttonFlag = false;
@@ -939,7 +943,8 @@ static int SaveImpFile();
 static int SaveGcoFile();
 static int ExportFBXFile();
 
-static void refreshTimeline( OWP_Timeline& timeline );
+static void refreshTimeline( OWP_Timeline& timeline ); 
+static void refreshEulerGraph();
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( ChaVector3 diffvec );
 static int AddBoneTraPhysics(ChaVector3 diffvec);
@@ -2138,6 +2143,14 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		delete s_owpLTimeline;
 		s_owpLTimeline = 0;
 	}
+	if (s_owpEulerGraph) {
+		delete s_owpEulerGraph;
+		s_owpEulerGraph = 0;
+	}
+	if (s_LTSeparator) {
+		delete s_LTSeparator;
+		s_LTSeparator = 0;
+	}
 
 	if (s_layerWnd) {
 		delete s_layerWnd;
@@ -3155,6 +3168,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 		*/
+
+
 	}else if( (uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK) ){
 		if (s_curboneno >= 0){
 			s_saveboneno = s_curboneno;
@@ -3209,6 +3224,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 						if (s_model->GetInitAxisMatX() == 0){
 							s_owpLTimeline->setCurrentTime(0.0, false);
+							s_owpEulerGraph->setCurrentTime(0.0, false);
 							s_model->SetMotionFrame(0.0);
 							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 
@@ -5518,9 +5534,16 @@ int AddTimeLine( int newmotid )
 		CallF( s_model->SetCurrentMotion( newmotid ), return 1 );
 	}
 
+	if (!s_LTSeparator && s_model) {
+		s_LTSeparator = new OWP_Separator(false);
+		s_LtimelineWnd->addParts(*s_LTSeparator);//playerbuttonより後
+	}
+
+
 	if( !s_owpLTimeline && s_model ){
 		s_owpLTimeline= new OWP_Timeline( L"EditRangeTimeLine" );
-		s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
+		//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
+		s_LTSeparator->addParts1(*s_owpLTimeline);
 		s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
 		s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
 		s_owpLTimeline->setMouseMDownListener([]() {
@@ -5535,18 +5558,98 @@ int AddTimeLine( int newmotid )
 		s_owpLTimeline->setMouseWheelListener([]() {
 			s_timelinewheelFlag = true;
 		});
-
 	}
 
+
+	if (!s_owpEulerGraph && s_model) {
+		s_owpEulerGraph = new OWP_EulerGraph(L"EulerGraph");
+		//s_LtimelineWnd->addParts(*s_owpEulerGraph);
+		s_LTSeparator->addParts2(*s_owpEulerGraph);
+		s_owpEulerGraph->setCursorListener([]() { s_LcursorFlag = true; });
+	}
 	//タイムラインのキーを設定
 	if( s_owpTimeline ){
 		refreshTimeline(*s_owpTimeline);
 	}
 
+
 	s_owpLTimeline->selectClear();
 
 	return 0;
 }
+
+void refreshEulerGraph()
+{
+	if (s_model && (s_model->GetCurMotInfo())) {
+
+		s_owpEulerGraph->deleteKey();
+		s_owpEulerGraph->deleteLine();
+
+		s_owpEulerGraph->newLine(0, 0, _T("X"));
+		s_owpEulerGraph->newLine(0, 0, _T("Y"));
+		s_owpEulerGraph->newLine(0, 0, _T("Z"));
+
+		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
+		s_owpEulerGraph->setMaxTime(s_model->GetCurMotInfo()->frameleng);//左端の１マスを選んだ状態がフレーム０を選んだ状態だから　-1 しない。
+
+
+
+		if (s_model && (s_curboneno >= 0)){
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone){
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi){
+					int curtime;
+					float minval = 0.0;
+					float maxval = 0.0;
+					int firstflag = 1;
+
+					for (curtime = 0; curtime < (int)s_model->GetCurMotInfo()->frameleng; curtime++) {
+						const WCHAR* wbonename = curbone->GetWBoneName();
+						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+						ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+						cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+
+
+						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
+						s_owpEulerGraph->newKey(_T("Y"), (double)curtime, cureul.y);
+						s_owpEulerGraph->newKey(_T("Z"), (double)curtime, cureul.z);
+
+						if ((firstflag == 1) || (minval > cureul.x)) {
+							minval = cureul.x;
+						}
+						if ((firstflag == 1) || (minval > cureul.y)) {
+							minval = cureul.y;
+						}
+						if ((firstflag == 1) || (minval > cureul.z)) {
+							minval = cureul.z;
+						}
+
+						if ((firstflag == 1) || (maxval < cureul.x)) {
+							maxval = cureul.x;
+						}
+						if ((firstflag == 1) || (maxval < cureul.y)) {
+							maxval = cureul.y;
+						}
+						if ((firstflag == 1) || (maxval < cureul.z)) {
+							maxval = cureul.z;
+						}
+						firstflag = 0;
+
+					}
+
+					s_owpEulerGraph->setEulMinMax(minval, maxval);
+
+				}
+			}
+		}
+
+		//s_owpEulerGraph->setCurrentTime(0.0, false);
+
+	}
+
+}
+
 
 //タイムラインにモーションデータのキーを設定する
 void refreshTimeline(OWP_Timeline& timeline){
@@ -5566,6 +5669,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
 		s_owpLTimeline->setMaxTime( s_model->GetCurMotInfo()->frameleng );//左端の１マスを選んだ状態がフレーム０を選んだ状態だから　-1 しない。
+
 
 		int itime;
 		for( itime = 0; itime < (int)s_model->GetCurMotInfo()->frameleng; itime++ ){
@@ -5608,6 +5712,9 @@ void refreshTimeline(OWP_Timeline& timeline){
 			}
 		}
 	}
+
+	refreshEulerGraph();
+	s_owpEulerGraph->setCurrentTime(0.0, false);
 }
 
 
@@ -6076,6 +6183,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 		if( s_model ){
 			double curframe = s_model->GetCurMotInfo()->curframe;
 			s_owpLTimeline->setCurrentTime( curframe, false );
+			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 	}
 
@@ -8001,6 +8109,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 			}
 			//curframe = 1.0;//!!!!!!!!!!
 			s_owpLTimeline->setCurrentTime(curframe, false);
+			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 
 		if ((g_previewFlag == 4) || (g_previewFlag == 5)) {
@@ -8439,6 +8548,7 @@ int SaveProject()
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
 			s_owpLTimeline->setCurrentTime(0.0, false);
+			s_owpEulerGraph->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
 			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 
@@ -10058,6 +10168,9 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 int ChangeCurrentBone()
 {
+	CBone* s_befbone = 0;
+
+
 	if (s_model){
 		CDXUTComboBox* pComboBox;
 		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
@@ -10084,6 +10197,15 @@ int ChangeCurrentBone()
 			Bone2AngleLimit();
 			AngleLimit2Dlg(s_anglelimitdlg);
 		}
+
+		if (s_befbone != curbone) {
+			refreshEulerGraph();
+		}
+
+		s_befbone = curbone;
+	}
+	else {
+		s_befbone = 0;
 	}
 	return 0;
 }
@@ -10257,6 +10379,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 		}
 	}
 	s_owpLTimeline->setCurrentTime(*pnextframe, false);
+	s_owpEulerGraph->setCurrentTime(*pnextframe, false);
 
 
 
@@ -10315,6 +10438,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			if (firstmodelflag) {
 				s_owpLTimeline->setCurrentTime(*pnextframe, false);
+				s_owpEulerGraph->setCurrentTime(*pnextframe, false);
 				firstmodelflag = 0;
 			}
 			//if (endflag == 1) {
@@ -11140,6 +11264,7 @@ int OnFramePlayButton()
 		g_previewFlag = 0;
 		if (s_owpTimeline){
 			s_owpLTimeline->setCurrentTime(1.0, false);
+			s_owpEulerGraph->setCurrentTime(1.0, false);
 		}
 	}
 	if (s_lastkeyFlag){
@@ -11152,6 +11277,7 @@ int OnFramePlayButton()
 				if (curmi){
 					double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
 					s_owpLTimeline->setCurrentTime(lastframe, false);
+					s_owpEulerGraph->setCurrentTime(lastframe, false);
 				}
 			}
 		}
@@ -11520,7 +11646,7 @@ int CreateLongTimelineWnd()
 		//WindowPos( 250, 825 ),		//位置
 		//WindowPos(200, 645),		//位置
 		WindowPos(150, 600),		//位置
-		WindowSize(1050, 170),	//サイズ
+		WindowSize(1050, 290),	//サイズ
 		L"EditRangeTimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
@@ -11538,7 +11664,8 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setFrontStepButtonListener([](){ s_LstartFlag = true; s_lastkeyFlag = true; });
 	s_owpPlayerButton->setBackStepButtonListener([](){  s_LstartFlag = true; s_firstkeyFlag = true; });
 	s_owpPlayerButton->setStopButtonListener([]() {  s_LstopFlag = true; g_previewFlag = 0; });
-	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, false); } });
+	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, false); s_owpEulerGraph->setCurrentTime(1.0, false);
+	} });
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
 	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
 	s_owpPlayerButton->setPrevRangeButtonListener([](){  g_undereditrange = true; s_prevrangeFlag = true; });
@@ -12401,7 +12528,7 @@ int CreateToolWnd()
 		//WindowPos(400, 580),		//位置
 		//WindowPos(50, 645),		//位置
 		WindowPos(0, 600),		//位置
-		WindowSize(150, 170),		//サイズ
+		WindowSize(150, 290),		//サイズ
 		_T("ツールウィンドウ"),	//タイトル
 		//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
 		s_mainhwnd,
@@ -13836,13 +13963,16 @@ int OnTimeLineSelectFormSelectedKey()
 			if (s_underselectingframe != 0) {
 				if (s_buttonselectstart <= s_buttonselectend) {
 					s_owpLTimeline->setCurrentTime(endframe, false);
+					s_owpEulerGraph->setCurrentTime(endframe, false);
 				}
 				else {
 					s_owpLTimeline->setCurrentTime(startframe, false);
+					s_owpEulerGraph->setCurrentTime(startframe, false);
 				}
 			}
 			else {
 				s_owpLTimeline->setCurrentTime(applyframe, false);
+				s_owpEulerGraph->setCurrentTime(applyframe, false);
 				AddEditRangeHistory();
 			}
 		}
@@ -13873,11 +14003,14 @@ int OnTimeLineCursor(int mbuttonflag, double newframe)
 		if (mbuttonflag != 2) {
 			curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
 			s_owpTimeline->setCurrentTime(curframe, false);
+			//s_owpLTimeline->setCurrentTime(curframe, false);
+			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 		else {
 			curframe = newframe;
 			s_owpTimeline->setCurrentTime(curframe, false);
 			s_owpLTimeline->setCurrentTime(curframe, false);
+			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 	}
 
@@ -14297,7 +14430,7 @@ HWND CreateMainWindow()
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("まめばけ３D (MameBake3D)"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-		0, 0, 1216, 830,
+		0, 0, 1216, 950,
 		NULL, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
 	);
 	if (!window)
