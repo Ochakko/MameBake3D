@@ -210,6 +210,7 @@ int                         g_nActiveLight;
 
 */
 
+
 extern map<CModel*,int> g_bonecntmap;
 extern int gNumIslands;
 extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
@@ -5602,42 +5603,48 @@ void refreshEulerGraph()
 					int curtime;
 					float minval = 0.0;
 					float maxval = 0.0;
-					int firstflag = 1;
+					int minfirstflag = 1;
+					int maxfirstflag = 1;
 
+					ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 					for (curtime = 0; curtime < (int)s_model->GetCurMotInfo()->frameleng; curtime++) {
 						const WCHAR* wbonename = curbone->GetWBoneName();
 						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-						ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 						cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-
+						befeul = cureul;//!!!!!!!
 
 						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
 						s_owpEulerGraph->newKey(_T("Y"), (double)curtime, cureul.y);
 						s_owpEulerGraph->newKey(_T("Z"), (double)curtime, cureul.z);
 
-						if ((firstflag == 1) || (minval > cureul.x)) {
+
+						if ((minfirstflag == 1) || (minval > cureul.x)) {
 							minval = cureul.x;
 						}
-						if ((firstflag == 1) || (minval > cureul.y)) {
+						minfirstflag = 0;
+
+						if (minval > cureul.y) {
 							minval = cureul.y;
 						}
-						if ((firstflag == 1) || (minval > cureul.z)) {
+						if (minval > cureul.z) {
 							minval = cureul.z;
 						}
 
-						if ((firstflag == 1) || (maxval < cureul.x)) {
+						if ((maxfirstflag == 1) || (maxval < cureul.x)) {
 							maxval = cureul.x;
 						}
-						if ((firstflag == 1) || (maxval < cureul.y)) {
+						maxfirstflag = 0;
+
+						if (maxval < cureul.y) {
 							maxval = cureul.y;
 						}
-						if ((firstflag == 1) || (maxval < cureul.z)) {
+						if (maxval < cureul.z) {
 							maxval = cureul.z;
 						}
-						firstflag = 0;
 
 					}
 
+					//_ASSERT(0);
 					s_owpEulerGraph->setEulMinMax(minval, maxval);
 
 				}

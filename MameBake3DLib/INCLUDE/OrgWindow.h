@@ -4642,6 +4642,7 @@ static void s_dummyfunc();
 		
 			mineul = 0.0;
 			maxeul = 0.0;
+			isseteulminmax = false;
 		}
 		~OWP_EulerGraph() {
 			selectAll(true);
@@ -5720,9 +5721,10 @@ static void s_dummyfunc();
 			this->mouseRUpListener = listener;
 		}
 
-		void setEulMinMax(double minval, double maxval) {
-			mineul = minval;
-			maxeul = maxval;
+		void setEulMinMax(float _minval, float _maxval) {
+			mineul = (double)_minval;
+			maxeul = (double)_maxval;
+			isseteulminmax = true;
 		}
 
 		KeyInfo ExistKey(int srcline, double srctime)
@@ -5760,6 +5762,7 @@ static void s_dummyfunc();
 		std::tr1::function<void()> mouseWheelListener;
 		std::tr1::function<void()> mouseRUpListener;
 		std::tr1::function<void(const KeyInfo&)> keyDeleteListener;
+		bool isseteulminmax;
 		double mineul;
 		double maxeul;
 
@@ -5821,33 +5824,25 @@ static void s_dummyfunc();
 				unsigned char baseG = parent->baseColor.g;
 				unsigned char baseB = parent->baseColor.b;
 
-				//highLight
+
 				int x0 = posX;
 				int x1 = posX + parent->LABEL_SIZE_X;
 				int x2 = posX + width;
 				int y0 = posY;
 				int y1 = posY + parent->GRAPH_SIZE_Y;
 
+
+				if (parent->isseteulminmax == false) {
+					return;
+				}
+
+
 				//if (highLight) {
 				//	hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
 				//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 				//}
 
-				//ラベル
-				hdcM->setFont(12, _T("ＭＳ ゴシック"));
-				if (m_nullflag == 0) {
-					SetTextColor(hdcM->hDC, RGB(240, 240, 240));
-				}
-				else {
-					SetTextColor(hdcM->hDC, RGB(0, 240, 240));
-				}
 
-				std::basic_string<TCHAR> prname;
-				int depthcnt;
-				for (depthcnt = 0; depthcnt < depth; depthcnt++) {
-					prname += TEXT("  ");
-				}
-				prname += name;
 
 				//TextOut(hdcM->hDC,
 				//	posX + 2, posY + parent->LABEL_SIZE_Y / 2 - 5,
@@ -5908,6 +5903,7 @@ static void s_dummyfunc();
 				//	}
 				//}
 
+				double eulmargin = 10.0;
 
 				double eulrange = parent->maxeul - parent->mineul;
 				if (eulrange < 10.0) {
@@ -5915,55 +5911,97 @@ static void s_dummyfunc();
 				}
 
 				//キー
-				for (int i = 0; i<(int)key.size(); i++) {
-					int ey0 = ((key[i]->value + eulrange / 2.0) / eulrange) * (y1 - y0) + y0;
+				for (int i = 0; i < (int)key.size(); i++) {
+					//valueが増える方向を上方向に。座標系は下方向にプラス。
+					int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 					int ey1 = ey0 + DOT_SIZE_Y;
 
 					int ex0 = (int)((key[i]->time - startTime)*timeSize) + x1;
 					int ex1 = ex0 + DOT_SIZE_X;
 
-					//if (x2 <= ex0) {
-					//	break;
+					if ((key[i]->time - startTime) < 0.0) {
+						continue;
+					}
+					if (ex1 > x2) {
+						break;
+					}
+
+					//if (key[i]->select) {
 					//}
-					//if (x1 <= ex1) {
+					if (wcscmp(L"X", name.c_str()) == 0) {
+						hdcM->setPenAndBrush(NULL, RGB(255, 0, 0));
+					}
+					else if (wcscmp(L"Y", name.c_str()) == 0) {
+						hdcM->setPenAndBrush(NULL, RGB(0, 255, 0));
+					}
+					else if (wcscmp(L"Z", name.c_str()) == 0) {
+						hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
+					}
+					else {
+						hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
+					}
+					//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
+					Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
 
-						//if (ex1 <= x1 - 1 && ex0 + 1 <= x2) {
+				}
 
-							//if (key[i]->select) {
-								//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
-								//Rectangle(hdcM->hDC, max(ex0 + 1, ex1), ey0 + 1, min(ex1 - 1, x2), ey1 - 1);
 
-								//hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
-								if (wcscmp(L"X", name.c_str()) == 0) {
-									hdcM->setPenAndBrush(NULL, RGB(255, 0, 0));
-								}
-								else if (wcscmp(L"Y", name.c_str()) == 0) {
-									hdcM->setPenAndBrush(NULL, RGB(0, 255, 0));
-								}
-								else if (wcscmp(L"Z", name.c_str()) == 0) {
-									hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
-								}
-								else {
-									hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
-								}
-								//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
-								Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
+				//目盛り 10度単位
+				int fontsize = 12;
+				hdcM->setFont(fontsize, _T("ＭＳ ゴシック"));
+				SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 
-							//}
-							//else {
-							//	hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
-							//	Rectangle(hdcM->hDC, max(ex0 + 1, x1), ey0 + 1, min(ex1 - 1, x2), ey1 - 1);
-							//}
+				int befey0 = 0;
+				int mindiv = (int)((parent->mineul - 1.0) / 10.0);
+				int minmeasure = (mindiv - 1) * 10;
+				int maxdiv = (int)((parent->maxeul + 1.0) / 10.0);
+				int maxmeasure = (maxdiv + 1) * 10;
 
-						//}
+				//min
+				int ey0 = (parent->maxeul - minmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
+				int ex0 = x0 + parent->LABEL_SIZE_X - 7 * fontsize;
+				WCHAR strmeasure[64];
+				swprintf_s(strmeasure, 64, L"%+03d---", minmeasure);
+				TextOut(hdcM->hDC,
+					ex0, ey0,
+					strmeasure, (int)wcslen(strmeasure));
+				hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+				MoveToEx(hdcM->hDC, x1, ey0, NULL);
+				LineTo(hdcM->hDC, x2, ey0);
+				befey0 = ey0;//!!!!!!!!!!!!!!!
 
-						//if (ex1 <= ex0) {
-						//	hdcM->setPenAndBrush(RGB(baseR, baseG, baseB), NULL);
-						//	MoveToEx(hdcM->hDC, ex0, ey0, NULL);
-						//	LineTo(hdcM->hDC, ex0, ey1);
-						//}
 
-					//}
+				//max
+				ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
+				ex0 = x0 + parent->LABEL_SIZE_X - 7 * fontsize;
+				swprintf_s(strmeasure, 64, L"%+03d---", maxmeasure);
+				TextOut(hdcM->hDC,
+					ex0, ey0,
+					strmeasure, (int)wcslen(strmeasure));
+				hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+				MoveToEx(hdcM->hDC, x1, ey0, NULL);
+				LineTo(hdcM->hDC, x2, ey0);
+
+
+				//between min and max
+				for (int curmeasure = minmeasure + 10; curmeasure < maxmeasure; curmeasure += 10) {
+					//valueが増える方向を上方向に。座標系は下方向にプラス。
+					ey0 = (parent->maxeul - curmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
+					ex0 = x0 + parent->LABEL_SIZE_X - 7 * fontsize;
+
+					if (abs(ey0 - befey0) > 20) {
+						swprintf_s(strmeasure, 64, L"%+03d---", curmeasure);
+
+						TextOut(hdcM->hDC,
+							ex0, ey0,
+							strmeasure, (int)wcslen(strmeasure));
+
+						hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+						MoveToEx(hdcM->hDC, x1, ey0, NULL);
+						LineTo(hdcM->hDC, x2, ey0);
+
+						befey0 = ey0;
+					}
 				}
 
 			}
