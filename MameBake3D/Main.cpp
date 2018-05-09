@@ -10755,32 +10755,40 @@ int OnFrameTimeLineWnd()
 {
 	// カーソル移動フラグを確認 //////////////////////////////////////////////////
 
-	if (s_cursorFlag){
+
+	if (g_previewFlag != 0) {
 		s_cursorFlag = false;
+		s_LcursorFlag = false;
+		s_keyShiftFlag = false;
+		return 0;
+	}
 
+
+
+	if (s_cursorFlag) {
+		s_cursorFlag = false;
 		GetCurrentBoneFromTimeline(&s_curboneno);
+	}
 
-		// カーソル位置をコンソールに出力
-		if (s_owpTimeline && s_model && s_model->GetCurMotInfo()){
-			if (g_previewFlag == 0){
-				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
 
-				vector<MODELELEM>::iterator itrmodel;
-				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-					CModel* curmodel = itrmodel->modelptr;
-					if (curmodel && curmodel->GetCurMotInfo()){
-						curmodel->SetMotionFrame(curframe);
-					}
+	//preview中ではないときには毎フレーム実行。
+	// カーソル位置を姿勢に反映。
+	if (s_owpTimeline && s_model && s_model->GetCurMotInfo()){
+		if (g_previewFlag == 0){
+			double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
+
+			vector<MODELELEM>::iterator itrmodel;
+			for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+				CModel* curmodel = itrmodel->modelptr;
+				if (curmodel && curmodel->GetCurMotInfo()){
+					curmodel->SetMotionFrame(curframe);
 				}
 			}
 		}
-		//DbgOut( L"cursor : lineno %d, boneno %d, frame %f\r\n", curlineno, s_curboneno, s_curframe );
 	}
 
-	if (s_LcursorFlag) {
-		static int s_cnt = 0;
-		s_cnt++;
 
+	//if (s_LcursorFlag) {
 		s_LcursorFlag = false;
 
 		if (s_underselectingframe == 0) {
@@ -10797,12 +10805,12 @@ int OnFrameTimeLineWnd()
 			//これがないとモーション再生中にselectが表示されない。
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 		}
-	}
+	//}
 
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
-	if (s_keyShiftFlag){
+	//if (s_keyShiftFlag){
 		s_keyShiftFlag = false;
-	}
+	//}
 
 	return 0;
 }
