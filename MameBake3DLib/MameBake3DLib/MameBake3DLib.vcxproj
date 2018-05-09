@@ -87,7 +87,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;_DEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__MAMEBAKE3DLIB;_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;_DEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\tbb2018\include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
@@ -132,7 +132,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;NDEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__MAMEBAKE3DLIB;_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;NDEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;CONVD3DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\tbb2018\include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
@@ -348,6 +348,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="..\CPP\TexBank.cpp" />
     <ClCompile Include="..\CPP\TexElem.cpp" />
