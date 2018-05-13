@@ -3224,7 +3224,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						ChangeCurrentBone();
 
 						if (s_model->GetInitAxisMatX() == 0){
-							s_owpLTimeline->setCurrentTime(0.0, false);
+							s_owpLTimeline->setCurrentTime(0.0, true);
 							s_owpEulerGraph->setCurrentTime(0.0, false);
 							s_model->SetMotionFrame(0.0);
 							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
@@ -5700,7 +5700,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 
 	//選択時刻を設定
 	timeline.setCurrentLine( 0 );
-	s_owpLTimeline->setCurrentTime( 0.0, false );
+	s_owpLTimeline->setCurrentTime( 0.0, true );
 	//timeline.setCurrentTime(0.0);
 
 
@@ -6189,7 +6189,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 	}else{
 		if( s_model ){
 			double curframe = s_model->GetCurMotInfo()->curframe;
-			s_owpLTimeline->setCurrentTime( curframe, false );
+			s_owpLTimeline->setCurrentTime( curframe, true );
 			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 	}
@@ -8115,7 +8115,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				curframe = s_previewrange.GetStartFrame();
 			}
 			//curframe = 1.0;//!!!!!!!!!!
-			s_owpLTimeline->setCurrentTime(curframe, false);
+			s_owpLTimeline->setCurrentTime(curframe, true);
 			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 
@@ -8554,7 +8554,7 @@ int SaveProject()
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
-			s_owpLTimeline->setCurrentTime(0.0, false);
+			s_owpLTimeline->setCurrentTime(0.0, true);
 			s_owpEulerGraph->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
 			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
@@ -9294,6 +9294,10 @@ int SetSelectState()
 
 int CreateTimeLineMark( int topboneno )
 {
+	if (g_previewFlag != 0) {
+		return 0;
+	}
+
 	if( s_model && s_owpTimeline && s_owpLTimeline ){
 		if( topboneno < 0 ){
 			CreateMarkReq( s_editmotionflag, 0 );
@@ -9316,6 +9320,10 @@ int SetTimelineMark()
 {
 	if( !s_model || !s_owpTimeline || !s_owpLTimeline ){
 		_ASSERT( 0 );
+		return 0;
+	}
+
+	if (g_previewFlag != 0) {
 		return 0;
 	}
 
@@ -9393,6 +9401,10 @@ void CreateMarkReq( int curboneno, int broflag )
 
 int SetLTimelineMark( int curboneno )
 {
+	if (g_previewFlag != 0){
+		return 0;
+	}
+
 	if( (curboneno >= 0) && s_model && s_owpTimeline && s_owpLTimeline ){
 		CBone* curbone = s_model->GetBoneByID( curboneno );
 		if( curbone ){
@@ -9429,7 +9441,7 @@ int ExportFBXFile()
 	}
 
 	g_previewFlag = 0; 
-	s_owpLTimeline->setCurrentTime( 0.0, false );
+	s_owpLTimeline->setCurrentTime( 0.0, true );
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
@@ -9478,7 +9490,7 @@ int ExportFBXFile()
 
 
 	{
-		s_owpLTimeline->setCurrentTime(0.0, false);
+		s_owpLTimeline->setCurrentTime(0.0, true);
 		s_model->SetMotionFrame(0.0);
 		s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 
@@ -9518,7 +9530,7 @@ int ExportBntFile()
 	}
 
 	g_previewFlag = 0; 
-	s_owpLTimeline->setCurrentTime( 0.0, false );
+	s_owpLTimeline->setCurrentTime( 0.0, true );
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
@@ -10385,9 +10397,11 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 			curmodel->SetMotionFrame(*pnextframe);
 		}
 	}
+
+#ifndef SKIP_EULERGRAPH__
 	s_owpLTimeline->setCurrentTime(*pnextframe, false);
 	s_owpEulerGraph->setCurrentTime(*pnextframe, false);
-
+#endif
 
 
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
@@ -10444,8 +10458,10 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			}
 
 			if (firstmodelflag) {
+#ifndef SKIP_EULERGRAPH__
 				s_owpLTimeline->setCurrentTime(*pnextframe, false);
 				s_owpEulerGraph->setCurrentTime(*pnextframe, false);
+#endif
 				firstmodelflag = 0;
 			}
 			//if (endflag == 1) {
@@ -10768,27 +10784,24 @@ int OnFrameTimeLineWnd()
 	if (s_cursorFlag) {
 		s_cursorFlag = false;
 		GetCurrentBoneFromTimeline(&s_curboneno);
-	}
 
+		// カーソル位置を姿勢に反映。
+		if (s_owpTimeline && s_model && s_model->GetCurMotInfo()) {
+			if (g_previewFlag == 0) {
+				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
 
-	//preview中ではないときには毎フレーム実行。
-	// カーソル位置を姿勢に反映。
-	if (s_owpTimeline && s_model && s_model->GetCurMotInfo()){
-		if (g_previewFlag == 0){
-			double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
-
-			vector<MODELELEM>::iterator itrmodel;
-			for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-				CModel* curmodel = itrmodel->modelptr;
-				if (curmodel && curmodel->GetCurMotInfo()){
-					curmodel->SetMotionFrame(curframe);
+				vector<MODELELEM>::iterator itrmodel;
+				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+					CModel* curmodel = itrmodel->modelptr;
+					if (curmodel && curmodel->GetCurMotInfo()) {
+						curmodel->SetMotionFrame(curframe);
+					}
 				}
 			}
 		}
 	}
 
-
-	//if (s_LcursorFlag) {
+	if (s_LcursorFlag) {
 		s_LcursorFlag = false;
 
 		if (s_underselectingframe == 0) {
@@ -10805,7 +10818,20 @@ int OnFrameTimeLineWnd()
 			//これがないとモーション再生中にselectが表示されない。
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 		}
-	//}
+
+		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
+			if (g_previewFlag == 0) {
+				double curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
+				vector<MODELELEM>::iterator itrmodel;
+				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+					CModel* curmodel = itrmodel->modelptr;
+					if (curmodel && curmodel->GetCurMotInfo()) {
+						curmodel->SetMotionFrame(curframe);
+					}
+				}
+			}
+		}
+	}
 
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
 	//if (s_keyShiftFlag){
@@ -11278,7 +11304,7 @@ int OnFramePlayButton()
 		s_firstkeyFlag = false;
 		g_previewFlag = 0;
 		if (s_owpTimeline){
-			s_owpLTimeline->setCurrentTime(1.0, false);
+			s_owpLTimeline->setCurrentTime(1.0, true);
 			s_owpEulerGraph->setCurrentTime(1.0, false);
 		}
 	}
@@ -11291,7 +11317,7 @@ int OnFramePlayButton()
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
 					double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
-					s_owpLTimeline->setCurrentTime(lastframe, false);
+					s_owpLTimeline->setCurrentTime(lastframe, true);
 					s_owpEulerGraph->setCurrentTime(lastframe, false);
 				}
 			}
@@ -11679,7 +11705,7 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setFrontStepButtonListener([](){ s_LstartFlag = true; s_lastkeyFlag = true; });
 	s_owpPlayerButton->setBackStepButtonListener([](){  s_LstartFlag = true; s_firstkeyFlag = true; });
 	s_owpPlayerButton->setStopButtonListener([]() {  s_LstopFlag = true; g_previewFlag = 0; });
-	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, false); s_owpEulerGraph->setCurrentTime(1.0, false);
+	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, true); s_owpEulerGraph->setCurrentTime(1.0, false);
 	} });
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
 	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
@@ -13967,6 +13993,10 @@ bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
 //////////////////////////////////////////
 int OnTimeLineSelectFormSelectedKey()
 {
+	if (g_previewFlag != 0) {
+		return 0;
+	}
+
 	s_editrange.Clear();
 	if (s_model && s_model->GetCurMotInfo()) {
 		if (s_owpTimeline && s_owpLTimeline) {
@@ -13977,16 +14007,16 @@ int OnTimeLineSelectFormSelectedKey()
 
 			if (s_underselectingframe != 0) {
 				if (s_buttonselectstart <= s_buttonselectend) {
-					s_owpLTimeline->setCurrentTime(endframe, false);
+					s_owpLTimeline->setCurrentTime(endframe, true);
 					s_owpEulerGraph->setCurrentTime(endframe, false);
 				}
 				else {
-					s_owpLTimeline->setCurrentTime(startframe, false);
+					s_owpLTimeline->setCurrentTime(startframe, true);
 					s_owpEulerGraph->setCurrentTime(startframe, false);
 				}
 			}
 			else {
-				s_owpLTimeline->setCurrentTime(applyframe, false);
+				s_owpLTimeline->setCurrentTime(applyframe, true);
 				s_owpEulerGraph->setCurrentTime(applyframe, false);
 				AddEditRangeHistory();
 			}
@@ -14013,6 +14043,10 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 
 int OnTimeLineCursor(int mbuttonflag, double newframe)
 {
+	if (g_previewFlag != 0){
+		return 0;
+	}
+
 	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 		double curframe;
 		if (mbuttonflag != 2) {

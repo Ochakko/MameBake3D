@@ -1625,6 +1625,7 @@ int CModel::SetCurrentMotion( int srcmotid )
 		_ASSERT( 0 );
 		return 1;
 	}else{
+		ResetMotionCache();
 		return 0;
 	}
 }
@@ -1699,8 +1700,20 @@ int CModel::DeleteMotion( int motid )
 		}
 	}
 
+	ResetMotionCache();
 
 	return 0;
+}
+
+void CModel::ResetMotionCache()
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->ResetMotionCache();
+		}
+	}
 }
 
 int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )

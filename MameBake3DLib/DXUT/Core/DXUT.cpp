@@ -321,9 +321,13 @@ public:
         m_state.m_OverrideForceAPI = -1;
         m_state.m_OverrideAdapterOrdinal = -1;
         m_state.m_OverrideOutput = -1;
+
+#ifndef SPEEDTEST__
 		m_state.m_OverrideForceVsync = 1;
+#else
+		m_state.m_OverrideForceVsync = 0;
+#endif
         //m_state.m_OverrideForceVsync = -1;
-		//m_state.m_OverrideForceVsync = 0;
         m_state.m_AutoChangeAdapter = true;
         m_state.m_ShowMsgBoxOnError = true;
         m_state.m_AllowShortcutKeysWhenWindowed = true;
@@ -4219,11 +4223,15 @@ void DXUTRender3DEnvironment10()
     UINT SyncInterval = GetDXUTState().GetCurrentDeviceSettings()->d3d10.SyncInterval;
 
     // Show the frame on the primary surface.
+#ifndef SPEEDTEST__
 	hr = pSwapChain->Present(1, dwFlags);
+#else
+	hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!
+#endif
+	//hr = pSwapChain->Present(1, dwFlags);
     //hr = pSwapChain->Present( SyncInterval, dwFlags );
 	//hr = pSwapChain->Present(1, DXGI_PRESENT_DO_NOT_SEQUENCE);//!!!!!!!!!!!!!!!!!!
 	//hr = pSwapChain->Present(1, 0);//!!!!!!!!!!!!!!!!!!
-	//hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!
     if( DXGI_STATUS_OCCLUDED == hr )
     {
         // There is a window covering our entire rendering area.

@@ -588,6 +588,8 @@ public:
 	void CalcBtAxismat(int onfirstcreate);
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 
+	void ResetMotionCache();
+
 private:
 	int InitParams();
 	int DestroyObjs();

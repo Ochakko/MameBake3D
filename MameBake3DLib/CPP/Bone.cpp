@@ -521,6 +521,10 @@ int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr,
 	return 0;
 }
 
+void CBone::ResetMotionCache()
+{
+	m_cachebefmp = 0;
+}
 
 int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr )
 {
@@ -529,12 +533,13 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 
 	*existptr = 0;
 
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//キャッシュをチェックする
 	if (m_cachebefmp && (m_cachebefmp->GetFrame() <= (srcframe + 0.0001))){
 		//高速化のため途中からの検索にする
 		pcur = m_cachebefmp;
 	}
-
+#endif
 
 	while( pcur ){
 
@@ -558,6 +563,7 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 		*ppnext = pcur;
 	}
 
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//m_cachebefmp = pbef;
 	if (pbef) {
 		m_cachebefmp = pbef->GetPrev();
@@ -565,6 +571,7 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 	else {
 		m_cachebefmp = m_motionkey[srcmotid];
 	}
+#endif
 
 	return 0;
 }

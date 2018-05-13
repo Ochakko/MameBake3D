@@ -371,6 +371,8 @@ public:
 
 	int ChkMovableEul(ChaVector3 srceul);
 
+	void ResetMotionCache();
+
 private:
 
 /**
