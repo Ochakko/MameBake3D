@@ -499,6 +499,7 @@ static void s_dummyfunc();
 			//イベントリスナー
 			closeListener = [](){s_dummyfunc();};
 			keyboardListener = [](const KeyboardEvent &e){s_dummyfunc();};
+			ldownListener = []() {s_dummyfunc(); };
 			lupListener = [](){s_dummyfunc();};
 			rupListener = [](){s_dummyfunc();};
 
@@ -686,6 +687,9 @@ static void s_dummyfunc();
 		void setCloseListener(std::tr1::function<void()> listener){
 			this->closeListener= listener;
 		}
+		void setLDownListener(std::tr1::function<void()> listener) {
+			this->ldownListener = listener;
+		}
 		void setLUpListener(std::tr1::function<void()> listener){
 			this->lupListener= listener;
 		}
@@ -736,6 +740,7 @@ static void s_dummyfunc();
 
 		//ユーザーイベントリスナー
 		std::tr1::function<void()> closeListener;
+		std::tr1::function<void()> ldownListener;
 		std::tr1::function<void()> lupListener;
 		std::tr1::function<void()> rupListener;
 		std::tr1::function<void(const KeyboardEvent&)> keyboardListener;
@@ -821,6 +826,9 @@ static void s_dummyfunc();
 		}
 		///	Method : 左右マウスボタンダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
+			if (this->ldownListener != NULL) {
+				(this->ldownListener)();
+			}
 			onLRButtonDown(e,true);
 		}
 		void onRButtonDown(const MouseEvent& e){

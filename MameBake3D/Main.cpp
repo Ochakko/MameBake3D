@@ -10811,7 +10811,7 @@ int OnFrameTimeLineWnd()
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 		}
 
-		s_underselectingframe = 1;
+		//s_underselectingframe = 1;
 		OnTimeLineCursor(0, 0.0);
 
 		if (g_previewFlag != 0) {
@@ -11736,6 +11736,7 @@ int CreateLongTimelineWnd()
 	//####################################
 	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
 	s_LtimelineWnd->setCloseListener([](){ s_LcloseFlag = true; });
+	s_LtimelineWnd->setLDownListener([]() { s_underselectingframe = 1; });
 	s_LtimelineWnd->setLUpListener([](){
 		if (s_owpLTimeline) {
 			if (g_previewFlag == 0) {
@@ -14189,6 +14190,10 @@ int OnTimeLineWheel()
 			if (delta2 != 0.0) {
 				double curframe = s_owpLTimeline->getCurrentTime();
 				double newframe = curframe + delta2;
+				s_buttonselectstart = newframe;
+				s_buttonselectend = newframe;
+				s_editrange.Clear();
+				s_owpLTimeline->selectClear();
 				OnTimeLineCursor(2, newframe);
 			}
 
