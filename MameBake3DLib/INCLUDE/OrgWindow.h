@@ -3259,6 +3259,7 @@ static void s_dummyfunc();
 			}
 			return false;
 		}
+
 		//	Method : キーを削除
 		bool deleteKey(const std::basic_string<TCHAR>& _name, double time){
 			for(int i=0; i<(int)lineData.size(); i++){
@@ -4348,6 +4349,9 @@ static void s_dummyfunc();
 				
 				return true;
 			}
+
+
+
 			//	Method : すべてのキーの選択を解除する
 			void selectClear(){
 				for(int i=0; i<(int)key.size(); i++){
@@ -4872,6 +4876,21 @@ static void s_dummyfunc();
 					if (ret && rewriteOnChange) {
 						callRewrite();
 					}
+					return ret;
+				}
+			}
+			return false;
+		}
+		//	Method : キーに値をセット
+		bool setKey(const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0) {
+			for (int i = 0; i<(int)lineData.size(); i++) {
+				if (lineData[i]->name == _name) {
+					bool ret = lineData[i]->setKey(time, 0, _value);
+
+					//再描画要求
+					//if (ret && rewriteOnChange) {
+					//	callRewrite();
+					//}
 					return ret;
 				}
 			}
@@ -5698,6 +5717,15 @@ static void s_dummyfunc();
 			maxeul = (double)_maxval;
 			isseteulminmax = true;
 		}
+		void getEulMinMax(bool* dstisset, float* dstmin, float* dstmax) {
+			if (dstisset && dstmin && dstmax) {
+				*dstisset = isseteulminmax;
+				*dstmin = mineul;
+				*dstmax = maxeul;
+			}
+		}
+
+		int getEuler(double srcframe, ChaVector3* dsteul);
 
 		KeyInfo ExistKey(int srcline, double srctime)
 		{
@@ -5783,6 +5811,9 @@ static void s_dummyfunc();
 			std::vector<EulKey*> key;
 			unsigned int lineIndex;
 			int depth;
+
+
+			int getValue(double srcframe, double* dstvalue);
 
 			//////////////////////////// Method //////////////////////////////
 			//	Method : 描画
@@ -6037,6 +6068,16 @@ static void s_dummyfunc();
 				else {
 					key.push_back(new EulKey(_time, _type, _value, _length, _select));
 				}
+
+				return true;
+			}
+			//	Method : キーに値を設定する。
+			bool setKey(const double &_time, int _type = 0, double _value = 0.0) {
+				int i = getKeyIndex(_time);
+				if (i < 0) {
+					return false;
+				}
+				key[i]->value = _value;
 
 				return true;
 			}

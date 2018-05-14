@@ -151,7 +151,7 @@ quaternion.RotationMatrix(matrix);形式に書き換えます。
 DXUTmisc.cpp のDXUTTrace関数のreturn文のところをreturn hr;にします。
 
 DXUT.cppのCreate関数の
-m_state.m_OverrideForceVsyncの値を= 0にします。
+m_state.m_OverrideForceVsyncの値を= 1にします。
 
 
 そしてどうしてもD3DXが必要な部分はそのようにキャストします。
@@ -179,6 +179,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2018/05/14_2
+	オイラーグラフアップデート
+		IK操作結果をオイラーグラフに反映するようにしました。
+
+		IK操作は実際には操作しているボーンの親のボーンに姿勢が設定されるので
+		現状では結果を確認するには親のボーンをクリックしてグラフを確認します。
+
 2018/05/14_1
 	タイムライン操作の調整
 		ホイール処理の調整

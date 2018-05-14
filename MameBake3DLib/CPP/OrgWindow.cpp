@@ -458,6 +458,59 @@ namespace OrgWinGUI{
 	}
 
 
+	int OWP_EulerGraph::getEuler(double srcframe, ChaVector3* dsteul)
+	{
+		if (!dsteul) {
+			return 1;
+		}
+		if (isseteulminmax == false) {
+			return 1;
+		}
+		if ((int)lineData.size() != 3) {
+			return 1;
+		}
+
+		double valx, valy, valz;
+		int ret;
+		ret = lineData[0]->getValue(srcframe, &valx);
+		if (ret) {
+			return 1;
+		}
+		ret = lineData[1]->getValue(srcframe, &valy);
+		if (ret) {
+			return 1;
+		}
+		ret = lineData[2]->getValue(srcframe, &valz);
+		if (ret) {
+			return 1;
+		}
+
+		dsteul->x = (float)valx;
+		dsteul->y = (float)valy;
+		dsteul->z = (float)valz;
+	
+		return 0;
+
+	}
+
+	int OWP_EulerGraph::EulLineData::getValue(double srcframe, double* dstvalue)
+	{
+		if (!dstvalue) {
+			return 1;
+		}
+		if (parent->isseteulminmax == false) {
+			return 1;
+		}
+
+		int srcindex = getKeyIndex(srcframe);
+		if (srcindex >= 0) {
+			*dstvalue = key[srcindex]->value;
+			return 0;
+		}
+		else {
+			return 1;
+		}
+	}
 
 
 	/// Method : Ä•`‰æ—v‹‚ğ‘—‚é
