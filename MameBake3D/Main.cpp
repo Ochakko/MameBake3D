@@ -400,6 +400,7 @@ static ChaMatrix s_selm = ChaMatrix( 0.0f, 0.0f, 0.0f, 0.0f,
 static OrgWindow* s_timelineWnd = 0;
 static OWP_Timeline* s_owpTimeline = 0;
 static OWP_PlayerButton* s_owpPlayerButton = 0;
+static OWP_CheckBox* s_parentcheck = 0;
 
 static OrgWindow* s_LtimelineWnd = 0;
 static OWP_Timeline* s_owpLTimeline = 0;
@@ -4625,6 +4626,11 @@ int DestroyTimeLine( int dellist )
 
 	s_tlarray.clear();
 	
+	if (s_parentcheck) {
+		delete s_parentcheck;
+		s_parentcheck = 0;
+	}
+
 	return 0;
 }
 
@@ -5566,8 +5572,19 @@ int AddTimeLine( int newmotid )
 
 
 	if (!s_owpEulerGraph && s_model) {
+		s_parentcheck = new OWP_CheckBox(L"Parent Euler", 0);
+		//OrgWinGUI::WindowSize checksize = OrgWinGUI::WindowSize(280, 15);
+		//s_parentcheck->setSize(checksize);
+		//OrgWinGUI::WindowPos checkpos = OrgWinGUI::WindowPos(0, 0);
+		//s_parentcheck->setPos(checkpos);
+		s_LTSeparator->addParts2(*s_parentcheck);
+		s_parentcheck->setButtonListener([]() { refreshEulerGraph(); });
+
 		s_owpEulerGraph = new OWP_EulerGraph(L"EulerGraph");
-		//s_LtimelineWnd->addParts(*s_owpEulerGraph);
+		//OrgWinGUI::WindowSize graphsize = OrgWinGUI::WindowSize(s_LTSeparator->getSize().x - 8, 60);
+		//s_owpEulerGraph->setSize(graphsize);
+		//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
+		//s_owpEulerGraph->setPos(graphpos);
 		s_LTSeparator->addParts2(*s_owpEulerGraph);
 		s_owpEulerGraph->setCursorListener([]() { s_LcursorFlag = true; });
 	}
@@ -5601,6 +5618,14 @@ void refreshEulerGraph()
 		if (s_model && (s_curboneno >= 0)){
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
 			if (curbone){
+				int check = s_parentcheck->getValue();
+				if (check == 1) {
+					CBone* parentbone = curbone->GetParent();
+					if (parentbone) {
+						curbone = parentbone;
+					}
+				}
+
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
 					int curtime;
@@ -14582,6 +14607,14 @@ int UpdateEdittedEuler()
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone) {
+		int check = (int)s_parentcheck->getValue();
+		if (check == 1) {
+			CBone* parentbone = curbone->GetParent();
+			if (parentbone) {
+				curbone = parentbone;
+			}
+		}
+
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
 			double curtime;
@@ -14659,5 +14692,5 @@ int UpdateEdittedEuler()
 		}
 	}
 
-
+	return 0;
 }
