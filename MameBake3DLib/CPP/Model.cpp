@@ -1979,7 +1979,12 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 		ChaMatrix mWVP;
 		ChaMatrix mW;
 		if (g_previewFlag != 5){
-			mW = curbone->GetCurMp().GetWorldMat();
+			if (curbone->GetParent()) {
+				mW = curbone->GetParent()->GetCurMp().GetWorldMat();
+			}
+			else {
+				mW = curbone->GetCurMp().GetWorldMat();
+			}
 		}
 		else{
 			CBone* parbone = curbone->GetParent();
@@ -5962,26 +5967,30 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 	erptr->GetRange( &keynum, &startframe, &endframe, &applyframe );
 
 	CBone* curbone = firstbone;
+	CBone* lastpar = curbone; 
 	SetBefEditMat( erptr, curbone, maxlevel );
 
-	CBone* lastpar = firstbone->GetParent();
-	curbone = firstbone;
-	int calcnum = 3;
+	//CBone* lastpar = firstbone->GetParent();
+	int calcnum = 20;
 	int calccnt;
 	for( calccnt = 0; calccnt < calcnum; calccnt++ ){
+		curbone = firstbone;
+		lastpar = curbone;
+
 		int levelcnt = 0;
+		float currate = g_ikrate;
 
-		float currate = 1.0f;
-
-		CBone* curbone = firstbone;
-		while( curbone && ((maxlevel == 0) || (levelcnt < maxlevel)) )
+		while( curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)) )
 		{
-			CBone* parbone = curbone->GetParent();
+			//CBone* parbone = curbone->GetParent();
+			CBone* parbone = lastpar->GetParent();
 			if( parbone && (curbone->GetJointFPos() != parbone->GetJointFPos()) ){
+				UpdateMatrix(&m_matWorld, &m_matVP);//curmpXV
+
 				ChaVector3 parworld, chilworld;
 				//ChaVector3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
 				ChaVector3TransformCoord( &parworld, &(parbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()) );
-				ChaVector3TransformCoord(&chilworld, &(curbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()));
+				ChaVector3TransformCoord(&chilworld, &(firstbone->GetJointFPos()), &(firstbone->GetParent()->GetCurMp().GetWorldMat()));
 
 				ChaVector3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -6102,10 +6111,13 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 			}
 
 
-			if( curbone->GetParent() ){
-				lastpar = curbone->GetParent();
+			//if( curbone->GetParent() ){
+			//	lastpar = curbone->GetParent();
+			//}
+			//curbone = curbone->GetParent();
+			if (parbone) {
+				lastpar = parbone;
 			}
-			curbone = curbone->GetParent();
 
 			levelcnt++;
 
