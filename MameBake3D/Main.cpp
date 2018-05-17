@@ -6800,8 +6800,10 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 	s_pickinfo.diffmouse.y = (float)( s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y );
 
 	ChaVector3 mousesc;
-	mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
-	mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
+	//mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
+	//mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
+	mousesc.x = s_pickinfo.mousepos.x;
+	mousesc.y = s_pickinfo.mousepos.y;
 	mousesc.z = s_pickinfo.objscreen.z;
 
 	ChaVector3 startsc, endsc;
