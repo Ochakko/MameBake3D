@@ -1076,7 +1076,7 @@ static int RecalcBoneAxisX(CBone* srcbone);
 
 static int GetSymRootMode();
 
-static int UpdateEdittedEuler();
+static int UpdateEditedEuler();
 
 
 int RegistKey()
@@ -3688,7 +3688,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			//s_model->SetBtKinFlagReq(s_model->GetTopBt(), 1);
 		}
 
-		UpdateEdittedEuler();
+		UpdateEditedEuler();
 
 		s_pickinfo.buttonflag = 0;
 		s_ikcnt = 0;
@@ -6800,8 +6800,11 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 	s_pickinfo.diffmouse.y = (float)( s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y );
 
 	ChaVector3 mousesc;
+	//以下2行。相対位置で動かすことができるが、マウスが可動でボーンが可動でないような位置への操作があると、その後の操作と結果の関係が不自然にみえる。
 	//mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
 	//mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
+
+	//以下２行。常にマウス位置を目標にする。
 	mousesc.x = s_pickinfo.mousepos.x;
 	mousesc.y = s_pickinfo.mousepos.y;
 	mousesc.z = s_pickinfo.objscreen.z;
@@ -10939,6 +10942,8 @@ int OnFrameToolWnd()
 
 			s_model->InterpolateBetweenSelection(startframe, endframe);
 
+			UpdateEditedEuler();
+
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
 		}
 
@@ -11034,8 +11039,11 @@ int OnFrameToolWnd()
 					}
 				}
 			}
+
+			UpdateEditedEuler();
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
 		}
-		s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+
 	}
 
 	if (s_motpropFlag){
@@ -11099,6 +11107,8 @@ int OnFrameToolWnd()
 				if (keynum >= 2){
 					CMotFilter motfilter;
 					motfilter.Filter(s_model, s_model->GetCurMotInfo()->motid, (int)startframe, (int)endframe);
+
+					UpdateEditedEuler();
 
 					if (s_model){
 						s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
@@ -13031,6 +13041,8 @@ int InitMpFromTool()
 				}
 			}
 		}
+
+		UpdateEditedEuler();
 	}
 
 	for (subno = 0; subno < 3; subno++){
@@ -14598,11 +14610,13 @@ HWND Create3DWnd()
 	return s_3dwnd;
 }
 
-int UpdateEdittedEuler()
+int UpdateEditedEuler()
 {
-	if (s_pickinfo.buttonflag == 0) {
-		return 0;
-	}
+	//ツールボタンからも呼ぶ
+	//if (s_pickinfo.buttonflag == 0) {
+	//	return 0;
+	//}
+
 	if (!s_model || (s_curboneno <= 0) || !s_owpLTimeline || !s_owpEulerGraph) {
 		return 0;
 	}
