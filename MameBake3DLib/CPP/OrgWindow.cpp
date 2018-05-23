@@ -558,6 +558,7 @@ namespace OrgWinGUI{
 
 		MouseEvent mouseEvent;
 		KeyboardEvent keyboardEvent;
+		POINT tmpPoint;
 		switch (message){				//イベント作成
 			case WM_LBUTTONDOWN:
 			case WM_RBUTTONDOWN:
@@ -567,13 +568,14 @@ namespace OrgWinGUI{
 			case WM_MBUTTONUP:
 			case WM_MOUSEMOVE:
 			case WM_MOUSEWHEEL:
-				POINT tmpPoint;
+			case WM_MOUSEHOVER:
+			case WM_MOUSELEAVE:
 				GetCursorPos(&tmpPoint);
 
 				mouseEvent.globalX= (int)tmpPoint.x;
 				mouseEvent.globalY= (int)tmpPoint.y;
-				mouseEvent.localX= mouseEvent.globalX- owner->pos.x;
-				mouseEvent.localY= mouseEvent.globalY- owner->pos.y;
+				mouseEvent.localX= mouseEvent.globalX - owner->pos.x;
+				mouseEvent.localY= mouseEvent.globalY - owner->pos.y;
 				mouseEvent.shiftKey= GetKeyState(VK_SHIFT)<0;
 				mouseEvent.ctrlKey= GetKeyState(VK_CONTROL)<0;
 				mouseEvent.altKey= GetKeyState(VK_MENU)<0;
@@ -619,6 +621,12 @@ namespace OrgWinGUI{
 				return 0;
 			case WM_MOUSEWHEEL:
 				owner->onMouseWheel(mouseEvent);
+				return 0;
+			case WM_MOUSEHOVER:
+				owner->onMouseHover(mouseEvent);
+				return 0;
+			case WM_MOUSELEAVE:
+				owner->onMouseLeave(mouseEvent);
 				return 0;
 			case WM_KEYDOWN:			//キーボードイベント
 			case WM_KEYUP:

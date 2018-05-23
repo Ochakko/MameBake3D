@@ -7682,6 +7682,8 @@ int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe
 
 	InterpolateBetweenSelectionReq(GetTopBone(), srcstartframe, srcendframe);
 
+	UpdateMatrix(&m_matWorld, &m_matVP);
+
 	return 0;
 }
 

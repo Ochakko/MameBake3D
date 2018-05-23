@@ -500,6 +500,7 @@ static OWP_Button* s_toolInitMPB = 0;
 static OWP_Button* s_toolFilterB = 0;
 static OWP_Button* s_toolInterpolateB = 0;
 
+
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
 static OWP_ScrollWnd* s_convboneSCWnd = 0;
@@ -10932,15 +10933,16 @@ int OnFrameToolWnd()
 		s_interpolateFlag = false;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
 
-			int keynum;
-			double startframe, endframe, applyframe;
-			s_editrange.Clear();
-			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+			//int keynum;
+			//double startframe, endframe, applyframe;
+			//s_editrange.Clear();
+			//s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+			//s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+			//s_model->InterpolateBetweenSelection(startframe, endframe);
 
-			s_model->InterpolateBetweenSelection(startframe, endframe);
+			s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend);
 
 			UpdateEditedEuler();
 
@@ -11673,6 +11675,7 @@ int CreateTimelineWnd()
 
 	s_timelineWnd->callRewrite();
 
+
 	// ウィンドウの閉じるボタンのイベントリスナーに
 	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
 	s_timelineWnd->setCloseListener([]() { s_closeFlag = true; });
@@ -11726,14 +11729,15 @@ int CreateLongTimelineWnd()
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos( 250, 825 ),		//位置
 		//WindowPos(200, 645),		//位置
-		WindowPos(150, 600),		//位置
-		WindowSize(1050, 290),	//サイズ
+		WindowPos(230, 600),		//位置
+		WindowSize(970, 290),	//サイズ
 		L"EditRangeTimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
 		70, 50, 70);				//カラー
 
 	s_LtimelineWnd->callRewrite();
+
 
 	/////////
 	s_owpPlayerButton = new OWP_PlayerButton;
@@ -11847,6 +11851,7 @@ int CreateLongTimelineWnd()
 
 
 	});
+
 
 	return 0;
 }
@@ -12610,7 +12615,7 @@ int CreateToolWnd()
 		//WindowPos(400, 580),		//位置
 		//WindowPos(50, 645),		//位置
 		WindowPos(0, 600),		//位置
-		WindowSize(150, 290),		//サイズ
+		WindowSize(230, 290),		//サイズ
 		_T("ツールウィンドウ"),	//タイトル
 		//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
 		s_mainhwnd,
@@ -12622,17 +12627,17 @@ int CreateToolWnd()
 	s_toolWnd->callRewrite();
 
 
-	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン"));
-	s_toolCopyB = new OWP_Button(_T("コピー"));
-	s_toolSymCopyB = new OWP_Button(_T("対称コピー"));
+	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン target bone"));
+	s_toolCopyB = new OWP_Button(_T("コピー copy"));
+	s_toolSymCopyB = new OWP_Button(_T("対称コピー sym copy"));
 	//s_toolCutB = new OWP_Button(_T("カット"));
-	s_toolPasteB = new OWP_Button(_T("ペースト"));
-	s_toolInitMPB = new OWP_Button(_T("姿勢初期化"));
+	s_toolPasteB = new OWP_Button(_T("ペースト paste"));
+	s_toolInitMPB = new OWP_Button(_T("姿勢初期化 init"));
 	//s_toolDeleteB = new OWP_Button(_T("削除"));
 	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
-	s_toolMotPropB = new OWP_Button(_T("プロパティ"));
-	s_toolFilterB = new OWP_Button(_T("平滑化"));
-	s_toolInterpolateB = new OWP_Button(_T("補間"));
+	s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
+	s_toolFilterB = new OWP_Button(_T("平滑化 smoothing"));
+	s_toolInterpolateB = new OWP_Button(_T("補間 interpolate"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolCopyB);
@@ -12644,7 +12649,11 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolFilterB);
 	s_toolWnd->addParts(*s_toolInterpolateB);
 
+
 	s_toolWnd->setCloseListener([](){ s_closetoolFlag = true; });
+	//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
+	//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
+
 	s_toolCopyB->setButtonListener([](){ s_copyFlag = true; });
 	s_toolSymCopyB->setButtonListener([](){ s_symcopyFlag = true; });
 	s_toolPasteB->setButtonListener([](){ s_pasteFlag = true; });
@@ -12653,9 +12662,11 @@ int CreateToolWnd()
 	s_toolSelBoneB->setButtonListener([](){ s_selboneFlag = true; });
 	s_toolInitMPB->setButtonListener([](){ s_initmpFlag = true; });
 	s_toolFilterB->setButtonListener([](){ s_filterFlag = true; });
-	s_toolInterpolateB->setButtonListener([](){ s_interpolateFlag = true; });
+	s_toolInterpolateB->setButtonListener([]() { s_interpolateFlag = true; });
 
 
+	s_toolWnd->autoResizeAllParts();
+	s_toolWnd->refreshPosAndSize();//これを呼ばないと1回目のクリック位置がずれることがある。
 
 	return 0;
 
@@ -14617,9 +14628,19 @@ int UpdateEditedEuler()
 	//	return 0;
 	//}
 
-	if (!s_model || (s_curboneno <= 0) || !s_owpLTimeline || !s_owpEulerGraph) {
+	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return 0;
 	}
+
+
+	//選択状態がない場合にはtopboneのオイラーグラフを表示する。
+	if (s_curboneno < 0) {
+		CBone* topbone = s_model->GetTopBone();
+		if (topbone) {
+			s_curboneno = topbone->GetBoneNo();
+		}
+	}
+
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone) {
@@ -14704,6 +14725,7 @@ int UpdateEditedEuler()
 
 			//_ASSERT(0);
 			s_owpEulerGraph->setEulMinMax(minval, maxval);
+			s_owpEulerGraph->callRewrite();
 
 		}
 	}

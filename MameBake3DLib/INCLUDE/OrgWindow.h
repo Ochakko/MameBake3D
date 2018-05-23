@@ -404,6 +404,10 @@ static void s_dummyfunc();
 		//	Method : マウス移動イベント受信
 		virtual void onMouseMove(const MouseEvent& e){
 		}
+		virtual void onMouseHover(const MouseEvent& e) {
+		}
+		virtual void onMouseLeave(const MouseEvent& e) {
+		}
 		//	Method : キーダウンイベント受信
 		virtual void onKeyDown(const KeyboardEvent& e){
 		}
@@ -502,6 +506,8 @@ static void s_dummyfunc();
 			ldownListener = []() {s_dummyfunc(); };
 			lupListener = [](){s_dummyfunc();};
 			rupListener = [](){s_dummyfunc();};
+			hoverListener = []() {s_dummyfunc(); };
+			leaveListener = []() {s_dummyfunc(); };
 
 			//マウスキャプチャ用のフラグ
 			mouseCaptureFlagL=mouseCaptureFlagR=false;
@@ -625,6 +631,24 @@ static void s_dummyfunc();
 			//再描画要求を送る
 			callRewrite();
 		}
+		//	Method : ウィンドウ位置とサイズの更新
+		void refreshPosAndSize() {
+			RECT tmpRect;
+			GetWindowRect(hWnd, &tmpRect);
+			pos.x = tmpRect.left;
+			pos.y = tmpRect.top;
+			size.x = tmpRect.right - tmpRect.left;
+			size.y = tmpRect.bottom - tmpRect.top;
+
+			//最小ウィンドウサイズ未満になって居ないかどうか確認
+			if (size.x<sizeMin.x || size.y<sizeMin.y) {
+				if (size.x<sizeMin.x) size.x = sizeMin.x;
+				if (size.y<sizeMin.y) size.y = sizeMin.y;
+				setSize(size);
+			}
+
+			partsAreaSize = WindowSize(size.x - partsAreaPos.x - 3, size.y - partsAreaPos.y - 3);
+		}
 
 		/////////////////////////// Operator /////////////////////////////
 		void operator=(const OrgWindow& a){
@@ -696,6 +720,12 @@ static void s_dummyfunc();
 		void setRUpListener(std::tr1::function<void()> listener){
 			this->rupListener= listener;
 		}
+		void setHoverListener(std::tr1::function<void()> listener) {
+			this->hoverListener = listener;
+		}
+		void setLeaveListener(std::tr1::function<void()> listener) {
+			this->leaveListener = listener;
+		}
 		/// Accessor : keyboardListener
 		void setKeyboardEventListener(std::tr1::function<void(const KeyboardEvent&)> listener){
 			this->keyboardListener= listener;
@@ -743,6 +773,8 @@ static void s_dummyfunc();
 		std::tr1::function<void()> ldownListener;
 		std::tr1::function<void()> lupListener;
 		std::tr1::function<void()> rupListener;
+		std::tr1::function<void()> hoverListener;
+		std::tr1::function<void()> leaveListener;
 		std::tr1::function<void(const KeyboardEvent&)> keyboardListener;
 
 		//マウスキャプチャ用のフラグ
@@ -806,24 +838,6 @@ static void s_dummyfunc();
 		}
 		//	Method : ウィンドウプロシージャ
 		static LRESULT CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-		//	Method : ウィンドウ位置とサイズの更新
-		void refreshPosAndSize(){
-			RECT tmpRect;
-			GetWindowRect(hWnd, &tmpRect);
-			pos.x= tmpRect.left;
-			pos.y= tmpRect.top;
-			size.x= tmpRect.right-  tmpRect.left;
-			size.y= tmpRect.bottom- tmpRect.top;
-
-			//最小ウィンドウサイズ未満になって居ないかどうか確認
-			if( size.x<sizeMin.x || size.y<sizeMin.y ){
-				if( size.x<sizeMin.x ) size.x= sizeMin.x;
-				if( size.y<sizeMin.y ) size.y= sizeMin.y;
-				setSize(size);
-			}
-
-			partsAreaSize= WindowSize( size.x-partsAreaPos.x-3, size.y-partsAreaPos.y-3 );
-		}
 		///	Method : 左右マウスボタンダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
 			if (this->ldownListener != NULL) {
@@ -1067,6 +1081,52 @@ static void s_dummyfunc();
 				(*plItr)->onMouseMove(mouseEvent);
 			}
 		}
+
+		void onMouseHover(const MouseEvent& e) {
+			if (this->hoverListener != NULL) {
+				(this->hoverListener)();
+			}
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
+				plItr != partsList.end();
+				plItr++) {
+
+				MouseEvent mouseEvent;
+				mouseEvent.globalX = e.globalX;
+				mouseEvent.globalY = e.globalY;
+				mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+				mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+				mouseEvent.altKey = e.altKey;
+				mouseEvent.shiftKey = e.shiftKey;
+				mouseEvent.ctrlKey = e.ctrlKey;
+
+				(*plItr)->onMouseHover(mouseEvent);
+			}
+		}
+		void onMouseLeave(const MouseEvent& e) {
+			if (this->leaveListener != NULL) {
+				(this->leaveListener)();
+			}
+
+			//内部パーツ
+			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
+				plItr != partsList.end();
+				plItr++) {
+
+				MouseEvent mouseEvent;
+				mouseEvent.globalX = e.globalX;
+				mouseEvent.globalY = e.globalY;
+				mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+				mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+				mouseEvent.altKey = e.altKey;
+				mouseEvent.shiftKey = e.shiftKey;
+				mouseEvent.ctrlKey = e.ctrlKey;
+
+				(*plItr)->onMouseLeave(mouseEvent);
+			}
+		}
+
 		//	Method : キーボードイベント受信
 		void onKeyboard(const KeyboardEvent& e){
 			if( this->keyboardListener!=NULL ){
