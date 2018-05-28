@@ -54,37 +54,39 @@ namespace OrgWinGUI{
 		//}
 
 		//枠を書く
-		int centerPos = getCenterLinePos();
-		hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-		if (divideSide) {
-			MoveToEx(hdcM->hDC, pos.x + centerPos, pos.y + 1, NULL);
-			LineTo(hdcM->hDC, pos.x + centerPos, pos.y + size.y - 1);
-			if (canShift) {
-				hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-				int centerPos2 = pos.y + size.y / 2;
-				MoveToEx(hdcM->hDC, pos.x + centerPos, centerPos2 - HANDLE_MARK_SIZE / 2, NULL);
-				LineTo(hdcM->hDC, pos.x + centerPos, centerPos2 + HANDLE_MARK_SIZE / 2);
+		if (hdcM) {
+			int centerPos = getCenterLinePos();
+			hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+			if (divideSide) {
+				MoveToEx(hdcM->hDC, pos.x + centerPos, pos.y + 1, NULL);
+				LineTo(hdcM->hDC, pos.x + centerPos, pos.y + size.y - 1);
+				if (canShift) {
+					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+					int centerPos2 = pos.y + size.y / 2;
+					MoveToEx(hdcM->hDC, pos.x + centerPos, centerPos2 - HANDLE_MARK_SIZE / 2, NULL);
+					LineTo(hdcM->hDC, pos.x + centerPos, centerPos2 + HANDLE_MARK_SIZE / 2);
+				}
 			}
-		}
-		else {
-			MoveToEx(hdcM->hDC, pos.x + 1, pos.y + centerPos, NULL);
-			LineTo(hdcM->hDC, pos.x + size.x - 1, pos.y + centerPos);
-			if (canShift) {
-				hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-				int centerPos2 = pos.x + size.x / 2;
-				MoveToEx(hdcM->hDC, centerPos2 - HANDLE_MARK_SIZE / 2, pos.y + centerPos, NULL);
-				LineTo(hdcM->hDC, centerPos2 + HANDLE_MARK_SIZE / 2, pos.y + centerPos);
+			else {
+				MoveToEx(hdcM->hDC, pos.x + 1, pos.y + centerPos, NULL);
+				LineTo(hdcM->hDC, pos.x + size.x - 1, pos.y + centerPos);
+				if (canShift) {
+					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+					int centerPos2 = pos.x + size.x / 2;
+					MoveToEx(hdcM->hDC, centerPos2 - HANDLE_MARK_SIZE / 2, pos.y + centerPos, NULL);
+					LineTo(hdcM->hDC, centerPos2 + HANDLE_MARK_SIZE / 2, pos.y + centerPos);
+				}
 			}
-		}
 
-		//全ての内部パーツを描画
-		for (std::list<OrgWindowParts*>::iterator itr = partsList1.begin();
-			itr != partsList1.end(); itr++) {
-			(*itr)->draw();
-		}
-		for (std::list<OrgWindowParts*>::iterator itr = partsList2.begin();
-			itr != partsList2.end(); itr++) {
-			(*itr)->draw();
+			//全ての内部パーツを描画
+			for (std::list<OrgWindowParts*>::iterator itr = partsList1.begin();
+				itr != partsList1.end(); itr++) {
+				(*itr)->draw();
+			}
+			for (std::list<OrgWindowParts*>::iterator itr = partsList2.begin();
+				itr != partsList2.end(); itr++) {
+				(*itr)->draw();
+			}
 		}
 	}
 
@@ -393,6 +395,53 @@ namespace OrgWinGUI{
 		//}
 	}
 
+	void OWP_CheckBoxA::draw() {
+		if (!parentWindow) {
+			return;
+		}
+		HWND parenthwnd = parentWindow->getHWnd();
+		if (!IsWindow(parenthwnd)) {
+			return;
+		}
+
+
+		if (hdcM) {
+			drawEdge();
+
+			//チェックボックス
+			int pos1x = pos.x + BOX_POS_X;
+			int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
+			int pos2x = pos.x + BOX_POS_X + BOX_WIDTH - 1;
+			int pos2y = pos.y + size.y / 2 + BOX_WIDTH / 2 - 1;
+			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+			Rectangle(hdcM->hDC, pos1x, pos1y, pos2x + 1, pos2y + 1);
+			if (value) {
+				MoveToEx(hdcM->hDC, pos1x + 2, pos1y + 2, NULL);
+				LineTo(hdcM->hDC, pos2x - 1, pos2y - 1);
+				MoveToEx(hdcM->hDC, pos2x - 2, pos1y + 2, NULL);
+				LineTo(hdcM->hDC, pos1x + 1, pos2y - 1);
+			}
+			hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+			MoveToEx(hdcM->hDC, pos1x, pos1y + 2, NULL);
+			LineTo(hdcM->hDC, pos1x, pos2y - 1);
+			MoveToEx(hdcM->hDC, pos2x, pos1y + 2, NULL);
+			LineTo(hdcM->hDC, pos2x, pos2y - 1);
+			MoveToEx(hdcM->hDC, pos1x + 2, pos1y, NULL);
+			LineTo(hdcM->hDC, pos2x - 1, pos1y);
+			MoveToEx(hdcM->hDC, pos1x + 2, pos2y, NULL);
+			LineTo(hdcM->hDC, pos2x - 1, pos2y);
+
+			//名前
+			pos1x = pos.x + BOX_POS_X + BOX_WIDTH + 3;
+			pos1y = pos.y + size.y / 2 - 5;
+			hdcM->setFont(12, _T("ＭＳ ゴシック"));
+			SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+			TextOut(hdcM->hDC,
+				pos1x, pos1y,
+				name, (int)_tcslen(name));
+		}
+	}
+
 
 	void OWP_Timeline::setCurrentTime(double _currentTime, bool CallListener) {
 		static int s_paintcnt = 0;
@@ -650,7 +699,7 @@ namespace OrgWinGUI{
 				//PostQuitMessage(0);
 				return 0;
 			default:
-				if( owner->nowChangingSize ){
+				if( (g_endappflag == 0 )&& owner->nowChangingSize ){
 					owner->nowChangingSize= false;
 					owner->autoResizeAllParts();
 				}

@@ -19,6 +19,7 @@
 #include <TexBank.h>
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
+int g_endappflag = 0;
 ID3D10DepthStencilState *g_pDSStateZCmp = 0;
 ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
 ID3D10ShaderResourceView* g_presview = 0;
@@ -123,6 +124,7 @@ int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
 #else
+extern int g_endappflag;
 extern ID3D10DepthStencilState *g_pDSStateZCmp;
 extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;
 extern ID3D10ShaderResourceView* g_presview;

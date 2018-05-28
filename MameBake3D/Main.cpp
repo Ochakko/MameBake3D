@@ -221,6 +221,10 @@ extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 extern void DXUTSetOverrideSize(int srcw, int srch);
 
 
+
+CRITICAL_SECTION s_CritSection_LTimeline;
+
+
 //ChaMatrix s_selectmat;//for display manipulator
 //ChaMatrix s_ikselectmat;//for ik, fk
 ChaMatrix s_selectmat;//for display manipulator
@@ -400,7 +404,7 @@ static ChaMatrix s_selm = ChaMatrix( 0.0f, 0.0f, 0.0f, 0.0f,
 static OrgWindow* s_timelineWnd = 0;
 static OWP_Timeline* s_owpTimeline = 0;
 static OWP_PlayerButton* s_owpPlayerButton = 0;
-static OWP_CheckBox* s_parentcheck = 0;
+static OWP_CheckBoxA* s_parentcheck = 0;
 
 static OrgWindow* s_LtimelineWnd = 0;
 static OWP_Timeline* s_owpLTimeline = 0;
@@ -408,7 +412,7 @@ static OWP_EulerGraph* s_owpEulerGraph = 0;
 static OWP_Separator* s_LTSeparator = 0;
 
 static OrgWindow* s_dmpanimWnd = 0;
-static OWP_CheckBox* s_dmpgroupcheck = 0;
+static OWP_CheckBoxA* s_dmpgroupcheck = 0;
 static OWP_Label* s_dmpanimLlabel = 0;
 static OWP_Slider* s_dmpanimLSlider = 0;
 static OWP_Label* s_dmpanimAlabel = 0;
@@ -416,13 +420,13 @@ static OWP_Slider* s_dmpanimASlider = 0;
 static OWP_Button* s_dmpanimB = 0;
 
 static OrgWindow* s_rigidWnd = 0;
-static OWP_CheckBox* s_groupcheck = 0;
+static OWP_CheckBoxA* s_groupcheck = 0;
 static OWP_Slider* s_shprateSlider = 0;
 static OWP_Slider* s_boxzSlider = 0;
 static OWP_Slider* s_massSlider = 0;
 static OWP_Button* s_massB = 0;
-static OWP_CheckBox* s_rigidskip = 0;
-static OWP_CheckBox* s_forbidrot = 0;
+static OWP_CheckBoxA* s_rigidskip = 0;
+static OWP_CheckBoxA* s_forbidrot = 0;
 static OWP_Label* s_shplabel = 0;
 static OWP_Label* s_boxzlabel = 0;
 static OWP_RadioButton* s_colradio = 0;
@@ -459,10 +463,10 @@ static OWP_Label* s_btglabel = 0;
 static OWP_Slider* s_btgscSlider = 0;
 static OWP_Label* s_btgsclabel = 0;
 static OWP_Button* s_btgB = 0;
-static OWP_CheckBox* s_btforce = 0;
+static OWP_CheckBoxA* s_btforce = 0;
 
 static OrgWindow* s_impWnd = 0;
-static OWP_CheckBox* s_impgroupcheck = 0;
+static OWP_CheckBoxA* s_impgroupcheck = 0;
 static OWP_Slider* s_impxSlider = 0;
 static OWP_Slider* s_impySlider = 0;
 static OWP_Slider* s_impzSlider = 0;
@@ -481,7 +485,7 @@ static OWP_Slider* s_gsizezSlider = 0;
 static OWP_Label* s_ghlabel = 0;
 static OWP_Label* s_gsizexlabel = 0;
 static OWP_Label* s_gsizezlabel = 0;
-static OWP_CheckBox* s_gpdisp = 0;
+static OWP_CheckBoxA* s_gpdisp = 0;
 static OWP_Slider* s_grestSlider = 0;
 static OWP_Label* s_grestlabel = 0;
 static OWP_Slider* s_gfricSlider = 0;
@@ -612,7 +616,7 @@ typedef struct tag_modelpanel
 	OrgWindow* panel;
 	OWP_RadioButton* radiobutton;
 	OWP_Separator* separator;
-	vector<OWP_CheckBox*> checkvec;
+	vector<OWP_CheckBoxA*> checkvec;
 	int modelindex;
 }MODELPANEL;
 
@@ -927,7 +931,7 @@ static CRigidElem* GetCurRgdRe();
 
 static int OpenChaFile();
 CModel* OpenMQOFile();
-CModel* OpenFBXFile( int skipdefref );
+CModel* OpenFBXFile( int skipdefref, int inittimelineflag );
 static int OpenREFile();
 static int OpenImpFile();
 static int OpenGcoFile();
@@ -1321,6 +1325,18 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 //--------------------------------------------------------------------------------------
 void InitApp()
 {
+	InitializeCriticalSection(&s_CritSection_LTimeline);
+
+	s_timelineWnd = 0;
+	s_owpTimeline = 0;
+	s_owpPlayerButton = 0;
+	s_parentcheck = 0;
+	s_LtimelineWnd = 0;
+	s_owpLTimeline = 0;
+	s_owpEulerGraph = 0;
+	s_LTSeparator = 0;
+
+
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
 
@@ -1976,6 +1992,9 @@ void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext)
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 {
+	g_endappflag = 1;
+
+
 	if (g_pDSStateZCmp) {
 		g_pDSStateZCmp->Release();
 		g_pDSStateZCmp = 0;
@@ -2507,7 +2526,7 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		s_bpWorld = 0;
 	}
 
-
+	DeleteCriticalSection(&s_CritSection_LTimeline);
 }
 
 
@@ -5054,7 +5073,7 @@ int OpenFile()
 			OpenChaFile();
 			s_filterindex = 1;
 		}else if( cmpfbx == 0 ){
-			OpenFBXFile( 0 );
+			OpenFBXFile( 0, 1 );
 			s_filterindex = 1;
 		}else if( cmpmqo == 0 ){
 			OpenMQOFile();
@@ -5084,7 +5103,14 @@ int OpenFile()
 			cmpfbx = wcscmp( extptr, L".fbx" );
 			cmpmqo = wcscmp( extptr, L".mqo" );
 			if( cmpfbx == 0 ){
-				OpenFBXFile( 0 );
+				WCHAR* nexttopchar = topchar + leng2 + 1;
+				if (*nexttopchar != TEXT('\0')) {
+					OpenFBXFile(0, 0);
+				}
+				else {
+					//最終のFBXに対してのみinittimelineをする
+					OpenFBXFile(0, 1);
+				}
 				s_filterindex = 1;
 			}else if( cmpmqo == 0 ){
 				OpenMQOFile();
@@ -5228,7 +5254,7 @@ CModel* OpenMQOFile()
 	return newmodel;
 }
 
-CModel* OpenFBXFile( int skipdefref )
+CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
@@ -5388,7 +5414,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	CallF( CreateModelPanel(), return 0 );
 
-	CallF( s_model->LoadFBXAnim( s_psdk, pImporter, pScene, OnAddMotion ), return 0 );
+	//CallF( s_model->LoadFBXAnim( s_psdk, pImporter, pScene, OnAddMotion ), return 0 );
+	CallF(s_model->LoadFBXAnim(s_psdk, pImporter, pScene, NULL), return 0);
 	//if( (int)s_modelindex.size() >= 2 )
 	//	_ASSERT( 0 );
 
@@ -5396,6 +5423,11 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//if( s_model->GetMotInfoSize() >= 2 ){
 	//	OnDelMotion( 0 );//初期状態のダミーモーションを削除
 	//}
+
+	if (inittimelineflag == 1) {
+		OnAddMotion(s_model->GetCurMotInfo()->motid);
+	}
+
 
 	int motnum = s_model->GetMotInfoSize();
 	if (motnum == 0){
@@ -5492,110 +5524,128 @@ int InitCurMotion(int selectflag, double expandmotion)
 
 int AddTimeLine( int newmotid )
 {
+	EnterCriticalSection(&s_CritSection_LTimeline);
+
 	//EraseKeyList();
+	if (s_model && s_model->GetBoneListSize() > 0) {
 
-	if( !s_owpTimeline && s_model && (s_model->GetBoneListSize() > 0) ){
-		//OWP_Timeline* owpTimeline = 0;
-		//タイムラインのGUIパーツを生成
-		s_owpTimeline= new OWP_Timeline( L"testmotion", 100.0, 4.0 );
+		if (!s_owpTimeline) {
+			//OWP_Timeline* owpTimeline = 0;
+			//タイムラインのGUIパーツを生成
+			s_owpTimeline = new OWP_Timeline(L"testmotion", 100.0, 4.0);
 
-		// カーソル移動時のイベントリスナーに
-		// カーソル移動フラグcursorFlagをオンにするラムダ関数を登録する
-		s_owpTimeline->setCursorListener([](){ s_cursorFlag = true; });
+			// カーソル移動時のイベントリスナーに
+			// カーソル移動フラグcursorFlagをオンにするラムダ関数を登録する
+			s_owpTimeline->setCursorListener([]() { s_cursorFlag = true; });
 
-		// キー選択時のイベントリスナーに
-		// キー選択フラグselectFlagをオンにするラムダ関数を登録する
-		//s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });//LTimelineへ移動
+			// キー選択時のイベントリスナーに
+			// キー選択フラグselectFlagをオンにするラムダ関数を登録する
+			//s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });//LTimelineへ移動
 
-		s_owpTimeline->setMouseRUpListener([]() {s_timelineRUpFlag = true; });
+			s_owpTimeline->setMouseRUpListener([]() {s_timelineRUpFlag = true; });
 
-		// キー移動時のイベントリスナーに
-		// キー移動フラグkeyShiftFlagをオンにして、キー移動量をコピーするラムダ関数を登録する
-		s_owpTimeline->setKeyShiftListener([](){
-			s_keyShiftFlag = true;
-			s_keyShiftTime = s_owpTimeline->getShiftKeyTime();
-		});
+			// キー移動時のイベントリスナーに
+			// キー移動フラグkeyShiftFlagをオンにして、キー移動量をコピーするラムダ関数を登録する
+			s_owpTimeline->setKeyShiftListener([]() {
+				s_keyShiftFlag = true;
+				s_keyShiftTime = s_owpTimeline->getShiftKeyTime();
+			});
 
-		// キー削除時のイベントリスナーに
-		// 削除されたキー情報をスタックするラムダ関数を登録する
-		s_owpTimeline->setKeyDeleteListener([](const KeyInfo &keyInfo){
-			//s_deletedKeyInfoList.push_back(keyInfo);
-		});
-
-
-		//ウィンドウにタイムラインを関連付ける
-		s_timelineWnd->addParts(*s_owpTimeline);
+			// キー削除時のイベントリスナーに
+			// 削除されたキー情報をスタックするラムダ関数を登録する
+			s_owpTimeline->setKeyDeleteListener([](const KeyInfo &keyInfo) {
+				//s_deletedKeyInfoList.push_back(keyInfo);
+			});
 
 
-
-//		s_owpTimeline->timeSize = 4.0;
-//		s_owpTimeline->callRewrite();						//再描画
-//		s_owpTimeline->setRewriteOnChangeFlag(true);		//再描画要求を再開
-	}
-
-	if( s_owpTimeline && (s_model->GetBoneListSize() > 0) ){
-		int nextindex;
-		nextindex = (int)s_tlarray.size();
-
-		TLELEM newtle;
-		newtle.menuindex = nextindex;
-		newtle.motionid = newmotid;
-		s_tlarray.push_back( newtle );
-
-		CallF( s_model->SetCurrentMotion( newmotid ), return 1 );
-	}
-
-	if (!s_LTSeparator && s_model) {
-		s_LTSeparator = new OWP_Separator(false);
-		s_LtimelineWnd->addParts(*s_LTSeparator);//playerbuttonより後
-	}
+			//ウィンドウにタイムラインを関連付ける
+			s_timelineWnd->addParts(*s_owpTimeline);
 
 
-	if( !s_owpLTimeline && s_model ){
-		s_owpLTimeline= new OWP_Timeline( L"EditRangeTimeLine" );
-		//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
-		s_LTSeparator->addParts1(*s_owpLTimeline);
-		s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
-		s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
-		s_owpLTimeline->setMouseMDownListener([]() {
-			s_timelinembuttonFlag = true;
-			if (s_mbuttoncnt == 0) {
-				s_mbuttoncnt = 1;
+
+			//		s_owpTimeline->timeSize = 4.0;
+			//		s_owpTimeline->callRewrite();						//再描画
+			//		s_owpTimeline->setRewriteOnChangeFlag(true);		//再描画要求を再開
+		}
+
+		if (s_owpTimeline) {
+			int nextindex;
+			nextindex = (int)s_tlarray.size();
+
+			TLELEM newtle;
+			newtle.menuindex = nextindex;
+			newtle.motionid = newmotid;
+			s_tlarray.push_back(newtle);
+
+			s_model->SetCurrentMotion(newmotid);
+		}
+
+		if (s_LtimelineWnd && s_owpPlayerButton) {
+			if (!s_LTSeparator) {
+				s_LTSeparator = new OWP_Separator(false);
+				s_LtimelineWnd->addParts(*s_LTSeparator);
+
+				if (s_owpLTimeline) {
+					delete s_owpLTimeline;
+					s_owpLTimeline = 0;
+				}
+				s_owpLTimeline = new OWP_Timeline(L"EditRangeTimeLine");
+				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
+				s_LTSeparator->addParts1(*s_owpLTimeline);
+				s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
+				s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
+				s_owpLTimeline->setMouseMDownListener([]() {
+					s_timelinembuttonFlag = true;
+					if (s_mbuttoncnt == 0) {
+						s_mbuttoncnt = 1;
+					}
+					else {
+						s_mbuttoncnt = 0;
+					}
+				});
+				s_owpLTimeline->setMouseWheelListener([]() {
+					s_timelinewheelFlag = true;
+				});
+
+
+				if (s_parentcheck) {
+					delete s_parentcheck;
+					s_parentcheck = 0;
+				}
+				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 0);
+				//s_LtimelineWnd->addParts(*s_parentcheck);
+				s_LTSeparator->addParts2(*s_parentcheck);
+				s_parentcheck->setButtonListener([]() { refreshEulerGraph(); });
+
+
+				if (s_owpEulerGraph) {
+					delete s_owpEulerGraph;
+					s_owpEulerGraph = 0;
+				}
+				s_owpEulerGraph = new OWP_EulerGraph(L"EulerGraph");
+				//s_LtimelineWnd->addParts(*s_owpEulerGraph);
+				s_LTSeparator->addParts2(*s_owpEulerGraph);
+
+				//OrgWinGUI::WindowSize graphsize = OrgWinGUI::WindowSize(s_LTSeparator->getSize().x - 8, 60);
+				//s_owpEulerGraph->setSize(graphsize);
+				//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
+				//s_owpEulerGraph->setPos(graphpos);
+				s_owpEulerGraph->setCursorListener([]() { s_LcursorFlag = true; });
+
+
 			}
-			else {
-				s_mbuttoncnt = 0;
-			}
-		});
-		s_owpLTimeline->setMouseWheelListener([]() {
-			s_timelinewheelFlag = true;
-		});
+		}
+
+		//タイムラインのキーを設定
+		if (s_owpTimeline) {
+			refreshTimeline(*s_owpTimeline);
+		}
+
+		s_owpLTimeline->selectClear();
 	}
 
 
-	if (!s_owpEulerGraph && s_model) {
-		s_parentcheck = new OWP_CheckBox(L"Parent Euler", 0);
-		//OrgWinGUI::WindowSize checksize = OrgWinGUI::WindowSize(280, 15);
-		//s_parentcheck->setSize(checksize);
-		//OrgWinGUI::WindowPos checkpos = OrgWinGUI::WindowPos(0, 0);
-		//s_parentcheck->setPos(checkpos);
-		s_LTSeparator->addParts2(*s_parentcheck);
-		s_parentcheck->setButtonListener([]() { refreshEulerGraph(); });
-
-		s_owpEulerGraph = new OWP_EulerGraph(L"EulerGraph");
-		//OrgWinGUI::WindowSize graphsize = OrgWinGUI::WindowSize(s_LTSeparator->getSize().x - 8, 60);
-		//s_owpEulerGraph->setSize(graphsize);
-		//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
-		//s_owpEulerGraph->setPos(graphpos);
-		s_LTSeparator->addParts2(*s_owpEulerGraph);
-		s_owpEulerGraph->setCursorListener([]() { s_LcursorFlag = true; });
-	}
-	//タイムラインのキーを設定
-	if( s_owpTimeline ){
-		refreshTimeline(*s_owpTimeline);
-	}
-
-
-	s_owpLTimeline->selectClear();
+	LeaveCriticalSection(&s_CritSection_LTimeline);
 
 	return 0;
 }
@@ -5619,11 +5669,13 @@ void refreshEulerGraph()
 		if (s_model && (s_curboneno >= 0)){
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
 			if (curbone){
-				int check = s_parentcheck->getValue();
-				if (check == 1) {
-					CBone* parentbone = curbone->GetParent();
-					if (parentbone) {
-						curbone = parentbone;
+				if (s_parentcheck) {
+					int check = s_parentcheck->getValue();
+					if (check == 1) {
+						CBone* parentbone = curbone->GetParent();
+						if (parentbone) {
+							curbone = parentbone;
+						}
 					}
 				}
 
@@ -7408,7 +7460,7 @@ int CreateModelPanel()
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		CModel* curmodel = s_modelindex[modelcnt].modelptr;
-		OWP_CheckBox *owpCheckBox= new OWP_CheckBox( L"表示/非表示", curmodel->GetModelDisp() );
+		OWP_CheckBoxA *owpCheckBox= new OWP_CheckBoxA( L"表示/非表示", curmodel->GetModelDisp() );
 		s_modelpanel.checkvec.push_back( owpCheckBox );
 	}
 
@@ -7417,7 +7469,7 @@ int CreateModelPanel()
 	s_modelpanel.separator->addParts1( *(s_modelpanel.radiobutton) );
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
-		OWP_CheckBox* curcb = s_modelpanel.checkvec[modelcnt];
+		OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
 		s_modelpanel.separator->addParts2( *curcb );
 	}
 
@@ -8769,7 +8821,12 @@ int OpenChaFile()
 	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 	CChaFile chafile;
-	CallF( chafile.LoadChaFile( g_tmpmqopath, OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu ), return 1 );
+	int ret = chafile.LoadChaFile( g_tmpmqopath, OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu );
+	if (ret == 1) {
+		_ASSERT(0);
+		return 1;
+	}
+	OnAddMotion(s_model->GetCurMotInfo()->motid);
 
 	SetCursor(oldcursor);
 
@@ -11874,7 +11931,7 @@ int CreateDmpAnimWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_dmpgroupcheck = new OWP_CheckBox(L"全部設定ボタンで同グループ剛体に設定する。", 0);
+	s_dmpgroupcheck = new OWP_CheckBoxA(L"全部設定ボタンで同グループ剛体に設定する。", 0);
 	s_dmpanimLlabel = new OWP_Label(L"１フレームあたりの位置ばね減衰率の減少率");
 	s_dmpanimLSlider = new OWP_Slider(0.0, 1.0, 0.0);
 	s_dmpanimAlabel = new OWP_Label(L"１フレームあたりの角度ばね減衰率の減少率");
@@ -11952,19 +12009,19 @@ int CreateRigidWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_groupcheck = new OWP_CheckBox(L"全部設定ボタンで同グループ剛体に設定する。", 0);
+	s_groupcheck = new OWP_CheckBoxA(L"全部設定ボタンで同グループ剛体に設定する。", 0);
 	s_shprateSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
 	s_massB = new OWP_Button(L"全剛体に質量設定");
-	s_rigidskip = new OWP_CheckBox(L"有効/無効", 1);
-	s_forbidrot = new OWP_CheckBox(L"回転禁止", 0);
+	s_rigidskip = new OWP_CheckBoxA(L"有効/無効", 1);
+	s_forbidrot = new OWP_CheckBoxA(L"回転禁止", 0);
 	s_allrigidenableB = new OWP_Button(L"全ての剛体を有効にする");
 	s_allrigiddisableB = new OWP_Button(L"全ての剛体以外を無効にする");
 	s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
 	s_btgscSlider = new OWP_Slider(10.0, 100.0, 0.0);
 	s_btgB = new OWP_Button(L"全ての剛体にBT重力設定");
-	s_btforce = new OWP_CheckBox(L"BTシミュ剛体にする", 0);
+	s_btforce = new OWP_CheckBoxA(L"BTシミュ剛体にする", 0);
 
 	s_shplabel = new OWP_Label(L"剛体の太さ");
 	s_boxzlabel = new OWP_Label(L"直方体の奥行き");
@@ -12408,7 +12465,7 @@ int CreateImpulseWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_impgroupcheck = new OWP_CheckBox(L"全部に設定ボタンで同じ剛体グループに設定", 0);
+	s_impgroupcheck = new OWP_CheckBoxA(L"全部に設定ボタンで同じ剛体グループに設定", 0);
 
 	s_impxSlider = new OWP_Slider(0.0, 50.0, -50.0);
 	s_impySlider = new OWP_Slider(0.0, 50.0, -50.0);
@@ -12513,7 +12570,7 @@ int CreateGPlaneWnd()
 	s_ghlabel = new OWP_Label(L"物理地面の高さ");
 	s_gsizexlabel = new OWP_Label(L"X方向のサイズ");
 	s_gsizezlabel = new OWP_Label(L"Z方向のサイズ");
-	s_gpdisp = new OWP_CheckBox(L"表示する", 1);
+	s_gpdisp = new OWP_CheckBoxA(L"表示する", 1);
 
 	s_grestSlider = new OWP_Slider(0.5, 1.0, 0.0);
 	s_gfricSlider = new OWP_Slider(0.5, 1.0, 0.0);
@@ -12605,7 +12662,6 @@ int CreateGPlaneWnd()
 
 int CreateToolWnd()
 {
-
 	/////////
 	// ツールウィンドウを作成してボタン類を追加
 	s_toolWnd = new OrgWindow(
@@ -14644,11 +14700,13 @@ int UpdateEditedEuler()
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone) {
-		int check = (int)s_parentcheck->getValue();
-		if (check == 1) {
-			CBone* parentbone = curbone->GetParent();
-			if (parentbone) {
-				curbone = parentbone;
+		if (s_parentcheck) {
+			int check = (int)s_parentcheck->getValue();
+			if (check == 1) {
+				CBone* parentbone = curbone->GetParent();
+				if (parentbone) {
+					curbone = parentbone;
+				}
 			}
 		}
 

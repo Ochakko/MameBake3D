@@ -343,7 +343,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	return 0;
 }
 
-int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(), 
+int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(), 
 	int (*srcReMenu)( int selindex1, int callbymenu1 ), int (*srcRgdMenu)( int selindex2, int callbymenu2 ), int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) )
 {
 	m_mode = XMLIO_LOAD;
@@ -412,8 +412,8 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref
 	m_xmliobuf.pos = 0;
 	XMLIOBUF wallbuf;
 	ZeroMemory(&wallbuf, sizeof(XMLIOBUF));
-	CallF(SetXmlIOBuf(&m_xmliobuf, "<Wall>", "</Wall>", &wallbuf), return 1);
-	CallF(ReadWall(&wallbuf), return 1);
+	CallF(SetXmlIOBuf(&m_xmliobuf, "<Wall>", "</Wall>", &wallbuf), return 2);
+	CallF(ReadWall(&wallbuf), return 2);
 
 	return 0;
 }
@@ -527,7 +527,7 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 	g_tmpmqomult = modelmult;
 
 	CModel* newmodel = 0;
-	newmodel = (this->m_FbxFunc)( 1 );
+	newmodel = (this->m_FbxFunc)( 1, 0 );
 	_ASSERT( newmodel );
 
 	//newmodel->m_tmpmotspeed = m_motspeed;

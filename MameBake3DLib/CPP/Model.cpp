@@ -629,7 +629,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 		return 0;
 	}
 
-	this->m_tlFunc = tlfunc;
+	this->m_tlFunc = tlfunc;//–¢Žg—p
 
 	FbxNode *pRootNode = pscene->GetRootNode();
 	CallF( CreateFBXAnim( pscene, pRootNode ), return 1 );
@@ -3084,7 +3084,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 			CallF( CreateFBXShape( mCurrentAnimLayer, animleng, mStart, mFrameTime2 ), return 1 );
 		}
 
-		(this->m_tlFunc)( curmotid );
+		//(this->m_tlFunc)( curmotid );
+		SetCurrentMotion(curmotid);
 
 	}
 
@@ -7901,7 +7902,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							}
 							rotq.Slerp2(endq, 1.0 - currate2, &curq);
 
-							_ASSERT(0);
+							//_ASSERT(0);
 
 
 							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);

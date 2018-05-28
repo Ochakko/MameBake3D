@@ -365,11 +365,11 @@ static void s_dummyfunc();
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : 親ウィンドウに登録
-		virtual void regist( OrgWindow *_parentWindow,
+		virtual void registmember( OrgWindow *_parentWindow,
 							 WindowPos _pos, WindowSize _size,
 							 HDCMaster* _hdcM,
 							 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
-			_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
+			_registmember(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 			autoResize();
 		}
 		/// Method : 自動サイズ設定
@@ -435,6 +435,10 @@ static void s_dummyfunc();
 		virtual WindowSize getSize() const{
 			return WindowSize(size.x,size.y);
 		}
+		virtual OrgWindow* getParent() const {
+			return parentWindow;
+		}
+
 		virtual void setSize(const WindowSize& _size){
 			size= _size;
 	//		draw();
@@ -459,7 +463,7 @@ static void s_dummyfunc();
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : 親ウィンドウに登録
-		void _regist( OrgWindow *_parentWindow,
+		void _registmember( OrgWindow *_parentWindow,
 					  WindowPos _pos, WindowSize _size,
 					  HDCMaster* _hdcM,
 					  unsigned char _baseR, unsigned char _baseG, unsigned char _baseB ){
@@ -572,7 +576,27 @@ static void s_dummyfunc();
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウ内部品を追加
 		void addParts(OrgWindowParts& a){
-			a.regist( this,
+
+			//整合性チェック
+			if (!partsList.empty()) {
+				std::list<OrgWindowParts*>::iterator itr = partsList.begin();
+				if (*itr) {
+					OrgWindow* parent = (*itr)->getParent();
+					if (parent) {
+						if (parent != this) {
+							return;
+						}
+					}
+					else {
+						return;
+					}
+				}
+				else {
+					return;
+				}
+			}
+
+			a.registmember( this,
 					  WindowPos(partsAreaPos.x,partsAreaPos.y+currentPartsSizeY),
 					  WindowSize(partsAreaSize.x,partsAreaSize.y-currentPartsSizeY),
 					  &hdcM,
@@ -1219,6 +1243,8 @@ static void s_dummyfunc();
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_Separator(bool _divideSide=true){
+			parentWindow = NULL;
+
 			currentPartsSizeY1= 0;
 			currentPartsSizeY2= 0;
 
@@ -1227,37 +1253,41 @@ static void s_dummyfunc();
 			divideSide= _divideSide;
 			shiftDrag= false;
 
+			partsList1.clear();
+			partsList2.clear();
 		}
 		~OWP_Separator(){
 		}
 
 		//////////////////////////// Method //////////////////////////////
 		///	Method : 親ウィンドウに登録
-		void regist( OrgWindow *_parentWindow,
-							 WindowPos _pos, WindowSize _size,
-							 HDCMaster* _hdcM,
-							 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
-			_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
+		//void regist( OrgWindow *_parentWindow,
+		//					 WindowPos _pos, WindowSize _size,
+		//					 HDCMaster* _hdcM,
+		//					 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
+		//	_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 
-			//全てのグループ内部品を同じウィンドウに登録
-			for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
-				itr!=partsList1.end(); itr++){
-				(*itr)->regist( parentWindow,
-								_pos,_size,
-								hdcM,
-								baseColor.r,baseColor.g,baseColor.b);
-			}
-			for(std::list<OrgWindowParts*>::iterator itr=partsList2.begin();
-				itr!=partsList2.end(); itr++){
-				(*itr)->regist( parentWindow,
-								_pos,_size,
-								hdcM,
-								baseColor.r,baseColor.g,baseColor.b);
-			}
 
-			//グループボックスと内部要素の位置とサイズを自動設定
-			autoResize();
-		}
+		//	//addParts1, addParts2で個別にregistが呼ばれるのでコメントアウト。
+		//	////全てのグループ内部品を同じウィンドウに登録
+		//	//for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
+		//	//	itr!=partsList1.end(); itr++){
+		//	//	(*itr)->regist( parentWindow,
+		//	//					_pos,_size,
+		//	//					hdcM,
+		//	//					baseColor.r,baseColor.g,baseColor.b);
+		//	//}
+		//	//for(std::list<OrgWindowParts*>::iterator itr=partsList2.begin();
+		//	//	itr!=partsList2.end(); itr++){
+		//	//	(*itr)->regist( parentWindow,
+		//	//					_pos,_size,
+		//	//					hdcM,
+		//	//					baseColor.r,baseColor.g,baseColor.b);
+		//	//}
+
+		//	//グループボックスと内部要素の位置とサイズを自動設定
+		//	autoResize();
+		//}
 		///	Method : グループ内部品を追加
 		void addParts1(OrgWindowParts& a){
 			partsList1.push_back(&a);
@@ -1265,7 +1295,7 @@ static void s_dummyfunc();
 			// グループボックスがウィンドウに登録されている場合は
 			// グループ内部品も同じウィンドウに登録する
 			if( parentWindow!=NULL ){
-				a.regist( parentWindow,
+				a.registmember( parentWindow,
 						  pos, size,
 						  hdcM,
 						  baseColor.r,baseColor.g,baseColor.b);
@@ -1280,7 +1310,7 @@ static void s_dummyfunc();
 			// グループボックスがウィンドウに登録されている場合は
 			// グループ内部品も同じウィンドウに登録する
 			if( parentWindow!=NULL ){
-				a.regist( parentWindow,
+				a.registmember( parentWindow,
 						  pos, size,
 						  hdcM,
 						  baseColor.r,baseColor.g,baseColor.b);
@@ -1780,24 +1810,24 @@ static void s_dummyfunc();
 
 		//////////////////////////// Method //////////////////////////////
 		///	Method : 親ウィンドウに登録
-		void regist( OrgWindow *_parentWindow,
-							 WindowPos _pos, WindowSize _size,
-							 HDCMaster* _hdcM,
-							 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
-			_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
+		//void regist( OrgWindow *_parentWindow,
+		//					 WindowPos _pos, WindowSize _size,
+		//					 HDCMaster* _hdcM,
+		//					 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
+		//	_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 
-			//全てのグループ内部品を同じウィンドウに登録
-			for(std::list<OrgWindowParts*>::iterator itr=partsList.begin();
-				itr!=partsList.end(); itr++){
-				(*itr)->regist( parentWindow,
-								_pos,_size,
-								hdcM,
-								baseColor.r,baseColor.g,baseColor.b);
-			}
+		//	////全てのグループ内部品を同じウィンドウに登録
+		//	//for(std::list<OrgWindowParts*>::iterator itr=partsList.begin();
+		//	//	itr!=partsList.end(); itr++){
+		//	//	(*itr)->regist( parentWindow,
+		//	//					_pos,_size,
+		//	//					hdcM,
+		//	//					baseColor.r,baseColor.g,baseColor.b);
+		//	//}
 
-			//グループボックスと内部要素の位置とサイズを自動設定
-			autoResize();
-		}
+		//	//グループボックスと内部要素の位置とサイズを自動設定
+		//	autoResize();
+		//}
 		///	Method : グループ内部品を追加
 		void addParts(OrgWindowParts& a){
 			partsList.push_back(&a);
@@ -1805,7 +1835,7 @@ static void s_dummyfunc();
 			// グループボックスがウィンドウに登録されている場合は
 			// グループ内部品も同じウィンドウに登録する
 			if( parentWindow!=NULL ){
-				a.regist( parentWindow,
+				a.registmember( parentWindow,
 						  pos, size,
 						  hdcM,
 						  baseColor.r,baseColor.g,baseColor.b);
@@ -2624,10 +2654,12 @@ static void s_dummyfunc();
 	///<summary>
 	///	ウィンドウ内部品"チェックボックス"クラス
 	///</summary>
-	class OWP_CheckBox : public OrgWindowParts{
+	class OWP_CheckBoxA : public OrgWindowParts {
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_CheckBox( const TCHAR *_name=_T(""), bool _value=false ){
+		OWP_CheckBoxA( const TCHAR *_name=_T(""), bool _value=false ){
+			parentWindow = NULL;
+
 			name= new TCHAR[256];
 			_tcscpy_s(name,256,_name);
 
@@ -2635,7 +2667,7 @@ static void s_dummyfunc();
 
 			buttonListener = [](){s_dummyfunc();};
 		}
-		~OWP_CheckBox(){
+		~OWP_CheckBoxA(){
 			delete[] name;
 		}
 
@@ -2645,41 +2677,7 @@ static void s_dummyfunc();
 			size.y= SIZE_Y;
 		}
 		//	Method : 描画
-		void draw(){
-			drawEdge();
-
-			//チェックボックス
-			int pos1x= pos.x+BOX_POS_X;
-			int pos1y= pos.y+size.y/2-BOX_WIDTH/2;
-			int pos2x= pos.x+BOX_POS_X+BOX_WIDTH-1;
-			int pos2y= pos.y+size.y/2+BOX_WIDTH/2-1;
-			hdcM->setPenAndBrush(RGB(240,240,240),NULL);
-			Rectangle(hdcM->hDC,pos1x,pos1y,pos2x+1,pos2y+1);
-			if( value ){
-				MoveToEx(hdcM->hDC, pos1x+2,pos1y+2, NULL);
-				LineTo(hdcM->hDC,   pos2x-1,pos2y-1);
-				MoveToEx(hdcM->hDC, pos2x-2,pos1y+2, NULL);
-				LineTo(hdcM->hDC,   pos1x+1,pos2y-1);
-			}
-			hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-			MoveToEx(hdcM->hDC, pos1x,pos1y+2, NULL);
-			LineTo(hdcM->hDC,   pos1x,pos2y-1);
-			MoveToEx(hdcM->hDC, pos2x,pos1y+2, NULL);
-			LineTo(hdcM->hDC,   pos2x,pos2y-1);
-			MoveToEx(hdcM->hDC, pos1x+2,pos1y, NULL);
-			LineTo(hdcM->hDC,   pos2x-1,pos1y);
-			MoveToEx(hdcM->hDC, pos1x+2,pos2y, NULL);
-			LineTo(hdcM->hDC,   pos2x-1,pos2y);
-
-			//名前
-			pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
-			pos1y= pos.y+size.y/2-5;
-			hdcM->setFont(12,_T("ＭＳ ゴシック"));
-			SetTextColor(hdcM->hDC,RGB(240,240,240));
-			TextOut( hdcM->hDC,
-					 pos1x, pos1y,
-					 name, (int)_tcslen(name));
-		}
+		void draw();
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
 			setValue(value^true);
@@ -2688,18 +2686,20 @@ static void s_dummyfunc();
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : value
 		void setValue(bool _value){
-			value= _value;
+			if (parentWindow) {
+				value = _value;
 
-			RECT tmpRect;
-			tmpRect.left=   pos.x+1;
-			tmpRect.top=    pos.y+1;
-			tmpRect.right=  pos.x+size.x-1;
-			tmpRect.bottom= pos.y+size.y-1;
-			InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-			//リスナーコール
-			if(this->buttonListener!=NULL){
-				(this->buttonListener)();
+				//リスナーコール
+				if (this->buttonListener != NULL) {
+					(this->buttonListener)();
+				}
 			}
 		}
 		bool getValue() const{
@@ -7171,24 +7171,24 @@ static void s_dummyfunc();
 
 		//////////////////////////// Method //////////////////////////////
 		///	Method : 親ウィンドウに登録
-		void regist(OrgWindow *_parentWindow,
-			WindowPos _pos, WindowSize _size,
-			HDCMaster* _hdcM,
-			unsigned char _baseR = 50, unsigned char _baseG = 70, unsigned char _baseB = 70){
-			_regist(_parentWindow, _pos, _size, _hdcM, _baseR, _baseG, _baseB);
+		//void regist(OrgWindow *_parentWindow,
+		//	WindowPos _pos, WindowSize _size,
+		//	HDCMaster* _hdcM,
+		//	unsigned char _baseR = 50, unsigned char _baseG = 70, unsigned char _baseB = 70){
+		//	_regist(_parentWindow, _pos, _size, _hdcM, _baseR, _baseG, _baseB);
 
-			//全てのグループ内部品を同じウィンドウに登録
-			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
-				itr != partsList.end(); itr++){
-				(*itr)->regist(parentWindow,
-					_pos, _size,
-					hdcM,
-					baseColor.r, baseColor.g, baseColor.b);
-			}
+		//	////全てのグループ内部品を同じウィンドウに登録
+		//	//for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
+		//	//	itr != partsList.end(); itr++){
+		//	//	(*itr)->regist(parentWindow,
+		//	//		_pos, _size,
+		//	//		hdcM,
+		//	//		baseColor.r, baseColor.g, baseColor.b);
+		//	//}
 
-			//グループボックスと内部要素の位置とサイズを自動設定
-			autoResize();
-		}
+		//	//グループボックスと内部要素の位置とサイズを自動設定
+		//	autoResize();
+		//}
 		///	Method : グループ内部品を追加
 		void addParts(OrgWindowParts& a){
 			partsList.push_back(&a);
@@ -7196,7 +7196,7 @@ static void s_dummyfunc();
 			// グループボックスがウィンドウに登録されている場合は
 			// グループ内部品も同じウィンドウに登録する
 			if (parentWindow != NULL){
-				a.regist(parentWindow,
+				a.registmember(parentWindow,
 					pos, size,
 					hdcM,
 					baseColor.r, baseColor.g, baseColor.b);
