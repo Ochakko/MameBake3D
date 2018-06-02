@@ -5988,6 +5988,21 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 			if( parbone && (curbone->GetJointFPos() != parbone->GetJointFPos()) ){
 				UpdateMatrix(&m_matWorld, &m_matVP);//curmp更新
 
+
+				CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
+				if (curre && (curre->GetForbidRotFlag() != 0)) {
+					
+					//_ASSERT(0);
+
+					//回転禁止の場合処理をスキップ
+					if (parbone) {
+						lastpar = parbone;
+					}
+					levelcnt++;
+					currate = pow(g_ikrate, g_ikfirst * levelcnt);
+					continue;
+				}
+
 				ChaVector3 parworld, chilworld;
 				//ChaVector3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
 				ChaVector3TransformCoord( &parworld, &(parbone->GetJointFPos()), &(parbone->GetCurMp().GetWorldMat()) );
@@ -6020,15 +6035,15 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					rotq0.SetAxisAndRot( rotaxis2, rotrad2 );
 					CQuaternion rotq;
 
-					if( keynum >= 2 ){
+					if (keynum >= 2) {
 						int keyno = 0;
 						double curframe;
-						for (curframe = startframe; curframe <= endframe; curframe += 1.0){
+						for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
 							CMotionPoint* curparmp;
 							curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 							CMotionPoint* aplyparmp;
 							aplyparmp = parbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-							if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
+							if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
 								ChaMatrix curparrotmat = curparmp->GetWorldMat();
 								curparrotmat._41 = 0.0f;
 								curparrotmat._42 = 0.0f;
@@ -6052,61 +6067,66 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								transmp.CalcQandTra(transmat2, firstbone);
 								rotq = transmp.GetQ();
 							}
-							else{
+							else {
 								rotq = rotq0;
 							}
 
 							double changerate;
-							if( curframe <= applyframe ){
+							if (curframe <= applyframe) {
 								changerate = 1.0 / (applyframe - startframe + 1);
-							}else{
+							}
+							else {
 								changerate = 1.0 / (endframe - applyframe + 1);
 							}
 
 
-							if( keyno == 0 ){
+							if (keyno == 0) {
 								firstframe = curframe;
 							}
-							if( g_absikflag == 0 ){
-								if( g_slerpoffflag == 0 ){
+							if (g_absikflag == 0) {
+								if (g_slerpoffflag == 0) {
 									CQuaternion endq;
-									endq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
+									endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 									CQuaternion curq;
 									double currate2;
-									if( curframe <= applyframe ){
+									if (curframe <= applyframe) {
 										currate2 = changerate * (curframe - startframe + 1);
-									}else{
+									}
+									else {
 										currate2 = changerate * (endframe - curframe + 1);
 									}
-									rotq.Slerp2( endq, 1.0 - currate2, &curq );
+									rotq.Slerp2(endq, 1.0 - currate2, &curq);
 
-									parbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, curq );
-								}else{
-									parbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
+									parbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 								}
-							}else{
-								if( keyno == 0 ){
-									parbone->RotBoneQReq( 0, m_curmotinfo->motid, curframe, rotq );
-								}else{
-									parbone->SetAbsMatReq( 0, m_curmotinfo->motid, curframe, firstframe );
+								else {
+									parbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+								}
+							}
+							else {
+								if (keyno == 0) {
+									parbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+								}
+								else {
+									parbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
 								}
 							}
 							keyno++;
 						}
-					}else{
+					}
+					else {
 						rotq = rotq0;
-						parbone->RotBoneQReq( 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq );
+						parbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
 					}
 
 
-					if( g_applyendflag == 1 ){
+					if (g_applyendflag == 1) {
 						//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
 						int tolast;
-						for( tolast = (int)m_curmotinfo->curframe + 1; tolast < m_curmotinfo->frameleng; tolast++ ){
-							(m_bonelist[ 0 ])->PasteRotReq( m_curmotinfo->motid, m_curmotinfo->curframe, tolast );
+						for (tolast = (int)m_curmotinfo->curframe + 1; tolast < m_curmotinfo->frameleng; tolast++) {
+							(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
 						}
 					}
-
 				}
 
 			}
@@ -6142,6 +6162,12 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel)
 {
 
+	//Memo 20180602
+	//PhysicsRotの結果が不安定になるケースが絞り込めてきた。
+	//parrent-->grand parentのボーンが視線に対して平行のときにこの関数を使うとcurrent-->parentボーンがぐるんぐるん回ってしまうことが多い。
+	//腕-->肩と鎖骨が直角なときに腕のIKで起こりやすい。
+	//PhysicsRotAxisDelta関数で回転軸を指定してIKすると安定する。
+
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone){
 		_ASSERT(0);
@@ -6149,6 +6175,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	}
 
 	CBone* curbone = firstbone;
+	CBone* lastpar = curbone;
 	CBone* parbone = curbone->GetParent();
 	if (!parbone){
 		return 0;
@@ -6176,14 +6203,15 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 	if (parbone){
 		CBone* gparbone = parbone->GetParent();
-		CBone* childbone = parbone->GetChild();
+		//CBone* childbone = parbone->GetChild();
+		CBone* childbone = curbone;
 		int isfirst = 1;
-		while (childbone){
-
+		//while (childbone){
+		if (childbone){
 			if (childbone->GetJointFPos() != parbone->GetJointFPos()){
 				ChaVector3 parworld, chilworld;
 				ChaVector3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));//curbone
 
 				ChaVector3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -6390,23 +6418,27 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									//OutputDebugStringA(strmsg);
 
 
-									if (ismovable != 1){
-										childbone = childbone->GetBrother();
-										continue;
+									//if (ismovable != 1){
+									//	childbone = childbone->GetBrother();
+									//	continue;
+									//}
+									if (ismovable == 1) {
+
+										setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+										//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+										//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+										setbto->GetRigidBody()->setDeactivationTime(0.0);
+
+										if (isfirst == 1) {
+											parbone->SetBtMat(newbtmat);
+											//IKボーンはKINEMATICだから。
+											//parbone->GetCurMp().SetWorldMat(newbtmat);
+											isfirst = 0;
+										}
+
+										MOTINFO* curmi = GetCurMotInfo();
+										parbone->SetWorldMat(1, curmi->motid, curmi->curframe, newbtmat);
 									}
-
-									setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
-									//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
-									//setbto->GetRigidBody()->setDeactivationTime(30000.0);
-									setbto->GetRigidBody()->setDeactivationTime(0.0);
-
-									if (isfirst == 1){
-										parbone->SetBtMat(newbtmat);
-										//IKボーンはKINEMATICだから。
-										parbone->GetCurMp().SetWorldMat(newbtmat);
-										isfirst = 0;
-									}
-
 								}
 							}
 						}
@@ -6417,7 +6449,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 			}
 
-			childbone = childbone->GetBrother();
+			//childbone = childbone->GetBrother();
 		}
 	}
 	return srcboneno;
@@ -7792,6 +7824,17 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				break;
 			}
 
+			CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
+			if (curre && curre->GetForbidRotFlag() != 0) {
+				//回転禁止の場合処理をスキップ
+				currate = pow(g_ikrate, g_ikfirst * levelcnt);
+				lastbone = curbone;
+				curbone = curbone->GetParent();
+				levelcnt++;
+				continue;
+			}
+
+
 			ChaVector3 axis0;
 			CQuaternion localq;
 			if (axiskind == PICK_X){
@@ -7905,18 +7948,18 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							//_ASSERT(0);
 
 
-							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
+							parbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 						}
 						else{
-							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							parbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
 						}
 					}
 					else{
 						if (keyno == 0){
-							curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							parbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
 						}
 						else{
-							curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+							parbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
 						}
 					}
 					keyno++;
@@ -7929,7 +7972,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				transmp.CalcQandTra(transmat, firstbone);
 				rotq = transmp.GetQ();
 
-				curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+				parbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
 			}
 
 
@@ -8856,4 +8899,112 @@ void CModel::ApplyBtToMotionReq(CBone* srcbone)
 	}
 
 }
+
+CRigidElem* CModel::GetRigidElem(int srcboneno)
+{
+	CRigidElem* retre = 0;
+
+	//if ((srcboneno >= 0) && (srcreindex >= 0)) {
+	if (srcboneno >= 0) {
+		CBone* curbone = GetBoneByID(srcboneno);
+		if (curbone) {
+			CBone* parbone = curbone->GetParent();
+			if (parbone) {
+				//char* filename = GetRigidElemInfo(srcreindex).filename;
+				//CRigidElem* curre = parbone->GetRigidElemOfMap(filename, curbone);
+				CRigidElem* curre = parbone->GetRigidElem(curbone);
+				if (curre) {
+					retre = curre;
+				}
+				else {
+					retre = 0;
+				}
+			}
+			else {
+				retre = 0;
+			}
+		}
+		else {
+			retre = 0;
+		}
+	}
+	else {
+		retre = 0;
+	}
+
+	return retre;
+}
+
+CRigidElem* CModel::GetRgdRigidElem(int srcrgdindex, int srcboneno)
+{
+	CRigidElem* retre = 0;
+
+	if ((srcboneno >= 0) && (srcrgdindex >= 0)) {
+		CBone* curbone = GetBoneByID(srcboneno);
+		if (curbone) {
+			CBone* parbone = curbone->GetParent();
+			if (parbone) {
+				char* filename = GetRigidElemInfo(srcrgdindex).filename;
+				CRigidElem* curre = parbone->GetRigidElemOfMap(filename, curbone);
+				if (curre) {
+					retre = curre;
+				}
+				else {
+					retre = 0;
+				}
+			}
+			else {
+				retre = 0;
+			}
+		}
+		else {
+			retre = 0;
+		}
+	}
+	else {
+		retre = 0;
+	}
+
+	return retre;
+}
+
+void CModel::EnableRotChildren(CBone* srcbone, bool srcflag)
+{
+	if (!srcbone) {
+		return;
+	}
+
+	//子供ジョイントから再帰をスタートさせる。
+	if (srcbone->GetChild()) {
+		EnableRotChildrenReq(srcbone->GetChild(), srcflag);
+	}
+
+}
+
+
+void CModel::EnableRotChildrenReq(CBone* srcbone, bool srcflag)
+{
+	if (!srcbone) {
+		return;
+	}
+
+	CRigidElem* curre = GetRigidElem(srcbone->GetBoneNo());
+	if (curre) {
+		if (srcflag == true) {
+			curre->SetForbidRotFlag(0);
+		}
+		else {
+			curre->SetForbidRotFlag(1);
+		}
+	}
+
+	if (srcbone->GetChild()) {
+		EnableRotChildrenReq(srcbone->GetChild(), srcflag);
+	}
+	if (srcbone->GetBrother()) {
+		EnableRotChildrenReq(srcbone->GetBrother(), srcflag);
+	}
+}
+
+
 

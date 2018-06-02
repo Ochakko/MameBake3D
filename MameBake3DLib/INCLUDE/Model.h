@@ -590,6 +590,10 @@ public:
 
 	void ResetMotionCache();
 
+	void EnableRotChildren(CBone* srcbone, bool srcflag);
+	void EnableRotChildrenReq(CBone* srcbone, bool srcflag);
+
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -856,6 +860,8 @@ public: //accesser
 		m_curmotinfo = srcinfo;
 	};
 
+	CRigidElem* GetRigidElem(int srcboneno);
+	CRigidElem* GetRgdRigidElem(int srcrgdindex, int srcboneno);
 
 	int GetRigidElemInfoSize(){
 		return (int)m_rigideleminfo.size();

@@ -693,6 +693,11 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define ID_RMENU_PHYSICSCONSTRAINT	(ID_RMENU_0 - 100)
 #define ID_RMENU_MASS0			(ID_RMENU_PHYSICSCONSTRAINT + 1)
 #define ID_RMENU_EXCLUDE_MV		(ID_RMENU_PHYSICSCONSTRAINT + 2)
+#define ID_RMENU_FORBIDROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 3)
+#define ID_RMENU_ENABLEROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 4)
+#define ID_RMENU_FORBIDROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 5)
+#define ID_RMENU_ENABLEROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 6)
+
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -926,8 +931,6 @@ static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime
 static int ChangeCurrentBone();
 
 static int InitCurMotion(int selectflag, double expandmotion);
-static CRigidElem* GetCurRe();
-static CRigidElem* GetCurRgdRe();
 
 static int OpenChaFile();
 CModel* OpenMQOFile();
@@ -8847,63 +8850,6 @@ int OnSetMotSpeed()
 	return 0;
 }
 
-CRigidElem* GetCurRe()
-{
-	CRigidElem* retre = 0;
-
-	if( s_model && (s_curboneno >= 0) && (s_curreindex >= 0) ){
-		CBone* curbone = s_model->GetBoneByID( s_curboneno );
-		if( curbone ){
-			CBone* parbone = curbone->GetParent();
-			if( parbone ){
-				char* filename = s_model->GetRigidElemInfo( s_curreindex ).filename;
-				CRigidElem* curre = parbone->GetRigidElemOfMap( filename, curbone );
-				if( curre ){
-					retre = curre;
-				}else{
-					retre = 0;
-				}
-			}else{
-				retre = 0;
-			}
-		}else{
-			retre = 0;
-		}
-	}else{
-		retre = 0;
-	}
-
-	return retre;
-}
-
-CRigidElem* GetCurRgdRe()
-{
-	CRigidElem* retre = 0;
-
-	if( s_model && (s_curboneno >= 0) && (s_rgdindex >= 0) ){
-		CBone* curbone = s_model->GetBoneByID( s_curboneno );
-		if( curbone ){
-			CBone* parbone = curbone->GetParent();
-			if( parbone ){
-				char* filename = s_model->GetRigidElemInfo( s_rgdindex ).filename;
-				CRigidElem* curre = parbone->GetRigidElemOfMap( filename, curbone );
-				if( curre ){
-					retre = curre;
-				}else{
-					retre = 0;
-				}
-			}else{
-				retre = 0;
-			}
-		}else{
-			retre = 0;
-		}
-	}else{
-		retre = 0;
-	}
-
-	return retre;
-}
 
 int SetSpAxisParams()
 {
@@ -11952,20 +11898,24 @@ int CreateDmpAnimWnd()
 	s_dmpanimWnd->setCloseListener([](){ s_DcloseFlag = true; });
 
 	s_dmpanimLSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRgdRe();
-		if (curre){
-			float val = (float)s_dmpanimLSlider->getValue();
-			curre->SetDampanimL(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
+			if (curre) {
+				float val = (float)s_dmpanimLSlider->getValue();
+				curre->SetDampanimL(val);
+			}
+			s_dmpanimWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_dmpanimWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_dmpanimASlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRgdRe();
-		if (curre){
-			float val = (float)s_dmpanimASlider->getValue();
-			curre->SetDampanimA(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
+			if (curre) {
+				float val = (float)s_dmpanimASlider->getValue();
+				curre->SetDampanimA(val);
+			}
+			s_dmpanimWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_dmpanimWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_dmpanimB->setButtonListener([](){
 		if (s_model && (s_rgdindex >= 0)){
@@ -11974,7 +11924,7 @@ int CreateDmpAnimWnd()
 			int chkg = (int)s_dmpgroupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRgdRe();
+				CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -12142,109 +12092,131 @@ int CreateRigidWnd()
 	s_rigidWnd->setCloseListener([](){ s_RcloseFlag = true; });
 
 	s_shprateSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_shprateSlider->getValue();
-			curre->SetSphrate(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_shprateSlider->getValue();
+				curre->SetSphrate(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_boxzSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_boxzSlider->getValue();
-			curre->SetBoxzrate(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_boxzSlider->getValue();
+				curre->SetBoxzrate(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 	s_massSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_massSlider->getValue();
-			curre->SetMass(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_massSlider->getValue();
+				curre->SetMass(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 	s_ldmpSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_ldmpSlider->getValue();
-			curre->SetLDamping(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_ldmpSlider->getValue();
+				curre->SetLDamping(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_admpSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_admpSlider->getValue();
-			curre->SetADamping(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_admpSlider->getValue();
+				curre->SetADamping(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 	s_lkSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_lkSlider->getValue();
-			curre->SetCusLk(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_lkSlider->getValue();
+				curre->SetCusLk(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_akSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_akSlider->getValue();
-			curre->SetCusAk(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_akSlider->getValue();
+				curre->SetCusAk(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 
 	s_restSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_restSlider->getValue();
-			curre->SetRestitution(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_restSlider->getValue();
+				curre->SetRestitution(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_fricSlider->setCursorListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			float val = (float)s_fricSlider->getValue();
-			curre->SetFriction(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				float val = (float)s_fricSlider->getValue();
+				curre->SetFriction(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 
 	s_rigidskip->setButtonListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			bool validflag = s_rigidskip->getValue();
-			if (validflag == false){
-				curre->SetSkipflag(1);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				bool validflag = s_rigidskip->getValue();
+				if (validflag == false) {
+					curre->SetSkipflag(1);
+				}
+				else {
+					curre->SetSkipflag(0);
+				}
 			}
-			else{
-				curre->SetSkipflag(0);
-			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_forbidrot->setButtonListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			bool validflag = s_forbidrot->getValue();
-			if (validflag == false){
-				curre->SetForbidRotFlag(0);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				bool validflag = s_forbidrot->getValue();
+				if (validflag == false) {
+					curre->SetForbidRotFlag(0);
+				}
+				else {
+					curre->SetForbidRotFlag(1);
+				}
 			}
-			else{
-				curre->SetForbidRotFlag(1);
-			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_allrigidenableB->setButtonListener([](){
 		if (s_model){
@@ -12280,47 +12252,57 @@ int CreateRigidWnd()
 	});
 
 	s_btgSlider->setCursorListener([](){
-		float btg = (float)s_btgSlider->getValue();
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			curre->SetBtg(btg);
+		if (s_model) {
+			float btg = (float)s_btgSlider->getValue();
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				curre->SetBtg(btg);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_btgscSlider->setCursorListener([](){
-		float btgsc = (float)s_btgscSlider->getValue();
-		if (s_model && (s_curreindex >= 0)){
-			REINFO tmpinfo = s_model->GetRigidElemInfo(s_curreindex);
-			tmpinfo.btgscale = btgsc;
-			s_model->SetRigidElemInfo(s_curreindex, tmpinfo);
+		if (s_model) {
+			float btgsc = (float)s_btgscSlider->getValue();
+			if (s_model && (s_curreindex >= 0)) {
+				REINFO tmpinfo = s_model->GetRigidElemInfo(s_curreindex);
+				tmpinfo.btgscale = btgsc;
+				s_model->SetRigidElemInfo(s_curreindex, tmpinfo);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 	s_colradio->setSelectListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			int val = s_colradio->getSelectIndex();
-			curre->SetColtype(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				int val = s_colradio->getSelectIndex();
+				curre->SetColtype(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 	s_lkradio->setSelectListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			int val = s_lkradio->getSelectIndex();
-			curre->SetLKindex(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				int val = s_lkradio->getSelectIndex();
+				curre->SetLKindex(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 	s_akradio->setSelectListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			int val = s_akradio->getSelectIndex();
-			curre->SetAKindex(val);
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				int val = s_akradio->getSelectIndex();
+				curre->SetAKindex(val);
+			}
+			s_rigidWnd->callRewrite();						//Ä•`‰æ
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
 	});
 
 	s_kB->setButtonListener([](){
@@ -12332,7 +12314,7 @@ int CreateRigidWnd()
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRe();
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -12350,7 +12332,7 @@ int CreateRigidWnd()
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRe();
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -12368,7 +12350,7 @@ int CreateRigidWnd()
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRe();
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -12381,14 +12363,16 @@ int CreateRigidWnd()
 	});
 
 	s_groupB->setButtonListener([](){
-		CRigidElem* curre = GetCurRe();
-		if (curre){
-			CColiIDDlg dlg(curre);
-			dlg.DoModal();
+		if (s_model) {
+			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+			if (curre) {
+				CColiIDDlg dlg(curre);
+				dlg.DoModal();
 
-			if (dlg.m_setgroup == 1){
-				if (s_model){
-					s_model->SetColiIDtoGroup(curre);
+				if (dlg.m_setgroup == 1) {
+					if (s_model) {
+						s_model->SetColiIDtoGroup(curre);
+					}
 				}
 			}
 		}
@@ -12411,7 +12395,7 @@ int CreateRigidWnd()
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRe();
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -12429,7 +12413,7 @@ int CreateRigidWnd()
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRe();
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -12529,7 +12513,7 @@ int CreateImpulseWnd()
 			int chkg = (int)s_impgroupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = GetCurRgdRe();
+				CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -13712,6 +13696,21 @@ int BoneRClick(int srcboneno)
 					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"MVœŠO‰ðœ");
 				}
 
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				int forbidflag = 0;
+				if (curre) {
+					forbidflag = curre->GetForbidRotFlag();
+					if (forbidflag == 0) {
+						AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_ONE, L"‚±‚ÌƒWƒ‡ƒCƒ“ƒg‚ðŽq‹Ÿ‚Æ‚·‚éƒ{[ƒ“‰ñ“]‹ÖŽ~");
+					}
+					else {
+						AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE, L"‚±‚ÌƒWƒ‡ƒCƒ“ƒg‚ðŽq‹Ÿ‚Æ‚·‚éƒ{[ƒ“‰ñ“]‹–‰Â");
+					}
+
+					AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN, L"‚±‚ÌƒWƒ‡ƒCƒ“ƒg‚æ‚è‰ºŠK‘w‰ñ“]‹ÖŽ~");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN, L"‚±‚ÌƒWƒ‡ƒCƒ“ƒg‚æ‚è‰ºŠK‘w‰ñ“]‹–‰Â");
+				}
+
 
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"V‹KRig");
 				int setmenuno = 1;
@@ -13783,6 +13782,26 @@ int BoneRClick(int srcboneno)
 					}
 					else{
 						curbone->SetExcludeMv(0);
+					}
+				}
+				else if (menuid == ID_RMENU_FORBIDROT_ONE) {
+					if (curre) {
+						curre->SetForbidRotFlag(1);
+					}
+				}
+				else if (menuid == ID_RMENU_ENABLEROT_ONE) {
+					if (curre) {
+						curre->SetForbidRotFlag(0);
+					}
+				}
+				else if (menuid == ID_RMENU_FORBIDROT_CHILDREN) {
+					if (curre) {
+						s_model->EnableRotChildren(curbone, false);
+					}
+				}
+				else if (menuid == ID_RMENU_ENABLEROT_CHILDREN) {
+					if (curre) {
+						s_model->EnableRotChildren(curbone, true);
 					}
 				}
 
