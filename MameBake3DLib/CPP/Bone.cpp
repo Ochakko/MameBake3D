@@ -2086,6 +2086,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 
 	CMotionPoint* pcurmp = 0;
 	CMotionPoint* pparmp = 0;
+	CMotionPoint* pgparmp = 0;
 	pcurmp = GetMotionPoint(srcmotid, srcframe);
 	if (!pcurmp){
 		//_ASSERT(0);
@@ -2100,6 +2101,12 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	}
 	else{
 		return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	if (m_parent && m_parent->GetParent()) {
+		pgparmp = m_parent->GetParent()->GetMotionPoint(srcmotid, srcframe);
+	}
+	else {
+		pgparmp = 0;
 	}
 
 
@@ -2127,7 +2134,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 
 
 	CRigidElem* parre = 0;
-	if (m_parent->GetParent()) {
+	if (m_parent && m_parent->GetParent()) {
 		parre = m_parent->GetParent()->GetRigidElem(m_parent);
 	}
 	ChaMatrix parcapsulemat;
@@ -2141,10 +2148,23 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	invparcapsulemat = ChaMatrixInv(parcapsulemat);
 
 
+	CRigidElem* childre = 0;
+	if (GetChild()) {
+		childre = GetRigidElem(GetChild());//複数子供がある場合にはそれを指定しなければならない。ここでは仮実装として長男を選択。
+	}
+	ChaMatrix childcapsulemat;
+	ChaMatrix invchildcapsulemat;
+	if (childre) {
+		childcapsulemat = childre->GetFirstcapsulemat();
+	}
+	else {
+		ChaMatrixIdentity(&childcapsulemat);
+	}
+	invchildcapsulemat = ChaMatrixInv(childcapsulemat);
 
 
-	ChaMatrix worldmat, parworldmat;
-	ChaMatrix diffworld, pardiffworld;
+	ChaMatrix worldmat, parworldmat, gparworldmat;
+	ChaMatrix diffworld, pardiffworld, gpardiffworld;
 	if (pcurmp){
 		if (g_previewFlag != 5){
 			worldmat = pcurmp->GetWorldMat();
@@ -2153,7 +2173,15 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		}
 		else{
 			worldmat = GetBtMat();
-			diffworld = GetInvStartMat2() * worldmat;
+			//diffworld = GetInvStartMat2() * worldmat;
+			//diffworld = GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
+			if (childre) {
+				diffworld = childre->GetInvFirstWorldmat() * worldmat;//初期状態からの変化分
+			}
+			else {
+				diffworld = curre->GetInvFirstWorldmat() * worldmat;
+			}
+
 		}
 		//diffworld = curre->GetInvFirstWorldmat() * worldmat;
 		//ChaMatrixIdentity(&diffworld);
@@ -2172,8 +2200,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		}
 		else{
 			parworldmat = m_parent->GetBtMat();
-			diffworld = parworldmat * m_parent->GetInvBtMat();
-			pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//!!!!!!!
+			//pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//シミュレーション開始時からの変化分
+			pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
 		}
 		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
@@ -2183,6 +2211,32 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		ChaMatrixIdentity(&parworldmat);
 		ChaMatrixIdentity(&pardiffworld);
 	}
+
+
+	if (pgparmp) {
+		if (g_previewFlag != 5) {
+			gparworldmat = pgparmp->GetWorldMat();
+			gpardiffworld = m_parent->GetParent()->GetInvFirstMat() * gparworldmat;
+		}
+		else {
+			gparworldmat = m_parent->GetParent()->GetBtMat();
+			//gpardiffworld = m_parent->GetParent()->GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
+			if (parre) {
+				gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
+			}
+			else {
+				gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
+			}
+		}
+		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
+		//ChaMatrixIdentity(&pardiffworld);
+	}
+	else {
+		ChaMatrixIdentity(&gparworldmat);
+		ChaMatrixIdentity(&gpardiffworld);
+	}
+
 
 
 	//ChaMatrix curcapsulemat, parcapsulemat;
@@ -2198,25 +2252,16 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		//current bone axis
 		if (GetBoneLeng() > 0.00001f){
 			if (multworld == 1){
-				//if (m_child){
-				//	selm = capsulemat * diffworld;
-				//}
-				//else{
-					selm = capsulemat * pardiffworld;
-				//}
+				//selm = capsulemat * pardiffworld;
+				selm = childcapsulemat * pardiffworld;
 			}
 			else{
-				selm = capsulemat;
+				selm = childcapsulemat;
 			}
 		}
 		else{
 			if (multworld == 1){
-				//if (m_child){
-				//	selm = diffworld;
-				//}
-				//else{
-					selm = pardiffworld;
-				//}
+				selm = pardiffworld;
 			}
 			else{
 				ChaMatrixIdentity(&selm);
@@ -2227,15 +2272,17 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		//parent bone axis
 		if (GetBoneLeng() > 0.00001f){
 			if (multworld == 1){
-				selm = parcapsulemat * pardiffworld;
+				//selm = parcapsulemat * gpardiffworld;
+				selm = capsulemat * gpardiffworld;
 			}
 			else{
-				selm = parcapsulemat;
+				//selm = parcapsulemat;
+				selm = capsulemat;
 			}
 		}
 		else{
 			if (multworld == 1){
-				selm = pardiffworld;
+				selm = gpardiffworld;
 			}
 			else{
 				ChaMatrixIdentity(&selm);
@@ -2265,6 +2312,217 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	return selm;
 }
 
+ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe)
+{
+
+	//Posture
+
+	ChaMatrix selm;
+	ChaMatrixIdentity(&selm);
+
+	CMotionPoint* pcurmp = 0;
+	CMotionPoint* pparmp = 0;
+	CMotionPoint* pgparmp = 0;
+	pcurmp = GetMotionPoint(srcmotid, srcframe);
+	if (!pcurmp) {
+		//_ASSERT(0);
+		return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	if (m_parent) {
+		pparmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		if (!pparmp) {
+			_ASSERT(0);
+			return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		}
+	}
+	else {
+		return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	if (m_parent && m_parent->GetParent()) {
+		pgparmp = m_parent->GetParent()->GetMotionPoint(srcmotid, srcframe);
+	}
+	else {
+		pgparmp = 0;
+	}
+
+
+	CRigidElem* curre = m_parent->GetRigidElem(this);
+	if (!curre) {
+		//_ASSERT(0);
+		return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	ChaMatrix capsulemat;
+	ChaMatrix invcapsulemat;
+	if (m_parent) {
+		if (curre) {
+			capsulemat = curre->GetFirstcapsulemat();
+			//capsulemat = curre->GetCapsulemat();
+		}
+		else {
+			ChaMatrixIdentity(&capsulemat);
+		}
+	}
+	else {
+		ChaMatrixIdentity(&capsulemat);
+	}
+	invcapsulemat = ChaMatrixInv(capsulemat);
+
+
+
+	CRigidElem* parre = 0;
+	if (m_parent && m_parent->GetParent()) {
+		parre = m_parent->GetParent()->GetRigidElem(m_parent);
+	}
+	ChaMatrix parcapsulemat;
+	ChaMatrix invparcapsulemat;
+	if (parre) {
+		parcapsulemat = parre->GetFirstcapsulemat();
+	}
+	else {
+		ChaMatrixIdentity(&parcapsulemat);
+	}
+	invparcapsulemat = ChaMatrixInv(parcapsulemat);
+
+
+	CRigidElem* childre = 0;
+	if (GetChild()) {
+		childre = GetRigidElem(GetChild());//複数子供がある場合にはそれを指定しなければならない。ここでは仮実装として長男を選択。
+	}
+	ChaMatrix childcapsulemat;
+	ChaMatrix invchildcapsulemat;
+	if (childre) {
+		childcapsulemat = childre->GetFirstcapsulemat();
+	}
+	else {
+		ChaMatrixIdentity(&childcapsulemat);
+	}
+	invchildcapsulemat = ChaMatrixInv(childcapsulemat);
+
+
+	ChaMatrix worldmat, parworldmat, gparworldmat;
+	ChaMatrix diffworld, pardiffworld, gpardiffworld;
+	if (pcurmp) {
+		if (g_previewFlag != 5) {
+			worldmat = pcurmp->GetWorldMat();
+			diffworld = GetInvFirstMat() * worldmat;
+		}
+		else {
+			worldmat = GetBtMat();
+			if (childre) {
+				diffworld = childre->GetInvFirstWorldmat() * worldmat;//初期状態からの変化分
+			}
+			else {
+				diffworld = curre->GetInvFirstWorldmat() * worldmat;
+			}
+
+		}
+	}
+	else {
+		ChaMatrixIdentity(&worldmat);
+		ChaMatrixIdentity(&diffworld);
+	}
+
+
+	if (pparmp) {
+		if (g_previewFlag != 5) {
+			parworldmat = pparmp->GetWorldMat();
+			pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
+		}
+		else {
+			parworldmat = m_parent->GetBtMat();
+			pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
+		}
+	}
+	else {
+		ChaMatrixIdentity(&parworldmat);
+		ChaMatrixIdentity(&pardiffworld);
+	}
+
+
+	if (pgparmp) {
+		if (g_previewFlag != 5) {
+			gparworldmat = pgparmp->GetWorldMat();
+			gpardiffworld = m_parent->GetParent()->GetInvFirstMat() * gparworldmat;
+		}
+		else {
+			gparworldmat = m_parent->GetParent()->GetBtMat();
+			if (parre) {
+				gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
+			}
+			else {
+				gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
+			}
+		}
+	}
+	else {
+		ChaMatrixIdentity(&gparworldmat);
+		ChaMatrixIdentity(&gpardiffworld);
+	}
+
+	if (g_boneaxis == 2) {
+		//global axis
+		ChaMatrixIdentity(&selm);
+	}
+	else if (g_boneaxis == 0) {
+		//current bone axis
+		if (GetBoneLeng() > 0.00001f) {
+			if (multworld == 1) {
+				selm = childcapsulemat * diffworld;
+			}
+			else {
+				selm = childcapsulemat;
+			}
+		}
+		else {
+			if (multworld == 1) {
+				selm = pardiffworld;
+			}
+			else {
+				ChaMatrixIdentity(&selm);
+			}
+		}
+	}
+	else if (g_boneaxis == 1) {
+		//parent bone axis
+		if (GetBoneLeng() > 0.00001f) {
+			if (multworld == 1) {
+				selm = capsulemat * pardiffworld;
+			}
+			else {
+				selm = capsulemat;
+			}
+		}
+		else {
+			if (multworld == 1) {
+				selm = pardiffworld;
+			}
+			else {
+				ChaMatrixIdentity(&selm);
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+		ChaMatrixIdentity(&selm);
+	}
+
+	if (settraflag == 0) {
+		selm._41 = 0.0f;
+		selm._42 = 0.0f;
+		selm._43 = 0.0f;
+	}
+	else {
+		ChaVector3 aftjpos;
+		ChaVector3TransformCoord(&aftjpos, &(GetJointFPos()), &worldmat);
+
+		selm._41 = aftjpos.x;
+		selm._42 = aftjpos.y;
+		selm._43 = aftjpos.z;
+	}
+
+
+	return selm;
+}
 
 /*
 ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe)

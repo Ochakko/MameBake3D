@@ -228,6 +228,7 @@ CRITICAL_SECTION s_CritSection_LTimeline;
 //ChaMatrix s_selectmat;//for display manipulator
 //ChaMatrix s_ikselectmat;//for ik, fk
 ChaMatrix s_selectmat;//for display manipulator
+ChaMatrix s_selectmat_posture;//for display manipulator
 ChaMatrix s_ikselectmat;//for ik, fk
 
 
@@ -365,6 +366,7 @@ static ID3D10Device* s_pdev = 0;
 
 static CModel* s_model = NULL;
 static CModel* s_select = NULL;
+static CModel* s_select_posture = NULL;
 static CModel* s_bmark = NULL;
 //static CModel* s_coldisp[ COL_MAX ];
 static CModel* s_ground = NULL;
@@ -396,6 +398,11 @@ static int s_saveboneno = -1;
 static int s_curbaseno = -1;
 static int s_ikcnt = 0;
 static ChaMatrix s_selm = ChaMatrix( 0.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 0.0f
+);
+static ChaMatrix s_selm_posture = ChaMatrix(0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f
@@ -1008,6 +1015,7 @@ static int OnDelAllModel();
 static int refreshModelPanel();
 static int RenderSelectMark(int renderflag);
 static int RenderSelectFunc();
+static int RenderSelectPostureFunc();
 static int RenderRigMarkFunc();
 static int SetSelectState();
 
@@ -1361,6 +1369,7 @@ void InitApp()
 	}
 
 	ChaMatrixIdentity(&s_selectmat);
+	ChaMatrixIdentity(&s_selectmat_posture);
 	ChaMatrixIdentity(&s_ikselectmat);
 
 	int cbno;
@@ -1721,6 +1730,15 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 	s_matyellowmat = s_matyellow->GetDif4F();
 
 
+	s_select_posture = new CModel();
+	if (!s_select_posture) {
+		_ASSERT(0);
+		return 1;
+	}
+	CallF(s_select_posture->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_select_posture->MakeDispObj(), return 1);
+
+
 	s_rigmark = new CModel();
 	if (!s_rigmark) {
 		_ASSERT(0);
@@ -2058,6 +2076,10 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 	if (s_select) {
 		delete s_select;
 		s_select = 0;
+	}
+	if (s_select_posture) {
+		delete s_select_posture;
+		s_select_posture = 0;
 	}
 	if (s_rigmark) {
 		delete s_rigmark;
@@ -2563,7 +2585,13 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	AutoCameraTarget();
 
 	OnFrameKeyboard();
+
+	if ((g_previewFlag == 0) && (s_savepreviewFlag != 0)) {
+		s_cursorFlag = true;
+	}
 	OnFrameTimeLineWnd();
+
+
 	OnFramePlayButton();
 	OnFrameMouseButton();
 
@@ -6746,7 +6774,8 @@ int RenderSelectMark(int renderflag)
 		//if (s_onragdollik == 0){
 			int multworld = 1;
 			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
-		//}
+			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
+			//}
 
 		ChaVector3 orgpos = curboneptr->GetJointFPos();
 		ChaVector3 bonepos = curboneptr->GetChildWorld();
@@ -6779,12 +6808,16 @@ int RenderSelectMark(int renderflag)
 		s_selectmat._42 = bonepos.y;
 		s_selectmat._43 = bonepos.z;
 
+		s_selectmat_posture = scalemat * s_selm_posture;
+		s_selectmat_posture._41 = bonepos.x;
+		s_selectmat_posture._42 = bonepos.y;
+		s_selectmat_posture._43 = bonepos.z;
+
+
 		if (renderflag){
 			g_hmVP->SetMatrix((float*)&s_matVP);
-			//g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
-			g_hmWorld->SetMatrix((float*)&s_selectmat);
-			//g_pEffect->SetMatrix(g_hmWorld, &(s_selectmat.D3DX()));
 
+			g_hmWorld->SetMatrix((float*)&s_selectmat);
 			if (s_oprigflag == 0){
 				RenderSelectFunc();
 			}
@@ -6796,6 +6829,21 @@ int RenderSelectMark(int renderflag)
 					RenderSelectFunc();
 				}
 			}
+
+
+			g_hmWorld->SetMatrix((float*)&s_selectmat_posture);
+			if (s_oprigflag == 0) {
+				RenderSelectPostureFunc();
+			}
+			else {
+				if (curboneptr == s_customrigbone) {
+				}
+				else {
+					RenderSelectPostureFunc();
+				}
+			}
+
+
 			//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 			s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
@@ -6820,6 +6868,23 @@ int RenderSelectFunc()
 	return 0;
 
 }
+
+int RenderSelectPostureFunc()
+{
+	s_select_posture->UpdateMatrix(&s_selectmat_posture, &s_matVP);
+	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	if (s_dispselect) {
+		int lightflag = 1;
+		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+		s_select_posture->OnRender(s_pdev, lightflag, diffusemult);
+	}
+	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+
+	return 0;
+
+}
+
 
 int RenderRigMarkFunc()
 {
@@ -10379,11 +10444,20 @@ int OnFrameUtCheckBox()
 
 int OnFramePreviewStop()
 {
+	if (!s_owpLTimeline) {
+		return 0;
+	}
+
+	double currenttime = s_owpLTimeline->getCurrentTime();
 
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
+
+			if (curmodel && curmodel->GetCurMotInfo()) {
+				curmodel->SetMotionFrame(currenttime);
+			}
 			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		}
 	}
