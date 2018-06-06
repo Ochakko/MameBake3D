@@ -6168,6 +6168,18 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	//腕-->肩と鎖骨が直角なときに腕のIKで起こりやすい。
 	//PhysicsRotAxisDelta関数で回転軸を指定してIKすると安定する。
 
+	//Memo 20180604
+	//上記のぐるんぐるん回る問題
+	//Mediaフォルダのサンプルのfbxファイルの「腕の座標軸がX軸ベースになっていない」ことが分かった。
+	//PhysicsRotボタンを押すとサンプルの該当ボーンの座標軸がX軸ベースでなくなるようだった。
+	//CalcShadowToPlaneの問題の可能性もある。見直したが忘れていてわからない部分があった。
+
+	//Memo 20180606
+	//座標軸は直した。
+	//カレント座標系をデフォルトにした。
+	//ぐるんぐるんはまだ直っていない。
+
+
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone){
 		_ASSERT(0);
@@ -6198,9 +6210,6 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	float currate = g_physicsmvrate;
 
 
-
-
-
 	if (parbone){
 		CBone* gparbone = parbone->GetParent();
 		//CBone* childbone = parbone->GetChild();
@@ -6211,7 +6220,10 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 			if (childbone->GetJointFPos() != parbone->GetJointFPos()){
 				ChaVector3 parworld, chilworld;
 				ChaVector3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
-				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));//curbone
+				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parbone->GetBtMat()));
+				//ChaVector3TransformCoord(&parworld, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
+				//ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(childbone->GetBtMat()));
+
 
 				ChaVector3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -6220,19 +6232,25 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 				ChaVector3 vec0, vec1;
 				vec0 = chilbef - parbef;
+
 				ChaVector3Normalize(&vec0, &vec0);
 				vec1 = tarbef - parbef;
 				ChaVector3Normalize(&vec1, &vec1);
+
+				//double chkdot = ChaVector3DotDbl(&vec0, &vec1);
+				//if (fabs(chkdot) >= 0.999) {
+				//	return srcboneno;//!!!!!!!!!!!!!!!!!!!
+				//}
 
 				ChaVector3 rotaxis2;
 				ChaVector3Cross(&rotaxis2, (const ChaVector3*)&vec0, (const ChaVector3*)&vec1);
 				ChaVector3Normalize(&rotaxis2, &rotaxis2);
 
-				float rotdot2, rotrad2;
-				rotdot2 = ChaVector3Dot(&vec0, &vec1);
+				double rotdot2, rotrad2;
+				rotdot2 = ChaVector3DotDbl(&vec0, &vec1);
 				rotdot2 = min(1.0f, rotdot2);
 				rotdot2 = max(-1.0f, rotdot2);
-				rotrad2 = (float)acos(rotdot2);
+				rotrad2 = acos(rotdot2);
 				rotrad2 *= currate;
 				double firstframe = 0.0;
 				if (fabs(rotrad2) > 1.0e-4){
@@ -6432,12 +6450,13 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 										if (isfirst == 1) {
 											parbone->SetBtMat(newbtmat);
 											//IKボーンはKINEMATICだから。
-											//parbone->GetCurMp().SetWorldMat(newbtmat);
+											parbone->GetCurMp().SetWorldMat(newbtmat);
 											isfirst = 0;
 										}
 
 										MOTINFO* curmi = GetCurMotInfo();
 										parbone->SetWorldMat(1, curmi->motid, curmi->curframe, newbtmat);
+										//parbone->SetWorldMat(1, curmi->motid, applyframe, newbtmat);
 									}
 								}
 							}

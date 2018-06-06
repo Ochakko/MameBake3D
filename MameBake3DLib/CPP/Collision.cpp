@@ -111,13 +111,17 @@ int CalcShadowToPlane( ChaVector3 srcpos, ChaVector3 planedir, ChaVector3 planep
 	}
 
 	ChaVector3 sb, se, n;
-	sb = planepos - srcpos;
-	se = (srcpos + planedir * 100.0f) - srcpos;
+	sb = planepos - (srcpos - planedir);
+	se = (srcpos + planedir * 100.0f) - (srcpos - planedir);
 	n = planedir;
 
-	float t;
-	t = ChaVector3Dot( &sb, &n ) / ChaVector3Dot( &se, &n );
+	double t;
+	t = ChaVector3DotDbl( &sb, &n ) / ChaVector3DotDbl( &se, &n );
 
-	*shadowptr = srcpos * (1.0f - t) + (srcpos + planedir * 100.0f) * t;
+	shadowptr->x = (float)((double)(srcpos.x - planedir.x) * (1.0 - t) + ((double)srcpos.x + (double)planedir.x * 100.0) * t);
+	shadowptr->y = (float)((double)(srcpos.y - planedir.y) * (1.0 - t) + ((double)srcpos.y + (double)planedir.y * 100.0) * t);
+	shadowptr->z = (float)((double)(srcpos.z - planedir.z) * (1.0 - t) + ((double)srcpos.z + (double)planedir.z * 100.0) * t);
+	//*shadowptr = srcpos * (1.0f - t) + (srcpos + planedir * 100.0f) * t;
+
 	return 0;
 }

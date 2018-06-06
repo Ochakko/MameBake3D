@@ -1081,6 +1081,7 @@ static int OnTimeLineWheel();
 static int AddEditRangeHistory();
 static int RollBackEditRange(int prevrangeFlag, int nextrangeFlag);
 static int RecalcBoneAxisX(CBone* srcbone);
+static void RecalcAxisX_All();
 
 static int GetSymRootMode();
 
@@ -3043,7 +3044,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				// "編集・変換"
 				// "ボーン軸をZに再計算"
 				ActivatePanel(0);
-				RecalcBoneAxisX(0);
+				//RecalcBoneAxisX(0);
+				RecalcAxisX_All();
 				ActivatePanel(1);
 				return 0;
 				break;
@@ -9730,19 +9732,6 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 }
 
 
-int RecalcBoneAxisX(CBone* srcbone)
-{
-	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)){
-		::MessageBox(s_3dwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
-		return 0;
-	}
-
-	s_model->RecalcBoneAxisX(srcbone);
-
-	return 0;
-}
-
-
 
 int DispAngleLimitDlg()
 {
@@ -11526,7 +11515,7 @@ int CreateUtDialog()
 	swprintf_s(straxis, 256, L"GlobalBoneAxis");
 	boneaxisindex = 2;
 	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	pComboBox3->SetSelectedByData(ULongToPtr(1L));
+	pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
 
 
 	g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, ctrlxlen, ctrlh);
@@ -14412,9 +14401,10 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			switch (menuid) {
 			case ID_40047:
 				// "編集・変換"
-				// "ボーン軸をZに再計算"
+				// "ボーン軸をXに再計算"
 				ActivatePanel(0);
-				RecalcBoneAxisX(0);
+				//RecalcBoneAxisX(0);
+				RecalcAxisX_All();
 				ActivatePanel(1);
 				return 0;
 				break;
@@ -14809,3 +14799,36 @@ int UpdateEditedEuler()
 
 	return 0;
 }
+
+int RecalcBoneAxisX(CBone* srcbone)
+{
+	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
+		::MessageBox(s_3dwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
+		return 0;
+	}
+
+	s_model->RecalcBoneAxisX(srcbone);
+
+	return 0;
+}
+
+void RecalcAxisX_All()
+{
+	if (s_model) {
+		if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
+			::MessageBox(s_3dwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
+			return;
+		}
+
+		s_owpLTimeline->setCurrentTime(0.0, true);
+		s_owpEulerGraph->setCurrentTime(0.0, false);
+		s_model->SetMotionFrame(0.0);
+		s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+
+		//ここでAxisMatXの初期化
+		s_model->CreateBtObject(1);
+		s_model->CalcBtAxismat(2);//2
+		s_model->SetInitAxisMatX(1);
+	}
+}
+

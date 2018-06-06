@@ -2478,6 +2478,38 @@ void ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
 	pdst->_44 = m[3][3];
 
 }
+
+double ChaVector3LengthDbl(ChaVector3* v)
+{
+	if (!v) {
+		return 0.0f;
+	}
+
+	double leng;
+	double mag;
+	mag = v->x * v->x + v->y * v->y + v->z * v->z;
+	if (mag != 0.0f) {
+		leng = sqrt(mag);
+	}
+	else {
+		leng = 0.0;
+	}
+	return leng;
+
+}
+
+double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2)
+{
+	if (!psrc1 || !psrc2) {
+		return 0.0f;
+	}
+
+	double retval = psrc1->x * psrc2->x + psrc1->y * psrc2->y + psrc1->z * psrc2->z;
+
+	return retval;
+}
+
+
 float ChaVector3Length(ChaVector3* v)
 {
 	if (!v){

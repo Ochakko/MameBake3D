@@ -64,7 +64,8 @@ int g_slerpoffflag = 0;
 int g_absikflag = 0;
 int g_bonemarkflag = 1;
 int g_pseudolocalflag = 1;
-int g_boneaxis = 1;
+//int g_boneaxis = 1;//parent
+int g_boneaxis = 0;//current
 
 CTexBank*	g_texbank = 0;
 

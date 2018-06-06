@@ -1326,6 +1326,8 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 		//if (setstartflag == 2){
 		//	chilbone->SetNodeMat(bmmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//}
+
+		chilbone->SetBtMat(chilbone->GetCurMp().GetWorldMat());//!!!!!!!!!!!!!btmat‚Ì‰Šú’l
 	}
 
 
@@ -1337,6 +1339,7 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 void CBone::SetStartMat2Req()
 {
 	SetStartMat2(m_curmp.GetWorldMat());
+	SetBtMat(m_curmp.GetWorldMat());//!!!!!!!!!!!!!btmat‚Ì‰Šú’l
 
 	if (m_child){
 		m_child->SetStartMat2Req();
@@ -2105,11 +2108,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		//_ASSERT(0);
 		return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
-
-
-	//m_parent->CalcRigidElemParams(this, 0);//!!!!!!!!!!!!!!!!!!
-
 	ChaMatrix capsulemat;
+	ChaMatrix invcapsulemat;
 	if (m_parent){
 		if (curre){
 			capsulemat = curre->GetFirstcapsulemat();
@@ -2122,9 +2122,23 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	else{
 		ChaMatrixIdentity(&capsulemat);
 	}
+	invcapsulemat = ChaMatrixInv(capsulemat);
 
 
-	//return capsulemat;
+
+	CRigidElem* parre = 0;
+	if (m_parent->GetParent()) {
+		parre = m_parent->GetParent()->GetRigidElem(m_parent);
+	}
+	ChaMatrix parcapsulemat;
+	ChaMatrix invparcapsulemat;
+	if (parre) {
+		parcapsulemat = parre->GetFirstcapsulemat();
+	}
+	else {
+		ChaMatrixIdentity(&parcapsulemat);
+	}
+	invparcapsulemat = ChaMatrixInv(parcapsulemat);
 
 
 
@@ -2134,14 +2148,16 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	if (pcurmp){
 		if (g_previewFlag != 5){
 			worldmat = pcurmp->GetWorldMat();
-			//diffworld = worldmat * pparmp->GetInvWorldMat();
+			//diffworld = curre->GetInvFirstWorldmat() * worldmat;
+			diffworld = GetInvFirstMat() * worldmat;
 		}
 		else{
 			worldmat = GetBtMat();
-			//diffworld = worldmat * m_parent->GetInvBtMat();
+			diffworld = GetInvStartMat2() * worldmat;
 		}
-		diffworld = curre->GetInvFirstWorldmat() * worldmat;
+		//diffworld = curre->GetInvFirstWorldmat() * worldmat;
 		//ChaMatrixIdentity(&diffworld);
+		//diffworld = curre->GetInvFirstWorldmat() * worldmat;//!!!!!!!!!!!!!!
 	}
 	else{
 		ChaMatrixIdentity(&worldmat);
@@ -2152,11 +2168,14 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	if (pparmp){
 		if (g_previewFlag != 5){
 			parworldmat = pparmp->GetWorldMat();
+			pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
 		}
 		else{
 			parworldmat = m_parent->GetBtMat();
+			diffworld = parworldmat * m_parent->GetInvBtMat();
+			pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//!!!!!!!
 		}
-		pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
+		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
 		//ChaMatrixIdentity(&pardiffworld);
 	}
@@ -2208,10 +2227,10 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		//parent bone axis
 		if (GetBoneLeng() > 0.00001f){
 			if (multworld == 1){
-				selm = capsulemat * pardiffworld;
+				selm = parcapsulemat * pardiffworld;
 			}
 			else{
-				selm = capsulemat;
+				selm = parcapsulemat;
 			}
 		}
 		else{
