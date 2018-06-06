@@ -6743,10 +6743,10 @@ int RenderSelectMark(int renderflag)
 
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if (curboneptr){
-		if (s_onragdollik == 0){
+		//if (s_onragdollik == 0){
 			int multworld = 1;
 			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
-		}
+		//}
 
 		ChaVector3 orgpos = curboneptr->GetJointFPos();
 		ChaVector3 bonepos = curboneptr->GetChildWorld();

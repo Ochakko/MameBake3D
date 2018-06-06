@@ -2198,12 +2198,12 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		//current bone axis
 		if (GetBoneLeng() > 0.00001f){
 			if (multworld == 1){
-				if (m_child){
-					selm = capsulemat * diffworld;
-				}
-				else{
+				//if (m_child){
+				//	selm = capsulemat * diffworld;
+				//}
+				//else{
 					selm = capsulemat * pardiffworld;
-				}
+				//}
 			}
 			else{
 				selm = capsulemat;
@@ -2211,12 +2211,12 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		}
 		else{
 			if (multworld == 1){
-				if (m_child){
-					selm = diffworld;
-				}
-				else{
+				//if (m_child){
+				//	selm = diffworld;
+				//}
+				//else{
 					selm = pardiffworld;
-				}
+				//}
 			}
 			else{
 				ChaMatrixIdentity(&selm);
