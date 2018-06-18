@@ -6179,6 +6179,10 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	//カレント座標系をデフォルトにした。
 	//ぐるんぐるんはまだ直っていない。
 
+	//Memo 20180619
+	//ぐるんぐるん症状が直った（ただしBtApplyボタンを押さない場合）
+	//newbtmatの計算を修正した。
+
 
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone){
@@ -6226,9 +6230,17 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 
 				ChaVector3 parbef, chilbef, tarbef;
+
+				//parent jointが乗っている平面上
 				parbef = parworld;
 				CalcShadowToPlane(chilworld, ikaxis, parworld, &chilbef);
 				CalcShadowToPlane(targetpos, ikaxis, parworld, &tarbef);
+
+				////ドラッグするジョイントが乗っている平面上
+				//chilbef = chilworld;
+				//CalcShadowToPlane(parworld, ikaxis, chilworld, &parbef);
+				//CalcShadowToPlane(targetpos, ikaxis, chilworld, &tarbef);
+				
 
 				ChaVector3 vec0, vec1;
 				vec0 = chilbef - parbef;
@@ -6259,55 +6271,50 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
 
 
-					ChaMatrix gparrotmat, invgparrotmat;
-					CQuaternion gparrotq;
-					if (parbone->GetParent()){
-						gparrotmat = parbone->GetParent()->GetBtMat();
-						ChaMatrixInverse(&invgparrotmat, NULL, &gparrotmat);
+					double curframe = startframe;//!!!!!!!!!
 
-						gparrotmat._41 = 0.0f;
-						gparrotmat._42 = 0.0f;
-						gparrotmat._43 = 0.0f;
+					CMotionPoint* curparmp;
+					curparmp = parbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+					CMotionPoint* aplyparmp;
+					aplyparmp = parbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
+						ChaMatrix curparrotmat = curparmp->GetWorldMat();
+						curparrotmat._41 = 0.0f;
+						curparrotmat._42 = 0.0f;
+						curparrotmat._43 = 0.0f;
+						ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+						invcurparrotmat._41 = 0.0f;
+						invcurparrotmat._42 = 0.0f;
+						invcurparrotmat._43 = 0.0f;
+						ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+						aplyparrotmat._41 = 0.0f;
+						aplyparrotmat._42 = 0.0f;
+						aplyparrotmat._43 = 0.0f;
+						ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+						invaplyparrotmat._41 = 0.0f;
+						invaplyparrotmat._42 = 0.0f;
+						invaplyparrotmat._43 = 0.0f;
 
-						invgparrotmat._41 = 0.0f;
-						invgparrotmat._42 = 0.0f;
-						invgparrotmat._43 = 0.0f;
-
-						CMotionPoint tmpmp;
-						tmpmp.CalcQandTra(gparrotmat, 0);
-						gparrotq = tmpmp.GetQ();
-
+						ChaMatrix transmat2;
+						//transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
+						transmat2 = rotq0.MakeRotMatX();//現状では物理IK時には、カレントフレームがstartframeにあるので。
+						CMotionPoint transmp;
+						transmp.CalcQandTra(transmat2, firstbone);
+						rotq = transmp.GetQ();
 					}
-					else{
-						ChaMatrixIdentity(&gparrotmat);
-						ChaMatrixIdentity(&invgparrotmat);
-						gparrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+					else {
+						rotq = rotq0;
 					}
-					ChaMatrix parrotmat, invparrotmat;
-					parrotmat = parbone->GetBtMat();
-					ChaMatrixInverse(&invparrotmat, NULL, &parrotmat);
 
-
-					ChaMatrix transmat2;
-					transmat2 = rotq0.MakeRotMatX();
-
-					CMotionPoint transmp;
-					transmp.CalcQandTra(transmat2, parbone);
-					rotq = transmp.GetQ();
-
-
-					ChaMatrix newbtmat;
 					ChaVector3 rotcenter;
-					//rotcenter = parworld;
-					rotcenter = parbone->GetJointFPos();
-
+					ChaVector3TransformCoord(&rotcenter, &(parbone->GetJointFPos()), &(parbone->GetBtMat()));
 					ChaMatrix befrot, aftrot;
 					ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 					ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 					ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-					//newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
-					//newbtmat = parbone->GetBtMat() * gparbone->GetInvBtMat() * rotmat * gparbone->GetBtMat();// *tramat;
-					newbtmat = rotmat * parbone->GetBtMat();// parbone->GetBtMat() * (invBtMat * rotmat * BtMat) --> rotmat * BtMat
+					ChaMatrix newbtmat = parbone->GetBtMat() * rotmat;// *tramat;
+					//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
+					//SetWorldMat(0, srcmotid, srcframe, tmpmat);
 
 
 
@@ -6447,15 +6454,15 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 										//setbto->GetRigidBody()->setDeactivationTime(30000.0);
 										setbto->GetRigidBody()->setDeactivationTime(0.0);
 
-										if (isfirst == 1) {
+										//if (isfirst == 1) {
 											parbone->SetBtMat(newbtmat);
 											//IKボーンはKINEMATICだから。
 											parbone->GetCurMp().SetWorldMat(newbtmat);
 											isfirst = 0;
-										}
+										//}
 
-										MOTINFO* curmi = GetCurMotInfo();
-										parbone->SetWorldMat(1, curmi->motid, curmi->curframe, newbtmat);
+										//MOTINFO* curmi = GetCurMotInfo();
+										//parbone->SetWorldMat(1, curmi->motid, curmi->curframe, newbtmat);
 										//parbone->SetWorldMat(1, curmi->motid, applyframe, newbtmat);
 									}
 								}

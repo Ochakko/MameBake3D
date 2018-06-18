@@ -1685,6 +1685,9 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 	return curmp;
 }
 
+
+
+
 CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, ChaMatrix srcmat)
 {
 	int existflag = 0;

@@ -3395,16 +3395,22 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_camdist = ChaVector3Length( &diffv );
 
 
-		if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
-			if (PickSpBt(ptCursor) == 0){
+		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
+		if (s_model && (g_previewFlag == 5)) {
+			if ((s_pickinfo.pickobjno >= 0) && (PickSpBt(ptCursor) == 0)){//物理IK中でジョイントをクリックしていて、Applyボタンを押していないとき
 				StartBt(s_model, TRUE, 1, 1);
 				//s_model->BulletSimulationStart();
 			}
-			else{
+			else if(PickSpBt(ptCursor) != 0){//物理IK中でApplyボタンを押したとき
 				if (s_model){
 					s_model->BulletSimulationStop();
 					g_previewFlag = 0;
-					s_model->ApplyBtToMotion();
+					
+
+					//Applyした状態でさらに物理IKをすると姿勢が乱れるから、直るまで工事中。
+					//s_model->ApplyBtToMotion();					
+					MessageBoxA(s_mainhwnd, "物理のアプライはただいま工事中", "ただいま工事中", MB_OK);
+					
 				}
 			}
 		}
@@ -6771,11 +6777,11 @@ int RenderSelectMark(int renderflag)
 
 	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
 	if (curboneptr){
-		//if (s_onragdollik == 0){
+		if (s_onragdollik == 0){
 			int multworld = 1;
 			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
 			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
-			//}
+		}
 
 		ChaVector3 orgpos = curboneptr->GetJointFPos();
 		ChaVector3 bonepos = curboneptr->GetChildWorld();
@@ -8228,7 +8234,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				resetflag = 1;
 			}
 			else if (g_previewFlag == 5) {
-				//resetflag = 1;
+				resetflag = 0;
 			}
 		}
 		else {
@@ -8323,6 +8329,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 				curmodel->SetMotionFrame(curframe);
 
+				vector<MODELELEM>::iterator itrmodel;
+				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+					CModel* curmodel = itrmodel->modelptr;
+					if (curmodel) {
+						curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
+					}
+				}
 
 
 				curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
