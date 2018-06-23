@@ -45,13 +45,13 @@ extern bool g_underRetargetFlag;
 extern int g_previewFlag;
 */
 //global
-void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
-int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
-//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
+void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno);
+int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone);
+//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* childbone);
 int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 
-void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno)
+void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno)
 {
 	ZeroMemory(dstcr, sizeof(CUSTOMRIG));
 
@@ -71,8 +71,8 @@ void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno)
 
 	if ((rigno >= 0) && (rigno < MAXRIGNUM)) {
 		dstcr->rigno = rigno;
-		if (parbone) {
-			swprintf_s(dstcr->rigname, 256, L"%s_Rig%d", parbone->GetWBoneName(), rigno);
+		if (parentbone) {
+			swprintf_s(dstcr->rigname, 256, L"%s_Rig%d", parentbone->GetWBoneName(), rigno);
 		}
 		else {
 			swprintf_s(dstcr->rigname, 256, L"Rig%d", rigno);
@@ -84,15 +84,15 @@ void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno)
 		swprintf_s(dstcr->rigname, 256, L"RigName_00");
 	}
 
-	if (parbone) {
-		dstcr->rigboneno = parbone->GetBoneNo();
+	if (parentbone) {
+		dstcr->rigboneno = parentbone->GetBoneNo();
 		dstcr->elemnum = 1;
-		dstcr->rigelem[0].boneno = parbone->GetBoneNo();
+		dstcr->rigelem[0].boneno = parentbone->GetBoneNo();
 	}
 }
 
 
-int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone)
+int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 {
 	/*
 	typedef struct tag_rigtrans
@@ -116,14 +116,14 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone)
 	RIGELEM rigelem[4];
 	}CUSTOMRIG;
 	*/
-	if (!parbone) {
+	if (!parentbone) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。ownerbone NULL");
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}
 
-	if (parbone && (srccr.rigboneno != parbone->GetBoneNo())) {
+	if (parentbone && (srccr.rigboneno != parentbone->GetBoneNo())) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。rigboneno : %d", srccr.rigboneno);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
@@ -148,7 +148,7 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone)
 		int isvalid = IsValidRigElem(srcmodel, currigelem);
 		if (isvalid == 0) {
 			WCHAR strerr[256];
-			swprintf_s(strerr, 256, L"エラー。bonename %s, elem %d", parbone->GetWBoneName(), elemno);
+			swprintf_s(strerr, 256, L"エラー。bonename %s, elem %d", parentbone->GetWBoneName(), elemno);
 			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 
 			return 0;//!!!!!!!!!!!!!
@@ -261,8 +261,8 @@ int CBone::InitParams()
 	m_setbtflag = 0;
 
 
-	m_btparpos = ChaVector3(0.0f, 0.0f, 0.0f);
-	m_btchilpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	m_btparentpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	m_btchildpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaMatrixIdentity(&m_btdiffmat);
 
 	m_initcustomrigflag = 0;
@@ -665,9 +665,9 @@ int CBone::SetName( char* srcname )
 	return 0;
 }
 
-int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* chilpos )
+int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 {
-	if( *curpos == *chilpos ){
+	if( *curpos == *childpos ){
 		ChaMatrixIdentity( &m_laxismat );
 		m_axisq.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 		return 0;
@@ -679,7 +679,7 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* chilpos )
 	ChaVector3 vecx1, vecy1, vecz1;
 
 	startpos = *curpos;
-	endpos = *chilpos;
+	endpos = *childpos;
 
 	vecx0.x = 1.0;
 	vecx0.y = 0.0;
@@ -736,44 +736,51 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* chilpos )
 
 
 
-float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
+float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
 	ChaVector3 aftbonepos;
-	ChaVector3 aftchilpos;
-	if (g_previewFlag != 5){
-		ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-		ChaVector3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
-	}
-	else{
-		if (setstartflag == 1){
-			ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-			ChaVector3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
-		}
-		else{
-			//if (GetParent()){
-				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
-				ChaVector3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(GetBtMat()));
-			//}
-			//else{
-			//	ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
-			//	ChaVector3TransformCoord(&aftchilpos, &(chilbone->GetJointFPos()), &(chilbone->GetBtMat()));
-			//}
-		}
-	}
+	ChaVector3 aftchildpos;
 
+	if (bindflag == 1) {
+		//bind pose
+		aftbonepos = GetJointFPos();
+		aftchildpos = childbone->GetJointFPos();
+	}
+	else {
+		if (g_previewFlag != 5) {
+			ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
+			ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+		}
+		else {
+			if (setstartflag == 1) {
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+			}
+			else {
+				//if (GetParent()){
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetBtMat()));
+				//}
+				//else{
+				//	ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
+				//	ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(childbone->GetBtMat()));
+				//}
+			}
+		}
+	}
 
 	//ChaVector3 curpos;
-	//ChaVector3 chilpos;
+	//ChaVector3 childpos;
 	////ChaVector3TransformCoord(&curpos, &(m_parent->GetJointFPos()), &(m_parent->m_startmat2));
-	////ChaVector3TransformCoord(&chilpos, &(GetJointFPos()), &m_startmat2);
+	////ChaVector3TransformCoord(&childpos, &(GetJointFPos()), &m_startmat2);
 
 	//ChaVector3TransformCoord(&curpos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-	//////ChaVector3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
-	//ChaVector3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+	//////ChaVector3TransformCoord(&childpos, &(childbone->GetJointFPos()), &(childbone->m_curmp.GetWorldMat()));
+	//ChaVector3TransformCoord(&childpos, &(childbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
 
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
-	if (aftbonepos == aftchilpos){
+	if (aftbonepos == aftchildpos){
 		*dstmat = retmat;
 		dstmat->_41 = aftbonepos.x;
 		dstmat->_42 = aftbonepos.y;
@@ -788,9 +795,9 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	ChaVector3 vecx1, vecy1, vecz1;
 
 	//startpos = curpos;
-	//endpos = chilpos;
+	//endpos = childpos;
 	startpos = aftbonepos;
-	endpos = aftchilpos;
+	endpos = aftchildpos;
 
 	vecx0.x = 1.0;
 	vecx0.y = 0.0;
@@ -958,22 +965,23 @@ float CBone::CalcAxisMatX(CBone* chilbone, ChaMatrix* dstmat, int setstartflag)
 	dstmat->_42 = aftbonepos.y;
 	dstmat->_43 = aftbonepos.z;
 
-	ChaVector3 diffvec = aftbonepos - aftchilpos;
+	ChaVector3 diffvec = aftbonepos - aftchildpos;
 	float retleng = ChaVector3Length(&diffvec);
 
 	return retleng;
 }
+
 /*
 int CBone::CalcAxisMatX()
 {
 	ChaVector3 curpos;
-	ChaVector3 chilpos;
+	ChaVector3 childpos;
 
 	if (m_parent){
 		ChaVector3TransformCoord(&curpos, &(m_parent->GetJointFPos()), &(m_parent->m_startmat2));
-		ChaVector3TransformCoord(&chilpos, &(GetJointFPos()), &m_startmat2);
+		ChaVector3TransformCoord(&childpos, &(GetJointFPos()), &m_startmat2);
 
-		CalcAxisMatX_aft(curpos, chilpos, &m_gaxismatXpar);
+		CalcAxisMatX_aft(curpos, childpos, &m_gaxismatXpar);
 	}
 
 	return 0;
@@ -981,11 +989,11 @@ int CBone::CalcAxisMatX()
 */
 
 /*
-int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* dstmat)
+int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* dstmat)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
-	if (curpos == chilpos){
+	if (curpos == childpos){
 		*dstmat = retmat;
 		return 0;
 	}
@@ -996,7 +1004,7 @@ int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 	ChaVector3 vecx1, vecy1, vecz1;
 
 	startpos = curpos;
-	endpos = chilpos;
+	endpos = childpos;
 
 	vecx0.x = 1.0;
 	vecx0.y = 0.0;
@@ -1062,11 +1070,11 @@ int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 }
 */
 
-int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* dstmat)
+int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* dstmat)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
-	if (curpos == chilpos){
+	if (curpos == childpos){
 		*dstmat = retmat;
 		return 0;
 	}
@@ -1077,7 +1085,7 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 	ChaVector3 vecx1, vecy1, vecz1;
 
 	startpos = curpos;
-	endpos = chilpos;
+	endpos = childpos;
 
 	vecx0.x = 1.0;
 	vecx0.y = 0.0;
@@ -1137,17 +1145,17 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* ds
 
 
 
-int CBone::CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat )
+int CBone::CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat )
 {
 
 	ChaVector3 curpos;
-	ChaVector3 chilpos;
+	ChaVector3 childpos;
 
 	ChaVector3TransformCoord(&curpos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-	//ChaVector3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(chilbone->m_curmp.GetWorldMat()));
-	ChaVector3TransformCoord(&chilpos, &(chilbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+	//ChaVector3TransformCoord(&childpos, &(childbone->GetJointFPos()), &(childbone->m_curmp.GetWorldMat()));
+	ChaVector3TransformCoord(&childpos, &(childbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
 
-	ChaVector3 diff = curpos - chilpos;
+	ChaVector3 diff = curpos - childpos;
 	float leng;
 	leng = ChaVector3Length( &diff );
 
@@ -1162,7 +1170,7 @@ int CBone::CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat )
 	ChaVector3 vecx1, vecy1, vecz1;
 
 	startpos = curpos;
-	endpos = chilpos;
+	endpos = childpos;
 
 	vecx0.x = 1.0;
 	vecx0.y = 0.0;
@@ -1225,18 +1233,18 @@ int CBone::CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat )
 	return 0;
 }
 
-int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
+int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 {
 
 
-	CRigidElem* curre = GetRigidElem(chilbone);
+	CRigidElem* curre = GetRigidElem(childbone);
 	if( !curre ){
 		_ASSERT( 0 );
 		return 0;
 	}
 
 	//_ASSERT( colptr );
-	_ASSERT( chilbone );
+	_ASSERT( childbone );
 
 	CModel* curcoldisp = m_coldisp[curre->GetColtype()];
 	_ASSERT( curcoldisp );
@@ -1245,9 +1253,13 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 
 	ChaMatrix bmmat;
 	ChaMatrixIdentity(&bmmat);
-	//CalcAxisMatZ( &aftbonepos, &aftchilpos );
-	//CalcAxisMatY( chilbone, &bmmat );			
-	float diffleng = CalcAxisMatX(chilbone, &bmmat, 1);
+	//CalcAxisMatZ( &aftbonepos, &aftchildpos );
+	//CalcAxisMatY( childbone, &bmmat );			
+	//float diffleng = CalcAxisMatX(0, childbone, &bmmat, 1);
+
+	ChaMatrix bindcapsulemat;
+	ChaMatrixIdentity(&bindcapsulemat);
+	float diffleng = CalcAxisMatX(1, childbone, &bindcapsulemat, 1);
 
 
 	float cylileng = curre->GetCylileng();
@@ -1304,30 +1316,35 @@ int CBone::CalcRigidElemParams( CBone* chilbone, int setstartflag )
 		}
 	}
 
-	//bmmat._41 = ( aftbonepos.x + aftchilpos.x ) * 0.5f;
-	//bmmat._42 = ( aftbonepos.y + aftchilpos.y ) * 0.5f;
-	//bmmat._43 = ( aftbonepos.z + aftchilpos.z ) * 0.5f;
+	//bmmat._41 = ( aftbonepos.x + aftchildpos.x ) * 0.5f;
+	//bmmat._42 = ( aftbonepos.y + aftchildpos.y ) * 0.5f;
+	//bmmat._43 = ( aftbonepos.z + aftchildpos.z ) * 0.5f;
 
 	//bmmat._41 = aftbonepos.x;
 	//bmmat._42 = aftbonepos.y;
 	//bmmat._43 = aftbonepos.z;
 
+	curre->SetBindcapsulemat(bindcapsulemat);
+	//bmmat = curre->GetEndbone()->CalcManipulatorPostureMatrix(0, 1, 1);
+	bmmat = curre->GetCapsulemat();
 
-	curre->SetCapsulemat( bmmat );
+	//curre->SetCapsulemat( bmmat );
 	curre->SetCylileng( cylileng );
 	curre->SetSphr( sphr );
 	curre->SetBoxz( boxz );
 
+
+
 	if( setstartflag != 0 ){
 		curre->SetFirstcapsulemat( bmmat );
-		curre->SetFirstWorldmat(chilbone->GetCurMp().GetWorldMat());
+		curre->SetFirstWorldmat(childbone->GetCurMp().GetWorldMat());
 		//curre->SetFirstWorldmat(GetCurMp().GetWorldMat());
 
 		//if (setstartflag == 2){
-		//	chilbone->SetNodeMat(bmmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//	childbone->SetNodeMat(bmmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//}
 
-		chilbone->SetBtMat(chilbone->GetCurMp().GetWorldMat());//!!!!!!!!!!!!!btmatの初期値
+		childbone->SetBtMat(childbone->GetCurMp().GetWorldMat());//!!!!!!!!!!!!!btmatの初期値
 	}
 
 
@@ -1360,11 +1377,11 @@ int CBone::CalcAxisMat( int firstflag, float delta )
 
 	if( delta != 0.0f ){
 		CQuaternion multq;
-		ChaVector3 gparpos, gchilpos, gbonevec;
+		ChaVector3 gparentpos, gchildpos, gbonevec;
 		if (m_parent){
-			ChaVector3TransformCoord(&gparpos, &(m_parent->GetJointFPos()), &(m_parent->m_startmat2));
-			ChaVector3TransformCoord(&gchilpos, &(GetJointFPos()), &m_startmat2);
-			gbonevec = gchilpos - gparpos;
+			ChaVector3TransformCoord(&gparentpos, &(m_parent->GetJointFPos()), &(m_parent->m_startmat2));
+			ChaVector3TransformCoord(&gchildpos, &(GetJointFPos()), &m_startmat2);
+			gbonevec = gchildpos - gparentpos;
 			ChaVector3Normalize(&gbonevec, &gbonevec);
 		}
 		else{
@@ -1411,9 +1428,9 @@ int CBone::CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix g
 	return 0;
 }
 
-int CBone::CreateRigidElem( CBone* parbone, int reflag, std::string rename, int impflag, std::string impname )
+int CBone::CreateRigidElem( CBone* parentbone, int reflag, std::string rename, int impflag, std::string impname )
 {
-	if (!parbone){
+	if (!parentbone){
 		return 0;
 	}
 
@@ -1423,17 +1440,17 @@ int CBone::CreateRigidElem( CBone* parbone, int reflag, std::string rename, int 
 			_ASSERT(0);
 			return 1;
 		}
-		newre->SetBone(parbone);
+		newre->SetBone(parentbone);
 		newre->SetEndbone(this);
 		SetGroupNoByName(newre, this);
-		parbone->SetRigidElemOfMap(rename, this, newre);
+		parentbone->SetRigidElemOfMap(rename, this, newre);
 	}
 
 //////////////
 	if( impflag ){
 		map<string, map<CBone*, ChaVector3>>::iterator findimpmap;
-		findimpmap = parbone->FindImpMap(impname);
-		if (findimpmap != parbone->GetImpMapEnd()){
+		findimpmap = parentbone->FindImpMap(impname);
+		if (findimpmap != parentbone->GetImpMapEnd()){
 			map<CBone*, ChaVector3>::iterator itrimp;
 			itrimp = findimpmap->second.find(this);
 			if (itrimp != findimpmap->second.end()){
@@ -1444,15 +1461,15 @@ int CBone::CreateRigidElem( CBone* parbone, int reflag, std::string rename, int 
 			map<CBone*, ChaVector3> curmap;
 
 			curmap[this] = ChaVector3( 0.0f, 0.0f, 0.0f );
-			parbone->m_impmap[impname] = curmap;
+			parentbone->m_impmap[impname] = curmap;
 		}
 	}
 	return 0;
 }
 
-int CBone::SetGroupNoByName( CRigidElem* curre, CBone* chilbone )
+int CBone::SetGroupNoByName( CRigidElem* curre, CBone* childbone )
 {
-	char* groupmark = strstr( chilbone->m_bonename, "_G_" );
+	char* groupmark = strstr( childbone->m_bonename, "_G_" );
 	if( groupmark ){
 		char* numstart = groupmark + 3;
 		char* numend = strstr( numstart, "_" );
@@ -1469,7 +1486,7 @@ int CBone::SetGroupNoByName( CRigidElem* curre, CBone* chilbone )
 			}
 		}
 	}
-	int cmpbt = strncmp( chilbone->m_bonename, "BT_", 3 );
+	int cmpbt = strncmp( childbone->m_bonename, "BT_", 3 );
 	if( cmpbt == 0 ){
 		m_btforce = 1;
 	}
@@ -1961,7 +1978,7 @@ int CBone::CalcFirstFrameBonePos(ChaMatrix srcmat)
 void CBone::CalcFirstAxisMatX()
 {
 	ChaVector3 curpos;
-	ChaVector3 chilpos;
+	ChaVector3 childpos;
 
 	if (m_parent){
 		CalcAxisMatX_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatX);
@@ -1972,7 +1989,7 @@ void CBone::CalcFirstAxisMatX()
 void CBone::CalcFirstAxisMatZ()
 {
 	ChaVector3 curpos;
-	ChaVector3 chilpos;
+	ChaVector3 childpos;
 
 	if (m_parent){
 		CalcAxisMatZ_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatZ);
@@ -2122,8 +2139,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	ChaMatrix invcapsulemat;
 	if (m_parent){
 		if (curre){
-			capsulemat = curre->GetFirstcapsulemat();
-			//capsulemat = curre->GetCapsulemat();
+			//capsulemat = curre->GetFirstcapsulemat();
+			capsulemat = curre->GetBindcapsulemat();
 		}
 		else{
 			ChaMatrixIdentity(&capsulemat);
@@ -2143,7 +2160,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	ChaMatrix parcapsulemat;
 	ChaMatrix invparcapsulemat;
 	if (parre) {
-		parcapsulemat = parre->GetFirstcapsulemat();
+		//parcapsulemat = parre->GetFirstcapsulemat();
+		parcapsulemat = parre->GetBindcapsulemat();
 	}
 	else {
 		ChaMatrixIdentity(&parcapsulemat);
@@ -2158,7 +2176,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	ChaMatrix childcapsulemat;
 	ChaMatrix invchildcapsulemat;
 	if (childre) {
-		childcapsulemat = childre->GetFirstcapsulemat();
+		//childcapsulemat = childre->GetFirstcapsulemat();
+		childcapsulemat = childre->GetBindcapsulemat();
 	}
 	else {
 		ChaMatrixIdentity(&childcapsulemat);
@@ -2172,18 +2191,19 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		if (g_previewFlag != 5){
 			worldmat = pcurmp->GetWorldMat();
 			//diffworld = curre->GetInvFirstWorldmat() * worldmat;
-			diffworld = GetInvFirstMat() * worldmat;
+			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
 		}
 		else{
 			worldmat = GetBtMat();
-			//diffworld = GetInvStartMat2() * worldmat;
-			//diffworld = GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
-			if (childre) {
-				diffworld = childre->GetInvFirstWorldmat() * worldmat;//初期状態からの変化分
-			}
-			else {
-				diffworld = curre->GetInvFirstWorldmat() * worldmat;
-			}
+			////diffworld = GetInvStartMat2() * worldmat;
+			////diffworld = GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
+			//if (childre) {
+			//	diffworld = childre->GetInvFirstWorldmat() * worldmat;//初期状態からの変化分
+			//}
+			//else {
+			//	diffworld = curre->GetInvFirstWorldmat() * worldmat;
+			//}
+			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
 
 		}
 		//diffworld = curre->GetInvFirstWorldmat() * worldmat;
@@ -2199,12 +2219,13 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	if (pparmp){
 		if (g_previewFlag != 5){
 			parworldmat = pparmp->GetWorldMat();
-			pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
 		}
 		else{
 			parworldmat = m_parent->GetBtMat();
 			//pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//シミュレーション開始時からの変化分
-			pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
+			//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
 		}
 		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
@@ -2219,17 +2240,19 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	if (pgparmp) {
 		if (g_previewFlag != 5) {
 			gparworldmat = pgparmp->GetWorldMat();
-			gpardiffworld = m_parent->GetParent()->GetInvFirstMat() * gparworldmat;
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
 		}
 		else {
 			gparworldmat = m_parent->GetParent()->GetBtMat();
 			//gpardiffworld = m_parent->GetParent()->GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
-			if (parre) {
-				gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
-			}
-			else {
-				gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
-			}
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
+
+			//if (parre) {
+			//	gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
+			//}
+			//else {
+			//	gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
+			//}
 		}
 		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
@@ -2304,7 +2327,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	}
 	else{
 		ChaVector3 aftjpos;
-		ChaVector3TransformCoord(&aftjpos, &(GetJointFPos()), &worldmat);
+		//ChaVector3TransformCoord(&aftjpos, &(GetJointFPos()), &worldmat);
+		ChaVector3TransformCoord(&aftjpos, &(GetParent()->GetJointFPos()), &parworldmat);
 
 		selm._41 = aftjpos.x;
 		selm._42 = aftjpos.y;
@@ -2315,13 +2339,20 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	return selm;
 }
 
-ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe)
+ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld)
 {
 
 	//Posture
 
 	ChaMatrix selm;
 	ChaMatrixIdentity(&selm);
+	if (!m_parmodel) {
+		return selm;
+	}
+
+	int srcmotid = m_parmodel->GetCurMotInfo()->motid;
+	double srcframe = m_parmodel->GetCurMotInfo()->curframe;
+
 
 	CMotionPoint* pcurmp = 0;
 	CMotionPoint* pparmp = 0;
@@ -2358,8 +2389,8 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 	ChaMatrix invcapsulemat;
 	if (m_parent) {
 		if (curre) {
-			capsulemat = curre->GetFirstcapsulemat();
-			//capsulemat = curre->GetCapsulemat();
+			//capsulemat = curre->GetFirstcapsulemat();
+			capsulemat = curre->GetBindcapsulemat();
 		}
 		else {
 			ChaMatrixIdentity(&capsulemat);
@@ -2379,7 +2410,8 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 	ChaMatrix parcapsulemat;
 	ChaMatrix invparcapsulemat;
 	if (parre) {
-		parcapsulemat = parre->GetFirstcapsulemat();
+		//parcapsulemat = parre->GetFirstcapsulemat();
+		parcapsulemat = parre->GetBindcapsulemat();
 	}
 	else {
 		ChaMatrixIdentity(&parcapsulemat);
@@ -2394,7 +2426,8 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 	ChaMatrix childcapsulemat;
 	ChaMatrix invchildcapsulemat;
 	if (childre) {
-		childcapsulemat = childre->GetFirstcapsulemat();
+		//childcapsulemat = childre->GetFirstcapsulemat();
+		childcapsulemat = childre->GetBindcapsulemat();
 	}
 	else {
 		ChaMatrixIdentity(&childcapsulemat);
@@ -2407,18 +2440,25 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 	if (pcurmp) {
 		if (g_previewFlag != 5) {
 			worldmat = pcurmp->GetWorldMat();
-			diffworld = GetInvFirstMat() * worldmat;
+			//diffworld = curre->GetInvFirstWorldmat() * worldmat;
+			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
 		}
 		else {
 			worldmat = GetBtMat();
-			if (childre) {
-				diffworld = childre->GetInvFirstWorldmat() * worldmat;//初期状態からの変化分
-			}
-			else {
-				diffworld = curre->GetInvFirstWorldmat() * worldmat;
-			}
+			////diffworld = GetInvStartMat2() * worldmat;
+			////diffworld = GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
+			//if (childre) {
+			//	diffworld = childre->GetInvFirstWorldmat() * worldmat;//初期状態からの変化分
+			//}
+			//else {
+			//	diffworld = curre->GetInvFirstWorldmat() * worldmat;
+			//}
+			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
 
 		}
+		//diffworld = curre->GetInvFirstWorldmat() * worldmat;
+		//ChaMatrixIdentity(&diffworld);
+		//diffworld = curre->GetInvFirstWorldmat() * worldmat;//!!!!!!!!!!!!!!
 	}
 	else {
 		ChaMatrixIdentity(&worldmat);
@@ -2429,12 +2469,17 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 	if (pparmp) {
 		if (g_previewFlag != 5) {
 			parworldmat = pparmp->GetWorldMat();
-			pardiffworld = m_parent->GetInvFirstMat() * parworldmat;
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
 		}
 		else {
 			parworldmat = m_parent->GetBtMat();
-			pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
+			//pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//シミュレーション開始時からの変化分
+			//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
 		}
+		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
+		//ChaMatrixIdentity(&pardiffworld);
 	}
 	else {
 		ChaMatrixIdentity(&parworldmat);
@@ -2445,28 +2490,34 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 	if (pgparmp) {
 		if (g_previewFlag != 5) {
 			gparworldmat = pgparmp->GetWorldMat();
-			gpardiffworld = m_parent->GetParent()->GetInvFirstMat() * gparworldmat;
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
 		}
 		else {
 			gparworldmat = m_parent->GetParent()->GetBtMat();
-			if (parre) {
-				gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
-			}
-			else {
-				gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
-			}
+			//gpardiffworld = m_parent->GetParent()->GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
+
+			//if (parre) {
+			//	gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
+			//}
+			//else {
+			//	gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
+			//}
 		}
+		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
+		//ChaMatrixIdentity(&pardiffworld);
 	}
 	else {
 		ChaMatrixIdentity(&gparworldmat);
 		ChaMatrixIdentity(&gpardiffworld);
 	}
 
-	if (g_boneaxis == 2) {
+	if ((calccapsuleflag == 0) && (g_boneaxis == 2)) {
 		//global axis
 		ChaMatrixIdentity(&selm);
 	}
-	else if (g_boneaxis == 0) {
+	else if ((calccapsuleflag == 0) && (g_boneaxis == 0)) {
 		//current bone axis
 		if (GetBoneLeng() > 0.00001f) {
 			if (multworld == 1) {
@@ -2485,7 +2536,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 			}
 		}
 	}
-	else if (g_boneaxis == 1) {
+	else if ((calccapsuleflag == 1) || (g_boneaxis == 1)) {
 		//parent bone axis
 		if (GetBoneLeng() > 0.00001f) {
 			if (multworld == 1) {
@@ -2513,14 +2564,16 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settra
 		selm._41 = 0.0f;
 		selm._42 = 0.0f;
 		selm._43 = 0.0f;
+		selm._44 = 1.0f;
 	}
 	else {
 		ChaVector3 aftjpos;
-		ChaVector3TransformCoord(&aftjpos, &(GetJointFPos()), &worldmat);
+		ChaVector3TransformCoord(&aftjpos, &(GetParent()->GetJointFPos()), &parworldmat);
 
 		selm._41 = aftjpos.x;
 		selm._42 = aftjpos.y;
 		selm._43 = aftjpos.z;
+		selm._44 = 1.0f;
 	}
 
 
@@ -3877,9 +3930,9 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	if (newmp){
 		ChaMatrix setmat = srcmp.GetWorldMat();
 
-		CBone* parbone = GetParent();
-		if (parbone){
-			CMotionPoint* parmp = parbone->GetMotionPoint(srcmotid, srcframe);
+		CBone* parentbone = GetParent();
+		if (parentbone){
+			CMotionPoint* parmp = parentbone->GetMotionPoint(srcmotid, srcframe);
 			if (parmp){
 				setmat = setmat * parmp->GetWorldMat();
 			}
@@ -3958,9 +4011,9 @@ ChaVector3 CBone::CalcFBXTra(int srcmotid, double srcframe)
 	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
 
 	ChaVector3 orgtra;
-	CBone* parbone = GetParent();
-	if (parbone){
-		orgtra = GetJointFPos() - parbone->GetJointFPos();
+	CBone* parentbone = GetParent();
+	if (parentbone){
+		orgtra = GetJointFPos() - parentbone->GetJointFPos();
 	}
 	else{
 		orgtra = GetJointFPos();
@@ -3988,12 +4041,12 @@ int CBone::QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq
 }
 
 /*
-int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, ChaVector3* dstpos)
+int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
 {
 	ChaMatrixIdentity(dstmat);
 	*dstpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	if (!chilbone || !dstmat || !dstpos){
+	if (!childbone || !dstmat || !dstpos){
 		return 1;
 	}
 
@@ -4031,17 +4084,17 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, C
 		}
 	}
 	jointfpos = GetJointFPos();
-	ChaVector3TransformCoord(&m_btparpos, &jointfpos, &tramat);
+	ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
 
 	//child
-	jointfpos = chilbone->GetJointFPos();
-	ChaVector3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+	jointfpos = childbone->GetJointFPos();
+	ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
 
 
 
 	multmat = srcre->GetFirstcapsulemat() * diffworld;
-	//rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
-	rigidcenter = m_btparpos;
+	//rigidcenter = (m_btparentpos + m_btchildpos) * 0.5f;
+	rigidcenter = m_btparentpos;
 
 
 	*dstmat = multmat;
@@ -4051,18 +4104,18 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, C
 }
 */
 
-int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, ChaVector3* dstpos)
+int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
 {
 	ChaMatrixIdentity(dstmat);
 	*dstpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	if (!chilbone || !dstmat || !dstpos){
+	if (!childbone || !dstmat || !dstpos){
 		return 1;
 	}
 
 	ChaVector3 jointfpos;
-	ChaMatrix firstworld;
-	ChaMatrix invfirstworld;
+	ChaMatrix firstmat;
+	ChaMatrix invfirstmat;
 	ChaMatrix curworld;
 	ChaMatrix befworld;
 	ChaMatrix invbefworld;
@@ -4072,8 +4125,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, Ch
 	ChaMatrix tramat;
 
 
-	firstworld = GetStartMat2();
-	ChaMatrixInverse(&invfirstworld, NULL, &firstworld);
+	firstmat = GetFirstMat();
+	ChaMatrixInverse(&invfirstmat, NULL, &firstmat);
 
 	ChaMatrix befbtmat;
 	if (GetBtFlag() == 0){
@@ -4087,25 +4140,25 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, Ch
 
 	//current
 	if (GetBtKinFlag() == 1){
-		diffworld = invfirstworld * GetCurMp().GetWorldMat();
+		diffworld = invfirstmat * GetCurMp().GetWorldMat();
 		tramat = GetCurMp().GetWorldMat();
 
 		jointfpos = GetJointFPos();
-		ChaVector3TransformCoord(&m_btparpos, &jointfpos, &tramat);
-		jointfpos = chilbone->GetJointFPos();
-		ChaVector3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+		ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
+		jointfpos = childbone->GetJointFPos();
+		ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
 
 	}
 	else{
 		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
 		if (srcmodel->GetBtCnt() == 0){
-			diffworld = invfirstworld * GetCurMp().GetWorldMat();
+			diffworld = invfirstmat * GetCurMp().GetWorldMat();
 			tramat = GetCurMp().GetWorldMat();
 
 			jointfpos = GetJointFPos();
-			ChaVector3TransformCoord(&m_btparpos, &jointfpos, &tramat);
-			jointfpos = chilbone->GetJointFPos();
-			ChaVector3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+			ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
+			jointfpos = childbone->GetJointFPos();
+			ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
 		}
 		else{
 			if (GetParent() && (GetParent()->GetBtKinFlag() == 1)){
@@ -4115,11 +4168,11 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, Ch
 				curworld = GetCurMp().GetWorldMat();
 				befworld = GetCurMp().GetBefWorldMat();
 
-				ChaVector3 befparpos, curparpos;
+				ChaVector3 befparentpos, curparentpos;
 				jointfpos = GetJointFPos();
-				ChaVector3TransformCoord(&befparpos, &jointfpos, &befworld);
-				ChaVector3TransformCoord(&curparpos, &jointfpos, &curworld);
-				ChaVector3 diffmv = curparpos - befparpos;
+				ChaVector3TransformCoord(&befparentpos, &jointfpos, &befworld);
+				ChaVector3TransformCoord(&curparentpos, &jointfpos, &curworld);
+				ChaVector3 diffmv = curparentpos - befparentpos;
 
 				ChaMatrix diffmvmat;
 				ChaMatrixIdentity(&diffmvmat);
@@ -4128,27 +4181,27 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, Ch
 				ChaMatrixInverse(&invbefworld, NULL, &befworld);
 				ChaMatrix newtramat = befbtmat * diffmvmat;
 
-				diffworld = invfirstworld * newtramat;
+				diffworld = invfirstmat * newtramat;
 
-				m_btparpos = curparpos;
-				jointfpos = chilbone->GetJointFPos();
-				//ChaVector3TransformCoord(&m_btchilpos, &jointfpos, &befbtmat);
-				ChaVector3TransformCoord(&m_btchilpos, &jointfpos, &newtramat);
+				m_btparentpos = curparentpos;
+				jointfpos = childbone->GetJointFPos();
+				//ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &befbtmat);
+				ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &newtramat);
 			}
 			else{
-				diffworld = invfirstworld * befbtmat;
+				diffworld = invfirstmat * befbtmat;
 				tramat = befbtmat;
 
 				jointfpos = GetJointFPos();
-				ChaVector3TransformCoord(&m_btparpos, &jointfpos, &tramat);
-				jointfpos = chilbone->GetJointFPos();
-				ChaVector3TransformCoord(&m_btchilpos, &jointfpos, &tramat);
+				ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
+				jointfpos = childbone->GetJointFPos();
+				ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
 			}
 		}
 	}
 
-	multmat = srcre->GetFirstcapsulemat() * diffworld;
-	rigidcenter = (m_btparpos + m_btchilpos) * 0.5f;
+	multmat = srcre->GetBindcapsulemat() * diffworld;
+	rigidcenter = (m_btparentpos + m_btchildpos) * 0.5f;
 
 	*dstmat = multmat;
 	*dstpos = rigidcenter;

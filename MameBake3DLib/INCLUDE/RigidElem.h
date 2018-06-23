@@ -97,11 +97,15 @@ public: //accesser
 	float GetFriction(){ return m_friction; };
 	void SetFriction( float srcval ){ m_friction = srcval; };
 
-	ChaMatrix GetCapsulemat(){ return m_capsulemat; };
-	void SetCapsulemat( ChaMatrix srcmat ){ m_capsulemat = srcmat; };
+	ChaMatrix GetCapsulemat();
+	//void SetCapsulemat( ChaMatrix srcmat ){ m_capsulemat = srcmat; };
 
 	ChaMatrix GetFirstcapsulemat(){ return m_firstcapsulemat; };
 	void SetFirstcapsulemat( ChaMatrix srcmat ){ m_firstcapsulemat = srcmat; };
+
+	ChaMatrix GetBindcapsulemat() { return m_bindcapsulemat; };
+	void SetBindcapsulemat(ChaMatrix srcmat) { m_bindcapsulemat = srcmat; };
+
 
 	ChaMatrix GetFirstWorldmat() { return m_firstworldmat; };
 	ChaMatrix GetInvFirstWorldmat() { ChaMatrix retmat; ChaMatrixInverse(&retmat, NULL, &m_firstworldmat); return retmat; };
@@ -163,7 +167,7 @@ private:
 	ChaMatrix m_capsulemat;
 	ChaMatrix m_firstcapsulemat;
 	ChaMatrix m_firstworldmat;//m_firstcapsulematê›íËéûÇÃworldmat
-
+	ChaMatrix m_bindcapsulemat;//bind poseÇÃcapsulemat
 
 	CBone* m_bone;
 	CBone* m_endbone;

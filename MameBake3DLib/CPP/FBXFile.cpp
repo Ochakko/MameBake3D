@@ -117,7 +117,7 @@ static bool CreateScene(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmode
 static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene );
 static FbxNode* CreateFbxMesh( FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj );
 static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
-static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparbone, FbxNode* pparnode );
+static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
 //static void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* lMesh, CMQOObject* curobj, CModel* pmodel );
 static void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
 static void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag);
@@ -1455,7 +1455,7 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 {
 	int notexistflag = 0;
 
-	ChaVector3 curpos, parpos;
+	ChaVector3 curpos, parentpos;
 	if (s_bvhflag == 1){
 		CBVHElem* curbone = fbxbone->GetBvhElem();
 		if (curbone){
@@ -1464,16 +1464,16 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 			CFBXBone* parfbxbone;
 			parfbxbone = fbxbone->GetParent();
 			if (parfbxbone){
-				CBVHElem* parbone = parfbxbone->GetBvhElem();
-				if (parbone){
-					parpos = parbone->GetPosition();
+				CBVHElem* parentbone = parfbxbone->GetBvhElem();
+				if (parentbone){
+					parentpos = parentbone->GetPosition();
 				}
 				else{
-					parpos = ChaVector3(0.0f, 0.0f, 0.0f);
+					parentpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				}
 			}
 			else{
-				parpos = ChaVector3(0.0f, 0.0f, 0.0f);
+				parentpos = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
@@ -1488,16 +1488,16 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 			CFBXBone* parfbxbone;
 			parfbxbone = fbxbone->GetParent();
 			if (parfbxbone){
-				CBone* parbone = parfbxbone->GetBone();
-				if (parbone){
-					parpos = parbone->GetJointFPos();
+				CBone* parentbone = parfbxbone->GetBone();
+				if (parentbone){
+					parentpos = parentbone->GetJointFPos();
 				}
 				else{
-					parpos = ChaVector3(0.0f, 0.0f, 0.0f);
+					parentpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				}
 			}
 			else{
-				parpos = ChaVector3(0.0f, 0.0f, 0.0f);
+				parentpos = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 		}
 		else{
@@ -1520,11 +1520,11 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 		tramat = fbxbone->GetBone()->GetNodeMat();
 	}
 	else{
-		ChaVector3 diffvec = curpos - parpos;
+		ChaVector3 diffvec = curpos - parentpos;
 		float leng = ChaVector3Length(&diffvec);
 		if (leng >= 0.00001f){
-			//tramat = CalcAxisMatX_aft(parpos, curpos);
-			calcbone.CalcAxisMatZ_aft(parpos, curpos, &tramat);
+			//tramat = CalcAxisMatX_aft(parentpos, curpos);
+			calcbone.CalcAxisMatZ_aft(parentpos, curpos, &tramat);
 			tramat._41 = curpos.x;
 			tramat._42 = curpos.y;
 			tramat._43 = curpos.z;
@@ -1869,13 +1869,13 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		parpbe = 0;
 	}
 
-	ChaVector3 curpos, parpos, gparpos;
+	ChaVector3 curpos, parentpos, gparentpos;
 	curpos = pbe->GetPosition();
 	if (parpbe){
-		parpos = parpbe->GetPosition();
+		parentpos = parpbe->GetPosition();
 	}
 	else{
-		parpos = ChaVector3(0.0f, 0.0f, 0.0f);
+		parentpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
 
@@ -1896,7 +1896,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		lSkeletonLimbNodeAttribute2->Size.Set(1.0);
 		FbxNode* lSkeletonLimbNode2 = FbxNode::Create(pScene, lLimbNodeName2.Buffer());
 		lSkeletonLimbNode2->SetNodeAttribute(lSkeletonLimbNodeAttribute2);
-		//lSkeletonLimbNode2->LclTranslation.Set(FbxVector4(curpos2.x - parpos2.x, curpos2.y - parpos2.y, curpos2.z - parpos2.z));
+		//lSkeletonLimbNode2->LclTranslation.Set(FbxVector4(curpos2.x - parentpos2.x, curpos2.y - parentpos2.y, curpos2.z - parentpos2.z));
 		lSkeletonLimbNode2->LclTranslation.Set(FbxVector4(0.0, 0.0, 0.0));
 		parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode2);
 
@@ -1922,10 +1922,10 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
 		//if (pbe->GetChild()){
 		if (pbe->GetParent()){//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parpos.x, curpos.y - parpos.y, curpos.z - parpos.z));
+			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
 		}
 		else{
-			//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parpos.x - gparpos.x, parpos.y - gparpos.y, parpos.z - gparpos.z));
+			//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parentpos.x - gparentpos.x, parentpos.y - gparentpos.y, parentpos.z - gparentpos.z));
 			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x, curpos.y, curpos.z));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
 		fbxbone2->GetSkelNode()->AddChild(lSkeletonLimbNode1);
@@ -1982,10 +1982,10 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
 		//if (pbe->GetChild()){
 		if (pbe->GetParent()){//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parpos.x, curpos.y - parpos.y, curpos.z - parpos.z));
+			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
 		}
 		else{
-			//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parpos.x - gparpos.x, parpos.y - gparpos.y, parpos.z - gparpos.z));
+			//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parentpos.x - gparentpos.x, parentpos.y - gparentpos.y, parentpos.z - gparentpos.z));
 			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x, curpos.y, curpos.z));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			_ASSERT(0);
 		}
@@ -2084,13 +2084,13 @@ CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
 
 void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 {
-	ChaVector3 curpos, parpos, gparpos;
+	ChaVector3 curpos, parentpos, gparentpos;
 	curpos = pbone->GetJointFPos();
-	CBone* parbone = pbone->GetParent();
-	if( parbone ){
-		parpos = parbone->GetJointFPos();
+	CBone* parentbone = pbone->GetParent();
+	if( parentbone ){
+		parentpos = parentbone->GetJointFPos();
 	}else{
-		parpos = ChaVector3( 0.0f, 0.0f, 0.0f );
+		parentpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	}
 
 	CFBXBone* fbxbone = new CFBXBone();
@@ -2108,7 +2108,7 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 	lSkeletonLimbNodeAttribute1->Size.Set(1.0);
 	FbxNode* lSkeletonLimbNode1 = FbxNode::Create(pScene,lLimbNodeName1.Buffer());
 	lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
-	lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parpos.x, curpos.y - parpos.y, curpos.z - parpos.z));
+	lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
 	parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode1);
 
 	fbxbone->SetBone( pbone );
@@ -2132,13 +2132,13 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 }
 int DestroyFBXBoneReq( CFBXBone* fbxbone )
 {
-	CFBXBone* chilbone = fbxbone->GetChild();
+	CFBXBone* childbone = fbxbone->GetChild();
 	CFBXBone* brobone = fbxbone->GetBrother();
 
 	delete fbxbone;
 
-	if( chilbone ){
-		DestroyFBXBoneReq( chilbone );
+	if( childbone ){
+		DestroyFBXBoneReq( childbone );
 	}
 	if( brobone ){
 		DestroyFBXBoneReq( brobone );

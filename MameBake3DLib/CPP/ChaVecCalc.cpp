@@ -2979,7 +2979,42 @@ void CQuaternionIdentity(CQuaternion* dstq)
 
 }
 
+ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat)
+{
+	CQuaternion tmpq;
+	tmpq.MakeFromD3DXMat(srcmat);
+	return tmpq.MakeRotMatX();
+}
 
+ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat)
+{
+	ChaMatrix tmpmat = srcmat;
+	ChaMatrix retmat;
+
+
+	retmat._11 = tmpmat._11;
+	retmat._12 = tmpmat._21;
+	retmat._13 = tmpmat._31;
+	retmat._14 = tmpmat._41;
+
+	retmat._21 = tmpmat._12;
+	retmat._22 = tmpmat._22;
+	retmat._23 = tmpmat._32;
+	retmat._24 = tmpmat._42;
+
+	retmat._31 = tmpmat._13;
+	retmat._32 = tmpmat._23;
+	retmat._33 = tmpmat._33;
+	retmat._34 = tmpmat._43;
+
+	retmat._41 = tmpmat._14;
+	retmat._42 = tmpmat._24;
+	retmat._43 = tmpmat._34;
+	retmat._44 = tmpmat._44;
+
+
+	return retmat;
+}
 
 
 
@@ -3063,6 +3098,9 @@ D3DXMATRIX ChaMatrix::D3DX()
 	return retm;
 }
 #endif
+
+
+
 
 
 

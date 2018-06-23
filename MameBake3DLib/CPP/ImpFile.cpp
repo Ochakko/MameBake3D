@@ -295,10 +295,10 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 		int headleng = (int)(jointnameptr - childname);
 		*(childname2 + headleng) = 0;
 	}
-	CBone* chilbone = m_model->GetBoneByName(childname1);
-	if (!chilbone){
-		chilbone = m_model->GetBoneByName(childname2);
-		if (!chilbone){
+	CBone* childbone = m_model->GetBoneByName(childname1);
+	if (!childbone){
+		childbone = m_model->GetBoneByName(childname2);
+		if (!childbone){
 			_ASSERT(0);
 			return 0;
 		}
@@ -315,8 +315,8 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 	ChaVector3 imp( impx, impy, impz );
 
 	if( curbone ){
-		if( chilbone ){
-			curbone->SetImpOfMap( m_strimp, chilbone, imp );
+		if( childbone ){
+			curbone->SetImpOfMap( m_strimp, childbone, imp );
 		}
 	}
 

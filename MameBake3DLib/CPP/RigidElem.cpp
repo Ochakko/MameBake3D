@@ -53,6 +53,7 @@ int CRigidElem::InitParams()
 	ChaMatrixIdentity( &m_capsulemat );
 	ChaMatrixIdentity(&m_firstcapsulemat);
 	ChaMatrixIdentity(&m_firstworldmat);
+	ChaMatrixIdentity(&m_bindcapsulemat);
 
 	m_sphrate = 0.6f;
 	m_boxzrate = 0.6f;
@@ -122,14 +123,23 @@ float CRigidElem::GetBoneLeng()
 		return 0.0f;
 	}
 
-	ChaVector3 centerA, parposA, chilposA, aftparposA, aftchilposA;
-	parposA = m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparposA, &parposA, &m_bone->GetInitMat());
-	chilposA = m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetInitMat());
-	ChaVector3 diffA = chilposA - parposA;
+	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
+	parentposA = m_bone->GetJointFPos();
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetInitMat());
+	childposA = m_endbone->GetJointFPos();
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetInitMat());
+	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = ChaVector3Length(&diffA);
 
 	return m_boneleng;
+
+}
+
+
+ChaMatrix CRigidElem::GetCapsulemat()
+{
+	int calccapsuleflag = 1;
+	m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 1, 1);
+	return m_capsulemat;
 
 }

@@ -47,12 +47,12 @@ public:
  * CreateObject
  * @breaf bulletの剛体オブジェクトを作成し設定する。
  * @param (CBtObject* parbt) IN 親のCBtObjectへのポインタ。
- * @param (CBone* parbone) IN 剛体の親側のボーンのそのまた親のボーン。
+ * @param (CBone* parentbone) IN 剛体の親側のボーンのそのまた親のボーン。
  * @param (CBone* curbone) IN 剛体の親側のボーン。
- * @param (CBone* chilbone) IN 剛体の子供側のボーン。
+ * @param (CBone* childbone) IN 剛体の子供側のボーン。
  * @return 成功したら０。
  */
-	int CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, CBone* chilbone );
+	int CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone );
 
 /**
  * @fn
@@ -174,8 +174,8 @@ public: //accesser
 	CBone* GetBone(){ return m_bone; };
 	void SetBone( CBone* srcbone ){ m_bone = srcbone; };
 
-	CBone* GetParBone(){ return m_parbone; };
-	void SetParBone( CBone* srcbone ){ m_parbone = srcbone; };
+	CBone* Getparentbone(){ return m_parentbone; };
+	void Setparentbone( CBone* srcbone ){ m_parentbone = srcbone; };
 
 	CBone* GetEndBone(){ return m_endbone; };
 	void SetEndBone( CBone* srcbone ){ m_endbone = srcbone; };
@@ -290,7 +290,7 @@ private:
 	ChaMatrix m_xworld;//bulletの剛体に設定された変換行列。
 
 	CBone* m_bone;//剛体の親側のボーン
-	CBone* m_parbone;//m_boneの親のボーン
+	CBone* m_parentbone;//m_boneの親のボーン
 	CBone* m_endbone;//剛体の子供側のボーン
 
 

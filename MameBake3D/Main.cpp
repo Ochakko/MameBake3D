@@ -213,9 +213,9 @@ int                         g_nActiveLight;
 
 extern map<CModel*,int> g_bonecntmap;
 extern int gNumIslands;
-extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
-extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
-//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
+extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno);
+extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone);
+//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* childbone);
 extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 extern void DXUTSetOverrideSize(int srcw, int srch);
@@ -233,6 +233,7 @@ ChaMatrix s_ikselectmat;//for ik, fk
 
 
 static HWND s_mainhwnd = NULL;
+
 
 static int s_onragdollik = 0;
 static int s_physicskind = 0;
@@ -889,6 +890,7 @@ void InitApp();
 HRESULT LoadMesh( ID3D10Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText( double fTime );
 
+static int OnMouseMoveFunc();
 
 static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
@@ -1319,6 +1321,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	FbxString lExtension = "so";
 #endif
 	s_psdk->LoadPluginsDirectory(lPath.Buffer(), "dll");
+
+
+	//s_iktimerid = (int)::SetTimer(s_mainhwnd, s_iktimerid, 16, NULL);
+
 
 	// Pass control to DXUT for handling the message pump and 
     // dispatching render calls. DXUT will call your FrameMove 
@@ -2015,6 +2021,8 @@ void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext)
 void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 {
 	g_endappflag = 1;
+
+	//::KillTimer(s_mainhwnd, s_iktimerid);
 
 
 	if (g_pDSStateZCmp) {
@@ -3406,11 +3414,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_model->BulletSimulationStop();
 					g_previewFlag = 0;
 					
-
-					//Applyした状態でさらに物理IKをすると姿勢が乱れるから、直るまで工事中。
-					//s_model->ApplyBtToMotion();					
-					MessageBoxA(s_mainhwnd, "物理のアプライはただいま工事中", "ただいま工事中", MB_OK);
-					
+					s_model->ApplyBtToMotion();										
 				}
 			}
 		}
@@ -3427,6 +3431,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 	}
 	else if (uMsg == WM_MOUSEMOVE){
+		OnMouseMoveFunc();
+
+/*
 		if (s_pickinfo.buttonflag == PICK_CENTER){
 			if (s_model){
 				if (g_previewFlag == 0){
@@ -3738,7 +3745,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			g_camEye = g_camtargetpos + camvec * s_camdist;
 			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		}
-
+*/
 	}else if( uMsg == WM_LBUTTONUP ){
 		ReleaseCapture();
 
@@ -3937,6 +3944,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		//	}
 		//	break;
 		case IDC_STOP_BT:
+			s_model->BulletSimulationStop();
 			g_previewFlag = 0;
 			break;
 
@@ -6780,7 +6788,8 @@ int RenderSelectMark(int renderflag)
 		if (s_onragdollik == 0){
 			int multworld = 1;
 			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
-			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
+			int calccapsuleflag = 0;
+			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 0, multworld);
 		}
 
 		ChaVector3 orgpos = curboneptr->GetJointFPos();
@@ -8213,6 +8222,32 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		return 0;
 	}
 
+	double curframe = 1.0;//初期値、start時の揺れに影響？
+
+	if (s_model && (flag == 1)) {
+		//まず物理IKを停止する。
+		//プレビューを止めないとtimelineはスタートフレームになるが姿勢がスタートフレームにならない。
+		//flag == 0で呼ぶとシミュが動かない。
+
+		s_model->BulletSimulationStop();
+		g_previewFlag = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		s_previewrange = s_editrange;
+		double rangestart;
+		if (s_previewrange.IsSameStartAndEnd()) {
+			//rangestart = 1.0;
+			curframe = 1.0;
+		}
+		else {
+			//rangestart = s_previewrange.GetStartFrame();
+			curframe = s_previewrange.GetStartFrame();
+		}
+
+		s_owpLTimeline->setCurrentTime(curframe, true);
+		s_owpEulerGraph->setCurrentTime(curframe, false);
+
+		OnFramePreviewStop();
+	}
 
 	static int resetflag = 0;
 	static int createflag = 0;
@@ -8260,25 +8295,31 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		//}
 
 
-		double curframe;
-		if (resetflag == 1) {
-			curframe = s_owpTimeline->getCurrentTime();
-			//curmodel->GetMotionFrame(&curframe);
-		}
-		else {
-			s_previewrange = s_editrange;
-			double rangestart;
-			if (s_previewrange.IsSameStartAndEnd()) {
-				//rangestart = 1.0;
-				curframe = 1.0;
+		//double curframe;
+		if (flag == 0) {// bt simu
+			if (resetflag == 1) {
+				curframe = s_owpTimeline->getCurrentTime();
+				//curmodel->GetMotionFrame(&curframe);
 			}
 			else {
-				//rangestart = s_previewrange.GetStartFrame();
-				curframe = s_previewrange.GetStartFrame();
+				s_previewrange = s_editrange;
+				double rangestart;
+				if (s_previewrange.IsSameStartAndEnd()) {
+					//rangestart = 1.0;
+					curframe = 1.0;
+				}
+				else {
+					//rangestart = s_previewrange.GetStartFrame();
+					curframe = s_previewrange.GetStartFrame();
+				}
+				//curframe = 1.0;//!!!!!!!!!!
+
+				//curframe = s_editrange.GetStartFrame();
+				//curframe = s_buttonselectstart;
+
+				s_owpLTimeline->setCurrentTime(curframe, false);
+				s_owpEulerGraph->setCurrentTime(curframe, false);
 			}
-			//curframe = 1.0;//!!!!!!!!!!
-			s_owpLTimeline->setCurrentTime(curframe, true);
-			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 
 		if ((g_previewFlag == 4) || (g_previewFlag == 5)) {
@@ -8441,12 +8482,12 @@ int RigidElem2WndParam()
 	if( curbone ){
 		//int kinflag = curbone->m_btforce;
 
-		CBone* parbone = curbone->GetParent();
-		if( parbone ){
-			int kinflag = parbone->GetBtForce();
+		CBone* parentbone = curbone->GetParent();
+		if( parentbone ){
+			int kinflag = parentbone->GetBtForce();
 			s_btforce->setValue( (bool)kinflag );
 			
-			CRigidElem* curre = parbone->GetRigidElem( curbone );
+			CRigidElem* curre = parentbone->GetRigidElem( curbone );
 			if( curre ){
 				float rate = (float)curre->GetSphrate();
 				float boxz = (float)curre->GetBoxzrate();
@@ -8600,15 +8641,15 @@ int SetImpWndParams()
 
 	CBone* curbone = s_model->GetBoneByID( s_curboneno );
 	if( curbone ){
-		CBone* parbone = curbone->GetParent();
-		if( parbone ){
+		CBone* parentbone = curbone->GetParent();
+		if( parentbone ){
 			ChaVector3 setimp( 0.0f, 0.0f, 0.0f );
 
 
-			int impnum = parbone->GetImpMapSize();
+			int impnum = parentbone->GetImpMapSize();
 			if( (s_model->GetCurImpIndex() >= 0) && (s_model->GetCurImpIndex() < impnum) ){
 				string curimpname = s_model->GetImpInfo( s_model->GetCurImpIndex() );
-				setimp = parbone->GetImpMap( curimpname, curbone );
+				setimp = parentbone->GetImpMap( curimpname, curbone );
 			}
 			else{
 				//_ASSERT(0);
@@ -8649,10 +8690,10 @@ int SetDmpWndParams()
 
 	CBone* curbone = s_model->GetBoneByID( s_curboneno );
 	if( curbone ){
-		CBone* parbone = curbone->GetParent();
-		if( parbone ){
+		CBone* parentbone = curbone->GetParent();
+		if( parentbone ){
 			char* filename = s_model->GetRigidElemInfo( s_rgdindex ).filename;
-			CRigidElem* curre = parbone->GetRigidElemOfMap( filename, curbone );
+			CRigidElem* curre = parentbone->GetRigidElemOfMap( filename, curbone );
 			if( curre ){
 				if( s_dmpanimLSlider ){
 					s_dmpanimLSlider->setValue( curre->GetDampanimL() );
@@ -10703,9 +10744,9 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		CBone* parbone = curbone->GetParent();
-		if (parbone){
-			s_editmotionflag = parbone->GetBoneNo();
+		CBone* parentbone = curbone->GetParent();
+		if (parentbone){
+			s_editmotionflag = parentbone->GetBoneNo();
 		}
 		else{
 			s_editmotionflag = s_curboneno;
@@ -11249,12 +11290,12 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 			if (chkbone == srcbone){
 				docopyflag = 1;
 
-				CBone* parbone = srcbone->GetParent();
-				if (parbone){
+				CBone* parentbone = srcbone->GetParent();
+				if (parentbone){
 					int cpno2;
 					for (cpno2 = 0; cpno2 < cpnum; cpno2++){
-						CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
-						if (chkparbone == parbone){
+						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
+						if (chkparentbone == parentbone){
 							hasNotMvParFlag = 0;
 						}
 					}
@@ -11302,12 +11343,12 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 			if (chkbone == srcbone){
 				docopyflag = 1;
 
-				CBone* parbone = srcbone->GetParent();
-				if (parbone){
+				CBone* parentbone = srcbone->GetParent();
+				if (parentbone){
 					int cpno2;
 					for (cpno2 = 0; cpno2 < cpnum; cpno2++){
-						CBone* chkparbone = s_selbonedlg.m_cpvec[cpno2];
-						if (chkparbone == parbone){
+						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
+						if (chkparentbone == parentbone){
 							hasNotMvParFlag = 0;
 						}
 					}
@@ -11336,9 +11377,9 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 		newmp = srcbone->GetMotionPoint(curmotid, newframe);
 		if (newmp){
 			if (hasNotMvParFlag == 1){
-				CBone* parbone = srcbone->GetParent();
-				if (parbone){
-					CMotionPoint* parmp = parbone->GetMotionPoint(curmotid, newframe);
+				CBone* parentbone = srcbone->GetParent();
+				if (parentbone){
+					CMotionPoint* parmp = parentbone->GetMotionPoint(curmotid, newframe);
 					int setmatflag1 = 1;
 					CQuaternion dummyq;
 					ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -12312,14 +12353,14 @@ int CreateRigidWnd()
 		if (s_model && (s_curboneno >= 0)){
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
 			if (curbone){
-				CBone* parbone = curbone->GetParent();
-				if (parbone){
+				CBone* parentbone = curbone->GetParent();
+				if (parentbone){
 					bool kinflag = s_btforce->getValue();
 					if (kinflag == false){
-						parbone->SetBtForce(0);
+						parentbone->SetBtForce(0);
 					}
 					else{
-						parbone->SetBtForce(1);
+						parentbone->SetBtForce(1);
 					}
 				}
 			}
@@ -14015,11 +14056,11 @@ int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 		int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 
 		int parno = 1;
-		CBone* parbone = s_customrigbone->GetParent();
-		while (parbone && (parno < MAXRIGELEMNUM) && (parno < levelnum)){
-			SetDlgItemText(s_customrigdlg, gpboxid[parno], (LPCWSTR)parbone->GetWBoneName());
-			s_customrig.rigelem[parno].boneno = parbone->GetBoneNo();
-			parbone = parbone->GetParent();
+		CBone* parentbone = s_customrigbone->GetParent();
+		while (parentbone && (parno < MAXRIGELEMNUM) && (parno < levelnum)){
+			SetDlgItemText(s_customrigdlg, gpboxid[parno], (LPCWSTR)parentbone->GetWBoneName());
+			s_customrig.rigelem[parno].boneno = parentbone->GetBoneNo();
+			parentbone = parentbone->GetParent();
 			parno++;
 		}
 
@@ -14433,6 +14474,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	switch (uMsg)
 	{
+	//case WM_TIMER:
+	//	OnTimerFunc(wParam);
+	//	break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -14919,3 +14963,330 @@ void RecalcAxisX_All()
 	}
 }
 
+
+int OnMouseMoveFunc()
+{
+	static bool s_doingflag = false;
+	if (s_doingflag == true) {
+		return 0;
+	}
+	s_doingflag = true;
+
+	if (s_pickinfo.buttonflag == PICK_CENTER) {
+		if (s_model) {
+			if (g_previewFlag == 0) {
+
+				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+				POINT ptCursor;
+				GetCursorPos(&ptCursor);
+				::ScreenToClient(s_3dwnd, &ptCursor);
+				s_pickinfo.mousepos = ptCursor;
+
+				ChaVector3 tmpsc;
+				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+
+				if (s_model) {
+					if (s_oprigflag == 0) {
+						ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
+						//CallF(CalcTargetPos(&targetpos), return 1);
+						CalcTargetPos(&targetpos);
+						if (s_ikkind == 0) {
+							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+						}
+						else if (s_ikkind == 1) {
+							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+							AddBoneTra2(diffvec);
+							s_editmotionflag = s_curboneno;
+						}
+					}
+					else {
+						if (s_customrigbone) {
+							float deltau = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) * 0.5f;
+							float deltav = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+							if (g_controlkey == true) {
+								deltau *= 0.250f;
+								deltav *= 0.250f;
+							}
+
+							s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
+
+							s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
+							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+							s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
+							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+							s_editmotionflag = s_curboneno;
+						}
+					}
+					s_ikcnt++;
+				}
+			}
+			else if (g_previewFlag == 5) {
+				if (s_model) {
+					//if (s_onragdollik == 0){
+					//	StartBt(1, 1);
+					//}
+					s_onragdollik = 1;
+				}
+			}
+		}
+	}
+	else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)) {
+		if (s_model) {
+			if (g_previewFlag == 0) {
+				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+				POINT ptCursor;
+				GetCursorPos(&ptCursor);
+				::ScreenToClient(s_3dwnd, &ptCursor);
+				s_pickinfo.mousepos = ptCursor;
+
+				ChaVector3 tmpsc;
+				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+
+				if (g_previewFlag == 0) {
+					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+					if (g_controlkey == true) {
+						deltax *= 0.250f;
+					}
+					if (s_ikkind == 0) {
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					}
+					else {
+						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						s_editmotionflag = s_curboneno;
+					}
+					s_ikcnt++;
+				}
+			}
+			else if (g_previewFlag == 5) {
+				if (s_model) {
+					s_onragdollik = 2;
+				}
+			}
+		}
+	}
+	else if ((s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z)) {
+		if (s_model) {
+			if (g_previewFlag == 0) {
+				s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
+
+				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+				POINT ptCursor;
+				GetCursorPos(&ptCursor);
+				::ScreenToClient(s_3dwnd, &ptCursor);
+				s_pickinfo.mousepos = ptCursor;
+
+				ChaVector3 tmpsc;
+				s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+
+				if (g_previewFlag == 0) {
+					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+					if (g_controlkey == true) {
+						deltax *= 0.250f;
+					}
+
+					if (s_ikkind == 0) {
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					}
+					else {
+						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						s_editmotionflag = s_curboneno;
+					}
+					s_ikcnt++;
+				}
+			}
+			else if (g_previewFlag == 5) {
+				if (s_model) {
+					s_onragdollik = 3;
+				}
+			}
+		}
+	}
+	else if (s_pickinfo.buttonflag == PICK_CAMMOVE) {
+
+		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+		s_pickinfo.mousepos = ptCursor;
+
+		ChaVector3 cammv;
+		cammv.x = ((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * -s_cammvstep;
+		cammv.y = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * s_cammvstep;
+		cammv.z = 0.0f;
+		if (g_controlkey == true) {
+			cammv *= 0.250f;
+		}
+
+
+		ChaMatrix matview;
+		ChaVector3 weye, wat;
+		matview = s_matView;
+		weye = g_camEye;
+		wat = g_camtargetpos;
+
+		ChaVector3 cameye, camat;
+		ChaVector3TransformCoord(&cameye, &weye, &matview);
+		ChaVector3TransformCoord(&camat, &wat, &matview);
+
+		ChaVector3 aftcameye, aftcamat;
+		aftcameye = cameye + cammv;
+		aftcamat = camat + cammv;
+
+		ChaMatrix invmatview;
+		ChaMatrixInverse(&invmatview, NULL, &matview);
+
+		ChaVector3 neweye, newat;
+		ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
+		ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
+
+		g_Camera.SetViewParams(&neweye, &newat);
+
+
+
+		g_camEye = neweye;
+		g_camtargetpos = newat;
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaVector3 diffv;
+		diffv = neweye - newat;
+		s_camdist = ChaVector3Length(&diffv);
+
+
+	}
+	else if (s_pickinfo.buttonflag == PICK_CAMROT) {
+		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+		s_pickinfo.mousepos = ptCursor;
+
+		float roty, rotxz;
+		rotxz = -((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * 250.0f;
+		roty = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * 250.0f;
+		if (g_controlkey == true) {
+			rotxz *= 0.250f;
+			roty *= 0.250f;
+		}
+
+		ChaMatrix matview;
+		ChaVector3 weye, wat;
+		weye = g_camEye;
+		wat = g_camtargetpos;
+
+		ChaVector3 viewvec, upvec, rotaxisy, rotaxisxz;
+		viewvec = wat - weye;
+		ChaVector3Normalize(&viewvec, &viewvec);
+		upvec = ChaVector3(0.000001f, 1.0f, 0.0f);
+
+		float chkdot;
+		chkdot = ChaVector3Dot(&viewvec, &upvec);
+		if (fabs(chkdot) < 0.99965f) {
+			ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
+			ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
+
+			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			ChaVector3Normalize(&rotaxisy, &rotaxisy);
+		}
+		else if (chkdot >= 0.99965f) {
+			rotaxisxz = upvec;
+			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			ChaVector3Normalize(&rotaxisy, &rotaxisy);
+			if (roty < 0.0f) {
+				roty = 0.0f;
+			}
+			else {
+			}
+		}
+		else {
+			rotaxisxz = upvec;
+			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			ChaVector3Normalize(&rotaxisy, &rotaxisy);
+			if (roty > 0.0f) {
+				roty = 0.0f;
+			}
+			else {
+				//rotyだけ回す。
+			}
+		}
+
+
+		if (s_model && (s_curboneno >= 0) && s_camtargetflag) {
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			_ASSERT(curbone);
+			if (curbone) {
+				g_camtargetpos = curbone->GetChildWorld();
+			}
+		}
+
+
+		ChaMatrix befrotmat, rotmaty, rotmatxz, aftrotmat;
+		ChaMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
+		ChaMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
+		ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+		ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+
+		ChaMatrix mat;
+		mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
+		ChaVector3 neweye;
+		ChaVector3TransformCoord(&neweye, &weye, &mat);
+
+		float chkdot2;
+		ChaVector3 newviewvec = weye - neweye;
+		ChaVector3Normalize(&newviewvec, &newviewvec);
+		chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
+		if (fabs(chkdot2) < 0.99965f) {
+			ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
+			ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
+
+			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			ChaVector3Normalize(&rotaxisy, &rotaxisy);
+		}
+		else {
+			roty = 0.0f;
+			rotaxisxz = upvec;
+			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			ChaVector3Normalize(&rotaxisy, &rotaxisy);
+		}
+		ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+		ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+		mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
+		ChaVector3TransformCoord(&neweye, &weye, &mat);
+
+		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+
+		g_camEye = neweye;
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		ChaVector3 diffv;
+		diffv = neweye - g_camtargetpos;
+		s_camdist = ChaVector3Length(&diffv);
+
+
+	}
+	else if (s_pickinfo.buttonflag == PICK_CAMDIST) {
+		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+		s_pickinfo.mousepos = ptCursor;
+
+		float deltadist = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
+		//float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
+		//float deltadist = mdelta * s_camdist * 0.0010f;
+		if (g_controlkey == true) {
+			deltadist *= 0.250f;
+		}
+
+		s_camdist += deltadist;
+		if (s_camdist < 0.0001f) {
+			s_camdist = 0.0001f;
+		}
+
+		ChaVector3 camvec = g_camEye - g_camtargetpos;
+		ChaVector3Normalize(&camvec, &camvec);
+		g_camEye = g_camtargetpos + camvec * s_camdist;
+		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	}
+
+	s_doingflag = false;
+
+	return 0;
+}

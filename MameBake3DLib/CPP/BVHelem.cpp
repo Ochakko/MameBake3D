@@ -581,21 +581,21 @@ int CBVHElem::DbgOutBVHElem( int srcdepth, int outmotionflag )
 int CBVHElem::SetPosition()
 {
 
-	ChaVector3 parpos;
+	ChaVector3 parentpos;
 	if( parent ){
-		parpos = parent->position;
+		parentpos = parent->position;
 
 		partransptr = parent->trans;
 
 	}else{
-		parpos.x = 0.0f;
-		parpos.y = 0.0f;
-		parpos.z = 0.0f;
+		parentpos.x = 0.0f;
+		parentpos.y = 0.0f;
+		parentpos.z = 0.0f;
 
 		partransptr = 0;
 	}
 
-	position = offset + parpos;
+	position = offset + parentpos;
 
 
 	return 0;

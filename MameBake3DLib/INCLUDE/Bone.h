@@ -30,8 +30,8 @@ class CBone
 {
 public:
 
-	ChaVector3 m_btparpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
-	ChaVector3 m_btchilpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	ChaVector3 m_btparentpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
+	ChaVector3 m_btchildpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
 	ChaMatrix m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
 
 /**
@@ -162,12 +162,12 @@ public:
  * @fn
  * CalcRigidElemParams
  * @breaf 剛体表示用のデータを剛体のパラメータに従ってスケールするための変換行列を求めてスケールする。
- * @param (CBone* chilbone) IN　剛体を指定するための子供ボーン。
+ * @param (CBone* childbone) IN　剛体を指定するための子供ボーン。
  * @param (int setstartflag) IN　剛体シミュレーション開始時の呼び出し時に１をセットする。
  * @return 成功したら０。
- * @detail 剛体をボーンの位置に表示するために、剛体表示用の形状をスケールするために呼ぶ。剛体はボーンの子供ジョイントと１対１で対応するため、指定にchilboneを使う。
+ * @detail 剛体をボーンの位置に表示するために、剛体表示用の形状をスケールするために呼ぶ。剛体はボーンの子供ジョイントと１対１で対応するため、指定にchildboneを使う。
  */
-	int CalcRigidElemParams( CBone* chilbone, int setstartflag );
+	int CalcRigidElemParams( CBone* childbone, int setstartflag );
 
 /**
  * @fn
@@ -179,7 +179,7 @@ public:
  * @detail 計算したデータは、ボーンの位置にマニピュレータを表示するための変換行列に使用する。現在はCalcAxisMatZ関数でボーンの変換行列を計算している。
  */
 	int CalcAxisMat( int firstflag, float delta );
-	float CalcAxisMatX(CBone* childbone, ChaMatrix* dstmat, int setstartflag);
+	float CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);
 
 
 /**
@@ -198,7 +198,7 @@ public:
  * @fn
  * CreateRigidElem
  * @breaf 剛体シミュレーション用のパラメータを保持するCRigidElemを作成する。指定ボーンに関するCRigidElemを作成する。
- * @param (CBone* parbone) IN 自分自身とここで指定する親ジョイントで定義されるボーンに関するCRigidElemを作成する。
+ * @param (CBone* parentbone) IN 自分自身とここで指定する親ジョイントで定義されるボーンに関するCRigidElemを作成する。
  * @param (int reflag) IN CRigidElemを作成する場合に１、しない場合に０を指定。
  * @param (std::string rename) IN reflagが１のとき、refファイルのファイル名を指定する。
  * @param (int impflag) IN インパルスを与えるための設定を作成する場合に１、しない場合に０を指定。
@@ -207,7 +207,7 @@ public:
  * @detail インパルス設定データも作成する。
  */
 	//int CreateRigidElem( CBone* chil, int reflag, std::string rename, int impflag, std::string impname );
-	int CreateRigidElem(CBone* parbone, int reflag, std::string rename, int impflag, std::string impname);
+	int CreateRigidElem(CBone* parentbone, int reflag, std::string rename, int impflag, std::string impname);
 
 
 /**
@@ -332,14 +332,14 @@ public:
 	* CalcAxisMatX_aft
 	* @breaf ボーンの軸のための変換行列を計算する。初期状態がX軸を向いていると仮定して計算する。
 	* @param (ChaVector3 curpos) IN ボーンの位置。
-	* @param (ChaVector3 chilpos) IN 子供のボーンの位置。
+	* @param (ChaVector3 childpos) IN 子供のボーンの位置。
 	* @param (ChaMatrix* destmat) OUT 変換行列を格納するデータへのポインタ。
 	* @return 成功したら０。
 	* @detail CalcAxisMatXから呼ばれる。
 	*/
-	//int CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* destmat);
+	//int CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* destmat);
 
-	int CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 chilpos, ChaMatrix* destmat);
+	int CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* destmat);
 
 
 	int CalcFirstFrameBonePos(ChaMatrix srcmat);
@@ -348,7 +348,8 @@ public:
 
 	ChaVector3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
-	ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
+	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
+	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
@@ -366,7 +367,7 @@ public:
 	ChaVector3 CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);
 	ChaVector3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
-	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* chilbone, ChaMatrix* dstmat, ChaVector3* dstpos);
+	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);
 
 	int LoadCapsuleShape(ID3D10Device* pdev);
 
@@ -410,11 +411,11 @@ private:
  * @fn
  * CalcAxisMatY
  * @breaf ボーンの軸のための変換行列を計算する。初期状態がZ軸を向いていると仮定して計算する。
- * @param (CBone* chilbone) IN 子供のボーン。
+ * @param (CBone* childbone) IN 子供のボーン。
  * @param (ChaMatrix* dstmat) OUT 変換行列を格納するデータへのポインタ。
  * @return 成功したら０。
  */
-	int CalcAxisMatY( CBone* chilbone, ChaMatrix* dstmat );
+	int CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat );
 
 /**
  * @fn
@@ -433,11 +434,11 @@ private:
  * SetGroupNoByName
  * @breaf 剛体のあたり判定用のグループ番号を設定する。ボーンの名前から判定して設定する。
  * @param (CRigidElem* curre) IN 剛体のCRigidElemへのポインタ。
- * @param (CBone* chilbone) IN ボーンのCBoneへのポインタ。
+ * @param (CBone* childbone) IN ボーンのCBoneへのポインタ。
  * @return 成功したら０。
  * @detail BT_が名前につくものにも剛体用のグループ番号が与えられる。それ以外のグループ番号は、name_G_*** 形式の名前で指定できる。
  */
-	int SetGroupNoByName( CRigidElem* curre, CBone* chilbone );
+	int SetGroupNoByName( CRigidElem* curre, CBone* childbone );
 
 /**
  * @fn
@@ -783,9 +784,9 @@ public: //accesser
 	};
 
 	float GetBoneLeng(){
-		CBone* parbone = GetParent();
-		if (parbone){
-			ChaVector3 bonevec = GetJointFPos() - parbone->GetJointFPos();
+		CBone* parentbone = GetParent();
+		if (parentbone){
+			ChaVector3 bonevec = GetJointFPos() - parentbone->GetJointFPos();
 			float boneleng = ChaVector3Length(&bonevec);
 			return boneleng;
 		}
@@ -836,11 +837,11 @@ public: //accesser
 	{
 		m_tmpsymmat = srcmat;
 	};
-	ChaVector3 GetBtParPos(){
-		return m_btparpos;
+	ChaVector3 GetBtparentpos(){
+		return m_btparentpos;
 	};
-	ChaVector3 GetBtChilPos(){
-		return m_btchilpos;
+	ChaVector3 GetBtchildpos(){
+		return m_btchildpos;
 	};
 	ChaMatrix GetBtDiffMat(){
 		return m_btdiffmat;

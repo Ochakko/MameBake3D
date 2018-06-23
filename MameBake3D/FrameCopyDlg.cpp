@@ -209,9 +209,9 @@ void CFrameCopyDlg::AddBoneToTree( CBone* srcbone, int addbroflag, int addtolast
 	//( CShdElem‚ÌTree\‘¢‚Æ“¯Šú‚·‚é‚½‚ßB)
 
 	HTREEITEM parTI;
-	CBone* parbone = srcbone->GetParent();
-	if( parbone ){
-		parTI = m_timap[ parbone->GetBoneNo() ];
+	CBone* parentbone = srcbone->GetParent();
+	if( parentbone ){
+		parTI = m_timap[ parentbone->GetBoneNo() ];
 	}else{
 		parTI = TreeView_GetRoot( m_tree_wnd );
 	}

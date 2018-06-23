@@ -350,10 +350,10 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 		int headleng = (int)(jointnameptr - childname);
 		*(childname2 + headleng) = 0;
 	}
-	CBone* chilbone = m_model->GetBoneByName(childname1);
-	if (!chilbone){
-		chilbone = m_model->GetBoneByName(childname2);
-		if (!chilbone){
+	CBone* childbone = m_model->GetBoneByName(childname1);
+	if (!childbone){
+		childbone = m_model->GetBoneByName(childname2);
+		if (!childbone){
 			_ASSERT(0);
 			return 0;
 		}
@@ -492,9 +492,9 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 
 
 	if( curbone ){
-		if( chilbone ){			
+		if( childbone ){			
 			CRigidElem* curre;
-			curre = curbone->GetRigidElemOfMap( m_rename, chilbone );
+			curre = curbone->GetRigidElemOfMap( m_rename, childbone );
 			if( curre ){
 				curre->SetSkipflag( skipflag );
 				curre->SetSphrate( rate );

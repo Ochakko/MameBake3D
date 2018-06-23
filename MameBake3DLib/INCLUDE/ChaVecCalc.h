@@ -306,6 +306,8 @@ public:
 
 
 #ifdef CHACALCCPP
+ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
+
 double ChaVector3LengthDbl(ChaVector3* psrc);
 double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
 
@@ -371,7 +373,11 @@ ChaMatrix ChaMatrixInv(ChaMatrix srcmat);
 
 CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 
+ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
+
 #else
+extern ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
+
 extern double ChaVector3LengthDbl(ChaVector3* psrc);
 extern double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
 
@@ -433,6 +439,9 @@ extern ChaMatrix ChaMatrixInv(ChaMatrix srcmat);
 
 
 extern CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
+
+extern ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
+
 
 #endif
 

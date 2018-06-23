@@ -606,7 +606,7 @@ private:
 	int DestroyAncObj();
 	int DestroyAllMotionInfo();
 
-	void MakeBoneReq( CBone* parbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
+	void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
 	int SetShapeNoReq( CMQOFace** ppface, int facenum, int searchp, int shapeno, int* setfacenum);
 	int SetFaceOfShape( CMQOFace** ppface, int facenum, int shapeno, CMQOFace** ppface2, int setfacenum );
@@ -655,13 +655,13 @@ private:
 	int SetDefaultBonePos();
 	void SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition );
 
-	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parbone );
+	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
 
 	int SetMaterialName();
 
 	int DestroyBtObject();
 	void DestroyBtObjectReq( CBtObject* curbt );
-	void CreateBtObjectReq( CBtObject* parbt, CBone* parbone, CBone* curbone );
+	void CreateBtObjectReq( CBtObject* parbt, CBone* parentbone, CBone* curbone );
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
 	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );

@@ -26,9 +26,9 @@ using namespace std;
 
 
 
-extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parbone, int rigno);
-extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parbone);
-//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* chilbone);
+extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno);
+extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone);
+//void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* childbone);
 extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 

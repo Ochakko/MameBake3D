@@ -62,7 +62,7 @@ int CBtObject::InitParams()
 	m_btWorld = 0;
 
 	m_topflag = 0;
-	m_parbone = 0;
+	m_parentbone = 0;
 	m_endbone = 0;
 	m_bone = 0;
 	m_colshape = 0;
@@ -218,12 +218,12 @@ int CBtObject::AddChild( CBtObject* addbt )
 	return 0;
 }
 
-int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, CBone* chilbone )
+int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone )
 {
 	m_bone = curbone;
-	m_parbone = parbone;
+	m_parentbone = parentbone;
 	m_parbt = parbt;
-	m_endbone = chilbone;
+	m_endbone = childbone;
 
 	if( !m_bone ){
 		return 0;
@@ -236,7 +236,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	m_endbone->SetFirstCalcRigid(true);
 
 
-	CRigidElem* curre = m_bone->GetRigidElem( chilbone );
+	CRigidElem* curre = m_bone->GetRigidElem( childbone );
 	if( !curre ){
 		_ASSERT( 0 );
 		return 1;
@@ -246,12 +246,12 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 		return 0;
 	}
 
-	ChaVector3 centerA, parposA, chilposA, aftparposA, aftchilposA;
-	parposA = m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparposA, &parposA, &m_bone->GetStartMat2());
-	chilposA = m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchilposA, &chilposA, &m_endbone->GetStartMat2());
-	ChaVector3 diffA = chilposA - parposA;
+	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
+	parentposA = m_bone->GetJointFPos();
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetStartMat2());
+	childposA = m_endbone->GetJointFPos();
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetStartMat2());
+	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = ChaVector3Length(&diffA);
 
 	float h, r, z;
@@ -304,6 +304,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 
 
 	ChaMatrix startrot = curre->GetCapsulemat();
+	//ChaMatrix startrot = m_bone->CalcManipulatorPostureMatrix(0, 0, 1);
+
 	//m_transmat = startrot;
 
 
@@ -317,8 +319,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 	btQuaternion btq( qx, qy, qz, qw ); 
 
 
-	centerA = ( aftparposA + aftchilposA ) * 0.5f;
-	//centerA = aftparposA;
+	centerA = ( aftparentposA + aftchildposA ) * 0.5f;
+	//centerA = aftparentposA;
 	btVector3 btv( btScalar( centerA.x ), btScalar( centerA.y ), btScalar( centerA.z ) );
 
 	btTransform transform;
@@ -338,7 +340,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parbone, CBone* curbone, C
 //	m_cen2parY._43 = 0.0f;
 
 
-	ChaVector3 partocen = centerA - aftparposA;
+	ChaVector3 partocen = centerA - aftparentposA;
 	ChaMatrixIdentity( &m_par2cen );
 	m_par2cen._41 = partocen.x;
 	m_par2cen._42 = partocen.y;
@@ -409,15 +411,15 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 		return 1;
 	}
 
-	ChaVector3 parposA, chilposA, aftparposA, aftchilposA;
-	parposA = curbto->m_bone->GetJointFPos();
-	ChaVector3TransformCoord( &aftparposA, &parposA, &curbto->m_bone->GetStartMat2() );
-	chilposA = curbto->m_endbone->GetJointFPos();
-	ChaVector3TransformCoord( &aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2() );
+	ChaVector3 parentposA, childposA, aftparentposA, aftchildposA;
+	parentposA = curbto->m_bone->GetJointFPos();
+	ChaVector3TransformCoord( &aftparentposA, &parentposA, &curbto->m_bone->GetStartMat2() );
+	childposA = curbto->m_endbone->GetJointFPos();
+	ChaVector3TransformCoord( &aftchildposA, &childposA, &curbto->m_endbone->GetStartMat2() );
 
 	ChaVector2 dirxy, ndirxy;
-	dirxy.x = aftchilposA.x - aftparposA.x;
-	dirxy.y = aftchilposA.y - aftparposA.y;
+	dirxy.x = aftchildposA.x - aftparentposA.x;
+	dirxy.y = aftchildposA.y - aftparentposA.y;
 	float lengxy = D3DXVec2Length( &dirxy );
 	D3DXVec2Normalize( &ndirxy, &dirxy );
 
@@ -457,10 +459,10 @@ int CBtObject::CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObje
 	btTransform invtra = rigidtra.inverse();
 	//btVector3 localpivot;
 	if( chilflag == 0 ){
-		m_curpivot = invtra( btVector3( aftchilposA.x, aftchilposA.y, aftchilposA.z ) );
+		m_curpivot = invtra( btVector3( aftchildposA.x, aftchildposA.y, aftchildposA.z ) );
 		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
 	}else{
-		m_curpivot = invtra( btVector3( aftparposA.x, aftparposA.y, aftparposA.z ) );
+		m_curpivot = invtra( btVector3( aftparentposA.x, aftparentposA.y, aftparentposA.z ) );
 		//m_curpivot = btVector3( 0.0f, -0.5f * curbto->m_boneleng, 0.0f );
 	}
 	dsttra.setOrigin( m_curpivot );
@@ -481,7 +483,7 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	ChaMatrixIdentity(&transmatx);
 	int setstartflag = 1;
 
-	curbto->m_bone->CalcAxisMatX(curbto->m_endbone, &transmatx, setstartflag);
+	curbto->m_bone->CalcAxisMatX(0, curbto->m_endbone, &transmatx, setstartflag);
 
 	CQuaternion rotq;
 	rotq.RotationMatrix(transmatx);
@@ -498,17 +500,17 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
 	btTransform invtra = rigidtra.inverse();
 
-	ChaVector3 parposA, chilposA, aftparposA, aftchilposA;
-	parposA = curbto->m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparposA, &parposA, &curbto->m_bone->GetStartMat2());
-	chilposA = curbto->m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchilposA, &chilposA, &curbto->m_endbone->GetStartMat2());
+	ChaVector3 parentposA, childposA, aftparentposA, aftchildposA;
+	parentposA = curbto->m_bone->GetJointFPos();
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetStartMat2());
+	childposA = curbto->m_endbone->GetJointFPos();
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetStartMat2());
 	if (chilflag == 0){
-		m_curpivot = invtra(btVector3(aftchilposA.x, aftchilposA.y, aftchilposA.z));
+		m_curpivot = invtra(btVector3(aftchildposA.x, aftchildposA.y, aftchildposA.z));
 		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
 	}
 	else{
-		m_curpivot = invtra(btVector3(aftparposA.x, aftparposA.y, aftparposA.z));
+		m_curpivot = invtra(btVector3(aftparentposA.x, aftparentposA.y, aftparentposA.z));
 		//m_curpivot = btVector3( 0.0f, -0.5f * curbto->m_boneleng, 0.0f );
 	}
 
@@ -1025,7 +1027,8 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	newxworld._43 = worldpos.z();
 
 	ChaMatrix invxworld;
-	ChaMatrixInverse(&invxworld, NULL, &m_xworld);
+	//ChaMatrixInverse(&invxworld, NULL, &m_xworld);
+	invxworld = m_bone->GetInvFirstMat();
 
 	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
@@ -1036,9 +1039,10 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	//curmp.SetBtFlag(1);
 	//m_bone->SetCurMp(curmp);
 
-	ChaMatrix newcapsulemat;
-	newcapsulemat = srcre->GetFirstcapsulemat() * diffxworld;
-	srcre->SetCapsulemat(newcapsulemat);
+	//ChaMatrix newcapsulemat;
+	//newcapsulemat = srcre->GetBindcapsulemat() * diffxworld;
+	//newcapsulemat = m_bone->CalcManipulatorPostureMatrix(0, 1, 1);
+	//srcre->SetCapsulemat(newcapsulemat);
 
 
 	return 0;
