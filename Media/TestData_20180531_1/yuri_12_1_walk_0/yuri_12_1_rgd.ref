@@ -79,7 +79,7 @@
       <COLIID>3</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>RightHip_Joint</ChildName>
@@ -103,7 +103,7 @@
       <COLIID>3</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -131,7 +131,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>LeftCollar_Joint</ChildName>
@@ -155,7 +155,7 @@
       <COLIID>3</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>RightCollar_Joint</ChildName>
@@ -179,7 +179,7 @@
       <COLIID>3</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1735,7 +1735,7 @@
       <COLIID>3</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1819,7 +1819,7 @@
       <COLIID>3</COLIID>
       <RESTITUTION>0.491979</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>

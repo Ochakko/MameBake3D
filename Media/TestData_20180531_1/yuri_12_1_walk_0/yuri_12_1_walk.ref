@@ -126,7 +126,7 @@
       <COLIID>1</COLIID>
       <RESTITUTION>0.016043</RESTITUTION>
       <FRICTION>0.491979</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>LeftCollar_Joint</ChildName>
@@ -149,7 +149,7 @@
       <COLIID>1</COLIID>
       <RESTITUTION>0.005348</RESTITUTION>
       <FRICTION>1.000000</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>RightCollar_Joint</ChildName>
@@ -172,7 +172,7 @@
       <COLIID>1</COLIID>
       <RESTITUTION>0.005348</RESTITUTION>
       <FRICTION>1.000000</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -249,7 +249,7 @@
       <COLIID>1</COLIID>
       <RESTITUTION>0.026738</RESTITUTION>
       <FRICTION>1.000000</FRICTION>
-      <FORBIDROT>1</FORBIDROT>
+      <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>Twin_L_2_Joint</ChildName>

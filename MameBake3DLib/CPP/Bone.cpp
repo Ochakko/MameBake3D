@@ -1266,7 +1266,7 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 	float sphr = curre->GetSphr();
 	float boxz = curre->GetBoxz();
 
-	if ((setstartflag != 0) || (m_firstcalcrigid == true)){
+	//if ((setstartflag != 0) || (m_firstcalcrigid == true)){
 		if (curre->GetColtype() == COL_CAPSULE_INDEX){
 			map<int, CMQOObject*>::iterator itrobj;
 			for (itrobj = curcoldisp->GetMqoObjectBegin(); itrobj != curcoldisp->GetMqoObjectEnd(); itrobj++){
@@ -1314,7 +1314,7 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 			_ASSERT(0);
 			return 1;
 		}
-	}
+	//}
 
 	//bmmat._41 = ( aftbonepos.x + aftchildpos.x ) * 0.5f;
 	//bmmat._42 = ( aftbonepos.y + aftchildpos.y ) * 0.5f;
