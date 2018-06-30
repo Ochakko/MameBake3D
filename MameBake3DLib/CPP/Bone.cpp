@@ -1235,6 +1235,8 @@ int CBone::CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat )
 
 int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 {
+	
+	//剛体の形状(m_coldisp)を複数の子供で使いまわしている。使用するたびにこの関数で大きさをセットしている。
 
 
 	CRigidElem* curre = GetRigidElem(childbone);

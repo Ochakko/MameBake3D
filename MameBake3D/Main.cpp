@@ -8363,8 +8363,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				//s_bpWorld->setGlobalERP(1.0e-8);// ERP
 
 
-				s_bpWorld->setGlobalERP(0.00020);// ERP
+				//s_bpWorld->setGlobalERP(0.00020);// ERP
 				//s_bpWorld->setGlobalERP(s_erp);// ERP
+				//s_bpWorld->setGlobalERP(0.00040);// ERP
+				//s_bpWorld->setGlobalERP(0.0010);// ERP
+				//s_bpWorld->setGlobalERP(0.80);// ERP
+
+				s_bpWorld->setGlobalERP(s_erp);// ERP
 
 
 
