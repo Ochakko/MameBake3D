@@ -599,13 +599,6 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
 				ANGLELIMIT anglelimit = chilbto->m_bone->GetAngleLimit();
 
-				if (forbidrotflag == 0){
-					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
-					dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
-				} else{
-					dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-					dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
-				}
 
 				int dofid;
 				/*
@@ -669,6 +662,23 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				//m_dofC = dofC;
 
 				//dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+
+
+				if (forbidrotflag == 0) {
+					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+					dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
+				}
+				else {
+					//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+					//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+					dofC->calculateTransforms();
+					btScalar currentx = dofC->getAngle(0);
+					btScalar currenty = dofC->getAngle(1);
+					btScalar currentz = dofC->getAngle(2);
+					dofC->setAngularLowerLimit(btVector3(currentx - 1.0 * (float)DEG2PAI, currenty - 1.0 * (float)DEG2PAI, currentz - 1.0 * (float)DEG2PAI));
+					dofC->setAngularUpperLimit(btVector3(currentx + 1.0 * (float)DEG2PAI, currenty + 1.0 * (float)DEG2PAI, currentz + 1.0 * (float)DEG2PAI));
+
+				}
 
 			}
 		}
@@ -827,8 +837,15 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 				dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
 			}
 			else{
-				dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-				dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+				dofC->calculateTransforms();
+				btScalar currentx = dofC->getAngle(0);
+				btScalar currenty = dofC->getAngle(1);
+				btScalar currentz = dofC->getAngle(2);
+				dofC->setAngularLowerLimit(btVector3(currentx - 1.0 * (float)DEG2PAI, currenty - 1.0 * (float)DEG2PAI, currentz - 1.0 * (float)DEG2PAI));
+				dofC->setAngularUpperLimit(btVector3(currentx + 1.0 * (float)DEG2PAI, currenty + 1.0 * (float)DEG2PAI, currentz + 1.0 * (float)DEG2PAI));
+
+				//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+				//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
 			}
 		}
 	}
