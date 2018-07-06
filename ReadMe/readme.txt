@@ -179,6 +179,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2018/07/07_1
+　　　　　動画　【オイラーグラフ】まめばけ３Dのオイラーグラフ【使い方】
+　　　　　　https://youtu.be/s0nHIjjcGdY
+
+　　　　　（物理のときのオイラー角は現在仕様変更中）
+
 2018/07/02_1
 	ジョイントを右クリックしたときの回転禁止の処理のデバッグ
 		０度に固定ではなくて、現在の角度に固定するように修正。
@@ -1772,6 +1778,9 @@ https://youtu.be/YeM43To-xCg
 
 /////////// 以下、説明動画
 
+【オイラーグラフ】まめばけ３Dのオイラーグラフ【使い方】
+https://youtu.be/s0nHIjjcGdY
+
 【まめばけ３D】物理シミュレーションのマルチスレッド化
 （今回はしゃべりました）
 https://youtu.be/cW7TWNiX-uk
@@ -1781,8 +1790,6 @@ https://youtu.be/3GxO7jPOdlY
 
 【まめばけ】角度制限ファイルを物理に適用
 https://youtu.be/q0bY6-jNk20
-
-
 
 【物理コンストレイント】しゃがんだりかかとを上げたり
 https://youtu.be/JIXG7u1RciU

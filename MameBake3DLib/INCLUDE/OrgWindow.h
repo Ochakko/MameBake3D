@@ -577,24 +577,25 @@ static void s_dummyfunc();
 		//	Method : ウィンドウ内部品を追加
 		void addParts(OrgWindowParts& a){
 
-			//整合性チェック
-			if (!partsList.empty()) {
-				std::list<OrgWindowParts*>::iterator itr = partsList.begin();
-				if (*itr) {
-					OrgWindow* parent = (*itr)->getParent();
-					if (parent) {
-						if (parent != this) {
-							return;
-						}
-					}
-					else {
-						return;
-					}
-				}
-				else {
-					return;
-				}
-			}
+
+			////整合性チェック
+			//if (!partsList.empty()) {
+			//	std::list<OrgWindowParts*>::iterator itr = partsList.begin();
+			//	if (*itr) {
+			//		OrgWindow* parent = (*itr)->getParent();
+			//		if (parent) {
+			//			if (parent != this) {
+			//				return;
+			//			}
+			//		}
+			//		else {
+			//			return;
+			//		}
+			//	}
+			//	else {
+			//		return;
+			//	}
+			//}
 
 			a.registmember( this,
 					  WindowPos(partsAreaPos.x,partsAreaPos.y+currentPartsSizeY),
