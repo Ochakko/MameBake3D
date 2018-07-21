@@ -167,6 +167,7 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(curre->GetMass(), myMotionState, shape, localInertia);
 		body = new btRigidBody(rbInfo);
 
+
 		//body->setRestitution(curre->GetRestitution());
 		//body->setFriction(curre->GetFriction());
 		body->setRestitution(0.0);
@@ -176,6 +177,7 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 		//}else{
 		//	body->setDamping(0.3, 1.0);
 		//}
+
 
 		int myid = curre->GetGroupid();
 		//int coliid = curre->GetColiID();
@@ -248,9 +250,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
 	parentposA = m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetStartMat2());
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetCurrentZeroFrameMat());
 	childposA = m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetStartMat2());
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat());
 	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = ChaVector3Length(&diffA);
 
@@ -303,7 +305,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 //	}
 
 
-	ChaMatrix startrot = curre->GetCapsulemat();
+	ChaMatrix startrot = curre->GetCapsulemat(1);
 	//ChaMatrix startrot = m_bone->CalcManipulatorPostureMatrix(0, 0, 1);
 
 	//m_transmat = startrot;
@@ -316,7 +318,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	btScalar qy = startrotq.y;
 	btScalar qz = startrotq.z;
 	btScalar qw = startrotq.w;
-	btQuaternion btq( qx, qy, qz, qw ); 
+	btQuaternion btq( qx, qy, qz, qw );
 
 
 	centerA = ( aftparentposA + aftchildposA ) * 0.5f;
@@ -368,7 +370,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	
 	m_firstTransform = worldtra;
 	m_firstTransformMat = worldmat;//bto->GetRigidBody()‚ÌCreateBtObjectŽž‚ÌWorldTransform->getBasis
-	m_firstTransformMatX = ChaMatrixFromBtTransform(&worldtra.getBasis(), &worldtra.getOrigin());
+	SetFirstTransformMatX(ChaMatrixFromBtTransform(&worldtra.getBasis(), &worldtra.getOrigin()));
 
 	btVector3 tmpcol[3];
 	int colno;
@@ -502,9 +504,9 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 
 	ChaVector3 parentposA, childposA, aftparentposA, aftchildposA;
 	parentposA = curbto->m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetStartMat2());
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurrentZeroFrameMat());
 	childposA = curbto->m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetStartMat2());
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurrentZeroFrameMat());
 	if (chilflag == 0){
 		m_curpivot = invtra(btVector3(aftchildposA.x, aftchildposA.y, aftchildposA.z));
 		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
@@ -582,9 +584,6 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				//##dofC->setLinearLowerLimit(btVector3(worldpos.x() + lmin, worldpos.y() + lmin, worldpos.z() + lmin));
 				//##dofC->setLinearUpperLimit(btVector3(worldpos.x() + lmax, worldpos.y() + lmax, worldpos.z() + lmax));
 
-
-
-
 				//dofC->setBreakingImpulseThreshold(FLT_MAX);
 				//dofC->setBreakingImpulseThreshold( 1e9 );
 				//dofC->setBreakingImpulseThreshold(0.0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -651,8 +650,18 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					m_bone->GetWBoneName(), m_endbone->GetWBoneName(),
 					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
 
-				
-				dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+
+				dofC->setEquilibriumPoint();
+				//tmpre = m_bone->GetRigidElem(m_endbone);
+				////ChaMatrix axismatrix = m_endbone->GetStartMat2();
+				//ChaMatrix axismatrix = tmpre->GetFirstcapsulemat();
+				//btVector3 axisZ;
+				//btVector3 axisX;
+				//axisZ = btVector3(axismatrix._13, axismatrix._23, axismatrix._33);
+				//axisX = btVector3(axismatrix._11, axismatrix._21, axismatrix._31);
+				////axisZ = btVector3(axismatrix._31, axismatrix._32, axismatrix._33);
+				////axisX = btVector3(axismatrix._11, axismatrix._12, axismatrix._13);
+				//dofC->setAxis(axisZ, axisX);
 
 
 				//m_btWorld->addConstraint(dofC, false);
@@ -675,8 +684,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					btScalar currentx = dofC->getAngle(0);
 					btScalar currenty = dofC->getAngle(1);
 					btScalar currentz = dofC->getAngle(2);
-					dofC->setAngularLowerLimit(btVector3(currentx - 1.0 * (float)DEG2PAI, currenty - 1.0 * (float)DEG2PAI, currentz - 1.0 * (float)DEG2PAI));
-					dofC->setAngularUpperLimit(btVector3(currentx + 1.0 * (float)DEG2PAI, currenty + 1.0 * (float)DEG2PAI, currentz + 1.0 * (float)DEG2PAI));
+					dofC->setAngularLowerLimit(btVector3(currentx - 0.5 * (float)DEG2PAI, currenty - 0.5 * (float)DEG2PAI, currentz - 0.5 * (float)DEG2PAI));
+					dofC->setAngularUpperLimit(btVector3(currentx + 0.5 * (float)DEG2PAI, currenty + 0.5 * (float)DEG2PAI, currentz + 0.5 * (float)DEG2PAI));
 
 				}
 
@@ -1044,8 +1053,8 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	newxworld._43 = worldpos.z();
 
 	ChaMatrix invxworld;
-	//ChaMatrixInverse(&invxworld, NULL, &m_xworld);
-	invxworld = m_bone->GetInvFirstMat();
+	ChaMatrixInverse(&invxworld, NULL, &m_xworld);
+	//invxworld = m_bone->GetCurrentZeroFrameInvMat();
 
 	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;

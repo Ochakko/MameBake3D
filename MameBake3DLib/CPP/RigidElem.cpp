@@ -136,10 +136,10 @@ float CRigidElem::GetBoneLeng()
 }
 
 
-ChaMatrix CRigidElem::GetCapsulemat()
+ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe)
 {
 	int calccapsuleflag = 1;
-	m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 1, 1);
+	m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 1, 1, calczeroframe);
 	return m_capsulemat;
 
 }

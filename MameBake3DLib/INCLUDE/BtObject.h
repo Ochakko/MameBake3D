@@ -221,11 +221,19 @@ public: //accesser
 	ChaMatrix GetFirstTransformMatX(){
 		return m_firstTransformMatX;
 	};
+	ChaMatrix GetInvFirstTransformMatX() {
+		return ChaMatrixInv(m_firstTransformMatX);
+	};
+
+	void SetFirstTransformMatX(ChaMatrix srcmat) {
+		m_firstTransformMatX = srcmat;
+	};
 	btTransform GetFirstTransform(){
 		return m_firstTransform;
 	};
 
 	ChaMatrix GetXWorld(){ return m_xworld; };
+	ChaMatrix GetInvXWorld() { ChaMatrix invxworld; ChaMatrixInverse(&invxworld, NULL, &m_xworld); return invxworld; };
 	void SetXWorld( ChaMatrix srcworld ){ m_xworld = srcworld; };
 
 	int GetConstraintSize(){

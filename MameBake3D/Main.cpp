@@ -6789,7 +6789,7 @@ int RenderSelectMark(int renderflag)
 			int multworld = 1;
 			s_selm = curboneptr->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);
 			int calccapsuleflag = 0;
-			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 0, multworld);
+			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 0, multworld, 0);
 		}
 
 		ChaVector3 orgpos = curboneptr->GetJointFPos();
@@ -8364,12 +8364,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 				//s_bpWorld->setGlobalERP(0.00020);// ERP
+				s_bpWorld->setGlobalERP(0.00030);// ERP
 				//s_bpWorld->setGlobalERP(s_erp);// ERP
 				//s_bpWorld->setGlobalERP(0.00040);// ERP
 				//s_bpWorld->setGlobalERP(0.0010);// ERP
 				//s_bpWorld->setGlobalERP(0.80);// ERP
 
-				s_bpWorld->setGlobalERP(s_erp);// ERP
+				//s_bpWorld->setGlobalERP(s_erp);// ERP
 
 
 
@@ -8385,6 +8386,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 				curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				//curmodel->SetColTypeAll(s_rgdindex, COL_CAPSULE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 			//ラグドールの時のバネは決め打ち
@@ -10689,6 +10691,26 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	}
 	CModel* curmodel = s_model;
 
+	BOOL isstartframe = FALSE;
+	double rangestart = 1.0;
+	s_previewrange = s_editrange;
+	if (s_previewrange.IsSameStartAndEnd()) {
+		rangestart = 1.0;
+	}
+	else {
+		rangestart = s_previewrange.GetStartFrame();
+	}
+
+	if (g_previewFlag != 0) {
+		if (s_savepreviewFlag == 0) {
+			//preview start frame
+			*pdifftime = 0.0;
+			*pnextframe = rangestart;
+			isstartframe = TRUE;
+		}
+	}
+
+
 
 	if (curmodel && curmodel->GetCurMotInfo()){
 		//if (s_onragdollik != 0){
@@ -10697,7 +10719,25 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//		s_underikflag = 1;
 		//	}
 		//}
-		curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
+
+		if (curmodel->GetBtCnt() <= 10) {
+			curmodel->SetKinematicFlag();
+			curmodel->SetBtEquilibriumPoint();
+
+			curmodel->SetMotionFrame(*pnextframe);
+			//UpdateBtSimu(*pnextframe, curmodel);
+			if (curmodel && curmodel->GetCurMotInfo()) {
+				int firstflag = 1;
+				curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
+			}
+		}
+		else {
+			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
+			curmodel->SetBtEquilibriumPoint();
+		}
+
+		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
+
 	}
 
 	if (s_onragdollik != 0){

@@ -543,8 +543,10 @@ public:
 
 	int Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix* mVP, int selectboneno );
 	int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
+	int SetKinematicFlag();
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
+	int SetBtEquilibriumPoint();
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );
 	void SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind);
 
@@ -587,6 +589,7 @@ public:
 	int ApplyBtToMotion();
 	void CalcBtAxismat(int onfirstcreate);
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
+	void SetKinematicFlagReq(CBtObject* srcbto);
 
 	void ResetMotionCache();
 

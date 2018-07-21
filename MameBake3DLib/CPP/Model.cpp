@@ -1033,7 +1033,13 @@ int CModel::Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix
 			SetBtKinFlagReq(m_topbt, 0);
 		}
 		else{
-			SetRagdollKinFlagReq(m_topbt, selectboneno);
+			//if (GetBtCnt() <= 10) {
+			//	SetKinematicFlag();
+			//	//SetBtEquilibriumPoint();
+			//}
+			//else {
+			//	SetRagdollKinFlagReq(m_topbt, selectboneno);
+			//}
 		}
 	}
 
@@ -1042,7 +1048,8 @@ int CModel::Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 			CBone* boneptr = itrbone->second;
 			if (boneptr){
-				boneptr->SetStartMat2(boneptr->GetCurMp().GetWorldMat());
+				//boneptr->SetStartMat2(boneptr->GetCurMp().GetWorldMat());
+				boneptr->SetStartMat2(boneptr->GetCurrentZeroFrameMat());
 			}
 		}
 
@@ -1625,7 +1632,14 @@ int CModel::SetCurrentMotion( int srcmotid )
 		_ASSERT( 0 );
 		return 1;
 	}else{
-		ResetMotionCache();
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				curbone->SetCurrentMotion(srcmotid);
+			}
+		}
+		//ResetMotionCache();
 		return 0;
 	}
 }
@@ -3548,9 +3562,9 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 					CRigidElem* curre = boneptr->GetRigidElem(childbone);
 					if (curre){
 						boneptr->CalcRigidElemParams(childbone, 0);
-						g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat()));
+						g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
 						//g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
-						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
+						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
 						ChaVector4 difmult;
 						//if( boneptr->GetSelectFlag() & 4 ){
 						if (childbone->GetSelectFlag() & 4){
@@ -3668,9 +3682,9 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 			srcbone->CalcRigidElemParams(childbone, 0);//形状データのスケールのために呼ぶ。ここでのカプセルマットは次のSetCapsuleBtMotionで上書きされる。
 			srcbto->SetCapsuleBtMotion(curre);
 
-			g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat()));
+			g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
 			//g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
-			srcbone->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat()), &m_matVP);
+			srcbone->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
 			ChaVector4 difmult;
 			//if( boneptr->GetSelectFlag() & 4 ){
 			if (childbone->GetSelectFlag() & 4){
@@ -4319,6 +4333,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 }
 
 
+
 int CModel::BulletSimulationStop()
 {
 	BulletSimulationStopReq(m_topbt);
@@ -4604,6 +4619,15 @@ int CModel::CreateBtObject( int onfirstcreate )
 	return 0;          
 }
 
+
+int CModel::SetBtEquilibriumPoint()
+{
+	if (m_topbt) {
+		SetBtEquilibriumPointReq(m_topbt);
+	}
+	return 0;
+}
+
 int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 {
 	if (!srcbto){
@@ -4731,7 +4755,8 @@ void CModel::CalcBtAxismatReq( CBone* curbone, int onfirstcreate )
 		if (curbone->GetParent()){
 			curbone->GetParent()->CalcRigidElemParams(curbone, onfirstcreate);//firstflag 1
 		}
-		curbone->SetStartMat2( curbone->GetCurMp().GetWorldMat() );
+		//curbone->SetStartMat2( curbone->GetCurMp().GetWorldMat() );
+		curbone->SetStartMat2(curbone->GetCurrentZeroFrameMat());
 	}
 
 	if( curbone->GetChild() ){
@@ -5662,6 +5687,57 @@ void CModel::SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, floa
 	}
 }
 
+int CModel::SetKinematicFlag()
+{
+	if (!m_topbt) {
+		return 0;
+	}
+
+	SetKinematicFlagReq(m_topbt);
+
+	return 0;
+}
+
+void CModel::SetKinematicFlagReq(CBtObject* srcbto)
+{
+	CBone* srcbone = srcbto->GetBone();
+	if (srcbone) {
+
+		srcbone->SetBtKinFlag(1);
+
+		DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
+		if (s_setrigidflag == 0) {
+			s_rigidflag = curflag;
+			s_setrigidflag = 1;
+		}
+		//srcbto->GetRigidBody()->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
+		srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
+		//srcbto->m_rigidbody->setActivationState(DISABLE_DEACTIVATION);
+		//srcbto->m_rigidbody->setActivationState(WANTS_DEACTIVATION);
+		//srcbto->m_rigidbody->setActivationState(DISABLE_SIMULATION);
+		//CF_STATIC_OBJECT
+
+		if (srcbto->GetRigidBody()) {
+			//srcbto->GetRigidBody()->activate();
+			//###srcbto->GetRigidBody()->setDeactivationTime(0.0);
+			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+
+			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 150.0);
+			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+		}
+	}
+
+
+	int chilno;
+	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++) {
+		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+		if (chilbto) {
+			SetKinematicFlagReq(chilbto);
+		}
+	}
+}
+
+
 int CModel::SetRagdollKinFlag(int selectbone, int physicsmvkind)
 {
 
@@ -6311,17 +6387,26 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					}
 
 
-					ChaMatrix invfirstmat = parentbone->GetInvFirstMat();
+					ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat();
 					ChaMatrix diffworld = invfirstmat * newbtmat;
-					CRigidElem* curre = parentbone->GetRigidElem(childbone);
+					CBtObject* setbto = parentbone->GetBtObject(childbone);
 					ChaMatrix newrigidmat;
-					if (curre){
-						newrigidmat = curre->GetBindcapsulemat() * diffworld;
+					if (setbto) {
+						newrigidmat = setbto->GetFirstTransformMatX() * diffworld;
 					}
-					else{
-						::MessageBoxA(NULL, "IKRotateRagdoll : curre NULL error", "error", MB_OK);
+					else {
+						::MessageBoxA(NULL, "IKRotateRagdoll : setbto NULL error", "error", MB_OK);
 						return -1;
 					}
+					
+					//CRigidElem* curre = parentbone->GetRigidElem(childbone);
+					//if (curre){
+					//	newrigidmat = curre->GetBindcapsulemat() * diffworld;
+					//}
+					//else{
+					//	::MessageBoxA(NULL, "IKRotateRagdoll : curre NULL error", "error", MB_OK);
+					//	return -1;
+					//}
 
 
 					ChaVector3 newparentpos, newchildpos;
@@ -6348,9 +6433,8 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					if (gparentbone){
 						CBtObject* parbto = gparentbone->GetBtObject(parentbone);
 						if (parbto){
-							CBtObject* setbto = parentbone->GetBtObject(childbone);
 							if (setbto){
-								btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
+								//btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
 
 								btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parentbone, childbone);
 								if (dofC){
@@ -6371,7 +6455,14 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
 
 
-									ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
+
+
+
+									//ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
+									ChaMatrix firstlocalmat = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat()) * ChaMatrixInv(ChaMatrixFromBtMat3x3(&parbto->GetFirstTransformMat()));
+\
+
+
 									CQuaternion firstlocalq;
 									firstlocalq.MakeFromD3DXMat(firstlocalmat);
 									CQuaternion invfirstlocalq;
@@ -6529,9 +6620,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 						//btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
 						btTransform firstworldtra = setbto->GetFirstTransform();
 						btTransform invfirstworldtra = firstworldtra.inverse();
-						ChaMatrix firstworldmatx = setbto->GetFirstTransformMatX();
+						ChaMatrix firstworldmatx = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat());
 
-						ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
+						ChaMatrix firstlocalmat = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat()) * ChaMatrixInv(ChaMatrixFromBtMat3x3(&parbto->GetFirstTransformMat()));
 						CQuaternion firstlocalq;
 						firstlocalq.MakeFromD3DXMat(firstlocalmat);
 						CQuaternion invfirstlocalq;

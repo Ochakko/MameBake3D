@@ -349,7 +349,7 @@ public:
 	ChaVector3 CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
-	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld);
+	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
@@ -373,7 +373,12 @@ public:
 
 	int ChkMovableEul(ChaVector3 srceul);
 
+
+	int SetCurrentMotion(int srcmotid);
 	void ResetMotionCache();
+
+	ChaMatrix GetCurrentZeroFrameMat();//current motion‚Ìframe 0‚Ìworldmat
+	ChaMatrix GetCurrentZeroFrameInvMat();
 
 private:
 
@@ -887,7 +892,14 @@ public: //accesser
 	int GetExcludeMv(){
 		return m_excludemv;
 	};
-
+	void SetCurMotID(int srcmotid)
+	{
+		m_curmotid = srcmotid;
+	}
+	int GetCurMotID()
+	{
+		return m_curmotid;
+	}
 
 private:
 	int m_posconstraint;
@@ -903,6 +915,7 @@ private:
 	char m_bonename[256];
 	WCHAR m_wbonename[256];
 	char m_engbonename[256];
+	int m_curmotid;
 
 	int m_upkind;//m_gaxismatXparŒvŽZŽž‚Ìupvec
 

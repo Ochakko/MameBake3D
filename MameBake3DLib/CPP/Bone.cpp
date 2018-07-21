@@ -21,6 +21,7 @@
 
 #include <Bone.h>
 #include <MQOFace.h>
+#include <BtObject.h>
 
 #include <InfScope.h>
 #include <MotionPoint.h>
@@ -249,6 +250,7 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_curmotid = -1;
 	m_excludemv = 0;
 	m_mass0 = 0;
 	m_posconstraint = 0;
@@ -748,18 +750,18 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	}
 	else {
 		if (g_previewFlag != 5) {
-			ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-			ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+			ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentZeroFrameMat()));
+			ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat()));
 		}
 		else {
 			if (setstartflag == 1) {
-				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(m_curmp.GetWorldMat()));
-				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(m_curmp.GetWorldMat()));
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentZeroFrameMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat()));
 			}
 			else {
 				//if (GetParent()){
-				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
-				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetBtMat()));
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentZeroFrameMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat()));
 				//}
 				//else{
 				//	ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
@@ -1328,7 +1330,6 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 
 	curre->SetBindcapsulemat(bindcapsulemat);
 	//bmmat = curre->GetEndbone()->CalcManipulatorPostureMatrix(0, 1, 1);
-	bmmat = curre->GetCapsulemat();
 
 	//curre->SetCapsulemat( bmmat );
 	curre->SetCylileng( cylileng );
@@ -1338,8 +1339,9 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 
 
 	if( setstartflag != 0 ){
+		bmmat = curre->GetCapsulemat(1);
 		curre->SetFirstcapsulemat( bmmat );
-		curre->SetFirstWorldmat(childbone->GetCurMp().GetWorldMat());
+		curre->SetFirstWorldmat(childbone->GetCurrentZeroFrameMat());
 		//curre->SetFirstWorldmat(GetCurMp().GetWorldMat());
 
 		//if (setstartflag == 2){
@@ -1357,7 +1359,8 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 
 void CBone::SetStartMat2Req()
 {
-	SetStartMat2(m_curmp.GetWorldMat());
+	//SetStartMat2(m_curmp.GetWorldMat());
+	SetStartMat2(GetCurrentZeroFrameMat());
 	SetBtMat(m_curmp.GetWorldMat());//!!!!!!!!!!!!!btmatの初期値
 
 	if (m_child){
@@ -2193,7 +2196,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		if (g_previewFlag != 5){
 			worldmat = pcurmp->GetWorldMat();
 			//diffworld = curre->GetInvFirstWorldmat() * worldmat;
-			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
+			//diffworld = MakeRotMatFromChaMatrix(GetCurrentZeroFrameInvMat() * worldmat);
+			diffworld = MakeRotMatFromChaMatrix(GetCurrentZeroFrameInvMat() * worldmat);
 		}
 		else{
 			worldmat = GetBtMat();
@@ -2205,7 +2209,8 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 			//else {
 			//	diffworld = curre->GetInvFirstWorldmat() * worldmat;
 			//}
-			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
+			//diffworld = MakeRotMatFromChaMatrix(GetCurrentZeroFrameInvMat() * worldmat);
+			diffworld = MakeRotMatFromChaMatrix(GetCurrentZeroFrameInvMat() * worldmat);
 
 		}
 		//diffworld = curre->GetInvFirstWorldmat() * worldmat;
@@ -2221,15 +2226,17 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	if (pparmp){
 		if (g_previewFlag != 5){
 			parworldmat = pparmp->GetWorldMat();
-			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
+			//pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetCurrentZeroFrameInvMat() * parworldmat);
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetCurrentZeroFrameInvMat() * parworldmat);
 		}
 		else{
 			parworldmat = m_parent->GetBtMat();
 			//pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//シミュレーション開始時からの変化分
 			//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
-			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
+			//pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetCurrentZeroFrameInvMat() * parworldmat);
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetCurrentZeroFrameInvMat() * parworldmat);
 		}
-		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = m_parent->GetCurrentZeroFrameInvMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
 		//ChaMatrixIdentity(&pardiffworld);
 	}
@@ -2242,12 +2249,12 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	if (pgparmp) {
 		if (g_previewFlag != 5) {
 			gparworldmat = pgparmp->GetWorldMat();
-			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetCurrentZeroFrameInvMat() * gparworldmat);
 		}
 		else {
 			gparworldmat = m_parent->GetParent()->GetBtMat();
 			//gpardiffworld = m_parent->GetParent()->GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
-			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetCurrentZeroFrameInvMat() * gparworldmat);
 
 			//if (parre) {
 			//	gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
@@ -2256,7 +2263,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 			//	gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
 			//}
 		}
-		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = m_parent->GetCurrentZeroFrameInvMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
 		//ChaMatrixIdentity(&pardiffworld);
 	}
@@ -2341,7 +2348,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	return selm;
 }
 
-ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld)
+ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe)
 {
 
 	//Posture
@@ -2352,10 +2359,15 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 		return selm;
 	}
 
-	int srcmotid = m_parmodel->GetCurMotInfo()->motid;
-	double srcframe = m_parmodel->GetCurMotInfo()->curframe;
-
-
+	int srcmotid = m_curmotid;
+	double srcframe;
+	if (calczeroframe == 0) {
+		srcframe = m_parmodel->GetCurMotInfo()->curframe;
+	}
+	else {
+		srcframe = 0.0;
+	}
+	
 	CMotionPoint* pcurmp = 0;
 	CMotionPoint* pparmp = 0;
 	CMotionPoint* pgparmp = 0;
@@ -2443,7 +2455,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 		if (g_previewFlag != 5) {
 			worldmat = pcurmp->GetWorldMat();
 			//diffworld = curre->GetInvFirstWorldmat() * worldmat;
-			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
+			diffworld = MakeRotMatFromChaMatrix(GetCurrentZeroFrameInvMat() * worldmat);
 		}
 		else {
 			worldmat = GetBtMat();
@@ -2455,7 +2467,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 			//else {
 			//	diffworld = curre->GetInvFirstWorldmat() * worldmat;
 			//}
-			diffworld = MakeRotMatFromChaMatrix(GetInvFirstMat() * worldmat);
+			diffworld = MakeRotMatFromChaMatrix(GetCurrentZeroFrameInvMat() * worldmat);
 
 		}
 		//diffworld = curre->GetInvFirstWorldmat() * worldmat;
@@ -2471,15 +2483,15 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 	if (pparmp) {
 		if (g_previewFlag != 5) {
 			parworldmat = pparmp->GetWorldMat();
-			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetCurrentZeroFrameInvMat() * parworldmat);
 		}
 		else {
 			parworldmat = m_parent->GetBtMat();
 			//pardiffworld = m_parent->GetInvStartMat2() * parworldmat;//シミュレーション開始時からの変化分
 			//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;//初期状態からの変化分
-			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetInvFirstMat() * parworldmat);
+			pardiffworld = MakeRotMatFromChaMatrix(m_parent->GetCurrentZeroFrameInvMat() * parworldmat);
 		}
-		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = m_parent->GetCurrentZeroFrameInvMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
 		//ChaMatrixIdentity(&pardiffworld);
 	}
@@ -2492,12 +2504,12 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 	if (pgparmp) {
 		if (g_previewFlag != 5) {
 			gparworldmat = pgparmp->GetWorldMat();
-			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetCurrentZeroFrameInvMat() * gparworldmat);
 		}
 		else {
 			gparworldmat = m_parent->GetParent()->GetBtMat();
 			//gpardiffworld = m_parent->GetParent()->GetInvStartMat2() * gparworldmat;//シミュレーション開始時からの変化分
-			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetInvFirstMat() * gparworldmat);
+			gpardiffworld = MakeRotMatFromChaMatrix(m_parent->GetParent()->GetCurrentZeroFrameInvMat() * gparworldmat);
 
 			//if (parre) {
 			//	gpardiffworld = parre->GetInvFirstWorldmat() * gparworldmat;//初期状態からの変化分
@@ -2506,7 +2518,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 			//	gpardiffworld = curre->GetInvFirstWorldmat() * gparworldmat;
 			//}
 		}
-		//pardiffworld = m_parent->GetInvFirstMat() * parworldmat;//!!!!!!
+		//pardiffworld = m_parent->GetCurrentZeroFrameInvMat() * parworldmat;//!!!!!!
 		//pardiffworld = curre->GetInvFirstWorldmat() * parworldmat;
 		//ChaMatrixIdentity(&pardiffworld);
 	}
@@ -4127,7 +4139,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 	ChaMatrix tramat;
 
 
-	firstmat = GetFirstMat();
+	//firstmat = GetFirstMat();
+	firstmat = GetCurrentZeroFrameMat();
 	ChaMatrixInverse(&invfirstmat, NULL, &firstmat);
 
 	ChaMatrix befbtmat;
@@ -4168,8 +4181,9 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 
 				//BtMatにアニメーションの移動成分のみを掛けたものを新しい姿勢行列として子供ジョイント位置を計算してシミュレーションに使用する。
 				curworld = GetCurMp().GetWorldMat();
-				befworld = GetCurMp().GetBefWorldMat();
-
+				//befworld = GetCurMp().GetBefWorldMat();
+				befworld = GetCurrentZeroFrameMat();
+				
 				ChaVector3 befparentpos, curparentpos;
 				jointfpos = GetJointFPos();
 				ChaVector3TransformCoord(&befparentpos, &jointfpos, &befworld);
@@ -4202,7 +4216,15 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 		}
 	}
 
-	multmat = srcre->GetBindcapsulemat() * diffworld;
+	//multmat = srcre->GetBindcapsulemat() * diffworld;
+	CBtObject* curbto = GetBtObject(childbone);
+	if (curbto) {
+		multmat = curbto->GetFirstTransformMatX() * diffworld;
+	}
+	else {
+		multmat = GetCurrentZeroFrameMat() * diffworld;
+		_ASSERT(0);
+	}
 	rigidcenter = (m_btparentpos + m_btchildpos) * 0.5f;
 
 	*dstmat = multmat;
@@ -4335,3 +4357,54 @@ void CBone::SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* sr
 	
 	//((m_remap[ srcstr ])[ srcbone ]) = srcre;
 }
+
+int CBone::SetCurrentMotion(int srcmotid)
+{
+	SetCurMotID(srcmotid);
+	ResetMotionCache();
+	return 0;
+}
+
+//current motionのframe 0のworldmat
+ChaMatrix CBone::GetCurrentZeroFrameMat()
+{
+	if (m_curmotid >= 0) {
+		CMotionPoint* pcur = m_motionkey[m_curmotid];
+		if (pcur) {
+			return pcur->GetWorldMat();
+		}
+		else {
+			ChaMatrix inimat;
+			ChaMatrixIdentity(&inimat);
+			return inimat;
+		}
+	}
+	else {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+}
+ChaMatrix CBone::GetCurrentZeroFrameInvMat()
+{
+	if (m_curmotid >= 0) {
+		CMotionPoint* pcur = m_motionkey[m_curmotid];
+		if (pcur) {
+			ChaMatrix curmat = pcur->GetWorldMat();
+			ChaMatrix retmat;
+			ChaMatrixInverse(&retmat, NULL, &curmat);
+			return retmat;
+		}
+		else {
+			ChaMatrix inimat;
+			ChaMatrixIdentity(&inimat);
+			return inimat;
+		}
+	}
+	else {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+}
+
