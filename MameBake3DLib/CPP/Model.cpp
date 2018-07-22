@@ -1030,7 +1030,7 @@ int CModel::Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix
 
 	if( m_topbt ){
 		if (g_previewFlag != 5){
-			SetBtKinFlagReq(m_topbt, 0);
+			//SetBtKinFlagReq(m_topbt, 0);
 		}
 		else{
 			//if (GetBtCnt() <= 10) {
@@ -2087,7 +2087,7 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 	}
 
 
-	if( previewflag > 0 ){
+	if( previewflag >= 0 ){
 		nextframe = curframe + difftime / oneframe * curspeed;
 		if( nextframe > rangeend ){
 			if( loopflag == 0 ){

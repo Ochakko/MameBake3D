@@ -1085,7 +1085,7 @@ static int IsRegist();
 
 static int OnTimeLineCursor(int mbuttonflag, double newframe);
 static int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag);
-static int OnTimeLineSelectFormSelectedKey();
+static int OnTimeLineSelectFromSelectedKey();
 static int OnTimeLineMButtonDown(bool ctrlshiftflag);
 static int OnTimeLineWheel();
 static int AddEditRangeHistory();
@@ -3981,7 +3981,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		    swprintf_s( sz, 100, L"Žp¨“K—pˆÊ’u : %d “", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
-			OnTimeLineSelectFormSelectedKey();
+			OnTimeLineSelectFromSelectedKey();
             break;
 
         case IDC_SPEED:
@@ -10583,24 +10583,24 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	}
 
 
-	BOOL isstartframe = FALSE;
-	double rangestart = 1.0;
-	s_previewrange = s_editrange;
-	if (s_previewrange.IsSameStartAndEnd()) {
-		rangestart = 1.0;
-	}
-	else {
-		rangestart = s_previewrange.GetStartFrame();
-	}
+	//BOOL isstartframe = FALSE;
+	//double rangestart = 1.0;
+	//s_previewrange = s_editrange;
+	//if (s_previewrange.IsSameStartAndEnd()) {
+	//	rangestart = 1.0;
+	//}
+	//else {
+	//	rangestart = s_previewrange.GetStartFrame();
+	//}
 
-	if (g_previewFlag != 0) {
-		if (s_savepreviewFlag == 0) {
-			//preview start frame
-			*pdifftime = 0.0;
-			*pnextframe = rangestart;
-			isstartframe = TRUE;
-		}
-	}
+	//if (g_previewFlag != 0) {
+	//	if (s_savepreviewFlag == 0) {
+	//		//preview start frame
+	//		*pdifftime = 0.0;
+	//		*pnextframe = rangestart;
+	//		isstartframe = TRUE;
+	//	}
+	//}
 
 	//CModel* curmodel = s_model;
 	vector<MODELELEM>::iterator itrmodel;
@@ -10609,14 +10609,23 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
 
-			int endflag = 0;
-			int loopstartflag = 0;
-			if (isstartframe == FALSE) {
-				curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+			if (curmodel->GetBtCnt() <= 10) {
+				curmodel->SetKinematicFlag();
+				curmodel->SetBtEquilibriumPoint();
 			}
 			else {
-				loopstartflag = 1;
+				curmodel->SetBtKinFlagReq(curmodel->GetTopBt(), 0);
+				//curmodel->SetBtEquilibriumPoint();
 			}
+
+			int endflag = 0;
+			int loopstartflag = 0;
+			//if (isstartframe == FALSE) {
+				curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+			//}
+			//else {
+			//	loopstartflag = 1;
+			//}
 
 			if (firstmodelflag) {
 #ifndef SKIP_EULERGRAPH__
@@ -10631,10 +10640,16 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			int firstflag = 0;
 			curmodel->SetMotionFrame(*pnextframe);
-			if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
+			//if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
+			if((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
 				curmodel->ZeroBtCnt();
-				StartBt(curmodel, firstmodelflag, 2, 0);
-				firstflag = 1;
+				//g_previewFlag = 0;
+				//StartBt(curmodel, firstmodelflag, 2, 0);
+				//firstflag = 1;
+
+				curmodel->SetKinematicFlag();
+				curmodel->SetBtEquilibriumPoint();
+
 			}
 
 			//UpdateBtSimu(*pnextframe, curmodel);
@@ -14282,7 +14297,7 @@ bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
 
 
 //////////////////////////////////////////
-int OnTimeLineSelectFormSelectedKey()
+int OnTimeLineSelectFromSelectedKey()
 {
 	if (g_previewFlag != 0) {
 		return 0;
@@ -14327,7 +14342,7 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 		}
 	}
 
-	OnTimeLineSelectFormSelectedKey();
+	OnTimeLineSelectFromSelectedKey();
 
 	return 0;
 }

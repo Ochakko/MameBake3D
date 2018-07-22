@@ -2296,7 +2296,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		}
 		else{
 			if (multworld == 1){
-				selm = pardiffworld;
+				selm = parworldmat;
 			}
 			else{
 				ChaMatrixIdentity(&selm);
@@ -2317,7 +2317,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		}
 		else{
 			if (multworld == 1){
-				selm = gpardiffworld;
+				selm = gparworldmat;
 			}
 			else{
 				ChaMatrixIdentity(&selm);
@@ -2543,7 +2543,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 		}
 		else {
 			if (multworld == 1) {
-				selm = pardiffworld;
+				selm = parworldmat;
 			}
 			else {
 				ChaMatrixIdentity(&selm);
@@ -2562,7 +2562,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 		}
 		else {
 			if (multworld == 1) {
-				selm = pardiffworld;
+				selm = parworldmat;
 			}
 			else {
 				ChaMatrixIdentity(&selm);
