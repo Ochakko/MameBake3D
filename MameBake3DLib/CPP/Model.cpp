@@ -1049,7 +1049,7 @@ int CModel::Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix
 			CBone* boneptr = itrbone->second;
 			if (boneptr){
 				//boneptr->SetStartMat2(boneptr->GetCurMp().GetWorldMat());
-				boneptr->SetStartMat2(boneptr->GetCurrentZeroFrameMat());
+				boneptr->SetStartMat2(boneptr->GetCurrentZeroFrameMat(0));
 			}
 		}
 
@@ -3562,9 +3562,12 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 					CRigidElem* curre = boneptr->GetRigidElem(childbone);
 					if (curre){
 						boneptr->CalcRigidElemParams(childbone, 0);
-						g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
-						//g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
-						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
+
+						ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
+						g_hmWorld->SetMatrix((float*)&(worldcapsulemat));
+						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
+						//g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
+						//boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
 						ChaVector4 difmult;
 						//if( boneptr->GetSelectFlag() & 4 ){
 						if (childbone->GetSelectFlag() & 4){
@@ -3612,7 +3615,10 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 	else{
 		RenderCapsuleReq(pdev, m_topbt);
 	}
-	
+
+
+
+
 
 	//ボーンのサークル表示
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
@@ -3662,6 +3668,9 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 		}
 	}
 
+
+
+
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
 	pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
@@ -3672,6 +3681,10 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 
 void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 {
+	if (!pdev || !srcbto) {
+		return;
+	}
+
 	CBone* srcbone = srcbto->GetBone();
 	CBone* childbone = srcbto->GetEndBone();
 	if (srcbone && childbone){
@@ -3682,8 +3695,13 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 			srcbone->CalcRigidElemParams(childbone, 0);//形状データのスケールのために呼ぶ。ここでのカプセルマットは次のSetCapsuleBtMotionで上書きされる。
 			srcbto->SetCapsuleBtMotion(curre);
 
+
+			//btmatにはmodelのworldが考慮されたものが入っている！？
+			//ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
+			//g_hmWorld->SetMatrix((float*)&(worldcapsulemat));
+			//srcbone->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
+
 			g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
-			//g_pEffect->SetMatrix(g_hmWorld, &(curre->GetCapsulemat().D3DX()));
 			srcbone->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
 			ChaVector4 difmult;
 			//if( boneptr->GetSelectFlag() & 4 ){
@@ -3709,6 +3727,10 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 
 void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 {
+	if (!srcbto || !bcircleptr) {
+		return;
+	}
+
 	CBone* srcbone = srcbto->GetBone();
 	CBone* childbone = srcbto->GetEndBone();
 	if (srcbone && childbone){
@@ -4148,6 +4170,9 @@ int CModel::CalcBtAxismat( float delta )
 
 void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 {
+	if (!srcbto) {
+		return;
+	}
 
 	CBone* srcbone = srcbto->GetBone();
 	if( srcbone ){
@@ -4756,7 +4781,7 @@ void CModel::CalcBtAxismatReq( CBone* curbone, int onfirstcreate )
 			curbone->GetParent()->CalcRigidElemParams(curbone, onfirstcreate);//firstflag 1
 		}
 		//curbone->SetStartMat2( curbone->GetCurMp().GetWorldMat() );
-		curbone->SetStartMat2(curbone->GetCurrentZeroFrameMat());
+		curbone->SetStartMat2(curbone->GetCurrentZeroFrameMat(0));
 	}
 
 	if( curbone->GetChild() ){
@@ -4773,7 +4798,7 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, ChaMatrix* wmat, ChaM
 	m_matVP = *vpmat;
 
 	if( !m_topbt ){
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 0;
 	}
 	if (!m_btWorld){
@@ -6387,7 +6412,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					}
 
 
-					ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat();
+					ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat(0);
 					ChaMatrix diffworld = invfirstmat * newbtmat;
 					CBtObject* setbto = parentbone->GetBtObject(childbone);
 					ChaMatrix newrigidmat;
@@ -7923,6 +7948,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))){
 			parentbone = curbone->GetParent();
+			if (!parentbone) {
+				break;
+			}
+
 			float rotrad2 = currate * rotrad;
 			//float rotrad2 = rotrad;
 			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
@@ -7988,10 +8017,9 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 					CMotionPoint* curparmp = 0;
 					CMotionPoint* aplyparmp = 0;
-					if (parentbone){
-						curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-						aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-					}
+					curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+					aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+
 					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
 						ChaMatrix curparrotmat = curparmp->GetWorldMat();
 						curparrotmat._41 = 0.0f;
@@ -8072,12 +8100,14 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			}
 			else{
-				ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-				CMotionPoint transmp;
-				transmp.CalcQandTra(transmat, firstbone);
-				rotq = transmp.GetQ();
+				if (parentbone) {
+					ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+					CMotionPoint transmp;
+					transmp.CalcQandTra(transmat, firstbone);
+					rotq = transmp.GetQ();
 
-				parentbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+					parentbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+				}
 			}
 
 

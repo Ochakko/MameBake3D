@@ -377,8 +377,8 @@ public:
 	int SetCurrentMotion(int srcmotid);
 	void ResetMotionCache();
 
-	ChaMatrix GetCurrentZeroFrameMat();//current motion‚Ìframe 0‚Ìworldmat
-	ChaMatrix GetCurrentZeroFrameInvMat();
+	ChaMatrix GetCurrentZeroFrameMat(int updateflag);//current motion‚Ìframe 0‚Ìworldmat
+	ChaMatrix GetCurrentZeroFrameInvMat(int updateflag);
 
 private:
 
@@ -481,6 +481,10 @@ private:
 	ChaVector3 LimitEul(ChaVector3 srceul);
 	int InitCustomRig();
 	void CalcBtRootDiffMatFunc(CBone* srcbone);
+
+	ChaMatrix GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag);
+
+
 
 public: //accesser
 	int GetType(){ return m_type; };
@@ -993,6 +997,11 @@ private:
 	CModel* m_coldisp[COL_MAX];
 
 	CModel* m_parmodel;
+
+	int m_firstgetflag;//GetCurrentZeroFrameMat—p
+	ChaMatrix m_firstgetmatrix;//GetCurrentZeroFrameMat—p
+	ChaMatrix m_invfirstgetmatrix;//GetCurrentZeroFrameMat—p
+
 
 	CBone* m_parent;
 	CBone* m_child;

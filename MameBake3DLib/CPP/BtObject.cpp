@@ -250,9 +250,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
 	parentposA = m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetCurrentZeroFrameMat());
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetCurrentZeroFrameMat(0));
 	childposA = m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat());
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat(0));
 	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = ChaVector3Length(&diffA);
 
@@ -504,9 +504,9 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 
 	ChaVector3 parentposA, childposA, aftparentposA, aftchildposA;
 	parentposA = curbto->m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurrentZeroFrameMat());
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurrentZeroFrameMat(0));
 	childposA = curbto->m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurrentZeroFrameMat());
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurrentZeroFrameMat(0));
 	if (chilflag == 0){
 		m_curpivot = invtra(btVector3(aftchildposA.x, aftchildposA.y, aftchildposA.z));
 		//m_curpivot = btVector3( 0.0f, 0.5f * curbto->m_boneleng, 0.0f );
@@ -1054,7 +1054,7 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 
 	ChaMatrix invxworld;
 	ChaMatrixInverse(&invxworld, NULL, &m_xworld);
-	//invxworld = m_bone->GetCurrentZeroFrameInvMat();
+	//invxworld = m_bone->GetCurrentZeroFrameInvMat(0);
 
 	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
