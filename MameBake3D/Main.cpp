@@ -5519,6 +5519,10 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	g_dbgloadcnt++;
 
+	s_model->DestroyScene();
+
+
+
 	return newmodel;
 }
 

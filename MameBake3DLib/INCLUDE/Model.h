@@ -596,6 +596,7 @@ public:
 	void EnableRotChildren(CBone* srcbone, bool srcflag);
 	void EnableRotChildrenReq(CBone* srcbone, bool srcflag);
 
+	void DestroyScene();
 
 private:
 	int InitParams();

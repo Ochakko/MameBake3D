@@ -9121,5 +9121,13 @@ void CModel::EnableRotChildrenReq(CBone* srcbone, bool srcflag)
 	}
 }
 
+void CModel::DestroyScene()
+{
+	if (m_pscene) {
+		m_pscene->Destroy(true);
+		m_pscene = 0;
+	}
+}
+
 
 
