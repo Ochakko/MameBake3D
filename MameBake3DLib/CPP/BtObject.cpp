@@ -651,19 +651,6 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					chilbto->m_bone->GetWBoneName(), chilbto->m_endbone->GetWBoneName());
 
 
-				dofC->setEquilibriumPoint();
-				//tmpre = m_bone->GetRigidElem(m_endbone);
-				////ChaMatrix axismatrix = m_endbone->GetStartMat2();
-				//ChaMatrix axismatrix = tmpre->GetFirstcapsulemat();
-				//btVector3 axisZ;
-				//btVector3 axisX;
-				//axisZ = btVector3(axismatrix._13, axismatrix._23, axismatrix._33);
-				//axisX = btVector3(axismatrix._11, axismatrix._21, axismatrix._31);
-				////axisZ = btVector3(axismatrix._31, axismatrix._32, axismatrix._33);
-				////axisX = btVector3(axismatrix._11, axismatrix._12, axismatrix._13);
-				//dofC->setAxis(axisZ, axisX);
-
-
 				//m_btWorld->addConstraint(dofC, false);
 				m_btWorld->addConstraint(dofC, true);
 				//m_btWorld->addConstraint((btTypedConstraint*)dofC, false);//!!!!!!!!!!!! disable collision between linked bodies
@@ -671,6 +658,28 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				//m_dofC = dofC;
 
 				//dofC->setEquilibriumPoint();//!!!!!!!!!!!!tmp disable
+
+
+				//以下、setAxisコメントアウト
+				//2つの軸はZとY（XはそれらのCross）
+				//以下の設定をすると不自然にだらーんと伸びてバネで奇妙に動く。謎。
+				//CRigidElem* tmpre2 = chilbto->m_bone->GetRigidElem(chilbto->m_endbone);
+				//ChaMatrix bmat = tmpre2->GetBindcapsulemat();
+				//btVector3 axisZ, axisY;
+				//axisZ = btVector3(bmat._31, bmat._32, bmat._33);
+				//axisY = btVector3(bmat._21, bmat._22, bmat._23);
+				////axisZ = btVector3(bmat._13, bmat._23, bmat._33);
+				////axisY = btVector3(bmat._12, bmat._22, bmat._32);
+				//dofC->setAxis(axisZ, axisY);
+
+				int dofcindex;
+				for (dofcindex = 0; dofcindex < 6; dofcindex++) {
+					//0-2:linear, 3-5:angular
+					dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.0, dofcindex);//CFM 0 壊れにくい
+					dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.8, dofcindex);//ERP 0.8 エラー補正大
+				}
+
+				dofC->setEquilibriumPoint();
 
 
 				if (forbidrotflag == 0) {

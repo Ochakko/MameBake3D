@@ -6481,11 +6481,9 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 
 
-
-
 									//ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
 									ChaMatrix firstlocalmat = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat()) * ChaMatrixInv(ChaMatrixFromBtMat3x3(&parbto->GetFirstTransformMat()));
-\
+
 
 
 									CQuaternion firstlocalq;

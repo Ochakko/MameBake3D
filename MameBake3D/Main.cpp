@@ -8352,12 +8352,15 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
 
 					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
+					//s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 					s_bpWorld->setGlobalERP(s_erp);// ERP
 
 
 
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
-					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
+					//s_model->SetAllKData(-1, s_curreindex, 3, 3, 800.0, 20.0);
+					//curmodel->SetAllKData(-1, s_curreindex, 3, 3, 1000.0, 30.0);
+
+					curmodel->SetAllMassDataByBoneLeng(-1, s_curreindex, 30.0);//!!!!!!!! Mass自動設定中 !!!!!
 
 
 					curmodel->SetMotionFrame(curframe);
@@ -10637,7 +10640,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			if (curmodel->GetBtCnt() <= 10) {
 				curmodel->SetKinematicFlag();
-				curmodel->SetBtEquilibriumPoint();
+				//!!curmodel->SetBtEquilibriumPoint();
 			}
 			else {
 				curmodel->SetBtKinFlagReq(curmodel->GetTopBt(), 0);
@@ -10674,7 +10677,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				//firstflag = 1;
 
 				curmodel->SetKinematicFlag();
-				curmodel->SetBtEquilibriumPoint();
+				//!!curmodel->SetBtEquilibriumPoint();
 
 			}
 
@@ -10763,7 +10766,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 		if (curmodel->GetBtCnt() <= 10) {
 			curmodel->SetKinematicFlag();
-			curmodel->SetBtEquilibriumPoint();
+			//!!curmodel->SetBtEquilibriumPoint();
 
 			curmodel->SetMotionFrame(*pnextframe);
 			//UpdateBtSimu(*pnextframe, curmodel);
@@ -10774,7 +10777,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-			curmodel->SetBtEquilibriumPoint();
+			//!!curmodel->SetBtEquilibriumPoint();
 		}
 
 		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
