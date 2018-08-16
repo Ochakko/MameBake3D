@@ -28,6 +28,9 @@
 #include <dbg.h>
 
 using namespace std;
+
+extern double g_erp;
+
 /*
 extern float g_miscale;
 extern float g_l_kval[3];
@@ -672,12 +675,14 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				////axisY = btVector3(bmat._12, bmat._22, bmat._32);
 				//dofC->setAxis(axisZ, axisY);
 
-				int dofcindex;
-				for (dofcindex = 0; dofcindex < 6; dofcindex++) {
-					//0-2:linear, 3-5:angular
-					dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.0, dofcindex);//CFM 0 壊れにくい
-					dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.8, dofcindex);//ERP 0.8 エラー補正大
-				}
+					int dofcindex;
+					for (dofcindex = 0; dofcindex < 6; dofcindex++) {
+						//0-2:linear, 3-5:angular
+						dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
+						if (g_previewFlag != 5) {
+							dofC->setParam(BT_CONSTRAINT_STOP_ERP, g_erp, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+						}
+					}
 
 				dofC->setEquilibriumPoint();
 

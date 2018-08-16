@@ -316,11 +316,12 @@ static int s_1keycnt = 0;
 static bool s_dispsampleui = true;
 
 
-static double s_erp = 1.0;
-//static float s_erp = 0.99f;
-//static float s_erp = 0.75f;
-//static double s_erp = 0.5;
-//static float s_erp = 0.2f;
+//double g_erp = 1.0;
+double g_erp = 0.8;
+//static float g_erp = 0.99f;
+//static float g_erp = 0.75f;
+//static double g_erp = 0.5;
+//static float g_erp = 0.2f;
 //static float s_impup = 0.0f;
 
 
@@ -1433,7 +1434,7 @@ void InitApp()
 		s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
-		s_bpWorld->setGlobalERP(s_erp);// ERP
+		s_bpWorld->setGlobalERP(g_erp);// ERP
 		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
 		s_btWorld = s_bpWorld->getDynamicsWorld();
 		s_bpWorld->setNumThread(g_numthread);
@@ -2935,7 +2936,7 @@ void RenderText( double fTime )
     //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
     g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, s_erp );
+    g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -4005,9 +4006,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
 		case IDC_ERP:
 			RollbackCurBoneNo();
-			s_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.0002);
+			g_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.0002);
 
-			swprintf_s(sz, 100, L"BT ERP: %0.5f", s_erp);
+			swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
 			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
 			break;
 
@@ -8353,7 +8354,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
 					//s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
-					s_bpWorld->setGlobalERP(s_erp);// ERP
+					s_bpWorld->setGlobalERP(g_erp);// ERP
 
 
 
@@ -8390,14 +8391,14 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_bpWorld->setGlobalERP(1.0e-8);// ERP
 
 
-					//s_bpWorld->setGlobalERP(0.00020);// ERP
-					s_bpWorld->setGlobalERP(0.00030);// ERP
-					//s_bpWorld->setGlobalERP(s_erp);// ERP
+					s_bpWorld->setGlobalERP(0.00020);// ERP
+					//s_bpWorld->setGlobalERP(0.00030);// ERP
+					//s_bpWorld->setGlobalERP(g_erp);// ERP
 					//s_bpWorld->setGlobalERP(0.00040);// ERP
 					//s_bpWorld->setGlobalERP(0.0010);// ERP
 					//s_bpWorld->setGlobalERP(0.80);// ERP
 
-					//s_bpWorld->setGlobalERP(s_erp);// ERP
+					//s_bpWorld->setGlobalERP(g_erp);// ERP
 
 
 
@@ -8971,7 +8972,7 @@ int OpenChaFile()
 		s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
-		s_bpWorld->setGlobalERP(s_erp);// ERP
+		s_bpWorld->setGlobalERP(g_erp);// ERP
 									   //s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
 		s_btWorld = s_bpWorld->getDynamicsWorld();
 		s_bpWorld->setNumThread(g_numthread);
@@ -10462,14 +10463,14 @@ int OnFrameKeyboard()
 	}
 	else{
 		if (g_keybuf[VK_ADD] & 0x80){
-			if (s_erp <= 0.9){
-				s_erp += 0.1;
+			if (g_erp <= 0.9){
+				g_erp += 0.1;
 				Sleep(200);
 			}
 		}
 		else if (g_keybuf[VK_SUBTRACT] & 0x80){
-			if (s_erp >= 0.1){
-				s_erp -= 0.1;
+			if (g_erp >= 0.1){
+				g_erp -= 0.1;
 				Sleep(200);
 			}
 		}
@@ -10766,7 +10767,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 		if (curmodel->GetBtCnt() <= 10) {
 			curmodel->SetKinematicFlag();
-			//!!curmodel->SetBtEquilibriumPoint();
+			curmodel->SetBtEquilibriumPoint();//必要
 
 			curmodel->SetMotionFrame(*pnextframe);
 			//UpdateBtSimu(*pnextframe, curmodel);
@@ -10777,7 +10778,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-			//!!curmodel->SetBtEquilibriumPoint();
+			curmodel->SetBtEquilibriumPoint();//必要　物理IKのときにこれを呼ばない場合、関節部分に空白ができる、子供がIK結果の通りに動かない。
 		}
 
 		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
@@ -10959,7 +10960,7 @@ int OnFrameCloseFlag()
 		s_DcloseFlag = false;
 		s_dmpanimWnd->setVisible(0);
 		if (s_bpWorld){
-			s_bpWorld->setGlobalERP(s_erp);
+			s_bpWorld->setGlobalERP(g_erp);
 		}
 		if (s_model){
 			CallF(s_model->CreateBtObject(0), return 1);
@@ -10969,7 +10970,7 @@ int OnFrameCloseFlag()
 		s_RcloseFlag = false;
 		s_rigidWnd->setVisible(0);
 		if (s_bpWorld){
-			s_bpWorld->setGlobalERP(s_erp);
+			s_bpWorld->setGlobalERP(g_erp);
 		}
 		if (s_model){
 			CallF(s_model->CreateBtObject(0), return 1);
@@ -10979,7 +10980,7 @@ int OnFrameCloseFlag()
 		s_IcloseFlag = false;
 		s_impWnd->setVisible(0);
 		if (s_bpWorld){
-			s_bpWorld->setGlobalERP(s_erp);
+			s_bpWorld->setGlobalERP(g_erp);
 		}
 		if (s_model){
 			CallF(s_model->CreateBtObject(0), return 1);
@@ -11828,9 +11829,9 @@ int CreateUtDialog()
 	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
 
-	swprintf_s(sz, 100, L"BT ERP: %0.5f", s_erp);
+	swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
 	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(s_erp * 5000.0 + 0.4));
+	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(g_erp * 5000.0 + 0.4));
 
 	
 
