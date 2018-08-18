@@ -2071,9 +2071,25 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, e
 	
 	ChaMatrix axismat;
 	CQuaternion axisq;
-	int multworld = 0;//local!!!
-	axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
-	axisq.RotationMatrix(axismat);
+	//int multworld = 0;//local!!!
+	//axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
+	//axisq.RotationMatrix(axismat);
+
+	if (GetParent()) {
+		CRigidElem* curre = GetParent()->GetRigidElem(this);
+		if (curre) {
+			axismat = curre->GetBindcapsulemat();
+		}
+		else {
+			_ASSERT(0);
+			ChaMatrixIdentity(&axismat);
+		}
+		axisq.RotationMatrix(axismat);
+	}
+	else {
+		ChaMatrixIdentity(&axismat);
+		axisq.SetParams(1.0, 0.0, 0.0, 0.0);
+	}
 
 	if (axiskind == -1){
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
@@ -3322,9 +3338,25 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 
 	ChaMatrix axismat;
 	CQuaternion axisq;
-	int multworld = 0;//local!!!
-	axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
-	axisq.RotationMatrix(axismat);
+	//int multworld = 0;//local!!!
+	//axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
+	//axisq.RotationMatrix(axismat);
+	if (GetParent()) {
+		CRigidElem* curre = GetParent()->GetRigidElem(this);
+		if (curre) {
+			axismat = curre->GetBindcapsulemat();
+		}
+		else {
+			_ASSERT(0);
+			ChaMatrixIdentity(&axismat);
+		}
+		axisq.RotationMatrix(axismat);
+	}
+	else {
+		ChaMatrixIdentity(&axismat);
+		axisq.SetParams(1.0, 0.0, 0.0, 0.0);
+	}
+
 
 	CQuaternion newrot;
 	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
@@ -3471,9 +3503,26 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVect
 
 	ChaMatrix axismat;
 	CQuaternion axisq;
-	int multworld = 0;//local!!!
-	axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
-	axisq.RotationMatrix(axismat);
+	//int multworld = 0;//local!!!
+	//axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
+	//axisq.RotationMatrix(axismat);
+	if (GetParent()) {
+		CRigidElem* curre = GetParent()->GetRigidElem(this);
+		if (curre) {
+			axismat = curre->GetBindcapsulemat();
+		}
+		else {
+			_ASSERT(0);
+			ChaMatrixIdentity(&axismat);
+		}
+		axisq.RotationMatrix(axismat);
+	}
+	else {
+		ChaMatrixIdentity(&axismat);
+		axisq.SetParams(1.0, 0.0, 0.0, 0.0);
+	}
+
+
 	CQuaternion invaxisq;
 	axisq.inv(&invaxisq);
 

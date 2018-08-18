@@ -5508,19 +5508,20 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	}
 
 
-	s_model->CalcBoneEul(-1);
 
-	s_model->SetLoadedFlag(true);
 
 
 	s_model->SetMotionSpeed(g_dspeed);
 
+	s_model->CreateBtObject(1);//初回
+	s_model->CalcBoneEul(-1);
 
 	CallF(s_model->DbgDump(), return 0);
 
 	g_dbgloadcnt++;
 
 	s_model->DestroyScene();
+	s_model->SetLoadedFlag(true);
 
 
 
@@ -5702,8 +5703,140 @@ int AddTimeLine( int newmotid )
 	return 0;
 }
 
+
+int UpdateEditedEuler()
+{
+	//オイラーグラフのキーを作成しなおす場合にはrefreshEulerGraph()
+
+
+	//ツールボタンからも呼ぶ
+	//if (s_pickinfo.buttonflag == 0) {
+	//	return 0;
+	//}
+
+	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
+		return 0;
+	}
+
+
+	//選択状態がない場合にはtopboneのオイラーグラフを表示する。
+	if (s_curboneno < 0) {
+		CBone* topbone = s_model->GetTopBone();
+		if (topbone) {
+			s_curboneno = topbone->GetBoneNo();
+		}
+	}
+
+
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (curbone) {
+		if (s_parentcheck) {
+			int check = (int)s_parentcheck->getValue();
+			if (check == 1) {
+				CBone* parentbone = curbone->GetParent();
+				if (parentbone) {
+					curbone = parentbone;
+				}
+			}
+		}
+
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			double curtime;
+			float minval = 0.0f;
+			float maxval = 0.0f;
+			int minfirstflag, maxfirstflag;
+			bool isset = false;
+
+			s_owpEulerGraph->getEulMinMax(&isset, &minval, &maxval);
+			if (isset == true) {
+				minfirstflag = 0;
+				maxfirstflag = 0;
+			}
+			else {
+				minfirstflag = 1;
+				maxfirstflag = 1;
+			}
+
+			//s_buttonselectstart = s_editrange.GetStartFrame();
+			//s_buttonselectend = s_editrange.GetEndFrame();
+
+			double startframe, endframe;
+			startframe = s_buttonselectstart;
+			endframe = s_buttonselectend;
+			double firstframe;
+			firstframe = max((startframe - 1.0), 0.0);
+
+			ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			int ret;
+			ret = s_owpEulerGraph->getEuler(firstframe, &befeul);
+			if (ret) {
+				befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			}
+
+			for (curtime = startframe; curtime <= endframe; curtime += 1.0) {
+				const WCHAR* wbonename = curbone->GetWBoneName();
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+				//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+				//befeul = cureul;//!!!!!!!
+
+				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
+				if (curmp) {
+					cureul = curmp->GetLocalEul();
+				}
+				else {
+					cureul.x = 0.0;
+					cureul.y = 0.0;
+					cureul.z = 0.0;
+				}
+
+
+				s_owpEulerGraph->setKey(_T("X"), (double)curtime, cureul.x);
+				s_owpEulerGraph->setKey(_T("Y"), (double)curtime, cureul.y);
+				s_owpEulerGraph->setKey(_T("Z"), (double)curtime, cureul.z);
+
+
+				if ((minfirstflag == 1) || (minval > cureul.x)) {
+					minval = cureul.x;
+				}
+				minfirstflag = 0;
+
+				if (minval > cureul.y) {
+					minval = cureul.y;
+				}
+				if (minval > cureul.z) {
+					minval = cureul.z;
+				}
+
+				if ((maxfirstflag == 1) || (maxval < cureul.x)) {
+					maxval = cureul.x;
+				}
+				maxfirstflag = 0;
+
+				if (maxval < cureul.y) {
+					maxval = cureul.y;
+				}
+				if (maxval < cureul.z) {
+					maxval = cureul.z;
+				}
+
+			}
+
+			//_ASSERT(0);
+			s_owpEulerGraph->setEulMinMax(minval, maxval);
+			s_owpEulerGraph->callRewrite();
+
+		}
+	}
+
+	return 0;
+}
+
 void refreshEulerGraph()
 {
+
+	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
+
 	if (s_model && (s_model->GetCurMotInfo())) {
 
 		s_owpEulerGraph->deleteKey();
@@ -5743,8 +5876,18 @@ void refreshEulerGraph()
 					for (curtime = 0; curtime < (int)s_model->GetCurMotInfo()->frameleng; curtime++) {
 						const WCHAR* wbonename = curbone->GetWBoneName();
 						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-						cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-						befeul = cureul;//!!!!!!!
+						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+						//befeul = cureul;//!!!!!!!
+
+						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
+						if (curmp) {
+							cureul = curmp->GetLocalEul();
+						}
+						else {
+							cureul.x = 0.0;
+							cureul.y = 0.0;
+							cureul.z = 0.0;
+						}
 
 						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
 						s_owpEulerGraph->newKey(_T("Y"), (double)curtime, cureul.y);
@@ -14907,119 +15050,6 @@ HWND Create3DWnd()
 	return s_3dwnd;
 }
 
-int UpdateEditedEuler()
-{
-	//ツールボタンからも呼ぶ
-	//if (s_pickinfo.buttonflag == 0) {
-	//	return 0;
-	//}
-
-	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
-		return 0;
-	}
-
-
-	//選択状態がない場合にはtopboneのオイラーグラフを表示する。
-	if (s_curboneno < 0) {
-		CBone* topbone = s_model->GetTopBone();
-		if (topbone) {
-			s_curboneno = topbone->GetBoneNo();
-		}
-	}
-
-
-	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	if (curbone) {
-		if (s_parentcheck) {
-			int check = (int)s_parentcheck->getValue();
-			if (check == 1) {
-				CBone* parentbone = curbone->GetParent();
-				if (parentbone) {
-					curbone = parentbone;
-				}
-			}
-		}
-
-		MOTINFO* curmi = s_model->GetCurMotInfo();
-		if (curmi) {
-			double curtime;
-			float minval = 0.0f;
-			float maxval = 0.0f;
-			int minfirstflag, maxfirstflag;
-			bool isset = false;
-
-			s_owpEulerGraph->getEulMinMax(&isset, &minval, &maxval);
-			if (isset == true) {
-				minfirstflag = 0;
-				maxfirstflag = 0;
-			}
-			else {
-				minfirstflag = 1;
-				maxfirstflag = 1;
-			}
-
-			//s_buttonselectstart = s_editrange.GetStartFrame();
-			//s_buttonselectend = s_editrange.GetEndFrame();
-
-			double startframe, endframe;
-			startframe = s_buttonselectstart;
-			endframe = s_buttonselectend;
-			double firstframe;
-			firstframe = max((startframe - 1.0), 0.0);
-
-			ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-			int ret;
-			ret = s_owpEulerGraph->getEuler(firstframe, &befeul);
-			if (ret) {
-				befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-			}
-
-			for (curtime = startframe; curtime <= endframe; curtime+= 1.0) {
-				const WCHAR* wbonename = curbone->GetWBoneName();
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-				befeul = cureul;//!!!!!!!
-
-				s_owpEulerGraph->setKey(_T("X"), (double)curtime, cureul.x);
-				s_owpEulerGraph->setKey(_T("Y"), (double)curtime, cureul.y);
-				s_owpEulerGraph->setKey(_T("Z"), (double)curtime, cureul.z);
-
-
-				if ((minfirstflag == 1) || (minval > cureul.x)) {
-					minval = cureul.x;
-				}
-				minfirstflag = 0;
-
-				if (minval > cureul.y) {
-					minval = cureul.y;
-				}
-				if (minval > cureul.z) {
-					minval = cureul.z;
-				}
-
-				if ((maxfirstflag == 1) || (maxval < cureul.x)) {
-					maxval = cureul.x;
-				}
-				maxfirstflag = 0;
-
-				if (maxval < cureul.y) {
-					maxval = cureul.y;
-				}
-				if (maxval < cureul.z) {
-					maxval = cureul.z;
-				}
-
-			}
-
-			//_ASSERT(0);
-			s_owpEulerGraph->setEulMinMax(minval, maxval);
-			s_owpEulerGraph->callRewrite();
-
-		}
-	}
-
-	return 0;
-}
 
 int RecalcBoneAxisX(CBone* srcbone)
 {
