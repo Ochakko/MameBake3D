@@ -90,7 +90,7 @@ int vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	CQuaternion dirq;
 	ChaMatrix	dirm;
 
-	ret = dirq.SetRotation(&iniq, 0, deg, 0);
+	ret = dirq.SetRotationXYZ(&iniq, 0, deg, 0);
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
@@ -108,7 +108,7 @@ int vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	CQuaternion dirq;
 	ChaMatrix	dirm;
 
-	ret = dirq.SetRotation(&iniq, deg, 0, 0);
+	ret = dirq.SetRotationXYZ(&iniq, deg, 0, 0);
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
@@ -126,7 +126,7 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	CQuaternion dirq;
 	ChaMatrix	dirm;
 
-	ret = dirq.SetRotation(&iniq, 0, 0, deg);
+	ret = dirq.SetRotationXYZ(&iniq, 0, 0, deg);
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
@@ -962,7 +962,81 @@ int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, double phai)
 //}
 
 
-int CQuaternion::SetRotation(CQuaternion* axisq, ChaVector3 srcdeg)
+int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
+{
+	// X軸、Y軸、Z軸の順番で、回転する、クォータニオンをセットする。
+
+	CQuaternion axisQ, invaxisQ;
+	if (axisq) {
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+	}
+	else {
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+
+	CQuaternion q, qx, qy, qz;
+	float cosx, sinx, cosy, siny, cosz, sinz;
+	float fDeg2Pai = (float)DEG2PAI;
+
+	cosx = (float)cos(srcdeg.x * 0.5 * fDeg2Pai);
+	sinx = (float)sin(srcdeg.x * 0.5 * fDeg2Pai);
+	cosy = (float)cos(srcdeg.y * 0.5 * fDeg2Pai);
+	siny = (float)sin(srcdeg.y * 0.5 * fDeg2Pai);
+	cosz = (float)cos(srcdeg.z * 0.5 * fDeg2Pai);
+	sinz = (float)sin(srcdeg.z * 0.5 * fDeg2Pai);
+
+	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
+	qy.SetParams(cosy, 0.0f, siny, 0.0f);
+	qz.SetParams(cosz, 0.0f, 0.0f, sinz);
+
+	//q = axisQ * qy * qx * qz * invaxisQ;
+	q = axisQ * qz * qy * qx * invaxisQ;
+
+
+	*this = q;
+
+	return 0;
+}
+
+int CQuaternion::SetRotationXYZ(CQuaternion* axisq, double degx, double degy, double degz)
+{
+	// X軸、Y軸、Z軸の順番で、回転する、クォータニオンをセットする。
+	CQuaternion axisQ, invaxisQ;
+	if (axisq) {
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+	}
+	else {
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	CQuaternion q, qx, qy, qz;
+	float cosx, sinx, cosy, siny, cosz, sinz;
+
+	cosx = (float)cos(degx * 0.5 * DEG2PAI);
+	sinx = (float)sin(degx * 0.5 * DEG2PAI);
+	cosy = (float)cos(degy * 0.5 * DEG2PAI);
+	siny = (float)sin(degy * 0.5 * DEG2PAI);
+	cosz = (float)cos(degz * 0.5 * DEG2PAI);
+	sinz = (float)sin(degz * 0.5 * DEG2PAI);
+
+	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
+	qy.SetParams(cosy, 0.0f, siny, 0.0f);
+	qz.SetParams(cosz, 0.0f, 0.0f, sinz);
+
+	//q = axisQ * qy * qx * qz * invaxisQ;
+	q = axisQ * qz * qy * qx * invaxisQ;
+
+	*this = q;
+
+	return 0;
+}
+
+int CQuaternion::SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg)
 {
 	// Z軸、X軸、Y軸の順番で、回転する、クォータニオンをセットする。
 
@@ -1000,7 +1074,7 @@ int CQuaternion::SetRotation(CQuaternion* axisq, ChaVector3 srcdeg)
 	return 0;
 }
 
-int CQuaternion::SetRotation(CQuaternion* axisq, double degx, double degy, double degz)
+int CQuaternion::SetRotationZXY(CQuaternion* axisq, double degx, double degy, double degz)
 {
 	// Z軸、X軸、Y軸の順番で、回転する、クォータニオンをセットする。
 	CQuaternion axisQ, invaxisQ;
@@ -1033,7 +1107,6 @@ int CQuaternion::SetRotation(CQuaternion* axisq, double degx, double degy, doubl
 
 	return 0;
 }
-
 
 
 CQuaternion CQuaternion::operator= (CQuaternion q) { this->x = q.x; this->y = q.y; this->z = q.z; this->w = q.w; return *this; };
@@ -1627,7 +1700,7 @@ int CQuaternion::vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	ChaVector3 tmpsrcvec = *srcvec;
 
 
-	ret = dirq.SetRotation(0, 0, deg, 0);
+	ret = dirq.SetRotationXYZ(0, 0, deg, 0);
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
@@ -1651,7 +1724,7 @@ int CQuaternion::vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 
 	ChaVector3 tmpsrcvec = *srcvec;
 
-	ret = dirq.SetRotation(0, deg, 0, 0);
+	ret = dirq.SetRotationXYZ(0, deg, 0, 0);
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
@@ -1677,7 +1750,7 @@ int CQuaternion::vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 
 	ChaVector3 tmpsrcvec = *srcvec;
 
-	ret = dirq.SetRotation(0, 0, 0, deg);
+	ret = dirq.SetRotationXYZ(0, 0, 0, deg);
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 

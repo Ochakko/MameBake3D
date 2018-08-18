@@ -856,8 +856,74 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 
 			if (forbidrotflag == 0){
 				//XYZ
-				dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
-				dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
+				//dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
+				//dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
+
+				ChaMatrix eulaxismat;
+				CQuaternion eulaxisq;
+				int multworld = 0;//local!!!
+				CRigidElem* curre = childbto->m_bone->GetRigidElem(childbto->m_endbone);
+				if (curre) {
+					eulaxismat = curre->GetBindcapsulemat();
+				}
+				else {
+					_ASSERT(0);
+					ChaMatrixIdentity(&eulaxismat);
+				}
+				eulaxisq.RotationMatrix(eulaxismat);
+
+
+				ChaVector3 lowereul, uppereul;
+				lowereul = ChaVector3(anglelimit.lower[0], anglelimit.lower[1], anglelimit.lower[2]);
+				uppereul = ChaVector3(anglelimit.upper[0], anglelimit.upper[1], anglelimit.upper[2]);
+
+				CQuaternion lowereulq;
+				lowereulq.SetRotationXYZ(&eulaxisq, lowereul);
+				CQuaternion uppereulq;
+				uppereulq.SetRotationXYZ(&eulaxisq, uppereul);
+
+				btTransform lowereultra;
+				btTransform uppereultra;
+				lowereultra.setIdentity();
+				uppereultra.setIdentity();
+				btQuaternion lowerbteulq(lowereulq.x, lowereulq.y, lowereulq.z, lowereulq.w);
+				btQuaternion upperbteulq(uppereulq.x, uppereulq.y, uppereulq.z, uppereulq.w);
+				lowereultra.setRotation(lowerbteulq);
+				uppereultra.setRotation(upperbteulq);
+				btScalar lowereulz, lowereuly, lowereulx;
+				btScalar uppereulz, uppereuly, uppereulx;
+				lowereultra.getBasis().getEulerZYX(lowereulz, lowereuly, lowereulx, 1);//ŠÖ”–¼‚Æ‚Í— • ‚É‰ñ“]‡˜‚Æ‚µ‚Ä‚ÍXYZ
+				uppereultra.getBasis().getEulerZYX(uppereulz, uppereuly, uppereulx, 1);//ŠÖ”–¼‚Æ‚Í— • ‚É‰ñ“]‡˜‚Æ‚µ‚Ä‚ÍXYZ
+
+
+				btScalar startx, endx, starty, endy, startz, endz;
+				if (lowereulx <= uppereulx) {
+					startx = lowereulx;
+					endx = uppereulx;
+				}
+				else {
+					startx = uppereulx;
+					endx = lowereulx;
+				}
+				if (lowereuly <= uppereuly) {
+					starty = lowereuly;
+					endy = uppereuly;
+				}
+				else {
+					starty = uppereuly;
+					endy = lowereuly;
+				}
+				if (lowereulz <= uppereulz) {
+					startz = lowereulz;
+					endz = uppereulz;
+				}
+				else {
+					startz = uppereulz;
+					endz = lowereulz;
+				}
+
+				dofC->setAngularLowerLimit(btVector3(startx, starty, startz));
+				dofC->setAngularUpperLimit(btVector3(endx, endy, endz));
 			}
 			else{
 				dofC->calculateTransforms();

@@ -1599,7 +1599,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
-	cureul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 	SetLocalEul(srcmotid, srcframe, cureul);
 
 
@@ -2038,7 +2038,7 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 }
 
 
-ChaVector3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul)
+ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul)
 {
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
@@ -2077,17 +2077,17 @@ ChaVector3 CBone::CalcLocalEulZXY(int axiskind, int srcmotid, double srcframe, e
 
 	if (axiskind == -1){
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
-			tmpmp.GetQ().CalcFBXEulZXY(&axisq, befeul, &cureul, isfirstbone);
+			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul);
 		}
 		else{
-			tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
+			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul);
 		}
 	}
 	else if (axiskind != BONEAXIS_GLOBAL){
-		tmpmp.GetQ().CalcFBXEulZXY(&axisq, befeul, &cureul, isfirstbone);
+		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul);
 	}
 	else{
-		tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
+		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul);
 	}
 
 	CMotionPoint* curmp;
@@ -3328,10 +3328,10 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 
 	CQuaternion newrot;
 	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
-		newrot.SetRotation(&axisq, srceul);
+		newrot.SetRotationXYZ(&axisq, srceul);
 	}
 	else{
-		newrot.SetRotation(0, srceul);
+		newrot.SetRotationXYZ(0, srceul);
 	}
 
 
@@ -3440,7 +3440,7 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 	if (curmp){
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newmat);
-		ChaVector3 neweul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
+		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
 		curmp->SetLocalEul(neweul);
 
 		if (setchildflag == 1){
@@ -3479,10 +3479,10 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVect
 
 	CQuaternion newrot;
 	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
-		newrot.SetRotation(&axisq, srceul);
+		newrot.SetRotationXYZ(&axisq, srceul);
 	}
 	else{
-		newrot.SetRotation(0, srceul);
+		newrot.SetRotationXYZ(0, srceul);
 	}
 
 	ChaMatrix newlocalmat, newrotmat, befrotmat, aftrotmat;
@@ -3570,12 +3570,12 @@ void CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatr
 		ChaVector3 oldeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag = 1;
 		int isfirstbone = 0;
-		oldeul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		oldeul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 
 		curmp->SetWorldMat(srcmat);//tmp time
 		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
-		neweul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 		curmp->SetWorldMat(saveworldmat);
 
@@ -3597,7 +3597,7 @@ void CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatr
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(srcmat);
 
-		ChaVector3 neweul = CalcLocalEulZXY(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
+		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
 		curmp->SetLocalEul(neweul);
 	}
 	/*
@@ -3973,7 +3973,7 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag = 1;
 		int isfirstbone = 0;
-		cureul = CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		cureul = CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 		SetLocalEul(srcmotid, srcframe, cureul);
 
 	}

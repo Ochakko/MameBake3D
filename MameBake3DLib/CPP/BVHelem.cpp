@@ -670,9 +670,9 @@ int CBVHElem::ConvertRotate2Q()
 			q[ROTAXIS_Y].SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 			q[ROTAXIS_Z].SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
-			q[ROTAXIS_X].SetRotation(&iniq, (rotate + fno)->x, 0.0f, 0.0f);
-			q[ROTAXIS_Y].SetRotation(&iniq, 0.0f, (rotate + fno)->y, 0.0f);
-			q[ROTAXIS_Z].SetRotation(&iniq, 0.0f, 0.0f, (rotate + fno)->z);
+			q[ROTAXIS_X].SetRotationZXY(&iniq, (rotate + fno)->x, 0.0f, 0.0f);
+			q[ROTAXIS_Y].SetRotationZXY(&iniq, 0.0f, (rotate + fno)->y, 0.0f);
+			q[ROTAXIS_Z].SetRotationZXY(&iniq, 0.0f, 0.0f, (rotate + fno)->z);
 
 			qall = q[ rotorder[0] ] * q[ rotorder[1] ] * q[ rotorder[2] ];
 			//qall = qy * qx * qz;//Z, X, YÇÃéûÅ@ÅF matrixÇ…íºÇ∑Ç∆matz * matx * maty
@@ -708,7 +708,7 @@ int CBVHElem::ConvZxyRot()
 		*(zxyrot + frameno) = euler;
 
 		befeul = euler;
-		befq.SetRotation(0, *(zxyrot + frameno));
+		befq.SetRotationZXY(0, *(zxyrot + frameno));
 	}
 
 	return 0;

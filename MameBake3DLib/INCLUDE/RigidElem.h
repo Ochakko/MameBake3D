@@ -97,7 +97,7 @@ public: //accesser
 	float GetFriction(){ return m_friction; };
 	void SetFriction( float srcval ){ m_friction = srcval; };
 
-	ChaMatrix GetCapsulemat(int calczeroframe);
+	ChaMatrix GetCapsulemat(int calczeroframe, int multworld = 1);
 	//void SetCapsulemat( ChaMatrix srcmat ){ m_capsulemat = srcmat; };
 
 	ChaMatrix GetFirstcapsulemat(){ return m_firstcapsulemat; };

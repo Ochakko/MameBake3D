@@ -4068,7 +4068,7 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag = 1;
 				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulZXY(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO, isfirstbone);
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO, isfirstbone);
 				curbone->SetLocalEul(motid, (double)framecnt, cureul);
 
 			}
@@ -6508,23 +6508,39 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat;
 
 
+									ChaMatrix eulaxismat;
+									CQuaternion eulaxisq;
+									int multworld = 0;//local!!!
+									CRigidElem* curre = parentbone->GetRigidElem(childbone);
+									if (curre) {
+										eulaxismat = curre->GetBindcapsulemat();
+									}
+									else {
+										_ASSERT(0);
+										ChaMatrixIdentity(&eulaxismat);
+									}									
+									eulaxisq.RotationMatrix(eulaxismat);
 
 									btScalar eulz = 0.0;
 									btScalar euly = 0.0;
 									btScalar eulx = 0.0;
 									ChaVector3 eul = ChaVector3(0.0f, 0.0f, 0.0f);
-									//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-									//eulmat.getEulerZYX(eulz, euly, eulx, 1);
+									ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+									////worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+									////eulmat.getEulerZYX(eulz, euly, eulx, 1);
 									CQuaternion eulq;
 									eulq.MakeFromD3DXMat(eulmat);
-									btTransform eultra;
-									eultra.setIdentity();
-									btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
-									eultra.setRotation(bteulq);
-									eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-									eul.x = eulx * 180.0 / PAI;
-									eul.y = euly * 180.0 / PAI;
-									eul.z = eulz * 180.0 / PAI;
+									//btTransform eultra;
+									//eultra.setIdentity();
+									//btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
+									//eultra.setRotation(bteulq);
+									//eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+									//eul.x = eulx * 180.0 / PAI;
+									//eul.y = euly * 180.0 / PAI;
+									//eul.z = eulz * 180.0 / PAI;
+
+									eulq.Q2EulXYZ(&eulaxisq, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+
 
 									int ismovable = parentbone->ChkMovableEul(eul);
 									char strmsg[256];
@@ -6532,24 +6548,13 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
 									OutputDebugStringA(strmsg);
 
-
-									////Q2EulZYXbtのテスト　以下8行
-									//CQuaternion eulq;
-									//eulq.MakeFromBtMat3x3(eulmat);
-									//int needmodifyflag = 0;
-									//ChaVector3 testbefeul = ChaVector3(0.0f, 0.0f, 0.0f);
-									//ChaVector3 testeul = ChaVector3(0.0f, 0.0f, 0.0f);
-									////eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
-									//eulq.Q2EulXYZ(0, testbefeul, &testeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-									//sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
-									//OutputDebugStringA(strmsg);
-
-
 									//if (ismovable != 1){
 									//	childbone = childbone->GetBrother();
 									//	continue;
 									//}
 									if (ismovable == 1) {
+										//CQuaternion eulnewrot;
+										//eulnewrot.SetRotationXYZ(&eulaxisq, eul);
 
 										setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
 										//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
@@ -6833,25 +6838,58 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//ChaMatrix chkeulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * newlocalrotmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
 
 
-							//ChaVector3 chkbefeul = ChaVector3(0.0f, 0.0f, 0.0f);
+							ChaMatrix eulaxismat;
+							CQuaternion eulaxisq;
+							int multworld = 0;//local!!!
+							CRigidElem* curre = parentbone->GetRigidElem(childbone);
+							if (curre) {
+								eulaxismat = curre->GetBindcapsulemat();
+							}
+							else {
+								_ASSERT(0);
+								ChaMatrixIdentity(&eulaxismat);
+							}
+							eulaxisq.RotationMatrix(eulaxismat);
+
+
 							ChaVector3 chkeul = ChaVector3(0.0f, 0.0f, 0.0f);
+							ChaVector3 befchkeul = ChaVector3(0.0f, 0.0f, 0.0f);
+							////worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+							////eulmat.getEulerZYX(eulz, euly, eulx, 1);
+							//CQuaternion eulq;
+							//eulq.MakeFromD3DXMat(eulmat);
+							//btTransform eultra;
+							//eultra.setIdentity();
+							//btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
+							//eultra.setRotation(bteulq);
+							//eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+							//eul.x = eulx * 180.0 / PAI;
+							//eul.y = euly * 180.0 / PAI;
+							//eul.z = eulz * 180.0 / PAI;
+
+							//ChaVector3 chkbefeul = ChaVector3(0.0f, 0.0f, 0.0f);
+							//ChaVector3 chkeul = ChaVector3(0.0f, 0.0f, 0.0f);
 							//CQuaternion chkeulq;
 							//chkeulq.MakeFromD3DXMat(chkeulmat);
 							//chkeulq.Q2EulXYZ(0, chkbefeul, &chkeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
 
-							btScalar chkeulx, chkeuly, chkeulz;
+							//btScalar chkeulx, chkeuly, chkeulz;
 
 							CQuaternion chkeulq;
 							chkeulq.MakeFromD3DXMat(chkeulmat);
-							btTransform chkeultra;
-							chkeultra.setIdentity();
-							btQuaternion chkbteulq(chkeulq.x, chkeulq.y, chkeulq.z, chkeulq.w);
-							chkeultra.setRotation(chkbteulq);
-							chkeultra.getBasis().getEulerZYX(chkeulz, chkeuly, chkeulx, 1);
+							//btTransform chkeultra;
+							//chkeultra.setIdentity();
+							//btQuaternion chkbteulq(chkeulq.x, chkeulq.y, chkeulq.z, chkeulq.w);
+							//chkeultra.setRotation(chkbteulq);
+							//chkeultra.getBasis().getEulerZYX(chkeulz, chkeuly, chkeulx, 1);
 
-							chkeul.x = chkeulx * 180.0 / PAI;
-							chkeul.y = chkeuly * 180.0 / PAI;
-							chkeul.z = chkeulz * 180.0 / PAI;
+							chkeulq.Q2EulXYZ(&eulaxisq, befchkeul, &chkeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+
+
+
+							//chkeul.x = chkeulx * 180.0 / PAI;
+							//chkeul.y = chkeuly * 180.0 / PAI;
+							//chkeul.z = chkeulz * 180.0 / PAI;
 
 							int ismovable = parentbone->ChkMovableEul(chkeul);
 							sprintf_s(strmsg, 256, "%s : neweul [%f, %f, %f] : ismovable %d\n", parentbone->GetBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
@@ -8742,7 +8780,7 @@ void CModel::CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe)
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulZXY(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 	curbone->SetLocalEul(srcmotid, srcframe, cureul);
 
 	if (curbone->GetChild()){

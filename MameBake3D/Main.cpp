@@ -2763,7 +2763,7 @@ int InitMP( CBone* curbone, double curframe )
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulZXY(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO, isfirstbone);
+	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO, isfirstbone);
 	curbone->SetLocalEul(s_model->GetCurMotInfo()->motid, curframe, cureul);
 
 	return 0;
@@ -13336,7 +13336,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulZXY(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
