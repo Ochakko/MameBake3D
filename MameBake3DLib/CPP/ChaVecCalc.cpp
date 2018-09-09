@@ -3052,6 +3052,14 @@ void CQuaternionIdentity(CQuaternion* dstq)
 
 }
 
+CQuaternion CQuaternionInv(CQuaternion srcq)
+{
+	CQuaternion invq;
+	srcq.inv(&invq);
+	return invq;
+}
+
+
 ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat)
 {
 	CQuaternion tmpq;

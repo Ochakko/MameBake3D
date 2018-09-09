@@ -340,7 +340,7 @@ ChaMatrix* ChaMatrixRotationZ(ChaMatrix* pOut, float srcrad);
 const ChaMatrix* ChaMatrixRotationQuaternion(ChaMatrix* dstmat, CQuaternion* srcq);
 
 void CQuaternionIdentity(CQuaternion* dstq);
-
+CQuaternion CQuaternionInv(CQuaternion srcq);
 
 
 int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
@@ -408,6 +408,7 @@ extern ChaMatrix* ChaMatrixRotationZ(ChaMatrix* pOut, float srcrad);
 extern const ChaMatrix* ChaMatrixRotationQuaternion(ChaMatrix* dstmat, CQuaternion* srcq);
 
 extern void CQuaternionIdentity(CQuaternion* dstq);
+extern CQuaternion CQuaternionInv(CQuaternion srcq);
 
 
 extern int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);

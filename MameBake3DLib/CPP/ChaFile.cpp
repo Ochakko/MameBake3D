@@ -576,6 +576,10 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 	CallF( (this->m_MorphMenu)( morphindex ), return 1 );
 	CallF( (this->m_ImpMenu)( 0 ), return 1 );
 
+	newmodel->CreateBtObject(1);//‰‰ñ
+	newmodel->CalcBoneEul(-1);
+
+
 	return 0;
 }
 

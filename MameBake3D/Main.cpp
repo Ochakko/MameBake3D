@@ -5513,8 +5513,10 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	s_model->SetMotionSpeed(g_dspeed);
 
-	s_model->CreateBtObject(1);//‰‰ñ
-	s_model->CalcBoneEul(-1);
+	if (skipdefref == 0) {
+		s_model->CreateBtObject(1);//‰‰ñ
+		s_model->CalcBoneEul(-1);
+	}
 
 	CallF(s_model->DbgDump(), return 0);
 

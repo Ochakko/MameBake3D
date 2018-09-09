@@ -6604,8 +6604,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	if (!parentbone){
 		return 0;
 	}
-	if (!parentbone->GetParent()){
-		//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
+	CBone* grandparentbone = parentbone->GetParent();
+	if (!grandparentbone){
 		return 0;
 	}
 
@@ -6624,7 +6624,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	SetBefEditMat(erptr, curbone, maxlevel);//!!!!!!!!!!!!
 
 	if (parentbone){
-		CBone* gparentbone = parentbone->GetParent();
+		grandparentbone = parentbone->GetParent();
 		CBone* childbone = parentbone->GetChild();
 		int isfirst = 1;
 		float currate = 1.0f;
@@ -6640,8 +6640,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 
 			//角度制限　ここから
-			if (gparentbone){
-				CBtObject* parbto = gparentbone->GetBtObject(parentbone);
+			if (grandparentbone){
+				CBtObject* parbto = grandparentbone->GetBtObject(parentbone);
 				if (parbto){
 					CBtObject* setbto = parentbone->GetBtObject(childbone);
 					if (setbto){
@@ -6705,24 +6705,50 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 							CQuaternion eulq;
 							eulq.MakeFromD3DXMat(eulmat);
-							btTransform eultra;
-							eultra.setIdentity();
-							btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
-							eultra.setRotation(bteulq);
-							eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
+							//btTransform eultra;
+							//eultra.setIdentity();
+							//btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
+							//eultra.setRotation(bteulq);
+							//eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
 
 							//CQuaternion eulq;
 							//eulq.MakeFromD3DXMat(eulmat);
 							//int needmodifyflag = 0;
 							//eulq.Q2EulXYZ(0, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
 
-							eul.x = eulx * 180.0 / PAI;
-							eul.y = euly * 180.0 / PAI;
-							eul.z = eulz * 180.0 / PAI;
 
-							//eulx = eul.x * PAI / 180.0;
-							//euly = eul.y * PAI / 180.0;
-							//eulz = eul.z * PAI / 180.0;
+							ChaMatrix eulaxismat;
+							CQuaternion eulaxisq, inveulaxisq;
+							int multworld = 0;//local!!!
+							CRigidElem* curre = grandparentbone->GetRigidElem(parentbone);
+							if (curre) {
+								eulaxismat = curre->GetBindcapsulemat();
+							}
+							else {
+								_ASSERT(0);
+								ChaMatrixIdentity(&eulaxismat);
+							}
+							eulaxisq.RotationMatrix(eulaxismat);
+							eulaxisq.inv(&inveulaxisq);
+
+							eulq.Q2EulXYZ(&eulaxisq, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
+
+							//eul.x = eulx * 180.0 / PAI;
+							//eul.y = euly * 180.0 / PAI;
+							//eul.z = eulz * 180.0 / PAI;
+
+							eulx = eul.x * PAI / 180.0;
+							euly = eul.y * PAI / 180.0;
+							eulz = eul.z * PAI / 180.0;
+
+
+							CQuaternion currotx;
+							CQuaternion curroty;
+							CQuaternion currotz;
+							currotx.SetAxisAndRot(ChaVector3(1.0f, 0.0f, 0.0f), eulx);
+							curroty.SetAxisAndRot(ChaVector3(0.0f, 1.0f, 0.0f), euly);
+							currotz.SetAxisAndRot(ChaVector3(0.0f, 0.0f, 1.0f), eulz);
+
 
 							if (axiskind == PICK_X){
 								eulx +=  -rotrad2;
@@ -6745,38 +6771,48 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							btTransform newworldtra;
 							newworldtra.setIdentity();
 							//newworldtra.getBasis().setEulerZYX(eul.x, eul.y, eul.z);
-							CQuaternion currotx;
-							CQuaternion curroty;
-							CQuaternion currotz;
-							currotx.SetAxisAndRot(ChaVector3(1.0f, 0.0f, 0.0f), eulx);
-							curroty.SetAxisAndRot(ChaVector3(0.0f, 1.0f, 0.0f), euly);
-							currotz.SetAxisAndRot(ChaVector3(0.0f, 0.0f, 1.0f), eulz);
-							CQuaternion contraArot;
-							CQuaternion contrainvArot;
-							CQuaternion firstworldrot;
-							contraArot = QMakeFromBtMat3x3(&contraA.getBasis());
-							contrainvArot = QMakeFromBtMat3x3(&contraA.getBasis().inverse());
-							firstworldrot = QMakeFromBtMat3x3(&firstworldtra.getBasis());
+							CQuaternion newrotx;
+							CQuaternion newroty;
+							CQuaternion newrotz;
+							newrotx.SetAxisAndRot(ChaVector3(1.0f, 0.0f, 0.0f), eulx);
+							newroty.SetAxisAndRot(ChaVector3(0.0f, 1.0f, 0.0f), euly);
+							newrotz.SetAxisAndRot(ChaVector3(0.0f, 0.0f, 1.0f), eulz);
+							//CQuaternion contraArot;
+							//CQuaternion contrainvArot;
+							//CQuaternion firstworldrot;
+							//contraArot = QMakeFromBtMat3x3(&contraA.getBasis());
+							//contrainvArot = QMakeFromBtMat3x3(&contraA.getBasis().inverse());
+							//firstworldrot = QMakeFromBtMat3x3(&firstworldtra.getBasis());
 							CQuaternion parrotq;
 							parrotq = QMakeFromBtMat3x3(&parworldtra.getBasis());
 							CQuaternion invparrotq;
 							parrotq.inv(&invparrotq);
 
-							CQuaternion newrotq;
-							newrotq = parrotq  * currotz * curroty * currotx * firstlocalq;
+							//CQuaternion newrotq;
+							//newrotq = parrotq  * eulaxisq * currotz * curroty * currotx * inveulaxisq * firstlocalq;
 
-							btQuaternion btrotq(newrotq.x, newrotq.y, newrotq.z, newrotq.w);
+							//CQuaternion curmanipurotq = parrotq  * eulaxisq * currotz * curroty * currotx * inveulaxisq * firstlocalq;
+							//CQuaternion newmanipurotq = parrotq  * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
+
+							CQuaternion newlocalq = eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
+							CQuaternion newworldq = parrotq  * newlocalq;
+
+							//CQuaternion diffmanipurotq = CQuaternionInv(curmanipurotq) * newmanipurotq;
+							//ChaMatrix difflocalrotmat = diffmanipurotq.MakeRotMatX();
+
+
+							btQuaternion btrotq(newworldq.x, newworldq.y, newworldq.z, newworldq.w);
 							newworldtra.setRotation(btrotq);
-
-
+							
 							ChaMatrix newlocalrotmat;
 							newlocalrotmat = ChaMatrixFromBtMat3x3(&newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 
 							ChaMatrix invcurlocalmat;
 							ChaMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
+							
 
 							ChaMatrix difflocalrotmat;
-							//difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
+							////difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
 							difflocalrotmat = newlocalrotmat * invcurlocalmat;//!!!!!!!!!!!!
 							difflocalrotmat = TransZeroMat(difflocalrotmat);
 
@@ -6798,7 +6834,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 							ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 							ChaMatrix rotmat = befrot * difflocalrotmat * aftrot;
-
+							//ChaMatrix rotmat = befrot * newlocalq.MakeRotMatX() * aftrot;
+							//ChaMatrix rotmat = befrot * newlocalrotmat * aftrot;
 
 							//befrot * difflocalrotmat aftrot* curlocalmat * parmat --> rotmat * BtMat
 							newbtmat = rotmat * parentbone->GetBtMat();
@@ -6838,18 +6875,6 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//ChaMatrix chkeulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * newlocalrotmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
 
 
-							ChaMatrix eulaxismat;
-							CQuaternion eulaxisq;
-							int multworld = 0;//local!!!
-							CRigidElem* curre = parentbone->GetRigidElem(childbone);
-							if (curre) {
-								eulaxismat = curre->GetBindcapsulemat();
-							}
-							else {
-								_ASSERT(0);
-								ChaMatrixIdentity(&eulaxismat);
-							}
-							eulaxisq.RotationMatrix(eulaxismat);
 
 
 							ChaVector3 chkeul = ChaVector3(0.0f, 0.0f, 0.0f);
