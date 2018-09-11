@@ -10961,7 +10961,8 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 					if (g_controlkey == true){
 						deltax *= 0.250f;
 					}
-					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					//s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_curboneno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
 					s_ikcnt++;
 				}
 

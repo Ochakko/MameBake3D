@@ -501,6 +501,8 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	//rotq.Q2EulZYX(0, 0, befeul, &eul);
 
 	dsttra.getBasis().setEulerZYX(eul.x * PAI / 180.0, eul.y * PAI / 180.0, eul.z * PAI / 180.0);
+	//dsttra.getBasis().setRotation(btQuaternion(rotq.x, rotq.y, rotq.z, rotq.w));
+	
 
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
 	btTransform invtra = rigidtra.inverse();

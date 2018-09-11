@@ -6481,15 +6481,15 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 
 
-									//ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
+									////ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
 									ChaMatrix firstlocalmat = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat()) * ChaMatrixInv(ChaMatrixFromBtMat3x3(&parbto->GetFirstTransformMat()));
 
 
 
-									CQuaternion firstlocalq;
-									firstlocalq.MakeFromD3DXMat(firstlocalmat);
-									CQuaternion invfirstlocalq;
-									firstlocalq.inv(&invfirstlocalq);
+									//CQuaternion firstlocalq;
+									//firstlocalq.MakeFromD3DXMat(firstlocalmat);
+									//CQuaternion invfirstlocalq;
+									//firstlocalq.inv(&invfirstlocalq);
 
 									btTransform curworldtra;
 									curworldtra.setIdentity();
@@ -6505,8 +6505,9 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
 									ChaMatrix newlocalmat;
 									newlocalmat = ChaMatrixFromBtMat3x3(&worldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
-									ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat;
-
+									//ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat;
+									ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test中
+									
 
 									ChaMatrix eulaxismat;
 									CQuaternion eulaxisq;
@@ -6639,7 +6640,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 			}
 
 
-			//角度制限　ここから
+			
 			if (grandparentbone){
 				CBtObject* parbto = grandparentbone->GetBtObject(parentbone);
 				if (parbto){
@@ -6688,7 +6689,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaMatrix curlocalmat;
 							curlocalmat = ChaMatrixFromBtMat3x3(&curworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 							//ChaMatrix eulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * curlocalmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
-							ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat;
+							//ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat;
+							ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test中
 
 
 							//double eulz = 0.0;
@@ -6720,7 +6722,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaMatrix eulaxismat;
 							CQuaternion eulaxisq, inveulaxisq;
 							int multworld = 0;//local!!!
-							CRigidElem* curre = grandparentbone->GetRigidElem(parentbone);
+							CRigidElem* curre = parentbone->GetRigidElem(childbone);
 							if (curre) {
 								eulaxismat = curre->GetBindcapsulemat();
 							}
@@ -6794,7 +6796,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//CQuaternion curmanipurotq = parrotq  * eulaxisq * currotz * curroty * currotx * inveulaxisq * firstlocalq;
 							//CQuaternion newmanipurotq = parrotq  * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
 
-							CQuaternion newlocalq = eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
+							CQuaternion newlocalq = invfirstlocalq * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
 							CQuaternion newworldq = parrotq  * newlocalq;
 
 							//CQuaternion diffmanipurotq = CQuaternionInv(curmanipurotq) * newmanipurotq;
@@ -6807,14 +6809,19 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaMatrix newlocalrotmat;
 							newlocalrotmat = ChaMatrixFromBtMat3x3(&newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 
-							ChaMatrix invcurlocalmat;
-							ChaMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
+							ChaMatrix invcurlocalrotmat;
+							CQuaternion curlocalrotq, invcurlocalrotq;
+							curlocalrotq.RotationMatrix(curlocalmat);
+							curlocalrotq.inv(&invcurlocalrotq);
+							invcurlocalrotmat = invcurlocalrotq.MakeRotMatX();
+							//ChaMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
 							
 
 							ChaMatrix difflocalrotmat;
 							////difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
-							difflocalrotmat = newlocalrotmat * invcurlocalmat;//!!!!!!!!!!!!
+							difflocalrotmat = newlocalrotmat * invcurlocalrotmat;//!!!!!!!!!!!!
 							difflocalrotmat = TransZeroMat(difflocalrotmat);
+
 
 ////// 新しい回転を求める　ここまで
 //
@@ -6834,11 +6841,15 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 							ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 							ChaMatrix rotmat = befrot * difflocalrotmat * aftrot;
-							//ChaMatrix rotmat = befrot * newlocalq.MakeRotMatX() * aftrot;
 							//ChaMatrix rotmat = befrot * newlocalrotmat * aftrot;
+							////ChaMatrix rotmat = befrot * newlocalq.MakeRotMatX() * aftrot;
+							////ChaMatrix rotmat = befrot * newlocalrotmat * aftrot;
 
 							//befrot * difflocalrotmat aftrot* curlocalmat * parmat --> rotmat * BtMat
 							newbtmat = rotmat * parentbone->GetBtMat();
+							//newbtmat = rotmat * grandparentbone->GetBtMat();
+							//newbtmat = rotmat * ChaMatrixInv(parentbone->GetBtMat() * ChaMatrixInv(grandparentbone->GetBtMat())) * parentbone->GetBtMat();
+
 
 
 
@@ -6868,7 +6879,10 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //// 新しい剛体の中心を求める　ここまで
 
 ////　角度制限をする　ここから
-							ChaMatrix chkeulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalrotmat;
+							//ChaMatrix chkeulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalrotmat;
+							ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * newlocalrotmat * TransZeroMat(ChaMatrixInv(firstlocalmat));//!!!!!!!!!!!!!!!!test中
+							
+							
 							//ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * newlocalrotmat * TransZeroMat(ChaMatrixInv(firstlocalmat));
 							//ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * ChaMatrixFromBtMat3x3(newworldtra.getBasis()) * TransZeroMat(ChaMatrixInv(firstlocalmat)) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
 							//ChaMatrix chkeulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * ChaMatrixFromBtMat3x3(newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse()) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());

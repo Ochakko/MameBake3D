@@ -179,6 +179,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2018/09/12_1
+	オイラー角による角度制限の検証と修正のつづき
+		物理IKのとき（PhysicsRot()とPhysicsRotAxisDelta()）の検証と修正
+
+		さらに検証が必要。
+
 2018/09/09_1
 	統一オイラー角による角度制限の検証と修正
 		物理IKのとき（PhysicsRot()とPhysicsRotAxisDelta()）の検証と修正
