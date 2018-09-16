@@ -182,13 +182,14 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 		//}
 
 
-		int myid = curre->GetGroupid();
-		//int coliid = curre->GetColiID();
+		int myid;// = curre->GetGroupid();
 		int coliid;
 		if (g_previewFlag == 5){
-			coliid = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			myid = 0;//!!!!!!!!!!!!!!!!!!!!!
+			coliid = 4098;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
 		else{
+			myid = curre->GetGroupid();
 			coliid = curre->GetColiID();
 		}
 		m_btWorld->addRigidBody(body, myid, coliid);

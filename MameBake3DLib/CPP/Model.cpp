@@ -6506,6 +6506,10 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									ChaMatrix newlocalmat;
 									newlocalmat = ChaMatrixFromBtMat3x3(&worldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 									//ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat;
+
+
+									//CBtObject::CalcConstraintTransformでの剛体の初期行列は親ボーンの初期状態のインバース回転の行列である。（初期状態の回転の行列ではない。Q2Eul内の変換とは異なる。）
+									//よってクォータニオンで言うところのaxisq * curq * invaxisq、行列で言うところのinvaxismat * curmat * axismatにより座標系を変換する。
 									ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test中
 									
 
@@ -6690,8 +6694,11 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							curlocalmat = ChaMatrixFromBtMat3x3(&curworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
 							//ChaMatrix eulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * curlocalmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
 							//ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat;
+							
+							
+							//CBtObject::CalcConstraintTransformでの剛体の初期行列は親ボーンの初期状態のインバース回転の行列である。（初期状態の回転の行列ではない。Q2Eul内の変換とは異なる。）
+							//よってクォータニオンで言うところのaxisq * curq * invaxisq、行列で言うところのinvaxismat * curmat * axismatにより座標系を変換する。
 							ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test中
-
 
 							//double eulz = 0.0;
 							//double euly = 0.0;
@@ -6796,7 +6803,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//CQuaternion curmanipurotq = parrotq  * eulaxisq * currotz * curroty * currotx * inveulaxisq * firstlocalq;
 							//CQuaternion newmanipurotq = parrotq  * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
 
-							CQuaternion newlocalq = invfirstlocalq * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
+							CQuaternion newlocalq = invfirstlocalq * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;//!!!!!!!!!!!!!!
+
 							CQuaternion newworldq = parrotq  * newlocalq;
 
 							//CQuaternion diffmanipurotq = CQuaternionInv(curmanipurotq) * newmanipurotq;
@@ -6858,9 +6866,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //// 新しい剛体の中心を求める　ここから
 
 							ChaVector3 newparentpos, newchildpos;
-							ChaVector3 jointfpos;
-							jointfpos = parentbone->GetJointFPos();
-							ChaVector3TransformCoord(&newparentpos, &jointfpos, &newbtmat);
+							ChaVector3 jointfpos, parentjointfpos;
+							parentjointfpos = parentbone->GetJointFPos();
+							ChaVector3TransformCoord(&newparentpos, &parentjointfpos, &newbtmat);
 							jointfpos = childbone->GetJointFPos();
 							ChaVector3TransformCoord(&newchildpos, &jointfpos, &newbtmat);
 							ChaVector3 rigidcenter = (newparentpos + newchildpos) * 0.5f;
@@ -6880,8 +6888,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 ////　角度制限をする　ここから
 							//ChaMatrix chkeulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalrotmat;
-							ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * newlocalrotmat * TransZeroMat(ChaMatrixInv(firstlocalmat));//!!!!!!!!!!!!!!!!test中
 							
+							
+							ChaMatrix chkeulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalrotmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!test中
 							
 							//ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * newlocalrotmat * TransZeroMat(ChaMatrixInv(firstlocalmat));
 							//ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * ChaMatrixFromBtMat3x3(newworldtra.getBasis()) * TransZeroMat(ChaMatrixInv(firstlocalmat)) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
