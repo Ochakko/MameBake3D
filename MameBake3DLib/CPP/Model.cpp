@@ -27,6 +27,8 @@
 #include <Bone.h>
 #include <mqoface.h>
 
+#include <InfoWindow.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -6291,6 +6293,9 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	//Bindcapsulematを利用するようにした。
 	//制限角度部分をBindcapsulematを利用するように修正する必要あり（バインドポーズ基点の角度にする必要あり）。
 
+	//Memo 20180922
+	//マニピュレータの座標系（Bindcapsulemat基準）のオイラー角による角度制限。検証中。
+
 
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone){
@@ -6550,8 +6555,10 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 									int ismovable = parentbone->ChkMovableEul(eul);
 									char strmsg[256];
 									//sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : dof [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, dofx, dofy, dofz, ismovable);
-									sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
+									sprintf_s(strmsg, 256, "PhysicsRot : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
 									OutputDebugStringA(strmsg);
+									OutputToInfoWnd(L"PhysicsRot : %s : neweul [%f, %f, %f] : ismovable %d", parentbone->GetWBoneName(), eul.x, eul.y, eul.z, ismovable);
+
 
 									//if (ismovable != 1){
 									//	childbone = childbone->GetBrother();
@@ -6773,7 +6780,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							}
 
 							char strmsg[256];
-							sprintf_s(strmsg, 256, "%s : cureul [%f, %f, %f]\n", parentbone->GetBoneName(), eul.x, eul.y, eul.z);
+							sprintf_s(strmsg, 256, "PhysicsRotAxisDelta : %s : cureul [%f, %f, %f]\n", parentbone->GetBoneName(), eul.x, eul.y, eul.z);
 							OutputDebugStringA(strmsg);
 
 
@@ -6881,7 +6888,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//btVector3 pivotpos = invtra(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
 							//newworldtra.setOrigin(pivotpos);
 
-							sprintf_s(strmsg, 256, "%s : newworldtra Origin [%f, %f, %f]\n", parentbone->GetBoneName(), rigidcenter.x, rigidcenter.y, rigidcenter.z);
+							sprintf_s(strmsg, 256, "PhysicsRotAxisDelta : %s : newworldtra Origin [%f, %f, %f]\n", parentbone->GetBoneName(), rigidcenter.x, rigidcenter.y, rigidcenter.z);
 							OutputDebugStringA(strmsg);
 
 //// 新しい剛体の中心を求める　ここまで
@@ -6940,8 +6947,9 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 							//chkeul.z = chkeulz * 180.0 / PAI;
 
 							int ismovable = parentbone->ChkMovableEul(chkeul);
-							sprintf_s(strmsg, 256, "%s : neweul [%f, %f, %f] : ismovable %d\n", parentbone->GetBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
+							sprintf_s(strmsg, 256, "PhysicsRotAxisDelta : %s : neweul [%f, %f, %f] : ismovable %d\n", parentbone->GetBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
 							OutputDebugStringA(strmsg);
+							OutputToInfoWnd(L"PhysicsRotAxisDelta : %s : neweul [%f, %f, %f] : ismovable %d", parentbone->GetWBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
 
 							if (ismovable != 1){
 								childbone = childbone->GetBrother();
@@ -9243,5 +9251,26 @@ void CModel::DestroyScene()
 	}
 }
 
+void CModel::OutputToInfoWnd(WCHAR* lpFormat, ...)
+{
+	if (g_infownd) {
+		int ret;
+		va_list Marker;
+		unsigned long wleng, writeleng;
+		WCHAR outchar[7000];
 
+		ZeroMemory(outchar, sizeof(WCHAR) * 7000);
+
+		va_start(Marker, lpFormat);
+		ret = vswprintf_s(outchar, 7000, lpFormat, Marker);
+		va_end(Marker);
+
+		if (ret < 0)
+			return;
+
+		g_infownd->OutputInfo(outchar);
+		g_infownd->UpdateWindow();
+
+	}
+}
 

@@ -46,7 +46,9 @@ MameBake3Dはデフォルトで相対IKです。
 #include <MySprite.h>
 #include <mqoobject.h>
 
-#include <OrgWindow.h>
+//#include <OrgWindow.h>
+//InfoWindowでOrgWindowをincludeしている
+#include <InfoWindow.h>
 
 #define DBGH
 #include <dbg.h>
@@ -234,7 +236,6 @@ ChaMatrix s_ikselectmat;//for ik, fk
 
 static HWND s_mainhwnd = NULL;
 
-
 static int s_onragdollik = 0;
 static int s_physicskind = 0;
 
@@ -360,9 +361,13 @@ static int s_filterindex = 1;
 //static int s_mainheight = 620;
 static int s_mainwidth = 800;
 //static int s_mainheight = 820;
-static int s_mainheight = 600;
+//static int s_mainheight = 600;
+static int s_mainheight = 520;
 static int s_bufwidth = 800;
-static int s_bufheight = 600;
+//static int s_bufheight = 600;
+static int s_bufheight = 520;
+static int s_infowinwidth = s_mainwidth;
+static int s_infowinheight = 600 - s_mainheight;
 
 static ID3D10Device* s_pdev = 0;
 
@@ -789,10 +794,11 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 int InitializeMainWindow(CREATESTRUCT* createWindowArgs);
 static HWND CreateMainWindow();
 static HWND Create3DWnd();
-
+static CInfoWindow* CreateInfoWnd();
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -1291,6 +1297,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		return 1;
 	}
 
+	g_infownd = CreateInfoWnd();
 
 	CreateTimelineWnd();
 	CreateToolWnd();
@@ -2064,6 +2071,11 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
 	}
+	if (g_infownd) {
+		delete g_infownd;
+		g_infownd = 0;
+	}
+
 	s_oprigflag = 0;
 	s_customrigbone = 0;
 
@@ -11829,7 +11841,7 @@ int CreateUtDialog()
 
 	int iY;
 	g_SampleUI.SetCallback(OnGUIEvent); 
-	iY = 60;
+	iY = 15;
 
 	int ctrlh = 25;
 	int addh = ctrlh + 2;
@@ -11842,8 +11854,9 @@ int CreateUtDialog()
 
 	//iY += 24;
 	swprintf_s(sz, 100, L"Light scale: %0.2f", g_fLightScale);
-	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
-	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
+//	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
+//	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
+	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 
 	g_SampleUI.AddCheckBox(IDC_BMARK, L"ボーンを表示する", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
 
@@ -14702,6 +14715,8 @@ int InitializeMainWindow(CREATESTRUCT* createWindowArgs)
 	return 0;
 }
 
+
+
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD menuid;
@@ -14902,6 +14917,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return 0;
 }
 
+
+
+
 HWND CreateMainWindow()
 {
 	s_mainhwnd = NULL;
@@ -15051,6 +15069,30 @@ HWND Create3DWnd()
 
 
 	return s_3dwnd;
+}
+
+CInfoWindow* CreateInfoWnd()
+{
+	CInfoWindow* newinfownd = new CInfoWindow();
+	if (newinfownd) {
+		int cxframe = GetSystemMetrics(SM_CXFRAME);
+		int cyframe = GetSystemMetrics(SM_CYFRAME);
+
+		int ret;
+		ret = newinfownd->CreateInfoWindow(s_mainhwnd,
+			400, s_mainheight + 3 * cyframe,
+			s_infowinwidth, s_infowinheight + 2 * cyframe);
+
+		if (ret == 0) {
+			newinfownd->OutputInfo(L"InfoWindow initialized 1");
+			newinfownd->OutputInfo(L"InfoWindow initialized 2");
+			newinfownd->OutputInfo(L"InfoWindow initialized 3");
+			newinfownd->OutputInfo(L"InfoWindow initialized 4");
+		}
+
+	}
+
+	return newinfownd;
 }
 
 

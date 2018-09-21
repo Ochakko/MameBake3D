@@ -18,7 +18,11 @@
 #include <ChaVecCalc.h>
 #include <TexBank.h>
 
+
+class CInfoWindow;
+
 #ifdef MAMEBAKE3DLIBGLOBALVAR
+CInfoWindow* g_infownd = 0;
 int g_endappflag = 0;
 ID3D10DepthStencilState *g_pDSStateZCmp = 0;
 ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
@@ -125,6 +129,7 @@ int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
 #else
+extern CInfoWindow* g_infownd;
 extern int g_endappflag;
 extern ID3D10DepthStencilState *g_pDSStateZCmp;
 extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;

@@ -328,6 +328,7 @@
     <ClCompile Include="..\CPP\GetMaterial.cpp" />
     <ClCompile Include="..\CPP\ImpFile.cpp" />
     <ClCompile Include="..\CPP\InfBone.cpp" />
+    <ClCompile Include="..\CPP\InfoWindow.cpp" />
     <ClCompile Include="..\CPP\lmtFile.cpp" />
     <ClCompile Include="..\CPP\Model.cpp" />
     <ClCompile Include="..\CPP\MotFilter.cpp" />
@@ -613,6 +614,7 @@
     <ClInclude Include="..\INCLUDE\GlobalVar.h" />
     <ClInclude Include="..\INCLUDE\ImpFile.h" />
     <ClInclude Include="..\INCLUDE\InfBone.h" />
+    <ClInclude Include="..\INCLUDE\InfoWindow.h" />
     <ClInclude Include="..\INCLUDE\lmtFile.h" />
     <ClInclude Include="..\INCLUDE\Model.h" />
     <ClInclude Include="..\INCLUDE\MotFilter.h" />
