@@ -354,7 +354,8 @@ public:
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
-	void SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat);
+	ChaVector3 GetLocalEul(int srcmotid, double srcframe);
+	int SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
 	ChaMatrix GetWorldMat(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalTraAnim(int srcmotid, double srcframe);
 	ChaMatrix CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);

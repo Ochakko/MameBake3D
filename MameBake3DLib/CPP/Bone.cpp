@@ -3603,14 +3603,33 @@ int CBone::SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul)
 
 }
 
-void CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat)
+ChaVector3 CBone::GetLocalEul(int srcmotid, double srcframe)
+{
+	ChaVector3 reteul;
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if (curmp) {
+		reteul = curmp->GetLocalEul();
+	}
+	else {
+		reteul.x = 0.0;
+		reteul.y = 0.0;
+		reteul.z = 0.0;
+	}
+
+	return reteul;
+}
+
+//onlycheck = 0
+int CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck)
 {
 	//if pose is change, return 1 else return 0
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
 	if (!curmp){
-		return;
+		return 0;
 	}
+
+	int ismovable = 0;
 
 	if ((g_wmatDirectSetFlag == false) && (g_underRetargetFlag == false)){
 		ChaMatrix saveworldmat;
@@ -3628,26 +3647,33 @@ void CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatr
 
 		curmp->SetWorldMat(saveworldmat);
 
-		int ismovable = ChkMovableEul(neweul);
-		if (ismovable == 1){
-			if (IsSameEul(oldeul, neweul) == 0){
-				int inittraflag0 = 0;
-				SetWorldMatFromEul(inittraflag0, setchildflag, neweul, srcmotid, srcframe);//setchildflag—L‚è!!!!
+		ismovable = ChkMovableEul(neweul);
+		OutputToInfoWnd(L"CBone::SetWorldMat : %s : neweul [%f, %f, %f] : ismovable %d", GetWBoneName(), neweul.x, neweul.y, neweul.z, ismovable);
+		
+		if (onlycheck == 0) {
+			if (ismovable == 1) {
+				if (IsSameEul(oldeul, neweul) == 0) {
+					int inittraflag0 = 0;
+					SetWorldMatFromEul(inittraflag0, setchildflag, neweul, srcmotid, srcframe);//setchildflag—L‚è!!!!
+				}
+				else {
+					curmp->SetBefWorldMat(curmp->GetWorldMat());
+				}
 			}
-			else{
+			else {
 				curmp->SetBefWorldMat(curmp->GetWorldMat());
 			}
 		}
-		else{
-			curmp->SetBefWorldMat(curmp->GetWorldMat());
-		}
 	}
 	else{
-		//curmp->SetBefWorldMat(curmp->GetWorldMat());
-		curmp->SetWorldMat(srcmat);
+		ismovable = 1;
+		if (onlycheck == 0) {
+			//curmp->SetBefWorldMat(curmp->GetWorldMat());
+			curmp->SetWorldMat(srcmat);
 
-		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
-		curmp->SetLocalEul(neweul);
+			ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
+			curmp->SetLocalEul(neweul);
+		}
 	}
 	/*
 	if (setchildflag){
@@ -3657,6 +3683,9 @@ void CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatr
 		}
 	}
 	*/
+
+
+	return ismovable;
 }
 
 int CBone::ChkMovableEul(ChaVector3 srceul)

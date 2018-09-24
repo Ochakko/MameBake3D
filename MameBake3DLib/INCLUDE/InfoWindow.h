@@ -11,10 +11,10 @@
 #include <OrgWindow.h>
 
 //1行の長さ
-#define INFOWINDOWLINEW	1024
+#define INFOWINDOWLINEW	300
 
 //保持する行数
-#define INFOWINDOWLINEH	5000
+#define INFOWINDOWLINEH	50000
 
 //表示する行数
 #define INFOWINDOWLINEVIEW 4

@@ -6296,6 +6296,9 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	//Memo 20180922
 	//マニピュレータの座標系（Bindcapsulemat基準）のオイラー角による角度制限。検証中。
 
+	//Memo 20180925
+	//Eulerは通常IK時のものを使用。物理マトリックスは通常IKのdiffで計算。
+
 
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone){
@@ -6328,6 +6331,10 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 	float currate = g_physicsmvrate;
 
+	MOTINFO* curmi = GetCurMotInfo();
+	if (!curmi) {
+		return 0;
+	}
 
 	if (parentbone){
 		CBone* gparentbone = parentbone->GetParent();
@@ -6416,6 +6423,11 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 						return srcboneno;
 					}
 
+					int onlycheck = 1;
+					int isbonemovable = parentbone->SetWorldMat(1, curmi->motid, curframe, newbtmat, onlycheck);
+					if (isbonemovable == 0) {
+						return 0;//!!!!!!!!!!!!!!!!!!!!!!!!!
+					}
 
 					ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat(0);
 					ChaMatrix diffworld = invfirstmat * newbtmat;
@@ -6429,16 +6441,6 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 						return -1;
 					}
 					
-					//CRigidElem* curre = parentbone->GetRigidElem(childbone);
-					//if (curre){
-					//	newrigidmat = curre->GetBindcapsulemat() * diffworld;
-					//}
-					//else{
-					//	::MessageBoxA(NULL, "IKRotateRagdoll : curre NULL error", "error", MB_OK);
-					//	return -1;
-					//}
-
-
 					ChaVector3 newparentpos, newchildpos;
 					ChaVector3 jointfpos;
 					jointfpos = parentbone->GetJointFPos();
@@ -6453,143 +6455,32 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					tmpq.RotationMatrix(newrigidmat);
 					btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
 
-
 					btTransform worldtra;
 					worldtra.setIdentity();
 					worldtra.setRotation(btrotq);
 					worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
 
-//角度制限　ここから
-					if (gparentbone){
-						CBtObject* parbto = gparentbone->GetBtObject(parentbone);
-						if (parbto){
-							if (setbto){
-								//btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
+					if (isbonemovable == 1) {
+						//CQuaternion eulnewrot;
+						//eulnewrot.SetRotationXYZ(&eulaxisq, eul);
 
-								btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parentbone, childbone);
-								if (dofC){
+						setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+						//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+						//setbto->GetRigidBody()->setDeactivationTime(30000.0);
+						setbto->GetRigidBody()->setDeactivationTime(0.0);
 
-									//constraint変化分　以下3行　　CreateBtObjectをしたときの状態を基準にした角度になっている。つまりシミュ開始時が０度。
-									dofC->calculateTransforms();
-									//btTransform contraA = dofC->getCalculatedTransformA();
-									//btTransform contraB = dofC->getCalculatedTransformB();
-									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * contraB.getBasis() * contraA.getBasis();
+						//if (isfirst == 1) {
+						//parentbone->SetBtMat(newbtmat);
+						//IKボーンはKINEMATICだから。
+						//parentbone->GetCurMp().SetWorldMat(newbtmat);
+						isfirst = 0;
+						//}
 
-
-									////親ボーンとの角度がオイラー角に入る
-									//btTransform contraA = dofC->getCalculatedTransformA();
-									//btTransform contraB = dofC->getCalculatedTransformB();
-									//btTransform parworldtra;
-									//parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
-									//btMatrix3x3 diffmat = worldtra.getBasis() * parworldtra.getBasis().inverse();
-									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
-
-
-
-									////ChaMatrix firstlocalmat = setbto->GetFirstTransformMatX() * ChaMatrixInv(parbto->GetFirstTransformMatX());
-									ChaMatrix firstlocalmat = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat()) * ChaMatrixInv(ChaMatrixFromBtMat3x3(&parbto->GetFirstTransformMat()));
-
-
-
-									//CQuaternion firstlocalq;
-									//firstlocalq.MakeFromD3DXMat(firstlocalmat);
-									//CQuaternion invfirstlocalq;
-									//firstlocalq.inv(&invfirstlocalq);
-
-									btTransform curworldtra;
-									curworldtra.setIdentity();
-									setbto->GetRigidBody()->getMotionState()->getWorldTransform(curworldtra);
-									btTransform parworldtra;
-									parworldtra.setIdentity();
-									parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
-
-
-									//btTransform contraA = dofC->getCalculatedTransformA();
-									//btTransform contraB = dofC->getCalculatedTransformB();
-									//btMatrix3x3 diffmat = firstworldmat.inverse() * worldtra.getBasis();
-									//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
-									ChaMatrix newlocalmat;
-									newlocalmat = ChaMatrixFromBtMat3x3(&worldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
-									//ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat;
-
-
-									//CBtObject::CalcConstraintTransformでの剛体の初期行列は親ボーンの初期状態のインバース回転の行列である。（初期状態の回転の行列ではない。Q2Eul内の変換とは異なる。）
-									//よってクォータニオンで言うところのaxisq * curq * invaxisq、行列で言うところのinvaxismat * curmat * axismatにより座標系を変換する。
-									ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test中
-									
-
-									ChaMatrix eulaxismat;
-									CQuaternion eulaxisq;
-									int multworld = 0;//local!!!
-									CRigidElem* curre = parentbone->GetRigidElem(childbone);
-									if (curre) {
-										eulaxismat = curre->GetBindcapsulemat();
-									}
-									else {
-										_ASSERT(0);
-										ChaMatrixIdentity(&eulaxismat);
-									}									
-									eulaxisq.RotationMatrix(eulaxismat);
-
-									btScalar eulz = 0.0;
-									btScalar euly = 0.0;
-									btScalar eulx = 0.0;
-									ChaVector3 eul = ChaVector3(0.0f, 0.0f, 0.0f);
-									ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-									////worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-									////eulmat.getEulerZYX(eulz, euly, eulx, 1);
-									CQuaternion eulq;
-									eulq.MakeFromD3DXMat(eulmat);
-									//btTransform eultra;
-									//eultra.setIdentity();
-									//btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
-									//eultra.setRotation(bteulq);
-									//eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-									//eul.x = eulx * 180.0 / PAI;
-									//eul.y = euly * 180.0 / PAI;
-									//eul.z = eulz * 180.0 / PAI;
-
-									eulq.Q2EulXYZ(&eulaxisq, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-
-
-									int ismovable = parentbone->ChkMovableEul(eul);
-									char strmsg[256];
-									//sprintf_s(strmsg, 256, "needmodify 0 : neweul [%f, %f, %f] : dof [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, dofx, dofy, dofz, ismovable);
-									sprintf_s(strmsg, 256, "PhysicsRot : neweul [%f, %f, %f] : ismovable %d\n", eul.x, eul.y, eul.z, ismovable);
-									OutputDebugStringA(strmsg);
-									OutputToInfoWnd(L"PhysicsRot : %s : neweul [%f, %f, %f] : ismovable %d", parentbone->GetWBoneName(), eul.x, eul.y, eul.z, ismovable);
-
-
-									//if (ismovable != 1){
-									//	childbone = childbone->GetBrother();
-									//	continue;
-									//}
-									if (ismovable == 1) {
-										//CQuaternion eulnewrot;
-										//eulnewrot.SetRotationXYZ(&eulaxisq, eul);
-
-										setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
-										//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
-										//setbto->GetRigidBody()->setDeactivationTime(30000.0);
-										setbto->GetRigidBody()->setDeactivationTime(0.0);
-
-										//if (isfirst == 1) {
-											//parentbone->SetBtMat(newbtmat);
-											//IKボーンはKINEMATICだから。
-											//parentbone->GetCurMp().SetWorldMat(newbtmat);
-											isfirst = 0;
-										//}
-
-										//MOTINFO* curmi = GetCurMotInfo();
-										//parentbone->SetWorldMat(0, curmi->motid, curmi->curframe, newbtmat);
-										//parentbone->SetWorldMat(1, curmi->motid, applyframe, newbtmat);
-									}
-								}
-							}
-						}
-//角度制限　ここまで
-
+						//MOTINFO* curmi = GetCurMotInfo();
+						//parentbone->SetWorldMat(0, curmi->motid, curmi->curframe, newbtmat);
+						//parentbone->SetWorldMat(1, curmi->motid, applyframe, newbtmat);
 					}
+
 				}
 
 			}
@@ -6603,29 +6494,15 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat)
 {
-	if (!m_curmotinfo){
+	if (!m_curmotinfo) {
 		return 0;
 	}
 
 
-	CBone* curbone = m_bonelist[srcboneno];
-	if (!curbone){
-		return 0;
-	}
-	CBone* parentbone = curbone->GetParent();
-	if (!parentbone){
-		return 0;
-	}
-	CBone* grandparentbone = parentbone->GetParent();
-	if (!grandparentbone){
-		return 0;
-	}
-
-
-	int calcnum = 3;
+	int calcnum = 1;
 
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
-	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
+	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)) {
 		return 0;
 	}
 
@@ -6633,350 +6510,148 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	double startframe, endframe, applyframe;
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-	SetBefEditMat(erptr, curbone, maxlevel);//!!!!!!!!!!!!
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone) {
+		return 0;
+	}
+	CBone* firstbone = curbone;
+	CBone* parentbone = 0;
+	CBone* lastbone = 0;
+	CBone* topbone = GetTopBone();
 
-	if (parentbone){
-		grandparentbone = parentbone->GetParent();
-		CBone* childbone = parentbone->GetChild();
-		int isfirst = 1;
+	int calccnt;
+	for (calccnt = 0; calccnt < calcnum; calccnt++) {
+		curbone = firstbone;
+		if (!curbone) {
+			return 0;
+		}
+		lastbone = curbone;
+
 		float currate = 1.0f;
+
 		double firstframe = 0.0;
 		int levelcnt = 0;
 
-		while (childbone){
-			float rotrad2 = currate * rotrad;
-			//float rotrad2 = rotrad;
-			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
-				continue;
-			}
-
-
-			
-			if (grandparentbone){
-				CBtObject* parbto = grandparentbone->GetBtObject(parentbone);
-				if (parbto){
-					CBtObject* setbto = parentbone->GetBtObject(childbone);
-					if (setbto){
-						//btMatrix3x3 firstworldmat = setbto->GetFirstTransformMat();
-						btTransform firstworldtra = setbto->GetFirstTransform();
-						btTransform invfirstworldtra = firstworldtra.inverse();
-						ChaMatrix firstworldmatx = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat());
-
-						ChaMatrix firstlocalmat = ChaMatrixFromBtMat3x3(&setbto->GetFirstTransformMat()) * ChaMatrixInv(ChaMatrixFromBtMat3x3(&parbto->GetFirstTransformMat()));
-						CQuaternion firstlocalq;
-						firstlocalq.MakeFromD3DXMat(firstlocalmat);
-						CQuaternion invfirstlocalq;
-						firstlocalq.inv(&invfirstlocalq);
-
-						btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parentbone, childbone);
-						if (dofC){
-
-							//constraint変化分　以下3行　　CreateBtObjectをしたときの状態を基準にした角度になっている。つまりシミュ開始時が０度。
-							//btTransform contraA = dofC->getCalculatedTransformA();
-							//btTransform contraB = dofC->getCalculatedTransformB();
-							//btMatrix3x3 eulmat = contraA.getBasis().inverse() * contraB.getBasis() * contraA.getBasis();
-
-
-							////親ボーンとの角度がオイラー角に入る
-							//btTransform contraA = dofC->getCalculatedTransformA();
-							//btTransform contraB = dofC->getCalculatedTransformB();
-							//btTransform parworldtra;
-							//parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
-							//btMatrix3x3 diffmat = worldtra.getBasis() * parworldtra.getBasis().inverse();
-							//btMatrix3x3 eulmat = contraA.getBasis().inverse() * diffmat * contraA.getBasis();
-
-//// 新しい回転を求める　ここから
-							dofC->calculateTransforms();
-							btTransform contraA = dofC->getCalculatedTransformA();
-							btTransform contraB = dofC->getCalculatedTransformB();
-
-							btTransform curworldtra;
-							curworldtra.setIdentity();
-							setbto->GetRigidBody()->getMotionState()->getWorldTransform(curworldtra);
-							btTransform parworldtra;
-							parworldtra.setIdentity();
-							parbto->GetRigidBody()->getMotionState()->getWorldTransform(parworldtra);
-
-							ChaMatrix curlocalmat;
-							curlocalmat = ChaMatrixFromBtMat3x3(&curworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
-							//ChaMatrix eulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * curlocalmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
-							//ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat;
-							
-							
-							//CBtObject::CalcConstraintTransformでの剛体の初期行列は親ボーンの初期状態のインバース回転の行列である。（初期状態の回転の行列ではない。Q2Eul内の変換とは異なる。）
-							//よってクォータニオンで言うところのaxisq * curq * invaxisq、行列で言うところのinvaxismat * curmat * axismatにより座標系を変換する。
-							ChaMatrix eulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * curlocalmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test中
-
-							//double eulz = 0.0;
-							//double euly = 0.0;
-							//double eulx = 0.0;
-							btScalar eulz = 0.0;
-							btScalar euly = 0.0;
-							btScalar eulx = 0.0;
-							ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-							ChaVector3 eul = ChaVector3(0.0f, 0.0f, 0.0f);
-							//worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-							//eulmat.getEulerZYX(eulz, euly, eulx, 1);
-
-
-							CQuaternion eulq;
-							eulq.MakeFromD3DXMat(eulmat);
-							//btTransform eultra;
-							//eultra.setIdentity();
-							//btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
-							//eultra.setRotation(bteulq);
-							//eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-
-							//CQuaternion eulq;
-							//eulq.MakeFromD3DXMat(eulmat);
-							//int needmodifyflag = 0;
-							//eulq.Q2EulXYZ(0, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-
-
-							ChaMatrix eulaxismat;
-							CQuaternion eulaxisq, inveulaxisq;
-							int multworld = 0;//local!!!
-							CRigidElem* curre = parentbone->GetRigidElem(childbone);
-							if (curre) {
-								eulaxismat = curre->GetBindcapsulemat();
-							}
-							else {
-								_ASSERT(0);
-								ChaMatrixIdentity(&eulaxismat);
-							}
-							eulaxisq.RotationMatrix(eulaxismat);
-							eulaxisq.inv(&inveulaxisq);
-
-							eulq.Q2EulXYZ(&eulaxisq, befeul, &eul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-
-							//eul.x = eulx * 180.0 / PAI;
-							//eul.y = euly * 180.0 / PAI;
-							//eul.z = eulz * 180.0 / PAI;
-
-							eulx = eul.x * PAI / 180.0;
-							euly = eul.y * PAI / 180.0;
-							eulz = eul.z * PAI / 180.0;
-
-
-							CQuaternion currotx;
-							CQuaternion curroty;
-							CQuaternion currotz;
-							currotx.SetAxisAndRot(ChaVector3(1.0f, 0.0f, 0.0f), eulx);
-							curroty.SetAxisAndRot(ChaVector3(0.0f, 1.0f, 0.0f), euly);
-							currotz.SetAxisAndRot(ChaVector3(0.0f, 0.0f, 1.0f), eulz);
-
-
-							if (axiskind == PICK_X){
-								eulx +=  -rotrad2;
-								eul.x += -rotrad2 * 180.0 / PAI;
-							}
-							else if (axiskind == PICK_Y){
-								euly += -rotrad2;
-								eul.y += -rotrad2 * 180.0 / PAI;
-							}
-							else if (axiskind == PICK_Z){
-								eulz += -rotrad2;
-								eul.z += -rotrad2 * 180.0 / PAI;
-							}
-
-							char strmsg[256];
-							sprintf_s(strmsg, 256, "PhysicsRotAxisDelta : %s : cureul [%f, %f, %f]\n", parentbone->GetBoneName(), eul.x, eul.y, eul.z);
-							OutputDebugStringA(strmsg);
-
-
-							btTransform newworldtra;
-							newworldtra.setIdentity();
-							//newworldtra.getBasis().setEulerZYX(eul.x, eul.y, eul.z);
-							CQuaternion newrotx;
-							CQuaternion newroty;
-							CQuaternion newrotz;
-							newrotx.SetAxisAndRot(ChaVector3(1.0f, 0.0f, 0.0f), eulx);
-							newroty.SetAxisAndRot(ChaVector3(0.0f, 1.0f, 0.0f), euly);
-							newrotz.SetAxisAndRot(ChaVector3(0.0f, 0.0f, 1.0f), eulz);
-							//CQuaternion contraArot;
-							//CQuaternion contrainvArot;
-							//CQuaternion firstworldrot;
-							//contraArot = QMakeFromBtMat3x3(&contraA.getBasis());
-							//contrainvArot = QMakeFromBtMat3x3(&contraA.getBasis().inverse());
-							//firstworldrot = QMakeFromBtMat3x3(&firstworldtra.getBasis());
-							CQuaternion parrotq;
-							parrotq = QMakeFromBtMat3x3(&parworldtra.getBasis());
-							CQuaternion invparrotq;
-							parrotq.inv(&invparrotq);
-
-							//CQuaternion newrotq;
-							//newrotq = parrotq  * eulaxisq * currotz * curroty * currotx * inveulaxisq * firstlocalq;
-
-							//CQuaternion curmanipurotq = parrotq  * eulaxisq * currotz * curroty * currotx * inveulaxisq * firstlocalq;
-							//CQuaternion newmanipurotq = parrotq  * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;
-
-							CQuaternion newlocalq = invfirstlocalq * eulaxisq * newrotz * newroty * newrotx * inveulaxisq * firstlocalq;//!!!!!!!!!!!!!!
-
-							CQuaternion newworldq = parrotq  * newlocalq;
-
-							//CQuaternion diffmanipurotq = CQuaternionInv(curmanipurotq) * newmanipurotq;
-							//ChaMatrix difflocalrotmat = diffmanipurotq.MakeRotMatX();
-
-
-							btQuaternion btrotq(newworldq.x, newworldq.y, newworldq.z, newworldq.w);
-							newworldtra.setRotation(btrotq);
-							
-							ChaMatrix newlocalrotmat;
-							newlocalrotmat = ChaMatrixFromBtMat3x3(&newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(&parworldtra.getBasis().inverse());
-
-							ChaMatrix invcurlocalrotmat;
-							CQuaternion curlocalrotq, invcurlocalrotq;
-							curlocalrotq.RotationMatrix(curlocalmat);
-							curlocalrotq.inv(&invcurlocalrotq);
-							invcurlocalrotmat = invcurlocalrotq.MakeRotMatX();
-							//ChaMatrixInverse(&invcurlocalmat, NULL, &curlocalmat);
-							
-
-							ChaMatrix difflocalrotmat;
-							////difflocalrotmat = invcurlocalmat * newlocalrotmat;//!!!!!!!!!!!!
-							difflocalrotmat = newlocalrotmat * invcurlocalrotmat;//!!!!!!!!!!!!
-							difflocalrotmat = TransZeroMat(difflocalrotmat);
-
-
-////// 新しい回転を求める　ここまで
-//
-//// 新しいbtmatを求める　ここから
-
-							ChaVector3 curparentpos;
-							ChaVector3TransformCoord(&curparentpos, &parentbone->GetJointFPos(), &parentbone->GetBtMat());
-
-							ChaMatrix newbtmat;
-							//newbtmat = rotmat * parentbone->GetBtMat();
-							//newbtmat = parentbone->GetBtMat() * rotmat;
-
-							ChaVector3 rotcenter;
-							rotcenter = parentbone->GetJointFPos();
-
-							ChaMatrix befrot, aftrot;
-							ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-							ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
-							ChaMatrix rotmat = befrot * difflocalrotmat * aftrot;
-							//ChaMatrix rotmat = befrot * newlocalrotmat * aftrot;
-							////ChaMatrix rotmat = befrot * newlocalq.MakeRotMatX() * aftrot;
-							////ChaMatrix rotmat = befrot * newlocalrotmat * aftrot;
-
-							//befrot * difflocalrotmat aftrot* curlocalmat * parmat --> rotmat * BtMat
-							newbtmat = rotmat * parentbone->GetBtMat();
-							//newbtmat = rotmat * grandparentbone->GetBtMat();
-							//newbtmat = rotmat * ChaMatrixInv(parentbone->GetBtMat() * ChaMatrixInv(grandparentbone->GetBtMat())) * parentbone->GetBtMat();
-
-
-
-
-//// 新しいbtmatを求める　ここまで
-
-//// 新しい剛体の中心を求める　ここから
-
-							ChaVector3 newparentpos, newchildpos;
-							ChaVector3 jointfpos, parentjointfpos;
-							parentjointfpos = parentbone->GetJointFPos();
-							ChaVector3TransformCoord(&newparentpos, &parentjointfpos, &newbtmat);
-							jointfpos = childbone->GetJointFPos();
-							ChaVector3TransformCoord(&newchildpos, &jointfpos, &newbtmat);
-							ChaVector3 rigidcenter = (newparentpos + newchildpos) * 0.5f;
-
-							newworldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
-							//newworldtra.setOrigin(btVector3(newparentpos.x, newparentpos.y, newparentpos.z));
-
-
-							//btTransform invtra = newworldtra.inverse();
-							//btVector3 pivotpos = invtra(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
-							//newworldtra.setOrigin(pivotpos);
-
-							sprintf_s(strmsg, 256, "PhysicsRotAxisDelta : %s : newworldtra Origin [%f, %f, %f]\n", parentbone->GetBoneName(), rigidcenter.x, rigidcenter.y, rigidcenter.z);
-							OutputDebugStringA(strmsg);
-
-//// 新しい剛体の中心を求める　ここまで
-
-////　角度制限をする　ここから
-							//ChaMatrix chkeulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalrotmat;
-							
-							
-							ChaMatrix chkeulmat = TransZeroMat(ChaMatrixInv(firstlocalmat)) * newlocalrotmat * TransZeroMat(firstlocalmat);//!!!!!!!!!!!!!!!!test中
-							
-							//ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * newlocalrotmat * TransZeroMat(ChaMatrixInv(firstlocalmat));
-							//ChaMatrix chkeulmat = TransZeroMat(firstlocalmat) * ChaMatrixFromBtMat3x3(newworldtra.getBasis()) * TransZeroMat(ChaMatrixInv(firstlocalmat)) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
-							//ChaMatrix chkeulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * ChaMatrixFromBtMat3x3(newworldtra.getBasis()) * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse()) * ChaMatrixFromBtMat3x3(parworldtra.getBasis().inverse());
-							//ChaMatrix chkeulmat = ChaMatrixFromBtMat3x3(contraA.getBasis()) * newlocalrotmat * ChaMatrixFromBtMat3x3(contraA.getBasis().inverse());
-
-
-
-
-							ChaVector3 chkeul = ChaVector3(0.0f, 0.0f, 0.0f);
-							ChaVector3 befchkeul = ChaVector3(0.0f, 0.0f, 0.0f);
-							////worldtra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-							////eulmat.getEulerZYX(eulz, euly, eulx, 1);
-							//CQuaternion eulq;
-							//eulq.MakeFromD3DXMat(eulmat);
-							//btTransform eultra;
-							//eultra.setIdentity();
-							//btQuaternion bteulq(eulq.x, eulq.y, eulq.z, eulq.w);
-							//eultra.setRotation(bteulq);
-							//eultra.getBasis().getEulerZYX(eulz, euly, eulx, 1);
-							//eul.x = eulx * 180.0 / PAI;
-							//eul.y = euly * 180.0 / PAI;
-							//eul.z = eulz * 180.0 / PAI;
-
-							//ChaVector3 chkbefeul = ChaVector3(0.0f, 0.0f, 0.0f);
-							//ChaVector3 chkeul = ChaVector3(0.0f, 0.0f, 0.0f);
-							//CQuaternion chkeulq;
-							//chkeulq.MakeFromD3DXMat(chkeulmat);
-							//chkeulq.Q2EulXYZ(0, chkbefeul, &chkeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-
-							//btScalar chkeulx, chkeuly, chkeulz;
-
-							CQuaternion chkeulq;
-							chkeulq.MakeFromD3DXMat(chkeulmat);
-							//btTransform chkeultra;
-							//chkeultra.setIdentity();
-							//btQuaternion chkbteulq(chkeulq.x, chkeulq.y, chkeulq.z, chkeulq.w);
-							//chkeultra.setRotation(chkbteulq);
-							//chkeultra.getBasis().getEulerZYX(chkeulz, chkeuly, chkeulx, 1);
-
-							chkeulq.Q2EulXYZ(&eulaxisq, befchkeul, &chkeul);//bulletの回転順序は数値検証の結果XYZ。(ZYXではない)。
-
-
-
-							//chkeul.x = chkeulx * 180.0 / PAI;
-							//chkeul.y = chkeuly * 180.0 / PAI;
-							//chkeul.z = chkeulz * 180.0 / PAI;
-
-							int ismovable = parentbone->ChkMovableEul(chkeul);
-							sprintf_s(strmsg, 256, "PhysicsRotAxisDelta : %s : neweul [%f, %f, %f] : ismovable %d\n", parentbone->GetBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
-							OutputDebugStringA(strmsg);
-							OutputToInfoWnd(L"PhysicsRotAxisDelta : %s : neweul [%f, %f, %f] : ismovable %d", parentbone->GetWBoneName(), chkeul.x, chkeul.y, chkeul.z, ismovable);
-
-							if (ismovable != 1){
-								childbone = childbone->GetBrother();
-								continue;
-							}
-//// 角度制限をする　ここまで
-
-//// 設定をする　ここから
-							setbto->GetRigidBody()->getMotionState()->setWorldTransform(newworldtra);
-							//setbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
-							//setbto->GetRigidBody()->setDeactivationTime(30000.0);
-							setbto->GetRigidBody()->setDeactivationTime(0.0);
-
-							//if (isfirst == 1){
-							//	parentbone->SetBtMat(newbtmat);
-							//	//IKボーンはKINEMATICだから。
-							//	parentbone->GetCurMp().SetWorldMat(newbtmat);
-							//	isfirst = 0;
-							//}
-//// 設定をする　ここまで
-
-						}
-					}
-				}
-			}
-			childbone = childbone->GetBrother();
+		//while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))) {
+		parentbone = curbone->GetParent();
+		if (!parentbone) {
+			break;
 		}
+
+		float rotrad2 = currate * rotrad;
+		//float rotrad2 = rotrad;
+		if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)) {
+			break;
+		}
+
+		CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
+		if (curre && curre->GetForbidRotFlag() != 0) {
+			//回転禁止の場合処理をスキップ
+			currate = pow(g_ikrate, g_ikfirst * levelcnt);
+			lastbone = curbone;
+			curbone = curbone->GetParent();
+			levelcnt++;
+			continue;
+		}
+
+
+		ChaVector3 axis0;
+		CQuaternion localq;
+		if (axiskind == PICK_X) {
+			axis0 = ChaVector3(1.0f, 0.0f, 0.0f);
+			localq.SetAxisAndRot(axis0, rotrad2);
+		}
+		else if (axiskind == PICK_Y) {
+			axis0 = ChaVector3(0.0f, 1.0f, 0.0f);
+			localq.SetAxisAndRot(axis0, rotrad2);
+		}
+		else if (axiskind == PICK_Z) {
+			axis0 = ChaVector3(0.0f, 0.0f, 1.0f);
+			localq.SetAxisAndRot(axis0, rotrad2);
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+
+		//ChaMatrix selectmat;
+		ChaMatrix invselectmat;
+		//int multworld = 1;
+		//selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
+		ChaMatrixInverse(&invselectmat, NULL, &selectmat);
+
+
+		ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
+		rotinvworld._41 = 0.0f;
+		rotinvworld._42 = 0.0f;
+		rotinvworld._43 = 0.0f;
+		ChaMatrix rotselect = selectmat;
+		rotselect._41 = 0.0f;
+		rotselect._42 = 0.0f;
+		rotselect._43 = 0.0f;
+		ChaMatrix rotinvselect = invselectmat;
+		rotinvselect._41 = 0.0f;
+		rotinvselect._42 = 0.0f;
+		rotinvselect._43 = 0.0f;
+
+		CQuaternion rotq;
+		if (parentbone) {
+			ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+			CMotionPoint transmp;
+			transmp.CalcQandTra(transmat, firstbone);
+			rotq = transmp.GetQ();
+
+			ChaVector3 rotcenter;
+			ChaVector3TransformCoord(&rotcenter, &(parentbone->GetJointFPos()), &(parentbone->GetBtMat()));
+			ChaMatrix befrot, aftrot;
+			ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+			ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+			ChaMatrix rotmat1 = befrot * rotq.MakeRotMatX() * aftrot;
+			ChaMatrix newbtmat1 = parentbone->GetBtMat() * rotmat1;// *tramat;
+
+			int onlycheck = 1;
+			int isbonemovable = parentbone->SetWorldMat(1, m_curmotinfo->motid, startframe, newbtmat1, onlycheck);
+			//parentbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+			if (isbonemovable == 1) {
+				ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat(0);
+				ChaMatrix diffworld = invfirstmat * newbtmat1;
+				CBtObject* setbto = parentbone->GetBtObject(curbone);
+				ChaMatrix newrigidmat;
+				if (setbto) {
+					newrigidmat = setbto->GetFirstTransformMatX() * diffworld;
+				}
+				else {
+					::MessageBoxA(NULL, "IKRotateRagdoll : setbto NULL error", "error", MB_OK);
+					return -1;
+				}
+
+				ChaVector3 newparentpos, newchildpos;
+				ChaVector3 jointfpos;
+				jointfpos = parentbone->GetJointFPos();
+				ChaVector3TransformCoord(&newparentpos, &jointfpos, &newbtmat1);
+				jointfpos = curbone->GetJointFPos();
+				ChaVector3TransformCoord(&newchildpos, &jointfpos, &newbtmat1);
+
+				ChaVector3 rigidcenter = (newparentpos + newchildpos) * 0.5f;
+
+				CQuaternion tmpq;
+				tmpq.RotationMatrix(newrigidmat);
+				btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
+
+				btTransform worldtra;
+				worldtra.setIdentity();
+				worldtra.setRotation(btrotq);
+				worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
+
+				setbto->GetRigidBody()->getMotionState()->setWorldTransform(worldtra);
+				setbto->GetRigidBody()->setDeactivationTime(0.0);
+
+			}
+
+
+		}
+
+		//}
 	}
 
 	if (curbone){
