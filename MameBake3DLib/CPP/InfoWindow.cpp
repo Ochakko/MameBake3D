@@ -46,6 +46,11 @@ void CInfoWindow::DestroyObjs()
 		delete m_hdcM;
 		m_hdcM = 0;
 	}
+
+	if (m_stroutput) {
+		free(m_stroutput);
+		m_stroutput = 0;
+	}
 }
 
 
