@@ -603,7 +603,6 @@ private:
 	int DestroyObjs();
 	int CreateMaterialTexture();
 
-	void OutputToInfoWnd(WCHAR* lpFormat, ...);
 
 	int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
 

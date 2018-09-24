@@ -1297,7 +1297,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		return 1;
 	}
 
-	g_infownd = CreateInfoWnd();
+	CreateInfoWnd();
 
 	CreateTimelineWnd();
 	CreateToolWnd();
@@ -2071,10 +2071,14 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
 	}
+
+
+	CloseDbgFile();
 	if (g_infownd) {
 		delete g_infownd;
 		g_infownd = 0;
 	}
+
 
 	s_oprigflag = 0;
 	s_customrigbone = 0;
@@ -15084,10 +15088,13 @@ CInfoWindow* CreateInfoWnd()
 			s_infowinwidth, s_infowinheight + 2 * cyframe);
 
 		if (ret == 0) {
-			newinfownd->OutputInfo(L"InfoWindow initialized 1");
-			newinfownd->OutputInfo(L"InfoWindow initialized 2");
-			newinfownd->OutputInfo(L"InfoWindow initialized 3");
-			newinfownd->OutputInfo(L"InfoWindow initialized 4");
+			g_infownd = newinfownd;
+
+			OutputToInfoWnd(L"InfoWindow initialized 1");
+			OutputToInfoWnd(L"Upper to lower, older to newer.Limit to 5,000 lines.");
+			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
+			OutputToInfoWnd(L"If the most newest line is shown at lowest position, auto scroll works.Save to info_(date).txt on exit application.");
+			OutputToInfoWnd(L"上：古,下：新。5,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
 		}
 
 	}

@@ -34,8 +34,10 @@ void CInfoWindow::InitParams()
 	m_hParentWnd = NULL;
 	m_hdcM = 0;
 
-	ZeroMemory(&(m_stroutput[0][0]), sizeof(WCHAR) * INFOWINDOWLINEW * INFOWINDOWLINEH);
-	m_outputindex = 0;
+	m_stroutput = 0;
+
+	m_dataindex = 0;
+	m_viewindex = 0;
 
 }
 void CInfoWindow::DestroyObjs()
@@ -49,6 +51,14 @@ void CInfoWindow::DestroyObjs()
 
 int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, int srcwidth, int srcheight)
 {
+	//データを作成
+	m_stroutput = (WCHAR*)malloc(sizeof(WCHAR) * INFOWINDOWLINEW * INFOWINDOWLINEH);
+	if (!m_stroutput) {
+		return 1;
+	}
+	ZeroMemory(m_stroutput, sizeof(WCHAR) * INFOWINDOWLINEW * INFOWINDOWLINEH);
+
+
 	//ウィンドウクラスを登録
 	WNDCLASSEX wcex;
 	ZeroMemory((LPVOID)&wcex, sizeof(WNDCLASSEX));
@@ -116,6 +126,12 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 	if (!IsWindow(m_hWnd)) {
 		return 0;
 	}
+	if (!m_stroutput) {
+		return 1;
+	}
+	if (m_dataindex >= INFOWINDOWLINEH) {
+		return 1;
+	}
 
 	int ret;
 	va_list Marker;
@@ -132,14 +148,24 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 		return 1;
 
 	if (!m_isfirstoutput) {
-		m_outputindex++;
-		if (m_outputindex >= INFOWINDOWLINEH) {
-			m_outputindex = 0;
+		m_dataindex++;
+		if (m_dataindex >= INFOWINDOWLINEH) {
+			//m_dataindex = 0;
+			MessageBox(m_hWnd, L"InfoWindowの出力行数が制限に達しました。", L"警告", MB_OK);
+			return 1;
 		}
 	}
 
+
+	//最新ビューの場合にのみ最新状態に更新する。
+	//ホイールでビュー位置を操作するため、最初の書き込みのときと最新ビュー以外の場合はいじらない。
+	if (m_isfirstoutput || (m_viewindex == (m_dataindex - 1))) {
+		m_viewindex = m_dataindex;
+	}
+
+
 	//wleng = (unsigned long)wcslen(outchar);
-	wcscpy_s(&(m_stroutput[m_outputindex][0]), INFOWINDOWLINEW, outchar);
+	wcscpy_s(m_stroutput + m_dataindex * INFOWINDOWLINEW, INFOWINDOWLINEW, outchar);
 
 	m_isfirstoutput = false;
 
@@ -175,25 +201,78 @@ void CInfoWindow::OnPaint()
 
 		//INFOWINDOWLINEH行分、古い順に描画する
 		int outputno;
-		int curindex = m_outputindex + INFOWINDOWLINEH;
-		while(curindex >= INFOWINDOWLINEH) {
-			curindex -= INFOWINDOWLINEH;
-		}
-		if (curindex >= 0) {
-			for (outputno = 0; outputno < INFOWINDOWLINEH; outputno++) {
-				TextOut(m_hdcM->hDC, 5, 5 + 15 * outputno, &(m_stroutput[curindex][0]), (int)wcslen(&(m_stroutput[curindex][0])));
-				curindex--;
-				if (curindex < 0) {
-					curindex = INFOWINDOWLINEH - 1;
-				}
+		int curindex = m_viewindex - (INFOWINDOWLINEVIEW - 1);
+		int dispno = 0;
+		for (outputno = 0; outputno < INFOWINDOWLINEVIEW; outputno++) {
+			if ((curindex >= 0) && (curindex <= m_dataindex)) {
+				TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + curindex * INFOWINDOWLINEW));
+				dispno++;
 			}
+			curindex++;
 		}
 		m_hdcM->endPaint();
 	}
 }
 
+void CInfoWindow::onMouseWheel(const OrgWinGUI::MouseEvent& e)
+{
+	//ホイールで描画する行をシフトする。
+
+	if (e.wheeldelta < 0) {
+		m_viewindex++;
+		if (m_viewindex > m_dataindex) {
+			m_viewindex = m_dataindex;
+		}
+		UpdateWindow();
+	}
+	else if (e.wheeldelta > 0) {
+		m_viewindex--;
+		if (m_viewindex < (INFOWINDOWLINEVIEW - 1)) {
+			m_viewindex = (INFOWINDOWLINEVIEW - 1);
+		}
+		UpdateWindow();
+	}
+}
+
+int CInfoWindow::GetStrNum()
+{
+	if (m_isfirstoutput) {
+		return 0;
+	}
+	else {
+		int retnum = m_dataindex + 1;
+		if (retnum > INFOWINDOWLINEH) {
+			retnum = INFOWINDOWLINEH;
+		}
+		return retnum;
+	}
+}
+int CInfoWindow::GetStr(int srcindex, int srcoutleng, WCHAR* strout)
+{
+	if (!strout) {
+		return 1;
+	}
+	if (srcoutleng < 0)
+	{
+		return 1;
+	}
+
+	if ((srcindex >= 0) && (srcindex < INFOWINDOWLINEH)) {
+		wcscpy_s(strout, srcoutleng, m_stroutput + srcindex * INFOWINDOWLINEW);
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
+
+
+
 LRESULT CALLBACK InfoWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	POINT tmpPoint;
+	RECT tmpRect;
+	OrgWinGUI::MouseEvent mouseEvent;
 
 	switch (uMsg)
 	{
@@ -223,7 +302,34 @@ LRESULT CALLBACK InfoWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			s_contextwin->OnPaint();
 		}
 		return 0;
+	case WM_MOUSEWHEEL:
+		if (s_contextwin) {
+			GetCursorPos(&tmpPoint);
+			GetWindowRect(s_contextwin->GetHWnd(), &tmpRect);
 
+			mouseEvent.globalX = (int)tmpPoint.x;
+			mouseEvent.globalY = (int)tmpPoint.y;
+			mouseEvent.localX = mouseEvent.globalX - tmpRect.left;
+			mouseEvent.localY = mouseEvent.globalY - tmpRect.top;
+			mouseEvent.shiftKey = GetKeyState(VK_SHIFT) < 0;
+			mouseEvent.ctrlKey = GetKeyState(VK_CONTROL) < 0;
+			mouseEvent.altKey = GetKeyState(VK_MENU) < 0;
+			mouseEvent.wheeldelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+			s_contextwin->onMouseWheel(mouseEvent);
+
+		}
+		break;
+	case WM_MOUSEHOVER:
+		if (s_contextwin) {
+			SetCapture(s_contextwin->GetHWnd());
+		}
+		break;
+	case WM_MOUSELEAVE:
+		if (s_contextwin) {
+			ReleaseCapture();
+		}
+		break;
 	default:
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}

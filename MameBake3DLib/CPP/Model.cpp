@@ -9251,26 +9251,3 @@ void CModel::DestroyScene()
 	}
 }
 
-void CModel::OutputToInfoWnd(WCHAR* lpFormat, ...)
-{
-	if (g_infownd) {
-		int ret;
-		va_list Marker;
-		unsigned long wleng, writeleng;
-		WCHAR outchar[7000];
-
-		ZeroMemory(outchar, sizeof(WCHAR) * 7000);
-
-		va_start(Marker, lpFormat);
-		ret = vswprintf_s(outchar, 7000, lpFormat, Marker);
-		va_end(Marker);
-
-		if (ret < 0)
-			return;
-
-		g_infownd->OutputInfo(outchar);
-		g_infownd->UpdateWindow();
-
-	}
-}
-

@@ -13,6 +13,41 @@
 #endif
 #include <dbg.h>
 
+#include <GlobalVar.h>
+#include <InfoWindow.h>
+
+//Global Func
+void OutputToInfoWnd(WCHAR* lpFormat, ...)
+{
+	if (g_infownd) {
+		int ret;
+		va_list Marker;
+		unsigned long wleng, writeleng;
+		WCHAR outchar[INFOWINDOWLINEW - 10];
+
+		ZeroMemory(outchar, sizeof(WCHAR) * (INFOWINDOWLINEW - 10));
+
+		va_start(Marker, lpFormat);
+		ret = vswprintf_s(outchar, INFOWINDOWLINEW - 10, lpFormat, Marker);
+		va_end(Marker);
+
+		if (ret < 0)
+			return;
+
+		WCHAR strlineno[10] = { 0L };
+		if (g_infownd->IsFirstOutput()) {
+			swprintf_s(strlineno, L"L%d", g_infownd->GetDataIndex());
+		}
+		else {
+			swprintf_s(strlineno, L"L%d", g_infownd->GetDataIndex() + 1);
+		}
+
+		g_infownd->OutputInfo(L"%s : %s", strlineno, outchar);
+		g_infownd->UpdateWindow();
+
+	}
+}
+
 int DbgOut( WCHAR* lpFormat, ... )
 {
 	if( !dbgfile ){
@@ -76,26 +111,42 @@ void ErrorMessage(WCHAR* szMessage, HRESULT hr)
 
 int OpenDbgFile()
 {
-	if( dbgfile )
-		return 1;
-
-	dbgfile = CreateFile( L"dbg.txt", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
-		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
-	if( dbgfile == INVALID_HANDLE_VALUE ){
-		return 1;
+	if (!dbgfile) {
+		dbgfile = CreateFile(L"dbg.txt", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
+			FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+		if (dbgfile == INVALID_HANDLE_VALUE) {
+			return 1;
+		}
+		SetEndOfFile(dbgfile);
+		DbgOut(L"InitFunc: dbgfile created\r\n");
 	}
 
-	SetEndOfFile( dbgfile );
+	if (!infofile) {
 
-	DbgOut( L"InitFunc: dbgfile created\r\n" );
-		
+		/* Œ»ÝŽž•\Ž¦:UTC+Žž· */
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+
+		WCHAR infofilename[MAX_PATH] = { 0L };
+		swprintf_s(infofilename, MAX_PATH, L"info_%4d_%02d_%02d_%02d_%02d_%02d.txt",
+			st.wYear, st.wMonth, st.wDay,
+			st.wHour, st.wMinute, st.wSecond);
+
+		infofile = CreateFile(infofilename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
+			FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+		if (infofile == INVALID_HANDLE_VALUE) {
+			return 1;
+		}
+		SetEndOfFile(infofile);
+		DbgOut(L"InitFunc: infofile created\r\n");
+	}
+
 	return 0;
 }
 
 int CloseDbgFile()
 {
-	if( dbgfile ){
-		
+	if(dbgfile){		
 		DbgOut( L"CloseDbgFile\r\n" );
 
 		FlushFileBuffers( dbgfile );
@@ -103,6 +154,30 @@ int CloseDbgFile()
 		CloseHandle( dbgfile );
 		dbgfile = 0;
 	}
+
+	if (infofile) {
+		if (g_infownd) {
+			int linenum = g_infownd->GetStrNum();
+			if (linenum > 0) {
+				int lineno;
+				for (lineno = 0; lineno < linenum; lineno++) {
+					WCHAR strline[INFOWINDOWLINEW] = { 0L };
+					int ret;
+					ret = g_infownd->GetStr(lineno, INFOWINDOWLINEW, strline);
+					wcscat_s(strline, INFOWINDOWLINEW, L"\r\n");
+
+					DWORD wleng = (unsigned long)wcslen(strline);
+					DWORD writeleng = 0;
+					WriteFile(infofile, strline, sizeof(WCHAR) * wleng, &writeleng, NULL);
+				}
+				FlushFileBuffers(infofile);
+				SetEndOfFile(infofile);
+			}
+			CloseHandle(infofile);
+			infofile = 0;
+		}
+	}
+
 	return 0;
 }
 

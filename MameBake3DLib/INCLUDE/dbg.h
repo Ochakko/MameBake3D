@@ -16,6 +16,7 @@
 #ifndef DBGH
 #define	DBGH
 	HANDLE dbgfile = 0;
+	HANDLE infofile = 0;
 
 	int DbgOut( WCHAR* lpFormat, ... );
 
@@ -26,8 +27,11 @@
 	int OpenDbgFile();
 	int CloseDbgFile();
 
+	void OutputToInfoWnd(WCHAR* lpFormat, ...);
+
 #else
 	extern HANDLE dbgfile;
+	extern HANDLE infofile;
 
 	extern int DbgOut( WCHAR* lpFormat, ... );
 	extern int DbgOutB( void* lpvoid, int datsize );
@@ -36,5 +40,6 @@
 	extern void ErrorMessage(char* szMessage, HRESULT hr);
 	extern int OpenDbgFile();
 	extern int CloseDbgFile();
+	extern void OutputToInfoWnd(WCHAR* lpFormat, ...);
 #endif
 
