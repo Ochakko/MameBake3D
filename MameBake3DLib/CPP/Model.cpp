@@ -6581,7 +6581,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 		ChaMatrixInverse(&invselectmat, NULL, &selectmat);
 
 
-		ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
+		//ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
+		ChaMatrix rotinvworld = ChaMatrixInv(firstbone->GetBtMat());
 		rotinvworld._41 = 0.0f;
 		rotinvworld._42 = 0.0f;
 		rotinvworld._43 = 0.0f;

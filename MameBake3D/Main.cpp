@@ -15091,7 +15091,7 @@ CInfoWindow* CreateInfoWnd()
 			g_infownd = newinfownd;
 
 			OutputToInfoWnd(L"InfoWindow initialized 1");
-			OutputToInfoWnd(L"Upper to lower, older to newer.Limit to 5,000 lines.");
+			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 50,000 lines.");
 			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
 			OutputToInfoWnd(L"If the most newest line is shown at lowest position, auto scroll works.Save to info_(date).txt on exit application.");
 			OutputToInfoWnd(L"上：古,下：新。5,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
