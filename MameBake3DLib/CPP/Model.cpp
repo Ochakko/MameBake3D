@@ -1152,10 +1152,10 @@ void CModel::Motion2BtReq( CBtObject* srcbto )
 		srcbto->Motion2Bt(this);
 	}
 
-	int chilnum = srcbto->GetChilBtSize();
+	int chilnum = srcbto->GetChildBtSize();
 	int chilno;
 	for( chilno = 0; chilno < chilnum; chilno++ ){
-		Motion2BtReq( srcbto->GetChilBt( chilno ) );
+		Motion2BtReq( srcbto->GetChildBt( chilno ) );
 	}
 }
 
@@ -3719,8 +3719,8 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 	}
 
 	int chilno;
-	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
-		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++){
+		CBtObject* chilbto = srcbto->GetChildBt(chilno);
 		RenderCapsuleReq(pdev, chilbto);
 	}
 
@@ -3780,8 +3780,8 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 	}
 
 	int chilno;
-	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
-		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++){
+		CBtObject* chilbto = srcbto->GetChildBt(chilno);
 		RenderBoneCircleReq(chilbto, bcircleptr);
 	}
 }
@@ -4141,8 +4141,8 @@ void CModel::DestroyBtObjectReq( CBtObject* curbt )
 	vector<CBtObject*> tmpvec;
 
 	int chilno;
-	for (chilno = 0; chilno < (int)curbt->GetChilBtSize(); chilno++){
-		CBtObject* chilbt = curbt->GetChilBt(chilno);
+	for (chilno = 0; chilno < (int)curbt->GetChildBtSize(); chilno++){
+		CBtObject* chilbt = curbt->GetChildBt(chilno);
 		if (chilbt){
 			tmpvec.push_back(chilbt);
 		}
@@ -4353,8 +4353,8 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 	}
 
 	int chilno;
-	for( chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++ ){
-		CBtObject* chilbto = srcbto->GetChilBt( chilno );
+	for( chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++ ){
+		CBtObject* chilbto = srcbto->GetChildBt( chilno );
 		SetBtKinFlagReq( chilbto, oncreateflag );
 	}
 }
@@ -4377,8 +4377,8 @@ void CModel::BulletSimulationStopReq(CBtObject* srcbto)
 	}
 
 	int chilno;
-	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
-		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++){
+		CBtObject* chilbto = srcbto->GetChildBt(chilno);
 		BulletSimulationStopReq(chilbto);
 	}
 
@@ -4403,8 +4403,8 @@ void CModel::BulletSimulationStartReq(CBtObject* srcbto)
 	}
 
 	int chilno;
-	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++){
-		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++){
+		CBtObject* chilbto = srcbto->GetChildBt(chilno);
 		BulletSimulationStartReq(chilbto);
 	}
 
@@ -4460,8 +4460,8 @@ void CModel::CreateBtConstraintReq( CBtObject* curbto )
 	}
 
 	int btono;
-	for( btono = 0; btono < (int)curbto->GetChilBtSize(); btono++ ){
-		CBtObject* chilbto = curbto->GetChilBt( btono );
+	for( btono = 0; btono < (int)curbto->GetChildBtSize(); btono++ ){
+		CBtObject* chilbto = curbto->GetChildBt( btono );
 		if( chilbto ){
 			CreateBtConstraintReq( chilbto );
 		}
@@ -4662,8 +4662,12 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 	}
 
 	//`Šp“xAˆÊ’u
-	srcbto->EnableSpring(true, true);
-
+	if (g_previewFlag != 5) {
+		srcbto->EnableSpring(true, true);
+	}
+	else {
+		srcbto->EnableSpring(false, false);
+	}
 	//srcbto->EnableSpring(false, true);
 	//srcbto->EnableSpring(true, false);
 
@@ -4673,8 +4677,8 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 	srcbto->SetEquilibriumPoint( lflag, aflag );
 
 	int childno;
-	for (childno = 0; childno < srcbto->GetChilBtSize(); childno++){
-		CBtObject* childbto = srcbto->GetChilBt(childno);
+	for (childno = 0; childno < srcbto->GetChildBtSize(); childno++){
+		CBtObject* childbto = srcbto->GetChildBt(childno);
 		if (childbto){
 			SetBtEquilibriumPointReq(childbto);
 		}
@@ -4704,8 +4708,8 @@ void CModel::SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind)
 
 
 	int childno;
-	for (childno = 0; childno < srcbto->GetChilBtSize(); childno++){
-		CBtObject* childbto = srcbto->GetChilBt(childno);
+	for (childno = 0; childno < srcbto->GetChildBtSize(); childno++){
+		CBtObject* childbto = srcbto->GetChildBt(childno);
 		if (childbto){
 			SetDofRotAxisReq(childbto, srcaxiskind);
 		}
@@ -5057,8 +5061,8 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 		}
 	}
 	int chilno;
-	for( chilno = 0; chilno < curbto->GetChilBtSize(); chilno++ ){
-		CBtObject* chilbto = curbto->GetChilBt( chilno );
+	for( chilno = 0; chilno < curbto->GetChildBtSize(); chilno++ ){
+		CBtObject* chilbto = curbto->GetChildBt( chilno );
 		if( chilbto ){
 			SetBtMotionReq( chilbto, wmat, vpmat );
 		}
@@ -5181,8 +5185,8 @@ void CModel::FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppre
 	}
 
 	int chilno;
-	for( chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++ ){
-		CBtObject* chilbto = srcbto->GetChilBt( chilno );
+	for( chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++ ){
+		CBtObject* chilbto = srcbto->GetChildBt( chilno );
 		FindBtObjectReq( chilbto, srcboneno, ppret );
 	}
 }
@@ -5756,8 +5760,8 @@ void CModel::SetKinematicFlagReq(CBtObject* srcbto)
 
 
 	int chilno;
-	for (chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++) {
-		CBtObject* chilbto = srcbto->GetChilBt(chilno);
+	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++) {
+		CBtObject* chilbto = srcbto->GetChildBt(chilno);
 		if (chilbto) {
 			SetKinematicFlagReq(chilbto);
 		}
@@ -5849,8 +5853,8 @@ void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physics
 
 
 	int chilno;
-	for( chilno = 0; chilno < srcbto->GetChilBtSize(); chilno++ ){
-		CBtObject* chilbto = srcbto->GetChilBt( chilno );
+	for( chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++ ){
+		CBtObject* chilbto = srcbto->GetChildBt( chilno );
 		if( chilbto ){
 			SetRagdollKinFlagReq( chilbto, selectbone );
 		}
@@ -5993,8 +5997,8 @@ void CModel::ResetBtReq( CBtObject* curbto )
 	}
 
 	int chilno;
-	for( chilno = 0; chilno < curbto->GetChilBtSize(); chilno++ ){
-		CBtObject* chilbto = curbto->GetChilBt( chilno );
+	for( chilno = 0; chilno < curbto->GetChildBtSize(); chilno++ ){
+		CBtObject* chilbto = curbto->GetChildBt( chilno );
 		if( chilbto ){
 			ResetBtReq( chilbto );
 		}
@@ -8572,10 +8576,10 @@ void CModel:: DumpBtObjectReq(CBtObject* srcbto, int srcdepth)
 		}
 	}
 
-	int childnum = srcbto->GetChilBtSize();
+	int childnum = srcbto->GetChildBtSize();
 	int childno;
 	for (childno = 0; childno < childnum; childno++){
-		CBtObject* childbto = srcbto->GetChilBt(childno);
+		CBtObject* childbto = srcbto->GetChildBt(childno);
 		if (childbto){
 			DumpBtObjectReq(childbto, srcdepth + 1);
 		}
@@ -8627,10 +8631,10 @@ void CModel::DumpBtConstraintReq(CBtObject* srcbto, int srcdepth)
 			}
 		}
 
-		int childnum = srcbto->GetChilBtSize();
+		int childnum = srcbto->GetChildBtSize();
 		int childno;
 		for (childno = 0; childno < childnum; childno++){
-			CBtObject* childbto = srcbto->GetChilBt(childno);
+			CBtObject* childbto = srcbto->GetChildBt(childno);
 			if (childbto){
 				DumpBtConstraintReq(childbto, srcdepth + 1);
 			}
@@ -8673,22 +8677,134 @@ int CModel::DestroyPhysicsPosConstraint(CBone* srcbone)
 
 	return 0;
 }
+int CModel::CreatePhysicsPosConstraintAll()
+{
+	if (!m_topbone) {
+		return 0;
+	}
 
-void CModel::CreatePhysicsPosConstraintReq(CBone* srcbone)
+	int forceflag = 1;
+	CreatePhysicsPosConstraintReq(m_topbone, forceflag);
+
+	return 0;
+}
+
+int CModel::DestroyPhysicsPosConstraintAll()
+{
+	if (!m_topbone) {
+		return 0;
+	}
+
+	int forceflag = 1;
+	DestroyPhysicsPosConstraintReq(m_topbone, forceflag);
+
+	return 0;
+}
+int CModel::CreatePhysicsPosConstraintUpper(CBone* srcbone)
+{
+	if (!srcbone) {
+		return 0;
+	}
+
+	CBone* upperbone = srcbone;
+	while (upperbone) {
+		CBone* parentbone = upperbone->GetParent();
+		if (parentbone) {
+			CBtObject* curbto = parentbone->GetBtObject(srcbone);
+			if (curbto) {
+				curbto->CreatePhysicsPosConstraint();
+				srcbone->SetPosConstraint(1);
+			}
+		}
+		upperbone = parentbone;
+	}
+
+	return 0;
+}
+
+int CModel::DestroyPhysicsPosConstraintUpper(CBone* srcbone)
+{
+	if (!srcbone) {
+		return 0;
+	}
+
+	CBone* upperbone = srcbone;
+	while (upperbone) {
+		CBone* parentbone = upperbone->GetParent();
+		if (parentbone) {
+			CBtObject* curbto = parentbone->GetBtObject(srcbone);
+			if (curbto) {
+				curbto->DestroyPhysicsPosConstraint();
+				srcbone->SetPosConstraint(0);
+			}
+		}
+		upperbone = parentbone;
+	}
+
+
+	return 0;
+}
+
+int CModel::CreatePhysicsPosConstraintLower(CBone* srcbone)
+{
+	if (!srcbone) {
+		return 0;
+	}
+
+	int forceflag = 1;
+	CreatePhysicsPosConstraintReq(srcbone, forceflag);
+
+	return 0;
+}
+
+int CModel::DestroyPhysicsPosConstraintLower(CBone* srcbone)
+{
+	if (!srcbone) {
+		return 0;
+	}
+
+	int forceflag = 1;
+	DestroyPhysicsPosConstraintReq(srcbone, forceflag);
+
+
+	return 0;
+}
+
+
+//forceflag = 0
+void CModel::CreatePhysicsPosConstraintReq(CBone* srcbone, int forceflag)
 {
 	if (srcbone){
-		if (srcbone->GetPosConstraint() == 1){
+		if ((forceflag == 1) || (srcbone->GetPosConstraint() == 1)){
 			CreatePhysicsPosConstraint(srcbone);
 		}
 
 		if (srcbone->GetChild()){
-			CreatePhysicsPosConstraintReq(srcbone->GetChild());
+			CreatePhysicsPosConstraintReq(srcbone->GetChild(), forceflag);
 		}
 		if (srcbone->GetBrother()){
-			CreatePhysicsPosConstraintReq(srcbone->GetBrother());
+			CreatePhysicsPosConstraintReq(srcbone->GetBrother(), forceflag);
 		}
 	}
 }
+
+//forceflag = 0
+void CModel::DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag)
+{
+	if (srcbone) {
+		if ((forceflag == 1) || (srcbone->GetPosConstraint() == 0)) {
+			DestroyPhysicsPosConstraint(srcbone);
+		}
+
+		if (srcbone->GetChild()) {
+			DestroyPhysicsPosConstraintReq(srcbone->GetChild(), forceflag);
+		}
+		if (srcbone->GetBrother()) {
+			DestroyPhysicsPosConstraintReq(srcbone->GetBrother(), forceflag);
+		}
+	}
+}
+
 
 
 int CModel::SetMass0(CBone* srcbone)

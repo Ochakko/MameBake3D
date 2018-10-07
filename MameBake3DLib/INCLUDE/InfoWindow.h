@@ -14,7 +14,7 @@
 #define INFOWINDOWLINEW	300
 
 //ï€éùÇ∑ÇÈçsêî
-#define INFOWINDOWLINEH	50000
+#define INFOWINDOWLINEH	500000
 
 //ï\é¶Ç∑ÇÈçsêî
 #define INFOWINDOWLINEVIEW 4
@@ -30,7 +30,8 @@ public:
 
 
 	void UpdateWindow();
-	
+	void UpdateWindowFunc();
+
 	void OnPaint();
 	void onMouseWheel(const OrgWinGUI::MouseEvent& e);
 

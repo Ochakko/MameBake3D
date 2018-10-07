@@ -131,7 +131,7 @@ private:
  * @param (btCollisionShape* shape) IN 剛体のあたり判定用オブジェクト。
  * @return 作成したbtRigidBodyへのポインタ。
  */
-	btRigidBody* localCreateRigidBody( CRigidElem* curre, const btTransform& startTransform, btCollisionShape* shape );
+	btRigidBody* localCreateRigidBody( CRigidElem* curre, const btTransform& startTransform, btCollisionShape* shape, btVector3 localInertia = btVector3(0.0, 0.0, 0.0));
 
 
 
@@ -146,10 +146,12 @@ private:
  * @return 戻り値の説明
  * @detail 親側のコンストレイントと子供側のコンストレイントと別々に両方呼び出す。
  */
-	int CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dstmat );
+	int CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dstmat, int setstartflag = 1 );
 
 
 	void DestroyGZObj();
+	int CreatePhysicsPosConstraintCurrent();
+	int CreatePhysicsPosConstraintChild(CBtObject* childbto);
 
 
 public: //accesser
@@ -190,10 +192,10 @@ public: //accesser
 	CBtObject* GetParBt(){ return m_parbt; };
 	void SetParBt( CBtObject* srcbt ){ m_parbt = srcbt; };
 
-	int GetChilBtSize(){ return (int)m_chilbt.size(); };
-	void PushBackChilBt( CBtObject* srcchil ){ m_chilbt.push_back( srcchil ); };
-	CBtObject* GetChilBt( int srcindex ){ return m_chilbt[ srcindex ]; };
-	void CopyChilBt( std::vector<CBtObject*>& dstbt ){ dstbt = m_chilbt; };
+	int GetChildBtSize(){ return (int)m_chilbt.size(); };
+	void PushBackChildBt( CBtObject* srcchil ){ m_chilbt.push_back( srcchil ); };
+	CBtObject* GetChildBt( int srcindex ){ return m_chilbt[ srcindex ]; };
+	void CopyChildBt( std::vector<CBtObject*>& dstbt ){ dstbt = m_chilbt; };
 
 
 	float GetConstZRad(){ return m_constzrad; };
@@ -308,7 +310,7 @@ private:
 	
 	btCollisionShape* m_gz_colshape;//bulletのあたり判定形状データ。
 	btRigidBody* m_gz_rigidbody;//ブレットの剛体データ。	
-	CONSTRAINTELEM m_gz_constraint;//thisと子供のBtObjectをつなぐコンストレイントのvector。
+	std::vector<CONSTRAINTELEM> m_gz_vecconstraint;//thisと子供のBtObjectと質量ゼロ剛体をつなぐコンストレイントのvector。
 
 
 

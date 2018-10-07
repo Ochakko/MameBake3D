@@ -434,7 +434,7 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 {
 	int existflag = 0;
 
-	if (g_previewFlag != 5){
+	if ((g_previewFlag != 5) || (m_parmodel && (m_parmodel->GetBtCnt() == 0))){
 
 
 		if (srcframe >= 0.0){
@@ -455,6 +455,11 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 			m_curmp.InitParams();
 			m_curmp.SetWorldMat(*wmat);
 		}
+
+		if (m_parmodel->GetBtCnt() == 0) {
+			SetBtMat(m_curmp.GetWorldMat());
+		}
+
 	}
 	else{
 		//RagdollIKŽž‚Ìƒ{[ƒ“‘I‘ð‘Îô
@@ -476,8 +481,6 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 
 		//ChaVector3TransformCoord(&m_childworld, &jpos, &(GetBtMat()));
 		ChaVector3TransformCoord(&m_childscreen, &m_childworld, vpmat);
-
-
 	}
 	return 0;
 }
@@ -754,8 +757,14 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	}
 	else {
 		if (g_previewFlag != 5) {
-			ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
-			ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
+			if (setstartflag == 1) {
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
+			}
+			else {
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurMp().GetWorldMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurMp().GetWorldMat()));
+			}
 		}
 		else {
 			if (setstartflag == 1) {
@@ -763,14 +772,8 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
 			}
 			else {
-				//if (GetParent()){
-				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
-				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
-				//}
-				//else{
-				//	ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
-				//	ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(childbone->GetBtMat()));
-				//}
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetBtMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetBtMat()));
 			}
 		}
 	}
@@ -866,24 +869,27 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 		//else{
 		//	ChaVector3Cross(&vecy1, &vecx1, &upvec);
 		//}
+		//ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
 	}
 	else if ((fabs(bonevec.x) <= 0.000001f) && (fabs(bonevec.z) <= 0.000001f)){
 		//bonevec‚ªŽÀŽ¿YŽ²
-		if (bonevec.y >= 0.0f){
+		//if (bonevec.y >= 0.0f){
 			ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
-		}
-		else{
-			ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
-		}
-	}
-	else{
-		float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
-		//if (dotbonex >= 0.0f){
-			ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 		//}
 		//else{
-		//	ChaVector3Cross(&vecy1, &vecx1, &upvec);
+		//	ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 		//}
+	}
+	else{
+		//float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
+		////if (dotbonex >= 0.0f){
+		//	ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
+		////}
+		////else{
+		////	ChaVector3Cross(&vecy1, &vecx1, &upvec);
+		////}
+		ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
+
 	}
 
 
@@ -913,24 +919,28 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 		//else{
 		//	ChaVector3Cross(&vecz1, &vecy1, &vecx1);
 		//}
+
+//		ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
 	}
 	else if ((fabs(bonevec.x) <= 0.000001f) && (fabs(bonevec.z) <= 0.000001f)){
 		//bonevec‚ªŽÀŽ¿YŽ²
-		if (bonevec.y >= 0.0f){
+		//if (bonevec.y >= 0.0f){
 			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
-		}
-		else{
-			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
-		}
-	}
-	else{
-		float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
-		//if (dotbonex >= 0.0f){
-			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		//}
 		//else{
-		//	ChaVector3Cross(&vecz1, &vecy1, &vecx1);
+		//	ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		//}
+	}
+	else{
+		//float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
+		////if (dotbonex >= 0.0f){
+		//	ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
+		////}
+		////else{
+		////	ChaVector3Cross(&vecz1, &vecy1, &vecx1);
+		////}
+
+		ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
 	}
 
 

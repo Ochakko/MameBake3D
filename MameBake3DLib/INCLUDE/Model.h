@@ -333,6 +333,13 @@ public:
 	int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
 	int CreatePhysicsPosConstraint(CBone* srcbone);
 	int DestroyPhysicsPosConstraint(CBone* srcbone);
+	int CreatePhysicsPosConstraintAll();
+	int DestroyPhysicsPosConstraintAll();
+	int CreatePhysicsPosConstraintUpper(CBone* srcbone);
+	int DestroyPhysicsPosConstraintUpper(CBone* srcbone);
+	int CreatePhysicsPosConstraintLower(CBone* srcbone);
+	int DestroyPhysicsPosConstraintLower(CBone* srcbone);
+
 	int SetMass0(CBone* srcbone);
 	int RestoreMass(CBone* srcbone);
 /**
@@ -714,7 +721,8 @@ private:
 	void DumpBtConstraintReq(CBtObject* srcbto, int srcdepth);
 	FbxPose* GetBindPose();
 
-	void CreatePhysicsPosConstraintReq(CBone* srcbone);
+	void CreatePhysicsPosConstraintReq(CBone* srcbone, int forceflag = 0);
+	void DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag = 0);
 	void SetMass0Req(CBone* srcbone);
 	void RestoreMassReq(CBone* srcbone);
 

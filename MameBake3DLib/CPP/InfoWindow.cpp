@@ -17,6 +17,18 @@ int InitializeInfoWindow(CREATESTRUCT* createWindowArgs);
 
 static CInfoWindow* s_contextwin = 0;
 
+static HANDLE s_hThread = NULL;
+// thread 終了トリガー
+// 0 が立つと　_endthreadex で　終了　(　handle は　close しない！！！　)
+static LONG s_lThread = 1;
+static unsigned int s_dwMainId = 0;
+static DWORD s_mainthreadid = 0;
+//static DWORD WINAPI	ThreadFunc(LPVOID	lpThreadParam);
+static unsigned __stdcall ThreadFunc(void* pArguments);
+static HANDLE s_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
+
+
+
 CInfoWindow::CInfoWindow()
 {
 	InitParams();
@@ -42,6 +54,29 @@ void CInfoWindow::InitParams()
 }
 void CInfoWindow::DestroyObjs()
 {
+	if (s_hThread != NULL) {
+		DWORD dwwait = 0;
+		InterlockedExchange(&s_lThread, 0);
+		Sleep(500);
+		//InterlockedExchange(&m_preview_flag, 0);
+		SetEvent(s_hEvent);//!!! msgwaitを解除。
+
+		while (dwwait != WAIT_OBJECT_0) {
+			dwwait = WaitForSingleObject(s_hThread, 1500);
+			//INFINITEで待つと、実行スレッドが無くなってしまい、デッドロックする。
+		}
+
+		CloseHandle(s_hThread);
+		//DbgOut("motparamdlg : thread handle close\n");
+	}
+
+
+	if (s_hEvent != NULL) {
+		CloseHandle(s_hEvent);
+	}
+
+
+
 	if (m_hdcM) {
 		delete m_hdcM;
 		m_hdcM = 0;
@@ -112,7 +147,7 @@ int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, i
 
 			s_contextwin = this;
 
-			return 0;
+			//return 0;
 		}
 		else {
 			return 1;
@@ -121,6 +156,20 @@ int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, i
 	else {
 		return 1;
 	}
+
+
+	// ( , 手動リセット, ノンシグナル初期化, )
+	s_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	//s_hThread = BEGINTHREADEX(
+	s_hThread = (HANDLE)_beginthreadex(
+		NULL, 0, &ThreadFunc,
+		(void*)this,
+		0, &s_dwMainId);
+		//CREATE_SUSPENDED, &s_dwMainId );
+
+	return 0;
+
 }
 
 int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
@@ -178,8 +227,16 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 
 	return 0;
 }
-
 void CInfoWindow::UpdateWindow()
+{
+	if (m_hWnd && IsWindow(m_hWnd)) {
+		if (s_hEvent != INVALID_HANDLE_VALUE) {
+			SetEvent(s_hEvent);
+		}
+	}
+}
+
+void CInfoWindow::UpdateWindowFunc()
 {
 	if (m_hWnd && IsWindow(m_hWnd)) {
 		RECT clirect;
@@ -355,5 +412,30 @@ int InitializeInfoWindow(CREATESTRUCT* createWindowArgs)
 
 	//if (messageResult == IDNO)
 	//	return -1;
+	return 0;
+}
+
+unsigned __stdcall ThreadFunc(LPVOID lpThreadParam)
+{
+	static int isfirst = 1;
+	int ret;
+
+	if (!lpThreadParam) {
+		return 1;
+	}
+	CInfoWindow* infowinptr = (CInfoWindow*)lpThreadParam;
+
+	while (s_lThread) {
+		if (::MsgWaitForMultipleObjects(1, &s_hEvent, FALSE, 500, 0) == WAIT_OBJECT_0) {
+
+			infowinptr->UpdateWindowFunc();
+			
+			isfirst = 0;
+			ResetEvent(s_hEvent);
+		}
+	}
+
+	//_endthreadex( 0 );//<----ThreadFuncがreturnするときに、自動的に呼ばれる。
+
 	return 0;
 }

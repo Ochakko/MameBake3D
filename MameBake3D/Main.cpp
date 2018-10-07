@@ -712,6 +712,13 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define ID_RMENU_FORBIDROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 5)
 #define ID_RMENU_ENABLEROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 6)
 
+#define ID_RMENU_PHYSICSCONSTRAINT_ON_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 7)
+#define ID_RMENU_PHYSICSCONSTRAINT_OFF_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 8)
+#define ID_RMENU_PHYSICSCONSTRAINT_ON_UPPER		(ID_RMENU_PHYSICSCONSTRAINT + 9)
+#define ID_RMENU_PHYSICSCONSTRAINT_OFF_UPPER	(ID_RMENU_PHYSICSCONSTRAINT + 10)
+#define ID_RMENU_PHYSICSCONSTRAINT_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
+#define ID_RMENU_PHYSICSCONSTRAINT_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
+
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -8552,12 +8559,21 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_bpWorld->setGlobalERP(1.0e-8);// ERP
 
 
-					s_bpWorld->setGlobalERP(0.00020);// ERP
+					//s_bpWorld->setGlobalERP(0.00020);// ERP
 					//s_bpWorld->setGlobalERP(0.00030);// ERP
 					//s_bpWorld->setGlobalERP(g_erp);// ERP
 					//s_bpWorld->setGlobalERP(0.00040);// ERP
 					//s_bpWorld->setGlobalERP(0.0010);// ERP
 					//s_bpWorld->setGlobalERP(0.80);// ERP
+
+
+					//s_bpWorld->setGlobalERP(0.0010);// ERP
+					//s_bpWorld->setGlobalERP(0.0020);// ERP
+					s_bpWorld->setGlobalERP(0.0040);// ERP !!!!
+
+					//s_bpWorld->setGlobalERP(0.0100);// ERP
+					//s_bpWorld->setGlobalERP(0.0200);// ERP
+					//s_bpWorld->setGlobalERP(0.0400);// ERP
 
 					//s_bpWorld->setGlobalERP(g_erp);// ERP
 
@@ -8574,8 +8590,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					}
 
 
+					curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
+					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+
+/*
 					curmodel->SetColTypeAll(s_rgdindex, COL_CONE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					//curmodel->SetColTypeAll(s_rgdindex, COL_CAPSULE_INDEX);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 
 				//ラグドールの時のバネは決め打ち
@@ -8592,24 +8613,30 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_model->SetAllMassData(-1, s_rgdindex, 10.0);
 
 
-					if (s_physicskind == 0) {
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+					//if (s_physicskind == 0) {
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 						curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 20.0);
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1600.0, 20.0);
-					}
-					else {
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 2000.0, 60.0);
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 10000.0, 60.0);
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 13000.0, 200.0);
-						//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 40000.0, 100.0);
-						curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
-					}
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1600.0, 20.0);
+					//}
+					//else {
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 60.0);
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 2000.0, 60.0);
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 10000.0, 60.0);
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 13000.0, 200.0);
+					//	//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 40000.0, 100.0);
+					//	curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 30.0);
+					//}
+
+					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 0.0, 20.0);
 
 					//s_model->SetAllMassData(-1, s_rgdindex, 100.0);
 					//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
+*/
+
 					curmodel->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
+					//curmodel->SetAllMassData(-1, s_rgdindex, 1.0);
+
 
 					curmodel->SetMotionSpeed(g_dspeed);
 				}
@@ -14052,6 +14079,13 @@ int BoneRClick(int srcboneno)
 					AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint解除");
 				}
 
+				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_ON_ALL, L"すべてのジョイントの位置コンON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_OFF_ALL, L"すべてのジョイントの位置コンOFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_ON_UPPER, L"このジョイントより上階層位置コンON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_OFF_UPPER, L"このジョイントより上階層位置コンOFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_ON_LOWER, L"このジョイントより下階層位置コンON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_OFF_LOWER, L"このジョイントより下階層位置コンOFF");
+
 				if (curbone->GetMass0() == 0){
 					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"一時Mass0設定");
 				}
@@ -14077,8 +14111,10 @@ int BoneRClick(int srcboneno)
 						AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE, L"このジョイントを子供とするボーン回転許可");
 					}
 
+
 					AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN, L"このジョイントより下階層回転禁止");
 					AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN, L"このジョイントより下階層回転許可");
+
 				}
 
 
@@ -14135,6 +14171,24 @@ int BoneRClick(int srcboneno)
 					else{
 						s_model->DestroyPhysicsPosConstraint(curbone);
 					}
+				}
+				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_ON_ALL) {
+					s_model->CreatePhysicsPosConstraintAll();
+				}
+				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_OFF_ALL) {
+					s_model->DestroyPhysicsPosConstraintAll();
+				}
+				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_ON_UPPER) {
+					s_model->CreatePhysicsPosConstraintUpper(curbone);
+				}
+				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_OFF_UPPER) {
+					s_model->DestroyPhysicsPosConstraintUpper(curbone);
+				}
+				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_ON_LOWER) {
+					s_model->CreatePhysicsPosConstraintLower(curbone);
+				}
+				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_OFF_LOWER) {
+					s_model->DestroyPhysicsPosConstraintLower(curbone);
 				}
 				else if (menuid == ID_RMENU_MASS0){
 					//toggle
@@ -15091,10 +15145,10 @@ CInfoWindow* CreateInfoWnd()
 			g_infownd = newinfownd;
 
 			OutputToInfoWnd(L"InfoWindow initialized 1");
-			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 50,000 lines.");
+			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 500,000 lines.");
 			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
 			OutputToInfoWnd(L"If the most newest line is shown at lowest position, auto scroll works.Save to info_(date).txt on exit application.");
-			OutputToInfoWnd(L"上：古,下：新。5,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
+			OutputToInfoWnd(L"上：古,下：新。500,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
 		}
 
 	}
