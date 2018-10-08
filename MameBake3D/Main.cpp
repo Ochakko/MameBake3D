@@ -9570,7 +9570,8 @@ int SetSelectState()
 	float hirate = 1.0f;
 	float lowrate = 0.6f;
 
-	float hia = 0.3f;
+	//float hia = 0.3f;
+	float hia = 0.7f;
 	float lowa = 0.3f;
 
 	if (s_matred && s_ringred && s_matblue && s_ringblue && s_matgreen && s_ringgreen && s_matyellow){
