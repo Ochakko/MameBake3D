@@ -712,12 +712,12 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define ID_RMENU_FORBIDROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 5)
 #define ID_RMENU_ENABLEROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 6)
 
-#define ID_RMENU_PHYSICSCONSTRAINT_ON_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 7)
-#define ID_RMENU_PHYSICSCONSTRAINT_OFF_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 8)
-#define ID_RMENU_PHYSICSCONSTRAINT_ON_UPPER		(ID_RMENU_PHYSICSCONSTRAINT + 9)
-#define ID_RMENU_PHYSICSCONSTRAINT_OFF_UPPER	(ID_RMENU_PHYSICSCONSTRAINT + 10)
-#define ID_RMENU_PHYSICSCONSTRAINT_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
-#define ID_RMENU_PHYSICSCONSTRAINT_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
+#define ID_RMENU_MASS0_ON_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 7)
+#define ID_RMENU_MASS0_OFF_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 8)
+#define ID_RMENU_MASS0_ON_UPPER		(ID_RMENU_PHYSICSCONSTRAINT + 9)
+#define ID_RMENU_MASS0_OFF_UPPER	(ID_RMENU_PHYSICSCONSTRAINT + 10)
+#define ID_RMENU_MASS0_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
+#define ID_RMENU_MASS0_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
 
 
 #define IDC_TOGGLEFULLSCREEN    1
@@ -14080,12 +14080,12 @@ int BoneRClick(int srcboneno)
 					AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint解除");
 				}
 
-				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_ON_ALL, L"すべてのジョイントの位置コンON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_OFF_ALL, L"すべてのジョイントの位置コンOFF");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_ON_UPPER, L"このジョイントより上階層位置コンON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_OFF_UPPER, L"このジョイントより上階層位置コンOFF");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_ON_LOWER, L"このジョイントより下階層位置コンON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT_OFF_LOWER, L"このジョイントより下階層位置コンOFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL, L"すべてのジョイントのMass0 ON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL, L"すべてのジョイントのMass0 OFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_UPPER, L"このジョイントより上階層Mass0 ON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_UPPER, L"このジョイントより上階層Mass0 OFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER, L"このジョイントより下階層Mass0 ON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER, L"このジョイントより下階層Mass0 OFF");
 
 				if (curbone->GetMass0() == 0){
 					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"一時Mass0設定");
@@ -14173,23 +14173,23 @@ int BoneRClick(int srcboneno)
 						s_model->DestroyPhysicsPosConstraint(curbone);
 					}
 				}
-				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_ON_ALL) {
-					s_model->CreatePhysicsPosConstraintAll();
+				else if (menuid == ID_RMENU_MASS0_ON_ALL) {
+					s_model->Mass0_All(true);
 				}
-				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_OFF_ALL) {
-					s_model->DestroyPhysicsPosConstraintAll();
+				else if (menuid == ID_RMENU_MASS0_OFF_ALL) {
+					s_model->Mass0_All(false);
 				}
-				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_ON_UPPER) {
-					s_model->CreatePhysicsPosConstraintUpper(curbone);
+				else if (menuid == ID_RMENU_MASS0_ON_UPPER) {
+					s_model->Mass0_Upper(true, curbone);
 				}
-				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_OFF_UPPER) {
-					s_model->DestroyPhysicsPosConstraintUpper(curbone);
+				else if (menuid == ID_RMENU_MASS0_OFF_UPPER) {
+					s_model->Mass0_Upper(false, curbone);
 				}
-				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_ON_LOWER) {
-					s_model->CreatePhysicsPosConstraintLower(curbone);
+				else if (menuid == ID_RMENU_MASS0_ON_LOWER) {
+					s_model->Mass0_Lower(true, curbone);
 				}
-				else if (menuid == ID_RMENU_PHYSICSCONSTRAINT_OFF_LOWER) {
-					s_model->DestroyPhysicsPosConstraintLower(curbone);
+				else if (menuid == ID_RMENU_MASS0_OFF_LOWER) {
+					s_model->Mass0_Lower(false, curbone);
 				}
 				else if (menuid == ID_RMENU_MASS0){
 					//toggle

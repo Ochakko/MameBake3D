@@ -331,6 +331,7 @@ public:
 
 	int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
 	int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
+
 	int CreatePhysicsPosConstraint(CBone* srcbone);
 	int DestroyPhysicsPosConstraint(CBone* srcbone);
 	int CreatePhysicsPosConstraintAll();
@@ -339,6 +340,10 @@ public:
 	int DestroyPhysicsPosConstraintUpper(CBone* srcbone);
 	int CreatePhysicsPosConstraintLower(CBone* srcbone);
 	int DestroyPhysicsPosConstraintLower(CBone* srcbone);
+	
+	int Mass0_All(bool setflag);
+	int Mass0_Upper(bool setflag, CBone* srcbone);
+	int Mass0_Lower(bool setflag, CBone* srcbone);
 
 	int SetMass0(CBone* srcbone);
 	int RestoreMass(CBone* srcbone);
@@ -723,7 +728,7 @@ private:
 
 	void CreatePhysicsPosConstraintReq(CBone* srcbone, int forceflag = 0);
 	void DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag = 0);
-	void SetMass0Req(CBone* srcbone);
+	void SetMass0Req(CBone* srcbone, bool forceflag);
 	void RestoreMassReq(CBone* srcbone);
 
 	void PhysicsMVReq(CBone* srcbone, ChaVector3 diffvec);

@@ -4625,7 +4625,8 @@ int CModel::CreateBtObject( int onfirstcreate )
 	else{
 		SetRagdollKinFlagReq(m_topbt, -1);
 		CreatePhysicsPosConstraintReq(m_topbone);
-		SetMass0Req(m_topbone);
+		bool forceflag = false;
+		SetMass0Req(m_topbone, forceflag);
 	}
 
 
@@ -8806,6 +8807,52 @@ void CModel::DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag)
 }
 
 
+int CModel::Mass0_All(bool setflag)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (setflag == true) {
+		bool forceflag = true;
+		SetMass0Req(m_topbone, forceflag);
+	}
+	else {
+		RestoreMassReq(m_topbone);
+	}
+	return 0;
+}
+int CModel::Mass0_Upper(bool setflag, CBone* srcbone)
+{
+	if (!srcbone) {
+		return 1;
+	}
+	bool forceflag = true;
+	CBone* setbone = srcbone;
+	while (setbone) {
+		if (setflag == true) {
+			SetMass0(setbone);
+		}
+		else {
+			RestoreMass(setbone);
+		}
+		setbone = setbone->GetParent();
+	}
+	return 0;
+}
+int CModel::Mass0_Lower(bool setflag, CBone* srcbone)
+{
+	if (!srcbone) {
+		return 1;
+	}
+	bool forceflag = true;
+	if (setflag == true) {
+		SetMass0Req(srcbone, forceflag);
+	}
+	else {
+		RestoreMassReq(srcbone);
+	}
+	return 0;
+}
 
 int CModel::SetMass0(CBone* srcbone)
 {
@@ -8849,18 +8896,19 @@ int CModel::RestoreMass(CBone* srcbone)
 
 }
 
-void CModel::SetMass0Req(CBone* srcbone)
+void CModel::SetMass0Req(CBone* srcbone, bool forceflag)
 {
 	if (srcbone){
-		if (srcbone->GetMass0() == 1){
+		//‹­§Ý’èorÝ’è‚Ì•œŒ³
+		if ((forceflag == true) || (srcbone->GetMass0() == 1)){
 			SetMass0(srcbone);
 		}
 
 		if (srcbone->GetChild()){
-			SetMass0Req(srcbone->GetChild());
+			SetMass0Req(srcbone->GetChild(), forceflag);
 		}
 		if (srcbone->GetBrother()){
-			SetMass0Req(srcbone->GetBrother());
+			SetMass0Req(srcbone->GetBrother(), forceflag);
 		}
 	}
 }

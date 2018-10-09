@@ -1222,6 +1222,8 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	return 0;
 }
 
+
+
 int CBtObject::CreatePhysicsPosConstraint()
 {
 
