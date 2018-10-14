@@ -148,6 +148,9 @@ private:
  */
 	int CalcConstraintTransform( int chilflag, CRigidElem* curre, CBtObject* curbto, btTransform& dstmat, int setstartflag = 1 );
 
+	int CalcConstraintTransformA(btTransform& dsttraA, btQuaternion& rotA);
+	int CalcConstraintTransformB(CBtObject* childbto, btQuaternion rotA, btTransform& dsttraB);
+
 
 	void DestroyGZObj();
 	int CreatePhysicsPosConstraintCurrent();

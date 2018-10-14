@@ -258,9 +258,9 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 		return 1;
 	}
 
-	if( curre && (curre->GetSkipflag() == 1) ){
-		return 0;
-	}
+	//if( curre && (curre->GetSkipflag() == 1) ){
+	//	return 0;
+	//}
 
 	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
 	parentposA = m_bone->GetJointFPos();
@@ -718,6 +718,13 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						if (g_previewFlag != 5) {
 							dofC->setParam(BT_CONSTRAINT_STOP_ERP, g_erp, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 						}
+						else {
+							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.10, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.040, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.070, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+						}
 					}
 
 				dofC->setEquilibriumPoint();
@@ -1034,22 +1041,28 @@ int CBtObject::Motion2Bt(CModel* srcmodel)
 				btGeneric6DofSpringConstraint* dofC = curce.constraint;
 				CBtObject* childbto = curce.childbto;
 				if (dofC && childbto) {
+					btQuaternion rotA;
 					btTransform FrameA;
 					btTransform FrameB;
 					FrameA.setIdentity();
 					FrameB.setIdentity();
 
-					int setstartflag = 0;
-					CRigidElem* tmpre;
-					tmpre = m_bone->GetRigidElem(m_endbone);
-					_ASSERT(tmpre);
-					CalcConstraintTransform(0, tmpre, this, FrameA, setstartflag);
-					tmpre = childbto->m_bone->GetRigidElem(childbto->m_endbone);
-					_ASSERT(tmpre);
-					CalcConstraintTransform(1, tmpre, childbto, FrameB, setstartflag);
+					//int setstartflag = 0;
+					//CRigidElem* tmpre;
+					//tmpre = m_bone->GetRigidElem(m_endbone);
+					//_ASSERT(tmpre);
+					//CalcConstraintTransform(0, tmpre, this, FrameA, setstartflag);
+					//tmpre = childbto->m_bone->GetRigidElem(childbto->m_endbone);
+					//_ASSERT(tmpre);
+					//CalcConstraintTransform(1, tmpre, childbto, FrameB, setstartflag);
+
+					CalcConstraintTransformA(FrameA, rotA);
+					CalcConstraintTransformB(childbto, rotA, FrameB);
 
 					if (m_rigidbody && childbto->m_rigidbody) {
 						dofC->setFrames(FrameA, FrameB);
+						dofC->setEquilibriumPoint();
+						dofC->calculateTransforms();
 					}
 
 					//dofC->setEquilibriumPoint();
@@ -1107,18 +1120,16 @@ int CBtObject::SetBtMotion()
 
 	ChaMatrix invxworld;
 	ChaMatrixInverse( &invxworld, NULL, &m_xworld );
+	//invxworld = GetInvFirstTransformMatX();
 
 	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
 
-	//CMotionPoint curmp;
-	//curmp = m_bone->GetCurMp();
-	m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
-	//curmp.SetBtMat(newxworld);
-	//m_bone->GetCurMp().SetBtMat(m_bone->GetStartMat2() * diffxworld);
-	m_bone->SetBtFlag(1);
-	//m_bone->SetCurMp(curmp);
-
+	if (m_bone->GetBtFlag() == 0) {
+		//m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
+		m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
+		m_bone->SetBtFlag(1);
+	}
 
 	/*
 	
@@ -1312,6 +1323,157 @@ int CBtObject::CreatePhysicsPosConstraint()
 
 	return 0;
 }
+
+int CBtObject::CalcConstraintTransformA(btTransform& dsttraA, btQuaternion& rotA)
+{
+	if (m_topflag == 1) {
+		return 0;
+	}
+	if (!m_endbone) {
+		return 1;
+	}
+
+	ChaMatrix parentmat;
+	ChaMatrix childmat;
+	if (g_previewFlag == 5) {
+		parentmat = m_bone->GetBtMat();
+		childmat = m_endbone->GetBtMat();
+	}
+	else {
+		parentmat = m_bone->GetCurMp().GetWorldMat();
+		childmat = m_endbone->GetCurMp().GetWorldMat();
+	}
+
+	ChaVector3 parentposA, childposA, aftparentposA, aftchildposA;
+	parentposA = m_bone->GetJointFPos();
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &parentmat);
+	childposA = m_endbone->GetJointFPos();
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &childmat);
+	ChaVector3 centerA = (aftparentposA + aftchildposA) * 0.5f;
+
+	//////////////////
+	////////////////// constraint
+	_ASSERT(m_btWorld);
+	_ASSERT(m_bone);
+
+	dsttraA.setIdentity();
+
+	btTransform rigidtraA = m_rigidbody->getWorldTransform();
+	btTransform invtraA = rigidtraA.inverse();
+	btVector3 originA = m_rigidbody->getWorldTransform().getOrigin();
+
+	btQuaternion btrotqA;
+	btrotqA = rigidtraA.getRotation();
+	btQuaternion invbtrotqA;
+	invbtrotqA = btrotqA.inverse();
+	dsttraA.setRotation(invbtrotqA);
+
+	ChaMatrix transmatx;
+	ChaMatrixIdentity(&transmatx);
+	m_bone->CalcAxisMatX(0, m_endbone, &transmatx, 0);
+	CQuaternion rotq;
+	rotq.RotationMatrix(transmatx);
+	CQuaternion invrotq;
+	rotq.inv(&invrotq);
+	btQuaternion btrotq;
+	btrotq = btQuaternion(rotq.x, rotq.y, rotq.z, rotq.w);
+	btQuaternion invbtrotq;
+	invbtrotq = btQuaternion(invrotq.x, invrotq.y, invrotq.z, invrotq.w);
+
+	//btQuaternion setbtqA;
+	//setbtqA = invbtrotqA * btrotq * btrotqA;
+	////setbtqA = invbtrotqA * invbtrotq * btrotqA;
+	////setbtqA = btrotqA * invbtrotq * invbtrotqA;
+	//dsttraA.setRotation(setbtqA);
+	//rotA = setbtqA;
+
+	btVector3 pivotA;
+	pivotA = invtraA(btVector3(aftchildposA.x, aftchildposA.y, aftchildposA.z));
+	dsttraA.setOrigin(pivotA);
+
+	return 0;
+
+}
+int CBtObject::CalcConstraintTransformB(CBtObject* childbto, btQuaternion rotA, btTransform& dsttraB)
+{
+	if (m_topflag == 1) {
+		return 0;
+	}
+	if (!childbto) {
+		return 1;
+	}
+	if (!childbto->m_bone) {
+		return 1;
+	}
+	if (!childbto->m_endbone) {
+		return 1;
+	}
+
+
+	ChaMatrix parentmat;
+	ChaMatrix childmat;
+	if (g_previewFlag == 5) {
+		parentmat = childbto->m_bone->GetBtMat();
+		childmat = childbto->m_endbone->GetBtMat();
+	}
+	else {
+		parentmat = childbto->m_bone->GetCurMp().GetWorldMat();
+		childmat = childbto->m_endbone->GetCurMp().GetWorldMat();
+	}
+
+	ChaVector3 parentposB, childposB, aftparentposB, aftchildposB;
+	parentposB = childbto->m_bone->GetJointFPos();
+	ChaVector3TransformCoord(&aftparentposB, &parentposB, &parentmat);
+	childposB = childbto->m_endbone->GetJointFPos();
+	ChaVector3TransformCoord(&aftchildposB, &childposB, &childmat);
+	ChaVector3 centerB = (aftparentposB + aftchildposB) * 0.5f;
+
+	//////////////////
+	////////////////// constraint
+	_ASSERT(m_btWorld);
+	_ASSERT(m_bone);
+
+	dsttraB.setIdentity();
+
+	btTransform rigidtraB = childbto->m_rigidbody->getWorldTransform();
+	btTransform invtraB = rigidtraB.inverse();
+
+	btQuaternion btrotqB;
+	btrotqB = rigidtraB.getRotation();
+	btQuaternion invbtrotqB;
+	invbtrotqB = btrotqB.inverse();
+
+	dsttraB.setRotation(invbtrotqB);
+
+
+	//ChaMatrix transmatx;
+	//ChaMatrixIdentity(&transmatx);
+	//m_bone->CalcAxisMatX(0, m_endbone, &transmatx, 0);
+	//CQuaternion rotq;
+	//rotq.RotationMatrix(transmatx);
+	//CQuaternion invrotq;
+	//rotq.inv(&invrotq);
+	//btQuaternion btrotq;
+	//btrotq = btQuaternion(rotq.x, rotq.y, rotq.z, rotq.w);
+	//btQuaternion invbtrotq;
+	//invbtrotq = btQuaternion(invrotq.x, invrotq.y, invrotq.z, invrotq.w);
+
+	//btQuaternion setbtqB;
+	////setbtqB = invbtrotqB * btrotq * btrotqB;
+	////setbtqB = invbtrotqB * invbtrotq * btrotqB;
+	////setbtqB = btrotqB * invbtrotq * invbtrotqB;
+	//setbtqB = btrotqB * rotA * invbtrotqB;
+	//dsttraB.setRotation(setbtqB);
+
+
+	btVector3 pivotB;
+	pivotB = invtraB(btVector3(aftparentposB.x, aftparentposB.y, aftparentposB.z));;
+	dsttraB.setOrigin(pivotB);
+
+	return 0;
+}
+
+
 
 int CBtObject::CreatePhysicsPosConstraintCurrent()
 {

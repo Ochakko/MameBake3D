@@ -8569,13 +8569,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					//s_bpWorld->setGlobalERP(0.0010);// ERP
 					//s_bpWorld->setGlobalERP(0.0020);// ERP
-					s_bpWorld->setGlobalERP(0.0040);// ERP !!!!
+					//s_bpWorld->setGlobalERP(0.0040);// ERP !!!!
 
 					//s_bpWorld->setGlobalERP(0.0100);// ERP
 					//s_bpWorld->setGlobalERP(0.0200);// ERP
 					//s_bpWorld->setGlobalERP(0.0400);// ERP
 
-					//s_bpWorld->setGlobalERP(g_erp);// ERP
+					s_bpWorld->setGlobalERP(g_erp);// ERP
 
 
 
@@ -8590,7 +8590,8 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					}
 
 
-					curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
+					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
+					curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1500.0, 30.0);
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 
 /*
@@ -10954,21 +10955,41 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//	}
 		//}
 
+
+		//if (curmodel->GetBtCnt() <= 10) {
+		//	curmodel->SetKinematicFlag();
+		//	curmodel->SetBtEquilibriumPoint();//必要
+
+		//	curmodel->SetMotionFrame(*pnextframe);
+		//	//UpdateBtSimu(*pnextframe, curmodel);
+		//	if (curmodel && curmodel->GetCurMotInfo()) {
+		//		int firstflag = 1;
+		//		curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
+		//	}
+		//}
+		//else {
+		//	curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
+		//	curmodel->SetBtEquilibriumPoint();//必要　物理IKのときにこれを呼ばない場合、関節部分に空白ができる、子供がIK結果の通りに動かない。
+		//}
+
 		if (curmodel->GetBtCnt() <= 10) {
 			curmodel->SetKinematicFlag();
-			curmodel->SetBtEquilibriumPoint();//必要
-
 			curmodel->SetMotionFrame(*pnextframe);
 			//UpdateBtSimu(*pnextframe, curmodel);
 			if (curmodel && curmodel->GetCurMotInfo()) {
 				int firstflag = 1;
 				curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
 			}
+			curmodel->SetBtEquilibriumPoint();//必要
+
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-			curmodel->SetBtEquilibriumPoint();//必要　物理IKのときにこれを呼ばない場合、関節部分に空白ができる、子供がIK結果の通りに動かない。
+			//curmodel->SetBtEquilibriumPoint();//必要　物理IKのときにこれを呼ばない場合、関節部分に空白ができる、子供がIK結果の通りに動かない。
 		}
+
+
+
 
 		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
 
@@ -14073,12 +14094,13 @@ int BoneRClick(int srcboneno)
 				}
 				s_customrigmenuindex.clear();
 
-				if (curbone->GetPosConstraint() == 0){
-					AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint設定");
-				}
-				else{
-					AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint解除");
-				}
+				//位置コンストレイントはMass0で実現する。
+				//if (curbone->GetPosConstraint() == 0){
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint設定");
+				//}
+				//else{
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint解除");
+				//}
 
 				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL, L"すべてのジョイントのMass0 ON");
 				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL, L"すべてのジョイントのMass0 OFF");
@@ -14165,13 +14187,14 @@ int BoneRClick(int srcboneno)
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
 				if (menuid == ID_RMENU_PHYSICSCONSTRAINT){
-					//toggle
-					if (curbone->GetPosConstraint() == 0){
-						s_model->CreatePhysicsPosConstraint(curbone);
-					}
-					else{
-						s_model->DestroyPhysicsPosConstraint(curbone);
-					}
+					//位置コンストレイントはMass0で実現する。
+					////toggle
+					//if (curbone->GetPosConstraint() == 0){
+					//	s_model->CreatePhysicsPosConstraint(curbone);
+					//}
+					//else{
+					//	s_model->DestroyPhysicsPosConstraint(curbone);
+					//}
 				}
 				else if (menuid == ID_RMENU_MASS0_ON_ALL) {
 					s_model->Mass0_All(true);

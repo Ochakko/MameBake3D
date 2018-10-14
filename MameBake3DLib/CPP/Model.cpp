@@ -4179,14 +4179,13 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 	CBone* srcbone = srcbto->GetBone();
 	if( srcbone ){
 //		srcbone->m_btkinflag = 0;
-		
-		int cmp0 = strncmp( srcbone->GetBoneName(), "BT_", 3 );
-		if( (cmp0 == 0) || (srcbone->GetBtForce() == 1)){
-			if (srcbone->GetParent()){
+		int cmp0 = strncmp(srcbone->GetBoneName(), "BT_", 3);
+		if ((cmp0 == 0) || (srcbone->GetBtForce() == 1)) {
+			if (srcbone->GetParent()) {
 				CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
-				if (curre){
+				if (curre) {
 					//if (curre->GetSkipflag() == 0){
-						srcbone->SetBtKinFlag(0);
+					srcbone->SetBtKinFlag(0);
 					//}
 					//else{
 					//	srcbone->SetBtKinFlag(1);
@@ -4194,16 +4193,18 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 
 
 				}
-				else{
+				else {
 					srcbone->SetBtKinFlag(1);
 				}
 			}
-			else{
+			else {
 				srcbone->SetBtKinFlag(1);
 			}
-		}else{
-			srcbone->SetBtKinFlag( 1 );
 		}
+		else {
+			srcbone->SetBtKinFlag(1);
+		}
+		
 
 		/*
 		if ((srcbone->GetBtKinFlag() == 0) && srcbone->GetParent() && (srcbone->GetParent()->GetBtKinFlag() == 1)){
@@ -4667,7 +4668,9 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 		srcbto->EnableSpring(true, true);
 	}
 	else {
-		srcbto->EnableSpring(false, false);
+		//srcbto->EnableSpring(false, false);
+		srcbto->EnableSpring(true, true);
+		//srcbto->EnableSpring(false, true);
 	}
 	//srcbto->EnableSpring(false, true);
 	//srcbto->EnableSpring(true, false);
@@ -5041,14 +5044,20 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 
 				if (curbone->GetBtFlag() == 0){
 					if (curbone->GetParent()){
-						ChaMatrix invstart;
-						ChaMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
-						ChaMatrix diffmat;
-						diffmat = invstart * curbone->GetParent()->GetBtMat();
-						CMotionPoint curmp = curbone->GetCurMp();
-						curbone->SetBtMat(curbone->GetStartMat2() * diffmat);
-						curbone->SetBtFlag(1);
-						//curbone->SetCurMp(curmp);
+						if (curbone->GetParent()->GetBtFlag() == 1) {//2018/10/13
+							ChaMatrix invstart;
+							ChaMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
+							ChaMatrix diffmat;
+							diffmat = invstart * curbone->GetParent()->GetBtMat();
+							CMotionPoint curmp = curbone->GetCurMp();
+							curbone->SetBtMat(curbone->GetStartMat2() * diffmat);
+							curbone->SetBtFlag(1);
+							//curbone->SetCurMp(curmp);
+						}
+						else {
+							curbone->SetBtMat(curbone->GetStartMat2());
+							curbone->SetBtFlag(1);
+						}
 					}
 					else{
 						//CMotionPoint curmp = curbone->GetCurMp();
@@ -5732,6 +5741,10 @@ int CModel::SetKinematicFlag()
 
 void CModel::SetKinematicFlagReq(CBtObject* srcbto)
 {
+	if (!srcbto) {
+		return;
+	}
+
 	CBone* srcbone = srcbto->GetBone();
 	if (srcbone) {
 
@@ -5760,11 +5773,11 @@ void CModel::SetKinematicFlagReq(CBtObject* srcbto)
 	}
 
 
-	int chilno;
-	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++) {
-		CBtObject* chilbto = srcbto->GetChildBt(chilno);
-		if (chilbto) {
-			SetKinematicFlagReq(chilbto);
+	int childno;
+	for (childno = 0; childno < srcbto->GetChildBtSize(); childno++) {
+		CBtObject* childbto = srcbto->GetChildBt(childno);
+		if (childbto) {
+			SetKinematicFlagReq(childbto);
 		}
 	}
 }

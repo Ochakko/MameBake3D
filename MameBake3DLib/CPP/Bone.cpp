@@ -883,12 +883,12 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	else{
 		//float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
 		////if (dotbonex >= 0.0f){
-		//	ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
+			ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 		////}
 		////else{
 		////	ChaVector3Cross(&vecy1, &vecx1, &upvec);
 		////}
-		ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
+		//ChaVector3Cross(&vecy1, (const ChaVector3*)&vecx1, (const ChaVector3*)&upvec);
 
 	}
 
@@ -934,13 +934,13 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	else{
 		//float dotbonex = ChaVector3Dot(&vecx1, &vecx0);
 		////if (dotbonex >= 0.0f){
-		//	ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
+			ChaVector3Cross(&vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1);
 		////}
 		////else{
 		////	ChaVector3Cross(&vecz1, &vecy1, &vecx1);
 		////}
 
-		ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
+		//ChaVector3Cross(&vecz1, (const ChaVector3*)&vecy1, (const ChaVector3*)&vecx1);
 	}
 
 
@@ -986,6 +986,8 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 
 	return retleng;
 }
+
+
 
 /*
 int CBone::CalcAxisMatX()
@@ -4243,11 +4245,11 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 
 	ChaMatrix befbtmat;
 	if (GetBtFlag() == 0){
-		//再起処理中のまだ未セットの状態の場合
+		//再帰処理中のまだ未セットの状態の場合
 		befbtmat = GetBtMat();
 	}
 	else{
-		//再起処理中のすでにセットした状態の場合
+		//再帰処理中のすでにセットした状態の場合
 		befbtmat = GetBefBtMat();
 	}
 
