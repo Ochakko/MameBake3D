@@ -250,6 +250,7 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_tmpkinematic = false;
 	m_curmotid = -1;
 	m_excludemv = 0;
 	m_mass0 = 0;

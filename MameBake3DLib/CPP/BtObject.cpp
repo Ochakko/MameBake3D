@@ -1326,6 +1326,8 @@ int CBtObject::CreatePhysicsPosConstraint()
 
 int CBtObject::CalcConstraintTransformA(btTransform& dsttraA, btQuaternion& rotA)
 {
+	//FrameAは剛体Aの座標系におけるコンストレイントの姿勢
+
 	if (m_topflag == 1) {
 		return 0;
 	}
@@ -1396,6 +1398,8 @@ int CBtObject::CalcConstraintTransformA(btTransform& dsttraA, btQuaternion& rotA
 }
 int CBtObject::CalcConstraintTransformB(CBtObject* childbto, btQuaternion rotA, btTransform& dsttraB)
 {
+	//FrameBは剛体Bの座標系におけるコンストレイントの姿勢
+
 	if (m_topflag == 1) {
 		return 0;
 	}

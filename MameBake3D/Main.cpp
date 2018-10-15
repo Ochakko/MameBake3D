@@ -719,6 +719,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define ID_RMENU_MASS0_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
 #define ID_RMENU_MASS0_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
 
+#define ID_RMENU_KINEMATIC_ON_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 13)
+#define ID_RMENU_KINEMATIC_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 14)
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -10955,23 +10957,6 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//	}
 		//}
 
-
-		//if (curmodel->GetBtCnt() <= 10) {
-		//	curmodel->SetKinematicFlag();
-		//	curmodel->SetBtEquilibriumPoint();//必要
-
-		//	curmodel->SetMotionFrame(*pnextframe);
-		//	//UpdateBtSimu(*pnextframe, curmodel);
-		//	if (curmodel && curmodel->GetCurMotInfo()) {
-		//		int firstflag = 1;
-		//		curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
-		//	}
-		//}
-		//else {
-		//	curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-		//	curmodel->SetBtEquilibriumPoint();//必要　物理IKのときにこれを呼ばない場合、関節部分に空白ができる、子供がIK結果の通りに動かない。
-		//}
-
 		if (curmodel->GetBtCnt() <= 10) {
 			curmodel->SetKinematicFlag();
 			curmodel->SetMotionFrame(*pnextframe);
@@ -10985,17 +10970,16 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-			//curmodel->SetBtEquilibriumPoint();//必要　物理IKのときにこれを呼ばない場合、関節部分に空白ができる、子供がIK結果の通りに動かない。
+			//curmodel->SetBtEquilibriumPoint();//
 		}
-
-
-
 
 		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
 
 	}
 
-	if (s_onragdollik != 0){
+	//physics mvの場合、クリックしていないときには直下のif文内を呼ばない。
+	//physics rotの場合、クリックしていなくても直下のif文内を呼んだほうが剛体がゆらゆらしない。
+	if((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))){
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
 		GetCursorPos(&ptCursor);
@@ -11004,9 +10988,6 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 		ChaVector3 tmpsc;
 		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
-		//RagdollIK時には時間０（とりあえず）
-		//s_editrange.SetRangeOne(1.0);
 
 		if (s_oprigflag == 0){//Rig操作ではないとき
 			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
@@ -11037,25 +11018,30 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 			}
 			else{
+				//少しずつ動かさないと壊れやすい
 				int ikmaxlevel = 0;
-				ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.1f;
 				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
 			}
 		}
 
 
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		CBone* parentbone = curbone->GetParent();
-		if (parentbone){
-			s_editmotionflag = parentbone->GetBoneNo();
+		if (curbone) {
+			CBone* parentbone = curbone->GetParent();
+			if (parentbone) {
+				s_editmotionflag = parentbone->GetBoneNo();
+			}
+			else {
+				s_editmotionflag = s_curboneno;
+			}
+			s_ikcnt++;
 		}
-		else{
-			s_editmotionflag = s_curboneno;
-		}
-		s_ikcnt++;
 
 
 	}
+
+
 	//else{
 	//	if (s_underikflag == 1){
 	//		curmodel->BulletSimulationStop();
@@ -11098,9 +11084,6 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 
 	
-	//RadgollIK時には時間０（とりあえず）
-	//curmodel->SetMotionFrame(0.0);
-	//*pnextframe = 0.0;//!!!!!!!!!!!!!!!!
 	curmodel->SetMotionFrame(s_editrange.GetStartFrame());
 	*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
 
@@ -14123,6 +14106,9 @@ int BoneRClick(int srcboneno)
 					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"MV除外解除");
 				}
 
+				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_ON_LOWER, L"このジョイントより下階層Kinematic ON");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_OFF_LOWER, L"このジョイントより下階層Kinematic OFF");
+
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				int forbidflag = 0;
 				if (curre) {
@@ -14195,6 +14181,12 @@ int BoneRClick(int srcboneno)
 					//else{
 					//	s_model->DestroyPhysicsPosConstraint(curbone);
 					//}
+				}
+				else if (menuid == ID_RMENU_KINEMATIC_ON_LOWER) {
+					s_model->SetKinematicTmpLower(curbone, true);
+				}
+				else if (menuid == ID_RMENU_KINEMATIC_OFF_LOWER) {
+					s_model->SetKinematicTmpLower(curbone, false);
 				}
 				else if (menuid == ID_RMENU_MASS0_ON_ALL) {
 					s_model->Mass0_All(true);

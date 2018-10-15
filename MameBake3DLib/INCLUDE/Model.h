@@ -347,6 +347,9 @@ public:
 
 	int SetMass0(CBone* srcbone);
 	int RestoreMass(CBone* srcbone);
+
+	int SetKinematicTmpLower(CBone* srcbone, bool srcflag);
+	
 /**
  * @fn
  * IKRotateAxisDelta
@@ -730,6 +733,7 @@ private:
 	void DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag = 0);
 	void SetMass0Req(CBone* srcbone, bool forceflag);
 	void RestoreMassReq(CBone* srcbone);
+	void SetKinematicTmpLowerReq(CBone* srcbone, bool srcflag);
 
 	void PhysicsMVReq(CBone* srcbone, ChaVector3 diffvec);
 	int WithConstraint(CBone* srcbone);

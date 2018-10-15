@@ -900,11 +900,19 @@ public: //accesser
 	void SetCurMotID(int srcmotid)
 	{
 		m_curmotid = srcmotid;
-	}
+	};
 	int GetCurMotID()
 	{
 		return m_curmotid;
-	}
+	};
+	void SetTmpKinematic(bool srcflag)
+	{
+		m_tmpkinematic = srcflag;
+	};
+	bool GetTmpKinematic()
+	{
+		return m_tmpkinematic;
+	};
 
 private:
 	int m_posconstraint;
@@ -1003,6 +1011,7 @@ private:
 	ChaMatrix m_firstgetmatrix;//GetCurrentZeroFrameMat—p
 	ChaMatrix m_invfirstgetmatrix;//GetCurrentZeroFrameMat—p
 
+	bool m_tmpkinematic;
 
 	CBone* m_parent;
 	CBone* m_child;

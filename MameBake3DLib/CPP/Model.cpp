@@ -1060,7 +1060,7 @@ int CModel::Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 		CBone* boneptr = itrbone->second;
-		if (boneptr->GetParent()){
+		if (boneptr && boneptr->GetParent()){
 			CRigidElem* curre = boneptr->GetParent()->GetRigidElem(boneptr);
 			if (curre){
 				boneptr->GetParent()->CalcRigidElemParams(boneptr, firstflag);
@@ -4178,20 +4178,24 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 
 	CBone* srcbone = srcbto->GetBone();
 	if( srcbone ){
-//		srcbone->m_btkinflag = 0;
-		int cmp0 = strncmp(srcbone->GetBoneName(), "BT_", 3);
-		if ((cmp0 == 0) || (srcbone->GetBtForce() == 1)) {
-			if (srcbone->GetParent()) {
-				CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
-				if (curre) {
-					//if (curre->GetSkipflag() == 0){
-					srcbone->SetBtKinFlag(0);
-					//}
-					//else{
-					//	srcbone->SetBtKinFlag(1);
-					//}
+		if (srcbone->GetTmpKinematic() == false) {
+			int cmp0 = strncmp(srcbone->GetBoneName(), "BT_", 3);
+			if ((cmp0 == 0) || (srcbone->GetBtForce() == 1)) {
+				if (srcbone->GetParent()) {
+					CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
+					if (curre) {
+						//if (curre->GetSkipflag() == 0){
+						srcbone->SetBtKinFlag(0);
+						//}
+						//else{
+						//	srcbone->SetBtKinFlag(1);
+						//}
 
 
+					}
+					else {
+						srcbone->SetBtKinFlag(1);
+					}
 				}
 				else {
 					srcbone->SetBtKinFlag(1);
@@ -4204,7 +4208,6 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 		else {
 			srcbone->SetBtKinFlag(1);
 		}
-		
 
 		/*
 		if ((srcbone->GetBtKinFlag() == 0) && srcbone->GetParent() && (srcbone->GetParent()->GetBtKinFlag() == 1)){
@@ -5802,23 +5805,27 @@ void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physics
 
 	CBone* srcbone = srcbto->GetBone();
 	if (srcbone){
+		if (srcbone->GetTmpKinematic() == false) {
+			CBone* kinchildbone = GetBoneByID(selectbone);
+			if (kinchildbone) {
+				CBone* kinbone = kinchildbone->GetParent();
+				if (kinbone) {
+					int curboneno = srcbone->GetBoneNo();
+					if (curboneno != kinbone->GetBoneNo()) {
+						srcbone->SetBtKinFlag(0);
+					}
+					else {
+						srcbone->SetBtKinFlag(1);
+					}
 
-		CBone* kinchildbone = GetBoneByID(selectbone);
-		if (kinchildbone){
-			CBone* kinbone = kinchildbone->GetParent();
-			if (kinbone){
-				int curboneno = srcbone->GetBoneNo();
-				if (curboneno != kinbone->GetBoneNo()){
-					srcbone->SetBtKinFlag(0);
 				}
-				else{
-					srcbone->SetBtKinFlag(1);
-				}
-
+			}
+			else {
+				srcbone->SetBtKinFlag(0);
 			}
 		}
-		else{
-			srcbone->SetBtKinFlag(0);
+		else {
+			srcbone->SetBtKinFlag(1);
 		}
 
 		//if ((physicsmvkind == 0) && (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
@@ -7304,37 +7311,37 @@ void CModel::PhysicsMVReq(CBone* srcbone, ChaVector3 mvvec)
 				
 			CBone* childbone = curbone;
 
-			childbone->SetBtKinFlag(1);
+			//childbone->SetBtKinFlag(1);
 			CBtObject* srcbto = parentbone->GetBtObject(childbone);
 			if (srcbto){
-				DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
-				srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
-				if (srcbto->GetRigidBody()){
-					srcbto->GetRigidBody()->setDeactivationTime(0.0);
-					//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+				//DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
+				//srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
+				//if (srcbto->GetRigidBody()){
+				//	srcbto->GetRigidBody()->setDeactivationTime(0.0);
+				//	//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+				//}
+
+				if (parentbone->GetBtKinFlag() == 1) {
+					ChaMatrix newbtmat;
+					newbtmat = parentbone->GetBtMat() * mvmat;// *tramat;
+
+					btTransform worldtra;
+					srcbto->GetRigidBody()->getMotionState()->getWorldTransform(worldtra);
+					btMatrix3x3 worldmat = worldtra.getBasis();
+					btVector3 worldpos = worldtra.getOrigin();
+
+
+					btTransform setworldtra;
+					setworldtra.setIdentity();
+					setworldtra.setBasis(worldmat);
+					setworldtra.setOrigin(btVector3(worldpos.x() + mvvec.x, worldpos.y() + mvvec.y, worldpos.z() + mvvec.z));
+					if (srcbto) {
+						srcbto->GetRigidBody()->getMotionState()->setWorldTransform(setworldtra);
+					}
+					else {
+						::MessageBoxA(NULL, "IKTraRagdoll : setbto NULL !!!!", "check", MB_OK);
+					}
 				}
-
-
-				ChaMatrix newbtmat;
-				newbtmat = parentbone->GetBtMat() * mvmat;// *tramat;
-
-				btTransform worldtra;
-				srcbto->GetRigidBody()->getMotionState()->getWorldTransform(worldtra);
-				btMatrix3x3 worldmat = worldtra.getBasis();
-				btVector3 worldpos = worldtra.getOrigin();
-
-
-				btTransform setworldtra;
-				setworldtra.setIdentity();
-				setworldtra.setBasis(worldmat);
-				setworldtra.setOrigin(btVector3(worldpos.x() + mvvec.x, worldpos.y() + mvvec.y, worldpos.z() + mvvec.z));
-				if (srcbto){
-					srcbto->GetRigidBody()->getMotionState()->setWorldTransform(setworldtra);
-				}
-				else{
-					::MessageBoxA(NULL, "IKTraRagdoll : setbto NULL !!!!", "check", MB_OK);
-				}
-
 			}
 		}
 
@@ -8819,6 +8826,31 @@ void CModel::DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag)
 	}
 }
 
+int CModel::SetKinematicTmpLower(CBone* srcbone, bool srcflag)
+{
+	if (!srcbone) {
+		return 1;
+	}
+	SetKinematicTmpLowerReq(srcbone, srcflag);
+	return 0;
+}
+
+void CModel::SetKinematicTmpLowerReq(CBone* srcbone, bool srcflag)
+{
+	if (!srcbone) {
+		return;
+	}
+
+	srcbone->SetTmpKinematic(srcflag);
+
+	if (srcbone->GetChild()) {
+		SetKinematicTmpLowerReq(srcbone->GetChild(), srcflag);
+	}
+	if (srcbone->GetBrother()) {
+		SetKinematicTmpLowerReq(srcbone->GetBrother(), srcflag);
+	}
+}
+
 
 int CModel::Mass0_All(bool setflag)
 {
@@ -9064,10 +9096,8 @@ void CModel::EnableRotChildren(CBone* srcbone, bool srcflag)
 		return;
 	}
 
-	//子供ジョイントから再帰をスタートさせる。
-	if (srcbone->GetChild()) {
-		EnableRotChildrenReq(srcbone->GetChild(), srcflag);
-	}
+	//カレントボーンも含めて再帰的に設定する。
+	EnableRotChildrenReq(srcbone, srcflag);
 
 }
 
