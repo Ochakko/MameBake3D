@@ -685,6 +685,8 @@ private:
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
 	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );
+	void SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
 
 	void FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppret );
 	void SetImpulseDataReq( int gid, CBone* srcbone, ChaVector3 srcimp );

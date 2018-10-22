@@ -11095,7 +11095,9 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		curmodel->PlusPlusBtCnt();
 	}
-	
+
+	s_bpWorld->clientMoveAndDisplay();//tmpkinematic部分のbullet情報変更がSetBtMotion内で生じるので、もう一回シミュをまわす。
+
 
 	s_befunderikflag = s_underikflag;
 

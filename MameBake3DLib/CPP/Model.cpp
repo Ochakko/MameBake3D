@@ -4178,7 +4178,7 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 
 	CBone* srcbone = srcbto->GetBone();
 	if( srcbone ){
-		if (srcbone->GetTmpKinematic() == false) {
+		if (!srcbone->GetParent() || (srcbone->GetParent() && (srcbone->GetParent()->GetTmpKinematic() == false))) {
 			int cmp0 = strncmp(srcbone->GetBoneName(), "BT_", 3);
 			if ((cmp0 == 0) || (srcbone->GetBtForce() == 1)) {
 				if (srcbone->GetParent()) {
@@ -4841,6 +4841,9 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, ChaMatrix* wmat, ChaM
 	}
 
 	SetBtMotionReq( m_topbt, wmat, vpmat );
+	SetBtMotionPostReq(m_topbt, wmat, vpmat);
+	BtMat2BtObjReq(m_topbt, wmat, vpmat);
+
 
 	//if (g_previewFlag == 5){
 	//	if (m_topbt){
@@ -4990,86 +4993,14 @@ MOTINFO* CModel::GetRgdMorphInfo()
 
 void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat )
 {
-	/*
-	if (curbone && (curbone->GetCurMp().GetBtFlag() == 0)){
-		if (g_previewFlag == 4){
-			if (curbone->GetBtKinFlag() == 1){
-				CMotionPoint curmp = curbone->GetCurMp();
-				curmp.SetBtMat(curmp.GetWorldMat());
-				curmp.SetBtFlag(1);
-				curbone->SetCurMp(curmp);
-			}
-		}
-		else if (g_previewFlag == 5){
-			if (curbone->GetParent()){
-				//curbone->m_curmp.m_btmat = curbone->m_parent->m_curmp.m_btmat;
-				ChaMatrix invstart;
-				ChaMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
-				ChaMatrix diffmat;
-				diffmat = invstart * curbone->GetParent()->GetCurMp().GetBtMat();
-				CMotionPoint curmp = curbone->GetCurMp();
-				curmp.SetBtMat(curbone->GetStartMat2() * diffmat);
-				curmp.SetBtFlag(1);
-				curbone->SetCurMp(curmp);
-			}
-			else{
-				CMotionPoint curmp = curbone->GetCurMp();
-				curmp.SetBtMat(curbone->GetStartMat2());
-				curmp.SetBtFlag(1);
-				curbone->SetCurMp(curmp);
-			}
-		}
-	}
-	*/
-
 	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()){
 		CBone* curbone = curbto->GetBone();
 		if (curbone){
 			if (g_previewFlag == 4){
-				if (curbone->GetBtKinFlag() == 0){
-					//if (curbto->GetParBt() && (curbto->GetParBt()->GetBone()->GetBtKinFlag() == 1) && (curbto->GetParBt()->GetBone()->GetCurMp().GetBtFlag() == 0)){
-					//	//KinFlagの変わり目部分に対応。
-					//	//変わり目部分が枝分かれの時はまた後で、、、
-					//	curbto->GetParBt()->SetBtMotion();
-					//}
-					curbto->SetBtMotion();
-				}
-				else if (curbone->GetBtKinFlag() == 1){
-					CMotionPoint curmp = curbone->GetCurMp();
-					curbone->SetBtMat(curmp.GetWorldMat());
-					curbone->SetBtFlag(1);
-					//curbone->SetCurMp(curmp);
-				}
+				curbto->SetBtMotion();
 			}
 			else if (g_previewFlag == 5){
-
 				curbto->SetBtMotion();
-
-				if (curbone->GetBtFlag() == 0){
-					if (curbone->GetParent()){
-						if (curbone->GetParent()->GetBtFlag() == 1) {//2018/10/13
-							ChaMatrix invstart;
-							ChaMatrixInverse(&invstart, NULL, &(curbone->GetParent()->GetStartMat2()));
-							ChaMatrix diffmat;
-							diffmat = invstart * curbone->GetParent()->GetBtMat();
-							CMotionPoint curmp = curbone->GetCurMp();
-							curbone->SetBtMat(curbone->GetStartMat2() * diffmat);
-							curbone->SetBtFlag(1);
-							//curbone->SetCurMp(curmp);
-						}
-						else {
-							curbone->SetBtMat(curbone->GetStartMat2());
-							curbone->SetBtFlag(1);
-						}
-					}
-					else{
-						//CMotionPoint curmp = curbone->GetCurMp();
-						curbone->SetBtMat(curbone->GetStartMat2());
-						curbone->SetBtFlag(1);
-						//curbone->SetCurMp(curmp);
-					}
-				}
-
 			}
 		}
 	}
@@ -5082,6 +5013,97 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 	}
 
 }
+
+//Post処理。SetBtMotionReqを呼び出した後で呼び出す。
+void CModel::SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	//後処理
+
+	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
+		CBone* curbone = curbto->GetBone();
+		if (curbone && curbone->GetParent()) {
+			if (g_previewFlag == 4) {
+				if (curbone->GetBtKinFlag() == 1) {
+					CMotionPoint curmp = curbone->GetCurMp();
+					curbone->SetBtMat(curmp.GetWorldMat());
+					curbone->SetBtFlag(1);
+				}
+			}
+			else if (g_previewFlag == 5) {
+
+				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
+				if ((curbone->GetBtFlag() == 0) || (curbone->GetParent()->GetTmpKinematic() == true)) {
+					if (curbone->GetParent()) {
+						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
+						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
+						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
+						curbone->SetBtMat(newcurmat);
+						curbone->SetBtFlag(1);
+					}
+					else {
+						curbone->SetBtMat(curbone->GetCurMp().GetWorldMat());
+						curbone->SetBtFlag(1);
+					}
+				}
+			}
+		}
+	}
+	int chilno;
+	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+		CBtObject* chilbto = curbto->GetChildBt(chilno);
+		if (chilbto) {
+			SetBtMotionPostReq(chilbto, wmat, vpmat);
+		}
+	}
+
+
+}
+
+
+void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+
+	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
+		CBone* curbone = curbto->GetBone();
+		if (curbone && curbone->GetParent()) {
+			if (g_previewFlag == 5) {
+
+				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
+				if (curbone->GetParent()->GetTmpKinematic() == true) {
+					if (curbone->GetParent()) {
+						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
+						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
+						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
+
+						ChaMatrix newbtmat;
+						newbtmat = curbto->GetFirstTransformMatX() * ChaMatrixInv(firstparmat) * newparmat;
+						ChaVector3 aftparentpos;
+						ChaVector3 befparentpos = curbone->GetParent()->GetJointFPos();
+						ChaVector3TransformCoord(&aftparentpos, &befparentpos, &newparmat);
+						ChaVector3 aftchildpos;
+						ChaVector3 befchildpos = curbone->GetJointFPos();
+						ChaVector3TransformCoord(&aftchildpos, &befchildpos, &newcurmat);
+						ChaVector3 rigidcenter = (aftparentpos + aftchildpos) * 0.5f;
+						curbto->SetPosture2Bt(newbtmat, rigidcenter);
+
+					}
+					else {
+
+					}
+				}
+			}
+		}
+	}
+	int chilno;
+	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+		CBtObject* chilbto = curbto->GetChildBt(chilno);
+		if (chilbto) {
+			BtMat2BtObjReq(chilbto, wmat, vpmat);
+		}
+	}
+
+}
+
 
 void CModel::CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname )
 {
@@ -5804,8 +5826,8 @@ void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physics
 {
 
 	CBone* srcbone = srcbto->GetBone();
-	if (srcbone){
-		if (srcbone->GetTmpKinematic() == false) {
+	if (srcbone && srcbone->GetParent()){
+		if (srcbone->GetParent()->GetTmpKinematic() == false) {
 			CBone* kinchildbone = GetBoneByID(selectbone);
 			if (kinchildbone) {
 				CBone* kinbone = kinchildbone->GetParent();

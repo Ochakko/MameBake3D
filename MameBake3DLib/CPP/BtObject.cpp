@@ -1019,62 +1019,61 @@ int CBtObject::Motion2Bt(CModel* srcmodel)
 		ChaVector3 newrigidpos;
 		GetBone()->CalcNewBtMat(srcmodel, curre, GetEndBone(), &newrotmat, &newrigidpos);
 
-		CQuaternion tmpq;
-		tmpq.RotationMatrix(newrotmat);
-		btQuaternion btrotq( tmpq.x, tmpq.y, tmpq.z, tmpq.w );
+		SetPosture2Bt(newrotmat, newrigidpos);
 
-		btTransform worldtra;
-		worldtra.setIdentity();
-		worldtra.setRotation(btrotq);
-		worldtra.setOrigin(btVector3(newrigidpos.x, newrigidpos.y, newrigidpos.z));
-
-		m_rigidbody->getMotionState()->setWorldTransform( worldtra );
-
-		m_btpos = ChaVector3(newrigidpos.x, newrigidpos.y, newrigidpos.z);
-
-		
-		
-	//constraintのFrameA, FrameBの更新
-		if (g_previewFlag == 5) {
-			for (int i = 0; i < GetConstraintSize(); i++) {
-				CONSTRAINTELEM curce = GetConstraintElem(i);
-				btGeneric6DofSpringConstraint* dofC = curce.constraint;
-				CBtObject* childbto = curce.childbto;
-				if (dofC && childbto) {
-					btQuaternion rotA;
-					btTransform FrameA;
-					btTransform FrameB;
-					FrameA.setIdentity();
-					FrameB.setIdentity();
-
-					//int setstartflag = 0;
-					//CRigidElem* tmpre;
-					//tmpre = m_bone->GetRigidElem(m_endbone);
-					//_ASSERT(tmpre);
-					//CalcConstraintTransform(0, tmpre, this, FrameA, setstartflag);
-					//tmpre = childbto->m_bone->GetRigidElem(childbto->m_endbone);
-					//_ASSERT(tmpre);
-					//CalcConstraintTransform(1, tmpre, childbto, FrameB, setstartflag);
-
-					CalcConstraintTransformA(FrameA, rotA);
-					CalcConstraintTransformB(childbto, rotA, FrameB);
-
-					if (m_rigidbody && childbto->m_rigidbody) {
-						dofC->setFrames(FrameA, FrameB);
-						dofC->setEquilibriumPoint();
-						dofC->calculateTransforms();
-					}
-
-					//dofC->setEquilibriumPoint();
-				}
-			}
-		}
 	}else{
 		_ASSERT( 0 );
 	}
 
 	return 0;
 }
+
+int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter)
+{
+	CQuaternion tmpq;
+	tmpq.RotationMatrix(srcmat);
+	btQuaternion btrotq(tmpq.x, tmpq.y, tmpq.z, tmpq.w);
+
+	btTransform worldtra;
+	worldtra.setIdentity();
+	worldtra.setRotation(btrotq);
+	worldtra.setOrigin(btVector3(srcrigidcenter.x, srcrigidcenter.y, srcrigidcenter.z));
+
+	m_rigidbody->getMotionState()->setWorldTransform(worldtra);
+
+	m_btpos = ChaVector3(srcrigidcenter.x, srcrigidcenter.y, srcrigidcenter.z);
+
+	//constraintのFrameA, FrameBの更新
+	if (g_previewFlag == 5) {
+		for (int i = 0; i < GetConstraintSize(); i++) {
+			CONSTRAINTELEM curce = GetConstraintElem(i);
+			btGeneric6DofSpringConstraint* dofC = curce.constraint;
+			CBtObject* childbto = curce.childbto;
+			if (dofC && childbto) {
+				btQuaternion rotA;
+				btTransform FrameA;
+				btTransform FrameB;
+				FrameA.setIdentity();
+				FrameB.setIdentity();
+
+				CalcConstraintTransformA(FrameA, rotA);
+				CalcConstraintTransformB(childbto, rotA, FrameB);
+
+				if (m_rigidbody && childbto->m_rigidbody) {
+					dofC->setFrames(FrameA, FrameB);
+					dofC->setEquilibriumPoint();
+					dofC->calculateTransforms();
+				}
+
+				//dofC->setEquilibriumPoint();
+			}
+		}
+	}
+	return 0;
+
+}
+
+
 
 int CBtObject::SetBtMotion()
 {
@@ -1125,7 +1124,8 @@ int CBtObject::SetBtMotion()
 	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
 
-	if (m_bone->GetBtFlag() == 0) {
+
+	if ((m_bone->GetBtFlag() == 0) && (m_bone->GetTmpKinematic() == false)) {
 		//m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
 		m_bone->SetBtFlag(1);

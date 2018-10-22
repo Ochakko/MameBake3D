@@ -84,6 +84,8 @@ public:
  */
 	int Motion2Bt(CModel* srcmodel);
 
+	int SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter);
+
 /**
  * @fn
  * AddChild
