@@ -163,6 +163,7 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	m_physicsikcnt = 0;
 	ChaMatrixIdentity(&m_worldmat);
 	m_modelposition = ChaVector3(0.0f, 0.0f, 0.0f);
 	m_initaxismatx = 0;
@@ -4671,8 +4672,8 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 		srcbto->EnableSpring(true, true);
 	}
 	else {
-		//srcbto->EnableSpring(false, false);
-		srcbto->EnableSpring(true, true);
+		srcbto->EnableSpring(false, false);
+		//srcbto->EnableSpring(true, true);
 		//srcbto->EnableSpring(false, true);
 	}
 	//srcbto->EnableSpring(false, true);
@@ -4805,7 +4806,7 @@ void CModel::CalcBtAxismatReq( CBone* curbone, int onfirstcreate )
 	}
 }
 
-int CModel::SetBtMotion( int ragdollflag, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat )
+int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat )
 {
 	m_matWorld = *wmat;
 	m_matVP = *vpmat;
@@ -4841,9 +4842,17 @@ int CModel::SetBtMotion( int ragdollflag, double srcframe, ChaMatrix* wmat, ChaM
 	}
 
 	SetBtMotionReq( m_topbt, wmat, vpmat );
-	SetBtMotionPostReq(m_topbt, wmat, vpmat);
-	BtMat2BtObjReq(m_topbt, wmat, vpmat);
 
+	//SetBtMotionPostReq(m_topbt, wmat, vpmat);
+	if (srcbone && srcbone->GetParent()) {
+		CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
+		SetBtMotionPostLowerReq(startbto, wmat, vpmat);
+		SetBtMotionPostUpperReq(startbto, wmat, vpmat);
+		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat);
+		BtMat2BtObjReq(m_topbt, wmat, vpmat);
+		RecalcConstraintFrameABReq(m_topbt);
+		m_physicsikcnt++;
+	}
 
 	//if (g_previewFlag == 5){
 	//	if (m_topbt){
@@ -5015,7 +5024,7 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 }
 
 //Post処理。SetBtMotionReqを呼び出した後で呼び出す。
-void CModel::SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
 	//後処理
 
@@ -5030,7 +5039,6 @@ void CModel::SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* v
 				}
 			}
 			else if (g_previewFlag == 5) {
-
 				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
 				if ((curbone->GetBtFlag() == 0) || (curbone->GetParent()->GetTmpKinematic() == true)) {
 					if (curbone->GetParent()) {
@@ -5045,6 +5053,106 @@ void CModel::SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* v
 						curbone->SetBtFlag(1);
 					}
 				}
+				else if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && (curbone->GetParent()->GetTmpKinematic() == false)) {
+					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
+					if (curbto->GetParBt()) {
+						if (curbone->GetParent()->GetParent()) {
+							//ChaVector3 basepos, curpos;
+							//ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
+							//ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+							//ChaVector3 adjustvec = basepos - curpos;
+							////ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
+							//ChaMatrix newcurmat = curbone->GetBtMat();
+							//newcurmat._41 += adjustvec.x;
+							//newcurmat._42 += adjustvec.y;
+							//newcurmat._43 += adjustvec.z;
+							//curbone->SetBtMat(newcurmat);
+							//curbone->SetBtFlag(1);
+
+
+
+							//ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+							//ChaMatrix currentmat = curbone->GetBtMat();
+							//ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
+							//CQuaternion localrot;
+							//localrot.RotationMatrix(currentlocalmat);
+							//ChaVector3 pivot;
+							//pivot = curbone->GetJointFPos();
+							//ChaMatrix beftra, afttra, newmat;
+							//ChaMatrixIdentity(&beftra);
+							//ChaMatrixIdentity(&afttra);
+							//ChaMatrixTranslation(&beftra, -pivot.x, -pivot.y, -pivot.z);
+							//ChaMatrixTranslation(&afttra, pivot.x, pivot.y, pivot.z);
+							//newmat = beftra * localrot.MakeRotMatX() * afttra * parentmat;
+							//curbone->SetBtMat(newmat);
+							//curbone->SetBtFlag(1);
+
+
+
+							//ChaMatrix currentmat = curbone->GetBtMat();
+							//ChaMatrix currentfirstmat = curbone->GetCurrentZeroFrameMat(0);
+							//ChaMatrix currentdiffmat = ChaMatrixInv(currentfirstmat) * currentmat;
+							//CQuaternion addrotq;
+							//addrotq.RotationMatrix(currentdiffmat);
+							//ChaVector3 rotcenter;
+							//ChaVector3TransformCoord(&rotcenter, &(curbone->GetJointFPos()), &currentfirstmat);
+							//ChaMatrix beftra, afttra;
+							//ChaMatrixIdentity(&beftra);
+							//ChaMatrixIdentity(&afttra);
+							//ChaMatrixTranslation(&beftra, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+							//ChaMatrixTranslation(&afttra, rotcenter.x, rotcenter.y, rotcenter.z);
+							//ChaVector3 traanim = curbone->CalcLocalTraAnim(GetCurMotInfo()->motid, GetCurMotInfo()->curframe);
+							//ChaMatrix traanimmat;
+							//ChaMatrixIdentity(&traanimmat);
+							//ChaMatrixTranslation(&traanimmat, traanim.x, traanim.y, traanim.z);
+							//ChaMatrix newmat;
+							//newmat = currentfirstmat * beftra * addrotq.MakeRotMatX() * afttra * traanimmat;
+							//curbone->SetBtMat(newmat);
+							//curbone->SetBtFlag(1);
+
+
+							//ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+							//ChaMatrix currentmat = curbone->GetBtMat();
+							//ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
+							//ChaMatrix smat, rmat, tmat;
+							//GetSRTMatrix2(currentlocalmat, &smat, &rmat, &tmat);
+							//ChaVector3 pivot;
+							//pivot = curbone->GetJointFPos();
+							//ChaMatrix beftra, afttra, newmat;
+							//ChaMatrixIdentity(&beftra);
+							//ChaMatrixIdentity(&afttra);
+							//ChaMatrixTranslation(&beftra, -pivot.x, -pivot.y, -pivot.z);
+							//ChaMatrixTranslation(&afttra, pivot.x, pivot.y, pivot.z);
+							////newmat = smat * rmat * tmat * parentmat;//変更なしの場合
+							////newmat = smat * beftra * rmat * afttra * parentmat;//めちゃくちゃ
+							////newmat = beftra * smat * rmat * afttra * parentmat;//くるっと
+
+							ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+							ChaMatrix currentmat = curbone->GetBtMat();
+							ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
+							ChaMatrix smat, rmat, tmat;
+							GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
+
+							ChaVector3 basepos, curpos;
+							ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
+							ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+							ChaVector3 adjustvec = basepos - curpos;
+							//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
+
+							if (ChaVector3Length(&adjustvec) >= 0.20f) {
+								tmat._41 += adjustvec.x;
+								tmat._42 += adjustvec.y;
+								tmat._43 += adjustvec.z;
+
+								ChaMatrix newmat;
+								newmat = smat * rmat * tmat;
+
+								curbone->SetBtMat(newmat);
+								curbone->SetBtFlag(1);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -5052,13 +5160,82 @@ void CModel::SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* v
 	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
 		CBtObject* chilbto = curbto->GetChildBt(chilno);
 		if (chilbto) {
-			SetBtMotionPostReq(chilbto, wmat, vpmat);
+			SetBtMotionPostLowerReq(chilbto, wmat, vpmat);
 		}
 	}
 
 
 }
 
+//Post処理。SetBtMotionReqを呼び出した後で呼び出す。
+void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	//後処理
+
+	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
+		CBone* curbone = curbto->GetBone();
+		if (curbone && curbone->GetParent()) {
+			if (g_previewFlag == 4) {
+				if (curbone->GetBtKinFlag() == 1) {
+					CMotionPoint curmp = curbone->GetCurMp();
+					curbone->SetBtMat(curmp.GetWorldMat());
+					curbone->SetBtFlag(1);
+				}
+			}
+			else if (g_previewFlag == 5) {
+				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
+				if ((curbone->GetBtFlag() == 0) || (curbone->GetParent()->GetTmpKinematic() == true)) {
+					if (curbone->GetParent()) {
+						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
+						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
+						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
+						curbone->SetBtMat(newcurmat);
+						curbone->SetBtFlag(1);
+					}
+					else {
+						curbone->SetBtMat(curbone->GetCurMp().GetWorldMat());
+						curbone->SetBtFlag(1);
+					}
+				}
+				else if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && (curbone->GetParent()->GetTmpKinematic() == false)) {
+					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
+					if (curbto->GetParBt()) {
+						if (curbone->GetParent()->GetParent()) {
+							ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+							ChaMatrix currentmat = curbone->GetBtMat();
+							ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
+							ChaMatrix smat, rmat, tmat;
+							GetSRTMatrix2(parentmat, &smat, &rmat, &tmat);
+
+							ChaVector3 basepos, curpos;
+							ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
+							ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+							ChaVector3 adjustvec = curpos - basepos;
+							//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
+
+							if (ChaVector3Length(&adjustvec) >= 0.050f) {
+								tmat._41 += adjustvec.x;
+								tmat._42 += adjustvec.y;
+								tmat._43 += adjustvec.z;
+
+								ChaMatrix newmat;
+								newmat = smat * rmat * tmat;
+
+								curbone->GetParent()->SetBtMat(newmat);
+								curbone->GetParent()->SetBtFlag(1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	CBtObject* parentbto = curbto->GetParBt();
+	if (parentbto) {
+		SetBtMotionPostUpperReq(parentbto, wmat, vpmat);
+	}
+
+}
 
 void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
@@ -5066,29 +5243,57 @@ void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat
 	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
 		CBone* curbone = curbto->GetBone();
 		if (curbone && curbone->GetParent()) {
-			if (g_previewFlag == 5) {
+			if (curbone->GetBtFlag() == 1){
+				if (g_previewFlag == 5) {
 
-				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
-				if (curbone->GetParent()->GetTmpKinematic() == true) {
-					if (curbone->GetParent()) {
+					//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
+					if (curbone->GetParent()->GetTmpKinematic() == true) {
 						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
 						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
 						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
 
 						ChaMatrix newbtmat;
 						newbtmat = curbto->GetFirstTransformMatX() * ChaMatrixInv(firstparmat) * newparmat;
-						ChaVector3 aftparentpos;
-						ChaVector3 befparentpos = curbone->GetParent()->GetJointFPos();
-						ChaVector3TransformCoord(&aftparentpos, &befparentpos, &newparmat);
+
+						ChaVector3 aftcurpos;
+						ChaVector3 befcurpos = curbone->GetJointFPos();
+						ChaVector3TransformCoord(&aftcurpos, &befcurpos, &newcurmat);
 						ChaVector3 aftchildpos;
-						ChaVector3 befchildpos = curbone->GetJointFPos();
+						ChaVector3 befchildpos = curbto->GetEndBone()->GetJointFPos();
 						ChaVector3TransformCoord(&aftchildpos, &befchildpos, &newcurmat);
-						ChaVector3 rigidcenter = (aftparentpos + aftchildpos) * 0.5f;
-						curbto->SetPosture2Bt(newbtmat, rigidcenter);
+						ChaVector3 rigidcenter = (aftcurpos + aftchildpos) * 0.5f;
+						//ChaVector3 aftparentpos;
+						//ChaVector3 befparentpos = curbone->GetParent()->GetJointFPos();
+						//ChaVector3TransformCoord(&aftparentpos, &befparentpos, &newparmat);
+						//ChaVector3 aftchildpos;
+						//ChaVector3 befchildpos = curbone->GetJointFPos();
+						//ChaVector3TransformCoord(&aftchildpos, &befchildpos, &newcurmat);
+						//ChaVector3 rigidcenter = (aftparentpos + aftchildpos) * 0.5f;
+						curbto->SetPosture2Bt(newbtmat, rigidcenter, 0);
 
 					}
 					else {
+						if (curbto->GetParBt() && (curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1)) {
+							if (curbone->GetParent()->GetParent()) {
+								ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
+								ChaMatrix newcurmat = curbone->GetBtMat();
+								//ChaMatrix invfirstcurmat = ChaMatrixInv(curbone->GetCurrentZeroFrameMat(0));
+								ChaMatrix invfirstcurmat = ChaMatrixInv(curbone->GetStartMat2());
+								ChaMatrix diffmat = invfirstcurmat * newcurmat;
 
+								ChaMatrix newbtmat;
+								newbtmat = curbto->GetFirstTransformMatX() * diffmat;
+								ChaVector3 aftcurpos;
+								ChaVector3 befcurpos = curbone->GetJointFPos();
+								ChaVector3TransformCoord(&aftcurpos, &befcurpos, &newcurmat);
+								ChaVector3 aftchildpos;
+								ChaVector3 befchildpos = curbto->GetEndBone()->GetJointFPos();
+								ChaVector3TransformCoord(&aftchildpos, &befchildpos, &newcurmat);
+								ChaVector3 rigidcenter = (aftcurpos + aftchildpos) * 0.5f;
+
+								curbto->SetPosture2Bt(newbtmat, rigidcenter, 0);
+							}
+						}
 					}
 				}
 			}
@@ -5102,6 +5307,29 @@ void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat
 		}
 	}
 
+}
+
+void CModel::RecalcConstraintFrameABReq(CBtObject* curbto)
+{
+	if (curbto) {
+		CBone* curbone = curbto->GetBone();
+		if (curbone && curbone->GetParent()) {
+			if (g_previewFlag == 5) {
+				//if (curbto->GetParBt() && (curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1)) {
+					if (curbone->GetParent()->GetParent()) {
+						curbto->RecalcConstraintFrameAB();
+					}
+				//}
+			}
+		}
+		int chilno;
+		for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+			CBtObject* chilbto = curbto->GetChildBt(chilno);
+			if (chilbto) {
+				RecalcConstraintFrameABReq(chilbto);
+			}
+		}
+	}
 }
 
 
@@ -6462,13 +6690,13 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					//比較と選択
 					CQuaternion rotq;
 					ChaMatrix newbtmat;
-					if ((dist0 * 0.9) >= dist1) {//10%近づかなかったらキャンセル。乱れ防止策。
+					//if ((dist0 * 0.9) >= dist1) {//10%近づかなかったらキャンセル。乱れ防止策。
 						rotq = rotq1;
 						newbtmat = newbtmat1;
-					}
-					else {
-						return srcboneno;
-					}
+					//}
+					//else {
+					//	return srcboneno;
+					//}
 
 					int onlycheck = 1;
 					int isbonemovable = parentbone->SetWorldMat(1, curmi->motid, curframe, newbtmat, onlycheck);

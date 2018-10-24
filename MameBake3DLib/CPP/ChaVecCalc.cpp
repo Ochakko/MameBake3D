@@ -407,6 +407,7 @@ float VecLength(ChaVector3 srcvec)
 }
 
 
+
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr)
 {
 	*svecptr = ChaVector3(1.0f, 1.0f, 1.0f);
@@ -480,6 +481,32 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 
 
 }
+
+void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr)
+{
+	if (!smatptr || !rmatptr || !tmatptr) {
+		return;
+	}
+
+	ChaMatrix smat, rmat, tmat;
+	ChaMatrixIdentity(&smat);
+	ChaMatrixIdentity(&rmat);
+	ChaMatrixIdentity(&tmat);
+
+	ChaVector3 svec = ChaVector3(0.0, 0.0, 0.0);
+	ChaVector3 tvec = ChaVector3(0.0, 0.0, 0.0);
+
+	GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+
+	ChaMatrixScaling(&smat, svec.x, svec.y, svec.z);
+	ChaMatrixTranslation(&tmat, tvec.x, tvec.y, tvec.z);
+
+	*smatptr = smat;
+	*rmatptr = rmat;
+	*tmatptr = tmat;
+}
+
+
 
 ChaMatrix TransZeroMat(ChaMatrix srcmat)
 {

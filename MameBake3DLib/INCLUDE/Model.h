@@ -497,7 +497,7 @@ public:
  * @return 成功したら０。
  * @detail bulletシミュレーション時には、CModel::Motion2Bt-->BPWorld::clientMoveAndDisplay-->CModel::SetBtMotionという流れで呼び出す。
  */
-	int SetBtMotion( int rgdollflag, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
+	int SetBtMotion(CBone* srcbone, int rgdollflag, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
 
 /**
  * @fn
@@ -685,8 +685,10 @@ private:
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
 	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );
-	void SetBtMotionPostReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
 	void BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void RecalcConstraintFrameABReq(CBtObject* curbto);
 
 	void FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppret );
 	void SetImpulseDataReq( int gid, CBone* srcbone, ChaVector3 srcimp );
@@ -1057,6 +1059,7 @@ public: //accesser
 		return m_worldmat;
 	};
 private:
+	int m_physicsikcnt;
 	int m_initaxismatx;
 	int m_modelno;//モデルのID
 	bool m_modeldisp;//表示するかどうか

@@ -266,7 +266,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	parentposA = m_bone->GetJointFPos();
 	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetCurrentZeroFrameMat(0));
 	childposA = m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat(0));
+	//ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat(0));
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_bone->GetCurrentZeroFrameMat(0));
 	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = ChaVector3Length(&diffA);
 
@@ -523,16 +524,19 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	childposA = curbto->m_endbone->GetJointFPos();
 	if (setstartflag == 1) {
 		ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurrentZeroFrameMat(0));
-		ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurrentZeroFrameMat(0));
+		//ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurrentZeroFrameMat(0));
+		ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_bone->GetCurrentZeroFrameMat(0));
 	}
 	else {
 		if (g_previewFlag != 5) {
 			ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurMp().GetWorldMat());
-			ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurMp().GetWorldMat());
+			//ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurMp().GetWorldMat());
+			ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_bone->GetCurMp().GetWorldMat());
 		}
 		else {
 			ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetBtMat());
-			ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetBtMat());
+			//ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetBtMat());
+			ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_bone->GetBtMat());
 		}
 	}
 	if (chilflag == 0){
@@ -714,16 +718,22 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					int dofcindex;
 					for (dofcindex = 0; dofcindex < 6; dofcindex++) {
 						//0-2:linear, 3-5:angular
-						dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
+						//dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
 						if (g_previewFlag != 5) {
+							dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
 							dofC->setParam(BT_CONSTRAINT_STOP_ERP, g_erp, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 						}
 						else {
+							dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.5, dofcindex);//CFM 0 壊れにくい
+							dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+
 							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.10, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.040, dofcindex);//ERP(0-1) 値大 --> エラー補正大
-							dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.070, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.070, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+
+							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.00020, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 						}
 					}
 
@@ -1028,7 +1038,8 @@ int CBtObject::Motion2Bt(CModel* srcmodel)
 	return 0;
 }
 
-int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter)
+//int constraintupdateflag = 1
+int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter, int constraintupdateflag)
 {
 	CQuaternion tmpq;
 	tmpq.RotationMatrix(srcmat);
@@ -1044,6 +1055,15 @@ int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter)
 	m_btpos = ChaVector3(srcrigidcenter.x, srcrigidcenter.y, srcrigidcenter.z);
 
 	//constraintのFrameA, FrameBの更新
+	if (constraintupdateflag == 1) {
+		RecalcConstraintFrameAB();
+	}
+	return 0;
+
+}
+
+void CBtObject::RecalcConstraintFrameAB()
+{
 	if (g_previewFlag == 5) {
 		for (int i = 0; i < GetConstraintSize(); i++) {
 			CONSTRAINTELEM curce = GetConstraintElem(i);
@@ -1069,11 +1089,7 @@ int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter)
 			}
 		}
 	}
-	return 0;
-
 }
-
-
 
 int CBtObject::SetBtMotion()
 {

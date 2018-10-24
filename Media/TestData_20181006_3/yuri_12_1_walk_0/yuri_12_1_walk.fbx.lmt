@@ -23,12 +23,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-10</Lower_X>
-      <Upper_X>10</Upper_X>
-      <Lower_Y>-10</Lower_Y>
-      <Upper_Y>10</Upper_Y>
-      <Lower_Z>-10</Lower_Z>
-      <Upper_Z>10</Upper_Z>
+      <Lower_X>-180</Lower_X>
+      <Upper_X>180</Upper_X>
+      <Lower_Y>-180</Lower_Y>
+      <Upper_Y>180</Upper_Y>
+      <Lower_Z>-180</Lower_Z>
+      <Upper_Z>180</Upper_Z>
   </Bone>
   <Bone>
     <Name>Hip_branch_Joint</Name>
@@ -81,12 +81,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-10</Lower_X>
-      <Upper_X>10</Upper_X>
-      <Lower_Y>-10</Lower_Y>
-      <Upper_Y>10</Upper_Y>
-      <Lower_Z>-10</Lower_Z>
-      <Upper_Z>10</Upper_Z>
+      <Lower_X>-180</Lower_X>
+      <Upper_X>180</Upper_X>
+      <Lower_Y>-180</Lower_Y>
+      <Upper_Y>180</Upper_Y>
+      <Lower_Z>-180</Lower_Z>
+      <Upper_Z>180</Upper_Z>
   </Bone>
   <Bone>
     <Name>Neck_Joint</Name>
@@ -110,12 +110,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-10</Lower_X>
-      <Upper_X>10</Upper_X>
-      <Lower_Y>-10</Lower_Y>
-      <Upper_Y>10</Upper_Y>
-      <Lower_Z>-10</Lower_Z>
-      <Upper_Z>10</Upper_Z>
+      <Lower_X>-180</Lower_X>
+      <Upper_X>180</Upper_X>
+      <Lower_Y>-180</Lower_Y>
+      <Upper_Y>180</Upper_Y>
+      <Lower_Z>-180</Lower_Z>
+      <Upper_Z>180</Upper_Z>
   </Bone>
   <Bone>
     <Name>Neck_branch_Joint</Name>
@@ -429,12 +429,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-10</Lower_X>
-      <Upper_X>10</Upper_X>
-      <Lower_Y>-10</Lower_Y>
-      <Upper_Y>10</Upper_Y>
-      <Lower_Z>-10</Lower_Z>
-      <Upper_Z>10</Upper_Z>
+      <Lower_X>-180</Lower_X>
+      <Upper_X>180</Upper_X>
+      <Lower_Y>-180</Lower_Y>
+      <Upper_Y>180</Upper_Y>
+      <Lower_Z>-180</Lower_Z>
+      <Upper_Z>180</Upper_Z>
   </Bone>
   <Bone>
     <Name>LeftShoulder_Joint</Name>
@@ -1125,12 +1125,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-10</Lower_X>
-      <Upper_X>10</Upper_X>
-      <Lower_Y>-10</Lower_Y>
-      <Upper_Y>10</Upper_Y>
-      <Lower_Z>-10</Lower_Z>
-      <Upper_Z>10</Upper_Z>
+      <Lower_X>-180</Lower_X>
+      <Upper_X>180</Upper_X>
+      <Lower_Y>-180</Lower_Y>
+      <Upper_Y>180</Upper_Y>
+      <Lower_Z>-180</Lower_Z>
+      <Upper_Z>180</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightShoulder_Joint</Name>

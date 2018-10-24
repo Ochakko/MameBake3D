@@ -339,7 +339,6 @@ static ChaMatrix s_inimat;
 static double s_time = 0.0;
 static double s_difftime = 0.0;
 static int s_ikkind = 0;
-static int s_iklevel = 1;
 
 static PICKINFO s_pickinfo;
 static vector<TLELEM> s_tlarray;
@@ -3478,7 +3477,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 							CallF(CalcTargetPos(&targetpos), return 1);
 							if (s_ikkind == 0){
-								s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+								s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 							}
 							else if (s_ikkind == 1){
 								ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
@@ -3535,7 +3534,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							deltax *= 0.250f;
 						}
 						if (s_ikkind == 0){
-							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 						}
 						else{
 							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -3572,7 +3571,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						}
 
 						if (s_ikkind == 0){
-							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 						}
 						else{
 							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -4137,7 +4136,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_COMBO_IKLEVEL:
 			RollbackCurBoneNo();
 			pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
-			s_iklevel = (int)PtrToUlong( pComboBox->GetSelectedData() );
+			g_iklevel = (int)PtrToUlong( pComboBox->GetSelectedData() );
 			break;
 		case IDC_CAMTARGET:
 			RollbackCurBoneNo();
@@ -8554,7 +8553,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 
 				//ラグドールの時のERPは決め打ち
-					//s_bpWorld->setGlobalERP(0.0);// ERP
+					s_bpWorld->setGlobalERP(0.0);// ERP
 					//s_bpWorld->setGlobalERP(1.0);// ERP
 					//s_bpWorld->setGlobalERP(0.2);// ERP
 					//s_bpWorld->setGlobalERP(0.001);// ERP
@@ -8577,7 +8576,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_bpWorld->setGlobalERP(0.0200);// ERP
 					//s_bpWorld->setGlobalERP(0.0400);// ERP
 
-					s_bpWorld->setGlobalERP(g_erp);// ERP
+					//s_bpWorld->setGlobalERP(g_erp);// ERP
 
 
 
@@ -10889,7 +10888,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
 			if (curmodel && curmodel->GetCurMotInfo()){
-				curmodel->SetBtMotion(0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+				curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 			}
 		}
 	}
@@ -10912,7 +10911,7 @@ void UpdateBtSimu(double nextframe, CModel* curmodel)
 	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
 	s_bpWorld->clientMoveAndDisplay();
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->SetBtMotion(0, nextframe, &curmodel->GetWorldMat(), &s_matVP);
+		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, nextframe, &curmodel->GetWorldMat(), &s_matVP);
 	}
 }
 
@@ -10970,7 +10969,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-			//curmodel->SetBtEquilibriumPoint();//
+			curmodel->SetBtEquilibriumPoint();//
 		}
 
 		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
@@ -11007,8 +11006,8 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 					if (g_controlkey == true){
 						deltax *= 0.250f;
 					}
-					//s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
-					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_curboneno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+					//s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_curboneno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					s_ikcnt++;
 				}
 
@@ -11054,7 +11053,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 	CallF(CalcTargetPos(&targetpos), return 1);
 	if (s_ikkind == 0){
-	s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+	s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 	}
 	else if (s_ikkind == 1){
 	ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
@@ -11091,7 +11090,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	s_bpWorld->clientMoveAndDisplay();
 
 	if (curmodel && curmodel->GetCurMotInfo()){
-		curmodel->SetBtMotion(1, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 1, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 		curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		curmodel->PlusPlusBtCnt();
 	}
@@ -15235,7 +15234,7 @@ int OnMouseMoveFunc()
 						//CallF(CalcTargetPos(&targetpos), return 1);
 						CalcTargetPos(&targetpos);
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, s_iklevel);
+							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 						}
 						else if (s_ikkind == 1) {
 							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
@@ -15292,7 +15291,7 @@ int OnMouseMoveFunc()
 						deltax *= 0.250f;
 					}
 					if (s_ikkind == 0) {
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
 					else {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -15329,7 +15328,7 @@ int OnMouseMoveFunc()
 					}
 
 					if (s_ikkind == 0) {
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, s_iklevel, s_ikcnt, s_ikselectmat);
+						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
 					else {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);

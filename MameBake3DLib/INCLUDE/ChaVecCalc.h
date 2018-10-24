@@ -366,6 +366,7 @@ bool IsTimeEqual(double srctime1, double srctime2);
 
 float VecLength(ChaVector3 srcvec);
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
+void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr);
 
 ChaMatrix TransZeroMat(ChaMatrix srcmat);
 ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3);
@@ -434,6 +435,7 @@ extern bool IsTimeEqual(double srctime1, double srctime2);
 
 extern float VecLength(ChaVector3 srcvec);
 extern void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
+extern void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr);
 
 extern ChaMatrix TransZeroMat(ChaMatrix srcmat);
 extern ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3);
