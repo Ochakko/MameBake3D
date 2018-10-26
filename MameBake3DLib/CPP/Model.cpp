@@ -4846,9 +4846,11 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 	//SetBtMotionPostReq(m_topbt, wmat, vpmat);
 	if (srcbone && srcbone->GetParent()) {
 		CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
-		SetBtMotionPostLowerReq(startbto, wmat, vpmat);
+		SetBtMotionPostLowerReq(startbto, wmat, vpmat, 0);//mass0adjust = 0
 		SetBtMotionPostUpperReq(startbto, wmat, vpmat);
-		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat);
+		//SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//mass0adjust = 0
+		SetBtMotionMass0BottomUpReq(m_topbt, wmat, vpmat);//for mass0
+		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 1);//mass0adjust = 1
 		BtMat2BtObjReq(m_topbt, wmat, vpmat);
 		RecalcConstraintFrameABReq(m_topbt);
 		m_physicsikcnt++;
@@ -5023,8 +5025,137 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 
 }
 
+//adjustrot = 0
+void CModel::AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot)
+{
+	ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+	ChaMatrix currentmat = curbone->GetBtMat();
+	ChaMatrix smat, rmat, tmat;
+	GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
+
+	ChaVector3 curpos1, curpos2;
+	ChaVector3TransformCoord(&curpos1, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+	ChaVector3TransformCoord(&curpos2, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
+	ChaVector3 adjustvec = curpos2 - curpos1;
+	//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
+
+	if (adjustrot == 1) {
+		ChaVector3 childpos;
+		ChaVector3TransformCoord(&childpos, &(childbone->GetJointFPos()), &(curbone->GetBtMat()));
+
+		ChaVector3 oldbonevec = childpos - curpos1;
+		ChaVector3Normalize(&oldbonevec, &oldbonevec);
+
+		ChaVector3 newcurpos;
+		newcurpos = curpos1 + adjustvec;
+		ChaVector3 newbonevec = childpos - newcurpos;
+		ChaVector3Normalize(&newbonevec, &newbonevec);
+
+		CQuaternion addrotq;
+		addrotq.RotationArc(oldbonevec, newbonevec);
+
+		rmat = rmat * addrotq.MakeRotMatX();
+
+		currentmat = smat * rmat * tmat;
+		ChaVector3TransformCoord(&curpos1, &(curbone->GetJointFPos()), &currentmat);
+		adjustvec = curpos2 - curpos1;
+		GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
+	}
+
+	if (ChaVector3Length(&adjustvec) >= 0.050f) {
+		tmat._41 += adjustvec.x;
+		tmat._42 += adjustvec.y;
+		tmat._43 += adjustvec.z;
+
+		ChaMatrix newmat;
+		newmat = smat * rmat * tmat;
+
+		curbone->SetBtMat(newmat);
+		curbone->SetBtFlag(1);
+	}
+}
+
+//int adjustrot = 0
+void CModel::AdjustBtMatToCurrent(CBone* curbone)
+{
+	ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+	ChaMatrix currentmat = curbone->GetBtMat();
+	ChaMatrix smat, rmat, tmat;
+	GetSRTMatrix2(parentmat, &smat, &rmat, &tmat);
+
+	ChaVector3 basepos, curpos;
+	ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
+	ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+	ChaVector3 adjustvec = curpos - basepos;
+	//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
+
+	if (ChaVector3Length(&adjustvec) >= 0.050f) {
+		tmat._41 += adjustvec.x;
+		tmat._42 += adjustvec.y;
+		tmat._43 += adjustvec.z;
+
+		ChaMatrix newmat;
+		newmat = smat * rmat * tmat;
+
+		curbone->GetParent()->SetBtMat(newmat);
+		curbone->GetParent()->SetBtFlag(1);
+	}
+}
+
+//int adjustrot = 0
+void CModel::AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot)
+{
+	ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
+	ChaMatrix currentmat = curbone->GetBtMat();
+	ChaMatrix smat, rmat, tmat;
+	GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
+
+	ChaVector3 childpos1, childpos2;
+	ChaVector3TransformCoord(&childpos1, &(childbone->GetJointFPos()), &(curbone->GetBtMat()));
+	ChaVector3TransformCoord(&childpos2, &(childbone->GetJointFPos()), &(childbone->GetBtMat()));
+	ChaVector3 adjustvec = childpos2 - childpos1;
+	//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
+
+	if (adjustrot == 1) {
+		ChaVector3 curpos;
+		ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
+
+		ChaVector3 oldbonevec = childpos1 - curpos;
+		ChaVector3Normalize(&oldbonevec, &oldbonevec);
+
+		ChaVector3 newchildpos;
+		newchildpos = childpos1 + adjustvec;
+		ChaVector3 newbonevec = newchildpos - curpos;
+		ChaVector3Normalize(&newbonevec, &newbonevec);
+
+		CQuaternion addrotq;
+		addrotq.RotationArc(oldbonevec, newbonevec);
+
+		rmat = rmat * addrotq.MakeRotMatX();
+
+		currentmat = smat * rmat * tmat;
+		ChaVector3TransformCoord(&childpos1, &(childbone->GetJointFPos()), &currentmat);
+		adjustvec = childpos2 - childpos1;
+		GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
+	}
+
+
+	if (ChaVector3Length(&adjustvec) >= 0.050f) {
+		tmat._41 += adjustvec.x;
+		tmat._42 += adjustvec.y;
+		tmat._43 += adjustvec.z;
+
+		ChaMatrix newmat;
+		newmat = smat * rmat * tmat;
+
+		curbone->SetBtMat(newmat);
+		curbone->SetBtFlag(1);
+	}
+}
+
+
 //Post処理。SetBtMotionReqを呼び出した後で呼び出す。
-void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int mass0adjustflag)
 {
 	//後処理
 
@@ -5057,98 +5188,21 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
-							//ChaVector3 basepos, curpos;
-							//ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
-							//ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
-							//ChaVector3 adjustvec = basepos - curpos;
-							////ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
-							//ChaMatrix newcurmat = curbone->GetBtMat();
-							//newcurmat._41 += adjustvec.x;
-							//newcurmat._42 += adjustvec.y;
-							//newcurmat._43 += adjustvec.z;
-							//curbone->SetBtMat(newcurmat);
-							//curbone->SetBtFlag(1);
+							CBone* childbone = curbone->GetChild();
+							if (childbone) {
+								if (curbone->GetMass0() == 0) {
+									int adjustrot = 0;
+									AdjustBtMatToParent(curbone, childbone, adjustrot);
+								}
 
-
-
-							//ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
-							//ChaMatrix currentmat = curbone->GetBtMat();
-							//ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
-							//CQuaternion localrot;
-							//localrot.RotationMatrix(currentlocalmat);
-							//ChaVector3 pivot;
-							//pivot = curbone->GetJointFPos();
-							//ChaMatrix beftra, afttra, newmat;
-							//ChaMatrixIdentity(&beftra);
-							//ChaMatrixIdentity(&afttra);
-							//ChaMatrixTranslation(&beftra, -pivot.x, -pivot.y, -pivot.z);
-							//ChaMatrixTranslation(&afttra, pivot.x, pivot.y, pivot.z);
-							//newmat = beftra * localrot.MakeRotMatX() * afttra * parentmat;
-							//curbone->SetBtMat(newmat);
-							//curbone->SetBtFlag(1);
-
-
-
-							//ChaMatrix currentmat = curbone->GetBtMat();
-							//ChaMatrix currentfirstmat = curbone->GetCurrentZeroFrameMat(0);
-							//ChaMatrix currentdiffmat = ChaMatrixInv(currentfirstmat) * currentmat;
-							//CQuaternion addrotq;
-							//addrotq.RotationMatrix(currentdiffmat);
-							//ChaVector3 rotcenter;
-							//ChaVector3TransformCoord(&rotcenter, &(curbone->GetJointFPos()), &currentfirstmat);
-							//ChaMatrix beftra, afttra;
-							//ChaMatrixIdentity(&beftra);
-							//ChaMatrixIdentity(&afttra);
-							//ChaMatrixTranslation(&beftra, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-							//ChaMatrixTranslation(&afttra, rotcenter.x, rotcenter.y, rotcenter.z);
-							//ChaVector3 traanim = curbone->CalcLocalTraAnim(GetCurMotInfo()->motid, GetCurMotInfo()->curframe);
-							//ChaMatrix traanimmat;
-							//ChaMatrixIdentity(&traanimmat);
-							//ChaMatrixTranslation(&traanimmat, traanim.x, traanim.y, traanim.z);
-							//ChaMatrix newmat;
-							//newmat = currentfirstmat * beftra * addrotq.MakeRotMatX() * afttra * traanimmat;
-							//curbone->SetBtMat(newmat);
-							//curbone->SetBtFlag(1);
-
-
-							//ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
-							//ChaMatrix currentmat = curbone->GetBtMat();
-							//ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
-							//ChaMatrix smat, rmat, tmat;
-							//GetSRTMatrix2(currentlocalmat, &smat, &rmat, &tmat);
-							//ChaVector3 pivot;
-							//pivot = curbone->GetJointFPos();
-							//ChaMatrix beftra, afttra, newmat;
-							//ChaMatrixIdentity(&beftra);
-							//ChaMatrixIdentity(&afttra);
-							//ChaMatrixTranslation(&beftra, -pivot.x, -pivot.y, -pivot.z);
-							//ChaMatrixTranslation(&afttra, pivot.x, pivot.y, pivot.z);
-							////newmat = smat * rmat * tmat * parentmat;//変更なしの場合
-							////newmat = smat * beftra * rmat * afttra * parentmat;//めちゃくちゃ
-							////newmat = beftra * smat * rmat * afttra * parentmat;//くるっと
-
-							ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
-							ChaMatrix currentmat = curbone->GetBtMat();
-							ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
-							ChaMatrix smat, rmat, tmat;
-							GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
-
-							ChaVector3 basepos, curpos;
-							ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
-							ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
-							ChaVector3 adjustvec = basepos - curpos;
-							//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
-
-							if (ChaVector3Length(&adjustvec) >= 0.20f) {
-								tmat._41 += adjustvec.x;
-								tmat._42 += adjustvec.y;
-								tmat._43 += adjustvec.z;
-
-								ChaMatrix newmat;
-								newmat = smat * rmat * tmat;
-
-								curbone->SetBtMat(newmat);
-								curbone->SetBtFlag(1);
+								//if ((mass0adjustflag == 1) && (curbone->GetMass0() == 1)) {
+								//	//int adjustrot = 1;
+								//	//AdjustBtMatToParent(curbone, childbone, adjustrot);
+								//}
+								//else{
+								//	int adjustrot = 0;
+								//	AdjustBtMatToParent(curbone, childbone, adjustrot);
+								//}
 							}
 						}
 					}
@@ -5160,7 +5214,7 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
 		CBtObject* chilbto = curbto->GetChildBt(chilno);
 		if (chilbto) {
-			SetBtMotionPostLowerReq(chilbto, wmat, vpmat);
+			SetBtMotionPostLowerReq(chilbto, wmat, vpmat, mass0adjustflag);
 		}
 	}
 
@@ -5201,28 +5255,12 @@ void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
-							ChaMatrix parentmat = curbone->GetParent()->GetBtMat();
-							ChaMatrix currentmat = curbone->GetBtMat();
-							ChaMatrix currentlocalmat = currentmat * ChaMatrixInv(parentmat);
-							ChaMatrix smat, rmat, tmat;
-							GetSRTMatrix2(parentmat, &smat, &rmat, &tmat);
-
-							ChaVector3 basepos, curpos;
-							ChaVector3TransformCoord(&basepos, &(curbone->GetJointFPos()), &(curbone->GetParent()->GetBtMat()));
-							ChaVector3TransformCoord(&curpos, &(curbone->GetJointFPos()), &(curbone->GetBtMat()));
-							ChaVector3 adjustvec = curpos - basepos;
-							//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
-
-							if (ChaVector3Length(&adjustvec) >= 0.050f) {
-								tmat._41 += adjustvec.x;
-								tmat._42 += adjustvec.y;
-								tmat._43 += adjustvec.z;
-
-								ChaMatrix newmat;
-								newmat = smat * rmat * tmat;
-
-								curbone->GetParent()->SetBtMat(newmat);
-								curbone->GetParent()->SetBtFlag(1);
+							if (curbone->GetMass0() == 1) {
+							//	int adjustrot = 1;
+							//	AdjustBtMatToCurrent(curbone, adjustrot);
+							}
+							else {
+								AdjustBtMatToCurrent(curbone);
 							}
 						}
 					}
@@ -5235,6 +5273,54 @@ void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 		SetBtMotionPostUpperReq(parentbto, wmat, vpmat);
 	}
 
+}
+
+
+//Post処理。SetBtMotionReqを呼び出した後で呼び出す。
+void CModel::SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	//後処理
+
+	//先に階層をたどってから処理をする。つまり末端から処理を始める。
+	int chilno;
+	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+		CBtObject* chilbto = curbto->GetChildBt(chilno);
+		if (chilbto) {
+			SetBtMotionMass0BottomUpReq(chilbto, wmat, vpmat);
+		}
+	}
+
+	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
+		CBone* curbone = curbto->GetBone();
+		if (curbone && curbone->GetParent()) {
+			if (g_previewFlag == 5) {
+				if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetTmpKinematic() == false)) {
+					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
+					if (curbto->GetParBt()) {
+						if (curbone->GetParent()->GetParent()) {
+							if (curbone->GetBtFlag() == 1) {
+
+								//endjoint回避。子供のある子どもボーンを探す。
+								CBone* childbone = curbone->GetChild();
+								CBone* childbone2 = 0;
+								while (childbone) {
+									if (childbone->GetChild()) {
+										childbone2 = childbone;
+										break;
+									}
+									childbone = childbone->GetBrother();
+								}
+								if (childbone2) {
+									int adjustrot = 1;
+									AdjustBtMatToChild(curbone, childbone2, adjustrot);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
