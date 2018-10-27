@@ -179,6 +179,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2018/10/27_1
+　　動画　【物理IK】質量０とポスト処理による位置コンストレイント
+　　　（1分くらいのテスト動画）
+　　　https://youtu.be/q9z_DhzZQYU
+
 2018/10/26_1
 	物理IKの検証と修正のつづき
 		物理IK時の位置補正計算の修正
@@ -1952,6 +1957,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【物理IK】質量０とポスト処理による位置コンストレイント
+（1分くらいのテスト動画）
+https://youtu.be/q9z_DhzZQYU
 
 【オイラーグラフ】まめばけ３Dのオイラーグラフ【使い方】
 https://youtu.be/s0nHIjjcGdY
