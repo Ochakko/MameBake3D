@@ -10998,11 +10998,10 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			if (s_physicskind == 0){
 				if (s_onragdollik == 1){
 					int ikmaxlevel = 0;
-
 					curmodel->PhysicsRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
 				}
 				else if ((s_onragdollik == 2) || (s_onragdollik == 3)){
-					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.1f;
 					if (g_controlkey == true){
 						deltax *= 0.250f;
 					}
@@ -11017,9 +11016,11 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 			}
 			else{
+				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//­‚µ‚¸‚Â“®‚©‚³‚È‚¢‚Æ‰ó‚ê‚â‚·‚¢
+				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				int ikmaxlevel = 0;
-				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.1f;
+				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.2;//PhysicsMVŠÖ”“à‚Å‚³‚ç‚Ég_physicsmvrate‚ªŠ|‚¯‚ç‚ê‚éB
 				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
 			}
 		}

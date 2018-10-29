@@ -123,7 +123,8 @@ double						g_dspeed = 3.0;
 float g_ikfirst = 1.0f;
 float g_ikrate = 1.0f;
 int g_applyrate = 50;
-float g_physicsmvrate = 1.0f;
+//float g_physicsmvrate = 1.0f;
+float g_physicsmvrate = 0.1f;
 
 float                       g_fLightScale;
 int                         g_nNumActiveLights;
