@@ -4846,11 +4846,14 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 	//SetBtMotionPostReq(m_topbt, wmat, vpmat);
 	if (srcbone && srcbone->GetParent()) {
 		CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
-		SetBtMotionPostLowerReq(startbto, wmat, vpmat, 0);//mass0adjust = 0
+		SetBtMotionPostLowerReq(startbto, wmat, vpmat, 1);//kinematicadjust = 0
 		SetBtMotionPostUpperReq(startbto, wmat, vpmat);
 		//SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//mass0adjust = 0
 		SetBtMotionMass0BottomUpReq(m_topbt, wmat, vpmat);//for mass0
-		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 1);//mass0adjust = 1
+		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//kinematicadjust = 0
+
+		FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
+
 		BtMat2BtObjReq(m_topbt, wmat, vpmat);
 		RecalcConstraintFrameABReq(m_topbt);
 		m_physicsikcnt++;
@@ -5155,7 +5158,7 @@ void CModel::AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot)
 
 
 //Post処理。SetBtMotionReqを呼び出した後で呼び出す。
-void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int mass0adjustflag)
+void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag)
 {
 	//後処理
 
@@ -5171,38 +5174,35 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 			}
 			else if (g_previewFlag == 5) {
 				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
-				if ((curbone->GetBtFlag() == 0) || (curbone->GetParent()->GetTmpKinematic() == true)) {
-					if (curbone->GetParent()) {
-						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
-						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
-						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
-						curbone->SetBtMat(newcurmat);
-						curbone->SetBtFlag(1);
-					}
-					else {
-						curbone->SetBtMat(curbone->GetCurMp().GetWorldMat());
-						curbone->SetBtFlag(1);
+				if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetParent()->GetTmpKinematic() == true))) {//mass0とkinematic併用の場合にはmass0を適用
+				//if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetTmpKinematic() == true))) {//mass0とkinematic併用の場合にはmass0を適用
+					if (kinematicadjustflag == 1) {
+						if (curbone->GetParent()) {
+							ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
+							ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
+							ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
+							curbone->SetBtMat(newcurmat);
+							curbone->SetBtFlag(1);
+						}
+						else {
+							curbone->SetBtMat(curbone->GetCurMp().GetWorldMat());
+							curbone->SetBtFlag(1);
+						}
 					}
 				}
-				else if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && (curbone->GetParent()->GetTmpKinematic() == false)) {
+				else if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && 
+					((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0とkinematic併用の場合にはmass0を適用
+					//((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0とkinematic併用の場合にはmass0を適用
 					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
-							CBone* childbone = curbone->GetChild();
+							//CBone* childbone = curbone->GetChild();
+							CBone* childbone = curbto->GetEndBone();
 							if (childbone) {
 								if (curbone->GetMass0() == 0) {
 									int adjustrot = 0;
 									AdjustBtMatToParent(curbone, childbone, adjustrot);
 								}
-
-								//if ((mass0adjustflag == 1) && (curbone->GetMass0() == 1)) {
-								//	//int adjustrot = 1;
-								//	//AdjustBtMatToParent(curbone, childbone, adjustrot);
-								//}
-								//else{
-								//	int adjustrot = 0;
-								//	AdjustBtMatToParent(curbone, childbone, adjustrot);
-								//}
 							}
 						}
 					}
@@ -5214,7 +5214,7 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
 		CBtObject* chilbto = curbto->GetChildBt(chilno);
 		if (chilbto) {
-			SetBtMotionPostLowerReq(chilbto, wmat, vpmat, mass0adjustflag);
+			SetBtMotionPostLowerReq(chilbto, wmat, vpmat, kinematicadjustflag);
 		}
 	}
 
@@ -5238,20 +5238,9 @@ void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 			}
 			else if (g_previewFlag == 5) {
 				//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
-				if ((curbone->GetBtFlag() == 0) || (curbone->GetParent()->GetTmpKinematic() == true)) {
-					if (curbone->GetParent()) {
-						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
-						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
-						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
-						curbone->SetBtMat(newcurmat);
-						curbone->SetBtFlag(1);
-					}
-					else {
-						curbone->SetBtMat(curbone->GetCurMp().GetWorldMat());
-						curbone->SetBtFlag(1);
-					}
-				}
-				else if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && (curbone->GetParent()->GetTmpKinematic() == false)) {
+				if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && 
+					((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0とkinematic併用の場合にはmass0を適用
+					//((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0とkinematic併用の場合にはmass0を適用
 					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
@@ -5294,28 +5283,106 @@ void CModel::SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, Cha
 		CBone* curbone = curbto->GetBone();
 		if (curbone && curbone->GetParent()) {
 			if (g_previewFlag == 5) {
-				if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetTmpKinematic() == false)) {
+				if (curbone->GetBtFlag() == 1) {
 					//親の剛体とカレントの剛体のすきま、つまり関節の隙間を無くすために補正をする。
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
-							if (curbone->GetBtFlag() == 1) {
-
-								//endjoint回避。子供のある子どもボーンを探す。
-								CBone* childbone = curbone->GetChild();
-								CBone* childbone2 = 0;
-								while (childbone) {
+							if ((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE)) {//mass0とkinematic併用の場合にはmass0を適用
+							//if ((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE)) {//mass0とkinematic併用の場合にはmass0を適用
+								CBone* childbone = curbto->GetEndBone();
+								if (childbone) {
 									if (childbone->GetChild()) {
-										childbone2 = childbone;
-										break;
+										int adjustrot = 1;//!!!!!!!!!!!!
+										AdjustBtMatToChild(curbone, childbone, adjustrot);
 									}
-									childbone = childbone->GetBrother();
-								}
-								if (childbone2) {
-									int adjustrot = 1;
-									AdjustBtMatToChild(curbone, childbone2, adjustrot);
+									else {
+										AdjustBtMatToCurrent(curbone);
+									}
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void CModel::FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
+
+	//先に階層をたどってから処理をする。つまり末端から処理を始める。
+	int childno;
+	for (childno = 0; childno < curbto->GetChildBtSize(); childno++) {
+		CBtObject* childbto = curbto->GetChildBt(childno);
+		if (childbto) {
+			FindAndSetKinematicReq(childbto, wmat, vpmat);
+		}
+	}
+
+	if (curbto) {
+		CBone* curbone = curbto->GetBone();
+		if (curbone) {
+			CBone* childbone = curbto->GetEndBone();
+			CBone* parentbone = curbone->GetParent();
+			if (parentbone) {
+				if ((parentbone->GetMass0() == FALSE) && (curbone->GetMass0() == FALSE)) {
+					if ((parentbone->GetTmpKinematic() == FALSE) && (curbone->GetTmpKinematic() == TRUE)) {
+						//境目を発見
+
+						//親剛体の姿勢（角度含む）の補正
+						//ChaMatrix oldparentmat = parentbone->GetBtMat();
+						//AdjustBtMatToChild(parentbone, curbone, 1);
+
+						ChaMatrix curmatrix = curbone->GetBtMat();
+						//ChaMatrix newmatrix = curmatrix * ChaMatrixInv(oldparentmat) * parentbone->GetBtMat();
+
+						//SetBtMotionKinematicLowerReq(curbto, curmatrix, curmatrix);
+
+						int childno2;
+						for (childno2 = 0; childno2 < curbto->GetChildBtSize(); childno2++) {
+							CBtObject* childbto2 = curbto->GetChildBt(childno2);
+							if (childbto2) {
+								//SetBtMotionKinematicLowerReq(childbto2, curmatrix, newmatrix);
+								SetBtMotionKinematicLowerReq(childbto2, curmatrix, curmatrix);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+void CModel::SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparentmat, ChaMatrix newparentmat)
+{
+	//LowerReqで親行列をセットする。
+	
+	if (curbto) {
+		CBone* curbone = curbto->GetBone();
+		if ((curbone->GetMass0() == FALSE) && (curbone->GetTmpKinematic() == TRUE)) {
+			ChaMatrix oldcurmat, newcurmat;
+			if (curbone && curbone->GetParent()) {
+				oldcurmat = curbone->GetBtMat();
+
+				//newcurmat = oldcurmat * ChaMatrixInv(oldparentmat) * newparentmat;//形状修正なしの場合
+
+				ChaMatrix curkinematicmat, parentkinematicmat;
+				curkinematicmat = curbone->GetCurMp().GetWorldMat();
+				parentkinematicmat = curbone->GetParent()->GetCurMp().GetWorldMat();
+				newcurmat = curkinematicmat * ChaMatrixInv(parentkinematicmat) * newparentmat;//形状を保持する場合
+
+				curbone->SetBtMat(newcurmat);
+				curbone->SetBtFlag(1);
+
+
+				int chilno;
+				for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+					CBtObject* chilbto = curbto->GetChildBt(chilno);
+					if (chilbto) {
+						SetBtMotionKinematicLowerReq(chilbto, oldcurmat, newcurmat);
 					}
 				}
 			}
@@ -5333,7 +5400,7 @@ void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat
 				if (g_previewFlag == 5) {
 
 					//GetCurMp().GetWorldMat()には物理IK開始時の姿勢が入っている。
-					if (curbone->GetParent()->GetTmpKinematic() == true) {
+					if ((curbone->GetMass0() == FALSE) && (curbone->GetParent()->GetTmpKinematic() == true)) {
 						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
 						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
 						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
@@ -6138,10 +6205,12 @@ int CModel::SetRagdollKinFlag(int selectbone, int physicsmvkind)
 }
 void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physicsmvkind)
 {
+	//Mass0が設定されていた場合、TmpKinematicは強制的に無効
+
 
 	CBone* srcbone = srcbto->GetBone();
 	if (srcbone && srcbone->GetParent()){
-		if (srcbone->GetParent()->GetTmpKinematic() == false) {
+		if ((srcbone->GetMass0() == TRUE) || (srcbone->GetParent()->GetMass0() == TRUE) || (srcbone->GetParent()->GetTmpKinematic() == false)) {
 			CBone* kinchildbone = GetBoneByID(selectbone);
 			if (kinchildbone) {
 				CBone* kinbone = kinchildbone->GetParent();

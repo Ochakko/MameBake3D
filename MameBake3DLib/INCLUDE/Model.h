@@ -685,9 +685,11 @@ private:
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
 	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );
-	void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int mass0adjustflag);
+	void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag);
 	void SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
 	void SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
+	void SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparentmat, ChaMatrix newparentmat);
 	void AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot = 0);
 	void AdjustBtMatToCurrent(CBone* curbone);
 	void AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot = 0);

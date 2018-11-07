@@ -1141,7 +1141,7 @@ int CBtObject::SetBtMotion()
 	diffxworld = invxworld * newxworld;
 
 
-	if ((m_bone->GetBtFlag() == 0) && (m_bone->GetTmpKinematic() == false)) {
+	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
 		//m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
 		m_bone->SetBtFlag(1);
