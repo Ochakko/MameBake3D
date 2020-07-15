@@ -3978,7 +3978,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
 
             swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
-            g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
+            //g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
             break;
 
         case IDC_SL_IKFIRST:
@@ -11892,8 +11892,8 @@ int CreateUtDialog()
 
 	//iY += 24;
 	swprintf_s(sz, 100, L"Light scale: %0.2f", g_fLightScale);
-//	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
-//	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
+	//g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
+	//g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 
 	g_SampleUI.AddCheckBox(IDC_BMARK, L"É{Å[ÉìÇï\é¶Ç∑ÇÈ", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
