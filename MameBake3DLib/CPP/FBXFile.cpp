@@ -225,6 +225,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
     int lMajor, lMinor, lRevision;
     bool lStatus = true;
 
+
     // Create an exporter.
     FbxExporter* lExporter = FbxExporter::Create(pSdkManager, "");
 
@@ -265,6 +266,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
     IOS_REF.SetBoolProp(EXP_FBX_ANIMATION,       true);
     IOS_REF.SetBoolProp(EXP_FBX_GLOBAL_SETTINGS, true);
 
+
     // Initialize the exporter by providing a filename.
     if(lExporter->Initialize(pFilename, pFileFormat, pSdkManager->GetIOSettings()) == false)
     {
@@ -273,8 +275,18 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
         return false;
     }
 
-    FbxManager::GetFileFormatVersion(lMajor, lMinor, lRevision);
-    printf("FBX version number for this version of the FBX SDK is %d.%d.%d\n\n", lMajor, lMinor, lRevision);
+
+	//FBX File‚ª³‚µ‚¢‚©‚Ç‚¤‚©‚ÍMaya‚Å“Ç‚Ýž‚Ü‚È‚¢‚Æ•ª‚©‚ç‚È‚¢
+	//Ž‚Á‚Ä‚¢‚é‚Ì‚ÍMaya2013‚È‚Ì‚ÅMaya2013‚ÅŠm‚©‚ß‚é
+	//FBX201300‚Åo—Í
+	//Maya2013‚ÌFBX plugin 2013.3‚ÌAPI version‚Í201300
+	lExporter->SetFileExportVersion(FbxString("FBX201300"),
+		FbxSceneRenamer::eNone
+	);
+
+	FbxManager::GetFileFormatVersion(lMajor, lMinor, lRevision);
+	printf("FBX version number for this version of the FBX SDK is %d.%d.%d\n\n", lMajor, lMinor, lRevision);
+
 
     // Export the scene.
     lStatus = lExporter->Export(pScene); 
@@ -367,7 +379,6 @@ int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename )
     }
 
     // Save the scene.
-
     // The example can take an output file name as an argument.
     lResult = SaveScene( s_pSdkManager, lScene, pfilename );
 

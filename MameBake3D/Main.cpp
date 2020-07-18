@@ -3136,6 +3136,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				}
 				return 0;
 				break;
+/***
 			case ID_SAVE_FBX40039:
 				if( s_registflag == 1 ){
 					ActivatePanel( 0 );
@@ -3143,7 +3144,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					ActivatePanel( 1 );
 				}
 				break;
+***/
 			case ID_SAVEPROJ_40035:
+				//FBX File‚Í201300‚Å‘‚«o‚µ
 				if( s_registflag == 1 ){
 					ActivatePanel( 0 );
 					SaveProject();
@@ -9889,7 +9892,6 @@ int ExportFBXFile()
 
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
 	CallF( WriteFBXFile( s_psdk, s_model, fbxpath ), return 1 );
-
 
 	if (s_model->GetOldAxisFlagAtLoading() == 0){
 		WCHAR lmtname[MAX_PATH] = { 0L };
