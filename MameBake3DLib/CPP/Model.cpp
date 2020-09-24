@@ -3579,7 +3579,11 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 						else{
 							difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 						}
-						CallF(boneptr->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return 1);
+
+						//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
+						if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
+							CallF(boneptr->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return 1);
+						}
 					}
 
 					childbone = childbone->GetBrother();
@@ -3714,7 +3718,10 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 			else{
 				difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 			}
-			CallF(srcbone->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return);
+			//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
+			if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
+				CallF(srcbone->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return);
+			}
 		}
 		//}
 	}
