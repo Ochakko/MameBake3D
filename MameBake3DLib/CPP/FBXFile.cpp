@@ -280,9 +280,9 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
 	//Ž‚Á‚Ä‚¢‚é‚Ì‚ÍMaya2013‚È‚Ì‚ÅMaya2013‚ÅŠm‚©‚ß‚é
 	//FBX201300‚Åo—Í
 	//Maya2013‚ÌFBX plugin 2013.3‚ÌAPI version‚Í201300
-	lExporter->SetFileExportVersion(FbxString("FBX201300"),
-		FbxSceneRenamer::eNone
-	);
+	//lExporter->SetFileExportVersion(FbxString("FBX201300"),
+	//	FbxSceneRenamer::eNone
+	//);
 
 	FbxManager::GetFileFormatVersion(lMajor, lMinor, lRevision);
 	printf("FBX version number for this version of the FBX SDK is %d.%d.%d\n\n", lMajor, lMinor, lRevision);
