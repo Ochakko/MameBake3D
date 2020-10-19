@@ -48,8 +48,8 @@ private:
 public:
 	//accesser
 	int GetOrgPointNum(){
-		//return m_orgpointnum;
-		return (m_lastvalidvno + 1);
+		return m_orgpointnum;
+		//return (m_lastvalidvno + 1);
 	};
 
 	int GetOrgFaceNum(){

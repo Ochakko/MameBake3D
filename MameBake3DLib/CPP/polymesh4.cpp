@@ -280,7 +280,9 @@ int CPolyMesh4::SetTriFace( CMQOFace* faceptr, int* numptr )
 			}
 
 			setno++;
-		}else if( srcface->GetPointNum() >= 4 ){
+		//}else if( srcface->GetPointNum() >= 4 ){
+		}
+		else if (srcface->GetPointNum() != 3) {
 			::MessageBoxA(NULL, "triangle only!! Convert to triangles and retry.", "Data Type Error!!", MB_OK);
 			_ASSERT( 0 );
 			return 1;
