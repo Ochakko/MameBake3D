@@ -2531,7 +2531,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				//for (int i = 0; i < size; ++i) {
 				for (int i = 0; i < size; i++) {
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
-					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(i)[1];
+					(newobj->GetUVBuf() + i)->y = 1.0f - (float)elem->GetDirectArray().GetAt(i)[1];
 					DbgOut(L"direct %d, u : %f, v : %f\r\n", i, (newobj->GetUVBuf() + i)->x, (newobj->GetUVBuf() + i)->y);
 				}
 				DbgOut(L"\r\n\r\n");
@@ -2548,7 +2548,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				for (int i = 0; i < size; i++) {
 					int index = elem->GetIndexArray().GetAt(i);
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(index)[0];
-					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(index)[1];
+					(newobj->GetUVBuf() + i)->y = 1.0f - (float)elem->GetDirectArray().GetAt(index)[1];
 					DbgOut(L"direct %d, u : %f, v : %f\r\n", i, (newobj->GetUVBuf() + i)->x, (newobj->GetUVBuf() + i)->y);
 				}
 				DbgOut(L"\r\n\r\n");
@@ -2573,7 +2573,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				//for (int i = 0; i < size; ++i) {
 				for (int i = 0; i < size; i++) {
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
-					(newobj->GetUVBuf() + i)->y = (float)elem->GetDirectArray().GetAt(i)[1];
+					(newobj->GetUVBuf() + i)->y = 1.0f - (float)elem->GetDirectArray().GetAt(i)[1];
 					DbgOut(L"direct %d, u : %f, v : %f\r\n", i, (newobj->GetUVBuf() + i)->x, (newobj->GetUVBuf() + i)->y);
 				}
 			}

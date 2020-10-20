@@ -523,9 +523,9 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 		FbxSkin* lSkin = FbxSkin::Create(pScene, "");
 
 
-		int* psetflag = (int*)malloc( curobj->GetPm4()->GetOrgPointNum() * sizeof(int));
+		int* psetflag = (int*)malloc( curobj->GetPm4()->GetOptLeng() * sizeof(int));
 		_ASSERT(psetflag);
-		ZeroMemory(psetflag, curobj->GetPm4()->GetOrgPointNum() * sizeof(int));
+		ZeroMemory(psetflag, curobj->GetPm4()->GetOptLeng() * sizeof(int));
 		CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
 		if (!ppsetbone){
 			_ASSERT(0);
@@ -668,72 +668,106 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	int facenum = pm4->GetFaceNum();
 	s_doublevertices = 0;
 	FbxMesh* lMesh = FbxMesh::Create(pScene, meshname);
-	lMesh->InitControlPoints(pm4->GetOrgPointNum());
+	//lMesh->InitControlPoints(pm4->GetOrgPointNum());
+	lMesh->InitControlPoints(pm4->GetOptLeng());//###
 
 
 	FbxVector4* lcp = lMesh->GetControlPoints();
 
 	FbxGeometryElementNormal* lElementNormal = lMesh->CreateElementNormal();
-	lElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
+	//lElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
+	lElementNormal->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
 	lElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
 
 	FbxGeometryElementUV* lUVDiffuseElement = lMesh->CreateElementUV( "DiffuseUV");
 	_ASSERT( lUVDiffuseElement != NULL);
 	//lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
-	//lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eDirect);
 	lUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
-	lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
+	lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eDirect);
+	//lUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
 
 	int vsetno = 0;
-	for (vsetno = 0; vsetno < pm4->GetOrgPointNum(); vsetno++){
-		ChaVector3* curv = pm4->GetOrgPointBuf() + vsetno;
-		*(lcp + vsetno) = FbxVector4(curv->x, curv->y, curv->z, 1.0f);
+	//vsetno = 0;
+	//for (vsetno = 0; vsetno < pm4->GetOptLeng(); vsetno++) {
+	//	PM3DISPV* pm3dispv = pm4->GetPm3Disp() + vsetno;
+	//	*(lcp + vsetno) = FbxVector4(pm3dispv->pos.x, pm3dispv->pos.y, -pm3dispv->pos.z, 1.0);
 
-		ChaVector3 curn = pm4->GetNormalByControlPointNo(vsetno);
-		FbxVector4 fbxn = FbxVector4(curn.x, curn.y, curn.z, 0.0f);
-		lElementNormal->GetDirectArray().Add(fbxn);
+	//	//int orgvno = *(pm4->GetOrgIndex() + vsetno);
+	//	//ChaVector2 curuv = pm4->GetUVByControlPointNo(orgvno);
+	//	
+	//	//FbxVector2 fbxuv = FbxVector2(pm3dispv->uv.x, 1.0f - pm3dispv->uv.y);
+	//	//lUVDiffuseElement->GetDirectArray().Add(fbxuv);
 
-	}
-
-
-	vsetno = 0;
+	//	//FbxVector4 fbxn = FbxVector4(pm3dispv->normal.x, pm3dispv->normal.y, pm3dispv->normal.z, 0.0);
+	//	//lElementNormal->GetDirectArray().Add(fbxn);
+	//}
+	
 	int faceno;
-	for (faceno = 0; faceno < facenum; faceno++){
-		PM3DISPV* curdispv = pm4->GetPm3Disp() + faceno * 3;
+	for (faceno = 0; faceno < facenum; faceno++) {
+		int srcno[3];
+		srcno[0] = faceno * 3;
+		srcno[1] = faceno * 3 + 2;
+		srcno[2] = faceno * 3 + 1;
+
+		int nno[3];
+		nno[0] = faceno * 3;
+		nno[1] = faceno * 3 + 1;
+		nno[2] = faceno * 3 + 2;
+
+		//int vcnt;
+		//for (vcnt = 0; vcnt < 3; vcnt++) {
+		//	int vno = *(pm4->GetDispIndex() + srcno[vcnt]);
+		//	PM3DISPV* pm3dispv = pm4->GetPm3Disp() + vno;
+
+		//	//0 2 1のインデックス順で書き出して　読み込み時の　０　１　２の順に直す
+		//	*(lcp + vno) = FbxVector4(pm3dispv->pos.x, pm3dispv->pos.y, pm3dispv->pos.z, 1.0);
+		//	FbxVector2 fbxuv = FbxVector2(pm3dispv->uv.x, 1.0f - pm3dispv->uv.y);
+		//	lUVDiffuseElement->GetDirectArray().Add(fbxuv);
+
+
+		//	//0 1 2 の順番のまま
+		//	int nvno = *(pm4->GetDispIndex() + nno[vcnt]);
+		//	PM3DISPV* npm3dispv = pm4->GetPm3Disp() + nvno;
+		//	FbxVector4 fbxn = FbxVector4(npm3dispv->normal.x, npm3dispv->normal.y, npm3dispv->normal.z, 0.0);
+		//	lElementNormal->GetDirectArray().Add(fbxn);
+		//}
 		int vcnt;
-		for (vcnt = 0; vcnt < 3; vcnt++){
-			//PM3DISPV* curv = curdispv + vcnt;
-			PM3DISPV* curv = curdispv + s_invindex[vcnt];
-			FbxVector2 fbxuv = FbxVector2(curv->uv.x, 1.0f - curv->uv.y);
-			//FbxVector2 fbxuv = FbxVector2(curv->uv.x, curv->uv.y);
+		for (vcnt = 0; vcnt < 3; vcnt++) {
+			int vno = *(pm4->GetDispIndex() + srcno[vcnt]);
+			PM3DISPV* pm3dispv = pm4->GetPm3Disp() + vno;
+
+			//0 2 1のインデックス順で書き出して　読み込み時の　０　１　２の順に直す
+			*(lcp + vno) = FbxVector4(pm3dispv->pos.x, pm3dispv->pos.y, pm3dispv->pos.z, 1.0);
+
+			FbxVector2 fbxuv = FbxVector2(pm3dispv->uv.x, 1.0f - pm3dispv->uv.y);
 			lUVDiffuseElement->GetDirectArray().Add(fbxuv);
 
-			vsetno++;
+			FbxVector4 fbxn = FbxVector4(pm3dispv->normal.x, pm3dispv->normal.y, pm3dispv->normal.z, 0.0);
+			lElementNormal->GetDirectArray().Add(fbxn);
 		}
+
 	}
 	lUVDiffuseElement->GetIndexArray().SetCount(facenum * 3);
 
 
-	vsetno = 0;
-	for( faceno = 0; faceno < facenum; faceno++ ){
-		CMQOFace* curface = pm4->GetTriFace() + faceno;
-		int vno[3];
-		vno[0] = curface->GetIndex(0);
-		vno[2] = curface->GetIndex(2);
-		vno[1] = curface->GetIndex(1);
 
-		_ASSERT((vno[0] >= 0) && (vno[0] < pm4->GetOrgPointNum()));
-		_ASSERT((vno[1] >= 0) && (vno[1] < pm4->GetOrgPointNum()));
-		_ASSERT((vno[2] >= 0) && (vno[2] < pm4->GetOrgPointNum()));
+	vsetno = 0;
+	//int faceno;
+	for( faceno = 0; faceno < facenum; faceno++ ){
 
 		lMesh->BeginPolygon(-1, -1, -1, false);
 
+		int srcno[3];
+		srcno[0] = faceno * 3;
+		srcno[1] = faceno * 3 + 2;
+		srcno[2] = faceno * 3 + 1;
+
 		int vcnt;
 		for( vcnt = 0; vcnt < 3; vcnt++ ){
-			lMesh->AddPolygon(vno[vcnt]);
-			//lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vcnt);//vertex, vcnt
-			lUVDiffuseElement->GetIndexArray().SetAt(vsetno, vsetno);//vertex, vcnt
-			vsetno++;
+			int vno = *(pm4->GetDispIndex() + srcno[vcnt]);
+			_ASSERT((vno >= 0) && (vno < pm4->GetOptLeng()));
+		
+			lMesh->AddPolygon(vno);
 		}
 		lMesh->EndPolygon ();
 	}
@@ -870,37 +904,40 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 				int fno;
 				for (fno = 0; fno < pm4->GetFaceNum(); fno++){
 					CMQOFace* curface = pm4->GetTriFace() + fno;
-					int vno[3];
-					vno[0] = curface->GetIndex(0);
-					vno[2] = curface->GetIndex(2);
-					vno[1] = curface->GetIndex(1);
+					int orgvno[3];
+					orgvno[0] = curface->GetIndex(0);
+					orgvno[2] = curface->GetIndex(2);
+					orgvno[1] = curface->GetIndex(1);
 
-					_ASSERT((vno[0] >= 0) && (vno[0] < pm4->GetOrgPointNum()));
-					_ASSERT((vno[1] >= 0) && (vno[1] < pm4->GetOrgPointNum()));
-					_ASSERT((vno[2] >= 0) && (vno[2] < pm4->GetOrgPointNum()));
+					_ASSERT((orgvno[0] >= 0) && (orgvno[0] < pm4->GetOrgPointNum()));
+					_ASSERT((orgvno[1] >= 0) && (orgvno[1] < pm4->GetOrgPointNum()));
+					_ASSERT((orgvno[2] >= 0) && (orgvno[2] < pm4->GetOrgPointNum()));
 
 					int vcnt;
 					for (vcnt = 0; vcnt < 3; vcnt++){
-						CInfBone* curib = pm4->GetInfBone() + vno[vcnt];
+						int dispvno;
+						dispvno = fno * 3 + s_invindex[vcnt];
+
+						CInfBone* curib = pm4->GetInfBone() + orgvno[vcnt];
 						int ieno = curib->ExistBone(curobj, curclusterno);
 						if (ieno >= 0){
 							map<int, int>::iterator itrmapdirty;
-							itrmapdirty = itrlinkdirty->second.find(vno[vcnt]);
+							itrmapdirty = itrlinkdirty->second.find(dispvno);
 							if (itrmapdirty == itrlinkdirty->second.end()){
 								INFDATA* infd = curib->GetInfData(curobj);
 								if (infd){
-									lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+									lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
 								}
-								*(psetflag + vno[vcnt]) = 1;
-								itrlinkdirty->second[vno[vcnt]] = 1;
+								*(psetflag + dispvno) = 1;
+								itrlinkdirty->second[dispvno] = 1;
 							}
 							else if ((int)(itrmapdirty->second) != 1){
 								INFDATA* infd = curib->GetInfData(curobj);
 								if (infd){
-									lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+									lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
 								}
-								*(psetflag + vno[vcnt]) = 1;
-								itrlinkdirty->second[vno[vcnt]] = 1;
+								*(psetflag + dispvno) = 1;
+								itrlinkdirty->second[dispvno] = 1;
 							}
 						}
 						vsetno++;//セットしてもしなくてもインデックスは増える
@@ -932,7 +969,7 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 
 				//ボーンがないデータ用　だったっけ？
 				int setv;
-				for (setv = 0; setv < pm4->GetOrgPointNum(); setv++) {
+				for (setv = 0; setv < pm4->GetOptLeng(); setv++) {
 					if (*(psetflag + setv) == 0) {
 						//lCluster->AddControlPointIndex(setv, 1.0);
 						lCluster->AddControlPointIndex(setv, 0.0000010);
@@ -1035,38 +1072,41 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 					int fno;
 					for (fno = 0; fno < pm4->GetFaceNum(); fno++){
 						CMQOFace* curface = pm4->GetTriFace() + fno;
-						int vno[3];
-						vno[0] = curface->GetIndex(0);
-						vno[2] = curface->GetIndex(2);
-						vno[1] = curface->GetIndex(1);
+						int orgvno[3];
+						orgvno[0] = curface->GetIndex(0);
+						orgvno[2] = curface->GetIndex(2);
+						orgvno[1] = curface->GetIndex(1);
 
-						_ASSERT((vno[0] >= 0) && (vno[0] < pm4->GetOrgPointNum()));
-						_ASSERT((vno[1] >= 0) && (vno[1] < pm4->GetOrgPointNum()));
-						_ASSERT((vno[2] >= 0) && (vno[2] < pm4->GetOrgPointNum()));
+						_ASSERT((orgvno[0] >= 0) && (orgvno[0] < pm4->GetOrgPointNum()));
+						_ASSERT((orgvno[1] >= 0) && (orgvno[1] < pm4->GetOrgPointNum()));
+						_ASSERT((orgvno[2] >= 0) && (orgvno[2] < pm4->GetOrgPointNum()));
 
 						int vcnt;
 						for (vcnt = 0; vcnt < 3; vcnt++){
-							CInfBone* curib = pm4->GetInfBone() + vno[vcnt];
+							int dispvno;
+							dispvno = fno * 3 + s_invindex[vcnt];
+
+							CInfBone* curib = pm4->GetInfBone() + orgvno[vcnt];
 							int ieno = curib->ExistBone(curobj, curclusterno);
 							if (ieno >= 0){
 								map<int, int>::iterator itrmapdirty;
-								itrmapdirty = itrlinkdirty->second.find(vno[vcnt]);
+								itrmapdirty = itrlinkdirty->second.find(dispvno);
 								if (itrmapdirty == itrlinkdirty->second.end()){
 									INFDATA* infd = curib->GetInfData(curobj);
 									if (infd){
-										lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+										lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
 									}
-									*(psetflag + vno[vcnt]) = 1;
-									itrlinkdirty->second[vno[vcnt]] = 1;
+									*(psetflag + dispvno) = 1;
+									itrlinkdirty->second[dispvno] = 1;
 									dosetcnt++;
 								}
 								else if ((int)(itrmapdirty->second) != 1){
 									INFDATA* infd = curib->GetInfData(curobj);
 									if (infd){
-										lCluster->AddControlPointIndex(vno[vcnt], (double)(infd->m_infelem[ieno].dispinf));
+										lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
 									}
-									*(psetflag + vno[vcnt]) = 1;
-									itrlinkdirty->second[vno[vcnt]] = 1;
+									*(psetflag + dispvno) = 1;
+									itrlinkdirty->second[dispvno] = 1;
 									dosetcnt++;
 								}
 							}
@@ -1074,10 +1114,10 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 						}
 					}
 					
-					int newcnt;
-					newcnt = lCluster->GetControlPointIndicesCount();
-					newcnt += dosetcnt;
-					lCluster->SetControlPointIWCount(newcnt);
+					//int newcnt;
+					//newcnt = lCluster->GetControlPointIndicesCount();
+					//newcnt += dosetcnt;
+					//lCluster->SetControlPointIWCount(newcnt);
 
 					FbxAMatrix lXMatrix;
 					lXMatrix = pMesh->EvaluateGlobalTransform();

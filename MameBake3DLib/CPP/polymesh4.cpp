@@ -315,6 +315,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
 				PM3DISPV* curv = dispv + (setno * 3 + vcnt);
 				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
+				// 0 2 1
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
 				curv->pos.x = (m_pointbuf + vno)->x;
 				curv->pos.y = (m_pointbuf + vno)->y;
@@ -327,10 +328,13 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				//*(m_fbxindex + setno * 3 + vi[vcnt]) = vno;
 
 				if( m_normal ){
-					if( m_normalleng == m_orgpointnum ){
-						curv->normal = *(m_normal + vno);
-					}else if( m_normalleng == (m_facenum * 3) ){
+
+					if (m_normalleng == (m_facenum * 3)) {
+						//0 2 1 if•¶—Dæ
 						curv->normal = *(m_normal + setno * 3 + vi[vcnt]);
+					}
+					else if( m_normalleng == m_orgpointnum ){
+						curv->normal = *(m_normal + vno);
 					}else{
 						_ASSERT( 0 );
 					}
@@ -340,7 +344,9 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				}
 
 				if( m_uvbuf ){
+
 					if (m_uvleng == (m_facenum * 3)){
+						//0 2 1 if•¶—Dæ
 						curv->uv = *(m_uvbuf + setno * 3 + vi[vcnt]);
 					}
 					else if(m_uvleng >= m_orgpointnum){//m_orgpointnum‚Ì‚Æ‚«‚Æm_orgpointnum * 2‚Ì‚Æ‚«
@@ -350,7 +356,7 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 						_ASSERT(0);
 					}
 
-					curv->uv.y = 1.0f - curv->uv.y;//•\Ž¦—p
+					//curv->uv.y = 1.0f - curv->uv.y;//•\Ž¦—p CModel::GetFBXMesh‚Å‚µ‚Ä‚¢‚é
 
 				}else{
 					curv->uv = ChaVector2( 0.0f, 0.0f );
