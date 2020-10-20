@@ -199,6 +199,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2020/10/21
+	FBX入出力テストの続き
+	2020/10/19でFBX出力時にRootNodeを新規には作成しないようにしたが
+	同梱のyuriのデータの入出力で不具合が生じたので
+	RootNodeの扱いを元に戻した
+
+
 2020/10/20
 	FBXの受け渡し順として
 	RokDeBone2-->Maya2018-->MameBake3D-->MameBake3D
