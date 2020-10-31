@@ -1048,72 +1048,70 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 					}
 				}
 			}
-		
-			if (foundinf == 0) {
-				lCluster->SetLinkMode(FbxCluster::eAdditive);
-			}
-
-			if (fbxbone && fbxbone->GetBone()) {
-				CBone* curbone = fbxbone->GetBone();
-				if (curbone) {
-					ChaVector3 pos;
-					pos = curbone->GetJointFPos();
-
-					FbxAMatrix lXMatrix;
-					lXMatrix.SetIdentity();
-					lXMatrix[3][0] = -pos.x;
-					lXMatrix[3][1] = -pos.y;
-					lXMatrix[3][2] = -pos.z;
-					lCluster->SetTransformMatrix(lXMatrix);
-
-					lXMatrix.SetIdentity();
-					lCluster->SetTransformLinkMatrix(lXMatrix);
-				}
-				else {
-					FbxAMatrix lXMatrix;
-					lXMatrix.SetIdentity();
-					lCluster->SetTransformMatrix(lXMatrix);
-					lCluster->SetTransformLinkMatrix(lXMatrix);
-				}
-				lSkin->AddCluster(lCluster);
-			}
-			else if (fbxbone && fbxbone->GetBvhElem()) {
-				CBVHElem* curbone = fbxbone->GetBvhElem();
-				if (curbone) {
-					ChaVector3 pos;
-					pos = curbone->GetPosition();
-
-					FbxAMatrix lXMatrix;
-					lXMatrix.SetIdentity();
-					lXMatrix[3][0] = -pos.x;
-					lXMatrix[3][1] = -pos.y;
-					lXMatrix[3][2] = -pos.z;
-					lCluster->SetTransformMatrix(lXMatrix);
-
-					lXMatrix.SetIdentity();
-					lCluster->SetTransformLinkMatrix(lXMatrix);
-				}
-				else {
-					FbxAMatrix lXMatrix;
-					lXMatrix.SetIdentity();
-					lCluster->SetTransformMatrix(lXMatrix);
-					lCluster->SetTransformLinkMatrix(lXMatrix);
-				}
-				lSkin->AddCluster(lCluster);
-			}
-
-
-			//FbxAMatrix lXMatrix;
-			//lXMatrix = pMesh->EvaluateGlobalTransform();
-			//lCluster->SetTransformMatrix(lXMatrix);
-
-			//FbxAMatrix lXMatrix2;
-			//lXMatrix2 = lSkel->EvaluateGlobalTransform();
-			//lCluster->SetTransformLinkMatrix(lXMatrix2);
-
-			//lSkin->AddCluster(lCluster);
-
 		}
+		if (foundinf == 0) {
+			lCluster->SetLinkMode(FbxCluster::eAdditive);
+		}
+
+		if (fbxbone && fbxbone->GetBone()) {
+			CBone* curbone = fbxbone->GetBone();
+			if (curbone) {
+				ChaVector3 pos;
+				pos = curbone->GetJointFPos();
+
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lXMatrix[3][0] = -pos.x;
+				lXMatrix[3][1] = -pos.y;
+				lXMatrix[3][2] = -pos.z;
+				lCluster->SetTransformMatrix(lXMatrix);
+
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
+			else {
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformMatrix(lXMatrix);
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
+			lSkin->AddCluster(lCluster);
+		}
+		else if (fbxbone && fbxbone->GetBvhElem()) {
+			CBVHElem* curbone = fbxbone->GetBvhElem();
+			if (curbone) {
+				ChaVector3 pos;
+				pos = curbone->GetPosition();
+
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lXMatrix[3][0] = -pos.x;
+				lXMatrix[3][1] = -pos.y;
+				lXMatrix[3][2] = -pos.z;
+				lCluster->SetTransformMatrix(lXMatrix);
+
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
+			else {
+				FbxAMatrix lXMatrix;
+				lXMatrix.SetIdentity();
+				lCluster->SetTransformMatrix(lXMatrix);
+				lCluster->SetTransformLinkMatrix(lXMatrix);
+			}
+			lSkin->AddCluster(lCluster);
+		}
+
+
+		//FbxAMatrix lXMatrix;
+		//lXMatrix = pMesh->EvaluateGlobalTransform();
+		//lCluster->SetTransformMatrix(lXMatrix);
+
+		//FbxAMatrix lXMatrix2;
+		//lXMatrix2 = lSkel->EvaluateGlobalTransform();
+		//lCluster->SetTransformLinkMatrix(lXMatrix2);
+
+		//lSkin->AddCluster(lCluster);
 	}
 
 	if( fbxbone->GetChild() ){

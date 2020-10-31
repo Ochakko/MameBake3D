@@ -199,6 +199,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2020/10/31‚»‚Ì‚Q
+	FBXo—Í‚ÌC³
+	LinkMeshToSkeletonReq‚ÌC³
+
+
 2020/10/31‚»‚Ì‚P
 	FBXo—Í‚ÌC³
 	RokDeBone2-->MameBake3D-->MameBake3D‚Æ‚¢‚¤Œo˜H‚Æ
