@@ -296,6 +296,7 @@ private:
 	int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
 
 	int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
+	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB);
 	int GetRound(float srcval);
 
 

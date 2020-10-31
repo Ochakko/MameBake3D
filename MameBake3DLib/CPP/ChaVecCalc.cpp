@@ -1981,6 +1981,9 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 		Euler.z = -Euler.z;
 	}
+	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
+	//	Euler.z = -Euler.z;
+	//}
 
 	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
 	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
@@ -1995,6 +1998,9 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	if (vecDotVec(&shadowVec, &axisZVec) > 0.0f) {
 		Euler.y = -Euler.y;
 	}
+	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
+	//	Euler.y = -Euler.y;
+	//}
 
 
 	EQ.Rotate(&targetVec, axisZVec);
@@ -2013,8 +2019,12 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
 		Euler.x = -Euler.x;
 	}
+	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
+	//	Euler.x = -Euler.x;
+	//}
 
-	ModifyEuler(&Euler, &befeul);
+	//ModifyEuler(&Euler, &befeul);
+	ModifyEulerXYZ(&Euler, &befeul);
 	*reteul = Euler;
 
 	return 0;
@@ -2218,6 +2228,44 @@ int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 	return 0;
 }
 
+int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
+{
+
+	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
+	double tmpX1, tmpY1, tmpZ1;
+	double tmpX2, tmpY2, tmpZ2;
+	double s1, s2;
+
+	//予想される角度1
+	tmpX1 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
+	tmpY1 = eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y) / 360.0);
+	tmpZ1 = eulerA->z + 360.0 * GetRound((eulerB->z - eulerA->z) / 360.0);
+
+	//予想される角度2
+	//クォータニオンは１８０°で一回転する。
+	//横軸が２シータ、縦軸がsin2シータ、cos2シータのグラフにおいて、newシータ　=　180 + oldシータの値は等しい。
+	//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
+	//この場合、３つの軸のうち１つだけの軸の角度の符号(ここではX軸)が反転する。
+	//ということだと思う。テストすると合っている。
+	tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
+	tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
+	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+
+
+	//角度変化の大きさ
+	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
+	s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
+
+	//変化の少ない方に修正
+	if (s1 < s2) {
+		eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+	}
+	else {
+		eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+	}
+
+	return 0;
+}
 
 /*
 int CQuaternion::ModifyEuler( ChaVector3* eulerA, ChaVector3* eulerB )

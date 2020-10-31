@@ -199,6 +199,21 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2020/10/31その１
+	FBX出力の修正
+	RokDeBone2-->MameBake3D-->MameBake3Dという経路と
+	RokDeBone2-->MameBake3D-->Maya2018という経路で確認
+	Maya2018でエラーも警告も出ずに正常に読み込めることを確認
+
+	ただし現在、(Joint名)JointSetという名前のオブジェクトが多数出来る症状が出ている
+	AppleのReality Converter(Beta)でusdzに変換するためには
+	Maya2018で(Joint名)JointSetをすべて削除する必要があった
+
+	XYZローテーションオーダーにおけるCBone::ModifyEulerXYZを新規
+
+	サンプルとして付けているFBXファイルはまだ2013のままであり
+	MameBake3Dで保存しなおさないと修正は適用されない
+
 2020/10/21
 	FBX入出力テストの続き
 	2020/10/19でFBX出力時にRootNodeを新規には作成しないようにしたが

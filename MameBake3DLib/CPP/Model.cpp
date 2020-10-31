@@ -2912,10 +2912,10 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 		m_bone2node[newbone] = curnode;
 	}
 
-	EFbxRotationOrder lRotationOrder0;
-	curnode->GetRotationOrder (FbxNode::eSourcePivot, lRotationOrder0);
-	EFbxRotationOrder lRotationOrder1 = eEulerXYZ;
-	curnode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
+	EFbxRotationOrder lRotationOrderSource;
+	curnode->GetRotationOrder (FbxNode::eSourcePivot, lRotationOrderSource);
+	EFbxRotationOrder lRotationOrderDest = eEulerXYZ;
+	curnode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrderDest );
 
 	if( parnode ){
 		//const char* parentbonename = parnode->GetName();
@@ -3027,6 +3027,14 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 			_ASSERT( 0 );
 			return 1;
 		}
+
+		
+		//RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
+		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);
+
+
+
+
 		FbxAnimLayer * mCurrentAnimLayer;
 		mCurrentAnimLayer = lCurrentAnimationStack->GetMember<FbxAnimLayer>();
 
