@@ -199,6 +199,14 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2020/11/08その１
+	FBX出力の修正
+	影響度出力の修正
+		Maya2018で読み込んだ時に余計なJointSetが出来ないようにした
+		ダミーメッシュの頂点数をきちんと計算してセットした
+	AppleのRealityConverterでusdzに変換しても形が崩れなくなったしモーションも正常
+	AppleのRealityConverterでusdzに変換するとテクスチャ情報が無くなったようにみえた
+
 2020/10/31その２
 	FBX出力の修正
 	LinkMeshToSkeletonReqの修正

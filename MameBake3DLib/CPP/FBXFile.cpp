@@ -120,7 +120,10 @@ static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
 static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
 //static void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* lMesh, CMQOObject* curobj, CModel* pmodel );
 static void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
-static void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag);
+static BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
+
+static void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
+static BOOL LinkToTopBoneFunc(FbxCluster* lCluster, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
 
 
 
@@ -143,9 +146,9 @@ static int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno );
 static int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObject* curobj, BLSINDEX* blsindex );
 static int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, ChaVector3* targetv, int targetcnt );
 
-static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, int bonecnt);
-static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene);
-static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt);
+static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, CBone** ppsetbone, int* bonecnt);
+static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CBone** ppsetbone);
+static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int* bonecnt);
 
 static FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone);
 
@@ -443,12 +446,25 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 	}
 ***/
 
-	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
+	CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
+	if (!ppsetbone) {
+		_ASSERT(0);
+		return 1;
+	}
+	_ASSERT(ppsetbone);
+	ZeroMemory(ppsetbone, s_model->GetBoneListSize() * sizeof(CBone*));
+
+
+	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene, ppsetbone);
 	lRootNode->AddChild(lMesh);
 	FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
 	FbxSkin* lSkin = FbxSkin::Create(pScene, "");
-	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, 0);
+	int sbonecnt = 0;
+	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, ppsetbone, &sbonecnt);
 	lMeshAttribute->AddDeformer(lSkin);
+
+	free(ppsetbone);
+	ppsetbone = 0;
 
 
 //    StoreRestPose(pScene, lSkeletonRoot);
@@ -472,46 +488,55 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 
 
 
-bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
+bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
 {
-    // create scene info
-    FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager,"SceneInfo");
-    sceneInfo->mTitle = "scene made by MameBake3D";
-    sceneInfo->mSubject = "skinmesh and animation";
-    sceneInfo->mAuthor = "OchakkoLab";
-    sceneInfo->mRevision = "rev. 2.2";
-    sceneInfo->mKeywords = "skinmesh animation";
-    sceneInfo->mComment = "no particular comments required.";
+	// create scene info
+	FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager, "SceneInfo");
+	sceneInfo->mTitle = "scene made by MameBake3D";
+	sceneInfo->mSubject = "skinmesh and animation";
+	sceneInfo->mAuthor = "OchakkoLab";
+	sceneInfo->mRevision = "rev. 2.2";
+	sceneInfo->mKeywords = "skinmesh animation";
+	sceneInfo->mComment = "no particular comments required.";
 
-    // we need to add the sceneInfo before calling AddThumbNailToScene because
-    // that function is asking the scene for the sceneInfo.
-    pScene->SetSceneInfo(sceneInfo);
+	// we need to add the sceneInfo before calling AddThumbNailToScene because
+	// that function is asking the scene for the sceneInfo.
+	pScene->SetSceneInfo(sceneInfo);
 
-//    AddThumbnailToScene(pScene);
+	//    AddThumbnailToScene(pScene);
 
-    FbxNode* lRootNode = pScene->GetRootNode();
+	FbxNode* lRootNode = pScene->GetRootNode();
 
 	s_fbxbone = CreateFBXBone(pScene, pmodel);
-	lRootNode->AddChild( s_fbxbone->GetSkelNode() );
-	if( !s_fbxbone ){
-		_ASSERT( 0 );
+	lRootNode->AddChild(s_fbxbone->GetSkelNode());
+	if (!s_fbxbone) {
+		_ASSERT(0);
 		return 0;
 	}
 
+
+	CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
+	if (!ppsetbone) {
+		_ASSERT(0);
+		return 1;
+	}
+	_ASSERT(ppsetbone);
+	ZeroMemory(ppsetbone, s_model->GetBoneListSize() * sizeof(CBone*));
+
 	BLSINDEX blsindex;
-	ZeroMemory( &blsindex, sizeof( BLSINDEX ) );
+	ZeroMemory(&blsindex, sizeof(BLSINDEX));
 	s_blsinfo.clear();
-	map<int,CMQOObject*>::iterator itrobj;
-	for( itrobj = pmodel->GetMqoObjectBegin(); itrobj != pmodel->GetMqoObjectEnd(); itrobj++ ){
+	map<int, CMQOObject*>::iterator itrobj;
+	for (itrobj = pmodel->GetMqoObjectBegin(); itrobj != pmodel->GetMqoObjectEnd(); itrobj++) {
 		CMQOObject* curobj = itrobj->second;
 
 		const char* dummynameptr = strstr(curobj->GetName(), "_ND_dtri");
-		if (dummynameptr){
+		if (dummynameptr) {
 			continue;
 		}
 
-		FbxNode* lMesh = CreateFbxMesh( pSdkManager, pScene, pmodel, curobj );
-		if (!lMesh){
+		FbxNode* lMesh = CreateFbxMesh(pSdkManager, pScene, pmodel, curobj);
+		if (!lMesh) {
 			continue;//RootNode
 		}
 		//if( !(curobj->EmptyFindShape()) ){
@@ -523,37 +548,35 @@ bool CreateScene( FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel )
 		FbxSkin* lSkin = FbxSkin::Create(pScene, "");
 
 
-		int* psetflag = (int*)malloc( curobj->GetPm4()->GetOptLeng() * sizeof(int));
+		int* psetflag = (int*)malloc(curobj->GetPm4()->GetOptLeng() * sizeof(int));
 		_ASSERT(psetflag);
 		ZeroMemory(psetflag, curobj->GetPm4()->GetOptLeng() * sizeof(int));
-		CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
-		if (!ppsetbone){
-			_ASSERT(0);
-			return 1;
-		}
-		_ASSERT(ppsetbone);
-		ZeroMemory(ppsetbone, s_model->GetBoneListSize() * sizeof(CBone*));
 
 		s_linkdirty.clear();
 		LinkMeshToSkeletonReq(s_fbxbone, lSkin, pScene, lMesh, curobj, curobj->GetPm4(), psetflag, ppsetbone);
-		LinkToTopBone(lSkin, pScene, curobj, curobj->GetPm4(), psetflag);
-		
+		LinkToTopBone(lSkin, pScene, lMesh, curobj, curobj->GetPm4(), psetflag, ppsetbone);
+
 		free(psetflag);
 		psetflag = 0;
-		free(ppsetbone);
-		ppsetbone = 0;
 
 		lMeshAttribute->AddDeformer(lSkin);
 	}
 
 
-	//FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
-	//lRootNode->AddChild(lMesh);
-	//FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
-	//FbxSkin* lSkin = FbxSkin::Create(pScene, "");
-	//CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, 0);
-	//lMeshAttribute->AddDeformer(lSkin);
 
+
+	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene, ppsetbone);
+	if (lMesh) {
+		lRootNode->AddChild(lMesh);
+		FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
+		FbxSkin* lSkin = FbxSkin::Create(pScene, "");
+		int sbonecnt = 0;
+		CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, ppsetbone, &sbonecnt);
+		lMeshAttribute->AddDeformer(lSkin);
+	}
+
+	free(ppsetbone);
+	ppsetbone = 0;
 
 //    StoreRestPose(pScene, lSkeletonRoot);
 
@@ -862,7 +885,130 @@ FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
     return lTexture;
 }
 
-void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag)
+BOOL LinkToTopBoneFunc(FbxCluster* lCluster, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone)
+{
+	FbxAMatrix lXMatrix;
+	FbxNode* lSkel;
+
+	if (s_firsttopbone) {
+		//lSkel = s_fbxbone->skelnode;
+		lSkel = s_firsttopbone->GetSkelNode();
+		if (!lSkel) {
+			_ASSERT(0);
+			return FALSE;
+		}
+		CBone* curbone = s_firsttopbone->GetBone();
+		_ASSERT(curbone);
+		if (curbone) {
+			int foundinf = 0;
+
+			map<CBone*, map<int, int>>::iterator itrlinkdirty;
+			map<int, int> mapdirty;
+			s_linkdirty[curbone] = mapdirty;
+			itrlinkdirty = s_linkdirty.find(curbone);
+
+			FbxCluster *lCluster = 0;
+			int curclusterno = -1;
+			int infdirty = ExistBoneInInf(curbone->GetBoneNo(), curobj, &curclusterno);
+
+			if (infdirty) {
+				int fno;
+				for (fno = 0; fno < pm4->GetFaceNum(); fno++) {
+					CMQOFace* curface = pm4->GetTriFace() + fno;
+					int orgvno[3];
+					orgvno[0] = curface->GetIndex(0);
+					orgvno[2] = curface->GetIndex(2);
+					orgvno[1] = curface->GetIndex(1);
+
+					_ASSERT((orgvno[0] >= 0) && (orgvno[0] < pm4->GetOrgPointNum()));
+					_ASSERT((orgvno[1] >= 0) && (orgvno[1] < pm4->GetOrgPointNum()));
+					_ASSERT((orgvno[2] >= 0) && (orgvno[2] < pm4->GetOrgPointNum()));
+
+					int vcnt;
+					for (vcnt = 0; vcnt < 3; vcnt++) {
+						int dispvno;
+						dispvno = fno * 3 + s_invindex[vcnt];
+
+						CInfBone* curib = pm4->GetInfBone() + orgvno[vcnt];
+						int ieno = curib->ExistBone(curobj, curclusterno);
+						if (ieno >= 0) {
+							INFDATA* infd = curib->GetInfData(curobj);
+							if (infd) {
+								if (foundinf == 0)
+								{
+									foundinf = 1;
+									if (lCluster) {
+										lCluster->SetLinkMode(FbxCluster::eTotalOne);
+
+										_ASSERT(curbone->GetBoneNo() >= 0);
+										_ASSERT(curbone->GetBoneNo() < s_model->GetBoneListSize());
+										if (!(*(ppsetbone + curbone->GetBoneNo()))) {
+											*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
+										}
+									}
+									else {
+										//lCluster‚ª‚O‚Ì‚Æ‚«‚É‚Í•Ô‚è’l‚Ådirty‚ð‹³‚¦‚é‚¾‚¯
+										return TRUE;
+									}
+								}
+								if (lCluster) {
+									lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
+								}
+							}
+							*(psetflag + dispvno) = 1;
+						}
+					}
+				}
+			}
+			if (foundinf == 0) {
+				return FALSE;
+			}
+
+			if (lCluster) {
+				FbxScene* lScene = pMesh->GetScene();
+				FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform();
+				lCluster->SetTransformMatrix(MeshMatrix);
+				FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform();
+				lCluster->SetTransformLinkMatrix(SkelMatrix);
+
+				lSkin->AddCluster(lCluster);
+			}
+			//if (lCluster) {
+			//	if (foundinf == 0) {
+			//		lCluster->SetLinkMode(FbxCluster::eAdditive);
+			//	}
+
+			//	ChaVector3 pos = ChaVector3(0.0f, 0.0f, 0.0f);
+			//	pos.x = s_firsttopbone->GetBone()->GetJointFPos().x;
+			//	pos.y = s_firsttopbone->GetBone()->GetJointFPos().y;
+			//	pos.z = s_firsttopbone->GetBone()->GetJointFPos().z;
+
+			//	//KFbxScene* lScene = pMesh->GetScene();
+			//	//lXMatrix = pMesh->EvaluateGlobalTransform();
+			//	//lCluster->SetTransformMatrix(lXMatrix);
+			//	lXMatrix.SetIdentity();
+			//	lXMatrix[3][0] = -pos.x;
+			//	lXMatrix[3][1] = -pos.y;
+			//	lXMatrix[3][2] = pos.z;
+			//	lCluster->SetTransformMatrix(lXMatrix);
+
+			//	//lXMatrix = lSkel->EvaluateGlobalTransform();
+			//	//lCluster->SetTransformLinkMatrix(lXMatrix);
+			//	lXMatrix.SetIdentity();
+			//	lCluster->SetTransformLinkMatrix(lXMatrix);
+
+			//	lSkin->AddCluster(lCluster);
+
+			//	return TRUE;
+			//}
+		}
+	}
+	return FALSE;
+
+}
+
+
+void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone)
 {
 
 	FbxAMatrix lXMatrix;
@@ -879,122 +1025,39 @@ void LinkToTopBone(FbxSkin* lSkin, FbxScene* pScene, CMQOObject* curobj, CPolyMe
 		CBone* curbone = s_firsttopbone->GetBone();
 		_ASSERT(curbone);
 		if (curbone){
-			lCluster = FbxCluster::Create(pScene, "");
-			lCluster->SetLink(lSkel);
-			//enum  	ELinkMode { eNormalize, eAdditive, eTotalOne }
-			//lCluster->SetLinkMode(FbxCluster::eTotalOne);
-			int foundinf = 0;
+			BOOL isdirty;
+			isdirty = LinkToTopBoneFunc(0, lSkin, pScene, pMesh, curobj, pm4, psetflag, ppsetbone);
+			if (isdirty == TRUE) {
+				lCluster = FbxCluster::Create(pScene, "");
+				lCluster->SetLink(lSkel);
 
-			map<CBone*, map<int, int>>::iterator itrlinkdirty;
-			map<int, int> mapdirty;
-			s_linkdirty[curbone] = mapdirty;
-			itrlinkdirty = s_linkdirty.find(curbone);
-
-			FbxCluster *lCluster = 0;
-			int curclusterno = -1;
-			int infdirty = ExistBoneInInf(curbone->GetBoneNo(), curobj, &curclusterno);
-
-			if (infdirty){
-				//lCluster->SetLinkMode(FbxCluster::eNormalize);
-				//lCluster->SetLinkMode(FbxCluster::eAdditive);
-				//*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
-				
-				int fno;
-				for (fno = 0; fno < pm4->GetFaceNum(); fno++){
-					CMQOFace* curface = pm4->GetTriFace() + fno;
-					int orgvno[3];
-					orgvno[0] = curface->GetIndex(0);
-					orgvno[2] = curface->GetIndex(2);
-					orgvno[1] = curface->GetIndex(1);
-
-					_ASSERT((orgvno[0] >= 0) && (orgvno[0] < pm4->GetOrgPointNum()));
-					_ASSERT((orgvno[1] >= 0) && (orgvno[1] < pm4->GetOrgPointNum()));
-					_ASSERT((orgvno[2] >= 0) && (orgvno[2] < pm4->GetOrgPointNum()));
-
-					int vcnt;
-					for (vcnt = 0; vcnt < 3; vcnt++){
-						int dispvno;
-						dispvno = fno * 3 + s_invindex[vcnt];
-
-						CInfBone* curib = pm4->GetInfBone() + orgvno[vcnt];
-						int ieno = curib->ExistBone(curobj, curclusterno);
-						if (ieno >= 0){
-							INFDATA* infd = curib->GetInfData(curobj);
-							if (infd){
-								if (foundinf == 0)
-								{
-									foundinf = 1;
-									lCluster->SetLinkMode(FbxCluster::eTotalOne);
-								}
-								lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
-							}
-							*(psetflag + dispvno) = 1;
-						}
-					}
-				}
-			}
-
-			if (lCluster) {
-				if (foundinf == 0) {
-					lCluster->SetLinkMode(FbxCluster::eAdditive);
-				}
-
-				ChaVector3 pos = ChaVector3(0.0f, 0.0f, 0.0f);
-				pos.x = s_firsttopbone->GetBone()->GetJointFPos().x;
-				pos.y = s_firsttopbone->GetBone()->GetJointFPos().y;
-				pos.z = s_firsttopbone->GetBone()->GetJointFPos().z;
-
-				//KFbxScene* lScene = pMesh->GetScene();
-				//lXMatrix = pMesh->EvaluateGlobalTransform();
-				//lCluster->SetTransformMatrix(lXMatrix);
-				lXMatrix.SetIdentity();
-				lXMatrix[3][0] = -pos.x;
-				lXMatrix[3][1] = -pos.y;
-				lXMatrix[3][2] = pos.z;
-				lCluster->SetTransformMatrix(lXMatrix);
-
-				//lXMatrix = lSkel->EvaluateGlobalTransform();
-				//lCluster->SetTransformLinkMatrix(lXMatrix);
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-
-				lSkin->AddCluster(lCluster);
+				BOOL isdirty2;
+				isdirty2 = LinkToTopBoneFunc(lCluster, lSkin, pScene, pMesh, curobj, pm4, psetflag, ppsetbone);
 			}
 		}
 	}
 }
 
-
-
-void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone)
+BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone)
 {
-	_ASSERT( pm4 );
+	_ASSERT(pm4);
 	FbxGeometry* lMeshAttribute;
-    FbxNode* lSkel;
+	FbxNode* lSkel;
 
 	lSkel = fbxbone->GetSkelNode();
 	if (!lSkel) {
 		_ASSERT(0);
-		return;
+		return FALSE;
 	}
 	lMeshAttribute = (FbxGeometry*)pMesh->GetNodeAttribute();
 
 	if (!fbxbone) {
 		_ASSERT(0);
-		return;
+		return FALSE;
 	}
 	CBone* curbone = fbxbone->GetBone();
 	if (curbone) {
-		FbxCluster *lCluster = FbxCluster::Create(pScene, "");
-		lCluster->SetLink(lSkel);
-
 		int foundinf = 0;
-
-		//enum  	ELinkMode { eNormalize, eAdditive, eTotalOne }
-		//lCluster->SetLinkMode(FbxCluster::eTotalOne);
-		//lCluster->SetLinkMode(FbxCluster::eNormalize);
-		//lCluster->SetLinkMode(FbxCluster::eAdditive);
-
 
 		//if ((fbxbone != s_fbxbone) && (fbxbone->GetBone() != s_firsttopbone->GetBone()) && ((fbxbone->GetType() == FB_NORMAL) || (fbxbone->GetType() == FB_BUNKI_CHIL))){
 		if (fbxbone && (fbxbone != s_fbxbone) && (fbxbone->GetBone() != s_firsttopbone->GetBone())) {
@@ -1010,10 +1073,6 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 				int infdirty = ExistBoneInInf(curbone->GetBoneNo(), curobj, &curclusterno);
 
 				if (infdirty) {
-					_ASSERT(curbone->GetBoneNo() >= 0);
-					_ASSERT(curbone->GetBoneNo() < s_model->GetBoneListSize());
-					*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
-
 					int fno;
 					for (fno = 0; fno < pm4->GetFaceNum(); fno++) {
 						CMQOFace* curface = pm4->GetTriFace() + fno;
@@ -1038,9 +1097,23 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 								if (infd) {
 									if (foundinf == 0) {
 										foundinf = 1;
-										lCluster->SetLinkMode(FbxCluster::eTotalOne);
+										if (lCluster) {
+											lCluster->SetLinkMode(FbxCluster::eTotalOne);
+
+											_ASSERT(curbone->GetBoneNo() >= 0);
+											_ASSERT(curbone->GetBoneNo() < s_model->GetBoneListSize());
+											if (!(*(ppsetbone + curbone->GetBoneNo()))) {
+												*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
+											}
+										}
+										else {
+											//lCluster‚ª‚O‚Ì‚Æ‚«‚É‚Í•Ô‚è’l‚Ådirty‚ð‹³‚¦‚é‚¾‚¯
+											return TRUE;
+										}
 									}
-									lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
+									if (lCluster) {
+										lCluster->AddControlPointIndex(dispvno, (double)(infd->m_infelem[ieno].dispinf));
+									}
 								}
 								*(psetflag + dispvno) = 1;
 							}
@@ -1050,68 +1123,111 @@ void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, 
 			}
 		}
 		if (foundinf == 0) {
-			lCluster->SetLinkMode(FbxCluster::eAdditive);
+			//lCluster->SetLinkMode(FbxCluster::eAdditive);
+			return FALSE;
 		}
 
-		if (fbxbone && fbxbone->GetBone()) {
-			CBone* curbone = fbxbone->GetBone();
-			if (curbone) {
-				ChaVector3 pos;
-				pos = curbone->GetJointFPos();
+		if (lCluster) {
+			FbxScene* lScene = pMesh->GetScene();
+			FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform();
+			lCluster->SetTransformMatrix(MeshMatrix);
+			FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform();
+			lCluster->SetTransformLinkMatrix(SkelMatrix);
 
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lXMatrix[3][0] = -pos.x;
-				lXMatrix[3][1] = -pos.y;
-				lXMatrix[3][2] = -pos.z;
-				lCluster->SetTransformMatrix(lXMatrix);
-
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
-			else {
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformMatrix(lXMatrix);
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
-			lSkin->AddCluster(lCluster);
-		}
-		else if (fbxbone && fbxbone->GetBvhElem()) {
-			CBVHElem* curbone = fbxbone->GetBvhElem();
-			if (curbone) {
-				ChaVector3 pos;
-				pos = curbone->GetPosition();
-
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lXMatrix[3][0] = -pos.x;
-				lXMatrix[3][1] = -pos.y;
-				lXMatrix[3][2] = -pos.z;
-				lCluster->SetTransformMatrix(lXMatrix);
-
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
-			else {
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformMatrix(lXMatrix);
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
 			lSkin->AddCluster(lCluster);
 		}
 
+		//if (lCluster) {
+		//	if (fbxbone && fbxbone->GetBone()) {
+		//		CBone* curbone = fbxbone->GetBone();
+		//		if (curbone) {
+		//			ChaVector3 pos;
+		//			pos = curbone->GetJointFPos();
 
-		//FbxAMatrix lXMatrix;
-		//lXMatrix = pMesh->EvaluateGlobalTransform();
-		//lCluster->SetTransformMatrix(lXMatrix);
+		//			FbxAMatrix lXMatrix;
+		//			lXMatrix.SetIdentity();
+		//			lXMatrix[3][0] = -pos.x;
+		//			lXMatrix[3][1] = -pos.y;
+		//			lXMatrix[3][2] = -pos.z;
+		//			lCluster->SetTransformMatrix(lXMatrix);
 
-		//FbxAMatrix lXMatrix2;
-		//lXMatrix2 = lSkel->EvaluateGlobalTransform();
-		//lCluster->SetTransformLinkMatrix(lXMatrix2);
+		//			lXMatrix.SetIdentity();
+		//			lCluster->SetTransformLinkMatrix(lXMatrix);
+		//		}
+		//		else {
+		//			FbxAMatrix lXMatrix;
+		//			lXMatrix.SetIdentity();
+		//			lCluster->SetTransformMatrix(lXMatrix);
+		//			lCluster->SetTransformLinkMatrix(lXMatrix);
+		//		}
+		//		lSkin->AddCluster(lCluster);
+		//	}
+		//	else if (fbxbone && fbxbone->GetBvhElem()) {
+		//		CBVHElem* curbone = fbxbone->GetBvhElem();
+		//		if (curbone) {
+		//			ChaVector3 pos;
+		//			pos = curbone->GetPosition();
 
-		//lSkin->AddCluster(lCluster);
+		//			FbxAMatrix lXMatrix;
+		//			lXMatrix.SetIdentity();
+		//			lXMatrix[3][0] = -pos.x;
+		//			lXMatrix[3][1] = -pos.y;
+		//			lXMatrix[3][2] = -pos.z;
+		//			lCluster->SetTransformMatrix(lXMatrix);
+
+		//			lXMatrix.SetIdentity();
+		//			lCluster->SetTransformLinkMatrix(lXMatrix);
+		//		}
+		//		else {
+		//			FbxAMatrix lXMatrix;
+		//			lXMatrix.SetIdentity();
+		//			lCluster->SetTransformMatrix(lXMatrix);
+		//			lCluster->SetTransformLinkMatrix(lXMatrix);
+		//		}
+		//		lSkin->AddCluster(lCluster);
+		//	}
+		//}
+
+		return TRUE;
+
+	}
+	else {
+		return FALSE;
+	}
+
+}
+
+
+void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone)
+{
+	_ASSERT( pm4 );
+	FbxGeometry* lMeshAttribute;
+    FbxNode* lSkel;
+
+	lSkel = fbxbone->GetSkelNode();
+	if (!lSkel) {
+		_ASSERT(0);
+		return;
+	}
+	lMeshAttribute = (FbxGeometry*)pMesh->GetNodeAttribute();
+
+	if (!fbxbone) {
+		_ASSERT(0);
+		return;
+	}
+	CBone* curbone = fbxbone->GetBone();
+	if (curbone) {
+		BOOL isdirty;
+		isdirty = LinkMeshToSkeletonFunc(0, fbxbone, lSkin, pScene, pMesh, curobj, pm4, psetflag, ppsetbone);
+		if (isdirty == TRUE) {
+
+			FbxCluster *lCluster = FbxCluster::Create(pScene, "");
+			lCluster->SetLink(lSkel);
+
+			BOOL isdirty2;
+			isdirty2 = LinkMeshToSkeletonFunc(lCluster, fbxbone, lSkin, pScene, pMesh, curobj, pm4, psetflag, ppsetbone);
+			_ASSERT(isdirty2 == TRUE);
+		}
 	}
 
 	if( fbxbone->GetChild() ){
@@ -2208,35 +2324,53 @@ int DestroyFBXBoneReq( CFBXBone* fbxbone )
 }
 
 
-void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, int bonecnt)
+void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene*& pScene, FbxNode* lMesh, FbxSkin* lSkin, CBone** ppsetbone, int* bonecnt)
 {
 	//FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene);
 	//srcRootNode->AddChild(lMesh);
 	//FbxGeometry* lMeshAttribute = (FbxGeometry*)lMesh->GetNodeAttribute();
 	//FbxSkin* lSkin = FbxSkin::Create(pScene, "");
 
-	LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);
-	//lMeshAttribute->AddDeformer(lSkin);
-	bonecnt++;
+	CBone* curbone = fbxbone->GetBone();
+	if (curbone) {
+		if (*(ppsetbone + curbone->GetBoneNo()) == 0) {
+			LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);
+			//lMeshAttribute->AddDeformer(lSkin);
+			(*bonecnt)++;
+		}
+	}
 
 	if (fbxbone->GetChild()){
-		CreateDummyInfDataReq(fbxbone->GetChild(), pSdkManager, pScene, lMesh, lSkin, bonecnt);
+		CreateDummyInfDataReq(fbxbone->GetChild(), pSdkManager, pScene, lMesh, lSkin, ppsetbone, bonecnt);
 	}
 
 	if (fbxbone->GetBrother()){
-		CreateDummyInfDataReq(fbxbone->GetBrother() , pSdkManager, pScene, lMesh, lSkin, bonecnt);
+		CreateDummyInfDataReq(fbxbone->GetBrother() , pSdkManager, pScene, lMesh, lSkin, ppsetbone, bonecnt);
 	}
 
 }
 
-FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
+FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CBone** ppsetbone)
 {
 	static int s_namecnt = 0;
+
+	int notdirtycnt = 0;
+	int bonecnt;
+	for (bonecnt = 0; bonecnt < s_model->GetBoneListSize(); bonecnt++) {
+		if (*(ppsetbone + bonecnt) == 0) {
+			notdirtycnt++;
+		}
+	}
+	if (notdirtycnt == 0) {
+		return NULL;
+	}
+
 
 	char meshname[256] = { 0 };
 	sprintf_s(meshname, 256, "_ND_dtri%d", s_namecnt);
 	s_namecnt++;
-	int facenum = s_fbxbonenum;
+	//int facenum = s_fbxbonenum;
+	int facenum = notdirtycnt;
 
 	FbxMesh* lMesh = FbxMesh::Create(pScene, meshname);
 	lMesh->InitControlPoints(facenum * 3);
@@ -2342,7 +2476,7 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene)
 	return lNode;
 }
 
-void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int bonecnt)
+void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int* bonecnt)
 {
 	FbxNode* lSkel;
 
@@ -2360,7 +2494,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 		//lCluster->SetLinkMode(FbxCluster::eNormalize);
 		//lCluster->SetLinkMode(FbxCluster::eAdditive);
 
-		int vsetno = bonecnt * 3;
+		int vsetno = *bonecnt * 3;
 		int vcnt;
 		for (vcnt = 0; vcnt < 3; vcnt++){
 			lCluster->AddControlPointIndex(vsetno, 1.0);
@@ -2380,54 +2514,64 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 		lSkin->AddCluster(lCluster);
 		*/
 
-		if (fbxbone->GetBone()){
-			CBone* curbone = fbxbone->GetBone();
-			if (curbone){
-				ChaVector3 pos;
-				pos = curbone->GetJointFPos();
+		if (lCluster) {
+			FbxScene* lScene = pMesh->GetScene();
+			FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform();
+			lCluster->SetTransformMatrix(MeshMatrix);
+			FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform();
+			lCluster->SetTransformLinkMatrix(SkelMatrix);
 
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lXMatrix[3][0] = -pos.x;
-				lXMatrix[3][1] = -pos.y;
-				lXMatrix[3][2] = -pos.z;
-				lCluster->SetTransformMatrix(lXMatrix);
-
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
-			else{
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformMatrix(lXMatrix);
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
 			lSkin->AddCluster(lCluster);
 		}
-		else if (fbxbone->GetBvhElem()){
-			CBVHElem* curbone = fbxbone->GetBvhElem();
-			if (curbone){
-				ChaVector3 pos;
-				pos = curbone->GetPosition();
 
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lXMatrix[3][0] = -pos.x;
-				lXMatrix[3][1] = -pos.y;
-				lXMatrix[3][2] = -pos.z;
-				lCluster->SetTransformMatrix(lXMatrix);
+		//if (fbxbone->GetBone()){
+		//	CBone* curbone = fbxbone->GetBone();
+		//	if (curbone){
+		//		ChaVector3 pos;
+		//		pos = curbone->GetJointFPos();
 
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
-			else{
-				FbxAMatrix lXMatrix;
-				lXMatrix.SetIdentity();
-				lCluster->SetTransformMatrix(lXMatrix);
-				lCluster->SetTransformLinkMatrix(lXMatrix);
-			}
-			lSkin->AddCluster(lCluster);
-		}
+		//		FbxAMatrix lXMatrix;
+		//		lXMatrix.SetIdentity();
+		//		lXMatrix[3][0] = -pos.x;
+		//		lXMatrix[3][1] = -pos.y;
+		//		lXMatrix[3][2] = -pos.z;
+		//		lCluster->SetTransformMatrix(lXMatrix);
+
+		//		lXMatrix.SetIdentity();
+		//		lCluster->SetTransformLinkMatrix(lXMatrix);
+		//	}
+		//	else{
+		//		FbxAMatrix lXMatrix;
+		//		lXMatrix.SetIdentity();
+		//		lCluster->SetTransformMatrix(lXMatrix);
+		//		lCluster->SetTransformLinkMatrix(lXMatrix);
+		//	}
+		//	lSkin->AddCluster(lCluster);
+		//}
+		//else if (fbxbone->GetBvhElem()){
+		//	CBVHElem* curbone = fbxbone->GetBvhElem();
+		//	if (curbone){
+		//		ChaVector3 pos;
+		//		pos = curbone->GetPosition();
+
+		//		FbxAMatrix lXMatrix;
+		//		lXMatrix.SetIdentity();
+		//		lXMatrix[3][0] = -pos.x;
+		//		lXMatrix[3][1] = -pos.y;
+		//		lXMatrix[3][2] = -pos.z;
+		//		lCluster->SetTransformMatrix(lXMatrix);
+
+		//		lXMatrix.SetIdentity();
+		//		lCluster->SetTransformLinkMatrix(lXMatrix);
+		//	}
+		//	else{
+		//		FbxAMatrix lXMatrix;
+		//		lXMatrix.SetIdentity();
+		//		lCluster->SetTransformMatrix(lXMatrix);
+		//		lCluster->SetTransformLinkMatrix(lXMatrix);
+		//	}
+		//	lSkin->AddCluster(lCluster);
+		//}
 
 		//}
 
