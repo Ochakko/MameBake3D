@@ -13,6 +13,15 @@
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
 
+開発環境(2020/12/17時点)を書きます。
+なんちゃってワークステーション（ホワイトワークステーション）つまりWWSにて開発
+Microsoft VisualStudio Subscription   VisualStudio2015Pro(2015 Comuでは開けなかったです)
+FBXSDKは2020.0.1
+  サンプルとして付けているFBXファイルはまだ2013のままであり
+  MameBake3Dで保存しなおさないと修正は適用されない
+Maya2013とAutodesk Maya Indie
+
+
 開発環境(2020/09/24時点)を書きます。
 なんちゃってワークステーション（ホワイトワークステーション）つまりWWSにて開発
 VisualStudio2015Pro(2015 Comuでは開けなかったです)
@@ -40,7 +49,7 @@ Mac(ちくわ)とBootCampとWindows10 Pro で開発しています。
 Microsoft DirectX SDK (June 2010) (マイクロソフトの3D描画ライブラリ)
 OpenGL(３Ｄ描画ライブラリ(このプログラムではbulletからリンクされている))
 bullet physics(AMDのオープンソースの物理演算ライブラリ http://bulletphysics.org/wordpress/)
-FBX SDK 2018.1.1(Autodeskの互換用ファイル操作SDK  http://www.autodesk.com/fbx)
+FBX SDK 2020.0.1(Autodeskの互換用ファイル操作SDK  http://www.autodesk.com/fbx)
 Intel TBB(Intelのスレッド操作用のライブラリ　https://www.threadingbuildingblocks.org/)
 
 VisualStudioのバージョンは2015 (VC 14)です。
@@ -199,6 +208,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2020/12/17その１
+	FBXSDKのバージョンアップ
+		Maya2020を使用することになったのでFBXSDKも2020.0.1にバージョンアップ
+		
+
 2020/11/08その１
 	FBX出力の修正
 	影響度出力の修正
