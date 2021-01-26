@@ -801,6 +801,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_SL_NUMTHREAD			61
 #define IDC_STATIC_NUMTHREAD		62
 
+#define IDC_COMBO_EDITSCALE_METHOD	63
+
 
 
 
@@ -1364,6 +1366,14 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
+
+	g_editscale_method = 0;
+	g_editscale_startframe = 0.0;
+	g_editscale_endframe = 0.0;
+	g_editscale_applyframe = 0.0;
+	g_editscale_numframe = 0.0;
+	g_editscale_frameleng = 0;
+	g_editscale_value = 0;
 
 	s_timelineWnd = 0;
 	s_owpTimeline = 0;
@@ -4020,6 +4030,12 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
 			OnTimeLineSelectFromSelectedKey();
+			if (s_editmotionflag < 0) {
+				int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+				if (result) {
+					_ASSERT(0);
+				}
+			}
             break;
 
         case IDC_SPEED:
@@ -4048,7 +4064,19 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
 			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
 			break;
-
+		case IDC_COMBO_EDITSCALE_METHOD:
+			RollbackCurBoneNo();
+			if (s_model) {
+				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_EDITSCALE_METHOD);
+				g_editscale_method = (int)PtrToUlong(pComboBox->GetSelectedData());
+				if (s_editmotionflag < 0) {
+					int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+			}
+			break;
 		case IDC_COMBO_BONEAXIS:
 			RollbackCurBoneNo();
 			if (s_model){
@@ -5891,7 +5919,7 @@ void refreshEulerGraph()
 
 		int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 
-		if (!g_editscale_value) {
+		if (!g_editscale_value || (g_editscale_frameleng != frameleng)) {
 			int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
 			if (result) {
 				_ASSERT(0);
@@ -9769,31 +9797,60 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 	g_editscale_startframe = startframe;
 	g_editscale_endframe = endframe;
 	g_editscale_numframe = endframe - startframe + 1;
+	g_editscale_frameleng = frameleng;
 
-	g_editscale_value = (float*)malloc(sizeof(float) * (frameleng + 1));
+	g_editscale_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+	if ((g_editscale_applyframe < 0) || (g_editscale_applyframe > endframe)) {
+		_ASSERT(0);
+		return -1;
+	}
+
+	g_editscale_value = (float*)malloc(sizeof(float) * (g_editscale_frameleng + 1));
 	if (!g_editscale_value) {
 		_ASSERT(0);
 		return -1;
 	}
-	memset(g_editscale_value, 0, sizeof(float) * (frameleng + 1));
+	memset(g_editscale_value, 0, sizeof(float) * (g_editscale_frameleng + 1));
 
 	if (g_editscale_numframe >= 3) {
 
-		double halfcnt;
-		double tangent;
+		double halfcnt1, halfcnt2;
+		double tangent1, tangent2;
+		double radstep1, radstep2;
+
 		int framecnt;
-		halfcnt = g_editscale_numframe / 2.0;
-		tangent = 1.0 / halfcnt;
-		for (framecnt = 0; framecnt < frameleng; framecnt++) {
+		halfcnt1 = (g_editscale_applyframe - g_editscale_startframe + 1);
+		halfcnt2 = (g_editscale_endframe - g_editscale_applyframe + 1);
+		tangent1 = 1.0 / halfcnt1;
+		tangent2 = 1.0 / halfcnt2;
+		radstep1 = PI / halfcnt1;
+		radstep2 = PI / halfcnt2;
+		for (framecnt = 0; framecnt < g_editscale_frameleng; framecnt++) {
 			float curscale;
 			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
-				if (framecnt < (g_editscale_startframe + halfcnt)) {
-					curscale = (framecnt - g_editscale_startframe) * tangent;
+				if (framecnt < g_editscale_applyframe) {
+					if (g_editscale_method == 0) {
+						curscale = (framecnt - g_editscale_startframe) * tangent1;
+					}
+					else if (g_editscale_method == 1) {
+						curscale = (1.0 + cos(PI + radstep1 * (framecnt - g_editscale_startframe))) * 0.5;
+					}
+					else {
+						curscale = 1.0;
+					}
 				}
-				else if (framecnt > (g_editscale_startframe + halfcnt)) {
-					curscale = 1.0 - (framecnt - g_editscale_startframe - halfcnt) * tangent;
+				else if (framecnt > g_editscale_applyframe) {
+					if (g_editscale_method == 0) {
+						curscale = 1.0 - (framecnt - g_editscale_applyframe) * tangent2;
+					}
+					else if (g_editscale_method == 1) {
+						curscale = (1.0 + cos(radstep2 * (framecnt - g_editscale_applyframe))) * 0.5;
+					}
+					else {
+						curscale = 1.0;
+					}
 				}
-				else if (framecnt == (g_editscale_startframe + halfcnt)) {
+				else if (framecnt == g_editscale_applyframe) {
 					curscale = 1.0;
 				}
 				else {
@@ -9808,7 +9865,7 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 		}
 	}else{
 		double framecnt;
-		for (framecnt = 0.0; framecnt < frameleng; framecnt++) {
+		for (framecnt = 0.0; framecnt < g_editscale_frameleng; framecnt++) {
 			float curscale;
 			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
 				curscale = 1.0;
@@ -12117,6 +12174,12 @@ int CreateUtDialog()
 	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
 	CEditRange::SetApplyRate(g_applyrate);
 
+	g_SampleUI.AddComboBox(IDC_COMBO_EDITSCALE_METHOD, 35, iY += addh, ctrlxlen, ctrlh);
+	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_EDITSCALE_METHOD);
+	pComboBox5->RemoveAllItems();
+	pComboBox5->AddItem(L"線形山", ULongToPtr(0));
+	pComboBox5->AddItem(L"Cos(x+PI)山", ULongToPtr(1));
+	pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
 	swprintf_s(sz, 100, L"IK 次数の係数 : %f", g_ikfirst);
@@ -12130,8 +12193,8 @@ int CreateUtDialog()
 	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
 	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
 	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
-	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
+//	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+//	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 
 
 	//Left Bottom
@@ -12141,6 +12204,9 @@ int CreateUtDialog()
 	swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
 	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 64, g_numthread);
+
+	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 
 
 	//Right Bottom

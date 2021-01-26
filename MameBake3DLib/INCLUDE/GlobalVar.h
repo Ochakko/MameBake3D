@@ -130,10 +130,12 @@ float                       g_fLightScale;
 int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
-
+int g_editscale_method = 0;
 double g_editscale_startframe = 0.0;
 double g_editscale_endframe = 0.0;
+double g_editscale_applyframe = 0.0;
 double g_editscale_numframe = 0.0;
+int g_editscale_frameleng = 0;
 float* g_editscale_value = 0;
 
 
@@ -245,9 +247,12 @@ extern float                       g_fLightScale;
 extern int                         g_nNumActiveLights;
 extern int                         g_nActiveLight;
 
+extern int g_editscale_method;
 extern double g_editscale_startframe;
 extern double g_editscale_endframe;
+extern double g_editscale_applyframe;
 extern double g_editscale_numframe;
+extern int g_editscale_frameleng;
 extern float* g_editscale_value;
 
 
