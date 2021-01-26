@@ -212,6 +212,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/01/27_2
+	エディットスケールの動画　https://youtu.be/uqMUoQo7egE
+
 2021/01/27_1
 	EditScaleのバージョンアップ
 		姿勢適用位置スライダーに対応
@@ -2180,6 +2183,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【MameBake3D】エディットスケール【編集の山】
+https://youtu.be/uqMUoQo7egE
+
 【物理IK】質量０とポスト処理による位置コンストレイント
 （1分くらいのテスト動画）
 https://youtu.be/q9z_DhzZQYU
