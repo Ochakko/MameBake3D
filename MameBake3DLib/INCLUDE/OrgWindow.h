@@ -4669,6 +4669,7 @@ static void s_dummyfunc();
 			lineData.push_back(new EulLineData(0, 0, _T("X"), this, 0));
 			lineData.push_back(new EulLineData(0, 0, _T("Y"), this, 1));
 			lineData.push_back(new EulLineData(0, 0, _T("Z"), this, 2));
+			lineData.push_back(new EulLineData(0, 0, _T("S"), this, 3));
 			maxTime = _maxTime;
 			timeSize = _timeSize;
 			cursorListener = []() {s_dummyfunc(); };
@@ -5983,6 +5984,9 @@ static void s_dummyfunc();
 				}
 				else if (wcscmp(L"Z", name.c_str()) == 0) {
 					hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
+				}
+				else if (wcscmp(L"S", name.c_str()) == 0) {
+					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 				}
 				else {
 					hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));

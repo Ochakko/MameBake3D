@@ -306,7 +306,8 @@ namespace OrgWinGUI{
 
 		//行データ
 		//int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
-		int showLineNum = 3;
+		//int showLineNum = 3;
+		int showLineNum = 4;
 		//for (int i = showPos_line, j = 0; i<(int)lineData.size() && j<showLineNum; i++, j++) {
 		for (int i = 0; i < showLineNum; i++) {
 			bool highLight = false;
@@ -320,6 +321,17 @@ namespace OrgWinGUI{
 					timeSize, showPos_time, highLight);
 			}
 		}
+
+
+		////editscale ０フレームから書く
+		//bool highLight = false;
+		//lineData[3]->draw(hdcM,
+		//pos.x + MARGIN,
+		////pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
+		//pos.y + MARGIN + AXIS_SIZE_Y,
+		//size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
+		//timeSize, 0.0, highLight);
+
 
 		////ドラッグによる選択範囲
 		//if (dragSelect && dragSelectTime1 != dragSelectTime2) {

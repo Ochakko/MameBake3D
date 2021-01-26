@@ -130,6 +130,14 @@ float                       g_fLightScale;
 int                         g_nNumActiveLights;
 int                         g_nActiveLight;
 
+
+double g_editscale_startframe = 0.0;
+double g_editscale_endframe = 0.0;
+double g_editscale_numframe = 0.0;
+float* g_editscale_value = 0;
+
+
+
 #else
 extern int g_iklevel;
 extern CInfoWindow* g_infownd;
@@ -236,6 +244,12 @@ extern float g_physicsmvrate;
 extern float                       g_fLightScale;
 extern int                         g_nNumActiveLights;
 extern int                         g_nActiveLight;
+
+extern double g_editscale_startframe;
+extern double g_editscale_endframe;
+extern double g_editscale_numframe;
+extern float* g_editscale_value;
+
 
 #endif
 

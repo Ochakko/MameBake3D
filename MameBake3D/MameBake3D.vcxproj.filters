@@ -21,13 +21,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ColiIDDlg.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="FrameCopyDlg.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GColiIDDlg.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GetDlgParams.cpp">
@@ -66,18 +60,18 @@
     <ClCompile Include="..\MameBake3DLib\DXUT\Optional\SDKmisc.cpp">
       <Filter>DXUT_</Filter>
     </ClCompile>
+    <ClCompile Include="ColiIDDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GColiIDDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ColiIDDlg.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="dlgid.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="FrameCopyDlg.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GColiIDDlg.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GetDlgParams.h">
@@ -250,6 +244,15 @@
     </ClInclude>
     <ClInclude Include="..\MameBake3DLib\DXUT\Optional\SDKmisc.h">
       <Filter>DXUT_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MameBake3DLib\INCLUDE\GlobalVar.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ColiIDDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GColiIDDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

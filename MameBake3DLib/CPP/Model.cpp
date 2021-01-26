@@ -215,6 +215,13 @@ int CModel::InitParams()
 	m_rigideleminfo.clear();
 	m_impinfo.clear();
 
+
+	g_editscale_startframe = 0.0;
+	g_editscale_endframe = 0.0;
+	g_editscale_numframe = 1;
+	g_editscale_value = 0;
+
+
 	InitUndoMotion( 0 );
 
 	return 0;
@@ -6620,12 +6627,13 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 							}
 
 							double changerate;
-							if (curframe <= applyframe) {
+							/*if (curframe <= applyframe) {
 								changerate = 1.0 / (applyframe - startframe + 1);
 							}
 							else {
 								changerate = 1.0 / (endframe - applyframe + 1);
-							}
+							}*/
+							changerate = (double)(*(g_editscale_value + (int)curframe));
 
 
 							if (keyno == 0) {
@@ -6636,14 +6644,15 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 									CQuaternion endq;
 									endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 									CQuaternion curq;
-									double currate2;
-									if (curframe <= applyframe) {
-										currate2 = changerate * (curframe - startframe + 1);
-									}
-									else {
-										currate2 = changerate * (endframe - curframe + 1);
-									}
-									rotq.Slerp2(endq, 1.0 - currate2, &curq);
+									//double currate2;
+									//if (curframe <= applyframe) {
+									//	currate2 = changerate * (curframe - startframe + 1);
+									//}
+									//else {
+									//	currate2 = changerate * (endframe - curframe + 1);
+									//}
+									//rotq.Slerp2(endq, 1.0 - currate2, &curq);
+									rotq.Slerp2(endq, 1.0 - changerate, &curq);
 
 									parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 								}
@@ -7967,12 +7976,14 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 									}
 
 									double changerate;
-									if (curframe <= applyframe){
-										changerate = 1.0 / (applyframe - startframe + 1);
-									}
-									else{
-										changerate = 1.0 / (endframe - applyframe + 1);
-									}
+									//if (curframe <= applyframe){
+									//	changerate = 1.0 / (applyframe - startframe + 1);
+									//}
+									//else{
+									//	changerate = 1.0 / (endframe - applyframe + 1);
+									//}
+									changerate = (double)(*(g_editscale_value + (int)curframe));
+
 
 									if (keyno == 0){
 										firstframe = curframe;
@@ -7983,13 +7994,14 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 											CQuaternion endq;
 											CQuaternion curq;
 											endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-											if (curframe <= applyframe){
-												currate2 = changerate * (curframe - startframe + 1);
-											}
-											else{
-												currate2 = changerate * (endframe - curframe + 1);
-											}
-											rotq.Slerp2(endq, 1.0 - currate2, &curq);
+											//if (curframe <= applyframe){
+											//	currate2 = changerate * (curframe - startframe + 1);
+											//}
+											//else{
+											//	currate2 = changerate * (endframe - curframe + 1);
+											//}
+											//rotq.Slerp2(endq, 1.0 - currate2, &curq);
+											rotq.Slerp2(endq, 1.0 - changerate, &curq);
 											curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 										}
 										else{
@@ -8266,12 +8278,13 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					}
 
 					double changerate;
-					if (curframe <= applyframe){
-						changerate = 1.0 / (applyframe - startframe + 1);
-					}
-					else{
-						changerate = 1.0 / (endframe - applyframe + 1);
-					}
+					//if (curframe <= applyframe){
+					//	changerate = 1.0 / (applyframe - startframe + 1);
+					//}
+					//else{
+					//	changerate = 1.0 / (endframe - applyframe + 1);
+					//}
+					changerate = (double)(*(g_editscale_value + (int)curframe));
 
 					if (keyno == 0){
 						firstframe = curframe;
@@ -8283,13 +8296,14 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							CQuaternion endq;
 							CQuaternion curq;
 							endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-							if (curframe <= applyframe){
-								currate2 = changerate * (curframe - startframe + 1);
-							}
-							else{
-								currate2 = changerate * (endframe - curframe + 1);
-							}
-							rotq.Slerp2(endq, 1.0 - currate2, &curq);
+							//if (curframe <= applyframe){
+							//	currate2 = changerate * (curframe - startframe + 1);
+							//}
+							//else{
+							//	currate2 = changerate * (endframe - curframe + 1);
+							//}
+							//rotq.Slerp2(endq, 1.0 - currate2, &curq);
+							rotq.Slerp2(endq, 1.0 - changerate, &curq);
 
 							//_ASSERT(0);
 
@@ -8413,12 +8427,13 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 		double curframe;
 		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 			double changerate;
-			if (curframe <= applyframe){
-				changerate = 1.0 / (applyframe - startframe + 1);
-			}
-			else{
-				changerate = 1.0 / (endframe - applyframe + 1);
-			}
+			//if (curframe <= applyframe){
+			//	changerate = 1.0 / (applyframe - startframe + 1);
+			//}
+			//else{
+			//	changerate = 1.0 / (endframe - applyframe + 1);
+			//}
+			changerate = (double)(*(g_editscale_value + (int)curframe));
 
 			if (keyno == 0){
 				firstframe = curframe;
@@ -8429,13 +8444,14 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 					CQuaternion endq;
 					CQuaternion curq;
 					endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-					if (curframe <= applyframe){
-						currate2 = changerate * (curframe - startframe + 1);
-					}
-					else{
-						currate2 = changerate * (endframe - curframe + 1);
-					}
-					rotq.Slerp2(endq, 1.0 - currate2, &curq);
+					//if (curframe <= applyframe){
+					//	currate2 = changerate * (curframe - startframe + 1);
+					//}
+					//else{
+					//	currate2 = changerate * (endframe - curframe + 1);
+					//}
+					//rotq.Slerp2(endq, 1.0 - currate2, &curq);
+					rotq.Slerp2(endq, 1.0 - changerate, &curq);
 
 					curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
 				}
@@ -8591,11 +8607,12 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 		double curframe;
 		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 			double changerate;
-			if( curframe <= applyframe ){
-				changerate = 1.0 / (applyframe - startframe + 1);
-			}else{
-				changerate = 1.0 / (endframe - applyframe + 1);
-			}
+			//if( curframe <= applyframe ){
+			//	changerate = 1.0 / (applyframe - startframe + 1);
+			//}else{
+			//	changerate = 1.0 / (endframe - applyframe + 1);
+			//}
+			changerate = (double)(*(g_editscale_value + (int)curframe));
 
 			if( keyno == 0 ){
 				firstframe = curframe;
@@ -8603,14 +8620,16 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 			if( g_absikflag == 0 ){
 				if( g_slerpoffflag == 0 ){
 					double currate2;
-					if( curframe <= applyframe ){
-						currate2 = changerate * (curframe - startframe + 1);
-					}else{
-						currate2 = changerate * (endframe - curframe + 1);
-					}
+					//if( curframe <= applyframe ){
+					//	currate2 = changerate * (curframe - startframe + 1);
+					//}else{
+					//	currate2 = changerate * (endframe - curframe + 1);
+					//}
+					//ChaVector3 curtra;
+					//curtra = addtra * (float)currate2;
 					ChaVector3 curtra;
-					curtra = addtra * (float)currate2;
-
+					curtra = addtra * (float)changerate;
+	
 					//currate2 = changerate * keyno;
 					//ChaVector3 curtra;
 					//curtra = (1.0 - currate2) * addtra;

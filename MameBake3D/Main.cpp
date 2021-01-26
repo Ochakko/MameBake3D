@@ -624,6 +624,9 @@ static SPELEM s_sprig[2];//inactive, active
 static SPELEM s_spbt;
 static int s_oprigflag = 0;
 
+
+
+
 typedef struct tag_modelpanel
 {
 	OrgWindow* panel;
@@ -1086,6 +1089,8 @@ static int CreateTimeLineMark( int topboneno = -1 );
 static void CreateMarkReq( int curboneno, int broflag );
 static int SetLTimelineMark( int curboneno );
 static int SetTimelineMark();
+static int CreateEditScale(double srcstart, double srcend, bool onrefresh);
+
 
 static int ExportBntFile();
 
@@ -1111,7 +1116,6 @@ static void RecalcAxisX_All();
 static int GetSymRootMode();
 
 static int UpdateEditedEuler();
-
 
 int RegistKey()
 {
@@ -2532,6 +2536,12 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		delete s_gfriclabel;
 		s_gfriclabel = 0;
 	}
+
+	if (g_editscale_value) {
+		free(g_editscale_value);
+		g_editscale_value = 0;
+	}
+
 
 	//static SPAXIS s_spaxis[3];
 	int spno;
@@ -5851,8 +5861,19 @@ int UpdateEditedEuler()
 
 			}
 
-			//_ASSERT(0);
+
 			s_owpEulerGraph->setEulMinMax(minval, maxval);
+
+			if (g_editscale_value) {
+				int scaleindex;
+				for (scaleindex = 0; scaleindex < curmi->frameleng; scaleindex++) {
+					double curscalevalue;
+					curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (maxval - minval) + minval;
+					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);
+				}
+			}
+
+			//_ASSERT(0);
 			s_owpEulerGraph->callRewrite();
 
 		}
@@ -5868,12 +5889,26 @@ void refreshEulerGraph()
 
 	if (s_model && (s_model->GetCurMotInfo())) {
 
+		int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
+
+		if (!g_editscale_value) {
+			int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
+			}
+		}
+
+		//int result = CreateEditScale(0, (double)(frameleng - 1), true);
+		//_ASSERT(result == 0);
+
+
 		s_owpEulerGraph->deleteKey();
 		s_owpEulerGraph->deleteLine();
 
 		s_owpEulerGraph->newLine(0, 0, _T("X"));
 		s_owpEulerGraph->newLine(0, 0, _T("Y"));
 		s_owpEulerGraph->newLine(0, 0, _T("Z"));
+		s_owpEulerGraph->newLine(0, 0, _T("S"));
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
 		s_owpEulerGraph->setMaxTime(s_model->GetCurMotInfo()->frameleng);//左端の１マスを選んだ状態がフレーム０を選んだ状態だから　-1 しない。
@@ -5902,7 +5937,7 @@ void refreshEulerGraph()
 					int maxfirstflag = 1;
 
 					ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-					for (curtime = 0; curtime < (int)s_model->GetCurMotInfo()->frameleng; curtime++) {
+					for (curtime = 0; curtime < frameleng; curtime++) {
 						const WCHAR* wbonename = curbone->GetWBoneName();
 						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
@@ -5921,7 +5956,8 @@ void refreshEulerGraph()
 						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
 						s_owpEulerGraph->newKey(_T("Y"), (double)curtime, cureul.y);
 						s_owpEulerGraph->newKey(_T("Z"), (double)curtime, cureul.z);
-
+						//s_owpEulerGraph->newKey(_T("S"), (double)curtime, 0.0);
+						
 
 						if ((minfirstflag == 1) || (minval > cureul.x)) {
 							minval = cureul.x;
@@ -5952,6 +5988,15 @@ void refreshEulerGraph()
 					//_ASSERT(0);
 					s_owpEulerGraph->setEulMinMax(minval, maxval);
 
+					if (g_editscale_value) {
+						for (curtime = 0; curtime < frameleng; curtime++) {
+							int scaleindex;
+							scaleindex = (int)curtime;
+							double curscalevalue;
+							curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (maxval - minval) + minval;
+							s_owpEulerGraph->newKey(_T("S"), (double)curtime, curscalevalue);
+						}
+					}
 				}
 			}
 		}
@@ -9705,6 +9750,84 @@ int CreateTimeLineMark( int topboneno )
 	return 0;
 }
 
+int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
+{
+	int keynum;
+	double startframe, endframe;
+	//s_editrange.GetRange(&keynum, &startframe, &endframe);
+	startframe = srcstart;
+	endframe = srcend;
+
+
+	if (g_editscale_value) {
+		free(g_editscale_value);
+		g_editscale_value = 0;
+	}
+
+	int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
+
+	g_editscale_startframe = startframe;
+	g_editscale_endframe = endframe;
+	g_editscale_numframe = endframe - startframe + 1;
+
+	g_editscale_value = (float*)malloc(sizeof(float) * (frameleng + 1));
+	if (!g_editscale_value) {
+		_ASSERT(0);
+		return -1;
+	}
+	memset(g_editscale_value, 0, sizeof(float) * (frameleng + 1));
+
+	if (g_editscale_numframe >= 3) {
+
+		double halfcnt;
+		double tangent;
+		int framecnt;
+		halfcnt = g_editscale_numframe / 2.0;
+		tangent = 1.0 / halfcnt;
+		for (framecnt = 0; framecnt < frameleng; framecnt++) {
+			float curscale;
+			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
+				if (framecnt < (g_editscale_startframe + halfcnt)) {
+					curscale = (framecnt - g_editscale_startframe) * tangent;
+				}
+				else if (framecnt > (g_editscale_startframe + halfcnt)) {
+					curscale = 1.0 - (framecnt - g_editscale_startframe - halfcnt) * tangent;
+				}
+				else if (framecnt == (g_editscale_startframe + halfcnt)) {
+					curscale = 1.0;
+				}
+				else {
+					_ASSERT(0);
+					curscale = 0.0;
+				}
+			}
+			else {
+				curscale = 0.0;
+			}
+			*(g_editscale_value + (int)framecnt) = curscale;
+		}
+	}else{
+		double framecnt;
+		for (framecnt = 0.0; framecnt < frameleng; framecnt++) {
+			float curscale;
+			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
+				curscale = 1.0;
+			}
+			else {
+				curscale = 0.0;
+			}
+			*(g_editscale_value + (int)framecnt) = curscale;
+		}
+	}
+
+	if (onrefreshflag == false) {
+		UpdateEditedEuler();
+	}
+
+	return 0;
+}
+
+
 int SetTimelineMark()
 {
 	if( !s_model || !s_owpTimeline || !s_owpLTimeline ){
@@ -12199,6 +12322,14 @@ int CreateLongTimelineWnd()
 					s_buttonselectend = s_editrange.GetEndFrame();
 
 					s_underselectingframe = 0;
+
+					if (s_editmotionflag < 0) {
+						int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+						if (result) {
+							_ASSERT(0);
+						}
+					}
+
 					OnTimeLineButtonSelectFromSelectStartEnd(0);
 				}
 				else if (g_selecttolastFlag == false) {
@@ -12220,6 +12351,14 @@ int CreateLongTimelineWnd()
 							s_underselectingframe = 0;
 							//_ASSERT(0);
 						}
+
+						if (s_editmotionflag < 0) {
+							int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+							if (result) {
+								_ASSERT(0);
+							}
+						}
+
 						OnTimeLineButtonSelectFromSelectStartEnd(0);
 					}
 					else {
@@ -12229,6 +12368,12 @@ int CreateLongTimelineWnd()
 						s_buttonselectend = s_editrange.GetEndFrame();
 						s_underselectingframe = 0;
 						//_ASSERT(0);
+
+						//int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+						//if (result) {
+						//	_ASSERT(0);
+						//}
+
 						OnTimeLineButtonSelectFromSelectStartEnd(0);
 						//_ASSERT(0);
 					}
@@ -12237,7 +12382,17 @@ int CreateLongTimelineWnd()
 				else {
 					//ToTheLastFrame
 					OnTimeLineButtonSelectFromSelectStartEnd(1);
+
+					if (s_editmotionflag < 0) {
+						int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+						if (result) {
+							_ASSERT(0);
+						}
+					}
+
 				}
+
+
 			}
 			else {
 				//再生ボタンが押されたとき
@@ -12246,6 +12401,11 @@ int CreateLongTimelineWnd()
 				s_buttonselectend = s_editrange.GetEndFrame();
 				s_underselectingframe = 0;
 				//_ASSERT(0);
+
+				int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+				if (result) {
+					_ASSERT(0);
+				}
 
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
 
