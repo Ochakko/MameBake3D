@@ -212,6 +212,19 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/01/27_3
+	【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
+
+	複数フレームに対する編集だから
+	モデルの向きが変わったら
+	編集結果がおかしくなるんじゃないかという
+	疑問に応える動画
+
+	PseudoLocalと呼ぶ技術で解決しています
+
+
+	https://youtu.be/iyQS7ZPEQLk
+
 2021/01/27_2
 	エディットスケールの動画　https://youtu.be/uqMUoQo7egE
 
@@ -2183,6 +2196,13 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
+複数フレームに対する編集だから	モデルの向きが変わったら
+編集結果がおかしくなるんじゃないかという
+疑問に応える動画
+PseudoLocalと呼ぶ技術で解決しています
+https://youtu.be/iyQS7ZPEQLk
+
 【MameBake3D】エディットスケール【編集の山】
 https://youtu.be/uqMUoQo7egE
 
