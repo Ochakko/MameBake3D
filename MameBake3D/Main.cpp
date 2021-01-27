@@ -9816,35 +9816,55 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 
 		double halfcnt1, halfcnt2;
 		double tangent1, tangent2;
-		double radstep1, radstep2;
 
 		int framecnt;
-		halfcnt1 = (g_editscale_applyframe - g_editscale_startframe + 1);
-		halfcnt2 = (g_editscale_endframe - g_editscale_applyframe + 1);
+		halfcnt1 = (g_editscale_applyframe - g_editscale_startframe);
+		halfcnt2 = (g_editscale_endframe - g_editscale_applyframe);
 		tangent1 = 1.0 / halfcnt1;
 		tangent2 = 1.0 / halfcnt2;
-		radstep1 = PI / halfcnt1;
-		radstep2 = PI / halfcnt2;
+
 		for (framecnt = 0; framecnt < g_editscale_frameleng; framecnt++) {
 			float curscale;
 			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
-				if (framecnt < g_editscale_applyframe) {
+				if ((framecnt == g_editscale_startframe) || (framecnt == g_editscale_endframe)) {
+					if (g_editscale_method == 3) {
+						//矩形
+						curscale = 1.0;
+					}
+					else {
+						//矩形以外　両端０
+						curscale = 0.0;
+					}
+				}
+				else if (framecnt < g_editscale_applyframe) {
 					if (g_editscale_method == 0) {
 						curscale = (framecnt - g_editscale_startframe) * tangent1;
 					}
 					else if (g_editscale_method == 1) {
-						curscale = (1.0 + cos(PI + radstep1 * (framecnt - g_editscale_startframe))) * 0.5;
+						curscale = (1.0 + cos(PI + PI * (framecnt - g_editscale_startframe) / halfcnt1)) * 0.5;
+					}
+					else if (g_editscale_method == 2) {
+						curscale = (1.0 + cos(PI + PI * pow((framecnt - g_editscale_startframe) / halfcnt1, 2.0))) * 0.5;
+					}
+					else if (g_editscale_method == 3) {
+						curscale = 1.0;
 					}
 					else {
 						curscale = 1.0;
 					}
 				}
-				else if (framecnt > g_editscale_applyframe) {
+				else if ((framecnt > g_editscale_applyframe) && (framecnt < g_editscale_endframe)) {
 					if (g_editscale_method == 0) {
 						curscale = 1.0 - (framecnt - g_editscale_applyframe) * tangent2;
 					}
 					else if (g_editscale_method == 1) {
-						curscale = (1.0 + cos(radstep2 * (framecnt - g_editscale_applyframe))) * 0.5;
+						curscale = (1.0 + cos(PI + PI * (g_editscale_endframe - framecnt) / halfcnt2)) * 0.5;
+					}
+					else if (g_editscale_method == 2) {
+						curscale = (1.0 + cos(PI + PI * pow((g_editscale_endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
+					}
+					else if (g_editscale_method == 3) {
+						curscale = 1.0;
 					}
 					else {
 						curscale = 1.0;
@@ -9859,6 +9879,7 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 				}
 			}
 			else {
+				//選択範囲以外０
 				curscale = 0.0;
 			}
 			*(g_editscale_value + (int)framecnt) = curscale;
@@ -12174,11 +12195,13 @@ int CreateUtDialog()
 	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
 	CEditRange::SetApplyRate(g_applyrate);
 
-	g_SampleUI.AddComboBox(IDC_COMBO_EDITSCALE_METHOD, 35, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_EDITSCALE_METHOD, 35, iY += addh, ctrlxlen + 15, ctrlh);
 	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_EDITSCALE_METHOD);
 	pComboBox5->RemoveAllItems();
 	pComboBox5->AddItem(L"線形山", ULongToPtr(0));
 	pComboBox5->AddItem(L"Cos(x+PI)山", ULongToPtr(1));
+	pComboBox5->AddItem(L"Cos(x^2+PI)山", ULongToPtr(2));
+	pComboBox5->AddItem(L"矩形山", ULongToPtr(3));
 	pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );

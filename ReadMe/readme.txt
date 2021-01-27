@@ -212,6 +212,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/01/28_1
+	EditScaleの修正
+
+	EditScaleの種類に"cos(x^2+PI)山"と"矩形山"を追加
+
 2021/01/27_3
 	【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
 
