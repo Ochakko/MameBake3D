@@ -212,6 +212,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/01/30_1
+	EditScaleの修正
+		オイラー角がすべて０度の場合にEditScale形状がフラットになってしまう不具合を修正
+
 2021/01/28_1
 	EditScaleの修正
 

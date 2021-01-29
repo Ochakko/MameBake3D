@@ -5893,10 +5893,24 @@ int UpdateEditedEuler()
 			s_owpEulerGraph->setEulMinMax(minval, maxval);
 
 			if (g_editscale_value) {
+
+				double scalemin, scalemax;
+				if ((minval != 0.0) || (maxval != 0.0)) {
+					scalemin = minval;
+					scalemax = maxval;
+				}
+				else {
+					//Eulerが全て０　例えば全フレームを選択してツールの姿勢初期化を実行した後など
+					//仮のminとmaxを指定
+					scalemin = -10.0;
+					scalemax = 10.0;
+				}
+
+
 				int scaleindex;
 				for (scaleindex = 0; scaleindex < curmi->frameleng; scaleindex++) {
 					double curscalevalue;
-					curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (maxval - minval) + minval;
+					curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (scalemax - scalemin) + scalemin;
 					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);
 				}
 			}
@@ -6017,11 +6031,25 @@ void refreshEulerGraph()
 					s_owpEulerGraph->setEulMinMax(minval, maxval);
 
 					if (g_editscale_value) {
+
+						double scalemin, scalemax;
+						if ((minval != 0.0) || (maxval != 0.0)) {
+							scalemin = minval;
+							scalemax = maxval;
+						}
+						else {
+							//Eulerが全て０　例えば全フレームを選択してツールの姿勢初期化を実行した後など
+							//仮のminとmaxを指定
+							scalemin = -10.0;
+							scalemax = 10.0;
+						}
+
+
 						for (curtime = 0; curtime < frameleng; curtime++) {
 							int scaleindex;
 							scaleindex = (int)curtime;
 							double curscalevalue;
-							curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (maxval - minval) + minval;
+							curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (scalemax - scalemin) + scalemin;
 							s_owpEulerGraph->newKey(_T("S"), (double)curtime, curscalevalue);
 						}
 					}
