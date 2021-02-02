@@ -5732,7 +5732,7 @@ int AddTimeLine( int newmotid )
 					delete s_parentcheck;
 					s_parentcheck = 0;
 				}
-				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 0);
+				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 1);//parentcheck ON by default
 				//s_LtimelineWnd->addParts(*s_parentcheck);
 				s_LTSeparator->addParts2(*s_parentcheck);
 				s_parentcheck->setButtonListener([]() { refreshEulerGraph(); });
