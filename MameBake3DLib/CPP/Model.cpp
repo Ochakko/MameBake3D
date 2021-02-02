@@ -216,10 +216,10 @@ int CModel::InitParams()
 	m_impinfo.clear();
 
 
-	g_editscale_startframe = 0.0;
-	g_editscale_endframe = 0.0;
-	g_editscale_numframe = 1;
-	g_editscale_value = 0;
+	//g_motionbrush_startframe = 0.0;
+	//g_motionbrush_endframe = 0.0;
+	//g_motionbrush_numframe = 1;
+	//g_motionbrush_value = 0;
 
 
 	InitUndoMotion( 0 );
@@ -6633,7 +6633,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 							else {
 								changerate = 1.0 / (endframe - applyframe + 1);
 							}*/
-							changerate = (double)(*(g_editscale_value + (int)curframe));
+							changerate = (double)(*(g_motionbrush_value + (int)curframe));
 
 
 							if (keyno == 0) {
@@ -7982,7 +7982,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 									//else{
 									//	changerate = 1.0 / (endframe - applyframe + 1);
 									//}
-									changerate = (double)(*(g_editscale_value + (int)curframe));
+									changerate = (double)(*(g_motionbrush_value + (int)curframe));
 
 
 									if (keyno == 0){
@@ -8284,7 +8284,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					//else{
 					//	changerate = 1.0 / (endframe - applyframe + 1);
 					//}
-					changerate = (double)(*(g_editscale_value + (int)curframe));
+					changerate = (double)(*(g_motionbrush_value + (int)curframe));
 
 					if (keyno == 0){
 						firstframe = curframe;
@@ -8433,7 +8433,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 			//else{
 			//	changerate = 1.0 / (endframe - applyframe + 1);
 			//}
-			changerate = (double)(*(g_editscale_value + (int)curframe));
+			changerate = (double)(*(g_motionbrush_value + (int)curframe));
 
 			if (keyno == 0){
 				firstframe = curframe;
@@ -8612,7 +8612,7 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 			//}else{
 			//	changerate = 1.0 / (endframe - applyframe + 1);
 			//}
-			changerate = (double)(*(g_editscale_value + (int)curframe));
+			changerate = (double)(*(g_motionbrush_value + (int)curframe));
 
 			if( keyno == 0 ){
 				firstframe = curframe;

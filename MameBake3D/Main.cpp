@@ -801,7 +801,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_SL_NUMTHREAD			61
 #define IDC_STATIC_NUMTHREAD		62
 
-#define IDC_COMBO_EDITSCALE_METHOD	63
+#define IDC_COMBO_MOTIONBRUSH_METHOD	63
 
 
 
@@ -1091,7 +1091,7 @@ static int CreateTimeLineMark( int topboneno = -1 );
 static void CreateMarkReq( int curboneno, int broflag );
 static int SetLTimelineMark( int curboneno );
 static int SetTimelineMark();
-static int CreateEditScale(double srcstart, double srcend, bool onrefresh);
+static int CreateMotionBrush(double srcstart, double srcend, bool onrefresh);
 
 
 static int ExportBntFile();
@@ -1367,13 +1367,13 @@ void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
 
-	g_editscale_method = 0;
-	g_editscale_startframe = 0.0;
-	g_editscale_endframe = 0.0;
-	g_editscale_applyframe = 0.0;
-	g_editscale_numframe = 0.0;
-	g_editscale_frameleng = 0;
-	g_editscale_value = 0;
+	g_motionbrush_method = 0;
+	g_motionbrush_startframe = 0.0;
+	g_motionbrush_endframe = 0.0;
+	g_motionbrush_applyframe = 0.0;
+	g_motionbrush_numframe = 0.0;
+	g_motionbrush_frameleng = 0;
+	g_motionbrush_value = 0;
 
 	s_timelineWnd = 0;
 	s_owpTimeline = 0;
@@ -2547,9 +2547,9 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		s_gfriclabel = 0;
 	}
 
-	if (g_editscale_value) {
-		free(g_editscale_value);
-		g_editscale_value = 0;
+	if (g_motionbrush_value) {
+		free(g_motionbrush_value);
+		g_motionbrush_value = 0;
 	}
 
 
@@ -4031,7 +4031,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			CEditRange::SetApplyRate((double)g_applyrate);
 			OnTimeLineSelectFromSelectedKey();
 			if (s_editmotionflag < 0) {
-				int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if (result) {
 					_ASSERT(0);
 				}
@@ -4064,13 +4064,13 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
 			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
 			break;
-		case IDC_COMBO_EDITSCALE_METHOD:
+		case IDC_COMBO_MOTIONBRUSH_METHOD:
 			RollbackCurBoneNo();
 			if (s_model) {
-				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_EDITSCALE_METHOD);
-				g_editscale_method = (int)PtrToUlong(pComboBox->GetSelectedData());
+				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
+				g_motionbrush_method = (int)PtrToUlong(pComboBox->GetSelectedData());
 				if (s_editmotionflag < 0) {
-					int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 					if (result) {
 						_ASSERT(0);
 					}
@@ -5892,7 +5892,7 @@ int UpdateEditedEuler()
 
 			s_owpEulerGraph->setEulMinMax(minval, maxval);
 
-			if (g_editscale_value) {
+			if (g_motionbrush_value) {
 
 				double scalemin, scalemax;
 				if ((minval != 0.0) || (maxval != 0.0)) {
@@ -5910,7 +5910,7 @@ int UpdateEditedEuler()
 				int scaleindex;
 				for (scaleindex = 0; scaleindex < curmi->frameleng; scaleindex++) {
 					double curscalevalue;
-					curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (scalemax - scalemin) + scalemin;
+					curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
 					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);
 				}
 			}
@@ -5933,14 +5933,14 @@ void refreshEulerGraph()
 
 		int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 
-		if (!g_editscale_value || (g_editscale_frameleng != frameleng)) {
-			int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+		if (!g_motionbrush_value || (g_motionbrush_frameleng != frameleng)) {
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 			if (result) {
 				_ASSERT(0);
 			}
 		}
 
-		//int result = CreateEditScale(0, (double)(frameleng - 1), true);
+		//int result = CreateMotionBrush(0, (double)(frameleng - 1), true);
 		//_ASSERT(result == 0);
 
 
@@ -6030,7 +6030,7 @@ void refreshEulerGraph()
 					//_ASSERT(0);
 					s_owpEulerGraph->setEulMinMax(minval, maxval);
 
-					if (g_editscale_value) {
+					if (g_motionbrush_value) {
 
 						double scalemin, scalemax;
 						if ((minval != 0.0) || (maxval != 0.0)) {
@@ -6049,7 +6049,7 @@ void refreshEulerGraph()
 							int scaleindex;
 							scaleindex = (int)curtime;
 							double curscalevalue;
-							curscalevalue = (double)(*(g_editscale_value + scaleindex)) * (scalemax - scalemin) + scalemin;
+							curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
 							s_owpEulerGraph->newKey(_T("S"), (double)curtime, curscalevalue);
 						}
 					}
@@ -9806,7 +9806,7 @@ int CreateTimeLineMark( int topboneno )
 	return 0;
 }
 
-int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
+int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 {
 	int keynum;
 	double startframe, endframe;
@@ -9815,47 +9815,47 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 	endframe = srcend;
 
 
-	if (g_editscale_value) {
-		free(g_editscale_value);
-		g_editscale_value = 0;
+	if (g_motionbrush_value) {
+		free(g_motionbrush_value);
+		g_motionbrush_value = 0;
 	}
 
 	int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 
-	g_editscale_startframe = startframe;
-	g_editscale_endframe = endframe;
-	g_editscale_numframe = endframe - startframe + 1;
-	g_editscale_frameleng = frameleng;
+	g_motionbrush_startframe = startframe;
+	g_motionbrush_endframe = endframe;
+	g_motionbrush_numframe = endframe - startframe + 1;
+	g_motionbrush_frameleng = frameleng;
 
-	g_editscale_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
-	if ((g_editscale_applyframe < 0) || (g_editscale_applyframe > endframe)) {
+	g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+	if ((g_motionbrush_applyframe < 0) || (g_motionbrush_applyframe > endframe)) {
 		_ASSERT(0);
 		return -1;
 	}
 
-	g_editscale_value = (float*)malloc(sizeof(float) * (g_editscale_frameleng + 1));
-	if (!g_editscale_value) {
+	g_motionbrush_value = (float*)malloc(sizeof(float) * (g_motionbrush_frameleng + 1));
+	if (!g_motionbrush_value) {
 		_ASSERT(0);
 		return -1;
 	}
-	memset(g_editscale_value, 0, sizeof(float) * (g_editscale_frameleng + 1));
+	memset(g_motionbrush_value, 0, sizeof(float) * (g_motionbrush_frameleng + 1));
 
-	if (g_editscale_numframe >= 3) {
+	if (g_motionbrush_numframe >= 3) {
 
 		double halfcnt1, halfcnt2;
 		double tangent1, tangent2;
 
 		int framecnt;
-		halfcnt1 = (g_editscale_applyframe - g_editscale_startframe);
-		halfcnt2 = (g_editscale_endframe - g_editscale_applyframe);
+		halfcnt1 = (g_motionbrush_applyframe - g_motionbrush_startframe);
+		halfcnt2 = (g_motionbrush_endframe - g_motionbrush_applyframe);
 		tangent1 = 1.0 / halfcnt1;
 		tangent2 = 1.0 / halfcnt2;
 
-		for (framecnt = 0; framecnt < g_editscale_frameleng; framecnt++) {
+		for (framecnt = 0; framecnt < g_motionbrush_frameleng; framecnt++) {
 			float curscale;
-			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
-				if ((framecnt == g_editscale_startframe) || (framecnt == g_editscale_endframe)) {
-					if (g_editscale_method == 3) {
+			if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
+				if ((framecnt == g_motionbrush_startframe) || (framecnt == g_motionbrush_endframe)) {
+					if (g_motionbrush_method == 3) {
 						//矩形
 						curscale = 1.0;
 					}
@@ -9864,41 +9864,41 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 						curscale = 0.0;
 					}
 				}
-				else if (framecnt < g_editscale_applyframe) {
-					if (g_editscale_method == 0) {
-						curscale = (framecnt - g_editscale_startframe) * tangent1;
+				else if (framecnt < g_motionbrush_applyframe) {
+					if (g_motionbrush_method == 0) {
+						curscale = (framecnt - g_motionbrush_startframe) * tangent1;
 					}
-					else if (g_editscale_method == 1) {
-						curscale = (1.0 + cos(PI + PI * (framecnt - g_editscale_startframe) / halfcnt1)) * 0.5;
+					else if (g_motionbrush_method == 1) {
+						curscale = (1.0 + cos(PI + PI * (framecnt - g_motionbrush_startframe) / halfcnt1)) * 0.5;
 					}
-					else if (g_editscale_method == 2) {
-						curscale = (1.0 + cos(PI + PI * pow((framecnt - g_editscale_startframe) / halfcnt1, 2.0))) * 0.5;
+					else if (g_motionbrush_method == 2) {
+						curscale = (1.0 + cos(PI + PI * pow((framecnt - g_motionbrush_startframe) / halfcnt1, 2.0))) * 0.5;
 					}
-					else if (g_editscale_method == 3) {
+					else if (g_motionbrush_method == 3) {
 						curscale = 1.0;
 					}
 					else {
 						curscale = 1.0;
 					}
 				}
-				else if ((framecnt > g_editscale_applyframe) && (framecnt < g_editscale_endframe)) {
-					if (g_editscale_method == 0) {
-						curscale = 1.0 - (framecnt - g_editscale_applyframe) * tangent2;
+				else if ((framecnt > g_motionbrush_applyframe) && (framecnt < g_motionbrush_endframe)) {
+					if (g_motionbrush_method == 0) {
+						curscale = 1.0 - (framecnt - g_motionbrush_applyframe) * tangent2;
 					}
-					else if (g_editscale_method == 1) {
-						curscale = (1.0 + cos(PI + PI * (g_editscale_endframe - framecnt) / halfcnt2)) * 0.5;
+					else if (g_motionbrush_method == 1) {
+						curscale = (1.0 + cos(PI + PI * (g_motionbrush_endframe - framecnt) / halfcnt2)) * 0.5;
 					}
-					else if (g_editscale_method == 2) {
-						curscale = (1.0 + cos(PI + PI * pow((g_editscale_endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
+					else if (g_motionbrush_method == 2) {
+						curscale = (1.0 + cos(PI + PI * pow((g_motionbrush_endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
 					}
-					else if (g_editscale_method == 3) {
+					else if (g_motionbrush_method == 3) {
 						curscale = 1.0;
 					}
 					else {
 						curscale = 1.0;
 					}
 				}
-				else if (framecnt == g_editscale_applyframe) {
+				else if (framecnt == g_motionbrush_applyframe) {
 					curscale = 1.0;
 				}
 				else {
@@ -9910,19 +9910,19 @@ int CreateEditScale(double srcstart, double srcend, bool onrefreshflag)
 				//選択範囲以外０
 				curscale = 0.0;
 			}
-			*(g_editscale_value + (int)framecnt) = curscale;
+			*(g_motionbrush_value + (int)framecnt) = curscale;
 		}
 	}else{
 		double framecnt;
-		for (framecnt = 0.0; framecnt < g_editscale_frameleng; framecnt++) {
+		for (framecnt = 0.0; framecnt < g_motionbrush_frameleng; framecnt++) {
 			float curscale;
-			if ((framecnt >= (int)g_editscale_startframe) && (framecnt <= g_editscale_endframe)) {
+			if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
 				curscale = 1.0;
 			}
 			else {
 				curscale = 0.0;
 			}
-			*(g_editscale_value + (int)framecnt) = curscale;
+			*(g_motionbrush_value + (int)framecnt) = curscale;
 		}
 	}
 
@@ -12223,13 +12223,16 @@ int CreateUtDialog()
 	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
 	CEditRange::SetApplyRate(g_applyrate);
 
-	g_SampleUI.AddComboBox(IDC_COMBO_EDITSCALE_METHOD, 35, iY += addh, ctrlxlen + 15, ctrlh);
-	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_EDITSCALE_METHOD);
+
+	swprintf_s(sz, 100, L"モーションブラシ(MotionBrush)");
+	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen + 25, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
+	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
 	pComboBox5->RemoveAllItems();
-	pComboBox5->AddItem(L"線形山", ULongToPtr(0));
-	pComboBox5->AddItem(L"Cos(x+PI)山", ULongToPtr(1));
-	pComboBox5->AddItem(L"Cos(x^2+PI)山", ULongToPtr(2));
-	pComboBox5->AddItem(L"矩形山", ULongToPtr(3));
+	pComboBox5->AddItem(L"線形ブラシ", ULongToPtr(0));
+	pComboBox5->AddItem(L"Cos(x+PI)ブラシ", ULongToPtr(1));
+	pComboBox5->AddItem(L"Cos(x^2+PI)ブラシ", ULongToPtr(2));
+	pComboBox5->AddItem(L"矩形ブラシ", ULongToPtr(3));
 	pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
@@ -12441,7 +12444,7 @@ int CreateLongTimelineWnd()
 					s_underselectingframe = 0;
 
 					if (s_editmotionflag < 0) {
-						int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 						if (result) {
 							_ASSERT(0);
 						}
@@ -12470,7 +12473,7 @@ int CreateLongTimelineWnd()
 						}
 
 						if (s_editmotionflag < 0) {
-							int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 							if (result) {
 								_ASSERT(0);
 							}
@@ -12486,7 +12489,7 @@ int CreateLongTimelineWnd()
 						s_underselectingframe = 0;
 						//_ASSERT(0);
 
-						//int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+						//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 						//if (result) {
 						//	_ASSERT(0);
 						//}
@@ -12501,7 +12504,7 @@ int CreateLongTimelineWnd()
 					OnTimeLineButtonSelectFromSelectStartEnd(1);
 
 					if (s_editmotionflag < 0) {
-						int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 						if (result) {
 							_ASSERT(0);
 						}
@@ -12519,7 +12522,7 @@ int CreateLongTimelineWnd()
 				s_underselectingframe = 0;
 				//_ASSERT(0);
 
-				int result = CreateEditScale(s_buttonselectstart, s_buttonselectend, false);
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if (result) {
 					_ASSERT(0);
 				}

@@ -323,7 +323,7 @@ namespace OrgWinGUI{
 		}
 
 
-		////editscale ‚OƒtƒŒ[ƒ€‚©‚ç‘‚­
+		////motionbrush ‚OƒtƒŒ[ƒ€‚©‚ç‘‚­
 		//bool highLight = false;
 		//lineData[3]->draw(hdcM,
 		//pos.x + MARGIN,
