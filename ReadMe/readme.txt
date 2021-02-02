@@ -212,6 +212,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/02_2
+	動画　
+	【MameBake3D】モーションをブラシで盛る！！【モーションブラシ】
+	https://youtu.be/rZFTNVLYXPU
+
+
 2021/02/02_1
 	Rename EditScale to MotinBrush.
 	エディットスケールという機能名をモーションブラシという名前に変更しました。
@@ -2216,6 +2222,11 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+2021/02/02_2
+動画　
+【MameBake3D】モーションをブラシで盛る！！【モーションブラシ】
+https://youtu.be/rZFTNVLYXPU
+
 【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
 複数フレームに対する編集だから	モデルの向きが変わったら
 編集結果がおかしくなるんじゃないかという
