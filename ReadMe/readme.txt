@@ -212,15 +212,19 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/06
+	動画【MameBake3D】モーションにアクセントを【モーションブラシ】
+	https://youtu.be/WqB03hMqbgc
+
 2021/02/03_1
 	オイラーグラフのペアレントオイラーのチェックボックスをデフォルトでオンにしました
 	一階層のIK操作が一番多い操作だと思うので、チェックボックスをチェックする手間と思い違いが減ると思います。
-
 
 2021/02/02_2
 	動画　
 	【MameBake3D】モーションをブラシで盛る！！【モーションブラシ】
 	https://youtu.be/rZFTNVLYXPU
+	（公開終了しました）
 
 
 2021/02/02_1
@@ -255,9 +259,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 	https://youtu.be/iyQS7ZPEQLk
+	（公開終了しました）
+
 
 2021/01/27_2
 	エディットスケールの動画　https://youtu.be/uqMUoQo7egE
+	（公開終了しました）
+
 
 2021/01/27_1
 	EditScaleのバージョンアップ
@@ -2227,10 +2235,15 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+2021/02/06
+動画【MameBake3D】モーションにアクセントを【モーションブラシ】
+https://youtu.be/WqB03hMqbgc
+
 2021/02/02_2
 動画　
 【MameBake3D】モーションをブラシで盛る！！【モーションブラシ】
 https://youtu.be/rZFTNVLYXPU
+(公開終了しました)
 
 【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
 複数フレームに対する編集だから	モデルの向きが変わったら
@@ -2238,9 +2251,11 @@ https://youtu.be/rZFTNVLYXPU
 疑問に応える動画
 PseudoLocalと呼ぶ技術で解決しています
 https://youtu.be/iyQS7ZPEQLk
+(公開終了しました)
 
 【MameBake3D】エディットスケール【編集の山】
 https://youtu.be/uqMUoQo7egE
+(公開終了しました)
 
 【物理IK】質量０とポスト処理による位置コンストレイント
 （1分くらいのテスト動画）
