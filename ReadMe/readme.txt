@@ -212,6 +212,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/11
+	ControlFlowGuardをGuardに設定してビルドしました
+
+
 2021/02/06
 	動画【MameBake3D】モーションにアクセントを【モーションブラシ】
 	https://youtu.be/WqB03hMqbgc
