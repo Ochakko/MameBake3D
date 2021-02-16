@@ -9,6 +9,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3D", "MameBake3D.vc
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3DLib", "..\MameBake3DLib\MameBake3DLib\MameBake3DLib.vcxproj", "{381D22C0-053F-437F-A4AB-3B57CB413001}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545} = {4290AD57-72AB-4034-AA82-1EF3D9E3D545}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Effects11", "..\Effects11\Effects11.vcxproj", "{4290AD57-72AB-4034-AA82-1EF3D9E3D545}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +39,14 @@ Global
 		{381D22C0-053F-437F-A4AB-3B57CB413001}.Release|Win32.Build.0 = Release|Win32
 		{381D22C0-053F-437F-A4AB-3B57CB413001}.Release|x64.ActiveCfg = Release|x64
 		{381D22C0-053F-437F-A4AB-3B57CB413001}.Release|x64.Build.0 = Release|x64
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Debug|Win32.Build.0 = Debug|Win32
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Debug|x64.ActiveCfg = Debug|x64
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Debug|x64.Build.0 = Debug|x64
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|Win32.ActiveCfg = Release|Win32
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|Win32.Build.0 = Release|Win32
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|x64.ActiveCfg = Release|x64
+		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

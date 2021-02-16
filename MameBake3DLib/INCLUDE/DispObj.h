@@ -1,14 +1,6 @@
 #ifndef DISPOBJH
 #define DISPOBJH
 
-//// Direct3D10 includes
-//#include <d3dcommon.h>
-//#include <dxgi.h>
-//#include <d3d10_1.h>
-//#include <d3d10.h>
-//#include <d3dcompiler.h>
-//#include <d3dx10.h>
-
 #include <ChaVecCalc.h>
 
 class CMQOMaterial;
@@ -40,34 +32,34 @@ public:
  * @fn
  * CreateDispObj
  * @breaf メタセコイアからのデータ用の表示用オブジェクトを作成する。
- * @param (ID3D10Device* pdev) IN Direct3Dのデバイス。
+ * @param (ID3D11Device* pdev) IN Direct3Dのデバイス。
  * @param (CPolyMesh3* pm3) IN 形状データへのポインタ。
  * @param (int hasbone) IN ボーン変形有の場合は１、無しの場合は０。MameBake3Dではメタセコイアデータはボーン無し。
  * @return 成功したら０。
  */
-	int CreateDispObj( ID3D10Device* pdev, CPolyMesh3* pm3, int hasbone );
+	int CreateDispObj( ID3D11Device* pdev, CPolyMesh3* pm3, int hasbone );
 
 
 /**
  * @fn
  * CreateDispObj
  * @breaf FBXからのデータ用の表示用オブジェクトを作成する。
- * @param (ID3D10Device* pdev) IN Direct3Dのデバイス。
+ * @param (ID3D11Device* pdev) IN Direct3Dのデバイス。
  * @param (CPolyMesh4* pm4) IN 形状データへのポインタ。
  * @param (int hasbone) IN ボーン変形有の場合は１、無しの場合は０。 * @return 戻り値の説明
  * @return 成功したら０。
  */
-	int CreateDispObj( ID3D10Device* pdev, CPolyMesh4* pm4, int hasbone );
+	int CreateDispObj( ID3D11Device* pdev, CPolyMesh4* pm4, int hasbone );
 
 /**
  * @fn
  * CreateDispObj
  * @breaf 線分データ用の表示用オブジェクトを作成する。
- * @param (ID3D10Device* pdev) IN Direct3Dのデバイス。
+ * @param (ID3D11Device* pdev) IN Direct3Dのデバイス。
  * @param (CExtLine* extline) IN 線の形状データへのポインタ。
  * @return 成功したら０。
  */
-	int CreateDispObj( ID3D10Device* pdev, CExtLine* extline );
+	int CreateDispObj( ID3D11Device* pdev, CExtLine* extline );
 
 
 /**
@@ -79,7 +71,7 @@ public:
  * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  */
-	int RenderNormal( CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult );
+	int RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult );
 
 /**
  * @fn
@@ -90,7 +82,7 @@ public:
  * @return 成功したら０。
  * @detail FBXデータは１オブジェクトにつき１マテリアル(材質)だが、メタセコイアデータは１オブジェクトに複数マテリアルが設定されていることが多い。
  */
-	int RenderNormalPM3( int lightflag, ChaVector4 diffusemult );
+	int RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult );
 
 /**
  * @fn
@@ -99,7 +91,7 @@ public:
  * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  */
-	int RenderLine( ChaVector4 diffusemult );
+	int RenderLine(ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult );
 
 /**
  * @fn
@@ -172,48 +164,49 @@ private:
 private:
 	int m_hasbone;//ボーン変形用のオブジェクトであるとき１、それ以外の時は０。
 
-	ID3D10Device* m_pdev;//外部メモリ、Direct3Dのデバイス。
+	ID3D11Device* m_pdev;//外部メモリ、Direct3Dのデバイス。
 	CPolyMesh3* m_pm3;//外部メモリ、メタセコイアファイルから作成した３Dデータ。
 	CPolyMesh4* m_pm4;//外部メモリ、FBXファイルから作成した３Dデータ。
 	CExtLine* m_extline;//外部メモリ、線データ。
 
 
 	/*
-	extern ID3D10EffectTechnique* g_hRenderBoneL0;
-	extern ID3D10EffectTechnique* g_hRenderBoneL1;
-	extern ID3D10EffectTechnique* g_hRenderBoneL2;
-	extern ID3D10EffectTechnique* g_hRenderBoneL3;
-	extern ID3D10EffectTechnique* g_hRenderNoBoneL0;
-	extern ID3D10EffectTechnique* g_hRenderNoBoneL1;
-	extern ID3D10EffectTechnique* g_hRenderNoBoneL2;
-	extern ID3D10EffectTechnique* g_hRenderNoBoneL3;
-	extern ID3D10EffectTechnique* g_hRenderLine;
+	extern ID3D11EffectTechnique* g_hRenderBoneL0;
+	extern ID3D11EffectTechnique* g_hRenderBoneL1;
+	extern ID3D11EffectTechnique* g_hRenderBoneL2;
+	extern ID3D11EffectTechnique* g_hRenderBoneL3;
+	extern ID3D11EffectTechnique* g_hRenderNoBoneL0;
+	extern ID3D11EffectTechnique* g_hRenderNoBoneL1;
+	extern ID3D11EffectTechnique* g_hRenderNoBoneL2;
+	extern ID3D11EffectTechnique* g_hRenderNoBoneL3;
+	extern ID3D11EffectTechnique* g_hRenderLine;
 	*/
 
 
-	D3D10_BUFFER_DESC m_BufferDescBone;
-	D3D10_BUFFER_DESC m_BufferDescNoBone;
-	D3D10_BUFFER_DESC m_BufferDescInf;
-	D3D10_BUFFER_DESC m_BufferDescLine;
+	D3D11_BUFFER_DESC m_BufferDescBone;
+	D3D11_BUFFER_DESC m_BufferDescNoBone;
+	D3D11_BUFFER_DESC m_BufferDescInf;
+	D3D11_BUFFER_DESC m_BufferDescLine;
 
-	ID3D10InputLayout* m_layoutBoneL0;
-	ID3D10InputLayout* m_layoutBoneL1;
-	ID3D10InputLayout* m_layoutBoneL2;
-	ID3D10InputLayout* m_layoutBoneL3;
-	ID3D10InputLayout* m_layoutNoBoneL0;
-	ID3D10InputLayout* m_layoutNoBoneL1;
-	ID3D10InputLayout* m_layoutNoBoneL2;
-	ID3D10InputLayout* m_layoutNoBoneL3;
-	ID3D10InputLayout* m_layoutLine;
+	ID3D11InputLayout* m_layoutBoneL0;
+	ID3D11InputLayout* m_layoutBoneL1;
+	ID3D11InputLayout* m_layoutBoneL2;
+	ID3D11InputLayout* m_layoutBoneL3;
+	ID3D11InputLayout* m_layoutNoBoneL0;
+	ID3D11InputLayout* m_layoutNoBoneL1;
+	ID3D11InputLayout* m_layoutNoBoneL2;
+	ID3D11InputLayout* m_layoutNoBoneL3;
+	ID3D11InputLayout* m_layoutLine;
 
-    ID3D10Buffer* m_VB;//表示用頂点バッファ。
-	ID3D10Buffer* m_InfB;//表示用ボーン影響度バッファ。
-	ID3D10Buffer* m_IB;//表示用三角のインデックスバッファ。
+    ID3D11Buffer* m_VB;//表示用頂点バッファ。
+	ID3D11Buffer* m_InfB;//表示用ボーン影響度バッファ。
+	ID3D11Buffer* m_IB;//表示用三角のインデックスバッファ。
 
 
 	ChaVector3 m_scale;
 	ChaVector3 m_scaleoffset;
 
+	int* m_tmpindexLH;
 };
 
 

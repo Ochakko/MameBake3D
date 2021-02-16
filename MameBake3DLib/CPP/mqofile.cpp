@@ -75,7 +75,7 @@ void CMQOFile::InitLoadParams()
 }
 
 
-int CMQOFile::LoadMQOFile( ID3D10Device* pdev, float multiple, WCHAR* filename, 
+int CMQOFile::LoadMQOFile( ID3D11Device* pdev, float multiple, WCHAR* filename, 
 	ChaVector3 offsetpos, ChaVector3 rot, CModel* srcmodel )
 {
 	m_pdev = pdev;

@@ -1,11 +1,11 @@
 #ifndef MYSPRITEH
 #define MYSPRITEH
 
-//class ID3D10Device;
-//struct D3D10_BUFFER_DESC;
-//class ID3D10InputLayout;
-//class ID3D10Buffer;//表示用頂点バッファ。
-//class ID3D10Resource;
+//class ID3D11Device;
+//struct D3D11_BUFFER_DESC;
+//class ID3D11InputLayout;
+//class ID3D11Buffer;//表示用頂点バッファ。
+//class ID3D11Resource;
 //class D3DXCOLOR;
 
 //#include <d3dx9.h>
@@ -16,15 +16,16 @@
 class CMySprite
 {
 public:
-	CMySprite( ID3D10Device* pdev );
+	CMySprite( ID3D11Device* pdev );
 	~CMySprite();
 
-	int Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol );
+	//int Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol );
+	int Create(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool);
 	int CreateDecl();
 	int SetPos( ChaVector3 srcpos );
 	int SetSize( ChaVector2 srcsize );
 	int SetColor( ChaVector4 srccol );
-	int OnRender( ID3D10Resource* ptex = 0 );
+	int OnRender(ID3D11DeviceContext* pd3dImmediateContext, ID3D11Resource* ptex = 0 );
 
 private:
 	int InitParams();
@@ -32,13 +33,13 @@ private:
 
 
 private:
-	ID3D10Device* m_pdev;
+	ID3D11Device* m_pdev;
 	int m_texid;
 	SPRITEV m_v[6];
 
-	D3D10_BUFFER_DESC* m_BufferDesc;
-	ID3D10InputLayout* m_layout;
-	ID3D10Buffer* m_VB;//表示用頂点バッファ。
+	D3D11_BUFFER_DESC* m_BufferDesc;
+	ID3D11InputLayout* m_layout;
+	ID3D11Buffer* m_VB;//表示用頂点バッファ。
 
 	ChaVector3 m_pos;
 	ChaVector2 m_size;

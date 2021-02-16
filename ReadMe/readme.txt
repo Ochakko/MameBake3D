@@ -12,6 +12,14 @@
 	（インディー契約の条件については以下のページ）
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
+開発環境(2021/02/16時点)を書きます。
+FBXSDKは2020.0.1(Debugビルドも出来た)
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+VisualStudio2015Pro(VisualStudioSubscription)
+MayaIndie(Subscription FBXの確認はMayaでする)
+
 
 開発環境(2021/01/26時点)を書きます。
 FBXSDKを2018.1.1に戻しました
@@ -212,9 +220,20 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/16
+	DirectX11対応
+	FBX SDK 2020.0.1対応
+
+	開発環境(2021/02/16時点)を書きます。
+	FBXSDKは2020.0.1(Debugビルドも出来た)
+	DirectX11 (Windows10 SDK or VisualStudioからインストール)
+	githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+	githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+	VisualStudio2015Pro(VisualStudioSubscription)
+	MayaIndie(Subscription FBXの確認はMayaでする)
+
 2021/02/11
 	ControlFlowGuardをGuardに設定してビルドしました
-
 
 2021/02/06
 	動画【MameBake3D】モーションにアクセントを【モーションブラシ】

@@ -24,7 +24,7 @@
 
 extern WCHAR g_basedir[ MAX_PATH ];
 
-CTexBank::CTexBank( ID3D10Device* pdev )
+CTexBank::CTexBank( ID3D11Device* pdev )
 {
 	InitParams();
 	m_pdev = pdev;
@@ -81,7 +81,8 @@ CTexElem* CTexBank::ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent
 	return 0;
 }
 
-int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol, int* dstid )
+//int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol, int* dstid )
+int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, int* dstid)
 {
 	*dstid = -1;
 
@@ -105,7 +106,7 @@ int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int sr
 	//if (srccol) {
 	//	newelem->SetTransCol(*srccol);
 	//}
-	CallF( newelem->CreateTexData( m_pdev ), return 1 );
+	CallF( newelem->CreateTexData( m_pdev, pd3dImmediateContext), return 1 );
 
 	m_texmap[ newelem->GetID() ] = newelem;
 	*dstid = newelem->GetID();
@@ -125,13 +126,13 @@ int CTexBank::Invalidate( int invalmode )
 
 	return 0;
 }
-int CTexBank::Restore()
+int CTexBank::Restore(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	map<int,CTexElem*>::iterator itr;
 	for( itr = m_texmap.begin(); itr != m_texmap.end(); itr++ ){
 		CTexElem* telem = itr->second;
 		if( telem ){
-			CallF( telem->CreateTexData( m_pdev ), return 1 );
+			CallF( telem->CreateTexData( m_pdev, pd3dImmediateContext), return 1 );
 		}
 	}
 

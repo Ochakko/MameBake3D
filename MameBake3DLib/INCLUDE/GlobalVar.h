@@ -4,13 +4,44 @@
 #include <Windows.h>
 
 
-//class ID3D10DepthStencilState;
-//class ID3D10ShaderResourceView;
-//class ID3D10EffectTechnique;
-//class ID3D10EffectMatrixVariable;
-//class ID3D10EffectVectorVariable;
-//class ID3D10EffectScalarVariable;
-//class ID3D10EffectShaderResourceVariable;
+#ifdef CONVD3DX11
+// Direct3D11 includes
+#include <d3dcommon.h>
+#include <dxgi.h>
+#include <d3d11_1.h>
+#include <d3d11_2.h>
+#include <d3dcompiler.h>
+#ifdef USE_DIRECT3D11_3
+#include <d3d11_3.h>
+#endif
+#ifdef USE_DIRECT3D11_4
+#include <d3d11_4.h>
+#endif
+// DirectXMath includes
+#include <DirectXMath.h>
+#include <DirectXColors.h>
+// WIC includes
+#include <wincodec.h>
+// XInput includes
+#include <xinput.h>
+// HRESULT translation for Direct3D and other APIs 
+#include <dxerr.h>
+#endif
+
+//#undef DEFINE_GUID
+//#include "INITGUID.h"
+#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\Inc\d3dx11effect.h"
+
+//#include "..\..\Effects11\pchfx.h"
+
+
+//class ID3D11DepthStencilState;
+//class ID3D11ShaderResourceView;
+//class ID3DX11EffectTechnique;
+//class ID3DX11EffectMatrixVariable;
+//class ID3DX11EffectVectorVariable;
+//class ID3DX11EffectScalarVariable;
+//class ID3DX11EffectShaderResourceVariable;
 
 
 
@@ -25,9 +56,9 @@ class CInfoWindow;
 int g_iklevel = 1;
 CInfoWindow* g_infownd = 0;
 int g_endappflag = 0;
-ID3D10DepthStencilState *g_pDSStateZCmp = 0;
-ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
-ID3D10ShaderResourceView* g_presview = 0;
+ID3D11DepthStencilState *g_pDSStateZCmp = 0;
+ID3D11DepthStencilState *g_pDSStateZCmpAlways = 0;
+ID3D11ShaderResourceView* g_presview = 0;
 
 int	g_numthread = 3;
 double g_btcalccnt = 3.0;
@@ -78,38 +109,43 @@ float g_tmpmqomult = 1.0f;
 WCHAR g_tmpmqopath[MULTIPATH] = { 0L };
 float g_tmpbvhfilter = 100.0f;
 
-ID3D10EffectTechnique* g_hRenderBoneL0 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL1 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL2 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL3 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL0 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL1 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL2 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL3 = 0;
-ID3D10EffectTechnique* g_hRenderLine = 0;
-ID3D10EffectTechnique* g_hRenderSprite = 0;
-
-ID3D10EffectMatrixVariable* g_hm4x4Mat = 0;
-ID3D10EffectMatrixVariable* g_hmWorld = 0;
-ID3D10EffectMatrixVariable* g_hmVP = 0;
-
-ID3D10EffectVectorVariable* g_hEyePos = 0;
-ID3D10EffectScalarVariable* g_hnNumLight = 0;
-ID3D10EffectVectorVariable* g_hLightDir = 0;
-ID3D10EffectVectorVariable* g_hLightDiffuse = 0;
-ID3D10EffectVectorVariable* g_hLightAmbient = 0;
-ID3D10EffectVectorVariable* g_hSpriteOffset = 0;
-ID3D10EffectVectorVariable* g_hSpriteScale = 0;
-ID3D10EffectVectorVariable* g_hPm3Scale = 0;
-ID3D10EffectVectorVariable* g_hPm3Offset = 0;
+ID3D11BlendState* g_blendState = 0;
 
 
-ID3D10EffectVectorVariable* g_hdiffuse = 0;
-ID3D10EffectVectorVariable* g_hambient = 0;
-ID3D10EffectVectorVariable* g_hspecular = 0;
-ID3D10EffectScalarVariable* g_hpower = 0;
-ID3D10EffectVectorVariable* g_hemissive = 0;
-ID3D10EffectShaderResourceVariable* g_hMeshTexture = 0;
+ID3DX11Effect* g_pEffect = 0;
+
+ID3DX11EffectTechnique* g_hRenderBoneL0 = 0;
+ID3DX11EffectTechnique* g_hRenderBoneL1 = 0;
+ID3DX11EffectTechnique* g_hRenderBoneL2 = 0;
+ID3DX11EffectTechnique* g_hRenderBoneL3 = 0;
+ID3DX11EffectTechnique* g_hRenderNoBoneL0 = 0;
+ID3DX11EffectTechnique* g_hRenderNoBoneL1 = 0;
+ID3DX11EffectTechnique* g_hRenderNoBoneL2 = 0;
+ID3DX11EffectTechnique* g_hRenderNoBoneL3 = 0;
+ID3DX11EffectTechnique* g_hRenderLine = 0;
+ID3DX11EffectTechnique* g_hRenderSprite = 0;
+
+ID3DX11EffectMatrixVariable* g_hm4x4Mat = 0;
+ID3DX11EffectMatrixVariable* g_hmWorld = 0;
+ID3DX11EffectMatrixVariable* g_hmVP = 0;
+
+ID3DX11EffectVectorVariable* g_hEyePos = 0;
+ID3DX11EffectScalarVariable* g_hnNumLight = 0;
+ID3DX11EffectVectorVariable* g_hLightDir = 0;
+ID3DX11EffectVectorVariable* g_hLightDiffuse = 0;
+ID3DX11EffectVectorVariable* g_hLightAmbient = 0;
+ID3DX11EffectVectorVariable* g_hSpriteOffset = 0;
+ID3DX11EffectVectorVariable* g_hSpriteScale = 0;
+ID3DX11EffectVectorVariable* g_hPm3Scale = 0;
+ID3DX11EffectVectorVariable* g_hPm3Offset = 0;
+
+
+ID3DX11EffectVectorVariable* g_hdiffuse = 0;
+ID3DX11EffectVectorVariable* g_hambient = 0;
+ID3DX11EffectVectorVariable* g_hspecular = 0;
+ID3DX11EffectScalarVariable* g_hpower = 0;
+ID3DX11EffectVectorVariable* g_hemissive = 0;
+ID3DX11EffectShaderResourceVariable* g_hMeshTexture = 0;
 
 BYTE g_keybuf[256];
 BYTE g_savekeybuf[256];
@@ -144,9 +180,9 @@ float* g_motionbrush_value = 0;
 extern int g_iklevel;
 extern CInfoWindow* g_infownd;
 extern int g_endappflag;
-extern ID3D10DepthStencilState *g_pDSStateZCmp;
-extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;
-extern ID3D10ShaderResourceView* g_presview;
+extern ID3D11DepthStencilState *g_pDSStateZCmp;
+extern ID3D11DepthStencilState *g_pDSStateZCmpAlways;
+extern ID3D11ShaderResourceView* g_presview;
 
 extern int	g_numthread;
 extern double g_btcalccnt;
@@ -196,38 +232,42 @@ extern float g_tmpmqomult;
 extern WCHAR g_tmpmqopath[MULTIPATH];
 extern float g_tmpbvhfilter;
 
-extern ID3D10EffectTechnique* g_hRenderBoneL0;
-extern ID3D10EffectTechnique* g_hRenderBoneL1;
-extern ID3D10EffectTechnique* g_hRenderBoneL2;
-extern ID3D10EffectTechnique* g_hRenderBoneL3;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL0;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL1;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL2;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL3;
-extern ID3D10EffectTechnique* g_hRenderLine;
-extern ID3D10EffectTechnique* g_hRenderSprite;
+extern ID3D11BlendState* g_blendState;
 
-extern ID3D10EffectMatrixVariable* g_hm4x4Mat;
-extern ID3D10EffectMatrixVariable* g_hmWorld;
-extern ID3D10EffectMatrixVariable* g_hmVP;
+extern ID3DX11Effect* g_pEffect;
 
-extern ID3D10EffectVectorVariable* g_hEyePos;
-extern ID3D10EffectScalarVariable* g_hnNumLight;
-extern ID3D10EffectVectorVariable* g_hLightDir;
-extern ID3D10EffectVectorVariable* g_hLightDiffuse;
-extern ID3D10EffectVectorVariable* g_hLightAmbient;
-extern ID3D10EffectVectorVariable* g_hSpriteOffset;
-extern ID3D10EffectVectorVariable* g_hSpriteScale;
-extern ID3D10EffectVectorVariable* g_hPm3Scale;
-extern ID3D10EffectVectorVariable* g_hPm3Offset;
+extern ID3DX11EffectTechnique* g_hRenderBoneL0;
+extern ID3DX11EffectTechnique* g_hRenderBoneL1;
+extern ID3DX11EffectTechnique* g_hRenderBoneL2;
+extern ID3DX11EffectTechnique* g_hRenderBoneL3;
+extern ID3DX11EffectTechnique* g_hRenderNoBoneL0;
+extern ID3DX11EffectTechnique* g_hRenderNoBoneL1;
+extern ID3DX11EffectTechnique* g_hRenderNoBoneL2;
+extern ID3DX11EffectTechnique* g_hRenderNoBoneL3;
+extern ID3DX11EffectTechnique* g_hRenderLine;
+extern ID3DX11EffectTechnique* g_hRenderSprite;
+
+extern ID3DX11EffectMatrixVariable* g_hm4x4Mat;
+extern ID3DX11EffectMatrixVariable* g_hmWorld;
+extern ID3DX11EffectMatrixVariable* g_hmVP;
+
+extern ID3DX11EffectVectorVariable* g_hEyePos;
+extern ID3DX11EffectScalarVariable* g_hnNumLight;
+extern ID3DX11EffectVectorVariable* g_hLightDir;
+extern ID3DX11EffectVectorVariable* g_hLightDiffuse;
+extern ID3DX11EffectVectorVariable* g_hLightAmbient;
+extern ID3DX11EffectVectorVariable* g_hSpriteOffset;
+extern ID3DX11EffectVectorVariable* g_hSpriteScale;
+extern ID3DX11EffectVectorVariable* g_hPm3Scale;
+extern ID3DX11EffectVectorVariable* g_hPm3Offset;
 
 
-extern ID3D10EffectVectorVariable* g_hdiffuse;
-extern ID3D10EffectVectorVariable* g_hambient;
-extern ID3D10EffectVectorVariable* g_hspecular;
-extern ID3D10EffectScalarVariable* g_hpower;
-extern ID3D10EffectVectorVariable* g_hemissive;
-extern ID3D10EffectShaderResourceVariable* g_hMeshTexture;
+extern ID3DX11EffectVectorVariable* g_hdiffuse;
+extern ID3DX11EffectVectorVariable* g_hambient;
+extern ID3DX11EffectVectorVariable* g_hspecular;
+extern ID3DX11EffectScalarVariable* g_hpower;
+extern ID3DX11EffectVectorVariable* g_hemissive;
+extern ID3DX11EffectShaderResourceVariable* g_hMeshTexture;
 
 extern BYTE g_keybuf[256];
 extern BYTE g_savekeybuf[256];

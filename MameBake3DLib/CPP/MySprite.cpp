@@ -38,34 +38,34 @@
 using namespace std;
 
 /*
-extern ID3D10ShaderResourceView* g_presview;
+extern ID3D11ShaderResourceView* g_presview;
 extern CTexBank* g_texbank;
 extern WCHAR g_basedir[ MAX_PATH ];
 
-extern ID3D10Effect*		g_pEffect;
-extern ID3D10EffectTechnique* g_hRenderSprite;
+extern ID3D11Effect*		g_pEffect;
+extern ID3D11EffectTechnique* g_hRenderSprite;
 
-extern ID3D10EffectMatrixVariable* g_hm4x4Mat;
-extern ID3D10EffectMatrixVariable* g_hmWorld;
-extern ID3D10EffectMatrixVariable* g_hmVP;
+extern ID3D11EffectMatrixVariable* g_hm4x4Mat;
+extern ID3D11EffectMatrixVariable* g_hmWorld;
+extern ID3D11EffectMatrixVariable* g_hmVP;
 
-extern ID3D10EffectVectorVariable* g_hEyePos;
-extern ID3D10EffectScalarVariable* g_hnNumLight;
-extern ID3D10EffectVectorVariable* g_hLightDir;
-extern ID3D10EffectVectorVariable* g_hLightDiffuse;
-extern ID3D10EffectVectorVariable* g_hLightAmbient;
-extern ID3D10EffectVectorVariable* g_hSpriteOffset;
-extern ID3D10EffectVectorVariable* g_hSpriteScale;
+extern ID3D11EffectVectorVariable* g_hEyePos;
+extern ID3D11EffectScalarVariable* g_hnNumLight;
+extern ID3D11EffectVectorVariable* g_hLightDir;
+extern ID3D11EffectVectorVariable* g_hLightDiffuse;
+extern ID3D11EffectVectorVariable* g_hLightAmbient;
+extern ID3D11EffectVectorVariable* g_hSpriteOffset;
+extern ID3D11EffectVectorVariable* g_hSpriteScale;
 
-extern ID3D10EffectVectorVariable*g_hdiffuse;
-extern ID3D10EffectVectorVariable* g_hambient;
-extern ID3D10EffectVectorVariable* g_hspecular;
-extern ID3D10EffectScalarVariable* g_hpower;
-extern ID3D10EffectVectorVariable* g_hemissive;
-extern ID3D10EffectShaderResourceVariable* g_hMeshTexture;
+extern ID3D11EffectVectorVariable*g_hdiffuse;
+extern ID3D11EffectVectorVariable* g_hambient;
+extern ID3D11EffectVectorVariable* g_hspecular;
+extern ID3D11EffectScalarVariable* g_hpower;
+extern ID3D11EffectVectorVariable* g_hemissive;
+extern ID3D11EffectShaderResourceVariable* g_hMeshTexture;
 */
 
-CMySprite::CMySprite( ID3D10Device* pdev )
+CMySprite::CMySprite( ID3D11Device* pdev )
 {
 	InitParams();
 	m_pdev = pdev;
@@ -80,8 +80,8 @@ int CMySprite::InitParams()
 	m_pdev = 0;
 	m_texid = -1;
 
-	m_BufferDesc = (D3D10_BUFFER_DESC*)malloc(sizeof(D3D10_BUFFER_DESC));
-	ZeroMemory(m_BufferDesc, sizeof(D3D10_BUFFER_DESC));
+	m_BufferDesc = (D3D11_BUFFER_DESC*)malloc(sizeof(D3D11_BUFFER_DESC));
+	ZeroMemory(m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
 	m_layout = 0;
 	m_VB = 0;
 
@@ -133,24 +133,24 @@ int CMySprite::CreateDecl()
 		return 1;
 	}
 
-	D3D10_INPUT_ELEMENT_DESC decl[] = {
+	D3D11_INPUT_ELEMENT_DESC decl[] = {
 		//pos[4]
-		{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0 },
+		{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		//{ 0, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 
 		//uv
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(ChaVector4), D3D10_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(ChaVector4), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		//{ 0, 16, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 
 		//D3DDECL_END()
 	};
 
-	D3D10_PASS_DESC PassDesc;
+	D3DX11_PASS_DESC PassDesc;
 	g_hRenderSprite->GetPassByIndex(0)->GetDesc(&PassDesc);
 	// 頂点レイアウトを作成
 	HRESULT hr;
 	hr = m_pdev->CreateInputLayout(
-		decl, sizeof(decl) / sizeof(D3D10_INPUT_ELEMENT_DESC),
+		decl, sizeof(decl) / sizeof(D3D11_INPUT_ELEMENT_DESC),
 		PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, &m_layout);
 	if (FAILED(hr)) {
 		_ASSERT(0);
@@ -159,13 +159,13 @@ int CMySprite::CreateDecl()
 
 
 	m_BufferDesc->ByteWidth = 6 * sizeof(SPRITEV);
-	m_BufferDesc->Usage = D3D10_USAGE_DYNAMIC;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	m_BufferDesc->BindFlags = D3D10_BIND_VERTEX_BUFFER;
-	m_BufferDesc->CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+	m_BufferDesc->Usage = D3D11_USAGE_DYNAMIC;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	m_BufferDesc->BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	m_BufferDesc->CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	m_BufferDesc->MiscFlags = 0;
 
 
-	D3D10_SUBRESOURCE_DATA SubData;
+	D3D11_SUBRESOURCE_DATA SubData;
 	SubData.pSysMem = m_v;
 	SubData.SysMemPitch = 0;
 	SubData.SysMemSlicePitch = 0;
@@ -179,7 +179,8 @@ int CMySprite::CreateDecl()
 	return 0;
 }
 
-int CMySprite::Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol )
+//int CMySprite::Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol )
+int CMySprite::Create(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool)
 {
 	CallF( CreateDecl(), return 1 );
 
@@ -188,7 +189,8 @@ int CMySprite::Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int s
 		_ASSERT( g_texbank );
 	}
 
-	g_texbank->AddTex( srcpath, srcname, srctransparent, srcpool, srccol, &m_texid );
+	//g_texbank->AddTex( srcpath, srcname, srctransparent, srcpool, srccol, &m_texid );
+	g_texbank->AddTex(pd3dImmediateContext, srcpath, srcname, srctransparent, srcpool, &m_texid);
 	if( m_texid < 0 ){
 		_ASSERT( 0 );
 		return 1;
@@ -224,7 +226,7 @@ int CMySprite::SetPos( ChaVector3 srcpos )
 
 	HRESULT hr;
 	SPRITEV* pv;
-	hr = m_VB->Map(D3D10_MAP_WRITE_DISCARD, 0, (void**)&pv);
+	hr = m_VB->Map(D3D11_MAP_WRITE_DISCARD, 0, (void**)&pv);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;
@@ -247,7 +249,7 @@ int CMySprite::SetColor( ChaVector4 srccol )
 	m_col = srccol;
 	return 0;
 }
-int CMySprite::OnRender( ID3D10Resource* ptex )
+int CMySprite::OnRender(ID3D11DeviceContext* pd3dImmediateContext, ID3D11Resource* ptex )
 {
 	HRESULT hr;
 
@@ -259,11 +261,11 @@ int CMySprite::OnRender( ID3D10Resource* ptex )
 	_ASSERT(!hr);
 
 
-	m_pdev->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_pdev->IASetInputLayout(m_layout);
+	pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pd3dImmediateContext->IASetInputLayout(m_layout);
 
 
-	ID3D10ShaderResourceView* texresview = 0;
+	ID3D11ShaderResourceView* texresview = 0;
 	CTexElem* findtex = g_texbank->GetTexElem(m_texid);
 	if (findtex) {
 		texresview = findtex->GetPTex();
@@ -283,16 +285,16 @@ int CMySprite::OnRender( ID3D10Resource* ptex )
 
 	UINT vbstride = sizeof(SPRITEV);
 	UINT offset = 0;
-	m_pdev->IASetVertexBuffers(0, 1, &m_VB, &vbstride, &offset);
+	pd3dImmediateContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride, &offset);
 
 
-	//D3D10_TECHNIQUE_DESC techDesc;
+	//D3D11_TECHNIQUE_DESC techDesc;
 	//g_hRenderSprite->GetDesc(&techDesc);
 	UINT p = 0;
 	//for (UINT p = 0; p < techDesc.Passes; ++p)
 	//{
-		g_hRenderSprite->GetPassByIndex(p)->Apply(0);
-		m_pdev->Draw(6, 0);
+		g_hRenderSprite->GetPassByIndex(p)->Apply(0, pd3dImmediateContext);
+		pd3dImmediateContext->Draw(6, 0);
 	//}
 
 	return 0;

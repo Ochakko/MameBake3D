@@ -39,9 +39,6 @@
     <ClCompile Include="..\MameBake3DLib\DXUT\Core\DXUT.cpp">
       <Filter>DXUT_</Filter>
     </ClCompile>
-    <ClCompile Include="..\MameBake3DLib\DXUT\Core\DXUTenum.cpp">
-      <Filter>DXUT_</Filter>
-    </ClCompile>
     <ClCompile Include="..\MameBake3DLib\DXUT\Core\DXUTmisc.cpp">
       <Filter>DXUT_</Filter>
     </ClCompile>
@@ -64,6 +61,24 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GColiIDDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MameBake3DLib\DXUT\Core\DDSTextureLoader.cpp">
+      <Filter>DXUT_</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MameBake3DLib\DXUT\Core\dxerr.cpp">
+      <Filter>DXUT_</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MameBake3DLib\DXUT\Core\DXUTDevice11.cpp">
+      <Filter>DXUT_</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MameBake3DLib\DXUT\Core\ScreenGrab.cpp">
+      <Filter>DXUT_</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MameBake3DLib\DXUT\Core\WICTextureLoader.cpp">
+      <Filter>DXUT_</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -224,9 +239,6 @@
     <ClInclude Include="..\MameBake3DLib\DXUT\Core\DXUT.h">
       <Filter>DXUT_</Filter>
     </ClInclude>
-    <ClInclude Include="..\MameBake3DLib\DXUT\Core\DXUTenum.h">
-      <Filter>DXUT_</Filter>
-    </ClInclude>
     <ClInclude Include="..\MameBake3DLib\DXUT\Core\DXUTmisc.h">
       <Filter>DXUT_</Filter>
     </ClInclude>
@@ -252,6 +264,24 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GColiIDDlg.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MameBake3DLib\DXUT\Core\DDSTextureLoader.h">
+      <Filter>DXUT_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MameBake3DLib\DXUT\Core\dxerr.h">
+      <Filter>DXUT_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MameBake3DLib\DXUT\Core\DXUTDevice11.h">
+      <Filter>DXUT_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MameBake3DLib\DXUT\Core\ScreenGrab.h">
+      <Filter>DXUT_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MameBake3DLib\DXUT\Core\WICTextureLoader.h">
+      <Filter>DXUT_</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

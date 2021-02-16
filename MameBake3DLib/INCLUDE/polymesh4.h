@@ -1,7 +1,7 @@
 #ifndef POLYMESH4H
 #define POLYMESH4H
 
-//class ID3D10Device;
+//class ID3D11Device;
 
 
 #include <coef.h>
@@ -35,7 +35,7 @@ public:
 	int UpdateMorphBuffer( ChaVector3* mpoint );
 
 	int DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist );
-	int SetPm3InfNoSkin( ID3D10Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist );
+	int SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist );
 
 private:
 	void InitParams();

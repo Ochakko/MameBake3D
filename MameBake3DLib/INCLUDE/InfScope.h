@@ -2,7 +2,7 @@
 #define INFSCOPEH
 
 #include <coef.h>
-#include <d3dx9.h>
+//#include <d3dx9.h>
 
 class CMQOObject;
 class CMQOFace;

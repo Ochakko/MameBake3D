@@ -1,9 +1,9 @@
 #ifndef TEXELEMH
 #define TEXELEMH
 
-//class ID3D10Device;
-//class ID3D10ShaderResourceView;
-//class ID3D10Resource;
+//class ID3D11Device;
+//class ID3D11ShaderResourceView;
+//class ID3D11Resource;
 //class D3DXCOLOR;
 
 //#include <d3dx9.h>
@@ -16,7 +16,7 @@ public:
 	CTexElem();
 	~CTexElem();
 
-	int CreateTexData( ID3D10Device* pdev );
+	int CreateTexData( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext );
 	int InvalidateTexData();
 
 private:
@@ -24,7 +24,7 @@ private:
 	int DestroyObjs();
 
 public:
-	ID3D10ShaderResourceView* GetPTex(){
+	ID3D11ShaderResourceView* GetPTex(){
 		return m_ResView;
 	};
 
@@ -76,8 +76,8 @@ private:
 	int m_orgheight, m_orgwidth;
 	int m_height, m_width;
 	//D3DXCOLOR* m_transcol;
-	ID3D10Resource* m_ptex;
-	ID3D10ShaderResourceView* m_ResView;
+	ID3D11Resource* m_ptex;
+	ID3D11ShaderResourceView* m_ResView;
 
 };
 

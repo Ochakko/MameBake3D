@@ -32,11 +32,11 @@
 #define DBGH
 #include <dbg.h>
 
-#include <DXUT.h>
-#include <DXUTcamera.h>
-#include <DXUTgui.h>
-#include <DXUTsettingsdlg.h>
-#include <SDKmisc.h>
+//#include <DXUT.h>
+//#include <DXUTcamera.h>
+//#include <DXUTgui.h>
+//#include <DXUTsettingsdlg.h>
+//#include <SDKmisc.h>
 
 #include <DispObj.h>
 #include <MySprite.h>
@@ -68,6 +68,8 @@
 #include <EditRange.h>
 //#include <BoneProp.h>
 
+#include <DXUT.h>
+
 
 using namespace OrgWinGUI;
 
@@ -78,8 +80,8 @@ static int s_alloccnt = 0;
 #include <GlobalVar.h>
 
 /*
-extern ID3D10DepthStencilState *g_pDSStateZCmp;
-extern ID3D10DepthStencilState *g_pDSStateZCmpAlways;
+extern ID3D11DepthStencilState *g_pDSStateZCmp;
+extern ID3D11DepthStencilState *g_pDSStateZCmpAlways;
 
 extern int g_boneaxis;
 extern int g_dbgloadcnt;
@@ -87,34 +89,34 @@ extern int g_pseudolocalflag;
 extern int g_previewFlag;			// プレビューフラグ
 extern WCHAR g_basedir[ MAX_PATH ];
 
-extern ID3D10Effect*		g_pEffect;
-extern ID3D10EffectTechnique* g_hRenderBoneL0;
-extern ID3D10EffectTechnique* g_hRenderBoneL1;
-extern ID3D10EffectTechnique* g_hRenderBoneL2;
-extern ID3D10EffectTechnique* g_hRenderBoneL3;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL0;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL1;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL2;
-extern ID3D10EffectTechnique* g_hRenderNoBoneL3;
-extern ID3D10EffectTechnique* g_hRenderLine;
-extern ID3D10EffectTechnique* g_hRenderSprite;
+extern ID3D11Effect*		g_pEffect;
+extern ID3D11EffectTechnique* g_hRenderBoneL0;
+extern ID3D11EffectTechnique* g_hRenderBoneL1;
+extern ID3D11EffectTechnique* g_hRenderBoneL2;
+extern ID3D11EffectTechnique* g_hRenderBoneL3;
+extern ID3D11EffectTechnique* g_hRenderNoBoneL0;
+extern ID3D11EffectTechnique* g_hRenderNoBoneL1;
+extern ID3D11EffectTechnique* g_hRenderNoBoneL2;
+extern ID3D11EffectTechnique* g_hRenderNoBoneL3;
+extern ID3D11EffectTechnique* g_hRenderLine;
+extern ID3D11EffectTechnique* g_hRenderSprite;
 
-extern ID3D10EffectMatrixVariable* g_hm4x4Mat;
-extern ID3D10EffectMatrixVariable* g_hmWorld;
-extern ID3D10EffectMatrixVariable* g_hmVP;
+extern ID3D11EffectMatrixVariable* g_hm4x4Mat;
+extern ID3D11EffectMatrixVariable* g_hmWorld;
+extern ID3D11EffectMatrixVariable* g_hmVP;
 
-extern ID3D10EffectVectorVariable* g_hEyePos;
-extern ID3D10EffectScalarVariable* g_hnNumLight;
-extern ID3D10EffectVectorVariable* g_hLightDir;
-extern ID3D10EffectVectorVariable* g_hLightDiffuse;
-extern ID3D10EffectVectorVariable* g_hLightAmbient;
+extern ID3D11EffectVectorVariable* g_hEyePos;
+extern ID3D11EffectScalarVariable* g_hnNumLight;
+extern ID3D11EffectVectorVariable* g_hLightDir;
+extern ID3D11EffectVectorVariable* g_hLightDiffuse;
+extern ID3D11EffectVectorVariable* g_hLightAmbient;
 
-extern ID3D10EffectVectorVariable*g_hdiffuse;
-extern ID3D10EffectVectorVariable* g_hambient;
-extern ID3D10EffectVectorVariable* g_hspecular;
-extern ID3D10EffectScalarVariable* g_hpower;
-extern ID3D10EffectVectorVariable* g_hemissive;
-extern ID3D10EffectShaderResourceVariable* g_hMeshTexture;
+extern ID3D11EffectVectorVariable*g_hdiffuse;
+extern ID3D11EffectVectorVariable* g_hambient;
+extern ID3D11EffectVectorVariable* g_hspecular;
+extern ID3D11EffectScalarVariable* g_hpower;
+extern ID3D11EffectVectorVariable* g_hemissive;
+extern ID3D11EffectShaderResourceVariable* g_hMeshTexture;
 
 
 extern float g_impscale;
@@ -338,7 +340,7 @@ int CModel::DestroyAncObj()
 	return 0;
 }
 
-int CModel::LoadMQO( ID3D10Device* pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, int ismedia, int texpool )
+int CModel::LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, int ismedia, int texpool )
 {
 	if( modelfolder ){
 		wcscpy_s( m_modelfolder, MAX_PATH, modelfolder );
@@ -398,7 +400,7 @@ int CModel::LoadMQO( ID3D10Device* pdev, WCHAR* wfile, WCHAR* modelfolder, float
 	CallF( MakeObjectName(), return 1 );
 
 
-	CallF( CreateMaterialTexture(), return 1 );
+	CallF( CreateMaterialTexture(pd3dImmediateContext), return 1 );
 
 	SetMaterialName();
 
@@ -406,7 +408,7 @@ int CModel::LoadMQO( ID3D10Device* pdev, WCHAR* wfile, WCHAR* modelfolder, float
 }
 
 
-int CModel::LoadFBX(int skipdefref, ID3D10Device* pdev, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag)
+int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag)
 {
 
 	//DestroyFBXSDK();
@@ -530,7 +532,9 @@ int CModel::LoadFBX(int skipdefref, ID3D10Device* pdev, WCHAR* wfile, WCHAR* mod
 		if (dummybone){
 			dummybone->SetName("DummyBone");
 			m_bonelist[0] = dummybone;
-			dummybone->LoadCapsuleShape(m_pdev);
+
+			ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+			dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 
 			//m_topbone = dummybone;
 		}
@@ -568,7 +572,7 @@ _ASSERT(m_bonelist[0]);
 
 	CallF( MakePolyMesh4(), return 1 );
 	CallF( MakeObjectName(), return 1 );
-	CallF( CreateMaterialTexture(), return 1 );
+	CallF( CreateMaterialTexture(pd3dImmediateContext), return 1 );
 	if( m_topbone ){
 		CallF( CreateFBXSkinReq( pRootNode ), return 1 );
 	}
@@ -659,13 +663,13 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 	return 0;
 }
 
-int CModel::CreateMaterialTexture()
+int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 {
 
 	map<int,CMQOMaterial*>::iterator itr;
 	for( itr = m_material.begin(); itr != m_material.end(); itr++ ){
 		CMQOMaterial* curmat = itr->second;
-		CallF( curmat->CreateTexture( m_dirname, m_texpool ), return 1 );
+		CallF( curmat->CreateTexture( pd3dImmediateContext, m_dirname, m_texpool ), return 1 );
 	}
 
 
@@ -676,7 +680,7 @@ int CModel::CreateMaterialTexture()
 			map<int,CMQOMaterial*>::iterator itr;
 			for( itr = curobj->GetMaterialBegin(); itr != curobj->GetMaterialEnd(); itr++ ){
 				CMQOMaterial* curmat = itr->second;
-				CallF( curmat->CreateTexture( m_dirname, m_texpool ), return 1 );
+				CallF( curmat->CreateTexture( pd3dImmediateContext, m_dirname, m_texpool ), return 1 );
 			}
 		}
 	}
@@ -684,7 +688,7 @@ int CModel::CreateMaterialTexture()
 	return 0;
 }
 
-int CModel::OnRender( ID3D10Device* pdev, int lightflag, ChaVector4 diffusemult, int btflag )
+int CModel::OnRender(ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
 {
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
@@ -696,17 +700,17 @@ int CModel::OnRender( ID3D10Device* pdev, int lightflag, ChaVector4 diffusemult,
 				CMQOMaterial* rmaterial = 0;
 				if( curobj->GetPm3() ){
 					//g_pEffect->SetMatrix( g_hmWorld, &m_matWorld );
-					CallF( curobj->GetDispObj()->RenderNormalPM3( lightflag, diffusemult ), return 1 );
+					CallF( curobj->GetDispObj()->RenderNormalPM3(pd3dImmediateContext, lightflag, diffusemult ), return 1 );
 				}
 				else if (curobj->GetPm4()){
 					rmaterial = curobj->GetMaterialBegin()->second;
-					CallF( curobj->GetDispObj()->RenderNormal( rmaterial, lightflag, diffusemult ), return 1 );
+					CallF( curobj->GetDispObj()->RenderNormal(pd3dImmediateContext, rmaterial, lightflag, diffusemult ), return 1 );
 				}else{
 					_ASSERT( 0 );
 				}
 			}
 			if( curobj->GetDispLine() ){
-				CallF( curobj->GetDispLine()->RenderLine( diffusemult ), return 1 );
+				CallF( curobj->GetDispLine()->RenderLine(pd3dImmediateContext, diffusemult ), return 1 );
 			}
 		}
 	}
@@ -917,7 +921,7 @@ int CModel::DbgDumpBoneReq( CBone* boneptr, int broflag )
 	WCHAR wmes[1024];
 
 	if( boneptr->GetParent() ){
-		sprintf_s( mes, 1024, "\tboneno %d, bonename %s - parent %s\r\n", boneptr->GetBoneName(), boneptr->GetBoneName(), boneptr->GetParent()->GetBoneName() );
+		sprintf_s( mes, 1024, "\tboneno %d, bonename %s - parent %s\r\n", boneptr->GetBoneNo(), boneptr->GetBoneName(), boneptr->GetParent()->GetBoneName() );
 	}else{
 		sprintf_s( mes, 1024, "\tboneno %d, bonename %s - parent NONE\r\n", boneptr->GetBoneNo(), boneptr->GetBoneName() );
 	}
@@ -1457,6 +1461,10 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 
 	ChaMatrix set4x4[MAXCLUSTERNUM];
+	int inicnt;
+	for (inicnt = 0; inicnt < MAXCLUSTERNUM; inicnt++) {
+		ChaMatrixIdentity(&(set4x4[inicnt]));
+	}
 	//ZeroMemory( &set4x4[0], sizeof( ChaMatrix ) * MAXCLUSTERNUM );
 
 	int setclcnt = 0;
@@ -1472,8 +1480,10 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		CMotionPoint tmpmp = curbone->GetCurMp();
 		if( btflag == 0 ){
 			set4x4[clcnt] = tmpmp.GetWorldMat();
+			//set4x4[clcnt] = ChaMatrixTranspose(tmpmp.GetWorldMat());
 		}else{
 			set4x4[clcnt] = curbone->GetBtMat();
+			//set4x4[clcnt] = ChaMatrixTranspose(curbone->GetBtMat());
 		}
 		setclcnt++;
 	}
@@ -1483,6 +1493,11 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 		HRESULT hr = S_OK;
 		hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, setclcnt);
+		//hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, MAXCLUSTERNUM);
+
+		//hr = g_hm4x4Mat->SetRawValue((float*)(&set4x4[0]), 0, sizeof(float) * 16 * MAXCLUSTERNUM);
+		//hr = g_pEffect->SetValue(g_hm4x4Mat, (void*)set4x4, sizeof(float) * 16 * MAXCLUSTERNUM);
+		
 		//hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, MAXCLUSTERNUM);
 		//hr = g_hm4x4Mat->SetRawValue((float*)(&set4x4[0]), 0, sizeof(float) * 16 * MAXCLUSTERNUM);
 		//hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, MAXCLUSTERNUM);
@@ -2780,7 +2795,7 @@ FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,
 
 
 
-int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode )
+int CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode )
 {
 //	EFbxRotationOrder lRotationOrder0 = eEulerZXY;
 //	EFbxRotationOrder lRotationOrder1 = eEulerXYZ;
@@ -2874,13 +2889,13 @@ int CModel::CreateFBXBoneReq( FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
 		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
-		CreateFBXBoneReq( pScene, pChild, pNode );
+		CreateFBXBoneReq(pScene, pChild, pNode );
 	}
 
 	return 0;
 }
 
-int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
+int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
 {
 	int settopflag = 0;
 	CBone* newbone = new CBone( this );
@@ -2889,7 +2904,9 @@ int CModel::GetFBXBone( FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeA
 		_ASSERT(0);
 		return 1;
 	}
-	newbone->LoadCapsuleShape(m_pdev);
+
+	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+	newbone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!!
 
 	char newbonename[256];
 	strcpy_s(newbonename, 256, curnode->GetName());
@@ -3458,7 +3475,7 @@ int IsValidCluster( FbxCluster* cluster )
 	return findflag;
 }
 
-int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark )
+int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark )
 {
 	if( m_bonelist.empty() ){
 		return 0;
@@ -3490,7 +3507,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 	}
 
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
-	pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 
 	//ボーンの三角錐表示
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
@@ -3557,7 +3574,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 							else{
 								difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 							}
-							CallF(bmarkptr->OnRender(pdev, 0, difmult), return 1);
+							CallF(bmarkptr->OnRender(pd3dImmediateContext, 0, difmult), return 1);
 						}
 
 
@@ -3597,7 +3614,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 
 						//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
 						if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
-							CallF(boneptr->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return 1);
+							CallF(boneptr->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return 1);
 						}
 					}
 
@@ -3635,7 +3652,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 		}
 	}
 	else{
-		RenderCapsuleReq(pdev, m_topbt);
+		RenderCapsuleReq(pd3dImmediateContext, m_topbt);
 	}
 
 
@@ -3678,7 +3695,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 						bsize = ChaVector2(0.025f, 0.025f);
 						bcircleptr->SetSize(bsize);
 					}
-					CallF(bcircleptr->OnRender(), return 1);
+					CallF(bcircleptr->OnRender(pd3dImmediateContext), return 1);
 
 				}
 			}
@@ -3686,7 +3703,7 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 	}
 	else{
 		if (g_bonemarkflag && bcircleptr){
-			RenderBoneCircleReq(m_topbt, bcircleptr);
+			RenderBoneCircleReq(pd3dImmediateContext, m_topbt, bcircleptr);
 		}
 	}
 
@@ -3694,16 +3711,16 @@ int CModel::RenderBoneMark( ID3D10Device* pdev, CModel* bmarkptr, CMySprite* bci
 
 
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
-	pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 }
 
 
 
-void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
+void CModel::RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto)
 {
-	if (!pdev || !srcbto) {
+	if (!pd3dImmediateContext || !srcbto) {
 		return;
 	}
 
@@ -3735,7 +3752,7 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 			}
 			//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
 			if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
-				CallF(srcbone->GetCurColDisp(childbone)->OnRender(pdev, 0, difmult), return);
+				CallF(srcbone->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return);
 			}
 		}
 		//}
@@ -3744,13 +3761,13 @@ void CModel::RenderCapsuleReq(ID3D10Device* pdev, CBtObject* srcbto)
 	int chilno;
 	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++){
 		CBtObject* chilbto = srcbto->GetChildBt(chilno);
-		RenderCapsuleReq(pdev, chilbto);
+		RenderCapsuleReq(pd3dImmediateContext, chilbto);
 	}
 
 }
 
 
-void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
+void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto, CMySprite* bcircleptr)
 {
 	if (!srcbto || !bcircleptr) {
 		return;
@@ -3796,7 +3813,7 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 					bsize = ChaVector2(0.025f, 0.025f);
 					bcircleptr->SetSize(bsize);
 				}
-				CallF(bcircleptr->OnRender(), return);
+				CallF(bcircleptr->OnRender(pd3dImmediateContext), return);
 
 			}
 		}
@@ -3805,7 +3822,7 @@ void CModel::RenderBoneCircleReq(CBtObject* srcbto, CMySprite* bcircleptr)
 	int chilno;
 	for (chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++){
 		CBtObject* chilbto = srcbto->GetChildBt(chilno);
-		RenderBoneCircleReq(chilbto, bcircleptr);
+		RenderBoneCircleReq(pd3dImmediateContext, chilbto, bcircleptr);
 	}
 }
 

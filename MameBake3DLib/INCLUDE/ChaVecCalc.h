@@ -23,15 +23,15 @@ public:
 	ChaMatrix();
 	ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44);
 
-#ifdef CONVD3DX9
-	ChaMatrix::ChaMatrix(D3DXMATRIX m);
+#ifdef CONVD3DX11
+	ChaMatrix::ChaMatrix(DirectX::XMMATRIX m);
 #endif
 
 	~ChaMatrix();
 
 	ChaMatrix ChaMatrix::operator= (ChaMatrix m);
-#ifdef CONVD3DX9
-	ChaMatrix ChaMatrix::operator= (D3DXMATRIX m);
+#ifdef CONVD3DX11
+	ChaMatrix ChaMatrix::operator= (DirectX::XMMATRIX m);
 #endif
 
 	ChaMatrix operator* (float srcw) const;
@@ -60,8 +60,8 @@ public:
 		return !(*this == m);
 	};
 
-#ifdef CONVD3DX9
-	D3DXMATRIX D3DX();
+#ifdef CONVD3DX11
+	DirectX::XMMATRIX D3DX();
 #endif
 
 public:
@@ -114,8 +114,8 @@ public:
 	bool operator== (const ChaVector2 &v) const { return x == v.x && y == v.y; };
 	bool operator!= (const ChaVector2 &v) const { return !(*this == v); };
 
-#ifdef CONVD3DX9
-	D3DXVECTOR2 D3DX();
+#ifdef CONVD3DX11
+	DirectX::XMFLOAT2 D3DX();
 #endif
 
 public:
@@ -131,6 +131,7 @@ public:
 
 	ChaVector3();
 	ChaVector3(float srcx, float srcy, float srcz);
+	ChaVector3(DirectX::XMVECTOR v);
 	~ChaVector3();
 
 	ChaVector3 ChaVector3::operator= (ChaVector3 v);
@@ -151,8 +152,9 @@ public:
 	bool operator== (const ChaVector3 &v) const { return x == v.x && y == v.y && z == v.z; };
 	bool operator!= (const ChaVector3 &v) const { return !(*this == v); };
 
-#ifdef CONVD3DX9
-	D3DXVECTOR3 D3DX();
+#ifdef CONVD3DX11
+	DirectX::XMFLOAT3 D3DX();
+	DirectX::XMVECTOR XMVECTOR(float w);
 #endif
 
 public:
@@ -189,8 +191,8 @@ public:
 	bool operator== (const ChaVector4 &v) const { return x == v.x && y == v.y && z == v.z && w == v.w; };
 	bool operator!= (const ChaVector4 &v) const { return !(*this == v); };
 
-#ifdef CONVD3DX9
-	D3DXVECTOR4 D3DX();
+#ifdef CONVD3DX11
+	DirectX::XMFLOAT4 D3DX();
 #endif
 
 public:
@@ -208,7 +210,9 @@ public:
 	CQuaternion(float srcw, float srcx, float srcy, float srcz);
 	~CQuaternion();
 	int SetParams(float srcw, float srcx, float srcy, float srcz);
-	int SetParams(D3DXQUATERNION srcxq);
+#ifdef CONVD3DX11
+	int SetParams(DirectX::XMFLOAT4 srcxq);
+#endif
 
 	int SetAxisAndRot(ChaVector3 srcaxis, float phai);
 	int SetAxisAndRot(ChaVector3 srcaxis, double phai);
@@ -262,8 +266,10 @@ public:
 	int RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1);
 	int Rotate(ChaVector3* dstvec, ChaVector3 srcvec);
 
-	int Q2X(D3DXQUATERNION* dstx);
-	int Q2X(D3DXQUATERNION* dstx, CQuaternion srcq);
+#ifdef CONVD3DX11
+	int Q2X(DirectX::XMFLOAT4* dstx);
+	int Q2X(DirectX::XMFLOAT4* dstx, CQuaternion srcq);
+#endif
 
 	int transpose(CQuaternion* dstq);
 

@@ -96,6 +96,9 @@ MameBake3Dはデフォルトで相対IKです。
 #include <RigFile.h>
 #include <MotFilter.h>
 
+#include "..\Effects11\Inc\d3dx11effect.h"
+
+#include <Windows.h>
 
 #define WINDOWS_CLASS_NAME TEXT("OchakkoLab.MameBake3D.Window")
 
@@ -106,9 +109,9 @@ typedef struct tag_spaxis
 }SPAXIS, SPCAM, SPELEM;
 
 /*
-ID3D10DepthStencilState *g_pDSStateZCmp = 0;
-ID3D10DepthStencilState *g_pDSStateZCmpAlways = 0;
-ID3D10ShaderResourceView* g_presview = 0;
+ID3D11DepthStencilState *g_pDSStateZCmp = 0;
+ID3D11DepthStencilState *g_pDSStateZCmpAlways = 0;
+ID3D11ShaderResourceView* g_presview = 0;
 
 int	g_numthread = 3;
 double g_btcalccnt = 3.0;
@@ -158,38 +161,38 @@ float g_tmpmqomult = 1.0f;
 WCHAR g_tmpmqopath[MULTIPATH] = {0L};
 float g_tmpbvhfilter = 100.0f;
 
-ID3D10EffectTechnique* g_hRenderBoneL0 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL1 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL2 = 0;
-ID3D10EffectTechnique* g_hRenderBoneL3 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL0 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL1 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL2 = 0;
-ID3D10EffectTechnique* g_hRenderNoBoneL3 = 0;
-ID3D10EffectTechnique* g_hRenderLine = 0;
-ID3D10EffectTechnique* g_hRenderSprite = 0;
+ID3D11EffectTechnique* g_hRenderBoneL0 = 0;
+ID3D11EffectTechnique* g_hRenderBoneL1 = 0;
+ID3D11EffectTechnique* g_hRenderBoneL2 = 0;
+ID3D11EffectTechnique* g_hRenderBoneL3 = 0;
+ID3D11EffectTechnique* g_hRenderNoBoneL0 = 0;
+ID3D11EffectTechnique* g_hRenderNoBoneL1 = 0;
+ID3D11EffectTechnique* g_hRenderNoBoneL2 = 0;
+ID3D11EffectTechnique* g_hRenderNoBoneL3 = 0;
+ID3D11EffectTechnique* g_hRenderLine = 0;
+ID3D11EffectTechnique* g_hRenderSprite = 0;
 
-ID3D10EffectMatrixVariable* g_hm4x4Mat = 0;
-ID3D10EffectMatrixVariable* g_hmWorld = 0;
-ID3D10EffectMatrixVariable* g_hmVP = 0;
+ID3D11EffectMatrixVariable* g_hm4x4Mat = 0;
+ID3D11EffectMatrixVariable* g_hmWorld = 0;
+ID3D11EffectMatrixVariable* g_hmVP = 0;
 
-ID3D10EffectVectorVariable* g_hEyePos = 0;
-ID3D10EffectScalarVariable* g_hnNumLight = 0;
-ID3D10EffectVectorVariable* g_hLightDir = 0;
-ID3D10EffectVectorVariable* g_hLightDiffuse = 0;
-ID3D10EffectVectorVariable* g_hLightAmbient = 0;
-ID3D10EffectVectorVariable* g_hSpriteOffset = 0;
-ID3D10EffectVectorVariable* g_hSpriteScale = 0;
-ID3D10EffectVectorVariable* g_hPm3Scale = 0;
-ID3D10EffectVectorVariable* g_hPm3Offset = 0;
+ID3D11EffectVectorVariable* g_hEyePos = 0;
+ID3D11EffectScalarVariable* g_hnNumLight = 0;
+ID3D11EffectVectorVariable* g_hLightDir = 0;
+ID3D11EffectVectorVariable* g_hLightDiffuse = 0;
+ID3D11EffectVectorVariable* g_hLightAmbient = 0;
+ID3D11EffectVectorVariable* g_hSpriteOffset = 0;
+ID3D11EffectVectorVariable* g_hSpriteScale = 0;
+ID3D11EffectVectorVariable* g_hPm3Scale = 0;
+ID3D11EffectVectorVariable* g_hPm3Offset = 0;
 
 
-ID3D10EffectVectorVariable* g_hdiffuse = 0;
-ID3D10EffectVectorVariable* g_hambient = 0;
-ID3D10EffectVectorVariable* g_hspecular = 0;
-ID3D10EffectScalarVariable* g_hpower = 0;
-ID3D10EffectVectorVariable* g_hemissive = 0;
-ID3D10EffectShaderResourceVariable* g_hMeshTexture = 0;
+ID3D11EffectVectorVariable* g_hdiffuse = 0;
+ID3D11EffectVectorVariable* g_hambient = 0;
+ID3D11EffectVectorVariable* g_hspecular = 0;
+ID3D11EffectScalarVariable* g_hpower = 0;
+ID3D11EffectVectorVariable* g_hemissive = 0;
+ID3D11EffectShaderResourceVariable* g_hMeshTexture = 0;
 
 BYTE g_keybuf[256];
 BYTE g_savekeybuf[256];
@@ -232,7 +235,6 @@ CRITICAL_SECTION s_CritSection_LTimeline;
 ChaMatrix s_selectmat;//for display manipulator
 ChaMatrix s_selectmat_posture;//for display manipulator
 ChaMatrix s_ikselectmat;//for ik, fk
-
 
 static HWND s_mainhwnd = NULL;
 
@@ -287,7 +289,9 @@ static int s_allmodelbone = 0;
 //float g_initcamdist = 10.0f;
 //static float s_projnear = 0.01f;
 float g_initcamdist = 50.0f;
-static float s_projnear = 0.001f;
+//static float s_projnear = 0.001f;
+//static float s_projnear = 1.0f;
+static float s_projnear = 0.01f;
 static float s_fAspectRatio = 1.0f;
 static float s_cammvstep = 100.0f;
 static int s_editmotionflag = -1;
@@ -368,7 +372,7 @@ static int s_bufheight = 520;
 static int s_infowinwidth = s_mainwidth;
 static int s_infowinheight = 600 - s_mainheight;
 
-static ID3D10Device* s_pdev = 0;
+static ID3D11Device* s_pdev = 0;
 
 static CModel* s_model = NULL;
 static CModel* s_select = NULL;
@@ -678,17 +682,17 @@ ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
-ID3DX10Font*                  g_pFont = NULL;         // Font for drawing text
-ID3DX10Sprite*                g_pSprite = NULL;       // Sprite for batching draw text calls
+//ID3DX11Font*                  g_pFont = NULL;         // Font for drawing text
+//ID3DX11Sprite*                g_pSprite = NULL;       // Sprite for batching draw text calls
 CDXUTTextHelper*              g_pTxtHelper = NULL;
 
 bool                        g_bShowHelp = true;     // If true, it renders the UI control text
-CModelViewerCamera          g_Camera;// A model viewing camera
-ID3D10Effect*                g_pEffect = NULL;       // D3DX effect interface
+CModelViewerCamera*          g_Camera = 0;// A model viewing camera
+//ID3DX11Effect*                g_pEffect = NULL;       // D3DX effect interface
 //ID3DXMesh*                  g_pMesh = NULL;         // Mesh object
 
 //IDirect3DTexture10*          g_pMeshTexture = NULL;  // Mesh texture
-LPD3DXFONT                  g_pFont9 = NULL;         // Font for drawing text
+//LPD3DXFONT                  g_pFont9 = NULL;         // Font for drawing text
 
 
 CDXUTDialogResourceManager  g_DialogResourceManager; // manager for shared resources of dialogs
@@ -819,12 +823,12 @@ static CInfoWindow* CreateInfoWnd();
 //bool CALLBACK IsDeviceAcceptable( D3DCAPS10* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed,
 //                                  void* pUserContext );
 //bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext );
-//HRESULT CALLBACK OnCreateDevice( ID3D10Device* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+//HRESULT CALLBACK OnCreateDevice( ID3D11Device* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
 //                                 void* pUserContext );
-//HRESULT CALLBACK OnResetDevice( ID3D10Device* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+//HRESULT CALLBACK OnResetDevice( ID3D11Device* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
 //                                void* pUserContext );
 //void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext );
-//void CALLBACK OnFrameRender( ID3D10Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext );
+//void CALLBACK OnFrameRender( ID3D11Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext );
 //LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing, void* pUserContext );
 //void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext );
 //void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext );
@@ -868,27 +872,37 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 //{
 //	return;
 //};
-bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat,
-	bool bWindowed, void* pUserContext);
-HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice,
-	const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
-HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
-	void* pUserContext);
-void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime,
-	void* pUserContext);
-void CALLBACK OnD3D9LostDevice(void* pUserContext);
-void CALLBACK OnD3D9DestroyDevice(void* pUserContext);
+//bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat,
+//	bool bWindowed, void* pUserContext);
+//HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice,
+//	const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
+//HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
+//	void* pUserContext);
+//void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime,
+//	void* pUserContext);
+//void CALLBACK OnD3D9LostDevice(void* pUserContext);
+//void CALLBACK OnD3D9DestroyDevice(void* pUserContext);
 
-
-bool CALLBACK IsD3D10DeviceAcceptable(UINT Adapter, UINT Output, D3D10_DRIVER_TYPE DeviceType,
+bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
 	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext);
-HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
+HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
 	void* pUserContext);
-HRESULT CALLBACK OnD3D10ResizedSwapChain(ID3D10Device* pd3dDevice, IDXGISwapChain* pSwapChain,
+HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
 	const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
-void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext);
-void CALLBACK OnD3D10DestroyDevice(void* pUserContext);
-void CALLBACK OnD3D10FrameRender(ID3D10Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext);
+void CALLBACK OnD3D11ReleasingSwapChain(void* pUserContext);
+void CALLBACK OnD3D11DestroyDevice(void* pUserContext);
+void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
+	float fElapsedTime, void* pUserContext);
+
+//bool CALLBACK IsD3D11DeviceAcceptable(UINT Adapter, UINT Output, D3D11_DRIVER_TYPE DeviceType,
+//	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext);
+//HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
+//	void* pUserContext);
+//HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
+//	const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext);
+//void CALLBACK OnD3D11ReleasingSwapChain(void* pUserContext);
+//void CALLBACK OnD3D11DestroyDevice(void* pUserContext);
+//void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime, float fElapsedTime, void* pUserContext);
 
 
 LRESULT CALLBACK OpenMqoDlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -907,8 +921,8 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 void InitApp();
-HRESULT LoadMesh( ID3D10Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
-void RenderText( double fTime );
+//HRESULT LoadMesh( ID3D11Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
+void RenderText(double fTime );
 
 static int OnMouseMoveFunc();
 
@@ -945,12 +959,12 @@ static int ToggleRig();
 static void UpdateBtSimu(double nextframe, CModel* curmodel);
 
 static int OnRenderSetShaderConst();
-static int OnRenderModel();
-static int OnRenderGround();
-static int OnRenderBoneMark();
-static int OnRenderSelect();
-static int OnRenderSprite();
-static int OnRenderUtDialog(float fElapsedTime);
+static int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderUtDialog(ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTime);
 
 static int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
 static int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
@@ -1035,11 +1049,11 @@ static int OnImpMenu( int selindex );
 static int OnDelModel( int delindex );
 static int OnDelAllModel();
 static int refreshModelPanel();
-static int RenderSelectMark(int renderflag);
-static int RenderSelectFunc();
-static int RenderSelectPostureFunc();
-static int RenderRigMarkFunc();
-static int SetSelectState();
+static int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag);
+static int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext);
+static int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext);
+static int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext);
+static int SetSelectState(ID3D11DeviceContext* pd3dImmediateContext);
 
 static int CreateModelPanel();
 static int DestroyModelPanel();
@@ -1212,7 +1226,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	s_selectKeyInfoList.clear();	// コピーされたキー情報リスト
 
 
-	DXUTSetCallbackDeviceChanging(ModifyDeviceSettings);
+	//DXUTSetCallbackDeviceChanging(ModifyDeviceSettings);
 	DXUTSetCallbackMsgProc(MsgProc);
 	DXUTSetCallbackKeyboard(OnKeyboard);
 	DXUTSetCallbackFrameMove(OnFrameMove);
@@ -1223,20 +1237,20 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//DXUTSetCallbackD3D9FrameRender(OnD3D9FrameRender);
 	//DXUTSetCallbackD3D9DeviceLost(OnD3D9LostDevice);
 	//DXUTSetCallbackD3D9DeviceDestroyed(OnD3D9DestroyDevice);
-	DXUTSetCallbackD3D9DeviceAcceptable(IsD3D9DeviceAcceptable);
-	DXUTSetCallbackD3D9DeviceCreated(NULL);
-	DXUTSetCallbackD3D9DeviceReset(NULL);
-	DXUTSetCallbackD3D9FrameRender(NULL);
-	DXUTSetCallbackD3D9DeviceLost(NULL);
-	DXUTSetCallbackD3D9DeviceDestroyed(NULL);
+	//DXUTSetCallbackD3D9DeviceAcceptable(IsD3D9DeviceAcceptable);
+	//DXUTSetCallbackD3D9DeviceCreated(NULL);
+	//DXUTSetCallbackD3D9DeviceReset(NULL);
+	//DXUTSetCallbackD3D9FrameRender(NULL);
+	//DXUTSetCallbackD3D9DeviceLost(NULL);
+	//DXUTSetCallbackD3D9DeviceDestroyed(NULL);
 
 
-	DXUTSetCallbackD3D10DeviceAcceptable(IsD3D10DeviceAcceptable);
-	DXUTSetCallbackD3D10DeviceCreated(OnD3D10CreateDevice);
-	DXUTSetCallbackD3D10SwapChainResized(OnD3D10ResizedSwapChain);
-	DXUTSetCallbackD3D10FrameRender(OnD3D10FrameRender);
-	DXUTSetCallbackD3D10SwapChainReleasing(OnD3D10ReleasingSwapChain);
-	DXUTSetCallbackD3D10DeviceDestroyed(OnD3D10DestroyDevice);
+	DXUTSetCallbackD3D11DeviceAcceptable(IsD3D11DeviceAcceptable);
+	DXUTSetCallbackD3D11DeviceCreated(OnD3D11CreateDevice);
+	DXUTSetCallbackD3D11SwapChainResized(OnD3D11ResizedSwapChain);
+	DXUTSetCallbackD3D11FrameRender(OnD3D11FrameRender);
+	DXUTSetCallbackD3D11SwapChainReleasing(OnD3D11ReleasingSwapChain);
+	DXUTSetCallbackD3D11DeviceDestroyed(OnD3D11DestroyDevice);
 
 
 
@@ -1297,6 +1311,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	//DXUTSetHotkeyHandling( true, true, true );
 	DXUTSetHotkeyHandling(false, false, false);
+
+	g_Camera = new CModelViewerCamera();
+	if (!g_Camera) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	//DXUTSetOverrideSize(s_mainwidth, s_mainheight);//mac + VM Fusionの場合はここを実行する
 
@@ -1432,8 +1453,8 @@ void InitApp()
     g_bEnablePreshader = true;
 
     for( int i = 0; i < MAX_LIGHTS; i++ ){
-        g_LightControl[i].SetLightDirection( ChaVector3( sinf( D3DX_PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - D3DX_PI / 6 ),
-                                                          0, -cosf( D3DX_PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - D3DX_PI / 6 ) ) );
+        g_LightControl[i].SetLightDirection( ChaVector3( sinf( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ),
+                                                          0, -cosf( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ) ).D3DX() );
 	}
 
     g_nActiveLight = 0;
@@ -1473,122 +1494,77 @@ void InitApp()
 }
 
 //--------------------------------------------------------------------------------------
-// Called right before creating a D3D9 or D3D10 device, allowing the app to modify the device settings as needed
+// Called right before creating a D3D9 or D3D11 device, allowing the app to modify the device settings as needed
 //--------------------------------------------------------------------------------------
 bool CALLBACK ModifyDeviceSettings(DXUTDeviceSettings* pDeviceSettings, void* pUserContext)
 {
-	if (DXUT_D3D9_DEVICE == pDeviceSettings->ver)
-	{
-		D3DCAPS9 Caps;
-		IDirect3D9* pD3D = DXUTGetD3D9Object();
-		pD3D->GetDeviceCaps(pDeviceSettings->d3d9.AdapterOrdinal, pDeviceSettings->d3d9.DeviceType, &Caps);
-
-		// If device doesn't support HW T&L or doesn't support 1.1 vertex shaders in HW 
-		// then switch to SWVP.
-		if ((Caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) == 0 ||
-			Caps.VertexShaderVersion < D3DVS_VERSION(1, 1))
-		{
-			pDeviceSettings->d3d9.BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-		}
-
-		// Debugging vertex shaders requires either REF or software vertex processing 
-		// and debugging pixel shaders requires REF.  
-#ifdef DEBUG_VS
-		if (pDeviceSettings->d3d9.DeviceType != D3DDEVTYPE_REF)
-		{
-			pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_HARDWARE_VERTEXPROCESSING;
-			pDeviceSettings->d3d9.BehaviorFlags &= ~D3DCREATE_PUREDEVICE;
-			pDeviceSettings->d3d9.BehaviorFlags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-		}
-#endif
-#ifdef DEBUG_PS
-		pDeviceSettings->d3d9.DeviceType = D3DDEVTYPE_REF;
-#endif
-	}
-	else
-	{
-		// Uncomment this to get debug information from D3D10
-		//pDeviceSettings->d3d10.CreateFlags |= D3D10_CREATE_DEVICE_DEBUG;
-	}
+	// Uncomment this to get debug information from D3D11
+	//pDeviceSettings->d3d11.CreateFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
 	// For the first device created if its a REF device, optionally display a warning dialog box
-	static bool s_bFirstTime = true;
-	if (s_bFirstTime)
-	{
-		s_bFirstTime = false;
-		if ((DXUT_D3D9_DEVICE == pDeviceSettings->ver && pDeviceSettings->d3d9.DeviceType == D3DDEVTYPE_REF) ||
-			(DXUT_D3D10_DEVICE == pDeviceSettings->ver &&
-				pDeviceSettings->d3d10.DriverType == D3D10_DRIVER_TYPE_REFERENCE))
-			DXUTDisplaySwitchingToREFWarning(pDeviceSettings->ver);
-	}
+	//static bool s_bFirstTime = true;
+	//if (s_bFirstTime)
+	//{
+	//	s_bFirstTime = false;
+	//	//if ((DXUT_D3D11_DEVICE == pDeviceSettings->ver &&
+	//	//	pDeviceSettings->d3d11.DriverType == D3D_DRIVER_TYPE_REFERENCE))
+	//	if ((pDeviceSettings->d3d11.DriverType == D3D_DRIVER_TYPE_REFERENCE))
+	//	{
+	//		DXUTDisplaySwitchingToREFWarning(pDeviceSettings->ver);
+	//	}
+	//}
 
 	return true;
 }
-
 
 
 //--------------------------------------------------------------------------------------
 // Called during device initialization, this code checks the device for some 
 // minimum set of capabilities, and rejects those that don't pass by returning E_FAIL.
 //------------------------------------------------
-bool CALLBACK IsD3D10DeviceAcceptable(UINT Adapter, UINT Output, D3D10_DRIVER_TYPE DeviceType,
+bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
 	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
 {
- //   // No fallback defined by this app, so reject any device that 
- //   // doesn't support at least ps2.0
- //   if( pCaps->PixelShaderVersion < D3DPS_VERSION( 3, 0 ) )
- //       return false;
-
-	//if( pCaps->MaxVertexIndex <= 0x0000FFFF ){
-	//	return false;
-	//}
-
- //   // Skip backbuffer formats that don't support alpha blending
- //   IDirect3D10* pD3D = DXUTGetD3D10Object();
- //   if( FAILED( pD3D->CheckDeviceFormat( pCaps->AdapterOrdinal, pCaps->DeviceType,
- //                                        AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
- //                                        D3DRTYPE_TEXTURE, BackBufferFormat ) ) )
- //       return false;
-
-    return true;
+	return true;
 }
 
 
 //--------------------------------------------------------------------------------------
-// Create any D3D10 resources that aren't dependant on the back buffer
+// Create any D3D11 resources that aren't dependant on the back buffer
 //--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
+HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
 	void* pUserContext)
 {
 	HRESULT hr;
 
+	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+	V_RETURN(g_DialogResourceManager.OnD3D11CreateDevice(pd3dDevice, pd3dImmediateContext));
+	//V_RETURN(g_D3DSettingsDlg.OnD3D11CreateDevice(pd3dDevice));
+	g_pTxtHelper = new CDXUTTextHelper(pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 10);
+
+
 	s_pdev = pd3dDevice;
 
-	hr = g_DialogResourceManager.OnD3D10CreateDevice(pd3dDevice);
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		return hr;
-	}
-	//hr = g_SettingsDlg.OnD3D10CreateDevice(pd3dDevice);
+	//hr = g_SettingsDlg.OnD3D11CreateDevice(pd3dDevice);
 	//if (FAILED(hr)) {
 	//	_ASSERT(0);
 	//	return hr;
 	//}
-	hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-		L"MS ゴシック", &g_pFont);
-		//L"Arial", &g_pFont10);
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		return hr;
-	}
+	//hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+	//	OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+	//	L"MS ゴシック", &g_pFont);
+	//	//L"Arial", &g_pFont10);
+	//if (FAILED(hr)) {
+	//	_ASSERT(0);
+	//	return hr;
+	//}
 
-	hr = D3DX10CreateSprite(pd3dDevice, 512, &g_pSprite);
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		return hr;
-	}
-	g_pTxtHelper = new CDXUTTextHelper(NULL, NULL, g_pFont, g_pSprite, 15);
+	//hr = D3DX10CreateSprite(pd3dDevice, 512, &g_pSprite);
+	//if (FAILED(hr)) {
+	//	_ASSERT(0);
+	//	return hr;
+	//}
+	////g_pTxtHelper = new CDXUTTextHelper(NULL, NULL, g_pFont, g_pSprite, 15);
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
@@ -1598,58 +1574,64 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 	float fObjectRadius = s_totalmb.r;
 	//ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
 
-	hr = CDXUTDirectionWidget::StaticOnD3D10CreateDevice(pd3dDevice);
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		return hr;
-	}
+	//hr = CDXUTDirectionWidget::StaticOnD3D11CreateDevice(pd3dDevice);
+	//if (FAILED(hr)) {
+	//	_ASSERT(0);
+	//	return hr;
+	//}
 	for (int i = 0; i < MAX_LIGHTS; i++)
 		g_LightControl[i].SetRadius(fObjectRadius);
 
-//	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+	//DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
+
+	////	DWORD dwShaderFlags = D3D11_SHADER_ENABLE_STRICTNESS;
+////#if defined( DEBUG ) || defined( _DEBUG )
+////	// Set the D3D11_SHADER_DEBUG flag to embed debug information in the shaders.
+////	// Setting this flag improves the shader debugging experience, but still allows 
+////	// the shaders to be optimized and to run exactly the way they will run in 
+////	// the release configuration of this program.
+////	dwShaderFlags |= D3D11_SHADER_DEBUG;
+////#endif
+//
+	//DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE;
+	//DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE | D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
+//
 //#if defined( DEBUG ) || defined( _DEBUG )
-//	// Set the D3D10_SHADER_DEBUG flag to embed debug information in the shaders.
+//	// Set the D3DXSHADER_DEBUG flag to embed debug information in the shaders.
 //	// Setting this flag improves the shader debugging experience, but still allows 
 //	// the shaders to be optimized and to run exactly the way they will run in 
 //	// the release configuration of this program.
-//	dwShaderFlags |= D3D10_SHADER_DEBUG;
+//	dwShaderFlags |= D3DXSHADER_DEBUG;
 //#endif
-
-	DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE;
-
-#if defined( DEBUG ) || defined( _DEBUG )
-	// Set the D3DXSHADER_DEBUG flag to embed debug information in the shaders.
-	// Setting this flag improves the shader debugging experience, but still allows 
-	// the shaders to be optimized and to run exactly the way they will run in 
-	// the release configuration of this program.
-	dwShaderFlags |= D3DXSHADER_DEBUG;
-#endif
-
-#ifdef DEBUG_VS
-	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
-#endif
-#ifdef DEBUG_PS
-	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
-#endif
-
-	// Preshaders are parts of the shader that the effect system pulls out of the 
-	// shader and runs on the host CPU. They should be used if you are GPU limited. 
-	// The D3DXSHADER_NO_PRESHADER flag disables preshaders.
-	if (!g_bEnablePreshader)
-		dwShaderFlags |= D3DXSHADER_NO_PRESHADER;
+//
+//#ifdef DEBUG_VS
+//	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
+//#endif
+//#ifdef DEBUG_PS
+//	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
+//#endif
+//
+//	// Preshaders are parts of the shader that the effect system pulls out of the 
+//	// shader and runs on the host CPU. They should be used if you are GPU limited. 
+//	// The D3DXSHADER_NO_PRESHADER flag disables preshaders.
+//	if (!g_bEnablePreshader)
+//		dwShaderFlags |= D3DXSHADER_NO_PRESHADER;
 
 
 	// Read the D3DX effect file
 	WCHAR str[MAX_PATH];
 	hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fx");
+	//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko11.fx");
+	//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fxo");
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return hr;
 	}
-	//ID3D10Blob*	l_pBlob_Effect = NULL;
-	//ID3D10Blob*	l_pBlob_Errors = NULL;
+	//ID3D11Blob*	l_pBlob_Effect = NULL;
+	//ID3D11Blob*	l_pBlob_Errors = NULL;
 	//hr = D3DX10CompileEffectFromFile(str, NULL, NULL,
-	//	D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL,
+	//	D3D11_SHADER_ENABLE_STRICTNESS, 0, NULL,
 	//	&l_pBlob_Effect, &l_pBlob_Errors);
 	//if (FAILED(hr)) {
 	//	LPVOID l_pError = NULL;
@@ -1674,16 +1656,16 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 	/*
 	HRESULT D3DX10CreateEffectFromFile(
 	  LPCTSTR pFileName,
-	  CONST D3D10_SHADER_MACRO *pDefines,
-	  ID3D10Include *pInclude,
+	  CONST D3D11_SHADER_MACRO *pDefines,
+	  ID3D11Include *pInclude,
 	  LPCSTR pProfile,
 	  UINT HLSLFlags,
 	  UINT FXFlags,
-	  ID3D10Device *pDevice,
-	  ID3D10EffectPool *pEffectPool,
+	  ID3D11Device *pDevice,
+	  ID3D11EffectPool *pEffectPool,
 	  ID3DX10ThreadPump *pPump,
-	  ID3D10Effect **ppEffect,
-	  ID3D10Blob **ppErrors,
+	  ID3D11Effect **ppEffect,
+	  ID3D11Blob **ppErrors,
 	  HRESULT *pHResult
 	);*/
 
@@ -1692,9 +1674,31 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 
 
 	ID3D10Blob*	l_pBlob_Errors = NULL;
-	hr = D3DX10CreateEffectFromFile(str, NULL, NULL,
-		"fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL, NULL,
-		&g_pEffect, &l_pBlob_Errors, NULL);
+	//hr = D3DX11CreateEffectFromFile(str, NULL, NULL,
+	//	"fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL, NULL,
+	//	&g_pEffect, &l_pBlob_Errors, NULL);
+	//hr = D3DX11CreateEffectFromFile(str, dwShaderFlags, pd3dDevice, &g_pEffect);
+	//HRESULT WINAPI D3DX11CreateEffectFromFile(LPCWSTR pFileName, UINT FXFlags, ID3D11Device *pDevice, ID3DX11Effect **ppEffect)
+	
+
+//	//compile shader
+//	ID3DBlob* errorBlob;
+//	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+//
+//#if defined _DEBUG || defined DEBUG
+//	shaderFlags = D3DCOMPILE_DEBUG;
+//#endif
+
+	hr = D3DX11CompileEffectFromFile(str, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, dwShaderFlags,
+		0, pd3dDevice, &g_pEffect, &l_pBlob_Errors);
+	////if (FAILED(hr))
+	////{
+	////	MessageBox(nullptr, (LPCWSTR)errorBlob->GetBufferPointer(), L"error", MB_OK);
+	////	return hr;
+	////}
+	////m_pTechnique = m_pFx->GetTechniqueByName("ColorTech");
+	////m_pFxWorldViewProj = m_pFx->GetVariableByName("gWorldViewProj")->AsMatrix();
+
 	if (FAILED(hr)) {
 		LPVOID l_pError = NULL;
 		if (l_pBlob_Errors)
@@ -1711,20 +1715,29 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 
 
 	// Setup the camera's view parameters
-	//	g_Camera.SetProjParams( D3DX_PI / 4, 1.0f, g_initnear, 4.0f * g_initcamdist );
-	g_Camera.SetProjParams(D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist);
+	//	g_Camera->SetProjParams( D3DX_PI / 4, 1.0f, g_initnear, 4.0f * g_initcamdist );
+	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist);
+	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
 
 
-	ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
-	ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
-	g_Camera.SetViewParams(&vecEye, &vecAt);
-	g_Camera.SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	//ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
+	//ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
+	//g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
+	//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, g_initcamdist);
 	g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
-	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	s_matView = g_Camera->GetViewMatrix();
+	s_matProj = g_Camera->GetProjMatrix();
+
+
 
 	if (!g_texbank) {
 		g_texbank = new CTexBank(s_pdev);
@@ -1739,7 +1752,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return 1;
 	}
-	CallF(s_select->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return 1);
 	CallF(s_select->MakeDispObj(), return 1);
 
 	s_matred = s_select->GetMQOMaterialByName("matred");
@@ -1771,7 +1784,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return 1;
 	}
-	CallF(s_select_posture->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return 1);
 	CallF(s_select_posture->MakeDispObj(), return 1);
 
 
@@ -1780,7 +1793,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return 1;
 	}
-	CallF(s_rigmark->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_rigmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 1.0f, 0), return 1);
 	CallF(s_rigmark->MakeDispObj(), return 1);
 
 
@@ -1789,7 +1802,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return 1;
 	}
-	CallF(s_bmark->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return 1);
 	CallF(s_bmark->MakeDispObj(), return 1);
 
 
@@ -1800,7 +1813,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return 1;
 	}
-	CallF(s_ground->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return 1);
+	CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return 1);
 	CallF(s_ground->MakeDispObj(), return 1);
 
 	s_gplane = new CModel();
@@ -1808,7 +1821,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return 1;
 	}
-	CallF(s_gplane->LoadMQO(s_pdev, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0, D3DPOOL_MANAGED), return 1);
+	CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return 1);
 	CallF(s_gplane->MakeDispObj(), return 1);
 	ChaVector3 tra(0.0f, 0.0, 0.0f);
 	ChaVector3 mult(5.0f, 1.0f, 5.0f);
@@ -1830,7 +1843,7 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 	last2en = wcsrchr(path, TEXT('\\'));
 	*last2en = 0L;
 	wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
-	CallF(s_bcircle->Create(path, L"bonecircle.dds", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.png", 0, 0), return 1);
 
 	///////
 	WCHAR mpath[MAX_PATH];
@@ -1845,35 +1858,35 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spaxis[0].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[0].sprite);
-	CallF(s_spaxis[0].sprite->Create(mpath, L"X.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.png", 0, 0), return 1);
 	s_spaxis[1].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[1].sprite);
-	CallF(s_spaxis[1].sprite->Create(mpath, L"Y.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.png", 0, 0), return 1);
 	s_spaxis[2].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[2].sprite);
-	CallF(s_spaxis[2].sprite->Create(mpath, L"Z.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.png", 0, 0), return 1);
 
 
 	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_I].sprite);
-	CallF(s_spcam[SPR_CAM_I].sprite->Create(mpath, L"cam_i.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.png", 0, 0), return 1);
 	s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_KAI].sprite);
-	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(mpath, L"cam_kai.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.png", 0, 0), return 1);
 	s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
-	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(mpath, L"cam_kaku.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.png", 0, 0), return 1);
 
 	s_sprig[0].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_sprig[0].sprite);
-	CallF(s_sprig[0].sprite->Create(mpath, L"ToggleRig.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_sprig[0].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRig.png", 0, 0), return 1);
 	s_sprig[1].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_sprig[1].sprite);
-	CallF(s_sprig[1].sprite->Create(mpath, L"ToggleRigActive.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_sprig[1].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRigActive.png", 0, 0), return 1);
 
 	s_spbt.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spbt.sprite);
-	CallF(s_spbt.sprite->Create(mpath, L"BtApply.png", 0, D3DPOOL_MANAGED, 0), return 1);
+	CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return 1);
 
 	///////
 	//s_pdev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -1884,56 +1897,78 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 	//s_pdev->SetRenderState(D3DRS_ALPHAREF, 0x00);
 	//s_pdev->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 
-	D3D10_DEPTH_STENCIL_DESC dsDescNormal;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	if (FAILED(s_pdev->CreateBlendState(&blendDesc, &g_blendState)))
+	{
+		_ASSERT(0);
+		return 1;
+	}
+	/*
+	FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
+	g_context->OMSetBlendState(g_blendMode[BlendMode::NONE]->GetBlendState(), blendFactor, 0xffffffff);
+	*/
+
+	D3D11_DEPTH_STENCIL_DESC dsDescNormal;
 	// Depth test parameters
 	dsDescNormal.DepthEnable = true;
-	dsDescNormal.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
-	dsDescNormal.DepthFunc = D3D10_COMPARISON_LESS;
+	dsDescNormal.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDescNormal.DepthFunc = D3D11_COMPARISON_LESS;
 	// Stencil test parameters
 	dsDescNormal.StencilEnable = true;
 	dsDescNormal.StencilReadMask = 0xFF;
 	dsDescNormal.StencilWriteMask = 0xFF;
 	// Stencil operations if pixel is front-facing
-	dsDescNormal.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-	dsDescNormal.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
-	dsDescNormal.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-	dsDescNormal.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	dsDescNormal.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDescNormal.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsDescNormal.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDescNormal.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	// Stencil operations if pixel is back-facing
-	dsDescNormal.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-	dsDescNormal.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
-	dsDescNormal.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-	dsDescNormal.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	dsDescNormal.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDescNormal.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsDescNormal.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDescNormal.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	// Create depth stencil state
-	//ID3D10DepthStencilState * pDSState;
+	//ID3D11DepthStencilState * pDSState;
 	s_pdev->CreateDepthStencilState(&dsDescNormal, &g_pDSStateZCmp);
 
 
-	D3D10_DEPTH_STENCIL_DESC dsDescZCmpAlways;
+	D3D11_DEPTH_STENCIL_DESC dsDescZCmpAlways;
 	// Depth test parameters
 	dsDescZCmpAlways.DepthEnable = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	dsDescZCmpAlways.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
-	dsDescZCmpAlways.DepthFunc = D3D10_COMPARISON_LESS;
+	dsDescZCmpAlways.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDescZCmpAlways.DepthFunc = D3D11_COMPARISON_LESS;
 	// Stencil test parameters
 	dsDescZCmpAlways.StencilEnable = true;
 	dsDescZCmpAlways.StencilReadMask = 0xFF;
 	dsDescZCmpAlways.StencilWriteMask = 0xFF;
 	// Stencil operations if pixel is front-facing
-	dsDescZCmpAlways.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
-	dsDescZCmpAlways.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	dsDescZCmpAlways.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsDescZCmpAlways.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	// Stencil operations if pixel is back-facing
-	dsDescZCmpAlways.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
-	dsDescZCmpAlways.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+	dsDescZCmpAlways.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsDescZCmpAlways.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDescZCmpAlways.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	// Create depth stencil state
-	//ID3D10DepthStencilState * pDSState;
+	//ID3D11DepthStencilState * pDSState;
 	s_pdev->CreateDepthStencilState(&dsDescZCmpAlways, &g_pDSStateZCmpAlways);
 
 
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 
 	return S_OK;
@@ -1947,13 +1982,13 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 //// the device is lost. Resources created here should be released in the OnLostDevice 
 //// callback. 
 ////--------------------------------------------------------------------------------------
-//HRESULT CALLBACK OnResetDevice( ID3D10Device* pd3dDevice,
+//HRESULT CALLBACK OnResetDevice( ID3D11Device* pd3dDevice,
 //                                const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 //{
 //    HRESULT hr;
 //
-//    V_RETURN( g_DialogResourceManager.OnD3D10ResetDevice() );
-//    V_RETURN( g_SettingsDlg.OnD3D10ResetDevice() );
+//    V_RETURN( g_DialogResourceManager.OnD3D11ResetDevice() );
+//    V_RETURN( g_SettingsDlg.OnD3D11ResetDevice() );
 //
 //    // Create a sprite to help batch calls when drawing many lines of text
 //    V_RETURN( D3DXCreateSprite( pd3dDevice, &g_pSprite ) );
@@ -1970,15 +2005,15 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 //	}
 //
 //    for( int i = 0; i < MAX_LIGHTS; i++ )
-//        g_LightControl[i].OnD3D10ResetDevice( pBackBufferSurfaceDesc );
+//        g_LightControl[i].OnD3D11ResetDevice( pBackBufferSurfaceDesc );
 //
 //    // Setup the camera's projection parameters
 //    s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
-////    g_Camera.SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
-//	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+////    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
+//	g_Camera->SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 //
-//    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
-//	g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
+//    g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+//	g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 //
 //	s_mainwidth = pBackBufferSurfaceDesc->Width;
 //	s_mainheight = pBackBufferSurfaceDesc->Height;
@@ -1999,23 +2034,25 @@ HRESULT CALLBACK OnD3D10CreateDevice(ID3D10Device* pd3dDevice, const DXGI_SURFAC
 //}
 
 //--------------------------------------------------------------------------------------
-// Create any D3D10 resources that depend on the back buffer
+// Create any D3D11 resources that depend on the back buffer
 //--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnD3D10ResizedSwapChain(ID3D10Device* pd3dDevice, IDXGISwapChain* pSwapChain,
+HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChain* pSwapChain,
 	const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext)
 {
 	HRESULT hr;
 
-	V_RETURN(g_DialogResourceManager.OnD3D10ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
-	//V_RETURN(g_SettingsDlg.OnD3D10ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
+	V_RETURN(g_DialogResourceManager.OnD3D11ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
+	//V_RETURN(g_SettingsDlg.OnD3D11ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
 
 	// Setup the camera's projection parameters
 	s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
-//    g_Camera.SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-	
-	g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
-	g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
+//    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
+	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+
+	g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+	g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 	
 	s_mainwidth = pBackBufferSurfaceDesc->Width;
 	s_mainheight = pBackBufferSurfaceDesc->Height;
@@ -2037,18 +2074,18 @@ HRESULT CALLBACK OnD3D10ResizedSwapChain(ID3D10Device* pd3dDevice, IDXGISwapChai
 }
 
 //--------------------------------------------------------------------------------------
-// Release D3D10 resources created in OnD3D10ResizedSwapChain 
+// Release D3D11 resources created in OnD3D11ResizedSwapChain 
 //--------------------------------------------------------------------------------------
-void CALLBACK OnD3D10ReleasingSwapChain(void* pUserContext)
+void CALLBACK OnD3D11ReleasingSwapChain(void* pUserContext)
 {
-	g_DialogResourceManager.OnD3D10ReleasingSwapChain();
+	g_DialogResourceManager.OnD3D11ReleasingSwapChain();
 }
 
 
 //--------------------------------------------------------------------------------------
-// Release D3D10 resources created in OnD3D10CreateDevice 
+// Release D3D11 resources created in OnD3D11CreateDevice 
 //--------------------------------------------------------------------------------------
-void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
+void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 {
 	g_endappflag = 1;
 
@@ -2064,13 +2101,13 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 		g_pDSStateZCmpAlways = 0;
 	}
 
-	g_DialogResourceManager.OnD3D10DestroyDevice();
-	//g_SettingsDlg.OnD3D10DestroyDevice();
-	CDXUTDirectionWidget::StaticOnD3D10DestroyDevice();
+	g_DialogResourceManager.OnD3D11DestroyDevice();
+	//g_SettingsDlg.OnD3D11DestroyDevice();
+	CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();
 	DXUTGetGlobalResourceCache().OnDestroyDevice();
 	SAFE_DELETE(g_pTxtHelper);
-	SAFE_RELEASE(g_pFont);
-	SAFE_RELEASE(g_pSprite);
+	//SAFE_RELEASE(g_pFont);
+	//SAFE_RELEASE(g_pSprite);
 	SAFE_RELEASE(g_pEffect);
 	//SAFE_RELEASE(g_pVertexLayout);
 	//g_Mesh10.Destroy();
@@ -2588,7 +2625,10 @@ void CALLBACK OnD3D10DestroyDevice(void* pUserContext)
 	}
 	s_spbt.sprite = 0;
 
-
+	if (g_Camera) {
+		delete g_Camera;
+		g_Camera = 0;
+	}
 
 	DestroyModelPanel();
 	DestroyConvBoneWnd();
@@ -2649,11 +2689,11 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	OnFrameMouseButton();
 
 	s_time = fTime;
-	g_Camera.FrameMove(fElapsedTime);
+	g_Camera->FrameMove(fElapsedTime);
 	double difftime = fTime - savetime;
 
-	s_matWorld = ChaMatrix(*g_Camera.GetWorldMatrix());
-	s_matProj = ChaMatrix(*g_Camera.GetProjMatrix());
+	s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
+	s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
 	s_matWorld._41 = 0.0f;
 	s_matWorld._42 = 0.0f;
 	s_matWorld._43 = 0.0f;
@@ -2846,7 +2886,8 @@ int AdjustBoneTra( CBone* curbone, double curframe )
 // repainted. After this function has returned, DXUT will call 
 // IDirect3DDevice9::Present to display the contents of the next buffer in the swap chain
 //--------------------------------------------------------------------------------------
-void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext )
+void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
+	float fElapsedTime, void* pUserContext)
 {
     HRESULT hr;
 
@@ -2865,10 +2906,10 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 
 	// Clear the render target and depth stencil
 	float ClearColor[4] = { 0.0f, 0.25f, 0.25f, 0.55f };
-	ID3D10RenderTargetView* pRTV = DXUTGetD3D10RenderTargetView();
-	pd3dDevice->ClearRenderTargetView(pRTV, ClearColor);
-	ID3D10DepthStencilView* pDSV = DXUTGetD3D10DepthStencilView();
-	pd3dDevice->ClearDepthStencilView(pDSV, D3D10_CLEAR_DEPTH, 1.0, 0);
+	ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
+	pd3dImmediateContext->ClearRenderTargetView(pRTV, ClearColor);
+	ID3D11DepthStencilView* pDSV = DXUTGetD3D11DepthStencilView();
+	pd3dImmediateContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0, 0);
 
 
 
@@ -2881,19 +2922,19 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	ChaMatrix mProj;
 
 	// Get the projection & view matrix from the camera class
-//	mWorld = g_mCenterMesh * *g_Camera.GetWorldMatrix();
-	mWorld = *g_Camera.GetWorldMatrix();
-	mProj = *g_Camera.GetProjMatrix();
-	mView = *g_Camera.GetViewMatrix();
+//	mWorld = g_mCenterMesh * *g_Camera->GetWorldMatrix();
+	mWorld = g_Camera->GetWorldMatrix();
+	mProj = g_Camera->GetProjMatrix();
+	mView = g_Camera->GetViewMatrix();
 
 	mWorldViewProjection = mWorld * mView * mProj;
 
 	// Render the light arrow so the user can visually see the light dir
 	for (int i = 0; i < g_nNumActiveLights; i++)
 	{
-		D3DXCOLOR arrowColor = (i == g_nActiveLight) ? D3DXCOLOR(1, 1, 0, 1) : D3DXCOLOR(1, 1, 1, 1);
-		//V(g_LightControl[i].OnRender10(arrowColor, &mView, &mProj, g_Camera.GetEyePt()));
-		vLightDir[i] = g_LightControl[i].GetLightDirection();
+		DirectX::XMFLOAT4 arrowColor = (i == g_nActiveLight) ? DirectX::XMFLOAT4(1, 1, 0, 1) : DirectX::XMFLOAT4(1, 1, 1, 1);
+		//V(g_LightControl[i].OnRender10(arrowColor, &mView, &mProj, g_Camera->GetEyePt()));
+		vLightDir[i] = ChaVector3(g_LightControl[i].GetLightDirection());
 		vLightDiffuse[i] = ChaVector4(1, 1, 1, 1) * g_fLightScale;
 	}
 
@@ -2905,7 +2946,7 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	//V(g_pnNumLights->SetInt(g_nNumActiveLights));
 
 	//// Render the scene with this technique as defined in the .fx file
-	//ID3D10EffectTechnique* pRenderTechnique;
+	//ID3D11EffectTechnique* pRenderTechnique;
 	//switch (g_nNumActiveLights)
 	//{
 	//case 1:
@@ -2931,13 +2972,13 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 
 	OnRenderSetShaderConst();
 
-	OnRenderModel();
-	OnRenderGround();
-	OnRenderBoneMark();
-	OnRenderSelect();
+	OnRenderModel(pd3dImmediateContext);
+	OnRenderGround(pd3dImmediateContext);
+	OnRenderBoneMark(pd3dImmediateContext);
+	OnRenderSelect(pd3dImmediateContext);
 	//OnRenderUtDialog(fElapsedTime);
 	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
-		OnRenderSprite();
+		OnRenderSprite(pd3dImmediateContext);
 	}
 
 	DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
@@ -2975,11 +3016,11 @@ void RenderText( double fTime )
     // Output statistics
     g_pTxtHelper->Begin();
     g_pTxtHelper->SetInsertionPos( 2, 0 );
-    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+    g_pTxtHelper->SetForegroundColor( DirectX::XMFLOAT4( 1.0f, 1.0f, 0.0f, 1.0f ) );
     //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
     //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
-    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+    g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
     g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
 
 	//int tmpnum;
@@ -3012,7 +3053,7 @@ void RenderText( double fTime )
     // Draw help
     if( g_bShowHelp )
     {
-        const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D10BackBufferSurfaceDesc();
+        const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D11BackBufferSurfaceDesc();
         g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
         g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
         g_pTxtHelper->DrawTextLine( L"Controls:" );
@@ -3075,7 +3116,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}
 
 	// Pass all remaining windows messages to camera so it can respond to user input
-	//g_Camera.HandleMessages(hWnd, uMsg, wParam, lParam);
+	//g_Camera->HandleMessages(hWnd, uMsg, wParam, lParam);
 
 
 	if( uMsg == WM_COMMAND ){
@@ -3446,7 +3487,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
-		g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
+		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
+		//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
 		s_camdist = ChaVector3Length( &diffv );
 
@@ -3648,7 +3690,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
 			ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
 
-			g_Camera.SetViewParams(&neweye, &newat);
+			g_Camera->SetViewParams(&neweye, &newat);
 
 
 
@@ -3760,7 +3802,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 			ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-			g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+			g_Camera->SetViewParams(&neweye, &g_camtargetpos);
 
 			g_camEye = neweye;
 			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -3832,13 +3874,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 	/*
 	if( uMsg == WM_LBUTTONDOWN ){
-		g_Camera.HandleMessages( hWnd, WM_RBUTTONDOWN, wParam, lParam );
+		g_Camera->HandleMessages( hWnd, WM_RBUTTONDOWN, wParam, lParam );
 		if( s_ikkind == 2 ){
 			g_LightControl[g_nActiveLight].HandleMessages( hWnd, WM_RBUTTONDOWN, wParam, lParam );
 		}
 	}else if( uMsg == WM_LBUTTONDBLCLK ){
 	}else if( uMsg == WM_LBUTTONUP ){
-		g_Camera.HandleMessages( hWnd, WM_RBUTTONUP, wParam, lParam );
+		g_Camera->HandleMessages( hWnd, WM_RBUTTONUP, wParam, lParam );
 		if( s_ikkind == 2 ){
 			g_LightControl[g_nActiveLight].HandleMessages( hWnd, WM_RBUTTONUP, wParam, lParam );
 		}
@@ -3864,7 +3906,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//	ChaMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 		//}
 	}else{
-		g_Camera.HandleMessages( hWnd, uMsg, wParam, lParam );
+		g_Camera->HandleMessages( hWnd, uMsg, wParam, lParam );
 		if( s_ikkind == 2 ){
 			g_LightControl[g_nActiveLight].HandleMessages( hWnd, uMsg, wParam, lParam );
 		}
@@ -3981,7 +4023,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_PHYSICS_MV_SLIDER:
 			RollbackCurBoneNo();
 			g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
-			swprintf_s(sz, 100, L"Physics Edit Rate : %.3f", g_physicsmvrate);
+			swprintf_s(sz, 100, L"PhysEditRate : %.3f", g_physicsmvrate);
 			g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
 			break;
 		//case IDC_APPLY_BT:
@@ -4000,33 +4042,33 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			RollbackCurBoneNo();
 			g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
 
-            swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
+            swprintf_s( sz, 100, L"Light : %0.2f", g_fLightScale );
             //g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
             break;
 
         case IDC_SL_IKFIRST:
 			RollbackCurBoneNo();
 			g_ikfirst = (float)(g_SampleUI.GetSlider(IDC_SL_IKFIRST)->GetValue()) * 0.04f;
-		    swprintf_s( sz, 100, L"IK 次数の係数 : %f", g_ikfirst );
+		    swprintf_s( sz, 100, L"IK Order : %f", g_ikfirst );
             g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
             break;
         case IDC_SL_IKRATE:
 			RollbackCurBoneNo();
 			g_ikrate = (float)(g_SampleUI.GetSlider(IDC_SL_IKRATE)->GetValue()) * 0.01f;
-		    swprintf_s( sz, 100, L"IK 伝達係数 : %f", g_ikrate );
+		    swprintf_s( sz, 100, L"IK Trans : %f", g_ikrate );
             g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
             break;
 		case IDC_SL_NUMTHREAD:
 			RollbackCurBoneNo();
 			g_numthread = (int)(g_SampleUI.GetSlider(IDC_SL_NUMTHREAD)->GetValue());
-			swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
+			swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
 			g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 			s_bpWorld->setNumThread(g_numthread);
 			break;
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
-		    swprintf_s( sz, 100, L"姿勢適用位置 : %d ％", g_applyrate );
+		    swprintf_s( sz, 100, L"TopPos : %d ％", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
 			OnTimeLineSelectFromSelectedKey();
@@ -4045,7 +4087,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				s_modelindex[modelno].modelptr->SetMotionSpeed( g_dspeed );
 			}
 
-            swprintf_s( sz, 100, L"Motion Speed: %0.4f", g_dspeed );
+            swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
             g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
             break;
 
@@ -4217,9 +4259,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 ////--------------------------------------------------------------------------------------
 //void CALLBACK OnLostDevice( void* pUserContext )
 //{
-//    g_DialogResourceManager.OnD3D10LostDevice();
-//    g_SettingsDlg.OnD3D10LostDevice();
-//    CDXUTDirectionWidget::StaticOnD3D10LostDevice();
+//    g_DialogResourceManager.OnD3D11LostDevice();
+//    g_SettingsDlg.OnD3D11LostDevice();
+//    CDXUTDirectionWidget::StaticOnD3D11LostDevice();
 //    if( g_pFont )
 //        g_pFont->OnLostDevice();
 //    if( g_pEffect )
@@ -4241,9 +4283,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 //--------------------------------------------------------------------------------------
 //void CALLBACK OnDestroyDevice( void* pUserContext )
 //{
-//    g_DialogResourceManager.OnD3D10DestroyDevice();
-//    g_SettingsDlg.OnD3D10DestroyDevice();
-//    CDXUTDirectionWidget::StaticOnD3D10DestroyDevice();
+//    g_DialogResourceManager.OnD3D11DestroyDevice();
+//    g_SettingsDlg.OnD3D11DestroyDevice();
+//    CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();
 //    SAFE_RELEASE( g_pEffect );
 //    SAFE_RELEASE( g_pFont );
 //
@@ -4854,14 +4896,14 @@ g_pMaterialDiffuseColor = g_pEffect10->GetVariableByName("g_MaterialDiffuseColor
 g_pnNumLights = g_pEffect10->GetVariableByName("g_nNumLights")->AsScalar();
 
 // Create our vertex input layout
-const D3D10_INPUT_ELEMENT_DESC layout[] =
+const D3D11_INPUT_ELEMENT_DESC layout[] =
 {
-{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D10_INPUT_PER_VERTEX_DATA, 0 },
-{ "NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D10_INPUT_PER_VERTEX_DATA, 0 },
-{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D10_INPUT_PER_VERTEX_DATA, 0 },
+{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+{ "NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 };
 
-D3D10_PASS_DESC PassDesc;
+D3DX11_PASS_DESC PassDesc;
 V_RETURN(g_pTechRenderSceneWithTexture1Light->GetPassByIndex(0)->GetDesc(&PassDesc));
 V_RETURN(pd3dDevice->CreateInputLayout(layout, 3, PassDesc.pIAInputSignature,
 PassDesc.IAInputSignatureSize, &g_pVertexLayout));
@@ -4934,7 +4976,7 @@ int SetBaseDir()
 		}
 	}
 
-	int leng;
+	unsigned int leng;
 	ZeroMemory(g_basedir, sizeof(WCHAR)* MAX_PATH);
 	wcscpy_s(g_basedir, MAX_PATH, filename);
 	leng = wcslen(g_basedir);
@@ -5240,6 +5282,8 @@ int OpenFile()
 
 CModel* OpenMQOFile()
 {
+	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+
 	static int modelcnt = 0;
 	WCHAR modelname[MAX_PATH] = {0L};
 	WCHAR* lasten;
@@ -5284,7 +5328,7 @@ CModel* OpenMQOFile()
 		return 0;
 	}
 	int ret;
-	ret = newmodel->LoadMQO( s_pdev, g_tmpmqopath, modelfolder, g_tmpmqomult, 0 );
+	ret = newmodel->LoadMQO( s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, 0 );
 	if( ret ){
 		delete newmodel;
 		if( s_owpTimeline ){
@@ -5345,13 +5389,19 @@ CModel* OpenMQOFile()
 
     ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
     ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera.SetViewParams(&vecEye, &vecAt);
-    g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
+	g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
+    g_Camera->SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
 
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	s_matView = g_Camera->GetViewMatrix();
+	s_matProj = g_Camera->GetProjMatrix();
+
 
 	CallF( AddMotion( 0 ), return 0 );
 	InitCurMotion(0, 0);
@@ -5372,6 +5422,7 @@ CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
 
+	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 
 	//int dlgret;
 	//dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CHECKAXISTYPE),
@@ -5433,7 +5484,7 @@ CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
 	FbxImporter* pImporter = 0;
 
 	int ret;
-	ret = newmodel->LoadFBX(skipdefref, s_pdev, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene, s_forcenewaxis);
+	ret = newmodel->LoadFBX(skipdefref, s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene, s_forcenewaxis);
 	if( ret ){
 		_ASSERT( 0 );
 		delete newmodel;
@@ -5500,8 +5551,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	s_projnear = fObjectRadius * 0.01f;
 	g_initcamdist = fObjectRadius * 3.0f;
-	g_Camera.SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-	
+	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+
 	
     for( int i = 0; i < MAX_LIGHTS; i++ )
 		g_LightControl[i].SetRadius( fObjectRadius );
@@ -5509,13 +5561,18 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
     ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
     ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera.SetViewParams(&vecEye, &vecAt);
-    g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
+	g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
+    g_Camera->SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
 
 	s_camdist = fObjectRadius * 4.0f;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	s_matView = g_Camera->GetViewMatrix();
+	s_matProj = g_Camera->GetProjMatrix();
 
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
@@ -7048,7 +7105,7 @@ int refreshModelPanel()
 	return 0;
 }
 
-int RenderSelectMark(int renderflag)
+int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 {
 	if( s_curboneno < 0 ){
 		return 0;
@@ -7112,33 +7169,33 @@ int RenderSelectMark(int renderflag)
 
 			g_hmWorld->SetMatrix((float*)&s_selectmat);
 			if (s_oprigflag == 0){
-				RenderSelectFunc();
+				RenderSelectFunc(pd3dImmediateContext);
 			}
 			else{
 				if (curboneptr == s_customrigbone){
-					RenderRigMarkFunc();
+					RenderRigMarkFunc(pd3dImmediateContext);
 				}
 				else{
-					RenderSelectFunc();
+					RenderSelectFunc(pd3dImmediateContext);
 				}
 			}
 
 
 			g_hmWorld->SetMatrix((float*)&s_selectmat_posture);
 			if (s_oprigflag == 0) {
-				RenderSelectPostureFunc();
+				RenderSelectPostureFunc(pd3dImmediateContext);
 			}
 			else {
 				if (curboneptr == s_customrigbone) {
 				}
 				else {
-					RenderSelectPostureFunc();
+					RenderSelectPostureFunc(pd3dImmediateContext);
 				}
 			}
 
 
 			//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-			s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+			pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 		}
 	}
@@ -7146,49 +7203,52 @@ int RenderSelectMark(int renderflag)
 	return 0;
 }
 
-int RenderSelectFunc()
+int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	s_select->UpdateMatrix(&s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect){
 		int lightflag = 1;
-		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-		s_select->OnRender(s_pdev, lightflag, diffusemult);
+		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
+		s_select->OnRender(pd3dImmediateContext, lightflag, diffusemult);
 	}
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 
 }
 
-int RenderSelectPostureFunc()
+int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	s_select_posture->UpdateMatrix(&s_selectmat_posture, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect) {
 		int lightflag = 1;
-		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-		s_select_posture->OnRender(s_pdev, lightflag, diffusemult);
+		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
+		s_select_posture->OnRender(pd3dImmediateContext, lightflag, diffusemult);
 	}
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 
 }
 
 
-int RenderRigMarkFunc()
+int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	s_rigmark->UpdateMatrix(&s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	int lightflag = 1;
-	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-	s_rigmark->OnRender(s_pdev, lightflag, diffusemult);
+	//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
+	s_rigmark->OnRender(pd3dImmediateContext, lightflag, diffusemult);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-	s_pdev->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 }
@@ -7235,7 +7295,7 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 	
     ChaMatrix mView;
     ChaMatrix mProj;
-    mProj = *g_Camera.GetProjMatrix();
+    mProj = g_Camera->GetProjMatrix();
     mView = s_matView;
 	ChaMatrix mVP, invmVP;
 	mVP = mView * mProj;
@@ -8418,55 +8478,78 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z - camdist;
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
 
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	}else if( g_keybuf[ VK_F2 ] & 0x80 ){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z + camdist;
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F3] & 0x80){
 		neweye.x = g_camtargetpos.x - camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F4] & 0x80){
 		neweye.x = g_camtargetpos.x + camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
+		
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F5] & 0x80){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y + camdist;
 		neweye.z = g_camtargetpos.z + delta;
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 	else if (g_keybuf[VK_F6] & 0x80){
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y - camdist;
 		neweye.z = g_camtargetpos.z - delta;
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
 
 	ChaVector3 diffv;
@@ -9178,7 +9261,8 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					bi.hwndOwner = hDlgWnd;
 					bi.pidlRoot = NULL;//!!!!!!!
 					bi.pszDisplayName = dispname;
-					bi.lpszTitle = L"保存フォルダを選択してください。";
+					//bi.lpszTitle = L"保存フォルダを選択してください。";
+					bi.lpszTitle = L"SelectDirectoryForSave";
 					//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 					bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 					bi.lpfn = NULL;
@@ -12122,12 +12206,12 @@ int CreateUtDialog()
 
 
 	//iY += 24;
-	swprintf_s(sz, 100, L"Light scale: %0.2f", g_fLightScale);
+	swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
 	//g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
 	//g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 
-	g_SampleUI.AddCheckBox(IDC_BMARK, L"ボーンを表示する", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
+	g_SampleUI.AddCheckBox(IDC_BMARK, L"DispBone", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
 
 	/***
 	swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
@@ -12187,7 +12271,7 @@ int CreateUtDialog()
 	//iY += addh;
 
 
-	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"選択部を注視点にする", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
+	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"LockToSel", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
 
 
 	//iY += addh;
@@ -12208,45 +12292,45 @@ int CreateUtDialog()
 	g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, ctrlxlen, ctrlh);
 	CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
 	pComboBox1->RemoveAllItems();
-	pComboBox1->AddItem(L"IK回転", ULongToPtr(IDC_IK_ROT));
-	pComboBox1->AddItem(L"IK移動", ULongToPtr(IDC_IK_MV));
+	pComboBox1->AddItem(L"IKRot", ULongToPtr(IDC_IK_ROT));
+	pComboBox1->AddItem(L"IKMove", ULongToPtr(IDC_IK_MV));
 	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
-	pComboBox1->AddItem(L"剛体設定", ULongToPtr(IDC_BT_RIGID));
-	pComboBox1->AddItem(L"インパルス", ULongToPtr(IDC_BT_IMP));
-	pComboBox1->AddItem(L"物理地面", ULongToPtr(IDC_BT_GP));
-	pComboBox1->AddItem(L"減衰率アニメ", ULongToPtr(IDC_BT_DAMP));
+	pComboBox1->AddItem(L"Rigid", ULongToPtr(IDC_BT_RIGID));
+	pComboBox1->AddItem(L"Impulse", ULongToPtr(IDC_BT_IMP));
+	pComboBox1->AddItem(L"Ground", ULongToPtr(IDC_BT_GP));
+	pComboBox1->AddItem(L"DampAnim", ULongToPtr(IDC_BT_DAMP));
 
 	pComboBox1->SetSelectedByData(ULongToPtr(0));
 
-	swprintf_s(sz, 100, L"姿勢適用位置 : %d ％", g_applyrate);
+	swprintf_s(sz, 100, L"TopPos : %d ％", g_applyrate);
 	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
 	CEditRange::SetApplyRate(g_applyrate);
 
 
-	swprintf_s(sz, 100, L"モーションブラシ(MotionBrush)");
+	swprintf_s(sz, 100, L"MotionBrush");
 	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen + 25, ctrlh);
 	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
 	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
 	pComboBox5->RemoveAllItems();
-	pComboBox5->AddItem(L"線形ブラシ", ULongToPtr(0));
-	pComboBox5->AddItem(L"Cos(x+PI)ブラシ", ULongToPtr(1));
-	pComboBox5->AddItem(L"Cos(x^2+PI)ブラシ", ULongToPtr(2));
-	pComboBox5->AddItem(L"矩形ブラシ", ULongToPtr(3));
+	pComboBox5->AddItem(L"Linear", ULongToPtr(0));
+	pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
+	pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
+	pComboBox5->AddItem(L"Rect", ULongToPtr(3));
 	pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
-	swprintf_s(sz, 100, L"IK 次数の係数 : %f", g_ikfirst);
+	swprintf_s(sz, 100, L"IK Order : %f", g_ikfirst);
 	g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikfirst * 25.0f));
 
-	swprintf_s(sz, 100, L"IK 伝達係数 : %f", g_ikrate);
+	swprintf_s(sz, 100, L"IK Trans : %f", g_ikrate);
 	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
 
-	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"最終フレームまで適用する。", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
-	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKをオフにする", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
-	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"絶対IKをオンにする", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
+	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"ApplyToTheEnd", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
+	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKOff", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
+	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"AbsIKOn", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
 //	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
 //	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 
@@ -12255,12 +12339,12 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	int startx = s_mainwidth / 2 - 180;
 
-	swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
+	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
 	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 64, g_numthread);
 
-	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
+	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimmitEul", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 
 
 	//Right Bottom
@@ -12281,7 +12365,7 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50;
 
-	swprintf_s(sz, 100, L"Motion Speed: %0.2f", g_dspeed);
+	swprintf_s(sz, 100, L"Speed: %0.2f", g_dspeed);
 	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
 
@@ -12295,14 +12379,14 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50 + 130 ;
 
-	swprintf_s(sz, 100, L"Physics Edit Rate : %.3f", g_physicsmvrate);
+	swprintf_s(sz, 100, L"PhysEditRate : %.3f", g_physicsmvrate);
 	g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_PHYSICS_MV_SLIDER, startx, iY += addh, 100, ctrlh, 0, 100, (int)(g_physicsmvrate * 100.0f));
 
 	iY += 10;
-	g_SampleUI.AddButton(IDC_PHYSICS_IK, L"Physics Rot start", startx, iY += addh, 100, ctrlh);
+	g_SampleUI.AddButton(IDC_PHYSICS_IK, L"PhysRotStart", startx, iY += addh, 100, ctrlh);
 	iY += 5;
-	g_SampleUI.AddButton(IDC_PHYSICS_MV_IK, L"Physics MV start", startx, iY += addh, 100, ctrlh);
+	g_SampleUI.AddButton(IDC_PHYSICS_MV_IK, L"PhysMvStart", startx, iY += addh, 100, ctrlh);
 	//iY += 5;
 	//g_SampleUI.AddButton(IDC_APPLY_BT, L"Apply BT", startx, iY += addh, 100, ctrlh);
 
@@ -13482,7 +13566,7 @@ int CreateLayerWnd()
 
 }
 
-int OnRenderModel()
+int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
@@ -13498,21 +13582,21 @@ int OnRenderModel()
 			else{
 				btflag = 1;
 			}
-			curmodel->OnRender(s_pdev, lightflag, diffusemult, btflag);
+			curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
 		}
 	}
 
 	return 0;
 }
 
-int OnRenderGround()
+int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if (s_ground && s_dispground){
 		g_hmWorld->SetMatrix((float*)&s_matWorld);
 		//g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-		s_ground->OnRender(s_pdev, 0, diffusemult);
+		s_ground->OnRender(pd3dImmediateContext, 0, diffusemult);
 	}
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
 		ChaMatrix gpmat = s_inimat;
@@ -13521,13 +13605,13 @@ int OnRenderGround()
 		//g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-		s_gplane->OnRender(s_pdev, 0, diffusemult);
+		s_gplane->OnRender(pd3dImmediateContext, 0, diffusemult);
 	}
 
 	return 0;
 }
 
-int OnRenderBoneMark()
+int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if (g_bonemarkflag) {
 
@@ -13535,7 +13619,7 @@ int OnRenderBoneMark()
 			//if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
 			if (s_model && s_model->GetModelDisp()) {
 				//if (s_ikkind >= 3){
-				s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, s_curboneno);
+				s_model->RenderBoneMark(pd3dImmediateContext, s_bmark, s_bcircle, s_curboneno);
 				//}
 				//else{
 				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
@@ -13548,20 +13632,20 @@ int OnRenderBoneMark()
 			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++) {
 				MODELELEM curme = *itrme;
 				CModel* curmodel = curme.modelptr;
-				curmodel->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
+				curmodel->RenderBoneMark(pd3dImmediateContext, s_bmark, s_bcircle, 0, s_curboneno);
 			}
 		}
 	}
 
 	return 0;
 }
-int OnRenderSelect()
+int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if ((g_previewFlag != 4) && (g_previewFlag != 5)){
 		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp())){
 			//SetSelectCol();
 			SetSelectState();
-			RenderSelectMark(1);
+			RenderSelectMark(pd3dImmediateContext, 1);
 		}
 	}
 	//else if ((g_previewFlag == 5) && (s_oprigflag == 1)){
@@ -13569,27 +13653,27 @@ int OnRenderSelect()
 		if (s_select && (s_curboneno >= 0) && (s_model && s_model->GetModelDisp())){
 			//SetSelectCol();
 			SetSelectState();
-			RenderSelectMark(1);
+			RenderSelectMark(pd3dImmediateContext, 1);
 		}
 	}
 
 	return 0;
 }
 
-int OnRenderSprite()
+int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	int spacnt;
 	for (spacnt = 0; spacnt < 3; spacnt++){
-		s_spaxis[spacnt].sprite->OnRender();
+		s_spaxis[spacnt].sprite->OnRender(pd3dImmediateContext);
 	}
 	int spccnt;
 	for (spccnt = 0; spccnt < 3; spccnt++){
-		s_spcam[spccnt].sprite->OnRender();
+		s_spcam[spccnt].sprite->OnRender(pd3dImmediateContext);
 	}
 
-	s_sprig[s_oprigflag].sprite->OnRender();
+	s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
 
-	s_spbt.sprite->OnRender();
+	s_spbt.sprite->OnRender(pd3dImmediateContext);
 
 
 	return 0;
@@ -13600,7 +13684,7 @@ int OnRenderSetShaderConst()
 	HRESULT hr;
 
 	ChaVector3 vLightDir[MAX_LIGHTS];
-	D3DXCOLOR vLightDiffuse[MAX_LIGHTS];
+	ChaVector4 vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
 	g_hmVP->SetMatrix((float*)&s_matVP);
@@ -13611,7 +13695,7 @@ int OnRenderSetShaderConst()
 	ChaVector3 lightdir0, nlightdir0;
 	lightdir0 = g_camEye;
 	ChaVector3Normalize(&nlightdir0, &lightdir0);
-	g_LightControl[0].SetLightDirection(nlightdir0);
+	g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
 
 	// Render the light arrow so the user can visually see the light dir
 	for (int i = 0; i < g_nNumActiveLights; i++)
@@ -13620,8 +13704,8 @@ int OnRenderSetShaderConst()
 		//	D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
 		//	V( g_LightControl[i].OnRender10( arrowColor, &mView, &mProj, &g_camEye ) );
 		//}
-		vLightDir[i] = g_LightControl[i].GetLightDirection();
-		vLightDiffuse[i] = g_fLightScale * D3DXCOLOR(1, 1, 1, 1);
+		vLightDir[i] = ChaVector3(g_LightControl[i].GetLightDirection());
+		vLightDiffuse[i] = ChaVector4(g_fLightScale, g_fLightScale, g_fLightScale, g_fLightScale);
 	}
 	ChaVector3 lightamb(1.0f, 1.0f, 1.0f);
 
@@ -13636,7 +13720,7 @@ int OnRenderSetShaderConst()
 	return 0;
 }
 
-int OnRenderUtDialog(float fElapsedTime)
+int OnRenderUtDialog(ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTime)
 {
 	if (g_previewFlag != 3){
 		//g_HUD.OnRender( fElapsedTime );
@@ -14001,12 +14085,12 @@ int CustomRig2Dlg(HWND hDlgWnd)
 				}
 				else{
 					_ASSERT(0);
-					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
+					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"None");
 					//return 1;
 				}
 			}
 			else{
-				SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
+				SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"None");
 			}
 
 			SetRigRigCombo(hDlgWnd, elemno);
@@ -14078,7 +14162,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 		SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)levelbone->GetWBoneName());
 	}
 	else{
-		SetDlgItemText(hDlgWnd, gpboxid[elemno], L"未設定");
+		SetDlgItemText(hDlgWnd, gpboxid[elemno], L"None");
 	}
 
 
@@ -14808,12 +14892,18 @@ void AutoCameraTarget()
 		_ASSERT(curbone);
 		if (curbone){
 			g_camtargetpos = curbone->GetChildWorld();
-			g_Camera.SetViewParams(&g_camEye, &g_camtargetpos);
 
-			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!!
+			//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!!
+
+			//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
 			s_camdist = ChaVector3Length(&diffv);
+
+			s_matView = g_Camera->GetViewMatrix();
+			s_matProj = g_Camera->GetProjMatrix();
 		}
 	}
 }
@@ -14824,23 +14914,23 @@ void AutoCameraTarget()
 //--------------------------------------------------------------------------------------
 // Rejects any D3D9 devices that aren't acceptable to the app by returning false
 //--------------------------------------------------------------------------------------
-bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
-	D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
-{
-	//// No fallback defined by this app, so reject any device that doesn't support at least ps2.0
-	//if (pCaps->PixelShaderVersion < D3DPS_VERSION(2, 0))
-	//	return false;
-
-	//// Skip backbuffer formats that don't support alpha blending
-	//IDirect3D9* pD3D = DXUTGetD3D9Object();
-	//if (FAILED(pD3D->CheckDeviceFormat(pCaps->AdapterOrdinal, pCaps->DeviceType,
-	//	AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
-	//	D3DRTYPE_TEXTURE, BackBufferFormat)))
-	//	return false;
-
-	//return true;
-	return false;
-}
+//bool CALLBACK IsD3D9DeviceAcceptable(D3DCAPS9* pCaps, D3DFORMAT AdapterFormat,
+//	D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
+//{
+//	//// No fallback defined by this app, so reject any device that doesn't support at least ps2.0
+//	//if (pCaps->PixelShaderVersion < D3DPS_VERSION(2, 0))
+//	//	return false;
+//
+//	//// Skip backbuffer formats that don't support alpha blending
+//	//IDirect3D9* pD3D = DXUTGetD3D9Object();
+//	//if (FAILED(pD3D->CheckDeviceFormat(pCaps->AdapterOrdinal, pCaps->DeviceType,
+//	//	AdapterFormat, D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
+//	//	D3DRTYPE_TEXTURE, BackBufferFormat)))
+//	//	return false;
+//
+//	//return true;
+//	return false;
+//}
 
 
 //////////////////////////////////////////
@@ -15393,7 +15483,8 @@ HWND Create3DWnd()
 
 	//hr = DXUTCreateDevice(true);//mac + VM Fusionの場合はこっち
 	//hr = DXUTCreateDevice(true, bufwidth, bufheight);
-	hr = DXUTCreateDevice(true, s_mainwidth, s_mainheight);
+	//hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_0, true, s_mainwidth, s_mainheight);
+	hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_1, true, s_mainwidth, s_mainheight);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 0;
@@ -15665,13 +15756,14 @@ int OnMouseMoveFunc()
 		ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
 		ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
 
-		g_Camera.SetViewParams(&neweye, &newat);
-
-
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), newat.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
 
 		g_camEye = neweye;
 		g_camtargetpos = newat;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		ChaVector3 diffv;
 		diffv = neweye - newat;
 		s_camdist = ChaVector3Length(&diffv);
@@ -15777,10 +15869,14 @@ int OnMouseMoveFunc()
 		mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 		ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-		g_Camera.SetViewParams(&neweye, &g_camtargetpos);
+		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
 
 		g_camEye = neweye;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+
 		ChaVector3 diffv;
 		diffv = neweye - g_camtargetpos;
 		s_camdist = ChaVector3Length(&diffv);
@@ -15809,7 +15905,13 @@ int OnMouseMoveFunc()
 		ChaVector3 camvec = g_camEye - g_camtargetpos;
 		ChaVector3Normalize(&camvec, &camvec);
 		g_camEye = g_camtargetpos + camvec * s_camdist;
-		ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+
+		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+
 	}
 
 	s_doingflag = false;

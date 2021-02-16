@@ -2182,7 +2182,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 }
 
 
-CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel )
+CFBXBone* CreateFBXBone(FbxScene* pScene, CModel* pmodel )
 {
 	s_fbxbonenum = 0;
 

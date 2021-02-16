@@ -724,7 +724,7 @@ int CMQOObject::SetColor( char* srcchar, int srcleng )
 
 	return 0;
 }
-int CMQOObject::MakePolymesh3( ID3D10Device* pdev, std::map<int,CMQOMaterial*>& srcmaterial )
+int CMQOObject::MakePolymesh3( ID3D11Device* pdev, std::map<int,CMQOMaterial*>& srcmaterial )
 {
 	if( !m_pointbuf || !m_facebuf )
 		return 0;
@@ -805,7 +805,7 @@ int CMQOObject::MakePolymesh3( ID3D10Device* pdev, std::map<int,CMQOMaterial*>& 
 	return 0;
 }
 
-int CMQOObject::MakePolymesh4( ID3D10Device* pdev )
+int CMQOObject::MakePolymesh4( ID3D11Device* pdev )
 {
 	if( !m_pointbuf || !m_facebuf )
 		return 0;
@@ -864,7 +864,7 @@ int CMQOObject::MakeExtLine()
 	return 0;
 }
 
-int CMQOObject::MakeDispObj( ID3D10Device* pdev, map<int,CMQOMaterial*>& srcmat, int hasbone )
+int CMQOObject::MakeDispObj( ID3D11Device* pdev, map<int,CMQOMaterial*>& srcmat, int hasbone )
 {
 	if( m_dispobj ){
 		delete m_dispobj;

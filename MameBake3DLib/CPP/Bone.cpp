@@ -1232,7 +1232,7 @@ int CBone::CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat )
 	ChaVector3Cross( &vecz1, (const ChaVector3*)&vecx1, (const ChaVector3*)&vecy1 );
 	ChaVector3Normalize( &vecy1, &vecy1 );
 
-	D3DXQUATERNION tmpxq;
+	//D3DXQUATERNION tmpxq;
 
 	ChaMatrixIdentity( dstmat );
 	if( illeagalflag == 0 ){
@@ -4354,7 +4354,7 @@ ChaVector3 CBone::GetChildWorld(){
 	return m_childworld;
 };
 
-int CBone::LoadCapsuleShape(ID3D10Device* pdev)
+int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext)
 {
 	WCHAR wfilename[MAX_PATH];
 	WCHAR mpath[MAX_PATH];
@@ -4379,7 +4379,7 @@ int CBone::LoadCapsuleShape(ID3D10Device* pdev)
 	}
 
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"cone_dirX.mqo");
-	CallF(m_coldisp[COL_CONE_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_CONE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
 	CallF(m_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1);
 
 	m_coldisp[COL_CAPSULE_INDEX] = new CModel();
@@ -4388,7 +4388,7 @@ int CBone::LoadCapsuleShape(ID3D10Device* pdev)
 		return 1;
 	}
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"capsule_dirX.mqo");
-	CallF(m_coldisp[COL_CAPSULE_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_CAPSULE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
 	CallF(m_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1);
 
 	m_coldisp[COL_SPHERE_INDEX] = new CModel();
@@ -4397,7 +4397,7 @@ int CBone::LoadCapsuleShape(ID3D10Device* pdev)
 		return 1;
 	}
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"sphere_dirX.mqo");
-	CallF(m_coldisp[COL_SPHERE_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_SPHERE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
 	CallF(m_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1);
 
 	m_coldisp[COL_BOX_INDEX] = new CModel();
@@ -4406,7 +4406,7 @@ int CBone::LoadCapsuleShape(ID3D10Device* pdev)
 		return 1;
 	}
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"box.mqo");
-	CallF(m_coldisp[COL_BOX_INDEX]->LoadMQO(pdev, wfilename, 0, 1.0f, 0), return 1);
+	CallF(m_coldisp[COL_BOX_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
 	CallF(m_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1);
 
 	return 0;

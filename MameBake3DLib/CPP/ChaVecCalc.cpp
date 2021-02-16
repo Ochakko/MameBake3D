@@ -3,7 +3,7 @@
 #include <math.h>
 
 
-//#ifdef CONVD3DX9
+//#ifdef CONVD3DX11
 //#include <d3dcommon.h>
 //#include <dxgi.h>
 //#include <d3d10_1.h>
@@ -636,6 +636,12 @@ ChaVector3::ChaVector3(float srcx, float srcy, float srcz)
 	y = srcy;
 	z = srcz;
 }
+ChaVector3::ChaVector3(DirectX::XMVECTOR v)
+{
+	x = v.m128_f32[0];
+	y = v.m128_f32[1];
+	z = v.m128_f32[2];
+}
 
 ChaVector3::~ChaVector3()
 {
@@ -740,27 +746,48 @@ ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, floa
 
 }
 
-#ifdef CONVD3DX9
-ChaMatrix::ChaMatrix(D3DXMATRIX m) {
-	_11 = m._11;
-	_12 = m._12;
-	_13 = m._13;
-	_14 = m._14;
+#ifdef CONVD3DX11
+ChaMatrix::ChaMatrix(DirectX::XMMATRIX m) {
+	_11 = m.r[0].m128_f32[0];
+	_12 = m.r[0].m128_f32[1];
+	_13 = m.r[0].m128_f32[2];
+	_14 = m.r[0].m128_f32[3];
 
-	_21 = m._21;
-	_22 = m._22;
-	_23 = m._23;
-	_24 = m._24;
+	_21 = m.r[1].m128_f32[0];
+	_22 = m.r[1].m128_f32[1];
+	_23 = m.r[1].m128_f32[2];
+	_24 = m.r[1].m128_f32[3];
 
-	_31 = m._31;
-	_32 = m._32;
-	_33 = m._33;
-	_34 = m._34;
+	_31 = m.r[2].m128_f32[0];
+	_32 = m.r[2].m128_f32[1];
+	_33 = m.r[2].m128_f32[2];
+	_34 = m.r[2].m128_f32[3];
 
-	_41 = m._41;
-	_42 = m._42;
-	_43 = m._43;
-	_44 = m._44;
+	_41 = m.r[3].m128_f32[0];
+	_42 = m.r[3].m128_f32[1];
+	_43 = m.r[3].m128_f32[2];
+	_44 = m.r[3].m128_f32[3];
+
+	//_11 = m.r[0].m128_f32[0];
+	//_12 = m.r[1].m128_f32[0];
+	//_13 = m.r[2].m128_f32[0];
+	//_14 = m.r[3].m128_f32[0];
+
+	//_21 = m.r[0].m128_f32[1];
+	//_22 = m.r[1].m128_f32[1];
+	//_23 = m.r[2].m128_f32[1];
+	//_24 = m.r[3].m128_f32[1];
+
+	//_31 = m.r[0].m128_f32[2];
+	//_32 = m.r[1].m128_f32[2];
+	//_33 = m.r[2].m128_f32[2];
+	//_34 = m.r[3].m128_f32[2];
+
+	//_41 = m.r[0].m128_f32[3];
+	//_42 = m.r[1].m128_f32[3];
+	//_43 = m.r[2].m128_f32[3];
+	//_44 = m.r[3].m128_f32[3];
+
 };
 #endif
 
@@ -929,7 +956,8 @@ int CQuaternion::SetParams(float srcw, float srcx, float srcy, float srcz)
 	z = srcz;
 	return 0;
 }
-int CQuaternion::SetParams(D3DXQUATERNION srcxq)
+#ifdef CONVD3DX11
+int CQuaternion::SetParams(DirectX::XMFLOAT4 srcxq)
 {
 	w = srcxq.w;
 	x = srcxq.x;
@@ -937,7 +965,7 @@ int CQuaternion::SetParams(D3DXQUATERNION srcxq)
 	z = srcxq.z;
 	return 0;
 }
-
+#endif
 
 int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, float phai)
 {
@@ -1528,41 +1556,39 @@ CQuaternion CQuaternion::Slerp(CQuaternion endq, int framenum, int frameno)
 	return retq;
 }
 
-
-int CQuaternion::Squad(CQuaternion q0, CQuaternion q1, CQuaternion q2, CQuaternion q3, float t)
-{
-
-	CQuaternion iq0, iq1, iq2, iq3;
-	D3DXQUATERNION qx0, qx1, qx2, qx3;
-	D3DXQUATERNION ax, bx, cx, resx;
-
-	q0.inv(&iq0);
-	q1.inv(&iq1);
-	q2.inv(&iq2);
-	q3.inv(&iq3);
-
-	Q2X(&qx0, iq0);
-	Q2X(&qx1, iq1);
-	Q2X(&qx2, iq2);
-	Q2X(&qx3, iq3);
-
-	D3DXQuaternionSquadSetup(&ax, &bx, &cx, &qx0, &qx1, &qx2, &qx3);
-	D3DXQuaternionSquad(&resx, &qx1, &ax, &bx, &cx, t);
-
-	D3DXQUATERNION iresx;
-	D3DXQuaternionInverse(&iresx, &resx);
-
-	this->x = iresx.x;
-	this->y = iresx.y;
-	this->z = iresx.z;
-	this->w = iresx.w;
-
-
-	return 0;
-}
-
-
-int CQuaternion::Q2X(D3DXQUATERNION* dstx)
+#ifdef CONVD3DX11
+//int CQuaternion::Squad(CQuaternion q0, CQuaternion q1, CQuaternion q2, CQuaternion q3, float t)
+//{
+//
+//	CQuaternion iq0, iq1, iq2, iq3;
+//	D3DXQUATERNION qx0, qx1, qx2, qx3;
+//	D3DXQUATERNION ax, bx, cx, resx;
+//
+//	q0.inv(&iq0);
+//	q1.inv(&iq1);
+//	q2.inv(&iq2);
+//	q3.inv(&iq3);
+//
+//	Q2X(&qx0, iq0);
+//	Q2X(&qx1, iq1);
+//	Q2X(&qx2, iq2);
+//	Q2X(&qx3, iq3);
+//
+//	D3DXQuaternionSquadSetup(&ax, &bx, &cx, &qx0, &qx1, &qx2, &qx3);
+//	D3DXQuaternionSquad(&resx, &qx1, &ax, &bx, &cx, t);
+//
+//	D3DXQUATERNION iresx;
+//	D3DXQuaternionInverse(&iresx, &resx);
+//
+//	this->x = iresx.x;
+//	this->y = iresx.y;
+//	this->z = iresx.z;
+//	this->w = iresx.w;
+//
+//
+//	return 0;
+//}
+int CQuaternion::Q2X(DirectX::XMFLOAT4* dstx)
 {
 	dstx->x = x;
 	dstx->y = y;
@@ -1572,7 +1598,7 @@ int CQuaternion::Q2X(D3DXQUATERNION* dstx)
 	return 0;
 }
 
-int CQuaternion::Q2X(D3DXQUATERNION* dstx, CQuaternion srcq)
+int CQuaternion::Q2X(DirectX::XMFLOAT4* dstx, CQuaternion srcq)
 {
 	dstx->x = srcq.x;
 	dstx->y = srcq.y;
@@ -1581,6 +1607,7 @@ int CQuaternion::Q2X(D3DXQUATERNION* dstx, CQuaternion srcq)
 
 	return 0;
 }
+#endif
 
 int CQuaternion::inv(CQuaternion* dstq)
 {
@@ -2896,7 +2923,6 @@ xaxis.z           yaxis.z           zaxis.z          0
 
 }
 
-
 /*
 D3DXMATRIX *D3DXMatrixOrthoOffCenterRH(          D3DXMATRIX *pOut,
 FLOAT l,
@@ -3175,27 +3201,37 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat)
 
 
 
-#ifdef CONVD3DX9
-D3DXVECTOR2 ChaVector2::D3DX()
+#ifdef CONVD3DX11
+DirectX::XMFLOAT2 ChaVector2::D3DX()
 {
-	D3DXVECTOR2 retv;
+	DirectX::XMFLOAT2 retv;
 	retv.x = x;
 	retv.y = y;
 	return retv;
 }
 
-D3DXVECTOR3 ChaVector3::D3DX()
+DirectX::XMFLOAT3 ChaVector3::D3DX()
 {
-	D3DXVECTOR3 retv;
+	DirectX::XMFLOAT3 retv;
 	retv.x = x;
 	retv.y = y;
 	retv.z = z;
 	return retv;
 }
-
-D3DXVECTOR4 ChaVector4::D3DX()
+DirectX::XMVECTOR ChaVector3::XMVECTOR(float w)
 {
-	D3DXVECTOR4 retv;
+	DirectX::XMVECTOR retv;
+	retv.m128_f32[0] = x;
+	retv.m128_f32[1] = y;
+	retv.m128_f32[2] = z;
+	retv.m128_f32[3] = w;
+	return retv;
+}
+
+
+DirectX::XMFLOAT4 ChaVector4::D3DX()
+{
+	DirectX::XMFLOAT4 retv;
 	retv.x = x;
 	retv.y = y;
 	retv.z = z;
@@ -3204,52 +3240,93 @@ D3DXVECTOR4 ChaVector4::D3DX()
 }
 
 
-ChaMatrix ChaMatrix::operator= (D3DXMATRIX m) {
-	this->_11 = m._11;
-	this->_12 = m._12;
-	this->_13 = m._13;
-	this->_14 = m._14;
+ChaMatrix ChaMatrix::operator= (DirectX::XMMATRIX m) {
+	this->_11 = m.r[0].m128_f32[0];
+	this->_12 = m.r[0].m128_f32[1];
+	this->_13 = m.r[0].m128_f32[2];
+	this->_14 = m.r[0].m128_f32[3];
 
-	this->_21 = m._21;
-	this->_22 = m._22;
-	this->_23 = m._23;
-	this->_24 = m._24;
+	this->_21 = m.r[1].m128_f32[0];
+	this->_22 = m.r[1].m128_f32[1];
+	this->_23 = m.r[1].m128_f32[2];
+	this->_24 = m.r[1].m128_f32[3];
 
-	this->_31 = m._31;
-	this->_32 = m._32;
-	this->_33 = m._33;
-	this->_34 = m._34;
+	this->_31 = m.r[2].m128_f32[0];
+	this->_32 = m.r[2].m128_f32[1];
+	this->_33 = m.r[2].m128_f32[2];
+	this->_34 = m.r[2].m128_f32[3];
 
-	this->_41 = m._41;
-	this->_42 = m._42;
-	this->_43 = m._43;
-	this->_44 = m._44;
+	this->_41 = m.r[3].m128_f32[0];
+	this->_42 = m.r[3].m128_f32[1];
+	this->_43 = m.r[3].m128_f32[2];
+	this->_44 = m.r[3].m128_f32[3];
+
+	//this->_11 = m.r[0].m128_f32[0];
+	//this->_12 = m.r[1].m128_f32[0];
+	//this->_13 = m.r[2].m128_f32[0];
+	//this->_14 = m.r[3].m128_f32[0];
+
+	//this->_21 = m.r[0].m128_f32[1];
+	//this->_22 = m.r[1].m128_f32[1];
+	//this->_23 = m.r[2].m128_f32[1];
+	//this->_24 = m.r[3].m128_f32[1];
+
+	//this->_31 = m.r[0].m128_f32[2];
+	//this->_32 = m.r[1].m128_f32[2];
+	//this->_33 = m.r[2].m128_f32[2];
+	//this->_34 = m.r[3].m128_f32[2];
+
+	//this->_41 = m.r[0].m128_f32[3];
+	//this->_42 = m.r[1].m128_f32[3];
+	//this->_43 = m.r[2].m128_f32[3];
+	//this->_44 = m.r[3].m128_f32[3];
+
 
 	return *this;
 };
 
-D3DXMATRIX ChaMatrix::D3DX()
+DirectX::XMMATRIX ChaMatrix::D3DX()
 {
-	D3DXMATRIX retm;
-	retm._11 = _11;
-	retm._12 = _12;
-	retm._13 = _13;
-	retm._14 = _14;
+	DirectX::XMMATRIX retm;
+	retm.r[0].m128_f32[0] = _11;
+	retm.r[0].m128_f32[1] = _12;
+	retm.r[0].m128_f32[2] = _13;
+	retm.r[0].m128_f32[3] = _14;
 
-	retm._21 = _21;
-	retm._22 = _22;
-	retm._23 = _23;
-	retm._24 = _24;
+	retm.r[1].m128_f32[0] = _21;
+	retm.r[1].m128_f32[1] = _22;
+	retm.r[1].m128_f32[2] = _23;
+	retm.r[1].m128_f32[3] = _24;
 
-	retm._31 = _31;
-	retm._32 = _32;
-	retm._33 = _33;
-	retm._34 = _34;
+	retm.r[2].m128_f32[0] = _31;
+	retm.r[2].m128_f32[1] = _32;
+	retm.r[2].m128_f32[2] = _33;
+	retm.r[2].m128_f32[3] = _34;
 
-	retm._41 = _41;
-	retm._42 = _42;
-	retm._43 = _43;
-	retm._44 = _44;
+	retm.r[3].m128_f32[0] = _41;
+	retm.r[3].m128_f32[1] = _42;
+	retm.r[3].m128_f32[2] = _43;
+	retm.r[3].m128_f32[3] = _44;
+
+	//retm.r[0].m128_f32[0] = _11;
+	//retm.r[1].m128_f32[0] = _12;
+	//retm.r[2].m128_f32[0] = _13;
+	//retm.r[3].m128_f32[0] = _14;
+
+	//retm.r[0].m128_f32[1] = _21;
+	//retm.r[2].m128_f32[1] = _22;
+	//retm.r[3].m128_f32[1] = _23;
+	//retm.r[4].m128_f32[1] = _24;
+
+	//retm.r[0].m128_f32[2] = _31;
+	//retm.r[1].m128_f32[2] = _32;
+	//retm.r[2].m128_f32[2] = _33;
+	//retm.r[3].m128_f32[2] = _34;
+
+	//retm.r[0].m128_f32[3] = _41;
+	//retm.r[1].m128_f32[3] = _42;
+	//retm.r[2].m128_f32[3] = _43;
+	//retm.r[3].m128_f32[3] = _44;
 
 	return retm;
 }

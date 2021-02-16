@@ -25,6 +25,9 @@
     <Filter Include="disp4">
       <UniqueIdentifier>{075be777-cf3c-4e74-b2cb-7cb03ea2c42a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DXUT_WIC">
+      <UniqueIdentifier>{b18eb0b5-ca15-44da-8437-acd4ef6f57fa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -597,11 +600,14 @@
     <ClCompile Include="..\CPP\BtObject.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
-    <ClCompile Include="..\CPP\stdafx.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
     <ClCompile Include="..\CPP\InfoWindow.cpp">
       <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\stdafx.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp">
+      <Filter>DXUT_WIC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1427,14 +1433,20 @@
     <ClInclude Include="..\INCLUDE\XMLIO.h">
       <Filter>disp4</Filter>
     </ClInclude>
-    <ClInclude Include="..\INCLUDE\stdafx.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
     <ClInclude Include="..\INCLUDE\GlobalVar.h">
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\InfoWindow.h">
       <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\stdafx.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DXUT\Core\DXUT.h">
+      <Filter>DXUT_WIC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DXUT\Core\WICTextureLoader.h">
+      <Filter>DXUT_WIC</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

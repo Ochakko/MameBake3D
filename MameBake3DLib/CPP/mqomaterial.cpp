@@ -842,7 +842,7 @@ int CMQOMaterial::GetColorrefEmissive( COLORREF* dstemissive )
 	return 0;
 }
 
-int CMQOMaterial::CreateTexture( WCHAR* dirname, int texpool )
+int CMQOMaterial::CreateTexture( ID3D11DeviceContext* pd3dImmediateContext, WCHAR* dirname, int texpool )
 {
 	SetCurrentDirectory( dirname );
 	
@@ -851,7 +851,8 @@ int CMQOMaterial::CreateTexture( WCHAR* dirname, int texpool )
 	if( m_tex[0] ){
 		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, m_tex, 256, wname, 256 );
 
-		g_texbank->AddTex( dirname, wname, m_transparent, texpool, 0, &m_texid );
+		//g_texbank->AddTex( dirname, wname, m_transparent, texpool, 0, &m_texid );
+		g_texbank->AddTex(pd3dImmediateContext, dirname, wname, m_transparent, texpool, &m_texid);
 	}
 
 	return 0;

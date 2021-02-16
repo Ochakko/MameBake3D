@@ -2,13 +2,28 @@
 
 #include <Windows.h>
 
-#ifdef CONVD3DX9
+#ifdef CONVD3DX11
+// Direct3D11 includes
 #include <d3dcommon.h>
 #include <dxgi.h>
-#include <d3d10_1.h>
-#include <d3d10.h>
+#include <d3d11_1.h>
+#include <d3d11_2.h>
 #include <d3dcompiler.h>
-#include <d3dx10.h>
+#ifdef USE_DIRECT3D11_3
+#include <d3d11_3.h>
+#endif
+#ifdef USE_DIRECT3D11_4
+#include <d3d11_4.h>
+#endif
+// DirectXMath includes
+#include <DirectXMath.h>
+#include <DirectXColors.h>
+// WIC includes
+#include <wincodec.h>
+// XInput includes
+#include <xinput.h>
+// HRESULT translation for Direct3D and other APIs 
+#include <dxerr.h>
 #endif
 
 //fpsチェックの時に有効にする。垂直同期をしないモード。

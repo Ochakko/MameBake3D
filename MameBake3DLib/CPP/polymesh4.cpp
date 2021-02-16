@@ -362,7 +362,9 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 					curv->uv = ChaVector2( 0.0f, 0.0f );
 				}
 
-				*( m_dispindex + setno * 3 + vcnt ) = setno * 3 + vcnt;
+				if (m_dispindex) {
+					*(m_dispindex + setno * 3 + vcnt) = setno * 3 + vcnt;
+				}
 			}
 
 		}
@@ -490,7 +492,7 @@ int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 	return 0;
 }
 
-int CPolyMesh4::SetPm3InfNoSkin( ID3D10Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist )
+int CPolyMesh4::SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist )
 {
 	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
 

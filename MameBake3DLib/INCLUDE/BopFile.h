@@ -1,7 +1,7 @@
 #ifndef BopFileH
 #define BopFileH
 
-#include <d3dx9.h>
+//#include <d3dx9.h>
 #include <coef.h>
 #include <XMLIO.h>
 
