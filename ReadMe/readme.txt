@@ -220,6 +220,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/17_1
+	DirectX11対応版にファイルをaddし忘れていたのを追加
+		Media/MameMedia/bonecircle.png
+	補足説明
+		DXUTのUIディレクトリは実行時にはexeのある場所へコピーする必要有
+		ControlFlowGuardはリリースビルドのみ
+
 2021/02/16
 	DirectX11対応
 	FBX SDK 2020.0.1対応
