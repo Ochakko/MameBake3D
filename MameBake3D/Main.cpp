@@ -1843,7 +1843,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	last2en = wcsrchr(path, TEXT('\\'));
 	*last2en = 0L;
 	wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
-	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.png", 0, 0), return 1);
+	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.dds", 0, 0), return 1);
 
 	///////
 	WCHAR mpath[MAX_PATH];

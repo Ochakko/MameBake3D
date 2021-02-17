@@ -358,6 +358,7 @@
     <ClCompile Include="..\CPP\TexElem.cpp" />
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
     <ClCompile Include="..\CPP\XMLIO.cpp" />
+    <ClCompile Include="..\DXUT\Core\DDSTextureLoader.cpp" />
     <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp" />
     <ClCompile Include="..\examples\MultiThreadedDemo\CommonRigidBodyMTBase.cpp" />
   </ItemGroup>
@@ -590,6 +591,7 @@
     <ClInclude Include="..\BTSRC\LinearMath\btTransform.h" />
     <ClInclude Include="..\BTSRC\LinearMath\btTransformUtil.h" />
     <ClInclude Include="..\BTSRC\LinearMath\btVector3.h" />
+    <ClInclude Include="..\DXUT\Core\DDSTextureLoader.h" />
     <ClInclude Include="..\DXUT\Core\DXUT.h" />
     <ClInclude Include="..\DXUT\Core\WICTextureLoader.h" />
     <ClInclude Include="..\examples\MultiThreadedDemo\CommonRigidBodyMTBase.h" />

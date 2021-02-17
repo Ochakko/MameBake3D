@@ -27,6 +27,7 @@
 //#include <d3dx10.h>
 
 #include "WICTextureLoader.h"
+#include "DDSTextureLoader.h"
 
 static int s_alloccnt = 0;
 
@@ -94,17 +95,53 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 	int miplevels = 0;
 	//int mipfilter = D3DX_FILTER_TRIANGLE;
 
-	HRESULT hr = DirectX::CreateWICTextureFromFile(
-		pdev,
-		pd3dImmediateContext,
-		m_name,
-		&m_ptex,
-		&m_ResView
+	HRESULT hr;
+
+	WCHAR patdds[256] = { 0L };
+	wcscpy_s(patdds, 256, L".dds");
+	WCHAR* findptr = wcsstr(m_name, patdds);
+	if (findptr) {
+		hr = DirectX::CreateDDSTextureFromFile(
+			pdev,
+			pd3dImmediateContext,
+			m_name,
+			&m_ptex,
+			&m_ResView
+			);
+	}else{
+		hr = DirectX::CreateWICTextureFromFile(
+			pdev,
+			pd3dImmediateContext,
+			m_name,
+			&m_ptex,
+			&m_ResView
 		);
+	}
+
 	if (FAILED(hr)) {
 		DbgOut(L"TexElem : CreateTexData : CreateTextureFromFileEx error!!! %x, path : %s, name : %s\r\n", hr, m_path, m_name);
 		_ASSERT( 0 );
 		return -1;
+	}
+
+	if (m_ResView) {
+		ID3D11Texture2D* texture2d = nullptr;
+		HRESULT hr = m_ptex->QueryInterface(&texture2d);
+		if (SUCCEEDED(hr))
+		{
+			D3D11_TEXTURE2D_DESC desc;
+			texture2d->GetDesc(&desc);
+			m_orgwidth = static_cast<float>(desc.Width);
+			m_orgheight = static_cast<float>(desc.Height);
+		}
+		else {
+			DbgOut(L"texelem : CreateTexData : GetImageInfoFromFile error !!! skip size setting %s\r\n", m_name);
+			_ASSERT(0);
+		}
+		texture2d->Release();
+	}
+	else {
+		_ASSERT(0);
 	}
 
 	m_width = m_orgwidth;

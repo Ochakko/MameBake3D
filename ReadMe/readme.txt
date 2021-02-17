@@ -220,6 +220,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/17_2
+	ddsファイルに対応
+
 2021/02/17_1
 	DirectX11対応版にファイルをaddし忘れていたのを追加
 		Media/MameMedia/bonecircle.png
