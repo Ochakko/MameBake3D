@@ -133,12 +133,13 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 			texture2d->GetDesc(&desc);
 			m_orgwidth = static_cast<float>(desc.Width);
 			m_orgheight = static_cast<float>(desc.Height);
+
+			texture2d->Release();
 		}
 		else {
 			DbgOut(L"texelem : CreateTexData : GetImageInfoFromFile error !!! skip size setting %s\r\n", m_name);
 			_ASSERT(0);
 		}
-		texture2d->Release();
 	}
 	else {
 		_ASSERT(0);

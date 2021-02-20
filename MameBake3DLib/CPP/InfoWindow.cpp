@@ -24,7 +24,7 @@ static LONG s_lThread = 1;
 static unsigned int s_dwMainId = 0;
 static DWORD s_mainthreadid = 0;
 //static DWORD WINAPI	ThreadFunc(LPVOID	lpThreadParam);
-static unsigned __stdcall ThreadFunc(void* pArguments);
+static unsigned __stdcall ThreadFunc_Info(void* pArguments);
 static HANDLE s_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
 
 
@@ -163,7 +163,7 @@ int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, i
 
 	//s_hThread = BEGINTHREADEX(
 	s_hThread = (HANDLE)_beginthreadex(
-		NULL, 0, &ThreadFunc,
+		NULL, 0, &ThreadFunc_Info,
 		(void*)this,
 		0, &s_dwMainId);
 		//CREATE_SUSPENDED, &s_dwMainId );
@@ -415,7 +415,7 @@ int InitializeInfoWindow(CREATESTRUCT* createWindowArgs)
 	return 0;
 }
 
-unsigned __stdcall ThreadFunc(LPVOID lpThreadParam)
+unsigned __stdcall ThreadFunc_Info(LPVOID lpThreadParam)
 {
 	static int isfirst = 1;
 	int ret;

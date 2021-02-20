@@ -22,6 +22,7 @@ MameBake3Dはデフォルトで相対IKです。
 
 メインウインドウの絶対IKをオンにすると
 絶対IKになる。
+
 */
 
 
@@ -54,6 +55,10 @@ MameBake3Dはデフォルトで相対IKです。
 #include <dbg.h>
 
 #include <shlobj.h> //shell
+#include <shlobj_core.h>
+#include <objbase.h>
+#include <Knownfolders.h>
+
 #include <Commdlg.h>
 //#include <ChaVecCalc.h>
 #include <GlobalVar.h>
@@ -2669,7 +2674,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	static int capcnt = 0;
 
 	WCHAR sz[100];
-	swprintf_s(sz, 100, L"スレッド数 : %d(%d) 個", g_numthread, gNumIslands);
+	swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
 	g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 
 
@@ -4061,14 +4066,14 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_SL_NUMTHREAD:
 			RollbackCurBoneNo();
 			g_numthread = (int)(g_SampleUI.GetSlider(IDC_SL_NUMTHREAD)->GetValue());
-			swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
+			swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
 			g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 			s_bpWorld->setNumThread(g_numthread);
 			break;
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
-		    swprintf_s( sz, 100, L"TopPos : %d ％", g_applyrate );
+		    swprintf_s( sz, 100, L"TopPos : %d", g_applyrate );
             g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
 			OnTimeLineSelectFromSelectedKey();
@@ -6763,7 +6768,7 @@ int OnModelMenu( int selindex, int callbymenu )
 
 	g_SampleUI.GetSlider( IDC_SPEED )->SetValue( (int)( g_dspeed * 100.0f ) );
 	WCHAR sz[100];
-	swprintf_s( sz, 100, L"Motion Speed: %0.4f", g_dspeed );
+	swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
     g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
 
 
@@ -9158,26 +9163,26 @@ int SetGpWndParams()
 
 int SaveProject()
 {
-	if( !s_bpWorld ){
+	if (!s_bpWorld) {
 		return 0;
 	}
 
-	if( s_modelindex.empty() ){
+	if (s_modelindex.empty()) {
 		return 0;
 	}
 
 	int dlgret;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVECHADLG ), 
-		s_3dwnd, (DLGPROC)SaveChaDlgProc );
-	if( (dlgret != IDOK) || !s_projectname[0] || !s_projectdir[0] ){
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SAVECHADLG),
+		s_3dwnd, (DLGPROC)SaveChaDlgProc);
+	if ((dlgret != IDOK) || !s_projectname[0] || !s_projectdir[0]) {
 		return 0;
 	}
 
 
 	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel){
+		if (curmodel) {
 			s_owpLTimeline->setCurrentTime(0.0, true);
 			s_owpEulerGraph->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
@@ -9193,7 +9198,7 @@ int SaveProject()
 
 
 	CChaFile chafile;
-	CallF( chafile.WriteChaFile( s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed ), return 1 );
+	CallF(chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed), return 1);
 
 	return 0;
 }
@@ -9202,101 +9207,103 @@ int SaveProject()
 LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 
-//	static WCHAR s_projectname[64] = {0L};
-//	static WCHAR s_projectdir[MAX_PATH] = {0L};
+	//	static WCHAR s_projectname[64] = {0L};
+	//	static WCHAR s_projectdir[MAX_PATH] = {0L};
 
 	BROWSEINFO bi;
 	LPITEMIDLIST curlpidl = 0;
-	WCHAR dispname[MAX_PATH] = {0L};
-	WCHAR selectname[MAX_PATH] = {0L};
+	WCHAR dispname[MAX_PATH] = { 0L };
+	WCHAR selectname[MAX_PATH] = { 0L };
 	int iImage = 0;
 
 	switch (msg) {
-        case WM_INITDIALOG:
-			if( s_model && s_model->GetCurMotInfo() ){
-				if( s_chasavename[0] ){
-					SetDlgItemText( hDlgWnd, IDC_PROJNAME, s_chasavename );
+	case WM_INITDIALOG:
+		if (s_model && s_model->GetCurMotInfo()) {
+			if (s_chasavename[0]) {
+				SetDlgItemText(hDlgWnd, IDC_PROJNAME, s_chasavename);
+			}
+			if (s_chasavedir[0]) {
+				SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_chasavedir);
+			}
+			else {
+				if (s_projectdir[0]) {
+					SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 				}
-				if( s_chasavedir[0] ){
-					SetDlgItemText( hDlgWnd, IDC_DIRNAME, s_chasavedir );
-				}else{
-					if( s_projectdir[0] ){
-						SetDlgItemText( hDlgWnd, IDC_DIRNAME, s_projectdir );
-					}else{
-						LPITEMIDLIST pidl;
+				else {
+					LPITEMIDLIST pidl;
 
-						HWND hWnd = NULL;
+					HWND hWnd = NULL;
 
-						IMalloc *pMalloc;
-						SHGetMalloc( &pMalloc );
+					IMalloc *pMalloc;
+					SHGetMalloc(&pMalloc);
 
-						if( SUCCEEDED(SHGetSpecialFolderLocation( s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl )) )
-						{ 
-							// パスに変換する
-							SHGetPathFromIDList( pidl, s_projectdir );
-							// 取得したIDLを解放する (CoTaskMemFreeでも可)
-							pMalloc->Free( pidl );              
-							SetDlgItemText( hDlgWnd, IDC_DIRNAME, s_projectdir );
-						}
-						pMalloc->Release();
+					if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+					{
+						// パスに変換する
+						SHGetPathFromIDList(pidl, s_projectdir);
+						// 取得したIDLを解放する (CoTaskMemFreeでも可)
+						pMalloc->Free(pidl);
+						SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 					}
+					pMalloc->Release();
 				}
 			}
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					GetDlgItemText( hDlgWnd, IDC_PROJNAME, s_projectname, 64 );
-					GetDlgItemText( hDlgWnd, IDC_DIRNAME, s_projectdir, MAX_PATH );
-					wcscpy_s( s_chasavename, 64, s_projectname );
-					wcscpy_s( s_chasavedir, MAX_PATH, s_projectdir );
-                    EndDialog(hDlgWnd, IDOK);
-                    break;
-                case IDCANCEL:
-					s_projectname[0] = 0L;
-					s_projectdir[0] = 0L;
-                    EndDialog(hDlgWnd, IDCANCEL);
-                    break;
-				case IDC_REFDIR:
-					bi.hwndOwner = hDlgWnd;
-					bi.pidlRoot = NULL;//!!!!!!!
-					bi.pszDisplayName = dispname;
-					//bi.lpszTitle = L"保存フォルダを選択してください。";
-					bi.lpszTitle = L"SelectDirectoryForSave";
-					//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-					bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-					bi.lpfn = NULL;
-					bi.lParam = 0;
-					bi.iImage = iImage;
+		}
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			GetDlgItemText(hDlgWnd, IDC_PROJNAME, s_projectname, 64);
+			GetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir, MAX_PATH);
+			wcscpy_s(s_chasavename, 64, s_projectname);
+			wcscpy_s(s_chasavedir, MAX_PATH, s_projectdir);
+			EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			s_projectname[0] = 0L;
+			s_projectdir[0] = 0L;
+			EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		case IDC_REFDIR:
+			bi.hwndOwner = hDlgWnd;
+			bi.pidlRoot = NULL;//!!!!!!!
+			bi.pszDisplayName = dispname;
+			//bi.lpszTitle = L"保存フォルダを選択してください。";
+			bi.lpszTitle = L"SelectDirectoryForSave";
+			//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+			bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEを指定すると固まる　謎
+			bi.lpfn = NULL;
+			bi.lParam = 0;
+			bi.iImage = iImage;
 
-					curlpidl = SHBrowseForFolder( &bi );
-					if( curlpidl ){
-						//::MessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
+			curlpidl = SHBrowseForFolder(&bi);
+			if (curlpidl) {
+				//::MessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
 
-						BOOL bret;
-						bret = SHGetPathFromIDList( curlpidl, selectname );
-						if( bret == FALSE ){
-							_ASSERT( 0 );
-							if( curlpidl )
-								CoTaskMemFree( curlpidl );
-							return 1;
-						}
+				BOOL bret;
+				bret = SHGetPathFromIDList(curlpidl, selectname);
+				if (bret == FALSE) {
+					_ASSERT(0);
+					if (curlpidl)
+						CoTaskMemFree(curlpidl);
+					return 1;
+				}
 
-						if( curlpidl )
-							CoTaskMemFree( curlpidl );
+				if (curlpidl)
+					CoTaskMemFree(curlpidl);
 
-						wcscpy_s( s_projectdir, MAX_PATH, selectname );
-						SetDlgItemText( hDlgWnd, IDC_DIRNAME, s_projectdir );
-					}
+				wcscpy_s(s_projectdir, MAX_PATH, selectname);
+				SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+			}
 
-					break;
-				default:
-                    return FALSE;
-            }
-        default:
-            return FALSE;
-    }
-    return TRUE;
+			break;
+		default:
+			return FALSE;
+		}
+	default:
+		return FALSE;
+	}
+	return TRUE;
 
 }
 
@@ -12302,7 +12309,7 @@ int CreateUtDialog()
 
 	pComboBox1->SetSelectedByData(ULongToPtr(0));
 
-	swprintf_s(sz, 100, L"TopPos : %d ％", g_applyrate);
+	swprintf_s(sz, 100, L"TopPos : %d", g_applyrate);
 	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
 	CEditRange::SetApplyRate(g_applyrate);
