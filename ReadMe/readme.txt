@@ -220,6 +220,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/22_2
+	動画【MameBake3D】煩雑なGUIをスイッチでオンオフ【プレートスイッチ】
+	https://youtu.be/DhcikN88D5A
+
 2021/02/22
 	３Dウインドウの下部にSpritePlateSwitchを５枚表示
 		SpritePlateSwitchをクリックすることにより３Dウインドウ内のGUIのオンオフ
@@ -2276,6 +2280,10 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+2021/02/22_2
+動画【MameBake3D】煩雑なGUIをスイッチでオンオフ【プレートスイッチ】
+https://youtu.be/DhcikN88D5A
+
 2021/02/06
 動画【MameBake3D】モーションにアクセントを【モーションブラシ】
 https://youtu.be/WqB03hMqbgc
