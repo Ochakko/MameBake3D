@@ -220,6 +220,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/22
+	３Dウインドウの下部にSpritePlateSwitchを５枚表示
+		SpritePlateSwitchをクリックすることにより３Dウインドウ内のGUIのオンオフ
+
 2021/02/21_1
 	Save-->Projectメニューにおいて参照ボタンを押すと固まる不具合に対応
 		新しいUIを指定するフラグを取り除くと動くようになった

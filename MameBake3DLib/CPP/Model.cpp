@@ -3574,7 +3574,9 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 							else{
 								difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 							}
-							CallF(bmarkptr->OnRender(pd3dImmediateContext, 0, difmult), return 1);
+							if (g_bonemarkflag) {
+								CallF(bmarkptr->OnRender(pd3dImmediateContext, 0, difmult), return 1);
+							}
 						}
 
 
@@ -3612,9 +3614,11 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 							difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 						}
 
-						//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
-						if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
-							CallF(boneptr->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return 1);
+						if (g_rigidmarkflag) {
+							//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
+							if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
+								CallF(boneptr->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return 1);
+							}
 						}
 					}
 

@@ -99,6 +99,7 @@ int g_applyendflag = 0;
 int g_slerpoffflag = 0;
 int g_absikflag = 0;
 int g_bonemarkflag = 1;
+int g_rigidmarkflag = 1;
 int g_pseudolocalflag = 1;
 int g_boneaxis = 1;//parent
 //int g_boneaxis = 0;//current
@@ -223,6 +224,7 @@ extern int g_applyendflag;
 extern int g_slerpoffflag;
 extern int g_absikflag;
 extern int g_bonemarkflag;
+extern int g_rigidmarkflag;
 extern int g_pseudolocalflag;
 extern int g_boneaxis;
 
