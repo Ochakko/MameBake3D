@@ -139,10 +139,12 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		else {
 			DbgOut(L"texelem : CreateTexData : GetImageInfoFromFile error !!! skip size setting %s\r\n", m_name);
 			_ASSERT(0);
+			return -1;
 		}
 	}
 	else {
 		_ASSERT(0);
+		return -1;
 	}
 
 	m_width = m_orgwidth;
