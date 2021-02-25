@@ -220,6 +220,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/02/26_1
+	サンプルの物理が以前と同じように動くように修正
+		DXUTのfps制御をVSYNCに設定
+		previewflag == 4のときに決め打ちしていたパラメータを設定ファイルに適用して保存
+			Media/TestData_20210226_1
+
 2021/02/24_2
 	動画【カエルボタン】プレートメニューでGUIを切り替え【プレートメニュー】
 	https://youtu.be/GW0OVv7_0SA

@@ -276,7 +276,8 @@ public:
         m_state.m_ExitAfterScreenShot = false;
         m_state.m_OverrideAdapterOrdinal = -1;
         m_state.m_OverrideOutput = -1;
-        m_state.m_OverrideForceVsync = -1;
+        //m_state.m_OverrideForceVsync = -1;//!!!!!! org
+		m_state.m_OverrideForceVsync = 1;//!!!!!!
         m_state.m_AutoChangeAdapter = true;
         m_state.m_ShowMsgBoxOnError = true;
         m_state.m_AllowShortcutKeysWhenWindowed = true;
