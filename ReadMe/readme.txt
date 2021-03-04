@@ -12,6 +12,16 @@
 	（インディー契約の条件については以下のページ）
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
+開発環境(2021/03/04時点)を書きます。
+FBXSDKは2020.2(VC2019)
+Intel OneAPI Base Toolkit v.2021のtbb(Intelのサイトに登録してダウンロードインストール)
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+VisualStudio2019Pro(VisualStudioSubscription)
+MayaIndie(Subscription FBXの確認はMayaでする)
+
+
 開発環境(2021/02/16時点)を書きます。
 FBXSDKは2020.0.1(Debugビルドも出来た)
 DirectX11 (Windows10 SDK or VisualStudioからインストール)
@@ -220,6 +230,17 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/04_2
+	VisualStudio2019Pro対応
+		開発環境(2021/03/04時点)を書きます。
+		FBXSDKは2020.2(VC2019)
+		Intel OneAPI Base Toolkit v.2021のtbb(Intelのサイトに登録してダウンロードインストール)
+		DirectX11 (Windows10 SDK or VisualStudioからインストール)
+		githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+		githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+		VisualStudio2019Pro(VisualStudioSubscription)
+		MayaIndie(Subscription FBXの確認はMayaでする)
+	
 2021/03/04_1
 	リターゲットウインドウをサイドウインドウに配置
 		カエルボタンを１回押すと物理パラメータメニュー

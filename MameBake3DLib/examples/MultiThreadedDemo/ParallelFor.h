@@ -58,7 +58,8 @@ subject to the following restrictions:
 
 #define __TBB_NO_IMPLICIT_LINKAGE 1
 #include <tbb/tbb.h>
-#include <tbb/task_scheduler_init.h>
+//#include <tbb/task_scheduler_init.h>
+#include <tbb/task_scheduler_observer.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 
@@ -147,7 +148,8 @@ public:
 #elif USE_PPL
         return Concurrency::GetProcessorCount();
 #elif USE_TBB
-        return tbb::task_scheduler_init::default_num_threads();
+        //return tbb::task_scheduler_observer::default_num_threads();//!!!!!!!!!!!!!!!!!
+        return 1;
 #endif
         return 1;
     }
@@ -184,7 +186,8 @@ public:
             delete m_tbbSchedulerInit;
             m_tbbSchedulerInit = NULL;
         }
-        m_tbbSchedulerInit = new tbb::task_scheduler_init( m_numThreads );
+        //m_tbbSchedulerInit = new tbb::task_scheduler_observer( m_numThreads );
+        m_tbbSchedulerInit = new tbb::task_scheduler_observer();
 #endif
         return m_numThreads;
     }
@@ -225,7 +228,7 @@ private:
     Api m_api;
     int m_numThreads;
 #if USE_TBB
-    tbb::task_scheduler_init* m_tbbSchedulerInit;
+    tbb::task_scheduler_observer* m_tbbSchedulerInit;
 #endif // #if USE_TBB
 };
 

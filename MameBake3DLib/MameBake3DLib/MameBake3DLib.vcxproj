@@ -28,26 +28,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CONVD3DX11;__MAMEBAKE3DLIB;_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;_DEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\tbb2018\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\..\Effects11;..\..\Effects11\Inc;..\..\Effects11\Binary;..\Effects11;..\Effects11\Inc;..\Effects11\Binary;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\..\Effects11;..\..\Effects11\Inc;..\..\Effects11\Binary;..\Effects11;..\Effects11\Inc;..\Effects11\Binary;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableSpecificWarnings>4305;</DisableSpecificWarnings>
@@ -105,7 +105,7 @@
       <AdditionalLibraryDirectories>..\..\..\tbb2018\lib\intel64\vc14;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\lib\vs2015\x64\release;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Debug;..\..\..\tbb2018\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.0.1\lib\vs2015\x64\debug;..\Glut;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.0.1\lib\vs2015\x64\debug;..\Glut;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;tbb.lib;tbbmalloc.lib;tbbmalloc_proxy.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
@@ -135,7 +135,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>CONVD3DX11;__MAMEBAKE3DLIB;_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_WINDOWS;NDEBUG;_LIB;FBXSDK_NEW_API;FBXSDK_SHARED;BT_USE_TBB;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\tbb2018\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\..\Effects11;..\..\Effects11\Inc;..\..\Effects11\Binary;..\Effects11;..\Effects11\Inc;..\Effects11\Binary;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\..\Effects11;..\..\Effects11\Inc;..\..\Effects11\Binary;..\Effects11;..\Effects11\Inc;..\Effects11\Binary;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableSpecificWarnings>4305;</DisableSpecificWarnings>
@@ -152,7 +152,7 @@
       <AdditionalLibraryDirectories>..\..\..\tbb2018\lib\intel64\vc14;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\lib\x64;C:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\lib\vs2015\x64\release;..\Glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Release;..\..\..\tbb2018\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.0.1\lib\vs2015\x64\release;..\Glut;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Release;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.0.1\lib\vs2015\x64\release;..\Glut;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;tbb.lib;tbbmalloc.lib;tbbmalloc_proxy.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
