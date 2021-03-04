@@ -60,6 +60,8 @@ ID3D11DepthStencilState *g_pDSStateZCmp = 0;
 ID3D11DepthStencilState *g_pDSStateZCmpAlways = 0;
 ID3D11ShaderResourceView* g_presview = 0;
 
+bool g_underloading = false;
+
 int	g_numthread = 3;
 double g_btcalccnt = 3.0;
 int g_dbgloadcnt = 0;
@@ -184,6 +186,8 @@ extern int g_endappflag;
 extern ID3D11DepthStencilState *g_pDSStateZCmp;
 extern ID3D11DepthStencilState *g_pDSStateZCmpAlways;
 extern ID3D11ShaderResourceView* g_presview;
+
+extern bool g_underloading;
 
 extern int	g_numthread;
 extern double g_btcalccnt;

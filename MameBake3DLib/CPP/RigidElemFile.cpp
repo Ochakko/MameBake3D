@@ -79,7 +79,7 @@ int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, int re
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		DbgOut( L"RigidElemFile : WriteRigidElemFile : file open error !!!\n" );
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 1;
 	}
 

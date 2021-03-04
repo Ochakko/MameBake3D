@@ -34,7 +34,9 @@ namespace OrgWinGUI{
 		for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
 			itr != partsList.end();
 			itr++) {
-			(*itr)->draw();
+			if ((*itr)->getParent() && IsWindow((*itr)->getParent()->hWnd)) {
+				(*itr)->draw();
+			}
 		}
 		endPaint();
 	}
@@ -51,6 +53,10 @@ namespace OrgWinGUI{
 		//	if ((s_paintcnt % 2) != 0) {
 		//		return;
 		//	}
+		//}
+
+		//if (g_underloading == true) {
+		//	return;
 		//}
 
 		//枠を書く
@@ -81,11 +87,15 @@ namespace OrgWinGUI{
 			//全ての内部パーツを描画
 			for (std::list<OrgWindowParts*>::iterator itr = partsList1.begin();
 				itr != partsList1.end(); itr++) {
-				(*itr)->draw();
+				if(*itr){
+					(*itr)->draw();
+				}
 			}
 			for (std::list<OrgWindowParts*>::iterator itr = partsList2.begin();
 				itr != partsList2.end(); itr++) {
-				(*itr)->draw();
+				if (*itr) {
+					(*itr)->draw();
+				}
 			}
 		}
 	}
@@ -99,7 +109,6 @@ namespace OrgWinGUI{
 		//		return;
 		//	}
 		//}
-
 
 		drawEdge();
 

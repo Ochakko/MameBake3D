@@ -676,6 +676,7 @@ static SPELEM s_sprig[2];//inactive, active
 static SPELEM s_spbt;
 static SPGUISW s_spguisw[5];
 static SPGUISW s_sprigidsw[4];
+static SPGUISW s_spretargetsw;
 static SPELEM s_spret2prev;
 static int s_oprigflag = 0;
 
@@ -783,10 +784,13 @@ static void GUISetVisible_Bullet();
 static void GUISetVisible_PhysicsIK();
 
 static void GUIRigidSetVisible(int srcplateno);
-static void ShowRigidWnd();
-static void ShowImpulseWnd();
-static void ShowGroundWnd();
-static void ShowDampAnimWnd();
+static void ShowRigidWnd(bool srcflag);
+static void ShowImpulseWnd(bool srcflag);
+static void ShowGroundWnd(bool srcflag);
+static void ShowDampAnimWnd(bool srcflag);
+
+static void GUIRetargetSetVisible(int srcplateno);
+static void ShowRetargetWnd(bool srcflag);
 
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
@@ -1124,7 +1128,7 @@ static int DispMotionWindow();
 static int DispToolWindow();
 static int DispObjPanel();
 static int DispModelPanel();
-static int DispConvBoneWindow();
+//static int DispConvBoneWindow();
 static int DispAngleLimitDlg();
 static int DispRotAxisDlg();
 static int DispCustomRigDlg(int rigno);
@@ -1202,6 +1206,8 @@ static int SetSpGUISWParams();
 static int PickSpGUISW(POINT srcpos);
 static int SetSpRigidSWParams();
 static int PickSpRigidSW(POINT srcpos);
+static int PickSpRetargetSW(POINT srcpos);
+static int SetSpRetargetSWParams();
 static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
@@ -1590,6 +1596,10 @@ void InitApp()
 		}
 		s_sprigidsw[0].state = true;
 	}
+
+	ZeroMemory(&s_spretargetsw, sizeof(SPGUISW));
+	s_spretargetsw.state = false;
+
 
 	g_bonecntmap.clear();
 
@@ -2072,6 +2082,14 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_sprigidsw[3].spriteOFF);
 	CallF(s_sprigidsw[3].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140OFF.png", 0, 0), return 1);
 
+	s_spretargetsw.spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spretargetsw.spriteON);
+	CallF(s_spretargetsw.spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140ON.png", 0, 0), return 1);
+	s_spretargetsw.spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spretargetsw.spriteOFF);
+	CallF(s_spretargetsw.spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140OFF.png", 0, 0), return 1);
+
+
 
 	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_I].sprite);
@@ -2276,6 +2294,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpAxisParams();
 	SetSpGUISWParams();
 	SetSpRigidSWParams();
+	SetSpRetargetSWParams();
 	SetSpCamParams();
 	SetSpRigParams();
 	SetSpBtParams();
@@ -2897,6 +2916,15 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	}
 
+	if (s_spretargetsw.spriteON) {
+		delete s_spretargetsw.spriteON;
+	}
+	s_spretargetsw.spriteON = 0;
+
+	if (s_spretargetsw.spriteOFF) {
+		delete s_spretargetsw.spriteOFF;
+	}
+	s_spretargetsw.spriteOFF = 0;
 
 
 	int spcno;
@@ -3557,7 +3585,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				return 0;
 				break;
 			case ID_40048:
-				DispConvBoneWindow();
+				//DispConvBoneWindow();
+				s_platemenukind = 2;
+				ShowRigidWnd(false);
+				ShowImpulseWnd(false);
+				ShowGroundWnd(false);
+				ShowDampAnimWnd(false);
+
+				ShowRetargetWnd(true);
 				return 0;
 				break;
 			case ID_40049:
@@ -3655,16 +3690,24 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		int spckind = 0;
 		int spguikind = 0;
 		int sprigidkind = 0;
-		if (s_platemenukind == 0) {
+		int spretargetkind = 0;
+		int platemenukind = s_platemenukind;
+		if (platemenukind == 0) {
 			spguikind = PickSpGUISW(ptCursor);
 			if (spguikind != 0) {
 				GUISetVisible(spguikind);
 			}
 		}
-		else if (s_platemenukind == 1) {
+		else if (platemenukind == 1) {
 			sprigidkind = PickSpRigidSW(ptCursor);
 			if (sprigidkind != 0) {
 				GUIRigidSetVisible(sprigidkind);
+			}
+		}
+		else if (platemenukind == 2) {
+			spretargetkind = PickSpRetargetSW(ptCursor);
+			if (spretargetkind != 0) {
+				GUIRetargetSetVisible(spretargetkind);
 			}
 		}
 		
@@ -4496,16 +4539,38 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				//	}
 				//	break;
 				case IDC_BT_RIGID:
-					ShowRigidWnd();
+					ShowRigidWnd(true);
+					ShowImpulseWnd(false);
+					ShowGroundWnd(false);
+					ShowDampAnimWnd(false);
+
+					ShowRetargetWnd(false);
+
 					break;
 				case IDC_BT_IMP:
-					ShowImpulseWnd();
+					ShowRigidWnd(false);
+					ShowImpulseWnd(true);
+					ShowGroundWnd(false);
+					ShowDampAnimWnd(false);
+
+					ShowRetargetWnd(false);
+
 					break;
 				case IDC_BT_GP:
-					ShowGroundWnd();
+					ShowRigidWnd(false);
+					ShowImpulseWnd(false);
+					ShowGroundWnd(true);
+					ShowDampAnimWnd(false);
+
+					ShowRetargetWnd(false);
 					break;
 				case IDC_BT_DAMP:
-					ShowDampAnimWnd();
+					ShowRigidWnd(false);
+					ShowImpulseWnd(false);
+					ShowGroundWnd(false);
+					ShowDampAnimWnd(true);
+
+					ShowRetargetWnd(false);
 					break;
 				default:
 					break;
@@ -5944,7 +6009,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	s_model->DestroyScene();
 	s_model->SetLoadedFlag(true);
 
-	ShowRigidWnd();
+	//ShowRigidWnd(true);
 
 	return newmodel;
 }
@@ -6056,7 +6121,7 @@ int AddTimeLine( int newmotid )
 
 		if (s_LtimelineWnd && s_owpPlayerButton) {
 			if (!s_LTSeparator) {
-				s_LTSeparator = new OWP_Separator(false);
+				s_LTSeparator = new OWP_Separator(s_LtimelineWnd, false);
 				s_LtimelineWnd->addParts(*s_LTSeparator);
 
 				if (s_owpLTimeline) {
@@ -6088,7 +6153,7 @@ int AddTimeLine( int newmotid )
 				}
 				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 1);//parentcheck ON by default
 				//s_LtimelineWnd->addParts(*s_parentcheck);
-				s_LTSeparator->addParts2(*s_parentcheck);
+				//s_LTSeparator->addParts2(*s_parentcheck);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!parentwindow libfbxdll error 2021/03/04 comment out tmp
 				s_parentcheck->setButtonListener([]() { refreshEulerGraph(); });
 
 
@@ -6746,28 +6811,28 @@ int DispModelPanel()
 	return 0;
 }
 
-int DispConvBoneWindow()
-{
-	if (!s_model){
-		return 0;
-	}
-
-	CreateConvBoneWnd();
-
-	if (!s_convboneWnd){
-		return 0;
-	}
-
-	if (s_dispconvbone){
-		s_convboneWnd->setVisible(false);
-		s_dispconvbone = false;
-	}
-	else{
-		s_convboneWnd->setVisible(true);
-		s_dispconvbone = true;
-	}
-	return 0;
-}
+//int DispConvBoneWindow()
+//{
+//	if (!s_model){
+//		return 0;
+//	}
+//
+//	CreateConvBoneWnd();
+//
+//	if (!s_convboneWnd){
+//		return 0;
+//	}
+//
+//	if (s_dispconvbone){
+//		s_convboneWnd->setVisible(false);
+//		s_dispconvbone = false;
+//	}
+//	else{
+//		s_convboneWnd->setVisible(true);
+//		s_dispconvbone = true;
+//	}
+//	return 0;
+//}
 
 
 int EraseKeyList()
@@ -7063,6 +7128,8 @@ int OnModelMenu( int selindex, int callbymenu )
 	swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
     g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
 
+
+	CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
 
 	return 0;
 }
@@ -8175,7 +8242,7 @@ int CreateModelPanel()
 		}
 	}
 
-	s_modelpanel.separator =  new OWP_Separator();									// セパレータ1（境界線による横方向2分割）
+	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel);									// セパレータ1（境界線による横方向2分割）
 
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
@@ -8297,7 +8364,7 @@ int CreateConvBoneWnd()
 		WindowPos(900, 200),		//位置
 		WindowSize(200, 100),	//サイズ
 		L"ConvBoneWnd",	//タイトル
-		NULL,					//親ウィンドウハンドル
+		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
@@ -8339,7 +8406,7 @@ int CreateConvBoneWnd()
 	_ASSERT(cbno == s_convbonenum);
 
 
-	s_convbonesp = new OWP_Separator(true);									// セパレータ1（境界線による横方向2分割）
+	s_convbonesp = new OWP_Separator(s_convboneWnd, true);									// セパレータ1（境界線による横方向2分割）
 
 	s_cbselmodel = new OWP_Button(L"モデルデータ選択ボタン");
 	s_cbselbvh = new OWP_Button(L"bvh選択ボタン");
@@ -8374,7 +8441,12 @@ int CreateConvBoneWnd()
 		s_convboneWnd->callRewrite();
 	});
 	s_cbselbvh->setButtonListener([](){
-		SetConvBoneBvh();
+		if (!s_convbone_model || (s_convbone_model != s_model)) {
+			::MessageBox(NULL, L"モデル選択メニューで形状側のモデルを選択してから再試行してください。", L"エラー", MB_OK);
+		}
+		else {
+			SetConvBoneBvh();
+		}
 		s_convboneWnd->callRewrite();
 	});
 	for (cbno = 0; cbno < s_convbonenum; cbno++){
@@ -8389,6 +8461,9 @@ int CreateConvBoneWnd()
 		ConvBoneConvert();
 	});
 
+	s_convboneWnd->setSize(WindowSize(450, 858));//880
+	s_convboneWnd->setPos(WindowPos(1200, 32));
+	s_convboneWnd->setVisible(false);
 
 	return 0;
 }
@@ -8550,6 +8625,8 @@ int SetConvBone( int cbno )
 
 	HWND parwnd;
 	parwnd = s_convboneWnd->getHWnd();
+	//parwnd = NULL;
+
 
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
@@ -8646,6 +8723,7 @@ int ConvBoneConvert()
 	if (!s_convbone_model || !s_convbone_bvh){
 		return 0;
 	}
+
 	if (s_model != s_convbone_model){
 		::MessageBox(NULL, L"モデル選択メニューで形状側のモデルを選択してから再試行してください。", L"エラー", MB_OK);
 		return 1;
@@ -8700,6 +8778,7 @@ int ConvBoneConvert()
 	s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 
 	g_underRetargetFlag = false;//!!!!!!!!!!!!
+
 
 	::MessageBox(NULL, L"コンバートが終了しました。", L"完了", MB_OK);
 
@@ -9006,7 +9085,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
 
 					//決め打ち
-					//s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
+					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
 					
 																	  
 																	  
@@ -9785,6 +9864,43 @@ int SetSpRigidSWParams()
 
 }
 
+int SetSpRetargetSWParams()
+{
+	if (!(s_spretargetsw.spriteON) || !(s_spretargetsw.spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	float spgwidth = 140.0f;
+	float spgheight = 28.0f;
+	int spgshift = 6;
+	s_spretargetsw.dispcenter.x = 120;
+	s_spretargetsw.dispcenter.y = 486;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spretargetsw.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spretargetsw.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+
+	if (s_spretargetsw.spriteON) {
+		CallF(s_spretargetsw.spriteON->SetPos(disppos), return 1);
+		CallF(s_spretargetsw.spriteON->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_spretargetsw.spriteOFF) {
+		CallF(s_spretargetsw.spriteOFF->SetPos(disppos), return 1);
+		CallF(s_spretargetsw.spriteOFF->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
 
 int SetSpGUISWParams()
 {
@@ -10089,6 +10205,53 @@ int PickSpRigidSW(POINT srcpos)
 	}
 	return kind;
 }
+
+int PickSpRetargetSW(POINT srcpos)
+{
+	int kind = 0;
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+
+	//ret2prev
+	int starty0 = s_spret2prev.dispcenter.y - 16;
+	int endy0 = starty0 + 32;
+	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
+		int startx0 = s_spret2prev.dispcenter.x - 16;
+		int endx0 = startx0 + 32;
+		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
+			kind = -2;
+		}
+	}
+
+	//spretargetsw
+	if (kind == 0) {
+		int starty = s_spretargetsw.dispcenter.y - 14;
+		int endy = starty + 28;
+
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			int startx = s_spretargetsw.dispcenter.x - 70;
+			int endx = startx + 140;
+
+			if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+				kind = 1;
+			}
+		}
+
+		//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
+		//	kind, srcpos.x, srcpos.y, starty, endy );
+		//int spacnt;
+		//for( spacnt = 0; spacnt < 3; spacnt++ ){
+		//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spaxis[spacnt].dispcenter.x, s_spaxis[spacnt].dispcenter.x + 32 );
+		//}
+	}
+	return kind;
+}
+
+
 
 int PickSpGUISW(POINT srcpos)
 {
@@ -13418,11 +13581,11 @@ int CreateSideMenuWnd()
 		true, true);					//サイズ変更の可否
 
 
-	s_sidemenusp = new OWP_Separator(true);
+	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true);
 	s_sidemenuWnd->addParts(*s_sidemenusp);
 
-	s_sidemenusp1 = new OWP_Separator(true);
-	s_sidemenusp2 = new OWP_Separator(true);
+	s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, true);
+	s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, true);
 	s_sidemenusp->addParts1(*s_sidemenusp1);
 	s_sidemenusp->addParts2(*s_sidemenusp2);
 
@@ -13442,25 +13605,45 @@ int CreateSideMenuWnd()
 
 	s_sidemenu_rigid->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			ShowRigidWnd();
+			s_platemenukind = 1;
+			ShowRetargetWnd(false);
+			ShowRigidWnd(true);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
 	});
 	s_sidemenu_impulse->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			ShowImpulseWnd();
+			s_platemenukind = 1;
+			ShowRetargetWnd(false);
+			ShowRigidWnd(false);
+			ShowImpulseWnd(true);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
 	});
 	s_sidemenu_ground->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			ShowGroundWnd();
+			s_platemenukind = 1;
+			ShowRetargetWnd(false);
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(true);
+			ShowDampAnimWnd(false);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
 	});
 	s_sidemenu_dampanim->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			ShowDampAnimWnd();
+			s_platemenukind = 1;
+			ShowRetargetWnd(false);
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(true);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
 	});
@@ -14505,6 +14688,25 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				}
 			}
 		}
+	}
+	else if (s_platemenukind == 2) {
+		if (s_spretargetsw.state) {
+			if (s_spretargetsw.spriteON) {
+				s_spretargetsw.spriteON->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			if (s_spretargetsw.spriteOFF) {
+				s_spretargetsw.spriteOFF->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+
 	}
 
 	if (s_spguisw[0].state) {
@@ -16183,7 +16385,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				return 0;
 				break;
 			case ID_40048:
-				DispConvBoneWindow();
+				//DispConvBoneWindow();
+				s_platemenukind = 2;
+				ShowRigidWnd(false);
+				ShowImpulseWnd(false);
+				ShowGroundWnd(false);
+				ShowDampAnimWnd(false);
+
+				ShowRetargetWnd(true);
 				return 0;
 				break;
 			case ID_40049:
@@ -16787,26 +16996,107 @@ int OnMouseMoveFunc()
 	return 0;
 }
 
+void GUIRetargetSetVisible(int srcplateno)
+{
+	if (srcplateno == -2) {
+		//plate menu select
+		int nextmenukind = 0;
+		if (s_platemenukind == 0) {
+			nextmenukind = 1;
+
+			ShowRetargetWnd(false);
+
+			ShowRigidWnd(true);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+		}
+		else if (s_platemenukind == 1) {
+			nextmenukind = 2;
+
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+
+			ShowRetargetWnd(true);
+		}
+		else if (s_platemenukind == 2) {
+			nextmenukind = 0;
+		}
+		s_platemenukind = nextmenukind;
+	}
+
+	if (s_platemenukind == 2) {
+		if (srcplateno == 1) {
+			ShowRetargetWnd(true);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+}
+
+
 void GUIRigidSetVisible(int srcplateno)
 {
 	if (srcplateno == -2) {
 		//plate menu select
-		s_platemenukind = !s_platemenukind;
+		int nextmenukind = 0;
+		if (s_platemenukind == 0) {
+			nextmenukind = 1;
+
+			ShowRetargetWnd(false);
+
+			ShowRigidWnd(true);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+		}
+		else if (s_platemenukind == 1) {
+			nextmenukind = 2;
+
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+
+			ShowRetargetWnd(true);
+		}
+		else if (s_platemenukind == 2) {
+			nextmenukind = 0;
+		}
+		s_platemenukind = nextmenukind;
 	}
-	else if (srcplateno == 1) {
-		ShowRigidWnd();
-	}
-	else if (srcplateno == 2) {
-		ShowImpulseWnd();
-	}
-	else if (srcplateno == 3) {
-		ShowGroundWnd();
-	}
-	else if (srcplateno == 4) {
-		ShowDampAnimWnd();
-	}
-	else {
-		_ASSERT(0);
+
+	if (s_platemenukind == 1) {
+		if (srcplateno == 1) {
+			ShowRigidWnd(true);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+		}
+		else if (srcplateno == 2) {
+			ShowRigidWnd(false);
+			ShowImpulseWnd(true);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+		}
+		else if (srcplateno == 3) {
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(true);
+			ShowDampAnimWnd(false);
+		}
+		else if (srcplateno == 4) {
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(true);
+		}
+		else {
+			_ASSERT(0);
+		}
 	}
 }
 
@@ -16816,25 +17106,52 @@ void GUISetVisible(int srcplateno)
 {
 	if (srcplateno == -2) {
 		//plate menu select
-		s_platemenukind = !s_platemenukind;
+		int nextmenukind = 0;
+		if (s_platemenukind == 0) {
+			nextmenukind = 1;
+
+			ShowRetargetWnd(false);
+
+			ShowRigidWnd(true);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+		}
+		else if (s_platemenukind == 1) {
+			nextmenukind = 2;
+
+			ShowRigidWnd(false);
+			ShowImpulseWnd(false);
+			ShowGroundWnd(false);
+			ShowDampAnimWnd(false);
+
+			ShowRetargetWnd(true);
+		}
+		else if (s_platemenukind == 2) {
+			nextmenukind = 0;
+		}
+		s_platemenukind = nextmenukind;
 	}
-	else if (srcplateno == 1) {
-		GUISetVisible_SpriteFK();
-	}
-	else if (srcplateno == 2) {
-		GUISetVisible_Left();
-	}
-	else if (srcplateno == 3) {
-		GUISetVisible_Left2nd();
-	}
-	else if (srcplateno == 4) {
-		GUISetVisible_Bullet();
-	}
-	else if (srcplateno == 5) {
-		GUISetVisible_PhysicsIK();
-	}
-	else {
-		_ASSERT(0);
+
+	if (s_platemenukind == 0) {
+		if (srcplateno == 1) {
+			GUISetVisible_SpriteFK();
+		}
+		else if (srcplateno == 2) {
+			GUISetVisible_Left();
+		}
+		else if (srcplateno == 3) {
+			GUISetVisible_Left2nd();
+		}
+		else if (srcplateno == 4) {
+			GUISetVisible_Bullet();
+		}
+		else if (srcplateno == 5) {
+			GUISetVisible_PhysicsIK();
+		}
+		else {
+			_ASSERT(0);
+		}
 	}
 }
 
@@ -16982,9 +17299,34 @@ void GUISetVisible_PhysicsIK()
 	s_spguisw[4].state = nextvisible;
 }
 
-void ShowRigidWnd()
+void ShowRetargetWnd(bool srcflag)
 {
 	if (s_model && (s_curboneno >= 0)) {
+		if (s_bpWorld) {
+			if (srcflag == true) {
+				//if (!s_convboneWnd) {
+					CreateConvBoneWnd();
+				//}
+				s_convboneWnd->setVisible(true);
+				s_spretargetsw.state = true;
+				s_dispconvbone = true;
+			}
+			else {
+				if (s_convboneWnd) {
+					s_convboneWnd->setVisible(false);
+				}
+				s_spretargetsw.state = false;
+				s_dispconvbone = false;
+			}
+		}
+	}
+}
+
+
+void ShowRigidWnd(bool srcflag)
+{
+	if (s_model && (s_curboneno >= 0)) {
+	//if (s_model) {
 		if (s_bpWorld) {
 			s_model->SetCurrentRigidElem(s_curreindex);
 
@@ -16992,91 +17334,94 @@ void ShowRigidWnd()
 			CallF(s_model->CreateBtObject(1), return);
 
 
-			s_impWnd->setVisible(0);
-			s_gpWnd->setVisible(0);
-			s_dmpanimWnd->setVisible(0);
+			//s_impWnd->setVisible(0);
+			//s_gpWnd->setVisible(0);
+			//s_dmpanimWnd->setVisible(0);
 
 			//s_ikkind = 3;
-			s_rigidWnd->setVisible(1);
+			s_rigidWnd->setVisible(srcflag);
 			SetRigidLeng();
 			RigidElem2WndParam();
 
-			s_sprigidsw[0].state = true;
-			s_sprigidsw[1].state = false;
-			s_sprigidsw[2].state = false;
-			s_sprigidsw[3].state = false;
+			s_sprigidsw[0].state = srcflag;
+			//s_sprigidsw[1].state = false;
+			//s_sprigidsw[2].state = false;
+			//s_sprigidsw[3].state = false;
 		}
 	}
 }
 
-void ShowImpulseWnd()
+void ShowImpulseWnd(bool srcflag)
 {
-	if (s_model && (s_curboneno >= 0)) {
+	//if (s_model && (s_curboneno >= 0)) {
+	if (s_model) {
 		if (s_bpWorld) {
 			CallF(s_model->CreateBtObject(0), return);
 
-			s_rigidWnd->setVisible(0);
-			s_gpWnd->setVisible(0);
-			s_dmpanimWnd->setVisible(0);
+			//s_rigidWnd->setVisible(0);
+			//s_gpWnd->setVisible(0);
+			//s_dmpanimWnd->setVisible(0);
 
 			//s_ikkind = 4;
-			s_impWnd->setVisible(1);
+			s_impWnd->setVisible(srcflag);
 
 			SetImpWndParams();
 			s_impWnd->callRewrite();
 
-			s_sprigidsw[0].state = false;
-			s_sprigidsw[1].state = true;
-			s_sprigidsw[2].state = false;
-			s_sprigidsw[3].state = false;
+			//s_sprigidsw[0].state = false;
+			s_sprigidsw[1].state = srcflag;
+			//s_sprigidsw[2].state = false;
+			//s_sprigidsw[3].state = false;
 
 		}
 	}
 }
-void ShowGroundWnd()
+void ShowGroundWnd(bool srcflag)
 {
-	if (s_model && (s_curboneno >= 0)) {
+	//if (s_model && (s_curboneno >= 0)) {
+	if (s_model) {
 		if (s_bpWorld) {
 			CallF(s_model->CreateBtObject(0), return);
 
-			s_rigidWnd->setVisible(0);
-			s_impWnd->setVisible(0);
-			s_dmpanimWnd->setVisible(0);
+			//s_rigidWnd->setVisible(0);
+			//s_impWnd->setVisible(0);
+			//s_dmpanimWnd->setVisible(0);
 
 
 			//s_ikkind = 5;
-			s_gpWnd->setVisible(1);
+			s_gpWnd->setVisible(srcflag);
 
 			SetGpWndParams();
 			s_gpWnd->callRewrite();
 
-			s_sprigidsw[0].state = false;
-			s_sprigidsw[1].state = false;
-			s_sprigidsw[2].state = true;
-			s_sprigidsw[3].state = false;
+			//s_sprigidsw[0].state = false;
+			//s_sprigidsw[1].state = false;
+			s_sprigidsw[2].state = srcflag;
+			//s_sprigidsw[3].state = false;
 		}
 	}
 }
-void ShowDampAnimWnd()
+void ShowDampAnimWnd(bool srcflag)
 {
-	if (s_model && (s_curboneno >= 0)) {
+	//if (s_model && (s_curboneno >= 0)) {
+	if (s_model) {
 		if (s_bpWorld) {
 			CallF(s_model->CreateBtObject(0), return);
 
-			s_rigidWnd->setVisible(0);
-			s_impWnd->setVisible(0);
-			s_gpWnd->setVisible(0);
+			//s_rigidWnd->setVisible(0);
+			//s_impWnd->setVisible(0);
+			//s_gpWnd->setVisible(0);
 
 			//s_ikkind = 6;
-			s_dmpanimWnd->setVisible(1);
+			s_dmpanimWnd->setVisible(srcflag);
 
 			SetDmpWndParams();
 			s_dmpanimWnd->callRewrite();
 
-			s_sprigidsw[0].state = false;
-			s_sprigidsw[1].state = false;
-			s_sprigidsw[2].state = false;
-			s_sprigidsw[3].state = true;
+			//s_sprigidsw[0].state = false;
+			//s_sprigidsw[1].state = false;
+			//s_sprigidsw[2].state = false;
+			s_sprigidsw[3].state = srcflag;
 		}
 	}
 }

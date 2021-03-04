@@ -351,10 +351,17 @@ static void s_dummyfunc();
 		//////////////////// Constructor/Destructor //////////////////////
 		OrgWindowParts(){
 			parentWindow=NULL;
+			isregistered = false;
 		}
 		OrgWindowParts( const OrgWindowParts& a ){
 			operator=(a);
 		}
+
+		bool getIsResigtered()
+		{
+			return isregistered;
+		}
+
 		virtual ~OrgWindowParts(){
 		}
 
@@ -460,6 +467,7 @@ static void s_dummyfunc();
 		color_tag baseColor;
 
 		HDCMaster *hdcM;
+		bool isregistered;
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : eƒEƒBƒ“ƒhƒE‚É“o˜^
@@ -474,15 +482,19 @@ static void s_dummyfunc();
 			baseColor.g= _baseG;
 			baseColor.b= _baseB;
 			hdcM= _hdcM;
+			isregistered = true;
 		}
 		//	Method : ˜g‚ð•`‰æ
 		void drawEdge(bool fill=true){
-			if(fill){
-				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),RGB(baseColor.r,baseColor.g,baseColor.b));
-			}else{
-				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
+			if (isregistered && hdcM) {
+				if (fill) {
+					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), RGB(baseColor.r, baseColor.g, baseColor.b));
+				}
+				else {
+					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+				}
+				Rectangle(hdcM->hDC, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
 			}
-			Rectangle(hdcM->hDC,pos.x,pos.y,pos.x+size.x,pos.y+size.y);
 		}
 	};
 
@@ -1243,8 +1255,8 @@ static void s_dummyfunc();
 	class OWP_Separator : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Separator(bool _divideSide=true){
-			parentWindow = NULL;
+		OWP_Separator(OrgWindow *_parentWindow, bool _divideSide=true){
+			parentWindow = _parentWindow;
 
 			currentPartsSizeY1= 0;
 			currentPartsSizeY2= 0;
@@ -1804,6 +1816,7 @@ static void s_dummyfunc();
 
 			open= true;
 			canClose= true;
+			parentWindow = NULL;
 		}
 		~OWP_GroupBox(){
 			delete[] name;
@@ -2172,6 +2185,7 @@ static void s_dummyfunc();
 
 			buttonPush=false;
 			buttonListener = [](){s_dummyfunc();};
+			parentWindow = NULL;
 		}
 		~OWP_Button(){
 			delete[] name;
@@ -2733,6 +2747,7 @@ static void s_dummyfunc();
 			selectIndex= 0;
 
 			selectListener = [](){s_dummyfunc();};
+			parentWindow = NULL;
 		}
 		~OWP_RadioButton(){
 		}
@@ -2895,6 +2910,7 @@ static void s_dummyfunc();
 			value= max(min(_value,maxValue),minValue);
 
 			drag=false;
+			parentWindow = NULL;
 		}
 
 		//////////////////////////// Method //////////////////////////////
@@ -3084,6 +3100,7 @@ static void s_dummyfunc();
 			dragSelect= false;
 			dragShift= false;
 			wheeldelta = 0;
+			parentWindow = NULL;
 		}
 		~OWP_Timeline(){
 			selectAll(true);
@@ -4706,6 +4723,7 @@ static void s_dummyfunc();
 			mineul = 0.0;
 			maxeul = 0.0;
 			isseteulminmax = false;
+			parentWindow = NULL;
 		}
 		~OWP_EulerGraph() {
 			selectAll(true);
@@ -7168,6 +7186,7 @@ static void s_dummyfunc();
 			currentPartsSizeY = 0;
 			open = true;
 			canClose = true;
+			parentWindow = NULL;
 
 		}
 		~OWP_ScrollWnd(){
