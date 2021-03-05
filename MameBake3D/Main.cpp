@@ -2310,6 +2310,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D11ReleasingSwapChain(void* pUserContext)
 {
+	UNREFERENCED_PARAMETER(pUserContext);
+
 	g_DialogResourceManager.OnD3D11ReleasingSwapChain();
 }
 
@@ -2319,10 +2321,36 @@ void CALLBACK OnD3D11ReleasingSwapChain(void* pUserContext)
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 {
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//DirectX11 : because of DX11 defferd destroy, some ref count will be alive.//!!!!!!!!!!!!!!!
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 	g_endappflag = 1;
 
-	//::KillTimer(s_mainhwnd, s_iktimerid);
+	UNREFERENCED_PARAMETER(pUserContext);
 
+	//::KillTimer(s_mainhwnd, s_iktimerid);
+	/*
+	g_DialogResourceManager.OnD3D11DestroyDevice();
+	g_D3DSettingsDlg.OnD3D11DestroyDevice();
+	//CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();
+	DXUTGetGlobalResourceCache().OnDestroyDevice();
+	SAFE_DELETE( g_pTxtHelper );
+
+	g_Mesh11.Destroy();
+
+	SAFE_RELEASE( g_pVertexLayout11 );
+	SAFE_RELEASE( g_pVertexBuffer );
+	SAFE_RELEASE( g_pIndexBuffer );
+	SAFE_RELEASE( g_pVertexShader );
+	SAFE_RELEASE( g_pPixelShader );
+	SAFE_RELEASE( g_pSamLinear );
+
+	SAFE_RELEASE( g_pcbVSPerObject );
+	SAFE_RELEASE( g_pcbPSPerObject );
+	SAFE_RELEASE( g_pcbPSPerFrame );
+	*/
 
 	if (g_pDSStateZCmp) {
 		g_pDSStateZCmp->Release();
@@ -2338,11 +2366,15 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();
 	DXUTGetGlobalResourceCache().OnDestroyDevice();
 	SAFE_DELETE(g_pTxtHelper);
+
 	//SAFE_RELEASE(g_pFont);
 	//SAFE_RELEASE(g_pSprite);
-	SAFE_RELEASE(g_pEffect);
 	//SAFE_RELEASE(g_pVertexLayout);
 	//g_Mesh10.Destroy();
+
+	SAFE_RELEASE(g_pEffect);
+
+	SAFE_RELEASE(g_blendState);//!!!!!
 
 	if (s_editrangehistory) {
 		delete[] s_editrangehistory;

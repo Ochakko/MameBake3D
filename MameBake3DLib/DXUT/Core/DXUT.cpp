@@ -3094,12 +3094,18 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
         auto pImmediateContext3 = DXUTGetD3D11DeviceContext3();
         SAFE_RELEASE(pImmediateContext3);
         GetDXUTState().SetD3D11DeviceContext3(nullptr);
+        if (pImmediateContext3) {
+            pImmediateContext3->Flush();
+        }
 #endif
 
 #ifdef USE_DIRECT3D11_4
         auto pImmediateContext4 = DXUTGetD3D11DeviceContext4();
         SAFE_RELEASE(pImmediateContext4);
         GetDXUTState().SetD3D11DeviceContext4(nullptr);
+        if (pImmediateContext4) {
+            pImmediateContext4->Flush();
+        }
 #endif
 
         // Report live objects
@@ -3126,12 +3132,18 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
             auto pd3dDevice3 = DXUTGetD3D11Device3();
             SAFE_RELEASE(pd3dDevice3);
             GetDXUTState().SetD3D11Device3(nullptr);
+            if (pImmediateContext3) {
+                pImmediateContext3->Flush();
+            }
 #endif
 
 #ifdef USE_DIRECT3D11_4
             auto pd3dDevice4 = DXUTGetD3D11Device4();
             SAFE_RELEASE(pd3dDevice4);
             GetDXUTState().SetD3D11Device4(nullptr);
+            if (pImmediateContext4) {
+                pImmediateContext4->Flush();
+            }
 #endif
 
             // Release the D3D device and in debug configs, displays a message box if there 

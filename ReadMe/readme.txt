@@ -230,6 +230,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/05_1
+	メモリリークに関する修正
+		blendstateのリリースし忘れ修正
+
+		DirectX11のDXUT(MicrosoftのOSSを使用)に関して（D3D11のデバイスなどに関して）は、
+		differred destroyという遅延解放処理のためにリファレンスカウンタが残っているようにみえることがあるとのこと
+
 2021/03/04_2
 	VisualStudio2019Pro対応
 		開発環境(2021/03/04時点)を書きます。
