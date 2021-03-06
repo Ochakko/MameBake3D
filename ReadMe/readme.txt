@@ -230,6 +230,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/06_1
+	プレートメニューのコードをRefactoring
+
+	プレートメニューのRetargetと同じ階層にLimitEulerを追加
+
+		
 2021/03/05_1
 	メモリリークに関する修正
 		blendstateのリリースし忘れ修正
