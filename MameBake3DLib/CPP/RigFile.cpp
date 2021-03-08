@@ -186,6 +186,18 @@ int CRigFile::WriteRig(CBone* srcbone)
 		CallF(Write2File("    <RigRigName>%s</RigRigName>\r\n", mrigrigname), return 1);		
 		CallF(Write2File("    <RigRigNo>%d</RigRigNo>\r\n", currigelem.rigrigno), return 1);
 
+
+		////for debug
+		//int cmpfront = strcmp(mrigname, "Front");
+		//if (cmpfront == 0) {
+		//	_ASSERT(0);
+		//}
+		//int cmpback = strcmp(mrigname, "Back");
+		//if (cmpback == 0) {
+		//	_ASSERT(0);
+		//}
+
+
 		CBone* rigelembone = m_model->GetBoneByID(currigelem.boneno);
 		if (!rigelembone){
 			_ASSERT(0);
@@ -454,6 +466,9 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 		}
 		else if (cmpz == 0){
 			dstrigelem->transuv[uvno].axiskind = AXIS_Z;
+		}
+		else {
+			_ASSERT(0);
 		}
 		float rate;
 		CallF(Read_Float(xmlbuf, str_startrate[uvno], str_endrate[uvno], &rate), return 1);
