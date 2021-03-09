@@ -279,6 +279,7 @@ static HWND s_mainhwnd = NULL;
 static int s_onragdollik = 0;
 static int s_physicskind = 0;
 static int s_platemenukind = 0;
+static int s_platemenuno = 1;
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -482,6 +483,11 @@ static OWP_Button* s_sidemenu_rigid = 0;
 static OWP_Button* s_sidemenu_impulse = 0;
 static OWP_Button* s_sidemenu_ground = 0;
 static OWP_Button* s_sidemenu_dampanim = 0;
+
+static OrgWindow* s_placefolderWnd = 0;
+static OWP_Label* s_placefolderlabel_1 = 0;
+static OWP_Label* s_placefolderlabel_2 = 0;
+static OWP_Label* s_placefolderlabel_3 = 0;
 
 static OrgWindow* s_rigidWnd = 0;
 static OWP_CheckBoxA* s_groupcheck = 0;
@@ -1065,6 +1071,7 @@ static int CreateImpulseWnd();
 static int CreateGPlaneWnd();
 static int CreateToolWnd();
 static int CreateLayerWnd();
+static int CreatePlaceFolderWnd();
 
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
@@ -1459,7 +1466,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	CreateUtDialog();
 	int spgno;
 	for (spgno = 0; spgno < 5; spgno++) {
-		GUISetVisible(spgno + 1);
+		GUISetVisible(spgno + 2);
 	}
 
 
@@ -1469,6 +1476,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		return 1;
 	}
 
+	CreatePlaceFolderWnd();
 	CreateTimelineWnd();
 	CreateToolWnd();
 	CreateLongTimelineWnd();
@@ -1500,6 +1508,9 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	FbxString lExtension = "so";
 #endif
 	s_psdk->LoadPluginsDirectory(lPath.Buffer(), "dll");
+
+	
+	GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 
 
 	//s_iktimerid = (int)::SetTimer(s_mainhwnd, s_iktimerid, 16, NULL);
@@ -2736,6 +2747,22 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_rigidWnd = 0;
 	}
 
+	if (s_placefolderlabel_1) {
+		delete s_placefolderlabel_1;
+		s_placefolderlabel_1 = 0;
+	}
+	if (s_placefolderlabel_2) {
+		delete s_placefolderlabel_2;
+		s_placefolderlabel_2 = 0;
+	}
+	if (s_placefolderlabel_3) {
+		delete s_placefolderlabel_3;
+		s_placefolderlabel_3 = 0;
+	}
+	if (s_placefolderWnd) {
+		delete s_placefolderWnd;
+		s_placefolderWnd = 0;
+	}
 
 
 	if (s_sidemenu_rigid) {
@@ -3636,7 +3663,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				return 0;
 				break;
 			case ID_40049:
-				DispAngleLimitDlg();
+				//DispAngleLimitDlg();
+				s_platemenukind = 2;
+				GUIMenuSetVisible(s_platemenukind, 2);
 				return 0;
 				break;
 			case ID_40050:
@@ -3749,6 +3778,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		GUIGetNextMenu(ptCursor, platemenukind, &nextplatemenukind, &nextplateno);
 		if ((nextplatemenukind >= 0) && (nextplateno != 0)) {
 			s_platemenukind = nextplatemenukind;
+			s_platemenuno = nextplateno;
 			GUIMenuSetVisible(s_platemenukind, nextplateno);
 		}
 
@@ -10319,22 +10349,22 @@ int PickSpGUISW(POINT srcpos)
 				if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 					switch (spgcnt) {
 					case 0:
-						kind = 1;
-						break;
-					case 1:
 						kind = 2;
 						break;
-					case 2:
+					case 1:
 						kind = 3;
 						break;
-					case 3:
+					case 2:
 						kind = 4;
 						break;
-					case 4:
+					case 3:
 						kind = 5;
 						break;
+					case 4:
+						kind = 6;
+						break;
 					default:
-						kind = 0;
+						kind = 1;
 						break;
 					}
 					break;
@@ -13687,6 +13717,43 @@ int CreateSideMenuWnd()
 	return 0;
 }
 
+int CreatePlaceFolderWnd()
+{
+	s_placefolderWnd = new OrgWindow(
+		0,
+		_T("PlaceFolderWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		//WindowPos(100, 200),		//位置
+		WindowPos(0, 0),
+		//WindowSize(450,880),		//サイズ
+		//WindowSize(450,680),		//サイズ
+		//WindowSize(450, 760),		//サイズ
+		WindowSize(450, 780),		//サイズ
+		_T("PlaceFolderWindow"),	//タイトル
+		s_mainhwnd,	//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true, true);					//サイズ変更の可否
+
+	s_placefolderlabel_1 = new OWP_Label(L"After Loading Model Data,");
+	s_placefolderlabel_2 = new OWP_Label(L"Click Frog Button, Change Plate Menu,");
+	s_placefolderlabel_3 = new OWP_Label(L"MainWindowGUI Menu->RigidBody Menu->Retarget Menu->MainWindowGUI Menu");
+
+	s_placefolderWnd->addParts(*s_placefolderlabel_1);
+	s_placefolderWnd->addParts(*s_placefolderlabel_2);
+	s_placefolderWnd->addParts(*s_placefolderlabel_3);
+
+	s_placefolderWnd->setSize(WindowSize(450, 858));//880
+	s_placefolderWnd->setPos(WindowPos(1200, 32));
+
+	s_placefolderWnd->callRewrite();						//再描画
+
+	s_placefolderWnd->setVisible(false);
+
+	return 0;
+
+}
+
 int CreateRigidWnd()
 {
 
@@ -14195,6 +14262,7 @@ int CreateRigidWnd()
 	s_rigidWnd->setPos(WindowPos(1200, 32));
 
 	s_rigidWnd->callRewrite();						//再描画
+	//s_rigidWnd->setVisible(false);
 
 	return 0;
 }
@@ -15059,7 +15127,8 @@ int DispCustomRigDlg(int rigno)
 	Bone2CustomRig(rigno);
 
 	if (!s_customrigdlg){
-		s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_3dwnd, (DLGPROC)CustomRigDlgProc);
+		//s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_3dwnd, (DLGPROC)CustomRigDlgProc);
+		s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_mainhwnd, (DLGPROC)CustomRigDlgProc);
 		if (!s_customrigdlg){
 			_ASSERT(0);
 			return 1;
@@ -15069,6 +15138,18 @@ int DispCustomRigDlg(int rigno)
 		CustomRig2Dlg(s_customrigdlg);
 	}
 	
+
+	SetParent(s_customrigdlg, s_mainhwnd);
+	SetWindowPos(
+		s_customrigdlg,
+		HWND_TOP,
+		1200,
+		32,
+		450,
+		858,
+		SWP_SHOWWINDOW
+	);
+
 	ShowWindow(s_customrigdlg, SW_SHOW);
 	UpdateWindow(s_customrigdlg);
 	
@@ -15478,6 +15559,9 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			DestroyWindow(s_customrigdlg);
 			s_customrigdlg = 0;
 		}
+
+		GUIMenuSetVisible(s_platemenukind, s_platemenuno);
+
 		break;
 	default:
 		return FALSE;
@@ -15728,11 +15812,13 @@ int BoneRClick(int srcboneno)
 
 				else if (menuid == ID_RMENU_0){
 					//新規
+					GUIMenuSetVisible(-1, -1);
 					currigno = -1;
 					DispCustomRigDlg(currigno);
 				}
 				else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 2))){
 					//設定
+					GUIMenuSetVisible(-1, -1);
 					currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM)];
 					DispCustomRigDlg(currigno);
 
@@ -15901,6 +15987,9 @@ int ToggleRig()
 				DestroyWindow(s_customrigdlg);
 				s_customrigdlg = 0;
 			}
+
+			GUIMenuSetVisible(s_platemenukind, s_platemenuno);
+
 		}
 	}
 	else{
@@ -15910,6 +15999,8 @@ int ToggleRig()
 			s_customrigdlg = 0;
 		}
 		s_pickinfo.buttonflag = 0;
+
+		GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 	}
 	return 0;
 }
@@ -17095,19 +17186,21 @@ void GUIRigidSetVisible(int srcplateno)
 
 void GUISetVisible(int srcplateno)
 {
-	if (srcplateno == 1) {
+	//srcplateno == 1 --> PlaceFolderWnd visible
+
+	if (srcplateno == 2) {
 		GUISetVisible_SpriteFK();
 	}
-	else if (srcplateno == 2) {
+	else if (srcplateno == 3) {
 		GUISetVisible_Left();
 	}
-	else if (srcplateno == 3) {
+	else if (srcplateno == 4) {
 		GUISetVisible_Left2nd();
 	}
-	else if (srcplateno == 4) {
+	else if (srcplateno == 5) {
 		GUISetVisible_Bullet();
 	}
-	else if (srcplateno == 5) {
+	else if (srcplateno == 6) {
 		GUISetVisible_PhysicsIK();
 	}
 	else {
@@ -17419,18 +17512,33 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		switch (s_platemenukind) {
 		case 0:
 			if ((srcplateno >= 1) && (srcplateno <= 5)) {
+				GUIRigidSetVisible(-2);
+				GUIRetargetSetVisible(-2);
 				GUISetVisible(srcplateno);
-				//GUIRigidSetVisible(-2);
-				//GUIRetargetSetVisible(-2);
+				if (s_placefolderWnd) {
+					s_placefolderWnd->setVisible(true);
+				}
 			}
 			else {
-				_ASSERT(0);
+				GUIRigidSetVisible(-2);
+				GUIRetargetSetVisible(-2);
+				//GUISetVisible(srcplateno);
+				if (s_placefolderWnd) {
+					s_placefolderWnd->setVisible(true);
+				}
 			}
 			break;
 		case 1:
 			if ((srcplateno >= 1) && (srcplateno <= 4)) {
-				GUIRigidSetVisible(srcplateno);
 				GUIRetargetSetVisible(-2);
+				if (s_customrigdlg) {
+					DestroyWindow(s_customrigdlg);
+					s_customrigdlg = 0;
+				}
+				if (s_placefolderWnd) {
+					s_placefolderWnd->setVisible(false);
+				}
+				GUIRigidSetVisible(srcplateno);
 			}
 			else {
 				_ASSERT(0);
@@ -17439,12 +17547,26 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		case 2:
 			if ((srcplateno >= 1) && (srcplateno <= 2)) {
 				GUIRigidSetVisible(-2);
+				if (s_customrigdlg) {
+					DestroyWindow(s_customrigdlg);
+					s_customrigdlg = 0;
+				}
+				if (s_placefolderWnd) {
+					s_placefolderWnd->setVisible(false);
+				}
 				GUIRetargetSetVisible(srcplateno);
 			}
 			break;
 		default:
 			break;
 		}
+	}
+	else if (srcmenukind == -1) {
+		if (s_placefolderWnd) {
+			s_placefolderWnd->setVisible(false);
+		}
+		GUIRetargetSetVisible(-2);
+		GUIRigidSetVisible(-2);
 	}
 	else {
 		_ASSERT(0);
@@ -17459,7 +17581,7 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 	if ((srcmenukind >= 0) && (srcmenukind <= 2)) {
 
 		int nextmenukind = srcmenukind;
-		int nextplateno = 0;
+		int nextplateno = 1;
 
 		int spckind = 0;
 		int spguikind = 0;
@@ -17471,13 +17593,13 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 				nextmenukind = 1;
 				nextplateno = 1;
 			}
-			else if (spguikind != 0) {
+			else if (spguikind >= 2) {
 				nextmenukind = srcmenukind;
 				nextplateno = spguikind;
 			}
 			else {
 				nextmenukind = -1;
-				nextplateno = 0;
+				nextplateno = 1;
 			}
 		}
 		else if (srcmenukind == 1) {
@@ -17492,7 +17614,7 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 			}
 			else {
 				nextmenukind = -1;
-				nextplateno = 0;
+				nextplateno = 1;
 			}
 		}
 		else if (srcmenukind == 2) {
@@ -17507,7 +17629,7 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 			}
 			else {
 				nextmenukind = -1;
-				nextplateno = 0;
+				nextplateno = 1;
 			}
 		}
 
@@ -17517,7 +17639,7 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 	else {
 		_ASSERT(0);
 		*dstmenukind = -1;
-		*dstplateno = 0;
+		*dstplateno = 1;
 	}
 }
 

@@ -235,6 +235,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/09_3
+	On Selecting RightClickRigMenu, RigSettingWindow is set to SideWindow.
+	At First, PlaceFolderWindow is set to SideWindow.	
+
 2021/03/09_2
 	Rig Sprite is displayed when RightClickRigExecutionMenu is selected too.
 
