@@ -21,6 +21,11 @@ githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
 VisualStudio2019Pro(VisualStudioSubscription)
 MayaIndie(Subscription FBXの確認はMayaでする)
 
+2017/12/17コミット分から
+bullet physicsのバージョンが2.86になりました。
+http://bulletphysics.org/wordpress/
+
+
 
 開発環境(2021/02/16時点)を書きます。
 FBXSDKは2020.0.1(Debugビルドも出来た)
@@ -230,6 +235,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/09_1
+	Display GUIText in English.
+
+
 2021/03/08_1
 	Mediaフォルダの中のサンプルデータの修正
 		リグ設定ファイル　yuri_12_1_walk.fbx.rig　の修正

@@ -5423,7 +5423,7 @@ int OpenREFile()
 	}
 
 	if( s_model->GetRigidElemInfoSize() >= (MAXRENUM - 1) ){
-		::MessageBox( s_3dwnd, L"これ以上読み込めません。", L"制限数オーバー(９９個まで)", MB_OK );
+		::MessageBox( s_3dwnd, L"Can't Load More.", L"Overflow Loading(Limit under 99 files)", MB_OK );
 		return 0;
 	}
 
@@ -5473,7 +5473,7 @@ int SaveImpFile()
 		return 0;
 	}
 	if( s_rgdindex < 0 ){
-		::MessageBox( s_3dwnd, L"ラグドール設定のimpulseしか保存できません。\nラグドール設定してから再試行してください。", L"準備エラー", MB_OK );
+		::MessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"Error Of Prepairation", MB_OK );
 		return 0;
 	}
 
@@ -6854,7 +6854,8 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 {
 	int motnum = (int)s_tlarray.size();
 	if( motnum >= MAXMOTIONNUM ){
-		MessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
+		::MessageBox(s_3dwnd, L"Can't Load More.", L"Overflow Loading", MB_OK);
+		//MessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
 		return 0;
 	}
 
@@ -7152,14 +7153,14 @@ int OnREMenu( int selindex, int callbymenu )
 	}
 
 	if( (selindex < 0) || !s_model ){
-		AppendMenu(s_remenu, MF_STRING, 62000, L"読み込んでいません" );
+		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
 		return 0;//!!!!!!!!!
 	}
 
 	cReSets = s_model->GetRigidElemInfoSize();
 	if( cReSets <= 0 ){
 		s_curreindex = -1;
-		AppendMenu(s_remenu, MF_STRING, 62000, L"読み込んでいません" );
+		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -7199,14 +7200,14 @@ int OnRgdMenu( int selindex, int callbymenu )
 	}
 
 	if( (selindex < 0) || !s_model ){
-		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"読み込んでいません" );
+		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded" );
 		return 0;//!!!!!!!!!
 	}
 
 	cReSets = s_model->GetRigidElemInfoSize();
 	if( cReSets <= 0 ){
 		s_rgdindex = -1;
-		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"読み込んでいません" );
+		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded" );
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -7241,14 +7242,14 @@ int OnImpMenu( int selindex )
 	}
 
 	if( (selindex < 0) || !s_model ){
-		AppendMenu(s_impmenu, MF_STRING, 64500, L"読み込んでいません" );
+		AppendMenu(s_impmenu, MF_STRING, 64500, L"NotLoaded" );
 		return 0;//!!!!!!!!!
 	}
 
 	cReSets = s_model->GetImpInfoSize();
 	if( cReSets <= 0 ){
 		s_model->SetCurImpIndex( 0 );
-		AppendMenu(s_impmenu, MF_STRING, 64500, L"読み込んでいません" );
+		AppendMenu(s_impmenu, MF_STRING, 64500, L"NotLoaded" );
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -7710,7 +7711,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			g_tmpmqomult = 1.0f;
 			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
-			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"参照ボタンを押してファイルを指定してください。" );
+			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile." );
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
@@ -7775,7 +7776,7 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		ZeroMemory(g_tmpmqopath, sizeof(WCHAR)* MULTIPATH);
 		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 		SetDlgItemText(hDlgWnd, IDC_EDITFILTER, strfilter);
-		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"参照ボタンを押してファイルを指定してください。");
+		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
@@ -8118,7 +8119,7 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			g_tmpmqomult = 1.0f;
 			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
-			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"参照ボタンを押してファイルを指定してください。" );
+			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile." );
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
@@ -8252,7 +8253,7 @@ int CreateModelPanel()
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		CModel* curmodel = s_modelindex[modelcnt].modelptr;
-		OWP_CheckBoxA *owpCheckBox= new OWP_CheckBoxA( L"表示/非表示", curmodel->GetModelDisp() );
+		OWP_CheckBoxA *owpCheckBox= new OWP_CheckBoxA( L"Show/Hide", curmodel->GetModelDisp() );
 		s_modelpanel.checkvec.push_back( owpCheckBox );
 	}
 
@@ -8395,7 +8396,7 @@ int CreateConvBoneWnd()
 			_ASSERT(s_modelbone[cbno]);
 			s_modelbone_bone[cbno] = curbone;
 
-			swprintf_s(bvhbonename, MAX_PATH, L"未設定_%03d", cbno);
+			swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
 			s_bvhbone[cbno] = new OWP_Button(bvhbonename);
 			_ASSERT(s_bvhbone[cbno]);
 			s_bvhbone_bone[cbno] = 0;
@@ -8413,11 +8414,11 @@ int CreateConvBoneWnd()
 
 	s_convbonesp = new OWP_Separator(s_convboneWnd, true);									// セパレータ1（境界線による横方向2分割）
 
-	s_cbselmodel = new OWP_Button(L"モデルデータ選択ボタン");
-	s_cbselbvh = new OWP_Button(L"bvh選択ボタン");
-	s_convboneconvert = new OWP_Button(L"コンバートボタン");
-	s_convbonemidashi[0] = new OWP_Label(L"骨入り形状側");
-	s_convbonemidashi[1] = new OWP_Label(L"モーション側");
+	s_cbselmodel = new OWP_Button(L"SelectShapeModel");
+	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
+	s_convboneconvert = new OWP_Button(L"ConvertButton");
+	s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
+	s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
 
 	s_convboneSCWnd->addParts(*s_convbonesp);
 
@@ -8447,7 +8448,7 @@ int CreateConvBoneWnd()
 	});
 	s_cbselbvh->setButtonListener([](){
 		if (!s_convbone_model || (s_convbone_model != s_model)) {
-			::MessageBox(NULL, L"モデル選択メニューで形状側のモデルを選択してから再試行してください。", L"エラー", MB_OK);
+			::MessageBox(NULL, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"Error", MB_OK);
 		}
 		else {
 			SetConvBoneBvh();
@@ -8655,7 +8656,7 @@ int SetConvBone( int cbno )
 	}
 
 	int setmenuid0 = ID_RMENU_0 + 0;
-	AppendMenu(submenu, MF_STRING, setmenuid0, L"未設定");
+	AppendMenu(submenu, MF_STRING, setmenuid0, L"NotSet");
 
 	int maxboneno = 0;
 	map<int, CBone*>::iterator itrbone;
@@ -8686,7 +8687,7 @@ int SetConvBone( int cbno )
 			if (modelbone){
 				s_convbonemap[modelbone] = 0;
 			}
-			s_bvhbone[cbno]->setName(L"未設定");
+			s_bvhbone[cbno]->setName(L"NotSet");
 		}
 		else{
 			int boneno = menuid - ID_RMENU_0 - 1;
@@ -8699,7 +8700,7 @@ int SetConvBone( int cbno )
 				if (modelbone){
 					s_convbonemap[modelbone] = 0;
 				}
-				s_bvhbone[cbno]->setName(L"未設定");
+				s_bvhbone[cbno]->setName(L"NotSet");
 
 				swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
 				::MessageBox(NULL, strmes, L"check", MB_OK);
@@ -8730,7 +8731,7 @@ int ConvBoneConvert()
 	}
 
 	if (s_model != s_convbone_model){
-		::MessageBox(NULL, L"モデル選択メニューで形状側のモデルを選択してから再試行してください。", L"エラー", MB_OK);
+		::MessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"エラー", MB_OK);
 		return 1;
 	}
 
@@ -8785,7 +8786,7 @@ int ConvBoneConvert()
 	g_underRetargetFlag = false;//!!!!!!!!!!!!
 
 
-	::MessageBox(NULL, L"コンバートが終了しました。", L"完了", MB_OK);
+	::MessageBox(NULL, L"Finish of convertion.", L"Finish", MB_OK);
 
 	return 0;
 }
@@ -9366,7 +9367,7 @@ int RigidElem2WndParam()
 		s_namelabel->setName( (WCHAR*)curbone->GetWBoneName() );
 	}else{
 		WCHAR noname[256];
-		wcscpy_s( noname, 256, L"ボーン名：not selected" );
+		wcscpy_s( noname, 256, L"BoneName：not selected" );
 		s_namelabel->setName( noname );
 	}
 	if( s_model ){
@@ -9405,25 +9406,25 @@ int SetRigidLeng()
 	CBtObject* curbto = s_model->FindBtObject( s_curboneno );
 	if( curbto ){
 		WCHAR curlabel[512];
-		swprintf_s( curlabel, 512, L"ボーン名：%s", curbto->GetEndBone()->GetWBoneName() );
+		swprintf_s( curlabel, 512, L"BonaName：%s", curbto->GetEndBone()->GetWBoneName() );
 		if( s_namelabel ){
 			s_namelabel->setName( curlabel );
 		}
 
 		WCHAR curlabel2[256];
-		swprintf_s( curlabel2, 256, L"ボーン長:%.3f[m]", curbto->GetBoneLeng() );
+		swprintf_s( curlabel2, 256, L"BoneLength:%.3f[m]", curbto->GetBoneLeng() );
 		if( s_lenglabel ){
 			s_lenglabel->setName( curlabel2 );
 		}
 	}else{
 		WCHAR curlabel[512];
-		wcscpy_s( curlabel, 512, L"ボーン名：not selected" );
+		wcscpy_s( curlabel, 512, L"BoneName：not selected" );
 		if( s_namelabel ){
 			s_namelabel->setName( curlabel );
 		}
 
 		WCHAR curlabel2[256];
-		wcscpy_s( curlabel2, 256, L"ボーン長：not selected" );
+		wcscpy_s( curlabel2, 256, L"BoneLength：not selected" );
 		if( s_lenglabel ){
 			s_lenglabel->setName( curlabel2 );
 		}
@@ -11202,7 +11203,7 @@ int DispAngleLimitDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_3dwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry after Saving FBX file.", L"Data Type Error", MB_OK);
 		return 0;
 	}
 
@@ -11487,7 +11488,7 @@ int DispRotAxisDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_3dwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving FBX file.", L"Data Type error", MB_OK);
 		return 0;
 	}
 
@@ -12651,7 +12652,7 @@ int OnFrameToolWnd()
 					}
 				}
 				else{
-					::MessageBox(s_3dwnd, L"フレーム範囲を指定してから再試行してください。", L"選択エラー", MB_OK);
+					::MessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"Selection Error", MB_OK);
 				}
 			}
 		}
@@ -13522,19 +13523,19 @@ int CreateDmpAnimWnd()
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450, 120),		//サイズ
 		WindowSize(450, 780),		//サイズ
-		_T("減衰率アニメウィンドウ"),	//タイトル
+		_T("AnimOfDumping"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_dmpgroupcheck = new OWP_CheckBoxA(L"全部設定ボタンで同グループ剛体に設定する。", 0);
-	s_dmpanimLlabel = new OWP_Label(L"１フレームあたりの位置ばね減衰率の減少率");
+	s_dmpgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidsMeansToSetToSameGroup", 0);
+	s_dmpanimLlabel = new OWP_Label(L"posSpringDumpingPerFrame");
 	s_dmpanimLSlider = new OWP_Slider(0.0, 1.0, 0.0);
-	s_dmpanimAlabel = new OWP_Label(L"１フレームあたりの角度ばね減衰率の減少率");
+	s_dmpanimAlabel = new OWP_Label(L"rotSpringDumpingPerFrame");
 	s_dmpanimASlider = new OWP_Slider(0.0, 1.0, 0.0);
-	s_dmpanimB = new OWP_Button(L"全ての剛体に設定");
+	s_dmpanimB = new OWP_Button(L"SetToAllRigids");
 
 	int slw2 = 500;
 	s_dmpanimLSlider->setSize(WindowSize(slw2, 40));
@@ -13709,72 +13710,72 @@ int CreateRigidWnd()
 		70, 50, 70,				//カラー
 		true, true);					//サイズ変更の可否
 
-	s_groupcheck = new OWP_CheckBoxA(L"全部設定ボタンで同グループ剛体に設定する。", 0);
+	s_groupcheck = new OWP_CheckBoxA(L"AllSetButtonMeansToSetToSameGroupRigids", 0);
 	s_shprateSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
-	s_massB = new OWP_Button(L"全剛体に質量設定");
-	s_rigidskip = new OWP_CheckBoxA(L"有効/無効", 1);
-	s_forbidrot = new OWP_CheckBoxA(L"回転禁止", 0);
-	s_allrigidenableB = new OWP_Button(L"全ての剛体を有効にする");
-	s_allrigiddisableB = new OWP_Button(L"全ての剛体以外を無効にする");
+	s_massB = new OWP_Button(L"SetMassToAllRigids");
+	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid", 1);
+	s_forbidrot = new OWP_CheckBoxA(L"ForbidRot", 0);
+	s_allrigidenableB = new OWP_Button(L"ValidateAllRigids");
+	s_allrigiddisableB = new OWP_Button(L"InvalidateAllRigids");
 	s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
 	s_btgscSlider = new OWP_Slider(10.0, 100.0, 0.0);
-	s_btgB = new OWP_Button(L"全ての剛体にBT重力設定");
-	s_btforce = new OWP_CheckBoxA(L"BTシミュ剛体にする", 0);
+	s_btgB = new OWP_Button(L"SetBtGravityToAllRigids");
+	s_btforce = new OWP_CheckBoxA(L"RigidBodySimulation", 0);
 
-	s_shplabel = new OWP_Label(L"剛体の太さ");
-	s_boxzlabel = new OWP_Label(L"直方体の奥行き");
-	s_massSLlabel = new OWP_Label(L"剛体の質量");
-	s_btglabel = new OWP_Label(L"BT剛体の重力");
-	s_btgsclabel = new OWP_Label(L"BT剛体の重力のスケール");
+	s_shplabel = new OWP_Label(L"Thickness");
+	s_boxzlabel = new OWP_Label(L"Depth");
+	s_massSLlabel = new OWP_Label(L"Mass");
+	s_btglabel = new OWP_Label(L"Gravity");
+	s_btgsclabel = new OWP_Label(L"ScaleOfGravity");
 
-	s_namelabel = new OWP_Label(L"ボーン名:????");
-	s_lenglabel = new OWP_Label(L"ボーン長:*****[m]");
+	s_namelabel = new OWP_Label(L"BonaName:????");
+	s_lenglabel = new OWP_Label(L"BoneLength:*****[m]");
 
 
-	s_kB = new OWP_Button(L"全ての剛体にばねパラメータ設定");
-	s_restB = new OWP_Button(L"全ての剛体に弾性と摩擦設定");
+	s_kB = new OWP_Button(L"SetSpringParamsToAllRigies");
+	s_restB = new OWP_Button(L"ElasticityAndFrictionToAllRigids");
 
-	s_colradio = new OWP_RadioButton(L"コーン形状");
-	s_colradio->addLine(L"カプセル形状");
-	s_colradio->addLine(L"球形状");
-	s_colradio->addLine(L"直方体形状");
+	s_colradio = new OWP_RadioButton(L"Cone");
+	s_colradio->addLine(L"Capsule");
+	s_colradio->addLine(L"Sphere");
+	s_colradio->addLine(L"Rectangular");
 
-	s_lkradio = new OWP_RadioButton(L"[位置ばね]へなへな");
-	s_lkradio->addLine(L"[位置ばね]結構ゆるい");
-	s_lkradio->addLine(L"[位置ばね]普通こんなもんだと思う");
-	s_lkradio->addLine(L"[位置ばね]カスタム値");
+	s_lkradio = new OWP_RadioButton(L"[posSpring]very weak");
+	s_lkradio->addLine(L"[posSpring]weak");
+	s_lkradio->addLine(L"[posSpring]regular");
+	s_lkradio->addLine(L"[posSpring]custom");
 
 	//s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 1e4);//60000
 	//s_lkSlider = new OWP_Slider(g_initcuslk, 1e10, 1e8);//60000
 	s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 1e2);//60000
-	s_lklabel = new OWP_Label(L"位置ばね カスタム値");
+	s_lklabel = new OWP_Label(L"posSpring customValue");
 
-	s_akradio = new OWP_RadioButton(L"[角度ばね]へなへな");
-	s_akradio->addLine(L"[角度ばね]結構ゆるい");
-	s_akradio->addLine(L"[角度ばね]普通こんなもんだと思う");
-	s_akradio->addLine(L"[角度ばね]カスタム値");
+	s_akradio = new OWP_RadioButton(L"[rotSpring]very weak");
+	s_akradio->addLine(L"[rotSpring]weak");
+	s_akradio->addLine(L"[rotSpring]regular");
+	s_akradio->addLine(L"[rotSpring]custom");
 
 	//s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
 	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300
-	s_aklabel = new OWP_Label(L"角度ばね カスタム値");
+	s_aklabel = new OWP_Label(L"rotSpring customValue");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
-	s_restlabel = new OWP_Label(L"剛体の弾性");
+	s_restlabel = new OWP_Label(L"RigidElasticity");
 	s_fricSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
-	s_friclabel = new OWP_Label(L"剛体の摩擦");
+	s_friclabel = new OWP_Label(L"RigidFriction");
 
 
-	s_ldmplabel = new OWP_Label(L"[位置ばね]減衰率");
-	s_admplabel = new OWP_Label(L"[角度ばね]減衰率");
+	s_ldmplabel = new OWP_Label(L"[posSpring]rateOfDumping");
+	s_admplabel = new OWP_Label(L"[rotSpring]rateOfDumping");
 	s_ldmpSlider = new OWP_Slider(g_l_dmp, 1.0, 0.0);
 	s_admpSlider = new OWP_Slider(g_a_dmp, 1.0, 0.0);
-	s_dmpB = new OWP_Button(L"全剛体に減衰率設定");
-	s_groupB = new OWP_Button(L"剛体の衝突グループID設定");
-	s_gcoliB = new OWP_Button(L"地面の衝突グループID設定");
+	s_dmpB = new OWP_Button(L"SetDumpingToAllRigids");
+	s_groupB = new OWP_Button(L"SetRigidGroupIDForConflict");
+	s_gcoliB = new OWP_Button(L"SetGroundGroupIDForConflict");
 
 	int slw = 350;
 
@@ -14204,17 +14205,17 @@ int CreateImpulseWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_impgroupcheck = new OWP_CheckBoxA(L"全部に設定ボタンで同じ剛体グループに設定", 0);
+	s_impgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidSMeansToSetSameGroup", 0);
 
 	s_impxSlider = new OWP_Slider(0.0, 50.0, -50.0);
 	s_impySlider = new OWP_Slider(0.0, 50.0, -50.0);
 	s_impzSlider = new OWP_Slider(0.0, 50.0, -50.0);
 	s_impscaleSlider = new OWP_Slider(1.0, 10.0, 0.0);
-	s_impxlabel = new OWP_Label(L"インパルスのX");
-	s_impylabel = new OWP_Label(L"インパルスのY");
-	s_impzlabel = new OWP_Label(L"インパルスのZ");
-	s_impscalelabel = new OWP_Label(L"インパルスのスケール");
-	s_impallB = new OWP_Button(L"全ての剛体にインパルスをセット");
+	s_impxlabel = new OWP_Label(L"Impulse X");
+	s_impylabel = new OWP_Label(L"Impulse Y");
+	s_impzlabel = new OWP_Label(L"Impulse Z");
+	s_impscalelabel = new OWP_Label(L"ScaleOfImpulse ");
+	s_impallB = new OWP_Button(L"SetImpulseToAllRigies");
 
 	int slw = 300;
 
@@ -14301,7 +14302,7 @@ int CreateGPlaneWnd()
 		//WindowSize(450, 320),		//サイズ
 		WindowSize(450, 780),		//サイズ
 		//WindowSize(200,110),		//サイズ
-		_T("物理地面ウィンドウ"),	//タイトル
+		_T("GroudOfPhysics"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		70, 50, 70,				//カラー
@@ -14311,15 +14312,15 @@ int CreateGPlaneWnd()
 	s_ghSlider = new OWP_Slider(-1.5, 5.0, -15.0);
 	s_gsizexSlider = new OWP_Slider(5.0, 50.0, -50.0);
 	s_gsizezSlider = new OWP_Slider(5.0, 50.0, -50.0);
-	s_ghlabel = new OWP_Label(L"物理地面の高さ");
-	s_gsizexlabel = new OWP_Label(L"X方向のサイズ");
-	s_gsizezlabel = new OWP_Label(L"Z方向のサイズ");
-	s_gpdisp = new OWP_CheckBoxA(L"表示する", 1);
+	s_ghlabel = new OWP_Label(L"Height");
+	s_gsizexlabel = new OWP_Label(L"SizeOfX");
+	s_gsizezlabel = new OWP_Label(L"SizeOfZ");
+	s_gpdisp = new OWP_CheckBoxA(L"Display", 1);
 
 	s_grestSlider = new OWP_Slider(0.5, 1.0, 0.0);
 	s_gfricSlider = new OWP_Slider(0.5, 1.0, 0.0);
-	s_grestlabel = new OWP_Label(L"地面の弾性");
-	s_gfriclabel = new OWP_Label(L"地面の摩擦");
+	s_grestlabel = new OWP_Label(L"Elasticity");
+	s_gfriclabel = new OWP_Label(L"Friction");
 
 
 	int slw = 300;
@@ -14877,8 +14878,8 @@ int InitMpFromTool()
 	int subsubnum = 3;
 	int setmenuid;
 	
-	WCHAR strinitmpsub[3][20] = { L"全ボーン", L"選択ボーン１つ", L"選択ボーンと子供ボーン" };
-	WCHAR strinitmpsubsub[3][20] = { L"回転と移動を初期化", L"回転を初期化", L"移動を初期化" };
+	WCHAR strinitmpsub[3][20] = { L"AllBones", L"OneSelectedBone", L"SelectedAndChildren" };
+	WCHAR strinitmpsubsub[3][20] = { L"InitRotAndPos", L"InitRot", L"InitPos" };
 
 	int subno;
 	for (subno = 0; subno < 3; subno++){
@@ -15029,7 +15030,7 @@ int DispCustomRigDlg(int rigno)
 		return 0;
 	}
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_3dwnd, L"座標軸が設定してあるデータでのみ機能します。\nFBXファイルを保存しなおしてから再試行してください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"Data Type Error", MB_OK);
 		return 0;
 	}
 
@@ -15102,7 +15103,7 @@ int CustomRig2Bone()
 	if (s_customrigbone){
 		int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 		if (isvalid == 0){
-			::MessageBox(s_3dwnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
+			::MessageBox(s_3dwnd, L"Invalid Parameter", L"Input Error", MB_OK);
 			return 0;
 		}
 		s_customrigbone->SetCustomRig(s_customrig);
@@ -15121,7 +15122,7 @@ int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr)
 	float tmpval;
 	tmpval = (float)_wtof(strval);
 	if ((tmpval < -100.0f) || (tmpval > 100.0f)){
-		::MessageBox(hDlgWnd, L"倍率は-100.0から100.0までです。", L"倍率範囲エラー", MB_OK);
+		::MessageBox(hDlgWnd, L"Limit Range From -100.0 to 100.", L"Out Of Limit Error", MB_OK);
 		*dstptr = 0.0f;
 		return 1;
 	}
@@ -15401,14 +15402,14 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					float tmprate;
 					ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
 					if (ret){
-						::MessageBox(hDlgWnd, L"横倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+						::MessageBox(hDlgWnd, L"Invalid VerticalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
 
 					ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
 					if (ret){
-						::MessageBox(hDlgWnd, L"縦倍率パラメータが不正です。倍率は-100.0から100.0です。", L"入力エラー", MB_OK);
+						::MessageBox(hDlgWnd, L"Invalid HolizontalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
@@ -15433,7 +15434,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 				int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 				if (isvalid == 0){
-					::MessageBox(hDlgWnd, L"パラメータが不正です。", L"入力エラー", MB_OK);
+					::MessageBox(hDlgWnd, L"Invalid Parameter", L"Input Error", MB_OK);
 					return 0;
 				}
 
@@ -15543,49 +15544,49 @@ int BoneRClick(int srcboneno)
 				//	AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint解除");
 				//}
 
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL, L"すべてのジョイントのMass0 ON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL, L"すべてのジョイントのMass0 OFF");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_UPPER, L"このジョイントより上階層Mass0 ON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_UPPER, L"このジョイントより上階層Mass0 OFF");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER, L"このジョイントより下階層Mass0 ON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER, L"このジョイントより下階層Mass0 OFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL, L"Mass0 ON tO AllJoints");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL, L"Mass0 OFF to AllJoints");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_UPPER, L"Mass0 ON to UpperJoints");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_UPPER, L"Mass0 OFF to UpperJoints");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER, L"Mass0 ON to LowerJoints");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER, L"Mass0 OFF to LowerJoints");
 
 				if (curbone->GetMass0() == 0){
-					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"一時Mass0設定");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"Tempolary Mass0 Set");
 				}
 				else{
-					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"一時Mass0解除");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0, L"Tempolary Mass0 Unset");
 				}
 
 				if (curbone->GetExcludeMv() == 0){
-					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"MV除外設定");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"Exclude MV Set");
 				}
 				else{
-					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"MV除外解除");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV, L"Exclude MV Unset");
 				}
 
-				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_ON_LOWER, L"このジョイントより下階層Kinematic ON");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_OFF_LOWER, L"このジョイントより下階層Kinematic OFF");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_ON_LOWER, L"Kinematic ON to LowerJoints");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_OFF_LOWER, L"Kinematic OFF to LowerJoints");
 
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				int forbidflag = 0;
 				if (curre) {
 					forbidflag = curre->GetForbidRotFlag();
 					if (forbidflag == 0) {
-						AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_ONE, L"このジョイントを子供とするボーン回転禁止");
+						AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_ONE, L"Forbid Rot Of ParentJoint.");
 					}
 					else {
-						AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE, L"このジョイントを子供とするボーン回転許可");
+						AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE, L"NotForbid Rot Of ParentJoint");
 					}
 
 
-					AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN, L"このジョイントより下階層回転禁止");
-					AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN, L"このジョイントより下階層回転許可");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN, L"Forbid Rot Of LowerJoints");
+					AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN, L"NotForbid Rot Of LowerJoints");
 
 				}
 
 
-				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"新規Rig");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"CreateNewRig");
 				int setmenuno = 1;
 				int rigno;
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++){
@@ -15615,8 +15616,8 @@ int BoneRClick(int srcboneno)
 
 						int subsubid1 = setmenuid + MAXRIGNUM;
 						int subsubid2 = setmenuid + MAXRIGNUM * 2;
-						AppendMenu(subsubmenu, MF_STRING, subsubid1, L"Rig設定");
-						AppendMenu(subsubmenu, MF_STRING, subsubid2, L"Rig実行");
+						AppendMenu(subsubmenu, MF_STRING, subsubid1, L"SettingOfRig");
+						AppendMenu(subsubmenu, MF_STRING, subsubid2, L"Execute Rig");
 
 						setmenuno++;
 					}
@@ -15770,9 +15771,9 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 
 	WCHAR strcombo[256];
 
-	SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"未設定");
+	SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"NotSet");
 	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_RESETCONTENT, 0, 0);
-	wcscpy_s(strcombo, 256, L"通常ボーン");
+	wcscpy_s(strcombo, 256, L"RegularBone");
 	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
 	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_SETCURSEL, 0, 0);
 
@@ -15781,7 +15782,7 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 		RIGELEM currigelem = s_customrig.rigelem[elemno];
 		int selrigrigcombono = 0;
 		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_RESETCONTENT, 0, 0);
-		wcscpy_s(strcombo, 256, L"通常ボーン");
+		wcscpy_s(strcombo, 256, L"RegularBone");
 		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
 		int setcombono = 1;
 
@@ -15932,13 +15933,13 @@ int GetSymRootMode()
 
 	int setmenuid;
 	setmenuid = ID_RMENU_0;
-	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンはコピー元と同じ");
+	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SameToSource");
 	setmenuid = ID_RMENU_0 + 1;
-	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンは位置と向き共対称");
+	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymPosAndSymDir");
 	setmenuid = ID_RMENU_0 + 2;
-	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンは向きだけ対称");
+	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymDir");
 	setmenuid = ID_RMENU_0 + 3;
-	AppendMenu(submenu, MF_STRING, setmenuid, L"ルートボーンは位置だけ対称");
+	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymPos");
 
 
 	POINT pt;
@@ -16643,7 +16644,7 @@ CInfoWindow* CreateInfoWnd()
 int RecalcBoneAxisX(CBone* srcbone)
 {
 	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
-		::MessageBox(s_3dwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
+		::MessageBox(s_3dwnd, L"Retry After Saving And Loading.", L"Data Type Error", MB_OK);
 		return 0;
 	}
 
@@ -16656,7 +16657,7 @@ void RecalcAxisX_All()
 {
 	if (s_model) {
 		if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
-			::MessageBox(s_3dwnd, L"旧型データを新型データにしてから(保存しなおして読み込んでから)\n実行しなおしてください。", L"データタイプエラー", MB_OK);
+			::MessageBox(s_3dwnd, L"Retry After Saving And Loding.", L"Data Type Error", MB_OK);
 			return;
 		}
 
