@@ -235,6 +235,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/09_2
+	Rig Sprite is displayed when RightClickRigExecutionMenu is selected too.
+
 2021/03/09_1
 	Display GUIText in English.
 

@@ -3730,6 +3730,20 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		int nextplatemenukind = 0;
 		int nextplateno = 0;
 		
+
+		//check and op rigflag : s_oprigflag turn to 1 when RClickRigMenu selected too.
+		int oprigdoneflag = 0;
+		if (s_oprigflag == 1) {
+			int pickrigflag = 0;
+			pickrigflag = PickSpRig(ptCursor);
+			if (pickrigflag == 1) {
+				RollbackCurBoneNo();
+				ToggleRig();
+				oprigdoneflag = 1;
+			}
+		}
+
+
 		//menukind : from 0 to 4
 		//plateno : from 1 to platenum
 		GUIGetNextMenu(ptCursor, platemenukind, &nextplatemenukind, &nextplateno);
@@ -3756,7 +3770,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				RollbackCurBoneNo();
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
-			} else if (pickrigflag == 1){
+			} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
 				RollbackCurBoneNo();
 				ToggleRig();
 			}else{
@@ -14760,6 +14774,14 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 		if (s_spbt.sprite) {
 			s_spbt.sprite->OnRender(pd3dImmediateContext);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	else if (s_oprigflag == 1) {
+		if (s_sprig[s_oprigflag].sprite) {
+			s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
 		}
 		else {
 			_ASSERT(0);
