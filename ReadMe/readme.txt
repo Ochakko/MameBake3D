@@ -235,6 +235,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/10_1
+	Keep Rig target On Click othoer. Rig Mode is OFF when Red Rig Sprite is clicked.	
+
 2021/03/09_3
 	On Selecting RightClickRigMenu, RigSettingWindow is set to SideWindow.
 	At First, PlaceFolderWindow is set to SideWindow.	

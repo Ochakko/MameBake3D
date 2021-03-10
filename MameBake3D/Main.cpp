@@ -3769,6 +3769,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				RollbackCurBoneNo();
 				ToggleRig();
 				oprigdoneflag = 1;
+					
+				//s_oprigflag == 1 のときのpickrigflag == 1　で　ToggleRigだから　rigはオフ
+				s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
+			}
+			else {
+				//s_oprigflag == 1 のときのpickrigflag == 0　だから　rigはオン
+				//s_curboneno はそのまま
 			}
 		}
 
@@ -3782,7 +3789,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			GUIMenuSetVisible(s_platemenukind, nextplateno);
 		}
 
-		s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
+		//s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
 		
 		int spckind = 0;
 		if (s_spguisw[0].state && ((spckind = PickSpCam(ptCursor)) != 0)) {
@@ -3809,7 +3816,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						CallF(s_model->PickBone(&s_pickinfo), return 1);
 					}
 					if (s_pickinfo.pickobjno >= 0){
-						s_curboneno = s_pickinfo.pickobjno;
+						s_curboneno = s_pickinfo.pickobjno;//!!!!!!!
 
 						if (s_owpTimeline){
 							s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
