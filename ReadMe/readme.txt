@@ -235,6 +235,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/03/12
+	Fix problem about Normal of FBX2020 saved with Maya2020.
+		Treatment of Normal Mapping Mode of FBX 2020.
+
+	Before Loading by Maya FBX File which is saved by MameBake3D, run next MEL script.
+		FBXProperty "Import|IncludeGrp|Geometry|OverrideNormalsLock" -v 1
+ 
 2021/03/10_1
 	Keep Rig target On Click othoer. Rig Mode is OFF when Red Rig Sprite is clicked.	
 

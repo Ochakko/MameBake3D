@@ -773,7 +773,6 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	lUVDiffuseElement->GetIndexArray().SetCount(facenum * 3);
 
 
-
 	vsetno = 0;
 	//int faceno;
 	for( faceno = 0; faceno < facenum; faceno++ ){

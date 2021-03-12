@@ -50,6 +50,8 @@ CPolyMesh4::~CPolyMesh4()
 }
 void CPolyMesh4::InitParams()
 {
+	m_normalmappingmode = 0;//0:polygonvertex, 1:controlpoint
+
 	m_orgpointnum = 0;
 	m_orgfacenum = 0;
 	m_facenum = 0;
@@ -144,7 +146,7 @@ int sortfunc_material( void *context, const void *elem1, const void *elem2)
 }
 
 
-int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
+int CPolyMesh4::CreatePM4(int normalmappingmode, int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat )
 {
 	m_orgpointnum = pointnum;
 	m_orgfacenum = facenum;
@@ -154,6 +156,7 @@ int CPolyMesh4::CreatePM4( int pointnum, int facenum, int normalleng, int uvleng
 	m_uvbuf = uvptr;
 	m_normalleng = normalleng;
 	m_uvleng = uvleng;
+	m_normalmappingmode = normalmappingmode;
 
 	CallF( SetTriFace( 0, &m_facenum ), return 1 );
 	if( m_facenum <= 0 ){
@@ -311,9 +314,11 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 
 		if( dispv ){
 			int vi[3] = {0, 2, 1};
+			int fbx2020NormalVi[3] = { 0, 1, 2 };
+
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
-				PM3DISPV* curv = dispv + (setno * 3 + vcnt);
+				PM3DISPV* curv = dispv + (setno * 3 + vcnt);//!!!!!!!!!!!!!!!!!!!!
 				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				// 0 2 1
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
@@ -330,8 +335,12 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				if( m_normal ){
 
 					if (m_normalleng == (m_facenum * 3)) {
-						//0 2 1 if•¶—Dæ
-						curv->normal = *(m_normal + setno * 3 + vi[vcnt]);
+						if (m_normalmappingmode == 0) {
+							curv->normal = *(m_normal + (setno * 3 + vi[vcnt]));//!!!!!! eByPolygonVertex : save with MameBake3D
+						}
+						else {
+							curv->normal = *(m_normal + (setno * 3 + vcnt));//!!!!!!!!!!! eByControlPoint : save with Maya FBX
+						}
 					}
 					else if( m_normalleng == m_orgpointnum ){
 						curv->normal = *(m_normal + vno);
@@ -344,17 +353,29 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				}
 
 				if( m_uvbuf ){
-
-					if (m_uvleng == (m_facenum * 3)){
+					if (m_uvleng == (m_facenum * 3)) {
 						//0 2 1 if•¶—Dæ
 						curv->uv = *(m_uvbuf + setno * 3 + vi[vcnt]);
 					}
-					else if(m_uvleng >= m_orgpointnum){//m_orgpointnum‚Ì‚Æ‚«‚Æm_orgpointnum * 2‚Ì‚Æ‚«
+					else if (m_uvleng >= m_orgpointnum) {//m_orgpointnum‚Ì‚Æ‚«‚Æm_orgpointnum * 2‚Ì‚Æ‚«
 						curv->uv = *(m_uvbuf + vno);
 					}
-					else{
+					else {
 						_ASSERT(0);
 					}
+
+
+
+					//if (m_uvleng == (m_facenum * 3)){
+					//	//0 2 1 if•¶—Dæ
+					//	curv->uv = *(m_uvbuf + setno * 3 + vi[vcnt]);
+					//}
+					//else if(m_uvleng >= m_orgpointnum){//m_orgpointnum‚Ì‚Æ‚«‚Æm_orgpointnum * 2‚Ì‚Æ‚«
+					//	curv->uv = *(m_uvbuf + vno);
+					//}
+					//else{
+					//	_ASSERT(0);
+					//}
 
 					//curv->uv.y = 1.0f - curv->uv.y;//•\Ž¦—p CModel::GetFBXMesh‚Å‚µ‚Ä‚¢‚é
 

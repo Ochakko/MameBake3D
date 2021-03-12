@@ -14269,7 +14269,7 @@ int CreateRigidWnd()
 	s_rigidWnd->setPos(WindowPos(1200, 32));
 
 	s_rigidWnd->callRewrite();						//Ä•`‰æ
-	//s_rigidWnd->setVisible(false);
+	s_rigidWnd->setVisible(false);
 
 	return 0;
 }
@@ -17193,9 +17193,10 @@ void GUIRigidSetVisible(int srcplateno)
 
 void GUISetVisible(int srcplateno)
 {
-	//srcplateno == 1 --> PlaceFolderWnd visible
-
-	if (srcplateno == 2) {
+	if (srcplateno == 1) {
+		//srcplateno == 1 --> PlaceFolderWnd visible
+	}
+	else if (srcplateno == 2) {
 		GUISetVisible_SpriteFK();
 	}
 	else if (srcplateno == 3) {
@@ -17529,7 +17530,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			else {
 				GUIRigidSetVisible(-2);
 				GUIRetargetSetVisible(-2);
-				//GUISetVisible(srcplateno);
+				//GUISetVisible(-2);
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
 				}

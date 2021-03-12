@@ -2461,7 +2461,10 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 		if ( mappingMode == FbxLayerElement::eByPolygonVertex ) {
 //DbgOut( L"GetFBXMesh : %s : mapping eByPolygonVertex\r\n", wname );
-		   if ( refMode == FbxLayerElement::eDirect ) {
+
+			newobj->SetNormalMappingMode(0);
+
+			if ( refMode == FbxLayerElement::eDirect ) {
 //DbgOut( L"GetFBXMesh : %s : ref eDirect\r\n", wname );
 
 				newobj->SetNormalLeng( normalNum );
@@ -2496,6 +2499,10 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 		   }
 		} else if ( mappingMode == FbxLayerElement::eByControlPoint ) {
 //DbgOut( L"GetFBXMesh : %s : mapping eByControlPoint\r\n", wname );
+
+			newobj->SetNormalMappingMode(1);
+
+
 		   if ( refMode == FbxLayerElement::eDirect ) {
 //DbgOut( L"GetFBXMesh : %s : ref eDirect\r\n", wname );
 
@@ -2512,6 +2519,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				}
 		   }else{
 //DbgOut( L"GetFBXMesh : %s : ref %d\r\n", wname, refMode );
+			   _ASSERT(0);
 		   }
 		} else {
 			_ASSERT( 0 );

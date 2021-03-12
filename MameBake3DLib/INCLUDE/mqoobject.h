@@ -245,6 +245,13 @@ public:
 		m_uvleng = srcval;
 	};
 
+	int GetNormalMappingMode() {
+		return m_normalmappingmode;//0:eByPolygonVertex, 1:eByControlPoint
+	};
+	void SetNormalMappingMode(int srcval) {
+		m_normalmappingmode = srcval;//0:eByPolygonVertex, 1:eByControlPoint
+	};
+
 	ChaVector2* GetUVBuf(){
 		return m_uvbuf;
 	};
@@ -376,6 +383,11 @@ private:
 	int m_shapenum;
 	std::map<std::string,float> m_shapeweight;
 	ChaVector3* m_mpoint;
+
+
+	//fbx GetFBXMesh()
+	int m_normalmappingmode;//0:eByPolygonVertex, 1:eByControlPoint
+
 
 };
 

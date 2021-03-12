@@ -169,6 +169,10 @@ void CMQOObject::InitParams()
 {
 	m_objfrom = OBJFROM_MQO;
 
+
+	m_normalmappingmode = 0;//0:eByPolygonVertex, 1:eByControlPoint
+
+
 	m_dispflag = 1;
 	m_objectno = -1;
 	ZeroMemory( m_name, 256 );
@@ -825,7 +829,7 @@ int CMQOObject::MakePolymesh4( ID3D11Device* pdev )
 		return 1;
 	}
 
-	CallF( m_pm4->CreatePM4( m_vertex, m_face, m_normalleng, m_uvleng, m_pointbuf, m_normal, m_uvbuf, m_facebuf, m_material ), return 1 );
+	CallF( m_pm4->CreatePM4( m_normalmappingmode, m_vertex, m_face, m_normalleng, m_uvleng, m_pointbuf, m_normal, m_uvbuf, m_facebuf, m_material ), return 1 );
 	
 	return 0;
 }

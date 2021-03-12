@@ -26,7 +26,7 @@ public:
 	CPolyMesh4();
 	~CPolyMesh4();
 
-	int CreatePM4( int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
+	int CreatePM4( int normalmappingmode, int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
 	
 	int ChkAlphaNum( map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
@@ -123,6 +123,8 @@ public:
 	ChaVector2 GetUVByControlPointNo(int vno);
 
 private:
+	int m_normalmappingmode;//0:polygonvertex, 1:controlpoint
+
 	int m_orgpointnum;
 	int m_orgfacenum;
 	int m_facenum;//éOäpï™äÑå„ÇÃñ êî
