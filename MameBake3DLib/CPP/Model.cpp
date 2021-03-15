@@ -1641,7 +1641,7 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 	newmi->speed = 1.0;
 	newmi->loopflag = 1;
 
-	m_motinfo[newid] = newmi;
+	m_motinfo[newid - 1] = newmi;//id‚Í‚P‚©‚ç
 
 
 	*dstid = newid;
@@ -1652,7 +1652,7 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 
 int CModel::SetCurrentMotion( int srcmotid )
 {
-	m_curmotinfo = m_motinfo[ srcmotid ];
+	m_curmotinfo = m_motinfo[ srcmotid - 1 ];//id‚Í‚P‚©‚ç
 	if( !m_curmotinfo ){
 		_ASSERT( 0 );
 		return 1;
@@ -2052,7 +2052,7 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 
 int CModel::ChangeMotFrameLeng( int motid, double srcleng )
 {
-	MOTINFO* dstmi = m_motinfo[ motid ];
+	MOTINFO* dstmi = m_motinfo[ motid - 1 ];//id‚Í‚P‚©‚ç
 	if( dstmi ){
 		double befleng = dstmi->frameleng;
 
@@ -2083,7 +2083,7 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 	int loopflag = 0;
 	MOTINFO* curmotinfo;
 	if( srcmotid >= 0 ){
-		curmotinfo = m_motinfo[ srcmotid ];
+		curmotinfo = m_motinfo[ srcmotid - 1];//id‚Í‚P‚©‚ç
 		loopflag = 0;
 	}else{
 		curmotinfo = m_curmotinfo;

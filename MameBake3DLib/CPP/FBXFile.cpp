@@ -1544,7 +1544,7 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 	*/
 
 
-	FbxPose* lPose = FbxPose::Create(pScene,"BindPose0");
+	FbxPose* lPose = FbxPose::Create(pScene,"BindPose1");
 	lPose->SetIsBindPose(true);
 
 

@@ -235,6 +235,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/03/15_1
+	Fix problem about loading FBX File which include Multiple motions.
+		Fix motid problem, motid range is form 1 to motnum.
+
 2021/03/12
 	Fix problem about Normal of FBX2020 saved with Maya2020.
 		Treatment of Normal Mapping Mode of FBX 2020.

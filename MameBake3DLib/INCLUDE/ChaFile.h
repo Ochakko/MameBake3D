@@ -32,7 +32,7 @@ private:
 
 	//int CheckFileVersion( XMLIOBUF* xmliobuf );
 	int ReadProjectInfo( XMLIOBUF* xmliobuf, int* charanumptr );
-	int ReadChara( XMLIOBUF* xmliobuf );
+	int ReadChara( int characnt, XMLIOBUF* xmliobuf );
 	//int ReadMotion( XMLIOBUF* xmliobuf, WCHAR* modelfolder, CModel* modelptr );
 	int ReadWall(XMLIOBUF* xmliobuf);
 

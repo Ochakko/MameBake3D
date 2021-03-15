@@ -406,7 +406,7 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref
 		XMLIOBUF charabuf;
 		ZeroMemory( &charabuf, sizeof( XMLIOBUF ) );
 		CallF( SetXmlIOBuf( &m_xmliobuf, "<Chara>", "</Chara>", &charabuf ), return 1 );
-		CallF( ReadChara( &charabuf ), return 1 );
+		CallF( ReadChara( characnt, &charabuf ), return 1 );
 	}
 
 	m_xmliobuf.pos = 0;
@@ -453,7 +453,7 @@ int CChaFile::ReadProjectInfo( XMLIOBUF* xmlbuf, int* charanumptr )
 
 	return 0;
 }
-int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
+int CChaFile::ReadChara( int characnt, XMLIOBUF* xmlbuf )
 {
 /***
 	CallF( Write2File( "  <Chara>\r\n" ), return 1 );
@@ -526,8 +526,12 @@ int CChaFile::ReadChara( XMLIOBUF* xmlbuf )
 	swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s\\%s", m_wloaddir, wmodelfolder, wfilename );
 	g_tmpmqomult = modelmult;
 
+	int inittimeline = 0;
+	if (characnt != 0) {
+		inittimeline = 1;
+	}
 	CModel* newmodel = 0;
-	newmodel = (this->m_FbxFunc)( 1, 0 );
+	newmodel = (this->m_FbxFunc)( 1, inittimeline );
 	_ASSERT( newmodel );
 
 	//newmodel->m_tmpmotspeed = m_motspeed;

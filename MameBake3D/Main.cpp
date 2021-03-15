@@ -6012,9 +6012,19 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//	OnDelMotion( 0 );//‰Šúó‘Ô‚Ìƒ_ƒ~[ƒ‚[ƒVƒ‡ƒ“‚ðíœ
 	//}
 
-	if (inittimelineflag == 1) {
-		OnAddMotion(s_model->GetCurMotInfo()->motid);
+	//if (inittimelineflag == 1) {//inittimelineflag ‚Í ‚P‚Â‚ß‚ÌFBX‚Ì‚Æ‚«‚OA‚»‚êˆÈ~‚P
+	{
+		int motnum = s_model->GetMotInfoSize();
+		int motno;
+		for (motno = 0; motno < motnum; motno++) {
+			MOTINFO* curmi = s_model->GetMotInfo(motno + 1);
+			if (curmi) {
+				OnAddMotion(curmi->motid);
+			}
+		}
+		s_model->SetCurrentMotion(motnum);//id‚Í‚P‚©‚çmotnum
 	}
+	//}
 
 
 	int motnum = s_model->GetMotInfoSize();
@@ -9810,7 +9820,7 @@ int OpenChaFile()
 		_ASSERT(0);
 		return 1;
 	}
-	OnAddMotion(s_model->GetCurMotInfo()->motid);
+	//OnAddMotion(s_model->GetCurMotInfo()->motid);
 
 	SetCursor(oldcursor);
 

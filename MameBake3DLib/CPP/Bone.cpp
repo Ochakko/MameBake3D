@@ -251,7 +251,8 @@ CBone::~CBone()
 int CBone::InitParams()
 {
 	m_tmpkinematic = false;
-	m_curmotid = -1;
+	//m_curmotid = -1;
+	m_curmotid = 0;//—LŒø‚Èid‚Í‚P‚©‚ç
 	m_excludemv = 0;
 	m_mass0 = 0;
 	m_posconstraint = 0;
@@ -4476,8 +4477,8 @@ ChaMatrix CBone::GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag)
 	//static ChaMatrix s_firstgetmatrix;
 	//static ChaMatrix s_invfirstgetmatrix;
 
-	if (m_curmotid >= 0) {
-		CMotionPoint* pcur = m_motionkey[m_curmotid];
+	if (m_curmotid >= 1) {//id‚Í‚P‚©‚ç
+		CMotionPoint* pcur = m_motionkey[m_curmotid - 1];//id‚Í‚P‚©‚ç
 		if (pcur) {
 			if ((updateflag == 1) || (m_firstgetflag == 0)) {
 				m_firstgetflag = 1;

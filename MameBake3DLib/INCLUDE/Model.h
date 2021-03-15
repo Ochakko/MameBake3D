@@ -876,8 +876,13 @@ public: //accesser
 	int GetMotInfoSize(){
 		return (int)m_motinfo.size();
 	};
-	MOTINFO* GetMotInfo( int srcid ){
-		return m_motinfo[ srcid ];
+	MOTINFO* GetMotInfo( int srcid ){//motid‚Í1‚©‚ç
+		if ((srcid <= 0) || (srcid > m_motinfo.size())) {
+			return 0;
+		}
+		else {
+			return m_motinfo[srcid - 1];
+		}
 	};
 	std::map<int,MOTINFO*>::iterator GetMotInfoBegin(){
 		return m_motinfo.begin();
