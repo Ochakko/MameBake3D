@@ -490,6 +490,16 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 
 bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
 {
+	//source sceneがbvhから作られたFBXかどうかを判定
+	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
+	if (sceneinfo) {
+		FbxString mKeywords = "BVH animation";
+		if (sceneinfo->mKeywords == mKeywords) {
+			s_bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
+		}
+	}
+
+
 	// create scene info
 	FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager, "SceneInfo");
 	sceneInfo->mTitle = "scene made by MameBake3D";
@@ -584,7 +594,7 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
     AnimateSkeleton(pScene, pmodel);
 	AnimateMorph(pScene, pmodel);
 
-	WriteBindPose(pScene);
+	WriteBindPose(pScene, s_bvhflag);
 
 	if( s_ai ){
 		free( s_ai );
@@ -1367,6 +1377,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 {
+	static int s_dbgcnt = 0;
 
     FbxString lAnimStackName;
     FbxTime lTime;
@@ -1396,6 +1407,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 		aino++;
 	}
 
+
 _ASSERT( motionnum == aino );
 
 	qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );//モーション長が短い順に出力しないと正しく読み込めない。FBXの仕様？
@@ -1403,25 +1415,41 @@ _ASSERT( motionnum == aino );
 	s_firstoutmot = s_ai->motid;
 
 	for( aino = 0; aino < motionnum; aino++ ){
+		//char takename[256];
+		//sprintf_s(takename, 256, "take%d", aino);
+		//pScene->SetCurrentTake
+
 		ANIMINFO* curai = s_ai + aino;
 		int curmotid = curai->motid;
 		int maxframe = curai->maxframe;
 
+
 		lAnimStackName = curai->engmotname;
-	    FbxAnimStack* lAnimStack = FbxAnimStack::Create(pScene, lAnimStackName);
-		FbxAnimLayer* lAnimLayer = FbxAnimLayer::Create(pScene, "Base Layer");
+		char layername[256];
+		sprintf_s(layername, 256, "%sLayer%d", lAnimStackName, aino);
+		
+		FbxAnimStack* lAnimStack = FbxAnimStack::Create(pScene, lAnimStackName);
+		FbxAnimLayer* lAnimLayer = FbxAnimLayer::Create(pScene, layername);
+		//FbxTakeInfo takeinfo;
+	
+
 		curai->animlayer = lAnimLayer;
-        lAnimStack->AddMember(lAnimLayer);
+        //lAnimStack->AddMember(lAnimLayer);
+		lAnimStack->AddMember(lAnimLayer);
+
 
 		pmodel->SetCurrentMotion( curmotid );
 
 		s_firstanimout = 1;
 		AnimateBoneReq( s_fbxbone, lAnimLayer, curmotid, maxframe );
 
+		pScene->AddMember(lAnimStack);//!!!!!!!!
+
 		//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
 		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);
 
 	}
+
 
 }
 
@@ -1543,6 +1571,7 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 	)		const
 	*/
 
+	static int s_bvhanimcnt = 0;
 
 	FbxPose* lPose = FbxPose::Create(pScene,"BindPose1");
 	lPose->SetIsBindPose(true);
@@ -1552,6 +1581,8 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 		FbxAnimStack * lCurrentAnimationStack;
 		//lCurrentAnimationStack = pScene->GetMember(FBX_TYPE(FbxAnimStack), s_ai->motid);
 
+		
+		
 		if (bvhflag == 0) {
 			lCurrentAnimationStack = pScene->GetSrcObject<FbxAnimStack>(s_ai->motid);
 		}
@@ -1559,26 +1590,28 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 			lCurrentAnimationStack = pScene->GetSrcObject<FbxAnimStack>(0);
 		}
 
+
 		//if (bvhflag == 0){
 		//	lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), s_ai->engmotname);
 		//}
 		//else{
 		//	lCurrentAnimationStack = pScene->FindMember(FBX_TYPE(FbxAnimStack), "bvh_animation_nyan");
 		//}
-		if (lCurrentAnimationStack == NULL)
+		if (lCurrentAnimationStack != NULL)
 		{
-			_ASSERT( 0 );
-			return 1;
-		}
-		//FbxAnimLayer * mCurrentAnimLayer;
-		////mCurrentAnimLayer = lCurrentAnimationStack->GetMember(FBX_TYPE(FbxAnimLayer), 0);
-		//mCurrentAnimLayer = lCurrentAnimationStack->GetSrcObject<FbxAnimLayer>(0);
-		//pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
-		//
+			//_ASSERT( 0 );
+			//return 1;
 
-		//gSceneContext->SetCurrentAnimStack(s_ai->motid);
-		//pScene->SetCurrentAnimStack(s_ai->motid);
-		pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
+			//FbxAnimLayer * mCurrentAnimLayer;
+			////mCurrentAnimLayer = lCurrentAnimationStack->GetMember(FBX_TYPE(FbxAnimLayer), 0);
+			//mCurrentAnimLayer = lCurrentAnimationStack->GetSrcObject<FbxAnimLayer>(0);
+			//pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
+			//
+
+			//gSceneContext->SetCurrentAnimStack(s_ai->motid);
+			//pScene->SetCurrentAnimStack(s_ai->motid);
+			pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
+		}
 	}else{
 		_ASSERT( 0 );
 	}
@@ -1681,6 +1714,7 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 		lInitMatrix.SetIdentity();
 		return lInitMatrix;//!!!!!!!!!!!!!!! curbone == NULL
 	}
+
 
 	if ((s_bvhflag == 0) && fbxbone->GetBone() && (s_model->GetOldAxisFlagAtLoading() == 0)){
 		tramat = fbxbone->GetBone()->GetNodeMat();
@@ -2621,6 +2655,7 @@ static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 			strChannel = FBXSDK_CURVENODE_COMPONENT_X;
 			break;
 		}
+
 
 		ChaVector3 fbxtra;
 		lCurve = lSkel->LclTranslation.GetCurve(lAnimLayer, strChannel, true);

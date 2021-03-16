@@ -6022,7 +6022,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 				OnAddMotion(curmi->motid);
 			}
 		}
-		s_model->SetCurrentMotion(motnum);//id‚Í‚P‚©‚çmotnum
+		s_model->SetCurrentMotion(motnum);
 	}
 	//}
 

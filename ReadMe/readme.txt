@@ -235,6 +235,17 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/03/16_1
+	Fix problem about saving FBX file which is made from bvh file.
+	
+	Update Sample File in Media Directory.
+		Multible models, multiple motions.
+	
+	Select editable model by model menu, select editable motion by motion menu of MameBake3D.
+
+	Now chekking about operations of CharacterSet and AnimationLayer of Maya2020.
+		Now ?????.
+
 2021/03/15_1
 	Fix problem about loading FBX File which include Multiple motions.
 		Fix motid problem, motid range is form 1 to motnum.
