@@ -250,6 +250,10 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	m_motionkey.clear();
+	m_motionkey[0] = 0;
+
+
 	m_tmpkinematic = false;
 	//m_curmotid = -1;
 	m_curmotid = 0;//有効なidは１から
@@ -540,9 +544,21 @@ void CBone::ResetMotionCache()
 int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr )
 {
 	CMotionPoint* pbef = 0;
-	CMotionPoint* pcur = m_motionkey[srcmotid];
+	//CMotionPoint* pcur = m_motionkey[srcmotid];
+	CMotionPoint* pcur = 0;
 
 	*existptr = 0;
+
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		*ppbef = 0;
+		*ppnext = 0;
+		_ASSERT(0);
+		return 0;
+	}
+	else {
+		pcur = m_motionkey[srcmotid];
+	}
+
 
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//キャッシュをチェックする

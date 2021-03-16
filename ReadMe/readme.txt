@@ -235,6 +235,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/16_3
+	Init m_motionkey[0] On Constructing.
+
+	Select ref by rigid menu of MainWindowMenuBar before Simulating Bullet Physics.
+
 2021/03/16_2
 	Result of checkking about loading FBX having multiple AnimStack, 
 	read FBX file and open same FBX by Animation Time Editor using Synthetic option.
