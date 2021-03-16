@@ -235,6 +235,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/03/16_2
+	Result of checkking about loading FBX having multiple AnimStack, 
+	read FBX file and open same FBX by Animation Time Editor using Synthetic option.
+
+	It is success to read FBX sample of today by Maya2020.
+
 2021/03/16_1
 	Fix problem about saving FBX file which is made from bvh file.
 	
