@@ -235,6 +235,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/18
+	Each physics paramster file each character, select using rigid menu and rgd menu after select model.
+
+	Replace Elasticity to Restitution as in bullet physics.
+
+
 2021/03/16_3
 	Init m_motionkey[0] On Constructing.
 

@@ -385,9 +385,16 @@ static int s_ikkind = 0;
 
 static PICKINFO s_pickinfo;
 static vector<TLELEM> s_tlarray;
-static int s_curmotmenuindex = -1;
-static int s_curreindex = -1;
-static int s_rgdindex = -1;
+
+
+//static int s_curmotmenuindex = -1;
+//static int s_curreindex = -1;
+//static int s_rgdindex = -1;
+	//each character each param //2021/03/18 
+static map<CModel*, int> s_motmenuindexmap;
+static map<CModel*, int> s_reindexmap;
+static map<CModel*, int> s_rgdindexmap;
+
 
 static HWND		s_3dwnd = 0;
 static HMENU	s_mainmenu = 0;
@@ -1535,6 +1542,12 @@ void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
 
+	s_motmenuindexmap.clear();
+	s_reindexmap.clear();
+	s_rgdindexmap.clear();
+
+
+
 	g_motionbrush_method = 0;
 	g_motionbrush_startframe = 0.0;
 	g_motionbrush_endframe = 0.0;
@@ -2351,6 +2364,11 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	g_endappflag = 1;
 
 	UNREFERENCED_PARAMETER(pUserContext);
+
+	s_motmenuindexmap.clear();
+	s_reindexmap.clear();
+	s_rgdindexmap.clear();
+
 
 	//::KillTimer(s_mainhwnd, s_iktimerid);
 	/*
@@ -3686,7 +3704,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				return 0;
 				break;
 			case ID_DELCURMOT:
-				OnDelMotion( s_curmotmenuindex );
+				if (s_model) {
+					OnDelMotion(s_motmenuindexmap[s_model]);
+				}
 				return 0;
 				break;
 			case ID_DELMODEL:
@@ -5523,7 +5543,7 @@ int SaveImpFile()
 	if( !s_model->GetTopBone() ){
 		return 0;
 	}
-	if( s_rgdindex < 0 ){
+	if( s_rgdindexmap[s_model] < 0 ){
 		::MessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"Error Of Prepairation", MB_OK );
 		return 0;
 	}
@@ -7008,7 +7028,12 @@ int OnRgdMorphMenu( int selindex )
 
 int OnAnimMenu( int selindex, int saveundoflag )
 {
-	s_curmotmenuindex = selindex;
+	if (!s_model) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	s_motmenuindexmap[s_model] = selindex;
 
 	if( selindex < 0 ){
 		return 0;//!!!!!!!!!
@@ -7162,12 +7187,14 @@ int OnModelMenu( int selindex, int callbymenu )
 		CheckMenuItem( s_mainmenu, 61000 + selindex, MF_CHECKED );
 
 		s_model = s_modelindex[ selindex ].modelptr;
-		s_tlarray = s_modelindex[ selindex ].tlarray;
-		s_curmotmenuindex = s_modelindex[ selindex ].motmenuindex;
-		s_lineno2boneno = s_modelindex[ selindex ].lineno2boneno;
-		s_boneno2lineno = s_modelindex[ selindex ].boneno2lineno;
+		if (s_model) {
+			s_tlarray = s_modelindex[selindex].tlarray;
+			s_motmenuindexmap[s_model] = s_modelindex[selindex].motmenuindex;
+			s_lineno2boneno = s_modelindex[selindex].lineno2boneno;
+			s_boneno2lineno = s_modelindex[selindex].boneno2lineno;
 
-		OnAnimMenu( s_curmotmenuindex );
+			OnAnimMenu(s_motmenuindexmap[s_model]);
+		}
 	}
 
 
@@ -7203,7 +7230,11 @@ int OnModelMenu( int selindex, int callbymenu )
 
 int OnREMenu( int selindex, int callbymenu )
 {
-	s_curreindex = selindex;
+	if (!s_model) {
+		_ASSERT(0);
+		return 0;
+	}
+	s_reindexmap[s_model] = selindex;
 
 	_ASSERT( s_remenu );
 	int iReSet, cReSets;
@@ -7220,7 +7251,9 @@ int OnREMenu( int selindex, int callbymenu )
 
 	cReSets = s_model->GetRigidElemInfoSize();
 	if( cReSets <= 0 ){
-		s_curreindex = -1;
+		if (s_model) {
+			s_reindexmap[s_model] = -1;
+		}
 		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
@@ -7238,7 +7271,7 @@ DbgOut( L"OnREMenu : addmenu %s\r\n", wname );
 		CheckMenuItem( s_mainmenu, 62000 + selindex, MF_CHECKED );
 	}
 
-	CallF( s_model->SetCurrentRigidElem( s_curreindex ), return 1 );
+	CallF( s_model->SetCurrentRigidElem( s_reindexmap[s_model] ), return 1 );
 
 	RigidElem2WndParam();
 	
@@ -7250,7 +7283,11 @@ int OnRgdMenu( int selindex, int callbymenu )
 	if( s_model ){
 		s_model->SetRgdIndex( selindex );
 	}
-	s_rgdindex = selindex;
+	else {
+		_ASSERT(0);
+		return 0;
+	}
+	s_rgdindexmap[s_model] = selindex;
 
 	_ASSERT( s_rgdmenu );
 	int iReSet, cReSets;
@@ -7267,7 +7304,7 @@ int OnRgdMenu( int selindex, int callbymenu )
 
 	cReSets = s_model->GetRigidElemInfoSize();
 	if( cReSets <= 0 ){
-		s_rgdindex = -1;
+		s_rgdindexmap[s_model] = -1;
 		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded" );
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
@@ -7400,16 +7437,18 @@ int OnDelModel( int delmenuindex )
 		s_model = 0;
 		s_curmodelmenuindex = -1;
 		s_tlarray.clear();
-		s_curmotmenuindex = -1;
+		s_motmenuindexmap.clear();
 		s_lineno2boneno.clear();
 		s_boneno2lineno.clear();
 	}else{
 		s_curboneno = -1;
 		s_model = s_modelindex[ 0 ].modelptr;
-		s_tlarray = s_modelindex[ 0 ].tlarray;
-		s_curmotmenuindex = s_modelindex[ 0 ].motmenuindex;
-		s_lineno2boneno = s_modelindex[ 0 ].lineno2boneno;
-		s_boneno2lineno = s_modelindex[ 0 ].boneno2lineno;
+		if (s_model) {
+			s_motmenuindexmap[s_model] = s_modelindex[0].motmenuindex;
+		}
+		s_tlarray = s_modelindex[0].tlarray;
+		s_lineno2boneno = s_modelindex[0].lineno2boneno;
+		s_boneno2lineno = s_modelindex[0].boneno2lineno;
 	}
 
 	OnModelMenu( 0, 0 );
@@ -7449,7 +7488,7 @@ int OnDelAllModel()
 	s_model = 0;
 	s_curmodelmenuindex = -1;
 	s_tlarray.clear();
-	s_curmotmenuindex = -1;
+	s_motmenuindexmap.clear();
 	s_lineno2boneno.clear();
 	s_boneno2lineno.clear();
 
@@ -9149,7 +9188,8 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 			if ((g_previewFlag == 4) || (g_previewFlag == 5)) {
 
 				if (g_previewFlag == 4) {
-					curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
+					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
+					curmodel->SetCurrentRigidElem(s_reindexmap[curmodel]);//s_curreindexをmodelごとに持つ必要あり！！！
 
 					//決め打ち
 					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
@@ -9184,7 +9224,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					curmodel->SetMotionSpeed(g_dspeed);
 				}
 				else if (g_previewFlag == 5) {
-					curmodel->SetCurrentRigidElem(s_rgdindex);//s_rgdindexをmodelごとに持つ必要あり！！！
+					curmodel->SetCurrentRigidElem(s_rgdindexmap[curmodel]);//s_rgdindexをmodelごとに持つ必要あり！！！
 
 					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 
@@ -9230,7 +9270,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
 
 					//決め打ち
-					curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1500.0, 30.0);
+					curmodel->SetAllKData(-1, s_rgdindexmap[curmodel], 3, 3, 1500.0, 30.0);
 										
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 
@@ -9275,7 +9315,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 */
 					//決め打ち
-					curmodel->SetAllMassDataByBoneLeng(-1, s_rgdindex, 30.0);
+					curmodel->SetAllMassDataByBoneLeng(-1, s_rgdindexmap[curmodel], 30.0);
 					
 					//curmodel->SetAllMassData(-1, s_rgdindex, 1.0);
 
@@ -9336,13 +9376,16 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 int RigidElem2WndParam()
 {
+	if (!s_model) {
+		return 0;
+	}
 	if( s_curboneno < 0 ){
 		return 0;
 	}
 
 
 	//ダイアログの数値はメニューで選択中のもの
-	s_model->SetCurrentRigidElem(s_curreindex);
+	s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 
 
 	CBone* curbone = s_model->GetBoneByID( s_curboneno );
@@ -9441,10 +9484,10 @@ int RigidElem2WndParam()
 
 	//再生中、シミュレーション中への対応。元の状態に戻す。
 	if (g_previewFlag != 5){
-		s_model->SetCurrentRigidElem(s_curreindex);
+		s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 	}
 	else{
-		s_model->SetCurrentRigidElem(s_rgdindex);
+		s_model->SetCurrentRigidElem(s_rgdindexmap[s_model]);
 	}
 
 
@@ -9501,7 +9544,7 @@ int SetImpWndParams()
 	if( !s_model ){
 		return 0;
 	}
-	if( s_rgdindex < 0 ){
+	if( s_rgdindexmap[s_model] < 0 ){
 		return 0;
 	}
 
@@ -9550,7 +9593,7 @@ int SetDmpWndParams()
 	if( !s_model ){
 		return 0;
 	}
-	if( s_rgdindex < 0 ){
+	if( s_rgdindexmap[s_model] < 0 ){
 		return 0;
 	}
 
@@ -9559,7 +9602,7 @@ int SetDmpWndParams()
 	if( curbone ){
 		CBone* parentbone = curbone->GetParent();
 		if( parentbone ){
-			char* filename = s_model->GetRigidElemInfo( s_rgdindex ).filename;
+			char* filename = s_model->GetRigidElemInfo( s_rgdindexmap[s_model] ).filename;
 			CRigidElem* curre = parentbone->GetRigidElemOfMap( filename, curbone );
 			if( curre ){
 				if( s_dmpanimLSlider ){
@@ -12662,7 +12705,7 @@ int OnFrameToolWnd()
 				InitCurMotion(0, oldframeleng);
 
 				//メニュー書き換え, timeline update
-				OnAnimMenu(s_curmotmenuindex);
+				OnAnimMenu(s_motmenuindexmap[s_model]);
 			}
 		}
 	}
@@ -13003,8 +13046,10 @@ int OnFrameUndo()
 			}
 		}
 		else{
-			//メニュー書き換え, timeline update
-			OnAnimMenu(s_curmotmenuindex, 0);
+			if (s_model) {
+				//メニュー書き換え, timeline update
+				OnAnimMenu(s_motmenuindexmap[s_model], 0);
+			}
 		}
 
 		int curlineno = s_boneno2lineno[s_curboneno];
@@ -13613,7 +13658,7 @@ int CreateDmpAnimWnd()
 
 	s_dmpanimLSlider->setCursorListener([](){
 		if (s_model) {
-			CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
+			CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
 			if (curre) {
 				float val = (float)s_dmpanimLSlider->getValue();
 				curre->SetDampanimL(val);
@@ -13623,7 +13668,7 @@ int CreateDmpAnimWnd()
 	});
 	s_dmpanimASlider->setCursorListener([](){
 		if (s_model) {
-			CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
+			CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
 			if (curre) {
 				float val = (float)s_dmpanimASlider->getValue();
 				curre->SetDampanimA(val);
@@ -13632,13 +13677,13 @@ int CreateDmpAnimWnd()
 		}
 	});
 	s_dmpanimB->setButtonListener([](){
-		if (s_model && (s_rgdindex >= 0)){
+		if (s_model && (s_rgdindexmap[s_model] >= 0)){
 			float valL = (float)s_dmpanimLSlider->getValue();
 			float valA = (float)s_dmpanimASlider->getValue();
 			int chkg = (int)s_dmpgroupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
+				CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -13646,7 +13691,7 @@ int CreateDmpAnimWnd()
 					gid = -1;
 				}
 			}
-			s_model->SetAllDampAnimData(gid, s_rgdindex, valL, valA);
+			s_model->SetAllDampAnimData(gid, s_rgdindexmap[s_model], valL, valA);
 		}
 	});
 
@@ -13833,7 +13878,7 @@ int CreateRigidWnd()
 
 
 	s_kB = new OWP_Button(L"SetSpringParamsToAllRigies");
-	s_restB = new OWP_Button(L"ElasticityAndFrictionToAllRigids");
+	s_restB = new OWP_Button(L"RestitutionAndFrictionToAllRigids");
 
 	s_colradio = new OWP_RadioButton(L"Cone");
 	s_colradio->addLine(L"Capsule");
@@ -13862,7 +13907,7 @@ int CreateRigidWnd()
 	s_aklabel = new OWP_Label(L"rotSpring customValue");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
-	s_restlabel = new OWP_Label(L"RigidElasticity");
+	s_restlabel = new OWP_Label(L"RigidRestitution");
 	s_fricSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
 	s_friclabel = new OWP_Label(L"RigidFriction");
 
@@ -14069,13 +14114,13 @@ int CreateRigidWnd()
 	});
 	s_allrigidenableB->setButtonListener([](){
 		if (s_model){
-			s_model->EnableAllRigidElem(s_curreindex);
+			s_model->EnableAllRigidElem(s_reindexmap[s_model]);
 		}
 		s_rigidWnd->callRewrite();						//再描画
 	});
 	s_allrigiddisableB->setButtonListener([](){
 		if (s_model){
-			s_model->DisableAllRigidElem(s_curreindex);
+			s_model->DisableAllRigidElem(s_reindexmap[s_model]);
 		}
 		s_rigidWnd->callRewrite();						//再描画
 	});
@@ -14113,10 +14158,10 @@ int CreateRigidWnd()
 	s_btgscSlider->setCursorListener([](){
 		if (s_model) {
 			float btgsc = (float)s_btgscSlider->getValue();
-			if (s_model && (s_curreindex >= 0)) {
-				REINFO tmpinfo = s_model->GetRigidElemInfo(s_curreindex);
+			if (s_model && (s_reindexmap[s_model] >= 0)) {
+				REINFO tmpinfo = s_model->GetRigidElemInfo(s_reindexmap[s_model]);
 				tmpinfo.btgscale = btgsc;
-				s_model->SetRigidElemInfo(s_curreindex, tmpinfo);
+				s_model->SetRigidElemInfo(s_reindexmap[s_model], tmpinfo);
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
@@ -14171,7 +14216,7 @@ int CreateRigidWnd()
 					gid = -1;
 				}
 			}
-			s_model->SetAllKData(gid, s_curreindex, lindex, aindex, cuslk, cusak);
+			s_model->SetAllKData(gid, s_reindexmap[s_model], lindex, aindex, cuslk, cusak);
 		}
 	});
 	s_restB->setButtonListener([](){
@@ -14189,7 +14234,7 @@ int CreateRigidWnd()
 					gid = -1;
 				}
 			}
-			s_model->SetAllRestData(gid, s_curreindex, rest, fric);
+			s_model->SetAllRestData(gid, s_reindexmap[s_model], rest, fric);
 		}
 	});
 	s_dmpB->setButtonListener([](){
@@ -14207,7 +14252,7 @@ int CreateRigidWnd()
 					gid = -1;
 				}
 			}
-			s_model->SetAllDmpData(gid, s_curreindex, ldmp, admp);
+			s_model->SetAllDmpData(gid, s_reindexmap[s_model], ldmp, admp);
 		}
 	});
 
@@ -14252,7 +14297,7 @@ int CreateRigidWnd()
 					gid = -1;
 				}
 			}
-			s_model->SetAllMassData(gid, s_curreindex, mass);
+			s_model->SetAllMassData(gid, s_reindexmap[s_model], mass);
 		}
 		//		_ASSERT( 0 );
 	});
@@ -14270,7 +14315,7 @@ int CreateRigidWnd()
 					gid = -1;
 				}
 			}
-			s_model->SetAllBtgData(gid, s_curreindex, btg);
+			s_model->SetAllBtgData(gid, s_reindexmap[s_model], btg);
 		}
 	});
 
@@ -14368,7 +14413,7 @@ int CreateImpulseWnd()
 			int chkg = (int)s_impgroupcheck->getValue();
 			int gid = -1;
 			if (chkg){
-				CRigidElem* curre = s_model->GetRgdRigidElem(s_curreindex, s_curboneno);
+				CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
 				if (curre){
 					gid = curre->GetGroupid();
 				}
@@ -14418,7 +14463,7 @@ int CreateGPlaneWnd()
 
 	s_grestSlider = new OWP_Slider(0.5, 1.0, 0.0);
 	s_gfricSlider = new OWP_Slider(0.5, 1.0, 0.0);
-	s_grestlabel = new OWP_Label(L"Elasticity");
+	s_grestlabel = new OWP_Label(L"Restitution");
 	s_gfriclabel = new OWP_Label(L"Friction");
 
 
@@ -16563,7 +16608,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				return 0;
 				break;
 			case ID_DELCURMOT:
-				OnDelMotion(s_curmotmenuindex);
+				if (s_model) {
+					OnDelMotion(s_motmenuindexmap[s_model]);
+				}
 				return 0;
 				break;
 			case ID_DELMODEL:
@@ -17424,7 +17471,7 @@ void ShowRigidWnd(bool srcflag)
 	if (s_model && (s_curboneno >= 0)) {
 	//if (s_model) {
 		if (s_bpWorld) {
-			s_model->SetCurrentRigidElem(s_curreindex);
+			s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 
 			//CallF(s_model->CreateBtObject(0), return);
 			CallF(s_model->CreateBtObject(1), return);
@@ -17529,7 +17576,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 
 		switch (s_platemenukind) {
 		case 0:
-			if ((srcplateno >= 1) && (srcplateno <= 5)) {
+			if ((srcplateno >= 1) && (srcplateno <= 6)) {
 				GUIRigidSetVisible(-2);
 				GUIRetargetSetVisible(-2);
 				GUISetVisible(srcplateno);
