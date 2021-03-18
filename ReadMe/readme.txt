@@ -235,6 +235,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/19_1
+	Replace std::tr1::function to std::function.
+
 2021/03/18
 	Each physics paramster file each character, select using rigid menu and rgd menu after select model.
 

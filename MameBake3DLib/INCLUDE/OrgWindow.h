@@ -745,26 +745,26 @@ static void s_dummyfunc();
 			return hWnd;
 		}
 		//	Accessor : closeListener
-		void setCloseListener(std::tr1::function<void()> listener){
+		void setCloseListener(std::function<void()> listener){
 			this->closeListener= listener;
 		}
-		void setLDownListener(std::tr1::function<void()> listener) {
+		void setLDownListener(std::function<void()> listener) {
 			this->ldownListener = listener;
 		}
-		void setLUpListener(std::tr1::function<void()> listener){
+		void setLUpListener(std::function<void()> listener){
 			this->lupListener= listener;
 		}
-		void setRUpListener(std::tr1::function<void()> listener){
+		void setRUpListener(std::function<void()> listener){
 			this->rupListener= listener;
 		}
-		void setHoverListener(std::tr1::function<void()> listener) {
+		void setHoverListener(std::function<void()> listener) {
 			this->hoverListener = listener;
 		}
-		void setLeaveListener(std::tr1::function<void()> listener) {
+		void setLeaveListener(std::function<void()> listener) {
 			this->leaveListener = listener;
 		}
 		/// Accessor : keyboardListener
-		void setKeyboardEventListener(std::tr1::function<void(const KeyboardEvent&)> listener){
+		void setKeyboardEventListener(std::function<void(const KeyboardEvent&)> listener){
 			this->keyboardListener= listener;
 		}
 		//	Accessor : visible
@@ -806,13 +806,13 @@ static void s_dummyfunc();
 		static std::map<HWND,OrgWindow*> hWndAndClassMap;
 
 		//ユーザーイベントリスナー
-		std::tr1::function<void()> closeListener;
-		std::tr1::function<void()> ldownListener;
-		std::tr1::function<void()> lupListener;
-		std::tr1::function<void()> rupListener;
-		std::tr1::function<void()> hoverListener;
-		std::tr1::function<void()> leaveListener;
-		std::tr1::function<void(const KeyboardEvent&)> keyboardListener;
+		std::function<void()> closeListener;
+		std::function<void()> ldownListener;
+		std::function<void()> lupListener;
+		std::function<void()> rupListener;
+		std::function<void()> hoverListener;
+		std::function<void()> leaveListener;
+		std::function<void(const KeyboardEvent&)> keyboardListener;
 
 		//マウスキャプチャ用のフラグ
 		bool mouseCaptureFlagL,mouseCaptureFlagR;
@@ -2055,7 +2055,7 @@ static void s_dummyfunc();
 
 		bool open;
 		bool canClose;
-		std::tr1::function<void()> openListener;
+		std::function<void()> openListener;
 
 		static const int SIZE_CLOSE_Y= 13;
 		static const int BOX_POS_X= 3;
@@ -2251,7 +2251,7 @@ static void s_dummyfunc();
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : buttonListener
-		void setButtonListener(std::tr1::function<void()> listener){
+		void setButtonListener(std::function<void()> listener){
 			this->buttonListener= listener;
 		}
 		void setName(TCHAR *value){
@@ -2264,7 +2264,7 @@ static void s_dummyfunc();
 		TCHAR *name;
 
 		bool buttonPush;
-		std::tr1::function<void()> buttonListener;
+		std::function<void()> buttonListener;
 
 		static const int SIZE_Y= 15;
 		static const int BOX_POS_X= 3;
@@ -2533,34 +2533,34 @@ static void s_dummyfunc();
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : buttonListener
-		void setFrontPlayButtonListener(std::tr1::function<void()> listener){
+		void setFrontPlayButtonListener(std::function<void()> listener){
 			frontPlay.buttonListener= listener;
 		}
-		void setBackPlayButtonListener(std::tr1::function<void()> listener){
+		void setBackPlayButtonListener(std::function<void()> listener){
 			backPlay.buttonListener= listener;
 		}
-		void setStopButtonListener(std::tr1::function<void()> listener){
+		void setStopButtonListener(std::function<void()> listener){
 			stop.buttonListener= listener;
 		}
-		void setResetButtonListener(std::tr1::function<void()> listener){
+		void setResetButtonListener(std::function<void()> listener){
 			reset.buttonListener= listener;
 		}
-		void setFrontStepButtonListener(std::tr1::function<void()> listener){
+		void setFrontStepButtonListener(std::function<void()> listener){
 			frontStep.buttonListener= listener;
 		}
-		void setBackStepButtonListener(std::tr1::function<void()> listener){
+		void setBackStepButtonListener(std::function<void()> listener){
 			backStep.buttonListener= listener;
 		}
-		void setSelectToLastButtonListener(std::tr1::function<void()> listener){
+		void setSelectToLastButtonListener(std::function<void()> listener){
 			selecttolast.buttonListener = listener;
 		}
-		void setBtResetButtonListener(std::tr1::function<void()> listener){
+		void setBtResetButtonListener(std::function<void()> listener){
 			btreset.buttonListener = listener;
 		}
-		void setPrevRangeButtonListener(std::tr1::function<void()> listener){
+		void setPrevRangeButtonListener(std::function<void()> listener){
 			prevrange.buttonListener = listener;
 		}
-		void setNextRangeButtonListener(std::tr1::function<void()> listener){
+		void setNextRangeButtonListener(std::function<void()> listener){
 			nextrange.buttonListener = listener;
 		}
 
@@ -2584,7 +2584,7 @@ static void s_dummyfunc();
 			}
 
 			bool buttonPush;
-			std::tr1::function<void()> buttonListener;
+			std::function<void()> buttonListener;
 		}frontPlay,backPlay,stop,reset,frontStep,backStep,selecttolast,btreset,prevrange,nextrange;
 		
 
@@ -2721,7 +2721,7 @@ static void s_dummyfunc();
 			return value;
 		}
 		//	Accessor : buttonListener
-		void setButtonListener(std::tr1::function<void()> listener){
+		void setButtonListener(std::function<void()> listener){
 			this->buttonListener= listener;
 		}
 
@@ -2729,7 +2729,7 @@ static void s_dummyfunc();
 		////////////////////////// MemberVar /////////////////////////////
 		TCHAR *name;
 		bool value;
-		std::tr1::function<void()> buttonListener;
+		std::function<void()> buttonListener;
 
 		static const int SIZE_Y= 15;
 		static const int BOX_POS_X= 3;
@@ -2881,7 +2881,7 @@ static void s_dummyfunc();
 			return selectIndex;
 		}
 		//	Accessor : selectListener
-		void setSelectListener(std::tr1::function<void()> listener){
+		void setSelectListener(std::function<void()> listener){
 			selectListener= listener;
 		}
 
@@ -2889,7 +2889,7 @@ static void s_dummyfunc();
 		////////////////////////// MemberVar /////////////////////////////
 		TCHAR *name;
 		int selectIndex;
-		std::tr1::function<void()> selectListener;
+		std::function<void()> selectListener;
 
 		std::vector< std::basic_string<TCHAR> > nameList;
 
@@ -3040,14 +3040,14 @@ static void s_dummyfunc();
 			}
 		}
 		//	Accessor : cursorListener
-		void setCursorListener(std::tr1::function<void()> listener){
+		void setCursorListener(std::function<void()> listener){
 			this->cursorListener= listener;
 		}
 
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		double maxValue,minValue,value;
-		std::tr1::function<void()> cursorListener;
+		std::function<void()> cursorListener;
 
 		bool drag;
 
@@ -4127,28 +4127,28 @@ static void s_dummyfunc();
 			return ghostShiftTime;
 		}
 		///	Accessor : cursorListener
-		void setCursorListener(std::tr1::function<void()> listener){
+		void setCursorListener(std::function<void()> listener){
 			this->cursorListener= listener;
 		}
 		///	Accessor : selectListener
-		void setSelectListener(std::tr1::function<void()> listener){
+		void setSelectListener(std::function<void()> listener){
 			this->selectListener= listener;
 		}
 		///	Accessor : keyShiftListener
-		void setKeyShiftListener(std::tr1::function<void()> listener){
+		void setKeyShiftListener(std::function<void()> listener){
 			this->keyShiftListener= listener;
 		}
 		///	Accessor : keyShiftListener
-		void setKeyDeleteListener(std::tr1::function<void(const KeyInfo&)> listener){
+		void setKeyDeleteListener(std::function<void(const KeyInfo&)> listener){
 			this->keyDeleteListener= listener;
 		}
-		void setMouseMDownListener(std::tr1::function<void()> listener){
+		void setMouseMDownListener(std::function<void()> listener){
 			this->mouseMDownListener = listener;
 		}
-		void setMouseWheelListener(std::tr1::function<void()> listener){
+		void setMouseWheelListener(std::function<void()> listener){
 			this->mouseWheelListener = listener;
 		}
-		void setMouseRUpListener(std::tr1::function<void()> listener){
+		void setMouseRUpListener(std::function<void()> listener){
 			this->mouseRUpListener = listener;
 		}
 
@@ -4181,13 +4181,13 @@ static void s_dummyfunc();
 		double maxTime,currentTime,showPos_time;
 		int currentLine,showPos_line;
 		int wheeldelta;
-		std::tr1::function<void()> cursorListener;
-		std::tr1::function<void()> selectListener;
-		std::tr1::function<void()> keyShiftListener;
-		std::tr1::function<void()> mouseMDownListener;
-		std::tr1::function<void()> mouseWheelListener;
-		std::tr1::function<void()> mouseRUpListener;
-		std::tr1::function<void(const KeyInfo&)> keyDeleteListener;
+		std::function<void()> cursorListener;
+		std::function<void()> selectListener;
+		std::function<void()> keyShiftListener;
+		std::function<void()> mouseMDownListener;
+		std::function<void()> mouseWheelListener;
+		std::function<void()> mouseRUpListener;
+		std::function<void(const KeyInfo&)> keyDeleteListener;
 
 		//行データクラス-------------
 		class LineData{
@@ -5767,28 +5767,28 @@ static void s_dummyfunc();
 			return ghostShiftTime;
 		}
 		///	Accessor : cursorListener
-		void setCursorListener(std::tr1::function<void()> listener) {
+		void setCursorListener(std::function<void()> listener) {
 			this->cursorListener = listener;
 		}
 		///	Accessor : selectListener
-		void setSelectListener(std::tr1::function<void()> listener) {
+		void setSelectListener(std::function<void()> listener) {
 			this->selectListener = listener;
 		}
 		///	Accessor : keyShiftListener
-		void setKeyShiftListener(std::tr1::function<void()> listener) {
+		void setKeyShiftListener(std::function<void()> listener) {
 			this->keyShiftListener = listener;
 		}
 		///	Accessor : keyShiftListener
-		void setKeyDeleteListener(std::tr1::function<void(const KeyInfo&)> listener) {
+		void setKeyDeleteListener(std::function<void(const KeyInfo&)> listener) {
 			this->keyDeleteListener = listener;
 		}
-		void setMouseMDownListener(std::tr1::function<void()> listener) {
+		void setMouseMDownListener(std::function<void()> listener) {
 			this->mouseMDownListener = listener;
 		}
-		void setMouseWheelListener(std::tr1::function<void()> listener) {
+		void setMouseWheelListener(std::function<void()> listener) {
 			this->mouseWheelListener = listener;
 		}
-		void setMouseRUpListener(std::tr1::function<void()> listener) {
+		void setMouseRUpListener(std::function<void()> listener) {
 			this->mouseRUpListener = listener;
 		}
 
@@ -5835,13 +5835,13 @@ static void s_dummyfunc();
 		double maxTime, currentTime, showPos_time;
 		int currentLine, showPos_line;
 		int wheeldelta;
-		std::tr1::function<void()> cursorListener;
-		std::tr1::function<void()> selectListener;
-		std::tr1::function<void()> keyShiftListener;
-		std::tr1::function<void()> mouseMDownListener;
-		std::tr1::function<void()> mouseWheelListener;
-		std::tr1::function<void()> mouseRUpListener;
-		std::tr1::function<void(const KeyInfo&)> keyDeleteListener;
+		std::function<void()> cursorListener;
+		std::function<void()> selectListener;
+		std::function<void()> keyShiftListener;
+		std::function<void()> mouseMDownListener;
+		std::function<void()> mouseWheelListener;
+		std::function<void()> mouseRUpListener;
+		std::function<void(const KeyInfo&)> keyDeleteListener;
 		bool isseteulminmax;
 		double mineul;
 		double maxeul;
@@ -6999,23 +6999,23 @@ static void s_dummyfunc();
 		}
 
 		///	Accessor : cursorListener
-		void setCursorListener(std::tr1::function<void()> listener){
+		void setCursorListener(std::function<void()> listener){
 			this->cursorListener= listener;
 		}
 		///	Accessor : lineShiftListener
-		void setLineShiftListener(std::tr1::function<void(int beforIndex, int afterIndex)> listener){
+		void setLineShiftListener(std::function<void(int beforIndex, int afterIndex)> listener){
 			this->lineShiftListener= listener;
 		}
 		///	Accessor : changeVisibleListener
-		void setChangeVisibleListener(std::tr1::function<void(int targetIndex)> listener){
+		void setChangeVisibleListener(std::function<void(int targetIndex)> listener){
 			this->changeVisibleListener= listener;
 		}
 		///	Accessor : changeLockListener
-		void setChangeLockListener(std::tr1::function<void(int targetIndex)> listener){
+		void setChangeLockListener(std::function<void(int targetIndex)> listener){
 			this->changeLockListener= listener;
 		}
 		///	Accessor : callPropertyListener
-		void setCallPropertyListener(std::tr1::function<void(int targetIndex)> listener){
+		void setCallPropertyListener(std::function<void(int targetIndex)> listener){
 			this->callPropertyListener= listener;
 		}
 
@@ -7023,11 +7023,11 @@ static void s_dummyfunc();
 		////////////////////////// MemberVar /////////////////////////////
 		int currentLine,showPosLine;
 		TCHAR *name;
-		std::tr1::function<void()> cursorListener;										//カーソル位置が変更された直後に呼ばれる
-		std::tr1::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//移動が行われる直前に呼ばれる
-		std::tr1::function<void(int targetIndex)> changeVisibleListener;				//可視状態が変更された直後に呼ばれる
-		std::tr1::function<void(int targetIndex)> changeLockListener;					//ロック状態が変更された直後に呼ばれる
-		std::tr1::function<void(int targetIndex)> callPropertyListener;					//レイヤーのプロパティを呼ぶ時に呼ばれる
+		std::function<void()> cursorListener;										//カーソル位置が変更された直後に呼ばれる
+		std::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//移動が行われる直前に呼ばれる
+		std::function<void(int targetIndex)> changeVisibleListener;				//可視状態が変更された直後に呼ばれる
+		std::function<void(int targetIndex)> changeLockListener;					//ロック状態が変更された直後に呼ばれる
+		std::function<void(int targetIndex)> callPropertyListener;					//レイヤーのプロパティを呼ぶ時に呼ばれる
 
 		class LineData{
 		public:
@@ -7477,23 +7477,23 @@ static void s_dummyfunc();
 		}
 
 		///	Accessor : cursorListener
-		void setCursorListener(std::tr1::function<void()> listener){
+		void setCursorListener(std::function<void()> listener){
 			this->cursorListener = listener;
 		}
 		///	Accessor : lineShiftListener
-		void setLineShiftListener(std::tr1::function<void(int beforIndex, int afterIndex)> listener){
+		void setLineShiftListener(std::function<void(int beforIndex, int afterIndex)> listener){
 			this->lineShiftListener = listener;
 		}
 		///	Accessor : changeVisibleListener
-		void setChangeVisibleListener(std::tr1::function<void(int targetIndex)> listener){
+		void setChangeVisibleListener(std::function<void(int targetIndex)> listener){
 			this->changeVisibleListener = listener;
 		}
 		///	Accessor : changeLockListener
-		void setChangeLockListener(std::tr1::function<void(int targetIndex)> listener){
+		void setChangeLockListener(std::function<void(int targetIndex)> listener){
 			this->changeLockListener = listener;
 		}
 		///	Accessor : callPropertyListener
-		void setCallPropertyListener(std::tr1::function<void(int targetIndex)> listener){
+		void setCallPropertyListener(std::function<void(int targetIndex)> listener){
 			this->callPropertyListener = listener;
 		}
 
@@ -7501,11 +7501,11 @@ static void s_dummyfunc();
 		////////////////////////// MemberVar /////////////////////////////
 		int currentLine, showPosLine;
 		TCHAR *name;
-		std::tr1::function<void()> cursorListener;										//カーソル位置が変更された直後に呼ばれる
-		std::tr1::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//移動が行われる直前に呼ばれる
-		std::tr1::function<void(int targetIndex)> changeVisibleListener;				//可視状態が変更された直後に呼ばれる
-		std::tr1::function<void(int targetIndex)> changeLockListener;					//ロック状態が変更された直後に呼ばれる
-		std::tr1::function<void(int targetIndex)> callPropertyListener;					//レイヤーのプロパティを呼ぶ時に呼ばれる
+		std::function<void()> cursorListener;										//カーソル位置が変更された直後に呼ばれる
+		std::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//移動が行われる直前に呼ばれる
+		std::function<void(int targetIndex)> changeVisibleListener;				//可視状態が変更された直後に呼ばれる
+		std::function<void(int targetIndex)> changeLockListener;					//ロック状態が変更された直後に呼ばれる
+		std::function<void(int targetIndex)> callPropertyListener;					//レイヤーのプロパティを呼ぶ時に呼ばれる
 
 		int lineDatasize;
 		
@@ -7533,7 +7533,7 @@ static void s_dummyfunc();
 
 		bool open;
 		bool canClose;
-		std::tr1::function<void()> openListener;
+		std::function<void()> openListener;
 
 		static const int SIZE_CLOSE_Y = 15;
 		static const int BOX_POS_X = 3;
