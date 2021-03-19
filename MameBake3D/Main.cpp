@@ -1350,6 +1350,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 
 	OpenDbgFile();
+
+	//_CrtSetBreakAlloc(10309);
+	//_CrtSetBreakAlloc(10833);
+
 //_CrtSetBreakAlloc(787);
 //_CrtSetBreakAlloc(2806);
 //_CrtSetBreakAlloc(758);

@@ -124,6 +124,7 @@ public:
 							  btConstraintSolver * constraintSolverMt,      // single multi-threaded solver for large islands (or NULL)
 							  btCollisionConfiguration * collisionConfiguration);
 	virtual ~btDiscreteDynamicsWorldMt();
+	
 
 	virtual int stepSimulation(btScalar timeStep, int maxSubSteps, btScalar fixedTimeStep) BT_OVERRIDE;
 };

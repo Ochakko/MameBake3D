@@ -168,6 +168,11 @@ btDiscreteDynamicsWorldMt::btDiscreteDynamicsWorldMt(btDispatcher* dispatcher,
 
 btDiscreteDynamicsWorldMt::~btDiscreteDynamicsWorldMt()
 {
+	//2021/03/19 add
+	if (m_constraintSolverMt) {
+		delete m_constraintSolverMt;
+		m_constraintSolverMt = 0;
+	}
 }
 
 void btDiscreteDynamicsWorldMt::solveConstraints(btContactSolverInfo& solverInfo)

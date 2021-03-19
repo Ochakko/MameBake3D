@@ -286,7 +286,11 @@ class btTaskSchedulerManager
 	btAlignedObjectArray<btITaskScheduler*> m_allocatedTaskSchedulers;
 
 public:
-	btTaskSchedulerManager() {}
+	btTaskSchedulerManager() {};
+
+	//2021/03/19 add
+	virtual ~btTaskSchedulerManager() { shutdown(); };
+
 	void init()
 	{
 		addTaskScheduler(btGetSequentialTaskScheduler());
@@ -312,11 +316,17 @@ public:
 	}
 	void shutdown()
 	{
-		for (int i = 0; i < m_allocatedTaskSchedulers.size(); ++i)
+		for (int i = 0; i < m_allocatedTaskSchedulers.size(); i++)
 		{
-			delete m_allocatedTaskSchedulers[i];
+			if (m_allocatedTaskSchedulers[i]) {
+				delete m_allocatedTaskSchedulers[i];
+			}
 		}
 		m_allocatedTaskSchedulers.clear();
+
+		//2021/03/19 add
+		m_taskSchedulers.clear();
+
 	}
 
 	void addTaskScheduler(btITaskScheduler* ts)
@@ -334,6 +344,7 @@ public:
 			m_taskSchedulers.push_back(ts);
 		}
 	}
+
 	int getNumTaskSchedulers() const { return m_taskSchedulers.size(); }
 	btITaskScheduler* getTaskScheduler(int i) { return m_taskSchedulers[i]; }
 };

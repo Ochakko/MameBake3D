@@ -248,6 +248,27 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/19_3
+	Bullet Physics ver2.89‚Ìƒƒ‚ƒŠƒŠ[ƒNC³
+	Fix Memory Leak of Bullet Physics ver 2.89.
+
+		//btDiscreteDynamicsWorldMt.cpp
+		btDiscreteDynamicsWorldMt::~btDiscreteDynamicsWorldMt()
+		{
+			//2021/03/19 add
+			if (m_constraintSolverMt) {
+				delete m_constraintSolverMt;
+				m_constraintSolverMt = 0;
+			}
+		}
+
+
+		//CommonRigidBodyMTBase.cpp
+		//2021/03/19 add
+		virtual ~btTaskSchedulerManager() { shutdown(); };
+
+
+
 2021/03/19_2
 	Bullet Physics Update ver2.86 to ver 2.89.
 	Bullet Physics with PPL Micosoft MultiTheadLibrary.
