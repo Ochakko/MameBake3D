@@ -13295,7 +13295,7 @@ int CreateUtDialog()
 	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
 	_ASSERT(s_ui_texthreadnum);
-	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 64, g_numthread);
+	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 4, g_numthread);
 	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
 	_ASSERT(s_ui_slthreadnum);
 

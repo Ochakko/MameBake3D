@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 	GWEN
 	Copyright (c) 2010 Facepunch Studios
@@ -10,4 +9,3 @@
 
 using namespace Gwen;
 using namespace Gwen::Controls;
-

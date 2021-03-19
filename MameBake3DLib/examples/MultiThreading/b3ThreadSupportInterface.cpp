@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2007 Erwin Coumans  http://bulletphysics.com
@@ -18,6 +17,4 @@ subject to the following restrictions:
 
 b3ThreadSupportInterface::~b3ThreadSupportInterface()
 {
-
 }
-

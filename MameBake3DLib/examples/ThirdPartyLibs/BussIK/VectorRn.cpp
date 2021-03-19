@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 *
 * Mathematics Subpackage (VrMath)
@@ -21,7 +20,6 @@ subject to the following restrictions:
 *
 */
 
-
 //
 // VectorRn:  Vector over Rn  (Variable length vector)
 //
@@ -30,15 +28,18 @@ subject to the following restrictions:
 
 VectorRn VectorRn::WorkVector;
 
-double VectorRn::MaxAbs () const
+double VectorRn::MaxAbs() const
 {
 	double result = 0.0;
 	double* t = x;
-	for ( long i = length; i>0; i-- ) {
-		if ( (*t) > result ) {
+	for (long i = length; i > 0; i--)
+	{
+		if ((*t) > result)
+		{
 			result = *t;
 		}
-		else if ( -(*t) > result ) {
+		else if (-(*t) > result)
+		{
 			result = -(*t);
 		}
 		t++;

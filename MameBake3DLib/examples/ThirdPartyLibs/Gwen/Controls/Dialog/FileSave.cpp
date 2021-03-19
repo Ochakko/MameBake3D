@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 	GWEN
 	Copyright (c) 2010 Facepunch Studios
@@ -12,9 +11,9 @@
 using namespace Gwen;
 using namespace Gwen::Dialogs;
 
-void Gwen::Dialogs::FileSaveEx( bool bUseSystem, const String& Name, const String& StartPath, const String& Extension, Gwen::Event::Handler* pHandler, Gwen::Event::Handler::FunctionStr fnCallback )
+void Gwen::Dialogs::FileSaveEx(bool bUseSystem, const String& Name, const String& StartPath, const String& Extension, Gwen::Event::Handler* pHandler, Gwen::Event::Handler::FunctionStr fnCallback)
 {
-	if ( bUseSystem && Gwen::Platform::FileSave( Name, StartPath, Extension, pHandler, fnCallback ) )
+	if (bUseSystem && Gwen::Platform::FileSave(Name, StartPath, Extension, pHandler, fnCallback))
 	{
 		return;
 	}

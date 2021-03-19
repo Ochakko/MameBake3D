@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2008 Erwin Coumans  http://bulletphysics.com
@@ -18,31 +17,31 @@ subject to the following restrictions:
 #include "btCollisionDispatcher.h"
 #include "btCollisionObject.h"
 
-btActivatingCollisionAlgorithm::btActivatingCollisionAlgorithm (const btCollisionAlgorithmConstructionInfo& ci)
-:btCollisionAlgorithm(ci)
+btActivatingCollisionAlgorithm::btActivatingCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci)
+	: btCollisionAlgorithm(ci)
 //,
 //m_colObj0(0),
 //m_colObj1(0)
 {
 }
-btActivatingCollisionAlgorithm::btActivatingCollisionAlgorithm (const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* ,const btCollisionObjectWrapper* )
-:btCollisionAlgorithm(ci)
+btActivatingCollisionAlgorithm::btActivatingCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper*, const btCollisionObjectWrapper*)
+	: btCollisionAlgorithm(ci)
 //,
 //m_colObj0(0),
 //m_colObj1(0)
 {
-//	if (ci.m_dispatcher1->needsCollision(colObj0,colObj1))
-//	{
-//		m_colObj0 = colObj0;
-//		m_colObj1 = colObj1;
-//		
-//		m_colObj0->activate();
-//		m_colObj1->activate();
-//	}
+	//	if (ci.m_dispatcher1->needsCollision(colObj0,colObj1))
+	//	{
+	//		m_colObj0 = colObj0;
+	//		m_colObj1 = colObj1;
+	//
+	//		m_colObj0->activate();
+	//		m_colObj1->activate();
+	//	}
 }
 
 btActivatingCollisionAlgorithm::~btActivatingCollisionAlgorithm()
 {
-//		m_colObj0->activate();
-//		m_colObj1->activate();
+	//		m_colObj0->activate();
+	//		m_colObj1->activate();
 }

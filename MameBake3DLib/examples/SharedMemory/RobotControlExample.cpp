@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 
 
 #include "RobotControlExample.h"
@@ -666,5 +664,3 @@ class CommonExampleInterface*    RobotControlExampleCreateFunc(struct CommonExam
 	return example;
 }
 #endif
-
-

@@ -1,5 +1,5 @@
-#ifndef PHYSICS_CLIENT_SHARED_MEMORY2_H
-#define PHYSICS_CLIENT_SHARED_MEMORY2_H
+#ifndef PHYSICS_CLIENT_SHARED_MEMORY3_H
+#define PHYSICS_CLIENT_SHARED_MEMORY3_H
 
 #include "PhysicsDirect.h"
 
@@ -12,7 +12,6 @@ public:
 	virtual ~PhysicsClientSharedMemory2();
 
 	void setSharedMemoryInterface(class SharedMemoryInterface* sharedMem);
-
 };
 
-#endif //PHYSICS_CLIENT_SHARED_MEMORY2_H
+#endif  //PHYSICS_CLIENT_SHARED_MEMORY3_H

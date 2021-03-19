@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -21,4 +20,3 @@ btCollisionAlgorithm::btCollisionAlgorithm(const btCollisionAlgorithmConstructio
 {
 	m_dispatcher = ci.m_dispatcher1;
 }
-

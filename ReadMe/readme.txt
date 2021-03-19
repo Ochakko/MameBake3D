@@ -12,6 +12,19 @@
 	（インディー契約の条件については以下のページ）
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
+
+開発環境(2021/03/19_2時点)を書きます。
+FBXSDKは2020.2(VC2019)
+Microsoft MultiThreadLibrary PPL.
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
+VisualStudio2019Pro(VisualStudioSubscription)
+MayaIndie(Subscription FBXの確認はMayaでする)
+
+
+
 開発環境(2021/03/04時点)を書きます。
 FBXSDKは2020.2(VC2019)
 Intel OneAPI Base Toolkit v.2021のtbb(Intelのサイトに登録してダウンロードインストール)
@@ -235,6 +248,21 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/19_2
+	Bullet Physics Update ver2.86 to ver 2.89.
+	Bullet Physics with PPL Micosoft MultiTheadLibrary.
+		Becaouse bullet physics 2 series (old version) is not treated with new Intel oneAPI.
+
+	Develop Env(2021/03/19_2)
+		FBXSDKは2020.2(VC2019)
+		Microsoft MultiThreadLibrary PPL.
+		DirectX11 (Windows10 SDK or VisualStudioからインストール)
+		githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+		githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+		githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
+		VisualStudio2019Pro(VisualStudioSubscription)
+		MayaIndie(Subscription FBXの確認はMayaでする)
+
 2021/03/19_1
 	Replace std::tr1::function to std::function.
 

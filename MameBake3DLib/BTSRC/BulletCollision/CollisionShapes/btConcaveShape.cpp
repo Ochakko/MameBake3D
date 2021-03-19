@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
@@ -14,15 +13,12 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #include "btConcaveShape.h"
 
 btConcaveShape::btConcaveShape() : m_collisionMargin(btScalar(0.))
 {
-
 }
 
 btConcaveShape::~btConcaveShape()
 {
-
 }
