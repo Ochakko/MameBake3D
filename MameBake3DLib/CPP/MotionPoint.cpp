@@ -9,6 +9,9 @@
 #include <crtdbg.h>
 
 
+static std::vector<CMotionPoint*> s_mppool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+
+
 CMotionPoint::CMotionPoint()
 {
 	InitParams();
@@ -20,6 +23,12 @@ CMotionPoint::~CMotionPoint()
 
 int CMotionPoint::InitParams()
 {
+	//not use at allocated
+	m_useflag = 0;//0: not use, 1: in use
+	m_indexofpool = 0;
+	m_allocheadflag = 0;//1: head pointer at allocated
+
+
 	m_localmatflag = 0;
 	m_undovalidflag = 0;
 	m_frame = 0.0;
@@ -267,3 +276,157 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	return *this;
 }
 
+
+
+//static func
+CMotionPoint* CMotionPoint::GetNewMP()
+{
+	static int s_befheadno = -1;
+	static int s_befelemno = -1;
+
+	int curpoollen;
+	curpoollen = s_mppool.size();
+
+
+	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
+	int chkheadno;
+	chkheadno = s_befheadno;
+	int chkelemno;
+	chkelemno = s_befelemno + 1;
+	if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= MPPOOLBLKLEN)) {
+		chkelemno = 0;
+		chkheadno++;
+	}
+	if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < MPPOOLBLKLEN)) {
+		CMotionPoint* curmphead = s_mppool[chkheadno];
+		if (curmphead) {
+			CMotionPoint* chkmp;
+			chkmp = curmphead + chkelemno;
+			if (chkmp) {
+				if (chkmp->GetUseFlag() == 0) {
+					int saveindex = chkmp->GetIndexOfPool();
+					int saveallochead = chkmp->IsAllocHead();
+					chkmp->InitParams();
+					chkmp->SetUseFlag(1);
+					chkmp->SetIndexOfPool(saveindex);
+					chkmp->SetIsAllocHead(saveallochead);
+
+					s_befheadno = chkheadno;
+					s_befelemno = chkelemno;
+					return chkmp;
+				}
+			}
+		}
+	}
+
+	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+		//プールを先頭から検索して未使用がみつかればそれをリリース
+		int mpno;
+		for (mpno = 0; mpno < curpoollen; mpno++) {
+			CMotionPoint* curmphead = s_mppool[mpno];
+			if (curmphead) {
+				int elemno;
+				for (elemno = 0; elemno < MPPOOLBLKLEN; elemno++) {
+					CMotionPoint* curmp;
+					curmp = curmphead + elemno;
+					if (curmp->GetUseFlag() == 0) {
+						int saveindex = curmp->GetIndexOfPool();
+						int saveallochead = curmp->IsAllocHead();
+						curmp->InitParams();
+						curmp->SetUseFlag(1);
+						curmp->SetIndexOfPool(saveindex);
+						curmp->SetIsAllocHead(saveallochead);
+
+						s_befheadno = mpno;
+						s_befelemno = elemno;
+						return curmp;
+					}
+				}
+			}
+		}
+	//}
+
+	//未使用MPがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
+	CMotionPoint* allocmp;
+	allocmp = new CMotionPoint[MPPOOLBLKLEN];
+	if (!allocmp) {
+		_ASSERT(0);
+
+		s_befheadno = -1;
+		s_befelemno = -1;
+
+		return 0;
+	}
+	int allocno;
+	for (allocno = 0; allocno < MPPOOLBLKLEN; allocno++) {
+		CMotionPoint* curallocmp = allocmp + allocno;
+		if (curallocmp) {
+			int indexofpool = curpoollen + allocno;
+			curallocmp->InitParams();
+			curallocmp->SetUseFlag(0);
+			curallocmp->SetIndexOfPool(indexofpool);
+
+			if (allocno == 0) {
+				curallocmp->SetIsAllocHead(1);
+			}
+			else {
+				curallocmp->SetIsAllocHead(0);
+			}
+		}
+		else {
+			_ASSERT(0);
+
+			s_befheadno = -1;
+			s_befelemno = -1;
+
+			return 0;
+		}
+	}
+	s_mppool.push_back(allocmp);//allocate block(アロケート時の先頭ポインタ)を格納
+
+	allocmp->SetUseFlag(1);
+
+
+	s_befheadno = s_mppool.size() - 1;
+	s_befelemno = 0;
+
+	return allocmp;
+}
+
+//static func
+void CMotionPoint::InvalidateMotionPoint(CMotionPoint* srcmp)
+{
+	if (!srcmp) {
+		_ASSERT(0);
+		return;
+	}
+
+	int saveindex = srcmp->GetIndexOfPool();
+	int saveallochead = srcmp->IsAllocHead();
+
+	srcmp->InitParams();
+	srcmp->SetUseFlag(0);
+	srcmp->SetIsAllocHead(saveallochead);
+	srcmp->SetIndexOfPool(saveindex);
+}
+
+//static func
+void CMotionPoint::InitMotionPoints()
+{
+	s_mppool.clear();
+}
+
+//static func
+void CMotionPoint::DestroyMotionPoints() {
+	int mpallocnum = s_mppool.size();
+	int mpno;
+	for (mpno = 0; mpno < mpallocnum; mpno++) {
+		CMotionPoint* delmp;
+		delmp = s_mppool[mpno];
+		//if (delmp && (delmp->IsAllocHead() == 1)) {
+		if (delmp) {
+			delete[] delmp;
+		}
+	}
+	s_mppool.clear();
+}

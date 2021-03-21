@@ -12,6 +12,8 @@
 
 using namespace std;
 
+extern std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+
 namespace OrgWinGUI{
 
 	////////////////----------------------------------------////////////////
@@ -416,6 +418,162 @@ namespace OrgWinGUI{
 		//}
 	}
 
+	//namespace global func
+	void* GetNewEulKey()
+	{
+		static int s_befheadno = -1;
+		static int s_befelemno = -1;
+
+		int curpoollen;
+		curpoollen = g_eulpool.size();
+
+
+		//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
+		int chkheadno;
+		chkheadno = s_befheadno;
+		int chkelemno;
+		chkelemno = s_befelemno + 1;
+		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= EULPOOLBLKLEN)) {
+			chkelemno = 0;
+			chkheadno++;
+		}
+		if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < EULPOOLBLKLEN)) {
+			OWP_EulerGraph::EulLineData::EulKey* cureulhead = (OWP_EulerGraph::EulLineData::EulKey*)g_eulpool[chkheadno];
+
+			if (cureulhead) {
+				OWP_EulerGraph::EulLineData::EulKey* chkeul;
+				chkeul = cureulhead + chkelemno;
+				if (chkeul) {
+					if (chkeul->GetUseFlag() == 0) {
+						int saveindex = chkeul->GetIndexOfPool();
+						int saveallochead = chkeul->IsAllocHead();
+						chkeul->InitParams();
+						chkeul->SetUseFlag(1);
+						chkeul->SetIndexOfPool(saveindex);
+						chkeul->SetIsAllocHead(saveallochead);
+
+						s_befheadno = chkheadno;
+						s_befelemno = chkelemno;
+						return (void*)chkeul;
+					}
+				}
+			}
+		}
+
+		//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+			//プールを先頭から検索して未使用がみつかればそれをリリース
+			int eulno;
+			for (eulno = 0; eulno < curpoollen; eulno++) {
+				OWP_EulerGraph::EulLineData::EulKey* cureulhead = (OWP_EulerGraph::EulLineData::EulKey*)g_eulpool[eulno];
+				if (cureulhead) {
+					int elemno;
+					for (elemno = 0; elemno < EULPOOLBLKLEN; elemno++) {
+						OrgWinGUI::OWP_EulerGraph::EulLineData::EulKey* cureul;
+						cureul = cureulhead + elemno;
+						if (cureul->GetUseFlag() == 0) {
+							int saveindex = cureul->GetIndexOfPool();
+							int saveallochead = cureul->IsAllocHead();
+							cureul->InitParams();
+							cureul->SetUseFlag(1);
+							cureul->SetIndexOfPool(saveindex);
+							cureul->SetIsAllocHead(saveallochead);
+
+							s_befheadno = eulno;
+							s_befelemno = elemno;
+							return (void*)cureul;
+						}
+					}
+				}
+			}
+		//}
+
+		//未使用eulがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
+		OWP_EulerGraph::EulLineData::EulKey* alloceul;
+		alloceul = new OWP_EulerGraph::EulLineData::EulKey[EULPOOLBLKLEN];
+		if (!alloceul) {
+			_ASSERT(0);
+
+			s_befheadno = -1;
+			s_befelemno = -1;
+
+			return 0;
+		}
+		int allocno;
+		for (allocno = 0; allocno < EULPOOLBLKLEN; allocno++) {
+			OWP_EulerGraph::EulLineData::EulKey* curalloceul = alloceul + allocno;
+			if (curalloceul) {
+				int indexofpool = curpoollen + allocno;
+				curalloceul->InitParams();
+				curalloceul->SetUseFlag(0);
+				curalloceul->SetIndexOfPool(indexofpool);
+
+				if (allocno == 0) {
+					curalloceul->SetIsAllocHead(1);
+				}
+				else {
+					curalloceul->SetIsAllocHead(0);
+				}
+			}
+			else {
+				_ASSERT(0);
+
+				s_befheadno = -1;
+				s_befelemno = -1;
+
+				return 0;
+			}
+		}
+		g_eulpool.push_back((void*)alloceul);//allocate block(アロケート時の先頭ポインタ)を格納
+
+		alloceul->SetUseFlag(1);
+
+
+		s_befheadno = g_eulpool.size() - 1;
+		s_befelemno = 0;
+
+		return (void*)alloceul;
+	}
+
+	//member func
+	void OWP_EulerGraph::EulLineData::EulKey::InvalidateEulKeys()
+	{
+		if (!this) {
+			_ASSERT(0);
+			return;
+		}
+
+		int saveindex = GetIndexOfPool();
+		int saveallochead = IsAllocHead();
+
+		InitParams();
+		SetUseFlag(0);
+		SetIsAllocHead(saveallochead);
+		SetIndexOfPool(saveindex);
+	}
+
+	//namespace global func
+	void InitEulKeys()
+	{
+		g_eulpool.clear();
+	}
+
+	//namespace global func
+	void DestroyEulKeys() {
+		int eulallocnum = g_eulpool.size();
+		int eulno;
+		for (eulno = 0; eulno < eulallocnum; eulno++) {
+			//class OWP_EulerGraph::EulLineData::EulKey;
+			OWP_EulerGraph::EulLineData::EulKey* deleul;
+			deleul = (OWP_EulerGraph::EulLineData::EulKey*)g_eulpool[eulno];
+			//if (deleul && (deleul->IsAllocHead() == 1)) {
+			if (deleul) {
+				delete[] deleul;
+			}
+		}
+		g_eulpool.clear();
+	}
+
+
 	void OWP_CheckBoxA::draw() {
 		if (!parentWindow) {
 			return;
@@ -729,5 +887,9 @@ namespace OrgWinGUI{
 
 		return 0;
 	}
+
+
+
+
 
 }

@@ -72,7 +72,8 @@ int CUndoMotion::DestroyObjs()
 		CMotionPoint* nextmp = 0;
 		while( mpptr ){
 			nextmp = mpptr->GetNext();
-			delete mpptr;
+			//delete mpptr;
+			CMotionPoint::InvalidateMotionPoint(mpptr);
 			mpptr = nextmp;
 		}
 	}
@@ -133,7 +134,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 
 			if (firstmp){
 				if (!undofirstmp){
-					undofirstmp = new CMotionPoint();
+					//undofirstmp = new CMotionPoint();
+					undofirstmp = CMotionPoint::GetNewMP();
 					if (!undofirstmp){
 						_ASSERT(0);
 						return 1;
@@ -149,7 +151,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 				CMotionPoint* newundomp = befundomp->GetNext();
 				while (curmp){
 					if (!newundomp){
-						newundomp = new CMotionPoint();
+						//newundomp = new CMotionPoint();
+						newundomp = CMotionPoint::GetNewMP();
 						if (!newundomp){
 							_ASSERT(0);
 							return 1;

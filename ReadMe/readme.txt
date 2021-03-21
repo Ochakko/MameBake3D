@@ -248,6 +248,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/21
+	Use memory blocks on allocating CMotionPoint and EulKey.
+
+	Fix EulerGraph problem that euler is not displayed at cases of loading multi characters multi motions.
+
 2021/03/19_3
 	Bullet Physics ver2.89‚Ìƒƒ‚ƒŠƒŠ[ƒNC³
 	Fix Memory Leak of Bullet Physics ver 2.89.

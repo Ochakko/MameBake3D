@@ -20,6 +20,9 @@
 
 #include <MotionPoint.h>
 
+
+
+
 class CMQOFace;
 class CMotionPoint;
 class CRigidElem;
@@ -486,7 +489,6 @@ private:
 	ChaMatrix GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag);
 
 
-
 public: //accesser
 	int GetType(){ return m_type; };
 	void SetType( int srctype ){ m_type = srctype; };
@@ -913,6 +915,9 @@ public: //accesser
 	{
 		return m_tmpkinematic;
 	};
+	
+
+
 
 private:
 	int m_posconstraint;
@@ -936,6 +941,9 @@ private:
 
 	ChaVector3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
 	ChaVector3 m_childscreen;//ボーンの子供のWVP適用後の座標。
+
+
+
 
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。

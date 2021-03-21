@@ -1652,6 +1652,13 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 
 int CModel::SetCurrentMotion( int srcmotid )
 {
+	int motnum;
+	motnum = m_motinfo.size();
+	if ((srcmotid <= 0) || (srcmotid > motnum)) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	m_curmotinfo = m_motinfo[ srcmotid - 1 ];//id‚Í‚P‚©‚ç
 	if( !m_curmotinfo ){
 		_ASSERT( 0 );

@@ -15,6 +15,7 @@
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
 
+#define EULPOOLBLKLEN	2048
 
 struct KeyInfo{
 	const TCHAR *label;
@@ -29,11 +30,21 @@ extern bool g_selecttolastFlag;//Main.cpp
 extern bool g_underselecttolast;//Main.cpp
 extern bool g_undereditrange;//Main.cpp
 
+
+
 static double TIME_ERROR_WIDTH = 0.0001;
 
 namespace OrgWinGUI{
 
+	//global
+void InitEulKeys();
+void DestroyEulKeys();
+void* GetNewEulKey();
+
+
 static void s_dummyfunc();
+
+
 
 /*	//	function : WCHAR → TCHAR
 	int wchar2tchar(const WCHAR *src, TCHAR *dst, size_t size){
@@ -4724,6 +4735,7 @@ static void s_dummyfunc();
 			maxeul = 0.0;
 			isseteulminmax = false;
 			parentWindow = NULL;
+
 		}
 		~OWP_EulerGraph() {
 			selectAll(true);
@@ -4735,6 +4747,11 @@ static void s_dummyfunc();
 				delete (*it);
 			}
 		}
+
+
+		static void OWP_EulerGraph::InitEulKeys();
+		static void OWP_EulerGraph::DestroyEulKeys();
+
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
@@ -5829,7 +5846,7 @@ static void s_dummyfunc();
 			return retki;
 		}
 
-
+	
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		double maxTime, currentTime, showPos_time;
@@ -5847,48 +5864,138 @@ static void s_dummyfunc();
 		double maxeul;
 
 		//行データクラス-------------
-		class EulLineData {
+		public : class EulLineData {
 		public:
-			EulLineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_EulerGraph *_parent, unsigned int _lineIndex) {
+			EulLineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_EulerGraph* _parent, unsigned int _lineIndex) {
 				depth = _depth;
 				m_nullflag = nullflag;
 				name = _name;
 				parent = _parent;
 				lineIndex = _lineIndex;
-			}
+				//InitEulKeys();
+			};
 			EulLineData(const EulLineData& a) {
 				_ASSERT_EXPR(0, L"コピーコンストラクタは使えません");
-			}
+			};
 			~EulLineData() {
 				for (std::vector<EulKey*>::iterator it = key.begin();
 					it != key.end();
 					it++) {
-					delete (*it);
+					//delete (*it);
+					(*it)->InvalidateEulKeys();
 				}
-			}
+
+				//DestroyEulKeys();
+
+			};
+
+
+			//class OWP_EulerGraph::EulLineData::EulKey;
+			//static OWP_EulerGraph::EulLineData::EulKey* OWP_EulerGraph::EulLineData::GetNewEulKey();
+			//static void OWP_EulerGraph::EulLineData::InvalidateEulKeys(OWP_EulerGraph::EulLineData::EulKey* srceul);
+
 
 			//キーデータクラス---------------
 			class EulKey {
 			public:
+				EulKey() {
+					InitParams();
+				};
 				EulKey(double _time, int _type = 0, double _value = 0.0, double _length = 1.0, bool _select = false) {
+					InitParams();
+					SetParams(_time, _type, _value, _length, _select);
+				};
+
+				void InitParams() {
+					time = 0.0;
+					type = 0;
+					length = 0.0;
+					select = false;
+					value = 0.0;
+
+					m_useflag = 0;//0: not use, 1: in use
+					m_indexofpool = 0;//index of pool vector
+					m_allocheadflag = 0;//1: head pointer at allocated
+				};
+				void SetParams(double _time, int _type = 0, double _value = 0.0, double _length = 1.0, bool _select = false) {
 					time = _time;
 					type = _type;
 					length = _length;
 					select = _select;
 					value = _value;
-				}
+				};
+				void* operator new[](size_t sizeInBytes) { 
+					//return (void*)malloc(sizeInBytes); 
+					int newelemnum;
+					newelemnum = sizeInBytes / sizeof(OWP_EulerGraph::EulLineData::EulKey);
+					if (sizeInBytes != (newelemnum * sizeof(OWP_EulerGraph::EulLineData::EulKey))) {
+						_ASSERT(0);
+						return 0;
+					}
+
+					OWP_EulerGraph::EulLineData::EulKey* neweulblk;
+					neweulblk = (OWP_EulerGraph::EulLineData::EulKey*)malloc(sizeof(OWP_EulerGraph::EulLineData::EulKey) * newelemnum);
+					if (!neweulblk) {
+						_ASSERT(0);
+						return 0;
+					}
+					int elemno;
+					for (elemno = 0; elemno < newelemnum; elemno++) {
+						OWP_EulerGraph::EulLineData::EulKey* newelem;
+						newelem = neweulblk + elemno;
+						newelem->InitParams();
+					}
+
+					return neweulblk;
+				};
+				
+				void OWP_EulerGraph::EulLineData::EulKey::InvalidateEulKeys();
+
+
+				int GetUseFlag()
+				{
+					return m_useflag;
+				};
+				void SetUseFlag(int srcflag)
+				{
+					m_useflag = srcflag;
+				};
+				int GetIndexOfPool()
+				{
+					return m_indexofpool;
+				};
+				void SetIndexOfPool(int srcindex)
+				{
+					m_indexofpool = srcindex;
+				};
+				int IsAllocHead()
+				{
+					return m_allocheadflag;
+				};
+				void SetIsAllocHead(int srcflag)
+				{
+					m_allocheadflag = srcflag;
+				};
+
+
 
 				////////////////////////// MemberVar /////////////////////////////
 				double time, length;
 				int type;
 				bool select;
 				double value;
+				int m_useflag;//0: not use, 1: in use
+				int m_indexofpool;//index of pool vector
+				int m_allocheadflag;//1: head pointer at allocated
+
 			};
 
+		public:			
 			////////////////////////// MemberVar /////////////////////////////
+
 			int m_nullflag;
 			std::basic_string<TCHAR> name;
-			std::vector<EulKey*> key;
+			std::vector<OWP_EulerGraph::EulLineData::EulKey*> key;
 			unsigned int lineIndex;
 			int depth;
 
@@ -6146,10 +6253,19 @@ static void s_dummyfunc();
 					for (int i = (int)key.size() - 2; i>pushPos; i--) {
 						key[i] = key[i - 1];
 					}
-					key[pushPos] = new EulKey(_time, _type, _value, _length, _select);
+					//key[pushPos] = new EulKey(_time, _type, _value, _length, _select);
+					key[pushPos] = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
+					key[pushPos]->SetParams(_time, _type, _value, _length, _select);
+
 				}
 				else {
-					key.push_back(new EulKey(_time, _type, _value, _length, _select));
+					//key.push_back(new EulKey(_time, _type, _value, _length, _select));
+					OWP_EulerGraph::EulLineData::EulKey* neweulkey;
+					neweulkey = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
+					if (neweulkey) {
+						neweulkey->SetParams(_time, _type, _value, _length, _select);
+						key.push_back(neweulkey);
+					}
 				}
 
 				return true;
@@ -6238,31 +6354,41 @@ static void s_dummyfunc();
 			}
 			//	Method : 選択されているキーをすべて削除する
 			unsigned int deleteKey(bool noCallListener = false) {
-
-				unsigned int deleteNum = 0;
-				for (unsigned int i = 0; i<(int)key.size(); i++) {
-					if (key[i]->select) {
-						//リスナーコール
-						if (!noCallListener && parent->keyDeleteListener != NULL) {
-							KeyInfo ki;
-							ki.label = name.c_str();
-							ki.lineIndex = lineIndex;
-							ki.time = key[i]->time;
-							ki.timeIndex = -1;
-							ki.object = NULL;// key[i]->object;
-							(parent->keyDeleteListener)(ki);
-						}
-
-						delete key[i];
-						deleteNum++;
-					}
-					else {
-						key[i - deleteNum] = key[i];
-					}
+				//EulKeyの場合　全てInvalidate
+				unsigned int deleteNum;
+				deleteNum = (unsigned int)key.size();
+				for (unsigned int i = 0; i < deleteNum; i++) {
+					key[i]->InvalidateEulKeys();
 				}
-				for (unsigned int i = 0; i<deleteNum; i++) {
-					key.pop_back();
-				}
+
+				key.clear();
+
+				//unsigned int deleteNum = 0;
+				//for (unsigned int i = 0; i<(int)key.size(); i++) {
+				//	if (key[i]->select) {
+				//		//リスナーコール
+				//		if (!noCallListener && parent->keyDeleteListener != NULL) {
+				//			KeyInfo ki;
+				//			ki.label = name.c_str();
+				//			ki.lineIndex = lineIndex;
+				//			ki.time = key[i]->time;
+				//			ki.timeIndex = -1;
+				//			ki.object = NULL;// key[i]->object;
+				//			(parent->keyDeleteListener)(ki);
+				//		}
+
+				//		//delete key[i];
+				//		key[i]->InvalidateEulKeys();
+				//		deleteNum++;
+				//	}
+				//	else {
+				//		key[i - deleteNum] = key[i];
+				//	}
+				//}
+				//for (unsigned int i = 0; i<deleteNum; i++) {
+				//	key.pop_back();
+				//}
+				
 				return deleteNum;
 
 			}
@@ -7553,7 +7679,6 @@ void s_dummyfuncKey( KeyboardEvent& keye )
 	static int dummycnt = 0;
 	dummycnt++;
 }
-
 
 }
 

@@ -5,7 +5,11 @@
 #include <ChaVecCalc.h>
 //#include <quaternion.h>
 
+#define MPPOOLBLKLEN	8192
+//#define MPPOOLBLKLEN	32768
+
 class CBone;
+
 
 class CMotionPoint
 {
@@ -105,10 +109,48 @@ public:
 	{
 		m_localmatflag = srcflag;
 	};
+
+	int GetUseFlag()
+	{
+		return m_useflag;
+	};
+	void SetUseFlag(int srcflag)
+	{
+		m_useflag = srcflag;
+	};
+	int GetIndexOfPool()
+	{
+		return m_indexofpool;
+	};
+	void SetIndexOfPool(int srcindex)
+	{
+		m_indexofpool = srcindex;
+	};
+	int IsAllocHead()
+	{
+		return m_allocheadflag;
+	};
+	void SetIsAllocHead(int srcflag)
+	{
+		m_allocheadflag = srcflag;
+	};
+
+
+
+	static CMotionPoint* GetNewMP();
+	static void InvalidateMotionPoint(CMotionPoint* srcmp);
+	static void InitMotionPoints();
+	static void DestroyMotionPoints();
+
 private:
 	int DestroyObjs();
 
 private:
+
+	int m_useflag;//0: not use, 1: in use
+	int m_indexofpool;//index of pool vector
+	int m_allocheadflag;//1: head pointer at allocated
+
 	int m_undovalidflag;
 	double m_frame;
 	int m_localmatflag;

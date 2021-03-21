@@ -406,7 +406,7 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref
 		XMLIOBUF charabuf;
 		ZeroMemory( &charabuf, sizeof( XMLIOBUF ) );
 		CallF( SetXmlIOBuf( &m_xmliobuf, "<Chara>", "</Chara>", &charabuf ), return 1 );
-		CallF( ReadChara( characnt, &charabuf ), return 1 );
+		CallF( ReadChara( charanum, characnt, &charabuf ), return 1 );
 	}
 
 	m_xmliobuf.pos = 0;
@@ -453,7 +453,7 @@ int CChaFile::ReadProjectInfo( XMLIOBUF* xmlbuf, int* charanumptr )
 
 	return 0;
 }
-int CChaFile::ReadChara( int characnt, XMLIOBUF* xmlbuf )
+int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 {
 /***
 	CallF( Write2File( "  <Chara>\r\n" ), return 1 );
@@ -527,7 +527,7 @@ int CChaFile::ReadChara( int characnt, XMLIOBUF* xmlbuf )
 	g_tmpmqomult = modelmult;
 
 	int inittimeline = 0;
-	if (characnt != 0) {
+	if (characnt == (charanum - 1)) {
 		inittimeline = 1;
 	}
 	CModel* newmodel = 0;

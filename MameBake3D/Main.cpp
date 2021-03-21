@@ -123,6 +123,8 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #include <lmtFile.h>
 #include <RigFile.h>
 #include <MotFilter.h>
+#include <MotionPoint.h>
+
 
 #include "..\Effects11\Inc\d3dx11effect.h"
 
@@ -143,6 +145,8 @@ typedef struct tag_spsw
 	CMySprite* spriteOFF;
 	POINT dispcenter;
 }SPGUISW;
+
+
 
 
 /*
@@ -262,6 +266,8 @@ extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 extern void DXUTSetOverrideSize(int srcw, int srch);
 
+extern void OrgWinGUI::InitEulKeys();
+extern void OrgWinGUI::DestroyEulKeys();
 
 
 CRITICAL_SECTION s_CritSection_LTimeline;
@@ -815,6 +821,9 @@ static void ShowLimitEulerWnd(bool srcflag);
 
 ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 
+
+std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
@@ -943,8 +952,6 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 #define IDC_COMBO_MOTIONBRUSH_METHOD	63
 #define IDC_RMARK					64
-
-
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1351,8 +1358,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	OpenDbgFile();
 
-	//_CrtSetBreakAlloc(10309);
-	//_CrtSetBreakAlloc(10833);
+//_CrtSetBreakAlloc(10309);
+//_CrtSetBreakAlloc(10833);
 
 //_CrtSetBreakAlloc(787);
 //_CrtSetBreakAlloc(2806);
@@ -1545,6 +1552,9 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
+
+	CMotionPoint::InitMotionPoints();
+	InitEulKeys();
 
 	s_motmenuindexmap.clear();
 	s_reindexmap.clear();
@@ -2450,6 +2460,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	s_oprigflag = 0;
 	s_customrigbone = 0;
 
+
+
+
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
@@ -2458,12 +2471,16 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 			//if (pscene){
 			//	pscene->Destroy();
 			//}
+			//curmodel->DestroyScene();
 
 			delete curmodel;
 		}
 	}
 	s_modelindex.clear();
 	s_model = 0;
+
+
+
 
 	if (s_select) {
 		delete s_select;
@@ -3072,6 +3089,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_bpWorld;
 		s_bpWorld = 0;
 	}
+
+	CMotionPoint::DestroyMotionPoints();
+	DestroyEulKeys();
+
 
 	DeleteCriticalSection(&s_CritSection_LTimeline);
 }
@@ -3847,6 +3868,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						}
 
 						ChangeCurrentBone();
+
+						
+
 
 						if (s_model->GetInitAxisMatX() == 0){
 							s_owpLTimeline->setCurrentTime(0.0, true);
@@ -6036,17 +6060,19 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//	OnDelMotion( 0 );//初期状態のダミーモーションを削除
 	//}
 
-	//if (inittimelineflag == 1) {//inittimelineflag は １つめのFBXのとき０、それ以降１
+	//if (inittimelineflag == 1)//inittimelineflag は 最後のキャラの時に１
 	{
+		int lastmotid = -1;
 		int motnum = s_model->GetMotInfoSize();
 		int motno;
 		for (motno = 0; motno < motnum; motno++) {
 			MOTINFO* curmi = s_model->GetMotInfo(motno + 1);
 			if (curmi) {
+				lastmotid = curmi->motid;
 				OnAddMotion(curmi->motid);
 			}
 		}
-		s_model->SetCurrentMotion(motnum);
+		s_model->SetCurrentMotion(lastmotid);
 	}
 	//}
 
@@ -6306,15 +6332,15 @@ int UpdateEditedEuler()
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone) {
-		if (s_parentcheck) {
-			int check = (int)s_parentcheck->getValue();
-			if (check == 1) {
+		//if (s_parentcheck) {
+			//int check = (int)s_parentcheck->getValue();
+			//if (check == 1) {
 				CBone* parentbone = curbone->GetParent();
 				if (parentbone) {
 					curbone = parentbone;
 				}
-			}
-		}
+			//}
+		//}
 
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
@@ -6358,12 +6384,15 @@ int UpdateEditedEuler()
 
 				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
-					cureul = curmp->GetLocalEul();
+					//cureul = curmp->GetLocalEul();
+					cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+					befeul = cureul;//!!!!!!!
 				}
 				else {
 					cureul.x = 0.0;
 					cureul.y = 0.0;
 					cureul.z = 0.0;
+					befeul = cureul;//!!!!!!!
 				}
 
 
@@ -6438,7 +6467,8 @@ void refreshEulerGraph()
 
 	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
 
-	if (s_model && (s_model->GetCurMotInfo())) {
+	MOTINFO* curmotinfo = 0;
+	if (s_model && ((curmotinfo = s_model->GetCurMotInfo()) != 0)) {
 
 		int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 
@@ -6469,15 +6499,15 @@ void refreshEulerGraph()
 		if (s_model && (s_curboneno >= 0)){
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
 			if (curbone){
-				if (s_parentcheck) {
-					int check = s_parentcheck->getValue();
-					if (check == 1) {
+				//if (s_parentcheck) {
+					//int check = s_parentcheck->getValue();
+					//if (check == 1) {
 						CBone* parentbone = curbone->GetParent();
 						if (parentbone) {
 							curbone = parentbone;
 						}
-					}
-				}
+					//}
+				//}
 
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
@@ -6496,12 +6526,15 @@ void refreshEulerGraph()
 
 						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
-							cureul = curmp->GetLocalEul();
+							//cureul = curmp->GetLocalEul();
+							cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+							befeul = cureul;//!!!!!!!
 						}
 						else {
 							cureul.x = 0.0;
 							cureul.y = 0.0;
 							cureul.z = 0.0;
+							befeul = cureul;
 						}
 
 						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
@@ -7102,6 +7135,12 @@ int OnAnimMenu( int selindex, int saveundoflag )
 		refreshTimeline(*s_owpTimeline);
 		s_owpTimeline->setCurrentTime( 0.0 );
 	}
+
+	//MOTINFO* curmi = s_model->GetCurMotInfo();
+	//if (curmi) {
+	//	OnAddMotion(curmi->motid);
+	//}
+
 
 	if( saveundoflag == 1 ){
 		if( s_model ){
@@ -11792,20 +11831,20 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 int ChangeCurrentBone()
 {
-	CBone* s_befbone = 0;
+	static CModel* s_befmodel = 0;
+	static CBone* s_befbone = 0;
 
-
-	if (s_model){
+	if (s_model) {
 		CDXUTComboBox* pComboBox;
 		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
 		CBone* pBone;
 		pBone = s_model->GetBoneByID(s_curboneno);
-		if (pBone){
+		if (pBone) {
 			pComboBox->SetSelectedByData(ULongToPtr(s_curboneno));
 		}
 
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone){
+		if (curbone) {
 			CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
 			//ANGLELIMIT anglelimit = curbone->GetAngleLimit();
 			//pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
@@ -11817,19 +11856,28 @@ int ChangeCurrentBone()
 		SetImpWndParams();
 		SetDmpWndParams();
 		RigidElem2WndParam();
-		if (s_anglelimitdlg){
+		if (s_anglelimitdlg) {
 			Bone2AngleLimit();
 			AngleLimit2Dlg(s_anglelimitdlg);
 		}
 
-		if (s_befbone != curbone) {
-			refreshEulerGraph();
+		//if (s_befbone != curbone) {
+		//	refreshEulerGraph();
+		//}
+		if ((s_befbone != curbone) || (s_befmodel != s_model)) {
+			//if (s_owpTimeline) {
+				//refreshTimeline(*s_owpTimeline);
+				refreshEulerGraph();
+			//}
 		}
 
+
 		s_befbone = curbone;
+		s_befmodel = s_model;
 	}
 	else {
 		s_befbone = 0;
+		s_befmodel = s_model;
 	}
 	return 0;
 }

@@ -376,25 +376,24 @@ int CBone::DestroyObjs()
 
 	m_motmark.clear();
 
-	map<int, CMotionPoint*>::iterator itrmp;
-	for( itrmp = m_motionkey.begin(); itrmp != m_motionkey.end(); itrmp++ ){
-		CMotionPoint* topkey = itrmp->second;
-		if( topkey ){
-			CMotionPoint* curmp = topkey;
-			CMotionPoint* nextmp = 0;
-			while( curmp ){
-				nextmp = curmp->GetNext();
+	//map<int, CMotionPoint*>::iterator itrmp;
+	//for( itrmp = m_motionkey.begin(); itrmp != m_motionkey.end(); itrmp++ ){
+	//	CMotionPoint* topkey = itrmp->second;
+	//	if( topkey ){
+	//		CMotionPoint* curmp = topkey;
+	//		CMotionPoint* nextmp = 0;
+	//		while( curmp ){
+	//			nextmp = curmp->GetNext();
 
-				delete curmp;
+	//			delete curmp;
 
-				curmp = nextmp;
-			}
-		}
-	}
-
+	//			curmp = nextmp;
+	//		}
+	//	}
+	//}
 	m_motionkey.clear();
 
-	
+
 	map<string, std::map<CBone*, CRigidElem*>>::iterator itrmap;
 	for( itrmap = m_remap.begin(); itrmap != m_remap.end(); itrmap++ ){
 		map<CBone*, CRigidElem*>::iterator itrre;
@@ -504,7 +503,8 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 		newmp = pbef;
 	}
 	else{
-		newmp = new CMotionPoint();
+		//newmp = new CMotionPoint();
+		newmp = CMotionPoint::GetNewMP();
 		if (!newmp){
 			_ASSERT(0);
 			return 0;
@@ -645,7 +645,8 @@ int CBone::DeleteMotion( int srcmotid )
 			while( curmp ){
 				nextmp = curmp->GetNext();
 
-				delete curmp;
+				//delete curmp;
+				CMotionPoint::InvalidateMotionPoint(curmp);
 
 				curmp = nextmp;
 			}
@@ -668,7 +669,11 @@ int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 
 		if( curmp->GetFrame() > srcleng ){
 			curmp->LeaveFromChain( motid, this );
-			delete curmp;
+
+
+			//delete curmp;
+			CMotionPoint::InvalidateMotionPoint(curmp);
+
 		}
 		curmp = nextmp;
 	}
@@ -1799,12 +1804,18 @@ CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, d
 	return curmp;
 }
 
+
+
 int CBone::DestroyMotionKey( int srcmotid )
 {
 	CMotionPoint* curmp = m_motionkey[ srcmotid ];
 	while( curmp ){
 		CMotionPoint* nextmp = curmp->GetNext();
-		delete curmp;
+		
+		//delete curmp;
+		CMotionPoint::InvalidateMotionPoint(curmp);
+
+
 		curmp = nextmp;
 	}
 
@@ -4494,7 +4505,8 @@ ChaMatrix CBone::GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag)
 	//static ChaMatrix s_invfirstgetmatrix;
 
 	if (m_curmotid >= 1) {//id‚Í‚P‚©‚ç
-		CMotionPoint* pcur = m_motionkey[m_curmotid - 1];//id‚Í‚P‚©‚ç
+		//CMotionPoint* pcur = m_motionkey[m_curmotid - 1];//id‚Í‚P‚©‚ç
+		CMotionPoint* pcur = m_motionkey[m_curmotid];//id‚Í‚P‚©‚ç !!!!!!!!!!!!!!
 		if (pcur) {
 			if ((updateflag == 1) || (m_firstgetflag == 0)) {
 				m_firstgetflag = 1;
@@ -4542,4 +4554,5 @@ ChaMatrix CBone::GetCurrentZeroFrameInvMat(int updateflag)
 	int inverseflag = 1;
 	return GetCurrentZeroFrameMatFunc(updateflag, inverseflag);
 }
+
 
