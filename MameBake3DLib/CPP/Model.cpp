@@ -5551,7 +5551,7 @@ int CModel::CreateRigidElem()
 		CreateRigidElemReq(m_topbone, 1, m_defaultrename, 0, m_defaultimpname);
 	}
 
-	SetCurrentRigidElem(0);
+	//SetCurrentRigidElem(0);
 	m_curreindex = 0;
 	m_curimpindex = 0;
 

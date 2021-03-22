@@ -248,6 +248,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/22_2
+	Fix loading ref files and CreateRigidElem.
+
 2021/03/22_1
 	Fix CModel::CalcBoneEul(-1).
 

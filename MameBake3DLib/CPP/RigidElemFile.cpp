@@ -230,6 +230,9 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 
 	CallF( SetBuffer(), return 1 );
 
+
+
+
 	m_rename = mfilename;
 	CBone* topbone = srcmodel->GetTopBone();
 	if( topbone ){

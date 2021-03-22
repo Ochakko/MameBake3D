@@ -5533,11 +5533,12 @@ int OpenREFile()
 	int renum = s_model->GetRigidElemInfoSize();
 	if( renum > 0 ){
 		
-		if (s_model && (renum == 1)) {//‰‰ñ‚Ìref“Ç‚Ýž‚ÝŒã‚ÉRigidElem‚ðì¬
-			int chkret;
-			chkret = s_model->CreateRigidElem();
-			_ASSERT(!chkret);
-		}
+		//RgidElemFile‚ÌLoadŽž‚É‚µ‚Ä‚¢‚é
+		//if (s_model && (renum == 1)) {//‰‰ñ‚Ìref“Ç‚Ýž‚ÝŒã‚ÉRigidElem‚ðì¬
+		//	int chkret;
+		//	chkret = s_model->CreateRigidElem();
+		//	_ASSERT(!chkret);
+		//}
 
 		OnREMenu( renum - 1, 0 );
 		OnRgdMenu( renum - 1, 0 );
