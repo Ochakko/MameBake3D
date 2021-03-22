@@ -1,0 +1,57 @@
+1. CreateRigidElemReqで剛体パラメータ格納領域をCBoneに作成
+2. RigidElemFileのLoadで剛体パラメータ読み込み格納
+3. PushBackRigidElemInfoで剛体ファイルインデックスをCModelに作成
+4. CreateBtObjectでbullet physicsオブジェクト作成
+
+1,2,3,4の順に呼ぶ
+
+
+CreateRigidElemを呼んだ後でrefファイルを読む
+そのあとでCreateBtObjectを呼ぶ
+（ref読み込み時とCreateBtObject時にreオブジェクトを使用するから）
+
+
+RigidElemFileのLoad関数のファイル読み込みの前に
+CreateRigidElemReqが呼ばれる
+CModelのrigideleminfoへのpush_backはCreateRigidElemより後、refのLoadの直後。
+
+
+モーションごとに最初のフレームの姿勢が違うことがあるので
+MainのOnAnimMenu(OnAddMotionからも呼ばれる)内でCreateBtObjectを呼ぶ
+CreateBtObjectは物理シミュの開始時にも呼ぶ
+
+
+モデルデータ読み込み時には
+プロジェクトファイルに記されたFBXを読み込む場合と
+FBXファイル単体で読み込む場合とがある
+
+プロジェクトファイルからFBXを読み込む際には
+refファイルの数が１つ以上の場合（default_ref.refがある場合）に、
+skipdefrefに１が代入されてOpenFBXが呼び出される
+skipdefrefが１になっている場合
+OpenFBX内でdefault_ref.defを読み込む
+その場合、プロジェクトファイルからはdefault_ref.ref以外のrefファイルをFBX読み込みより後で読み込む
+
+
+skipdefrefが０の場合(ひとつもrefファイルが無い場合)は
+CModelでのFBXロードの際に
+default_ref.refのPushBackRigidElemInfoとCreateRigidElemReqが呼ばれてデフォルトパラメータがセットされる
+デフォルトパラメータにおいてはすべての剛体が無効状態である
+しかしジョイントの命名規則により物理が有効になる剛体がある
+カエルボタンを１回押してRigidプレートメニューを押してサイドウインドウにRigidウインドウを出し
+RigidウインドウのValidateAllRigidsボタンを１回押すと全ての剛体が有効になって表示される
+剛体は無効になっている場合にも有効になっている場合にも全てのボーンにボーン軸に合わせて（ユーザからみて）自動的に作成される
+
+
+
+FBX単体で読み込まれる場合には
+skipdefrefが０でOpenFBXが呼ばれる
+
+
+
+skipdefrefに１が代入されているときにスキップされる処理は
+CModel::LoadFBX内のメモリからのdefault_ref.ref設定
+
+default_ref.refがファイルとして存在していて、FBXと同時に読み込む場合には
+skipdefrefは０
+

@@ -5956,7 +5956,7 @@ CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
 	newmodel->SetBtWorld( s_btWorld );
 	FbxScene* pScene = 0;
 	FbxImporter* pImporter = 0;
-
+	//skipdefref FBX単体読み込みの場合にはdefault_ref.refは存在しない。その場合skipdefrefには０が代入され、CModel::LoadFBX内でdefault_ref.refの中でメモリからデフォルト値が設定される
 	int ret;
 	ret = newmodel->LoadFBX(skipdefref, s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene, s_forcenewaxis);
 	if( ret ){
@@ -6070,28 +6070,29 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 
 	//OnAnimMenuでCreateRigidElemを呼ぶ前に、default_ref.refを読む
-	if(s_model->GetMotInfoSize() > 0){
-		MOTINFO* firstmi = s_model->GetMotInfo(1);
-		if (firstmi) {
-			s_model->SetCurrentMotion(firstmi->motid);
+	if (skipdefref == 1) {//プロジェクトファイルから呼ばれて、かつ、default_ref.refが存在する場合
+		if (s_model->GetMotInfoSize() > 0) {
+			MOTINFO* firstmi = s_model->GetMotInfo(1);
+			if (firstmi) {
+				s_model->SetCurrentMotion(firstmi->motid);
 
-			WCHAR savetmpmqopath[MAX_PATH];
-			wcscpy_s(savetmpmqopath, MAX_PATH, g_tmpmqopath);
-			WCHAR* lastenref;
-			lastenref = wcsrchr(g_tmpmqopath, TEXT('\\'));
-			if (lastenref) {
-				*lastenref = 0L;
-				wcscat_s(g_tmpmqopath, MAX_PATH, L"\\default_ref.ref");
-				int chkret;
-				chkret = OpenREFile();
-				_ASSERT(chkret == 0);
+				WCHAR savetmpmqopath[MAX_PATH];
+				wcscpy_s(savetmpmqopath, MAX_PATH, g_tmpmqopath);
+				WCHAR* lastenref;
+				lastenref = wcsrchr(g_tmpmqopath, TEXT('\\'));
+				if (lastenref) {
+					*lastenref = 0L;
+					wcscat_s(g_tmpmqopath, MAX_PATH, L"\\default_ref.ref");
+					int chkret;
+					chkret = OpenREFile();
+					_ASSERT(chkret == 0);
 
 
-				wcscpy_s(g_tmpmqopath, MAX_PATH, savetmpmqopath);
+					wcscpy_s(g_tmpmqopath, MAX_PATH, savetmpmqopath);
+				}
 			}
 		}
 	}
-
 	//if (inittimelineflag == 1)//inittimelineflag は 最後のキャラの時に１
 	{
 		int lastmotid = -1;
