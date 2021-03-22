@@ -493,6 +493,12 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 
 CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr)
 {
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
+		_ASSERT(0);
+		return 0;
+	}
+
+
 	CMotionPoint* newmp = 0;
 	CMotionPoint* pbef = 0;
 	CMotionPoint* pnext = 0;
@@ -515,7 +521,7 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 			CallF(pbef->AddToNext(newmp), return 0);
 		}
 		else{
-			m_motionkey[srcmotid] = newmp;
+			m_motionkey[srcmotid - 1] = newmp;
 			if (pnext){
 				newmp->SetNext(pnext);
 			}
@@ -544,19 +550,20 @@ void CBone::ResetMotionCache()
 int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr )
 {
 	CMotionPoint* pbef = 0;
-	//CMotionPoint* pcur = m_motionkey[srcmotid];
+	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
 	CMotionPoint* pcur = 0;
 
 	*existptr = 0;
 
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		//AddMotionPoint‚©‚çŒÄ‚Î‚ê‚é‚Æ‚«‚É’Ê‚éê‡‚Í³í
 		*ppbef = 0;
 		*ppnext = 0;
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 	else {
-		pcur = m_motionkey[srcmotid];
+		pcur = m_motionkey[srcmotid - 1];
 	}
 
 
@@ -596,7 +603,7 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 		m_cachebefmp = pbef->GetPrev();
 	}
 	else {
-		m_cachebefmp = m_motionkey[srcmotid];
+		m_cachebefmp = m_motionkey[srcmotid - 1];
 	}
 #endif
 
@@ -662,7 +669,12 @@ int CBone::DeleteMotion( int srcmotid )
 
 int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 {
-	CMotionPoint* curmp = m_motionkey[ motid ];
+	if ((motid <= 0) || (motid > m_motionkey.size())) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CMotionPoint* curmp = m_motionkey[motid - 1];
 
 	while( curmp ){
 		CMotionPoint* nextmp = curmp->GetNext();
@@ -1808,7 +1820,12 @@ CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, d
 
 int CBone::DestroyMotionKey( int srcmotid )
 {
-	CMotionPoint* curmp = m_motionkey[ srcmotid ];
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CMotionPoint* curmp = m_motionkey[srcmotid - 1];
 	while( curmp ){
 		CMotionPoint* nextmp = curmp->GetNext();
 		
@@ -1819,7 +1836,7 @@ int CBone::DestroyMotionKey( int srcmotid )
 		curmp = nextmp;
 	}
 
-	m_motionkey[ srcmotid ] = NULL;
+	m_motionkey[srcmotid - 1] = NULL;
 
 	return 0;
 }
@@ -1827,6 +1844,11 @@ int CBone::DestroyMotionKey( int srcmotid )
 
 int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double curframe, int flag )
 {
+	if ((motid <= 0) || (motid > m_motionkey.size())) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	map<double, int> curmark;
 	map<int, map<double, int>>::iterator itrcur;
 	itrcur = m_motmark.find( motid );
@@ -1839,7 +1861,7 @@ int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 	itrmark = curmark.find( curframe );
 	if( itrmark == curmark.end() ){
 		curmark[ curframe ] = flag;
-		m_motmark[ motid ] = curmark;
+		m_motmark[motid - 1] = curmark;
 	}
 
 	return 0;
@@ -1847,6 +1869,11 @@ int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 
 int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe )
 {
+	if ((motid <= 0) || (motid > m_motionkey.size())) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	map<int, map<double, int>>::iterator itrcur;
 	itrcur = m_motmark.find( motid );
 	if( itrcur == m_motmark.end() ){
@@ -1865,7 +1892,7 @@ int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 		}
 	}
 
-	m_motmark[ motid ] = curmark;
+	m_motmark[motid - 1] = curmark;
 
 	return 0;
 }
@@ -4504,9 +4531,16 @@ ChaMatrix CBone::GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag)
 	//static ChaMatrix s_firstgetmatrix;
 	//static ChaMatrix s_invfirstgetmatrix;
 
+	if ((m_curmotid <= 0) || (m_curmotid > m_motionkey.size())) {
+		_ASSERT(0);
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+
 	if (m_curmotid >= 1) {//id‚Í‚P‚©‚ç
 		//CMotionPoint* pcur = m_motionkey[m_curmotid - 1];//id‚Í‚P‚©‚ç
-		CMotionPoint* pcur = m_motionkey[m_curmotid];//id‚Í‚P‚©‚ç !!!!!!!!!!!!!!
+		CMotionPoint* pcur = m_motionkey[m_curmotid - 1];//id‚Í‚P‚©‚ç !!!!!!!!!!!!!!
 		if (pcur) {
 			if ((updateflag == 1) || (m_firstgetflag == 0)) {
 				m_firstgetflag = 1;

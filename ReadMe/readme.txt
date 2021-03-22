@@ -248,6 +248,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/22_1
+	Fix CModel::CalcBoneEul(-1).
+
+	Modified loading ref files and CreateRigidElem.
+
+				
 2021/03/21
 	Use memory blocks on allocating CMotionPoint and EulKey.
 

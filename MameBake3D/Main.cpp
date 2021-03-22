@@ -3338,7 +3338,7 @@ int AdjustBoneTra( CBone* curbone, double curframe )
 void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
 	float fElapsedTime, void* pUserContext)
 {
-    HRESULT hr;
+    //HRESULT hr;
 
     // If the settings dialog is being shown, then
     // render it instead of rendering the app's scene
@@ -5532,6 +5532,13 @@ int OpenREFile()
 
 	int renum = s_model->GetRigidElemInfoSize();
 	if( renum > 0 ){
+		
+		if (s_model && (renum == 1)) {//初回のref読み込み後にRigidElemを作成
+			int chkret;
+			chkret = s_model->CreateRigidElem();
+			_ASSERT(!chkret);
+		}
+
 		OnREMenu( renum - 1, 0 );
 		OnRgdMenu( renum - 1, 0 );
 	}else{
@@ -6060,6 +6067,30 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//	OnDelMotion( 0 );//初期状態のダミーモーションを削除
 	//}
 
+
+	//OnAnimMenuでCreateRigidElemを呼ぶ前に、default_ref.refを読む
+	if(s_model->GetMotInfoSize() > 0){
+		MOTINFO* firstmi = s_model->GetMotInfo(1);
+		if (firstmi) {
+			s_model->SetCurrentMotion(firstmi->motid);
+
+			WCHAR savetmpmqopath[MAX_PATH];
+			wcscpy_s(savetmpmqopath, MAX_PATH, g_tmpmqopath);
+			WCHAR* lastenref;
+			lastenref = wcsrchr(g_tmpmqopath, TEXT('\\'));
+			if (lastenref) {
+				*lastenref = 0L;
+				wcscat_s(g_tmpmqopath, MAX_PATH, L"\\default_ref.ref");
+				int chkret;
+				chkret = OpenREFile();
+				_ASSERT(chkret == 0);
+
+
+				wcscpy_s(g_tmpmqopath, MAX_PATH, savetmpmqopath);
+			}
+		}
+	}
+
 	//if (inittimelineflag == 1)//inittimelineflag は 最後のキャラの時に１
 	{
 		int lastmotid = -1;
@@ -6069,10 +6100,11 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 			MOTINFO* curmi = s_model->GetMotInfo(motno + 1);
 			if (curmi) {
 				lastmotid = curmi->motid;
+				s_model->SetCurrentMotion(lastmotid);
 				OnAddMotion(curmi->motid);
 			}
 		}
-		s_model->SetCurrentMotion(lastmotid);
+		//s_model->SetCurrentMotion(lastmotid);
 	}
 	//}
 
@@ -6099,24 +6131,25 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		CLmtFile lmtfile;
 		WCHAR lmtname[MAX_PATH];
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
-		lmtfile.LoadLmtFile(lmtname, s_model);
+		int chkret1;
+		chkret1 = lmtfile.LoadLmtFile(lmtname, s_model);
+		_ASSERT(chkret1 == 0);
 
 		WCHAR rigname[MAX_PATH] = { 0L };
 		swprintf_s(rigname, MAX_PATH, L"%s.rig", g_tmpmqopath);
 		CRigFile rigfile;
-		rigfile.LoadRigFile(rigname, s_model);
+		int chkret2;
+		chkret2 = rigfile.LoadRigFile(rigname, s_model);
+		_ASSERT(chkret2 == 0);
 	}
-
-
-
-
 
 	s_model->SetMotionSpeed(g_dspeed);
 
-	if (skipdefref == 0) {
-		s_model->CreateBtObject(1);//初回
-		s_model->CalcBoneEul(-1);
-	}
+	//OnAnimMenuで呼ぶ
+	//if (skipdefref == 0) {
+	//	s_model->CreateBtObject(1);//初回
+	//	s_model->CalcBoneEul(-1);
+	//}
 
 	CallF(s_model->DbgDump(), return 0);
 
@@ -6384,9 +6417,9 @@ int UpdateEditedEuler()
 
 				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
-					//cureul = curmp->GetLocalEul();
-					cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-					befeul = cureul;//!!!!!!!
+					cureul = curmp->GetLocalEul();
+					//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+					//befeul = cureul;//!!!!!!!
 				}
 				else {
 					cureul.x = 0.0;
@@ -6526,9 +6559,9 @@ void refreshEulerGraph()
 
 						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
-							//cureul = curmp->GetLocalEul();
-							cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-							befeul = cureul;//!!!!!!!
+							cureul = curmp->GetLocalEul();
+							//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+							//befeul = cureul;//!!!!!!!
 						}
 						else {
 							cureul.x = 0.0;
@@ -7127,6 +7160,10 @@ int OnAnimMenu( int selindex, int saveundoflag )
 			s_owpTimeline->setCurrentLine( 0 );
 			s_owpTimeline->setCurrentTime( 0.0 );
 			s_curmotid = selmotid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+			
+			s_model->CreateBtObject(1);
+			s_model->CalcBoneEul(-1);
 		}
 	}
 
@@ -9134,7 +9171,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		g_previewFlag = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		s_previewrange = s_editrange;
-		double rangestart;
+		//double rangestart;
 		if (s_previewrange.IsSameStartAndEnd()) {
 			//rangestart = 1.0;
 			curframe = 1.0;
@@ -9209,7 +9246,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				}
 				else {
 					s_previewrange = s_editrange;
-					double rangestart;
+					//double rangestart;
 					if (s_previewrange.IsSameStartAndEnd()) {
 						//rangestart = 1.0;
 						curframe = 1.0;
@@ -10830,7 +10867,7 @@ int CreateTimeLineMark( int topboneno )
 
 int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 {
-	int keynum;
+	//int keynum;
 	double startframe, endframe;
 	//s_editrange.GetRange(&keynum, &startframe, &endframe);
 	startframe = srcstart;
@@ -14976,7 +15013,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 int OnRenderSetShaderConst()
 {
-	HRESULT hr;
+	//HRESULT hr;
 
 	ChaVector3 vLightDir[MAX_LIGHTS];
 	ChaVector4 vLightDiffuse[MAX_LIGHTS];

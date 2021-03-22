@@ -397,7 +397,12 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref
 	WCHAR wfilename[MAX_PATH] = {0L};
 	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, gcofile, MAX_PATH, wfilename, MAX_PATH );
 	swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s", m_wloaddir, wfilename );
-	CallF( (this->m_GcoFunc)(), return 1 );
+	int chkret;
+	chkret = (this->m_GcoFunc)();
+	if ((chkret != 0) && (chkret != 2)) {
+		_ASSERT(0);
+		return 1;
+	}
 
 
 	m_xmliobuf.pos = 0;
@@ -412,8 +417,11 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref
 	m_xmliobuf.pos = 0;
 	XMLIOBUF wallbuf;
 	ZeroMemory(&wallbuf, sizeof(XMLIOBUF));
-	CallF(SetXmlIOBuf(&m_xmliobuf, "<Wall>", "</Wall>", &wallbuf), return 2);
-	CallF(ReadWall(&wallbuf), return 2);
+	int chkret2;
+	chkret2 = SetXmlIOBuf(&m_xmliobuf, "<Wall>", "</Wall>", &wallbuf);
+	if (chkret2 == 0) {
+		CallF(ReadWall(&wallbuf), return 2);
+	}
 
 	return 0;
 }
@@ -511,7 +519,8 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	int retimp;
 	retimp = Read_Int( xmlbuf, "<ImpNum>", "</ImpNum>", &impnum );
 	if( retimp ){
-		impnum = 1;
+		//impnum = 1;
+		impnum = 0;
 	}
 
 	Read_Int( xmlbuf, "<RGDMORPH>", "</RGDMORPH>", &morphindex );
@@ -530,10 +539,15 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	if (characnt == (charanum - 1)) {
 		inittimeline = 1;
 	}
+	
+	
+	int skipdefref = (int)(refnum != 0);//default_ref.refが無い場合にCModel::LoadFBXでdefault_ref.refを作るためのフラグ
+	//int skipdefref = 0;//CModel::LoadFBXでCreateRigidElemReqを呼ぶ必要がある。FBXだけ読み込んでいる状態でdefault_refが必要。
 	CModel* newmodel = 0;
-	newmodel = (this->m_FbxFunc)( 1, inittimeline );
+	newmodel = (this->m_FbxFunc)( skipdefref, inittimeline );
 	_ASSERT( newmodel );
 
+	
 	//newmodel->m_tmpmotspeed = m_motspeed;
 
 	newmodel->SetModelPosition(ChaVector3(posx, posy, posz));
@@ -553,7 +567,14 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, reffile, MAX_PATH, wreffile, MAX_PATH );
 			swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s\\%s", m_wloaddir, wmodelfolder, wreffile );
 
-			CallF( (this->m_RefFunc)(), return 1 );
+			if (refcnt >= 1) {//refcnt == 0 の１つのめのrefファイルdefault_ref.refはm_FBXFuncで読み込む
+				int chkret;
+				chkret = (this->m_RefFunc)();
+				if ((chkret != 0) && (chkret != 2)) {
+					_ASSERT(0);
+					return 1;
+				}
+			}
 		}
 	}
 
@@ -571,7 +592,12 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, impfile, MAX_PATH, wimpfile, MAX_PATH );
 			swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s\\%s", m_wloaddir, wmodelfolder, wimpfile );
 
-			CallF( (this->m_ImpFunc)(), return 1 );
+			int chkret2;
+			chkret2 = (this->m_ImpFunc)();
+			if ((chkret2 != 0) && (chkret2 != 2)) {
+				_ASSERT(0);
+				return 1;
+			}
 		}
 	}
 
@@ -581,7 +607,7 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	CallF( (this->m_ImpMenu)( 0 ), return 1 );
 
 	newmodel->CreateBtObject(1);//初回
-	newmodel->CalcBoneEul(-1);
+	newmodel->CalcBoneEul(-1);//
 
 
 	return 0;

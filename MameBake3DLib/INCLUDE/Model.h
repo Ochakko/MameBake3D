@@ -559,6 +559,7 @@ public:
 	int Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix* mVP, int selectboneno );
 	int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
 	int SetKinematicFlag();
+	int CreateRigidElem();
 	int SetCurrentRigidElem( int curindex );
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
 	int SetBtEquilibriumPoint();

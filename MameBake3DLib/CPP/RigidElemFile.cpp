@@ -24,6 +24,9 @@
 #include <dbg.h>
 #include <map>
 #include <vector>
+
+#include <shlwapi.h>
+
 /*
 extern float g_initcuslk;
 extern float g_initcusak;
@@ -210,6 +213,13 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 	ZeroMemory( mfilename, sizeof( char ) * MAX_PATH );
 	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
 
+	BOOL bexist;
+	bexist = PathFileExists(strpath);
+	if (!bexist)
+	{
+		_ASSERT(0);
+		return 2;//not found
+	}
 
 	m_hfile = CreateFile( strpath, GENERIC_READ, 0, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );

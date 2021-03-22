@@ -4681,6 +4681,7 @@ int CModel::CreateBtObject( int onfirstcreate )
 	//	SetBtKinFlagReq( m_topbt, onfirstcreate );
 	//}
 
+
 	if (g_previewFlag != 5){
 		SetBtKinFlagReq(m_topbt, 1);
 		 //RestoreMassReq(m_topbone);
@@ -5543,6 +5544,19 @@ void CModel::RecalcConstraintFrameABReq(CBtObject* curbto)
 	}
 }
 
+int CModel::CreateRigidElem()
+{
+	if (m_topbone) {
+		//CreateRigidElemReq(m_topbone, 1, m_defaultrename, 1, m_defaultimpname);
+		CreateRigidElemReq(m_topbone, 1, m_defaultrename, 0, m_defaultimpname);
+	}
+
+	SetCurrentRigidElem(0);
+	m_curreindex = 0;
+	m_curimpindex = 0;
+
+	return 0;
+}
 
 void CModel::CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname )
 {
@@ -9038,9 +9052,12 @@ int CModel::CalcBoneEul(int srcmotid)
 	else{
 		map<int, MOTINFO*>::iterator itrmi;
 		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++){
-			int motid = itrmi->first;
-			if (motid >= 0){
-				CalcBoneEul(motid);
+			MOTINFO* chkmi = itrmi->second;
+			if (chkmi) {
+				int motid = chkmi->motid;
+				if (motid > 0) {
+					CalcBoneEul(motid);
+				}
 			}
 		}
 	}

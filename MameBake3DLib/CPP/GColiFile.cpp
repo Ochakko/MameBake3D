@@ -20,6 +20,8 @@
 #include <dbg.h>
 #include <vector>
 
+#include <shlwapi.h>
+
 using namespace std;
 
 CGColiFile::CGColiFile()
@@ -118,6 +120,13 @@ int CGColiFile::LoadGColiFile( CModel* srcmodel, WCHAR* strpath, BPWorld* srcbpw
 	ZeroMemory( mfilename, sizeof( char ) * MAX_PATH );
 	WideCharToMultiByte( CP_ACP, 0, wfilename, -1, mfilename, MAX_PATH, NULL, NULL );
 
+	BOOL bexist;
+	bexist = PathFileExists(strpath);
+	if (!bexist)
+	{
+		_ASSERT(0);
+		return 2;//not found
+	}
 
 	m_hfile = CreateFile( strpath, GENERIC_READ, 0, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
