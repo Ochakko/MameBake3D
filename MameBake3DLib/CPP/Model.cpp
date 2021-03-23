@@ -316,7 +316,8 @@ int CModel::DestroyAncObj()
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* delbone = itrbone->second;
 		if( delbone ){
-			delete delbone;
+			//delete delbone;
+			CBone::InvalidateBone(delbone);
 		}
 	}
 	m_bonelist.clear();
@@ -520,14 +521,19 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	CreateFBXBoneReq( pScene, pRootNode, 0 );
 	if ((int)m_bonelist.size() <= 1){
 		_ASSERT( 0 );
-		delete (CBone*)(m_bonelist.begin()->second);
+		//delete (CBone*)(m_bonelist.begin()->second);
+		CBone* delbone = (CBone*)(m_bonelist.begin()->second);
+		if (delbone) {
+			CBone::InvalidateBone(delbone);
+		}
 		m_bonelist.clear();
 		m_topbone = 0;
 		_ASSERT(0);
 	}
 	CBone* chkbone = m_bonelist[0];
 	if( !chkbone ){
-		CBone* dummybone = new CBone( this );
+		//CBone* dummybone = new CBone( this );
+		CBone* dummybone = CBone::GetNewBone(this);
 		_ASSERT( dummybone );
 		if (dummybone){
 			dummybone->SetName("DummyBone");
@@ -2913,7 +2919,8 @@ int CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode 
 int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
 {
 	int settopflag = 0;
-	CBone* newbone = new CBone( this );
+	//CBone* newbone = new CBone( this );
+	CBone* newbone = CBone::GetNewBone(this);
 	_ASSERT( newbone );
 	if (!newbone){
 		_ASSERT(0);

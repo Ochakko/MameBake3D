@@ -1553,6 +1553,7 @@ void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
 
+	CBone::InitBones();
 	CMotionPoint::InitMotionPoints();
 	InitEulKeys();
 
@@ -3091,6 +3092,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 	CMotionPoint::DestroyMotionPoints();
+	CBone::DestroyBones();
 	DestroyEulKeys();
 
 

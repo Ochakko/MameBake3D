@@ -930,10 +930,7 @@ ChaMatrix ChaMatrix::operator- () const { return *this * -1.0f; }
 
 CQuaternion::CQuaternion()
 {
-	w = 1.0f;
-	x = 0.0f;
-	y = 0.0f;
-	z = 0.0f;
+	InitParams();
 }
 
 CQuaternion::CQuaternion(float srcw, float srcx, float srcy, float srcz)
@@ -943,6 +940,16 @@ CQuaternion::CQuaternion(float srcw, float srcx, float srcy, float srcz)
 	y = srcy;
 	z = srcz;
 }
+
+void CQuaternion::InitParams()
+{
+	w = 1.0f;
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+}
+
+
 CQuaternion::~CQuaternion()
 {
 

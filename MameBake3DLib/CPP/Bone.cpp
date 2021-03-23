@@ -52,6 +52,10 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone);
 int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
 
+static std::vector<CBone*> s_bonepool;//allocate BONEPOOLBLKLEN motoinpoints at onse and pool 
+
+
+
 void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno)
 {
 	ZeroMemory(dstcr, sizeof(CUSTOMRIG));
@@ -222,25 +226,10 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 //class
 
 
-CBone::CBone( CModel* parmodel ) : m_curmp(), m_axisq()
+CBone::CBone( CModel* parmodel )// : m_curmp(), m_axisq()
 {
 	InitParams();
-
-	m_parmodel = parmodel;
-	//_ASSERT(m_parmodel);
-
-	map<CModel*,int>::iterator itrcnt;
-	itrcnt = g_bonecntmap.find( m_parmodel );
-	if( itrcnt == g_bonecntmap.end() ){
-		g_bonecntmap[ m_parmodel ] = 0;
-	}
-
-	int curno = g_bonecntmap[ m_parmodel ]; 
-	m_boneno = curno;
-	g_bonecntmap[ m_parmodel ] = m_boneno + 1;
-
-	m_firstcalcrigid = true;
-
+	SetParams(parmodel);
 }
 
 CBone::~CBone()
@@ -250,6 +239,15 @@ CBone::~CBone()
 
 int CBone::InitParams()
 {
+	//not use at allocated
+	m_useflag = 0;//0: not use, 1: in use
+	m_indexofpool = 0;
+	m_allocheadflag = 0;//1: head pointer at allocated
+
+	m_curmp.InitParams();
+	m_axisq.InitParams();
+
+
 	m_motionkey.clear();
 	m_motionkey[0] = 0;
 
@@ -339,6 +337,48 @@ int CBone::InitParams()
 	m_firstgetflag = 0;//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_firstgetmatrix);//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_invfirstgetmatrix);//GetCurrentZeroFrameMat用
+
+	return 0;
+}
+
+int CBone::InitParamsForReUse()
+{
+	int saveboneno = m_boneno;
+	CModel* saveparmodel = m_parmodel;
+	int saveindex = GetIndexOfPool();
+	int saveallochead = IsAllocHead();
+
+	DestroyObjs();
+	InitParams();
+
+	m_parmodel = saveparmodel;
+	m_boneno = saveboneno;
+	m_firstcalcrigid = true;
+
+	SetIndexOfPool(saveindex);
+	SetIsAllocHead(saveallochead);
+	SetUseFlag(1);
+
+	return 0;
+}
+
+
+int CBone::SetParams(CModel* parmodel)
+{
+	m_parmodel = parmodel;
+	//_ASSERT(m_parmodel);
+
+	map<CModel*, int>::iterator itrcnt;
+	itrcnt = g_bonecntmap.find(m_parmodel);
+	if (itrcnt == g_bonecntmap.end()) {
+		g_bonecntmap[m_parmodel] = 0;
+	}
+
+	int curno = g_bonecntmap[m_parmodel];
+	m_boneno = curno;
+	g_bonecntmap[m_parmodel] = m_boneno + 1;
+
+	m_firstcalcrigid = true;
 
 	return 0;
 }
@@ -4590,3 +4630,164 @@ ChaMatrix CBone::GetCurrentZeroFrameInvMat(int updateflag)
 }
 
 
+//static func
+CBone* CBone::GetNewBone(CModel* parmodel)
+{
+	//目的としてはメモリの使いまわしではなく、メモリを連続させることでキャッシュヒットの可能性を増すことである
+
+	//parmodelごとの使いまわししか出来ない
+	//モデルの削除と作成を繰り返すとメモリが増え続ける
+	//しかし必要モデルをあらかじめ作成して、表示非表示を切り替えて（削除作成を繰り返さずに）やりくりすれば良い
+
+	static int s_befheadno = -1;
+	static int s_befelemno = -1;
+
+	if (!parmodel) {
+		_ASSERT(0);
+	}
+
+
+	int curpoollen;
+	curpoollen = s_bonepool.size();
+
+
+	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
+	int chkheadno;
+	chkheadno = s_befheadno;
+	int chkelemno;
+	chkelemno = s_befelemno + 1;
+	if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= BONEPOOLBLKLEN)) {
+		chkelemno = 0;
+		chkheadno++;
+	}
+	if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < BONEPOOLBLKLEN)) {
+		CBone* curbonehead = s_bonepool[chkheadno];
+		if (curbonehead) {
+			CBone* chkbone;
+			chkbone = curbonehead + chkelemno;
+			if (chkbone && (chkbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
+				if (chkbone->GetUseFlag() == 0) {
+					chkbone->InitParamsForReUse();//
+
+					s_befheadno = chkheadno;
+					s_befelemno = chkelemno;
+
+					return chkbone;
+				}
+			}
+		}
+	}
+
+	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+		//プールを先頭から検索して未使用がみつかればそれをリリース
+	int boneno;
+	for (boneno = 0; boneno < curpoollen; boneno++) {
+		CBone* curbonehead = s_bonepool[boneno];
+		if (curbonehead) {
+			int elemno;
+			for (elemno = 0; elemno < BONEPOOLBLKLEN; elemno++) {
+				CBone* curbone;
+				curbone = curbonehead + elemno;
+				if (curbone && (curbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
+					if (curbone->GetUseFlag() == 0) {
+						curbone->InitParamsForReUse();
+
+						s_befheadno = boneno;
+						s_befelemno = elemno;
+
+						return curbone;
+					}
+				}
+			}
+		}
+	}
+	//}
+
+	//未使用boneがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
+	CBone* allocbone;
+	allocbone = new CBone[BONEPOOLBLKLEN];
+	if (!allocbone) {
+		_ASSERT(0);
+
+		s_befheadno = -1;
+		s_befelemno = -1;
+
+		return 0;
+	}
+	int allocno;
+	for (allocno = 0; allocno < BONEPOOLBLKLEN; allocno++) {
+		CBone* curallocbone = allocbone + allocno;
+		if (curallocbone) {
+			int indexofpool = curpoollen + allocno;
+			curallocbone->InitParams();
+			curallocbone->SetParams(parmodel);//!!!!!作成時にはparmodel以外にボーン番号なども決定
+			curallocbone->SetUseFlag(0);
+			curallocbone->SetIndexOfPool(indexofpool);
+
+			if (allocno == 0) {
+				curallocbone->SetIsAllocHead(1);
+			}
+			else {
+				curallocbone->SetIsAllocHead(0);
+			}
+		}
+		else {
+			_ASSERT(0);
+
+			s_befheadno = -1;
+			s_befelemno = -1;
+
+			return 0;
+		}
+	}
+	s_bonepool.push_back(allocbone);//allocate block(アロケート時の先頭ポインタ)を格納
+
+	allocbone->SetUseFlag(1);
+
+
+	s_befheadno = s_bonepool.size() - 1;
+	s_befelemno = 0;
+
+	return allocbone;
+}
+
+//static func
+void CBone::InvalidateBone(CBone* srcbone)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return;
+	}
+
+	int saveindex = srcbone->GetIndexOfPool();
+	int saveallochead = srcbone->IsAllocHead();
+
+	srcbone->DestroyObjs();
+
+	srcbone->InitParams();
+	srcbone->SetUseFlag(0);
+	srcbone->SetIsAllocHead(saveallochead);
+	srcbone->SetIndexOfPool(saveindex);
+}
+
+//static func
+void CBone::InitBones()
+{
+	s_bonepool.clear();
+}
+
+//static func
+void CBone::DestroyBones() 
+{
+	int boneallocnum = s_bonepool.size();
+	int boneno;
+	for (boneno = 0; boneno < boneallocnum; boneno++) {
+		CBone* delbone;
+		delbone = s_bonepool[boneno];
+		//if (delbone && (delbone->IsAllocHead() == 1)) {
+		if (delbone) {
+			delete[] delbone;
+		}
+	}
+	s_bonepool.clear();
+}

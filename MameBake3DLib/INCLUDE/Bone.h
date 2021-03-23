@@ -21,6 +21,7 @@
 #include <MotionPoint.h>
 
 
+#define BONEPOOLBLKLEN	256
 
 
 class CMQOFace;
@@ -36,6 +37,11 @@ public:
 	ChaVector3 m_btparentpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
 	ChaVector3 m_btchildpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
 	ChaMatrix m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
+
+
+	CBone() {
+		InitParams();
+	};
 
 /**
  * @fn
@@ -384,6 +390,13 @@ public:
 	ChaMatrix GetCurrentZeroFrameMat(int updateflag);//current motionのframe 0のworldmat
 	ChaMatrix GetCurrentZeroFrameInvMat(int updateflag);
 
+
+	static CBone* GetNewBone(CModel* parmodel);
+	static void InvalidateBone(CBone* srcmp);
+	static void InitBones();
+	static void DestroyBones();
+
+
 private:
 
 /**
@@ -393,6 +406,9 @@ private:
  * @return ０。
  */
 	int InitParams();
+	int InitParamsForReUse();
+
+	int SetParams(CModel* parmodel);//コンストラクタのInitParamsでは足りない部分
 
 /**
  * @fn
@@ -777,7 +793,7 @@ public: //accesser
 
 
 	CModel* GetParModel(){ return m_parmodel; };
-	void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };
+	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodelごとのm_bonenoに注意！！！
 
 	CBone* GetParent(){ return m_parent; };
 	void SetParent( CBone* srcpar ){ m_parent = srcpar; };
@@ -917,9 +933,38 @@ public: //accesser
 	};
 	
 
+	int GetUseFlag()
+	{
+		return m_useflag;
+	};
+	void SetUseFlag(int srcflag)
+	{
+		m_useflag = srcflag;
+	};
+	int GetIndexOfPool()
+	{
+		return m_indexofpool;
+	};
+	void SetIndexOfPool(int srcindex)
+	{
+		m_indexofpool = srcindex;
+	};
+	int IsAllocHead()
+	{
+		return m_allocheadflag;
+	};
+	void SetIsAllocHead(int srcflag)
+	{
+		m_allocheadflag = srcflag;
+	};
 
 
 private:
+	int m_useflag;//0: not use, 1: in use
+	int m_indexofpool;//index of pool vector
+	int m_allocheadflag;//1: head pointer at allocated
+
+
 	int m_posconstraint;
 	int m_mass0;
 	int m_excludemv;

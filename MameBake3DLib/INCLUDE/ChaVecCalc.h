@@ -209,6 +209,7 @@ public:
 	CQuaternion();
 	CQuaternion(float srcw, float srcx, float srcy, float srcz);
 	~CQuaternion();
+	void InitParams();
 	int SetParams(float srcw, float srcx, float srcy, float srcz);
 #ifdef CONVD3DX11
 	int SetParams(DirectX::XMFLOAT4 srcxq);
