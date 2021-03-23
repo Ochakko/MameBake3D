@@ -12,6 +12,8 @@
 
 #include <Bone.h>
 
+#define REPOOLBLKLEN	256
+
 class CRigidElem
 {
 public:
@@ -129,7 +131,43 @@ public: //accesser
 		}
 	};
 
+
+	int GetUseFlag()
+	{
+		return m_useflag;
+	};
+	void SetUseFlag(int srcflag)
+	{
+		m_useflag = srcflag;
+	};
+	int GetIndexOfPool()
+	{
+		return m_indexofpool;
+	};
+	void SetIndexOfPool(int srcindex)
+	{
+		m_indexofpool = srcindex;
+	};
+	int IsAllocHead()
+	{
+		return m_allocheadflag;
+	};
+	void SetIsAllocHead(int srcflag)
+	{
+		m_allocheadflag = srcflag;
+	};
+
+	static CRigidElem* GetNewRigidElem();
+	static void InvalidateRigidElem(CRigidElem* srcmp);
+	static void InitRigidElems();
+	static void DestroyRigidElems();
+
 private:
+	int m_useflag;//0: not use, 1: in use
+	int m_indexofpool;//index of pool vector
+	int m_allocheadflag;//1: head pointer at allocated
+
+
 	int m_coltype;
 	int m_skipflag;
 

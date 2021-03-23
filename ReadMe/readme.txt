@@ -248,6 +248,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/03/23_2
+	Use memory blocks on allocating CRigidElem for cache hit.
+
 2021/03/23_1
 	Use memory blocks on allocating CBone for cache hit.
 

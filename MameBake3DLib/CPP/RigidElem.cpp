@@ -30,6 +30,10 @@ extern float g_initcuslk;
 extern float g_initcusak;
 */
 
+
+static std::vector<CRigidElem*> s_rigidelempool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+
+
 CRigidElem::CRigidElem()
 {
 	InitParams();
@@ -41,6 +45,12 @@ CRigidElem::~CRigidElem()
 
 int CRigidElem::InitParams()
 {
+	//not use at allocated
+	m_useflag = 0;//0: not use, 1: in use
+	m_indexofpool = 0;
+	m_allocheadflag = 0;//1: head pointer at allocated
+
+
 	m_forbidrotflag = 0;
 
 	m_dampanim_l = 0.0f;
@@ -142,4 +152,159 @@ ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe, int multworld)//default o
 	m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 1, multworld, calczeroframe);
 	return m_capsulemat;
 
+}
+
+
+
+//static func
+CRigidElem* CRigidElem::GetNewRigidElem()
+{
+	static int s_befheadno = -1;
+	static int s_befelemno = -1;
+
+	int curpoollen;
+	curpoollen = s_rigidelempool.size();
+
+
+	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
+	int chkheadno;
+	chkheadno = s_befheadno;
+	int chkelemno;
+	chkelemno = s_befelemno + 1;
+	if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= REPOOLBLKLEN)) {
+		chkelemno = 0;
+		chkheadno++;
+	}
+	if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < REPOOLBLKLEN)) {
+		CRigidElem* currigidelemhead = s_rigidelempool[chkheadno];
+		if (currigidelemhead) {
+			CRigidElem* chkrigidelem;
+			chkrigidelem = currigidelemhead + chkelemno;
+			if (chkrigidelem) {
+				if (chkrigidelem->GetUseFlag() == 0) {
+					int saveindex = chkrigidelem->GetIndexOfPool();
+					int saveallochead = chkrigidelem->IsAllocHead();
+					chkrigidelem->InitParams();
+					chkrigidelem->SetUseFlag(1);
+					chkrigidelem->SetIndexOfPool(saveindex);
+					chkrigidelem->SetIsAllocHead(saveallochead);
+
+					s_befheadno = chkheadno;
+					s_befelemno = chkelemno;
+					return chkrigidelem;
+				}
+			}
+		}
+	}
+
+	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+		//プールを先頭から検索して未使用がみつかればそれをリリース
+	int rigidelemno;
+	for (rigidelemno = 0; rigidelemno < curpoollen; rigidelemno++) {
+		CRigidElem* currigidelemhead = s_rigidelempool[rigidelemno];
+		if (currigidelemhead) {
+			int elemno;
+			for (elemno = 0; elemno < REPOOLBLKLEN; elemno++) {
+				CRigidElem* currigidelem;
+				currigidelem = currigidelemhead + elemno;
+				if (currigidelem->GetUseFlag() == 0) {
+					int saveindex = currigidelem->GetIndexOfPool();
+					int saveallochead = currigidelem->IsAllocHead();
+					currigidelem->InitParams();
+					currigidelem->SetUseFlag(1);
+					currigidelem->SetIndexOfPool(saveindex);
+					currigidelem->SetIsAllocHead(saveallochead);
+
+					s_befheadno = rigidelemno;
+					s_befelemno = elemno;
+					return currigidelem;
+				}
+			}
+		}
+	}
+	//}
+
+	//未使用rigidelemがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
+	CRigidElem* allocrigidelem;
+	allocrigidelem = new CRigidElem[REPOOLBLKLEN];
+	if (!allocrigidelem) {
+		_ASSERT(0);
+
+		s_befheadno = -1;
+		s_befelemno = -1;
+
+		return 0;
+	}
+	int allocno;
+	for (allocno = 0; allocno < REPOOLBLKLEN; allocno++) {
+		CRigidElem* curallocrigidelem = allocrigidelem + allocno;
+		if (curallocrigidelem) {
+			int indexofpool = curpoollen + allocno;
+			curallocrigidelem->InitParams();
+			curallocrigidelem->SetUseFlag(0);
+			curallocrigidelem->SetIndexOfPool(indexofpool);
+
+			if (allocno == 0) {
+				curallocrigidelem->SetIsAllocHead(1);
+			}
+			else {
+				curallocrigidelem->SetIsAllocHead(0);
+			}
+		}
+		else {
+			_ASSERT(0);
+
+			s_befheadno = -1;
+			s_befelemno = -1;
+
+			return 0;
+		}
+	}
+	s_rigidelempool.push_back(allocrigidelem);//allocate block(アロケート時の先頭ポインタ)を格納
+
+	allocrigidelem->SetUseFlag(1);
+
+
+	s_befheadno = s_rigidelempool.size() - 1;
+	s_befelemno = 0;
+
+	return allocrigidelem;
+}
+
+//static func
+void CRigidElem::InvalidateRigidElem(CRigidElem* srcrigidelem)
+{
+	if (!srcrigidelem) {
+		_ASSERT(0);
+		return;
+	}
+
+	int saveindex = srcrigidelem->GetIndexOfPool();
+	int saveallochead = srcrigidelem->IsAllocHead();
+
+	srcrigidelem->InitParams();
+	srcrigidelem->SetUseFlag(0);
+	srcrigidelem->SetIsAllocHead(saveallochead);
+	srcrigidelem->SetIndexOfPool(saveindex);
+}
+
+//static func
+void CRigidElem::InitRigidElems()
+{
+	s_rigidelempool.clear();
+}
+
+//static func
+void CRigidElem::DestroyRigidElems() {
+	int rigidelemallocnum = s_rigidelempool.size();
+	int rigidelemno;
+	for (rigidelemno = 0; rigidelemno < rigidelemallocnum; rigidelemno++) {
+		CRigidElem* delrigidelem;
+		delrigidelem = s_rigidelempool[rigidelemno];
+		//if (delrigidelem && (delrigidelem->IsAllocHead() == 1)) {
+		if (delrigidelem) {
+			delete[] delrigidelem;
+		}
+	}
+	s_rigidelempool.clear();
 }

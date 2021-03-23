@@ -440,7 +440,8 @@ int CBone::DestroyObjs()
 		for( itrre = itrmap->second.begin(); itrre != itrmap->second.end(); itrre++ ){
 			CRigidElem* curre = itrre->second;
 			if (curre){
-				delete curre;
+				//delete curre;
+				CRigidElem::InvalidateRigidElem(curre);
 			}
 		}
 		itrmap->second.clear();
@@ -1531,7 +1532,8 @@ int CBone::CreateRigidElem( CBone* parentbone, int reflag, std::string rename, i
 	}
 
 	if (reflag){
-		CRigidElem* newre = new CRigidElem();
+		//CRigidElem* newre = new CRigidElem();
+		CRigidElem* newre = CRigidElem::GetNewRigidElem();
 		if (!newre){
 			_ASSERT(0);
 			return 1;
@@ -4535,8 +4537,10 @@ void CBone::SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* sr
 		std::map<CBone*, CRigidElem*>::iterator itrsetmap;
 		itrsetmap = itrremap->second.find(srcbone);
 		if (itrsetmap != itrremap->second.end()){
-			if (itrsetmap->second){
-				delete itrsetmap->second;
+			CRigidElem* delre = itrsetmap->second;
+			if (delre){
+				//delete itrsetmap->second;
+				CRigidElem::InvalidateRigidElem(delre);
 				itrsetmap->second = 0;
 			}
 			itrsetmap->second = srcre;
