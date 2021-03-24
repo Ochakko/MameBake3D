@@ -14,7 +14,8 @@
 #define INFOWINDOWLINEW	300
 
 //ï€éùÇ∑ÇÈçsêî
-#define INFOWINDOWLINEH	500000
+//#define INFOWINDOWLINEH	500000
+#define INFOWINDOWLINEH 6000
 
 //ï\é¶Ç∑ÇÈçsêî
 #define INFOWINDOWLINEVIEW 4

@@ -248,6 +248,16 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/24_1
+	Change number of LogLines of CInfoWindow from 500,000 to 6,000.
+	Change LogLines of CInfoWindow to ring buffer.
+	CInfoWindowのログ用メモリの行数を500,000行から6,000行のリングバッファに変更
+
+	Change PICKRANGE from 6 to 16.
+	Change pickmode to relative mode.
+	ピックの誤差許容範囲を６ピクセルから１６ピクセルに変更。
+ 	ピックモードをマウス位置相対モードに変更。
+
 2021/03/23_2
 	Use memory blocks on allocating CRigidElem for cache hit.
 

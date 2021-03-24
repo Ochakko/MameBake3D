@@ -389,6 +389,8 @@ static double s_time = 0.0;
 static double s_difftime = 0.0;
 static int s_ikkind = 0;
 
+//PICKRANGEを大きくするとジョイントではなく疑似ボーンドラッグまで可能になるが、マニピュレータのリングのpickが難しくなる
+#define PICKRANGE	16
 static PICKINFO s_pickinfo;
 static vector<TLELEM> s_tlarray;
 
@@ -1410,6 +1412,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	DXUTSetCallbackD3D11DeviceDestroyed(OnD3D11DestroyDevice);
 
 
+	s_mainhwnd = CreateMainWindow();
+	if (s_mainhwnd == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
 
 
 	s_doneinit = 0;
@@ -1449,11 +1456,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	//DXUTCreateDevice(true, 640, 480);
 	//DXUTMainLoop(); // Enter into the DXUT render loop
 
-	s_mainhwnd = CreateMainWindow();
-	if (s_mainhwnd == NULL) {
-		_ASSERT(0);
-		return 1;
-	}
+	//s_mainhwnd = CreateMainWindow();
+	//if (s_mainhwnd == NULL) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
 
 
 	hr = DXUTInit( true, true ); // Parse the command line and show msgboxes
@@ -3801,7 +3808,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		s_pickinfo.winx = (int)DXUTGetWindowWidth();
 		s_pickinfo.winy = (int)DXUTGetWindowHeight();
-		s_pickinfo.pickrange = 6;
+		s_pickinfo.pickrange = PICKRANGE;
 
 		s_pickinfo.pickobjno = -1;
 
@@ -3892,8 +3899,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
 
-						s_pickinfo.firstdiff.x = (float)s_pickinfo.clickpos.x - s_pickinfo.objscreen.x;
-						s_pickinfo.firstdiff.y = (float)s_pickinfo.clickpos.y - s_pickinfo.objscreen.y;
+						//CModel::PickBone内でセット
+						//s_pickinfo.firstdiff.x = (float)s_pickinfo.clickpos.x - s_pickinfo.objscreen.x;
+						//s_pickinfo.firstdiff.y = (float)s_pickinfo.clickpos.y - s_pickinfo.objscreen.y;
 
 					}
 					else{
@@ -7834,12 +7842,12 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 
 	ChaVector3 mousesc;
 	//以下2行。相対位置で動かすことができるが、マウスが可動でボーンが可動でないような位置への操作があると、その後の操作と結果の関係が不自然にみえる。
-	//mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
-	//mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
+	mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
+	mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
 
 	//以下２行。常にマウス位置を目標にする。
-	mousesc.x = s_pickinfo.mousepos.x;
-	mousesc.y = s_pickinfo.mousepos.y;
+	//mousesc.x = s_pickinfo.mousepos.x;
+	//mousesc.y = s_pickinfo.mousepos.y;
 	mousesc.z = s_pickinfo.objscreen.z;
 
 	ChaVector3 startsc, endsc;
@@ -10665,7 +10673,7 @@ int SetSelectState()
 
 	pickinfo.winx = (int)DXUTGetWindowWidth();
 	pickinfo.winy = (int)DXUTGetWindowHeight();
-	pickinfo.pickrange = 6;
+	pickinfo.pickrange = PICKRANGE;
 	pickinfo.buttonflag = 0;
 
 	//pickinfo.pickobjno = s_curboneno;
@@ -15751,7 +15759,7 @@ int BoneRClick(int srcboneno)
 
 		s_pickinfo.winx = (int)DXUTGetWindowWidth();
 		s_pickinfo.winy = (int)DXUTGetWindowHeight();
-		s_pickinfo.pickrange = 6;
+		s_pickinfo.pickrange = PICKRANGE;
 
 		s_pickinfo.pickobjno = -1;
 
@@ -16736,7 +16744,11 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 HWND CreateMainWindow()
 {
-	s_mainhwnd = NULL;
+	if (s_mainhwnd && IsWindow(s_mainhwnd)) {
+		DestroyWindow(s_mainhwnd);
+		s_mainhwnd = 0;
+	}
+	s_mainhwnd = 0;
 
 
 	HWND window;
@@ -16819,6 +16831,13 @@ HWND Create3DWnd()
 {
 	HRESULT hr;
 
+	if (s_3dwnd && IsWindow(s_3dwnd)) {
+		DestroyWindow(s_3dwnd);
+		s_3dwnd = 0;
+	}
+	s_3dwnd = 0;
+
+
 	hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, 450, 0);
 	if (FAILED(hr)) {
 		_ASSERT(0);
@@ -16888,6 +16907,11 @@ HWND Create3DWnd()
 
 CInfoWindow* CreateInfoWnd()
 {
+	if (g_infownd) {
+		delete g_infownd;
+		g_infownd = 0;
+	}
+
 	CInfoWindow* newinfownd = new CInfoWindow();
 	if (newinfownd) {
 		int cxframe = GetSystemMetrics(SM_CXFRAME);
@@ -16902,10 +16926,10 @@ CInfoWindow* CreateInfoWnd()
 			g_infownd = newinfownd;
 
 			OutputToInfoWnd(L"InfoWindow initialized 1");
-			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 500,000 lines.");
+			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 6,000 lines.");
 			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
 			OutputToInfoWnd(L"If the most newest line is shown at lowest position, auto scroll works.Save to info_(date).txt on exit application.");
-			OutputToInfoWnd(L"上：古,下：新。500,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
+			OutputToInfoWnd(L"上：古,下：新。6,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
 		}
 
 	}

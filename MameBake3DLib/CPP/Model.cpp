@@ -1907,7 +1907,7 @@ int CModel::PickBone( PICKINFO* pickinfo )
 	float cmpdist;
 	float mindist = 0.0f;
 	int firstflag = 1;
-
+	ChaVector2 firstdiff = ChaVector2(0.0f, 0.0f);
 
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
@@ -1919,9 +1919,10 @@ int CModel::PickBone( PICKINFO* pickinfo )
 
 			if( (cmpsc.z >= 0.0f) && (cmpsc.z <= 1.0f) ){
 				float mag;
-				mag = ( (float)pickinfo->clickpos.x - cmpsc.x ) * ( (float)pickinfo->clickpos.x - cmpsc.x ) + 
-					( (float)pickinfo->clickpos.y - cmpsc.y ) * ( (float)pickinfo->clickpos.y - cmpsc.y );
-				if( mag != 0.0f ){
+				firstdiff.x = (float)pickinfo->clickpos.x - cmpsc.x;
+				firstdiff.y = (float)pickinfo->clickpos.y - cmpsc.y;
+				mag = firstdiff.x * firstdiff.x + firstdiff.y * firstdiff.y;
+				if (mag != 0.0f) {
 					cmpdist = sqrtf( mag );
 				}else{
 					cmpdist = 0.0f;
@@ -1942,6 +1943,7 @@ int CModel::PickBone( PICKINFO* pickinfo )
 	if( minno >= 0 ){
 		pickinfo->objscreen = picksc;
 		pickinfo->objworld = pickworld;
+		pickinfo->firstdiff = firstdiff;
 	}
 
 	return 0;

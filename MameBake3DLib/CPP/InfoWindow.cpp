@@ -204,9 +204,10 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 	if (!m_isfirstoutput) {
 		m_dataindex++;
 		if (m_dataindex >= INFOWINDOWLINEH) {
-			//m_dataindex = 0;
-			MessageBox(m_hWnd, L"InfoWindowの出力行数が制限に達しました。", L"警告", MB_OK);
-			return 1;
+			m_dataindex = 0;
+			m_isfirstoutput = true;
+			//MessageBox(m_hWnd, L"InfoWindowの出力行数が制限に達しました。", L"警告", MB_OK);
+			//return 1;
 		}
 	}
 
