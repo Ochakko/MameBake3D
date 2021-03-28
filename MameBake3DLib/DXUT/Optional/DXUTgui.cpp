@@ -431,7 +431,8 @@ CDXUTDialog::CDXUTDialog() noexcept :
     m_pCallbackEventUserContext( nullptr ),
     m_CapElement{},
     m_pNextDialog(this),
-    m_pPrevDialog(this)
+    m_pPrevDialog(this),
+    m_dlghwnd(0)
 {
 }
 
@@ -806,6 +807,10 @@ _Use_decl_annotations_
 bool CDXUTDialog::MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
     bool bHandled = false;
+
+    if (!m_dlghwnd && hWnd && IsWindow(hWnd)) {
+        m_dlghwnd = hWnd;
+    }
 
     // For invisible dialog, do not handle anything.
     if( !m_bVisible )

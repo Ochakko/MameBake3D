@@ -253,6 +253,8 @@ public:
     }
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
+    HWND GetHWnd() const { return m_dlghwnd; }
+
 
     static void WINAPI SetRefreshTime( _In_ float fTime ) { s_fTimeRefresh = fTime; }
 
@@ -342,6 +344,8 @@ private:
     std::vector<DXUTElementHolder*> m_DefaultElements;
 
     CDXUTElement m_CapElement;  // Element for the caption
+
+    HWND m_dlghwnd;
 
     CDXUTDialog* m_pNextDialog;
     CDXUTDialog* m_pPrevDialog;
@@ -524,6 +528,13 @@ public:
         m_x = x;
         m_y = y;
         UpdateRects();
+    }
+    void GetLocation(_Out_ POINT* dstpoint)
+    {
+        if (dstpoint) {
+            dstpoint->x = m_x;
+            dstpoint->y = m_y;
+        }
     }
     void SetSize( int width, int height )
     {

@@ -1,10 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3D", "MameBake3D.vcxproj", "{16FA9686-BD76-4B06-AE36-7B156CC35AFA}"
 	ProjectSection(ProjectDependencies) = postProject
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2} = {50943E28-D093-44B3-AC1C-8F3BAC2917D2}
 		{381D22C0-053F-437F-A4AB-3B57CB413001} = {381D22C0-053F-437F-A4AB-3B57CB413001}
 	EndProjectSection
 EndProject
@@ -14,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3DLib", "..\MameBak
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Effects11", "..\Effects11\Effects11.vcxproj", "{4290AD57-72AB-4034-AA82-1EF3D9E3D545}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DS4HidInputLib", "..\MameBake3DLib\DS4HidInputLib\DS4HidInputLib.vcxproj", "{50943E28-D093-44B3-AC1C-8F3BAC2917D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,8 +50,19 @@ Global
 		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|Win32.Build.0 = Release|Win32
 		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|x64.ActiveCfg = Release|x64
 		{4290AD57-72AB-4034-AA82-1EF3D9E3D545}.Release|x64.Build.0 = Release|x64
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Debug|Win32.Build.0 = Debug|Win32
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Debug|x64.ActiveCfg = Debug|x64
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Debug|x64.Build.0 = Debug|x64
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|Win32.ActiveCfg = Release|Win32
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|Win32.Build.0 = Release|Win32
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|x64.ActiveCfg = Release|x64
+		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5E5A70B2-EED8-4010-BE42-42B5D30F0282}
 	EndGlobalSection
 EndGlobal

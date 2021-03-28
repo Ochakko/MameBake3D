@@ -803,6 +803,61 @@ public: //accesser
 
 	CBone* GetBrother(){ return m_brother; };
 	void SetBrother( CBone* srcbro ){ m_brother = srcbro; };
+	CBone* GetSister() {
+		CBone* parbone = GetParent();
+		if (parbone) {
+			CBone* firstbrobone = parbone->GetChild();
+			CBone* nextbone = firstbrobone;
+			while (nextbone) {
+				if (nextbone) {
+					if (nextbone->GetBrother() == this) {
+						return nextbone;//!!!!!!!!!!!!
+					}
+					nextbone = nextbone->GetBrother();
+				}
+				else {
+					return 0;
+				}
+			}
+			return 0;
+		}
+		else {
+			return 0;
+		}
+		return 0;
+	};
+	bool IsBranchBone()
+	{
+		CBone* chksister = GetSister();
+		CBone* chkbrother = GetBrother();
+		if (chksister || chkbrother) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	CBone* GetUpperBranchBone() {
+		CBone* curbone = GetParent();
+		while (curbone) {
+			if (curbone->IsBranchBone()) {
+				return curbone;
+			}
+			curbone = curbone->GetParent();
+		}
+		return 0;
+	};
+	CBone* GetLowerBranchBone() {
+		CBone* curbone = GetChild();
+		while (curbone) {
+			if (curbone->IsBranchBone()) {
+				return curbone;
+			}
+			curbone = curbone->GetChild();
+		}
+		return 0;
+	}
+	
 
 	bool GetPositionFound(){
 		return m_posefoundflag;

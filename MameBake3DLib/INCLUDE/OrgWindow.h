@@ -93,6 +93,7 @@ static void s_dummyfunc();
 			y=_y;
 		}
 
+
 		////////////////////////// MemberVar /////////////////////////////
 		int x,y;
 
@@ -363,11 +364,20 @@ static void s_dummyfunc();
 		OrgWindowParts(){
 			parentWindow=NULL;
 			isregistered = false;
+			isactive = false;
 		}
 		OrgWindowParts( const OrgWindowParts& a ){
 			operator=(a);
 		}
 
+		bool getActive()
+		{
+			return isactive;
+		}
+		void setActive(bool srcactive)
+		{
+			isactive = srcactive;
+		}
 		bool getIsResigtered()
 		{
 			return isregistered;
@@ -465,6 +475,11 @@ static void s_dummyfunc();
 		color_tag getBaseColor() const{
 			return baseColor;
 		}
+		void setColor(unsigned char srcr, unsigned char srcg, unsigned char srcb) {
+			baseColor.r = srcr;
+			baseColor.g = srcg;
+			baseColor.b = srcb;
+		}
 		void setColor(color_tag _color){
 			baseColor= _color;
 	//		draw();
@@ -479,6 +494,7 @@ static void s_dummyfunc();
 
 		HDCMaster *hdcM;
 		bool isregistered;
+		bool isactive;
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : 親ウィンドウに登録
@@ -498,13 +514,24 @@ static void s_dummyfunc();
 		//	Method : 枠を描画
 		void drawEdge(bool fill=true){
 			if (isregistered && hdcM) {
-				if (fill) {
-					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), RGB(baseColor.r, baseColor.g, baseColor.b));
+				if (getActive()) {
+					if (fill) {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20 + 30, 255), min(baseColor.g + 20 + 30, 255), min(baseColor.b + 20 + 30, 255)), RGB(baseColor.r + 30, baseColor.g + 30, baseColor.b + 30));
+					}
+					else {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20 + 30, 255), min(baseColor.g + 20 + 30, 255), min(baseColor.b + 20 + 30, 255)), NULL);
+					}
+					Rectangle(hdcM->hDC, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
 				}
 				else {
-					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+					if (fill) {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), RGB(baseColor.r, baseColor.g, baseColor.b));
+					}
+					else {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+					}
+					Rectangle(hdcM->hDC, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
 				}
-				Rectangle(hdcM->hDC, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
 			}
 		}
 	};
@@ -524,7 +551,7 @@ static void s_dummyfunc();
 				   HWND _hWndParent=NULL, bool _visible=true,
 				   unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70,
 				   bool _canQuit=true, bool _canChangeSize=true ){
-
+			isactive = false;
 			istopmost = srcistopmost;
 
 			//イベントリスナー
@@ -569,9 +596,8 @@ static void s_dummyfunc();
 			//ウィンドウ表示
 			ShowWindow(hWnd, SW_SHOW);
 
-
 			beginPaint();
-				paintTitleBar();
+			paintTitleBar();
 			endPaint();
 
 			UpdateWindow(hWnd);
@@ -596,8 +622,76 @@ static void s_dummyfunc();
 			delete[] title;
 		}
 
+		bool getActive()
+		{
+			return isactive;
+		}
+
+
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウ内部品を追加
+		void setBackGroundColor(bool srcisactive) {
+			isactive = srcisactive;
+
+			if (isactive) {
+				baseR = 255;
+				baseG = 128;
+				baseB = 64;
+			}
+			else {
+				baseR = 70;
+				baseG = 50;
+				baseB = 70;
+			}
+
+			HBRUSH brush = CreateSolidBrush(RGB(baseR, baseG, baseB));
+			SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
+
+			//UpdateWindow(hWnd);
+
+			//std::list<OrgWindowParts*> tmpPartsList = partsList;
+			//partsList.clear();
+			//currentPartsSizeY = 0;
+			//for (std::list<OrgWindowParts*>::iterator itr = tmpPartsList.begin();
+			//	itr != tmpPartsList.end(); itr++) {
+			//	(*itr)->setColor(baseR, baseG, baseB);
+			//}
+
+
+			callRewrite();
+
+			//allPaint();
+
+			//std::list<OrgWindowParts*> tmpPartsList = partsList;
+			//partsList.clear();
+			//currentPartsSizeY = 0;
+			//for (std::list<OrgWindowParts*>::iterator itr = tmpPartsList.begin();
+			//	itr != tmpPartsList.end(); itr++) {
+			//	(*itr)->setActive(srcisactive);
+			//	(*itr)->setColor(baseR, baseG, baseB);
+			//	(*itr)->callRewrite();
+			//	//(*itr)->draw();
+			//}
+
+			//callRewrite();
+			//UpdateWindow(hWnd);
+
+			//if (isactive) {
+			//	HBRUSH brush = CreateSolidBrush(RGB(min(baseR + 30, 255), min(baseG + 30, 255), min(baseB + 30, 255)));
+			//	SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
+			//	DeleteObject(brush);
+			//	InvalidateRect(hWnd, NULL, true);
+			//	UpdateWindow(hWnd);
+			//}
+			//else {
+			//	HBRUSH brush = CreateSolidBrush(RGB(baseR, baseG, baseB));
+			//	SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
+			//	DeleteObject(brush);
+			//	InvalidateRect(hWnd, NULL, true);
+			//	UpdateWindow(hWnd);
+			//}
+		};
+
 		void addParts(OrgWindowParts& a){
 
 
@@ -643,13 +737,18 @@ static void s_dummyfunc();
 		void callRewrite(){
 			if( hWnd==NULL ) return;
 
-			//再描画領域
+			////再描画領域
 			RECT tmpRect;
 			tmpRect.left=   0;
 			tmpRect.top=    0;
 			tmpRect.right=  size.x;
 			tmpRect.bottom= size.y;
 			InvalidateRect( hWnd, &tmpRect, false );
+			
+			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin(); itr != partsList.end(); itr++) {
+				//(*itr)->draw();
+				(*itr)->callRewrite();
+			}
 		}
 		/// Method : ウィンドウ内部品を全て追加しなおす
 		void reAddAllParts(){
@@ -805,6 +904,7 @@ static void s_dummyfunc();
 		bool visible;
 		bool nowChangingSize;
 		bool canChangeSize;
+		bool isactive;
 
 		HDCMaster hdcM;
 
@@ -830,6 +930,47 @@ static void s_dummyfunc();
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウクラスを登録
+
+/*
+	//ウィンドウクラスを登録
+	WNDCLASSEX wcex;
+	ZeroMemory((LPVOID)&wcex, sizeof(WNDCLASSEX));
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = 0;
+	wcex.lpfnWndProc = InfoWndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = (HINSTANCE)GetModuleHandle(NULL);
+	wcex.hIcon = NULL;
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = NULL;
+	wcex.lpszClassName = L"InfoWindow_";
+	wcex.hIconSm = NULL;
+	RegisterClassEx(&wcex);
+
+
+
+	//ウィンドウ作成
+	int cxframe = GetSystemMetrics(SM_CXFRAME);
+	int cyframe = GetSystemMetrics(SM_CYFRAME);
+	//if (istopmost) {
+	//	hWnd = CreateWindowEx(//WS_EX_TOOLWINDOW|WS_EX_TOPMOST,szclassName,title,WS_POPUP,
+	//		WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+	//		pos.x, pos.y,
+	//		size.x, size.y,
+	//		hWndParent, NULL, hInstance, NULL);
+	//}
+	//else {
+	m_hWnd = CreateWindowEx(
+		WS_EX_LEFT, L"InfoWindow_", L"InfoWindow", WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE | WS_THICKFRAME,
+		srcposx, srcposy,
+		srcwidth, srcheight - 2 * cyframe,
+		srcparentwnd, NULL, (HINSTANCE)GetModuleHandle(NULL), NULL);
+
+*/
+
+
 		void registerWindowClass(){
 			ZeroMemory((LPVOID)&wcex, sizeof(WNDCLASSEX));
 
@@ -838,28 +979,29 @@ static void s_dummyfunc();
 			wcex.lpfnWndProc	= wndProc;
 			wcex.cbClsExtra		= 0;
 			wcex.cbWndExtra		= 0;
-			wcex.hInstance		= hInstance;
+			//wcex.hInstance		= hInstance;
+			wcex.hInstance = (HINSTANCE)GetModuleHandle(NULL);
 			wcex.hIcon			= NULL;
 			wcex.hCursor		= LoadCursor(NULL,IDC_ARROW);
 			wcex.hbrBackground	= ( HBRUSH)( COLOR_WINDOW+1);
 			wcex.lpszMenuName	= NULL;
 			wcex.lpszClassName	= szclassName;
 			wcex.hIconSm		= NULL;
-			RegisterClassEx(&wcex);
+			RegisterClassExW(&wcex);
 		}
 		//	Method : ウィンドウ作成
 		void create(){
 			if (hWndParent != NULL) {
 				if (istopmost) {
-					hWnd = CreateWindowEx(//WS_EX_TOOLWINDOW|WS_EX_TOPMOST,szclassName,title,WS_POPUP,
-						WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+					hWnd = CreateWindowExW(//WS_EX_TOOLWINDOW|WS_EX_TOPMOST,szclassName,title,WS_POPUP,
+						WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,// | WS_THICKFRAME,
 						pos.x, pos.y,
 						size.x, size.y,
 						hWndParent, NULL, hInstance, NULL);
 				}
 				else {
-					hWnd = CreateWindowEx(
-						WS_EX_LEFT, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+					hWnd = CreateWindowExW(
+						WS_EX_LEFT, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,// | WS_THICKFRAME,
 						pos.x, pos.y,
 						size.x, size.y,
 						hWndParent, NULL, hInstance, NULL);
@@ -868,13 +1010,13 @@ static void s_dummyfunc();
 			}
 			else {
 				if (istopmost) {
-					hWnd = CreateWindowEx(WS_EX_LEFT | WS_EX_TOPMOST,szclassName,title,WS_POPUP,
+					hWnd = CreateWindowExW(WS_EX_LEFT | WS_EX_TOPMOST,szclassName,title, WS_POPUP,// | WS_THICKFRAME,
 						pos.x, pos.y,
 						size.x, size.y,
 						hWndParent, NULL, hInstance, NULL);
 				}
 				else {
-					hWnd = CreateWindowEx(WS_EX_LEFT,szclassName,title,WS_POPUP,
+					hWnd = CreateWindowExW(WS_EX_LEFT,szclassName,title, WS_POPUP,// | WS_THICKFRAME,
 						pos.x, pos.y,
 						size.x, size.y,
 						hWndParent, NULL, hInstance, NULL);
@@ -3130,7 +3272,8 @@ static void s_dummyfunc();
 			size.y-= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)%(LABEL_SIZE_Y-1);
 		}
 		//	Method : 描画
-		void draw();
+		virtual void callRewrite();
+		virtual void draw();
 		//void draw(){
 		//	drawEdge();
 
@@ -4248,6 +4391,8 @@ static void s_dummyfunc();
 
 			//////////////////////////// Method //////////////////////////////
 			//	Method : 描画
+			virtual void callRewrite();
+
 			void draw(	HDCMaster *hdcM,
 						int posX, int posY,
 						int width,
@@ -4272,9 +4417,16 @@ static void s_dummyfunc();
 				//ラベル
 				hdcM->setFont(12,_T("ＭＳ ゴシック"));
 				if( m_nullflag == 0 ){
-					SetTextColor(hdcM->hDC,RGB(240,240,240));
-				}else{
-					SetTextColor(hdcM->hDC,RGB(0,240,240));
+					SetTextColor(hdcM->hDC, RGB(220,220,220));
+				}else if(m_nullflag == 1){
+					SetTextColor(hdcM->hDC, RGB(0,220,220));
+				}
+				else if (m_nullflag == 2) {
+					SetTextColor(hdcM->hDC, RGB(64, 128, 255));
+				}
+				else {
+					_ASSERT(0);
+					SetTextColor(hdcM->hDC, RGB(255, 0, 0));
 				}
 
 				std::basic_string<TCHAR> prname;
@@ -4694,10 +4846,16 @@ static void s_dummyfunc();
 
 			TIME_ERROR_WIDTH = 0.0001;
 
-			lineData.push_back(new EulLineData(0, 0, _T("X"), this, 0));
-			lineData.push_back(new EulLineData(0, 0, _T("Y"), this, 1));
-			lineData.push_back(new EulLineData(0, 0, _T("Z"), this, 2));
-			lineData.push_back(new EulLineData(0, 0, _T("S"), this, 3));
+			//常識：コンストラクタではthisはまだ使えない！！！
+			//lineData.push_back(new EulLineData(0, 0, _T("X"), this, 0));
+			//lineData.push_back(new EulLineData(0, 0, _T("Y"), this, 1));
+			//lineData.push_back(new EulLineData(0, 0, _T("Z"), this, 2));
+			//lineData.push_back(new EulLineData(0, 0, _T("S"), this, 3));
+			//lineData.push_back(new EulLineData(0, 0, _T("X"), 0, 0));
+			//lineData.push_back(new EulLineData(0, 0, _T("Y"), 0, 1));
+			//lineData.push_back(new EulLineData(0, 0, _T("Z"), 0, 2));
+			//lineData.push_back(new EulLineData(0, 0, _T("S"), 0, 3));
+
 			maxTime = _maxTime;
 			timeSize = _timeSize;
 			cursorListener = []() {s_dummyfunc(); };
@@ -5889,6 +6047,9 @@ static void s_dummyfunc();
 
 			};
 
+			void SetParent(OWP_EulerGraph* _parent) {
+				parent = _parent;
+			};
 
 			//class OWP_EulerGraph::EulLineData::EulKey;
 			//static OWP_EulerGraph::EulLineData::EulKey* OWP_EulerGraph::EulLineData::GetNewEulKey();
@@ -6010,6 +6171,11 @@ static void s_dummyfunc();
 				double timeSize,
 				double startTime,
 				bool highLight = false) {
+
+				if (!parent) {
+					return;
+				}
+
 				unsigned char baseR = parent->baseColor.r;
 				unsigned char baseG = parent->baseColor.g;
 				unsigned char baseB = parent->baseColor.b;
@@ -6501,7 +6667,7 @@ static void s_dummyfunc();
 
 		private:
 			////////////////////////// MemberVar /////////////////////////////
-			OWP_EulerGraph *parent;
+			OWP_EulerGraph* parent;
 			//static const double TIME_ERROR_WIDTH;
 		};
 		std::vector<EulLineData*> lineData;
@@ -6621,11 +6787,13 @@ static void s_dummyfunc();
 				Rectangle(hdcM->hDC,x0,y0,x1,y1);
 
 				//中身
-				int barSize= (y1-y0-4)*showLineNum/(int)lineData.size();
-				int barStart= (y1-y0-4)*showPosLine/(int)lineData.size();
-				if( showLineNum<(int)lineData.size() ){
-					hdcM->setPenAndBrush(NULL,RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)));
-					Rectangle(hdcM->hDC,x0+2,y0+2+barStart,x1-2,y0+2+barStart+barSize+1);
+				if (lineData.size() > 0) {
+					int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
+					int barStart = (y1 - y0 - 4) * showPosLine / (int)lineData.size();
+					if (showLineNum < (int)lineData.size()) {
+						hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+						Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
+					}
 				}
 			}
 		}

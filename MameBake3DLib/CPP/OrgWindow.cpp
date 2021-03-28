@@ -102,7 +102,24 @@ namespace OrgWinGUI{
 		}
 	}
 
+	void OWP_Timeline::LineData::callRewrite()
+	{
+	}
 
+	void OWP_Timeline::callRewrite()
+	{
+		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			RECT tmpRect;
+			tmpRect.left = 0;
+			tmpRect.top = 0;
+			tmpRect.right = size.x;
+			tmpRect.bottom = size.y;
+			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+			//draw();
+
+		}
+	}
 	void OWP_Timeline::draw() {
 		//static int s_paintcnt = 0;
 		//s_paintcnt++;
@@ -244,11 +261,13 @@ namespace OrgWinGUI{
 			Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
 			//íÜêg
-			int barSize = (y1 - y0 - 4)*showLineNum / (int)lineData.size();
-			int barStart = (y1 - y0 - 4)*showPos_line / (int)lineData.size();
-			if (showLineNum<(int)lineData.size()) {
-				hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
-				Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
+			if (lineData.size() > 0) {
+				int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
+				int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
+				if (showLineNum < (int)lineData.size()) {
+					hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
+				}
 			}
 		}
 	}
@@ -320,10 +339,14 @@ namespace OrgWinGUI{
 		//int showLineNum = 3;
 		int showLineNum = 4;
 		//for (int i = showPos_line, j = 0; i<(int)lineData.size() && j<showLineNum; i++, j++) {
-		for (int i = 0; i < showLineNum; i++) {
-			bool highLight = false;
-			//if (i == currentLine) highLight = true;
-			if (i >= 0) {
+		
+		if (lineData.size() >= 4) {//X, Y, Z, Brush
+
+			int drawnum = min(lineData.size(), showLineNum);
+
+			for (int i = 0; i < drawnum; i++) {
+				bool highLight = false;
+				//if (i == currentLine) highLight = true;
 				lineData[i]->draw(hdcM,
 					pos.x + MARGIN,
 					//pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
@@ -752,6 +775,8 @@ namespace OrgWinGUI{
 		tmpRect.right=  pos.x+size.x-1;
 		tmpRect.bottom= pos.y+size.y-1;
 		InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+
+		//draw();
 	}
 
 	///<summary>

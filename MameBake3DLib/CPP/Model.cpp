@@ -1537,7 +1537,10 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 			int depth = curbone->CalcBoneDepth();
 
 			//s‚ð’Ç‰Á
-			if (curbone->GetType() != FBXBONE_NULL){
+			if (curbone->IsBranchBone()) {
+				timeline.newLine(depth, 2, curbone->GetWBoneName());
+			}
+			else if (curbone->GetType() != FBXBONE_NULL){
 				timeline.newLine(depth, 0, curbone->GetWBoneName());
 			}
 			else{
@@ -3968,6 +3971,10 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 
 FbxPose* CModel::GetBindPose()
 {
+
+	if (!m_pscene) {
+		return 0;
+	}
 	FbxPose* bindpose = 0;
 	FbxPose* curpose = m_pscene->GetPose(0);
 	int curpindex = 1;
