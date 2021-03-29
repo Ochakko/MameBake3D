@@ -248,14 +248,24 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/29_2
+	マウスドラッグ改善
+		ゲームパッド使用時においても
+		ドラッグ中にマウスがウインドウ外に出た場合にドラッグ効果が続くようにしました
+
+	Improve mouse drag operations.
+	In case of using GamePad, effect of mouse drag is continued even if mouse is out of window.
+ 
+
 2021/03/29_1
 	Sony PlayStation用のゲームパッドに対応(中)
 		PS5用のDualSenceとPS4用のDualShock4に対応(中)
 		
 		カエルボタン押下：△ボタン
 		プレートメニュー移動；□ボタン
-			プレートメニュー選択決定：〇ボタン
-		
+		プレートメニュー選択決定：〇ボタン
+		アクセル：L2,R2		
+
 		決定：〇ボタン		
 			GUIを押すことが出来ます
 
@@ -264,7 +274,7 @@ hr = pSwapChain->Present(1, dwFlags);
 
 		マウスカーソル移動：Lアナログスティック
 
-		階層エディタの操作
+		階層エディタの操作(L1ボタンで階層エディタ選択後)
 			十字ボタンでジョイントを選択
 			親ジョイント選択：上ボタン
 			子供ジョイント選択：下ボタン
@@ -278,6 +288,7 @@ hr = pSwapChain->Present(1, dwFlags);
 			スプライトのドラッグ
 			スライダーのドラッグ
 			コンボボックスのドラッグ
+			複数フレーム選択
 			などが出来ます
 
 

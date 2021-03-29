@@ -296,7 +296,8 @@ static RECT s_rcltwnd;
 static RECT s_rcsidemenuwnd;
 static RECT s_rcrigidwnd;
 static RECT s_rcinfownd;
-static void ChangeMouseCapture();
+static void ChangeMouseSetCapture();
+static void ChangeMouseReleaseCapture();
 
 
 #define MB3D_DSBUTTONNUM	14
@@ -3418,7 +3419,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	static double savetime = 0.0;
 	static int capcnt = 0;
 
-	ChangeMouseCapture();
+	
 
 	WCHAR sz[100];
 	swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
@@ -3428,6 +3429,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	if (g_undertrackingRMenu == 0) {
 		OnDSUpdate();
 	}
+
 
 	OnFrameUtCheckBox();
 	SetCamera6Angle();
@@ -4177,7 +4179,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//s_curboneno = -1;
 
 		s_ikcnt = 0;
-		SetCapture( s_3dwnd );
+		if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+			//DS deviceが無い場合
+			SetCapture(s_3dwnd);
+		}
+		//SetCapture( s_3dwnd );
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
 		::ScreenToClient( s_3dwnd, &ptCursor );
@@ -4730,7 +4736,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 */
 	}else if( uMsg == WM_LBUTTONUP ){
-		ReleaseCapture();
+		if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+			//DS deviceが無い場合
+			ReleaseCapture();
+		}
+		//ReleaseCapture();
 		s_wmlbuttonup = 1;
 
 		if (s_model && (s_onragdollik != 0)){
@@ -17937,6 +17947,9 @@ int OnMouseMoveFunc()
 
 	}
 	else if (s_pickinfo.buttonflag == PICK_CAMROT) {
+
+	//not use quaternion yet int this part, so ジンバルロック未回避.
+
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
 		GetCursorPos(&ptCursor);
@@ -17974,22 +17987,24 @@ int OnMouseMoveFunc()
 			rotaxisxz = upvec;
 			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			if (roty < 0.0f) {
-				roty = 0.0f;
-			}
-			else {
-			}
+			//rotxz = 0.0f;
+			//if (roty < 0.0f) {
+			//	roty = 0.0f;
+			//}
+			//else {
+			//}
 		}
 		else {
 			rotaxisxz = upvec;
 			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			if (roty > 0.0f) {
-				roty = 0.0f;
-			}
-			else {
-				//rotyだけ回す。
-			}
+			//rotxz = 0.0f;
+			//if (roty > 0.0f) {
+			//	roty = 0.0f;
+			//}
+			//else {
+			//	//rotyだけ回す。
+			//}
 		}
 
 
@@ -18013,27 +18028,27 @@ int OnMouseMoveFunc()
 		ChaVector3 neweye;
 		ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-		float chkdot2;
-		ChaVector3 newviewvec = weye - neweye;
-		ChaVector3Normalize(&newviewvec, &newviewvec);
-		chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
-		if (fabs(chkdot2) < 0.99965f) {
-			ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
-			ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
+		//float chkdot2;
+		//ChaVector3 newviewvec = weye - neweye;
+		//ChaVector3Normalize(&newviewvec, &newviewvec);
+		//chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
+		//if (fabs(chkdot2) < 0.99965f) {
+		//	ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
+		//	ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
 
-			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-		}
-		else {
-			roty = 0.0f;
-			rotaxisxz = upvec;
-			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-		}
-		ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-		ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
-		mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-		ChaVector3TransformCoord(&neweye, &weye, &mat);
+		//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+		//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
+		//}
+		//else {
+		//	roty = 0.0f;
+		//	rotaxisxz = upvec;
+		//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+		//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
+		//}
+		//ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+		//ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+		//mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
+		//ChaVector3TransformCoord(&neweye, &weye, &mat);
 
 		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 		s_matView = g_Camera->GetViewMatrix();
@@ -18685,7 +18700,12 @@ void OnDSUpdate()
 		return;
 	}
 
+
 	GetDSValues();
+
+	ChangeMouseSetCapture();//処理前にキャプチャーをセット
+
+
 
 	DSColorAndVibration();
 
@@ -18709,6 +18729,8 @@ void OnDSUpdate()
 	//Axis L Mouse Move
 	DSAxisLMouseMove();
 
+
+	ChangeMouseReleaseCapture();//処理が終わってからキャプチャーを外す
 
 	//OutputToInfoWnd(L"\n\n");
 	//OutputToInfoWnd(L"Axis 0 : %1.4f\n", axisval0);
@@ -19972,8 +19994,47 @@ void DSAxisLMouseMove()
 			LPARAM lparam;
 			lparam = (cursorpos.y << 16) | cursorpos.x;
 
-			::SetCursorPos(cursorpos.x, cursorpos.y);
-			//::SetCursorPos(cursorpos.x, cursorpos.y);
+
+			HWND desktopwnd;
+			desktopwnd = ::GetDesktopWindow();
+			if (desktopwnd) {
+				RECT desktoprect;
+				::GetClientRect(desktopwnd, &desktoprect);
+				::ClipCursor(&desktoprect);
+
+
+				::SetCursorPos(cursorpos.x, cursorpos.y);
+				//::SetCursorPos(cursorpos.x, cursorpos.y);
+
+				if (s_3dwnd) {
+					POINT client3dpoint;
+					client3dpoint = cursorpos;
+					::ScreenToClient(s_3dwnd, &client3dpoint);
+					LPARAM threelparam;
+					threelparam = (client3dpoint.y << 16) | client3dpoint.x;
+					::SendMessage(s_3dwnd, WM_MOUSEMOVE, 0, threelparam);
+				}
+				if (s_mainhwnd) {
+					POINT clientpoint;
+					clientpoint = cursorpos;
+					::ScreenToClient(s_mainhwnd, &clientpoint);
+					LPARAM mainlparam;
+					mainlparam = (clientpoint.y << 16) | clientpoint.x;
+					::SendMessage(s_mainhwnd, WM_MOUSEMOVE, 0, mainlparam);
+				}
+				HWND dlghwnd;
+				dlghwnd = g_SampleUI.GetHWnd();
+				if (dlghwnd) {
+					POINT clientpoint;
+					clientpoint = cursorpos;
+					::ScreenToClient(dlghwnd, &clientpoint);
+					LPARAM dlglparam;
+					dlglparam = (clientpoint.y << 16) | clientpoint.x;
+					::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
+				}
+
+				//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
+			}
 		}
 	//}
 	//else if (s_undertrackingRMenu == 1) {
@@ -20396,7 +20457,7 @@ s_shprateSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\M
 WindowSize(400, 600)
 */
 
-void ChangeMouseCapture()
+void ChangeMouseSetCapture()
 {
 	static bool s_firstflag = true;
 	static int s_capwndid = -1;
@@ -20405,6 +20466,19 @@ void ChangeMouseCapture()
 	if (!s_mainhwnd) {
 		return;
 	}
+
+	int dragbuttondown;
+	int dragbuttonup;
+
+	dragbuttondown = s_dsbuttondown[2];
+	dragbuttonup = s_dsbuttonup[2];
+
+
+	//〇ボタン押していないときには何もしないでリターン
+	if (!dragbuttondown) {
+		return;
+	}
+
 
 	POINT mousepoint;
 	::GetCursorPos(&mousepoint);
@@ -20526,162 +20600,139 @@ void ChangeMouseCapture()
 	///////////////
 	///////////////
 
-	if ((s_pickinfo.buttonflag == PICK_CAMMOVE) || (s_pickinfo.buttonflag == PICK_CAMROT) || (s_pickinfo.buttonflag == PICK_CAMDIST)) {
-		//ここでは、カメラスプライトをドラッグ中はマウスキャプチャーをいじらない
-	}
+	//if ((s_pickinfo.buttonflag == PICK_CAMMOVE) || (s_pickinfo.buttonflag == PICK_CAMROT) || (s_pickinfo.buttonflag == PICK_CAMDIST)) {
+	//	//ここでは、カメラスプライトをドラッグ中はマウスキャプチャーをいじらない
+	//}
 	//if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0) || (g_undertrackingRMenu == 0)) {
-	else if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0)) {
-		
-		switch (nextcapwndid) {
-		case 0:
-			//if (s_mainhwnd) {
-			//	SetCapture(s_mainhwnd);
-			//}
-			//break;
-		case 1:
-			if (s_3dwnd) {
-				//SetCapture(s_3dwnd);
-				HWND dlghwnd;
-				dlghwnd = g_SampleUI.GetHWnd();
-				if (dlghwnd) {
-					if (!s_firstflag) {
-						ReleaseCapture();
-						s_firstflag = false;
-					}
-					SetCapture(dlghwnd);
-				}
-			}
-			break;
-		case 2:
-			if (s_timelineWnd) {
-				if (!s_firstflag) {
-					ReleaseCapture();
-					s_firstflag = false;
-				}
-				SetCapture(s_timelineWnd->getHWnd());
-			}
-			break;
-		case 3:
-			if (s_toolWnd) {
-				if (!s_firstflag) {
-					ReleaseCapture();
-					s_firstflag = false;
-				}
-				SetCapture(s_toolWnd->getHWnd());
-			}
-			break;
-		case 4:
-			if (s_LtimelineWnd) {
-				if (!s_firstflag) {
-					ReleaseCapture();
-					s_firstflag = false;
-				}
-				SetCapture(s_LtimelineWnd->getHWnd());
-			}
-			break;
-		case 5:
-			if (s_sidemenuWnd) {
-				if (!s_firstflag) {
-					ReleaseCapture();
-					s_firstflag = false;
-				}
-				SetCapture(s_sidemenuWnd->getHWnd());
-			}
-			break;
-		case 6:
-			//plate menuで場合分け必要
-			if (s_platemenukind == 0) {
+	//else if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0)) {
+	
+
+	if (dragbuttondown >= 1) {//〇ボタンを押したときにキャプチャーオン
+
+		if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1)) {
+			switch (nextcapwndid) {
+			case 0:
 				if (s_mainhwnd) {
-					if (!s_firstflag) {
-						ReleaseCapture();
-						s_firstflag = false;
+					if (s_mainhwnd) {
+						SetCapture(s_mainhwnd);
 					}
+				}
+				break;
+			case 1:
+				if (s_3dwnd) {
+					//SetCapture(s_3dwnd);
+					HWND dlghwnd;
+					dlghwnd = g_SampleUI.GetHWnd();
+					if (dlghwnd) {
+						SetCapture(dlghwnd);
+					}
+				}
+				break;
+			case 2:
+				if (s_timelineWnd) {
+					SetCapture(s_timelineWnd->getHWnd());
+				}
+				break;
+			case 3:
+				if (s_toolWnd) {
+					SetCapture(s_toolWnd->getHWnd());
+				}
+				break;
+			case 4:
+				if (s_LtimelineWnd) {
+					SetCapture(s_LtimelineWnd->getHWnd());
+				}
+				break;
+			case 5:
+				if (s_sidemenuWnd) {
+					SetCapture(s_sidemenuWnd->getHWnd());
+				}
+				break;
+			case 6:
+				//plate menuで場合分け必要
+				if (s_platemenukind == 0) {
+					if (s_mainhwnd) {
+						SetCapture(s_mainhwnd);
+					}
+				}
+				else if (s_platemenukind == 1) {
+					if (s_platemenuno == 1) {
+						if (s_rigidWnd) {
+							SetCapture(s_rigidWnd->getHWnd());
+						}
+					}
+					else if (s_platemenuno == 2) {
+						if (s_impWnd) {
+							SetCapture(s_impWnd->getHWnd());
+						}
+					}
+					else if (s_platemenuno == 3) {
+						if (s_gpWnd) {
+							SetCapture(s_gpWnd->getHWnd());
+						}
+					}
+					else if (s_platemenuno == 4) {
+						if (s_dmpanimWnd) {
+							SetCapture(s_dmpanimWnd->getHWnd());
+						}
+					}
+				}
+				else if (s_platemenukind == 2) {
+					if (s_platemenuno == 1) {
+						if (s_convboneWnd) {
+							SetCapture(s_convboneWnd->getHWnd());
+						}
+					}
+					else if (s_platemenuno == 2) {
+						if (s_anglelimitdlg) {
+							SetCapture(s_anglelimitdlg);
+						}
+					}
+				}
+				break;
+			case 7:
+				if (g_infownd) {
+					SetCapture(g_infownd->GetHWnd());
+				}
+				break;
+			default:
+				if (s_mainhwnd) {
 					SetCapture(s_mainhwnd);
 				}
+				//if (s_mainhwnd) {
+				//	if (!s_firstflag) {
+				//		ReleaseCapture();
+				//		s_firstflag = false;
+				//	}
+				//	SetCapture(s_mainhwnd);
+				//}
+				break;
 			}
-			else if (s_platemenukind == 1) {
-				if (s_platemenuno == 1) {
-					if (s_rigidWnd) {
-						if (!s_firstflag) {
-							ReleaseCapture();
-							s_firstflag = false;
-						}
-						SetCapture(s_rigidWnd->getHWnd());
-					}
-				}
-				else if (s_platemenuno == 2) {
-					if (s_impWnd) {
-						if (!s_firstflag) {
-							ReleaseCapture();
-							s_firstflag = false;
-						}
-						SetCapture(s_impWnd->getHWnd());
-					}
-				}
-				else if (s_platemenuno == 3) {
-					if (s_gpWnd) {
-						if (!s_firstflag) {
-							ReleaseCapture();
-							s_firstflag = false;
-						}
-						SetCapture(s_gpWnd->getHWnd());
-					}
-				}
-				else if (s_platemenuno == 4) {
-					if (s_dmpanimWnd) {
-						if (!s_firstflag) {
-							ReleaseCapture();
-							s_firstflag = false;
-						}
-						SetCapture(s_dmpanimWnd->getHWnd());
-					}
-				}
-			}
-			else if (s_platemenukind == 2) {
-				if (s_platemenuno == 1) {
-					if (s_convboneWnd) {
-						if (!s_firstflag) {
-							ReleaseCapture();
-							s_firstflag = false;
-						}
-						SetCapture(s_convboneWnd->getHWnd());
-					}
-				}
-				else if (s_platemenuno == 2) {
-					if (s_anglelimitdlg) {
-						if (!s_firstflag) {
-							ReleaseCapture();
-							s_firstflag = false;
-						}
-						SetCapture(s_anglelimitdlg);
-					}
-				}
-			}
-			break;
-		case 7:
-			if (g_infownd) {
-				if (!s_firstflag) {
-					ReleaseCapture();
-					s_firstflag = false;
-				}
-				SetCapture(g_infownd->GetHWnd());
-			}
-			break;
-		default:
-			//if (s_mainhwnd) {
-			//	SetCapture(s_mainhwnd);
-			//}
-			if (!s_firstflag) {
-				ReleaseCapture();
-				s_firstflag = false;
-			}
-			break;
+
+			s_capwndid = nextcapwndid;
+			s_wmlbuttonup = 0;
 		}
-
-		s_capwndid = nextcapwndid;
-		s_wmlbuttonup = 0;
 	}
-
 }
 
+
+void ChangeMouseReleaseCapture()
+{
+	if (!s_mainhwnd) {
+		return;
+	}
+
+	int dragbuttondown;
+	int dragbuttonup;
+
+	dragbuttondown = s_dsbuttondown[2];
+	dragbuttonup = s_dsbuttonup[2];
+
+
+	//〇ボタンを話した時にリリースキャプチャしてリターン
+	if (dragbuttonup >= 1) {
+		ReleaseCapture();
+		return;
+	}
+}
 
