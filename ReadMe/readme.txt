@@ -13,6 +13,22 @@
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
 
+
+開発環境(2021/03/29時点)を書きます。
+FBXSDKは2020.2(VC2019)
+Microsoft MultiThreadLibrary PPL.
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
+VisualStudio2019Pro(VisualStudioSubscription)
+MayaIndie(Subscription FBXの確認はMayaでする)
+ゲームパッド操作用のライブラリはGitHubのヒロッチさんのオープンソースを編集して使いました。
+(ヒロッチさんのゲームパッドライブラリのライセンスはReadMe/DS4HidInput_LICENSE.txtに置きました。)
+
+
+
+
 開発環境(2021/03/19_2時点)を書きます。
 FBXSDKは2020.2(VC2019)
 Microsoft MultiThreadLibrary PPL.
@@ -248,6 +264,19 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/03/30_1
+	マウスキャプチャーに関する修正
+
+	十字キーでスライダーを選択した際のマウスポインタの位置の修正
+
+	リファクタリング
+		スプライトの配列アクセスにかかわる部分をenumに置き換え
+
+	Modify operation of mouse capturing.
+	Fix problem of mouse position on selectiong a slider by cross button.
+	Refactoring source code concerned with access of sprite array.
+
+
 2021/03/29_2
 	マウスドラッグ改善
 		ゲームパッド使用時においても
