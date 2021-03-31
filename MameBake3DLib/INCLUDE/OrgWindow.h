@@ -365,6 +365,7 @@ static void s_dummyfunc();
 			parentWindow=NULL;
 			isregistered = false;
 			isactive = false;
+			isslider = false;
 		}
 		OrgWindowParts( const OrgWindowParts& a ){
 			operator=(a);
@@ -381,6 +382,14 @@ static void s_dummyfunc();
 		bool getIsResigtered()
 		{
 			return isregistered;
+		}
+		void setIsSlider(bool srcisslider)
+		{
+			isslider = srcisslider;
+		}
+		bool getIsSlider()
+		{
+			return isslider;
 		}
 
 		virtual ~OrgWindowParts(){
@@ -495,6 +504,7 @@ static void s_dummyfunc();
 		HDCMaster *hdcM;
 		bool isregistered;
 		bool isactive;
+		bool isslider;
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : 親ウィンドウに登録
@@ -2454,6 +2464,29 @@ static void s_dummyfunc();
 		~OWP_PlayerButton(){
 		}
 
+		WindowPos getButtonPos(int buttonno)
+		{
+			WindowPos retpos;
+
+			if ((buttonno >= 0) && (buttonno <= 9)) {
+				//ボタンの四隅になる座標を求める
+				int pos1x = pos.x + BOX_POS_X + BOX_WIDTH * buttonno;
+				int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
+				int pos2x = pos.x + BOX_POS_X + BOX_WIDTH * (buttonno + 1) - 1;
+				int pos2y = pos1y + BOX_WIDTH - 1;
+
+				retpos.x = ((pos1x + pos2x) / 2);
+				retpos.y = ((pos1y + pos2y) / 2);
+			}
+			else {
+				_ASSERT(0);
+				retpos.x = 0;
+				retpos.y = 0;
+			}
+
+			return retpos;
+		};
+
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
 		void autoResize(){
@@ -3064,6 +3097,7 @@ static void s_dummyfunc();
 
 			drag=false;
 			parentWindow = NULL;
+			isslider = true;//!!!!!!
 		}
 
 		//////////////////////////// Method //////////////////////////////

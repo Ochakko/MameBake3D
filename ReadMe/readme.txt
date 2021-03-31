@@ -264,6 +264,19 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/01_1
+	ゲームパッド（Sony DualSence, Sony DualShock4）対応
+		L1でウインドウを選択後
+			十字ボタンでコントロール選択
+			〇ボタンで決定
+			〇ボタン＋Lスティックでドラッグ
+
+		After selecting a window by L1 button,
+			select control by cross button,
+			enter by 〇 button,
+			drag by 〇 button + L stick.
+
+	
 2021/03/30_1
 	マウスキャプチャーに関する修正
 

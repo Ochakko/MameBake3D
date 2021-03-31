@@ -286,6 +286,14 @@ static void DSColorAndVibration();
 static void DSSelectWindowAndCtrl();
 static void DSCrossButtonSelectTree();
 static void DSCrossButtonSelectUTGUI();
+static void DSCrossButtonSelectToolCtrls();
+static void DSCrossButtonSelectPlayerBtns();
+static void DSCrossButtonSelectRigidCtrls();
+static void DSCrossButtonSelectImpulseCtrls();
+static void DSCrossButtonSelectGPCtrls();
+static void DSCrossButtonSelectDampCtrls();
+static void DSCrossButtonSelectRetargetCtrls();
+static void DSCrossButtonSelectEulLimitCtrls();
 static void DSAxisLMouseMove();
 static void DSAimBarOK();
 
@@ -310,9 +318,11 @@ static int s_currentwndid = 0;
 static HWND s_currenthwnd = 0;
 static int s_currentctrlid = -1;
 static HWND s_currentctrlhwnd = 0;
+static int s_wmlbuttonup = 0;
+
+
 static int s_curdsutguikind = 0;
 static int s_curdsutguino = 0;
-static int s_wmlbuttonup = 0;
 static std::vector<CDXUTControl*> s_dsutgui0;
 static std::vector<CDXUTControl*> s_dsutgui1;
 static std::vector<CDXUTControl*> s_dsutgui2;
@@ -321,6 +331,29 @@ static std::vector<UINT> s_dsutguiid0;
 static std::vector<UINT> s_dsutguiid1;
 static std::vector<UINT> s_dsutguiid2;
 static std::vector<UINT> s_dsutguiid3;
+
+static int s_curdstoolctrlno = 0;
+static std::vector<OrgWinGUI::OrgWindowParts*> s_dstoolctrls;
+
+static int s_curdsplayerbtnno = 0;
+
+static int s_curdsrigidctrlno = 0;
+static std::vector<OrgWinGUI::OrgWindowParts*> s_dsrigidctrls;
+
+static int s_curdsimpulsectrlno = 0;
+static std::vector<OrgWinGUI::OrgWindowParts*> s_dsimpulsectrls;
+
+static int s_curdsgpctrlno = 0;
+static std::vector<OrgWinGUI::OrgWindowParts*> s_dsgpctrls;
+
+static int s_curdsdampctrlno = 0;
+static std::vector<OrgWinGUI::OrgWindowParts*> s_dsdampctrls;
+
+static int s_curdsretargetctrlno = 0;
+static std::vector<OrgWinGUI::OrgWindowParts*> s_dsretargetctrls;
+
+static int s_curdseullimitctrlno = 0;
+static std::vector<UINT> s_dseullimitctrls;
 
 
 static int s_dsbuttondown[MB3D_DSBUTTONNUM];
@@ -831,6 +864,7 @@ enum {
 };
 //#define SPAIMBARNUM	5
 
+#define SPPLAYERBUTTONNUM	10
 
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
@@ -1790,6 +1824,29 @@ void InitApp()
 	s_dsutguiid1.clear();
 	s_dsutguiid2.clear();
 	s_dsutguiid3.clear();
+
+	s_curdstoolctrlno = 0;
+	s_dstoolctrls.clear();
+
+	s_curdsplayerbtnno = 0;
+
+	s_curdsrigidctrlno = 0;
+	s_dsrigidctrls.clear();
+
+	s_curdsimpulsectrlno = 0;
+	s_dsimpulsectrls.clear();
+
+	s_curdsgpctrlno = 0;
+	s_dsgpctrls.clear();
+
+	s_curdsdampctrlno = 0;
+	s_dsdampctrls.clear();
+
+	s_curdsretargetctrlno = 0;
+	s_dsretargetctrls.clear();;
+
+	s_curdseullimitctrlno = 0;
+	s_dseullimitctrls.clear();
 
 
 	CRigidElem::InitRigidElems();
@@ -7852,6 +7909,7 @@ int OnModelMenu( int selindex, int callbymenu )
     g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
 
 
+	
 	CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
 
 	return 0;
@@ -9092,11 +9150,14 @@ int CreateConvBoneWnd()
 {
 	DestroyConvBoneWnd();
 
+	s_dsretargetctrls.clear();
+
 	s_convbonenum = s_model->GetBoneListSize();
 	if (s_convbonenum >= CONVBONEMAX){
 		_ASSERT(0);
 		return 1;
 	}
+
 
 	s_convboneWnd = new OrgWindow(
 		0,
@@ -9106,7 +9167,8 @@ int CreateConvBoneWnd()
 		WindowSize(200, 100),	//サイズ
 		L"ConvBoneWnd",	//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
-		true,					//表示・非表示状態
+		false,					//表示・非表示状態
+		//true,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
@@ -9164,12 +9226,21 @@ int CreateConvBoneWnd()
 	s_convbonesp->addParts2(*s_cbselbvh);
 
 
-	for (cbno = 0; cbno < s_convbonenum; cbno++){
+	s_dsretargetctrls.push_back(s_cbselmodel);
+	s_dsretargetctrls.push_back(s_cbselbvh);
+
+
+	for (cbno = 0; cbno < s_convbonenum; cbno++) {
 		s_convbonesp->addParts1(*s_modelbone[cbno]);
 		s_convbonesp->addParts2(*s_bvhbone[cbno]);
+
+		//s_dsretargetctrls.push_back(s_modelbone[cbno]);
+		s_dsretargetctrls.push_back(s_bvhbone[cbno]);
 	}
 
 	s_convbonesp->addParts1(*s_convboneconvert);
+	s_dsretargetctrls.push_back(s_convboneconvert);
+
 
 	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -12055,6 +12126,8 @@ int DispAngleLimitDlg()
 		return 0;
 	}
 
+	s_dseullimitctrls.clear();
+
 
 	Bone2AngleLimit();
 
@@ -12083,6 +12156,20 @@ int DispAngleLimitDlg()
 		858,
 		SWP_SHOWWINDOW
 	);
+
+	//s_dseullimitctrls.push_back(IDD_ANGLELIMITDLG);
+	s_dseullimitctrls.push_back(IDC_BONEAXIS);
+	s_dseullimitctrls.push_back(IDC_SLXL);
+	s_dseullimitctrls.push_back(IDC_SLXU);
+	s_dseullimitctrls.push_back(IDC_SLYL);
+	s_dseullimitctrls.push_back(IDC_SLYU);
+	s_dseullimitctrls.push_back(IDC_SLZL);
+	s_dseullimitctrls.push_back(IDC_SLZU);
+	s_dseullimitctrls.push_back(IDOK);
+
+	
+	
+
 
 	//::MoveWindow(s_anglelimitdlg, 1200, 32, 450, 858, TRUE);
 	//s_rigidWnd->setSize(WindowSize(450, 858));//880
@@ -14453,6 +14540,8 @@ int CreateLongTimelineWnd()
 int CreateDmpAnimWnd()
 {
 
+	s_dsdampctrls.clear();
+
 	/////////
 	s_dmpanimWnd = new OrgWindow(
 		0,
@@ -14487,6 +14576,15 @@ int CreateDmpAnimWnd()
 	s_dmpanimWnd->addParts(*s_dmpanimAlabel);
 	s_dmpanimWnd->addParts(*s_dmpanimASlider);
 	s_dmpanimWnd->addParts(*s_dmpanimB);
+
+
+	s_dsdampctrls.push_back(s_dmpgroupcheck);
+	s_dsdampctrls.push_back(s_dmpanimLlabel);
+	s_dsdampctrls.push_back(s_dmpanimLSlider);
+	s_dsdampctrls.push_back(s_dmpanimAlabel);
+	s_dsdampctrls.push_back(s_dmpanimASlider);
+	s_dsdampctrls.push_back(s_dmpanimB);
+
 
 	s_dmpanimWnd->setCloseListener([](){ s_DcloseFlag = true; });
 
@@ -14678,6 +14776,9 @@ int CreateRigidWnd()
 	//	true,					//閉じられるか否か
 	//	true);					//サイズ変更の可否
 
+	s_dsrigidctrls.clear();
+
+
 	s_rigidWnd = new OrgWindow(
 		0,
 		_T("RigidWindow"),		//ウィンドウクラス名
@@ -14822,6 +14923,54 @@ int CreateRigidWnd()
 
 	s_rigidWnd->addParts(*s_groupB);
 	s_rigidWnd->addParts(*s_gcoliB);
+/////////
+	s_dsrigidctrls.push_back(s_namelabel);
+	s_dsrigidctrls.push_back(s_groupcheck);
+	s_dsrigidctrls.push_back(s_shplabel);
+	s_dsrigidctrls.push_back(s_shprateSlider);
+	s_dsrigidctrls.push_back(s_boxzlabel);
+	s_dsrigidctrls.push_back(s_boxzSlider);
+	s_dsrigidctrls.push_back(s_massSLlabel);
+	s_dsrigidctrls.push_back(s_massSlider);
+	s_dsrigidctrls.push_back(s_massB);
+	s_dsrigidctrls.push_back(s_lenglabel);
+	s_dsrigidctrls.push_back(s_rigidskip);
+	s_dsrigidctrls.push_back(s_forbidrot);
+	s_dsrigidctrls.push_back(s_allrigidenableB);
+	s_dsrigidctrls.push_back(s_allrigiddisableB);
+
+	s_dsrigidctrls.push_back(s_colradio);
+
+	s_dsrigidctrls.push_back(s_lkradio);
+	s_dsrigidctrls.push_back(s_lklabel);
+	s_dsrigidctrls.push_back(s_lkSlider);
+	s_dsrigidctrls.push_back(s_akradio);
+	s_dsrigidctrls.push_back(s_aklabel);
+	s_dsrigidctrls.push_back(s_akSlider);
+	s_dsrigidctrls.push_back(s_kB);
+
+	s_dsrigidctrls.push_back(s_restlabel);
+	s_dsrigidctrls.push_back(s_restSlider);
+	s_dsrigidctrls.push_back(s_friclabel);
+	s_dsrigidctrls.push_back(s_fricSlider);
+	s_dsrigidctrls.push_back(s_restB);
+
+
+	s_dsrigidctrls.push_back(s_ldmplabel);
+	s_dsrigidctrls.push_back(s_ldmpSlider);
+	s_dsrigidctrls.push_back(s_admplabel);
+	s_dsrigidctrls.push_back(s_admpSlider);
+	s_dsrigidctrls.push_back(s_dmpB);
+
+	s_dsrigidctrls.push_back(s_btglabel);
+	s_dsrigidctrls.push_back(s_btgSlider);
+	s_dsrigidctrls.push_back(s_btgB);
+	s_dsrigidctrls.push_back(s_btgsclabel);
+	s_dsrigidctrls.push_back(s_btgscSlider);
+	s_dsrigidctrls.push_back(s_btforce);
+
+	s_dsrigidctrls.push_back(s_groupB);
+	s_dsrigidctrls.push_back(s_gcoliB);
 
 
 	s_rigidWnd->setCloseListener([](){ s_RcloseFlag = true; });
@@ -15179,6 +15328,8 @@ int CreateRigidWnd()
 int CreateImpulseWnd()
 {
 
+	s_dsimpulsectrls.clear();
+
 	//////////
 	s_impWnd = new OrgWindow(
 		0,
@@ -15208,7 +15359,7 @@ int CreateImpulseWnd()
 	s_impscalelabel = new OWP_Label(L"ScaleOfImpulse ");
 	s_impallB = new OWP_Button(L"SetImpulseToAllRigies");
 
-	int slw = 300;
+	int slw = 350;
 
 	s_impzSlider->setSize(WindowSize(slw, 40));
 	s_impySlider->setSize(WindowSize(slw, 40));
@@ -15223,6 +15374,18 @@ int CreateImpulseWnd()
 	s_impWnd->addParts(*s_impscalelabel);
 	s_impWnd->addParts(*s_impscaleSlider);
 	s_impWnd->addParts(*s_impallB);
+/////////
+	s_dsimpulsectrls.push_back(s_impgroupcheck);
+	s_dsimpulsectrls.push_back(s_impxlabel);
+	s_dsimpulsectrls.push_back(s_impxSlider);
+	s_dsimpulsectrls.push_back(s_impylabel);
+	s_dsimpulsectrls.push_back(s_impySlider);
+	s_dsimpulsectrls.push_back(s_impzlabel);
+	s_dsimpulsectrls.push_back(s_impzSlider);
+	s_dsimpulsectrls.push_back(s_impscalelabel);
+	s_dsimpulsectrls.push_back(s_impscaleSlider);
+	s_dsimpulsectrls.push_back(s_impallB);
+
 
 	s_impWnd->setCloseListener([](){ s_IcloseFlag = true; });
 
@@ -15282,6 +15445,8 @@ int CreateImpulseWnd()
 int CreateGPlaneWnd()
 {
 
+	s_dsgpctrls.clear();
+
 	//////////
 	s_gpWnd = new OrgWindow(
 		0,
@@ -15314,7 +15479,7 @@ int CreateGPlaneWnd()
 	s_gfriclabel = new OWP_Label(L"Friction");
 
 
-	int slw = 300;
+	int slw = 350;
 
 	s_ghSlider->setSize(WindowSize(slw, 40));
 	s_gsizexSlider->setSize(WindowSize(slw, 40));
@@ -15334,6 +15499,19 @@ int CreateGPlaneWnd()
 	s_gpWnd->addParts(*s_grestSlider);
 	s_gpWnd->addParts(*s_gfriclabel);
 	s_gpWnd->addParts(*s_gfricSlider);
+/////////
+	s_dsgpctrls.push_back(s_ghlabel);
+	s_dsgpctrls.push_back(s_ghSlider);
+	s_dsgpctrls.push_back(s_gsizexlabel);
+	s_dsgpctrls.push_back(s_gsizexSlider);
+	s_dsgpctrls.push_back(s_gsizezlabel);
+	s_dsgpctrls.push_back(s_gsizezSlider);
+	s_dsgpctrls.push_back(s_gpdisp);
+
+	s_dsgpctrls.push_back(s_grestlabel);
+	s_dsgpctrls.push_back(s_grestSlider);
+	s_dsgpctrls.push_back(s_gfriclabel);
+	s_dsgpctrls.push_back(s_gfricSlider);
 
 	s_gpWnd->setCloseListener([](){ s_GcloseFlag = true; });
 
@@ -15444,6 +15622,16 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolMotPropB);
 	s_toolWnd->addParts(*s_toolFilterB);
 	s_toolWnd->addParts(*s_toolInterpolateB);
+
+	s_dstoolctrls.push_back(s_toolSelBoneB);
+	s_dstoolctrls.push_back(s_toolCopyB);
+	s_dstoolctrls.push_back(s_toolSymCopyB);
+	s_dstoolctrls.push_back(s_toolPasteB);
+	s_dstoolctrls.push_back(s_toolInitMPB);
+	//s_dstoolctrls.push_back(s_toolMarkB);
+	s_dstoolctrls.push_back(s_toolMotPropB);
+	s_dstoolctrls.push_back(s_toolFilterB);
+	s_dstoolctrls.push_back(s_toolInterpolateB);
 
 
 	s_toolWnd->setCloseListener([](){ s_closetoolFlag = true; });
@@ -18787,12 +18975,51 @@ void OnDSUpdate()
 	//選択ウインドウ依存
 	//十字キー処理
 	{
-		if (s_currentwndid == 1) {
+		if (s_currentwndid == MB3D_WND_3D) {
 			DSCrossButtonSelectUTGUI();
 		}
-		else if (s_currentwndid == 2) {
+		else if (s_currentwndid == MB3D_WND_TREE) {
 			DSCrossButtonSelectTree();
 		}
+		else if (s_currentwndid == MB3D_WND_TOOL) {
+			DSCrossButtonSelectToolCtrls();
+		}
+		else if (s_currentwndid == MB3D_WND_TIMELINE) {
+			DSCrossButtonSelectPlayerBtns();
+		}
+		else if (s_currentwndid == MB3D_WND_SIDE) {
+			if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
+				switch (s_platemenuno) {
+				case (SPRIGIDTSW_RIGIDPARAMS + 1):
+					DSCrossButtonSelectRigidCtrls();
+					break;
+				case (SPRIGIDSW_IMPULSE + 1):
+					DSCrossButtonSelectImpulseCtrls();
+					break;
+				case (SPRIGIDSW_GROUNDPLANE + 1):
+					DSCrossButtonSelectGPCtrls();
+					break;
+				case (SPRIGIDSW_DAMPANIM + 1):
+					DSCrossButtonSelectDampCtrls();
+					break;
+				default:
+					break;
+				}
+			}
+			else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
+				switch (s_platemenuno) {
+				case (SPRETARGETSW_RETARGET + 1):
+					DSCrossButtonSelectRetargetCtrls();
+					break;
+				case (SPRETARGETSW_LIMITEULER + 1):
+					DSCrossButtonSelectEulLimitCtrls();
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
 	}
 	
 	//OK button
@@ -18954,6 +19181,10 @@ void DSSelectWindowAndCtrl()
 
 	if (!s_model) {
 		//モデル読み込み前は処理しないでリターン
+		return;
+	}
+
+	if (!s_3dwnd) {
 		return;
 	}
 
@@ -19263,17 +19494,17 @@ void DSSelectWindowAndCtrl()
 					nextaimbarno = s_curaimbarno + 1;
 				}
 
-				if (platemenukind == 0) {
+				if (platemenukind == SPPLATEMENUKIND_GUI) {
 					if (nextaimbarno >= SPGUISWNUM) {
 						nextaimbarno = 0;
 					}
 				}
-				else if (platemenukind == 1) {
+				else if (platemenukind == SPPLATEMENUKIND_RIGID) {
 					if (nextaimbarno >= SPRIGIDSWNUM) {
 						nextaimbarno = 0;
 					}
 				}
-				else if (platemenukind == 2) {
+				else if (platemenukind == SPPLATEMENUKIND_RETARGET) {
 					if (nextaimbarno >= SPRETARGETSWNUM) {
 						nextaimbarno = 0;
 					}
@@ -19321,6 +19552,15 @@ void DSSelectWindowAndCtrl()
 
 void DSCrossButtonSelectTree()
 {
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+
+	if (!s_owpTimeline) {
+		return;
+	}
+
 	//select control
 	//十字キー移動ブロック
 	{
@@ -19488,6 +19728,12 @@ void DSCrossButtonSelectUTGUI()
 		return;
 	}
 
+	if (!s_3dwnd) {
+		return;
+	}
+	if (!IsWindow(s_3dwnd)) {
+		return;
+	}
 
 	//select control
 	//十字キー移動ブロック
@@ -20018,6 +20264,1353 @@ void DSCrossButtonSelectUTGUI()
 
 }
 
+
+void DSCrossButtonSelectEulLimitCtrls()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_anglelimitdlg || !IsWindow(s_anglelimitdlg)) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_SIDE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdseullimitctrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dseullimitctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dseullimitctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dseullimitctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dseullimitctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dseullimitctrls.size())) {
+
+								s_curdseullimitctrlno = curdsctrlno;
+
+
+								if (s_anglelimitdlg && IsWindow(s_anglelimitdlg) &&
+									(s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && (s_dseullimitctrls[s_curdseullimitctrlno])) {
+
+								
+									POINT ctrlpos;
+
+									HWND ctrlwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
+									if (ctrlwnd) {
+										RECT ctrlrect;
+										::GetWindowRect(ctrlwnd, &ctrlrect);
+										if (s_curdseullimitctrlno == 0) {
+											ctrlpos.x = ctrlrect.left + 175;
+											ctrlpos.y = ctrlrect.top + 20 / 2;
+										}
+										else if(s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)){
+											ctrlpos.x = ctrlrect.left + 100 / 2;
+											ctrlpos.y = ctrlrect.top + 20 / 2;
+										}
+										else {
+											int slidervalue;
+											slidervalue = ::SendMessage(ctrlwnd, TBM_GETPOS, 0, 0);
+											int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
+											ctrlpos.x = ctrlrect.left + sliderposx + 12;
+											ctrlpos.y = ctrlrect.top + 20 / 2;
+										}
+
+										//ClientToScreen(s_anglelimitdlg, &ctrlpos);
+
+										::SetCursorPos(ctrlpos.x, ctrlpos.y);
+									}
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+void DSCrossButtonSelectRetargetCtrls()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_convboneWnd) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_SIDE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdsretargetctrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsretargetctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsretargetctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsretargetctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsretargetctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dsretargetctrls.size())) {
+								s_curdsretargetctrlno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_dsretargetctrls[s_curdsretargetctrlno]->getPos();
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_convboneWnd && IsWindow(s_convboneWnd->getHWnd()) &&
+									(s_curdsretargetctrlno >= 0) && (s_curdsretargetctrlno < s_dsretargetctrls.size()) && (s_dsretargetctrls[s_curdsretargetctrlno])) {
+
+									bool isslider;
+									isslider = ((OrgWinGUI::OrgWindowParts*)s_dsretargetctrls[s_curdsretargetctrlno])->getIsSlider();
+									if (isslider) {
+										//sizex : 350, sizey : 20, window with 450
+
+										double minval;
+										double maxval;
+										double curval;
+										double length;
+										minval = ((OrgWinGUI::OWP_Slider*)s_dsretargetctrls[s_curdsretargetctrlno])->getMinValue();
+										maxval = ((OrgWinGUI::OWP_Slider*)s_dsretargetctrls[s_curdsretargetctrlno])->getMaxValue();
+										curval = ((OrgWinGUI::OWP_Slider*)s_dsretargetctrls[s_curdsretargetctrlno])->getValue();
+										length = maxval - minval;
+										if (length != 0.0) {
+											double rate;
+											rate = (curval - minval) / length;
+											//ctrlpos.x += (LONG)(350.0 * rate);
+											//pos1x+ (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+											int pos2xpos1x = 450 - 6 - 65 - 5;
+											ctrlpos.x += (5 + (int)((curval - minval) * (float)(pos2xpos1x) / (maxval - minval) + 0.5f));//LABEL_SIZE_X : 65.0, AXIS_POS_X : 5.0
+											ctrlpos.y += (int)(20.0 / 2.0);
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+										else {
+											//if button
+											ctrlpos.x += 6;
+											ctrlpos.y += 6;
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+									}
+									else {
+										//if button
+										ctrlpos.x += 6;
+										ctrlpos.y += 6;
+										//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+									}
+
+									WindowPos retargetpos;
+									retargetpos = s_convboneWnd->getPos();
+									ctrlpos.x += retargetpos.x;
+									ctrlpos.y += retargetpos.y;
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+void DSCrossButtonSelectDampCtrls()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_dmpanimWnd) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_SIDE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdsdampctrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsdampctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsdampctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsdampctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsdampctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dsdampctrls.size())) {
+								s_curdsdampctrlno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_dsdampctrls[s_curdsdampctrlno]->getPos();
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_dmpanimWnd && IsWindow(s_dmpanimWnd->getHWnd()) &&
+									(s_curdsdampctrlno >= 0) && (s_curdsdampctrlno < s_dsdampctrls.size()) && (s_dsdampctrls[s_curdsdampctrlno])) {
+
+									bool isslider;
+									isslider = ((OrgWinGUI::OrgWindowParts*)s_dsdampctrls[s_curdsdampctrlno])->getIsSlider();
+									if (isslider) {
+										//sizex : 350, sizey : 20, window with 450
+
+										double minval;
+										double maxval;
+										double curval;
+										double length;
+										minval = ((OrgWinGUI::OWP_Slider*)s_dsdampctrls[s_curdsdampctrlno])->getMinValue();
+										maxval = ((OrgWinGUI::OWP_Slider*)s_dsdampctrls[s_curdsdampctrlno])->getMaxValue();
+										curval = ((OrgWinGUI::OWP_Slider*)s_dsdampctrls[s_curdsdampctrlno])->getValue();
+										length = maxval - minval;
+										if (length != 0.0) {
+											double rate;
+											rate = (curval - minval) / length;
+											//ctrlpos.x += (LONG)(350.0 * rate);
+											//pos1x+ (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+											int pos2xpos1x = 450 - 6 - 65 - 5;
+											ctrlpos.x += (5 + (int)((curval - minval) * (float)(pos2xpos1x) / (maxval - minval) + 0.5f));//LABEL_SIZE_X : 65.0, AXIS_POS_X : 5.0
+											ctrlpos.y += (int)(20.0 / 2.0);
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+										else {
+											//if button
+											ctrlpos.x += 6;
+											ctrlpos.y += 6;
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+									}
+									else {
+										//if button
+										ctrlpos.x += 6;
+										ctrlpos.y += 6;
+										//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+									}
+
+									WindowPos damppos;
+									damppos = s_dmpanimWnd->getPos();
+									ctrlpos.x += damppos.x;
+									ctrlpos.y += damppos.y;
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+void DSCrossButtonSelectGPCtrls()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_gpWnd) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_SIDE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdsgpctrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsgpctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsgpctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsgpctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsgpctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dsgpctrls.size())) {
+								s_curdsgpctrlno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_dsgpctrls[s_curdsgpctrlno]->getPos();
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_gpWnd && IsWindow(s_gpWnd->getHWnd()) &&
+									(s_curdsgpctrlno >= 0) && (s_curdsgpctrlno < s_dsgpctrls.size()) && (s_dsgpctrls[s_curdsgpctrlno])) {
+
+									bool isslider;
+									isslider = ((OrgWinGUI::OrgWindowParts*)s_dsgpctrls[s_curdsgpctrlno])->getIsSlider();
+									if (isslider) {
+										//sizex : 350, sizey : 20, window with 450
+
+										double minval;
+										double maxval;
+										double curval;
+										double length;
+										minval = ((OrgWinGUI::OWP_Slider*)s_dsgpctrls[s_curdsgpctrlno])->getMinValue();
+										maxval = ((OrgWinGUI::OWP_Slider*)s_dsgpctrls[s_curdsgpctrlno])->getMaxValue();
+										curval = ((OrgWinGUI::OWP_Slider*)s_dsgpctrls[s_curdsgpctrlno])->getValue();
+										length = maxval - minval;
+										if (length != 0.0) {
+											double rate;
+											rate = (curval - minval) / length;
+											//ctrlpos.x += (LONG)(350.0 * rate);
+											//pos1x+ (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+											int pos2xpos1x = 450 - 6 - 65 - 5;
+											ctrlpos.x += (5 + (int)((curval - minval) * (float)(pos2xpos1x) / (maxval - minval) + 0.5f));//LABEL_SIZE_X : 65.0, AXIS_POS_X : 5.0
+											ctrlpos.y += (int)(20.0 / 2.0);
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+										else {
+											//if button
+											ctrlpos.x += 6;
+											ctrlpos.y += 6;
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+									}
+									else {
+										//if button
+										ctrlpos.x += 6;
+										ctrlpos.y += 6;
+										//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+									}
+
+									WindowPos gppos;
+									gppos = s_gpWnd->getPos();
+									ctrlpos.x += gppos.x;
+									ctrlpos.y += gppos.y;
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+void DSCrossButtonSelectImpulseCtrls()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_impWnd) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_SIDE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdsimpulsectrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsimpulsectrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsimpulsectrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsimpulsectrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsimpulsectrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dsimpulsectrls.size())) {
+								s_curdsimpulsectrlno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_dsimpulsectrls[s_curdsimpulsectrlno]->getPos();
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_impWnd && IsWindow(s_impWnd->getHWnd()) &&
+									(s_curdsimpulsectrlno >= 0) && (s_curdsimpulsectrlno < s_dsimpulsectrls.size()) && (s_dsimpulsectrls[s_curdsimpulsectrlno])) {
+
+									bool isslider;
+									isslider = ((OrgWinGUI::OrgWindowParts*)s_dsimpulsectrls[s_curdsimpulsectrlno])->getIsSlider();
+									if (isslider) {
+										//sizex : 350, sizey : 20, window with 450
+
+										double minval;
+										double maxval;
+										double curval;
+										double length;
+										minval = ((OrgWinGUI::OWP_Slider*)s_dsimpulsectrls[s_curdsimpulsectrlno])->getMinValue();
+										maxval = ((OrgWinGUI::OWP_Slider*)s_dsimpulsectrls[s_curdsimpulsectrlno])->getMaxValue();
+										curval = ((OrgWinGUI::OWP_Slider*)s_dsimpulsectrls[s_curdsimpulsectrlno])->getValue();
+										length = maxval - minval;
+										if (length != 0.0) {
+											double rate;
+											rate = (curval - minval) / length;
+											//ctrlpos.x += (LONG)(350.0 * rate);
+											//pos1x+ (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+											int pos2xpos1x = 450 - 6 - 65 - 5;
+											ctrlpos.x += (5 + (int)((curval - minval) * (float)(pos2xpos1x) / (maxval - minval) + 0.5f));//LABEL_SIZE_X : 65.0, AXIS_POS_X : 5.0
+											ctrlpos.y += (int)(20.0 / 2.0);
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+										else {
+											//if button
+											ctrlpos.x += 6;
+											ctrlpos.y += 6;
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+									}
+									else {
+										//if button
+										ctrlpos.x += 6;
+										ctrlpos.y += 6;
+										//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+									}
+
+									WindowPos impulsepos;
+									impulsepos = s_impWnd->getPos();
+									ctrlpos.x += impulsepos.x;
+									ctrlpos.y += impulsepos.y;
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+void DSCrossButtonSelectRigidCtrls()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_rigidWnd) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_SIDE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdsrigidctrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsrigidctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsrigidctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dsrigidctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dsrigidctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dsrigidctrls.size())) {
+								s_curdsrigidctrlno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_dsrigidctrls[s_curdsrigidctrlno]->getPos();
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_rigidWnd && IsWindow(s_rigidWnd->getHWnd()) && 
+									(s_curdsrigidctrlno >= 0) && (s_curdsrigidctrlno < s_dsrigidctrls.size()) && (s_dsrigidctrls[s_curdsrigidctrlno])) {
+
+									bool isslider;
+									isslider = ((OrgWinGUI::OrgWindowParts*)s_dsrigidctrls[s_curdsrigidctrlno])->getIsSlider();
+									if (isslider) {
+										//sizex : 350, sizey : 20, window with 450
+
+										double minval;
+										double maxval;
+										double curval;
+										double length;
+										minval = ((OrgWinGUI::OWP_Slider*)s_dsrigidctrls[s_curdsrigidctrlno])->getMinValue();
+										maxval = ((OrgWinGUI::OWP_Slider*)s_dsrigidctrls[s_curdsrigidctrlno])->getMaxValue();
+										curval = ((OrgWinGUI::OWP_Slider*)s_dsrigidctrls[s_curdsrigidctrlno])->getValue();
+										length = maxval - minval;
+										if (length != 0.0) {
+											double rate;
+											rate = (curval - minval) / length;
+											//ctrlpos.x += (LONG)(350.0 * rate);
+											//pos1x+ (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+											int pos2xpos1x = 450 - 6 - 65 - 5;
+											ctrlpos.x += (5 + (int)((curval - minval) * (float)(pos2xpos1x) / (maxval - minval) + 0.5f));//LABEL_SIZE_X : 65.0, AXIS_POS_X : 5.0
+											ctrlpos.y += (int)(20.0 / 2.0);
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+										else {
+											//if button
+											ctrlpos.x += 6;
+											ctrlpos.y += 6;
+											//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+										}
+									}
+									else {
+										//if button
+										ctrlpos.x += 6;
+										ctrlpos.y += 6;
+										//ClientToScreen(s_rigidWnd->getHWnd(), &ctrlpos);
+									}
+
+									WindowPos rigidpos;
+									rigidpos = s_rigidWnd->getPos();
+									ctrlpos.x += rigidpos.x;
+									ctrlpos.y += rigidpos.y;
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+void DSCrossButtonSelectToolCtrls()
+{
+
+
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_toolWnd) {
+		return;
+	}
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_TOOL) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_TOOL) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdstoolctrlno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dstoolctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dstoolctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= s_dstoolctrls.size()) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = s_dstoolctrls.size() - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < s_dstoolctrls.size())) {
+								s_curdstoolctrlno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_dstoolctrls[s_curdstoolctrlno]->getPos();
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+
+								//if button
+								ctrlpos.x += 6;
+								ctrlpos.y += 6;
+
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_toolWnd && IsWindow(s_toolWnd->getHWnd())) {
+									ClientToScreen(s_toolWnd->getHWnd(), &ctrlpos);
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+
+void DSCrossButtonSelectPlayerBtns()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_LtimelineWnd) {
+		return;
+	}
+
+	if (!s_owpPlayerButton) {
+		return;
+	}
+
+
+	//select control
+	//十字キー移動ブロック
+	{
+		if ((s_currentwndid == MB3D_WND_TIMELINE) && (s_currenthwnd != 0)) {
+
+
+			int parentbuttonid = 4;
+			int sisterbuttonid = 5;
+			int childbuttonid = 6;
+			int brotherbuttonid = 7;
+			int accelaxisid1 = 4;//axisid
+			int accelaxisid2 = 5;//axisid
+
+			int parentbutton = 0;
+			int sisterbutton = 0;
+			int childbutton = 0;
+			int brotherbutton = 0;
+			int accelaxis1 = 0;
+			int accelaxis2 = 0;
+
+			parentbutton = s_dsbuttonup[parentbuttonid];
+			sisterbutton = s_dsbuttonup[sisterbuttonid];
+			childbutton = s_dsbuttonup[childbuttonid];
+			brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+			accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+			accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+			bool changeflag = false;
+			bool chkflag = false;
+
+			//WS_TABSTOP
+			//VK_TAB
+			//WS_GROUP
+			//または
+			//HWND SetFocus(HWND hWnd);
+
+			//static int s_curdsutguikind = 0;
+			//static int s_curdsutguino = 0;
+
+			if (s_currentwndid == MB3D_WND_TIMELINE) {
+				if (s_model && (s_curboneno >= 0)) {
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					int curdsctrlno = s_curdsplayerbtnno;
+					if (curbone) {
+
+						if (parentbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = SPPLAYERBUTTONNUM - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (sisterbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= SPPLAYERBUTTONNUM) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (childbutton >= 1) {
+							curdsctrlno++;
+							if (curdsctrlno >= SPPLAYERBUTTONNUM) {
+								curdsctrlno = 0;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+						else if (brotherbutton >= 1) {
+							curdsctrlno--;
+							if (curdsctrlno < 0) {
+								curdsctrlno = SPPLAYERBUTTONNUM - 1;//Ring
+							}
+							changeflag = true;
+							chkflag = true;
+						}
+
+
+						/*
+						enum DXUT_CONTROL_TYPE
+						{
+							DXUT_CONTROL_BUTTON,
+							DXUT_CONTROL_STATIC,
+							DXUT_CONTROL_CHECKBOX,
+							DXUT_CONTROL_RADIOBUTTON,
+							DXUT_CONTROL_COMBOBOX,
+							DXUT_CONTROL_SLIDER,
+							DXUT_CONTROL_EDITBOX,
+							DXUT_CONTROL_IMEEDITBOX,
+							DXUT_CONTROL_LISTBOX,
+							DXUT_CONTROL_SCROLLBAR,
+						};
+						*/
+						if (chkflag && changeflag && (s_curboneno >= 0)) {
+							if (((curdsctrlno) >= 0) && ((curdsctrlno) < SPPLAYERBUTTONNUM)) {
+								s_curdsplayerbtnno = curdsctrlno;
+
+								OrgWinGUI::WindowPos ctrlwinpos;
+								POINT ctrlpos;
+								ctrlwinpos = s_owpPlayerButton->getButtonPos(s_curdsplayerbtnno);
+								ctrlpos.x = ctrlwinpos.x;
+								ctrlpos.y = ctrlwinpos.y;
+
+								//if button
+								//ctrlpos.x += 10;
+								//ctrlpos.y += 10;
+
+
+								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+								if (s_owpPlayerButton && s_LtimelineWnd && IsWindow(s_LtimelineWnd->getHWnd())) {
+									ClientToScreen(s_LtimelineWnd->getHWnd(), &ctrlpos);
+									::SetCursorPos(ctrlpos.x, ctrlpos.y);
+								}
+							}
+
+							//if (s_owpTimeline) {
+							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+							//}
+							//ChangeCurrentBone();
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+}
+
+
 void DSAxisLMouseMove()
 {
 	//each of plate button
@@ -20224,17 +21817,77 @@ void DSAimBarOK()
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
 		if (g_undertrackingRMenu == 0) {
-			HWND caphwnd;
-			caphwnd = ::GetCapture();
-			if (caphwnd && IsWindow(caphwnd)) {
-				POINT cappoint;
-				cappoint = cursorpos;
-				::ScreenToClient(caphwnd, &cappoint);
-				LPARAM caplparam;
-				caplparam = (cappoint.y << 16) | cappoint.x;
+			if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+				if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
 
-				::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+					HWND caphwnd;
+					caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
+					if (caphwnd && IsWindow(caphwnd)) {
+						POINT cappoint;
+						cappoint = cursorpos;
+						//::ScreenToClient(caphwnd, &cappoint);
+						::ScreenToClient(caphwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
+
+						//::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+
+						WPARAM wparam;
+						LPARAM lparam;
+						lparam = (LPARAM)caphwnd;
+						if (s_curdseullimitctrlno == 0) {
+							//wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+							//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+							//COMMAND control ID  !!!!!
+							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+							::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
+						}
+						else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
+							wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
+							//COMMAND control ID  !!!!!
+							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+						}
+						else {
+							//slider
+							RECT sliderloc;
+							::GetWindowRect(caphwnd, &sliderloc);
+							POINT slidertopleft;
+							slidertopleft.x = sliderloc.left;
+							slidertopleft.y = sliderloc.top;
+							::ScreenToClient(s_anglelimitdlg, &slidertopleft);
+
+
+							int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+							//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
+							//ctrlpos.x = ctrlrect.left + sliderposx + 12;
+							//ctrlpos.y = ctrlrect.top + 20 / 2;
+
+							::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+							::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
+						}
+
+
+					}
+
+
+					//::SendMessage(s_anglelimitdlg, WM_COMMAND, s_dseullimitctrls[s_curdseullimitctrlno], 0);
+				}
+
 			}
+			else {
+				HWND caphwnd;
+				caphwnd = ::GetCapture();
+				if (caphwnd && IsWindow(caphwnd)) {
+					POINT cappoint;
+					cappoint = cursorpos;
+					::ScreenToClient(caphwnd, &cappoint);
+					LPARAM caplparam;
+					caplparam = (cappoint.y << 16) | cappoint.x;
+
+					::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+				}
+			}
+
 		}
 		else {
 			HWND caphwnd;
@@ -20292,17 +21945,70 @@ void DSAimBarOK()
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
 		if (g_undertrackingRMenu == 0) {
-			HWND caphwnd;
-			caphwnd = ::GetCapture();
-			if (caphwnd && IsWindow(caphwnd)) {
-				POINT cappoint;
-				cappoint = cursorpos;
-				::ScreenToClient(caphwnd, &cappoint);
-				LPARAM caplparam;
-				caplparam = (cappoint.y << 16) | cappoint.x;
 
-				::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
-				s_wmlbuttonup = 1;
+			if (g_undertrackingRMenu == 0) {
+				if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+					if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
+
+						HWND caphwnd;
+						caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
+						if (caphwnd && IsWindow(caphwnd)) {
+							POINT cappoint;
+							cappoint = cursorpos;
+							::ScreenToClient(caphwnd, &cappoint);
+							LPARAM caplparam;
+							caplparam = (cappoint.y << 16) | cappoint.x;
+
+							//::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+
+							WPARAM wparam;
+							LPARAM lparam;
+							lparam = (LPARAM)caphwnd;
+							if (s_curdseullimitctrlno == 0) {
+								//wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+								//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+								//COMMAND control ID  !!!!!
+								//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+							}
+							else if(s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)){
+								wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
+								//COMMAND control ID  !!!!!
+								::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+							}
+							else {
+								//slider
+								//int sliderpos = (int)(((-180.0f + 360.0f * (float)cappoint.x / 200.0f) / 360.0f) * 100.0f);
+								//int sliderpos = (int)(-180.0f + (float)cappoint.x / 250.0f * 360.0f);
+
+								int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+								//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
+								//ctrlpos.x = ctrlrect.left + sliderposx + 12;
+								//ctrlpos.y = ctrlrect.top + 20 / 2;
+
+
+								::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+								::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
+							}
+
+						}
+					}
+				}
+				else {
+					HWND caphwnd;
+					caphwnd = ::GetCapture();
+					if (caphwnd && IsWindow(caphwnd)) {
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(caphwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
+
+						::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+						s_wmlbuttonup = 1;
+					}
+
+				}
+
 			}
 		}
 		else {
