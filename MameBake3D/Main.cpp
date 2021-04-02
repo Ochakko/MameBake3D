@@ -2268,6 +2268,8 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, g_initcamdist);
 	g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
+	g_befcamEye = g_camEye;
+	g_befcamtargetpos = g_camtargetpos;
 	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
@@ -4291,11 +4293,17 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//s_curboneno = -1;
 
 		s_ikcnt = 0;
-		if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//DS deviceがあっても、マウスを併用する場合があるのでマウスのSetCaptureとReleaseCaptureは必要
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		//if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
 			SetCapture(s_3dwnd);
-		}
+		//}
 		//SetCapture( s_3dwnd );
+
+
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
 		::ScreenToClient( s_3dwnd, &ptCursor );
@@ -4483,6 +4491,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_saveboneno = s_curboneno;
 
 				if (s_camtargetflag){
+					g_befcamtargetpos = g_camtargetpos;
 					g_camtargetpos = curbone->GetChildWorld();
 				}
 				MOTINFO* curmi = s_model->GetCurMotInfo();
@@ -4848,10 +4857,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 */
 	}else if( uMsg == WM_LBUTTONUP ){
-		if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//DS deviceがあっても、マウスを併用することがあるのでマウスのSetCaptureとReleaseCaptureは必要
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		//if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
 			ReleaseCapture();
-		}
+		//}
 		//ReleaseCapture();
 		s_wmlbuttonup = 1;
 
@@ -6409,6 +6423,8 @@ CModel* OpenMQOFile()
 	s_camdist = g_initcamdist;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
+	g_befcamEye = g_camEye;
+	g_befcamtargetpos = g_camtargetpos;
 	//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
@@ -6452,7 +6468,8 @@ CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
 	//}
 
 	g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
-	
+	g_befcamtargetpos = g_camtargetpos;
+
 
 	static int modelcnt = 0;
 	WCHAR modelname[MAX_PATH] = {0L};
@@ -6614,6 +6631,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	s_camdist = fObjectRadius * 4.0f;
 	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
 	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
+	g_befcamEye = g_camEye;
+	g_befcamtargetpos = g_camtargetpos;
 	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
@@ -9677,6 +9696,7 @@ int SetCamera6Angle()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
 		g_camEye = neweye;
 		//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -9690,6 +9710,7 @@ int SetCamera6Angle()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
 		g_camEye = neweye;
 		//!!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -9703,6 +9724,7 @@ int SetCamera6Angle()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
 		g_camEye = neweye;
 		//!!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -9716,6 +9738,7 @@ int SetCamera6Angle()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
 		g_camEye = neweye;
 		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -9729,6 +9752,7 @@ int SetCamera6Angle()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
 		g_camEye = neweye;
 		//!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -9742,6 +9766,7 @@ int SetCamera6Angle()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
 		g_camEye = neweye;
 		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -17274,6 +17299,7 @@ void AutoCameraTarget()
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		_ASSERT(curbone);
 		if (curbone){
+			g_befcamtargetpos = g_camtargetpos;
 			g_camtargetpos = curbone->GetChildWorld();
 
 			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!!
@@ -18196,6 +18222,8 @@ int OnMouseMoveFunc()
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
+		g_befcamEye = g_camEye;
+		g_befcamtargetpos = g_camtargetpos;
 		g_camEye = neweye;
 		g_camtargetpos = newat;
 		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -18242,87 +18270,93 @@ int OnMouseMoveFunc()
 
 			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
 			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-		}
-		else if (chkdot >= 0.99965f) {
-			rotaxisxz = upvec;
-			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			//rotxz = 0.0f;
-			//if (roty < 0.0f) {
-			//	roty = 0.0f;
+			//}
+			//else if (chkdot >= 0.99965f) {
+			//	rotaxisxz = upvec;
+			//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
+			//	//rotxz = 0.0f;
+			//	//if (roty < 0.0f) {
+			//	//	roty = 0.0f;
+			//	//}
+			//	//else {
+			//	//}
 			//}
 			//else {
+			//	rotaxisxz = upvec;
+			//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
+			//	//rotxz = 0.0f;
+			//	//if (roty > 0.0f) {
+			//	//	roty = 0.0f;
+			//	//}
+			//	//else {
+			//	//	//rotyだけ回す。
+			//	//}
 			//}
+
+
+			if (s_model && (s_curboneno >= 0) && s_camtargetflag) {
+				CBone* curbone = s_model->GetBoneByID(s_curboneno);
+				_ASSERT(curbone);
+				if (curbone) {
+					g_befcamtargetpos = g_camtargetpos;
+					g_camtargetpos = curbone->GetChildWorld();
+				}
+			}
+
+
+			ChaMatrix befrotmat, rotmaty, rotmatxz, aftrotmat;
+			ChaMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
+			ChaMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
+			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+			ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+
+			ChaMatrix mat;
+			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
+			ChaVector3 neweye;
+			ChaVector3TransformCoord(&neweye, &weye, &mat);
+
+			//float chkdot2;
+			//ChaVector3 newviewvec = weye - neweye;
+			//ChaVector3Normalize(&newviewvec, &newviewvec);
+			//chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
+			//if (fabs(chkdot2) < 0.99965f) {
+			//	ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
+			//	ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
+
+			//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
+			//}
+			//else {
+			//	roty = 0.0f;
+			//	rotaxisxz = upvec;
+			//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
+			//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
+			//}
+			//ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
+			//ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
+			//mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
+			//ChaVector3TransformCoord(&neweye, &weye, &mat);
+
+			g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+			s_matView = g_Camera->GetViewMatrix();
+			s_matProj = g_Camera->GetProjMatrix();
+
+			g_befcamEye = g_camEye;
+			g_camEye = neweye;
+			//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+			//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+
+			ChaVector3 diffv;
+			diffv = neweye - g_camtargetpos;
+			s_camdist = ChaVector3Length(&diffv);
+
 		}
 		else {
-			rotaxisxz = upvec;
-			ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-			ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			//rotxz = 0.0f;
-			//if (roty > 0.0f) {
-			//	roty = 0.0f;
-			//}
-			//else {
-			//	//rotyだけ回す。
-			//}
+			g_camEye = g_befcamEye;
+			g_camtargetpos = g_befcamtargetpos;
 		}
-
-
-		if (s_model && (s_curboneno >= 0) && s_camtargetflag) {
-			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			_ASSERT(curbone);
-			if (curbone) {
-				g_camtargetpos = curbone->GetChildWorld();
-			}
-		}
-
-
-		ChaMatrix befrotmat, rotmaty, rotmatxz, aftrotmat;
-		ChaMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
-		ChaMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
-		ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-		ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
-
-		ChaMatrix mat;
-		mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-		ChaVector3 neweye;
-		ChaVector3TransformCoord(&neweye, &weye, &mat);
-
-		//float chkdot2;
-		//ChaVector3 newviewvec = weye - neweye;
-		//ChaVector3Normalize(&newviewvec, &newviewvec);
-		//chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
-		//if (fabs(chkdot2) < 0.99965f) {
-		//	ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
-		//	ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
-
-		//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-		//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
-		//}
-		//else {
-		//	roty = 0.0f;
-		//	rotaxisxz = upvec;
-		//	ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-		//	ChaVector3Normalize(&rotaxisy, &rotaxisy);
-		//}
-		//ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-		//ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
-		//mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-		//ChaVector3TransformCoord(&neweye, &weye, &mat);
-
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-		s_matView = g_Camera->GetViewMatrix();
-		s_matProj = g_Camera->GetProjMatrix();
-
-		g_camEye = neweye;
-		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-
-		ChaVector3 diffv;
-		diffv = neweye - g_camtargetpos;
-		s_camdist = ChaVector3Length(&diffv);
-
-
 	}
 	else if (s_pickinfo.buttonflag == PICK_CAMDIST) {
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
@@ -18345,6 +18379,7 @@ int OnMouseMoveFunc()
 
 		ChaVector3 camvec = g_camEye - g_camtargetpos;
 		ChaVector3Normalize(&camvec, &camvec);
+		g_befcamEye = g_camEye;
 		g_camEye = g_camtargetpos + camvec * s_camdist;
 		//!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -19785,8 +19820,26 @@ void DSCrossButtonSelectUTGUI()
 
 						if (parentbutton >= 1) {
 							curdsutguino--;
-							int guigroupid = curdsutguikind + 1;//guikindからSPGUISW?_*への変換。guikind(0)がSPGUISW_LEFT(1)で、guikind(3)がSPGUISW_PHYSICSIK(4)
+							int guigroupid = curdsutguikind;//guikindからSPGUISW?_*への変換。guikind(1)がSPGUISW_LEFT(1)で、guikind(3)がSPGUISW_PHYSICSIK(3)
 							switch (guigroupid) {
+							case SPGUISW_SPRITEFK:
+							{
+								if (s_spguisw[SPGUISW_SPRITEFK].state) {
+									if (curdsutguino >= SPR_CAM_MAX) {
+										curdsutguino = SPR_CAM_MAX - 1;//size >= 1は関数戦闘で確認
+									}
+									else if (curdsutguino < 0) {
+										curdsutguino = 0;
+									}
+									changeflag = true;
+									chkflag = true;
+								}
+								else {
+									changeflag = false;
+									chkflag = true;
+								}
+							}
+							break;
 							case SPGUISW_LEFT:
 							{
 								if (s_spguisw[SPGUISW_LEFT].state) {
@@ -19874,8 +19927,8 @@ void DSCrossButtonSelectUTGUI()
 							curdsutguikind++;
 							curdsutguino = 0;
 							while (chkflag == false) {
-								int curgroupid = curdsutguikind + 1;
-								if ((curgroupid >= SPGUISW_LEFT) && (curgroupid <= SPGUISW_PHYSICSIK)) {
+								int curgroupid = curdsutguikind;
+								if ((curgroupid >= SPGUISW_SPRITEFK) && (curgroupid <= SPGUISW_PHYSICSIK)) {
 									if (s_spguisw[curgroupid].state) {
 										changeflag = true;
 										chkflag = true;
@@ -19901,8 +19954,27 @@ void DSCrossButtonSelectUTGUI()
 
 							//}
 							curdsutguino++;
-							int guigroupid = curdsutguikind + 1;//guikindからSPGUISW?_*への変換。guikind(0)がSPGUISW_LEFT(1)で、guikind(3)がSPGUISW_PHYSICSIK(4)
+							int guigroupid = curdsutguikind;//guikindからSPGUISW?_*への変換。
 							switch (guigroupid) {
+							case SPGUISW_SPRITEFK:
+							{
+								if (s_spguisw[SPGUISW_SPRITEFK].state) {
+									if (curdsutguino >= SPR_CAM_MAX) {
+										curdsutguino = SPR_CAM_MAX - 1;//size >= 1は関数戦闘で確認
+									}
+									else if (curdsutguino < 0) {
+										curdsutguino = 0;
+									}
+									changeflag = true;
+									chkflag = true;
+								}
+								else {
+									changeflag = false;
+									chkflag = true;
+								}
+							}
+							break;
+
 							case SPGUISW_LEFT:
 							{
 								if (s_spguisw[SPGUISW_LEFT].state) {
@@ -19991,8 +20063,8 @@ void DSCrossButtonSelectUTGUI()
 							curdsutguikind--;
 							curdsutguino = 0;
 							while (chkflag == false) {
-								int curgroupid = curdsutguikind + 1;
-								if ((curgroupid >= SPGUISW_LEFT) && (curgroupid <= SPGUISW_PHYSICSIK)) {
+								int curgroupid = curdsutguikind;
+								if ((curgroupid >= SPGUISW_SPRITEFK) && (curgroupid <= SPGUISW_PHYSICSIK)) {
 									if (s_spguisw[curgroupid].state) {
 										changeflag = true;
 										chkflag = true;
@@ -20027,12 +20099,25 @@ void DSCrossButtonSelectUTGUI()
 						};
 						*/
 						if (chkflag && changeflag && (s_curboneno >= 0)) {
-							if (((curdsutguikind + 1) >= SPGUISW_LEFT) && ((curdsutguikind + 1) <= SPGUISW_PHYSICSIK)) {
+							if ((curdsutguikind >= SPGUISW_SPRITEFK) && (curdsutguikind <= SPGUISW_PHYSICSIK)) {
 
 								s_curdsutguikind = curdsutguikind;
 								s_curdsutguino = curdsutguino;
-								int guigroupid = s_curdsutguikind + 1;
+								int guigroupid = s_curdsutguikind;
 								switch (guigroupid) {
+								case SPGUISW_SPRITEFK:
+								{
+									if ((s_curdsutguino >= 0) && (s_curdsutguino < SPR_CAM_MAX)) {
+										POINT ctrlpos;
+										ctrlpos.x = s_spcam[s_curdsutguino].dispcenter.x;
+										ctrlpos.y = s_spcam[s_curdsutguino].dispcenter.y;
+
+										ClientToScreen(s_3dwnd, &ctrlpos);
+										::SetCursorPos(ctrlpos.x, ctrlpos.y);
+									}
+								}
+								break;
+
 								case SPGUISW_LEFT:
 									if ((s_curdsutguino >= 0) && (s_curdsutguino < s_dsutgui0.size()) && s_dsutgui0[s_curdsutguino]) {
 										//s_dsutgui0[s_curdsutguino]->SetTextColor(0xFF0000FF);

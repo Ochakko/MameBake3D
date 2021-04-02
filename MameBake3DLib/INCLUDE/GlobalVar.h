@@ -80,6 +80,8 @@ float g_initmass = 1.0f;
 
 ChaVector3 g_camEye = ChaVector3(0.0f, 0.0f, 0.0f);
 ChaVector3 g_camtargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+ChaVector3 g_befcamEye = ChaVector3(0.0f, 0.0f, 0.0f);
+ChaVector3 g_befcamtargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 float g_l_kval[3] = { 1.0f, powf(10.0f, 2.61f), 2000.0f };//
 float g_a_kval[3] = { 0.1f, powf(10.0f, 0.3f), 70.0f };//
@@ -207,6 +209,8 @@ extern float g_initmass;
 
 extern ChaVector3 g_camEye;
 extern ChaVector3 g_camtargetpos;
+extern ChaVector3 g_befcamEye;
+extern ChaVector3 g_befcamtargetpos;
 
 extern float g_l_kval[3];//
 extern float g_a_kval[3];//
