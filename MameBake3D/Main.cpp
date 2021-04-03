@@ -294,6 +294,7 @@ static void DSCrossButtonSelectGPCtrls();
 static void DSCrossButtonSelectDampCtrls();
 static void DSCrossButtonSelectRetargetCtrls();
 static void DSCrossButtonSelectEulLimitCtrls();
+static void DSR1ButtonSelectCurrentBone();
 static void DSAxisLMouseMove();
 static void DSAimBarOK();
 
@@ -19054,9 +19055,13 @@ void OnDSUpdate()
 				}
 			}
 		}
-
 	}
 	
+
+	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
+	DSR1ButtonSelectCurrentBone();
+
+
 	//OK button
 	DSAimBarOK();
 
@@ -19206,6 +19211,77 @@ void DSColorAndVibration()
 
 }
 
+void DSR1ButtonSelectCurrentBone()
+{
+	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
+	if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//DS deviceが無い場合には何もせずにリターン
+		return;
+	}
+
+	if (!s_model) {
+		//モデル読み込み前は処理しないでリターン
+		return;
+	}
+
+	if (!s_3dwnd) {
+		return;
+	}
+
+	int buttonR1 = 9;
+	int curbuttondown = s_dsbuttondown[buttonR1];
+	int curbuttonup = s_dsbuttonup[buttonR1];
+
+	if (curbuttonup >= 1) {
+		s_currentwndid = MB3D_WND_3D;
+		s_currenthwnd = s_3dwnd;
+
+		::SetWindowPos(s_3dwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+		if (s_timelineWnd) {
+			s_timelineWnd->setBackGroundColor(false);
+		}
+		if (s_toolWnd) {
+			s_toolWnd->setBackGroundColor(false);
+		}
+		if (s_LtimelineWnd) {
+			s_LtimelineWnd->setBackGroundColor(false);
+		}
+		if (s_sidemenuWnd) {
+			s_sidemenuWnd->setBackGroundColor(false);
+		}
+
+		GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
+
+		if (s_model && (s_curboneno >= 0)) {
+			//s_select->UpdateMatrix(&s_selectmat, &s_matVP);
+
+			CBone* curboneptr = s_model->GetBoneByID(s_curboneno);
+			if (curboneptr) {
+				ChaVector3 jointpos;
+				jointpos.x = s_selectmat._41;
+				jointpos.y = s_selectmat._42;
+				jointpos.z = s_selectmat._43;
+
+				//ChaVector3 bonepos = curboneptr->GetChildWorld();
+
+				ChaMatrix transmat = s_selectmat * s_matVP;
+				ChaVector3 jointscreenpos;
+
+				//ChaVector3TransformCoord(&jointscreenpos, &bonepos, &transmat);
+				ChaVector3TransformCoord(&jointscreenpos, &jointpos, &transmat);
+
+				POINT mousepos;
+				mousepos.x = (jointscreenpos.x + 1.0f) * 0.5f * (s_mainwidth - 8);
+				mousepos.y = (-jointscreenpos.y + 1.0f) * 0.5f * (s_mainheight - 8);
+				::ClientToScreen(s_3dwnd, &mousepos);
+				::SetCursorPos(mousepos.x, mousepos.y);
+			}
+		}
+	}
+}
+
+
 void DSSelectWindowAndCtrl()
 {
 
@@ -19313,7 +19389,7 @@ void DSSelectWindowAndCtrl()
 
 				::SetFocus(nexthwnd);
 
-				if (nextwndid == 0) {
+				if (nextwndid == MB3D_WND_MAIN) {
 					//:: SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)selectbrush);
 					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 				
@@ -19337,7 +19413,7 @@ void DSSelectWindowAndCtrl()
 						s_sidemenuWnd->setBackGroundColor(false);
 					}
 				}
-				else if (nextwndid == 1) {
+				else if (nextwndid == MB3D_WND_3D) {
 					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)selectbrush);
 					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 
@@ -19360,7 +19436,7 @@ void DSSelectWindowAndCtrl()
 						s_sidemenuWnd->setBackGroundColor(false);
 					}
 				}
-				else if (nextwndid == 2) {
+				else if (nextwndid == MB3D_WND_TREE) {
 					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 
@@ -19378,7 +19454,7 @@ void DSSelectWindowAndCtrl()
 						s_sidemenuWnd->setBackGroundColor(false);
 					}
 				}
-				else if (nextwndid == 3) {
+				else if (nextwndid == MB3D_WND_TOOL) {
 					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 
@@ -19396,7 +19472,7 @@ void DSSelectWindowAndCtrl()
 						s_sidemenuWnd->setBackGroundColor(false);
 					}
 				}
-				else if (nextwndid == 4) {
+				else if (nextwndid == MB3D_WND_TIMELINE) {
 					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 
@@ -19414,7 +19490,7 @@ void DSSelectWindowAndCtrl()
 						s_sidemenuWnd->setBackGroundColor(false);
 					}
 				}
-				else if (nextwndid == 5) {
+				else if (nextwndid == MB3D_WND_SIDE) {
 					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 

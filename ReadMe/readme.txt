@@ -264,6 +264,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/03_1
+	ゲームパッド対応続き
+		R1ボタンで３Dウインドウを選択して選択中のジョイントの位置にマウス位置ジャンプ
+
+	On R1 button, select 3d window and jump to selected joint pos.
+
+
 2021/04/02
 	カメラスプライトのドラッグ処理の修正
 		真上と真下でくるくる回る問題を修正
