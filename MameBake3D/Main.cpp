@@ -19256,8 +19256,8 @@ void DSR1ButtonSelectCurrentBone()
 		if (s_model && (s_curboneno >= 0)) {
 			//s_select->UpdateMatrix(&s_selectmat, &s_matVP);
 
-			CBone* curboneptr = s_model->GetBoneByID(s_curboneno);
-			if (curboneptr) {
+			CBone* boneptr = s_model->GetBoneByID(s_curboneno);
+			if (boneptr) {
 				ChaVector3 jointpos;
 				jointpos.x = s_selectmat._41;
 				jointpos.y = s_selectmat._42;
@@ -19265,15 +19265,34 @@ void DSR1ButtonSelectCurrentBone()
 
 				//ChaVector3 bonepos = curboneptr->GetChildWorld();
 
-				ChaMatrix transmat = s_selectmat * s_matVP;
-				ChaVector3 jointscreenpos;
+				//ChaMatrix transmat = s_selectmat * s_matVP;
+				//ChaVector3 jointscreenpos;
 
 				//ChaVector3TransformCoord(&jointscreenpos, &bonepos, &transmat);
-				ChaVector3TransformCoord(&jointscreenpos, &jointpos, &transmat);
+				//ChaVector3TransformCoord(&jointscreenpos, &jointpos, &transmat);
+				//ChaVector3 aftbonepos;
+				//ChaVector3TransformCoord(&jointscreenpos, &curboneptr->GetJointFPos(), &(curboneptr->GetCurMp().GetWorldMat()));
+				ChaMatrix bcmat;
+				bcmat = boneptr->GetCurMp().GetWorldMat();
+				//CBone* parentbone = boneptr->GetParent();
+				//CBone* childbone = boneptr->GetChild();
+				ChaMatrix transmat = bcmat * s_matVP;
+				ChaVector3 scpos;
+				ChaVector3 firstpos = boneptr->GetJointFPos();
+				ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
+				scpos.z = 0.0f;
+				//bcircleptr->SetPos(scpos);
 
+
+				//RECT clientrect;
+				//::GetClientRect(s_3dwnd, &clientrect);
 				POINT mousepos;
-				mousepos.x = (jointscreenpos.x + 1.0f) * 0.5f * (s_mainwidth - 8);
-				mousepos.y = (-jointscreenpos.y + 1.0f) * 0.5f * (s_mainheight - 8);
+				//mousepos.x = (jointscreenpos.x + 1.0f) * 0.5f * (clientrect.right - clientrect.left);
+				//mousepos.y = (-jointscreenpos.y + 1.0f) * 0.5f * (clientrect.bottom - clientrect.top);
+				//mousepos.x = (jointscreenpos.x + 1.0f) * 0.5f * (s_mainwidth - 16);
+				//mousepos.y = (-jointscreenpos.y + 1.0f) * 0.5f * (s_mainheight - 16);
+				mousepos.x = (scpos.x + 1.0f) * 0.5f * s_mainwidth;
+				mousepos.y = (-scpos.y + 1.0f) * 0.5f * s_mainheight;
 				::ClientToScreen(s_3dwnd, &mousepos);
 				::SetCursorPos(mousepos.x, mousepos.y);
 			}

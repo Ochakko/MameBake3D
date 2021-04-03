@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/03_2
+	ゲームパッドR1ボタンのジョイント位置修正
+	Fix mouse cursor pos problem on R1 button.
+
 2021/04/03_1
 	ゲームパッド対応続き
 		R1ボタンで３Dウインドウを選択して選択中のジョイントの位置にマウス位置ジャンプ
