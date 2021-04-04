@@ -276,6 +276,7 @@ enum {
 
 static CDSUpdateUnderTracking* s_dsupdater = 0;
 LONG g_undertrackingRMenu = 0;
+LONG g_underApealingMouseHere = 0;
 
 
 extern DSManager manager;
@@ -297,6 +298,12 @@ static void DSCrossButtonSelectEulLimitCtrls();
 static void DSR1ButtonSelectCurrentBone();
 static void DSAxisLMouseMove();
 static void DSAimBarOK();
+static void DSL3R3ButtonMouseHere();
+
+
+static void SelectNextWindow(int nextwndid);
+
+
 
 static RECT s_rcmainwnd;
 static RECT s_rc3dwnd;
@@ -317,6 +324,9 @@ static int s_curaimbarno = -1;
 static int s_dsdeviceid = -1;
 static int s_currentwndid = 0;
 static HWND s_currenthwnd = 0;
+static int s_restorewndid = 0;
+static HWND s_restorehwnd = 0;
+static POINT s_restorecursorpos;
 static int s_currentctrlid = -1;
 static HWND s_currentctrlhwnd = 0;
 static int s_wmlbuttonup = 0;
@@ -368,6 +378,9 @@ static int s_bef_dsaxisOverSrh[MB3D_DSAXISNUM];
 static int s_dsaxisMOverSrh[MB3D_DSAXISNUM];
 static int s_bef_dsaxisMOverSrh[MB3D_DSAXISNUM];
 static int s_dspushedOK = 0;
+static int s_dspushedL3 = 0;
+static int s_dspushedR3 = 0;
+static int s_dsmousewait = 0;
 
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
@@ -879,7 +892,7 @@ static bool s_firstmoveaimbar = true;
 static SPGUISW s_spaimbar[SPAIMBARNUM];
 static int s_oprigflag = 0;
 static SPGUISW s_spsel3d;
-
+static SPELEM s_spmousehere;
 
 typedef struct tag_modelpanel
 {
@@ -1005,6 +1018,7 @@ ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
 
 void OnDSUpdate();
+void OnDSMouseHereApeal();
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -1423,7 +1437,7 @@ static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
 static int SetSpBtParams();
 static int PickSpBt(POINT srcpos);
-
+static int SetSpMouseHereParams();
 
 static int InsertCopyMP(CBone* curbone, double curframe);
 static void InsertCopyMPReq(CBone* curbone, double curframe);
@@ -1759,6 +1773,8 @@ void InitApp()
 
 	InitDSValues();
 
+
+
 	s_sampleuihwnd = 0;
 	s_nowloading = true;
 
@@ -1937,6 +1953,7 @@ void InitApp()
 	ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
 	ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
 	ZeroMemory(&s_spbt, sizeof(SPELEM));
+	ZeroMemory(&s_spmousehere, sizeof(SPELEM));
 	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
 
 	{
@@ -2018,10 +2035,11 @@ void InitApp()
 	}
 
 
-	g_undertrackingRMenu = 0;
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_underApealingMouseHere, 0);
 	s_dsupdater = new CDSUpdateUnderTracking();
 	if (s_dsupdater) {
-		int isuccess = s_dsupdater->CreateDSUpdateUnderTracking();
+		int isuccess = s_dsupdater->CreateDSUpdateUnderTracking(GetModuleHandle(NULL));
 		if (isuccess != 0) {
 			delete s_dsupdater;
 			s_dsupdater = 0;
@@ -2523,6 +2541,10 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spbt.sprite);
 	CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return 1);
 
+	s_spmousehere.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spmousehere.sprite);
+	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"a_ilst031.gif", 0, 0), return 1);
+
 	s_spret2prev.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spret2prev.sprite);
 	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return 1);
@@ -2710,7 +2732,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpCamParams();
 	SetSpRigParams();
 	SetSpBtParams();
-	
+	SetSpMouseHereParams();
+
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
 	//g_HUD.SetSize(170, 170);
 
@@ -3476,6 +3499,13 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete cursp;
 	}
 	s_spbt.sprite = 0;
+
+	CMySprite* curspmousehere = s_spmousehere.sprite;
+	if (curspmousehere) {
+		delete curspmousehere;
+	}
+	s_spmousehere.sprite = 0;
+
 
 	CMySprite* curspret = s_spret2prev.sprite;
 	if (curspret) {
@@ -11019,6 +11049,34 @@ int SetSpRigParams()
 
 }
 
+int SetSpMouseHereParams()
+{
+	if (!s_spmousehere.sprite) {
+		return 0;
+	}
+
+	float spawidth = 80.0f;
+	int spashift = 100;
+	s_spmousehere.dispcenter.x = 0;
+	s_spmousehere.dispcenter.y = 0;
+
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spmousehere.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spmousehere.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+	if (s_spmousehere.sprite) {
+		CallF(s_spmousehere.sprite->SetPos(disppos), return 1);
+		CallF(s_spmousehere.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
 int SetSpBtParams()
 {
 	if (!s_spbt.sprite){
@@ -16044,6 +16102,8 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		else {
 			_ASSERT(0);
 		}
+
+
 	}
 	else if ((s_oprigflag == 1) && (s_oprigflag < SPRIGMAX)) {
 		if (s_sprig[s_oprigflag].sprite) {
@@ -16053,6 +16113,15 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			_ASSERT(0);
 		}		
 	}
+
+	//if (g_underApealingMouseHere >= 1) {
+	//	if (s_spmousehere.sprite) {
+	//		s_spmousehere.sprite->OnRender(pd3dImmediateContext);
+	//	}
+	//	else {
+	//		_ASSERT(0);
+	//	}
+	//}
 
 
 	return 0;
@@ -17773,7 +17842,10 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	}
 		break;
 	default:
-		lret = DefWindowProc(hwnd, uMsg, wParam, lParam);
+		//if (uMsg != WM_SETCURSOR) {
+			lret = DefWindowProc(hwnd, uMsg, wParam, lParam);
+		//}
+		break;
 	}
 
 	return lret;
@@ -18963,15 +19035,22 @@ void InitDSValues()
 
 	s_wmlbuttonup = 0;
 	s_dspushedOK = 0;
+	s_dspushedL3 = 0;
+	s_dspushedR3 = 0;
+	s_dsmousewait = 0;
 	InterlockedExchange(&g_undertrackingRMenu, 0);
 
 	s_firstmoveaimbar = true;
 
 	s_currentwndid = 0;
 	s_currenthwnd = 0;
-	s_currentctrlid = 0;
+	s_restorewndid = 0;
+	s_restorehwnd = 0;
+	s_currentctrlid = -1;
 	s_currentctrlhwnd = 0;
-
+	s_wmlbuttonup = 0;
+	s_restorecursorpos.x = 0;
+	s_restorecursorpos.y = 0;
 
 	ZeroMemory(s_dsbuttondown, sizeof(int) * MB3D_DSBUTTONNUM);
 	ZeroMemory(s_bef_dsbuttondown, sizeof(int) * MB3D_DSBUTTONNUM);
@@ -19061,6 +19140,8 @@ void OnDSUpdate()
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
 	DSR1ButtonSelectCurrentBone();
 
+	//L3, R3ボタンでマウス位置アピール
+	DSL3R3ButtonMouseHere();
 
 	//OK button
 	DSAimBarOK();
@@ -19157,6 +19238,23 @@ void GetDSValues()
 	if (s_dsbuttonup[2] >= 1) {
 		s_dspushedOK = 0;
 	}
+
+
+	if (s_dsbuttondown[12] >= 1) {
+		s_dspushedL3 = 1;
+	}
+	if (s_dsbuttonup[12] >= 1) {
+		s_dspushedL3 = 0;
+	}
+	if (s_dsbuttondown[13] >= 1) {
+		s_dspushedR3 = 1;
+	}
+	if (s_dsbuttonup[13] >= 1) {
+		s_dspushedR3 = 0;
+	}
+
+
+
 }
 
 void DSColorAndVibration()
@@ -19228,14 +19326,16 @@ void DSR1ButtonSelectCurrentBone()
 		return;
 	}
 
+	//###################################################
+	//R1ボタンを押して、jointとprev_selected_windowを往復する
+	//###################################################
+
 	int buttonR1 = 9;
 	int curbuttondown = s_dsbuttondown[buttonR1];
 	int curbuttonup = s_dsbuttonup[buttonR1];
 
 	if (curbuttonup >= 1) {
-		s_currentwndid = MB3D_WND_3D;
-		s_currenthwnd = s_3dwnd;
-
+		
 		::SetWindowPos(s_3dwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
 		if (s_timelineWnd) {
@@ -19251,55 +19351,282 @@ void DSR1ButtonSelectCurrentBone()
 			s_sidemenuWnd->setBackGroundColor(false);
 		}
 
-		GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
 
-		if (s_model && (s_curboneno >= 0)) {
-			//s_select->UpdateMatrix(&s_selectmat, &s_matVP);
+		if ((s_restorewndid <= 0) || !s_restorehwnd) {
+			if (s_model && (s_curboneno >= 0)) {
+				CBone* boneptr = s_model->GetBoneByID(s_curboneno);
+				if (boneptr) {
+					ChaVector3 jointpos;
+					jointpos.x = s_selectmat._41;
+					jointpos.y = s_selectmat._42;
+					jointpos.z = s_selectmat._43;
 
-			CBone* boneptr = s_model->GetBoneByID(s_curboneno);
-			if (boneptr) {
-				ChaVector3 jointpos;
-				jointpos.x = s_selectmat._41;
-				jointpos.y = s_selectmat._42;
-				jointpos.z = s_selectmat._43;
+					ChaMatrix bcmat;
+					bcmat = boneptr->GetCurMp().GetWorldMat();
+					ChaMatrix transmat = bcmat * s_matVP;
+					ChaVector3 scpos;
+					ChaVector3 firstpos = boneptr->GetJointFPos();
+					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
+					scpos.z = 0.0f;
+					POINT mousepos;
+					mousepos.x = (scpos.x + 1.0f) * 0.5f * s_mainwidth;
+					mousepos.y = (-scpos.y + 1.0f) * 0.5f * s_mainheight;
 
-				//ChaVector3 bonepos = curboneptr->GetChildWorld();
+					s_restorewndid = s_currentwndid;
+					s_restorehwnd = s_currenthwnd;
+					::GetCursorPos(&s_restorecursorpos);
+					s_currentwndid = MB3D_WND_3D;
+					s_currenthwnd = s_3dwnd;
 
-				//ChaMatrix transmat = s_selectmat * s_matVP;
-				//ChaVector3 jointscreenpos;
+					GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
 
-				//ChaVector3TransformCoord(&jointscreenpos, &bonepos, &transmat);
-				//ChaVector3TransformCoord(&jointscreenpos, &jointpos, &transmat);
-				//ChaVector3 aftbonepos;
-				//ChaVector3TransformCoord(&jointscreenpos, &curboneptr->GetJointFPos(), &(curboneptr->GetCurMp().GetWorldMat()));
-				ChaMatrix bcmat;
-				bcmat = boneptr->GetCurMp().GetWorldMat();
-				//CBone* parentbone = boneptr->GetParent();
-				//CBone* childbone = boneptr->GetChild();
-				ChaMatrix transmat = bcmat * s_matVP;
-				ChaVector3 scpos;
-				ChaVector3 firstpos = boneptr->GetJointFPos();
-				ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
-				scpos.z = 0.0f;
-				//bcircleptr->SetPos(scpos);
+					::ClientToScreen(s_3dwnd, &mousepos);
+					::SetCursorPos(mousepos.x, mousepos.y);
 
-
-				//RECT clientrect;
-				//::GetClientRect(s_3dwnd, &clientrect);
-				POINT mousepos;
-				//mousepos.x = (jointscreenpos.x + 1.0f) * 0.5f * (clientrect.right - clientrect.left);
-				//mousepos.y = (-jointscreenpos.y + 1.0f) * 0.5f * (clientrect.bottom - clientrect.top);
-				//mousepos.x = (jointscreenpos.x + 1.0f) * 0.5f * (s_mainwidth - 16);
-				//mousepos.y = (-jointscreenpos.y + 1.0f) * 0.5f * (s_mainheight - 16);
-				mousepos.x = (scpos.x + 1.0f) * 0.5f * s_mainwidth;
-				mousepos.y = (-scpos.y + 1.0f) * 0.5f * s_mainheight;
-				::ClientToScreen(s_3dwnd, &mousepos);
-				::SetCursorPos(mousepos.x, mousepos.y);
+				}
 			}
+		}
+		else {
+			int nextwndid;
+			nextwndid = s_restorewndid;
+
+			SelectNextWindow(nextwndid);
+
+			::SetCursorPos(s_restorecursorpos.x, s_restorecursorpos.y);
+
+			//!!!!!!!!!!!!!!!!!!!!!!!!!!
+			s_restorewndid = 0;
+			s_restorehwnd = 0;
 		}
 	}
 }
 
+
+void SelectNextWindow(int nextwndid)
+{
+	HWND tmptlwnd;
+	if (s_timelineWnd) {
+		tmptlwnd = s_timelineWnd->getHWnd();
+	}
+	else {
+		tmptlwnd = 0;
+	}
+	HWND tmptoolwnd;
+	if (s_toolWnd) {
+		tmptoolwnd = s_toolWnd->getHWnd();
+	}
+	else {
+		tmptoolwnd = 0;
+	}
+	HWND tmplongtlwnd;
+	if (s_LtimelineWnd) {
+		tmplongtlwnd = s_LtimelineWnd->getHWnd();
+	}
+	else {
+		tmplongtlwnd = 0;
+	}
+	HWND tmpsidewnd;
+	if (s_sidemenuWnd) {
+		tmpsidewnd = s_sidemenuWnd->getHWnd();
+	}
+	else {
+		tmpsidewnd = 0;
+	}
+
+	HWND hwnds[MB3D_WND_MAX];
+	hwnds[MB3D_WND_MAIN] = s_mainhwnd;
+	hwnds[MB3D_WND_3D] = s_3dwnd;
+	hwnds[MB3D_WND_TREE] = tmptlwnd;
+	hwnds[MB3D_WND_TOOL] = tmptoolwnd;
+	hwnds[MB3D_WND_TIMELINE] = tmplongtlwnd;
+	hwnds[MB3D_WND_SIDE] = tmpsidewnd;
+
+	int dbgcnt = 0;
+	HWND nexthwnd = 0;
+	nexthwnd = hwnds[nextwndid];
+	//while (nexthwnd == 0) {
+	//	nextwndid++;
+	//	if (nextwndid >= MB3D_WND_MAX) {
+	//		nextwndid = 0;
+	//	}
+	//	dbgcnt++;
+	//	if (dbgcnt >= MB3D_WND_MAX) {
+	//		nextwndid = 0;
+	//		break;
+	//	}
+	//	nexthwnd = hwnds[nextwndid];
+	//}
+
+	if ((nextwndid >= 0) && (nextwndid < MB3D_WND_MAX) && nexthwnd) {
+
+		BYTE selectR = 255;
+		BYTE selectG = 128;
+		BYTE selectB = 64;
+
+		BYTE unselectR = 70;
+		BYTE unselectG = 50;
+		BYTE unselectB = 70;
+
+		HBRUSH selectbrush = CreateSolidBrush(RGB(selectR, selectG, selectB));
+		HBRUSH unselectbrush = CreateSolidBrush(RGB(unselectR, unselectG, unselectB));
+
+		::SetFocus(nexthwnd);
+
+		if (nextwndid == MB3D_WND_MAIN) {
+			//:: SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)selectbrush);
+			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			//SetThemeAppProperties(STAP_ALLOW_NONCLIENT | STAP_ALLOW_CONTROLS | STAP_ALLOW_WEBCONTENT);//STAP_ALLOW_WEBCONTENT
+			//SendMessage(hwnds[0], WM_THEMECHANGED, 0, 0);
+			//RedrawWindow(hwnds[0], 0, 0, RDW_UPDATENOW);
+
+
+			::SetWindowPos(hwnds[0], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+			if (s_timelineWnd) {
+				s_timelineWnd->setBackGroundColor(false);
+			}
+			if (s_toolWnd) {
+				s_toolWnd->setBackGroundColor(false);
+			}
+			if (s_LtimelineWnd) {
+				s_LtimelineWnd->setBackGroundColor(false);
+			}
+			if (s_sidemenuWnd) {
+				s_sidemenuWnd->setBackGroundColor(false);
+			}
+		}
+		else if (nextwndid == MB3D_WND_3D) {
+			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)selectbrush);
+			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			//SetThemeAppProperties(STAP_ALLOW_NONCLIENT | STAP_ALLOW_CONTROLS | STAP_ALLOW_WEBCONTENT);//STAP_ALLOW_WEBCONTENT
+			//SendMessage(hwnds[1], WM_THEMECHANGED, 0, 0);
+			//RedrawWindow(hwnds[1], 0, 0, RDW_UPDATENOW);
+
+			::SetWindowPos(hwnds[1], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+			if (s_timelineWnd) {
+				s_timelineWnd->setBackGroundColor(false);
+			}
+			if (s_toolWnd) {
+				s_toolWnd->setBackGroundColor(false);
+			}
+			if (s_LtimelineWnd) {
+				s_LtimelineWnd->setBackGroundColor(false);
+			}
+			if (s_sidemenuWnd) {
+				s_sidemenuWnd->setBackGroundColor(false);
+			}
+		}
+		else if (nextwndid == MB3D_WND_TREE) {
+			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			if (s_timelineWnd) {
+				s_timelineWnd->setBackGroundColor(true);
+				::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			}
+			if (s_toolWnd) {
+				s_toolWnd->setBackGroundColor(false);
+			}
+			if (s_LtimelineWnd) {
+				s_LtimelineWnd->setBackGroundColor(false);
+			}
+			if (s_sidemenuWnd) {
+				s_sidemenuWnd->setBackGroundColor(false);
+			}
+		}
+		else if (nextwndid == MB3D_WND_TOOL) {
+			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			if (s_timelineWnd) {
+				s_timelineWnd->setBackGroundColor(false);
+			}
+			if (s_toolWnd) {
+				s_toolWnd->setBackGroundColor(true);
+				::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			}
+			if (s_LtimelineWnd) {
+				s_LtimelineWnd->setBackGroundColor(false);
+			}
+			if (s_sidemenuWnd) {
+				s_sidemenuWnd->setBackGroundColor(false);
+			}
+		}
+		else if (nextwndid == MB3D_WND_TIMELINE) {
+			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			if (s_timelineWnd) {
+				s_timelineWnd->setBackGroundColor(false);
+			}
+			if (s_toolWnd) {
+				s_toolWnd->setBackGroundColor(false);
+			}
+			if (s_LtimelineWnd) {
+				s_LtimelineWnd->setBackGroundColor(true);
+				::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			}
+			if (s_sidemenuWnd) {
+				s_sidemenuWnd->setBackGroundColor(false);
+			}
+		}
+		else if (nextwndid == MB3D_WND_SIDE) {
+			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			if (s_timelineWnd) {
+				s_timelineWnd->setBackGroundColor(false);
+			}
+			if (s_toolWnd) {
+				s_toolWnd->setBackGroundColor(false);
+			}
+			if (s_LtimelineWnd) {
+				s_LtimelineWnd->setBackGroundColor(false);
+			}
+			if (s_sidemenuWnd) {
+				s_sidemenuWnd->setBackGroundColor(true);
+				::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			}
+		}
+		else {
+			_ASSERT(0);
+		}
+
+
+
+		DeleteObject(selectbrush);
+		DeleteObject(unselectbrush);
+
+
+		//if (s_befactivehwnd) {
+		//	ReleaseCapture();
+		//}
+		//SetCapture(nexthwnd);
+
+		//SetForegroundWindow(nexthwnd);
+
+		//if (s_befactivehwnd) {
+		//	ReleaseCapture();
+		//}
+		//::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+		//HWND befactive;
+		//befactive = ::SetActiveWindow(nexthwnd);
+		//SetCapture(nexthwnd);
+
+
+		//SetCaptureWindow !!!!!!!!!!!!!!!!!
+
+		s_currentwndid = nextwndid;
+		s_currenthwnd = hwnds[s_currentwndid];
+
+		GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
+
+	}
+	//OutputToInfoWnd(L"Button Down %d", buttonL1);
+}
 
 void DSSelectWindowAndCtrl()
 {
@@ -19318,39 +19645,12 @@ void DSSelectWindowAndCtrl()
 		return;
 	}
 
-	static HWND s_befactivehwnd = 0;
+	//static HWND s_befactivehwnd = 0;
 
 	
 //ウインドウ選択ブロック
 	{
-		HWND tmptlwnd;
-		if (s_timelineWnd) {
-			tmptlwnd = s_timelineWnd->getHWnd();
-		}
-		else {
-			tmptlwnd = 0;
-		}
-		HWND tmptoolwnd;
-		if (s_toolWnd) {
-			tmptoolwnd = s_toolWnd->getHWnd();
-		}
-		else {
-			tmptoolwnd = 0;
-		}
-		HWND tmplongtlwnd;
-		if (s_LtimelineWnd) {
-			tmplongtlwnd = s_LtimelineWnd->getHWnd();
-		}
-		else {
-			tmplongtlwnd = 0;
-		}
-		HWND tmpsidewnd;
-		if (s_sidemenuWnd) {
-			tmpsidewnd = s_sidemenuWnd->getHWnd();
-		}
-		else {
-			tmpsidewnd = 0;
-		}
+		
 
 		//static int s_currentwndid = 0;
 		//s_currentwndid = 0;
@@ -19359,213 +19659,31 @@ void DSSelectWindowAndCtrl()
 		//s_currentctrlhwnd = 0;
 
 
-		HWND hwnds[MB3D_WND_MAX];
-		hwnds[MB3D_WND_MAIN] = s_mainhwnd;
-		hwnds[MB3D_WND_3D] = s_3dwnd;
-		hwnds[MB3D_WND_TREE] = tmptlwnd;
-		hwnds[MB3D_WND_TOOL] = tmptoolwnd;
-		hwnds[MB3D_WND_TIMELINE] = tmplongtlwnd;
-		hwnds[MB3D_WND_SIDE] = tmpsidewnd;
 
 
 		int buttonL1 = 8;
 		int curbuttondown = s_dsbuttondown[buttonL1];
 		int curbuttonup = s_dsbuttonup[buttonL1];
 
+
+
+
 		if (curbuttonup >= 1) {
-			int nextwndid = s_currentwndid + 1;
+
+
+			int nextwndid = 0;
+			nextwndid = s_currentwndid + 1;
+
 			if (nextwndid >= MB3D_WND_MAX) {
 				nextwndid = 0;
 			}
-			int dbgcnt = 0;
-			HWND nexthwnd = 0;
-			nexthwnd = hwnds[nextwndid];
-			//while (nexthwnd == 0) {
-			//	nextwndid++;
-			//	if (nextwndid >= MB3D_WND_MAX) {
-			//		nextwndid = 0;
-			//	}
-			//	dbgcnt++;
-			//	if (dbgcnt >= MB3D_WND_MAX) {
-			//		nextwndid = 0;
-			//		break;
-			//	}
-			//	nexthwnd = hwnds[nextwndid];
-			//}
-
-			if ((nextwndid >= 0) && (nextwndid < MB3D_WND_MAX) && nexthwnd) {
-
-				BYTE selectR = 255;
-				BYTE selectG = 128;
-				BYTE selectB = 64;
-
-				BYTE unselectR = 70;
-				BYTE unselectG = 50;
-				BYTE unselectB = 70;
-
-				HBRUSH selectbrush = CreateSolidBrush(RGB(selectR, selectG, selectB));
-				HBRUSH unselectbrush = CreateSolidBrush(RGB(unselectR, unselectG, unselectB));
-
-				::SetFocus(nexthwnd);
-
-				if (nextwndid == MB3D_WND_MAIN) {
-					//:: SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)selectbrush);
-					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-				
-					//SetThemeAppProperties(STAP_ALLOW_NONCLIENT | STAP_ALLOW_CONTROLS | STAP_ALLOW_WEBCONTENT);//STAP_ALLOW_WEBCONTENT
-					//SendMessage(hwnds[0], WM_THEMECHANGED, 0, 0);
-					//RedrawWindow(hwnds[0], 0, 0, RDW_UPDATENOW);
-					
-
-					::SetWindowPos(hwnds[0], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-
-					if (s_timelineWnd) {
-						s_timelineWnd->setBackGroundColor(false);
-					}
-					if (s_toolWnd) {
-						s_toolWnd->setBackGroundColor(false);
-					}
-					if (s_LtimelineWnd) {
-						s_LtimelineWnd->setBackGroundColor(false);
-					}
-					if (s_sidemenuWnd) {
-						s_sidemenuWnd->setBackGroundColor(false);
-					}
-				}
-				else if (nextwndid == MB3D_WND_3D) {
-					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)selectbrush);
-					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-
-					//SetThemeAppProperties(STAP_ALLOW_NONCLIENT | STAP_ALLOW_CONTROLS | STAP_ALLOW_WEBCONTENT);//STAP_ALLOW_WEBCONTENT
-					//SendMessage(hwnds[1], WM_THEMECHANGED, 0, 0);
-					//RedrawWindow(hwnds[1], 0, 0, RDW_UPDATENOW);
-
-					::SetWindowPos(hwnds[1], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-
-					if (s_timelineWnd) {
-						s_timelineWnd->setBackGroundColor(false);
-					}
-					if (s_toolWnd) {
-						s_toolWnd->setBackGroundColor(false);
-					}
-					if (s_LtimelineWnd) {
-						s_LtimelineWnd->setBackGroundColor(false);
-					}
-					if (s_sidemenuWnd) {
-						s_sidemenuWnd->setBackGroundColor(false);
-					}
-				}
-				else if (nextwndid == MB3D_WND_TREE) {
-					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-
-					if (s_timelineWnd) {
-						s_timelineWnd->setBackGroundColor(true);
-						::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-					}
-					if (s_toolWnd) {
-						s_toolWnd->setBackGroundColor(false);
-					}
-					if (s_LtimelineWnd) {
-						s_LtimelineWnd->setBackGroundColor(false);
-					}
-					if (s_sidemenuWnd) {
-						s_sidemenuWnd->setBackGroundColor(false);
-					}
-				}
-				else if (nextwndid == MB3D_WND_TOOL) {
-					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-
-					if (s_timelineWnd) {
-						s_timelineWnd->setBackGroundColor(false);
-					}
-					if (s_toolWnd) {
-						s_toolWnd->setBackGroundColor(true);
-						::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-					}
-					if (s_LtimelineWnd) {
-						s_LtimelineWnd->setBackGroundColor(false);
-					}
-					if (s_sidemenuWnd) {
-						s_sidemenuWnd->setBackGroundColor(false);
-					}
-				}
-				else if (nextwndid == MB3D_WND_TIMELINE) {
-					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-
-					if (s_timelineWnd) {
-						s_timelineWnd->setBackGroundColor(false);
-					}
-					if (s_toolWnd) {
-						s_toolWnd->setBackGroundColor(false);
-					}
-					if (s_LtimelineWnd) {
-						s_LtimelineWnd->setBackGroundColor(true);
-						::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-					}
-					if (s_sidemenuWnd) {
-						s_sidemenuWnd->setBackGroundColor(false);
-					}
-				}
-				else if (nextwndid == MB3D_WND_SIDE) {
-					//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-					//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
-
-					if (s_timelineWnd) {
-						s_timelineWnd->setBackGroundColor(false);
-					}
-					if (s_toolWnd) {
-						s_toolWnd->setBackGroundColor(false);
-					}
-					if (s_LtimelineWnd) {
-						s_LtimelineWnd->setBackGroundColor(false);
-					}
-					if (s_sidemenuWnd) {
-						s_sidemenuWnd->setBackGroundColor(true);
-						::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-					}
-				}
-				else {
-				_ASSERT(0);
-				}
-
-
-
-				DeleteObject(selectbrush);
-				DeleteObject(unselectbrush);
-
-
-				//if (s_befactivehwnd) {
-				//	ReleaseCapture();
-				//}
-				//SetCapture(nexthwnd);
-
-				//SetForegroundWindow(nexthwnd);
-
-				//if (s_befactivehwnd) {
-				//	ReleaseCapture();
-				//}
-				//::SetWindowPos(nexthwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-				//HWND befactive;
-				//befactive = ::SetActiveWindow(nexthwnd);
-				//SetCapture(nexthwnd);
-
-
-				//SetCaptureWindow !!!!!!!!!!!!!!!!!
-
-
-				s_currentwndid = nextwndid;
-				s_currenthwnd = hwnds[s_currentwndid];
-
-				s_befactivehwnd = s_currenthwnd;//次回呼ばれた時のために、今回の選択状態を保存
-
-
-				GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
-
+			if (nextwndid < 0) {
+				nextwndid = MB3D_WND_MAX - 1;
 			}
-			//OutputToInfoWnd(L"Button Down %d", buttonL1);
+
+
+			SelectNextWindow(nextwndid);
+
 		}
 	}
 
@@ -19834,6 +19952,13 @@ void DSCrossButtonSelectTree()
 						if (changeflag && (s_curboneno >= 0)) {
 							if (s_owpTimeline) {
 								s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+								WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
+								POINT mousepos;
+								mousepos.x = currentpos.x;
+								mousepos.y = currentpos.y;
+
+								::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
+								::SetCursorPos(mousepos.x, mousepos.y);
 							}
 							ChangeCurrentBone();
 						}
@@ -21793,6 +21918,11 @@ void DSCrossButtonSelectPlayerBtns()
 
 void DSAxisLMouseMove()
 {
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+
 	//each of plate button
 	//int okbuttonid = 2;
 	//int okbuttondown;
@@ -21980,9 +22110,70 @@ void DSAxisLMouseMove()
 	//}
 }
 
+void DSL3R3ButtonMouseHere()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	static HCURSOR s_prevcursor = 0;
+
+	if ((s_dspushedL3 == 1) || (s_dspushedR3 == 1)) {
+		if (s_dsmousewait == 0) {
+			s_prevcursor = ::SetCursor(LoadCursor(NULL, IDC_WAIT));
+			s_dsmousewait = 1;
+		}
+	}
+	else if ((s_dspushedL3 == 0) && (s_dspushedR3 == 0)) {
+		if (s_dsmousewait == 1) {
+			if (s_prevcursor) {
+				::SetCursor(s_prevcursor);
+			}
+			s_dsmousewait = 0;
+		}
+	}
+}
+
+//void OnDSMouseHereApeal()
+//{
+//	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+//		return;
+//	}
+//
+//	if (g_underApealingMouseHere >= 1) {
+//		POINT cursorpos;
+//		::GetCursorPos(&cursorpos);
+//		if (s_spmousehere.sprite) {
+//			s_spmousehere.dispcenter.x = cursorpos.x;
+//			s_spmousehere.dispcenter.y = cursorpos.y;
+//
+//			float spawidth = 80.0f;
+//			int spashift = 100;
+//			ChaVector3 disppos;
+//			disppos.x = (float)(s_spmousehere.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+//			disppos.y = -((float)(s_spmousehere.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+//			disppos.z = 0.0f;
+//			ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+//			if (s_spmousehere.sprite) {
+//				CallF(s_spmousehere.sprite->SetPos(disppos), return);
+//				CallF(s_spmousehere.sprite->SetSize(dispsize), return);
+//			}
+//			else {
+//				_ASSERT(0);
+//			}
+//
+//		}
+//	}
+//}
+
+
 void DSAimBarOK()
 {
-	//each of plate button
+
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
 	int okbuttonid = 2;
 	int okbuttondown;
 	int okbuttonup;
@@ -22435,9 +22626,13 @@ WindowSize(400, 600)
 
 void ChangeMouseSetCapture()
 {
+
 	static bool s_firstflag = true;
 	static int s_capwndid = -1;
 
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
 
 	if (!s_mainhwnd) {
 		return;
@@ -22711,4 +22906,5 @@ void ChangeMouseReleaseCapture()
 		return;
 	}
 }
+
 

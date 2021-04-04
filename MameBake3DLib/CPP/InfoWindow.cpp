@@ -110,6 +110,7 @@ int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, i
 	wcex.hInstance = (HINSTANCE)GetModuleHandle(NULL);
 	wcex.hIcon = NULL;
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	//wcex.hCursor = NULL;
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = L"InfoWindow_";
@@ -394,7 +395,10 @@ LRESULT CALLBACK InfoWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	default:
-		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		//if (uMsg != WM_SETCURSOR) {
+			return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		//}
+		break;
 	}
 
 	return 0;

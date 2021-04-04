@@ -804,7 +804,12 @@ namespace OrgWinGUI{
 		map<HWND,OrgWindow*>::iterator owItr;
 		owItr= hWndAndClassMap.find(hwnd);
 		if( owItr==hWndAndClassMap.end() ){
-			return (DefWindowProc(hwnd,message,wParam,lParam));
+			//if (message != WM_SETCURSOR) {
+				return (DefWindowProc(hwnd, message, wParam, lParam));
+			//}
+			//else {
+			//	return 0;
+			//}
 		}
 		OrgWindow *owner= owItr->second;	//ウィンドウ作成元のクラスのインスタンスポインタ
 
@@ -907,7 +912,10 @@ namespace OrgWinGUI{
 					owner->nowChangingSize= false;
 					owner->autoResizeAllParts();
 				}
-				return (DefWindowProc(hwnd,message,wParam,lParam));
+				//if (message != WM_SETCURSOR) {
+					return (DefWindowProc(hwnd, message, wParam, lParam));
+				//}
+				break;
 		}
 
 		return 0;

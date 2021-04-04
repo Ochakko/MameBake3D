@@ -14,7 +14,7 @@ public:
 	CDSUpdateUnderTracking();
 	~CDSUpdateUnderTracking();
 
-	int CreateDSUpdateUnderTracking();
+	int CreateDSUpdateUnderTracking(HINSTANCE srchinstance);
 
 
 
@@ -33,6 +33,16 @@ public:
 	int GetStrNum();
 	int GetStr(int srcindex, int srcoutleng, WCHAR* strout);
 
+	HCURSOR GetMHCursor() {
+		return m_mhcursor;
+	};
+	HCURSOR GetArrowCursor() {
+		return m_arrowcursor;
+	};
+	void SetArrowCursor(HCURSOR srccursor) {
+		m_arrowcursor = srccursor;
+	};
+
 private:
 	void InitParams();
 	void DestroyObjs();
@@ -40,6 +50,8 @@ private:
 private:
 	HWND m_hWnd;
 	HWND m_hParentWnd;
+	HCURSOR m_mhcursor;
+	HCURSOR m_arrowcursor;
 	//OrgWinGUI::HDCMaster* m_hdcM;
 
 	//WCHAR m_stroutput[DSUpdateUnderTrackingLINEH][DSUpdateUnderTrackingLINEW];

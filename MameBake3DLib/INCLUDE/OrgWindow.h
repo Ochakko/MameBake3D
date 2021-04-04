@@ -993,6 +993,7 @@ static void s_dummyfunc();
 			wcex.hInstance = (HINSTANCE)GetModuleHandle(NULL);
 			wcex.hIcon			= NULL;
 			wcex.hCursor		= LoadCursor(NULL,IDC_ARROW);
+			//wcex.hCursor		= NULL;
 			wcex.hbrBackground	= ( HBRUSH)( COLOR_WINDOW+1);
 			wcex.lpszMenuName	= NULL;
 			wcex.lpszClassName	= szclassName;
@@ -3304,6 +3305,30 @@ static void s_dummyfunc();
 		/// Method : 自動サイズ設定
 		void autoResize(){
 			size.y-= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)%(LABEL_SIZE_Y-1);
+		}
+		WindowPos getCurrentLinePos()
+		{
+			WindowPos retpos;
+			int i = currentLine;
+			int j = currentLine - showPos_line;
+			retpos.x = pos.x + MARGIN + (size.x - SCROLL_BAR_WIDTH - MARGIN * 2) / 2;
+			retpos.y = pos.y + MARGIN + AXIS_SIZE_Y + j * (LABEL_SIZE_Y - 1) + LABEL_SIZE_Y / 2;
+
+			////行データ
+			//int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
+			//for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < showLineNum; i++, j++) {
+			//	bool highLight = false;
+			//	if (i == currentLine) highLight = true;
+			//	if (i >= 0) {
+			//		lineData[i]->draw(hdcM,
+			//			pos.x + MARGIN,
+			//			pos.y + MARGIN + AXIS_SIZE_Y + j * (LABEL_SIZE_Y - 1),
+			//			size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
+			//			timeSize, showPos_time, highLight);
+			//	}
+			//}
+
+			return retpos;
 		}
 		//	Method : 描画
 		virtual void callRewrite();

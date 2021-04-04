@@ -14,11 +14,14 @@
 #include <dbg.h>
 
 
+#include "resource.h"
+
 LRESULT CALLBACK DSUpdaterWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int InitializeDSUpdateUnderTracking(CREATESTRUCT* createWindowArgs);
 
 static CDSUpdateUnderTracking* s_contextwin = 0;
 
+static HINSTANCE s_hinstance = 0;
 static HANDLE s_hThread = NULL;
 // thread 終了トリガー
 // 0 が立つと　_endthreadex で　終了　(　handle は　close しない！！！　)
@@ -26,14 +29,17 @@ static LONG s_lThread = 1;
 static unsigned int s_dwMainId = 0;
 static DWORD s_mainthreadid = 0;
 //static DWORD WINAPI	ThreadFunc(LPVOID	lpThreadParam);
-static unsigned __stdcall ThreadFunc_Info(void* pArguments);
+static unsigned __stdcall ThreadFunc_DS(void* pArguments);
 
 
 
 
 //extern
 extern void OnDSUpdate();
+extern void OnDSMouseHereApeal();
 extern LONG g_undertrackingRMenu;
+extern LONG g_underApealingMouseHere;
+
 HANDLE g_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
 
 
@@ -60,10 +66,15 @@ void CDSUpdateUnderTracking::InitParams()
 	m_dataindex = 0;
 	m_viewindex = 0;
 
+	m_mhcursor = 0;
+	m_arrowcursor = 0;
+
 }
 void CDSUpdateUnderTracking::DestroyObjs()
 {
 	if (s_hThread != NULL) {
+
+
 		DWORD dwwait = 0;
 		InterlockedExchange(&s_lThread, 0);
 		Sleep(500);
@@ -98,8 +109,11 @@ void CDSUpdateUnderTracking::DestroyObjs()
 }
 
 
-int CDSUpdateUnderTracking::CreateDSUpdateUnderTracking()
+int CDSUpdateUnderTracking::CreateDSUpdateUnderTracking(HINSTANCE srchinstance)
 {
+
+	s_hinstance = srchinstance;
+
 
 	////ウィンドウクラスを登録
 	//WNDCLASSEX wcex;
@@ -165,7 +179,7 @@ int CDSUpdateUnderTracking::CreateDSUpdateUnderTracking()
 
 	//s_hThread = BEGINTHREADEX(
 	s_hThread = (HANDLE)_beginthreadex(
-		NULL, 0, &ThreadFunc_Info,
+		NULL, 0, &ThreadFunc_DS,
 		(void*)this,
 		0, &s_dwMainId);
 		//CREATE_SUSPENDED, &s_dwMainId );
@@ -401,6 +415,11 @@ LRESULT CALLBACK DSUpdaterWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	//	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	//}
 
+	//if (uMsg != WM_SETCURSOR) {
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	//}
+
+
 	return 0;
 }
 
@@ -420,15 +439,18 @@ int InitializeDSUpdateUnderTracking(CREATESTRUCT* createWindowArgs)
 	return 0;
 }
 
-unsigned __stdcall ThreadFunc_Info(LPVOID lpThreadParam)
+unsigned __stdcall ThreadFunc_DS(LPVOID lpThreadParam)
 {
 	static int isfirst = 1;
+	
 	int ret;
+
+
 
 	if (!lpThreadParam) {
 		return 1;
 	}
-	CDSUpdateUnderTracking* infowinptr = (CDSUpdateUnderTracking*)lpThreadParam;
+	CDSUpdateUnderTracking* dsptr = (CDSUpdateUnderTracking*)lpThreadParam;
 
 	while (s_lThread) {
 		//if (::MsgWaitForMultipleObjects(1, &g_hEvent, FALSE, 500, 0) == WAIT_OBJECT_0) {

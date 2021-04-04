@@ -1059,6 +1059,7 @@ HRESULT WINAPI DXUTCreateWindow( const WCHAR* strWindowTitle, HINSTANCE hInstanc
         wndClass.hInstance = hInstance;
         wndClass.hIcon = hIcon;
         wndClass.hCursor = LoadCursor( nullptr, IDC_ARROW );
+        //wndClass.hCursor = NULL;
         wndClass.hbrBackground = ( HBRUSH )GetStockObject( BLACK_BRUSH );
         wndClass.lpszMenuName = nullptr;
         wndClass.lpszClassName = L"Direct3DWindowClass";
@@ -1575,8 +1576,14 @@ LRESULT CALLBACK DXUTStaticWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     if( !GetDXUTState().GetCallDefWindowProc() || !GetDXUTState().GetMenu() &&
         ( uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP ) && wParam == VK_F10 )
         return 0;
-    else
-        return DefWindowProc( hWnd, uMsg, wParam, lParam );
+    else {
+        //if (uMsg != WM_SETCURSOR) {
+            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        //}
+        //else {
+        //    return 0;
+        //}
+    }
 }
 
 

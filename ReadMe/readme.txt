@@ -264,6 +264,22 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/04
+	R1ボタンを１回押すと３Dウインドウのジョイント位置へジャンプ、
+	もう一回押すとジョイント位置へジャンプする前の位置にジャンプ
+
+	L3ボタン、R3ボタンを押している間、マウス位置にウェイティングカーソルを表示
+	マウスカーソルを見失わないための機能
+
+	L1ボタンを何回か押して階層エディタ選択した後の十字ボタンによるジョイント階層選択時にマウスも追従
+
+	Mouse cursor is jumped to joint pos at 3dwindow on push R1 button,
+	it jumped to prev pos on one more push R1 button.
+
+	If L3 or R3 button is push, waiting cursor is displayed, for lose sight of mouse position.
+
+	Mouse position is moved to selecting tree elem too.(by L1 button and corss buttons)
+
 2021/04/03_2
 	ゲームパッドR1ボタンのジョイント位置修正
 	Fix mouse cursor pos problem on R1 button.

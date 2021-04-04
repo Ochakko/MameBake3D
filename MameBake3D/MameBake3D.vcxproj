@@ -328,6 +328,13 @@
     <None Include="..\Media\MameBake3D.ico" />
     <None Include="..\Media\MameMedia\boneimage.bmp" />
     <None Include="..\Media\MameMedia\boneselect.bmp" />
+    <None Include="..\Media\MameMedia\MouseHere.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Media\MameMedia\a_ilst031.gif" />
+    <Image Include="..\media\mamemedia\bitmap2.bmp" />
+    <Image Include="..\Media\MameMedia\img_l105.bmp" />
+    <Image Include="..\Media\MameMedia\img_l105.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
