@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/05_3
+	動画【MameBake3D】モーションツールをゲームパッドで動かしてみた【DualSence】
+　	https://youtu.be/AdJPZ3Uv6-c
+
 2021/04/05_2
 	L3, R3ボタンを押したときの機能の改良
 		設定ウインドウ上でもボタンを押している間半透明アニメをするようにした
@@ -2663,6 +2667,10 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+2021/04/05_3
+動画【MameBake3D】モーションツールをゲームパッドで動かしてみた【DualSence】
+https://youtu.be/AdJPZ3Uv6-c
+
 2021/02/24_2
 動画【カエルボタン】プレートメニューでGUIを切り替え【プレートメニュー】
 https://youtu.be/GW0OVv7_0SA
