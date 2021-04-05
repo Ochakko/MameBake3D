@@ -264,6 +264,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/05_2
+	L3, R3ボタンを押したときの機能の改良
+		設定ウインドウ上でもボタンを押している間半透明アニメをするようにした
+		設定ウインドウ上でも背景色を透過して描画した
+
+	UFO Transparent and AlphaBlendAnimation at mouse pos while L3 or R3 is pushed. 
+
 2021/04/05_1
 	L3, R3ボタン(アナログスティックを)を押したときにマウス位置にUFOを表示しました
 	設定用ウインドウにも３Dウインドウにも出ます

@@ -137,6 +137,7 @@ previewflag 5 ‚ÌÄ¶‚É‚Íƒpƒ‰ƒ[ƒ^‚ğŒˆ‚ß‘Å‚¿‚ğ~‚ß‚½
 
 
 #include <Windows.h>
+#include <gdiplus.h>
 
 #define WINDOWS_CLASS_NAME TEXT("OchakkoLab.MameBake3D.Window")
 
@@ -155,7 +156,9 @@ typedef struct tag_spsw
 }SPGUISW;
 
 
-
+static Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+static ULONG_PTR gdiplusToken;
+Gdiplus::Image* g_mousehereimage = 0;
 
 /*
 ID3D11DepthStencilState *g_pDSStateZCmp = 0;
@@ -1773,9 +1776,13 @@ void InitApp()
 
 	InitDSValues();
 
+	g_mousehereimage = 0;
+	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+
 	g_dsmousewait = 0;
 	g_mouseherebmp = 0;
-
+	g_tranbmp = 0;
 
 	s_sampleuihwnd = 0;
 	s_nowloading = true;
@@ -2545,12 +2552,17 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spmousehere.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spmousehere.sprite);
-	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.bmp", 0, 0), return 1);
+	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return 1);
 
-	WCHAR bmppath[MAX_PATH];
-	swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
-	g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
-	_ASSERT(g_mouseherebmp);
+	WCHAR pngpath[MAX_PATH];
+	swprintf_s(pngpath, MAX_PATH, L"%simg_l105.png", mpath);
+	//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
+	//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
+	//_ASSERT(g_mouseherebmp);
+	//g_tranbmp = 0xFF000000;
+	g_mousehereimage = new Gdiplus::Image(pngpath);
+	_ASSERT(g_mousehereimage);
+
 
 
 	s_spret2prev.sprite = new CMySprite(s_pdev);
@@ -2779,6 +2791,12 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 	EndDS4();
+
+	if (g_mousehereimage) {
+		delete g_mousehereimage;
+		g_mousehereimage = 0;
+	}
+	Gdiplus::GdiplusShutdown(gdiplusToken);
 
 
 	if (g_mouseherebmp) {
@@ -22247,9 +22265,9 @@ void OnDSMouseHereApeal()
 					s_mousehereval = 0.0f;
 					s_mouseheredir = 0;
 				}
-				float alpha = s_mousehereval * s_mousehereval;
+				g_mouseherealpha = s_mousehereval * s_mousehereval;
 
-				ChaVector4 spritecol = ChaVector4(1.0f, 1.0f, 1.0f, alpha);
+				ChaVector4 spritecol = ChaVector4(1.0f, 1.0f, 1.0f, g_mouseherealpha);
 				CallF(s_spmousehere.sprite->SetColor(spritecol), return);
 			}
 			else {

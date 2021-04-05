@@ -102,19 +102,27 @@ namespace OrgWinGUI{
 				::GetCursorPos(&mousepoint);
 				if (getParent() && getHDCMaster()) {
 					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
-					PAINTSTRUCT ps;
-					//HDC hdc = BeginPaint(getHWnd(), &ps);
-					// メモリデバイスコンテキストを作成する
-					HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
-					// ロードしたビットマップを選択する
-					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
-					BITMAP bmp;
-					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
-					int BMP_W = (int)bmp.bmWidth;
-					int BMP_H = (int)bmp.bmHeight;
-					BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
-					DeleteDC(hCompatDC);
-					//EndPaint(hWnd, &ps);
+					int BMP_W = 52;
+					int BMP_H = 50;
+					Gdiplus::Graphics* gdipg = new Gdiplus::Graphics(hdcM->hDC);
+					if (gdipg) {
+						Gdiplus::ImageAttributes attr;
+						Gdiplus::ColorMatrix cmat = {
+							1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Red
+							0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   // Green
+							0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Blue
+							0.0f, 0.0f, 0.0f, g_mouseherealpha, 0.0f,   // Alpha (70%)
+							0.0f, 0.0f, 0.0f, 0.0f, 1.0f    // must be 1
+						};
+						attr.SetColorMatrix(&cmat);
+						//Gdiplus::Image* imgptr = new Gdiplus::Image(L"E:\\PG\\MameBake3D_git\\MameBake3D\\Media\\MameMedia\\img_l105.png");
+						if(g_mousehereimage){
+							gdipg->DrawImage(g_mousehereimage, Gdiplus::Rect(mousepoint.x, mousepoint.y, BMP_W, BMP_H),
+								0, 0, BMP_W, BMP_H,
+								Gdiplus::UnitPixel, &attr, NULL, NULL);
+						}
+						delete gdipg;
+					}
 				}
 			}
 		}
@@ -179,19 +187,28 @@ namespace OrgWinGUI{
 					::GetCursorPos(&mousepoint);
 					if (getParent() && getHDCMaster()) {
 						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
-						PAINTSTRUCT ps;
-						//HDC hdc = BeginPaint(getHWnd(), &ps);
-						// メモリデバイスコンテキストを作成する
-						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
-						// ロードしたビットマップを選択する
-						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
-						BITMAP bmp;
-						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
-						int BMP_W = (int)bmp.bmWidth;
-						int BMP_H = (int)bmp.bmHeight;
-						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
-						DeleteDC(hCompatDC);
-						//EndPaint(hWnd, &ps);
+						int BMP_W = 52;
+						int BMP_H = 50;
+						Gdiplus::Graphics* gdipg = new Gdiplus::Graphics(hdcM->hDC);
+						if (gdipg) {
+							Gdiplus::ImageAttributes attr;
+							Gdiplus::ColorMatrix cmat = {
+								1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Red
+								0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   // Green
+								0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Blue
+								0.0f, 0.0f, 0.0f, g_mouseherealpha, 0.0f,   // Alpha (70%)
+								0.0f, 0.0f, 0.0f, 0.0f, 1.0f    // must be 1
+							};
+							attr.SetColorMatrix(&cmat);
+							//Gdiplus::Image* imgptr = new Gdiplus::Image(L"E:\\PG\\MameBake3D_git\\MameBake3D\\Media\\MameMedia\\img_l105.png");
+							if (g_mousehereimage){
+								gdipg->DrawImage(g_mousehereimage, Gdiplus::Rect(mousepoint.x, mousepoint.y, BMP_W, BMP_H),
+									0, 0, BMP_W, BMP_H,
+									Gdiplus::UnitPixel, &attr, NULL, NULL);
+							}
+
+							delete gdipg;
+						}
 					}
 				}
 			}
@@ -376,19 +393,27 @@ namespace OrgWinGUI{
 				::GetCursorPos(&mousepoint);
 				if (getParent()) {
 					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
-
-					//hdc = BeginPaint(hWnd, &ps);
-					// メモリデバイスコンテキストを作成する
-					HDC hCompatDC = CreateCompatibleDC(hdcM->hDC);
-					// ロードしたビットマップを選択する
-					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
-					BITMAP bmp;
-					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
-					int BMP_W = (int)bmp.bmWidth;
-					int BMP_H = (int)bmp.bmHeight;
-					BitBlt(hdcM->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
-					DeleteDC(hCompatDC);
-					//EndPaint(hWnd, &ps);
+					int BMP_W = 52;
+					int BMP_H = 50;
+					Gdiplus::Graphics* gdipg = new Gdiplus::Graphics(hdcM->hDC);
+					if (gdipg) {
+						Gdiplus::ImageAttributes attr;
+						Gdiplus::ColorMatrix cmat = {
+							1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Red
+							0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   // Green
+							0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Blue
+							0.0f, 0.0f, 0.0f, g_mouseherealpha, 0.0f,   // Alpha (70%)
+							0.0f, 0.0f, 0.0f, 0.0f, 1.0f    // must be 1
+						};
+						attr.SetColorMatrix(&cmat);
+						//Gdiplus::Image* imgptr = new Gdiplus::Image(L"E:\\PG\\MameBake3D_git\\MameBake3D\\Media\\MameMedia\\img_l105.png");
+						if (g_mousehereimage) {
+							gdipg->DrawImage(g_mousehereimage, Gdiplus::Rect(mousepoint.x, mousepoint.y, BMP_W, BMP_H),
+								0, 0, BMP_W, BMP_H,
+								Gdiplus::UnitPixel, &attr, NULL, NULL);
+						}
+						delete gdipg;
+					}
 				}
 			}
 		}
@@ -568,19 +593,28 @@ namespace OrgWinGUI{
 				::GetCursorPos(&mousepoint);
 				if (getParent() && getHDCMaster()) {
 					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
-					PAINTSTRUCT ps;
-					//HDC hdc = BeginPaint(getHWnd(), &ps);
-					// メモリデバイスコンテキストを作成する
-					HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
-					// ロードしたビットマップを選択する
-					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
-					BITMAP bmp;
-					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
-					int BMP_W = (int)bmp.bmWidth;
-					int BMP_H = (int)bmp.bmHeight;
-					BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
-					DeleteDC(hCompatDC);
-					//EndPaint(hWnd, &ps);
+					int BMP_W = 52;
+					int BMP_H = 50;
+					Gdiplus::Graphics* gdipg = new Gdiplus::Graphics(hdcM->hDC);
+					if (gdipg) {
+						Gdiplus::ImageAttributes attr;
+						Gdiplus::ColorMatrix cmat = {
+							1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Red
+							0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   // Green
+							0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Blue
+							0.0f, 0.0f, 0.0f, g_mouseherealpha, 0.0f,   // Alpha (70%)
+							0.0f, 0.0f, 0.0f, 0.0f, 1.0f    // must be 1
+						};
+						attr.SetColorMatrix(&cmat);
+						//Gdiplus::Image* imgptr = new Gdiplus::Image(L"E:\\PG\\MameBake3D_git\\MameBake3D\\Media\\MameMedia\\img_l105.png");
+						if (g_mousehereimage) {
+							gdipg->DrawImage(g_mousehereimage, Gdiplus::Rect(mousepoint.x, mousepoint.y, BMP_W, BMP_H),
+								0, 0, BMP_W, BMP_H,
+								Gdiplus::UnitPixel, &attr, NULL, NULL);
+						}
+						delete gdipg;
+					}
+					
 				}
 			}
 		}
@@ -794,19 +828,27 @@ namespace OrgWinGUI{
 				::GetCursorPos(&mousepoint);
 				if (getParent() && getHDCMaster()) {
 					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
-					PAINTSTRUCT ps;
-					//HDC hdc = BeginPaint(getHWnd(), &ps);
-					// メモリデバイスコンテキストを作成する
-					HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
-					// ロードしたビットマップを選択する
-					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
-					BITMAP bmp;
-					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
-					int BMP_W = (int)bmp.bmWidth;
-					int BMP_H = (int)bmp.bmHeight;
-					BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
-					DeleteDC(hCompatDC);
-					//EndPaint(hWnd, &ps);
+					int BMP_W = 52;
+					int BMP_H = 50;
+					Gdiplus::Graphics* gdipg = new Gdiplus::Graphics(hdcM->hDC);
+					if (gdipg) {
+						Gdiplus::ImageAttributes attr;
+						Gdiplus::ColorMatrix cmat = {
+							1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Red
+							0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   // Green
+							0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Blue
+							0.0f, 0.0f, 0.0f, g_mouseherealpha, 0.0f,   // Alpha (70%)
+							0.0f, 0.0f, 0.0f, 0.0f, 1.0f    // must be 1
+						};
+						attr.SetColorMatrix(&cmat);
+						//Gdiplus::Image* imgptr = new Gdiplus::Image(L"E:\\PG\\MameBake3D_git\\MameBake3D\\Media\\MameMedia\\img_l105.png");
+						if (g_mousehereimage) {
+							gdipg->DrawImage(g_mousehereimage, Gdiplus::Rect(mousepoint.x, mousepoint.y, BMP_W, BMP_H),
+								0, 0, BMP_W, BMP_H,
+								Gdiplus::UnitPixel, &attr, NULL, NULL);
+						}
+						delete gdipg;
+					}
 				}
 			}
 		}
