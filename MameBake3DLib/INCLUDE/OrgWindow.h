@@ -12,6 +12,7 @@
 #include <vector>
 
 
+
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
 
@@ -29,8 +30,8 @@ struct KeyInfo{
 extern bool g_selecttolastFlag;//Main.cpp
 extern bool g_underselecttolast;//Main.cpp
 extern bool g_undereditrange;//Main.cpp
-
-
+extern HBITMAP g_mouseherebmp;
+extern int g_dsmousewait;
 
 static double TIME_ERROR_WIDTH = 0.0001;
 
@@ -461,6 +462,10 @@ static void s_dummyfunc();
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : pos
+		HDCMaster* getHDCMaster()
+		{
+			return hdcM;
+		}
 		virtual WindowPos getPos() const{
 			return WindowPos(pos.x,pos.y);
 		}
@@ -760,6 +765,7 @@ static void s_dummyfunc();
 				(*itr)->callRewrite();
 			}
 		}
+
 		/// Method : ウィンドウ内部品を全て追加しなおす
 		void reAddAllParts(){
 			std::list<OrgWindowParts*> tmpPartsList= partsList;
@@ -892,6 +898,7 @@ static void s_dummyfunc();
 			return visible;
 		}
 		void setVisible(bool value){
+			visible = value;
 			if( value ){
 				ShowWindow(hWnd, SW_SHOWNA);
 			}else{
@@ -1039,6 +1046,27 @@ static void s_dummyfunc();
 		}
 		//	Method : ウィンドウプロシージャ
 		static LRESULT CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+		//	Method : 全描画
+		void allPaint();
+		//void allPaint(){
+		//	static int s_paintcnt = 0;
+		//	s_paintcnt++;
+		//	if (g_previewFlag != 0) {
+		//		if ((s_paintcnt % 10) != 0) {
+		//			return;
+		//		}
+		//	}
+
+
+		//	beginPaint();
+		//		paintTitleBar();
+		//		for( std::list<OrgWindowParts*>::iterator itr=partsList.begin();
+		//				itr!= partsList.end();
+		//				itr++ ){
+		//			(*itr)->draw();
+		//		}
+		//	endPaint();
+		//}
 		///	Method : 左右マウスボタンダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
 			if (this->ldownListener != NULL) {
@@ -1334,27 +1362,6 @@ static void s_dummyfunc();
 				(this->keyboardListener)(e);
 			}
 		}
-		//	Method : 全描画
-		void allPaint();
-		//void allPaint(){
-		//	static int s_paintcnt = 0;
-		//	s_paintcnt++;
-		//	if (g_previewFlag != 0) {
-		//		if ((s_paintcnt % 10) != 0) {
-		//			return;
-		//		}
-		//	}
-
-
-		//	beginPaint();
-		//		paintTitleBar();
-		//		for( std::list<OrgWindowParts*>::iterator itr=partsList.begin();
-		//				itr!= partsList.end();
-		//				itr++ ){
-		//			(*itr)->draw();
-		//		}
-		//	endPaint();
-		//}
 		//	Method : 描画準備
 		void beginPaint(){
 			hdcM.beginPaint();
@@ -2127,6 +2134,30 @@ static void s_dummyfunc();
 						(*itr)->draw();
 				}
 			}
+
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
+
 		}
 		///	Method : 左右マウスボタンダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
@@ -2320,6 +2351,30 @@ static void s_dummyfunc();
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
 					 name, (int)_tcslen(name));
+
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
+
 		}
 		/// Method : 内容変更
 		void setName( TCHAR *value ){
@@ -2392,6 +2447,29 @@ static void s_dummyfunc();
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
 					 name, (int)_tcslen(name));
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
+
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
@@ -2660,8 +2738,30 @@ static void s_dummyfunc();
 					}break;
 				}
 			}
-
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
 		}
+
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
 
@@ -2970,6 +3070,30 @@ static void s_dummyfunc();
 				TextOut( hdcM->hDC,
 						 pos1x, pos1y,
 						 nameList[i].c_str(), (int)_tcslen(nameList[i].c_str()));
+
+				{
+					if (g_dsmousewait == 1) {
+						POINT mousepoint;
+						::GetCursorPos(&mousepoint);
+						if (getParent() && getHDCMaster()) {
+							::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+							PAINTSTRUCT ps;
+							//HDC hdc = BeginPaint(getHWnd(), &ps);
+							// メモリデバイスコンテキストを作成する
+							HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+							// ロードしたビットマップを選択する
+							HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+							BITMAP bmp;
+							GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+							int BMP_W = (int)bmp.bmWidth;
+							int BMP_H = (int)bmp.bmHeight;
+							BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+							DeleteDC(hCompatDC);
+							//EndPaint(hWnd, &ps);
+						}
+					}
+				}
+
 			}
 		}
 		///	Method : マウスダウンイベント受信
@@ -3158,6 +3282,29 @@ static void s_dummyfunc();
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
 					 tmpChar, (int)_tcslen(tmpChar));
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
+
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
@@ -6855,6 +7002,29 @@ static void s_dummyfunc();
 					}
 				}
 			}
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
+
 		}
 		//	Method : 行を追加	(既に同名のキーがある場合はFalseを返す)
 		bool newLine(const std::basic_string<TCHAR> &_name, const void *object=NULL){

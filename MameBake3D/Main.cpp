@@ -380,7 +380,7 @@ static int s_bef_dsaxisMOverSrh[MB3D_DSAXISNUM];
 static int s_dspushedOK = 0;
 static int s_dspushedL3 = 0;
 static int s_dspushedR3 = 0;
-static int s_dsmousewait = 0;
+//static int s_dsmousewait = 0;
 
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
@@ -1018,7 +1018,7 @@ ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
 
 void OnDSUpdate();
-void OnDSMouseHereApeal();
+static void OnDSMouseHereApeal();
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -1773,6 +1773,8 @@ void InitApp()
 
 	InitDSValues();
 
+	g_dsmousewait = 0;
+	g_mouseherebmp = 0;
 
 
 	s_sampleuihwnd = 0;
@@ -2543,7 +2545,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spmousehere.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spmousehere.sprite);
-	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"a_ilst031.gif", 0, 0), return 1);
+	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.bmp", 0, 0), return 1);
+
+	WCHAR bmppath[MAX_PATH];
+	swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
+	g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
+	_ASSERT(g_mouseherebmp);
+
 
 	s_spret2prev.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spret2prev.sprite);
@@ -2773,6 +2781,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	EndDS4();
 
 
+	if (g_mouseherebmp) {
+		::DeleteObject(g_mouseherebmp);
+		g_mouseherebmp = 0;
+	}
 
 
 	s_motmenuindexmap.clear();
@@ -3640,6 +3652,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	OnFrameUpdateGround();
 	OnFrameInitBtWorld();
 
+	OnDSMouseHereApeal();
 
 	s_savepreviewFlag = g_previewFlag;
 }
@@ -3963,6 +3976,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
 		OnRenderSprite(pd3dImmediateContext);
 	}
+
 
 	DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
 	////g_HUD.OnRender(fElapsedTime);
@@ -11055,8 +11069,8 @@ int SetSpMouseHereParams()
 		return 0;
 	}
 
-	float spawidth = 80.0f;
-	int spashift = 100;
+	float spawidth = 52.0f;
+	int spashift = 50;
 	s_spmousehere.dispcenter.x = 0;
 	s_spmousehere.dispcenter.y = 0;
 
@@ -16114,14 +16128,14 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		}		
 	}
 
-	//if (g_underApealingMouseHere >= 1) {
-	//	if (s_spmousehere.sprite) {
-	//		s_spmousehere.sprite->OnRender(pd3dImmediateContext);
-	//	}
-	//	else {
-	//		_ASSERT(0);
-	//	}
-	//}
+	if (g_dsmousewait == 1) {
+		if (s_spmousehere.sprite) {
+			s_spmousehere.sprite->OnRender(pd3dImmediateContext);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
 
 
 	return 0;
@@ -19037,7 +19051,7 @@ void InitDSValues()
 	s_dspushedOK = 0;
 	s_dspushedL3 = 0;
 	s_dspushedR3 = 0;
-	s_dsmousewait = 0;
+	g_dsmousewait = 0;
 	InterlockedExchange(&g_undertrackingRMenu, 0);
 
 	s_firstmoveaimbar = true;
@@ -22119,52 +22133,132 @@ void DSL3R3ButtonMouseHere()
 	static HCURSOR s_prevcursor = 0;
 
 	if ((s_dspushedL3 == 1) || (s_dspushedR3 == 1)) {
-		if (s_dsmousewait == 0) {
+		if (g_dsmousewait == 0) {
 			s_prevcursor = ::SetCursor(LoadCursor(NULL, IDC_WAIT));
-			s_dsmousewait = 1;
+			g_dsmousewait = 1;
 		}
 	}
 	else if ((s_dspushedL3 == 0) && (s_dspushedR3 == 0)) {
-		if (s_dsmousewait == 1) {
+		if (g_dsmousewait == 1) {
 			if (s_prevcursor) {
 				::SetCursor(s_prevcursor);
 			}
-			s_dsmousewait = 0;
+			g_dsmousewait = 0;
+		}
+	}
+
+
+	if (g_dsmousewait == 1) {
+		if (s_timelineWnd) {
+			s_timelineWnd->callRewrite();
+		}
+		if (s_toolWnd) {
+			s_toolWnd->callRewrite();
+		}
+		if (s_LtimelineWnd) {
+			s_LtimelineWnd->callRewrite();
+		}
+		if (s_placefolderWnd && s_placefolderWnd->getVisible()) {
+			s_placefolderWnd->callRewrite();
+		}
+		if (s_rigidWnd && s_rigidWnd->getVisible()) {
+			s_rigidWnd->callRewrite();
+		}
+		if (s_impWnd && s_impWnd->getVisible()) {
+			s_impWnd->callRewrite();
+		}
+		if (s_gpWnd && s_gpWnd->getVisible()) {
+			s_gpWnd->callRewrite();
+		}
+		if (s_dmpanimWnd && s_dmpanimWnd->getVisible()){
+			s_dmpanimWnd->callRewrite();
+		}
+		if (s_convboneWnd && s_convboneWnd->getVisible()) {
+			s_convboneWnd->callRewrite();
+		}
+		if (s_anglelimitdlg && s_spretargetsw[SPRETARGETSW_LIMITEULER].state) {
+			//POINT mousepoint;
+			//::GetCursorPos(&mousepoint);			
+			//::ScreenToClient(s_anglelimitdlg, &mousepoint);
+			//PAINTSTRUCT ps;
+			//HDC hdc = BeginPaint(s_anglelimitdlg, &ps);
+			//// メモリデバイスコンテキストを作成する
+			//HDC hCompatDC = CreateCompatibleDC(hdc);
+			//// ロードしたビットマップを選択する
+			//HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+			//BITMAP bmp;
+			//GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+			//int BMP_W = (int)bmp.bmWidth;
+			//int BMP_H = (int)bmp.bmHeight;
+			//BitBlt(hdc, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+			//DeleteDC(hCompatDC);
+			////EndPaint(hWnd, &ps);
 		}
 	}
 }
 
-//void OnDSMouseHereApeal()
-//{
-//	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
-//		return;
-//	}
-//
-//	if (g_underApealingMouseHere >= 1) {
-//		POINT cursorpos;
-//		::GetCursorPos(&cursorpos);
-//		if (s_spmousehere.sprite) {
-//			s_spmousehere.dispcenter.x = cursorpos.x;
-//			s_spmousehere.dispcenter.y = cursorpos.y;
-//
-//			float spawidth = 80.0f;
-//			int spashift = 100;
-//			ChaVector3 disppos;
-//			disppos.x = (float)(s_spmousehere.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
-//			disppos.y = -((float)(s_spmousehere.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
-//			disppos.z = 0.0f;
-//			ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
-//			if (s_spmousehere.sprite) {
-//				CallF(s_spmousehere.sprite->SetPos(disppos), return);
-//				CallF(s_spmousehere.sprite->SetSize(dispsize), return);
-//			}
-//			else {
-//				_ASSERT(0);
-//			}
-//
-//		}
-//	}
-//}
+void OnDSMouseHereApeal()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_3dwnd) {
+		return;
+	}
+
+	static float s_mousehereval = 0.0f;
+	static int s_mouseheredir = 0;
+
+	//if (g_dsmousewait >= 1) {
+		POINT cursorpos;
+		::GetCursorPos(&cursorpos);
+		::ScreenToClient(s_3dwnd, &cursorpos);
+		if (s_spmousehere.sprite) {
+
+			float spawidth = 52.0f;
+			int spashift = 50;
+
+			s_spmousehere.dispcenter.x = cursorpos.x + 52 / 2;
+			s_spmousehere.dispcenter.y = cursorpos.y + 50 / 2;
+
+			
+			ChaVector3 disppos;
+			disppos.x = (float)(s_spmousehere.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+			disppos.y = -((float)(s_spmousehere.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+			disppos.z = 0.0f;
+			ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+			if (s_spmousehere.sprite) {
+				CallF(s_spmousehere.sprite->SetPos(disppos), return);
+				CallF(s_spmousehere.sprite->SetSize(dispsize), return);
+
+				if (s_mouseheredir == 0) {
+					s_mousehereval += 0.08f;
+				}
+				else if (s_mouseheredir == 1) {
+					s_mousehereval -= 0.08f;
+				}
+
+				if (s_mousehereval >= 1.0f) {
+					s_mousehereval = 1.0;
+					s_mouseheredir = 1;
+				}
+				else if (s_mousehereval <= 0.0f) {
+					s_mousehereval = 0.0f;
+					s_mouseheredir = 0;
+				}
+				float alpha = s_mousehereval * s_mousehereval;
+
+				ChaVector4 spritecol = ChaVector4(1.0f, 1.0f, 1.0f, alpha);
+				CallF(s_spmousehere.sprite->SetColor(spritecol), return);
+			}
+			else {
+				_ASSERT(0);
+			}
+
+		}
+	//}
+}
 
 
 void DSAimBarOK()

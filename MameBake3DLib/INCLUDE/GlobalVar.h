@@ -53,6 +53,8 @@
 class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
+int g_dsmousewait = 0;
+HBITMAP g_mouseherebmp = 0;
 int g_iklevel = 1;
 CInfoWindow* g_infownd = 0;
 int g_endappflag = 0;
@@ -182,6 +184,8 @@ float* g_motionbrush_value = 0;
 
 
 #else
+extern int g_dsmousewait;
+extern HBITMAP g_mouseherebmp;
 extern int g_iklevel;
 extern CInfoWindow* g_infownd;
 extern int g_endappflag;

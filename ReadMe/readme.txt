@@ -264,6 +264,14 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/05_1
+	L3, R3ボタン(アナログスティックを)を押したときにマウス位置にUFOを表示しました
+	設定用ウインドウにも３Dウインドウにも出ます
+
+	For not lose sight of mouse pos, UFO appear at window on L3 or R3 button.
+	L3(R3) button is pushed when L(R) analog stick is pushed.
+ 
+
 2021/04/04
 	R1ボタンを１回押すと３Dウインドウのジョイント位置へジャンプ、
 	もう一回押すとジョイント位置へジャンプする前の位置にジャンプ

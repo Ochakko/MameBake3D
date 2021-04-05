@@ -40,12 +40,85 @@ namespace OrgWinGUI{
 				(*itr)->draw();
 			}
 		}
+
+
+		//{
+		//	//if (g_dsmousewait == 1) {
+		//	if (g_mouseherebmp) {
+		//		POINT mousepoint;
+		//		::GetCursorPos(&mousepoint);
+		//		::ScreenToClient(hWnd, &mousepoint);
+
+		//		//PAINTSTRUCT ps;
+		//		//HDC hdc = BeginPaint(hWnd, &ps);
+		//		// メモリデバイスコンテキストを作成する
+		//		HDC hCompatDC = CreateCompatibleDC(hdcM.hDC);
+		//		// ロードしたビットマップを選択する
+		//		HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+		//		BITMAP bmp;
+		//		GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+		//		int BMP_W = (int)bmp.bmWidth;
+		//		int BMP_H = (int)bmp.bmHeight;
+		//		BitBlt(hdcM.hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+		//		DeleteDC(hCompatDC);
+		//		//EndPaint(hWnd, &ps);
+		//	}
+		//	//}
+		//}
+
+
+		//{
+		//	//if (g_dsmousewait == 1) {
+		//	POINT mousepoint;
+		//	::GetCursorPos(&mousepoint);
+		//	//if (getParent()) {
+		//		::ScreenToClient(getHWnd(), &mousepoint);
+		//		PAINTSTRUCT ps;
+		//		HDC hdc = BeginPaint(getHWnd(), &ps);
+		//		// メモリデバイスコンテキストを作成する
+		//		HDC hCompatDC = CreateCompatibleDC(hdc);
+		//		// ロードしたビットマップを選択する
+		//		HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+		//		BITMAP bmp;
+		//		GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+		//		int BMP_W = (int)bmp.bmWidth;
+		//		int BMP_H = (int)bmp.bmHeight;
+		//		BitBlt(hdc, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+		//		DeleteDC(hCompatDC);
+		//		//EndPaint(hWnd, &ps);
+		//	//}
+		//	//}
+		//}
+
 		endPaint();
 	}
 
 	void OrgWindowParts::draw()
 	{
 		drawEdge();
+		{
+			if (g_dsmousewait == 1) {
+				POINT mousepoint;
+				::GetCursorPos(&mousepoint);
+				if (getParent() && getHDCMaster()) {
+					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+					PAINTSTRUCT ps;
+					//HDC hdc = BeginPaint(getHWnd(), &ps);
+					// メモリデバイスコンテキストを作成する
+					HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+					// ロードしたビットマップを選択する
+					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+					BITMAP bmp;
+					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+					int BMP_W = (int)bmp.bmWidth;
+					int BMP_H = (int)bmp.bmHeight;
+					BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+					DeleteDC(hCompatDC);
+					//EndPaint(hWnd, &ps);
+				}
+			}
+		}
+		
 	}
 
 	void OWP_Separator::draw() {
@@ -99,7 +172,33 @@ namespace OrgWinGUI{
 					(*itr)->draw();
 				}
 			}
+
+			{
+				if (g_dsmousewait == 1) {
+					POINT mousepoint;
+					::GetCursorPos(&mousepoint);
+					if (getParent() && getHDCMaster()) {
+						::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+						PAINTSTRUCT ps;
+						//HDC hdc = BeginPaint(getHWnd(), &ps);
+						// メモリデバイスコンテキストを作成する
+						HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+						// ロードしたビットマップを選択する
+						HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+						BITMAP bmp;
+						GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+						int BMP_W = (int)bmp.bmWidth;
+						int BMP_H = (int)bmp.bmHeight;
+						BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+						DeleteDC(hCompatDC);
+						//EndPaint(hWnd, &ps);
+					}
+				}
+			}
+
 		}
+
+
 	}
 
 	void OWP_Timeline::LineData::callRewrite()
@@ -267,6 +366,29 @@ namespace OrgWinGUI{
 				if (showLineNum < (int)lineData.size()) {
 					hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
 					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
+				}
+			}
+		}
+
+		{
+			if (g_dsmousewait == 1) {
+				POINT mousepoint;
+				::GetCursorPos(&mousepoint);
+				if (getParent()) {
+					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+
+					//hdc = BeginPaint(hWnd, &ps);
+					// メモリデバイスコンテキストを作成する
+					HDC hCompatDC = CreateCompatibleDC(hdcM->hDC);
+					// ロードしたビットマップを選択する
+					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+					BITMAP bmp;
+					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+					int BMP_W = (int)bmp.bmWidth;
+					int BMP_H = (int)bmp.bmHeight;
+					BitBlt(hdcM->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+					DeleteDC(hCompatDC);
+					//EndPaint(hWnd, &ps);
 				}
 			}
 		}
@@ -439,6 +561,30 @@ namespace OrgWinGUI{
 		//		Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 		//	}
 		//}
+
+		{
+			if (g_dsmousewait == 1) {
+				POINT mousepoint;
+				::GetCursorPos(&mousepoint);
+				if (getParent() && getHDCMaster()) {
+					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+					PAINTSTRUCT ps;
+					//HDC hdc = BeginPaint(getHWnd(), &ps);
+					// メモリデバイスコンテキストを作成する
+					HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+					// ロードしたビットマップを選択する
+					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+					BITMAP bmp;
+					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+					int BMP_W = (int)bmp.bmWidth;
+					int BMP_H = (int)bmp.bmHeight;
+					BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+					DeleteDC(hCompatDC);
+					//EndPaint(hWnd, &ps);
+				}
+			}
+		}
+
 	}
 
 	//namespace global func
@@ -642,6 +788,29 @@ namespace OrgWinGUI{
 				pos1x, pos1y,
 				name, (int)_tcslen(name));
 		}
+		{
+			if (g_dsmousewait == 1) {
+				POINT mousepoint;
+				::GetCursorPos(&mousepoint);
+				if (getParent() && getHDCMaster()) {
+					::ScreenToClient(getParent()->getHWnd(), &mousepoint);
+					PAINTSTRUCT ps;
+					//HDC hdc = BeginPaint(getHWnd(), &ps);
+					// メモリデバイスコンテキストを作成する
+					HDC hCompatDC = CreateCompatibleDC(getHDCMaster()->hDC);
+					// ロードしたビットマップを選択する
+					HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
+					BITMAP bmp;
+					GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
+					int BMP_W = (int)bmp.bmWidth;
+					int BMP_H = (int)bmp.bmHeight;
+					BitBlt(getHDCMaster()->hDC, mousepoint.x, mousepoint.y, BMP_W, BMP_H, hCompatDC, 0, 0, SRCCOPY);
+					DeleteDC(hCompatDC);
+					//EndPaint(hWnd, &ps);
+				}
+			}
+		}
+
 	}
 
 
@@ -774,7 +943,8 @@ namespace OrgWinGUI{
 		tmpRect.top=    pos.y+1;
 		tmpRect.right=  pos.x+size.x-1;
 		tmpRect.bottom= pos.y+size.y-1;
-		InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+		//InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+		InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
 		//draw();
 	}
