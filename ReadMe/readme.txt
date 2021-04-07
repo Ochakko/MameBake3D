@@ -264,6 +264,24 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/07_1
+	ゲームパッド対応の続き
+		Rスティック左右でメインウインドウのメニューバー選択
+			スティック左右でドロップダウンを出して、Xボタンでキャンセルしてを繰り返して左右へと進む
+			ドロップダウンが出たらLスティックでマウス位置移動し〇ボタンで決定
+
+		つまり
+		メインメニューバードロップダウン：Rスティック
+		ドロップダウンキャンセル：Xボタン
+		マウスカーソル移動：Lスティック
+		メニュー選択決定：〇ボタン
+
+	DropDown main menu : R stick.
+	Cancel DropDown : X button.
+	Move Mouse Cursor : L stick.
+	Enter button : 〇 button.
+
+
 2021/04/05_3
 	動画【MameBake3D】モーションツールをゲームパッドで動かしてみた【DualSence】
 　	https://youtu.be/AdJPZ3Uv6-c

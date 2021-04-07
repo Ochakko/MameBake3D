@@ -300,7 +300,11 @@ static void DSCrossButtonSelectRetargetCtrls();
 static void DSCrossButtonSelectEulLimitCtrls();
 static void DSR1ButtonSelectCurrentBone();
 static void DSAxisLMouseMove();
+//static void DSAxisLSelectingPopupMenu();
+static void DSAxisRMainMenuBar();
 static void DSAimBarOK();
+static void DSOButtonSelectedPopupMenu();
+static void DSXButtonCancel();
 static void DSL3R3ButtonMouseHere();
 
 
@@ -333,7 +337,9 @@ static POINT s_restorecursorpos;
 static int s_currentctrlid = -1;
 static HWND s_currentctrlhwnd = 0;
 static int s_wmlbuttonup = 0;
-
+#define SUBMENUNUM	10
+static int s_currentsubmenuid = 0;
+static int s_currentsubmenuitemid = 0;
 
 static int s_curdsutguikind = 0;
 static int s_curdsutguino = 0;
@@ -547,6 +553,8 @@ static HMENU	s_remenu = 0;
 static HMENU	s_rgdmenu = 0;
 static HMENU	s_impmenu = 0;
 static int s_filterindex = 1;
+static HMENU	s_cursubmenu = 0;
+
 
 //static int s_mainwidth = 600;
 //static int s_mainheight = 620;
@@ -1556,6 +1564,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
+	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
 
 	OpenDbgFile();
 	_CrtSetBreakAlloc(303);
@@ -1779,6 +1789,7 @@ void InitApp()
 	g_mousehereimage = 0;
 	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
+	s_cursubmenu = 0;
 
 	g_dsmousewait = 0;
 	g_mouseherebmp = 0;
@@ -1839,40 +1850,6 @@ void InitApp()
 		s_curaimbarno = -1;
 	}
 
-
-	s_curdsutguikind = 0;
-	s_curdsutguino = 0;
-	s_dsutgui0.clear();
-	s_dsutgui1.clear();
-	s_dsutgui2.clear();
-	s_dsutgui3.clear();
-	s_dsutguiid0.clear();
-	s_dsutguiid1.clear();
-	s_dsutguiid2.clear();
-	s_dsutguiid3.clear();
-
-	s_curdstoolctrlno = 0;
-	s_dstoolctrls.clear();
-
-	s_curdsplayerbtnno = 0;
-
-	s_curdsrigidctrlno = 0;
-	s_dsrigidctrls.clear();
-
-	s_curdsimpulsectrlno = 0;
-	s_dsimpulsectrls.clear();
-
-	s_curdsgpctrlno = 0;
-	s_dsgpctrls.clear();
-
-	s_curdsdampctrlno = 0;
-	s_dsdampctrls.clear();
-
-	s_curdsretargetctrlno = 0;
-	s_dsretargetctrls.clear();;
-
-	s_curdseullimitctrlno = 0;
-	s_dseullimitctrls.clear();
 
 
 	CRigidElem::InitRigidElems();
@@ -4192,7 +4169,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				ActivatePanel(1);
 				//return 0;
 				break;
-			case 55544:
+			case 29800:
 				ActivatePanel( 0 );
 				RegistKey();
 				ActivatePanel( 1 );
@@ -17688,6 +17665,19 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	//case WM_TIMER:
 	//	OnTimerFunc(wParam);
 	//	break;
+
+	//case WM_LBUTTONDOWN:
+	//case WM_RBUTTONDOWN:
+	//	SetCapture(s_mainhwnd);
+	//	break;
+	//case WM_LBUTTONUP:
+	//case WM_RBUTTONUP:
+	//	ReleaseCapture();
+	//	break;
+	//case WM_MOUSEMOVE:
+	//	OnMouseMoveFunc();
+	//	break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		//return 0;
@@ -17750,7 +17740,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				ActivatePanel(1);
 				//return 0;
 				break;
-			case 55544:
+			case 29800:
 				ActivatePanel(0);
 				RegistKey();
 				ActivatePanel(1);
@@ -17974,8 +17964,6 @@ HWND CreateMainWindow()
 	s_rcmainwnd.bottom = 950;
 
 	s_mainhwnd = window;
-
-
 
 	HWND desktopwnd;
 	desktopwnd = ::GetDesktopWindow();
@@ -19084,6 +19072,43 @@ void InitDSValues()
 	s_restorecursorpos.x = 0;
 	s_restorecursorpos.y = 0;
 
+	s_curdsutguikind = 0;
+	s_curdsutguino = 0;
+	s_dsutgui0.clear();
+	s_dsutgui1.clear();
+	s_dsutgui2.clear();
+	s_dsutgui3.clear();
+	s_dsutguiid0.clear();
+	s_dsutguiid1.clear();
+	s_dsutguiid2.clear();
+	s_dsutguiid3.clear();
+
+	s_curdstoolctrlno = 0;
+	s_dstoolctrls.clear();
+
+	s_curdsplayerbtnno = 0;
+
+	s_curdsrigidctrlno = 0;
+	s_dsrigidctrls.clear();
+
+	s_curdsimpulsectrlno = 0;
+	s_dsimpulsectrls.clear();
+
+	s_curdsgpctrlno = 0;
+	s_dsgpctrls.clear();
+
+	s_curdsdampctrlno = 0;
+	s_dsdampctrls.clear();
+
+	s_curdsretargetctrlno = 0;
+	s_dsretargetctrls.clear();;
+
+	s_curdseullimitctrlno = 0;
+	s_dseullimitctrls.clear();
+
+	s_currentsubmenuid = 0;
+	s_currentsubmenuitemid = 0;
+
 	ZeroMemory(s_dsbuttondown, sizeof(int) * MB3D_DSBUTTONNUM);
 	ZeroMemory(s_bef_dsbuttondown, sizeof(int) * MB3D_DSBUTTONNUM);
 	ZeroMemory(s_dsbuttonup, sizeof(int) * MB3D_DSBUTTONNUM);
@@ -19175,11 +19200,24 @@ void OnDSUpdate()
 	//L3, R3ボタンでマウス位置アピール
 	DSL3R3ButtonMouseHere();
 
-	//OK button
-	DSAimBarOK();
+
+	if (g_undertrackingRMenu == 0) {
+		//OK button popupmenuを出していないとき
+		DSAimBarOK();
+	}
+	else if (g_undertrackingRMenu == 1) {
+		//OK button popupmenuを出しているとき
+		DSOButtonSelectedPopupMenu();
+	}
+
+	//Cancel button : メニューのドロップダウンをキャンセルする　Cancel dropdown menu
+	DSXButtonCancel();
 
 	//Axis L Mouse Move
 	DSAxisLMouseMove();
+
+	//Axis R MenuBar of MainWindow
+	DSAxisRMainMenuBar();
 
 
 	ChangeMouseReleaseCapture();//処理が終わってからキャプチャーを外す
@@ -21948,6 +21986,438 @@ void DSCrossButtonSelectPlayerBtns()
 }
 
 
+void DSAxisRMainMenuBar()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+
+
+	
+
+
+
+	POINT cursorpos;
+	::GetCursorPos(&cursorpos);
+
+	int upbutton;
+	int downbutton;
+	int leftbutton;
+	int rightbutton;
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+	bool accelaxis1 = 0;
+	bool accelaxis2 = 0;
+	bool accelflag = false;
+
+	upbutton = s_dsaxisMOverSrh[1];
+	downbutton = s_dsaxisOverSrh[1];
+	leftbutton = s_dsaxisMOverSrh[0];
+	rightbutton = s_dsaxisOverSrh[0];
+
+	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+	accelflag = accelaxis1 || accelaxis2;
+
+	//if (s_undertrackingRMenu == 0) {
+	bool changeflag = false;
+
+	int delta = 1;
+	//if (accelflag) {
+	//	delta = 4;
+	//}
+	//else {
+	//	delta = 2;
+	//}
+
+
+
+	int nextsubmenuid;
+
+	nextsubmenuid = s_currentsubmenuid;
+
+	//if (upbutton >= 1) {
+	//	s_currentsubmenuid -= delta;
+	//	changeflag = true;
+	//}
+	//if (downbutton >= 1) {
+	//	s_currentsubmenuid += delta;
+	//	changeflag = true;
+	//}
+	if (leftbutton >= 1) {
+		nextsubmenuid -= delta;
+		changeflag = true;
+	}
+	if (rightbutton >= 1) {
+		nextsubmenuid += delta;
+		changeflag = true;
+	}
+
+	if (nextsubmenuid >= SUBMENUNUM) {
+		nextsubmenuid = 0;//ring
+	}
+	if (nextsubmenuid < 0) {
+		nextsubmenuid = (SUBMENUNUM - 1);//ring
+	}
+
+	if (changeflag == true) {
+
+		if (g_undertrackingRMenu == 1) {
+			//多重トラックポップアップ禁止（多重ポップアップするとプログラムからマウス移動できなくなる）
+			return;
+		}
+
+		s_currentsubmenuid = nextsubmenuid;
+		s_currentsubmenuitemid = 0;
+
+		HMENU mainmenu;
+		//HMENU cursubmenu;
+		mainmenu = GetMenu(s_mainhwnd);
+		s_cursubmenu = GetSubMenu(mainmenu, s_currentsubmenuid);
+		if (s_cursubmenu) {
+			int curmenuitemid;
+			curmenuitemid = ::GetMenuItemID(s_cursubmenu, 0);
+			if (curmenuitemid >= 0) {
+				
+				//::SendMessage(s_mainhwnd, WM_NOTIFY, 0, (LPARAM)&nmtoolbara);
+				////::SendMessage(s_mainhwnd, WM_COMMAND, curmenuitemid, 0);//選択決定時のコマンド
+
+				RECT rc;
+				TPMPARAMS tpm;
+				GetMenuItemRect(s_mainhwnd, mainmenu, s_currentsubmenuid, &rc);
+				tpm.cbSize = sizeof(TPMPARAMS);//
+				tpm.rcExclude = rc;//
+
+				POINT mousepoint;
+				mousepoint.x = rc.left + 30;
+				mousepoint.y = rc.bottom + 10;
+				::SetCursorPos(mousepoint.x, mousepoint.y);
+
+				//HMENU hMenuLoaded = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU1));//
+				//HMENU hPopupMenu = GetSubMenu(s_mainmenu, s_currentsubmenuid);//
+				InterlockedExchange(&g_undertrackingRMenu, 1);
+
+				//#################
+				//選択決定成功例その２
+				//#################
+				//第2項目（インデックス値 = 1, ID = 0x2711）を選択したところ、
+				//wParam = 0x00012711
+				//のように、上位2バイトにインデックス値が、下位2バイトにIDが入ります。
+				//WPARAM wparam;
+				//wparam = (s_currentsubmenuid << 16) | curmenuitemid;
+				//LPARAM lparam;
+				//lparam = (LPARAM)mainmenu;
+				//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
+
+
+
+				//wparam = ((MF_POPUP | MF_MOUSESELECT) << 16) | (WORD)s_currentsubmenuid;//s_currentsubmenuid, curmenuitemid
+				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)mainmenu);//GetMenu(s_mainhwnd), cursubmenu
+
+
+
+
+				//TrackPopupMenuEx(cursubmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
+				//	rc.left, rc.bottom, s_mainhwnd, &tpm);//
+				//SetCapture(s_3dwnd);
+
+				SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
+
+				int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, rc.left, rc.bottom, 0, s_mainhwnd, NULL);
+
+				//ReleaseCapture();
+
+				InterlockedExchange(&g_undertrackingRMenu, 0);
+
+				//int retmenuid = ::TrackPopupMenu(hPopupMenu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
+				//DestroyMenu(hMenuLoaded);//
+			}
+		}
+
+		//LPARAM lparam;
+		//lparam = (cursorpos.y << 16) | cursorpos.x;
+
+		//HWND desktopwnd;
+		//desktopwnd = ::GetDesktopWindow();
+		//if (desktopwnd) {
+		//	RECT desktoprect;
+		//	::GetClientRect(desktopwnd, &desktoprect);
+		//	::ClipCursor(&desktoprect);
+
+
+		//	::SetCursorPos(cursorpos.x, cursorpos.y);
+		//	//::SetCursorPos(cursorpos.x, cursorpos.y);
+
+		//	if (s_3dwnd) {
+		//		POINT client3dpoint;
+		//		client3dpoint = cursorpos;
+		//		::ScreenToClient(s_3dwnd, &client3dpoint);
+		//		LPARAM threelparam;
+		//		threelparam = (client3dpoint.y << 16) | client3dpoint.x;
+		//		::SendMessage(s_3dwnd, WM_MOUSEMOVE, 0, threelparam);
+		//	}
+		//	if (s_mainhwnd) {
+		//		POINT clientpoint;
+		//		clientpoint = cursorpos;
+		//		::ScreenToClient(s_mainhwnd, &clientpoint);
+		//		LPARAM mainlparam;
+		//		mainlparam = (clientpoint.y << 16) | clientpoint.x;
+		//		::SendMessage(s_mainhwnd, WM_MOUSEMOVE, 0, mainlparam);
+		//	}
+		//	HWND dlghwnd;
+		//	dlghwnd = g_SampleUI.GetHWnd();
+		//	if (dlghwnd) {
+		//		POINT clientpoint;
+		//		clientpoint = cursorpos;
+		//		::ScreenToClient(dlghwnd, &clientpoint);
+		//		LPARAM dlglparam;
+		//		dlglparam = (clientpoint.y << 16) | clientpoint.x;
+		//		::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
+		//	}
+		//
+		//	//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
+		//}
+	}
+
+}
+
+void DSAxisLSelectingPopupMenu()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_cursubmenu) {
+		return;
+	}
+
+	int upbutton;
+	int downbutton;
+	int leftbutton;
+	int rightbutton;
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+	bool accelaxis1 = 0;
+	bool accelaxis2 = 0;
+	bool accelflag = false;
+
+	upbutton = s_dsaxisMOverSrh[3];
+	downbutton = s_dsaxisOverSrh[3];
+	leftbutton = s_dsaxisMOverSrh[2];
+	rightbutton = s_dsaxisOverSrh[2];
+
+	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+	accelflag = accelaxis1 || accelaxis2;
+
+	//if (s_undertrackingRMenu == 0) {
+	bool changeflag = false;
+	int currentsubmenuitemid;
+	currentsubmenuitemid = s_currentsubmenuitemid;
+
+	int delta = 0;
+
+	if (upbutton >= 1) {
+		currentsubmenuitemid -= 1;
+		changeflag = true;
+	}
+	if (downbutton >= 1) {
+		currentsubmenuitemid += 1;
+		changeflag = true;
+	}
+
+
+	int submenuitemnum;
+	submenuitemnum = GetMenuItemCount(s_cursubmenu);
+
+
+	if (currentsubmenuitemid >= submenuitemnum) {
+		currentsubmenuitemid = 0;//ring
+	}
+	if (currentsubmenuitemid < 0) {
+		currentsubmenuitemid = submenuitemnum - 1;//ring
+	}
+
+/*
+typedef struct tagMENUITEMINFO {
+	UINT    cbSize;
+	UINT    fMask;
+	UINT    fType;
+	UINT    fState;
+	UINT    wID;
+	HMENU   hSubMenu;
+	HBITMAP hbmpChecked;
+	HBITMAP hbmpUnchecked;
+	DWORD   dwItemData;
+	LPTSTR  dwTypeData;
+	UINT    cch;
+} MENUITEMINFO, FAR* LPMENUITEMINFO;
+cbSize は、この構造体のサイズをバイト単位
+
+
+fState は、メニュー項目の状態を表す定数を組み合わせて指定します
+定数は、次のものを指定できます
+定数	解説
+MFS_CHECKED	項目をチェックする
+MFS_DEFAULT	項目はデフォルトである
+MFS_DISABLED	項目を無効状態にする
+MFS_ENABLED	項目を有効状態にする（デフォルト）
+MFS_GRAYED	項目をグレー状態にする
+MFS_HILITE	項目をハイライト状態にする//#################
+MFS_UNCHECKED	項目のチェックを外す
+MFS_UNHILITE	項目のハイライトを削除する
+
+fByPosition が TRUE ならば uItem はインデックスだと判断し
+FALSE ならば、uItem がメニューアイテムの ID であると判断されます
+
+BOOL SetMenuItemInfo(
+	HMENU hMenu , UINT uItem ,
+	BOOL fByPosition , LPMENUITEMINFO lpmii
+);
+
+BOOL GetMenuItemInfo(
+	HMENU hMenu , UINT uItem ,
+	BOOL fByPosition , LPMENUITEMINFO lpmii
+);
+
+UINT GetMenuState(
+  HMENU hMenu,
+  UINT  uId,
+  UINT  uFlags
+);
+*/
+	
+	//if (changeflag == true) {
+	//	if (g_undertrackingRMenu == 1) {
+	//		MENUITEMINFO menuiteminfo;
+	//		ZeroMemory(&menuiteminfo, sizeof(MENUITEMINFO));
+	//		menuiteminfo.cbSize = sizeof(MENUITEMINFO);
+
+
+	//		//typedef struct tagMENUITEMINFO {
+	//		//	UINT    cbSize;
+	//		//	UINT    fMask;
+	//		//	UINT    fType;
+	//		//	UINT    fState;
+	//		//	UINT    wID;
+	//		//	HMENU   hSubMenu;
+	//		//	HBITMAP hbmpChecked;
+	//		//	HBITMAP hbmpUnchecked;
+	//		//	DWORD   dwItemData;
+	//		//	LPTSTR  dwTypeData;
+	//		//	UINT    cch;
+	//		//} MENUITEMINFO, FAR* LPMENUITEMINFO;
+
+
+	//			/*
+	//			IDR_MENU1 MENU
+	//			BEGIN
+	//				POPUP "File"
+	//				BEGIN
+	//					MENUITEM "Open",                        ID_FILE_OPEN40001
+	//					POPUP "Save"
+	//					BEGIN
+	//						MENUITEM "Project(*.cha)",              ID_SAVEPROJ_40035
+	//						MENUITEM "RigidParams(*ref)",           ID_RESAVE_40028
+	//						MENUITEM "ImpulseParams(*.imp)",        ID_IMPSAVE_40030
+	//						MENUITEM "GroundParams(*.gco)",         ID_SAVEGCOLI_40033
+	//					END
+	//					MENUITEM "bvh2FBX",                     ID_FILE_BVH2FBX
+	//					MENUITEM "Export bnt",                  ID_FILE_EXPORTBNT
+	//				END
+	//				POPUP "表示(disp)"
+	//				BEGIN
+	//					MENUITEM "モーションウインドウ(motion)",          ID_DISPMW40002
+	//					MENUITEM "ツールウインドウ(tool)",              4007
+	//					MENUITEM "モデルパネル(model)",               40026
+	//					MENUITEM "オブジェクトパネル(object)",           40012
+	//					MENUITEM "地面オブジェクト(ground)",            ID_DISPGROUND
+	//				END
+	//				POPUP "モーション(motion)"
+	//				BEGIN
+	//					MENUITEM "新規空モーション(new empty)",         40004
+	//					MENUITEM "編集中モーションの削除(del under editting)", 40006
+	//					MENUITEM SEPARATOR
+	//					POPUP "モーションの選択(select)"
+	//					BEGIN
+	//						MENUITEM "PlacingFolder",               ID_40062
+	//					END
+	//				END
+	//				POPUP "モデル(model)"
+	//				BEGIN
+	//					MENUITEM "編集中のモデルを削除(del under editting)", ID_DELMODEL
+	//					MENUITEM "全モデル削除(del all)",             ID_DELALLMODEL
+	//					MENUITEM SEPARATOR
+	//					POPUP "モデルの選択(select)"
+	//					BEGIN
+	//						MENUITEM "PlacingFolder",               0
+	//					END
+	//				END
+	//				POPUP "編集・変換(edit, conv)"
+	//				BEGIN
+	//					MENUITEM "ボーン軸をXに再計算(RecalcAxisX)",     ID_40047
+	//					MENUITEM "モーションのリターゲット(retarget)",      ID_40048
+	//					MENUITEM "オイラー角　角度制限(limit euler)",     ID_40049
+	//					MENUITEM "ボーン座標軸回転(rot axis)",          ID_40050
+	//				END
+	//				POPUP "剛体設定切り替え(select rigid)"
+	//				BEGIN
+	//					MENUITEM "PlacingFolder",               0
+	//				END
+	//				POPUP "ragdoll剛体選択(select ragdoll)"
+	//				BEGIN
+	//					MENUITEM "PlacingFolder",               0
+	//				END
+	//				POPUP "ragdollモーフ選択(ragdoll morph)"
+	//				BEGIN
+	//					MENUITEM "PlacingFolder",               0
+	//				END
+	//				POPUP "Imp選択(impulse)"
+	//				BEGIN
+	//					MENUITEM "PlacingFolder",               64500
+	//				END
+	//				POPUP "HELP"
+	//				BEGIN
+	//					MENUITEM "Regist",                      29800
+	//				END
+	//			END
+
+	//			IDR_RMENU MENU
+	//			BEGIN
+	//				POPUP "RMenu"
+	//				BEGIN
+	//					MENUITEM "menutitle",                   ID_RMENU_0
+	//				END
+	//			END
+
+	//			IDR_MENU3 MENU
+	//			BEGIN
+	//				POPUP "RMenu2"
+	//				BEGIN
+	//					MENUITEM "全ボーン(all bones)",             ID_RMENU2_40051
+	//					MENUITEM "選択ボーン１つ(one bone)",           ID_RMENU2_40052
+	//					MENUITEM "選択ボーンと子供ボーン(selected and children)", ID_RMENU2_40053
+	//				END
+	//			END
+
+	//			IDR_MENU4 MENU
+	//			BEGIN
+	//				POPUP "RMenu3"
+	//				BEGIN
+	//					MENUITEM "Rigの設定(set)",                 ID_RMENU3_RIG40055
+	//					MENUITEM "Rigの実行(run)",                 ID_RMENU3_RIG40056
+	//				END
+	//			END
+
+	//			*/
+
+	//		}
+	//	}
+	//}
+
+}
+
 void DSAxisLMouseMove()
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
@@ -21986,31 +22456,33 @@ void DSAxisLMouseMove()
 	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
 	accelflag = accelaxis1 || accelaxis2;
 
-	//if (s_undertrackingRMenu == 0) {
+	//if (g_undertrackingRMenu == 0) {
 		bool changeflag = false;
 
-		int delta = 2;
+		int deltascale = 1;
+		int deltax = 0;
+		int deltay = 0;
 		if (accelflag) {
-			delta = 4;
+			deltascale = 4;
 		}
 		else {
-			delta = 2;
+			deltascale = 2;
 		}
 
 		if (upbutton >= 1) {
-			cursorpos.y -= delta;
+			deltay = -deltascale;
 			changeflag = true;
 		}
 		if (downbutton >= 1) {
-			cursorpos.y += delta;
+			deltay = deltascale;
 			changeflag = true;
 		}
 		if (leftbutton >= 1) {
-			cursorpos.x -= delta;
+			deltax = -deltascale;
 			changeflag = true;
 		}
 		if (rightbutton >= 1) {
-			cursorpos.x += delta;
+			deltax = deltascale;
 			changeflag = true;
 		}
 
@@ -22024,14 +22496,171 @@ void DSAxisLMouseMove()
 			desktopwnd = ::GetDesktopWindow();
 			if (desktopwnd) {
 				RECT desktoprect;
-				::GetClientRect(desktopwnd, &desktoprect);
+				//::GetClientRect(desktopwnd, &desktoprect);
+				::GetWindowRect(desktopwnd, &desktoprect);
 				::ClipCursor(&desktoprect);
 
+				/*
+				IDR_MENU1 MENU
+				BEGIN
+					POPUP "File"
+					BEGIN
+						MENUITEM "Open",                        ID_FILE_OPEN40001
+						POPUP "Save"
+						BEGIN
+							MENUITEM "Project(*.cha)",              ID_SAVEPROJ_40035
+							MENUITEM "RigidParams(*ref)",           ID_RESAVE_40028
+							MENUITEM "ImpulseParams(*.imp)",        ID_IMPSAVE_40030
+							MENUITEM "GroundParams(*.gco)",         ID_SAVEGCOLI_40033
+						END
+						MENUITEM "bvh2FBX",                     ID_FILE_BVH2FBX
+						MENUITEM "Export bnt",                  ID_FILE_EXPORTBNT
+					END
+					POPUP "表示(disp)"
+					BEGIN
+						MENUITEM "モーションウインドウ(motion)",          ID_DISPMW40002
+						MENUITEM "ツールウインドウ(tool)",              4007
+						MENUITEM "モデルパネル(model)",               40026
+						MENUITEM "オブジェクトパネル(object)",           40012
+						MENUITEM "地面オブジェクト(ground)",            ID_DISPGROUND
+					END
+					POPUP "モーション(motion)"
+					BEGIN
+						MENUITEM "新規空モーション(new empty)",         40004
+						MENUITEM "編集中モーションの削除(del under editting)", 40006
+						MENUITEM SEPARATOR
+						POPUP "モーションの選択(select)"
+						BEGIN
+							MENUITEM "PlacingFolder",               ID_40062
+						END
+					END
+					POPUP "モデル(model)"
+					BEGIN
+						MENUITEM "編集中のモデルを削除(del under editting)", ID_DELMODEL
+						MENUITEM "全モデル削除(del all)",             ID_DELALLMODEL
+						MENUITEM SEPARATOR
+						POPUP "モデルの選択(select)"
+						BEGIN
+							MENUITEM "PlacingFolder",               0
+						END
+					END
+					POPUP "編集・変換(edit, conv)"
+					BEGIN
+						MENUITEM "ボーン軸をXに再計算(RecalcAxisX)",     ID_40047
+						MENUITEM "モーションのリターゲット(retarget)",      ID_40048
+						MENUITEM "オイラー角　角度制限(limit euler)",     ID_40049
+						MENUITEM "ボーン座標軸回転(rot axis)",          ID_40050
+					END
+					POPUP "剛体設定切り替え(select rigid)"
+					BEGIN
+						MENUITEM "PlacingFolder",               0
+					END
+					POPUP "ragdoll剛体選択(select ragdoll)"
+					BEGIN
+						MENUITEM "PlacingFolder",               0
+					END
+					POPUP "ragdollモーフ選択(ragdoll morph)"
+					BEGIN
+						MENUITEM "PlacingFolder",               0
+					END
+					POPUP "Imp選択(impulse)"
+					BEGIN
+						MENUITEM "PlacingFolder",               64500
+					END
+					POPUP "HELP"
+					BEGIN
+						MENUITEM "Regist",                      29800
+					END
+				END
 
-				::SetCursorPos(cursorpos.x, cursorpos.y);
+				IDR_RMENU MENU
+				BEGIN
+					POPUP "RMenu"
+					BEGIN
+						MENUITEM "menutitle",                   ID_RMENU_0
+					END
+				END
+
+				IDR_MENU3 MENU
+				BEGIN
+					POPUP "RMenu2"
+					BEGIN
+						MENUITEM "全ボーン(all bones)",             ID_RMENU2_40051
+						MENUITEM "選択ボーン１つ(one bone)",           ID_RMENU2_40052
+						MENUITEM "選択ボーンと子供ボーン(selected and children)", ID_RMENU2_40053
+					END
+				END
+
+				IDR_MENU4 MENU
+				BEGIN
+					POPUP "RMenu3"
+					BEGIN
+						MENUITEM "Rigの設定(set)",                 ID_RMENU3_RIG40055
+						MENUITEM "Rigの実行(run)",                 ID_RMENU3_RIG40056
+					END
+				END
+
+				*/
+
+
+				//WM_MENUSELECT
+				//MF_MOUSESELECT(上位)
+				//下位はメニューID
+				//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 40026;
+				//WPARAM wparam = (MF_SYSMENU << 16) | 40026;
+				//WPARAM wparam = (MF_SYSMENU << 16) | 2;
+				//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 3;
+
+				//HMENU motmenu = GetSubMenu(s_mainmenu, 2);
+				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)motmenu);
+				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)s_mainmenu);
+				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)40026);
+
+				
+				
 				//::SetCursorPos(cursorpos.x, cursorpos.y);
+				
+				::SetCursorPos(cursorpos.x + deltax, cursorpos.y + deltay);				
 
-				if (s_3dwnd) {
+
+
+				//::SendMessage(s_mainhwnd, WM_KEYDOWN, VK_DOWN, 0);
+
+
+				//const double ScaleX = 0xffff / GetSystemMetrics(SM_CXSCREEN);
+				//const double ScaleY = 0xffff / GetSystemMetrics(SM_CYSCREEN);
+				//const double ScaleX = (double)0xffff / (double)GetSystemMetrics(SM_CXSCREEN);
+				//const double ScaleY = (double)0xffff / (double)GetSystemMetrics(SM_CYSCREEN);
+				//const double ScaleX = (double)0xffff / (double)(desktoprect.right - desktoprect.left);
+				//const double ScaleY = (double)0xffff / (double)(desktoprect.bottom - desktoprect.top);
+
+				////SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS);
+				//INPUT input;
+				//ZeroMemory(&input, sizeof(INPUT));
+				//input.type = INPUT_MOUSE;
+				////input.mi.mouseData = 0;
+				////input.mi.time = 0;
+				//input.mi.dwExtraInfo = GetMessageExtraInfo();
+				////input.mi.dx = (LONG)((cursorpos.x + deltax) * ScaleX);
+				////input.mi.dy = (LONG)((cursorpos.y + deltay) * ScaleY);
+				////input.mi.dx = (LONG)(deltax * ScaleX);
+				////input.mi.dy = (LONG)(deltay * ScaleY);
+				//input.mi.dx = (LONG)(deltax);
+				//input.mi.dy = (LONG)(deltay);
+				////input.mi.dx = (LONG)((double)cursorpos.x * 65536.0 / (double)GetSystemMetrics(SM_CXSCREEN));
+				////input.mi.dy = (LONG)((double)cursorpos.y * 65536.0 / (double)GetSystemMetrics(SM_CYSCREEN));
+				////input.mi.dx = (LONG)((double)cursorpos.x * 65536.0 / (double)(desktoprect.right - desktoprect.left));
+				////input.mi.dy = (LONG)((double)cursorpos.y * 65536.0 / (double)(desktoprect.bottom - desktoprect.top));
+				////input.mi.dx = (LONG)cursorpos.x;
+				////input.mi.dy = (LONG)cursorpos.y;
+				//input.mi.dwFlags = MOUSEEVENTF_MOVE;
+				////input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
+				////input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
+				//SendInput(1, &input, sizeof(INPUT));
+
+
+
+				/*if (s_3dwnd) {
 					POINT client3dpoint;
 					client3dpoint = cursorpos;
 					::ScreenToClient(s_3dwnd, &client3dpoint);
@@ -22056,7 +22685,8 @@ void DSAxisLMouseMove()
 					LPARAM dlglparam;
 					dlglparam = (clientpoint.y << 16) | clientpoint.x;
 					::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
-				}
+				}*/
+
 
 				//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
 			}
@@ -22278,6 +22908,426 @@ void OnDSMouseHereApeal()
 	//}
 }
 
+void DSXButtonCancel()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_mainhwnd) {
+		return;
+	}
+	if (!s_3dwnd) {
+		return;
+	}
+
+	int cancelbuttonid = 1;
+	int cancelbuttondown;
+	int cancelbuttonup;
+
+	cancelbuttondown = s_dsbuttondown[cancelbuttonid];
+	cancelbuttonup = s_dsbuttonup[cancelbuttonid];
+
+	if (cancelbuttondown >= 1) {
+		//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
+		PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+		PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+	}
+
+}
+
+
+void GetHiLiteSubmenu(HMENU* pcommandsubmenu, int* pcommandsubmenunum, int* pcommandsubmenuno)
+{
+	if (!pcommandsubmenu || !pcommandsubmenunum || !pcommandsubmenuno) {
+		return;
+	}
+	*pcommandsubmenu = 0;
+	*pcommandsubmenunum = 0;
+	*pcommandsubmenuno = 0;
+
+
+
+	int selectedsubmenuitemno = -1;
+	int submenuitemnum;
+	submenuitemnum = GetMenuItemCount(s_cursubmenu);
+	int submenuitemcnt;
+	for (submenuitemcnt = 0; submenuitemcnt < submenuitemnum; submenuitemcnt++) {
+		UINT submenuitemstate;
+		submenuitemstate = GetMenuState(s_cursubmenu, submenuitemcnt, MF_BYPOSITION);
+		if (submenuitemstate == MF_HILITE) {
+			selectedsubmenuitemno = submenuitemcnt;
+			break;
+		}
+	}
+
+	if (selectedsubmenuitemno == -1) {
+		HMENU submenu2 = 0;
+
+		if (s_currentsubmenuid == 0) {
+			submenu2 = GetSubMenu(s_cursubmenu, 1);
+		}
+		else if (s_currentsubmenuid == 2) {
+			submenu2 = GetSubMenu(s_cursubmenu, 3);
+		}
+		else if (s_currentsubmenuid == 3) {
+			submenu2 = GetSubMenu(s_cursubmenu, 3);
+		}
+		else if (s_currentsubmenuid == 4) {
+			submenu2 = GetSubMenu(s_cursubmenu, 3);
+		}
+		else if ((s_currentsubmenuid >= 5) && (s_currentsubmenuid <= 8)) {
+			submenu2 = GetSubMenu(s_cursubmenu, 0);
+		}
+
+		if (submenu2) {
+			{
+				int selectedsubmenuitemno = -1;
+				int submenuitemnum;
+				submenuitemnum = GetMenuItemCount(submenu2);
+				int submenuitemcnt;
+				for (submenuitemcnt = 0; submenuitemcnt < submenuitemnum; submenuitemcnt++) {
+					UINT submenuitemstate;
+					submenuitemstate = GetMenuState(submenu2, submenuitemcnt, MF_BYPOSITION);
+					if (submenuitemstate == MF_HILITE) {
+						selectedsubmenuitemno = submenuitemcnt;
+						break;
+					}
+				}
+				if (selectedsubmenuitemno >= 0) {
+					*pcommandsubmenu = submenu2;
+					*pcommandsubmenunum = submenuitemnum;
+					*pcommandsubmenuno = selectedsubmenuitemno;
+				}
+			}
+		}
+	}
+	else {
+		*pcommandsubmenu = s_cursubmenu;
+		*pcommandsubmenunum = submenuitemnum;
+		*pcommandsubmenuno = selectedsubmenuitemno;
+
+	}
+}
+
+void DSOButtonSelectedPopupMenu()
+{
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	if (!s_cursubmenu) {
+		return;
+	}
+
+	int okbuttonid = 2;
+	int okbuttondown;
+	int okbuttonup;
+
+	okbuttondown = s_dsbuttondown[okbuttonid];
+	okbuttonup = s_dsbuttonup[okbuttonid];
+
+	if (okbuttonup >= 1) {
+		POINT cursorpos;
+		::GetCursorPos(&cursorpos);
+		LPARAM lparam;
+		lparam = (cursorpos.y << 16) | cursorpos.x;
+
+		if (g_undertrackingRMenu == 1) {
+			//int selectedsubmenuitemno = -1;
+			//int submenuitemnum;
+			//submenuitemnum = GetMenuItemCount(s_cursubmenu);
+			//int submenuitemcnt;
+			//for (submenuitemcnt = 0; submenuitemcnt < submenuitemnum; submenuitemcnt++) {
+			//	UINT submenuitemstate;
+			//	submenuitemstate = GetMenuState(s_cursubmenu, submenuitemcnt, MF_BYPOSITION);
+			//	if (submenuitemstate == MF_HILITE) {
+			//		selectedsubmenuitemno = submenuitemcnt;
+			//		break;
+			//	}
+			//}
+
+
+//			if (selectedsubmenuitemno >= 0) {
+//				int selectedmenuid = -1;
+//
+//				switch (s_currentsubmenuid) {
+//				case 0:
+//					switch (selectedsubmenuitemno) {
+//					case 0:
+//						selectedmenuid = ID_FILE_OPEN40001;
+//						break;
+//					case 1:
+//						selectedmenuid = -1;//popup
+//						break;
+//					case 2:
+//						selectedmenuid = ID_FILE_BVH2FBX;
+//						break;
+//					case 3:
+//						selectedmenuid = ID_FILE_EXPORTBNT;
+//						break;
+//					default:
+//						selectedmenuid = -1;
+//						break;
+//					}
+//					/*
+//								MENUITEM "Open", ID_FILE_OPEN40001
+//								POPUP "Save"
+//								BEGIN
+//								MENUITEM "Project(*.cha)", ID_SAVEPROJ_40035
+//								MENUITEM "RigidParams(*ref)", ID_RESAVE_40028
+//								MENUITEM "ImpulseParams(*.imp)", ID_IMPSAVE_40030
+//								MENUITEM "GroundParams(*.gco)", ID_SAVEGCOLI_40033
+//								END
+//								MENUITEM "bvh2FBX", ID_FILE_BVH2FBX
+//								MENUITEM "Export bnt", ID_FILE_EXPORTBNT
+//					*/
+//					break;
+//				case 1:
+//					switch (selectedsubmenuitemno) {
+//					case 0:
+//						selectedmenuid = ID_DISPMW40002;
+//						break;
+//					case 1:
+//						selectedmenuid = 4007;
+//						break;
+//					case 2:
+//						selectedmenuid = 40026;
+//						break;
+//					case 3:
+//						selectedmenuid = 40012;
+//						break;
+//					case 4:
+//						selectedmenuid = ID_DISPGROUND;
+//						break;
+//					default:
+//						selectedmenuid = -1;
+//						break;
+//					}
+///*
+//	POPUP "表示(disp)"
+//	BEGIN
+//		MENUITEM "モーションウインドウ(motion)",          ID_DISPMW40002
+//		MENUITEM "ツールウインドウ(tool)",              4007
+//		MENUITEM "モデルパネル(model)",               40026
+//		MENUITEM "オブジェクトパネル(object)",           40012
+//		MENUITEM "地面オブジェクト(ground)",            ID_DISPGROUND
+//	END
+//	
+//	*/
+//					break;
+//				case 2:
+//					switch (selectedsubmenuitemno) {
+//					case 0:
+//						selectedmenuid = 40004;
+//						break;
+//					case 1:
+//						selectedmenuid = 40006;
+//						break;
+//					case 2:
+//						selectedmenuid = -1;//separator
+//						break;
+//					case 3:
+//						selectedmenuid = -1;//popup
+//						break;
+//					default:
+//						selectedmenuid = -1;
+//						break;
+//					}
+///*
+//POPUP "モーション(motion)"
+//	BEGIN
+//		MENUITEM "新規空モーション(new empty)",         40004
+//		MENUITEM "編集中モーションの削除(del under editting)", 40006
+//		MENUITEM SEPARATOR
+//		POPUP "モーションの選択(select)"
+//		BEGIN
+//			MENUITEM "PlacingFolder",               ID_40062
+//		END
+//	END
+//*/
+//					break;
+//				case 3:
+//					switch (selectedsubmenuitemno) {
+//					case 0:
+//						selectedmenuid = ID_DELMODEL;
+//						break;
+//					case 1:
+//						selectedmenuid = ID_DELALLMODEL;
+//						break;
+//					case 2:
+//						selectedmenuid = -1;//separator
+//						break;
+//					case 3:
+//						selectedmenuid = -1;//popup
+//						break;
+//					default:
+//						selectedmenuid = -1;
+//						break;
+//					}
+///*
+//POPUP "モデル(model)"
+//	BEGIN
+//		MENUITEM "編集中のモデルを削除(del under editting)", ID_DELMODEL
+//		MENUITEM "全モデル削除(del all)",             ID_DELALLMODEL
+//		MENUITEM SEPARATOR
+//		POPUP "モデルの選択(select)"
+//		BEGIN
+//			MENUITEM "PlacingFolder",               0
+//		END
+//	END
+//*/
+//					break;
+//				case 4:
+//					switch (selectedsubmenuitemno) {
+//					case 0:
+//						selectedmenuid = ID_40047;
+//						break;
+//					case 1:
+//						selectedmenuid = ID_40048;
+//						break;
+//					case 2:
+//						selectedmenuid = ID_40049;//separator
+//						break;
+//					case 3:
+//						selectedmenuid = ID_40050;//popup
+//						break;
+//					default:
+//						selectedmenuid = -1;
+//						break;
+//					}
+///*
+//POPUP "編集・変換(edit, conv)"
+//	BEGIN
+//		MENUITEM "ボーン軸をXに再計算(RecalcAxisX)",     ID_40047
+//		MENUITEM "モーションのリターゲット(retarget)",      ID_40048
+//		MENUITEM "オイラー角　角度制限(limit euler)",     ID_40049
+//		MENUITEM "ボーン座標軸回転(rot axis)",          ID_40050
+//	END
+//*/
+//					break;
+//				case 5:
+//					selectedmenuid = -1;//popup
+///*
+//	POPUP "剛体設定切り替え(select rigid)"
+//	BEGIN
+//		MENUITEM "PlacingFolder",               0
+//	END
+//*/
+//					break;
+//				case 6:
+//					selectedmenuid = -1;//popup
+///*
+//	POPUP "ragdoll剛体選択(select ragdoll)"
+//	BEGIN
+//		MENUITEM "PlacingFolder",               0
+//	END
+//*/
+//					break;
+//				case 7:
+//					selectedmenuid = -1;//popup
+///*
+//	POPUP "ragdollモーフ選択(ragdoll morph)"
+//	BEGIN
+//		MENUITEM "PlacingFolder",               0
+//	END
+//*/
+//					break;
+//				case 8:
+//					selectedmenuid = -1;//popup
+///*
+//POPUP "Imp選択(impulse)"
+//	BEGIN
+//		MENUITEM "PlacingFolder",               64500
+//	END
+//*/
+//					break;
+//				case 9:
+//					selectedmenuid = 29800;
+//					selectedsubmenuitemno = 0;
+///*
+//	POPUP "HELP"
+//	BEGIN
+//		MENUITEM "Regist",                      29800
+//	END
+//*/
+//					break;
+//				default:
+//					selectedmenuid = -1;
+//					break;
+//				}
+
+			HMENU commandsubmenu = 0;
+			int commandsubmenunum = 0;
+			int	commandsubmenuno = -1;
+			GetHiLiteSubmenu(&commandsubmenu, &commandsubmenunum, &commandsubmenuno);
+			if (commandsubmenu && (commandsubmenunum >= 1) && (commandsubmenuno >= 0)) {
+				//if (commandsubmenunum == 1) {
+					//メニュー項目が１つだけの場合にはポップアップを解除してからWM_COMMANDを呼んでみる
+					//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
+					PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+					PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+				//}
+
+				int commandmenuid;
+				commandmenuid = GetMenuItemID(commandsubmenu, commandsubmenuno);
+				WPARAM wparam;
+				//wparam = (selectedsubmenuitemno << 16) | selectedmenuid;
+				wparam = (commandsubmenuno << 16) | commandmenuid;
+				LPARAM lparam;
+				//lparam = (LPARAM)s_mainmenu;
+				lparam = (LPARAM)commandsubmenu;
+				::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
+
+			}
+		}
+
+				//int selectedsubmenuitemno = -1;
+				//int submenuitemnum;
+				//submenuitemnum = GetMenuItemCount(s_cursubmenu);
+				//int submenuitemcnt;
+				//for (submenuitemcnt = 0; submenuitemcnt < submenuitemnum; submenuitemcnt++) {
+				//	UINT submenuitemstate;
+				//	submenuitemstate = GetMenuState(s_cursubmenu, submenuitemcnt, MF_BYPOSITION);
+				//	if (submenuitemstate == MF_HILITE) {
+				//		selectedsubmenuitemno = submenuitemcnt;
+				//		break;
+				//	}
+				//}
+
+
+				//if (selectedmenuid >= 0) {
+				//	//#################
+				//	//選択決定成功例その２
+				//	//#################
+				//	//第2項目（インデックス値 = 1, ID = 0x2711）を選択したところ、
+				//	//wParam = 0x00012711
+				//	//のように、上位2バイトにインデックス値が、下位2バイトにIDが入ります。
+				//	//WPARAM wparam;
+				//	//wparam = (s_currentsubmenuid << 16) | curmenuitemid;
+				//	//LPARAM lparam;
+				//	//lparam = (LPARAM)mainmenu;
+				//	//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
+
+				//	if ((submenuitemnum == 1) && (selectedsubmenuitemno >= 0) && (s_currentsubmenuid >= 0)) {
+				//		//メニュー項目が１つだけの場合にはポップアップを解除してからWM_COMMANDを呼んでみる
+				//		//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
+				//		PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+				//		PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+				//	}
+				//	
+				//	int commandmenuid;
+				//	commandmenuid = GetMenuItemID(s_cursubmenu, selectedsubmenuitemno);
+				//	WPARAM wparam;
+				//	//wparam = (selectedsubmenuitemno << 16) | selectedmenuid;
+				//	wparam = (selectedsubmenuitemno << 16) | commandmenuid;
+				//	LPARAM lparam;
+				//	//lparam = (LPARAM)s_mainmenu;
+				//	lparam = (LPARAM)s_cursubmenu;
+				//	::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
+				//}
+	}
+}
 
 void DSAimBarOK()
 {
@@ -22372,50 +23422,6 @@ void DSAimBarOK()
 			}
 
 		}
-		else {
-			HWND caphwnd;
-			//caphwnd = ::GetCapture();
-			caphwnd = s_3dwnd;
-			if (caphwnd && IsWindow(caphwnd)) {
-				::SendMessage(caphwnd, WM_KEYDOWN, VK_RETURN, 0);
-			}
-
-			//caphwnd = s_3dwnd;
-			//if (caphwnd && IsWindow(caphwnd)) {
-			//	POINT cappoint;
-			//	cappoint = cursorpos;
-			//	::ScreenToClient(caphwnd, &cappoint);
-			//	LPARAM caplparam;
-			//	caplparam = (cappoint.y << 16) | cappoint.x;
-
-			//	::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
-			//	s_wmlbuttonup = 1;
-			//}
-		}
-
-
-		//::SendMessage(s_3dwnd, WM_LBUTTONDOWN, MK_LBUTTON, lparam);
-		//::SendMessage(s_mainhwnd, WM_LBUTTONDOWN, MK_LBUTTON, lparam);
-		//if (s_sampleuihwnd) {
-		//	//::SendMessage(s_sampleuihwnd, WM_LBUTTONDOWN, MK_LBUTTON, lparam);
-		//	//g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
-		//	g_SampleUI.MsgProc(s_sampleuihwnd, WM_LBUTTONDOWN, MK_LBUTTON, lparam);
-		//}
-		//HWND dlghwnd;
-		//dlghwnd = g_SampleUI.GetHWnd();
-		//if (dlghwnd) {
-		//	POINT dlgpoint;
-		//	dlgpoint = cursorpos;
-		//	::ScreenToClient(dlghwnd, &dlgpoint);
-		//	LPARAM dlglparam;
-		//	dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
-
-		//	::SendMessage(dlghwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam);
-		//}
-
-
-		//!!!!!!!!!!!!!!!     WM_COMMANDを後で試す
-		//! 
 	}
 
 	//g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
@@ -22429,56 +23435,11 @@ void DSAimBarOK()
 
 		if (g_undertrackingRMenu == 0) {
 
-			if (g_undertrackingRMenu == 0) {
-				if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-					if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
+			if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+				if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
 
-						HWND caphwnd;
-						caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
-						if (caphwnd && IsWindow(caphwnd)) {
-							POINT cappoint;
-							cappoint = cursorpos;
-							::ScreenToClient(caphwnd, &cappoint);
-							LPARAM caplparam;
-							caplparam = (cappoint.y << 16) | cappoint.x;
-
-							//::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
-
-							WPARAM wparam;
-							LPARAM lparam;
-							lparam = (LPARAM)caphwnd;
-							if (s_curdseullimitctrlno == 0) {
-								//wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-								//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-								//COMMAND control ID  !!!!!
-								//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
-							}
-							else if(s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)){
-								wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
-								//COMMAND control ID  !!!!!
-								::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
-							}
-							else {
-								//slider
-								//int sliderpos = (int)(((-180.0f + 360.0f * (float)cappoint.x / 200.0f) / 360.0f) * 100.0f);
-								//int sliderpos = (int)(-180.0f + (float)cappoint.x / 250.0f * 360.0f);
-
-								int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
-								//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
-								//ctrlpos.x = ctrlrect.left + sliderposx + 12;
-								//ctrlpos.y = ctrlrect.top + 20 / 2;
-
-
-								::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
-								::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
-							}
-
-						}
-					}
-				}
-				else {
 					HWND caphwnd;
-					caphwnd = ::GetCapture();
+					caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
 					if (caphwnd && IsWindow(caphwnd)) {
 						POINT cappoint;
 						cappoint = cursorpos;
@@ -22486,220 +23447,65 @@ void DSAimBarOK()
 						LPARAM caplparam;
 						caplparam = (cappoint.y << 16) | cappoint.x;
 
-						::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
-						s_wmlbuttonup = 1;
-					}
+						//::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 
+						WPARAM wparam;
+						LPARAM lparam;
+						lparam = (LPARAM)caphwnd;
+						if (s_curdseullimitctrlno == 0) {
+							//wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+							//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+							//COMMAND control ID  !!!!!
+							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+						}
+						else if(s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)){
+							wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
+							//COMMAND control ID  !!!!!
+							::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+						}
+						else {
+							//slider
+							//int sliderpos = (int)(((-180.0f + 360.0f * (float)cappoint.x / 200.0f) / 360.0f) * 100.0f);
+							//int sliderpos = (int)(-180.0f + (float)cappoint.x / 250.0f * 360.0f);
+
+							int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+							//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
+							//ctrlpos.x = ctrlrect.left + sliderposx + 12;
+							//ctrlpos.y = ctrlrect.top + 20 / 2;
+
+
+							::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+							::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
+						}
+
+					}
+				}
+			}
+			else {
+				HWND caphwnd;
+				caphwnd = ::GetCapture();
+				if (caphwnd && IsWindow(caphwnd)) {
+
+					//WPARAM wparam = (0xFFFF << 16) | (WORD)s_currentsubmenuid;//s_currentsubmenuid, curmenuitemid
+					//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)GetMenu(s_mainhwnd));//GetMenu(s_mainhwnd), cursubmenu
+
+
+					POINT cappoint;
+					cappoint = cursorpos;
+					::ScreenToClient(caphwnd, &cappoint);
+					LPARAM caplparam;
+					caplparam = (cappoint.y << 16) | cappoint.x;
+
+					::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+					s_wmlbuttonup = 1;
 				}
 
 			}
+
 		}
-		else {
-			HWND caphwnd;
-			//caphwnd = ::GetCapture();
-			caphwnd = s_3dwnd;
-			if (caphwnd && IsWindow(caphwnd)) {
-				::SendMessage(caphwnd, WM_KEYUP, VK_RETURN, 0);			
-			}
-			//caphwnd = s_3dwnd;
-			//if (caphwnd && IsWindow(caphwnd)) {
-			//	POINT cappoint;
-			//	cappoint = cursorpos;
-			//	::ScreenToClient(caphwnd, &cappoint);
-			//	LPARAM caplparam;
-			//	caplparam = (cappoint.y << 16) | cappoint.x;
-
-			//	::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
-			//	s_wmlbuttonup = 1;
-			//}
-		}
-
-		//::SendMessage(s_3dwnd, WM_LBUTTONUP, MK_LBUTTON, lparam);
-		//::SendMessage(s_mainhwnd, WM_LBUTTONUP, MK_LBUTTON, lparam);
-		//if (s_sampleuihwnd) {
-			//::SendMessage(s_sampleuihwnd, WM_LBUTTONUP, MK_LBUTTON, lparam);
-			//g_SampleUI.MsgProc(hWnd, uMsg, wParam, lParam);
-			//g_SampleUI.MsgProc(s_sampleuihwnd, WM_LBUTTONUP, MK_LBUTTON, lparam);
-		//}
-
-
-
-		//HWND dlghwnd;
-		//dlghwnd = g_SampleUI.GetHWnd();
-		//if (dlghwnd) {
-		//	POINT dlgpoint;
-		//	dlgpoint = cursorpos;
-		//	::ScreenToClient(dlghwnd, &dlgpoint);
-		//	LPARAM dlglparam;
-		//	dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
-
-		//	::SendMessage(dlghwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
-		//}
-
-
-		//UINT dummyevent = 0;
-		//void* dummycontext = 0;
-		//if (s_sampleuihwnd) {
-		//	switch (s_curdsutguikind) {
-		//	case 0:
-		//		if (s_dsutgui0[s_curdsutguino]) {
-		//			OnGUIEvent(dummyevent, s_dsutguiid0[s_curdsutguino], s_dsutgui0[s_curdsutguino], dummycontext);
-		//		}
-		//		break;
-
-		//	case 1:
-		//		if (s_dsutgui1[s_curdsutguino]) {
-		//			OnGUIEvent(dummyevent, s_dsutguiid1[s_curdsutguino], s_dsutgui1[s_curdsutguino], dummycontext);
-		//		}
-		//		break;
-
-		//	case 2:
-		//		if (s_dsutgui2[s_curdsutguino]) {
-		//			OnGUIEvent(dummyevent, s_dsutguiid2[s_curdsutguino], s_dsutgui2[s_curdsutguino], dummycontext);
-		//		}
-		//		break;
-
-		//	case 3:
-		//		if (s_dsutgui3[s_curdsutguino]) {
-		//			OnGUIEvent(dummyevent, s_dsutguiid3[s_curdsutguino], s_dsutgui3[s_curdsutguino], dummycontext);
-		//		}
-		//		break;
-		//	default:
-		//		break;
-		//	}
-		//}
-
-
-
-
-
-		//if (s_sampleuihwnd) {
-		//	switch (s_curdsutguikind) {
-		//	case 0:
-		//		if (s_dsutgui0[s_curdsutguino]) {
-		//			WPARAM wparam;
-		//			wparam = (BN_CLICKED << 16) | s_dsutguiid0[s_curdsutguino];
-		//			LPARAM lparam;
-		//			//lparam = (LPARAM)s_mainhwnd;
-		//			//s_dsutgui0[s_curdsutguino]->MsgProc(WM_COMMAND, wparam, lparam);
-
-		//			//s_dsutgui0[s_curdsutguino]->MsgProc(WM_COMMAND, s_dsutguiid0[s_curdsutguino], 0);
-		//			//g_SampleUI.MsgProc(s_sampleuihwnd, WM_COMMAND, s_dsutguiid0[s_curdsutguino], 0);
-		//			//::SendMessage(s_mainhwnd, WM_COMMAND, s_dsutguiid0[s_curdsutguino], 0);
-		//			//::SendMessage(s_3dwnd, WM_COMMAND, s_dsutguiid0[s_curdsutguino], 0);
-		//		}
-		//		break;
-
-		//	case 1:
-		//		if (s_dsutgui1[s_curdsutguino]) {
-		//			WPARAM wparam;
-		//			wparam = (BN_CLICKED << 16) | s_dsutguiid1[s_curdsutguino];
-		//			LPARAM lparam;
-		//			lparam = (LPARAM)s_mainhwnd;
-
-		//			s_dsutgui1[s_curdsutguino]->MsgProc(WM_COMMAND, wparam, lparam);
-		//			
-		//			//s_dsutgui1[s_curdsutguino]->MsgProc(WM_COMMAND, s_dsutguiid1[s_curdsutguino], 0);
-		//			//g_SampleUI.MsgProc(s_sampleuihwnd, WM_COMMAND, s_dsutguiid1[s_curdsutguino], 0);
-		//			//::SendMessage(s_mainhwnd, WM_COMMAND, s_dsutguiid1[s_curdsutguino], 0);
-		//			//::SendMessage(s_3dwnd, WM_COMMAND, s_dsutguiid1[s_curdsutguino], 0);
-		//		}
-		//		break;
-
-		//	case 2:
-		//		if (s_dsutgui2[s_curdsutguino]) {
-		//			WPARAM wparam;
-		//			wparam = (BN_CLICKED << 16) | s_dsutguiid2[s_curdsutguino];
-		//			LPARAM lparam;
-		//			lparam = (LPARAM)s_mainhwnd;
-
-		//			s_dsutgui2[s_curdsutguino]->MsgProc(WM_COMMAND, wparam, lparam);
-
-
-		//			//s_dsutgui2[s_curdsutguino]->MsgProc(WM_COMMAND, s_dsutguiid2[s_curdsutguino], 0);
-		//			//g_SampleUI.MsgProc(s_sampleuihwnd, WM_COMMAND, s_dsutguiid2[s_curdsutguino], 0);
-		//			//::SendMessage(s_mainhwnd, WM_COMMAND, s_dsutguiid2[s_curdsutguino], 0);
-		//			//::SendMessage(s_3dwnd, WM_COMMAND, s_dsutguiid2[s_curdsutguino], 0);
-		//		}
-		//		break;
-
-		//	case 3:
-		//		if (s_dsutgui3[s_curdsutguino]) {
-		//			WPARAM wparam;
-		//			wparam = (BN_CLICKED << 16) | s_dsutguiid3[s_curdsutguino];
-		//			LPARAM lparam;
-		//			lparam = (LPARAM)s_mainhwnd;
-
-		//			s_dsutgui3[s_curdsutguino]->MsgProc(WM_COMMAND, wparam, lparam);
-
-
-		//			//s_dsutgui3[s_curdsutguino]->MsgProc(WM_COMMAND, s_dsutguiid3[s_curdsutguino], 0);
-		//			//g_SampleUI.MsgProc(s_sampleuihwnd, WM_COMMAND, s_dsutguiid3[s_curdsutguino], 0);
-		//			//::SendMessage(s_mainhwnd, WM_COMMAND, s_dsutguiid3[s_curdsutguino], 0);
-		//			::SendMessage(s_3dwnd, WM_COMMAND, s_dsutguiid3[s_curdsutguino], 0);
-		//		}
-		//		break;
-		//	default:
-		//		break;
-		//	}
-		//}
 
 	}
 
-
-
-	//int platemenukind = s_platemenukind;
-	//int platemenuno = s_platemenuno;
-	//int nextplatemenukind = 0;
-	//int nextplateno = 0;
-
-	//if (okbutton >= 1) {
-	//	if (s_curaimbarno >= 0) {
-	//		if ((platemenukind >= 0) && (platemenuno >= 0)) {
-	//			//int clickplateno;
-	//			int clickplateindex;
-
-	//			clickplateindex = s_curaimbarno;
-	//			if (platemenukind == 0) {
-	//				if (clickplateindex >= 5) {
-	//					clickplateindex = 0;
-	//				}
-	//			}
-	//			else {
-	//				int platenomax = 0;
-	//				switch (platemenukind) {
-	//				case 1:
-	//					platenomax = 4;
-	//					break;
-	//				case 2:
-	//					platenomax = 2;
-	//					break;
-	//				default:
-	//					platenomax = 0;
-	//					break;
-	//				}
-	//				if (clickplateindex >= platenomax) {
-	//					clickplateindex = 0;
-	//				}
-	//			}
-
-	//			if ((clickplateindex) >= 0 && (clickplateindex < SPGUISWNUM)) {					
-	//				//POINT buttonpos;
-	//				//buttonpos = s_spguisw[clickplateindex].dispcenter;
-
-	//				//ClientToScreen(s_3dwnd, &buttonpos);
-	//				//::SetCursorPos(buttonpos.x, buttonpos.y);
-
-	//				//GUIGetNextMenu(buttonpos, platemenukind, &nextplatemenukind, &nextplateno);
-	//				//if ((nextplatemenukind >= 0) && (nextplateno != 0)) {
-	//				//	s_platemenukind = nextplatemenukind;
-	//				//	s_platemenuno = nextplateno;
-	//				//	GUIMenuSetVisible(s_platemenukind, nextplateno);
-	//				//}
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 

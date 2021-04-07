@@ -46,6 +46,7 @@ HANDLE g_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
 
 CDSUpdateUnderTracking::CDSUpdateUnderTracking()
 {
+	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	InitParams();
 }
 CDSUpdateUnderTracking::~CDSUpdateUnderTracking()
@@ -111,6 +112,7 @@ void CDSUpdateUnderTracking::DestroyObjs()
 
 int CDSUpdateUnderTracking::CreateDSUpdateUnderTracking(HINSTANCE srchinstance)
 {
+	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 	s_hinstance = srchinstance;
 
