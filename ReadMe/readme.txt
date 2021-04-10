@@ -264,6 +264,23 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/10
+	ゲームパッド対応の続き
+		プロジェクト読み込みに成功するたびにTempフォルダにプロジェクトパスを記録
+			FileのOpenメニューから出すダイアログをゲームパッドで押せるようにした
+			ゲームパッドからプロジェクトを読み込めるようにFileのOpenメニューに履歴パスのラジオボタンを配置
+
+		Rスティック上下で現在のメインメニューバー項目、左右でひとつ左または一つ右のメインメニューバー項目
+
+
+		L2,R2のアクセル機能はLスティックのマウス移動を加速。L2とR2の両方を押しているとさらに加速。
+
+
+		Open Project History is saved at temp directory.
+		It is enable that buttons of open file dialog is pushed using a GamePad.
+		Current menu is selected with up and down of R stick.
+		Accel function of L2 or R2 is double effective by both is pushed. 	
+
 2021/04/07_1
 	ゲームパッド対応の続き
 		Rスティック左右でメインウインドウのメニューバー選択

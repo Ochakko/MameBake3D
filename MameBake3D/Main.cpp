@@ -277,6 +277,9 @@ enum {
 	MB3D_WND_MAX
 };
 
+static WCHAR s_temppath[MAX_PATH] = { 0L };
+
+
 static CDSUpdateUnderTracking* s_dsupdater = 0;
 LONG g_undertrackingRMenu = 0;
 LONG g_underApealingMouseHere = 0;
@@ -390,6 +393,10 @@ static int s_dspushedOK = 0;
 static int s_dspushedL3 = 0;
 static int s_dspushedR3 = 0;
 //static int s_dsmousewait = 0;
+
+static HWND s_mqodlghwnd = 0;
+static HWND s_openfilehwnd = 0;
+
 
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
@@ -1783,6 +1790,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
+
+	s_temppath[0] = 0L;
+	::GetTempPathW(MAX_PATH, s_temppath);
+	_ASSERT(s_temppath[0]);
+
 
 	InitDSValues();
 
@@ -6256,7 +6268,6 @@ int OpenFile()
 		return 0;
 	}
 
-
 	WCHAR savepath[MULTIPATH];
 	MoveMemory( savepath, g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 
@@ -8523,13 +8534,125 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 	return 0;
 }
 
+////s_openfilehwnd
+////UINT CALLBACK OFNHookProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
+////UINT CALLBACK GetFileNameHook(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+////UINT_PTR CALLBACK GetFileNameHook(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+////{
+////
+////	static int s_getfilenametimer = 338;
+////
+////	WORD loword;
+////	WORD hiword;
+////
+////	switch (msg) {
+////	case WM_INITDIALOG:
+////		SetTimer(hDlgWnd, s_getfilenametimer, 20, NULL);
+////		s_openfilehwnd = hDlgWnd;
+////		return FALSE;
+////	case WM_COMMAND:
+////		switch (LOWORD(wp)) {
+////		case IDOK:
+////			s_openfilehwnd = 0;
+////			KillTimer(hDlgWnd, s_getfilenametimer);
+////			EndDialog(hDlgWnd, IDOK);
+////			return TRUE;
+////			break;
+////		case IDCANCEL:
+////			s_openfilehwnd = 0;
+////			KillTimer(hDlgWnd, s_getfilenametimer);
+////			EndDialog(hDlgWnd, IDCANCEL);
+////			return TRUE;
+////			break;
+////		default:
+////			return FALSE;
+////		}
+////	case WM_LBUTTONDOWN:
+////		loword = LOWORD(wp);
+////		hiword = HIWORD(wp);
+////		break;
+////	case WM_LBUTTONUP:
+////		loword = LOWORD(wp);
+////		hiword = HIWORD(wp);
+////
+////		switch (LOWORD(wp)) {
+////		case IDOK:
+////			s_openfilehwnd = 0;
+////			KillTimer(hDlgWnd, s_getfilenametimer);
+////			EndDialog(hDlgWnd, IDOK);
+////			return TRUE;
+////			break;
+////		case IDCANCEL:
+////			s_openfilehwnd = 0;
+////			KillTimer(hDlgWnd, s_getfilenametimer);
+////			EndDialog(hDlgWnd, IDCANCEL);
+////			return TRUE;
+////			break;
+////		default:
+////			return FALSE;
+////		}
+////		break;
+////	case WM_NOTIFY:
+/////*
+////WM_NOTIFYメッセージは、標準のコントロールやユーザーの操作によるさまざまな通知メッセージが送られたときに送られてきます。
+////lParamにはOFNOTIFY構造体のアドレスが入っていてこれを調べると通知メッセージの種類がわかります。
+////この構造体の説明はここでは省略します。通知メッセージとしては、
+////CDN_INITDONE          ダイアログ配置が終わったことを知らせます。
+////CDN_FILEOK            ＯＫボタンが押されたことを知らせます。
+////CDN_FOLDERCHANGE      開いているフォルダが変わったことを知らせます。
+////CDN_HELP              ＨＥＬＰボタンが押されたことを知らせます。
+////CDN_SELCHANGE         別のファイルが選ばれたことを知らせます。
+////CDN_SHAREVIOLATION    共有違反が発生したことを知らせます。
+////CDN_TYPECHANGE        ファイルの種類が変更されたことを知らせます。
+////また、ダイアログの状態を知るためには次のようなメッセージを送ります。
+////それぞれのメッセージについては各自で調べてください（今回こればっか、手抜きだというのがばれてしまう）。
+////CDM_GETFILEPATH       選択されているファイルのパス（フォルダ名＋ファイル名）を取得します。
+////CDM_GETSPEC           選択されているファイルのファイル名だけを取得します。
+////CDM_GETFOLDERPATH     現在のフォルダのパスを取得します。
+////CDM_GETFOLDERIDLIST   現在のフォルダのItem-ID-Listを取得します。
+////CDM_HIDECONTROL       指定したコントロールを隠します。
+////CDM_SETCONTROLTEXT    指定したコントロールにテキストを設定します。
+////CDM_SETDEFEXT         表示するファイルの拡張子を設定します。*/
+////		loword = LOWORD(wp);
+////		hiword = HIWORD(wp);
+////
+////		switch (LOWORD(wp)) {
+////		case IDOK:
+////			s_openfilehwnd = 0;
+////			KillTimer(hDlgWnd, s_getfilenametimer);
+////			EndDialog(hDlgWnd, IDOK);
+////			return TRUE;
+////			break;
+////		case IDCANCEL:
+////			s_openfilehwnd = 0;
+////			KillTimer(hDlgWnd, s_getfilenametimer);
+////			EndDialog(hDlgWnd, IDCANCEL);
+////			return TRUE;
+////			break;
+////		default:
+////			return FALSE;
+////		}
+////		break;
+////	case WM_TIMER:
+////		OnDSUpdate();
+////		return FALSE;
+////		break;
+////	default:
+////		DefWindowProc(hDlgWnd, msg, wp, lp);
+////		return FALSE;
+////	}
+////	return TRUE;
+////
+////
+////}
 
 LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = hDlgWnd;
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
 	ofn.lpstrFilter = L"project(*.cha)chara(*.fbx)\0*.cha;*.fbx\0Rigid(*.ref)\0*.ref\0Impulse(*.imp)\0*.imp\0Ground(*.gco)\0*.gco\0BVH(*.bvh)\0*.bvh\0";
 	ofn.lpstrCustomFilter = NULL;
@@ -8541,45 +8664,164 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.lpstrTitle = NULL;
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT | OFN_ENABLEHOOK;
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt =NULL;
 	ofn.lCustData = NULL;
+	//ofn.lpfnHook = GetFileNameHook;
 	ofn.lpfnHook = NULL;
 	ofn.lpTemplateName = NULL;
 
 	WCHAR strmult[256];
 	wcscpy_s( strmult, 256, L"1.000" );
 	
+	static int s_openmqoproctimer = 336;
+	static bool s_refokflag = false;
+
 	switch (msg) {
-        case WM_INITDIALOG:
+		case WM_INITDIALOG: 
+			{
+			s_refokflag = false;
 			g_tmpmqomult = 1.0f;
-			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
-			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
-			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile." );
+			ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+			SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
+			SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
+
+			//MB3DOpenProj_20210410215628.txt
+			WCHAR searchfilename[MAX_PATH] = { 0L };
+			swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProj_*.txt", s_temppath);
+			HANDLE hFind;
+			WIN32_FIND_DATA win32fd;
+			hFind = FindFirstFileW(searchfilename, &win32fd);
+			std::vector<wstring> vechistory;
+			vechistory.clear();
+			bool notfoundfirst = false;
+			if (hFind == INVALID_HANDLE_VALUE) {
+				notfoundfirst = true;
+			}
+			do {
+				if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+					//printf("%s\n", win32fd.cFileName);
+
+					WCHAR openfilename[MAX_PATH] = { 0L };
+					swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+					HANDLE hfile;
+					hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+						FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+					if (hfile != INVALID_HANDLE_VALUE) {
+						WCHAR readwstr[MAX_PATH] = { 0L };
+						DWORD readleng = 0;
+						ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+						vechistory.push_back(readwstr);
+						CloseHandle(hfile);
+					}
+				}
+			} while (FindNextFile(hFind, &win32fd));
+			FindClose(hFind);
+
+			std::sort(vechistory.begin(), vechistory.end());
+			std::reverse(vechistory.begin(), vechistory.end());
+
+			int radiocnt = 0;
+			int radionum = min(3, vechistory.size());
+			if (radionum != 0) {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vechistory[0].c_str());
+			}
+			else {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
+			}
+			if (radionum >= 2) {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vechistory[1].c_str());
+			}
+			else {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
+			}
+			if (radionum >= 3) {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vechistory[2].c_str());
+			}
+			else {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
+			}
+
+			SetTimer(hDlgWnd, s_openmqoproctimer, 20, NULL);
+			s_mqodlghwnd = hDlgWnd;
+			}
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
                 case IDOK:
 					GetDlgItemText( hDlgWnd, IDC_MULT, strmult, 256 );
 					g_tmpmqomult = (float)_wtof( strmult );
-					//GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
-
-                    EndDialog(hDlgWnd, IDOK);
+					if (s_refokflag == false) {
+						UINT ischecked1 = 0;
+						UINT ischecked2 = 0;
+						UINT ischecked3 = 0;
+						ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO1);
+						ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO2);
+						ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO3);
+						if (ischecked1 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO1, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+							else {
+								g_tmpmqopath[0] = 0L;
+							}
+						}
+						else if (ischecked2 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO2, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+							else {
+								g_tmpmqopath[0] = 0L;
+							}
+						}
+						else if (ischecked3 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO3, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else {
+							g_tmpmqopath[0] = 0L;
+						}
+					}
+					if (g_tmpmqopath[0]) {
+						//GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
+						s_mqodlghwnd = 0;
+						KillTimer(hDlgWnd, s_openmqoproctimer);
+						EndDialog(hDlgWnd, IDOK);
+					}
+					return TRUE;
                     break;
                 case IDCANCEL:
+					s_mqodlghwnd = 0;
+					KillTimer(hDlgWnd, s_openmqoproctimer);
                     EndDialog(hDlgWnd, IDCANCEL);
+					return TRUE;
                     break;
 				case IDC_REFMQO:
 					if( GetOpenFileNameW(&ofn) == IDOK ){
 						SetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath );
+						s_refokflag = true;
 					}
+					s_openfilehwnd = 0;//!!!!!!!!!!!
 					break;
 				default:
                     return FALSE;
             }
+		case WM_TIMER:
+			OnDSUpdate();
+			return FALSE;
+			break;
         default:
+			DefWindowProc(hDlgWnd, msg, wp, lp);
             return FALSE;
     }
     return TRUE;
@@ -8647,7 +8889,9 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			return FALSE;
 		}
 	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
 		return FALSE;
+		break;
 	}
 	return TRUE;
 }
@@ -10578,6 +10822,11 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 int OpenChaFile()
 {
+
+	//g_tmpmqopathはプロジェクト読み込み時にプロジェクトファイル内に記述されているファイル名に変わっていくので先に保存しておく。
+	WCHAR saveprojpath[MAX_PATH] = { 0L };
+	wcscpy_s(saveprojpath, MAX_PATH, g_tmpmqopath);
+
 	WCHAR* lasten = 0;
 	lasten = wcsrchr( g_tmpmqopath, TEXT( '\\' ) );
 	if( lasten ){
@@ -10635,6 +10884,9 @@ int OpenChaFile()
 
 	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
+
+
+
 	CChaFile chafile;
 	int ret = chafile.LoadChaFile( g_tmpmqopath, OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu );
 	if (ret == 1) {
@@ -10644,8 +10896,35 @@ int OpenChaFile()
 	//OnAddMotion(s_model->GetCurMotInfo()->motid);
 
 	SetCursor(oldcursor);
-
-
+	
+	//読み込み処理が成功してから履歴を保存する。chaファイルだけ。
+	int savepathlen;
+	savepathlen = wcslen(saveprojpath);
+	if (savepathlen > 4) {
+		WCHAR* pwext;
+		pwext = saveprojpath + (savepathlen - 1) - 3;
+		if (wcscmp(pwext, L".cha") == 0) {
+			SYSTEMTIME localtime;
+			GetLocalTime(&localtime);
+			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04d%02d%02d%02d%02d%02d.txt",
+				s_temppath,
+				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+			HANDLE hfile;
+			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				int pathlen;
+				pathlen = wcslen(saveprojpath);
+				if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+					DWORD writelen = 0;
+					WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
+					_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
 	return 0;
 }
 
@@ -17014,7 +17293,7 @@ int BoneRClick(int srcboneno)
 				GetCursorPos(&pt);
 				//::ScreenToClient(parwnd, &pt);
 
-				InterlockedExchange(&g_undertrackingRMenu, 0);
+				InterlockedExchange(&g_undertrackingRMenu, 1);
 				int currigno = -1;
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
@@ -19061,6 +19340,9 @@ void InitDSValues()
 	InterlockedExchange(&g_undertrackingRMenu, 0);
 
 	s_firstmoveaimbar = true;
+
+	s_mqodlghwnd = 0;
+	s_openfilehwnd = 0;
 
 	s_currentwndid = 0;
 	s_currenthwnd = 0;
@@ -22010,6 +22292,7 @@ void DSAxisRMainMenuBar()
 	bool accelaxis1 = 0;
 	bool accelaxis2 = 0;
 	bool accelflag = false;
+	bool accelbothflag = false;
 
 	upbutton = s_dsaxisMOverSrh[1];
 	downbutton = s_dsaxisOverSrh[1];
@@ -22019,6 +22302,8 @@ void DSAxisRMainMenuBar()
 	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
 	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
 	accelflag = accelaxis1 || accelaxis2;
+	accelbothflag = accelaxis1 && accelaxis2;
+
 
 	//if (s_undertrackingRMenu == 0) {
 	bool changeflag = false;
@@ -22037,14 +22322,12 @@ void DSAxisRMainMenuBar()
 
 	nextsubmenuid = s_currentsubmenuid;
 
-	//if (upbutton >= 1) {
-	//	s_currentsubmenuid -= delta;
-	//	changeflag = true;
-	//}
-	//if (downbutton >= 1) {
-	//	s_currentsubmenuid += delta;
-	//	changeflag = true;
-	//}
+	if (upbutton >= 1) {
+		changeflag = true;
+	}
+	if (downbutton >= 1) {
+		changeflag = true;
+	}
 	if (leftbutton >= 1) {
 		nextsubmenuid -= delta;
 		changeflag = true;
@@ -22201,6 +22484,7 @@ void DSAxisLSelectingPopupMenu()
 	bool accelaxis1 = 0;
 	bool accelaxis2 = 0;
 	bool accelflag = false;
+	bool accelbothflag = false;
 
 	upbutton = s_dsaxisMOverSrh[3];
 	downbutton = s_dsaxisOverSrh[3];
@@ -22446,6 +22730,7 @@ void DSAxisLMouseMove()
 	bool accelaxis1 = 0;
 	bool accelaxis2 = 0;
 	bool accelflag = false;
+	bool accelbothflag = false;
 
 	upbutton = s_dsaxisMOverSrh[3];
 	downbutton = s_dsaxisOverSrh[3];
@@ -22455,6 +22740,7 @@ void DSAxisLMouseMove()
 	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
 	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
 	accelflag = accelaxis1 || accelaxis2;
+	accelbothflag = accelaxis1 && accelaxis2;
 
 	//if (g_undertrackingRMenu == 0) {
 		bool changeflag = false;
@@ -22462,7 +22748,10 @@ void DSAxisLMouseMove()
 		int deltascale = 1;
 		int deltax = 0;
 		int deltay = 0;
-		if (accelflag) {
+		if (accelbothflag) {
+			deltascale = 10;
+		}
+		else if (accelflag) {
 			deltascale = 4;
 		}
 		else {
@@ -23277,6 +23566,9 @@ void DSOButtonSelectedPopupMenu()
 				LPARAM lparam;
 				//lparam = (LPARAM)s_mainmenu;
 				lparam = (LPARAM)commandsubmenu;
+
+
+				g_undertrackingRMenu = 0;//コマンド発行が決まったらトラッキングフラグ解除!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
 
 			}
@@ -23327,6 +23619,286 @@ void DSOButtonSelectedPopupMenu()
 				//	::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
 				//}
 	}
+}
+
+BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
+{
+	if (!lParam) {
+		return FALSE;
+	}
+	HWND* rethwnd = (HWND*)lParam;
+	*rethwnd = 0;
+
+	POINT mousepoint;
+	::GetCursorPos(&mousepoint);
+	::ScreenToClient(hwnd, &mousepoint);
+
+	RECT ctrlrect;
+	GetClientRect(hwnd, &ctrlrect);
+
+
+
+
+	//GetWindowRect(hwnd, &ctrlrect);
+	//POINT point1;
+	//POINT point2;
+	//point1.x = ctrlrect.left;
+	//point1.y = ctrlrect.top;
+	//point2.x = ctrlrect.right;
+	//point2.y = ctrlrect.bottom;
+	//::ScreenToClient(hwnd, &point1);
+	//::ScreenToClient(hwnd, &point2);
+	//ctrlrect.left = point1.x;
+	//ctrlrect.top = point1.y;
+	//ctrlrect.right = point2.x;
+	//ctrlrect.bottom = point2.y;
+
+
+
+
+	//if (g_undertrackingRMenu == 3) {
+	//	if (mousepoint.x <= 200) {
+	//		_ASSERT(0);
+	//	}
+	//}
+
+
+	if ((mousepoint.x >= ctrlrect.left) && (mousepoint.x <= ctrlrect.right)
+		&& (mousepoint.y >= ctrlrect.top) && (mousepoint.y <= ctrlrect.bottom)) {
+		//if ((mousepoint.x >= 0) && (mousepoint.x <= (ctrlrect.right - ctrlrect.left))
+		//	&& (mousepoint.y >= 0) && (mousepoint.y <= (ctrlrect.bottom - ctrlrect.top))) {
+		if (g_undertrackingRMenu == 3) {
+			_ASSERT(0);
+		}
+		*rethwnd = hwnd;
+		return FALSE;//探索終了
+	}
+	else {
+		*rethwnd = 0;
+		return TRUE;//探索続行
+	}
+
+}
+
+BOOL CALLBACK EnumChildProcOF(HWND hwnd, LPARAM lParam)
+{
+	if (!lParam) {
+		return FALSE;
+	}
+	HWND* rethwnd = (HWND*)lParam;
+	*rethwnd = 0;
+
+	POINT mousepoint;
+	::GetCursorPos(&mousepoint);
+	//::ScreenToClient(hwnd, &mousepoint);
+
+
+	//typedef struct tagWINDOWPLACEMENT {
+	//	UINT  length;
+	//	UINT  flags;
+	//	UINT  showCmd;
+	//	POINT ptMinPosition;
+	//	POINT ptMaxPosition;
+	//	RECT  rcNormalPosition;
+	//	RECT  rcDevice;
+	//} WINDOWPLACEMENT;
+	//WINDOWPLACEMENT wplacement;
+	//ZeroMemory(&wplacement, sizeof(WINDOWPLACEMENT));
+	RECT ctrlrect;
+	//GetClientRect(hwnd, &ctrlrect);
+	GetWindowRect(hwnd, &ctrlrect);
+	//WINDOWPLACEMENT wplacement;
+	//ZeroMemory(&wplacement, sizeof(WINDOWPLACEMENT));
+	//GetWindowPlacement(hwnd, &wplacement);
+	//ctrlrect = wplacement.rcNormalPosition;
+
+	POINT point1;
+	POINT point2;
+	point1.x = ctrlrect.left;
+	point1.y = ctrlrect.top;
+	point2.x = ctrlrect.right;
+	point2.y = ctrlrect.bottom;
+	//::ScreenToClient(hwnd, &point1);
+	//::ScreenToClient(hwnd, &point2);
+	//::ClientToScreen(s_ofhwnd, &point1);
+	//::ClientToScreen(s_ofhwnd, &point2);
+	::ClientToScreen(hwnd, &point1);
+	::ClientToScreen(hwnd, &point2);
+	ctrlrect.left = point1.x;
+	ctrlrect.top = point1.y;
+	ctrlrect.right = point2.x;
+	ctrlrect.bottom = point2.y;
+
+	//if (g_undertrackingRMenu == 3) {
+		//if (abs(mousepoint.x - ctrlrect.left) <= 200) {
+		//	_ASSERT(0);
+		//}
+		//if (abs(mousepoint.x) <= 200) {
+		//	_ASSERT(0);
+		//}
+	//}
+
+
+	//if ((s_cursorposenum.x >= ctrlrect.left) && (s_cursorposenum.x <= ctrlrect.right)
+	//	&& (s_cursorposenum.y >= ctrlrect.top) && (s_cursorposenum.y <= ctrlrect.bottom)) {
+	if ((mousepoint.x >= 0) && (mousepoint.x <= (ctrlrect.right - ctrlrect.left))
+		&& (mousepoint.y >= 0) && (mousepoint.y <= (ctrlrect.bottom - ctrlrect.top))) {
+		*rethwnd = hwnd;
+		return FALSE;//探索終了
+	}
+	else {
+		*rethwnd = 0;
+		return TRUE;//探索続行
+	}
+
+}
+
+HWND GetDlgCtrlWnd(HWND dlgwnd, POINT cappoint)
+{
+	HWND hbtn = NULL;
+	::EnumChildWindows(dlgwnd, EnumChildProc, reinterpret_cast<LPARAM>(&hbtn));
+	return hbtn;
+}
+
+
+BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
+{
+	if (!lParam) {
+		return FALSE;
+	}
+	HWND* rethwnd = (HWND*)lParam;
+	//*rethwnd = 0;
+
+	WCHAR szBuff[512];
+	GetWindowTextW(hwnd, szBuff, 512);
+	int cmp;
+	cmp = wcscmp(L"OpenMqoDlg", szBuff);
+	if (cmp == 0) {
+		//HWND hbtn = NULL;
+		//::EnumChildWindows(hwnd, EnumChildProcOF, reinterpret_cast<LPARAM>(&hbtn));
+		//if (hbtn) {
+		*rethwnd = hwnd;
+		return FALSE;
+		//}
+		//else {
+		//	return TRUE;
+		//}
+	}
+	else {
+		//*rethwnd = 0;
+		return TRUE;
+	}
+}
+
+HWND GetOFWnd(POINT srcpoint)
+{
+	HWND retctrlwnd = 0;
+
+
+	if (!retctrlwnd && s_openfilehwnd) {
+		//s_ofhwnd = focuswnd;
+		::EnumChildWindows(s_openfilehwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		if (retctrlwnd) {
+			return retctrlwnd;
+		}
+	}else if (!retctrlwnd && s_mqodlghwnd) {
+		//s_ofhwnd = focuswnd;
+		::EnumChildWindows(s_mqodlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		if (retctrlwnd) {
+			return retctrlwnd;
+		}
+	}
+
+
+	//HWND ofhwnd = 0;
+	//HWND focuswnd = 0;
+	//HWND capturewnd = 0;
+	//HWND foregroundwnd = 0;
+	//HWND activewnd = 0;
+	//focuswnd = ::GetFocus();
+	//capturewnd = ::GetCapture();
+	//foregroundwnd = ::GetForegroundWindow();
+	//activewnd = ::GetActiveWindow();
+	////EnumWindows(EnumWindowsProc, (LPARAM)&ofhwnd);
+	////if (ofhwnd) {
+	////	//POINT cursorposdlg = srcpoint;
+	////	//::ScreenToClient(ofhwnd, &cursorposdlg);
+	////	//s_cursorposenum = cursorposdlg;
+	////	s_ofhwnd = ofhwnd;
+	////	::EnumChildWindows(ofhwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	////	if (retctrlwnd) {
+	////		return retctrlwnd;
+	////	}
+	////}
+	//if (!retctrlwnd && focuswnd) {
+	//	//s_ofhwnd = focuswnd;
+	//	::EnumChildWindows(focuswnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && capturewnd) {
+	//	//s_ofhwnd = capturewnd;
+	//	::EnumChildWindows(capturewnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && foregroundwnd) {
+	//	//s_ofhwnd = foregroundwnd;
+	//	::EnumChildWindows(foregroundwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && activewnd) {
+	//	//s_ofhwnd = activewnd;
+	//	::EnumChildWindows(activewnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (ofhwnd) {
+	//	//POINT cursorposdlg = srcpoint;
+	//	//::ScreenToClient(ofhwnd, &cursorposdlg);
+	//	//s_cursorposenum = cursorposdlg;
+	//	s_ofhwnd = ofhwnd;
+	//	::EnumChildWindows(ofhwnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && focuswnd) {
+	//	s_ofhwnd = focuswnd;
+	//	::EnumChildWindows(focuswnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && capturewnd) {
+	//	s_ofhwnd = capturewnd;
+	//	::EnumChildWindows(capturewnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && foregroundwnd) {
+	//	s_ofhwnd = foregroundwnd;
+	//	::EnumChildWindows(foregroundwnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+	//if (!retctrlwnd && activewnd) {
+	//	s_ofhwnd = activewnd;
+	//	::EnumChildWindows(activewnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
+	//	if (retctrlwnd) {
+	//		return retctrlwnd;
+	//	}
+	//}
+
+	return 0;
+
 }
 
 void DSAimBarOK()
@@ -23408,6 +23980,14 @@ void DSAimBarOK()
 
 			}
 			else {
+				//dialog ctrl
+				HWND ctrlwnd;
+				ctrlwnd = GetOFWnd(cursorpos);
+				if (ctrlwnd) {
+					::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, 0);
+				}
+
+				//aimbar
 				HWND caphwnd;
 				caphwnd = ::GetCapture();
 				if (caphwnd && IsWindow(caphwnd)) {
@@ -23482,23 +24062,36 @@ void DSAimBarOK()
 				}
 			}
 			else {
+				//dialog ctrl
+				HWND ctrlwnd;
+				ctrlwnd = GetOFWnd(cursorpos);
+				if (ctrlwnd) {
+					::SendMessage(ctrlwnd, WM_LBUTTONUP, 0, 0);
+					if (s_mqodlghwnd) {
+						int ctrlid;
+						ctrlid = GetDlgCtrlID(ctrlwnd);
+						::SendMessage(s_mqodlghwnd, WM_COMMAND, ctrlid, 0);
+					}
+				}
+
+
+				//aim bar
 				HWND caphwnd;
 				caphwnd = ::GetCapture();
 				if (caphwnd && IsWindow(caphwnd)) {
-
 					//WPARAM wparam = (0xFFFF << 16) | (WORD)s_currentsubmenuid;//s_currentsubmenuid, curmenuitemid
 					//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)GetMenu(s_mainhwnd));//GetMenu(s_mainhwnd), cursubmenu
-
-
 					POINT cappoint;
 					cappoint = cursorpos;
 					::ScreenToClient(caphwnd, &cappoint);
 					LPARAM caplparam;
 					caplparam = (cappoint.y << 16) | cappoint.x;
-
 					::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
-					s_wmlbuttonup = 1;
 				}
+
+
+				s_wmlbuttonup = 1;
+
 
 			}
 
