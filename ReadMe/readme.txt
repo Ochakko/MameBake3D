@@ -264,6 +264,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/11_3
+	MainMenu with GamePad
+		AimBar moves under Main Menu Bar :  R stick.
+		And then DropDown Menu is displayed : O button.
+		And then select menu item : L stick and 0 button.
+	
 2021/04/11_2
 	補足：Undo, Redoモーション編集に関するUndo, Redo。
 

@@ -159,7 +159,10 @@ typedef struct tag_spsw
 static Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 static ULONG_PTR gdiplusToken;
 Gdiplus::Image* g_mousehereimage = 0;
-
+Gdiplus::Image* g_menuaimbarimage = 0;
+int g_currentsubmenuid = 0;
+POINT g_currentsubmenupos = { 0, 0 };
+int g_submenuwidth = 32;
 /*
 ID3D11DepthStencilState *g_pDSStateZCmp = 0;
 ID3D11DepthStencilState *g_pDSStateZCmpAlways = 0;
@@ -179,7 +182,7 @@ bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 
 float g_impscale = 1.0f;
-float g_initmass = 1.0f;
+float g_mass = 1.0f;
 
 ChaVector3 g_camEye = ChaVector3( 0.0f, 0.0f, 0.0f );
 ChaVector3 g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
@@ -286,7 +289,7 @@ LONG g_underApealingMouseHere = 0;
 
 
 extern DSManager manager;
-static bool s_enableDS = false;
+bool g_enableDS = false;
 static void InitDSValues();
 static void GetDSValues();
 static void DSColorAndVibration();
@@ -323,6 +326,7 @@ static RECT s_rcltwnd;
 static RECT s_rcsidemenuwnd;
 static RECT s_rcrigidwnd;
 static RECT s_rcinfownd;
+static RECT s_rcmainmenuaimbarwnd;
 static void ChangeMouseSetCapture();
 static void ChangeMouseReleaseCapture();
 
@@ -340,8 +344,8 @@ static POINT s_restorecursorpos;
 static int s_currentctrlid = -1;
 static HWND s_currentctrlhwnd = 0;
 static int s_wmlbuttonup = 0;
-#define SUBMENUNUM	10
-static int s_currentsubmenuid = 0;
+//#define SUBMENUNUM	10
+//static int g_currentsubmenuid = 0;//globalへ
 static int s_currentsubmenuitemid = 0;
 
 static int s_curdsutguikind = 0;
@@ -563,17 +567,20 @@ static int s_filterindex = 1;
 static HMENU	s_cursubmenu = 0;
 
 
+#define MAINMENUAIMBARH		32
+
 //static int s_mainwidth = 600;
 //static int s_mainheight = 620;
 static int s_mainwidth = 800;
 //static int s_mainheight = 820;
 //static int s_mainheight = 600;
-static int s_mainheight = 520;
+//static int s_mainheight = 520;
+static int s_mainheight = (520 - MAINMENUAIMBARH);
 static int s_bufwidth = 800;
 //static int s_bufheight = 600;
-static int s_bufheight = 520;
+static int s_bufheight = (520 - MAINMENUAIMBARH);
 static int s_infowinwidth = s_mainwidth;
-static int s_infowinheight = 600 - s_mainheight;
+static int s_infowinheight = 600 - s_mainheight - MAINMENUAIMBARH;
 
 static ID3D11Device* s_pdev = 0;
 
@@ -647,6 +654,10 @@ static OWP_Button* s_sidemenu_rigid = 0;
 static OWP_Button* s_sidemenu_impulse = 0;
 static OWP_Button* s_sidemenu_ground = 0;
 static OWP_Button* s_sidemenu_dampanim = 0;
+
+static OrgWindow* s_mainmenuaimbarWnd = 0;
+static OWP_Label* s_mainmenulabel = 0;
+
 
 static OrgWindow* s_placefolderWnd = 0;
 static OWP_Label* s_placefolderlabel_1 = 0;
@@ -895,6 +906,21 @@ enum {
 	SPAIMBARNUM
 };
 //#define SPAIMBARNUM	5
+enum {
+	SPMENU_FILE,
+	SPMENU_DISP,
+	SPMENU_MOTION,
+	SPMENU_MODEL,
+	SPMENU_EDIT,
+	SPMENU_SELRIGID,
+	SPMENU_SELRGD,
+	SPMENU_SELRGDMORPH,
+	SPMENU_SELIMPULSE,
+	SPMENU_HELP,
+	SPMENU_MAX
+};
+
+
 
 #define SPPLAYERBUTTONNUM	10
 
@@ -908,6 +934,7 @@ static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
 static SPGUISW s_spretargetsw[SPRETARGETSWNUM];
 static bool s_firstmoveaimbar = true;
 static SPGUISW s_spaimbar[SPAIMBARNUM];
+static SPGUISW s_spmenuaimbar[SPMENU_MAX];
 static int s_oprigflag = 0;
 static SPGUISW s_spsel3d;
 static SPELEM s_spmousehere;
@@ -949,7 +976,7 @@ static int s_camtargetflag = 0;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
-CDXUTCheckBox* s_SlerpOffCheckBox = 0;
+//CDXUTCheckBox* s_SlerpOffCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_RigidMarkCheckBox = 0;
@@ -1297,6 +1324,7 @@ static int CreateLongTimelineWnd();
 static int CreateDmpAnimWnd();
 static int CreateRigidWnd();
 static int CreateSideMenuWnd();
+static int CreateMainMenuAimBarWnd();
 static int CreateImpulseWnd();
 static int CreateGPlaneWnd();
 static int CreateToolWnd();
@@ -1443,6 +1471,7 @@ static int SetDmpWndParams();
 
 static int SetSpSel3DParams();
 static int SetSpAimBarParams();
+static int SetSpMenuAimBarParams();
 static int SetSpAxisParams();
 static int PickSpAxis( POINT srcpos );
 static int SetSpGUISWParams();
@@ -1741,6 +1770,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	CreateLayerWnd();
 	CreateInfoWnd();
 	CreateSideMenuWnd();
+	CreateMainMenuAimBarWnd();	
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -1801,6 +1831,13 @@ void InitApp()
 	InitDSValues();
 
 	g_mousehereimage = 0;
+	g_menuaimbarimage = 0;
+	g_currentsubmenuid = 0;
+	g_currentsubmenupos.x = 0;
+	g_currentsubmenupos.y = 0;
+
+	g_submenuwidth = 32;
+
 	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 	s_cursubmenu = 0;
@@ -1844,7 +1881,10 @@ void InitApp()
 	s_rcinfownd.left = 0;
 	s_rcinfownd.bottom = 0;
 	s_rcinfownd.right = 0;
-
+	s_rcmainmenuaimbarwnd.top = 0;
+	s_rcmainmenuaimbarwnd.left = 0;
+	s_rcmainmenuaimbarwnd.bottom = 0;
+	s_rcmainmenuaimbarwnd.right = 0;
 
 
 	bool bsuccess1 = false;
@@ -1854,12 +1894,12 @@ void InitApp()
 		bsuccess2 = GetController();
 	}
 	if (bsuccess1 && bsuccess2) {
-		s_enableDS = true;
+		g_enableDS = true;
 		s_dsdeviceid = 0;
 		s_curaimbarno = 0;
 	}
 	else {
-		s_enableDS = false;
+		g_enableDS = false;
 		s_dsdeviceid = -1;
 		s_curaimbarno = -1;
 	}
@@ -1898,6 +1938,8 @@ void InitApp()
 	s_sidemenusp1 = 0;
 	s_sidemenusp2 = 0;
 
+	s_mainmenuaimbarWnd = 0;
+	s_mainmenulabel = 0;
 
 	s_toolWnd = 0;
 	s_toolSeparator = 0;
@@ -1961,6 +2003,13 @@ void InitApp()
 		int spgno;
 		for (spgno = 0; spgno < SPAIMBARNUM; spgno++) {
 			s_spaimbar[spgno].state = false;
+		}
+	}
+	{
+		ZeroMemory(&s_spmenuaimbar, sizeof(SPGUISW) * SPMENU_MAX);
+		int spgno;
+		for (spgno = 0; spgno < SPMENU_MAX; spgno++) {
+			s_spmenuaimbar[spgno].state = false;
 		}
 	}
 
@@ -2499,14 +2548,27 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF);
 	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140OFF.png", 0, 0), return 1);
 
-	int aimno;
-	for (aimno = 0; aimno < SPAIMBARNUM; aimno++) {
-		s_spaimbar[aimno].spriteON = new CMySprite(s_pdev);
-		_ASSERT(s_spaimbar[aimno].spriteON);
-		CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return 1);
-		s_spaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
-		_ASSERT(s_spaimbar[aimno].spriteOFF);
-		CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return 1);
+	{
+		int aimno;
+		for (aimno = 0; aimno < SPAIMBARNUM; aimno++) {
+			s_spaimbar[aimno].spriteON = new CMySprite(s_pdev);
+			_ASSERT(s_spaimbar[aimno].spriteON);
+			CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return 1);
+			s_spaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
+			_ASSERT(s_spaimbar[aimno].spriteOFF);
+			CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return 1);
+		}
+	}
+	{
+		int aimno;
+		for (aimno = 0; aimno < SPMENU_MAX; aimno++) {
+			s_spmenuaimbar[aimno].spriteON = new CMySprite(s_pdev);
+			_ASSERT(s_spmenuaimbar[aimno].spriteON);
+			CallF(s_spmenuaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return 1);
+			s_spmenuaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
+			_ASSERT(s_spmenuaimbar[aimno].spriteOFF);
+			CallF(s_spmenuaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return 1);
+		}
 	}
 
 	{
@@ -2544,16 +2606,28 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_spmousehere.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spmousehere.sprite);
 	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return 1);
+	
+	{
+		WCHAR pngpath[MAX_PATH];
+		swprintf_s(pngpath, MAX_PATH, L"%simg_l105.png", mpath);
+		//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
+		//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
+		//_ASSERT(g_mouseherebmp);
+		//g_tranbmp = 0xFF000000;
+		g_mousehereimage = new Gdiplus::Image(pngpath);
+		_ASSERT(g_mousehereimage);
+	}
 
-	WCHAR pngpath[MAX_PATH];
-	swprintf_s(pngpath, MAX_PATH, L"%simg_l105.png", mpath);
-	//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
-	//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
-	//_ASSERT(g_mouseherebmp);
-	//g_tranbmp = 0xFF000000;
-	g_mousehereimage = new Gdiplus::Image(pngpath);
-	_ASSERT(g_mousehereimage);
-
+	{
+		WCHAR pngpath[MAX_PATH];
+		swprintf_s(pngpath, MAX_PATH, L"%sMenuAimBar140.png", mpath);
+		//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
+		//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
+		//_ASSERT(g_mouseherebmp);
+		//g_tranbmp = 0xFF000000;
+		g_menuaimbarimage = new Gdiplus::Image(pngpath);
+		_ASSERT(g_menuaimbarimage);
+	}
 
 
 	s_spret2prev.sprite = new CMySprite(s_pdev);
@@ -2736,6 +2810,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 
 	SetSpSel3DParams();
 	SetSpAimBarParams();
+	SetSpMenuAimBarParams();//CreateMainMenuAimBarWndよりも後
 	SetSpAxisParams();
 	SetSpGUISWParams();
 	SetSpRigidSWParams();
@@ -2786,6 +2861,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	if (g_mousehereimage) {
 		delete g_mousehereimage;
 		g_mousehereimage = 0;
+	}
+	if (g_menuaimbarimage) {
+		delete g_menuaimbarimage;
+		g_menuaimbarimage = 0;
 	}
 	Gdiplus::GdiplusShutdown(gdiplusToken);
 
@@ -3274,6 +3353,15 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_sidemenuWnd = 0;
 	}
 
+	if (s_mainmenuaimbarWnd) {
+		delete s_mainmenuaimbarWnd;
+		s_mainmenuaimbarWnd = 0;
+	}
+	if (s_mainmenulabel) {
+		delete s_mainmenulabel;
+		s_mainmenulabel = 0;
+	}
+
 
 	if (s_dmpgroupcheck) {
 		delete s_dmpgroupcheck;
@@ -3429,6 +3517,22 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 				delete curspgOFF;
 			}
 			s_spaimbar[spgno].spriteOFF = 0;
+		}
+	}
+	{
+		int spgno;
+		for (spgno = 0; spgno < SPMENU_MAX; spgno++) {
+			CMySprite* curspgON = s_spmenuaimbar[spgno].spriteON;
+			if (curspgON) {
+				delete curspgON;
+			}
+			s_spmenuaimbar[spgno].spriteON = 0;
+
+			CMySprite* curspgOFF = s_spmenuaimbar[spgno].spriteOFF;
+			if (curspgOFF) {
+				delete curspgOFF;
+			}
+			s_spmenuaimbar[spgno].spriteOFF = 0;
 		}
 	}
 	{
@@ -4363,7 +4467,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//DS deviceがあっても、マウスを併用する場合があるのでマウスのSetCaptureとReleaseCaptureは必要
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-		//if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
 			SetCapture(s_3dwnd);
 		//}
@@ -4935,7 +5039,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//DS deviceがあっても、マウスを併用することがあるのでマウスのSetCaptureとReleaseCaptureは必要
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-		//if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
 			ReleaseCapture();
 		//}
@@ -11020,7 +11124,8 @@ int SetSpRigidSWParams()
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x = 120;
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486;
+	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486;
+	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
 
 	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.x = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x + (int)spgwidth + spgshift;
 	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.y = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y;
@@ -11071,7 +11176,8 @@ int SetSpRetargetSWParams()
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x = 120;
-	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486;
+	//s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486;
+	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 - MAINMENUAIMBARH;
 
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].dispcenter.x = s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x + (int)spgwidth + spgshift;
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].dispcenter.y = s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y;
@@ -11105,6 +11211,76 @@ int SetSpRetargetSWParams()
 
 }
 
+int SetSpMenuAimBarParams()
+{
+	if (!(s_spmenuaimbar[0].spriteON) || !(s_spmenuaimbar[0].spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	////float spgwidth = 140.0f;
+	////float spgheight = 6.0f;
+	////int spgshift = 6;
+
+	//HMENU mainmenu;
+	//mainmenu = GetMenu(s_mainhwnd);
+	//int menuno;
+	//for (menuno = 0; menuno < SPMENU_MAX; menuno++) {
+	//	HMENU submenu = GetSubMenu(mainmenu, menuno);
+	//	if (submenu) {
+	//		int curmenuitemid;
+	//		curmenuitemid = ::GetMenuItemID(submenu, 0);
+	//		if (curmenuitemid >= 0) {
+	//			RECT rc;
+	//			GetMenuItemRect(s_mainhwnd, mainmenu, menuno, &rc);
+	//			int spritewidth = rc.right - rc.left;//org:140
+	//			int spriteheight = 6;//org:6
+
+	//			POINT point1;
+	//			POINT point2;
+	//			point1.x = rc.left;
+	//			point1.y = rc.top;
+	//			point2.x = rc.right;
+	//			point2.y = rc.bottom;
+	//			::ClientToScreen(s_mainhwnd, &point1);
+	//			::ClientToScreen(s_mainhwnd, &point2);
+	//			//::ScreenToClient(s_mainmenuaimbarWnd->getHWnd(), &point1);
+	//			//::ScreenToClient(s_mainmenuaimbarWnd->getHWnd(), &point2);
+
+	//			s_spmenuaimbar[menuno].dispcenter.x = point1.x;//screen pos!!!!!!!!!!!
+	//			s_spmenuaimbar[menuno].dispcenter.y = 16;
+
+	//			//ChaVector3 disppos;
+	//			//disppos.x = (float)(s_spmenuaimbar[menuno].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	//			//disppos.y = -((float)(s_spmenuaimbar[menuno].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	//			//disppos.z = 0.0f;
+	//			//ChaVector2 dispsize = ChaVector2(spritewidth / (float)s_mainwidth * 2.0f, spriteheight / (float)s_mainheight * 2.0f);
+
+	//			//if (s_spmenuaimbar[menuno].spriteON) {
+	//			//	CallF(s_spmenuaimbar[menuno].spriteON->SetPos(disppos), return 1);
+	//			//	CallF(s_spmenuaimbar[menuno].spriteON->SetSize(dispsize), return 1);
+	//			//}
+	//			//else {
+	//			//	_ASSERT(0);
+	//			//}
+	//			//if (s_spmenuaimbar[menuno].spriteOFF) {
+	//			//	CallF(s_spmenuaimbar[menuno].spriteOFF->SetPos(disppos), return 1);
+	//			//	CallF(s_spmenuaimbar[menuno].spriteOFF->SetSize(dispsize), return 1);
+	//			//}
+	//			//else {
+	//			//	_ASSERT(0);
+	//			//}
+
+	//		}
+	//	}
+
+	//}
+
+	return 0;
+
+}
+
+
 int SetSpAimBarParams()
 {
 	if (!(s_spaimbar[SPAIMBAR_1].spriteON) || !(s_spaimbar[SPAIMBAR_1].spriteOFF)) {
@@ -11116,7 +11292,8 @@ int SetSpAimBarParams()
 	float spgheight = 6.0f;
 	int spgshift = 6;
 	s_spaimbar[SPAIMBAR_1].dispcenter.x = 120;
-	s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2);
+	//s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2);
+	s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2) - MAINMENUAIMBARH;
 
 	s_spaimbar[SPAIMBAR_2].dispcenter.x = s_spaimbar[SPAIMBAR_1].dispcenter.x + (int)spgwidth + spgshift;
 	s_spaimbar[SPAIMBAR_2].dispcenter.y = s_spaimbar[SPAIMBAR_1].dispcenter.y;
@@ -11222,7 +11399,8 @@ int SetSpGUISWParams()
 		float spretheight = 32.0f;
 		int spretshift = 0;
 		s_spret2prev.dispcenter.x = 16.0f + 8.0f;
-		s_spret2prev.dispcenter.y = 486;
+		//s_spret2prev.dispcenter.y = 486;
+		s_spret2prev.dispcenter.y = 486 - MAINMENUAIMBARH;
 		ChaVector3 disppos;
 		disppos.x = (float)(s_spret2prev.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spret2prev.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
@@ -11244,7 +11422,8 @@ int SetSpGUISWParams()
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_spguisw[SPGUISW_SPRITEFK].dispcenter.x = 120;
-	s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486;
+	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486;
+	s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 - MAINMENUAIMBARH;
 
 	s_spguisw[SPGUISW_LEFT].dispcenter.x = s_spguisw[SPGUISW_SPRITEFK].dispcenter.x + (int)spgwidth + spgshift;
 	s_spguisw[SPGUISW_LEFT].dispcenter.y = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y;
@@ -13185,7 +13364,7 @@ int OnFrameKeyboard()
 int OnFrameUtCheckBox()
 {
 	g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
-	g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
+	//g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
 	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	g_rigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
@@ -14553,11 +14732,11 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_applytotheend);
 	s_dsutguiid0.push_back(IDC_APPLY_TO_THEEND);
 
-	g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKOff", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
-	s_ui_slerpoff = g_SampleUI.GetControl(IDC_SLERP_OFF);
-	_ASSERT(s_ui_slerpoff);
-	s_dsutgui0.push_back(s_ui_slerpoff);
-	s_dsutguiid0.push_back(IDC_SLERP_OFF);
+	//g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKOff", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
+	//s_ui_slerpoff = g_SampleUI.GetControl(IDC_SLERP_OFF);
+	//_ASSERT(s_ui_slerpoff);
+	//s_dsutgui0.push_back(s_ui_slerpoff);
+	//s_dsutguiid0.push_back(IDC_SLERP_OFF);
 	//	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(疑似ローカル)", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
 //	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"回転角度制限をする", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 
@@ -14703,8 +14882,10 @@ int CreateTimelineWnd()
 		0,
 		L"TimeLine",				//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(0, 0),		//位置
-		WindowSize(400, 600),	//サイズ
+		//WindowPos(0, 0),		//位置
+		//WindowSize(400, 600),	//サイズ
+		WindowPos(0, MAINMENUAIMBARH),		//位置
+		WindowSize(400, (600 - MAINMENUAIMBARH)),	//サイズ 
 		//WindowSize(150,540),	//サイズ
 		L"TimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
@@ -14753,7 +14934,7 @@ int CreateTimelineWnd()
 		}
 	});
 
-	s_rctreewnd.top = 0;
+	s_rctreewnd.top = MAINMENUAIMBARH;
 	s_rctreewnd.left = 0;
 	s_rctreewnd.right = 400;
 	s_rctreewnd.bottom = 600;
@@ -15031,10 +15212,53 @@ int CreateDmpAnimWnd()
 	});
 
 	s_dmpanimWnd->setSize(WindowSize(450, 858));
-	s_dmpanimWnd->setPos(WindowPos(1200, 32));
+	s_dmpanimWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
 
 
 	return 0;
+}
+
+int CreateMainMenuAimBarWnd()
+{
+	s_mainmenuaimbarWnd = new OrgWindow(
+		0,
+		_T("MainMenuAimBarWnd"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+								//WindowPos(100, 200),		//位置
+		WindowPos(0, 0),
+		//WindowSize(450,880),		//サイズ
+		//WindowSize(450,680),		//サイズ
+		//WindowSize(450, 760),		//サイズ
+		WindowSize(1200, MAINMENUAIMBARH),		//サイズ
+		_T("MainMenuAimBarWnd"),	//タイトル
+		s_mainhwnd,	//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true, true);					//サイズ変更の可否
+
+
+	//s_sidemenuWnd->setCloseListener([]() { s_ScloseFlag = true; });
+
+	s_mainmenuaimbarWnd->setBlackTheme();
+
+
+	s_mainmenulabel = new OWP_Label(L".");
+	s_mainmenuaimbarWnd->addParts(*s_mainmenulabel);
+
+
+	s_mainmenuaimbarWnd->setPos(WindowPos(0, 0));
+	s_mainmenuaimbarWnd->setSize(WindowSize(1200, MAINMENUAIMBARH));
+	s_mainmenuaimbarWnd->callRewrite();						//再描画
+
+	//450, 32
+	s_rcmainmenuaimbarwnd.top = 0;
+	s_rcmainmenuaimbarwnd.left = 0;
+	s_rcmainmenuaimbarwnd.bottom = MAINMENUAIMBARH;
+	s_rcmainmenuaimbarwnd.right = 1200;
+
+
+	return 0;
+
 }
 
 int CreateSideMenuWnd()
@@ -15049,7 +15273,7 @@ int CreateSideMenuWnd()
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450,680),		//サイズ
 		//WindowSize(450, 760),		//サイズ
-		WindowSize(450, 32),		//サイズ
+		WindowSize(450, MAINMENUAIMBARH),		//サイズ
 		_T("SideMenu"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
@@ -15114,7 +15338,7 @@ int CreateSideMenuWnd()
 	//450, 32
 	s_rcsidemenuwnd.top = 0;
 	s_rcsidemenuwnd.left = 0;
-	s_rcsidemenuwnd.bottom = 32;
+	s_rcsidemenuwnd.bottom = MAINMENUAIMBARH;
 	s_rcsidemenuwnd.right = 450;
 
 
@@ -15148,7 +15372,7 @@ int CreatePlaceFolderWnd()
 	s_placefolderWnd->addParts(*s_placefolderlabel_3);
 
 	s_placefolderWnd->setSize(WindowSize(450, 858));//880
-	s_placefolderWnd->setPos(WindowPos(1200, 32));
+	s_placefolderWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
 
 	s_placefolderWnd->callRewrite();						//再描画
 
@@ -15714,12 +15938,12 @@ int CreateRigidWnd()
 
 
 	s_rigidWnd->setSize(WindowSize(450, 858));//880
-	s_rigidWnd->setPos(WindowPos(1200, 32));
+	s_rigidWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
 
 	s_rigidWnd->callRewrite();						//再描画
 	s_rigidWnd->setVisible(false);
 
-	s_rcrigidwnd.top = 0;
+	s_rcrigidwnd.top = MAINMENUAIMBARH;
 	s_rcrigidwnd.left = 0;
 	s_rcrigidwnd.bottom = 858;
 	s_rcrigidwnd.right = 450;
@@ -15839,7 +16063,7 @@ int CreateImpulseWnd()
 	});
 	//////////
 	s_impWnd->setSize(WindowSize(450, 858));
-	s_impWnd->setPos(WindowPos(1200, 32));
+	s_impWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
 
 
 	return 0;
@@ -15975,7 +16199,7 @@ int CreateGPlaneWnd()
 	});
 
 	s_gpWnd->setSize(WindowSize(450, 858));
-	s_gpWnd->setPos(WindowPos(1200, 32));
+	s_gpWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
 
 
 	return 0;
@@ -16256,7 +16480,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 	
 	//aimbar
-	if (s_enableDS && (s_dsdeviceid >= 0)) {
+	if (g_enableDS && (s_dsdeviceid >= 0)) {
 
 		int platemenukind = s_platemenukind;
 		int platenomax = 0;
@@ -16295,28 +16519,57 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				}
 			}
 		}
-
-		int spgcnt;
-		int chkplatenomax;
-		chkplatenomax = min(SPAIMBARNUM, platenomax);
-		for (spgcnt = 0; spgcnt < chkplatenomax; spgcnt++) {
-			if (s_spaimbar[spgcnt].state) {
-				if (s_spaimbar[spgcnt].spriteON) {
-					s_spaimbar[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+		{
+			int spgcnt;
+			int chkplatenomax;
+			chkplatenomax = min(SPAIMBARNUM, platenomax);
+			for (spgcnt = 0; spgcnt < chkplatenomax; spgcnt++) {
+				if (s_spaimbar[spgcnt].state) {
+					if (s_spaimbar[spgcnt].spriteON) {
+						s_spaimbar[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 				else {
-					_ASSERT(0);
-				}
-			}
-			else {
-				if (s_spaimbar[spgcnt].spriteOFF) {
-					s_spaimbar[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
+					if (s_spaimbar[spgcnt].spriteOFF) {
+						s_spaimbar[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 			}
 		}
+		{
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->callRewrite();
+			}
+
+
+			//int spgcnt;
+			//for (spgcnt = 0; spgcnt < SPMENU_MAX; spgcnt++) {
+			//	//MainMenuAimBarWndの背景色は、非選択時に茶色、選択時にオレンジ。オレンジはspriteONの色。よってスプライト表示のオンとオフを入れ替える。
+			//	if (s_spmenuaimbar[spgcnt].state) {
+			//		if (s_spmenuaimbar[spgcnt].spriteOFF) {//ONのときにOFF色
+			//			s_spmenuaimbar[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
+			//		}
+			//		else {
+			//			_ASSERT(0);
+			//		}
+			//	}
+			//	else {
+			//		if (s_spmenuaimbar[spgcnt].spriteON) {//OFFのときにON色
+			//			s_spmenuaimbar[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+			//		}
+			//		else {
+			//			_ASSERT(0);
+			//		}
+			//	}
+			//}
+		}
+
 	}
 
 	if (s_platemenukind == SPPLATEMENUKIND_GUI) {
@@ -16733,7 +16986,7 @@ int DispCustomRigDlg(int rigno)
 		s_customrigdlg,
 		HWND_TOP,
 		1200,
-		32,
+		MAINMENUAIMBARH,
 		450,
 		858,
 		SWP_SHOWWINDOW
@@ -18353,12 +18606,13 @@ HWND Create3DWnd()
 	RECT winrect;
 	::GetWindowRect(s_3dwnd, &winrect);
 	//::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
-	::MoveWindow(s_3dwnd, 400, 0, s_mainwidth, s_mainheight, TRUE);
+	//::MoveWindow(s_3dwnd, 400, 0, s_mainwidth, s_mainheight, TRUE);
+	::MoveWindow(s_3dwnd, 400, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
 
-	s_rc3dwnd.top = 0;
+	s_rc3dwnd.top = MAINMENUAIMBARH;
 	s_rc3dwnd.left = 0;
 	s_rc3dwnd.right = s_mainwidth;
-	s_rc3dwnd.bottom = s_mainheight;
+	s_rc3dwnd.bottom = s_mainheight + MAINMENUAIMBARH;
 
 
 	//#############################################################################
@@ -18388,7 +18642,7 @@ CInfoWindow* CreateInfoWnd()
 
 		int ret;
 		ret = newinfownd->CreateInfoWindow(s_mainhwnd,
-			400, s_mainheight + 3 * cyframe,
+			400, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
 			s_infowinwidth, s_infowinheight + 2 * cyframe);
 
 		if (ret == 0) {
@@ -18403,8 +18657,8 @@ CInfoWindow* CreateInfoWnd()
 
 	}
 
-	s_rcinfownd.top = 0;
-	s_rcinfownd.left = 0;
+	s_rcinfownd.top = s_mainheight + 3 * cyframe + MAINMENUAIMBARH;
+	s_rcinfownd.left = 400;
 	s_rcinfownd.bottom = (s_infowinheight + 2 * cyframe);
 	s_rcinfownd.right = s_infowinwidth;
 
@@ -18893,6 +19147,22 @@ void GUISetVisible_Sel3D()
 	}
 }
 
+
+// g_currentsubmenuid
+void GUISetVisible_MenuAimBar()
+{
+	//static int s_curaimbarno
+	if ((g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
+		int aimno;
+		for (aimno = 0; aimno < SPMENU_MAX; aimno++) {
+			s_spmenuaimbar[aimno].state = false;
+		}
+
+		s_spmenuaimbar[g_currentsubmenuid].state = true;
+
+	}
+}
+
 void GUISetVisible_AimBar()
 {
 	//static int s_curaimbarno
@@ -19360,7 +19630,7 @@ void InitDSValues()
 	//static int s_dsaxisMOverSrh[MB3D_DSAXISNUM];
 	//static int s_bef_dsaxisMOverSrh[MB3D_DSAXISNUM];
 
-	s_enableDS = false;
+	g_enableDS = false;
 	s_dsdeviceid = -1;
 	s_curaimbarno = -1;
 
@@ -19420,7 +19690,7 @@ void InitDSValues()
 	s_curdseullimitctrlno = 0;
 	s_dseullimitctrls.clear();
 
-	s_currentsubmenuid = 0;
+	g_currentsubmenuid = 0;
 	s_currentsubmenuitemid = 0;
 
 	ZeroMemory(s_dsbuttondown, sizeof(int) * MB3D_DSBUTTONNUM);
@@ -19441,7 +19711,7 @@ void InitDSValues()
 void OnDSUpdate()
 {
 
-	if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 		//DS deviceが無い場合には何もせずにリターン
 		return;
 	}
@@ -19562,7 +19832,7 @@ void GetDSValues()
 	//static int s_bef_dsaxisMOverSrh[MB3D_DSAXISNUM];
 
 
-	if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 		//DS deviceが無い場合には何もせずにリターン
 		return;
 	}
@@ -19643,7 +19913,7 @@ void GetDSValues()
 
 void DSColorAndVibration()
 {
-	if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 		//DS deviceが無い場合には何もせずにリターン
 		return;
 	}
@@ -19696,7 +19966,7 @@ void DSColorAndVibration()
 void DSR1ButtonSelectCurrentBone()
 {
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
-	if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 		//DS deviceが無い場合には何もせずにリターン
 		return;
 	}
@@ -19721,6 +19991,10 @@ void DSR1ButtonSelectCurrentBone()
 	if (curbuttonup >= 1) {
 		
 		::SetWindowPos(s_3dwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+		if (s_mainmenuaimbarWnd) {
+			s_mainmenuaimbarWnd->setBackGroundColor(false);
+		}
 
 		if (s_timelineWnd) {
 			s_timelineWnd->setBackGroundColor(false);
@@ -19816,9 +20090,18 @@ void SelectNextWindow(int nextwndid)
 	else {
 		tmpsidewnd = 0;
 	}
+	HWND tmpmainmenuaimbarwnd;
+	if (s_mainmenuaimbarWnd) {
+		tmpmainmenuaimbarwnd = s_mainmenuaimbarWnd->getHWnd();
+	}
+	else {
+		tmpmainmenuaimbarwnd = 0;
+	}
+
 
 	HWND hwnds[MB3D_WND_MAX];
-	hwnds[MB3D_WND_MAIN] = s_mainhwnd;
+	//hwnds[MB3D_WND_MAIN] = s_mainhwnd;
+	hwnds[MB3D_WND_MAIN] = tmpmainmenuaimbarwnd;
 	hwnds[MB3D_WND_3D] = s_3dwnd;
 	hwnds[MB3D_WND_TREE] = tmptlwnd;
 	hwnds[MB3D_WND_TOOL] = tmptoolwnd;
@@ -19865,7 +20148,11 @@ void SelectNextWindow(int nextwndid)
 			//RedrawWindow(hwnds[0], 0, 0, RDW_UPDATENOW);
 
 
-			::SetWindowPos(hwnds[0], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			//::SetWindowPos(hwnds[0], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			::SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->setBackGroundColor(true);
+			}
 
 			if (s_timelineWnd) {
 				s_timelineWnd->setBackGroundColor(false);
@@ -19890,6 +20177,11 @@ void SelectNextWindow(int nextwndid)
 
 			::SetWindowPos(hwnds[1], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->setBackGroundColor(false);
+			}
+
+
 			if (s_timelineWnd) {
 				s_timelineWnd->setBackGroundColor(false);
 			}
@@ -19906,6 +20198,10 @@ void SelectNextWindow(int nextwndid)
 		else if (nextwndid == MB3D_WND_TREE) {
 			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->setBackGroundColor(false);
+			}
 
 			if (s_timelineWnd) {
 				s_timelineWnd->setBackGroundColor(true);
@@ -19925,6 +20221,10 @@ void SelectNextWindow(int nextwndid)
 			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->setBackGroundColor(false);
+			}
+
 			if (s_timelineWnd) {
 				s_timelineWnd->setBackGroundColor(false);
 			}
@@ -19943,6 +20243,10 @@ void SelectNextWindow(int nextwndid)
 			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->setBackGroundColor(false);
+			}
+
 			if (s_timelineWnd) {
 				s_timelineWnd->setBackGroundColor(false);
 			}
@@ -19960,6 +20264,10 @@ void SelectNextWindow(int nextwndid)
 		else if (nextwndid == MB3D_WND_SIDE) {
 			//::SetClassLongPtr(hwnds[1], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
 			//::SetClassLongPtr(hwnds[0], GCLP_HBRBACKGROUND, (LONG_PTR)unselectbrush);
+
+			if (s_mainmenuaimbarWnd) {
+				s_mainmenuaimbarWnd->setBackGroundColor(false);
+			}
 
 			if (s_timelineWnd) {
 				s_timelineWnd->setBackGroundColor(false);
@@ -20004,7 +20312,9 @@ void SelectNextWindow(int nextwndid)
 		//SetCaptureWindow !!!!!!!!!!!!!!!!!
 
 		s_currentwndid = nextwndid;
-		s_currenthwnd = hwnds[s_currentwndid];
+		if ((s_currentwndid >= 0) && (s_currentwndid < MB3D_WND_MAX)) {
+			s_currenthwnd = hwnds[s_currentwndid];
+		}
 
 		GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
 
@@ -20015,7 +20325,7 @@ void SelectNextWindow(int nextwndid)
 void DSSelectWindowAndCtrl()
 {
 
-	if (!s_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 		//DS deviceが無い場合には何もせずにリターン
 		return;
 	}
@@ -22306,12 +22616,6 @@ void DSAxisRMainMenuBar()
 		return;
 	}
 
-
-
-	
-
-
-
 	POINT cursorpos;
 	::GetCursorPos(&cursorpos);
 
@@ -22352,7 +22656,7 @@ void DSAxisRMainMenuBar()
 
 	int nextsubmenuid;
 
-	nextsubmenuid = s_currentsubmenuid;
+	nextsubmenuid = g_currentsubmenuid;
 
 	if (upbutton >= 1) {
 		changeflag = true;
@@ -22369,11 +22673,11 @@ void DSAxisRMainMenuBar()
 		changeflag = true;
 	}
 
-	if (nextsubmenuid >= SUBMENUNUM) {
+	if (nextsubmenuid >= SPMENU_MAX) {
 		nextsubmenuid = 0;//ring
 	}
 	if (nextsubmenuid < 0) {
-		nextsubmenuid = (SUBMENUNUM - 1);//ring
+		nextsubmenuid = (SPMENU_MAX - 1);//ring
 	}
 
 	if (changeflag == true) {
@@ -22383,72 +22687,102 @@ void DSAxisRMainMenuBar()
 			return;
 		}
 
-		s_currentsubmenuid = nextsubmenuid;
+
+		SelectNextWindow(MB3D_WND_MAIN);//MainMenuAimBarWndをハイライト
+
+
+		g_currentsubmenuid = nextsubmenuid;
 		s_currentsubmenuitemid = 0;
 
-		HMENU mainmenu;
-		//HMENU cursubmenu;
-		mainmenu = GetMenu(s_mainhwnd);
-		s_cursubmenu = GetSubMenu(mainmenu, s_currentsubmenuid);
-		if (s_cursubmenu) {
-			int curmenuitemid;
-			curmenuitemid = ::GetMenuItemID(s_cursubmenu, 0);
-			if (curmenuitemid >= 0) {
-				
-				//::SendMessage(s_mainhwnd, WM_NOTIFY, 0, (LPARAM)&nmtoolbara);
-				////::SendMessage(s_mainhwnd, WM_COMMAND, curmenuitemid, 0);//選択決定時のコマンド
 
-				RECT rc;
-				TPMPARAMS tpm;
-				GetMenuItemRect(s_mainhwnd, mainmenu, s_currentsubmenuid, &rc);
-				tpm.cbSize = sizeof(TPMPARAMS);//
-				tpm.rcExclude = rc;//
+		if ((g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
 
-				POINT mousepoint;
-				mousepoint.x = rc.left + 30;
-				mousepoint.y = rc.bottom + 10;
-				::SetCursorPos(mousepoint.x, mousepoint.y);
+			HMENU mainmenu;
+			mainmenu = GetMenu(s_mainhwnd);
+			int menuno = g_currentsubmenuid;
+			s_cursubmenu = GetSubMenu(mainmenu, menuno);
+			if (s_cursubmenu) {
+				int curmenuitemid;
+				curmenuitemid = ::GetMenuItemID(s_cursubmenu, 0);
+				if (curmenuitemid >= 0) {
+					RECT rc;
+					GetMenuItemRect(s_mainhwnd, mainmenu, menuno, &rc);//rcはスクリーン座標
+					g_submenuwidth = rc.right - rc.left;//org:140
 
-				//HMENU hMenuLoaded = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU1));//
-				//HMENU hPopupMenu = GetSubMenu(s_mainmenu, s_currentsubmenuid);//
-				InterlockedExchange(&g_undertrackingRMenu, 1);
+					::SetCursorPos(rc.left, rc.bottom + 22);
+					g_currentsubmenupos.x = rc.left;
+					g_currentsubmenupos.y = rc.bottom + 16;
 
-				//#################
-				//選択決定成功例その２
-				//#################
-				//第2項目（インデックス値 = 1, ID = 0x2711）を選択したところ、
-				//wParam = 0x00012711
-				//のように、上位2バイトにインデックス値が、下位2バイトにIDが入ります。
-				//WPARAM wparam;
-				//wparam = (s_currentsubmenuid << 16) | curmenuitemid;
-				//LPARAM lparam;
-				//lparam = (LPARAM)mainmenu;
-				//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
-
-
-
-				//wparam = ((MF_POPUP | MF_MOUSESELECT) << 16) | (WORD)s_currentsubmenuid;//s_currentsubmenuid, curmenuitemid
-				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)mainmenu);//GetMenu(s_mainhwnd), cursubmenu
-
-
-
-
-				//TrackPopupMenuEx(cursubmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
-				//	rc.left, rc.bottom, s_mainhwnd, &tpm);//
-				//SetCapture(s_3dwnd);
-
-				SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
-
-				int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, rc.left, rc.bottom, 0, s_mainhwnd, NULL);
-
-				//ReleaseCapture();
-
-				InterlockedExchange(&g_undertrackingRMenu, 0);
-
-				//int retmenuid = ::TrackPopupMenu(hPopupMenu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
-				//DestroyMenu(hMenuLoaded);//
+					Sleep(200);
+				}
 			}
 		}
+
+
+
+		//HMENU mainmenu;
+		////HMENU cursubmenu;
+		//mainmenu = GetMenu(s_mainhwnd);
+		//s_cursubmenu = GetSubMenu(mainmenu, g_currentsubmenuid);
+		//if (s_cursubmenu) {
+		//	int curmenuitemid;
+		//	curmenuitemid = ::GetMenuItemID(s_cursubmenu, 0);
+		//	if (curmenuitemid >= 0) {
+		//		
+		//		//::SendMessage(s_mainhwnd, WM_NOTIFY, 0, (LPARAM)&nmtoolbara);
+		//		////::SendMessage(s_mainhwnd, WM_COMMAND, curmenuitemid, 0);//選択決定時のコマンド
+
+		//		RECT rc;
+		//		TPMPARAMS tpm;
+		//		GetMenuItemRect(s_mainhwnd, mainmenu, g_currentsubmenuid, &rc);
+		//		tpm.cbSize = sizeof(TPMPARAMS);//
+		//		tpm.rcExclude = rc;//
+
+		//		POINT mousepoint;
+		//		mousepoint.x = rc.left + 30;
+		//		mousepoint.y = rc.bottom + 10;
+		//		::SetCursorPos(mousepoint.x, mousepoint.y);
+
+		//		//HMENU hMenuLoaded = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU1));//
+		//		//HMENU hPopupMenu = GetSubMenu(s_mainmenu, g_currentsubmenuid);//
+		//		InterlockedExchange(&g_undertrackingRMenu, 1);
+
+		//		//#################
+		//		//選択決定成功例その２
+		//		//#################
+		//		//第2項目（インデックス値 = 1, ID = 0x2711）を選択したところ、
+		//		//wParam = 0x00012711
+		//		//のように、上位2バイトにインデックス値が、下位2バイトにIDが入ります。
+		//		//WPARAM wparam;
+		//		//wparam = (g_currentsubmenuid << 16) | curmenuitemid;
+		//		//LPARAM lparam;
+		//		//lparam = (LPARAM)mainmenu;
+		//		//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
+
+
+
+		//		//wparam = ((MF_POPUP | MF_MOUSESELECT) << 16) | (WORD)g_currentsubmenuid;//g_currentsubmenuid, curmenuitemid
+		//		//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)mainmenu);//GetMenu(s_mainhwnd), cursubmenu
+
+
+
+
+		//		//TrackPopupMenuEx(cursubmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
+		//		//	rc.left, rc.bottom, s_mainhwnd, &tpm);//
+		//		//SetCapture(s_3dwnd);
+
+		//		SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
+
+		//		int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, rc.left, rc.bottom, 0, s_mainhwnd, NULL);
+
+		//		//ReleaseCapture();
+
+		//		InterlockedExchange(&g_undertrackingRMenu, 0);
+
+		//		//int retmenuid = ::TrackPopupMenu(hPopupMenu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
+		//		//DestroyMenu(hMenuLoaded);//
+		//	}
+		//}
 
 		//LPARAM lparam;
 		//lparam = (cursorpos.y << 16) | cursorpos.x;
@@ -23305,19 +23639,19 @@ void GetHiLiteSubmenu(HMENU* pcommandsubmenu, int* pcommandsubmenunum, int* pcom
 	if (selectedsubmenuitemno == -1) {
 		HMENU submenu2 = 0;
 
-		if (s_currentsubmenuid == 0) {
+		if (g_currentsubmenuid == 0) {
 			submenu2 = GetSubMenu(s_cursubmenu, 1);
 		}
-		else if (s_currentsubmenuid == 2) {
+		else if (g_currentsubmenuid == 2) {
 			submenu2 = GetSubMenu(s_cursubmenu, 3);
 		}
-		else if (s_currentsubmenuid == 3) {
+		else if (g_currentsubmenuid == 3) {
 			submenu2 = GetSubMenu(s_cursubmenu, 3);
 		}
-		else if (s_currentsubmenuid == 4) {
+		else if (g_currentsubmenuid == 4) {
 			submenu2 = GetSubMenu(s_cursubmenu, 3);
 		}
-		else if ((s_currentsubmenuid >= 5) && (s_currentsubmenuid <= 8)) {
+		else if ((g_currentsubmenuid >= 5) && (g_currentsubmenuid <= 8)) {
 			submenu2 = GetSubMenu(s_cursubmenu, 0);
 		}
 
@@ -23392,7 +23726,7 @@ void DSOButtonSelectedPopupMenu()
 //			if (selectedsubmenuitemno >= 0) {
 //				int selectedmenuid = -1;
 //
-//				switch (s_currentsubmenuid) {
+//				switch (g_currentsubmenuid) {
 //				case 0:
 //					switch (selectedsubmenuitemno) {
 //					case 0:
@@ -23648,12 +23982,12 @@ void DSOButtonSelectedPopupMenu()
 				//	//wParam = 0x00012711
 				//	//のように、上位2バイトにインデックス値が、下位2バイトにIDが入ります。
 				//	//WPARAM wparam;
-				//	//wparam = (s_currentsubmenuid << 16) | curmenuitemid;
+				//	//wparam = (g_currentsubmenuid << 16) | curmenuitemid;
 				//	//LPARAM lparam;
 				//	//lparam = (LPARAM)mainmenu;
 				//	//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
 
-				//	if ((submenuitemnum == 1) && (selectedsubmenuitemno >= 0) && (s_currentsubmenuid >= 0)) {
+				//	if ((submenuitemnum == 1) && (selectedsubmenuitemno >= 0) && (g_currentsubmenuid >= 0)) {
 				//		//メニュー項目が１つだけの場合にはポップアップを解除してからWM_COMMANDを呼んでみる
 				//		//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
 				//		PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
@@ -24131,7 +24465,7 @@ void DSAimBarOK()
 				HWND caphwnd;
 				caphwnd = ::GetCapture();
 				if (caphwnd && IsWindow(caphwnd)) {
-					//WPARAM wparam = (0xFFFF << 16) | (WORD)s_currentsubmenuid;//s_currentsubmenuid, curmenuitemid
+					//WPARAM wparam = (0xFFFF << 16) | (WORD)g_currentsubmenuid;//g_currentsubmenuid, curmenuitemid
 					//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)GetMenu(s_mainhwnd));//GetMenu(s_mainhwnd), cursubmenu
 					POINT cappoint;
 					cappoint = cursorpos;
@@ -24141,6 +24475,15 @@ void DSAimBarOK()
 					::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 				}
 
+
+				//MainMenuAimBar
+				if ((s_currentwndid == MB3D_WND_MAIN) && s_cursubmenu && (g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
+					SelectNextWindow(MB3D_WND_3D);//続いて　O button を押したときにメニューが開かないように
+					InterlockedExchange(&g_undertrackingRMenu, 1);
+					SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
+					int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_mainhwnd, NULL);
+					InterlockedExchange(&g_undertrackingRMenu, 0);
+				}
 
 				//MainWindow MsgProc ; Prepair For Undo
 				PrepairUndo();
@@ -24252,7 +24595,7 @@ void ChangeMouseSetCapture()
 
 	//check 3dwnd
 	{
-		int wndtop = 0;
+		int wndtop = s_rc3dwnd.top;
 		int wndleft = s_rctreewnd.right;
 		int wndbottom = s_rc3dwnd.bottom;
 		int wndright = wndleft + s_rc3dwnd.right;
@@ -24264,7 +24607,7 @@ void ChangeMouseSetCapture()
 
 	//check treewnd
 	{
-		int wndtop = 0;
+		int wndtop = s_rctreewnd.top;
 		int wndleft = 0;
 		int wndbottom = s_rctreewnd.bottom;
 		int wndright = s_rctreewnd.right;
@@ -24355,6 +24698,7 @@ void ChangeMouseSetCapture()
 					}
 				}
 				break;
+
 			case 1:
 				if (s_3dwnd) {
 					//SetCapture(s_3dwnd);
@@ -24432,6 +24776,7 @@ void ChangeMouseSetCapture()
 					SetCapture(g_infownd->GetHWnd());
 				}
 				break;
+
 			default:
 				if (s_mainhwnd) {
 					SetCapture(s_mainhwnd);

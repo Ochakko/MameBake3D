@@ -35,6 +35,11 @@ extern int g_dsmousewait;
 //extern COLORREF g_tranbmp;
 extern float g_mouseherealpha;
 extern Gdiplus::Image* g_mousehereimage;
+extern Gdiplus::Image* g_menuaimbarimage;
+extern int g_currentsubmenuid;
+extern POINT g_currentsubmenupos;
+extern bool g_enableDS;
+extern int g_submenuwidth;
 
 
 static double TIME_ERROR_WIDTH = 0.0001;
@@ -605,6 +610,8 @@ static void s_dummyfunc();
 			partsAreaSize= WindowSize( size.x-partsAreaPos.x-3, size.y-partsAreaPos.y-3 );
 			currentPartsSizeY= 0;
 
+			isblacktheme = false;
+
 			partsList.clear();
 
 			//ウィンドウクラスを登録
@@ -647,6 +654,10 @@ static void s_dummyfunc();
 			return isactive;
 		}
 
+		void setBlackTheme()
+		{
+			isblacktheme = true;
+		}
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウ内部品を追加
@@ -654,9 +665,16 @@ static void s_dummyfunc();
 			isactive = srcisactive;
 
 			if (isactive) {
-				baseR = 255;
-				baseG = 128;
-				baseB = 64;
+				if (isblacktheme) {
+					baseR = 0;
+					baseG = 0;
+					baseB = 0;
+				}
+				else {
+					baseR = 255;
+					baseG = 128;
+					baseB = 64;
+				}
 			}
 			else {
 				baseR = 70;
@@ -949,6 +967,8 @@ static void s_dummyfunc();
 
 		//マウスキャプチャ用のフラグ
 		bool mouseCaptureFlagL,mouseCaptureFlagR;
+
+		bool isblacktheme;
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウクラスを登録
@@ -2388,6 +2408,35 @@ static void s_dummyfunc();
 							if (g_mousehereimage) {
 								gdipg->DrawImage(g_mousehereimage, Gdiplus::Rect(mousepoint.x, mousepoint.y, BMP_W, BMP_H),
 									0, 0, BMP_W, BMP_H,
+									Gdiplus::UnitPixel, &attr, NULL, NULL);
+							}
+							delete gdipg;
+						}
+					}
+				}
+
+				if (g_enableDS) {
+					if (_tcscmp(name, L".") == 0) {
+						POINT barpos;
+						barpos = g_currentsubmenupos;
+						::ScreenToClient(getParent()->getHWnd(), &barpos);
+						int BMP_W = g_submenuwidth;
+						int BMP_H = 16;
+						Gdiplus::Graphics* gdipg = new Gdiplus::Graphics(hdcM->hDC);
+						if (gdipg) {
+							Gdiplus::ImageAttributes attr;
+							Gdiplus::ColorMatrix cmat = {
+								1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Red
+								0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   // Green
+								0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Blue
+								0.0f, 0.0f, 0.0f, 1.0f, 0.0f,   // Alpha
+								0.0f, 0.0f, 0.0f, 0.0f, 1.0f    // must be 1
+							};
+							attr.SetColorMatrix(&cmat);
+							//Gdiplus::Image* imgptr = new Gdiplus::Image(L"E:\\PG\\MameBake3D_git\\MameBake3D\\Media\\MameMedia\\img_l105.png");
+							if (g_menuaimbarimage) {
+								gdipg->DrawImage(g_menuaimbarimage, Gdiplus::Rect(barpos.x, barpos.y, BMP_W, BMP_H),
+									0, 0, 140, 6,
 									Gdiplus::UnitPixel, &attr, NULL, NULL);
 							}
 							delete gdipg;
