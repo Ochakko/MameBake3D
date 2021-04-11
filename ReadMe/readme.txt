@@ -264,6 +264,15 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/11_2
+	補足：Undo, Redoモーション編集に関するUndo, Redo。
+
+	FileのOpenメニューのプロジェクトオープン履歴に重複するものを表示しないように。
+
+	Undo and Redo is concerned with editting of motions.
+	Exclude same project entries of Open Project Dialog.
+	
+
 2021/04/11_1
 	ゲームパッド対応の続き
 		Undo, Redoが動かなくなっていたのを修正

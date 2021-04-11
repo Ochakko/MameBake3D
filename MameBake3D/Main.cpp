@@ -8729,8 +8729,21 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (hfile != INVALID_HANDLE_VALUE) {
 						WCHAR readwstr[MAX_PATH] = { 0L };
 						DWORD readleng = 0;
-						ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
-						vechistory.push_back(readwstr);
+						bool bsuccess;
+						bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+						if (bsuccess) {
+							bool foundsame = false;
+							wstring newwstr = readwstr;
+							std::vector<wstring>::iterator itrhistory;
+							for (itrhistory = vechistory.begin(); itrhistory != vechistory.end(); itrhistory++) {
+								if (newwstr.compare(*itrhistory) == 0) {
+									foundsame = true;
+								}
+							}
+							if (foundsame == false) {
+								vechistory.push_back(readwstr);
+							}
+						}
 						CloseHandle(hfile);
 					}
 				}
