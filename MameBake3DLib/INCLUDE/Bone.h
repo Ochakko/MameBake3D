@@ -540,8 +540,23 @@ public: //accesser
 	void SetChildScreen( ChaVector3 srcvec ){ m_childscreen = srcvec; };
 
 	int GetMotionKeySize(){ return (int)m_motionkey.size(); };
-	CMotionPoint* GetMotionKey( int srccookie ){ return m_motionkey[ srccookie ]; };
-	void SetMotionKey( int srccookie, CMotionPoint* srcmk ){ m_motionkey[ srccookie ] = srcmk; };
+	CMotionPoint* GetMotionKey( int srccookie ){
+		if ((srccookie >= 1) && (srccookie <= m_motionkey.size())) {
+			return m_motionkey[srccookie - 1];
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+	};
+	void SetMotionKey( int srccookie, CMotionPoint* srcmk ){ 
+		if ((srccookie >= 1) && (srccookie <= m_motionkey.size())) {
+			m_motionkey[srccookie - 1] = srcmk;
+		}
+		else {
+			_ASSERT(0);
+		}
+	};
 
 	CMotionPoint GetCurMp(){ return m_curmp; };
 	void SetCurMp( CMotionPoint srcmp ){ m_curmp = srcmp; };

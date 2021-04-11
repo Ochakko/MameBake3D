@@ -6580,7 +6580,6 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 		return -1;
 	}
 
-
 	ChaVector3 ikaxis = g_camtargetpos - g_camEye;
 	ChaVector3Normalize( &ikaxis, &ikaxis );
 
@@ -6591,6 +6590,14 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 	CBone* curbone = firstbone;
 	CBone* lastpar = curbone; 
 	SetBefEditMat( erptr, curbone, maxlevel );
+	CBone* editboneforret = 0;
+	if (firstbone->GetParent()) {
+		editboneforret = firstbone->GetParent();
+	}
+	else {
+		editboneforret = firstbone;
+	}
+
 
 	//CBone* lastpar = firstbone->GetParent();
 	int calcnum = 20;
@@ -6773,11 +6780,20 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 		}
 	}
 
-	if( lastpar ){
-		return lastpar->GetBoneNo();
-	}else{
+	//if( lastpar ){
+	//	return lastpar->GetBoneNo();
+	//}else{
+	//	return srcboneno;
+	//}
+
+	if (editboneforret)
+	{
+		return editboneforret->GetBoneNo();
+	}
+	else {
 		return srcboneno;
 	}
+
 
 }
 
@@ -6837,6 +6853,13 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	if (!gparentbone){
 		//grand parentがルートボーンの場合に、まだうまくいかないのでスキップ
 		return 0;
+	}
+	CBone* editboneforret = 0;
+	if (firstbone->GetParent()) {
+		editboneforret = firstbone->GetParent();
+	}
+	else {
+		editboneforret = firstbone;
 	}
 
 
@@ -7008,7 +7031,15 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 			//childbone = childbone->GetBrother();
 		}
 	}
-	return srcboneno;
+	//return srcboneno;
+
+	if (editboneforret) {
+		return editboneforret->GetBoneNo();
+	}
+	else {
+		return srcboneno;
+	}
+
 
 }
 
@@ -7038,6 +7069,14 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	CBone* parentbone = 0;
 	CBone* lastbone = 0;
 	CBone* topbone = GetTopBone();
+	CBone* editboneforret = 0;
+	if (firstbone->GetParent()) {
+		editboneforret = firstbone->GetParent();
+	}
+	else {
+		editboneforret = firstbone;
+	}
+
 
 	int calccnt;
 	for (calccnt = 0; calccnt < calcnum; calccnt++) {
@@ -7175,8 +7214,8 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 		//}
 	}
 
-	if (curbone){
-		return curbone->GetBoneNo();
+	if (editboneforret){
+		return editboneforret->GetBoneNo();
 	}
 	else{
 		return srcboneno;
@@ -8223,6 +8262,13 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 	CBone* parentbone = 0;
 	CBone* lastbone = 0;
 	CBone* topbone = GetTopBone();
+	CBone* editboneforret = 0;
+	if (firstbone->GetParent()) {
+		editboneforret = firstbone->GetParent();
+	}
+	else {
+		editboneforret = firstbone;
+	}
 
 	int calccnt;
 	for (calccnt = 0; calccnt < calcnum; calccnt++){
@@ -8427,8 +8473,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 		}
 	}
 
-	if (lastbone){
-		return lastbone->GetBoneNo();
+	if (editboneforret){
+		return editboneforret->GetBoneNo();
 	}
 	else{
 		return srcboneno;

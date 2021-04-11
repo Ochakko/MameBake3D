@@ -1286,6 +1286,8 @@ static int OnMouseMoveFunc();
 
 static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
+static void PrepairUndo();
+static int OnFrameUndo(bool fromds, int fromdskind);
 
 static void AutoCameraTarget();
 
@@ -1312,7 +1314,7 @@ static int OnFrameTimeLineWnd();
 static int OnFrameMouseButton();
 static int OnFrameToolWnd();
 static int OnFramePlayButton();
-static int OnFrameUndo();
+static int OnFrame();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
@@ -3654,7 +3656,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 	OnFrameCloseFlag();
 	OnFrameToolWnd();
-	OnFrameUndo();
+	OnFrameUndo(false, 0);
 
 	OnFrameUpdateGround();
 	OnFrameInitBtWorld();
@@ -4082,6 +4084,18 @@ void RenderText( double fTime )
 
 
 	s_savetime = fTime;
+}
+
+void PrepairUndo()
+{
+	if (s_editmotionflag >= 0) {
+		if (s_model) {
+			CreateTimeLineMark();
+			SetLTimelineMark(s_curboneno);
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+		}
+		s_editmotionflag = -1;
+	}
 }
 
 
@@ -4558,6 +4572,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
+
+		//pickでボーン選択が変わらなかったとき。モーションフレーム選択をした場合など。
+		if ((s_curboneno <= 0) && (s_saveboneno > 0)) {
+			s_curboneno = s_saveboneno;
+		}
+
+
 		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
@@ -4932,14 +4953,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_ikcnt = 0;
 		s_onragdollik = 0;
 
-		if( s_editmotionflag >= 0 ){
-			if( s_model ){
-				CreateTimeLineMark();
-				SetLTimelineMark( s_curboneno );
-				s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
-			}
-			s_editmotionflag = -1;
-		}
+
+		PrepairUndo();
+
 
 	}else if( uMsg == WM_RBUTTONDOWN ){
 		
@@ -14221,15 +14237,17 @@ int OnFramePlayButton()
 }
 
 
-int OnFrameUndo()
+int OnFrameUndo(bool fromds, int fromdskind)
 {
 	///////////// undo
-	if (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80)){
+	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))){
 
-		if (g_keybuf[VK_SHIFT] & 0x80){
+		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)){
+			//redo
 			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
 		}
-		else{
+		else if((fromds && (fromdskind == 0)) || !fromds){
+			//undo
 			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
 
 		}
@@ -18465,7 +18483,8 @@ int OnMouseMoveFunc()
 							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 							s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
 							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-							s_editmotionflag = s_curboneno;
+							//s_editmotionflag = s_curboneno;
+							s_editmotionflag = 0;
 						}
 					}
 					s_ikcnt++;
@@ -19492,7 +19511,7 @@ void OnDSUpdate()
 		DSOButtonSelectedPopupMenu();
 	}
 
-	//Cancel button : メニューのドロップダウンをキャンセルする　Cancel dropdown menu
+	//Cancel button : メニューのドロップダウンをキャンセルする　Cancel dropdown menu. L2 + X --> Undo, R2 + X --> Redo.
 	DSXButtonCancel();
 
 	//Axis L Mouse Move
@@ -22948,8 +22967,8 @@ void DSAxisLMouseMove()
 				//SendInput(1, &input, sizeof(INPUT));
 
 
-
-				/*if (s_3dwnd) {
+				//WM_MOUSEMOVEはカメラ操作時などのときに画面が今でドラッグする場合に必要
+				if (s_3dwnd) {
 					POINT client3dpoint;
 					client3dpoint = cursorpos;
 					::ScreenToClient(s_3dwnd, &client3dpoint);
@@ -22974,7 +22993,7 @@ void DSAxisLMouseMove()
 					LPARAM dlglparam;
 					dlglparam = (clientpoint.y << 16) | clientpoint.x;
 					::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
-				}*/
+				}
 
 
 				//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
@@ -23199,6 +23218,8 @@ void OnDSMouseHereApeal()
 
 void DSXButtonCancel()
 {
+	//Cancel button : メニューのドロップダウンをキャンセルする　Cancel dropdown menu. L2 + X --> Undo, R2 + X --> Redo.
+
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
 	}
@@ -23211,18 +23232,36 @@ void DSXButtonCancel()
 	}
 
 	int cancelbuttonid = 1;
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+
 	int cancelbuttondown;
 	int cancelbuttonup;
+	int accelaxis1 = 0;
+	int accelaxis2 = 0;
 
 	cancelbuttondown = s_dsbuttondown[cancelbuttonid];
 	cancelbuttonup = s_dsbuttonup[cancelbuttonid];
+	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
 
 	if (cancelbuttondown >= 1) {
-		//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
-		PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
-		PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
-	}
+		if (accelaxis1 >= 1) {
+			//Undo
+			OnFrameUndo(true, 0);//fromds, fromdskind
+		}
+		else if (accelaxis2 >= 1) {
+			//Redo
+			OnFrameUndo(true, 1);//fromds, fromdskind
+		}
+		else {
+			//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
+			PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+			PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 
+		}
+	}
 }
 
 
@@ -24089,6 +24128,9 @@ void DSAimBarOK()
 					::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 				}
 
+
+				//MainWindow MsgProc ; Prepair For Undo
+				PrepairUndo();
 
 				s_wmlbuttonup = 1;
 

@@ -264,6 +264,20 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/11_1
+	ゲームパッド対応の続き
+		Undo, Redoが動かなくなっていたのを修正
+	
+		Keyboard
+			Ctrl + Z : Undo
+			Ctrl + Shift + Z : Redo
+		GamePad
+			L2 + X button : Undo
+			R3 + X button : Redo
+
+		画面外へドラッグするとドラッグが中断する問題を再び修正
+
+
 2021/04/10
 	ゲームパッド対応の続き
 		プロジェクト読み込みに成功するたびにTempフォルダにプロジェクトパスを記録
