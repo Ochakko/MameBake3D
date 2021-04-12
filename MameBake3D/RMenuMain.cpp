@@ -31,19 +31,22 @@ int CRMenuMain::InitParams()
 	return 0;
 }
 
-int CRMenuMain::Create(HWND srchwnd)
+int CRMenuMain::Create(HWND srchwnd, int srcoffset)
 {
 	m_menuwnd = srchwnd;
+	m_menuoffset = srcoffset;
+
 	//m_rmenu = LoadMenu( (HINSTANCE)GetWindowLong( m_menuwnd, GWL_HINSTANCE ), MAKEINTRESOURCE( m_menuid ) );
 	m_rmenu = LoadMenu((HINSTANCE)GetClassLongPtr(m_menuwnd, GCLP_HMODULE), MAKEINTRESOURCE(m_menuid));
 	m_rsubmenu = ::GetSubMenu( m_rmenu, 0 );
+
 
 	return 0;
 }
 
 int CRMenuMain::CreatePopupMenu(HWND srchwnd, HMENU parmenu, WCHAR* partitle)
 {
-	Create(srchwnd);
+	Create(srchwnd, m_menuoffset);
 
 	if (parmenu){
 		AppendMenu(parmenu, MF_STRING | MF_POPUP, (UINT_PTR)m_rsubmenu, partitle);
@@ -70,9 +73,10 @@ int CRMenuMain::TrackPopupMenu( POINT pt )
 {
 	Params2Dlg();
 	int retmenuid;
-	retmenuid = ::TrackPopupMenu(m_rsubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
+	//retmenuid = ::TrackPopupMenu(m_rsubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
+	::TrackPopupMenu(m_rsubmenu, TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
 
-	return retmenuid;
+	return 0;
 }
 
 int CRMenuMain::Params2Dlg()

@@ -19,9 +19,9 @@
 #include <Bone.h>
 //#include <BoneProp.h>
 
-#include <FilterType.h>
-#include <FilterDlg.h>
-#include <MotFilter.h>
+#include "FilterType.h"
+#include "FilterDlg.h"
+#include "MotFilter.h"
 
 using namespace std;
 

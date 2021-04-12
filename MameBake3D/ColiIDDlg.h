@@ -27,8 +27,22 @@ public:
 
 	enum { IDD = IDD_COLIIDDLG };
 
+	void StartTimer() {
+		if (!m_inittimerflag) {
+			SetTimer(m_timerid, 20);
+			m_inittimerflag = true;
+		}
+	};
+	void EndTimer() {
+		if (m_inittimerflag) {
+			KillTimer(m_timerid);
+			m_inittimerflag = false;
+		}
+	};
+
 BEGIN_MSG_MAP(CColiIDDlg)
 	MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+	MESSAGE_HANDLER(WM_TIMER, OnTimer)
 	COMMAND_ID_HANDLER(IDOK, OnOK)
 	COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 	COMMAND_ID_HANDLER(IDC_ADD, OnAdd)
@@ -47,6 +61,7 @@ END_MSG_MAP()
 	LRESULT OnAdd(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnDel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnSelGroup(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnTimer(UINT, WPARAM, LPARAM, BOOL&);
 
 private:
 	void InitParams();
@@ -57,6 +72,9 @@ private:
 
 
 private:
+	bool m_inittimerflag;
+	int m_timerid;
+
 	CRigidElem* m_curre;
 	CWindow m_combo_wnd;
 	CWindow m_combo2_wnd;

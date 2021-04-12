@@ -35,6 +35,7 @@ public:
 
 BEGIN_MSG_MAP(CFrameCopyDlg)
 	MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+	MESSAGE_HANDLER(WM_TIMER, OnTimer)
 	COMMAND_ID_HANDLER(IDOK, OnOK)
 	COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 	NOTIFY_HANDLER(IDN_TREE1, TVN_SELCHANGED, OnSelchangedTree1)
@@ -68,6 +69,7 @@ END_MSG_MAP()
 	LRESULT OnAllDelete2(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	LRESULT OnSelCombo(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnTimer(UINT, WPARAM, LPARAM, BOOL&);
 
 private:
 	int InitParams();
@@ -91,8 +93,23 @@ public:
 		return m_cpvec;
 	}
 
+	void StartTimer() {
+		if (!m_inittimerflag) {
+			SetTimer(m_timerid, 20);
+			m_inittimerflag = true;
+		}
+	};
+	void EndTimer() {
+		if (m_inittimerflag) {
+			KillTimer(m_timerid);
+			m_inittimerflag = false;
+		}
+	};
+
 private:
 	int m_samemodelflag;
+	bool m_inittimerflag;
+	int m_timerid;
 
 	CWindow m_dlg_wnd;
 	CWindow m_tree_wnd;

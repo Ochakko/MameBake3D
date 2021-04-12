@@ -240,10 +240,12 @@
     </ClCompile>
     <ClCompile Include="ColiIDDlg.cpp" />
     <ClCompile Include="DSUpdateUnderTracking.cpp" />
+    <ClCompile Include="FilterDlg.cpp" />
     <ClCompile Include="FrameCopyDlg.cpp" />
     <ClCompile Include="GColiIDDlg.cpp" />
     <ClCompile Include="GetDlgParams.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MotFilter.cpp" />
     <ClCompile Include="RegistDlg.cpp" />
     <ClCompile Include="RMenuMain.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -309,9 +311,12 @@
     <ClInclude Include="ColiIDDlg.h" />
     <ClInclude Include="dlgid.h" />
     <ClInclude Include="DSUpdateUnderTracking.h" />
+    <ClInclude Include="FilterDlg.h" />
+    <ClInclude Include="FilterType.h" />
     <ClInclude Include="FrameCopyDlg.h" />
     <ClInclude Include="GColiIDDlg.h" />
     <ClInclude Include="GetDlgParams.h" />
+    <ClInclude Include="MotFilter.h" />
     <ClInclude Include="RegistDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RMenuMain.h" />

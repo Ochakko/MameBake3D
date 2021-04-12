@@ -264,6 +264,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/12
+	Operation with GamePad
+		Can Select DropDownMenuItem from GUI buttons with GamePad.
+		Can push Windows Dialogs form GUI buttons with GamePad.
+		Can push OrgWindows from GUI buttons with GamePad.
+
 2021/04/11_3
 	MainMenu with GamePad
 		AimBar moves under Main Menu Bar :  R stick.

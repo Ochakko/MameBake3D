@@ -357,7 +357,6 @@
     <ClCompile Include="..\CPP\ExtLine.cpp" />
     <ClCompile Include="..\CPP\FBXBone.cpp" />
     <ClCompile Include="..\CPP\FBXFile.cpp" />
-    <ClCompile Include="..\CPP\FilterDlg.cpp" />
     <ClCompile Include="..\CPP\GColiFile.cpp" />
     <ClCompile Include="..\CPP\GetMaterial.cpp" />
     <ClCompile Include="..\CPP\ImpFile.cpp" />
@@ -365,7 +364,6 @@
     <ClCompile Include="..\CPP\InfoWindow.cpp" />
     <ClCompile Include="..\CPP\lmtFile.cpp" />
     <ClCompile Include="..\CPP\Model.cpp" />
-    <ClCompile Include="..\CPP\MotFilter.cpp" />
     <ClCompile Include="..\CPP\MotionPoint.cpp" />
     <ClCompile Include="..\CPP\mqoface.cpp" />
     <ClCompile Include="..\CPP\mqofile.cpp" />
@@ -715,8 +713,6 @@
     <ClInclude Include="..\INCLUDE\ExtLine.h" />
     <ClInclude Include="..\INCLUDE\FBXBone.h" />
     <ClInclude Include="..\INCLUDE\FBXFile.h" />
-    <ClInclude Include="..\INCLUDE\FilterDlg.h" />
-    <ClInclude Include="..\INCLUDE\FilterType.h" />
     <ClInclude Include="..\INCLUDE\GColiFile.h" />
     <ClInclude Include="..\INCLUDE\GetMaterial.h" />
     <ClInclude Include="..\INCLUDE\GlobalVar.h" />
@@ -724,7 +720,6 @@
     <ClInclude Include="..\INCLUDE\InfBone.h" />
     <ClInclude Include="..\INCLUDE\InfoWindow.h" />
     <ClInclude Include="..\INCLUDE\lmtFile.h" />
-    <ClInclude Include="..\INCLUDE\Model.h" />
     <ClInclude Include="..\INCLUDE\MotFilter.h" />
     <ClInclude Include="..\INCLUDE\MotionPoint.h" />
     <ClInclude Include="..\INCLUDE\mqoface.h" />

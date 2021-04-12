@@ -6,6 +6,14 @@
 
 using namespace std;
 
+//extern
+extern void OnDSUpdate();
+//extern void OnDSMouseHereApeal();
+//extern LONG g_undertrackingRMenu;
+//extern LONG g_underApealingMouseHere;
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CFrameCopyDlg
 
@@ -17,6 +25,8 @@ CFrameCopyDlg::CFrameCopyDlg()
 
 int CFrameCopyDlg::InitParams()
 {
+	m_inittimerflag = false;
+	m_timerid = 339;
 
 	m_hImageList = 0;
 	m_iImage = 0;
@@ -71,6 +81,8 @@ CFrameCopyDlg::~CFrameCopyDlg()
 	
 int CFrameCopyDlg::DestroyObjs()
 {
+	//KillTimer(m_timerid);
+
 	if( m_hImageList ){
 		ImageList_Destroy( m_hImageList );
 	}
@@ -107,6 +119,8 @@ int CFrameCopyDlg::SetupDlg( CModel* srcmodel )
 
 	CreateImageList();
 
+	//SetTimer(m_timerid, 20);
+
 	if( m_model->GetTopBone() ){
 		ret = FillTree();
 		if( ret ){
@@ -127,13 +141,15 @@ LRESULT CFrameCopyDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 {
 	//InitCommonControls();
 	SetupDlg( m_model );
+	StartTimer();
 	return 1;  // システムにフォーカスを設定させます
 }
 
 LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	//外部クラスから、wNotifyCode = 999 で呼び出されることがある。（ダイアログは表示されていない状態）
-
+	
+	EndTimer();
 
 	GetDlgItemTextW( IDC_SLOTNAME, &(m_slotname[m_slotno][0]), SLOTNAMELEN );
 
@@ -176,6 +192,8 @@ LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHan
 
 LRESULT CFrameCopyDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	EndTimer();
+
 	EndDialog(wID);
 	return 0;
 }
@@ -610,4 +628,10 @@ LRESULT CFrameCopyDlg::OnSelCombo(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	ParamsToDlg();
 
 	return 0;
+}
+
+LRESULT CFrameCopyDlg::OnTimer(UINT, WPARAM, LPARAM, BOOL&)
+{
+	OnDSUpdate();
+	return TRUE;
 }

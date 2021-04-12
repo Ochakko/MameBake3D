@@ -18,8 +18,10 @@ public:
 
 	enum { IDD = IDD_FILTERDLG };
 
+
 BEGIN_MSG_MAP(CFilterDlg)
 	MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+	MESSAGE_HANDLER(WM_TIMER, OnTimer)
 	COMMAND_ID_HANDLER(IDOK, OnOK)
 	COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 END_MSG_MAP()
@@ -27,6 +29,7 @@ END_MSG_MAP()
 	LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnTimer(UINT, WPARAM, LPARAM, BOOL&);
 
 	int GetFilterType()
 	{
@@ -41,6 +44,8 @@ private:
 	void SetWnd();
 	int SetCombo();
 	int ParamsToDlg();
+	void StartTimer();
+	void EndTimer();
 
 public:
 	int m_cmdshow;
@@ -48,6 +53,10 @@ public:
 	int m_filtersize;
 
 private:
+	bool m_inittimerflag;
+	int m_timerid;
+
+
 	CWindow m_filtertype_wnd;
 	CWindow m_filtersize_wnd;
 };

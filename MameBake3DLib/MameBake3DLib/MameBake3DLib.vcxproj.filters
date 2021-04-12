@@ -90,9 +90,6 @@
     <ClCompile Include="..\CPP\FBXFile.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
-    <ClCompile Include="..\CPP\FilterDlg.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
     <ClCompile Include="..\CPP\GColiFile.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
@@ -109,9 +106,6 @@
       <Filter>disp4</Filter>
     </ClCompile>
     <ClCompile Include="..\CPP\Model.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CPP\MotFilter.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
     <ClCompile Include="..\CPP\MotionPoint.cpp">
@@ -770,12 +764,6 @@
     <ClInclude Include="..\INCLUDE\FBXFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
-    <ClInclude Include="..\INCLUDE\FilterDlg.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
-    <ClInclude Include="..\INCLUDE\FilterType.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
     <ClInclude Include="..\INCLUDE\GColiFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
@@ -789,9 +777,6 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\lmtFile.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
-    <ClInclude Include="..\INCLUDE\Model.h">
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\MotFilter.h">

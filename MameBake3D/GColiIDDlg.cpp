@@ -10,6 +10,12 @@
 
 using namespace std;
 
+//extern
+extern void OnDSUpdate();
+//extern void OnDSMouseHereApeal();
+//extern LONG g_undertrackingRMenu;
+//extern LONG g_underApealingMouseHere;
+
 /////////////////////////////////////////////////////////////////////////////
 // CGColiIDDlg
 
@@ -34,6 +40,9 @@ int CGColiIDDlg::DestroyObjs()
 
 void CGColiIDDlg::InitParams()
 {
+	m_inittimerflag = false;
+	m_timerid = 344;
+
 	m_groupid = 1;
 	m_coliids.clear();
 }
@@ -54,18 +63,24 @@ LRESULT CGColiIDDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	ret = ParamsToDlg();
 	_ASSERT( !ret );
 
+	StartTimer();
+
 
 	return 1;  // システムにフォーカスを設定させます
 }
 
 LRESULT CGColiIDDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	EndTimer();
+
 	EndDialog(wID);
 	return 0;
 }
 
 LRESULT CGColiIDDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	EndTimer();
+
 	EndDialog(wID);
 	return 0;
 }
@@ -189,3 +204,8 @@ LRESULT CGColiIDDlg::OnDel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHand
 	return 0;
 }
 
+LRESULT CGColiIDDlg::OnTimer(UINT, WPARAM, LPARAM, BOOL&)
+{
+	OnDSUpdate();
+	return TRUE;
+}

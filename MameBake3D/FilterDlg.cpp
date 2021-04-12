@@ -4,7 +4,15 @@
 
 #include "FilterDlg.h"
 #include <Commdlg.h>
-#include <FilterType.h>
+#include "FilterType.h"
+
+//extern
+extern void OnDSUpdate();
+extern HWND g_filterdlghwnd;
+//extern void OnDSMouseHereApeal();
+//extern LONG g_undertrackingRMenu;
+//extern LONG g_underApealingMouseHere;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CFilterDlg
@@ -20,11 +28,34 @@ CFilterDlg::~CFilterDlg()
 {
 }
 
+
+
+void CFilterDlg::StartTimer() {
+	if (!m_inittimerflag) {
+		g_filterdlghwnd = m_hWnd;
+		SetTimer(m_timerid, 20);
+		m_inittimerflag = true;
+	}
+};
+void CFilterDlg::EndTimer() {
+	if (m_inittimerflag) {
+		KillTimer(m_timerid);
+		m_inittimerflag = false;
+		g_filterdlghwnd = 0;
+	}
+};
+
 LRESULT CFilterDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+	m_inittimerflag = false;
+	m_timerid = 346;
+
 	SetWnd();
 	SetCombo();
 	ParamsToDlg();
+
+	StartTimer();
+
 
 	return 1;  // システムにフォーカスを設定させます
 }
@@ -32,6 +63,8 @@ LRESULT CFilterDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 LRESULT CFilterDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 ///
+	EndTimer();
+
 	int combono;
 	combono = (int)SendMessage( m_filtertype_wnd, CB_GETCURSEL, 0, 0);
 	if( combono == CB_ERR ){
@@ -53,6 +86,8 @@ LRESULT CFilterDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandle
 
 LRESULT CFilterDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	EndTimer();
+
 	EndDialog(wID);
 	return 0;
 }
@@ -85,4 +120,11 @@ int CFilterDlg::SetCombo()
 	SendMessage( m_filtersize_wnd, CB_SETCURSEL, 0, 0);
 
 	return 0;
+}
+
+
+LRESULT CFilterDlg::OnTimer(UINT, WPARAM, LPARAM, BOOL&)
+{
+	OnDSUpdate();
+	return TRUE;
 }
