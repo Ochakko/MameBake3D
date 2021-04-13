@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/13_2
+	Explanation of operation with Sony Game Pad DualSence.
+		MameBake3D/ReadMe/MameBake3D_OperationUsingSonyGamePadDualSence.png
+
 2021/04/13_1
 	Ring GUI selecting using CrossButtons.
 
