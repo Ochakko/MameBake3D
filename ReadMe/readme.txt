@@ -264,6 +264,14 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/13_1
+	Ring GUI selecting using CrossButtons.
+
+	Move Mouse Cursor using Analog L stick.
+
+	Num of open history is changed from 3 to 5.
+ 
+
 2021/04/12
 	Operation with GamePad
 		Can Select DropDownMenuItem from GUI buttons with GamePad.

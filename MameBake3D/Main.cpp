@@ -9170,7 +9170,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			std::reverse(vechistory.begin(), vechistory.end());
 
 			int radiocnt = 0;
-			int radionum = min(3, vechistory.size());
+			int radionum = min(5, vechistory.size());
 			if (radionum != 0) {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vechistory[0].c_str());
 			}
@@ -9189,6 +9189,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			else {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
 			}
+			if (radionum >= 4) {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vechistory[3].c_str());
+			}
+			else {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
+			}
+			if (radionum >= 5) {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vechistory[4].c_str());
+			}
+			else {
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
+			}
 
 			SetTimer(hDlgWnd, s_openmqoproctimer, 20, NULL);
 			s_mqodlghwnd = hDlgWnd;
@@ -9203,9 +9215,13 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						UINT ischecked1 = 0;
 						UINT ischecked2 = 0;
 						UINT ischecked3 = 0;
+						UINT ischecked4 = 0;
+						UINT ischecked5 = 0;
 						ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO1);
 						ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO2);
 						ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO3);
+						ischecked4 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO4);
+						ischecked5 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO5);
 						if (ischecked1 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
 							GetDlgItemTextW(hDlgWnd, IDC_RADIO1, checkedpath, MAX_PATH);
@@ -9229,6 +9245,20 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						else if (ischecked3 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
 							GetDlgItemTextW(hDlgWnd, IDC_RADIO3, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked4 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO4, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked5 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO5, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
@@ -21092,6 +21122,16 @@ void DSCrossButtonSelectUTGUI()
 					CBone* curbone = s_model->GetBoneByID(s_curboneno);
 					int curdsutguikind = s_curdsutguikind;
 					int curdsutguino = s_curdsutguino;
+
+
+					//############################################################################################################################
+					//STL.size()の返り値はunsigned。-1との比較の際には0xFFFFFFFFとsize()との比較になり、意図しない結果を招きやすい。signedに代入してから-1と比較する。
+					//############################################################################################################################
+					int guisize0 = s_dsutgui0.size();
+					int guisize1 = s_dsutgui1.size();
+					int guisize2 = s_dsutgui2.size();
+					int guisize3 = s_dsutgui3.size();
+
 					if (curbone) {
 
 
@@ -21103,10 +21143,10 @@ void DSCrossButtonSelectUTGUI()
 							{
 								if (s_spguisw[SPGUISW_SPRITEFK].state) {
 									if (curdsutguino >= SPR_CAM_MAX) {
-										curdsutguino = SPR_CAM_MAX - 1;//size >= 1は関数戦闘で確認
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = SPR_CAM_MAX - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21120,11 +21160,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_LEFT:
 							{
 								if (s_spguisw[SPGUISW_LEFT].state) {
-									if (curdsutguino >= s_dsutgui0.size()) {
-										curdsutguino = s_dsutgui0.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize0) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize0 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21139,11 +21179,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_LEFT2ND:
 							{
 								if (s_spguisw[SPGUISW_LEFT2ND].state) {
-									if (curdsutguino >= s_dsutgui1.size()) {
-										curdsutguino = s_dsutgui1.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize1) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize1 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21158,11 +21198,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_BULLETPHYSICS:
 							{
 								if (s_spguisw[SPGUISW_BULLETPHYSICS].state) {
-									if (curdsutguino >= s_dsutgui2.size()) {
-										curdsutguino = s_dsutgui2.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize2) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize2 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21177,11 +21217,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_PHYSICSIK:
 							{
 								if (s_spguisw[SPGUISW_PHYSICSIK].state) {
-									if (curdsutguino >= s_dsutgui3.size()) {
-										curdsutguino = s_dsutgui3.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize3) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認 ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize3 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21203,6 +21243,7 @@ void DSCrossButtonSelectUTGUI()
 						else if (sisterbutton >= 1) {
 							curdsutguikind++;
 							curdsutguino = 0;
+							int dbgcnt = 0;
 							while (chkflag == false) {
 								int curgroupid = curdsutguikind;
 								if ((curgroupid >= SPGUISW_SPRITEFK) && (curgroupid <= SPGUISW_PHYSICSIK)) {
@@ -21216,6 +21257,13 @@ void DSCrossButtonSelectUTGUI()
 									}
 								}
 								else {
+									curdsutguikind = 0;//ring
+									//changeflag = false;
+									//chkflag = true;
+									//break;
+								}
+								dbgcnt++;
+								if (dbgcnt >= (SPGUISW_PHYSICSIK - SPGUISW_SPRITEFK + 1)) {//1周分チェックしたら抜ける
 									changeflag = false;
 									chkflag = true;
 									break;
@@ -21237,10 +21285,10 @@ void DSCrossButtonSelectUTGUI()
 							{
 								if (s_spguisw[SPGUISW_SPRITEFK].state) {
 									if (curdsutguino >= SPR_CAM_MAX) {
-										curdsutguino = SPR_CAM_MAX - 1;//size >= 1は関数戦闘で確認
+										curdsutguino = 0;//size >= 1は関数先頭で確認 ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = SPR_CAM_MAX - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21255,11 +21303,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_LEFT:
 							{
 								if (s_spguisw[SPGUISW_LEFT].state) {
-									if (curdsutguino >= s_dsutgui0.size()) {
-										curdsutguino = s_dsutgui0.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize0) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize0 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21274,11 +21322,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_LEFT2ND:
 							{
 								if (s_spguisw[SPGUISW_LEFT2ND].state) {
-									if (curdsutguino >= s_dsutgui1.size()) {
-										curdsutguino = s_dsutgui1.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize1) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize1 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21293,11 +21341,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_BULLETPHYSICS:
 							{
 								if (s_spguisw[SPGUISW_BULLETPHYSICS].state) {
-									if (curdsutguino >= s_dsutgui2.size()) {
-										curdsutguino = s_dsutgui2.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize2) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize2 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21312,11 +21360,11 @@ void DSCrossButtonSelectUTGUI()
 							case SPGUISW_PHYSICSIK:
 							{
 								if (s_spguisw[SPGUISW_PHYSICSIK].state) {
-									if (curdsutguino >= s_dsutgui3.size()) {
-										curdsutguino = s_dsutgui3.size() - 1;//size >= 1は関数戦闘で確認
+									if (curdsutguino >= guisize3) {
+										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
 									else if (curdsutguino < 0) {
-										curdsutguino = 0;
+										curdsutguino = guisize3 - 1;//ring
 									}
 									changeflag = true;
 									chkflag = true;
@@ -21339,6 +21387,7 @@ void DSCrossButtonSelectUTGUI()
 						else if (brotherbutton >= 1) {
 							curdsutguikind--;
 							curdsutguino = 0;
+							int dbgcnt = 0;
 							while (chkflag == false) {
 								int curgroupid = curdsutguikind;
 								if ((curgroupid >= SPGUISW_SPRITEFK) && (curgroupid <= SPGUISW_PHYSICSIK)) {
@@ -21352,6 +21401,13 @@ void DSCrossButtonSelectUTGUI()
 									}
 								}
 								else {
+									curdsutguikind = SPGUISW_PHYSICSIK;//ring
+									//changeflag = false;
+									//chkflag = true;
+									//break;
+								}
+								dbgcnt++;
+								if (dbgcnt >= (SPGUISW_PHYSICSIK - SPGUISW_SPRITEFK + 1)) {//1周分チェックしたら抜ける
 									changeflag = false;
 									chkflag = true;
 									break;
@@ -21396,7 +21452,7 @@ void DSCrossButtonSelectUTGUI()
 								break;
 
 								case SPGUISW_LEFT:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < s_dsutgui0.size()) && s_dsutgui0[s_curdsutguino]) {
+									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize0) && s_dsutgui0[s_curdsutguino]) {
 										//s_dsutgui0[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui0[s_curdsutguino]->OnFocusIn();
 										POINT ctrlpos;
@@ -21449,7 +21505,7 @@ void DSCrossButtonSelectUTGUI()
 									break;
 
 								case SPGUISW_LEFT2ND:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < s_dsutgui1.size()) && s_dsutgui1[s_curdsutguino]) {
+									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize1) && s_dsutgui1[s_curdsutguino]) {
 										//s_dsutgui1[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui1[s_curdsutguino]->OnFocusIn();
 										POINT ctrlpos;
@@ -21501,7 +21557,7 @@ void DSCrossButtonSelectUTGUI()
 									break;
 
 								case SPGUISW_BULLETPHYSICS:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < s_dsutgui2.size()) && s_dsutgui2[s_curdsutguino]) {
+									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize2) && s_dsutgui2[s_curdsutguino]) {
 										//s_dsutgui2[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui2[s_curdsutguino]->OnFocusIn();
 										POINT ctrlpos;
@@ -21554,7 +21610,7 @@ void DSCrossButtonSelectUTGUI()
 									break;
 
 								case SPGUISW_PHYSICSIK:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < s_dsutgui3.size()) && s_dsutgui3[s_curdsutguino]) {
+									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize3) && s_dsutgui3[s_curdsutguino]) {
 										//s_dsutgui3[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui3[s_curdsutguino]->OnFocusIn();
 										POINT ctrlpos;
@@ -23450,10 +23506,13 @@ void DSAxisLMouseMove()
 	POINT cursorpos;
 	::GetCursorPos(&cursorpos);
 
-	int upbutton;
-	int downbutton;
-	int leftbutton;
-	int rightbutton;
+	float axisX;
+	float axisY;
+
+	//int upbutton;
+	//int downbutton;
+	//int leftbutton;
+	//int rightbutton;
 	int accelaxisid1 = 4;//axisid
 	int accelaxisid2 = 5;//axisid
 	bool accelaxis1 = 0;
@@ -23461,10 +23520,13 @@ void DSAxisLMouseMove()
 	bool accelflag = false;
 	bool accelbothflag = false;
 
-	upbutton = s_dsaxisMOverSrh[3];
-	downbutton = s_dsaxisOverSrh[3];
-	leftbutton = s_dsaxisMOverSrh[2];
-	rightbutton = s_dsaxisOverSrh[2];
+	//upbutton = s_dsaxisMOverSrh[3];
+	//downbutton = s_dsaxisOverSrh[3];
+	//leftbutton = s_dsaxisMOverSrh[2];
+	//rightbutton = s_dsaxisOverSrh[2];
+
+	axisX = s_dsaxisvalue[2];//float
+	axisY = s_dsaxisvalue[3];//float
 
 	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
 	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
@@ -23474,35 +23536,47 @@ void DSAxisLMouseMove()
 	//if (g_undertrackingRMenu == 0) {
 		bool changeflag = false;
 
-		int deltascale = 1;
+		float deltascale = 1.0f;
 		int deltax = 0;
 		int deltay = 0;
 		if (accelbothflag) {
-			deltascale = 10;
+			deltascale = 10.0f;
 		}
 		else if (accelflag) {
-			deltascale = 4;
+			deltascale = 4.0f;
 		}
 		else {
-			deltascale = 2;
+			deltascale = 1.5f;
 		}
 
-		if (upbutton >= 1) {
-			deltay = -deltascale;
+
+
+		if (axisX != 0.0f) {
+			deltax = (int)(axisX * deltascale);
 			changeflag = true;
 		}
-		if (downbutton >= 1) {
-			deltay = deltascale;
+		if (axisY != 0.0f) {
+			deltay = (int)(axisY * deltascale);
 			changeflag = true;
 		}
-		if (leftbutton >= 1) {
-			deltax = -deltascale;
-			changeflag = true;
-		}
-		if (rightbutton >= 1) {
-			deltax = deltascale;
-			changeflag = true;
-		}
+
+
+		//if (upbutton >= 1) {
+		//	deltay = -deltascale;
+		//	changeflag = true;
+		//}
+		//if (downbutton >= 1) {
+		//	deltay = deltascale;
+		//	changeflag = true;
+		//}
+		//if (leftbutton >= 1) {
+		//	deltax = -deltascale;
+		//	changeflag = true;
+		//}
+		//if (rightbutton >= 1) {
+		//	deltax = deltascale;
+		//	changeflag = true;
+		//}
 
 
 		if (changeflag == true) {
@@ -23677,7 +23751,7 @@ void DSAxisLMouseMove()
 				//SendInput(1, &input, sizeof(INPUT));
 
 
-				//WM_MOUSEMOVEはカメラ操作時などのときに画面が今でドラッグする場合に必要
+				//WM_MOUSEMOVEはカメラ操作時などのときに画面が	MB3D_WND_3Dでドラッグする場合に必要
 				if (s_3dwnd) {
 					POINT client3dpoint;
 					client3dpoint = cursorpos;
