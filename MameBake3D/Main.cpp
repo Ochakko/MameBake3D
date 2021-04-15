@@ -297,16 +297,17 @@ static void InitDSValues();
 static void GetDSValues();
 static void DSColorAndVibration();
 static void DSSelectWindowAndCtrl();
-static void DSCrossButtonSelectTree();
-static void DSCrossButtonSelectUTGUI();
-static void DSCrossButtonSelectToolCtrls();
-static void DSCrossButtonSelectPlayerBtns();
-static void DSCrossButtonSelectRigidCtrls();
-static void DSCrossButtonSelectImpulseCtrls();
-static void DSCrossButtonSelectGPCtrls();
-static void DSCrossButtonSelectDampCtrls();
-static void DSCrossButtonSelectRetargetCtrls();
-static void DSCrossButtonSelectEulLimitCtrls();
+static void DSCrossButton(bool firstctrlselect);
+static void DSCrossButtonSelectTree(bool firstctrlselect);
+static void DSCrossButtonSelectUTGUI(bool firstctrlselect);
+static void DSCrossButtonSelectToolCtrls(bool firstctrlselect);
+static void DSCrossButtonSelectPlayerBtns(bool firstctrlselect);
+static void DSCrossButtonSelectRigidCtrls(bool firstctrlselect);
+static void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect);
+static void DSCrossButtonSelectGPCtrls(bool firstctrlselect);
+static void DSCrossButtonSelectDampCtrls(bool firstctrlselect);
+static void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect);
+static void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect);
 static void DSR1ButtonSelectCurrentBone();
 static void DSAxisLMouseMove();
 //static void DSAxisLSelectingPopupMenu();
@@ -19871,6 +19872,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
 				}
+				SelectNextWindow(MB3D_WND_3D);
 			}
 			else {
 				GUIRigidSetVisible(-2);
@@ -19879,6 +19881,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
 				}
+				SelectNextWindow(MB3D_WND_SIDE);
 			}
 			break;
 		case SPPLATEMENUKIND_RIGID:
@@ -19892,6 +19895,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 					s_placefolderWnd->setVisible(false);
 				}
 				GUIRigidSetVisible(srcplateno);
+				SelectNextWindow(MB3D_WND_SIDE);
 			}
 			else {
 				_ASSERT(0);
@@ -19908,6 +19912,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 					s_placefolderWnd->setVisible(false);
 				}
 				GUIRetargetSetVisible(srcplateno);
+				SelectNextWindow(MB3D_WND_SIDE);
 			}
 			break;
 		default:
@@ -19920,6 +19925,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		}
 		GUIRetargetSetVisible(-2);
 		GUIRigidSetVisible(-2);
+		SelectNextWindow(MB3D_WND_3D);
 	}
 	else {
 		_ASSERT(0);
@@ -20120,56 +20126,8 @@ void OnDSUpdate()
 
 	DSSelectWindowAndCtrl();
 
-
-	//選択ウインドウ依存
-	//十字キー処理
-	{
-		if (s_currentwndid == MB3D_WND_3D) {
-			DSCrossButtonSelectUTGUI();
-		}
-		else if (s_currentwndid == MB3D_WND_TREE) {
-			DSCrossButtonSelectTree();
-		}
-		else if (s_currentwndid == MB3D_WND_TOOL) {
-			DSCrossButtonSelectToolCtrls();
-		}
-		else if (s_currentwndid == MB3D_WND_TIMELINE) {
-			DSCrossButtonSelectPlayerBtns();
-		}
-		else if (s_currentwndid == MB3D_WND_SIDE) {
-			if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
-				switch (s_platemenuno) {
-				case (SPRIGIDTSW_RIGIDPARAMS + 1):
-					DSCrossButtonSelectRigidCtrls();
-					break;
-				case (SPRIGIDSW_IMPULSE + 1):
-					DSCrossButtonSelectImpulseCtrls();
-					break;
-				case (SPRIGIDSW_GROUNDPLANE + 1):
-					DSCrossButtonSelectGPCtrls();
-					break;
-				case (SPRIGIDSW_DAMPANIM + 1):
-					DSCrossButtonSelectDampCtrls();
-					break;
-				default:
-					break;
-				}
-			}
-			else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
-				switch (s_platemenuno) {
-				case (SPRETARGETSW_RETARGET + 1):
-					DSCrossButtonSelectRetargetCtrls();
-					break;
-				case (SPRETARGETSW_LIMITEULER + 1):
-					DSCrossButtonSelectEulLimitCtrls();
-					break;
-				default:
-					break;
-				}
-			}
-		}
-	}
-	
+	bool firstctrlselect = false;
+	DSCrossButton(firstctrlselect);
 
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
 	DSR1ButtonSelectCurrentBone();
@@ -20682,6 +20640,7 @@ void SelectNextWindow(int nextwndid)
 
 
 
+
 		DeleteObject(selectbrush);
 		DeleteObject(unselectbrush);
 
@@ -20709,7 +20668,13 @@ void SelectNextWindow(int nextwndid)
 			s_currenthwnd = hwnds[s_currentwndid];
 		}
 
+
+		bool firstctrlselect = true;
+		DSCrossButton(firstctrlselect);
+
 		GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
+
+
 
 	}
 	//OutputToInfoWnd(L"Button Down %d", buttonL1);
@@ -20735,29 +20700,21 @@ void DSSelectWindowAndCtrl()
 	//static HWND s_befactivehwnd = 0;
 
 	
+	bool doneflag = false;
+
 //ウインドウ選択ブロック
 	{
-		
-
 		//static int s_currentwndid = 0;
 		//s_currentwndid = 0;
 		//s_currenthwnd = 0;
 		//s_currentctrlid = 0;
 		//s_currentctrlhwnd = 0;
 
-
-
-
 		int buttonL1 = 8;
 		int curbuttondown = s_dsbuttondown[buttonL1];
 		int curbuttonup = s_dsbuttonup[buttonL1];
 
-
-
-
 		if (curbuttonup >= 1) {
-
-
 			int nextwndid = 0;
 			nextwndid = s_currentwndid + 1;
 
@@ -20768,16 +20725,16 @@ void DSSelectWindowAndCtrl()
 				nextwndid = MB3D_WND_MAX - 1;
 			}
 
+			SelectNextWindow(nextwndid);//マウスカーソルをプレート位置に移動する前に呼ぶ（この関数ではコントロール位置にマウスは移動する）
 
-			SelectNextWindow(nextwndid);
-
+			doneflag = true;
 		}
 	}
 
 	//R1モードに関係なく
 	//カエルボタン　プレートメニュー選択ブロック
 	//R1モードによって機能が変わる場合には別関数にする
-	{
+	if (!doneflag) {
 		int frogbuttonid = 3;
 		int platebuttonid = 0;
 		int frogbutton;
@@ -20789,7 +20746,7 @@ void DSSelectWindowAndCtrl()
 		int platemenukind = s_platemenukind;
 		int platemenuno = s_platemenuno;
 		int nextplatemenukind = 0;
-		int nextplateno = 0;
+		int nextplateno = -1;
 
 		//frogButton ret2prev
 		if ((frogbutton >= 1) && (s_spret2prev.sprite != 0)) {
@@ -20797,25 +20754,40 @@ void DSSelectWindowAndCtrl()
 			frogbuttonpos = s_spret2prev.dispcenter;
 
 			GUIGetNextMenu(frogbuttonpos, platemenukind, &nextplatemenukind, &nextplateno);
-			if ((nextplatemenukind >= 0) && (nextplateno != 0)) {
+			if ((nextplatemenukind >= 0) && (nextplateno >= 0)) {
 				s_platemenukind = nextplatemenukind;
 				s_platemenuno = nextplateno;
 				GUIMenuSetVisible(s_platemenukind, nextplateno);
-				
+
 				s_curaimbarno = 0;
 				GUISetVisible_AimBar();
+
+				if (s_platemenukind == SPPLATEMENUKIND_GUI) {
+					SelectNextWindow(MB3D_WND_3D);
+				}
+				else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
+					SelectNextWindow(MB3D_WND_SIDE);
+				}
+				else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
+					SelectNextWindow(MB3D_WND_SIDE);
+				}
+				else {
+					_ASSERT(0);
+				}
+
+				doneflag = true;
 			}
 		}
 
-/*
-#define SPAXISNUM	3
-//#define SPCAMNUM	3	//Coef.h : SPR_CAM_MAX
-#define SPRIGMAX	2
-#define SPGUISWNUM	5
-#define SPRIGIDSWNUM	4
-#define SPRETARGETSWNUM	2
-#define SPAIMBARNUM	5
-*/
+		/*
+		#define SPAXISNUM	3
+		//#define SPCAMNUM	3	//Coef.h : SPR_CAM_MAX
+		#define SPRIGMAX	2
+		#define SPGUISWNUM	5
+		#define SPRIGIDSWNUM	4
+		#define SPRETARGETSWNUM	2
+		#define SPAIMBARNUM	5
+		*/
 
 		//move aimbar
 		if ((platebutton >= 1) && (s_curaimbarno >= 0)) {
@@ -20852,6 +20824,8 @@ void DSSelectWindowAndCtrl()
 				if ((nextaimbarno >= 0) && (nextaimbarno < SPAIMBARNUM)) {
 					s_curaimbarno = nextaimbarno;
 
+					SelectNextWindow(MB3D_WND_3D);//マウスカーソルをプレート位置に移動する前に呼ぶ（この関数ではコントロール位置にマウスは移動する）
+
 					POINT buttonpos;
 					buttonpos = s_spaimbar[s_curaimbarno].dispcenter;
 					buttonpos.y -= (28 / 2 + 6 / 2);
@@ -20862,9 +20836,6 @@ void DSSelectWindowAndCtrl()
 				}
 			}
 		}
-
-		
-
 	}
 
 	////モード依存
@@ -20884,8 +20855,61 @@ void DSSelectWindowAndCtrl()
 	////s_platemenuno
 }
 
+void DSCrossButton(bool firstctrlselect)
+{
+	//選択ウインドウ依存
+	//十字キー処理
+	{
+		if (s_currentwndid == MB3D_WND_3D) {
+			DSCrossButtonSelectUTGUI(firstctrlselect);
+		}
+		else if (s_currentwndid == MB3D_WND_TREE) {
+			DSCrossButtonSelectTree(firstctrlselect);
+		}
+		else if (s_currentwndid == MB3D_WND_TOOL) {
+			DSCrossButtonSelectToolCtrls(firstctrlselect);
+		}
+		else if (s_currentwndid == MB3D_WND_TIMELINE) {
+			DSCrossButtonSelectPlayerBtns(firstctrlselect);
+		}
+		else if (s_currentwndid == MB3D_WND_SIDE) {
+			if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
+				switch (s_platemenuno) {
+				case (SPRIGIDTSW_RIGIDPARAMS + 1):
+					DSCrossButtonSelectRigidCtrls(firstctrlselect);
+					break;
+				case (SPRIGIDSW_IMPULSE + 1):
+					DSCrossButtonSelectImpulseCtrls(firstctrlselect);
+					break;
+				case (SPRIGIDSW_GROUNDPLANE + 1):
+					DSCrossButtonSelectGPCtrls(firstctrlselect);
+					break;
+				case (SPRIGIDSW_DAMPANIM + 1):
+					DSCrossButtonSelectDampCtrls(firstctrlselect);
+					break;
+				default:
+					break;
+				}
+			}
+			else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
+				switch (s_platemenuno) {
+				case (SPRETARGETSW_RETARGET + 1):
+					DSCrossButtonSelectRetargetCtrls(firstctrlselect);
+					break;
+				case (SPRETARGETSW_LIMITEULER + 1):
+					DSCrossButtonSelectEulLimitCtrls(firstctrlselect);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+}
 
-void DSCrossButtonSelectTree()
+
+
+void DSCrossButtonSelectTree(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -20931,6 +20955,19 @@ void DSCrossButtonSelectTree()
 			//WS_GROUP
 			//または
 			//HWND SetFocus(HWND hWnd);
+
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+				changeflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_TREE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -21062,7 +21099,7 @@ void DSCrossButtonSelectTree()
 
 
 
-void DSCrossButtonSelectUTGUI()
+void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 {
 
 
@@ -21117,11 +21154,29 @@ void DSCrossButtonSelectUTGUI()
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
 
+
+
+
 			if (s_currentwndid == MB3D_WND_3D) {
 				if (s_model && (s_curboneno >= 0)) {
 					CBone* curbone = s_model->GetBoneByID(s_curboneno);
 					int curdsutguikind = s_curdsutguikind;
 					int curdsutguino = s_curdsutguino;
+
+
+					if (firstctrlselect) {
+						parentbutton = 0;
+						sisterbutton = 0;
+						childbutton = 0;
+						brotherbutton = 0;
+
+						accelaxis1 = 0;
+						accelaxis2 = 0;
+
+						changeflag = true;
+						chkflag = true;
+					}
+
 
 
 					//############################################################################################################################
@@ -21683,7 +21738,7 @@ void DSCrossButtonSelectUTGUI()
 }
 
 
-void DSCrossButtonSelectEulLimitCtrls()
+void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -21732,6 +21787,21 @@ void DSCrossButtonSelectEulLimitCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_SIDE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -21841,7 +21911,7 @@ void DSCrossButtonSelectEulLimitCtrls()
 
 }
 
-void DSCrossButtonSelectRetargetCtrls()
+void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -21890,6 +21960,19 @@ void DSCrossButtonSelectRetargetCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
 
 			if (s_currentwndid == MB3D_WND_SIDE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -22020,7 +22103,7 @@ void DSCrossButtonSelectRetargetCtrls()
 
 }
 
-void DSCrossButtonSelectDampCtrls()
+void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -22069,6 +22152,20 @@ void DSCrossButtonSelectDampCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_SIDE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -22199,7 +22296,7 @@ void DSCrossButtonSelectDampCtrls()
 
 }
 
-void DSCrossButtonSelectGPCtrls()
+void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -22248,6 +22345,20 @@ void DSCrossButtonSelectGPCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_SIDE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -22377,7 +22488,7 @@ void DSCrossButtonSelectGPCtrls()
 	}
 
 }
-void DSCrossButtonSelectImpulseCtrls()
+void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -22426,6 +22537,20 @@ void DSCrossButtonSelectImpulseCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_SIDE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -22556,7 +22681,7 @@ void DSCrossButtonSelectImpulseCtrls()
 
 }
 
-void DSCrossButtonSelectRigidCtrls()
+void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -22605,6 +22730,21 @@ void DSCrossButtonSelectRigidCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
+
 
 			if (s_currentwndid == MB3D_WND_SIDE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -22735,7 +22875,7 @@ void DSCrossButtonSelectRigidCtrls()
 
 }
 
-void DSCrossButtonSelectToolCtrls()
+void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 {
 
 
@@ -22786,6 +22926,20 @@ void DSCrossButtonSelectToolCtrls()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_TOOL) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -22881,7 +23035,7 @@ void DSCrossButtonSelectToolCtrls()
 }
 
 
-void DSCrossButtonSelectPlayerBtns()
+void DSCrossButtonSelectPlayerBtns(bool firstctrlselect)
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -22935,6 +23089,20 @@ void DSCrossButtonSelectPlayerBtns()
 
 			//static int s_curdsutguikind = 0;
 			//static int s_curdsutguino = 0;
+
+			if (firstctrlselect) {
+				parentbutton = 0;
+				sisterbutton = 0;
+				childbutton = 0;
+				brotherbutton = 0;
+
+				accelaxis1 = 0;
+				accelaxis2 = 0;
+
+				changeflag = true;
+				chkflag = true;
+			}
+
 
 			if (s_currentwndid == MB3D_WND_TIMELINE) {
 				if (s_model && (s_curboneno >= 0)) {
@@ -24590,7 +24758,8 @@ void DSAimBarOK()
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
 		if (g_undertrackingRMenu == 0) {
-			if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+			if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+			//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
 				if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
 
 					HWND caphwnd;
@@ -24613,6 +24782,12 @@ void DSAimBarOK()
 							//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
 							//COMMAND control ID  !!!!!
 							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+
+							//WCHAR wclassname[MAX_PATH] = { 0L };
+							//::GetClassNameW(caphwnd, wclassname, MAX_PATH);
+							//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+
+
 							::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
 						}
 						else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
@@ -24658,7 +24833,15 @@ void DSAimBarOK()
 					LPARAM caplparam;
 					caplparam = (cappoint.y << 16) | cappoint.x;
 
-					::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+					WCHAR wclassname[MAX_PATH] = { 0L };
+					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
+					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+					if (wcscmp(L"ComboBox", wclassname) == 0) {
+						::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);
+					}
+					else {
+						::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+					}
 				}
 
 				//aimbar
@@ -24671,7 +24854,15 @@ void DSAimBarOK()
 					LPARAM caplparam;
 					caplparam = (cappoint.y << 16) | cappoint.x;
 
-					::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+					WCHAR wclassname[MAX_PATH] = { 0L };
+					::GetClassNameW(caphwnd, wclassname, MAX_PATH);
+					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+					if (wcscmp(L"ComboBox", wclassname) == 0) {
+						::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
+					}
+					else {
+						::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+					}
 				}
 			}
 
@@ -24689,7 +24880,8 @@ void DSAimBarOK()
 
 		if (g_undertrackingRMenu == 0) {
 
-			if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+			if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+			//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
 				if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
 
 					HWND caphwnd;

@@ -264,6 +264,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/04/15_1
+	Operation with GamePad
+		HiLite Window on SelChangeGUIPlate.		
+		Put cursor pos to ctrl pos of HiLite window on SelChangePlate.
+			
 2021/04/13_2
 	Explanation of operation with Sony Game Pad DualSence.
 		MameBake3D/ReadMe/MameBake3D_OperationUsingSonyGamePadDualSence.png
