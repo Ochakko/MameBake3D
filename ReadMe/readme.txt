@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/16_2
+	pragma lib at cpp not at h.
+	MouseMoveMessage of AngleLimitDlg. 	
+
 2021/04/16_1
 	Fix problem that cursor moves to 3DWND on drop down Main Menu.
 

@@ -23961,6 +23961,70 @@ void DSAxisLMouseMove()
 					::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
 				}
 
+				//anglelimitdlg SLIDER
+				if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+					//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+					if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
+
+						HWND caphwnd;
+						caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
+						if (caphwnd && IsWindow(caphwnd)) {
+							POINT cappoint;
+							cappoint = cursorpos;
+							//::ScreenToClient(caphwnd, &cappoint);
+							::ScreenToClient(caphwnd, &cappoint);
+							LPARAM caplparam;
+							caplparam = (cappoint.y << 16) | cappoint.x;
+
+							//::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+
+							WPARAM wparam;
+							LPARAM lparam;
+							lparam = (LPARAM)caphwnd;
+							if (s_curdseullimitctrlno == 0) {
+								////wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+								////wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
+								////COMMAND control ID  !!!!!
+								////::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+
+								////WCHAR wclassname[MAX_PATH] = { 0L };
+								////::GetClassNameW(caphwnd, wclassname, MAX_PATH);
+								////::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+
+
+								//::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
+							}
+							else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
+								//wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
+								////COMMAND control ID  !!!!!
+								////::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);//UP‚Ìˆ—‚ÅŒÄ‚Ô
+							}
+							else {
+								//slider
+								RECT sliderloc;
+								::GetWindowRect(caphwnd, &sliderloc);
+								POINT slidertopleft;
+								slidertopleft.x = sliderloc.left;
+								slidertopleft.y = sliderloc.top;
+								::ScreenToClient(s_anglelimitdlg, &slidertopleft);
+
+
+								int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+								//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
+								//ctrlpos.x = ctrlrect.left + sliderposx + 12;
+								//ctrlpos.y = ctrlrect.top + 20 / 2;
+
+								::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+								::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
+							}
+
+
+						}
+
+
+						//::SendMessage(s_anglelimitdlg, WM_COMMAND, s_dseullimitctrls[s_curdseullimitctrlno], 0);
+					}
+				}
 
 				//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
 			}
@@ -24807,7 +24871,7 @@ void DSAimBarOK()
 						else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
 							wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
 							//COMMAND control ID  !!!!!
-							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);//UP‚Ìˆ—‚ÅŒÄ‚Ô
 						}
 						else {
 							//slider

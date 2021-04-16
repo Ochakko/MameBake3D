@@ -3,6 +3,13 @@
 
 #include "HidDevice.h"
 
+
+#pragma comment(lib,"hid.lib")
+#pragma comment(lib,"setupapi.lib")
+
+using namespace std;
+
+
 HidDevice HidDevice::Create(char * path, int id)
 {
 	//パスのコピー

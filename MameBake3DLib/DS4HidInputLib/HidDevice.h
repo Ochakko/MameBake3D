@@ -9,11 +9,11 @@ extern "C"
 {
 #include <hidsdi.h>
 }
-
-#pragma comment(lib,"hid.lib")
-#pragma comment(lib,"setupapi.lib")
-
-using namespace std;
+//
+//#pragma comment(lib,"hid.lib")
+//#pragma comment(lib,"setupapi.lib")
+//
+//using namespace std;
 
 class HidDevice
 {
