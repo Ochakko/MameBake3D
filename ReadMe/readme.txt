@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/16_3
+	Refactoring source file.
+		Use common source at AngleLimitDlg and other WindowsDialogs.
+
 2021/04/16_2
 	pragma lib at cpp not at h.
 	MouseMoveMessage of AngleLimitDlg. 	

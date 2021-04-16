@@ -166,6 +166,11 @@ int g_submenuwidth = 32;
 HWND g_filterdlghwnd = 0;
 
 
+
+static HWND GetOFWnd(POINT srcpoint);
+static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
+
+
 /*
 ID3D11DepthStencilState *g_pDSStateZCmp = 0;
 ID3D11DepthStencilState *g_pDSStateZCmpAlways = 0;
@@ -23774,109 +23779,6 @@ void DSAxisLMouseMove()
 				::GetWindowRect(desktopwnd, &desktoprect);
 				::ClipCursor(&desktoprect);
 
-				/*
-				IDR_MENU1 MENU
-				BEGIN
-					POPUP "File"
-					BEGIN
-						MENUITEM "Open",                        ID_FILE_OPEN40001
-						POPUP "Save"
-						BEGIN
-							MENUITEM "Project(*.cha)",              ID_SAVEPROJ_40035
-							MENUITEM "RigidParams(*ref)",           ID_RESAVE_40028
-							MENUITEM "ImpulseParams(*.imp)",        ID_IMPSAVE_40030
-							MENUITEM "GroundParams(*.gco)",         ID_SAVEGCOLI_40033
-						END
-						MENUITEM "bvh2FBX",                     ID_FILE_BVH2FBX
-						MENUITEM "Export bnt",                  ID_FILE_EXPORTBNT
-					END
-					POPUP "表示(disp)"
-					BEGIN
-						MENUITEM "モーションウインドウ(motion)",          ID_DISPMW40002
-						MENUITEM "ツールウインドウ(tool)",              4007
-						MENUITEM "モデルパネル(model)",               40026
-						MENUITEM "オブジェクトパネル(object)",           40012
-						MENUITEM "地面オブジェクト(ground)",            ID_DISPGROUND
-					END
-					POPUP "モーション(motion)"
-					BEGIN
-						MENUITEM "新規空モーション(new empty)",         40004
-						MENUITEM "編集中モーションの削除(del under editting)", 40006
-						MENUITEM SEPARATOR
-						POPUP "モーションの選択(select)"
-						BEGIN
-							MENUITEM "PlacingFolder",               ID_40062
-						END
-					END
-					POPUP "モデル(model)"
-					BEGIN
-						MENUITEM "編集中のモデルを削除(del under editting)", ID_DELMODEL
-						MENUITEM "全モデル削除(del all)",             ID_DELALLMODEL
-						MENUITEM SEPARATOR
-						POPUP "モデルの選択(select)"
-						BEGIN
-							MENUITEM "PlacingFolder",               0
-						END
-					END
-					POPUP "編集・変換(edit, conv)"
-					BEGIN
-						MENUITEM "ボーン軸をXに再計算(RecalcAxisX)",     ID_40047
-						MENUITEM "モーションのリターゲット(retarget)",      ID_40048
-						MENUITEM "オイラー角　角度制限(limit euler)",     ID_40049
-						MENUITEM "ボーン座標軸回転(rot axis)",          ID_40050
-					END
-					POPUP "剛体設定切り替え(select rigid)"
-					BEGIN
-						MENUITEM "PlacingFolder",               0
-					END
-					POPUP "ragdoll剛体選択(select ragdoll)"
-					BEGIN
-						MENUITEM "PlacingFolder",               0
-					END
-					POPUP "ragdollモーフ選択(ragdoll morph)"
-					BEGIN
-						MENUITEM "PlacingFolder",               0
-					END
-					POPUP "Imp選択(impulse)"
-					BEGIN
-						MENUITEM "PlacingFolder",               64500
-					END
-					POPUP "HELP"
-					BEGIN
-						MENUITEM "Regist",                      29800
-					END
-				END
-
-				IDR_RMENU MENU
-				BEGIN
-					POPUP "RMenu"
-					BEGIN
-						MENUITEM "menutitle",                   ID_RMENU_0
-					END
-				END
-
-				IDR_MENU3 MENU
-				BEGIN
-					POPUP "RMenu2"
-					BEGIN
-						MENUITEM "全ボーン(all bones)",             ID_RMENU2_40051
-						MENUITEM "選択ボーン１つ(one bone)",           ID_RMENU2_40052
-						MENUITEM "選択ボーンと子供ボーン(selected and children)", ID_RMENU2_40053
-					END
-				END
-
-				IDR_MENU4 MENU
-				BEGIN
-					POPUP "RMenu3"
-					BEGIN
-						MENUITEM "Rigの設定(set)",                 ID_RMENU3_RIG40055
-						MENUITEM "Rigの実行(run)",                 ID_RMENU3_RIG40056
-					END
-				END
-
-				*/
-
-
 				//WM_MENUSELECT
 				//MF_MOUSESELECT(上位)
 				//下位はメニューID
@@ -23908,29 +23810,6 @@ void DSAxisLMouseMove()
 				//const double ScaleX = (double)0xffff / (double)(desktoprect.right - desktoprect.left);
 				//const double ScaleY = (double)0xffff / (double)(desktoprect.bottom - desktoprect.top);
 
-				////SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS);
-				//INPUT input;
-				//ZeroMemory(&input, sizeof(INPUT));
-				//input.type = INPUT_MOUSE;
-				////input.mi.mouseData = 0;
-				////input.mi.time = 0;
-				//input.mi.dwExtraInfo = GetMessageExtraInfo();
-				////input.mi.dx = (LONG)((cursorpos.x + deltax) * ScaleX);
-				////input.mi.dy = (LONG)((cursorpos.y + deltay) * ScaleY);
-				////input.mi.dx = (LONG)(deltax * ScaleX);
-				////input.mi.dy = (LONG)(deltay * ScaleY);
-				//input.mi.dx = (LONG)(deltax);
-				//input.mi.dy = (LONG)(deltay);
-				////input.mi.dx = (LONG)((double)cursorpos.x * 65536.0 / (double)GetSystemMetrics(SM_CXSCREEN));
-				////input.mi.dy = (LONG)((double)cursorpos.y * 65536.0 / (double)GetSystemMetrics(SM_CYSCREEN));
-				////input.mi.dx = (LONG)((double)cursorpos.x * 65536.0 / (double)(desktoprect.right - desktoprect.left));
-				////input.mi.dy = (LONG)((double)cursorpos.y * 65536.0 / (double)(desktoprect.bottom - desktoprect.top));
-				////input.mi.dx = (LONG)cursorpos.x;
-				////input.mi.dy = (LONG)cursorpos.y;
-				//input.mi.dwFlags = MOUSEEVENTF_MOVE;
-				////input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
-				////input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
-				//SendInput(1, &input, sizeof(INPUT));
 
 
 				//WM_MOUSEMOVEはカメラ操作時などのときに画面が	MB3D_WND_3Dでドラッグする場合に必要
@@ -23961,153 +23840,44 @@ void DSAxisLMouseMove()
 					::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
 				}
 
-				//anglelimitdlg SLIDER
-				if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-					//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-					if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
 
-						HWND caphwnd;
-						caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
-						if (caphwnd && IsWindow(caphwnd)) {
-							POINT cappoint;
-							cappoint = cursorpos;
-							//::ScreenToClient(caphwnd, &cappoint);
-							::ScreenToClient(caphwnd, &cappoint);
-							LPARAM caplparam;
-							caplparam = (cappoint.y << 16) | cappoint.x;
+				//dialog ctrlのドラッグは　enter buttonを押している間だけ
+				if (s_dspushedOK >= 1) {
+					HWND ctrlwnd = GetOFWnd(cursorpos);
+					if (ctrlwnd) {
+						WCHAR wclassname[MAX_PATH] = { 0L };
+						::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
+						//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+						if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
+							//Slider
+							RECT sliderloc;
+							::GetWindowRect(ctrlwnd, &sliderloc);
+							POINT cappoint = cursorpos;
+							::ScreenToClient(ctrlwnd, &cappoint);
 
-							//::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+							float rangemin;
+							float rangemax;
+							rangemin = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMIN, 0, 0);
+							rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
+							
+							float thumblength;
+							thumblength = ::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
 
-							WPARAM wparam;
-							LPARAM lparam;
-							lparam = (LPARAM)caphwnd;
-							if (s_curdseullimitctrlno == 0) {
-								////wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-								////wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-								////COMMAND control ID  !!!!!
-								////::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
+							//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+							int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
 
-								////WCHAR wclassname[MAX_PATH] = { 0L };
-								////::GetClassNameW(caphwnd, wclassname, MAX_PATH);
-								////::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
-
-
-								//::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
-							}
-							else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
-								//wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
-								////COMMAND control ID  !!!!!
-								////::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);//UPの処理で呼ぶ
-							}
-							else {
-								//slider
-								RECT sliderloc;
-								::GetWindowRect(caphwnd, &sliderloc);
-								POINT slidertopleft;
-								slidertopleft.x = sliderloc.left;
-								slidertopleft.y = sliderloc.top;
-								::ScreenToClient(s_anglelimitdlg, &slidertopleft);
-
-
-								int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
-								//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
-								//ctrlpos.x = ctrlrect.left + sliderposx + 12;
-								//ctrlpos.y = ctrlrect.top + 20 / 2;
-
-								::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
-								::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
-							}
-
-
+							::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+							::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
 						}
-
-
-						//::SendMessage(s_anglelimitdlg, WM_COMMAND, s_dseullimitctrls[s_curdseullimitctrlno], 0);
 					}
 				}
+
+				
 
 				//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
 			}
 		}
-	//}
-	//else if (s_undertrackingRMenu == 1) {
-
-	//	HWND trackingwnd;
-	//	trackingwnd = ::GetCapture();
-	//	if (trackingwnd) {
-	//		if (upbutton >= 1) {
-	//			::SendMessage(trackingwnd, WM_KEYDOWN, VK_UP, 0);
-	//		}
-	//		if (downbutton >= 1) {
-	//			::SendMessage(trackingwnd, WM_KEYDOWN, VK_DOWN, 0);
-	//		}
-	//		if (leftbutton >= 1) {
-	//			::SendMessage(trackingwnd, WM_KEYDOWN, VK_LEFT, 0);
-	//		}
-	//		if (rightbutton >= 1) {
-
-	//		}
-	//	}
-
-
-	//}
-	//HWND dlghwnd;
-	//dlghwnd = g_SampleUI.GetHWnd();
-	//if (dlghwnd) {
-	//	POINT dlgpoint;
-	//	dlgpoint = cursorpos;
-	//	::ScreenToClient(dlghwnd, &dlgpoint);
-	//	LPARAM dlglparam;
-	//	dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
-
-	//	NMMOUSE nmMouse;
-	//	ZeroMemory(&nmMouse, sizeof nmMouse);
-	//	nmMouse.hdr.hwndFrom = dlghwnd;
-	//	nmMouse.hdr.code = WM_MOUSEMOVE;
-	//	nmMouse.pt.x = LOWORD(dlglparam);
-	//	nmMouse.pt.y = HIWORD(dlglparam);
-
-	//	nmMouse.hdr.idFrom = 0;//!!!!!!!!!!!!!!
-
-	//	//if (s_sampleuihwnd) {
-	//	//	switch (s_curdsutguikind) {
-	//	//	case 0:
-	//	//		if (s_dsutgui0[s_curdsutguino]) {
-	//	//			nmMouse.hdr.idFrom = s_dsutguiid0[s_curdsutguino];
-	//	//		}
-	//	//		break;
-
-	//	//	case 1:
-	//	//		if (s_dsutgui1[s_curdsutguino]) {
-	//	//			nmMouse.hdr.idFrom = s_dsutguiid1[s_curdsutguino];
-	//	//		}
-	//	//		break;
-
-	//	//	case 2:
-	//	//		if (s_dsutgui2[s_curdsutguino]) {
-	//	//			nmMouse.hdr.idFrom = s_dsutguiid2[s_curdsutguino];
-	//	//		}
-	//	//		break;
-
-	//	//	case 3:
-	//	//		if (s_dsutgui3[s_curdsutguino]) {
-	//	//			nmMouse.hdr.idFrom = s_dsutguiid3[s_curdsutguino];
-	//	//		}
-	//	//		break;
-	//	//	default:
-	//	//		break;
-	//	//	}
-	//	//}
-	//	////ClientToScreen(hwnd, &nmMouse.pt);
-
-	//	//::SendMessage(dlghwnd, WM_NOTIFY, 0, (LPARAM)&nmMouse);
-	//	//::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, (LPARAM)dlglparam);
-	//	//::SetCapture(dlghwnd);
-	//	//::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, (LPARAM)dlglparam);
-	//	//::ReleaseCapture();
-
-	//	
-	//}
+	
 }
 
 void DSL3R3ButtonMouseHere()
@@ -24558,115 +24328,36 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 }
 
-BOOL CALLBACK EnumChildProcOF(HWND hwnd, LPARAM lParam)
-{
-	if (!lParam) {
-		return FALSE;
-	}
-	HWND* rethwnd = (HWND*)lParam;
-	*rethwnd = 0;
-
-	POINT mousepoint;
-	::GetCursorPos(&mousepoint);
-	//::ScreenToClient(hwnd, &mousepoint);
 
 
-	//typedef struct tagWINDOWPLACEMENT {
-	//	UINT  length;
-	//	UINT  flags;
-	//	UINT  showCmd;
-	//	POINT ptMinPosition;
-	//	POINT ptMaxPosition;
-	//	RECT  rcNormalPosition;
-	//	RECT  rcDevice;
-	//} WINDOWPLACEMENT;
-	//WINDOWPLACEMENT wplacement;
-	//ZeroMemory(&wplacement, sizeof(WINDOWPLACEMENT));
-	RECT ctrlrect;
-	//GetClientRect(hwnd, &ctrlrect);
-	GetWindowRect(hwnd, &ctrlrect);
-	//WINDOWPLACEMENT wplacement;
-	//ZeroMemory(&wplacement, sizeof(WINDOWPLACEMENT));
-	//GetWindowPlacement(hwnd, &wplacement);
-	//ctrlrect = wplacement.rcNormalPosition;
-
-	POINT point1;
-	POINT point2;
-	point1.x = ctrlrect.left;
-	point1.y = ctrlrect.top;
-	point2.x = ctrlrect.right;
-	point2.y = ctrlrect.bottom;
-	//::ScreenToClient(hwnd, &point1);
-	//::ScreenToClient(hwnd, &point2);
-	//::ClientToScreen(s_ofhwnd, &point1);
-	//::ClientToScreen(s_ofhwnd, &point2);
-	::ClientToScreen(hwnd, &point1);
-	::ClientToScreen(hwnd, &point2);
-	ctrlrect.left = point1.x;
-	ctrlrect.top = point1.y;
-	ctrlrect.right = point2.x;
-	ctrlrect.bottom = point2.y;
-
-	//if (g_undertrackingRMenu == 3) {
-		//if (abs(mousepoint.x - ctrlrect.left) <= 200) {
-		//	_ASSERT(0);
-		//}
-		//if (abs(mousepoint.x) <= 200) {
-		//	_ASSERT(0);
-		//}
-	//}
-
-
-	//if ((s_cursorposenum.x >= ctrlrect.left) && (s_cursorposenum.x <= ctrlrect.right)
-	//	&& (s_cursorposenum.y >= ctrlrect.top) && (s_cursorposenum.y <= ctrlrect.bottom)) {
-	if ((mousepoint.x >= 0) && (mousepoint.x <= (ctrlrect.right - ctrlrect.left))
-		&& (mousepoint.y >= 0) && (mousepoint.y <= (ctrlrect.bottom - ctrlrect.top))) {
-		*rethwnd = hwnd;
-		return FALSE;//探索終了
-	}
-	else {
-		*rethwnd = 0;
-		return TRUE;//探索続行
-	}
-
-}
-
-HWND GetDlgCtrlWnd(HWND dlgwnd, POINT cappoint)
-{
-	HWND hbtn = NULL;
-	::EnumChildWindows(dlgwnd, EnumChildProc, reinterpret_cast<LPARAM>(&hbtn));
-	return hbtn;
-}
-
-
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
-{
-	if (!lParam) {
-		return FALSE;
-	}
-	HWND* rethwnd = (HWND*)lParam;
-	//*rethwnd = 0;
-
-	WCHAR szBuff[512];
-	GetWindowTextW(hwnd, szBuff, 512);
-	int cmp;
-	cmp = wcscmp(L"OpenMqoDlg", szBuff);
-	if (cmp == 0) {
-		//HWND hbtn = NULL;
-		//::EnumChildWindows(hwnd, EnumChildProcOF, reinterpret_cast<LPARAM>(&hbtn));
-		//if (hbtn) {
-		*rethwnd = hwnd;
-		return FALSE;
-		//}
-		//else {
-		//	return TRUE;
-		//}
-	}
-	else {
-		//*rethwnd = 0;
-		return TRUE;
-	}
-}
+//BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
+//{
+//	if (!lParam) {
+//		return FALSE;
+//	}
+//	HWND* rethwnd = (HWND*)lParam;
+//	//*rethwnd = 0;
+//
+//	WCHAR szBuff[512];
+//	GetWindowTextW(hwnd, szBuff, 512);
+//	int cmp;
+//	cmp = wcscmp(L"OpenMqoDlg", szBuff);
+//	if (cmp == 0) {
+//		//HWND hbtn = NULL;
+//		//::EnumChildWindows(hwnd, EnumChildProcOF, reinterpret_cast<LPARAM>(&hbtn));
+//		//if (hbtn) {
+//		*rethwnd = hwnd;
+//		return FALSE;
+//		//}
+//		//else {
+//		//	return TRUE;
+//		//}
+//	}
+//	else {
+//		//*rethwnd = 0;
+//		return TRUE;
+//	}
+//}
 
 HWND GetOFWnd(POINT srcpoint)
 {
@@ -24722,94 +24413,18 @@ HWND GetOFWnd(POINT srcpoint)
 			return retctrlwnd;
 		}
 	}
+	else if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+		//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+		if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
+			::EnumChildWindows(s_anglelimitdlg, EnumChildProc, (LPARAM)&retctrlwnd);
+			if (retctrlwnd) {
+				s_ofhwnd = s_anglelimitdlg;
+				return retctrlwnd;
+			}
+		}
+	}
 
 	
-	//HWND ofhwnd = 0;
-	//HWND focuswnd = 0;
-	//HWND capturewnd = 0;
-	//HWND foregroundwnd = 0;
-	//HWND activewnd = 0;
-	//focuswnd = ::GetFocus();
-	//capturewnd = ::GetCapture();
-	//foregroundwnd = ::GetForegroundWindow();
-	//activewnd = ::GetActiveWindow();
-	////EnumWindows(EnumWindowsProc, (LPARAM)&ofhwnd);
-	////if (ofhwnd) {
-	////	//POINT cursorposdlg = srcpoint;
-	////	//::ScreenToClient(ofhwnd, &cursorposdlg);
-	////	//s_cursorposenum = cursorposdlg;
-	////	s_ofhwnd = ofhwnd;
-	////	::EnumChildWindows(ofhwnd, EnumChildProc, (LPARAM)&retctrlwnd);
-	////	if (retctrlwnd) {
-	////		return retctrlwnd;
-	////	}
-	////}
-	//if (!retctrlwnd && focuswnd) {
-	//	//s_ofhwnd = focuswnd;
-	//	::EnumChildWindows(focuswnd, EnumChildProc, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && capturewnd) {
-	//	//s_ofhwnd = capturewnd;
-	//	::EnumChildWindows(capturewnd, EnumChildProc, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && foregroundwnd) {
-	//	//s_ofhwnd = foregroundwnd;
-	//	::EnumChildWindows(foregroundwnd, EnumChildProc, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && activewnd) {
-	//	//s_ofhwnd = activewnd;
-	//	::EnumChildWindows(activewnd, EnumChildProc, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (ofhwnd) {
-	//	//POINT cursorposdlg = srcpoint;
-	//	//::ScreenToClient(ofhwnd, &cursorposdlg);
-	//	//s_cursorposenum = cursorposdlg;
-	//	s_ofhwnd = ofhwnd;
-	//	::EnumChildWindows(ofhwnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && focuswnd) {
-	//	s_ofhwnd = focuswnd;
-	//	::EnumChildWindows(focuswnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && capturewnd) {
-	//	s_ofhwnd = capturewnd;
-	//	::EnumChildWindows(capturewnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && foregroundwnd) {
-	//	s_ofhwnd = foregroundwnd;
-	//	::EnumChildWindows(foregroundwnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
-	//if (!retctrlwnd && activewnd) {
-	//	s_ofhwnd = activewnd;
-	//	::EnumChildWindows(activewnd, EnumChildProcOF, (LPARAM)&retctrlwnd);
-	//	if (retctrlwnd) {
-	//		return retctrlwnd;
-	//	}
-	//}
 
 	return 0;
 
@@ -24836,71 +24451,7 @@ void DSAimBarOK()
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
 		if (g_undertrackingRMenu == 0) {
-			if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-			//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-				if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
-
-					HWND caphwnd;
-					caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
-					if (caphwnd && IsWindow(caphwnd)) {
-						POINT cappoint;
-						cappoint = cursorpos;
-						//::ScreenToClient(caphwnd, &cappoint);
-						::ScreenToClient(caphwnd, &cappoint);
-						LPARAM caplparam;
-						caplparam = (cappoint.y << 16) | cappoint.x;
-
-						//::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
-
-						WPARAM wparam;
-						LPARAM lparam;
-						lparam = (LPARAM)caphwnd;
-						if (s_curdseullimitctrlno == 0) {
-							//wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-							//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-							//COMMAND control ID  !!!!!
-							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
-
-							//WCHAR wclassname[MAX_PATH] = { 0L };
-							//::GetClassNameW(caphwnd, wclassname, MAX_PATH);
-							//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
-
-
-							::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
-						}
-						else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
-							wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
-							//COMMAND control ID  !!!!!
-							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);//UPの処理で呼ぶ
-						}
-						else {
-							//slider
-							RECT sliderloc;
-							::GetWindowRect(caphwnd, &sliderloc);
-							POINT slidertopleft;
-							slidertopleft.x = sliderloc.left;
-							slidertopleft.y = sliderloc.top;
-							::ScreenToClient(s_anglelimitdlg, &slidertopleft);
-
-
-							int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
-							//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
-							//ctrlpos.x = ctrlrect.left + sliderposx + 12;
-							//ctrlpos.y = ctrlrect.top + 20 / 2;
-
-							::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
-							::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
-						}
-
-
-					}
-
-
-					//::SendMessage(s_anglelimitdlg, WM_COMMAND, s_dseullimitctrls[s_curdseullimitctrlno], 0);
-				}
-
-			}
-			else {
+			{
 				//dialog ctrl
 				HWND ctrlwnd;
 				ctrlwnd = GetOFWnd(cursorpos);
@@ -24915,31 +24466,61 @@ void DSAimBarOK()
 					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
 					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 					if (wcscmp(L"ComboBox", wclassname) == 0) {
+						//COMBOBOX
 						::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);
+
+						//HWND caphwnd;
+						//caphwnd = ::GetCapture();
+						//if (caphwnd && IsWindow(caphwnd)) {
+						//	::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
+						//}
+					}
+					else if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
+						//Slider
+						RECT sliderloc;
+						::GetWindowRect(ctrlwnd, &sliderloc);
+						POINT cappoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint);
+
+						float rangemin;
+						float rangemax;
+						rangemin = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMIN, 0, 0);
+						rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
+
+						float thumblength;
+						thumblength = ::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+
+						//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+						int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
+
+						::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+						::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
 					}
 					else {
 						::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
 					}
 				}
+				else {
 
-				//aimbar
-				HWND caphwnd;
-				caphwnd = ::GetCapture();
-				if (caphwnd && IsWindow(caphwnd)) {
-					POINT cappoint;
-					cappoint = cursorpos;
-					::ScreenToClient(caphwnd, &cappoint);
-					LPARAM caplparam;
-					caplparam = (cappoint.y << 16) | cappoint.x;
+					//aimbar
+					HWND caphwnd;
+					caphwnd = ::GetCapture();
+					if (caphwnd && IsWindow(caphwnd)) {
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(caphwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
 
-					WCHAR wclassname[MAX_PATH] = { 0L };
-					::GetClassNameW(caphwnd, wclassname, MAX_PATH);
-					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
-					if (wcscmp(L"ComboBox", wclassname) == 0) {
-						::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
-					}
-					else {
+						//WCHAR wclassname[MAX_PATH] = { 0L };
+						//::GetClassNameW(caphwnd, wclassname, MAX_PATH);
+						////::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+						//if (wcscmp(L"ComboBox", wclassname) == 0) {
+						//	::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
+						//}
+						//else {
 						::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+						//}
 					}
 				}
 			}
@@ -24957,66 +24538,57 @@ void DSAimBarOK()
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
 		if (g_undertrackingRMenu == 0) {
+			//dialog ctrl
+			HWND ctrlwnd;
+			ctrlwnd = GetOFWnd(cursorpos);
+			if (ctrlwnd) {
+				::SendMessage(ctrlwnd, WM_LBUTTONUP, 0, 0);
+				if (s_ofhwnd) {
+					POINT cappoint;
+					cappoint = cursorpos;
+					::ScreenToClient(ctrlwnd, &cappoint);
+					LPARAM caplparam;
+					caplparam = (cappoint.y << 16) | cappoint.x;
 
-			if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-			//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
-				if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
-
-					HWND caphwnd;
-					caphwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
-					if (caphwnd && IsWindow(caphwnd)) {
-						POINT cappoint;
-						cappoint = cursorpos;
-						::ScreenToClient(caphwnd, &cappoint);
-						LPARAM caplparam;
-						caplparam = (cappoint.y << 16) | cappoint.x;
-
-						//::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
-
-						WPARAM wparam;
-						LPARAM lparam;
-						lparam = (LPARAM)caphwnd;
-						if (s_curdseullimitctrlno == 0) {
-							//wparam = (CBN_SELCHANGE << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-							//wparam = (CB_SHOWDROPDOWN << 16) | s_dseullimitctrls[s_curdseullimitctrlno];
-							//COMMAND control ID  !!!!!
-							//::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
-						}
-						else if(s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)){
-							wparam = (BN_CLICKED << 16) | s_dseullimitctrls[s_curdseullimitctrlno];//BM_CLICK?
-							//COMMAND control ID  !!!!!
-							::SendMessage(s_anglelimitdlg, WM_COMMAND, wparam, lparam);
-						}
-						else {
-							//slider
-							//int sliderpos = (int)(((-180.0f + 360.0f * (float)cappoint.x / 200.0f) / 360.0f) * 100.0f);
-							//int sliderpos = (int)(-180.0f + (float)cappoint.x / 250.0f * 360.0f);
-
-							int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
-							//int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
-							//ctrlpos.x = ctrlrect.left + sliderposx + 12;
-							//ctrlpos.y = ctrlrect.top + 20 / 2;
+					int ctrlid;
+					ctrlid = GetDlgCtrlID(ctrlwnd);
+					::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);
 
 
-							::SendMessage(caphwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
-							::SendMessage(s_anglelimitdlg, WM_HSCROLL, 0, lparam);
-						}
+					WCHAR wclassname[MAX_PATH] = { 0L };
+					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
+					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+					if (wcscmp(L"ComboBox", wclassname) == 0) {
+					//	//COMBOBOX
+					//	::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);//DOWNのときに処理する
+					}
+					else if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
+						//Slider
+						RECT sliderloc;
+						::GetWindowRect(ctrlwnd, &sliderloc);
+						POINT cappoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint);
 
+						float rangemin;
+						float rangemax;
+						rangemin = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMIN, 0, 0);
+						rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
+
+						float thumblength;
+						thumblength = ::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+
+						//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+						int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
+
+						::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+						::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
+					}
+					else {
+						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 					}
 				}
 			}
-			else {
-				//dialog ctrl
-				HWND ctrlwnd;
-				ctrlwnd = GetOFWnd(cursorpos);
-				if (ctrlwnd) {
-					::SendMessage(ctrlwnd, WM_LBUTTONUP, 0, 0);
-					if (s_ofhwnd) {
-						int ctrlid;
-						ctrlid = GetDlgCtrlID(ctrlwnd);
-						::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);
-					}
-				}
+			else{
 
 
 				//aim bar
@@ -25044,14 +24616,12 @@ void DSAimBarOK()
 					int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_3dwnd, NULL);
 					InterlockedExchange(&g_undertrackingRMenu, 0);
 				}
-
-				//MainWindow MsgProc ; Prepair For Undo
-				PrepairUndo();
-
-				s_wmlbuttonup = 1;
-
-
 			}
+
+			//MainWindow MsgProc ; Prepair For Undo
+			PrepairUndo();
+
+			s_wmlbuttonup = 1;
 
 		}
 
