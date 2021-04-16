@@ -9203,6 +9203,10 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
 			}
 
+			RECT dlgrect;
+			GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 			SetTimer(hDlgWnd, s_openmqoproctimer, 20, NULL);
 			s_mqodlghwnd = hDlgWnd;
 			}
@@ -9419,22 +9423,28 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
         case WM_INITDIALOG:
-			if( s_model && s_model->GetCurMotInfo() ){
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
-					s_model->GetCurMotInfo()->motname, 256, s_tmpmotname, 256 );
-				SetDlgItemText( hDlgWnd, IDC_MOTNAME, s_tmpmotname );
+		{
+			if (s_model && s_model->GetCurMotInfo()) {
+				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+					s_model->GetCurMotInfo()->motname, 256, s_tmpmotname, 256);
+				SetDlgItemText(hDlgWnd, IDC_MOTNAME, s_tmpmotname);
 
 				s_tmpmotframeleng = s_model->GetCurMotInfo()->frameleng;
-				swprintf_s( strframeleng, 256, L"%f", s_tmpmotframeleng );
-				SetDlgItemText( hDlgWnd, IDC_FRAMELENG, strframeleng );
+				swprintf_s(strframeleng, 256, L"%f", s_tmpmotframeleng);
+				SetDlgItemText(hDlgWnd, IDC_FRAMELENG, strframeleng);
 
 				s_tmpmotloop = s_model->GetCurMotInfo()->loopflag;
-				SendMessage( GetDlgItem( hDlgWnd, IDC_LOOP ), BM_SETCHECK, (WPARAM)s_tmpmotloop, 0L);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_LOOP), BM_SETCHECK, (WPARAM)s_tmpmotloop, 0L);
 			}
+
+
+			RECT dlgrect;
+			GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 
 			s_motpropdlghwnd = hDlgWnd;
 			SetTimer(hDlgWnd, s_motproptimerid, 20, NULL);
-
+		}
 			//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
             return FALSE;
         case WM_COMMAND:
@@ -11259,6 +11269,9 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					pMalloc->Release();
 				}
 			}
+			RECT dlgrect;
+			GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 		}
 		return FALSE;
 	case WM_COMMAND:
@@ -13303,6 +13316,7 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			Bone2AngleLimit();
 			//AngleLimit2Dlg(s_anglelimitdlg);
 			ChangeCurrentBone();
+
 
 			//EndDialog(hDlgWnd, IDOK);
 			break;
@@ -24958,7 +24972,7 @@ void DSAimBarOK()
 
 				//MainMenuAimBar
 				if ((s_currentwndid == MB3D_WND_MAIN) && s_cursubmenu && (g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
-					SelectNextWindow(MB3D_WND_3D);//続いて　O button を押したときにメニューが開かないように
+					//SelectNextWindow(MB3D_WND_3D);//続いて　O button を押したときにメニューが開かないように。//プレート選択時に該当ウインドウをハイライトするようにしたので必要ない。
 					InterlockedExchange(&g_undertrackingRMenu, 1);
 					//SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
 					SetForegroundWindow(s_3dwnd);//この処理をしないと範囲外クリックでPopupが閉じない

@@ -264,6 +264,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/16_1
+	Fix problem that cursor moves to 3DWND on drop down Main Menu.
+
 2021/04/15_1
 	Operation with GamePad
 		HiLite Window on SelChangeGUIPlate.		
