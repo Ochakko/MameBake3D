@@ -264,6 +264,14 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/04/18_1
+	Adjust GUI placement of 3DWND.
+	
+	Set default value of PhysEditRate from 0.1 to 1.0.
+	(PhysRot and PhysMv works effectively.)
+		
+	Add PhysicsIkStop button.
+
 2021/04/17_1
 	Option button at joint pos of 3dwnd as Right Click Menu.
 	

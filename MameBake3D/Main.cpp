@@ -1066,6 +1066,7 @@ static CDXUTControl* s_ui_texphysmv = 0;
 static CDXUTControl* s_ui_slphysmv = 0;
 static CDXUTControl* s_ui_physrotstart = 0;
 static CDXUTControl* s_ui_physmvstart = 0;
+static CDXUTControl* s_ui_physikstop = 0;
 
 //static bool s_guivisible_left = true;
 //static bool s_guivisible_left2nd = true;
@@ -1233,6 +1234,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 #define IDC_COMBO_MOTIONBRUSH_METHOD	63
 #define IDC_RMARK					64
+
+#define IDC_PHYSICS_IK_STOP			65
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -5573,6 +5576,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		//	}
 		//	break;
 		case IDC_STOP_BT:
+		case IDC_PHYSICS_IK_STOP:
 			s_model->BulletSimulationStop();
 			g_previewFlag = 0;
 			break;
@@ -15256,15 +15260,15 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	int startx = s_mainwidth / 2 - 180;
 
-	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
-	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
-	_ASSERT(s_ui_texthreadnum);
-	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 4, g_numthread);
-	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
-	_ASSERT(s_ui_slthreadnum);
-	s_dsutgui1.push_back(s_ui_slthreadnum);
-	s_dsutguiid1.push_back(IDC_SL_NUMTHREAD);
+	swprintf_s(sz, 100, L"Speed: %0.2f", g_dspeed);
+	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	s_ui_texspeed = g_SampleUI.GetControl(IDC_SPEED_STATIC);
+	_ASSERT(s_ui_texspeed);
+	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+	s_ui_speed = g_SampleUI.GetControl(IDC_SPEED);
+	_ASSERT(s_ui_speed);
+	s_dsutgui1.push_back(s_ui_speed);//!!!!!!!!!!!!!!!! dsutgui1
+	s_dsutguiid1.push_back(IDC_SPEED);
 
 	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
 	s_ui_pseudolocal = g_SampleUI.GetControl(IDC_PSEUDOLOCAL);
@@ -15316,15 +15320,6 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50;
 
-	swprintf_s(sz, 100, L"Speed: %0.2f", g_dspeed);
-	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	s_ui_texspeed = g_SampleUI.GetControl(IDC_SPEED_STATIC);
-	_ASSERT(s_ui_texspeed);
-	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
-	s_ui_speed = g_SampleUI.GetControl(IDC_SPEED);
-	_ASSERT(s_ui_speed);
-	s_dsutgui1.push_back(s_ui_speed);//!!!!!!!!!!!!!!!! dsutgui1
-	s_dsutguiid1.push_back(IDC_SPEED);
 
 	iY += 10;
 	g_SampleUI.AddButton(IDC_BTSTART, L"BT start", startx, iY += addh, 100, ctrlh);
@@ -15340,6 +15335,16 @@ int CreateUtDialog()
 	s_dsutgui2.push_back(s_ui_stopbt);
 	s_dsutguiid2.push_back(IDC_STOP_BT);
 
+	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
+	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
+	_ASSERT(s_ui_texthreadnum);
+	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 4, g_numthread);
+	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
+	_ASSERT(s_ui_slthreadnum);
+	s_dsutgui2.push_back(s_ui_slthreadnum);
+	s_dsutguiid2.push_back(IDC_SL_NUMTHREAD);
+
 //################
 //utguikind == 3
 //################
@@ -15347,7 +15352,7 @@ int CreateUtDialog()
 	s_dsutgui3.clear();
 	s_dsutguiid3.clear();
 
-	iY = s_mainheight - 210;
+	iY = s_mainheight - 210 - addh;
 	startx = s_mainwidth - 150;
 
 	swprintf_s(sz, 100, L"PhysEditRate : %.3f", g_physicsmvrate);
@@ -15372,6 +15377,13 @@ int CreateUtDialog()
 	_ASSERT(s_ui_physmvstart);
 	s_dsutgui3.push_back(s_ui_physmvstart);
 	s_dsutguiid3.push_back(IDC_PHYSICS_MV_IK);
+	iY += 5;
+	g_SampleUI.AddButton(IDC_PHYSICS_IK_STOP, L"PhysIkStop", startx, iY += addh, 100, ctrlh);
+	s_ui_physikstop = g_SampleUI.GetControl(IDC_PHYSICS_IK_STOP);
+	_ASSERT(s_ui_physikstop);
+	s_dsutgui3.push_back(s_ui_physikstop);
+	s_dsutguiid3.push_back(IDC_PHYSICS_IK_STOP);
+
 
 	//iY += 5;
 	//g_SampleUI.AddButton(IDC_APPLY_BT, L"Apply BT", startx, iY += addh, 100, ctrlh);
@@ -19778,12 +19790,8 @@ void GUISetVisible_Left2nd()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_LEFT2ND].state);
 
-	if (s_ui_texthreadnum) {
-		s_ui_texthreadnum->SetVisible(nextvisible);
-	}
-	if (s_ui_slthreadnum) {
-		s_ui_slthreadnum->SetVisible(nextvisible);
-	}
+	
+	
 	if (s_ui_pseudolocal) {
 		s_ui_pseudolocal->SetVisible(nextvisible);
 	}
@@ -19806,6 +19814,12 @@ void GUISetVisible_Bullet()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_BULLETPHYSICS].state);
 
+	if (s_ui_texthreadnum) {
+		s_ui_texthreadnum->SetVisible(nextvisible);
+	}
+	if (s_ui_slthreadnum) {
+		s_ui_slthreadnum->SetVisible(nextvisible);
+	}
 	if (s_ui_btstart) {
 		s_ui_btstart->SetVisible(nextvisible);
 	}
@@ -19843,6 +19857,9 @@ void GUISetVisible_PhysicsIK()
 	}
 	if (s_ui_physmvstart) {
 		s_ui_physmvstart->SetVisible(nextvisible);
+	}
+	if (s_ui_physikstop) {
+		s_ui_physikstop->SetVisible(nextvisible);
 	}
 
 	s_spguisw[SPGUISW_PHYSICSIK].state = nextvisible;
