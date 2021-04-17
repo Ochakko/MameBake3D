@@ -264,6 +264,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/04/17_1
+	Option button at joint pos of 3dwnd as Right Click Menu.
+	
+	Can push buttons in a group box.
+
+	All? of Dialogs exclude GetFileNameDialog operation can be enable with GamePad.(perhaps)
+
 2021/04/16_3
 	Refactoring source file.
 		Use common source at AngleLimitDlg and other WindowsDialogs.

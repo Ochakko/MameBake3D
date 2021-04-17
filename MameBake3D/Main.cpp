@@ -169,7 +169,7 @@ HWND g_filterdlghwnd = 0;
 
 static HWND GetOFWnd(POINT srcpoint);
 static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
-
+static HWND GetNearestEnumDist();
 
 /*
 ID3D11DepthStencilState *g_pDSStateZCmp = 0;
@@ -313,6 +313,7 @@ static void DSCrossButtonSelectGPCtrls(bool firstctrlselect);
 static void DSCrossButtonSelectDampCtrls(bool firstctrlselect);
 static void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect);
 static void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect);
+static void DSOptionButtonRightClick();
 static void DSR1ButtonSelectCurrentBone();
 static void DSAxisLMouseMove();
 //static void DSAxisLSelectingPopupMenu();
@@ -358,6 +359,13 @@ static int s_wmlbuttonup = 0;
 static int s_currentsubmenuitemid = 0;
 static HWND s_ofhwnd = 0;
 static int s_getsym_retmode = 0;
+
+typedef struct tag_enumdist
+{
+	HWND hwnd;
+	float dist;
+}ENUMDIST;
+static std::vector<ENUMDIST> s_enumdist;
 
 static int s_curdsutguikind = 0;
 static int s_curdsutguino = 0;
@@ -417,6 +425,13 @@ static bool s_undercolidlg = false;
 static CGColiIDDlg* s_pgcolidlg = 0;
 static bool s_undergcolidlg = false;
 static HWND s_motpropdlghwnd = 0;
+static HWND s_savechadlghwnd = 0;
+static HWND s_bvhdlghwnd = 0;
+static HWND s_saveredlghwnd = 0;
+static HWND s_saveimpdlghwnd = 0;
+static HWND s_savegcodlghwnd = 0;
+static HWND s_rotzisdlghwnd = 0;
+static HWND s_customrighwnd = 0;
 
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
@@ -9343,6 +9358,9 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	WCHAR strfilter[256];
 	wcscpy_s(strfilter, 256, L"100.0");
 
+	static int s_openbvhproctimer = 352;
+
+
 	switch (msg) {
 	case WM_INITDIALOG:
 		g_tmpmqomult = 1.0f;
@@ -9350,10 +9368,20 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 		SetDlgItemText(hDlgWnd, IDC_EDITFILTER, strfilter);
 		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
+
+		RECT dlgrect;
+		GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		SetTimer(hDlgWnd, s_openbvhproctimer, 20, NULL);
+		s_bvhdlghwnd = hDlgWnd;
+
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
+			s_bvhdlghwnd = 0;
+			KillTimer(hDlgWnd, s_openbvhproctimer);
+
 			GetDlgItemText(hDlgWnd, IDC_MULT, strmult, 256);
 			g_tmpmqomult = (float)_wtof(strmult);
 			//GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
@@ -9363,6 +9391,9 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			EndDialog(hDlgWnd, IDOK);
 			break;
 		case IDCANCEL:
+			s_bvhdlghwnd = 0;
+			KillTimer(hDlgWnd, s_openbvhproctimer);
+
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		case IDC_REFMQO:
@@ -9373,6 +9404,10 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		default:
 			return FALSE;
 		}
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
 	default:
 		DefWindowProc(hDlgWnd, msg, wp, lp);
 		return FALSE;
@@ -9521,20 +9556,35 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpTemplateName = NULL;
 
 
+	static int s_savegcoproctimer = 356;
+
 	switch (msg) {
         case WM_INITDIALOG:
 			if( s_model && s_model->GetTopBone() ){
 				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_Gconame );
 			}
+
+			RECT dlgrect;
+			GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+			SetTimer(hDlgWnd, s_savegcoproctimer, 20, NULL);
+			s_savegcodlghwnd = hDlgWnd;
+
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
                 case IDOK:
+					s_savegcodlghwnd = 0;
+					KillTimer(hDlgWnd, s_savegcoproctimer);
+
 					GetDlgItemText( hDlgWnd, IDC_FILENAME, s_Gconame, MAX_PATH );
                     EndDialog(hDlgWnd, IDOK);
                     break;
                 case IDCANCEL:
-                    EndDialog(hDlgWnd, IDCANCEL);
+					s_savegcodlghwnd = 0;
+					KillTimer(hDlgWnd, s_savegcoproctimer);
+					
+					EndDialog(hDlgWnd, IDCANCEL);
                     break;
 					break;
 				case IDC_REFFILE:
@@ -9545,8 +9595,14 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
-        default:
-            return FALSE;
+		case WM_TIMER:
+			OnDSUpdate();
+			return FALSE;
+			break;
+		default:
+			DefWindowProc(hDlgWnd, msg, wp, lp);
+			return FALSE;
+			break;
     }
     return TRUE;
 
@@ -9583,21 +9639,34 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpfnHook = NULL;
 	ofn.lpTemplateName = NULL;
 
+	static int s_saveimpproctimer = 355;
 
 	switch (msg) {
         case WM_INITDIALOG:
 			if( s_model && s_model->GetTopBone() ){
 				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_Impname );
 			}
+			RECT dlgrect;
+			GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+			SetTimer(hDlgWnd, s_saveimpproctimer, 20, NULL);
+			s_saveimpdlghwnd = hDlgWnd;
+
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
                 case IDOK:
+					s_saveimpdlghwnd = 0;
+					KillTimer(hDlgWnd, s_saveimpproctimer);
+
 					GetDlgItemText( hDlgWnd, IDC_FILENAME, s_Impname, MAX_PATH );
                     EndDialog(hDlgWnd, IDOK);
                     break;
                 case IDCANCEL:
-                    EndDialog(hDlgWnd, IDCANCEL);
+					s_saveimpdlghwnd = 0;
+					KillTimer(hDlgWnd, s_saveimpproctimer);
+					
+					EndDialog(hDlgWnd, IDCANCEL);
                     break;
 					break;
 				case IDC_REFFILE:
@@ -9608,8 +9677,14 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
-        default:
-            return FALSE;
+		case WM_TIMER:
+			OnDSUpdate();
+			return FALSE;
+			break;
+		default:
+			DefWindowProc(hDlgWnd, msg, wp, lp);
+			return FALSE;
+			break;
     }
     return TRUE;
 
@@ -9647,21 +9722,34 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpfnHook = NULL;
 	ofn.lpTemplateName = NULL;
 
+	static int s_savereproctimer = 354;
 
 	switch (msg) {
         case WM_INITDIALOG:
 			if( s_model && s_model->GetTopBone() ){
 				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_REname );
 			}
+			RECT dlgrect;
+			GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+			SetTimer(hDlgWnd, s_savereproctimer, 20, NULL);
+			s_saveredlghwnd = hDlgWnd;
+
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
                 case IDOK:
+					s_saveredlghwnd = 0;
+					KillTimer(hDlgWnd, s_savereproctimer);
+
 					GetDlgItemText( hDlgWnd, IDC_FILENAME, s_REname, MAX_PATH );
                     EndDialog(hDlgWnd, IDOK);
                     break;
                 case IDCANCEL:
-                    EndDialog(hDlgWnd, IDCANCEL);
+					s_saveredlghwnd = 0;
+					KillTimer(hDlgWnd, s_savereproctimer);
+					
+					EndDialog(hDlgWnd, IDCANCEL);
                     break;
 					break;
 				case IDC_REFFILE:
@@ -9672,8 +9760,14 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
-        default:
-            return FALSE;
+		case WM_TIMER:
+			OnDSUpdate();
+			return FALSE;
+			break;
+		default:
+			DefWindowProc(hDlgWnd, msg, wp, lp);
+			return FALSE;
+			break;
     }
     return TRUE;
 
@@ -11242,6 +11336,9 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	WCHAR selectname[MAX_PATH] = { 0L };
 	int iImage = 0;
 
+	static int s_savechaproctimer = 351;
+
+
 	switch (msg) {
 	case WM_INITDIALOG:
 		if (s_model && s_model->GetCurMotInfo()) {
@@ -11277,11 +11374,18 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			RECT dlgrect;
 			GetWindowRect(hDlgWnd, &dlgrect);
 			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
+			s_savechadlghwnd = hDlgWnd;
+			SetTimer(hDlgWnd, s_savechaproctimer, 20, NULL);
+
 		}
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
+			s_savechadlghwnd = 0;
+			KillTimer(hDlgWnd, s_savechaproctimer);
+
 			GetDlgItemText(hDlgWnd, IDC_PROJNAME, s_projectname, 64);
 			GetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir, MAX_PATH);
 			wcscpy_s(s_chasavename, 64, s_projectname);
@@ -11289,6 +11393,9 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			EndDialog(hDlgWnd, IDOK);
 			break;
 		case IDCANCEL:
+			s_savechadlghwnd = 0;
+			KillTimer(hDlgWnd, s_savechaproctimer);
+
 			s_projectname[0] = 0L;
 			s_projectdir[0] = 0L;
 			EndDialog(hDlgWnd, IDCANCEL);
@@ -11329,7 +11436,12 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		default:
 			return FALSE;
 		}
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
 	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
 		return FALSE;
 	}
 	return TRUE;
@@ -13539,12 +13651,17 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		if (curbone){
 			SetWindowText(GetDlgItem(hDlgWnd, IDC_BONENAME), curbone->GetWBoneName());
 		}
+		
+		s_rotzisdlghwnd = hDlgWnd;
+
 		return FALSE;
 	}
 	break;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
+			s_rotzisdlghwnd = 0;
+
 			//EndDialog(hDlgWnd, IDOK);
 			if (s_rotaxisdlg){
 				DestroyWindow(s_rotaxisdlg);
@@ -13552,6 +13669,8 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			}
 			break;
 		case IDCANCEL:
+			s_rotzisdlghwnd = 0;
+
 			//EndDialog(hDlgWnd, IDCANCEL);
 			if (s_rotaxisdlg){
 				DestroyWindow(s_rotaxisdlg);
@@ -17680,6 +17799,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_INITDIALOG:
 	{
 		CustomRig2Dlg(hDlgWnd);
+		s_customrighwnd = hDlgWnd;
 		return FALSE;
 	}
 	break;
@@ -17717,6 +17837,8 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			switch (LOWORD(wp)) {
 			case IDOK:
 			{
+				s_customrighwnd = 0;
+
 				WCHAR strrigname[256] = { 0L };
 				GetDlgItemText(hDlgWnd, IDC_RIGNAME, strrigname, 256);
 				wcscpy_s(s_customrig.rigname, 256, strrigname);
@@ -17789,6 +17911,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			}
 			break;
 			case IDCANCEL:
+				s_customrighwnd = 0;
 				//EndDialog(hDlgWnd, IDCANCEL);
 				break;
 			default:
@@ -20060,6 +20183,15 @@ void InitDSValues()
 	s_pgcolidlg = 0;
 	s_undergcolidlg = false;
 	s_motpropdlghwnd = 0;
+	s_savechadlghwnd = 0;
+	s_bvhdlghwnd = 0;
+	s_saveredlghwnd = 0;
+	s_saveimpdlghwnd = 0;
+	s_savegcodlghwnd = 0;
+	s_rotzisdlghwnd = 0;
+	s_customrighwnd = 0;
+
+	s_enumdist.clear();
 
 
 	s_currentwndid = 0;
@@ -20148,6 +20280,8 @@ void OnDSUpdate()
 	bool firstctrlselect = false;
 	DSCrossButton(firstctrlselect);
 
+
+
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
 	DSR1ButtonSelectCurrentBone();
 
@@ -20158,6 +20292,9 @@ void OnDSUpdate()
 	if (g_undertrackingRMenu == 0) {
 		//OK button popupmenuを出していないとき
 		DSAimBarOK();
+
+		//optionボタンは右クリック相当
+		DSOptionButtonRightClick();
 	}
 	else if (g_undertrackingRMenu == 1) {
 		//OK button popupmenuを出しているとき
@@ -24286,40 +24423,30 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 
 
-
-	//GetWindowRect(hwnd, &ctrlrect);
-	//POINT point1;
-	//POINT point2;
-	//point1.x = ctrlrect.left;
-	//point1.y = ctrlrect.top;
-	//point2.x = ctrlrect.right;
-	//point2.y = ctrlrect.bottom;
-	//::ScreenToClient(hwnd, &point1);
-	//::ScreenToClient(hwnd, &point2);
-	//ctrlrect.left = point1.x;
-	//ctrlrect.top = point1.y;
-	//ctrlrect.right = point2.x;
-	//ctrlrect.bottom = point2.y;
-
-
-
-
-	//if (g_undertrackingRMenu == 3) {
-	//	if (mousepoint.x <= 200) {
-	//		_ASSERT(0);
-	//	}
-	//}
-
-
 	if ((mousepoint.x >= ctrlrect.left) && (mousepoint.x <= ctrlrect.right)
 		&& (mousepoint.y >= ctrlrect.top) && (mousepoint.y <= ctrlrect.bottom)) {
 		//if ((mousepoint.x >= 0) && (mousepoint.x <= (ctrlrect.right - ctrlrect.left))
 		//	&& (mousepoint.y >= 0) && (mousepoint.y <= (ctrlrect.bottom - ctrlrect.top))) {
-		if (g_undertrackingRMenu == 3) {
-			_ASSERT(0);
-		}
-		*rethwnd = hwnd;
-		return FALSE;//探索終了
+		
+		//#################################################################################################################################################
+		//groupboxのclassnameもButton。groupboxの中のコントロールを押すためには距離で判定する必要があった。マウス位置に一番近いコントロールを探すための情報をs_enumdistにpush_back
+		//#################################################################################################################################################
+		POINT ctrllefttop;
+		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ラジオボタンなどはコントロール真ん中ではなく左側を押すことが多いので中央はやめる
+		//ctrlcenter.y = (ctrlrect.bottom - ctrlrect.top) / 2;
+		ctrllefttop.x = ctrlrect.left;
+		ctrllefttop.y = ctrlrect.top;
+
+		ENUMDIST enumdist;
+		enumdist.hwnd = hwnd;
+		enumdist.dist = (float)(mousepoint.x - ctrllefttop.x) * (float)(mousepoint.x - ctrllefttop.x) + (float)(mousepoint.y - ctrllefttop.y) * (float)(mousepoint.y - ctrllefttop.y);
+		s_enumdist.push_back(enumdist);
+
+
+		//*rethwnd = hwnd;
+		//return FALSE;//探索終了
+
+		return TRUE;//探索続行
 	}
 	else {
 		*rethwnd = 0;
@@ -24359,20 +24486,52 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 //	}
 //}
 
+HWND GetNearestEnumDist()
+{
+	if (s_enumdist.empty()) {
+		return 0;
+	}
+	else {
+		bool isfirst = true;
+		float nearestdist = 1e20;
+		HWND nearesthwnd = 0;
+		std::vector<ENUMDIST>::iterator itrenumdist;
+		for (itrenumdist = s_enumdist.begin(); itrenumdist != s_enumdist.end(); itrenumdist++) {
+			if (isfirst) {
+				nearesthwnd = itrenumdist->hwnd;
+				nearestdist = itrenumdist->dist;
+				isfirst = false;
+			}
+			else {
+				if (nearestdist > itrenumdist->dist) {
+					nearesthwnd = itrenumdist->hwnd;
+					nearestdist = itrenumdist->dist;
+				}
+			}
+		}
+
+		return nearesthwnd;
+	}
+}
+
+
 HWND GetOFWnd(POINT srcpoint)
 {
 	HWND retctrlwnd = 0;
 
 	s_ofhwnd = 0;
+	s_enumdist.clear();
 
 	if (!retctrlwnd && s_openfilehwnd) {
 		::EnumChildWindows(s_openfilehwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = s_openfilehwnd;
 			return retctrlwnd;
 		}
 	}else if (!retctrlwnd && s_mqodlghwnd) {
 		::EnumChildWindows(s_mqodlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = s_mqodlghwnd;
 			return retctrlwnd;
@@ -24380,6 +24539,7 @@ HWND GetOFWnd(POINT srcpoint)
 	}
 	else if (!retctrlwnd && s_underframecopydlg && s_selbonedlg.m_hWnd) {
 		::EnumChildWindows(s_selbonedlg.m_hWnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = s_selbonedlg.m_hWnd;
 			return retctrlwnd;
@@ -24387,6 +24547,7 @@ HWND GetOFWnd(POINT srcpoint)
 	}
 	else if (!retctrlwnd && s_undercolidlg && s_pcolidlg && s_pcolidlg->m_hWnd && IsWindow(s_pcolidlg->m_hWnd)) {
 		::EnumChildWindows(s_pcolidlg->m_hWnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = s_pcolidlg->m_hWnd;
 			return retctrlwnd;
@@ -24394,6 +24555,7 @@ HWND GetOFWnd(POINT srcpoint)
 	}
 	else if (!retctrlwnd && s_undergcolidlg && s_pgcolidlg && s_pgcolidlg->m_hWnd && IsWindow(s_pgcolidlg->m_hWnd)) {
 		::EnumChildWindows(s_pgcolidlg->m_hWnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = s_pgcolidlg->m_hWnd;
 			return retctrlwnd;
@@ -24401,6 +24563,7 @@ HWND GetOFWnd(POINT srcpoint)
 	}
 	else if (!retctrlwnd && s_motpropdlghwnd) {
 		::EnumChildWindows(s_motpropdlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = s_motpropdlghwnd;
 			return retctrlwnd;
@@ -24408,27 +24571,139 @@ HWND GetOFWnd(POINT srcpoint)
 	}
 	else if (!retctrlwnd && g_filterdlghwnd) {
 		::EnumChildWindows(g_filterdlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
 			s_ofhwnd = g_filterdlghwnd;
 			return retctrlwnd;
 		}
 	}
-	else if ((s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
+	else if (!retctrlwnd && (s_currentwndid == MB3D_WND_SIDE) && s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
 		//if (s_anglelimitdlg && (s_platemenukind == SPPLATEMENUKIND_RETARGET) && (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1))) {
 		if ((s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && s_dseullimitctrls[s_curdseullimitctrlno]) {
 			::EnumChildWindows(s_anglelimitdlg, EnumChildProc, (LPARAM)&retctrlwnd);
+			retctrlwnd = GetNearestEnumDist();
 			if (retctrlwnd) {
 				s_ofhwnd = s_anglelimitdlg;
 				return retctrlwnd;
 			}
 		}
 	}
+	else if (!retctrlwnd && s_savechadlghwnd) {
+		::EnumChildWindows(s_savechadlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_savechadlghwnd;
+			return retctrlwnd;
+		}
+	}
+	else if (!retctrlwnd && s_bvhdlghwnd) {
+		::EnumChildWindows(s_bvhdlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_bvhdlghwnd;
+			return retctrlwnd;
+		}
+	}
+	else if (!retctrlwnd && s_saveredlghwnd) {
+		::EnumChildWindows(s_saveredlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_saveredlghwnd;
+			return retctrlwnd;
+		}
+	}
+	else if (!retctrlwnd && s_savegcodlghwnd) {
+		::EnumChildWindows(s_savegcodlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_savegcodlghwnd;
+			return retctrlwnd;
+		}
+	}
+	else if (!retctrlwnd && s_rotzisdlghwnd) {
+		::EnumChildWindows(s_rotzisdlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_rotzisdlghwnd;
 
-	
+			//WCHAR chkclassname[MAX_PATH] = { 0L };
+			//::GetClassName(retctrlwnd, chkclassname, MAX_PATH);
+			//::MessageBox(NULL, chkclassname, L"check!!!", MB_OK);
+
+			return retctrlwnd;
+		}
+	}
+	else if (!retctrlwnd && s_customrighwnd) {
+		::EnumChildWindows(s_customrighwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_customrighwnd;
+			return retctrlwnd;
+		}
+	}
+
+
 
 	return 0;
 
 }
+
+void DSOptionButtonRightClick()
+{
+	//optionボタンは右クリック相当
+	//カーソルがジョイント位置にあるときに右クリックするとコンテクストメニューが出る。
+
+	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
+		return;
+	}
+
+	int optbuttonid = 11;
+	int optbuttondown;
+	int optbuttonup;
+
+	optbuttondown = s_dsbuttondown[optbuttonid];
+	optbuttonup = s_dsbuttonup[optbuttonid];
+
+	if (optbuttondown >= 1) {
+		POINT cursorpos;
+		::GetCursorPos(&cursorpos);
+		LPARAM lparam;
+		lparam = (cursorpos.y << 16) | cursorpos.x;
+
+		if (g_undertrackingRMenu == 0) {
+			if ((s_currentwndid == MB3D_WND_3D) && (s_curboneno >= 0)) {
+				POINT cappoint;
+				cappoint = cursorpos;
+				::ScreenToClient(s_3dwnd, &cappoint);
+				LPARAM caplparam;
+				caplparam = (cappoint.y << 16) | cappoint.x;
+
+				::SendMessage(s_3dwnd, WM_RBUTTONDOWN, MK_RBUTTON, caplparam);
+			}
+		}
+	}
+
+	if (optbuttonup >= 1) {
+		POINT cursorpos;
+		::GetCursorPos(&cursorpos);
+		LPARAM lparam;
+		lparam = (cursorpos.y << 16) | cursorpos.x;
+
+		if (g_undertrackingRMenu == 0) {
+			if ((s_currentwndid == MB3D_WND_3D) && (s_curboneno >= 0)) {
+				POINT cappoint;
+				cappoint = cursorpos;
+				::ScreenToClient(s_3dwnd, &cappoint);
+				LPARAM caplparam;
+				caplparam = (cappoint.y << 16) | cappoint.x;
+
+				::SendMessage(s_3dwnd, WM_RBUTTONUP, MK_RBUTTON, caplparam);
+			}
+		}
+	}
+
+}
+
 
 void DSAimBarOK()
 {
@@ -24456,12 +24731,7 @@ void DSAimBarOK()
 				HWND ctrlwnd;
 				ctrlwnd = GetOFWnd(cursorpos);
 				if (ctrlwnd) {
-					POINT cappoint;
-					cappoint = cursorpos;
-					::ScreenToClient(ctrlwnd, &cappoint);
-					LPARAM caplparam;
-					caplparam = (cappoint.y << 16) | cappoint.x;
-
+					
 					WCHAR wclassname[MAX_PATH] = { 0L };
 					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
 					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
@@ -24497,6 +24767,18 @@ void DSAimBarOK()
 						::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
 					}
 					else {
+						POINT dlgpoint;
+						dlgpoint = cursorpos;
+						::ScreenToClient(s_ofhwnd, &dlgpoint);
+						LPARAM dlglparam;
+						dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+						::SendMessage(s_ofhwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam);
+
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
 						::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
 					}
 				}
@@ -24583,8 +24865,53 @@ void DSAimBarOK()
 						::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
 						::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
 					}
-					else {
+					else if (wcscmp(L"Button", wclassname) == 0) {
+						POINT dlgpoint;
+						dlgpoint = cursorpos;
+						::ScreenToClient(s_ofhwnd, &dlgpoint);
+						LPARAM dlglparam;
+						dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+						::SendMessage(s_ofhwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
+
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
 						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+
+						//::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+
+						//int check1 = SendMessage(ctrlwnd, BM_GETCHECK, 0, 0);
+						//if (check1 == 0) {
+						//	SendMessage(ctrlwnd,
+						//		BM_SETCHECK,
+						//		BST_CHECKED,    // チェックをつける
+						//		0);
+						//}
+						//else if (check1 == 1) {
+						//	SendMessage(ctrlwnd,
+						//		BM_SETCHECK,
+						//		BST_UNCHECKED,    // チェックをはずす
+						//		0);
+						//}
+					}
+					else {
+						POINT dlgpoint;
+						dlgpoint = cursorpos;
+						::ScreenToClient(s_ofhwnd, &dlgpoint);
+						LPARAM dlglparam;
+						dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+						::SendMessage(s_ofhwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
+
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
+						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+
+						//::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 					}
 				}
 			}
