@@ -480,7 +480,9 @@ static void s_dummyfunc();
 			return WindowPos(pos.x,pos.y);
 		}
 		virtual void setPos(const WindowPos& _pos){
-			pos= _pos;
+			//if ((_pos.x >= -4000) && (_pos.x <= 4000) && (_pos.y >= -4000) && (_pos.y <= 4000)) {
+				pos = _pos;
+			//}
 	//		draw()
 		}
 		//	Accessor : size
@@ -492,7 +494,9 @@ static void s_dummyfunc();
 		}
 
 		virtual void setSize(const WindowSize& _size){
-			size= _size;
+			//if ((_size.x >= -4000) && (_size.x <= 4000) && (_size.y >= -4000) && (_size.y <= 4000)) {
+				size = _size;
+			//}
 	//		draw();
 		}
 		//	Accessor : color
@@ -577,6 +581,7 @@ static void s_dummyfunc();
 				   unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70,
 				   bool _canQuit=true, bool _canChangeSize=true ){
 			isactive = false;
+			listenmouse = false;
 			istopmost = srcistopmost;
 
 			//イベントリスナー
@@ -657,6 +662,15 @@ static void s_dummyfunc();
 		void setBlackTheme()
 		{
 			isblacktheme = true;
+		}
+
+		void setListenMouse(bool srcflag)
+		{
+			listenmouse = srcflag;
+		}
+		bool getListenMouse()
+		{
+			return listenmouse;
 		}
 
 		//////////////////////////// Method //////////////////////////////
@@ -851,9 +865,10 @@ static void s_dummyfunc();
 		}
 		void setPos(const WindowPos& _pos){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
-
-			pos= _pos;
-			MoveWindow(hWnd, pos.x,pos.y, size.x,size.y, true);
+			//if ((_pos.x >= -4000) && (_pos.x <= 4000) && (_pos.y >= -4000) && (_pos.y <= 4000)) {
+				pos = _pos;
+			//}
+			MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
 		}
 		//	Accessor : size
 		WindowSize getSize(){
@@ -865,12 +880,14 @@ static void s_dummyfunc();
 		void setSize(const WindowSize& _size){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
 
-			if( _size.x<sizeMin.x ) size.x= sizeMin.x;
-			else					size.x= _size.x;
-			if( _size.y<sizeMin.y ) size.y= sizeMin.y;
-			else					size.y= _size.y;
+			//if ((_size.x >= -4000) && (_size.x <= 4000) && (_size.y >= -4000) && (_size.y <= 4000)) {
+				if (_size.x < sizeMin.x) size.x = sizeMin.x;
+				else					size.x = _size.x;
+				if (_size.y < sizeMin.y) size.y = sizeMin.y;
+				else					size.y = _size.y;
+			//}
 
-			MoveWindow(hWnd, pos.x,pos.y, size.x,size.y, true);
+			MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
 		}
 		//	Accessor : sizeMin
 		WindowSize getSizeMin(){
@@ -880,14 +897,14 @@ static void s_dummyfunc();
 		}
 		void setSizeMin(const WindowSize& _sizeMin){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
-
-			sizeMin= _sizeMin;
-			if( size.x<sizeMin.x || size.y<sizeMin.y ){
-				if( size.x<sizeMin.x ) size.x= sizeMin.x;
-				if( size.y<sizeMin.y ) size.y= sizeMin.y;
-
-				MoveWindow(hWnd, pos.x,pos.y, size.x,size.y, true);
+			//if ((_sizeMin.x >= -4000) && (_sizeMin.x <= 4000) && (_sizeMin.y >= -4000) && (_sizeMin.y <= 4000)) {
+				sizeMin = _sizeMin;
+			//}
+			if (size.x < sizeMin.x || size.y < sizeMin.y) {
+				if (size.x < sizeMin.x) size.x = sizeMin.x;
+				if (size.y < sizeMin.y) size.y = sizeMin.y;
 			}
+			MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
 		}
 		//	Accessor : hWnd
 		HWND getHWnd(){
@@ -969,7 +986,7 @@ static void s_dummyfunc();
 		bool mouseCaptureFlagL,mouseCaptureFlagR;
 
 		bool isblacktheme;
-
+		bool listenmouse;
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウクラスを登録
 
@@ -1094,15 +1111,25 @@ static void s_dummyfunc();
 		//}
 		///	Method : 左右マウスボタンダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
 			if (this->ldownListener != NULL) {
 				(this->ldownListener)();
 			}
 			onLRButtonDown(e,true);
 		}
 		void onRButtonDown(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
 			onLRButtonDown(e,false);
 		}
 		void onLRButtonDown(const MouseEvent& e, bool lButton){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			int xButtonX1=size.x-1-2-9;
 			int xButtonY1=1+2;
 			int xButtonX2=xButtonX1+9;
@@ -1120,17 +1147,21 @@ static void s_dummyfunc();
 					return;
 				}
 
-				//タイトルバー
+
+				
+				////タイトルバー
 				if( 1<=e.localX && e.localX<=size.x-2
 				 && 1<=e.localY && e.localY<=1+2+9+1 ){
-					SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+					//ユーザーマニュアル操作によるウインドウ位置サイズ変更を出来ないようにコメントアウト
+					//SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
 					return;
 				}
 
 				//右下の隅
 				if( canChangeSize &&
 					size.x-4<=e.localX && size.y-4<=e.localY ){
-					SendMessage(hWnd, WM_NCLBUTTONDOWN, HTBOTTOMRIGHT, 0);
+					//ユーザーマニュアル操作によるウインドウ位置サイズ変更を出来ないようにコメントアウト
+					//SendMessage(hWnd, WM_NCLBUTTONDOWN, HTBOTTOMRIGHT, 0);
 					return;
 				}
 			}
@@ -1170,18 +1201,28 @@ static void s_dummyfunc();
 		}
 		//	Method : 左右マウスボタンアップイベント受信
 		void onLButtonUp(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			if( this->lupListener!=NULL ){
 				(this->lupListener)();
 			}
 			onLRButtonUp(e,true);
 		}
 		void onRButtonUp(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
 			onLRButtonUp(e,false);
 			if (this->rupListener != NULL){
 				(this->rupListener)();
 			}
 		}
 		void onLRButtonUp(const MouseEvent& e, bool lButton){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
 
 			//マウスキャプチャリリース
 			if( lButton ) mouseCaptureFlagL=false;
@@ -1210,6 +1251,10 @@ static void s_dummyfunc();
 			}
 		}
 		void onMButtonDown(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			int xButtonX1 = size.x - 1 - 2 - 9;
 			int xButtonY1 = 1 + 2;
 			int xButtonX2 = xButtonX1 + 9;
@@ -1247,6 +1292,9 @@ static void s_dummyfunc();
 
 		}
 		void onMButtonUp(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
 
 			//マウスキャプチャリリース
 			//if (lButton) mouseCaptureFlagL = false;
@@ -1271,6 +1319,10 @@ static void s_dummyfunc();
 			}
 		}
 		void onMouseWheel(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			int xButtonX1 = size.x - 1 - 2 - 9;
 			int xButtonY1 = 1 + 2;
 			int xButtonX2 = xButtonX1 + 9;
@@ -1311,6 +1363,10 @@ static void s_dummyfunc();
 		}
 		//	Method : マウス移動イベント受信
 		void onMouseMove(const MouseEvent& e){
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			//右下の隅
 			if( canChangeSize && 
 				size.x-4<=e.localX && size.y-4<=e.localY ){
@@ -1337,6 +1393,10 @@ static void s_dummyfunc();
 		}
 
 		void onMouseHover(const MouseEvent& e) {
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			if (this->hoverListener != NULL) {
 				(this->hoverListener)();
 			}
@@ -1359,6 +1419,10 @@ static void s_dummyfunc();
 			}
 		}
 		void onMouseLeave(const MouseEvent& e) {
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
 			if (this->leaveListener != NULL) {
 				(this->leaveListener)();
 			}

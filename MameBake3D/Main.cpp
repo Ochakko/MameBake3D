@@ -659,6 +659,8 @@ static ChaMatrix s_selm_posture = ChaMatrix(0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f
 );
 
+static void OrgWindowListenMouse(bool srcflag);
+
 static OrgWindow* s_timelineWnd = 0;
 static OWP_Timeline* s_owpTimeline = 0;
 static OWP_PlayerButton* s_owpPlayerButton = 0;
@@ -2896,8 +2898,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 
 	g_endappflag = 1;
-
 	UNREFERENCED_PARAMETER(pUserContext);
+
+	OrgWindowListenMouse(false);
+
 
 	if (s_dsupdater) {
 		delete s_dsupdater;
@@ -3020,6 +3024,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 			delete curmodel;
 		}
 	}
+
 	s_modelindex.clear();
 	s_model = 0;
 
@@ -7293,6 +7298,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		OnRenderNowLoading();
 	}
 
+	OrgWindowListenMouse(true);
+
+
 	return newmodel;
 }
 
@@ -7357,19 +7365,29 @@ int AddTimeLine( int newmotid )
 
 			// カーソル移動時のイベントリスナーに
 			// カーソル移動フラグcursorFlagをオンにするラムダ関数を登録する
-			s_owpTimeline->setCursorListener([]() { s_cursorFlag = true; });
+			s_owpTimeline->setCursorListener([]() { 
+				if (s_model) {
+					s_cursorFlag = true;
+				}
+			});
 
 			// キー選択時のイベントリスナーに
 			// キー選択フラグselectFlagをオンにするラムダ関数を登録する
 			//s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });//LTimelineへ移動
 
-			s_owpTimeline->setMouseRUpListener([]() {s_timelineRUpFlag = true; });
+			s_owpTimeline->setMouseRUpListener([]() {
+				if (s_model) {
+					s_timelineRUpFlag = true;
+				}
+			});
 
 			// キー移動時のイベントリスナーに
 			// キー移動フラグkeyShiftFlagをオンにして、キー移動量をコピーするラムダ関数を登録する
 			s_owpTimeline->setKeyShiftListener([]() {
-				s_keyShiftFlag = true;
-				s_keyShiftTime = s_owpTimeline->getShiftKeyTime();
+				if (s_model) {
+					s_keyShiftFlag = true;
+					s_keyShiftTime = s_owpTimeline->getShiftKeyTime();
+				}
 			});
 
 			// キー削除時のイベントリスナーに
@@ -7413,19 +7431,31 @@ int AddTimeLine( int newmotid )
 				s_owpLTimeline = new OWP_Timeline(L"EditRangeTimeLine");
 				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
 				s_LTSeparator->addParts1(*s_owpLTimeline);
-				s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
-				s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
-				s_owpLTimeline->setMouseMDownListener([]() {
-					s_timelinembuttonFlag = true;
-					if (s_mbuttoncnt == 0) {
-						s_mbuttoncnt = 1;
+				s_owpLTimeline->setCursorListener([]() { 
+					if (s_model) {
+						s_LcursorFlag = true;
 					}
-					else {
-						s_mbuttoncnt = 0;
+				});
+				s_owpLTimeline->setSelectListener([]() { 
+					if (s_model) {
+						s_selectFlag = true;
+					}
+				});
+				s_owpLTimeline->setMouseMDownListener([]() {
+					if (s_model) {
+						s_timelinembuttonFlag = true;
+						if (s_mbuttoncnt == 0) {
+							s_mbuttoncnt = 1;
+						}
+						else {
+							s_mbuttoncnt = 0;
+						}
 					}
 				});
 				s_owpLTimeline->setMouseWheelListener([]() {
-					s_timelinewheelFlag = true;
+					if (s_model) {
+						s_timelinewheelFlag = true;
+					}
 				});
 
 
@@ -7436,7 +7466,11 @@ int AddTimeLine( int newmotid )
 				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 1);//parentcheck ON by default
 				//s_LtimelineWnd->addParts(*s_parentcheck);
 				//s_LTSeparator->addParts2(*s_parentcheck);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!parentwindow libfbxdll error 2021/03/04 comment out tmp
-				s_parentcheck->setButtonListener([]() { refreshEulerGraph(); });
+				s_parentcheck->setButtonListener([]() { 
+					if (s_model) {
+						refreshEulerGraph();
+					}
+				});
 
 
 				if (s_owpEulerGraph) {
@@ -7451,7 +7485,11 @@ int AddTimeLine( int newmotid )
 				//s_owpEulerGraph->setSize(graphsize);
 				//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
 				//s_owpEulerGraph->setPos(graphpos);
-				s_owpEulerGraph->setCursorListener([]() { s_LcursorFlag = true; });
+				s_owpEulerGraph->setCursorListener([]() { 
+					if (s_model) {
+						s_LcursorFlag = true;
+					}
+				});
 
 
 			}
@@ -8366,6 +8404,8 @@ int OnModelMenu( int selindex, int callbymenu )
 	}
 
 	if( (selindex < 0) || !s_model ){
+		OrgWindowListenMouse(false);
+
 		s_model = 0;
 		s_curboneno = -1;
 		if( s_owpTimeline ){
@@ -8377,6 +8417,8 @@ int OnModelMenu( int selindex, int callbymenu )
 
 	cMdlSets = (int)s_modelindex.size();
 	if( cMdlSets <= 0 ){
+		OrgWindowListenMouse(false);
+
 		s_model = 0;
 		if( s_owpTimeline ){
 			refreshTimeline(*s_owpTimeline);
@@ -8669,6 +8711,10 @@ int OnDelModel( int delmenuindex )
 
 	CreateModelPanel();
 
+	if (!s_model) {
+		OrgWindowListenMouse(false);
+	}
+
 	return 0;
 }
 
@@ -8695,6 +8741,8 @@ int OnDelAllModel()
 		itrmodel->boneno2lineno.clear();
 		itrmodel->lineno2boneno.clear();
 	}
+
+	OrgWindowListenMouse(false);
 
 	s_modelindex.clear();
 
@@ -9966,18 +10014,26 @@ int CreateModelPanel()
 	s_modelpanel.panel->setVisible( 0 );//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ////////////
-	s_modelpanel.panel->setCloseListener( [](){ s_closemodelFlag = true; } );
+	s_modelpanel.panel->setCloseListener( [](){ 
+		if (s_model) {
+			s_closemodelFlag = true;
+		}
+	});
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		s_modelpanel.checkvec[modelcnt]->setButtonListener( [modelcnt](){
-			CModel* curmodel = s_modelindex[modelcnt].modelptr;
-			curmodel->SetModelDisp( s_modelpanel.checkvec[modelcnt]->getValue() );
+			if (s_model) {
+				CModel* curmodel = s_modelindex[modelcnt].modelptr;
+				curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+			}
 		} );
 	}
 
 	s_modelpanel.radiobutton->setSelectListener( [](){
-		s_modelpanel.modelindex = s_modelpanel.radiobutton->getSelectIndex();
-		OnModelMenu( s_modelpanel.modelindex, 1 );
+		if (s_model) {
+			s_modelpanel.modelindex = s_modelpanel.radiobutton->getSelectIndex();
+			OnModelMenu(s_modelpanel.modelindex, 1);
+		}
 	} );
 
 	s_modelpanel.panel->setSize(WindowSize(200, 100));//880
@@ -9995,6 +10051,7 @@ int DestroyConvBoneWnd()
 	s_convbonemap.clear();
 
 	if (s_convboneWnd){
+		s_convboneWnd->setListenMouse(false);
 		s_convboneWnd->setVisible(false);
 		delete s_convboneWnd;
 		s_convboneWnd = 0;
@@ -10147,36 +10204,48 @@ int CreateConvBoneWnd()
 	s_convbonesp->addParts1(*s_convboneconvert);
 	s_dsretargetctrls.push_back(s_convboneconvert);
 
-
+	s_convboneWnd->setListenMouse(false);
 	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	////////////
-	s_convboneWnd->setCloseListener([](){ s_closeconvboneFlag = true; });
+	s_convboneWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_closeconvboneFlag = true;
+		}
+	});
 
 
 	s_cbselmodel->setButtonListener([](){
-		SetConvBoneModel();
-		s_convboneWnd->callRewrite();
+		if (s_model) {
+			SetConvBoneModel();
+			s_convboneWnd->callRewrite();
+		}
 	});
 	s_cbselbvh->setButtonListener([](){
-		if (!s_convbone_model || (s_convbone_model != s_model)) {
-			::MessageBox(NULL, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"Error", MB_OK);
+		if (s_model) {
+			if (!s_convbone_model || (s_convbone_model != s_model)) {
+				::MessageBox(NULL, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"Error", MB_OK);
+			}
+			else {
+				SetConvBoneBvh();
+			}
+			s_convboneWnd->callRewrite();
 		}
-		else {
-			SetConvBoneBvh();
-		}
-		s_convboneWnd->callRewrite();
 	});
 	for (cbno = 0; cbno < s_convbonenum; cbno++){
 		s_bvhbone[cbno]->setButtonListener([cbno](){
-			SetConvBone(cbno);
-			//CModel* curmodel = s_modelindex[modelcnt].modelptr;
-			//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
-			s_convboneWnd->callRewrite();
+			if (s_model) {
+				SetConvBone(cbno);
+				//CModel* curmodel = s_modelindex[modelcnt].modelptr;
+				//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+				s_convboneWnd->callRewrite();
+			}
 		});
 	}
 	s_convboneconvert->setButtonListener([](){
-		ConvBoneConvert();
+		if (s_model) {
+			ConvBoneConvert();
+		}
 	});
 
 	s_convboneWnd->setSize(WindowSize(450, 858));//880
@@ -14307,6 +14376,7 @@ int OnFrameCloseFlag()
 		s_dispconvbone = false;
 		if (s_convboneWnd){
 			s_convboneWnd->setVisible(false);
+			s_convboneWnd->setListenMouse(false);
 		}
 	}
 	if (s_DcloseFlag){
@@ -14384,10 +14454,11 @@ int OnFrameTimeLineWnd()
 
 	if (s_cursorFlag) {
 		s_cursorFlag = false;
-		GetCurrentBoneFromTimeline(&s_curboneno);
-
-		// カーソル位置を姿勢に反映。
 		if (s_owpTimeline && s_model && s_model->GetCurMotInfo()) {
+
+			GetCurrentBoneFromTimeline(&s_curboneno);
+
+			// カーソル位置を姿勢に反映。
 			if (g_previewFlag == 0) {
 				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
 
@@ -14984,13 +15055,15 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			}
 		}
 
-		int curlineno = s_boneno2lineno[s_curboneno];
-		if (s_owpTimeline){
-			s_owpTimeline->setCurrentLine(curlineno, true);
-		}
+		if (s_curboneno >= 0) {
+			int curlineno = s_boneno2lineno[s_curboneno];
+			if (s_owpTimeline) {
+				s_owpTimeline->setCurrentLine(curlineno, true);
+			}
 
-		SetTimelineMark();
-		SetLTimelineMark(s_curboneno);
+			SetTimelineMark();
+			SetLTimelineMark(s_curboneno);
+		}
 
 		Sleep(500);
 	}
@@ -15414,7 +15487,11 @@ int CreateTimelineWnd()
 
 	// ウィンドウの閉じるボタンのイベントリスナーに
 	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
-	s_timelineWnd->setCloseListener([]() { s_closeFlag = true; });
+	s_timelineWnd->setCloseListener([]() {
+		if (s_model) {
+			s_closeFlag = true;
+		}
+	});
 
 
 	// ウィンドウのキーボードイベントリスナーに
@@ -15422,31 +15499,33 @@ int CreateTimelineWnd()
 	// コピー等のキーボードを使用する処理はキーボードイベントリスナーを使用しなくても
 	// メインループ内でマイフレームキー状態を監視することで作成可能である。
 	s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent &e){
-		if (e.ctrlKey && !e.repeat && e.onDown){
-			switch (e.keyCode){
-			case 'C':
-				s_copyFlag = true;
-				break;
-			case 'B':
-				s_symcopyFlag = true;
-				break;
-			case 'X':
-				s_cutFlag = true;
-				break;
-			case 'V':
-				s_pasteFlag = true;
-				break;
-			case 'P':
-				g_previewFlag = 1;
-				break;
-			case 'S':
-				g_previewFlag = 0;
-				break;
-			case 'D':
-				s_deleteFlag = true;
-				break;
-			default:
-				break;
+		if (s_model) {
+			if (e.ctrlKey && !e.repeat && e.onDown) {
+				switch (e.keyCode) {
+				case 'C':
+					s_copyFlag = true;
+					break;
+				case 'B':
+					s_symcopyFlag = true;
+					break;
+				case 'X':
+					s_cutFlag = true;
+					break;
+				case 'V':
+					s_pasteFlag = true;
+					break;
+				case 'P':
+					g_previewFlag = 1;
+					break;
+				case 'S':
+					g_previewFlag = 0;
+					break;
+				case 'D':
+					s_deleteFlag = true;
+					break;
+				default:
+					break;
+				}
 			}
 		}
 	});
@@ -15485,17 +15564,58 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setButtonSize(20);
 	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
 
-	s_owpPlayerButton->setFrontPlayButtonListener([]() { s_LstartFlag = true; g_previewFlag = 1; });
-	s_owpPlayerButton->setBackPlayButtonListener([](){  s_LstartFlag = true; g_previewFlag = -1; });
-	s_owpPlayerButton->setFrontStepButtonListener([](){ s_LstartFlag = true; s_lastkeyFlag = true; });
-	s_owpPlayerButton->setBackStepButtonListener([](){  s_LstartFlag = true; s_firstkeyFlag = true; });
-	s_owpPlayerButton->setStopButtonListener([]() {  s_LstopFlag = true; g_previewFlag = 0; });
-	s_owpPlayerButton->setResetButtonListener([](){ if (s_owpLTimeline){ s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, true); s_owpEulerGraph->setCurrentTime(1.0, false);
-	} });
-	s_owpPlayerButton->setSelectToLastButtonListener([](){  g_underselecttolast = true; g_selecttolastFlag = true; });
-	s_owpPlayerButton->setBtResetButtonListener([](){  s_btresetFlag = true; });
-	s_owpPlayerButton->setPrevRangeButtonListener([](){  g_undereditrange = true; s_prevrangeFlag = true; });
-	s_owpPlayerButton->setNextRangeButtonListener([](){  g_undereditrange = true; s_nextrangeFlag = true; });
+	s_owpPlayerButton->setFrontPlayButtonListener([]() { 
+		if (s_model) {
+			s_LstartFlag = true; g_previewFlag = 1;
+		}
+	});
+	s_owpPlayerButton->setBackPlayButtonListener([](){  
+		if (s_model) {
+			s_LstartFlag = true; g_previewFlag = -1;
+		}
+	});
+	s_owpPlayerButton->setFrontStepButtonListener([](){ 
+		if (s_model) {
+			s_LstartFlag = true; s_lastkeyFlag = true;
+		}
+	});
+	s_owpPlayerButton->setBackStepButtonListener([](){  
+		if (s_model) {
+			s_LstartFlag = true; s_firstkeyFlag = true;
+		}
+	});
+	s_owpPlayerButton->setStopButtonListener([]() {  		
+		if (s_model) {
+			s_LstopFlag = true; g_previewFlag = 0;
+		}
+	});
+	s_owpPlayerButton->setResetButtonListener([](){ 
+		if (s_model) {
+			if (s_owpLTimeline) {
+				s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, true); s_owpEulerGraph->setCurrentTime(1.0, false);
+			}
+		}
+	});
+	s_owpPlayerButton->setSelectToLastButtonListener([](){  
+		if (s_model) {
+			g_underselecttolast = true; g_selecttolastFlag = true;
+		}
+	});
+	s_owpPlayerButton->setBtResetButtonListener([](){  
+		if (s_model) {
+			s_btresetFlag = true;
+		}
+	});
+	s_owpPlayerButton->setPrevRangeButtonListener([](){  
+		if (s_model) {
+			g_undereditrange = true; s_prevrangeFlag = true;
+		}
+	});
+	s_owpPlayerButton->setNextRangeButtonListener([](){  
+		if (s_model) {
+			g_undereditrange = true; s_nextrangeFlag = true;
+		}
+	});
 
 
 	//###################################
@@ -15520,46 +15640,26 @@ int CreateLongTimelineWnd()
 	//s_LtimelineWndのラムダ　s_owpLTimelineではない。
 	//####################################
 	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
-	s_LtimelineWnd->setCloseListener([](){ s_LcloseFlag = true; });
-	s_LtimelineWnd->setLDownListener([]() { s_underselectingframe = 1; });
+	s_LtimelineWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_LcloseFlag = true;
+		}
+	});
+	s_LtimelineWnd->setLDownListener([]() { 
+		if (s_model) {
+			s_underselectingframe = 1;
+		}
+	});
 	s_LtimelineWnd->setLUpListener([](){
-		if (s_owpLTimeline) {
-			if (g_previewFlag == 0) {
-				if (s_prevrangeFlag || s_nextrangeFlag) {
-					RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
-					s_buttonselectstart = s_editrange.GetStartFrame();
-					s_buttonselectend = s_editrange.GetEndFrame();
+		if (s_model) {
+			if (s_owpLTimeline) {
+				if (g_previewFlag == 0) {
+					if (s_prevrangeFlag || s_nextrangeFlag) {
+						RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
+						s_buttonselectstart = s_editrange.GetStartFrame();
+						s_buttonselectend = s_editrange.GetEndFrame();
 
-					s_underselectingframe = 0;
-
-					if (s_editmotionflag < 0) {
-						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-						if (result) {
-							_ASSERT(0);
-						}
-					}
-
-					OnTimeLineButtonSelectFromSelectStartEnd(0);
-				}
-				else if (g_selecttolastFlag == false) {
-
-					if (!s_LstopFlag) {
-						if (s_selectFlag) {
-							s_selectFlag = false;
-							s_selectKeyInfoList.clear();
-							s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
-							s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
-							s_buttonselectstart = s_editrange.GetStartFrame();
-							s_buttonselectend = s_editrange.GetEndFrame();
-							s_underselectingframe = 0;
-							//_ASSERT(0);
-						}
-						else {
-							s_buttonselectstart = s_owpLTimeline->getCurrentTime();
-							s_buttonselectend = s_owpLTimeline->getCurrentTime();
-							s_underselectingframe = 0;
-							//_ASSERT(0);
-						}
+						s_underselectingframe = 0;
 
 						if (s_editmotionflag < 0) {
 							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
@@ -15570,63 +15670,92 @@ int CreateLongTimelineWnd()
 
 						OnTimeLineButtonSelectFromSelectStartEnd(0);
 					}
-					else {
-						//停止ボタンが押されたとき
-						//_ASSERT(0);
-						s_buttonselectstart = s_editrange.GetStartFrame();
-						s_buttonselectend = s_editrange.GetEndFrame();
-						s_underselectingframe = 0;
-						//_ASSERT(0);
+					else if (g_selecttolastFlag == false) {
 
-						//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-						//if (result) {
-						//	_ASSERT(0);
-						//}
+						if (!s_LstopFlag) {
+							if (s_selectFlag) {
+								s_selectFlag = false;
+								s_selectKeyInfoList.clear();
+								s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
+								s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+								s_buttonselectstart = s_editrange.GetStartFrame();
+								s_buttonselectend = s_editrange.GetEndFrame();
+								s_underselectingframe = 0;
+								//_ASSERT(0);
+							}
+							else {
+								s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+								s_buttonselectend = s_owpLTimeline->getCurrentTime();
+								s_underselectingframe = 0;
+								//_ASSERT(0);
+							}
 
-						OnTimeLineButtonSelectFromSelectStartEnd(0);
-						//_ASSERT(0);
+							if (s_editmotionflag < 0) {
+								int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+								if (result) {
+									_ASSERT(0);
+								}
+							}
+
+							OnTimeLineButtonSelectFromSelectStartEnd(0);
+						}
+						else {
+							//停止ボタンが押されたとき
+							//_ASSERT(0);
+							s_buttonselectstart = s_editrange.GetStartFrame();
+							s_buttonselectend = s_editrange.GetEndFrame();
+							s_underselectingframe = 0;
+							//_ASSERT(0);
+
+							//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+							//if (result) {
+							//	_ASSERT(0);
+							//}
+
+							OnTimeLineButtonSelectFromSelectStartEnd(0);
+							//_ASSERT(0);
+						}
+
 					}
+					else {
+						//ToTheLastFrame
+						OnTimeLineButtonSelectFromSelectStartEnd(1);
+
+						if (s_editmotionflag < 0) {
+							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+							if (result) {
+								_ASSERT(0);
+							}
+						}
+
+					}
+
 
 				}
 				else {
-					//ToTheLastFrame
-					OnTimeLineButtonSelectFromSelectStartEnd(1);
+					//再生ボタンが押されたとき
+					//_ASSERT(0);
+					s_buttonselectstart = s_editrange.GetStartFrame();
+					s_buttonselectend = s_editrange.GetEndFrame();
+					s_underselectingframe = 0;
+					//_ASSERT(0);
 
-					if (s_editmotionflag < 0) {
-						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-						if (result) {
-							_ASSERT(0);
-						}
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
 					}
 
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+
 				}
-
-
 			}
-			else {
-				//再生ボタンが押されたとき
-				//_ASSERT(0);
-				s_buttonselectstart = s_editrange.GetStartFrame();
-				s_buttonselectend = s_editrange.GetEndFrame();
-				s_underselectingframe = 0;
-				//_ASSERT(0);
 
-				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if (result) {
-					_ASSERT(0);
-				}
-
-				OnTimeLineButtonSelectFromSelectStartEnd(0);
-
-			}
+			s_LstartFlag = false;
+			s_LstopFlag = false;
+			g_selecttolastFlag = false;
+			s_prevrangeFlag = false;
+			s_nextrangeFlag = false;
 		}
-
-		s_LstartFlag = false;
-		s_LstopFlag = false;
-		g_selecttolastFlag = false;
-		s_prevrangeFlag = false;
-		s_nextrangeFlag = false;
-
 
 	});
 
@@ -15687,7 +15816,11 @@ int CreateDmpAnimWnd()
 	s_dsdampctrls.push_back(s_dmpanimB);
 
 
-	s_dmpanimWnd->setCloseListener([](){ s_DcloseFlag = true; });
+	s_dmpanimWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_DcloseFlag = true;
+		}
+	});
 
 	s_dmpanimLSlider->setCursorListener([](){
 		if (s_model) {
@@ -15818,7 +15951,11 @@ int CreateSideMenuWnd()
 	s_sidemenusp2->addParts2(*s_sidemenu_dampanim);
 
 
-	s_sidemenuWnd->setCloseListener([]() { s_ScloseFlag = true; });
+	s_sidemenuWnd->setCloseListener([]() { 
+		if (s_model) {
+			s_ScloseFlag = true;
+		}
+	});
 
 	s_sidemenu_rigid->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
@@ -16117,7 +16254,11 @@ int CreateRigidWnd()
 	s_dsrigidctrls.push_back(s_gcoliB);
 
 
-	s_rigidWnd->setCloseListener([](){ s_RcloseFlag = true; });
+	s_rigidWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_RcloseFlag = true;
+		}
+	});
 
 	s_shprateSlider->setCursorListener([](){
 		if (s_model) {
@@ -16412,20 +16553,22 @@ int CreateRigidWnd()
 		}
 	});
 	s_gcoliB->setButtonListener([](){
-		if (s_bpWorld){
-			CGColiIDDlg dlg(s_bpWorld->m_coliids, s_bpWorld->m_myselfflag);
-			s_pgcolidlg = &dlg;
-			s_undergcolidlg = true;
+		if (s_model) {
+			if (s_bpWorld) {
+				CGColiIDDlg dlg(s_bpWorld->m_coliids, s_bpWorld->m_myselfflag);
+				s_pgcolidlg = &dlg;
+				s_undergcolidlg = true;
 
-			int dlgret = (int)dlg.DoModal();
-			if (dlgret == IDOK){
-				s_bpWorld->m_coliids = dlg.m_coliids;
-				s_bpWorld->m_myselfflag = dlg.m_myself;
-				s_bpWorld->RemakeG();
+				int dlgret = (int)dlg.DoModal();
+				if (dlgret == IDOK) {
+					s_bpWorld->m_coliids = dlg.m_coliids;
+					s_bpWorld->m_myselfflag = dlg.m_myself;
+					s_bpWorld->RemakeG();
+				}
+
+				s_undergcolidlg = false;
+				s_pgcolidlg = 0;
 			}
-
-			s_undergcolidlg = false;
-			s_pgcolidlg = 0;
 		}
 	});
 
@@ -16543,33 +16686,45 @@ int CreateImpulseWnd()
 	s_dsimpulsectrls.push_back(s_impallB);
 
 
-	s_impWnd->setCloseListener([](){ s_IcloseFlag = true; });
+	s_impWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_IcloseFlag = true;
+		}
+	});
 
 	s_impzSlider->setCursorListener([](){
-		float val = (float)s_impzSlider->getValue();
-		if (s_model){
-			s_model->SetImp(s_curboneno, 2, val);
+		if (s_model) {
+			float val = (float)s_impzSlider->getValue();
+			if (s_model) {
+				s_model->SetImp(s_curboneno, 2, val);
+			}
+			s_impWnd->callRewrite();						//再描画
 		}
-		s_impWnd->callRewrite();						//再描画
 	});
 	s_impySlider->setCursorListener([](){
-		float val = (float)s_impySlider->getValue();
-		if (s_model){
-			s_model->SetImp(s_curboneno, 1, val);
+		if (s_model) {
+			float val = (float)s_impySlider->getValue();
+			if (s_model) {
+				s_model->SetImp(s_curboneno, 1, val);
+			}
+			s_impWnd->callRewrite();						//再描画
 		}
-		s_impWnd->callRewrite();						//再描画
 	});
 	s_impxSlider->setCursorListener([](){
-		float val = (float)s_impxSlider->getValue();
-		if (s_model){
-			s_model->SetImp(s_curboneno, 0, val);
+		if (s_model) {
+			float val = (float)s_impxSlider->getValue();
+			if (s_model) {
+				s_model->SetImp(s_curboneno, 0, val);
+			}
+			s_impWnd->callRewrite();						//再描画
 		}
-		s_impWnd->callRewrite();						//再描画
 	});
 	s_impscaleSlider->setCursorListener([](){
-		float scale = (float)s_impscaleSlider->getValue();
-		g_impscale = scale;
-		s_impWnd->callRewrite();						//再描画
+		if (s_model) {
+			float scale = (float)s_impscaleSlider->getValue();
+			g_impscale = scale;
+			s_impWnd->callRewrite();						//再描画
+		}
 	});
 	s_impallB->setButtonListener([](){
 		if (s_model){
@@ -16669,61 +16824,77 @@ int CreateGPlaneWnd()
 	s_dsgpctrls.push_back(s_gfriclabel);
 	s_dsgpctrls.push_back(s_gfricSlider);
 
-	s_gpWnd->setCloseListener([](){ s_GcloseFlag = true; });
+	s_gpWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_GcloseFlag = true;
+		}
+	});
 
 	s_ghSlider->setCursorListener([](){
-		if (s_bpWorld){
-			s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
-			s_bpWorld->RemakeG();
+		if (s_model) {
+			if (s_bpWorld) {
+				s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
+				s_bpWorld->RemakeG();
 
-			ChaVector3 tra(0.0f, 0.0f, 0.0f);
-			ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
-			CallF(s_gplane->MultDispObj(mult, tra), return);
+				ChaVector3 tra(0.0f, 0.0f, 0.0f);
+				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+				CallF(s_gplane->MultDispObj(mult, tra), return);
 
-			s_gpWnd->callRewrite();						//再描画
+				s_gpWnd->callRewrite();						//再描画
+			}
 		}
 	});
 	s_gsizexSlider->setCursorListener([](){
-		if (s_bpWorld && s_gplane){
-			s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
+		if (s_model) {
+			if (s_bpWorld && s_gplane) {
+				s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
 
-			ChaVector3 tra(0.0f, 0.0f, 0.0f);
-			ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
-			CallF(s_gplane->MultDispObj(mult, tra), return);
-			s_gpWnd->callRewrite();						//再描画
+				ChaVector3 tra(0.0f, 0.0f, 0.0f);
+				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+				CallF(s_gplane->MultDispObj(mult, tra), return);
+				s_gpWnd->callRewrite();						//再描画
+			}
 		}
 	});
 	s_gsizezSlider->setCursorListener([](){
-		if (s_bpWorld && s_gplane){
-			s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
+		if (s_model) {
+			if (s_bpWorld && s_gplane) {
+				s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
 
-			ChaVector3 tra(0.0f, 0.0f, 0.0f);
-			ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
-			CallF(s_gplane->MultDispObj(mult, tra), return);
-			s_gpWnd->callRewrite();						//再描画
+				ChaVector3 tra(0.0f, 0.0f, 0.0f);
+				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+				CallF(s_gplane->MultDispObj(mult, tra), return);
+				s_gpWnd->callRewrite();						//再描画
+			}
 		}
 	});
 	s_gpdisp->setButtonListener([](){
-		if (s_bpWorld){
-			bool dispflag = s_gpdisp->getValue();
-			s_bpWorld->m_gplanedisp = (int)dispflag;
-			s_gpWnd->callRewrite();						//再描画
+		if (s_model) {
+			if (s_bpWorld) {
+				bool dispflag = s_gpdisp->getValue();
+				s_bpWorld->m_gplanedisp = (int)dispflag;
+				s_gpWnd->callRewrite();						//再描画
+			}
 		}
 	});
 	s_grestSlider->setCursorListener([](){
-		if (s_bpWorld && s_gplane){
-			s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
-			s_bpWorld->RemakeG();
+		if (s_model) {
+			if (s_bpWorld && s_gplane) {
+				s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
+				s_bpWorld->RemakeG();
 
-			s_gpWnd->callRewrite();						//再描画
+				s_gpWnd->callRewrite();						//再描画
+			}
 		}
 	});
 	s_gfricSlider->setCursorListener([](){
-		if (s_bpWorld && s_gplane){
-			s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
-			s_bpWorld->RemakeG();
+		if (s_model) {
+			if (s_bpWorld && s_gplane) {
+				s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
+				s_bpWorld->RemakeG();
 
-			s_gpWnd->callRewrite();						//再描画
+				s_gpWnd->callRewrite();						//再描画
+			}
 		}
 	});
 
@@ -16790,19 +16961,55 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolInterpolateB);
 
 
-	s_toolWnd->setCloseListener([](){ s_closetoolFlag = true; });
+	s_toolWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_closetoolFlag = true;
+		}
+	});
 	//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
 	//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
 
-	s_toolCopyB->setButtonListener([](){ s_copyFlag = true; });
-	s_toolSymCopyB->setButtonListener([](){ s_symcopyFlag = true; });
-	s_toolPasteB->setButtonListener([](){ s_pasteFlag = true; });
-	s_toolMotPropB->setButtonListener([](){ s_motpropFlag = true; });
+	s_toolCopyB->setButtonListener([](){ 
+		if (s_model) {
+			s_copyFlag = true;
+		}
+	});
+	s_toolSymCopyB->setButtonListener([](){ 
+		if (s_model) {
+			s_symcopyFlag = true;
+		}
+	});
+	s_toolPasteB->setButtonListener([](){ 
+		if (s_model) {
+			s_pasteFlag = true;
+		}
+	});
+	s_toolMotPropB->setButtonListener([](){ 
+		if (s_model) {
+			s_motpropFlag = true;
+		}
+	});
 	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
-	s_toolSelBoneB->setButtonListener([](){ s_selboneFlag = true; });
-	s_toolInitMPB->setButtonListener([](){ s_initmpFlag = true; });
-	s_toolFilterB->setButtonListener([](){ s_filterFlag = true; });
-	s_toolInterpolateB->setButtonListener([]() { s_interpolateFlag = true; });
+	s_toolSelBoneB->setButtonListener([](){ 
+		if (s_model) {
+			s_selboneFlag = true;
+		}
+	});
+	s_toolInitMPB->setButtonListener([](){ 
+		if (s_model) {
+			s_initmpFlag = true;
+		}
+	});
+	s_toolFilterB->setButtonListener([](){ 
+		if (s_model) {
+			s_filterFlag = true;
+		}
+	});
+	s_toolInterpolateB->setButtonListener([]() { 
+		if (s_model) {
+			s_interpolateFlag = true;
+		}
+	});
 
 	s_toolWnd->setPos(WindowPos(0, 600));
 
@@ -16849,7 +17056,11 @@ int CreateLayerWnd()
 	s_layerWnd->addParts(*s_owpLayerTable);
 
 
-	s_layerWnd->setCloseListener([](){ s_closeobjFlag = true; });
+	s_layerWnd->setCloseListener([](){ 
+		if (s_model) {
+			s_closeobjFlag = true;
+		}
+	});
 
 	//レイヤーのカーソルリスナー
 	s_owpLayerTable->setCursorListener([](){
@@ -19873,12 +20084,14 @@ void ShowRetargetWnd(bool srcflag)
 				//if (!s_convboneWnd) {
 					CreateConvBoneWnd();
 				//}
+				s_convboneWnd->setListenMouse(true);
 				s_convboneWnd->setVisible(true);
 				s_spretargetsw[SPRETARGETSW_RETARGET].state = true;
 				s_dispconvbone = true;
 			}
 			else {
 				if (s_convboneWnd) {
+					s_convboneWnd->setListenMouse(false);
 					s_convboneWnd->setVisible(false);
 				}
 				s_spretargetsw[SPRETARGETSW_RETARGET].state = false;
@@ -20997,6 +21210,7 @@ void DSSelectWindowAndCtrl()
 				if ((nextaimbarno >= 0) && (nextaimbarno < SPAIMBARNUM)) {
 					s_curaimbarno = nextaimbarno;
 
+
 					SelectNextWindow(MB3D_WND_3D);//マウスカーソルをプレート位置に移動する前に呼ぶ（この関数ではコントロール位置にマウスは移動する）
 
 					POINT buttonpos;
@@ -21011,25 +21225,17 @@ void DSSelectWindowAndCtrl()
 		}
 	}
 
-	////モード依存
-	////十字キー処理
-	//{
-	//	if (s_currentwndid == 1) {
-	//		DSCrossButtonSelectUTGUI();
-	//	}
-	//	else if (s_currentwndid == 2) {
-	//		DSCrossButtonSelectTree();
-	//	}
 
-	//	//AxisR Mouse Move
-	//	DSAxisLMouseMove();
-
-	//}
-	////s_platemenuno
 }
 
 void DSCrossButton(bool firstctrlselect)
 {
+
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//DS deviceが無い場合には何もせずにリターン
+		return;
+	}
+
 	//選択ウインドウ依存
 	//十字キー処理
 	{
@@ -25291,5 +25497,52 @@ void ChangeMouseReleaseCapture()
 		return;
 	}
 }
+
+void OrgWindowListenMouse(bool srcflag)
+{
+	if (s_timelineWnd) {
+		s_timelineWnd->setListenMouse(srcflag);
+	}
+	if (s_LtimelineWnd) {
+		s_LtimelineWnd->setListenMouse(srcflag);
+	}
+	if (s_dmpanimWnd) {
+		s_dmpanimWnd->setListenMouse(srcflag);
+	}
+	if (s_sidemenuWnd) {
+		s_sidemenuWnd->setListenMouse(srcflag);
+	}
+	if (s_mainmenuaimbarWnd) {
+		s_mainmenuaimbarWnd->setListenMouse(srcflag);
+	}
+	if (s_placefolderWnd) {
+		s_placefolderWnd->setListenMouse(srcflag);
+	}
+	if (s_rigidWnd) {
+		s_rigidWnd->setListenMouse(srcflag);
+	}
+	if (s_impWnd) {
+		s_impWnd->setListenMouse(srcflag);
+	}
+	if (s_gpWnd) {
+		s_gpWnd->setListenMouse(srcflag);
+	}
+	if (s_toolWnd) {
+		s_toolWnd->setListenMouse(srcflag);
+	}
+	if (s_convboneWnd) {
+		s_convboneWnd->setListenMouse(srcflag);
+	}
+	if (s_layerWnd) {
+		s_layerWnd->setListenMouse(srcflag);
+	}
+	if (s_convboneWnd) {
+		s_convboneWnd->setListenMouse(srcflag);
+	}
+
+	//anglelimitdlgはWindowsDialog
+
+}
+
 
 

@@ -264,6 +264,16 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ÅîÅîÅî
+2021/04/18_2
+	Fix problems that timelineWnd close if click timelineWnd before loading model.
+	Fix problems that timelineWnd is resized Unintentionally.
+
+	Enable all buttons of PlayerButtons of LongTimeLineWnd.
+	(history buttons of selected frames)
+
+	If GamePad is not connected, mouse cursor pos don't jump to GUI pos.
+
+		
 2021/04/18_1
 	Adjust GUI placement of 3DWND.
 	

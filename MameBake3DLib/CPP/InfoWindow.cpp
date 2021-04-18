@@ -131,7 +131,7 @@ int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, i
 	//}
 	//else {
 	m_hWnd = CreateWindowEx(
-		WS_EX_LEFT, L"InfoWindow_", L"InfoWindow", WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE | WS_THICKFRAME,
+		WS_EX_LEFT, L"InfoWindow_", L"InfoWindow", WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,// | WS_THICKFRAME,
 		srcposx, srcposy,
 		srcwidth, srcheight - 2 * cyframe,
 		srcparentwnd, NULL, (HINSTANCE)GetModuleHandle(NULL), NULL);
