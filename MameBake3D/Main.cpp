@@ -170,6 +170,11 @@ HWND g_filterdlghwnd = 0;
 static HWND GetOFWnd(POINT srcpoint);
 static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
 static HWND GetNearestEnumDist();
+static BOOL CALLBACK EnumIDOKProc(HWND hwnd, LPARAM lParam);
+static BOOL CALLBACK EnumTreeViewProc(HWND hwnd, LPARAM lParam);
+void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime);
+
+static void DSMessageBox(HWND srcparenthwnd, WCHAR* srcmessage, WCHAR* srctitle, LONG srcok);
 
 /*
 ID3D11DepthStencilState *g_pDSStateZCmp = 0;
@@ -295,8 +300,9 @@ static CDSUpdateUnderTracking* s_dsupdater = 0;
 LONG g_undertrackingRMenu = 0;
 LONG g_underApealingMouseHere = 0;
 
-
+extern HANDLE g_hUnderTrackingThread;
 extern DSManager manager;
+
 bool g_enableDS = false;
 static void InitDSValues();
 static void GetDSValues();
@@ -358,7 +364,14 @@ static int s_wmlbuttonup = 0;
 //static int g_currentsubmenuid = 0;//globalへ
 static int s_currentsubmenuitemid = 0;
 static HWND s_ofhwnd = 0;
+static HWND s_messageboxhwnd = 0;
+static int s_messageboxpushcnt = 0;
+static HWND s_getfilenamehwnd = 0;
+static HWND s_getfilenametreeview = 0;
+
 static int s_getsym_retmode = 0;
+
+
 
 typedef struct tag_enumdist
 {
@@ -418,7 +431,6 @@ static int s_dspushedR3 = 0;
 //static int s_dsmousewait = 0;
 
 static HWND s_mqodlghwnd = 0;
-static HWND s_openfilehwnd = 0;
 static bool s_underframecopydlg = false;
 static CColiIDDlg* s_pcolidlg = 0;
 static bool s_undercolidlg = false;
@@ -432,6 +444,8 @@ static HWND s_saveimpdlghwnd = 0;
 static HWND s_savegcodlghwnd = 0;
 static HWND s_rotzisdlghwnd = 0;
 static HWND s_customrighwnd = 0;
+static HWND s_exportxdlghwnd = 0;
+
 
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
@@ -1841,6 +1855,35 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	
 	GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 
+	
+	//if (!s_eventhook) {
+	CoInitialize(NULL);
+	//s_eventhook = SetWinEventHook(
+	//	//EVENT_SYSTEM_DIALOGSTART,
+	//	//EVENT_SYSTEM_DIALOGSTART,
+	//	//EVENT_SYSTEM_DIALOGEND,
+	//	EVENT_MIN,
+	//	EVENT_MAX,
+	//	NULL,
+	//	WinEventProc,
+	//	//GetDlgItemInt(IDC_PROCESSID),
+	//	//GetProcessId(GetModuleHandle(NULL)),
+	//	//GetThreadId(g_hUnderTrackingThread),
+	//	//GetThreadId(s_messageboxthread),
+	//	0,
+	//	0,
+	//	WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS
+	//);
+	//IntPtr hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero,
+	//	procDelegate, 0, 0, WINEVENT_OUTOFCONTEXT);
+
+	//// MessageBox provides the necessary mesage loop that SetWinEventHook requires.
+	//MessageBox.Show("Tracking focus, close message box to exit.");
+
+	//UnhookWinEvent(hhook);
+
+	//}
+
 
 	//s_iktimerid = (int)::SetTimer(s_mainhwnd, s_iktimerid, 16, NULL);
 
@@ -1867,6 +1910,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
+
+
+
+
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -2901,6 +2948,14 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	UNREFERENCED_PARAMETER(pUserContext);
 
 	OrgWindowListenMouse(false);
+
+
+	//if (s_eventhook) {
+		//UnhookWinEvent(s_eventhook);
+		//s_eventhook = 0;
+		CoUninitialize();
+	//}
+
 
 
 	if (s_dsupdater) {
@@ -4338,7 +4393,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			WCHAR strmes[1024];
 			if (!s_convbone_model) {
 				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-				::MessageBox(NULL, strmes, L"check", MB_OK);
+				::DSMessageBox(NULL, strmes, L"check", MB_OK);
 			}
 			else {
 				swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
@@ -4354,7 +4409,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			WCHAR strmes[1024];
 			if (!s_convbone_bvh) {
 				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-				::MessageBox(NULL, strmes, L"check", MB_OK);
+				::DSMessageBox(NULL, strmes, L"check", MB_OK);
 			}
 			else {
 				swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
@@ -4388,7 +4443,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
 
 					swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
-					::MessageBox(NULL, strmes, L"check", MB_OK);
+					::DSMessageBox(NULL, strmes, L"check", MB_OK);
 				}
 				else {
 					swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
@@ -6571,7 +6626,7 @@ int OpenREFile()
 	}
 
 	if( s_model->GetRigidElemInfoSize() >= (MAXRENUM - 1) ){
-		::MessageBox( s_3dwnd, L"Can't Load More.", L"Overflow Loading(Limit under 99 files)", MB_OK );
+		::DSMessageBox( s_3dwnd, L"Can't Load More.", L"Overflow Loading(Limit under 99 files)", MB_OK );
 		return 0;
 	}
 
@@ -6629,7 +6684,7 @@ int SaveImpFile()
 		return 0;
 	}
 	if( s_rgdindexmap[s_model] < 0 ){
-		::MessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"Error Of Prepairation", MB_OK );
+		::DSMessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"Error Of Prepairation", MB_OK );
 		return 0;
 	}
 
@@ -8176,8 +8231,8 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 {
 	int motnum = (int)s_tlarray.size();
 	if( motnum >= MAXMOTIONNUM ){
-		::MessageBox(s_3dwnd, L"Can't Load More.", L"Overflow Loading", MB_OK);
-		//MessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
+		::DSMessageBox(s_3dwnd, L"Can't Load More.", L"Overflow Loading", MB_OK);
+		//DSMessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
 		return 0;
 	}
 
@@ -9168,9 +9223,12 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = NULL;
+	//ofn.lpstrTitle = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
 	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT | OFN_ENABLEHOOK;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt =NULL;
@@ -9359,11 +9417,23 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					return TRUE;
                     break;
 				case IDC_REFMQO:
-					if( GetOpenFileNameW(&ofn) == IDOK ){
-						SetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath );
+				{
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, 1);
+
+					if (GetOpenFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
 						s_refokflag = true;
 					}
-					s_openfilehwnd = 0;//!!!!!!!!!!!
+					
+					InterlockedExchange(&g_undertrackingRMenu, 0);
+					UnhookWinEvent(hhook);
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+				}
 					break;
 				default:
                     return FALSE;
@@ -9396,7 +9466,7 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
@@ -9449,9 +9519,22 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		case IDC_REFMQO:
-			if (GetOpenFileNameW(&ofn) == IDOK){
+		{
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+			HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, 1);
+
+			if (GetOpenFileNameW(&ofn) == IDOK) {
 				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
 			}
+
+			InterlockedExchange(&g_undertrackingRMenu, 0);
+			UnhookWinEvent(hhook);
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+		}
 			break;
 		default:
 			return FALSE;
@@ -9598,7 +9681,7 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
 	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
@@ -9640,9 +9723,22 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
                     break;
 					break;
 				case IDC_REFFILE:
-					if( GetSaveFileNameW(&ofn) == IDOK ){
-						SetDlgItemText( hDlgWnd, IDC_FILENAME, buf );
+				{
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, 1);
+
+					if (GetSaveFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
+
+					InterlockedExchange(&g_undertrackingRMenu, 0);
+					UnhookWinEvent(hhook);
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+				}
 					break;
 				default:
                     return FALSE;
@@ -9682,7 +9778,7 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
 	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
@@ -9722,9 +9818,22 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
                     break;
 					break;
 				case IDC_REFFILE:
-					if( GetSaveFileNameW(&ofn) == IDOK ){
-						SetDlgItemText( hDlgWnd, IDC_FILENAME, buf );
+				{
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, 1);
+
+					if (GetSaveFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
+
+					InterlockedExchange(&g_undertrackingRMenu, 0);
+					UnhookWinEvent(hhook);
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+				}
 					break;
 				default:
                     return FALSE;
@@ -9765,7 +9874,7 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
 	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
@@ -9805,9 +9914,23 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
                     break;
 					break;
 				case IDC_REFFILE:
-					if( GetSaveFileNameW(&ofn) == IDOK ){
-						SetDlgItemText( hDlgWnd, IDC_FILENAME, buf );
+				{
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, 1);
+
+					if (GetSaveFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
+
+					InterlockedExchange(&g_undertrackingRMenu, 0);
+					UnhookWinEvent(hhook);
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+				}
+
 					break;
 				default:
                     return FALSE;
@@ -9843,7 +9966,7 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
 	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
@@ -9855,34 +9978,62 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	WCHAR strmult[256];
 	wcscpy_s( strmult, 256, L"1.000" );
 	
+	static int s_exportxproctimer = 360;
+
 	switch (msg) {
         case WM_INITDIALOG:
 			g_tmpmqomult = 1.0f;
 			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
 			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile." );
+
+			SetTimer(hDlgWnd, s_exportxproctimer, 20, NULL);
+			s_exportxdlghwnd = hDlgWnd;
             return FALSE;
         case WM_COMMAND:
             switch (LOWORD(wp)) {
                 case IDOK:
+					s_exportxdlghwnd = 0;
+					KillTimer(hDlgWnd, s_exportxproctimer);
 					GetDlgItemText( hDlgWnd, IDC_MULT, strmult, 256 );
 					g_tmpmqomult = (float)_wtof( strmult );
 					GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
                     EndDialog(hDlgWnd, IDOK);
                     break;
                 case IDCANCEL:
-                    EndDialog(hDlgWnd, IDCANCEL);
+					s_exportxdlghwnd = 0;
+					KillTimer(hDlgWnd, s_exportxproctimer);
+					EndDialog(hDlgWnd, IDCANCEL);
                     break;
 				case IDC_REFX:
-					if( GetSaveFileNameW(&ofn) == IDOK ){
-						SetDlgItemText( hDlgWnd, IDC_FILEPATH, buf );
+				{
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, 1);
+
+					if (GetSaveFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
 					}
+
+					InterlockedExchange(&g_undertrackingRMenu, 0);
+					UnhookWinEvent(hhook);
+					s_getfilenamehwnd = 0;
+					s_getfilenametreeview = 0;
+				}
 					break;
 				default:
                     return FALSE;
             }
-        default:
-            return FALSE;
+		case WM_TIMER:
+			OnDSUpdate();
+			return FALSE;
+			break;
+		default:
+			DefWindowProc(hDlgWnd, msg, wp, lp);
+			return FALSE;
+
     }
     return TRUE;
 }
@@ -10224,7 +10375,7 @@ int CreateConvBoneWnd()
 	s_cbselbvh->setButtonListener([](){
 		if (s_model) {
 			if (!s_convbone_model || (s_convbone_model != s_model)) {
-				::MessageBox(NULL, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"Error", MB_OK);
+				::DSMessageBox(s_mainhwnd, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
 			}
 			else {
 				SetConvBoneBvh();
@@ -10316,7 +10467,7 @@ int SetConvBoneModel()
 	//	WCHAR strmes[1024];
 	//	if (!s_convbone_model) {
 	//		swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-	//		::MessageBox(NULL, strmes, L"check", MB_OK);
+	//		::DSMessageBox(NULL, strmes, L"check", MB_OK);
 	//	}
 	//	else {
 	//		swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
@@ -10392,7 +10543,7 @@ int SetConvBoneBvh()
 	//	WCHAR strmes[1024];
 	//	if (!s_convbone_bvh){
 	//		swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-	//		::MessageBox(NULL, strmes, L"check", MB_OK);
+	//		::DSMessageBox(NULL, strmes, L"check", MB_OK);
 	//	}
 	//	else{
 	//		swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
@@ -10498,7 +10649,7 @@ int SetConvBone( int cbno )
 	//			s_bvhbone[cbno]->setName(L"NotSet");
 
 	//			swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
-	//			::MessageBox(NULL, strmes, L"check", MB_OK);
+	//			::DSMessageBox(NULL, strmes, L"check", MB_OK);
 	//		}
 	//		else{
 	//			swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
@@ -10527,7 +10678,7 @@ int ConvBoneConvert()
 	}
 
 	if (s_model != s_convbone_model){
-		::MessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"エラー", MB_OK);
+		::DSMessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"エラー", MB_OK);
 		return 1;
 	}
 
@@ -10582,7 +10733,7 @@ int ConvBoneConvert()
 	g_underRetargetFlag = false;//!!!!!!!!!!!!
 
 
-	::MessageBox(NULL, L"Finish of convertion.", L"Finish", MB_OK);
+	::DSMessageBox(NULL, L"Finish of convertion.", L"Finish", MB_OK);
 
 	return 0;
 }
@@ -11487,7 +11638,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 			curlpidl = SHBrowseForFolder(&bi);
 			if (curlpidl) {
-				//::MessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
+				//::DSMessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
 
 				BOOL bret;
 				bret = SHGetPathFromIDList(curlpidl, selectname);
@@ -13032,7 +13183,7 @@ int ExportFBXFile()
 	ofn1.lpstrFileTitle = NULL;
 	ofn1.nMaxFileTitle = 0;
 	ofn1.lpstrInitialDir = NULL;
-	ofn1.lpstrTitle = NULL;
+	ofn1.lpstrTitle = L"GetFileNameDlg";
 	ofn1.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 	ofn1.nFileOffset = 0;
 	ofn1.nFileExtension = 0;
@@ -13041,9 +13192,25 @@ int ExportFBXFile()
 	ofn1.lpfnHook = NULL;
 	ofn1.lpTemplateName = NULL;
 
-	if( GetSaveFileNameW(&ofn1) != IDOK ){
-		return 0;
+
+	{
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
+		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		InterlockedExchange(&g_undertrackingRMenu, 1);
+
+		if (GetSaveFileNameW(&ofn1) != IDOK) {
+			return 0;
+		}
+
+		InterlockedExchange(&g_undertrackingRMenu, 0);
+		UnhookWinEvent(hhook);
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
 	}
+
+
 	
 	char fbxpath[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_UTF8, 0, filename, -1, fbxpath, MAX_PATH, NULL, NULL );	
@@ -13121,7 +13288,7 @@ int ExportBntFile()
 	ofn1.lpstrFileTitle = NULL;
 	ofn1.nMaxFileTitle = 0;
 	ofn1.lpstrInitialDir = NULL;
-	ofn1.lpstrTitle = NULL;
+	ofn1.lpstrTitle = L"GetFileNameDlg";
 	ofn1.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 	ofn1.nFileOffset = 0;
 	ofn1.nFileExtension = 0;
@@ -13130,8 +13297,22 @@ int ExportBntFile()
 	ofn1.lpfnHook = NULL;
 	ofn1.lpTemplateName = NULL;
 
-	if( GetSaveFileNameW(&ofn1) != IDOK ){
-		return 0;
+
+	{
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
+		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		InterlockedExchange(&g_undertrackingRMenu, 1);
+
+		if (GetSaveFileNameW(&ofn1) != IDOK) {
+			return 0;
+		}
+
+		InterlockedExchange(&g_undertrackingRMenu, 0);
+		UnhookWinEvent(hhook);
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
 	}
 	
 	//char fbxpath[MAX_PATH] = {0};
@@ -13270,7 +13451,7 @@ int DispAngleLimitDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry after Saving FBX file.", L"Data Type Error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry after Saving FBX file.", L"Data Type Error", MB_OK);
 		return 0;
 	}
 
@@ -13572,7 +13753,7 @@ int DispRotAxisDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving FBX file.", L"Data Type error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving FBX file.", L"Data Type error", MB_OK);
 		return 0;
 	}
 
@@ -13702,7 +13883,7 @@ int RotAxis(HWND hDlgWnd)
 			}
 			//WCHAR strmes[256];
 			//swprintf_s(strmes, 256, L"rotaxis %d, rotdeg %.3f", s_rotaxiskind, s_rotaxisdeg);
-			//::MessageBox(hDlgWnd, strmes, L"Check!!!", MB_OK);
+			//::DSMessageBox(hDlgWnd, strmes, L"Check!!!", MB_OK);
 		}
 	}
 
@@ -14724,7 +14905,7 @@ int OnFrameToolWnd()
 	int isfirstbone = 0;
 	cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
 	curbone->SetWorldMatFromEul(1, cureul, curmi->motid, curmi->curframe);
-	::MessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
+	::DSMessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
 	}
 	}
 	}
@@ -14757,7 +14938,7 @@ int OnFrameToolWnd()
 					}
 				}
 				else{
-					::MessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"Selection Error", MB_OK);
+					::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"Selection Error", MB_OK);
 				}
 			}
 		}
@@ -17704,7 +17885,7 @@ int DispCustomRigDlg(int rigno)
 		return 0;
 	}
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::MessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"Data Type Error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"Data Type Error", MB_OK);
 		return 0;
 	}
 
@@ -17790,7 +17971,7 @@ int CustomRig2Bone()
 	if (s_customrigbone){
 		int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 		if (isvalid == 0){
-			::MessageBox(s_3dwnd, L"Invalid Parameter", L"Input Error", MB_OK);
+			::DSMessageBox(s_3dwnd, L"Invalid Parameter", L"Input Error", MB_OK);
 			return 0;
 		}
 		s_customrigbone->SetCustomRig(s_customrig);
@@ -17809,7 +17990,7 @@ int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr)
 	float tmpval;
 	tmpval = (float)_wtof(strval);
 	if ((tmpval < -100.0f) || (tmpval > 100.0f)){
-		::MessageBox(hDlgWnd, L"Limit Range From -100.0 to 100.", L"Out Of Limit Error", MB_OK);
+		::DSMessageBox(hDlgWnd, L"Limit Range From -100.0 to 100.", L"Out Of Limit Error", MB_OK);
 		*dstptr = 0.0f;
 		return 1;
 	}
@@ -17956,7 +18137,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 //{
 //	WCHAR strdbg[256];
 //	swprintf_s(strdbg, 256, L"elemno %d, combolabel %s", elemno, combolabel);
-//	::MessageBox(hDlgWnd, strdbg, L"combolabel", MB_OK);
+//	::DSMessageBox(hDlgWnd, strdbg, L"combolabel", MB_OK);
 //}
 		size_t labellen = wcslen(combolabel);
 		if ((labellen > 0) && (labellen < 256)){
@@ -17971,7 +18152,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 //{
 //	WCHAR strdbg[256];
 //	swprintf_s(strdbg, 256, L"rigrigno %d", rigrigno);
-//	::MessageBox(hDlgWnd, strdbg, L"rigrigno", MB_OK);
+//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigno", MB_OK);
 //}
 					if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
 						s_customrig.rigelem[elemno].rigrigno = rigrigno;
@@ -17984,7 +18165,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 //{
 //	WCHAR strdbg[256];
 //	swprintf_s(strdbg, 256, L"rigrigbonename %s", rigrigbonename);
-//	::MessageBox(hDlgWnd, strdbg, L"rigrigbonename", MB_OK);
+//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigbonename", MB_OK);
 //}
 							CBone* rigrigbone = s_model->GetBoneByWName(rigrigbonename);
 							if (rigrigbone){
@@ -17993,7 +18174,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 //{
 //	WCHAR strdbg[256];
 //	swprintf_s(strdbg, 256, L"rigrigboneno %d", s_customrig.rigelem[elemno].rigrigboneno);
-//	::MessageBox(hDlgWnd, strdbg, L"rigrigboneno", MB_OK);
+//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigboneno", MB_OK);
 //}
 								int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 								SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)rigrigbone->GetWBoneName());
@@ -18092,14 +18273,14 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					float tmprate;
 					ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
 					if (ret){
-						::MessageBox(hDlgWnd, L"Invalid VerticalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
+						::DSMessageBox(hDlgWnd, L"Invalid VerticalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
 
 					ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
 					if (ret){
-						::MessageBox(hDlgWnd, L"Invalid HolizontalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
+						::DSMessageBox(hDlgWnd, L"Invalid HolizontalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
@@ -18124,7 +18305,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 				int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 				if (isvalid == 0){
-					::MessageBox(hDlgWnd, L"Invalid Parameter", L"Input Error", MB_OK);
+					::DSMessageBox(hDlgWnd, L"Invalid Parameter", L"Input Error", MB_OK);
 					return 0;
 				}
 
@@ -18957,7 +19138,7 @@ int InitializeMainWindow(CREATESTRUCT* createWindowArgs)
 	//	createWindowArgs->lpszClass, createWindowArgs->lpszName
 	//);
 
-	//messageResult = MessageBox(NULL, message, TEXT("確認"), MB_YESNO | MB_ICONINFORMATION);
+	//messageResult = DSMessageBox(NULL, message, TEXT("確認"), MB_YESNO | MB_ICONINFORMATION);
 
 	//if (messageResult == IDNO)
 	//	return -1;
@@ -19420,7 +19601,7 @@ CInfoWindow* CreateInfoWnd()
 int RecalcBoneAxisX(CBone* srcbone)
 {
 	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
-		::MessageBox(s_3dwnd, L"Retry After Saving And Loading.", L"Data Type Error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Retry After Saving And Loading.", L"Data Type Error", MB_OK);
 		return 0;
 	}
 
@@ -19433,7 +19614,7 @@ void RecalcAxisX_All()
 {
 	if (s_model) {
 		if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
-			::MessageBox(s_3dwnd, L"Retry After Saving And Loding.", L"Data Type Error", MB_OK);
+			::DSMessageBox(s_3dwnd, L"Retry After Saving And Loding.", L"Data Type Error", MB_OK);
 			return;
 		}
 
@@ -20406,7 +20587,6 @@ void InitDSValues()
 	s_firstmoveaimbar = true;
 
 	s_mqodlghwnd = 0;
-	s_openfilehwnd = 0;
 	s_underframecopydlg = false;
 	s_pcolidlg = 0;
 	s_undercolidlg = false;
@@ -20420,6 +20600,7 @@ void InitDSValues()
 	s_savegcodlghwnd = 0;
 	s_rotzisdlghwnd = 0;
 	s_customrighwnd = 0;
+	s_exportxdlghwnd = 0;
 
 	s_enumdist.clear();
 
@@ -20435,6 +20616,10 @@ void InitDSValues()
 	s_restorecursorpos.y = 0;
 
 	s_ofhwnd = 0;
+	s_messageboxhwnd = 0;
+	s_messageboxpushcnt = 0;
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
 
 	s_curdsutguikind = 0;
 	s_curdsutguino = 0;
@@ -24207,7 +24392,7 @@ void DSAxisLMouseMove()
 					if (ctrlwnd) {
 						WCHAR wclassname[MAX_PATH] = { 0L };
 						::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
-						//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+						//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 						if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
 							//Slider
 							RECT sliderloc;
@@ -24229,6 +24414,48 @@ void DSAxisLMouseMove()
 							::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
 							::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
 						}
+						//else if (wcsstr(wclassname, L"ListBox") != 0) {
+						else{
+							POINT clientpoint;
+							clientpoint = cursorpos;
+							::ScreenToClient(ctrlwnd, &clientpoint);
+							LPARAM dlglparam;
+							dlglparam = (clientpoint.y << 16) | clientpoint.x;
+							::SendMessage(ctrlwnd, WM_MOUSEMOVE, 0, dlglparam);
+							
+						}
+					}
+					else if (s_getfilenamehwnd) {
+
+						//###############################################################################################################################################
+						// GetOpenFileNameのダイアログの２つあるリストボックスの垂直スクロールバー(スクロールバーはFindWindowExで取得できず。EnumChildProcでもクライアントエリア内に入らなかった)
+						//###############################################################################################################################################
+
+						//ctrlwnd == 0
+						//scrollwnd = FindWindowEx(s_getfilenamehwnd, 0, L"ScrollBar", 0);//   scrollwnd == 0
+						//s_ofhwnd = 0;
+						s_enumdist.clear();
+						::EnumChildWindows(s_getfilenamehwnd, EnumTreeViewProc, (LPARAM)&ctrlwnd);
+						//ctrlwnd = GetNearestEnumDist();
+						std::vector<ENUMDIST>::iterator itrenumdist;
+						for (itrenumdist = s_enumdist.begin(); itrenumdist != s_enumdist.end(); itrenumdist++) {
+							HWND listboxwnd = itrenumdist->hwnd;
+
+							//POINT clientpoint;
+							//clientpoint = cursorpos;
+							//::ScreenToClient(listboxwnd, &clientpoint);
+							//LPARAM dlglparam;
+							//dlglparam = (clientpoint.y << 16) | clientpoint.x;
+							//::SendMessage(listboxwnd, WM_VSCROLL, SB_THUMBTRACK, (LPARAM)dlglparam);
+
+							if (deltay > 0) {
+								::SendMessage(listboxwnd, WM_VSCROLL, SB_LINEDOWN, (LPARAM)0);
+							}
+							else if (deltay < 0) {
+								::SendMessage(listboxwnd, WM_VSCROLL, SB_LINEUP, (LPARAM)0);
+							}
+						}
+
 					}
 				}
 
@@ -24518,6 +24745,69 @@ void GetHiLiteSubmenu(HMENU* pcommandsubmenu, int* pcommandsubmenunum, int* pcom
 	}
 }
 
+void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
+{
+
+	//if ((event >= EVENT_SYSTEM_DIALOGSTART) && (event <= EVENT_SYSTEM_DIALOGEND)) {
+	//if((event == EVENT_OBJECT_INVOKED) || (event == EVENT_OBJECT_SELECTION) || (event == EVENT_OBJECT_SELECTIONWITHIN) || (event == EVENT_OBJECT_STATECHANGE)){
+	//	WCHAR classname[MAX_PATH] = { 0L };
+	//	WCHAR wintext[MAX_PATH] = { 0L };
+	//	::GetClassName(hwnd, classname, MAX_PATH);
+	//	::GetWindowText(hwnd, wintext, MAX_PATH);
+	//	//if (wcscmp(L"Button", classname) == 0) {
+	//		if (wcscmp(L"OK", wintext) == 0) {
+	//			SendMessage(hwnd, BM_CLICK, 0, 0);
+	//		}
+	//	//}
+	//}
+	////::SendMessage(hwnd, WM_COMMAND, IDOK, 0);
+	//HWND hwndChild = FindWindowEx(hwnd, 0, L"Button", L"OK");
+	//if (hwndChild) {
+	//	SendMessage(hwndChild, BM_CLICK, 0, 0);
+	//	//::SendMessage(hwndChild, WM_COMMAND, IDOK, 0);
+	//}
+
+	//if ((event == EVENT_OBJECT_INVOKED) || (event == EVENT_OBJECT_SELECTION) || (event == EVENT_OBJECT_SELECTIONWITHIN) || (event == EVENT_OBJECT_STATECHANGE)) {
+	//if (event == EVENT_SYSTEM_DIALOGSTART) {
+	//if(event == EVENT_OBJECT_CREATE){
+		WCHAR classname[MAX_PATH] = { 0L };
+		WCHAR wintext[MAX_PATH] = { 0L };
+		::GetClassName(hwnd, classname, MAX_PATH);
+		::GetWindowText(hwnd, wintext, MAX_PATH);
+
+		//if (wcscmp(L"error!!!", wintext) == 0) {
+		if(wcsstr(wintext, L"error!!!") != 0){
+			//::SendMessage(hwnd, WM_COMMAND, IDOK, 0);
+			s_messageboxhwnd = hwnd;
+		}
+		if (wcsstr(wintext, L"warning!!!") != 0) {
+			s_messageboxhwnd = hwnd;
+		}
+		if (wcsstr(wintext, L"check!!!") != 0) {
+			s_messageboxhwnd = hwnd;
+		}
+		if (wcsstr(wintext, L"GetFileNameDlg") != 0) {
+			s_getfilenamehwnd = hwnd;
+		}
+
+
+		//HWND hwndChild = FindWindowExA(hwnd, 0, "Button", "OK");
+		//if (hwndChild) {
+		//	SendMessage(hwndChild, BM_CLICK, 0, 0);
+		//	::SendMessage(hwndChild, WM_COMMAND, IDOK, 0);
+		//}
+		//else {
+		//	HWND hwndChildW = FindWindowExW(hwnd, 0, L"Button", L"OK");
+		//	if (hwndChildW) {
+		//		SendMessage(hwndChildW, BM_CLICK, 0, 0);
+		//		::SendMessage(hwndChild, WM_COMMAND, IDOK, 0);
+		//	}
+		//}
+	//}
+
+	return;
+}
+
 void DSOButtonSelectedPopupMenu()
 {
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
@@ -24528,12 +24818,22 @@ void DSOButtonSelectedPopupMenu()
 		return;
 	}
 
+	static HWINEVENTHOOK s_eventhook = 0;
+
 	int okbuttonid = 2;
 	int okbuttondown;
 	int okbuttonup;
 
+	int cancelbuttonid = 1;
+	int cancelbuttondown;
+	int cancelbuttonup;
+
 	okbuttondown = s_dsbuttondown[okbuttonid];
 	okbuttonup = s_dsbuttonup[okbuttonid];
+
+	cancelbuttondown = s_dsbuttondown[cancelbuttonid];
+	cancelbuttonup = s_dsbuttonup[cancelbuttonid];
+
 
 	if (okbuttonup >= 1) {
 		POINT cursorpos;
@@ -24581,6 +24881,249 @@ void DSOButtonSelectedPopupMenu()
 				//::SendMessage(s_3dwnd, WM_COMMAND, wparam, lparam);//menuのMsgProcはs_3dwndのメッセージプロック
 				::SendMessage(s_3dwnd, WM_COMMAND, wparam, 0);//menuのMsgProcはs_3dwndのメッセージプロック
 			}
+			else {
+
+				if (s_messageboxhwnd) {
+					HWND ctrlwnd = 0;
+					::EnumChildWindows(s_messageboxhwnd, EnumIDOKProc, (LPARAM)&ctrlwnd);
+					if (ctrlwnd) {
+						s_messageboxpushcnt++;
+
+						//一回目はダイアログを出すときのクリック。２回目でIDOKを押す。
+						if (s_messageboxpushcnt >= 2) {
+							//WPARAM wparam;
+							//wparam = (BN_CLICKED << 16) | IDOK;
+							//::SendMessage(s_messageboxhwnd, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+							SendMessage(ctrlwnd, BM_CLICK, 0, 0);
+						}
+					}
+					//::SendMessage(s_messageboxhwnd, WM_COMMAND, IDOK, 0);
+					//	SendMessage(hwndChild, BM_CLICK, 0, 0);
+				}
+				else {
+					HWND ctrlwnd = 0;
+					ctrlwnd = GetOFWnd(cursorpos);
+					//s_ofhwnd = 0;
+					//s_enumdist.clear();
+					//::EnumChildWindows(s_getfilenamehwnd, EnumTreeViewProc, (LPARAM)&ctrlwnd);
+					//ctrlwnd = GetNearestEnumDist();
+					if (ctrlwnd) {
+
+						int ctrlid;
+						ctrlid = GetDlgCtrlID(ctrlwnd);
+						
+						//::SendMessage(s_getfilenametreeview, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+
+						POINT dlgpoint;
+						dlgpoint = cursorpos;
+						::ScreenToClient(s_ofhwnd, &dlgpoint);
+						LPARAM dlglparam;
+						dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+						::SendMessage(s_ofhwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
+						//::SendMessage(s_ofhwnd, WM_LBUTTONDBLCLK, MK_LBUTTON, dlglparam);//!!!!!!!!!!!!!!
+
+						WPARAM wparam;
+						wparam = (BN_CLICKED << 16) | ctrlid;
+						::SendMessage(s_ofhwnd, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+
+						POINT dlgpoint2;
+						dlgpoint2 = cursorpos;
+						::ScreenToClient(ctrlwnd, &dlgpoint2);
+						LPARAM dlglparam2;
+						dlglparam2 = (dlgpoint2.y << 16) | dlgpoint2.x;
+						//::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
+						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam2);
+						//::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
+						//::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam2);
+						//::SendMessage(ctrlwnd, WM_LBUTTONDBLCLK, MK_LBUTTON, dlglparam2);//!!!!!!!!!
+
+
+						SendMessage(ctrlwnd, BM_CLICK, 0, 0);
+						//SendMessage(ctrlwnd, BM_CLICK, 0, 0);
+
+						
+						WCHAR ctrlclassname[MAX_PATH] = { 0L };
+						GetClassName(ctrlwnd, ctrlclassname, MAX_PATH);
+						if (wcsstr(L"ListBox", ctrlclassname) != 0) {
+
+							//WCHAR ctrlwintext[MAX_PATH] = { 0L };
+							//GetWindowText(ctrlwnd, ctrlwintext, MAX_PATH);//L""
+
+							POINT lbpoint;
+							lbpoint = cursorpos;
+							::ScreenToClient(ctrlwnd, &lbpoint);
+							LPARAM lblparam;
+							lblparam = (lbpoint.y << 16) | lbpoint.x;
+							DWORD hitinfo = SendMessage(ctrlwnd, LB_ITEMFROMPOINT, 0, lblparam);
+							WORD hitflag;
+							WORD hitindex;
+							hitflag = HIWORD(hitinfo);
+							hitindex = LOWORD(hitinfo);
+							if (hitflag == 0) {
+
+
+								//ディレクトリ指定用のListBoxのときにはエンターキーを押して展開表示する。
+								//int itrcnt = 0;
+								//int findindex = 0;
+								//if (s_enumdist.size() >= 2) {
+								//	std::vector<ENUMDIST>::iterator itrenumdist;
+								//	for (itrenumdist = s_enumdist.begin(); itrenumdist != s_enumdist.end(); itrenumdist++) {
+								//		if (itrenumdist->hwnd == ctrlwnd) {
+								//			findindex = itrcnt;
+								//			break;
+								//		}
+								//		itrcnt++;
+								//	}
+								//}
+								//if (findindex == 0) {
+								//	::PostMessage(ctrlwnd, WM_KEYDOWN, VK_RETURN, 0);
+								//}
+								 
+								
+
+								//ディレクトリ指定用のListBoxのときにはエンターキーを押して展開表示する。
+								RECT ctrlrect;
+								GetWindowRect(ctrlwnd, &ctrlrect);
+								POINT ctrllefttop;
+								ctrllefttop.x = ctrlrect.left;
+								ctrllefttop.y = ctrlrect.top;
+								ScreenToClient(s_getfilenamehwnd, &ctrllefttop);
+								if (ctrllefttop.x > 150) {
+									::PostMessage(ctrlwnd, WM_KEYDOWN, VK_RETURN, 0);
+								}
+
+
+
+
+
+								//SendMessage(ctrlwnd, WM_CHAR, VK_RETURN, 0);
+								//SendMessage(s_ofhwnd, WM_CHAR, VK_RETURN, 0);
+								//SendMessage(s_getfilenamehwnd, WM_CHAR, VK_RETURN, 0);
+
+								//SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
+								//SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)TRUE, (LPARAM)hitindex);
+								
+								
+								
+								
+								//SendMessage(ctrlwnd, LB_SETCURSEL, (WPARAM)hitindex, (LPARAM)0);
+
+								//::SendMessage(ctrlwnd, WM_LBUTTONDBLCLK, MK_LBUTTON, dlglparam2);//!!!!!!!!!
+
+								//WCHAR itembuf[MAX_PATH] = { 0L };
+								//LVITEM item;
+								//ZeroMemory(&item, sizeof(LVITEM));
+								//item.mask = LVIF_STATE | LVIF_TEXT;
+								//item.state = 0;
+								//item.stateMask = LVIS_SELECTED | LVIS_FOCUSED;
+								//item.iItem = hitindex;
+								//item.iSubItem = 0;          //取得するサブアイテムの番号
+								//item.pszText = itembuf;         //格納するテキストバッファ
+								//item.cchTextMax = MAX_PATH; //バッファ容量
+								//ListView_GetItem(ctrlwnd, &item);
+								//if (item.state & LVIS_SELECTED) {
+								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
+								//}
+								//else if (item.state & LVIS_FOCUSED) {
+								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
+								//}
+								//else {
+								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)TRUE, (LPARAM)hitindex);
+								//}
+
+								
+								//DWORD itemstate = ListView_GetItemState(ctrlwnd, hitindex, LVIS_SELECTED | LVIS_FOCUSED);
+								//if ((itemstate & LVIS_SELECTED) != 0) {
+								//	//ListView_SetItemState(ctrlwnd, hitindex, 0, LVIS_SELECTED);
+								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
+								//}
+								//else if ((itemstate & LVIS_FOCUSED) != 0) {
+								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
+								//}
+								//else {
+								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)TRUE, (LPARAM)hitindex);
+								//}
+							}
+						}
+						else if (wcsstr(L"TreeView", ctrlclassname) != 0) {
+							POINT tvpoint;
+							tvpoint = cursorpos;
+							::ScreenToClient(ctrlwnd, &tvpoint);
+							LPARAM tvlparam;
+							tvlparam = (tvpoint.y << 16) | tvpoint.x;
+
+							TVHITTESTINFO ht;
+							ZeroMemory(&ht, sizeof(TVHITTESTINFO));
+							ht.flags = TVHT_ONITEM;
+							ht.hItem = NULL;
+							ht.pt = tvpoint;
+							HTREEITEM hItem = TreeView_HitTest(ctrlwnd, &ht);
+							if (ht.flags & TVHT_ONITEM) {
+								TreeView_SelectItem(ctrlwnd, ht.hItem);
+							}
+						}
+
+
+						//WPARAM wparam;
+						//wparam = (BN_CLICKED << 16) | ctrlid;
+						////wparam = (BN_PUSHED << 16) | ctrlid;
+						//::SendMessage(s_ofhwnd, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+						//::SendMessage(ctrlwnd, BM_CLICK, 0, 0);
+
+						//HWND hList = ctrlwnd;
+						//LV_HITTESTINFO lvinfo;
+						//WCHAR buf[MAX_PATH];
+						//ZeroMemory(&lvinfo, sizeof(LV_HITTESTINFO));
+						//GetCursorPos((LPPOINT)&lvinfo.pt);
+						//ScreenToClient(hList, &lvinfo.pt);
+						//ListView_HitTest(hList, &lvinfo);
+						//if ((lvinfo.flags & LVHT_ONITEM) != 0)
+						//{
+						//	LVITEM item;
+						//	ZeroMemory(&item, sizeof(LVITEM));
+						//	item.mask = TVIF_HANDLE | TVIF_TEXT;
+						//	item.iItem = lvinfo.iItem;
+						//	item.iSubItem = 0;          //取得するサブアイテムの番号
+						//	item.pszText = buf;         //格納するテキストバッファ
+						//	item.cchTextMax = MAX_PATH; //バッファ容量
+						//	ListView_GetItem(hList, &item);
+						//	DSMessageBox(s_3dwnd, buf, L"選択したデータ", MB_OK);
+						//}
+						
+
+
+						//dHWND treeviewhwnd = 0;
+						//::EnumChildWindows(s_ofhwnd, EnumTreeViewProc, (LPARAM)&treeviewhwnd);
+						//if (treeviewhwnd) {
+						//	s_getfilenametreeview = treeviewhwnd;
+
+						//	::SendMessage(s_getfilenametreeview, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+
+						//	POINT dlgpoint;
+						//	dlgpoint = cursorpos;
+						//	::ScreenToClient(s_ofhwnd, &dlgpoint);
+						//	LPARAM dlglparam;
+						//	dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+						//	::SendMessage(s_ofhwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
+
+						//	POINT dlgpoint2;
+						//	dlgpoint2 = cursorpos;
+						//	::ScreenToClient(s_getfilenametreeview, &dlgpoint2);
+						//	LPARAM dlglparam2;
+						//	dlglparam2 = (dlgpoint2.y << 16) | dlgpoint2.x;
+						//	::SendMessage(s_getfilenametreeview, WM_LBUTTONUP, MK_LBUTTON, dlglparam2);
+						//}
+					}
+				}
+
+
+
+				//if(s_eventhook){
+				//	UnhookWinEvent(s_eventhook);
+				//	s_eventhook = 0;
+				//}
+				//m_event = nullptr;
+			}
 		}
 
 
@@ -24626,6 +25169,280 @@ void DSOButtonSelectedPopupMenu()
 				//	lparam = (LPARAM)s_cursubmenu;
 				//	::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
 				//}
+	}
+
+
+	if (okbuttondown >= 1) {
+		POINT cursorpos;
+		::GetCursorPos(&cursorpos);
+		LPARAM lparam;
+		lparam = (cursorpos.y << 16) | cursorpos.x;
+
+		if (g_undertrackingRMenu == 1) {
+			HMENU commandsubmenu = 0;
+			int commandsubmenunum = 0;
+			int	commandsubmenuno = -1;
+			GetHiLiteSubmenu(&commandsubmenu, &commandsubmenunum, &commandsubmenuno);
+			if (commandsubmenu && (commandsubmenunum >= 1) && (commandsubmenuno >= 0)) {
+				//
+			}
+			else {
+				HWND ctrlwnd = 0;
+				ctrlwnd = GetOFWnd(cursorpos);
+				//s_ofhwnd = 0;
+				//s_enumdist.clear();
+				//::EnumChildWindows(s_getfilenamehwnd, EnumTreeViewProc, (LPARAM)&ctrlwnd);
+				//ctrlwnd = GetNearestEnumDist();
+				if (ctrlwnd) {
+
+					int ctrlid;
+					ctrlid = GetDlgCtrlID(ctrlwnd);
+
+					//::SendMessage(s_getfilenametreeview, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+
+					POINT dlgpoint;
+					dlgpoint = cursorpos;
+					::ScreenToClient(s_ofhwnd, &dlgpoint);
+					LPARAM dlglparam;
+					dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+					::SendMessage(s_ofhwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam);
+					//::SendMessage(s_ofhwnd, WM_LBUTTONDBLCLK, MK_LBUTTON, dlglparam);//!!!!!!!!!!!!!!
+
+					WPARAM wparam;
+					wparam = (BN_CLICKED << 16) | ctrlid;
+					//::SendMessage(s_ofhwnd, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+
+					POINT dlgpoint2;
+					dlgpoint2 = cursorpos;
+					::ScreenToClient(ctrlwnd, &dlgpoint2);
+					LPARAM dlglparam2;
+					dlglparam2 = (dlgpoint2.y << 16) | dlgpoint2.x;
+					//::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
+					::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
+				}
+			
+		
+
+
+
+
+
+
+				//HWND treeviewhwnd = 0;
+				//treeviewhwnd = FindWindowExW(s_getfilenamehwnd, 0, WC_LISTVIEW, 0);
+
+				//WCHAR dlgclassname[MAX_PATH] = { 0L };
+				//GetClassName(s_getfilenamehwnd, dlgclassname, MAX_PATH);
+				//WCHAR dlgwintext[MAX_PATH] = { 0L };
+				//GetWindowText(s_getfilenamehwnd, dlgwintext, MAX_PATH);
+
+
+
+				//HWND ctrlwnd = 0;
+				//ctrlwnd = GetOFWnd(cursorpos);
+				//if (ctrlwnd) {
+				//	WCHAR ctrlclassname[MAX_PATH] = { 0L };
+				//	GetClassName(ctrlwnd, ctrlclassname, MAX_PATH);
+				//	WCHAR ctrlwintext[MAX_PATH] = { 0L };
+				//	GetWindowText(ctrlwnd, ctrlwintext, MAX_PATH);
+
+				//	int ctrlid;
+				//	ctrlid = GetDlgCtrlID(ctrlwnd);
+				//	WPARAM wparam;
+				//	wparam = (BN_CLICKED << 16) | ctrlid;
+				//	//wparam = (BN_PUSHED << 16) | ctrlid;
+				//	//::SendMessage(s_ofhwnd, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
+				//	//::SendMessage(ctrlwnd, BM_CLICK, 0, 0);
+
+				//	//HWND parenthwnd = 0;
+				//	//parenthwnd = GetParent(ctrlwnd);
+				//	//if (parenthwnd) {
+				//	//	WCHAR parentclassname[MAX_PATH] = { 0L };
+				//	//	GetClassName(parenthwnd, parentclassname, MAX_PATH);
+				//	//	WCHAR parentwintext[MAX_PATH] = { 0L };
+				//	//	GetWindowText(parenthwnd, parentwintext, MAX_PATH);
+
+				//	//	int dbgcnt;
+				//	//	dbgcnt = 0;
+				//	//	//{
+				//	//	//	LVCOLUMN lvcol;
+				//	//	//	LVITEM item;
+				//	//	//	UINT i;
+				//	//	//	//HWND hList = parenthwnd;
+				//	//	//	//HWND hList = ctrlwnd;
+				//	//	//	HWND hList = s_getfilenamehwnd;
+				//	//	//	LV_HITTESTINFO lvinfo;
+				//	//	//	WCHAR buf[MAX_PATH];
+
+				//	//	//	ZeroMemory(&lvinfo, sizeof(LV_HITTESTINFO));
+
+				//	//	//	GetCursorPos((LPPOINT)&lvinfo.pt);
+				//	//	//	ScreenToClient(hList, &lvinfo.pt);
+				//	//	//	ListView_HitTest(hList, &lvinfo);
+				//	//	//	if ((lvinfo.flags & LVHT_ONITEM) != 0)
+				//	//	//	{
+				//	//	//		item.mask = TVIF_HANDLE | TVIF_TEXT;
+				//	//	//		item.iItem = lvinfo.iItem;
+				//	//	//		item.iSubItem = 0;          //取得するサブアイテムの番号
+				//	//	//		item.pszText = buf;         //格納するテキストバッファ
+				//	//	//		item.cchTextMax = MAX_PATH; //バッファ容量
+				//	//	//		ListView_GetItem(hList, &item);
+				//	//	//		DSMessageBox(s_3dwnd, buf, L"選択したデータ", MB_OK);
+				//	//	//	}
+				//	//	//}
+				//	//	//int hotitem;
+				//	//	//int parenthotitem;
+				//	//	//hotitem = ListView_GetHotItem(ctrlwnd);
+				//	//	//parenthotitem = ListView_GetHotItem(parenthwnd);
+				//	//	//if (hotitem > 0) {
+				//	//	//	_ASSERT(0);
+				//	//	//}
+				//	//	//if (parenthotitem > 0) {
+				//	//	//	_ASSERT(0);
+				//	//	//}
+
+				//	//	//s_getfilenametreeview = parenthwnd;
+
+
+				//	//	//POINT treepos;
+				//	//	//treepos = cursorpos;
+				//	//	////ScreenToClient(ctrlwnd, &treepos);
+				//	//	////ScreenToClient(s_getfilenametreeview, &treepos);
+				//	//	////ScreenToClient(s_ofhwnd, &treepos);
+				//	//	//TVHITTESTINFO ht;
+				//	//	//ZeroMemory(&ht, sizeof(TVHITTESTINFO));
+				//	//	//ht.flags = TVHT_ONITEM;
+				//	//	//ht.hItem = NULL;
+				//	//	//ht.pt = treepos;
+				//	//	////ht.pt.x = cursorpos.x;
+				//	//	////ht.pt.y = cursorpos.y;
+				//	//	////TreeView_HitTest(s_getfilenametreeview, &ht);
+				//	//	//HTREEITEM hItem = TreeView_HitTest(ctrlwnd, &ht);
+				//	//	//if (ht.flags & TVHT_ONITEM) {
+				//	//	//	//TreeView_SelectItem(s_getfilenametreeview, hititem);
+
+				//	//	//	//TVITEM ti;
+				//	//	//	//ZeroMemory(&ti, sizeof(TVITEM));
+				//	//	//	//ti.mask = TVIF_HANDLE | TVIF_PARAM;
+				//	//	//	//ti.hItem = hititem;
+				//	//	//	//TreeView_GetItem(s_getfilenametreeview, &ti);
+				//	//	//	//int clickno = (int)tvi.lParam;
+
+				//	//	//	//TreeView_Select(s_getfilenametreeview, ht.hItem, TVGN_CARET);
+				//	//	//	TreeView_Select(ctrlwnd, ht.hItem, TVGN_CARET);
+
+
+				//	//	//	int dbgcnt = 0;
+				//	//	//}
+				//	//}
+
+
+				//	//s_ofhwnd = 0;
+				//	//s_enumdist.clear();
+				//	//::EnumChildWindows(s_getfilenamehwnd, EnumTreeViewProc, (LPARAM)&treeviewhwnd);
+				//	//treeviewhwnd = GetNearestEnumDist();
+				////if (treeviewhwnd) {
+				//	//s_getfilenametreeview = treeviewhwnd;
+
+
+				//	//POINT dlgpoint;
+				//	//dlgpoint = cursorpos;
+				//	//::ScreenToClient(s_ofhwnd, &dlgpoint);
+				//	//LPARAM dlglparam;
+				//	//dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
+				//	//::SendMessage(s_ofhwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam);
+
+				//	//POINT dlgpoint2;
+				//	//dlgpoint2 = cursorpos;
+				//	//::ScreenToClient(s_getfilenametreeview, &dlgpoint2);
+				//	//LPARAM dlglparam2;
+				//	//dlglparam2 = (dlgpoint2.y << 16) | dlgpoint2.x;
+				//	//::SendMessage(s_getfilenametreeview, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
+
+
+
+
+				//}
+				//}
+					//if (!s_eventhook) {
+					//	s_eventhook = SetWinEventHook(
+					//		EVENT_SYSTEM_DIALOGSTART,
+					//		//EVENT_SYSTEM_DIALOGSTART,
+					//		EVENT_SYSTEM_DIALOGEND,
+					//		NULL,
+					//		WinEventProc,
+					//		//GetDlgItemInt(IDC_PROCESSID),
+					//		//GetProcessId(GetModuleHandle(NULL)),
+					//		//GetThreadId(g_hUnderTrackingThread),
+					//		//GetThreadId(s_messageboxthread),
+					//		0,
+					//		0,
+					//		WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS
+					//	);
+					//}
+					/*if (m_event != nullptr)
+					{
+						SetDlgItemText(IDOK, _T("停止"));
+					}*/
+			}
+		}
+	}
+
+
+	if (cancelbuttonup >= 1) {
+		POINT cursorpos;
+		::GetCursorPos(&cursorpos);
+		LPARAM lparam;
+		lparam = (cursorpos.y << 16) | cursorpos.x;
+
+		if (g_undertrackingRMenu == 1) {
+			if (s_messageboxhwnd) {
+			}
+			else {
+				HWND ctrlwnd = 0;
+				ctrlwnd = GetOFWnd(cursorpos);
+				if (ctrlwnd) {
+					int ctrlid;
+					ctrlid = GetDlgCtrlID(ctrlwnd);
+					WCHAR ctrlclassname[MAX_PATH] = { 0L };
+					GetClassName(ctrlwnd, ctrlclassname, MAX_PATH);
+					if (wcscmp(L"ListBox", ctrlclassname) == 0) {
+
+						POINT lbpoint;
+						lbpoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &lbpoint);
+						LPARAM lblparam;
+						lblparam = (lbpoint.y << 16) | lbpoint.x;
+						DWORD hitinfo = SendMessage(ctrlwnd, LB_ITEMFROMPOINT, 0, lblparam);
+						WORD hitflag;
+						WORD hitindex;
+						hitflag = HIWORD(hitinfo);
+						hitindex = LOWORD(hitinfo);
+						if (hitflag == 0) {
+							//X buttonで  selectをCancel
+							SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
+						}
+					}
+					/*else if (wcscmp(L"TreeView", ctrlclassname) == 0) {
+						POINT tvpoint;
+						tvpoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &tvpoint);
+						LPARAM tvlparam;
+						tvlparam = (tvpoint.y << 16) | tvpoint.x;
+
+						TVHITTESTINFO ht;
+						ZeroMemory(&ht, sizeof(TVHITTESTINFO));
+						ht.flags = TVHT_ONITEM;
+						ht.hItem = NULL;
+						ht.pt = tvpoint;
+						HTREEITEM hItem = TreeView_HitTest(ctrlwnd, &ht);
+						if (ht.flags & TVHT_ONITEM) {
+							TreeView_SelectItem(ctrlwnd, ht.hItem);
+						}
+					}*/
+				}
+			}
+		}
 	}
 }
 
@@ -24678,6 +25495,74 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 }
 
+BOOL CALLBACK EnumTreeViewProc(HWND hwnd, LPARAM lParam)
+{
+	if (!lParam) {
+		return FALSE;
+	}
+	HWND* rethwnd = (HWND*)lParam;
+	*rethwnd = 0;
+
+	WCHAR classname[MAX_PATH] = { 0L };
+	::GetClassName(hwnd, classname, MAX_PATH);
+
+	//if ((wcscmp(L"SysListView32", classname) == 0) || (wcscmp(L"SysTreeView32", classname) == 0)) {
+	if ((wcsstr(classname, L"ListBox") != 0) || (wcsstr(classname, L"TreeView") != 0)) {
+		//*rethwnd = hwnd;
+		//return FALSE;//探索終了
+
+		POINT mousepoint;
+		::GetCursorPos(&mousepoint);
+		::ScreenToClient(hwnd, &mousepoint);
+		//::ScreenToClient(s_getfilenamehwnd, &mousepoint);
+
+		RECT ctrlrect;
+		GetClientRect(hwnd, &ctrlrect);
+		//GetWindowRect(hwnd, &ctrlrect);
+
+		POINT ctrllefttop;
+		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ラジオボタンなどはコントロール真ん中ではなく左側を押すことが多いので中央はやめる
+		//ctrlcenter.y = (ctrlrect.bottom - ctrlrect.top) / 2;
+		ctrllefttop.x = ctrlrect.left;
+		ctrllefttop.y = ctrlrect.top;
+
+		ENUMDIST enumdist;
+		enumdist.hwnd = hwnd;
+		enumdist.dist = (float)(mousepoint.x - ctrllefttop.x) * (float)(mousepoint.x - ctrllefttop.x) + (float)(mousepoint.y - ctrllefttop.y) * (float)(mousepoint.y - ctrllefttop.y);
+		s_enumdist.push_back(enumdist);
+
+		*rethwnd = 0;
+		return TRUE;//探索続行
+	}
+	else {
+		*rethwnd = 0;
+		return TRUE;//探索続行
+	}
+}
+
+
+
+BOOL CALLBACK EnumIDOKProc(HWND hwnd, LPARAM lParam)
+{
+	if (!lParam) {
+		return FALSE;
+	}
+	HWND* rethwnd = (HWND*)lParam;
+	*rethwnd = 0;
+
+	WCHAR wintext[MAX_PATH] = { 0L };
+	::GetWindowText(hwnd, wintext, MAX_PATH);
+
+	if(wcscmp(L"OK", wintext) == 0){
+		*rethwnd = hwnd;
+		return FALSE;//探索終了
+	}
+	else {
+		*rethwnd = 0;
+		return TRUE;//探索続行
+	}
+
+}
 
 
 //BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
@@ -24745,11 +25630,11 @@ HWND GetOFWnd(POINT srcpoint)
 	s_ofhwnd = 0;
 	s_enumdist.clear();
 
-	if (!retctrlwnd && s_openfilehwnd) {
-		::EnumChildWindows(s_openfilehwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	if (!retctrlwnd && s_getfilenamehwnd) {
+		::EnumChildWindows(s_getfilenamehwnd, EnumChildProc, (LPARAM)&retctrlwnd);
 		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
-			s_ofhwnd = s_openfilehwnd;
+			s_ofhwnd = s_getfilenamehwnd;
 			return retctrlwnd;
 		}
 	}else if (!retctrlwnd && s_mqodlghwnd) {
@@ -24851,7 +25736,7 @@ HWND GetOFWnd(POINT srcpoint)
 
 			//WCHAR chkclassname[MAX_PATH] = { 0L };
 			//::GetClassName(retctrlwnd, chkclassname, MAX_PATH);
-			//::MessageBox(NULL, chkclassname, L"check!!!", MB_OK);
+			//::DSMessageBox(NULL, chkclassname, L"check!!!", MB_OK);
 
 			return retctrlwnd;
 		}
@@ -24864,8 +25749,14 @@ HWND GetOFWnd(POINT srcpoint)
 			return retctrlwnd;
 		}
 	}
-
-
+	else if (!retctrlwnd && s_mqodlghwnd) {
+		::EnumChildWindows(s_exportxdlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
+		retctrlwnd = GetNearestEnumDist();
+		if (retctrlwnd) {
+			s_ofhwnd = s_exportxdlghwnd;
+			return retctrlwnd;
+		}
+	}
 
 	return 0;
 
@@ -24957,7 +25848,7 @@ void DSAimBarOK()
 					
 					WCHAR wclassname[MAX_PATH] = { 0L };
 					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
-					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+					//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 					if (wcscmp(L"ComboBox", wclassname) == 0) {
 						//COMBOBOX
 						::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);
@@ -25019,7 +25910,7 @@ void DSAimBarOK()
 
 						//WCHAR wclassname[MAX_PATH] = { 0L };
 						//::GetClassNameW(caphwnd, wclassname, MAX_PATH);
-						////::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+						////::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 						//if (wcscmp(L"ComboBox", wclassname) == 0) {
 						//	::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
 						//}
@@ -25062,7 +25953,7 @@ void DSAimBarOK()
 
 					WCHAR wclassname[MAX_PATH] = { 0L };
 					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
-					//::MessageBoxW(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+					//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 					if (wcscmp(L"ComboBox", wclassname) == 0) {
 					//	//COMBOBOX
 					//	::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);//DOWNのときに処理する
@@ -25544,5 +26435,27 @@ void OrgWindowListenMouse(bool srcflag)
 
 }
 
+void DSMessageBox(HWND srcparenthwnd, WCHAR* srcmessage, WCHAR* srctitle, LONG srcok)
+{
+	if (!srcmessage || !srctitle) {
+		return;
+	}
+
+	_ASSERT(srcok == MB_OK);
+
+
+	s_messageboxhwnd = 0;
+	s_messageboxpushcnt = 0;
+	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	::MessageBoxW(srcparenthwnd, srcmessage, srctitle, srcok);
+
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	UnhookWinEvent(hhook);
+	s_messageboxhwnd = 0;
+	s_messageboxpushcnt = 0;
+}
 
 

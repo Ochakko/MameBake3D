@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/20_1
+	Operation with GamePad is enable during MessageBox and GetOpenFileName and GetSaveFileName too.
+
+	
 2021/04/18_2
 	Fix problems that timelineWnd close if click timelineWnd before loading model.
 	Fix problems that timelineWnd is resized Unintentionally.

@@ -18,11 +18,13 @@
 
 LRESULT CALLBACK DSUpdaterWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int InitializeDSUpdateUnderTracking(CREATESTRUCT* createWindowArgs);
+HANDLE g_hUnderTrackingThread = NULL;
+
+
 
 static CDSUpdateUnderTracking* s_contextwin = 0;
 
 static HINSTANCE s_hinstance = 0;
-static HANDLE s_hThread = NULL;
 // thread 終了トリガー
 // 0 が立つと　_endthreadex で　終了　(　handle は　close しない！！！　)
 static LONG s_lThread = 1;
@@ -73,7 +75,7 @@ void CDSUpdateUnderTracking::InitParams()
 }
 void CDSUpdateUnderTracking::DestroyObjs()
 {
-	if (s_hThread != NULL) {
+	if (g_hUnderTrackingThread != NULL) {
 
 
 		DWORD dwwait = 0;
@@ -83,11 +85,11 @@ void CDSUpdateUnderTracking::DestroyObjs()
 		SetEvent(g_hEvent);//!!! msgwaitを解除。
 
 		while (dwwait != WAIT_OBJECT_0) {
-			dwwait = WaitForSingleObject(s_hThread, 1500);
+			dwwait = WaitForSingleObject(g_hUnderTrackingThread, 1500);
 			//INFINITEで待つと、実行スレッドが無くなってしまい、デッドロックする。
 		}
 
-		CloseHandle(s_hThread);
+		CloseHandle(g_hUnderTrackingThread);
 		//DbgOut("motparamdlg : thread handle close\n");
 	}
 
@@ -179,8 +181,8 @@ int CDSUpdateUnderTracking::CreateDSUpdateUnderTracking(HINSTANCE srchinstance)
 	// ( , 手動リセット, ノンシグナル初期化, )
 	g_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	//s_hThread = BEGINTHREADEX(
-	s_hThread = (HANDLE)_beginthreadex(
+	//g_hUnderTrackingThread = BEGINTHREADEX(
+	g_hUnderTrackingThread = (HANDLE)_beginthreadex(
 		NULL, 0, &ThreadFunc_DS,
 		(void*)this,
 		0, &s_dwMainId);
