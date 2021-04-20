@@ -9455,7 +9455,8 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = hDlgWnd;
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
 	ofn.lpstrFilter = L"BVH(*.bvh)\0*.bvh\0chara(*.fbx)\0*.fbx\0";
 	ofn.lpstrCustomFilter = NULL;
@@ -9467,7 +9468,8 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.lpstrTitle = L"GetFileNameDlg";
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt = NULL;
@@ -9670,7 +9672,8 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	OPENFILENAME ofn;
 	buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = NULL;
+	//ofn.hwndOwner = NULL;
+	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
 	ofn.lpstrFilter = L"Ground File(*.gco)\0*.gco\0";
 	ofn.lpstrCustomFilter = NULL;
@@ -9682,7 +9685,8 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.lpstrTitle = L"GetFileNameDlg";
-	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	//ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt = L"gco";
@@ -9730,7 +9734,7 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 					InterlockedExchange(&g_undertrackingRMenu, 1);
 
-					if (GetSaveFileNameW(&ofn) == IDOK) {
+					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
 
@@ -9767,7 +9771,8 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	OPENFILENAME ofn;
 	buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = NULL;
+	//ofn.hwndOwner = NULL;
+	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
 	ofn.lpstrFilter = L"Impulse File(*.imp)\0*.imp\0";
 	ofn.lpstrCustomFilter = NULL;
@@ -9779,7 +9784,8 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.lpstrTitle = L"GetFileNameDlg";
-	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	//ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt = L"imp";
@@ -9825,7 +9831,7 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 					InterlockedExchange(&g_undertrackingRMenu, 1);
 
-					if (GetSaveFileNameW(&ofn) == IDOK) {
+					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
 
@@ -9863,7 +9869,8 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	OPENFILENAME ofn;
 	buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = NULL;
+	//ofn.hwndOwner = NULL;
+	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
 	ofn.lpstrFilter = L"RigidElem File(*.ref)\0*.ref\0";
 	ofn.lpstrCustomFilter = NULL;
@@ -9875,7 +9882,8 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.lpstrTitle = L"GetFileNameDlg";
-	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	//ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt = L"ref";
@@ -9921,7 +9929,7 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 					InterlockedExchange(&g_undertrackingRMenu, 1);
 
-					if (GetSaveFileNameW(&ofn) == IDOK) {
+					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
 
@@ -9955,7 +9963,8 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	OPENFILENAME ofn;
 	buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = NULL;
+	//ofn.hwndOwner = NULL;
+	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
 	ofn.lpstrFilter = L"x File (*.x)\0*.x\0";
 	ofn.lpstrCustomFilter = NULL;
@@ -9967,7 +9976,8 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.lpstrTitle = L"GetFileNameDlg";
-	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	//ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
 	ofn.lpstrDefExt =NULL;
@@ -10013,7 +10023,7 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 					InterlockedExchange(&g_undertrackingRMenu, 1);
 
-					if (GetSaveFileNameW(&ofn) == IDOK) {
+					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
 					}
 
@@ -13172,6 +13182,7 @@ int ExportFBXFile()
 	WCHAR filename[MAX_PATH]={0L};
 	OPENFILENAME ofn1;
 	ofn1.lStructSize = sizeof(OPENFILENAME);
+	//ofn1.hwndOwner = s_3dwnd;
 	ofn1.hwndOwner = s_3dwnd;
 	ofn1.hInstance = 0;
 	ofn1.lpstrFilter = L"FBX file(*.fbx)\0";
@@ -13184,7 +13195,8 @@ int ExportFBXFile()
 	ofn1.nMaxFileTitle = 0;
 	ofn1.lpstrInitialDir = NULL;
 	ofn1.lpstrTitle = L"GetFileNameDlg";
-	ofn1.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	//ofn1.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn1.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn1.nFileOffset = 0;
 	ofn1.nFileExtension = 0;
 	ofn1.lpstrDefExt = L"fbx";
@@ -13200,7 +13212,7 @@ int ExportFBXFile()
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 		InterlockedExchange(&g_undertrackingRMenu, 1);
 
-		if (GetSaveFileNameW(&ofn1) != IDOK) {
+		if (GetOpenFileNameW(&ofn1) != IDOK) {
 			return 0;
 		}
 
@@ -13289,7 +13301,8 @@ int ExportBntFile()
 	ofn1.nMaxFileTitle = 0;
 	ofn1.lpstrInitialDir = NULL;
 	ofn1.lpstrTitle = L"GetFileNameDlg";
-	ofn1.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	//ofn1.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn1.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn1.nFileOffset = 0;
 	ofn1.nFileExtension = 0;
 	ofn1.lpstrDefExt = L"bnt";
@@ -13305,7 +13318,7 @@ int ExportBntFile()
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 		InterlockedExchange(&g_undertrackingRMenu, 1);
 
-		if (GetSaveFileNameW(&ofn1) != IDOK) {
+		if (GetOpenFileNameW(&ofn1) != IDOK) {
 			return 0;
 		}
 

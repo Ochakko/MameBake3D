@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/20_2
+	Replace GetSaveFileName to GetOpenFileName, GamePad OK!
+
+
 2021/04/20_1
 	Operation with GamePad is enable during MessageBox and GetOpenFileName and GetSaveFileName too.
 
