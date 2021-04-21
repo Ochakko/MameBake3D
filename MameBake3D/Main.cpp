@@ -4393,7 +4393,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			WCHAR strmes[1024];
 			if (!s_convbone_model) {
 				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-				::DSMessageBox(NULL, strmes, L"check", MB_OK);
+				::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
 			}
 			else {
 				swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
@@ -4409,7 +4409,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			WCHAR strmes[1024];
 			if (!s_convbone_bvh) {
 				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-				::DSMessageBox(NULL, strmes, L"check", MB_OK);
+				::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
 			}
 			else {
 				swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
@@ -4443,7 +4443,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
 
 					swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
-					::DSMessageBox(NULL, strmes, L"check", MB_OK);
+					::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
 				}
 				else {
 					swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
@@ -6626,7 +6626,7 @@ int OpenREFile()
 	}
 
 	if( s_model->GetRigidElemInfoSize() >= (MAXRENUM - 1) ){
-		::DSMessageBox( s_3dwnd, L"Can't Load More.", L"Overflow Loading(Limit under 99 files)", MB_OK );
+		::DSMessageBox( s_3dwnd, L"Overflow Loading(Limit under 99 files)", L"warning!!!", MB_OK );
 		return 0;
 	}
 
@@ -6684,7 +6684,7 @@ int SaveImpFile()
 		return 0;
 	}
 	if( s_rgdindexmap[s_model] < 0 ){
-		::DSMessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"Error Of Prepairation", MB_OK );
+		::DSMessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"error!!!", MB_OK );
 		return 0;
 	}
 
@@ -8231,7 +8231,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 {
 	int motnum = (int)s_tlarray.size();
 	if( motnum >= MAXMOTIONNUM ){
-		::DSMessageBox(s_3dwnd, L"Can't Load More.", L"Overflow Loading", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Can't Load More.", L"error!!!", MB_OK);
 		//DSMessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
 		return 0;
 	}
@@ -10688,7 +10688,7 @@ int ConvBoneConvert()
 	}
 
 	if (s_model != s_convbone_model){
-		::DSMessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"エラー", MB_OK);
+		::DSMessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
 		return 1;
 	}
 
@@ -11635,6 +11635,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		case IDC_REFDIR:
+		{
 			bi.hwndOwner = hDlgWnd;
 			bi.pidlRoot = NULL;//!!!!!!!
 			bi.pszDisplayName = dispname;
@@ -11646,7 +11647,20 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			bi.lParam = 0;
 			bi.iImage = iImage;
 
+
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+			HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, 1);
+
 			curlpidl = SHBrowseForFolder(&bi);
+
+			InterlockedExchange(&g_undertrackingRMenu, 0);
+			UnhookWinEvent(hhook);
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+
 			if (curlpidl) {
 				//::DSMessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
 
@@ -11665,7 +11679,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wcscpy_s(s_projectdir, MAX_PATH, selectname);
 				SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 			}
-
+		}
 			break;
 		default:
 			return FALSE;
@@ -13464,7 +13478,7 @@ int DispAngleLimitDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry after Saving FBX file.", L"Data Type Error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry after Saving FBX file.", L"error!!!", MB_OK);
 		return 0;
 	}
 
@@ -13766,7 +13780,7 @@ int DispRotAxisDlg()
 	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving FBX file.", L"Data Type error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving FBX file.", L"error", MB_OK);
 		return 0;
 	}
 
@@ -14951,7 +14965,7 @@ int OnFrameToolWnd()
 					}
 				}
 				else{
-					::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"Selection Error", MB_OK);
+					::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
 				}
 			}
 		}
@@ -17898,7 +17912,7 @@ int DispCustomRigDlg(int rigno)
 		return 0;
 	}
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
-		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"Data Type Error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"error!!!", MB_OK);
 		return 0;
 	}
 
@@ -17984,7 +17998,7 @@ int CustomRig2Bone()
 	if (s_customrigbone){
 		int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 		if (isvalid == 0){
-			::DSMessageBox(s_3dwnd, L"Invalid Parameter", L"Input Error", MB_OK);
+			::DSMessageBox(s_3dwnd, L"Invalid Parameter", L"error!!!", MB_OK);
 			return 0;
 		}
 		s_customrigbone->SetCustomRig(s_customrig);
@@ -18286,14 +18300,14 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					float tmprate;
 					ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
 					if (ret){
-						::DSMessageBox(hDlgWnd, L"Invalid VerticalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
+						::DSMessageBox(hDlgWnd, L"Invalid VerticalScale. Limit From -100.0 to 100.0.", L"error!!!", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
 
 					ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
 					if (ret){
-						::DSMessageBox(hDlgWnd, L"Invalid HolizontalScale. Limit From -100.0 to 100.0.", L"Out Of Range", MB_OK);
+						::DSMessageBox(hDlgWnd, L"Invalid HolizontalScale. Limit From -100.0 to 100.0.", L"error!!!", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
@@ -18318,7 +18332,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 				int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
 				if (isvalid == 0){
-					::DSMessageBox(hDlgWnd, L"Invalid Parameter", L"Input Error", MB_OK);
+					::DSMessageBox(hDlgWnd, L"Invalid Parameter", L"error!!!", MB_OK);
 					return 0;
 				}
 
@@ -19614,7 +19628,7 @@ CInfoWindow* CreateInfoWnd()
 int RecalcBoneAxisX(CBone* srcbone)
 {
 	if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
-		::DSMessageBox(s_3dwnd, L"Retry After Saving And Loading.", L"Data Type Error", MB_OK);
+		::DSMessageBox(s_3dwnd, L"Retry After Saving And Loading.", L"error!!!", MB_OK);
 		return 0;
 	}
 
@@ -19627,7 +19641,7 @@ void RecalcAxisX_All()
 {
 	if (s_model) {
 		if (s_model && (s_model->GetOldAxisFlagAtLoading() == 1)) {
-			::DSMessageBox(s_3dwnd, L"Retry After Saving And Loding.", L"Data Type Error", MB_OK);
+			::DSMessageBox(s_3dwnd, L"Retry After Saving And Loding.", L"error!!!", MB_OK);
 			return;
 		}
 
@@ -24788,21 +24802,37 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 		::GetClassName(hwnd, classname, MAX_PATH);
 		::GetWindowText(hwnd, wintext, MAX_PATH);
 
+
+		HWND fgwnd = 0;
+
 		//if (wcscmp(L"error!!!", wintext) == 0) {
 		if(wcsstr(wintext, L"error!!!") != 0){
 			//::SendMessage(hwnd, WM_COMMAND, IDOK, 0);
 			s_messageboxhwnd = hwnd;
+			fgwnd = hwnd;
 		}
 		if (wcsstr(wintext, L"warning!!!") != 0) {
 			s_messageboxhwnd = hwnd;
+			fgwnd = hwnd;
 		}
 		if (wcsstr(wintext, L"check!!!") != 0) {
 			s_messageboxhwnd = hwnd;
+			fgwnd = hwnd;
 		}
 		if (wcsstr(wintext, L"GetFileNameDlg") != 0) {
 			s_getfilenamehwnd = hwnd;
+			fgwnd = hwnd;
+		}
+		if ((wcscmp(classname, L"#32770") == 0) || (wcsstr(wintext, L"フォルダーの参照") != 0)) {//SHGetSpecialFolderLocation
+			s_getfilenamehwnd = hwnd;
+			fgwnd = hwnd;
 		}
 
+		if (fgwnd) {
+			RECT dlgrect;
+			GetWindowRect(fgwnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		}
 
 		//HWND hwndChild = FindWindowExA(hwnd, 0, "Button", "OK");
 		//if (hwndChild) {
@@ -25058,7 +25088,11 @@ void DSOButtonSelectedPopupMenu()
 								//}
 							}
 						}
-						else if (wcsstr(L"TreeView", ctrlclassname) != 0) {
+						else if ((wcsstr(L"TreeView", ctrlclassname) != 0) || (wcsstr(L"SysTreeView32", ctrlclassname) != 0)) {
+						//for SHGetSpecialFolderLocation
+						//select : click text
+						//expand tree : click triangleMark
+
 							POINT tvpoint;
 							tvpoint = cursorpos;
 							::ScreenToClient(ctrlwnd, &tvpoint);
@@ -26455,6 +26489,14 @@ void DSMessageBox(HWND srcparenthwnd, WCHAR* srcmessage, WCHAR* srctitle, LONG s
 	}
 
 	_ASSERT(srcok == MB_OK);
+
+	int cmperror;
+	int cmpwarning;
+	int cmpcheck;
+	cmperror = wcscmp(srctitle, L"error!!!");
+	cmpwarning = wcscmp(srctitle, L"warning!!!");
+	cmpcheck = wcscmp(srctitle, L"check!!!");
+	_ASSERT((cmperror == 0) || (cmpwarning == 0) || (cmpcheck == 0));
 
 
 	s_messageboxhwnd = 0;

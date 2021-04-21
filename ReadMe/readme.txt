@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/22_1
+	GamePad is enable on SHGetSpacaialFolderLocation too.
+	Title of MessageBox is one of error!!! or warning!!! or check!!!.
+ 
 2021/04/20_2
 	Replace GetSaveFileName to GetOpenFileName, GamePad OK!
 
