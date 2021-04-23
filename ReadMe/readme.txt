@@ -264,6 +264,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/23_1
+	Fix Reuse bone problem on deletion models and loading models.
+
 2021/04/22_1
 	GamePad is enable on SHGetSpacaialFolderLocation too.
 	Title of MessageBox is one of error!!! or warning!!! or check!!!.

@@ -395,7 +395,7 @@ public:
 	static void InvalidateBone(CBone* srcmp);
 	static void InitBones();
 	static void DestroyBones();
-
+	static void OnDelModel(CModel* parmodel);
 
 private:
 
@@ -406,7 +406,7 @@ private:
  * @return ０。
  */
 	int InitParams();
-	int InitParamsForReUse();
+	int InitParamsForReUse(CModel* srcparmodel);
 
 	int SetParams(CModel* parmodel);//コンストラクタのInitParamsでは足りない部分
 

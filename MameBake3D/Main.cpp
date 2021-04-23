@@ -8720,11 +8720,14 @@ int OnDelModel( int delmenuindex )
 
 	CModel* delmodel = s_modelindex[ delmenuindex ].modelptr;
 	if( delmodel ){
-		map<CModel*, int>::iterator itrbonecnt;
-		itrbonecnt = g_bonecntmap.find(delmodel);
-		if (itrbonecnt != g_bonecntmap.end()){
-			g_bonecntmap.erase(itrbonecnt);
-		}
+		//map<CModel*, int>::iterator itrbonecnt;
+		//itrbonecnt = g_bonecntmap.find(delmodel);
+		//if (itrbonecnt != g_bonecntmap.end()){
+		//	g_bonecntmap.erase(itrbonecnt);
+		//}
+
+		CBone::OnDelModel(delmodel);
+
 
 		FbxScene* pscene = delmodel->GetScene();
 		if (pscene){
@@ -8780,12 +8783,14 @@ int OnDelAllModel()
 		return 0;
 	}
 
-	g_bonecntmap.clear();
+	//g_bonecntmap.clear();
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* delmodel = itrmodel->modelptr;
 		if( delmodel ){
+			CBone::OnDelModel(delmodel);
+
 			FbxScene* pscene = delmodel->GetScene();
 			if (pscene){
 				pscene->Destroy();

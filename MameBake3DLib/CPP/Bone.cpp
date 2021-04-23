@@ -341,7 +341,7 @@ int CBone::InitParams()
 	return 0;
 }
 
-int CBone::InitParamsForReUse()
+int CBone::InitParamsForReUse(CModel* srcparmodel)
 {
 	int saveboneno = m_boneno;
 	CModel* saveparmodel = m_parmodel;
@@ -353,6 +353,12 @@ int CBone::InitParamsForReUse()
 
 	m_parmodel = saveparmodel;
 	m_boneno = saveboneno;
+
+	if (m_parmodel == 0) {//!!!!! モデルごと削除されたボーンの再利用
+		SetParams(srcparmodel);//m_parmodel, m_boneno
+	}
+
+
 	m_firstcalcrigid = true;
 
 	SetIndexOfPool(saveindex);
@@ -4671,13 +4677,21 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 			chkbone = curbonehead + chkelemno;
 			if (chkbone && (chkbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
 				if (chkbone->GetUseFlag() == 0) {
-					chkbone->InitParamsForReUse();//
+					chkbone->InitParamsForReUse(parmodel);//
 
 					s_befheadno = chkheadno;
 					s_befelemno = chkelemno;
 
 					return chkbone;
 				}
+			}
+			else if (chkbone && (chkbone->GetParModel() == 0)) {
+				chkbone->InitParamsForReUse(parmodel);//
+
+				s_befheadno = chkheadno;
+				s_befelemno = chkelemno;
+
+				return chkbone;
 			}
 		}
 	}
@@ -4694,7 +4708,17 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 				curbone = curbonehead + elemno;
 				if (curbone && (curbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
 					if (curbone->GetUseFlag() == 0) {
-						curbone->InitParamsForReUse();
+						curbone->InitParamsForReUse(parmodel);
+
+						s_befheadno = boneno;
+						s_befelemno = elemno;
+
+						return curbone;
+					}
+				}
+				else if (curbone && (curbone->GetParModel() == 0)) {
+					if (curbone->GetUseFlag() == 0) {
+						curbone->InitParamsForReUse(parmodel);
 
 						s_befheadno = boneno;
 						s_befelemno = elemno;
@@ -4794,4 +4818,38 @@ void CBone::DestroyBones()
 		}
 	}
 	s_bonepool.clear();
+}
+
+void CBone::OnDelModel(CModel* srcparmodel)
+{
+	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+		//プールを先頭から検索して未使用がみつかればそのparmodelを０にする
+
+	int curpoollen;
+	curpoollen = s_bonepool.size();
+
+	int boneno;
+	for (boneno = 0; boneno < curpoollen; boneno++) {
+		CBone* curbonehead = s_bonepool[boneno];
+		if (curbonehead) {
+			int elemno;
+			for (elemno = 0; elemno < BONEPOOLBLKLEN; elemno++) {
+				CBone* curbone;
+				curbone = curbonehead + elemno;
+				if (curbone && (curbone->GetParModel() == srcparmodel)) {//parmodelが同じ必要有。
+					if (curbone->GetUseFlag() == 0) {
+						curbone->m_parmodel = 0;
+					}
+				}
+			}
+		}
+	}
+	//}
+
+	map<CModel*, int>::iterator itrbonecnt;
+	itrbonecnt = g_bonecntmap.find(srcparmodel);
+	if (itrbonecnt != g_bonecntmap.end()) {
+		g_bonecntmap.erase(itrbonecnt);
+	}
+
 }
