@@ -334,7 +334,7 @@ static void DSL3R3ButtonMouseHere();
 
 static void SelectNextWindow(int nextwndid);
 
-
+static void SetMainWindowTitle();
 
 static RECT s_rcmainwnd;
 static RECT s_rc3dwnd;
@@ -8360,12 +8360,14 @@ int OnAnimMenu( int selindex, int saveundoflag )
 {
 	if (!s_model) {
 		_ASSERT(0);
+		SetMainWindowTitle();
 		return 0;
 	}
 
 	s_motmenuindexmap[s_model] = selindex;
 
 	if( selindex < 0 ){
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!
 	}
 
@@ -8381,6 +8383,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 
 	if( !s_model || !s_owpTimeline ){
 		s_curmotid = -1;
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!!!!!!!!!!
 	}
 
@@ -8391,6 +8394,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 			refreshTimeline(*s_owpTimeline);
 		}
 		s_curmotid = -1;
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -8453,6 +8457,8 @@ int OnAnimMenu( int selindex, int saveundoflag )
 
 	s_owpLTimeline->selectClear();
 
+	SetMainWindowTitle();
+
 	return 0;
 }
 
@@ -8501,6 +8507,8 @@ int OnModelMenu( int selindex, int callbymenu )
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
+
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!
 	}
 
@@ -8513,6 +8521,8 @@ int OnModelMenu( int selindex, int callbymenu )
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
+
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -8569,6 +8579,8 @@ int OnModelMenu( int selindex, int callbymenu )
 
 	
 	CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
+
+	SetMainWindowTitle();
 
 	return 0;
 }
@@ -26776,4 +26788,43 @@ void DSMessageBox(HWND srcparenthwnd, WCHAR* srcmessage, WCHAR* srctitle, LONG s
 	s_messageboxpushcnt = 0;
 }
 
+void SetMainWindowTitle()
+{
+	if (!s_mainhwnd) {
+		return;
+	}
 
+
+//"まめばけ３D (MameBake3D)"
+	WCHAR strmaintitle[2048] = { 0L };
+	wcscpy_s(strmaintitle, 2048, L"まめばけ３D (MameBake3D) : ");
+
+
+	if(s_model){
+		WCHAR strcharactor[MAX_PATH] = { 0L };
+		char strmotionA[MAX_PATH] = { 0 };
+		WCHAR strmotionW[MAX_PATH] = { 0L };
+
+		int modelnum = (int)s_modelindex.size();
+
+		if ((modelnum >= 1) && (s_curmodelmenuindex >= 0) && (s_curmodelmenuindex < modelnum)) {
+			CModel* curmodel;
+			curmodel = s_modelindex[s_curmodelmenuindex].modelptr;
+			if (curmodel) {
+				wcscat_s(strmaintitle, 2048, curmodel->GetFileName());
+				wcscat_s(strmaintitle, 2048, L" : ");
+
+				MOTINFO* curmi;
+				curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+					strcpy_s(strmotionA, MAX_PATH, curmi->motname);
+					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strmotionA, MAX_PATH, strmotionW, MAX_PATH);
+					wcscat_s(strmaintitle, 2048, strmotionW);
+				}
+			}
+		}
+	}
+
+	SetWindowText(s_mainhwnd, strmaintitle);
+
+}

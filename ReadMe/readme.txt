@@ -264,6 +264,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/25_1
+	Current CharactorFileName and MotionName is written at MainWindowTitle.
+
 2021/04/24_3
 	When (L2 or R2) and R1 button is pushed, change Motion to other loaded one.
 
