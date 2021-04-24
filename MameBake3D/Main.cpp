@@ -321,7 +321,8 @@ static void DSCrossButtonSelectDampCtrls(bool firstctrlselect);
 static void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect);
 static void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect);
 static void DSOptionButtonRightClick();
-static void DSR1ButtonSelectCurrentBone();
+static void DSR1ButtonSelectCurrentBone();//R1
+static void DSR1ButtonSelectMotion();//(L2 or R2) and R1
 static void DSAxisLMouseMove();
 //static void DSAxisLSelectingPopupMenu();
 static void DSAxisRMainMenuBar();
@@ -20800,6 +20801,7 @@ void OnDSUpdate()
 
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
 	DSR1ButtonSelectCurrentBone();
+	DSR1ButtonSelectMotion();
 
 	//L3, R3ボタンでマウス位置アピール
 	DSL3R3ButtonMouseHere();
@@ -20986,6 +20988,57 @@ void DSColorAndVibration()
 
 }
 
+void DSR1ButtonSelectMotion()
+{
+	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//DS deviceが無い場合には何もせずにリターン
+		return;
+	}
+
+	if (!s_model) {
+		//モデル読み込み前は処理しないでリターン
+		return;
+	}
+
+	if (!s_3dwnd) {
+		return;
+	}
+
+
+	int buttonR1 = 9;
+	int curbuttondown = s_dsbuttondown[buttonR1];
+	int curbuttonup = s_dsbuttonup[buttonR1];
+
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+	bool accelaxis1 = 0;
+	bool accelaxis2 = 0;
+	bool accelflag = false;
+	bool accelbothflag = false;
+	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+	accelflag = accelaxis1 || accelaxis2;
+	accelbothflag = accelaxis1 && accelaxis2;
+
+	if ((accelflag != 0) && (curbuttonup >= 1)) {//アクセル有り
+		int cAnimSets = (int)s_tlarray.size();
+		int nextmotionindex;
+		nextmotionindex = s_motmenuindexmap[s_model] + 1;
+	
+		if (nextmotionindex < 0) {
+			nextmotionindex = cAnimSets - 1;
+		}
+		else if (nextmotionindex >= cAnimSets) {
+			nextmotionindex = 0;
+		}
+
+		OnAnimMenu(nextmotionindex);
+	}
+
+}
+
+
 void DSR1ButtonSelectCurrentBone()
 {
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
@@ -21011,7 +21064,18 @@ void DSR1ButtonSelectCurrentBone()
 	int curbuttondown = s_dsbuttondown[buttonR1];
 	int curbuttonup = s_dsbuttonup[buttonR1];
 
-	if (curbuttonup >= 1) {
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+	bool accelaxis1 = 0;
+	bool accelaxis2 = 0;
+	bool accelflag = false;
+	bool accelbothflag = false;
+	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+	accelflag = accelaxis1 || accelaxis2;
+	accelbothflag = accelaxis1 && accelaxis2;
+
+	if ((accelflag == 0) && (curbuttonup >= 1)) {//アクセル無し
 		
 		::SetWindowPos(s_3dwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
