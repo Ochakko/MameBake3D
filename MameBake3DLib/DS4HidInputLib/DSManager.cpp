@@ -57,9 +57,12 @@ bool DSManager::GetDevice()
 		if (size > 0) {//sizeが正の場合のif文追加　2021/03/25 add OchakkoLAB
 
 			//デバイスインターフェース詳細情報の領域を確保する
-			detail = new SP_INTERFACE_DEVICE_DETAIL_DATA[size];
+			//detail = new SP_INTERFACE_DEVICE_DETAIL_DATA[size];//クラスではなく構造体なのでmallocに変更
+			detail = (PSP_INTERFACE_DEVICE_DETAIL_DATA)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * size);
 			if (detail)
 			{
+				ZeroMemory(detail, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * size);
+
 				DWORD len = 0;
 				memset(detail, 0, size);
 

@@ -264,6 +264,11 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/24_1
+	disp-->model panel menu is enable.
+	disp-->object panel menu is enable.
+	ModelPanel and ObjectPanel with GamePad OK.
+
 2021/04/23_1
 	Fix Reuse bone problem on deletion models and loading models.
 

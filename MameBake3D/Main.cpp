@@ -4889,6 +4889,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		int nextplateno = 0;
 		
 
+		//if (s_dispmodel && s_modelpanel.panel && s_modelpanel.separator) {
+		//	
+		//	//SetCapture(s_modelpanel.panel->getHWnd());//!!!!!!!!!!!!
+		//	POINT tmppos;
+		//	GetCursorPos(&tmppos);
+		//	LPARAM panallparam;
+		//	panallparam = (tmppos.y << 16) | tmppos.x;
+		//	SendMessage(s_modelpanel.panel->getHWnd(), WM_LBUTTONDOWN, MK_LBUTTON, panallparam);
+		//}
+
 		//check and op rigflag : s_oprigflag turn to 1 when RClickRigMenu selected too.
 		int oprigdoneflag = 0;
 		if (s_oprigflag == 1) {
@@ -5429,6 +5439,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 */
 	}else if( uMsg == WM_LBUTTONUP ){
+
+
+		//if (s_dispmodel && s_modelpanel.panel && s_modelpanel.separator) {
+		//	POINT tmppos;
+		//	GetCursorPos(&tmppos);
+		//	LPARAM panallparam;
+		//	panallparam = (tmppos.y << 16) | tmppos.x;
+		//	SendMessage(s_modelpanel.panel->getHWnd(), WM_LBUTTONUP, MK_LBUTTON, panallparam);
+		//}
+
 
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//DS deviceがあっても、マウスを併用することがあるのでマウスのSetCaptureとReleaseCaptureは必要
@@ -8162,32 +8182,44 @@ int DispToolWindow()
 }
 int DispObjPanel()
 {
-	if( !s_layerWnd ){
+	if( !s_layerWnd || !(s_layerWnd->getHWnd())){
 		return 0;
 	}
 
 	if( s_dispobj ){
+		s_layerWnd->setListenMouse(false);
 		s_layerWnd->setVisible( false );
 		s_dispobj = false;
 	}else{
+		s_layerWnd->setListenMouse(true);
 		s_layerWnd->setVisible( true );
 		s_dispobj = true;
+
+		RECT dlgrect;
+		GetWindowRect(s_layerWnd->getHWnd(), &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 	}
 
 	return 0;
 }
 int DispModelPanel()
 {
-	if( !s_modelpanel.panel ){
+	if( !s_modelpanel.panel || !(s_modelpanel.panel->getHWnd())){
 		return 0;
 	}
 
 	if( s_dispmodel ){
+		s_modelpanel.panel->setListenMouse(false);
 		s_modelpanel.panel->setVisible( false );
 		s_dispmodel = false;
 	}else{
+		s_modelpanel.panel->setListenMouse(true);
 		s_modelpanel.panel->setVisible( true );
 		s_dispmodel = true;
+
+		RECT dlgrect;
+		GetWindowRect(s_modelpanel.panel->getHWnd(), &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 	}
 
 	return 0;
@@ -10129,15 +10161,16 @@ int CreateModelPanel()
 	swprintf_s( clsname, 256, L"ModelPanel%d", classcnt );
 
 	s_modelpanel.panel = new OrgWindow(
-		0,
+		1,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(2000, 0),		//位置
 		WindowSize(200,100),	//サイズ
 		L"ModelPanel",	//タイトル
-		s_mainhwnd,					//親ウィンドウハンドル
-		false,
-		//true,					//表示・非表示状態
+		//s_mainhwnd,					//親ウィンドウハンドル
+		//false,
+		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+		true,					//表示・非表示状態
 		70,50,70,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
@@ -10189,23 +10222,40 @@ int CreateModelPanel()
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		s_modelpanel.checkvec[modelcnt]->setButtonListener( [modelcnt](){
 			if (s_model) {
-				CModel* curmodel = s_modelindex[modelcnt].modelptr;
-				curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+				if (modelcnt < s_modelindex.size()) {
+					CModel* curmodel = s_modelindex[modelcnt].modelptr;
+					if (curmodel) {
+						//s_modelpanel.checkvec[modelcnt]->setValue(!(s_modelpanel.checkvec[modelcnt]->getValue()));
+						curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+						s_modelpanel.panel->callRewrite();
+					}
+				}
 			}
 		} );
 	}
 
 	s_modelpanel.radiobutton->setSelectListener( [](){
 		if (s_model) {
-			s_modelpanel.modelindex = s_modelpanel.radiobutton->getSelectIndex();
-			OnModelMenu(s_modelpanel.modelindex, 1);
+			int curindex = s_modelpanel.radiobutton->getSelectIndex();
+			if ((curindex >= 0) && (curindex < s_modelindex.size())) {
+				s_modelpanel.modelindex = curindex;
+				OnModelMenu(s_modelpanel.modelindex, 1);
+				s_modelpanel.panel->callRewrite();
+			}
 		}
 	} );
 
-	s_modelpanel.panel->setSize(WindowSize(200, 100));//880
-	s_modelpanel.panel->setPos(WindowPos(900, 0));
-	s_modelpanel.panel->setVisible(false);
 
+	RECT wnd3drect;
+	if (s_mainhwnd) {
+		GetWindowRect(s_mainhwnd, &wnd3drect);
+		s_modelpanel.panel->setPos(WindowPos(wnd3drect.left + 500, wnd3drect.top + 500));
+	}
+	else {
+		s_modelpanel.panel->setPos(WindowPos(600, 200));
+	}
+	s_modelpanel.panel->setSize(WindowSize(200, 100));//880
+	s_modelpanel.panel->setVisible(false);
 
 	return 0;
 }
@@ -17238,12 +17288,19 @@ int CreateToolWnd()
 
 }
 
+
 int CreateLayerWnd()
 {
+	if (s_layerWnd) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
 	////
 	// ウィンドウを作成
 	s_layerWnd = new OrgWindow(
-		0,
+		1,
 		_T("LayerTool"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		//WindowPos(800, 500),		//位置
@@ -17252,9 +17309,11 @@ int CreateLayerWnd()
 		WindowPos(2000, 660),		//位置
 		WindowSize(150, 200),		//サイズ
 		_T("LayerTool"),	//タイトル
-		s_mainhwnd,					//親ウィンドウハンドル
-		//true,					//表示・非表示状態
-		false,					//表示・非表示状態
+		//s_mainhwnd,					//親ウィンドウハンドル
+		//s_3dwnd,
+		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+		true,					//表示・非表示状態
+		//false,					//表示・非表示状態
 		70, 50, 70,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
@@ -17322,7 +17381,15 @@ int CreateLayerWnd()
 		//			owpLayerTable->getName(index).c_str() );
 	});
 
-	s_layerWnd->setPos(WindowPos(250, 660));
+	RECT wnd3drect;
+	if (s_mainhwnd) {
+		GetWindowRect(s_mainhwnd, &wnd3drect);
+		s_layerWnd->setPos(WindowPos(wnd3drect.left + 750, wnd3drect.top + 500));
+	}
+	else {
+		s_layerWnd->setPos(WindowPos(600, 200));
+	}
+	s_layerWnd->setVisible(false);
 
 	return 0;
 
@@ -25949,26 +26016,51 @@ void DSAimBarOK()
 					}
 				}
 				else {
-
-					//aimbar
-					HWND caphwnd;
-					caphwnd = ::GetCapture();
-					if (caphwnd && IsWindow(caphwnd)) {
-						POINT cappoint;
-						cappoint = cursorpos;
-						::ScreenToClient(caphwnd, &cappoint);
-						LPARAM caplparam;
-						caplparam = (cappoint.y << 16) | cappoint.x;
-
-						//WCHAR wclassname[MAX_PATH] = { 0L };
-						//::GetClassNameW(caphwnd, wclassname, MAX_PATH);
-						////::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
-						//if (wcscmp(L"ComboBox", wclassname) == 0) {
-						//	::SendMessage(caphwnd, CB_SHOWDROPDOWN, TRUE, 0);
-						//}
-						//else {
-						::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
-						//}
+					bool doneflag1 = false;
+					if (s_dispmodel && s_modelpanel.panel && s_modelpanel.panel->getHWnd()) {
+						RECT panelrect;
+						GetWindowRect(s_modelpanel.panel->getHWnd(), &panelrect);
+						if ((cursorpos.x >= panelrect.left) && (cursorpos.x <= panelrect.right) && 
+							(cursorpos.y >= panelrect.top) && (cursorpos.y <= panelrect.bottom)) {
+							POINT cappoint;
+							cappoint = cursorpos;
+							::ScreenToClient(s_modelpanel.panel->getHWnd(), &cappoint);
+							LPARAM caplparam;
+							caplparam = (cappoint.y << 16) | cappoint.x;
+							::SendMessage(s_modelpanel.panel->getHWnd(), WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+							SetCapture(s_modelpanel.panel->getHWnd());
+							doneflag1 = true;
+						}
+					}
+					if(!doneflag1){
+						if (s_dispobj && s_layerWnd && s_layerWnd->getHWnd()) {
+							RECT panelrect;
+							GetWindowRect(s_layerWnd->getHWnd(), &panelrect);
+							if ((cursorpos.x >= panelrect.left) && (cursorpos.x <= panelrect.right) &&
+								(cursorpos.y >= panelrect.top) && (cursorpos.y <= panelrect.bottom)) {
+								POINT cappoint;
+								cappoint = cursorpos;
+								::ScreenToClient(s_layerWnd->getHWnd(), &cappoint);
+								LPARAM caplparam;
+								caplparam = (cappoint.y << 16) | cappoint.x;
+								::SendMessage(s_layerWnd->getHWnd(), WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+								SetCapture(s_layerWnd->getHWnd());
+								doneflag1 = true;
+							}
+						}
+					}
+					if (!doneflag1) {
+						//aimbar
+						HWND caphwnd;
+						caphwnd = ::GetCapture();
+						if (caphwnd && IsWindow(caphwnd)) {
+							POINT cappoint;
+							cappoint = cursorpos;
+							::ScreenToClient(caphwnd, &cappoint);
+							LPARAM caplparam;
+							caplparam = (cappoint.y << 16) | cappoint.x;
+							::SendMessage(caphwnd, WM_LBUTTONDOWN, MK_LBUTTON, caplparam);
+						}
 					}
 				}
 			}
@@ -26083,31 +26175,64 @@ void DSAimBarOK()
 			}
 			else{
 
-
-				//aim bar
-				HWND caphwnd;
-				caphwnd = ::GetCapture();
-				if (caphwnd && IsWindow(caphwnd)) {
-					//WPARAM wparam = (0xFFFF << 16) | (WORD)g_currentsubmenuid;//g_currentsubmenuid, curmenuitemid
-					//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)GetMenu(s_mainhwnd));//GetMenu(s_mainhwnd), cursubmenu
-					POINT cappoint;
-					cappoint = cursorpos;
-					::ScreenToClient(caphwnd, &cappoint);
-					LPARAM caplparam;
-					caplparam = (cappoint.y << 16) | cappoint.x;
-					::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+				bool doneflag1 = false;
+				if (s_dispmodel && s_modelpanel.panel && s_modelpanel.panel->getHWnd()) {
+					RECT panelrect;
+					GetWindowRect(s_modelpanel.panel->getHWnd(), &panelrect);
+					if ((cursorpos.x >= panelrect.left) && (cursorpos.x <= panelrect.right) &&
+						(cursorpos.y >= panelrect.top) && (cursorpos.y <= panelrect.bottom)) {
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(s_modelpanel.panel->getHWnd(), &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
+						::SendMessage(s_modelpanel.panel->getHWnd(), WM_LBUTTONUP, MK_LBUTTON, caplparam);
+						ReleaseCapture();
+						doneflag1 = true;
+					}
 				}
+				if (!doneflag1) {
+					if (s_dispobj && s_layerWnd && s_layerWnd->getHWnd()) {
+						RECT panelrect;
+						GetWindowRect(s_layerWnd->getHWnd(), &panelrect);
+						if ((cursorpos.x >= panelrect.left) && (cursorpos.x <= panelrect.right) &&
+							(cursorpos.y >= panelrect.top) && (cursorpos.y <= panelrect.bottom)) {
+							POINT cappoint;
+							cappoint = cursorpos;
+							::ScreenToClient(s_layerWnd->getHWnd(), &cappoint);
+							LPARAM caplparam;
+							caplparam = (cappoint.y << 16) | cappoint.x;
+							::SendMessage(s_layerWnd->getHWnd(), WM_LBUTTONUP, MK_LBUTTON, caplparam);
+							ReleaseCapture();
+							doneflag1 = true;
+						}
+					}
+				}
+				if (!doneflag1) {
+					//aim bar
+					HWND caphwnd;
+					caphwnd = ::GetCapture();
+					if (caphwnd && IsWindow(caphwnd)) {
+						//WPARAM wparam = (0xFFFF << 16) | (WORD)g_currentsubmenuid;//g_currentsubmenuid, curmenuitemid
+						//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)GetMenu(s_mainhwnd));//GetMenu(s_mainhwnd), cursubmenu
+						POINT cappoint;
+						cappoint = cursorpos;
+						::ScreenToClient(caphwnd, &cappoint);
+						LPARAM caplparam;
+						caplparam = (cappoint.y << 16) | cappoint.x;
+						::SendMessage(caphwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+					}
 
-
-				//MainMenuAimBar
-				if ((s_currentwndid == MB3D_WND_MAIN) && s_cursubmenu && (g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
-					//SelectNextWindow(MB3D_WND_3D);//続いて　O button を押したときにメニューが開かないように。//プレート選択時に該当ウインドウをハイライトするようにしたので必要ない。
-					InterlockedExchange(&g_undertrackingRMenu, 1);
-					//SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
-					SetForegroundWindow(s_3dwnd);//この処理をしないと範囲外クリックでPopupが閉じない
-					//int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_mainhwnd, NULL);
-					int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_3dwnd, NULL);
-					InterlockedExchange(&g_undertrackingRMenu, 0);
+					//MainMenuAimBar
+					if ((s_currentwndid == MB3D_WND_MAIN) && s_cursubmenu && (g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
+						//SelectNextWindow(MB3D_WND_3D);//続いて　O button を押したときにメニューが開かないように。//プレート選択時に該当ウインドウをハイライトするようにしたので必要ない。
+						InterlockedExchange(&g_undertrackingRMenu, 1);
+						//SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
+						SetForegroundWindow(s_3dwnd);//この処理をしないと範囲外クリックでPopupが閉じない
+						//int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_mainhwnd, NULL);
+						int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_3dwnd, NULL);
+						InterlockedExchange(&g_undertrackingRMenu, 0);
+					}
 				}
 			}
 

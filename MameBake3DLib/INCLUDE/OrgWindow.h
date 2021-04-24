@@ -584,6 +584,13 @@ static void s_dummyfunc();
 			listenmouse = false;
 			istopmost = srcistopmost;
 
+
+			//##########################################################################
+			// For Handleing Mouse Event, It is necessary to call setListenMouse(true).
+			// マウスイベントを処理するためには、setListenMouse(true)をあらかじめ呼んでおく必要有り。
+			//##########################################################################
+
+
 			//イベントリスナー
 			closeListener = [](){s_dummyfunc();};
 			keyboardListener = [](const KeyboardEvent &e){s_dummyfunc();};
@@ -1054,7 +1061,9 @@ static void s_dummyfunc();
 			if (hWndParent != NULL) {
 				if (istopmost) {
 					hWnd = CreateWindowExW(//WS_EX_TOOLWINDOW|WS_EX_TOPMOST,szclassName,title,WS_POPUP,
-						WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,// | WS_THICKFRAME,
+						//WS_EX_TOOLWINDOW | WS_EX_TOPMOST, szclassName, title, WS_POPUP,// | WS_THICKFRAME,
+						//WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,// | WS_THICKFRAME,
+						WS_EX_LEFT | WS_EX_TOPMOST, szclassName, title, WS_POPUP,// | WS_THICKFRAME,
 						pos.x, pos.y,
 						size.x, size.y,
 						hWndParent, NULL, hInstance, NULL);
@@ -1152,16 +1161,18 @@ static void s_dummyfunc();
 				////タイトルバー
 				if( 1<=e.localX && e.localX<=size.x-2
 				 && 1<=e.localY && e.localY<=1+2+9+1 ){
-					//ユーザーマニュアル操作によるウインドウ位置サイズ変更を出来ないようにコメントアウト
-					//SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+					if (istopmost) {
+						SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+					}
 					return;
 				}
 
 				//右下の隅
 				if( canChangeSize &&
 					size.x-4<=e.localX && size.y-4<=e.localY ){
-					//ユーザーマニュアル操作によるウインドウ位置サイズ変更を出来ないようにコメントアウト
-					//SendMessage(hWnd, WM_NCLBUTTONDOWN, HTBOTTOMRIGHT, 0);
+					if (istopmost) {
+						SendMessage(hWnd, WM_NCLBUTTONDOWN, HTBOTTOMRIGHT, 0);
+					}
 					return;
 				}
 			}
@@ -3132,7 +3143,10 @@ static void s_dummyfunc();
 		void draw();
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
-			setValue(value^true);
+			//if ((e.localX >= pos.x) && (e.localX <= (pos.x + size.x)) && 
+			//	(e.localY >= pos.y) && (e.localY <= (pos.y + size.y))) {
+				setValue(value ^ true);
+			//}
 		}
 
 		/////////////////////////// Accessor /////////////////////////////
