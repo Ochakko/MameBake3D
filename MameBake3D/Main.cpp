@@ -307,7 +307,8 @@ bool g_enableDS = false;
 static void InitDSValues();
 static void GetDSValues();
 static void DSColorAndVibration();
-static void DSSelectWindowAndCtrl();
+static void DSSelectWindowAndCtrl();//L1, square, triangle
+static void DSSelectCharactor();//(L2 or R2) and L1
 static void DSCrossButton(bool firstctrlselect);
 static void DSCrossButtonSelectTree(bool firstctrlselect);
 static void DSCrossButtonSelectUTGUI(bool firstctrlselect);
@@ -20789,7 +20790,8 @@ void OnDSUpdate()
 
 	DSColorAndVibration();
 
-	DSSelectWindowAndCtrl();
+	DSSelectWindowAndCtrl();//L1, square, triangle
+	DSSelectCharactor();//(L2 or R2) and L1
 
 	bool firstctrlselect = false;
 	DSCrossButton(firstctrlselect);
@@ -21350,6 +21352,60 @@ void SelectNextWindow(int nextwndid)
 	//OutputToInfoWnd(L"Button Down %d", buttonL1);
 }
 
+void DSSelectCharactor()
+{
+	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
+		//DS deviceが無い場合には何もせずにリターン
+		return;
+	}
+
+	if (!s_model) {
+		//モデル読み込み前は処理しないでリターン
+		return;
+	}
+
+	if (!s_3dwnd) {
+		return;
+	}
+
+	int buttonL1 = 8;
+	int curbuttondown = s_dsbuttondown[buttonL1];
+	int curbuttonup = s_dsbuttonup[buttonL1];
+
+
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+	bool accelaxis1 = 0;
+	bool accelaxis2 = 0;
+	bool accelflag = false;
+	bool accelbothflag = false;
+	accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+	accelflag = accelaxis1 || accelaxis2;
+	accelbothflag = accelaxis1 && accelaxis2;
+
+	//L1 Button Up（L2, R2 not pushed）
+	if ((accelflag != 0) && (curbuttonup >= 1)) {
+		int modelnum;
+		modelnum = s_modelindex.size();
+		if (modelnum > 0) {
+			int nextmodelindex;
+			nextmodelindex = s_curmodelmenuindex + 1;
+			if (nextmodelindex < 0) {
+				nextmodelindex = modelnum - 1;
+			}
+			else if (nextmodelindex >= modelnum) {
+				nextmodelindex = 0;
+			}
+
+			s_modelpanel.modelindex = nextmodelindex;
+			OnModelMenu(s_modelpanel.modelindex, 1);
+			s_modelpanel.panel->callRewrite();
+
+		}
+	}
+}
+
 void DSSelectWindowAndCtrl()
 {
 
@@ -21384,7 +21440,20 @@ void DSSelectWindowAndCtrl()
 		int curbuttondown = s_dsbuttondown[buttonL1];
 		int curbuttonup = s_dsbuttonup[buttonL1];
 
-		if (curbuttonup >= 1) {
+
+		int accelaxisid1 = 4;//axisid
+		int accelaxisid2 = 5;//axisid
+		bool accelaxis1 = 0;
+		bool accelaxis2 = 0;
+		bool accelflag = false;
+		bool accelbothflag = false;
+		accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+		accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+		accelflag = accelaxis1 || accelaxis2;
+		accelbothflag = accelaxis1 && accelaxis2;
+
+		//L1 Button Up（L2, R2 not pushed）
+		if ((accelflag == 0) && (curbuttonup >= 1)) {
 			int nextwndid = 0;
 			nextwndid = s_currentwndid + 1;
 

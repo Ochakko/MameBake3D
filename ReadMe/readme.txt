@@ -264,6 +264,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/24_2
+	If (L2 or R2) and L1 buttons is pushed, change charactor to other loaded one.
+
 2021/04/24_1
 	disp-->model panel menu is enable.
 	disp-->object panel menu is enable.
