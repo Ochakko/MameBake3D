@@ -47,6 +47,15 @@ typedef struct tag_fbxobj
 }FBXOBJ;
 
 
+typedef struct tag_physikrec
+{
+	double time;
+	CBone* pbone;
+	ChaMatrix btmat;
+}PHYSIKREC;
+
+#define MAXPHYSIKRECCNT		(60 * 30)
+
 class CModel
 {
 public:
@@ -614,6 +623,12 @@ public:
 
 	void DestroyScene();
 
+
+	void PhysIKRec(double srcrectime);
+	void PhysIKRecReq(CBone* srcbone, double srcrectime);
+	void ApplyPhysIkRec();
+	void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -1145,6 +1160,11 @@ private:
 
 	ChaMatrix m_worldmat;
 	ChaVector3 m_modelposition;
+
+	std::vector<PHYSIKREC> m_physikrec0;
+	std::vector<PHYSIKREC> m_physikrec;
+	double m_phyikrectime;
+
 };
 
 #endif

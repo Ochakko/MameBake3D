@@ -264,6 +264,18 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/26_1
+	Result of PhysicsRot and PhysicsMv is applied to selected frame range.
+	Editiing data of PhysicsIK is started to record when PhysicsRot or PhysicsMv button is pushed and Joint is dragged.
+	Recording of PhysicsIK is finished and Apply result to selected frame range when mouse LButtonUp.
+	Apply rate is enable when PhysicsIK too.
+
+	物理IKの結果が選択フレームに適用されるようになった。
+	PhysRotまたはPhysMvボタンを押してからジョイントをドラッグすると編集内容が記録され始める。
+	編集内容の記録はマウス左ボタンをアップした時に終了し、結果が選択フレームに適用される。
+	選択範囲のブラシの山の頂点の位置を決めるためのApplyRateスライダーは物理IKのときも有効に働く。
+
+ 
 2021/04/25_2
 	ApplyFrameNumber of PhysicsRot and PhysicsMv is free selectable, not only Zero Frame.
 	(Currently result of PhysicsIK is applied to a frame, but futurely result will be applied to selected range.)

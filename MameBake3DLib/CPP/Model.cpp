@@ -165,6 +165,11 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	m_physikrec0.clear();
+	m_physikrec.clear();
+	m_phyikrectime = 0.0;
+
+
 	m_physicsikcnt = 0;
 	ChaMatrixIdentity(&m_worldmat);
 	m_modelposition = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -9689,3 +9694,185 @@ void CModel::DestroyScene()
 	}
 }
 
+
+void CModel::PhysIKRec(double srcrectime)
+{
+	if (srcrectime == 0.0) {
+		m_physikrec0.clear();
+		m_physikrec.clear();
+	}
+
+	if (!GetTopBone()) {
+		return;
+	}
+
+	PhysIKRecReq(GetTopBone(), srcrectime);
+
+}
+
+void CModel::PhysIKRecReq(CBone* srcbone, double srcrectime)
+{
+	if (!srcbone) {
+		return;
+	}
+
+	MOTINFO* curmi = GetCurMotInfo();
+	if (!curmi) {
+		return;
+	}
+
+	PHYSIKREC currec;
+	currec.time = srcrectime;
+	currec.pbone = srcbone;
+	currec.btmat = srcbone->GetBtMat();
+	//currec.btmat = srcbone->GetWorldMat(curmi->motid, curmi->curframe);
+
+	if (srcrectime == 0.0) {
+		m_physikrec0.push_back(currec);
+	}
+	m_physikrec.push_back(currec);
+	m_phyikrectime = srcrectime;
+
+	if (srcbone->GetChild()) {
+		PhysIKRecReq(srcbone->GetChild(), srcrectime);
+	}
+	if (srcbone->GetBrother()) {
+		PhysIKRecReq(srcbone->GetBrother(), srcrectime);
+	}
+}
+
+
+void CModel::ApplyPhysIkRec()
+{
+	if (!GetTopBone()) {
+		return;
+	}
+
+	if (g_motionbrush_frameleng == 0.0) {
+		return;
+	}
+
+	double srcmaxtime = m_phyikrectime;
+
+	/*
+		g_motionbrush_startframe = startframe;
+		g_motionbrush_endframe = endframe;
+		g_motionbrush_numframe = endframe - startframe + 1;
+		g_motionbrush_frameleng = frameleng;
+		g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+	*/
+
+	double curframe;
+	for (curframe = g_motionbrush_startframe; curframe <= g_motionbrush_endframe; curframe += 1.0) {
+		double currectime;
+		if (curframe == g_motionbrush_applyframe) {
+			currectime = srcmaxtime - 1.0;
+		}
+		else if (curframe < g_motionbrush_applyframe) {
+			double rectimestep;
+			rectimestep = srcmaxtime / (g_motionbrush_applyframe - g_motionbrush_startframe + 1);
+			currectime = (double)((int)(rectimestep * (curframe - g_motionbrush_startframe)));
+			currectime = (double)((int)min(currectime, (m_phyikrectime - 1.0)));
+			currectime = (double)((int)max(0.0, currectime));
+		}
+		else {
+			double rectimestep;
+			rectimestep = srcmaxtime / (g_motionbrush_endframe - g_motionbrush_applyframe + 1);
+			currectime = (double)((int)(m_phyikrectime - rectimestep * (curframe - g_motionbrush_applyframe)));
+			currectime = (double)((int)min(currectime, (m_phyikrectime - 1.0)));
+			currectime = (double)((int)max(0.0, currectime));
+		}
+
+		ApplyPhysIkRecReq(GetTopBone(), curframe, currectime);
+	}
+	return;
+}
+
+void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime)
+{
+	if (!srcbone)
+		return;
+
+	if (g_motionbrush_numframe == 0) {
+		return;
+	}
+
+	MOTINFO* curmi = GetCurMotInfo();
+	if (!curmi)
+		return;
+
+	CBone* btbone = 0;
+	//if (srcbone->GetParent()) {
+	//	if (srcbone->GetChild()) {
+	//		btbone = srcbone;
+	//	}
+	//	else {
+	//		btbone = srcbone->GetParent();
+	//	}
+	//}
+	btbone = srcbone;
+
+	if (btbone) {
+		PHYSIKREC recdata0;
+		PHYSIKREC recdata;
+		bool foundrecdata0 = false;
+		bool foundrecdata = false;
+
+		std::vector<PHYSIKREC>::iterator itrfind0;
+		for (itrfind0 = m_physikrec0.begin(); itrfind0 != m_physikrec0.end(); itrfind0++) {
+			PHYSIKREC curdata = *itrfind0;
+			if (curdata.pbone == btbone) {
+				recdata0 = curdata;
+				foundrecdata0 = true;
+				break;
+			}
+		}
+
+		std::vector<PHYSIKREC>::iterator itrfind;
+		for (itrfind = m_physikrec.begin(); itrfind != m_physikrec.end(); itrfind++) {
+			PHYSIKREC curdata = *itrfind;
+			if (curdata.time == srcrectime) {
+				if (curdata.pbone == btbone) {
+					recdata = curdata;
+					foundrecdata = true;
+					break;
+				}
+			}
+		}
+
+
+		if (foundrecdata0 && foundrecdata) {
+			ChaMatrix worldmat0 = btbone->GetWorldMat(curmi->motid, g_motionbrush_applyframe);//or srcframe
+			ChaMatrix btmat0 = recdata0.btmat;
+			ChaMatrix btmat = recdata.btmat;
+
+			ChaMatrix btdiff = ChaMatrixInv(btmat0) * btmat;
+
+			ChaMatrix curworldmat = btbone->GetWorldMat(curmi->motid, srcframe);
+			//ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * btmat0 * btdiff;
+			ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * btdiff;
+
+			//if (btbone->GetMass0() == 0) {
+			g_wmatDirectSetFlag = true;
+			//srcbone->SetWorldMat(0, curmi->motid, srcframe, setmat);
+			if (btbone->GetChild()) {
+				btbone->SetWorldMat(0, curmi->motid, srcframe, setmat);
+			}
+			else if (btbone->GetParent()) {
+				//endjoint‚Åparent‚ª‚ ‚éê‡
+				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, srcframe);
+				btbone->SetWorldMat(0, curmi->motid, srcframe, parsetmat);
+			}
+			g_wmatDirectSetFlag = false;
+			//}
+		}
+	}
+
+	if (srcbone->GetChild()) {
+		ApplyPhysIkRecReq(srcbone->GetChild(), srcframe, srcrectime);
+	}
+	if (srcbone->GetBrother()) {
+		ApplyPhysIkRecReq(srcbone->GetBrother(), srcframe, srcrectime);
+	}
+
+}

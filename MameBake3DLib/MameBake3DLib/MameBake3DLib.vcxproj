@@ -720,6 +720,7 @@
     <ClInclude Include="..\INCLUDE\InfBone.h" />
     <ClInclude Include="..\INCLUDE\InfoWindow.h" />
     <ClInclude Include="..\INCLUDE\lmtFile.h" />
+    <ClInclude Include="..\INCLUDE\Model.h" />
     <ClInclude Include="..\INCLUDE\MotFilter.h" />
     <ClInclude Include="..\INCLUDE\MotionPoint.h" />
     <ClInclude Include="..\INCLUDE\mqoface.h" />

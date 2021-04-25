@@ -1742,6 +1742,9 @@
     <ClInclude Include="..\BTSRC\Bullet3Common\shared\b3Quat.h">
       <Filter>BulletSrc</Filter>
     </ClInclude>
+    <ClInclude Include="..\INCLUDE\Model.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\BTSRC\BulletSoftBody\premake4.lua">

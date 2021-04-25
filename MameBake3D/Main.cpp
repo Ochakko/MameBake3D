@@ -141,6 +141,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 
 #define WINDOWS_CLASS_NAME TEXT("OchakkoLab.MameBake3D.Window")
 
+
 typedef struct tag_spaxis
 {
 	CMySprite* sprite;
@@ -154,6 +155,24 @@ typedef struct tag_spsw
 	CMySprite* spriteOFF;
 	POINT dispcenter;
 }SPGUISW;
+
+//typedef struct tag_physikrec
+//{
+//	double time;
+//	CBone* pbone;
+//	ChaMatrix btmat;
+//}PHYSIKREC;
+//
+//#define MAXPHYSIKRECCNT		(60 * 30)
+//static std::vector<PHYSIKREC> s_physikrec0;
+//static std::vector<PHYSIKREC> s_physikrec;
+//static double s_phyikrectime = 0.0;
+//static void PhysIKRec(double srcrectime);
+//static void PhysIKRecReq(CBone* srcbone, double srcrectime);
+//static void ApplyPhysIkRec();
+//static void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
+static double s_rectime = 0.0;
+static double s_reccnt = 0;
 
 
 static Gdiplus::GdiplusStartupInput gdiplusStartupInput;
@@ -985,7 +1004,7 @@ enum {
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
 static SPELEM s_sprig[SPRIGMAX];//inactive, active
-static SPELEM s_spbt;
+//static SPELEM s_spbt;
 static SPELEM s_spret2prev;
 static SPGUISW s_spguisw[SPGUISWNUM];
 static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
@@ -1545,8 +1564,8 @@ static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
-static int SetSpBtParams();
-static int PickSpBt(POINT srcpos);
+//static int SetSpBtParams();
+//static int PickSpBt(POINT srcpos);
 static int SetSpMouseHereParams();
 
 static int InsertCopyMP(CBone* curbone, double curframe);
@@ -1913,16 +1932,15 @@ void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
 
-
-
-
-
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
 	_ASSERT(s_temppath[0]);
 
-
 	InitDSValues();
+
+	s_rectime = 0.0;
+	s_reccnt = 0;
+
 
 	g_mousehereimage = 0;
 	g_menuaimbarimage = 0;
@@ -2094,7 +2112,7 @@ void InitApp()
 	ZeroMemory(s_spaxis, sizeof( SPAXIS ) * SPAXISNUM);
 	ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
 	ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
-	ZeroMemory(&s_spbt, sizeof(SPELEM));
+	//ZeroMemory(&s_spbt, sizeof(SPELEM));
 	ZeroMemory(&s_spmousehere, sizeof(SPELEM));
 	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
 
@@ -2699,9 +2717,9 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_sprig[SPRIG_ACTIVE].sprite);
 	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRigActive.png", 0, 0), return 1);
 
-	s_spbt.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spbt.sprite);
-	CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return 1);
+	//s_spbt.sprite = new CMySprite(s_pdev);
+	//_ASSERT(s_spbt.sprite);
+	//CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return 1);
 
 	s_spmousehere.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spmousehere.sprite);
@@ -2916,7 +2934,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpRetargetSWParams();
 	SetSpCamParams();
 	SetSpRigParams();
-	SetSpBtParams();
+	//SetSpBtParams();
 	SetSpMouseHereParams();
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
@@ -3729,11 +3747,11 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		}
 	}
 
-	CMySprite* cursp = s_spbt.sprite;
-	if (cursp) {
-		delete cursp;
-	}
-	s_spbt.sprite = 0;
+	//CMySprite* cursp = s_spbt.sprite;
+	//if (cursp) {
+	//	delete cursp;
+	//}
+	//s_spbt.sprite = 0;
 
 	CMySprite* curspmousehere = s_spmousehere.sprite;
 	if (curspmousehere) {
@@ -5098,18 +5116,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
 		if (s_model && (g_previewFlag == 5)) {
-			if ((s_pickinfo.pickobjno >= 0) && 
-				((s_spguisw[SPGUISW_SPRITEFK].state == false) || (PickSpBt(ptCursor) == 0))){//物理IK中でジョイントをクリックしていて、Applyボタンを押していないとき
+			if ((s_pickinfo.pickobjno >= 0)){// && 
+				//((s_spguisw[SPGUISW_SPRITEFK].state == false)) || (PickSpBt(ptCursor) == 0))){//物理IK中でジョイントをクリックしていて、Applyボタンを押していないとき
 				StartBt(s_model, TRUE, 1, 1);
 				//s_model->BulletSimulationStart();
-			}
-			else if(s_spguisw[SPGUISW_SPRITEFK].state && (PickSpBt(ptCursor) != 0)){//物理IK中でApplyボタンを押したとき
-				if (s_model){
-					s_model->BulletSimulationStop();
-					g_previewFlag = 0;
-					
-					s_model->ApplyBtToMotion();										
-				}
 			}
 		}
 
@@ -5464,8 +5474,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_wmlbuttonup = 1;
 
 		if (s_model && (s_onragdollik != 0)){
-			s_model->BulletSimulationStop();
+			//s_model->BulletSimulationStop();
 			//s_model->SetBtKinFlagReq(s_model->GetTopBt(), 1);
+			
+			s_model->BulletSimulationStop();
+			g_previewFlag = 0;
+			s_model->ApplyPhysIkRec();
 		}
 
 		UpdateEditedEuler();
@@ -11029,8 +11043,16 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 			curframe = 1.0;
 		}
 		else {
-			//rangestart = s_previewrange.GetStartFrame();
-			curframe = s_previewrange.GetStartFrame();
+			if (g_previewFlag == 5) {
+				int tmpleng;
+				double tmpstart, tmpend;
+				s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
+				curframe = s_previewrange.GetApplyFrame();
+			}
+			else {
+				//rangestart = s_previewrange.GetStartFrame();
+				curframe = s_previewrange.GetStartFrame();
+			}
 		}
 
 		s_owpLTimeline->setCurrentTime(curframe, true);
@@ -11104,8 +11126,16 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 						curframe = 1.0;
 					}
 					else {
-						//rangestart = s_previewrange.GetStartFrame();
-						curframe = s_previewrange.GetStartFrame();
+						if (g_previewFlag == 5) {
+							int tmpleng;
+							double tmpstart, tmpend;
+							s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
+							curframe = s_previewrange.GetApplyFrame();
+						}
+						else {
+							//rangestart = s_previewrange.GetStartFrame();
+							curframe = s_previewrange.GetStartFrame();
+						}
 					}
 					//curframe = 1.0;//!!!!!!!!!!
 
@@ -12385,35 +12415,35 @@ int SetSpMouseHereParams()
 	return 0;
 }
 
-int SetSpBtParams()
-{
-	if (!s_spbt.sprite){
-		return 0;
-	}
-
-	float spawidth = 32.0f;
-	int spashift = 12;
-	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
-	s_spbt.dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
-	s_spbt.dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));// *2);
-
-
-	ChaVector3 disppos;
-	disppos.x = (float)(s_spbt.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
-	disppos.y = -((float)(s_spbt.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
-	disppos.z = 0.0f;
-	ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
-	if (s_spbt.sprite) {
-		CallF(s_spbt.sprite->SetPos(disppos), return 1);
-		CallF(s_spbt.sprite->SetSize(dispsize), return 1);
-	}
-	else {
-		_ASSERT(0);
-	}
-
-	return 0;
-
-}
+//int SetSpBtParams()
+//{
+//	if (!s_spbt.sprite){
+//		return 0;
+//	}
+//
+//	float spawidth = 32.0f;
+//	int spashift = 12;
+//	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
+//	s_spbt.dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
+//	s_spbt.dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));// *2);
+//
+//
+//	ChaVector3 disppos;
+//	disppos.x = (float)(s_spbt.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+//	disppos.y = -((float)(s_spbt.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+//	disppos.z = 0.0f;
+//	ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+//	if (s_spbt.sprite) {
+//		CallF(s_spbt.sprite->SetPos(disppos), return 1);
+//		CallF(s_spbt.sprite->SetSize(dispsize), return 1);
+//	}
+//	else {
+//		_ASSERT(0);
+//	}
+//
+//	return 0;
+//
+//}
 
 
 
@@ -12728,33 +12758,33 @@ int PickSpRig(POINT srcpos)
 }
 
 
-int PickSpBt(POINT srcpos)
-{
-	int pickflag = 0;
-
-	//if (g_previewFlag == 5){
-	//	return 0;
-	//}
-
-
-	if (s_spbt.sprite == 0){
-		return 0;
-	}
-
-	int starty = s_spbt.dispcenter.y - 16;
-	int endy = starty + 32;
-
-	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
-		int startx = s_spbt.dispcenter.x - 16;
-		int endx = startx + 32;
-
-		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
-			pickflag = 1;
-		}
-	}
-
-	return pickflag;
-}
+//int PickSpBt(POINT srcpos)
+//{
+//	int pickflag = 0;
+//
+//	//if (g_previewFlag == 5){
+//	//	return 0;
+//	//}
+//
+//
+//	if (s_spbt.sprite == 0){
+//		return 0;
+//	}
+//
+//	int starty = s_spbt.dispcenter.y - 16;
+//	int endy = starty + 32;
+//
+//	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
+//		int startx = s_spbt.dispcenter.x - 16;
+//		int endx = startx + 32;
+//
+//		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
+//			pickflag = 1;
+//		}
+//	}
+//
+//	return pickflag;
+//}
 
 int SetSelectState()
 {
@@ -14450,8 +14480,12 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	//}
 
 
+	//*pnextframe = s_previewrange.GetApplyFrame();
+	int tmpleng;
+	double tmpstart, tmpend;
+	s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
 	*pnextframe = s_previewrange.GetApplyFrame();
-
+	//*pnextframe = g_motionbrush_applyframe;
 
 	if (curmodel && curmodel->GetCurMotInfo()){
 		//if (s_onragdollik != 0){
@@ -14471,6 +14505,11 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			}
 			curmodel->SetBtEquilibriumPoint();//必要
 
+			if (curmodel->GetBtCnt() == 10) {
+				s_rectime = 0.0;
+				s_reccnt = 0;
+				s_model->PhysIKRec(s_rectime);
+			}
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
@@ -14493,21 +14532,21 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		ChaVector3 tmpsc;
 		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 
-		if (s_oprigflag == 0){//Rig操作ではないとき
+		if (s_oprigflag == 0) {//Rig操作ではないとき
 			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 			CallF(CalcTargetPos(&targetpos), return 1);
 
 			s_model->SetDofRotAxis(s_pickinfo.buttonflag);//!!!!!!!!!!!!!!!!!!!!!!!
 
 
-			if (s_physicskind == 0){
-				if (s_onragdollik == 1){
+			if (s_physicskind == 0) {
+				if (s_onragdollik == 1) {
 					int ikmaxlevel = 0;
 					curmodel->PhysicsRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
 				}
-				else if ((s_onragdollik == 2) || (s_onragdollik == 3)){
+				else if ((s_onragdollik == 2) || (s_onragdollik == 3)) {
 					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.1f;
-					if (g_controlkey == true){
+					if (g_controlkey == true) {
 						deltax *= 0.250f;
 					}
 					//s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
@@ -14520,7 +14559,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 				//}
 
 			}
-			else{
+			else {
 				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				//少しずつ動かさないと壊れやすい
 				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -14588,9 +14627,21 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	*/
 
 
-	
-	curmodel->SetMotionFrame(s_editrange.GetStartFrame());
-	*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
+
+	//curmodel->SetMotionFrame(s_editrange.GetStartFrame());
+	//*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
+	{
+		int tmpleng;
+		double tmpstart, tmpend;
+		s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
+		*pnextframe = s_previewrange.GetApplyFrame();
+		curmodel->SetMotionFrame(*pnextframe);
+	}
+
+#ifndef SKIP_EULERGRAPH__
+	s_owpLTimeline->setCurrentTime(*pnextframe, false);
+	s_owpEulerGraph->setCurrentTime(*pnextframe, false);
+#endif
 
 
 	s_bpWorld->clientMoveAndDisplay();
@@ -14599,6 +14650,16 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 1, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 		curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		curmodel->PlusPlusBtCnt();
+
+		//ドラッグ中だけ記録
+		if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
+			//60 x 30 frames limit : 30 sec limit
+			if (s_reccnt < MAXPHYSIKRECCNT) {
+				s_rectime = (double)((int)s_reccnt);
+				s_model->PhysIKRec(s_rectime);
+				s_reccnt++;
+			}
+		}
 	}
 
 	s_bpWorld->clientMoveAndDisplay();//tmpkinematic部分のbullet情報変更がSetBtMotion内で生じるので、もう一回シミュをまわす。
@@ -17707,12 +17768,12 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 		}
 
-		if (s_spbt.sprite) {
-			s_spbt.sprite->OnRender(pd3dImmediateContext);
-		}
-		else {
-			_ASSERT(0);
-		}
+		//if (s_spbt.sprite) {
+		//	s_spbt.sprite->OnRender(pd3dImmediateContext);
+		//}
+		//else {
+		//	_ASSERT(0);
+		//}
 
 
 	}
@@ -26240,9 +26301,9 @@ void DSAimBarOK()
 					LPARAM caplparam;
 					caplparam = (cappoint.y << 16) | cappoint.x;
 
-					int ctrlid;
-					ctrlid = GetDlgCtrlID(ctrlwnd);
-					::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);
+					//int ctrlid;
+					//ctrlid = GetDlgCtrlID(ctrlwnd);
+					//::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);//WM_COMMANDはマウスのUPよりも後で呼ばないとUPでコマンドが終了してしまうことがある。
 
 
 					WCHAR wclassname[MAX_PATH] = { 0L };
@@ -26321,6 +26382,11 @@ void DSAimBarOK()
 
 						//::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 					}
+
+					int ctrlid;
+					ctrlid = GetDlgCtrlID(ctrlwnd);
+					::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);//WM_COMMANDはマウスのUPよりも後で呼ばないとUPでコマンドが終了してしまうことがある。
+
 				}
 			}
 			else{
@@ -26800,12 +26866,12 @@ void SetMainWindowTitle()
 	}
 
 
-//"まめばけ３D (MameBake3D)"
+	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[2048] = { 0L };
 	wcscpy_s(strmaintitle, 2048, L"まめばけ３D (MameBake3D) : ");
 
 
-	if(s_model){
+	if (s_model) {
 		WCHAR strcharactor[MAX_PATH] = { 0L };
 		char strmotionA[MAX_PATH] = { 0 };
 		WCHAR strmotionW[MAX_PATH] = { 0L };
@@ -26833,3 +26899,4 @@ void SetMainWindowTitle()
 	SetWindowText(s_mainhwnd, strmaintitle);
 
 }
+
