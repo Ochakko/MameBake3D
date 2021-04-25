@@ -6936,7 +6936,8 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 				rotrad2 *= currate;
 				double firstframe = 0.0;
 				if (fabs(rotrad2) > 1.0e-4){
-					double curframe = startframe;//!!!!!!!!!
+					//double curframe = startframe;//!!!!!!!!!
+					double curframe = applyframe;//!!!!!!!!!
 
 					CQuaternion rotq1;
 					rotq1.SetAxisAndRot(rotaxis2, rotrad2);

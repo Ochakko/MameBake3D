@@ -264,6 +264,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/04/25_2
+	ApplyFrameNumber of PhysicsRot and PhysicsMv is free selectable, not only Zero Frame.
+	(Currently result of PhysicsIK is applied to a frame, but futurely result will be applied to selected range.)
+
+	Set Visible of Manipulator False when Visible of Bone is FALSE.
+
 2021/04/25_1
 	Current CharactorFileName and MotionName is written at MainWindowTitle.
 

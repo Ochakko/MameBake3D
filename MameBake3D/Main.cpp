@@ -14430,25 +14430,27 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	}
 	CModel* curmodel = s_model;
 
-	BOOL isstartframe = FALSE;
-	double rangestart = 1.0;
-	s_previewrange = s_editrange;
-	if (s_previewrange.IsSameStartAndEnd()) {
-		rangestart = 1.0;
-	}
-	else {
-		rangestart = s_previewrange.GetStartFrame();
-	}
+	//BOOL isstartframe = FALSE;
+	//double rangestart = 1.0;
+	//s_previewrange = s_editrange;
+	//if (s_previewrange.IsSameStartAndEnd()) {
+	//	rangestart = 1.0;
+	//}
+	//else {
+	//	rangestart = s_previewrange.GetStartFrame();
+	//}
 
-	if (g_previewFlag != 0) {
-		if (s_savepreviewFlag == 0) {
-			//preview start frame
-			*pdifftime = 0.0;
-			*pnextframe = rangestart;
-			isstartframe = TRUE;
-		}
-	}
+	//if (g_previewFlag != 0) {
+	//	if (s_savepreviewFlag == 0) {
+	//		//preview start frame
+	//		*pdifftime = 0.0;
+	//		*pnextframe = rangestart;
+	//		isstartframe = TRUE;
+	//	}
+	//}
 
+
+	*pnextframe = s_previewrange.GetApplyFrame();
 
 
 	if (curmodel && curmodel->GetCurMotInfo()){
@@ -15643,29 +15645,6 @@ int CreateUtDialog()
 	s_dsutgui2.clear();
 	s_dsutguiid2.clear();
 
-	iY = s_mainheight - 210;
-	startx = s_mainwidth / 2 - 50 + 130;
-
-	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
-	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	s_ui_texbtcalccnt = g_SampleUI.GetControl(IDC_STATIC_BTCALCCNT);
-	_ASSERT(s_ui_texbtcalccnt);
-	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
-	s_ui_btcalccnt = g_SampleUI.GetControl(IDC_BTCALCCNT);
-	_ASSERT(s_ui_btcalccnt);
-	s_dsutgui2.push_back(s_ui_btcalccnt);
-	s_dsutguiid2.push_back(IDC_BTCALCCNT);
-
-	swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
-	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
-	s_ui_texerp = g_SampleUI.GetControl(IDC_STATIC_ERP);
-	_ASSERT(s_ui_texerp);
-	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(g_erp * 5000.0 + 0.4));
-	s_ui_erp = g_SampleUI.GetControl(IDC_ERP);
-	_ASSERT(s_ui_erp);
-	s_dsutgui2.push_back(s_ui_erp);
-	s_dsutguiid2.push_back(IDC_ERP);
-
 	//Center Bottom
 	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50;
@@ -15694,6 +15673,32 @@ int CreateUtDialog()
 	_ASSERT(s_ui_slthreadnum);
 	s_dsutgui2.push_back(s_ui_slthreadnum);
 	s_dsutguiid2.push_back(IDC_SL_NUMTHREAD);
+
+
+	iY = s_mainheight - 210;
+	startx = s_mainwidth / 2 - 50 + 130;
+
+	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
+	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	s_ui_texbtcalccnt = g_SampleUI.GetControl(IDC_STATIC_BTCALCCNT);
+	_ASSERT(s_ui_texbtcalccnt);
+	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
+	s_ui_btcalccnt = g_SampleUI.GetControl(IDC_BTCALCCNT);
+	_ASSERT(s_ui_btcalccnt);
+	s_dsutgui2.push_back(s_ui_btcalccnt);
+	s_dsutguiid2.push_back(IDC_BTCALCCNT);
+
+	swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
+	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	s_ui_texerp = g_SampleUI.GetControl(IDC_STATIC_ERP);
+	_ASSERT(s_ui_texerp);
+	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(g_erp * 5000.0 + 0.4));
+	s_ui_erp = g_SampleUI.GetControl(IDC_ERP);
+	_ASSERT(s_ui_erp);
+	s_dsutgui2.push_back(s_ui_erp);
+	s_dsutguiid2.push_back(IDC_ERP);
+
+
 
 //################
 //utguikind == 3
@@ -17485,7 +17490,7 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if ((g_previewFlag != 4) && (g_previewFlag != 5)){
-		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp())){
+		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) && (g_bonemarkflag != 0)){
 			//SetSelectCol();
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);
