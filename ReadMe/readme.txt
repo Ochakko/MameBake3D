@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/27_1
+	日記のページで、物理IKの操作手順や注意点を図解しました
+	https://moo-ochakkolab.ssl-lolipop.jp/diary_win.html#PhysicsIK_20210426
+
 2021/04/26_2
 	Debug a problem that first time of PhysRot and PhysMv is fail.
 	For keep hand figure, it is needed to set Hand KinematicONtoLower with RightClickMenu.
