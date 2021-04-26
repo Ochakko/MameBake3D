@@ -4878,6 +4878,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//s_curboneno = -1;
 
 		s_ikcnt = 0;
+		s_rectime = 0.0;
+		s_reccnt = 0;
+
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//DS deviceがあっても、マウスを併用する場合があるのでマウスのSetCaptureとReleaseCaptureは必要
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -11186,6 +11189,9 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					curmodel->SetMotionSpeed(g_dspeed);
 				}
 				else if (g_previewFlag == 5) {
+					s_rectime = 0.0;
+					s_reccnt = 0;
+
 					curmodel->SetCurrentRigidElem(s_rgdindexmap[curmodel]);//s_rgdindexをmodelごとに持つ必要あり！！！
 
 					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
@@ -14654,7 +14660,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//ドラッグ中だけ記録
 		if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
 			//60 x 30 frames limit : 30 sec limit
-			if (s_reccnt < MAXPHYSIKRECCNT) {
+			if ((curmodel->GetBtCnt() > 10) && (s_reccnt < MAXPHYSIKRECCNT)) {
 				s_rectime = (double)((int)s_reccnt);
 				s_model->PhysIKRec(s_rectime);
 				s_reccnt++;

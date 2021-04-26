@@ -264,6 +264,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/26_2
+	Debug a problem that first time of PhysRot and PhysMv is fail.
+	For keep hand figure, it is needed to set Hand KinematicONtoLower with RightClickMenu.
+
+	初回の物理IKが失敗する問題をデバッグ。
+	物理IKの間、手の形を保つためには、手首を右クリックしてメニューを出しKinematicONtoLowerJoitsを設定する必要有り。
+
 2021/04/26_1
 	Result of PhysicsRot and PhysicsMv is applied to selected frame range.
 	Editiing data of PhysicsIK is started to record when PhysicsRot or PhysicsMv button is pushed and Joint is dragged.
