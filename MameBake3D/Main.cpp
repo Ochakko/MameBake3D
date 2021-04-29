@@ -8606,6 +8606,7 @@ int OnREMenu( int selindex, int callbymenu )
 {
 	if (!s_model) {
 		_ASSERT(0);
+		SetMainWindowTitle();
 		return 0;
 	}
 	s_reindexmap[s_model] = selindex;
@@ -8620,6 +8621,7 @@ int OnREMenu( int selindex, int callbymenu )
 
 	if( (selindex < 0) || !s_model ){
 		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!
 	}
 
@@ -8629,6 +8631,7 @@ int OnREMenu( int selindex, int callbymenu )
 			s_reindexmap[s_model] = -1;
 		}
 		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
+		SetMainWindowTitle();
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -8649,6 +8652,8 @@ DbgOut( L"OnREMenu : addmenu %s\r\n", wname );
 
 	RigidElem2WndParam();
 	
+	SetMainWindowTitle();
+
 	return 0;
 }
 
@@ -26873,14 +26878,15 @@ void SetMainWindowTitle()
 
 
 	//"‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"
-	WCHAR strmaintitle[2048] = { 0L };
-	wcscpy_s(strmaintitle, 2048, L"‚Ü‚ß‚Î‚¯‚RD (MameBake3D) : ");
+	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
+	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"‚Ü‚ß‚Î‚¯‚RD (MameBake3D) : ");
 
 
 	if (s_model) {
-		WCHAR strcharactor[MAX_PATH] = { 0L };
-		char strmotionA[MAX_PATH] = { 0 };
-		WCHAR strmotionW[MAX_PATH] = { 0L };
+		WCHAR strcharactor[MAX_PATH * 3] = { 0L };
+		char strmotionA[MAX_PATH * 3] = { 0 };
+		WCHAR strmotionW[MAX_PATH * 3] = { 0 };
+		WCHAR strrefW[MAX_PATH * 3] = { 0 };
 
 		int modelnum = (int)s_modelindex.size();
 
@@ -26888,15 +26894,27 @@ void SetMainWindowTitle()
 			CModel* curmodel;
 			curmodel = s_modelindex[s_curmodelmenuindex].modelptr;
 			if (curmodel) {
-				wcscat_s(strmaintitle, 2048, curmodel->GetFileName());
-				wcscat_s(strmaintitle, 2048, L" : ");
+				wcscat_s(strmaintitle, (MAX_PATH * 3), curmodel->GetFileName());
+				wcscat_s(strmaintitle, (MAX_PATH * 3), L" : ");
 
 				MOTINFO* curmi;
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
-					strcpy_s(strmotionA, MAX_PATH, curmi->motname);
-					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strmotionA, MAX_PATH, strmotionW, MAX_PATH);
-					wcscat_s(strmaintitle, 2048, strmotionW);
+					strcpy_s(strmotionA, (MAX_PATH * 3), curmi->motname);
+					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strmotionA, (MAX_PATH * 3), strmotionW, (MAX_PATH * 3));
+					wcscat_s(strmaintitle, (MAX_PATH * 3), strmotionW);
+					wcscat_s(strmaintitle, (MAX_PATH * 3), L" : ");
+				}
+
+				int retrefindex = -1;
+				REINFO reinfo;
+				reinfo = s_model->GetCurrentRigidElemInfo(&retrefindex);
+				if (retrefindex >= 0) {
+					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, reinfo.filename, (MAX_PATH * 3), strrefW, (MAX_PATH * 3));
+					wcscat_s(strmaintitle, (MAX_PATH * 3), strrefW);
+				}
+				else {
+					wcscat_s(strmaintitle, (MAX_PATH * 3), L"reffile unknown");
 				}
 			}
 		}

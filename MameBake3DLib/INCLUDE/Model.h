@@ -570,6 +570,7 @@ public:
 	int SetKinematicFlag();
 	int CreateRigidElem();
 	int SetCurrentRigidElem( int curindex );
+	REINFO GetCurrentRigidElemInfo(int* retindex);
 	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
 	int SetBtEquilibriumPoint();
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );

@@ -6410,6 +6410,22 @@ int CModel::SetCurrentRigidElem( int curindex )
 	return 0;
 }
 
+REINFO CModel::GetCurrentRigidElemInfo(int* retindex)
+{
+	REINFO retinfo;
+
+	if ((m_curreindex >= 0) && (m_curreindex < (int)m_rigideleminfo.size())) {
+		*retindex = m_curreindex;
+		retinfo = m_rigideleminfo[m_curreindex];
+	}
+	else {
+		*retindex = -1;
+		retinfo.btgscale = 1.0f;
+		strcpy_s(retinfo.filename, 256, "unknown");
+	}
+
+	return retinfo;
+}
 
 void CModel::SetCurrentRigidElemReq(CBone* srcbone, string curname)
 {

@@ -264,6 +264,15 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/30_1
+	メインウインドウのタイトルにカレントのRigidElemファイル(*.ref)名も表示しました
+	設定したはずの物理の動きと異なる場合にはカレントのrefファイルが異なることを疑います。
+	refファイルはメインメニューの剛体設定切り替え(select rigid)メニューで選択します。
+
+	Current RigidElemFileName(*.ref) is displayed at MainWindowTitle.
+	If behavior of physics simulation is diffrent form what you expected, you will doubt current ref selection.
+	For selecting current ref file, there is the "select rigid" Menu at MainWindowMenu.
+
 2021/04/29_1
 	物理IKの数式にコメントをたくさんつけました。
 	Comment politely at PhysicsIK formula of CModel::ApplyPhysIkRecReq.
