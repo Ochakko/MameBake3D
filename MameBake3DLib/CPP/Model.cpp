@@ -9801,6 +9801,8 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 	if (!curmi)
 		return;
 
+
+
 	CBone* btbone = 0;
 	//if (srcbone->GetParent()) {
 	//	if (srcbone->GetChild()) {
@@ -9843,14 +9845,63 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 
 		if (foundrecdata0 && foundrecdata) {
 			ChaMatrix worldmat0 = btbone->GetWorldMat(curmi->motid, g_motionbrush_applyframe);//or srcframe
-			ChaMatrix btmat0 = recdata0.btmat;
-			ChaMatrix btmat = recdata.btmat;
-
-			ChaMatrix btdiff = ChaMatrixInv(btmat0) * btmat;
+			ChaMatrix btmat0 = recdata0.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間ゼロの姿勢
+			ChaMatrix btmat = recdata.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間カレントの姿勢
 
 			ChaMatrix curworldmat = btbone->GetWorldMat(curmi->motid, srcframe);
-			//ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * btmat0 * btdiff;
-			ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * btdiff;
+
+
+			//#######################################################################################
+			// quaternionのローカル座標系の式　invAxis * B * Axis は Matrixでは　Axis * B * InvAxis
+			// グローバルに戻すときには InvAxis * (Axis * B * InvAxis ) * Axis
+			// 
+			// DiffにBtを使う理由
+			// worldmatにはマウスドラッグ直後の姿勢が入っている
+			// その後、物理のループを回して他の剛体に力を伝え、またフィードバックをもらい剛体の接続を保つ
+			// 剛体の接続を保っているのはbtmat
+			// 
+			// worldmatでdiffをとる場合には
+			// TopDownとBottomUpを組み合わせてジョイントの接続を保つ
+			// しかしそれをリアルタイムでしない場合、結果は記録と異なるかもしれない
+			// 
+			// 
+			// Btmatを使った姿勢式は以下（シミュレーションしてみて多数の候補の中から選定した数式）
+			// ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;
+			// 
+			// 
+			// 解釈その１
+			// world * worldDiff
+			// world * InvAxis * LocalDIff * Axis
+			// world * InvAxis * (Axis * Diff * InvAxis) * Axis
+			// world * InvAxis * (Axis * (InvAxis * InvBt0 * Bt) * InvAxis) * Axis
+			// world * InvAxis * InvBt0 * Bt
+			// world * Inv(world0) * Inv(Bt0) * Bt
+			// 
+			// 
+			// 解釈その２
+			// LocalDiffをグローバルに戻すときには　InvAxis * LocalDiff * E (Eは単位行列　微分イメージ？！)
+			// world * worldDiff
+			// world * InvAxis * LocalDiff * E
+			// world * InvAxis * InvBt0 * Bt * E
+			// world * Inv(world0) * Inv(Bt0) * Bt
+			// 
+			// 解釈その３
+			//(world * invworld) * (invbt * bt)という掛け算の仕方の解釈のときE * Eになる気がするが結果はうまくいっている。
+			//world * InvAxis * LocalDiff * Eという解釈において、　LocalDiff == E は特異点？？？ 
+			// ######################################################################################
+			
+			//########################################################
+			//物理IKの数式（シミュレーションしてみて多数の候補の中から選定した数式）
+			//########################################################
+			ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;
+
+
+			//２つのうまくいかない数式
+			//worldmatを多用するとworldmatは接続を保っていないので形状が分断することがある。
+			//それを直すにはボーン構造をTopDownとBottomUp両方で処理する必要があると思われる。しかしその場合記録した結果と異なるかもしれない。
+			//ChaMatrix setmat = curworldmat * curworldmat * ChaMatrixInv(btmat0) * btmat * ChaMatrixInv(curworldmat);
+			//ChaMatrix setmat = curworldmat * ChaMatrixInv(curworldmat) * ChaMatrixInv(btmat0) * btmat * curworldmat;
+
 
 			//if (btbone->GetMass0() == 0) {
 			g_wmatDirectSetFlag = true;
@@ -9862,6 +9913,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 				//endjointでparentがある場合
 				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, srcframe);
 				btbone->SetWorldMat(0, curmi->motid, srcframe, parsetmat);
+				//btbone->SetWorldMat(1, curmi->motid, srcframe, parsetmat);
 			}
 			g_wmatDirectSetFlag = false;
 			//}

@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/29_1
+	物理IKの数式にコメントをたくさんつけました。
+	Comment politely at PhysicsIK formula of CModel::ApplyPhysIkRecReq.
+
 2021/04/27_1
 	日記のページで、物理IKの操作手順や注意点を図解しました
 	https://moo-ochakkolab.ssl-lolipop.jp/diary_win.html#PhysicsIK_20210426
