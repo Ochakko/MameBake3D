@@ -1427,6 +1427,9 @@ static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
 static void UpdateBtSimu(double nextframe, CModel* curmodel);
+static void SetKinematicToHand(CModel* srcmodel);
+static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone);
+
 
 static int OnRenderSetShaderConst();
 static int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext);
@@ -11307,6 +11310,9 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				curmodel->BulletSimulationStart();
 
 
+
+
+
 				//s_bpWorld->clientResetScene();
 				//if( s_model ){
 				//	s_model->ResetBt();
@@ -14506,6 +14512,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//	}
 		//}
 
+
 		if (curmodel->GetBtCnt() <= 10) {
 			curmodel->SetKinematicFlag();
 			curmodel->SetMotionFrame(*pnextframe);
@@ -14520,12 +14527,16 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 				s_rectime = 0.0;
 				s_reccnt = 0;
 				s_model->PhysIKRec(s_rectime);
+				SetKinematicToHand(curmodel);//Žw‚ª•Ï‚É‚È‚ç‚È‚¢‚æ‚¤‚É
 			}
 		}
 		else {
 			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
 			curmodel->SetBtEquilibriumPoint();//
 		}
+
+
+
 
 		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
 
@@ -26924,3 +26935,42 @@ void SetMainWindowTitle()
 
 }
 
+void SetKinematicToHand(CModel* srcmodel)
+{
+	if (!srcmodel) {
+		return;
+	}
+	if (!srcmodel->GetTopBone()) {
+		return;
+	}
+
+	SetKinematicToHandReq(srcmodel, srcmodel->GetTopBone());
+}
+
+
+void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone)
+{
+	if (!srcmodel) {
+		return;
+	}
+	if (!srcbone) {
+		return;
+	}
+
+	const char* pbonename = (const char*)srcbone->GetBoneName();
+	const char* phandpat1 = strstr(pbonename, "Elbow_branch");
+	const char* phandpat2 = strstr(pbonename, "Hand");
+
+	if (phandpat1 || phandpat2) {
+		srcmodel->SetKinematicTmpLower(srcbone, true);
+	}
+
+
+	if (srcbone->GetChild()) {
+		SetKinematicToHandReq(srcmodel, srcbone->GetChild());
+	}
+	if(srcbone->GetBrother()){
+		SetKinematicToHandReq(srcmodel, srcbone->GetBrother());
+	}
+
+}

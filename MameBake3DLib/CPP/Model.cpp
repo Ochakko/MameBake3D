@@ -9889,27 +9889,25 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			// world * worldDiff
 			// world * InvAxis * LocalDIff * Axis
 			// world * InvAxis * (Axis * Diff * InvAxis) * Axis
-			// world * InvAxis * (Axis * (InvAxis * InvBt0 * Bt) * InvAxis) * Axis
-			// world * InvAxis * InvBt0 * Bt
-			// world * Inv(world0) * Inv(Bt0) * Bt
+			// world * InvAxis * (Axis * (InvBt0 * Bt) * InvAxis) * Axis
+			// world * InvBt0 * Bt
 			// 
-			// 
-			// 解釈その２
-			// LocalDiffをグローバルに戻すときには　InvAxis * LocalDiff * E (Eは単位行列　微分イメージ？！)
-			// world * worldDiff
-			// world * InvAxis * LocalDiff * E
-			// world * InvAxis * InvBt0 * Bt * E
-			// world * Inv(world0) * Inv(Bt0) * Bt
-			// 
-			// 解釈その３
-			//(world * invworld) * (invbt * bt)という掛け算の仕方の解釈のときE * Eになる気がするが結果はうまくいっている。
-			//world * InvAxis * LocalDiff * Eという解釈において、　LocalDiff == E は特異点？？？ 
 			// ######################################################################################
 			
 			//########################################################
 			//物理IKの数式（シミュレーションしてみて多数の候補の中から選定した数式）
 			//########################################################
-			ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;
+			ChaMatrix setmat = curworldmat * ChaMatrixInv(btmat0) * btmat;
+
+			int isinitrot = IsInitRot(setmat);
+			if (isinitrot == 1) {
+				//解釈その３における特異点　編集効果無し
+				setmat = curworldmat;
+			}
+
+
+
+			//ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;//姿勢が変化している場所で試すと一見合っていたが、やはり全体として次元も違うしInvworld0は必要ない
 
 
 			//２つのうまくいかない数式

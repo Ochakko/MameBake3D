@@ -264,6 +264,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/04/30_2
+	物理IKのデバッグ。いつもの式を使うようにした。
+	物理IKで手が変にならないように
+	手（名前にHandあるいはElbow_branchが含まれるジョイントより子供のジョイント）自動でキネマティックフラグをセット。
+	Debug CModel::ApplyPhysIkRecReq using ordinary formula. Auto Hand KinematicFlag.
+
 2021/04/30_1
 	メインウインドウのタイトルにカレントのRigidElemファイル(*.ref)名も表示しました
 	設定したはずの物理の動きと異なる場合にはカレントのrefファイルが異なることを疑います。
