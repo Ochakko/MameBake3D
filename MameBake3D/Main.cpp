@@ -15436,6 +15436,8 @@ int OnFrameUndo(bool fromds, int fromdskind)
 	///////////// undo
 	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))){
 
+		StopBt();
+
 		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)){
 			//redo
 			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
