@@ -264,6 +264,10 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/01_3
+　　　　動画【物理シミュのベイク】MameBake3Dで物理をベイク【フレーム範囲指定OK】
+　　　　https://youtu.be/E-w6tpksu4I
+
 2021/05/01_2
 	物理シミュレーション中にアンドゥをすると形が崩れるので
 	アンドゥーの際に物理シミュレーションを自動で止めるようにしました。
@@ -2888,9 +2892,12 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+2021/05/01_3
+動画【物理シミュのベイク】MameBake3Dで物理をベイク【フレーム範囲指定OK】
+https://youtu.be/E-w6tpksu4I
 
 2021/04/30
-【物理IK】MameBake3Dの物理IKが保存可能に【位置コンストレイント】
+動画【物理IK】MameBake3Dの物理IKが保存可能に【位置コンストレイント】
 https://youtu.be/EOqRf35o7u8
 
 2021/04/05_3
