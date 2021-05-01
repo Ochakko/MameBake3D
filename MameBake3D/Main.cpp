@@ -594,6 +594,7 @@ double g_erp = 0.8;
 
 static int s_savepreviewFlag = 0;
 double s_btstartframe = 0.0;
+bool g_btsimurecflag = false;
 
 static FbxManager* s_psdk = 0;
 static BPWorld* s_bpWorld = 0;
@@ -1091,6 +1092,7 @@ static CDXUTControl* s_ui_speed = 0;
 
 //Bullet
 static CDXUTControl* s_ui_btstart = 0;
+static CDXUTControl* s_ui_btrecstart = 0;
 static CDXUTControl* s_ui_stopbt = 0;
 static CDXUTControl* s_ui_texbtcalccnt = 0;
 static CDXUTControl* s_ui_btcalccnt = 0;
@@ -1273,6 +1275,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_RMARK					64
 
 #define IDC_PHYSICS_IK_STOP			65
+#define IDC_BTRECSTART				66
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1395,6 +1398,7 @@ static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
 static void PrepairUndo();
 static int OnFrameUndo(bool fromds, int fromdskind);
+static void OnGUIEventSpeed();
 
 static void AutoCameraTarget();
 
@@ -1459,6 +1463,7 @@ int OnDelMotion( int delindex );
 int OnAddMotion( int srcmotid );
 
 static int StartBt( CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero );
+static int StopBt();
 static int GetShaderHandle();
 static int SetBaseDir();
 
@@ -1943,7 +1948,7 @@ void InitApp()
 
 	s_rectime = 0.0;
 	s_reccnt = 0;
-
+	g_btsimurecflag = false;
 
 	g_mousehereimage = 0;
 	g_menuaimbarimage = 0;
@@ -4323,7 +4328,7 @@ void RenderText( double fTime )
 
 void PrepairUndo()
 {
-	if (s_editmotionflag >= 0) {
+	if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
 		if (s_model) {
 			CreateTimeLineMark();
 			SetLTimelineMark(s_curboneno);
@@ -5656,6 +5661,19 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_BTSTART:
 			StartBt(s_model, TRUE, 0, 1);
 			break;
+		case IDC_BTRECSTART:
+		{
+			if (g_motionbrush_numframe < 10) {
+				WCHAR strmes[1024] = {0L};
+				swprintf_s(strmes, 1024, L"複数フレームを選択してから再試行してください。\nRetry after selecting frames range.");
+				::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
+			}
+			else {
+				g_btsimurecflag = true;
+				StartBt(s_model, TRUE, 0, 1);
+			}
+		}
+			break;
 		case IDC_PHYSICS_IK:
 			s_physicskind = 0;
 			StartBt(s_model, TRUE, 1, 1);
@@ -5679,8 +5697,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		//	break;
 		case IDC_STOP_BT:
 		case IDC_PHYSICS_IK_STOP:
-			s_model->BulletSimulationStop();
-			g_previewFlag = 0;
+			StopBt();
 			break;
 
         case IDC_LIGHT_SCALE:
@@ -5726,16 +5743,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
 
         case IDC_SPEED:
-			RollbackCurBoneNo();
-			g_dspeed = (float)(g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010f);
-			for( modelno = 0; modelno < modelnum; modelno++ ){
-				s_modelindex[modelno].modelptr->SetMotionSpeed( g_dspeed );
-			}
-
-            swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
-            g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
-            break;
-
+			OnGUIEventSpeed();
+			break;
 		case IDC_BTCALCCNT:
 			RollbackCurBoneNo();
 			g_btcalccnt = (double)(g_SampleUI.GetSlider(IDC_BTCALCCNT)->GetValue());
@@ -11015,12 +11024,29 @@ int OnAddMotion( int srcmotid )
 
 }
 
+int StopBt()
+{
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel) {
+			curmodel->BulletSimulationStop();
+		}
+	}
+
+	g_previewFlag = 0;
+
+	return 0;
+}
+
 
 int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 {
 	if (!s_model || !curmodel){
 		return 0;
 	}
+
+
 
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -11349,6 +11375,11 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 			}
 		}
 	}
+
+	if (s_model && (curmodel == s_model)) {
+		PrepairUndo();
+	}
+
 
 	return 0;
 }
@@ -14374,6 +14405,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	//}
 
 	//CModel* curmodel = s_model;
+
+	bool recstopflag = false;
 	vector<MODELELEM>::iterator itrmodel;
 	BOOL firstmodelflag = TRUE;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
@@ -14389,6 +14422,12 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				//curmodel->SetBtEquilibriumPoint();
 			}
 
+			if ((curmodel == s_model) && (s_model->GetBtCnt() == 0)) {
+				s_rectime = 0.0;
+				s_reccnt = 0;
+				s_model->PhysIKRec(s_rectime);
+			}
+
 			int endflag = 0;
 			int loopstartflag = 0;
 			//if (isstartframe == FALSE) {
@@ -14397,6 +14436,12 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			//else {
 			//	loopstartflag = 1;
 			//}
+
+			if ((g_btsimurecflag == true) && ((loopstartflag == 1) || (endflag == 1))) {
+				recstopflag = true;//!!!!!!!!!!!!!!!!!!!!!!!
+				break;
+			}
+
 
 			if (firstmodelflag) {
 #ifndef SKIP_EULERGRAPH__
@@ -14432,13 +14477,28 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		}
 	}
 
-	s_bpWorld->clientMoveAndDisplay();
+	if (s_model && (recstopflag == true)) {
+		StopBt();
+		s_model->ApplyPhysIkRec();
+		PrepairUndo();
+		g_btsimurecflag = false;
+	}
+	else {
+		s_bpWorld->clientMoveAndDisplay();
 
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel){
-			if (curmodel && curmodel->GetCurMotInfo()){
-				curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+			CModel* curmodel = itrmodel->modelptr;
+			if (curmodel) {
+				if (curmodel && curmodel->GetCurMotInfo()) {
+					curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+
+					//60 x 30 frames limit : 30 sec limit
+					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+						s_rectime = (double)((int)s_reccnt);
+						s_model->PhysIKRec(s_rectime);
+						s_reccnt++;
+					}
+				}
 			}
 		}
 	}
@@ -14523,7 +14583,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 			}
 			curmodel->SetBtEquilibriumPoint();//必要
 
-			if (curmodel->GetBtCnt() == 10) {
+			if (curmodel->GetBtCnt() == 0) {
 				s_rectime = 0.0;
 				s_reccnt = 0;
 				s_model->PhysIKRec(s_rectime);
@@ -15430,6 +15490,10 @@ int OnFrameUndo(bool fromds, int fromdskind)
 		Sleep(500);
 	}
 
+
+	OnGUIEventSpeed();
+
+
 	return 0;
 }
 
@@ -15732,26 +15796,34 @@ int CreateUtDialog()
 	iY = s_mainheight - 210;
 	startx = s_mainwidth / 2 - 50;
 
+	int addh2 = 27;
 
-	iY += 10;
+	//iY += 10;
 	g_SampleUI.AddButton(IDC_BTSTART, L"BT start", startx, iY += addh, 100, ctrlh);
 	s_ui_btstart = g_SampleUI.GetControl(IDC_BTSTART);
 	_ASSERT(s_ui_btstart);
 	s_dsutgui2.push_back(s_ui_btstart);
 	s_dsutguiid2.push_back(IDC_BTSTART);
-	
-	iY += 5;
-	g_SampleUI.AddButton(IDC_STOP_BT, L"STOP BT", startx, iY += addh, 100, ctrlh);
+
+	//iY += 3;
+	g_SampleUI.AddButton(IDC_BTRECSTART, L"BT REC", startx, iY += addh2, 100, ctrlh);
+	s_ui_btrecstart = g_SampleUI.GetControl(IDC_BTRECSTART);
+	_ASSERT(s_ui_btrecstart);
+	s_dsutgui2.push_back(s_ui_btrecstart);
+	s_dsutguiid2.push_back(IDC_BTRECSTART);
+
+	//iY += 3;
+	g_SampleUI.AddButton(IDC_STOP_BT, L"STOP BT", startx, iY += addh2, 100, ctrlh);
 	s_ui_stopbt = g_SampleUI.GetControl(IDC_STOP_BT);
 	_ASSERT(s_ui_stopbt);
 	s_dsutgui2.push_back(s_ui_stopbt);
 	s_dsutguiid2.push_back(IDC_STOP_BT);
 
 	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
-	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, ctrlh);
 	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
 	_ASSERT(s_ui_texthreadnum);
-	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh, 100, ctrlh, 1, 4, g_numthread);
+	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh2, 100, ctrlh, 1, 4, g_numthread);
 	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
 	_ASSERT(s_ui_slthreadnum);
 	s_dsutgui2.push_back(s_ui_slthreadnum);
@@ -16086,13 +16158,15 @@ int CreateLongTimelineWnd()
 						//ToTheLastFrame
 						OnTimeLineButtonSelectFromSelectStartEnd(1);
 
+						s_buttonselectstart = s_editrange.GetStartFrame();
+						s_buttonselectend = s_editrange.GetEndFrame();
+
 						if (s_editmotionflag < 0) {
 							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 							if (result) {
 								_ASSERT(0);
 							}
 						}
-
 					}
 
 
@@ -20415,6 +20489,9 @@ void GUISetVisible_Bullet()
 	}
 	if (s_ui_btstart) {
 		s_ui_btstart->SetVisible(nextvisible);
+	}
+	if (s_ui_btrecstart) {
+		s_ui_btrecstart->SetVisible(nextvisible);
 	}
 	if (s_ui_stopbt) {
 		s_ui_stopbt->SetVisible(nextvisible);
@@ -26974,3 +27051,21 @@ void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone)
 	}
 
 }
+
+void OnGUIEventSpeed()
+{
+	int modelnum;
+	modelnum = s_modelindex.size();
+	int modelno;
+
+	RollbackCurBoneNo();
+	g_dspeed = (float)(g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010f);
+	for (modelno = 0; modelno < modelnum; modelno++) {
+		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
+	}
+
+	WCHAR sz[100] = { 0L };
+	swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
+	g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
+}
+

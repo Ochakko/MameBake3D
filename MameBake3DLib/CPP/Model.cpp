@@ -79,6 +79,9 @@ static int s_alloccnt = 0;
 #define MAMEBAKE3DLIBGLOBALVAR
 #include <GlobalVar.h>
 
+extern bool g_btsimurecflag;
+
+
 /*
 extern ID3D11DepthStencilState *g_pDSStateZCmp;
 extern ID3D11DepthStencilState *g_pDSStateZCmpAlways;
@@ -9741,6 +9744,7 @@ void CModel::PhysIKRecReq(CBone* srcbone, double srcrectime)
 	currec.time = srcrectime;
 	currec.pbone = srcbone;
 	currec.btmat = srcbone->GetBtMat();
+
 	//currec.btmat = srcbone->GetWorldMat(curmi->motid, curmi->curframe);
 
 	if (srcrectime == 0.0) {
@@ -9777,30 +9781,50 @@ void CModel::ApplyPhysIkRec()
 		g_motionbrush_frameleng = frameleng;
 		g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
 	*/
+	if (g_btsimurecflag == false) {
+		//Physics IK
 
-	double curframe;
-	for (curframe = g_motionbrush_startframe; curframe <= g_motionbrush_endframe; curframe += 1.0) {
-		double currectime;
-		if (curframe == g_motionbrush_applyframe) {
-			currectime = srcmaxtime - 1.0;
+		double curframe;
+		for (curframe = g_motionbrush_startframe; curframe <= g_motionbrush_endframe; curframe += 1.0) {
+			double currectime;
+			if (curframe == g_motionbrush_applyframe) {
+				currectime = srcmaxtime - 1.0;
+			}
+			else if (curframe < g_motionbrush_applyframe) {
+				double rectimestep;
+				rectimestep = srcmaxtime / (g_motionbrush_applyframe - g_motionbrush_startframe + 1);
+				currectime = (double)((int)(rectimestep * (curframe - g_motionbrush_startframe)));
+				currectime = (double)((int)min(currectime, (m_phyikrectime - 1.0)));
+				currectime = (double)((int)max(0.0, currectime));
+			}
+			else {
+				double rectimestep;
+				rectimestep = srcmaxtime / (g_motionbrush_endframe - g_motionbrush_applyframe + 1);
+				currectime = (double)((int)(m_phyikrectime - rectimestep * (curframe - g_motionbrush_applyframe)));
+				currectime = (double)((int)min(currectime, (m_phyikrectime - 1.0)));
+				currectime = (double)((int)max(0.0, currectime));
+			}
+
+			ApplyPhysIkRecReq(GetTopBone(), curframe, currectime);
 		}
-		else if (curframe < g_motionbrush_applyframe) {
+	}
+	else {
+		//bt simulation
+
+		double curframe;
+		for (curframe = g_motionbrush_startframe; curframe <= g_motionbrush_endframe; curframe += 1.0) {
+			double currectime;
 			double rectimestep;
-			rectimestep = srcmaxtime / (g_motionbrush_applyframe - g_motionbrush_startframe + 1);
+			rectimestep = srcmaxtime / (g_motionbrush_endframe - g_motionbrush_startframe + 1.0);
 			currectime = (double)((int)(rectimestep * (curframe - g_motionbrush_startframe)));
 			currectime = (double)((int)min(currectime, (m_phyikrectime - 1.0)));
 			currectime = (double)((int)max(0.0, currectime));
-		}
-		else {
-			double rectimestep;
-			rectimestep = srcmaxtime / (g_motionbrush_endframe - g_motionbrush_applyframe + 1);
-			currectime = (double)((int)(m_phyikrectime - rectimestep * (curframe - g_motionbrush_applyframe)));
-			currectime = (double)((int)min(currectime, (m_phyikrectime - 1.0)));
-			currectime = (double)((int)max(0.0, currectime));
-		}
 
-		ApplyPhysIkRecReq(GetTopBone(), curframe, currectime);
+			ApplyPhysIkRecReq(GetTopBone(), curframe, currectime);
+
+		}
 	}
+
 	return;
 }
 
@@ -9882,7 +9906,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			// 
 			// 
 			// Btmatを使った姿勢式は以下（シミュレーションしてみて多数の候補の中から選定した数式）
-			// ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;
+			// ChaMatrix setmat = curworldmat * ChaMatrixInv(btmat0) * btmat;
 			// 
 			// 
 			// 解釈その１
@@ -9897,14 +9921,24 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			//########################################################
 			//物理IKの数式（シミュレーションしてみて多数の候補の中から選定した数式）
 			//########################################################
-			ChaMatrix setmat = curworldmat * ChaMatrixInv(btmat0) * btmat;
 
-			int isinitrot = IsInitRot(setmat);
-			if (isinitrot == 1) {
-				//解釈その３における特異点　編集効果無し
-				setmat = curworldmat;
+			ChaMatrix setmat;
+
+			if (g_btsimurecflag == false) {
+				//physic IK
+
+				setmat = curworldmat * ChaMatrixInv(btmat0) * btmat;
+
+				int isinitrot = IsInitRot(setmat);
+				if (isinitrot == 1) {
+					//解釈その３における特異点　編集効果無し
+					setmat = curworldmat;
+				}
 			}
-
+			else {
+				//bt simulation
+				setmat = btmat;				
+			}
 
 
 			//ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;//姿勢が変化している場所で試すと一見合っていたが、やはり全体として次元も違うしInvworld0は必要ない
@@ -9918,6 +9952,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 
 
 			//if (btbone->GetMass0() == 0) {
+
 			g_wmatDirectSetFlag = true;
 			//srcbone->SetWorldMat(0, curmi->motid, srcframe, setmat);
 			if (btbone->GetChild()) {
@@ -9930,6 +9965,11 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 				//btbone->SetWorldMat(1, curmi->motid, srcframe, parsetmat);
 			}
 			g_wmatDirectSetFlag = false;
+
+
+			//CalcBoneEulReq(btbone, curmi->motid, srcframe);
+
+
 			//}
 		}
 	}

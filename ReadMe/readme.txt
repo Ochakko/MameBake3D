@@ -264,6 +264,21 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/01_1
+	物理シミュレーションをモーションに書き出せるようにしました
+	メインウインドウのBullet PhysicsプレートをクリックしてGUIを表示し、BT RECボタンを押すと再生保存します。保存には少し時間がかかります。
+	
+	動画のお知らせ
+　　　　【物理IK】MameBake3Dの物理IKが保存可能に【位置コンストレイント】
+　　　　https://youtu.be/EOqRf35o7u8
+
+	物理シミュレーションの保存の動画は後ほど撮る予定
+
+	Simulation result of bullet physics is saved on click BT REC button.
+	new movie : saving of Physics IK  https://youtu.be/EOqRf35o7u8
+
+	moview about Simulation result of bullet physics will be up later.
+	
 2021/04/30_2
 	物理IKのデバッグ。いつもの式を使うようにした。
 	物理IKで手が変にならないように
@@ -2867,6 +2882,11 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+2021/04/30
+【物理IK】MameBake3Dの物理IKが保存可能に【位置コンストレイント】
+https://youtu.be/EOqRf35o7u8
+
 2021/04/05_3
 動画【MameBake3D】モーションツールをゲームパッドで動かしてみた【DualSence】
 https://youtu.be/AdJPZ3Uv6-c

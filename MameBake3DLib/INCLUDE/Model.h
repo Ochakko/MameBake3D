@@ -54,7 +54,7 @@ typedef struct tag_physikrec
 	ChaMatrix btmat;
 }PHYSIKREC;
 
-#define MAXPHYSIKRECCNT		(60 * 30)
+#define MAXPHYSIKRECCNT		(60 * 60)
 
 class CModel
 {
