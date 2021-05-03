@@ -9343,7 +9343,10 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			HANDLE hFind;
 			WIN32_FIND_DATA win32fd;
 			hFind = FindFirstFileW(searchfilename, &win32fd);
-			std::vector<wstring> vechistory;
+
+			std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+			std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
 			vechistory.clear();
 			bool notfoundfirst = false;
 			if (hFind == INVALID_HANDLE_VALUE) {
@@ -9352,9 +9355,31 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			do {
 				if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 					//printf("%s\n", win32fd.cFileName);
-
 					WCHAR openfilename[MAX_PATH] = { 0L };
 					swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+			
+					vechistory.push_back(openfilename);
+				}
+			} while (FindNextFile(hFind, &win32fd));
+			FindClose(hFind);
+
+
+			if (!vechistory.empty()) {
+
+				std::sort(vechistory.begin(), vechistory.end());
+				std::reverse(vechistory.begin(), vechistory.end());
+
+				int numhistory = (int)vechistory.size();
+				int dispnum = min(5, numhistory);
+
+				
+
+				int foundnum = 0;
+				int historyno;
+				for (historyno = 0; historyno < numhistory; historyno++) {
+					WCHAR openfilename[MAX_PATH] = { 0L };
+					wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+
 					HANDLE hfile;
 					hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 						FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -9366,53 +9391,53 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						if (bsuccess) {
 							bool foundsame = false;
 							wstring newwstr = readwstr;
-							std::vector<wstring>::iterator itrhistory;
-							for (itrhistory = vechistory.begin(); itrhistory != vechistory.end(); itrhistory++) {
-								if (newwstr.compare(*itrhistory) == 0) {
+							std::vector<wstring>::iterator itropenfilename;
+							for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+								if (newwstr.compare(*itropenfilename) == 0) {
 									foundsame = true;
 								}
 							}
 							if (foundsame == false) {
-								vechistory.push_back(readwstr);
+								vecopenfilename.push_back(readwstr);
+								foundnum++;
+								if (foundnum >= dispnum) {
+									break;
+								}
 							}
 						}
 						CloseHandle(hfile);
 					}
 				}
-			} while (FindNextFile(hFind, &win32fd));
-			FindClose(hFind);
-
-			std::sort(vechistory.begin(), vechistory.end());
-			std::reverse(vechistory.begin(), vechistory.end());
+			}
 
 			int radiocnt = 0;
-			int radionum = min(5, vechistory.size());
+			int radionum = min(5, vecopenfilename.size());
 			if (radionum != 0) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vechistory[0].c_str());
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
 			}
 			else {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
 			}
 			if (radionum >= 2) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vechistory[1].c_str());
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
 			}
 			else {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
 			}
 			if (radionum >= 3) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vechistory[2].c_str());
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
 			}
 			else {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
 			}
 			if (radionum >= 4) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vechistory[3].c_str());
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
 			}
 			else {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
 			}
 			if (radionum >= 5) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vechistory[4].c_str());
+				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
 			}
 			else {
 				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
@@ -11680,6 +11705,9 @@ int SaveProject()
 	}
 
 
+
+
+
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
@@ -11697,9 +11725,42 @@ int SaveProject()
 	}
 
 
+	WCHAR saveprojpath[MAX_PATH] = { 0L };
+	swprintf_s(saveprojpath, MAX_PATH, L"%s\\%s\\%s.cha", s_projectdir, s_projectname, s_projectname);
+
 
 	CChaFile chafile;
 	CallF(chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed), return 1);
+
+
+	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
+	int savepathlen;
+	savepathlen = wcslen(saveprojpath);
+	if (savepathlen > 4) {
+		WCHAR* pwext;
+		pwext = saveprojpath + (savepathlen - 1) - 3;
+		if (wcscmp(pwext, L".cha") == 0) {
+			SYSTEMTIME localtime;
+			GetLocalTime(&localtime);
+			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04d%02d%02d%02d%02d%02d.txt",
+				s_temppath,
+				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+			HANDLE hfile;
+			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				int pathlen;
+				pathlen = wcslen(saveprojpath);
+				if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+					DWORD writelen = 0;
+					WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
+					_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
 
 	return 0;
 }
@@ -26973,7 +27034,8 @@ void SetMainWindowTitle()
 
 
 	if (s_model) {
-		WCHAR strcharactor[MAX_PATH * 3] = { 0L };
+		//WCHAR strcharactor[MAX_PATH * 3] = { 0L };
+		WCHAR strindexedcharactor[MAX_PATH * 3] = { 0L };
 		char strmotionA[MAX_PATH * 3] = { 0 };
 		WCHAR strmotionW[MAX_PATH * 3] = { 0 };
 		WCHAR strrefW[MAX_PATH * 3] = { 0 };
@@ -26984,7 +27046,8 @@ void SetMainWindowTitle()
 			CModel* curmodel;
 			curmodel = s_modelindex[s_curmodelmenuindex].modelptr;
 			if (curmodel) {
-				wcscat_s(strmaintitle, (MAX_PATH * 3), curmodel->GetFileName());
+				swprintf_s(strindexedcharactor, MAX_PATH * 3, L"%d : %s", s_curmodelmenuindex, curmodel->GetFileName());
+				wcscat_s(strmaintitle, (MAX_PATH * 3), strindexedcharactor);
 				wcscat_s(strmaintitle, (MAX_PATH * 3), L" : ");
 
 				MOTINFO* curmi;

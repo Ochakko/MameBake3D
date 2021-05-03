@@ -264,6 +264,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/03_1
+	オープンプロジェクトファイル履歴を改良
+	ウインドウタイトルにキャラクターのインデックスも表示
+
+	Improve OpenProjectFileHistory.
+	Display charactor index at WindowTitle too.
+
 2021/05/01_3
 　　　　動画【物理シミュのベイク】MameBake3Dで物理をベイク【フレーム範囲指定OK】
 　　　　https://youtu.be/E-w6tpksu4I
