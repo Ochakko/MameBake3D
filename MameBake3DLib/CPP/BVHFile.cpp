@@ -307,7 +307,8 @@ int CBVHFile::LoadBVHFile( HWND srcapphwnd, WCHAR* srcname, float srcmult )
 			
 			CalcBVHTreeQReq(m_behead);
 
-			ret = (*( m_bearray + beno ))->ConvZxyRot();
+			//ret = (*( m_bearray + beno ))->ConvZxyRot();
+			ret = (*(m_bearray + beno))->ConvXYZRot();
 			_ASSERT(!ret);
 
 			CalcTransMatReq(m_behead);

@@ -31,7 +31,8 @@ public:
 	int CheckNotAlNumName( char** ppdstname );
 
 	int CalcDiffTra( int frameno, ChaVector3* pdifftra );
-	int ConvZxyRot();
+	//int ConvZxyRot();
+	int ConvXYZRot();
 
 private:
 	int InitParams();
@@ -95,19 +96,20 @@ public:
 	//	return rotate;
 	//};
 
-	float GetZxyRot(int srcframeno, int srcaxis)
+	//float GetZxyRot(int srcframeno, int srcaxis)
+	float GetXYZRot(int srcframeno, int srcaxis)
 	{
 		if ((srcframeno >= 0) && (srcframeno < framenum)){
 			if ((srcaxis >= ROTAXIS_X) && (srcaxis <= ROTAXIS_Z)){
 				switch (srcaxis){
 				case ROTAXIS_X:
-					return (zxyrot + srcframeno)->x;
+					return (xyzrot + srcframeno)->x;
 					break;
 				case ROTAXIS_Y:
-					return (zxyrot + srcframeno)->y;
+					return (xyzrot + srcframeno)->y;
 					break;
 				case ROTAXIS_Z:
-					return (zxyrot + srcframeno)->z;
+					return (xyzrot + srcframeno)->z;
 					break;
 				default:
 					_ASSERT(0);
@@ -252,7 +254,7 @@ private:
 
 	ChaVector3* trans;
 	ChaVector3* rotate;
-	ChaVector3* zxyrot;
+	ChaVector3* xyzrot;
 	CQuaternion* qptr;
 	CQuaternion* transpose;//転置後のクォータニオン
 	CQuaternion* treeq;//親の影響を考慮したクォータニオン。自分を含まず。

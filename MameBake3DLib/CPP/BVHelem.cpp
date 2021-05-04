@@ -63,7 +63,7 @@ int CBVHElem::InitParams()
 
 	trans = 0;
 	rotate = 0;
-	zxyrot = 0;
+	xyzrot = 0;
 	qptr = 0;
 	treeq = 0;
 	transpose = 0;
@@ -100,9 +100,9 @@ int CBVHElem::DestroyObjs()
 		delete [] rotate;
 		rotate = 0;
 	}
-	if (zxyrot){
-		delete[] zxyrot;
-		zxyrot = 0;
+	if (xyzrot){
+		delete[] xyzrot;
+		xyzrot = 0;
 	}
 
 	if( qptr ){
@@ -462,13 +462,13 @@ int CBVHElem::CreateMotionObjs( int srcframes )
 	}
 	ZeroMemory( rotate, sizeof( ChaVector3 ) * framenum );
 
-	zxyrot = new ChaVector3[framenum];
-	if (!zxyrot){
-		DbgOut(L"bvhelem : CreateMotionObjs : zxyrot alloc error !!!\n");
+	xyzrot = new ChaVector3[framenum];
+	if (!xyzrot){
+		DbgOut(L"bvhelem : CreateMotionObjs : xyzrot alloc error !!!\n");
 		_ASSERT(0);
 		return 1;
 	}
-	ZeroMemory(zxyrot, sizeof(ChaVector3)* framenum);
+	ZeroMemory(xyzrot, sizeof(ChaVector3)* framenum);
 
 
 	qptr = new CQuaternion[ framenum ];
@@ -688,9 +688,9 @@ int CBVHElem::ConvertRotate2Q()
 	return 0;
 }
 
-int CBVHElem::ConvZxyRot()
+//int CBVHElem::ConvZxyRot()
+int CBVHElem::ConvXYZRot()
 {
-
 	int frameno;
 	ChaVector3 befeul;
 	ZeroMemory(&befeul, sizeof(ChaVector3));
@@ -700,15 +700,17 @@ int CBVHElem::ConvZxyRot()
 		befq.InOrder(qptr + frameno);
 
 		ChaVector3 euler;
-		//qToEulerAxis( *(treeq + frameno), (qptr + frameno), &euler);
+		CQuaternion calcq;
 		CQuaternion iniq;
-		qToEulerAxis(iniq, (qptr + frameno), &euler);
-		modifyEuler(&euler, &befeul);
+		//qToEulerAxis(iniq, (qptr + frameno), &euler);
+		//modifyEuler(&euler, &befeul);
+		(qptr + frameno)->Q2EulXYZ(&iniq, befeul, &euler);
 
-		*(zxyrot + frameno) = euler;
+		*(xyzrot + frameno) = euler;
 
 		befeul = euler;
-		befq.SetRotationZXY(0, *(zxyrot + frameno));
+		//befq.SetRotationZXY(0, *(xyzrot + frameno));
+		befq.SetRotationXYZ(0, *(xyzrot + frameno));
 	}
 
 	return 0;

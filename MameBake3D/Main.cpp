@@ -4384,7 +4384,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	CBone* curbone = 0;
 	CRigidElem* curre = 0;
 	int maxboneno = 0;
-	if (s_curboneno >= 0) {
+	if (s_model && (s_curboneno >= 0)) {
 		curbone = s_model->GetBoneByID(s_curboneno);
 		curre = s_model->GetRigidElem(s_curboneno);
 	}

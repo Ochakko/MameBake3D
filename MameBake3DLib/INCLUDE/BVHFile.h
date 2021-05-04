@@ -79,7 +79,10 @@ public:
 	CBVHElem* GetBVHElem(){
 		return m_behead;
 	};
-
+	int GetJointNum()
+	{
+		return m_jointnum;
+	}
 
 private:
 	//file‘€ì—p

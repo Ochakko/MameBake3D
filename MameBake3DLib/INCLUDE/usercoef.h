@@ -29,7 +29,8 @@
 
 //#define MAXBONENUM	81
 //#define MAXCLUSTERNUM	70
-#define MAXCLUSTERNUM	70
+//#define MAXCLUSTERNUM	70
+#define MAXCLUSTERNUM	200
 
 
 

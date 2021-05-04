@@ -264,6 +264,18 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/04_1
+	file->bvh2fbxメニュー実行の際に落ちるようになっていたのを修正
+	bvhファイルはMotionBuilder friendlyのものに対応することにした
+	カーネギーメロン大学のbvh file : MotionBuilder friendlyで変換再生テストOK！！
+	１つの表示オブジェクトに対する最大クラスター数を７０から２００に変更、ビデオカードのシェーダー定数の数の問題になり得るがしょうがない。
+
+	Debug function of file->bvh2fbx menu.
+	bvh2fbx function is tested ok using Motionbuilder-friendly BVH conversion release of 
+	the Carnegie-Mellon University (CMU) Graphics Lab Motion Capture Database.
+	Max Num of Clustor for a object is changed from 70 to 200, it may cause a problem of num of videocard's shader constants.
+
+
 2021/05/03_1
 	オープンプロジェクトファイル履歴を改良
 	ウインドウタイトルにキャラクターのインデックスも表示

@@ -95,6 +95,7 @@ int sortfunc_leng( void *context, const void *elem1, const void *elem2)
 
 static FbxManager* s_pSdkManager = 0;
 static int s_bvhflag = 0;
+static int s_bvhjointnum = 0;
 
 //static map<CBone*, FbxNode*> s_bone2skel;
 static int s_firstoutmot;
@@ -301,8 +302,14 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
 
 int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename)
 {
+	if (!pbvhfile) {
+		return 1;
+	}
+
 	s_bvhflag = 1;
+	s_bvhjointnum = 0;
 	s_behead = pbvhfile->GetBVHElem();
+	s_bvhjointnum = pbvhfile->GetJointNum();
 	s_model = 0;
 
 	s_pSdkManager = psdk;
@@ -446,13 +453,14 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 	}
 ***/
 
-	CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
-	if (!ppsetbone) {
-		_ASSERT(0);
-		return 1;
-	}
-	_ASSERT(ppsetbone);
-	ZeroMemory(ppsetbone, s_model->GetBoneListSize() * sizeof(CBone*));
+	CBone** ppsetbone = 0;
+	//CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
+	//if (!ppsetbone) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
+	//_ASSERT(ppsetbone);
+	//ZeroMemory(ppsetbone, s_model->GetBoneListSize() * sizeof(CBone*));
 
 
 	FbxNode* lMesh = CreateDummyFbxMesh(pSdkManager, pScene, ppsetbone);
@@ -463,9 +471,10 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 	CreateDummyInfDataReq(s_fbxbone, pSdkManager, pScene, lMesh, lSkin, ppsetbone, &sbonecnt);
 	lMeshAttribute->AddDeformer(lSkin);
 
-	free(ppsetbone);
-	ppsetbone = 0;
-
+	if (ppsetbone) {
+		free(ppsetbone);
+		ppsetbone = 0;
+	}
 
 //    StoreRestPose(pScene, lSkeletonRoot);
 
@@ -490,6 +499,8 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 
 bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
 {
+	s_model = pmodel;
+
 	//source scene‚ªbvh‚©‚çì‚ç‚ê‚½FBX‚©‚Ç‚¤‚©‚ð”»’è
 	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
 	if (sceneinfo) {
@@ -524,6 +535,11 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
 		return 0;
 	}
 
+	
+	if (!s_model) {
+		_ASSERT(0);
+		return 1;//!!!!!!
+	}
 
 	CBone** ppsetbone = (CBone**)malloc(s_model->GetBoneListSize() * sizeof(CBone*));
 	if (!ppsetbone) {
@@ -951,7 +967,7 @@ BOOL LinkToTopBoneFunc(FbxCluster* lCluster, FbxSkin* lSkin, FbxScene* pScene, F
 
 										_ASSERT(curbone->GetBoneNo() >= 0);
 										_ASSERT(curbone->GetBoneNo() < s_model->GetBoneListSize());
-										if (!(*(ppsetbone + curbone->GetBoneNo()))) {
+										if (!(ppsetbone && *(ppsetbone + curbone->GetBoneNo()))) {
 											*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
 										}
 									}
@@ -1111,7 +1127,7 @@ BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lS
 
 											_ASSERT(curbone->GetBoneNo() >= 0);
 											_ASSERT(curbone->GetBoneNo() < s_model->GetBoneListSize());
-											if (!(*(ppsetbone + curbone->GetBoneNo()))) {
+											if (!(ppsetbone && *(ppsetbone + curbone->GetBoneNo()))) {
 												*(ppsetbone + curbone->GetBoneNo()) = curbone;//!!!!!!!!!
 											}
 										}
@@ -1329,15 +1345,22 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				return;
 			}
 
-			EFbxRotationOrder lRotationOrderSrc = eEulerZXY;
-			EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
-			lSkel->GetRotationOrder(FbxNode::eSourcePivot, lRotationOrderSrc);
-			lSkel->GetRotationOrder(FbxNode::eDestinationPivot, lRotationOrderDst);
-			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerZXY);
-			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
+			//EFbxRotationOrder lRotationOrderSrc = eEulerZXY;
+			//EFbxRotationOrder lRotationOrderDst = eEulerXYZ;
+			//lSkel->GetRotationOrder(FbxNode::eSourcePivot, lRotationOrderSrc);
+			//lSkel->GetRotationOrder(FbxNode::eDestinationPivot, lRotationOrderDst);
+			
+			
+			////lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerZXY);
+			////lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
+			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
+			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerZXY);
+
 			lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
-			lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerZXY);
-			s_convPivot = FbxNode::eSourcePivot;
+			lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
+			//s_convPivot = FbxNode::eSourcePivot;
+			s_convPivot = FbxNode::eDestinationPivot;
+
 
 			int zeroflag;
 
@@ -1348,9 +1371,9 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				WriteFBXAnimTraOfBVH(fbxbone, lAnimLayer, AXIS_Y, zeroflag);
 				WriteFBXAnimTraOfBVH(fbxbone, lAnimLayer, AXIS_Z, zeroflag);
 
-				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_Z, zeroflag);
 				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_X, zeroflag);
 				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_Y, zeroflag);
+				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_Z, zeroflag);
 			}
 			else{
 				zeroflag = 0;
@@ -1358,9 +1381,9 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 				WriteFBXAnimTraOfBVH(fbxbone, lAnimLayer, AXIS_Y, zeroflag);
 				WriteFBXAnimTraOfBVH(fbxbone, lAnimLayer, AXIS_Z, zeroflag);
 
-				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_Z, zeroflag);
 				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_X, zeroflag);
 				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_Y, zeroflag);
+				WriteFBXAnimRotOfBVH(fbxbone, lAnimLayer, AXIS_Z, zeroflag);
 			}
 			
 		}
@@ -2365,9 +2388,9 @@ void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene
 	//FbxSkin* lSkin = FbxSkin::Create(pScene, "");
 
 	CBone* curbone = fbxbone->GetBone();
-	if (curbone) {
-		if (*(ppsetbone + curbone->GetBoneNo()) == 0) {
-			LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);
+	if (curbone || !ppsetbone) {//bvh‚Ìê‡‚É‚Ífbxbone->GetBone() == NULL ‚©‚Â!ppsetbone
+		if (!ppsetbone ||(ppsetbone && *(ppsetbone + curbone->GetBoneNo()) == 0)) {
+			LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);//“à•”‚Åfbxbone->GetBone()‚ÍŽg‚í‚È‚¢
 			//lMeshAttribute->AddDeformer(lSkin);
 			(*bonecnt)++;
 		}
@@ -2389,15 +2412,19 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CBone** p
 
 	int notdirtycnt = 0;
 	int bonecnt;
-	for (bonecnt = 0; bonecnt < s_model->GetBoneListSize(); bonecnt++) {
-		if (*(ppsetbone + bonecnt) == 0) {
-			notdirtycnt++;
+	if (ppsetbone) {
+		for (bonecnt = 0; bonecnt < s_model->GetBoneListSize(); bonecnt++) {
+			if (*(ppsetbone + bonecnt) == 0) {
+				notdirtycnt++;
+			}
+		}
+		if (notdirtycnt == 0) {
+			return NULL;
 		}
 	}
-	if (notdirtycnt == 0) {
-		return NULL;
+	else if(s_bvhflag == 1){
+		notdirtycnt = s_bvhjointnum;
 	}
-
 
 	char meshname[256] = { 0 };
 	sprintf_s(meshname, 256, "_ND_dtri%d", s_namecnt);
@@ -2815,7 +2842,8 @@ int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiski
 
 		lCurve = lSkel->LclTranslation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
-		for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
+		//for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
+		for (frameno = 0; frameno < curbe->GetFrameNum(); frameno++) {
 			curbe->GetTrans(frameno, &difftra);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
@@ -2887,7 +2915,8 @@ int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiski
 
 		lCurve = lSkel->LclRotation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
-		for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
+		//for (frameno = 0; frameno <= curbe->GetFrameNum(); frameno++){
+		for (frameno = 0; frameno < curbe->GetFrameNum(); frameno++) {
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 			if (zeroflag == 1){
@@ -2896,17 +2925,17 @@ int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiski
 			else{
 				switch (axiskind){
 				case AXIS_X:
-					curval = curbe->GetZxyRot(frameno, ROTAXIS_X);
+					curval = curbe->GetXYZRot(frameno, ROTAXIS_X);
 					break;
 				case AXIS_Y:
-					curval = curbe->GetZxyRot(frameno, ROTAXIS_Y);
+					curval = curbe->GetXYZRot(frameno, ROTAXIS_Y);
 					break;
 				case AXIS_Z:
-					curval = curbe->GetZxyRot(frameno, ROTAXIS_Z);
+					curval = curbe->GetXYZRot(frameno, ROTAXIS_Z);
 					break;
 				default:
 					_ASSERT(0);
-					curval = curbe->GetZxyRot(frameno, ROTAXIS_X);
+					curval = curbe->GetXYZRot(frameno, ROTAXIS_X);
 					break;
 				}
 			}
