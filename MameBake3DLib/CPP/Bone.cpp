@@ -333,6 +333,7 @@ int CBone::InitParams()
 
 	m_posefoundflag = false;
 	m_cachebefmp = 0;
+	m_chechebefmotid = 0;
 
 	m_firstgetflag = 0;//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_firstgetmatrix);//GetCurrentZeroFrameMat用
@@ -408,6 +409,7 @@ void CBone::InitAngleLimit()
 int CBone::DestroyObjs()
 {
 	m_cachebefmp = 0;
+	m_chechebefmotid = 0;
 
 	int colindex;
 	for (colindex = 0; colindex < COL_MAX; colindex++){
@@ -592,6 +594,7 @@ int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr,
 void CBone::ResetMotionCache()
 {
 	m_cachebefmp = 0;
+	m_chechebefmotid = 0;
 }
 
 int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr )
@@ -616,7 +619,7 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//キャッシュをチェックする
-	if (m_cachebefmp && (m_cachebefmp->GetFrame() <= (srcframe + 0.0001))){
+	if ((m_chechebefmotid == srcmotid) && m_cachebefmp && (m_cachebefmp->GetUseFlag() == 1) && (m_cachebefmp->GetFrame() <= (srcframe + 0.0001))){
 		//高速化のため途中からの検索にする
 		pcur = m_cachebefmp;
 	}
@@ -646,6 +649,7 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//m_cachebefmp = pbef;
+	m_chechebefmotid = srcmotid;
 	if (pbef) {
 		m_cachebefmp = pbef->GetPrev();
 	}
@@ -4660,23 +4664,33 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 	int curpoollen;
 	curpoollen = s_bonepool.size();
 
+	if ((s_befheadno != (s_bonepool.size() - 1)) || (s_befelemno != (BONEPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
 	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
-	int chkheadno;
-	chkheadno = s_befheadno;
-	int chkelemno;
-	chkelemno = s_befelemno + 1;
-	if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= BONEPOOLBLKLEN)) {
-		chkelemno = 0;
-		chkheadno++;
-	}
-	if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < BONEPOOLBLKLEN)) {
-		CBone* curbonehead = s_bonepool[chkheadno];
-		if (curbonehead) {
-			CBone* chkbone;
-			chkbone = curbonehead + chkelemno;
-			if (chkbone && (chkbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
-				if (chkbone->GetUseFlag() == 0) {
+		int chkheadno;
+		chkheadno = s_befheadno;
+		int chkelemno;
+		chkelemno = s_befelemno + 1;
+		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= BONEPOOLBLKLEN)) {
+			chkelemno = 0;
+			chkheadno++;
+		}
+		if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < BONEPOOLBLKLEN)) {
+			CBone* curbonehead = s_bonepool[chkheadno];
+			if (curbonehead) {
+				CBone* chkbone;
+				chkbone = curbonehead + chkelemno;
+				if (chkbone && (chkbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
+					if (chkbone->GetUseFlag() == 0) {
+						chkbone->InitParamsForReUse(parmodel);//
+
+						s_befheadno = chkheadno;
+						s_befelemno = chkelemno;
+
+						return chkbone;
+					}
+				}
+				else if (chkbone && (chkbone->GetParModel() == 0)) {
 					chkbone->InitParamsForReUse(parmodel);//
 
 					s_befheadno = chkheadno;
@@ -4685,52 +4699,46 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 					return chkbone;
 				}
 			}
-			else if (chkbone && (chkbone->GetParModel() == 0)) {
-				chkbone->InitParamsForReUse(parmodel);//
-
-				s_befheadno = chkheadno;
-				s_befelemno = chkelemno;
-
-				return chkbone;
-			}
 		}
-	}
 
-	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
-		//プールを先頭から検索して未使用がみつかればそれをリリース
-	int boneno;
-	for (boneno = 0; boneno < curpoollen; boneno++) {
-		CBone* curbonehead = s_bonepool[boneno];
-		if (curbonehead) {
-			int elemno;
-			for (elemno = 0; elemno < BONEPOOLBLKLEN; elemno++) {
-				CBone* curbone;
-				curbone = curbonehead + elemno;
-				if (curbone && (curbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
-					if (curbone->GetUseFlag() == 0) {
-						curbone->InitParamsForReUse(parmodel);
+		//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+			//プールを先頭から検索して未使用がみつかればそれをリリース
+		int boneno;
+		for (boneno = 0; boneno < curpoollen; boneno++) {
+			CBone* curbonehead = s_bonepool[boneno];
+			if (curbonehead) {
+				int elemno;
+				for (elemno = 0; elemno < BONEPOOLBLKLEN; elemno++) {
+					CBone* curbone;
+					curbone = curbonehead + elemno;
+					if (curbone && (curbone->GetParModel() == parmodel)) {//parmodelが同じ必要有。
+						if (curbone->GetUseFlag() == 0) {
+							curbone->InitParamsForReUse(parmodel);
 
-						s_befheadno = boneno;
-						s_befelemno = elemno;
+							s_befheadno = boneno;
+							s_befelemno = elemno;
 
-						return curbone;
+							return curbone;
+						}
 					}
-				}
-				else if (curbone && (curbone->GetParModel() == 0)) {
-					if (curbone->GetUseFlag() == 0) {
-						curbone->InitParamsForReUse(parmodel);
+					else if (curbone && (curbone->GetParModel() == 0)) {
+						if (curbone->GetUseFlag() == 0) {
+							curbone->InitParamsForReUse(parmodel);
 
-						s_befheadno = boneno;
-						s_befelemno = elemno;
+							s_befheadno = boneno;
+							s_befelemno = elemno;
 
-						return curbone;
+							return curbone;
+						}
 					}
 				}
 			}
 		}
+		//}
 	}
-	//}
 
+
+	//前回リリースしたポインタが最後尾または
 	//未使用boneがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 	CBone* allocbone;
 	allocbone = new CBone[BONEPOOLBLKLEN];

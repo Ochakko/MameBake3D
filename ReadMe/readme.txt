@@ -264,6 +264,15 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/06_1
+	fbxファイルの読み込みをFbxStreamを使ってバッファから読み込むように修正
+	しかし、読み込み速度のボトルネックではなかった（ほとんど速くならなかった）
+	ブロックアロケート修正（前回最後尾データをリリースした場合の考慮）
+
+	Use FbxStream on load FBX file.
+	Modify block alloc of CMotionPoint, CBone, CRigidElem and EulKey.
+
+
 2021/05/04_1
 	file->bvh2fbxメニュー実行の際に落ちるようになっていたのを修正
 	bvhファイルはMotionBuilder friendlyのものに対応することにした

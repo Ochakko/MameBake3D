@@ -1140,7 +1140,7 @@ static void ShowLimitEulerWnd(bool srcflag);
 ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 
 
-std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+std::vector<void*> g_eulpool;//allocate EULPOOLBLKLEN EulKey at onse and pool 
 
 void OnDSUpdate();
 static void OnDSMouseHereApeal();

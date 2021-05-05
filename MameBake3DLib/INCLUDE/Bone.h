@@ -1064,6 +1064,7 @@ private:
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。
 	CMotionPoint m_befmp;//一回前の姿勢データ。
 	CMotionPoint* m_cachebefmp;
+	int m_chechebefmotid;
 
 
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。

@@ -166,64 +166,68 @@ CRigidElem* CRigidElem::GetNewRigidElem()
 	curpoollen = s_rigidelempool.size();
 
 
+	if ((s_befheadno != (s_rigidelempool.size() - 1)) || (s_befelemno != (REPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
+
 	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
-	int chkheadno;
-	chkheadno = s_befheadno;
-	int chkelemno;
-	chkelemno = s_befelemno + 1;
-	if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= REPOOLBLKLEN)) {
-		chkelemno = 0;
-		chkheadno++;
-	}
-	if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < REPOOLBLKLEN)) {
-		CRigidElem* currigidelemhead = s_rigidelempool[chkheadno];
-		if (currigidelemhead) {
-			CRigidElem* chkrigidelem;
-			chkrigidelem = currigidelemhead + chkelemno;
-			if (chkrigidelem) {
-				if (chkrigidelem->GetUseFlag() == 0) {
-					int saveindex = chkrigidelem->GetIndexOfPool();
-					int saveallochead = chkrigidelem->IsAllocHead();
-					chkrigidelem->InitParams();
-					chkrigidelem->SetUseFlag(1);
-					chkrigidelem->SetIndexOfPool(saveindex);
-					chkrigidelem->SetIsAllocHead(saveallochead);
+		int chkheadno;
+		chkheadno = s_befheadno;
+		int chkelemno;
+		chkelemno = s_befelemno + 1;
+		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= REPOOLBLKLEN)) {
+			chkelemno = 0;
+			chkheadno++;
+		}
+		if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < REPOOLBLKLEN)) {
+			CRigidElem* currigidelemhead = s_rigidelempool[chkheadno];
+			if (currigidelemhead) {
+				CRigidElem* chkrigidelem;
+				chkrigidelem = currigidelemhead + chkelemno;
+				if (chkrigidelem) {
+					if (chkrigidelem->GetUseFlag() == 0) {
+						int saveindex = chkrigidelem->GetIndexOfPool();
+						int saveallochead = chkrigidelem->IsAllocHead();
+						chkrigidelem->InitParams();
+						chkrigidelem->SetUseFlag(1);
+						chkrigidelem->SetIndexOfPool(saveindex);
+						chkrigidelem->SetIsAllocHead(saveallochead);
 
-					s_befheadno = chkheadno;
-					s_befelemno = chkelemno;
-					return chkrigidelem;
+						s_befheadno = chkheadno;
+						s_befelemno = chkelemno;
+						return chkrigidelem;
+					}
 				}
 			}
 		}
-	}
 
-	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
-		//プールを先頭から検索して未使用がみつかればそれをリリース
-	int rigidelemno;
-	for (rigidelemno = 0; rigidelemno < curpoollen; rigidelemno++) {
-		CRigidElem* currigidelemhead = s_rigidelempool[rigidelemno];
-		if (currigidelemhead) {
-			int elemno;
-			for (elemno = 0; elemno < REPOOLBLKLEN; elemno++) {
-				CRigidElem* currigidelem;
-				currigidelem = currigidelemhead + elemno;
-				if (currigidelem->GetUseFlag() == 0) {
-					int saveindex = currigidelem->GetIndexOfPool();
-					int saveallochead = currigidelem->IsAllocHead();
-					currigidelem->InitParams();
-					currigidelem->SetUseFlag(1);
-					currigidelem->SetIndexOfPool(saveindex);
-					currigidelem->SetIsAllocHead(saveallochead);
+		//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+			//プールを先頭から検索して未使用がみつかればそれをリリース
+		int rigidelemno;
+		for (rigidelemno = 0; rigidelemno < curpoollen; rigidelemno++) {
+			CRigidElem* currigidelemhead = s_rigidelempool[rigidelemno];
+			if (currigidelemhead) {
+				int elemno;
+				for (elemno = 0; elemno < REPOOLBLKLEN; elemno++) {
+					CRigidElem* currigidelem;
+					currigidelem = currigidelemhead + elemno;
+					if (currigidelem->GetUseFlag() == 0) {
+						int saveindex = currigidelem->GetIndexOfPool();
+						int saveallochead = currigidelem->IsAllocHead();
+						currigidelem->InitParams();
+						currigidelem->SetUseFlag(1);
+						currigidelem->SetIndexOfPool(saveindex);
+						currigidelem->SetIsAllocHead(saveallochead);
 
-					s_befheadno = rigidelemno;
-					s_befelemno = elemno;
-					return currigidelem;
+						s_befheadno = rigidelemno;
+						s_befelemno = elemno;
+						return currigidelem;
+					}
 				}
 			}
 		}
+		//}
 	}
-	//}
 
+	//前回リリースしたポイントが最後尾または
 	//未使用rigidelemがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 	CRigidElem* allocrigidelem;
 	allocrigidelem = new CRigidElem[REPOOLBLKLEN];

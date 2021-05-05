@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include <stdafx.h>
 
 #include <stdio.h>
@@ -69,6 +69,239 @@
 //#include <BoneProp.h>
 
 #include <DXUT.h>
+#include <io.h>
+
+//######################################
+// Custom stream 
+
+static long long int s_mpos = 0;
+
+class CustomStreamClass : public FbxStream
+{
+public:
+	CustomStreamClass(FbxManager* pSdkManager, const char* mode, const char* ut8name)
+	{
+		mFile = NULL;
+		mbuffer = 0;
+		msize = 0;
+		s_mpos = 0;
+
+		// expect the mode to contain something
+		if (mode == NULL) return;
+
+
+		FBXSDK_strcpy(mFileName, MAX_PATH, ut8name);
+		FBXSDK_strcpy(mMode, 3, (mode) ? mode : "r");
+
+		if (mode[0] == 'r')
+		{
+			const char* format = "FBX (*.fbx)";
+			mReaderID = pSdkManager->GetIOPluginRegistry()->FindReaderIDByDescription(format);
+			mWriterID = -1;
+		}
+		else
+		{
+			//const char* format = "FBX ascii (*.fbx)";
+			//mWriterID = pSdkManager->GetIOPluginRegistry()->FindWriterIDByDescription(format);
+			//mReaderID = -1;
+			mWriterID = -1;
+			mReaderID = -1;
+		}
+	}
+
+	~CustomStreamClass()
+	{
+		Close();
+	}
+
+	virtual EState GetState()
+	{
+		return mFile ? FbxStream::eOpen : eClosed;
+	}
+
+	virtual bool Open(void* /*pStreamData*/)
+	{
+		if (mMode[0] != 'r') {
+			return false;
+		}
+
+		if (mFile == NULL) {
+			fopen_s(&mFile, mFileName, mMode);
+			if (!mFile) {
+				return false;
+			}
+
+			msize = _filelengthi64(_fileno(mFile));
+			if (msize == -1L) {
+				return false;
+			}
+
+			mbuffer = (char*)malloc(sizeof(char) * msize);
+			if (!mbuffer) {
+				return false;
+			}
+			ZeroMemory(mbuffer, sizeof(char) * msize);
+
+			long long int doread = 0;
+			while (doread < msize) {
+				doread += fread(mbuffer + doread, 1, (msize - doread), mFile);
+			}
+			s_mpos = 0;
+			return true;
+		}
+		else {
+			return false;
+		}
+
+
+	}
+
+	virtual bool Close()
+	{
+		// This method can be called several times during the
+		// Initialize phase so it is important that it can handle multiple closes
+		if (mFile) {
+			fclose(mFile);
+			mFile = NULL;
+		}
+		if (mbuffer) {
+			free(mbuffer);
+			mbuffer = 0;
+		}
+		s_mpos = 0;
+
+		mWriterID = -1;
+		mReaderID = -1;
+
+		return true;
+	}
+
+	virtual bool Flush()
+	{
+		return true;
+	}
+
+	virtual int Write(const void* pData, int pSize)
+	{
+		//if (mFile == NULL)
+		//	return 0;
+		//return (int)fwrite(pData, 1, pSize, mFile);
+		return 0;
+	}
+
+	virtual int Read(void* pData, int pSize) const
+	{
+		if (mFile == NULL) {
+			return 0;
+		}
+		if (!mbuffer) {
+			return 0;
+		}
+
+
+		long long int readsize;
+		if ((s_mpos >= 0) && ((s_mpos + pSize) <= msize)) {
+			readsize = pSize;
+		}
+		else if ((s_mpos >= 0) && ((s_mpos + pSize) > msize)) {
+			readsize = msize - s_mpos;
+		}
+		else {
+			readsize = 0;
+		}
+
+		if (readsize > 0) {
+			MoveMemory(pData, mbuffer + s_mpos, readsize);
+		}
+
+		s_mpos = s_mpos + readsize;//constãªã®ã§ãƒ¡ãƒ³ãƒãƒ¼å¤‰æ•°ã‚’å¤‰ãˆã‚‹ã“ã¨ãŒå‡ºæ¥ãªã„ã€‚mposã‚’å¤–ã§å®šç¾©ã™ã‚‹ã€‚
+
+		return readsize;
+	}
+
+	virtual int GetReaderID() const
+	{
+		return mReaderID;
+	}
+
+	virtual int GetWriterID() const
+	{
+		return mWriterID;
+	}
+
+	void Seek(const FbxInt64& pOffset, const FbxFile::ESeekPos& pSeekPos)
+	{
+		switch (pSeekPos)
+		{
+		case FbxFile::eBegin:
+			//fseek(mFile, (long)pOffset, SEEK_SET);
+			s_mpos = (long)pOffset;
+			break;
+		case FbxFile::eCurrent:
+			//fseek(mFile, (long)pOffset, SEEK_CUR);
+			s_mpos = s_mpos + (long)pOffset;
+			break;
+		case FbxFile::eEnd:
+			//fseek(mFile, (long)pOffset, SEEK_END);
+			s_mpos = msize - (long)pOffset;
+			break;
+		}
+	}
+
+	virtual long GetPosition() const
+	{
+		if (mFile == NULL) {
+			return 0;
+		}
+		if (!mbuffer) {
+			return 0;
+		}
+		//return ftell(mFile);
+		return s_mpos;
+	}
+	virtual void SetPosition(long pPosition)
+	{
+		if (mFile && mbuffer) {
+			//fseek(mFile, pPosition, SEEK_SET);
+			s_mpos = pPosition;
+		}
+	}
+
+	virtual int GetError() const
+	{
+		if (mFile == NULL) {
+			return 0;
+		}
+		if (!mbuffer) {
+			return 0;
+		}
+		//return ferror(mFile);
+		if ((s_mpos < 0) || (s_mpos > msize)) {
+			return -1;
+		}
+	}
+	virtual void ClearError()
+	{
+		if (mFile != NULL) {
+			//clearerr(mFile);
+			s_mpos = 0;
+		}
+	}
+
+private:
+	FILE* mFile;
+	int             mReaderID;
+	int             mWriterID;
+	char    mFileName[MAX_PATH];
+	char    mMode[3];
+	char* mbuffer;
+	long long int msize;
+	//long long int mpos;
+};
+
+
+//#######################################
+//#######################################
 
 
 using namespace OrgWinGUI;
@@ -89,7 +322,7 @@ extern ID3D11DepthStencilState *g_pDSStateZCmpAlways;
 extern int g_boneaxis;
 extern int g_dbgloadcnt;
 extern int g_pseudolocalflag;
-extern int g_previewFlag;			// ƒvƒŒƒrƒ…[ƒtƒ‰ƒO
+extern int g_previewFlag;			// ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ãƒ•ãƒ©ã‚°
 extern WCHAR g_basedir[ MAX_PATH ];
 
 extern ID3D11Effect*		g_pEffect;
@@ -123,7 +356,7 @@ extern ID3D11EffectShaderResourceVariable* g_hMeshTexture;
 
 
 extern float g_impscale;
-extern btScalar G_ACC; // d—Í‰Á‘¬“x : BPWorld.cpp
+extern btScalar G_ACC; // é‡åŠ›åŠ é€Ÿåº¦ : BPWorld.cpp
 
 extern float g_l_kval[3];
 extern float g_a_kval[3];
@@ -255,7 +488,8 @@ int CModel::DestroyObjs()
 int CModel::DestroyFBXSDK()
 {
 	
-	if( m_pimporter ){
+	//if( m_pimporter ){
+	if(mAnimStackNameArray.Size() >= 1){
 		FbxArrayDelete(mAnimStackNameArray);
 	}
 
@@ -265,7 +499,7 @@ int CModel::DestroyFBXSDK()
 //	}
 
 //	if( m_pimporter ){
-//		m_pimporter->Destroy();// ƒCƒ“ƒ|[ƒ^‚Ìíœ
+//		m_pimporter->Destroy();// ã‚¤ãƒ³ãƒãƒ¼ã‚¿ã®å‰Šé™¤
 //		m_pimporter = 0;
 //	}
 
@@ -455,7 +689,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	DestroyObject();
 
 	char utf8path[MAX_PATH] = {0};
-    // Unicode •¶šƒR[ƒh‚ğ‘æˆêˆø”‚Åw’è‚µ‚½•¶šƒR[ƒh‚É•ÏŠ·‚·‚é
+    // Unicode æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ç¬¬ä¸€å¼•æ•°ã§æŒ‡å®šã—ãŸæ–‡å­—ã‚³ãƒ¼ãƒ‰ã«å¤‰æ›ã™ã‚‹
     ::WideCharToMultiByte( CP_UTF8, 0, wfile, -1, utf8path, MAX_PATH, NULL, NULL );	
 
 	FbxScene* pScene = 0;
@@ -474,14 +708,26 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	sprintf_s(importername, "importer_%d", s_alloccnt);
 	pImporter = FbxImporter::Create(m_psdk, importername);
 
-    const bool lImportStatus = pImporter->Initialize(utf8path, -1, m_psdk->GetIOSettings());
-    pImporter->GetFileVersion(lFileMajor, lFileMinor, lFileRevision);
-    if( !lImportStatus )
-    {
-		_ASSERT( 0 );
-		return 1;
+    //const bool lImportStatus = pImporter->Initialize(utf8path, -1, m_psdk->GetIOSettings());
+
+
+	//Initialize(FbxStream * pStream, void* pStreamData = NULL, const int pFileFormat = -1, FbxIOSettings * pIOSettings = NULL)
+
+
+	//###############################################################
+	// load from buffer using FbxStream CustomStreamClass 2021/05/06
+	//###############################################################
+	FbxIOSettings* ios = FbxIOSettings::Create(m_psdk, IOSROOT);
+	CustomStreamClass stream(m_psdk, "rb", utf8path);
+	// can pass in a void* data pointer to be passed to the stream on FileOpen
+	void* streamData = NULL;
+	// initialize the importer with a stream
+	if (!pImporter->Initialize(&stream, streamData, -1, ios)) {
+		_ASSERT(0);
+		return -1;
 	}
-	//_ASSERT(0);
+
+    pImporter->GetFileVersion(lFileMajor, lFileMinor, lFileRevision);
 
 	if (pImporter->IsFBX())
     {
@@ -495,6 +741,8 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
         (*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_ANIMATION,       true);
         (*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);
     }
+
+
 
     // Import the scene.
     lStatus = pImporter->Import(pScene);
@@ -639,8 +887,10 @@ _ASSERT(m_bonelist[0]);
 	*ppimporter = pImporter;
 	*ppscene = pScene;
 
-	m_pimporter = pImporter;
+	//m_pimporter = pImporter;
 	m_pscene = pScene;
+
+	pImporter->Destroy();
 
 
 	return 0;
@@ -657,7 +907,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 		return 0;
 	}
 
-	this->m_tlFunc = tlfunc;//–¢g—p
+	this->m_tlFunc = tlfunc;//æœªä½¿ç”¨
 
 	FbxNode *pRootNode = pscene->GetRootNode();
 	CallF( CreateFBXAnim( pscene, pRootNode ), return 1 );
@@ -1208,7 +1458,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	/*
 	// for morph anim
 
-	//ground‚ÌUpdateMatrix‚ÅƒGƒ‰[
+	//groundã®UpdateMatrixã§ã‚¨ãƒ©ãƒ¼
 
 
 	int chkcnt = 0;
@@ -1230,7 +1480,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	}
 
 
-	//“Ç‚İ‚İ‚ÉƒAƒjƒ‚ª‚È‚¯‚ê‚ÎˆÈ‰º‚ÍƒXƒLƒbƒv
+	//èª­ã¿è¾¼ã¿æ™‚ã«ã‚¢ãƒ‹ãƒ¡ãŒãªã‘ã‚Œã°ä»¥ä¸‹ã¯ã‚¹ã‚­ãƒƒãƒ—
 	const int lAnimStackCount = mAnimStackNameArray.GetCount();
 	if (lAnimStackCount <= 0){
 		//_ASSERT(0);
@@ -1306,7 +1556,7 @@ int CModel::ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTi
 				for(int lShapeIndex = 0; lShapeIndex<lShapeCount; lShapeIndex++)
 				{
 					FbxShape* lShape = NULL;
-					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1‚Å‚Í‚È‚¢IIIIIIIIIIIIIIII
+					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1ã§ã¯ãªã„ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼
 					if(lShape)
 					{		
 						FbxVector4* shapev = lShape->GetControlPoints();
@@ -1374,7 +1624,7 @@ int CModel::GetFBXShape( FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panim
 						
 					int lShapeIndex = 0;
 					FbxShape* lShape = NULL;
-					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1‚Å‚Í‚È‚¢IIIIIIIIIIIIIIII
+					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1ã§ã¯ãªã„ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼
 					if(lShape)
 					{		
 						//const char* nameptr = lChannel->GetName();
@@ -1448,7 +1698,7 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 				for(int lShapeIndex = 0; lShapeIndex < lShapeCount; lShapeIndex++)
 				{
 					FbxShape* lShape = NULL;
-					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1‚Å‚Í‚È‚¢IIIIIIIIIIIIIIII
+					lShape = lChannel->GetTargetShape(lShapeIndex);//lShapeIndex+1ã§ã¯ãªã„ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼
 					if(lShape)
 					{	
 						char tmpname[512];
@@ -1544,7 +1794,7 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 		if (curbone){
 			int depth = curbone->CalcBoneDepth();
 
-			//s‚ğ’Ç‰Á
+			//è¡Œã‚’è¿½åŠ 
 			if (curbone->IsBranchBone()) {
 				timeline.newLine(depth, 2, curbone->GetWBoneName());
 			}
@@ -1575,7 +1825,7 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 ***/
 
 	if (m_topbone){
-		//‘I‘ğs‚ğİ’è
+		//é¸æŠè¡Œã‚’è¨­å®š
 		timeline.setCurrentLineName(m_topbone->GetWBoneName());
 	}
 	return 0;
@@ -1590,7 +1840,7 @@ void CModel::FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone,
 
 	int depth = curbone->CalcBoneDepth();
 
-	//s‚ğ’Ç‰Á
+	//è¡Œã‚’è¿½åŠ 
 	if( curbone->GetType() != FBXBONE_NULL ){
 		timeline.newLine(depth, 0, curbone->GetWBoneName());
 	}else{
@@ -1658,7 +1908,7 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 	newmi->speed = 1.0;
 	newmi->loopflag = 1;
 
-	m_motinfo[newid - 1] = newmi;//id‚Í‚P‚©‚ç
+	m_motinfo[newid - 1] = newmi;//idã¯ï¼‘ã‹ã‚‰
 
 
 	*dstid = newid;
@@ -1676,7 +1926,7 @@ int CModel::SetCurrentMotion( int srcmotid )
 		return 1;
 	}
 
-	m_curmotinfo = m_motinfo[ srcmotid - 1 ];//id‚Í‚P‚©‚ç
+	m_curmotinfo = m_motinfo[ srcmotid - 1 ];//idã¯ï¼‘ã‹ã‚‰
 	if( !m_curmotinfo ){
 		_ASSERT( 0 );
 		return 1;
@@ -1880,7 +2130,7 @@ CBone* CModel::GetSymPosBone(CBone* srcbone)
 			ChaVector3 diffpos = curpos - srcpos;
 			float curdist = ChaVector3Length(&diffpos);
 			if ((curdist <= mindist) && (curdist <= matchdist) && (curbone != srcbone)){
-				//“¯ˆêˆÊ’u‚Ìƒ{[ƒ“‚ª‘¶İ‚·‚éê‡‚ª‚ ‚é‚Ì‚ÅAe‚àƒ`ƒFƒbƒN‚·‚éB
+				//åŒä¸€ä½ç½®ã®ãƒœãƒ¼ãƒ³ãŒå­˜åœ¨ã™ã‚‹å ´åˆãŒã‚ã‚‹ã®ã§ã€è¦ªã‚‚ãƒã‚§ãƒƒã‚¯ã™ã‚‹ã€‚
 				CBone* srcparentbone = srcbone->GetParent();
 				CBone* curparentbone = curbone->GetParent();
 				if (srcparentbone && curparentbone){
@@ -1975,7 +2225,7 @@ void CModel::SetSelectFlagReq( CBone* boneptr, int broflag )
 
 int CModel::CollisionNoBoneObj_Mouse( PICKINFO* pickinfo, char* objnameptr )
 {
-	//“–‚½‚Á‚½‚ç‚PA“–‚½‚ç‚È‚©‚Á‚½‚ç‚O‚ğ•Ô‚·BƒGƒ‰[‚à‚O‚ğ•Ô‚·B
+	//å½“ãŸã£ãŸã‚‰ï¼‘ã€å½“ãŸã‚‰ãªã‹ã£ãŸã‚‰ï¼ã‚’è¿”ã™ã€‚ã‚¨ãƒ©ãƒ¼ã‚‚ï¼ã‚’è¿”ã™ã€‚
 
 	CMQOObject* curobj = m_objectname[ objnameptr ];
 	if( !curobj ){
@@ -2054,7 +2304,7 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 		else{
 			CBone* parentbone = curbone->GetParent();
 			if (parentbone){
-				mW = parentbone->GetBtMat();//endjoint‚Ìbtmat‚ª‚¨‚©‚µ‚¢‰Â”\«‚ª‚ ‚é‚½‚ßB
+				mW = parentbone->GetBtMat();//endjointã®btmatãŒãŠã‹ã—ã„å¯èƒ½æ€§ãŒã‚ã‚‹ãŸã‚ã€‚
 			}
 			else{
 				mW = curbone->GetBtMat();
@@ -2078,7 +2328,7 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 
 int CModel::ChangeMotFrameLeng( int motid, double srcleng )
 {
-	MOTINFO* dstmi = m_motinfo[ motid - 1 ];//id‚Í‚P‚©‚ç
+	MOTINFO* dstmi = m_motinfo[ motid - 1 ];//idã¯ï¼‘ã‹ã‚‰
 	if( dstmi ){
 		double befleng = dstmi->frameleng;
 
@@ -2109,7 +2359,7 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 	int loopflag = 0;
 	MOTINFO* curmotinfo;
 	if( srcmotid >= 0 ){
-		curmotinfo = m_motinfo[ srcmotid - 1];//id‚Í‚P‚©‚ç
+		curmotinfo = m_motinfo[ srcmotid - 1];//idã¯ï¼‘ã‹ã‚‰
 		loopflag = 0;
 	}else{
 		curmotinfo = m_curmotinfo;
@@ -2236,7 +2486,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 		{
 			case FbxNodeAttribute::eMesh:
 
-				newobj = GetFBXMesh( pNode, pAttrib );     // ƒƒbƒVƒ…‚ğì¬
+				newobj = GetFBXMesh( pNode, pAttrib );     // ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ä½œæˆ
 				if (newobj){
 					shapecnt = pNode->GetMesh()->GetShapeCount();
 					if (shapecnt > 0){
@@ -2248,7 +2498,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 //			case FbxNodeAttribute::eNURB:
 //			case FbxNodeAttribute::eNURBS_SURFACE:
 //                lConverter.TriangulateInPlace(pNode);
-//				GetFBXMesh( pAttrib, pNode->GetName() );     // ƒƒbƒVƒ…‚ğì¬
+//				GetFBXMesh( pAttrib, pNode->GetName() );     // ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ä½œæˆ
 				break;
 			default:
 				break;
@@ -2259,7 +2509,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 	childNodeNum = pNode->GetChildCount();
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
-		FbxNode *pChild = pNode->GetChild(i);  // qƒm[ƒh‚ğæ“¾
+		FbxNode *pChild = pNode->GetChild(i);  // å­ãƒãƒ¼ãƒ‰ã‚’å–å¾—
 		if (pChild) {
 			CreateFBXMeshReq(pChild);
 		}
@@ -2316,7 +2566,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 	WCHAR wname[256] = L"none for debug";
 	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), 256, wname, 256 );//•¡”ƒLƒƒƒ‰“Ç‚İ‚İ‚É—‚¿‚é‚±‚Æ‚ª‚ ‚éHH
+	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), 256, wname, 256 );//è¤‡æ•°ã‚­ãƒ£ãƒ©èª­ã¿è¾¼ã¿æ™‚ã«è½ã¡ã‚‹ã“ã¨ãŒã‚ã‚‹ï¼Ÿï¼Ÿ
 
 
 	FBXOBJ* fbxobj = (FBXOBJ*)malloc(sizeof(FBXOBJ));
@@ -2332,12 +2582,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 //	int morphnum = pMesh->GetShapeCount();
 //	newobj->m_morphnum = morphnum;
 
-//ƒ}ƒeƒŠƒAƒ‹
+//ãƒãƒ†ãƒªã‚¢ãƒ«
 	FbxNode* node = pMesh->GetNode();
 	if ( node != 0 ) {
-		// ƒ}ƒeƒŠƒAƒ‹‚Ì”
+		// ãƒãƒ†ãƒªã‚¢ãƒ«ã®æ•°
 		int materialNum_ = node->GetMaterialCount();
-		// ƒ}ƒeƒŠƒAƒ‹î•ñ‚ğæ“¾
+		// ãƒãƒ†ãƒªã‚¢ãƒ«æƒ…å ±ã‚’å–å¾—
 		//for( int i = 0; i < materialNum_; ++i ) {
 		for (int i = 0; i < materialNum_; i++) {
 			FbxSurfaceMaterial* material = node->GetMaterial( i );
@@ -2356,17 +2606,17 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 		}
 	}
 
-//’¸“_
+//é ‚ç‚¹
 	int PolygonNum       = pMesh->GetPolygonCount();
 	int PolygonVertexNum = pMesh->GetPolygonVertexCount();
 	int *IndexAry        = pMesh->GetPolygonVertices();
 
-	int controlNum = pMesh->GetControlPointsCount();   // ’¸“_”
-	FbxVector4* src = pMesh->GetControlPoints();    // ’¸“_À•W”z—ñ
+	int controlNum = pMesh->GetControlPointsCount();   // é ‚ç‚¹æ•°
+	FbxVector4* src = pMesh->GetControlPoints();    // é ‚ç‚¹åº§æ¨™é…åˆ—
 
 	//DbgOut(L"LDCheck : GetFBXMesh : nodename %s, controlnum %d, polygonnum %d, polygonvertexnum %d\r\n", wname, controlNum, PolygonNum, PolygonVertexNum);
 
-	// ƒRƒs[
+	// ã‚³ãƒ”ãƒ¼
 	newobj->SetVertex( controlNum );
 	newobj->SetPointBuf( (ChaVector3*)malloc( sizeof( ChaVector3 ) * controlNum ) );
 	//for ( int i = 0; i < controlNum; ++i ) {
@@ -2385,7 +2635,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 	newobj->SetFace( PolygonNum );
 	newobj->SetFaceBuf( new CMQOFace[ PolygonNum ] );
 	for ( int p = 0; p < PolygonNum; p++ ) {
-		int IndexNumInPolygon = pMesh->GetPolygonSize( p );  // p”Ô–Ú‚Ìƒ|ƒŠƒSƒ“‚Ì’¸“_”
+		int IndexNumInPolygon = pMesh->GetPolygonSize( p );  // pç•ªç›®ã®ãƒãƒªã‚´ãƒ³ã®é ‚ç‚¹æ•°
 		if( (IndexNumInPolygon != 3) && (IndexNumInPolygon != 4) ){
 			_ASSERT( 0 );
 			return 0;
@@ -2395,7 +2645,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 		curface->SetPointNum( IndexNumInPolygon );
 
 		for ( int n = 0; n < IndexNumInPolygon; n++ ) {
-			// ƒ|ƒŠƒSƒ“p‚ğ\¬‚·‚én”Ô–Ú‚Ì’¸“_‚ÌƒCƒ“ƒfƒbƒNƒX”Ô†
+			// ãƒãƒªã‚´ãƒ³pã‚’æ§‹æˆã™ã‚‹nç•ªç›®ã®é ‚ç‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ç•ªå·
 			int IndexNumber = pMesh->GetPolygonVertex( p, n );
 			curface->SetFaceNo( p );
 			curface->SetIndex(  n, IndexNumber );
@@ -2464,24 +2714,24 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 
 
-//–@ü
+//æ³•ç·š
 	int layerNum = pMesh->GetLayerCount();
 	//for ( int i = 0; i < layerNum; ++i ) {
 	for (int i = 0; i < layerNum; i++) {
 	   FbxLayer* layer = pMesh->GetLayer( i );
 	   FbxLayerElementNormal* normalElem = layer->GetNormals();
 	   if ( normalElem == 0 ) {
-		  continue;   // –@ü–³‚µ
+		  continue;   // æ³•ç·šç„¡ã—
 	   }
-	   // –@ü‚ ‚Á‚½I
-		// –@ü‚Ì”EƒCƒ“ƒfƒbƒNƒX
+	   // æ³•ç·šã‚ã£ãŸï¼
+		// æ³•ç·šã®æ•°ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 		int    normalNum          = normalElem->GetDirectArray().GetCount();
 		int    indexNum           = normalElem->GetIndexArray().GetCount();
 
 
 //DbgOut( L"GetFBXMesh : %s : normalNum %d : indexNum %d\r\n", wname, normalNum, indexNum );
 
-		// ƒ}ƒbƒsƒ“ƒOƒ‚[ƒhEƒŠƒtƒ@ƒŒƒ“ƒXƒ‚[ƒhæ“¾
+		// ãƒãƒƒãƒ”ãƒ³ã‚°ãƒ¢ãƒ¼ãƒ‰ãƒ»ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹ãƒ¢ãƒ¼ãƒ‰å–å¾—
 		FbxLayerElement::EMappingMode mappingMode = normalElem->GetMappingMode();
 		FbxLayerElement::EReferenceMode refMode = normalElem->GetReferenceMode();
 
@@ -2496,7 +2746,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				newobj->SetNormalLeng( normalNum );
 				newobj->SetNormal( (ChaVector3*)malloc( sizeof( ChaVector3 ) * normalNum ) );
 
-				// ’¼Úæ“¾
+				// ç›´æ¥å–å¾—
 			  //for ( int i = 0; i < normalNum; ++i ) {
 				for (int i = 0; i < normalNum; i++) {
 				ChaVector3* curn = newobj->GetNormal() + i;
@@ -2535,7 +2785,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				newobj->SetNormalLeng( normalNum );
 				newobj->SetNormal( (ChaVector3*)malloc( sizeof( ChaVector3 ) * normalNum ) );
 
-				// ’¼Úæ“¾
+				// ç›´æ¥å–å¾—
 				//for ( int i = 0; i < normalNum; ++i ) {
 				for (int i = 0; i < normalNum; i++) {
 					ChaVector3* curn = newobj->GetNormal() + i;
@@ -2555,7 +2805,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 	}
 
 //UV
-	int layerCount = pMesh->GetLayerCount();   // mesh‚ÍFbxMesh
+	int layerCount = pMesh->GetLayerCount();   // meshã¯FbxMesh
 	for ( int uvi = 0; uvi < layerCount; ++uvi ) {
 		FbxLayer* layer = pMesh->GetLayer( uvi );
 		FbxLayerElementUV* elem = layer->GetUVs();
@@ -2563,13 +2813,13 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 			continue;
 		}
 
-		// UVî•ñ‚ğæ“¾
-		// UV‚Ì”EƒCƒ“ƒfƒbƒNƒX
+		// UVæƒ…å ±ã‚’å–å¾—
+		// UVã®æ•°ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 		int UVNum = elem->GetDirectArray().GetCount();
 		int indexNum = elem->GetIndexArray().GetCount();
 //		int size = UVNum > indexNum ? UVNum : indexNum;
 
-		// ƒ}ƒbƒsƒ“ƒOƒ‚[ƒhEƒŠƒtƒ@ƒŒƒ“ƒXƒ‚[ƒh•Ê‚ÉUVæ“¾
+		// ãƒãƒƒãƒ”ãƒ³ã‚°ãƒ¢ãƒ¼ãƒ‰ãƒ»ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹ãƒ¢ãƒ¼ãƒ‰åˆ¥ã«UVå–å¾—
 		FbxLayerElement::EMappingMode mappingMode = elem->GetMappingMode();
 		FbxLayerElement::EReferenceMode refMode = elem->GetReferenceMode();
 
@@ -2583,7 +2833,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				newobj->SetUVLeng(size);
 				newobj->SetUVBuf((ChaVector2*)malloc(sizeof(ChaVector2) * size));
 
-				// ’¼Úæ“¾
+				// ç›´æ¥å–å¾—
 				//for (int i = 0; i < size; ++i) {
 				for (int i = 0; i < size; i++) {
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
@@ -2599,7 +2849,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				newobj->SetUVLeng(size);
 				newobj->SetUVBuf((ChaVector2*)malloc(sizeof(ChaVector2) * size));
 
-				// ƒCƒ“ƒfƒbƒNƒX‚©‚çæ“¾
+				// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‹ã‚‰å–å¾—
 				//for (int i = 0; i < size; ++i) {
 				for (int i = 0; i < size; i++) {
 					int index = elem->GetIndexArray().GetAt(i);
@@ -2625,7 +2875,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 				newobj->SetUVBuf(newuv);
 				//newobj->SetUVBuf((ChaVector2*)malloc(sizeof(ChaVector2) * size));
 
-				// ’¼Úæ“¾
+				// ç›´æ¥å–å¾—
 				//for (int i = 0; i < size; ++i) {
 				for (int i = 0; i < size; i++) {
 					(newobj->GetUVBuf() + i)->x = (float)elem->GetDirectArray().GetAt(i)[0];
@@ -2922,7 +3172,7 @@ int CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode 
 	childNodeNum = pNode->GetChildCount();
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
-		FbxNode *pChild = pNode->GetChild(i);  // qƒm[ƒh‚ğæ“¾
+		FbxNode *pChild = pNode->GetChild(i);  // å­ãƒãƒ¼ãƒ‰ã‚’å–å¾—
 		CreateFBXBoneReq(pScene, pChild, pNode );
 	}
 
@@ -3088,7 +3338,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 		}
 
 		
-		//RokDeBone2‚Ìƒf[ƒ^‚ğ“Ç‚İ‚ñ‚¾ê‡‚É‚ÍZXY‚ğXYZ‚ÉƒRƒ“ƒo[ƒg‚·‚é
+		//RokDeBone2ã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚“ã å ´åˆã«ã¯ZXYã‚’XYZã«ã‚³ãƒ³ãƒãƒ¼ãƒˆã™ã‚‹
 		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);
 
 
@@ -3191,7 +3441,7 @@ int CModel::CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int mo
 			case FbxNodeAttribute::eMesh:
 //			case FbxNodeAttribute::eNURB:
 //			case FbxNodeAttribute::eNURBS_SURFACE:
-				GetFBXAnim( animno, pNode, pPose, pAttrib, motid, animleng, mStart, mFrameTime );     // ƒƒbƒVƒ…‚ğì¬
+				GetFBXAnim( animno, pNode, pPose, pAttrib, motid, animleng, mStart, mFrameTime );     // ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ä½œæˆ
 
 				break;
 			default:
@@ -3203,7 +3453,7 @@ int CModel::CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int mo
 	childNodeNum = pNode->GetChildCount();
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
-		FbxNode *pChild = pNode->GetChild(i);  // qƒm[ƒh‚ğæ“¾
+		FbxNode *pChild = pNode->GetChild(i);  // å­ãƒãƒ¼ãƒ‰ã‚’å–å¾—
 		CreateFBXAnimReq( animno, pPose, pChild, motid, animleng, mStart, mFrameTime );
 	}
 
@@ -3218,19 +3468,19 @@ int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttri
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
 
 
-	// ƒXƒLƒ“‚Ì”‚ğæ“¾
+	// ã‚¹ã‚­ãƒ³ã®æ•°ã‚’å–å¾—
 	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
 
 	//for ( int i = 0; i < skinCount; ++i ) {
 	for (int i = 0; i < skinCount; i++) {
-		// i”Ô–Ú‚ÌƒXƒLƒ“‚ğæ“¾
+		// iç•ªç›®ã®ã‚¹ã‚­ãƒ³ã‚’å–å¾—
 		FbxSkin* skin = (FbxSkin*)( pMesh->GetDeformer( i, FbxDeformer::eSkin ) );
 
-		// ƒNƒ‰ƒXƒ^[‚Ì”‚ğæ“¾
+		// ã‚¯ãƒ©ã‚¹ã‚¿ãƒ¼ã®æ•°ã‚’å–å¾—
 		int clusterNum = skin->GetClusterCount();
 
 		for ( int j = 0; j < clusterNum; ++j ) {
-			// j”Ô–Ú‚ÌƒNƒ‰ƒXƒ^‚ğæ“¾
+			// jç•ªç›®ã®ã‚¯ãƒ©ã‚¹ã‚¿ã‚’å–å¾—
 			FbxCluster* cluster = skin->GetCluster( j );
 
 			//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
@@ -3329,7 +3579,7 @@ MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 )
 						_ASSERT( 0 );
 						return 1;
 					}
-					curmp->SetWorldMat(xmat);//anglelimit–³‚µ
+					curmp->SetWorldMat(xmat);//anglelimitç„¡ã—
 					//curmp->SetBefWorldMat(xmat);
 
 					ktime += mFrameTime;
@@ -3360,7 +3610,7 @@ int CModel::CreateFBXSkinReq( FbxNode* pNode )
 //			case FbxNodeAttribute::eNURB:
 //			case FbxNodeAttribute::eNURBS_SURFACE:
 
-				GetFBXSkin( pAttrib, pNode );     // ƒƒbƒVƒ…‚ğì¬
+				GetFBXSkin( pAttrib, pNode );     // ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ä½œæˆ
 				break;
 			default:
 				break;
@@ -3371,7 +3621,7 @@ int CModel::CreateFBXSkinReq( FbxNode* pNode )
 	childNodeNum = pNode->GetChildCount();
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
-		FbxNode *pChild = pNode->GetChild(i);  // qƒm[ƒh‚ğæ“¾
+		FbxNode *pChild = pNode->GetChild(i);  // å­ãƒãƒ¼ãƒ‰ã‚’å–å¾—
 		CreateFBXSkinReq( pChild );
 	}
 
@@ -3389,22 +3639,22 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 		return 1;
 	}
 
-//ƒXƒLƒ“
-	// ƒXƒLƒ“‚Ì”‚ğæ“¾
+//ã‚¹ã‚­ãƒ³
+	// ã‚¹ã‚­ãƒ³ã®æ•°ã‚’å–å¾—
 	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
 
 	int makecnt = 0;
 	//for ( int i = 0; i < skinCount; ++i ) {
 	for (int i = 0; i < skinCount; i++) {
-		// i”Ô–Ú‚ÌƒXƒLƒ“‚ğæ“¾
+		// iç•ªç›®ã®ã‚¹ã‚­ãƒ³ã‚’å–å¾—
 		FbxSkin* skin = (FbxSkin*)( pMesh->GetDeformer( i, FbxDeformer::eSkin ) );
 
-		// ƒNƒ‰ƒXƒ^[‚Ì”‚ğæ“¾
+		// ã‚¯ãƒ©ã‚¹ã‚¿ãƒ¼ã®æ•°ã‚’å–å¾—
 		int clusterNum = skin->GetClusterCount();
 DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 
 		for ( int j = 0; j < clusterNum; ++j ) {
-			// j”Ô–Ú‚ÌƒNƒ‰ƒXƒ^‚ğæ“¾
+			// jç•ªç›®ã®ã‚¯ãƒ©ã‚¹ã‚¿ã‚’å–å¾—
 			FbxCluster* cluster = skin->GetCluster( j );
 
 			int validflag = IsValidCluster( cluster );
@@ -3429,8 +3679,8 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 
 				if( curclusterno >= MAXCLUSTERNUM ){
 					WCHAR wmes[256];
-					swprintf_s( wmes, 256, L"‚P‚Â‚Ìƒp[ƒc‚É‰e‹¿‚Å‚«‚éƒ{[ƒ“‚Ì§ŒÀ”(%dŒÂ)‚ğ’´‚¦‚Ü‚µ‚½B“Ç‚İ‚ß‚Ü‚¹‚ñB", MAXCLUSTERNUM );
-					MessageBoxW( NULL, wmes, L"ƒ{[ƒ“”ƒGƒ‰[", MB_OK );
+					swprintf_s( wmes, 256, L"ï¼‘ã¤ã®ãƒ‘ãƒ¼ãƒ„ã«å½±éŸ¿ã§ãã‚‹ãƒœãƒ¼ãƒ³ã®åˆ¶é™æ•°(%då€‹)ã‚’è¶…ãˆã¾ã—ãŸã€‚èª­ã¿è¾¼ã‚ã¾ã›ã‚“ã€‚", MAXCLUSTERNUM );
+					MessageBoxW( NULL, wmes, L"ãƒœãƒ¼ãƒ³æ•°ã‚¨ãƒ©ãƒ¼", MB_OK );
 					_ASSERT( 0 );
 					return 1;
 				}
@@ -3446,7 +3696,7 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 				int index;
 				float weight;
 				for ( int i2 = 0; i2 < pointNum; i2++ ) {
-					// ’¸“_ƒCƒ“ƒfƒbƒNƒX‚ÆƒEƒFƒCƒg‚ğæ“¾
+					// é ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¨ã‚¦ã‚§ã‚¤ãƒˆã‚’å–å¾—
 					index  = pointAry[ i2 ];
 					weight = (float)weightAry[ i2 ];
 
@@ -3496,7 +3746,7 @@ int IsValidCluster( FbxCluster* cluster )
 	int index;
 	double weight;
 	for ( int i2 = 0; i2 < pointNum; i2++ ) {
-		// ’¸“_ƒCƒ“ƒfƒbƒNƒX‚ÆƒEƒFƒCƒg‚ğæ“¾
+		// é ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¨ã‚¦ã‚§ã‚¤ãƒˆã‚’å–å¾—
 		index  = pointAry[ i2 ];
 		weight = weightAry[ i2 ];
 
@@ -3544,7 +3794,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 
-	//ƒ{[ƒ“‚ÌOŠp•\¦
+	//ãƒœãƒ¼ãƒ³ã®ä¸‰è§’éŒè¡¨ç¤º
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
 		if (g_bonemarkflag && bmarkptr){
 			map<int, CBone*>::iterator itrbone;
@@ -3623,7 +3873,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 	}
 
 
-	//ƒ{[ƒ“‚Ì„‘Ì•\¦
+	//ãƒœãƒ¼ãƒ³ã®å‰›ä½“è¡¨ç¤º
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
@@ -3650,8 +3900,8 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 						}
 
 						if (g_rigidmarkflag) {
-							//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//—LŒø‚É‚³‚ê‚Ä‚¢‚éê‡‚Ì‚İ•\¦@RootNode‚È‚Ç‚à•\¦‚µ‚È‚¢
-							if (curre->GetSkipflag() == 0) {//—LŒø‚É‚³‚ê‚Ä‚¢‚éê‡‚Ì‚İ•\¦
+							//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//æœ‰åŠ¹ã«ã•ã‚Œã¦ã„ã‚‹å ´åˆã®ã¿è¡¨ç¤ºã€€RootNodeãªã©ã‚‚è¡¨ç¤ºã—ãªã„
+							if (curre->GetSkipflag() == 0) {//æœ‰åŠ¹ã«ã•ã‚Œã¦ã„ã‚‹å ´åˆã®ã¿è¡¨ç¤º
 								CallF(boneptr->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return 1);
 							}
 						}
@@ -3698,7 +3948,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 
 
 
-	//ƒ{[ƒ“‚ÌƒT[ƒNƒ‹•\¦
+	//ãƒœãƒ¼ãƒ³ã®ã‚µãƒ¼ã‚¯ãƒ«è¡¨ç¤º
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
 
 		if (g_bonemarkflag && bcircleptr){
@@ -3770,11 +4020,11 @@ void CModel::RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObje
 			//CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
 		CRigidElem* curre = srcbone->GetRigidElem(childbone);
 		if (curre){
-			srcbone->CalcRigidElemParams(childbone, 0);//Œ`óƒf[ƒ^‚ÌƒXƒP[ƒ‹‚Ì‚½‚ß‚ÉŒÄ‚ÔB‚±‚±‚Å‚ÌƒJƒvƒZƒ‹ƒ}ƒbƒg‚ÍŸ‚ÌSetCapsuleBtMotion‚Åã‘‚«‚³‚ê‚éB
+			srcbone->CalcRigidElemParams(childbone, 0);//å½¢çŠ¶ãƒ‡ãƒ¼ã‚¿ã®ã‚¹ã‚±ãƒ¼ãƒ«ã®ãŸã‚ã«å‘¼ã¶ã€‚ã“ã“ã§ã®ã‚«ãƒ—ã‚»ãƒ«ãƒãƒƒãƒˆã¯æ¬¡ã®SetCapsuleBtMotionã§ä¸Šæ›¸ãã•ã‚Œã‚‹ã€‚
 			srcbto->SetCapsuleBtMotion(curre);
 
 
-			//btmat‚É‚Ímodel‚Ìworld‚ªl—¶‚³‚ê‚½‚à‚Ì‚ª“ü‚Á‚Ä‚¢‚éIH
+			//btmatã«ã¯modelã®worldãŒè€ƒæ…®ã•ã‚ŒãŸã‚‚ã®ãŒå…¥ã£ã¦ã„ã‚‹ï¼ï¼Ÿ
 			//ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
 			//g_hmWorld->SetMatrix((float*)&(worldcapsulemat));
 			//srcbone->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
@@ -3789,8 +4039,8 @@ void CModel::RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObje
 			else{
 				difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 			}
-			//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//—LŒø‚É‚³‚ê‚Ä‚¢‚éê‡‚Ì‚İ•\¦@RootNode‚È‚Ç‚à•\¦‚µ‚È‚¢
-			if (curre->GetSkipflag() == 0) {//—LŒø‚É‚³‚ê‚Ä‚¢‚éê‡‚Ì‚İ•\¦
+			//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//æœ‰åŠ¹ã«ã•ã‚Œã¦ã„ã‚‹å ´åˆã®ã¿è¡¨ç¤ºã€€RootNodeãªã©ã‚‚è¡¨ç¤ºã—ãªã„
+			if (curre->GetSkipflag() == 0) {//æœ‰åŠ¹ã«ã•ã‚Œã¦ã„ã‚‹å ´åˆã®ã¿è¡¨ç¤º
 				CallF(srcbone->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return);
 			}
 		}
@@ -3876,7 +4126,7 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 
 
 	FbxAMatrix lGlobalPosition;
-	bool        lPositionFound = false;//ƒoƒCƒ“ƒhƒ|[ƒY‚ğ‘‚«o‚³‚È‚¢ê‡‚âHips‚È‚Ç‚Ìê‡‚Í‚O‚É‚È‚éH
+	bool        lPositionFound = false;//ãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚ºã‚’æ›¸ãå‡ºã•ãªã„å ´åˆã‚„Hipsãªã©ã®å ´åˆã¯ï¼ã«ãªã‚‹ï¼Ÿ
 
 
 	if( pPose ){
@@ -3988,13 +4238,13 @@ FbxPose* CModel::GetBindPose()
 	int curpindex = 1;
 	while (curpose){
 		if (curpose->IsBindPose()){
-			bindpose = curpose;//ÅŒã‚ÌƒoƒCƒ“ƒhƒ|[ƒY
+			bindpose = curpose;//æœ€å¾Œã®ãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚º
 		}
 		curpose = m_pscene->GetPose(curpindex);
 		curpindex++;
 	}
 	if (!bindpose){
-		//::MessageBoxA(NULL, "ƒoƒCƒ“ƒhƒ|[ƒY‚ª‚ ‚è‚Ü‚¹‚ñB", "Œx", MB_OK);
+		//::MessageBoxA(NULL, "ãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚ºãŒã‚ã‚Šã¾ã›ã‚“ã€‚", "è­¦å‘Š", MB_OK);
 		bindpose = m_pscene->GetPose(0);
 	}
 	return bindpose;
@@ -4117,7 +4367,7 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 		int existz = 0;
 		CMotionPoint* parmp = parentbone->AddMotionPoint( motid, zeroframe, &existz );
 		if( existz && parmp ){
-			parfirstmat = parmp->GetWorldMat();//!!!!!!!!!!!!!! ‚±‚Ì“_‚Å‚Ím_matWorld‚ªŠ|‚©‚Á‚Ä‚¢‚È‚¢‚©‚çŒã‚ÅC³•K—v‚©‚àHH
+			parfirstmat = parmp->GetWorldMat();//!!!!!!!!!!!!!! ã“ã®æ™‚ç‚¹ã§ã¯m_matWorldãŒæ›ã‹ã£ã¦ã„ãªã„ã‹ã‚‰å¾Œã§ä¿®æ­£å¿…è¦ã‹ã‚‚ï¼Ÿï¼Ÿ
 			ChaMatrixInverse( &invparfirstmat, NULL, &parfirstmat );
 		}else{
 			ChaMatrixIdentity( &parfirstmat );
@@ -4145,11 +4395,11 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 			if( parentbone ){
 				int exist3 = 0;
 				CMotionPoint* parmp = parentbone->AddMotionPoint( motid, frame, &exist3 );
-				ChaMatrix tmpmat = parentbone->GetInvFirstMat() * parmp->GetWorldMat();//!!!!!!!!!!!!!!!!!! endjoint‚Í‚±‚ê‚Å‚¤‚Ü‚­s‚­‚ªAfloat‚Æ•ªŠò‚ª•s“®‚É‚È‚éB
+				ChaMatrix tmpmat = parentbone->GetInvFirstMat() * parmp->GetWorldMat();//!!!!!!!!!!!!!!!!!! endjointã¯ã“ã‚Œã§ã†ã¾ãè¡ŒããŒã€floatã¨åˆ†å²ãŒä¸å‹•ã«ãªã‚‹ã€‚
 				//newmp->SetBefWorldMat(tmpmat);
-				newmp->SetWorldMat(tmpmat);//anglelimit–³‚µ
+				newmp->SetWorldMat(tmpmat);//anglelimitç„¡ã—
 
-				//ƒIƒCƒ‰[Šp‰Šú‰»
+				//ã‚ªã‚¤ãƒ©ãƒ¼è§’åˆæœŸåŒ–
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag = 1;
 				int isfirstbone = 0;
@@ -4750,7 +5000,7 @@ int CModel::SetBtEquilibriumPointReq( CBtObject* srcbto )
 		return 0;
 	}
 
-	//`Šp“xAˆÊ’u
+	//`è§’åº¦ã€ä½ç½®
 	if (g_previewFlag != 5) {
 		srcbto->EnableSpring(true, true);
 	}
@@ -4794,7 +5044,7 @@ void CModel::SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind)
 		return;
 	}
 
-	//`Šp“xAˆÊ’u
+	//`è§’åº¦ã€ä½ç½®
 	srcbto->SetDofRotAxis(srcaxiskind);
 
 
@@ -4935,7 +5185,7 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 		SetBtMotionMass0BottomUpReq(m_topbt, wmat, vpmat);//for mass0
 		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//kinematicadjust = 0
 
-		FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematic‚Æ‚»‚¤‚Å‚È‚¢‚Æ‚±‚ë‚Ì‹«–Ú‚ğ’T‚µ‚Ä‚İ‚Â‚©‚Á‚½‚çLowerReq‚Åes—ñ‚ğƒZƒbƒg‚·‚éB
+		FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematicã¨ãã†ã§ãªã„ã¨ã“ã‚ã®å¢ƒç›®ã‚’æ¢ã—ã¦ã¿ã¤ã‹ã£ãŸã‚‰LowerReqã§è¦ªè¡Œåˆ—ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 
 		BtMat2BtObjReq(m_topbt, wmat, vpmat);
 		RecalcConstraintFrameABReq(m_topbt);
@@ -4949,7 +5199,7 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 	//}
 
 	/*
-	//resetbtˆ—‚Æ‚Ì–â‘è‚Åˆê“I‚ÉƒRƒƒ“ƒgƒAƒEƒg
+	//resetbtå‡¦ç†ã¨ã®å•é¡Œã§ä¸€æ™‚çš„ã«ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 
 ///// morph
 
@@ -5240,10 +5490,10 @@ void CModel::AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot)
 }
 
 
-//Postˆ—BSetBtMotionReq‚ğŒÄ‚Ño‚µ‚½Œã‚ÅŒÄ‚Ño‚·B
+//Postå‡¦ç†ã€‚SetBtMotionReqã‚’å‘¼ã³å‡ºã—ãŸå¾Œã§å‘¼ã³å‡ºã™ã€‚
 void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag)
 {
-	//Œãˆ—
+	//å¾Œå‡¦ç†
 
 	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
 		CBone* curbone = curbto->GetBone();
@@ -5256,9 +5506,9 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 				}
 			}
 			else if (g_previewFlag == 5) {
-				//GetCurMp().GetWorldMat()‚É‚Í•¨—IKŠJn‚Ìp¨‚ª“ü‚Á‚Ä‚¢‚éB
-				if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetParent()->GetTmpKinematic() == true))) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
-				//if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetTmpKinematic() == true))) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
+				//GetCurMp().GetWorldMat()ã«ã¯ç‰©ç†IKé–‹å§‹æ™‚ã®å§¿å‹¢ãŒå…¥ã£ã¦ã„ã‚‹ã€‚
+				if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetParent()->GetTmpKinematic() == true))) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
+				//if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetTmpKinematic() == true))) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
 					if (kinematicadjustflag == 1) {
 						if (curbone->GetParent()) {
 							ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
@@ -5274,9 +5524,9 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 					}
 				}
 				else if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && 
-					((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
-					//((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
-					//e‚Ì„‘Ì‚ÆƒJƒŒƒ“ƒg‚Ì„‘Ì‚Ì‚·‚«‚ÜA‚Â‚Ü‚èŠÖß‚ÌŒ„ŠÔ‚ğ–³‚­‚·‚½‚ß‚É•â³‚ğ‚·‚éB
+					((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
+					//((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
+					//è¦ªã®å‰›ä½“ã¨ã‚«ãƒ¬ãƒ³ãƒˆã®å‰›ä½“ã®ã™ãã¾ã€ã¤ã¾ã‚Šé–¢ç¯€ã®éš™é–“ã‚’ç„¡ãã™ãŸã‚ã«è£œæ­£ã‚’ã™ã‚‹ã€‚
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
 							//CBone* childbone = curbone->GetChild();
@@ -5304,10 +5554,10 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 
 }
 
-//Postˆ—BSetBtMotionReq‚ğŒÄ‚Ño‚µ‚½Œã‚ÅŒÄ‚Ño‚·B
+//Postå‡¦ç†ã€‚SetBtMotionReqã‚’å‘¼ã³å‡ºã—ãŸå¾Œã§å‘¼ã³å‡ºã™ã€‚
 void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
-	//Œãˆ—
+	//å¾Œå‡¦ç†
 
 	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
 		CBone* curbone = curbto->GetBone();
@@ -5320,11 +5570,11 @@ void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 				}
 			}
 			else if (g_previewFlag == 5) {
-				//GetCurMp().GetWorldMat()‚É‚Í•¨—IKŠJn‚Ìp¨‚ª“ü‚Á‚Ä‚¢‚éB
+				//GetCurMp().GetWorldMat()ã«ã¯ç‰©ç†IKé–‹å§‹æ™‚ã®å§¿å‹¢ãŒå…¥ã£ã¦ã„ã‚‹ã€‚
 				if ((curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1) && 
-					((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
-					//((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
-					//e‚Ì„‘Ì‚ÆƒJƒŒƒ“ƒg‚Ì„‘Ì‚Ì‚·‚«‚ÜA‚Â‚Ü‚èŠÖß‚ÌŒ„ŠÔ‚ğ–³‚­‚·‚½‚ß‚É•â³‚ğ‚·‚éB
+					((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
+					//((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE))) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
+					//è¦ªã®å‰›ä½“ã¨ã‚«ãƒ¬ãƒ³ãƒˆã®å‰›ä½“ã®ã™ãã¾ã€ã¤ã¾ã‚Šé–¢ç¯€ã®éš™é–“ã‚’ç„¡ãã™ãŸã‚ã«è£œæ­£ã‚’ã™ã‚‹ã€‚
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
 							if (curbone->GetMass0() == 1) {
@@ -5348,12 +5598,12 @@ void CModel::SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 }
 
 
-//Postˆ—BSetBtMotionReq‚ğŒÄ‚Ño‚µ‚½Œã‚ÅŒÄ‚Ño‚·B
+//Postå‡¦ç†ã€‚SetBtMotionReqã‚’å‘¼ã³å‡ºã—ãŸå¾Œã§å‘¼ã³å‡ºã™ã€‚
 void CModel::SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
-	//Œãˆ—
+	//å¾Œå‡¦ç†
 
-	//æ‚ÉŠK‘w‚ğ‚½‚Ç‚Á‚Ä‚©‚çˆ—‚ğ‚·‚éB‚Â‚Ü‚è––’[‚©‚çˆ—‚ğn‚ß‚éB
+	//å…ˆã«éšå±¤ã‚’ãŸã©ã£ã¦ã‹ã‚‰å‡¦ç†ã‚’ã™ã‚‹ã€‚ã¤ã¾ã‚Šæœ«ç«¯ã‹ã‚‰å‡¦ç†ã‚’å§‹ã‚ã‚‹ã€‚
 	int chilno;
 	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
 		CBtObject* chilbto = curbto->GetChildBt(chilno);
@@ -5367,11 +5617,11 @@ void CModel::SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, Cha
 		if (curbone && curbone->GetParent()) {
 			if (g_previewFlag == 5) {
 				if (curbone->GetBtFlag() == 1) {
-					//e‚Ì„‘Ì‚ÆƒJƒŒƒ“ƒg‚Ì„‘Ì‚Ì‚·‚«‚ÜA‚Â‚Ü‚èŠÖß‚ÌŒ„ŠÔ‚ğ–³‚­‚·‚½‚ß‚É•â³‚ğ‚·‚éB
+					//è¦ªã®å‰›ä½“ã¨ã‚«ãƒ¬ãƒ³ãƒˆã®å‰›ä½“ã®ã™ãã¾ã€ã¤ã¾ã‚Šé–¢ç¯€ã®éš™é–“ã‚’ç„¡ãã™ãŸã‚ã«è£œæ­£ã‚’ã™ã‚‹ã€‚
 					if (curbto->GetParBt()) {
 						if (curbone->GetParent()->GetParent()) {
-							if ((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE)) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
-							//if ((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE)) {//mass0‚Ækinematic•¹—p‚Ìê‡‚É‚Ímass0‚ğ“K—p
+							if ((curbone->GetParent()->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE)) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
+							//if ((curbone->GetTmpKinematic() == false) || (curbone->GetMass0() == TRUE)) {//mass0ã¨kinematicä½µç”¨ã®å ´åˆã«ã¯mass0ã‚’é©ç”¨
 								CBone* childbone = curbto->GetEndBone();
 								if (childbone) {
 									if (childbone->GetChild()) {
@@ -5394,9 +5644,9 @@ void CModel::SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, Cha
 
 void CModel::FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
-	//Kinematic‚Æ‚»‚¤‚Å‚È‚¢‚Æ‚±‚ë‚Ì‹«–Ú‚ğ’T‚µ‚Ä‚İ‚Â‚©‚Á‚½‚çLowerReq‚Åes—ñ‚ğƒZƒbƒg‚·‚éB
+	//Kinematicã¨ãã†ã§ãªã„ã¨ã“ã‚ã®å¢ƒç›®ã‚’æ¢ã—ã¦ã¿ã¤ã‹ã£ãŸã‚‰LowerReqã§è¦ªè¡Œåˆ—ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 
-	//æ‚ÉŠK‘w‚ğ‚½‚Ç‚Á‚Ä‚©‚çˆ—‚ğ‚·‚éB‚Â‚Ü‚è––’[‚©‚çˆ—‚ğn‚ß‚éB
+	//å…ˆã«éšå±¤ã‚’ãŸã©ã£ã¦ã‹ã‚‰å‡¦ç†ã‚’ã™ã‚‹ã€‚ã¤ã¾ã‚Šæœ«ç«¯ã‹ã‚‰å‡¦ç†ã‚’å§‹ã‚ã‚‹ã€‚
 	int childno;
 	for (childno = 0; childno < curbto->GetChildBtSize(); childno++) {
 		CBtObject* childbto = curbto->GetChildBt(childno);
@@ -5413,9 +5663,9 @@ void CModel::FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatri
 			if (parentbone) {
 				if ((parentbone->GetMass0() == FALSE) && (curbone->GetMass0() == FALSE)) {
 					if ((parentbone->GetTmpKinematic() == FALSE) && (curbone->GetTmpKinematic() == TRUE)) {
-						//‹«–Ú‚ğ”­Œ©
+						//å¢ƒç›®ã‚’ç™ºè¦‹
 
-						//e„‘Ì‚Ìp¨iŠp“xŠÜ‚Şj‚Ì•â³
+						//è¦ªå‰›ä½“ã®å§¿å‹¢ï¼ˆè§’åº¦å«ã‚€ï¼‰ã®è£œæ­£
 						//ChaMatrix oldparentmat = parentbone->GetBtMat();
 						//AdjustBtMatToChild(parentbone, curbone, 1);
 
@@ -5441,7 +5691,7 @@ void CModel::FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatri
 }
 void CModel::SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparentmat, ChaMatrix newparentmat)
 {
-	//LowerReq‚Åes—ñ‚ğƒZƒbƒg‚·‚éB
+	//LowerReqã§è¦ªè¡Œåˆ—ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 	
 	if (curbto) {
 		CBone* curbone = curbto->GetBone();
@@ -5450,12 +5700,12 @@ void CModel::SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparent
 			if (curbone && curbone->GetParent()) {
 				oldcurmat = curbone->GetBtMat();
 
-				//newcurmat = oldcurmat * ChaMatrixInv(oldparentmat) * newparentmat;//Œ`óC³‚È‚µ‚Ìê‡
+				//newcurmat = oldcurmat * ChaMatrixInv(oldparentmat) * newparentmat;//å½¢çŠ¶ä¿®æ­£ãªã—ã®å ´åˆ
 
 				ChaMatrix curkinematicmat, parentkinematicmat;
 				curkinematicmat = curbone->GetCurMp().GetWorldMat();
 				parentkinematicmat = curbone->GetParent()->GetCurMp().GetWorldMat();
-				newcurmat = curkinematicmat * ChaMatrixInv(parentkinematicmat) * newparentmat;//Œ`ó‚ğ•Û‚·‚éê‡
+				newcurmat = curkinematicmat * ChaMatrixInv(parentkinematicmat) * newparentmat;//å½¢çŠ¶ã‚’ä¿æŒã™ã‚‹å ´åˆ
 
 				curbone->SetBtMat(newcurmat);
 				curbone->SetBtFlag(1);
@@ -5482,7 +5732,7 @@ void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat
 			if (curbone->GetBtFlag() == 1){
 				if (g_previewFlag == 5) {
 
-					//GetCurMp().GetWorldMat()‚É‚Í•¨—IKŠJn‚Ìp¨‚ª“ü‚Á‚Ä‚¢‚éB
+					//GetCurMp().GetWorldMat()ã«ã¯ç‰©ç†IKé–‹å§‹æ™‚ã®å§¿å‹¢ãŒå…¥ã£ã¦ã„ã‚‹ã€‚
 					if ((curbone->GetMass0() == FALSE) && (curbone->GetParent()->GetTmpKinematic() == true)) {
 						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
 						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
@@ -6301,7 +6551,7 @@ int CModel::SetRagdollKinFlag(int selectbone, int physicsmvkind)
 }
 void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physicsmvkind)
 {
-	//Mass0‚ªİ’è‚³‚ê‚Ä‚¢‚½ê‡ATmpKinematic‚Í‹­§“I‚É–³Œø
+	//Mass0ãŒè¨­å®šã•ã‚Œã¦ã„ãŸå ´åˆã€TmpKinematicã¯å¼·åˆ¶çš„ã«ç„¡åŠ¹
 
 
 	CBone* srcbone = srcbto->GetBone();
@@ -6638,7 +6888,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
 			if( parentbone && (curbone->GetJointFPos() != parentbone->GetJointFPos()) ){
-				UpdateMatrix(&m_matWorld, &m_matVP);//curmpXV
+				UpdateMatrix(&m_matWorld, &m_matVP);//curmpæ›´æ–°
 
 
 				CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
@@ -6646,7 +6896,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					
 					//_ASSERT(0);
 
-					//‰ñ“]‹Ö~‚Ìê‡ˆ—‚ğƒXƒLƒbƒv
+					//å›è»¢ç¦æ­¢ã®å ´åˆå‡¦ç†ã‚’ã‚¹ã‚­ãƒƒãƒ—
 					if (parentbone) {
 						lastpar = parentbone;
 					}
@@ -6775,7 +7025,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 
 
 					if (g_applyendflag == 1) {
-						//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚Ìp¨‚ğ“K—p
+						//curmotinfo->curframeã‹ã‚‰æœ€å¾Œã¾ã§curmotinfo->curframeã®å§¿å‹¢ã‚’é©ç”¨
 						int tolast;
 						for (tolast = (int)m_curmotinfo->curframe + 1; tolast < m_curmotinfo->frameleng; tolast++) {
 							(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
@@ -6826,38 +7076,38 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 {
 
 	//Memo 20180602
-	//PhysicsRot‚ÌŒ‹‰Ê‚ª•sˆÀ’è‚É‚È‚éƒP[ƒX‚ªi‚è‚ß‚Ä‚«‚½B
-	//parrent-->grand parent‚Ìƒ{[ƒ“‚ª‹ü‚É‘Î‚µ‚Ä•½s‚Ì‚Æ‚«‚É‚±‚ÌŠÖ”‚ğg‚¤‚Æcurrent-->parentƒ{[ƒ“‚ª‚®‚é‚ñ‚®‚é‚ñ‰ñ‚Á‚Ä‚µ‚Ü‚¤‚±‚Æ‚ª‘½‚¢B
-	//˜r-->Œ¨‚Æ½œ‚ª’¼Šp‚È‚Æ‚«‚É˜r‚ÌIK‚Å‹N‚±‚è‚â‚·‚¢B
-	//PhysicsRotAxisDeltaŠÖ”‚Å‰ñ“]²‚ğw’è‚µ‚ÄIK‚·‚é‚ÆˆÀ’è‚·‚éB
+	//PhysicsRotã®çµæœãŒä¸å®‰å®šã«ãªã‚‹ã‚±ãƒ¼ã‚¹ãŒçµã‚Šè¾¼ã‚ã¦ããŸã€‚
+	//parrent-->grand parentã®ãƒœãƒ¼ãƒ³ãŒè¦–ç·šã«å¯¾ã—ã¦å¹³è¡Œã®ã¨ãã«ã“ã®é–¢æ•°ã‚’ä½¿ã†ã¨current-->parentãƒœãƒ¼ãƒ³ãŒãã‚‹ã‚“ãã‚‹ã‚“å›ã£ã¦ã—ã¾ã†ã“ã¨ãŒå¤šã„ã€‚
+	//è…•-->è‚©ã¨é–éª¨ãŒç›´è§’ãªã¨ãã«è…•ã®IKã§èµ·ã“ã‚Šã‚„ã™ã„ã€‚
+	//PhysicsRotAxisDeltaé–¢æ•°ã§å›è»¢è»¸ã‚’æŒ‡å®šã—ã¦IKã™ã‚‹ã¨å®‰å®šã™ã‚‹ã€‚
 
 	//Memo 20180604
-	//ã‹L‚Ì‚®‚é‚ñ‚®‚é‚ñ‰ñ‚é–â‘è
-	//MediaƒtƒHƒ‹ƒ_‚ÌƒTƒ“ƒvƒ‹‚Ìfbxƒtƒ@ƒCƒ‹‚Ìu˜r‚ÌÀ•W²‚ªX²ƒx[ƒX‚É‚È‚Á‚Ä‚¢‚È‚¢v‚±‚Æ‚ª•ª‚©‚Á‚½B
-	//PhysicsRotƒ{ƒ^ƒ“‚ğ‰Ÿ‚·‚ÆƒTƒ“ƒvƒ‹‚ÌŠY“–ƒ{[ƒ“‚ÌÀ•W²‚ªX²ƒx[ƒX‚Å‚È‚­‚È‚é‚æ‚¤‚¾‚Á‚½B
-	//CalcShadowToPlane‚Ì–â‘è‚Ì‰Â”\«‚à‚ ‚éBŒ©’¼‚µ‚½‚ª–Y‚ê‚Ä‚¢‚Ä‚í‚©‚ç‚È‚¢•”•ª‚ª‚ ‚Á‚½B
+	//ä¸Šè¨˜ã®ãã‚‹ã‚“ãã‚‹ã‚“å›ã‚‹å•é¡Œ
+	//Mediaãƒ•ã‚©ãƒ«ãƒ€ã®ã‚µãƒ³ãƒ—ãƒ«ã®fbxãƒ•ã‚¡ã‚¤ãƒ«ã®ã€Œè…•ã®åº§æ¨™è»¸ãŒXè»¸ãƒ™ãƒ¼ã‚¹ã«ãªã£ã¦ã„ãªã„ã€ã“ã¨ãŒåˆ†ã‹ã£ãŸã€‚
+	//PhysicsRotãƒœã‚¿ãƒ³ã‚’æŠ¼ã™ã¨ã‚µãƒ³ãƒ—ãƒ«ã®è©²å½“ãƒœãƒ¼ãƒ³ã®åº§æ¨™è»¸ãŒXè»¸ãƒ™ãƒ¼ã‚¹ã§ãªããªã‚‹ã‚ˆã†ã ã£ãŸã€‚
+	//CalcShadowToPlaneã®å•é¡Œã®å¯èƒ½æ€§ã‚‚ã‚ã‚‹ã€‚è¦‹ç›´ã—ãŸãŒå¿˜ã‚Œã¦ã„ã¦ã‚ã‹ã‚‰ãªã„éƒ¨åˆ†ãŒã‚ã£ãŸã€‚
 
 	//Memo 20180606
-	//À•W²‚Í’¼‚µ‚½B
-	//ƒJƒŒƒ“ƒgÀ•WŒn‚ğƒfƒtƒHƒ‹ƒg‚É‚µ‚½B
-	//‚®‚é‚ñ‚®‚é‚ñ‚Í‚Ü‚¾’¼‚Á‚Ä‚¢‚È‚¢B
+	//åº§æ¨™è»¸ã¯ç›´ã—ãŸã€‚
+	//ã‚«ãƒ¬ãƒ³ãƒˆåº§æ¨™ç³»ã‚’ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ã—ãŸã€‚
+	//ãã‚‹ã‚“ãã‚‹ã‚“ã¯ã¾ã ç›´ã£ã¦ã„ãªã„ã€‚
 
 	//Memo 20180619
-	//‚®‚é‚ñ‚®‚é‚ñÇó‚ª’¼‚Á‚½i‚½‚¾‚µBtApplyƒ{ƒ^ƒ“‚ğ‰Ÿ‚³‚È‚¢ê‡j
-	//newbtmat‚ÌŒvZ‚ğC³‚µ‚½B
+	//ãã‚‹ã‚“ãã‚‹ã‚“ç—‡çŠ¶ãŒç›´ã£ãŸï¼ˆãŸã ã—BtApplyãƒœã‚¿ãƒ³ã‚’æŠ¼ã•ãªã„å ´åˆï¼‰
+	//newbtmatã®è¨ˆç®—ã‚’ä¿®æ­£ã—ãŸã€‚
 
 	//Memo 20180623
-	//BtApplyƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚à‚®‚é‚ñ‚®‚é‚ñÇó‚ªo‚È‚­‚È‚Á‚½B
-	//‚®‚é‚ñ‚®‚é‚ñ‚·‚éê‡‚ÍAƒ{[ƒ“‚ª”½‘Î‰ñ‚è‚µ‚Ä‚¢‚é‚æ‚¤‚¾‚Á‚½B
-	//‰ñ“]‚µ‚Äƒ^[ƒQƒbƒg‚É‹ß‚Ã‚©‚È‚¢ê‡‚É‚ÍƒLƒƒƒ“ƒZƒ‹‚·‚é‚±‚Æ‚É‚æ‚è’¼‚Á‚½B
-	//Bindcapsulemat‚ğ—˜—p‚·‚é‚æ‚¤‚É‚µ‚½B
-	//§ŒÀŠp“x•”•ª‚ğBindcapsulemat‚ğ—˜—p‚·‚é‚æ‚¤‚ÉC³‚·‚é•K—v‚ ‚èiƒoƒCƒ“ƒhƒ|[ƒYŠî“_‚ÌŠp“x‚É‚·‚é•K—v‚ ‚èjB
+	//BtApplyãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã‚‚ãã‚‹ã‚“ãã‚‹ã‚“ç—‡çŠ¶ãŒå‡ºãªããªã£ãŸã€‚
+	//ãã‚‹ã‚“ãã‚‹ã‚“ã™ã‚‹å ´åˆã¯ã€ãƒœãƒ¼ãƒ³ãŒåå¯¾å›ã‚Šã—ã¦ã„ã‚‹ã‚ˆã†ã ã£ãŸã€‚
+	//å›è»¢ã—ã¦ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã«è¿‘ã¥ã‹ãªã„å ´åˆã«ã¯ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã™ã‚‹ã“ã¨ã«ã‚ˆã‚Šç›´ã£ãŸã€‚
+	//Bindcapsulematã‚’åˆ©ç”¨ã™ã‚‹ã‚ˆã†ã«ã—ãŸã€‚
+	//åˆ¶é™è§’åº¦éƒ¨åˆ†ã‚’Bindcapsulematã‚’åˆ©ç”¨ã™ã‚‹ã‚ˆã†ã«ä¿®æ­£ã™ã‚‹å¿…è¦ã‚ã‚Šï¼ˆãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚ºåŸºç‚¹ã®è§’åº¦ã«ã™ã‚‹å¿…è¦ã‚ã‚Šï¼‰ã€‚
 
 	//Memo 20180922
-	//ƒ}ƒjƒsƒ…ƒŒ[ƒ^‚ÌÀ•WŒniBindcapsulematŠî€j‚ÌƒIƒCƒ‰[Šp‚É‚æ‚éŠp“x§ŒÀBŒŸØ’†B
+	//ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®åº§æ¨™ç³»ï¼ˆBindcapsulematåŸºæº–ï¼‰ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ã«ã‚ˆã‚‹è§’åº¦åˆ¶é™ã€‚æ¤œè¨¼ä¸­ã€‚
 
 	//Memo 20180925
-	//Euler‚Í’ÊíIK‚Ì‚à‚Ì‚ğg—pB•¨—ƒ}ƒgƒŠƒbƒNƒX‚Í’ÊíIK‚Ìdiff‚ÅŒvZB
+	//Eulerã¯é€šå¸¸IKæ™‚ã®ã‚‚ã®ã‚’ä½¿ç”¨ã€‚ç‰©ç†ãƒãƒˆãƒªãƒƒã‚¯ã‚¹ã¯é€šå¸¸IKã®diffã§è¨ˆç®—ã€‚
 
 
 	CBone* firstbone = m_bonelist[srcboneno];
@@ -6875,7 +7125,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	}
 	gparentbone = parentbone->GetParent();
 	if (!gparentbone){
-		//grand parent‚ªƒ‹[ƒgƒ{[ƒ“‚Ìê‡‚ÉA‚Ü‚¾‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚ÅƒXƒLƒbƒv
+		//grand parentãŒãƒ«ãƒ¼ãƒˆãƒœãƒ¼ãƒ³ã®å ´åˆã«ã€ã¾ã ã†ã¾ãã„ã‹ãªã„ã®ã§ã‚¹ã‚­ãƒƒãƒ—
 		return 0;
 	}
 	CBone* editboneforret = 0;
@@ -6916,17 +7166,17 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 				ChaVector3TransformCoord(&parworld, &(parentbone->GetJointFPos()), &(parentbone->GetBtMat()));
 				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parentbone->GetBtMat()));
 				//ChaVector3TransformCoord(&parworld, &(parentbone->GetJointFPos()), &(parentbone->GetBtMat()));
-				//ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(childbone->GetBtMat()));//<--—‚ê‚é
+				//ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(childbone->GetBtMat()));//<--ä¹±ã‚Œã‚‹
 
 
 				ChaVector3 parbef, chilbef, tarbef;
 
-				//parent joint‚ªæ‚Á‚Ä‚¢‚é•½–Êã
+				//parent jointãŒä¹—ã£ã¦ã„ã‚‹å¹³é¢ä¸Š
 				parbef = parworld;
 				CalcShadowToPlane(chilworld, ikaxis, parworld, &chilbef);
 				CalcShadowToPlane(targetpos, ikaxis, parworld, &tarbef);
 
-				////ƒhƒ‰ƒbƒO‚·‚éƒWƒ‡ƒCƒ“ƒg‚ªæ‚Á‚Ä‚¢‚é•½–Êã
+				////ãƒ‰ãƒ©ãƒƒã‚°ã™ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãŒä¹—ã£ã¦ã„ã‚‹å¹³é¢ä¸Š
 				//chilbef = chilworld;
 				//CalcShadowToPlane(parworld, ikaxis, chilworld, &parbef);
 				//CalcShadowToPlane(targetpos, ikaxis, chilworld, &tarbef);
@@ -6980,10 +7230,10 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					dist1 = ChaVector3LengthDbl(&child2target);
 
 
-					//”äŠr‚Æ‘I‘ğ
+					//æ¯”è¼ƒã¨é¸æŠ
 					CQuaternion rotq;
 					ChaMatrix newbtmat;
-					//if ((dist0 * 0.9) >= dist1) {//10%‹ß‚Ã‚©‚È‚©‚Á‚½‚çƒLƒƒƒ“ƒZƒ‹B—‚ê–h~ôB
+					//if ((dist0 * 0.9) >= dist1) {//10%è¿‘ã¥ã‹ãªã‹ã£ãŸã‚‰ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã€‚ä¹±ã‚Œé˜²æ­¢ç­–ã€‚
 						rotq = rotq1;
 						newbtmat = newbtmat1;
 					//}
@@ -7039,7 +7289,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 						//if (isfirst == 1) {
 						//parentbone->SetBtMat(newbtmat);
-						//IKƒ{[ƒ“‚ÍKINEMATIC‚¾‚©‚çB
+						//IKãƒœãƒ¼ãƒ³ã¯KINEMATICã ã‹ã‚‰ã€‚
 						//parentbone->GetCurMp().SetWorldMat(newbtmat);
 						isfirst = 0;
 						//}
@@ -7130,7 +7380,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 		CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
 		if (curre && curre->GetForbidRotFlag() != 0) {
-			//‰ñ“]‹Ö~‚Ìê‡ˆ—‚ğƒXƒLƒbƒv
+			//å›è»¢ç¦æ­¢ã®å ´åˆå‡¦ç†ã‚’ã‚¹ã‚­ãƒƒãƒ—
 			currate = pow(g_ikrate, g_ikfirst * levelcnt);
 			lastbone = curbone;
 			curbone = curbone->GetParent();
@@ -7264,7 +7514,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //		return 0;
 //	}
 //	if (!parentbone->GetParent()){
-//		//grand parent‚ªƒ‹[ƒgƒ{[ƒ“‚Ìê‡‚ÉA‚Ü‚¾‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚ÅƒXƒLƒbƒv
+//		//grand parentãŒãƒ«ãƒ¼ãƒˆãƒœãƒ¼ãƒ³ã®å ´åˆã«ã€ã¾ã ã†ã¾ãã„ã‹ãªã„ã®ã§ã‚¹ã‚­ãƒƒãƒ—
 //		return 0;
 //	}
 //
@@ -7414,7 +7664,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //			worldtra.setRotation(btrotq);
 //			worldtra.setOrigin(btVector3(rigidcenter.x, rigidcenter.y, rigidcenter.z));
 //
-////Šp“x§ŒÀ@‚±‚±‚©‚ç
+////è§’åº¦åˆ¶é™ã€€ã“ã“ã‹ã‚‰
 //			if (gparentbone){
 //				CBtObject* parbto = gparentbone->GetBtObject(parentbone);
 //				if (parbto){
@@ -7425,13 +7675,13 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //						btGeneric6DofSpringConstraint* dofC = parbto->FindConstraint(parentbone, childbone);
 //						if (dofC){
 //
-//							//constraint•Ï‰»•ª@ˆÈ‰º3s@@CreateBtObject‚ğ‚µ‚½‚Æ‚«‚Ìó‘Ô‚ğŠî€‚É‚µ‚½Šp“x‚É‚È‚Á‚Ä‚¢‚éB‚Â‚Ü‚èƒVƒ~ƒ…ŠJn‚ª‚O“xB
+//							//constraintå¤‰åŒ–åˆ†ã€€ä»¥ä¸‹3è¡Œã€€ã€€CreateBtObjectã‚’ã—ãŸã¨ãã®çŠ¶æ…‹ã‚’åŸºæº–ã«ã—ãŸè§’åº¦ã«ãªã£ã¦ã„ã‚‹ã€‚ã¤ã¾ã‚Šã‚·ãƒŸãƒ¥é–‹å§‹æ™‚ãŒï¼åº¦ã€‚
 //							//btTransform contraA = dofC->getCalculatedTransformA();
 //							//btTransform contraB = dofC->getCalculatedTransformB();
 //							//btMatrix3x3 eulmat = contraA.getBasis().inverse() * contraB.getBasis() * contraA.getBasis();
 //
 //
-//							////eƒ{[ƒ“‚Æ‚ÌŠp“x‚ªƒIƒCƒ‰[Šp‚É“ü‚é
+//							////è¦ªãƒœãƒ¼ãƒ³ã¨ã®è§’åº¦ãŒã‚ªã‚¤ãƒ©ãƒ¼è§’ã«å…¥ã‚‹
 //							//btTransform contraA = dofC->getCalculatedTransformA();
 //							//btTransform contraB = dofC->getCalculatedTransformB();
 //							//btTransform parworldtra;
@@ -7464,14 +7714,14 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //							OutputDebugStringA(strmsg);
 //
 //
-//							//Q2EulZYXbt‚ÌƒeƒXƒg@ˆÈ‰º8s
+//							//Q2EulZYXbtã®ãƒ†ã‚¹ãƒˆã€€ä»¥ä¸‹8è¡Œ
 //							CQuaternion eulq;
 //							eulq = QMakeFromBtMat3x3(eulmat);
 //							int needmodifyflag = 0;
 //							ChaVector3 testbefeul = ChaVector3(0.0f, 0.0f, 0.0f);
 //							ChaVector3 testeul = ChaVector3(0.0f, 0.0f, 0.0f);
 //							//eulq.Q2EulZYXbt(needmodifyflag, 0, testbefeul, &testeul);
-//							eulq.Q2EulXYZ(0, testbefeul, &testeul);//bullet‚Ì‰ñ“]‡˜‚Í”’lŒŸØ‚ÌŒ‹‰ÊXYZB(ZYX‚Å‚Í‚È‚¢)B
+//							eulq.Q2EulXYZ(0, testbefeul, &testeul);//bulletã®å›è»¢é †åºã¯æ•°å€¤æ¤œè¨¼ã®çµæœXYZã€‚(ZYXã§ã¯ãªã„)ã€‚
 //							sprintf_s(strmsg, 256, "testeul [%f, %f, %f]\n", testeul.x, testeul.y, testeul.z);
 //							OutputDebugStringA(strmsg);
 //
@@ -7488,7 +7738,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //
 //							if (isfirst == 1){
 //								parentbone->SetBtMat(newbtmat);
-//								//IKƒ{[ƒ“‚ÍKINEMATIC‚¾‚©‚çB
+//								//IKãƒœãƒ¼ãƒ³ã¯KINEMATICã ã‹ã‚‰ã€‚
 //								parentbone->GetCurMp().SetWorldMat(newbtmat);
 //								isfirst = 0;
 //							}
@@ -7496,7 +7746,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 //						}
 //					}
 //				}
-////Šp“x§ŒÀ@‚±‚±‚Ü‚Å
+////è§’åº¦åˆ¶é™ã€€ã“ã“ã¾ã§
 //			}
 //			childbone = childbone->GetBrother();
 //		}
@@ -7551,7 +7801,7 @@ int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, in
 	for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++){
 		RIGELEM currigelem = ikcustomrig.rigelem[elemno];
 		if (currigelem.rigrigboneno >= 0){
-			//rig‚Ìrig
+			//rigã®rig
 			CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
 			if (rigrigbone){
 				int rigrigno = currigelem.rigrigno;
@@ -7661,12 +7911,12 @@ int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, in
 
 								*/
 								ChaMatrix transmat2;
-								//‚±‚ê‚Å‚Í‘Ì‘S‘Ì‚ª”½‘Î‚ğŒü‚¢‚½‚Æ‚«‚É‰ñ“]•ûŒü‚ª”½‘ÎŒü‚«‚É‚È‚éB
+								//ã“ã‚Œã§ã¯ä½“å…¨ä½“ãŒåå¯¾ã‚’å‘ã„ãŸã¨ãã«å›è»¢æ–¹å‘ãŒåå¯¾å‘ãã«ãªã‚‹ã€‚
 								//transmat2 = invgparrotmat * rotq0.MakeRotMatX() * gparrotmat;
 
 								//ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 								ChaMatrix transmat = localq.MakeRotMatX();
-								//ˆÈ‰º‚Ì‚æ‚¤‚É‚·‚ê‚Î‘Ì‘S‘Ì‚ª‰ñ“]‚µ‚½‚É‚à³í‚É“®‚­
+								//ä»¥ä¸‹ã®ã‚ˆã†ã«ã™ã‚Œã°ä½“å…¨ä½“ãŒå›è»¢ã—ãŸæ™‚ã«ã‚‚æ­£å¸¸ã«å‹•ã
 								//transmat2 = invgparrotmat * parrotmat * transmat * invparrotmat * gparrotmat;
 								//CMotionPoint transmp;
 								//transmp.CalcQandTra(transmat2, parentbone);
@@ -7763,7 +8013,7 @@ int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, in
 
 								if (isfirst == 1){
 									parentbone->SetBtMat(newbtmat);
-									//IKƒ{[ƒ“‚ÍKINEMATIC‚¾‚©‚çB
+									//IKãƒœãƒ¼ãƒ³ã¯KINEMATICã ã‹ã‚‰ã€‚
 									parentbone->GetCurMp().SetWorldMat(newbtmat);
 									isfirst = 0;
 								}
@@ -7998,7 +8248,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 		for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++){
 			RIGELEM currigelem = ikcustomrig.rigelem[elemno];
 			if (currigelem.rigrigboneno >= 0){
-				//rig‚Ìrig
+				//rigã®rig
 				CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
 				if (rigrigbone){
 					int rigrigno = currigelem.rigrigno;
@@ -8160,7 +8410,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 
 							}
 							if (g_applyendflag == 1){
-								//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚Ìp¨‚ğ“K—p
+								//curmotinfo->curframeã‹ã‚‰æœ€å¾Œã¾ã§curmotinfo->curframeã®å§¿å‹¢ã‚’é©ç”¨
 								if (m_topbone){
 									int tolast;
 									for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
@@ -8243,7 +8493,7 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 				settra = endtra;
 			}
 			else{
-				slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframe‚Í–`“ª‚Åreturn‚µ‚Ä‚¢‚éB
+				slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeã¯å†’é ­ã§returnã—ã¦ã„ã‚‹ã€‚
 				startq.Slerp2(endq, slerpt, &setq);
 				settra = starttra + (endtra - starttra) * slerpt;
 			}
@@ -8322,7 +8572,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
 			if (curre && curre->GetForbidRotFlag() != 0) {
-				//‰ñ“]‹Ö~‚Ìê‡ˆ—‚ğƒXƒLƒbƒv
+				//å›è»¢ç¦æ­¢ã®å ´åˆå‡¦ç†ã‚’ã‚¹ã‚­ãƒƒãƒ—
 				currate = pow(g_ikrate, g_ikfirst * levelcnt);
 				lastbone = curbone;
 				curbone = curbone->GetParent();
@@ -8476,7 +8726,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 
 			if (g_applyendflag == 1){
-				//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚Ìp¨‚ğ“K—p
+				//curmotinfo->curframeã‹ã‚‰æœ€å¾Œã¾ã§curmotinfo->curframeã®å§¿å‹¢ã‚’é©ç”¨
 				if (m_topbone){
 					int tolast;
 					for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
@@ -8608,7 +8858,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 		}
 
 		if (g_applyendflag == 1){
-			//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚Ìp¨‚ğ“K—p
+			//curmotinfo->curframeã‹ã‚‰æœ€å¾Œã¾ã§curmotinfo->curframeã®å§¿å‹¢ã‚’é©ç”¨
 			if (m_topbone){
 				int tolast;
 				for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++){
@@ -8955,7 +9205,7 @@ float CModel::GetTargetWeight( int motid, double srcframe, double srctimescale, 
 	FbxTime lTime;
 	lTime.SetSecondDouble( srcframe / srctimescale );
 
-	//m_fbxobj end iterator check•K—vH
+	//m_fbxobj end iterator checkå¿…è¦ï¼Ÿ
 	//return GetFbxTargetWeight( (FbxNode*)m_fbxobj[srcbaseobj].node, (FbxMesh*)m_fbxobj[srcbaseobj].mesh, srctargetname, lTime, curanimlayer, srcbaseobj );
 	return 1.0f;
 }
@@ -9523,7 +9773,7 @@ int CModel::RestoreMass(CBone* srcbone)
 void CModel::SetMass0Req(CBone* srcbone, bool forceflag)
 {
 	if (srcbone){
-		//‹­§İ’èorİ’è‚Ì•œŒ³
+		//å¼·åˆ¶è¨­å®šorè¨­å®šã®å¾©å…ƒ
 		if ((forceflag == true) || (srcbone->GetMass0() == 1)){
 			SetMass0(srcbone);
 		}
@@ -9675,7 +9925,7 @@ void CModel::EnableRotChildren(CBone* srcbone, bool srcflag)
 		return;
 	}
 
-	//ƒJƒŒƒ“ƒgƒ{[ƒ“‚àŠÜ‚ß‚ÄÄ‹A“I‚Éİ’è‚·‚éB
+	//ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ã‚‚å«ã‚ã¦å†å¸°çš„ã«è¨­å®šã™ã‚‹ã€‚
 	EnableRotChildrenReq(srcbone, srcflag);
 
 }
@@ -9885,31 +10135,31 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 
 		if (foundrecdata0 && foundrecdata) {
 			ChaMatrix worldmat0 = btbone->GetWorldMat(curmi->motid, g_motionbrush_applyframe);//or srcframe
-			ChaMatrix btmat0 = recdata0.btmat;//ƒJƒŒƒ“ƒgƒ{[ƒ“‚ÌApplyFrame‚É‚¨‚¯‚éƒhƒ‰ƒbƒOŠÔƒ[ƒ‚Ìp¨
-			ChaMatrix btmat = recdata.btmat;//ƒJƒŒƒ“ƒgƒ{[ƒ“‚ÌApplyFrame‚É‚¨‚¯‚éƒhƒ‰ƒbƒOŠÔƒJƒŒƒ“ƒg‚Ìp¨
+			ChaMatrix btmat0 = recdata0.btmat;//ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ã®ApplyFrameã«ãŠã‘ã‚‹ãƒ‰ãƒ©ãƒƒã‚°æ™‚é–“ã‚¼ãƒ­ã®å§¿å‹¢
+			ChaMatrix btmat = recdata.btmat;//ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ã®ApplyFrameã«ãŠã‘ã‚‹ãƒ‰ãƒ©ãƒƒã‚°æ™‚é–“ã‚«ãƒ¬ãƒ³ãƒˆã®å§¿å‹¢
 
 			ChaMatrix curworldmat = btbone->GetWorldMat(curmi->motid, srcframe);
 
 
 			//#######################################################################################
-			// quaternion‚Ìƒ[ƒJƒ‹À•WŒn‚Ì®@invAxis * B * Axis ‚Í Matrix‚Å‚Í@Axis * B * InvAxis
-			// ƒOƒ[ƒoƒ‹‚É–ß‚·‚Æ‚«‚É‚Í InvAxis * (Axis * B * InvAxis ) * Axis
+			// quaternionã®ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ç³»ã®å¼ã€€invAxis * B * Axis ã¯ Matrixã§ã¯ã€€Axis * B * InvAxis
+			// ã‚°ãƒ­ãƒ¼ãƒãƒ«ã«æˆ»ã™ã¨ãã«ã¯ InvAxis * (Axis * B * InvAxis ) * Axis
 			// 
-			// Diff‚ÉBt‚ğg‚¤——R
-			// worldmat‚É‚Íƒ}ƒEƒXƒhƒ‰ƒbƒO’¼Œã‚Ìp¨‚ª“ü‚Á‚Ä‚¢‚é
-			// ‚»‚ÌŒãA•¨—‚Ìƒ‹[ƒv‚ğ‰ñ‚µ‚Ä‘¼‚Ì„‘Ì‚É—Í‚ğ“`‚¦A‚Ü‚½ƒtƒB[ƒhƒoƒbƒN‚ğ‚à‚ç‚¢„‘Ì‚ÌÚ‘±‚ğ•Û‚Â
-			// „‘Ì‚ÌÚ‘±‚ğ•Û‚Á‚Ä‚¢‚é‚Ì‚Íbtmat
+			// Diffã«Btã‚’ä½¿ã†ç†ç”±
+			// worldmatã«ã¯ãƒã‚¦ã‚¹ãƒ‰ãƒ©ãƒƒã‚°ç›´å¾Œã®å§¿å‹¢ãŒå…¥ã£ã¦ã„ã‚‹
+			// ãã®å¾Œã€ç‰©ç†ã®ãƒ«ãƒ¼ãƒ—ã‚’å›ã—ã¦ä»–ã®å‰›ä½“ã«åŠ›ã‚’ä¼ãˆã€ã¾ãŸãƒ•ã‚£ãƒ¼ãƒ‰ãƒãƒƒã‚¯ã‚’ã‚‚ã‚‰ã„å‰›ä½“ã®æ¥ç¶šã‚’ä¿ã¤
+			// å‰›ä½“ã®æ¥ç¶šã‚’ä¿ã£ã¦ã„ã‚‹ã®ã¯btmat
 			// 
-			// worldmat‚Ådiff‚ğ‚Æ‚éê‡‚É‚Í
-			// TopDown‚ÆBottomUp‚ğ‘g‚İ‡‚í‚¹‚ÄƒWƒ‡ƒCƒ“ƒg‚ÌÚ‘±‚ğ•Û‚Â
-			// ‚µ‚©‚µ‚»‚ê‚ğƒŠƒAƒ‹ƒ^ƒCƒ€‚Å‚µ‚È‚¢ê‡AŒ‹‰Ê‚Í‹L˜^‚ÆˆÙ‚È‚é‚©‚à‚µ‚ê‚È‚¢
+			// worldmatã§diffã‚’ã¨ã‚‹å ´åˆã«ã¯
+			// TopDownã¨BottomUpã‚’çµ„ã¿åˆã‚ã›ã¦ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®æ¥ç¶šã‚’ä¿ã¤
+			// ã—ã‹ã—ãã‚Œã‚’ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã§ã—ãªã„å ´åˆã€çµæœã¯è¨˜éŒ²ã¨ç•°ãªã‚‹ã‹ã‚‚ã—ã‚Œãªã„
 			// 
 			// 
-			// Btmat‚ğg‚Á‚½p¨®‚ÍˆÈ‰ºiƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚µ‚Ä‚İ‚Ä‘½”‚ÌŒó•â‚Ì’†‚©‚ç‘I’è‚µ‚½”®j
+			// Btmatã‚’ä½¿ã£ãŸå§¿å‹¢å¼ã¯ä»¥ä¸‹ï¼ˆã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã—ã¦ã¿ã¦å¤šæ•°ã®å€™è£œã®ä¸­ã‹ã‚‰é¸å®šã—ãŸæ•°å¼ï¼‰
 			// ChaMatrix setmat = curworldmat * ChaMatrixInv(btmat0) * btmat;
 			// 
 			// 
-			// ‰ğß‚»‚Ì‚P
+			// è§£é‡ˆãã®ï¼‘
 			// world * worldDiff
 			// world * InvAxis * LocalDIff * Axis
 			// world * InvAxis * (Axis * Diff * InvAxis) * Axis
@@ -9919,7 +10169,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			// ######################################################################################
 			
 			//########################################################
-			//•¨—IK‚Ì”®iƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚µ‚Ä‚İ‚Ä‘½”‚ÌŒó•â‚Ì’†‚©‚ç‘I’è‚µ‚½”®j
+			//ç‰©ç†IKã®æ•°å¼ï¼ˆã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã—ã¦ã¿ã¦å¤šæ•°ã®å€™è£œã®ä¸­ã‹ã‚‰é¸å®šã—ãŸæ•°å¼ï¼‰
 			//########################################################
 
 			ChaMatrix setmat;
@@ -9931,7 +10181,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 
 				int isinitrot = IsInitRot(setmat);
 				if (isinitrot == 1) {
-					//‰ğß‚»‚Ì‚R‚É‚¨‚¯‚é“ÁˆÙ“_@•ÒWŒø‰Ê–³‚µ
+					//è§£é‡ˆãã®ï¼“ã«ãŠã‘ã‚‹ç‰¹ç•°ç‚¹ã€€ç·¨é›†åŠ¹æœç„¡ã—
 					setmat = curworldmat;
 				}
 			}
@@ -9941,12 +10191,12 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			}
 
 
-			//ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;//p¨‚ª•Ï‰»‚µ‚Ä‚¢‚éêŠ‚Å‚·‚ÆˆêŒ©‡‚Á‚Ä‚¢‚½‚ªA‚â‚Í‚è‘S‘Ì‚Æ‚µ‚ÄŸŒ³‚àˆá‚¤‚µInvworld0‚Í•K—v‚È‚¢
+			//ChaMatrix setmat = curworldmat * ChaMatrixInv(worldmat0) * ChaMatrixInv(btmat0) * btmat;//å§¿å‹¢ãŒå¤‰åŒ–ã—ã¦ã„ã‚‹å ´æ‰€ã§è©¦ã™ã¨ä¸€è¦‹åˆã£ã¦ã„ãŸãŒã€ã‚„ã¯ã‚Šå…¨ä½“ã¨ã—ã¦æ¬¡å…ƒã‚‚é•ã†ã—Invworld0ã¯å¿…è¦ãªã„
 
 
-			//‚Q‚Â‚Ì‚¤‚Ü‚­‚¢‚©‚È‚¢”®
-			//worldmat‚ğ‘½—p‚·‚é‚Æworldmat‚ÍÚ‘±‚ğ•Û‚Á‚Ä‚¢‚È‚¢‚Ì‚ÅŒ`ó‚ª•ª’f‚·‚é‚±‚Æ‚ª‚ ‚éB
-			//‚»‚ê‚ğ’¼‚·‚É‚Íƒ{[ƒ“\‘¢‚ğTopDown‚ÆBottomUp—¼•û‚Åˆ—‚·‚é•K—v‚ª‚ ‚é‚Æv‚í‚ê‚éB‚µ‚©‚µ‚»‚Ìê‡‹L˜^‚µ‚½Œ‹‰Ê‚ÆˆÙ‚È‚é‚©‚à‚µ‚ê‚È‚¢B
+			//ï¼’ã¤ã®ã†ã¾ãã„ã‹ãªã„æ•°å¼
+			//worldmatã‚’å¤šç”¨ã™ã‚‹ã¨worldmatã¯æ¥ç¶šã‚’ä¿ã£ã¦ã„ãªã„ã®ã§å½¢çŠ¶ãŒåˆ†æ–­ã™ã‚‹ã“ã¨ãŒã‚ã‚‹ã€‚
+			//ãã‚Œã‚’ç›´ã™ã«ã¯ãƒœãƒ¼ãƒ³æ§‹é€ ã‚’TopDownã¨BottomUpä¸¡æ–¹ã§å‡¦ç†ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã¨æ€ã‚ã‚Œã‚‹ã€‚ã—ã‹ã—ãã®å ´åˆè¨˜éŒ²ã—ãŸçµæœã¨ç•°ãªã‚‹ã‹ã‚‚ã—ã‚Œãªã„ã€‚
 			//ChaMatrix setmat = curworldmat * curworldmat * ChaMatrixInv(btmat0) * btmat * ChaMatrixInv(curworldmat);
 			//ChaMatrix setmat = curworldmat * ChaMatrixInv(curworldmat) * ChaMatrixInv(btmat0) * btmat * curworldmat;
 
@@ -9959,7 +10209,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 				btbone->SetWorldMat(0, curmi->motid, srcframe, setmat);
 			}
 			else if (btbone->GetParent()) {
-				//endjoint‚Åparent‚ª‚ ‚éê‡
+				//endjointã§parentãŒã‚ã‚‹å ´åˆ
 				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, srcframe);
 				btbone->SetWorldMat(0, curmi->motid, srcframe, parsetmat);
 				//btbone->SetWorldMat(1, curmi->motid, srcframe, parsetmat);

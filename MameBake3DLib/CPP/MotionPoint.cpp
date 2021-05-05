@@ -288,39 +288,41 @@ CMotionPoint* CMotionPoint::GetNewMP()
 	curpoollen = s_mppool.size();
 
 
-	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
-	int chkheadno;
-	chkheadno = s_befheadno;
-	int chkelemno;
-	chkelemno = s_befelemno + 1;
-	if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= MPPOOLBLKLEN)) {
-		chkelemno = 0;
-		chkheadno++;
-	}
-	if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < MPPOOLBLKLEN)) {
-		CMotionPoint* curmphead = s_mppool[chkheadno];
-		if (curmphead) {
-			CMotionPoint* chkmp;
-			chkmp = curmphead + chkelemno;
-			if (chkmp) {
-				if (chkmp->GetUseFlag() == 0) {
-					int saveindex = chkmp->GetIndexOfPool();
-					int saveallochead = chkmp->IsAllocHead();
-					chkmp->InitParams();
-					chkmp->SetUseFlag(1);
-					chkmp->SetIndexOfPool(saveindex);
-					chkmp->SetIsAllocHead(saveallochead);
+	if ((s_befheadno != (s_mppool.size() - 1)) || (s_befelemno != (MPPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
-					s_befheadno = chkheadno;
-					s_befelemno = chkelemno;
-					return chkmp;
+		//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
+		int chkheadno;
+		chkheadno = s_befheadno;
+		int chkelemno;
+		chkelemno = s_befelemno + 1;
+		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= MPPOOLBLKLEN)) {
+			chkelemno = 0;
+			chkheadno++;
+		}
+		if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < MPPOOLBLKLEN)) {
+			CMotionPoint* curmphead = s_mppool[chkheadno];
+			if (curmphead) {
+				CMotionPoint* chkmp;
+				chkmp = curmphead + chkelemno;
+				if (chkmp) {
+					if (chkmp->GetUseFlag() == 0) {
+						int saveindex = chkmp->GetIndexOfPool();
+						int saveallochead = chkmp->IsAllocHead();
+						chkmp->InitParams();
+						chkmp->SetUseFlag(1);
+						chkmp->SetIndexOfPool(saveindex);
+						chkmp->SetIsAllocHead(saveallochead);
+
+						s_befheadno = chkheadno;
+						s_befelemno = chkelemno;
+						return chkmp;
+					}
 				}
 			}
 		}
-	}
 
-	//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
-		//プールを先頭から検索して未使用がみつかればそれをリリース
+		//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+			//プールを先頭から検索して未使用がみつかればそれをリリース
 		int mpno;
 		for (mpno = 0; mpno < curpoollen; mpno++) {
 			CMotionPoint* curmphead = s_mppool[mpno];
@@ -344,8 +346,10 @@ CMotionPoint* CMotionPoint::GetNewMP()
 				}
 			}
 		}
-	//}
+		//}
+	}
 
+	//前回リリースしたポインタが最後尾または
 	//未使用MPがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 	CMotionPoint* allocmp;
 	allocmp = new CMotionPoint[MPPOOLBLKLEN];
