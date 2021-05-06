@@ -34,6 +34,23 @@ class CBtObject;
 class CRigidElem;
 class CEditRange;
 
+typedef struct funcmpparams
+{
+	int slotno;
+	FbxMesh* fbxmesh;
+	CModel* pmodel;
+	FbxNode* linknode;
+	int framestart;
+	int frameend;
+	CBone* curbone;
+	int animno;
+	int motid;
+	double animleng;
+	FbxCluster* cluster;
+	FbxPose* pPose;
+}FUNCMPPARAMS;
+
+
 typedef struct tag_newmpelem
 {
 	CBone* boneptr;
@@ -1087,6 +1104,11 @@ public: //accesser
 	{
 		return m_worldmat;
 	};
+public:
+	CRITICAL_SECTION m_CritSection_GetGP;
+	FUNCMPPARAMS* armpparams[4];
+	HANDLE arhthread[4];
+
 private:
 	int m_physicsikcnt;
 	int m_initaxismatx;

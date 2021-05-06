@@ -146,6 +146,7 @@ public:
 private:
 	int DestroyObjs();
 
+
 private:
 
 	int m_useflag;//0: not use, 1: in use

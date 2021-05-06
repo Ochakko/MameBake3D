@@ -228,12 +228,16 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 
 CBone::CBone( CModel* parmodel )// : m_curmp(), m_axisq()
 {
+	InitializeCriticalSection(&m_CritSection_AddMP);
+	InitializeCriticalSection(&m_CritSection_GetBefNext);
 	InitParams();
 	SetParams(parmodel);
 }
 
 CBone::~CBone()
 {
+	DeleteCriticalSection(&m_CritSection_AddMP);
+	DeleteCriticalSection(&m_CritSection_GetBefNext);
 	DestroyObjs();
 }
 
@@ -332,12 +336,28 @@ int CBone::InitParams()
 	m_firstframebonepos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	m_posefoundflag = false;
-	m_cachebefmp = 0;
-	m_chechebefmotid = 0;
+	ZeroMemory(m_cachebefmp, sizeof(CMotionPoint*) * (MAXMOTIONNUM + 1));
 
 	m_firstgetflag = 0;//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_firstgetmatrix);//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_invfirstgetmatrix);//GetCurrentZeroFrameMat用
+
+	int motcnt;
+	for (motcnt = 0; motcnt < (MAXMOTIONNUM + 1); motcnt++) {
+		lClusterMode[motcnt] = FbxCluster::ELinkMode::eNormalize;
+
+		lReferenceGlobalInitPosition[motcnt].SetIdentity();
+		lReferenceGlobalCurrentPosition[motcnt].SetIdentity();
+		lAssociateGlobalInitPosition[motcnt].SetIdentity();
+		lAssociateGlobalCurrentPosition[motcnt].SetIdentity();
+		lClusterGlobalInitPosition[motcnt].SetIdentity();
+		lClusterGlobalCurrentPosition[motcnt].SetIdentity();
+		lReferenceGeometry[motcnt].SetIdentity();
+		lAssociateGeometry[motcnt].SetIdentity();
+		lClusterGeometry[motcnt].SetIdentity();
+		lClusterRelativeInitPosition[motcnt].SetIdentity();
+		lClusterRelativeCurrentPositionInverse[motcnt].SetIdentity();
+	}
 
 	return 0;
 }
@@ -408,8 +428,7 @@ void CBone::InitAngleLimit()
 
 int CBone::DestroyObjs()
 {
-	m_cachebefmp = 0;
-	m_chechebefmotid = 0;
+	ZeroMemory(m_cachebefmp, sizeof(CMotionPoint*) * (MAXMOTIONNUM + 1));
 
 	int colindex;
 	for (colindex = 0; colindex < COL_MAX; colindex++){
@@ -542,8 +561,11 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 
 CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr)
 {
+	EnterCriticalSection(&m_CritSection_AddMP);
+
 	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
 		_ASSERT(0);
+		LeaveCriticalSection(&m_CritSection_AddMP);
 		return 0;
 	}
 
@@ -551,7 +573,11 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 	CMotionPoint* newmp = 0;
 	CMotionPoint* pbef = 0;
 	CMotionPoint* pnext = 0;
-	CallF(GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, existptr), return 0);
+	int result = GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, existptr);
+	if (result != 0) {
+		LeaveCriticalSection(&m_CritSection_AddMP);
+		return 0;
+	}
 
 	if (*existptr){
 		pbef->SetFrame(srcframe);
@@ -562,6 +588,7 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 		newmp = CMotionPoint::GetNewMP();
 		if (!newmp){
 			_ASSERT(0);
+			LeaveCriticalSection(&m_CritSection_AddMP);
 			return 0;
 		}
 		newmp->SetFrame(srcframe);
@@ -577,9 +604,177 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 		}
 	}
 
+	LeaveCriticalSection(&m_CritSection_AddMP);
+
 	return newmp;
 }
 
+CMotionPoint* CBone::AddMotionPoint1(int srcmotid, double srcframe, int* existptr)
+{
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	CMotionPoint* newmp = 0;
+	CMotionPoint* pbef = 0;
+	CMotionPoint* pnext = 0;
+	int result = GetBefNextMP1(srcmotid, srcframe, &pbef, &pnext, existptr);
+	if (result != 0) {
+		return 0;
+	}
+
+	if (*existptr) {
+		pbef->SetFrame(srcframe);
+		newmp = pbef;
+	}
+	else {
+		//newmp = new CMotionPoint();
+		newmp = CMotionPoint::GetNewMP();
+		if (!newmp) {
+			_ASSERT(0);
+			return 0;
+		}
+		newmp->SetFrame(srcframe);
+
+		if (pbef) {
+			CallF(pbef->AddToNext(newmp), return 0);
+		}
+		else {
+			m_motionkey[srcmotid - 1] = newmp;
+			if (pnext) {
+				newmp->SetNext(pnext);
+			}
+		}
+	}
+	return newmp;
+}
+
+CMotionPoint* CBone::AddMotionPoint2(int srcmotid, double srcframe, int* existptr)
+{
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	CMotionPoint* newmp = 0;
+	CMotionPoint* pbef = 0;
+	CMotionPoint* pnext = 0;
+	int result = GetBefNextMP2(srcmotid, srcframe, &pbef, &pnext, existptr);
+	if (result != 0) {
+		return 0;
+	}
+
+	if (*existptr) {
+		pbef->SetFrame(srcframe);
+		newmp = pbef;
+	}
+	else {
+		//newmp = new CMotionPoint();
+		newmp = CMotionPoint::GetNewMP();
+		if (!newmp) {
+			_ASSERT(0);
+			return 0;
+		}
+		newmp->SetFrame(srcframe);
+
+		if (pbef) {
+			CallF(pbef->AddToNext(newmp), return 0);
+		}
+		else {
+			m_motionkey[srcmotid - 1] = newmp;
+			if (pnext) {
+				newmp->SetNext(pnext);
+			}
+		}
+	}
+	return newmp;
+}
+CMotionPoint* CBone::AddMotionPoint3(int srcmotid, double srcframe, int* existptr)
+{
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	CMotionPoint* newmp = 0;
+	CMotionPoint* pbef = 0;
+	CMotionPoint* pnext = 0;
+	int result = GetBefNextMP3(srcmotid, srcframe, &pbef, &pnext, existptr);
+	if (result != 0) {
+		return 0;
+	}
+
+	if (*existptr) {
+		pbef->SetFrame(srcframe);
+		newmp = pbef;
+	}
+	else {
+		//newmp = new CMotionPoint();
+		newmp = CMotionPoint::GetNewMP();
+		if (!newmp) {
+			_ASSERT(0);
+			return 0;
+		}
+		newmp->SetFrame(srcframe);
+
+		if (pbef) {
+			CallF(pbef->AddToNext(newmp), return 0);
+		}
+		else {
+			m_motionkey[srcmotid - 1] = newmp;
+			if (pnext) {
+				newmp->SetNext(pnext);
+			}
+		}
+	}
+	return newmp;
+}
+
+CMotionPoint* CBone::AddMotionPoint4(int srcmotid, double srcframe, int* existptr)
+{
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	CMotionPoint* newmp = 0;
+	CMotionPoint* pbef = 0;
+	CMotionPoint* pnext = 0;
+	int result = GetBefNextMP4(srcmotid, srcframe, &pbef, &pnext, existptr);
+	if (result != 0) {
+		return 0;
+	}
+
+	if (*existptr) {
+		pbef->SetFrame(srcframe);
+		newmp = pbef;
+	}
+	else {
+		//newmp = new CMotionPoint();
+		newmp = CMotionPoint::GetNewMP();
+		if (!newmp) {
+			_ASSERT(0);
+			return 0;
+		}
+		newmp->SetFrame(srcframe);
+
+		if (pbef) {
+			CallF(pbef->AddToNext(newmp), return 0);
+		}
+		else {
+			m_motionkey[srcmotid - 1] = newmp;
+			if (pnext) {
+				newmp->SetNext(pnext);
+			}
+		}
+	}
+	return newmp;
+}
 
 int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr )
 {
@@ -593,12 +788,87 @@ int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr,
 
 void CBone::ResetMotionCache()
 {
-	m_cachebefmp = 0;
-	m_chechebefmotid = 0;
+	ZeroMemory(m_cachebefmp, sizeof(CMotionPoint*) * (MAXMOTIONNUM + 1));
 }
 
-int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr )
+int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr)
 {
+	EnterCriticalSection(&m_CritSection_GetBefNext);
+
+	CMotionPoint* pbef = 0;
+	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
+	CMotionPoint* pcur = 0;
+
+	*existptr = 0;
+
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		//AddMotionPointから呼ばれるときに通る場合は正常
+		*ppbef = 0;
+		*ppnext = 0;
+		//_ASSERT(0);
+		LeaveCriticalSection(&m_CritSection_GetBefNext);
+		return 0;
+	}
+	else {
+		pcur = m_motionkey[srcmotid - 1];
+	}
+
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//キャッシュをチェックする
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
+		((m_cachebefmp[srcmotid])->GetUseFlag() == 1) &&
+		((m_cachebefmp[srcmotid])->GetFrame() <= (srcframe + 0.0001))) {
+		//高速化のため途中からの検索にする
+		pcur = m_cachebefmp[srcmotid];
+	}
+#endif
+
+	while (pcur) {
+
+		if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
+			*existptr = 1;
+			pbef = pcur;
+			break;
+		}
+		else if (pcur->GetFrame() > srcframe) {
+			*existptr = 0;
+			break;
+		}
+		else {
+			pbef = pcur;
+			pcur = pcur->GetNext();
+		}
+	}
+	*ppbef = pbef;
+
+	if (*existptr) {
+		*ppnext = pbef->GetNext();
+	}
+	else {
+		*ppnext = pcur;
+	}
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//m_cachebefmp = pbef;
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM)){
+		if (pbef) {
+			m_cachebefmp[srcmotid] = pbef->GetPrev();
+		}
+		else {
+			m_cachebefmp[srcmotid] = m_motionkey[srcmotid - 1];
+		}
+	}
+#endif
+
+	LeaveCriticalSection(&m_CritSection_GetBefNext);
+
+	return 0;
+}
+
+int CBone::GetBefNextMP1(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr)
+{
+
 	CMotionPoint* pbef = 0;
 	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
 	CMotionPoint* pcur = 0;
@@ -619,47 +889,268 @@ int CBone::GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CM
 
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//キャッシュをチェックする
-	if ((m_chechebefmotid == srcmotid) && m_cachebefmp && (m_cachebefmp->GetUseFlag() == 1) && (m_cachebefmp->GetFrame() <= (srcframe + 0.0001))){
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
+		((m_cachebefmp[srcmotid])->GetUseFlag() == 1) &&
+		((m_cachebefmp[srcmotid])->GetFrame() <= (srcframe + 0.0001))) {
 		//高速化のため途中からの検索にする
-		pcur = m_cachebefmp;
+		pcur = m_cachebefmp[srcmotid];
 	}
 #endif
 
-	while( pcur ){
+	while (pcur) {
 
-		if( (pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001) ){
+		if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
 			*existptr = 1;
 			pbef = pcur;
 			break;
-		}else if( pcur->GetFrame() > srcframe ){
+		}
+		else if (pcur->GetFrame() > srcframe) {
 			*existptr = 0;
 			break;
-		}else{
+		}
+		else {
 			pbef = pcur;
 			pcur = pcur->GetNext();
 		}
 	}
 	*ppbef = pbef;
 
-	if( *existptr ){
+	if (*existptr) {
 		*ppnext = pbef->GetNext();
-	}else{
+	}
+	else {
 		*ppnext = pcur;
 	}
 
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//m_cachebefmp = pbef;
-	m_chechebefmotid = srcmotid;
-	if (pbef) {
-		m_cachebefmp = pbef->GetPrev();
-	}
-	else {
-		m_cachebefmp = m_motionkey[srcmotid - 1];
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM)) {
+		if (pbef) {
+			m_cachebefmp[srcmotid] = pbef->GetPrev();
+		}
+		else {
+			m_cachebefmp[srcmotid] = m_motionkey[srcmotid - 1];
+		}
 	}
 #endif
 
 	return 0;
 }
+
+int CBone::GetBefNextMP2(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr)
+{
+
+	CMotionPoint* pbef = 0;
+	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
+	CMotionPoint* pcur = 0;
+
+	*existptr = 0;
+
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		//AddMotionPointから呼ばれるときに通る場合は正常
+		*ppbef = 0;
+		*ppnext = 0;
+		//_ASSERT(0);
+		return 0;
+	}
+	else {
+		pcur = m_motionkey[srcmotid - 1];
+	}
+
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//キャッシュをチェックする
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
+		((m_cachebefmp[srcmotid])->GetUseFlag() == 1) &&
+		((m_cachebefmp[srcmotid])->GetFrame() <= (srcframe + 0.0001))) {
+		//高速化のため途中からの検索にする
+		pcur = m_cachebefmp[srcmotid];
+	}
+#endif
+
+	while (pcur) {
+
+		if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
+			*existptr = 1;
+			pbef = pcur;
+			break;
+		}
+		else if (pcur->GetFrame() > srcframe) {
+			*existptr = 0;
+			break;
+		}
+		else {
+			pbef = pcur;
+			pcur = pcur->GetNext();
+		}
+	}
+	*ppbef = pbef;
+
+	if (*existptr) {
+		*ppnext = pbef->GetNext();
+	}
+	else {
+		*ppnext = pcur;
+	}
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//m_cachebefmp = pbef;
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM)) {
+		if (pbef) {
+			m_cachebefmp[srcmotid] = pbef->GetPrev();
+		}
+		else {
+			m_cachebefmp[srcmotid] = m_motionkey[srcmotid - 1];
+		}
+	}
+#endif
+
+	return 0;
+}
+
+
+int CBone::GetBefNextMP3(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr)
+{
+
+	CMotionPoint* pbef = 0;
+	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
+	CMotionPoint* pcur = 0;
+
+	*existptr = 0;
+
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		//AddMotionPointから呼ばれるときに通る場合は正常
+		*ppbef = 0;
+		*ppnext = 0;
+		//_ASSERT(0);
+		return 0;
+	}
+	else {
+		pcur = m_motionkey[srcmotid - 1];
+	}
+
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//キャッシュをチェックする
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
+		((m_cachebefmp[srcmotid])->GetUseFlag() == 1) &&
+		((m_cachebefmp[srcmotid])->GetFrame() <= (srcframe + 0.0001))) {
+		//高速化のため途中からの検索にする
+		pcur = m_cachebefmp[srcmotid];
+	}
+#endif
+
+	while (pcur) {
+
+		if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
+			*existptr = 1;
+			pbef = pcur;
+			break;
+		}
+		else if (pcur->GetFrame() > srcframe) {
+			*existptr = 0;
+			break;
+		}
+		else {
+			pbef = pcur;
+			pcur = pcur->GetNext();
+		}
+	}
+	*ppbef = pbef;
+
+	if (*existptr) {
+		*ppnext = pbef->GetNext();
+	}
+	else {
+		*ppnext = pcur;
+	}
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//m_cachebefmp = pbef;
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM)) {
+		if (pbef) {
+			m_cachebefmp[srcmotid] = pbef->GetPrev();
+		}
+		else {
+			m_cachebefmp[srcmotid] = m_motionkey[srcmotid - 1];
+		}
+	}
+#endif
+
+	return 0;
+}
+
+int CBone::GetBefNextMP4(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr)
+{
+
+	CMotionPoint* pbef = 0;
+	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
+	CMotionPoint* pcur = 0;
+
+	*existptr = 0;
+
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		//AddMotionPointから呼ばれるときに通る場合は正常
+		*ppbef = 0;
+		*ppnext = 0;
+		//_ASSERT(0);
+		return 0;
+	}
+	else {
+		pcur = m_motionkey[srcmotid - 1];
+	}
+
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//キャッシュをチェックする
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
+		((m_cachebefmp[srcmotid])->GetUseFlag() == 1) &&
+		((m_cachebefmp[srcmotid])->GetFrame() <= (srcframe + 0.0001))) {
+		//高速化のため途中からの検索にする
+		pcur = m_cachebefmp[srcmotid];
+	}
+#endif
+
+	while (pcur) {
+
+		if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
+			*existptr = 1;
+			pbef = pcur;
+			break;
+		}
+		else if (pcur->GetFrame() > srcframe) {
+			*existptr = 0;
+			break;
+		}
+		else {
+			pbef = pcur;
+			pcur = pcur->GetNext();
+		}
+	}
+	*ppbef = pbef;
+
+	if (*existptr) {
+		*ppnext = pbef->GetNext();
+	}
+	else {
+		*ppnext = pcur;
+	}
+
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+	//m_cachebefmp = pbef;
+	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM)) {
+		if (pbef) {
+			m_cachebefmp[srcmotid] = pbef->GetPrev();
+		}
+		else {
+			m_cachebefmp[srcmotid] = m_motionkey[srcmotid - 1];
+		}
+	}
+#endif
+
+	return 0;
+}
+
 
 int CBone::CalcFBXFrame( double srcframe, CMotionPoint* befptr, CMotionPoint* nextptr, int existflag, CMotionPoint* dstmpptr )
 {
@@ -2201,7 +2692,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, e
 			axismat = curre->GetBindcapsulemat();
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);
 			ChaMatrixIdentity(&axismat);
 		}
 		axisq.RotationMatrix(axismat);
@@ -4571,7 +5062,7 @@ void CBone::SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* sr
 int CBone::SetCurrentMotion(int srcmotid)
 {
 	SetCurMotID(srcmotid);
-	ResetMotionCache();
+	//ResetMotionCache();
 	return 0;
 }
 

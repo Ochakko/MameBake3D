@@ -10,6 +10,7 @@
 
 
 static std::vector<CMotionPoint*> s_mppool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+static CRITICAL_SECTION s_CritSection_GetNewMP;
 
 
 CMotionPoint::CMotionPoint()
@@ -281,6 +282,9 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 //static func
 CMotionPoint* CMotionPoint::GetNewMP()
 {
+
+	EnterCriticalSection(&s_CritSection_GetNewMP);
+
 	static int s_befheadno = -1;
 	static int s_befelemno = -1;
 
@@ -315,6 +319,7 @@ CMotionPoint* CMotionPoint::GetNewMP()
 
 						s_befheadno = chkheadno;
 						s_befelemno = chkelemno;
+						LeaveCriticalSection(&s_CritSection_GetNewMP);
 						return chkmp;
 					}
 				}
@@ -341,6 +346,7 @@ CMotionPoint* CMotionPoint::GetNewMP()
 
 						s_befheadno = mpno;
 						s_befelemno = elemno;
+						LeaveCriticalSection(&s_CritSection_GetNewMP);
 						return curmp;
 					}
 				}
@@ -358,23 +364,24 @@ CMotionPoint* CMotionPoint::GetNewMP()
 
 		s_befheadno = -1;
 		s_befelemno = -1;
-
+		LeaveCriticalSection(&s_CritSection_GetNewMP);
 		return 0;
 	}
 	int allocno;
 	for (allocno = 0; allocno < MPPOOLBLKLEN; allocno++) {
-		CMotionPoint* curallocmp = allocmp + allocno;
+		CMotionPoint* curallocmp = (CMotionPoint*)allocmp + allocno;
 		if (curallocmp) {
 			int indexofpool = curpoollen + allocno;
 			curallocmp->InitParams();
-			curallocmp->SetUseFlag(0);
 			curallocmp->SetIndexOfPool(indexofpool);
 
 			if (allocno == 0) {
 				curallocmp->SetIsAllocHead(1);
+				curallocmp->SetUseFlag(1);
 			}
 			else {
 				curallocmp->SetIsAllocHead(0);
+				curallocmp->SetUseFlag(0);
 			}
 		}
 		else {
@@ -382,19 +389,21 @@ CMotionPoint* CMotionPoint::GetNewMP()
 
 			s_befheadno = -1;
 			s_befelemno = -1;
-
+			LeaveCriticalSection(&s_CritSection_GetNewMP);
 			return 0;
 		}
 	}
 	s_mppool.push_back(allocmp);//allocate block(アロケート時の先頭ポインタ)を格納
 
-	allocmp->SetUseFlag(1);
+	//allocmp->SetUseFlag(1);
 
 
 	s_befheadno = s_mppool.size() - 1;
 	s_befelemno = 0;
 
-	return allocmp;
+	LeaveCriticalSection(&s_CritSection_GetNewMP);
+
+	return (CMotionPoint*)allocmp;
 }
 
 //static func
@@ -417,11 +426,13 @@ void CMotionPoint::InvalidateMotionPoint(CMotionPoint* srcmp)
 //static func
 void CMotionPoint::InitMotionPoints()
 {
+	InitializeCriticalSection(&s_CritSection_GetNewMP);
 	s_mppool.clear();
 }
 
 //static func
 void CMotionPoint::DestroyMotionPoints() {
+	DeleteCriticalSection(&s_CritSection_GetNewMP);
 	int mpallocnum = s_mppool.size();
 	int mpno;
 	for (mpno = 0; mpno < mpallocnum; mpno++) {

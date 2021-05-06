@@ -40,6 +40,8 @@ public:
 
 
 	CBone() {
+		InitializeCriticalSection(&m_CritSection_AddMP);
+		InitializeCriticalSection(&m_CritSection_GetBefNext);
 		InitParams();
 	};
 
@@ -104,6 +106,10 @@ public:
  * @detail 追加したMotionPointの姿勢はIdentity状態である。
  */
 	CMotionPoint* AddMotionPoint( int srcmotid, double srcframe, int* existptr );
+	CMotionPoint* AddMotionPoint1(int srcmotid, double srcframe, int* existptr);
+	CMotionPoint* AddMotionPoint2(int srcmotid, double srcframe, int* existptr);
+	CMotionPoint* AddMotionPoint3(int srcmotid, double srcframe, int* existptr);
+	CMotionPoint* AddMotionPoint4(int srcmotid, double srcframe, int* existptr);
 
 
 /**
@@ -145,6 +151,10 @@ public:
  * @detail existptrの内容が１のとき、ちょうどの時間の姿勢はppbefにセットされる。
  */
 	int GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr );
+	int GetBefNextMP1(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
+	int GetBefNextMP2(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
+	int GetBefNextMP3(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
+	int GetBefNextMP4(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
 
 /**
  * @fn
@@ -1028,8 +1038,24 @@ public: //accesser
 		m_allocheadflag = srcflag;
 	};
 
+public:
+	FbxCluster::ELinkMode lClusterMode[MAXMOTIONNUM + 1];
+	FbxAMatrix lReferenceGlobalInitPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lReferenceGlobalCurrentPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lAssociateGlobalInitPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lAssociateGlobalCurrentPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterGlobalInitPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterGlobalCurrentPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lReferenceGeometry[MAXMOTIONNUM + 1];
+	FbxAMatrix lAssociateGeometry[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterGeometry[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterRelativeInitPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterRelativeCurrentPositionInverse[MAXMOTIONNUM + 1];
 
 private:
+	CRITICAL_SECTION m_CritSection_GetBefNext;
+	CRITICAL_SECTION m_CritSection_AddMP;
+
 	int m_useflag;//0: not use, 1: in use
 	int m_indexofpool;//index of pool vector
 	int m_allocheadflag;//1: head pointer at allocated
@@ -1063,9 +1089,7 @@ private:
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。
 	CMotionPoint m_befmp;//一回前の姿勢データ。
-	CMotionPoint* m_cachebefmp;
-	int m_chechebefmotid;
-
+	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidごとのキャッシュ
 
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
 

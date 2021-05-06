@@ -279,6 +279,7 @@ public:
 		if ((s_mpos < 0) || (s_mpos > msize)) {
 			return -1;
 		}
+		return 0;
 	}
 	virtual void ClearError()
 	{
@@ -313,6 +314,8 @@ static int s_alloccnt = 0;
 #include <GlobalVar.h>
 
 extern bool g_btsimurecflag;
+
+
 
 
 /*
@@ -381,7 +384,7 @@ int g_dbgflag = 0;
 //////////
 static FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial, const char * pPropertyName, const char * pFactorPropertyName, char** ppTextureName);
 static int IsValidCluster( FbxCluster* pcluster );
-static FbxAMatrix GetGlobalPosition(FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = NULL );
+static FbxAMatrix GetGlobalPosition(CModel* srcmodel, FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = NULL );
 static FbxAMatrix GetPoseMatrix(FbxPose* pPose, int pNodeIndex);
 static FbxAMatrix GetGeometry(FbxNode* pNode);
 
@@ -391,12 +394,16 @@ static DWORD s_rigidflag = 0;
 
 CModel::CModel()
 {
+	InitializeCriticalSection(&m_CritSection_GetGP);
+
 	InitParams();
 	s_alloccnt++;
 	m_modelno = s_alloccnt;
 }
 CModel::~CModel()
 {
+	DeleteCriticalSection(&m_CritSection_GetGP);
+
 	DestroyObjs();
 }
 int CModel::InitParams()
@@ -405,6 +412,9 @@ int CModel::InitParams()
 	m_physikrec.clear();
 	m_phyikrectime = 0.0;
 
+
+	ZeroMemory(armpparams, sizeof(FUNCMPPARAMS*) * 4);
+	ZeroMemory(arhthread, sizeof(HANDLE) * 4);
 
 	m_physicsikcnt = 0;
 	ChaMatrixIdentity(&m_worldmat);
@@ -696,7 +706,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	FbxImporter* pImporter = 0;
 
 	char scenename[256];
-	sprintf_s(scenename, "scene_%d", s_alloccnt);
+	sprintf_s(scenename, "scene_%05d", s_alloccnt);
     pScene = FbxScene::Create(m_psdk, scenename);
 
     int lFileMajor, lFileMinor, lFileRevision;
@@ -708,8 +718,11 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	sprintf_s(importername, "importer_%d", s_alloccnt);
 	pImporter = FbxImporter::Create(m_psdk, importername);
 
-    //const bool lImportStatus = pImporter->Initialize(utf8path, -1, m_psdk->GetIOSettings());
-
+ //   const bool lImportStatus = pImporter->Initialize(utf8path, -1, m_psdk->GetIOSettings());
+	//if (!lImportStatus) {
+	//	_ASSERT(0);
+	//	return -1;
+	//}
 
 	//Initialize(FbxStream * pStream, void* pStreamData = NULL, const int pFileFormat = -1, FbxIOSettings * pIOSettings = NULL)
 
@@ -3459,10 +3472,493 @@ int CModel::CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int mo
 
 	return 0;
 }
-int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime )
+
+
+static unsigned __stdcall ThreadFunc_MP1(void* pArguments)
 {
+	if (!pArguments) {
+		return 1;
+	}
+
+	FUNCMPPARAMS* params = (FUNCMPPARAMS*)pArguments;
+
 	FbxAMatrix pGlobalPosition;
 	pGlobalPosition.SetIdentity();
+
+	FbxAMatrix mat;
+	FbxTime ktime;
+	ktime.SetSecondDouble(0.0);
+	FbxTime diffktime;
+	diffktime.SetSecondDouble(1.0 / 30);
+
+	double framecnt;
+	for (framecnt = params->framestart; framecnt < params->frameend; framecnt += 1.0) {
+		params->curbone->lClusterMode[params->motid] = params->cluster->GetLinkMode();
+		params->curbone->lReferenceGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGeometry[params->motid].SetIdentity();
+		params->curbone->lAssociateGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid].SetIdentity();
+
+
+		params->cluster->GetTransformMatrix(params->curbone->lReferenceGlobalInitPosition[params->motid]);
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid] = pGlobalPosition;
+
+
+		EnterCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+		// Multiply lReferenceGlobalInitPosition by Geometric Transformation
+		params->curbone->lReferenceGeometry[params->motid] = GetGeometry(params->fbxmesh->GetNode());
+		params->curbone->lReferenceGlobalInitPosition[params->motid] *= params->curbone->lReferenceGeometry[params->motid];
+
+		// Get the link initial global position and the link current global position.
+		params->cluster->GetTransformLinkMatrix(params->curbone->lClusterGlobalInitPosition[params->motid]);
+
+		//ktime.SetSecondDouble((double)framecnt / 60.0);
+		
+		ktime.SetSecondDouble((double)framecnt / 30.0);
+		//params->curbone->lClusterGlobalCurrentPosition[params->motid] = GetGlobalPosition(params->pmodel, params->linknode, ktime, params->pPose);
+		if (params->curbone->GetParent()) {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform(ktime);
+			//params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform();
+		}
+		else {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();		
+		}
+		LeaveCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+
+
+
+
+		// Compute the initial position of the link relative to the reference.
+		params->curbone->lClusterRelativeInitPosition[params->motid] = params->curbone->lClusterGlobalInitPosition[params->motid].Inverse() * params->curbone->lReferenceGlobalInitPosition[params->motid];
+
+		// Compute the current position of the link relative to the reference.
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] = params->curbone->lReferenceGlobalCurrentPosition[params->motid].Inverse() * params->curbone->lClusterGlobalCurrentPosition[params->motid];
+
+		// Compute the shift of the link relative to the reference.
+		mat = params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] * params->curbone->lClusterRelativeInitPosition[params->motid];
+
+
+		ChaMatrix xmat;
+		xmat._11 = (float)mat.Get(0, 0);
+		xmat._12 = (float)mat.Get(0, 1);
+		xmat._13 = (float)mat.Get(0, 2);
+		xmat._14 = (float)mat.Get(0, 3);
+
+		xmat._21 = (float)mat.Get(1, 0);
+		xmat._22 = (float)mat.Get(1, 1);
+		xmat._23 = (float)mat.Get(1, 2);
+		xmat._24 = (float)mat.Get(1, 3);
+
+		xmat._31 = (float)mat.Get(2, 0);
+		xmat._32 = (float)mat.Get(2, 1);
+		xmat._33 = (float)mat.Get(2, 2);
+		xmat._34 = (float)mat.Get(2, 3);
+
+		xmat._41 = (float)mat.Get(3, 0);
+		xmat._42 = (float)mat.Get(3, 1);
+		xmat._43 = (float)mat.Get(3, 2);
+		xmat._44 = (float)mat.Get(3, 3);
+
+		if ((params->animno == 0) && (framecnt == 0.0)) {
+			params->curbone->SetFirstMat(xmat);
+			params->curbone->SetInitMat(xmat);
+			ChaMatrix calcmat = params->curbone->GetNodeMat() * params->curbone->GetInvFirstMat();
+			ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+			ChaVector3 tmppos;
+			ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
+			params->curbone->SetOldJointFPos(tmppos);
+		}
+
+
+		CMotionPoint* curmp = 0;
+		int existflag = 0;
+		curmp = params->curbone->AddMotionPoint(params->motid, framecnt, &existflag);
+		if (!curmp) {
+			_ASSERT(0);
+			return 1;
+		}
+		curmp->SetWorldMat(xmat);//anglelimit無し
+		//curmp->SetBefWorldMat(xmat);
+
+		//ktime += mFrameTime;
+		//ktime = mFrameTime * framecnt;
+
+		//ktime += diffktime;
+	}
+
+	return 0;
+}
+
+static unsigned __stdcall ThreadFunc_MP2(void* pArguments)
+{
+	if (!pArguments) {
+		return 1;
+	}
+
+	FUNCMPPARAMS* params = (FUNCMPPARAMS*)pArguments;
+
+	FbxAMatrix pGlobalPosition;
+	pGlobalPosition.SetIdentity();
+
+	FbxAMatrix mat;
+	FbxTime ktime;
+	ktime.SetSecondDouble(0.0);
+	FbxTime diffktime;
+	diffktime.SetSecondDouble(1.0 / 30);
+
+	double framecnt;
+	for (framecnt = params->framestart; framecnt < params->frameend; framecnt += 1.0) {
+		params->curbone->lClusterMode[params->motid] = params->cluster->GetLinkMode();
+		params->curbone->lReferenceGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGeometry[params->motid].SetIdentity();
+		params->curbone->lAssociateGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid].SetIdentity();
+
+
+		params->cluster->GetTransformMatrix(params->curbone->lReferenceGlobalInitPosition[params->motid]);
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid] = pGlobalPosition;
+
+		EnterCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+		// Multiply lReferenceGlobalInitPosition by Geometric Transformation
+		params->curbone->lReferenceGeometry[params->motid] = GetGeometry(params->fbxmesh->GetNode());
+		params->curbone->lReferenceGlobalInitPosition[params->motid] *= params->curbone->lReferenceGeometry[params->motid];
+
+		// Get the link initial global position and the link current global position.
+		params->cluster->GetTransformLinkMatrix(params->curbone->lClusterGlobalInitPosition[params->motid]);
+
+		ktime.SetSecondDouble((double)framecnt / 30.0);
+		//ktime.SetSecondDouble((double)framecnt / 60.0);
+		//params->curbone->lClusterGlobalCurrentPosition[params->motid] = GetGlobalPosition(params->pmodel, params->linknode, ktime, params->pPose);
+		if (params->curbone->GetParent()) {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform(ktime);
+			//params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform();
+		}
+		else {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		}
+		LeaveCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+
+
+
+
+		// Compute the initial position of the link relative to the reference.
+		params->curbone->lClusterRelativeInitPosition[params->motid] = params->curbone->lClusterGlobalInitPosition[params->motid].Inverse() * params->curbone->lReferenceGlobalInitPosition[params->motid];
+
+		// Compute the current position of the link relative to the reference.
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] = params->curbone->lReferenceGlobalCurrentPosition[params->motid].Inverse() * params->curbone->lClusterGlobalCurrentPosition[params->motid];
+
+		// Compute the shift of the link relative to the reference.
+		mat = params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] * params->curbone->lClusterRelativeInitPosition[params->motid];
+
+
+		ChaMatrix xmat;
+		xmat._11 = (float)mat.Get(0, 0);
+		xmat._12 = (float)mat.Get(0, 1);
+		xmat._13 = (float)mat.Get(0, 2);
+		xmat._14 = (float)mat.Get(0, 3);
+
+		xmat._21 = (float)mat.Get(1, 0);
+		xmat._22 = (float)mat.Get(1, 1);
+		xmat._23 = (float)mat.Get(1, 2);
+		xmat._24 = (float)mat.Get(1, 3);
+
+		xmat._31 = (float)mat.Get(2, 0);
+		xmat._32 = (float)mat.Get(2, 1);
+		xmat._33 = (float)mat.Get(2, 2);
+		xmat._34 = (float)mat.Get(2, 3);
+
+		xmat._41 = (float)mat.Get(3, 0);
+		xmat._42 = (float)mat.Get(3, 1);
+		xmat._43 = (float)mat.Get(3, 2);
+		xmat._44 = (float)mat.Get(3, 3);
+
+		if ((params->animno == 0) && (framecnt == 0.0)) {
+			params->curbone->SetFirstMat(xmat);
+			params->curbone->SetInitMat(xmat);
+			ChaMatrix calcmat = params->curbone->GetNodeMat() * params->curbone->GetInvFirstMat();
+			ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+			ChaVector3 tmppos;
+			ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
+			params->curbone->SetOldJointFPos(tmppos);
+		}
+
+
+		CMotionPoint* curmp = 0;
+		int existflag = 0;
+		curmp = params->curbone->AddMotionPoint(params->motid, framecnt, &existflag);
+		if (!curmp) {
+			_ASSERT(0);
+			return 1;
+		}
+		curmp->SetWorldMat(xmat);//anglelimit無し
+		//curmp->SetBefWorldMat(xmat);
+
+		//ktime += mFrameTime;
+		//ktime = mFrameTime * framecnt;
+
+		//ktime += diffktime;
+	}
+
+	return 0;
+}
+
+static unsigned __stdcall ThreadFunc_MP3(void* pArguments)
+{
+	if (!pArguments) {
+		return 1;
+	}
+
+	FUNCMPPARAMS* params = (FUNCMPPARAMS*)pArguments;
+
+	FbxAMatrix pGlobalPosition;
+	pGlobalPosition.SetIdentity();
+
+	FbxAMatrix mat;
+	FbxTime ktime;
+	ktime.SetSecondDouble(0.0);
+	FbxTime diffktime;
+	diffktime.SetSecondDouble(1.0 / 30);
+
+	double framecnt;
+	for (framecnt = params->framestart; framecnt < params->frameend; framecnt += 1.0) {
+		params->curbone->lClusterMode[params->motid] = params->cluster->GetLinkMode();
+		params->curbone->lReferenceGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGeometry[params->motid].SetIdentity();
+		params->curbone->lAssociateGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid].SetIdentity();
+
+
+		params->cluster->GetTransformMatrix(params->curbone->lReferenceGlobalInitPosition[params->motid]);
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid] = pGlobalPosition;
+
+		EnterCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+		// Multiply lReferenceGlobalInitPosition by Geometric Transformation
+		params->curbone->lReferenceGeometry[params->motid] = GetGeometry(params->fbxmesh->GetNode());
+		params->curbone->lReferenceGlobalInitPosition[params->motid] *= params->curbone->lReferenceGeometry[params->motid];
+
+		// Get the link initial global position and the link current global position.
+		params->cluster->GetTransformLinkMatrix(params->curbone->lClusterGlobalInitPosition[params->motid]);
+
+		ktime.SetSecondDouble((double)framecnt / 30.0);
+		//ktime.SetSecondDouble((double)framecnt / 60.0);
+		//params->curbone->lClusterGlobalCurrentPosition[params->motid] = GetGlobalPosition(params->pmodel, params->linknode, ktime, params->pPose);
+		if (params->curbone->GetParent()) {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform(ktime);
+			//params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform();
+		}
+		else {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		}
+		LeaveCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+
+
+
+
+		// Compute the initial position of the link relative to the reference.
+		params->curbone->lClusterRelativeInitPosition[params->motid] = params->curbone->lClusterGlobalInitPosition[params->motid].Inverse() * params->curbone->lReferenceGlobalInitPosition[params->motid];
+
+		// Compute the current position of the link relative to the reference.
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] = params->curbone->lReferenceGlobalCurrentPosition[params->motid].Inverse() * params->curbone->lClusterGlobalCurrentPosition[params->motid];
+
+		// Compute the shift of the link relative to the reference.
+		mat = params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] * params->curbone->lClusterRelativeInitPosition[params->motid];
+
+
+		ChaMatrix xmat;
+		xmat._11 = (float)mat.Get(0, 0);
+		xmat._12 = (float)mat.Get(0, 1);
+		xmat._13 = (float)mat.Get(0, 2);
+		xmat._14 = (float)mat.Get(0, 3);
+
+		xmat._21 = (float)mat.Get(1, 0);
+		xmat._22 = (float)mat.Get(1, 1);
+		xmat._23 = (float)mat.Get(1, 2);
+		xmat._24 = (float)mat.Get(1, 3);
+
+		xmat._31 = (float)mat.Get(2, 0);
+		xmat._32 = (float)mat.Get(2, 1);
+		xmat._33 = (float)mat.Get(2, 2);
+		xmat._34 = (float)mat.Get(2, 3);
+
+		xmat._41 = (float)mat.Get(3, 0);
+		xmat._42 = (float)mat.Get(3, 1);
+		xmat._43 = (float)mat.Get(3, 2);
+		xmat._44 = (float)mat.Get(3, 3);
+
+		if ((params->animno == 0) && (framecnt == 0.0)) {
+			params->curbone->SetFirstMat(xmat);
+			params->curbone->SetInitMat(xmat);
+			ChaMatrix calcmat = params->curbone->GetNodeMat() * params->curbone->GetInvFirstMat();
+			ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+			ChaVector3 tmppos;
+			ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
+			params->curbone->SetOldJointFPos(tmppos);
+		}
+
+
+		CMotionPoint* curmp = 0;
+		int existflag = 0;
+		curmp = params->curbone->AddMotionPoint(params->motid, framecnt, &existflag);
+		if (!curmp) {
+			_ASSERT(0);
+			return 1;
+		}
+		curmp->SetWorldMat(xmat);//anglelimit無し
+		//curmp->SetBefWorldMat(xmat);
+
+		//ktime += mFrameTime;
+		//ktime = mFrameTime * framecnt;
+
+		//ktime += diffktime;
+	}
+
+	return 0;
+}
+
+static unsigned __stdcall ThreadFunc_MP4(void* pArguments)
+{
+	if (!pArguments) {
+		return 1;
+	}
+
+	FUNCMPPARAMS* params = (FUNCMPPARAMS*)pArguments;
+
+	FbxAMatrix pGlobalPosition;
+	pGlobalPosition.SetIdentity();
+
+	FbxAMatrix mat;
+	FbxTime ktime;
+	ktime.SetSecondDouble(0.0);
+	FbxTime diffktime;
+	diffktime.SetSecondDouble(1.0 / 30);
+
+	double framecnt;
+	for (framecnt = params->framestart; framecnt < params->frameend; framecnt += 1.0) {
+		params->curbone->lClusterMode[params->motid] = params->cluster->GetLinkMode();
+		params->curbone->lReferenceGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lAssociateGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		params->curbone->lReferenceGeometry[params->motid].SetIdentity();
+		params->curbone->lAssociateGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterGeometry[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeInitPosition[params->motid].SetIdentity();
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid].SetIdentity();
+
+
+		params->cluster->GetTransformMatrix(params->curbone->lReferenceGlobalInitPosition[params->motid]);
+		params->curbone->lReferenceGlobalCurrentPosition[params->motid] = pGlobalPosition;
+
+		EnterCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+		// Multiply lReferenceGlobalInitPosition by Geometric Transformation
+		params->curbone->lReferenceGeometry[params->motid] = GetGeometry(params->fbxmesh->GetNode());
+		params->curbone->lReferenceGlobalInitPosition[params->motid] *= params->curbone->lReferenceGeometry[params->motid];
+
+		// Get the link initial global position and the link current global position.
+		params->cluster->GetTransformLinkMatrix(params->curbone->lClusterGlobalInitPosition[params->motid]);
+
+		ktime.SetSecondDouble((double)framecnt / 30.0);
+		//ktime.SetSecondDouble((double)framecnt / 60.0);
+		//params->curbone->lClusterGlobalCurrentPosition[params->motid] = GetGlobalPosition(params->pmodel, params->linknode, ktime, params->pPose);
+		if (params->curbone->GetParent()) {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform(ktime);
+			//params->curbone->lClusterGlobalCurrentPosition[params->motid] = params->linknode->EvaluateGlobalTransform();
+		}
+		else {
+			params->curbone->lClusterGlobalCurrentPosition[params->motid].SetIdentity();
+		}
+		LeaveCriticalSection(&(params->pmodel->m_CritSection_GetGP));
+
+
+
+
+		// Compute the initial position of the link relative to the reference.
+		params->curbone->lClusterRelativeInitPosition[params->motid] = params->curbone->lClusterGlobalInitPosition[params->motid].Inverse() * params->curbone->lReferenceGlobalInitPosition[params->motid];
+
+		// Compute the current position of the link relative to the reference.
+		params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] = params->curbone->lReferenceGlobalCurrentPosition[params->motid].Inverse() * params->curbone->lClusterGlobalCurrentPosition[params->motid];
+
+		// Compute the shift of the link relative to the reference.
+		mat = params->curbone->lClusterRelativeCurrentPositionInverse[params->motid] * params->curbone->lClusterRelativeInitPosition[params->motid];
+
+
+		ChaMatrix xmat;
+		xmat._11 = (float)mat.Get(0, 0);
+		xmat._12 = (float)mat.Get(0, 1);
+		xmat._13 = (float)mat.Get(0, 2);
+		xmat._14 = (float)mat.Get(0, 3);
+
+		xmat._21 = (float)mat.Get(1, 0);
+		xmat._22 = (float)mat.Get(1, 1);
+		xmat._23 = (float)mat.Get(1, 2);
+		xmat._24 = (float)mat.Get(1, 3);
+
+		xmat._31 = (float)mat.Get(2, 0);
+		xmat._32 = (float)mat.Get(2, 1);
+		xmat._33 = (float)mat.Get(2, 2);
+		xmat._34 = (float)mat.Get(2, 3);
+
+		xmat._41 = (float)mat.Get(3, 0);
+		xmat._42 = (float)mat.Get(3, 1);
+		xmat._43 = (float)mat.Get(3, 2);
+		xmat._44 = (float)mat.Get(3, 3);
+
+		if ((params->animno == 0) && (framecnt == 0.0)) {
+			params->curbone->SetFirstMat(xmat);
+			params->curbone->SetInitMat(xmat);
+			ChaMatrix calcmat = params->curbone->GetNodeMat() * params->curbone->GetInvFirstMat();
+			ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+			ChaVector3 tmppos;
+			ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
+			params->curbone->SetOldJointFPos(tmppos);
+		}
+
+
+		CMotionPoint* curmp = 0;
+		int existflag = 0;
+		curmp = params->curbone->AddMotionPoint(params->motid, framecnt, &existflag);
+		if (!curmp) {
+			_ASSERT(0);
+			return 1;
+		}
+		curmp->SetWorldMat(xmat);//anglelimit無し
+		//curmp->SetBefWorldMat(xmat);
+
+		//ktime += mFrameTime;
+		//ktime = mFrameTime * framecnt;
+
+		//ktime += diffktime;
+	}
+
+	return 0;
+}
+
+int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime )
+{
+	
 
 
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
@@ -3470,6 +3966,9 @@ int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttri
 
 	// スキンの数を取得
 	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
+
+	int beginthreadindex = 0;
+
 
 	//for ( int i = 0; i < skinCount; ++i ) {
 	for (int i = 0; i < skinCount; i++) {
@@ -3480,117 +3979,128 @@ int CModel::GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttri
 		int clusterNum = skin->GetClusterCount();
 
 		for ( int j = 0; j < clusterNum; ++j ) {
+
 			// j番目のクラスタを取得
 			FbxCluster* cluster = skin->GetCluster( j );
+			FbxNode* clusterlink = (FbxNode*)cluster->GetLink();
 
 			//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
 			char bonename2[256];
-			strcpy_s(bonename2, 256, ((FbxNode*)cluster->GetLink())->GetName());
+			strcpy_s(bonename2, 256, clusterlink->GetName());
 			TermJointRepeats(bonename2);
 			CBone* curbone = m_bonename[ (char*)bonename2 ];
 
 
-WCHAR wname[256]={0L};
-ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 );
+			WCHAR wname[256]={0L};
+			ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 );
 
 
 			if( curbone && !curbone->GetGetAnimFlag()){
 				curbone->SetGetAnimFlag( 1 );
 
+				FUNCMPPARAMS* mpparams1 = (FUNCMPPARAMS*)malloc(sizeof(FUNCMPPARAMS));
+				mpparams1->slotno = 0;
+				mpparams1->fbxmesh = pMesh;
+				mpparams1->pmodel = this;
+				mpparams1->linknode = clusterlink;
+				mpparams1->framestart = 0;
+				mpparams1->frameend = (int)animleng - 1;
+				mpparams1->curbone = curbone;
+				mpparams1->animno = animno;
+				mpparams1->motid = motid;
+				mpparams1->animleng = animleng;
+				mpparams1->cluster = cluster;
+				mpparams1->pPose = pPose;
 
-				FbxAMatrix mat;
-				FbxTime ktime = mStart;
-				double framecnt;
-				for( framecnt = 0.0; framecnt < animleng; framecnt+=1.0 ){
-					FbxCluster::ELinkMode lClusterMode = cluster->GetLinkMode();
-
-					FbxAMatrix lReferenceGlobalInitPosition;
-					FbxAMatrix lReferenceGlobalCurrentPosition;
-					FbxAMatrix lAssociateGlobalInitPosition;
-					FbxAMatrix lAssociateGlobalCurrentPosition;
-					FbxAMatrix lClusterGlobalInitPosition;
-					FbxAMatrix lClusterGlobalCurrentPosition;
-
-					FbxAMatrix lReferenceGeometry;
-					FbxAMatrix lAssociateGeometry;
-					FbxAMatrix lClusterGeometry;
-
-					FbxAMatrix lClusterRelativeInitPosition;
-					FbxAMatrix lClusterRelativeCurrentPositionInverse;
-	
-
-					cluster->GetTransformMatrix(lReferenceGlobalInitPosition);
-					lReferenceGlobalCurrentPosition = pGlobalPosition;
-					// Multiply lReferenceGlobalInitPosition by Geometric Transformation
-					lReferenceGeometry = GetGeometry(pMesh->GetNode());
-					lReferenceGlobalInitPosition *= lReferenceGeometry;
-
-					// Get the link initial global position and the link current global position.
-					cluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
-					lClusterGlobalCurrentPosition = GetGlobalPosition(cluster->GetLink(), ktime, pPose);
-
-					// Compute the initial position of the link relative to the reference.
-					lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
-
-					// Compute the current position of the link relative to the reference.
-					lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
-
-					// Compute the shift of the link relative to the reference.
-					mat = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
+				armpparams[beginthreadindex] = mpparams1;
 
 
-					ChaMatrix xmat;
-					xmat._11 = (float)mat.Get( 0, 0 );
-					xmat._12 = (float)mat.Get( 0, 1 );
-					xmat._13 = (float)mat.Get( 0, 2 );
-					xmat._14 = (float)mat.Get( 0, 3 );
+				int nextthreadindex = 0;
 
-					xmat._21 = (float)mat.Get( 1, 0 );
-					xmat._22 = (float)mat.Get( 1, 1 );
-					xmat._23 = (float)mat.Get( 1, 2 );
-					xmat._24 = (float)mat.Get( 1, 3 );
-
-					xmat._31 = (float)mat.Get( 2, 0 );
-					xmat._32 = (float)mat.Get( 2, 1 );
-					xmat._33 = (float)mat.Get( 2, 2 );
-					xmat._34 = (float)mat.Get( 2, 3 );
-
-					xmat._41 = (float)mat.Get( 3, 0 );
-					xmat._42 = (float)mat.Get( 3, 1 );
-					xmat._43 = (float)mat.Get( 3, 2 );
-					xmat._44 = (float)mat.Get( 3, 3 );
-
-					if ((animno == 0) && (framecnt == 0.0)){
-						curbone->SetFirstMat(xmat);
-						curbone->SetInitMat(xmat);
-						ChaMatrix calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
-						ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
-						ChaVector3 tmppos;
-						ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
-						curbone->SetOldJointFPos(tmppos);
-					}
-					
-
-					CMotionPoint* curmp = 0;
-					int existflag = 0;
-					curmp = curbone->AddMotionPoint( motid, framecnt, &existflag );
-					if( !curmp ){
-						_ASSERT( 0 );
-						return 1;
-					}
-					curmp->SetWorldMat(xmat);//anglelimit無し
-					//curmp->SetBefWorldMat(xmat);
-
-					ktime += mFrameTime;
-					//ktime = mFrameTime * framecnt;
+				if (beginthreadindex == 0) {
+					unsigned int dwThreadId1 = 0;
+					arhthread[0] = (HANDLE)_beginthreadex(
+						NULL, 0, &ThreadFunc_MP1,
+						(void*)mpparams1,
+						0, &dwThreadId1);
+					nextthreadindex = 1;
 				}
+				else if (beginthreadindex == 1) {
+					unsigned int dwThreadId2 = 0;
+					arhthread[1] = (HANDLE)_beginthreadex(
+						NULL, 0, &ThreadFunc_MP2,//!!!!!!!!!!!!!!!!!!! 2
+						(void*)mpparams1,
+						0, &dwThreadId2);
+					nextthreadindex = 2;
+				}
+				else if (beginthreadindex == 2) {
+					unsigned int dwThreadId3 = 0;
+					arhthread[2] = (HANDLE)_beginthreadex(
+						NULL, 0, &ThreadFunc_MP3,//!!!!!!!!!!!!!!!!!!! 3
+						(void*)mpparams1,
+						0, &dwThreadId3);
+					nextthreadindex = 3;
+				}
+				else if (beginthreadindex == 3) {
+					unsigned int dwThreadId4 = 0;
+					arhthread[3] = (HANDLE)_beginthreadex(
+						NULL, 0, &ThreadFunc_MP4,//!!!!!!!!!!!!!!!!!!! 4
+						(void*)mpparams1,
+						0, &dwThreadId4);
+					nextthreadindex = 0;
+				}
+
+
+				int waitthreadindex = 0;
+				HANDLE waitthread = 0;
+
+				waitthreadindex = nextthreadindex;
+				waitthread = arhthread[waitthreadindex];
+
+				if (waitthread != 0) {
+					WaitForMultipleObjects(1, &waitthread, TRUE, INFINITE);
+					arhthread[waitthreadindex] = 0;
+					FUNCMPPARAMS* curparams = armpparams[waitthreadindex];
+					if (curparams) {
+						free(curparams);
+					}
+					armpparams[waitthreadindex] = 0;
+				}
+
+				beginthreadindex = nextthreadindex;
+
 			}
 
 			if (!curbone){
 				_ASSERT(0);
 			}
 		}
+
+
+		int threadnum = 0;
+		HANDLE remainthread[4] = { 0, 0, 0, 0 };
+		int chkno;
+		for (chkno = 0; chkno < 4; chkno++) {
+			if (arhthread[chkno] != 0) {
+				remainthread[threadnum] = arhthread[chkno];
+				threadnum++;
+			}
+		}
+
+		if (threadnum >= 1) {
+			WaitForMultipleObjects(threadnum, remainthread, TRUE, INFINITE);
+
+			int paramno;
+			for (paramno = 0; paramno < 4; paramno++) {
+				FUNCMPPARAMS* curparams = armpparams[paramno];
+				if (curparams) {
+					free(curparams);
+				}
+				armpparams[paramno] = 0;
+			}
+		}
+
 	}
 
 
@@ -4154,7 +4664,7 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 				{
 					if (pNode->GetParent())
 					{
-						lParentGlobalPosition = GetGlobalPosition(pNode->GetParent(), pTime, pPose);
+						lParentGlobalPosition = GetGlobalPosition(this, pNode->GetParent(), pTime, pPose);
 					}
 				}
 
@@ -4272,7 +4782,7 @@ int CModel::SetDefaultBonePos()
 	return 0;
 }
 
-FbxAMatrix GetGlobalPosition(FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition)
+FbxAMatrix GetGlobalPosition(CModel* srcmodel, FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition)
 {
     FbxAMatrix lGlobalPosition;
     bool        lPositionFound = false;
@@ -4304,7 +4814,7 @@ FbxAMatrix GetGlobalPosition(FbxNode* pNode, const FbxTime& pTime, FbxPose* pPos
                 {
                     if (pNode->GetParent())
                     {
-                        lParentGlobalPosition = GetGlobalPosition(pNode->GetParent(), pTime, pPose);
+                        lParentGlobalPosition = GetGlobalPosition(srcmodel, pNode->GetParent(), pTime, pPose);
                     }
                 }
 
@@ -4327,6 +4837,7 @@ FbxAMatrix GetGlobalPosition(FbxNode* pNode, const FbxTime& pTime, FbxPose* pPos
         // To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
         lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
     }
+
 
     return lGlobalPosition;
 }

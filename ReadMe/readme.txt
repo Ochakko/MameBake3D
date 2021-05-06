@@ -264,6 +264,13 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/07_1
+	FBXファイルのアニメーション読み込み部分を４スレッドのマルチスレッド化
+	同期をとったので速くはならなかったが処理の負荷が分散した
+	
+	Four threads loading of FBX Animation.
+	It is not faster than prev version, but Load distributed.
+
 2021/05/06_1
 	fbxファイルの読み込みをFbxStreamを使ってバッファから読み込むように修正
 	しかし、読み込み速度のボトルネックではなかった（ほとんど速くならなかった）
