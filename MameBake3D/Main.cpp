@@ -184,6 +184,8 @@ POINT g_currentsubmenupos = { 0, 0 };
 int g_submenuwidth = 32;
 HWND g_filterdlghwnd = 0;
 
+CRITICAL_SECTION g_CritSection_GetGP;
+
 
 
 static HWND GetOFWnd(POINT srcpoint);
@@ -1939,6 +1941,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
+	InitializeCriticalSection(&g_CritSection_GetGP);
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -3785,6 +3788,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	//DestroySdkObjects();
 
+
 	if (s_psdk) {
 		s_psdk->Destroy();
 		s_psdk = 0;
@@ -3795,6 +3799,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_bpWorld = 0;
 	}
 
+
 	CMotionPoint::DestroyMotionPoints();
 	CBone::DestroyBones();
 	CRigidElem::DestroyRigidElems();
@@ -3803,6 +3808,8 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 
 	DeleteCriticalSection(&s_CritSection_LTimeline);
+	DeleteCriticalSection(&g_CritSection_GetGP);
+
 }
 
 
@@ -7395,7 +7402,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	g_dbgloadcnt++;
 
-	s_model->DestroyScene();
+	//s_model->DestroyScene();
 	s_model->SetLoadedFlag(true);
 
 	//ShowRigidWnd(true);

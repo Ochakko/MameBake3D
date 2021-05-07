@@ -106,10 +106,6 @@ public:
  * @detail 追加したMotionPointの姿勢はIdentity状態である。
  */
 	CMotionPoint* AddMotionPoint( int srcmotid, double srcframe, int* existptr );
-	CMotionPoint* AddMotionPoint1(int srcmotid, double srcframe, int* existptr);
-	CMotionPoint* AddMotionPoint2(int srcmotid, double srcframe, int* existptr);
-	CMotionPoint* AddMotionPoint3(int srcmotid, double srcframe, int* existptr);
-	CMotionPoint* AddMotionPoint4(int srcmotid, double srcframe, int* existptr);
 
 
 /**
@@ -151,10 +147,6 @@ public:
  * @detail existptrの内容が１のとき、ちょうどの時間の姿勢はppbefにセットされる。
  */
 	int GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr );
-	int GetBefNextMP1(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
-	int GetBefNextMP2(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
-	int GetBefNextMP3(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
-	int GetBefNextMP4(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr);
 
 /**
  * @fn
@@ -1038,6 +1030,20 @@ public: //accesser
 		m_allocheadflag = srcflag;
 	};
 
+	FbxAMatrix GetlClusterGlobalCurrentPosition(int srcframe)
+	{
+		int matnum;
+		matnum = veclClusterGlobalCurrentPosition.size();
+		if ((srcframe < 0) || (srcframe >= matnum)) {
+			FbxAMatrix inimat;
+			inimat.SetIdentity();
+			return inimat;
+		}
+		else {
+			return veclClusterGlobalCurrentPosition[srcframe];
+		}
+	};
+
 public:
 	FbxCluster::ELinkMode lClusterMode[MAXMOTIONNUM + 1];
 	FbxAMatrix lReferenceGlobalInitPosition[MAXMOTIONNUM + 1];
@@ -1045,12 +1051,14 @@ public:
 	FbxAMatrix lAssociateGlobalInitPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lAssociateGlobalCurrentPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterGlobalInitPosition[MAXMOTIONNUM + 1];
-	FbxAMatrix lClusterGlobalCurrentPosition[MAXMOTIONNUM + 1];
+	//FbxAMatrix lClusterGlobalCurrentPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lReferenceGeometry[MAXMOTIONNUM + 1];
 	FbxAMatrix lAssociateGeometry[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterGeometry[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterRelativeInitPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterRelativeCurrentPositionInverse[MAXMOTIONNUM + 1];
+
+	std::vector<FbxAMatrix> veclClusterGlobalCurrentPosition;
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;

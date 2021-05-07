@@ -264,6 +264,14 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/08_1
+	マルチスレッド読み込みの修正（エラーにならないように）
+	一番重い関数がわかったが、その関数のマルチスレッド化は難しいこともわかった。
+	FBX SDKのMDとリンクした。
+
+	Modify multiThread loading of FBX animation.
+	Link Fbx md library.
+
 2021/05/07_1
 	FBXファイルのアニメーション読み込み部分を４スレッドのマルチスレッド化
 	同期をとったので速くはならなかったが処理の負荷が分散した

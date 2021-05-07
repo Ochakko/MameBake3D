@@ -788,7 +788,13 @@ private:
 
 	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
 
+	int GetFreeThreadIndex();
+	void WaitAllTheadOfGetFbxAnim();
 
+	static unsigned __stdcall ThreadFunc_MP1(void* pArguments);
+	static unsigned __stdcall ThreadFunc_MP2(void* pArguments);
+	static unsigned __stdcall ThreadFunc_MP3(void* pArguments);
+	static unsigned __stdcall ThreadFunc_MP4(void* pArguments);
 
 public: //accesser
 	FbxManager* GetFBXSDK(){
@@ -1105,9 +1111,9 @@ public: //accesser
 		return m_worldmat;
 	};
 public:
-	CRITICAL_SECTION m_CritSection_GetGP;
-	FUNCMPPARAMS* armpparams[4];
-	HANDLE arhthread[4];
+	//CRITICAL_SECTION m_CritSection_GetGP;
+	FUNCMPPARAMS* m_armpparams[4];
+	HANDLE m_arhthread[4];
 
 private:
 	int m_physicsikcnt;
