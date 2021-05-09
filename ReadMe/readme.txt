@@ -264,6 +264,15 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/10_1
+	FBXのマルチスレッド読み込みはSDKに任せることに（そのままでも複数CPUが動いていました）。
+	アニメーション読み込み時、メッシュの行列とスケルトンの行列読み込み関数を別にした。
+	EvaluateGlobalTransformはEvaluatorから呼び出すように。
+
+	MeshTransform at GetMeshAnimReq, SkeletonTransform at GetFBXAnimReq.
+	Use FbxAnimEvaluator.
+
+
 2021/05/08_1
 	マルチスレッド読み込みの修正（エラーにならないように）
 	一番重い関数がわかったが、その関数のマルチスレッド化は難しいこともわかった。

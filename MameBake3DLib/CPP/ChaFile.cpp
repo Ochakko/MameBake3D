@@ -236,7 +236,12 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	char fbxpath[MAX_PATH] = { 0 };//UTF-8
 	swprintf_s(wcfbxfilename, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName());
 	WideCharToMultiByte(CP_UTF8, 0, wcfbxfilename, -1, fbxpath, MAX_PATH, NULL, NULL);
-	int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath);
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	char fbxdate[MAX_PATH] = { 0L };
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+	int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath, fbxdate);
 	_ASSERT(!ret1);
 
 

@@ -13469,8 +13469,13 @@ int ExportFBXFile()
 	}
 
 
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	char fbxdate[MAX_PATH] = { 0L };
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
-	CallF( WriteFBXFile( s_psdk, s_model, fbxpath ), return 1 );
+	CallF( WriteFBXFile( s_psdk, s_model, fbxpath, fbxdate ), return 1 );
 
 	if (s_model->GetOldAxisFlagAtLoading() == 0){
 		WCHAR lmtname[MAX_PATH] = { 0L };

@@ -39,6 +39,7 @@ typedef struct funcmpparams
 	int slotno;
 	FbxMesh* fbxmesh;
 	CModel* pmodel;
+	FbxNode* jointnode;
 	FbxNode* linknode;
 	int framestart;
 	int frameend;
@@ -48,6 +49,7 @@ typedef struct funcmpparams
 	double animleng;
 	FbxCluster* cluster;
 	FbxPose* pPose;
+	FbxAMatrix globalcurrentpos;
 }FUNCMPPARAMS;
 
 
@@ -696,8 +698,10 @@ private:
 	int CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
 	int GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode );
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode );
-	int CreateFBXAnimReq( int animno, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
-	int GetFBXAnim( int animno, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
+	int CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);
+	int CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
+	int GetMeshAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);
+	int GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
 	int CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
@@ -791,10 +795,12 @@ private:
 	int GetFreeThreadIndex();
 	void WaitAllTheadOfGetFbxAnim();
 
-	static unsigned __stdcall ThreadFunc_MP1(void* pArguments);
-	static unsigned __stdcall ThreadFunc_MP2(void* pArguments);
-	static unsigned __stdcall ThreadFunc_MP3(void* pArguments);
-	static unsigned __stdcall ThreadFunc_MP4(void* pArguments);
+	//static unsigned __stdcall ThreadFunc_MP1(void* pArguments);
+	//static unsigned __stdcall ThreadFunc_MP2(void* pArguments);
+	//static unsigned __stdcall ThreadFunc_MP3(void* pArguments);
+	//static unsigned __stdcall ThreadFunc_MP4(void* pArguments);
+	//static unsigned __stdcall ThreadFunc_MP5(void* pArguments);
+	//static unsigned __stdcall ThreadFunc_MP6(void* pArguments);
 
 public: //accesser
 	FbxManager* GetFBXSDK(){
@@ -1112,8 +1118,8 @@ public: //accesser
 	};
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
-	FUNCMPPARAMS* m_armpparams[4];
-	HANDLE m_arhthread[4];
+	//FUNCMPPARAMS* m_armpparams[6];
+	//HANDLE m_arhthread[6];
 
 private:
 	int m_physicsikcnt;

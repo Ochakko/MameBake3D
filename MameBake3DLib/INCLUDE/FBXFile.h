@@ -36,7 +36,7 @@ class CModel;
  * @return 成功したら０。
  * @detail ボーン影響度やアニメーションも書き出す。
  */	
-	int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename );
+	int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate );
 
 /**
  * @fn
@@ -52,7 +52,7 @@ class CModel;
 #else
 	extern int InitializeSdkObjects();
 	extern int DestroySdkObjects();
-	extern int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename );
+	extern int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate );
 	extern int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename);
 #endif
 

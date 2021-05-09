@@ -71,6 +71,29 @@ typedef struct tag_animinfo
 	FbxAnimLayer* animlayer;
 }ANIMINFO;
 
+typedef struct tag_egvheader
+{
+	char magicstr[32];//EvaluateGlobalPositionVer0.01
+	char fbxdate[256];
+	int jointnum;
+	int framenum;
+}EGVHEADER;
+
+typedef struct tag_egvjointheader
+{
+	int jointindex;
+	int framenum;
+	char jointname[256];
+}EGVJOINTHEADER;
+
+typedef struct tag_egvelem
+{
+	int jointindex;
+	int frameno;
+	ChaMatrix egv;
+}EGVELEM;
+
+
 static map<CBone*, map<int, int>> s_linkdirty;
 static CModel* s_model = 0;
 
@@ -357,7 +380,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename)
 }
 
 
-int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename )
+int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate )
 {
 
 	s_bvhflag = 0;
