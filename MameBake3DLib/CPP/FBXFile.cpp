@@ -71,28 +71,6 @@ typedef struct tag_animinfo
 	FbxAnimLayer* animlayer;
 }ANIMINFO;
 
-typedef struct tag_egvheader
-{
-	char magicstr[32];//EvaluateGlobalPositionVer0.01
-	char fbxdate[256];
-	int jointnum;
-	int framenum;
-}EGVHEADER;
-
-typedef struct tag_egvjointheader
-{
-	int jointindex;
-	int framenum;
-	char jointname[256];
-}EGVJOINTHEADER;
-
-typedef struct tag_egvelem
-{
-	int jointindex;
-	int frameno;
-	ChaMatrix egv;
-}EGVELEM;
-
 
 static map<CBone*, map<int, int>> s_linkdirty;
 static CModel* s_model = 0;
@@ -137,8 +115,8 @@ static void CreateAndFillIOSettings(FbxManager* pSdkManager);
 static bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilename, int pFileFormat=-1, bool pEmbedMedia=false);
 
 
-static bool CreateScene(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel );
-static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene );
+static bool CreateScene(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate );
+static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene, char* fbxdate );
 static FbxNode* CreateFbxMesh( FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj );
 static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
 static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
@@ -323,7 +301,7 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
     return lStatus;
 }
 
-int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename)
+int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbxdate)
 {
 	if (!pbvhfile) {
 		return 1;
@@ -350,7 +328,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename)
 	FbxScene* lScene;
     lScene = FbxScene::Create(s_pSdkManager,"");
     // Create the scene.
-    lResult = CreateBVHScene( s_pSdkManager, lScene );// create, set
+    lResult = CreateBVHScene( s_pSdkManager, lScene, fbxdate );// create, set
     if(lResult == false)
     {
 		_ASSERT( 0 );
@@ -403,7 +381,7 @@ int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxda
     lScene = FbxScene::Create(s_pSdkManager,"");
 
     // Create the scene.
-    lResult = CreateScene( s_pSdkManager, lScene, pmodel );
+    lResult = CreateScene( s_pSdkManager, lScene, pmodel, fbxdate );
 
     if(lResult == false)
     {
@@ -430,16 +408,23 @@ int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxda
 	return 0;
 }
 
-bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
+bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 {
+	if (!pSdkManager || !pScene || !fbxdate) {
+		return 1;
+	}
+
     // create scene info
     FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager,"SceneInfo");
 	sceneInfo->mTitle = "scene made by MameBake3D";
 	sceneInfo->mSubject = "skinmesh and animation";
 	sceneInfo->mAuthor = "OchakkoLab";
-	sceneInfo->mRevision = "rev. 2.2";
+	//sceneInfo->mRevision = "rev. 2.2";
+	sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
 	sceneInfo->mKeywords = "BVH animation";
-	sceneInfo->mComment = "no particular comments required.";
+	//sceneInfo->mComment = "no particular comments required.";
+	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
+
 
     // we need to add the sceneInfo before calling AddThumbNailToScene because
     // that function is asking the scene for the sceneInfo.
@@ -520,8 +505,12 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene )
 
 
 
-bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
+bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate)
 {
+	if (!pSdkManager || !pScene || !pmodel || !fbxdate) {
+		return 1;
+	}
+
 	s_model = pmodel;
 
 	//source scene‚ªbvh‚©‚çì‚ç‚ê‚½FBX‚©‚Ç‚¤‚©‚ð”»’è
@@ -539,9 +528,12 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel)
 	sceneInfo->mTitle = "scene made by MameBake3D";
 	sceneInfo->mSubject = "skinmesh and animation";
 	sceneInfo->mAuthor = "OchakkoLab";
-	sceneInfo->mRevision = "rev. 2.2";
+	//sceneInfo->mRevision = "rev. 2.2";
+	sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
 	sceneInfo->mKeywords = "skinmesh animation";
-	sceneInfo->mComment = "no particular comments required.";
+	//sceneInfo->mComment = "no particular comments required.";
+	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
+
 
 	// we need to add the sceneInfo before calling AddThumbNailToScene because
 	// that function is asking the scene for the sceneInfo.

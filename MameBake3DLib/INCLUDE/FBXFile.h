@@ -47,13 +47,13 @@ class CModel;
  * @param (char* pfilename) IN 書き出すFBXファイル名。
  * @return 成功したら０。
  */	
-	int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename);
+	int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbxdate);
 
 #else
 	extern int InitializeSdkObjects();
 	extern int DestroySdkObjects();
 	extern int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate );
-	extern int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename);
+	extern int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbxdate);
 #endif
 
 #endif

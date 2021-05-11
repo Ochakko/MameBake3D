@@ -29,6 +29,8 @@
 
 #include <InfoWindow.h>
 
+#include <EGPFile.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -409,6 +411,8 @@ int CModel::InitParams()
 	m_physikrec.clear();
 	m_phyikrectime = 0.0;
 
+	ZeroMemory(m_fbxfullname, sizeof(WCHAR) * MAX_PATH);
+	m_useegpfile = false;
 
 	//ZeroMemory(m_armpparams, sizeof(FUNCMPPARAMS*) * 6);
 	//ZeroMemory(m_arhthread, sizeof(HANDLE) * 6);
@@ -677,8 +681,8 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	m_pdev = pdev;
 
 	WCHAR fullname[MAX_PATH];
-
-	wcscpy_s( fullname, MAX_PATH, wfile );
+	wcscpy_s( m_fbxfullname, MAX_PATH, wfile );//save org fullpath
+	wcscpy_s(fullname, MAX_PATH, wfile);
 
     WCHAR* strLastSlash = NULL;
     strLastSlash = wcsrchr( fullname, TEXT( '\\' ) );
@@ -778,9 +782,10 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 		return 1;
 	}
 
+	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
+	m_fbxcomment = sceneinfo->mComment;
 	m_oldaxis_atloading = 0;
 	if (forcenewaxisflag == 0){
-		FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
 		if (sceneinfo){
 			FbxString oldauther = "OpenRDB user";
 			if (sceneinfo->mAuthor == oldauther){
@@ -3441,10 +3446,21 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 //!!!!!!!!!!!!!!!!!!!!!		
 		//FbxPose* pPose = GetBindPose();
 		FbxPose* pPose = NULL;
-		
+
+		m_useegpfile = false;
+		if (strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) {
+			//if fbx file rev. 2.3 and all of fbxcomment(include date) is match, load fbx anim cache file.  
+			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
+			m_useegpfile = LoadEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
+		}
 		CreateMeshAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2);
 		CreateFBXAnimReq( animno, pScene, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2 );	
 		//WaitAllTheadOfGetFbxAnim();
+		if (strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) {
+			//if fbx file rev. 2.3, save fbx anim cache file.  
+			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
+			WriteEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
+		}
 
 
 		FillUpEmptyKeyReq( curmotid, animleng, m_topbone, 0 );
@@ -3707,7 +3723,10 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 		curbone->lReferenceGlobalInitPosition[motid] *= curbone->lReferenceGeometry[motid];
 		//cluster->GetTransformLinkMatrix(curbone->lClusterGlobalInitPosition[motid]);
 
-		//curbone->veclClusterGlobalCurrentPosition.clear();//!!!!!!!!!!!!!!!!!! animleng - 1個の vector
+		if (m_useegpfile == false) {
+			curbone->veclClusterGlobalCurrentPosition.clear();//!!!!!!!!!!!!!!!!!! animleng - 1個の vector
+		}
+
 		double framecnt;
 		for (framecnt = 0.0; framecnt < animleng - 1; framecnt += 1.0) {
 			//curbone->lClusterMode[motid] = cluster->GetLinkMode();
@@ -3735,16 +3754,17 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			// Compute the initial position of the link relative to the reference.
 			curbone->lClusterRelativeInitPosition[motid] = curbone->lClusterGlobalInitPosition[motid].Inverse() * curbone->lReferenceGlobalInitPosition[motid];
 
-			FbxTime fbxtime;
-			fbxtime.SetSecondDouble((double)framecnt / 30.0);
-			FbxAMatrix globalcurrentpos;
-			globalcurrentpos = GetGlobalPosition(this, pNode->GetScene(), pNode, fbxtime, pPose);
-			//curbone->veclClusterGlobalCurrentPosition.push_back(globalcurrentpos);
-
+			if (m_useegpfile == false) {
+				FbxTime fbxtime;
+				fbxtime.SetSecondDouble((double)framecnt / 30.0);
+				FbxAMatrix globalcurrentpos;
+				globalcurrentpos = GetGlobalPosition(this, pNode->GetScene(), pNode, fbxtime, pPose);
+				curbone->veclClusterGlobalCurrentPosition.push_back(globalcurrentpos);
+			}
 
 			// Compute the current position of the link relative to the reference.
-			//curbone->lClusterRelativeCurrentPositionInverse[motid] = curbone->lReferenceGlobalCurrentPosition[motid].Inverse() * curbone->GetlClusterGlobalCurrentPosition((int)framecnt);
-			curbone->lClusterRelativeCurrentPositionInverse[motid] = curbone->lReferenceGlobalCurrentPosition[motid].Inverse() * globalcurrentpos;
+			curbone->lClusterRelativeCurrentPositionInverse[motid] = curbone->lReferenceGlobalCurrentPosition[motid].Inverse() * curbone->GetlClusterGlobalCurrentPosition((int)framecnt);
+			//curbone->lClusterRelativeCurrentPositionInverse[motid] = curbone->lReferenceGlobalCurrentPosition[motid].Inverse() * globalcurrentpos;
 
 			// Compute the shift of the link relative to the reference.
 			FbxAMatrix mat;

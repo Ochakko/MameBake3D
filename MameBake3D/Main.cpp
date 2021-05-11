@@ -6823,7 +6823,12 @@ int BVH2FBX()
 	char fbxpath[MAX_PATH] = {0};
 	WideCharToMultiByte( CP_UTF8, 0, g_tmpmqopath, -1, fbxpath, MAX_PATH, NULL, NULL );
 	strcat_s( fbxpath, MAX_PATH, ".fbx" );
-	CallF( BVH2FBXFile( s_psdk, &bvhfile, fbxpath ), return 1 );
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	char fbxdate[MAX_PATH] = { 0L };
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+	CallF( BVH2FBXFile( s_psdk, &bvhfile, fbxpath, fbxdate ), return 1 );
 
 
 	return 0;

@@ -1060,6 +1060,7 @@ public:
 
 	std::vector<FbxAMatrix> veclClusterGlobalCurrentPosition;
 
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;

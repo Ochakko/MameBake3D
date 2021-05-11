@@ -702,6 +702,9 @@
     <ClCompile Include="..\BTSRC\Bullet3Common\b3Vector3.cpp">
       <Filter>BulletSrc</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\EGPFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1743,6 +1746,9 @@
       <Filter>BulletSrc</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\Model.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\EGPFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

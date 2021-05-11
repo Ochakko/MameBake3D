@@ -264,6 +264,22 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ＃＃＃
+2021/05/11_1
+	Loading time is about three times faster than prev version.
+	Add fbx animation loading cache files named *.fbx.anim*.egp.
+	If laoding fbx file's rev is rev. 2.3 and comment of fbxinfo is match with cache file, cachefile will be loaded. 
+	For fbx file's rev becomming rev.2.3, it is needed that project file is saved from file menu.
+	For creating cache file, it is needed that rev2.3 fbx file is loaded once at least.
+	If fbx file is changed, it is needed that cachefile is remaked. 
+
+	読み込みが以前と比べて約３倍速くなった。
+	FBXアニメーション読み込みのキャッシュファイルを追加。キャッシュファイルの名前はFBXファイルの名前の後に.anim*.egpを付けたもの
+	rev 2.3のFBXファイルが読み込まれFBXINFOのコメントがキャッシュファイルと一致した時、キャッシュファイルが読み込まれる
+	FBXのrevをrev. 2.3にするためにはfileメニューでプロジェクトファイルを保存する必要がある
+	キャッシュファイルを作成するためには、rev. 2.3のfbxファイルを少なくとも一度読み込む必要がある
+	FBXファイルの内容が更新された場合、キャッシュファイルも作り直す必要がある
+
+
 2021/05/10_1
 	FBXのマルチスレッド読み込みはSDKに任せることに（そのままでも複数CPUが動いていました）。
 	アニメーション読み込み時、メッシュの行列とスケルトンの行列読み込み関数を別にした。

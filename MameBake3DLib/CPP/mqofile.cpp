@@ -276,7 +276,7 @@ int CMQOFile::SetBuffer()
 	DWORD sizehigh;
 	DWORD bufleng;
 	bufleng = GetFileSize( mqobuf.hfile, &sizehigh );
-	if( bufleng < 0 ){
+	if( bufleng <= 0 ){
 		_ASSERT( 0 );
 		return 1;
 	}

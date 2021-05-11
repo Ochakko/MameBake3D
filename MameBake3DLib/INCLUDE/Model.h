@@ -892,6 +892,30 @@ public: //accesser
 		}
 		//return m_bonelist[ srcid ];
 	};
+	CBone* GetBoneByZeroBaseIndex(int srcindex) {
+		int bonenum = m_bonelist.size();
+		if ((srcindex < 0) || (srcindex >= bonenum)) {
+			return 0;
+		}
+		std::map<int, CBone*>::iterator itrbone;
+		int curindex = 0;
+		itrbone = m_bonelist.begin();
+		while (curindex < srcindex) {
+			itrbone++;
+			if (itrbone == m_bonelist.end()) {
+				return 0;
+			}
+			curindex++;
+		}
+		if (itrbone != m_bonelist.end()) {
+			return itrbone->second;
+		}
+		else {
+			return 0;
+		}
+	};
+
+
 
 	CBone* GetTopBone(){
 		return m_topbone;
@@ -1122,6 +1146,7 @@ public:
 	//HANDLE m_arhthread[6];
 
 private:
+	
 	int m_physicsikcnt;
 	int m_initaxismatx;
 	int m_modelno;//モデルのID
@@ -1171,6 +1196,9 @@ private:
 	ID3D11Device* m_pdev;//外部メモリ。Direct3DのDevice。
 	FbxManager* m_psdk;//外部メモリ。FBX SDKのマネージャ。
 	FbxImporter* m_pimporter;//FBX SDKのインポーター。CModel内でアロケート。
+	FbxString m_fbxcomment;
+	WCHAR m_fbxfullname[MAX_PATH];
+	bool m_useegpfile;
 
 	ChaMatrix m_matWorld;//ワールド変換行列。
 	ChaMatrix m_matVP;//View * Projection 変換行列。

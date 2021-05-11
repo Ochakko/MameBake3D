@@ -345,7 +345,7 @@ int CBVHFile::SetBuffer( WCHAR* filename )
 	DWORD sizehigh;
 	DWORD bufleng;
 	bufleng = GetFileSize( m_hfile, &sizehigh );
-	if( bufleng < 0 ){
+	if( bufleng <= 0 ){
 		DbgOut( L"bvhfile : SetBuffer :  GetFileSize error !!!\n" );
 		_ASSERT( 0 );
 		return 1;

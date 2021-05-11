@@ -165,7 +165,7 @@ int CXMLIO::SetBuffer()
 	DWORD sizehigh;
 	DWORD bufleng;
 	bufleng = GetFileSize( m_hfile, &sizehigh );
-	if( bufleng < 0 ){
+	if( bufleng <= 0 ){
 		_ASSERT( 0 );
 		return 1;
 	}
