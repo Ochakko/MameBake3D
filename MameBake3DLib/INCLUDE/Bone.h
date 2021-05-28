@@ -1043,6 +1043,26 @@ public: //accesser
 			return veclClusterGlobalCurrentPosition[srcframe];
 		}
 	};
+	FbxAMatrix GetLocalTransform(int srcframe)
+	{
+		int matnum;
+		matnum = vecLocalTransform.size();
+		if ((srcframe < 0) || (srcframe >= matnum)) {
+			FbxAMatrix inimat;
+			inimat.SetIdentity();
+			return inimat;
+		}
+		else {
+			return vecLocalTransform[srcframe];
+		}
+	};
+
+	void SetExtendFlag(bool srcflag) {
+		m_extendflag = srcflag;
+	};
+	bool GetExtendFlag() {
+		return m_extendflag;
+	};
 
 public:
 	FbxCluster::ELinkMode lClusterMode[MAXMOTIONNUM + 1];
@@ -1058,6 +1078,7 @@ public:
 	FbxAMatrix lClusterRelativeInitPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterRelativeCurrentPositionInverse[MAXMOTIONNUM + 1];
 
+	std::vector<FbxAMatrix> vecLocalTransform;
 	std::vector<FbxAMatrix> veclClusterGlobalCurrentPosition;
 
 
@@ -1169,6 +1190,8 @@ private:
 	ChaMatrix m_invfirstgetmatrix;//GetCurrentZeroFrameMat—p
 
 	bool m_tmpkinematic;
+
+	bool m_extendflag;
 
 	CBone* m_parent;
 	CBone* m_child;

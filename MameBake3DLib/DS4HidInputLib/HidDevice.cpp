@@ -9,21 +9,63 @@
 
 using namespace std;
 
+HidDevice::HidDevice()
+{
+	isDevice = FALSE;
+	productID = 0;
+	vendorID = 0;
+	deviceHandle = INVALID_HANDLE_VALUE;
+	ZeroMemory(&capabilities, sizeof(HIDP_CAPS));
+	isCapabilities = false;
+	devicePath = 0;
+}
+
+HidDevice::~HidDevice()
+{
+	Destroy();
+}
 
 HidDevice HidDevice::Create(char * path, int id)
 {
-	//パスのコピー
-	size_t size = 1;
-	for (UINT i = 0; path[i] != '\0'; i++)
-	{
-		size += 1;
+	if (devicePath) {
+		free(devicePath);
+		devicePath = 0;
 	}
 
-	devicePath = new char[size];
-	for (UINT i = 0; i < size; i++)
-	{
-		devicePath[i] = path[i];
+	if (!path) {
+		_ASSERT(0);
+		isDevice = FALSE;
+		return *this;//!!!!!!!!
 	}
+
+	//パスのコピー
+	size_t size = 1;
+	//for (UINT i = 0; path[i] != '\0'; i++)
+	//{
+	//	size += 1;
+	//}
+	size = strlen(path);
+	if ((size <= 0) || (size > 2048)) {
+		_ASSERT(0);
+		isDevice = FALSE;
+		return *this;//!!!!!!!!
+	}
+
+	//devicePath = new char[size];
+	devicePath = (char*)malloc(sizeof(char) * (size + 1));
+	if (!devicePath) {
+		_ASSERT(0);
+		isDevice = FALSE;
+		return *this;//!!!!!!!!
+	}
+	if (devicePath) {
+		ZeroMemory(devicePath, sizeof(char) * (size + 1));
+	}
+	//for (UINT i = 0; i < size; i++)
+	//{
+	//	devicePath[i] = path[i];
+	//}
+	strcpy_s(devicePath, (size + 1), path);
 
 	//デバイスハンドルの作成
 	deviceHandle = CreateFile(
@@ -73,6 +115,14 @@ HIDP_CAPS HidDevice::GetCapabilities()
 void HidDevice::Destroy() 
 {
 	isDevice = 0;
-	CloseHandle(deviceHandle);
-	delete[] devicePath;
+	if (deviceHandle != INVALID_HANDLE_VALUE) {
+		CloseHandle(deviceHandle);
+	}
+	deviceHandle = INVALID_HANDLE_VALUE;
+
+	//delete[] devicePath;
+	if (devicePath) {
+		free(devicePath);
+		devicePath = 0;
+	}
 }

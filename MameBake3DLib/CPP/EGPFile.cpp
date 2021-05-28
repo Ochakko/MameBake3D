@@ -381,7 +381,7 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 	bool isvalid;
 	isvalid = ValidateEGPFile(&egpheader, newbuf, bufleng, pmodel, fbxdate, animno);
 	if (!isvalid) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		if (newbuf) {
 			free(newbuf);
 			newbuf = 0;

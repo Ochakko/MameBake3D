@@ -1387,6 +1387,7 @@ LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
+LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 
@@ -1433,8 +1434,8 @@ static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
 static void UpdateBtSimu(double nextframe, CModel* curmodel);
-static void SetKinematicToHand(CModel* srcmodel);
-static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone);
+static void SetKinematicToHand(CModel* srcmodel, bool srcflag);
+static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag);
 
 
 static int OnRenderSetShaderConst();
@@ -1601,7 +1602,7 @@ static int ExportBntFile();
 
 static const int s_appindex = 1;
 
-
+static void AboutMotionBrush();
 static int s_registflag = 1;//!!!!!!!!!!!
 static HKEY s_hkey;
 static int RegistKey();
@@ -1621,6 +1622,42 @@ static void RecalcAxisX_All();
 static int GetSymRootMode();
 
 static int UpdateEditedEuler();
+
+
+LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			return FALSE;
+		}
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
+}
+
+
+void AboutMotionBrush()
+{
+	int dlgret;
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG1),
+		s_3dwnd, (DLGPROC)AboutDlgProc);
+
+}
+
+
 
 int RegistKey()
 {
@@ -4731,7 +4768,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			case 29800:
 				ActivatePanel( 0 );
-				RegistKey();
+				//RegistKey();
+				AboutMotionBrush();
 				ActivatePanel( 1 );
 				//return 0;
 				break;
@@ -11068,8 +11106,10 @@ int StopBt()
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
 			curmodel->BulletSimulationStop();
+			SetKinematicToHand(curmodel, false);
 		}
 	}
+
 
 	g_previewFlag = 0;
 
@@ -14665,7 +14705,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 				s_rectime = 0.0;
 				s_reccnt = 0;
 				s_model->PhysIKRec(s_rectime);
-				SetKinematicToHand(curmodel);//Žw‚ª•Ï‚É‚È‚ç‚È‚¢‚æ‚¤‚É
+				SetKinematicToHand(curmodel, true);//Žw‚ª•Ï‚É‚È‚ç‚È‚¢‚æ‚¤‚É
 			}
 		}
 		else {
@@ -19591,7 +19631,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				break;
 			case 29800:
 				ActivatePanel(0);
-				RegistKey();
+				//RegistKey();
+				AboutMotionBrush();
 				ActivatePanel(1);
 				//return 0;
 				break;
@@ -19793,7 +19834,7 @@ HWND CreateMainWindow()
 
 
 	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"),
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.2"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		0, 0, (1216 + 450), 950,
@@ -27047,7 +27088,7 @@ void SetMainWindowTitle()
 
 	//"‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"‚Ü‚ß‚Î‚¯‚RD (MameBake3D) : ");
+	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.2 : ");
 
 
 	if (s_model) {
@@ -27094,7 +27135,7 @@ void SetMainWindowTitle()
 
 }
 
-void SetKinematicToHand(CModel* srcmodel)
+void SetKinematicToHand(CModel* srcmodel, bool srcflag)
 {
 	if (!srcmodel) {
 		return;
@@ -27103,11 +27144,11 @@ void SetKinematicToHand(CModel* srcmodel)
 		return;
 	}
 
-	SetKinematicToHandReq(srcmodel, srcmodel->GetTopBone());
+	SetKinematicToHandReq(srcmodel, srcmodel->GetTopBone(), srcflag);
 }
 
 
-void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone)
+void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag)
 {
 	if (!srcmodel) {
 		return;
@@ -27121,15 +27162,15 @@ void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone)
 	const char* phandpat2 = strstr(pbonename, "Hand");
 
 	if (phandpat1 || phandpat2) {
-		srcmodel->SetKinematicTmpLower(srcbone, true);
+		srcmodel->SetKinematicTmpLower(srcbone, srcflag);
 	}
 
 
 	if (srcbone->GetChild()) {
-		SetKinematicToHandReq(srcmodel, srcbone->GetChild());
+		SetKinematicToHandReq(srcmodel, srcbone->GetChild(), srcflag);
 	}
 	if(srcbone->GetBrother()){
-		SetKinematicToHandReq(srcmodel, srcbone->GetBrother());
+		SetKinematicToHandReq(srcmodel, srcbone->GetBrother(), srcflag);
 	}
 
 }

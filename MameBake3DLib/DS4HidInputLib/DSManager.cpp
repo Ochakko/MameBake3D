@@ -72,30 +72,36 @@ bool DSManager::GetDevice()
 				{
 					//Hidデバイスの作成
 					HidDevice device = device.Create(detail->DevicePath, 0);
+					if (device.isDevice) {
 
-					if (device.GetVendorID() == 0x54C && device.GetProductID() == 0xce6) {
-						//	PS5コントローラー
-						for (int i = 0; i < 4; i++) {
-							if (!dsDevice[i]) {
-								dsDevice[i] = new DSenseDevice(device, i);
-								foundflag = true;
-								break;
+						if (device.GetVendorID() == 0x54C && device.GetProductID() == 0xce6) {
+							//	PS5コントローラー
+							for (int i = 0; i < 4; i++) {
+								if (!dsDevice[i]) {
+									dsDevice[i] = new DSenseDevice(device, i);
+									foundflag = true;
+									break;
+								}
 							}
 						}
-					}
-					else if (device.GetVendorID() == 0x54c && (device.GetProductID() == 0x5c4 || device.GetProductID() == 0x9CC))
-					{
-						for (int i = 0; i < 4; i++) {
-							if (!dsDevice[i]) {
-								//PS4コントローラーとして設定
-								dsDevice[i] = new DS4Device(device, i);
-								foundflag = true;
-								break;
+						else if (device.GetVendorID() == 0x54c && (device.GetProductID() == 0x5c4 || device.GetProductID() == 0x9CC))
+						{
+							for (int i = 0; i < 4; i++) {
+								if (!dsDevice[i]) {
+									//PS4コントローラーとして設定
+									dsDevice[i] = new DS4Device(device, i);
+									foundflag = true;
+									break;
+								}
 							}
 						}
+						else
+						{
+							//デバイスの破棄
+							device.Destroy();
+						}
 					}
-					else
-					{
+					else {
 						//デバイスの破棄
 						device.Destroy();
 					}
@@ -103,7 +109,9 @@ bool DSManager::GetDevice()
 
 			}
 			if (detail) {
-				delete[] detail;
+				//delete[] detail;
+				free(detail);
+				detail = 0;
 			}
 		}
 	}

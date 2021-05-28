@@ -248,9 +248,12 @@ int CBone::InitParams()
 	m_indexofpool = 0;
 	m_allocheadflag = 0;//1: head pointer at allocated
 
+	m_extendflag = false;
+
 	m_curmp.InitParams();
 	m_axisq.InitParams();
 
+	vecLocalTransform.clear();
 	veclClusterGlobalCurrentPosition.clear();
 
 	m_motionkey.clear();

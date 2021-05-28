@@ -834,6 +834,8 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 		_ASSERT(0);
 	}
 
+	//CreateExtendBoneReq(m_topbone);
+
 _ASSERT(m_bonelist[0]);
 
 	CreateFBXMeshReq( pRootNode );
@@ -3112,6 +3114,51 @@ FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,
     return lResult;
 }
 
+int CModel::CreateExtendBoneReq(CBone* srcbone)
+{
+	if (srcbone) {
+		if (!srcbone->GetExtendFlag() && !srcbone->GetChild()) {
+			CBone* newbone = CBone::GetNewBone(this);
+			_ASSERT(newbone);
+			if (!newbone) {
+				_ASSERT(0);
+				return 1;
+			}
+			newbone->SetExtendFlag(true);
+			srcbone->AddChild(newbone);
+
+			char newbonename[256];
+			strcpy_s(newbonename, 256, "ext_");
+			strcat_s(newbonename, 256, srcbone->GetBoneName());
+			newbone->SetName(newbonename);
+
+			newbone->SetTopBoneFlag(0);
+			m_bonelist[newbone->GetBoneNo()] = newbone;
+			m_bonename[newbone->GetBoneName()] = newbone;
+
+			//if (type == FbxNodeAttribute::eSkeleton) {
+			newbone->SetType(FBXBONE_NORMAL);
+			//}
+			//else if (type == FbxNodeAttribute::eNull) {
+			//	newbone->SetType(FBXBONE_NULL);
+			//}
+			//else {
+			//	_ASSERT(0);
+			//}
+
+		}
+		else {
+			if (srcbone->GetChild()) {
+				CreateExtendBoneReq(srcbone->GetChild());
+			}
+		}
+
+		if (srcbone->GetBrother()) {
+			CreateExtendBoneReq(srcbone->GetBrother());
+		}
+	}
+}
+
 
 
 int CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode )
@@ -3237,13 +3284,22 @@ int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAt
 	m_bonelist[newbone->GetBoneNo()] = newbone;
 	m_bonename[ newbone->GetBoneName() ] = newbone;
 
-	if( type == FbxNodeAttribute::eSkeleton ){
-		newbone->SetType( FBXBONE_NORMAL );
-	}else if( type == FbxNodeAttribute::eNull ){
-		newbone->SetType( FBXBONE_NULL );
-	}else{
-		_ASSERT( 0 );
-	}
+	//const char* strextend;
+	//strextend = strstr(newbone->GetBoneName(), "_extend_");
+	//if (!strextend) {
+		if (type == FbxNodeAttribute::eSkeleton) {
+			newbone->SetType(FBXBONE_NORMAL);
+		}
+		else if (type == FbxNodeAttribute::eNull) {
+			newbone->SetType(FBXBONE_NULL);
+		}
+		else {
+			_ASSERT(0);
+		}
+	//}
+	//else {
+	//	newbone->SetType(FBXBONE_NULL);
+	//}
 
 //	if( !parnode ){
 //		m_firstbone = curnode;
@@ -4338,7 +4394,7 @@ void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtO
 }
 
 
-void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition )
+void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix ParentGlobalPosition )
 {
 	if (!curbone){
 		return;
@@ -4350,41 +4406,45 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 	FbxAMatrix lGlobalPosition;
 	bool        lPositionFound = false;//バインドポーズを書き出さない場合やHipsなどの場合は０になる？
 
+	lGlobalPosition.SetIdentity();
 
-	if( pPose ){
-		int lNodeIndex = pPose->Find(pNode);
-		if (lNodeIndex > -1)
-		{
-			// The bind pose is always a global matrix.
-			// If we have a rest pose, we need to check if it is
-			// stored in global or local space.
-			if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
+	if (pNode) {
+		if (pPose) {
+			int lNodeIndex = pPose->Find(pNode);
+			if (lNodeIndex > -1)
 			{
-				lGlobalPosition = GetPoseMatrix(pPose, lNodeIndex);
-			}
-			else
-			{
-				// We have a local matrix, we need to convert it to
-				// a global space matrix.
-				FbxAMatrix lParentGlobalPosition;
-
-				if (pParentGlobalPosition)
+				// The bind pose is always a global matrix.
+				// If we have a rest pose, we need to check if it is
+				// stored in global or local space.
+				if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
 				{
-					lParentGlobalPosition = *pParentGlobalPosition;
+					lGlobalPosition = GetPoseMatrix(pPose, lNodeIndex);
 				}
 				else
 				{
-					if (pNode->GetParent())
+					// We have a local matrix, we need to convert it to
+					// a global space matrix.
+					FbxAMatrix lParentGlobalPosition;
+
+					//if (pParentGlobalPosition)
+					if (curbone->GetParent())
 					{
-						lParentGlobalPosition = GetGlobalPosition(this, pNode->GetScene(), pNode->GetParent(), pTime, pPose);
+						lParentGlobalPosition = ParentGlobalPosition;
 					}
+					else
+					{
+						if (pNode->GetParent())
+						{
+							lParentGlobalPosition = GetGlobalPosition(this, pNode->GetScene(), pNode->GetParent(), pTime, pPose);
+						}
+					}
+
+					FbxAMatrix lLocalPosition = GetPoseMatrix(pPose, lNodeIndex);
+					lGlobalPosition = lParentGlobalPosition * lLocalPosition;
 				}
 
-				FbxAMatrix lLocalPosition = GetPoseMatrix(pPose, lNodeIndex);
-				lGlobalPosition = lParentGlobalPosition * lLocalPosition;
- 			}
-
-			lPositionFound = true;
+				lPositionFound = true;
+			}
 		}
 	}
 
@@ -4397,42 +4457,43 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 		//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
 		// does not hold when inheritance type is other than "Parent" (RSrs).
 		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
-		lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
-
+		if (pNode) {
+			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+		}
 	}
-
 
 	ChaMatrix nodemat;
 
-	nodemat._11 = (float)lGlobalPosition.Get( 0, 0 );
-	nodemat._12 = (float)lGlobalPosition.Get( 0, 1 );
-	nodemat._13 = (float)lGlobalPosition.Get( 0, 2 );
-	nodemat._14 = (float)lGlobalPosition.Get( 0, 3 );
+	nodemat._11 = (float)lGlobalPosition.Get(0, 0);
+	nodemat._12 = (float)lGlobalPosition.Get(0, 1);
+	nodemat._13 = (float)lGlobalPosition.Get(0, 2);
+	nodemat._14 = (float)lGlobalPosition.Get(0, 3);
 
-	nodemat._21 = (float)lGlobalPosition.Get( 1, 0 );
-	nodemat._22 = (float)lGlobalPosition.Get( 1, 1 );
-	nodemat._23 = (float)lGlobalPosition.Get( 1, 2 );
-	nodemat._24 = (float)lGlobalPosition.Get( 1, 3 );
+	nodemat._21 = (float)lGlobalPosition.Get(1, 0);
+	nodemat._22 = (float)lGlobalPosition.Get(1, 1);
+	nodemat._23 = (float)lGlobalPosition.Get(1, 2);
+	nodemat._24 = (float)lGlobalPosition.Get(1, 3);
 
-	nodemat._31 = (float)lGlobalPosition.Get( 2, 0 );
-	nodemat._32 = (float)lGlobalPosition.Get( 2, 1 );
-	nodemat._33 = (float)lGlobalPosition.Get( 2, 2 );
-	nodemat._34 = (float)lGlobalPosition.Get( 2, 3 );
+	nodemat._31 = (float)lGlobalPosition.Get(2, 0);
+	nodemat._32 = (float)lGlobalPosition.Get(2, 1);
+	nodemat._33 = (float)lGlobalPosition.Get(2, 2);
+	nodemat._34 = (float)lGlobalPosition.Get(2, 3);
 
-	nodemat._41 = (float)lGlobalPosition.Get( 3, 0 );
-	nodemat._42 = (float)lGlobalPosition.Get( 3, 1 );
-	nodemat._43 = (float)lGlobalPosition.Get( 3, 2 );
-	nodemat._44 = (float)lGlobalPosition.Get( 3, 3 );
+	nodemat._41 = (float)lGlobalPosition.Get(3, 0);
+	nodemat._42 = (float)lGlobalPosition.Get(3, 1);
+	nodemat._43 = (float)lGlobalPosition.Get(3, 2);
+	nodemat._44 = (float)lGlobalPosition.Get(3, 3);
 
 	curbone->SetPositionFound(lPositionFound);//!!!
-	curbone->SetNodeMat( nodemat );
-	curbone->SetGlobalPosMat( lGlobalPosition );
+	curbone->SetNodeMat(nodemat);
+	curbone->SetGlobalPosMat(lGlobalPosition);
 
-	ChaVector3 zeropos( 0.0f, 0.0f, 0.0f );
+	ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
 	ChaVector3 tmppos;
-	ChaVector3TransformCoord( &tmppos, &zeropos, &(curbone->GetNodeMat()) );
-	curbone->SetJointWPos( tmppos );
-	curbone->SetJointFPos( tmppos );
+	ChaVector3TransformCoord(&tmppos, &zeropos, &(curbone->GetNodeMat()));
+	curbone->SetJointWPos(tmppos);
+	curbone->SetJointFPos(tmppos);
+
 
 //WCHAR wname[256];
 //ZeroMemory( wname, sizeof( WCHAR ) * 256 );
@@ -4441,10 +4502,15 @@ void CModel::SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose
 
 
 	if( curbone->GetChild() ){
-		SetDefaultBonePosReq( curbone->GetChild(), pTime, pPose, &curbone->GetGlobalPosMat() );
+		//if (curbone->GetChild()->GetChild()) {
+			SetDefaultBonePosReq(curbone->GetChild(), pTime, pPose, curbone->GetGlobalPosMat());
+		//}
+		//else {
+		//	SetDefaultBonePosReq(curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
+		//}
 	}
 	if( curbone->GetBrother() ){
-		SetDefaultBonePosReq( curbone->GetBrother(), pTime, pPose, pParentGlobalPosition );
+		SetDefaultBonePosReq( curbone->GetBrother(), pTime, pPose, ParentGlobalPosition );
 	}
 
 }
@@ -4487,8 +4553,10 @@ int CModel::SetDefaultBonePos()
 	//CBone* secbone = m_topbone->GetChild();
 	CBone* secbone = m_topbone;
 
+	FbxAMatrix inimat;
+	inimat.SetIdentity();
 	if( secbone ){
-		SetDefaultBonePosReq( secbone, pTime, bindpose, 0 );
+		SetDefaultBonePosReq( secbone, pTime, bindpose, inimat );
 	}
 
 	return 0;
@@ -6769,7 +6837,6 @@ void CModel::SetKinematicFlagReq(CBtObject* srcbto)
 			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 		}
 	}
-
 
 	int childno;
 	for (childno = 0; childno < srcbto->GetChildBtSize(); childno++) {

@@ -18,10 +18,12 @@ extern "C"
 class HidDevice
 {
 public:
+	HidDevice();
+	~HidDevice();
+
 	HidDevice Create(char* path, int id);
 	HIDP_CAPS GetCapabilities() ;
 	void Destroy() ;
-	BOOL isDevice;
 	inline HANDLE GetHandle() 
 	{
 		return deviceHandle;
@@ -38,6 +40,9 @@ public:
 	{
 		return devicePath;
 	};
+
+public:
+	BOOL isDevice;
 
 private:
 	USHORT productID;
