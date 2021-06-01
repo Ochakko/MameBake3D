@@ -350,7 +350,10 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
 		s_fbxbone = 0;
 	}
 
-
+	if (lScene) {
+		lScene->Destroy(true);
+		lScene = 0;
+	}
 
 	s_bvhflag = 0;
 
@@ -404,6 +407,10 @@ int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxda
 		s_fbxbone = 0;
 	}
 
+	if (lScene) {
+		lScene->Destroy(true);
+		lScene = 0;
+	}
 
 	return 0;
 }
@@ -1351,7 +1358,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 
 	if (fbxbone){
 		CBVHElem* curbe = fbxbone->GetBvhElem();
-		_ASSERT(curbe);
+		//_ASSERT(curbe);
 		if (curbe){
 
 			lSkel = fbxbone->GetSkelNode();

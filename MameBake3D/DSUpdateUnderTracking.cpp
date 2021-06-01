@@ -41,6 +41,9 @@ extern void OnDSUpdate();
 extern void OnDSMouseHereApeal();
 extern LONG g_undertrackingRMenu;
 extern LONG g_underApealingMouseHere;
+extern void InfoBvh2FbxBatchCnt();
+extern int g_bvh2fbxbatchflag;
+
 
 HANDLE g_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
 
@@ -463,6 +466,9 @@ unsigned __stdcall ThreadFunc_DS(LPVOID lpThreadParam)
 			if (g_undertrackingRMenu == 1) {
 				OnDSUpdate();
 			}
+			//if (g_bvh2fbxbatchflag == 1) {
+			//	InfoBvh2FbxBatchCnt();
+			//}
 
 			Sleep(16);
 

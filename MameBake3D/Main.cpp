@@ -175,6 +175,12 @@ typedef struct tag_spsw
 static double s_rectime = 0.0;
 static double s_reccnt = 0;
 
+static int s_bvh2fbxnum = 0;
+static int s_bvh2fbxcnt = 0;
+int g_bvh2fbxbatchflag = 0;
+HWND s_bvh2fbxbatchwnd = 0;
+
+
 
 static Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 static ULONG_PTR gdiplusToken;
@@ -1391,12 +1397,13 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
-
+LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 void InitApp();
 //HRESULT LoadMesh( ID3D11Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText(double fTime );
+void InfoBvh2FbxBatchCnt();
 
 static int OnMouseMoveFunc();
 
@@ -1475,6 +1482,7 @@ static int SetBaseDir();
 
 static int OpenFile();
 static int BVH2FBX();
+static int BVH2FBXBatch();
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -1995,6 +2003,12 @@ void InitApp()
 	s_rectime = 0.0;
 	s_reccnt = 0;
 	g_btsimurecflag = false;
+
+	s_bvh2fbxnum = 0;
+	s_bvh2fbxcnt = 0;
+	g_bvh2fbxbatchflag = 0;
+
+	s_bvh2fbxbatchwnd = 0;
 
 	g_mousehereimage = 0;
 	g_menuaimbarimage = 0;
@@ -4291,6 +4305,47 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 // Render the help and statistics text. This function uses the ID3DX10Font interface for 
 // efficient text rendering.
 //--------------------------------------------------------------------------------------
+void InfoBvh2FbxBatchCnt()
+{
+	//g_pTxtHelper->Begin();
+	//g_pTxtHelper->SetInsertionPos(100, 100);
+
+	//if (g_bvh2fbxbatchflag == 1) {
+	//	g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+	//	g_pTxtHelper->DrawFormattedTextLine(L"bvh2FBX Batch is running!!!");
+
+	//	g_pTxtHelper->DrawFormattedTextLine(L"%d / %d [cnt/num]", s_bvh2fbxcnt, s_bvh2fbxnum);
+	//}
+
+	//g_pTxtHelper->End();
+
+
+	//WCHAR strnumcnt[1024] = { 0L };
+	//swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", s_bvh2fbxcnt, s_bvh2fbxnum);
+	//OutputToInfoWnd(strnumcnt);
+
+	if (s_bvh2fbxbatchwnd && (g_bvh2fbxbatchflag == 1) && (s_bvh2fbxnum >= 1)) {
+		WCHAR strnumcnt[1024] = { 0L };
+		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_bvh2fbxcnt + 1), s_bvh2fbxnum);
+		SetDlgItemTextW(s_bvh2fbxbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+
+		HWND hProg;
+		hProg = GetDlgItem(s_bvh2fbxbatchwnd, IDC_PROGRESS1);
+		if (hProg) {
+			//プログレスバーの範囲を0-300にする           
+			//SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_bvh2fbxnum));
+			//現在位置を設定  
+			SendMessage(hProg, PBM_SETPOS, (s_bvh2fbxcnt + 1), 0);
+			//ステップの範囲を設定 
+			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
+		}
+
+		UpdateWindow(s_bvh2fbxbatchwnd);
+	}
+
+}
+
+
 void RenderText( double fTime )
 {
 	static double s_savetime = 0.0;
@@ -4318,6 +4373,7 @@ void RenderText( double fTime )
 
     g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
     g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
+
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -4799,6 +4855,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				}
 				//return 0;
 				break;
+			case ID_FILE_BVH2FBXBATCH:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					BVH2FBXBatch();
+					ActivatePanel(1);
+				}
+				//return 0;
+				break;
+
+				
 /***
 			case ID_SAVE_FBX40039:
 				if( s_registflag == 1 ){
@@ -6835,6 +6901,240 @@ int SaveREFile()
 	return 0;
 }
 
+
+void FindF(std::vector<wstring>& out, const wstring& directory)
+{
+	HANDLE dir;
+	WIN32_FIND_DATA fileData;
+
+	if ((dir = FindFirstFile((directory + L"/*").c_str(), &fileData)) == INVALID_HANDLE_VALUE)
+	{
+		return; /* No files found */
+	}
+
+	do
+	{
+		const wstring fileName = fileData.cFileName;
+		const wstring fullFileName = directory + L"/" + fileName;
+		const bool isDirectory = (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+		if (fileName[0] == L'.')
+			continue;
+
+		if (!isDirectory)
+		{
+			WCHAR pattern[20] = L".bvh";
+			WCHAR npattern[20] = L".bvh.";
+			const WCHAR* pfind;
+			const WCHAR* pfind2;
+			pfind = wcsstr(fullFileName.c_str(), pattern);
+			pfind2 = wcsstr(fullFileName.c_str(), npattern);
+
+			if (pfind && !pfind2) {
+				out.push_back(fullFileName);
+			}
+		}
+		else
+		{
+			FindF(out, fullFileName);
+		}
+
+	} while (FindNextFile(dir, &fileData));
+
+	FindClose(dir);
+
+	return;
+}
+
+int BVH2FBXBatch()
+{
+	BROWSEINFO bi;
+	LPITEMIDLIST curlpidl = 0;
+	WCHAR dispname[MAX_PATH] = { 0L };
+	WCHAR selectname[MAX_PATH] = { 0L };
+	int iImage = 0;
+
+
+	//LPITEMIDLIST pidl;
+	//IMalloc* pMalloc;
+	//SHGetMalloc(&pMalloc);
+	//if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+	//{
+	//	// パスに変換する
+	//	SHGetPathFromIDList(pidl, s_projectdir);
+	//	// 取得したIDLを解放する (CoTaskMemFreeでも可)
+	//	pMalloc->Free(pidl);
+	//	//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//}
+	//pMalloc->Release();
+
+
+
+	bi.hwndOwner = s_3dwnd;
+	bi.pidlRoot = NULL;//!!!!!!!
+	bi.pszDisplayName = dispname;
+	//bi.lpszTitle = L"保存フォルダを選択してください。";
+	bi.lpszTitle = L"SelectDirectoryForBatch";
+	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEを指定すると固まる　謎
+	bi.lpfn = NULL;
+	bi.lParam = 0;
+	bi.iImage = iImage;
+
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	curlpidl = SHBrowseForFolder(&bi);
+
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	UnhookWinEvent(hhook);
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+
+	if (curlpidl) {
+		//::DSMessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
+
+		BOOL bret;
+		bret = SHGetPathFromIDList(curlpidl, selectname);
+		if (bret == FALSE) {
+			_ASSERT(0);
+			if (curlpidl)
+				CoTaskMemFree(curlpidl);
+			return 1;
+		}
+
+		if (curlpidl)
+			CoTaskMemFree(curlpidl);
+
+
+		//selectname
+		wstring target;
+		string filenamepattern;
+		vector<wstring> out;
+
+		out.clear();
+		target = selectname;
+		FindF(out, target);
+		int outnum = (int)out.size();
+		s_bvh2fbxnum = outnum;
+		if (outnum > 0)
+		{
+	
+			//CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), s_mainhwnd, (DLGPROC)bvh2FbxBatchDlgProc);
+			CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), s_LtimelineWnd->getHWnd(), (DLGPROC)bvh2FbxBatchDlgProc);
+			if (s_bvh2fbxbatchwnd) {
+				//SetParent(s_bvh2fbxbatchwnd, s_mainhwnd);
+				RECT rect;
+				GetWindowRect(s_bvh2fbxbatchwnd, &rect);
+				SetParent(s_bvh2fbxbatchwnd, s_LtimelineWnd->getHWnd());
+				SetWindowPos(
+					s_bvh2fbxbatchwnd,
+					HWND_TOP,
+					0, 0,
+					rect.right - rect.left, rect.bottom - rect.top,
+					SWP_SHOWWINDOW
+				);
+				g_bvh2fbxbatchflag = 1;
+				//InfoBvh2FbxBatchCnt();
+				ShowWindow(s_bvh2fbxbatchwnd, SW_SHOW);
+				UpdateWindow(s_bvh2fbxbatchwnd);
+
+				HWND hProg;
+				hProg = GetDlgItem(s_bvh2fbxbatchwnd, IDC_PROGRESS1);
+				if (hProg) {
+					//プログレスバーの範囲         
+					SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_bvh2fbxnum));
+					//ステップの範囲を設定 
+					SendMessage(hProg, PBM_SETSTEP, 1, 0);
+					//現在位置を設定  
+					SendMessage(hProg, PBM_SETPOS, 0, 0);
+				}
+			}
+
+			//Sleep(250);
+
+			int outcnt;
+			for (outcnt = 0; outcnt < outnum; outcnt++) {
+				if (g_bvh2fbxbatchflag != 1) {
+					//cancel
+					if (s_bvh2fbxbatchwnd) {
+						SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
+					}
+					g_bvh2fbxbatchflag = 0;
+					break;
+				}
+
+				//bvhファイルを読み込む
+				CBVHFile* bvhfile = new CBVHFile();
+				if (!bvhfile) {
+					g_bvh2fbxbatchflag = 0;
+					break;
+				}
+				int ret;
+				ret = bvhfile->LoadBVHFile(s_LtimelineWnd->getHWnd(), (wchar_t*)(out[outcnt].c_str()), g_tmpmqomult);
+				if (ret) {
+					_ASSERT(0);
+					if (bvhfile) {
+						delete bvhfile;
+						bvhfile = 0;
+					}
+					g_bvh2fbxbatchflag = 0;
+					break;
+				}
+
+				InfoBvh2FbxBatchCnt();
+				UpdateWindow(s_bvh2fbxbatchwnd);
+				Sleep(40);
+
+				//FBXファイルに書き出す
+				char fbxpath[MAX_PATH] = { 0 };
+				WideCharToMultiByte(CP_UTF8, 0, out[outcnt].c_str(), -1, fbxpath, MAX_PATH, NULL, NULL);
+				strcat_s(fbxpath, MAX_PATH, ".fbx");
+				SYSTEMTIME localtime;
+				GetLocalTime(&localtime);
+				char fbxdate[MAX_PATH] = { 0L };
+				sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+					localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+				
+				int result;
+				result = BVH2FBXFile(s_psdk, bvhfile, fbxpath, fbxdate);
+				if (result == 0) {
+					s_bvh2fbxcnt = outcnt;
+				}
+				else {
+					g_bvh2fbxbatchflag = 0;
+					if (bvhfile) {
+						delete bvhfile;
+						bvhfile = 0;
+					}
+					break;
+				}
+
+				if (bvhfile) {
+					delete bvhfile;
+					bvhfile = 0;
+				}
+
+				InfoBvh2FbxBatchCnt();
+				UpdateWindow(s_bvh2fbxbatchwnd);
+				Sleep(40);
+
+			}
+			g_bvh2fbxbatchflag = 0;
+		}
+	}
+
+	g_bvh2fbxbatchflag = 0;
+	if (s_bvh2fbxbatchwnd) {
+		SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
+	}
+
+
+	return 0;
+}
 
 int BVH2FBX()
 {
@@ -9826,6 +10126,50 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
     return TRUE;
 
 }
+
+LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	static int s_bvh2fbxbatchdlgtimer = 361;
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		s_bvh2fbxbatchwnd = hDlgWnd;
+		//SetTimer(hDlgWnd, s_bvh2fbxbatchdlgtimer, 20, NULL);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			g_bvh2fbxbatchflag = 0;
+			s_bvh2fbxbatchwnd = 0;
+			//EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			g_bvh2fbxbatchflag = 0;
+			s_bvh2fbxbatchwnd = 0;
+			//EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			break;
+		}
+		break;
+	case WM_CLOSE:
+		if (s_bvh2fbxbatchwnd) {
+			//KillTimer(s_bvh2fbxbatchwnd, s_bvh2fbxbatchdlgtimer);
+			DestroyWindow(s_bvh2fbxbatchwnd);
+			s_bvh2fbxbatchwnd = 0;
+		}
+		break;
+	//case WM_TIMER:
+	//	InfoBvh2FbxBatchCnt();
+	//	break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
+}
+
 
 LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -19828,6 +20172,15 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				}
 				//return 0;
 				break;
+			case ID_FILE_BVH2FBXBATCH:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					BVH2FBXBatch();
+					ActivatePanel(1);
+				}
+				//return 0;
+				break;
+
 			case ID_SAVE_FBX40039:
 				if (s_registflag == 1) {
 					ActivatePanel(0);
@@ -20147,7 +20500,7 @@ CInfoWindow* CreateInfoWnd()
 		if (ret == 0) {
 			g_infownd = newinfownd;
 
-			OutputToInfoWnd(L"InfoWindow initialized 1");
+			//OutputToInfoWnd(L"InfoWindow initialized 1");
 			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 6,000 lines.");
 			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
 			OutputToInfoWnd(L"If the most newest line is shown at lowest position, auto scroll works.Save to info_(date).txt on exit application.");
