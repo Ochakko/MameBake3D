@@ -90,6 +90,7 @@ previewflag 5 ÇÃçƒê∂éûÇ…ÇÕÉpÉâÉÅÅ[É^ÇåàÇﬂë≈ÇøÇé~ÇﬂÇΩ
 #include <mqomaterial.h>
 
 #include <ChaFile.h>
+#include <RetargetFile.h>
 #include <ImpFile.h>
 #include <RigidElemFile.h>
 #include <RigidElem.h>
@@ -839,6 +840,8 @@ static CBone* s_modelbone_bone[CONVBONEMAX];
 static CBone* s_bvhbone_bone[CONVBONEMAX];
 static map<CBone*, CBone*> s_convbonemap;
 static int s_bvhbone_cbno = 0;
+static OWP_Button* s_rtgfilesave = 0;
+static OWP_Button* s_rtgfileload = 0;
 
 
 static OrgWindow* s_layerWnd = 0;
@@ -1544,6 +1547,9 @@ static int SetConvBoneModel();
 static int SetConvBoneBvh();
 static int SetConvBone( int cbno );
 static int ConvBoneConvert();
+static int SaveRetargetFile();
+static int LoadRetargetFile();
+static int SetJointPair2ConvBoneWnd();
 static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
 static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
@@ -10427,6 +10433,14 @@ int DestroyConvBoneWnd()
 		delete s_convboneconvert;
 		s_convboneconvert = 0;
 	}
+	if (s_rtgfilesave) {
+		delete s_rtgfilesave;
+		s_rtgfilesave = 0;
+	}
+	if (s_rtgfileload) {
+		delete s_rtgfileload;
+		s_rtgfileload = 0;
+	}
 
 	if (s_convbonesp){
 		delete s_convbonesp;
@@ -10516,6 +10530,8 @@ int CreateConvBoneWnd()
 	s_cbselmodel = new OWP_Button(L"SelectShapeModel");
 	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
 	s_convboneconvert = new OWP_Button(L"ConvertButton");
+	s_rtgfilesave = new OWP_Button(L"Save RtgFile");
+	s_rtgfileload = new OWP_Button(L"Load RtgFile");
 	s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
 	s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
 
@@ -10542,6 +10558,12 @@ int CreateConvBoneWnd()
 
 	s_convbonesp->addParts1(*s_convboneconvert);
 	s_dsretargetctrls.push_back(s_convboneconvert);
+
+	s_convbonesp->addParts1(*s_rtgfilesave);
+	s_dsretargetctrls.push_back(s_rtgfilesave);
+
+	s_convbonesp->addParts2(*s_rtgfileload);
+	s_dsretargetctrls.push_back(s_rtgfileload);
 
 	s_convboneWnd->setListenMouse(false);
 	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -10586,6 +10608,21 @@ int CreateConvBoneWnd()
 			ConvBoneConvert();
 		}
 	});
+
+	s_rtgfilesave->setButtonListener([]() {
+		if (s_model) {
+			SaveRetargetFile();
+		}
+	});
+
+	s_rtgfileload->setButtonListener([]() {
+		if (s_model) {
+			LoadRetargetFile();
+		}
+	});
+
+
+
 
 	s_convboneWnd->setSize(WindowSize(450, 858));//880
 	s_convboneWnd->setPos(WindowPos(1200, 32));
@@ -10858,6 +10895,141 @@ int SetConvBone( int cbno )
 
 	return 0;
 }
+
+int SetJointPair2ConvBoneWnd()
+{
+	if (s_convbonemap.empty()) {
+		return 0;
+	}
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_convbone_bvh) {
+		return 0;
+	}
+
+	WCHAR bvhbonename[MAX_PATH];
+	int cbno = 0;
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			CBone* bvhbone = s_convbonemap[curbone];
+			if (bvhbone) {
+				swprintf_s(bvhbonename, MAX_PATH, bvhbone->GetWBoneName());
+				(s_bvhbone[cbno])->setName(bvhbonename);
+				s_bvhbone_bone[cbno] = bvhbone;
+			}
+			else {
+				swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
+				(s_bvhbone[cbno])->setName(bvhbonename);
+				s_bvhbone_bone[cbno] = 0;
+			}
+
+			cbno++;
+		}
+	}
+
+	_ASSERT(cbno == s_convbonenum);
+
+	return 0;
+}
+
+
+int SaveRetargetFile()
+{
+	OPENFILENAME ofn;
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = s_3dwnd;
+	ofn.hInstance = 0;
+	ofn.lpstrFilter = L"Retarget(*.rtg)\0*.rtg\0";
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxCustFilter = 0;
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = g_tmpmqopath;
+	ofn.nMaxFile = MULTIPATH;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	ofn.nFileOffset = 0;
+	ofn.nFileExtension = 0;
+	ofn.lpstrDefExt = NULL;
+	ofn.lCustData = NULL;
+	ofn.lpfnHook = NULL;
+	ofn.lpTemplateName = NULL;
+
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	if (GetOpenFileNameW(&ofn) == IDOK) {
+		CRetargetFile rtgfile;
+		int result;
+		result = rtgfile.WriteRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
+	}
+
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	UnhookWinEvent(hhook);
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+
+	return 0;
+}
+int LoadRetargetFile()
+{
+	OPENFILENAME ofn;
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = s_3dwnd;
+	ofn.hInstance = 0;
+	ofn.lpstrFilter = L"Retarget(*.rtg)\0*.rtg\0";
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxCustFilter = 0;
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = g_tmpmqopath;
+	ofn.nMaxFile = MULTIPATH;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	ofn.nFileOffset = 0;
+	ofn.nFileExtension = 0;
+	ofn.lpstrDefExt = NULL;
+	ofn.lCustData = NULL;
+	ofn.lpfnHook = NULL;
+	ofn.lpTemplateName = NULL;
+
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	if (GetOpenFileNameW(&ofn) == IDOK) {
+		CRetargetFile rtgfile;
+		int result;
+		result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
+		if (result == 0) {
+			SetJointPair2ConvBoneWnd();
+		}
+	}
+
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	UnhookWinEvent(hhook);
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+
+	return 0;
+}
+
 
 int ConvBoneConvert()
 {

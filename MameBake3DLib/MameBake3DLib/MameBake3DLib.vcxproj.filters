@@ -705,6 +705,9 @@
     <ClCompile Include="..\CPP\EGPFile.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\RetargetFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1749,6 +1752,9 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\EGPFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\RetargetFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
