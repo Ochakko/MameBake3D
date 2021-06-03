@@ -81,7 +81,7 @@ void CDSUpdateUnderTracking::DestroyObjs()
 	if (g_hUnderTrackingThread != NULL) {
 
 
-		DWORD dwwait = 0;
+		DWORD dwwait = WAIT_TIMEOUT;
 		InterlockedExchange(&s_lThread, 0);
 		Sleep(500);
 		//InterlockedExchange(&m_preview_flag, 0);

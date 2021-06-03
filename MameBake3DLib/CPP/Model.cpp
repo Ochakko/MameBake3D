@@ -661,8 +661,7 @@ int CModel::LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateConte
 	return 0;
 }
 
-
-int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag)
+int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag, BOOL motioncachebatchflag)
 {
 
 	//DestroyFBXSDK();
@@ -829,9 +828,15 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 			ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 			dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 
+
+
+			if (m_topbone) {
+				dummybone->AddChild(m_topbone);
+				m_topbone = dummybone;
+			}
 			//m_topbone = dummybone;
 		}
-		_ASSERT(0);
+		//_ASSERT(0);
 	}
 
 	//CreateExtendBoneReq(m_topbone);
@@ -842,7 +847,6 @@ _ASSERT(m_bonelist[0]);
 
 	DbgOut(L"fbx bonenum %d\r\n", (int)m_bonelist.size());
 _ASSERT(m_bonelist[0]);
-
 
 	ChaMatrix offsetmat;
 	ChaMatrixIdentity( &offsetmat );
@@ -865,57 +869,58 @@ _ASSERT(m_bonelist[0]);
 //	m_ktime0.SetSecondDouble( 1.0 / 30.0 );
 
 
-	CallF( MakePolyMesh4(), return 1 );
-	CallF( MakeObjectName(), return 1 );
-	CallF( CreateMaterialTexture(pd3dImmediateContext), return 1 );
-	if( m_topbone ){
-		CallF( CreateFBXSkinReq( pRootNode ), return 1 );
-	}
-
-	SetMaterialName();
-
-_ASSERT(m_bonelist[0]);
-
-	map<int,CBone*>::iterator itrbone;
-	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
-		CBone* curbone = itrbone->second;
-		if (curbone){
-			curbone->SetBtKinFlag(1);
+	if (motioncachebatchflag == FALSE) {
+		CallF(MakePolyMesh4(), return 1);
+		CallF(MakeObjectName(), return 1);
+		CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
+		if (m_topbone) {
+			CallF(CreateFBXSkinReq(pRootNode), return 1);
 		}
-	}
 
+		SetMaterialName();
 
-	map<int,CMQOObject*>::iterator itr2;
-	for( itr2 = m_object.begin(); itr2 != m_object.end(); itr2++ ){
-		CMQOObject* curobj = itr2->second;
-		if( curobj ){
-			char* findnd = strstr( (char*)curobj->GetName(), "_ND" );
-			if( findnd ){
-				curobj->SetDispFlag( 0 );
+		_ASSERT(m_bonelist[0]);
+
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				curbone->SetBtKinFlag(1);
 			}
 		}
-	}
 
-	m_rigideleminfo.clear();
-	m_impinfo.clear();
 
-	if( skipdefref == 0 ){
-		REINFO reinfo;
-		ZeroMemory( &reinfo, sizeof( REINFO ) );
-		strcpy_s( reinfo.filename, MAX_PATH, m_defaultrename );
-		reinfo.btgscale = 9.07;
-		m_rigideleminfo.push_back( reinfo );
-		m_impinfo.push_back( m_defaultimpname );
-
-		if( m_topbone ){
-			CreateRigidElemReq( m_topbone, 1, m_defaultrename, 1, m_defaultimpname );
+		map<int, CMQOObject*>::iterator itr2;
+		for (itr2 = m_object.begin(); itr2 != m_object.end(); itr2++) {
+			CMQOObject* curobj = itr2->second;
+			if (curobj) {
+				char* findnd = strstr((char*)curobj->GetName(), "_ND");
+				if (findnd) {
+					curobj->SetDispFlag(0);
+				}
+			}
 		}
 
-		SetCurrentRigidElem( 0 );
-		m_curreindex = 0;
-		m_curimpindex = 0;
-	}
+		m_rigideleminfo.clear();
+		m_impinfo.clear();
 
+		if (skipdefref == 0) {
+			REINFO reinfo;
+			ZeroMemory(&reinfo, sizeof(REINFO));
+			strcpy_s(reinfo.filename, MAX_PATH, m_defaultrename);
+			reinfo.btgscale = 9.07;
+			m_rigideleminfo.push_back(reinfo);
+			m_impinfo.push_back(m_defaultimpname);
+
+			if (m_topbone) {
+				CreateRigidElemReq(m_topbone, 1, m_defaultrename, 1, m_defaultimpname);
+			}
+
+			SetCurrentRigidElem(0);
+			m_curreindex = 0;
+			m_curimpindex = 0;
+		}
+	}
 
 	*ppimporter = pImporter;
 	*ppscene = pScene;
@@ -933,7 +938,7 @@ _ASSERT(m_bonelist[0]);
 	return 0;
 }
 
-int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* pscene, int (*tlfunc)( int srcmotid ) )
+int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* pscene, int (*tlfunc)( int srcmotid ), BOOL motioncachebatchflag)
 {
 	if( !psdk || !pimporter || !pscene ){
 		_ASSERT( 0 );
@@ -947,7 +952,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 	this->m_tlFunc = tlfunc;//未使用
 
 	FbxNode *pRootNode = pscene->GetRootNode();
-	CallF( CreateFBXAnim( pscene, pRootNode ), return 1 );
+	CallF( CreateFBXAnim( pscene, pRootNode, motioncachebatchflag ), return 1 );
 
 	/*
 	map<int, CBone*>::iterator itrbone;
@@ -3398,7 +3403,7 @@ FbxAnimLayer* CModel::GetAnimLayer( int motid )
 }
 
 
-int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
+int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag)
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
@@ -3509,25 +3514,32 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode )
 			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
 			m_useegpfile = LoadEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
 		}
-		CreateMeshAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2);
+		if (motioncachebatchflag == FALSE) {
+			CreateMeshAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2);
+		}
 		CreateFBXAnimReq( animno, pScene, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2 );	
 		//WaitAllTheadOfGetFbxAnim();
-		if (strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) {
+		if (motioncachebatchflag || !m_useegpfile) {
 			//if fbx file rev. 2.3, save fbx anim cache file.  
 			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
 			WriteEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
 		}
 
+		
+		//motioncreatebatchflagが立っていた場合ここまで
 
-		FillUpEmptyKeyReq( curmotid, animleng, m_topbone, 0 );
 
-		if( animno == 0 ){
-			CallF( CreateFBXShape( mCurrentAnimLayer, animleng, mStart, mFrameTime2 ), return 1 );
+
+		if (motioncachebatchflag == FALSE) {
+			FillUpEmptyKeyReq(curmotid, animleng, m_topbone, 0);
+
+			if (animno == 0) {
+				CallF(CreateFBXShape(mCurrentAnimLayer, animleng, mStart, mFrameTime2), return 1);
+			}
+
+			//(this->m_tlFunc)( curmotid );
+			SetCurrentMotion(curmotid);
 		}
-
-		//(this->m_tlFunc)( curmotid );
-		SetCurrentMotion(curmotid);
-
 	}
 
 	return 0;

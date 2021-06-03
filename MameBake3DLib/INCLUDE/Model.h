@@ -125,7 +125,7 @@ public:
  * @param (int forcenewaxisflag) 過渡期ファイルのフラグ。
  * @return 成功したら０。
  */
-	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag );
+	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag, BOOL motioncachebatchflag);
 
 /**
  * @fn
@@ -138,7 +138,7 @@ public:
  * @return 成功したら０。
  * @detail LoadFBX呼び出しが成功した後でこの関数を呼び出す。
  */
-	int LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* pscene, int (*tlfunc)( int srcmotid ) );
+	int LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* pscene, int (*tlfunc)( int srcmotid ), BOOL motioncachebatchflag);
 
 
 /**
@@ -698,7 +698,7 @@ private:
 	int CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
 	int CreateExtendBoneReq(CBone* srcbone);
 	int GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode );
-	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode );
+	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
 	int CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);
 	int CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
 	int GetMeshAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);

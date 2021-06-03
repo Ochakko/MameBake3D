@@ -343,7 +343,7 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 	hfile = CreateFile(infilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return false;
 	}
 

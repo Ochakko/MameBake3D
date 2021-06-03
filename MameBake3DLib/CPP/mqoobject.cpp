@@ -1912,7 +1912,7 @@ int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isad
 		}
 		ibptr = m_pm4->GetInfBone() + srcvno;
 	}else{
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 	}
 	if( ibptr ){
 		INFELEM ie;
