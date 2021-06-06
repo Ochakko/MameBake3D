@@ -7076,6 +7076,8 @@ int MotionCacheFile(char* fbxpath)
 
 
 	if (newmodel) {
+		CBone::OnDelModel(newmodel);//bonenoの表から削除、parmodelを再利用しない処理
+
 		delete newmodel;
 		newmodel = 0;
 	}
@@ -7108,17 +7110,15 @@ unsigned __stdcall ThreadFunc_MotionCache(LPVOID lpThreadParam)
 			InterlockedExchange(&s_motioncachecnt, outcnt);
 		}
 		else {
-			InterlockedExchange(&g_motioncachebatchflag, 0);
+			//InterlockedExchange(&g_motioncachebatchflag, 0);
 			break;
 		}
-
-		Sleep(20);
 
 		if (g_motioncachebatchflag != 1) {
 			break;
 		}
 	}
-	InterlockedExchange(&g_motioncachebatchflag, 0);
+	//InterlockedExchange(&g_motioncachebatchflag, 0);
 
 	return 0;
 }
@@ -7324,7 +7324,7 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 		//bvhファイルを読み込む
 		CBVHFile* bvhfile = new CBVHFile();
 		if (!bvhfile) {
-			g_bvh2fbxbatchflag = 0;
+			//g_bvh2fbxbatchflag = 0;
 			break;
 		}
 		int ret;
@@ -7371,7 +7371,7 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 		}
 	}
 
-	InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+	//InterlockedExchange(&g_bvh2fbxbatchflag, 0);
 
 	return 0;
 }
@@ -10530,7 +10530,7 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 				DestroyWindow(s_motioncachebatchwnd);
 				s_motioncachebatchwnd = 0;
 			}
-			InterlockedExchange(&g_motioncachebatchflag, 0);
+			InterlockedExchange(&g_motioncachebatchflag, 2);
 			//EndDialog(hDlgWnd, IDOK);
 			break;
 		case IDCANCEL:
@@ -10542,7 +10542,7 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 				DestroyWindow(s_motioncachebatchwnd);
 				s_motioncachebatchwnd = 0;
 			}
-			InterlockedExchange(&g_motioncachebatchflag, 0);
+			InterlockedExchange(&g_motioncachebatchflag, 2);
 			//EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
@@ -10579,7 +10579,7 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 			DestroyWindow(s_motioncachebatchwnd);
 			s_motioncachebatchwnd = 0;
 		}
-		InterlockedExchange(&g_motioncachebatchflag, 0);
+		InterlockedExchange(&g_motioncachebatchflag, 2);
 		//EndDialog(hDlgWnd, IDOK);
 		break;
 	default:
@@ -10626,7 +10626,7 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 				DestroyWindow(s_bvh2fbxbatchwnd);
 				s_bvh2fbxbatchwnd = 0;
 			}
-			InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+			InterlockedExchange(&g_bvh2fbxbatchflag, 2);
 			//EndDialog(hDlgWnd, IDOK);
 			break;
 		case IDCANCEL:
@@ -10638,7 +10638,7 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 				DestroyWindow(s_bvh2fbxbatchwnd);
 				s_bvh2fbxbatchwnd = 0;
 			}
-			InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+			InterlockedExchange(&g_bvh2fbxbatchflag, 2);
 			//EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
@@ -10675,7 +10675,7 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 			DestroyWindow(s_bvh2fbxbatchwnd);
 			s_bvh2fbxbatchwnd = 0;
 		}
-		InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+		InterlockedExchange(&g_bvh2fbxbatchflag, 2);
 		//EndDialog(hDlgWnd, IDOK);
 		break;
 	default:
@@ -28243,12 +28243,12 @@ void OnGUIEventSpeed()
 
 void WaitMotionCacheThreads()
 {
-	if (g_motioncachebatchflag == 1) {
+	if ((g_motioncachebatchflag == 1) || (g_motioncachebatchflag == 2)) {//2はダイアログでのキャンセル
 		if ((s_motioncachehandle2 != INVALID_HANDLE_VALUE) && (s_motioncachehandle1 != INVALID_HANDLE_VALUE)) {
 			DWORD dwwait2 = WaitForSingleObject(s_motioncachehandle2, 10);
 			if (dwwait2 == WAIT_OBJECT_0) {
 
-				InterlockedExchange(&g_motioncachebatchflag, 0);
+				InterlockedExchange(&g_motioncachebatchflag, 0);//dispスレッドを終了させるため
 				s_motioncachehandle2 = INVALID_HANDLE_VALUE;
 
 				DWORD dwwait1 = WAIT_TIMEOUT;
@@ -28256,24 +28256,25 @@ void WaitMotionCacheThreads()
 					dwwait1 = WaitForSingleObject(s_motioncachehandle1, 100);
 				}
 				s_motioncachehandle1 = INVALID_HANDLE_VALUE;
+
+				//InterlockedExchange(&g_motioncachebatchflag, 0);
 				if (s_motioncachebatchwnd) {
 					SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
 				}
-
 			}
 		}
-
 	}
+
 }
 
 void WaitBvh2FbxThreads()
 {
-	if (g_bvh2fbxbatchflag == 1) {
+	if ((g_bvh2fbxbatchflag == 1) || (g_bvh2fbxbatchflag == 2)) {//2はダイアログでのキャンセル
 		if ((s_bvh2fbxhandle2 != INVALID_HANDLE_VALUE) && (s_bvh2fbxhandle1 != INVALID_HANDLE_VALUE)) {
 			DWORD dwwait2 = WaitForSingleObject(s_bvh2fbxhandle2, 10);
 			if (dwwait2 == WAIT_OBJECT_0) {
 
-				InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+				InterlockedExchange(&g_bvh2fbxbatchflag, 0);//dispスレッドを終了させるため
 				s_bvh2fbxhandle2 = INVALID_HANDLE_VALUE;
 
 				DWORD dwwait1 = WAIT_TIMEOUT;

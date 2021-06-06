@@ -4891,7 +4891,7 @@ void CBone::OnDelModel(CModel* srcparmodel)
 				CBone* curbone;
 				curbone = curbonehead + elemno;
 				if (curbone && (curbone->GetParModel() == srcparmodel)) {//parmodelが同じ必要有。
-					if (curbone->GetUseFlag() == 0) {
+					if (curbone->GetUseFlag() == 0) {//srcparmodelに関して再利用を防ぐ
 						curbone->m_parmodel = 0;
 					}
 				}
@@ -4903,7 +4903,7 @@ void CBone::OnDelModel(CModel* srcparmodel)
 	map<CModel*, int>::iterator itrbonecnt;
 	itrbonecnt = g_bonecntmap.find(srcparmodel);
 	if (itrbonecnt != g_bonecntmap.end()) {
-		g_bonecntmap.erase(itrbonecnt);
+		g_bonecntmap.erase(itrbonecnt);//エントリー削除
 	}
 
 }
