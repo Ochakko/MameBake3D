@@ -373,6 +373,10 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 	if (!bsuccess || (rleng != readleng)) {
 		_ASSERT(0);
 		CloseHandle(hfile);
+		if (!newbuf) {
+			_ASSERT(0);
+			return false;
+		}
 		return false;
 	}
 

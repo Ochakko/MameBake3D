@@ -292,7 +292,7 @@ CMotionPoint* CMotionPoint::GetNewMP()
 	curpoollen = s_mppool.size();
 
 
-	if ((s_befheadno != (s_mppool.size() - 1)) || (s_befelemno != (MPPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
+	//if ((s_befheadno != (s_mppool.size() - 1)) || (s_befelemno != (MPPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
 		//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
 		int chkheadno;
@@ -353,9 +353,8 @@ CMotionPoint* CMotionPoint::GetNewMP()
 			}
 		}
 		//}
-	}
+	//}
 
-	//前回リリースしたポインタが最後尾または
 	//未使用MPがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 	CMotionPoint* allocmp;
 	allocmp = new CMotionPoint[MPPOOLBLKLEN];
@@ -416,6 +415,8 @@ void CMotionPoint::InvalidateMotionPoint(CMotionPoint* srcmp)
 
 	int saveindex = srcmp->GetIndexOfPool();
 	int saveallochead = srcmp->IsAllocHead();
+
+	srcmp->DestroyObjs();
 
 	srcmp->InitParams();
 	srcmp->SetUseFlag(0);

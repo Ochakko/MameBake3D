@@ -6976,18 +6976,21 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 			//WCHAR pattern[20] = L".bvh";
 			//WCHAR npattern[20] = L".bvh.";
 			WCHAR pattern[20] = { 0L };
-			WCHAR npattern[20] = { 0L };
+			WCHAR wpath[MAX_PATH] = { 0L };
 			wcscpy_s(pattern, 20, findext.c_str());
-			wcscpy_s(npattern, 20, findext.c_str());
-			wcscat_s(npattern, 20, L".");
+			wcscpy_s(wpath, MAX_PATH, fullFileName.c_str());
 
 			const WCHAR* pfind;
-			const WCHAR* pfind2;
-			pfind = wcsstr(fullFileName.c_str(), pattern);
-			pfind2 = wcsstr(fullFileName.c_str(), npattern);
-
-			if (pfind && !pfind2) {
-				out.push_back(fullFileName);
+			pfind = wcsstr(wpath, pattern);
+			if (pfind) {
+				int pathleng = wcslen(wpath);
+				int patternleng = wcslen(pattern);
+				if ((patternleng > 0) && (pathleng > 0) && (pathleng < MAX_PATH) && (pathleng > patternleng)) {
+					WCHAR chkterm = *(pfind + patternleng);
+					if (chkterm == 0L) {//patternの次の文字がNULLの場合
+						out.push_back(fullFileName);
+					}
+				}
 			}
 		}
 		else
@@ -7076,19 +7079,23 @@ int MotionCacheFile(char* fbxpath)
 
 
 	if (newmodel) {
-		CBone::OnDelModel(newmodel);//bonenoの表から削除、parmodelを再利用しない処理
-
 		delete newmodel;
+
+		CBone::OnDelModel(newmodel);//delete modelよりも後で。bonenoの表から削除、parmodelを再利用しない処理
+
 		newmodel = 0;
 	}
-	if (pScene) {
-		pScene->Destroy(true);
-		pScene = 0;
-	}
+
+	//if (pScene) {
+	//	pScene->Destroy();
+	//	pScene = 0;
+	//}
+
 	//if (pImporter) {
 	//	pImporter->Destroy();
 	//	pImporter = 0;
 	//}
+
 	return 0;
 }
 
@@ -8667,6 +8674,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 	}
 
 	//すべての行をクリア
+	timeline.deleteKey();
 	timeline.deleteLine();
 
 	s_lineno2boneno.clear();
@@ -9533,10 +9541,10 @@ int OnDelModel( int delmenuindex )
 		CBone::OnDelModel(delmodel);
 
 
-		FbxScene* pscene = delmodel->GetScene();
-		if (pscene){
-			pscene->Destroy();
-		}
+		//FbxScene* pscene = delmodel->GetScene();
+		//if (pscene){
+		//	pscene->Destroy();
+		//}
 		delete delmodel;
 	}
 
@@ -9596,9 +9604,9 @@ int OnDelAllModel()
 			CBone::OnDelModel(delmodel);
 
 			FbxScene* pscene = delmodel->GetScene();
-			if (pscene){
-				pscene->Destroy();
-			}
+			//if (pscene){
+			//	pscene->Destroy();
+			//}
 			delete delmodel;
 		}
 		itrmodel->tlarray.clear();

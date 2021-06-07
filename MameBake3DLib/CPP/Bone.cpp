@@ -448,21 +448,22 @@ int CBone::DestroyObjs()
 
 	m_motmark.clear();
 
-	//map<int, CMotionPoint*>::iterator itrmp;
-	//for( itrmp = m_motionkey.begin(); itrmp != m_motionkey.end(); itrmp++ ){
-	//	CMotionPoint* topkey = itrmp->second;
-	//	if( topkey ){
-	//		CMotionPoint* curmp = topkey;
-	//		CMotionPoint* nextmp = 0;
-	//		while( curmp ){
-	//			nextmp = curmp->GetNext();
+	map<int, CMotionPoint*>::iterator itrmp;
+	for( itrmp = m_motionkey.begin(); itrmp != m_motionkey.end(); itrmp++ ){
+		CMotionPoint* topkey = itrmp->second;
+		if( topkey ){
+			CMotionPoint* curmp = topkey;
+			CMotionPoint* nextmp = 0;
+			while( curmp ){
+				nextmp = curmp->GetNext();
 
-	//			delete curmp;
+				//delete curmp;
+				CMotionPoint::InvalidateMotionPoint(curmp);
 
-	//			curmp = nextmp;
-	//		}
-	//	}
-	//}
+				curmp = nextmp;
+			}
+		}
+	}
 	m_motionkey.clear();
 
 
@@ -482,6 +483,10 @@ int CBone::DestroyObjs()
 	m_impmap.clear();
 
 	m_rigidelemname.clear();
+
+	vecLocalTransform.clear();
+	veclClusterGlobalCurrentPosition.clear();
+
 
 	return 0;
 }
@@ -4710,7 +4715,7 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 	int curpoollen;
 	curpoollen = s_bonepool.size();
 
-	if ((s_befheadno != (s_bonepool.size() - 1)) || (s_befelemno != (BONEPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
+	//if ((s_befheadno != (s_bonepool.size() - 1)) || (s_befelemno != (BONEPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
 	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
 		int chkheadno;
@@ -4781,10 +4786,9 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 			}
 		}
 		//}
-	}
+	//}
 
 
-	//前回リリースしたポインタが最後尾または
 	//未使用boneがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 	CBone* allocbone;
 	allocbone = new CBone[BONEPOOLBLKLEN];
@@ -4843,6 +4847,7 @@ void CBone::InvalidateBone(CBone* srcbone)
 
 	int saveindex = srcbone->GetIndexOfPool();
 	int saveallochead = srcbone->IsAllocHead();
+	CModel* saveparmodel = srcbone->GetParModel();
 
 	srcbone->DestroyObjs();
 
@@ -4850,6 +4855,7 @@ void CBone::InvalidateBone(CBone* srcbone)
 	srcbone->SetUseFlag(0);
 	srcbone->SetIsAllocHead(saveallochead);
 	srcbone->SetIndexOfPool(saveindex);
+	srcbone->m_parmodel = saveparmodel;
 }
 
 //static func
@@ -4891,9 +4897,10 @@ void CBone::OnDelModel(CModel* srcparmodel)
 				CBone* curbone;
 				curbone = curbonehead + elemno;
 				if (curbone && (curbone->GetParModel() == srcparmodel)) {//parmodelが同じ必要有。
-					if (curbone->GetUseFlag() == 0) {//srcparmodelに関して再利用を防ぐ
+					//if (curbone && (curbone->GetUseFlag() == 0)) {//srcparmodelに関して再利用を防ぐ
 						curbone->m_parmodel = 0;
-					}
+						curbone->SetUseFlag(0);
+					//}
 				}
 			}
 		}

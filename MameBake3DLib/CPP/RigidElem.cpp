@@ -166,7 +166,7 @@ CRigidElem* CRigidElem::GetNewRigidElem()
 	curpoollen = s_rigidelempool.size();
 
 
-	if ((s_befheadno != (s_rigidelempool.size() - 1)) || (s_befelemno != (REPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
+	//if ((s_befheadno != (s_rigidelempool.size() - 1)) || (s_befelemno != (REPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
 	//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
 		int chkheadno;
@@ -225,9 +225,8 @@ CRigidElem* CRigidElem::GetNewRigidElem()
 			}
 		}
 		//}
-	}
+	//}
 
-	//前回リリースしたポイントが最後尾または
 	//未使用rigidelemがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 	CRigidElem* allocrigidelem;
 	allocrigidelem = new CRigidElem[REPOOLBLKLEN];
@@ -285,6 +284,8 @@ void CRigidElem::InvalidateRigidElem(CRigidElem* srcrigidelem)
 
 	int saveindex = srcrigidelem->GetIndexOfPool();
 	int saveallochead = srcrigidelem->IsAllocHead();
+
+	srcrigidelem->DestroyObjs();
 
 	srcrigidelem->InitParams();
 	srcrigidelem->SetUseFlag(0);

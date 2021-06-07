@@ -631,7 +631,7 @@ namespace OrgWinGUI{
 		curpoollen = g_eulpool.size();
 
 
-		if ((s_befheadno != (g_eulpool.size() - 1)) || (s_befelemno != (EULPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
+		//if ((s_befheadno != (g_eulpool.size() - 1)) || (s_befelemno != (EULPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
 		//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
 			int chkheadno;
@@ -691,9 +691,8 @@ namespace OrgWinGUI{
 				}
 			}
 			//}
-		}
+		//}
 
-		//前回リリースしたポインタが最後尾または
 		//未使用eulがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
 		OWP_EulerGraph::EulLineData::EulKey* alloceul;
 		alloceul = new OWP_EulerGraph::EulLineData::EulKey[EULPOOLBLKLEN];

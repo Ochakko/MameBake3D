@@ -500,19 +500,21 @@ int CModel::DestroyFBXSDK()
 {
 	
 	//if( m_pimporter ){
-	if(mAnimStackNameArray.Size() >= 1){
-		FbxArrayDelete(mAnimStackNameArray);
+	
+	//if(mAnimStackNameArray.Size() >= 1){
+	//	FbxArrayDelete(mAnimStackNameArray);
+	//}
+
+	if (m_pimporter) {
+		m_pimporter->Destroy();// インポータの削除
+		m_pimporter = 0;
 	}
 
-//	if( m_pscene ){
-//		m_pscene->Destroy();
-//		m_pscene = 0;
-//	}
+	if( m_pscene ){
+		m_pscene->Destroy();
+		m_pscene = 0;
+	}
 
-//	if( m_pimporter ){
-//		m_pimporter->Destroy();// インポータの削除
-//		m_pimporter = 0;
-//	}
 
 	return 0;
 }
