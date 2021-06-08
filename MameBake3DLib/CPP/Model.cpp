@@ -3521,7 +3521,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		}
 		CreateFBXAnimReq( animno, pScene, pPose, prootnode, curmotid, animleng, mStart, mFrameTime2 );	
 		//WaitAllTheadOfGetFbxAnim();
-		if (motioncachebatchflag || !m_useegpfile) {
+		if ((strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) && !m_useegpfile) {
 			//if fbx file rev. 2.3, save fbx anim cache file.  
 			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
 			WriteEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);

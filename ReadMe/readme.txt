@@ -264,6 +264,12 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+2021/06/07
+	bvh2FBX Batch Menu.
+	MotionCacheFile Batch Menu.
+	Debug ReuseOfBlockAlocMem.
+	Add FbxComment to Lmt File.
+
 2021/05/11_1
 	Loading time is about three times faster than prev version.
 	Add fbx animation loading cache files named *.fbx.anim*.egp.

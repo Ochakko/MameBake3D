@@ -249,7 +249,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 		WCHAR lmtname[MAX_PATH] = { 0L };
 		swprintf_s(lmtname, MAX_PATH, L"%s\\%s.lmt", charafolder, curmodel->GetFileName());
 		CLmtFile lmtfile;
-		lmtfile.WriteLmtFile(lmtname, curmodel);
+		lmtfile.WriteLmtFile(lmtname, curmodel, fbxdate);
 
 
 		WCHAR rigname[MAX_PATH] = { 0L };

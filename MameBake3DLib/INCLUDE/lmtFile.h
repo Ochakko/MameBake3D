@@ -52,7 +52,7 @@ public:
  * @return 成功したら０。
  * @detail srcmodelに設定されている制限角度を書き出す。
  */
-	int WriteLmtFile( WCHAR* strpath, CModel* srcmodel );
+	int WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment);
 
 
 /**
@@ -63,7 +63,7 @@ public:
  * @param (CModel* srcmodel) IN 読み込んだ制限角度パラメータを設定するモデル。
  * @return 成功したら０。
  */
-	int LoadLmtFile( WCHAR* strpath, CModel* srcmodel );
+	int LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment );
 
 
 private:
@@ -122,6 +122,7 @@ private:
  * @return 成功したら０。
  */
 	int ReadRE( XMLIOBUF* xmliobuf, CBone* srcbone );
+
 
 
 private:

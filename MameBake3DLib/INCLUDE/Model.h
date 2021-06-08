@@ -1141,6 +1141,21 @@ public: //accesser
 	{
 		return m_worldmat;
 	};
+
+	int GetFbxComment(char* dstcomment, int dstlen)
+	{
+		if (!dstcomment) {
+			_ASSERT(0);
+			return 1;
+		}
+		if ((dstlen < 0) || (dstlen > MAX_PATH)) {
+			_ASSERT(0);
+			return 1;
+		}
+		strcpy_s(dstcomment, dstlen, m_fbxcomment.Buffer());
+		return 0;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];

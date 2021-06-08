@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <Lmt>
     <FileInfo>1001-01</FileInfo>
+	<FileComment>CommentForEGP_20210524174033</FileComment>
   <Bone>
     <Name>Hip_Joint</Name>
     <BoneAxisType>Current</BoneAxisType>
@@ -226,12 +227,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-180</Lower_X>
-      <Upper_X>180</Upper_X>
-      <Lower_Y>-180</Lower_Y>
-      <Upper_Y>180</Upper_Y>
-      <Lower_Z>-180</Lower_Z>
-      <Upper_Z>180</Upper_Z>
+      <Lower_X>-80</Lower_X>
+      <Upper_X>80</Upper_X>
+      <Lower_Y>-80</Lower_Y>
+      <Upper_Y>80</Upper_Y>
+      <Lower_Z>-80</Lower_Z>
+      <Upper_Z>80</Upper_Z>
   </Bone>
   <Bone>
     <Name>BT_G_3_R_4_Joint</Name>
@@ -255,12 +256,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-180</Lower_X>
-      <Upper_X>180</Upper_X>
-      <Lower_Y>-180</Lower_Y>
-      <Upper_Y>180</Upper_Y>
-      <Lower_Z>-180</Lower_Z>
-      <Upper_Z>180</Upper_Z>
+      <Lower_X>-80</Lower_X>
+      <Upper_X>80</Upper_X>
+      <Lower_Y>-80</Lower_Y>
+      <Upper_Y>80</Upper_Y>
+      <Lower_Z>-80</Lower_Z>
+      <Upper_Z>80</Upper_Z>
   </Bone>
   <Bone>
     <Name>BT_G_3_R_4_end_Joint</Name>
@@ -284,12 +285,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-180</Lower_X>
-      <Upper_X>180</Upper_X>
-      <Lower_Y>-180</Lower_Y>
-      <Upper_Y>180</Upper_Y>
-      <Lower_Z>-180</Lower_Z>
-      <Upper_Z>180</Upper_Z>
+      <Lower_X>-80</Lower_X>
+      <Upper_X>80</Upper_X>
+      <Lower_Y>-80</Lower_Y>
+      <Upper_Y>80</Upper_Y>
+      <Lower_Z>-80</Lower_Z>
+      <Upper_Z>80</Upper_Z>
   </Bone>
   <Bone>
     <Name>Twin_L_2_Joint</Name>
@@ -342,12 +343,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-180</Lower_X>
-      <Upper_X>180</Upper_X>
-      <Lower_Y>-180</Lower_Y>
-      <Upper_Y>180</Upper_Y>
-      <Lower_Z>-180</Lower_Z>
-      <Upper_Z>180</Upper_Z>
+      <Lower_X>-80</Lower_X>
+      <Upper_X>80</Upper_X>
+      <Lower_Y>-80</Lower_Y>
+      <Upper_Y>80</Upper_Y>
+      <Lower_Z>-80</Lower_Z>
+      <Upper_Z>80</Upper_Z>
   </Bone>
   <Bone>
     <Name>BT_G_3_L_4_Joint</Name>
@@ -371,12 +372,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-180</Lower_X>
-      <Upper_X>180</Upper_X>
-      <Lower_Y>-180</Lower_Y>
-      <Upper_Y>180</Upper_Y>
-      <Lower_Z>-180</Lower_Z>
-      <Upper_Z>180</Upper_Z>
+      <Lower_X>-80</Lower_X>
+      <Upper_X>80</Upper_X>
+      <Lower_Y>-80</Lower_Y>
+      <Upper_Y>80</Upper_Y>
+      <Lower_Z>-80</Lower_Z>
+      <Upper_Z>80</Upper_Z>
   </Bone>
   <Bone>
     <Name>BT_G_3_L_4_end_Joint</Name>
@@ -400,12 +401,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-180</Lower_X>
-      <Upper_X>180</Upper_X>
-      <Lower_Y>-180</Lower_Y>
-      <Upper_Y>180</Upper_Y>
-      <Lower_Z>-180</Lower_Z>
-      <Upper_Z>180</Upper_Z>
+      <Lower_X>-80</Lower_X>
+      <Upper_X>80</Upper_X>
+      <Lower_Y>-80</Lower_Y>
+      <Upper_Y>80</Upper_Y>
+      <Lower_Z>-80</Lower_Z>
+      <Upper_Z>80</Upper_Z>
   </Bone>
   <Bone>
     <Name>LeftCollar_Joint</Name>

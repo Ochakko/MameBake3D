@@ -8102,10 +8102,14 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		CLmtFile lmtfile;
 		WCHAR lmtname[MAX_PATH];
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
-		int chkret1;
-		chkret1 = lmtfile.LoadLmtFile(lmtname, s_model);
-		_ASSERT(chkret1 == 0);
-
+		char fbxcomment[MAX_PATH] = { 0 };
+		int chkretcomment;
+		chkretcomment = s_model->GetFbxComment(fbxcomment, MAX_PATH);
+		if (chkretcomment == 0) {
+			int chkret1;
+			chkret1 = lmtfile.LoadLmtFile(lmtname, s_model, fbxcomment);
+			_ASSERT(chkret1 == 0);
+		}
 		WCHAR rigname[MAX_PATH] = { 0L };
 		swprintf_s(rigname, MAX_PATH, L"%s.rig", g_tmpmqopath);
 		CRigFile rigfile;
@@ -14566,7 +14570,7 @@ int ExportFBXFile()
 		WCHAR lmtname[MAX_PATH] = { 0L };
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", filename);
 		CLmtFile lmtfile;
-		lmtfile.WriteLmtFile(lmtname, s_model);
+		lmtfile.WriteLmtFile(lmtname, s_model, fbxdate);
 
 		WCHAR rigname[MAX_PATH] = { 0L };
 		swprintf_s(rigname, MAX_PATH, L"%s.rig", filename);

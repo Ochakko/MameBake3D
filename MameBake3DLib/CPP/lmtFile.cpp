@@ -57,7 +57,7 @@ int CLmtFile::DestroyObjs()
 }
 
 
-int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel )
+int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 {
 	m_model = srcmodel;
 	m_mode = XMLIO_WRITE;
@@ -88,7 +88,9 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel )
 
 
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<Lmt>\r\n" ), return 1 );  
-	CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
+	//CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
+	CallF(Write2File("    <FileInfo>1001-02</FileInfo>\r\n"), return 1);//2021/06/08
+	CallF(Write2File("    <FileComment>%s</FileComment>\r\n", fbxcomment), return 1);//2021/06/08
 
 	WriteLmtReq( m_model->GetTopBone() );
 
@@ -195,7 +197,7 @@ int CLmtFile::WriteLmt( CBone* srcbone )
 
 
 
-int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel )
+int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 {
 	m_model = srcmodel;
 	m_mode = XMLIO_LOAD;
@@ -234,14 +236,35 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel )
 	CBone* topbone = srcmodel->GetTopBone();
 
 	int posstep = 0;
-//	XMLIOBUF fileinfobuf;
-//	ZeroMemory( &fileinfobuf, sizeof( XMLIOBUF ) );
-//	CallF( SetXmlIOBuf( &m_xmliobuf, "<FileInfo>", "</FileInfo>", &fileinfobuf ), return 1 );
-//	m_fileversion = CheckFileVersion( &fileinfobuf );
-//	if( m_fileversion <= 0 ){
-//		_ASSERT( 0 );
-//		return 1;
-//	}
+	//XMLIOBUF fileinfobuf;
+	//ZeroMemory( &fileinfobuf, sizeof( XMLIOBUF ) );
+	//CallF( SetXmlIOBuf( &m_xmliobuf, "<FileInfo>", "</FileInfo>", &fileinfobuf ), return 1 );
+	//m_fileversion = CheckFileVersion( &fileinfobuf );
+	//if( m_fileversion <= 0 ){
+	//	_ASSERT( 0 );
+	//	return 1;
+	//}
+
+
+	//FileCommentタグがある場合にはfbxcommentと比較チェック
+	char strcomment[MAX_PATH];
+	ZeroMemory(strcomment, sizeof(char) * MAX_PATH);
+	int resultgetcomment;
+	resultgetcomment = Read_Str(&m_xmliobuf, "<FileComment>", "</FileComment>", strcomment, MAX_PATH);
+	if (resultgetcomment == 0) {
+		if (strstr(fbxcomment, "CommentForEGP_") != 0) {
+			int resultcmp;
+			resultcmp = strcmp(strcomment, fbxcomment);
+			if (resultcmp != 0) {
+				_ASSERT(0);
+				return 2;
+			}
+		}
+		else {
+			_ASSERT(0);
+			return 2;
+		}
+	}
 
 	int findflag = 1;
 	while( findflag ){
@@ -258,6 +281,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel )
 
 	return 0;
 }
+
 
 int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 {
