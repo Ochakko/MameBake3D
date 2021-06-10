@@ -195,6 +195,15 @@ HANDLE s_motioncachehandle1;
 HANDLE s_motioncachehandle2;
 static void WaitMotionCacheThreads();
 
+static vector<wstring> s_retargetout;
+static LONG s_retargetnum = 0;
+static LONG s_retargetcnt = 0;
+LONG g_retargetbatchflag;
+HWND s_retargetbatchwnd;
+HANDLE s_retargethandle1;
+HANDLE s_retargethandle2;
+static void WaitRetargetThreads();
+static int s_convbone_model_batch_selindex;
 
 static Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 static ULONG_PTR gdiplusToken;
@@ -855,6 +864,7 @@ static OWP_Button* s_bvhbone[CONVBONEMAX];
 static OWP_Separator* s_convbonesp = 0;
 static OWP_Button* s_convboneconvert = 0;
 static CModel* s_convbone_model = 0;
+static CModel* s_convbone_model_batch = 0;
 static CModel* s_convbone_bvh = 0;
 static CBone* s_modelbone_bone[CONVBONEMAX];
 static CBone* s_bvhbone_bone[CONVBONEMAX];
@@ -1413,6 +1423,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
+LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 void InitApp();
@@ -1421,6 +1432,8 @@ void RenderText(double fTime );
 static void InfoBvh2FbxBatchCnt();
 static void InfoMotionCacheBatchCnt();
 static int MotionCacheFile(char* fbxpath);
+static void InfoRetargetBatchCnt();
+static int RetargetFile(char* fbxpath);
 
 static int OnMouseMoveFunc();
 
@@ -1502,6 +1515,7 @@ static int BVH2FBX();
 static void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& findext);
 static int BVH2FBXBatch();
 static int MotionCacheBatch();
+static int RetargetBatch();
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -1575,7 +1589,7 @@ static int SetConvBoneBvh();
 static int SetConvBone( int cbno );
 static int ConvBoneConvert();
 static int SaveRetargetFile();
-static int LoadRetargetFile();
+static int LoadRetargetFile(WCHAR* srcfilename);
 static int SetJointPair2ConvBoneWnd();
 static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
 static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
@@ -2042,6 +2056,16 @@ void InitApp()
 	s_motioncachebatchwnd = 0;
 	s_motioncacheout.clear();
 
+	s_convbone_model_batch_selindex = 0;
+	s_retargethandle1 = INVALID_HANDLE_VALUE;
+	s_retargethandle2 = INVALID_HANDLE_VALUE;
+	s_retargetnum = 0;
+	s_retargetcnt = 0;
+	g_retargetbatchflag = 0;
+	s_retargetbatchwnd = 0;
+	s_retargetout.clear();
+
+
 	g_mousehereimage = 0;
 	g_menuaimbarimage = 0;
 	g_currentsubmenuid = 0;
@@ -2195,6 +2219,9 @@ void InitApp()
 	ChaMatrixIdentity(&s_selectmat_posture);
 	ChaMatrixIdentity(&s_ikselectmat);
 
+	s_convbone_model = 0;
+	s_convbone_model_batch = 0;
+	s_convbone_bvh = 0;
 	int cbno;
 	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
 		s_modelbone[cbno] = 0;
@@ -3999,10 +4026,6 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 	OnDSMouseHereApeal();
 
-
-	WaitMotionCacheThreads();
-	WaitBvh2FbxThreads();
-
 	s_savepreviewFlag = g_previewFlag;
 }
 
@@ -4386,6 +4409,28 @@ void InfoMotionCacheBatchCnt()
 
 }
 
+void InfoRetargetBatchCnt()
+{
+	if (s_retargetbatchwnd && (g_retargetbatchflag == 1) && (s_retargetnum >= 1)) {
+		WCHAR strnumcnt[1024] = { 0L };
+		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_retargetcnt + 1), s_retargetnum);
+		SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+
+		HWND hProg;
+		hProg = GetDlgItem(s_retargetbatchwnd, IDC_PROGRESS1);
+		if (hProg) {
+			//プログレスバーの範囲を0-300にする           
+			//SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_retargetnum));
+			//現在位置を設定  
+			SendMessage(hProg, PBM_SETPOS, (s_retargetcnt + 1), 0);
+			//ステップの範囲を設定 
+			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
+		}
+
+		UpdateWindow(s_retargetbatchwnd);
+	}
+
+}
 
 
 void RenderText( double fTime )
@@ -4541,19 +4586,20 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		curre = 0;
 	}
 
-	if (s_model && s_convbone_bvh) {
-		map<int, CBone*>::iterator itrbone;
-		for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
-			CBone* curbone = itrbone->second;
-			if (curbone) {
-				int boneno = curbone->GetBoneNo();
-				if (boneno > maxboneno) {
-					maxboneno = boneno;
+	//if (g_retargetbatchflag == 0) {
+		if (s_model && s_convbone_bvh) {
+			map<int, CBone*>::iterator itrbone;
+			for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
+				CBone* curbone = itrbone->second;
+				if (curbone) {
+					int boneno = curbone->GetBoneNo();
+					if (boneno > maxboneno) {
+						maxboneno = boneno;
+					}
 				}
 			}
 		}
-	}
-
+	//}
 
 
 	if( uMsg == WM_COMMAND ){
@@ -4913,8 +4959,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				}
 				//return 0;
 				break;
+			case ID_FILE_RETARGETBATCH:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					RetargetBatch();
+					ActivatePanel(1);
+				}
+				//return 0;
+				break;
 
-				
 /***
 			case ID_SAVE_FBX40039:
 				if( s_registflag == 1 ){
@@ -6965,7 +7018,7 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 	do
 	{
 		const wstring fileName = fileData.cFileName;
-		const wstring fullFileName = directory + L"/" + fileName;
+		const wstring fullFileName = directory + L"\\" + fileName;
 		const bool isDirectory = (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 
 		if (fileName[0] == L'.')
@@ -7004,6 +7057,8 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 
 	return;
 }
+
+//########## motion cache batch ここから
 
 int MotionCacheFile(char* fbxpath)
 {
@@ -7125,58 +7180,25 @@ unsigned __stdcall ThreadFunc_MotionCache(LPVOID lpThreadParam)
 			break;
 		}
 	}
-	//InterlockedExchange(&g_motioncachebatchflag, 0);
+
+	InterlockedExchange(&g_motioncachebatchflag, 3);
+
+	WaitMotionCacheThreads();
+
 
 	return 0;
 }
 
 unsigned __stdcall ThreadFunc_MotionCacheDisp(LPVOID lpThreadParam)
 {
-	////CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), s_LtimelineWnd->getHWnd(), (DLGPROC)MotionCacheBatchDlgProc);
-	////CreateDialogW(NULL, MAKEINTRESOURCE(IDD_DIALOG2), s_LtimelineWnd->getHWnd(), (DLGPROC)MotionCacheBatchDlgProc);
-	//CreateDialogW(NULL, MAKEINTRESOURCE(IDD_DIALOG2), NULL, (DLGPROC)MotionCacheBatchDlgProc);
-
-	////if (s_motioncachebatchwnd) {
-	////	RECT rect;
-	////	GetWindowRect(s_motioncachebatchwnd, &rect);
-	////	//SetParent(s_motioncachebatchwnd, s_LtimelineWnd->getHWnd());
-	////	//SetWindowPos(
-	////	//	s_motioncachebatchwnd,
-	////	//	HWND_TOP,
-	////	//	0, 0,
-	////	//	rect.right - rect.left, rect.bottom - rect.top,
-	////	//	SWP_SHOWWINDOW
-	////	//);
-
-	//	RECT mainrect;
-	//	GetWindowRect(s_mainhwnd, &mainrect);
-
-	//	//SetWindowPos(
-	//	//	s_motioncachebatchwnd,
-	//	//	HWND_TOP,
-	//	//	//0, 0,
-	//	//	mainrect.left, mainrect.top,
-	//	//	rect.right - rect.left, rect.bottom - rect.top,
-	//	//	SWP_SHOWWINDOW
-	//	//);
-
-	//	SetWindowPos(s_motioncachebatchwnd, HWND_TOP, mainrect.left, mainrect.top, 0, 0, SWP_NOSIZE);
-	//	ShowWindow(s_motioncachebatchwnd, SW_SHOW);
-	//	UpdateWindow(s_motioncachebatchwnd);
-
-	////	//InfoMotionCacheBatchCnt();
-	////	//g_motioncachebatchflag = 1;
-	////}
 
 	if (s_motioncachebatchwnd != 0) {
 		SetWindowTextW(s_motioncachebatchwnd, L"Make MotionCache File(EGP) Batch");
 	}
 
 	while (g_motioncachebatchflag == 1) {
-		//if (s_motioncachebatchwnd != 0) {
-		//	SendMessage(s_motioncachebatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
-		//}
 		if (s_motioncachebatchwnd != 0) {
+			SendMessage(s_motioncachebatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
 			UpdateWindow(s_motioncachebatchwnd);
 		}
 		Sleep(20);
@@ -7285,33 +7307,10 @@ int MotionCacheBatch()
 				(void*)0,
 				0, &threadaddr1);
 
-			//DWORD dwwait = WAIT_TIMEOUT;
-			//while (dwwait == WAIT_TIMEOUT) {
-			//	WaitForMultipleObjects(2, waithandles, TRUE, 1500);
-			//}
 
-			//if (s_motioncachehandle2 != INVALID_HANDLE_VALUE) {
-			//	DWORD dwwait = WAIT_TIMEOUT;
-			//	while (dwwait != WAIT_OBJECT_0) {
-			//		dwwait = WaitForSingleObject(s_motioncachehandle2, 1000);
-			//		//INFINITEで待つと、実行スレッドが無くなってしまい、デッドロックする。
-			//	}
-			//}
-
-			//InterlockedExchange(&g_motioncachebatchflag, 0);
-
-			//if (s_motioncachehandle1 != INVALID_HANDLE_VALUE) {
-			//	DWORD dwwait = WAIT_TIMEOUT;
-			//	while (dwwait != WAIT_OBJECT_0) {
-			//		dwwait = WaitForSingleObject(s_motioncachehandle1, 100);
-			//		//INFINITEで待つと、実行スレッドが無くなってしまい、デッドロックする。
-			//	}
-			//}
-
-			//if (s_motioncachebatchwnd) {
-			//	SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
-			//}
-
+			//WiatForしない場合には先に閉じてもOK
+			CloseHandle(s_motioncachehandle1);
+			CloseHandle(s_motioncachehandle2);
 		}
 	}
 
@@ -7321,6 +7320,238 @@ int MotionCacheBatch()
 
 	return 0;
 }
+//########### motion cache batch ここまで
+
+//########### retarget batch　ここから
+
+int RetargetFile(char* fbxpath)
+{
+	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+
+	char directorypath[MAX_PATH] = { 0 };
+	ZeroMemory(directorypath, sizeof(char) * MAX_PATH);
+	char* pfind;
+	pfind = strrchr(fbxpath, '\\');
+	if (pfind) {
+		
+		if (s_modelindex.size() > 0) {
+			OnModelMenu(s_modelindex.size() - 1, 1);
+		}
+
+		unsigned int dirpathlen;
+		dirpathlen = (pfind - fbxpath + 1);
+		strncpy_s(directorypath, MAX_PATH, fbxpath, dirpathlen);
+
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, fbxpath, MAX_PATH, g_tmpmqopath, MAX_PATH);
+		CModel* newmodel = 0;
+		newmodel = OpenFBXFile(0, 1);
+		if (newmodel) {
+			//s_model = s_convbone_model_batch;
+
+
+			OnModelMenu(s_convbone_model_batch_selindex, 1);
+			s_model = s_convbone_model_batch;
+			s_convbone_model = s_convbone_model_batch;
+			s_convbone_bvh = newmodel;
+
+			WCHAR wretargetfilename[MAX_PATH] = { 0L };
+			char retargetfilename[MAX_PATH] = { 0 };
+			sprintf_s(retargetfilename, MAX_PATH, "%sretarget.rtg", directorypath);
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, retargetfilename, MAX_PATH, wretargetfilename, MAX_PATH);
+
+			int result1;
+			result1 = LoadRetargetFile(wretargetfilename);
+			if (result1 == 0) {
+				int result2;
+				result2 = ConvBoneConvert();
+				if (result2 != 0) {
+					_ASSERT(0);
+				}
+			}
+
+			//int modelindex = (int)s_modelindex.size() - 1;
+			//OnDelModel(modelindex);
+		}
+	}
+	return 0;
+}
+
+unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
+{
+
+	int outnum = s_retargetout.size();
+
+	int outcnt;
+	for (outcnt = 0; outcnt < outnum; outcnt++) {
+		//FBXファイル
+		char fbxpath[MAX_PATH] = { 0 };
+		WideCharToMultiByte(CP_UTF8, 0, s_retargetout[outcnt].c_str(), -1, fbxpath, MAX_PATH, NULL, NULL);
+		//strcat_s(fbxpath, MAX_PATH, ".fbx");
+
+		int result;
+		result = RetargetFile(fbxpath);
+		if (result == 0) {
+			InterlockedExchange(&s_retargetcnt, outcnt);
+		}
+		else {
+			//InterlockedExchange(&g_retargetbatchflag, 0);
+			break;
+		}
+
+		if (g_retargetbatchflag != 1) {
+			break;
+		}
+	}
+	
+	InterlockedExchange(&g_retargetbatchflag, 3);
+
+	WaitRetargetThreads();
+
+	return 0;
+}
+
+unsigned __stdcall ThreadFunc_RetargetDisp(LPVOID lpThreadParam)
+{
+	if (s_retargetbatchwnd != 0) {
+		SetWindowTextW(s_retargetbatchwnd, L"Make retarget File(EGP) Batch");
+	}
+
+	while (g_retargetbatchflag == 1) {
+		if (s_retargetbatchwnd != 0) {
+			SendMessage(s_retargetbatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
+			UpdateWindow(s_retargetbatchwnd);
+		}
+		Sleep(20);
+	}
+
+	return 0;
+}
+
+int RetargetBatch()
+{
+	if (!s_model) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	//if (!s_convbone_model || !s_convbone_bvh) {
+	//}
+	//if (s_model != s_convbone_model) {
+	//}
+
+	s_convbone_model_batch = s_model;
+	s_convbone_model_batch_selindex = s_curmodelmenuindex;
+
+	BROWSEINFO bi;
+	LPITEMIDLIST curlpidl = 0;
+	WCHAR dispname[MAX_PATH] = { 0L };
+	WCHAR selectname[MAX_PATH] = { 0L };
+	int iImage = 0;
+
+	//LPITEMIDLIST pidl;
+	//IMalloc* pMalloc;
+	//SHGetMalloc(&pMalloc);
+	//if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+	//{
+	//	// パスに変換する
+	//	SHGetPathFromIDList(pidl, s_projectdir);
+	//	// 取得したIDLを解放する (CoTaskMemFreeでも可)
+	//	pMalloc->Free(pidl);
+	//	//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//}
+	//pMalloc->Release();
+
+	bi.hwndOwner = s_3dwnd;
+	bi.pidlRoot = NULL;//!!!!!!!
+	bi.pszDisplayName = dispname;
+	//bi.lpszTitle = L"保存フォルダを選択してください。";
+	bi.lpszTitle = L"SelectDirectoryForBatch";
+	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEを指定すると固まる　謎
+	bi.lpfn = NULL;
+	bi.lParam = 0;
+	bi.iImage = iImage;
+
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	curlpidl = SHBrowseForFolder(&bi);
+
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	UnhookWinEvent(hhook);
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+
+	if (curlpidl) {
+		//::DSMessageBox( m_hWnd, dispname, "フォルダー名", MB_OK );
+
+		BOOL bret;
+		bret = SHGetPathFromIDList(curlpidl, selectname);
+		if (bret == FALSE) {
+			_ASSERT(0);
+			if (curlpidl)
+				CoTaskMemFree(curlpidl);
+			return 1;
+		}
+
+		if (curlpidl)
+			CoTaskMemFree(curlpidl);
+
+
+		//selectname
+		wstring target;
+		string filenamepattern;
+		//vector<wstring> out;
+		wstring findext;
+
+		s_retargetout.clear();
+		target = selectname;
+		findext = L".fbx";
+
+
+		FindF(s_retargetout, target, findext);
+		int outnum = (int)s_retargetout.size();
+		s_retargetnum = outnum;
+		if (outnum > 0)
+		{
+			InterlockedExchange(&g_retargetbatchflag, 1);
+
+			CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), NULL, (DLGPROC)RetargetBatchDlgProc);
+			RECT rect;
+			GetWindowRect(s_LtimelineWnd->getHWnd(), &rect);
+			SetWindowPos(s_retargetbatchwnd, HWND_TOP, rect.left, rect.top, 0, 0, SWP_NOSIZE);
+			ShowWindow(s_retargetbatchwnd, SW_SHOW);
+			UpdateWindow(s_retargetbatchwnd);
+
+			unsigned int threadaddr2 = 0;
+			s_retargethandle2 = (HANDLE)_beginthreadex(
+				NULL, 0, &ThreadFunc_Retarget,
+				(void*)0,
+				0, &threadaddr2);
+
+			unsigned int threadaddr1 = 0;
+			s_retargethandle1 = (HANDLE)_beginthreadex(
+				NULL, 0, &ThreadFunc_RetargetDisp,
+				(void*)0,
+				0, &threadaddr1);
+
+			//WiatForしない場合には先に閉じてもOK
+			CloseHandle(s_retargethandle1);
+			CloseHandle(s_retargethandle2);
+
+		}
+	}
+
+	//InterlockedExchange(&g_retargetbatchflag, 0);//スレッドを立ててすぐに出ていくのでここではフラグはそのまま
+
+	return 0;
+}
+
+
+//########## retarget batch ここまで
 
 
 unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
@@ -7378,7 +7609,9 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 		}
 	}
 
-	//InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+	InterlockedExchange(&g_bvh2fbxbatchflag, 3);
+
+	WaitBvh2FbxThreads();
 
 	return 0;
 }
@@ -7391,10 +7624,8 @@ unsigned __stdcall ThreadFunc_Bvh2FbxDisp(LPVOID lpThreadParam)
 	}
 
 	while (g_bvh2fbxbatchflag == 1) {
-		//if (s_bvh2fbxbatchwnd != 0) {
-		//	SendMessage(s_bvh2fbxbatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
-		//}
 		if (s_bvh2fbxbatchwnd != 0) {
+			SendMessage(s_bvh2fbxbatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
 			UpdateWindow(s_bvh2fbxbatchwnd);
 		}
 		Sleep(20);
@@ -7503,6 +7734,11 @@ int BVH2FBXBatch()
 				NULL, 0, &ThreadFunc_Bvh2FbxDisp,
 				(void*)0,
 				0, &threadaddr1);
+
+			//WiatForしない場合には先に閉じてもOK
+			CloseHandle(s_bvh2fbxhandle1);
+			CloseHandle(s_bvh2fbxhandle2);
+
 		}
 	}
 
@@ -9341,9 +9577,9 @@ int OnModelMenu( int selindex, int callbymenu )
 	swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
     g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
 
-
-	
-	CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
+	if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
+		CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
+	}
 
 	SetMainWindowTitle();
 
@@ -10507,6 +10743,100 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 }
 
+LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	static int s_timerid = 373;
+
+	WCHAR strnumcnt[1024] = { 0L };
+	HWND hProg;
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		s_retargetbatchwnd = hDlgWnd;
+
+		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_retargetcnt + 1), s_retargetnum);
+		SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+		hProg = GetDlgItem(s_retargetbatchwnd, IDC_PROGRESS1);
+		if (hProg) {
+			//プログレスバーの範囲         
+			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_retargetnum));
+			//ステップの範囲を設定 
+			SendMessage(hProg, PBM_SETSTEP, 1, 0);
+			//現在位置を設定  
+			SendMessage(hProg, PBM_SETPOS, 0, 0);
+		}
+		SetTimer(hDlgWnd, s_timerid, 100, NULL);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			if (s_retargetbatchwnd) {
+				if (s_timerid != 0) {
+					KillTimer(s_retargetbatchwnd, s_timerid);
+					s_timerid = 0;
+				}
+				DestroyWindow(s_retargetbatchwnd);
+				s_retargetbatchwnd = 0;
+			}
+			InterlockedExchange(&g_retargetbatchflag, 2);
+			//EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			if (s_retargetbatchwnd) {
+				if (s_timerid != 0) {
+					KillTimer(s_retargetbatchwnd, s_timerid);
+					s_timerid = 0;
+				}
+				DestroyWindow(s_retargetbatchwnd);
+				s_retargetbatchwnd = 0;
+			}
+			InterlockedExchange(&g_retargetbatchflag, 2);
+			//EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			break;
+		}
+		break;
+	case WM_USER_FOR_BATCH_PROGRESS:
+	case WM_TIMER:
+		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_retargetcnt + 1), s_retargetnum);
+		SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+
+		if (s_retargetbatchwnd) {
+			HWND hProg;
+			hProg = GetDlgItem(s_retargetbatchwnd, IDC_PROGRESS1);
+			if (hProg) {
+				//プログレスバーの範囲を0-300にする           
+				SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_retargetnum));
+				//現在位置を設定  
+				SendMessage(hProg, PBM_SETPOS, s_retargetcnt, 0);
+				//ステップの範囲を設定 
+				//SendMessage(hProg, PBM_SETSTEP, 1, 0);
+			}
+			UpdateWindow(s_retargetbatchwnd);
+		}
+		break;
+	case WM_CLOSE:
+		if (s_retargetbatchwnd) {
+			if (s_timerid != 0) {
+				KillTimer(s_retargetbatchwnd, s_timerid);
+				s_timerid = 0;
+			}
+			DestroyWindow(s_retargetbatchwnd);
+			s_retargetbatchwnd = 0;
+		}
+		InterlockedExchange(&g_retargetbatchflag, 2);
+		//EndDialog(hDlgWnd, IDOK);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
+}
+
+
 LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	static int s_timerid = 370;
@@ -10561,9 +10891,7 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 			break;
 		}
 		break;
-	//case WM_USER_FOR_BATCH_PROGRESS:
-	//	InfoMotionCacheBatchCnt();
-	//	break;
+	case WM_USER_FOR_BATCH_PROGRESS:
 	case WM_TIMER:
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_motioncachecnt + 1), s_motioncachenum);
 		SetDlgItemTextW(s_motioncachebatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -10657,9 +10985,7 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 			break;
 		}
 		break;
-		//case WM_USER_FOR_BATCH_PROGRESS:
-		//	Infobvh2fbxBatchCnt();
-		//	break;
+	case WM_USER_FOR_BATCH_PROGRESS:
 	case WM_TIMER:
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_bvh2fbxcnt + 1), s_bvh2fbxnum);
 		SetDlgItemTextW(s_bvh2fbxbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -11489,7 +11815,7 @@ int CreateConvBoneWnd()
 
 	s_rtgfileload->setButtonListener([]() {
 		if (s_model) {
-			LoadRetargetFile();
+			LoadRetargetFile(0);
 		}
 	});
 
@@ -11853,8 +12179,16 @@ int SaveRetargetFile()
 
 	return 0;
 }
-int LoadRetargetFile()
+int LoadRetargetFile(WCHAR* srcfilename)
 {
+	if (!s_convbone_model || !s_convbone_bvh) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	s_convbonemap.clear();
+
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
@@ -11879,27 +12213,47 @@ int LoadRetargetFile()
 	ofn.lpfnHook = NULL;
 	ofn.lpTemplateName = NULL;
 
-	s_getfilenamehwnd = 0;
-	s_getfilenametreeview = 0;
-	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	int result = 0;
 
-	if (GetOpenFileNameW(&ofn) == IDOK) {
-		CRetargetFile rtgfile;
-		int result;
-		result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
-		if (result == 0) {
-			SetJointPair2ConvBoneWnd();
+	if (srcfilename == 0) {
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
+		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		InterlockedExchange(&g_undertrackingRMenu, 1);
+
+		if (GetOpenFileNameW(&ofn) == IDOK) {
+			CRetargetFile rtgfile;
+			result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
+			if (result == 0) {
+				if (g_retargetbatchflag == 0) {
+					SetJointPair2ConvBoneWnd();
+				}
+			}
 		}
+
 	}
+	else {
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
+		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		InterlockedExchange(&g_undertrackingRMenu, 1);
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
-	UnhookWinEvent(hhook);
-	s_getfilenamehwnd = 0;
-	s_getfilenametreeview = 0;
+		CRetargetFile rtgfile;
+		result = rtgfile.LoadRetargetFile(srcfilename, s_convbone_model, s_convbone_bvh, s_convbonemap);
+		if (result == 0) {
+			if (g_retargetbatchflag == 0) {
+				SetJointPair2ConvBoneWnd();
+			}
+		}
 
-	return 0;
+		InterlockedExchange(&g_undertrackingRMenu, 0);
+		UnhookWinEvent(hhook);
+		s_getfilenamehwnd = 0;
+		s_getfilenametreeview = 0;
+	}
+	return result;
 }
 
 
@@ -11917,6 +12271,10 @@ int ConvBoneConvert()
 	g_underRetargetFlag = true;//!!!!!!!!!!!!
 
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
+	if (!bvhmi) {
+		_ASSERT(0);
+		return 1;
+	}
 	double motleng = bvhmi->frameleng;
 	AddMotion(0, motleng);
 	InitCurMotion(0, 0);
@@ -11964,8 +12322,9 @@ int ConvBoneConvert()
 
 	g_underRetargetFlag = false;//!!!!!!!!!!!!
 
-
-	::DSMessageBox(NULL, L"Finish of convertion.", L"Finish", MB_OK);
+	if (!g_retargetbatchflag) {
+		::DSMessageBox(NULL, L"Finish of convertion.", L"check!!!", MB_OK);
+	}
 
 	return 0;
 }
@@ -18741,7 +19100,8 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
 
-		if (curmodel && curmodel->GetModelDisp()){
+		//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
+		if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelが作成途中の場合を考えて、先頭から２つのpublicデータメンバーを参照する
 			int lightflag = 1;
 			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 			int btflag;
@@ -20712,6 +21072,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				if (s_registflag == 1) {
 					ActivatePanel(0);
 					MotionCacheBatch();
+					ActivatePanel(1);
+				}
+				//return 0;
+				break;
+			case ID_FILE_RETARGETBATCH:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					RetargetBatch();
 					ActivatePanel(1);
 				}
 				//return 0;
@@ -28253,27 +28621,23 @@ void OnGUIEventSpeed()
 	g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
 }
 
+void WaitRetargetThreads()
+{
+	if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2はダイアログでのキャンセル
+		InterlockedExchange(&g_retargetbatchflag, 0);
+		if (s_retargetbatchwnd) {
+			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
+		}
+	}
+
+}
+
 void WaitMotionCacheThreads()
 {
-	if ((g_motioncachebatchflag == 1) || (g_motioncachebatchflag == 2)) {//2はダイアログでのキャンセル
-		if ((s_motioncachehandle2 != INVALID_HANDLE_VALUE) && (s_motioncachehandle1 != INVALID_HANDLE_VALUE)) {
-			DWORD dwwait2 = WaitForSingleObject(s_motioncachehandle2, 10);
-			if (dwwait2 == WAIT_OBJECT_0) {
-
-				InterlockedExchange(&g_motioncachebatchflag, 0);//dispスレッドを終了させるため
-				s_motioncachehandle2 = INVALID_HANDLE_VALUE;
-
-				DWORD dwwait1 = WAIT_TIMEOUT;
-				while (dwwait1 != WAIT_OBJECT_0) {
-					dwwait1 = WaitForSingleObject(s_motioncachehandle1, 100);
-				}
-				s_motioncachehandle1 = INVALID_HANDLE_VALUE;
-
-				//InterlockedExchange(&g_motioncachebatchflag, 0);
-				if (s_motioncachebatchwnd) {
-					SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
-				}
-			}
+	if ((g_motioncachebatchflag == 2) || (g_motioncachebatchflag == 3)) {//2はダイアログでのキャンセル
+		InterlockedExchange(&g_motioncachebatchflag, 0);
+		if (s_motioncachebatchwnd) {
+			SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
 		}
 	}
 
@@ -28281,25 +28645,10 @@ void WaitMotionCacheThreads()
 
 void WaitBvh2FbxThreads()
 {
-	if ((g_bvh2fbxbatchflag == 1) || (g_bvh2fbxbatchflag == 2)) {//2はダイアログでのキャンセル
-		if ((s_bvh2fbxhandle2 != INVALID_HANDLE_VALUE) && (s_bvh2fbxhandle1 != INVALID_HANDLE_VALUE)) {
-			DWORD dwwait2 = WaitForSingleObject(s_bvh2fbxhandle2, 10);
-			if (dwwait2 == WAIT_OBJECT_0) {
-
-				InterlockedExchange(&g_bvh2fbxbatchflag, 0);//dispスレッドを終了させるため
-				s_bvh2fbxhandle2 = INVALID_HANDLE_VALUE;
-
-				DWORD dwwait1 = WAIT_TIMEOUT;
-				while (dwwait1 != WAIT_OBJECT_0) {
-					dwwait1 = WaitForSingleObject(s_bvh2fbxhandle1, 100);
-				}
-				s_bvh2fbxhandle1 = INVALID_HANDLE_VALUE;
-				if (s_bvh2fbxbatchwnd) {
-					SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
-				}
-
-			}
+	if ((g_bvh2fbxbatchflag == 2) || (g_bvh2fbxbatchflag == 3)) {//2はダイアログでのキャンセル
+		InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+		if (s_bvh2fbxbatchwnd) {
+			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 		}
-
 	}
 }

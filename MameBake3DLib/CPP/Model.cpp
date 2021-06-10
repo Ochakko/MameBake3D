@@ -830,8 +830,6 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 			ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 			dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 
-
-
 			if (m_topbone) {
 				dummybone->AddChild(m_topbone);
 				m_topbone = dummybone;

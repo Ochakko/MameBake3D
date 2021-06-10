@@ -573,7 +573,7 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 {
 	EnterCriticalSection(&m_CritSection_AddMP);
 
-	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add : ‚Ð‚Æ‚Â‘å‚«‚­‚Ä‚à‰Â
 		_ASSERT(0);
 		LeaveCriticalSection(&m_CritSection_AddMP);
 		return 0;
@@ -3764,7 +3764,7 @@ int CBone::SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul)
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
 	if (!curmp){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 1;
 	}
 
@@ -4637,7 +4637,7 @@ ChaMatrix CBone::GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag)
 	//static ChaMatrix s_invfirstgetmatrix;
 
 	if ((m_curmotid <= 0) || (m_curmotid > m_motionkey.size())) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		ChaMatrix inimat;
 		ChaMatrixIdentity(&inimat);
 		return inimat;

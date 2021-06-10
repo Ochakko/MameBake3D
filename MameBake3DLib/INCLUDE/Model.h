@@ -1161,12 +1161,15 @@ public:
 	//FUNCMPPARAMS* m_armpparams[6];
 	//HANDLE m_arhthread[6];
 
+	bool m_loadedflag;//初期の読み込み処理が終了したらtrue;
+	bool m_modeldisp;//表示するかどうか
+	bool m_createbtflag;//CreateBtObjectを読んだことがあればtrue。
+
 private:
 	
 	int m_physicsikcnt;
 	int m_initaxismatx;
 	int m_modelno;//モデルのID
-	bool m_modeldisp;//表示するかどうか
 	float m_loadmult;//表示倍率
 	int m_oldaxis_atloading;//FBX読み込み時に旧データ互換チェックボックスにチェックをしていたかどうか。
 
@@ -1234,8 +1237,6 @@ private:
 	ChaVector3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。
 	CUndoMotion m_undomotion[ UNDOMAX ];//アンドゥー機能のためのCUndoMotionの配列。CUndoMotionの１つのインスタンスは１フレーム分のモーションを保存する。
 	int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
-	bool m_createbtflag;//CreateBtObjectを読んだことがあればtrue。
-	bool m_loadedflag;//初期の読み込み処理が終了したらtrue;
 
 	ChaMatrix m_worldmat;
 	ChaVector3 m_modelposition;

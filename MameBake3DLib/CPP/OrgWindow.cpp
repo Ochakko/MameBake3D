@@ -14,6 +14,10 @@ using namespace std;
 
 extern std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
 
+extern LONG g_bvh2fbxbatchflag;
+extern LONG g_motioncachebatchflag;
+extern LONG g_retargetbatchflag;
+
 namespace OrgWinGUI{
 
 	////////////////----------------------------------------////////////////
@@ -29,6 +33,10 @@ namespace OrgWinGUI{
 		//	if ((s_paintcnt % 60) != 0) {
 		//		return;
 		//	}
+		//}
+
+		//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+		//	return;
 		//}
 
 		beginPaint();

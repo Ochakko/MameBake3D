@@ -198,8 +198,8 @@ int CRetargetFile::ReadRetargetInfo( int jointcnt, XMLIOBUF* xmlbuf )
 {
 	CBone* modeljoint = 0;
 	CBone* bvhjoint = 0;
-	char modeljointname[MAX_PATH] = { 0L };
-	char bvhjointname[MAX_PATH] = { 0L };
+	char modeljointname[MAX_PATH] = { 0 };
+	char bvhjointname[MAX_PATH] = { 0 };
 
 	CallF( Read_Str( xmlbuf, "<ModelJoint>", "</ModelJoint>", modeljointname, MAX_PATH ), return 1 );
 	CallF( Read_Str( xmlbuf, "<BvhJoint>", "</BvhJoint>", bvhjointname, MAX_PATH ), return 1 );
@@ -210,6 +210,12 @@ int CRetargetFile::ReadRetargetInfo( int jointcnt, XMLIOBUF* xmlbuf )
 		if (bvhjoint) {
 			m_convbonemap[modeljoint] = bvhjoint;
 		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	else {
+		_ASSERT(0);
 	}
 
 	return 0;
