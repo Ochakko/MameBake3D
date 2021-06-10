@@ -573,7 +573,7 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 {
 	EnterCriticalSection(&m_CritSection_AddMP);
 
-	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add : ひとつ大きくても可
+	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add : ひとつ大きくても可 : 他の部分でのチェックは motid > m_motionkey.size()
 		_ASSERT(0);
 		LeaveCriticalSection(&m_CritSection_AddMP);
 		return 0;

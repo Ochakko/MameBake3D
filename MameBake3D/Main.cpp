@@ -1516,6 +1516,10 @@ static void FindF(std::vector<wstring>& out, const wstring& directory, const wst
 static int BVH2FBXBatch();
 static int MotionCacheBatch();
 static int RetargetBatch();
+static int SaveBatchHistory(WCHAR* selectname);
+static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
+static int Savebvh2FBXHistory(WCHAR* selectname);
+static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename);
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -7207,6 +7211,36 @@ unsigned __stdcall ThreadFunc_MotionCacheDisp(LPVOID lpThreadParam)
 	return 0;
 }
 
+int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM lpData) 
+{
+	WCHAR firstdir[MAX_PATH] = { 0L };
+
+	switch (uMsg) {
+
+		// 初期ディレクトリの設定
+	case BFFM_INITIALIZED:
+		firstdir[0] = 0L;
+		GetBatchHistoryDir(firstdir, MAX_PATH);
+		if(firstdir[0] != 0L){
+			// ドキュメントが初期フォルダ
+			SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)firstdir);
+		}
+		else {
+			// ドキュメントが初期フォルダ
+			SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, lpData);
+		}
+		//初期フォルダ（ドキュメント）を展開
+		SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, lpData);
+		break;
+
+		// 無効なフォルダ名を入力された場合
+	case BFFM_VALIDATEFAILED:
+		MessageBox(NULL, L"無効なフォルダ名です", L"", MB_OK);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 int MotionCacheBatch()
 {
 	BROWSEINFO bi;
@@ -7215,18 +7249,21 @@ int MotionCacheBatch()
 	WCHAR selectname[MAX_PATH] = { 0L };
 	int iImage = 0;
 
-	//LPITEMIDLIST pidl;
-	//IMalloc* pMalloc;
-	//SHGetMalloc(&pMalloc);
-	//if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
-	//{
-	//	// パスに変換する
-	//	SHGetPathFromIDList(pidl, s_projectdir);
-	//	// 取得したIDLを解放する (CoTaskMemFreeでも可)
-	//	pMalloc->Free(pidl);
-	//	//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//GetBatchHistoryDir(dispname, MAX_PATH);
+	//if (selectname[0] != 0) {
+	//	LPITEMIDLIST pidl;
+	//	IMalloc* pMalloc;
+	//	SHGetMalloc(&pMalloc);
+	//	if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+	//	{
+	//		// パスに変換する
+	//		SHGetPathFromIDList(pidl, selectname);
+	//		// 取得したIDLを解放する (CoTaskMemFreeでも可)
+	//		pMalloc->Free(pidl);
+	//		//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//	}
+	//	pMalloc->Release();
 	//}
-	//pMalloc->Release();
 
 	bi.hwndOwner = s_3dwnd;
 	bi.pidlRoot = NULL;//!!!!!!!
@@ -7235,7 +7272,7 @@ int MotionCacheBatch()
 	bi.lpszTitle = L"SelectDirectoryForBatch";
 	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEを指定すると固まる　謎
-	bi.lpfn = NULL;
+	bi.lpfn = BrowseCallbackProc;
 	bi.lParam = 0;
 	bi.iImage = iImage;
 
@@ -7278,6 +7315,7 @@ int MotionCacheBatch()
 		target = selectname;
 		findext = L".fbx";
 
+		SaveBatchHistory(selectname);
 		
 		FindF(s_motioncacheout, target, findext);
 		int outnum = (int)s_motioncacheout.size();
@@ -7311,11 +7349,11 @@ int MotionCacheBatch()
 			//WiatForしない場合には先に閉じてもOK
 			CloseHandle(s_motioncachehandle1);
 			CloseHandle(s_motioncachehandle2);
+
 		}
 	}
 
 	//InterlockedExchange(&g_motioncachebatchflag, 0);//スレッドを立ててすぐに出ていくのでここではフラグはそのまま
-
 
 
 	return 0;
@@ -7448,18 +7486,21 @@ int RetargetBatch()
 	WCHAR selectname[MAX_PATH] = { 0L };
 	int iImage = 0;
 
-	//LPITEMIDLIST pidl;
-	//IMalloc* pMalloc;
-	//SHGetMalloc(&pMalloc);
-	//if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
-	//{
-	//	// パスに変換する
-	//	SHGetPathFromIDList(pidl, s_projectdir);
-	//	// 取得したIDLを解放する (CoTaskMemFreeでも可)
-	//	pMalloc->Free(pidl);
-	//	//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//GetBatchHistoryDir(dispname, MAX_PATH);
+	//if (selectname[0] != 0) {
+	//	LPITEMIDLIST pidl;
+	//	IMalloc* pMalloc;
+	//	SHGetMalloc(&pMalloc);
+	//	if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+	//	{
+	//		// パスに変換する
+	//		SHGetPathFromIDList(pidl, selectname);
+	//		// 取得したIDLを解放する (CoTaskMemFreeでも可)
+	//		pMalloc->Free(pidl);
+	//		//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//	}
+	//	pMalloc->Release();
 	//}
-	//pMalloc->Release();
 
 	bi.hwndOwner = s_3dwnd;
 	bi.pidlRoot = NULL;//!!!!!!!
@@ -7468,7 +7509,7 @@ int RetargetBatch()
 	bi.lpszTitle = L"SelectDirectoryForBatch";
 	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEを指定すると固まる　謎
-	bi.lpfn = NULL;
+	bi.lpfn = BrowseCallbackProc;
 	bi.lParam = 0;
 	bi.iImage = iImage;
 
@@ -7511,6 +7552,7 @@ int RetargetBatch()
 		target = selectname;
 		findext = L".fbx";
 
+		SaveBatchHistory(selectname);
 
 		FindF(s_retargetout, target, findext);
 		int outnum = (int)s_retargetout.size();
@@ -7546,6 +7588,7 @@ int RetargetBatch()
 	}
 
 	//InterlockedExchange(&g_retargetbatchflag, 0);//スレッドを立ててすぐに出ていくのでここではフラグはそのまま
+
 
 	return 0;
 }
@@ -7643,18 +7686,21 @@ int BVH2FBXBatch()
 	WCHAR selectname[MAX_PATH] = { 0L };
 	int iImage = 0;
 
-	//LPITEMIDLIST pidl;
-	//IMalloc* pMalloc;
-	//SHGetMalloc(&pMalloc);
-	//if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
-	//{
-	//	// パスに変換する
-	//	SHGetPathFromIDList(pidl, s_projectdir);
-	//	// 取得したIDLを解放する (CoTaskMemFreeでも可)
-	//	pMalloc->Free(pidl);
-	//	//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//GetBatchHistoryDir(dispname, MAX_PATH);
+	//if (selectname[0] != 0) {
+	//	LPITEMIDLIST pidl;
+	//	IMalloc* pMalloc;
+	//	SHGetMalloc(&pMalloc);
+	//	if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+	//	{
+	//		// パスに変換する
+	//		SHGetPathFromIDList(pidl, selectname);
+	//		// 取得したIDLを解放する (CoTaskMemFreeでも可)
+	//		pMalloc->Free(pidl);
+	//		//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+	//	}
+	//	pMalloc->Release();
 	//}
-	//pMalloc->Release();
 
 	bi.hwndOwner = s_3dwnd;
 	bi.pidlRoot = NULL;//!!!!!!!
@@ -7663,7 +7709,7 @@ int BVH2FBXBatch()
 	bi.lpszTitle = L"SelectDirectoryForBatch";
 	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEを指定すると固まる　謎
-	bi.lpfn = NULL;
+	bi.lpfn = BrowseCallbackProc;
 	bi.lParam = 0;
 	bi.iImage = iImage;
 
@@ -7705,6 +7751,8 @@ int BVH2FBXBatch()
 		s_bvh2fbxout.clear();
 		target = selectname;
 		findext = L".bvh";
+
+		SaveBatchHistory(selectname);
 
 		FindF(s_bvh2fbxout, target, findext);
 		int outnum = (int)s_bvh2fbxout.size();
@@ -7751,18 +7799,17 @@ int BVH2FBX()
 
 	int dlgret;
 	s_filterindex = 5;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
-		s_3dwnd, (DLGPROC)OpenMqoDlgProc );
-	if( (dlgret != IDOK) || !g_tmpmqopath[0] ){
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_OPENMQODLG),
+		s_3dwnd, (DLGPROC)OpenMqoDlgProc);
+	if ((dlgret != IDOK) || !g_tmpmqopath[0]) {
 		return 0;
 	}
 
 
 	WCHAR savepath[MULTIPATH];
-	MoveMemory( savepath, g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
+	MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 
-	
 	//bvhファイルを読み込む
 	CBVHFile bvhfile;
 	int ret;
@@ -7772,6 +7819,7 @@ int BVH2FBX()
 		return 1;
 	}
 
+	Savebvh2FBXHistory(savepath);
 
 	//FBXファイルに書き出す
 	char fbxpath[MAX_PATH] = {0};
@@ -10309,110 +10357,151 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 			SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
 
-			//MB3DOpenProj_20210410215628.txt
-			WCHAR searchfilename[MAX_PATH] = { 0L };
-			swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProj_*.txt", s_temppath);
-			HANDLE hFind;
-			WIN32_FIND_DATA win32fd;
-			hFind = FindFirstFileW(searchfilename, &win32fd);
+			if (s_filterindex == 5) {
+				//bvh2FBXの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				GetbvhHistoryDir(vecopenfilename);
 
-			std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
-			std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
-
-			vechistory.clear();
-			bool notfoundfirst = false;
-			if (hFind == INVALID_HANDLE_VALUE) {
-				notfoundfirst = true;
-			}
-			do {
-				if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-					//printf("%s\n", win32fd.cFileName);
-					WCHAR openfilename[MAX_PATH] = { 0L };
-					swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
-			
-					vechistory.push_back(openfilename);
+				int radiocnt = 0;
+				int radionum = min(5, vecopenfilename.size());
+				if (radionum != 0) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
 				}
-			} while (FindNextFile(hFind, &win32fd));
-			FindClose(hFind);
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
+				}
+				if (radionum >= 2) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
+				}
+				if (radionum >= 3) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
+				}
+				if (radionum >= 4) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
+				}
+				if (radionum >= 5) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
+				}
+
+			}
+			else {
+				//MB3DOpenProj_20210410215628.txt
+				WCHAR searchfilename[MAX_PATH] = { 0L };
+				swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProj_*.txt", s_temppath);
+				HANDLE hFind;
+				WIN32_FIND_DATA win32fd;
+				hFind = FindFirstFileW(searchfilename, &win32fd);
+
+				std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+				std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
+				vechistory.clear();
+				bool notfoundfirst = false;
+				if (hFind == INVALID_HANDLE_VALUE) {
+					notfoundfirst = true;
+				}
+				do {
+					if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+						//printf("%s\n", win32fd.cFileName);
+						WCHAR openfilename[MAX_PATH] = { 0L };
+						swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+						vechistory.push_back(openfilename);
+					}
+				} while (FindNextFile(hFind, &win32fd));
+				FindClose(hFind);
 
 
-			if (!vechistory.empty()) {
+				if (!vechistory.empty()) {
 
-				std::sort(vechistory.begin(), vechistory.end());
-				std::reverse(vechistory.begin(), vechistory.end());
+					std::sort(vechistory.begin(), vechistory.end());
+					std::reverse(vechistory.begin(), vechistory.end());
 
-				int numhistory = (int)vechistory.size();
-				int dispnum = min(5, numhistory);
+					int numhistory = (int)vechistory.size();
+					int dispnum = min(5, numhistory);
 
-				
 
-				int foundnum = 0;
-				int historyno;
-				for (historyno = 0; historyno < numhistory; historyno++) {
-					WCHAR openfilename[MAX_PATH] = { 0L };
-					wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
 
-					HANDLE hfile;
-					hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-						FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-					if (hfile != INVALID_HANDLE_VALUE) {
-						WCHAR readwstr[MAX_PATH] = { 0L };
-						DWORD readleng = 0;
-						bool bsuccess;
-						bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
-						if (bsuccess) {
-							bool foundsame = false;
-							wstring newwstr = readwstr;
-							std::vector<wstring>::iterator itropenfilename;
-							for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
-								if (newwstr.compare(*itropenfilename) == 0) {
-									foundsame = true;
+					int foundnum = 0;
+					int historyno;
+					for (historyno = 0; historyno < numhistory; historyno++) {
+						WCHAR openfilename[MAX_PATH] = { 0L };
+						wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+
+						HANDLE hfile;
+						hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+							FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+						if (hfile != INVALID_HANDLE_VALUE) {
+							WCHAR readwstr[MAX_PATH] = { 0L };
+							DWORD readleng = 0;
+							bool bsuccess;
+							bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+							if (bsuccess) {
+								bool foundsame = false;
+								wstring newwstr = readwstr;
+								std::vector<wstring>::iterator itropenfilename;
+								for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+									if (newwstr.compare(*itropenfilename) == 0) {
+										foundsame = true;
+									}
+								}
+								if (foundsame == false) {
+									vecopenfilename.push_back(readwstr);
+									foundnum++;
+									if (foundnum >= dispnum) {
+										break;
+									}
 								}
 							}
-							if (foundsame == false) {
-								vecopenfilename.push_back(readwstr);
-								foundnum++;
-								if (foundnum >= dispnum) {
-									break;
-								}
-							}
+							CloseHandle(hfile);
 						}
-						CloseHandle(hfile);
 					}
 				}
-			}
 
-			int radiocnt = 0;
-			int radionum = min(5, vecopenfilename.size());
-			if (radionum != 0) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
-			}
-			else {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
-			}
-			if (radionum >= 2) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
-			}
-			else {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
-			}
-			if (radionum >= 3) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
-			}
-			else {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
-			}
-			if (radionum >= 4) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
-			}
-			else {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
-			}
-			if (radionum >= 5) {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
-			}
-			else {
-				SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
+				int radiocnt = 0;
+				int radionum = min(5, vecopenfilename.size());
+				if (radionum != 0) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
+				}
+				if (radionum >= 2) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
+				}
+				if (radionum >= 3) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
+				}
+				if (radionum >= 4) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
+				}
+				if (radionum >= 5) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
+				}
 			}
 
 			RECT dlgrect;
@@ -21263,7 +21352,7 @@ HWND CreateMainWindow()
 
 
 	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.2"),
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.3"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		0, 0, (1216 + 450), 950,
@@ -28517,7 +28606,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.2 : ");
+	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.3 : ");
 
 
 	if (s_model) {
@@ -28651,4 +28740,243 @@ void WaitBvh2FbxThreads()
 			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 		}
 	}
+}
+
+int Savebvh2FBXHistory(WCHAR* selectname)
+{
+	WCHAR saveprojpath[MAX_PATH] = { 0L };
+	wcscpy_s(saveprojpath, MAX_PATH, selectname);
+
+
+	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
+	int savepathlen;
+	savepathlen = wcslen(saveprojpath);
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBvhDir_%04d%02d%02d%02d%02d%02d.txt",
+		s_temppath,
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+	HANDLE hfile;
+	hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile != INVALID_HANDLE_VALUE) {
+		int pathlen;
+		pathlen = wcslen(saveprojpath);
+		if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+			DWORD writelen = 0;
+			WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
+			_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+		}
+		CloseHandle(hfile);
+	}
+
+	return 0;
+}
+
+
+int SaveBatchHistory(WCHAR* selectname)
+{
+	WCHAR saveprojpath[MAX_PATH] = { 0L };
+	wcscpy_s(saveprojpath, MAX_PATH, selectname);
+
+
+	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
+	int savepathlen;
+	savepathlen = wcslen(saveprojpath);
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBatchDir_%04d%02d%02d%02d%02d%02d.txt",
+		s_temppath,
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+	HANDLE hfile;
+	hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile != INVALID_HANDLE_VALUE) {
+		int pathlen;
+		pathlen = wcslen(saveprojpath);
+		if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+			DWORD writelen = 0;
+			WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
+			_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+		}
+		CloseHandle(hfile);
+	}
+
+	return 0;
+}
+
+int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
+{
+
+	dstvecopenfilename.clear();
+	//ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
+
+
+	//MB3DOpenProj_20210410215628.txt
+	WCHAR searchfilename[MAX_PATH] = { 0L };
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProjBvhDir_*.txt", s_temppath);
+	HANDLE hFind;
+	WIN32_FIND_DATA win32fd;
+	hFind = FindFirstFileW(searchfilename, &win32fd);
+
+	std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
+	vechistory.clear();
+	bool notfoundfirst = false;
+	if (hFind == INVALID_HANDLE_VALUE) {
+		notfoundfirst = true;
+	}
+	do {
+		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+			//printf("%s\n", win32fd.cFileName);
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+			vechistory.push_back(openfilename);
+		}
+	} while (FindNextFile(hFind, &win32fd));
+	FindClose(hFind);
+
+
+	if (!vechistory.empty()) {
+
+		std::sort(vechistory.begin(), vechistory.end());
+		std::reverse(vechistory.begin(), vechistory.end());
+
+		int numhistory = (int)vechistory.size();
+		int dispnum = min(5, numhistory);
+
+		int foundnum = 0;
+		int historyno;
+		for (historyno = 0; historyno < numhistory; historyno++) {
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+
+			HANDLE hfile;
+			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				WCHAR readwstr[MAX_PATH] = { 0L };
+				DWORD readleng = 0;
+				bool bsuccess;
+				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+				if (bsuccess) {
+					bool foundsame = false;
+					wstring newwstr = readwstr;
+					std::vector<wstring>::iterator itropenfilename;
+					for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+						if (newwstr.compare(*itropenfilename) == 0) {
+							foundsame = true;
+						}
+					}
+					if (foundsame == false) {
+						vecopenfilename.push_back(readwstr);
+						foundnum++;
+						if (foundnum >= dispnum) {
+							break;
+						}
+					}
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
+
+	if (!vecopenfilename.empty()) {
+		dstvecopenfilename = vecopenfilename;
+	}
+	else {
+		dstvecopenfilename.clear();
+	}
+
+}
+
+
+int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
+{
+	
+	ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
+
+
+	//MB3DOpenProj_20210410215628.txt
+	WCHAR searchfilename[MAX_PATH] = { 0L };
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProjBatchDir_*.txt", s_temppath);
+	HANDLE hFind;
+	WIN32_FIND_DATA win32fd;
+	hFind = FindFirstFileW(searchfilename, &win32fd);
+
+	std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
+	vechistory.clear();
+	bool notfoundfirst = false;
+	if (hFind == INVALID_HANDLE_VALUE) {
+		notfoundfirst = true;
+	}
+	do {
+		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+			//printf("%s\n", win32fd.cFileName);
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+			vechistory.push_back(openfilename);
+		}
+	} while (FindNextFile(hFind, &win32fd));
+	FindClose(hFind);
+
+
+	if (!vechistory.empty()) {
+
+		std::sort(vechistory.begin(), vechistory.end());
+		std::reverse(vechistory.begin(), vechistory.end());
+
+		int numhistory = (int)vechistory.size();
+		int dispnum = min(5, numhistory);
+
+		int foundnum = 0;
+		int historyno;
+		for (historyno = 0; historyno < numhistory; historyno++) {
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+
+			HANDLE hfile;
+			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				WCHAR readwstr[MAX_PATH] = { 0L };
+				DWORD readleng = 0;
+				bool bsuccess;
+				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+				if (bsuccess) {
+					bool foundsame = false;
+					wstring newwstr = readwstr;
+					std::vector<wstring>::iterator itropenfilename;
+					for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+						if (newwstr.compare(*itropenfilename) == 0) {
+							foundsame = true;
+						}
+					}
+					if (foundsame == false) {
+						vecopenfilename.push_back(readwstr);
+						foundnum++;
+						if (foundnum >= dispnum) {
+							break;
+						}
+					}
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
+
+	if (!vecopenfilename.empty()) {
+		wcscpy_s(dstname, dstlen, vecopenfilename[0].c_str());
+	}
+	else {
+		*dstname = 0L;
+	}
+
 }
