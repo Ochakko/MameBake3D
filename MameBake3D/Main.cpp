@@ -12667,26 +12667,30 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		OnFramePreviewStop();
 	}
 
-	static int resetflag = 0;
-	static int createflag = 0;
+	static int resetflag = 0;//!!!!!!!!!!!!!!!!!!!! static 
+	static int createflag = 0;//!!!!!!!!!!!!!!!!!!!! static 
 
 	if (isfirstmodel == TRUE) {
 		if ((flag == 0) && (g_previewFlag != 4)) {
 			//F9キー
 			g_previewFlag = 4;
 			createflag = 1;
+			resetflag = 0;//2021/06/18
 		}
 		else if (flag == 1) {
 			//F10キー
 			g_previewFlag = 5;
 			createflag = 1;
+			resetflag = 0;//2021/06/18
 		}
 		else if (flag == 2) {
 			//spaceキー
 			if (g_previewFlag == 4) {
+				createflag = 1;//2021/06/18
 				resetflag = 1;
 			}
 			else if (g_previewFlag == 5) {
+				createflag = 1;//2021/06/18
 				resetflag = 0;
 			}
 		}
@@ -12748,6 +12752,14 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//curframe = s_editrange.GetStartFrame();
 					//curframe = s_buttonselectstart;
 
+					s_owpLTimeline->setCurrentTime(curframe, false);
+					s_owpEulerGraph->setCurrentTime(curframe, false);
+				}
+			}
+			else if (flag == 2) {//2021/06/18
+				if (resetflag == 1) {
+					//curframe = s_owpTimeline->getCurrentTime();
+					curmodel->GetMotionFrame(&curframe);
 					s_owpLTimeline->setCurrentTime(curframe, false);
 					s_owpEulerGraph->setCurrentTime(curframe, false);
 				}
@@ -16797,6 +16809,12 @@ int OnFrameToolWnd()
 
 	}
 
+	if (s_btresetFlag == true) {
+		s_btresetFlag = false;
+		if (s_model) {
+			StartBt(s_model, TRUE, 2, 1);//flag = 2 --> resetflag = 1
+		}
+	}
 
 
 	if (s_deleteFlag){
@@ -17653,6 +17671,7 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setBtResetButtonListener([](){  
 		if (s_model) {
 			s_btresetFlag = true;
+			//StartBt(s_model, TRUE, 0, 1);
 		}
 	});
 	s_owpPlayerButton->setPrevRangeButtonListener([](){  
@@ -17779,6 +17798,8 @@ int CreateLongTimelineWnd()
 								_ASSERT(0);
 							}
 						}
+
+						s_underselectingframe = 0;//!!!! 2021/06/18
 					}
 
 
@@ -20819,14 +20840,21 @@ int OnTimeLineSelectFromSelectedKey()
 			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 
 			if (s_underselectingframe != 0) {
-				if (s_buttonselectstart <= s_buttonselectend) {
-					s_owpLTimeline->setCurrentTime(endframe, true);
-					s_owpEulerGraph->setCurrentTime(endframe, false);
-				}
-				else {
-					s_owpLTimeline->setCurrentTime(startframe, true);
-					s_owpEulerGraph->setCurrentTime(startframe, false);
-				}
+				//if (s_buttonselecttothelast == 0) {//tothelastのときも同じ処理
+					if (s_buttonselectstart <= s_buttonselectend) {
+						s_owpLTimeline->setCurrentTime(endframe, true);
+						s_owpEulerGraph->setCurrentTime(endframe, false);
+					}
+					else {
+						s_owpLTimeline->setCurrentTime(startframe, true);
+						s_owpEulerGraph->setCurrentTime(startframe, false);
+					}
+				//}
+				//else {
+				//	//to the last selectionの際にはカレントをアプライフレームへ
+				//	s_owpLTimeline->setCurrentTime(applyframe, true);
+				//	s_owpEulerGraph->setCurrentTime(applyframe, false);
+				//}
 			}
 			else {
 				s_owpLTimeline->setCurrentTime(applyframe, true);
@@ -20844,8 +20872,10 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 	s_buttonselecttothelast = tothelastflag;
 	if (s_owpLTimeline) {
 		s_owpLTimeline->selectClear(false);
-		if (s_buttonselectstart != s_buttonselectend) {
-			s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
+		if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastの際には　範囲を指定していなくても実行
+			double tmpmaxselectionframe;
+			tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
+			s_buttonselectend = tmpmaxselectionframe;//tothelast対応
 		}
 	}
 
@@ -21352,7 +21382,7 @@ HWND CreateMainWindow()
 
 
 	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.3"),
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.4"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		0, 0, (1216 + 450), 950,
@@ -28606,7 +28636,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.3 : ");
+	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.4 : ");
 
 
 	if (s_model) {

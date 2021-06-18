@@ -3982,7 +3982,8 @@ static void s_dummyfunc();
 			}
 		}
 
-		void OnButtonSelect(double startframe, double endframe, int tothelastflag)
+		//MaxSelectionFrameを返す
+		double OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
 			this->selectClear();
 
@@ -4054,6 +4055,8 @@ static void s_dummyfunc();
 			//if (rewriteOnChange){
 				callRewrite();
 			//}
+
+			return maxframe;
 		}
 
 		/// Method : すべての選択されているキーを取得する
@@ -4081,11 +4084,11 @@ static void s_dummyfunc();
 				}
 			}
 
-			if ((ret.size() == 1) && ((*ret.begin()).time != currentTime)) {
-				//初期状態。セレクトではない。
-				(lineData[(*ret.begin()).lineIndex])->key[(*ret.begin()).timeIndex]->select = false;
-				ret.clear();
-			}
+			//if ((ret.size() == 1) && ((*ret.begin()).time != currentTime)) {
+			//	//初期状態。セレクトではない。
+			//	(lineData[(*ret.begin()).lineIndex])->key[(*ret.begin()).timeIndex]->select = false;
+			//	ret.clear();
+			//}
 
 //_ASSERT(0);
 			return ret;

@@ -7199,7 +7199,10 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 
 
 	//CBone* lastpar = firstbone->GetParent();
-	int calcnum = 20;
+	//int calcnum = 20;
+
+	int calcnum = 1;//今はtargetposを細かく刻んでいないので１で良い
+	
 	int calccnt;
 	for( calccnt = 0; calccnt < calcnum; calccnt++ ){
 		curbone = firstbone;
@@ -8843,7 +8846,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 	}
 
 
-	int calcnum = 3;
+	//int calcnum = 3;
+	int calcnum = 1;//今はtargetposを細かく刻んでいないので１で良い
 
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
 	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
