@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3D", "MameBake3D.vcxproj", "{16FA9686-BD76-4B06-AE36-7B156CC35AFA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{50943E28-D093-44B3-AC1C-8F3BAC2917D2} = {50943E28-D093-44B3-AC1C-8F3BAC2917D2}
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9} = {DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}
 		{381D22C0-053F-437F-A4AB-3B57CB413001} = {381D22C0-053F-437F-A4AB-3B57CB413001}
 	EndProjectSection
 EndProject
@@ -17,6 +18,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Effects11", "..\Effects11\Effects11.vcxproj", "{4290AD57-72AB-4034-AA82-1EF3D9E3D545}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DS4HidInputLib", "..\MameBake3DLib\DS4HidInputLib\DS4HidInputLib.vcxproj", "{50943E28-D093-44B3-AC1C-8F3BAC2917D2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionBrushPluginsSDK", "..\MotionBrushPluginsSDK\MotionBrushPluginsSDK.vcxproj", "{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,6 +81,18 @@ Global
 		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|Win32.Build.0 = Release|Win32
 		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|x64.ActiveCfg = Release|x64
 		{50943E28-D093-44B3-AC1C-8F3BAC2917D2}.Release|x64.Build.0 = Release|x64
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Debug|ARM.ActiveCfg = Debug|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Debug|Win32.Build.0 = Debug|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Debug|x64.ActiveCfg = Debug|x64
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Debug|x64.Build.0 = Debug|x64
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|ARM.ActiveCfg = Release|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|ARM64.ActiveCfg = Release|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|Win32.ActiveCfg = Release|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|Win32.Build.0 = Release|Win32
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|x64.ActiveCfg = Release|x64
+		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

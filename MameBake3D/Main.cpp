@@ -128,7 +128,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #include <MotionPoint.h>
 
 #include "DSUpdateUnderTracking.h"
-
+#include "PluginElem.h"
 
 //#include <uxtheme.h>
 //#pragma ( lib, "UxTheme.lib" )
@@ -144,6 +144,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 
 #define WM_USER_FOR_BATCH_PROGRESS	(WM_USER + 1)
 
+#define MAXPLUGIN	255
 
 typedef struct tag_spaxis
 {
@@ -216,6 +217,12 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
+
+
+static int OnPluginClose();
+static int OnPluginPose();
+static int s_onselectplugin = 0;
+static CPluginElem* s_plugin = 0;
 
 
 static HWND GetOFWnd(POINT srcpoint);
@@ -2039,6 +2046,9 @@ void InitApp()
 
 	InitDSValues();
 
+	s_onselectplugin = 0;
+	s_plugin = 0;
+
 	s_rectime = 0.0;
 	s_reccnt = 0;
 	g_btsimurecflag = false;
@@ -3085,6 +3095,46 @@ void CALLBACK OnD3D11ReleasingSwapChain(void* pUserContext)
 }
 
 
+int OnPluginClose()
+{
+	if (!s_plugin) {
+		return 0;
+	}
+
+	int pluginno;
+	for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
+		if ((s_plugin + pluginno)->validflag == 1) {
+			(s_plugin + pluginno)->CallOnClose();
+		}
+	}
+	return 0;
+}
+
+int OnPluginPose()
+{
+	if (!s_plugin) {
+		return 0;
+	}
+
+	//if (!m_shandler || (m_mhandler->m_kindnum <= 0)) {
+	//	return 0;
+	//}
+	//int motid;
+	//motid = g_motdlg->GetMotCookie();
+	//if (motid < 0) {
+	//	return 0;
+	//}
+
+	//int pluginno;
+	//for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
+	//	if ((m_plugin + pluginno)->validflag == 1) {
+	//		(m_plugin + pluginno)->CallOnPose(motid);
+	//	}
+	//}
+
+	return 0;
+}
+
 //--------------------------------------------------------------------------------------
 // Release D3D11 resources created in OnD3D11CreateDevice 
 //--------------------------------------------------------------------------------------
@@ -3099,7 +3149,12 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	UNREFERENCED_PARAMETER(pUserContext);
 
 	OrgWindowListenMouse(false);
-
+	
+	OnPluginClose();
+	if (s_plugin) {
+		delete[] s_plugin;
+		s_plugin = 0;
+	}
 
 	//if (s_eventhook) {
 		//UnhookWinEvent(s_eventhook);
@@ -14719,93 +14774,109 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 		_ASSERT(0);
 		return -1;
 	}
-	memset(g_motionbrush_value, 0, sizeof(float) * (g_motionbrush_frameleng + 1));
+	::memset(g_motionbrush_value, 0, sizeof(float) * (g_motionbrush_frameleng + 1));
 
-	if (g_motionbrush_numframe >= 3) {
+	int ret = 0;
 
-		double halfcnt1, halfcnt2;
-		double tangent1, tangent2;
+	//if (g_motionbrush_numframe >= 3) {
+		if (s_plugin && (g_motionbrush_method >= 0) && (g_motionbrush_method <= MAXPLUGIN)) {
+			s_onselectplugin = 1;
 
-		int framecnt;
-		halfcnt1 = (g_motionbrush_applyframe - g_motionbrush_startframe);
-		halfcnt2 = (g_motionbrush_endframe - g_motionbrush_applyframe);
-		tangent1 = 1.0 / halfcnt1;
-		tangent2 = 1.0 / halfcnt2;
-
-		for (framecnt = 0; framecnt < g_motionbrush_frameleng; framecnt++) {
-			float curscale;
-			if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
-				if ((framecnt == g_motionbrush_startframe) || (framecnt == g_motionbrush_endframe)) {
-					if (g_motionbrush_method == 3) {
-						//矩形
-						curscale = 1.0;
-					}
-					else {
-						//矩形以外　両端０
-						curscale = 0.0;
-					}
-				}
-				else if (framecnt < g_motionbrush_applyframe) {
-					if (g_motionbrush_method == 0) {
-						curscale = (framecnt - g_motionbrush_startframe) * tangent1;
-					}
-					else if (g_motionbrush_method == 1) {
-						curscale = (1.0 + cos(PI + PI * (framecnt - g_motionbrush_startframe) / halfcnt1)) * 0.5;
-					}
-					else if (g_motionbrush_method == 2) {
-						curscale = (1.0 + cos(PI + PI * pow((framecnt - g_motionbrush_startframe) / halfcnt1, 2.0))) * 0.5;
-					}
-					else if (g_motionbrush_method == 3) {
-						curscale = 1.0;
-					}
-					else {
-						curscale = 1.0;
-					}
-				}
-				else if ((framecnt > g_motionbrush_applyframe) && (framecnt < g_motionbrush_endframe)) {
-					if (g_motionbrush_method == 0) {
-						curscale = 1.0 - (framecnt - g_motionbrush_applyframe) * tangent2;
-					}
-					else if (g_motionbrush_method == 1) {
-						curscale = (1.0 + cos(PI + PI * (g_motionbrush_endframe - framecnt) / halfcnt2)) * 0.5;
-					}
-					else if (g_motionbrush_method == 2) {
-						curscale = (1.0 + cos(PI + PI * pow((g_motionbrush_endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
-					}
-					else if (g_motionbrush_method == 3) {
-						curscale = 1.0;
-					}
-					else {
-						curscale = 1.0;
-					}
-				}
-				else if (framecnt == g_motionbrush_applyframe) {
-					curscale = 1.0;
-				}
-				else {
-					_ASSERT(0);
-					curscale = 0.0;
+			int pluginno;
+			for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
+				if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
+					//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
+					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_motionbrush_value);
+					_ASSERT(!ret);
 				}
 			}
-			else {
-				//選択範囲以外０
-				curscale = 0.0;
-			}
-			*(g_motionbrush_value + (int)framecnt) = curscale;
+
+			s_onselectplugin = 0;
 		}
-	}else{
-		double framecnt;
-		for (framecnt = 0.0; framecnt < g_motionbrush_frameleng; framecnt++) {
-			float curscale;
-			if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
-				curscale = 1.0;
-			}
-			else {
-				curscale = 0.0;
-			}
-			*(g_motionbrush_value + (int)framecnt) = curscale;
-		}
-	}
+
+	//	double halfcnt1, halfcnt2;
+	//	double tangent1, tangent2;
+
+	//	int framecnt;
+	//	halfcnt1 = (g_motionbrush_applyframe - g_motionbrush_startframe);
+	//	halfcnt2 = (g_motionbrush_endframe - g_motionbrush_applyframe);
+	//	tangent1 = 1.0 / halfcnt1;
+	//	tangent2 = 1.0 / halfcnt2;
+
+	//	for (framecnt = 0; framecnt < g_motionbrush_frameleng; framecnt++) {
+	//		float curscale;
+	//		if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
+	//			if ((framecnt == g_motionbrush_startframe) || (framecnt == g_motionbrush_endframe)) {
+	//				if (g_motionbrush_method == 3) {
+	//					//矩形
+	//					curscale = 1.0;
+	//				}
+	//				else {
+	//					//矩形以外　両端０
+	//					curscale = 0.0;
+	//				}
+	//			}
+	//			else if (framecnt < g_motionbrush_applyframe) {
+	//				if (g_motionbrush_method == 0) {
+	//					curscale = (framecnt - g_motionbrush_startframe) * tangent1;
+	//				}
+	//				else if (g_motionbrush_method == 1) {
+	//					curscale = (1.0 + cos(PI + PI * (framecnt - g_motionbrush_startframe) / halfcnt1)) * 0.5;
+	//				}
+	//				else if (g_motionbrush_method == 2) {
+	//					curscale = (1.0 + cos(PI + PI * pow((framecnt - g_motionbrush_startframe) / halfcnt1, 2.0))) * 0.5;
+	//				}
+	//				else if (g_motionbrush_method == 3) {
+	//					curscale = 1.0;
+	//				}
+	//				else {
+	//					curscale = 1.0;
+	//				}
+	//			}
+	//			else if ((framecnt > g_motionbrush_applyframe) && (framecnt < g_motionbrush_endframe)) {
+	//				if (g_motionbrush_method == 0) {
+	//					curscale = 1.0 - (framecnt - g_motionbrush_applyframe) * tangent2;
+	//				}
+	//				else if (g_motionbrush_method == 1) {
+	//					curscale = (1.0 + cos(PI + PI * (g_motionbrush_endframe - framecnt) / halfcnt2)) * 0.5;
+	//				}
+	//				else if (g_motionbrush_method == 2) {
+	//					curscale = (1.0 + cos(PI + PI * pow((g_motionbrush_endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
+	//				}
+	//				else if (g_motionbrush_method == 3) {
+	//					curscale = 1.0;
+	//				}
+	//				else {
+	//					curscale = 1.0;
+	//				}
+	//			}
+	//			else if (framecnt == g_motionbrush_applyframe) {
+	//				curscale = 1.0;
+	//			}
+	//			else {
+	//				_ASSERT(0);
+	//				curscale = 0.0;
+	//			}
+	//		}
+	//		else {
+	//			//選択範囲以外０
+	//			curscale = 0.0;
+	//		}
+	//		*(g_motionbrush_value + (int)framecnt) = curscale;
+	//	}
+	//}else{
+	//	double framecnt;
+	//	for (framecnt = 0.0; framecnt < g_motionbrush_frameleng; framecnt++) {
+	//		float curscale;
+	//		if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
+	//			curscale = 1.0;
+	//		}
+	//		else {
+	//			curscale = 0.0;
+	//		}
+	//		*(g_motionbrush_value + (int)framecnt) = curscale;
+	//	}
+	//}
 
 	if (onrefreshflag == false) {
 		UpdateEditedEuler();
@@ -17165,6 +17236,113 @@ int OnFrameInitBtWorld()
 	return 0;
 }
 
+int InitPluginMenu()
+{
+
+	//g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
+	//s_ui_motionbrush = g_SampleUI.GetControl(IDC_COMBO_MOTIONBRUSH_METHOD);
+	//_ASSERT(s_ui_motionbrush);
+	//s_dsutgui0.push_back(s_ui_motionbrush);
+	//s_dsutguiid0.push_back(IDC_COMBO_MOTIONBRUSH_METHOD);
+	//CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
+	//pComboBox5->RemoveAllItems();
+	//pComboBox5->AddItem(L"Linear", ULongToPtr(0));
+	//pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
+	//pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
+	//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
+	//pComboBox5->SetSelectedByData(ULongToPtr(0));
+
+
+	s_plugin = new CPluginElem[MAXPLUGIN];
+	if (!s_plugin) {
+		DbgOut(L"viewer : InitPluginMenu : plugin alloc error !!!\n");
+		_ASSERT(0);
+		return 1;
+	}
+
+	///////////
+	WCHAR plugindir[MAX_PATH];
+	wcscpy_s(plugindir, MAX_PATH, g_basedir);
+	WCHAR* lasten = 0;
+	WCHAR* last2en = 0;
+	lasten = wcsrchr(plugindir, TEXT('\\'));
+	*lasten = 0L;
+	last2en = wcsrchr(plugindir, TEXT('\\'));
+	*last2en = 0L;
+	wcscat_s(plugindir, MAX_PATH, L"\\BrushesFolder\\");
+
+	WCHAR finddir[_MAX_PATH];
+	finddir[0] = 0;
+	wcscpy_s(finddir, _MAX_PATH, plugindir);
+	wcscat(finddir, L"*.dll");
+
+	///////////
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+	hFind = FindFirstFile(finddir, &FindFileData);
+	int pluginno = 0;
+
+	if (hFind != INVALID_HANDLE_VALUE) {
+		WCHAR pluginpath[_MAX_PATH];
+		wcscpy_s(pluginpath, _MAX_PATH, plugindir);
+		wcscat(pluginpath, FindFileData.cFileName);
+		DbgOut(L"InitPluginMenu : FindFirst : %s\r\n", FindFileData.cFileName);
+
+		(s_plugin + pluginno)->SetFilePath(pluginpath);
+		(s_plugin + pluginno)->LoadPlugin();
+		pluginno++;
+
+		BOOL bret = 1;
+		while (bret != 0) {
+			bret = FindNextFile(hFind, &FindFileData);
+			if (bret != 0) {
+
+				wcscpy_s(pluginpath, _MAX_PATH, plugindir);
+				wcscat(pluginpath, FindFileData.cFileName);
+				DbgOut(L"InitPluginMenu : FindNext : %s\r\n", FindFileData.cFileName);
+
+				(s_plugin + pluginno)->SetFilePath(pluginpath);
+				(s_plugin + pluginno)->LoadPlugin();
+
+				pluginno++;
+			}
+		}
+
+		FindClose(hFind);
+	}
+
+	//g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
+	//s_ui_motionbrush = g_SampleUI.GetControl(IDC_COMBO_MOTIONBRUSH_METHOD);
+	//_ASSERT(s_ui_motionbrush);
+	//s_dsutgui0.push_back(s_ui_motionbrush);
+	//s_dsutguiid0.push_back(IDC_COMBO_MOTIONBRUSH_METHOD);
+	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
+	pComboBox5->RemoveAllItems();
+	
+	
+	//pComboBox5->AddItem(L"Linear", ULongToPtr(0));
+	//pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
+	//pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
+	//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
+	//pComboBox5->SetSelectedByData(ULongToPtr(0));
+	int setno = 0;
+	int firstmenuno = -1;
+	for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
+		if ((s_plugin + pluginno)->validflag == 1) {
+			int menuid = setno;
+			if (firstmenuno == -1) {
+				firstmenuno = menuid;
+			}
+			pComboBox5->AddItem((s_plugin + pluginno)->pluginname, ULongToPtr(menuid));
+			(s_plugin + pluginno)->menuid = menuid;
+			setno++;
+		}
+	}
+	pComboBox5->SetSelectedByData(ULongToPtr(firstmenuno));
+
+	return 0;
+}
+
 
 int CreateUtDialog()
 {
@@ -17330,18 +17508,24 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_slapplyrate);
 	s_dsutguiid0.push_back(IDC_SL_APPLYRATE);
 
+	
 	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
 	s_ui_motionbrush = g_SampleUI.GetControl(IDC_COMBO_MOTIONBRUSH_METHOD);
 	_ASSERT(s_ui_motionbrush);
 	s_dsutgui0.push_back(s_ui_motionbrush);
 	s_dsutguiid0.push_back(IDC_COMBO_MOTIONBRUSH_METHOD);
-	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
-	pComboBox5->RemoveAllItems();
-	pComboBox5->AddItem(L"Linear", ULongToPtr(0));
-	pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
-	pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
-	pComboBox5->AddItem(L"Rect", ULongToPtr(3));
-	pComboBox5->SetSelectedByData(ULongToPtr(0));
+	InitPluginMenu();
+	//CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
+	//pComboBox5->RemoveAllItems();
+	//pComboBox5->AddItem(L"Linear", ULongToPtr(0));
+	//pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
+	//pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
+	//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
+	//pComboBox5->SetSelectedByData(ULongToPtr(0));
+
+
+
+
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
 	swprintf_s(sz, 100, L"IK Order : %f", g_ikfirst);
@@ -28921,7 +29105,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	else {
 		dstvecopenfilename.clear();
 	}
-
+	return 0;
 }
 
 
@@ -29009,4 +29193,5 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 		*dstname = 0L;
 	}
 
+	return 0;
 }
