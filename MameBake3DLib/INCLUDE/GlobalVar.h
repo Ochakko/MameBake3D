@@ -111,6 +111,10 @@ int g_rigidmarkflag = 1;
 int g_pseudolocalflag = 1;
 int g_boneaxis = 1;//parent
 //int g_boneaxis = 0;//current
+int g_brushrepeats = 1;
+int g_brushmirrorUflag = 0;
+int g_brushmirrorVflag = 0;
+
 
 CTexBank*	g_texbank = 0;
 
@@ -243,6 +247,10 @@ extern int g_bonemarkflag;
 extern int g_rigidmarkflag;
 extern int g_pseudolocalflag;
 extern int g_boneaxis;
+extern int g_brushrepeats;
+extern int g_brushmirrorUflag;
+extern int g_brushmirrorVflag;
+
 
 extern CTexBank*	g_texbank;
 

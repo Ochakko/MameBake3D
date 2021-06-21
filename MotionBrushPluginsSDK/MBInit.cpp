@@ -46,7 +46,7 @@ MBPLUGIN_EXPORT int MBInit( WCHAR *exe_name )
 
 	result = 0;
 
-MBINIT_EXIT:
+//MBINIT_EXIT:
 	FreeLibrary(hModule);
 	return result;
 }

@@ -1102,6 +1102,9 @@ CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_RigidMarkCheckBox = 0;
 CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
 CDXUTCheckBox* s_LimitDegCheckBox = 0;
+CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
+CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
+
 
 //Left
 static CDXUTControl* s_ui_lightscale = 0;
@@ -1122,6 +1125,12 @@ static CDXUTControl* s_ui_slikrate = 0;
 static CDXUTControl* s_ui_applytotheend = 0;
 static CDXUTControl* s_ui_slerpoff = 0;
 static CDXUTControl* s_ui_absikon = 0;
+
+static CDXUTControl* s_ui_texbrushrepeats = 0;
+static CDXUTControl* s_ui_brushrepeats = 0;
+static CDXUTControl* s_ui_brushmirroru = 0;
+static CDXUTControl* s_ui_brushmirrorv = 0;
+
 
 //Left 2nd
 static CDXUTControl* s_ui_texthreadnum = 0;
@@ -1318,6 +1327,12 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 #define IDC_PHYSICS_IK_STOP			65
 #define IDC_BTRECSTART				66
+
+#define IDC_STATIC_BRUSHREPEATS		67
+#define IDC_SL_BRUSHREPEATS			68
+#define IDC_BRUSH_MIRROR_U			69
+#define IDC_BRUSH_MIRROR_V			70
+
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2139,6 +2154,63 @@ void InitApp()
 	s_rcmainmenuaimbarwnd.left = 0;
 	s_rcmainmenuaimbarwnd.bottom = 0;
 	s_rcmainmenuaimbarwnd.right = 0;
+
+
+	s_CamTargetCheckBox = 0;
+	//s_LightCheckBox = 0;
+	s_ApplyEndCheckBox = 0;
+	//s_SlerpOffCheckBox = 0;
+	s_AbsIKCheckBox = 0;
+	s_BoneMarkCheckBox = 0;
+	s_RigidMarkCheckBox = 0;
+	s_PseudoLocalCheckBox = 0;
+	s_LimitDegCheckBox = 0;
+	s_BrushMirrorUCheckBox = 0;
+	s_BrushMirrorVCheckBox = 0;
+	//Left
+	s_ui_lightscale = 0;
+	s_ui_dispbone = 0;
+	s_ui_disprigid = 0;
+	s_ui_boneaxis = 0;
+	s_ui_bone = 0;
+	s_ui_locktosel = 0;
+	s_ui_iklevel = 0;
+	s_ui_editmode = 0;
+	s_ui_texapplyrate = 0;
+	s_ui_slapplyrate = 0;
+	s_ui_motionbrush = 0;
+	s_ui_texikorder = 0;
+	s_ui_slikorder = 0;
+	s_ui_texikrate = 0;
+	s_ui_slikrate = 0;
+	s_ui_applytotheend = 0;
+	s_ui_slerpoff = 0;
+	s_ui_absikon = 0;
+	s_ui_texbrushrepeats = 0;
+	s_ui_brushrepeats = 0;
+	s_ui_brushmirroru = 0;
+	s_ui_brushmirrorv = 0;
+	//Left 2nd
+	s_ui_texthreadnum = 0;
+	s_ui_slthreadnum = 0;
+	s_ui_pseudolocal = 0;
+	s_ui_limiteul = 0;
+	s_ui_texspeed = 0;
+	s_ui_speed = 0;
+	//Bullet
+	s_ui_btstart = 0;
+	s_ui_btrecstart = 0;
+	s_ui_stopbt = 0;
+	s_ui_texbtcalccnt = 0;
+	s_ui_btcalccnt = 0;
+	s_ui_texerp = 0;
+	s_ui_erp = 0;
+	//PhysicsIK
+	s_ui_texphysmv = 0;
+	s_ui_slphysmv = 0;
+	s_ui_physrotstart = 0;
+	s_ui_physmvstart = 0;
+	s_ui_physikstop = 0;
 
 
 	bool bsuccess1 = false;
@@ -5988,10 +6060,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
 
         case IDC_SL_IKFIRST:
-			RollbackCurBoneNo();
-			g_ikfirst = (float)(g_SampleUI.GetSlider(IDC_SL_IKFIRST)->GetValue()) * 0.04f;
-		    swprintf_s( sz, 100, L"IK Order : %f", g_ikfirst );
-            g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
+			//RollbackCurBoneNo();
+			//g_ikfirst = (float)(g_SampleUI.GetSlider(IDC_SL_IKFIRST)->GetValue()) * 0.04f;
+		 //   swprintf_s( sz, 100, L"IK Order : %f", g_ikfirst );
+   //         g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
             break;
         case IDC_SL_IKRATE:
 			RollbackCurBoneNo();
@@ -6006,6 +6078,41 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 			s_bpWorld->setNumThread(g_numthread);
 			break;
+		case IDC_SL_BRUSHREPEATS:
+			RollbackCurBoneNo();
+			g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
+			swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
+			g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
+			if (s_editmotionflag < 0) {
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				if (result) {
+					_ASSERT(0);
+				}
+			}
+			break;
+		case IDC_BRUSH_MIRROR_U:
+			if (s_BrushMirrorUCheckBox) {
+				g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+			}
+			break;
+		case IDC_BRUSH_MIRROR_V:
+			if (s_BrushMirrorVCheckBox) {
+				g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+			}
+			break;
+
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
@@ -6060,22 +6167,22 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			}
 			break;
 		case IDC_COMBO_BONE:
-			RollbackCurBoneNo();
-			if (s_model){
-				pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-				tmpboneno = (int)PtrToUlong( pComboBox->GetSelectedData() );
-				tmpbone = s_model->GetBoneByID( tmpboneno );
-				if( tmpbone ){
-					s_curboneno = tmpboneno;
-				}
+			//RollbackCurBoneNo();
+			//if (s_model){
+			//	pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+			//	tmpboneno = (int)PtrToUlong( pComboBox->GetSelectedData() );
+			//	tmpbone = s_model->GetBoneByID( tmpboneno );
+			//	if( tmpbone ){
+			//		s_curboneno = tmpboneno;
+			//	}
 
-				if( s_curboneno >= 0 ){
-					int lineno = s_boneno2lineno[ s_curboneno ];
-					if( lineno >= 0 ){
-						s_owpTimeline->setCurrentLine( lineno, true );					
-					}
-				}
-			}
+			//	if( s_curboneno >= 0 ){
+			//		int lineno = s_boneno2lineno[ s_curboneno ];
+			//		if( lineno >= 0 ){
+			//			s_owpTimeline->setCurrentLine( lineno, true );					
+			//		}
+			//	}
+			//}
 			break;
 
 		case IDC_COMBO_EDITMODE:
@@ -8064,21 +8171,21 @@ CModel* OpenMQOFile()
 	modelelem.motmenuindex = 0;
 	s_modelindex.push_back( modelelem );
 
-    CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-	pComboBox->RemoveAllItems();
+ //   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+	//pComboBox->RemoveAllItems();
 
-	map<int, CBone*>::iterator itrbone;
-	for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-		ULONG boneno = (ULONG)itrbone->first;
-		CBone* curbone = itrbone->second;
-		if( curbone && (boneno >= 0) ){
-			char* nameptr = (char*)curbone->GetBoneName();
-			WCHAR wname[256];
-			ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
-			pComboBox->AddItem( wname, ULongToPtr( boneno ) );
-		}
-	}
+	//map<int, CBone*>::iterator itrbone;
+	//for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	//	ULONG boneno = (ULONG)itrbone->first;
+	//	CBone* curbone = itrbone->second;
+	//	if( curbone && (boneno >= 0) ){
+	//		char* nameptr = (char*)curbone->GetBoneName();
+	//		WCHAR wname[256];
+	//		ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+	//		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
+	//		pComboBox->AddItem( wname, ULongToPtr( boneno ) );
+	//	}
+	//}
 
 	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
 	s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
@@ -8251,20 +8358,20 @@ CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
 	modelelem.motmenuindex = 0;
 	s_modelindex.push_back( modelelem );
 
-    CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-	pComboBox->RemoveAllItems();
+ //   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+	//pComboBox->RemoveAllItems();
 
-	map<int, CBone*>::iterator itrbone;
-	for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-		ULONG boneno = (ULONG)itrbone->first;
-		CBone* curbone = itrbone->second;
-		if( curbone && (boneno >= 0) ){
-			char* nameptr = (char*)curbone->GetBoneName();
-			WCHAR wname[256];
-			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
-			pComboBox->AddItem( wname, ULongToPtr( boneno ) );
-		}
-	}
+	//map<int, CBone*>::iterator itrbone;
+	//for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	//	ULONG boneno = (ULONG)itrbone->first;
+	//	CBone* curbone = itrbone->second;
+	//	if( curbone && (boneno >= 0) ){
+	//		char* nameptr = (char*)curbone->GetBoneName();
+	//		WCHAR wname[256];
+	//		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
+	//		pComboBox->AddItem( wname, ULongToPtr( boneno ) );
+	//	}
+	//}
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -9037,21 +9144,21 @@ void refreshTimeline(OWP_Timeline& timeline){
 	//timeline.setCurrentTime(0.0);
 
 
-    CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-	pComboBox->RemoveAllItems();
-	if( s_model ){
-		map<int, CBone*>::iterator itrbone;
-		for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-			ULONG boneno = (ULONG)itrbone->first;
-			CBone* curbone = itrbone->second;
-			if( curbone && (boneno >= 0) ){
-				char* nameptr = (char*)curbone->GetBoneName();
-				WCHAR wname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
-				pComboBox->AddItem( wname, ULongToPtr( boneno ) );
-			}
-		}
-	}
+ //   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+	//pComboBox->RemoveAllItems();
+	//if( s_model ){
+	//	map<int, CBone*>::iterator itrbone;
+	//	for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	//		ULONG boneno = (ULONG)itrbone->first;
+	//		CBone* curbone = itrbone->second;
+	//		if( curbone && (boneno >= 0) ){
+	//			char* nameptr = (char*)curbone->GetBoneName();
+	//			WCHAR wname[256];
+	//			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
+	//			pComboBox->AddItem( wname, ULongToPtr( boneno ) );
+	//		}
+	//	}
+	//}
 
 	refreshEulerGraph();
 	s_owpEulerGraph->setCurrentTime(0.0, false);
@@ -14786,7 +14893,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 			for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
 				if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
 					//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
-					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_motionbrush_value);
+					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_motionbrush_value);
 					_ASSERT(!ret);
 				}
 			}
@@ -15828,13 +15935,13 @@ int ChangeCurrentBone()
 	static CBone* s_befbone = 0;
 
 	if (s_model) {
-		CDXUTComboBox* pComboBox;
-		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
-		CBone* pBone;
-		pBone = s_model->GetBoneByID(s_curboneno);
-		if (pBone) {
-			pComboBox->SetSelectedByData(ULongToPtr(s_curboneno));
-		}
+		//CDXUTComboBox* pComboBox;
+		//pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
+		//CBone* pBone;
+		//pBone = s_model->GetBoneByID(s_curboneno);
+		//if (pBone) {
+		//	pComboBox->SetSelectedByData(ULongToPtr(s_curboneno));
+		//}
 
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		if (curbone) {
@@ -15987,13 +16094,29 @@ int OnFrameKeyboard()
 
 int OnFrameUtCheckBox()
 {
-	g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
+	//g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
 	//g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
-	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
-	g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
-	g_rigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
-	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
-	g_limitdegflag = (int)s_LimitDegCheckBox->GetChecked();
+	if (s_AbsIKCheckBox) {
+		g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
+	}
+	if (s_BoneMarkCheckBox) {
+		g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
+	}
+	if (s_RigidMarkCheckBox) {
+		g_rigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
+	}
+	if (s_PseudoLocalCheckBox) {
+		g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	}
+	if (s_LimitDegCheckBox) {
+		g_limitdegflag = (int)s_LimitDegCheckBox->GetChecked();
+	}
+	if (s_BrushMirrorUCheckBox) {
+		g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
+	}
+	if (s_BrushMirrorVCheckBox) {
+		g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
+	}
 
 	return 0;
 }
@@ -17388,6 +17511,14 @@ int CreateUtDialog()
 	_ASSERT(s_ui_disprigid);
 	s_dsutgui0.push_back(s_ui_disprigid);
 	s_dsutguiid0.push_back(IDC_RMARK);
+
+	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"LockToSel", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
+	s_ui_locktosel = g_SampleUI.GetControl(IDC_CAMTARGET);
+	_ASSERT(s_ui_locktosel);
+	s_dsutgui0.push_back(s_ui_locktosel);
+	s_dsutguiid0.push_back(IDC_CAMTARGET);
+
+
 	/***
 	swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
 	g_SampleUI.AddStatic( IDC_NUM_LIGHTS_STATIC, sz, 35, iY += addh, ctrlxlen, ctrlh );
@@ -17427,11 +17558,11 @@ int CreateUtDialog()
 	pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
 
 
-	g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, ctrlxlen, ctrlh);
-	s_ui_bone = g_SampleUI.GetControl(IDC_COMBO_BONE);
-	_ASSERT(s_ui_bone);
-	s_dsutgui0.push_back(s_ui_bone);
-	s_dsutguiid0.push_back(IDC_COMBO_BONE);
+	//g_SampleUI.AddComboBox(IDC_COMBO_BONE, 35, iY += addh, ctrlxlen, ctrlh);
+	//s_ui_bone = g_SampleUI.GetControl(IDC_COMBO_BONE);
+	//_ASSERT(s_ui_bone);
+	//s_dsutgui0.push_back(s_ui_bone);
+	//s_dsutguiid0.push_back(IDC_COMBO_BONE);
 
 	/***
 	g_SampleUI.AddButton( IDC_FK_XP, L"Rot X+", 35, iY += addh, 60, ctrlh );
@@ -17454,11 +17585,6 @@ int CreateUtDialog()
 	//iY += addh;
 
 
-	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"LockToSel", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
-	s_ui_locktosel = g_SampleUI.GetControl(IDC_CAMTARGET);
-	_ASSERT(s_ui_locktosel);
-	s_dsutgui0.push_back(s_ui_locktosel);
-	s_dsutguiid0.push_back(IDC_CAMTARGET);
 
 	//iY += addh;
 
@@ -17524,19 +17650,39 @@ int CreateUtDialog()
 	//pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 
-
-
-
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
-	swprintf_s(sz, 100, L"IK Order : %f", g_ikfirst);
-	g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	s_ui_texikorder = g_SampleUI.GetControl(IDC_STATIC_IKFIRST);
-	_ASSERT(s_ui_texikorder);
-	g_SampleUI.AddSlider(IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikfirst * 25.0f));
-	s_ui_slikorder = g_SampleUI.GetControl(IDC_SL_IKFIRST);
-	_ASSERT(s_ui_slikorder);
-	s_dsutgui0.push_back(s_ui_slikorder);
-	s_dsutguiid0.push_back(IDC_SL_IKFIRST);
+	swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
+	g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	s_ui_texbrushrepeats = g_SampleUI.GetControl(IDC_STATIC_BRUSHREPEATS);
+	_ASSERT(s_ui_texbrushrepeats);
+	g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, 50, iY += addh, 100, ctrlh, 0, 10, (int)g_brushrepeats);
+	s_ui_brushrepeats = g_SampleUI.GetControl(IDC_SL_BRUSHREPEATS);
+	_ASSERT(s_ui_brushrepeats);
+	s_dsutgui0.push_back(s_ui_brushrepeats);
+	s_dsutguiid0.push_back(IDC_SL_BRUSHREPEATS);
+
+	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_U, L"Brsh Mirror U", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_BrushMirrorUCheckBox);
+	s_ui_brushmirroru = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_U);
+	_ASSERT(s_ui_brushmirroru);
+	s_dsutgui0.push_back(s_ui_brushmirroru);
+	s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_U);
+
+	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V, L"Brsh Mirror V", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_BrushMirrorVCheckBox);
+	s_ui_brushmirrorv = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_V);
+	_ASSERT(s_ui_brushmirrorv);
+	s_dsutgui0.push_back(s_ui_brushmirrorv);
+	s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_V);
+
+	////swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
+	//swprintf_s(sz, 100, L"IK Order : %f", g_ikfirst);
+	//g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	//s_ui_texikorder = g_SampleUI.GetControl(IDC_STATIC_IKFIRST);
+	//_ASSERT(s_ui_texikorder);
+	//g_SampleUI.AddSlider(IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikfirst * 25.0f));
+	//s_ui_slikorder = g_SampleUI.GetControl(IDC_SL_IKFIRST);
+	//_ASSERT(s_ui_slikorder);
+	//s_dsutgui0.push_back(s_ui_slikorder);
+	//s_dsutguiid0.push_back(IDC_SL_IKFIRST);
 
 	swprintf_s(sz, 100, L"IK Trans : %f", g_ikrate);
 	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
@@ -17548,11 +17694,11 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_slikrate);
 	s_dsutguiid0.push_back(IDC_SL_IKRATE);
 
-	g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"ApplyToTheEnd", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
-	s_ui_applytotheend = g_SampleUI.GetControl(IDC_APPLY_TO_THEEND);
-	_ASSERT(s_ui_applytotheend);
-	s_dsutgui0.push_back(s_ui_applytotheend);
-	s_dsutguiid0.push_back(IDC_APPLY_TO_THEEND);
+	//g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"ApplyToTheEnd", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
+	//s_ui_applytotheend = g_SampleUI.GetControl(IDC_APPLY_TO_THEEND);
+	//_ASSERT(s_ui_applytotheend);
+	//s_dsutgui0.push_back(s_ui_applytotheend);
+	//s_dsutguiid0.push_back(IDC_APPLY_TO_THEEND);
 
 	//g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKOff", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
 	//s_ui_slerpoff = g_SampleUI.GetControl(IDC_SLERP_OFF);
@@ -22302,6 +22448,21 @@ void GUISetVisible_Left()
 	if (s_ui_slerpoff) {
 		s_ui_slerpoff->SetVisible(nextvisible);
 	}
+
+
+	if (s_ui_texbrushrepeats) {
+		s_ui_texbrushrepeats->SetVisible(nextvisible);
+	}
+	if (s_ui_brushrepeats) {
+		s_ui_brushrepeats->SetVisible(nextvisible);
+	}
+	if (s_ui_brushmirroru) {
+		s_ui_brushmirroru->SetVisible(nextvisible);
+	}
+	if (s_ui_brushmirrorv) {
+		s_ui_brushmirrorv->SetVisible(nextvisible);
+	}
+
 
 	s_spguisw[SPGUISW_LEFT].state = nextvisible;
 

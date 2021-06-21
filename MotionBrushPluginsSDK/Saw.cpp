@@ -20,6 +20,8 @@ static HANDLE hfile = INVALID_HANDLE_VALUE;
 
 static int Write2File( WCHAR* lpFormat, ... );
 
+#define PI          3.14159265358979323846f
+
 
 //---------------------------------------------------------------------------
 //  DllMain
@@ -97,7 +99,7 @@ MBPLUGIN_EXPORT int MBOnPose( int motid )
 //  この関数が、一回、呼ばれます。
 //----------------------------------------------------------------------------
 
-MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, float* dstvalue)
+MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, float* dstvalue)
 {
 	int MB2version;
 	if (MBGetVersion) {
@@ -107,48 +109,111 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 
 	if ((srcstartframe >= 0.0) && (srcstartframe < 1e5) && (srcendframe >= srcstartframe) && (srcendframe < 1e5) &&
 		(srcapplyframe >= srcstartframe) && (srcapplyframe <= srcendframe) &&
-		(srcframeleng > srcendframe) && (srcframeleng < 1e5) && dstvalue) {
+		(srcframeleng > srcendframe) && (srcframeleng < 1e5) && 
+		(srcrepeats >= 1) && (srcrepeats <= 10) &&
+		dstvalue) {
 
 		double numframe = srcendframe - srcstartframe + 1;
 		::memset(dstvalue, 0, sizeof(float) * srcframeleng);
 
 
-		if (numframe >= 3) {
+		//１周期が３フレーム以上になるように実際の繰り返し回数と周期を調整する
+		int repeats;
+		repeats = srcrepeats;
+		int frameT;//周期(フレーム数)
+		frameT = (int)(numframe / srcrepeats);
+		while ((frameT >= (srcapplyframe + 1)) && (frameT < 3) && (repeats >= 2)) {
+			repeats--;
+			frameT = (int)(numframe / srcrepeats);
+		}
+
+		if (frameT >= 3) {
 			double halfcnt1, halfcnt2;
 			double tangent1, tangent2;
 
-			int framecnt;
-			halfcnt1 = (srcapplyframe - srcstartframe);
-			halfcnt2 = (srcendframe - srcapplyframe);
-			tangent1 = 1.0 / halfcnt1;
-			tangent2 = 1.0 / halfcnt2;
 
-			for (framecnt = 0; framecnt < srcframeleng; framecnt++) {
-				float curscale;
-				if ((framecnt >= (int)srcstartframe) && (framecnt <= srcendframe)) {
-					if ((framecnt == srcstartframe) || (framecnt == srcendframe)) {
-						//矩形以外　両端０
-						curscale = 0.0;
-					}
-					else if (framecnt < srcapplyframe) {
-						curscale = (framecnt - srcstartframe) * tangent1;
-					}
-					else if ((framecnt > srcapplyframe) && (framecnt < srcendframe)) {
-						curscale = 1.0 - (framecnt - srcapplyframe) * tangent2;
-					}
-					else if (framecnt == srcapplyframe) {
-						curscale = 1.0;
+			int repeatscnt;
+			for (repeatscnt = 0; repeatscnt < repeats; repeatscnt++) {
+				int startframe;
+				int endframe;
+				int applyframe;
+				bool invu;
+				bool minusv;
+
+				startframe = srcstartframe + repeatscnt * frameT;
+				endframe = startframe + frameT;
+				applyframe = startframe + (srcapplyframe - srcstartframe);
+				if (srcmirroru) {
+					if ((repeatscnt % 2) == 0) {
+						invu = false;
 					}
 					else {
-						_ASSERT(0);
-						curscale = 0.0;
+						invu = true;
 					}
 				}
 				else {
-					//選択範囲以外０
-					curscale = 0.0;
+					invu = false;
 				}
-				*(dstvalue + (int)framecnt) = curscale;
+				if (srcmirrorv) {
+					if ((repeatscnt % 2) == 0) {
+						minusv = false;
+					}
+					else {
+						minusv = true;
+					}
+				}
+				else {
+					minusv = false;
+				}
+
+
+
+				if (invu) {
+					applyframe = startframe + (endframe - applyframe);
+				}
+
+				int framecnt;
+				halfcnt1 = (applyframe - startframe);
+				halfcnt2 = (endframe - applyframe);
+				tangent1 = 1.0 / halfcnt1;
+				tangent2 = 1.0 / halfcnt2;
+
+				for (framecnt = startframe; framecnt <= endframe; framecnt++) {
+					float curscale;
+					if ((framecnt >= (int)startframe) && (framecnt <= endframe)) {
+						if ((framecnt == startframe) || (framecnt == endframe)) {
+							//矩形以外　両端０
+							curscale = 0.0;
+						}
+						else if (framecnt < applyframe) {
+							curscale = (framecnt - startframe) * tangent1;
+							if (minusv) {
+								curscale *= -1.0f;
+							}
+						}
+						else if ((framecnt > applyframe) && (framecnt < endframe)) {
+							curscale = 1.0 - (framecnt - applyframe) * tangent2;
+							if (minusv) {
+								curscale *= -1.0f;
+							}
+						}
+						else if (framecnt == applyframe) {
+							curscale = 1.0;
+							if (minusv) {
+								curscale *= -1.0f;
+							}
+						}
+						else {
+							_ASSERT(0);
+							curscale = 0.0;
+						}
+					}
+					else {
+						//選択範囲以外０
+						curscale = 0.0;
+					}
+					*(dstvalue + (int)framecnt) = curscale;
+				}
 			}
 		}
 		else {
@@ -171,7 +236,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 	}
 
 
-OnSelectExit:
+//OnSelectExit:
 	if( hfile != INVALID_HANDLE_VALUE ){
 		FlushFileBuffers( hfile );
 		SetEndOfFile( hfile );
