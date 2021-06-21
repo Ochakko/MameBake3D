@@ -70,7 +70,7 @@ MBPLUGIN_EXPORT int MBGetPlugInID(DWORD *Product, DWORD *ID)
 MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 {
 	// プラグイン名
-	return L"Cos";
+	return L"-CosX Brush";
 }
 
 //---------------------------------------------------------------------------
@@ -99,7 +99,7 @@ MBPLUGIN_EXPORT int MBOnPose( int motid )
 //  この関数が、一回、呼ばれます。
 //----------------------------------------------------------------------------
 
-MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, float* dstvalue)
+MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue)
 {
 	int MB2version;
 	if (MBGetVersion) {
@@ -139,6 +139,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 				int applyframe;
 				bool invu;
 				bool minusv;
+				bool div2;
 
 				startframe = srcstartframe + repeatscnt * frameT;
 				endframe = startframe + frameT;
@@ -155,6 +156,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 					invu = false;
 				}
 				if (srcmirrorv) {
+					div2 = srcdiv2;
 					if ((repeatscnt % 2) == 0) {
 						minusv = false;
 					}
@@ -163,6 +165,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 					}
 				}
 				else {
+					div2 = false;
 					minusv = false;
 				}
 
@@ -181,26 +184,98 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 				for (framecnt = startframe; framecnt <= endframe; framecnt++) {
 					float curscale;
 					if ((framecnt >= (int)startframe) && (framecnt <= endframe)) {
-						if ((framecnt == startframe) || (framecnt == endframe)) {
-							//矩形以外　両端０
-							curscale = 0.0;
+						//if ((framecnt == startframe) || (framecnt == endframe)) {
+						//	//矩形以外　両端０
+						//	curscale = 0.0;
+						//}
+						if (framecnt == startframe) {
+							if (repeatscnt == 0) {
+								curscale = 0.0f;
+							}
+							else {
+								if (div2) {
+									curscale = 0.5f;
+								}
+								else {
+									curscale = 0.0f;
+								}
+							}
+						}
+						else if (framecnt == endframe) {
+							if (repeatscnt == (repeats - 1)) {
+								curscale = 0.0f;
+							}
+							else {
+								if (div2) {
+									curscale = 0.5f;
+								}
+								else {
+									curscale = 0.0f;
+								}
+							}
 						}
 						else if (framecnt < applyframe) {
-							curscale = (1.0 + cos(PI + PI * (framecnt - startframe) / halfcnt1)) * 0.5;
-							if (minusv) {
-								curscale *= -1.0f;
+							if (repeatscnt == 0) {
+
+								//repeatscnt == 0 でminusvは無い
+
+								if (div2) {
+									curscale = (cos(PI + PI * ((framecnt - startframe) / halfcnt1)));
+									curscale = (curscale + 1.0) * 0.5f;
+								}
+								else {
+									curscale = (1.0 + cos(PI + PI * ((framecnt - startframe) / halfcnt1))) * 0.5;
+									if (minusv) {
+										curscale *= -1.0f;
+									}
+								}
+							}
+							else {
+								curscale = (1.0 + cos(PI + PI * ((framecnt - startframe) / halfcnt1))) * 0.5;
+								if (minusv) {
+									curscale *= -1.0f;
+								}
+								if (div2) {
+									curscale = (curscale + 1.0) * 0.5f;
+								}
 							}
 						}
 						else if ((framecnt > applyframe) && (framecnt < endframe)) {
-							curscale = (1.0 + cos(PI + PI * (endframe - framecnt) / halfcnt2)) * 0.5;
-							if (minusv) {
-								curscale *= -1.0f;
+							if (repeatscnt == (repeats - 1)) {
+								if (div2) {
+									if (minusv) {
+										//minus div2 : applyframeのとき０　そこから　０へ戻るには０
+										curscale = 0.0f;
+									}
+									else {
+										curscale = (cos(PI + PI * ((endframe - framecnt) / halfcnt2)));
+										curscale = (curscale + 1.0) * 0.5f;
+									}
+								}
+								else {
+									curscale = (1.0 + cos(PI + PI * ((endframe - framecnt) / halfcnt2))) * 0.5;
+									if (minusv) {
+										curscale *= -1.0f;
+									}
+								}
+							}
+							else {
+								curscale = (1.0 + cos(PI + PI * ((endframe - framecnt) / halfcnt2))) * 0.5;
+								if (minusv) {
+									curscale *= -1.0f;
+								}
+								if (div2) {
+									curscale = (curscale + 1.0) * 0.5f;
+								}
 							}
 						}
 						else if (framecnt == applyframe) {
 							curscale = 1.0;
 							if (minusv) {
 								curscale *= -1.0f;
+							}
+							if (div2) {
+								curscale = (curscale + 1.0) * 0.5f;
 							}
 						}
 						else {
@@ -214,6 +289,65 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 					}
 					*(dstvalue + (int)framecnt) = curscale;
 				}
+
+				//if (srcmirrorv) {
+				//	if ((repeatscnt % 2) == 0) {
+				//		minusv = false;
+				//	}
+				//	else {
+				//		minusv = true;
+				//	}
+				//}
+				//else {
+				//	minusv = false;
+				//}
+
+				//if (invu) {
+				//	applyframe = startframe + (endframe - applyframe);
+				//}
+
+				//int framecnt;
+				//halfcnt1 = (applyframe - startframe);
+				//halfcnt2 = (endframe - applyframe);
+				//tangent1 = 1.0 / halfcnt1;
+				//tangent2 = 1.0 / halfcnt2;
+
+				//for (framecnt = startframe; framecnt <= endframe; framecnt++) {
+				//	float curscale;
+				//	if ((framecnt >= (int)startframe) && (framecnt <= endframe)) {
+				//		if ((framecnt == startframe) || (framecnt == endframe)) {
+				//			//矩形以外　両端０
+				//			curscale = 0.0;
+				//		}
+				//		else if (framecnt < applyframe) {
+				//			curscale = (1.0 + cos(PI + PI * (framecnt - startframe) / halfcnt1)) * 0.5;
+				//			if (minusv) {
+				//				curscale *= -1.0f;
+				//			}
+				//		}
+				//		else if ((framecnt > applyframe) && (framecnt < endframe)) {
+				//			curscale = (1.0 + cos(PI + PI * (endframe - framecnt) / halfcnt2)) * 0.5;
+				//			if (minusv) {
+				//				curscale *= -1.0f;
+				//			}
+				//		}
+				//		else if (framecnt == applyframe) {
+				//			curscale = 1.0;
+				//			if (minusv) {
+				//				curscale *= -1.0f;
+				//			}
+				//		}
+				//		else {
+				//			_ASSERT(0);
+				//			curscale = 0.0;
+				//		}
+				//	}
+				//	else {
+				//		//選択範囲以外０
+				//		curscale = 0.0;
+				//	}
+				//	*(dstvalue + (int)framecnt) = curscale;
+				//}
 			}
 		}
 		else {

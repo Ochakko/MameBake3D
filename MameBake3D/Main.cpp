@@ -1104,6 +1104,8 @@ CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
 CDXUTCheckBox* s_LimitDegCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
+CDXUTCheckBox* s_IfMirrorVDiv2CheckBox = 0;
+
 
 
 //Left
@@ -1130,6 +1132,7 @@ static CDXUTControl* s_ui_texbrushrepeats = 0;
 static CDXUTControl* s_ui_brushrepeats = 0;
 static CDXUTControl* s_ui_brushmirroru = 0;
 static CDXUTControl* s_ui_brushmirrorv = 0;
+static CDXUTControl* s_ui_ifmirrorvdiv2 = 0;
 
 
 //Left 2nd
@@ -1332,7 +1335,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_SL_BRUSHREPEATS			68
 #define IDC_BRUSH_MIRROR_U			69
 #define IDC_BRUSH_MIRROR_V			70
-
+#define IDC_BRUSH_MIRROR_V_DIV2		71
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2167,6 +2170,8 @@ void InitApp()
 	s_LimitDegCheckBox = 0;
 	s_BrushMirrorUCheckBox = 0;
 	s_BrushMirrorVCheckBox = 0;
+	s_IfMirrorVDiv2CheckBox = 0;
+
 	//Left
 	s_ui_lightscale = 0;
 	s_ui_dispbone = 0;
@@ -2190,6 +2195,8 @@ void InitApp()
 	s_ui_brushrepeats = 0;
 	s_ui_brushmirroru = 0;
 	s_ui_brushmirrorv = 0;
+	s_ui_ifmirrorvdiv2 = 0;
+
 	//Left 2nd
 	s_ui_texthreadnum = 0;
 	s_ui_slthreadnum = 0;
@@ -4584,14 +4591,15 @@ void RenderText( double fTime )
 
     // Output statistics
     g_pTxtHelper->Begin();
-    g_pTxtHelper->SetInsertionPos( 2, 0 );
+    //g_pTxtHelper->SetInsertionPos( 2, 0 );
+	g_pTxtHelper->SetInsertionPos(175, 0);
     g_pTxtHelper->SetForegroundColor( DirectX::XMFLOAT4( 1.0f, 1.0f, 0.0f, 1.0f ) );
     //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
     //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
     g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
-
+    //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
+	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -6112,7 +6120,17 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				}
 			}
 			break;
-
+		case IDC_BRUSH_MIRROR_V_DIV2:
+			if (s_IfMirrorVDiv2CheckBox) {
+				g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+			}
+			break;
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
@@ -14893,7 +14911,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 			for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
 				if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
 					//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
-					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_motionbrush_value);
+					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_ifmirrorVDiv2flag, g_motionbrush_value);
 					_ASSERT(!ret);
 				}
 			}
@@ -16116,6 +16134,9 @@ int OnFrameUtCheckBox()
 	}
 	if (s_BrushMirrorVCheckBox) {
 		g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
+	}
+	if (s_IfMirrorVDiv2CheckBox) {
+		g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
 	}
 
 	return 0;
@@ -17476,7 +17497,8 @@ int CreateUtDialog()
 
 	int iY;
 	g_SampleUI.SetCallback(OnGUIEvent); 
-	iY = 15;
+	//iY = 15;
+	iY = 0;
 
 	int ctrlh = 25;
 	int addh = ctrlh + 2;
@@ -17623,18 +17645,6 @@ int CreateUtDialog()
 	s_ikkind = 0;
 
 
-	swprintf_s(sz, 100, L"TopPos : %d", g_applyrate);
-	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	s_ui_texapplyrate = g_SampleUI.GetControl(IDC_STATIC_APPLYRATE);
-	_ASSERT(s_ui_texapplyrate);
-	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
-	s_ui_slapplyrate = g_SampleUI.GetControl(IDC_SL_APPLYRATE);
-	_ASSERT(s_ui_slapplyrate);
-	CEditRange::SetApplyRate(g_applyrate);
-	s_dsutgui0.push_back(s_ui_slapplyrate);
-	s_dsutguiid0.push_back(IDC_SL_APPLYRATE);
-
-	
 	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
 	s_ui_motionbrush = g_SampleUI.GetControl(IDC_COMBO_MOTIONBRUSH_METHOD);
 	_ASSERT(s_ui_motionbrush);
@@ -17649,13 +17659,30 @@ int CreateUtDialog()
 	//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
 	//pComboBox5->SetSelectedByData(ULongToPtr(0));
 
+	swprintf_s(sz, 100, L"TopPos : %d", g_applyrate);
+	//g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, 18);
+	s_ui_texapplyrate = g_SampleUI.GetControl(IDC_STATIC_APPLYRATE);
+	_ASSERT(s_ui_texapplyrate);
+	//g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
+	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_applyrate);
+	s_ui_slapplyrate = g_SampleUI.GetControl(IDC_SL_APPLYRATE);
+	_ASSERT(s_ui_slapplyrate);
+	CEditRange::SetApplyRate(g_applyrate);
+	s_dsutgui0.push_back(s_ui_slapplyrate);
+	s_dsutguiid0.push_back(IDC_SL_APPLYRATE);
+
+	
+
 
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
 	swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
-	g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, 35, iY += addh, ctrlxlen, 18);
 	s_ui_texbrushrepeats = g_SampleUI.GetControl(IDC_STATIC_BRUSHREPEATS);
 	_ASSERT(s_ui_texbrushrepeats);
-	g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, 50, iY += addh, 100, ctrlh, 0, 10, (int)g_brushrepeats);
+	//g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, 50, iY += addh, 100, ctrlh, 0, 10, (int)g_brushrepeats);
+	g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, 50, iY += (18 + 2), 100, ctrlh, 0, 10, (int)g_brushrepeats);
 	s_ui_brushrepeats = g_SampleUI.GetControl(IDC_SL_BRUSHREPEATS);
 	_ASSERT(s_ui_brushrepeats);
 	s_dsutgui0.push_back(s_ui_brushrepeats);
@@ -17673,6 +17700,13 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_brushmirrorv);
 	s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_V);
 
+	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V_DIV2, L"If Mirror V then Div2", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_IfMirrorVDiv2CheckBox);
+	s_ui_ifmirrorvdiv2 = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_V_DIV2);
+	_ASSERT(s_ui_ifmirrorvdiv2);
+	s_dsutgui0.push_back(s_ui_ifmirrorvdiv2);
+	s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_V_DIV2);
+
+
 	////swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
 	//swprintf_s(sz, 100, L"IK Order : %f", g_ikfirst);
 	//g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, ctrlxlen, ctrlh);
@@ -17685,10 +17719,12 @@ int CreateUtDialog()
 	//s_dsutguiid0.push_back(IDC_SL_IKFIRST);
 
 	swprintf_s(sz, 100, L"IK Trans : %f", g_ikrate);
-	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, 18);
 	s_ui_texikrate = g_SampleUI.GetControl(IDC_STATIC_IKRATE);
 	_ASSERT(s_ui_texikrate);
-	g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+	//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+	g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += (18 + 2), 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
 	s_ui_slikrate = g_SampleUI.GetControl(IDC_SL_IKRATE);
 	_ASSERT(s_ui_slikrate);
 	s_dsutgui0.push_back(s_ui_slikrate);
@@ -17720,10 +17756,12 @@ int CreateUtDialog()
 	int startx = s_mainwidth / 2 - 180;
 
 	swprintf_s(sz, 100, L"Speed: %0.2f", g_dspeed);
-	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_SPEED_STATIC, sz, startx, iY += addh, ctrlxlen, 18);
 	s_ui_texspeed = g_SampleUI.GetControl(IDC_SPEED_STATIC);
 	_ASSERT(s_ui_texspeed);
-	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+	//g_SampleUI.AddSlider(IDC_SPEED, startx, iY += addh, 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
+	g_SampleUI.AddSlider(IDC_SPEED, startx, iY += (18 + 2), 100, ctrlh, 0, 700, (int)(g_dspeed * 100.0f));
 	s_ui_speed = g_SampleUI.GetControl(IDC_SPEED);
 	_ASSERT(s_ui_speed);
 	s_dsutgui1.push_back(s_ui_speed);//!!!!!!!!!!!!!!!! dsutgui1
@@ -17780,10 +17818,12 @@ int CreateUtDialog()
 	s_dsutguiid2.push_back(IDC_STOP_BT);
 
 	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
-	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, 18);
 	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
 	_ASSERT(s_ui_texthreadnum);
-	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh2, 100, ctrlh, 1, 4, g_numthread);
+	//g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh2, 100, ctrlh, 1, 4, g_numthread);
+	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += (18 + 2), 100, ctrlh, 1, 4, g_numthread);
 	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
 	_ASSERT(s_ui_slthreadnum);
 	s_dsutgui2.push_back(s_ui_slthreadnum);
@@ -17794,20 +17834,24 @@ int CreateUtDialog()
 	startx = s_mainwidth / 2 - 50 + 130;
 
 	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
-	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_BTCALCCNT, sz, startx, iY += addh, ctrlxlen, 18);
 	s_ui_texbtcalccnt = g_SampleUI.GetControl(IDC_STATIC_BTCALCCNT);
 	_ASSERT(s_ui_texbtcalccnt);
-	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
+	//g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += addh, 100, ctrlh, 1, 100, (int)(g_btcalccnt));
+	g_SampleUI.AddSlider(IDC_BTCALCCNT, startx, iY += (18 + 2), 100, ctrlh, 1, 100, (int)(g_btcalccnt));
 	s_ui_btcalccnt = g_SampleUI.GetControl(IDC_BTCALCCNT);
 	_ASSERT(s_ui_btcalccnt);
 	s_dsutgui2.push_back(s_ui_btcalccnt);
 	s_dsutguiid2.push_back(IDC_BTCALCCNT);
 
 	swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
-	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_ERP, sz, startx, iY += addh, ctrlxlen, 18);
 	s_ui_texerp = g_SampleUI.GetControl(IDC_STATIC_ERP);
 	_ASSERT(s_ui_texerp);
-	g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(g_erp * 5000.0 + 0.4));
+	//g_SampleUI.AddSlider(IDC_ERP, startx, iY += addh, 100, ctrlh, 0, 5000, (int)(g_erp * 5000.0 + 0.4));
+	g_SampleUI.AddSlider(IDC_ERP, startx, iY += (18 + 2), 100, ctrlh, 0, 5000, (int)(g_erp * 5000.0 + 0.4));
 	s_ui_erp = g_SampleUI.GetControl(IDC_ERP);
 	_ASSERT(s_ui_erp);
 	s_dsutgui2.push_back(s_ui_erp);
@@ -17826,10 +17870,12 @@ int CreateUtDialog()
 	startx = s_mainwidth - 150;
 
 	swprintf_s(sz, 100, L"PhysEditRate : %.3f", g_physicsmvrate);
-	g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, 18);
 	s_ui_texphysmv = g_SampleUI.GetControl(IDC_STATIC_PHYSICS_MV_SLIDER);
 	_ASSERT(s_ui_texphysmv);
-	g_SampleUI.AddSlider(IDC_PHYSICS_MV_SLIDER, startx, iY += addh, 100, ctrlh, 0, 100, (int)(g_physicsmvrate * 100.0f));
+	//g_SampleUI.AddSlider(IDC_PHYSICS_MV_SLIDER, startx, iY += addh, 100, ctrlh, 0, 100, (int)(g_physicsmvrate * 100.0f));
+	g_SampleUI.AddSlider(IDC_PHYSICS_MV_SLIDER, startx, iY += (18 + 2), 100, ctrlh, 0, 100, (int)(g_physicsmvrate * 100.0f));
 	s_ui_slphysmv = g_SampleUI.GetControl(IDC_PHYSICS_MV_SLIDER);
 	_ASSERT(s_ui_slphysmv);
 	s_dsutgui3.push_back(s_ui_slphysmv);
@@ -22462,7 +22508,9 @@ void GUISetVisible_Left()
 	if (s_ui_brushmirrorv) {
 		s_ui_brushmirrorv->SetVisible(nextvisible);
 	}
-
+	if (s_ui_ifmirrorvdiv2) {
+		s_ui_ifmirrorvdiv2->SetVisible(nextvisible);
+	}
 
 	s_spguisw[SPGUISW_LEFT].state = nextvisible;
 

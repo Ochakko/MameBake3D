@@ -114,7 +114,7 @@ int g_boneaxis = 1;//parent
 int g_brushrepeats = 1;
 int g_brushmirrorUflag = 0;
 int g_brushmirrorVflag = 0;
-
+int g_ifmirrorVDiv2flag = 0;
 
 CTexBank*	g_texbank = 0;
 
@@ -250,6 +250,7 @@ extern int g_boneaxis;
 extern int g_brushrepeats;
 extern int g_brushmirrorUflag;
 extern int g_brushmirrorVflag;
+extern int g_ifmirrorVDiv2flag;
 
 
 extern CTexBank*	g_texbank;

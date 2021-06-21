@@ -25,13 +25,13 @@ public:
 
 
 	//int (*MBOnSelectPlugin)();
-	int (*MBCreateMotionBrush)(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, float* dstvalue);
+	int (*MBCreateMotionBrush)(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue);
 	int (*MBOnClose)();
 	int (*MBOnPose)( int motid );
 
 public:
 	//int CallOnSelectPlugin();
-	int CreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, float* dstvalue);
+	int CreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue);
 	int CallOnClose();
 	int CallOnPose( int motid );
 

@@ -41,7 +41,7 @@ CPluginElem::~CPluginElem()
 	UnloadPlugin();
 }
 
-int CPluginElem::CreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, float* dstvalue)
+int CPluginElem::CreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue)
 {
 	int ret = 0;
 
@@ -51,7 +51,7 @@ int CPluginElem::CreateMotionBrush(double srcstartframe, double srcendframe, dou
 			(srcapplyframe >= srcstartframe) && (srcapplyframe <= srcendframe) &&
 			(srcframeleng > srcendframe) && (srcframeleng < 1e5) && dstvalue) {
 
-			ret = MBCreateMotionBrush(srcstartframe, srcendframe, srcapplyframe, srcframeleng, srcrepeats, srcmirroru, srcmirrorv, dstvalue);
+			ret = MBCreateMotionBrush(srcstartframe, srcendframe, srcapplyframe, srcframeleng, srcrepeats, srcmirroru, srcmirrorv, srcdiv2, dstvalue);
 
 		}
 		else {
