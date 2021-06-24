@@ -14901,107 +14901,55 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	}
 	::memset(g_motionbrush_value, 0, sizeof(float) * (g_motionbrush_frameleng + 1));
 
+	float* tempvalue;
+	tempvalue = (float*)malloc(sizeof(float) * (g_motionbrush_frameleng + 1));
+	if (!tempvalue) {
+		_ASSERT(0);
+		return -1;
+	}
+	::memset(tempvalue, 0, sizeof(float) * (g_motionbrush_frameleng + 1));
+
+
 	int ret = 0;
 
-	//if (g_motionbrush_numframe >= 3) {
-		if (s_plugin && (g_motionbrush_method >= 0) && (g_motionbrush_method <= MAXPLUGIN)) {
-			s_onselectplugin = 1;
+	if (s_plugin && (g_motionbrush_method >= 0) && (g_motionbrush_method <= MAXPLUGIN)) {
+		s_onselectplugin = 1;
 
-			int pluginno;
-			for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
-				if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
-					//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
-					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_ifmirrorVDiv2flag, g_motionbrush_value);
-					_ASSERT(!ret);
-				}
+		int pluginno;
+		for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
+			if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
+				//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
+				ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_ifmirrorVDiv2flag, tempvalue);
+				_ASSERT(!ret);
 			}
-
-			s_onselectplugin = 0;
 		}
 
-	//	double halfcnt1, halfcnt2;
-	//	double tangent1, tangent2;
+		int cpframe;
+		for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
+			float cpvalue;
 
-	//	int framecnt;
-	//	halfcnt1 = (g_motionbrush_applyframe - g_motionbrush_startframe);
-	//	halfcnt2 = (g_motionbrush_endframe - g_motionbrush_applyframe);
-	//	tangent1 = 1.0 / halfcnt1;
-	//	tangent2 = 1.0 / halfcnt2;
+			if ((cpframe >= (int)g_motionbrush_startframe) && (cpframe <= (int)g_motionbrush_endframe)) {
+				cpvalue = *(tempvalue + cpframe);
+				cpvalue = min(1.0f, cpvalue);
+				cpvalue = max(-1.0f, cpvalue);
+			}
+			else {
+				cpvalue = 0.0f;
+			}
 
-	//	for (framecnt = 0; framecnt < g_motionbrush_frameleng; framecnt++) {
-	//		float curscale;
-	//		if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
-	//			if ((framecnt == g_motionbrush_startframe) || (framecnt == g_motionbrush_endframe)) {
-	//				if (g_motionbrush_method == 3) {
-	//					//矩形
-	//					curscale = 1.0;
-	//				}
-	//				else {
-	//					//矩形以外　両端０
-	//					curscale = 0.0;
-	//				}
-	//			}
-	//			else if (framecnt < g_motionbrush_applyframe) {
-	//				if (g_motionbrush_method == 0) {
-	//					curscale = (framecnt - g_motionbrush_startframe) * tangent1;
-	//				}
-	//				else if (g_motionbrush_method == 1) {
-	//					curscale = (1.0 + cos(PI + PI * (framecnt - g_motionbrush_startframe) / halfcnt1)) * 0.5;
-	//				}
-	//				else if (g_motionbrush_method == 2) {
-	//					curscale = (1.0 + cos(PI + PI * pow((framecnt - g_motionbrush_startframe) / halfcnt1, 2.0))) * 0.5;
-	//				}
-	//				else if (g_motionbrush_method == 3) {
-	//					curscale = 1.0;
-	//				}
-	//				else {
-	//					curscale = 1.0;
-	//				}
-	//			}
-	//			else if ((framecnt > g_motionbrush_applyframe) && (framecnt < g_motionbrush_endframe)) {
-	//				if (g_motionbrush_method == 0) {
-	//					curscale = 1.0 - (framecnt - g_motionbrush_applyframe) * tangent2;
-	//				}
-	//				else if (g_motionbrush_method == 1) {
-	//					curscale = (1.0 + cos(PI + PI * (g_motionbrush_endframe - framecnt) / halfcnt2)) * 0.5;
-	//				}
-	//				else if (g_motionbrush_method == 2) {
-	//					curscale = (1.0 + cos(PI + PI * pow((g_motionbrush_endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
-	//				}
-	//				else if (g_motionbrush_method == 3) {
-	//					curscale = 1.0;
-	//				}
-	//				else {
-	//					curscale = 1.0;
-	//				}
-	//			}
-	//			else if (framecnt == g_motionbrush_applyframe) {
-	//				curscale = 1.0;
-	//			}
-	//			else {
-	//				_ASSERT(0);
-	//				curscale = 0.0;
-	//			}
-	//		}
-	//		else {
-	//			//選択範囲以外０
-	//			curscale = 0.0;
-	//		}
-	//		*(g_motionbrush_value + (int)framecnt) = curscale;
-	//	}
-	//}else{
-	//	double framecnt;
-	//	for (framecnt = 0.0; framecnt < g_motionbrush_frameleng; framecnt++) {
-	//		float curscale;
-	//		if ((framecnt >= (int)g_motionbrush_startframe) && (framecnt <= g_motionbrush_endframe)) {
-	//			curscale = 1.0;
-	//		}
-	//		else {
-	//			curscale = 0.0;
-	//		}
-	//		*(g_motionbrush_value + (int)framecnt) = curscale;
-	//	}
-	//}
+			*(g_motionbrush_value + cpframe) = cpvalue;
+		}
+
+
+
+		s_onselectplugin = 0;
+	}
+
+
+	if (tempvalue) {
+		free(tempvalue);
+		tempvalue = 0;
+	}
 
 	if (onrefreshflag == false) {
 		UpdateEditedEuler();
@@ -21758,7 +21706,7 @@ HWND CreateMainWindow()
 
 
 	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.4"),
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.5"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		0, 0, (1216 + 450), 950,
@@ -29029,7 +28977,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.4 : ");
+	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.5 : ");
 
 
 	if (s_model) {

@@ -10,17 +10,11 @@
 #include <Commdlg.h>
 
 #include "MBPlugin.h"
-//#include "../coef_r.h"
 
 #include <crtdbg.h>// <--- _ASSERTマクロ
 
 
-extern HINSTANCE g_hInstance;
-static HANDLE hfile = INVALID_HANDLE_VALUE;
-
-static int Write2File( WCHAR* lpFormat, ... );
-
-#define PI          3.14159265358979323846f
+#define PI          3.141592f
 
 
 //---------------------------------------------------------------------------
@@ -44,7 +38,7 @@ static int Write2File( WCHAR* lpFormat, ... );
 //    プラグインIDを返す。
 //    この関数は起動時に呼び出される。
 //---------------------------------------------------------------------------
-MBPLUGIN_EXPORT int MBGetPlugInID(DWORD *Product, DWORD *ID)
+MBPLUGIN_EXPORT int MBGetPlugInID(DWORD* Product, DWORD* ID)
 {
 	// プロダクト名(制作者名)とIDを、全部で64bitの値として返す
 	// 値は他と重複しないようなランダムなもので良い
@@ -52,11 +46,11 @@ MBPLUGIN_EXPORT int MBGetPlugInID(DWORD *Product, DWORD *ID)
 	char* cproduct;
 	cproduct = (char*)Product;
 	*cproduct = 'o';
-	*( cproduct + 1 ) = 'c';
-	*( cproduct + 2 ) = 'h';
-	*( cproduct + 3 ) = 'a';
+	*(cproduct + 1) = 'c';
+	*(cproduct + 2) = 'h';
+	*(cproduct + 3) = 'a';
 
-	*ID      = 0x00000002;
+	*ID = 0x00000002;
 
 	return 0;
 }
@@ -65,7 +59,7 @@ MBPLUGIN_EXPORT int MBGetPlugInID(DWORD *Product, DWORD *ID)
 //---------------------------------------------------------------------------
 //  MBGetPlugInName
 //    プラグイン名を返す。
-//    RokDeBone2のプラグインメニューに、この名前が表示される。
+//    MotionBrushのブラシの種類のコンボボックスに、この名前が表示される。
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 {
@@ -75,7 +69,7 @@ MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 
 //---------------------------------------------------------------------------
 //  MBOnClose
-//    RokDeBone2が終了する直前にRokDeBone2から呼ばれる。
+//    MotionBrushが終了する直前にMotionBrushから呼ばれる。
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT int MBOnClose(void)
 {
@@ -84,10 +78,9 @@ MBPLUGIN_EXPORT int MBOnClose(void)
 
 //---------------------------------------------------------------------------
 //  MBOnPose
-//    RokDeBone2でユーザーがボーンの姿勢を編集し、マウスを離したときにRokDeBone2から呼ばれる。
-//    モーションポイントは変更されているがFillUpはされていない状態で呼ばれる。
+//   現在未使用
 //---------------------------------------------------------------------------
-MBPLUGIN_EXPORT int MBOnPose( int motid )
+MBPLUGIN_EXPORT int MBOnPose(int motid)
 {
 	return 0;
 }
@@ -95,10 +88,9 @@ MBPLUGIN_EXPORT int MBOnPose( int motid )
 
 //----------------------------------------------------------------------------
 //  MBOnSelectPlugin
-//  RokDeBone2のプラグインメニューで、MBGetPlugInNameの文字列を選択したときに、
-//  この関数が、一回、呼ばれます。
+//  MotionBrushで複数フレームを選択した時、ブラシの種類を選んだ時、ブラシのパラメータを変えたときに呼ばれます。
+//  選択された複数フレーム分のブラシ値を計算して配列dstvalueにセットします。
 //----------------------------------------------------------------------------
-
 MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue)
 {
 	int MB2version;
@@ -290,64 +282,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 					*(dstvalue + (int)framecnt) = curscale;
 				}
 
-				//if (srcmirrorv) {
-				//	if ((repeatscnt % 2) == 0) {
-				//		minusv = false;
-				//	}
-				//	else {
-				//		minusv = true;
-				//	}
-				//}
-				//else {
-				//	minusv = false;
-				//}
-
-				//if (invu) {
-				//	applyframe = startframe + (endframe - applyframe);
-				//}
-
-				//int framecnt;
-				//halfcnt1 = (applyframe - startframe);
-				//halfcnt2 = (endframe - applyframe);
-				//tangent1 = 1.0 / halfcnt1;
-				//tangent2 = 1.0 / halfcnt2;
-
-				//for (framecnt = startframe; framecnt <= endframe; framecnt++) {
-				//	float curscale;
-				//	if ((framecnt >= (int)startframe) && (framecnt <= endframe)) {
-				//		if ((framecnt == startframe) || (framecnt == endframe)) {
-				//			//矩形以外　両端０
-				//			curscale = 0.0;
-				//		}
-				//		else if (framecnt < applyframe) {
-				//			curscale = (1.0 + cos(PI + PI * (framecnt - startframe) / halfcnt1)) * 0.5;
-				//			if (minusv) {
-				//				curscale *= -1.0f;
-				//			}
-				//		}
-				//		else if ((framecnt > applyframe) && (framecnt < endframe)) {
-				//			curscale = (1.0 + cos(PI + PI * (endframe - framecnt) / halfcnt2)) * 0.5;
-				//			if (minusv) {
-				//				curscale *= -1.0f;
-				//			}
-				//		}
-				//		else if (framecnt == applyframe) {
-				//			curscale = 1.0;
-				//			if (minusv) {
-				//				curscale *= -1.0f;
-				//			}
-				//		}
-				//		else {
-				//			_ASSERT(0);
-				//			curscale = 0.0;
-				//		}
-				//	}
-				//	else {
-				//		//選択範囲以外０
-				//		curscale = 0.0;
-				//	}
-				//	*(dstvalue + (int)framecnt) = curscale;
-				//}
+				
 			}
 		}
 		else {
@@ -370,43 +305,8 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 	}
 
 
-//OnSelectExit:
-	if( hfile != INVALID_HANDLE_VALUE ){
-		FlushFileBuffers( hfile );
-		SetEndOfFile( hfile );
-		CloseHandle( hfile );
-		hfile = INVALID_HANDLE_VALUE;
-	}
-
 	//MessageBox( NULL, L"SawMotionBrushの処理を終わりました。", L"SawMotionBrush", MB_OK );
 
 	return 0;
 }
 
-
-int Write2File( WCHAR* lpFormat, ... )
-{
-	if( hfile == INVALID_HANDLE_VALUE ){
-		return 0;
-	}
-
-	int ret;
-	va_list Marker;
-	unsigned long wleng, writeleng;
-	WCHAR outchar[4098];
-			
-	va_start( Marker, lpFormat );
-	ret = vswprintf_s( outchar, 4096, lpFormat, Marker );
-	va_end( Marker );
-
-	if( ret < 0 )
-		return 1;
-
-	wleng = (unsigned long)wcslen( outchar );
-	WriteFile( hfile, outchar, wleng, &writeleng, NULL );
-	if( wleng != writeleng ){
-		return 1;
-	}
-
-	return 0;	
-}

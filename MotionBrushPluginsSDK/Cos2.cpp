@@ -10,17 +10,11 @@
 #include <Commdlg.h>
 
 #include "MBPlugin.h"
-//#include "../coef_r.h"
 
 #include <crtdbg.h>// <--- _ASSERTマクロ
 
 
-extern HINSTANCE g_hInstance;
-static HANDLE hfile = INVALID_HANDLE_VALUE;
-
-static int Write2File( WCHAR* lpFormat, ... );
-
-#define PI          3.14159265358979323846f
+#define PI          3.141592f
 
 
 //---------------------------------------------------------------------------
@@ -65,7 +59,7 @@ MBPLUGIN_EXPORT int MBGetPlugInID(DWORD *Product, DWORD *ID)
 //---------------------------------------------------------------------------
 //  MBGetPlugInName
 //    プラグイン名を返す。
-//    RokDeBone2のプラグインメニューに、この名前が表示される。
+//    MotionBrushのブラシの種類のコンボボックスに、この名前が表示される。
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 {
@@ -75,7 +69,7 @@ MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 
 //---------------------------------------------------------------------------
 //  MBOnClose
-//    RokDeBone2が終了する直前にRokDeBone2から呼ばれる。
+//    MotionBrushが終了する直前にMotionBrushから呼ばれる。
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT int MBOnClose(void)
 {
@@ -84,8 +78,7 @@ MBPLUGIN_EXPORT int MBOnClose(void)
 
 //---------------------------------------------------------------------------
 //  MBOnPose
-//    RokDeBone2でユーザーがボーンの姿勢を編集し、マウスを離したときにRokDeBone2から呼ばれる。
-//    モーションポイントは変更されているがFillUpはされていない状態で呼ばれる。
+//   現在未使用
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT int MBOnPose( int motid )
 {
@@ -95,8 +88,8 @@ MBPLUGIN_EXPORT int MBOnPose( int motid )
 
 //----------------------------------------------------------------------------
 //  MBOnSelectPlugin
-//  RokDeBone2のプラグインメニューで、MBGetPlugInNameの文字列を選択したときに、
-//  この関数が、一回、呼ばれます。
+//  MotionBrushで複数フレームを選択した時、ブラシの種類を選んだ時、ブラシのパラメータを変えたときに呼ばれます。
+//  選択された複数フレーム分のブラシ値を計算して配列dstvalueにセットします。
 //----------------------------------------------------------------------------
 
 MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue)
@@ -220,23 +213,20 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 								//repeatscnt == 0 でminusvは無い
 
 								if (div2) {
-									curscale = (cos(PI + PI * pow((framecnt - startframe) / halfcnt1, 2.0)));
-									curscale = (curscale + 1.0) * 0.5f;
+									curscale = (cos(PI + PI * pow((framecnt - startframe) / halfcnt1, 2.0)));//-1.0から1.0
+									curscale = (curscale + 1.0) * 0.5f;//0.0から1.0
 								}
 								else {
 									curscale = (1.0 + cos(PI + PI * pow((framecnt - startframe) / halfcnt1, 2.0))) * 0.5;
-									if (minusv) {
-										curscale *= -1.0f;
-									}
 								}
 							}
 							else {
-								curscale = (1.0 + cos(PI + PI * pow((framecnt - startframe) / halfcnt1, 2.0))) * 0.5;
+								curscale = (1.0 + cos(PI + PI * pow((framecnt - startframe) / halfcnt1, 2.0))) * 0.5;//0.0から1.0
 								if (minusv) {
-									curscale *= -1.0f;
+									curscale *= -1.0f;//0.0から-1.0
 								}
 								if (div2) {
-									curscale = (curscale + 1.0) * 0.5f;
+									curscale = (curscale + 1.0) * 0.5f;//0.5から1.0 または 0.5から0.0
 								}
 							}
 						}
@@ -248,34 +238,34 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 										curscale = 0.0f;
 									}
 									else {
-										curscale = (cos(PI + PI * pow((endframe - framecnt) / halfcnt2, 2.0)));
-										curscale = (curscale + 1.0) * 0.5f;
+										curscale = (cos(PI + PI * pow((endframe - framecnt) / halfcnt2, 2.0)));//-1.0から1.0
+										curscale = (curscale + 1.0) * 0.5f;//0.0から1.0
 									}
 								}
 								else {
-									curscale = (1.0 + cos(PI + PI * pow((endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
+									curscale = (1.0 + cos(PI + PI * pow((endframe - framecnt) / halfcnt2, 2.0))) * 0.5;//0.0から1.0
 									if (minusv) {
-										curscale *= -1.0f;
+										curscale *= -1.0f;//-1.0から0.0
 									}
 								}
 							}
 							else {
-								curscale = (1.0 + cos(PI + PI * pow((endframe - framecnt) / halfcnt2, 2.0))) * 0.5;
+								curscale = (1.0 + cos(PI + PI * pow((endframe - framecnt) / halfcnt2, 2.0))) * 0.5;//0.0から1.0
 								if (minusv) {
-									curscale *= -1.0f;
+									curscale *= -1.0f;//0.0から-1.0
 								}
 								if (div2) {
-									curscale = (curscale + 1.0) * 0.5f;
+									curscale = (curscale + 1.0) * 0.5f;//0.5から1.0　または　0.5から0.0
 								}
 							}
 						}
 						else if (framecnt == applyframe) {
 							curscale = 1.0;
 							if (minusv) {
-								curscale *= -1.0f;
+								curscale *= -1.0f;//-1.0
 							}
 							if (div2) {
-								curscale = (curscale + 1.0) * 0.5f;
+								curscale = (curscale + 1.0) * 0.5f;//0.0
 							}
 						}
 						else {
@@ -310,44 +300,9 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 		return 1;
 	}
 
-
-//OnSelectExit:
-	if( hfile != INVALID_HANDLE_VALUE ){
-		FlushFileBuffers( hfile );
-		SetEndOfFile( hfile );
-		CloseHandle( hfile );
-		hfile = INVALID_HANDLE_VALUE;
-	}
-
 	//MessageBox( NULL, L"SawMotionBrushの処理を終わりました。", L"SawMotionBrush", MB_OK );
 
 	return 0;
 }
 
 
-int Write2File( WCHAR* lpFormat, ... )
-{
-	if( hfile == INVALID_HANDLE_VALUE ){
-		return 0;
-	}
-
-	int ret;
-	va_list Marker;
-	unsigned long wleng, writeleng;
-	WCHAR outchar[4098];
-			
-	va_start( Marker, lpFormat );
-	ret = vswprintf_s( outchar, 4096, lpFormat, Marker );
-	va_end( Marker );
-
-	if( ret < 0 )
-		return 1;
-
-	wleng = (unsigned long)wcslen( outchar );
-	WriteFile( hfile, outchar, wleng, &writeleng, NULL );
-	if( wleng != writeleng ){
-		return 1;
-	}
-
-	return 0;	
-}
