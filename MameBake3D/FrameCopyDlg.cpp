@@ -4,6 +4,9 @@
 #include <Model.h>
 #include <Bone.h>
 
+#define DBGH
+#include <dbg.h>
+
 using namespace std;
 
 //extern
@@ -28,6 +31,9 @@ int CFrameCopyDlg::InitParams()
 	m_inittimerflag = false;
 	m_timerid = 339;
 
+
+	ZeroMemory(m_tmpmqopath, sizeof(WCHAR) * MAX_PATH);
+
 	m_hImageList = 0;
 	m_iImage = 0;
 	m_iSelect = 0;
@@ -46,11 +52,11 @@ int CFrameCopyDlg::InitParams()
 			swprintf_s( &(m_slotname[slotno][0]), SLOTNAMELEN, L"Slot %d", slotno );
 		}
 
-		ZeroMemory( m_influencenum, sizeof( int ) * FCSLOTNUM );
-		ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+		::ZeroMemory( m_influencenum, sizeof( int ) * FCSLOTNUM );
+		::ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
 
-		ZeroMemory( m_ignorenum, sizeof( int ) * FCSLOTNUM );
-		ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+		::ZeroMemory( m_ignorenum, sizeof( int ) * FCSLOTNUM );
+		::ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
 	}
 
 	m_validelemmap.clear();
@@ -367,7 +373,8 @@ int CFrameCopyDlg::ParamsToDlg()
 		const WCHAR* bonename = m_model->GetBoneByID( m_ignorelist[m_slotno][listno2] )->GetWBoneName();
 		WCHAR addstr[2048];
 		ZeroMemory( addstr, sizeof( WCHAR ) * 2048 );
-		swprintf_s( addstr, 2048, L"%d : %s", m_influencelist[m_slotno][listno2], bonename );
+		//swprintf_s( addstr, 2048, L"%d : %s", m_influencelist[m_slotno][listno2], bonename );
+		swprintf_s(addstr, 2048, L"%d : %s", m_ignorelist[m_slotno][listno2], bonename);
 
 		lres = m_list2_wnd.SendMessage( LB_ADDSTRING, 0, (LPARAM)addstr );
 		if( (lres == LB_ERR) || (lres == LB_ERRSPACE) ){
@@ -634,4 +641,367 @@ LRESULT CFrameCopyDlg::OnTimer(UINT, WPARAM, LPARAM, BOOL&)
 {
 	OnDSUpdate();
 	return TRUE;
+}
+
+
+LRESULT CFrameCopyDlg::OnLoad(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	LoadTBOFile();
+	return 0;
+}
+LRESULT CFrameCopyDlg::OnSave(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	WriteTBOFile();
+	return 0;
+}
+
+
+int CFrameCopyDlg::WriteTBOFile()
+{
+	if (!m_model) {
+		return 0;
+	}
+	if (!m_model->GetCurMotInfo()) {
+		return 0;
+	}
+
+	OPENFILENAME ofn;
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = m_dlg_wnd;
+	ofn.hInstance = 0;
+	ofn.lpstrFilter = L"TargetBone(*.tbo)\0*.tbo\0";
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxCustFilter = 0;
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = m_tmpmqopath;
+	ofn.nMaxFile = MULTIPATH;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	ofn.nFileOffset = 0;
+	ofn.nFileExtension = 0;
+	ofn.lpstrDefExt = NULL;
+	ofn.lCustData = NULL;
+	ofn.lpfnHook = NULL;
+	ofn.lpTemplateName = NULL;
+
+	//s_getfilenamehwnd = 0;
+	//s_getfilenametreeview = 0;
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	if (GetOpenFileNameW(&ofn) == IDOK) {
+		HANDLE hfile = CreateFile(m_tmpmqopath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+			FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+		if (hfile == INVALID_HANDLE_VALUE) {
+			DbgOut(L"TBOFile : WriteTBOFile : file open error !!!\n");
+			_ASSERT(0);
+			return 1;
+		}
+
+		char TBOheader[256];
+		::ZeroMemory(TBOheader, sizeof(char) * 256);
+		strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.6");
+		DWORD wleng = 0;
+		WriteFile(hfile, TBOheader, sizeof(char) * 256, &wleng, NULL);
+		if (wleng != (sizeof(char) * 256)) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		//WCHAR m_slotname[FCSLOTNUM][SLOTNAMELEN];
+		wleng = 0;
+		WriteFile(hfile, m_slotname, sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN, &wleng, NULL);
+		if (wleng != (sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN)) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		//int m_influencenum[FCSLOTNUM];
+		wleng = 0;
+		WriteFile(hfile, m_influencenum, sizeof(int) * FCSLOTNUM, &wleng, NULL);
+		if (wleng != (sizeof(int) * FCSLOTNUM)) {
+			_ASSERT(0);
+			return 1;
+		}
+
+
+		//int m_influencelist[FCSLOTNUM][FRAMECOPYLISTLENG];
+		wleng = 0;
+		WriteFile(hfile, m_influencelist, sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG, &wleng, NULL);
+		if (wleng != (sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG)) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		//int m_ignorenum[FCSLOTNUM];
+		wleng = 0;
+		WriteFile(hfile, m_ignorenum, sizeof(int) * FCSLOTNUM, &wleng, NULL);
+		if (wleng != (sizeof(int) * FCSLOTNUM)) {
+			_ASSERT(0);
+			return 1;
+		}
+		//int m_ignorelist[FCSLOTNUM][FRAMECOPYLISTLENG];
+		wleng = 0;
+		WriteFile(hfile, m_ignorelist, sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG, &wleng, NULL);
+		if (wleng != (sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG)) {
+			_ASSERT(0);
+			return 1;
+		}
+
+
+		FlushFileBuffers(hfile);
+		CloseHandle(hfile);
+	}
+
+	//InterlockedExchange(&g_undertrackingRMenu, 0);
+	//UnhookWinEvent(hhook);
+	//s_getfilenamehwnd = 0;
+	//s_getfilenametreeview = 0;
+
+	return 0;
+}
+
+
+bool CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufleng)
+{
+	if (!dstTBOheader || !srcbuf || (bufleng <= 0)) {
+		_ASSERT(0);
+		return false;
+	}
+
+	if (bufleng <= (sizeof(char) * 256)) {
+		_ASSERT(0);
+		return false;
+	}
+
+	MoveMemory(dstTBOheader, srcbuf, sizeof(char) * 256);
+
+	//typedef struct tag_CPTheader
+	//{
+	//	char magicstr[32];//EvaluateGlobalPosition
+	//	char version[16];
+	//	char fbxdate[256];
+	//	int animno;
+	//	int jointnum;
+	//	int framenum;
+	//	int reserved;
+	//}CPTHEADER;
+
+	int magicstrlen;
+	magicstrlen = strlen(dstTBOheader);
+	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
+		_ASSERT(0);
+		return false;
+	}
+	int cmp;
+	cmp = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.6");
+	if (cmp != 0) {
+		_ASSERT(0);
+		return false;
+	}
+
+	DWORD datasize;
+	datasize = (bufleng - sizeof(char) * 256);
+	DWORD chksize;
+	chksize = (sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN) +
+		(sizeof(int) * FCSLOTNUM) +
+		(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG) +
+		(sizeof(int) * FCSLOTNUM) +
+		(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+
+	if (datasize != chksize) {
+		_ASSERT(0);
+		return false;
+	}
+
+
+	return true;
+}
+
+
+bool CFrameCopyDlg::LoadTBOFile()
+{
+	if (!m_model) {
+		_ASSERT(0);
+		return false;
+	}
+	if (!m_model->GetCurMotInfo()) {
+		_ASSERT(0);
+		return false;
+	}
+
+	OPENFILENAME ofn;
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = m_dlg_wnd;
+	ofn.hInstance = 0;
+	ofn.lpstrFilter = L"TargetBone(*.tbo)\0*.tbo\0";
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxCustFilter = 0;
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = m_tmpmqopath;
+	ofn.nMaxFile = MULTIPATH;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	ofn.nFileOffset = 0;
+	ofn.nFileExtension = 0;
+	ofn.lpstrDefExt = NULL;
+	ofn.lCustData = NULL;
+	ofn.lpfnHook = NULL;
+	ofn.lpTemplateName = NULL;
+
+	//s_getfilenamehwnd = 0;
+	//s_getfilenametreeview = 0;
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//InterlockedExchange(&g_undertrackingRMenu, 1);
+
+	if (GetOpenFileNameW(&ofn) == IDOK) {
+		HANDLE hfile;
+		hfile = CreateFile(m_tmpmqopath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+			FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+		if (hfile == INVALID_HANDLE_VALUE) {
+			_ASSERT(0);
+			return false;
+		}
+
+		DWORD sizehigh;
+		DWORD bufleng;
+		bufleng = GetFileSize(hfile, &sizehigh);
+		if (bufleng <= 0) {
+			_ASSERT(0);
+			return false;
+		}
+		if (sizehigh != 0) {
+			_ASSERT(0);
+			return false;
+		}
+		char* newbuf;
+		newbuf = (char*)malloc(sizeof(char) * bufleng);//bufleng + 1
+		if (!newbuf) {
+			_ASSERT(0);
+			return false;
+		}
+		ZeroMemory(newbuf, sizeof(char) * bufleng);
+		DWORD rleng, readleng;
+		rleng = bufleng;
+		BOOL bsuccess;
+		bsuccess = ReadFile(hfile, (void*)newbuf, rleng, &readleng, NULL);
+		if (!bsuccess || (rleng != readleng)) {
+			_ASSERT(0);
+			CloseHandle(hfile);
+			if (!newbuf) {
+				_ASSERT(0);
+				return false;
+			}
+			return false;
+		}
+
+
+		char TBOheader[256];
+		ZeroMemory(TBOheader, sizeof(char) * 256);
+		bool isvalid;
+		isvalid = ValidateTBOFile(TBOheader, newbuf, bufleng);
+		if (!isvalid) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+
+
+		DWORD curpos;
+		curpos = sizeof(char) * 256;
+
+		//WCHAR m_slotname[FCSLOTNUM][SLOTNAMELEN];
+		if ((curpos + sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		MoveMemory(m_slotname, newbuf + curpos, sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN);
+		curpos += sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN;
+
+
+		//int m_influencenum[FCSLOTNUM];
+		if ((curpos + sizeof(int) * FCSLOTNUM) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		MoveMemory(m_influencenum, newbuf + curpos, sizeof(int) * FCSLOTNUM);
+		curpos += sizeof(int) * FCSLOTNUM;
+
+
+		//int m_influencelist[FCSLOTNUM][FRAMECOPYLISTLENG];
+		if ((curpos + sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		MoveMemory(m_influencelist, newbuf + curpos, sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+		curpos += sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG;
+
+		//int m_ignorenum[FCSLOTNUM];
+		if ((curpos + sizeof(int) * FCSLOTNUM) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		MoveMemory(m_ignorenum, newbuf + curpos, sizeof(int) * FCSLOTNUM);
+		curpos += sizeof(int) * FCSLOTNUM;
+
+		//int m_ignorelist[FCSLOTNUM][FRAMECOPYLISTLENG];
+		if ((curpos + sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		MoveMemory(m_ignorelist, newbuf + curpos, sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+		curpos += sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG;
+
+		ParamsToDlg();
+
+		CloseHandle(hfile);
+	}
+
+	//InterlockedExchange(&g_undertrackingRMenu, 0);
+	//UnhookWinEvent(hhook);
+	//s_getfilenamehwnd = 0;
+	//s_getfilenametreeview = 0;
+
+	return true;
 }

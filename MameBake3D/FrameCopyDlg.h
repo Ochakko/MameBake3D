@@ -49,6 +49,9 @@ BEGIN_MSG_MAP(CFrameCopyDlg)
 
 	COMMAND_ID_HANDLER(IDC_SLOTCOMBO, OnSelCombo)
 
+	COMMAND_ID_HANDLER(IDC_LOADTBO, OnLoad)
+	COMMAND_ID_HANDLER(IDC_SAVETBO, OnSave)
+
 END_MSG_MAP()
 // ハンドラのプロトタイプ:
 //  LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -71,6 +74,9 @@ END_MSG_MAP()
 	LRESULT OnSelCombo(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnTimer(UINT, WPARAM, LPARAM, BOOL&);
 
+	LRESULT OnLoad(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnSave(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -81,13 +87,17 @@ private:
 	HTREEITEM TVAdd( HTREEITEM parentTI, WCHAR* srcname, int srcno, int imageno, int selectno, int addtolast );
 
 	void CreateImageList();
-	int ParamsToDlg();
 
 	int SetTree2ListReq( int validorinvalid, int srcno, int addbroflag );
 
 	int CreateCombo();
 
+	int WriteTBOFile();
+	bool ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufleng);
+	bool LoadTBOFile();
 public:
+	int ParamsToDlg();
+
 	std::vector<CBone*> GetCpVec()
 	{
 		return m_cpvec;
@@ -110,6 +120,8 @@ private:
 	int m_samemodelflag;
 	bool m_inittimerflag;
 	int m_timerid;
+
+	WCHAR m_tmpmqopath[MAX_PATH];
 
 	CWindow m_dlg_wnd;
 	CWindow m_tree_wnd;

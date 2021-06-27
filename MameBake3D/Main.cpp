@@ -958,6 +958,8 @@ static vector<CPELEM> s_copymotvec;
 static vector<CPELEM> s_pastemotvec;
 static int WriteCPTFile();
 static bool LoadCPTFile();
+static int WriteTBOFile();
+static bool LoadTBOFile();
 
 
 static list<KeyInfo> s_deletedKeyInfoList;	// 削除されたキー情報リスト
@@ -29935,8 +29937,7 @@ int WriteCPTFile()
 
 	}
 
-
-
+	FlushFileBuffers(hfile);
 	CloseHandle(hfile);
 
 
@@ -30178,4 +30179,3 @@ bool LoadCPTFile()
 
 	return true;
 }
-
