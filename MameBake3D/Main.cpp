@@ -954,7 +954,11 @@ typedef struct tag_cpelem
 	CBone* bone;
 	CMotionPoint mp;
 }CPELEM;
-static vector<CPELEM> s_copymotmap;
+static vector<CPELEM> s_copymotvec;
+static vector<CPELEM> s_pastemotvec;
+static int WriteCPTFile();
+static bool LoadCPTFile();
+
 
 static list<KeyInfo> s_deletedKeyInfoList;	// 削除されたキー情報リスト
 static list<KeyInfo> s_selectKeyInfoList;	// コピーされたキー情報リスト
@@ -1545,6 +1549,7 @@ static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
 static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename);
+static int GetCPTFileName(std::vector<wstring>& dstcptfilename);
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -1832,7 +1837,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	
 	
 	s_copyKeyInfoList.clear();	// コピーされたキー情報リスト
-	s_copymotmap.clear();
+	s_copymotvec.clear();
+	s_pastemotvec.clear();
 	s_deletedKeyInfoList.clear();	// 削除されたキー情報リスト
 	s_selectKeyInfoList.clear();	// コピーされたキー情報リスト
 
@@ -4193,7 +4199,7 @@ int InsertCopyMP( CBone* curbone, double curframe )
 		cpelem.mp.SetFrame(curframe);
 		cpelem.mp.SetWorldMat(pcurmp->GetWorldMat());
 		cpelem.mp.SetLocalMatFlag(0);//!!!!!!!!!!
-		s_copymotmap.push_back(cpelem);
+		s_copymotvec.push_back(cpelem);
 	}
 	*/
 	int rotcenterflag1 = 1;
@@ -4209,7 +4215,7 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	cpelem.mp.SetFrame(curframe);
 	cpelem.mp.SetWorldMat(localmat);
 	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
-	s_copymotmap.push_back(cpelem);
+	s_copymotvec.push_back(cpelem);
 
 	return 0;
 }
@@ -4237,10 +4243,11 @@ int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
 	cpelem.mp.SetFrame(curframe);
 	cpelem.mp.SetWorldMat(symmat);
 	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
-	s_copymotmap.push_back(cpelem);
+	s_copymotvec.push_back(cpelem);
 
 	return 0;
 }
+
 
 int InitMP( CBone* curbone, double curframe )
 {
@@ -4826,7 +4833,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) - subid * 3;
 			MOTINFO* mi = s_model->GetCurMotInfo();
 			if (mi) {
-				s_copymotmap.clear();
+				s_copymotvec.clear();
 				s_copyKeyInfoList.clear();
 				s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 				s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
@@ -9483,7 +9490,7 @@ int DispModelPanel()
 int EraseKeyList()
 {
 	s_copyKeyInfoList.clear();
-	s_copymotmap.clear();
+	s_copymotvec.clear();
 	s_selectKeyInfoList.clear();
 	s_deletedKeyInfoList.clear();
 
@@ -16803,7 +16810,7 @@ int OnFrameToolWnd()
 		s_undersymcopyFlag = false;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
-			s_copymotmap.clear();
+			s_copymotvec.clear();
 			s_copyKeyInfoList.clear();
 			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 
@@ -16811,6 +16818,12 @@ int OnFrameToolWnd()
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
 				InsertCopyMPReq(s_model->GetTopBone(), curframe);
+			}
+
+			if (!s_copymotvec.empty()) {
+				//添付フォルダのファイルに記録
+				int result = WriteCPTFile();
+				_ASSERT(result == 0);
 			}
 
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
@@ -16824,7 +16837,7 @@ int OnFrameToolWnd()
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
 			int symrootmode = GetSymRootMode();
 
-			s_copymotmap.clear();
+			s_copymotvec.clear();
 			s_copyKeyInfoList.clear();
 			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 
@@ -16833,6 +16846,13 @@ int OnFrameToolWnd()
 				double curframe = itrcp->time;
 				InsertSymMPReq(s_model->GetTopBone(), curframe, symrootmode);
 			}
+
+			if (!s_copymotvec.empty()) {
+				//添付フォルダのファイルに記録
+				int result = WriteCPTFile();
+				_ASSERT(result == 0);
+			}
+
 		}
 	}
 
@@ -16840,16 +16860,22 @@ int OnFrameToolWnd()
 	if (s_pasteFlag){
 		s_pasteFlag = false;
 
-		if (s_model && s_owpTimeline && s_model->GetCurMotInfo() && !s_copymotmap.empty()){
 
+		//添付ファイルを読み取ってs_pastemotvecに格納する
+		s_pastemotvec.clear();
+		bool result;
+		result = LoadCPTFile();
+
+		if (result && s_model && s_owpTimeline && s_model->GetCurMotInfo() && !s_pastemotvec.empty())
+		{
 			int cpnum = (int)s_selbonedlg.m_cpvec.size();
 			int keynum = 0;
 			double startframe, endframe, applyframe;
 
 			double pastestartframe = 0.0;
 			s_editrange.Clear();
-			if (s_model && s_model->GetCurMotInfo()){
-				if (s_owpTimeline && s_owpLTimeline){
+			if (s_model && s_model->GetCurMotInfo()) {
+				if (s_owpTimeline && s_owpLTimeline) {
 					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
 					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 				}
@@ -16861,31 +16887,33 @@ int OnFrameToolWnd()
 			double copyStartTime = DBL_MAX;
 			double copyEndTime = 0;
 			vector<CPELEM>::iterator itrcp;
-			for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
-				if (itrcp->mp.GetFrame() <= copyStartTime){
+			for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+				if (itrcp->mp.GetFrame() <= copyStartTime) {
 					copyStartTime = itrcp->mp.GetFrame();
 				}
-				if (itrcp->mp.GetFrame() >= copyEndTime){
+				if (itrcp->mp.GetFrame() >= copyEndTime) {
 					copyEndTime = itrcp->mp.GetFrame();
 				}
 			}
 
-			if (keynum >= 0){
-				if (keynum == 0){
+			if (keynum >= 0) {
+				if (keynum == 0) {
 					double motleng = s_model->GetCurMotInfo()->frameleng - 1;
 					double srcendframe = min(motleng, startframe + (copyEndTime - copyStartTime));
 					srcendframe = max(srcendframe, 0.0);
 					PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, srcendframe);
 				}
-				else{
-					if (keynum <= (int)(copyEndTime - copyStartTime + 1.0 + 0.1)){
-						PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
-					}else{
-						PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
+				else {
+					PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
 
-						//コピー元の最終フレームの姿勢をコピー先の残りのフレームにペースト
-						PasteMotionPointAfterCopyEnd(copyStartTime, copyEndTime, startframe, endframe);
-					}
+					//if (keynum <= (int)(copyEndTime - copyStartTime + 1.0 + 0.1)){
+					//	PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
+					//}else{
+					//	PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
+
+					//	//コピー元の最終フレームの姿勢をコピー先の残りのフレームにペースト
+					//	PasteMotionPointAfterCopyEnd(copyStartTime, copyEndTime, startframe, endframe);
+					//}
 				}
 			}
 
@@ -17119,7 +17147,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 					parmp->SetBefWorldMat(parmp->GetWorldMat());
 					srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
-					_ASSERT(0);
+					//_ASSERT(0);
 				}
 			}
 		}
@@ -17132,29 +17160,69 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 {
 	int cpnum = (int)s_selbonedlg.m_cpvec.size();
 
-	vector<CPELEM>::iterator itrcp;
-	for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
-		CBone* srcbone = itrcp->bone;
-		if (srcbone){
-			CMotionPoint srcmp = itrcp->mp;
-			double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + startframe + 0.1));//!!!!!!!!!!!!!!!!!!
-			if ((newframe >= startframe) && (newframe <= endframe)){
-				PasteMotionPoint(srcbone, srcmp, newframe);
+
+	double srcleng;
+	double dstleng;
+	srcleng = copyEndTime - copyStartTime + 1;
+	dstleng = endframe - startframe + 1;
+	double dstframe;
+	for (dstframe = startframe; dstframe <= endframe; dstframe++) {
+		double dstrate = (dstframe - startframe) / dstleng;
+		double srcframe;
+		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
+		vector<CPELEM>::iterator itrcp;
+		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+			CBone* srcbone = itrcp->bone;
+			if (srcbone) {
+				CMotionPoint srcmp = itrcp->mp;
+				if (srcmp.GetFrame() == srcframe) {
+					PasteMotionPoint(srcbone, srcmp, dstframe);
+				}
 			}
 		}
 	}
 
 	//移動しないボーンのための処理
-	for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
-		CBone* srcbone = itrcp->bone;
-		if (srcbone){
-			CMotionPoint srcmp = itrcp->mp;
-			double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + startframe + 0.1));//!!!!!!!!!!!!!!!!!!
-			if ((newframe >= startframe) && (newframe <= endframe)){
-				PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
+	for (dstframe = startframe; dstframe <= endframe; dstframe++) {
+		double dstrate = (dstframe - startframe) / dstleng;
+		double srcframe;
+		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
+		vector<CPELEM>::iterator itrcp;
+		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+			CBone* srcbone = itrcp->bone;
+			if (srcbone) {
+				CMotionPoint srcmp = itrcp->mp;
+				if (srcmp.GetFrame() == srcframe) {
+					PasteNotMvParMotionPoint(srcbone, srcmp, dstframe);
+				}
 			}
 		}
 	}
+
+
+	//vector<CPELEM>::iterator itrcp;
+	//for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
+	//	CBone* srcbone = itrcp->bone;
+	//	if (srcbone){
+	//		CMotionPoint srcmp = itrcp->mp;
+	//		double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + startframe + 0.1));//!!!!!!!!!!!!!!!!!!
+	//		if ((newframe >= startframe) && (newframe <= endframe)){
+	//			PasteMotionPoint(srcbone, srcmp, newframe);
+	//		}
+	//	}
+	//}
+
+	////移動しないボーンのための処理
+	//for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
+	//	CBone* srcbone = itrcp->bone;
+	//	if (srcbone){
+	//		CMotionPoint srcmp = itrcp->mp;
+	//		double newframe = (double)((int)(srcmp.GetFrame() - copyStartTime + startframe + 0.1));//!!!!!!!!!!!!!!!!!!
+	//		if ((newframe >= startframe) && (newframe <= endframe)){
+	//			PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
+	//		}
+	//	}
+	//}
 
 	return 0;
 }
@@ -17165,7 +17233,7 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 
 	double newframe;
 	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
-		for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
 			CBone* srcbone = itrcp->bone;
 			if (srcbone){
 				CMotionPoint srcmp = itrcp->mp;
@@ -17178,7 +17246,7 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 
 	//移動しないボーンのための処理
 	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
-		for (itrcp = s_copymotmap.begin(); itrcp != s_copymotmap.end(); itrcp++){
+		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
 			CBone* srcbone = itrcp->bone;
 			if (srcbone){
 				CMotionPoint srcmp = itrcp->mp;
@@ -20005,7 +20073,7 @@ int InitMpFromTool()
 	//	int subid = (menuid - ID_RMENU_0) / 3;
 	//	int initmode = (menuid - ID_RMENU_0) - subid * 3;
 
-	//	s_copymotmap.clear();
+	//	s_copymotvec.clear();
 	//	s_copyKeyInfoList.clear();
 	//	s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 	//	s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
@@ -21706,7 +21774,7 @@ HWND CreateMainWindow()
 
 
 	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.5"),
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.6"),
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		0, 0, (1216 + 450), 950,
@@ -28977,7 +29045,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.5 : ");
+	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.6 : ");
 
 
 	if (s_model) {
@@ -29178,6 +29246,7 @@ int SaveBatchHistory(WCHAR* selectname)
 	return 0;
 }
 
+
 int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 {
 
@@ -29265,6 +29334,96 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	return 0;
 }
 
+int GetCPTFileName(std::vector<wstring>& dstvecopenfilename)
+{
+
+	dstvecopenfilename.clear();
+	//ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
+
+
+	//MB3DOpenProj_20210410215628.txt
+	WCHAR searchfilename[MAX_PATH] = { 0L };
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DTempCopyFrames_*.cpt", s_temppath);
+	HANDLE hFind;
+	WIN32_FIND_DATA win32fd;
+	hFind = FindFirstFileW(searchfilename, &win32fd);
+
+	std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+	//std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
+	vechistory.clear();
+	bool notfoundfirst = false;
+	if (hFind == INVALID_HANDLE_VALUE) {
+		notfoundfirst = true;
+	}
+	do {
+		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+			//printf("%s\n", win32fd.cFileName);
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+			vechistory.push_back(openfilename);
+		}
+	} while (FindNextFile(hFind, &win32fd));
+	FindClose(hFind);
+
+
+	if (!vechistory.empty()) {
+
+		std::sort(vechistory.begin(), vechistory.end());
+		std::reverse(vechistory.begin(), vechistory.end());
+
+		/*int numhistory = (int)vechistory.size();
+		int dispnum = min(5, numhistory);
+
+		int foundnum = 0;
+		int historyno;
+		for (historyno = 0; historyno < numhistory; historyno++) {
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+
+			HANDLE hfile;
+			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				WCHAR readwstr[MAX_PATH] = { 0L };
+				DWORD readleng = 0;
+				bool bsuccess;
+				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+				if (bsuccess) {
+					bool foundsame = false;
+					wstring newwstr = readwstr;
+					std::vector<wstring>::iterator itropenfilename;
+					for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+						if (newwstr.compare(*itropenfilename) == 0) {
+							foundsame = true;
+						}
+					}
+					if (foundsame == false) {
+						vecopenfilename.push_back(readwstr);
+						foundnum++;
+						if (foundnum >= dispnum) {
+							break;
+						}
+					}
+				}
+				CloseHandle(hfile);
+			}
+		}*/
+	}
+
+	if (!vechistory.empty()) {
+		dstvecopenfilename = vechistory;
+	}
+
+	//if (!vecopenfilename.empty()) {
+	//	dstvecopenfilename = vecopenfilename;
+	//}
+	//else {
+	//	dstvecopenfilename.clear();
+	//}
+	return 0;
+}
 
 int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 {
@@ -29352,3 +29511,671 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 
 	return 0;
 }
+
+
+//int CopyToClipBoardData(int shdnum, int cpframenum, COPYELEM* cpELem, HGLOBAL* cbhgptr)
+//{
+//	int ret = 0;
+//	HGLOBAL hGlobal = 0;
+//	//int datasize;
+//	int headerlen, shdnumlen, framenumlen, celen;
+//	int dstcharsize;
+//
+//	headerlen = (int)strlen(clipboardheader2);
+//	shdnumlen = sizeof(int);
+//	framenumlen = sizeof(int);
+//	celen = sizeof(COPYELEM) * shdnum * cpframenum;
+//	//datasize = headerlen + numlen + celen;
+//	dstcharsize = headerlen + (shdnumlen * 2) + (framenumlen * 2) + (celen * 2) + 1;// char以外の1byte --> 2文字、と終端ＮＵＬＬ
+//
+//
+//	hGlobal = GlobalAlloc(GHND, dstcharsize);
+//	if (hGlobal == NULL) {
+//		DbgOut("motparamdlg : CopyToClipBoardData : GlobalAlloc error !!!\n");
+//		_ASSERT(0);
+//		ret = 1;
+//		goto cptocbexit;
+//	}
+//
+//	char* dstptr;
+//	dstptr = (char*)GlobalLock(hGlobal);
+//	if (!dstptr) {
+//		DbgOut("motparamdlg : CopyToClipBoardData : GlobalLock error !!!\n");
+//		_ASSERT(0);
+//		ret = 1;
+//		goto cptocbexit;
+//	}
+//
+//	int dstpos = 0;
+//	strcpy_s(dstptr, dstcharsize - dstpos, clipboardheader2);
+//	dstpos += headerlen;
+//
+//	ret = Bin2Char((unsigned char*)&shdnum, dstptr + dstpos, shdnumlen);
+//	if (ret) {
+//		DbgOut("motparamdlg : CopyToClipBoardData : Bin2Char shdnum error !!!\n");
+//		_ASSERT(0);
+//		ret = 1;
+//		goto cptocbexit;
+//	}
+//	dstpos += shdnumlen * 2;
+//
+//
+//	ret = Bin2Char((unsigned char*)&cpframenum, dstptr + dstpos, framenumlen);
+//	if (ret) {
+//		DbgOut("motparamdlg : CopyToClipBoardData : Bin2Char cpframenum error !!!\n");
+//		_ASSERT(0);
+//		ret = 1;
+//		goto cptocbexit;
+//	}
+//	dstpos += framenumlen * 2;
+//
+//
+//	ret = Bin2Char((unsigned char*)srcce, dstptr + dstpos, celen);
+//	if (ret) {
+//		DbgOut("motparamdlg : CopyToClipBoardData : Bin2Char ce error !!!\n");
+//		_ASSERT(0);
+//		ret = 1;
+//		goto cptocbexit;
+//	}
+//	dstpos += celen * 2;
+//
+//	*(dstptr + dstpos) = 0;//!!!!!
+//
+//	if (dstpos > dstcharsize) {
+//		DbgOut("motparamdlg : CopyToClipBoardData : dstpos error !!!\n");
+//		_ASSERT(0);
+//		ret = 1;
+//		goto cptocbexit;
+//	}
+//
+//
+//	goto cptocbexit;
+//
+//cptocbexit:
+//	if (hGlobal)
+//		GlobalUnlock(hGlobal);
+//	if (ret && hGlobal)
+//		GlobalFree(hGlobal);
+//
+//	*cbhgptr = hGlobal;
+//	return ret;
+//}
+//
+//int Bin2Char(unsigned char* srcptr, char* dstptr, int srclen)
+//{
+//	int srcpos;
+//	int dstpos = 0;
+//	//int ret;
+//	unsigned char curuc;
+//	unsigned char lowuc, hiuc;
+//	char lowc, hic;
+//	for (srcpos = 0; srcpos < srclen; srcpos++) {
+//		curuc = *(srcptr + srcpos);
+//
+//		hiuc = curuc >> 4;
+//		if (hiuc <= 9) {
+//			hic = '0' + hiuc;
+//		}
+//		else {
+//			hic = 'A' + hiuc - 10;
+//		}
+//
+//		lowuc = curuc & 0x0F;
+//		if (lowuc <= 9) {
+//			lowc = '0' + lowuc;
+//		}
+//		else {
+//			lowc = 'A' + lowuc - 10;
+//		}
+//
+//		*(dstptr + dstpos) = hic;
+//		*(dstptr + dstpos + 1) = lowc;
+//		dstpos += 2;
+//	}
+//
+//	return 0;
+//}
+//
+//
+//
+//int PasteFromClipBoardData(COPYELEM* dstce, int* bufshdnum, int* bufframenum, HGLOBAL cbhg)
+//{
+//	*bufshdnum = 0;
+//	*bufframenum = 0;
+//
+//	char* srcptr;
+//
+//	srcptr = (char*)GlobalLock(cbhg);
+//	if (!srcptr) {
+//		DbgOut("motparamdlg : PasteFromClipBoardData : GlobalLock error !!!\n");
+//		_ASSERT(0);
+//		return 1;
+//	}
+//
+//	int headerleng;
+//	headerleng = (int)strlen(clipboardheader2);
+//
+//	int srcleng;
+//	srcleng = (int)strlen(srcptr);
+//	int minimumleng = headerleng + sizeof(int) * 2 + sizeof(int) * 2;
+//	if (srcleng <= minimumleng) {
+//		DbgOut("motparamdlg : PasteFromClipBoardData : srcleng 0 error !!!\n");
+//		::MessageBox(m_hWnd, "クリップボードにデータがありませんでした。", "ペースト失敗", MB_OK);
+//		_ASSERT(0);
+//		GlobalUnlock(cbhg);
+//		return 1;
+//	}
+//
+//	int srcpos = 0;
+//	int cmp0;
+//	cmp0 = strncmp(srcptr, clipboardheader2, headerleng);
+//	if (cmp0) {
+//		DbgOut("motparamdlg : PasteFromClipBoardData : invalid data type error !!!\n");
+//		::MessageBox(m_hWnd, "クリップボードのデータの種類が違います。", "ペースト失敗", MB_OK);
+//		_ASSERT(0);
+//		GlobalUnlock(cbhg);
+//		return 1;
+//	}
+//	srcpos += headerleng;
+//
+//
+//	int ret;
+//	int shdnum;
+//	ret = Char2Hex(srcptr + srcpos, (unsigned char*)&shdnum, sizeof(int) * 2);
+//	if (ret) {
+//		DbgOut("motparamdlg : PasteFromClipBoard : Char2Hex shdnum error !!!\n");
+//		::MessageBox(m_hWnd, "クリップボードのデータが不正です。", "ペースト失敗", MB_OK);
+//		_ASSERT(0);
+//		GlobalUnlock(cbhg);
+//		return 1;
+//	}
+//	srcpos += (sizeof(int) * 2);
+//
+//	int framenum;
+//	ret = Char2Hex(srcptr + srcpos, (unsigned char*)&framenum, sizeof(int) * 2);
+//	if (ret || (framenum <= 0) || (framenum > CPFRAMEMAX)) {
+//		DbgOut("motparamdlg : PasteFromClipBoard : Char2Hex framenum error !!!\n");
+//		::MessageBox(m_hWnd, "クリップボードのデータが不正です。", "ペースト失敗", MB_OK);
+//		_ASSERT(0);
+//		GlobalUnlock(cbhg);
+//		return 1;
+//	}
+//	srcpos += (sizeof(int) * 2);
+//
+//	int cesize;
+//	cesize = shdnum * sizeof(COPYELEM) * framenum;
+//	int sizeondata;
+//	sizeondata = srcleng - headerleng - (sizeof(int) * 2) - (sizeof(int) * 2);
+//	if (sizeondata != (cesize * 2)) {
+//		DbgOut("motparamdlg : PasteFromClipBoard : data size error !!!\n");
+//		::MessageBox(m_hWnd, "クリップボードのデータ長が不正です。", "ペースト失敗", MB_OK);
+//		_ASSERT(0);
+//		GlobalUnlock(cbhg);
+//		return 1;
+//	}
+//
+//
+//	InitCEBuff();//!!!!!!!!!!!!
+//
+//	int framecnt;
+//	int ceno;
+//	COPYELEM tempce;
+//	for (framecnt = 0; framecnt < framenum; framecnt++) {
+//		for (ceno = 0; ceno < shdnum; ceno++) {
+//			ret = Char2Hex(srcptr + srcpos, (unsigned char*)&tempce, sizeof(COPYELEM) * 2);
+//			if (ret) {
+//				DbgOut("motparamdlg : PasteFromClipBoard : Char2Hex ce %d %d error !!!\n", ceno, shdnum);
+//				::MessageBox(m_hWnd, "データ変換中にエラーが生じました。", "ペースト失敗", MB_OK);
+//				_ASSERT(0);
+//				GlobalUnlock(cbhg);
+//				return 1;
+//			}
+//			srcpos += (sizeof(COPYELEM) * 2);
+//
+//			tempce.mp.m_spp = 0;//!!!!!!!!!!
+//
+//			if (tempce.mp.m_frameno >= 0) {
+//
+//				//tempceの名前に対応するserialnoを探し、そのmpにデータをコピーする。
+//				int chkleng;
+//				chkleng = (int)strlen(tempce.name);
+//				if (chkleng >= 256) {
+//					DbgOut("motparamdlg : PasteFromClipBoard : check tempce name error %d !!!\n", ceno);
+//					::MessageBox(m_hWnd, "不正な名前が見つかりました。１", "ペースト失敗", MB_OK);
+//					_ASSERT(0);
+//					GlobalUnlock(cbhg);
+//					return 1;
+//				}
+//
+//				int findno;
+//				//ret = m_thandler->GetPartNoByName( tempce.name, &findno );
+//				ret = m_thandler->GetBoneNoByName(tempce.name, &findno, m_shandler, 0);
+//				if (ret) {
+//					DbgOut("motparamdlg : PasteFromClipBoard : GetPartNoByName error !!!\n");
+//					::MessageBox(m_hWnd, "不正な名前が見つかりました。２", "ペースト失敗", MB_OK);
+//					_ASSERT(0);
+//					GlobalUnlock(cbhg);
+//					return 1;
+//				}
+//
+//				if (findno > 0) {
+//					*(m_CEBuff + shdnum * framecnt + findno) = tempce;//!!!!!!!!
+//				}
+//			}
+//		}
+//	}
+//
+//	GlobalUnlock(cbhg);
+//
+//	*bufshdnum = shdnum;
+//	*bufframenum = framenum;
+//
+//	return 0;
+//}
+//
+//
+//int Char2Hex(char* orgdata, unsigned char* donedata, DWORD charleng)
+//{
+//	int ret;
+//	DWORD charno;
+//	DWORD rest;
+//
+//	unsigned char ucval;
+//	unsigned char* doneptr = 0;
+//
+//
+//	rest = charleng % 2;
+//	if (rest) {
+//		_ASSERT(0);
+//		return 1;
+//	}
+//
+//	doneptr = donedata;
+//	for (charno = 0; charno < charleng; charno += 2) {
+//		ret = ConvData(orgdata + charno, &ucval, 0);
+//		_ASSERT(!ret);
+//
+//		ret = ConvData(orgdata + charno + 1, &ucval, 1);
+//		_ASSERT(!ret);
+//
+//		*doneptr = ucval;
+//		doneptr++;
+//	}
+//
+//	return 0;
+//}
+//
+//int ConvData(char* charptr, unsigned char* ucptr, int pos)
+//{
+//	char charval;
+//	unsigned char convval;
+//
+//	charval = *charptr;
+//	if ((charval >= '0') && (charval <= '9')) {
+//		convval = charval - '0';
+//	}
+//	else if ((charval >= 'A') && (charval <= 'F')) {
+//		convval = charval - 'A' + 10;
+//	}
+//	else {
+//		_ASSERT(0);
+//		return 1;
+//	}
+//
+//	if (pos == 0) {
+//		*ucptr = convval << 4;
+//	}
+//	else {
+//		*ucptr |= convval;
+//	}
+//
+//	return 0;
+//}
+
+
+int WriteCPTFile()
+{
+	int cpelemnum;
+	cpelemnum = s_copymotvec.size();
+	if (cpelemnum <= 0) {
+		return 0;
+	}
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_model->GetCurMotInfo()) {
+		return 0;
+	}
+
+
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	WCHAR cptfilename[MAX_PATH] = { 0L };
+	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_%04d%02d%02d%02d%02d%02d.cpt",
+		s_temppath,
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+
+	HANDLE hfile = CreateFile(cptfilename, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile == INVALID_HANDLE_VALUE) {
+		DbgOut(L"CPTFile : WriteCPTFile : file open error !!!\n");
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	char CPTheader[256];
+	::ZeroMemory(CPTheader, sizeof(char) * 256);
+	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.6");
+
+	DWORD wleng = 0;
+	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
+	if (wleng != (sizeof(char) * 256)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	wleng = 0;
+	WriteFile(hfile, &cpelemnum, sizeof(int), &wleng, NULL);
+	if (wleng != sizeof(int)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+
+	int cpelemno;
+	for (cpelemno = 0; cpelemno < cpelemnum; cpelemno++) {
+		CPELEM curcpelem = s_copymotvec[cpelemno];
+		if (curcpelem.bone) {
+			char curbonename[MAX_PATH] = { 0 };
+			strcpy_s(curbonename, MAX_PATH, curcpelem.bone->GetBoneName());
+
+			wleng = 0;
+			WriteFile(hfile, curbonename, sizeof(char) * MAX_PATH, &wleng, NULL);
+			if (wleng != (sizeof(char) * MAX_PATH)) {
+				_ASSERT(0);
+				return 1;
+			}
+			
+			double curframe;
+			curframe = curcpelem.mp.GetFrame();
+			wleng = 0;
+			WriteFile(hfile, &curframe, sizeof(double), &wleng, NULL);
+			if (wleng != (sizeof(double))) {
+				_ASSERT(0);
+				return 1;
+			}
+
+			ChaMatrix curlocalmat;
+			curlocalmat = curcpelem.mp.GetWorldMat();
+			wleng = 0;
+			WriteFile(hfile, &curlocalmat, sizeof(ChaMatrix), &wleng, NULL);
+			if (wleng != (sizeof(ChaMatrix))) {
+				_ASSERT(0);
+				return 1;
+			}
+
+			int localmatflag;
+			localmatflag = curcpelem.mp.GetLocalMatFlag();
+			wleng = 0;
+			WriteFile(hfile, &localmatflag, sizeof(int), &wleng, NULL);
+			if (wleng != (sizeof(int))) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+/*
+	cpelem.bone = curbone;
+	cpelem.mp.SetFrame(curframe);
+	cpelem.mp.SetWorldMat(localmat);
+	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
+*/
+
+	}
+
+
+
+	CloseHandle(hfile);
+
+
+	return 0;
+}
+
+
+bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufleng)
+{
+	if (!dstCPTh || !dstcpelemnum || !srcbuf || (bufleng <= 0)) {
+		_ASSERT(0);
+		return false;
+	}
+
+	if (bufleng <= (sizeof(char) * 256 + sizeof(int))) {
+		_ASSERT(0);
+		return false;
+	}
+
+	MoveMemory(dstCPTh, srcbuf, sizeof(char) * 256);
+
+	//typedef struct tag_CPTheader
+	//{
+	//	char magicstr[32];//EvaluateGlobalPosition
+	//	char version[16];
+	//	char fbxdate[256];
+	//	int animno;
+	//	int jointnum;
+	//	int framenum;
+	//	int reserved;
+	//}CPTHEADER;
+
+	int magicstrlen;
+	magicstrlen = strlen(dstCPTh);
+	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
+		_ASSERT(0);
+		return false;
+	}
+	int cmp;
+	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.6");
+	if (cmp != 0) {
+		_ASSERT(0);
+		return false;
+	}
+
+	int cpelemnum;
+	MoveMemory(&cpelemnum, srcbuf + sizeof(char) * 256, sizeof(int));
+
+	DWORD datasize;
+	datasize = (bufleng - sizeof(char) * 256 - sizeof(int));
+	DWORD elemsize;
+	elemsize = sizeof(char) * MAX_PATH + sizeof(double) + sizeof(ChaMatrix) + sizeof(int);
+
+	if (datasize != (cpelemnum * elemsize)) {
+		_ASSERT(0);
+		return false;
+	}
+
+	*dstcpelemnum = cpelemnum;
+
+
+	return true;
+}
+
+
+bool LoadCPTFile()
+{
+	if (!s_model) {
+		_ASSERT(0);
+		return false;
+	}
+	if (!s_model->GetCurMotInfo()) {
+		_ASSERT(0);
+		return false;
+	}
+
+
+	s_pastemotvec.clear();
+
+	std::vector<wstring> cptfilename;
+	cptfilename.clear();
+	GetCPTFileName(cptfilename);
+
+	if (cptfilename.empty()) {
+		_ASSERT(0);
+		return false;
+	}
+
+	WCHAR infilename[MAX_PATH] = { 0L };
+	wcscpy_s(infilename, MAX_PATH, cptfilename[0].c_str());
+
+
+	HANDLE hfile;
+	hfile = CreateFile(infilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile == INVALID_HANDLE_VALUE) {
+		_ASSERT(0);
+		return false;
+	}
+
+
+	DWORD sizehigh;
+	DWORD bufleng;
+	bufleng = GetFileSize(hfile, &sizehigh);
+	if (bufleng <= 0) {
+		_ASSERT(0);
+		return false;
+	}
+	if (sizehigh != 0) {
+		_ASSERT(0);
+		return false;
+	}
+	char* newbuf;
+	newbuf = (char*)malloc(sizeof(char) * bufleng);//bufleng + 1
+	if (!newbuf) {
+		_ASSERT(0);
+		return false;
+	}
+	ZeroMemory(newbuf, sizeof(char) * bufleng);
+	DWORD rleng, readleng;
+	rleng = bufleng;
+	BOOL bsuccess;
+	bsuccess = ReadFile(hfile, (void*)newbuf, rleng, &readleng, NULL);
+	if (!bsuccess || (rleng != readleng)) {
+		_ASSERT(0);
+		CloseHandle(hfile);
+		if (!newbuf) {
+			_ASSERT(0);
+			return false;
+		}
+		return false;
+	}
+
+	int cpelemnum = 0;
+	char CPTheader[256];
+	ZeroMemory(CPTheader, sizeof(char) * 256);
+	bool isvalid;
+	isvalid = ValidateCPTFile(CPTheader, &cpelemnum, newbuf, bufleng);
+	if (!isvalid) {
+		_ASSERT(0);
+		if (newbuf) {
+			free(newbuf);
+			newbuf = 0;
+		}
+		CloseHandle(hfile);
+		return false;
+	}
+
+	DWORD curpos;
+	curpos = sizeof(char) * 256 + sizeof(int);
+	
+	int cpelemno;
+	for (cpelemno = 0; cpelemno < cpelemnum; cpelemno++) {
+		char curbonename[MAX_PATH] = { 0 };
+		ZeroMemory(curbonename, sizeof(char) * MAX_PATH);
+		if ((curpos + (sizeof(char) * MAX_PATH)) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		::MoveMemory(curbonename, newbuf + curpos, sizeof(char) * MAX_PATH);
+		curpos += (sizeof(char) * MAX_PATH);
+
+
+		double curframe;
+		if ((curpos + sizeof(double)) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		::MoveMemory(&curframe, newbuf + curpos, sizeof(double));
+		curpos += sizeof(double);
+
+
+
+		ChaMatrix curlocalmat;
+		if ((curpos + sizeof(ChaMatrix)) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		::MoveMemory(&curlocalmat, newbuf + curpos, sizeof(ChaMatrix));
+		curpos += sizeof(ChaMatrix);
+
+
+
+		int localmatflag = 0;
+		if ((curpos + sizeof(int)) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
+		}
+		::MoveMemory(&localmatflag, newbuf + curpos, sizeof(int));
+		curpos += sizeof(int);
+
+
+
+
+
+		CBone* curbone;
+		curbone = s_model->GetBoneByName(curbonename);
+		if (curbone) {
+			CPELEM curcpelem;
+			ZeroMemory(&curcpelem, sizeof(CPELEM));
+
+			curcpelem.bone = curbone;
+			curcpelem.mp.SetFrame(curframe);
+			curcpelem.mp.SetWorldMat(curlocalmat);
+			curcpelem.mp.SetLocalMatFlag(localmatflag);
+
+			s_pastemotvec.push_back(curcpelem);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+
+	if (newbuf) {
+		free(newbuf);
+		newbuf = 0;
+	}
+	CloseHandle(hfile);
+
+	return true;
+}
+

@@ -3,7 +3,7 @@
 
 
 #ifndef MBPLUGIN_VERSION
-#define MBPLUGIN_VERSION	1005
+#define MBPLUGIN_VERSION	1006
 #endif
 
 
