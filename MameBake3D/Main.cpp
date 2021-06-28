@@ -178,6 +178,8 @@ typedef struct tag_spsw
 static double s_rectime = 0.0;
 static double s_reccnt = 0;
 
+static int s_appcnt = 0;
+
 static vector<wstring> s_bvh2fbxout;
 static LONG s_bvh2fbxnum = 0;
 static LONG s_bvh2fbxcnt = 0;
@@ -1805,7 +1807,8 @@ int IsRegist()
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
 //--------------------------------------------------------------------------------------
-INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
+//INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
+INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
     // Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
@@ -1816,7 +1819,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 
 	OpenDbgFile();
-	_CrtSetBreakAlloc(303);
+	//_CrtSetBreakAlloc(303);
 	//_CrtSetBreakAlloc(307);
 
 //_CrtSetBreakAlloc(10309);
@@ -1837,7 +1840,28 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	SetBaseDir();
 	
-	
+	s_appcnt = 0;
+	int    i;
+	int    nArgs;
+	WCHAR  szBuf[256];
+	LPWSTR* lplpszArgs;
+	lplpszArgs = CommandLineToArgvW(GetCommandLine(), &nArgs);
+	for (i = 0; i < nArgs; i++) {
+		//wsprintf(szBuf, TEXT("%d番目の引数"), i + 1);
+		//MessageBox(NULL, lplpszArgs[i], szBuf, MB_OK);
+		if (wcscmp(lplpszArgs[i], L"-progno") == 0) {
+			if ((i + 1) < nArgs) {
+				i++;
+				WCHAR strprogno[MAX_PATH] = { 0L };
+				wcscpy_s(strprogno, MAX_PATH, lplpszArgs[i]);
+				s_appcnt = _wtoi(strprogno);
+			}
+		}
+	}
+
+	LocalFree(lplpszArgs);
+
+
 	s_copyKeyInfoList.clear();	// コピーされたキー情報リスト
 	s_copymotvec.clear();
 	s_pastemotvec.clear();
@@ -21706,6 +21730,19 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
+BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lp) {
+	WCHAR strWindowText[1024];
+	GetWindowTextW(hwnd, strWindowText, 1024);
+	if (wcsstr(strWindowText, L"MotionBrushC4") != 0) {
+		if (lp) {
+			*((HWND*)lp) = hwnd;
+		}
+		return FALSE;
+	}
+	else {
+		return TRUE;
+	}
+}
 
 
 HWND CreateMainWindow()
@@ -21715,6 +21752,12 @@ HWND CreateMainWindow()
 		s_mainhwnd = 0;
 	}
 	s_mainhwnd = 0;
+
+
+	//MotionBrushC4.exeが起動していればそのウインドウを親にする
+	HWND parenthwnd = 0;
+	EnumWindows(EnumWindowsProc, (LPARAM)&parenthwnd);
+
 
 
 	HWND window;
@@ -21775,12 +21818,15 @@ HWND CreateMainWindow()
 
 
 
+	WCHAR strwindowname[MAX_PATH] = { 0L };
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.6 : No.%d : ", s_appcnt);
+
 	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, TEXT("MotionBrush Ver1.0.0.6"),
+		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		0, 0, (1216 + 450), 950,
-		NULL, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
+		parenthwnd, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
 	);
 	if (!window)
 	{
@@ -21797,16 +21843,33 @@ HWND CreateMainWindow()
 
 	s_mainhwnd = window;
 
+	if (parenthwnd) {
+		SetParent(s_mainhwnd, parenthwnd);
+		//::MessageBox(s_mainhwnd, L"setparent", L"check!!!", MB_OK);
+	}
+
+
 	HWND desktopwnd;
 	desktopwnd = ::GetDesktopWindow();
 	if (desktopwnd) {
 		RECT desktoprect;
 		::GetClientRect(desktopwnd, &desktoprect);
-		if ((desktoprect.right >= 3840) && (desktoprect.bottom >= 2160)) {
+		if ((s_appcnt == 0) && (desktoprect.right >= 3840) && (desktoprect.bottom >= 2160)) {
 			SetWindowPos(s_mainhwnd, HWND_TOP, 1100, 1000, 0, 0, SWP_NOSIZE);
 		}
+		else if (s_appcnt == 1) {
+			SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
+		}
+		else if (s_appcnt == 2) {
+			SetWindowPos(s_mainhwnd, HWND_TOP, (1216 + 450), 0, 0, 0, SWP_NOSIZE);
+		}
+		else if (s_appcnt == 3) {
+			SetWindowPos(s_mainhwnd, HWND_TOP, 0, 950, 0, 0, SWP_NOSIZE);
+		}
+		else if (s_appcnt == 4) {
+			SetWindowPos(s_mainhwnd, HWND_TOP, (1216 + 450), 950, 0, 0, SWP_NOSIZE);
+		}
 	}
-
 
 	return window;
 
@@ -29047,7 +29110,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	wcscpy_s(strmaintitle, (MAX_PATH * 3), L"MotionBrush Ver1.0.0.6 : ");
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.6 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

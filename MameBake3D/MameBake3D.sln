@@ -6,7 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3D", "MameBake3D.vcxproj", "{16FA9686-BD76-4B06-AE36-7B156CC35AFA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{50943E28-D093-44B3-AC1C-8F3BAC2917D2} = {50943E28-D093-44B3-AC1C-8F3BAC2917D2}
-		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9} = {DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}
 		{381D22C0-053F-437F-A4AB-3B57CB413001} = {381D22C0-053F-437F-A4AB-3B57CB413001}
 	EndProjectSection
 EndProject
@@ -20,6 +19,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DS4HidInputLib", "..\MameBake3DLib\DS4HidInputLib\DS4HidInputLib.vcxproj", "{50943E28-D093-44B3-AC1C-8F3BAC2917D2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionBrushPluginsSDK", "..\MotionBrushPluginsSDK\MotionBrushPluginsSDK.vcxproj", "{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionBrushC4", "..\MotionBrushC4\MotionBrushC4.vcxproj", "{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}"
+	ProjectSection(ProjectDependencies) = postProject
+		{16FA9686-BD76-4B06-AE36-7B156CC35AFA} = {16FA9686-BD76-4B06-AE36-7B156CC35AFA}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +97,18 @@ Global
 		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|Win32.Build.0 = Release|Win32
 		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|x64.ActiveCfg = Release|x64
 		{DEBABB3B-DFD0-4802-94FE-786FBD8BDDD9}.Release|x64.Build.0 = Release|x64
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Debug|ARM.ActiveCfg = Debug|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Debug|Win32.Build.0 = Debug|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Debug|x64.ActiveCfg = Debug|x64
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Debug|x64.Build.0 = Debug|x64
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|ARM.ActiveCfg = Release|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|ARM64.ActiveCfg = Release|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|Win32.ActiveCfg = Release|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|Win32.Build.0 = Release|Win32
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|x64.ActiveCfg = Release|x64
+		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
