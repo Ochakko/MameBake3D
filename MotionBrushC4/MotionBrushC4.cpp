@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "framework.h"
 #include "MotionBrushC4.h"
+#include "LocateMBDlg.h"
 
 //#include <iostream.h>
 #include <Shlwapi.h>
@@ -50,21 +51,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
 
-    HWND desktopwnd;
-    desktopwnd = ::GetDesktopWindow();
-    if (desktopwnd) {
-        RECT desktoprect;
-        ::GetClientRect(desktopwnd, &desktoprect);
-        //(1216 + 450) * 2 + 16, (950) * 2 + 62
-        DWORD neededw = (1216 + 450) * 2 + 16;
-        DWORD neededh = (950) * 2 + 62;
-        if ((desktoprect.right < neededw) && (desktoprect.bottom < neededh)) {
-            WCHAR strmessage[MAX_PATH];
-            swprintf_s(strmessage, MAX_PATH, L"デスクトップの解像度が(%d x %d)以上の場合に起動を試みます。\n終了します。", neededw, neededh);
-            MessageBox(NULL, strmessage, L"解像度の条件", MB_OK);
-            return 0;
-        }
-    }
+    //HWND desktopwnd;
+    //desktopwnd = ::GetDesktopWindow();
+    //if (desktopwnd) {
+    //    RECT desktoprect;
+    //    ::GetClientRect(desktopwnd, &desktoprect);
+    //    //(1216 + 450) * 2 + 16, (950) * 2 + 62
+    //    DWORD neededw = (1216 + 450) * 2 + 16;
+    //    DWORD neededh = (950) * 2 + 62;
+    //    if ((desktoprect.right < neededw) && (desktoprect.bottom < neededh)) {
+    //        WCHAR strmessage[MAX_PATH];
+    //        swprintf_s(strmessage, MAX_PATH, L"デスクトップの解像度が(%d x %d)以上の場合に起動を試みます。\n終了します。", neededw, neededh);
+    //        MessageBox(NULL, strmessage, L"解像度の条件", MB_OK);
+    //        return 0;
+    //    }
+    //}
+
+
+
 
     // アプリケーション初期化の実行:
     if (!InitInstance (hInstance, nCmdShow))
@@ -176,6 +180,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    wcscpy_s(path4, MAX_PATH, L"..\\MameBake3D\\MameBake3D.exe");
 
 
+
+   CLocateMBDlg dlg;
+   UINT result;
+   result = (UINT)dlg.DoModal();
+   if (result != IDOK) {
+       return FALSE;
+   }
+
+
+
    BOOL bexist1;
    BOOL bexist2;
    BOOL bexist3;
@@ -214,9 +228,22 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
    //   CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-       0, 0, (1216 + 450) * 2 + 16, (950) * 2 + 62, nullptr, nullptr, hInstance, nullptr);
-
+   HWND hWnd = 0;
+   if (dlg.m_w2 && dlg.m_h2) {
+       hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+           0, 0, (1216 + 450) * 2 + 16, (950) * 2 + 62, nullptr, nullptr, hInstance, nullptr);
+   }
+   else if (dlg.m_w2) {
+       hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+           0, 0, (1216 + 450) * 2 + 16, (950) + 62, nullptr, nullptr, hInstance, nullptr);
+   }
+   else if (dlg.m_h2) {
+       hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+           0, 0, (1216 + 450) + 16, (950) * 2 + 62, nullptr, nullptr, hInstance, nullptr);
+   }
+   else {
+       return FALSE;
+   }
    //window = CreateWindowEx(
    //    WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
    //    WS_OVERLAPPEDWINDOW | WS_VISIBLE,
@@ -268,101 +295,107 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //CloseHandle(pi1.hProcess);
    //CloseHandle(pi1.hThread);
 
-   //STARTUPINFO si2;
-   //PROCESS_INFORMATION pi2;
-   //ZeroMemory(&si2, sizeof(si2));
-   //si2.cb = sizeof(si2);
-   //ZeroMemory(&pi2, sizeof(pi2));
-   WCHAR strcmdline2[MAX_PATH] = { 0L };
-   swprintf_s(strcmdline2, MAX_PATH, L"\"%s\" -progno 2", path);
-   //si2.dwX = (1216 + 450);
-   //si2.dwY = 0;
-   // Start the child process. 
-   if (!CreateProcess(NULL,   // No module name (use command line)
-       strcmdline2,        // Command line
-       NULL,           // Process handle not inheritable
-       NULL,           // Thread handle not inheritable
-       FALSE,          // Set handle inheritance to FALSE
-       0,              // No creation flags
-       NULL,           // Use parent's environment block
-       NULL,           // Use parent's starting directory 
-       &si2,            // Pointer to STARTUPINFO structure
-       &pi2)           // Pointer to PROCESS_INFORMATION structure
-       )
-   {
-       wprintf(L"CreateProcess failed (%d).\n", GetLastError());
-       _ASSERT(0);
-       return FALSE;
+   if (dlg.m_w2) {
+       //STARTUPINFO si2;
+       //PROCESS_INFORMATION pi2;
+       //ZeroMemory(&si2, sizeof(si2));
+       //si2.cb = sizeof(si2);
+       //ZeroMemory(&pi2, sizeof(pi2));
+       WCHAR strcmdline2[MAX_PATH] = { 0L };
+       swprintf_s(strcmdline2, MAX_PATH, L"\"%s\" -progno 2", path);
+       //si2.dwX = (1216 + 450);
+       //si2.dwY = 0;
+       // Start the child process. 
+       if (!CreateProcess(NULL,   // No module name (use command line)
+           strcmdline2,        // Command line
+           NULL,           // Process handle not inheritable
+           NULL,           // Thread handle not inheritable
+           FALSE,          // Set handle inheritance to FALSE
+           0,              // No creation flags
+           NULL,           // Use parent's environment block
+           NULL,           // Use parent's starting directory 
+           &si2,            // Pointer to STARTUPINFO structure
+           &pi2)           // Pointer to PROCESS_INFORMATION structure
+           )
+       {
+           wprintf(L"CreateProcess failed (%d).\n", GetLastError());
+           _ASSERT(0);
+           return FALSE;
+       }
+       //// Wait until child process exits.
+       //WaitForSingleObject(pi2.hProcess, INFINITE);
+       //// Close process and thread handles. 
+       //CloseHandle(pi2.hProcess);
+       //CloseHandle(pi2.hThread);
    }
-   //// Wait until child process exits.
-   //WaitForSingleObject(pi2.hProcess, INFINITE);
-   //// Close process and thread handles. 
-   //CloseHandle(pi2.hProcess);
-   //CloseHandle(pi2.hThread);
 
-   //STARTUPINFO si3;
-   //PROCESS_INFORMATION pi3;
-   //ZeroMemory(&si3, sizeof(si3));
-   //si3.cb = sizeof(si3);
-   //ZeroMemory(&pi3, sizeof(pi3));
-   WCHAR strcmdline3[MAX_PATH] = { 0L };
-   swprintf_s(strcmdline3, MAX_PATH, L"\"%s\" -progno 3", path);
-   //si3.dwX = 0;
-   //si3.dwY = 950;
-   // Start the child process. 
-   if (!CreateProcess(NULL,   // No module name (use command line)
-       strcmdline3,        // Command line
-       NULL,           // Process handle not inheritable
-       NULL,           // Thread handle not inheritable
-       FALSE,          // Set handle inheritance to FALSE
-       0,              // No creation flags
-       NULL,           // Use parent's environment block
-       NULL,           // Use parent's starting directory 
-       &si3,            // Pointer to STARTUPINFO structure
-       &pi3)           // Pointer to PROCESS_INFORMATION structure
-       )
-   {
-       wprintf(L"CreateProcess failed (%d).\n", GetLastError());
-       _ASSERT(0);
-       return FALSE;
+   if (dlg.m_h2) {
+       //STARTUPINFO si3;
+       //PROCESS_INFORMATION pi3;
+       //ZeroMemory(&si3, sizeof(si3));
+       //si3.cb = sizeof(si3);
+       //ZeroMemory(&pi3, sizeof(pi3));
+       WCHAR strcmdline3[MAX_PATH] = { 0L };
+       swprintf_s(strcmdline3, MAX_PATH, L"\"%s\" -progno 3", path);
+       //si3.dwX = 0;
+       //si3.dwY = 950;
+       // Start the child process. 
+       if (!CreateProcess(NULL,   // No module name (use command line)
+           strcmdline3,        // Command line
+           NULL,           // Process handle not inheritable
+           NULL,           // Thread handle not inheritable
+           FALSE,          // Set handle inheritance to FALSE
+           0,              // No creation flags
+           NULL,           // Use parent's environment block
+           NULL,           // Use parent's starting directory 
+           &si3,            // Pointer to STARTUPINFO structure
+           &pi3)           // Pointer to PROCESS_INFORMATION structure
+           )
+       {
+           wprintf(L"CreateProcess failed (%d).\n", GetLastError());
+           _ASSERT(0);
+           return FALSE;
+       }
+       //// Wait until child process exits.
+       //WaitForSingleObject(pi3.hProcess, INFINITE);
+       //// Close process and thread handles. 
+       //CloseHandle(pi3.hProcess);
+       //CloseHandle(pi3.hThread);
    }
-   //// Wait until child process exits.
-   //WaitForSingleObject(pi3.hProcess, INFINITE);
-   //// Close process and thread handles. 
-   //CloseHandle(pi3.hProcess);
-   //CloseHandle(pi3.hThread);
 
-   //STARTUPINFO si4;
-   //PROCESS_INFORMATION pi4;
-   //ZeroMemory(&si4, sizeof(si4));
-   //si4.cb = sizeof(si4);
-   //ZeroMemory(&pi4, sizeof(pi4));
-   WCHAR strcmdline4[MAX_PATH] = { 0L };
-   swprintf_s(strcmdline4, MAX_PATH, L"\"%s\" -progno 4", path);
-   //si4.dwX = 0;
-   //si4.dwY = 0;
-   // Start the child process. 
-   if (!CreateProcess(NULL,   // No module name (use command line)
-       strcmdline4,        // Command line
-       NULL,           // Process handle not inheritable
-       NULL,           // Thread handle not inheritable
-       FALSE,          // Set handle inheritance to FALSE
-       0,              // No creation flags
-       NULL,           // Use parent's environment block
-       NULL,           // Use parent's starting directory 
-       &si4,            // Pointer to STARTUPINFO structure
-       &pi4)           // Pointer to PROCESS_INFORMATION structure
-       )
-   {
-       wprintf(L"CreateProcess failed (%d).\n", GetLastError());
-       _ASSERT(0);
-       return FALSE;
+   if (dlg.m_w2 && dlg.m_h2) {
+       //STARTUPINFO si4;
+       //PROCESS_INFORMATION pi4;
+       //ZeroMemory(&si4, sizeof(si4));
+       //si4.cb = sizeof(si4);
+       //ZeroMemory(&pi4, sizeof(pi4));
+       WCHAR strcmdline4[MAX_PATH] = { 0L };
+       swprintf_s(strcmdline4, MAX_PATH, L"\"%s\" -progno 4", path);
+       //si4.dwX = 0;
+       //si4.dwY = 0;
+       // Start the child process. 
+       if (!CreateProcess(NULL,   // No module name (use command line)
+           strcmdline4,        // Command line
+           NULL,           // Process handle not inheritable
+           NULL,           // Thread handle not inheritable
+           FALSE,          // Set handle inheritance to FALSE
+           0,              // No creation flags
+           NULL,           // Use parent's environment block
+           NULL,           // Use parent's starting directory 
+           &si4,            // Pointer to STARTUPINFO structure
+           &pi4)           // Pointer to PROCESS_INFORMATION structure
+           )
+       {
+           wprintf(L"CreateProcess failed (%d).\n", GetLastError());
+           _ASSERT(0);
+           return FALSE;
+       }
+       //// Wait until child process exits.
+       //WaitForSingleObject(pi4.hProcess, INFINITE);
+       //// Close process and thread handles. 
+       //CloseHandle(pi4.hProcess);
+       //CloseHandle(pi4.hThread);
    }
-   //// Wait until child process exits.
-   //WaitForSingleObject(pi4.hProcess, INFINITE);
-   //// Close process and thread handles. 
-   //CloseHandle(pi4.hProcess);
-   //CloseHandle(pi4.hThread);
 
    return TRUE;
 }
