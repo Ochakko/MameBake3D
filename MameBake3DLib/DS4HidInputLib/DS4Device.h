@@ -5,7 +5,7 @@
 class DS4Device : public DSDevice
 {
 public:
-	DS4Device(HidDevice srcdevice, int srccontrollerId) ;
+	DS4Device(HidDevice srcdevice, int srccontrollerId, UINT leng) ;
 	bool SendOutputReport() override;
 	bool ChangeLedColor(const LED &led)  override;
 	void ChangeVibration(UCHAR right, UCHAR left) override;

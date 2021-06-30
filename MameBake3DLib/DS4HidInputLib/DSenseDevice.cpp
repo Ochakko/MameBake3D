@@ -3,9 +3,16 @@
 #include "DSenseDevice.h"
 #include "DSAxisType.h"
 
-DSenseDevice::DSenseDevice(HidDevice srcdevice, int srccontrollerId)
+DSenseDevice::DSenseDevice(HidDevice srcdevice, int srccontrollerId, UINT leng)
 {
 	device = srcdevice;
+	char* devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1));
+	if (devicePath) {
+		ZeroMemory(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)));
+		strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)), device.GetDevicePath());
+		device.SetDevicePath(devicePath);
+	}
+
 	controllerId = srccontrollerId;
 	outputDataLength = device.GetCapabilities().OutputReportByteLength;
 	inputDataLength = device.GetCapabilities().InputReportByteLength;
@@ -172,7 +179,7 @@ bool DSenseDevice::Destroy()
 	ChangeTriggerLock(0, 0, 0, 0);
 	ChangePlayerLight(0);
 	SendOutputReport();
-	device.Destroy();
+	device.Destroy(true);
 	controllerId = -1;
 	return true;
 }

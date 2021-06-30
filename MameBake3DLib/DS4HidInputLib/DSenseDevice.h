@@ -5,7 +5,7 @@
 class DSenseDevice : public DSDevice
 {
 public:
-	DSenseDevice(HidDevice srddevice, int srccontrollerId);
+	DSenseDevice(HidDevice srddevice, int srccontrollerId, UINT leng);
 	bool ChangeLedColor(const LED& led)  override;
 	void ChangePlayerLight(UCHAR val) override;
 	bool SendOutputReport() override;

@@ -16,7 +16,7 @@ HidDevice::HidDevice()
 
 HidDevice::~HidDevice()
 {
-	Destroy();
+	//Closeするときとしないときがあるので、Destroyは手動で呼ばなくてはならない
 }
 
 void HidDevice::InitParams()
@@ -37,12 +37,12 @@ HidDevice HidDevice::Create(char *path, UINT leng, int id)
 	//	devicePath = 0;
 	//}
 
-	Destroy();
+	Destroy(true);
 
 
 	if (!path) {
 		_ASSERT(0);
-		//isDevice = FALSE;
+		isDevice = FALSE;
 		//InitParams();
 		return *this;//!!!!!!!!
 	}
@@ -63,21 +63,21 @@ HidDevice HidDevice::Create(char *path, UINT leng, int id)
 	//}
 
 	//devicePath = new char[sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * leng];
-	devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * leng + 1);
+	devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1));
 	if (!devicePath) {
 		_ASSERT(0);
-		//isDevice = FALSE;
+		isDevice = FALSE;
 		//Destroy();
 		return *this;//!!!!!!!!
 	}
-	//if (devicePath) {
-	//	ZeroMemory(devicePath, sizeof(char) * (size + 1));
-	//}
+	if (devicePath) {
+		ZeroMemory(devicePath, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1));
+	}
 	//for (UINT i = 0; i < size; i++)
 	//{
 	//	devicePath[i] = path[i];
 	//}
-	strcpy_s(devicePath, leng + 1, path);
+	strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)), path);
 
 	//デバイスハンドルの作成
 	deviceHandle = CreateFile(
@@ -96,7 +96,7 @@ HidDevice HidDevice::Create(char *path, UINT leng, int id)
 			delete[] devicePath;
 			devicePath = 0;
 		}
-
+		isDevice = FALSE;
 		return *this;//!!!!!!!!
 	}
 
@@ -108,7 +108,8 @@ HidDevice HidDevice::Create(char *path, UINT leng, int id)
 		vendorID = attributes.VendorID;
 	}
 	else {
-		Destroy();
+		Destroy(true);
+		isDevice = FALSE;
 		return *this;//!!!!!!!!
 	}
 
@@ -140,24 +141,25 @@ HIDP_CAPS HidDevice::GetCapabilities()
 	return capabilities;
 }
 
-void HidDevice::Destroy() 
+void HidDevice::Destroy(bool closeflag) 
 {
 
 	//delete[] devicePath;
-	//if (devicePath) {
+	if (devicePath) {
 	//	delete[] devicePath;
-	//	free(devicePath);
-		//devicePath = 0;
-	//}
-
-	//isDevice = 0;
-	if (isDevice && isCapabilities && (deviceHandle != INVALID_HANDLE_VALUE)) {
-	//if ((deviceHandle != INVALID_HANDLE_VALUE)) {
-		//キーボードなどは閉じない。使った分だけ閉じる。
-		CloseHandle(deviceHandle);
+		free(devicePath);
+		devicePath = 0;
 	}
-	//deviceHandle = INVALID_HANDLE_VALUE;
 
+	if (closeflag) {
+		//isDevice = 0;
+		if (isDevice && isCapabilities && (deviceHandle != INVALID_HANDLE_VALUE)) {
+			//if ((deviceHandle != INVALID_HANDLE_VALUE)) {
+				//キーボードなどは閉じない。使った分だけ閉じる。
+			CloseHandle(deviceHandle);
+		}
+		deviceHandle = INVALID_HANDLE_VALUE;
+	}
 
 	InitParams();
 }

@@ -85,8 +85,17 @@ bool DSManager::GetDevice()
 								//	PS5コントローラー
 								for (int i = 0; i < 4; i++) {
 									if (!dsDevice[i]) {
-										dsDevice[i] = new DSenseDevice(*pdevice, i);
+										dsDevice[i] = new DSenseDevice(*pdevice, i, size + 4);
 										foundflag = true;
+
+										//pdevice//使用するときにはポインタもコピー。つまり使用する場合にはCloseHandleしてはいけない。
+										pdevice->Destroy(false);
+										delete pdevice;
+										pdevice = 0;
+										if (detail) {
+											free(detail);
+											detail = 0;
+										}
 										break;
 									}
 								}
@@ -96,40 +105,50 @@ bool DSManager::GetDevice()
 								for (int i = 0; i < 4; i++) {
 									if (!dsDevice[i]) {
 										//PS4コントローラーとして設定
-										dsDevice[i] = new DS4Device(*pdevice, i);
+										dsDevice[i] = new DS4Device(*pdevice, i, size + 4);
 										foundflag = true;
+
+										//pdevice//使用するときにはポインタもコピー。つまり使用する場合にはCloseHandleしてはいけない。
+										pdevice->Destroy(false);
+										delete pdevice;
+										pdevice = 0;
+										if (detail) {
+											free(detail);
+											detail = 0;
+										}
 										break;
 									}
 								}
+								
 							}
 							else
 							{
 								//デバイスの破棄
 								if (pdevice) {
+									pdevice->Destroy(true);
 									delete pdevice;
 									pdevice = 0;
 								}
 								if (detail) {
-								//	delete detail;
 									free(detail);
-								//	detail = 0;
+									detail = 0;
 								}
 							}
 						}
 						else {
 							//デバイスの破棄
 							if (pdevice) {
+								pdevice->Destroy(true);
 								delete pdevice;
 								pdevice = 0;
 							}
 							if (detail) {
-								//	delete detail;
 								free(detail);
-								//	detail = 0;
+								detail = 0;
 							}
 						}
 						
-						//pdevice//使用するときにはポインタもコピー。つまり使用する場合には破棄してはいけない。
+
 					}
 				}
 			}

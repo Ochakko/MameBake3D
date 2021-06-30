@@ -23,7 +23,7 @@ public:
 
 	HidDevice Create(char* path, UINT leng, int id);
 	HIDP_CAPS GetCapabilities() ;
-	void Destroy() ;
+	void Destroy(bool closeflag) ;
 	inline HANDLE GetHandle() 
 	{
 		return deviceHandle;
@@ -36,7 +36,11 @@ public:
 	{
 		return vendorID;
 	};
-	inline char* GetDevicePath() 
+	inline void SetDevicePath(char* srcpath)
+	{
+		devicePath = srcpath;
+	};
+	inline char* GetDevicePath()
 	{
 		return devicePath;
 	};

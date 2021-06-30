@@ -6,9 +6,17 @@
 const int BT_OUTPUT_REPORT_LENGTH = 78;
 const int BT_INPUT_REPORT_LENGTH = 547;
 
-DS4Device::DS4Device(HidDevice srcdevice, int srccontrollerId) 
+DS4Device::DS4Device(HidDevice srcdevice, int srccontrollerId, UINT leng) 
 {
 	device = srcdevice;
+	
+	char* devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1));
+	if (devicePath) {
+		ZeroMemory(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)));
+		strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)), device.GetDevicePath());
+		device.SetDevicePath(devicePath);
+	}
+
 	controllerId = srccontrollerId;//!!!
 	outputDataLength = device.GetCapabilities().OutputReportByteLength;
 	inputDataLength = device.GetCapabilities().InputReportByteLength;
@@ -290,7 +298,7 @@ bool DS4Device::Destroy()
 	inputData = nullptr;
 	delete[] outputData;
 	outputData = nullptr;
-	device.Destroy();
+	device.Destroy(true);
 	return true;
 }
 
