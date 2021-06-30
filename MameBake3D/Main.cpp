@@ -1819,6 +1819,7 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 
 	OpenDbgFile();
+	//_CrtSetBreakAlloc(297);
 	//_CrtSetBreakAlloc(303);
 	//_CrtSetBreakAlloc(307);
 

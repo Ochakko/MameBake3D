@@ -21,7 +21,7 @@ public:
 	HidDevice();
 	~HidDevice();
 
-	HidDevice Create(char* path, int id);
+	HidDevice Create(char* path, UINT leng, int id);
 	HIDP_CAPS GetCapabilities() ;
 	void Destroy() ;
 	inline HANDLE GetHandle() 
@@ -40,6 +40,12 @@ public:
 	{
 		return devicePath;
 	};
+	bool GetIsCapabilities()
+	{
+		return isCapabilities;
+	}
+
+	void InitParams();
 
 public:
 	BOOL isDevice;

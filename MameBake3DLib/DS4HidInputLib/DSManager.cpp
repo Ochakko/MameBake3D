@@ -57,62 +57,83 @@ bool DSManager::GetDevice()
 		if (size > 0) {//sizeが正の場合のif文追加　2021/03/25 add OchakkoLAB
 
 			//デバイスインターフェース詳細情報の領域を確保する
-			//detail = new SP_INTERFACE_DEVICE_DETAIL_DATA[size];//クラスではなく構造体なのでmallocに変更
+			//detail = new SP_INTERFACE_DEVICE_DETAIL_DATA[size];
+			//detail = new SP_INTERFACE_DEVICE_DETAIL_DATA();
 			detail = (PSP_INTERFACE_DEVICE_DETAIL_DATA)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * size);
+			//detail = (PSP_INTERFACE_DEVICE_DETAIL_DATA)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA));
 			if (detail)
 			{
-				ZeroMemory(detail, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * size);
+				//ZeroMemory(detail, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * size);
+				ZeroMemory(detail, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA));
 
 				DWORD len = 0;
-				memset(detail, 0, size);
+				//memset(detail, 0, size);
 
 				//デバイスインターフェースの詳細情報を読込む
 				detail->cbSize = sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
 				if (SetupDiGetInterfaceDeviceDetail(hdevInfo, &data, detail, size, &len, NULL))
 				{
 					//Hidデバイスの作成
-					HidDevice device = device.Create(detail->DevicePath, 0);
-					if (device.isDevice) {
+					HidDevice *pdevice = 0;
+					pdevice = new HidDevice();//使用するときにはポインタもコピー。つまり使用する場合には破棄してはいけない。
+					if (pdevice) {
+						pdevice->Create(detail->DevicePath, size + 4, 0);
+						//if (pdevice->isDevice && pdevice->GetIsCapabilities()) {
+						if (pdevice->isDevice) {
 
-						if (device.GetVendorID() == 0x54C && device.GetProductID() == 0xce6) {
-							//	PS5コントローラー
-							for (int i = 0; i < 4; i++) {
-								if (!dsDevice[i]) {
-									dsDevice[i] = new DSenseDevice(device, i);
-									foundflag = true;
-									break;
+							if (pdevice->GetVendorID() == 0x54C && pdevice->GetProductID() == 0xce6) {
+								//	PS5コントローラー
+								for (int i = 0; i < 4; i++) {
+									if (!dsDevice[i]) {
+										dsDevice[i] = new DSenseDevice(*pdevice, i);
+										foundflag = true;
+										break;
+									}
+								}
+							}
+							else if (pdevice->GetVendorID() == 0x54c && (pdevice->GetProductID() == 0x5c4 || pdevice->GetProductID() == 0x9CC))
+							{
+								for (int i = 0; i < 4; i++) {
+									if (!dsDevice[i]) {
+										//PS4コントローラーとして設定
+										dsDevice[i] = new DS4Device(*pdevice, i);
+										foundflag = true;
+										break;
+									}
+								}
+							}
+							else
+							{
+								//デバイスの破棄
+								if (pdevice) {
+									delete pdevice;
+									pdevice = 0;
+								}
+								if (detail) {
+								//	delete detail;
+									free(detail);
+								//	detail = 0;
 								}
 							}
 						}
-						else if (device.GetVendorID() == 0x54c && (device.GetProductID() == 0x5c4 || device.GetProductID() == 0x9CC))
-						{
-							for (int i = 0; i < 4; i++) {
-								if (!dsDevice[i]) {
-									//PS4コントローラーとして設定
-									dsDevice[i] = new DS4Device(device, i);
-									foundflag = true;
-									break;
-								}
-							}
-						}
-						else
-						{
+						else {
 							//デバイスの破棄
-							device.Destroy();
+							if (pdevice) {
+								delete pdevice;
+								pdevice = 0;
+							}
+							if (detail) {
+								//	delete detail;
+								free(detail);
+								//	detail = 0;
+							}
 						}
-					}
-					else {
-						//デバイスの破棄
-						device.Destroy();
+						
+						//pdevice//使用するときにはポインタもコピー。つまり使用する場合には破棄してはいけない。
 					}
 				}
-
 			}
-			if (detail) {
-				//delete[] detail;
-				free(detail);
-				detail = 0;
-			}
+			
 		}
 	}
 	SetupDestroyDiskSpaceList(hdevInfo);

@@ -11,6 +11,16 @@ using namespace std;
 
 HidDevice::HidDevice()
 {
+	InitParams();
+}
+
+HidDevice::~HidDevice()
+{
+	Destroy();
+}
+
+void HidDevice::InitParams()
+{
 	isDevice = FALSE;
 	productID = 0;
 	vendorID = 0;
@@ -20,23 +30,23 @@ HidDevice::HidDevice()
 	devicePath = 0;
 }
 
-HidDevice::~HidDevice()
+HidDevice HidDevice::Create(char *path, UINT leng, int id)
 {
-	Destroy();
-}
+	//if (devicePath) {
+	//	free(devicePath);
+	//	devicePath = 0;
+	//}
 
-HidDevice HidDevice::Create(char * path, int id)
-{
-	if (devicePath) {
-		free(devicePath);
-		devicePath = 0;
-	}
+	Destroy();
+
 
 	if (!path) {
 		_ASSERT(0);
-		isDevice = FALSE;
+		//isDevice = FALSE;
+		//InitParams();
 		return *this;//!!!!!!!!
 	}
+
 
 	//パスのコピー
 	size_t size = 1;
@@ -44,28 +54,30 @@ HidDevice HidDevice::Create(char * path, int id)
 	//{
 	//	size += 1;
 	//}
-	size = strlen(path);
-	if ((size <= 0) || (size > 2048)) {
-		_ASSERT(0);
-		isDevice = FALSE;
-		return *this;//!!!!!!!!
-	}
+	//size = strlen(path);
+	//if ((size <= 0) || (size > 2048)) {
+	//	_ASSERT(0);
+	//	//isDevice = FALSE;
+	//	Destroy();
+	//	return *this;//!!!!!!!!
+	//}
 
-	//devicePath = new char[size];
-	devicePath = (char*)malloc(sizeof(char) * (size + 1));
+	//devicePath = new char[sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * leng];
+	devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * leng + 1);
 	if (!devicePath) {
 		_ASSERT(0);
-		isDevice = FALSE;
+		//isDevice = FALSE;
+		//Destroy();
 		return *this;//!!!!!!!!
 	}
-	if (devicePath) {
-		ZeroMemory(devicePath, sizeof(char) * (size + 1));
-	}
+	//if (devicePath) {
+	//	ZeroMemory(devicePath, sizeof(char) * (size + 1));
+	//}
 	//for (UINT i = 0; i < size; i++)
 	//{
 	//	devicePath[i] = path[i];
 	//}
-	strcpy_s(devicePath, (size + 1), path);
+	strcpy_s(devicePath, leng + 1, path);
 
 	//デバイスハンドルの作成
 	deviceHandle = CreateFile(
@@ -77,15 +89,31 @@ HidDevice HidDevice::Create(char * path, int id)
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 
+	if (deviceHandle == INVALID_HANDLE_VALUE) {
+		//_ASSERT(0);
+		//Destroy();
+		if (devicePath) {
+			delete[] devicePath;
+			devicePath = 0;
+		}
+
+		return *this;//!!!!!!!!
+	}
+
+
 	HIDD_ATTRIBUTES attributes;
 	if (HidD_GetAttributes(deviceHandle, &attributes))
 	{
 		productID = attributes.ProductID;
 		vendorID = attributes.VendorID;
 	}
+	else {
+		Destroy();
+		return *this;//!!!!!!!!
+	}
 
 	isCapabilities = false;
-	isDevice = 1;
+	isDevice = TRUE;
 
 	return *this;
 }
@@ -114,15 +142,22 @@ HIDP_CAPS HidDevice::GetCapabilities()
 
 void HidDevice::Destroy() 
 {
-	isDevice = 0;
-	if (deviceHandle != INVALID_HANDLE_VALUE) {
-		CloseHandle(deviceHandle);
-	}
-	deviceHandle = INVALID_HANDLE_VALUE;
 
 	//delete[] devicePath;
-	if (devicePath) {
-		free(devicePath);
-		devicePath = 0;
+	//if (devicePath) {
+	//	delete[] devicePath;
+	//	free(devicePath);
+		//devicePath = 0;
+	//}
+
+	//isDevice = 0;
+	if (isDevice && isCapabilities && (deviceHandle != INVALID_HANDLE_VALUE)) {
+	//if ((deviceHandle != INVALID_HANDLE_VALUE)) {
+		//キーボードなどは閉じない。使った分だけ閉じる。
+		CloseHandle(deviceHandle);
 	}
+	//deviceHandle = INVALID_HANDLE_VALUE;
+
+
+	InitParams();
 }
