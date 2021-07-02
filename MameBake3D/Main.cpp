@@ -7436,15 +7436,18 @@ int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM 
 		firstdir[0] = 0L;
 		GetBatchHistoryDir(firstdir, MAX_PATH);
 		if(firstdir[0] != 0L){
-			// ドキュメントが初期フォルダ
 			SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)firstdir);
+			SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)firstdir);
 		}
 		else {
 			// ドキュメントが初期フォルダ
-			SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, lpData);
+			if (lpData) {
+				SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)lpData);
+				SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)lpData);
+			}
 		}
 		//初期フォルダ（ドキュメント）を展開
-		SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, lpData);
+		//SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)lpData);
 		break;
 
 		// 無効なフォルダ名を入力された場合
