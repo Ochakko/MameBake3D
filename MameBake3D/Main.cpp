@@ -14961,6 +14961,10 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 			}
 		}
 
+		if (g_motionbrush_applyframe == g_motionbrush_startframe) {
+			_ASSERT(0);
+		}
+
 		int cpframe;
 		for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
 			float cpvalue;

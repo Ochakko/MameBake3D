@@ -182,7 +182,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 						//	//矩形以外　両端０
 						//	curscale = 0.0;
 						//}
-						if (framecnt == startframe) {
+						if ((framecnt == startframe) && (framecnt != applyframe)) {
 							if (repeatscnt == 0) {
 								curscale = 0.0f;
 							}
@@ -195,7 +195,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 								}
 							}
 						}
-						else if (framecnt == endframe) {
+						else if ((framecnt == endframe) && (framecnt != applyframe)) {
 							if (repeatscnt == (repeats - 1)) {
 								curscale = 0.0f;
 							}

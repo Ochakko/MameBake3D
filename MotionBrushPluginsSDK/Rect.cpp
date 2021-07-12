@@ -181,7 +181,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 						//	//ãÈå`à»äOÅ@óºí[ÇO
 						//	curscale = 0.0;
 						//}
-						if (framecnt == startframe) {
+						if ((framecnt == startframe) && (framecnt != applyframe)) {//applyframeÇÃÇ∆Ç´ÇÕÇPÅDÇO
 							if (repeatscnt == 0) {
 								curscale = 0.0f;
 							}
@@ -194,7 +194,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 								}
 							}
 						}
-						else if (framecnt == endframe) {
+						else if ((framecnt == endframe) && (framecnt != applyframe)) {//applyframeÇÃÇ∆Ç´ÇÕÇPÅDÇO
 							if (repeatscnt == (repeats - 1)) {
 								curscale = 0.0f;
 							}
