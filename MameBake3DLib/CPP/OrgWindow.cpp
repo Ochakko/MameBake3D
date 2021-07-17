@@ -41,15 +41,16 @@ namespace OrgWinGUI{
 
 		beginPaint();
 		paintTitleBar();
-		for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
-			itr != partsList.end();
-			itr++) {
-			if ((*itr)->getParent() && IsWindow((*itr)->getParent()->hWnd)) {
-				(*itr)->draw();
+
+		if (g_retargetbatchflag == 0) {
+			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
+				itr != partsList.end();
+				itr++) {
+				if ((*itr)->getParent() && IsWindow((*itr)->getParent()->hWnd)) {
+					(*itr)->draw();
+				}
 			}
 		}
-
-
 		//{
 		//	//if (g_dsmousewait == 1) {
 		//	if (g_mouseherebmp) {

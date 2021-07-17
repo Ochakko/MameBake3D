@@ -4814,8 +4814,9 @@ static void s_dummyfunc();
 					SetTextColor(hdcM->hDC, RGB(64, 128, 255));
 				}
 				else {
-					_ASSERT(0);
+					//_ASSERT(0);
 					SetTextColor(hdcM->hDC, RGB(255, 0, 0));
+					return;
 				}
 
 				std::basic_string<TCHAR> prname;

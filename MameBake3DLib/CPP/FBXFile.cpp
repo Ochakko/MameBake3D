@@ -1348,7 +1348,7 @@ void AnimateSkeletonOfBVH( FbxScene* pScene )
 	s_firstanimout = 1;
 	AnimateBoneOfBVHReq( s_fbxbone, lAnimLayer );
 
-	//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStackName, s_convPivot, 30.0, true);
+	////pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStackName, s_convPivot, 30.0, true);
 	pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);
 
 }
@@ -1490,7 +1490,7 @@ _ASSERT( motionnum == aino );
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
-		//pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
+		////pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
 		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);
 
 	}

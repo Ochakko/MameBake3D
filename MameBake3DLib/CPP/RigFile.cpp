@@ -245,7 +245,7 @@ int CRigFile::LoadRigFile( WCHAR* strpath, CModel* srcmodel )
 	m_hfile = CreateFile( strpath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
 	if( m_hfile == INVALID_HANDLE_VALUE ){
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 1;
 	}	
 

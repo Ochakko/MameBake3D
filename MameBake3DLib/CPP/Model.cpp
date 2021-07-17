@@ -2009,7 +2009,7 @@ int CModel::GetMotionFrame( double* dstframe )
 int CModel::SetMotionSpeed( double srcspeed )
 {
 	if( !m_curmotinfo ){
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 1;
 	}
 
@@ -3434,7 +3434,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		}
 
 		
-		//RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
+		////RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
 		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);
 
 
@@ -4006,7 +4006,8 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 				makecnt++;
 
 			}else{
-				_ASSERT( 0 );
+				//RootNodeという名前のジョイントが無いときにもここを通る
+				//_ASSERT( 0 );
 			}
 
 		}

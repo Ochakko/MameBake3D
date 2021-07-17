@@ -691,27 +691,49 @@ int CBVHElem::ConvertRotate2Q()
 //int CBVHElem::ConvZxyRot()
 int CBVHElem::ConvXYZRot()
 {
-	int frameno;
-	ChaVector3 befeul;
-	ZeroMemory(&befeul, sizeof(ChaVector3));
-	CQuaternion befq;
-	befq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	for (frameno = 0; frameno < framenum; frameno++){
-		befq.InOrder(qptr + frameno);
+	//int frameno;
+	//ChaVector3 befeul;
+	//ZeroMemory(&befeul, sizeof(ChaVector3));
+	//CQuaternion befq;
+	//befq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//for (frameno = 0; frameno < framenum; frameno++){
+	//	befq.InOrder(qptr + frameno);
 
-		ChaVector3 euler;
-		CQuaternion calcq;
-		CQuaternion iniq;
-		//qToEulerAxis(iniq, (qptr + frameno), &euler);
-		//modifyEuler(&euler, &befeul);
-		(qptr + frameno)->Q2EulXYZ(&iniq, befeul, &euler);
+	//	ChaVector3 euler;
+	//	CQuaternion calcq;
+	//	CQuaternion iniq;
+	//	//qToEulerAxis(iniq, (qptr + frameno), &euler);
+	//	//modifyEuler(&euler, &befeul);
+	//	(qptr + frameno)->Q2EulXYZ(&iniq, befeul, &euler);
 
-		*(xyzrot + frameno) = euler;
+	//	*(xyzrot + frameno) = euler;
 
-		befeul = euler;
-		//befq.SetRotationZXY(0, *(xyzrot + frameno));
-		befq.SetRotationXYZ(0, *(xyzrot + frameno));
+	//	befeul = euler;
+	//	//befq.SetRotationZXY(0, *(xyzrot + frameno));
+	//	befq.SetRotationXYZ(0, *(xyzrot + frameno));
+	//}
+
+
+	int isfirstbone;
+	if (GetParent()) {
+		isfirstbone = 0;
 	}
+	else {
+		isfirstbone = 1;
+	}
+
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	int frameno;
+	for (frameno = 0; frameno < framenum; frameno++) {
+		CQuaternion* curq;
+		curq = (qptr + frameno);
+		curq->CalcFBXEul(0, befeul, &cureul, isfirstbone);
+		*(xyzrot + frameno) = cureul;
+		befeul = cureul;
+	}
+
 
 	return 0;
 }

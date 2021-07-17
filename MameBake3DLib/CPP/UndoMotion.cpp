@@ -32,6 +32,12 @@ using namespace std;
 //#include <MorphKey.h>
 
 
+extern LONG g_bvh2fbxbatchflag;
+extern LONG g_motioncachebatchflag;
+extern LONG g_retargetbatchflag;
+
+
+
 CUndoMotion::CUndoMotion()
 {
 	InitParams();
@@ -112,6 +118,9 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 		return 0;
 	}
 
+	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+		return 0;
+	}
 
 
 	//ClearData();

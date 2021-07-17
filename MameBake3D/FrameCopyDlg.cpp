@@ -706,7 +706,7 @@ int CFrameCopyDlg::WriteTBOFile()
 
 		char TBOheader[256];
 		::ZeroMemory(TBOheader, sizeof(char) * 256);
-		strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.6");
+		strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.8");
 		DWORD wleng = 0;
 		WriteFile(hfile, TBOheader, sizeof(char) * 256, &wleng, NULL);
 		if (wleng != (sizeof(char) * 256)) {
@@ -800,7 +800,7 @@ bool CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufl
 		return false;
 	}
 	int cmp;
-	cmp = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.6");
+	cmp = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.8");
 	if (cmp != 0) {
 		_ASSERT(0);
 		return false;

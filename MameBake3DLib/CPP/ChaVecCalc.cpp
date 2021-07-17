@@ -2268,7 +2268,10 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
-	double s1, s2;
+	double tmpX3, tmpY3, tmpZ3;
+	double tmpX4, tmpY4, tmpZ4;
+	double s1, s2, s3, s4;
+	double mins;
 
 	//予想される角度1
 	tmpX1 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
@@ -2279,24 +2282,70 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 	//クォータニオンは１８０°で一回転する。
 	//横軸が２シータ、縦軸がsin2シータ、cos2シータのグラフにおいて、newシータ　=　180 + oldシータの値は等しい。
 	//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
-	//この場合、３つの軸のうち１つだけの軸の角度の符号(ここではX軸)が反転する。
+	//この場合、３つの軸のうち１つだけの軸の角度の符号(ここではY軸)が反転する。
 	//ということだと思う。テストすると合っている。
-	tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
-	tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
+	//tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
+	//tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
+	//tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+	tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x - eulerA->x - 180.0) / 360.0);
+	tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y + eulerA->y - 180.0) / 360.0);//Y軸が反転する
 	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+
+
+	//tmpX3 = 180.0 - eulerA->x + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
+	//tmpY3 = eulerA->y + 180.0 + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);//X軸が反転する
+	//tmpZ3 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+
+	//tmpX4 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x - eulerA->x - 180.0) / 360.0);
+	//tmpY4 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);//Z軸が反転する
+	//tmpZ4 = 180.0 - eulerA->z + 360.0 * GetRound((eulerB->z + eulerA->z - 180.0) / 360.0);
 
 
 	//角度変化の大きさ
 	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
 	s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
+	//s3 = (eulerB->x - tmpX3) * (eulerB->x - tmpX3) + (eulerB->y - tmpY3) * (eulerB->y - tmpY3) + (eulerB->z - tmpZ3) * (eulerB->z - tmpZ3);
+	//s4 = (eulerB->x - tmpX4) * (eulerB->x - tmpX4) + (eulerB->y - tmpY4) * (eulerB->y - tmpY4) + (eulerB->z - tmpZ4) * (eulerB->z - tmpZ4);
 
-	//変化の少ない方に修正
-	if (s1 < s2) {
+
+	////変化の少ない方に修正
+	//mins = min(s1, min(s2, min(s3, s4)));
+	//if (mins == s1) {
+	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+	//}
+	//else if (mins == s2) {
+	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+	//}
+	//else if (mins == s3) {
+	//	eulerA->x = (float)tmpX3; eulerA->y = (float)tmpY3; eulerA->z = (float)tmpZ3;
+	//}
+	//else if (mins == s4) {
+	//	eulerA->x = (float)tmpX4; eulerA->y = (float)tmpY4; eulerA->z = (float)tmpZ4;
+	//}
+	//else {
+	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+	//}
+
+	if (s1 <= s2) {
 		eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
 	}
 	else {
 		eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
 	}
+
+
+	
+	//if ((eulerA->x > 90.0) || (eulerA->x < -90.0)) {
+	//	//Y軸反転
+	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+	//}
+	//else {
+	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+	//}
+
+
+
+
 
 	return 0;
 }

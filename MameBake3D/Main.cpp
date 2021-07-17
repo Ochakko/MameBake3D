@@ -201,6 +201,7 @@ static void WaitMotionCacheThreads();
 static vector<wstring> s_retargetout;
 static LONG s_retargetnum = 0;
 static LONG s_retargetcnt = 0;
+int s_saveretargetmodel = 0;
 LONG g_retargetbatchflag;
 HWND s_retargetbatchwnd;
 HANDLE s_retargethandle1;
@@ -875,6 +876,7 @@ static OWP_Button* s_convboneconvert = 0;
 static CModel* s_convbone_model = 0;
 static CModel* s_convbone_model_batch = 0;
 static CModel* s_convbone_bvh = 0;
+static int s_maxboneno = 0;
 static CBone* s_modelbone_bone[CONVBONEMAX];
 static CBone* s_bvhbone_bone[CONVBONEMAX];
 static map<CBone*, CBone*> s_convbonemap;
@@ -2121,6 +2123,7 @@ void InitApp()
 	s_motioncachebatchwnd = 0;
 	s_motioncacheout.clear();
 
+	s_saveretargetmodel = 0;
 	s_convbone_model_batch_selindex = 0;
 	s_retargethandle1 = INVALID_HANDLE_VALUE;
 	s_retargethandle2 = INVALID_HANDLE_VALUE;
@@ -2348,6 +2351,7 @@ void InitApp()
 	s_convbone_model = 0;
 	s_convbone_model_batch = 0;
 	s_convbone_bvh = 0;
+	s_maxboneno = 0;
 	int cbno;
 	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
 		s_modelbone[cbno] = 0;
@@ -4119,7 +4123,10 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	static double savetime = 0.0;
 	static int capcnt = 0;
 
-	
+	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+		return;
+	}
+
 
 	WCHAR sz[100];
 	swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
@@ -4514,8 +4521,10 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	OnRenderModel(pd3dImmediateContext);
 	OnRenderGround(pd3dImmediateContext);
-	OnRenderBoneMark(pd3dImmediateContext);
-	OnRenderSelect(pd3dImmediateContext);
+	if (g_retargetbatchflag == 0) {
+		OnRenderBoneMark(pd3dImmediateContext);
+		OnRenderSelect(pd3dImmediateContext);
+	}
 	//OnRenderUtDialog(fElapsedTime);
 	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
 		OnRenderSprite(pd3dImmediateContext);
@@ -4749,31 +4758,32 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	//g_Camera->HandleMessages(hWnd, uMsg, wParam, lParam);
 	CBone* curbone = 0;
 	CRigidElem* curre = 0;
-	int maxboneno = 0;
-	if (s_model && (s_curboneno >= 0)) {
-		curbone = s_model->GetBoneByID(s_curboneno);
-		curre = s_model->GetRigidElem(s_curboneno);
-	}
-	else {
-		curbone = 0;
-		curre = 0;
-	}
-
-	//if (g_retargetbatchflag == 0) {
-		if (s_model && s_convbone_bvh) {
-			map<int, CBone*>::iterator itrbone;
-			for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
-				CBone* curbone = itrbone->second;
-				if (curbone) {
-					int boneno = curbone->GetBoneNo();
-					if (boneno > maxboneno) {
-						maxboneno = boneno;
-					}
-				}
-			}
+	if (g_retargetbatchflag == 0) {
+		//int maxboneno = 0;
+		if (s_model && (s_curboneno >= 0)) {
+			curbone = s_model->GetBoneByID(s_curboneno);
+			curre = s_model->GetRigidElem(s_curboneno);
 		}
-	//}
+		else {
+			curbone = 0;
+			curre = 0;
+		}
 
+		////if (g_retargetbatchflag == 0) {
+		//if (s_model && s_convbone_bvh) {
+		//	map<int, CBone*>::iterator itrbone;
+		//	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
+		//		CBone* curbone = itrbone->second;
+		//		if (curbone) {
+		//			int boneno = curbone->GetBoneNo();
+		//			if (boneno > maxboneno) {
+		//				maxboneno = boneno;
+		//			}
+		//		}
+		//	}
+		//}
+		////}
+	}
 
 	if( uMsg == WM_COMMAND ){
 
@@ -4800,20 +4810,21 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
 			s_convbone_bvh = s_modelindex[modelindex].modelptr;
-
 			WCHAR strmes[1024];
 			if (!s_convbone_bvh) {
 				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
 				::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
+				s_maxboneno = 0;
 			}
 			else {
 				swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
 				s_cbselbvh->setName(strmes);
+				s_maxboneno = s_convbone_bvh->GetBoneListSize();
 			}
 		}
 
 
-		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid <= (ID_RMENU_0 + maxboneno + 1 + MENUOFFSET_SETCONVBONE))) {
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid <= (ID_RMENU_0 + s_maxboneno + 1 + MENUOFFSET_SETCONVBONE))) {
 			if (menuid == (ID_RMENU_0 + 0 + MENUOFFSET_SETCONVBONE)) {
 				//未設定
 				s_bvhbone_bone[s_bvhbone_cbno] = 0;
@@ -7608,6 +7619,7 @@ int RetargetFile(char* fbxpath)
 			s_model = s_convbone_model_batch;
 			s_convbone_model = s_convbone_model_batch;
 			s_convbone_bvh = newmodel;
+			s_maxboneno = s_convbone_bvh->GetBoneListSize();
 
 			WCHAR wretargetfilename[MAX_PATH] = { 0L };
 			char retargetfilename[MAX_PATH] = { 0 };
@@ -7696,6 +7708,10 @@ int RetargetBatch()
 
 	s_convbone_model_batch = s_model;
 	s_convbone_model_batch_selindex = s_curmodelmenuindex;
+
+
+	s_saveretargetmodel = s_curmodelmenuindex;//終了時にOnModelMenuを呼ぶために保存
+
 
 	BROWSEINFO bi;
 	LPITEMIDLIST curlpidl = 0;
@@ -8609,14 +8625,14 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		if (chkretcomment == 0) {
 			int chkret1;
 			chkret1 = lmtfile.LoadLmtFile(lmtname, s_model, fbxcomment);
-			_ASSERT(chkret1 == 0);
+			//_ASSERT(chkret1 == 0);
 		}
 		WCHAR rigname[MAX_PATH] = { 0L };
 		swprintf_s(rigname, MAX_PATH, L"%s.rig", g_tmpmqopath);
 		CRigFile rigfile;
 		int chkret2;
 		chkret2 = rigfile.LoadRigFile(rigname, s_model);
-		_ASSERT(chkret2 == 0);
+		//_ASSERT(chkret2 == 0);
 	}
 
 	s_model->SetMotionSpeed(g_dspeed);
@@ -12330,19 +12346,20 @@ int SetConvBone( int cbno )
 	int setmenuid0 = ID_RMENU_0 + 0;
 	AppendMenu(submenu, MF_STRING, setmenuid0, L"NotSet");
 
-	int maxboneno = 0;
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++){
-		CBone* curbone = itrbone->second;
-		if (curbone){
-			int boneno = curbone->GetBoneNo();
-			int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
-			AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
-			if (boneno > maxboneno){
-				maxboneno = boneno;
-			}
-		}
-	}
+	//int maxboneno = 0;
+	//map<int, CBone*>::iterator itrbone;
+	//for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++){
+	//	CBone* curbone = itrbone->second;
+	//	if (curbone){
+	//		int boneno = curbone->GetBoneNo();
+	//		int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
+	//		AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
+	//		if (boneno > maxboneno){
+	//			maxboneno = boneno;
+	//		}
+	//	}
+	//}
+	s_maxboneno = s_convbone_bvh->GetBoneListSize();
 
 	POINT pt;
 	GetCursorPos(&pt);
@@ -14961,9 +14978,9 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 			}
 		}
 
-		if (g_motionbrush_applyframe == g_motionbrush_startframe) {
-			_ASSERT(0);
-		}
+		//if (g_motionbrush_applyframe == g_motionbrush_startframe) {
+		//	_ASSERT(0);
+		//}
 
 		int cpframe;
 		for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
@@ -15941,51 +15958,56 @@ int ChangeCurrentBone()
 	static CModel* s_befmodel = 0;
 	static CBone* s_befbone = 0;
 
-	if (s_model) {
-		//CDXUTComboBox* pComboBox;
-		//pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
-		//CBone* pBone;
-		//pBone = s_model->GetBoneByID(s_curboneno);
-		//if (pBone) {
-		//	pComboBox->SetSelectedByData(ULongToPtr(s_curboneno));
-		//}
 
-		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone) {
-			CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
-			//ANGLELIMIT anglelimit = curbone->GetAngleLimit();
-			//pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
-			//g_boneaxis = anglelimit.boneaxiskind;
-			g_boneaxis = (int)PtrToUlong(pComboBox3->GetSelectedData());
-		}
+	if (g_retargetbatchflag == 0) {
 
-		SetRigidLeng();
-		SetImpWndParams();
-		SetDmpWndParams();
-		RigidElem2WndParam();
-		if (s_anglelimitdlg) {
-			Bone2AngleLimit();
-			AngleLimit2Dlg(s_anglelimitdlg);
-		}
-
-		//if (s_befbone != curbone) {
-		//	refreshEulerGraph();
-		//}
-		if ((s_befbone != curbone) || (s_befmodel != s_model)) {
-			//if (s_owpTimeline) {
-				//refreshTimeline(*s_owpTimeline);
-				refreshEulerGraph();
+		if (s_model) {
+			//CDXUTComboBox* pComboBox;
+			//pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONE);
+			//CBone* pBone;
+			//pBone = s_model->GetBoneByID(s_curboneno);
+			//if (pBone) {
+			//	pComboBox->SetSelectedByData(ULongToPtr(s_curboneno));
 			//}
+
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone) {
+				CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+				//ANGLELIMIT anglelimit = curbone->GetAngleLimit();
+				//pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
+				//g_boneaxis = anglelimit.boneaxiskind;
+				g_boneaxis = (int)PtrToUlong(pComboBox3->GetSelectedData());
+			}
+
+			SetRigidLeng();
+			SetImpWndParams();
+			SetDmpWndParams();
+			RigidElem2WndParam();
+			if (s_anglelimitdlg) {
+				Bone2AngleLimit();
+				AngleLimit2Dlg(s_anglelimitdlg);
+			}
+
+			//if (s_befbone != curbone) {
+			//	refreshEulerGraph();
+			//}
+			if ((s_befbone != curbone) || (s_befmodel != s_model)) {
+				//if (s_owpTimeline) {
+					//refreshTimeline(*s_owpTimeline);
+				refreshEulerGraph();
+				//}
+			}
+
+
+			s_befbone = curbone;
+			s_befmodel = s_model;
 		}
-
-
-		s_befbone = curbone;
-		s_befmodel = s_model;
+		else {
+			s_befbone = 0;
+			s_befmodel = s_model;
+		}
 	}
-	else {
-		s_befbone = 0;
-		s_befmodel = s_model;
-	}
+
 	return 0;
 }
 
@@ -19632,6 +19654,10 @@ int CreateLayerWnd()
 
 int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 {
+	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+		return 0;
+	}
+
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		CModel* curmodel = itrmodel->modelptr;
@@ -21827,7 +21853,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.6 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.8 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -29118,7 +29144,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.6 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.8 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -29229,6 +29255,8 @@ void WaitRetargetThreads()
 		if (s_retargetbatchwnd) {
 			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
 		}
+		InterlockedExchange(&g_retargetbatchflag, 0);//WM_CLOSEで変わる可能性あり
+		OnModelMenu(s_saveretargetmodel, 1);
 	}
 
 }
@@ -29240,6 +29268,7 @@ void WaitMotionCacheThreads()
 		if (s_motioncachebatchwnd) {
 			SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
 		}
+		InterlockedExchange(&g_motioncachebatchflag, 0);//WM_CLOSEで変わる可能性あり
 	}
 
 }
@@ -29251,6 +29280,7 @@ void WaitBvh2FbxThreads()
 		if (s_bvh2fbxbatchwnd) {
 			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 		}
+		InterlockedExchange(&g_bvh2fbxbatchflag, 0);//WM_CLOSEで変わる可能性あり
 	}
 }
 
@@ -29939,7 +29969,7 @@ int WriteCPTFile()
 
 	char CPTheader[256];
 	::ZeroMemory(CPTheader, sizeof(char) * 256);
-	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.6");
+	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.8");
 
 	DWORD wleng = 0;
 	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
@@ -30048,7 +30078,7 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 		return false;
 	}
 	int cmp;
-	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.6");
+	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.8");
 	if (cmp != 0) {
 		_ASSERT(0);
 		return false;

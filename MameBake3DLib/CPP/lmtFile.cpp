@@ -218,7 +218,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	bexist = PathFileExists(strpath);
 	if (!bexist)
 	{
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 2;//not found
 	}
 
