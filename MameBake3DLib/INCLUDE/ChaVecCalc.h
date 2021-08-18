@@ -306,6 +306,8 @@ private:
 	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB);
 	int GetRound(float srcval);
 
+	float QuaternionLimitPhai(float srcphai);
+	double QuaternionLimitPhai(double srcphai);
 
 public:
 	 float x;

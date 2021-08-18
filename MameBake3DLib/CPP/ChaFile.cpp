@@ -348,7 +348,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	return 0;
 }
 
-int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(), 
+int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
 	int (*srcReMenu)( int selindex1, int callbymenu1 ), int (*srcRgdMenu)( int selindex2, int callbymenu2 ), int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) )
 {
 	m_mode = XMLIO_LOAD;
@@ -549,7 +549,7 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	int skipdefref = (int)(refnum != 0);//default_ref.refが無い場合にCModel::LoadFBXでdefault_ref.refを作るためのフラグ
 	//int skipdefref = 0;//CModel::LoadFBXでCreateRigidElemReqを呼ぶ必要がある。FBXだけ読み込んでいる状態でdefault_refが必要。
 	CModel* newmodel = 0;
-	newmodel = (this->m_FbxFunc)( skipdefref, inittimeline );
+	newmodel = (this->m_FbxFunc)( (characnt == (charanum - 1)), skipdefref, inittimeline );
 	_ASSERT( newmodel );
 
 	

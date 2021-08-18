@@ -5,9 +5,11 @@
 #include <ChaVecCalc.h>
 //#include <quaternion.h>
 
-#define MPPOOLBLKLEN	2048
-//#define MPPOOLBLKLEN	8192
-//#define MPPOOLBLKLEN	32768
+#define MPPOOLBLKLEN	65536
+
+//#define MPPOOLBLKLEN	2048
+////#define MPPOOLBLKLEN	8192
+////#define MPPOOLBLKLEN	32768
 
 class CBone;
 

@@ -20,7 +20,7 @@ public:
 	virtual ~CChaFile();
 
 	int WriteChaFile( BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, std::vector<MODELELEM>& srcmodelindex, float srcmotspeed );
-	int LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(), 
+	int LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
 		int (*srcReMenu)( int selindex1, int callbymenu1 ), int (*srcRgdMenu)( int selindex2, int callbymenu2 ), int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) );
 
 private:
@@ -46,7 +46,7 @@ private:
 	char m_mloaddir[MAX_PATH];
 
 
-	CModel* (*m_FbxFunc)( int skipdefref, int inittimelineflag );
+	CModel* (*m_FbxFunc)( bool dorefreshtl, int skipdefref, int inittimelineflag );
 	int (*m_RefFunc)();
 	int (*m_ImpFunc)();
 	int (*m_GcoFunc)();

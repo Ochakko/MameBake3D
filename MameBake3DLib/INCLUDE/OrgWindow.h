@@ -16,7 +16,8 @@
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
 
-#define EULPOOLBLKLEN	2048
+//#define EULPOOLBLKLEN	2048
+#define EULPOOLBLKLEN	65536
 
 struct KeyInfo{
 	const TCHAR *label;

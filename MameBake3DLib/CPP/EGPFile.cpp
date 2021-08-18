@@ -73,11 +73,32 @@ typedef struct tag_egpelem
 	FbxAMatrix egp;
 }EGPELEM;
 
+//about 800MB
+#define EGPBUFLENG 800000000
 
 static CModel* s_model = 0;
 
 static int WriteEGPFileHeader(EGPHEADER* dstegph, HANDLE file, CModel* srcmodel, char* fbxdate, int srcanimno);
 static bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pmodel, char* fbxdate, int srcanimno);
+
+int CreateEGPBuf()
+{
+	g_egpbuf = (char*)malloc(sizeof(char) * (unsigned int)EGPBUFLENG);
+	if (!g_egpbuf) {
+		return 1;
+	}
+
+	return 0;
+}
+void DestroyEGPBuf()
+{
+	if (g_egpbuf) {
+		free(g_egpbuf);
+		g_egpbuf = 0;
+	}
+}
+
+
 
 int WriteEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 {
@@ -359,63 +380,52 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		_ASSERT(0);
 		return false;
 	}
-	char* newbuf;
-	newbuf = (char*)malloc(sizeof(char) * bufleng);//bufleng + 1
-	if (!newbuf) {
+	//char* newbuf;
+	//newbuf = (char*)malloc(sizeof(char) * bufleng);//bufleng + 1
+	//if (!newbuf) {
+	//	_ASSERT(0);
+	//	return false;
+	//}
+	if (!g_egpbuf || bufleng >= EGPBUFLENG) {
 		_ASSERT(0);
 		return false;
 	}
-	ZeroMemory(newbuf, sizeof(char) * bufleng);
+
+	ZeroMemory(g_egpbuf, sizeof(char) * bufleng);
 	DWORD rleng, readleng;
 	rleng = bufleng;
 	BOOL bsuccess;
-	bsuccess = ReadFile(hfile, (void*)newbuf, rleng, &readleng, NULL);
+	bsuccess = ReadFile(hfile, (void*)g_egpbuf, rleng, &readleng, NULL);
 	if (!bsuccess || (rleng != readleng)) {
 		_ASSERT(0);
 		CloseHandle(hfile);
-		if (!newbuf) {
-			_ASSERT(0);
-			return false;
-		}
 		return false;
 	}
 
 	EGPHEADER egpheader;
 	ZeroMemory(&egpheader, sizeof(egpheader));
 	bool isvalid;
-	isvalid = ValidateEGPFile(&egpheader, newbuf, bufleng, pmodel, fbxdate, animno);
+	isvalid = ValidateEGPFile(&egpheader, g_egpbuf, bufleng, pmodel, fbxdate, animno);
 	if (!isvalid) {
 		//_ASSERT(0);
-		if (newbuf) {
-			free(newbuf);
-			newbuf = 0;
-		}
 		CloseHandle(hfile);
 		return false;
 	}
 
-	int jointindex;
-	int frameno;
+	unsigned int jointindex;
+	unsigned int frameno;
 	for (jointindex = 0; jointindex < egpheader.jointnum; jointindex++) {
 		DWORD curheaderpos;
 		curheaderpos = sizeof(EGPHEADER) + jointindex * sizeof(EGPJOINTHEADER) + jointindex * egpheader.framenum * sizeof(EGPELEM);
 		if (curheaderpos >= (bufleng - sizeof(EGPJOINTHEADER))) {
-			if (newbuf) {
-				free(newbuf);
-				newbuf = 0;
-			}
 			CloseHandle(hfile);
 			return false;
 		}
 		EGPJOINTHEADER jointheader;
 		ZeroMemory(&jointheader, sizeof(EGPJOINTHEADER));
-		MoveMemory(&jointheader, newbuf + curheaderpos, sizeof(EGPJOINTHEADER));
+		MoveMemory(&jointheader, g_egpbuf + curheaderpos, sizeof(EGPJOINTHEADER));
 
 		if (jointheader.jointindex != jointindex) {
-			if (newbuf) {
-				free(newbuf);
-				newbuf = 0;
-			}
 			CloseHandle(hfile);
 			return false;
 		}
@@ -423,20 +433,12 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		int jointnamelen;
 		jointnamelen = strlen(jointheader.jointname);
 		if ((jointnamelen <= 0) || (jointnamelen >= 256)) {
-			if (newbuf) {
-				free(newbuf);
-				newbuf = 0;
-			}
 			CloseHandle(hfile);
 			return false;
 		}
 		CBone* curbone = 0;
 		curbone = pmodel->GetBoneByName(jointheader.jointname);
 		if (!curbone) {
-			if (newbuf) {
-				free(newbuf);
-				newbuf = 0;
-			}
 			CloseHandle(hfile);
 			return false;
 		}
@@ -448,23 +450,25 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		//	char jointname[256];
 		//}EGPJOINTHEADER;
 
-		curbone->veclClusterGlobalCurrentPosition.clear();
+		//curbone->veclClusterGlobalCurrentPosition.clear();
+
+		
+		size_t veccursize = curbone->veclClusterGlobalCurrentPosition.size();
+		if (veccursize < egpheader.framenum) {
+			curbone->veclClusterGlobalCurrentPosition.resize(egpheader.framenum);//!!!!!!!!!!!!
+		}
 
 		for (frameno = 0; frameno < egpheader.framenum; frameno++) {
 			DWORD egpbufpos;
 			egpbufpos = curheaderpos + sizeof(EGPJOINTHEADER) + frameno * sizeof(EGPELEM);
 			if ((egpbufpos <= 0) || (egpbufpos > (bufleng - sizeof(EGPELEM)))) {
-				if (newbuf) {
-					free(newbuf);
-					newbuf = 0;
-				}
 				CloseHandle(hfile);
 				return false;
 			}
 
 			EGPELEM egpelem;
 			ZeroMemory(&egpelem, sizeof(EGPELEM));
-			MoveMemory(&egpelem, newbuf + egpbufpos, sizeof(EGPELEM));
+			MoveMemory(&egpelem, g_egpbuf + egpbufpos, sizeof(EGPELEM));
 
 			//typedef struct tag_egpelem
 			//{
@@ -474,33 +478,22 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 			//}EGPELEM;
 
 			if (egpelem.jointindex != jointindex) {
-				if (newbuf) {
-					free(newbuf);
-					newbuf = 0;
-				}
 				CloseHandle(hfile);
 				return false;
 			}
 
 			if (egpelem.frameno != frameno) {
-				if (newbuf) {
-					free(newbuf);
-					newbuf = 0;
-				}
 				CloseHandle(hfile);
 				return false;
 			}
 
 			FbxAMatrix curegp;
 			curegp = egpelem.egp;
-			curbone->veclClusterGlobalCurrentPosition.push_back(curegp);
+			//curbone->veclClusterGlobalCurrentPosition.push_back(curegp);
+			curbone->veclClusterGlobalCurrentPosition[frameno] = curegp;//VS‚Ìpush_back‚Í’x‚¢‚ç‚µ‚¢‚Ì‚Å
 		}
 	}
 
-	if (newbuf) {
-		free(newbuf);
-		newbuf = 0;
-	}
 	CloseHandle(hfile);
 
 	return true;

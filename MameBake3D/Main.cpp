@@ -127,6 +127,8 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #include "MotFilter.h"
 #include <MotionPoint.h>
 
+#include <EGPFile.h>
+
 #include "DSUpdateUnderTracking.h"
 #include "PluginElem.h"
 
@@ -1532,13 +1534,13 @@ static int InitCurMotion(int selectflag, double expandmotion);
 
 static int OpenChaFile();
 CModel* OpenMQOFile();
-CModel* OpenFBXFile( int skipdefref, int inittimelineflag );
+CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag );
 static int OpenREFile();
 static int OpenImpFile();
 static int OpenGcoFile();
 
 int OnDelMotion( int delindex );
-int OnAddMotion( int srcmotid );
+int OnAddMotion( int srcmotid, bool dorefreshtl);
 
 static int StartBt( CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero );
 static int StopBt();
@@ -1600,14 +1602,14 @@ static int RotAxis(HWND hDlgWnd);
 
 static int EraseKeyList();
 static int DestroyTimeLine( int dellist );
-static int AddTimeLine( int newmotid );
+static int AddTimeLine( int newmotid, bool dorefreshtl );
 static int AddMotion( WCHAR* wfilename, double srcleng = 0.0 );
-static int OnAnimMenu( int selindex, int saveundoflag = 1 );
+static int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag = 1 );
 static int OnRgdMorphMenu( int selindex );
 static int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
 static int OnSetMotSpeed();
 
-static int OnModelMenu( int selindex, int callbymenu );
+static int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu );
 static int OnREMenu( int selindex, int callbymenu );
 static int OnRgdMenu( int selindex, int callbymenu );
 static int OnImpMenu( int selindex );
@@ -1904,6 +1906,29 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		_ASSERT(0);
 		return 1;
 	}
+
+	::SetPriorityClass(GetModuleHandle(NULL), REALTIME_PRIORITY_CLASS);
+	::SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
+	//#############################
+	//SetTreadAffinityはヒントでしかない
+	//#############################
+	//SYSTEM_INFO sys;
+	//::GetSystemInfo(&sys);
+	//DWORD cpunum = sys.dwNumberOfProcessors;
+	//DWORD_PTR affinitymask = 0;
+	//DWORD cpucnt;
+	////for (cpucnt = 0; cpucnt < cpunum; cpucnt++) {
+	////affinitymask |= (DWORD_PTR)(1 << (cpunum - 1));
+	////}
+	//DWORD_PTR befaffinity = ::SetThreadAffinityMask(GetCurrentThread(), affinitymask);
+	//--------------------------------------------------------------------------------------
+	// Limit the current thread to one processor (the current one). This ensures that timing code 
+	// runs on only one processor, and will not suffer any ill effects from power management.
+	// See "Game Timing and Multicore Processors" for more details
+	//--------------------------------------------------------------------------------------
+	//	void CDXUTTimer::LimitThreadAffinityToCurrentProc()
+
 
 
 	s_doneinit = 0;
@@ -2273,7 +2298,7 @@ void InitApp()
 		s_curaimbarno = -1;
 	}
 
-
+	CreateEGPBuf();
 
 	CRigidElem::InitRigidElems();
 	CBone::InitBones();
@@ -3381,6 +3406,8 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		g_infownd = 0;
 	}
 
+
+	DestroyEGPBuf();
 
 	s_oprigflag = 0;
 	s_customrigbone = 0;
@@ -5056,13 +5083,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		else if( (menuid >= 59900) && (menuid <= (59900 + MAXMOTIONNUM)) ){
 			ActivatePanel( 0 );
 			int selindex = menuid - 59900;
-			OnAnimMenu( selindex );
+			OnAnimMenu( true, selindex );
 			ActivatePanel( 1 );
 			//return 0;
 		}else if( (menuid >= 61000) && (menuid <= (61000 + MAXMODELNUM)) ){
 			ActivatePanel( 0 );
 			int selindex = menuid - 61000;
-			OnModelMenu( selindex, 1 );
+			OnModelMenu( true, selindex, 1 );
 			ActivatePanel( 1 );
 			//return 0;
 		}else if( (menuid >= 62000) && (menuid <= (62000 + MAXRENUM)) ){
@@ -7601,7 +7628,7 @@ int RetargetFile(char* fbxpath)
 	if (pfind) {
 		
 		if (s_modelindex.size() > 0) {
-			OnModelMenu(s_modelindex.size() - 1, 1);
+			OnModelMenu(false, s_modelindex.size() - 1, 1);
 		}
 
 		unsigned int dirpathlen;
@@ -7610,12 +7637,12 @@ int RetargetFile(char* fbxpath)
 
 		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, fbxpath, MAX_PATH, g_tmpmqopath, MAX_PATH);
 		CModel* newmodel = 0;
-		newmodel = OpenFBXFile(0, 1);
+		newmodel = OpenFBXFile(false, 0, 1);
 		if (newmodel) {
 			//s_model = s_convbone_model_batch;
 
 
-			OnModelMenu(s_convbone_model_batch_selindex, 1);
+			OnModelMenu(false, s_convbone_model_batch_selindex, 1);
 			s_model = s_convbone_model_batch;
 			s_convbone_model = s_convbone_model_batch;
 			s_convbone_bvh = newmodel;
@@ -8109,13 +8136,13 @@ int OpenFile()
 			s_filterindex = 1;
 		}else if( cmpfbx == 0 ){
 			if (s_modelindex.size() > 0) {
-				OnModelMenu(s_modelindex.size() - 1, 1);
+				OnModelMenu(false, s_modelindex.size() - 1, 1);
 			}
-			OpenFBXFile( 0, 1 );
+			OpenFBXFile( true, 0, 1 );
 			s_filterindex = 1;
 		}else if( cmpmqo == 0 ){
 			if (s_modelindex.size() > 0) {
-				OnModelMenu(s_modelindex.size() - 1, 1);
+				OnModelMenu(false, s_modelindex.size() - 1, 1);
 			}
 			OpenMQOFile();
 			s_filterindex = 1;
@@ -8148,9 +8175,9 @@ int OpenFile()
 				WCHAR* nexttopchar = topchar + leng2 + 1;
 				//if (*nexttopchar != TEXT('\0')) {
 					if (s_modelindex.size() > 0) {
-						OnModelMenu(s_modelindex.size() - 1, 1);
+						OnModelMenu(false, s_modelindex.size() - 1, 1);
 					}
-					OpenFBXFile(0, 1);
+					OpenFBXFile(true, 0, 1);
 				//}
 				//else {
 				//	//最終のFBXに対してのみinittimelineをする
@@ -8159,7 +8186,7 @@ int OpenFile()
 				s_filterindex = 1;
 			}else if( cmpmqo == 0 ){
 				if (s_modelindex.size() > 0) {
-					OnModelMenu(s_modelindex.size() - 1, 1);
+					OnModelMenu(false, s_modelindex.size() - 1, 1);
 				}
 				OpenMQOFile();
 				s_filterindex = 1;
@@ -8171,6 +8198,9 @@ int OpenFile()
 	}
 
 	s_nowloading = false;
+
+	//ChangeCurrentBone();
+
 	return 0;
 }
 
@@ -8313,7 +8343,7 @@ CModel* OpenMQOFile()
 	return newmodel;
 }
 
-CModel* OpenFBXFile( int skipdefref, int inittimelineflag )
+CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
@@ -8516,7 +8546,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		OnRenderNowLoading();
 	}
 
-	CallF( OnModelMenu( mindex, 0 ), return 0 );
+	CallF( OnModelMenu( dorefreshtl, mindex, 0 ), return 0 );
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -8534,6 +8564,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//if( (int)s_modelindex.size() >= 2 )
 	//	_ASSERT( 0 );
 
+//::MessageBox(s_mainhwnd, L"check 1", L"check!!!", MB_OK);
+
+
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
@@ -8542,6 +8575,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//	OnDelMotion( 0 );//初期状態のダミーモーションを削除
 	//}
 
+//::MessageBox(s_mainhwnd, L"check 2", L"check!!!", MB_OK);
 
 	//OnAnimMenuでCreateRigidElemを呼ぶ前に、default_ref.refを読む
 	if (skipdefref == 1) {//プロジェクトファイルから呼ばれて、かつ、default_ref.refが存在する場合
@@ -8567,17 +8601,26 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 			}
 		}
 	}
+
+//::MessageBox(s_mainhwnd, L"check 3", L"check!!!", MB_OK);
+
+
 	//if (inittimelineflag == 1)//inittimelineflag は 最後のキャラの時に１
 	{
 		int lastmotid = -1;
 		int motnum = s_model->GetMotInfoSize();
 		int motno;
 		for (motno = 0; motno < motnum; motno++) {
+
+//WCHAR strchk[256] = { 0L };
+//swprintf_s(strchk, 256, L"check 3 : %d / %d", motno, motnum);
+//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
+
 			MOTINFO* curmi = s_model->GetMotInfo(motno + 1);
 			if (curmi) {
 				lastmotid = curmi->motid;
 				s_model->SetCurrentMotion(lastmotid);
-				OnAddMotion(curmi->motid);
+				OnAddMotion(curmi->motid, (motno == 0));
 
 				if (s_nowloading && s_3dwnd) {
 					OnRenderNowLoading();
@@ -8589,6 +8632,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	}
 	//}
 
+//::MessageBox(s_mainhwnd, L"check 4", L"check!!!", MB_OK);
 
 	int motnum = s_model->GetMotInfoSize();
 	if (motnum == 0){
@@ -8603,6 +8647,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
+
+//::MessageBox(s_mainhwnd, L"check 5", L"check!!!", MB_OK);
 
 
 	OnRgdMorphMenu( 0 );
@@ -8635,6 +8681,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		//_ASSERT(chkret2 == 0);
 	}
 
+//::MessageBox(s_mainhwnd, L"check 6", L"check!!!", MB_OK);
+
+
 	s_model->SetMotionSpeed(g_dspeed);
 
 	//OnAnimMenuで呼ぶ
@@ -8652,11 +8701,16 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	//ShowRigidWnd(true);
 
+//::MessageBox(s_mainhwnd, L"check 7", L"check!!!", MB_OK);
+
+
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
 
 	OrgWindowListenMouse(true);
+
+//::MessageBox(s_mainhwnd, L"check 8", L"check!!!", MB_OK);
 
 
 	return newmodel;
@@ -8709,7 +8763,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 	return 0;
 };
 
-int AddTimeLine( int newmotid )
+int AddTimeLine( int newmotid, bool dorefreshtl )
 {
 	EnterCriticalSection(&s_CritSection_LTimeline);
 
@@ -8855,10 +8909,12 @@ int AddTimeLine( int newmotid )
 
 		//タイムラインのキーを設定
 		if (s_owpTimeline) {
-			refreshTimeline(*s_owpTimeline);
+			if (dorefreshtl) {
+				refreshTimeline(*s_owpTimeline);
+			}
+			s_owpLTimeline->selectClear();
 		}
 
-		s_owpLTimeline->selectClear();
 	}
 
 
@@ -8881,6 +8937,10 @@ int UpdateEditedEuler()
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return 0;
 	}
+
+	//if (s_model && (s_model->GetLoadedFlag() == FALSE)) {
+	//	return 0;
+	//}
 
 
 	//選択状態がない場合にはtopboneのオイラーグラフを表示する。
@@ -9029,6 +9089,14 @@ void refreshEulerGraph()
 
 	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
 
+	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
+		return;
+	}
+
+	//if (s_model && (s_model->GetLoadedFlag() == FALSE)) {
+	//	return;
+	//}
+
 	MOTINFO* curmotinfo = 0;
 	if (s_model && ((curmotinfo = s_model->GetCurMotInfo()) != 0)) {
 
@@ -9170,6 +9238,14 @@ void refreshEulerGraph()
 
 //タイムラインにモーションデータのキーを設定する
 void refreshTimeline(OWP_Timeline& timeline){
+
+	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
+		return;
+	}
+
+	//if (s_model && (s_model->GetLoadedFlag() == FALSE)) {
+	//	return;
+	//}
 
 	//時刻幅を設定
 	if( s_model && (s_model->GetCurMotInfo()) ){
@@ -9577,10 +9653,10 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 	CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
 	//_ASSERT(0);
 
-	CallF( AddTimeLine( newmotid ), return 1 );
+	CallF( AddTimeLine( newmotid, true ), return 1 );
 
 	int selindex = (int)s_tlarray.size() - 1;
-	CallF( OnAnimMenu( selindex ), return 1 );
+	CallF( OnAnimMenu( true, selindex ), return 1 );
 
 
 	return 0;
@@ -9638,7 +9714,7 @@ int OnRgdMorphMenu( int selindex )
 }
 
 
-int OnAnimMenu( int selindex, int saveundoflag )
+int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 {
 	if (!s_model) {
 		_ASSERT(0);
@@ -9672,7 +9748,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 	cAnimSets = (int)s_tlarray.size();
 
 	if( cAnimSets <= 0 ){
-		if( s_owpTimeline ){
+		if( s_owpTimeline && dorefreshflag){
 			refreshTimeline(*s_owpTimeline);
 		}
 		s_curmotid = -1;
@@ -9707,13 +9783,14 @@ int OnAnimMenu( int selindex, int saveundoflag )
 			s_owpTimeline->setCurrentTime( 0.0 );
 			s_curmotid = selmotid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-			
-			s_model->CreateBtObject(1);
-			s_model->CalcBoneEul(-1);
+			if (dorefreshflag) {
+				s_model->CreateBtObject(1);
+				s_model->CalcBoneEul(-1);
+			}
 		}
 	}
 
-	if( s_owpTimeline ){
+	if( s_owpTimeline && dorefreshflag){
 		//タイムラインのキーを設定
 		refreshTimeline(*s_owpTimeline);
 		s_owpTimeline->setCurrentTime( 0.0 );
@@ -9744,7 +9821,7 @@ int OnAnimMenu( int selindex, int saveundoflag )
 	return 0;
 }
 
-int OnModelMenu( int selindex, int callbymenu )
+int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 {
 	s_customrigbone = 0;
 	
@@ -9785,7 +9862,7 @@ int OnModelMenu( int selindex, int callbymenu )
 
 		s_model = 0;
 		s_curboneno = -1;
-		if( s_owpTimeline ){
+		if( s_owpTimeline && dorefreshtl){
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
@@ -9799,7 +9876,7 @@ int OnModelMenu( int selindex, int callbymenu )
 		OrgWindowListenMouse(false);
 
 		s_model = 0;
-		if( s_owpTimeline ){
+		if( s_owpTimeline && dorefreshtl){
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
@@ -9829,7 +9906,7 @@ int OnModelMenu( int selindex, int callbymenu )
 			s_lineno2boneno = s_modelindex[selindex].lineno2boneno;
 			s_boneno2lineno = s_modelindex[selindex].boneno2lineno;
 
-			OnAnimMenu(s_motmenuindexmap[s_model]);
+			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
 	}
 
@@ -10032,7 +10109,7 @@ int OnDelMotion( int delmenuindex )
 		AddMotion( 0 );
 		InitCurMotion(0, 0);
 	}else{
-		OnAnimMenu( 0 );
+		OnAnimMenu( true, 0 );
 	}
 
 	return 0;
@@ -10098,7 +10175,7 @@ int OnDelModel( int delmenuindex )
 		s_boneno2lineno = s_modelindex[0].boneno2lineno;
 	}
 
-	OnModelMenu( 0, 0 );
+	OnModelMenu( true, 0, 0 );
 
 	CreateModelPanel();
 
@@ -10147,7 +10224,7 @@ int OnDelAllModel()
 	s_lineno2boneno.clear();
 	s_boneno2lineno.clear();
 
-	OnModelMenu( -1, 0 );
+	OnModelMenu( true, -1, 0 );
 
 	CreateModelPanel();
 
@@ -11888,7 +11965,7 @@ int CreateModelPanel()
 			int curindex = s_modelpanel.radiobutton->getSelectIndex();
 			if ((curindex >= 0) && (curindex < s_modelindex.size())) {
 				s_modelpanel.modelindex = curindex;
-				OnModelMenu(s_modelpanel.modelindex, 1);
+				OnModelMenu(true, s_modelpanel.modelindex, 1);
 				s_modelpanel.panel->callRewrite();
 			}
 		}
@@ -12808,18 +12885,28 @@ int SetCamera6Angle()
 	return 0;
 }
 
-int OnAddMotion( int srcmotid )
+int OnAddMotion( int srcmotid, bool dorefreshtl)
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
 
-	MOTINFO* newmotinfo = s_model->GetMotInfo( srcmotid );
+	//MOTINFO* newmotinfo = s_model->GetMotInfo( srcmotid );
 
+//WCHAR strchk[256] = { 0L };
+//swprintf_s(strchk, 256, L"check OnAddMotion : 1 : %d, %d", srcmotid, (int)dorefreshtl);
+//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
 
-	CallF( AddTimeLine( srcmotid ), return 1 );
+	CallF( AddTimeLine( srcmotid, dorefreshtl ), return 1 );
+
+//swprintf_s(strchk, 256, L"check OnAddMotion : 2 : %d, %d", srcmotid, (int)dorefreshtl);
+//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
 
 	int selindex = (int)s_tlarray.size() - 1;
-	CallF( OnAnimMenu( selindex ), return 1 );
+	CallF( OnAnimMenu( dorefreshtl, selindex ), return 1 );
+
+//swprintf_s(strchk, 256, L"check OnAddMotion : 3 : %d, %d", srcmotid, (int)dorefreshtl);
+//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
+
 
 	return 0;
 
@@ -13799,6 +13886,9 @@ int OpenChaFile()
 			}
 		}
 	}
+
+	//ChangeCurrentBone();
+
 	return 0;
 }
 
@@ -16997,7 +17087,7 @@ int OnFrameToolWnd()
 				InitCurMotion(0, oldframeleng);
 
 				//メニュー書き換え, timeline update
-				OnAnimMenu(s_motmenuindexmap[s_model]);
+				OnAnimMenu(true, s_motmenuindexmap[s_model]);
 			}
 		}
 	}
@@ -17384,13 +17474,13 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			if (findflag == 1){
 				int selindex;
 				selindex = chkcnt;
-				OnAnimMenu(selindex, 0);
+				OnAnimMenu(true, selindex, 0);
 			}
 		}
 		else{
 			if (s_model) {
 				//メニュー書き換え, timeline update
-				OnAnimMenu(s_motmenuindexmap[s_model], 0);
+				OnAnimMenu(true, s_motmenuindexmap[s_model], 0);
 			}
 		}
 
@@ -21554,14 +21644,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		if ((menuid >= 59900) && (menuid <= (59900 + MAXMOTIONNUM))) {
 			ActivatePanel(0);
 			int selindex = menuid - 59900;
-			OnAnimMenu(selindex);
+			OnAnimMenu(true, selindex);
 			ActivatePanel(1);
 			//return 0;
 		}
 		else if ((menuid >= 61000) && (menuid <= (61000 + MAXMODELNUM))) {
 			ActivatePanel(0);
 			int selindex = menuid - 61000;
-			OnModelMenu(selindex, 1);
+			OnModelMenu(true, selindex, 1);
 			ActivatePanel(1);
 			//return 0;
 		}
@@ -21853,7 +21943,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.8 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.9 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -23387,7 +23477,7 @@ void DSR1ButtonSelectMotion()
 			nextmotionindex = 0;
 		}
 
-		OnAnimMenu(nextmotionindex);
+		OnAnimMenu(true, nextmotionindex);
 	}
 
 }
@@ -23817,7 +23907,7 @@ void DSSelectCharactor()
 			}
 
 			s_modelpanel.modelindex = nextmodelindex;
-			OnModelMenu(s_modelpanel.modelindex, 1);
+			OnModelMenu(true, s_modelpanel.modelindex, 1);
 			s_modelpanel.panel->callRewrite();
 
 		}
@@ -29144,7 +29234,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.8 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.9 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -29256,7 +29346,7 @@ void WaitRetargetThreads()
 			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
 		}
 		InterlockedExchange(&g_retargetbatchflag, 0);//WM_CLOSEで変わる可能性あり
-		OnModelMenu(s_saveretargetmodel, 1);
+		OnModelMenu(true, s_saveretargetmodel, 1);
 	}
 
 }
@@ -29969,7 +30059,7 @@ int WriteCPTFile()
 
 	char CPTheader[256];
 	::ZeroMemory(CPTheader, sizeof(char) * 256);
-	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.8");
+	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.9");
 
 	DWORD wleng = 0;
 	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
@@ -30078,7 +30168,7 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 		return false;
 	}
 	int cmp;
-	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.8");
+	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");
 	if (cmp != 0) {
 		_ASSERT(0);
 		return false;

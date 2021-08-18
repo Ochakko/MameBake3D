@@ -3532,12 +3532,11 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 		if (motioncachebatchflag == FALSE) {
 			FillUpEmptyKeyReq(curmotid, animleng, m_topbone, 0);
-
 			if (animno == 0) {
 				CallF(CreateFBXShape(mCurrentAnimLayer, animleng, mStart, mFrameTime2), return 1);
 			}
+			////(this->m_tlFunc)( curmotid );
 
-			//(this->m_tlFunc)( curmotid );
 			SetCurrentMotion(curmotid);
 		}
 	}
@@ -3792,7 +3791,12 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 		//cluster->GetTransformLinkMatrix(curbone->lClusterGlobalInitPosition[motid]);
 
 		if (m_useegpfile == false) {
-			curbone->veclClusterGlobalCurrentPosition.clear();//!!!!!!!!!!!!!!!!!! animleng - 1個の vector
+			//curbone->veclClusterGlobalCurrentPosition.clear();//!!!!!!!!!!!!!!!!!! animleng - 1個の vector
+			//curbone->veclClusterGlobalCurrentPosition.resize(animleng);//!!!!!!!!!!!!!!!
+			size_t veccursize = curbone->veclClusterGlobalCurrentPosition.size();
+			if (veccursize < animleng) {
+				curbone->veclClusterGlobalCurrentPosition.resize(animleng);//!!!!!!!!!!!!
+			}
 		}
 
 		double framecnt;
@@ -3827,7 +3831,8 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				fbxtime.SetSecondDouble((double)framecnt / 30.0);
 				FbxAMatrix globalcurrentpos;
 				globalcurrentpos = GetGlobalPosition(this, pNode->GetScene(), pNode, fbxtime, pPose);
-				curbone->veclClusterGlobalCurrentPosition.push_back(globalcurrentpos);
+				//curbone->veclClusterGlobalCurrentPosition.push_back(globalcurrentpos);
+				curbone->veclClusterGlobalCurrentPosition[(unsigned int)framecnt] = globalcurrentpos;//VSのpush_backは遅いらしいので
 			}
 
 			// Compute the current position of the link relative to the reference.

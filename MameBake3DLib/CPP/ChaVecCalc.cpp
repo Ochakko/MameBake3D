@@ -974,12 +974,46 @@ int CQuaternion::SetParams(DirectX::XMFLOAT4 srcxq)
 }
 #endif
 
+float CQuaternion::QuaternionLimitPhai(float srcphai) 
+{
+	float retphai = 0.0f;
+
+	if (srcphai > 0.0f) {
+		retphai = srcphai - (float)((int)(srcphai / (2.0f * (float)PAI))) * (2.0f * (float)PAI);
+		return retphai;
+	}
+	else if (srcphai < 0.0f) {
+		retphai = srcphai + (float)((int)(srcphai / (2.0f * (float)PAI))) * (2.0f * (float)PAI);
+		return retphai;
+	}
+	else {
+		return 0.0f;
+	}
+}
+
+double CQuaternion::QuaternionLimitPhai(double srcphai)
+{
+	double retphai = 0.0;
+
+	if (srcphai > 0.0) {
+		retphai = srcphai - (double)((int)(srcphai / (2.0 * PAI))) * (2.0 * PAI);
+		return retphai;
+	}
+	else if (srcphai < 0.0f) {
+		retphai = srcphai + (double)((int)(srcphai / (2.0 * PAI))) * (2.0 * PAI);
+		return retphai;
+	}
+	else {
+		return 0.0;
+	}
+}
+
 int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, float phai)
 {
 	float phai2;
 	float cos_phai2, sin_phai2;
 
-	phai2 = phai * 0.5f;
+	phai2 = QuaternionLimitPhai(phai) * 0.5f;
 	cos_phai2 = cosf(phai2);
 	sin_phai2 = sinf(phai2);
 
@@ -995,7 +1029,7 @@ int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, double phai)
 	double phai2;
 	double cos_phai2, sin_phai2;
 
-	phai2 = phai * 0.5;
+	phai2 = QuaternionLimitPhai(phai) * 0.5;
 	cos_phai2 = cos(phai2);
 	sin_phai2 = sin(phai2);
 
@@ -1043,12 +1077,17 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
 	float cosx, sinx, cosy, siny, cosz, sinz;
 	float fDeg2Pai = (float)DEG2PAI;
 
-	cosx = (float)cos(srcdeg.x * 0.5 * fDeg2Pai);
-	sinx = (float)sin(srcdeg.x * 0.5 * fDeg2Pai);
-	cosy = (float)cos(srcdeg.y * 0.5 * fDeg2Pai);
-	siny = (float)sin(srcdeg.y * 0.5 * fDeg2Pai);
-	cosz = (float)cos(srcdeg.z * 0.5 * fDeg2Pai);
-	sinz = (float)sin(srcdeg.z * 0.5 * fDeg2Pai);
+	float phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai(srcdeg.x * fDeg2Pai);
+	phaiy = QuaternionLimitPhai(srcdeg.y * fDeg2Pai);
+	phaiz = QuaternionLimitPhai(srcdeg.z * fDeg2Pai);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
 
 	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
 	qy.SetParams(cosy, 0.0f, siny, 0.0f);
@@ -1079,12 +1118,17 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, double degx, double degy, do
 	CQuaternion q, qx, qy, qz;
 	float cosx, sinx, cosy, siny, cosz, sinz;
 
-	cosx = (float)cos(degx * 0.5 * DEG2PAI);
-	sinx = (float)sin(degx * 0.5 * DEG2PAI);
-	cosy = (float)cos(degy * 0.5 * DEG2PAI);
-	siny = (float)sin(degy * 0.5 * DEG2PAI);
-	cosz = (float)cos(degz * 0.5 * DEG2PAI);
-	sinz = (float)sin(degz * 0.5 * DEG2PAI);
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai(degx * DEG2PAI);
+	phaiy = QuaternionLimitPhai(degy * DEG2PAI);
+	phaiz = QuaternionLimitPhai(degz * DEG2PAI);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
 
 	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
 	qy.SetParams(cosy, 0.0f, siny, 0.0f);
@@ -1117,12 +1161,18 @@ int CQuaternion::SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg)
 	float cosx, sinx, cosy, siny, cosz, sinz;
 	float fDeg2Pai = (float)DEG2PAI;
 
-	cosx = (float)cos(srcdeg.x * 0.5 * fDeg2Pai);
-	sinx = (float)sin(srcdeg.x * 0.5 * fDeg2Pai);
-	cosy = (float)cos(srcdeg.y * 0.5 * fDeg2Pai);
-	siny = (float)sin(srcdeg.y * 0.5 * fDeg2Pai);
-	cosz = (float)cos(srcdeg.z * 0.5 * fDeg2Pai);
-	sinz = (float)sin(srcdeg.z * 0.5 * fDeg2Pai);
+	float phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai(srcdeg.x * fDeg2Pai);
+	phaiy = QuaternionLimitPhai(srcdeg.y * fDeg2Pai);
+	phaiz = QuaternionLimitPhai(srcdeg.z * fDeg2Pai);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
+
 
 	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
 	qy.SetParams(cosy, 0.0f, siny, 0.0f);
@@ -1152,12 +1202,18 @@ int CQuaternion::SetRotationZXY(CQuaternion* axisq, double degx, double degy, do
 	CQuaternion q, qx, qy, qz;
 	float cosx, sinx, cosy, siny, cosz, sinz;
 
-	cosx = (float)cos(degx * 0.5 * DEG2PAI);
-	sinx = (float)sin(degx * 0.5 * DEG2PAI);
-	cosy = (float)cos(degy * 0.5 * DEG2PAI);
-	siny = (float)sin(degy * 0.5 * DEG2PAI);
-	cosz = (float)cos(degz * 0.5 * DEG2PAI);
-	sinz = (float)sin(degz * 0.5 * DEG2PAI);
+
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai(degx * DEG2PAI);
+	phaiy = QuaternionLimitPhai(degy * DEG2PAI);
+	phaiz = QuaternionLimitPhai(degz * DEG2PAI);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
 
 	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
 	qy.SetParams(cosy, 0.0f, siny, 0.0f);
