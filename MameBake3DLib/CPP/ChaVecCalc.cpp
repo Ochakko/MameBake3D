@@ -976,15 +976,45 @@ int CQuaternion::SetParams(DirectX::XMFLOAT4 srcxq)
 
 float CQuaternion::QuaternionLimitPhai(float srcphai) 
 {
+	//#######################################################
+	//srcphaiを-180度から180度に直してからクォータニオンの設定をする
+	//#######################################################
+
 	float retphai = 0.0f;
+	float tmpphai = srcphai;
+	int dbgcnt = 0;
 
 	if (srcphai > 0.0f) {
-		retphai = srcphai - (float)((int)(srcphai / (2.0f * (float)PAI))) * (2.0f * (float)PAI);
-		return retphai;
+		//retphai = srcphai - (float)((int)(srcphai / (2.0f * (float)PAI))) * (2.0f * (float)PAI);
+		//retphai = srcphai - (float)(((int)(srcphai / (float)PAI)) + 1) * (float)PAI;
+
+		//for example : 190 --> -170
+		while ((tmpphai >= -(float)PAI) && (tmpphai <= (float)PAI)) {
+			tmpphai -= (2.0 * (float)PAI);
+			dbgcnt++;
+			if (dbgcnt >= 100) {
+				tmpphai = srcphai;
+				break;
+			}
+		}
+
+		return tmpphai;
 	}
 	else if (srcphai < 0.0f) {
-		retphai = srcphai + (float)((int)(srcphai / (2.0f * (float)PAI))) * (2.0f * (float)PAI);
-		return retphai;
+		//retphai = srcphai + (float)(((int)(srcphai / (float)PAI)) + 1) * (float)PAI;
+
+		//for example : -190 --> 170
+
+		while ((tmpphai >= -(float)PAI) && (tmpphai <= (float)PAI)) {
+			tmpphai += (2.0 * (float)PAI);
+			dbgcnt++;
+			if (dbgcnt >= 100) {
+				tmpphai = srcphai;
+				break;
+			}
+		}
+
+		return tmpphai;
 	}
 	else {
 		return 0.0f;

@@ -8620,7 +8620,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 			if (curmi) {
 				lastmotid = curmi->motid;
 				s_model->SetCurrentMotion(lastmotid);
-				OnAddMotion(curmi->motid, (motno == 0));
+				//OnAddMotion(curmi->motid, (motno == 0));
+				OnAddMotion(curmi->motid, (motno == (motnum - 1)));//最後のモーション!!!!!! 2021/08/19
 
 				if (s_nowloading && s_3dwnd) {
 					OnRenderNowLoading();
@@ -8966,6 +8967,7 @@ int UpdateEditedEuler()
 
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
+
 			double curtime;
 			float minval = 0.0f;
 			float maxval = 0.0f;
@@ -9067,7 +9069,7 @@ int UpdateEditedEuler()
 				}
 
 
-				int scaleindex;
+				unsigned int scaleindex;
 				for (scaleindex = 0; scaleindex < curmi->frameleng; scaleindex++) {
 					double curscalevalue;
 					curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
@@ -9102,12 +9104,12 @@ void refreshEulerGraph()
 
 		int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 
-		if (!g_motionbrush_value || (g_motionbrush_frameleng != frameleng)) {
+		//if (!g_motionbrush_value || (g_motionbrush_frameleng != frameleng)) {
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 			if (result) {
 				_ASSERT(0);
 			}
-		}
+		//}
 
 		//int result = CreateMotionBrush(0, (double)(frameleng - 1), true);
 		//_ASSERT(result == 0);
@@ -9216,7 +9218,7 @@ void refreshEulerGraph()
 							scalemax = 10.0;
 						}
 
-
+						
 						for (curtime = 0; curtime < frameleng; curtime++) {
 							int scaleindex;
 							scaleindex = (int)curtime;
@@ -15100,6 +15102,19 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	}
 
 	if (onrefreshflag == false) {
+
+		if(s_owpTimeline)
+			s_owpTimeline->setMaxTime(frameleng);//!!!!!!!!!!!!!!!!!!!!!
+		if(s_owpLTimeline)
+			s_owpLTimeline->setMaxTime(frameleng);//!!!!!!!!!!!!!!!!!!!!!
+
+		if (s_owpTimeline)
+			s_owpTimeline->setCurrentTime(g_motionbrush_applyframe, false);//!!!!!!!!!!!!!!!!!!!!!
+		if (s_owpLTimeline)
+			s_owpLTimeline->setCurrentTime(g_motionbrush_applyframe, false);//!!!!!!!!!!!!!!!!!!!!!
+		if(s_owpEulerGraph)
+			s_owpEulerGraph->setCurrentTime(g_motionbrush_applyframe, false);//!!!!!!!!!!!!!!!!!!!!!
+
 		UpdateEditedEuler();
 	}
 
@@ -21943,7 +21958,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.9 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.10 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -29234,7 +29249,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.9 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.10 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -30059,7 +30074,7 @@ int WriteCPTFile()
 
 	char CPTheader[256];
 	::ZeroMemory(CPTheader, sizeof(char) * 256);
-	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.9");
+	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.9");//本体ではない
 
 	DWORD wleng = 0;
 	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
@@ -30168,7 +30183,7 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 		return false;
 	}
 	int cmp;
-	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");
+	cmp = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");//本体ではない
 	if (cmp != 0) {
 		_ASSERT(0);
 		return false;

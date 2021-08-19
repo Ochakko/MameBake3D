@@ -717,7 +717,8 @@ namespace OrgWinGUI{
 		for (allocno = 0; allocno < EULPOOLBLKLEN; allocno++) {
 			OWP_EulerGraph::EulLineData::EulKey* curalloceul = alloceul + allocno;
 			if (curalloceul) {
-				int indexofpool = curpoollen + allocno;
+				//int indexofpool = curpoollen + allocno;
+				int indexofpool = curpoollen;//pool[indexofpool] 2021/08/19
 				curalloceul->InitParams();
 				curalloceul->SetUseFlag(0);
 				curalloceul->SetIndexOfPool(indexofpool);

@@ -69,6 +69,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
 
+    ::SetPriorityClass(GetModuleHandle(NULL), REALTIME_PRIORITY_CLASS);
+    ::SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
 
     // アプリケーション初期化の実行:
     if (!InitInstance (hInstance, nCmdShow))

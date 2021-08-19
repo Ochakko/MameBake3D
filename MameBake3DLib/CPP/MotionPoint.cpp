@@ -370,7 +370,8 @@ CMotionPoint* CMotionPoint::GetNewMP()
 	for (allocno = 0; allocno < MPPOOLBLKLEN; allocno++) {
 		CMotionPoint* curallocmp = (CMotionPoint*)allocmp + allocno;
 		if (curallocmp) {
-			int indexofpool = curpoollen + allocno;
+			//int indexofpool = curpoollen + allocno;
+			int indexofpool = curpoollen;//pool[indexofpool] 2021/08/19
 			curallocmp->InitParams();
 			curallocmp->SetIndexOfPool(indexofpool);
 

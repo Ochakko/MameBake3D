@@ -242,7 +242,8 @@ CRigidElem* CRigidElem::GetNewRigidElem()
 	for (allocno = 0; allocno < REPOOLBLKLEN; allocno++) {
 		CRigidElem* curallocrigidelem = allocrigidelem + allocno;
 		if (curallocrigidelem) {
-			int indexofpool = curpoollen + allocno;
+			//int indexofpool = curpoollen + allocno;
+			int indexofpool = curpoollen;//pool[indexofpool] 2021/08/19
 			curallocrigidelem->InitParams();
 			curallocrigidelem->SetUseFlag(0);
 			curallocrigidelem->SetIndexOfPool(indexofpool);

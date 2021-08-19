@@ -14,7 +14,7 @@
 #include <crtdbg.h>
 
 //#include "MB2Version.h"
-#define MB2VERSION 1009
+#define MB2VERSION 10010
 
 CPluginElem::CPluginElem()
 {
@@ -47,12 +47,17 @@ int CPluginElem::CreateMotionBrush(double srcstartframe, double srcendframe, dou
 
 	if( (validflag == 1) && MBCreateMotionBrush){//！！！！！！！ validflagに注意！！！！！！
 		//ret = MBOnSelectPlugin();
-		if ((srcstartframe >= 0.0) && (srcstartframe < 1e5) && (srcendframe >= srcstartframe) && (srcendframe < 1e5) &&
-			(srcapplyframe >= srcstartframe) && (srcapplyframe <= srcendframe) &&
-			(srcframeleng > srcendframe) && (srcframeleng < 1e5) && dstvalue) {
+		//if ((srcstartframe >= 0.0) && (srcstartframe < 1e5) && (srcendframe >= srcstartframe) && (srcendframe < 1e5) &&
+		//	(srcapplyframe >= srcstartframe) && (srcapplyframe <= srcendframe) &&
+		//	(srcframeleng > srcendframe) && (srcframeleng < 1e5) && dstvalue) {
+
+		if ((srcstartframe >= 0.0) && 
+			(srcstartframe < 1e5) && (srcendframe >= srcstartframe) && 
+			(srcapplyframe < 1e5) && (srcapplyframe <= srcendframe) &&
+			(srcendframe < 1e5) && (srcframeleng >= srcendframe) &&
+			(srcframeleng < 1e5) && dstvalue) {
 
 			ret = MBCreateMotionBrush(srcstartframe, srcendframe, srcapplyframe, srcframeleng, srcrepeats, srcmirroru, srcmirrorv, srcdiv2, dstvalue);
-
 		}
 		else {
 			_ASSERT(0);

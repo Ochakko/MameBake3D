@@ -4804,7 +4804,8 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 	for (allocno = 0; allocno < BONEPOOLBLKLEN; allocno++) {
 		CBone* curallocbone = allocbone + allocno;
 		if (curallocbone) {
-			int indexofpool = curpoollen + allocno;
+			//int indexofpool = curpoollen + allocno;
+			int indexofpool = curpoollen;//pool[indexofpool] 2021/08/19
 			curallocbone->InitParams();
 			curallocbone->SetParams(parmodel);//!!!!!ì¬Žž‚É‚ÍparmodelˆÈŠO‚Éƒ{[ƒ“”Ô†‚È‚Ç‚àŒˆ’è
 			curallocbone->SetUseFlag(0);
