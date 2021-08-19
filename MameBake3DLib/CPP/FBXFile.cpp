@@ -651,7 +651,16 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, CMQOObject* curobj, ChaVector3* targetv, int targetcnt )
 {
 	char shapename[256]={0};
-	sprintf_s( shapename, 256, "SHAPE_%s_%d", curobj->GetEngName(), targetcnt );
+	char tmpname[256] = { 0 };
+	strcpy_s(tmpname, 256, curobj->GetEngName());
+	char* underbar = strchr(tmpname, '_');
+	if (underbar) {
+		*underbar = 0;
+		sprintf_s(shapename, 256, "SHAPE_%s_%d", tmpname, targetcnt);
+	}
+	else {
+		sprintf_s(shapename, 256, "SHAPE_%s_%d", curobj->GetEngName(), targetcnt);
+	}
     FbxShape* lShape = FbxShape::Create(pScene,shapename);
 
 	CPolyMesh4* basepm4 = curobj->GetPm4();
@@ -677,7 +686,18 @@ int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObjec
 {
 	char blsname[256] = {0};
 	int mbno = 0;//mqo‚Å‚Â‚©‚¤
-	sprintf_s( blsname, 256, "BLS_%s_%d", curobj->GetEngName(), mbno );
+
+	char tmpname[256] = { 0 };
+	strcpy_s(tmpname, 256, curobj->GetEngName());
+	char* underbar = strchr(tmpname, '_');
+	if (underbar) {
+		*underbar = 0;
+		sprintf_s(blsname, 256, "BLS_%s_%d", tmpname, mbno);
+	}
+	else {
+		sprintf_s(blsname, 256, "BLS_%s_%d", curobj->GetEngName(), mbno);
+	}
+	//sprintf_s( blsname, 256, "BLS_%s_%d", curobj->GetEngName(), mbno );
 	FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, blsname);
 
 	(blsindex->channelno) = 0;
@@ -869,7 +889,17 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	s_matcnt++;
 
 	char matname[256];
-	sprintf_s( matname, 256, "%s_%d", mqomat->GetName(), s_matcnt );
+	char tmpname[256] = { 0 };
+	strcpy_s(tmpname, 256, mqomat->GetName());
+	char* underbar = strchr(tmpname, '_');
+	if (underbar) {
+		*underbar = 0;
+		sprintf_s(matname, 256, "%s_%d", tmpname, s_matcnt);
+	}
+	else {
+		sprintf_s(matname, 256, "%s_%d", curobj->GetEngName(), s_matcnt);
+	}
+	//sprintf_s( matname, 256, "%s_%d", mqomat->GetName(), s_matcnt );
 	//FbxString lMaterialName = mqomat->name;
 	FbxString lMaterialName = matname;
 	FbxString lShadingName  = "Phong";
