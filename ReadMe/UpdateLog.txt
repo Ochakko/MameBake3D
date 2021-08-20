@@ -1,3 +1,10 @@
+2021/09_1
+	MotionBrush ver1.0.0.11
+
+	MotionBrushC4.exeで２つまたは４つのMotionBrush.exeを起動直後に
+	マウスに対する応答が悪くなることがある不具合を解消しました。
+	ゲームパッドへの対応は１つ目のMotionBrush.exeだけになりました。	
+
 2021/08_2
 	MotionBrush ver1.0.0.10
 		完成版ver1.0.0.9のデバッグ版

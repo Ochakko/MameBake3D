@@ -2281,9 +2281,15 @@ void InitApp()
 	s_ui_physikstop = 0;
 
 
+	
 	bool bsuccess1 = false;
 	bool bsuccess2 = false;
-	bsuccess1 = StartDS4();
+	if (s_appcnt == 0) {//１つめの起動アプリのときだけゲームパッド対応チェックをする。２つ目以降はゲームパッド未対応。//2021/08/20_2
+		bsuccess1 = StartDS4();
+	}
+	else {
+		bsuccess1 = false;
+	}
 	if (bsuccess1) {
 		bsuccess2 = GetController();
 	}
