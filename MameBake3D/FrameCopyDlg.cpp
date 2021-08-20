@@ -799,9 +799,13 @@ bool CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufl
 		_ASSERT(0);
 		return false;
 	}
-	int cmp;
-	cmp = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.9");//本体ではない
-	if (cmp != 0) {
+	int cmp7;
+	int cmp8;
+	int cmp9;
+	cmp7 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.7");//本体ではない
+	cmp8 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.8");//本体ではない
+	cmp9 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.9");//本体ではない
+	if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0)) {
 		_ASSERT(0);
 		return false;
 	}
