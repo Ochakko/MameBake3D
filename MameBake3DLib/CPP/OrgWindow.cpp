@@ -648,7 +648,8 @@ namespace OrgWinGUI{
 			chkheadno = s_befheadno;
 			int chkelemno;
 			chkelemno = s_befelemno + 1;
-			if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= EULPOOLBLKLEN)) {
+			//if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= EULPOOLBLKLEN)) {
+			if ((chkheadno >= 0) && (chkheadno < (curpoollen - 1)) && (chkelemno >= EULPOOLBLKLEN)) {//2021/08/21
 				chkelemno = 0;
 				chkheadno++;
 			}
@@ -811,7 +812,8 @@ namespace OrgWinGUI{
 		chkheadno = s_befheadno;
 		int chkelemno;
 		chkelemno = s_befelemno + 1;
-		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= KEYPOOLBLKLEN)) {
+		//if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= KEYPOOLBLKLEN)) {
+		if ((chkheadno >= 0) && (chkheadno < (curpoollen - 1)) && (chkelemno >= KEYPOOLBLKLEN)) {//2021/08/21
 			chkelemno = 0;
 			chkheadno++;
 		}

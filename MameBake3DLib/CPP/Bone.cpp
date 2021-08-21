@@ -4722,7 +4722,8 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 		chkheadno = s_befheadno;
 		int chkelemno;
 		chkelemno = s_befelemno + 1;
-		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= BONEPOOLBLKLEN)) {
+		//if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= BONEPOOLBLKLEN)) {
+		if ((chkheadno >= 0) && (chkheadno < (curpoollen - 1)) && (chkelemno >= BONEPOOLBLKLEN)) {//2021/08/21
 			chkelemno = 0;
 			chkheadno++;
 		}

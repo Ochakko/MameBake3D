@@ -17,8 +17,10 @@
 #include <ChaVecCalc.h>
 
 //#define EULPOOLBLKLEN	2048
-#define EULPOOLBLKLEN	65536
-#define KEYPOOLBLKLEN	65536
+//#define EULPOOLBLKLEN	65536
+//#define KEYPOOLBLKLEN	65536
+#define EULPOOLBLKLEN	4098
+#define KEYPOOLBLKLEN	4098
 
 struct KeyInfo{
 	const TCHAR *label;

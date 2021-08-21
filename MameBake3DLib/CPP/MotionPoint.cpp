@@ -299,7 +299,8 @@ CMotionPoint* CMotionPoint::GetNewMP()
 		chkheadno = s_befheadno;
 		int chkelemno;
 		chkelemno = s_befelemno + 1;
-		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= MPPOOLBLKLEN)) {
+		//if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= MPPOOLBLKLEN)) {
+		if ((chkheadno >= 0) && (chkheadno < (curpoollen - 1)) && (chkelemno >= MPPOOLBLKLEN)) {//2021/08/21
 			chkelemno = 0;
 			chkheadno++;
 		}
