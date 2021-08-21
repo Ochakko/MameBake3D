@@ -12,7 +12,8 @@
 
 using namespace std;
 
-extern std::vector<void*> g_eulpool;//allocate MPPOOLBLKLEN motoinpoints at onse and pool 
+extern std::vector<void*> g_eulpool;//allocate EULPOOLBLKLEN motoinpoints at onse and pool 
+extern std::vector<void*> g_keypool;//allocate KEYPOOLBLKLEN motoinpoints at onse and pool 
 
 extern LONG g_bvh2fbxbatchflag;
 extern LONG g_motioncachebatchflag;
@@ -788,6 +789,172 @@ namespace OrgWinGUI{
 		}
 		g_eulpool.clear();
 	}
+
+
+/// LineData::Key ここから
+
+
+	//namespace global func
+	void* GetNewKey()
+	{
+		static int s_befheadno = -1;
+		static int s_befelemno = -1;
+
+		int curpoollen;
+		curpoollen = g_keypool.size();
+
+
+		//if ((s_befheadno != (g_keypool.size() - 1)) || (s_befelemno != (KEYPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
+
+		//前回リリースしたポインタの次のメンバーをチェックして未使用だったらリリース
+		int chkheadno;
+		chkheadno = s_befheadno;
+		int chkelemno;
+		chkelemno = s_befelemno + 1;
+		if ((chkheadno >= 0) && (chkheadno >= curpoollen) && (chkelemno >= KEYPOOLBLKLEN)) {
+			chkelemno = 0;
+			chkheadno++;
+		}
+		if ((chkheadno >= 0) && (chkheadno < curpoollen) && (chkelemno >= 0) && (chkelemno < KEYPOOLBLKLEN)) {
+			OWP_Timeline::LineData::Key* curkeyhead = (OWP_Timeline::LineData::Key*)g_keypool[chkheadno];
+
+			if (curkeyhead) {
+				OWP_Timeline::LineData::Key* chkkey;
+				chkkey = curkeyhead + chkelemno;
+				if (chkkey) {
+					if (chkkey->GetUseFlag() == 0) {
+						int saveindex = chkkey->GetIndexOfPool();
+						int saveallochead = chkkey->IsAllocHead();
+						chkkey->InitParams();
+						chkkey->SetUseFlag(1);
+						chkkey->SetIndexOfPool(saveindex);
+						chkkey->SetIsAllocHead(saveallochead);
+
+						s_befheadno = chkheadno;
+						s_befelemno = chkelemno;
+						return (void*)chkkey;
+					}
+				}
+			}
+		}
+
+		//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
+			//プールを先頭から検索して未使用がみつかればそれをリリース
+		int keyno;
+		for (keyno = 0; keyno < curpoollen; keyno++) {
+			OWP_Timeline::LineData::Key* curkeyhead = (OWP_Timeline::LineData::Key*)g_keypool[keyno];
+			if (curkeyhead) {
+				int elemno;
+				for (elemno = 0; elemno < KEYPOOLBLKLEN; elemno++) {
+					OrgWinGUI::OWP_Timeline::LineData::Key* curkey;
+					curkey = curkeyhead + elemno;
+					if (curkey->GetUseFlag() == 0) {
+						int saveindex = curkey->GetIndexOfPool();
+						int saveallochead = curkey->IsAllocHead();
+						curkey->InitParams();
+						curkey->SetUseFlag(1);
+						curkey->SetIndexOfPool(saveindex);
+						curkey->SetIsAllocHead(saveallochead);
+
+						s_befheadno = keyno;
+						s_befelemno = elemno;
+						return (void*)curkey;
+					}
+				}
+			}
+		}
+		//}
+	//}
+
+	//未使用keyがpoolに無かった場合、アロケートしてアロケートした先頭のポインタをリリース
+		OWP_Timeline::LineData::Key* allockey;
+		allockey = new OWP_Timeline::LineData::Key[KEYPOOLBLKLEN];
+		if (!allockey) {
+			_ASSERT(0);
+
+			s_befheadno = -1;
+			s_befelemno = -1;
+
+			return 0;
+		}
+		int allocno;
+		for (allocno = 0; allocno < KEYPOOLBLKLEN; allocno++) {
+			OWP_Timeline::LineData::Key* curallockey = allockey + allocno;
+			if (curallockey) {
+				//int indexofpool = curpoollen + allocno;
+				int indexofpool = curpoollen;//pool[indexofpool] 2021/08/19
+				curallockey->InitParams();
+				curallockey->SetUseFlag(0);
+				curallockey->SetIndexOfPool(indexofpool);
+
+				if (allocno == 0) {
+					curallockey->SetIsAllocHead(1);
+				}
+				else {
+					curallockey->SetIsAllocHead(0);
+				}
+			}
+			else {
+				_ASSERT(0);
+
+				s_befheadno = -1;
+				s_befelemno = -1;
+
+				return 0;
+			}
+		}
+		g_keypool.push_back((void*)allockey);//allocate block(アロケート時の先頭ポインタ)を格納
+
+		allockey->SetUseFlag(1);
+
+
+		s_befheadno = g_keypool.size() - 1;
+		s_befelemno = 0;
+
+		return (void*)allockey;
+	}
+
+	//member func
+	void OWP_Timeline::LineData::Key::InvalidateKeys()
+	{
+		if (!this) {
+			_ASSERT(0);
+			return;
+		}
+
+		int saveindex = GetIndexOfPool();
+		int saveallochead = IsAllocHead();
+
+		InitParams();
+		SetUseFlag(0);
+		SetIsAllocHead(saveallochead);
+		SetIndexOfPool(saveindex);
+	}
+
+	//namespace global func
+	void InitKeys()
+	{
+		g_keypool.clear();
+	}
+
+	//namespace global func
+	void DestroyKeys() {
+		int keyallocnum = g_keypool.size();
+		int keyno;
+		for (keyno = 0; keyno < keyallocnum; keyno++) {
+			//class OWP_Timeline::LineData::Key;
+			OWP_Timeline::LineData::Key* delkey;
+			delkey = (OWP_Timeline::LineData::Key*)g_keypool[keyno];
+			//if (delkey && (delkey->IsAllocHead() == 1)) {
+			if (delkey) {
+				delete[] delkey;
+			}
+		}
+		g_keypool.clear();
+	}
+
+
+/// LineData::Key ここまで
 
 
 	void OWP_CheckBoxA::draw() {

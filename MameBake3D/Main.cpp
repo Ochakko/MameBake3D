@@ -526,6 +526,8 @@ extern void DXUTSetOverrideSize(int srcw, int srch);
 
 extern void OrgWinGUI::InitEulKeys();
 extern void OrgWinGUI::DestroyEulKeys();
+extern void OrgWinGUI::InitKeys();
+extern void OrgWinGUI::DestroyKeys();
 
 extern HANDLE g_hEvent; //手動リセットイベント
 
@@ -1207,6 +1209,7 @@ ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 
 
 std::vector<void*> g_eulpool;//allocate EULPOOLBLKLEN EulKey at onse and pool 
+std::vector<void*> g_keypool;//allocate KEYPOOLBLKLEN Key at onse and pool 
 
 void OnDSUpdate();
 static void OnDSMouseHereApeal();
@@ -2310,6 +2313,7 @@ void InitApp()
 	CBone::InitBones();
 	CMotionPoint::InitMotionPoints();
 	InitEulKeys();
+	InitKeys();
 
 	s_motmenuindexmap.clear();
 	s_reindexmap.clear();
@@ -4129,6 +4133,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	CRigidElem::DestroyRigidElems();
 
 	DestroyEulKeys();
+	DestroyKeys();
 
 
 	DeleteCriticalSection(&s_CritSection_LTimeline);
@@ -21964,7 +21969,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.10 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.11 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -29255,7 +29260,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.10 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.11 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

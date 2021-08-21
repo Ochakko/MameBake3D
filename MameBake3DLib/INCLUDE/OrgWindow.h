@@ -18,6 +18,7 @@
 
 //#define EULPOOLBLKLEN	2048
 #define EULPOOLBLKLEN	65536
+#define KEYPOOLBLKLEN	65536
 
 struct KeyInfo{
 	const TCHAR *label;
@@ -51,6 +52,9 @@ namespace OrgWinGUI{
 void InitEulKeys();
 void DestroyEulKeys();
 void* GetNewEulKey();
+void InitKeys();
+void DestroyKeys();
+void* GetNewKey();
 
 
 static void s_dummyfunc();
@@ -3629,6 +3633,11 @@ static void s_dummyfunc();
 			}
 		}
 
+
+		//static void OWP_Timeline::InitKeys();
+		//static void OWP_Timeline::DestroyKeys();
+
+
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
 		void autoResize(){
@@ -4734,7 +4743,7 @@ static void s_dummyfunc();
 		std::function<void(const KeyInfo&)> keyDeleteListener;
 
 		//行データクラス-------------
-		class LineData{
+		public: class LineData{
 		public:
 			LineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex){
 				depth = _depth;
@@ -4742,34 +4751,90 @@ static void s_dummyfunc();
 				name= _name;
 				parent= _parent;
 				lineIndex= _lineIndex;
+				key.clear();
 			}
 			LineData( const LineData& a ){
 				_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
 			}
 			~LineData(){
-				for(std::vector<Key*>::iterator it=key.begin();
-					it!=key.end();
-					it++){
-					delete (*it);
+				if (!key.empty()) {
+					for (std::vector<Key*>::iterator it = key.begin();
+						it != key.end();
+						it++) {
+						//delete (*it);
+						((Key*)(*it))->InvalidateKeys();
+					}
 				}
 			}
 
 			//キーデータクラス---------------
 			class Key{
 			public:
-				Key(double _time, int _type=0, void *_object=NULL, double _length=1.0, bool _select=false ){
-					time= _time;
-					type= _type;
-					length= _length;
-					select= _select;
-					object= _object;
+				Key()
+				{
+					InitParams();
 				}
+				Key(double _time, int _type=0, void *_object=NULL, double _length=1.0, bool _select=false ){
+					SetParams(_time, _type, _object, _length, _select);
+				}
+
+				void SetParams(double _time, int _type = 0, void* _object = NULL, double _length = 1.0, bool _select = false) {
+					//InitParams();//useflag, indexofpool, allogheadflagは設定済
+
+					time = _time;
+					type = _type;
+					length = _length;
+					select = _select;
+					object = _object;
+				}
+
+				void InitParams() {
+					time = 0.0;
+					type = 0;
+					length = 0.0;
+					select = false;
+					object = NULL;
+
+					m_useflag = 0;//0: not use, 1: in use
+					m_indexofpool = 0;//index of pool vector
+					m_allocheadflag = 0;//1: head pointer at allocated
+				};
+
+				void OWP_Timeline::LineData::Key::InvalidateKeys();
+
+				int GetUseFlag()
+				{
+					return m_useflag;
+				};
+				void SetUseFlag(int srcflag)
+				{
+					m_useflag = srcflag;
+				};
+				int GetIndexOfPool()
+				{
+					return m_indexofpool;
+				};
+				void SetIndexOfPool(int srcindex)
+				{
+					m_indexofpool = srcindex;
+				};
+				int IsAllocHead()
+				{
+					return m_allocheadflag;
+				};
+				void SetIsAllocHead(int srcflag)
+				{
+					m_allocheadflag = srcflag;
+				};
 
 				////////////////////////// MemberVar /////////////////////////////
 				double time,length;
 				int type;
 				bool select;
 				void *object;
+				int m_useflag;//0: not use, 1: in use
+				int m_indexofpool;//index of pool vector
+				int m_allocheadflag;//1: head pointer at allocated
 			};
 
 			////////////////////////// MemberVar /////////////////////////////
@@ -4974,9 +5039,28 @@ static void s_dummyfunc();
 					for(int i=(int)key.size()-2; i>pushPos; i--){
 						key[i]=key[i-1];
 					}
-					key[pushPos]= new Key(_time,_type,_object,_length,_select);
+					//key[pushPos]= new Key(_time,_type,_object,_length,_select);
+					Key* newkey = (Key*)GetNewKey();
+					if (newkey) {
+						newkey->SetParams(_time, _type, _object, _length, _select);
+						key[pushPos] = newkey;
+					}
+					else {
+						_ASSERT(0);
+						return false;
+					}
+
 				}else{
-					key.push_back(new Key(_time,_type,_object,_length,_select));
+					//key.push_back(new Key(_time,_type,_object,_length,_select));
+					Key* newkey = (Key*)GetNewKey();
+					if (newkey) {
+						newkey->SetParams(_time, _type, _object, _length, _select);
+						key.push_back(newkey);
+					}
+					else {
+						_ASSERT(0);
+						return false;
+					}
 				}
 				
 				return true;
@@ -5073,7 +5157,9 @@ static void s_dummyfunc();
 							(parent->keyDeleteListener)(ki);
 						}
 
-						delete key[i];
+						//delete key[i];
+						key[i]->InvalidateKeys();
+
 						deleteNum++;
 					}else{
 						key[i-deleteNum]=key[i];
@@ -5100,7 +5186,9 @@ static void s_dummyfunc();
 					(parent->keyDeleteListener)(ki);
 				}
 
-				delete key[index];
+				//delete key[index];
+				key[index]->InvalidateKeys();
+
 				for(int i=index; i<(int)key.size(); i++){
 					key[i-1]=key[i];
 				}
@@ -5298,8 +5386,8 @@ static void s_dummyfunc();
 		}
 
 
-		static void OWP_EulerGraph::InitEulKeys();
-		static void OWP_EulerGraph::DestroyEulKeys();
+		//static void OWP_EulerGraph::InitEulKeys();
+		//static void OWP_EulerGraph::DestroyEulKeys();
 
 
 		//////////////////////////// Method //////////////////////////////
@@ -6964,7 +7052,9 @@ static void s_dummyfunc();
 					(parent->keyDeleteListener)(ki);
 				}
 
-				delete key[index];
+				//delete key[index];
+				key[index]->InvalidateEulKeys();
+
 				for (int i = index; i<(int)key.size(); i++) {
 					key[i - 1] = key[i];
 				}
