@@ -4444,6 +4444,7 @@ void OnRenderNowLoading()
 	COLOR_MENUBAR	29	メニューバーの背景色。
 	 */
 
+	/*
 	HDC hdc;
 	RECT rect;
 	HBRUSH brush;
@@ -4456,6 +4457,7 @@ void OnRenderNowLoading()
 	::FillRect(hdc, &rect, brush);
 	::DeleteObject(brush);
 	::ReleaseDC(s_3dwnd, hdc);
+	*/
 	return;
 
 }
@@ -8950,7 +8952,7 @@ int UpdateEditedEuler()
 		return 0;
 	}
 
-	//if (s_model && (s_model->GetLoadedFlag() == FALSE)) {
+	//if (s_model && (s_model->GetLoadedFlag() == false)) {
 	//	return 0;
 	//}
 
@@ -9106,7 +9108,7 @@ void refreshEulerGraph()
 		return;
 	}
 
-	//if (s_model && (s_model->GetLoadedFlag() == FALSE)) {
+	//if (s_model && (s_model->GetLoadedFlag() == false)) {
 	//	return;
 	//}
 
@@ -9256,7 +9258,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 		return;
 	}
 
-	//if (s_model && (s_model->GetLoadedFlag() == FALSE)) {
+	//if (s_model && (s_model->GetLoadedFlag() == false)) {
 	//	return;
 	//}
 
@@ -9798,7 +9800,8 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 			if (dorefreshflag) {
 				s_model->CreateBtObject(1);
-				s_model->CalcBoneEul(-1);
+				//s_model->CalcBoneEul(-1);
+				s_model->CalcBoneEul(selmotid);//2021/08/25
 			}
 		}
 	}
@@ -16074,6 +16077,16 @@ int ChangeCurrentBone()
 	static CModel* s_befmodel = 0;
 	static CBone* s_befbone = 0;
 
+	if (!s_model) {
+		return 0;
+	}
+	if (s_model->GetLoadedFlag() == false) {//2021/08/23
+		return 0;
+	}
+	if (s_nowloading == true) {
+		return 0;
+	}
+
 
 	if (g_retargetbatchflag == 0) {
 
@@ -17520,7 +17533,8 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			SetLTimelineMark(s_curboneno);
 		}
 
-		Sleep(500);
+		//Sleep(500);
+		Sleep(30);
 	}
 
 
@@ -19773,6 +19787,11 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
 		return 0;
 	}
+
+	if (s_nowloading == true) {
+		return 0;
+	}
+
 
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){

@@ -612,7 +612,7 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	CallF( (this->m_ImpMenu)( 0 ), return 1 );
 
 	newmodel->CreateBtObject(1);//‰‰ñ
-	newmodel->CalcBoneEul(-1);//
+	//newmodel->CalcBoneEul(-1);//
 
 
 	return 0;
