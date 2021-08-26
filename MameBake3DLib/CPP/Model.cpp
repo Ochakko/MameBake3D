@@ -1950,7 +1950,9 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 	newmi->speed = 1.0;
 	newmi->loopflag = 1;
 
-	m_motinfo[newid - 1] = newmi;//idは１から
+	m_motinfo[m_motinfo.size()] = newmi;//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
+
+
 
 
 	*dstid = newid;
@@ -1963,12 +1965,13 @@ int CModel::SetCurrentMotion( int srcmotid )
 {
 	int motnum;
 	motnum = m_motinfo.size();
-	if ((srcmotid <= 0) || (srcmotid > motnum)) {
-		_ASSERT(0);
-		return 1;
-	}
+	//if ((srcmotid <= 0) || (srcmotid > motnum)) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
 
-	m_curmotinfo = m_motinfo[ srcmotid - 1 ];//idは１から
+	//m_curmotinfo = m_motinfo[ srcmotid - 1 ];//idは１から
+	m_curmotinfo = GetMotInfo(srcmotid);//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
 	if( !m_curmotinfo ){
 		_ASSERT( 0 );
 		return 1;
@@ -2038,14 +2041,33 @@ int CModel::DeleteMotion( int motid )
 		}
 	}
 
-	map<int, MOTINFO*>::iterator itrmi;
-	itrmi = m_motinfo.find( motid );
-	if( itrmi != m_motinfo.end() ){
-		MOTINFO* delmi = itrmi->second;
-		if( delmi ){
+
+	int miindex;
+	miindex = MotionID2Index(motid);
+	if (miindex >= 0) {
+		MOTINFO* delmi = m_motinfo[miindex];
+		if (delmi) {
 			delete delmi;
 		}
-		m_motinfo.erase( itrmi );
+
+		std::map<int, MOTINFO*> tmpmimap;
+		tmpmimap.clear();
+
+		int destindex = 0;
+		int srcindex;
+		for (srcindex = 0; srcindex < m_motinfo.size(); srcindex++) {
+			if (srcindex != miindex) {
+				tmpmimap[destindex] = m_motinfo[srcindex];
+				destindex++;
+			}
+		}
+
+		m_motinfo.clear();
+
+		for (srcindex = 0; srcindex < tmpmimap.size(); srcindex++) {
+			m_motinfo[srcindex] = tmpmimap[srcindex];
+		}
+
 	}
 
 	int undono;
@@ -2370,7 +2392,8 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 
 int CModel::ChangeMotFrameLeng( int motid, double srcleng )
 {
-	MOTINFO* dstmi = m_motinfo[ motid - 1 ];//idは１から
+	//MOTINFO* dstmi = m_motinfo[ motid - 1 ];//idは１から
+	MOTINFO* dstmi = GetMotInfo(motid);//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
 	if( dstmi ){
 		double befleng = dstmi->frameleng;
 
@@ -2401,7 +2424,8 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 	int loopflag = 0;
 	MOTINFO* curmotinfo;
 	if( srcmotid >= 0 ){
-		curmotinfo = m_motinfo[ srcmotid - 1];//idは１から
+		//curmotinfo = m_motinfo[ srcmotid - 1];//idは１から
+		curmotinfo = GetMotInfo(srcmotid);//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
 		loopflag = 0;
 	}else{
 		curmotinfo = m_curmotinfo;

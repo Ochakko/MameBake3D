@@ -10119,8 +10119,8 @@ int OnDelMotion( int delmenuindex )
 
 
 	int tlno;
-	for( tlno = delmenuindex; tlno < (tlnum - 1); tlno++ ){
-		s_tlarray[ tlno ] = s_tlarray[ tlno + 1 ];
+	for (tlno = delmenuindex; tlno < (tlnum - 1); tlno++) {
+		s_tlarray[tlno] = s_tlarray[tlno + 1];
 	}
 	s_tlarray.pop_back();
 

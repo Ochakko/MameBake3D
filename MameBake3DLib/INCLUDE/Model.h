@@ -948,11 +948,16 @@ public: //accesser
 		return (int)m_motinfo.size();
 	};
 	MOTINFO* GetMotInfo( int srcid ){//motidは1から
-		if ((srcid <= 0) || (srcid > m_motinfo.size())) {
-			return 0;
+		//return m_motinfo[srcid - 1];
+
+		//DeleteMotion時に要素をeraseするのでid - 1が配列のインデックスになるとは限らない//2021/08/26
+		int miindex;
+		miindex = MotionID2Index(srcid);
+		if (miindex >= 0) {
+			return m_motinfo[miindex];
 		}
 		else {
-			return m_motinfo[srcid - 1];
+			return 0;
 		}
 	};
 	std::map<int,MOTINFO*>::iterator GetMotInfoBegin(){

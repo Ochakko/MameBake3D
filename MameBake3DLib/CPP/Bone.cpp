@@ -745,7 +745,7 @@ int CBone::CalcFBXFrame( double srcframe, CMotionPoint* befptr, CMotionPoint* ne
 int CBone::DeleteMotion( int srcmotid )
 {
 	map<int, CMotionPoint*>::iterator itrmp;
-	itrmp = m_motionkey.find( srcmotid );
+	itrmp = m_motionkey.find( srcmotid - 1 );//2021/08/26
 	if( itrmp != m_motionkey.end() ){
 		CMotionPoint* topkey = itrmp->second;
 		if( topkey ){
@@ -762,7 +762,8 @@ int CBone::DeleteMotion( int srcmotid )
 		}
 	}
 
-	m_motionkey.erase( itrmp );
+	//m_motionkey.erase( itrmp );
+	m_motionkey[srcmotid - 1] = 0;////2021/08/26 eraseするとアクセスするためのインデックスがsrcmotid - 1ではなくなる
 
 	return 0;
 }
@@ -1954,7 +1955,7 @@ int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 
 	map<double, int> curmark;
 	map<int, map<double, int>>::iterator itrcur;
-	itrcur = m_motmark.find( motid );
+	itrcur = m_motmark.find( motid - 1 );//2021/08/26
 	if( itrcur == m_motmark.end() ){
 		curmark.clear();
 	}else{
@@ -1978,7 +1979,7 @@ int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 	}
 
 	map<int, map<double, int>>::iterator itrcur;
-	itrcur = m_motmark.find( motid );
+	itrcur = m_motmark.find( motid - 1 );//2021/08/26
 	if( itrcur == m_motmark.end() ){
 		return 0;
 	}
