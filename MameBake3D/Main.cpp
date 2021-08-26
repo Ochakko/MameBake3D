@@ -2496,15 +2496,19 @@ void InitApp()
 
 	InterlockedExchange(&g_undertrackingRMenu, 0);
 	InterlockedExchange(&g_underApealingMouseHere, 0);
-	s_dsupdater = new CDSUpdateUnderTracking();
-	if (s_dsupdater) {
-		int isuccess = s_dsupdater->CreateDSUpdateUnderTracking(GetModuleHandle(NULL));
-		if (isuccess != 0) {
-			delete s_dsupdater;
-			s_dsupdater = 0;
+	if (g_enableDS == true) {
+		s_dsupdater = new CDSUpdateUnderTracking();
+		if (s_dsupdater) {
+			int isuccess = s_dsupdater->CreateDSUpdateUnderTracking(GetModuleHandle(NULL));
+			if (isuccess != 0) {
+				delete s_dsupdater;
+				s_dsupdater = 0;
+			}
 		}
 	}
-
+	else {
+		s_dsupdater = 0;
+	}
 
 	s_doneinit = 1;
 }
@@ -4444,7 +4448,7 @@ void OnRenderNowLoading()
 	COLOR_MENUBAR	29	メニューバーの背景色。
 	 */
 
-	/*
+	
 	HDC hdc;
 	RECT rect;
 	HBRUSH brush;
@@ -4457,7 +4461,7 @@ void OnRenderNowLoading()
 	::FillRect(hdc, &rect, brush);
 	::DeleteObject(brush);
 	::ReleaseDC(s_3dwnd, hdc);
-	*/
+	
 	return;
 
 }

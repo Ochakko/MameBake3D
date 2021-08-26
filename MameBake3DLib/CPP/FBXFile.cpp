@@ -1501,7 +1501,7 @@ _ASSERT( motionnum == aino );
 
 		lAnimStackName = curai->engmotname;
 		char layername[256];
-		sprintf_s(layername, 256, "%sLayer%d", lAnimStackName, aino);
+		sprintf_s(layername, 256, "%sLayer%d", lAnimStackName.Buffer(), aino);//2021/08/26 GetBuffer()
 		
 		FbxAnimStack* lAnimStack = FbxAnimStack::Create(pScene, lAnimStackName);
 		FbxAnimLayer* lAnimLayer = FbxAnimLayer::Create(pScene, layername);
