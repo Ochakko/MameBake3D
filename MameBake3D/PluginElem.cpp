@@ -14,7 +14,7 @@
 #include <crtdbg.h>
 
 //#include "MB2Version.h"
-#define MB2VERSION 10010
+#define MB2VERSION 10012
 
 CPluginElem::CPluginElem()
 {

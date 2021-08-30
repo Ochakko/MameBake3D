@@ -5372,6 +5372,7 @@ static void s_dummyfunc();
 		
 			mineul = 0.0;
 			maxeul = 0.0;
+			ikkind = 0;
 			isseteulminmax = false;
 			parentWindow = NULL;
 
@@ -6448,9 +6449,10 @@ static void s_dummyfunc();
 			this->mouseRUpListener = listener;
 		}
 
-		void setEulMinMax(float _minval, float _maxval) {
+		void setEulMinMax(int _ikkind, float _minval, float _maxval) {
 			mineul = (double)_minval;
 			maxeul = (double)_maxval;
+			ikkind = _ikkind;
 			isseteulminmax = true;
 		}
 		void getEulMinMax(bool* dstisset, float* dstmin, float* dstmax) {
@@ -6501,6 +6503,7 @@ static void s_dummyfunc();
 		bool isseteulminmax;
 		double mineul;
 		double maxeul;
+		int ikkind;
 
 		//行データクラス-------------
 		public : class EulLineData {
@@ -6662,6 +6665,9 @@ static void s_dummyfunc();
 				unsigned char baseB = parent->baseColor.b;
 
 
+				int offsetY = -32;//!!!!!!!!!!! 左上が０で上がマイナス、上に16
+				posY += offsetY;//!!!!!!!!!!!
+
 				int x0 = posX;
 				int x1 = posX + parent->LABEL_SIZE_X;
 				int x2 = posX + width;
@@ -6742,10 +6748,14 @@ static void s_dummyfunc();
 
 				double eulmargin = 10.0;
 
-				double eulrange = parent->maxeul - parent->mineul;
-				if (eulrange < 10.0) {
-					eulrange = 10.0;
+				double eulrange = abs(parent->maxeul - parent->mineul);
+				//if (eulrange < 10.0) {
+				//	eulrange = 10.0;
+				//}
+				if (eulrange < 2.0) {
+					eulrange = 2.0;
 				}
+
 
 				//キー
 				if (wcscmp(L"X", name.c_str()) == 0) {
@@ -6810,6 +6820,27 @@ static void s_dummyfunc();
 					LineTo(hdcM->hDC, x2, ey0);
 					befey0 = ey0;//!!!!!!!!!!!!!!!
 
+
+					//ikkind
+					bool displabel = false;
+					ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;//
+					ex0 = x0 + parent->LABEL_SIZE_X - 15 * fontsize;//
+					if (parent->ikkind == 0) {
+						swprintf_s(strmeasure, 64, L"Rotate");
+						displabel = true;
+					}
+					else if(parent->ikkind == 1){
+						swprintf_s(strmeasure, 64, L"Move");
+						displabel = true;
+					}
+					if (displabel) {
+						TextOut(hdcM->hDC,
+							ex0, ey0,
+							strmeasure, (int)wcslen(strmeasure));
+						hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+						MoveToEx(hdcM->hDC, x1, ey0, NULL);
+						LineTo(hdcM->hDC, x2, ey0);
+					}
 
 					//max
 					ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
@@ -7156,7 +7187,8 @@ static void s_dummyfunc();
 		std::vector<EulLineData*> lineData;
 		double ghostShiftTime;
 
-		static const int GRAPH_SIZE_Y = 60;
+		//static const int GRAPH_SIZE_Y = 60;
+		static const int GRAPH_SIZE_Y = 120;
 		static const int LABEL_SIZE_Y = 20;
 		//static const int LABEL_SIZE_X= 75;
 		//static const int LABEL_SIZE_X= 250;

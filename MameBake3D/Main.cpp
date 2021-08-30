@@ -181,6 +181,7 @@ static double s_rectime = 0.0;
 static double s_reccnt = 0;
 
 static int s_appcnt = 0;
+static int s_launchbyc4 = 0;
 
 static vector<wstring> s_bvh2fbxout;
 static LONG s_bvh2fbxnum = 0;
@@ -1849,6 +1850,7 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	SetBaseDir();
 	
 	s_appcnt = 0;
+	s_launchbyc4 = 0;
 	int    i;
 	int    nArgs;
 	WCHAR  szBuf[256];
@@ -1858,6 +1860,7 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		//wsprintf(szBuf, TEXT("%d番目の引数"), i + 1);
 		//MessageBox(NULL, lplpszArgs[i], szBuf, MB_OK);
 		if (wcscmp(lplpszArgs[i], L"-progno") == 0) {
+			s_launchbyc4 = 1;
 			if ((i + 1) < nArgs) {
 				i++;
 				WCHAR strprogno[MAX_PATH] = { 0L };
@@ -2287,7 +2290,7 @@ void InitApp()
 	
 	bool bsuccess1 = false;
 	bool bsuccess2 = false;
-	if (s_appcnt == 0) {//１つめの起動アプリのときだけゲームパッド対応チェックをする。２つ目以降はゲームパッド未対応。//2021/08/20_2
+	if ((s_appcnt == 0) && (s_launchbyc4 == 0)) {//C4から起動時にはゲームパッド未対応。//2021/08/30
 		bsuccess1 = StartDS4();
 	}
 	else {
@@ -3130,6 +3133,14 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+
+
+
+
+	WCHAR initialdir[MAX_PATH] = { 0L };
+	wcscpy_s(initialdir, MAX_PATH, g_basedir);
+	wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
+	SetCurrentDirectoryW(initialdir);
 
 	return S_OK;
 }
@@ -6301,9 +6312,11 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				switch( tmpikindex ){
 				case IDC_IK_ROT:
 					s_ikkind = 0;
+					refreshEulerGraph();
 					break;
 				case IDC_IK_MV:
 					s_ikkind = 1;
+					refreshEulerGraph();
 					break;
 				//case IDC_IK_LIGHT:
 				//	s_ikkind = 2;
@@ -8976,7 +8989,7 @@ int UpdateEditedEuler()
 			//int check = (int)s_parentcheck->getValue();
 			//if (check == 1) {
 				CBone* parentbone = curbone->GetParent();
-				if (parentbone) {
+				if ((s_ikkind != 1) && parentbone) {//!!!!!!!!!!!!
 					curbone = parentbone;
 				}
 			//}
@@ -8991,6 +9004,7 @@ int UpdateEditedEuler()
 			int minfirstflag, maxfirstflag;
 			bool isset = false;
 
+			//refreshEulerGraphは全範囲でminとmaxを設定。UpdateEditedEulerはstartframeからendframeまで。
 			s_owpEulerGraph->getEulMinMax(&isset, &minval, &maxval);
 			if (isset == true) {
 				minfirstflag = 0;
@@ -9000,6 +9014,9 @@ int UpdateEditedEuler()
 				minfirstflag = 1;
 				maxfirstflag = 1;
 			}
+			//minfirstflag = 1;
+			//maxfirstflag = 1;
+
 
 			//s_buttonselectstart = s_editrange.GetStartFrame();
 			//s_buttonselectend = s_editrange.GetEndFrame();
@@ -9025,9 +9042,14 @@ int UpdateEditedEuler()
 
 				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
-					cureul = curmp->GetLocalEul();
-					//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-					//befeul = cureul;//!!!!!!!
+					if (s_ikkind != 1) {//移動以外
+						cureul = curmp->GetLocalEul();
+						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+						//befeul = cureul;//!!!!!!!
+					}
+					else {//移動
+						cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+					}
 				}
 				else {
 					cureul.x = 0.0;
@@ -9041,12 +9063,13 @@ int UpdateEditedEuler()
 				s_owpEulerGraph->setKey(_T("Y"), (double)curtime, cureul.y);
 				s_owpEulerGraph->setKey(_T("Z"), (double)curtime, cureul.z);
 
-
-				if ((minfirstflag == 1) || (minval > cureul.x)) {
+				if (minfirstflag == 1) {
+					minval = min(cureul.z, min(cureul.x, cureul.y));
+					minfirstflag = 0;
+				}
+				if (minval > cureul.x) {
 					minval = cureul.x;
 				}
-				minfirstflag = 0;
-
 				if (minval > cureul.y) {
 					minval = cureul.y;
 				}
@@ -9054,11 +9077,13 @@ int UpdateEditedEuler()
 					minval = cureul.z;
 				}
 
-				if ((maxfirstflag == 1) || (maxval < cureul.x)) {
+				if (maxfirstflag == 1) {
+					maxval = max(cureul.z, max(cureul.x, cureul.y));
+					maxfirstflag = 0;
+				}
+				if (maxval < cureul.x) {
 					maxval = cureul.x;
 				}
-				maxfirstflag = 0;
-
 				if (maxval < cureul.y) {
 					maxval = cureul.y;
 				}
@@ -9069,20 +9094,20 @@ int UpdateEditedEuler()
 			}
 
 
-			s_owpEulerGraph->setEulMinMax(minval, maxval);
+			s_owpEulerGraph->setEulMinMax(s_ikkind, minval, maxval);
 
 			if (g_motionbrush_value) {
 
 				double scalemin, scalemax;
-				if ((minval != 0.0) || (maxval != 0.0)) {
+				if (minval != maxval) {
 					scalemin = minval;
 					scalemax = maxval;
 				}
 				else {
 					//Eulerが全て０　例えば全フレームを選択してツールの姿勢初期化を実行した後など
 					//仮のminとmaxを指定
-					scalemin = -10.0;
-					scalemax = 10.0;
+					scalemin = minval;
+					scalemax = maxval + 10.0;
 				}
 
 
@@ -9152,7 +9177,7 @@ void refreshEulerGraph()
 					//int check = s_parentcheck->getValue();
 					//if (check == 1) {
 						CBone* parentbone = curbone->GetParent();
-						if (parentbone) {
+						if ((s_ikkind != 1) && parentbone) {//!!!!!!!!!!!!
 							curbone = parentbone;
 						}
 					//}
@@ -9175,9 +9200,14 @@ void refreshEulerGraph()
 
 						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
-							cureul = curmp->GetLocalEul();
-							//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-							//befeul = cureul;//!!!!!!!
+							if (s_ikkind != 1) {//移動以外
+								cureul = curmp->GetLocalEul();
+								//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+								//befeul = cureul;//!!!!!!!
+							}
+							else {//移動
+								cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+							}
 						}
 						else {
 							cureul.x = 0.0;
@@ -9192,11 +9222,13 @@ void refreshEulerGraph()
 						//s_owpEulerGraph->newKey(_T("S"), (double)curtime, 0.0);
 						
 
-						if ((minfirstflag == 1) || (minval > cureul.x)) {
+						if (minfirstflag == 1) {
+							minval = min(cureul.z, min(cureul.x, cureul.y));
+							minfirstflag = 0;
+						}
+						if (minval > cureul.x) {
 							minval = cureul.x;
 						}
-						minfirstflag = 0;
-
 						if (minval > cureul.y) {
 							minval = cureul.y;
 						}
@@ -9204,11 +9236,13 @@ void refreshEulerGraph()
 							minval = cureul.z;
 						}
 
-						if ((maxfirstflag == 1) || (maxval < cureul.x)) {
+						if (maxfirstflag == 1) {
+							maxval = max(cureul.z, max(cureul.x, cureul.y));
+							maxfirstflag = 0;
+						}
+						if (maxval < cureul.x) {
 							maxval = cureul.x;
 						}
-						maxfirstflag = 0;
-
 						if (maxval < cureul.y) {
 							maxval = cureul.y;
 						}
@@ -9219,20 +9253,20 @@ void refreshEulerGraph()
 					}
 
 					//_ASSERT(0);
-					s_owpEulerGraph->setEulMinMax(minval, maxval);
+					s_owpEulerGraph->setEulMinMax(s_ikkind, minval, maxval);
 
 					if (g_motionbrush_value) {
 
 						double scalemin, scalemax;
-						if ((minval != 0.0) || (maxval != 0.0)) {
+						if (minval != maxval) {
 							scalemin = minval;
 							scalemax = maxval;
 						}
 						else {
 							//Eulerが全て０　例えば全フレームを選択してツールの姿勢初期化を実行した後など
 							//仮のminとmaxを指定
-							scalemin = -10.0;
-							scalemax = 10.0;
+							scalemin = minval;
+							scalemax = maxval + 10.0;
 						}
 
 						
@@ -21992,7 +22026,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.11 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.12 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -29283,7 +29317,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.11 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.12 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
