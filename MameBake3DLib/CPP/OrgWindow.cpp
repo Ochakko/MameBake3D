@@ -507,7 +507,8 @@ namespace OrgWinGUI{
 				lineData[i]->draw(hdcM,
 					pos.x + MARGIN,
 					//pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
-					pos.y + MARGIN + AXIS_SIZE_Y,
+					//pos.y + MARGIN + AXIS_SIZE_Y,
+					pos.y,
 					size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
 					timeSize, showPos_time, highLight);
 			}

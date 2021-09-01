@@ -1057,7 +1057,7 @@ enum {
 
 
 
-#define SPPLAYERBUTTONNUM	10
+#define SPPLAYERBUTTONNUM	12
 
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
@@ -8864,7 +8864,7 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 
 		if (s_LtimelineWnd && s_owpPlayerButton) {
 			if (!s_LTSeparator) {
-				s_LTSeparator = new OWP_Separator(s_LtimelineWnd, false);
+				s_LTSeparator = new OWP_Separator(s_LtimelineWnd, 0.38, false);
 				s_LtimelineWnd->addParts(*s_LTSeparator);
 
 				if (s_owpLTimeline) {
@@ -9156,6 +9156,8 @@ void refreshEulerGraph()
 		//int result = CreateMotionBrush(0, (double)(frameleng - 1), true);
 		//_ASSERT(result == 0);
 
+		s_owpEulerGraph->setDispScale(1.0);//倍率初期化
+		s_owpEulerGraph->setDispOffset(0.0);//倍率オフセット
 
 		s_owpEulerGraph->deleteKey();
 		s_owpEulerGraph->deleteLine();
@@ -12176,7 +12178,7 @@ int CreateConvBoneWnd()
 	_ASSERT(cbno == s_convbonenum);
 
 
-	s_convbonesp = new OWP_Separator(s_convboneWnd, true);									// セパレータ1（境界線による横方向2分割）
+	s_convbonesp = new OWP_Separator(s_convboneWnd, 0.5, true);									// セパレータ1（境界線による横方向2分割）
 
 	s_cbselmodel = new OWP_Button(L"SelectShapeModel");
 	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
@@ -18300,6 +18302,31 @@ int CreateLongTimelineWnd()
 			g_undereditrange = true; s_nextrangeFlag = true;
 		}
 	});
+	s_owpPlayerButton->setPlusDispButtonListener([]() {
+		if (s_model && s_owpEulerGraph) {
+			s_owpEulerGraph->PlusDisp();
+		}
+	});
+	s_owpPlayerButton->setMinusDispButtonListener([]() {
+		if (s_model && s_owpEulerGraph) {
+			s_owpEulerGraph->MinusDisp();
+		}
+	});
+	s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
+		if (s_model && s_owpEulerGraph) {
+			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+		}
+	});
+	s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
+		if (s_model && s_owpEulerGraph) {
+			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+		}
+	});
+	s_owpPlayerButton->setResetDispButtonListener([]() {
+		if (s_model && s_owpEulerGraph) {
+			s_owpEulerGraph->ResetScaleAndOffset();
+		}
+	});
 
 
 	//###################################
@@ -18619,11 +18646,11 @@ int CreateSideMenuWnd()
 		true, true);					//サイズ変更の可否
 
 
-	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true);
+	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, 0.5, true);
 	s_sidemenuWnd->addParts(*s_sidemenusp);
 
-	s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, true);
-	s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, true);
+	s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, 0.5, true);
+	s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, 0.5, true);
 	s_sidemenusp->addParts1(*s_sidemenusp1);
 	s_sidemenusp->addParts2(*s_sidemenusp2);
 
