@@ -223,7 +223,7 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
-
+static void ChangeCurDirFromMameMediaToTest();
 
 static int OnPluginClose();
 static int OnPluginPose();
@@ -1057,7 +1057,7 @@ enum {
 
 
 
-#define SPPLAYERBUTTONNUM	12
+#define SPPLAYERBUTTONNUM	15
 
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
@@ -8130,6 +8130,21 @@ int OpenFile()
 {
 	s_nowloading = true;
 
+
+	//CurrentDirectoryがMameMediaになっていたときにはTestディレクトリに変える
+	WCHAR curdir[MAX_PATH] = { 0L };
+	ZeroMemory(curdir, sizeof(WCHAR) * MAX_PATH);
+	GetCurrentDirectory(MAX_PATH, curdir);
+	WCHAR* findpat = wcsstr(curdir, L"\\MameMedia");
+	if (findpat) {
+		WCHAR initialdir[MAX_PATH] = { 0L };
+		wcscpy_s(initialdir, MAX_PATH, g_basedir);
+		wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
+		SetCurrentDirectoryW(initialdir);
+	}
+
+
+
 	int dlgret;
 	s_filterindex = 1;
 	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
@@ -12592,6 +12607,9 @@ int SetJointPair2ConvBoneWnd()
 
 int SaveRetargetFile()
 {
+
+	ChangeCurDirFromMameMediaToTest();
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
@@ -12641,6 +12659,8 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		_ASSERT(0);
 		return 1;
 	}
+
+	ChangeCurDirFromMameMediaToTest();
 
 	s_convbonemap.clear();
 
@@ -30464,8 +30484,6 @@ bool LoadCPTFile()
 
 
 
-
-
 		CBone* curbone;
 		curbone = s_model->GetBoneByName(curbonename);
 		if (curbone) {
@@ -30492,3 +30510,19 @@ bool LoadCPTFile()
 
 	return true;
 }
+
+void ChangeCurDirFromMameMediaToTest()
+{
+	//CurrentDirectoryがMameMediaになっていたときにはTestディレクトリに変える
+	WCHAR curdir[MAX_PATH] = { 0L };
+	ZeroMemory(curdir, sizeof(WCHAR) * MAX_PATH);
+	GetCurrentDirectory(MAX_PATH, curdir);
+	WCHAR* findpat = wcsstr(curdir, L"\\MameMedia");
+	if (findpat) {
+		WCHAR initialdir[MAX_PATH] = { 0L };
+		wcscpy_s(initialdir, MAX_PATH, g_basedir);
+		wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
+		SetCurrentDirectoryW(initialdir);
+	}
+}
+

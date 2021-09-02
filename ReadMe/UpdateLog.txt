@@ -10,6 +10,7 @@
 	オープンファイルダイアログのデフォルトディレクトリをサンプルが置いてあるTestディレクトリに
 
 	MotionBrushC4.exeを使う場合にはゲームパッド対応無し
+	MotionBrushC4.exeからMotionBrush.exeを複数立ち上げた直後のマウスレスポンスが更に改善
 
 	ver1.0.0.12動画
 	https://youtu.be/Ml85Avo0vjw

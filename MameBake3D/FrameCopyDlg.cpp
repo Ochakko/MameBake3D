@@ -3,6 +3,7 @@
 #include "FrameCopyDlg.h"
 #include <Model.h>
 #include <Bone.h>
+#include <GlobalVar.h>
 
 #define DBGH
 #include <dbg.h>
@@ -14,6 +15,24 @@ extern void OnDSUpdate();
 //extern void OnDSMouseHereApeal();
 //extern LONG g_undertrackingRMenu;
 //extern LONG g_underApealingMouseHere;
+
+
+static void ChangeCurDirFromMameMediaToTest();
+
+void ChangeCurDirFromMameMediaToTest()
+{
+	//CurrentDirectoryがMameMediaになっていたときにはTestディレクトリに変える
+	WCHAR curdir[MAX_PATH] = { 0L };
+	ZeroMemory(curdir, sizeof(WCHAR) * MAX_PATH);
+	GetCurrentDirectory(MAX_PATH, curdir);
+	WCHAR* findpat = wcsstr(curdir, L"\\MameMedia");
+	if (findpat) {
+		WCHAR initialdir[MAX_PATH] = { 0L };
+		wcscpy_s(initialdir, MAX_PATH, g_basedir);
+		wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
+		SetCurrentDirectoryW(initialdir);
+	}
+}
 
 
 
@@ -665,6 +684,8 @@ int CFrameCopyDlg::WriteTBOFile()
 		return 0;
 	}
 
+	ChangeCurDirFromMameMediaToTest();
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
@@ -839,6 +860,8 @@ bool CFrameCopyDlg::LoadTBOFile()
 		_ASSERT(0);
 		return false;
 	}
+
+	ChangeCurDirFromMameMediaToTest();
 
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
