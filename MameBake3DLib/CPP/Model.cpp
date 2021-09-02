@@ -8919,7 +8919,9 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))){
 			parentbone = curbone->GetParent();
-			if (!parentbone) {
+
+			//parentboneの無いcurboneをドラッグした時はbreakしない
+			if (!parentbone && (firstbone != curbone)) {
 				break;
 			}
 
@@ -8988,10 +8990,16 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 					CMotionPoint* curparmp = 0;
 					CMotionPoint* aplyparmp = 0;
-					curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-					aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-
-					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
+					if (parentbone) {
+						curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+						aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					}
+					else {
+						//parentboneが無いときには、curparmpとapplyparmpはcurrentboneのもの
+						curparmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+						aplyparmp = curbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					}
+					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
 						ChaMatrix curparrotmat = curparmp->GetWorldMat();
 						curparrotmat._41 = 0.0f;
 						curparrotmat._42 = 0.0f;
@@ -9016,7 +9024,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 						transmp.CalcQandTra(transmat2, firstbone);
 						rotq = transmp.GetQ();
 					}
-					else{
+					else {
 						ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 						CMotionPoint transmp;
 						transmp.CalcQandTra(transmat, firstbone);
@@ -9053,19 +9061,38 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 							//_ASSERT(0);
 
-
-							parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
+							if(parentbone) {
+								parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
+							}
+							else {
+								curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, curq);
+							}
 						}
 						else{
-							parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							if (parentbone) {
+								parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							}
+							else {
+								curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							}
 						}
 					}
 					else{
 						if (keyno == 0){
-							parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							if (parentbone) {
+								parentbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							}
+							else {
+								curbone->RotBoneQReq(0, m_curmotinfo->motid, curframe, rotq);
+							}
 						}
 						else{
-							parentbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+							if (parentbone) {
+								parentbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+							}
+							else {
+								curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+							}
 						}
 					}
 					keyno++;
@@ -9073,13 +9100,16 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			}
 			else{
-				if (parentbone) {
-					ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-					CMotionPoint transmp;
-					transmp.CalcQandTra(transmat, firstbone);
-					rotq = transmp.GetQ();
+				ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
+				CMotionPoint transmp;
+				transmp.CalcQandTra(transmat, firstbone);
+				rotq = transmp.GetQ();
 
+				if (parentbone) {
 					parentbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
+				}
+				else {
+					curbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
 				}
 			}
 
