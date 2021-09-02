@@ -18305,11 +18305,19 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setPlusDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->PlusDisp();
+			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
 		}
 	});
 	s_owpPlayerButton->setMinusDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->MinusDisp();
+			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
 		}
 	});
 	s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
