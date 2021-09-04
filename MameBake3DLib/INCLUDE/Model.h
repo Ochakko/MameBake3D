@@ -569,7 +569,12 @@ public:
 
 	int FillUpEmptyMotion(int motid);
 
-
+	int SetAllSphrateData(int gid, int rgdindex, float srcval);
+	int SetAllBoxzrateData(int gid, int rgdindex, float srcval);
+	int SetAllSkipflagData(int gid, int rgdindex, bool srcval);
+	int SetAllForbidrotData(int gid, int rgdindex, bool srcval);
+	int SetAllColtypeData(int gid, int rgdindex, int srcval);
+	int SetAllBtforceData(int rgdindex, bool srcval);
 	int SetAllDampAnimData( int gid, int rgdindex, float valL, float valA );
 	int SetAllBtgData( int gid, int reindex, float btg );
 	int SetAllImpulseData( int gid, float impx, float impy, float impz );
@@ -740,6 +745,12 @@ private:
 	void SetImpulseDataReq( int gid, CBone* srcbone, ChaVector3 srcimp );
 	void SetBtImpulseReq( CBone* srcbone );
 	
+	void SetSphrateDataReq(int gid, int rgdindex, CBone* srcbone, float srcval);
+	void SetBoxzrateDataReq(int gid, int rgdindex, CBone* srcbone, float srcval);
+	void SetSkipflagDataReq(int gid, int rgdindex, CBone* srcbone, bool srcval);
+	void SetForbidrotDataReq(int gid, int rgdindex, CBone* srcbone, bool srcval);
+	void SetColtypeDataReq(int gid, int rgdindex, CBone* srcbone, int srcval);
+	void SetBtforceDataReq(int rgdindex, CBone* srcbone, bool srcval);
 	void SetDampAnimDataReq( int gid, int rgdindex, CBone* srcbone, float valL, float valA );
 	void SetBtgDataReq( int gid, int reindex, CBone* srcbone, float btg );
 	void SetKDataReq( int gid, int reindex, CBone* srcbone, int srclk, int srcak, float srccuslk, float srccusak );

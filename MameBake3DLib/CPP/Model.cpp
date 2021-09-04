@@ -6425,6 +6425,249 @@ void CModel::SetBtgDataReq( int gid, int reindex, CBone* srcbone, float btg )
 	}
 }
 
+
+int CModel::SetAllSphrateData(int gid, int rgdindex, float srcval)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (rgdindex < 0) {
+		return 0;
+	}
+
+	SetSphrateDataReq(gid, rgdindex, m_topbone, srcval);
+	return 0;
+}
+void CModel::SetSphrateDataReq(int gid, int rgdindex, CBone* srcbone, float srcval)
+{
+	if (rgdindex < 0) {
+		return;
+	}
+
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())) {
+		if (srcbone->GetParent()) {
+			char* filename = m_rigideleminfo[rgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre) {
+				if ((gid == -1) || (gid == curre->GetGroupid())) {
+					curre->SetSphrate(srcval);
+				}
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if (srcbone->GetChild()) {
+		SetSphrateDataReq(gid, rgdindex, srcbone->GetChild(), srcval);
+	}
+	if (srcbone->GetBrother()) {
+		SetSphrateDataReq(gid, rgdindex, srcbone->GetBrother(), srcval);
+	}
+}
+
+int CModel::SetAllBoxzrateData(int gid, int rgdindex, float srcval)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (rgdindex < 0) {
+		return 0;
+	}
+
+	SetBoxzrateDataReq(gid, rgdindex, m_topbone, srcval);
+	return 0;
+}
+void CModel::SetBoxzrateDataReq(int gid, int rgdindex, CBone * srcbone, float srcval)
+{
+	if (rgdindex < 0) {
+		return;
+	}
+
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())) {
+		if (srcbone->GetParent()) {
+			char* filename = m_rigideleminfo[rgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre) {
+				if ((gid == -1) || (gid == curre->GetGroupid())) {
+					curre->SetBoxzrate(srcval);
+				}
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if (srcbone->GetChild()) {
+		SetBoxzrateDataReq(gid, rgdindex, srcbone->GetChild(), srcval);
+	}
+	if (srcbone->GetBrother()) {
+		SetBoxzrateDataReq(gid, rgdindex, srcbone->GetBrother(), srcval);
+	}
+}
+
+int CModel::SetAllSkipflagData(int gid, int rgdindex, bool srcval)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (rgdindex < 0) {
+		return 0;
+	}
+
+	SetSkipflagDataReq(gid, rgdindex, m_topbone, srcval);
+	return 0;
+}
+void CModel::SetSkipflagDataReq(int gid, int rgdindex, CBone* srcbone, bool srcval)
+{
+	if (rgdindex < 0) {
+		return;
+	}
+
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())) {
+		if (srcbone->GetParent()) {
+			char* filename = m_rigideleminfo[rgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre) {
+				if ((gid == -1) || (gid == curre->GetGroupid())) {
+					curre->SetSkipflag(srcval);
+				}
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if (srcbone->GetChild()) {
+		SetSkipflagDataReq(gid, rgdindex, srcbone->GetChild(), srcval);
+	}
+	if (srcbone->GetBrother()) {
+		SetSkipflagDataReq(gid, rgdindex, srcbone->GetBrother(), srcval);
+	}
+}
+
+int CModel::SetAllForbidrotData(int gid, int rgdindex, bool srcval)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (rgdindex < 0) {
+		return 0;
+	}
+
+	SetForbidrotDataReq(gid, rgdindex, m_topbone, srcval);
+	return 0;
+}
+void CModel::SetForbidrotDataReq(int gid, int rgdindex, CBone* srcbone, bool srcval)
+{
+	if (rgdindex < 0) {
+		return;
+	}
+
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())) {
+		if (srcbone->GetParent()) {
+			char* filename = m_rigideleminfo[rgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre) {
+				if ((gid == -1) || (gid == curre->GetGroupid())) {
+					curre->SetForbidRotFlag(srcval);
+				}
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if (srcbone->GetChild()) {
+		SetForbidrotDataReq(gid, rgdindex, srcbone->GetChild(), srcval);
+	}
+	if (srcbone->GetBrother()) {
+		SetForbidrotDataReq(gid, rgdindex, srcbone->GetBrother(), srcval);
+	}
+}
+
+int CModel::SetAllColtypeData(int gid, int rgdindex, int srcval)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (rgdindex < 0) {
+		return 0;
+	}
+
+	SetColtypeDataReq(gid, rgdindex, m_topbone, srcval);
+	return 0;
+}
+void CModel::SetColtypeDataReq(int gid, int rgdindex, CBone* srcbone, int srcval)
+{
+	if (rgdindex < 0) {
+		return;
+	}
+
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())) {
+		if (srcbone->GetParent()) {
+			char* filename = m_rigideleminfo[rgdindex].filename;
+			CRigidElem* curre = srcbone->GetParent()->GetRigidElemOfMap(filename, srcbone);
+			if (curre) {
+				if ((gid == -1) || (gid == curre->GetGroupid())) {
+					curre->SetColtype(srcval);
+				}
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if (srcbone->GetChild()) {
+		SetColtypeDataReq(gid, rgdindex, srcbone->GetChild(), srcval);
+	}
+	if (srcbone->GetBrother()) {
+		SetColtypeDataReq(gid, rgdindex, srcbone->GetBrother(), srcval);
+	}
+}
+
+int CModel::SetAllBtforceData(int rgdindex, bool srcval)
+{
+	if (!m_topbone) {
+		return 0;
+	}
+	if (rgdindex < 0) {
+		return 0;
+	}
+
+	SetBtforceDataReq(rgdindex, m_topbone, srcval);
+	return 0;
+}
+void CModel::SetBtforceDataReq(int rgdindex, CBone* srcbone, bool srcval)
+{
+	if (rgdindex < 0) {
+		return;
+	}
+
+	if ((rgdindex >= 0) && (rgdindex < (int)m_rigideleminfo.size())) {
+		if (srcbone->GetParent()) {
+			srcbone->GetParent()->SetBtForce((int)srcval);
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if (srcbone->GetChild()) {
+		SetBtforceDataReq(rgdindex, srcbone->GetChild(), srcval);
+	}
+	if (srcbone->GetBrother()) {
+		SetBtforceDataReq(rgdindex, srcbone->GetBrother(), srcval);
+	}
+}
+
+
+
 int CModel::SetAllDampAnimData( int gid, int rgdindex, float valL, float valA )
 {
 	if( !m_topbone ){

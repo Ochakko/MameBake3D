@@ -838,7 +838,6 @@ static void s_dummyfunc();
 				(*itr)->setPos(  WindowPos(  partsAreaPos.x,  partsAreaPos.y+currentPartsSizeY  ) );
 				(*itr)->setSize( WindowSize( partsAreaSize.x, partsAreaSize.y-currentPartsSizeY ) );
 				(*itr)->autoResize();
-
 				currentPartsSizeY+= (*itr)->getSize().y+1;
 			}
 
@@ -1533,7 +1532,7 @@ static void s_dummyfunc();
 	class OWP_Separator : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Separator(OrgWindow *_parentWindow, double _centerRate=0.5, bool _divideSide=true){
+		OWP_Separator(OrgWindow *_parentWindow, bool _only1line, double _centerRate=0.5, bool _divideSide=true){
 			parentWindow = _parentWindow;
 
 			currentPartsSizeY1= 0;
@@ -1547,6 +1546,8 @@ static void s_dummyfunc();
 
 			partsList1.clear();
 			partsList2.clear();
+
+			only1line = _only1line;
 		}
 		~OWP_Separator(){
 		}
@@ -1616,7 +1617,33 @@ static void s_dummyfunc();
 		/// Method : 自動サイズ設定
 		void autoResize(){
 			//パーツエリアの位置とサイズを設定
+			int onelineheight = 16;
 			int centerPos= getCenterLinePos();
+
+
+			//only1line == trueの際にはセパレータ自体の最小サイズを決める
+			if (only1line == true) {
+				int sizey1 = 0;
+				int sizey2 = 0;
+				for (std::list<OrgWindowParts*>::iterator itr = partsList1.begin();
+					itr != partsList1.end(); itr++) {
+					(*itr)->autoResize();
+					WindowSize befsize = (*itr)->getSize();
+					sizey1 += (*itr)->getSize().y;
+				}
+				for (std::list<OrgWindowParts*>::iterator itr = partsList2.begin();
+					itr != partsList2.end(); itr++) {
+					(*itr)->autoResize();
+					WindowSize befsize = (*itr)->getSize();
+					sizey2 += (*itr)->getSize().y;
+				}
+				size.y = max(sizey1, sizey2);
+				if (size.y == 0) {
+					size.y = 15;
+				}
+			}
+
+
 			partsAreaPos1=  pos;
 			if( divideSide ){
 				partsAreaPos2=  pos+ WindowPos(centerPos+1+LINE_MARGIN, 0);
@@ -1633,22 +1660,24 @@ static void s_dummyfunc();
 			//全ての内部パーツの位置とサイズを自動設定
 			for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
 				itr!=partsList1.end(); itr++){
+				(*itr)->autoResize();//!!!!!!!!!!!!
 				WindowSize befsize = (*itr)->getSize();
 				(*itr)->setPos(  WindowPos(  partsAreaPos1.x,  partsAreaPos1.y+currentPartsSizeY1  ) );
 				//(*itr)->setSize( WindowSize( partsAreaSize1.x, partsAreaSize1.y-currentPartsSizeY1 ) );
 				(*itr)->setSize(WindowSize(partsAreaSize1.x, befsize.y));
-				(*itr)->autoResize();
+				//(*itr)->autoResize();//befsizeよりも前に移動
 
 				//currentPartsSizeY1+= (*itr)->getSize().y+1;
 				currentPartsSizeY1 += (*itr)->getSize().y;
 			}
 			for(std::list<OrgWindowParts*>::iterator itr=partsList2.begin();
 				itr!=partsList2.end(); itr++){
+				(*itr)->autoResize();//!!!!!!!!!!!!
 				WindowSize befsize = (*itr)->getSize();
 				(*itr)->setPos(  WindowPos(  partsAreaPos2.x,  partsAreaPos2.y+currentPartsSizeY2  ) );
 				//(*itr)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
 				(*itr)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
-				(*itr)->autoResize();
+				//(*itr)->autoResize();//befsizeよりも前に移動
 
 				//currentPartsSizeY2+= (*itr)->getSize().y+1;
 				currentPartsSizeY2 += (*itr)->getSize().y;
@@ -1911,6 +1940,8 @@ static void s_dummyfunc();
 		double centerRate;
 		bool divideSide;
 		bool shiftDrag;
+			
+		bool only1line;
 
 		static const int LINE_MARGIN= 1;
 		static const int HANDLE_SIZE= 12;
@@ -2596,7 +2627,15 @@ static void s_dummyfunc();
 			pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 			pos1y= pos.y+size.y/2-5;
 			hdcM->setFont(12,_T("ＭＳ ゴシック"));
-			SetTextColor(hdcM->hDC,RGB(240,240,240));
+			TCHAR* isToAll = 0;
+			isToAll = _tcsstr(name, _T("ToAll"));
+			if(!isToAll){
+				SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+			}
+			else {
+				//名前にToAllとついていた場合には、特殊ボタンとして色を変える
+				SetTextColor(hdcM->hDC, RGB(64, 128 + 32, 128 + 32));
+			}
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
 					 name, (int)_tcslen(name));

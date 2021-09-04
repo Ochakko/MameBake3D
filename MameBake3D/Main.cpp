@@ -782,14 +782,25 @@ static OWP_Label* s_placefolderlabel_3 = 0;
 
 static OrgWindow* s_rigidWnd = 0;
 static OWP_CheckBoxA* s_groupcheck = 0;
-static OWP_Slider* s_shprateSlider = 0;
+static OWP_Slider* s_sphrateSlider = 0;
 static OWP_Slider* s_boxzSlider = 0;
 static OWP_Slider* s_massSlider = 0;
+static OWP_Separator* s_massSeparator = 0;
+static OWP_Separator* s_massSeparator1 = 0;
+static OWP_Separator* s_massSeparator2 = 0;
 static OWP_Button* s_massB = 0;
+static OWP_Button* s_thicknessB = 0;
+static OWP_Button* s_depthB = 0;
+static OWP_Label* s_massspacelabel = 0;
 static OWP_CheckBoxA* s_rigidskip = 0;
+static OWP_Button* s_skipB = 0;
+static OWP_Separator* s_forbidSeparator = 0;
+static OWP_Button* s_forbidB = 0;
 static OWP_CheckBoxA* s_forbidrot = 0;
 static OWP_Label* s_shplabel = 0;
 static OWP_Label* s_boxzlabel = 0;
+static OWP_Separator* s_colSeparator = 0;
+static OWP_Button* s_colB = 0;
 static OWP_RadioButton* s_colradio = 0;
 static OWP_RadioButton* s_lkradio = 0;
 static OWP_RadioButton* s_akradio = 0;
@@ -805,6 +816,7 @@ static OWP_Button* s_restB = 0;
 static OWP_Button* s_dmpB = 0;
 static OWP_Button* s_groupB = 0;
 static OWP_Button* s_gcoliB = 0;
+static OWP_Separator* s_validSeparator = 0;
 static OWP_Button* s_allrigidenableB = 0;
 static OWP_Button* s_allrigiddisableB = 0;
 
@@ -824,7 +836,9 @@ static OWP_Label* s_btglabel = 0;
 static OWP_Slider* s_btgscSlider = 0;
 static OWP_Label* s_btgsclabel = 0;
 static OWP_Button* s_btgB = 0;
+static OWP_Separator* s_btforceSeparator = 0;
 static OWP_CheckBoxA* s_btforce = 0;
+static OWP_Button* s_btforceB = 0;
 
 static OrgWindow* s_impWnd = 0;
 static OWP_CheckBoxA* s_impgroupcheck = 0;
@@ -3600,9 +3614,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_owpLayerTable = 0;
 	}
 
-	if (s_shprateSlider) {
-		delete s_shprateSlider;
-		s_shprateSlider = 0;
+	if (s_sphrateSlider) {
+		delete s_sphrateSlider;
+		s_sphrateSlider = 0;
 	}
 	if (s_boxzSlider) {
 		delete s_boxzSlider;
@@ -3620,9 +3634,33 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_massSLlabel;
 		s_massSLlabel = 0;
 	}
+	if (s_massSeparator) {
+		delete s_massSeparator;
+		s_massSeparator = 0;
+	}
+	if (s_massSeparator1) {
+		delete s_massSeparator1;
+		s_massSeparator1 = 0;
+	}
+	if (s_massSeparator2) {
+		delete s_massSeparator2;
+		s_massSeparator2 = 0;
+	}
 	if (s_massB) {
 		delete s_massB;
 		s_massB = 0;
+	}
+	if (s_thicknessB) {
+		delete s_thicknessB;
+		s_thicknessB = 0;
+	}
+	if (s_depthB) {
+		delete s_depthB;
+		s_depthB = 0;
+	}
+	if (s_massspacelabel) {
+		delete s_massspacelabel;
+		s_massspacelabel = 0;
 	}
 	if (s_namelabel) {
 		delete s_namelabel;
@@ -3632,15 +3670,31 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_lenglabel;
 		s_lenglabel = 0;
 	}
+	if (s_skipB) {
+		delete s_skipB;
+		s_skipB = 0;
+	}
 	if (s_rigidskip) {
 		delete s_rigidskip;
 		s_rigidskip = 0;
+	}
+	if (s_forbidSeparator) {
+		delete s_forbidSeparator;
+		s_forbidSeparator = 0;
+	}
+	if (s_forbidB) {
+		delete s_forbidB;
+		s_forbidB = 0;
 	}
 	if (s_forbidrot) {
 		delete s_forbidrot;
 		s_forbidrot = 0;
 	}
 
+	if (s_validSeparator) {
+		delete s_validSeparator;
+		s_validSeparator = 0;
+	}
 	if (s_allrigidenableB) {
 		delete s_allrigidenableB;
 		s_allrigidenableB = 0;
@@ -3654,6 +3708,14 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	if (s_shplabel) {
 		delete s_shplabel;
 		s_shplabel = 0;
+	}
+	if (s_colSeparator) {
+		delete s_colSeparator;
+		s_colSeparator = 0;
+	}
+	if (s_colB) {
+		delete s_colB;
+		s_colB = 0;
 	}
 	if (s_colradio) {
 		delete s_colradio;
@@ -3751,9 +3813,17 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_btgsclabel;
 		s_btgsclabel = 0;
 	}
+	if (s_btforceSeparator) {
+		delete s_btforceSeparator;
+		s_btforceSeparator = 0;
+	}
 	if (s_btforce) {
 		delete s_btforce;
 		s_btforce = 0;
+	}
+	if (s_btforceB) {
+		delete s_btforceB;
+		s_btforceB = 0;
 	}
 	if (s_groupcheck) {
 		delete s_groupcheck;
@@ -8879,7 +8949,7 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 
 		if (s_LtimelineWnd && s_owpPlayerButton) {
 			if (!s_LTSeparator) {
-				s_LTSeparator = new OWP_Separator(s_LtimelineWnd, 0.38, false);
+				s_LTSeparator = new OWP_Separator(s_LtimelineWnd, false, 0.38, false);
 				s_LtimelineWnd->addParts(*s_LTSeparator);
 
 				if (s_owpLTimeline) {
@@ -11986,7 +12056,7 @@ int CreateModelPanel()
 		}
 	}
 
-	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel);									// セパレータ1（境界線による横方向2分割）
+	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
 
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
@@ -12193,7 +12263,7 @@ int CreateConvBoneWnd()
 	_ASSERT(cbno == s_convbonenum);
 
 
-	s_convbonesp = new OWP_Separator(s_convboneWnd, 0.5, true);									// セパレータ1（境界線による横方向2分割）
+	s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// セパレータ1（境界線による横方向2分割）
 
 	s_cbselmodel = new OWP_Button(L"SelectShapeModel");
 	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
@@ -13403,7 +13473,7 @@ int RigidElem2WndParam()
 				float btg = curre->GetBtg();
 				int forbidrot = curre->GetForbidRotFlag();
 
-				s_shprateSlider->setValue( rate );
+				s_sphrateSlider->setValue( rate );
 				s_boxzSlider->setValue( boxz );
 				s_massSlider->setValue( mass );
 				s_rigidskip->setValue( skipflag );
@@ -13421,7 +13491,7 @@ int RigidElem2WndParam()
 			}
 			else{
 				//rigid elemが作成されていないとき
-				s_shprateSlider->setValue(1.0);
+				s_sphrateSlider->setValue(1.0);
 				s_boxzSlider->setValue(1.0);
 				s_massSlider->setValue(1.0);
 				s_rigidskip->setValue(0);
@@ -13440,7 +13510,7 @@ int RigidElem2WndParam()
 		}
 		else{
 			//rigid elemが作成されていないとき
-			s_shprateSlider->setValue(1.0);
+			s_sphrateSlider->setValue(1.0);
 			s_boxzSlider->setValue(1.0);
 			s_massSlider->setValue(1.0);
 			s_rigidskip->setValue(0);
@@ -18674,11 +18744,11 @@ int CreateSideMenuWnd()
 		true, true);					//サイズ変更の可否
 
 
-	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, 0.5, true);
+	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
 	s_sidemenuWnd->addParts(*s_sidemenusp);
 
-	s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, 0.5, true);
-	s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, 0.5, true);
+	s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
+	s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
 	s_sidemenusp->addParts1(*s_sidemenusp1);
 	s_sidemenusp->addParts2(*s_sidemenusp2);
 
@@ -18819,19 +18889,31 @@ int CreateRigidWnd()
 		70, 50, 70,				//カラー
 		true, true);					//サイズ変更の可否
 
-	s_groupcheck = new OWP_CheckBoxA(L"AllSetButtonMeansToSetToSameGroupRigids", 0);
-	s_shprateSlider = new OWP_Slider(0.6, 20.0, 0.0);
+	s_groupcheck = new OWP_CheckBoxA(L"ToAll_MeansToSetToSameGroupRigids", 0);
+	s_sphrateSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
-	s_massB = new OWP_Button(L"SetMassToAllRigids");
+	s_massSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	s_massSeparator1 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	s_massSeparator2 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	s_massB = new OWP_Button(L"MassToAll");
+	s_thicknessB = new OWP_Button(L"ThicknessToAll");
+	s_depthB = new OWP_Button(L"DepthToAll");
+	s_massspacelabel = new OWP_Label(L"(Space4)");
+	s_validSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	s_skipB = new OWP_Button(L"ToAll");
 	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid", 1);
+	s_forbidSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	s_forbidB = new OWP_Button(L"ToAll");
 	s_forbidrot = new OWP_CheckBoxA(L"ForbidRot", 0);
-	s_allrigidenableB = new OWP_Button(L"ValidateAllRigids");
-	s_allrigiddisableB = new OWP_Button(L"InvalidateAllRigids");
+	//s_allrigidenableB = new OWP_Button(L"ValidateAllRigids");
+	//s_allrigiddisableB = new OWP_Button(L"InvalidateAllRigids");
 	s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
 	s_btgscSlider = new OWP_Slider(10.0, 100.0, 0.0);
-	s_btgB = new OWP_Button(L"SetBtGravityToAllRigids");
+	s_btgB = new OWP_Button(L"GToAll");
+	s_btforceSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_btforce = new OWP_CheckBoxA(L"RigidBodySimulation", 0);
+	s_btforceB = new OWP_Button(L"ToAll");
 
 	s_shplabel = new OWP_Label(L"Thickness");
 	s_boxzlabel = new OWP_Label(L"Depth");
@@ -18843,9 +18925,11 @@ int CreateRigidWnd()
 	s_lenglabel = new OWP_Label(L"BoneLength:*****[m]");
 
 
-	s_kB = new OWP_Button(L"SetSpringParamsToAllRigies");
-	s_restB = new OWP_Button(L"RestitutionAndFrictionToAllRigids");
+	s_kB = new OWP_Button(L"SpringParamsToAll");
+	s_restB = new OWP_Button(L"RestitutionAndFrictionToAll");
 
+	s_colSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	s_colB = new OWP_Button(L"ToAll");
 	s_colradio = new OWP_RadioButton(L"Cone");
 	s_colradio->addLine(L"Capsule");
 	s_colradio->addLine(L"Sphere");
@@ -18882,13 +18966,13 @@ int CreateRigidWnd()
 	s_admplabel = new OWP_Label(L"[rotSpring]rateOfDumping");
 	s_ldmpSlider = new OWP_Slider(g_l_dmp, 1.0, 0.0);
 	s_admpSlider = new OWP_Slider(g_a_dmp, 1.0, 0.0);
-	s_dmpB = new OWP_Button(L"SetDumpingToAllRigids");
+	s_dmpB = new OWP_Button(L"DumpingToAll");
 	s_groupB = new OWP_Button(L"SetRigidGroupIDForConflict");
 	s_gcoliB = new OWP_Button(L"SetGroundGroupIDForConflict");
 
 	int slw = 350;
 
-	s_shprateSlider->setSize(WindowSize(slw, 40));
+	s_sphrateSlider->setSize(WindowSize(slw, 40));
 	s_boxzSlider->setSize(WindowSize(slw, 40));
 	s_massSlider->setSize(WindowSize(slw, 40));
 	s_btgSlider->setSize(WindowSize(slw, 40));
@@ -18900,22 +18984,47 @@ int CreateRigidWnd()
 	s_restSlider->setSize(WindowSize(slw, 40));
 	s_fricSlider->setSize(WindowSize(slw, 40));
 
+
 	s_rigidWnd->addParts(*s_namelabel);
 	s_rigidWnd->addParts(*s_groupcheck);
 	s_rigidWnd->addParts(*s_shplabel);
-	s_rigidWnd->addParts(*s_shprateSlider);
+	s_rigidWnd->addParts(*s_sphrateSlider);
 	s_rigidWnd->addParts(*s_boxzlabel);
 	s_rigidWnd->addParts(*s_boxzSlider);
 	s_rigidWnd->addParts(*s_massSLlabel);
 	s_rigidWnd->addParts(*s_massSlider);
-	s_rigidWnd->addParts(*s_massB);
-	s_rigidWnd->addParts(*s_lenglabel);
-	s_rigidWnd->addParts(*s_rigidskip);
-	s_rigidWnd->addParts(*s_forbidrot);
-	s_rigidWnd->addParts(*s_allrigidenableB);
-	s_rigidWnd->addParts(*s_allrigiddisableB);
+	
+	//s_rigidWnd->addParts(*s_massB);
+	//s_massB->setColor(64, 128, 128);
+	//s_thicknessB->setColor(64, 128, 128);
+	//s_depthB->setColor(64, 128, 128);
+	s_rigidWnd->addParts(*s_massSeparator);
+	s_massSeparator->addParts1(*s_massSeparator1);
+	s_massSeparator->addParts2(*s_massSeparator2);
+	s_massSeparator1->addParts1(*s_massB);
+	s_massSeparator1->addParts2(*s_thicknessB);
+	s_massSeparator2->addParts1(*s_depthB);
+	//s_massSeparator2->addParts2(*s_massspacelabel);
 
-	s_rigidWnd->addParts(*s_colradio);
+	s_rigidWnd->addParts(*s_lenglabel);
+
+	s_rigidWnd->addParts(*s_validSeparator);
+	s_validSeparator->addParts1(*s_rigidskip);
+	s_validSeparator->addParts2(*s_skipB);
+	//s_rigidWnd->addParts(*s_rigidskip);
+	
+	s_rigidWnd->addParts(*s_forbidSeparator);
+	s_forbidSeparator->addParts1(*s_forbidrot);
+	s_forbidSeparator->addParts2(*s_forbidB);
+	//s_rigidWnd->addParts(*s_forbidrot);
+	//s_rigidWnd->addParts(*s_allrigidenableB);
+	//s_rigidWnd->addParts(*s_allrigiddisableB);
+
+
+	s_rigidWnd->addParts(*s_colSeparator);
+	s_colSeparator->addParts1(*s_colradio);
+	s_colSeparator->addParts2(*s_colB);
+	//s_rigidWnd->addParts(*s_colradio);
 
 	s_rigidWnd->addParts(*s_lkradio);
 	s_rigidWnd->addParts(*s_lklabel);
@@ -18940,10 +19049,15 @@ int CreateRigidWnd()
 
 	s_rigidWnd->addParts(*s_btglabel);
 	s_rigidWnd->addParts(*s_btgSlider);
-	s_rigidWnd->addParts(*s_btgB);
 	s_rigidWnd->addParts(*s_btgsclabel);
 	s_rigidWnd->addParts(*s_btgscSlider);
-	s_rigidWnd->addParts(*s_btforce);
+	
+	s_rigidWnd->addParts(*s_btgB);
+	
+	//s_rigidWnd->addParts(*s_btforce);
+	s_rigidWnd->addParts(*s_btforceSeparator);
+	s_btforceSeparator->addParts1(*s_btforce);
+	s_btforceSeparator->addParts2(*s_btforceB);
 
 	s_rigidWnd->addParts(*s_groupB);
 	s_rigidWnd->addParts(*s_gcoliB);
@@ -18951,19 +19065,24 @@ int CreateRigidWnd()
 	s_dsrigidctrls.push_back(s_namelabel);
 	s_dsrigidctrls.push_back(s_groupcheck);
 	s_dsrigidctrls.push_back(s_shplabel);
-	s_dsrigidctrls.push_back(s_shprateSlider);
+	s_dsrigidctrls.push_back(s_sphrateSlider);
 	s_dsrigidctrls.push_back(s_boxzlabel);
 	s_dsrigidctrls.push_back(s_boxzSlider);
 	s_dsrigidctrls.push_back(s_massSLlabel);
 	s_dsrigidctrls.push_back(s_massSlider);
 	s_dsrigidctrls.push_back(s_massB);
+	s_dsrigidctrls.push_back(s_thicknessB);
+	s_dsrigidctrls.push_back(s_depthB);
 	s_dsrigidctrls.push_back(s_lenglabel);
 	s_dsrigidctrls.push_back(s_rigidskip);
+	s_dsrigidctrls.push_back(s_skipB);
 	s_dsrigidctrls.push_back(s_forbidrot);
-	s_dsrigidctrls.push_back(s_allrigidenableB);
-	s_dsrigidctrls.push_back(s_allrigiddisableB);
+	s_dsrigidctrls.push_back(s_forbidB);
+	//s_dsrigidctrls.push_back(s_allrigidenableB);
+	//s_dsrigidctrls.push_back(s_allrigiddisableB);
 
 	s_dsrigidctrls.push_back(s_colradio);
+	s_dsrigidctrls.push_back(s_colB);
 
 	s_dsrigidctrls.push_back(s_lkradio);
 	s_dsrigidctrls.push_back(s_lklabel);
@@ -18992,6 +19111,7 @@ int CreateRigidWnd()
 	s_dsrigidctrls.push_back(s_btgsclabel);
 	s_dsrigidctrls.push_back(s_btgscSlider);
 	s_dsrigidctrls.push_back(s_btforce);
+	s_dsrigidctrls.push_back(s_btforceB);
 
 	s_dsrigidctrls.push_back(s_groupB);
 	s_dsrigidctrls.push_back(s_gcoliB);
@@ -19003,11 +19123,11 @@ int CreateRigidWnd()
 		}
 	});
 
-	s_shprateSlider->setCursorListener([](){
+	s_sphrateSlider->setCursorListener([](){
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
-				float val = (float)s_shprateSlider->getValue();
+				float val = (float)s_sphrateSlider->getValue();
 				curre->SetSphrate(val);
 			}
 			s_rigidWnd->callRewrite();						//再描画
@@ -19098,8 +19218,6 @@ int CreateRigidWnd()
 			s_rigidWnd->callRewrite();						//再描画
 		}
 	});
-
-
 	s_rigidskip->setButtonListener([](){
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
@@ -19115,6 +19233,31 @@ int CreateRigidWnd()
 			s_rigidWnd->callRewrite();						//再描画
 		}
 	});
+	s_skipB->setButtonListener([]() {
+		if (s_model) {
+			bool validflag = s_rigidskip->getValue();
+			bool skipflag;
+			if (validflag == false) {
+				skipflag = true;
+			}
+			else {
+				skipflag = false;
+			}
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					gid = curre->GetGroupid();
+				}
+				else {
+					gid = -1;
+				}
+			}
+			s_model->SetAllSkipflagData(gid, s_reindexmap[s_model], skipflag);
+		}
+		});
+
 	s_forbidrot->setButtonListener([](){
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
@@ -19130,18 +19273,36 @@ int CreateRigidWnd()
 			s_rigidWnd->callRewrite();						//再描画
 		}
 	});
-	s_allrigidenableB->setButtonListener([](){
-		if (s_model){
-			s_model->EnableAllRigidElem(s_reindexmap[s_model]);
+	s_forbidB->setButtonListener([]() {
+		if (s_model) {
+			bool validflag = s_forbidrot->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					gid = curre->GetGroupid();
+				}
+				else {
+					gid = -1;
+				}
+			}
+			s_model->SetAllForbidrotData(gid, s_reindexmap[s_model], validflag);
 		}
-		s_rigidWnd->callRewrite();						//再描画
-	});
-	s_allrigiddisableB->setButtonListener([](){
-		if (s_model){
-			s_model->DisableAllRigidElem(s_reindexmap[s_model]);
-		}
-		s_rigidWnd->callRewrite();						//再描画
-	});
+		});
+
+	//s_allrigidenableB->setButtonListener([](){
+	//	if (s_model){
+	//		s_model->EnableAllRigidElem(s_reindexmap[s_model]);
+	//	}
+	//	s_rigidWnd->callRewrite();						//再描画
+	//});
+	//s_allrigiddisableB->setButtonListener([](){
+	//	if (s_model){
+	//		s_model->DisableAllRigidElem(s_reindexmap[s_model]);
+	//	}
+	//	s_rigidWnd->callRewrite();						//再描画
+	//});
 
 
 	s_btforce->setButtonListener([](){
@@ -19195,6 +19356,23 @@ int CreateRigidWnd()
 			s_rigidWnd->callRewrite();						//再描画
 		}
 	});
+	s_colB->setButtonListener([]() {
+		if (s_model) {
+			int val = s_colradio->getSelectIndex();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					gid = curre->GetGroupid();
+				}
+				else {
+					gid = -1;
+				}
+			}
+			s_model->SetAllColtypeData(gid, s_reindexmap[s_model], val);
+		}
+		});
 
 	s_lkradio->setSelectListener([](){
 		if (s_model) {
@@ -19333,6 +19511,42 @@ int CreateRigidWnd()
 		}
 		//		_ASSERT( 0 );
 	});
+	s_thicknessB->setButtonListener([]() {
+		if (s_model) {
+			float sphrate = (float)s_sphrateSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					gid = curre->GetGroupid();
+				}
+				else {
+					gid = -1;
+				}
+			}
+			s_model->SetAllSphrateData(gid, s_reindexmap[s_model], sphrate);
+		}
+		//		_ASSERT( 0 );
+	});
+	s_depthB->setButtonListener([]() {
+		if (s_model) {
+			float boxzrate = (float)s_boxzSlider->getValue();
+			int chkg = (int)s_groupcheck->getValue();
+			int gid = -1;
+			if (chkg) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					gid = curre->GetGroupid();
+				}
+				else {
+					gid = -1;
+				}
+			}
+			s_model->SetAllBoxzrateData(gid, s_reindexmap[s_model], boxzrate);
+		}
+		//		_ASSERT( 0 );
+		});
 	s_btgB->setButtonListener([](){
 		if (s_model){
 			float btg = (float)s_btgSlider->getValue();
@@ -19350,7 +19564,12 @@ int CreateRigidWnd()
 			s_model->SetAllBtgData(gid, s_reindexmap[s_model], btg);
 		}
 	});
-
+	s_btforceB->setButtonListener([]() {
+		if (s_model) {
+			bool kinflag = s_btforce->getValue();
+			s_model->SetAllBtforceData(s_reindexmap[s_model], kinflag);
+		}
+	});
 
 	s_rigidWnd->setSize(WindowSize(450, 858));//880
 	s_rigidWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
@@ -28996,7 +29215,7 @@ s_modelpanel.panel->setSize(WindowSize(200, 100));//880	E:\PG\MameBake3D_git\Mam
 s_placefolderWnd->setSize(WindowSize(450, 858));//880	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14489	18
 s_restSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14615	14
 s_rigidWnd->setSize(WindowSize(450, 858));//880	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	15004	12
-s_shprateSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14606	17
+s_sphrateSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14606	17
 
 WindowSize(400, 600)
 */
