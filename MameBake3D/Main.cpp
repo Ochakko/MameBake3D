@@ -183,6 +183,9 @@ static double s_reccnt = 0;
 static int s_appcnt = 0;
 static int s_launchbyc4 = 0;
 
+static int s_onefps = 0;
+
+
 static vector<wstring> s_bvh2fbxout;
 static LONG s_bvh2fbxnum = 0;
 static LONG s_bvh2fbxcnt = 0;
@@ -1071,7 +1074,7 @@ enum {
 
 
 
-#define SPPLAYERBUTTONNUM	15
+#define SPPLAYERBUTTONNUM	16
 
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
@@ -2146,6 +2149,8 @@ void InitApp()
 
 	s_onselectplugin = 0;
 	s_plugin = 0;
+
+	s_onefps = 0;
 
 	s_rectime = 0.0;
 	s_reccnt = 0;
@@ -4768,6 +4773,14 @@ void RenderText( double fTime )
     g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
     //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
 	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
+	if (s_onefps == 1) {
+		g_pTxtHelper->DrawFormattedTextLine(L" ");
+		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
+	}
+	else if (s_onefps == 2) {
+		g_pTxtHelper->DrawFormattedTextLine(L" ");
+		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 2 fps");
+	}
 
 	//int tmpnum;
 	//double tmpstart, tmpend, tmpapply;
@@ -16455,7 +16468,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 
 	int endflag = 0;
 	int loopstartflag = 0;
-	s_model->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+	s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
 	if (endflag == 1){
 		g_previewFlag = 0;
 	}
@@ -16479,6 +16492,14 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 		if (curmodel){
 			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		}
+	}
+
+	//playerButtonのonefpsボタン
+	if (s_onefps == 1) {
+		Sleep(1000);//1fps
+	}
+	else if (s_onefps == 2) {
+		Sleep(500);//2fps
 	}
 
 
@@ -16538,7 +16559,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			int endflag = 0;
 			int loopstartflag = 0;
 			//if (isstartframe == FALSE) {
-				curmodel->AdvanceTime(s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+				curmodel->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
 			//}
 			//else {
 			//	loopstartflag = 1;
@@ -16609,6 +16630,15 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			}
 		}
 	}
+
+	//playerButtonのonefpsボタン
+	if (s_onefps == 1) {
+		Sleep(1000);//1fps
+	}
+	else if (s_onefps == 2) {
+		Sleep(500);//2fps
+	}
+
 
 	return 0;
 }
@@ -18354,7 +18384,25 @@ int CreateLongTimelineWnd()
 			s_LstartFlag = true; s_lastkeyFlag = true;
 		}
 	});
-	s_owpPlayerButton->setBackStepButtonListener([](){  
+	s_owpPlayerButton->setOneFpsButtonListener([]() {
+		if (s_model) {
+			int tmponefps;
+			if (s_onefps == 0) {
+				tmponefps = 1;
+			}
+			else if (s_onefps == 1) {
+				tmponefps = 2;
+			}
+			else if (s_onefps == 2) {
+				tmponefps = 0;
+			}
+			else {
+				tmponefps = 0;
+			}
+			s_onefps = tmponefps;
+		}
+	});
+	s_owpPlayerButton->setBackStepButtonListener([](){
 		if (s_model) {
 			s_LstartFlag = true; s_firstkeyFlag = true;
 		}
@@ -19107,9 +19155,9 @@ int CreateRigidWnd()
 
 	s_dsrigidctrls.push_back(s_btglabel);
 	s_dsrigidctrls.push_back(s_btgSlider);
-	s_dsrigidctrls.push_back(s_btgB);
 	s_dsrigidctrls.push_back(s_btgsclabel);
 	s_dsrigidctrls.push_back(s_btgscSlider);
+	s_dsrigidctrls.push_back(s_btgB);
 	s_dsrigidctrls.push_back(s_btforce);
 	s_dsrigidctrls.push_back(s_btforceB);
 

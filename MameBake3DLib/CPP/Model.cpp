@@ -2412,7 +2412,7 @@ int CModel::ChangeMotFrameLeng( int motid, double srcleng )
 	return 0;
 }
 
-int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int* loopstartflag, int srcmotid)
+int CModel::AdvanceTime( int onefps, CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int* loopstartflag, int srcmotid)
 {
 	if (!nextframeptr || !endflagptr || !loopstartflag) {
 		return 1;
@@ -2455,7 +2455,12 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 
 
 	if( previewflag >= 0 ){
-		nextframe = curframe + difftime / oneframe * curspeed;
+		if (onefps == 0) {
+			nextframe = curframe + difftime / oneframe * curspeed;
+		}
+		else {
+			nextframe = curframe + 1.0;
+		}
 		if( nextframe > rangeend ){
 			if( loopflag == 0 ){
 				nextframe = rangeend;
@@ -2466,7 +2471,12 @@ int CModel::AdvanceTime( CEditRange srcrange, int previewflag, double difftime, 
 			}
 		}
 	}else{
-		nextframe = curframe - difftime / oneframe * curspeed;
+		if (onefps == 0) {
+			nextframe = curframe - difftime / oneframe * curspeed;
+		}
+		else {
+			nextframe = curframe + 1.0;
+		}
 		if( nextframe < rangestart ){
 			if( loopflag == 0 ){
 				nextframe = rangestart;

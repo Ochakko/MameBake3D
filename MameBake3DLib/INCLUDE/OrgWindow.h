@@ -2776,7 +2776,7 @@ static void s_dummyfunc();
 			drawEdge();
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<15; i++){
+			for(int i=0; i<16; i++){
 
 				//ボタンの四隅になる座標を求める
 				int pos1x= pos.x+BOX_POS_X+BOX_WIDTH*i;
@@ -2793,15 +2793,16 @@ static void s_dummyfunc();
 				case 3: btnPrm= &stop; break;
 				case 4: btnPrm= &frontPlay; break;
 				case 5: btnPrm= &frontStep; break;
-				case 6: btnPrm = &selecttolast; break;
-				case 7: btnPrm = &btreset; break;
-				case 8: btnPrm = &prevrange; break;
-				case 9: btnPrm = &nextrange; break;
-				case 10: btnPrm = &plusdisp; break;
-				case 11: btnPrm = &minusdisp; break;
-				case 12: btnPrm = &plusoffsetdisp; break;
-				case 13: btnPrm = &minusoffsetdisp; break;
-				case 14: btnPrm = &resetdisp; break;
+				case 6: btnPrm = &onefps; break;
+				case 7: btnPrm = &selecttolast; break;
+				case 8: btnPrm = &btreset; break;
+				case 9: btnPrm = &prevrange; break;
+				case 10: btnPrm = &nextrange; break;
+				case 11: btnPrm = &plusdisp; break;
+				case 12: btnPrm = &minusdisp; break;
+				case 13: btnPrm = &plusoffsetdisp; break;
+				case 14: btnPrm = &minusoffsetdisp; break;
+				case 15: btnPrm = &resetdisp; break;
 				}
 
 				//枠組み描画
@@ -2896,7 +2897,24 @@ static void s_dummyfunc();
 						LineTo(hdcM->hDC, x3 + j + shiftDot, y2 - j + shiftDot);
 					}
 				}break;
-				case 6:		//最終フレームまで選択
+				case 6:		//1fps
+				{
+					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+					int x1 = (pos1x + pos2x) / 2;
+					int x2 = x1 - 2;
+					int x3 = x1 + 2;
+					int y1 = pos1y + 3;
+					int y2 = pos2y - 3;
+					int y3 = y1 + 2;
+
+					MoveToEx(hdcM->hDC, x1, y1, NULL);
+					LineTo(hdcM->hDC, x1, y2);
+					MoveToEx(hdcM->hDC, x1, y1, NULL);
+					LineTo(hdcM->hDC, x2, y3);
+					MoveToEx(hdcM->hDC, x2, y2, NULL);
+					LineTo(hdcM->hDC, x3, y2);
+				}break;
+				case 7:		//最終フレームまで選択
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 					int x1 = pos1x + 4;
@@ -2909,7 +2927,7 @@ static void s_dummyfunc();
 					MoveToEx(hdcM->hDC, x2, y1, NULL);
 					LineTo(hdcM->hDC, x2, y2);
 				}break;
-				case 7:		//bt reset event設定
+				case 8:		//bt reset event設定
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 					int x1 = pos1x + 4;
@@ -2919,7 +2937,7 @@ static void s_dummyfunc();
 					MoveToEx(hdcM->hDC, x1, y1, NULL);
 					LineTo(hdcM->hDC, x2, y1);
 				}break;
-				case 8:		//prev edit range
+				case 9:		//prev edit range
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 					int x1 = pos1x + 4;
@@ -2938,7 +2956,7 @@ static void s_dummyfunc();
 					LineTo(hdcM->hDC, x2, y4);
 					LineTo(hdcM->hDC, x3, y3);
 				}break;
-				case 9:		//next edit range
+				case 10:		//next edit range
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 					int x1 = pos1x + 4;
@@ -2957,7 +2975,7 @@ static void s_dummyfunc();
 					LineTo(hdcM->hDC, x2, y3);
 					LineTo(hdcM->hDC, x3, y4);
 				}break;
-				case 10:		//plusdisp
+				case 11:		//plusdisp
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 					int x1 = pos1x + 5;
@@ -2979,7 +2997,7 @@ static void s_dummyfunc();
 
 					Ellipse(hdcM->hDC, x4, y4, x5, y5);
 				}break;
-				case 11:		//minusdisp
+				case 12:		//minusdisp
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 					int x1 = pos1x + 5;
@@ -2999,7 +3017,7 @@ static void s_dummyfunc();
 
 					Ellipse(hdcM->hDC, x4, y4, x5, y5);
 				}break;
-				case 12:		//plusoffsetdisp
+				case 13:		//plusoffsetdisp
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 					int x1 = pos1x + 4;
@@ -3016,7 +3034,7 @@ static void s_dummyfunc();
 					MoveToEx(hdcM->hDC, x2, y1, NULL);
 					LineTo(hdcM->hDC, x2, y3);
 				}break;
-				case 13:		//minusoffsetdisp
+				case 14:		//minusoffsetdisp
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 					int x1 = pos1x + 4;
@@ -3033,7 +3051,7 @@ static void s_dummyfunc();
 					MoveToEx(hdcM->hDC, x2, y1, NULL);
 					LineTo(hdcM->hDC, x2, y3);
 				}break;
-				case 14:		//resetdisp
+				case 15:		//resetdisp
 				{
 					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 					int x1 = pos1x + 4;
@@ -3092,7 +3110,7 @@ static void s_dummyfunc();
 		void onLButtonDown(const MouseEvent& e){
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<15; i++){
+			for(int i=0; i<16; i++){
 
 				//まずボタンが押されたかを確認
 				if( BOX_POS_X+BOX_WIDTH*i<=e.localX && e.localX<BOX_POS_X+BOX_WIDTH*(i+1) ){
@@ -3109,15 +3127,16 @@ static void s_dummyfunc();
 				case 3: btnPrm= &stop; break;
 				case 4: btnPrm= &frontPlay; break;
 				case 5: btnPrm= &frontStep; break;
-				case 6: btnPrm = &selecttolast; break;
-				case 7: btnPrm = &btreset; break;
-				case 8: btnPrm = &prevrange; break;
-				case 9: btnPrm = &nextrange; break;
-				case 10: btnPrm = &plusdisp; break;
-				case 11: btnPrm = &minusdisp; break;
-				case 12: btnPrm = &plusoffsetdisp; break;
-				case 13: btnPrm = &minusoffsetdisp; break;
-				case 14: btnPrm = &resetdisp; break;
+				case 6: btnPrm = &onefps; break;
+				case 7: btnPrm = &selecttolast; break;
+				case 8: btnPrm = &btreset; break;
+				case 9: btnPrm = &prevrange; break;
+				case 10: btnPrm = &nextrange; break;
+				case 11: btnPrm = &plusdisp; break;
+				case 12: btnPrm = &minusdisp; break;
+				case 13: btnPrm = &plusoffsetdisp; break;
+				case 14: btnPrm = &minusoffsetdisp; break;
+				case 15: btnPrm = &resetdisp; break;
 				}
 
 				//ボタンリスナーを呼ぶ
@@ -3139,15 +3158,16 @@ static void s_dummyfunc();
 				case 3: _beginthread(drawStopButtonUpThread,0,(void *)this); break;
 				case 4: _beginthread(drawFrontPlayButtonUpThread,0,(void *)this); break;
 				case 5: _beginthread(drawFrontStepButtonUpThread,0,(void *)this); break;
-				case 6: _beginthread(drawSelectToLastButtonUpThread, 0, (void *)this); break;
-				case 7: _beginthread(drawBtResetButtonUpThread, 0, (void *)this); break;
-				case 8: _beginthread(drawPrevRangeButtonUpThread, 0, (void *)this); break;
-				case 9: _beginthread(drawNextRangeButtonUpThread, 0, (void *)this); break;
-				case 10: _beginthread(drawPlusDispButtonUpThread, 0, (void*)this); break;
-				case 11: _beginthread(drawMinusDispButtonUpThread, 0, (void*)this); break;
-				case 12: _beginthread(drawPlusOffsetDispButtonUpThread, 0, (void*)this); break;
-				case 13: _beginthread(drawMinusOffsetDispButtonUpThread, 0, (void*)this); break;
-				case 14: _beginthread(drawResetDispButtonUpThread, 0, (void*)this); break;
+				case 6: _beginthread(drawOneFpsButtonUpThread, 0, (void*)this); break;
+				case 7: _beginthread(drawSelectToLastButtonUpThread, 0, (void *)this); break;
+				case 8: _beginthread(drawBtResetButtonUpThread, 0, (void *)this); break;
+				case 9: _beginthread(drawPrevRangeButtonUpThread, 0, (void *)this); break;
+				case 10: _beginthread(drawNextRangeButtonUpThread, 0, (void *)this); break;
+				case 11: _beginthread(drawPlusDispButtonUpThread, 0, (void*)this); break;
+				case 12: _beginthread(drawMinusDispButtonUpThread, 0, (void*)this); break;
+				case 13: _beginthread(drawPlusOffsetDispButtonUpThread, 0, (void*)this); break;
+				case 14: _beginthread(drawMinusOffsetDispButtonUpThread, 0, (void*)this); break;
+				case 15: _beginthread(drawResetDispButtonUpThread, 0, (void*)this); break;
 				}
 
 				return;
@@ -3173,6 +3193,9 @@ static void s_dummyfunc();
 		}
 		void setBackStepButtonListener(std::function<void()> listener){
 			backStep.buttonListener= listener;
+		}
+		void setOneFpsButtonListener(std::function<void()> listener) {
+			onefps.buttonListener = listener;
 		}
 		void setSelectToLastButtonListener(std::function<void()> listener){
 			selecttolast.buttonListener = listener;
@@ -3223,7 +3246,7 @@ static void s_dummyfunc();
 
 			bool buttonPush;
 			std::function<void()> buttonListener;
-		}frontPlay,backPlay,stop,reset,frontStep,backStep,selecttolast,btreset,prevrange,nextrange,plusdisp,minusdisp,plusoffsetdisp,minusoffsetdisp,resetdisp;
+		}frontPlay,backPlay,stop,reset,frontStep,backStep,onefps,selecttolast,btreset,prevrange,nextrange,plusdisp,minusdisp,plusoffsetdisp,minusoffsetdisp,resetdisp;
 		
 
 		int SIZE_Y;
@@ -3272,6 +3295,13 @@ static void s_dummyfunc();
 
 			OWP_PlayerButton *thisClass= (OWP_PlayerButton*)pParam;
 			thisClass->backStep.buttonPush=false;
+			thisClass->callRewrite();
+		}
+		static void drawOneFpsButtonUpThread(LPVOID	pParam) {
+			Sleep(100);
+
+			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+			thisClass->onefps.buttonPush = false;
 			thisClass->callRewrite();
 		}
 		static void drawSelectToLastButtonUpThread(LPVOID	pParam){
