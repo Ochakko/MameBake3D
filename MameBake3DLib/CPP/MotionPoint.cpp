@@ -228,6 +228,10 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 
 int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 {
+	//ChaVector3 svec, tvec;
+	//ChaMatrix rmat;
+	//GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+
 	if (boneptr){
 		ChaVector3 aftpos;
 		ChaVector3TransformCoord(&aftpos, &boneptr->GetJointFPos(), &srcmat);
@@ -239,14 +243,18 @@ int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 		ChaVector3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
 		m_firstframetra = aftpos - srcbonepos;
 		//m_firstframetra = aftpos;
+
+		//m_tra = tvec - boneptr->GetJointFPos();
+		//ChaVector3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
+		//m_firstframetra = tvec - srcbonepos;
 	}
 	else{
 		m_tra = ChaVector3(0.0f, 0.0f, 0.0f);
 		m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
-
 	m_q.RotationMatrix(srcmat);
+
 
 	return 0;
 }

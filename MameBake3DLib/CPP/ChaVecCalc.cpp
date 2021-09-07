@@ -506,6 +506,53 @@ void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, Cha
 	*tmatptr = tmat;
 }
 
+ChaMatrix GetS0RTMatrix(ChaMatrix srcmat) 
+{
+	//Šg‘åk¬‚ğ‰Šú‰»‚µ‚½RTs—ñ‚ğ•Ô‚·
+	ChaMatrix retm;
+	ChaVector3 svec, tvec;
+	ChaMatrix rmat, tmat;
+	GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+
+	retm = srcmat;
+
+	if (svec.x != 0.0f) {
+		retm._11 /= svec.x;
+		retm._12 /= svec.x;
+		retm._13 /= svec.x;
+	}
+	else {
+		retm._11 = 1.0f;
+		retm._12 = 0.0f;
+		retm._13 = 0.0f;
+	}
+
+	if (svec.y != 0.0f) {
+		retm._21 /= svec.y;
+		retm._22 /= svec.y;
+		retm._23 /= svec.y;
+	}
+	else {
+		retm._21 = 0.0f;
+		retm._22 = 1.0f;
+		retm._23 = 0.0f;
+	}
+
+	if (svec.z != 0.0f) {
+		retm._31 /= svec.z;
+		retm._32 /= svec.z;
+		retm._33 /= svec.z;
+	}
+	else {
+		retm._31 = 0.0f;
+		retm._32 = 0.0f;
+		retm._33 = 1.0f;
+	}
+
+	return retm;
+}
+
+
 
 
 ChaMatrix TransZeroMat(ChaMatrix srcmat)

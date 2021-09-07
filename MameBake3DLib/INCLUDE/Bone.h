@@ -244,6 +244,9 @@ public:
  */
 	CMotionPoint* AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra );
 
+
+	CMotionPoint* AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale);
+
 /**
  * @fn
  * RotBoneQReq
@@ -369,6 +372,7 @@ public:
 	int SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
 	ChaMatrix GetWorldMat(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalTraAnim(int srcmotid, double srcframe);
+	ChaVector3 CalcLocalScaleAnim(int srcmotid, double srcframe);
 	ChaMatrix CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);
 	ChaMatrix CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe);
 	ChaMatrix CalcSymXMat(int srcmotid, double srcframe);

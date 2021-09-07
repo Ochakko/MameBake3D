@@ -435,6 +435,11 @@ public:
 	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta);
 
 
+	int FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 scalevec);
+
+	int FKBoneScaleAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float scaleval);
+
+
 /**
  * @fn
  * CollisionNoBoneObj_Mouse

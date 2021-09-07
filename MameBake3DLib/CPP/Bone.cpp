@@ -1722,6 +1722,55 @@ CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double sr
 }
 
 
+CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale)
+{
+	int existflag = 0;
+	CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
+	if (!curmp || !existflag) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
+	if (parmp) {
+		ChaMatrix invbefpar;
+		ChaMatrixInverse(&invbefpar, NULL, &parmp->GetBefWorldMat());
+		ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		g_wmatDirectSetFlag = true;
+		SetWorldMat(0, srcmotid, srcframe, tmpmat);
+		g_wmatDirectSetFlag = false;
+	}
+	else {
+		ChaVector3 curpos = GetJointFPos();
+		ChaMatrix beftramat;
+		ChaMatrixTranslation(&beftramat, -curpos.x, -curpos.y, -curpos.z);
+		ChaMatrix afttramat;
+		ChaMatrixTranslation(&afttramat, curpos.x, curpos.y, curpos.z);
+		ChaMatrix scalemat;
+		ChaMatrixScaling(&scalemat, srcscale.x, srcscale.y, srcscale.z);
+		ChaMatrix tramat;
+		tramat = beftramat * scalemat * afttramat;
+		//ChaMatrix tmpmat = curmp->GetWorldMat() * tramat;
+		ChaMatrix tmpmat = tramat * curmp->GetWorldMat();
+		g_wmatDirectSetFlag = true;
+		SetWorldMat(0, srcmotid, srcframe, tmpmat);
+		g_wmatDirectSetFlag = false;
+	}
+
+	curmp->SetAbsMat(curmp->GetWorldMat());
+
+	if (m_child) {
+		m_child->AddBoneScaleReq(curmp, srcmotid, srcframe, srcscale);
+	}
+	if (m_brother && parmp) {
+		m_brother->AddBoneScaleReq(parmp, srcmotid, srcframe, srcscale);
+	}
+
+	return curmp;
+}
+
+
 CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe )
 {
 	//src : srcmp srcparmp
@@ -1774,6 +1823,8 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 		return 0;
 	}
 	
+	ChaMatrix smat, rmat, tmat;
+	GetSRTMatrix2(curmp->GetWorldMat(), &smat, &rmat, &tmat);
 
 	if (parmp){
 		//再帰から呼び出し
@@ -1810,12 +1861,22 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 			if (setmatflag == 0){
 				ChaVector3 rotcenter;// = m_childworld;
 				ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
-
 				ChaMatrix befrot, aftrot;
 				ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 				ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 				ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-				ChaMatrix tmpmat = curmp->GetWorldMat() * rotmat * tramat;
+
+				ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
+				ChaVector3 tmppos;
+				ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &tmpmat0);
+				ChaVector3 diffvec;
+				diffvec = rotcenter - tmppos;
+				ChaMatrix tmptramat;
+				ChaMatrixIdentity(&tmptramat);
+				ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+				ChaMatrix tmpmat;
+				tmpmat = tmpmat0 * tmptramat * tramat;
+																  
 				//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
 				SetWorldMat(0, srcmotid, srcframe, tmpmat);
 				if (bvhbone){
@@ -1835,18 +1896,33 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 		else{
 			ChaVector3 rotcenter;// = m_childworld;
 			ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
-
 			ChaMatrix befrot, aftrot;
 			ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 			ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 			ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-			ChaMatrix tmpmat = curmp->GetWorldMat() * rotmat * tramat;
+			//ChaMatrix tmpmat = curmp->GetWorldMat() * rotmat * tramat;
+			//ChaMatrix tmpmat = GetS0RTMatrix(curmp->GetWorldMat()) * rotmat * tramat;
+
+			ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
+			ChaVector3 tmppos;
+			ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &tmpmat0);
+			ChaVector3 diffvec;
+			diffvec = rotcenter - tmppos;
+			ChaMatrix tmptramat;
+			ChaMatrixIdentity(&tmptramat);
+			ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+			ChaMatrix tmpmat;
+			tmpmat = tmpmat0 * tmptramat * tramat;
+
+
 			g_wmatDirectSetFlag = true;//!!!!!!!!
 			SetWorldMat(0, srcmotid, srcframe, tmpmat);
 			g_wmatDirectSetFlag = false;//!!!!!!!
 			if (bvhbone){
 				bvhbone->SetTmpMat(tmpmat);
 			}
+
+
 		}
 	}
 
@@ -2536,8 +2612,11 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		selm._43 = aftjpos.z;
 	}
 
+	ChaMatrix retm = GetS0RTMatrix(selm);
+	return retm;
 
-	return selm;
+	//return selm;
+
 }
 
 ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe)
@@ -3508,6 +3587,22 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 		return 0;
 	}
 
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, srcframe);
+	if (!curmp) {
+		_ASSERT(0);
+		return 1;
+	}
+	CMotionPoint* parmp = 0;
+	ChaMatrix parmat;
+	ChaMatrixIdentity(&parmat);
+	if (m_parent) {
+		parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		if (parmp) {
+			parmat = parmp->GetWorldMat();
+		}
+	}
+
 	ChaMatrix axismat;
 	CQuaternion axisq;
 	//int multworld = 0;//local!!!
@@ -3542,29 +3637,45 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 	QuaternionInOrder(srcmotid, srcframe, &newrot);
 
 
+	ChaMatrix curlocalmat;
+	curlocalmat = curmp->GetWorldMat() * ChaMatrixInv(parmat);
+	ChaVector3 curtrapos;
+	ChaVector3TransformCoord(&curtrapos, &(GetJointFPos()), &curlocalmat);
+
+	ChaMatrix cursmat, currmat, curtmat;
+	GetSRTMatrix2(curlocalmat, &cursmat, &currmat, &curtmat);
+
+
 	ChaMatrix newlocalmat, newrotmat, befrotmat, aftrotmat;
 	newrotmat = newrot.MakeRotMatX();
-	ChaMatrixIdentity(&befrotmat);
 	ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
-	ChaMatrixIdentity(&aftrotmat);
 	ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
-	newlocalmat = befrotmat * newrotmat * aftrotmat;
+	//newlocalmat = befrotmat * newrotmat * aftrotmat;
+	newlocalmat = befrotmat * cursmat * newrotmat * aftrotmat;
 
-	if (inittraflag == 0){
-		ChaVector3 traanim = CalcLocalTraAnim(srcmotid, srcframe);
-		ChaMatrix tramat;
-		ChaMatrixIdentity(&tramat);
-		ChaMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
-		newlocalmat = newlocalmat * tramat;
+	if (inittraflag == 0) {
+		ChaVector3 tmppos;
+		ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &newlocalmat);
+		ChaVector3 diffvec;
+		diffvec = curtrapos - tmppos;
+		ChaMatrix tmptramat;
+		ChaMatrixIdentity(&tmptramat);
+		ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+
+		newlocalmat = newlocalmat * tmptramat;
 	}
+
+	//if (inittraflag == 0){
+	//	ChaVector3 traanim = CalcLocalTraAnim(srcmotid, srcframe);
+	//	ChaMatrix tramat;
+	//	ChaMatrixIdentity(&tramat);
+	//	ChaMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
+	//	newlocalmat = newlocalmat * tramat;
+	//}
 
 	ChaMatrix newmat;
 	if (m_parent){
-		CMotionPoint* parmp;
-		parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
 		if (parmp){
-			ChaMatrix parmat;
-			parmat = parmp->GetWorldMat();
 			newmat = newlocalmat * parmat;
 		}
 		else{
@@ -3576,8 +3687,8 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 		newmat = newlocalmat;
 	}
 
-	CMotionPoint* curmp;
-	curmp = GetMotionPoint(srcmotid, srcframe);
+	//CMotionPoint* curmp;
+	//curmp = GetMotionPoint(srcmotid, srcframe);
 	if (curmp){
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newmat);
@@ -4174,6 +4285,11 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	ChaMatrix curmat;
 	curmat = GetWorldMat(srcmotid, srcframe);
 
+	//ChaMatrix smat, rmat, tmat;
+	//GetSRTMatrix2(curmat, &smat, &rmat, &tmat);
+
+
+
 	int rotcenterflag1 = 1;
 	ChaMatrix curlocalrotmat, invcurlocalrotmat;
 	curlocalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
@@ -4187,14 +4303,76 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	}
 
 	ChaMatrix curmvmat;
-	curmvmat = invcurlocalrotmat * curmat * invparmat;
+	//curmvmat = invcurlocalrotmat * curmat * invparmat;
+	curmvmat = invcurlocalrotmat * GetS0RTMatrix(curmat) * invparmat;
 
 	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 curanimtra;
 	ChaVector3TransformCoord(&curanimtra, &zeropos, &curmvmat);
 
+	//ChaMatrix localmat;
+	//localmat = curmat * invparmat;
+	//ChaVector3 svec, tvec;
+	//ChaMatrix rmat;
+	//GetSRTMatrix(localmat, &svec, &rmat, &tvec);
+	//ChaVector3 retvec;
+	//retvec = tvec - GetJointFPos();
+	//return retvec;
+
+	//ChaVector3 curjointpos;
+	//ChaVector3TransformCoord(&curjointpos, &(GetJointFPos()), &curmat);
+	//ChaVector3 curanimtra;
+	//curanimtra = tvec - curjointpos;
 	return curanimtra;
+	
+	//return tvec;
+
 }
+
+ChaVector3 CBone::CalcLocalScaleAnim(int srcmotid, double srcframe)
+{
+	ChaVector3 svec, tvec;
+	ChaMatrix rmat;
+	ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
+
+	CMotionPoint* pcurmp = 0;
+	CMotionPoint* pparmp = 0;
+	pcurmp = GetMotionPoint(srcmotid, srcframe);
+	if (m_parent) {
+		if (pcurmp) {
+			pparmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+			if (pparmp) {
+				CMotionPoint setmp;
+				ChaMatrix invpar = pparmp->GetInvWorldMat();
+				ChaMatrix localmat = pcurmp->GetWorldMat() * invpar;
+
+				GetSRTMatrix(localmat, &svec, &rmat, &tvec);
+				return svec;
+			}
+			else {
+				_ASSERT(0);
+				return iniscale;
+			}
+		}
+		else {
+			return iniscale;
+		}
+	}
+	else {
+		if (pcurmp) {
+			CMotionPoint setmp;
+			ChaMatrix localmat = pcurmp->GetWorldMat();
+
+			GetSRTMatrix(localmat, &svec, &rmat, &tvec);
+			return svec;
+
+		}
+		else {
+			return iniscale;
+		}
+	}
+}
+
 
 
 int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)

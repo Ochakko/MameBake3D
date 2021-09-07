@@ -1370,6 +1370,9 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_BRUSH_MIRROR_V			70
 #define IDC_BRUSH_MIRROR_V_DIV2		71
 
+#define IDC_IK_SC					72
+
+
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -1590,6 +1593,9 @@ static void refreshEulerGraph();
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( ChaVector3 diffvec );
 static int AddBoneTraPhysics(ChaVector3 diffvec);
+
+static int AddBoneScale(int kind, float srctra);
+static int AddBoneScale2(ChaVector3 diffvec);
 
 static int DispMotionWindow();
 static int DispToolWindow();
@@ -6401,6 +6407,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					s_ikkind = 1;
 					refreshEulerGraph();
 					break;
+				case IDC_IK_SC:
+					s_ikkind = 2;
+					refreshEulerGraph();
+					break;
 				//case IDC_IK_LIGHT:
 				//	s_ikkind = 2;
 				//	s_displightarrow = true;
@@ -9087,7 +9097,7 @@ int UpdateEditedEuler()
 			//int check = (int)s_parentcheck->getValue();
 			//if (check == 1) {
 				CBone* parentbone = curbone->GetParent();
-				if ((s_ikkind != 1) && parentbone) {//!!!!!!!!!!!!
+				if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
 					curbone = parentbone;
 				}
 			//}
@@ -9140,13 +9150,16 @@ int UpdateEditedEuler()
 
 				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
-					if (s_ikkind != 1) {//移動以外
+					if (s_ikkind == 0) {//回転
 						cureul = curmp->GetLocalEul();
 						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 						//befeul = cureul;//!!!!!!!
 					}
-					else {//移動
+					else if(s_ikkind == 1){//移動
 						cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+					}
+					else if (s_ikkind == 2) {//スケール
+						cureul = curbone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
 					}
 				}
 				else {
@@ -9277,7 +9290,7 @@ void refreshEulerGraph()
 					//int check = s_parentcheck->getValue();
 					//if (check == 1) {
 						CBone* parentbone = curbone->GetParent();
-						if ((s_ikkind != 1) && parentbone) {//!!!!!!!!!!!!
+						if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
 							curbone = parentbone;
 						}
 					//}
@@ -9300,13 +9313,16 @@ void refreshEulerGraph()
 
 						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
-							if (s_ikkind != 1) {//移動以外
+							if (s_ikkind == 0) {//回転
 								cureul = curmp->GetLocalEul();
 								//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 								//befeul = cureul;//!!!!!!!
 							}
-							else {//移動
+							else if (s_ikkind == 1) {//移動
 								cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+							}
+							else if (s_ikkind == 2) {//スケール
+								cureul = curbone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
 							}
 						}
 						else {
@@ -9658,6 +9674,103 @@ int AddBoneTra( int kind, float srctra )
 
 	return 0;
 }
+
+int AddBoneScale2(ChaVector3 diffvec)
+{
+	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()) {
+		return 0;
+	}
+
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (!curbone) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	float scaleval;
+
+	if (fabs(diffvec.x) >= fabs(diffvec.y)) {
+		if (fabs(diffvec.x) >= fabs(diffvec.z)) {
+			//x最大
+			if (diffvec.x >= 0.0) {
+				scaleval = 1.1f;
+			}
+			else {
+				scaleval = 0.9f;
+			}
+		}
+		else {
+			//z最大
+			if (diffvec.z >= 0.0) {
+				scaleval = 1.1f;
+			}
+			else {
+				scaleval = 0.9f;
+			}
+		}
+	}
+	else {
+		if (fabs(diffvec.y) >= fabs(diffvec.z)) {
+			//y最大
+			if (diffvec.y >= 0.0) {
+				scaleval = 1.1f;
+			}
+			else {
+				scaleval = 0.9f;
+			}
+		}
+		else {
+			//z最大
+			if (diffvec.z >= 0.0) {
+				scaleval = 1.1f;
+			}
+			else {
+				scaleval = 0.9f;
+			}
+		}
+	}
+
+	ChaVector3 scalevec;
+	scalevec.x = scaleval;
+	scalevec.y = scaleval;
+	scalevec.z = scaleval;
+
+	s_model->FKBoneScale(0, &s_editrange, s_curboneno, scalevec);
+
+	s_editmotionflag = s_curboneno;
+
+	return 0;
+}
+
+int AddBoneScale(int kind, float srcscale)
+{
+	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()) {
+		return 0;
+	}
+
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (!curbone) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	float scaleval;
+	if (srcscale >= 0.0) {
+		scaleval = 1.1f;
+	}
+	else {
+		scaleval = 0.9f;
+	}
+
+	s_model->FKBoneScaleAxis(0, &s_editrange, s_curboneno, kind, scaleval);
+
+
+	s_editmotionflag = s_curboneno;
+
+	return 0;
+}
+
 
 int DispMotionWindow()
 {
@@ -14945,7 +15058,7 @@ int SetSelectState()
 		s_select->SetDispFlag( "ringX", 1 );
 		s_select->SetDispFlag( "ringY", 1 );
 		s_select->SetDispFlag( "ringZ", 1 );
-	}else if( s_ikkind == 1 ){
+	}else if( (s_ikkind == 1) || (s_ikkind == 2) ){
 		s_select->SetDispFlag( "ringX", 0 );
 		s_select->SetDispFlag( "ringY", 0 );
 		s_select->SetDispFlag( "ringZ", 0 );
@@ -17998,6 +18111,7 @@ int CreateUtDialog()
 	pComboBox1->RemoveAllItems();
 	pComboBox1->AddItem(L"IKRot", ULongToPtr(IDC_IK_ROT));
 	pComboBox1->AddItem(L"IKMove", ULongToPtr(IDC_IK_MV));
+	pComboBox1->AddItem(L"IKScale", ULongToPtr(IDC_IK_SC));
 	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
 	//pComboBox1->AddItem(L"Rigid", ULongToPtr(IDC_BT_RIGID));
 	//pComboBox1->AddItem(L"Impulse", ULongToPtr(IDC_BT_IMP));
@@ -22348,7 +22462,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.12 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.13 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -22595,6 +22709,12 @@ int OnMouseMoveFunc()
 							AddBoneTra2(diffvec);
 							s_editmotionflag = s_curboneno;
 						}
+						else if (s_ikkind == 2) {
+							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+							AddBoneScale2(diffvec);
+							s_editmotionflag = s_curboneno;
+						}
+
 					}
 					else {
 						if (s_customrigbone) {
@@ -22648,8 +22768,12 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
-					else {
+					else if(s_ikkind == 1){
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						s_editmotionflag = s_curboneno;
+					}
+					else if (s_ikkind == 2) {
+						AddBoneScale(s_pickinfo.buttonflag - PICK_X, deltax);
 						s_editmotionflag = s_curboneno;
 					}
 					s_ikcnt++;
@@ -22685,8 +22809,12 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
-					else {
+					else if(s_ikkind == 1){
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						s_editmotionflag = s_curboneno;
+					}
+					else if (s_ikkind == 2) {
+						AddBoneScale(s_pickinfo.buttonflag - PICK_X, deltax);
 						s_editmotionflag = s_curboneno;
 					}
 					s_ikcnt++;
@@ -29639,7 +29767,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.12 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.13 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

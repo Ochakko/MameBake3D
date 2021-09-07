@@ -7164,6 +7164,10 @@ static void s_dummyfunc();
 							swprintf_s(strmeasure, 64, L"LocalPos(curjoint)");
 							displabel = true;
 						}
+						else if (parent->ikkind == 2) {
+							swprintf_s(strmeasure, 64, L"LocalScale(curjoint)");
+							displabel = true;
+						}
 						if (displabel) {
 							TextOut(hdcM->hDC,
 								ex0, ey0,

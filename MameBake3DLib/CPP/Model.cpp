@@ -7833,7 +7833,18 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 					ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 					ChaMatrix rotmat1 = befrot * rotq1.MakeRotMatX() * aftrot;
-					ChaMatrix newbtmat1 = parentbone->GetBtMat() * rotmat1;// *tramat;
+					//ChaMatrix newbtmat1 = parentbone->GetBtMat() * rotmat1;// *tramat;
+
+					ChaMatrix tmpmat0 = parentbone->GetBtMat() * rotmat1;// *tramat;
+					ChaVector3 tmppos;
+					ChaVector3TransformCoord(&tmppos, &(parentbone->GetJointFPos()), &tmpmat0);
+					ChaVector3 diffvec;
+					diffvec = rotcenter - tmppos;
+					ChaMatrix tmptramat;
+					ChaMatrixIdentity(&tmptramat);
+					ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+					ChaMatrix newbtmat1 = tmpmat0 * tmptramat;// *tramat;
+
 
 					ChaVector3 childworld1;
 					ChaVector3TransformCoord(&childworld1, &(childbone->GetJointFPos()), &newbtmat1);
@@ -8053,7 +8064,19 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 			ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 			ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 			ChaMatrix rotmat1 = befrot * rotq.MakeRotMatX() * aftrot;
-			ChaMatrix newbtmat1 = parentbone->GetBtMat() * rotmat1;// *tramat;
+			
+			//ChaMatrix newbtmat1 = parentbone->GetBtMat() * rotmat1;// *tramat;
+
+			ChaMatrix tmpmat0 = parentbone->GetBtMat() * rotmat1;// *tramat;
+			ChaVector3 tmppos;
+			ChaVector3TransformCoord(&tmppos, &(parentbone->GetJointFPos()), &tmpmat0);
+			ChaVector3 diffvec;
+			diffvec = rotcenter - tmppos;
+			ChaMatrix tmptramat;
+			ChaMatrixIdentity(&tmptramat);
+			ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+			ChaMatrix newbtmat1 = tmpmat0 * tmptramat;// *tramat;
+
 
 			int onlycheck = 1;
 			int isbonemovable = parentbone->SetWorldMat(1, m_curmotinfo->motid, startframe, newbtmat1, onlycheck);
@@ -9684,6 +9707,206 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 
 	return curbone->GetBoneNo();
 }
+
+
+int CModel::FKBoneScaleAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float scaleval)
+{
+	if ((srcboneno < 0) && !GetTopBone()) {
+		return 0;
+	}
+
+	CBone* curbone = GetBoneByID(srcboneno);
+	if (!curbone) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	//ChaVector3 basevec;
+	//ChaVector3 vecx(1.0f, 0.0f, 0.0f);
+	//ChaVector3 vecy(0.0f, 1.0f, 0.0f);
+	//ChaVector3 vecz(0.0f, 0.0f, 1.0f);
+
+	//int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//ChaMatrix selectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
+
+	//if (axiskind == 0) {
+	//	ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
+	//}
+	//else if (axiskind == 1) {
+	//	ChaVector3TransformCoord(&basevec, &vecy, &selectmat);
+	//}
+	//else if (axiskind == 2) {
+	//	ChaVector3TransformCoord(&basevec, &vecz, &selectmat);
+	//}
+	//else {
+	//	_ASSERT(0);
+	//	ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
+	//}
+
+	//ChaVector3Normalize(&basevec, &basevec);
+
+	//ChaVector3 addtra;
+	//addtra = basevec * delta;
+
+	ChaVector3 scalevec;
+	if (axiskind == 0) {
+		scalevec.x = scaleval;
+		scalevec.y = 1.0f;
+		scalevec.z = 1.0f;
+	}
+	else if (axiskind == 1) {
+		scalevec.x = 1.0f;
+		scalevec.y = scaleval;
+		scalevec.z = 1.0f;
+	}
+	else if (axiskind == 2) {
+		scalevec.x = 1.0f;
+		scalevec.y = 1.0f;
+		scalevec.z = scaleval;
+	}
+	else {
+		_ASSERT(0);
+		scalevec.x = scaleval;
+		scalevec.y = 1.0f;
+		scalevec.z = 1.0f;
+	}
+
+	//ChaVector3 basevec;
+	//ChaVector3 vecx(1.0f, 0.0f, 0.0f);
+	//ChaVector3 vecy(0.0f, 1.0f, 0.0f);
+	//ChaVector3 vecz(0.0f, 0.0f, 1.0f);
+	//int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//ChaMatrix selectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
+	//if (axiskind == 0) {
+	//	ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
+	//}
+	//else if (axiskind == 1) {
+	//	ChaVector3TransformCoord(&basevec, &vecy, &selectmat);
+	//}
+	//else if (axiskind == 2) {
+	//	ChaVector3TransformCoord(&basevec, &vecz, &selectmat);
+	//}
+	//else {
+	//	_ASSERT(0);
+	//	ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
+	//}
+	//ChaVector3Normalize(&basevec, &basevec);
+	//ChaVector3 scalevec;
+	//scalevec = basevec * scaleval;
+	//if (fabs(scalevec.x) <= 0.00001f) {
+	//	scalevec.x = 1.0f;
+	//}
+	//if (fabs(scalevec.y) <= 0.00001f) {
+	//	scalevec.y = 1.0f;
+	//}
+	//if (fabs(scalevec.z) <= 0.00001f) {
+	//	scalevec.z = 1.0f;
+	//}
+
+	FKBoneScale(0, erptr, srcboneno, scalevec);
+
+	return 0;
+}
+
+int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 scalevec)
+{
+
+	if (srcboneno < 0) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CBone* firstbone = m_bonelist[srcboneno];
+	if (!firstbone) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	//モーションブラシの0から1のウェイトを掛ける準備
+	ChaVector3 scalediffvec;
+	scalediffvec.x = scalevec.x - 1.0f;
+	scalediffvec.y = scalevec.y - 1.0f;
+	scalediffvec.z = scalevec.z - 1.0f;
+
+
+
+	CBone* curbone = firstbone;
+	SetBefEditMatFK(erptr, curbone);
+
+	CBone* lastpar = firstbone->GetParent();
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+	curbone = firstbone;
+	double firstframe = 0.0;
+
+	if (keynum >= 2) {
+		float changerate = 1.0f / (float)(endframe - startframe + 1);
+
+		int keyno = 0;
+		double curframe;
+		for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
+			double changerate;
+			//if( curframe <= applyframe ){
+			//	changerate = 1.0 / (applyframe - startframe + 1);
+			//}else{
+			//	changerate = 1.0 / (endframe - applyframe + 1);
+			//}
+			changerate = (double)(*(g_motionbrush_value + (int)curframe));
+
+
+			if (keyno == 0) {
+				firstframe = curframe;
+			}
+			if (g_absikflag == 0) {
+				if (g_slerpoffflag == 0) {
+					double currate2;
+					//if( curframe <= applyframe ){
+					//	currate2 = changerate * (curframe - startframe + 1);
+					//}else{
+					//	currate2 = changerate * (endframe - curframe + 1);
+					//}
+					//ChaVector3 curtra;
+					//curtra = addtra * (float)currate2;
+					ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
+					ChaVector3 curscale;
+					curscale = iniscale + scalediffvec * (float)changerate;
+
+					//currate2 = changerate * keyno;
+					//ChaVector3 curtra;
+					//curtra = (1.0 - currate2) * addtra;
+
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, curframe, curscale);
+				}
+				else {
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, curframe, scalevec);
+				}
+			}
+			else {
+				if (keyno == 0) {
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, curframe, scalevec);
+				}
+				else {
+					curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+				}
+			}
+			keyno++;
+
+		}
+	}
+	else {
+		curbone->AddBoneScaleReq(0, m_curmotinfo->motid, startframe, scalevec);
+	}
+
+
+	return curbone->GetBoneNo();
+}
+
+
+
 
 /*
 int CModel::ImpulseBoneRagdoll(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra)
