@@ -5011,8 +5011,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 3 + MENUOFFSET_INITMPFROMTOOL))) {
-			int subid = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) / 3;
-			int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) - subid * 3;
+			int subid = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) / 4;//4 * 3 / 4 --> 0, 1, 2
+			int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) - subid * 4;//0, 1, 2, 3
 			MOTINFO* mi = s_model->GetCurMotInfo();
 			if (mi) {
 				s_copymotvec.clear();
@@ -20699,12 +20699,12 @@ int InitMpFromTool()
 	int subsubnum = 3;
 	int setmenuid;
 	
-	WCHAR strinitmpsub[3][20] = { L"AllBones", L"OneSelectedBone", L"SelectedAndChildren" };
-	WCHAR strinitmpsubsub[3][20] = { L"InitRotAndPos", L"InitRot", L"InitPos" };
+	WCHAR strinitmpsub[3][32] = { L"AllBones", L"OneSelectedBone", L"SelectedAndChildren" };
+	WCHAR strinitmpsubsub[4][32] = { L"InitRotAndPosAndScale", L"InitRot", L"InitPos", L"InitScale" };
 
 	int subno;
 	for (subno = 0; subno < 3; subno++){
-		setmenuid = ID_RMENU_0 + subno * 3 + MENUOFFSET_INITMPFROMTOOL;
+		setmenuid = ID_RMENU_0 + subno * 4 + MENUOFFSET_INITMPFROMTOOL;
 
 		rsubmenu[subno] = new CRMenuMain(IDR_RMENU);
 		if (!rsubmenu[subno]){
@@ -20724,7 +20724,7 @@ int InitMpFromTool()
 		}
 
 		int subsubno;
-		for (subsubno = 0; subsubno < 3; subsubno++){
+		for (subsubno = 0; subsubno < 4; subsubno++){
 			int subsubid = setmenuid + subsubno;
 			AppendMenu(subsubmenu, MF_STRING, subsubid, strinitmpsubsub[subsubno]);
 
@@ -20803,7 +20803,8 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
-				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe);
+				int initscaleflag1 = 1;//!!!!!!!
+				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
 			}
 			else if (initmode == INITMP_ROT){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -20820,6 +20821,17 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
 				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe);
+			}
+			else if (initmode == INITMP_SCALE) {
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+				int paraxsiflag1 = 1;
+				int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+
+				int inittraflag1 = 0;
+				int setchildflag1 = 1;
+				int initscaleflag1 = 1;//!!!!!!!
+				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
 			}
 		}
 	}

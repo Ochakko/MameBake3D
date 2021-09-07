@@ -3580,7 +3580,7 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 }
 */
 
-int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag)//initscaleflag = 1 : default
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 	if (!m_child){
@@ -3651,8 +3651,13 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 	ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
 	ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
 	//newlocalmat = befrotmat * newrotmat * aftrotmat;
-	newlocalmat = befrotmat * cursmat * newrotmat * aftrotmat;
 
+	if (initscaleflag == 0) {
+		newlocalmat = befrotmat * cursmat * newrotmat * aftrotmat;
+	}
+	else {
+		newlocalmat = befrotmat * newrotmat * aftrotmat;
+	}
 	if (inittraflag == 0) {
 		ChaVector3 tmppos;
 		ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &newlocalmat);

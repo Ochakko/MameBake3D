@@ -156,6 +156,7 @@ static FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone);
 
 static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
 static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
 static int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 static int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 
@@ -1583,6 +1584,11 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
+			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
+
 		}
 	}
 
@@ -2835,6 +2841,79 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 	}
 	return 0;
 }
+
+
+static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+{
+	FbxTime lTime;
+	int lKeyIndex = 0;
+	double timescale = 30.0;
+
+
+	CBone* curbone = fbxbone->GetBone();
+	if (curbone) {
+		FbxNode* lSkel;
+		lSkel = fbxbone->GetSkelNode();
+		if (!lSkel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		FbxAnimCurve* lCurve;
+		int frameno;
+
+		const char* strChannel;
+		switch (axiskind) {
+		case AXIS_X:
+			strChannel = FBXSDK_CURVENODE_COMPONENT_X;
+			break;
+		case AXIS_Y:
+			strChannel = FBXSDK_CURVENODE_COMPONENT_Y;
+			break;
+		case AXIS_Z:
+			strChannel = FBXSDK_CURVENODE_COMPONENT_Z;
+			break;
+		default:
+			_ASSERT(0);
+			strChannel = FBXSDK_CURVENODE_COMPONENT_X;
+			break;
+		}
+
+
+		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+		lCurve = lSkel->LclScaling.GetCurve(lAnimLayer, strChannel, true);
+		lCurve->KeyModifyBegin();
+		for (frameno = 0; frameno <= maxframe; frameno++) {
+			//cureul = curbone->CalcFBXEul(curmotid, frameno, &befeul);
+			cureul = curbone->CalcLocalScaleAnim(curmotid, frameno);
+			lTime.SetSecondDouble((double)frameno / timescale);
+			lKeyIndex = lCurve->KeyAdd(lTime);
+
+			switch (axiskind) {
+			case AXIS_X:
+				lCurve->KeySetValue(lKeyIndex, cureul.x);
+				break;
+			case AXIS_Y:
+				lCurve->KeySetValue(lKeyIndex, cureul.y);
+				break;
+			case AXIS_Z:
+				lCurve->KeySetValue(lKeyIndex, cureul.z);
+				break;
+			default:
+				_ASSERT(0);
+				lCurve->KeySetValue(lKeyIndex, cureul.x);
+				break;
+			}
+			lCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
+			befeul = cureul;
+		}
+		lCurve->KeyModifyEnd();
+	}
+	return 0;
+}
+
 
 int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag)
 {
