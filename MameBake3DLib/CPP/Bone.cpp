@@ -4154,6 +4154,8 @@ ChaMatrix CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 
 	ChaMatrix directsetmat;
 	ChaMatrixIdentity(&directsetmat);
+	//ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
+	//symscale = CalcLocalScaleAnim(srcmotid, srcframe);
 
 	int rotcenterflag1 = 1;
 	if (GetParent()){
@@ -4174,7 +4176,8 @@ ChaMatrix CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 	}
 
 ////tra anim
-	ChaVector3 curanimtra = CalcLocalTraAnim(srcmotid, srcframe);
+	//ChaVector3 curanimtra = CalcLocalTraAnim(srcmotid, srcframe);
+	ChaVector3 curanimtra = CalcLocalSymTraAnim(srcmotid, srcframe);//traanim‚àsym‘Î‰ž
 
 	if (GetParent()){
 		directsetmat._41 += -curanimtra.x;//inv signe
@@ -4194,6 +4197,17 @@ ChaMatrix CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 			directsetmat._43 += curanimtra.z;
 		}
 	}
+
+
+	//directsetmat._11 *= symscale.x;
+	//directsetmat._12 *= symscale.x;
+	//directsetmat._13 *= symscale.x;
+	//directsetmat._21 *= symscale.y;
+	//directsetmat._22 *= symscale.y;
+	//directsetmat._23 *= symscale.y;
+	//directsetmat._31 *= symscale.z;
+	//directsetmat._32 *= symscale.z;
+	//directsetmat._33 *= symscale.z;
 
 	return directsetmat;
 }
@@ -4258,6 +4272,12 @@ ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcf
 			symbone->CalcLocalInfo(srcmotid, srcframe, &symlocalmp);
 			retmat = symlocalmp.GetQ().CalcSymX2();
 
+			ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
+			symscale = symbone->CalcLocalScaleAnim(srcmotid, srcframe);
+			ChaMatrix symscalemat;
+			ChaMatrixIdentity(&symscalemat);
+			ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+
 			retmat._41 = 0.0f;
 			retmat._42 = 0.0f;
 			retmat._43 = 0.0f;
@@ -4268,21 +4288,95 @@ ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcf
 				ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
 				ChaMatrixIdentity(&aftrotmat);
 				ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
-				retmat = befrotmat * retmat * aftrotmat;
+				retmat = befrotmat * symscalemat * retmat * aftrotmat;
+			}
+			else {
+				retmat = symscalemat * retmat;
 			}
 		}
 		else{
 			retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
+
+			ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
+			symscale = CalcLocalScaleAnim(srcmotid, srcframe);
+			ChaMatrix symscalemat;
+			ChaMatrixIdentity(&symscalemat);
+			ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+
+			if (rotcenterflag == 1) {
+				ChaMatrix befrotmat, aftrotmat;
+				ChaMatrixIdentity(&befrotmat);
+				ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+				ChaMatrixIdentity(&aftrotmat);
+				ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+				retmat = befrotmat * symscalemat * retmat * aftrotmat;
+			}
+			else {
+				retmat = symscalemat * retmat;
+			}
+
 			_ASSERT(0);
 		}
 	}
 	else{
 		retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
+
+		ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
+		symscale = CalcLocalScaleAnim(srcmotid, srcframe);
+		ChaMatrix symscalemat;
+		ChaMatrixIdentity(&symscalemat);
+		ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+
+		if (rotcenterflag == 1) {
+			ChaMatrix befrotmat, aftrotmat;
+			ChaMatrixIdentity(&befrotmat);
+			ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+			ChaMatrixIdentity(&aftrotmat);
+			ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+			retmat = befrotmat * symscalemat * retmat * aftrotmat;
+		}
+		else {
+			retmat = symscalemat * retmat;
+		}
+
 		_ASSERT(0);
 	}
 
 	return retmat;
 }
+
+ChaVector3 CBone::CalcLocalSymScaleVec(int srcmotid, double srcframe)
+{
+	ChaVector3 retscale;
+
+	int symboneno = 0;
+	int existflag = 0;
+	m_parmodel->GetSymBoneNo(GetBoneNo(), &symboneno, &existflag);
+	if (symboneno >= 0) {
+		CBone* symbone = m_parmodel->GetBoneByID(symboneno);
+		_ASSERT(symbone);
+		if (symbone) {
+			//if (symbone == this){
+			//	WCHAR dbgmes[1024];
+			//	swprintf_s(dbgmes, 1024, L"CalcLocalSymRotMat : frame %lf : samebone : this[%s]--sym[%s]", srcframe, GetWBoneName(), symbone->GetWBoneName());
+			//	::MessageBox(NULL, dbgmes, L"check", MB_OK);
+			//}
+			retscale = symbone->CalcLocalScaleAnim(srcmotid, srcframe);
+		}
+		else {
+			retscale = CalcLocalScaleAnim(srcmotid, srcframe);
+			_ASSERT(0);
+		}
+	}
+	else {
+		retscale = CalcLocalScaleAnim(srcmotid, srcframe);
+		_ASSERT(0);
+	}
+
+	return retscale;
+}
+
+
 
 ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 {
@@ -4333,6 +4427,42 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	//return tvec;
 
 }
+
+ChaVector3 CBone::CalcLocalSymTraAnim(int srcmotid, double srcframe)
+{
+
+	ChaVector3 rettra = ChaVector3(0.0f, 0.0f, 0.0);//scale‚ÉÝ’è‚³‚ê‚Ä‚¢‚Ä‚àrotcenter‚ÌˆÊ’u‚É‚È‚é
+
+	//int symboneno = 0;
+	//int existflag = 0;
+	//m_parmodel->GetSymBoneNo(GetBoneNo(), &symboneno, &existflag);
+	//if (symboneno >= 0) {
+	//	CBone* symbone = m_parmodel->GetBoneByID(symboneno);
+	//	_ASSERT(symbone);
+	//	if (symbone) {
+	//		//if (symbone == this){
+	//		//	WCHAR dbgmes[1024];
+	//		//	swprintf_s(dbgmes, 1024, L"CalcLocalSymRotMat : frame %lf : samebone : this[%s]--sym[%s]", srcframe, GetWBoneName(), symbone->GetWBoneName());
+	//		//	::MessageBox(NULL, dbgmes, L"check", MB_OK);
+	//		//}
+	//		rettra = symbone->CalcLocalTraAnim(srcmotid, srcframe);
+	//		rettra.x *= -1.0f;
+	//	}
+	//	else {
+	//		rettra = CalcLocalScaleAnim(srcmotid, srcframe);
+	//		_ASSERT(0);
+	//	}
+	//}
+	//else {
+	//	rettra = CalcLocalScaleAnim(srcmotid, srcframe);
+	//	_ASSERT(0);
+	//}
+
+	return rettra;
+
+}
+
+
 
 ChaVector3 CBone::CalcLocalScaleAnim(int srcmotid, double srcframe)
 {

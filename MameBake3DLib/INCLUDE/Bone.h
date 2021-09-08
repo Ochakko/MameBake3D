@@ -375,6 +375,8 @@ public:
 	ChaVector3 CalcLocalScaleAnim(int srcmotid, double srcframe);
 	ChaMatrix CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);
 	ChaMatrix CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe);
+	ChaVector3 CalcLocalSymScaleVec(int srcmotid, double srcframe);
+	ChaVector3 CalcLocalSymTraAnim(int srcmotid, double srcframe);
 	ChaMatrix CalcSymXMat(int srcmotid, double srcframe);
 	ChaMatrix CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);

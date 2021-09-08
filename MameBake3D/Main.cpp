@@ -979,13 +979,14 @@ typedef struct tag_cpelem
 {
 	CBone* bone;
 	CMotionPoint mp;
-}CPELEM;
-static vector<CPELEM> s_copymotvec;
-static vector<CPELEM> s_pastemotvec;
+	//ChaVector3 localscale;//mpのmatに掛け算しておく
+}CPELEM2;
+static vector<CPELEM2> s_copymotvec;
+static vector<CPELEM2> s_pastemotvec;
 static int WriteCPTFile();
 static bool LoadCPTFile();
-static int WriteTBOFile();
-static bool LoadTBOFile();
+//static int WriteTBOFile();
+//static bool LoadTBOFile();
 
 
 static list<KeyInfo> s_deletedKeyInfoList;	// 削除されたキー情報リスト
@@ -4373,12 +4374,24 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	int rotcenterflag1 = 1;
 	ChaMatrix localmat = curbone->CalcLocalRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
 	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
+	ChaVector3 localscale = curbone->CalcLocalScaleAnim(s_model->GetCurMotInfo()->motid, curframe);
+	
 	localmat._41 += curanimtra.x;
 	localmat._42 += curanimtra.y;
 	localmat._43 += curanimtra.z;
 
-	CPELEM cpelem;
-	ZeroMemory(&cpelem, sizeof(CPELEM));
+	localmat._11 *= localscale.x;
+	localmat._12 *= localscale.x;
+	localmat._13 *= localscale.x;
+	localmat._21 *= localscale.y;
+	localmat._22 *= localscale.y;
+	localmat._23 *= localscale.y;
+	localmat._31 *= localscale.z;
+	localmat._32 *= localscale.z;
+	localmat._33 *= localscale.z;
+
+	CPELEM2 cpelem;
+	ZeroMemory(&cpelem, sizeof(CPELEM2));
 	cpelem.bone = curbone;
 	cpelem.mp.SetFrame(curframe);
 	cpelem.mp.SetWorldMat(localmat);
@@ -4405,8 +4418,8 @@ int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
 {
 	ChaMatrix symmat = curbone->CalcSymXMat2(s_model->GetCurMotInfo()->motid, curframe, symrootmode);
 
-	CPELEM cpelem;
-	ZeroMemory(&cpelem, sizeof(CPELEM));
+	CPELEM2 cpelem;
+	ZeroMemory(&cpelem, sizeof(CPELEM2));
 	cpelem.bone = curbone;
 	cpelem.mp.SetFrame(curframe);
 	cpelem.mp.SetWorldMat(symmat);
@@ -12690,19 +12703,19 @@ int SetConvBone( int cbno )
 	int setmenuid0 = ID_RMENU_0 + 0;
 	AppendMenu(submenu, MF_STRING, setmenuid0, L"NotSet");
 
-	//int maxboneno = 0;
-	//map<int, CBone*>::iterator itrbone;
-	//for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++){
-	//	CBone* curbone = itrbone->second;
-	//	if (curbone){
-	//		int boneno = curbone->GetBoneNo();
-	//		int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
-	//		AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
-	//		if (boneno > maxboneno){
-	//			maxboneno = boneno;
-	//		}
-	//	}
-	//}
+	int maxboneno = 0;
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++){
+		CBone* curbone = itrbone->second;
+		if (curbone){
+			int boneno = curbone->GetBoneNo();
+			int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
+			AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
+			if (boneno > maxboneno){
+				maxboneno = boneno;
+			}
+		}
+	}
 	s_maxboneno = s_convbone_bvh->GetBoneListSize();
 
 	POINT pt;
@@ -12835,6 +12848,13 @@ int SaveRetargetFile()
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+
+	WCHAR* pext;
+	pext = wcsstr(g_tmpmqopath, L".rtg");
+	if (!pext) {
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//異なる拡張子のファイル名が残っている場合があるから
+	}
 
 	if (GetOpenFileNameW(&ofn) == IDOK) {
 		CRetargetFile rtgfile;
@@ -17344,7 +17364,7 @@ int OnFrameToolWnd()
 			//コピーされたキーの先頭時刻を求める
 			double copyStartTime = DBL_MAX;
 			double copyEndTime = 0;
-			vector<CPELEM>::iterator itrcp;
+			vector<CPELEM2>::iterator itrcp;
 			for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 				if (itrcp->mp.GetFrame() <= copyStartTime) {
 					copyStartTime = itrcp->mp.GetFrame();
@@ -17628,7 +17648,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
 		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
-		vector<CPELEM>::iterator itrcp;
+		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
@@ -17645,7 +17665,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
 		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
-		vector<CPELEM>::iterator itrcp;
+		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
@@ -17687,7 +17707,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 
 int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe)
 {
-	vector<CPELEM>::iterator itrcp;
+	vector<CPELEM2>::iterator itrcp;
 
 	double newframe;
 	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
@@ -30081,7 +30101,7 @@ int GetCPTFileName(std::vector<wstring>& dstvecopenfilename)
 
 	//MB3DOpenProj_20210410215628.txt
 	WCHAR searchfilename[MAX_PATH] = { 0L };
-	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DTempCopyFrames_*.cpt", s_temppath);
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DTempCopyFrames_v1.0.0.13_*.cpt", s_temppath);
 	HANDLE hFind;
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
@@ -30589,7 +30609,7 @@ int WriteCPTFile()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR cptfilename[MAX_PATH] = { 0L };
-	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_%04d%02d%02d%02d%02d%02d.cpt",
+	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04d%02d%02d%02d%02d%02d.cpt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 
@@ -30625,7 +30645,7 @@ int WriteCPTFile()
 
 	int cpelemno;
 	for (cpelemno = 0; cpelemno < cpelemnum; cpelemno++) {
-		CPELEM curcpelem = s_copymotvec[cpelemno];
+		CPELEM2 curcpelem = s_copymotvec[cpelemno];
 		if (curcpelem.bone) {
 			char curbonename[MAX_PATH] = { 0 };
 			strcpy_s(curbonename, MAX_PATH, curcpelem.bone->GetBoneName());
@@ -30894,8 +30914,8 @@ bool LoadCPTFile()
 		CBone* curbone;
 		curbone = s_model->GetBoneByName(curbonename);
 		if (curbone) {
-			CPELEM curcpelem;
-			ZeroMemory(&curcpelem, sizeof(CPELEM));
+			CPELEM2 curcpelem;
+			ZeroMemory(&curcpelem, sizeof(CPELEM2));
 
 			curcpelem.bone = curbone;
 			curcpelem.mp.SetFrame(curframe);
