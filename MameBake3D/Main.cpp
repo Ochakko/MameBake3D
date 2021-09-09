@@ -4380,15 +4380,16 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	localmat._42 += curanimtra.y;
 	localmat._43 += curanimtra.z;
 
-	localmat._11 *= localscale.x;
-	localmat._12 *= localscale.x;
-	localmat._13 *= localscale.x;
-	localmat._21 *= localscale.y;
-	localmat._22 *= localscale.y;
-	localmat._23 *= localscale.y;
-	localmat._31 *= localscale.z;
-	localmat._32 *= localscale.z;
-	localmat._33 *= localscale.z;
+
+	//localmat._11 *= localscale.x;
+	//localmat._12 *= localscale.x;
+	//localmat._13 *= localscale.x;
+	//localmat._21 *= localscale.y;
+	//localmat._22 *= localscale.y;
+	//localmat._23 *= localscale.y;
+	//localmat._31 *= localscale.z;
+	//localmat._32 *= localscale.z;
+	//localmat._33 *= localscale.z;
 
 	CPELEM2 cpelem;
 	ZeroMemory(&cpelem, sizeof(CPELEM2));

@@ -9748,6 +9748,8 @@ int CModel::FKBoneScaleAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, i
 	//ChaVector3 addtra;
 	//addtra = basevec * delta;
 
+
+	//scaleはworldmatの先頭に掛ける。マニピュレータ行列変換ではない
 	ChaVector3 scalevec;
 	if (axiskind == 0) {
 		scalevec.x = scaleval;
@@ -9771,10 +9773,11 @@ int CModel::FKBoneScaleAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, i
 		scalevec.z = 1.0f;
 	}
 
-	//ChaVector3 basevec;
-	//ChaVector3 vecx(1.0f, 0.0f, 0.0f);
-	//ChaVector3 vecy(0.0f, 1.0f, 0.0f);
-	//ChaVector3 vecz(0.0f, 0.0f, 1.0f);
+	//ChaVector3 basevec = ChaVector3(0.0f, 0.0f, 0.0f);
+	//ChaVector3 vecx = ChaVector3(1.0f, 0.0f, 0.0f);
+	//ChaVector3 vecy = ChaVector3(0.0f, 1.0f, 0.0f);
+	//ChaVector3 vecz = ChaVector3(0.0f, 0.0f, 1.0f);
+	//ChaVector3 vec1 = ChaVector3(1.0f, 1.0f, 1.0f);
 	//int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//ChaMatrix selectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
 	//if (axiskind == 0) {
@@ -9791,16 +9794,23 @@ int CModel::FKBoneScaleAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, i
 	//	ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
 	//}
 	//ChaVector3Normalize(&basevec, &basevec);
+	//
 	//ChaVector3 scalevec;
-	//scalevec = basevec * scaleval;
-	//if (fabs(scalevec.x) <= 0.00001f) {
-	//	scalevec.x = 1.0f;
+	//if (scaleval >= 1.0) {
+	//	scalevec = vec1 + basevec * 0.1f;
 	//}
-	//if (fabs(scalevec.y) <= 0.00001f) {
-	//	scalevec.y = 1.0f;
+	//else {
+	//	scalevec = vec1 - basevec * 0.1f;
 	//}
-	//if (fabs(scalevec.z) <= 0.00001f) {
-	//	scalevec.z = 1.0f;
+	
+	//if (fabs(scalevec.x) < 0.0001f) {
+	//	scalevec.x = 0.0001f;
+	//}
+	//if (fabs(scalevec.y) < 0.0001f) {
+	//	scalevec.y = 0.0001f;
+	//}
+	//if (fabs(scalevec.z) < 0.0001f) {
+	//	scalevec.z = 0.0001f;
 	//}
 
 	FKBoneScale(0, erptr, srcboneno, scalevec);

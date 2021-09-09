@@ -4229,14 +4229,28 @@ ChaMatrix CBone::CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcfram
 {
 	ChaMatrix curmat;
 	curmat = GetWorldMat(srcmotid, srcframe);
-	CMotionPoint curlocalmp;
-	CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
-	ChaMatrix currotmat;
-	currotmat = curlocalmp.GetQ().MakeRotMatX();
 
-	currotmat._41 = 0.0f;
-	currotmat._42 = 0.0f;
-	currotmat._43 = 0.0f;
+	ChaMatrix parmat, invparmat;
+	ChaMatrixIdentity(&parmat);
+	ChaMatrixIdentity(&invparmat);
+	if (m_parent) {
+		parmat = m_parent->GetWorldMat(srcmotid, srcframe);
+		invparmat = ChaMatrixInv(parmat);
+	}
+	ChaMatrix localmat;
+	localmat = curmat * invparmat;
+
+	ChaMatrix localsmat, localrmat, localtmat;
+	GetSRTMatrix2(localmat, &localsmat, &localrmat, &localtmat);
+
+	//CMotionPoint curlocalmp;
+	//CalcLocalInfo(srcmotid, srcframe, &curlocalmp);
+	ChaMatrix currotmat;
+	//currotmat = curlocalmp.GetQ().MakeRotMatX();
+
+	//currotmat._41 = 0.0f;
+	//currotmat._42 = 0.0f;
+	//currotmat._43 = 0.0f;
 
 	if (rotcenterflag == 1){
 		ChaMatrix befrotmat, aftrotmat;
@@ -4244,7 +4258,11 @@ ChaMatrix CBone::CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcfram
 		ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
 		ChaMatrixIdentity(&aftrotmat);
 		ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
-		currotmat = befrotmat * currotmat * aftrotmat;
+		currotmat = befrotmat * localsmat * localrmat * aftrotmat;// smat有り　！！！！
+	}
+	else {
+		_ASSERT(0);
+		currotmat = localsmat * localrmat;
 	}
 
 	return currotmat;
@@ -4297,23 +4315,26 @@ ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcf
 		else{
 			retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
 
-			ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
-			symscale = CalcLocalScaleAnim(srcmotid, srcframe);
-			ChaMatrix symscalemat;
-			ChaMatrixIdentity(&symscalemat);
-			ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+			//CalcLocalRotMatはrotcenter対応、scale有り!!!!!!!!!!!!!!
+			
 
-			if (rotcenterflag == 1) {
-				ChaMatrix befrotmat, aftrotmat;
-				ChaMatrixIdentity(&befrotmat);
-				ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
-				ChaMatrixIdentity(&aftrotmat);
-				ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
-				retmat = befrotmat * symscalemat * retmat * aftrotmat;
-			}
-			else {
-				retmat = symscalemat * retmat;
-			}
+			//ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
+			//symscale = CalcLocalScaleAnim(srcmotid, srcframe);
+			//ChaMatrix symscalemat;
+			//ChaMatrixIdentity(&symscalemat);
+			//ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+
+			//if (rotcenterflag == 1) {
+			//	ChaMatrix befrotmat, aftrotmat;
+			//	ChaMatrixIdentity(&befrotmat);
+			//	ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+			//	ChaMatrixIdentity(&aftrotmat);
+			//	ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+			//	retmat = befrotmat * symscalemat * retmat * aftrotmat;
+			//}
+			//else {
+			//	retmat = symscalemat * retmat;
+			//}
 
 			_ASSERT(0);
 		}
@@ -4321,23 +4342,26 @@ ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcf
 	else{
 		retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
 
-		ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
-		symscale = CalcLocalScaleAnim(srcmotid, srcframe);
-		ChaMatrix symscalemat;
-		ChaMatrixIdentity(&symscalemat);
-		ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+		//CalcLocalRotMatはrotcenter対応、scale有り!!!!!!!!!!!!!!
 
-		if (rotcenterflag == 1) {
-			ChaMatrix befrotmat, aftrotmat;
-			ChaMatrixIdentity(&befrotmat);
-			ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
-			ChaMatrixIdentity(&aftrotmat);
-			ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
-			retmat = befrotmat * symscalemat * retmat * aftrotmat;
-		}
-		else {
-			retmat = symscalemat * retmat;
-		}
+
+		//ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
+		//symscale = CalcLocalScaleAnim(srcmotid, srcframe);
+		//ChaMatrix symscalemat;
+		//ChaMatrixIdentity(&symscalemat);
+		//ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
+
+		//if (rotcenterflag == 1) {
+		//	ChaMatrix befrotmat, aftrotmat;
+		//	ChaMatrixIdentity(&befrotmat);
+		//	ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
+		//	ChaMatrixIdentity(&aftrotmat);
+		//	ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
+		//	retmat = befrotmat * symscalemat * retmat * aftrotmat;
+		//}
+		//else {
+		//	retmat = symscalemat * retmat;
+		//}
 
 		_ASSERT(0);
 	}
@@ -4383,16 +4407,18 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 
 	ChaMatrix curmat;
 	curmat = GetWorldMat(srcmotid, srcframe);
+	//ChaMatrix curmats0;
+	//curmats0 = GetS0RTMatrix(curmat);
 
-	//ChaMatrix smat, rmat, tmat;
-	//GetSRTMatrix2(curmat, &smat, &rmat, &tmat);
+	//ChaVector3 svec, tvec;
+	//ChaMatrix rmat;
+	//GetSRTMatrix(curmat, &svec, &rmat, &tvec);
 
 
-
-	int rotcenterflag1 = 1;
-	ChaMatrix curlocalrotmat, invcurlocalrotmat;
-	curlocalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
-	ChaMatrixInverse(&invcurlocalrotmat, NULL, &curlocalrotmat);
+	//int rotcenterflag1 = 1;
+	//ChaMatrix curlocalrotmat, invcurlocalrotmat;
+	//curlocalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+	//ChaMatrixInverse(&invcurlocalrotmat, NULL, &curlocalrotmat);
 	ChaMatrix parmat, invparmat;
 	ChaMatrixIdentity(&parmat);
 	invparmat = parmat;
@@ -4401,13 +4427,49 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 		ChaMatrixInverse(&invparmat, NULL, &parmat);
 	}
 
-	ChaMatrix curmvmat;
-	//curmvmat = invcurlocalrotmat * curmat * invparmat;
-	curmvmat = invcurlocalrotmat * GetS0RTMatrix(curmat) * invparmat;
+	ChaMatrix localmat = curmat * invparmat;
+	ChaMatrix smat, rmat, tmat;
+	GetSRTMatrix2(localmat, &smat, &rmat, &tmat);
 
-	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 curanimtra;
-	ChaVector3TransformCoord(&curanimtra, &zeropos, &curmvmat);
+	ChaVector3 jointpos;
+	ChaMatrix beftramat, afttramat;
+	ChaMatrix localSRmat;
+	ChaMatrixIdentity(&beftramat);
+	ChaMatrixIdentity(&afttramat);
+	ChaMatrixIdentity(&localSRmat);
+	jointpos = GetJointFPos();
+	ChaMatrixTranslation(&beftramat, -jointpos.x, -jointpos.y, -jointpos.z);
+	ChaMatrixTranslation(&afttramat, jointpos.x, jointpos.y, jointpos.z);
+	localSRmat = beftramat * smat * rmat * afttramat;
+
+	ChaVector3 srpos, localpos;
+	ChaVector3TransformCoord(&srpos, &jointpos, &localSRmat);
+	ChaVector3TransformCoord(&localpos, &jointpos, &localmat);
+
+	ChaVector3 rettraanim;
+	rettraanim = localpos - srpos;
+	return rettraanim;
+
+
+	//ChaMatrix curmvmat;
+	//curmvmat = invcurlocalrotmat * curmat * invparmat;
+	//curmvmat = invcurlocalrotmat * GetS0RTMatrix(curmat) * invparmat;
+	//curmvmat = invcurlocalrotmat * GetS0RTMatrix(curmat) * GetS0RTMatrix(invparmat);
+
+	//ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+	//ChaVector3 curanimtra;
+	//ChaVector3TransformCoord(&curanimtra, &zeropos, &curmvmat);
+
+	//if (svec.x != 0.0f) {
+	//	curanimtra.x /= svec.x;
+	//}
+	//if (svec.y != 0.0f) {
+	//	curanimtra.y /= svec.y;
+	//}
+	//if (svec.z != 0.0f) {
+	//	curanimtra.z /= svec.z;
+	//}
+
 
 	//ChaMatrix localmat;
 	//localmat = curmat * invparmat;
@@ -4419,10 +4481,10 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	//return retvec;
 
 	//ChaVector3 curjointpos;
-	//ChaVector3TransformCoord(&curjointpos, &(GetJointFPos()), &curmat);
+	//ChaVector3TransformCoord(&curjointpos, &(GetJointFPos()), &curmvmat);
 	//ChaVector3 curanimtra;
-	//curanimtra = tvec - curjointpos;
-	return curanimtra;
+	//curanimtra = curjointpos - GetJointFPos();
+	//return curanimtra;
 	
 	//return tvec;
 
