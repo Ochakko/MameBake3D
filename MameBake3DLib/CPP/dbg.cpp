@@ -109,10 +109,14 @@ void ErrorMessage(WCHAR* szMessage, HRESULT hr)
 	}
 }
 
-int OpenDbgFile()
+int OpenDbgFile(int srcappcnt)
 {
+	WCHAR dbgfilename[MAX_PATH] = { 0L };
+	swprintf_s(dbgfilename, MAX_PATH, L"dbg%d.txt", srcappcnt);//ï°êîÇÃMotionBrushÇóßÇøè„Ç∞ÇÈÇΩÇﬂ
+
 	if (!dbgfile) {
-		dbgfile = CreateFile(L"dbg.txt", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
+		//dbgfile = CreateFile(L"dbg.txt", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
+		dbgfile = CreateFile(dbgfilename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,
 			FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 		if (dbgfile == INVALID_HANDLE_VALUE) {
 			return 1;
@@ -128,7 +132,8 @@ int OpenDbgFile()
 		GetLocalTime(&st);
 
 		WCHAR infofilename[MAX_PATH] = { 0L };
-		swprintf_s(infofilename, MAX_PATH, L"info_%4d_%02d_%02d_%02d_%02d_%02d.txt",
+		swprintf_s(infofilename, MAX_PATH, L"info%d_%4d_%02d_%02d_%02d_%02d_%02d.txt",
+			srcappcnt,//ï°êîÇÃMotionBrushÇóßÇøè„Ç∞ÇÈÇΩÇﬂ
 			st.wYear, st.wMonth, st.wDay,
 			st.wHour, st.wMinute, st.wSecond);
 

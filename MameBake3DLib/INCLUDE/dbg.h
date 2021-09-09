@@ -24,7 +24,7 @@
 	int DbgWrite2File( char* lpFormat, ... );
 	int SetTabChar( int tabnum );		
 	void ErrorMessage(char* szMessage, HRESULT hr);
-	int OpenDbgFile();
+	int OpenDbgFile(int srcappcnt);
 	int CloseDbgFile();
 
 	void OutputToInfoWnd(WCHAR* lpFormat, ...);
@@ -38,7 +38,7 @@
 	extern int DbgWrite2File( char* lpFormat, ... );
 	extern int SetTabChar( int tabnum );
 	extern void ErrorMessage(char* szMessage, HRESULT hr);
-	extern int OpenDbgFile();
+	extern int OpenDbgFile(int srcappcnt);
 	extern int CloseDbgFile();
 	extern void OutputToInfoWnd(WCHAR* lpFormat, ...);
 #endif

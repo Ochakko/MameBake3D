@@ -1850,7 +1850,6 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 
-	OpenDbgFile();
 	//_CrtSetBreakAlloc(297);
 	//_CrtSetBreakAlloc(303);
 	//_CrtSetBreakAlloc(307);
@@ -1895,6 +1894,10 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	LocalFree(lplpszArgs);
+
+
+	OpenDbgFile(s_appcnt);
+
 
 
 	s_copyKeyInfoList.clear();	// コピーされたキー情報リスト
