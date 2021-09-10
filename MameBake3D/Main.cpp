@@ -233,6 +233,7 @@ static int OnPluginPose();
 static int s_onselectplugin = 0;
 static CPluginElem* s_plugin = 0;
 
+static void InitTimelineSelection();
 
 static HWND GetOFWnd(POINT srcpoint);
 static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
@@ -4375,7 +4376,7 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	}
 	*/
 	int rotcenterflag1 = 1;
-	ChaMatrix localmat = curbone->CalcLocalRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
+	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
 	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
 	ChaVector3 localscale = curbone->CalcLocalScaleAnim(s_model->GetCurMotInfo()->motid, curframe);
 	
@@ -8241,6 +8242,11 @@ int OpenFile()
 	s_nowloading = true;
 
 
+	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+	InitTimelineSelection();
+
+
+
 	//CurrentDirectoryがMameMediaになっていたときにはTestディレクトリに変える
 	WCHAR curdir[MAX_PATH] = { 0L };
 	ZeroMemory(curdir, sizeof(WCHAR) * MAX_PATH);
@@ -8362,6 +8368,11 @@ int OpenFile()
 CModel* OpenMQOFile()
 {
 	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+
+
+	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+	InitTimelineSelection();
+
 
 	static int modelcnt = 0;
 	WCHAR modelname[MAX_PATH] = {0L};
@@ -8509,6 +8520,10 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
+
+
+	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+	InitTimelineSelection();
 
 
 	//int dlgret;
@@ -21823,14 +21838,14 @@ int GetSymRootMode()
 		RemoveMenu(submenu, 0, MF_BYPOSITION);
 	}
 
-
+	//scaleを変えるとtraanimも変わるのでscaleメニューを分けないでおく。
 	int setmenuid;
 	setmenuid = ID_RMENU_0 + MENUOFFSET_GETSYMROOTMODE;
 	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SameToSource");
 	setmenuid = ID_RMENU_0 + 1 + MENUOFFSET_GETSYMROOTMODE;
-	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymPosAndSymDir");
+	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymDirAndSymPosAndSymScale");
 	setmenuid = ID_RMENU_0 + 2 + MENUOFFSET_GETSYMROOTMODE;
-	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymDir");
+	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymDirAndSymSale");
 	setmenuid = ID_RMENU_0 + 3 + MENUOFFSET_GETSYMROOTMODE;
 	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SymPos");
 
@@ -30955,5 +30970,26 @@ void ChangeCurDirFromMameMediaToTest()
 		wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
 		SetCurrentDirectoryW(initialdir);
 	}
+}
+
+void InitTimelineSelection()
+{
+	s_editrange.Clear();
+	s_buttonselectstart = 1.0;
+	s_buttonselectend = 1.0;
+
+	if (g_motionbrush_value) {
+		free(g_motionbrush_value);
+		g_motionbrush_value = 0;
+	}
+	g_motionbrush_value = (float*)malloc(sizeof(float) * 1);
+	*g_motionbrush_value = 1.0f;
+
+	//g_motionbrush_method = 0;
+	g_motionbrush_startframe = 1.0;
+	g_motionbrush_endframe = 1.0;
+	g_motionbrush_applyframe = 1.0;
+	g_motionbrush_numframe = 1.0;
+	g_motionbrush_frameleng = 1;
 }
 

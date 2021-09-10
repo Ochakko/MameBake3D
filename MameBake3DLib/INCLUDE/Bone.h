@@ -373,8 +373,8 @@ public:
 	ChaMatrix GetWorldMat(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalTraAnim(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalScaleAnim(int srcmotid, double srcframe);
-	ChaMatrix CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe);
-	ChaMatrix CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe);
+	ChaMatrix CalcLocalScaleRotMat(int rotcenterflag, int srcmotid, double srcframe);
+	ChaMatrix CalcLocalSymScaleRotMat(int rotcenterflag, int srcmotid, double srcframe);
 	ChaVector3 CalcLocalSymScaleVec(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalSymTraAnim(int srcmotid, double srcframe);
 	ChaMatrix CalcSymXMat(int srcmotid, double srcframe);

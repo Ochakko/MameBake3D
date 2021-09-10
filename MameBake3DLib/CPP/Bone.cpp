@@ -4159,7 +4159,7 @@ ChaMatrix CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 
 	int rotcenterflag1 = 1;
 	if (GetParent()){
-		directsetmat = CalcLocalSymRotMat(rotcenterflag1, srcmotid, srcframe);
+		directsetmat = CalcLocalSymScaleRotMat(rotcenterflag1, srcmotid, srcframe);
 	}
 	else{
 		//root bone
@@ -4168,10 +4168,10 @@ ChaMatrix CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 			return directsetmat;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
 		else if(symrootmode & SYMROOTBONE_SYMDIR){
-			directsetmat = CalcLocalSymRotMat(rotcenterflag1, srcmotid, srcframe);
+			directsetmat = CalcLocalSymScaleRotMat(rotcenterflag1, srcmotid, srcframe);
 		}
 		else{
-			directsetmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+			directsetmat = CalcLocalScaleRotMat(rotcenterflag1, srcmotid, srcframe);
 		}
 	}
 
@@ -4225,7 +4225,7 @@ ChaMatrix CBone::GetWorldMat(int srcmotid, double srcframe)
 	return curmat;
 }
 
-ChaMatrix CBone::CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcframe)
+ChaMatrix CBone::CalcLocalScaleRotMat(int rotcenterflag, int srcmotid, double srcframe)
 {
 	ChaMatrix curmat;
 	curmat = GetWorldMat(srcmotid, srcframe);
@@ -4269,7 +4269,7 @@ ChaMatrix CBone::CalcLocalRotMat(int rotcenterflag, int srcmotid, double srcfram
 }
 
 
-ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcframe)
+ChaMatrix CBone::CalcLocalSymScaleRotMat(int rotcenterflag, int srcmotid, double srcframe)
 {
 	ChaMatrix retmat;
 
@@ -4313,7 +4313,7 @@ ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcf
 			}
 		}
 		else{
-			retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
+			retmat = CalcLocalScaleRotMat(rotcenterflag, srcmotid, srcframe);
 
 			//CalcLocalRotMatはrotcenter対応、scale有り!!!!!!!!!!!!!!
 			
@@ -4340,7 +4340,7 @@ ChaMatrix CBone::CalcLocalSymRotMat(int rotcenterflag, int srcmotid, double srcf
 		}
 	}
 	else{
-		retmat = CalcLocalRotMat(rotcenterflag, srcmotid, srcframe);
+		retmat = CalcLocalScaleRotMat(rotcenterflag, srcmotid, srcframe);
 
 		//CalcLocalRotMatはrotcenter対応、scale有り!!!!!!!!!!!!!!
 
@@ -4417,7 +4417,7 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 
 	//int rotcenterflag1 = 1;
 	//ChaMatrix curlocalrotmat, invcurlocalrotmat;
-	//curlocalrotmat = CalcLocalRotMat(rotcenterflag1, srcmotid, srcframe);
+	//curlocalrotmat = CalcLocalScaleRotMat(rotcenterflag1, srcmotid, srcframe);
 	//ChaMatrixInverse(&invcurlocalrotmat, NULL, &curlocalrotmat);
 	ChaMatrix parmat, invparmat;
 	ChaMatrixIdentity(&parmat);
