@@ -94,6 +94,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #include <ImpFile.h>
 #include <RigidElemFile.h>
 #include <RigidElem.h>
+#include <MNLFile.h>
 
 #include <BtObject.h>
 #include <fbxsdk.h>
@@ -1564,6 +1565,7 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag );
 static int OpenREFile();
 static int OpenImpFile();
 static int OpenGcoFile();
+static int OpenMNLFile();
 
 int OnDelMotion( int delindex );
 int OnAddMotion( int srcmotid, bool dorefreshtl);
@@ -1661,6 +1663,8 @@ static int SetConvBone( int cbno );
 static int ConvBoneConvert();
 static int SaveRetargetFile();
 static int LoadRetargetFile(WCHAR* srcfilename);
+static int SaveMotionNameListFile();
+static int LoadMotionNameListFile(WCHAR* srcfilename);
 static int SetJointPair2ConvBoneWnd();
 static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
 static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
@@ -5355,6 +5359,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				}
 				//return 0;
 				break;
+			case ID_SAVE_MOTIONNAMELIST:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					SaveMotionNameListFile();
+					ActivatePanel(1);
+				}
+				//return 0;
+				break;
 			case ID_DISPMW40002:
 				DispMotionWindow();
 				//return 0;
@@ -7228,6 +7240,26 @@ int SetBaseDir()
 	return 0;
 }
 
+
+int OpenMNLFile()
+{
+	if (!s_model) {
+		return 0;
+	}
+
+	if (g_tmpmqopath[0] == 0) {
+		return 0;
+	}
+
+	CMNLFile mnlfile;
+	CallF(mnlfile.LoadMNLFile(g_tmpmqopath, s_model), return 1);
+
+	CallF(OnAnimMenu(true, 0), return 1);
+
+	return 0;
+}
+
+
 int OpenGcoFile()
 {
 	if( !s_bpWorld ){
@@ -8287,13 +8319,14 @@ int OpenFile()
 		}
 		int result = 0;
 		CModel* newmodel = 0;
-		int cmpcha, cmpfbx, cmpmqo, cmpref, cmpimp, cmpgco;
+		int cmpcha, cmpfbx, cmpmqo, cmpref, cmpimp, cmpgco, cmpmnl;
 		cmpcha = wcscmp( extptr, L".cha" );
 		cmpfbx = wcscmp( extptr, L".fbx" );
 		cmpmqo = wcscmp( extptr, L".mqo" );
 		cmpref = wcscmp( extptr, L".ref" );
 		cmpimp = wcscmp( extptr, L".imp" );
 		cmpgco = wcscmp( extptr, L".gco" );
+		cmpmnl = wcscmp( extptr, L".mnl" );
 		if( cmpcha == 0 ){
 			result = OpenChaFile();
 			s_filterindex = 1;
@@ -8331,11 +8364,16 @@ int OpenFile()
 			result = OpenGcoFile();
 			s_filterindex = 4;
 		}
+		else if (cmpmnl == 0) {
+			result = OpenMNLFile();
+			s_filterindex = 6;
+		}
 
 		if (result != 0) {
 			WCHAR strerror[MAX_PATH * 2] = { 0L };
 			swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
 			MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
+			s_nowloading = false;
 			return 1;
 		}
 
@@ -8392,6 +8430,7 @@ int OpenFile()
 				WCHAR strerror[MAX_PATH * 2] = { 0L };
 				swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
 				MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
+				s_nowloading = false;
 				return 1;
 			}
 
@@ -10971,7 +11010,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	//ofn.hwndOwner = hDlgWnd;
 	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
-	ofn.lpstrFilter = L"project(*.cha)chara(*.fbx)\0*.cha;*.fbx\0Rigid(*.ref)\0*.ref\0Impulse(*.imp)\0*.imp\0Ground(*.gco)\0*.gco\0BVH(*.bvh)\0*.bvh\0";
+	ofn.lpstrFilter = L"project(*.cha)chara(*.fbx)\0*.cha;*.fbx\0Rigid(*.ref)\0*.ref\0Impulse(*.imp)\0*.imp\0Ground(*.gco)\0*.gco\0BVH(*.bvh)\0*.bvh\0MNL(*.mnl)\0*.mnl\0";
 	ofn.lpstrCustomFilter = NULL;
 	ofn.nMaxCustFilter = 0;
 	ofn.nFilterIndex = s_filterindex;
@@ -12874,6 +12913,64 @@ int SetJointPair2ConvBoneWnd()
 
 	return 0;
 }
+
+
+int SaveMotionNameListFile()
+{
+
+	ChangeCurDirFromMameMediaToTest();
+
+	OPENFILENAME ofn;
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = hDlgWnd;
+	ofn.hwndOwner = s_3dwnd;
+	ofn.hInstance = 0;
+	ofn.lpstrFilter = L"Retarget(*.mnl)\0*.mnl\0";
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxCustFilter = 0;
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = g_tmpmqopath;
+	ofn.nMaxFile = MULTIPATH;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = L"GetFileNameDlg";
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	ofn.nFileOffset = 0;
+	ofn.nFileExtension = 0;
+	ofn.lpstrDefExt = NULL;
+	ofn.lCustData = NULL;
+	ofn.lpfnHook = NULL;
+	ofn.lpTemplateName = NULL;
+
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	InterlockedExchange(&g_undertrackingRMenu, 1);
+
+
+	WCHAR* pext;
+	pext = wcsstr(g_tmpmqopath, L".mnl");
+	if (!pext) {
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//異なる拡張子のファイル名が残っている場合があるから
+	}
+
+	if (GetOpenFileNameW(&ofn) == IDOK) {
+		CMNLFile mnlfile;
+		int result;
+		result = mnlfile.WriteMNLFile(g_tmpmqopath, s_model);
+	}
+
+	InterlockedExchange(&g_undertrackingRMenu, 0);
+	UnhookWinEvent(hhook);
+	s_getfilenamehwnd = 0;
+	s_getfilenametreeview = 0;
+
+	return 0;
+}
+
 
 
 int SaveRetargetFile()
@@ -22394,6 +22491,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				if (s_registflag == 1) {
 					ActivatePanel(0);
 					SaveGcoFile();
+					ActivatePanel(1);
+				}
+				//return 0;
+				break;
+			case ID_SAVE_MOTIONNAMELIST:
+				if (s_registflag == 1) {
+					ActivatePanel(0);
+					SaveMotionNameListFile();
 					ActivatePanel(1);
 				}
 				//return 0;

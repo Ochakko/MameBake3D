@@ -365,6 +365,7 @@
     <ClCompile Include="..\CPP\InfBone.cpp" />
     <ClCompile Include="..\CPP\InfoWindow.cpp" />
     <ClCompile Include="..\CPP\lmtFile.cpp" />
+    <ClCompile Include="..\CPP\MNLFile.cpp" />
     <ClCompile Include="..\CPP\Model.cpp" />
     <ClCompile Include="..\CPP\MotionPoint.cpp" />
     <ClCompile Include="..\CPP\mqoface.cpp" />
@@ -724,6 +725,7 @@
     <ClInclude Include="..\INCLUDE\InfBone.h" />
     <ClInclude Include="..\INCLUDE\InfoWindow.h" />
     <ClInclude Include="..\INCLUDE\lmtFile.h" />
+    <ClInclude Include="..\INCLUDE\MNLFile.h" />
     <ClInclude Include="..\INCLUDE\Model.h" />
     <ClInclude Include="..\INCLUDE\MotFilter.h" />
     <ClInclude Include="..\INCLUDE\MotionPoint.h" />
