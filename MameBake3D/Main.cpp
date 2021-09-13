@@ -8285,6 +8285,8 @@ int OpenFile()
 			s_nowloading = false;
 			return 0;
 		}
+		int result = 0;
+		CModel* newmodel = 0;
 		int cmpcha, cmpfbx, cmpmqo, cmpref, cmpimp, cmpgco;
 		cmpcha = wcscmp( extptr, L".cha" );
 		cmpfbx = wcscmp( extptr, L".fbx" );
@@ -8293,29 +8295,48 @@ int OpenFile()
 		cmpimp = wcscmp( extptr, L".imp" );
 		cmpgco = wcscmp( extptr, L".gco" );
 		if( cmpcha == 0 ){
-			OpenChaFile();
+			result = OpenChaFile();
 			s_filterindex = 1;
 		}else if( cmpfbx == 0 ){
 			if (s_modelindex.size() > 0) {
 				OnModelMenu(false, s_modelindex.size() - 1, 1);
 			}
-			OpenFBXFile( true, 0, 1 );
+			newmodel = OpenFBXFile( true, 0, 1 );
+			if (newmodel) {
+				result = 0;
+			}
+			else {
+				result = 1;
+			}
 			s_filterindex = 1;
 		}else if( cmpmqo == 0 ){
 			if (s_modelindex.size() > 0) {
 				OnModelMenu(false, s_modelindex.size() - 1, 1);
 			}
-			OpenMQOFile();
+			newmodel = OpenMQOFile();
+			if (newmodel) {
+				result = 0;
+			}
+			else {
+				result = 1;
+			}
 			s_filterindex = 1;
 		}else if( cmpref == 0 ){
-			OpenREFile();
+			result = OpenREFile();
 			s_filterindex = 2;
 		}else if( cmpimp == 0 ){
-			OpenImpFile();
+			result = OpenImpFile();
 			s_filterindex = 3;
 		}else if( cmpgco == 0 ){
-			OpenGcoFile();
+			result = OpenGcoFile();
 			s_filterindex = 4;
+		}
+
+		if (result != 0) {
+			WCHAR strerror[MAX_PATH * 2] = { 0L };
+			swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
+			MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
+			return 1;
 		}
 
 	}else{
@@ -8329,6 +8350,8 @@ int OpenFile()
 				s_nowloading = false;
 				return 0;
 			}
+			int result = 0;
+			CModel* newmodel = 0;
 			int cmpfbx, cmpmqo;
 			cmpfbx = wcscmp( extptr, L".fbx" );
 			cmpmqo = wcscmp( extptr, L".mqo" );
@@ -8338,7 +8361,13 @@ int OpenFile()
 					if (s_modelindex.size() > 0) {
 						OnModelMenu(false, s_modelindex.size() - 1, 1);
 					}
-					OpenFBXFile(true, 0, 1);
+					newmodel = OpenFBXFile(true, 0, 1);
+					if (newmodel) {
+						result = 0;
+					}
+					else {
+						result = 1;
+					}
 				//}
 				//else {
 				//	//最終のFBXに対してのみinittimelineをする
@@ -8349,9 +8378,23 @@ int OpenFile()
 				if (s_modelindex.size() > 0) {
 					OnModelMenu(false, s_modelindex.size() - 1, 1);
 				}
-				OpenMQOFile();
+				newmodel = OpenMQOFile();
+				if (newmodel) {
+					result = 0;
+				}
+				else {
+					result = 1;
+				}
 				s_filterindex = 1;
 			}
+
+			if (result != 0) {
+				WCHAR strerror[MAX_PATH * 2] = { 0L };
+				swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
+				MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
+				return 1;
+			}
+
 			leng2 = (int)wcslen( topchar );
 			topchar = topchar + leng2 + 1;
 			namecnt++;
@@ -17643,7 +17686,8 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 					ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
 
 					parmp->SetBefWorldMat(parmp->GetWorldMat());
-					srcbone->RotBoneQReq(parmp, curmotid, newframe, dummyq, 0, dummytra);
+					bool infooutflag = false;
+					srcbone->RotBoneQReq(infooutflag, parmp, curmotid, newframe, dummyq, 0, dummytra);
 					//_ASSERT(0);
 				}
 			}
@@ -22513,7 +22557,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.13 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.14 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -29818,7 +29862,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.13 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.14 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

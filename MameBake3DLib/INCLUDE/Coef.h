@@ -30,7 +30,10 @@ class CMQOMaterial;
 #define MAXMOTIONNUM	100
 #define MAXMODELNUM		100
 #define MAXRENUM		100
-#define MULTIPATH	(MAX_PATH * 100)
+
+// * 100だとOpenFile()関数のスタックサイズが大きすぎて警告が出るので * 32に変更
+//#define MULTIPATH	(MAX_PATH * 100)
+#define MULTIPATH	(MAX_PATH * 32)
 
 #define COL_CONE_INDEX		0
 #define COL_CAPSULE_INDEX	1

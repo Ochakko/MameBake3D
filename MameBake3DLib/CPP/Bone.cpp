@@ -1681,7 +1681,7 @@ int CBone::SetCurrentRigidElem( std::string curname )
 }
 
 
-CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra )
+CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra)
 {
 	int existflag = 0;
 	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
@@ -1690,6 +1690,7 @@ CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double sr
 		return 0;
 	}
 
+	bool infooutflag = false;
 
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if( parmp ){
@@ -1697,7 +1698,7 @@ CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double sr
 		ChaMatrixInverse( &invbefpar, NULL, &parmp->GetBefWorldMat() );
 		ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
 		g_wmatDirectSetFlag = true;
-		SetWorldMat( 0, srcmotid, srcframe, tmpmat );
+		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
 	}
 	else{
@@ -1705,7 +1706,7 @@ CMotionPoint* CBone::AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double sr
 		ChaMatrixTranslation( &tramat, srctra.x, srctra.y, srctra.z );
 		ChaMatrix tmpmat = curmp->GetWorldMat() * tramat;
 		g_wmatDirectSetFlag = true;
-		SetWorldMat(0, srcmotid, srcframe, tmpmat);
+		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
 	}
 
@@ -1731,6 +1732,8 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 		return 0;
 	}
 
+	bool infooutflag = false;
+
 
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if (parmp) {
@@ -1738,7 +1741,7 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 		ChaMatrixInverse(&invbefpar, NULL, &parmp->GetBefWorldMat());
 		ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
 		g_wmatDirectSetFlag = true;
-		SetWorldMat(0, srcmotid, srcframe, tmpmat);
+		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
 	}
 	else {
@@ -1754,7 +1757,7 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 		//ChaMatrix tmpmat = curmp->GetWorldMat() * tramat;
 		ChaMatrix tmpmat = tramat * curmp->GetWorldMat();
 		g_wmatDirectSetFlag = true;
-		SetWorldMat(0, srcmotid, srcframe, tmpmat);
+		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
 	}
 
@@ -1814,7 +1817,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 }
 
 
-CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat)
+CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat)
 {
 	int existflag = 0;
 	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
@@ -1835,7 +1838,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 			ChaMatrixInverse(&invbefpar, NULL, &befparmat);
 			ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * newparmat;
 			g_wmatDirectSetFlag = true;
-			SetWorldMat(0, srcmotid, srcframe, tmpmat);
+			SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 			g_wmatDirectSetFlag = false;
 			//}
 		//else{
@@ -1878,7 +1881,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 				tmpmat = tmpmat0 * tmptramat * tramat;
 																  
 				//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
-				SetWorldMat(0, srcmotid, srcframe, tmpmat);
+				SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 				if (bvhbone){
 					bvhbone->SetTmpMat(tmpmat);
 				}
@@ -1886,7 +1889,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 			else{
 				ChaMatrix tmpmat = *psetmat;
 				g_wmatDirectSetFlag = true;
-				SetWorldMat(0, srcmotid, srcframe, tmpmat);
+				SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 				g_wmatDirectSetFlag = false;
 				if (bvhbone){
 					bvhbone->SetTmpMat(tmpmat);
@@ -1916,7 +1919,7 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 
 
 			g_wmatDirectSetFlag = true;//!!!!!!!!
-			SetWorldMat(0, srcmotid, srcframe, tmpmat);
+			SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 			g_wmatDirectSetFlag = false;//!!!!!!!
 			if (bvhbone){
 				bvhbone->SetTmpMat(tmpmat);
@@ -1930,10 +1933,10 @@ CMotionPoint* CBone::RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcfr
 	curmp->SetAbsMat(curmp->GetWorldMat());
 
 	if (m_child && curmp){
-		m_child->RotBoneQReq(curmp, srcmotid, srcframe, rotq);
+		m_child->RotBoneQReq(infooutflag, curmp, srcmotid, srcframe, rotq);
 	}
 	if (m_brother && parmp){
-		m_brother->RotBoneQReq(parmp, srcmotid, srcframe, rotq);
+		m_brother->RotBoneQReq(infooutflag, parmp, srcmotid, srcframe, rotq);
 	}
 	return curmp;
 }
@@ -1950,14 +1953,16 @@ CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcfr
 		return 0;
 	}
 
+	bool infooutflag = false;
+
 	if (parmp){
 		//parentの行列をセット !!!!!!!!!
 		g_wmatDirectSetFlag = true;
-		SetWorldMat(0, srcmotid, srcframe, parmp->GetWorldMat());
+		SetWorldMat(infooutflag, 0, srcmotid, srcframe, parmp->GetWorldMat());
 		g_wmatDirectSetFlag = false;
 	} else{
 		g_wmatDirectSetFlag = true;
-		SetWorldMat(0, srcmotid, srcframe, srcmat);
+		SetWorldMat(infooutflag, 0, srcmotid, srcframe, srcmat);
 		g_wmatDirectSetFlag = false;
 	}
 
@@ -1983,8 +1988,10 @@ CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, d
 		return 0;
 	}
 
+	bool infooutflag = false;
+
 	g_wmatDirectSetFlag = true;
-	SetWorldMat(0, srcmotid, srcframe, firstmp->GetAbsMat());
+	SetWorldMat(infooutflag, 0, srcmotid, srcframe, firstmp->GetAbsMat());
 	g_wmatDirectSetFlag = false;
 
 	if( m_child ){
@@ -3701,8 +3708,9 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 
 		if (setchildflag == 1){
 			if (m_child){
+				bool infooutflag = false;
 				CQuaternion dummyq;
-				m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+				m_child->RotBoneQReq(infooutflag, curmp, srcmotid, srcframe, dummyq);
 			}
 		}
 	}
@@ -3765,8 +3773,9 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 
 		if (setchildflag == 1){
 			if (m_child){
+				bool infooutflag = false;
 				CQuaternion dummyq;
-				m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+				m_child->RotBoneQReq(infooutflag, curmp, srcmotid, srcframe, dummyq);
 			}
 		}
 	}
@@ -3863,8 +3872,9 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVect
 
 		if (setchildflag == 1){
 			if (m_child){
+				bool infooutflag = false;
 				CQuaternion dummyq;
-				m_child->RotBoneQReq(curmp, srcmotid, srcframe, dummyq);
+				m_child->RotBoneQReq(infooutflag, curmp, srcmotid, srcframe, dummyq);
 			}
 		}
 	}
@@ -3908,7 +3918,7 @@ ChaVector3 CBone::GetLocalEul(int srcmotid, double srcframe)
 }
 
 //onlycheck = 0
-int CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck)
+int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck)
 {
 	//if pose is change, return 1 else return 0
 	CMotionPoint* curmp;
@@ -3926,18 +3936,23 @@ int CBone::SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatri
 		ChaVector3 oldeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag = 1;
 		int isfirstbone = 0;
+
+		//axiskind == -1のときにはlimitangleのaxiskindがGLOBALかどうかをチェック.GLOBALでないときにはparentのaxisqで計算
 		oldeul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 
 		curmp->SetWorldMat(srcmat);//tmp time
 		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+		//axiskind == -1のときにはlimitangleのaxiskindがGLOBALかどうかをチェック.GLOBALでないときにはparentのaxisqで計算
 		neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
 
 		curmp->SetWorldMat(saveworldmat);
 
 		ismovable = ChkMovableEul(neweul);
-		OutputToInfoWnd(L"CBone::SetWorldMat : %s : neweul [%f, %f, %f] : ismovable %d", GetWBoneName(), neweul.x, neweul.y, neweul.z, ismovable);
-		
+		if (infooutflag == true) {
+			OutputToInfoWnd(L"CBone::SetWorldMat : %s : frame %5.1lf : neweul [%f, %f, %f] : ismovable %d", GetWBoneName(), srcframe, neweul.x, neweul.y, neweul.z, ismovable);
+		}
+
 		if (onlycheck == 0) {
 			if (ismovable == 1) {
 				if (IsSameEul(oldeul, neweul) == 0) {
@@ -4590,8 +4605,9 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 		int setmatflag1 = 1;
 		CQuaternion dummyq;
 		ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
+		bool infooutflag = false;
 		g_underRetargetFlag = true;
-		RotBoneQReq(0, srcmotid, srcframe, dummyq, 0, dummytra, setmatflag1, &setmat);
+		RotBoneQReq(infooutflag, 0, srcmotid, srcframe, dummyq, 0, dummytra, setmatflag1, &setmat);
 		g_underRetargetFlag = false;
 
 		//オイラー角初期化

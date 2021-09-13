@@ -242,7 +242,7 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* AddBoneTraReq( CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra );
+	CMotionPoint* AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra);
 
 
 	CMotionPoint* AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale);
@@ -258,7 +258,7 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* RotBoneQReq(CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
+	CMotionPoint* RotBoneQReq(bool infooutflag, CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
 /**
 
@@ -369,7 +369,7 @@ public:
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
 	ChaVector3 GetLocalEul(int srcmotid, double srcframe);
-	int SetWorldMat(int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
+	int SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
 	ChaMatrix GetWorldMat(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalTraAnim(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalScaleAnim(int srcmotid, double srcframe);

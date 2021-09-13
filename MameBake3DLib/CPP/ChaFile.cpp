@@ -550,7 +550,11 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	//int skipdefref = 0;//CModel::LoadFBXでCreateRigidElemReqを呼ぶ必要がある。FBXだけ読み込んでいる状態でdefault_refが必要。
 	CModel* newmodel = 0;
 	newmodel = (this->m_FbxFunc)( (characnt == (charanum - 1)), skipdefref, inittimeline );
-	_ASSERT( newmodel );
+	
+	if (!newmodel) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	
 	//newmodel->m_tmpmotspeed = m_motspeed;

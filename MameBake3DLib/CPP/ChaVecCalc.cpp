@@ -2416,7 +2416,29 @@ int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 {
 
-	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
+	////オイラー角Aの値をオイラー角Bの値に近い表示に修正
+	//double tmpX1, tmpY1, tmpZ1;
+	//double tmpX2, tmpY2, tmpZ2;
+	//double s1, s2;
+	//tmpX1 = eulerA->x;
+	//tmpY1 = eulerA->y;
+	//tmpZ1 = eulerA->z;
+	////予想される角度1
+	//tmpX2 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
+	//tmpY2 = eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y) / 360.0);
+	//tmpZ2 = eulerA->z + 360.0 * GetRound((eulerB->z - eulerA->z) / 360.0);
+	////角度変化の大きさ
+	//s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
+	//s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
+	//if (s1 <= s2) {
+	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+	//}
+	//else {
+	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+	//}
+
+
+		//オイラー角Aの値をオイラー角Bの値に近い表示に修正
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
 	double tmpX3, tmpY3, tmpZ3;
@@ -2485,7 +2507,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 	}
 
 
-	
+
 	//if ((eulerA->x > 90.0) || (eulerA->x < -90.0)) {
 	//	//Y軸反転
 	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
@@ -2493,6 +2515,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 	//else {
 	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
 	//}
+
 
 
 
