@@ -10096,6 +10096,9 @@ int OnRgdMorphMenu( int selindex )
 
 int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 {
+	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+	InitTimelineSelection();
+
 	if (!s_model) {
 		_ASSERT(0);
 		SetMainWindowTitle();
@@ -10289,6 +10292,10 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
+	}
+	else {
+		//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+		InitTimelineSelection();
 	}
 
 
