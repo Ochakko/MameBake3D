@@ -264,6 +264,9 @@ hr = pSwapChain->Present(1, dwFlags);
 
 
 ”””
+newer log is at UpdateLog.txt
+
+
 2021/06/07
 	bvh2FBX Batch Menu.
 	MotionCacheFile Batch Menu.
