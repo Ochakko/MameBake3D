@@ -5,7 +5,6 @@ ForContinuationOfDevelopmentOfMameBake3D
 次に示すアドレスは無料DL可能だが投げ銭も可能。 
 https://www.vector.co.jp/soft/winnt/art/se523002.html 
 
-
 動画【モーションツール】ver1.0.0.7完成版のいいところ【完成しますた】
 　https://youtu.be/nApvd9___mQ
 
@@ -29,6 +28,7 @@ A movie of completed version.
 Distribution address of Updata(addition and modified brushes) 
 https://moo-ochakkolab.ssl-lolipop.jp/LABMenu/MameBake3D.html
 
+<<<<<<< HEAD
 /////////////////////
 /////////////////////
 
