@@ -528,7 +528,7 @@ extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone
 //void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* childbone);
 extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
-extern void DXUTSetOverrideSize(int srcw, int srch);
+//extern void DXUTSetOverrideSize(int srcw, int srch);
 
 extern void OrgWinGUI::InitEulKeys();
 extern void OrgWinGUI::DestroyEulKeys();
@@ -1533,7 +1533,7 @@ static int OnFrameTimeLineWnd();
 static int OnFrameMouseButton();
 static int OnFrameToolWnd();
 static int OnFramePlayButton();
-static int OnFrame();
+//static int OnFrame();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
@@ -1596,7 +1596,7 @@ static void refreshTimeline( OWP_Timeline& timeline );
 static void refreshEulerGraph();
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( ChaVector3 diffvec );
-static int AddBoneTraPhysics(ChaVector3 diffvec);
+//static int AddBoneTraPhysics(ChaVector3 diffvec);
 
 static int AddBoneScale(int kind, float srctra);
 static int AddBoneScale2(ChaVector3 diffvec);
@@ -1651,7 +1651,7 @@ static int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int rende
 static int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext);
-static int SetSelectState(ID3D11DeviceContext* pd3dImmediateContext);
+//static int SetSelectState(ID3D11DeviceContext* pd3dImmediateContext);
 
 static int CreateModelPanel();
 static int DestroyModelPanel();
@@ -1664,7 +1664,7 @@ static int ConvBoneConvert();
 static int SaveRetargetFile();
 static int LoadRetargetFile(WCHAR* srcfilename);
 static int SaveMotionNameListFile();
-static int LoadMotionNameListFile(WCHAR* srcfilename);
+//static int LoadMotionNameListFile(WCHAR* srcfilename);
 static int SetJointPair2ConvBoneWnd();
 static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
 static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
@@ -1675,7 +1675,7 @@ static int CalcPickRay( ChaVector3* start3d, ChaVector3* end3d );
 static void ActivatePanel( int state );
 static int SetCamera6Angle();
 
-static int SetSelectCol();
+//static int SetSelectCol();
 static int RigidElem2WndParam();
 static int SetRigidLeng();
 static int SetImpWndParams();
@@ -1845,7 +1845,12 @@ int IsRegist()
 // loop. Idle time is used to render the scene.
 //--------------------------------------------------------------------------------------
 //INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
-INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+//INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+INT WINAPI wWinMain(
+	_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR lpCmdLine,
+	_In_ int nShowCmd )//SAL付き
 {
     // Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
@@ -1881,7 +1886,7 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	s_launchbyc4 = 0;
 	int    i;
 	int    nArgs;
-	WCHAR  szBuf[256];
+	//WCHAR  szBuf[256];
 	LPWSTR* lplpszArgs;
 	lplpszArgs = CommandLineToArgvW(GetCommandLine(), &nArgs);
 	for (i = 0; i < nArgs; i++) {
@@ -2099,7 +2104,12 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	
 	//if (!s_eventhook) {
-	CoInitialize(NULL);
+	HRESULT hr1 = CoInitialize(NULL);
+	if (FAILED(hr1)) {
+		//すでに初期化済なだけでエラーリターンするのでそのまま続行する
+		//_ASSERT(0);
+		//return 1;
+	}
 	//s_eventhook = SetWinEventHook(
 	//	//EVENT_SYSTEM_DIALOGSTART,
 	//	//EVENT_SYSTEM_DIALOGSTART,
@@ -2524,15 +2534,15 @@ void InitApp()
 		s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
-		s_bpWorld->setGlobalERP(g_erp);// ERP
+		s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 		//s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
 		s_btWorld = s_bpWorld->getDynamicsWorld();
 		s_bpWorld->setNumThread(g_numthread);
 	}
 
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
-	InterlockedExchange(&g_underApealingMouseHere, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+	InterlockedExchange(&g_underApealingMouseHere, (LONG)0);
 	if (g_enableDS == true) {
 		s_dsupdater = new CDSUpdateUnderTracking();
 		if (s_dsupdater) {
@@ -2626,7 +2636,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
 	s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
-	s_totalmb.r = ChaVector3Length(&s_totalmb.max);
+	s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
 	g_vCenter = s_totalmb.center;
 	float fObjectRadius = s_totalmb.r;
 	//ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
@@ -2768,7 +2778,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	}
 
 
-	CallF(GetShaderHandle(), return 1);
+	CallF(GetShaderHandle(), return S_FALSE);
 
 
 	// Setup the camera's view parameters
@@ -2809,10 +2819,10 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_select = new CModel();
 	if (!s_select) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
-	CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return 1);
-	CallF(s_select->MakeDispObj(), return 1);
+	CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_select->MakeDispObj(), return S_FALSE;);
 
 	s_matred = s_select->GetMQOMaterialByName("matred");
 	_ASSERT(s_matred);
@@ -2841,28 +2851,28 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_select_posture = new CModel();
 	if (!s_select_posture) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
-	CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return 1);
-	CallF(s_select_posture->MakeDispObj(), return 1);
+	CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_select_posture->MakeDispObj(), return S_FALSE);
 
 
 	s_rigmark = new CModel();
 	if (!s_rigmark) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
-	CallF(s_rigmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 1.0f, 0), return 1);
-	CallF(s_rigmark->MakeDispObj(), return 1);
+	CallF(s_rigmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_rigmark->MakeDispObj(), return S_FALSE);
 
 
 	s_bmark = new CModel();
 	if (!s_bmark) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
-	CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return 1);
-	CallF(s_bmark->MakeDispObj(), return 1);
+	CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_bmark->MakeDispObj(), return S_FALSE);
 
 
 
@@ -2870,27 +2880,27 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_ground = new CModel();
 	if (!s_ground) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
-	CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return 1);
-	CallF(s_ground->MakeDispObj(), return 1);
+	CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_ground->MakeDispObj(), return S_FALSE);
 
 	s_gplane = new CModel();
 	if (!s_gplane) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
-	CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return 1);
-	CallF(s_gplane->MakeDispObj(), return 1);
+	CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_gplane->MakeDispObj(), return S_FALSE);
 	ChaVector3 tra(0.0f, 0.0, 0.0f);
 	ChaVector3 mult(5.0f, 1.0f, 5.0f);
-	CallF(s_gplane->MultDispObj(mult, tra), return 1);
+	CallF(s_gplane->MultDispObj(mult, tra), return S_FALSE);
 
 
 	s_bcircle = new CMySprite(s_pdev);
 	if (!s_bcircle) {
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
 
 	WCHAR path[MAX_PATH];
@@ -2902,7 +2912,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	last2en = wcsrchr(path, TEXT('\\'));
 	*last2en = 0L;
 	wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
-	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.dds", 0, 0), return 1);
+	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.dds", 0, 0), return S_FALSE);
 
 	///////
 	WCHAR mpath[MAX_PATH];
@@ -2917,97 +2927,97 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spaxis[0].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[0].sprite);
-	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.png", 0, 0), return 1);
+	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.png", 0, 0), return S_FALSE);
 	s_spaxis[1].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[1].sprite);
-	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.png", 0, 0), return 1);
+	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.png", 0, 0), return S_FALSE);
 	s_spaxis[2].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[2].sprite);
-	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.png", 0, 0), return 1);
+	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.png", 0, 0), return S_FALSE);
 
 	//SpriteSwitch ON
 	s_spguisw[SPGUISW_SPRITEFK].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteON);
-	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateSpriteFK140ON.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateSpriteFK140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT].spriteON);
-	CallF(s_spguisw[SPGUISW_LEFT].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft140ON.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_LEFT].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT2ND].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT2ND].spriteON);
-	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft2nd140ON.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft2nd140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON);
-	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateBulletPhysics140ON.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateBulletPhysics140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteON);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlatePhysicsIK140ON.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlatePhysicsIK140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
 	s_spguisw[SPGUISW_SPRITEFK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateSpriteFK140OFF.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateSpriteFK140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT].spriteOFF);
-	CallF(s_spguisw[SPGUISW_LEFT].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft140OFF.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_LEFT].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT2ND].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT2ND].spriteOFF);
-	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft2nd140OFF.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft2nd140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF);
-	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateBulletPhysics140OFF.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateBulletPhysics140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlatePhysicsIK140OFF.png", 0, 0), return 1);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlatePhysicsIK140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON);
-	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON);
-	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140ON.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON);
-	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140ON.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON);
-	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140ON.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140ON.png", 0, 0), return S_FALSE);
 	//RigidSwitch OFF
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF);
-	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF);
-	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140OFF.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF);
-	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140OFF.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF);
-	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140OFF.png", 0, 0), return 1);
+	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140OFF.png", 0, 0), return S_FALSE);
 
 	s_spretargetsw[SPRETARGETSW_RETARGET].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON);
-	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140ON.png", 0, 0), return 1);
+	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140ON.png", 0, 0), return S_FALSE);
 	s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF);
-	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140OFF.png", 0, 0), return 1);
+	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140OFF.png", 0, 0), return S_FALSE);
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON);
-	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140ON.png", 0, 0), return 1);
+	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140ON.png", 0, 0), return S_FALSE);
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF);
-	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140OFF.png", 0, 0), return 1);
+	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140OFF.png", 0, 0), return S_FALSE);
 
 	{
 		int aimno;
 		for (aimno = 0; aimno < SPAIMBARNUM; aimno++) {
 			s_spaimbar[aimno].spriteON = new CMySprite(s_pdev);
 			_ASSERT(s_spaimbar[aimno].spriteON);
-			CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return 1);
+			CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
 			s_spaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
 			_ASSERT(s_spaimbar[aimno].spriteOFF);
-			CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return 1);
+			CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
 		}
 	}
 	{
@@ -3015,48 +3025,48 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		for (aimno = 0; aimno < SPMENU_MAX; aimno++) {
 			s_spmenuaimbar[aimno].spriteON = new CMySprite(s_pdev);
 			_ASSERT(s_spmenuaimbar[aimno].spriteON);
-			CallF(s_spmenuaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return 1);
+			CallF(s_spmenuaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
 			s_spmenuaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
 			_ASSERT(s_spmenuaimbar[aimno].spriteOFF);
-			CallF(s_spmenuaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return 1);
+			CallF(s_spmenuaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
 		}
 	}
 
 	{
 		s_spsel3d.spriteON = new CMySprite(s_pdev);
 		_ASSERT(s_spsel3d.spriteON);
-		CallF(s_spsel3d.spriteON->Create(pd3dImmediateContext, mpath, L"button101_Select.tif", 0, 0), return 1);
+		CallF(s_spsel3d.spriteON->Create(pd3dImmediateContext, mpath, L"button101_Select.tif", 0, 0), return S_FALSE);
 		s_spsel3d.spriteOFF = new CMySprite(s_pdev);
 		_ASSERT(s_spsel3d.spriteOFF);
-		CallF(s_spsel3d.spriteOFF->Create(pd3dImmediateContext, mpath, L"button101_UnSelect.tif", 0, 0), return 1);
+		CallF(s_spsel3d.spriteOFF->Create(pd3dImmediateContext, mpath, L"button101_UnSelect.tif", 0, 0), return S_FALSE);
 	}
 
 
 
 	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_I].sprite);
-	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.png", 0, 0), return 1);
+	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.png", 0, 0), return S_FALSE);
 	s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_KAI].sprite);
-	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.png", 0, 0), return 1);
+	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.png", 0, 0), return S_FALSE);
 	s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
-	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.png", 0, 0), return 1);
+	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.png", 0, 0), return S_FALSE);
 
 	s_sprig[SPRIG_INACTIVE].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_sprig[SPRIG_INACTIVE].sprite);
-	CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRig.png", 0, 0), return 1);
+	CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRig.png", 0, 0), return S_FALSE);
 	s_sprig[SPRIG_ACTIVE].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_sprig[SPRIG_ACTIVE].sprite);
-	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRigActive.png", 0, 0), return 1);
+	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRigActive.png", 0, 0), return S_FALSE);
 
 	//s_spbt.sprite = new CMySprite(s_pdev);
 	//_ASSERT(s_spbt.sprite);
-	//CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return 1);
+	//CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return S_FALSE);
 
 	s_spmousehere.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spmousehere.sprite);
-	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return 1);
+	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return S_FALSE);
 	
 	{
 		WCHAR pngpath[MAX_PATH];
@@ -3083,7 +3093,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spret2prev.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spret2prev.sprite);
-	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return 1);
+	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return S_FALSE);
 
 
 	///////
@@ -3111,7 +3121,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	if (FAILED(s_pdev->CreateBlendState(&blendDesc, &g_blendState)))
 	{
 		_ASSERT(0);
-		return 1;
+		return S_FALSE;
 	}
 	/*
 	FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
@@ -3205,7 +3215,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 //
 //
 //	if( g_texbank ){
-//		CallF( g_texbank->Invalidate( INVAL_ONLYDEFAULT ), return 1 );
+//		CallF( g_texbank->Invalidate( INVAL_ONLYDEFAULT ), return S_FALSE );
 //		CallF( g_texbank->Restore(), return 1 );
 //	}
 //
@@ -4266,7 +4276,8 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	static double savetime = 0.0;
 	static int capcnt = 0;
 
-	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	if((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)){
 		return;
 	}
 
@@ -4705,7 +4716,8 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 //--------------------------------------------------------------------------------------
 void InfoBvh2FbxBatchCnt()
 {
-	if (s_bvh2fbxbatchwnd && (g_bvh2fbxbatchflag == 1) && (s_bvh2fbxnum >= 1)) {
+	//if (s_bvh2fbxbatchwnd && (g_bvh2fbxbatchflag == 1) && (s_bvh2fbxnum >= 1)) {
+	if (s_bvh2fbxbatchwnd && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 1) && (s_bvh2fbxnum >= 1)) {
 		WCHAR strnumcnt[1024] = { 0L };
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_bvh2fbxcnt + 1), s_bvh2fbxnum);
 		SetDlgItemTextW(s_bvh2fbxbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -4716,7 +4728,7 @@ void InfoBvh2FbxBatchCnt()
 			//プログレスバーの範囲を0-300にする           
 			//SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_bvh2fbxnum));
 			//現在位置を設定  
-			SendMessage(hProg, PBM_SETPOS, (s_bvh2fbxcnt + 1), 0);
+			SendMessage(hProg, PBM_SETPOS, (WPARAM)((WPARAM)s_bvh2fbxcnt + 1), 0);
 			//ステップの範囲を設定 
 			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 		}
@@ -4727,7 +4739,8 @@ void InfoBvh2FbxBatchCnt()
 
 void InfoMotionCacheBatchCnt()
 {
-	if (s_motioncachebatchwnd && (g_motioncachebatchflag == 1) && (s_motioncachenum >= 1)) {
+	//if (s_motioncachebatchwnd && (g_motioncachebatchflag == 1) && (s_motioncachenum >= 1)) {
+	if (s_motioncachebatchwnd && (InterlockedAdd(&g_motioncachebatchflag, 0) == 1) && (s_motioncachenum >= 1)) {
 		WCHAR strnumcnt[1024] = { 0L };
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_motioncachecnt + 1), s_motioncachenum);
 		SetDlgItemTextW(s_motioncachebatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -4738,7 +4751,7 @@ void InfoMotionCacheBatchCnt()
 			//プログレスバーの範囲を0-300にする           
 			//SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_motioncachenum));
 			//現在位置を設定  
-			SendMessage(hProg, PBM_SETPOS, (s_motioncachecnt + 1), 0);
+			SendMessage(hProg, PBM_SETPOS, (WPARAM)((WPARAM)s_motioncachecnt + 1), 0);
 			//ステップの範囲を設定 
 			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 		}
@@ -4750,7 +4763,8 @@ void InfoMotionCacheBatchCnt()
 
 void InfoRetargetBatchCnt()
 {
-	if (s_retargetbatchwnd && (g_retargetbatchflag == 1) && (s_retargetnum >= 1)) {
+	//if (s_retargetbatchwnd && (g_retargetbatchflag == 1) && (s_retargetnum >= 1)) {
+	if (s_retargetbatchwnd && (InterlockedAdd(&g_retargetbatchflag, 0) == 1) && (s_retargetnum >= 1)) {
 		WCHAR strnumcnt[1024] = { 0L };
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_retargetcnt + 1), s_retargetnum);
 		SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -4761,7 +4775,7 @@ void InfoRetargetBatchCnt()
 			//プログレスバーの範囲を0-300にする           
 			//SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_retargetnum));
 			//現在位置を設定  
-			SendMessage(hProg, PBM_SETPOS, (s_retargetcnt + 1), 0);
+			SendMessage(hProg, PBM_SETPOS, (WPARAM)((WPARAM)s_retargetcnt + 1), 0);
 			//ステップの範囲を設定 
 			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 		}
@@ -4775,7 +4789,7 @@ void InfoRetargetBatchCnt()
 void RenderText( double fTime )
 {
 	static double s_savetime = 0.0;
-	double g_calcfps;
+	//double g_calcfps;
 	if (fTime != s_savetime) {
 		g_calcfps = 1.0 / (fTime - s_savetime);
 	}
@@ -4924,7 +4938,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	//g_Camera->HandleMessages(hWnd, uMsg, wParam, lParam);
 	CBone* curbone = 0;
 	CRigidElem* curre = 0;
-	if (g_retargetbatchflag == 0) {
+	//if (g_retargetbatchflag == 0) {
+	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
 		//int maxboneno = 0;
 		if (s_model && (s_curboneno >= 0)) {
 			curbone = s_model->GetBoneByID(s_curboneno);
@@ -5003,7 +5018,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 			else {
 				int boneno = menuid - ID_RMENU_0 - 1 - MENUOFFSET_SETCONVBONE;
-				CBone* curbone = s_convbone_bvh->GetBoneByID(boneno);
+				curbone = s_convbone_bvh->GetBoneByID(boneno);
 				WCHAR strmes[1024];
 				if (!curbone) {
 					s_bvhbone_bone[s_bvhbone_cbno] = 0;
@@ -5053,7 +5068,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 				}
 				else if (subid == 1) {
-					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					curbone = s_model->GetBoneByID(s_curboneno);
 					if (curbone) {
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
@@ -5063,7 +5078,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 				}
 				else if (subid == 2) {
-					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					curbone = s_model->GetBoneByID(s_curboneno);
 					if (curbone) {
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
@@ -5669,7 +5684,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		ChaMatrixIdentity(&s_ikselectmat);
 		if( s_model && (s_curboneno >= 0) ){
-			CBone* curbone = s_model->GetBoneByID( s_curboneno );
+			curbone = s_model->GetBoneByID( s_curboneno );
 			_ASSERT( curbone );
 			if (curbone){
 				s_saveboneno = s_curboneno;
@@ -5700,7 +5715,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
-		s_camdist = ChaVector3Length( &diffv );
+		s_camdist = (float)ChaVector3LengthDbl( &diffv );
 
 
 		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
@@ -5902,7 +5917,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = neweye - newat;
-			s_camdist = ChaVector3Length(&diffv);
+			s_camdist = ChaVector3LengthDbl(&diffv);
 
 
 		}
@@ -6011,7 +6026,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = neweye - g_camtargetpos;
-			s_camdist = ChaVector3Length(&diffv);
+			s_camdist = ChaVector3LengthDbl(&diffv);
 
 
 		}else if (s_pickinfo.buttonflag == PICK_CAMDIST){
@@ -6206,13 +6221,13 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
     CDXUTComboBox* pComboBox;
 	ChaVector3 cureul, neweul;
-	int tmpboneno;
-	CBone* tmpbone;
+	//int tmpboneno;
+	//CBone* tmpbone;
 	WCHAR sz[100];
 	ChaVector3 weye;
 	float trastep = s_totalmb.r * 0.05f;
 	int modelnum = (int)s_modelindex.size();
-	int modelno;
+	//int modelno;
 	int tmpikindex;
 
     switch( nControlID )
@@ -7229,7 +7244,7 @@ int SetBaseDir()
 	unsigned int leng;
 	ZeroMemory(g_basedir, sizeof(WCHAR)* MAX_PATH);
 	wcscpy_s(g_basedir, MAX_PATH, filename);
-	leng = wcslen(g_basedir);
+	leng = (unsigned int)wcslen(g_basedir);
 	if (wcscmp(g_basedir + leng - 1, L"\\") != 0){
 		wcscat_s(g_basedir, MAX_PATH, L"\\");
 	}
@@ -7465,8 +7480,8 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 			const WCHAR* pfind;
 			pfind = wcsstr(wpath, pattern);
 			if (pfind) {
-				int pathleng = wcslen(wpath);
-				int patternleng = wcslen(pattern);
+				int pathleng = (int)wcslen(wpath);
+				int patternleng = (int)wcslen(pattern);
 				if ((patternleng > 0) && (pathleng > 0) && (pathleng < MAX_PATH) && (pathleng > patternleng)) {
 					WCHAR chkterm = *(pfind + patternleng);
 					if (chkterm == 0L) {//patternの次の文字がNULLの場合
@@ -7543,7 +7558,7 @@ int MotionCacheFile(char* fbxpath)
 	//skipdefref FBX単体読み込みの場合にはdefault_ref.refは存在しない。その場合skipdefrefには０が代入され、CModel::LoadFBX内でdefault_ref.refの中でメモリからデフォルト値が設定される
 	int ret;
 	int skipdefref = 0;
-	BOOL motioncachebatchflag = TRUE;
+	BOOL motioncachebatchflag = TRUE;//g_ではない
 	ret = newmodel->LoadFBX(skipdefref, s_pdev, pd3dImmediateContext, wfbxpath, wmodelfolder, 1.0f, s_psdk, &pImporter, &pScene, s_forcenewaxis, motioncachebatchflag);
 	if (ret) {
 		_ASSERT(0);
@@ -7563,9 +7578,10 @@ int MotionCacheFile(char* fbxpath)
 
 
 	if (newmodel) {
+		CModel* savemodel = newmodel;
 		delete newmodel;
 
-		CBone::OnDelModel(newmodel);//delete modelよりも後で。bonenoの表から削除、parmodelを再利用しない処理
+		CBone::OnDelModel(savemodel);//delete modelよりも後で。bonenoの表から削除、parmodelを再利用しない処理
 
 		newmodel = 0;
 	}
@@ -7586,7 +7602,7 @@ int MotionCacheFile(char* fbxpath)
 unsigned __stdcall ThreadFunc_MotionCache(LPVOID lpThreadParam)
 {
 
-	int outnum = s_motioncacheout.size();
+	int outnum = (int)s_motioncacheout.size();
 
 	int outcnt;
 	for (outcnt = 0; outcnt < outnum; outcnt++) {
@@ -7598,19 +7614,27 @@ unsigned __stdcall ThreadFunc_MotionCache(LPVOID lpThreadParam)
 		int result;
 		result = MotionCacheFile(fbxpath);
 		if (result == 0) {
-			InterlockedExchange(&s_motioncachecnt, outcnt);
+			InterlockedExchange(&s_motioncachecnt, (LONG)outcnt);
 		}
 		else {
 			//InterlockedExchange(&g_motioncachebatchflag, 0);
 			break;
 		}
 
-		if (g_motioncachebatchflag != 1) {
+
+		//LONG InterlockedXor(
+		//	LONG volatile* Destination,
+		//	LONG          Value
+		//);
+
+		
+		//if (g_motioncachebatchflag != 1) {
+		if(InterlockedAdd(&g_motioncachebatchflag, 0) != 1){
 			break;
 		}
 	}
 
-	InterlockedExchange(&g_motioncachebatchflag, 3);
+	InterlockedExchange(&g_motioncachebatchflag, (LONG)3);
 
 	WaitMotionCacheThreads();
 
@@ -7625,7 +7649,8 @@ unsigned __stdcall ThreadFunc_MotionCacheDisp(LPVOID lpThreadParam)
 		SetWindowTextW(s_motioncachebatchwnd, L"Make MotionCache File(EGP) Batch");
 	}
 
-	while (g_motioncachebatchflag == 1) {
+	//while (g_motioncachebatchflag == 1) {
+	while (InterlockedAdd(&g_motioncachebatchflag, 0) == 1) {
 		if (s_motioncachebatchwnd != 0) {
 			SendMessage(s_motioncachebatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
 			UpdateWindow(s_motioncachebatchwnd);
@@ -7708,11 +7733,11 @@ int MotionCacheBatch()
 	s_getfilenametreeview = 0;
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	curlpidl = SHBrowseForFolder(&bi);
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
@@ -7750,7 +7775,7 @@ int MotionCacheBatch()
 		s_motioncachenum = outnum;
 		if (outnum > 0)
 		{
-			InterlockedExchange(&g_motioncachebatchflag, 1);
+			InterlockedExchange(&g_motioncachebatchflag, (LONG)1);
 
 			//CreateDialogW(NULL, MAKEINTRESOURCE(IDD_DIALOG2), NULL, (DLGPROC)MotionCacheBatchDlgProc);
 			//CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), s_LtimelineWnd->getHWnd(), (DLGPROC)MotionCacheBatchDlgProc);
@@ -7775,9 +7800,14 @@ int MotionCacheBatch()
 
 
 			//WiatForしない場合には先に閉じてもOK
-			CloseHandle(s_motioncachehandle1);
-			CloseHandle(s_motioncachehandle2);
-
+			
+			if (s_motioncachehandle1 && (s_motioncachehandle1 != INVALID_HANDLE_VALUE)) {
+				CloseHandle(s_motioncachehandle1);
+			}
+			if(s_motioncachehandle2 && (s_motioncachehandle2 != INVALID_HANDLE_VALUE)){
+				CloseHandle(s_motioncachehandle2);
+			}
+			
 		}
 	}
 
@@ -7801,11 +7831,11 @@ int RetargetFile(char* fbxpath)
 	if (pfind) {
 		
 		if (s_modelindex.size() > 0) {
-			OnModelMenu(false, s_modelindex.size() - 1, 1);
+			OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 		}
 
 		unsigned int dirpathlen;
-		dirpathlen = (pfind - fbxpath + 1);
+		dirpathlen = (unsigned int)(pfind - fbxpath + 1);
 		strncpy_s(directorypath, MAX_PATH, fbxpath, dirpathlen);
 
 		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, fbxpath, MAX_PATH, g_tmpmqopath, MAX_PATH);
@@ -7846,7 +7876,7 @@ int RetargetFile(char* fbxpath)
 unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
 {
 
-	int outnum = s_retargetout.size();
+	int outnum = (int)s_retargetout.size();
 
 	int outcnt;
 	for (outcnt = 0; outcnt < outnum; outcnt++) {
@@ -7858,19 +7888,20 @@ unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
 		int result;
 		result = RetargetFile(fbxpath);
 		if (result == 0) {
-			InterlockedExchange(&s_retargetcnt, outcnt);
+			InterlockedExchange(&s_retargetcnt, (LONG)outcnt);
 		}
 		else {
 			//InterlockedExchange(&g_retargetbatchflag, 0);
 			break;
 		}
 
-		if (g_retargetbatchflag != 1) {
+		//if (g_retargetbatchflag != 1) {
+		if (InterlockedAdd(&g_retargetbatchflag, 0) != 1) {
 			break;
 		}
 	}
 	
-	InterlockedExchange(&g_retargetbatchflag, 3);
+	InterlockedExchange(&g_retargetbatchflag, (LONG)3);
 
 	WaitRetargetThreads();
 
@@ -7950,11 +7981,11 @@ int RetargetBatch()
 	s_getfilenametreeview = 0;
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	curlpidl = SHBrowseForFolder(&bi);
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
@@ -7992,7 +8023,7 @@ int RetargetBatch()
 		s_retargetnum = outnum;
 		if (outnum > 0)
 		{
-			InterlockedExchange(&g_retargetbatchflag, 1);
+			InterlockedExchange(&g_retargetbatchflag, (LONG)1);
 
 			CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), NULL, (DLGPROC)RetargetBatchDlgProc);
 			RECT rect;
@@ -8014,8 +8045,12 @@ int RetargetBatch()
 				0, &threadaddr1);
 
 			//WiatForしない場合には先に閉じてもOK
-			CloseHandle(s_retargethandle1);
-			CloseHandle(s_retargethandle2);
+			if ((s_retargethandle1 != 0) && (s_retargethandle1 != INVALID_HANDLE_VALUE)) {
+				CloseHandle(s_retargethandle1);
+			}
+			if ((s_retargethandle2 != 0) && (s_retargethandle2 != INVALID_HANDLE_VALUE)) {
+				CloseHandle(s_retargethandle2);
+			}
 
 		}
 	}
@@ -8032,7 +8067,7 @@ int RetargetBatch()
 
 unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 {
-	int outnum = s_bvh2fbxout.size();
+	int outnum = (int)s_bvh2fbxout.size();
 	int outcnt;
 	for (outcnt = 0; outcnt < outnum; outcnt++) {
 		//bvhファイルを読み込む
@@ -8059,7 +8094,7 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 		SYSTEMTIME localtime;
 		GetLocalTime(&localtime);
 		char fbxdate[MAX_PATH] = { 0L };
-		sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+		sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
 			localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 
 		int result;
@@ -8080,12 +8115,13 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 			bvhfile = 0;
 		}
 
-		if (g_bvh2fbxbatchflag != 1) {
+		//if (g_bvh2fbxbatchflag != 1) {
+		if (InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 1) {
 			break;
 		}
 	}
 
-	InterlockedExchange(&g_bvh2fbxbatchflag, 3);
+	InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)3);
 
 	WaitBvh2FbxThreads();
 
@@ -8150,11 +8186,11 @@ int BVH2FBXBatch()
 	s_getfilenametreeview = 0;
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	curlpidl = SHBrowseForFolder(&bi);
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
@@ -8193,7 +8229,7 @@ int BVH2FBXBatch()
 		if (outnum > 0)
 		{
 	
-			InterlockedExchange(&g_bvh2fbxbatchflag, 1);
+			InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)1);
 
 			//CreateDialogW(NULL, MAKEINTRESOURCE(IDD_DIALOG2), NULL, (DLGPROC)bvh2fbxBatchDlgProc);
 			//CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG2), s_LtimelineWnd->getHWnd(), (DLGPROC)bvh2fbxBatchDlgProc);
@@ -8217,8 +8253,12 @@ int BVH2FBXBatch()
 				0, &threadaddr1);
 
 			//WiatForしない場合には先に閉じてもOK
-			CloseHandle(s_bvh2fbxhandle1);
-			CloseHandle(s_bvh2fbxhandle2);
+			if (s_bvh2fbxhandle1 && (s_bvh2fbxhandle1 != INVALID_HANDLE_VALUE)) {
+				CloseHandle(s_bvh2fbxhandle1);
+			}
+			if (s_bvh2fbxhandle2 && (s_bvh2fbxhandle2 != INVALID_HANDLE_VALUE)) {
+				CloseHandle(s_bvh2fbxhandle2);
+			}
 
 		}
 	}
@@ -8261,7 +8301,7 @@ int BVH2FBX()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
-	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	CallF( BVH2FBXFile( s_psdk, &bvhfile, fbxpath, fbxdate ), return 1 );
 
@@ -8308,6 +8348,7 @@ int OpenFile()
 
 	int leng;
 	int namecnt = 0;
+	savepath[MULTIPATH - 1] = 0L;
 	leng = (int)wcslen( savepath );
 	WCHAR* topchar = savepath + leng;
 	if( *topchar == TEXT( '\0' ) ){
@@ -8332,7 +8373,7 @@ int OpenFile()
 			s_filterindex = 1;
 		}else if( cmpfbx == 0 ){
 			if (s_modelindex.size() > 0) {
-				OnModelMenu(false, s_modelindex.size() - 1, 1);
+				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 			}
 			newmodel = OpenFBXFile( true, 0, 1 );
 			if (newmodel) {
@@ -8344,7 +8385,7 @@ int OpenFile()
 			s_filterindex = 1;
 		}else if( cmpmqo == 0 ){
 			if (s_modelindex.size() > 0) {
-				OnModelMenu(false, s_modelindex.size() - 1, 1);
+				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 			}
 			newmodel = OpenMQOFile();
 			if (newmodel) {
@@ -8380,6 +8421,7 @@ int OpenFile()
 	}else{
 		int leng2;
 		while( *topchar != TEXT( '\0' ) ){
+			leng2 = (int)wcslen(topchar);
 			swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s", savepath, topchar );
 
 			WCHAR* extptr = 0;
@@ -8394,10 +8436,10 @@ int OpenFile()
 			cmpfbx = wcscmp( extptr, L".fbx" );
 			cmpmqo = wcscmp( extptr, L".mqo" );
 			if( cmpfbx == 0 ){
-				WCHAR* nexttopchar = topchar + leng2 + 1;
+				//WCHAR* nexttopchar = topchar + leng2 + 1;
 				//if (*nexttopchar != TEXT('\0')) {
 					if (s_modelindex.size() > 0) {
-						OnModelMenu(false, s_modelindex.size() - 1, 1);
+						OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 					}
 					newmodel = OpenFBXFile(true, 0, 1);
 					if (newmodel) {
@@ -8414,7 +8456,7 @@ int OpenFile()
 				s_filterindex = 1;
 			}else if( cmpmqo == 0 ){
 				if (s_modelindex.size() > 0) {
-					OnModelMenu(false, s_modelindex.size() - 1, 1);
+					OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 				}
 				newmodel = OpenMQOFile();
 				if (newmodel) {
@@ -9599,24 +9641,38 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 {
 	if (selfflag && !bvhbone){
 		_ASSERT(0);
-		return 0;
+		return 1;
 	}
 	if ((selfflag == 0) && !befbvhbone){
 		_ASSERT(0);
-		return 0;
+		return 1;
 	}
 
 	if (!s_convbone_model || !s_convbone_bvh || !srcbone){
 		_ASSERT(0);
-		return 0;
+		return 1;
 	}
 
 	static ChaMatrix s_firsthipmat;
 	static ChaMatrix s_invfirsthipmat;
 
+	MOTINFO* bvhmi;
+	int bvhmotid;
 
-	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
-	int bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	if (s_convbone_bvh->GetMotInfoBegin() != s_convbone_bvh->GetMotInfoEnd()) {
+		bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
+		if (bvhmi) {
+			bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 
 	CMotionPoint bvhmp;
@@ -9628,7 +9684,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 		else{
 			_ASSERT(0);
-			return 0;
+			return 1;
 		}
 	}
 	else{
@@ -9639,7 +9695,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 		else{
 			_ASSERT(0);
-			return 0;
+			return 1;
 		}
 	}
 
@@ -9655,7 +9711,7 @@ int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcfra
 		}
 		else{
 			_ASSERT(0);
-			return 0;
+			return 1;
 		}
 
 		CMotionPoint modelparmp;
@@ -10012,7 +10068,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 	ZeroMemory( motionname, 256 );
 	SYSTEMTIME systime;
 	GetLocalTime( &systime );
-	sprintf_s( motionname, 256, "motion_%d_%d_%d_%d_%d_%d_%d",
+	sprintf_s( motionname, 256, "motion_%ud_%ud_%ud_%ud_%ud_%ud_%ud",
 		systime.wYear,
 		systime.wMonth,
 		systime.wDay,
@@ -10323,7 +10379,8 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
     g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
 
-	if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
+	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
 		CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
 	}
 
@@ -10652,7 +10709,7 @@ int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb )
 
 	ChaVector3 diff;
 	diff = mb->center - newmin;
-	mb->r = ChaVector3Length( &diff );
+	mb->r = (float)ChaVector3LengthDbl( &diff );
 
 	return 0;
 }
@@ -11061,7 +11118,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				GetbvhHistoryDir(vecopenfilename);
 
 				int radiocnt = 0;
-				int radionum = min(5, vecopenfilename.size());
+				int radionum = min(5, (int)vecopenfilename.size());
 				if (radionum != 0) {
 					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
 				}
@@ -11169,7 +11226,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				}
 
 				int radiocnt = 0;
-				int radionum = min(5, vecopenfilename.size());
+				int radionum = min(5, (int)vecopenfilename.size());
 				if (radionum != 0) {
 					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
 				}
@@ -11291,14 +11348,14 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenametreeview = 0;
 					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, 1);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
 						s_refokflag = true;
 					}
 					
-					InterlockedExchange(&g_undertrackingRMenu, 0);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 					UnhookWinEvent(hhook);
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -11395,13 +11452,13 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_getfilenametreeview = 0;
 			HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 				WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-			InterlockedExchange(&g_undertrackingRMenu, 1);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 			if (GetOpenFileNameW(&ofn) == IDOK) {
 				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
 			}
 
-			InterlockedExchange(&g_undertrackingRMenu, 0);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 			UnhookWinEvent(hhook);
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
@@ -11590,7 +11647,7 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 		SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 
 		if (s_retargetbatchwnd) {
-			HWND hProg;
+			//HWND hProg;
 			hProg = GetDlgItem(s_retargetbatchwnd, IDC_PROGRESS1);
 			if (hProg) {
 				//プログレスバーの範囲を0-300にする           
@@ -11684,7 +11741,7 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 		SetDlgItemTextW(s_motioncachebatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 
 		if (s_motioncachebatchwnd) {
-			HWND hProg;
+			//HWND hProg;
 			hProg = GetDlgItem(s_motioncachebatchwnd, IDC_PROGRESS1);
 			if (hProg) {
 				//プログレスバーの範囲を0-300にする           
@@ -11778,7 +11835,7 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 		SetDlgItemTextW(s_bvh2fbxbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 
 		if (s_bvh2fbxbatchwnd) {
-			HWND hProg;
+			//HWND hProg;
 			hProg = GetDlgItem(s_bvh2fbxbatchwnd, IDC_PROGRESS1);
 			if (hProg) {
 				//プログレスバーの範囲を0-300にする           
@@ -11883,13 +11940,13 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenametreeview = 0;
 					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, 1);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
 
-					InterlockedExchange(&g_undertrackingRMenu, 0);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 					UnhookWinEvent(hhook);
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -11980,13 +12037,13 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenametreeview = 0;
 					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, 1);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
 
-					InterlockedExchange(&g_undertrackingRMenu, 0);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 					UnhookWinEvent(hhook);
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -12078,13 +12135,13 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenametreeview = 0;
 					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, 1);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
 
-					InterlockedExchange(&g_undertrackingRMenu, 0);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 					UnhookWinEvent(hhook);
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -12172,13 +12229,13 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenametreeview = 0;
 					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, 1);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 					if (GetOpenFileNameW(&ofn) == IDOK) {
 						SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
 					}
 
-					InterlockedExchange(&g_undertrackingRMenu, 0);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 					UnhookWinEvent(hhook);
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -12667,7 +12724,7 @@ int SetConvBoneModel()
 
 	s_cursubmenu = rmenu->GetSubMenu();
 
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
 	//if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + modelnum))) {
@@ -12688,7 +12745,7 @@ int SetConvBoneModel()
 
 	rmenu->Destroy();
 	delete rmenu;
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
 	return 0;
 }
@@ -12743,7 +12800,7 @@ int SetConvBoneBvh()
 
 	s_cursubmenu = rmenu->GetSubMenu();
 
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
 	//if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + modelnum))){
@@ -12764,7 +12821,7 @@ int SetConvBoneBvh()
 
 	rmenu->Destroy();
 	delete rmenu;
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
 	return 0;
 }
@@ -12832,7 +12889,7 @@ int SetConvBone( int cbno )
 
 	s_cursubmenu = rmenu->GetSubMenu();
 
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
 	//if ((menuid >= ID_RMENU_0) && (menuid <= (ID_RMENU_0 + maxboneno + 1))){
@@ -12877,7 +12934,7 @@ int SetConvBone( int cbno )
 
 	rmenu->Destroy();
 	delete rmenu;
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
 	return 0;
 }
@@ -12955,7 +13012,7 @@ int SaveMotionNameListFile()
 	s_getfilenametreeview = 0;
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 
 	WCHAR* pext;
@@ -12970,7 +13027,7 @@ int SaveMotionNameListFile()
 		result = mnlfile.WriteMNLFile(g_tmpmqopath, s_model);
 	}
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
@@ -13013,7 +13070,7 @@ int SaveRetargetFile()
 	s_getfilenametreeview = 0;
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 
 	WCHAR* pext;
@@ -13028,7 +13085,7 @@ int SaveRetargetFile()
 		result = rtgfile.WriteRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
 	}
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
@@ -13078,13 +13135,14 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		s_getfilenametreeview = 0;
 		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-		InterlockedExchange(&g_undertrackingRMenu, 1);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		if (GetOpenFileNameW(&ofn) == IDOK) {
 			CRetargetFile rtgfile;
 			result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
 			if (result == 0) {
-				if (g_retargetbatchflag == 0) {
+				//if (g_retargetbatchflag == 0) {
+				if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
 					SetJointPair2ConvBoneWnd();
 				}
 			}
@@ -13096,17 +13154,18 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		s_getfilenametreeview = 0;
 		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-		InterlockedExchange(&g_undertrackingRMenu, 1);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		CRetargetFile rtgfile;
 		result = rtgfile.LoadRetargetFile(srcfilename, s_convbone_model, s_convbone_bvh, s_convbonemap);
 		if (result == 0) {
-			if (g_retargetbatchflag == 0) {
+			//if (g_retargetbatchflag == 0) {
+			if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
 				SetJointPair2ConvBoneWnd();
 			}
 		}
 
-		InterlockedExchange(&g_undertrackingRMenu, 0);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 		UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
@@ -13130,7 +13189,7 @@ int ConvBoneConvert()
 
 	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
 	if (!bvhmi) {
-		_ASSERT(0);
+		::DSMessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
 		return 1;
 	}
 	double motleng = bvhmi->frameleng;
@@ -13139,8 +13198,14 @@ int ConvBoneConvert()
 
 
 	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
-	CBone* modelbone = s_convbone_model->GetTopBone();
-
+	CBone* modelbone;
+	if (modelmi) {
+		modelbone = s_convbone_model->GetTopBone();
+	}
+	else {
+		::DSMessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
+		return 1;
+	}
 
 	HINFO bvhhi;
 	bvhhi.minh = 1e7;
@@ -13180,7 +13245,8 @@ int ConvBoneConvert()
 
 	g_underRetargetFlag = false;//!!!!!!!!!!!!
 
-	if (!g_retargetbatchflag) {
+	//if (!g_retargetbatchflag) {
+	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
 		::DSMessageBox(NULL, L"Finish of convertion.", L"check!!!", MB_OK);
 	}
 
@@ -13246,7 +13312,7 @@ int SetCamera6Angle()
 	ChaVector3 weye, wdiff;
 	weye = g_camEye;
 	wdiff = g_camtargetpos - weye;
-	float camdist = ChaVector3Length( &wdiff );
+	float camdist = (float)ChaVector3LengthDbl( &wdiff );
 
 	ChaVector3 neweye;
 	float delta = 0.10f;
@@ -13338,7 +13404,7 @@ int SetCamera6Angle()
 
 	ChaVector3 diffv;
 	diffv = g_camEye - g_camtargetpos;
-	s_camdist = ChaVector3Length( &diffv );
+	s_camdist = (float)ChaVector3LengthDbl( &diffv );
 
 	return 0;
 }
@@ -13412,10 +13478,10 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 		vector<MODELELEM>::iterator itrmodel;
 		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-			CModel* curmodel = itrmodel->modelptr;
-			if (curmodel) {
+			CModel* pmodel = itrmodel->modelptr;
+			if (pmodel) {
 				//全モデルシミュ停止
-				curmodel->BulletSimulationStop();
+				pmodel->BulletSimulationStop();
 			}
 		}
 
@@ -13481,15 +13547,15 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
+		CModel* pmodel = itrmodel->modelptr;
 
 
-		if (curmodel) {
+		if (pmodel) {
 			//if ((flag == 0) && (g_previewFlag != 4)){
 				//F9キー
 			if (btcntzero == 1) {
-				curmodel->ZeroBtCnt();
-				curmodel->SetCreateBtFlag(false);
+				pmodel->ZeroBtCnt();
+				pmodel->SetCreateBtFlag(false);
 			}
 			//}
 			//else if (flag == 1){
@@ -13538,7 +13604,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 			else if (flag == 2) {//2021/06/18
 				if (resetflag == 1) {
 					//curframe = s_owpTimeline->getCurrentTime();
-					curmodel->GetMotionFrame(&curframe);
+					pmodel->GetMotionFrame(&curframe);
 					s_owpLTimeline->setCurrentTime(curframe, false);
 					s_owpEulerGraph->setCurrentTime(curframe, false);
 				}
@@ -13548,7 +13614,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 				if (g_previewFlag == 4) {
 					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！
-					curmodel->SetCurrentRigidElem(s_reindexmap[curmodel]);//s_curreindexをmodelごとに持つ必要あり！！！
+					pmodel->SetCurrentRigidElem(s_reindexmap[pmodel]);//s_curreindexをmodelごとに持つ必要あり！！！
 
 					//決め打ち
 					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
@@ -13556,7 +13622,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 																	  
 																	  
 					//s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
-					s_bpWorld->setGlobalERP(g_erp);// ERP
+					s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 
 
 
@@ -13568,25 +13634,25 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//curmodel->SetAllMassDataByBoneLeng(-1, s_curreindex, 30.0);//!!!!!!!! Mass自動設定中 !!!!!
 
 
-					curmodel->SetMotionFrame(curframe);
+					pmodel->SetMotionFrame(curframe);
 
-					vector<MODELELEM>::iterator itrmodel;
-					for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-						CModel* curmodel = itrmodel->modelptr;
-						if (curmodel) {
-							curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
+					vector<MODELELEM>::iterator itrmodel2;
+					for (itrmodel2 = s_modelindex.begin(); itrmodel2 != s_modelindex.end(); itrmodel2++) {
+						CModel* updatemodel = itrmodel2->modelptr;
+						if (updatemodel) {
+							updatemodel->UpdateMatrix(&updatemodel->GetWorldMat(), &s_matVP);
 						}
 					}
 
 					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！reの内容を変えてから呼ぶ
 					//s_curreindex = 1;
-					curmodel->SetMotionSpeed(g_dspeed);
+					pmodel->SetMotionSpeed(g_dspeed);
 				}
 				else if (g_previewFlag == 5) {
 					s_rectime = 0.0;
 					s_reccnt = 0;
 
-					curmodel->SetCurrentRigidElem(s_rgdindexmap[curmodel]);//s_rgdindexをmodelごとに持つ必要あり！！！
+					pmodel->SetCurrentRigidElem(s_rgdindexmap[pmodel]);//s_rgdindexをmodelごとに持つ必要あり！！！
 
 					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 
@@ -13618,13 +13684,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 
-					curmodel->SetMotionFrame(curframe);
+					pmodel->SetMotionFrame(curframe);
 
-					vector<MODELELEM>::iterator itrmodel;
-					for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-						CModel* curmodel = itrmodel->modelptr;
-						if (curmodel) {
-							curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
+					vector<MODELELEM>::iterator itrmodel3;
+					for (itrmodel3 = s_modelindex.begin(); itrmodel3 != s_modelindex.end(); itrmodel3++) {
+						CModel* updatemodel = itrmodel3->modelptr;
+						if (updatemodel) {
+							updatemodel->UpdateMatrix(&updatemodel->GetWorldMat(), &s_matVP);
 						}
 					}
 
@@ -13632,7 +13698,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
 
 					//決め打ち
-					curmodel->SetAllKData(-1, s_rgdindexmap[curmodel], 3, 3, 1500.0, 30.0);
+					pmodel->SetAllKData(-1, s_rgdindexmap[pmodel], 3, 3, 1500.0, 30.0);
 										
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 
@@ -13677,23 +13743,23 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 */
 					//決め打ち
-					curmodel->SetAllMassDataByBoneLeng(-1, s_rgdindexmap[curmodel], 30.0);
+					pmodel->SetAllMassDataByBoneLeng(-1, s_rgdindexmap[pmodel], 30.0);
 					
 					//curmodel->SetAllMassData(-1, s_rgdindex, 1.0);
 
 
-					curmodel->SetMotionSpeed(g_dspeed);
+					pmodel->SetMotionSpeed(g_dspeed);
 				}
 
 				s_btstartframe = curframe;
 
 				//CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
-				CallF(curmodel->CreateBtObject(1), return 1);
+				CallF(pmodel->CreateBtObject(1), return 1);
 
 
 				//if( g_previewFlag == 4 ){
 
-				curmodel->BulletSimulationStart();
+				pmodel->BulletSimulationStart();
 
 
 
@@ -13724,8 +13790,8 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				//}
 
 
-				if (curmodel->GetRgdMorphIndex() >= 0) {
-					MOTINFO* morphmi = curmodel->GetRgdMorphInfo();
+				if (pmodel->GetRgdMorphIndex() >= 0) {
+					MOTINFO* morphmi = pmodel->GetRgdMorphInfo();
 					if (morphmi) {
 						//morphmi->curframe = 0.0;
 						morphmi->curframe = s_btstartframe;
@@ -13736,6 +13802,8 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		}
 	}
 
+
+	//curmodel : 引数で渡されたmodel
 	if (s_model && (curmodel == s_model)) {
 		PrepairUndo();
 	}
@@ -14065,12 +14133,16 @@ int SaveProject()
 
 
 	CChaFile chafile;
-	CallF(chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed), return 1);
+	int result = chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed);
+	if (result) {
+		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
+		return 1;
+	}
 
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
-	savepathlen = wcslen(saveprojpath);
+	savepathlen = (int)wcslen(saveprojpath);
 	if (savepathlen > 4) {
 		WCHAR* pwext;
 		pwext = saveprojpath + (savepathlen - 1) - 3;
@@ -14078,7 +14150,7 @@ int SaveProject()
 			SYSTEMTIME localtime;
 			GetLocalTime(&localtime);
 			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04d%02d%02d%02d%02d%02d.txt",
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
 				s_temppath,
 				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 			HANDLE hfile;
@@ -14086,7 +14158,7 @@ int SaveProject()
 				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 			if (hfile != INVALID_HANDLE_VALUE) {
 				int pathlen;
-				pathlen = wcslen(saveprojpath);
+				pathlen = (int)wcslen(saveprojpath);
 				if ((pathlen > 0) && (pathlen < MAX_PATH)) {
 					DWORD writelen = 0;
 					WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
@@ -14135,17 +14207,17 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					HWND hWnd = NULL;
 
 					IMalloc *pMalloc;
-					SHGetMalloc(&pMalloc);
-
-					if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
-					{
-						// パスに変換する
-						SHGetPathFromIDList(pidl, s_projectdir);
-						// 取得したIDLを解放する (CoTaskMemFreeでも可)
-						pMalloc->Free(pidl);
-						SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+					if (SUCCEEDED(SHGetMalloc(&pMalloc))) {
+						if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
+						{
+							// パスに変換する
+							SHGetPathFromIDList(pidl, s_projectdir);
+								// 取得したIDLを解放する (CoTaskMemFreeでも可)
+								pMalloc->Free(pidl);
+								SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+						}
+						pMalloc->Release();
 					}
-					pMalloc->Release();
 				}
 			}
 			RECT dlgrect;
@@ -14195,11 +14267,11 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_getfilenametreeview = 0;
 			HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 				WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-			InterlockedExchange(&g_undertrackingRMenu, 1);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 			curlpidl = SHBrowseForFolder(&bi);
 
-			InterlockedExchange(&g_undertrackingRMenu, 0);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 			UnhookWinEvent(hhook);
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
@@ -14294,7 +14366,7 @@ int OpenChaFile()
 		s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
-		s_bpWorld->setGlobalERP(g_erp);// ERP
+		s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 									   //s_bpWorld->start();// ウィンドウを表示して，シミュレーションを開始する
 		s_btWorld = s_bpWorld->getDynamicsWorld();
 		s_bpWorld->setNumThread(g_numthread);
@@ -14318,7 +14390,7 @@ int OpenChaFile()
 	
 	//読み込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
-	savepathlen = wcslen(saveprojpath);
+	savepathlen = (int)wcslen(saveprojpath);
 	if (savepathlen > 4) {
 		WCHAR* pwext;
 		pwext = saveprojpath + (savepathlen - 1) - 3;
@@ -14326,7 +14398,7 @@ int OpenChaFile()
 			SYSTEMTIME localtime;
 			GetLocalTime(&localtime);
 			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04d%02d%02d%02d%02d%02d.txt",
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
 				s_temppath,
 				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 			HANDLE hfile;
@@ -14334,7 +14406,7 @@ int OpenChaFile()
 				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 			if (hfile != INVALID_HANDLE_VALUE) {
 				int pathlen;
-				pathlen = wcslen(saveprojpath);
+				pathlen = (int)wcslen(saveprojpath);
 				if ((pathlen > 0) && (pathlen < MAX_PATH)) {
 					DWORD writelen = 0;
 					WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
@@ -14642,8 +14714,8 @@ int SetSpSel3DParams()
 	RECT clientrect;
 	::GetClientRect(s_3dwnd, &clientrect);
 
-	s_spsel3d.dispcenter.x = clientrect.right - spgwidth / 2 - 20;
-	s_spsel3d.dispcenter.y = clientrect.top + spgheight / 2 + 20;
+	s_spsel3d.dispcenter.x = (LONG)(clientrect.right - spgwidth / 2 - 20);
+	s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_spsel3d.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
@@ -14687,7 +14759,7 @@ int SetSpGUISWParams()
 		float spretwidth = 32.0f;
 		float spretheight = 32.0f;
 		int spretshift = 0;
-		s_spret2prev.dispcenter.x = 16.0f + 8.0f;
+		s_spret2prev.dispcenter.x = (LONG)(16.0f + 8.0f);
 		//s_spret2prev.dispcenter.y = 486;
 		s_spret2prev.dispcenter.y = 486 - MAINMENUAIMBARH;
 		ChaVector3 disppos;
@@ -14797,7 +14869,7 @@ int SetSpCamParams()
 
 int SetSpRigParams()
 {
-	if (!(s_sprig[SPRIG_INACTIVE].sprite) || !(s_sprig[SPRIG_INACTIVE].sprite)){
+	if (!(s_sprig[SPRIG_INACTIVE].sprite) || !(s_sprig[SPRIG_ACTIVE].sprite)){
 		return 0;
 	}
 
@@ -15751,13 +15823,13 @@ int ExportFBXFile()
 		s_getfilenametreeview = 0;
 		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-		InterlockedExchange(&g_undertrackingRMenu, 1);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		if (GetOpenFileNameW(&ofn1) != IDOK) {
 			return 0;
 		}
 
-		InterlockedExchange(&g_undertrackingRMenu, 0);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 		UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
@@ -15784,7 +15856,7 @@ int ExportFBXFile()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
-	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
 	CallF( WriteFBXFile( s_psdk, s_model, fbxpath, fbxdate ), return 1 );
@@ -15862,13 +15934,13 @@ int ExportBntFile()
 		s_getfilenametreeview = 0;
 		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-		InterlockedExchange(&g_undertrackingRMenu, 1);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		if (GetOpenFileNameW(&ofn1) != IDOK) {
 			return 0;
 		}
 
-		InterlockedExchange(&g_undertrackingRMenu, 0);
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 		UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
@@ -16530,7 +16602,8 @@ int ChangeCurrentBone()
 	}
 
 
-	if (g_retargetbatchflag == 0) {
+	//if (g_retargetbatchflag == 0) {
+	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
 
 		if (s_model) {
 			//CDXUTComboBox* pComboBox;
@@ -16586,35 +16659,38 @@ int OnFrameKeyboard()
 {
 	MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
 
+	if (GetKeyboardState((PBYTE)g_keybuf) == FALSE) {
+		//失敗した場合にはゴミが入らないように初期化
+		MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
+	}
 
-	GetKeyboardState((PBYTE)g_keybuf);
-	if (g_keybuf[VK_SHIFT] & 0x80){
+	if (g_keybuf[VK_SHIFT] & 0x80) {
 		s_dispselect = false;
 	}
-	else{
+	else {
 		s_dispselect = true;
 	}
-	if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)){
+	if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)) {
 		StartBt(s_model, TRUE, 0, 1);
 	}
-	if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)){
+	if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)) {
 		StartBt(s_model, TRUE, 1, 1);
 	}
-	if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)){
-		if (s_bpWorld && s_model){
+	if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)) {
+		if (s_bpWorld && s_model) {
 			StartBt(s_model, TRUE, 2, 1);
 		}
 	}
-	if (g_keybuf[VK_CONTROL] & 0x80){
+	if (g_keybuf[VK_CONTROL] & 0x80) {
 		g_controlkey = true;
 	}
-	else{
+	else {
 		g_controlkey = false;
 	}
-	if (g_keybuf[VK_SHIFT] & 0x80){
+	if (g_keybuf[VK_SHIFT] & 0x80) {
 		g_shiftkey = true;
 	}
-	else{
+	else {
 		g_shiftkey = false;
 	}
 
@@ -16648,25 +16724,25 @@ int OnFrameKeyboard()
 	}
 	*/
 
-	if (g_ctrlshiftkeyformb == false){
-		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)){
-			if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)){
+	if (g_ctrlshiftkeyformb == false) {
+		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)) {
+			if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)) {
 				g_ctrlshiftkeyformb = true;
 				//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
 			}
 		}
 	}
 
-	if (g_keybuf['A'] & 0x80){
+	if (g_keybuf['A'] & 0x80) {
 		s_akeycnt++;
 	}
-	else{
+	else {
 		s_akeycnt = 0;
 	}
-	if (g_keybuf['D'] & 0x80){
+	if (g_keybuf['D'] & 0x80) {
 		s_dkeycnt++;
 	}
-	else{
+	else {
 		s_dkeycnt = 0;
 	}
 
@@ -16680,14 +16756,13 @@ int OnFrameKeyboard()
 
 
 	/////// all model bone
-	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)){
+	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)) {
 		s_allmodelbone = !s_allmodelbone;
 	}
 
 	if (g_controlkey && (s_1keycnt == 1)) {
 		s_dispsampleui = !s_dispsampleui;
 	}
-
 
 	return 0;
 }
@@ -17149,9 +17224,9 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	//curmodel->SetMotionFrame(s_editrange.GetStartFrame());
 	//*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
 	{
-		int tmpleng;
-		double tmpstart, tmpend;
-		s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
+		int tmpleng2;
+		double tmpstart2, tmpend2;
+		s_previewrange.GetRange(&tmpleng2, &tmpstart2, &tmpend2);
 		*pnextframe = s_previewrange.GetApplyFrame();
 		curmodel->SetMotionFrame(*pnextframe);
 	}
@@ -17241,7 +17316,7 @@ int OnFrameCloseFlag()
 		s_DcloseFlag = false;
 		s_dmpanimWnd->setVisible(0);
 		if (s_bpWorld){
-			s_bpWorld->setGlobalERP(g_erp);
+			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
 		if (s_model){
 			CallF(s_model->CreateBtObject(0), return 1);
@@ -17251,7 +17326,7 @@ int OnFrameCloseFlag()
 		s_RcloseFlag = false;
 		s_rigidWnd->setVisible(0);
 		if (s_bpWorld){
-			s_bpWorld->setGlobalERP(g_erp);
+			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
 		if (s_model){
 			CallF(s_model->CreateBtObject(0), return 1);
@@ -17265,7 +17340,7 @@ int OnFrameCloseFlag()
 		s_IcloseFlag = false;
 		s_impWnd->setVisible(0);
 		if (s_bpWorld){
-			s_bpWorld->setGlobalERP(g_erp);
+			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
 		if (s_model){
 			CallF(s_model->CreateBtObject(0), return 1);
@@ -17962,12 +18037,13 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			map<int, MOTINFO*>::iterator itrmi;
 			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++){
 				MOTINFO* curmi = itrmi->second;
-				_ASSERT(curmi);
-				if (curmi == s_model->GetCurMotInfo()){
-					findflag = 1;
-					break;
+				if (curmi) {
+					if (curmi == s_model->GetCurMotInfo()) {
+						findflag = 1;
+						break;
+					}
+					chkcnt++;
 				}
-				chkcnt++;
 			}
 
 			if (findflag == 1){
@@ -20445,7 +20521,8 @@ int CreateLayerWnd()
 
 int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 		return 0;
 	}
 
@@ -20921,7 +20998,7 @@ int InitMpFromTool()
 /////////////
 	s_cursubmenu = rmenu->GetSubMenu();
 
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 	int initmode = -1;
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
@@ -20977,7 +21054,7 @@ int InitMpFromTool()
 
 	rmenu->Destroy();
 	delete rmenu;
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
 	return 0;
 }
@@ -21308,6 +21385,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 //	swprintf_s(strdbg, 256, L"elemno %d, combolabel %s", elemno, combolabel);
 //	::DSMessageBox(hDlgWnd, strdbg, L"combolabel", MB_OK);
 //}
+		combolabel[256 - 1] = 0L;
 		size_t labellen = wcslen(combolabel);
 		if ((labellen > 0) && (labellen < 256)){
 			//format    [rigrigno]rigrigbonename[|]rigname
@@ -21345,7 +21423,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 //	swprintf_s(strdbg, 256, L"rigrigboneno %d", s_customrig.rigelem[elemno].rigrigboneno);
 //	::DSMessageBox(hDlgWnd, strdbg, L"rigrigboneno", MB_OK);
 //}
-								int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+								//int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 								SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)rigrigbone->GetWBoneName());
 							}
 						}
@@ -21675,7 +21753,7 @@ int BoneRClick(int srcboneno)
 
 				s_cursubmenu = rmenu->GetSubMenu();
 
-				InterlockedExchange(&g_undertrackingRMenu, 1);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 				int currigno = -1;
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
@@ -21784,7 +21862,7 @@ int BoneRClick(int srcboneno)
 
 				rmenu->Destroy();
 				delete rmenu;
-				InterlockedExchange(&g_undertrackingRMenu, 0);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 			}
 		}
 	}
@@ -22003,7 +22081,7 @@ int GetSymRootMode()
 
 	s_cursubmenu = rmenu->GetSubMenu();
 
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 	s_getsym_retmode = 0;
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
@@ -22029,7 +22107,7 @@ int GetSymRootMode()
 
 	rmenu->Destroy();
 	delete rmenu;
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
 	return s_getsym_retmode;
 }
@@ -22051,7 +22129,7 @@ void AutoCameraTarget()
 			//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
-			s_camdist = ChaVector3Length(&diffv);
+			s_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 			s_matView = g_Camera->GetViewMatrix();
 			s_matProj = g_Camera->GetProjMatrix();
@@ -23084,7 +23162,7 @@ int OnMouseMoveFunc()
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		ChaVector3 diffv;
 		diffv = neweye - newat;
-		s_camdist = ChaVector3Length(&diffv);
+		s_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 
 	}
@@ -23204,7 +23282,7 @@ int OnMouseMoveFunc()
 
 			ChaVector3 diffv;
 			diffv = neweye - g_camtargetpos;
-			s_camdist = ChaVector3Length(&diffv);
+			s_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 		}
 		else {
@@ -23867,7 +23945,7 @@ void InitDSValues()
 	s_dspushedL3 = 0;
 	s_dspushedR3 = 0;
 	g_dsmousewait = 0;
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
 	s_firstmoveaimbar = true;
 
@@ -24057,14 +24135,14 @@ void GetDSValues()
 		s_bef_dsbuttondown[buttonno] = s_dsbuttondown[buttonno];
 		s_bef_dsbuttonup[buttonno] = s_dsbuttonup[buttonno];
 
-		if (GetButtonDown(s_dsdeviceid, buttonno) >= 1) {
+		if (GetButtonDown(s_dsdeviceid, buttonno)) {
 			s_dsbuttondown[buttonno] = GetButtonDown(s_dsdeviceid, buttonno);
 		}
 		else {
 			s_dsbuttondown[buttonno] = 0;
 		}
 
-		if (GetButtonUp(s_dsdeviceid, buttonno) >= 1) {
+		if (GetButtonUp(s_dsdeviceid, buttonno)) {
 			s_dsbuttonup[buttonno] = GetButtonUp(s_dsdeviceid, buttonno);
 		}
 		else {
@@ -24298,8 +24376,8 @@ void DSR1ButtonSelectCurrentBone()
 					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 					scpos.z = 0.0f;
 					POINT mousepos;
-					mousepos.x = (scpos.x + 1.0f) * 0.5f * s_mainwidth;
-					mousepos.y = (-scpos.y + 1.0f) * 0.5f * s_mainheight;
+					mousepos.x = (LONG)((scpos.x + 1.0f) * 0.5f * s_mainwidth);
+					mousepos.y = (LONG)((-scpos.y + 1.0f) * 0.5f * s_mainheight);
 
 					s_restorewndid = s_currentwndid;
 					s_restorehwnd = s_currenthwnd;
@@ -24635,7 +24713,7 @@ void DSSelectCharactor()
 	//L1 Button Up（L2, R2 not pushed）
 	if ((accelflag != 0) && (curbuttonup >= 1)) {
 		int modelnum;
-		modelnum = s_modelindex.size();
+		modelnum = (int)s_modelindex.size();
 		if (modelnum > 0) {
 			int nextmodelindex;
 			nextmodelindex = s_curmodelmenuindex + 1;
@@ -25162,10 +25240,10 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 					//############################################################################################################################
 					//STL.size()の返り値はunsigned。-1との比較の際には0xFFFFFFFFとsize()との比較になり、意図しない結果を招きやすい。signedに代入してから-1と比較する。
 					//############################################################################################################################
-					int guisize0 = s_dsutgui0.size();
-					int guisize1 = s_dsutgui1.size();
-					int guisize2 = s_dsutgui2.size();
-					int guisize3 = s_dsutgui3.size();
+					int guisize0 = (int)s_dsutgui0.size();
+					int guisize1 = (int)s_dsutgui1.size();
+					int guisize2 = (int)s_dsutgui2.size();
+					int guisize3 = (int)s_dsutgui3.size();
 
 					if (curbone) {
 
@@ -25792,14 +25870,14 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dseullimitctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dseullimitctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dseullimitctrls.size()) {
+							if (curdsctrlno >= (int)s_dseullimitctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -25807,7 +25885,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dseullimitctrls.size()) {
+							if (curdsctrlno >= (int)s_dseullimitctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -25816,7 +25894,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dseullimitctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dseullimitctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -25864,7 +25942,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 										}
 										else {
 											int slidervalue;
-											slidervalue = ::SendMessage(ctrlwnd, TBM_GETPOS, 0, 0);
+											slidervalue = (int)::SendMessage(ctrlwnd, TBM_GETPOS, 0, 0);
 											int sliderposx = (int)((float)(slidervalue + 180) / 360.0f * 274.0f);
 											ctrlpos.x = ctrlrect.left + sliderposx + 12;
 											ctrlpos.y = ctrlrect.top + 20 / 2;
@@ -25963,14 +26041,14 @@ void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsretargetctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsretargetctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsretargetctrls.size()) {
+							if (curdsctrlno >= (int)s_dsretargetctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -25978,7 +26056,7 @@ void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsretargetctrls.size()) {
+							if (curdsctrlno >= (int)s_dsretargetctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -25987,7 +26065,7 @@ void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsretargetctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsretargetctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -26156,14 +26234,14 @@ void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsdampctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsdampctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsdampctrls.size()) {
+							if (curdsctrlno >= (int)s_dsdampctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26171,7 +26249,7 @@ void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsdampctrls.size()) {
+							if (curdsctrlno >= (int)s_dsdampctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26180,7 +26258,7 @@ void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsdampctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsdampctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -26349,14 +26427,14 @@ void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsgpctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsgpctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsgpctrls.size()) {
+							if (curdsctrlno >= (int)s_dsgpctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26364,7 +26442,7 @@ void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsgpctrls.size()) {
+							if (curdsctrlno >= (int)s_dsgpctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26373,7 +26451,7 @@ void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsgpctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsgpctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -26541,14 +26619,14 @@ void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsimpulsectrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsimpulsectrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsimpulsectrls.size()) {
+							if (curdsctrlno >= (int)s_dsimpulsectrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26556,7 +26634,7 @@ void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsimpulsectrls.size()) {
+							if (curdsctrlno >= (int)s_dsimpulsectrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26565,7 +26643,7 @@ void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsimpulsectrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsimpulsectrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -26735,14 +26813,14 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsrigidctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsrigidctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsrigidctrls.size()) {
+							if (curdsctrlno >= (int)s_dsrigidctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26750,7 +26828,7 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dsrigidctrls.size()) {
+							if (curdsctrlno >= (int)s_dsrigidctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26759,7 +26837,7 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dsrigidctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dsrigidctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -26930,14 +27008,14 @@ void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 						if (parentbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dstoolctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dstoolctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
 						}
 						else if (sisterbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dstoolctrls.size()) {
+							if (curdsctrlno >= (int)s_dstoolctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26945,7 +27023,7 @@ void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							curdsctrlno++;
-							if (curdsctrlno >= s_dstoolctrls.size()) {
+							if (curdsctrlno >= (int)s_dstoolctrls.size()) {
 								curdsctrlno = 0;//Ring
 							}
 							changeflag = true;
@@ -26954,7 +27032,7 @@ void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 						else if (brotherbutton >= 1) {
 							curdsctrlno--;
 							if (curdsctrlno < 0) {
-								curdsctrlno = s_dstoolctrls.size() - 1;//Ring
+								curdsctrlno = (int)s_dstoolctrls.size() - 1;//Ring
 							}
 							changeflag = true;
 							chkflag = true;
@@ -27822,7 +27900,7 @@ void DSAxisLMouseMove()
 							rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
 							
 							float thumblength;
-							thumblength = ::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+							thumblength = (float)::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
 
 							//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
 							int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
@@ -28133,22 +28211,22 @@ void GetHiLiteSubmenu(HMENU* pcommandsubmenu, int* pcommandsubmenunum, int* pcom
 
 		if (submenu2) {
 			{
-				int selectedsubmenuitemno = -1;
-				int submenuitemnum;
-				submenuitemnum = GetMenuItemCount(submenu2);
-				int submenuitemcnt;
-				for (submenuitemcnt = 0; submenuitemcnt < submenuitemnum; submenuitemcnt++) {
+				int tmpselectedsubmenuitemno = -1;
+				int tmpsubmenuitemnum;
+				tmpsubmenuitemnum = GetMenuItemCount(submenu2);
+				int tmpsubmenuitemcnt;
+				for (tmpsubmenuitemcnt = 0; tmpsubmenuitemcnt < tmpsubmenuitemnum; tmpsubmenuitemcnt++) {
 					UINT submenuitemstate;
-					submenuitemstate = GetMenuState(submenu2, submenuitemcnt, MF_BYPOSITION);
+					submenuitemstate = GetMenuState(submenu2, tmpsubmenuitemcnt, MF_BYPOSITION);
 					if (submenuitemstate == MF_HILITE) {
-						selectedsubmenuitemno = submenuitemcnt;
+						tmpselectedsubmenuitemno = tmpsubmenuitemcnt;
 						break;
 					}
 				}
-				if (selectedsubmenuitemno >= 0) {
+				if (tmpselectedsubmenuitemno >= 0) {
 					*pcommandsubmenu = submenu2;
-					*pcommandsubmenunum = submenuitemnum;
-					*pcommandsubmenuno = selectedsubmenuitemno;
+					*pcommandsubmenunum = tmpsubmenuitemnum;
+					*pcommandsubmenuno = tmpselectedsubmenuitemno;
 				}
 			}
 		}
@@ -28273,7 +28351,8 @@ void DSOButtonSelectedPopupMenu()
 		LPARAM lparam;
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
-		if (g_undertrackingRMenu == 1) {
+		//if (g_undertrackingRMenu == 1) {
+		if (InterlockedAdd(&g_undertrackingRMenu, 0) == 1) {
 
 
 			HMENU commandsubmenu = 0;
@@ -28283,7 +28362,7 @@ void DSOButtonSelectedPopupMenu()
 			if (commandsubmenu && (commandsubmenunum >= 1) && (commandsubmenuno >= 0)) {
 
 
-				InterlockedExchange(&g_undertrackingRMenu, 0);//コマンド発行が決まったらトラッキングフラグ解除!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);//コマンド発行が決まったらトラッキングフラグ解除!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 				//::PostMessage(s_mainhwnd, WM_KEYDOWN, VK_RETURN, 0);
@@ -28304,9 +28383,9 @@ void DSOButtonSelectedPopupMenu()
 				wparam = commandmenuid;
 				
 				
-				LPARAM lparam;
-				//lparam = (LPARAM)s_mainmenu;
-				lparam = (LPARAM)commandsubmenu;
+				//LPARAM lparam;
+				////lparam = (LPARAM)s_mainmenu;
+				//lparam = (LPARAM)commandsubmenu;
 
 
 				//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
@@ -28386,7 +28465,7 @@ void DSOButtonSelectedPopupMenu()
 							::ScreenToClient(ctrlwnd, &lbpoint);
 							LPARAM lblparam;
 							lblparam = (lbpoint.y << 16) | lbpoint.x;
-							DWORD hitinfo = SendMessage(ctrlwnd, LB_ITEMFROMPOINT, 0, lblparam);
+							DWORD hitinfo = (DWORD)SendMessage(ctrlwnd, LB_ITEMFROMPOINT, 0, lblparam);
 							WORD hitflag;
 							WORD hitindex;
 							hitflag = HIWORD(hitinfo);
@@ -28614,7 +28693,8 @@ void DSOButtonSelectedPopupMenu()
 		LPARAM lparam;
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
-		if (g_undertrackingRMenu == 1) {
+		//if (g_undertrackingRMenu == 1) {
+		if (InterlockedAdd(&g_undertrackingRMenu, 0) == 1) {
 			HMENU commandsubmenu = 0;
 			int commandsubmenunum = 0;
 			int	commandsubmenuno = -1;
@@ -28831,7 +28911,8 @@ void DSOButtonSelectedPopupMenu()
 		LPARAM lparam;
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
-		if (g_undertrackingRMenu == 1) {
+		//if (g_undertrackingRMenu == 1) {
+		if (InterlockedAdd(&g_undertrackingRMenu, 0) == 1) {
 			if (s_messageboxhwnd) {
 			}
 			else {
@@ -28849,7 +28930,7 @@ void DSOButtonSelectedPopupMenu()
 						::ScreenToClient(ctrlwnd, &lbpoint);
 						LPARAM lblparam;
 						lblparam = (lbpoint.y << 16) | lbpoint.x;
-						DWORD hitinfo = SendMessage(ctrlwnd, LB_ITEMFROMPOINT, 0, lblparam);
+						DWORD hitinfo = (DWORD)SendMessage(ctrlwnd, LB_ITEMFROMPOINT, 0, lblparam);
 						WORD hitflag;
 						WORD hitindex;
 						hitflag = HIWORD(hitinfo);
@@ -29275,7 +29356,8 @@ void DSAimBarOK()
 		LPARAM lparam;
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
-		if (g_undertrackingRMenu == 0) {
+		//if (g_undertrackingRMenu == 0) {
+		if (InterlockedAdd(&g_undertrackingRMenu, 0) == 0) {
 			{
 				//dialog ctrl
 				HWND ctrlwnd;
@@ -29308,7 +29390,7 @@ void DSAimBarOK()
 						rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
 
 						float thumblength;
-						thumblength = ::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+						thumblength = (float)::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
 
 						//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
 						int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
@@ -29394,7 +29476,8 @@ void DSAimBarOK()
 		LPARAM lparam;
 		lparam = (cursorpos.y << 16) | cursorpos.x;
 
-		if (g_undertrackingRMenu == 0) {
+		//if (g_undertrackingRMenu == 0) {
+		if (InterlockedAdd(&g_undertrackingRMenu, 0) == 0) {
 			//dialog ctrl
 			HWND ctrlwnd;
 			ctrlwnd = GetOFWnd(cursorpos);
@@ -29423,8 +29506,8 @@ void DSAimBarOK()
 						//Slider
 						RECT sliderloc;
 						::GetWindowRect(ctrlwnd, &sliderloc);
-						POINT cappoint = cursorpos;
-						::ScreenToClient(ctrlwnd, &cappoint);
+						POINT cappoint2 = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint2);
 
 						float rangemin;
 						float rangemax;
@@ -29432,10 +29515,10 @@ void DSAimBarOK()
 						rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
 
 						float thumblength;
-						thumblength = ::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+						thumblength = (float)::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
 
-						//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
-						int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
+						//int sliderpos = (int)((float)(cappoint2.x - 12 - 274 / 2) / 274.0f * 360.0f);
+						int sliderpos = (int)((float)(cappoint2.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
 
 						::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
 						::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
@@ -29448,12 +29531,12 @@ void DSAimBarOK()
 						dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
 						::SendMessage(s_ofhwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
 
-						POINT cappoint;
-						cappoint = cursorpos;
-						::ScreenToClient(ctrlwnd, &cappoint);
-						LPARAM caplparam;
-						caplparam = (cappoint.y << 16) | cappoint.x;
-						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+						POINT cappoint2;
+						cappoint2 = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint2);
+						LPARAM caplparam2;
+						caplparam2 = (cappoint2.y << 16) | cappoint2.x;
+						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam2);
 
 						//::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 
@@ -29479,12 +29562,12 @@ void DSAimBarOK()
 						dlglparam = (dlgpoint.y << 16) | dlgpoint.x;
 						::SendMessage(s_ofhwnd, WM_LBUTTONUP, MK_LBUTTON, dlglparam);
 
-						POINT cappoint;
-						cappoint = cursorpos;
-						::ScreenToClient(ctrlwnd, &cappoint);
-						LPARAM caplparam;
-						caplparam = (cappoint.y << 16) | cappoint.x;
-						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
+						POINT cappoint2;
+						cappoint2 = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint2);
+						LPARAM caplparam2;
+						caplparam2 = (cappoint2.y << 16) | cappoint2.x;
+						::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam2);
 
 						//::SendMessage(ctrlwnd, WM_LBUTTONUP, MK_LBUTTON, caplparam);
 					}
@@ -29548,12 +29631,12 @@ void DSAimBarOK()
 					//MainMenuAimBar
 					if ((s_currentwndid == MB3D_WND_MAIN) && s_cursubmenu && (g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
 						//SelectNextWindow(MB3D_WND_3D);//続いて　O button を押したときにメニューが開かないように。//プレート選択時に該当ウインドウをハイライトするようにしたので必要ない。
-						InterlockedExchange(&g_undertrackingRMenu, 1);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 						//SetForegroundWindow(s_mainhwnd);//この処理をしないと範囲外クリックでPopupが閉じない
 						SetForegroundWindow(s_3dwnd);//この処理をしないと範囲外クリックでPopupが閉じない
 						//int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_mainhwnd, NULL);
 						int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_3dwnd, NULL);
-						InterlockedExchange(&g_undertrackingRMenu, 0);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 					}
 				}
 			}
@@ -29955,11 +30038,11 @@ void DSMessageBox(HWND srcparenthwnd, WCHAR* srcmessage, WCHAR* srctitle, LONG s
 	s_messageboxpushcnt = 0;
 	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-	InterlockedExchange(&g_undertrackingRMenu, 1);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	::MessageBoxW(srcparenthwnd, srcmessage, srctitle, srcok);
 
-	InterlockedExchange(&g_undertrackingRMenu, 0);
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
 	s_messageboxhwnd = 0;
 	s_messageboxpushcnt = 0;
@@ -30064,11 +30147,11 @@ void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag)
 void OnGUIEventSpeed()
 {
 	int modelnum;
-	modelnum = s_modelindex.size();
+	modelnum = (int)s_modelindex.size();
 	int modelno;
 
 	RollbackCurBoneNo();
-	g_dspeed = (float)(g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010f);
+	g_dspeed = (float)((double)g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010);
 	for (modelno = 0; modelno < modelnum; modelno++) {
 		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
 	}
@@ -30080,12 +30163,13 @@ void OnGUIEventSpeed()
 
 void WaitRetargetThreads()
 {
-	if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2はダイアログでのキャンセル
-		InterlockedExchange(&g_retargetbatchflag, 0);
+	//if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2はダイアログでのキャンセル
+	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2はダイアログでのキャンセル
+		InterlockedExchange(&g_retargetbatchflag, (LONG)0);
 		if (s_retargetbatchwnd) {
 			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
 		}
-		InterlockedExchange(&g_retargetbatchflag, 0);//WM_CLOSEで変わる可能性あり
+		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 		OnModelMenu(true, s_saveretargetmodel, 1);
 	}
 
@@ -30093,24 +30177,26 @@ void WaitRetargetThreads()
 
 void WaitMotionCacheThreads()
 {
-	if ((g_motioncachebatchflag == 2) || (g_motioncachebatchflag == 3)) {//2はダイアログでのキャンセル
-		InterlockedExchange(&g_motioncachebatchflag, 0);
+	//if ((g_motioncachebatchflag == 2) || (g_motioncachebatchflag == 3)) {//2はダイアログでのキャンセル
+	if ((InterlockedAdd(&g_motioncachebatchflag, 0) == 2) || (InterlockedAdd(&g_motioncachebatchflag, 0) == 3)) {//2はダイアログでのキャンセル
+		InterlockedExchange(&g_motioncachebatchflag, (LONG)0);
 		if (s_motioncachebatchwnd) {
 			SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
 		}
-		InterlockedExchange(&g_motioncachebatchflag, 0);//WM_CLOSEで変わる可能性あり
+		InterlockedExchange(&g_motioncachebatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 	}
 
 }
 
 void WaitBvh2FbxThreads()
 {
-	if ((g_bvh2fbxbatchflag == 2) || (g_bvh2fbxbatchflag == 3)) {//2はダイアログでのキャンセル
-		InterlockedExchange(&g_bvh2fbxbatchflag, 0);
+	//if ((g_bvh2fbxbatchflag == 2) || (g_bvh2fbxbatchflag == 3)) {//2はダイアログでのキャンセル
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 2) || (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 3)) {//2はダイアログでのキャンセル
+		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);
 		if (s_bvh2fbxbatchwnd) {
 			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 		}
-		InterlockedExchange(&g_bvh2fbxbatchflag, 0);//WM_CLOSEで変わる可能性あり
+		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 	}
 }
 
@@ -30122,11 +30208,11 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
-	savepathlen = wcslen(saveprojpath);
+	savepathlen = (int)wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBvhDir_%04d%02d%02d%02d%02d%02d.txt",
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBvhDir_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	HANDLE hfile;
@@ -30134,7 +30220,7 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile != INVALID_HANDLE_VALUE) {
 		int pathlen;
-		pathlen = wcslen(saveprojpath);
+		pathlen = (int)wcslen(saveprojpath);
 		if ((pathlen > 0) && (pathlen < MAX_PATH)) {
 			DWORD writelen = 0;
 			WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
@@ -30155,11 +30241,11 @@ int SaveBatchHistory(WCHAR* selectname)
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
-	savepathlen = wcslen(saveprojpath);
+	savepathlen = (int)wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBatchDir_%04d%02d%02d%02d%02d%02d.txt",
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBatchDir_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	HANDLE hfile;
@@ -30167,7 +30253,7 @@ int SaveBatchHistory(WCHAR* selectname)
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile != INVALID_HANDLE_VALUE) {
 		int pathlen;
-		pathlen = wcslen(saveprojpath);
+		pathlen = (int)wcslen(saveprojpath);
 		if ((pathlen > 0) && (pathlen < MAX_PATH)) {
 			DWORD writelen = 0;
 			WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
@@ -30769,7 +30855,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 int WriteCPTFile()
 {
 	int cpelemnum;
-	cpelemnum = s_copymotvec.size();
+	cpelemnum = (int)s_copymotvec.size();
 	if (cpelemnum <= 0) {
 		return 0;
 	}
@@ -30784,7 +30870,7 @@ int WriteCPTFile()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR cptfilename[MAX_PATH] = { 0L };
-	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04d%02d%02d%02d%02d%02d.cpt",
+	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04ud%02ud%02ud%02ud%02ud%02ud.cpt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 
@@ -30902,7 +30988,7 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 	//}CPTHEADER;
 
 	int magicstrlen;
-	magicstrlen = strlen(dstCPTh);
+	magicstrlen = (int)strlen(dstCPTh);
 	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
 		_ASSERT(0);
 		return false;
@@ -31139,7 +31225,9 @@ void InitTimelineSelection()
 		g_motionbrush_value = 0;
 	}
 	g_motionbrush_value = (float*)malloc(sizeof(float) * 1);
-	*g_motionbrush_value = 1.0f;
+	if (g_motionbrush_value) {
+		*g_motionbrush_value = 1.0f;
+	}
 
 	//g_motionbrush_method = 0;
 	g_motionbrush_startframe = 1.0;

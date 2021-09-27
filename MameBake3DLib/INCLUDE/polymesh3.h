@@ -27,13 +27,13 @@ public:
 	int CreatePM3( int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
 		map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat );
 	
-	int SetIndexBuf();	
-	int InvIndexBuf();
+	//int SetIndexBuf();	
+	//int InvIndexBuf();
 
 	int ChkAlphaNum( map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
 
-	int CalcInfNoSkin( CBone* applybone );
+	//int CalcInfNoSkin( CBone* applybone );
 
 	int MultScale( ChaVector3 srcscale, ChaVector3 srctra );
 
@@ -51,7 +51,7 @@ private:
 
 	int SetSMFace();
 	int AddSmFace( N3P* n3p1, N3P* n3p2 );
-	int CalcSMNormal();
+	//int CalcSMNormal();
 
 	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, map<int,CMQOMaterial*>& srcmat );
 

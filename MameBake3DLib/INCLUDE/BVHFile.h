@@ -69,7 +69,7 @@ private:
 /////////////
 //	void FindFirstJointReq( CShdElem* selem, CShdElem** ppfirstjoint );
 //	void WriteBVHTreeReq( CShdElem* selem, int* pwriteno, int depth, int broflag, int* perrorflag, int* wno2seri );
-	int WriteBVHMotion( int* wno2seri, int motid, float srcmult );
+	//int WriteBVHMotion( int* wno2seri, int motid, float srcmult );
 
 	int Write2File( char* lpFormat, ... );
 	int WriteTab( int tabnum );

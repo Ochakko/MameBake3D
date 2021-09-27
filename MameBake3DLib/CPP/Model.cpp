@@ -827,7 +827,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 			dummybone->SetName("RootNode_");
 			m_bonelist[0] = dummybone;
 
-			ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+			//pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 			dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 
 			if (m_topbone) {
@@ -874,7 +874,7 @@ _ASSERT(m_bonelist[0]);
 		CallF(MakeObjectName(), return 1);
 		CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
 		if (m_topbone) {
-			CallF(CreateFBXSkinReq(pRootNode), return 1);
+			CreateFBXSkinReq(pRootNode);
 		}
 
 		SetMaterialName();
@@ -983,9 +983,9 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 	for( itrobj = m_object.begin(); itrobj != m_object.end(); itrobj++ ){
 		CMQOObject* curobj = itrobj->second;
 		if( curobj ){
-			map<int,CMQOMaterial*>::iterator itr;
-			for( itr = curobj->GetMaterialBegin(); itr != curobj->GetMaterialEnd(); itr++ ){
-				CMQOMaterial* curmat = itr->second;
+			map<int,CMQOMaterial*>::iterator itrmat;
+			for( itrmat = curobj->GetMaterialBegin(); itrmat != curobj->GetMaterialEnd(); itrmat++ ){
+				CMQOMaterial* curmat = itrmat->second;
 				CallF( curmat->CreateTexture( pd3dImmediateContext, m_dirname, m_texpool ), return 1 );
 			}
 		}
@@ -1102,7 +1102,7 @@ int CModel::AddModelBound( MODELBOUND* mb, MODELBOUND* addmb )
 
 	ChaVector3 diff;
 	diff = mb->center - newmin;
-	mb->r = ChaVector3Length( &diff );
+	mb->r = (float)ChaVector3LengthDbl( &diff );
 
 	return 0;
 }
@@ -1950,7 +1950,7 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 	newmi->speed = 1.0;
 	newmi->loopflag = 1;
 
-	m_motinfo[m_motinfo.size()] = newmi;//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
+	m_motinfo[(int)m_motinfo.size()] = newmi;//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
 
 
 
@@ -1964,7 +1964,7 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 int CModel::SetCurrentMotion( int srcmotid )
 {
 	int motnum;
-	motnum = m_motinfo.size();
+	motnum = (int)m_motinfo.size();
 	//if ((srcmotid <= 0) || (srcmotid > motnum)) {
 	//	_ASSERT(0);
 	//	return 1;
@@ -2192,7 +2192,7 @@ CBone* CModel::GetSymPosBone(CBone* srcbone)
 		if (curbone){
 			ChaVector3 curpos = curbone->GetJointFPos();
 			ChaVector3 diffpos = curpos - srcpos;
-			float curdist = ChaVector3Length(&diffpos);
+			float curdist = (float)ChaVector3LengthDbl(&diffpos);
 			if ((curdist <= mindist) && (curdist <= matchdist) && (curbone != srcbone)){
 				//同一位置のボーンが存在する場合があるので、親もチェックする。
 				CBone* srcparentbone = srcbone->GetParent();
@@ -2202,7 +2202,7 @@ CBone* CModel::GetSymPosBone(CBone* srcbone)
 					srcparentpos.x *= -1.0f;
 					ChaVector3 curparentpos = curparentbone->GetJointFPos();
 					ChaVector3 pardiffpos = srcparentpos - curparentpos;
-					float pardist = ChaVector3Length(&pardiffpos);
+					float pardist = (float)ChaVector3LengthDbl(&pardiffpos);
 					if (pardist <= matchdist)
 					{
 						findbone = curbone;
@@ -2550,7 +2550,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
-		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
+		FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
         //FbxGeometryConverter lConverter(pNode->GetFbxManager());
 
 		char mes[256];
@@ -2824,12 +2824,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 				// 直接取得
 			  //for ( int i = 0; i < normalNum; ++i ) {
-				for (int i = 0; i < normalNum; i++) {
-				ChaVector3* curn = newobj->GetNormal() + i;
-				curn->x = (float)normalElem->GetDirectArray().GetAt( i )[ 0 ];
-				curn->y = (float)normalElem->GetDirectArray().GetAt( i )[ 1 ];
-				curn->z = (float)normalElem->GetDirectArray().GetAt( i )[ 2 ];
-			  }
+				for (int i2 = 0; i2 < normalNum; i2++) {
+					ChaVector3* curn = newobj->GetNormal() + i2;
+					curn->x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
+					curn->y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
+					curn->z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+				}
 		   }else if ( refMode == FbxLayerElement::eIndexToDirect ){
 //DbgOut( L"GetFBXMesh : %s : ref eIndexToDirect\r\n", wname );
 
@@ -2863,11 +2863,11 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 				// 直接取得
 				//for ( int i = 0; i < normalNum; ++i ) {
-				for (int i = 0; i < normalNum; i++) {
-					ChaVector3* curn = newobj->GetNormal() + i;
-					curn->x = (float)normalElem->GetDirectArray().GetAt( i )[ 0 ];
-					curn->y = (float)normalElem->GetDirectArray().GetAt( i )[ 1 ];
-					curn->z = (float)normalElem->GetDirectArray().GetAt( i )[ 2 ];
+				for (int i2 = 0; i2 < normalNum; i2++) {
+					ChaVector3* curn = newobj->GetNormal() + i2;
+					curn->x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
+					curn->y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
+					curn->z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
 				}
 		   }else{
 //DbgOut( L"GetFBXMesh : %s : ref %d\r\n", wname, refMode );
@@ -3153,7 +3153,7 @@ FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,
     return lResult;
 }
 
-int CModel::CreateExtendBoneReq(CBone* srcbone)
+void CModel::CreateExtendBoneReq(CBone* srcbone)
 {
 	if (srcbone) {
 		if (!srcbone->GetExtendFlag() && !srcbone->GetChild()) {
@@ -3161,7 +3161,7 @@ int CModel::CreateExtendBoneReq(CBone* srcbone)
 			_ASSERT(newbone);
 			if (!newbone) {
 				_ASSERT(0);
-				return 1;
+				return;
 			}
 			newbone->SetExtendFlag(true);
 			srcbone->AddChild(newbone);
@@ -3200,7 +3200,7 @@ int CModel::CreateExtendBoneReq(CBone* srcbone)
 
 
 
-int CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode )
+void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode )
 {
 //	EFbxRotationOrder lRotationOrder0 = eEulerZXY;
 //	EFbxRotationOrder lRotationOrder1 = eEulerXYZ;
@@ -3297,7 +3297,7 @@ int CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode 
 		CreateFBXBoneReq(pScene, pChild, pNode );
 	}
 
-	return 0;
+	return;
 }
 
 int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
@@ -3578,7 +3578,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 	return 0;
 }
 
-int CModel::CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime)
+void CModel::CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime)
 {
 	//static int dbgcnt = 0;
 
@@ -3610,11 +3610,11 @@ int CModel::CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxN
 		CreateMeshAnimReq(animno, pScene, pPose, pChild, motid, animleng, mStart, mFrameTime);
 	}
 
-	return 0;
+	return;
 }
 
 
-int CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime )
+void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime )
 {
 	//static int dbgcnt = 0;
 
@@ -3646,7 +3646,7 @@ int CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxN
 		CreateFBXAnimReq( animno, pScene, pPose, pChild, motid, animleng, mStart, mFrameTime );
 	}
 
-	return 0;
+	return;
 }
 
 
@@ -3828,8 +3828,8 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			//curbone->veclClusterGlobalCurrentPosition.clear();//!!!!!!!!!!!!!!!!!! animleng - 1個の vector
 			//curbone->veclClusterGlobalCurrentPosition.resize(animleng);//!!!!!!!!!!!!!!!
 			size_t veccursize = curbone->veclClusterGlobalCurrentPosition.size();
-			if (veccursize < animleng) {
-				curbone->veclClusterGlobalCurrentPosition.resize(animleng);//!!!!!!!!!!!!
+			if (veccursize < (size_t)animleng) {
+				curbone->veclClusterGlobalCurrentPosition.resize((size_t)animleng);//!!!!!!!!!!!!
 			}
 		}
 
@@ -3927,7 +3927,7 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 
 
 
-int CModel::CreateFBXSkinReq( FbxNode* pNode )
+void CModel::CreateFBXSkinReq( FbxNode* pNode )
 {
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
@@ -3954,7 +3954,7 @@ int CModel::CreateFBXSkinReq( FbxNode* pNode )
 		CreateFBXSkinReq( pChild );
 	}
 
-	return 0;
+	return;
 }
 int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 {
@@ -4021,7 +4021,7 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 				int* pointAry = cluster->GetControlPointIndices();
 				double* weightAry = cluster->GetControlPointWeights();
 
-				FbxCluster::ELinkMode lClusterMode = cluster->GetLinkMode();
+				FbxCluster::ELinkMode lClusterMode = (FbxCluster::ELinkMode)cluster->GetLinkMode();
 				int index;
 				float weight;
 				for ( int i2 = 0; i2 < pointNum; i2++ ) {
@@ -4163,7 +4163,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 
 
 							ChaVector3 diffvec = aftchildpos - aftbonepos;
-							float diffleng = ChaVector3Length(&diffvec);
+							float diffleng = (float)ChaVector3LengthDbl(&diffvec);
 
 							float fscale;
 							ChaMatrix scalemat;
@@ -5764,7 +5764,7 @@ void CModel::AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot
 		GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
 	}
 
-	if (ChaVector3Length(&adjustvec) >= 0.050f) {
+	if (ChaVector3LengthDbl(&adjustvec) >= 0.050f) {
 		tmat._41 += adjustvec.x;
 		tmat._42 += adjustvec.y;
 		tmat._43 += adjustvec.z;
@@ -5791,7 +5791,7 @@ void CModel::AdjustBtMatToCurrent(CBone* curbone)
 	ChaVector3 adjustvec = curpos - basepos;
 	//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
 
-	if (ChaVector3Length(&adjustvec) >= 0.050f) {
+	if (ChaVector3LengthDbl(&adjustvec) >= 0.050f) {
 		tmat._41 += adjustvec.x;
 		tmat._42 += adjustvec.y;
 		tmat._43 += adjustvec.z;
@@ -5842,7 +5842,7 @@ void CModel::AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot)
 	}
 
 
-	if (ChaVector3Length(&adjustvec) >= 0.050f) {
+	if (ChaVector3LengthDbl(&adjustvec) >= 0.050f) {
 		tmat._41 += adjustvec.x;
 		tmat._42 += adjustvec.y;
 		tmat._43 += adjustvec.z;
@@ -7069,7 +7069,7 @@ void CModel::SetMassDataByBoneLengReq(int gid, int reindex, CBone* srcbone, floa
 					parentpos = srcbone->GetParent()->GetJointFPos();
 					curpos = srcbone->GetJointFPos();
 					diffpos = curpos - parentpos;
-					float leng = ChaVector3Length(&diffpos);
+					float leng = (float)ChaVector3LengthDbl(&diffpos);
 					float setmass = srcmass * leng;
 
 					curre->SetMass(setmass);
@@ -7512,7 +7512,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 						lastpar = parentbone;
 					}
 					levelcnt++;
-					currate = pow(g_ikrate, g_ikfirst * levelcnt);
+					currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 					continue;
 				}
 
@@ -7667,7 +7667,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 
 			levelcnt++;
 
-			currate = pow( g_ikrate, g_ikfirst * levelcnt );
+			currate = (float)pow( (double)g_ikrate, (double)g_ikfirst * (double)levelcnt );
 		}
 
 		if( (calccnt == (calcnum - 1)) && g_absikflag && lastpar ){
@@ -7775,14 +7775,14 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 	}
 
 	if (parentbone){
-		CBone* gparentbone = parentbone->GetParent();
+		//CBone* gparentbone = parentbone->GetParent();
 		//CBone* childbone = parentbone->GetChild();
 		CBone* childbone = curbone;
 		int isfirst = 1;
 		//while (childbone){
 		if (childbone){
 			if (childbone->GetJointFPos() != parentbone->GetJointFPos()){
-				double dist0, dist1, dist2;
+				double dist0, dist1;// , dist2;
 				ChaVector3 parworld, chilworld;
 				ChaVector3TransformCoord(&parworld, &(parentbone->GetJointFPos()), &(parentbone->GetBtMat()));
 				ChaVector3TransformCoord(&chilworld, &(childbone->GetJointFPos()), &(parentbone->GetBtMat()));
@@ -7960,7 +7960,7 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	int calcnum = 1;
 
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
-	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)) {
+	if (fabs(rotrad) < (0.020 * DEG2PAI)) {
 		return 0;
 	}
 
@@ -8006,14 +8006,14 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 		float rotrad2 = currate * rotrad;
 		//float rotrad2 = rotrad;
-		if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)) {
+		if (fabs(rotrad2) < (0.02 * DEG2PAI)) {
 			break;
 		}
 
 		CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
 		if (curre && curre->GetForbidRotFlag() != 0) {
 			//回転禁止の場合処理をスキップ
-			currate = pow(g_ikrate, g_ikfirst * levelcnt);
+			currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 			lastbone = curbone;
 			curbone = curbone->GetParent();
 			levelcnt++;
@@ -8869,7 +8869,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 	int calcnum = 3;
 
 	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
-	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
+	if (fabs(rotrad) < (0.020 * DEG2PAI)){
 		return 0;
 	}
 
@@ -8913,7 +8913,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 					int axiskind = currigelem.transuv[uvno].axiskind;
 					float rotrad2 = rotrad * currigelem.transuv[uvno].applyrate;
 					if (currigelem.transuv[uvno].enable == 1){
-						if (fabs(rotrad2) >= (0.02f * (float)DEG2PAI)){
+						if (fabs(rotrad2) >= (0.020 * DEG2PAI)){
 							ChaVector3 axis0;
 							CQuaternion localq;
 							if (axiskind == AXIS_X){
@@ -9022,7 +9022,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 									}
 									if (g_absikflag == 0){
 										if (g_slerpoffflag == 0){
-											double currate2;
+											//double currate2;
 											CQuaternion endq;
 											CQuaternion curq;
 											endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -9174,7 +9174,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 	int calcnum = 1;//今はtargetposを細かく刻んでいないので１で良い
 
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
-	if (fabs(rotrad) < (0.02f * (float)DEG2PAI)){
+	if (fabs(rotrad) < (0.020 * DEG2PAI)){
 		return 0;
 	}
 
@@ -9221,14 +9221,14 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			float rotrad2 = currate * rotrad;
 			//float rotrad2 = rotrad;
-			if (fabs(rotrad2) < (0.02f * (float)DEG2PAI)){
+			if (fabs(rotrad2) < (0.020 * DEG2PAI)){
 				break;
 			}
 
 			CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
 			if (curre && curre->GetForbidRotFlag() != 0) {
 				//回転禁止の場合処理をスキップ
-				currate = pow(g_ikrate, g_ikfirst * levelcnt);
+				currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 				lastbone = curbone;
 				curbone = curbone->GetParent();
 				levelcnt++;
@@ -9348,7 +9348,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 					if (g_absikflag == 0){
 						if (g_slerpoffflag == 0){
-							double currate2;
+							//double currate2;
 							CQuaternion endq;
 							CQuaternion curq;
 							endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -9429,7 +9429,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				}
 			}
 
-			currate = pow(g_ikrate, g_ikfirst * levelcnt);
+			currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 			lastbone = curbone;
 			curbone = curbone->GetParent();
 			levelcnt++;
@@ -9485,7 +9485,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	ChaVector3Normalize( &rotaxis, &rotaxis );
 	rotrad = delta / 10.0f * (float)PAI / 12.0f;
 
-	if( fabs(rotrad) < (0.02f * (float)DEG2PAI) ){
+	if( fabs(rotrad) < (0.020 * DEG2PAI) ){
 		return 0;
 	}
 
@@ -9529,7 +9529,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 
 			if (g_absikflag == 0){
 				if (g_slerpoffflag == 0){
-					double currate2;
+					//double currate2;
 					CQuaternion endq;
 					CQuaternion curq;
 					endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -9692,7 +9692,7 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 	double firstframe = 0.0;
 
 	if( keynum >= 2 ){
-		float changerate = 1.0f / (float)(endframe - startframe + 1);
+		//float changerate = 1.0f / (float)(endframe - startframe + 1);
 
 		int keyno = 0;
 		double curframe;
@@ -9710,7 +9710,7 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 			}
 			if( g_absikflag == 0 ){
 				if( g_slerpoffflag == 0 ){
-					double currate2;
+					//double currate2;
 					//if( curframe <= applyframe ){
 					//	currate2 = changerate * (curframe - startframe + 1);
 					//}else{
@@ -9893,7 +9893,7 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 	double firstframe = 0.0;
 
 	if (keynum >= 2) {
-		float changerate = 1.0f / (float)(endframe - startframe + 1);
+		//float changerate = 1.0f / (float)(endframe - startframe + 1);
 
 		int keyno = 0;
 		double curframe;
@@ -9912,7 +9912,7 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 			}
 			if (g_absikflag == 0) {
 				if (g_slerpoffflag == 0) {
-					double currate2;
+					//double currate2;
 					//if( curframe <= applyframe ){
 					//	currate2 = changerate * (curframe - startframe + 1);
 					//}else{

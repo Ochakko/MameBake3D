@@ -27,6 +27,31 @@ static DWORD s_mainthreadid = 0;
 static unsigned __stdcall ThreadFunc_Info(void* pArguments);
 static HANDLE s_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
 
+unsigned __stdcall ThreadFunc_Info(LPVOID lpThreadParam)
+{
+	static int isfirst = 1;
+	//int ret;
+
+	if (!lpThreadParam) {
+		return 1;
+	}
+	CInfoWindow* infowinptr = (CInfoWindow*)lpThreadParam;
+
+	while (s_lThread) {
+		if (::MsgWaitForMultipleObjects(1, &s_hEvent, FALSE, 500, 0) == WAIT_OBJECT_0) {
+
+			infowinptr->UpdateWindowFunc();
+
+			isfirst = 0;
+			ResetEvent(s_hEvent);
+		}
+	}
+
+	//_endthreadex( 0 );//<----ThreadFuncがreturnするときに、自動的に呼ばれる。
+
+	return 0;
+}
+
 
 
 CInfoWindow::CInfoWindow()
@@ -190,7 +215,7 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 
 	int ret;
 	va_list Marker;
-	unsigned long wleng, writeleng;
+	//unsigned long wleng, writeleng;
 	WCHAR outchar[INFOWINDOWLINEW];
 
 	ZeroMemory(outchar, sizeof(WCHAR) * INFOWINDOWLINEW);
@@ -221,7 +246,7 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 
 
 	//wleng = (unsigned long)wcslen(outchar);
-	wcscpy_s(m_stroutput + m_dataindex * INFOWINDOWLINEW, INFOWINDOWLINEW, outchar);
+	wcscpy_s(m_stroutput + (INT64)m_dataindex * INFOWINDOWLINEW, INFOWINDOWLINEW, outchar);
 
 	m_isfirstoutput = false;
 
@@ -269,7 +294,7 @@ void CInfoWindow::OnPaint()
 		int dispno = 0;
 		for (outputno = 0; outputno < INFOWINDOWLINEVIEW; outputno++) {
 			if ((curindex >= 0) && (curindex <= m_dataindex)) {
-				TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + curindex * INFOWINDOWLINEW));
+				TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (INT64)curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + (INT64)curindex * INFOWINDOWLINEW));
 				dispno++;
 			}
 			curindex++;
@@ -322,7 +347,7 @@ int CInfoWindow::GetStr(int srcindex, int srcoutleng, WCHAR* strout)
 	}
 
 	if ((srcindex >= 0) && (srcindex < INFOWINDOWLINEH)) {
-		wcscpy_s(strout, srcoutleng, m_stroutput + srcindex * INFOWINDOWLINEW);
+		wcscpy_s(strout, srcoutleng, m_stroutput + (INT64)srcindex * INFOWINDOWLINEW);
 		return 0;
 	}
 	else {
@@ -420,27 +445,3 @@ int InitializeInfoWindow(CREATESTRUCT* createWindowArgs)
 	return 0;
 }
 
-unsigned __stdcall ThreadFunc_Info(LPVOID lpThreadParam)
-{
-	static int isfirst = 1;
-	int ret;
-
-	if (!lpThreadParam) {
-		return 1;
-	}
-	CInfoWindow* infowinptr = (CInfoWindow*)lpThreadParam;
-
-	while (s_lThread) {
-		if (::MsgWaitForMultipleObjects(1, &s_hEvent, FALSE, 500, 0) == WAIT_OBJECT_0) {
-
-			infowinptr->UpdateWindowFunc();
-			
-			isfirst = 0;
-			ResetEvent(s_hEvent);
-		}
-	}
-
-	//_endthreadex( 0 );//<----ThreadFuncがreturnするときに、自動的に呼ばれる。
-
-	return 0;
-}

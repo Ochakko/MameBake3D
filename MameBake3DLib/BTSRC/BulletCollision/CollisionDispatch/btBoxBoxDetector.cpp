@@ -187,6 +187,13 @@ done:
 void cullPoints2(int n, btScalar p[], int m, int i0, int iret[]);
 void cullPoints2(int n, btScalar p[], int m, int i0, int iret[])
 {
+	if (i0 > 7) {//2021/09/27
+		i0 = 7;
+	}
+	if (n > 8) {//2021/09/27
+		n = i0 + 1;
+	}
+
 	// compute the centroid of the polygon in cx,cy
 	int i, j;
 	btScalar a, cx, cy, q;

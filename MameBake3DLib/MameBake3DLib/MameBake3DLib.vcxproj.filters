@@ -788,9 +788,6 @@
     <ClInclude Include="..\INCLUDE\lmtFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
-    <ClInclude Include="..\INCLUDE\MotFilter.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
     <ClInclude Include="..\INCLUDE\MotionPoint.h">
       <Filter>disp4</Filter>
     </ClInclude>

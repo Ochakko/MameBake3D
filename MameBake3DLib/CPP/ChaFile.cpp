@@ -239,11 +239,13 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
-	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04d%02d%02d%02d%02d%02d",
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath, fbxdate);
-	_ASSERT(!ret1);
-
+	if (ret1) {
+		_ASSERT(!ret1);
+		return 1;
+	}
 
 	if (curmodel->GetOldAxisFlagAtLoading() == 0){
 		WCHAR lmtname[MAX_PATH] = { 0L };

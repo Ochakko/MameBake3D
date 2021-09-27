@@ -672,7 +672,7 @@ private:
 	int DestroyAncObj();
 	int DestroyAllMotionInfo();
 
-	void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
+	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
 	int SetShapeNoReq( CMQOFace** ppface, int facenum, int searchp, int shapeno, int* setfacenum);
 	int SetFaceOfShape( CMQOFace** ppface, int facenum, int shapeno, CMQOFace** ppface2, int setfacenum );
@@ -683,8 +683,8 @@ private:
 
 
 
-	void UpdateMatrixReq( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, 
-		ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
+	//void UpdateMatrixReq( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, 
+	//	ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
 
 	void FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone, int* linenoptr, 
 		map<int, int>& lineno2boneno, map<int, int>& boneno2lineno, int broflag );
@@ -692,10 +692,10 @@ private:
 	void SetSelectFlagReq( CBone* boneptr, int broflag );
 	int CalcMouseLocalRay( PICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr );
 	CBone* GetCalcRootBone( CBone* firstbone, int maxlevel );
-	void CalcXTransformMatrixReq( CBone* srcbone, ChaMatrix parenttra, float mult );
+	//void CalcXTransformMatrixReq( CBone* srcbone, ChaMatrix parenttra, float mult );
 
 
-	int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
+	//int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
 	int CreateFBXMeshReq( FbxNode* pNode );
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
@@ -705,15 +705,15 @@ private:
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 
 	int SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* material );
-	int CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
-	int CreateExtendBoneReq(CBone* srcbone);
+	void CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
+	void CreateExtendBoneReq(CBone* srcbone);
 	int GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode );
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
-	int CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);
-	int CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
+	void CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);
+	void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
 	int GetMeshAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime);
 	int GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng, FbxTime mStart, FbxTime mFrameTime );
-	int CreateFBXSkinReq( FbxNode* pNode );
+	void CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
 
@@ -767,9 +767,9 @@ private:
 
 	//void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );
-	void SetBtGravityReq( CBtObject* srcbto );
+	//void SetBtGravityReq( CBtObject* srcbto );
 	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int physicsmvkind = 0 );
-	void CreateBtConnectReq( CBone* curbone );
+	//void CreateBtConnectReq( CBone* curbone );
 	void SetColiIDReq( CBone* srcbone, CRigidElem* srcre );
 	void EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex);
 	void DisableAllRigidElemReq(CBone* srcbone, int srcrgdindex);
@@ -809,8 +809,8 @@ private:
 
 	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
 
-	int GetFreeThreadIndex();
-	void WaitAllTheadOfGetFbxAnim();
+	//int GetFreeThreadIndex();
+	//void WaitAllTheadOfGetFbxAnim();
 
 	//static unsigned __stdcall ThreadFunc_MP1(void* pArguments);
 	//static unsigned __stdcall ThreadFunc_MP2(void* pArguments);
@@ -910,7 +910,7 @@ public: //accesser
 		//return m_bonelist[ srcid ];
 	};
 	CBone* GetBoneByZeroBaseIndex(int srcindex) {
-		int bonenum = m_bonelist.size();
+		int bonenum = (int)m_bonelist.size();
 		if ((srcindex < 0) || (srcindex >= bonenum)) {
 			return 0;
 		}

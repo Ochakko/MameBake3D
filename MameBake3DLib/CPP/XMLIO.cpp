@@ -186,8 +186,8 @@ int CXMLIO::SetBuffer()
 
 	DWORD rleng, readleng;
 	rleng = bufleng;
-	ReadFile( m_hfile, (void*)newbuf, rleng, &readleng, NULL );
-	if( rleng != readleng ){
+	BOOL bresult = ReadFile( m_hfile, (void*)newbuf, rleng, &readleng, NULL );
+	if( !bresult || (rleng != readleng) ){
 		_ASSERT( 0 );
 
 		free( newbuf );

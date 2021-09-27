@@ -1042,7 +1042,7 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	*/
 
 	int illeagalflag = 0;
-	float crleng = ChaVector3Length(&vecy1);
+	float crleng = (float)ChaVector3LengthDbl(&vecy1);
 	if (crleng < 0.000001f){
 		illeagalflag = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
@@ -1120,7 +1120,7 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	dstmat->_43 = aftbonepos.z;
 
 	ChaVector3 diffvec = aftbonepos - aftchildpos;
-	float retleng = ChaVector3Length(&diffvec);
+	float retleng = (float)ChaVector3LengthDbl(&diffvec);
 
 	return retleng;
 }
@@ -1196,7 +1196,7 @@ int CBone::CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* d
 	ChaVector3Cross(&vecy1, (const ChaVector3*)&upvec, (const ChaVector3*)&vecx1);
 
 	int illeagalflag = 0;
-	float crleng = ChaVector3Length(&vecy1);
+	float crleng = ChaVector3LengthDbl(&vecy1);
 	if (crleng < 0.000001f){
 		illeagalflag = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
@@ -1313,7 +1313,7 @@ int CBone::CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat )
 
 	ChaVector3 diff = curpos - childpos;
 	float leng;
-	leng = ChaVector3Length( &diff );
+	leng = (float)ChaVector3LengthDbl( &diff );
 
 	if( leng <= 0.00001f ){
 		ChaMatrixIdentity( dstmat );
@@ -1359,7 +1359,7 @@ int CBone::CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat )
 	ChaVector3Cross( &vecx1, (const ChaVector3*)&vecy1, (const ChaVector3*)&upvec );
 
 	int illeagalflag = 0;
-	float crleng = ChaVector3Length( &vecx1 );
+	float crleng = (float)ChaVector3LengthDbl( &vecx1 );
 	if( crleng < 0.000001f ){
 		illeagalflag = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
@@ -2293,7 +2293,7 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 }
 
 
-ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul)
+ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul)
 {
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
@@ -5105,7 +5105,7 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 
 
 	int curpoollen;
-	curpoollen = s_bonepool.size();
+	curpoollen = (int)s_bonepool.size();
 
 	//if ((s_befheadno != (s_bonepool.size() - 1)) || (s_befelemno != (BONEPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
 
@@ -5225,7 +5225,10 @@ CBone* CBone::GetNewBone(CModel* parmodel)
 	allocbone->SetUseFlag(1);
 
 
-	s_befheadno = s_bonepool.size() - 1;
+	s_befheadno = (int)s_bonepool.size() - 1;
+	if (s_befheadno < 0) {
+		s_befheadno = 0;
+	}
 	s_befelemno = 0;
 
 	return allocbone;
@@ -5261,7 +5264,7 @@ void CBone::InitBones()
 //static func
 void CBone::DestroyBones() 
 {
-	int boneallocnum = s_bonepool.size();
+	int boneallocnum = (int)s_bonepool.size();
 	int boneno;
 	for (boneno = 0; boneno < boneallocnum; boneno++) {
 		CBone* delbone;
@@ -5280,7 +5283,7 @@ void CBone::OnDelModel(CModel* srcparmodel)
 		//プールを先頭から検索して未使用がみつかればそのparmodelを０にする
 
 	int curpoollen;
-	curpoollen = s_bonepool.size();
+	curpoollen = (int)s_bonepool.size();
 
 	int boneno;
 	for (boneno = 0; boneno < curpoollen; boneno++) {

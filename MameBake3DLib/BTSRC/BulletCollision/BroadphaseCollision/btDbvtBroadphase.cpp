@@ -473,14 +473,20 @@ void btDbvtBroadphase::performDeferredRemoval(btDispatcher* dispatcher)
 				//important to perform AABB check that is consistent with the broadphase
 				btDbvtProxy* pa = (btDbvtProxy*)pair.m_pProxy0;
 				btDbvtProxy* pb = (btDbvtProxy*)pair.m_pProxy1;
-				bool hasOverlap = Intersect(pa->leaf->volume, pb->leaf->volume);
+				if (pa && pb) {//2021/09/27
+					bool hasOverlap = Intersect(pa->leaf->volume, pb->leaf->volume);
 
-				if (hasOverlap)
-				{
-					needsRemoval = false;
+					if (hasOverlap)
+					{
+						needsRemoval = false;
+					}
+					else
+					{
+						needsRemoval = true;
+					}
 				}
-				else
-				{
+				else {//2021/09/27
+					_ASSERT(0);
 					needsRemoval = true;
 				}
 			}

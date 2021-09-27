@@ -118,7 +118,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 		return 0;
 	}
 
-	if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 		return 0;
 	}
 

@@ -60,8 +60,11 @@ void* GetNewKey();
 
 
 static void s_dummyfunc();
-
-
+void s_dummyfunc()
+{
+	static int dummycnt = 0;
+	dummycnt++;
+}
 
 /*	//	function : WCHAR → TCHAR
 	int wchar2tchar(const WCHAR *src, TCHAR *dst, size_t size){
@@ -200,7 +203,7 @@ static void s_dummyfunc();
 		bool onDown;
 	};
 
-	static void s_dummyfuncKey( KeyboardEvent& keye );
+	//static void s_dummyfuncKey( KeyboardEvent& keye );
 
 
 	////////////////----------------------------------------////////////////
@@ -222,9 +225,27 @@ static void s_dummyfunc();
 			backBM=NULL;
 			backBM_first=NULL;
 			hDC_window=NULL;
+
+			height = 0;
+			width = 0;
+			ZeroMemory(&paint, sizeof(PAINTSTRUCT));
 		}
 		HDCMaster( const HDCMaster& a ){
 			_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
+
+			hWnd = NULL;
+			hDC = NULL;
+			hFont = NULL;
+			hPen = NULL;
+			hBrush = NULL;
+
+			backBM = NULL;
+			backBM_first = NULL;
+			hDC_window = NULL;
+
+			height = 0;
+			width = 0;
+			ZeroMemory(&paint, sizeof(PAINTSTRUCT));
 		}
 		~HDCMaster(){
 			if( hFont ){
@@ -384,6 +405,15 @@ static void s_dummyfunc();
 			isregistered = false;
 			isactive = false;
 			isslider = false;
+
+			baseColor.r = 70;
+			baseColor.g = 50;
+			baseColor.b = 70;
+
+
+			pos = WindowPos(0, 0);
+			size = WindowSize(0, 0);
+			hdcM = 0;
 		}
 		OrgWindowParts( const OrgWindowParts& a ){
 			operator=(a);
@@ -640,13 +670,17 @@ static void s_dummyfunc();
 			create();
 
 			//ウィンドウ表示
-			ShowWindow(hWnd, SW_SHOW);
+			if (hWnd) {
+				ShowWindow(hWnd, SW_SHOW);
+			}
 
 			beginPaint();
 			paintTitleBar();
 			endPaint();
 
-			UpdateWindow(hWnd);
+			if (hWnd) {
+				UpdateWindow(hWnd);
+			}
 
 			//表示非表示
 			setVisible(_visible);
@@ -690,6 +724,8 @@ static void s_dummyfunc();
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウ内部品を追加
 		void setBackGroundColor(bool srcisactive) {
+			if (hWnd == NULL) return;
+
 			isactive = srcisactive;
 
 			if (isactive) {
@@ -759,6 +795,7 @@ static void s_dummyfunc();
 		};
 
 		void addParts(OrgWindowParts& a){
+			if (hWnd == NULL) return;
 
 
 			////整合性チェック
@@ -846,6 +883,8 @@ static void s_dummyfunc();
 		}
 		//	Method : ウィンドウ位置とサイズの更新
 		void refreshPosAndSize() {
+			if (hWnd == NULL) return;
+
 			RECT tmpRect;
 			GetWindowRect(hWnd, &tmpRect);
 			pos.x = tmpRect.left;
@@ -872,35 +911,51 @@ static void s_dummyfunc();
 		//	Accessor : pos
 		WindowPos getPos(){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
-
-			refreshPosAndSize();
-			return WindowPos(pos.x,pos.y);
+			if (hWnd != 0) {
+				refreshPosAndSize();
+				return WindowPos(pos.x, pos.y);
+			}
+			else {
+				_ASSERT(0);
+				return WindowPos(0, 0);
+			}
 		}
 		void setPos(const WindowPos& _pos){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
-			//if ((_pos.x >= -4000) && (_pos.x <= 4000) && (_pos.y >= -4000) && (_pos.y <= 4000)) {
+			if (hWnd) {
+				//if ((_pos.x >= -4000) && (_pos.x <= 4000) && (_pos.y >= -4000) && (_pos.y <= 4000)) {
 				pos = _pos;
-			//}
-			MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
+				//}
+				MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
+			}
 		}
 		//	Accessor : size
 		WindowSize getSize(){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
-
-			refreshPosAndSize();
-			return size;
+			if (hWnd) {
+				refreshPosAndSize();
+				return size;
+			}
+			else {
+				_ASSERT(0);
+				return WindowSize(0, 0);
+			}
 		}
 		void setSize(const WindowSize& _size){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
-
-			//if ((_size.x >= -4000) && (_size.x <= 4000) && (_size.y >= -4000) && (_size.y <= 4000)) {
+			if (hWnd) {
+				//if ((_size.x >= -4000) && (_size.x <= 4000) && (_size.y >= -4000) && (_size.y <= 4000)) {
 				if (_size.x < sizeMin.x) size.x = sizeMin.x;
 				else					size.x = _size.x;
 				if (_size.y < sizeMin.y) size.y = sizeMin.y;
 				else					size.y = _size.y;
-			//}
+				//}
 
-			MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
+				MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
+			}
+			else {
+				_ASSERT(0);
+			}
 		}
 		//	Accessor : sizeMin
 		WindowSize getSizeMin(){
@@ -917,7 +972,12 @@ static void s_dummyfunc();
 				if (size.x < sizeMin.x) size.x = sizeMin.x;
 				if (size.y < sizeMin.y) size.y = sizeMin.y;
 			}
-			MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
+			if (hWnd) {
+				MoveWindow(hWnd, pos.x, pos.y, size.x, size.y, true);
+			}
+			else {
+				_ASSERT(0);
+			}
 		}
 		//	Accessor : hWnd
 		HWND getHWnd(){
@@ -952,10 +1012,13 @@ static void s_dummyfunc();
 		}
 		void setVisible(bool value){
 			visible = value;
-			if( value ){
-				ShowWindow(hWnd, SW_SHOWNA);
-			}else{
-				ShowWindow(hWnd, SW_HIDE);
+			if (hWnd) {
+				if (value) {
+					ShowWindow(hWnd, SW_SHOWNA);
+				}
+				else {
+					ShowWindow(hWnd, SW_HIDE);
+				}
 			}
 		}
 
@@ -1081,7 +1144,9 @@ static void s_dummyfunc();
 						size.x, size.y,
 						hWndParent, NULL, hInstance, NULL);
 				}
-				SetParent(hWnd, hWndParent);
+				if (hWnd) {
+					SetParent(hWnd, hWndParent);
+				}
 			}
 			else {
 				if (istopmost) {
@@ -1097,9 +1162,14 @@ static void s_dummyfunc();
 						hWndParent, NULL, hInstance, NULL);
 				}
 			}
-			hdcM.setHWnd(hWnd);
+			if (hWnd) {
+				hdcM.setHWnd(hWnd);
 
-			hWndAndClassMap[hWnd]= this;	//hWndとこのクラスのインスタンスポインタの対応表更新
+				hWndAndClassMap[hWnd] = this;	//hWndとこのクラスのインスタンスポインタの対応表更新
+			}
+			else {
+				_ASSERT(0);
+			}
 		}
 		//	Method : ウィンドウプロシージャ
 		static LRESULT CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -5003,9 +5073,9 @@ static void s_dummyfunc();
 				lineIndex= _lineIndex;
 				key.clear();
 			}
-			LineData( const LineData& a ){
-				_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
-			}
+			//LineData( const LineData& a ){
+			//	_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
+			//}
 			~LineData(){
 				if (!key.empty()) {
 					for (std::vector<Key*>::iterator it = key.begin();
@@ -6748,8 +6818,8 @@ static void s_dummyfunc();
 		void getEulMinMax(bool* dstisset, float* dstmin, float* dstmax) {
 			if (dstisset && dstmin && dstmax) {
 				*dstisset = isseteulminmax;
-				*dstmin = mineul;
-				*dstmax = maxeul;
+				*dstmin = (float)mineul;
+				*dstmax = (float)maxeul;
 			}
 		}
 
@@ -6808,9 +6878,9 @@ static void s_dummyfunc();
 				lineIndex = _lineIndex;
 				//InitEulKeys();
 			};
-			EulLineData(const EulLineData& a) {
-				_ASSERT_EXPR(0, L"コピーコンストラクタは使えません");
-			};
+			//EulLineData(const EulLineData& a) {
+			//	_ASSERT_EXPR(0, L"コピーコンストラクタは使えません");
+			//};
 			~EulLineData() {
 				for (std::vector<EulKey*>::iterator it = key.begin();
 					it != key.end();
@@ -6863,7 +6933,7 @@ static void s_dummyfunc();
 				};
 				void* operator new[](size_t sizeInBytes) { 
 					//return (void*)malloc(sizeInBytes); 
-					int newelemnum;
+					size_t newelemnum;
 					newelemnum = sizeInBytes / sizeof(OWP_EulerGraph::EulLineData::EulKey);
 					if (sizeInBytes != (newelemnum * sizeof(OWP_EulerGraph::EulLineData::EulKey))) {
 						_ASSERT(0);
@@ -6876,7 +6946,7 @@ static void s_dummyfunc();
 						_ASSERT(0);
 						return 0;
 					}
-					int elemno;
+					size_t elemno;
 					for (elemno = 0; elemno < newelemnum; elemno++) {
 						OWP_EulerGraph::EulLineData::EulKey* newelem;
 						newelem = neweulblk + elemno;
@@ -7048,17 +7118,17 @@ static void s_dummyfunc();
 				if (wcscmp(L"X", name.c_str()) == 0) {
 					hdcM->setPenAndBrush(NULL, RGB(255, 0, 0));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
-					y2 = y0 + parent->getDispOffset();
+					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"Y", name.c_str()) == 0) {
 					hdcM->setPenAndBrush(NULL, RGB(0, 255, 0));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
-					y2 = y0 + parent->getDispOffset();
+					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"Z", name.c_str()) == 0) {
 					hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
-					y2 = y0 + parent->getDispOffset();
+					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"S", name.c_str()) == 0) {
 					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
@@ -7067,6 +7137,8 @@ static void s_dummyfunc();
 				}
 				else {
 					hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
+					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
+					y2 = y0;//MotionBrushは初期位置
 				}
 
 				//if (eulrange < 10.0) {
@@ -7079,7 +7151,7 @@ static void s_dummyfunc();
 				for (int i = 0; i < (int)key.size(); i++) {
 					//valueが増える方向を上方向に。座標系は下方向にプラス。
 					//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
-					int ey0 = (parent->maxeul - key[i]->value) / eulrange * (y1 - y0) + y2;
+					int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
 					int ey1 = ey0 + DOT_SIZE_Y;
 
 					int ex0 = (int)((key[i]->time - startTime)*timeSize) + x1;
@@ -8502,7 +8574,7 @@ static void s_dummyfunc();
 			//ラインスクロールバー
 			if (x2 <= e.localX && e.localX<x3
 				&& y0 <= e.localY && e.localY<y1){
-				int showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
+				showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
 				if (showLineNum<lineDatasize){
 					int barSize = (y1 - y0) * showLineNum / lineDatasize;
 
@@ -8725,16 +8797,11 @@ static void s_dummyfunc();
 	};
 
 
-void s_dummyfunc()
-{
-	static int dummycnt = 0;
-	dummycnt++;
-}
-void s_dummyfuncKey( KeyboardEvent& keye )
-{
-	static int dummycnt = 0;
-	dummycnt++;
-}
+//void s_dummyfuncKey( KeyboardEvent& keye )
+//{
+//	static int dummycnt = 0;
+//	dummycnt++;
+//}
 
 }
 

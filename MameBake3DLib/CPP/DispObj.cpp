@@ -651,17 +651,17 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 //diffuse = ChaVector4( 0.6f, 0.6f, 0.6f, 1.0f );
 
 	hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 	hr = g_hambient->SetRawValue(&(curmat->GetAmb3F()), 0, sizeof(ChaVector3));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 	hr = g_hspecular->SetRawValue(&(curmat->GetSpc3F()), 0, sizeof(ChaVector3));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 	hr = g_hpower->SetFloat(curmat->GetPower());
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 	hr = g_hemissive->SetRawValue(&(curmat->GetEmi3F()), 0, sizeof(ChaVector3));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 	hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 
 
 	pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -793,7 +793,7 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 
 	if(texresview && (texresview != g_presview)){
 		hr = g_hMeshTexture->SetResource(texresview);
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		g_presview = texresview;
 	}else{
 		//g_hMeshTexture->SetResource(NULL);
@@ -815,7 +815,7 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 
 
 /////////////
-	HRESULT hres;
+	//HRESULT hres;
 
 	int rendervnum;
 	if (m_pm3) {
@@ -840,7 +840,7 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 	//{
 		//pはテクスチャの有無によるパスの数字
 		hr = curtech->GetPassByIndex(p)->Apply(0, pd3d11DeviceContext);
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		pd3d11DeviceContext->DrawIndexed(curnumprim * 3, 0, 0);
 		//pd3d11DeviceContext->Draw(rendervnum, 0);
 	//}
@@ -879,19 +879,19 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 		diffuse.z = curdif4f.z * diffusemult.z;
 
 		hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		hr = g_hambient->SetRawValue(&(curmat->GetAmb3F()), 0, sizeof(ChaVector3));
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		hr = g_hspecular->SetRawValue(&(curmat->GetSpc3F()), 0, sizeof(ChaVector3));
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		hr = g_hpower->SetFloat(curmat->GetPower());
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		hr = g_hemissive->SetRawValue(&(curmat->GetEmi3F()), 0, sizeof(ChaVector3));
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 		hr = g_hPm3Offset->SetRawValue(&m_scaleoffset, 0, sizeof(ChaVector3));
-		_ASSERT(!hr);
+		_ASSERT(SUCCEEDED(hr));
 
 
 
@@ -980,7 +980,7 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 
 
 	/////////////
-		HRESULT hres;
+		//HRESULT hres;
 		int rendervnum;
 		if (m_pm3) {
 			rendervnum = m_pm3->GetOptLeng();
@@ -1025,7 +1025,7 @@ int CDispObj::RenderLine(ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 di
 	diffuse.z = m_extline->m_color.z * diffusemult.z;
 
 	hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 
 	pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 

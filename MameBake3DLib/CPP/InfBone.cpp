@@ -115,12 +115,17 @@ int CInfBone::AddInfElem( CMQOObject* srcobj, INFELEM srcie )
 	INFDATA* curinf = GetInfData(srcobj);
 	if( !curinf ){
 		curinf = (INFDATA*)malloc( sizeof( INFDATA ) );
-		_ASSERT( curinf );
-		InitElem( curinf );
-		curinf->m_infnum = 1;
-		curinf->m_infelem[0] = srcie;
-		m_infdata[ srcobj ] = curinf;
-		return 0;//
+		if (curinf) {
+			InitElem(curinf);
+			curinf->m_infnum = 1;
+			curinf->m_infelem[0] = srcie;
+			m_infdata[srcobj] = curinf;
+			return 0;//
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
 	}
 
 	int findieno = -1;
@@ -144,11 +149,11 @@ int CInfBone::AddInfElem( CMQOObject* srcobj, INFELEM srcie )
 			if( curinf->m_infnum >= INFNUMMAX ){
 				int minindex = 0;
 				float minweight = curinf->m_infelem[0].dispinf;
-				int ieno;
-				for( ieno = 1; ieno < curinf->m_infnum; ieno++ ){
-					if( curinf->m_infelem[ieno].dispinf < minweight ){
-						minindex = ieno;
-						minweight = curinf->m_infelem[ieno].dispinf;
+				int ieno2;
+				for( ieno2 = 1; ieno2 < curinf->m_infnum; ieno2++ ){
+					if( curinf->m_infelem[ieno2].dispinf < minweight ){
+						minindex = ieno2;
+						minweight = curinf->m_infelem[ieno2].dispinf;
 					}
 				}
 

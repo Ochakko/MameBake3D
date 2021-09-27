@@ -81,9 +81,21 @@ typedef BOOL(WINAPI* Pfn_GetLogicalProcessorInformation)(PSYSTEM_LOGICAL_PROCESS
 
 void getProcessorInformation(btProcessorInfo* procInfo)
 {
-	memset(procInfo, 0, sizeof(*procInfo));
+	if (!procInfo) {//2021/09/27
+		_ASSERT(0);
+		return;
+	}
+
+	//memset(procInfo, 0, sizeof(*procInfo));
+	memset(procInfo, 0, sizeof(btProcessorInfo));//2021/09/27
+	HMODULE hmodkernel32 = GetModuleHandle(TEXT("kernel32"));
+	if (!hmodkernel32) {//2021/09/27
+		_ASSERT(0);
+		return;
+	}
 	Pfn_GetLogicalProcessorInformation getLogicalProcInfo =
-		(Pfn_GetLogicalProcessorInformation)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetLogicalProcessorInformation");
+		//(Pfn_GetLogicalProcessorInformation)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetLogicalProcessorInformation");
+		(Pfn_GetLogicalProcessorInformation)GetProcAddress(hmodkernel32, "GetLogicalProcessorInformation");//2021/09/27
 	if (getLogicalProcInfo == NULL)
 	{
 		// no info
@@ -110,56 +122,60 @@ void getProcessorInformation(btProcessorInfo* procInfo)
 		}
 	}
 
-	int len = bufSize / sizeof(*buf);
-	for (int i = 0; i < len; ++i)
-	{
-		PSYSTEM_LOGICAL_PROCESSOR_INFORMATION info = buf + i;
-		switch (info->Relationship)
+	if (buf) {
+		int len = bufSize / sizeof(*buf);
+		for (int i = 0; i < len; ++i)
 		{
-			case RelationNumaNode:
-				procInfo->numNumaNodes++;
-				break;
+			PSYSTEM_LOGICAL_PROCESSOR_INFORMATION info = buf + i;
+			if (info) {
+				switch (info->Relationship)
+				{
+				case RelationNumaNode:
+					procInfo->numNumaNodes++;
+					break;
 
-			case RelationProcessorCore:
-				procInfo->numCores++;
-				procInfo->numLogicalProcessors += countSetBits(info->ProcessorMask);
-				break;
+				case RelationProcessorCore:
+					procInfo->numCores++;
+					procInfo->numLogicalProcessors += countSetBits(info->ProcessorMask);
+					break;
 
-			case RelationCache:
-				if (info->Cache.Level == 1)
-				{
-					procInfo->numL1Cache++;
-				}
-				else if (info->Cache.Level == 2)
-				{
-					procInfo->numL2Cache++;
-				}
-				else if (info->Cache.Level == 3)
-				{
-					procInfo->numL3Cache++;
-					// processors that share L3 cache are considered to be on the same team
-					// because they can more easily work together on the same data.
-					// Large performance penalties will occur if 2 or more threads from different
-					// teams attempt to frequently read and modify the same cache lines.
-					//
-					// On the AMD Ryzen 7 CPU for example, the 8 cores on the CPU are split into
-					// 2 CCX units of 4 cores each. Each CCX has a separate L3 cache, so if both
-					// CCXs are operating on the same data, many cycles will be spent keeping the
-					// two caches coherent.
-					if (procInfo->numTeamMasks < btProcessorInfo::maxNumTeamMasks)
+				case RelationCache:
+					if (info->Cache.Level == 1)
 					{
-						procInfo->processorTeamMasks[procInfo->numTeamMasks] = info->ProcessorMask;
-						procInfo->numTeamMasks++;
+						procInfo->numL1Cache++;
 					}
-				}
-				break;
+					else if (info->Cache.Level == 2)
+					{
+						procInfo->numL2Cache++;
+					}
+					else if (info->Cache.Level == 3)
+					{
+						procInfo->numL3Cache++;
+						// processors that share L3 cache are considered to be on the same team
+						// because they can more easily work together on the same data.
+						// Large performance penalties will occur if 2 or more threads from different
+						// teams attempt to frequently read and modify the same cache lines.
+						//
+						// On the AMD Ryzen 7 CPU for example, the 8 cores on the CPU are split into
+						// 2 CCX units of 4 cores each. Each CCX has a separate L3 cache, so if both
+						// CCXs are operating on the same data, many cycles will be spent keeping the
+						// two caches coherent.
+						if (procInfo->numTeamMasks < btProcessorInfo::maxNumTeamMasks)
+						{
+							procInfo->processorTeamMasks[procInfo->numTeamMasks] = info->ProcessorMask;
+							procInfo->numTeamMasks++;
+						}
+					}
+					break;
 
-			case RelationProcessorPackage:
-				procInfo->numPhysicalPackages++;
-				break;
+				case RelationProcessorPackage:
+					procInfo->numPhysicalPackages++;
+					break;
+				}
+			}
 		}
+		free(buf);
 	}
-	free(buf);
 }
 
 ///btThreadSupportWin32 helps to initialize/shutdown libspe2, start/stop SPU tasks and communication
@@ -352,7 +368,7 @@ void btThreadSupportWin32::startThreads(const ConstructionInfo& threadConstructi
 		//                     totally shut out and unable to tell the workers to stop
 		//SetThreadPriority( handle, THREAD_PRIORITY_BELOW_NORMAL );
 
-		{
+		if((handle != NULL) && (handle != INVALID_HANDLE_VALUE)){
 			int processorId = i + 1;  // leave processor 0 for main thread
 			DWORD_PTR teamMask = getProcessorTeamMask(procInfo, processorId);
 			if (teamMask)
@@ -388,16 +404,27 @@ void btThreadSupportWin32::stopThreads()
 		btThreadStatus& threadStatus = m_activeThreadStatus[i];
 		if (threadStatus.m_status > 0)
 		{
-			WaitForSingleObject(threadStatus.m_eventCompleteHandle, INFINITE);
+			if ((threadStatus.m_eventCompleteHandle != NULL) && (threadStatus.m_eventCompleteHandle != INVALID_HANDLE_VALUE)) {
+				WaitForSingleObject(threadStatus.m_eventCompleteHandle, INFINITE);
+			}
 		}
 
 		threadStatus.m_userPtr = NULL;
-		SetEvent(threadStatus.m_eventStartHandle);
-		WaitForSingleObject(threadStatus.m_eventCompleteHandle, INFINITE);
-
-		CloseHandle(threadStatus.m_eventCompleteHandle);
-		CloseHandle(threadStatus.m_eventStartHandle);
-		CloseHandle(threadStatus.m_threadHandle);
+		if ((threadStatus.m_eventStartHandle != NULL) && (threadStatus.m_eventStartHandle != INVALID_HANDLE_VALUE)) {
+			SetEvent(threadStatus.m_eventStartHandle);
+		}
+		if ((threadStatus.m_eventCompleteHandle != NULL) && (threadStatus.m_eventCompleteHandle != INVALID_HANDLE_VALUE)) {
+			WaitForSingleObject(threadStatus.m_eventCompleteHandle, INFINITE);
+		}
+		if ((threadStatus.m_eventCompleteHandle != NULL) && (threadStatus.m_eventCompleteHandle != INVALID_HANDLE_VALUE)) {
+			CloseHandle(threadStatus.m_eventCompleteHandle);
+		}
+		if ((threadStatus.m_eventStartHandle != NULL) && (threadStatus.m_eventStartHandle != INVALID_HANDLE_VALUE)) {
+			CloseHandle(threadStatus.m_eventStartHandle);
+		}
+		if ((threadStatus.m_threadHandle != NULL) && (threadStatus.m_threadHandle != INVALID_HANDLE_VALUE)) {
+			CloseHandle(threadStatus.m_threadHandle);
+		}
 	}
 
 	m_activeThreadStatus.clear();

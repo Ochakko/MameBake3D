@@ -209,7 +209,7 @@ int WriteEGPFileHeader(EGPHEADER* dstegph, HANDLE hfile, CModel* srcmodel, char*
 		return 1;
 	}
 	int framenum;
-	framenum = curmi->frameleng;
+	framenum = (int)curmi->frameleng;
 	if (framenum <= 0) {
 		return 1;
 	}
@@ -278,7 +278,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	//}EGPHEADER;
 
 	int magicstrlen;
-	magicstrlen = strlen(dstegph->magicstr);
+	magicstrlen = (int)strlen(dstegph->magicstr);
 	if ((magicstrlen <= 0) || (magicstrlen >= 32)) {
 		return false;
 	}
@@ -289,7 +289,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	}
 
 	int versionstrlen;
-	versionstrlen = strlen(dstegph->version);
+	versionstrlen = (int)strlen(dstegph->version);
 	if ((versionstrlen <= 0) || (versionstrlen >= 16)) {
 		return false;
 	}
@@ -300,7 +300,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	}
 	
 	int fbxdatelen;
-	fbxdatelen = strlen(dstegph->fbxdate);
+	fbxdatelen = (int)strlen(dstegph->fbxdate);
 	if ((fbxdatelen <= 0) || (fbxdatelen >= 256)) {
 		return false;
 	}
@@ -319,7 +319,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 		return 1;
 	}
 	int framenum;
-	framenum = curmi->frameleng;
+	framenum = (int)curmi->frameleng;
 	if (framenum <= 0) {
 		return 1;
 	}
@@ -340,10 +340,10 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 		return false;
 	}
 
-	DWORD buffersize = 0;
+	size_t buffersize = 0;
 	buffersize = sizeof(EGPHEADER) +
-		jointnum * sizeof(EGPJOINTHEADER) +
-		jointnum * framenum * sizeof(EGPELEM);
+		(size_t)jointnum * sizeof(EGPJOINTHEADER) +
+		(size_t)jointnum * (size_t)framenum * sizeof(EGPELEM);
 
 	if ((bufleng < 0) || (bufleng != buffersize)) {
 		return false;
@@ -414,10 +414,10 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 
 	unsigned int jointindex;
 	unsigned int frameno;
-	for (jointindex = 0; jointindex < egpheader.jointnum; jointindex++) {
-		DWORD curheaderpos;
-		curheaderpos = sizeof(EGPHEADER) + jointindex * sizeof(EGPJOINTHEADER) + jointindex * egpheader.framenum * sizeof(EGPELEM);
-		if (curheaderpos >= (bufleng - sizeof(EGPJOINTHEADER))) {
+	for (jointindex = 0; jointindex < (unsigned int)egpheader.jointnum; jointindex++) {
+		size_t curheaderpos;
+		curheaderpos = sizeof(EGPHEADER) + (size_t)jointindex * sizeof(EGPJOINTHEADER) + (size_t)jointindex * (size_t)egpheader.framenum * sizeof(EGPELEM);
+		if (curheaderpos >= ((size_t)bufleng - sizeof(EGPJOINTHEADER))) {
 			CloseHandle(hfile);
 			return false;
 		}
@@ -431,7 +431,7 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		}
 
 		int jointnamelen;
-		jointnamelen = strlen(jointheader.jointname);
+		jointnamelen = (int)strlen(jointheader.jointname);
 		if ((jointnamelen <= 0) || (jointnamelen >= 256)) {
 			CloseHandle(hfile);
 			return false;
@@ -454,14 +454,14 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 
 		
 		size_t veccursize = curbone->veclClusterGlobalCurrentPosition.size();
-		if (veccursize < egpheader.framenum) {
+		if (veccursize < (size_t)egpheader.framenum) {
 			curbone->veclClusterGlobalCurrentPosition.resize(egpheader.framenum);//!!!!!!!!!!!!
 		}
 
-		for (frameno = 0; frameno < egpheader.framenum; frameno++) {
-			DWORD egpbufpos;
+		for (frameno = 0; frameno < (unsigned int)egpheader.framenum; frameno++) {
+			size_t egpbufpos;
 			egpbufpos = curheaderpos + sizeof(EGPJOINTHEADER) + frameno * sizeof(EGPELEM);
-			if ((egpbufpos <= 0) || (egpbufpos > (bufleng - sizeof(EGPELEM)))) {
+			if ((egpbufpos <= 0) || (egpbufpos > ((size_t)bufleng - sizeof(EGPELEM)))) {
 				CloseHandle(hfile);
 				return false;
 			}

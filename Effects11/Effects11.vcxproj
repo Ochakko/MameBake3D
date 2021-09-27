@@ -125,6 +125,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <DisableSpecificWarnings>26451;4267;</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

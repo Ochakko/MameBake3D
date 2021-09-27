@@ -404,27 +404,32 @@ struct CommonRigidBodyMTBase : public CommonExampleInterface
 		bool isDynamic = (mass != 0.f);
 
 		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
+		if (shape && isDynamic) {
 			shape->calculateLocalInertia(mass, localInertia);
+		}
+		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
 
-			//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
 
+		btRigidBody* body = 0;
 #define USE_MOTIONSTATE 1
 #ifdef USE_MOTIONSTATE
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+		if (myMotionState) {
+			btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, shape, localInertia);
 
-		btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, shape, localInertia);
-
-		btRigidBody* body = new btRigidBody(cInfo);
-		//body->setContactProcessingThreshold(m_defaultContactProcessingThreshold);
-
+			body = new btRigidBody(cInfo);
+			//body->setContactProcessingThreshold(m_defaultContactProcessingThreshold);
+		}
 #else
-		btRigidBody* body = new btRigidBody(mass, 0, shape, localInertia);
-		body->setWorldTransform(startTransform);
+		body = new btRigidBody(mass, 0, shape, localInertia);
+		if (body) {
+			body->setWorldTransform(startTransform);
+		}
 #endif  //
-
-		body->setUserIndex(-1);
-		m_dynamicsWorld->addRigidBody(body);
+		if (body) {
+			body->setUserIndex(-1);
+			m_dynamicsWorld->addRigidBody(body);
+		}
 		return body;
 	}
 

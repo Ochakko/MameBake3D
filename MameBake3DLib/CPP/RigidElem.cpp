@@ -139,7 +139,7 @@ float CRigidElem::GetBoneLeng()
 	childposA = m_endbone->GetJointFPos();
 	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetInitMat());
 	ChaVector3 diffA = childposA - parentposA;
-	m_boneleng = ChaVector3Length(&diffA);
+	m_boneleng = (float)ChaVector3LengthDbl(&diffA);
 
 	return m_boneleng;
 
@@ -163,7 +163,7 @@ CRigidElem* CRigidElem::GetNewRigidElem()
 	static int s_befelemno = -1;
 
 	int curpoollen;
-	curpoollen = s_rigidelempool.size();
+	curpoollen = (int)s_rigidelempool.size();
 
 
 	//if ((s_befheadno != (s_rigidelempool.size() - 1)) || (s_befelemno != (REPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
@@ -270,7 +270,10 @@ CRigidElem* CRigidElem::GetNewRigidElem()
 	allocrigidelem->SetUseFlag(1);
 
 
-	s_befheadno = s_rigidelempool.size() - 1;
+	s_befheadno = (int)s_rigidelempool.size() - 1;
+	if (s_befheadno < 0) {
+		s_befheadno = 0;
+	}
 	s_befelemno = 0;
 
 	return allocrigidelem;
@@ -303,7 +306,7 @@ void CRigidElem::InitRigidElems()
 
 //static func
 void CRigidElem::DestroyRigidElems() {
-	int rigidelemallocnum = s_rigidelempool.size();
+	int rigidelemallocnum = (int)s_rigidelempool.size();
 	int rigidelemno;
 	for (rigidelemno = 0; rigidelemno < rigidelemallocnum; rigidelemno++) {
 		CRigidElem* delrigidelem;

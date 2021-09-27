@@ -211,7 +211,7 @@ int CMNLFile::ReadMNEntry( int motionnum, int motioncnt, XMLIOBUF* xmlbuf )
 
 	char changename[256] = { 0 };
 	strcpy_s(changename, 256, mname);
-	unsigned int namelen = strlen(changename);
+	size_t namelen = strlen(changename);
 	if (namelen <= 0) {
 		_ASSERT(0);
 		return 0;
@@ -219,7 +219,7 @@ int CMNLFile::ReadMNEntry( int motionnum, int motioncnt, XMLIOBUF* xmlbuf )
 
 	//check english name
 	bool isengname = true;
-	int ccnt;
+	size_t ccnt;
 	for (ccnt = 0; ccnt < namelen; ccnt++) {
 		char curc = changename[ccnt];
 		if (((curc >= '0') && (curc <= '9')) ||

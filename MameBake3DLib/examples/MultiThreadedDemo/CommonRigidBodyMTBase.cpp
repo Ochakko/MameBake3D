@@ -102,11 +102,11 @@ private:
 public:
 	void begin(RecordType rt)
 	{
-		mRecords[rt].begin(mClock.getTimeMicroseconds());
+		mRecords[rt].begin((int)mClock.getTimeMicroseconds());
 	}
 	void end(RecordType rt)
 	{
-		mRecords[rt].end(mClock.getTimeMicroseconds());
+		mRecords[rt].end((int)mClock.getTimeMicroseconds());
 	}
 	float getAverageTime(RecordType rt) const
 	{
@@ -402,7 +402,7 @@ void CommonRigidBodyMTBase::setThreadNumFunc(int srcnum) {
 	for (i = 0; i < taskschedulernum; i++) {
 		btITaskScheduler* curscheduler = gTaskSchedulerMgr.getTaskScheduler(i);
 		if (curscheduler) {
-			curscheduler->setNumThreads(gSliderNumThreads);
+			curscheduler->setNumThreads((int)gSliderNumThreads);
 		}
 	}
 };

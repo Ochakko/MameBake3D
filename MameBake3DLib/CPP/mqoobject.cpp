@@ -376,7 +376,7 @@ int CMQOObject::GetInt( int* dstint, char* srcchar, int pos, int srcleng, int* s
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, endpos - startpos );
+		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		*dstint = atoi( tempchar );
@@ -412,7 +412,7 @@ int CMQOObject::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, 
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, endpos - startpos );
+		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		*dstfloat = (float)atof( tempchar );
@@ -447,7 +447,7 @@ int CMQOObject::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int
 	}
 
 	if( (endpos - startpos < dstleng) && (endpos - startpos > 0) ){
-		strncpy_s( dstchar, dstleng, srcchar + startpos, endpos - startpos );
+		strncpy_s( dstchar, dstleng, srcchar + startpos, (int)((INT64)endpos - startpos) );
 		*(dstchar + endpos - startpos) = 0;
 
 	}else{
@@ -479,13 +479,14 @@ int CMQOObject::SetVertex( int* vertnum, char* srcchar, int srcleng )
 	char* find2;
 	find2 = strstr( srcchar, headerchar2 );
 
-	int pos;
+	int pos = 0;
 	if( find1 != NULL ){
 		pos = (int)(find1 + headerleng1 - srcchar);
 	}else if( find2 != NULL ){
 		pos = (int)(find2 + headerleng2 - srcchar);
 	}else{
-
+		_ASSERT(0);
+		return 1;
 	}
 	int stepnum;
 	ret = GetInt( &m_vertex, srcchar, pos, srcleng, &stepnum );
@@ -978,6 +979,12 @@ int CMQOObject::HasLine()
 
 int CMQOObject::MakeLatheBuf()
 {
+	if ((m_face > 0) && !m_facebuf) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	int linenum = 0;
 	int faceno;
 	CMQOFace* curface;
@@ -1083,7 +1090,7 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				ChaVector3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
+				ChaVector3* dst0 = m_pointbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
 				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].height;
@@ -1095,11 +1102,20 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].dist * (float)sin( rad * segno );
 
 				if( m_colorbuf2 ){
-					ChaVector4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
+					ChaVector4* dstcol0 = m_colorbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
 					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
-
-					*dstcol0 = *(m_colorbuf + v0);
-					*dstcol1 = *(m_colorbuf + v1);
+					if (dstcol0 && m_colorbuf) {
+						*dstcol0 = *(m_colorbuf + v0);
+					}
+					else {
+						_ASSERT(0);
+					}
+					if (dstcol1 && m_colorbuf) {
+						*dstcol1 = *(m_colorbuf + v1);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 			}
 
@@ -1122,7 +1138,7 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				ChaVector3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
+				ChaVector3* dst0 = m_pointbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
 				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].dist * (float)cos( rad * segno );
@@ -1134,11 +1150,20 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].dist * (float)sin( rad * segno );
 
 				if( m_colorbuf2 ){
-					ChaVector4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
+					ChaVector4* dstcol0 = m_colorbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
 					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
-
-					*dstcol0 = *(m_colorbuf + v0);
-					*dstcol1 = *(m_colorbuf + v1);
+					if (dstcol0 && m_colorbuf) {
+						*dstcol0 = *(m_colorbuf + v0);
+					}
+					else {
+						_ASSERT(0);
+					}
+					if (dstcol1 && m_colorbuf) {
+						*dstcol1 = *(m_colorbuf + v1);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 			}
 			break;
@@ -1160,7 +1185,7 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				ChaVector3* dst0 = m_pointbuf2 + lineno * 2 * m_lathe_seg + segno;
+				ChaVector3* dst0 = m_pointbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
 				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].dist * (float)cos( rad * segno );
@@ -1172,11 +1197,18 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].height;
 
 				if( m_colorbuf2 ){
-					ChaVector4* dstcol0 = m_colorbuf2 + lineno * 2 * m_lathe_seg + segno;
+					ChaVector4* dstcol0 = m_colorbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
 					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 
-					*dstcol0 = *(m_colorbuf + v0);
-					*dstcol1 = *(m_colorbuf + v1);
+					if (dstcol0 && m_colorbuf) {
+						*dstcol0 = *(m_colorbuf + v0);
+					}
+					if (dstcol1 && m_colorbuf) {
+						*dstcol1 = *(m_colorbuf + v1);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 			}
 			break;
@@ -1189,19 +1221,19 @@ int CMQOObject::MakeLatheBuf()
 
 	for( lineno = 0; lineno < linenum; lineno++ ){ 
 		for( segno = 0; segno < m_lathe_seg; segno++ ){
-			CMQOFace* dstface = m_facebuf2 + m_lathe_seg * lineno + segno;
+			CMQOFace* dstface = m_facebuf2 + (int)((INT64)m_lathe_seg * lineno + segno);
 			dstface->SetPointNum( 4 );
 
 			if( segno != m_lathe_seg - 1 ){
-				dstface->SetIndex( 0, lineno * 2 * m_lathe_seg + segno );
-				dstface->SetIndex( 1, lineno * 2 * m_lathe_seg + m_lathe_seg + segno );
-				dstface->SetIndex( 2, lineno * 2 * m_lathe_seg + m_lathe_seg + 1 + segno );
-				dstface->SetIndex( 3, lineno * 2 * m_lathe_seg + 1 + segno );
+				dstface->SetIndex( 0, (int)((INT64)lineno * 2 * m_lathe_seg + segno) );
+				dstface->SetIndex( 1, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg + segno) );
+				dstface->SetIndex( 2, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg + 1 + segno) );
+				dstface->SetIndex( 3, (int)((INT64)lineno * 2 * m_lathe_seg + 1 + segno));
 			}else{
-				dstface->SetIndex( 0, lineno * 2 * m_lathe_seg + segno );
-				dstface->SetIndex( 1, lineno * 2 * m_lathe_seg + m_lathe_seg + segno );
-				dstface->SetIndex( 2, lineno * 2 * m_lathe_seg + m_lathe_seg );
-				dstface->SetIndex( 3, lineno * 2 * m_lathe_seg );
+				dstface->SetIndex( 0, (int)((INT64)lineno * 2 * m_lathe_seg + segno));
+				dstface->SetIndex( 1, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg + segno));
+				dstface->SetIndex( 2, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg));
+				dstface->SetIndex( 3, (int)((INT64)lineno * 2 * m_lathe_seg));
 			}
 			dstface->SetHasUV( 0 );
 
@@ -1284,11 +1316,15 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 		m_face2 = befface * 2;
 
 	if( m_pointbuf2 ){
-		m_pointbuf2 = (ChaVector3*)realloc( m_pointbuf2, sizeof( ChaVector3 ) * m_vertex2 );
-		if( !m_pointbuf2 ){
+		ChaVector3* newpb2 = 0;
+		newpb2 = (ChaVector3*)realloc( m_pointbuf2, sizeof( ChaVector3 ) * m_vertex2 );
+		if( !newpb2 ){
 			DbgOut( L"MQOObject : MakeMirrorPointAndFace : pointbuf2 realloc error !!!\r\n" );
 			_ASSERT( 0 );
 			return 1;
+		}
+		else {
+			m_pointbuf2 = newpb2;
 		}
 	}else{
 		m_pointbuf2 = (ChaVector3*)malloc( sizeof( ChaVector3 ) * m_vertex2 );
@@ -1302,11 +1338,15 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 
 	if( m_colorbuf ){
 		if( m_colorbuf2 ){
-			m_colorbuf2 = (ChaVector4*)realloc( m_colorbuf2, sizeof( ChaVector4 ) * m_vertex2 );
-			if( !m_colorbuf2 ){
+			ChaVector4* newcb2 = 0;
+			newcb2 = (ChaVector4*)realloc( m_colorbuf2, sizeof( ChaVector4 ) * m_vertex2 );
+			if( !newcb2 ){
 				DbgOut( L"MQOObject : MakeMirrorPointAndFace : colorbuf2 realloc error !!!\r\n" );
 				_ASSERT( 0 );
 				return 1;
+			}
+			else {
+				m_colorbuf2 = newcb2;
 			}
 		}else{
 			m_colorbuf2 = (ChaVector4*)malloc( sizeof( ChaVector4 ) * m_vertex2 );
@@ -1442,6 +1482,12 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 
 int CMQOObject::FindConnectFace( int issetface )
 {
+	if ((m_face > 0) && !m_facebuf) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 
 	int conno = 0;
 	int faceno, chkno;

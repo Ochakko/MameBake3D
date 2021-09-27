@@ -72,10 +72,18 @@ int CFrameCopyDlg::InitParams()
 		}
 
 		::ZeroMemory( m_influencenum, sizeof( int ) * FCSLOTNUM );
-		::ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+		::ZeroMemory(m_ignorenum, sizeof(int) * FCSLOTNUM);
 
-		::ZeroMemory( m_ignorenum, sizeof( int ) * FCSLOTNUM );
-		::ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+
+		//ÇQéüå≥ÇÇPâÒÇ≈èâä˙âªÇ∑ÇÈÇ∆åxçêÇ™èoÇÈ
+		//::ZeroMemory(&(m_influencelist[0][0]), sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+		//::ZeroMemory(&(m_ignorelist[0][0]), sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+
+		int fcslotno;
+		for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
+			::ZeroMemory(&(m_influencelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+			::ZeroMemory(&(m_ignorelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+		}
 	}
 
 	m_validelemmap.clear();
@@ -325,40 +333,52 @@ HTREEITEM CFrameCopyDlg::TVAdd( HTREEITEM parentTI, WCHAR* srcname, int srcno, i
 
 void CFrameCopyDlg::CreateImageList()
 {
-	m_tree_wnd.SetWindowLong( GWL_STYLE, 
-		WS_CHILD | WS_VISIBLE | WS_BORDER | 
+	m_tree_wnd.SetWindowLong(GWL_STYLE,
+		WS_CHILD | WS_VISIBLE | WS_BORDER |
 		TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS
-		);
+	);
 
 	HBITMAP hBitmap;
-	m_hImageList = ImageList_Create( 16, 16, ILC_COLOR, 2, 10 );
-	
-	hBitmap = LoadBitmap( (HINSTANCE)GetModuleHandle(NULL),
-		MAKEINTRESOURCE( IDB_BONE_IMAGE ) );
-	if( hBitmap == NULL ){
-		_ASSERT( 0 );
-	}
-	m_iImage = ImageList_Add( m_hImageList, hBitmap, (HBITMAP)0 );
-	if( m_iImage == -1 ){
-		_ASSERT( 0 );
-	}
-	DeleteObject( hBitmap );
+	m_hImageList = ImageList_Create(16, 16, ILC_COLOR, 2, 10);
 
-	hBitmap = LoadBitmap( (HINSTANCE)GetModuleHandle(NULL),
-		MAKEINTRESOURCE( IDB_BONE_SELECT ) );
-	if( hBitmap == NULL ){
-		_ASSERT( 0 );
-	}
-	m_iSelect = ImageList_Add( m_hImageList, hBitmap, (HBITMAP)0 );
-	if( m_iSelect == -1 ){
-		_ASSERT( 0 );
-	}
-	DeleteObject( hBitmap );
+	hBitmap = LoadBitmap((HINSTANCE)GetModuleHandle(NULL),
+		MAKEINTRESOURCE(IDB_BONE_IMAGE));
+	if (hBitmap != NULL) {
+		m_iImage = ImageList_Add(m_hImageList, hBitmap, (HBITMAP)0);
+		if (m_iImage != -1) {
+			DeleteObject(hBitmap);
 
-	HIMAGELIST retIL;
-	retIL = TreeView_SetImageList( m_tree_wnd,
-		m_hImageList, TVSIL_NORMAL );	
+			HBITMAP hBitmap2;
+			hBitmap2 = LoadBitmap((HINSTANCE)GetModuleHandle(NULL),
+				MAKEINTRESOURCE(IDB_BONE_SELECT));
+			if (hBitmap2 != NULL) {
+				m_iSelect = ImageList_Add(m_hImageList, hBitmap2, (HBITMAP)0);
+				if (m_iSelect != -1) {
+					DeleteObject(hBitmap2);
+
+					HIMAGELIST retIL;
+					retIL = TreeView_SetImageList(m_tree_wnd,
+						m_hImageList, TVSIL_NORMAL);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
 }
+
+
 int CFrameCopyDlg::ParamsToDlg()
 {
 	m_slotname_wnd.SetWindowTextW( &(m_slotname[ m_slotno ][0]) );
@@ -572,7 +592,12 @@ LRESULT CFrameCopyDlg::OnAllDelete(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOO
 {
 	m_list_wnd.SendMessage( LB_RESETCONTENT, 0, 0 );
 	m_influencenum[m_slotno] = 0;
-	ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+	//ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+	int fcslotno;
+	for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
+		::ZeroMemory(&(m_influencelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+	}
+
 
 	return 0;
 }
@@ -581,7 +606,11 @@ LRESULT CFrameCopyDlg::OnAllDelete2(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 {
 	m_list2_wnd.SendMessage( LB_RESETCONTENT, 0, 0 );
 	m_ignorenum[m_slotno] = 0;
-	ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+	//ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+	int fcslotno;
+	for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
+		::ZeroMemory(&(m_ignorelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+	}
 
 	return 0;
 }
@@ -815,7 +844,7 @@ bool CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufl
 	//}CPTHEADER;
 
 	int magicstrlen;
-	magicstrlen = strlen(dstTBOheader);
+	magicstrlen = (int)strlen(dstTBOheader);
 	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
 		_ASSERT(0);
 		return false;

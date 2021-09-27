@@ -297,7 +297,7 @@ CMotionPoint* CMotionPoint::GetNewMP()
 	static int s_befelemno = -1;
 
 	int curpoollen;
-	curpoollen = s_mppool.size();
+	curpoollen = (int)s_mppool.size();
 
 
 	//if ((s_befheadno != (s_mppool.size() - 1)) || (s_befelemno != (MPPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
@@ -407,7 +407,10 @@ CMotionPoint* CMotionPoint::GetNewMP()
 	//allocmp->SetUseFlag(1);
 
 
-	s_befheadno = s_mppool.size() - 1;
+	s_befheadno = (int)s_mppool.size() - 1;
+	if (s_befheadno < 0) {
+		s_befheadno = 0;
+	}
 	s_befelemno = 0;
 
 	LeaveCriticalSection(&s_CritSection_GetNewMP);
@@ -444,7 +447,7 @@ void CMotionPoint::InitMotionPoints()
 //static func
 void CMotionPoint::DestroyMotionPoints() {
 	DeleteCriticalSection(&s_CritSection_GetNewMP);
-	int mpallocnum = s_mppool.size();
+	int mpallocnum = (int)s_mppool.size();
 	int mpno;
 	for (mpno = 0; mpno < mpallocnum; mpno++) {
 		CMotionPoint* delmp;

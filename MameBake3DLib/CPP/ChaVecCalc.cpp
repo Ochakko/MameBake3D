@@ -46,43 +46,43 @@ extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
 
 								//BoneProp
 
-float vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
+double vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
 {
-	return (vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z);
+	return ((double)vec1->x * (double)vec2->x + (double)vec1->y * (double)vec2->y + (double)vec1->z * (double)vec2->z);
 }
 
-float lengthVec(ChaVector3* vec)
+double lengthVec(ChaVector3* vec)
 {
 	double mag;
-	float leng;
+	double leng;
 
-	mag = vec->x * vec->x + vec->y * vec->y + vec->z * vec->z;
+	mag = (double)vec->x * (double)vec->x + (double)vec->y * (double)vec->y + (double)vec->z * (double)vec->z;
 	if (mag == 0.0) {
-		leng = 0.0f;
+		leng = 0.0;
 	}
 	else {
-		leng = (float)sqrt(mag);
+		leng = sqrt(mag);
 	}
 	return leng;
 }
 
-float aCos(float dot)
+double aCos(double dot)
 {
-	if (dot > 1.0f)
-		dot = 1.0f;
-	else if (dot < -1.0f)
-		dot = -1.0f;
+	if (dot > 1.0)
+		dot = 1.0;
+	else if (dot < -1.0)
+		dot = -1.0;
 
 	double rad;
 	rad = acos(dot);
 
-	float degree;
-	degree = (float)(rad * PAI2DEG);
+	double degree;
+	degree = (rad * PAI2DEG);
 
 	return degree;
 }
 
-int vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
+int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -94,13 +94,13 @@ int vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = dirm._11 * srcvec->x + dirm._21 * srcvec->y + dirm._31 * srcvec->z + dirm._41;
-	dstvec->y = dirm._12 * srcvec->x + dirm._22 * srcvec->y + dirm._32 * srcvec->z + dirm._42;
-	dstvec->z = dirm._13 * srcvec->x + dirm._23 * srcvec->y + dirm._33 * srcvec->z + dirm._43;
+	dstvec->x = (float)((double)dirm._11 * (double)srcvec->x + (double)dirm._21 * (double)srcvec->y + (double)dirm._31 * (double)srcvec->z + (double)dirm._41);
+	dstvec->y = (float)((double)dirm._12 * (double)srcvec->x + (double)dirm._22 * (double)srcvec->y + (double)dirm._32 * (double)srcvec->z + (double)dirm._42);
+	dstvec->z = (float)((double)dirm._13 * (double)srcvec->x + (double)dirm._23 * (double)srcvec->y + (double)dirm._33 * (double)srcvec->z + (double)dirm._43);
 
 	return 0;
 }
-int vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
+int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -112,9 +112,10 @@ int vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = dirm._11 * srcvec->x + dirm._21 * srcvec->y + dirm._31 * srcvec->z + dirm._41;
-	dstvec->y = dirm._12 * srcvec->x + dirm._22 * srcvec->y + dirm._32 * srcvec->z + dirm._42;
-	dstvec->z = dirm._13 * srcvec->x + dirm._23 * srcvec->y + dirm._33 * srcvec->z + dirm._43;
+	dstvec->x = (float)((double)dirm._11 * (double)srcvec->x + (double)dirm._21 * (double)srcvec->y + (double)dirm._31 * (double)srcvec->z + (double)dirm._41);
+	dstvec->y = (float)((double)dirm._12 * (double)srcvec->x + (double)dirm._22 * (double)srcvec->y + (double)dirm._32 * (double)srcvec->z + (double)dirm._42);
+	dstvec->z = (float)((double)dirm._13 * (double)srcvec->x + (double)dirm._23 * (double)srcvec->y + (double)dirm._33 * (double)srcvec->z + (double)dirm._43);
+
 
 	return 0;
 }
@@ -130,9 +131,9 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = dirm._11 * srcvec->x + dirm._21 * srcvec->y + dirm._31 * srcvec->z + dirm._41;
-	dstvec->y = dirm._12 * srcvec->x + dirm._22 * srcvec->y + dirm._32 * srcvec->z + dirm._42;
-	dstvec->z = dirm._13 * srcvec->x + dirm._23 * srcvec->y + dirm._33 * srcvec->z + dirm._43;
+	dstvec->x = (float)((double)dirm._11 * (double)srcvec->x + (double)dirm._21 * (double)srcvec->y + (double)dirm._31 * (double)srcvec->z + (double)dirm._41);
+	dstvec->y = (float)((double)dirm._12 * (double)srcvec->x + (double)dirm._22 * (double)srcvec->y + (double)dirm._32 * (double)srcvec->z + (double)dirm._42);
+	dstvec->z = (float)((double)dirm._13 * (double)srcvec->x + (double)dirm._23 * (double)srcvec->y + (double)dirm._33 * (double)srcvec->z + (double)dirm._43);
 
 	return 0;
 }
@@ -156,16 +157,16 @@ int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler)
 	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisZVec);
-	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
+	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = 0.0f;
-	shadowVec.z = vecDotVec(&targetVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler->y = 90.0f;
 	}
 	else {
-		Euler->y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler->y = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) < 0.0) {
 		Euler->y = -Euler->y;
 	}
 
@@ -183,15 +184,15 @@ int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler)
 	***/
 	vec3RotateY(&tmpVec, -Euler->y, &targetVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler->x = 90.0f;
 	}
 	else {
-		Euler->x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler->x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
 		Euler->x = -Euler->x;
 	}
 	/***
@@ -208,16 +209,16 @@ int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler)
 	vec3RotateY(&tmpVec, -Euler->y, &targetVec);
 	targetVec = tmpVec;
 	vec3RotateX(&tmpVec, -Euler->x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler->z = 90.0f;
 	}
 	else {
-		Euler->z = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+		Euler->z = (float)aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) > 0.0) {
 		Euler->z = -Euler->z;
 	}
 	/***
@@ -395,14 +396,14 @@ bool IsTimeEqual(double srctime1, double srctime2)
 	}
 }
 
-float VecLength(ChaVector3 srcvec)
+double VecLength(ChaVector3 srcvec)
 {
-	double tmpval = srcvec.x * srcvec.x + srcvec.y * srcvec.y + srcvec.z * srcvec.z;
+	double tmpval = (double)srcvec.x * (double)srcvec.x + (double)srcvec.y * (double)srcvec.y + (double)srcvec.z * (double)srcvec.z;
 	if (tmpval > 0.0) {
-		return (float)sqrt(tmpval);
+		return sqrt(tmpval);
 	}
 	else {
-		return 0.0f;
+		return 0.0;
 	}
 }
 
@@ -437,37 +438,37 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 	vec3.y = tmpmat1._32;
 	vec3.z = tmpmat1._33;
 
-	float len1, len2, len3;
+	double len1, len2, len3;
 	len1 = VecLength(vec1);
 	len2 = VecLength(vec2);
 	len3 = VecLength(vec3);
 
-	if ((fabs(len1) - 1.0f) < 0.0001f) {
-		len1 = 1.0f;//åÎç∑Ç≈ã}Ç…ëÂÇ´Ç≥Ç™ïœÇÌÇÈÇÃÇñhé~
+	if ((fabs(len1) - 1.0) < 0.0001) {
+		len1 = 1.0;//åÎç∑Ç≈ã}Ç…ëÂÇ´Ç≥Ç™ïœÇÌÇÈÇÃÇñhé~
 	}
-	if (fabs(len1) < 0.0001f) {
-		len1 = 0.0001f;//0scaleã÷é~
+	if (fabs(len1) < 0.0001) {
+		len1 = 0.0001;//0scaleã÷é~
 	}
-	if ((fabs(len2) - 1.0f) < 0.0001f) {
-		len2 = 1.0f;//åÎç∑Ç≈ã}Ç…ëÂÇ´Ç≥Ç™ïœÇÌÇÈÇÃÇñhé~
+	if ((fabs(len2) - 1.0) < 0.0001) {
+		len2 = 1.0;//åÎç∑Ç≈ã}Ç…ëÂÇ´Ç≥Ç™ïœÇÌÇÈÇÃÇñhé~
 	}
-	if (fabs(len2) < 0.0001f) {
-		len2 = 0.0001f;//0scaleã÷é~
+	if (fabs(len2) < 0.0001) {
+		len2 = 0.0001;//0scaleã÷é~
 	}
-	if ((fabs(len3) - 1.0f) < 0.0001f) {
-		len3 = 1.0f;//åÎç∑Ç≈ã}Ç…ëÂÇ´Ç≥Ç™ïœÇÌÇÈÇÃÇñhé~
+	if ((fabs(len3) - 1.0) < 0.0001) {
+		len3 = 1.0;//åÎç∑Ç≈ã}Ç…ëÂÇ´Ç≥Ç™ïœÇÌÇÈÇÃÇñhé~
 	}
-	if (fabs(len3) < 0.0001f) {
-		len3 = 0.0001f;//0scaleã÷é~
+	if (fabs(len3) < 0.0001) {
+		len3 = 0.0001;//0scaleã÷é~
 	}
-	svecptr->x = len1;
-	svecptr->y = len2;
-	svecptr->z = len3;
+	svecptr->x = (float)len1;
+	svecptr->y = (float)len2;
+	svecptr->z = (float)len3;
 
-	if (len1 != 0.0f) {
-		rmatptr->_11 = tmpmat1._11 / len1;
-		rmatptr->_12 = tmpmat1._12 / len1;
-		rmatptr->_13 = tmpmat1._13 / len1;
+	if (len1 != 0.0) {
+		rmatptr->_11 = (float)((double)tmpmat1._11 / len1);
+		rmatptr->_12 = (float)((double)tmpmat1._12 / len1);
+		rmatptr->_13 = (float)((double)tmpmat1._13 / len1);
 	}
 	else {
 		rmatptr->_11 = 1.0f;
@@ -476,9 +477,9 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 	}
 
 	if (len2 != 0.0f) {
-		rmatptr->_21 = tmpmat1._21 / len2;
-		rmatptr->_22 = tmpmat1._22 / len2;
-		rmatptr->_23 = tmpmat1._23 / len2;
+		rmatptr->_21 = (float)((double)tmpmat1._21 / len2);
+		rmatptr->_22 = (float)((double)tmpmat1._22 / len2);
+		rmatptr->_23 = (float)((double)tmpmat1._23 / len2);
 	}
 	else {
 		rmatptr->_21 = 0.0f;
@@ -487,9 +488,9 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 	}
 
 	if (len3 != 0.0f) {
-		rmatptr->_31 = tmpmat1._31 / len3;
-		rmatptr->_32 = tmpmat1._32 / len3;
-		rmatptr->_33 = tmpmat1._33 / len3;
+		rmatptr->_31 = (float)((double)tmpmat1._31 / len3);
+		rmatptr->_32 = (float)((double)tmpmat1._32 / len3);
+		rmatptr->_33 = (float)((double)tmpmat1._33 / len3);
 	}
 	else {
 		rmatptr->_31 = 0.0f;
@@ -535,9 +536,9 @@ ChaMatrix GetS0RTMatrix(ChaMatrix srcmat)
 	retm = srcmat;
 
 	if (svec.x != 0.0f) {
-		retm._11 /= svec.x;
-		retm._12 /= svec.x;
-		retm._13 /= svec.x;
+		retm._11 = (float)((double)retm._11 / (double)svec.x);
+		retm._12 = (float)((double)retm._12 / (double)svec.x);
+		retm._13 = (float)((double)retm._13 / (double)svec.x);
 	}
 	else {
 		retm._11 = 1.0f;
@@ -546,9 +547,9 @@ ChaMatrix GetS0RTMatrix(ChaMatrix srcmat)
 	}
 
 	if (svec.y != 0.0f) {
-		retm._21 /= svec.y;
-		retm._22 /= svec.y;
-		retm._23 /= svec.y;
+		retm._21 = (float)((double)retm._21 / (double)svec.y);
+		retm._22 = (float)((double)retm._22 / (double)svec.y);
+		retm._23 = (float)((double)retm._23 / (double)svec.y);
 	}
 	else {
 		retm._21 = 0.0f;
@@ -557,9 +558,9 @@ ChaMatrix GetS0RTMatrix(ChaMatrix srcmat)
 	}
 
 	if (svec.z != 0.0f) {
-		retm._31 /= svec.z;
-		retm._32 /= svec.z;
-		retm._33 /= svec.z;
+		retm._31 = (float)((double)retm._31 / (double)svec.z);
+		retm._32 = (float)((double)retm._32 / (double)svec.z);
+		retm._33 = (float)((double)retm._33 / (double)svec.z);
 	}
 	else {
 		retm._31 = 0.0f;
@@ -675,16 +676,20 @@ ChaVector2::~ChaVector2()
 
 
 ChaVector2 ChaVector2::operator= (ChaVector2 v) { this->x = v.x; this->y = v.y;; return *this; };
-ChaVector2 ChaVector2::operator* (float srcw) const { return ChaVector2(this->x * srcw, this->y * srcw); }
+ChaVector2 ChaVector2::operator* (float srcw) const { return ChaVector2((float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw)); }
 ChaVector2 &ChaVector2::operator*= (float srcw) { *this = *this * srcw; return *this; }
-ChaVector2 ChaVector2::operator/ (float srcw) const { return ChaVector2(this->x / srcw, this->y / srcw); }
-ChaVector2 &ChaVector2::operator/= (float srcw) { *this = *this / srcw; return *this; }
+ChaVector2 ChaVector2::operator/ (float srcw) const { if (srcw != 0.0f) { return ChaVector2((float)((double)this->x / (double)srcw), (float)((double)this->y / (double)srcw)); } else { return ChaVector2(0.0f, 0.0f); } }
+ChaVector2& ChaVector2::operator/= (float srcw) { if (srcw != 0.0f) { *this = *this / srcw; return *this; } else { this->x = 0.0f; this->y = 0.0f; return *this; } }
+ChaVector2 ChaVector2::operator* (double srcw) const { return ChaVector2((float)((double)this->x * srcw), (float)((double)this->y * srcw)); }
+ChaVector2& ChaVector2::operator*= (double srcw) { *this = *this * srcw; return *this; }
+ChaVector2 ChaVector2::operator/ (double srcw) const { if (srcw != 0.0) { return ChaVector2((float)((double)this->x / srcw), (float)((double)this->y / srcw)); } else { return ChaVector2(0.0f, 0.0f); } }
+ChaVector2& ChaVector2::operator/= (double srcw) { if (srcw != 0.0) { *this = *this / srcw; return *this; } else { this->x = 0.0f; this->y = 0.0f; return *this; } }
 ChaVector2 ChaVector2::operator+ (const ChaVector2 &v) const { return ChaVector2(x + v.x, y + v.y); }
 ChaVector2 &ChaVector2::operator+= (const ChaVector2 &v) { *this = *this + v; return *this; }
 ChaVector2 ChaVector2::operator- (const ChaVector2 &v) const { return ChaVector2(x - v.x, y - v.y); }
 ChaVector2 &ChaVector2::operator-= (const ChaVector2 &v) { *this = *this - v; return *this; }
 
-ChaVector2 ChaVector2::operator- () const { return *this * -1.0f; }
+ChaVector2 ChaVector2::operator- () const { return *this * -1.0; }
 
 
 
@@ -715,16 +720,20 @@ ChaVector3::~ChaVector3()
 
 
 ChaVector3 ChaVector3::operator= (ChaVector3 v) { this->x = v.x; this->y = v.y; this->z = v.z; return *this; };
-ChaVector3 ChaVector3::operator* (float srcw) const { return ChaVector3(this->x * srcw, this->y * srcw, this->z * srcw); }
+ChaVector3 ChaVector3::operator* (float srcw) const { return ChaVector3((float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw), (float)((double)this->z * (double)srcw)); }
 ChaVector3 &ChaVector3::operator*= (float srcw) { *this = *this * srcw; return *this; }
-ChaVector3 ChaVector3::operator/ (float srcw) const { return ChaVector3(this->x / srcw, this->y / srcw, this->z / srcw); }
+ChaVector3 ChaVector3::operator/ (float srcw) const { if (srcw != 0.0f) { return ChaVector3((float)((double)this->x / (double)srcw), (float)((double)this->y / (double)srcw), (float)((double)this->z / (double)srcw)); } else { return ChaVector3(0.0f, 0.0f, 0.0f); } }
 ChaVector3 &ChaVector3::operator/= (float srcw) { *this = *this / srcw; return *this; }
+ChaVector3 ChaVector3::operator* (double srcw) const { return ChaVector3((float)((double)this->x * srcw), (float)((double)this->y * srcw), (float)((double)this->z * srcw)); }
+ChaVector3& ChaVector3::operator*= (double srcw) { *this = *this * srcw; return *this; }
+ChaVector3 ChaVector3::operator/ (double srcw) const { if (srcw != 0.0) { return ChaVector3((float)((double)this->x / srcw), (float)((double)this->y / srcw), (float)((double)this->z / srcw)); } else { return ChaVector3(0.0f, 0.0f, 0.0f); } }
+ChaVector3& ChaVector3::operator/= (double srcw) { *this = *this / srcw; return *this; }
 ChaVector3 ChaVector3::operator+ (const ChaVector3 &v) const { return ChaVector3(x + v.x, y + v.y, z + v.z); }
 ChaVector3 &ChaVector3::operator+= (const ChaVector3 &v) { *this = *this + v; return *this; }
 ChaVector3 ChaVector3::operator- (const ChaVector3 &v) const { return ChaVector3(x - v.x, y - v.y, z - v.z); }
 ChaVector3 &ChaVector3::operator-= (const ChaVector3 &v) { *this = *this - v; return *this; }
 
-ChaVector3 ChaVector3::operator- () const { return *this * -1.0f; }
+ChaVector3 ChaVector3::operator- () const { return *this * -1.0; }
 
 
 
@@ -751,16 +760,20 @@ ChaVector4::~ChaVector4()
 
 
 ChaVector4 ChaVector4::operator= (ChaVector4 v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; return *this; };
-ChaVector4 ChaVector4::operator* (float srcw) const { return ChaVector4(this->x * srcw, this->y * srcw, this->z * srcw, this->w * srcw); }
+ChaVector4 ChaVector4::operator* (float srcw) const { return ChaVector4((float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw), (float)((double)this->z * (double)srcw), (float)((double)this->w * (double)srcw)); }
 ChaVector4 &ChaVector4::operator*= (float srcw) { *this = *this * srcw; return *this; }
-ChaVector4 ChaVector4::operator/ (float srcw) const { return ChaVector4(this->x / srcw, this->y / srcw, this->z / srcw, this->w / srcw); }
+ChaVector4 ChaVector4::operator/ (float srcw) const { if (srcw != 0.0f) { return ChaVector4((float)((double)this->x / (double)srcw), (float)((double)this->y / (double)srcw), (float)((double)this->z / (double)srcw), (float)((double)this->w / (double)srcw)); } else { return ChaVector4(0.0f, 0.0f, 0.0f, 0.0f); } }
 ChaVector4 &ChaVector4::operator/= (float srcw) { *this = *this / srcw; return *this; }
+ChaVector4 ChaVector4::operator* (double srcw) const { return ChaVector4((float)((double)this->x * srcw), (float)((double)this->y * srcw), (float)((double)this->z * srcw), (float)((double)this->w * srcw)); }
+ChaVector4& ChaVector4::operator*= (double srcw) { *this = *this * srcw; return *this; }
+ChaVector4 ChaVector4::operator/ (double srcw) const { if (srcw != 0.0) { return ChaVector4((float)((double)this->x / srcw), (float)((double)this->y / srcw), (float)((double)this->z / srcw), (float)((double)this->w / srcw)); } else { return ChaVector4(0.0f, 0.0f, 0.0f, 0.0f); } }
+ChaVector4& ChaVector4::operator/= (double srcw) { *this = *this / srcw; return *this; }
 ChaVector4 ChaVector4::operator+ (const ChaVector4 &v) const { return ChaVector4(x + v.x, y + v.y, z + v.z, w + v.w); }
 ChaVector4 &ChaVector4::operator+= (const ChaVector4 &v) { *this = *this + v; return *this; }
 ChaVector4 ChaVector4::operator- (const ChaVector4 &v) const { return ChaVector4(x - v.x, y - v.y, z - v.z, w - v.w); }
 ChaVector4 &ChaVector4::operator-= (const ChaVector4 &v) { *this = *this - v; return *this; }
 
-ChaVector4 ChaVector4::operator- () const { return *this * -1.0f; }
+ChaVector4 ChaVector4::operator- () const { return *this * -1.0; }
 
 
 ChaMatrix::ChaMatrix()
@@ -891,19 +904,50 @@ ChaMatrix ChaMatrix::operator= (ChaMatrix m) {
 
 
 
-ChaMatrix ChaMatrix::operator* (float srcw) const { return ChaMatrix(this->_11 * srcw, this->_12 * srcw, this->_13 * srcw, this->_14 * srcw,
-	this->_21 * srcw, this->_22 * srcw, this->_23 * srcw, this->_24 * srcw,
-	this->_31 * srcw, this->_32 * srcw, this->_33 * srcw, this->_34 * srcw,
-	this->_41 * srcw, this->_42 * srcw, this->_43 * srcw, this->_44 * srcw);
+ChaMatrix ChaMatrix::operator* (float srcw) const {
+	return ChaMatrix((float)((double)this->_11 * (double)srcw), (float)((double)this->_12 * (double)srcw), (float)((double)this->_13 * (double)srcw), (float)((double)this->_14 * (double)srcw),
+		(float)((double)this->_21 * (double)srcw), (float)((double)this->_22 * (double)srcw), (float)((double)this->_23 * (double)srcw), (float)((double)this->_24 * (double)srcw),
+		(float)((double)this->_31 * (double)srcw), (float)((double)this->_32 * (double)srcw), (float)((double)this->_33 * (double)srcw), (float)((double)this->_34 * (double)srcw),
+		(float)((double)this->_41 * (double)srcw), (float)((double)this->_42 * (double)srcw), (float)((double)this->_43 * (double)srcw), (float)((double)this->_44 * (double)srcw));
 }
 ChaMatrix &ChaMatrix::operator*= (float srcw) { *this = *this * srcw; return *this; }
-ChaMatrix ChaMatrix::operator/ (float srcw) const { 
-	return ChaMatrix(this->_11 / srcw, this->_12 / srcw, this->_13 / srcw, this->_14 / srcw,
-		this->_21 / srcw, this->_22 / srcw, this->_23 / srcw, this->_24 / srcw,
-		this->_31 / srcw, this->_32 / srcw, this->_33 / srcw, this->_34 / srcw,
-		this->_41 / srcw, this->_42 / srcw, this->_43 / srcw, this->_44 / srcw);
+ChaMatrix ChaMatrix::operator/ (float srcw) const {
+	if (srcw != 0.0f) {
+		return ChaMatrix((float)((double)this->_11 / (double)srcw), (float)((double)this->_12 / (double)srcw), (float)((double)this->_13 / (double)srcw), (float)((double)this->_14 / (double)srcw),
+			(float)((double)this->_21 / (double)srcw), (float)((double)this->_22 / (double)srcw), (float)((double)this->_23 / (double)srcw), (float)((double)this->_24 / (double)srcw),
+			(float)((double)this->_31 / (double)srcw), (float)((double)this->_32 / (double)srcw), (float)((double)this->_33 / (double)srcw), (float)((double)this->_34 / (double)srcw),
+			(float)((double)this->_41 / (double)srcw), (float)((double)this->_42 / (double)srcw), (float)((double)this->_43 / (double)srcw), (float)((double)this->_44 / (double)srcw));
+	}
+	else {
+		ChaMatrix retmat;
+		ChaMatrixIdentity(&retmat);
+		return retmat;
+	}
 }
 ChaMatrix &ChaMatrix::operator/= (float srcw) { *this = *this / srcw; return *this; }
+ChaMatrix ChaMatrix::operator* (double srcw) const {
+	return ChaMatrix((float)((double)this->_11 * srcw), (float)((double)this->_12 * srcw), (float)((double)this->_13 * srcw), (float)((double)this->_14 * srcw),
+		(float)((double)this->_21 * srcw), (float)((double)this->_22 * srcw), (float)((double)this->_23 * srcw), (float)((double)this->_24 * srcw),
+		(float)((double)this->_31 * srcw), (float)((double)this->_32 * srcw), (float)((double)this->_33 * srcw), (float)((double)this->_34 * srcw),
+		(float)((double)this->_41 * srcw), (float)((double)this->_42 * srcw), (float)((double)this->_43 * srcw), (float)((double)this->_44 * srcw));
+}
+ChaMatrix& ChaMatrix::operator*= (double srcw) { *this = *this * srcw; return *this; }
+ChaMatrix ChaMatrix::operator/ (double srcw) const {
+	if (srcw != 0.0) {
+		return ChaMatrix((float)((double)this->_11 / srcw), (float)((double)this->_12 / srcw), (float)((double)this->_13 / srcw), (float)((double)this->_14 / srcw),
+			(float)((double)this->_21 / srcw), (float)((double)this->_22 / srcw), (float)((double)this->_23 / srcw), (float)((double)this->_24 / srcw),
+			(float)((double)this->_31 / srcw), (float)((double)this->_32 / srcw), (float)((double)this->_33 / srcw), (float)((double)this->_34 / srcw),
+			(float)((double)this->_41 / srcw), (float)((double)this->_42 / srcw), (float)((double)this->_43 / srcw), (float)((double)this->_44 / srcw));
+	}
+	else {
+		ChaMatrix retmat;
+		ChaMatrixIdentity(&retmat);
+		return retmat;
+	}
+}
+ChaMatrix& ChaMatrix::operator/= (double srcw) { *this = *this / srcw; return *this; }
+
+
 
 ChaMatrix ChaMatrix::operator+ (const ChaMatrix &m) const { 
 	return ChaMatrix(
@@ -927,43 +971,43 @@ ChaMatrix &ChaMatrix::operator-= (const ChaMatrix &m) { *this = *this - m; retur
 
 ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
 	//*this * m
-	float m_11 = m._11;
-	float m_12 = m._12;
-	float m_13 = m._13;
-	float m_14 = m._14;
-	float m_21 = m._21;
-	float m_22 = m._22;
-	float m_23 = m._23;
-	float m_24 = m._24;
-	float m_31 = m._31;
-	float m_32 = m._32;
-	float m_33 = m._33;
-	float m_34 = m._34;
-	float m_41 = m._41;
-	float m_42 = m._42;
-	float m_43 = m._43;
-	float m_44 = m._44;
+	double m_11 = (double)m._11;
+	double m_12 = (double)m._12;
+	double m_13 = (double)m._13;
+	double m_14 = (double)m._14;
+	double m_21 = (double)m._21;
+	double m_22 = (double)m._22;
+	double m_23 = (double)m._23;
+	double m_24 = (double)m._24;
+	double m_31 = (double)m._31;
+	double m_32 = (double)m._32;
+	double m_33 = (double)m._33;
+	double m_34 = (double)m._34;
+	double m_41 = (double)m._41;
+	double m_42 = (double)m._42;
+	double m_43 = (double)m._43;
+	double m_44 = (double)m._44;
 
 	ChaMatrix res;
-	res._11 = m_11 * _11 + m_21 * _12 + m_31 * _13 + m_41 * _14;
-	res._21 = m_11 * _21 + m_21 * _22 + m_31 * _23 + m_41 * _24;
-	res._31 = m_11 * _31 + m_21 * _32 + m_31 * _33 + m_41 * _34;
-	res._41 = m_11 * _41 + m_21 * _42 + m_31 * _43 + m_41 * _44;
+	res._11 = (float)(m_11 * (double)_11 + m_21 * (double)_12 + m_31 * (double)_13 + m_41 * (double)_14);
+	res._21 = (float)(m_11 * (double)_21 + m_21 * (double)_22 + m_31 * (double)_23 + m_41 * (double)_24);
+	res._31 = (float)(m_11 * (double)_31 + m_21 * (double)_32 + m_31 * (double)_33 + m_41 * (double)_34);
+	res._41 = (float)(m_11 * (double)_41 + m_21 * (double)_42 + m_31 * (double)_43 + m_41 * (double)_44);
 
-	res._12 = m_12 * _11 + m_22 * _12 + m_32 * _13 + m_42 * _14;
-	res._22 = m_12 * _21 + m_22 * _22 + m_32 * _23 + m_42 * _24;
-	res._32 = m_12 * _31 + m_22 * _32 + m_32 * _33 + m_42 * _34;
-	res._42 = m_12 * _41 + m_22 * _42 + m_32 * _43 + m_42 * _44;
+	res._12 = (float)(m_12 * (double)_11 + m_22 * (double)_12 + m_32 * (double)_13 + m_42 * (double)_14);
+	res._22 = (float)(m_12 * (double)_21 + m_22 * (double)_22 + m_32 * (double)_23 + m_42 * (double)_24);
+	res._32 = (float)(m_12 * (double)_31 + m_22 * (double)_32 + m_32 * (double)_33 + m_42 * (double)_34);
+	res._42 = (float)(m_12 * (double)_41 + m_22 * (double)_42 + m_32 * (double)_43 + m_42 * (double)_44);
 
-	res._13 = m_13 * _11 + m_23 * _12 + m_33 * _13 + m_43 * _14;
-	res._23 = m_13 * _21 + m_23 * _22 + m_33 * _23 + m_43 * _24;
-	res._33 = m_13 * _31 + m_23 * _32 + m_33 * _33 + m_43 * _34;
-	res._43 = m_13 * _41 + m_23 * _42 + m_33 * _43 + m_43 * _44;
+	res._13 = (float)(m_13 * (double)_11 + m_23 * (double)_12 + m_33 * (double)_13 + m_43 * (double)_14);
+	res._23 = (float)(m_13 * (double)_21 + m_23 * (double)_22 + m_33 * (double)_23 + m_43 * (double)_24);
+	res._33 = (float)(m_13 * (double)_31 + m_23 * (double)_32 + m_33 * (double)_33 + m_43 * (double)_34);
+	res._43 = (float)(m_13 * (double)_41 + m_23 * (double)_42 + m_33 * (double)_43 + m_43 * (double)_44);
 
-	res._14 = m_14 * _11 + m_24 * _12 + m_34 * _13 + m_44 * _14;
-	res._24 = m_14 * _21 + m_24 * _22 + m_34 * _23 + m_44 * _24;
-	res._34 = m_14 * _31 + m_24 * _32 + m_34 * _33 + m_44 * _34;
-	res._44 = m_14 * _41 + m_24 * _42 + m_34 * _43 + m_44 * _44;
+	res._14 = (float)(m_14 * (double)_11 + m_24 * (double)_12 + m_34 * (double)_13 + m_44 * (double)_14);
+	res._24 = (float)(m_14 * (double)_21 + m_24 * (double)_22 + m_34 * (double)_23 + m_44 * (double)_24);
+	res._34 = (float)(m_14 * (double)_31 + m_24 * (double)_32 + m_34 * (double)_33 + m_44 * (double)_34);
+	res._44 = (float)(m_14 * (double)_41 + m_24 * (double)_42 + m_34 * (double)_43 + m_44 * (double)_44);
 
 	//ChaMatrix res;
 	//res._11 = m._11 * _11 + m._21 * _12 + m._31 * _13 + m._41 * _14;
@@ -990,7 +1034,7 @@ ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
 }
 
 ChaMatrix &ChaMatrix::operator*= (const ChaMatrix &m) { *this = *this * m; return *this; }
-ChaMatrix ChaMatrix::operator- () const { return *this * -1.0f; }
+ChaMatrix ChaMatrix::operator- () const { return *this * -1.0; }
 
 
 CQuaternion::CQuaternion()
@@ -1105,17 +1149,20 @@ double CQuaternion::QuaternionLimitPhai(double srcphai)
 
 int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, float phai)
 {
-	float phai2;
-	float cos_phai2, sin_phai2;
+	double dblphai = phai;
+	SetAxisAndRot(srcaxis, dblphai);
 
-	phai2 = QuaternionLimitPhai(phai) * 0.5f;
-	cos_phai2 = cosf(phai2);
-	sin_phai2 = sinf(phai2);
+	//float phai2;
+	//float cos_phai2, sin_phai2;
 
-	w = cos_phai2;
-	x = srcaxis.x * sin_phai2;
-	y = srcaxis.y * sin_phai2;
-	z = srcaxis.z * sin_phai2;
+	//phai2 = QuaternionLimitPhai(phai) * 0.5f;
+	//cos_phai2 = cosf(phai2);
+	//sin_phai2 = sinf(phai2);
+
+	//w = cos_phai2;
+	//x = srcaxis.x * sin_phai2;
+	//y = srcaxis.y * sin_phai2;
+	//z = srcaxis.z * sin_phai2;
 
 	return 0;
 }
@@ -1129,9 +1176,9 @@ int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, double phai)
 	sin_phai2 = sin(phai2);
 
 	w = (float)cos_phai2;
-	x = (float)(srcaxis.x * sin_phai2);
-	y = (float)(srcaxis.y * sin_phai2);
-	z = (float)(srcaxis.z * sin_phai2);
+	x = (float)((double)srcaxis.x * sin_phai2);
+	y = (float)((double)srcaxis.y * sin_phai2);
+	z = (float)((double)srcaxis.z * sin_phai2);
 
 	return 0;
 }
@@ -1170,12 +1217,12 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
 
 	CQuaternion q, qx, qy, qz;
 	float cosx, sinx, cosy, siny, cosz, sinz;
-	float fDeg2Pai = (float)DEG2PAI;
 
-	float phaix, phaiy, phaiz;
-	phaix = QuaternionLimitPhai(srcdeg.x * fDeg2Pai);
-	phaiy = QuaternionLimitPhai(srcdeg.y * fDeg2Pai);
-	phaiz = QuaternionLimitPhai(srcdeg.z * fDeg2Pai);
+
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai((double)srcdeg.x * DEG2PAI);
+	phaiy = QuaternionLimitPhai((double)srcdeg.y * DEG2PAI);
+	phaiz = QuaternionLimitPhai((double)srcdeg.z * DEG2PAI);
 
 	cosx = (float)cos(phaix * 0.5);
 	sinx = (float)sin(phaix * 0.5);
@@ -1254,12 +1301,11 @@ int CQuaternion::SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg)
 
 	CQuaternion q, qx, qy, qz;
 	float cosx, sinx, cosy, siny, cosz, sinz;
-	float fDeg2Pai = (float)DEG2PAI;
 
-	float phaix, phaiy, phaiz;
-	phaix = QuaternionLimitPhai(srcdeg.x * fDeg2Pai);
-	phaiy = QuaternionLimitPhai(srcdeg.y * fDeg2Pai);
-	phaiz = QuaternionLimitPhai(srcdeg.z * fDeg2Pai);
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai((double)srcdeg.x * DEG2PAI);
+	phaiy = QuaternionLimitPhai((double)srcdeg.y * DEG2PAI);
+	phaiz = QuaternionLimitPhai((double)srcdeg.z * DEG2PAI);
 
 	cosx = (float)cos(phaix * 0.5);
 	sinx = (float)sin(phaix * 0.5);
@@ -1323,10 +1369,14 @@ int CQuaternion::SetRotationZXY(CQuaternion* axisq, double degx, double degy, do
 
 
 CQuaternion CQuaternion::operator= (CQuaternion q) { this->x = q.x; this->y = q.y; this->z = q.z; this->w = q.w; return *this; };
-CQuaternion CQuaternion::operator* (float srcw) const { return CQuaternion(this->w * srcw, this->x * srcw, this->y * srcw, this->z * srcw); }
+CQuaternion CQuaternion::operator* (float srcw) const { return CQuaternion((float)((double)this->w * (double)srcw), (float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw), (float)((double)this->z * (double)srcw)); }
 CQuaternion &CQuaternion::operator*= (float srcw) { *this = *this * srcw; return *this; }
-CQuaternion CQuaternion::operator/ (float srcw) const { return CQuaternion(this->w / srcw, this->x / srcw, this->y / srcw, this->z / srcw); }
+CQuaternion CQuaternion::operator/ (float srcw) const { if (srcw != 0.0f) { return CQuaternion((float)((double)this->w / (double)srcw), (float)((double)this->x / (double)srcw), (float)((double)this->y / (double)srcw), (float)((double)this->z / (double)srcw)); } else { return CQuaternion(1.0f, 0.0f, 0.0f, 0.0f); } }
 CQuaternion &CQuaternion::operator/= (float srcw) { *this = *this / srcw; return *this; }
+CQuaternion CQuaternion::operator* (double srcw) const { return CQuaternion((float)((double)this->w * srcw), (float)((double)this->x * srcw), (float)((double)this->y * srcw), (float)((double)this->z * srcw)); }
+CQuaternion& CQuaternion::operator*= (double srcw) { *this = *this * srcw; return *this; }
+CQuaternion CQuaternion::operator/ (double srcw) const { if (srcw != 0.0) { return CQuaternion((float)((double)this->w / srcw), (float)((double)this->x / srcw), (float)((double)this->y / srcw), (float)((double)this->z / srcw)); } else { return CQuaternion(1.0f, 0.0f, 0.0f, 0.0f); } }
+CQuaternion& CQuaternion::operator/= (double srcw) { *this = *this / srcw; return *this; }
 CQuaternion CQuaternion::operator+ (const CQuaternion &q) const { return CQuaternion(w + q.w, x + q.x, y + q.y, z + q.z); }
 CQuaternion &CQuaternion::operator+= (const CQuaternion &q) { *this = *this + q; return *this; }
 CQuaternion CQuaternion::operator- (const CQuaternion &q) const { return CQuaternion(w - q.w, x - q.x, y - q.y, z - q.z); }
@@ -1338,10 +1388,10 @@ CQuaternion CQuaternion::operator* (const CQuaternion &q) const {
 	//	w * q.y + q.w * y + z * q.x - x * q.z,
 	//	w * q.z + q.w * z + x * q.y - y * q.x ).normalize();
 	double tmpx, tmpy, tmpz, tmpw;
-	tmpw = w * q.w - x * q.x - y * q.y - z * q.z;
-	tmpx = w * q.x + q.w * x + y * q.z - z * q.y;
-	tmpy = w * q.y + q.w * y + z * q.x - x * q.z;
-	tmpz = w * q.z + q.w * z + x * q.y - y * q.x;
+	tmpw = (double)w * (double)q.w - (double)x * (double)q.x - (double)y * (double)q.y - (double)z * (double)q.z;
+	tmpx = (double)w * (double)q.x + (double)q.w * (double)x + (double)y * (double)q.z - (double)z * (double)q.y;
+	tmpy = (double)w * (double)q.y + (double)q.w * (double)y + (double)z * (double)q.x - (double)x * (double)q.z;
+	tmpz = (double)w * (double)q.z + (double)q.w * (double)z + (double)x * (double)q.y - (double)y * (double)q.x;
 	CQuaternion retq;
 	retq.x = (float)tmpx;
 	retq.y = (float)tmpy;
@@ -1350,7 +1400,7 @@ CQuaternion CQuaternion::operator* (const CQuaternion &q) const {
 	return retq.normalize();
 }
 CQuaternion &CQuaternion::operator*= (const CQuaternion &q) { *this = *this * q; return *this; }
-CQuaternion CQuaternion::operator- () const { return *this * -1.0f; }
+CQuaternion CQuaternion::operator- () const { return *this * -1.0; }
 CQuaternion CQuaternion::normalize() {
 	//float mag = w*w+x*x+y*y+z*z;
 	//if( mag != 0.0f )
@@ -1358,13 +1408,25 @@ CQuaternion CQuaternion::normalize() {
 	//else
 	//	return CQuaternion( 1.0f, 0.0f, 0.0f, 0.0f );
 
-	double mag = w*w + x*x + y*y + z*z;
+	double mag = (double)w * (double)w + (double)x * (double)x + (double)y * (double)y + (double)z * (double)z;
 	if (mag != 0.0) {
 		double divval = ::sqrt(mag);
-		double tmpx = x / divval;
-		double tmpy = y / divval;
-		double tmpz = z / divval;
-		double tmpw = w / divval;
+		double tmpx;
+		double tmpy;
+		double tmpz;
+		double tmpw;
+		if (divval != 0.0) {
+			tmpx = (double)x / divval;
+			tmpy = (double)y / divval;
+			tmpz = (double)z / divval;
+			tmpw = (double)w / divval;
+		}
+		else {
+			tmpx = 0.0;
+			tmpy = 0.0;
+			tmpz = 0.0;
+			tmpw = 1.0;
+		}
 		this->x = (float)tmpx;
 		this->y = (float)tmpy;
 		this->z = (float)tmpz;
@@ -1385,17 +1447,17 @@ ChaMatrix CQuaternion::MakeRotMatX()
 	ChaMatrixIdentity(&retmat);
 
 	//ì]íu
-	double _11 = 1.0 - 2.0 * (y * y + z * z);
-	double _21 = 2.0 * (x * y - z * w);
-	double _31 = 2.0 * (z * x + w * y);
+	double _11 = 1.0 - 2.0 * ((double)y * (double)y + (double)z * (double)z);
+	double _21 = 2.0 * ((double)x * (double)y - (double)z * (double)w);
+	double _31 = 2.0 * ((double)z * (double)x + (double)w * (double)y);
 
-	double _12 = 2.0 * (x * y + z * w);
-	double _22 = 1.0 - 2.0 * (z * z + x * x);
-	double _32 = 2.0 * (y * z - w * x);
+	double _12 = 2.0 * ((double)x * (double)y + (double)z * (double)w);
+	double _22 = 1.0 - 2.0 * ((double)z * (double)z + (double)x * (double)x);
+	double _32 = 2.0 * ((double)y * (double)z - (double)w * (double)x);
 
-	double _13 = 2.0 * (z * x - w * y);
-	double _23 = 2.0 * (y * z + x * w);
-	double _33 = 1.0 - 2.0 * (y * y + x * x);
+	double _13 = 2.0 * ((double)z * (double)x - (double)w * (double)y);
+	double _23 = 2.0 * ((double)y * (double)z + (double)x * (double)w);
+	double _33 = 1.0 - 2.0 * ((double)y * (double)y + (double)x * (double)x);
 
 	retmat._11 = (float)_11;
 	retmat._21 = (float)_21;
@@ -1471,15 +1533,16 @@ void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 	m[3][3] = rmat._44;
 
 	int i, maxi;
-	FLOAT maxdiag, S, trace;
+	FLOAT maxdiag;
+	double S, trace;
 
-	trace = m[0][0] + m[1][1] + m[2][2] + 1.0f;
+	trace = (double)m[0][0] + (double)m[1][1] + (double)m[2][2] + 1.0;
 	if (trace > 0.0f)
 	{
-		tmpq.x = (m[1][2] - m[2][1]) / (2.0f * sqrt(trace));
-		tmpq.y = (m[2][0] - m[0][2]) / (2.0f * sqrt(trace));
-		tmpq.z = (m[0][1] - m[1][0]) / (2.0f * sqrt(trace));
-		tmpq.w = sqrt(trace) / 2.0f;
+		tmpq.x = (float)(((double)m[1][2] - (double)m[2][1]) / (2.0 * sqrt(trace)));
+		tmpq.y = (float)(((double)m[2][0] - (double)m[0][2]) / (2.0 * sqrt(trace)));
+		tmpq.z = (float)(((double)m[0][1] - (double)m[1][0]) / (2.0 * sqrt(trace)));
+		tmpq.w = (float)(sqrt(trace) / 2.0);
 		*this = tmpq;
 		return;
 	}
@@ -1496,25 +1559,40 @@ void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 	switch (maxi)
 	{
 	case 0:
-		S = 2.0f * sqrt(1.0f + m[0][0] - m[1][1] - m[2][2]);
-		tmpq.x = 0.25f * S;
-		tmpq.y = (m[0][1] + m[1][0]) / S;
-		tmpq.z = (m[0][2] + m[2][0]) / S;
-		tmpq.w = (m[1][2] - m[2][1]) / S;
+		S = 2.0 * sqrt(1.0 + (double)m[0][0] - (double)m[1][1] - (double)m[2][2]);
+		if (S != 0.0) {
+			tmpq.x = (float)(0.25 * S);
+			tmpq.y = (float)(((double)m[0][1] + (double)m[1][0]) / S);
+			tmpq.z = (float)(((double)m[0][2] + (double)m[2][0]) / S);
+			tmpq.w = (float)(((double)m[1][2] - (double)m[2][1]) / S);
+		}
+		else {
+			tmpq = CQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
+		}
 		break;
 	case 1:
-		S = 2.0f * sqrt(1.0f + m[1][1] - m[0][0] - m[2][2]);
-		tmpq.x = (m[0][1] + m[1][0]) / S;
-		tmpq.y = 0.25f * S;
-		tmpq.z = (m[1][2] + m[2][1]) / S;
-		tmpq.w = (m[2][0] - m[0][2]) / S;
+		S = 2.0 * sqrt(1.0 + (double)m[1][1] - (double)m[0][0] - (double)m[2][2]);
+		if (S != 0.0) {
+			tmpq.x = (float)(((double)m[0][1] + (double)m[1][0]) / S);
+			tmpq.y = (float)(0.25 * S);
+			tmpq.z = (float)(((double)m[1][2] + (double)m[2][1]) / S);
+			tmpq.w = (float)(((double)m[2][0] - (double)m[0][2]) / S);
+		}
+		else {
+			tmpq = CQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
+		}
 		break;
 	case 2:
-		S = 2.0f * sqrt(1.0f + m[2][2] - m[0][0] - m[1][1]);
-		tmpq.x = (m[0][2] + m[2][0]) / S;
-		tmpq.y = (m[1][2] + m[2][1]) / S;
-		tmpq.z = 0.25f * S;
-		tmpq.w = (m[0][1] - m[1][0]) / S;
+		S = 2.0 * sqrt(1.0 + (double)m[2][2] - (double)m[0][0] - (double)m[1][1]);
+		if (S != 0.0) {
+			tmpq.x = (float)(((double)m[0][2] + (double)m[2][0]) / S);
+			tmpq.y = (float)(((double)m[1][2] + (double)m[2][1]) / S);
+			tmpq.z = (float)(0.25 * S);
+			tmpq.w = (float)(((double)m[0][1] - (double)m[1][0]) / S);
+		}
+		else {
+			tmpq = CQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
+		}
 		break;
 	}
 	*this = tmpq;
@@ -1595,29 +1673,41 @@ break;
 }
 */
 
-float CQuaternion::DotProduct(CQuaternion srcq)
+//float CQuaternion::DotProduct(CQuaternion srcq)
+//{
+//	float dot;
+//	dot = w * srcq.w +
+//		x * srcq.x +
+//		y * srcq.y +
+//		z * srcq.z;
+//	return dot;
+//}
+double CQuaternion::DotProduct(CQuaternion srcq)
 {
-	float dot;
-	dot = w * srcq.w +
-		x * srcq.x +
-		y * srcq.y +
-		z * srcq.z;
+	double dot;
+	dot = (double)w * (double)srcq.w +
+		(double)x * (double)srcq.x +
+		(double)y * (double)srcq.y +
+		(double)z * (double)srcq.z;
 	return dot;
 }
 
-float CQuaternion::CalcRad(CQuaternion srcq)
+
+
+double CQuaternion::CalcRad(CQuaternion srcq)
 {
-	float dot, retrad;
+	double dot;
+	double retrad;
 	dot = this->DotProduct(srcq);
 
 	//!!!!!!!!!!Å@íçà”Å@!!!!!!!!!!!!
 	//!!!! dot Ç™ÇPÇÊÇËî˜ñ≠Ç…ëÂÇ´Ç¢ílÇÃÇ∆Ç´ÅAkakuÇ…ÇÕÅAñ≥å¯Ç»íl(-1.#IN00)Ç™ì¸Ç¡ÇƒÇµÇ‹Ç§ÅB
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	if (dot > 1.0f)
-		dot = 1.0f;
-	if (dot < -1.0f)
-		dot = -1.0f;
-	retrad = (float)acos(dot);
+	if (dot > 1.0)
+		dot = 1.0;
+	if (dot < -1.0)
+		dot = -1.0;
+	retrad = acos(dot);
 
 	return retrad;
 }
@@ -1635,14 +1725,14 @@ int CQuaternion::Slerp2(CQuaternion endq, double t, CQuaternion* dstq)
 		return 0;//!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
-	float kaku;
+	double kaku;
 	kaku = this->CalcRad(endq);
 
-	if (kaku > (PI * 0.5f)) {
+	if (kaku > (PI * 0.5)) {
 		//ï–ï˚Ç-qÇ…Ç∑ÇÍÇŒÅA(PI * 0.5f)ÇÊÇËè¨Ç≥Ç≠Ç»ÇÈÅBÅiç≈íZÉRÅ[ÉXÇÇΩÇ«ÇÍÇÈÅj
 		endq = -endq;
 		kaku = this->CalcRad(endq);
-		_ASSERT(kaku <= (PI * 0.5f));
+		_ASSERT(kaku <= (PI * 0.5));
 	}
 
 	// sin( kaku ) == 0.0 ïtãﬂÇí≤êÆÅB
@@ -1655,15 +1745,15 @@ int CQuaternion::Slerp2(CQuaternion endq, double t, CQuaternion* dstq)
 	CQuaternion tmpq;
 	tmpq.SetParams(w, x, y, z);
 
-	float alpha, beta;
+	double alpha, beta;
 	if (kaku0flag == 0) {
-		alpha = (float)sin(kaku * (1.0f - t)) / (float)sin(kaku);
-		beta = (float)sin(kaku * t) / (float)sin(kaku);
+		alpha = sin(kaku * (1.0 - t)) / sin(kaku);
+		beta = sin(kaku * t) / sin(kaku);
 
-		dstq->x = tmpq.x * alpha + endq.x * beta;
-		dstq->y = tmpq.y * alpha + endq.y * beta;
-		dstq->z = tmpq.z * alpha + endq.z * beta;
-		dstq->w = tmpq.w * alpha + endq.w * beta;
+		dstq->x = (float)((double)tmpq.x * alpha + (double)endq.x * beta);
+		dstq->y = (float)((double)tmpq.y * alpha + (double)endq.y * beta);
+		dstq->z = (float)((double)tmpq.z * alpha + (double)endq.z * beta);
+		dstq->w = (float)((double)tmpq.w * alpha + (double)endq.w * beta);
 		//		retq = tmpq * alpha + endq * beta;
 
 	}
@@ -1678,14 +1768,14 @@ CQuaternion CQuaternion::Slerp(CQuaternion endq, int framenum, int frameno)
 	CQuaternion retq;
 	retq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
-	float kaku;
+	double kaku;
 	kaku = this->CalcRad(endq);
 
-	if (kaku > (PI * 0.5f)) {
+	if (kaku > (PI * 0.5)) {
 		//ï–ï˚Ç-qÇ…Ç∑ÇÍÇŒÅA(PI * 0.5f)ÇÊÇËè¨Ç≥Ç≠Ç»ÇÈÅBÅiç≈íZÉRÅ[ÉXÇÇΩÇ«ÇÍÇÈÅj
 		endq = -endq;
 		kaku = this->CalcRad(endq);
-		_ASSERT(kaku <= (PI * 0.5f));
+		_ASSERT(kaku <= (PI * 0.5));
 	}
 
 	// sin( kaku ) == 0.0 ïtãﬂÇí≤êÆÅB
@@ -1697,11 +1787,11 @@ CQuaternion CQuaternion::Slerp(CQuaternion endq, int framenum, int frameno)
 	}
 
 
-	float t = (float)frameno / (float)framenum;
-	float alpha, beta;
+	double t = (double)frameno / (double)framenum;
+	double alpha, beta;
 	if (kaku0flag == 0) {
-		alpha = (float)sin(kaku * (1.0f - t)) / (float)sin(kaku);
-		beta = (float)sin(kaku * t) / (float)sin(kaku);
+		alpha = sin(kaku * (1.0 - t)) / sin(kaku);
+		beta = sin(kaku * t) / sin(kaku);
 
 		retq = *this * alpha + endq * beta;
 	}
@@ -1786,16 +1876,26 @@ int CQuaternion::RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1)
 
 	ChaVector3 c;
 	ChaVector3Cross(&c, (const ChaVector3*)&srcvec0, (const ChaVector3*)&srcvec1);
-	float d;
-	d = ChaVector3Dot(&srcvec0, &srcvec1);
-	float s;
-	s = (float)sqrt((1 + d) * 2.0f);
-
-	x = c.x / s;
-	y = c.y / s;
-	z = c.z / s;
-	w = s / 2.0f;
-
+	double d;
+	d = ChaVector3DotDbl(&srcvec0, &srcvec1);
+	double mags = (1.0 + d) * 2.0;
+	double s;
+	if (mags != 0.0) {
+		s = sqrt(mags);
+		if (s != 0.0) {
+			x = (float)((double)c.x / s);
+			y = (float)((double)c.y / s);
+			z = (float)((double)c.z / s);
+			w = (float)(s / 2.0);
+		}
+		else {
+			x = 0.0f; y = 0.0f; z = 0.0f; w = 1.0f;
+		}
+	}
+	else {
+		x = 0.0f; y = 0.0f; z = 0.0f; w = 1.0f;
+	}
+	
 	return 0;
 }
 
@@ -1842,10 +1942,10 @@ ChaMatrix CQuaternion::CalcSymX2()
 {
 	CQuaternion tmpq;
 	tmpq = *this;
-	tmpq.x *= -1.0f;
+	tmpq.x *= -1.0;
 	//tmpq.y *= -1.0f;
 	//tmpq.z *= -1.0f;
-	tmpq.w *= -1.0f;
+	tmpq.w *= -1.0;
 
 	return tmpq.MakeRotMatX();
 }
@@ -1855,54 +1955,54 @@ int CQuaternion::CalcSym(CQuaternion* dstq)
 {
 	CQuaternion tmpq;
 	tmpq = *this;
-	tmpq.x *= -1.0f;
+	tmpq.x *= -1.0;
 	//tmpq.y *= -1.0f;
 	//tmpq.z *= -1.0f;
-	tmpq.w *= -1.0f;
+	tmpq.w *= -1.0;
 
 	*dstq = tmpq;
 
 	return 0;
 }
 
-float CQuaternion::vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
+double CQuaternion::vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
 {
-	double tmpval = vec1->x * vec2->x + vec1->y * vec2->y + vec1->z * vec2->z;
-	return (float)tmpval;
+	double tmpval = (double)vec1->x * (double)vec2->x + (double)vec1->y * (double)vec2->y + (double)vec1->z * (double)vec2->z;
+	return tmpval;
 }
 
-float CQuaternion::lengthVec(ChaVector3* vec)
+double CQuaternion::lengthVec(ChaVector3* vec)
 {
 	double mag;
-	float leng;
+	double leng;
 
-	mag = vec->x * vec->x + vec->y * vec->y + vec->z * vec->z;
+	mag = (double)vec->x * (double)vec->x + (double)vec->y * (double)vec->y + (double)vec->z * (double)vec->z;
 	if (mag == 0.0) {
-		leng = 0.0f;
+		leng = 0.0;
 	}
 	else {
-		leng = (float)sqrt(mag);
+		leng = sqrt(mag);
 	}
 	return leng;
 }
 
-float CQuaternion::aCos(float dot)
+double CQuaternion::aCos(double dot)
 {
-	if (dot > 1.0f)
-		dot = 1.0f;
-	else if (dot < -1.0f)
-		dot = -1.0f;
+	if (dot > 1.0)
+		dot = 1.0;
+	else if (dot < -1.0)
+		dot = -1.0;
 
 	double rad;
 	rad = acos(dot);
 
-	float degree;
-	degree = (float)(rad * PAI2DEG);
+	double degree;
+	degree = (rad * PAI2DEG);
 
 	return degree;
 }
 
-int CQuaternion::vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
+int CQuaternion::vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -1917,9 +2017,9 @@ int CQuaternion::vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	dirm = dirq.MakeRotMatX();
 
 	double tmpx, tmpy, tmpz;
-	tmpx = dirm._11 * tmpsrcvec.x + dirm._21 * tmpsrcvec.y + dirm._31 * tmpsrcvec.z + dirm._41;
-	tmpy = dirm._12 * tmpsrcvec.x + dirm._22 * tmpsrcvec.y + dirm._32 * tmpsrcvec.z + dirm._42;
-	tmpz = dirm._13 * tmpsrcvec.x + dirm._23 * tmpsrcvec.y + dirm._33 * tmpsrcvec.z + dirm._43;
+	tmpx = (double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41;
+	tmpy = (double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42;
+	tmpz = (double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43;
 
 	dstvec->x = (float)tmpx;
 	dstvec->y = (float)tmpy;
@@ -1927,7 +2027,7 @@ int CQuaternion::vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 
 	return 0;
 }
-int CQuaternion::vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
+int CQuaternion::vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -1940,11 +2040,11 @@ int CQuaternion::vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	float tmpx, tmpy, tmpz;
+	double tmpx, tmpy, tmpz;
 
-	tmpx = dirm._11 * tmpsrcvec.x + dirm._21 * tmpsrcvec.y + dirm._31 * tmpsrcvec.z + dirm._41;
-	tmpy = dirm._12 * tmpsrcvec.x + dirm._22 * tmpsrcvec.y + dirm._32 * tmpsrcvec.z + dirm._42;
-	tmpz = dirm._13 * tmpsrcvec.x + dirm._23 * tmpsrcvec.y + dirm._33 * tmpsrcvec.z + dirm._43;
+	tmpx = (double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41;
+	tmpy = (double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42;
+	tmpz = (double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43;
 
 	dstvec->x = (float)tmpx;
 	dstvec->y = (float)tmpy;
@@ -1953,7 +2053,7 @@ int CQuaternion::vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 
 	return 0;
 }
-int CQuaternion::vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
+int CQuaternion::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -1966,11 +2066,11 @@ int CQuaternion::vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	float tmpx, tmpy, tmpz;
+	double tmpx, tmpy, tmpz;
 
-	tmpx = dirm._11 * tmpsrcvec.x + dirm._21 * tmpsrcvec.y + dirm._31 * tmpsrcvec.z + dirm._41;
-	tmpy = dirm._12 * tmpsrcvec.x + dirm._22 * tmpsrcvec.y + dirm._32 * tmpsrcvec.z + dirm._42;
-	tmpz = dirm._13 * tmpsrcvec.x + dirm._23 * tmpsrcvec.y + dirm._33 * tmpsrcvec.z + dirm._43;
+	tmpx = (double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41;
+	tmpy = (double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42;
+	tmpz = (double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43;
 
 	dstvec->x = (float)tmpx;
 	dstvec->y = (float)tmpy;
@@ -1993,30 +2093,30 @@ int CQuaternion::Q2EulBt(ChaVector3* reteul)
 
 	Rotate(&targetVec, axisZVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
-	shadowVec.z = vecDotVec(&targetVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.x = 90.0f;
 	}
 	else {
-		Euler.x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) > 0.0) {
 		Euler.x = -Euler.x;
 	}
 
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	shadowVec.y = 0.0f;
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.y = 90.0f;
 	}
 	else {
-		Euler.y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
 	//if( vecDotVec( &shadowVec, &axisXVec ) < 0.0f ){
-	if (vecDotVec(&shadowVec, &axisXVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) > 0.0) {
 		Euler.y = -Euler.y;
 	}
 
@@ -2025,17 +2125,17 @@ int CQuaternion::Q2EulBt(ChaVector3* reteul)
 	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
 	targetVec = tmpVec;
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.z = 90.0f;
 	}
 	else {
-		Euler.z = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
 	}
 	//if( vecDotVec( &shadowVec, &axisXVec ) > 0.0f ){
-	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) < 0.0) {
 		Euler.z = -Euler.z;
 	}
 
@@ -2076,30 +2176,30 @@ int CQuaternion::Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisYVec);
-	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
-	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
+	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
+	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.z = 90.0f;
 	}
 	else {
-		Euler.z = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) > 0.0) {
 		Euler.z = -Euler.z;
 	}
 
 	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.x = 90.0f;
 	}
 	else {
-		Euler.x = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisZVec) < 0.0) {
 		Euler.x = -Euler.x;
 	}
 
@@ -2108,16 +2208,16 @@ int CQuaternion::Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
 	targetVec = tmpVec;
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	shadowVec.y = 0.0f;
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.y = 90.0f;
 	}
 	else {
-		Euler.y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) < 0.0) {
 		Euler.y = -Euler.y;
 	}
 
@@ -2154,16 +2254,16 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisXVec);
-	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
-	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
+	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
+	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
 	if (lengthVec(&shadowVec) == 0.0f) {
 		Euler.z = 90.0f;
 	}
 	else {
-		Euler.z = aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
+		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisYVec) < 0.0) {
 		Euler.z = -Euler.z;
 	}
 	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
@@ -2171,16 +2271,16 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	//}
 
 	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	shadowVec.y = 0.0f;
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
 	if (lengthVec(&shadowVec) == 0.0f) {
 		Euler.y = 90.0f;
 	}
 	else {
-		Euler.y = aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
+		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisZVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisZVec) > 0.0) {
 		Euler.y = -Euler.y;
 	}
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
@@ -2193,15 +2293,15 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	targetVec = tmpVec;
 	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.x = 90.0f;
 	}
 	else {
-		Euler.x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
 		Euler.x = -Euler.x;
 	}
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
@@ -2243,30 +2343,30 @@ int CQuaternion::Q2Eul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul
 	ChaVector3 tmpVec;
 
 	EQ.Rotate(&targetVec, axisZVec);
-	shadowVec.x = vecDotVec(&targetVec, &axisXVec);
+	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = 0.0f;
-	shadowVec.z = vecDotVec(&targetVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.y = 90.0f;
 	}
 	else {
-		Euler.y = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) < 0.0) {
 		Euler.y = -Euler.y;
 	}
 
 	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.x = 90.0f;
 	}
 	else {
-		Euler.x = aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
 		Euler.x = -Euler.x;
 	}
 
@@ -2275,16 +2375,16 @@ int CQuaternion::Q2Eul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul
 	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
 	targetVec = tmpVec;
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.z = 90.0f;
 	}
 	else {
-		Euler.z = aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) > 0.0) {
 		Euler.z = -Euler.z;
 	}
 
@@ -2320,29 +2420,29 @@ int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 bef
 
 	EQ.Rotate(&targetVec, axisZVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = vecDotVec(&targetVec, &axisYVec);
-	shadowVec.z = vecDotVec(&targetVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.x = 90.0f;
 	}
 	else {
-		Euler.x = (float)((double)aCos(vecDotVec(&shadowVec, &axisZVec) / (double)lengthVec(&shadowVec)));
+		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / (double)lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
+	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
 		Euler.x = -Euler.x;
 	}
 
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	shadowVec.y = 0;
-	shadowVec.z = vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.y = 90.0f;
 	}
 	else {
-		Euler.y = (float)((double)aCos(vecDotVec(&shadowVec, &axisZVec) / (double)lengthVec(&shadowVec)));
+		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / (double)lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisXVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisXVec) < 0.0) {
 		Euler.y = -Euler.y;
 	}
 
@@ -2351,16 +2451,16 @@ int CQuaternion::Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 bef
 	vec3RotateX(&tmpVec, -Euler.x, &targetVec);
 	targetVec = tmpVec;
 	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
-	shadowVec.x = vecDotVec(&tmpVec, &axisXVec);
-	shadowVec.y = vecDotVec(&tmpVec, &axisYVec);
+	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
+	if (lengthVec(&shadowVec) == 0.0) {
 		Euler.z = 90.0f;
 	}
 	else {
-		Euler.z = (float)((double)aCos(vecDotVec(&shadowVec, &axisXVec) / (double)lengthVec(&shadowVec)));
+		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / (double)lengthVec(&shadowVec));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
+	if (vecDotVec(&shadowVec, &axisYVec) < 0.0) {
 		Euler.z = -Euler.z;
 	}
 
@@ -2383,9 +2483,9 @@ int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 	double s1, s2;
 
 	//ó\ëzÇ≥ÇÍÇÈäpìx1
-	tmpX1 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
-	tmpY1 = eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y) / 360.0);
-	tmpZ1 = eulerA->z + 360.0 * GetRound((eulerB->z - eulerA->z) / 360.0);
+	tmpX1 = eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
+	tmpY1 = eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
+	tmpZ1 = eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
 	//ó\ëzÇ≥ÇÍÇÈäpìx2
 	//ÉNÉHÅ[É^ÉjÉIÉìÇÕÇPÇWÇOÅãÇ≈àÍâÒì]Ç∑ÇÈÅB
@@ -2393,14 +2493,14 @@ int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 	//tmp2ÇÃäpìxÇÕÉNÉHÅ[É^ÉjÉIÉìÇ…Ç®Ç¢ÇƒìôÇµÇ¢épê®ÇéÊÇÈÉIÉCÉâÅ[äpÇ≈Ç†ÇÈÅB
 	//Ç±ÇÃèÍçáÅAÇRÇ¬ÇÃé≤ÇÃÇ§ÇøÇPÇ¬ÇæÇØÇÃé≤ÇÃäpìxÇÃïÑçÜ(Ç±Ç±Ç≈ÇÕXé≤)Ç™îΩì]Ç∑ÇÈÅB
 	//Ç∆Ç¢Ç§Ç±Ç∆ÇæÇ∆évÇ§ÅBÉeÉXÉgÇ∑ÇÈÇ∆çáÇ¡ÇƒÇ¢ÇÈÅB
-	tmpX2 = 180.0 - eulerA->x + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
-	tmpY2 = eulerA->y + 180.0 + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
-	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+	tmpX2 = 180.0 - eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x + (double)eulerA->x - 180.0) / 360.0));
+	tmpY2 = eulerA->y + 180.0 + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y - 180.0) / 360.0));
+	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z - 180.0) / 360.0));
 
 
 	//äpìxïœâªÇÃëÂÇ´Ç≥
-	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
-	s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
+	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
+	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
 
 	//ïœâªÇÃè≠Ç»Ç¢ï˚Ç…èCê≥
 	if (s1 < s2) {
@@ -2441,15 +2541,15 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 		//ÉIÉCÉâÅ[äpAÇÃílÇÉIÉCÉâÅ[äpBÇÃílÇ…ãﬂÇ¢ï\é¶Ç…èCê≥
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
-	double tmpX3, tmpY3, tmpZ3;
-	double tmpX4, tmpY4, tmpZ4;
-	double s1, s2, s3, s4;
-	double mins;
+	//double tmpX3, tmpY3, tmpZ3;
+	//double tmpX4, tmpY4, tmpZ4;
+	double s1, s2;// , s3, s4;
+	//double mins;
 
 	//ó\ëzÇ≥ÇÍÇÈäpìx1
-	tmpX1 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
-	tmpY1 = eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y) / 360.0);
-	tmpZ1 = eulerA->z + 360.0 * GetRound((eulerB->z - eulerA->z) / 360.0);
+	tmpX1 = eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
+	tmpY1 = eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
+	tmpZ1 = eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
 	//ó\ëzÇ≥ÇÍÇÈäpìx2
 	//ÉNÉHÅ[É^ÉjÉIÉìÇÕÇPÇWÇOÅãÇ≈àÍâÒì]Ç∑ÇÈÅB
@@ -2460,9 +2560,9 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 	//tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
 	//tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
 	//tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
-	tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x - eulerA->x - 180.0) / 360.0);
-	tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y + eulerA->y - 180.0) / 360.0);//Yé≤Ç™îΩì]Ç∑ÇÈ
-	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+	tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x - 180.0) / 360.0));
+	tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y + (double)eulerA->y - 180.0) / 360.0));//Yé≤Ç™îΩì]Ç∑ÇÈ
+	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z - 180.0) / 360.0));
 
 
 	//tmpX3 = 180.0 - eulerA->x + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
@@ -2475,8 +2575,8 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 
 
 	//äpìxïœâªÇÃëÂÇ´Ç≥
-	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
-	s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
+	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
+	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
 	//s3 = (eulerB->x - tmpX3) * (eulerB->x - tmpX3) + (eulerB->y - tmpY3) * (eulerB->y - tmpY3) + (eulerB->z - tmpZ3) * (eulerB->z - tmpZ3);
 	//s4 = (eulerB->x - tmpX4) * (eulerB->x - tmpX4) + (eulerB->y - tmpY4) * (eulerB->y - tmpY4) + (eulerB->z - tmpZ4) * (eulerB->z - tmpZ4);
 
@@ -2651,9 +2751,9 @@ int CQuaternion::IsInit()
 
 int CQuaternion::InOrder(CQuaternion* srcdstq)
 {
-	float kaku;
+	double kaku;
 	kaku = CalcRad(*srcdstq);
-	if (kaku > (PI * 0.5f)) {
+	if (kaku > (PI * 0.5)) {
 		//ï–ï˚Ç-qÇ…Ç∑ÇÍÇŒÅA(PI * 0.5f)ÇÊÇËè¨Ç≥Ç≠Ç»ÇÈÅBÅiç≈íZÉRÅ[ÉXÇÇΩÇ«ÇÍÇÈÅj
 		CQuaternion tmpq = -*srcdstq;
 		*srcdstq = tmpq;
@@ -2742,8 +2842,8 @@ void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 
 	ChaMatrix res;
 	double detA;
-	float a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44;
-	float b11, b12, b13, b14, b21, b22, b23, b24, b31, b32, b33, b34, b41, b42, b43, b44;
+	double a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44;
+	double b11, b12, b13, b14, b21, b22, b23, b24, b31, b32, b33, b34, b41, b42, b43, b44;
 
 	a11 = psrc->_11;
 	a12 = psrc->_12;
@@ -2807,25 +2907,25 @@ void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 	b43 = (a11 * a23 * a42) + (a12 * a21 * a43) + (a13 * a22 * a41) - (a11 * a22 * a43) - (a12 * a23 * a41) - (a13 * a21 * a42);
 	b44 = (a11 * a22 * a33) + (a12 * a23 * a31) + (a13 * a21 * a32) - (a11 * a23 * a32) - (a12 * a21 * a33) - (a13 * a22 * a31);
 
-	res._11 = b11 / detA;
-	res._12 = b12 / detA;
-	res._13 = b13 / detA;
-	res._14 = b14 / detA;
+	res._11 = (float)(b11 / detA);
+	res._12 = (float)(b12 / detA);
+	res._13 = (float)(b13 / detA);
+	res._14 = (float)(b14 / detA);
 
-	res._21 = b21 / detA;
-	res._22 = b22 / detA;
-	res._23 = b23 / detA;
-	res._24 = b24 / detA;
+	res._21 = (float)(b21 / detA);
+	res._22 = (float)(b22 / detA);
+	res._23 = (float)(b23 / detA);
+	res._24 = (float)(b24 / detA);
 
-	res._31 = b31 / detA;
-	res._32 = b32 / detA;
-	res._33 = b33 / detA;
-	res._34 = b34 / detA;
+	res._31 = (float)(b31 / detA);
+	res._32 = (float)(b32 / detA);
+	res._33 = (float)(b33 / detA);
+	res._34 = (float)(b34 / detA);
 
-	res._41 = b41 / detA;
-	res._42 = b42 / detA;
-	res._43 = b43 / detA;
-	res._44 = b44 / detA;
+	res._41 = (float)(b41 / detA);
+	res._42 = (float)(b42 / detA);
+	res._43 = (float)(b43 / detA);
+	res._44 = (float)(b44 / detA);
 
 	*pdst = res;
 }
@@ -2892,8 +2992,8 @@ double ChaVector3LengthDbl(ChaVector3* v)
 
 	double leng;
 	double mag;
-	mag = v->x * v->x + v->y * v->y + v->z * v->z;
-	if (mag != 0.0f) {
+	mag = (double)v->x * (double)v->x + (double)v->y * (double)v->y + (double)v->z * (double)v->z;
+	if (mag != 0.0) {
 		leng = sqrt(mag);
 	}
 	else {
@@ -2909,30 +3009,30 @@ double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2)
 		return 0.0f;
 	}
 
-	double retval = psrc1->x * psrc2->x + psrc1->y * psrc2->y + psrc1->z * psrc2->z;
+	double retval = (double)psrc1->x * (double)psrc2->x + (double)psrc1->y * (double)psrc2->y + (double)psrc1->z * (double)psrc2->z;
 
 	return retval;
 }
 
 
-float ChaVector3Length(ChaVector3* v)
-{
-	if (!v){
-		return 0.0f;
-	}
-
-	float leng;
-	double mag;
-	mag = v->x * v->x + v->y * v->y + v->z * v->z;
-	if (mag != 0.0f){
-		leng = (float)sqrt(mag);
-	}
-	else{
-		leng = 0.0f;
-	}
-	return leng;
-
-}
+//double ChaVector3LengthDbl(ChaVector3* v)
+//{
+//	if (!v){
+//		return 0.0f;
+//	}
+//
+//	double leng;
+//	double mag;
+//	mag = (double)v->x * (double)v->x + (double)v->y * (double)v->y + (double)v->z * (double)v->z;
+//	if (mag != 0.0f){
+//		leng = (float)sqrt(mag);
+//	}
+//	else{
+//		leng = 0.0;
+//	}
+//	return leng;
+//
+//}
 
 void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc){
 	if (!pdst || !psrc){
@@ -2941,18 +3041,28 @@ void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc){
 
 	ChaVector3 src = *psrc;
 
-	double mag = src.x * src.x + src.y * src.y + src.z * src.z;
+	double mag = (double)src.x * (double)src.x + (double)src.y * (double)src.y + (double)src.z * (double)src.z;
 	if (mag != 0.0){
 		double divval = ::sqrt(mag);
-		double tmpx = src.x / divval;
-		double tmpy = src.y / divval;
-		double tmpz = src.z / divval;
-		pdst->x = (float)tmpx;
-		pdst->y = (float)tmpy;
-		pdst->z = (float)tmpz;
+		if (divval != 0.0) {
+			double tmpx = src.x / divval;
+			double tmpy = src.y / divval;
+			double tmpz = src.z / divval;
+			pdst->x = (float)tmpx;
+			pdst->y = (float)tmpy;
+			pdst->z = (float)tmpz;
+		}
+		else {
+			pdst->x = src.x;
+			pdst->y = src.y;
+			pdst->z = src.z;
+		}
 	}
 	else{
-		*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
+		//*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
+		pdst->x = src.x;
+		pdst->y = src.y;
+		pdst->z = src.z;
 	}
 }
 
@@ -2979,9 +3089,9 @@ void ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3
 	//pdst->x = v1.y * v2.z - v1.z * v2.y;
 	//pdst->y = v1.z * v2.x - v1.x * v2.z;
 	//pdst->z = v1.x * v2.y - v1.y * v2.x;
-	pdst->x = psrc1->y * psrc2->z - psrc1->z * psrc2->y;
-	pdst->y = psrc1->z * psrc2->x - psrc1->x * psrc2->z;
-	pdst->z = psrc1->x * psrc2->y - psrc1->y * psrc2->x;
+	pdst->x = (float)((double)psrc1->y * (double)psrc2->z - (double)psrc1->z * (double)psrc2->y);
+	pdst->y = (float)((double)psrc1->z * (double)psrc2->x - (double)psrc1->x * (double)psrc2->z);
+	pdst->z = (float)((double)psrc1->x * (double)psrc2->y - (double)psrc1->y * (double)psrc2->x);
 }
 
 
@@ -2992,20 +3102,21 @@ void ChaVector3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix*
 	}
 
 	double tmpx, tmpy, tmpz, tmpw;
-	tmpx = srcmat->_11 * srcvec->x + srcmat->_21 * srcvec->y + srcmat->_31 * srcvec->z + srcmat->_41;
-	tmpy = srcmat->_12 * srcvec->x + srcmat->_22 * srcvec->y + srcmat->_32 * srcvec->z + srcmat->_42;
-	tmpz = srcmat->_13 * srcvec->x + srcmat->_23 * srcvec->y + srcmat->_33 * srcvec->z + srcmat->_43;
-	tmpw = srcmat->_14 * srcvec->x + srcmat->_24 * srcvec->y + srcmat->_34 * srcvec->z + srcmat->_44;
+	tmpx = (double)srcmat->_11 * (double)srcvec->x + (double)srcmat->_21 * (double)srcvec->y + (double)srcmat->_31 * (double)srcvec->z + (double)srcmat->_41;
+	tmpy = (double)srcmat->_12 * (double)srcvec->x + (double)srcmat->_22 * (double)srcvec->y + (double)srcmat->_32 * (double)srcvec->z + (double)srcmat->_42;
+	tmpz = (double)srcmat->_13 * (double)srcvec->x + (double)srcmat->_23 * (double)srcvec->y + (double)srcmat->_33 * (double)srcvec->z + (double)srcmat->_43;
+	tmpw = (double)srcmat->_14 * (double)srcvec->x + (double)srcmat->_24 * (double)srcvec->y + (double)srcmat->_34 * (double)srcvec->z + (double)srcmat->_44;
 
 	if (tmpw != 0.0){
-		dstvec->x = tmpx / tmpw;
-		dstvec->y = tmpy / tmpw;
-		dstvec->z = tmpz / tmpw;
+		dstvec->x = (float)(tmpx / tmpw);
+		dstvec->y = (float)(tmpy / tmpw);
+		dstvec->z = (float)(tmpz / tmpw);
 	}
 	else{
-		dstvec->x = 0.0f;
-		dstvec->y = 0.0f;
-		dstvec->z = 0.0f;
+		//dstvec->x = 0.0f;
+		//dstvec->y = 0.0f;
+		//dstvec->z = 0.0f;
+		*dstvec = *srcvec;
 	}
 }
 
@@ -3037,20 +3148,21 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *dstvec, const ChaVector3* srcv
 	}
 
 	double tmpx, tmpy, tmpz, tmpw;
-	tmpx = srcmat->_11 * srcvec->x + srcmat->_21 * srcvec->y + srcmat->_31 * srcvec->z;// +srcmat->_41;
-	tmpy = srcmat->_12 * srcvec->x + srcmat->_22 * srcvec->y + srcmat->_32 * srcvec->z;// +srcmat->_42;
-	tmpz = srcmat->_13 * srcvec->x + srcmat->_23 * srcvec->y + srcmat->_33 * srcvec->z;// +srcmat->_43;
-	tmpw = srcmat->_14 * srcvec->x + srcmat->_24 * srcvec->y + srcmat->_34 * srcvec->z;// +srcmat->_44;
+	tmpx = (double)srcmat->_11 * (double)srcvec->x + (double)srcmat->_21 * (double)srcvec->y + (double)srcmat->_31 * (double)srcvec->z;// +(double)srcmat->_41;
+	tmpy = (double)srcmat->_12 * (double)srcvec->x + (double)srcmat->_22 * (double)srcvec->y + (double)srcmat->_32 * (double)srcvec->z;// + (double)srcmat->_42;
+	tmpz = (double)srcmat->_13 * (double)srcvec->x + (double)srcmat->_23 * (double)srcvec->y + (double)srcmat->_33 * (double)srcvec->z;// + (double)srcmat->_43;
+	tmpw = (double)srcmat->_14 * (double)srcvec->x + (double)srcmat->_24 * (double)srcvec->y + (double)srcmat->_34 * (double)srcvec->z;// + (double)srcmat->_44;
 
 	if (tmpw != 0.0) {
-		dstvec->x = tmpx / tmpw;
-		dstvec->y = tmpy / tmpw;
-		dstvec->z = tmpz / tmpw;
+		dstvec->x = (float)(tmpx / tmpw);
+		dstvec->y = (float)(tmpy / tmpw);
+		dstvec->z = (float)(tmpz / tmpw);
 	}
 	else {
-		dstvec->x = 0.0f;
-		dstvec->y = 0.0f;
-		dstvec->z = 0.0f;
+		//dstvec->x = 0.0f;
+		//dstvec->y = 0.0f;
+		//dstvec->z = 0.0f;
+		*dstvec = *srcvec;
 	}
 
 	return dstvec;
@@ -3058,13 +3170,13 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *dstvec, const ChaVector3* srcv
 
 
 
-float ChaVector3LengthSq(ChaVector3* psrc)
+double ChaVector3LengthSq(ChaVector3* psrc)
 {
 	if (!psrc) {
 		return 0.0f;
 	}
 
-	float mag = psrc->x * psrc->x + psrc->y * psrc->y + psrc->z * psrc->z;
+	double mag = (double)psrc->x * (double)psrc->x + (double)psrc->y * (double)psrc->y + (double)psrc->z * (double)psrc->z;
 	return mag;
 
 }
@@ -3181,24 +3293,24 @@ ChaMatrix* ChaMatrixOrthoOffCenterRH(ChaMatrix* pOut, float l, float r, float t,
 	}
 
 
-	pOut->_11 = 2.0f / (r - l);
+	pOut->_11 = (float)(2.0 / ((double)r - (double)l));
 	pOut->_12 = 0.0f;
 	pOut->_13 = 0.0f;
 	pOut->_14 = 0.0f;
 
 	pOut->_21 = 0.0f;
-	pOut->_22 = 2.0f / (t - b);
+	pOut->_22 = (float)(2.0 / ((double)t - (double)b));
 	pOut->_23 = 0.0f;
 	pOut->_24 = 0.0f;
 
 	pOut->_31 = 0.0f;
 	pOut->_32 = 0.0f;
-	pOut->_33 = 1 / (zn - zf);
+	pOut->_33 = (float)(1.0 / ((double)zn - (double)zf));
 	pOut->_34 = 0.0f;
 
-	pOut->_41 = (l + r) / (l - r);
-	pOut->_42 = (t + b) / (b - t);
-	pOut->_43 = zn / (zn - zf);
+	pOut->_41 = (float)(((double)l + (double)r) / ((double)l - (double)r));
+	pOut->_42 = (float)(((double)t + (double)b) / ((double)b - (double)t));
+	pOut->_43 = (float)((double)zn / ((double)zn - (double)zf));
 	pOut->_44 = 1.0f;
 
 	return pOut;
@@ -3236,32 +3348,32 @@ ChaMatrix* ChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, float Aspect, 
 	}
 
 
-	float h, w;
-	float c, s;
-	c = cos(fovY / 2.0);
-	s = sin(fovY / 2.0);
-	if (s != 0.0f) {
+	double h, w;
+	double c, s;
+	c = cos((double)fovY / 2.0);
+	s = sin((double)fovY / 2.0);
+	if ((s != 0.0) && (Aspect != 0.0f)) {
 		h = c / s;
-		w = h / Aspect;
+		w = h / (double)Aspect;
 
-		pOut->_11 = w;
+		pOut->_11 = (float)w;
 		pOut->_12 = 0.0f;
 		pOut->_13 = 0.0f;
 		pOut->_14 = 0.0f;
 
 		pOut->_21 = 0;
-		pOut->_22 = h;
+		pOut->_22 = (float)h;
 		pOut->_23 = 0.0f;
 		pOut->_24 = 0.0f;
 
 		pOut->_31 = 0.0f;
 		pOut->_32 = 0.0f;
-		pOut->_33 = zf / (zn - zf);
+		pOut->_33 = (float)((double)zf / ((double)zn - (double)zf));
 		pOut->_34 = -1.0f;
 
 		pOut->_41 = 0.0f;
 		pOut->_42 = 0.0f;
-		pOut->_43 = zn * zf / (zn - zf);
+		pOut->_43 = (float)((double)zn * (double)zf / ((double)zn - (double)zf));
 		pOut->_44 = 0.0f;
 	}
 	else {

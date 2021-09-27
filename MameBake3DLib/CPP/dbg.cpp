@@ -22,7 +22,7 @@ void OutputToInfoWnd(WCHAR* lpFormat, ...)
 	if (g_infownd) {
 		int ret;
 		va_list Marker;
-		unsigned long wleng, writeleng;
+		//unsigned long wleng, writeleng;
 		WCHAR outchar[INFOWINDOWLINEW - 10];
 
 		ZeroMemory(outchar, sizeof(WCHAR) * (INFOWINDOWLINEW - 10));
@@ -132,7 +132,7 @@ int OpenDbgFile(int srcappcnt)
 		GetLocalTime(&st);
 
 		WCHAR infofilename[MAX_PATH] = { 0L };
-		swprintf_s(infofilename, MAX_PATH, L"info%d_%4d_%02d_%02d_%02d_%02d_%02d.txt",
+		swprintf_s(infofilename, MAX_PATH, L"info%d_%4ud_%02ud_%02ud_%02ud_%02ud_%02ud.txt",
 			srcappcnt,//ï°êîÇÃMotionBrushÇóßÇøè„Ç∞ÇÈÇΩÇﬂ
 			st.wYear, st.wMonth, st.wDay,
 			st.wHour, st.wMinute, st.wSecond);

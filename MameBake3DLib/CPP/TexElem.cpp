@@ -126,13 +126,13 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 
 	if (m_ResView) {
 		ID3D11Texture2D* texture2d = nullptr;
-		HRESULT hr = m_ptex->QueryInterface(&texture2d);
+		hr = m_ptex->QueryInterface(&texture2d);
 		if (SUCCEEDED(hr))
 		{
 			D3D11_TEXTURE2D_DESC desc;
 			texture2d->GetDesc(&desc);
-			m_orgwidth = static_cast<float>(desc.Width);
-			m_orgheight = static_cast<float>(desc.Height);
+			m_orgwidth = (int)desc.Width;
+			m_orgheight = (int)desc.Height;
 
 			texture2d->Release();
 		}

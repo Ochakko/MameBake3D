@@ -460,33 +460,33 @@ int CPolyMesh3::Vec3Cross( ChaVector3* pOut, ChaVector3* pV1, ChaVector3* pV2 )
 {
 	//ChaVector3 v;
 	
-	float x1, y1, z1, x2, y2, z2;
+	double x1, y1, z1, x2, y2, z2;
 	x1 = pV1->x; y1 = pV1->y; z1 = pV1->z;
 	x2 = pV2->x; y2 = pV2->y; z2 = pV2->z;
 
-	pOut->x = y1 * z2 - z1 * y2;
-	pOut->y = z1 * x2 - x1 * z2;
-	pOut->z = x1 * y2 - y1 * x2;
+	pOut->x = (float)(y1 * z2 - z1 * y2);
+	pOut->y = (float)(z1 * x2 - x1 * z2);
+	pOut->z = (float)(x1 * y2 - y1 * x2);
 
 	return 0;
 }
 
 int CPolyMesh3::Vec3Normalize( ChaVector3* retvec, ChaVector3* srcvec )
 {
-	float mag;
-	float srcx, srcy, srcz;
+	double mag;
+	double srcx, srcy, srcz;
 	srcx = srcvec->x; srcy = srcvec->y; srcz = srcvec->z;
 
 	mag = srcx * srcx + srcy * srcy + srcz * srcz;
-	float leng;
-	leng = (float)sqrtf( mag );
+	double leng;
+	leng = sqrt( mag );
 
-	if( leng > 0.0f ){
-		float divleng;
+	if( leng > 0.0 ){
+		double divleng;
 		divleng = 1.0f / leng;
-		retvec->x = srcx * divleng;
-		retvec->y = srcy * divleng;
-		retvec->z = srcz * divleng;
+		retvec->x = (float)(srcx * divleng);
+		retvec->y = (float)(srcy * divleng);
+		retvec->z = (float)(srcz * divleng);
 	}else{
 		retvec->x = 0.0f;
 		retvec->y = 0.0f;
@@ -556,16 +556,16 @@ int CPolyMesh3::SetSMFace()
 			ZeroMemory( n3pdirty, sizeof( int ) * CHKN3PNUM );
 			int i1;
 			for( i1 = 0; i1 < samevnum; i1++ ){
-				N3P* curn3p = samen3p[i1];
+				N3P* curn3p2 = samen3p[i1];
 				if( i1 == 0 ){
-					curn3p->pervert->createflag |= 2;
+					curn3p2->pervert->createflag |= 2;
 				}
 
 				int smno;
-				for( smno = 0; smno < curn3p->n3sm->smfacenum; smno++ ){
-					N3P* smn3p = (N3P*)(*(curn3p->n3sm->ppsmface + smno));
-					if( curn3p->perface->faceno != smn3p->perface->faceno ){
-						curn3p->pervert->smnormal += smn3p->perface->facenormal;
+				for( smno = 0; smno < curn3p2->n3sm->smfacenum; smno++ ){
+					N3P* smn3p = (N3P*)(*(curn3p2->n3sm->ppsmface + smno));
+					if( curn3p2->perface->faceno != smn3p->perface->faceno ){
+						curn3p2->pervert->smnormal += smn3p->perface->facenormal;
 					}
 					int chkn3;
 					for( chkn3 = 0; chkn3 < samevnum; chkn3++ ){
@@ -575,7 +575,7 @@ int CPolyMesh3::SetSMFace()
 						}
 					}
 				}
-				ChaVector3Normalize( &(curn3p->pervert->smnormal), &(curn3p->pervert->smnormal) );
+				ChaVector3Normalize( &(curn3p2->pervert->smnormal), &(curn3p2->pervert->smnormal) );
 			}
 
 			int i2;
@@ -612,10 +612,14 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 	}
 	if( findflag == 0 ){
 		int curnum = n3p1->n3sm->smfacenum;
-		n3p1->n3sm->ppsmface = (void**)realloc( n3p1->n3sm->ppsmface, sizeof(void*) * (curnum + 1) );
-		if( !n3p1->n3sm->ppsmface ){
+		void** newsmface = 0;
+		newsmface = (void**)realloc( n3p1->n3sm->ppsmface, sizeof(void*) * (int)((INT64)curnum + 1) );
+		if( !newsmface ){
 			_ASSERT( 0 );
 			return 1;
+		}
+		else {
+			n3p1->n3sm->ppsmface = newsmface;
 		}
 		*( n3p1->n3sm->ppsmface + curnum ) = (void*)n3p2;
 		n3p1->n3sm->smfacenum = curnum + 1;
@@ -630,10 +634,14 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 	}
 	if( findflag == 0 ){
 		int curnum = n3p2->n3sm->smfacenum;
-		n3p2->n3sm->ppsmface = (void**)realloc( n3p2->n3sm->ppsmface, sizeof(void*) * (curnum + 1) );
-		if( !n3p2->n3sm->ppsmface ){
+		void** newsmface = 0;
+		newsmface = (void**)realloc( n3p2->n3sm->ppsmface, sizeof(void*) * (int)((INT64)curnum + 1) );
+		if( !newsmface ){
 			_ASSERT( 0 );
 			return 1;
+		}
+		else {
+			n3p2->n3sm->ppsmface = newsmface;
 		}
 		*( n3p2->n3sm->ppsmface + curnum ) = (void*)n3p1;
 		n3p2->n3sm->smfacenum = curnum + 1;
@@ -802,7 +810,7 @@ typedef struct tag_modelbaund
 
 	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = ChaVector3Length( &diff );
+	m_bound.r = (float)ChaVector3LengthDbl( &diff );
 
 	return 0;
 }

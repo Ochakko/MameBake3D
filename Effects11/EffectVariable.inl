@@ -619,8 +619,8 @@ inline bool AreBoundsValid(_In_ uint32_t Offset, _In_ uint32_t Count, _In_ const
 
     return ((Offset + Count >= Offset) &&
         ((Offset + Count) < ((uint32_t)-1) / pType->Stride) &&
-        (Count * pType->Stride + (uint8_t*)pData >= (uint8_t*)pData) &&
-        ((Offset + Count - 1) * pType->Stride + singleElementSize <= TotalUnpackedSize));
+        ((size_t)Count * pType->Stride + (uint8_t*)pData >= (uint8_t*)pData) &&
+        (((size_t)Offset + Count - 1) * pType->Stride + singleElementSize <= TotalUnpackedSize));
 }
 
 // Note that the branches in this code is based on template parameters and will be compiled out

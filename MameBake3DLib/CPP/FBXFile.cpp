@@ -111,15 +111,15 @@ static int DestroyFBXBoneReq( CFBXBone* fbxbone );
 
 
 
-static void CreateAndFillIOSettings(FbxManager* pSdkManager);
+//static void CreateAndFillIOSettings(FbxManager* pSdkManager);
 static bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilename, int pFileFormat=-1, bool pEmbedMedia=false);
 
 
 static bool CreateScene(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate );
 static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene, char* fbxdate );
 static FbxNode* CreateFbxMesh( FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj );
-static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
-static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
+//static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
+//static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
 //static void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* lMesh, CMQOObject* curobj, CModel* pmodel );
 static void LinkMeshToSkeletonReq(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
 static BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, CMQOObject* curobj, CPolyMesh4* pm4, int* psetflag, CBone** ppsetbone);
@@ -598,7 +598,10 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 
 
 		int* psetflag = (int*)malloc(curobj->GetPm4()->GetOptLeng() * sizeof(int));
-		_ASSERT(psetflag);
+		if (!psetflag) {
+			_ASSERT(psetflag);
+			return 1;
+		}
 		ZeroMemory(psetflag, curobj->GetPm4()->GetOptLeng() * sizeof(int));
 
 		s_linkdirty.clear();
@@ -985,7 +988,7 @@ BOOL LinkToTopBoneFunc(FbxCluster* lCluster, FbxSkin* lSkin, FbxScene* pScene, F
 			s_linkdirty[curbone] = mapdirty;
 			itrlinkdirty = s_linkdirty.find(curbone);
 
-			FbxCluster *lCluster = 0;
+			//FbxCluster *lCluster = 0;
 			int curclusterno = -1;
 			int infdirty = ExistBoneInInf(curbone->GetBoneNo(), curobj, &curclusterno);
 
@@ -1139,9 +1142,9 @@ BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lS
 
 		//if ((fbxbone != s_fbxbone) && (fbxbone->GetBone() != s_firsttopbone->GetBone()) && ((fbxbone->GetType() == FB_NORMAL) || (fbxbone->GetType() == FB_BUNKI_CHIL))){
 		if (fbxbone && (fbxbone != s_fbxbone) && (fbxbone->GetBone() != s_firsttopbone->GetBone())) {
-			CBone* curbone = fbxbone->GetBone();
-			_ASSERT(curbone);
-			if (curbone) {
+			//CBone* curbone = fbxbone->GetBone();
+			//_ASSERT(curbone);
+			//if (curbone) {
 				map<int, int> mapdirty;
 				s_linkdirty[curbone] = mapdirty;
 				map<CBone*, map<int, int>>::iterator itrlinkdirty;
@@ -1198,7 +1201,7 @@ BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lS
 						}
 					}
 				}
-			}
+			//}
 		}
 		if (foundinf == 0) {
 			//lCluster->SetLinkMode(FbxCluster::eAdditive);
@@ -1476,15 +1479,21 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 	map<int, MOTINFO*>::iterator itrmi;
 	for( itrmi = pmodel->GetMotInfoBegin(); itrmi != pmodel->GetMotInfoEnd(); itrmi++ ){
 		MOTINFO* curmi = itrmi->second;
-		(s_ai + aino)->motid = curmi->motid;
-		(s_ai + aino)->orgindex = aino;
-		(s_ai + aino)->maxframe = (int)( curmi->frameleng - 1.0 );
-		(s_ai + aino)->engmotname = curmi->engmotname;
-		aino++;
+		if (curmi) {
+			(s_ai + aino)->motid = curmi->motid;
+			(s_ai + aino)->orgindex = aino;
+			(s_ai + aino)->maxframe = (int)(curmi->frameleng - 1.0);
+			(s_ai + aino)->engmotname = curmi->engmotname;
+			aino++;
+		}
 	}
 
+	if (motionnum != aino) {
+		//NULLのMOTPARAM*があった場合、総数を合わせる
+		_ASSERT(0);
+		motionnum = aino;
+	}
 
-_ASSERT( motionnum == aino );
 
 	qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );//モーション長が短い順に出力しないと正しく読み込めない。FBXの仕様？
 
@@ -1716,7 +1725,7 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 	FbxNode* curskel = fbxbone->GetSkelNode();
 	if (fbxbone->GetType() != FB_ROOT){
 		if (curskel){
-			FbxAMatrix lBindMatrix;
+			//FbxAMatrix lBindMatrix;
 			lBindMatrix = CalcBindMatrix(fbxbone);
 			lPose->Add(curskel, lBindMatrix);
 		}
@@ -1785,7 +1794,8 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 		}
 	}
 
-	CBone calcbone(s_model);
+	//CBone calcbone(s_model);
+	CBone calcbone = CBone(s_model);
 
 	ChaMatrix tramat;
 	ChaMatrixIdentity(&tramat);
@@ -1802,7 +1812,7 @@ FbxAMatrix CalcBindMatrix(CFBXBone* fbxbone)
 	}
 	else{
 		ChaVector3 diffvec = curpos - parentpos;
-		float leng = ChaVector3Length(&diffvec);
+		float leng = (float)ChaVector3LengthDbl(&diffvec);
 		if (leng >= 0.00001f){
 			//tramat = CalcAxisMatX_aft(parentpos, curpos);
 			calcbone.CalcAxisMatZ_aft(parentpos, curpos, &tramat);

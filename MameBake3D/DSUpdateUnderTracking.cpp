@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <windows.h>
 
+#include <GlobalVar.h>
+
 #include "DSUpdateUnderTracking.h"
 
 #include <process.h>
@@ -19,23 +21,10 @@
 LRESULT CALLBACK DSUpdaterWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 int InitializeDSUpdateUnderTracking(CREATESTRUCT* createWindowArgs);
 HANDLE g_hUnderTrackingThread = NULL;
+HANDLE g_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
 
-
-
-static CDSUpdateUnderTracking* s_contextwin = 0;
-
-static HINSTANCE s_hinstance = 0;
-// thread 終了トリガー
-// 0 が立つと　_endthreadex で　終了　(　handle は　close しない！！！　)
-static LONG s_lThread = 1;
-static unsigned int s_dwMainId = 0;
-static DWORD s_mainthreadid = 0;
-//static DWORD WINAPI	ThreadFunc(LPVOID	lpThreadParam);
-static unsigned __stdcall ThreadFunc_DS(void* pArguments);
-
-
-
-
+										
+										
 //extern
 extern void OnDSUpdate();
 extern void OnDSMouseHereApeal();
@@ -45,7 +34,53 @@ extern void InfoBvh2FbxBatchCnt();
 extern int g_bvh2fbxbatchflag;
 
 
-HANDLE g_hEvent = INVALID_HANDLE_VALUE; //手動リセットイベント
+
+
+
+static CDSUpdateUnderTracking* s_contextwin = 0;
+static HINSTANCE s_hinstance = 0;
+// thread 終了トリガー
+// 0 が立つと　_endthreadex で　終了　(　handle は　close しない！！！　)
+static LONG s_lThread = 1;
+static unsigned int s_dwMainId = 0;
+static DWORD s_mainthreadid = 0;
+//static DWORD WINAPI	ThreadFunc(LPVOID	lpThreadParam);
+
+static unsigned __stdcall ThreadFunc_DS(LPVOID pArguments);
+unsigned __stdcall ThreadFunc_DS(LPVOID lpThreadParam)
+{
+	static int isfirst = 1;
+	//int ret;
+	if (!lpThreadParam) {
+		return 1;
+	}
+	CDSUpdateUnderTracking* dsptr = (CDSUpdateUnderTracking*)lpThreadParam;
+
+	while (s_lThread) {
+		//if (::MsgWaitForMultipleObjects(1, &g_hEvent, FALSE, 500, 0) == WAIT_OBJECT_0) {
+
+			//infowinptr->UpdateWindowFunc();
+		//if (g_undertrackingRMenu == 1) {
+		if (InterlockedAdd(&g_undertrackingRMenu, 0) == 1) {
+			OnDSUpdate();
+		}
+		//if (g_bvh2fbxbatchflag == 1) {
+		//	InfoBvh2FbxBatchCnt();
+		//}
+
+		Sleep(16);
+
+		isfirst = 0;
+		//ResetEvent(g_hEvent);
+	//}
+	}
+	//_endthreadex( 0 );//<----ThreadFuncがreturnするときに、自動的に呼ばれる。
+	return 0;
+}
+
+
+
+
 
 
 
@@ -446,38 +481,3 @@ int InitializeDSUpdateUnderTracking(CREATESTRUCT* createWindowArgs)
 	return 0;
 }
 
-unsigned __stdcall ThreadFunc_DS(LPVOID lpThreadParam)
-{
-	static int isfirst = 1;
-	
-	int ret;
-
-
-
-	if (!lpThreadParam) {
-		return 1;
-	}
-	CDSUpdateUnderTracking* dsptr = (CDSUpdateUnderTracking*)lpThreadParam;
-
-	while (s_lThread) {
-		//if (::MsgWaitForMultipleObjects(1, &g_hEvent, FALSE, 500, 0) == WAIT_OBJECT_0) {
-
-			//infowinptr->UpdateWindowFunc();
-			if (g_undertrackingRMenu == 1) {
-				OnDSUpdate();
-			}
-			//if (g_bvh2fbxbatchflag == 1) {
-			//	InfoBvh2FbxBatchCnt();
-			//}
-
-			Sleep(16);
-
-			isfirst = 0;
-			//ResetEvent(g_hEvent);
-		//}
-	}
-
-	//_endthreadex( 0 );//<----ThreadFuncがreturnするときに、自動的に呼ばれる。
-
-	return 0;
-}

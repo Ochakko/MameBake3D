@@ -114,7 +114,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalOptions>/D "_ITERATOR_DEBUG_LEVEL"=0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/F 65536 /analyze:stacksize 65536 /D "_ITERATOR_DEBUG_LEVEL"=0 %(AdditionalOptions)</AdditionalOptions>
       <MinimalRebuild>false</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
@@ -178,11 +178,12 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <DisableSpecificWarnings>4005;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;26451;4267;4244;</DisableSpecificWarnings>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
+      <AdditionalOptions>/F 65536 /analyze:stacksize 65536 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

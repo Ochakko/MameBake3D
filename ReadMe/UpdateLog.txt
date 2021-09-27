@@ -1,3 +1,14 @@
+2021/09/27
+	develop版(非リリース版)　MameBake3Dアップデート
+
+	ChaVecCalcの途中計算をdoubleに	
+
+	VisualStudioが出力する膨大な量のwarningを解決する作業開始
+		bullet physicsの部分以外はほぼ解決？
+
+	少ししかテストしていないdevelop版
+
+	
 2021/09/22
 	MotionBrush ver1.0.0.14
 

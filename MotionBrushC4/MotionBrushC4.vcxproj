@@ -144,6 +144,7 @@
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <DisableSpecificWarnings>26451;</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

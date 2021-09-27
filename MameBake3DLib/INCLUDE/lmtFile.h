@@ -121,7 +121,7 @@ private:
  * @param (CBone* srcbone) IN 制限角度パラメータを持つボーン。
  * @return 成功したら０。
  */
-	int ReadRE( XMLIOBUF* xmliobuf, CBone* srcbone );
+	//int ReadRE( XMLIOBUF* xmliobuf, CBone* srcbone );
 
 
 

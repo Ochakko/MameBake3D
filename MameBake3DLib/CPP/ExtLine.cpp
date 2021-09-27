@@ -114,15 +114,15 @@ int CExtLine::CreateBuffer( EXTLINEV* lineptr, int arrayleng, int* setnum )
 					_ASSERT( 0 );
 					return 1;
 				}
-				(lineptr + *setnum * 2 )->pos.x = ( m_pointptr + curface->GetIndex( 0 ) )->x;
-				(lineptr + *setnum * 2 )->pos.y = ( m_pointptr + curface->GetIndex( 0 ) )->y;
-				(lineptr + *setnum * 2 )->pos.z = ( m_pointptr + curface->GetIndex( 0 ) )->z;
-				(lineptr + *setnum * 2 )->pos.w = 1.0f;
+				(lineptr + (int)((INT64)(*setnum) * 2))->pos.x = ( m_pointptr + curface->GetIndex( 0 ) )->x;
+				(lineptr + (int)((INT64)(*setnum) * 2))->pos.y = ( m_pointptr + curface->GetIndex( 0 ) )->y;
+				(lineptr + (int)((INT64)(*setnum) * 2))->pos.z = ( m_pointptr + curface->GetIndex( 0 ) )->z;
+				(lineptr + (int)((INT64)(*setnum) * 2))->pos.w = 1.0f;
 
-				(lineptr + *setnum * 2 + 1)->pos.x = ( m_pointptr + curface->GetIndex( 1 ) )->x;
-				(lineptr + *setnum * 2 + 1)->pos.y = ( m_pointptr + curface->GetIndex( 1 ) )->y;
-				(lineptr + *setnum * 2 + 1)->pos.z = ( m_pointptr + curface->GetIndex( 1 ) )->z;
-				(lineptr + *setnum * 2 + 1)->pos.w = 1.0f;
+				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.x = ( m_pointptr + curface->GetIndex( 1 ) )->x;
+				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.y = ( m_pointptr + curface->GetIndex( 1 ) )->y;
+				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.z = ( m_pointptr + curface->GetIndex( 1 ) )->z;
+				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.w = 1.0f;
 			}
 
 			(*setnum)++;
@@ -175,7 +175,7 @@ int CExtLine::CalcBound()
 
 	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = ChaVector3Length( &diff );
+	m_bound.r = (float)ChaVector3LengthDbl( &diff );
 
 	return 0;
 }

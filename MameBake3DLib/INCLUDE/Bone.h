@@ -189,7 +189,7 @@ public:
  * @return 成功したら０。
  * @detail 計算したデータは、ボーンの位置にマニピュレータを表示するための変換行列に使用する。現在はCalcAxisMatZ関数でボーンの変換行列を計算している。
  */
-	int CalcAxisMat( int firstflag, float delta );
+	//int CalcAxisMat( int firstflag, float delta );
 	float CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);
 
 
@@ -360,7 +360,7 @@ public:
 
 	int CalcBoneDepth();
 
-	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, enum tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
@@ -889,15 +889,15 @@ public: //accesser
 		m_posefoundflag = foundflag;
 	};
 
-	float GetBoneLeng(){
+	double GetBoneLeng(){
 		CBone* parentbone = GetParent();
 		if (parentbone){
 			ChaVector3 bonevec = GetJointFPos() - parentbone->GetJointFPos();
-			float boneleng = ChaVector3Length(&bonevec);
+			double boneleng = ChaVector3LengthDbl(&bonevec);
 			return boneleng;
 		}
 		else{
-			return 0.0f;
+			return 0.0;
 		}
 	};
 	/*
@@ -1039,7 +1039,7 @@ public: //accesser
 	FbxAMatrix GetlClusterGlobalCurrentPosition(int srcframe)
 	{
 		int matnum;
-		matnum = veclClusterGlobalCurrentPosition.size();
+		matnum = (int)veclClusterGlobalCurrentPosition.size();
 		if ((srcframe < 0) || (srcframe >= matnum)) {
 			FbxAMatrix inimat;
 			inimat.SetIdentity();
@@ -1052,7 +1052,7 @@ public: //accesser
 	FbxAMatrix GetLocalTransform(int srcframe)
 	{
 		int matnum;
-		matnum = vecLocalTransform.size();
+		matnum = (int)vecLocalTransform.size();
 		if ((srcframe < 0) || (srcframe >= matnum)) {
 			FbxAMatrix inimat;
 			inimat.SetIdentity();

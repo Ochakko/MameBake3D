@@ -89,20 +89,20 @@ private:
 
 
 /// for load
-	int MakeTree();
-	int start();
-	int begin();
-	int end();
-	int AddShape2Tree();
+	//int MakeTree();
+	//int start();
+	//int begin();
+	//int end();
+	//int AddShape2Tree();
 
-	int make_first_part();
-	int end_first_part();
-		
-	int do_transform_mat();
-	int IsJoint();
+	//int make_first_part();
+	//int end_first_part();
+	//	
+	//int do_transform_mat();
+	//int IsJoint();
 
 	int Multiple();
-	int PickUpAnchor();
+	//int PickUpAnchor();
 
 private:
 	CModel* m_modelptr;

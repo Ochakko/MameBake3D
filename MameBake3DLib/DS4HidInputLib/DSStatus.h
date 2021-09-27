@@ -1,9 +1,10 @@
 #pragma once
 #include "DSButton.h"
+#include <windows.h>
 
 struct DSStatus
 {
-	DSStatus()  {};
+	DSStatus() { ZeroMemory(data, sizeof(DSButton) * 15); ZeroMemory(axisVals, sizeof(float) * 6); };
 	union
 	{
 		struct

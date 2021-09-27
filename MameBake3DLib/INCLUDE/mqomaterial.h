@@ -43,13 +43,13 @@ public:
 
 	int IsSame( CMQOMaterial* compmat, int compnameflag, int cmplevel = 0 );//compnameflag == 0 ÇÃéûÇÕÅAñºëOÇÕî‰ärÇµÇ»Ç¢ÅB
 
-	int GetName( int srcmatno, char** nameptr );
+	//int GetName( int srcmatno, char** nameptr );
 	int AddConvName( char** ppname );
 
-	int SetCurTexname( int srcenabletex );
+	//int SetCurTexname( int srcenabletex );
 
-	int SetExtTex( int srctexnum, char** srctexname );
-	int SetConvName( int srcconvnum, char** srcconvname );
+	//int SetExtTex( int srctexnum, char** srctexname );
+	//int SetConvName( int srcconvnum, char** srcconvname );
 
 	int GetColorrefDiffuse( COLORREF* dstdiffuse );
 	int GetColorrefSpecular( COLORREF* dstspecular );

@@ -38,14 +38,18 @@ public:
 	ChaMatrix &operator*= (float srcw);
 	ChaMatrix operator/ (float srcw) const;
 	ChaMatrix &operator/= (float srcw);
+	ChaMatrix operator* (double srcw) const;
+	ChaMatrix& operator*= (double srcw);
+	ChaMatrix operator/ (double srcw) const;
+	ChaMatrix& operator/= (double srcw);
 	ChaMatrix operator+ (const ChaMatrix &m) const;
 	ChaMatrix &operator+= (const ChaMatrix &m);
 	ChaMatrix operator- (const ChaMatrix &m) const;
 	ChaMatrix &operator-= (const ChaMatrix &m);
 	ChaMatrix operator* (const ChaMatrix &m) const;
 	ChaMatrix &operator*= (const ChaMatrix &m);
-	ChaMatrix operator/ (const ChaMatrix &m) const;
-	ChaMatrix &operator/= (const ChaMatrix &m);
+	//ChaMatrix operator/ (const ChaMatrix &m) const;
+	//ChaMatrix &operator/= (const ChaMatrix &m);
 	ChaMatrix operator- () const;
 
 	bool ChaMatrix::operator== (const ChaMatrix &m) const {
@@ -101,12 +105,16 @@ public:
 	ChaVector2 &operator*= (float srcw);
 	ChaVector2 operator/ (float srcw) const;
 	ChaVector2 &operator/= (float srcw);
+	ChaVector2 operator* (double srcw) const;
+	ChaVector2& operator*= (double srcw);
+	ChaVector2 operator/ (double srcw) const;
+	ChaVector2& operator/= (double srcw);
 	ChaVector2 operator+ (const ChaVector2 &v) const;
 	ChaVector2 &operator+= (const ChaVector2 &v);
 	ChaVector2 operator- (const ChaVector2 &v) const;
 	ChaVector2 &operator-= (const ChaVector2 &v);
-	ChaVector2 operator* (const ChaVector2 &v) const;
-	ChaVector2 &operator*= (const ChaVector2 &v);
+	//ChaVector2 operator* (const ChaVector2 &v) const;
+	//ChaVector2 &operator*= (const ChaVector2 &v);
 	//ChaVector2 operator/ (const ChaVector2 &q) const;
 	//ChaVector2 &operator/= (const ChaVector2 &q);
 	ChaVector2 operator- () const;
@@ -139,6 +147,10 @@ public:
 	ChaVector3 &operator*= (float srcw);
 	ChaVector3 operator/ (float srcw) const;
 	ChaVector3 &operator/= (float srcw);
+	ChaVector3 operator* (double srcw) const;
+	ChaVector3& operator*= (double srcw);
+	ChaVector3 operator/ (double srcw) const;
+	ChaVector3& operator/= (double srcw);
 	ChaVector3 operator+ (const ChaVector3 &v) const;
 	ChaVector3 &operator+= (const ChaVector3 &v);
 	ChaVector3 operator- (const ChaVector3 &v) const;
@@ -180,6 +192,10 @@ public:
 	ChaVector4 &operator*= (float srcw);
 	ChaVector4 operator/ (float srcw) const;
 	ChaVector4 &operator/= (float srcw);
+	ChaVector4 operator* (double srcw) const;
+	ChaVector4& operator*= (double srcw);
+	ChaVector4 operator/ (double srcw) const;
+	ChaVector4& operator/= (double srcw);
 	ChaVector4 operator+ (const ChaVector4 &v) const;
 	ChaVector4 &operator+= (const ChaVector4 &v);
 	ChaVector4 operator- (const ChaVector4 &v) const;
@@ -237,6 +253,10 @@ public:
 	CQuaternion &operator*= (float srcw);
 	CQuaternion operator/ (float srcw) const;
 	CQuaternion &operator/= (float srcw);
+	CQuaternion operator* (double srcw) const;
+	CQuaternion& operator*= (double srcw);
+	CQuaternion operator/ (double srcw) const;
+	CQuaternion& operator/= (double srcw);
 	CQuaternion operator+ (const CQuaternion &q) const;
 	CQuaternion &operator+= (const CQuaternion &q);
 	CQuaternion operator- (const CQuaternion &q) const;
@@ -254,8 +274,9 @@ public:
 	bool CQuaternion::operator== (const CQuaternion &q) const { return w == q.w && x == q.x && y == q.y && z == q.z; }
 	bool CQuaternion::operator!= (const CQuaternion &q) const { return !(*this == q); }
 
-	float DotProduct(CQuaternion srcq);
-	float CalcRad(CQuaternion srcq);
+	//float DotProduct(CQuaternion srcq);
+	double DotProduct(CQuaternion srcq);
+	double CalcRad(CQuaternion srcq);
 
 	CQuaternion Slerp(CQuaternion endq, int framenum, int frameno);
 	int Slerp2(CQuaternion endq, double srcrate, CQuaternion* dstq);
@@ -295,12 +316,12 @@ public:
 
 private:
 
-	float vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
-	float lengthVec(ChaVector3* vec);
-	float aCos(float dot);
-	int vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
-	int vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
-	int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
+	double vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
+	double lengthVec(ChaVector3* vec);
+	double aCos(double dot);
+	int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
+	int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
+	int vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 
 	int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
 	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB);
@@ -323,12 +344,12 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 double ChaVector3LengthDbl(ChaVector3* psrc);
 double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
 
-float ChaVector3Length(ChaVector3* psrc);
+//float ChaVector3LengthDbl(ChaVector3* psrc);
 void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc);
 float ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2);
 void ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3* psrc2);
 void ChaVector3TransformCoord(ChaVector3* pdst, ChaVector3* psrc, ChaMatrix* pmat);
-float ChaVector3LengthSq(ChaVector3* psrc);
+double ChaVector3LengthSqDbl(ChaVector3* psrc);
 ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, const ChaMatrix* pM);
 
 
@@ -356,12 +377,12 @@ CQuaternion CQuaternionInv(CQuaternion srcq);
 int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
 int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);// new, old
 
-float vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
-float lengthVec(ChaVector3* vec);
-float aCos(float dot);
-int vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
-int vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
-int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
+double vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
+double lengthVec(ChaVector3* vec);
+double aCos(double dot);
+int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
+int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
+int vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 
 int GetRound(float srcval);
 int IsInitRot(ChaMatrix srcmat);
@@ -374,7 +395,7 @@ void SetAngleLimitOff(ANGLELIMIT* dstal);
 
 bool IsTimeEqual(double srctime1, double srctime2);
 
-float VecLength(ChaVector3 srcvec);
+double VecLength(ChaVector3 srcvec);
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
 void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr);
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//ägëÂèkè¨Çèâä˙âªÇµÇΩRTçsóÒÇï‘Ç∑
@@ -395,12 +416,12 @@ extern ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 extern double ChaVector3LengthDbl(ChaVector3* psrc);
 extern double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
 
-extern float ChaVector3Length(ChaVector3* psrc);
+//extern float ChaVector3LengthDbl(ChaVector3* psrc);
 extern void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc);
 extern float ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2);
 extern void ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3* psrc2);
 extern void ChaVector3TransformCoord(ChaVector3* pdst, ChaVector3* psrc, ChaMatrix* pmat);
-extern float ChaVector3LengthSq(ChaVector3* psrc);
+extern double ChaVector3LengthSqDbl(ChaVector3* psrc);
 extern ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, const ChaMatrix* pM);
 
 extern void ChaMatrixIdentity(ChaMatrix* pdst);
@@ -426,12 +447,12 @@ extern CQuaternion CQuaternionInv(CQuaternion srcq);
 extern int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
 extern int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);// new, old
 
-extern float vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
-extern float lengthVec(ChaVector3* vec);
-extern float aCos(float dot);
-extern int vec3RotateY(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
-extern int vec3RotateX(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
-extern int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec);
+extern double vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
+extern double lengthVec(ChaVector3* vec);
+extern double aCos(double dot);
+extern int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
+extern int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
+extern int vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 
 extern int GetRound(float srcval);
 extern int IsInitRot(ChaMatrix srcmat);
@@ -444,7 +465,7 @@ extern void SetAngleLimitOff(ANGLELIMIT* dstal);
 
 extern bool IsTimeEqual(double srctime1, double srctime2);
 
-extern float VecLength(ChaVector3 srcvec);
+extern double VecLength(ChaVector3 srcvec);
 extern void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
 extern void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr);
 extern ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//ägëÂèkè¨Çèâä˙âªÇµÇΩRTçsóÒÇï‘Ç∑

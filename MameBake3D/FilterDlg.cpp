@@ -22,6 +22,14 @@ CFilterDlg::CFilterDlg()
 {
 	m_filtertype = AVGF_NONE;
 	m_filtersize = avgfsize[0];
+
+	m_cmdshow = SW_HIDE;
+	m_filtertype = 0;
+	m_filtersize = 0;
+
+	m_inittimerflag = false;
+	m_timerid = 0;
+
 }
 
 CFilterDlg::~CFilterDlg()

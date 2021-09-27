@@ -479,7 +479,7 @@ typedef struct tag_modelbaund
 
 	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = ChaVector3Length( &diff );
+	m_bound.r = (float)ChaVector3LengthDbl( &diff );
 
 	return 0;
 }
@@ -515,6 +515,10 @@ int CPolyMesh4::DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist )
 
 int CPolyMesh4::SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist )
 {
+	if (!m_pm3inf || !m_triface) {
+		_ASSERT(0);
+		return 1;
+	}
 	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
 
 	int fno;
@@ -524,7 +528,7 @@ int CPolyMesh4::SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clu
 			int vi[3] = {0, 2, 1};
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
-				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
+				PM3INF* curinf = m_pm3inf + (int)((INT64)setno * 3 + vcnt);
 				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
 				curinf->boneindex[0] = clusterno;
@@ -552,6 +556,10 @@ int CPolyMesh4::SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clu
 
 int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
 {
+	if (!m_pm3inf || !m_triface) {
+		_ASSERT(0);
+		return 1;
+	}
 	ZeroMemory( m_pm3inf, sizeof( PM3INF ) * m_optleng );
 
 	int fno;
@@ -561,7 +569,7 @@ int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
 			int vi[3] = {0, 2, 1};
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
-				PM3INF* curinf = m_pm3inf + (setno * 3 + vcnt);
+				PM3INF* curinf = m_pm3inf + (int)((INT64)setno * 3 + vcnt);
 				int vno = (m_triface + setno)->GetIndex( vi[vcnt] );
 				_ASSERT( (vno >= 0) && (vno < m_orgpointnum) );
 				INFDATA* curinfdata = (m_infbone + vno)->GetInfData(srcobj);

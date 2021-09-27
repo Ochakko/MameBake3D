@@ -269,7 +269,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	//ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat(0));
 	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_bone->GetCurrentZeroFrameMat(0));
 	ChaVector3 diffA = childposA - parentposA;
-	m_boneleng = ChaVector3Length(&diffA);
+	m_boneleng = (float)ChaVector3LengthDbl(&diffA);
 
 	float h, r, z;
 	//max : boneleng 0 対策
@@ -307,7 +307,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 		m_colshape = new btSphereShape(btScalar(r * rrate));
 		_ASSERT( m_colshape );
 	}else if( curre->GetColtype() == COL_BOX_INDEX ){
-		m_colshape = new btBoxShape(btVector3(r * rrate, h * lengrate, z * rrate));
+		m_colshape = new btBoxShape(btVector3(btScalar(r * rrate), btScalar(h * lengrate), btScalar(z * rrate)));
 		_ASSERT( m_colshape );
 	}else{
 		_ASSERT( 0 );
@@ -720,12 +720,12 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						//0-2:linear, 3-5:angular
 						//dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
 						if (g_previewFlag != 5) {
-							dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
-							dofC->setParam(BT_CONSTRAINT_STOP_ERP, g_erp, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							dofC->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0), dofcindex);//CFM 0 壊れにくい
+							dofC->setParam(BT_CONSTRAINT_STOP_ERP, btScalar(g_erp), dofcindex);//ERP(0-1) 値大 --> エラー補正大
 						}
 						else {
-							dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.5, dofcindex);//CFM 0 壊れにくい
-							dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+							dofC->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0.5), dofcindex);//CFM 0 壊れにくい
+							dofC->setParam(BT_CONSTRAINT_STOP_ERP, btScalar(0.0), dofcindex);//ERP(0-1) 値大 --> エラー補正大
 
 							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 							//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010, dofcindex);//ERP(0-1) 値大 --> エラー補正大
@@ -751,8 +751,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 					btScalar currentx = dofC->getAngle(0);
 					btScalar currenty = dofC->getAngle(1);
 					btScalar currentz = dofC->getAngle(2);
-					dofC->setAngularLowerLimit(btVector3(currentx - 0.5 * (float)DEG2PAI, currenty - 0.5 * (float)DEG2PAI, currentz - 0.5 * (float)DEG2PAI));
-					dofC->setAngularUpperLimit(btVector3(currentx + 0.5 * (float)DEG2PAI, currenty + 0.5 * (float)DEG2PAI, currentz + 0.5 * (float)DEG2PAI));
+					dofC->setAngularLowerLimit(btVector3(btScalar(currentx - 0.5 * (float)DEG2PAI), btScalar(currenty - 0.5 * (float)DEG2PAI), btScalar(currentz - 0.5 * (float)DEG2PAI)));
+					dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 0.5 * (float)DEG2PAI), btScalar(currenty + 0.5 * (float)DEG2PAI), btScalar(currentz + 0.5 * (float)DEG2PAI)));
 
 				}
 
@@ -766,8 +766,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 int CBtObject::EnableSpring(bool angleflag, bool linearflag)
 {
 	
-	int constraintnum = m_constraint.size();
-	int constno;
+	size_t constraintnum = m_constraint.size();
+	size_t constno;
 	for (constno = 0; constno < constraintnum; constno++){
 		btGeneric6DofSpringConstraint* curconst = m_constraint[constno].constraint;
 		if (curconst){
@@ -840,8 +840,8 @@ int CBtObject::SetDofRotAxis(int srcaxiskind)
 int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 {
 
-	int constraintnum = m_constraint.size();
-	int constno;
+	size_t constraintnum = m_constraint.size();
+	size_t constno;
 	//if (g_previewFlag != 5) {
 		for (constno = 0; constno < constraintnum; constno++) {
 			btGeneric6DofSpringConstraint* dofC = m_constraint[constno].constraint;
@@ -928,8 +928,8 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 
 
 				ChaVector3 lowereul, uppereul;
-				lowereul = ChaVector3(anglelimit.lower[0], anglelimit.lower[1], anglelimit.lower[2]);
-				uppereul = ChaVector3(anglelimit.upper[0], anglelimit.upper[1], anglelimit.upper[2]);
+				lowereul = ChaVector3(btScalar(anglelimit.lower[0]), btScalar(anglelimit.lower[1]), btScalar(anglelimit.lower[2]));
+				uppereul = ChaVector3(btScalar(anglelimit.upper[0]), btScalar(anglelimit.upper[1]), btScalar(anglelimit.upper[2]));
 
 				CQuaternion lowereulq;
 				lowereulq.SetRotationXYZ(&eulaxisq, lowereul);
@@ -984,8 +984,8 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 				btScalar currentx = dofC->getAngle(0);
 				btScalar currenty = dofC->getAngle(1);
 				btScalar currentz = dofC->getAngle(2);
-				dofC->setAngularLowerLimit(btVector3(currentx - 1.0 * (float)DEG2PAI, currenty - 1.0 * (float)DEG2PAI, currentz - 1.0 * (float)DEG2PAI));
-				dofC->setAngularUpperLimit(btVector3(currentx + 1.0 * (float)DEG2PAI, currenty + 1.0 * (float)DEG2PAI, currentz + 1.0 * (float)DEG2PAI));
+				dofC->setAngularLowerLimit(btVector3(btScalar(currentx - 1.0 * (float)DEG2PAI), btScalar(currenty - 1.0 * (float)DEG2PAI), btScalar(currentz - 1.0 * (float)DEG2PAI)));
+				dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 1.0 * (float)DEG2PAI), btScalar(currenty + 1.0 * (float)DEG2PAI), btScalar(currentz + 1.0 * (float)DEG2PAI)));
 
 				//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
 				//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
@@ -1271,7 +1271,7 @@ int CBtObject::CreatePhysicsPosConstraint()
 	float h, r, z;
 	//max : boneleng 0 対策
 	if (GetBoneLeng() >= 0.001) {
-		r = GetBoneLeng() * 0.1;
+		r = (float)(GetBoneLeng() * 0.1);
 		h = r;
 		z = r;
 	}

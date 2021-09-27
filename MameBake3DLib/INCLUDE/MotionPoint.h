@@ -22,11 +22,11 @@ public:
 
 	int InitParams();
 
-	int GetEul( ChaVector3* dsteul );
-	int SetEul( CQuaternion* axisq, ChaVector3 srceul );
-	int SetQ( CQuaternion* axisq, CQuaternion newq );
+	//int GetEul( ChaVector3* dsteul );
+	//int SetEul( CQuaternion* axisq, ChaVector3 srceul );
+	//int SetQ( CQuaternion* axisq, CQuaternion newq );
 
-	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone );
+	//int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone );
 
 	int AddToPrev( CMotionPoint* addmp );
 	int AddToNext( CMotionPoint* addmp );
@@ -35,7 +35,7 @@ public:
 	int CopyMP( CMotionPoint* srcmp );
 
 	int CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate = 1.0f );
-	int SetFirstFrameBaseMat(ChaMatrix srcfirstmat);
+	//int SetFirstFrameBaseMat(ChaMatrix srcfirstmat);
 
 
 

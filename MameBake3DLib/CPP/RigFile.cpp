@@ -473,10 +473,10 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 		float rate;
 		CallF(Read_Float(xmlbuf, str_startrate[uvno], str_endrate[uvno], &rate), return 1);
 		dstrigelem->transuv[uvno].applyrate = rate;
-		int ret;
+		int ret3;
 		int enable;
-		ret = Read_Int(xmlbuf, str_startenable[uvno], str_endenable[uvno], &enable);
-		if (ret != 0){
+		ret3 = Read_Int(xmlbuf, str_startenable[uvno], str_endenable[uvno], &enable);
+		if (ret3 != 0){
 			enable = 1;
 		}
 		else{

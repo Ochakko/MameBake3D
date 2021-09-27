@@ -1655,6 +1655,8 @@ namespace
             );
             if (result > 0)
             {
+                strFileA[MAX_PATH - 1] = 0;//2021/09/27
+
                 const char* pstrName = strrchr(strFileA, '\\');
                 if (!pstrName)
                 {
@@ -1665,20 +1667,24 @@ namespace
                     pstrName++;
                 }
 
-                if (texture && *texture)
-                {
-                    (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
-                        static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
-                        pstrName
-                    );
-                }
+                if (pstrName && (pstrName < (strFileA + MAX_PATH - 1))) {//2021/09/27
+                    if (texture && *texture)
+                    {
+                        (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
+                            //static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
+                            (UINT)strlen(pstrName),//2021/09/27
+                            pstrName
+                        );
+                    }
 
-                if (textureView && *textureView)
-                {
-                    (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
-                        static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
-                        pstrName
-                    );
+                    if (textureView && *textureView)
+                    {
+                        (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
+                            //static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
+                            (UINT)strlen(pstrName),//2021/09/27
+                            pstrName
+                        );
+                    }
                 }
             }
         }

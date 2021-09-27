@@ -369,8 +369,8 @@ int CBVHFile::SetBuffer( WCHAR* filename )
 
 	DWORD rleng, readleng;
 	rleng = bufleng;
-	ReadFile( m_hfile, (void*)newbuf, rleng, &readleng, NULL );
-	if( rleng != readleng ){
+	BOOL bresult = ReadFile( m_hfile, (void*)newbuf, rleng, &readleng, NULL );
+	if( !bresult || (rleng != readleng) ){
 		DbgOut( L"bvhfile : SetBuffer :  ReadFile error !!!\n" );
 		_ASSERT( 0 );
 		return 1;
@@ -653,11 +653,15 @@ int CBVHFile::CreateNewElem()
 ////////////
 
 	m_benum++;
-	m_bearray = (CBVHElem**)realloc( m_bearray, sizeof( CBVHElem* ) * m_benum );
-	if( !m_bearray ){
+	CBVHElem** newbearray = 0;
+	newbearray = (CBVHElem**)realloc(m_bearray, sizeof(CBVHElem*) * m_benum);
+	if( !newbearray ){
 		DbgOut( L"bvhfile : CreateNewElem : bearray alloc error !!!\n" );
 		_ASSERT( 0 );
 		return 1;
+	}
+	else {
+		m_bearray = newbearray;
 	}
 
 	*( m_bearray + m_benum - 1 ) = newbe;
@@ -1362,6 +1366,7 @@ int CBVHFile::Write2File( char* lpFormat, ... )
 		return 1;
 	}
 
+	outchar[2048 - 1] = 0;//•ÛŒ¯
 	wleng = (unsigned long)strlen( outchar );
 	WriteFile( m_hwfile, outchar, wleng, &writeleng, NULL );
 	if( wleng != writeleng ){
@@ -1387,12 +1392,14 @@ int CBVHFile::WriteTab( int tabnum )
 	char outchar[2048];
 	ZeroMemory( outchar, sizeof( char ) * 2048 );
 	int tno;
-	for( tno = 0; tno < tabnum; tno++ ){
+	int wtabnum = min((2048 - 1), tabnum);
+	for( tno = 0; tno < wtabnum; tno++ ){
 		outchar[tno] = '\t';
 	}
 
 	unsigned long wleng, writeleng;
-	wleng = (unsigned long)strlen( outchar );
+	outchar[2048 - 1] = 0;//•ÛŒ¯
+	wleng = (unsigned long)::strlen(outchar);
 	WriteFile( m_hwfile, outchar, wleng, &writeleng, NULL );
 	if( wleng != writeleng ){
 		_ASSERT( 0 );	

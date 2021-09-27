@@ -19,6 +19,7 @@
 #endif
 
 #include "b3Vector3.h"
+#include <windows.h>
 
 #if defined(B3_USE_SSE) || defined(B3_USE_NEON)
 
@@ -52,6 +53,7 @@ long b3_maxdot_large(const float *vv, const float *vec, unsigned long count, flo
 	size_t segment = 0;
 	float4 stack_array[STACK_ARRAY_COUNT];
 
+	ZeroMemory(stack_array, sizeof(float4) * STACK_ARRAY_COUNT);//20210927
 #if DEBUG
 	// memset( stack_array, -1, STACK_ARRAY_COUNT * sizeof(stack_array[0]) );
 #endif
@@ -395,6 +397,18 @@ long b3_maxdot_large(const float *vv, const float *vec, unsigned long count, flo
 				y = _mm_shuffle_ps(xy, xy, 0x55);
 			}
 			break;
+
+			//20210927
+			default:
+			{
+				float4 xy = vertices[0];
+				z = _mm_shuffle_ps(xy, xy, 0xaa);
+				xy = xy * vLo;
+				z = z * vHi;
+				x = _mm_shuffle_ps(xy, xy, 0);
+				y = _mm_shuffle_ps(xy, xy, 0x55);
+			}
+			break;
 		}
 		x = x + y;
 		x = x + z;
@@ -446,6 +460,7 @@ long b3_mindot_large(const float *vv, const float *vec, unsigned long count, flo
 	size_t segment = 0;
 	float4 stack_array[STACK_ARRAY_COUNT];
 
+	ZeroMemory(stack_array, sizeof(float4) * STACK_ARRAY_COUNT);//20210927
 #if DEBUG
 	// memset( stack_array, -1, STACK_ARRAY_COUNT * sizeof(stack_array[0]) );
 #endif
@@ -781,6 +796,18 @@ long b3_mindot_large(const float *vv, const float *vec, unsigned long count, flo
 			}
 			break;
 			case 1:
+			{
+				float4 xy = vertices[0];
+				z = _mm_shuffle_ps(xy, xy, 0xaa);
+				xy = xy * vLo;
+				z = z * vHi;
+				x = _mm_shuffle_ps(xy, xy, 0);
+				y = _mm_shuffle_ps(xy, xy, 0x55);
+			}
+			break;
+
+			//2021/09/27
+			default:
 			{
 				float4 xy = vertices[0];
 				z = _mm_shuffle_ps(xy, xy, 0xaa);

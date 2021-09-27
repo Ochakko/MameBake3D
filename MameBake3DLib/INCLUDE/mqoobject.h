@@ -59,28 +59,28 @@ public:
 	int HasLine();
 
 	int MultMat( ChaMatrix multmat );
-	int Shift( ChaVector3 shiftvec );
+	//int Shift( ChaVector3 shiftvec );
 	int Multiple( float multiple );
 	int MultVertex();
 
 	int InitFaceDirtyFlag();
 
-	int SetMikoBoneIndex3();
-	int SetMikoBoneIndex2();
-	int CheckSameMikoBone();
-	int GetTopLevelMikoBone( CMQOFace** pptopface, int* topnumptr, int maxnum );
-	int SetTreeMikoBone( CMQOFace* srctopface );
-	int CheckLoopedMikoBoneReq( CMQOFace* faceptr, int* isloopedptr, int* jointnumptr );
-	int SetMikoBoneName( std::map<int, CMQOMaterial*> &srcmaterial );
-	int SetMikoFloatBoneName();
+	//int SetMikoBoneIndex3();
+	//int SetMikoBoneIndex2();
+	//int CheckSameMikoBone();
+	//int GetTopLevelMikoBone( CMQOFace** pptopface, int* topnumptr, int maxnum );
+	//int SetTreeMikoBone( CMQOFace* srctopface );
+	//int CheckLoopedMikoBoneReq( CMQOFace* faceptr, int* isloopedptr, int* jointnumptr );
+	//int SetMikoBoneName( std::map<int, CMQOMaterial*> &srcmaterial );
+	//int SetMikoFloatBoneName();
 
 	int GetMaterialNoInUse( int* noptr, int arrayleng, int* getnumptr );
 	int GetFaceInMaterial( int matno, CMQOFace** ppface, int arrayleng, int* getnumptr );
 	int CollisionLocal_Ray( ChaVector3 startlocal, ChaVector3 dirlocal );
 
-	int MakeXBoneno2wno( int arrayleng, int* boneno2wno, int* infnumptr );
-	int GetSkinMeshHeader( int leng, int* maxpervert, int* maxperface );
-	int MakeXBoneInfluence( std::map<int, CBone*>& bonelist, int arrayleng, int bonenum, int* boneno2wno, BONEINFLUENCE* biptr );
+	//int MakeXBoneno2wno( int arrayleng, int* boneno2wno, int* infnumptr );
+	//int GetSkinMeshHeader( int leng, int* maxpervert, int* maxperface );
+	//int MakeXBoneInfluence( std::map<int, CBone*>& bonelist, int arrayleng, int bonenum, int* boneno2wno, BONEINFLUENCE* biptr );
 
 	int AddInfBone( int srcboneno, int srcvno, float srcweight, int isadditive );
 	int NormalizeInfBone();
@@ -117,13 +117,13 @@ private:
 	int CheckMirrorDis( ChaVector3* pbuf, CMQOFace* fbuf, int lno, int pnum );
 
 	int CheckFaceSameChildIndex( CMQOFace* srcface, int chkno, CMQOFace** ppfindface );
-	int FindFaceSameParentIndex( CMQOFace* srcface, int chkno, CMQOFace** ppfindface, int* findnum, int maxnum );
-	int IsSameMikoBone( CMQOFace* face1, CMQOFace* face2 );
+	//int FindFaceSameParentIndex( CMQOFace* srcface, int chkno, CMQOFace** ppfindface, int* findnum, int maxnum );
+	//int IsSameMikoBone( CMQOFace* face1, CMQOFace* face2 );
 	int IsSameFaceIndex( CMQOFace* face1, CMQOFace* face2 );
-	int IsSameFacePos( CMQOFace* face1, CMQOFace* face2, VEC3F* pointptr );
+	//int IsSameFacePos( CMQOFace* face1, CMQOFace* face2, VEC3F* pointptr );
 
 	int CheckMaterialSameName( int srcmatno, std::map<int, CMQOMaterial*> &srcmaterial, int* nameflag );
-	int SetXInfluenceArray( CInfBone* ibptr, int vnum, int boneserino, DWORD* vertices, float* weights, int infnum, DWORD* setnumptr );
+	//int SetXInfluenceArray( CInfBone* ibptr, int vnum, int boneserino, DWORD* vertices, float* weights, int infnum, DWORD* setnumptr );
 
 public:
 	//accesser

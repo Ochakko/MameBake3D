@@ -296,8 +296,8 @@ int CMQOFile::SetBuffer()
 
 	DWORD rleng, readleng;
 	rleng = bufleng;
-	ReadFile( mqobuf.hfile, (void*)newbuf, rleng, &readleng, NULL );
-	if( rleng != readleng ){
+	BOOL bresult = ReadFile( mqobuf.hfile, (void*)newbuf, rleng, &readleng, NULL );
+	if( !bresult || (rleng != readleng) ){
 		_ASSERT( 0 );
 		free( newbuf );
 		return 1;
@@ -743,7 +743,7 @@ int CMQOFile::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, in
 
 	char tempchar[256];
 	if( flend - flstart < 256 ){
-		strncpy_s( tempchar, 256, srcchar + flstart, flend - flstart );
+		strncpy_s( tempchar, 256, srcchar + flstart, (int)((INT64)flend - flstart) );
 		tempchar[flend - flstart] = 0;
 		*dstfloat = (float)atof( tempchar );
 	}else{

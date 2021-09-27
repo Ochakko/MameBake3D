@@ -10,10 +10,10 @@ DS4Device::DS4Device(HidDevice srcdevice, int srccontrollerId, UINT leng)
 {
 	device = srcdevice;
 	
-	char* devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1));
+	char* devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * ((size_t)leng + 1));
 	if (devicePath) {
-		ZeroMemory(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)));
-		strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (leng + 1)), device.GetDevicePath());
+		ZeroMemory(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * ((size_t)leng + 1)));
+		strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * ((size_t)leng + 1)), device.GetDevicePath());
 		device.SetDevicePath(devicePath);
 	}
 

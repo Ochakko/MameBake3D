@@ -72,7 +72,7 @@ int CRMenuMain::Destroy()
 int CRMenuMain::TrackPopupMenu( POINT pt )
 {
 	Params2Dlg();
-	int retmenuid;
+	//int retmenuid;
 	//retmenuid = ::TrackPopupMenu(m_rsubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
 	::TrackPopupMenu(m_rsubmenu, TPM_LEFTALIGN, pt.x, pt.y, 0, m_menuwnd, NULL);
 

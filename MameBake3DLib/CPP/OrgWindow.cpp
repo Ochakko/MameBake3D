@@ -43,7 +43,8 @@ namespace OrgWinGUI{
 		beginPaint();
 		paintTitleBar();
 
-		if (g_retargetbatchflag == 0) {
+		//if (g_retargetbatchflag == 0) {
+		if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
 			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
 				itr != partsList.end();
 				itr++) {
@@ -366,9 +367,9 @@ namespace OrgWinGUI{
 			Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
 			//中身
-			double showTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
-			double barSize = ((double)(x1 - x0 - 4))*showTimeLength / maxTime;
-			double barStart = ((double)(x1 - x0 - 4))*showPos_time / maxTime;
+			double showTimeLength = ((double)x1 - x0 - 3) / timeSize;
+			double barSize = ((double)x1 - x0 - 4)*showTimeLength / maxTime;
+			double barStart = ((double)x1 - x0 - 4)*showPos_time / maxTime;
 			if (showTimeLength<maxTime) {
 				hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
 				Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
@@ -499,7 +500,7 @@ namespace OrgWinGUI{
 		
 		if (lineData.size() >= 4) {//X, Y, Z, Brush
 
-			int drawnum = min(lineData.size(), showLineNum);
+			int drawnum = min((int)lineData.size(), showLineNum);
 
 			for (int i = 0; i < drawnum; i++) {
 				bool highLight = false;
@@ -639,7 +640,7 @@ namespace OrgWinGUI{
 		static int s_befelemno = -1;
 
 		int curpoollen;
-		curpoollen = g_eulpool.size();
+		curpoollen = (int)g_eulpool.size();
 
 
 		//if ((s_befheadno != (g_eulpool.size() - 1)) || (s_befelemno != (EULPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
@@ -747,7 +748,10 @@ namespace OrgWinGUI{
 		alloceul->SetUseFlag(1);
 
 
-		s_befheadno = g_eulpool.size() - 1;
+		s_befheadno = (int)g_eulpool.size() - 1;
+		if (s_befheadno < 0) {
+			s_befheadno = 0;
+		}
 		s_befelemno = 0;
 
 		return (void*)alloceul;
@@ -778,7 +782,7 @@ namespace OrgWinGUI{
 
 	//namespace global func
 	void DestroyEulKeys() {
-		int eulallocnum = g_eulpool.size();
+		int eulallocnum = (int)g_eulpool.size();
 		int eulno;
 		for (eulno = 0; eulno < eulallocnum; eulno++) {
 			//class OWP_EulerGraph::EulLineData::EulKey;
@@ -803,7 +807,7 @@ namespace OrgWinGUI{
 		static int s_befelemno = -1;
 
 		int curpoollen;
-		curpoollen = g_keypool.size();
+		curpoollen = (int)g_keypool.size();
 
 
 		//if ((s_befheadno != (g_keypool.size() - 1)) || (s_befelemno != (KEYPOOLBLKLEN - 1))) {//前回リリースしたポインタが最後尾ではない場合
@@ -911,7 +915,10 @@ namespace OrgWinGUI{
 		allockey->SetUseFlag(1);
 
 
-		s_befheadno = g_keypool.size() - 1;
+		s_befheadno = (int)g_keypool.size() - 1;
+		if (s_befheadno < 0) {
+			s_befheadno = 0;
+		}
 		s_befelemno = 0;
 
 		return (void*)allockey;
@@ -942,7 +949,7 @@ namespace OrgWinGUI{
 
 	//namespace global func
 	void DestroyKeys() {
-		int keyallocnum = g_keypool.size();
+		int keyallocnum = (int)g_keypool.size();
 		int keyno;
 		for (keyno = 0; keyno < keyallocnum; keyno++) {
 			//class OWP_Timeline::LineData::Key;
@@ -1056,8 +1063,8 @@ namespace OrgWinGUI{
 		if (currentTime <= showPos_time) {
 			showPos_time = currentTime;
 		}
-		if (showPos_time + ((double)(x2 - 3 - x1)) / timeSize <= currentTime) {
-			showPos_time = currentTime - ((double)(x2 - 3 - x1)) / timeSize;
+		if (showPos_time + ((double)x2 - 3 - x1) / timeSize <= currentTime) {
+			showPos_time = currentTime - ((double)x2 - 3 - x1) / timeSize;
 		}
 
 		//リスナーコール
@@ -1087,8 +1094,8 @@ namespace OrgWinGUI{
 		if (currentTime <= showPos_time) {
 			showPos_time = currentTime;
 		}
-		if (showPos_time + ((double)(x2 - 3 - x1)) / timeSize <= currentTime) {
-			showPos_time = currentTime - ((double)(x2 - 3 - x1)) / timeSize;
+		if (showPos_time + ((double)x2 - 3 - x1) / timeSize <= currentTime) {
+			showPos_time = currentTime - ((double)x2 - 3 - x1) / timeSize;
 		}
 
 		//リスナーコール

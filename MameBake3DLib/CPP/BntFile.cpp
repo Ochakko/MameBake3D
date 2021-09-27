@@ -219,6 +219,10 @@ typedef struct tag_bntvertex
 		int curvnum = curpm4->GetOptLeng();
 		PM3DISPV* curdispv = curpm4->GetPm3Disp();
 		PM3INF* curinf = curpm4->GetPm3Inf();
+		if (!curinf || !curdispv) {
+			_ASSERT(0);
+			return 1;
+		}
 		int vno;
 		for( vno = 0; vno < curvnum; vno++ ){
 			CallF( WriteBntVertex( curdispv + vno, curinf + vno ), return 1 );

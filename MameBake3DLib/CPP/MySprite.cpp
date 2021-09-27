@@ -81,7 +81,9 @@ int CMySprite::InitParams()
 	m_texid = -1;
 
 	m_BufferDesc = (D3D11_BUFFER_DESC*)malloc(sizeof(D3D11_BUFFER_DESC));
-	ZeroMemory(m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
+	if (m_BufferDesc) {
+		ZeroMemory(m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
+	}
 	m_layout = 0;
 	m_VB = 0;
 
@@ -254,11 +256,11 @@ int CMySprite::OnRender(ID3D11DeviceContext* pd3dImmediateContext, ID3D11Resourc
 	HRESULT hr;
 
 	hr = g_hdiffuse->SetRawValue(&m_col, 0, sizeof(ChaVector4));
-	_ASSERT( !hr );
+	_ASSERT( SUCCEEDED(hr) );
 	hr = g_hSpriteOffset->SetRawValue(&m_spriteoffset, 0, sizeof(ChaVector3));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 	hr = g_hSpriteScale->SetRawValue(&m_spritescale, 0, sizeof(ChaVector2));
-	_ASSERT(!hr);
+	_ASSERT(SUCCEEDED(hr));
 
 
 	pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
