@@ -4688,9 +4688,9 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	OnRenderSetShaderConst();
 
-	OnRenderModel(pd3dImmediateContext);
-	OnRenderGround(pd3dImmediateContext);
-	if (g_retargetbatchflag == 0) {
+	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
+		OnRenderModel(pd3dImmediateContext);
+		OnRenderGround(pd3dImmediateContext);
 		OnRenderBoneMark(pd3dImmediateContext);
 		OnRenderSelect(pd3dImmediateContext);
 	}
@@ -7914,7 +7914,7 @@ unsigned __stdcall ThreadFunc_RetargetDisp(LPVOID lpThreadParam)
 		SetWindowTextW(s_retargetbatchwnd, L"Make retarget File(EGP) Batch");
 	}
 
-	while (g_retargetbatchflag == 1) {
+	while (InterlockedAdd(&g_retargetbatchflag, 0) == 1) {
 		if (s_retargetbatchwnd != 0) {
 			SendMessage(s_retargetbatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
 			UpdateWindow(s_retargetbatchwnd);
@@ -20522,7 +20522,7 @@ int CreateLayerWnd()
 int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
-	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 		return 0;
 	}
 
@@ -22747,7 +22747,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.14 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.15 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -30057,7 +30057,7 @@ void SetMainWindowTitle()
 
 	//"‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.14 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.15 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

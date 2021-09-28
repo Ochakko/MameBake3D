@@ -446,12 +446,18 @@ btHullTriangle *HullLibrary::extrudable(btScalar epsilon)
 	btHullTriangle *t = NULL;
 	for (i = 0; i < m_tris.size(); i++)
 	{
-		if (!t || (m_tris[i] && t->rise < m_tris[i]->rise))
+		//if (!t || (m_tris[i] && t->rise < m_tris[i]->rise))
+		if (!t || (m_tris[i] && (t != NULL) && (t->rise < m_tris[i]->rise)))//2021/09/28
 		{
 			t = m_tris[i];
 		}
 	}
-	return (t->rise > epsilon) ? t : NULL;
+	if (t != NULL) {
+		return (t->rise > epsilon) ? t : NULL;
+	}
+	else {
+		return NULL;
+	}
 }
 
 int4 HullLibrary::FindSimplex(btVector3 *verts, int verts_count, btAlignedObjectArray<int> &allow)
@@ -963,11 +969,11 @@ bool HullLibrary::CleanupVertices(unsigned int svcount,
 				btScalar y = v[1];
 				btScalar z = v[2];
 
-				btScalar dx = btFabs(x - px);
-				btScalar dy = btFabs(y - py);
-				btScalar dz = btFabs(z - pz);
+				btScalar dx2 = btFabs(x - px);
+				btScalar dy2 = btFabs(y - py);
+				btScalar dz2 = btFabs(z - pz);
 
-				if (dx < normalepsilon && dy < normalepsilon && dz < normalepsilon)
+				if (dx2 < normalepsilon && dy2 < normalepsilon && dz2 < normalepsilon)
 				{
 					// ok, it is close enough to the old one
 					// now let us see if it is further from the center of the point cloud than the one we already recorded.
@@ -1002,54 +1008,54 @@ bool HullLibrary::CleanupVertices(unsigned int svcount,
 	// ok..now make sure we didn't prune so many vertices it is now invalid.
 	//	if ( 1 )
 	{
-		btScalar bmin[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
-		btScalar bmax[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+		btScalar bmin2[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+		btScalar bmax2[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
 
 		for (unsigned int i = 0; i < vcount; i++)
 		{
 			const btVector3 &p = vertices[i];
 			for (int j = 0; j < 3; j++)
 			{
-				if (p[j] < bmin[j]) bmin[j] = p[j];
-				if (p[j] > bmax[j]) bmax[j] = p[j];
+				if (p[j] < bmin2[j]) bmin2[j] = p[j];
+				if (p[j] > bmax2[j]) bmax2[j] = p[j];
 			}
 		}
 
-		btScalar dx = bmax[0] - bmin[0];
-		btScalar dy = bmax[1] - bmin[1];
-		btScalar dz = bmax[2] - bmin[2];
+		btScalar dx2 = bmax2[0] - bmin2[0];
+		btScalar dy2 = bmax2[1] - bmin2[1];
+		btScalar dz2 = bmax2[2] - bmin2[2];
 
-		if (dx < EPSILON || dy < EPSILON || dz < EPSILON || vcount < 3)
+		if (dx2 < EPSILON || dy2 < EPSILON || dz2 < EPSILON || vcount < 3)
 		{
-			btScalar cx = dx * btScalar(0.5) + bmin[0];
-			btScalar cy = dy * btScalar(0.5) + bmin[1];
-			btScalar cz = dz * btScalar(0.5) + bmin[2];
+			btScalar cx = dx2 * btScalar(0.5) + bmin2[0];
+			btScalar cy = dy2 * btScalar(0.5) + bmin2[1];
+			btScalar cz = dz2 * btScalar(0.5) + bmin2[2];
 
 			btScalar len = FLT_MAX;
 
-			if (dx >= EPSILON && dx < len) len = dx;
-			if (dy >= EPSILON && dy < len) len = dy;
-			if (dz >= EPSILON && dz < len) len = dz;
+			if (dx2 >= EPSILON && dx2 < len) len = dx2;
+			if (dy2 >= EPSILON && dy2 < len) len = dy2;
+			if (dz2 >= EPSILON && dz2 < len) len = dz2;
 
 			if (len == FLT_MAX)
 			{
-				dx = dy = dz = btScalar(0.01);  // one centimeter
+				dx2 = dy2 = dz2 = btScalar(0.01);  // one centimeter
 			}
 			else
 			{
-				if (dx < EPSILON) dx = len * btScalar(0.05);  // 1/5th the shortest non-zero edge.
-				if (dy < EPSILON) dy = len * btScalar(0.05);
-				if (dz < EPSILON) dz = len * btScalar(0.05);
+				if (dx2 < EPSILON) dx2 = len * btScalar(0.05);  // 1/5th the shortest non-zero edge.
+				if (dy2 < EPSILON) dy2 = len * btScalar(0.05);
+				if (dz2 < EPSILON) dz2 = len * btScalar(0.05);
 			}
 
-			btScalar x1 = cx - dx;
-			btScalar x2 = cx + dx;
+			btScalar x1 = cx - dx2;
+			btScalar x2 = cx + dx2;
 
-			btScalar y1 = cy - dy;
-			btScalar y2 = cy + dy;
+			btScalar y1 = cy - dy2;
+			btScalar y2 = cy + dy2;
 
-			btScalar z1 = cz - dz;
-			btScalar z2 = cz + dz;
+			btScalar z1 = cz - dz2;
+			btScalar z2 = cz + dz2;
 
 			vcount = 0;  // add box
 

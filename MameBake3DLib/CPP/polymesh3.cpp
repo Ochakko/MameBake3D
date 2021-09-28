@@ -81,24 +81,21 @@ void CPolyMesh3::InitParams()
 
 void CPolyMesh3::DestroyObjs()
 {
+/*
+typedef struct tag_n3sm
+{
+	int smfacenum;
+	N3P** ppsmface;//N3Pのポインタの配列
+}N3SM;
+typedef  struct tag_n3p
+{
+	PERFACE*	perface;
+	PERVERT*	pervert;
+	N3SM*		n3sm;
+}N3P;//n*3
+*/
 	if( m_n3p ){
-		int n3;
-		for( n3 = 0; n3 < m_facenum * 3; n3++ ){
-			N3P* curn3p = m_n3p + n3;
-			if( curn3p->perface ){
-				free( curn3p->perface );
-			}
-			if( curn3p->pervert ){
-				free( curn3p->pervert );
-			}
-			if( curn3p->n3sm ){
-				if( curn3p->n3sm->ppsmface ){
-					free( curn3p->n3sm->ppsmface );
-				}
-				free( curn3p->n3sm );
-			}
-		}
-		free( m_n3p );
+		delete [] m_n3p;
 		m_n3p = 0;
 	}
 
@@ -228,12 +225,18 @@ int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, ChaVector3* p
 	
 	int n3pnum = m_facenum * 3;
 
-	m_n3p = (N3P*)malloc( sizeof( N3P ) * n3pnum );
+	m_n3p = new N3P[n3pnum];
 	if( !m_n3p ){
 		_ASSERT( 0 );
 		return 1;
 	}
-	ZeroMemory( m_n3p, sizeof( N3P ) * n3pnum );
+	int n3pno;
+	for (n3pno = 0; n3pno < n3pnum; n3pno++) {
+		N3P* initn3p = m_n3p + n3pno;
+		if (initn3p) {
+			initn3p->InitParams();
+		}
+	}
 
 	int n3;
 	for( n3 = 0; n3 < n3pnum; n3++ ){
@@ -242,6 +245,10 @@ int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, ChaVector3* p
 		PERFACE* perface = (PERFACE*)malloc( sizeof( PERFACE ) );
 		if( !perface ){
 			_ASSERT( 0 );
+			//2021/09/28
+			curn3p->perface = NULL;
+			//curn3p->pervert = 0;
+			//curn3p->n3sm = 0;
 			return 1;
 		}
 		ZeroMemory( perface, sizeof( PERFACE ) );
@@ -249,13 +256,21 @@ int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, ChaVector3* p
 		PERVERT* pervert = (PERVERT*)malloc( sizeof( PERVERT ) );
 		if( !pervert ){
 			_ASSERT( 0 );
+			//2021/09/28
+			//curn3p->perface = 0;
+			curn3p->pervert = NULL;
+			//curn3p->n3sm = 0;
 			return 1;
 		}
 		ZeroMemory( pervert, sizeof( PERVERT ) );
 
-		N3SM* n3sm = (N3SM*)malloc( sizeof( N3SM ) );
+		N3SM* n3sm = new N3SM();
 		if( !n3sm ){
 			_ASSERT( 0 );
+			//2021/09/28
+			//curn3p->perface = 0;
+			//curn3p->pervert = 0;
+			curn3p->n3sm = NULL;
 			return 1;
 		}
 		ZeroMemory( n3sm, sizeof( N3SM ) );
@@ -612,8 +627,8 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 	}
 	if( findflag == 0 ){
 		int curnum = n3p1->n3sm->smfacenum;
-		void** newsmface = 0;
-		newsmface = (void**)realloc( n3p1->n3sm->ppsmface, sizeof(void*) * (int)((INT64)curnum + 1) );
+		N3P** newsmface = 0;
+		newsmface = (N3P**)realloc( n3p1->n3sm->ppsmface, sizeof(N3P*) * (int)((INT64)curnum + 1) );
 		if( !newsmface ){
 			_ASSERT( 0 );
 			return 1;
@@ -621,7 +636,7 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 		else {
 			n3p1->n3sm->ppsmface = newsmface;
 		}
-		*( n3p1->n3sm->ppsmface + curnum ) = (void*)n3p2;
+		*( n3p1->n3sm->ppsmface + curnum ) = (N3P*)n3p2;
 		n3p1->n3sm->smfacenum = curnum + 1;
 	}
 
@@ -634,8 +649,8 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 	}
 	if( findflag == 0 ){
 		int curnum = n3p2->n3sm->smfacenum;
-		void** newsmface = 0;
-		newsmface = (void**)realloc( n3p2->n3sm->ppsmface, sizeof(void*) * (int)((INT64)curnum + 1) );
+		N3P** newsmface = 0;
+		newsmface = (N3P**)realloc( n3p2->n3sm->ppsmface, sizeof(N3P*) * (int)((INT64)curnum + 1) );
 		if( !newsmface ){
 			_ASSERT( 0 );
 			return 1;
@@ -643,7 +658,7 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 		else {
 			n3p2->n3sm->ppsmface = newsmface;
 		}
-		*( n3p2->n3sm->ppsmface + curnum ) = (void*)n3p1;
+		*( n3p2->n3sm->ppsmface + curnum ) = (N3P*)n3p1;
 		n3p2->n3sm->smfacenum = curnum + 1;
 	}
 

@@ -1,3 +1,15 @@
+2021/09/28
+	develop版(非リリース版)　MameBake3Dアップデート
+
+	CPolyMesh3::m_n3pを構造体からクラスに変更しDestroyObjsで警告が出ないように
+
+	ChaVecCalc::ModifyEulerXYZの内容を新しく
+		９０度以上回転した時にも以前よりもオイラーグラフのラインが本筋ラインにラインに
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+	
 2021/09/27
 	develop版(非リリース版)　MameBake3Dアップデート
 
@@ -8,6 +20,7 @@
 
 	少ししかテストしていないdevelop版
 
+	(最新exeは付いていません)
 	
 2021/09/22
 	MotionBrush ver1.0.0.14

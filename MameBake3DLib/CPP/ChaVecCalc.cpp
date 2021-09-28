@@ -37,6 +37,10 @@
 
 #include <math.h>
 
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
 #include <crtdbg.h>
 
 
@@ -2539,87 +2543,148 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB)
 
 
 		//オイラー角Aの値をオイラー角Bの値に近い表示に修正
+	double tmpX0, tmpY0, tmpZ0;
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
-	//double tmpX3, tmpY3, tmpZ3;
-	//double tmpX4, tmpY4, tmpZ4;
-	double s1, s2;// , s3, s4;
+	double tmpX3, tmpY3, tmpZ3;
+	double tmpX4, tmpY4, tmpZ4;
+	double tmpX5, tmpY5, tmpZ5;
+	double tmpX6, tmpY6, tmpZ6;
+	double s0, s1, s2 , s3, s4;
 	//double mins;
 
+
+	tmpX0 = eulerA->x;
+	tmpY0 = eulerA->y;
+	tmpZ0 = eulerA->z;
+
 	//予想される角度1
-	tmpX1 = eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
-	tmpY1 = eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
-	tmpZ1 = eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
+	tmpX1 = (double)eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
+	tmpY1 = (double)eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
+	tmpZ1 = (double)eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
 	//予想される角度2
 	//クォータニオンは１８０°で一回転する。
 	//横軸が２シータ、縦軸がsin2シータ、cos2シータのグラフにおいて、newシータ　=　180 + oldシータの値は等しい。
 	//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
-	//この場合、３つの軸のうち１つだけの軸の角度の符号(ここではY軸)が反転する。
-	//ということだと思う。テストすると合っている。
-	//tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
-	//tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);
-	//tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
-	tmpX2 = eulerA->x + 180.0 + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x - 180.0) / 360.0));
-	tmpY2 = 180.0 - eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y + (double)eulerA->y - 180.0) / 360.0));//Y軸が反転する
-	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z - 180.0) / 360.0));
+	
+	//この場合、３つの軸のうち２つだけの軸の角度の符号(ここではY軸)が反転する。
+	//！！！！　１つではなく２つの軸が反転する。　！！！！
+	
+	//X, Y
+	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
+		tmpX2 = tmpX0 - 180.0;
+	}
+	else {
+		tmpX2 = tmpX0 + 180.0;
+	}
+	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
+		tmpY2 = tmpY0 - 180.0;
+	}
+	else {
+		tmpY2 = tmpY0 + 180.0;
+	}
+	tmpZ2 = tmpZ0;
 
 
-	//tmpX3 = 180.0 - eulerA->x + 360.0 * GetRound((eulerB->x + eulerA->x - 180.0) / 360.0);
-	//tmpY3 = eulerA->y + 180.0 + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);//X軸が反転する
-	//tmpZ3 = eulerA->z + 180.0 + 360.0 * GetRound((eulerB->z - eulerA->z - 180.0) / 360.0);
+	//Y, Z
+	tmpX3 = tmpX0;
+	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
+		tmpY3 = tmpY0 - 180.0;
+	}
+	else {
+		tmpY3 = tmpY0 + 180.0;
+	}
+	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
+		tmpZ3 = tmpZ0 - 180.0;
+	}
+	else {
+		tmpZ3 = tmpZ0 + 180.0;
+	}
 
-	//tmpX4 = eulerA->x + 180.0 + 360.0 * GetRound((eulerB->x - eulerA->x - 180.0) / 360.0);
-	//tmpY4 = 180.0 - eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y - 180.0) / 360.0);//Z軸が反転する
-	//tmpZ4 = 180.0 - eulerA->z + 360.0 * GetRound((eulerB->z + eulerA->z - 180.0) / 360.0);
+
+	//Z, X
+	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
+		tmpX4 = tmpX0 - 180.0;
+	}
+	else {
+		tmpX4 = tmpX0 + 180.0;
+	}
+	tmpY4 = tmpY0;
+	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
+		tmpZ4 = tmpZ0 - 180.0;
+	}
+	else {
+		tmpZ4 = tmpZ0 + 180.0;
+	}
+
 
 
 	//角度変化の大きさ
+	s0 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) + ((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) + ((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
 	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
 	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
-	//s3 = (eulerB->x - tmpX3) * (eulerB->x - tmpX3) + (eulerB->y - tmpY3) * (eulerB->y - tmpY3) + (eulerB->z - tmpZ3) * (eulerB->z - tmpZ3);
-	//s4 = (eulerB->x - tmpX4) * (eulerB->x - tmpX4) + (eulerB->y - tmpY4) * (eulerB->y - tmpY4) + (eulerB->z - tmpZ4) * (eulerB->z - tmpZ4);
+	s3 = ((double)eulerB->x - tmpX3) * ((double)eulerB->x - tmpX3) + ((double)eulerB->y - tmpY3) * ((double)eulerB->y - tmpY3) + ((double)eulerB->z - tmpZ3) * ((double)eulerB->z - tmpZ3);
+	s4 = ((double)eulerB->x - tmpX4) * ((double)eulerB->x - tmpX4) + ((double)eulerB->y - tmpY4) * ((double)eulerB->y - tmpY4) + ((double)eulerB->z - tmpZ4) * ((double)eulerB->z - tmpZ4);
 
+	typedef struct tag_chkeul
+	{
+		double s;
+		int index;
+		bool operator<(const tag_chkeul& right) const {
+			return s == right.s ? index < right.index : s < right.s;
+		}
+	}CHKEUL;
 
-	////変化の少ない方に修正
-	//mins = min(s1, min(s2, min(s3, s4)));
-	//if (mins == s1) {
-	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-	//}
-	//else if (mins == s2) {
-	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
-	//}
-	//else if (mins == s3) {
-	//	eulerA->x = (float)tmpX3; eulerA->y = (float)tmpY3; eulerA->z = (float)tmpZ3;
-	//}
-	//else if (mins == s4) {
-	//	eulerA->x = (float)tmpX4; eulerA->y = (float)tmpY4; eulerA->z = (float)tmpZ4;
-	//}
-	//else {
-	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-	//}
+	std::vector<struct tag_chkeul> vecchkeul;
+	CHKEUL tmpchkeul;
+	tmpchkeul.s = s0;
+	tmpchkeul.index = 0;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s1;
+	tmpchkeul.index = 1;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s2;
+	tmpchkeul.index = 2;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s3;
+	tmpchkeul.index = 3;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s4;
+	tmpchkeul.index = 4;
+	vecchkeul.push_back(tmpchkeul);
 
-	if (s1 <= s2) {
-		eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+	std::sort(vecchkeul.begin(), vecchkeul.end());
+	
+	CHKEUL mineul = vecchkeul[0];
+
+	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
+		switch (mineul.index)
+		{
+		case 0:
+			eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
+			break;
+		case 1:
+			eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+			break;
+		case 2:
+			eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+			break;
+		case 3:
+			eulerA->x = (float)tmpX3; eulerA->y = (float)tmpY3; eulerA->z = (float)tmpZ3;
+			break;
+		case 4:
+			eulerA->x = (float)tmpX4; eulerA->y = (float)tmpY4; eulerA->z = (float)tmpZ4;
+			break;
+		default:
+			_ASSERT(0);
+			eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
+			break;
+		}
 	}
 	else {
-		eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+		eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
 	}
-
-
-
-	//if ((eulerA->x > 90.0) || (eulerA->x < -90.0)) {
-	//	//Y軸反転
-	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
-	//}
-	//else {
-	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-	//}
-
-
-
-
-
 
 	return 0;
 }
@@ -3675,8 +3740,47 @@ DirectX::XMMATRIX ChaMatrix::D3DX()
 #endif
 
 
+N3P::N3P() {
+	InitParams();
+}
+N3P::~N3P()
+{
+	if (perface) {
+		free(perface);
+		perface = 0;
+	}
+	if (pervert) {
+		free(pervert);
+		pervert = 0;
+	}
+	if (n3sm) {
+		delete n3sm;
+		n3sm = 0;
+	}
+}
+void N3P::InitParams()
+{
+	perface = 0;
+	pervert = 0;
+	n3sm = 0;
+}
 
-
-
+N3SM::N3SM()
+{
+	InitParams();
+}
+N3SM::~N3SM()
+{
+	if (ppsmface) {
+		free(ppsmface);
+		ppsmface = 0;
+	}
+	smfacenum = 0;
+}
+void N3SM::InitParams()
+{
+	smfacenum = 0;
+	ppsmface = 0;
+}
 
 

@@ -449,12 +449,6 @@ typedef struct tag_tlvertex {
 	float tex[2];
 } TLVERTEX;
 
-typedef struct tag_n3sm
-{
-	int smfacenum;
-	void** ppsmface;//N3Pのポインタの配列
-}N3SM;
-
 
 
 typedef struct tag_pm3inf

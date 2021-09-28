@@ -1279,15 +1279,15 @@ void btConvexHullInternal::computeInternal(int start, int end, IntermediateHull&
 				return;
 			}
 			{
-				Vertex* v = originalVertices[start];
-				v->edges = NULL;
-				v->next = v;
-				v->prev = v;
+				Vertex* v2 = originalVertices[start];
+				v2->edges = NULL;
+				v2->next = v2;
+				v2->prev = v2;
 
-				result.minXy = v;
-				result.maxXy = v;
-				result.minYx = v;
-				result.maxYx = v;
+				result.minXy = v2;
+				result.maxXy = v2;
+				result.minYx = v2;
+				result.maxYx = v2;
 			}
 
 			return;
@@ -1481,7 +1481,23 @@ void btConvexHullInternal::findEdgeForCoplanarFaces(Vertex* c0, Vertex* c1, Edge
 	Point32 et0 = start0 ? start0->target->point : c0->point;
 	Point32 et1 = start1 ? start1->target->point : c1->point;
 	Point32 s = c1->point - c0->point;
-	Point64 normal = ((start0 ? start0 : start1)->target->point - c0->point).cross(s);
+	
+	
+	//2021/09/28
+	//Point64 normal = ((start0 ? start0 : start1)->target->point - c0->point).cross(s);
+	Point64 normal = Point64(0, 0, 1);
+	if (start0 && start0->target) {
+		normal = (start0->target->point - c0->point).cross(s);
+	}
+	else if (start1 && start1->target) {
+		normal = (start1->target->point - c0->point).cross(s);
+	}
+	else {
+		_ASSERT(0);
+		normal = Point64(0, 0, 1);
+	}
+	
+
 	int64_t dist = c0->point.dot(normal);
 	btAssert(!start1 || (start1->target->point.dot(normal) == dist));
 	Point64 perp = s.cross(normal);
@@ -1796,10 +1812,14 @@ void btConvexHullInternal::merge(IntermediateHull& h0, IntermediateHull& h1)
 				{
 					pendingHead0 = e;
 				}
-				e->next = pendingTail0;
+				if (e) {//2021/09/28
+					e->next = pendingTail0;
+				}
 				pendingTail0 = e;
 
-				e = e->reverse;
+				if (e) {//2021/09/28
+					e = e->reverse;
+				}
 				if (pendingTail1)
 				{
 					pendingTail1->next = e;
@@ -1808,7 +1828,9 @@ void btConvexHullInternal::merge(IntermediateHull& h0, IntermediateHull& h1)
 				{
 					pendingHead1 = e;
 				}
-				e->prev = pendingTail1;
+				if (e) {//2021/09/28
+					e->prev = pendingTail1;
+				}
 				pendingTail1 = e;
 			}
 

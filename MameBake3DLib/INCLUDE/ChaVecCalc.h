@@ -593,13 +593,30 @@ typedef  struct tag_modelbound
 	float		r;
 }MODELBOUND;
 
-typedef  struct tag_n3p
+
+class N3SM;
+
+class N3P
 {
+public:
+	N3P();
+	~N3P();
+	void InitParams();
 	PERFACE*	perface;
 	PERVERT*	pervert;
 	N3SM*		n3sm;
-}N3P;//n*3
+};//n*3
 
+class N3SM
+{
+public:
+	N3SM();
+	~N3SM();
+	void InitParams();
+	int smfacenum;
+	//void** ppsmface;//N3Pのポインタの配列
+	N3P** ppsmface;//*(ppsmface + smfaceno) --> pointer which is allocateed(malloc) at other place
+};
 
 #endif
 
