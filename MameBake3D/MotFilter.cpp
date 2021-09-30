@@ -171,13 +171,16 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 		for (frame = srcstartframe; frame <= srcendframe; frame++){
 			CMotionPoint curmp;
 			curbone->CalcLocalInfo(srcmotid, (double)frame, &curmp);
-			ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, 0, &befeul);// axiskind = -1 --> m_anglelimit‚ÌÀ•WŒn
+			ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, &befeul);// axiskind = -1 --> m_anglelimit‚ÌÀ•WŒn
 			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimit‚ÌÀ•WŒn
 			ChaVector3 curtra = curbone->CalcLocalTraAnim(srcmotid, (double)frame);
 
 			*(m_eul + frame - srcstartframe) = cureul;
 			*(m_tra + frame - srcstartframe) = curtra;
-			befeul = cureul;
+			//befeul = cureul;
+			if ((frame == srcstartframe) || IsValidNewEul(cureul, befeul)) {
+				befeul = cureul;
+			}
 		}
 
 

@@ -4480,8 +4480,8 @@ int InitMP( CBone* curbone, double curframe )
 	//ƒIƒCƒ‰[Šp‰Šú‰»
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
-	int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO, isfirstbone);
+	//int isfirstbone = 0;
+	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO);
 	curbone->SetLocalEul(s_model->GetCurMotInfo()->motid, curframe, cureul);
 
 	return 0;
@@ -9322,7 +9322,10 @@ int UpdateEditedEuler()
 					cureul.x = 0.0;
 					cureul.y = 0.0;
 					cureul.z = 0.0;
-					befeul = cureul;//!!!!!!!
+					//befeul = cureul;//!!!!!!!
+				}
+				if ((curtime == 0.0) || (curtime == 1.0) || IsValidNewEul(cureul, befeul)) {
+					befeul = cureul;
 				}
 
 
@@ -9460,7 +9463,13 @@ void refreshEulerGraph()
 					int minfirstflag = 1;
 					int maxfirstflag = 1;
 
+					double firstframe = 0.0;
 					ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+					int ret;
+					ret = s_owpEulerGraph->getEuler(firstframe, &befeul);
+					if (ret) {
+						befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+					}
 					for (curtime = 0; curtime < frameleng; curtime++) {
 						const WCHAR* wbonename = curbone->GetWBoneName();
 						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -9485,8 +9494,12 @@ void refreshEulerGraph()
 							cureul.x = 0.0;
 							cureul.y = 0.0;
 							cureul.z = 0.0;
+							//befeul = cureul;
+						}
+						if ((curtime == 0.0) || (curtime == 1.0) || IsValidNewEul(cureul, befeul)) {
 							befeul = cureul;
 						}
+
 
 						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
 						s_owpEulerGraph->newKey(_T("Y"), (double)curtime, cureul.y);
@@ -21079,8 +21092,8 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 			else if (initmode == INITMP_TRA){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
-				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+				//int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO);
 
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
@@ -21089,8 +21102,8 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 			else if (initmode == INITMP_SCALE) {
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
-				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+				//int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO);
 
 				int inittraflag1 = 0;
 				int setchildflag1 = 1;

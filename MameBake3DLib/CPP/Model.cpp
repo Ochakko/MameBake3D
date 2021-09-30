@@ -4768,8 +4768,8 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 				//オイラー角初期化
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag = 1;
-				int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO, isfirstbone);
+				//int isfirstbone = 0;
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO);
 				curbone->SetLocalEul(motid, (double)framecnt, cureul);
 
 			}
@@ -10276,8 +10276,8 @@ void CModel::CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe)
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
-	int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	//int isfirstbone = 0;
+	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
 	curbone->SetLocalEul(srcmotid, srcframe, cureul);
 
 	if (curbone->GetChild()){

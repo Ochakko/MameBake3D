@@ -155,8 +155,8 @@ public:
 	ChaVector3 &operator+= (const ChaVector3 &v);
 	ChaVector3 operator- (const ChaVector3 &v) const;
 	ChaVector3 &operator-= (const ChaVector3 &v);
-	ChaVector3 operator* (const ChaVector3 &v) const;
-	ChaVector3 &operator*= (const ChaVector3 &v);
+	//ChaVector3 operator* (const ChaVector3 &v) const;
+	//ChaVector3 &operator*= (const ChaVector3 &v);
 	//ChaVector3 operator/ (const ChaVector3 &q) const;
 	//ChaVector3 &operator/= (const ChaVector3 &q);
 	ChaVector3 operator- () const;
@@ -200,8 +200,8 @@ public:
 	ChaVector4 &operator+= (const ChaVector4 &v);
 	ChaVector4 operator- (const ChaVector4 &v) const;
 	ChaVector4 &operator-= (const ChaVector4 &v);
-	ChaVector4 operator* (const ChaVector4 &v) const;
-	ChaVector4 &operator*= (const ChaVector4 &v);
+	//ChaVector4 operator* (const ChaVector4 &v) const;
+	//ChaVector4 &operator*= (const ChaVector4 &v);
 	ChaVector4 operator- () const;
 
 	bool operator== (const ChaVector4 &v) const { return x == v.x && y == v.y && z == v.z && w == v.w; };
@@ -240,8 +240,8 @@ public:
 	int SetRotationZXY(CQuaternion* axisq, double degx, double degy, double degz);
 	//int GetAxisAndRot(ChaVector3* axisvecptr, float* frad);
 	//int QuaternionToAxisAngle(ChaVector3* dstaxis, float* dstrad);
-	int CalcFBXEul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone);
-	int CalcFBXEulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone);
+	int CalcFBXEul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);
+	//int CalcFBXEulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone);
 	int IsInit();
 
 	//void MakeFromBtMat3x3(btMatrix3x3 eulmat);
@@ -281,7 +281,7 @@ public:
 	CQuaternion Slerp(CQuaternion endq, int framenum, int frameno);
 	int Slerp2(CQuaternion endq, double srcrate, CQuaternion* dstq);
 
-	int Squad(CQuaternion q0, CQuaternion q1, CQuaternion q2, CQuaternion q3, float t);
+	//int Squad(CQuaternion q0, CQuaternion q1, CQuaternion q2, CQuaternion q3, float t);
 
 	ChaMatrix MakeRotMatX();
 
@@ -300,14 +300,14 @@ public:
 
 
 	//ç∂ÇÀÇ∂
-	int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
-	int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
-	int Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);//bulletÇ‡XYZÇÃèá
-	int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
+	//int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
+	//int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
+	int Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);//bulletÇ‡XYZÇÃèá
+	//int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 
 
-	int Q2Eul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
-	int Q2EulBt(ChaVector3* reteul);
+	//int Q2Eul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
+	//int Q2EulBt(ChaVector3* reteul);
 
 	void RotationMatrix(ChaMatrix srcmat);
 
@@ -323,8 +323,8 @@ private:
 	int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 	int vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 
-	int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
-	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB);
+	//int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
+	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);
 	int GetRound(float srcval);
 
 	float QuaternionLimitPhai(float srcphai);
@@ -339,6 +339,7 @@ public:
 
 
 #ifdef CHACALCCPP
+BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul);
 ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 
 double ChaVector3LengthDbl(ChaVector3* psrc);
@@ -374,8 +375,8 @@ void CQuaternionIdentity(CQuaternion* dstq);
 CQuaternion CQuaternionInv(CQuaternion srcq);
 
 
-int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
-int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);// new, old
+//int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
+//int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);// new, old
 
 double vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
 double lengthVec(ChaVector3* vec);
@@ -411,6 +412,7 @@ CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
 
 #else
+extern BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul);
 extern ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 
 extern double ChaVector3LengthDbl(ChaVector3* psrc);
@@ -444,8 +446,8 @@ extern void CQuaternionIdentity(CQuaternion* dstq);
 extern CQuaternion CQuaternionInv(CQuaternion srcq);
 
 
-extern int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
-extern int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);// new, old
+//extern int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler);
+//extern int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);// new, old
 
 extern double vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
 extern double lengthVec(ChaVector3* vec);

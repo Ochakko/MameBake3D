@@ -18,6 +18,8 @@
 //#include <D3DX9.h>
 #include <ChaVecCalc.h>
 
+#include <GlobalVar.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -722,6 +724,26 @@ int CBVHElem::ConvXYZRot()
 		isfirstbone = 1;
 	}
 
+	//bvhのendjointの名前はsite*. リターゲット時に末端に渡すのはその手前. ３代チェックする
+	int isendbone;
+	if (GetChild()) {
+		if (GetChild()->GetChild()) {
+			if (GetChild()->GetChild()->GetChild()) {
+				isendbone = 0;
+			}
+			else {
+				isendbone = 1;
+			}
+		}
+		else {
+			isendbone = 1;
+		}
+	}
+	else {
+		isendbone = 1;
+	}
+
+
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -729,9 +751,18 @@ int CBVHElem::ConvXYZRot()
 	for (frameno = 0; frameno < framenum; frameno++) {
 		CQuaternion* curq;
 		curq = (qptr + frameno);
-		curq->CalcFBXEul(0, befeul, &cureul, isfirstbone);
+		int notmodifyflag;
+		if ((frameno == 0) || (frameno == 1)) {
+			notmodifyflag = 1;
+		}
+		else {
+			notmodifyflag = 0;
+		}
+		curq->CalcFBXEul(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 		*(xyzrot + frameno) = cureul;
-		befeul = cureul;
+		if ((frameno == 0) || (frameno == 1) || IsValidNewEul(cureul, befeul)) {
+			befeul = cureul;
+		}
 	}
 
 

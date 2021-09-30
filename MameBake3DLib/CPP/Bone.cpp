@@ -1801,8 +1801,8 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 	//オイラー角初期化
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
-	int isfirstbone = 0;
-	cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+	//int isfirstbone = 0;
+	cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 	SetLocalEul(srcmotid, srcframe, cureul);
 
 
@@ -2293,7 +2293,7 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 }
 
 
-ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, int isfirstbone, ChaVector3* directbefeul)
+ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
@@ -2330,6 +2330,9 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
 	//axisq.RotationMatrix(axismat);
 
+	int isfirstbone = 0;
+	int isendbone = 0;
+
 	if (GetParent()) {
 		CRigidElem* curre = GetParent()->GetRigidElem(this);
 		if (curre) {
@@ -2340,25 +2343,50 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 			ChaMatrixIdentity(&axismat);
 		}
 		axisq.RotationMatrix(axismat);
+
+		isfirstbone = 0;
 	}
 	else {
 		ChaMatrixIdentity(&axismat);
 		axisq.SetParams(1.0, 0.0, 0.0, 0.0);
+
+		isfirstbone = 1;
 	}
+
+	if (GetChild()) {
+		if (GetChild()->GetChild()) {
+			isendbone = 0;
+		}
+		else {
+			isendbone = 1;
+		}
+	}
+	else {
+		isendbone = 1;
+	}
+
+	int notmodifyflag;
+	if ((srcframe == 0.0) || (srcframe == 1.0)) {
+		notmodifyflag = 1;
+	}
+	else {
+		notmodifyflag = 0;
+	}
+
 
 	if (axiskind == -1){
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
-			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul);
+			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 		}
 		else{
-			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul);
+			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 		}
 	}
 	else if (axiskind != BONEAXIS_GLOBAL){
-		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul);
+		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 	}
 	else{
-		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul);
+		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 	}
 
 	CMotionPoint* curmp;
@@ -3768,7 +3796,7 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 	if (curmp){
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newmat);
-		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
+		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 		curmp->SetLocalEul(neweul);
 
 		if (setchildflag == 1){
@@ -3935,16 +3963,16 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 
 		ChaVector3 oldeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag = 1;
-		int isfirstbone = 0;
+		//int isfirstbone = 0;
 
 		//axiskind == -1のときにはlimitangleのaxiskindがGLOBALかどうかをチェック.GLOBALでないときにはparentのaxisqで計算
-		oldeul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		oldeul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 
 
 		curmp->SetWorldMat(srcmat);//tmp time
 		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
 		//axiskind == -1のときにはlimitangleのaxiskindがGLOBALかどうかをチェック.GLOBALでないときにはparentのaxisqで計算
-		neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 
 		curmp->SetWorldMat(saveworldmat);
 
@@ -3974,7 +4002,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 			//curmp->SetBefWorldMat(curmp->GetWorldMat());
 			curmp->SetWorldMat(srcmat);
 
-			ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO, 0);
+			ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 			curmp->SetLocalEul(neweul);
 		}
 	}
@@ -4613,8 +4641,8 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 		//オイラー角初期化
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag = 1;
-		int isfirstbone = 0;
-		cureul = CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO, isfirstbone);
+		//int isfirstbone = 0;
+		cureul = CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
 		SetLocalEul(srcmotid, srcframe, cureul);
 
 	}
@@ -4633,29 +4661,25 @@ ChaVector3 CBone::CalcFBXEul(int srcmotid, double srcframe, ChaVector3* befeulpt
 	else{
 		isfirstbone = 1;
 	}
-
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	if (befeulptr){
-		befeul = *befeulptr;
+	int isendbone;
+	if (GetChild()) {
+		if (GetChild()->GetChild()) {
+			isendbone = 0;
+		}
+		else {
+			isendbone = 1;
+		}
+	}
+	else {
+		isendbone = 1;
 	}
 
-	//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
-	tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
-
-	return cureul;
-
-}
-ChaVector3 CBone::CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeulptr)
-{
-	CMotionPoint tmpmp;
-	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
-	int isfirstbone;
-	if (GetParent()){
-		isfirstbone = 0;
+	int notmodifyflag;
+	if ((srcframe == 0.0) || (srcframe == 1.0)) {
+		notmodifyflag = 1;
 	}
-	else{
-		isfirstbone = 1;
+	else {
+		notmodifyflag = 0;
 	}
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -4665,11 +4689,35 @@ ChaVector3 CBone::CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeu
 	}
 
 	//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
-	tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
+	tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 
 	return cureul;
 
 }
+//ChaVector3 CBone::CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeulptr)
+//{
+//	CMotionPoint tmpmp;
+//	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+//	int isfirstbone;
+//	if (GetParent()){
+//		isfirstbone = 0;
+//	}
+//	else{
+//		isfirstbone = 1;
+//	}
+//
+//	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+//	if (befeulptr){
+//		befeul = *befeulptr;
+//	}
+//
+//	//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+//	tmpmp.GetQ().CalcFBXEulZXY(0, befeul, &cureul, isfirstbone);
+//
+//	return cureul;
+//
+//}
 ChaVector3 CBone::CalcFBXTra(int srcmotid, double srcframe)
 {
 	CMotionPoint tmpmp;

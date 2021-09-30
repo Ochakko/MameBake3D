@@ -1,3 +1,13 @@
+2021/09/30_1
+	develop版(非リリース版)　MameBake3Dアップデート
+
+	ChaVecCalc::ModifyEulerXYZ更新
+		モーションキャプチャデータの末端のボーン例えばつま先(toe)のボーンが裏返るのを防止するコードを追加
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/09/28
 	develop版(非リリース版)　MameBake3Dアップデート
 

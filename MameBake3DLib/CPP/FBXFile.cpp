@@ -2818,7 +2818,6 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 			break;
 		}
 
-
 		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -2845,7 +2844,10 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 				break;
 			}
 			lCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
-			befeul = cureul;
+			if ((frameno == 0) || (frameno == 1) || IsValidNewEul(cureul, befeul)) {
+				befeul = cureul;
+			}
+
 		}
 		lCurve->KeyModifyEnd();
 	}
@@ -2917,7 +2919,9 @@ static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int cu
 				break;
 			}
 			lCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationLinear);
-			befeul = cureul;
+			if ((frameno == 0) || (frameno == 1) || IsValidNewEul(cureul, befeul)) {
+				befeul = cureul;
+			}
 		}
 		lCurve->KeyModifyEnd();
 	}
