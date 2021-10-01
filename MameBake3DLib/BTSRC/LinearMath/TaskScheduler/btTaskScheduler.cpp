@@ -734,22 +734,22 @@ public:
 			prepareWorkerThreads();
 			// submit all of the jobs
 			int iJob = 0;
-			int iThread = kFirstWorkerThreadId;  // first worker thread
+			int iThread2 = kFirstWorkerThreadId;  // first worker thread
 			for (int i = iBegin; i < iEnd; i += grainSize)
 			{
 				btAssert(iJob < jobCount);
 				int iE = btMin(i + grainSize, iEnd);
-				JobQueue* jq = m_perThreadJobQueues[iThread];
+				JobQueue* jq = m_perThreadJobQueues[iThread2];
 				btAssert(jq);
 				btAssert((jq - &m_jobQueues[0]) < m_numActiveJobQueues);
 				void* jobMem = jq->allocJobMem(jobSize);
 				JobType* job = new (jobMem) ParallelSumJob(i, iE, body, &m_threadLocalStorage[0]);  // placement new
 				jq->submitJob(job);
 				iJob++;
-				iThread++;
-				if (iThread >= m_numThreads)
+				iThread2++;
+				if (iThread2 >= m_numThreads)
 				{
-					iThread = kFirstWorkerThreadId;  // first worker thread
+					iThread2 = kFirstWorkerThreadId;  // first worker thread
 				}
 			}
 			wakeWorkers(jobCount - 1);
@@ -759,9 +759,9 @@ public:
 
 			// add up all the thread sums
 			btScalar sum = btScalar(0);
-			for (int iThread = 0; iThread < m_numThreads; ++iThread)
+			for (int iThread3 = 0; iThread3 < m_numThreads; ++iThread3)
 			{
-				sum += m_threadLocalStorage[iThread].m_sumResult;
+				sum += m_threadLocalStorage[iThread3].m_sumResult;
 			}
 			m_antiNestingLock.unlock();
 			return sum;

@@ -2234,30 +2234,32 @@ void btSoftBody::indicesToPointers(const int* map)
 			m_nodes[i].m_leaf->data = &m_nodes[i];
 		}
 	}
-	for (i = 0, ni = m_links.size(); i < ni; ++i)
-	{
-		m_links[i].m_n[0] = IDX2PTR(m_links[i].m_n[0], base);
-		m_links[i].m_n[1] = IDX2PTR(m_links[i].m_n[1], base);
-	}
-	for (i = 0, ni = m_faces.size(); i < ni; ++i)
-	{
-		m_faces[i].m_n[0] = IDX2PTR(m_faces[i].m_n[0], base);
-		m_faces[i].m_n[1] = IDX2PTR(m_faces[i].m_n[1], base);
-		m_faces[i].m_n[2] = IDX2PTR(m_faces[i].m_n[2], base);
-		if (m_faces[i].m_leaf)
+	if (base) {//2021/10/01
+		for (i = 0, ni = m_links.size(); i < ni; ++i)
 		{
-			m_faces[i].m_leaf->data = &m_faces[i];
+			m_links[i].m_n[0] = IDX2PTR(m_links[i].m_n[0], base);
+			m_links[i].m_n[1] = IDX2PTR(m_links[i].m_n[1], base);
 		}
-	}
-	for (i = 0, ni = m_anchors.size(); i < ni; ++i)
-	{
-		m_anchors[i].m_node = IDX2PTR(m_anchors[i].m_node, base);
-	}
-	for (i = 0, ni = m_notes.size(); i < ni; ++i)
-	{
-		for (int j = 0; j < m_notes[i].m_rank; ++j)
+		for (i = 0, ni = m_faces.size(); i < ni; ++i)
 		{
-			m_notes[i].m_nodes[j] = IDX2PTR(m_notes[i].m_nodes[j], base);
+			m_faces[i].m_n[0] = IDX2PTR(m_faces[i].m_n[0], base);
+			m_faces[i].m_n[1] = IDX2PTR(m_faces[i].m_n[1], base);
+			m_faces[i].m_n[2] = IDX2PTR(m_faces[i].m_n[2], base);
+			if (m_faces[i].m_leaf)
+			{
+				m_faces[i].m_leaf->data = &m_faces[i];
+			}
+		}
+		for (i = 0, ni = m_anchors.size(); i < ni; ++i)
+		{
+			m_anchors[i].m_node = IDX2PTR(m_anchors[i].m_node, base);
+		}
+		for (i = 0, ni = m_notes.size(); i < ni; ++i)
+		{
+			for (int j = 0; j < m_notes[i].m_rank; ++j)
+			{
+				m_notes[i].m_nodes[j] = IDX2PTR(m_notes[i].m_nodes[j], base);
+			}
 		}
 	}
 #undef IDX2PTR

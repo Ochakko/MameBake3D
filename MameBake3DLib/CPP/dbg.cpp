@@ -132,7 +132,7 @@ int OpenDbgFile(int srcappcnt)
 		GetLocalTime(&st);
 
 		WCHAR infofilename[MAX_PATH] = { 0L };
-		swprintf_s(infofilename, MAX_PATH, L"info%d_%4ud_%02ud_%02ud_%02ud_%02ud_%02ud.txt",
+		swprintf_s(infofilename, MAX_PATH, L"info%d_%4u_%02u_%02u_%02u_%02u_%02u.txt",
 			srcappcnt,//ï°êîÇÃMotionBrushÇóßÇøè„Ç∞ÇÈÇΩÇﬂ
 			st.wYear, st.wMonth, st.wDay,
 			st.wHour, st.wMinute, st.wSecond);

@@ -191,9 +191,9 @@ void btConeTwistConstraint::getInfo2NonVirtual(btConstraintInfo2* info, const bt
 			J2[srow + 0] = -ax1[0];
 			J2[srow + 1] = -ax1[1];
 			J2[srow + 2] = -ax1[2];
-			btScalar k = info->fps * m_biasFactor;
+			btScalar k2 = info->fps * m_biasFactor;
 
-			info->m_constraintError[srow] = k * m_swingCorrection;
+			info->m_constraintError[srow] = k2 * m_swingCorrection;
 			if (m_flags & BT_CONETWIST_FLAGS_ANG_CFM)
 			{
 				info->cfm[srow] = m_angCFM;
@@ -215,8 +215,8 @@ void btConeTwistConstraint::getInfo2NonVirtual(btConstraintInfo2* info, const bt
 		J2[srow + 0] = -ax1[0];
 		J2[srow + 1] = -ax1[1];
 		J2[srow + 2] = -ax1[2];
-		btScalar k = info->fps * m_biasFactor;
-		info->m_constraintError[srow] = k * m_twistCorrection;
+		btScalar k3 = info->fps * m_biasFactor;
+		info->m_constraintError[srow] = k3 * m_twistCorrection;
 		if (m_flags & BT_CONETWIST_FLAGS_ANG_CFM)
 		{
 			info->cfm[srow] = m_angCFM;
@@ -572,9 +572,9 @@ void btConeTwistConstraint::calcAngleInfo()
 	// Twist limits
 	if (m_twistSpan >= btScalar(0.))
 	{
-		btVector3 b2Axis2 = getRigidBodyB().getCenterOfMassTransform().getBasis() * this->m_rbBFrame.getBasis().getColumn(1);
+		btVector3 b2Axis2_2 = getRigidBodyB().getCenterOfMassTransform().getBasis() * this->m_rbBFrame.getBasis().getColumn(1);
 		btQuaternion rotationArc = shortestArcQuat(b2Axis1, b1Axis1);
-		btVector3 TwistRef = quatRotate(rotationArc, b2Axis2);
+		btVector3 TwistRef = quatRotate(rotationArc, b2Axis2_2);
 		btScalar twist = btAtan2Fast(TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2));
 		m_twistAngle = twist;
 

@@ -2128,18 +2128,26 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 
 	ChaVector3 targetVec, shadowVec;
 	ChaVector3 tmpVec;
+	int dot0flagx, dot0flagy, dot0flagz;
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
-		Euler.z = 90.0f;
+	dot0flagz = 0;
+	if (abs(lengthVec(&shadowVec)) <= 1e-4) {
+		if (befeul.x >= 0.0f) {
+			Euler.z = 90.0f;
+		}
+		else {
+			Euler.x = -90.0f;
+		}
+		dot0flagz = 1;
 	}
 	else {
 		Euler.z = (float)abs(aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec)));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) < 0.0) {
+	if ((dot0flagz == 0) && (vecDotVec(&shadowVec, &axisYVec) < 0.0)) {
 		Euler.z = -abs(Euler.z);
 	}
 
@@ -2154,13 +2162,21 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	shadowVec.y = 0.0f;
 	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
-		Euler.y = 90.0f;
+	dot0flagy = 0;
+	if (abs(lengthVec(&shadowVec)) <= 1e-4) 
+	{
+		if (befeul.y >= 0.0f) {
+			Euler.y = 90.0f;
+		}
+		else {
+			Euler.y = -90.0f;
+		}
+		dot0flagy = 1;
 	}
 	else {
 		Euler.y = (float)abs(aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec)));
 	}
-	if (vecDotVec(&shadowVec, &axisZVec) > 0.0) {
+	if ((dot0flagy == 0) && (vecDotVec(&shadowVec, &axisZVec) > 0.0)) {
 		Euler.y = -abs(Euler.y);
 	}
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
@@ -2175,13 +2191,20 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	shadowVec.x = 0.0f;
 	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0) {
-		Euler.x = 90.0f;
+	dot0flagx = 0;
+	if (abs(lengthVec(&shadowVec)) <= 1e-4) {
+		if (befeul.x >= 0.0f) {
+			Euler.x = 90.0f;
+		}
+		else {
+			Euler.x = -90.0f;
+		}
+		dot0flagx = 1;
 	}
 	else {
 		Euler.x = (float)abs(aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec)));
 	}
-	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
+	if ((dot0flagx == 0) && (vecDotVec(&shadowVec, &axisYVec) > 0.0)) {
 		Euler.x = -abs(Euler.x);
 	}
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {

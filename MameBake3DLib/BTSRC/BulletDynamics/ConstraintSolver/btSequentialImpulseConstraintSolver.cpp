@@ -713,13 +713,13 @@ int btSequentialImpulseConstraintSolver::getOrInitSolverBody(btCollisionObject& 
 		// Kinematic bodies can be in multiple islands at once, so it is a
 		// race condition to write to them, so we use an alternate method
 		// to record the solverBodyId
-		int uniqueId = body.getWorldArrayIndex();
+		int uniqueId2 = body.getWorldArrayIndex();
 		const int INVALID_SOLVER_BODY_ID = -1;
-		if (uniqueId >= m_kinematicBodyUniqueIdToSolverBodyTable.size())
+		if (uniqueId2 >= m_kinematicBodyUniqueIdToSolverBodyTable.size())
 		{
-			m_kinematicBodyUniqueIdToSolverBodyTable.resize(uniqueId + 1, INVALID_SOLVER_BODY_ID);
+			m_kinematicBodyUniqueIdToSolverBodyTable.resize(uniqueId2 + 1, INVALID_SOLVER_BODY_ID);
 		}
-		solverBodyId = m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId];
+		solverBodyId = m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId2];
 		// if no table entry yet,
 		if (solverBodyId == INVALID_SOLVER_BODY_ID)
 		{
@@ -727,7 +727,7 @@ int btSequentialImpulseConstraintSolver::getOrInitSolverBody(btCollisionObject& 
 			solverBodyId = m_tmpSolverBodyPool.size();
 			btSolverBody& solverBody = m_tmpSolverBodyPool.expand();
 			initSolverBody(&solverBody, &body, timeStep);
-			m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId] = solverBodyId;
+			m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId2] = solverBodyId;
 		}
 	}
 	else

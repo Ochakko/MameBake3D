@@ -255,9 +255,9 @@ int maxdirsterid(const T *p, int count, const T &dir, btAlignedObjectArray<int> 
 				int mc = ma;
 				for (btScalar xx = x - btScalar(40.0); xx <= x; xx += btScalar(5.0))
 				{
-					btScalar s = btSin(SIMD_RADS_PER_DEG * (xx));
-					btScalar c = btCos(SIMD_RADS_PER_DEG * (xx));
-					int md = maxdirfiltered(p, count, dir + (u * s + v * c) * btScalar(0.025), allow);
+					btScalar s2 = btSin(SIMD_RADS_PER_DEG * (xx));
+					btScalar c2 = btCos(SIMD_RADS_PER_DEG * (xx));
+					int md = maxdirfiltered(p, count, dir + (u * s2 + v * c2) * btScalar(0.025), allow);
 					if (mc == m && md == m)
 					{
 						allow[m] = 3;

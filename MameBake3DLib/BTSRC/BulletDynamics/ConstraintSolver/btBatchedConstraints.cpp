@@ -555,9 +555,9 @@ static void writeOutBatches(btBatchedConstraints* bc,
 				const btBatchInfo& batch = batches[i];
 				int curBatchBegin = iConstraint;
 				constraintIdPerBatch[i] = curBatchBegin;  // record the start of each batch in m_constraintIndices array
-				int numConstraints = batch.numConstraints;
-				iConstraint += numConstraints;
-				if (numConstraints > 0)
+				int numConstraints2 = batch.numConstraints;
+				iConstraint += numConstraints2;
+				if (numConstraints2 > 0)
 				{
 					bc->m_batches.push_back(Range(curBatchBegin, iConstraint));
 				}

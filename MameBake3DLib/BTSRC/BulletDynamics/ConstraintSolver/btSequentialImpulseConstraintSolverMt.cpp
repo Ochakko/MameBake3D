@@ -332,19 +332,19 @@ int btSequentialImpulseConstraintSolverMt::getOrInitSolverBodyThreadsafe(btColli
 		// Kinematic bodies can be in multiple islands at once, so it is a
 		// race condition to write to them, so we use an alternate method
 		// to record the solverBodyId
-		int uniqueId = body.getWorldArrayIndex();
+		int uniqueId2 = body.getWorldArrayIndex();
 		const int INVALID_SOLVER_BODY_ID = -1;
-		if (m_kinematicBodyUniqueIdToSolverBodyTable.size() <= uniqueId)
+		if (m_kinematicBodyUniqueIdToSolverBodyTable.size() <= uniqueId2)
 		{
 			m_kinematicBodyUniqueIdToSolverBodyTableMutex.lock();
 			// now that we have the lock, check again
-			if (m_kinematicBodyUniqueIdToSolverBodyTable.size() <= uniqueId)
+			if (m_kinematicBodyUniqueIdToSolverBodyTable.size() <= uniqueId2)
 			{
-				m_kinematicBodyUniqueIdToSolverBodyTable.resize(uniqueId + 1, INVALID_SOLVER_BODY_ID);
+				m_kinematicBodyUniqueIdToSolverBodyTable.resize(uniqueId2 + 1, INVALID_SOLVER_BODY_ID);
 			}
 			m_kinematicBodyUniqueIdToSolverBodyTableMutex.unlock();
 		}
-		solverBodyId = m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId];
+		solverBodyId = m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId2];
 		// if no table entry yet,
 		if (INVALID_SOLVER_BODY_ID == solverBodyId)
 		{
@@ -352,14 +352,14 @@ int btSequentialImpulseConstraintSolverMt::getOrInitSolverBodyThreadsafe(btColli
 			m_kinematicBodyUniqueIdToSolverBodyTableMutex.lock();
 			m_bodySolverArrayMutex.lock();
 			// now that we have the lock, check again
-			solverBodyId = m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId];
+			solverBodyId = m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId2];
 			if (INVALID_SOLVER_BODY_ID == solverBodyId)
 			{
 				// create a table entry for this body
 				solverBodyId = m_tmpSolverBodyPool.size();
 				btSolverBody& solverBody = m_tmpSolverBodyPool.expand();
 				initSolverBody(&solverBody, &body, timeStep);
-				m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId] = solverBodyId;
+				m_kinematicBodyUniqueIdToSolverBodyTable[uniqueId2] = solverBodyId;
 			}
 			m_bodySolverArrayMutex.unlock();
 			m_kinematicBodyUniqueIdToSolverBodyTableMutex.unlock();
@@ -478,7 +478,7 @@ void btSequentialImpulseConstraintSolverMt::internalAllocContactConstraints(cons
 			{
 				m_rollingFrictionIndexTable[contactIndex] = rollingFrictionIndex;
 				// allocate 3 (although we may use only 2 sometimes)
-				for (int i = 0; i < 3; i++)
+				for (int i2 = 0; i2 < 3; i2++)
 				{
 					m_tmpSolverContactRollingFrictionConstraintPool[rollingFrictionIndex].m_frictionIndex = contactIndex;
 					rollingFrictionIndex++;
@@ -905,13 +905,13 @@ void btSequentialImpulseConstraintSolverMt::solveGroupCacheFriendlySplitImpulseI
 			{
 				const btBatchedConstraints& batchedCons = m_batchedContactConstraints;
 				ContactSplitPenetrationImpulseSolverLoop loop(this, &batchedCons);
-				btScalar leastSquaresResidual = 0.f;
+				btScalar leastSquaresResidual2 = 0.f;
 				for (int iiPhase = 0; iiPhase < batchedCons.m_phases.size(); ++iiPhase)
 				{
 					int iPhase = batchedCons.m_phaseOrder[iiPhase];
 					const btBatchedConstraints::Range& phase = batchedCons.m_phases[iPhase];
 					int grainSize = batchedCons.m_phaseGrainSize[iPhase];
-					leastSquaresResidual += btParallelSum(phase.begin, phase.end, grainSize, loop);
+					leastSquaresResidual2 += btParallelSum(phase.begin, phase.end, grainSize, loop);
 				}
 			}
 			else
@@ -1408,7 +1408,8 @@ btScalar btSequentialImpulseConstraintSolverMt::resolveAllRollingFrictionConstra
 		// use batching if there are many rolling friction constraints
 		const btBatchedConstraints& batchedCons = m_batchedContactConstraints;
 		ContactRollingFrictionSolverLoop loop(this, &batchedCons);
-		btScalar leastSquaresResidual = 0.f;
+		//btScalar leastSquaresResidual = 0.f;
+		leastSquaresResidual = 0.f;//2021/10/01 return‚·‚é’l
 		for (int iiPhase = 0; iiPhase < batchedCons.m_phases.size(); ++iiPhase)
 		{
 			int iPhase = batchedCons.m_phaseOrder[iiPhase];

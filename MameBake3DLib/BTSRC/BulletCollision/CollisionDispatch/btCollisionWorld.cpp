@@ -420,23 +420,23 @@ void btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans, co
 			{
 				///optimized version for btHeightfieldTerrainShape
 				btHeightfieldTerrainShape* heightField = (btHeightfieldTerrainShape*)collisionShape;
-				btTransform worldTocollisionObject = colObjWorldTransform.inverse();
-				btVector3 rayFromLocal = worldTocollisionObject * rayFromTrans.getOrigin();
-				btVector3 rayToLocal = worldTocollisionObject * rayToTrans.getOrigin();
+				btTransform worldTocollisionObject2 = colObjWorldTransform.inverse();
+				btVector3 rayFromLocal2 = worldTocollisionObject2 * rayFromTrans.getOrigin();
+				btVector3 rayToLocal2 = worldTocollisionObject2 * rayToTrans.getOrigin();
 
-				BridgeTriangleRaycastCallback rcb(rayFromLocal, rayToLocal, &resultCallback, collisionObjectWrap->getCollisionObject(), heightField, colObjWorldTransform);
+				BridgeTriangleRaycastCallback rcb(rayFromLocal2, rayToLocal2, &resultCallback, collisionObjectWrap->getCollisionObject(), heightField, colObjWorldTransform);
 				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
-				heightField->performRaycast(&rcb, rayFromLocal, rayToLocal);
+				heightField->performRaycast(&rcb, rayFromLocal2, rayToLocal2);
 			}
 			else
 			{
 				//generic (slower) case
 				btConcaveShape* concaveShape = (btConcaveShape*)collisionShape;
 
-				btTransform worldTocollisionObject = colObjWorldTransform.inverse();
+				btTransform worldTocollisionObject3 = colObjWorldTransform.inverse();
 
-				btVector3 rayFromLocal = worldTocollisionObject * rayFromTrans.getOrigin();
-				btVector3 rayToLocal = worldTocollisionObject * rayToTrans.getOrigin();
+				btVector3 rayFromLocal3 = worldTocollisionObject3 * rayFromTrans.getOrigin();
+				btVector3 rayToLocal3 = worldTocollisionObject3 * rayToTrans.getOrigin();
 
 				//ConvexCast::CastResult
 
@@ -476,13 +476,13 @@ void btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans, co
 					}
 				};
 
-				BridgeTriangleRaycastCallback rcb(rayFromLocal, rayToLocal, &resultCallback, collisionObjectWrap->getCollisionObject(), concaveShape, colObjWorldTransform);
+				BridgeTriangleRaycastCallback rcb(rayFromLocal3, rayToLocal3, &resultCallback, collisionObjectWrap->getCollisionObject(), concaveShape, colObjWorldTransform);
 				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
 
-				btVector3 rayAabbMinLocal = rayFromLocal;
-				rayAabbMinLocal.setMin(rayToLocal);
-				btVector3 rayAabbMaxLocal = rayFromLocal;
-				rayAabbMaxLocal.setMax(rayToLocal);
+				btVector3 rayAabbMinLocal = rayFromLocal3;
+				rayAabbMinLocal.setMin(rayToLocal3);
+				btVector3 rayAabbMaxLocal = rayFromLocal3;
+				rayAabbMaxLocal.setMax(rayToLocal3);
 
 				concaveShape->processAllTriangles(&rcb, rayAabbMinLocal, rayAabbMaxLocal);
 			}

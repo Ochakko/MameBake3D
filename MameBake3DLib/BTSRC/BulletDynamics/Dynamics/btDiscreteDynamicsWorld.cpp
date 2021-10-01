@@ -1320,12 +1320,12 @@ void btDiscreteDynamicsWorld::debugDrawConstraint(btTypedConstraint* constraint)
 			if (drawFrames) getDebugDrawer()->drawTransform(tr, dbgDrawSize);
 			if (drawLimits)
 			{
-				btTransform tr = pSlider->getUseLinearReferenceFrameA() ? pSlider->getCalculatedTransformA() : pSlider->getCalculatedTransformB();
-				btVector3 li_min = tr * btVector3(pSlider->getLowerLinLimit(), 0.f, 0.f);
-				btVector3 li_max = tr * btVector3(pSlider->getUpperLinLimit(), 0.f, 0.f);
+				btTransform tr2 = pSlider->getUseLinearReferenceFrameA() ? pSlider->getCalculatedTransformA() : pSlider->getCalculatedTransformB();
+				btVector3 li_min = tr2 * btVector3(pSlider->getLowerLinLimit(), 0.f, 0.f);
+				btVector3 li_max = tr2 * btVector3(pSlider->getUpperLinLimit(), 0.f, 0.f);
 				getDebugDrawer()->drawLine(li_min, li_max, btVector3(0, 0, 0));
-				btVector3 normal = tr.getBasis().getColumn(0);
-				btVector3 axis = tr.getBasis().getColumn(1);
+				btVector3 normal = tr2.getBasis().getColumn(0);
+				btVector3 axis = tr2.getBasis().getColumn(1);
 				btScalar a_min = pSlider->getLowerAngLimit();
 				btScalar a_max = pSlider->getUpperAngLimit();
 				const btVector3& center = pSlider->getCalculatedTransformB().getOrigin();

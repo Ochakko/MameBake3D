@@ -247,10 +247,10 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisi
 
 		if (allSleeping)
 		{
-			int idx;
-			for (idx = startIslandIndex; idx < endIslandIndex; idx++)
+			int idx2;
+			for (idx2 = startIslandIndex; idx2 < endIslandIndex; idx2++)
 			{
-				int i = getUnionFind().getElement(idx).m_sz;
+				int i = getUnionFind().getElement(idx2).m_sz;
 				btCollisionObject* colObj0 = collisionObjects[i];
 				if ((colObj0->getIslandTag() != islandId) && (colObj0->getIslandTag() != -1))
 				{
@@ -267,10 +267,10 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisi
 		}
 		else
 		{
-			int idx;
-			for (idx = startIslandIndex; idx < endIslandIndex; idx++)
+			int idx3;
+			for (idx3 = startIslandIndex; idx3 < endIslandIndex; idx3++)
 			{
-				int i = getUnionFind().getElement(idx).m_sz;
+				int i = getUnionFind().getElement(idx3).m_sz;
 
 				btCollisionObject* colObj0 = collisionObjects[i];
 				if ((colObj0->getIslandTag() != islandId) && (colObj0->getIslandTag() != -1))
@@ -318,12 +318,14 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisi
 			((colObj1) && colObj1->getActivationState() != ISLAND_SLEEPING))
 		{
 			//kinematic objects don't merge islands, but wake up all connected objects
-			if (colObj0->isKinematicObject() && colObj0->getActivationState() != ISLAND_SLEEPING)
+			//if (colObj0->isKinematicObject() && colObj0->getActivationState() != ISLAND_SLEEPING)
+			if (colObj0 && colObj1 && colObj0->isKinematicObject() && colObj0->getActivationState() != ISLAND_SLEEPING)//2021/09/30
 			{
 				if (colObj0->hasContactResponse())
 					colObj1->activate();
 			}
-			if (colObj1->isKinematicObject() && colObj1->getActivationState() != ISLAND_SLEEPING)
+			//if (colObj1->isKinematicObject() && colObj1->getActivationState() != ISLAND_SLEEPING)
+			if (colObj0 && colObj1 && colObj1->isKinematicObject() && colObj1->getActivationState() != ISLAND_SLEEPING)//2021/09/30
 			{
 				if (colObj1->hasContactResponse())
 					colObj0->activate();

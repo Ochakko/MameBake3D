@@ -829,6 +829,9 @@ void btMultiBody::computeAccelerationsArticulatedBodyAlgorithmMultiDof(btScalar 
 	fromWorld.m_trnVec.setZero();
 	/////////////////
 
+	memset(D, 0, sizeof(btScalar) * 36);//2021/10/01
+
+
 	// ptr to the joint accel part of the output
 	btScalar *joint_accel = output + 6;
 
@@ -985,22 +988,32 @@ void btMultiBody::computeAccelerationsArticulatedBodyAlgorithmMultiDof(btScalar 
 		fromParent.m_rotMat = rot_from_parent[i + 1];
 		fromParent.m_trnVec = m_links[i].m_cachedRVector;
 
-		for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
-		{
-			btSpatialForceVector &hDof = h[m_links[i].m_dofOffset + dof];
-			//
-			hDof = spatInertia[i + 1] * m_links[i].m_axes[dof];
-			//
-			Y[m_links[i].m_dofOffset + dof] = m_links[i].m_jointTorque[dof] - m_links[i].m_axes[dof].dot(zeroAccSpatFrc[i + 1]) - spatCoriolisAcc[i].dot(hDof);
-		}
-		for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
-		{
-			btScalar *D_row = &D[dof * m_links[i].m_dofCount];
-			for (int dof2 = 0; dof2 < m_links[i].m_dofCount; ++dof2)
+		if (h && Y) {//2021/10/01
+			for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
 			{
-				const btSpatialForceVector &hDof2 = h[m_links[i].m_dofOffset + dof2];
-				D_row[dof2] = m_links[i].m_axes[dof].dot(hDof2);
+				btSpatialForceVector &hDof = h[m_links[i].m_dofOffset + dof];
+				//
+				hDof = spatInertia[i + 1] * m_links[i].m_axes[dof];
+				//
+				Y[m_links[i].m_dofOffset + dof] = m_links[i].m_jointTorque[dof] - m_links[i].m_axes[dof].dot(zeroAccSpatFrc[i + 1]) - spatCoriolisAcc[i].dot(hDof);
 			}
+			for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
+			{
+				if ((dof * m_links[i].m_dofCount >= 0) && (dof * m_links[i].m_dofCount <= 36)) {//2021/10/01
+					btScalar* D_row = &D[dof * m_links[i].m_dofCount];
+					for (int dof2 = 0; dof2 < m_links[i].m_dofCount; ++dof2)
+					{
+						const btSpatialForceVector& hDof2 = h[m_links[i].m_dofOffset + dof2];
+						D_row[dof2] = m_links[i].m_axes[dof].dot(hDof2);
+					}
+				}
+			}
+		}
+
+
+		if (!invD || (m_links[i].m_dofOffset * m_links[i].m_dofOffset < 0) || (m_links[i].m_dofOffset * m_links[i].m_dofOffset >= (6 + m_dofCount))) {//2021/10/01
+			_ASSERT(0);
+			return;
 		}
 
 		btScalar *invDi = &invD[m_links[i].m_dofOffset * m_links[i].m_dofOffset];
@@ -1501,32 +1514,43 @@ void btMultiBody::calcAccelerationDeltasMultiDof(const btScalar *force, btScalar
 		fromParent.m_rotMat = rot_from_parent[i + 1];
 		fromParent.m_trnVec = m_links[i].m_cachedRVector;
 
-		for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
-		{
-			Y[m_links[i].m_dofOffset + dof] = force[6 + m_links[i].m_dofOffset + dof] - m_links[i].m_axes[dof].dot(zeroAccSpatFrc[i + 1]);
+		if (Y) {//2021/10/01
+			for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
+			{
+				Y[m_links[i].m_dofOffset + dof] = force[6 + m_links[i].m_dofOffset + dof] - m_links[i].m_axes[dof].dot(zeroAccSpatFrc[i + 1]);
+			}
 		}
 
 		btVector3 in_top, in_bottom, out_top, out_bottom;
+
+		if (!invD || (m_links[i].m_dofOffset * m_links[i].m_dofOffset < 0) || (m_links[i].m_dofOffset * m_links[i].m_dofOffset >= (6 + m_dofCount))) {//2021/10/01
+			_ASSERT(0);
+			return;
+		}
 		const btScalar *invDi = &invD[m_links[i].m_dofOffset * m_links[i].m_dofOffset];
 
-		for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
-		{
-			invD_times_Y[dof] = 0.f;
-
-			for (int dof2 = 0; dof2 < m_links[i].m_dofCount; ++dof2)
+		if (Y) {//2021/10/01
+			for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
 			{
-				invD_times_Y[dof] += invDi[dof * m_links[i].m_dofCount + dof2] * Y[m_links[i].m_dofOffset + dof2];
+				invD_times_Y[dof] = 0.f;
+
+				for (int dof2 = 0; dof2 < m_links[i].m_dofCount; ++dof2)
+				{
+					invD_times_Y[dof] += invDi[dof * m_links[i].m_dofCount + dof2] * Y[m_links[i].m_dofOffset + dof2];
+				}
 			}
 		}
 
 		// Zp += pXi * (Zi + hi*Yi/Di)
 		spatForceVecTemps[0] = zeroAccSpatFrc[i + 1];
 
-		for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
-		{
-			const btSpatialForceVector &hDof = h[m_links[i].m_dofOffset + dof];
-			//
-			spatForceVecTemps[0] += hDof * invD_times_Y[dof];
+		if (h) {//2021/10/01
+			for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
+			{
+					const btSpatialForceVector& hDof = h[m_links[i].m_dofOffset + dof];
+					//
+					spatForceVecTemps[0] += hDof * invD_times_Y[dof];
+			}
 		}
 
 		fromParent.transformInverse(spatForceVecTemps[0], spatForceVecTemps[1]);
@@ -1559,11 +1583,13 @@ void btMultiBody::calcAccelerationDeltasMultiDof(const btScalar *force, btScalar
 
 		fromParent.transform(spatAcc[parent + 1], spatAcc[i + 1]);
 
-		for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
-		{
-			const btSpatialForceVector &hDof = h[m_links[i].m_dofOffset + dof];
-			//
-			Y_minus_hT_a[dof] = Y[m_links[i].m_dofOffset + dof] - spatAcc[i + 1].dot(hDof);
+		if (h && Y) {//2021/10/01
+			for (int dof = 0; dof < m_links[i].m_dofCount; ++dof)
+			{
+				const btSpatialForceVector& hDof = h[m_links[i].m_dofOffset + dof];
+				//
+				Y_minus_hT_a[dof] = Y[m_links[i].m_dofOffset + dof] - spatAcc[i + 1].dot(hDof);
+			}
 		}
 
 		const btScalar *invDi = &invD[m_links[i].m_dofOffset * m_links[i].m_dofOffset];
@@ -1920,6 +1946,14 @@ void btMultiBody::fillConstraintJacobianMultiDof(int link,
     btScalar* links = num_links? &scratch_r1[m_dofCount] : 0;
     int numLinksChildToRoot=0;
     int l = link;
+
+
+	if (!links) {//2021/10/01
+		_ASSERT(0);
+		return;
+	}
+
+
     while (l != -1)
     {
         links[numLinksChildToRoot++]=l;
@@ -1956,6 +1990,11 @@ void btMultiBody::fillConstraintJacobianMultiDof(int link,
 		jac[i] = 0;
 	}
 
+	if (!results) {//2021/10/01
+		_ASSERT(0);
+		return;
+	}
+
 	// Qdot coefficients, if necessary.
 	if (num_links > 0 && link > -1)
 	{
@@ -1965,8 +2004,13 @@ void btMultiBody::fillConstraintJacobianMultiDof(int link,
 		// calculate required normals & positions in the local frames.
         for (int a = 0; a < numLinksChildToRoot; a++)
         {
+			if ((numLinksChildToRoot - 1 - a < 0) || (numLinksChildToRoot - 1 - a >= m_dofCount)) {//2021/10/01
+				_ASSERT(0);
+				break;
+			}
             int i = links[numLinksChildToRoot-1-a];
-        	// transform to local frame
+			
+			// transform to local frame
 			const int parent = m_links[i].m_parent;
 			const btMatrix3x3 mtx(m_links[i].m_cachedRotParentToThis);
 			rot_from_world[i + 1] = mtx * rot_from_world[parent + 1];

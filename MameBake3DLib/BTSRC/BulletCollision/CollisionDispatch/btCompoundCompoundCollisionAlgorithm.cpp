@@ -398,9 +398,9 @@ void btCompoundCompoundCollisionAlgorithm::processCollision(const btCollisionObj
 				}
 			}
 		}
-		for (int i = 0; i < m_removePairs.size(); i++)
+		for (int i2 = 0; i2 < m_removePairs.size(); i2++)
 		{
-			m_childCollisionAlgorithmCache->removeOverlappingPair(m_removePairs[i].m_indexA, m_removePairs[i].m_indexB);
+			m_childCollisionAlgorithmCache->removeOverlappingPair(m_removePairs[i2].m_indexA, m_removePairs[i2].m_indexB);
 		}
 		m_removePairs.clear();
 	}

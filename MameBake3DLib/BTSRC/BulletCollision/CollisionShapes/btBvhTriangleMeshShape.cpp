@@ -391,9 +391,9 @@ const char* btBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* se
 #endif  //BT_USE_DOUBLE_PRECISION
 
 			int sz = m_bvh->calculateSerializeBufferSizeNew();
-			btChunk* chunk = serializer->allocate(sz, 1);
-			const char* structType = m_bvh->serialize(chunk->m_oldPtr, serializer);
-			serializer->finalizeChunk(chunk, structType, BT_QUANTIZED_BVH_CODE, m_bvh);
+			btChunk* chunk2 = serializer->allocate(sz, 1);
+			const char* structType = m_bvh->serialize(chunk2->m_oldPtr, serializer);
+			serializer->finalizeChunk(chunk2, structType, BT_QUANTIZED_BVH_CODE, m_bvh);
 		}
 	}
 	else
@@ -404,18 +404,18 @@ const char* btBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* se
 
 	if (m_triangleInfoMap && !(serializer->getSerializationFlags() & BT_SERIALIZE_NO_TRIANGLEINFOMAP))
 	{
-		void* chunk = serializer->findPointer(m_triangleInfoMap);
-		if (chunk)
+		void* chunk3 = serializer->findPointer(m_triangleInfoMap);
+		if (chunk3)
 		{
-			trimeshData->m_triangleInfoMap = (btTriangleInfoMapData*)chunk;
+			trimeshData->m_triangleInfoMap = (btTriangleInfoMapData*)chunk3;
 		}
 		else
 		{
 			trimeshData->m_triangleInfoMap = (btTriangleInfoMapData*)serializer->getUniquePointer(m_triangleInfoMap);
 			int sz = m_triangleInfoMap->calculateSerializeBufferSize();
-			btChunk* chunk = serializer->allocate(sz, 1);
-			const char* structType = m_triangleInfoMap->serialize(chunk->m_oldPtr, serializer);
-			serializer->finalizeChunk(chunk, structType, BT_TRIANLGE_INFO_MAP, m_triangleInfoMap);
+			btChunk* chunk4 = serializer->allocate(sz, 1);
+			const char* structType = m_triangleInfoMap->serialize(chunk4->m_oldPtr, serializer);
+			serializer->finalizeChunk(chunk4, structType, BT_TRIANLGE_INFO_MAP, m_triangleInfoMap);
 		}
 	}
 	else

@@ -856,7 +856,8 @@ void btMultiBodyConstraintSolver::setupMultiBodyContactConstraint(btMultiBodySol
 			}
 			else
 			{
-				if (rb0)
+				//if (rb0)
+				if (rb0 && bodyA)//2021/10/01
 					bodyA->internalApplyImpulse(solverConstraint.m_contactNormal1 * bodyA->internalGetInvMass() * rb0->getLinearFactor(), solverConstraint.m_angularComponentA, solverConstraint.m_appliedImpulse);
 			}
 			if (multiBodyB)
@@ -868,7 +869,8 @@ void btMultiBodyConstraintSolver::setupMultiBodyContactConstraint(btMultiBodySol
 			}
 			else
 			{
-				if (rb1)
+				//if (rb1)
+				if (rb1 && bodyB)//2021/10/01
 					bodyB->internalApplyImpulse(-solverConstraint.m_contactNormal2 * bodyB->internalGetInvMass() * rb1->getLinearFactor(), -solverConstraint.m_angularComponentB, -(btScalar)solverConstraint.m_appliedImpulse);
 			}
 		}

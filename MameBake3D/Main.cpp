@@ -8094,7 +8094,7 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 		SYSTEMTIME localtime;
 		GetLocalTime(&localtime);
 		char fbxdate[MAX_PATH] = { 0L };
-		sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
+		sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 			localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 
 		int result;
@@ -8301,7 +8301,7 @@ int BVH2FBX()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
-	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	CallF( BVH2FBXFile( s_psdk, &bvhfile, fbxpath, fbxdate ), return 1 );
 
@@ -10081,7 +10081,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 	ZeroMemory( motionname, 256 );
 	SYSTEMTIME systime;
 	GetLocalTime( &systime );
-	sprintf_s( motionname, 256, "motion_%ud_%ud_%ud_%ud_%ud_%ud_%ud",
+	sprintf_s( motionname, 256, "motion_%u_%u_%u_%u_%u_%u_%u",
 		systime.wYear,
 		systime.wMonth,
 		systime.wDay,
@@ -14163,7 +14163,7 @@ int SaveProject()
 			SYSTEMTIME localtime;
 			GetLocalTime(&localtime);
 			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04u%02u%02u%02u%02u%02u.txt",
 				s_temppath,
 				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 			HANDLE hfile;
@@ -14411,7 +14411,7 @@ int OpenChaFile()
 			SYSTEMTIME localtime;
 			GetLocalTime(&localtime);
 			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04u%02u%02u%02u%02u%02u.txt",
 				s_temppath,
 				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 			HANDLE hfile;
@@ -15869,7 +15869,7 @@ int ExportFBXFile()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
-	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04ud%02ud%02ud%02ud%02ud%02ud",
+	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
 	CallF( WriteFBXFile( s_psdk, s_model, fbxpath, fbxdate ), return 1 );
@@ -30225,7 +30225,7 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBvhDir_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBvhDir_%04u%02u%02u%02u%02u%02u.txt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	HANDLE hfile;
@@ -30258,7 +30258,7 @@ int SaveBatchHistory(WCHAR* selectname)
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBatchDir_%04ud%02ud%02ud%02ud%02ud%02ud.txt",
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjBatchDir_%04u%02u%02u%02u%02u%02u.txt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	HANDLE hfile;
@@ -30883,7 +30883,7 @@ int WriteCPTFile()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR cptfilename[MAX_PATH] = { 0L };
-	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04ud%02ud%02ud%02ud%02ud%02ud.cpt",
+	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04ud%02u%02u%02u%02u%02u.cpt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 

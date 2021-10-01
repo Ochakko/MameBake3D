@@ -753,8 +753,10 @@ btSoftBody* btSoftBodyHelpers::CreatePatch(btSoftBodyWorldInfo& worldInfo, const
             btVector3 temp = py0;
             pert = perturbation * btScalar(rand())/RAND_MAX;
             temp.setY(py0.getY() + pert);
-			x[IDX(ix, iy)] = lerp(temp, temp1, tx);
-			m[IDX(ix, iy)] = 1;
+			if ((IDX(ix, iy) >= 0) && (IDX(ix, iy) < tot)) {//2021/10/01
+				x[IDX(ix, iy)] = lerp(temp, temp1, tx);
+				m[IDX(ix, iy)] = 1;
+			}
 		}
 	}
 	btSoftBody* psb = new btSoftBody(&worldInfo, tot, x, m);
@@ -900,8 +902,10 @@ btSoftBody* btSoftBodyHelpers::CreatePatchUV(btSoftBodyWorldInfo& worldInfo,
 		for (int ix = 0; ix < rx; ++ix)
 		{
 			const btScalar tx = ix / (btScalar)(rx - 1);
-			x[IDX(ix, iy)] = lerp(py0, py1, tx);
-			m[IDX(ix, iy)] = 1;
+			if ((IDX(ix, iy) >= 0) && (IDX(ix, iy) < tot)) {//2021/10/01
+				x[IDX(ix, iy)] = lerp(py0, py1, tx);
+				m[IDX(ix, iy)] = 1;
+			}
 		}
 	}
 	btSoftBody* psb = new btSoftBody(&worldInfo, tot, x, m);
@@ -1236,10 +1240,14 @@ if(face&&face[0])
     psb->initializeDmInverse();
     psb->m_tetraScratches.resize(psb->m_tetras.size());
     psb->m_tetraScratchesTn.resize(psb->m_tetras.size());
-	printf("Nodes:  %u\r\n", psb->m_nodes.size());
-	printf("Links:  %u\r\n", psb->m_links.size());
-	printf("Faces:  %u\r\n", psb->m_faces.size());
-	printf("Tetras: %u\r\n", psb->m_tetras.size());
+	//printf("Nodes:  %u\r\n", psb->m_nodes.size());
+	//printf("Links:  %u\r\n", psb->m_links.size());
+	//printf("Faces:  %u\r\n", psb->m_faces.size());
+	//printf("Tetras: %u\r\n", psb->m_tetras.size());
+	printf("Nodes:  %d\r\n", psb->m_nodes.size());//2021/10/01
+	printf("Links:  %d\r\n", psb->m_links.size());//2021/10/01
+	printf("Faces:  %d\r\n", psb->m_faces.size());//2021/10/01
+	printf("Tetras: %d\r\n", psb->m_tetras.size());//2021/10/01
 	return (psb);
 }
 
@@ -1331,10 +1339,14 @@ btSoftBody* btSoftBodyHelpers::CreateFromVtkFile(btSoftBodyWorldInfo& worldInfo,
     psb->initializeDmInverse();
     psb->m_tetraScratches.resize(psb->m_tetras.size());
     psb->m_tetraScratchesTn.resize(psb->m_tetras.size());
-    printf("Nodes:  %u\r\n", psb->m_nodes.size());
-    printf("Links:  %u\r\n", psb->m_links.size());
-    printf("Faces:  %u\r\n", psb->m_faces.size());
-    printf("Tetras: %u\r\n", psb->m_tetras.size());
+    //printf("Nodes:  %u\r\n", psb->m_nodes.size());
+    //printf("Links:  %u\r\n", psb->m_links.size());
+    //printf("Faces:  %u\r\n", psb->m_faces.size());
+    //printf("Tetras: %u\r\n", psb->m_tetras.size());
+	printf("Nodes:  %d\r\n", psb->m_nodes.size());//2021/10/01
+	printf("Links:  %d\r\n", psb->m_links.size());//2021/10/01
+	printf("Faces:  %d\r\n", psb->m_faces.size());//2021/10/01
+	printf("Tetras: %d\r\n", psb->m_tetras.size());//2021/10/01
 
     fs.close();
     return psb;

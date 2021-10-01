@@ -1283,9 +1283,9 @@ btLCP::btLCP(int _n, int _nskip, int _nub, btScalar *_Adata, btScalar *_x, btSca
 	}
 
 	{
-		int *p = m_p;
+		int *p2 = m_p;//2021/10/01コメント:分からない.pは引数とここでしか出てこない。m_pはpで初期化される.引数のポインタに設定したい？ようにも思えない.とりあえずそのままの意味になるようにp2にしておく
 		const int n = m_n;
-		for (int k = 0; k < n; ++k) p[k] = k;  // initially unpermuted
+		for (int k = 0; k < n; ++k) p2[k] = k;  // initially unpermuted  //(unpermuted : 並べ替え無し)
 	}
 
 	/*
@@ -1796,16 +1796,16 @@ void btLCP::solve1(btScalar *a, int i, int dir, int only_transfer)
 			if (dir > 0)
 			{
 				int *C = m_C;
-				btScalar *tmp = m_tmp;
+				btScalar *tmp2 = m_tmp;
 				const int nC = m_nC;
-				for (int j = 0; j < nC; ++j) a[C[j]] = -tmp[j];
+				for (int j = 0; j < nC; ++j) a[C[j]] = -tmp2[j];
 			}
 			else
 			{
 				int *C = m_C;
-				btScalar *tmp = m_tmp;
+				btScalar *tmp3 = m_tmp;
 				const int nC = m_nC;
-				for (int j = 0; j < nC; ++j) a[C[j]] = tmp[j];
+				for (int j = 0; j < nC; ++j) a[C[j]] = tmp3[j];
 			}
 		}
 	}

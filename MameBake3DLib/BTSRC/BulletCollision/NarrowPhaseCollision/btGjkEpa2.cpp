@@ -26,6 +26,8 @@ GJK-EPA collision solver by Nathanael Presson, 2008
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
 #include "btGjkEpa2.h"
 
+#include <crtdbg.h> //2021/10/01 for _ASSERT(0)
+
 #if defined(DEBUG) || defined(_DEBUG)
 #include <stdio.h>  //for debug printf
 #ifdef __SPU__
@@ -242,6 +244,11 @@ struct GJK
 			}
 			/* Append new vertice in -'v' direction	*/
 			appendvertice(cs, -m_ray);
+			if (((cs.rank - 1) < 0) || (cs.rank - 1) >= 2) {//2021/10/01
+				_ASSERT(0);
+				m_status = eStatus::Failed;
+				return m_status;
+			}
 			const btVector3& w = cs.c[cs.rank - 1]->w;
 			bool found = false;
 			for (U i = 0; i < 4; ++i)

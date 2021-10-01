@@ -2363,7 +2363,8 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 	printf("Needed %d iterations to find initial intersection\n", n);
 #endif
 
-	if (cmp == 0)
+	//if (cmp == 0)
+	if (intersection && intersection->reverse && (cmp == 0))//2021/09/30
 	{
 		Edge* e = intersection->reverse->next;
 #ifdef SHOW_ITERATIONS
@@ -2407,32 +2408,42 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 		intersection->print();
 		printf("\n");
 #endif
-		if (cmp == 0)
-		{
-			Edge* e = intersection->reverse->next;
-			startEdge = e;
-#ifdef SHOW_ITERATIONS
-			n = 0;
-#endif
-			while (true)
+		if (intersection && intersection->reverse) {//2021/09/30
+			if (cmp == 0)
 			{
+				Edge* e = intersection->reverse->next;
+				startEdge = e;
 #ifdef SHOW_ITERATIONS
-				n++;
+				n = 0;
 #endif
-				if (e->target->dot(normal).compare(shiftedDot) >= 0)
-				{
-					break;
+				if (e) {//2021/09/30
+					while (true)
+					{
+#ifdef SHOW_ITERATIONS
+						n++;
+#endif
+						//if (e->target->dot(normal).compare(shiftedDot) >= 0)
+						if (e && e->target && e->target->dot(normal).compare(shiftedDot) >= 0)//2021/09/30
+						{
+							break;
+						}
+						if (e) {//2021/09/30
+							intersection = e->reverse;
+							e = e->next;
+							if (e == startEdge)
+							{
+								return true;
+							}
+						}
+						else {//2021/09/30
+							break;
+						}
+					}
 				}
-				intersection = e->reverse;
-				e = e->next;
-				if (e == startEdge)
-				{
-					return true;
-				}
+#ifdef SHOW_ITERATIONS
+				printf("Needed %d iterations to advance intersection\n", n);
+#endif
 			}
-#ifdef SHOW_ITERATIONS
-			printf("Needed %d iterations to advance intersection\n", n);
-#endif
 		}
 
 #ifdef DEBUG_CONVEX_HULL
@@ -2458,30 +2469,41 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 #ifdef SHOW_ITERATIONS
 		n = 0;
 #endif
-		while (true)
-		{
-#ifdef SHOW_ITERATIONS
-			n++;
-#endif
-			e = e->reverse->prev;
-			btAssert(e != intersection->reverse);
-			cmp = e->target->dot(normal).compare(shiftedDot);
-#ifdef DEBUG_CONVEX_HULL
-			printf("Testing edge ");
-			e->print();
-			printf(" -> cmp = %d\n", cmp);
-#endif
-			if (cmp >= 0)
+		if (e) {//2021/09/30
+			while (true)
 			{
-				intersection = e;
-				break;
+#ifdef SHOW_ITERATIONS
+				n++;
+#endif
+				if (e && e->reverse && e->target) {//2021/09/30
+					e = e->reverse->prev;
+					if (intersection) {
+						btAssert(e != intersection->reverse);
+					}
+					cmp = e->target->dot(normal).compare(shiftedDot);
+#ifdef DEBUG_CONVEX_HULL
+					printf("Testing edge ");
+					e->print();
+					printf(" -> cmp = %d\n", cmp);
+#endif
+
+					if (cmp >= 0)
+					{
+						intersection = e;
+						break;
+					}
+				}
+				else {//2021/09/30
+					break;
+				}
 			}
 		}
 #ifdef SHOW_ITERATIONS
 		printf("Needed %d iterations to find other intersection of face\n", n);
 #endif
 
-		if (cmp > 0)
+		//if (cmp > 0)
+		if ((cmp > 0) && intersection && intersection->reverse && intersection->target && intersection->face && intersection->reverse->face)//2021/01/01
 		{
 			Vertex* removed = intersection->target;
 			e = intersection->reverse;
@@ -2527,12 +2549,18 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 			stack.push_back(NULL);
 		}
 
-		if (cmp || prevCmp || (prevIntersection->reverse->next->target != intersection->target))
+		//if (cmp || prevCmp || (prevIntersection->reverse->next->target != intersection->target))
+		if (cmp || prevCmp || (prevIntersection && (prevIntersection->reverse) && (prevIntersection->reverse->next) && intersection && (prevIntersection->reverse->next->target != intersection->target)))//2021/10/01
 		{
 			faceEdge = newEdgePair(prevIntersection->target, intersection->target);
 			if (prevCmp == 0)
 			{
-				faceEdge->link(prevIntersection->reverse->next);
+				if (faceEdge) {//2021/09/30
+					faceEdge->link(prevIntersection->reverse->next);
+				}
+				else {
+					_ASSERT(0);
+				}
 			}
 			if ((prevCmp == 0) || prevFaceEdge)
 			{
@@ -2540,11 +2568,22 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 			}
 			if (cmp == 0)
 			{
-				intersection->reverse->prev->link(faceEdge->reverse);
+				if (intersection->reverse && faceEdge) {//2021/09/30 2021/10/01
+					intersection->reverse->prev->link(faceEdge->reverse);
+				}
+				else {
+					_ASSERT(0);
+				}
 			}
-			faceEdge->reverse->link(intersection->reverse);
+			if (faceEdge && faceEdge->reverse && intersection) {//2021/09/30
+				faceEdge->reverse->link(intersection->reverse);
+			}
+			else {
+				_ASSERT(0);
+			}
 		}
-		else
+		//else
+		else if(prevIntersection && prevIntersection->reverse)//2021/10/01
 		{
 			faceEdge = prevIntersection->reverse->next;
 		}
@@ -2570,8 +2609,24 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 				stack.push_back(NULL);
 			}
 		}
-		faceEdge->face = face;
-		faceEdge->reverse->face = intersection->face;
+		if (faceEdge) {//2021/09/30
+			if (faceEdge->face) {//2021/09/30
+				faceEdge->face = face;
+			}
+			else {
+				_ASSERT(0);
+			}
+			if (faceEdge->reverse && intersection) {//2021/09/30
+				faceEdge->reverse->face = intersection->face;
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			_ASSERT(0);
+		}
+		
 
 		if (!firstFaceEdge)
 		{
@@ -2582,25 +2637,35 @@ bool btConvexHullInternal::shiftFace(Face* face, btScalar amount, btAlignedObjec
 	printf("Needed %d iterations to process all intersections\n", m);
 #endif
 
-	if (cmp > 0)
-	{
-		firstFaceEdge->reverse->target = faceEdge->target;
-		firstIntersection->reverse->link(firstFaceEdge);
-		firstFaceEdge->link(faceEdge->reverse);
-	}
-	else if (firstFaceEdge != faceEdge->reverse)
-	{
-		stack.push_back(faceEdge->target);
-		while (firstFaceEdge->next != faceEdge->reverse)
+	if (firstFaceEdge && faceEdge) {//2021/09/30
+		if (cmp > 0)
 		{
-			Vertex* removed = firstFaceEdge->next->target;
-			removeEdgePair(firstFaceEdge->next);
-			stack.push_back(removed);
-#ifdef DEBUG_CONVEX_HULL
-			printf("3: Removed part contains (%d %d %d)\n", removed->point.x, removed->point.y, removed->point.z);
-#endif
+			if (firstFaceEdge->reverse) {//2021/09/30
+				firstFaceEdge->reverse->target = faceEdge->target;
+				if (firstFaceEdge->reverse->target) {//2021/09/30
+					firstIntersection->reverse->link(firstFaceEdge);
+				}
+			}
+			firstFaceEdge->link(faceEdge->reverse);
 		}
-		stack.push_back(NULL);
+		else if (firstFaceEdge != faceEdge->reverse)
+		{
+			if (faceEdge && faceEdge->target) {//2021/09/30
+				stack.push_back(faceEdge->target);
+			}
+			while (firstFaceEdge->next != faceEdge->reverse)
+			{
+				if (firstFaceEdge->next) {//2021/09/30
+					Vertex* removed = firstFaceEdge->next->target;
+					removeEdgePair(firstFaceEdge->next);
+					stack.push_back(removed);
+#ifdef DEBUG_CONVEX_HULL
+					printf("3: Removed part contains (%d %d %d)\n", removed->point.x, removed->point.y, removed->point.z);
+#endif
+				}
+			}
+			stack.push_back(NULL);
+		}
 	}
 
 	btAssert(stack.size() > 0);
