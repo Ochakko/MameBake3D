@@ -2824,7 +2824,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		lCurve = lSkel->LclRotation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			cureul = curbone->CalcFBXEul(curmotid, frameno, &befeul);
+			cureul = curbone->CalcFBXEulXYZ(curmotid, frameno, &befeul);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 

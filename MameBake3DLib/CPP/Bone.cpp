@@ -4650,7 +4650,7 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	return 0;
 }
 
-ChaVector3 CBone::CalcFBXEul(int srcmotid, double srcframe, ChaVector3* befeulptr)
+ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr)
 {
 	CMotionPoint tmpmp;
 	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
@@ -4689,7 +4689,7 @@ ChaVector3 CBone::CalcFBXEul(int srcmotid, double srcframe, ChaVector3* befeulpt
 	}
 
 	//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
-	tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+	tmpmp.GetQ().CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 
 	return cureul;
 

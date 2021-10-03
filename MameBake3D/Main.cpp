@@ -163,6 +163,24 @@ typedef struct tag_spsw
 	POINT dispcenter;
 }SPGUISW;
 
+typedef struct tag_historyelem
+{
+	FILETIME filetime;
+	WCHAR wfilename[MAX_PATH];
+	bool operator< (const tag_historyelem& right) const {
+		LONG lRet = CompareFileTime(&filetime, &(right.filetime));
+		if (lRet < 0) {
+			return true;
+		}
+		else if (lRet > 0) {
+			return false;
+		}
+		else {
+			return (wstring(wfilename) < wstring(right.wfilename));
+		}
+	};
+}HISTORYELEM;
+
 //typedef struct tag_physikrec
 //{
 //	double time;
@@ -1585,7 +1603,7 @@ static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
 static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename);
-static int GetCPTFileName(std::vector<wstring>& dstcptfilename);
+static int GetCPTFileName(std::vector<HISTORYELEM>& dstcptfilename);
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -1744,6 +1762,33 @@ static void RecalcAxisX_All();
 static int GetSymRootMode();
 
 static int UpdateEditedEuler();
+
+
+static std::wstring ReplaceString
+(
+	std::wstring String1  // 置き換え対象
+	, std::wstring String2  // 検索対象
+	, std::wstring String3  // 置き換える内容
+);
+
+
+std::wstring ReplaceString
+(
+	std::wstring String1  // 置き換え対象
+	, std::wstring String2  // 検索対象
+	, std::wstring String3  // 置き換える内容
+)
+{
+	std::wstring::size_type  Pos(String1.find(String2));
+
+	while (Pos != std::string::npos)
+	{
+		String1.replace(Pos, String2.length(), String3);
+		Pos = String1.find(String2, Pos + String3.length());
+	}
+
+	return String1;
+}
 
 
 LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -11172,7 +11217,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				WIN32_FIND_DATA win32fd;
 				hFind = FindFirstFileW(searchfilename, &win32fd);
 
-				std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+				std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
 				std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 				vechistory.clear();
@@ -11182,11 +11227,15 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				}
 				do {
 					if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+						
+						HISTORYELEM curelem;
+						curelem.filetime = win32fd.ftCreationTime;
+						
 						//printf("%s\n", win32fd.cFileName);
-						WCHAR openfilename[MAX_PATH] = { 0L };
-						swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+						curelem.wfilename[MAX_PATH - 1] = { 0L };
+						swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
 
-						vechistory.push_back(openfilename);
+						vechistory.push_back(curelem);
 					}
 				} while (FindNextFile(hFind, &win32fd));
 				FindClose(hFind);
@@ -11206,7 +11255,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					int historyno;
 					for (historyno = 0; historyno < numhistory; historyno++) {
 						WCHAR openfilename[MAX_PATH] = { 0L };
-						wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+						wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
 
 						HANDLE hfile;
 						hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
@@ -30293,7 +30342,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
 	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 	vechistory.clear();
@@ -30303,11 +30352,14 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	}
 	do {
 		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-			//printf("%s\n", win32fd.cFileName);
-			WCHAR openfilename[MAX_PATH] = { 0L };
-			swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+			HISTORYELEM curelem;
+			curelem.filetime = win32fd.ftCreationTime;
 
-			vechistory.push_back(openfilename);
+			//printf("%s\n", win32fd.cFileName);
+			curelem.wfilename[MAX_PATH - 1] = { 0L };
+			swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+			vechistory.push_back(curelem);
 		}
 	} while (FindNextFile(hFind, &win32fd));
 	FindClose(hFind);
@@ -30325,7 +30377,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 		int historyno;
 		for (historyno = 0; historyno < numhistory; historyno++) {
 			WCHAR openfilename[MAX_PATH] = { 0L };
-			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
 
 			HANDLE hfile;
 			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
@@ -30366,7 +30418,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	return 0;
 }
 
-int GetCPTFileName(std::vector<wstring>& dstvecopenfilename)
+int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 {
 
 	dstvecopenfilename.clear();
@@ -30380,7 +30432,7 @@ int GetCPTFileName(std::vector<wstring>& dstvecopenfilename)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
 	//std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 	vechistory.clear();
@@ -30390,11 +30442,14 @@ int GetCPTFileName(std::vector<wstring>& dstvecopenfilename)
 	}
 	do {
 		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-			//printf("%s\n", win32fd.cFileName);
-			WCHAR openfilename[MAX_PATH] = { 0L };
-			swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+			HISTORYELEM curelem;
+			curelem.filetime = win32fd.ftCreationTime;
 
-			vechistory.push_back(openfilename);
+			//printf("%s\n", win32fd.cFileName);
+			curelem.wfilename[MAX_PATH - 1] = { 0L };
+			swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+			vechistory.push_back(curelem);
 		}
 	} while (FindNextFile(hFind, &win32fd));
 	FindClose(hFind);
@@ -30470,7 +30525,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<wstring> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
 	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 	vechistory.clear();
@@ -30480,11 +30535,14 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 	}
 	do {
 		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-			//printf("%s\n", win32fd.cFileName);
-			WCHAR openfilename[MAX_PATH] = { 0L };
-			swprintf_s(openfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+			HISTORYELEM curelem;
+			curelem.filetime = win32fd.ftCreationTime;
 
-			vechistory.push_back(openfilename);
+			//printf("%s\n", win32fd.cFileName);
+			curelem.wfilename[MAX_PATH - 1] = { 0L };
+			swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+			vechistory.push_back(curelem);
 		}
 	} while (FindNextFile(hFind, &win32fd));
 	FindClose(hFind);
@@ -30502,7 +30560,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 		int historyno;
 		for (historyno = 0; historyno < numhistory; historyno++) {
 			WCHAR openfilename[MAX_PATH] = { 0L };
-			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
 
 			HANDLE hfile;
 			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
@@ -31051,7 +31109,7 @@ bool LoadCPTFile()
 
 	s_pastemotvec.clear();
 
-	std::vector<wstring> cptfilename;
+	std::vector<HISTORYELEM> cptfilename;
 	cptfilename.clear();
 	GetCPTFileName(cptfilename);
 
@@ -31061,7 +31119,7 @@ bool LoadCPTFile()
 	}
 
 	WCHAR infilename[MAX_PATH] = { 0L };
-	wcscpy_s(infilename, MAX_PATH, cptfilename[0].c_str());
+	wcscpy_s(infilename, MAX_PATH, cptfilename[0].wfilename);
 
 
 	HANDLE hfile;

@@ -35,8 +35,6 @@
 #include "../BTSRC/btBulletDynamicsCommon.h"
 #include "../BTSRC/LinearMath/btIDebugDraw.h"
 
-#include <GLobalVar.h>
-
 #include <math.h>
 
 #include <iostream>
@@ -51,7 +49,6 @@ extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
 
 
 								//BoneProp
-
 
 double vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
 {
@@ -146,6 +143,106 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 }
 
 
+//int qToEulerAxis(CQuaternion axisQ, CQuaternion* srcq, ChaVector3* Euler)
+//{
+//
+//	int ret;
+//	CQuaternion invaxisQ, EQ;
+//	ret = axisQ.inv(&invaxisQ);
+//	_ASSERT(!ret);
+//	EQ = invaxisQ * *srcq * axisQ;
+//
+//
+//	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
+//	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
+//	ChaVector3 axisZVec(0.0f, 0.0f, 1.0f);
+//
+//	ChaVector3 targetVec, shadowVec;
+//	ChaVector3 tmpVec;
+//
+//	EQ.Rotate(&targetVec, axisZVec);
+//	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
+//	shadowVec.y = 0.0f;
+//	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+//	if (lengthVec(&shadowVec) == 0.0) {
+//		Euler->y = 90.0f;
+//	}
+//	else {
+//		Euler->y = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+//	}
+//	if (vecDotVec(&shadowVec, &axisXVec) < 0.0) {
+//		Euler->y = -Euler->y;
+//	}
+//
+//	/***
+//	E3DMultQVec targetQ,0.0,0.0,1.0,targetVec.0,targetVec.1,targetVec.2
+//	shadowVec.0= vecDotVec(targetVec,axisXVec)
+//	shadowVec.1= 0.0
+//	shadowVec.2= vecDotVec(targetVec,axisZVec)
+//	if( lengthVec(shadowVec) == 0 ){
+//	eulerY= 90.0
+//	}else{
+//	E3DACos ( vecDotVec(shadowVec,axisZVec)/ lengthVec(shadowVec) ), eulerY		//Y軸回転度数
+//	}
+//	if( vecDotVec(shadowVec,axisXVec) < 0.0 ){ eulerY= -eulerY }				//右回りに修正
+//	***/
+//	vec3RotateY(&tmpVec, -Euler->y, &targetVec);
+//	shadowVec.x = 0.0f;
+//	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+//	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+//	if (lengthVec(&shadowVec) == 0.0) {
+//		Euler->x = 90.0f;
+//	}
+//	else {
+//		Euler->x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
+//	}
+//	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
+//		Euler->x = -Euler->x;
+//	}
+//	/***
+//	E3DVec3RotateY targetVec.0,targetVec.1,targetVec.2,(-eulerY),shadowVec.0,shadowVec.1,shadowVec.2
+//	if( lengthVec(shadowVec) == 0 ){
+//	eulerX= 90.0
+//	}else{
+//	E3DACos ( vecDotVec(shadowVec,axisZVec)/ lengthVec(shadowVec) ), eulerX		//X軸回転度数
+//	}
+//	if( vecDotVec(shadowVec,axisYVec) > 0.0 ){ eulerX= -eulerX }				//右回りに修正
+//	***/
+//
+//	EQ.Rotate(&targetVec, axisYVec);
+//	vec3RotateY(&tmpVec, -Euler->y, &targetVec);
+//	targetVec = tmpVec;
+//	vec3RotateX(&tmpVec, -Euler->x, &targetVec);
+//	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+//	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+//	shadowVec.z = 0.0f;
+//	if (lengthVec(&shadowVec) == 0.0) {
+//		Euler->z = 90.0f;
+//	}
+//	else {
+//		Euler->z = (float)aCos(vecDotVec(&shadowVec, &axisYVec) / lengthVec(&shadowVec));
+//	}
+//	if (vecDotVec(&shadowVec, &axisXVec) > 0.0) {
+//		Euler->z = -Euler->z;
+//	}
+//	/***
+//	E3DMultQVec targetQ,0.0,1.0,0.0,targetVec.0,targetVec.1,targetVec.2
+//	E3DVec3RotateY (targetVec.0+0.0),(targetVec.1+0.0),(targetVec.2+0.0),(-eulerY),targetVec.0,targetVec.1,targetVec.2
+//	E3DVec3RotateY targetVec.2,targetVec.0,targetVec.1,(-eulerX),shadowVec.2,shadowVec.0,shadowVec.1
+//	　　----> 引数がZ,X,YになっているためRotateXと同じ！！！
+//
+//	  if( lengthVec(shadowVec) == 0 ){
+//	  eulerZ= 90.0
+//	  }else{
+//	  E3DACos ( vecDotVec(shadowVec,axisYVec)/ lengthVec(shadowVec) ), eulerZ		//Z軸回転度数
+//	  }
+//	  if( vecDotVec(shadowVec,axisXVec) > 0.0 ){ eulerZ= -eulerZ }				//右回りに修正
+//
+//	  ***/
+//	return 0;
+//}
+
+
 
 int GetRound(float srcval)
 {
@@ -157,6 +254,38 @@ int GetRound(float srcval)
 	}
 }
 
+//int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
+//{
+//
+//	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
+//	float tmpX1, tmpY1, tmpZ1;
+//	float tmpX2, tmpY2, tmpZ2;
+//	float s1, s2;
+//
+//	//予想される角度1
+//	tmpX1 = eulerA->x + 360.0f * GetRound((eulerB->x - eulerA->x) / 360.0f);
+//	tmpY1 = eulerA->y + 360.0f * GetRound((eulerB->y - eulerA->y) / 360.0f);
+//	tmpZ1 = eulerA->z + 360.0f * GetRound((eulerB->z - eulerA->z) / 360.0f);
+//
+//	//予想される角度2
+//	tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound((eulerB->x + eulerA->x - 180.0f) / 360.0f);
+//	tmpY2 = eulerA->y + 180.0f + 360.0f * GetRound((eulerB->y - eulerA->y - 180.0f) / 360.0f);
+//	tmpZ2 = eulerA->z + 180.0f + 360.0f * GetRound((eulerB->z - eulerA->z - 180.0f) / 360.0f);
+//
+//	//角度変化の大きさ
+//	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
+//	s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
+//
+//	//変化の少ない方に修正
+//	if (s1 < s2) {
+//		eulerA->x = tmpX1; eulerA->y = tmpY1; eulerA->z = tmpZ1;
+//	}
+//	else {
+//		eulerA->x = tmpX2; eulerA->y = tmpY2; eulerA->z = tmpZ2;
+//	}
+//
+//	return 0;
+//}
 
 int IsInitRot(ChaMatrix srcmat)
 {
@@ -2122,38 +2251,25 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 
 
 	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
-	ChaVector3 MaxisXVec(-1.0f, 0.0f, 0.0f);//2021/09/29
 	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
 	ChaVector3 axisZVec(0.0f, 0.0f, 1.0f);
 
 	ChaVector3 targetVec, shadowVec;
 	ChaVector3 tmpVec;
-	int dot0flagx, dot0flagy, dot0flagz;
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	dot0flagz = 0;
-	if (abs(lengthVec(&shadowVec)) <= 1e-4) {
-		if (befeul.x >= 0.0f) {
-			Euler.z = 90.0f;
-		}
-		else {
-			Euler.x = -90.0f;
-		}
-		dot0flagz = 1;
+	if (lengthVec(&shadowVec) == 0.0f) {
+		Euler.z = 90.0f;
 	}
 	else {
-		Euler.z = (float)abs(aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec)));
+		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
 	}
-	if ((dot0flagz == 0) && (vecDotVec(&shadowVec, &axisYVec) < 0.0)) {
-		Euler.z = -abs(Euler.z);
+	if (vecDotVec(&shadowVec, &axisYVec) < 0.0) {
+		Euler.z = -Euler.z;
 	}
-
-
-
-
 	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
 	//	Euler.z = -Euler.z;
 	//}
@@ -2162,22 +2278,14 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	shadowVec.y = 0.0f;
 	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	dot0flagy = 0;
-	if (abs(lengthVec(&shadowVec)) <= 1e-4) 
-	{
-		if (befeul.y >= 0.0f) {
-			Euler.y = 90.0f;
-		}
-		else {
-			Euler.y = -90.0f;
-		}
-		dot0flagy = 1;
+	if (lengthVec(&shadowVec) == 0.0f) {
+		Euler.y = 90.0f;
 	}
 	else {
-		Euler.y = (float)abs(aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec)));
+		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
 	}
-	if ((dot0flagy == 0) && (vecDotVec(&shadowVec, &axisZVec) > 0.0)) {
-		Euler.y = -abs(Euler.y);
+	if (vecDotVec(&shadowVec, &axisZVec) > 0.0) {
+		Euler.y = -Euler.y;
 	}
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
 	//	Euler.y = -Euler.y;
@@ -2191,21 +2299,14 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	shadowVec.x = 0.0f;
 	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	dot0flagx = 0;
-	if (abs(lengthVec(&shadowVec)) <= 1e-4) {
-		if (befeul.x >= 0.0f) {
-			Euler.x = 90.0f;
-		}
-		else {
-			Euler.x = -90.0f;
-		}
-		dot0flagx = 1;
+	if (lengthVec(&shadowVec) == 0.0) {
+		Euler.x = 90.0f;
 	}
 	else {
-		Euler.x = (float)abs(aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec)));
+		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
-	if ((dot0flagx == 0) && (vecDotVec(&shadowVec, &axisYVec) > 0.0)) {
-		Euler.x = -abs(Euler.x);
+	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
+		Euler.x = -Euler.x;
 	}
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
@@ -2375,33 +2476,53 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 //	return 0;
 //}
 //
-
-
+//
+//
 //int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 //{
-//	return ModifyEulerXYZ(eulerA, eulerB);
+//
+//	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
+//	double tmpX1, tmpY1, tmpZ1;
+//	double tmpX2, tmpY2, tmpZ2;
+//	double s1, s2;
+//
+//	//予想される角度1
+//	tmpX1 = eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
+//	tmpY1 = eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
+//	tmpZ1 = eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
+//
+//	//予想される角度2
+//	//クォータニオンは１８０°で一回転する。
+//	//横軸が２シータ、縦軸がsin2シータ、cos2シータのグラフにおいて、newシータ　=　180 + oldシータの値は等しい。
+//	//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
+//	//この場合、３つの軸のうち１つだけの軸の角度の符号(ここではX軸)が反転する。
+//	//ということだと思う。テストすると合っている。
+//	tmpX2 = 180.0 - eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x + (double)eulerA->x - 180.0) / 360.0));
+//	tmpY2 = eulerA->y + 180.0 + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y - 180.0) / 360.0));
+//	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z - 180.0) / 360.0));
+//
+//
+//	//角度変化の大きさ
+//	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
+//	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
+//
+//	//変化の少ない方に修正
+//	if (s1 < s2) {
+//		eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+//	}
+//	else {
+//		eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
+//	}
+//
+//	return 0;
 //}
 
 BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul)
 {
-	double diffx, diffy, diffz;
-	diffx = abs(srcneweul.x - srcbefeul.x);
-	diffy = abs(srcneweul.y - srcbefeul.y);
-	diffz = abs(srcneweul.z - srcbefeul.z);
-
-	////要調整
-	//if ((diffx <= g_befeuldiffmax) && (diffy <= g_befeuldiffmax) && (diffz <= g_befeuldiffmax)) {
-	//	return TRUE;
-	//}
-	//else {
-	//	return FALSE;
-	//}
-
-
 	//とりあえず
 	return TRUE;
-
 }
+
 
 int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag)
 {
@@ -2434,9 +2555,12 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	double tmpX2, tmpY2, tmpZ2;
 	double tmpX3, tmpY3, tmpZ3;
 	double tmpX4, tmpY4, tmpZ4;
-	//double tmpX5, tmpY5, tmpZ5;
-	//double tmpX6, tmpY6, tmpZ6;
-	double s0, s1, s2 , s3, s4;
+	double tmpX5, tmpY5, tmpZ5;
+	double tmpX6, tmpY6, tmpZ6;
+	double tmpX7, tmpY7, tmpZ7;
+	double tmpX8, tmpY8, tmpZ8;
+	double tmpX9, tmpY9, tmpZ9;
+	double s0, s1, s2 , s3, s4, s6, s7, s8, s9;
 	//double mins;
 
 
@@ -2450,9 +2574,12 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	tmpZ1 = (double)eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
 	//予想される角度2
-	//１つの軸が180度近く回転する場合、残りの２つの軸の符号は反転する
-	//座標系を保つためには一度に２つの軸の符号が反転する
-	//そのための+-180度のチェックを２軸について行う
+	//クォータニオンは１８０°で一回転する。
+	//横軸が２シータ、縦軸がsin2シータ、cos2シータのグラフにおいて、newシータ　=　180 + oldシータの値は等しい。
+	//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
+	
+	//この場合、３つの軸のうち２つだけの軸の角度の符号(ここではY軸)が反転する。
+	//！！！！　１つではなく２つの軸が反転する。　！！！！
 	
 	//X, Y
 	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
@@ -2468,6 +2595,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 		tmpY2 = tmpY0 + 180.0;
 	}
 	tmpZ2 = tmpZ0;
+
 
 
 	//Y, Z
@@ -2501,6 +2629,57 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 		tmpZ4 = tmpZ0 + 180.0;
 	}
 
+	//X, Y, Z
+	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
+		tmpX6 = tmpX0 - 180.0;
+	}
+	else {
+		tmpX6 = tmpX0 + 180.0;
+	}
+	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
+		tmpY6 = tmpY0 - 180.0;
+	}
+	else {
+		tmpY6 = tmpY0 + 180.0;
+	}
+	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
+		tmpZ6 = tmpZ0 - 180.0;
+	}
+	else {
+		tmpZ6 = tmpZ0 + 180.0;
+	}
+
+
+	//X
+	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
+		tmpX7 = tmpX0 - 180.0;
+	}
+	else {
+		tmpX7 = tmpX0 + 180.0;
+	}
+	tmpY7 = tmpY0;
+	tmpZ7 = tmpZ0;
+
+	//Y
+	tmpX8 = tmpX0;
+	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
+		tmpY8 = tmpY0 - 180.0;
+	}
+	else {
+		tmpY8 = tmpY0 + 180.0;
+	}
+	tmpZ8 = tmpZ0;
+
+	//Z
+	tmpX9 = tmpX0;
+	tmpY9 = tmpX0;
+	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
+		tmpZ9 = tmpZ0 - 180.0;
+	}
+	else {
+		tmpZ9 = tmpZ0 + 180.0;
+	}
+
 
 
 	//角度変化の大きさ
@@ -2509,11 +2688,16 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
 	s3 = ((double)eulerB->x - tmpX3) * ((double)eulerB->x - tmpX3) + ((double)eulerB->y - tmpY3) * ((double)eulerB->y - tmpY3) + ((double)eulerB->z - tmpZ3) * ((double)eulerB->z - tmpZ3);
 	s4 = ((double)eulerB->x - tmpX4) * ((double)eulerB->x - tmpX4) + ((double)eulerB->y - tmpY4) * ((double)eulerB->y - tmpY4) + ((double)eulerB->z - tmpZ4) * ((double)eulerB->z - tmpZ4);
+	s6 = ((double)eulerB->x - tmpX6) * ((double)eulerB->x - tmpX6) + ((double)eulerB->y - tmpY6) * ((double)eulerB->y - tmpY6) + ((double)eulerB->z - tmpZ6) * ((double)eulerB->z - tmpZ6);
+	s7 = ((double)eulerB->x - tmpX7) * ((double)eulerB->x - tmpX7) + ((double)eulerB->y - tmpY7) * ((double)eulerB->y - tmpY7) + ((double)eulerB->z - tmpZ7) * ((double)eulerB->z - tmpZ7);
+	s8 = ((double)eulerB->x - tmpX8) * ((double)eulerB->x - tmpX8) + ((double)eulerB->y - tmpY8) * ((double)eulerB->y - tmpY8) + ((double)eulerB->z - tmpZ8) * ((double)eulerB->z - tmpZ8);
+	s9 = ((double)eulerB->x - tmpX9) * ((double)eulerB->x - tmpX9) + ((double)eulerB->y - tmpY9) * ((double)eulerB->y - tmpY9) + ((double)eulerB->z - tmpZ9) * ((double)eulerB->z - tmpZ9);
 
 	typedef struct tag_chkeul
 	{
 		double s;
 		int index;
+		double X, Y, Z;
 		bool operator<(const tag_chkeul& right) const {
 			return s == right.s ? index < right.index : s < right.s;
 		}
@@ -2523,54 +2707,75 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	CHKEUL tmpchkeul;
 	tmpchkeul.s = s0;
 	tmpchkeul.index = 0;
+	tmpchkeul.X = tmpX0;
+	tmpchkeul.Y = tmpY0;
+	tmpchkeul.Z = tmpZ0;
 	vecchkeul.push_back(tmpchkeul);
 	tmpchkeul.s = s1;
 	tmpchkeul.index = 1;
+	tmpchkeul.X = tmpX1;
+	tmpchkeul.Y = tmpY1;
+	tmpchkeul.Z = tmpZ1;
 	vecchkeul.push_back(tmpchkeul);
 	tmpchkeul.s = s2;
 	tmpchkeul.index = 2;
+	tmpchkeul.X = tmpX2;
+	tmpchkeul.Y = tmpY2;
+	tmpchkeul.Z = tmpZ2;
 	vecchkeul.push_back(tmpchkeul);
 	tmpchkeul.s = s3;
 	tmpchkeul.index = 3;
+	tmpchkeul.X = tmpX3;
+	tmpchkeul.Y = tmpY3;
+	tmpchkeul.Z = tmpZ3;
 	vecchkeul.push_back(tmpchkeul);
 	tmpchkeul.s = s4;
 	tmpchkeul.index = 4;
+	tmpchkeul.X = tmpX4;
+	tmpchkeul.Y = tmpY4;
+	tmpchkeul.Z = tmpZ4;
 	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s6;
+	tmpchkeul.index = 6;
+	tmpchkeul.X = tmpX6;
+	tmpchkeul.Y = tmpY6;
+	tmpchkeul.Z = tmpZ6;
+	vecchkeul.push_back(tmpchkeul);
+
+	//tmpchkeul.s = s7;
+	//tmpchkeul.index = 7;
+	//tmpchkeul.X = tmpX7;
+	//tmpchkeul.Y = tmpY7;
+	//tmpchkeul.Z = tmpZ7;
+	//vecchkeul.push_back(tmpchkeul);
+	//tmpchkeul.s = s8;
+	//tmpchkeul.index = 8;
+	//tmpchkeul.X = tmpX8;
+	//tmpchkeul.Y = tmpY8;
+	//tmpchkeul.Z = tmpZ8;
+	//vecchkeul.push_back(tmpchkeul);
+	//tmpchkeul.s = s9;
+	//tmpchkeul.index = 9;
+	//tmpchkeul.X = tmpX9;
+	//tmpchkeul.Y = tmpY9;
+	//tmpchkeul.Z = tmpZ9;
+	//vecchkeul.push_back(tmpchkeul);
+
 
 	std::sort(vecchkeul.begin(), vecchkeul.end());
 	
 	CHKEUL mineul = vecchkeul[0];
 
-	//if (((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) && 
-	//	( (abs(eulerB->x) < 100.0) && (abs(eulerB->y) < 100.0) && (abs(eulerB->z) < 100.0))) {
-	if ((isfirstbone == 0) && (isendbone == 0) && (notmodifyflag == 0)){
-	//if ((isfirstbone == 0) && (notmodifyflag == 0)) {
-		switch (mineul.index)
-		{
-		case 0:
-			eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
-			break;
-		case 1:
-			eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-			break;
-		case 2:
-			eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
-			break;
-		case 3:
-			eulerA->x = (float)tmpX3; eulerA->y = (float)tmpY3; eulerA->z = (float)tmpZ3;
-			break;
-		case 4:
-			eulerA->x = (float)tmpX4; eulerA->y = (float)tmpY4; eulerA->z = (float)tmpZ4;
-			break;
-		default:
-			_ASSERT(0);
-			eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
-			break;
-		}
+	if ((notmodifyflag == 0) && (isfirstbone == 0) && (isendbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
+	//if((isfirstbone == 0) && (notmodifyflag == 0)){
+	//if ((eulerB->x != 0.0f) || (eulerB->y != 0.0f) || (eulerB->z != 0.0f)) {
+
+		eulerA->x = (float)mineul.X; eulerA->y = (float)mineul.Y; eulerA->z = (float)mineul.Z;
+
 	}
-	else{
-		if ((isfirstbone == 1) || (notmodifyflag == 1)) {
-			if(s0 <= s1){
+	else {
+		if ((notmodifyflag == 1) || (isendbone == 0)) {
+			if (s0 <= s1) {
 				eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
 			}
 			else {
@@ -2587,6 +2792,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 			//１軸だけ１８０度回転することは座標系上あり得ないが、以下のようにすると間違ったオイラー角の修正が出来るようだ。
 
 			//upvec間違い直し？
+
 			float plusZ, befplusZ;
 			befplusZ = eulerB->z;
 			plusZ = tmpZ0;
@@ -2597,7 +2803,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 				plusZ += 360.0f;
 			}
 
-			if ((notmodifyflag == 0) && !((eulerB->x == 0.0f) && (eulerB->y == 0.0f) && (eulerB->z == 0.0f)) && (abs(befplusZ - plusZ) >= 89.0)) {
+			if (!((eulerB->x == 0.0f) && (eulerB->y == 0.0f) && (eulerB->z == 0.0f)) && (abs(befplusZ - plusZ) >= 89.0)) {
 
 				//Zだけおかしい場合の修正.あり得ないけど有り得る
 				float tmpX5, tmpY5, tmpZ5;
@@ -2615,45 +2821,9 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 				else {
 					eulerA->x = (float)tmpX5; eulerA->y = (float)tmpY5; eulerA->z = (float)tmpZ5;
 				}
-
-
-				//以下のコメントアウト部分のようにしても直らない
-				//float tmpX5, tmpY5, tmpZ5;
-				//float tmpX6, tmpY6, tmpZ6;
-				//float s5, s6;
-				////Y, Z
-				//tmpX5 = tmpX0;
-				//tmpY5 = tmpY0 + 180.0f;
-				//if (tmpY5 > 180.0f) {
-				//	tmpY5 -= 360.0f;
-				//}
-				//tmpZ5 = tmpZ0 + 180.0f;
-				//if (tmpZ5 > 180.0f) {
-				//	tmpZ5 -= 360.0f;
-				//}
-				////X, Z
-				//tmpX6 = tmpX0 + 180.0f;
-				//if (tmpX6 > 180.0f) {
-				//	tmpX6 -= 360.0f;
-				//}
-				//tmpY6 = tmpY0;
-				//tmpZ6 = tmpZ0 + 180.0f;
-				//if (tmpZ6 > 180.0f) {
-				//	tmpZ6 -= 360.0f;
-				//}
-				//s5 = ((double)eulerB->x - tmpX5) * ((double)eulerB->x - tmpX5) + ((double)eulerB->y - tmpY5) * ((double)eulerB->y - tmpY5) + ((double)eulerB->z - tmpZ5) * ((double)eulerB->z - tmpZ5);
-				//s6 = ((double)eulerB->x - tmpX6) * ((double)eulerB->x - tmpX6) + ((double)eulerB->y - tmpY6) * ((double)eulerB->y - tmpY6) + ((double)eulerB->z - tmpZ6) * ((double)eulerB->z - tmpZ6);
-				//if (s5 <= s6) {
-				//	eulerA->x = (float)tmpX5; eulerA->y = (float)tmpY5; eulerA->z = (float)tmpZ5;
-				//}
-				//else {
-				//	eulerA->x = (float)tmpX6; eulerA->y = (float)tmpY6; eulerA->z = (float)tmpZ6;
-				//}
 			}
+
 		}
-
-
-
 	}
 
 	return 0;
@@ -2701,8 +2871,8 @@ int CQuaternion::GetRound(float srcval)
 		return (int)(srcval - 0.5);
 	}
 }
-
-int CQuaternion::CalcFBXEul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag)
+//
+int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag)
 {
 
 	int noise[4] = { 0, 1, 0, -1 };

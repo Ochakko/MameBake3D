@@ -240,7 +240,7 @@ public:
 	int SetRotationZXY(CQuaternion* axisq, double degx, double degy, double degz);
 	//int GetAxisAndRot(ChaVector3* axisvecptr, float* frad);
 	//int QuaternionToAxisAngle(ChaVector3* dstaxis, float* dstrad);
-	int CalcFBXEul(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);
+	int CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);
 	//int CalcFBXEulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone);
 	int IsInit();
 

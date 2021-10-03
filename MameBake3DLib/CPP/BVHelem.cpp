@@ -758,7 +758,7 @@ int CBVHElem::ConvXYZRot()
 		else {
 			notmodifyflag = 0;
 		}
-		curq->CalcFBXEul(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		curq->CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 		*(xyzrot + frameno) = cureul;
 		if ((frameno == 0) || (frameno == 1) || IsValidNewEul(cureul, befeul)) {
 			befeul = cureul;
