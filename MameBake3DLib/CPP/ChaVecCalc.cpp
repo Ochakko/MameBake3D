@@ -2527,42 +2527,12 @@ BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul)
 int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag)
 {
 
-	////オイラー角Aの値をオイラー角Bの値に近い表示に修正
-	//double tmpX1, tmpY1, tmpZ1;
-	//double tmpX2, tmpY2, tmpZ2;
-	//double s1, s2;
-	//tmpX1 = eulerA->x;
-	//tmpY1 = eulerA->y;
-	//tmpZ1 = eulerA->z;
-	////予想される角度1
-	//tmpX2 = eulerA->x + 360.0 * GetRound((eulerB->x - eulerA->x) / 360.0);
-	//tmpY2 = eulerA->y + 360.0 * GetRound((eulerB->y - eulerA->y) / 360.0);
-	//tmpZ2 = eulerA->z + 360.0 * GetRound((eulerB->z - eulerA->z) / 360.0);
-	////角度変化の大きさ
-	//s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
-	//s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
-	//if (s1 <= s2) {
-	//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-	//}
-	//else {
-	//	eulerA->x = (float)tmpX2; eulerA->y = (float)tmpY2; eulerA->z = (float)tmpZ2;
-	//}
-
-
-		//オイラー角Aの値をオイラー角Bの値に近い表示に修正
+	//オイラー角Aの値をオイラー角Bの値に近い表示に修正
 	double tmpX0, tmpY0, tmpZ0;
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
-	double tmpX3, tmpY3, tmpZ3;
-	double tmpX4, tmpY4, tmpZ4;
-	double tmpX5, tmpY5, tmpZ5;
-	double tmpX6, tmpY6, tmpZ6;
-	double tmpX7, tmpY7, tmpZ7;
-	double tmpX8, tmpY8, tmpZ8;
-	double tmpX9, tmpY9, tmpZ9;
-	double s0, s1, s2 , s3, s4, s6, s7, s8, s9;
-	//double mins;
-
+	double s0, s1;
+	double newX, newY, newZ;
 
 	tmpX0 = eulerA->x;
 	tmpY0 = eulerA->y;
@@ -2573,257 +2543,117 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	tmpY1 = (double)eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
 	tmpZ1 = (double)eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
-	//予想される角度2
-	//クォータニオンは１８０°で一回転する。
-	//横軸が２シータ、縦軸がsin2シータ、cos2シータのグラフにおいて、newシータ　=　180 + oldシータの値は等しい。
-	//tmp2の角度はクォータニオンにおいて等しい姿勢を取るオイラー角である。
-	
-	//この場合、３つの軸のうち２つだけの軸の角度の符号(ここではY軸)が反転する。
-	//！！！！　１つではなく２つの軸が反転する。　！！！！
-	
-	//X, Y
-	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
-		tmpX2 = tmpX0 - 180.0;
-	}
-	else {
-		tmpX2 = tmpX0 + 180.0;
-	}
-	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
-		tmpY2 = tmpY0 - 180.0;
-	}
-	else {
-		tmpY2 = tmpY0 + 180.0;
-	}
-	tmpZ2 = tmpZ0;
-
-
-
-	//Y, Z
-	tmpX3 = tmpX0;
-	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
-		tmpY3 = tmpY0 - 180.0;
-	}
-	else {
-		tmpY3 = tmpY0 + 180.0;
-	}
-	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
-		tmpZ3 = tmpZ0 - 180.0;
-	}
-	else {
-		tmpZ3 = tmpZ0 + 180.0;
-	}
-
-
-	//Z, X
-	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
-		tmpX4 = tmpX0 - 180.0;
-	}
-	else {
-		tmpX4 = tmpX0 + 180.0;
-	}
-	tmpY4 = tmpY0;
-	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
-		tmpZ4 = tmpZ0 - 180.0;
-	}
-	else {
-		tmpZ4 = tmpZ0 + 180.0;
-	}
-
-	//X, Y, Z
-	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
-		tmpX6 = tmpX0 - 180.0;
-	}
-	else {
-		tmpX6 = tmpX0 + 180.0;
-	}
-	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
-		tmpY6 = tmpY0 - 180.0;
-	}
-	else {
-		tmpY6 = tmpY0 + 180.0;
-	}
-	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
-		tmpZ6 = tmpZ0 - 180.0;
-	}
-	else {
-		tmpZ6 = tmpZ0 + 180.0;
-	}
-
-
-	//X
-	if (abs(eulerB->x - (tmpX0 - 180.0)) <= (abs(eulerB->x - (tmpX0 + 180.0)))) {
-		tmpX7 = tmpX0 - 180.0;
-	}
-	else {
-		tmpX7 = tmpX0 + 180.0;
-	}
-	tmpY7 = tmpY0;
-	tmpZ7 = tmpZ0;
-
-	//Y
-	tmpX8 = tmpX0;
-	if (abs(eulerB->y - (tmpY0 - 180.0)) <= (abs(eulerB->y - (tmpY0 + 180.0)))) {
-		tmpY8 = tmpY0 - 180.0;
-	}
-	else {
-		tmpY8 = tmpY0 + 180.0;
-	}
-	tmpZ8 = tmpZ0;
-
-	//Z
-	tmpX9 = tmpX0;
-	tmpY9 = tmpX0;
-	if (abs(eulerB->z - (tmpZ0 - 180.0)) <= (abs(eulerB->z - (tmpZ0 + 180.0)))) {
-		tmpZ9 = tmpZ0 - 180.0;
-	}
-	else {
-		tmpZ9 = tmpZ0 + 180.0;
-	}
-
-
-
-	//角度変化の大きさ
+	////角度変化の大きさ
 	s0 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) + ((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) + ((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
 	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
-	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
-	s3 = ((double)eulerB->x - tmpX3) * ((double)eulerB->x - tmpX3) + ((double)eulerB->y - tmpY3) * ((double)eulerB->y - tmpY3) + ((double)eulerB->z - tmpZ3) * ((double)eulerB->z - tmpZ3);
-	s4 = ((double)eulerB->x - tmpX4) * ((double)eulerB->x - tmpX4) + ((double)eulerB->y - tmpY4) * ((double)eulerB->y - tmpY4) + ((double)eulerB->z - tmpZ4) * ((double)eulerB->z - tmpZ4);
-	s6 = ((double)eulerB->x - tmpX6) * ((double)eulerB->x - tmpX6) + ((double)eulerB->y - tmpY6) * ((double)eulerB->y - tmpY6) + ((double)eulerB->z - tmpZ6) * ((double)eulerB->z - tmpZ6);
-	s7 = ((double)eulerB->x - tmpX7) * ((double)eulerB->x - tmpX7) + ((double)eulerB->y - tmpY7) * ((double)eulerB->y - tmpY7) + ((double)eulerB->z - tmpZ7) * ((double)eulerB->z - tmpZ7);
-	s8 = ((double)eulerB->x - tmpX8) * ((double)eulerB->x - tmpX8) + ((double)eulerB->y - tmpY8) * ((double)eulerB->y - tmpY8) + ((double)eulerB->z - tmpZ8) * ((double)eulerB->z - tmpZ8);
-	s9 = ((double)eulerB->x - tmpX9) * ((double)eulerB->x - tmpX9) + ((double)eulerB->y - tmpY9) * ((double)eulerB->y - tmpY9) + ((double)eulerB->z - tmpZ9) * ((double)eulerB->z - tmpZ9);
 
-	typedef struct tag_chkeul
-	{
-		double s;
-		int index;
-		double X, Y, Z;
-		bool operator<(const tag_chkeul& right) const {
-			return s == right.s ? index < right.index : s < right.s;
+
+	//##########################################################################################
+	//座標系合わせ。軸の向きが座標系に合うように１８０度回転チェック。座標系を合わせるにはbefeulに近づければ良い.
+	// 比較するときの角度のレンジと結果のレンジの決め方が難しかった（丸々１日試行錯誤してこのケースだけうまくいった）。
+	//##########################################################################################
+
+	//Z
+	float plusZ, befplusZ;
+	befplusZ = eulerB->z;
+	plusZ = tmpZ0;
+	if (befplusZ < 0.0f) {
+		befplusZ += 360.0f;
+	}
+	if (plusZ < 0.0f) {
+		plusZ += 360.0f;
+	}
+	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusZ - plusZ) >= 89.0)) {
+		//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。#################
+		tmpZ2 = tmpZ0 + 180.0f;
+		if (tmpZ2 > 180.0f) {
+			tmpZ2 -= 360.0f;
 		}
-	}CHKEUL;
+		if (abs(eulerB->z - tmpZ0) <= abs(eulerB->z - tmpZ2)) {
+			newZ = tmpZ0;			
+		}
+		else {
+			newZ = tmpZ2;
+		}
+	}
+	else {
+		newZ = tmpZ0;
+	}
 
-	std::vector<struct tag_chkeul> vecchkeul;
-	CHKEUL tmpchkeul;
-	tmpchkeul.s = s0;
-	tmpchkeul.index = 0;
-	tmpchkeul.X = tmpX0;
-	tmpchkeul.Y = tmpY0;
-	tmpchkeul.Z = tmpZ0;
-	vecchkeul.push_back(tmpchkeul);
-	tmpchkeul.s = s1;
-	tmpchkeul.index = 1;
-	tmpchkeul.X = tmpX1;
-	tmpchkeul.Y = tmpY1;
-	tmpchkeul.Z = tmpZ1;
-	vecchkeul.push_back(tmpchkeul);
-	tmpchkeul.s = s2;
-	tmpchkeul.index = 2;
-	tmpchkeul.X = tmpX2;
-	tmpchkeul.Y = tmpY2;
-	tmpchkeul.Z = tmpZ2;
-	vecchkeul.push_back(tmpchkeul);
-	tmpchkeul.s = s3;
-	tmpchkeul.index = 3;
-	tmpchkeul.X = tmpX3;
-	tmpchkeul.Y = tmpY3;
-	tmpchkeul.Z = tmpZ3;
-	vecchkeul.push_back(tmpchkeul);
-	tmpchkeul.s = s4;
-	tmpchkeul.index = 4;
-	tmpchkeul.X = tmpX4;
-	tmpchkeul.Y = tmpY4;
-	tmpchkeul.Z = tmpZ4;
-	vecchkeul.push_back(tmpchkeul);
-	tmpchkeul.s = s6;
-	tmpchkeul.index = 6;
-	tmpchkeul.X = tmpX6;
-	tmpchkeul.Y = tmpY6;
-	tmpchkeul.Z = tmpZ6;
-	vecchkeul.push_back(tmpchkeul);
+	//Y
+	float plusY, befplusY;
+	befplusY = eulerB->y;
+	plusY = tmpY0;
+	if (befplusY < 0.0f) {
+		befplusY += 360.0f;
+	}
+	if (plusY < 0.0f) {
+		plusY += 360.0f;
+	}
+	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusY - plusY) >= 89.0)) {
+	//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。#################
+		tmpY2 = tmpY0 + 180.0f;
+		if (tmpY2 > 180.0f) {
+			tmpY2 -= 360.0f;
+		}
+		if (abs(eulerB->y - tmpY0) <= abs(eulerB->y - tmpY2)) {
+			newY = tmpY0;
+		}
+		else {
+			newY = tmpY2;
+		}
+	}
+	else {
+		newY = tmpY0;
+	}
 
-	//tmpchkeul.s = s7;
-	//tmpchkeul.index = 7;
-	//tmpchkeul.X = tmpX7;
-	//tmpchkeul.Y = tmpY7;
-	//tmpchkeul.Z = tmpZ7;
-	//vecchkeul.push_back(tmpchkeul);
-	//tmpchkeul.s = s8;
-	//tmpchkeul.index = 8;
-	//tmpchkeul.X = tmpX8;
-	//tmpchkeul.Y = tmpY8;
-	//tmpchkeul.Z = tmpZ8;
-	//vecchkeul.push_back(tmpchkeul);
-	//tmpchkeul.s = s9;
-	//tmpchkeul.index = 9;
-	//tmpchkeul.X = tmpX9;
-	//tmpchkeul.Y = tmpY9;
-	//tmpchkeul.Z = tmpZ9;
-	//vecchkeul.push_back(tmpchkeul);
+	//X
+	float plusX, befplusX;
+	befplusX = eulerB->x;
+	plusX = tmpX0;
+	if (befplusX < 0.0f) {
+		befplusX += 360.0f;
+	}
+	if (plusX < 0.0f) {
+		plusX += 360.0f;
+	}
+	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusX - plusX) >= 89.0)) {
+	//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。#################
+		tmpX2 = tmpX0 + 180.0f;
+		if (tmpX2 > 180.0f) {
+			tmpX2 -= 360.0f;
+		}
+		if (abs(eulerB->x - tmpX0) <= abs(eulerB->x - tmpX2)) {
+			newX = tmpX0;
+		}
+		else {
+			newX = tmpX2;
+		}
+	}
+	else {
+		newX = tmpX0;
+	}
 
 
-	std::sort(vecchkeul.begin(), vecchkeul.end());
-	
-	CHKEUL mineul = vecchkeul[0];
 
-	if ((notmodifyflag == 0) && (isfirstbone == 0) && (isendbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
+	if ((notmodifyflag == 0) && (isfirstbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
+	//if ((notmodifyflag == 0) && (isfirstbone == 0) && (isendbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
 	//if((isfirstbone == 0) && (notmodifyflag == 0)){
-	//if ((eulerB->x != 0.0f) || (eulerB->y != 0.0f) || (eulerB->z != 0.0f)) {
+	// 
+	//if ((eulerB->x != 0.0f) || (eulerB->y != 0.0f) || (eulerB->z != 0.0f)) {	//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。#################
 
-		eulerA->x = (float)mineul.X; eulerA->y = (float)mineul.Y; eulerA->z = (float)mineul.Z;
+		eulerA->x = (float)newX; eulerA->y = (float)newY; eulerA->z = (float)newZ;
 
 	}
 	else {
-		if ((notmodifyflag == 1) || (isendbone == 0)) {
+		//if ((notmodifyflag == 1) || (isendbone == 0)) {
 			if (s0 <= s1) {
 				eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
 			}
 			else {
 				eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
 			}
-		}
-		else {
-			//a case that isendbone == 1
-
-			//########################
-			//意味は分からない、だが直る。
-			//########################
-			//モデル側endboneに於いてモーションキャプチャーデータのtoe(つま先)だけ１８０度異常に回転している場合がある。
-			//１軸だけ１８０度回転することは座標系上あり得ないが、以下のようにすると間違ったオイラー角の修正が出来るようだ。
-
-			//upvec間違い直し？
-
-			float plusZ, befplusZ;
-			befplusZ = eulerB->z;
-			plusZ = tmpZ0;
-			if (befplusZ < 0.0f) {
-				befplusZ += 360.0f;
-			}
-			if (plusZ < 0.0f) {
-				plusZ += 360.0f;
-			}
-
-			if (!((eulerB->x == 0.0f) && (eulerB->y == 0.0f) && (eulerB->z == 0.0f)) && (abs(befplusZ - plusZ) >= 89.0)) {
-
-				//Zだけおかしい場合の修正.あり得ないけど有り得る
-				float tmpX5, tmpY5, tmpZ5;
-				float s5;
-				tmpX5 = tmpX0;
-				tmpY5 = tmpY0;
-				tmpZ5 = tmpZ0 + 180.0f;
-				if (tmpZ5 > 180.0f) {
-					tmpZ5 -= 360.0f;
-				}
-				s5 = ((double)eulerB->x - tmpX5) * ((double)eulerB->x - tmpX5) + ((double)eulerB->y - tmpY5) * ((double)eulerB->y - tmpY5) + ((double)eulerB->z - tmpZ5) * ((double)eulerB->z - tmpZ5);
-				if (s0 <= s5) {
-					eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
-				}
-				else {
-					eulerA->x = (float)tmpX5; eulerA->y = (float)tmpY5; eulerA->z = (float)tmpZ5;
-				}
-			}
-
-		}
+		//}
 	}
 
 	return 0;
