@@ -10277,7 +10277,8 @@ void CModel::CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe)
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int paraxsiflag = 1;
 	//int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
+	//cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
+	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_BEFFRAME);
 	curbone->SetLocalEul(srcmotid, srcframe, cureul);
 
 	if (curbone->GetChild()){

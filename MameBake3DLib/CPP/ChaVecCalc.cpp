@@ -2563,14 +2563,15 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	if (plusZ < 0.0f) {
 		plusZ += 360.0f;
 	}
-	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusZ - plusZ) >= 89.0)) {
-		//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B#################
+	//if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusZ - plusZ) >= 89.0)) {
+	//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B########--> ŒÄ‚Ño‚µ‘¤‚ÅbefeulƒZƒbƒg‚µ‚½‚ç‚Oƒ`ƒFƒbƒN‚Í—v‚ç‚È‚©‚Á‚½
+	if (abs(befplusZ - plusZ) >= 89.0) {
 		tmpZ2 = tmpZ0 + 180.0f;
 		if (tmpZ2 > 180.0f) {
 			tmpZ2 -= 360.0f;
 		}
 		if (abs(eulerB->z - tmpZ0) <= abs(eulerB->z - tmpZ2)) {
-			newZ = tmpZ0;			
+			newZ = tmpZ0;
 		}
 		else {
 			newZ = tmpZ2;
@@ -2590,8 +2591,9 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	if (plusY < 0.0f) {
 		plusY += 360.0f;
 	}
-	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusY - plusY) >= 89.0)) {
-	//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B#################
+	//if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusY - plusY) >= 89.0)) {
+	//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B########--> ŒÄ‚Ño‚µ‘¤‚ÅbefeulƒZƒbƒg‚µ‚½‚ç‚Oƒ`ƒFƒbƒN‚Í—v‚ç‚È‚©‚Á‚½
+	if (abs(befplusY - plusY) >= 89.0) {
 		tmpY2 = tmpY0 + 180.0f;
 		if (tmpY2 > 180.0f) {
 			tmpY2 -= 360.0f;
@@ -2617,8 +2619,9 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	if (plusX < 0.0f) {
 		plusX += 360.0f;
 	}
-	if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusX - plusX) >= 89.0)) {
-	//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B#################
+	//if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusX - plusX) >= 89.0)) {
+	//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B########--> ŒÄ‚Ño‚µ‘¤‚ÅbefeulƒZƒbƒg‚µ‚½‚ç‚Oƒ`ƒFƒbƒN‚Í—v‚ç‚È‚©‚Á‚½
+	if (abs(befplusX - plusX) >= 89.0) {
 		tmpX2 = tmpX0 + 180.0f;
 		if (tmpX2 > 180.0f) {
 			tmpX2 -= 360.0f;
@@ -2636,11 +2639,13 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 
 
 
-	if ((notmodifyflag == 0) && (isfirstbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
+	//if ((notmodifyflag == 0) && (isfirstbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
+	if ((notmodifyflag == 0) && (isfirstbone == 0)) {
+	
 	//if ((notmodifyflag == 0) && (isfirstbone == 0) && (isendbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
 	//if((isfirstbone == 0) && (notmodifyflag == 0)){
 	// 
-	//if ((eulerB->x != 0.0f) || (eulerB->y != 0.0f) || (eulerB->z != 0.0f)) {	//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B#################
+	//if ((eulerB->x != 0.0f) || (eulerB->y != 0.0f) || (eulerB->z != 0.0f)) {//befeul.* == 0.0f‚ð‚P‚Â‚Å‚à‹–‚·‚ÆMocap 5-5‚Ìbvh‚ÅeulX+180 = eulZ‚ÌŠÖŒW‚É‚ ‚éX‚ÆZ‚ª“ü‚ê‘Ö‚í‚Á‚Ä‚µ‚Ü‚¤B#### ŠÖ”ŒÄ‚Ño‚µ‘¤‚Åbefeul‚É‚«‚¿‚ñ‚Æ’l‚ð“n‚·‚±‚Æ‚Å‚Oƒ`ƒFƒbƒN‚Í‚¢‚ç‚È‚­‚È‚Á‚½
 
 		eulerA->x = (float)newX; eulerA->y = (float)newY; eulerA->z = (float)newZ;
 
