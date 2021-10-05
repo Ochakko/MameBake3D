@@ -1,3 +1,15 @@
+2021/10/06
+	develop版(非リリース版)　MameBake3Dアップデート
+
+	ModifyEulerXYZ改良
+		今までで一番良い出来　試行錯誤の結果をまとめて書き直した
+
+		Best_ModifyEulerXYZ_RecapTheResultOfTrialAndError
+		
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/04
 	develop版(非リリース版)　MameBake3Dアップデート
 

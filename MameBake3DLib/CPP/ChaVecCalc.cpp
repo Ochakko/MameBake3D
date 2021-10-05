@@ -2531,8 +2531,11 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	double tmpX0, tmpY0, tmpZ0;
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
-	double s0, s1;
-	double newX, newY, newZ;
+	double tmpX3, tmpY3, tmpZ3;
+	double tmpX4, tmpY4, tmpZ4;
+	double tmpX5, tmpY5, tmpZ5;
+	double s0, s1, s2, s3, s4, s5;
+	//double newX, newY, newZ;
 
 	tmpX0 = eulerA->x;
 	tmpY0 = eulerA->y;
@@ -2543,122 +2546,124 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	tmpY1 = (double)eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
 	tmpZ1 = (double)eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
-	////角度変化の大きさ
+
+	//##########################################################################################
+	// ModifyEuler いままでの試行錯誤のまとめ
+	//####################################
+	// 
+	// 
+	// 試行錯誤時の症状と数学を思い出し、結局次のようになった.
+	// ノイズが乗っているときにも今までで一番きれいなオイラーグラフになった.つま先に関しても改善.
+	// 
+	//座標系合わせ。軸の向きが座標系に合うように１８０度回転チェック。座標系を合わせるにはbefeulに近づければ良い.
+	// 
+	// 
+	// クォータニオンからオイラー角を計算するとき、ボーン軸に関して１８０度ねじれるような逆クオータニオンのオイラー角と同じオイラー角になる（クオータニオンにおいては180度が一回転）.
+	// 例えばZが１８０度回転した時、XとYは-X, -Yになる.(180 - X)では無かった.
+	// 裏返ったオイラー角の方がbefeulに近い場合を検出してオイラー角を裏返返す処理をする.
+	// 
+	// 
+	//##########################################################################################
+
+
+	//X + 180のとき
+	tmpX2 = tmpX0 + 180.0;
+	if (tmpX2 > 180.0) {
+		tmpX2 -= 360.0;
+	}
+	tmpY2 = -tmpY0;
+	tmpZ2 = -tmpZ0;
+	//tmpY2 = 180.0 - tmpY0;
+	//tmpZ2 = 180.0 - tmpZ0;
+
+	//Y + 180のとき
+	tmpY3 = tmpY0 + 180.0;
+	if (tmpY3 > 180.0) {
+		tmpY3 -= 360.0;
+	}
+	tmpX3 = -tmpX0;
+	tmpZ3 = -tmpZ0;
+	//tmpX3 = 180.0 - tmpX0;
+	//tmpZ3 = 180.0 - tmpZ0;
+
+	//Z + 180のとき
+	tmpZ4 = tmpZ0 + 180.0;
+	if (tmpZ4 > 180.0) {
+		tmpZ4 -= 360.0;
+	}
+	tmpX4 = -tmpX0;
+	tmpY4 = -tmpY0;
+	//tmpX4 = 180.0 - tmpX0;
+	//tmpY4 = 180.0 - tmpY0;
+
+
+
+	//角度変化の大きさ
 	s0 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) + ((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) + ((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
 	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
+	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
+	s3 = ((double)eulerB->x - tmpX3) * ((double)eulerB->x - tmpX3) + ((double)eulerB->y - tmpY3) * ((double)eulerB->y - tmpY3) + ((double)eulerB->z - tmpZ3) * ((double)eulerB->z - tmpZ3);
+	s4 = ((double)eulerB->x - tmpX4) * ((double)eulerB->x - tmpX4) + ((double)eulerB->y - tmpY4) * ((double)eulerB->y - tmpY4) + ((double)eulerB->z - tmpZ4) * ((double)eulerB->z - tmpZ4);
 
+	typedef struct tag_chkeul
+	{
+		double s;
+		int index;
+		double X, Y, Z;
+		bool operator<(const tag_chkeul& right) const {
+			return s == right.s ? index < right.index : s < right.s;
+		}
+	}CHKEUL;
 
-	//##########################################################################################
-	//座標系合わせ。軸の向きが座標系に合うように１８０度回転チェック。座標系を合わせるにはbefeulに近づければ良い.
-	// 比較するときの角度のレンジと結果のレンジの決め方が難しかった（丸々１日試行錯誤してこのケースだけうまくいった）。
-	//##########################################################################################
+	std::vector<struct tag_chkeul> vecchkeul;
+	CHKEUL tmpchkeul;
+	tmpchkeul.s = s0;
+	tmpchkeul.index = 0;
+	tmpchkeul.X = tmpX0;
+	tmpchkeul.Y = tmpY0;
+	tmpchkeul.Z = tmpZ0;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s1;
+	tmpchkeul.index = 1;
+	tmpchkeul.X = tmpX1;
+	tmpchkeul.Y = tmpY1;
+	tmpchkeul.Z = tmpZ1;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s2;
+	tmpchkeul.index = 2;
+	tmpchkeul.X = tmpX2;
+	tmpchkeul.Y = tmpY2;
+	tmpchkeul.Z = tmpZ2;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s3;
+	tmpchkeul.index = 3;
+	tmpchkeul.X = tmpX3;
+	tmpchkeul.Y = tmpY3;
+	tmpchkeul.Z = tmpZ3;
+	vecchkeul.push_back(tmpchkeul);
+	tmpchkeul.s = s4;
+	tmpchkeul.index = 4;
+	tmpchkeul.X = tmpX4;
+	tmpchkeul.Y = tmpY4;
+	tmpchkeul.Z = tmpZ4;
+	vecchkeul.push_back(tmpchkeul);
 
-	//Z
-	float plusZ, befplusZ;
-	befplusZ = eulerB->z;
-	plusZ = tmpZ0;
-	if (befplusZ < 0.0f) {
-		befplusZ += 360.0f;
-	}
-	if (plusZ < 0.0f) {
-		plusZ += 360.0f;
-	}
-	//if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusZ - plusZ) >= 89.0)) {
-	//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。########--> 呼び出し側でbefeulセットしたら０チェックは要らなかった
-	if (abs(befplusZ - plusZ) >= 89.0) {
-		tmpZ2 = tmpZ0 + 180.0f;
-		if (tmpZ2 > 180.0f) {
-			tmpZ2 -= 360.0f;
-		}
-		if (abs(eulerB->z - tmpZ0) <= abs(eulerB->z - tmpZ2)) {
-			newZ = tmpZ0;
-		}
-		else {
-			newZ = tmpZ2;
-		}
-	}
-	else {
-		newZ = tmpZ0;
-	}
+	std::sort(vecchkeul.begin(), vecchkeul.end());
 
-	//Y
-	float plusY, befplusY;
-	befplusY = eulerB->y;
-	plusY = tmpY0;
-	if (befplusY < 0.0f) {
-		befplusY += 360.0f;
-	}
-	if (plusY < 0.0f) {
-		plusY += 360.0f;
-	}
-	//if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusY - plusY) >= 89.0)) {
-	//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。########--> 呼び出し側でbefeulセットしたら０チェックは要らなかった
-	if (abs(befplusY - plusY) >= 89.0) {
-		tmpY2 = tmpY0 + 180.0f;
-		if (tmpY2 > 180.0f) {
-			tmpY2 -= 360.0f;
-		}
-		if (abs(eulerB->y - tmpY0) <= abs(eulerB->y - tmpY2)) {
-			newY = tmpY0;
-		}
-		else {
-			newY = tmpY2;
-		}
-	}
-	else {
-		newY = tmpY0;
-	}
+	CHKEUL mineul = vecchkeul[0];
 
-	//X
-	float plusX, befplusX;
-	befplusX = eulerB->x;
-	plusX = tmpX0;
-	if (befplusX < 0.0f) {
-		befplusX += 360.0f;
-	}
-	if (plusX < 0.0f) {
-		plusX += 360.0f;
-	}
-	//if ((eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f) && (abs(befplusX - plusX) >= 89.0)) {
-	//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。########--> 呼び出し側でbefeulセットしたら０チェックは要らなかった
-	if (abs(befplusX - plusX) >= 89.0) {
-		tmpX2 = tmpX0 + 180.0f;
-		if (tmpX2 > 180.0f) {
-			tmpX2 -= 360.0f;
-		}
-		if (abs(eulerB->x - tmpX0) <= abs(eulerB->x - tmpX2)) {
-			newX = tmpX0;
-		}
-		else {
-			newX = tmpX2;
-		}
-	}
-	else {
-		newX = tmpX0;
-	}
-
-
-
-	//if ((notmodifyflag == 0) && (isfirstbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
 	if ((notmodifyflag == 0) && (isfirstbone == 0)) {
-	
-	//if ((notmodifyflag == 0) && (isfirstbone == 0) && (isendbone == 0) && (eulerB->x != 0.0f) && (eulerB->y != 0.0f) && (eulerB->z != 0.0f)) {
-	//if((isfirstbone == 0) && (notmodifyflag == 0)){
-	// 
-	//if ((eulerB->x != 0.0f) || (eulerB->y != 0.0f) || (eulerB->z != 0.0f)) {//befeul.* == 0.0fを１つでも許すとMocap 5-5のbvhでeulX+180 = eulZの関係にあるXとZが入れ替わってしまう。#### 関数呼び出し側でbefeulにきちんと値を渡すことで０チェックはいらなくなった
 
-		eulerA->x = (float)newX; eulerA->y = (float)newY; eulerA->z = (float)newZ;
+		eulerA->x = (float)mineul.X; eulerA->y = (float)mineul.Y; eulerA->z = (float)mineul.Z;
 
 	}
 	else {
-		//if ((notmodifyflag == 1) || (isendbone == 0)) {
-			if (s0 <= s1) {
-				eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
-			}
-			else {
-				eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-			}
-		//}
+		if (s0 <= s1) {
+			eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
+		}
+		else {
+			eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+		}
 	}
 
 	return 0;
