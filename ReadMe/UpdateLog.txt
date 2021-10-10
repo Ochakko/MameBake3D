@@ -1,3 +1,7 @@
+2021/10/10
+	Explain about ModifyEulerXYZ.
+	https://moo-ochakkolab.ssl-lolipop.jp/diary_win.html#MotionBrush_20211010
+	
 2021/10/06
 	develop版(非リリース版)　MameBake3Dアップデート
 

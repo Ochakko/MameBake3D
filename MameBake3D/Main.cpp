@@ -2211,6 +2211,13 @@ void InitApp()
 
 	InitCommonControls();
 
+
+	//////check
+	//WCHAR strchk[256] = { 0L };
+	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
+	//::MessageBox(NULL, strchk, L"check", MB_OK);
+
+
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
 	_ASSERT(s_temppath[0]);

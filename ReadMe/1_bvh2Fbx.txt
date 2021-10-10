@@ -1,0 +1,2 @@
+bvh2FBXは
+CMU(カーネギーメロン大学)のMotionBruilderFriendlyタイプのサンプルでテストしました
