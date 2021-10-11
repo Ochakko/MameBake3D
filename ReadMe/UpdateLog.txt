@@ -1,4 +1,27 @@
+2021/10/11_1
+	develop版(非リリース版)　MameBake3D
+
+	モーションキャプチャファイルbvhを扱う際に姿勢が180度裏返ることがあったのを修正
+	足が180度近く上がったときなどに症状が出ていました
+	Explain about ModifyEulerXYZ.
+	https://moo-ochakkolab.ssl-lolipop.jp/diary_win.html#MotionBrush_20211010
+
+	表示(disp)-->モデルパネル(model)メニューで表示されるモデルパネルに
+	deleteボタンを追加しモデルの削除をパネルから行えるようにしました
+
+	表示(disp)-->モーションパネル(motion)メニューでモーションパネルを表示
+	deleteボタン付き
+
+	トラブルシューティングの
+	MotionBrushのマニピュレータの軸の向きは合っているのか.docxを更新
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/10
+	develop版(非リリース版)　MameBake3D
+
 	Explain about ModifyEulerXYZ.
 	https://moo-ochakkolab.ssl-lolipop.jp/diary_win.html#MotionBrush_20211010
 	

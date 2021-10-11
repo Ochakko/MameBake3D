@@ -934,6 +934,7 @@ static bool s_closeFlag = false;			// 終了フラグ
 static bool s_closetoolFlag = false;
 static bool s_closeobjFlag = false;
 static bool s_closemodelFlag = false;
+static bool s_closemotionFlag = false;
 static bool s_closeconvboneFlag = false;
 static bool s_DcloseFlag = false;
 static bool s_RcloseFlag = false;
@@ -983,6 +984,7 @@ static bool s_disptool = true;
 //static bool s_dispobj = true;
 static bool s_dispobj = false;
 static bool s_dispmodel = false;//!!!!!!!!!!!!!!!!!
+static bool s_dispmotion = false;//!!!!!!!!!!!!!!!!!
 static bool s_dispground = true;
 static bool s_dispselect = true;
 //static bool s_displightarrow = true;
@@ -1117,11 +1119,23 @@ typedef struct tag_modelpanel
 	OrgWindow* panel;
 	OWP_RadioButton* radiobutton;
 	OWP_Separator* separator;
+	OWP_Separator* separator2;
 	vector<OWP_CheckBoxA*> checkvec;
+	vector<OWP_Button*> delbutton;
 	int modelindex;
 }MODELPANEL;
-
 static MODELPANEL s_modelpanel;
+
+typedef struct tag_motionpanel
+{
+	OrgWindow* panel;
+	OWP_RadioButton* radiobutton;
+	OWP_Separator* separator;
+	vector<OWP_Button*> delbutton;
+	int modelindex;
+}MOTIONPANEL;
+static MOTIONPANEL s_motionpanel;
+
 
 static map<int, int> s_lineno2boneno;
 static map<int, int> s_boneno2lineno;
@@ -1585,7 +1599,7 @@ static int OpenImpFile();
 static int OpenGcoFile();
 static int OpenMNLFile();
 
-int OnDelMotion( int delindex );
+int OnDelMotion( int delindex, bool ondelbutton = false );
 int OnAddMotion( int srcmotid, bool dorefreshtl);
 
 static int StartBt( CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero );
@@ -1623,6 +1637,7 @@ static int DispMotionWindow();
 static int DispToolWindow();
 static int DispObjPanel();
 static int DispModelPanel();
+static int DispMotionPanel();
 //static int DispConvBoneWindow();
 static int DispAngleLimitDlg();
 static int DispRotAxisDlg();
@@ -1662,9 +1677,10 @@ static int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu );
 static int OnREMenu( int selindex, int callbymenu );
 static int OnRgdMenu( int selindex, int callbymenu );
 static int OnImpMenu( int selindex );
-static int OnDelModel( int delindex );
+static int OnDelModel( int delindex, bool ondelbutton = false );
 static int OnDelAllModel();
 static int refreshModelPanel();
+static int refreshMotionPanel();
 static int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag);
 static int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext);
@@ -1673,6 +1689,8 @@ static int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext);
 
 static int CreateModelPanel();
 static int DestroyModelPanel();
+static int CreateMotionPanel();
+static int DestroyMotionPanel();
 static int CreateConvBoneWnd();
 static int DestroyConvBoneWnd();
 static int SetConvBoneModel();
@@ -2218,6 +2236,20 @@ void InitApp()
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
 
+	s_dispanglelimit = false;
+	s_dispsampleui = true;
+	s_dispmw = true;
+	s_disptool = true;
+	s_dispobj = false;
+	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+	s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanelのdispflag
+	s_dispground = true;
+	s_dispselect = true;
+	//s_displightarrow = true;
+	s_dispconvbone = false;
+
+
+
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
 	_ASSERT(s_temppath[0]);
@@ -2572,8 +2604,16 @@ void InitApp()
 	s_modelpanel.panel = 0;
 	s_modelpanel.radiobutton = 0;
 	s_modelpanel.separator = 0;
+	s_modelpanel.separator2 = 0;
 	s_modelpanel.checkvec.clear();
+	s_modelpanel.delbutton.clear();
 	s_modelpanel.modelindex = -1;
+
+	s_motionpanel.panel = 0;
+	s_motionpanel.radiobutton = 0;
+	s_motionpanel.separator = 0;
+	s_motionpanel.delbutton.clear();
+	s_motionpanel.modelindex = -1;
 
 
 	{
@@ -4279,6 +4319,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 	DestroyModelPanel();
+	DestroyMotionPanel();
 	DestroyConvBoneWnd();
 
 	//DestroySdkObjects();
@@ -5464,6 +5505,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			case ID_DISPMODELPANEL:
 				DispModelPanel();
+				//return 0;
+				break;
+			case ID_MOTIONPANEL:
+				DispMotionPanel();
 				//return 0;
 				break;
 			case ID_DISPGROUND:
@@ -8681,6 +8726,7 @@ CModel* OpenMQOFile()
 //	CallF( OnModelMenu( mindex, 0 ), return 0 );
 
 	CallF( CreateModelPanel(), return 0 );
+	CallF(CreateMotionPanel(), return 0);
 
 	return newmodel;
 }
@@ -8892,7 +8938,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		OnRenderNowLoading();
 	}
 
-	CallF( OnModelMenu( dorefreshtl, mindex, 0 ), return 0 );
+	CallF(OnModelMenu(dorefreshtl, mindex, 0), return 0);
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -9032,6 +9078,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 
 	s_model->SetMotionSpeed(g_dspeed);
+
+	CallF(CreateMotionPanel(), return 0);
+
 
 	//OnAnimMenuで呼ぶ
 	//if (skipdefref == 0) {
@@ -10086,6 +10135,31 @@ int DispModelPanel()
 	return 0;
 }
 
+int DispMotionPanel()
+{
+	if (!s_motionpanel.panel || !(s_motionpanel.panel->getHWnd())) {
+		return 0;
+	}
+
+	if (s_dispmotion) {
+		s_motionpanel.panel->setListenMouse(false);
+		s_motionpanel.panel->setVisible(false);
+		s_dispmotion = false;
+	}
+	else {
+		s_motionpanel.panel->setListenMouse(true);
+		s_motionpanel.panel->setVisible(true);
+		s_dispmotion = true;
+
+		RECT dlgrect;
+		GetWindowRect(s_motionpanel.panel->getHWnd(), &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+	}
+
+	return 0;
+}
+
+
 //int DispConvBoneWindow()
 //{
 //	if (!s_model){
@@ -10306,7 +10380,6 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	//	OnAddMotion(curmi->motid);
 	//}
 
-
 	if( saveundoflag == 1 ){
 		if( s_model ){
 			s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
@@ -10320,6 +10393,9 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	}
 
 	s_owpLTimeline->selectClear();
+
+	refreshMotionPanel();
+
 
 	SetMainWindowTitle();
 
@@ -10371,6 +10447,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
+		CreateMotionPanel();
 
 		SetMainWindowTitle();
 		return 0;//!!!!!!!!!
@@ -10385,6 +10462,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
+		CreateMotionPanel();
 
 		SetMainWindowTitle();
 		return 0;//!!!!!!!!!!!!!!!!!!!
@@ -10439,6 +10517,12 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 	refreshModelPanel();
 
+	bool savedispflag = s_dispmotion;
+	CreateMotionPanel();
+	if (savedispflag) {
+		DispMotionPanel();
+	}
+
 	g_SampleUI.GetSlider( IDC_SPEED )->SetValue( (int)( g_dspeed * 100.0f ) );
 	WCHAR sz[100];
 	swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
@@ -10446,7 +10530,9 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
 	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-		CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
+		if (dorefreshtl) {//2021/10/11
+			CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
+		}
 	}
 
 	SetMainWindowTitle();
@@ -10597,7 +10683,7 @@ int OnImpMenu( int selindex )
 	return 0;
 }
 
-int OnDelMotion( int delmenuindex )
+int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = false
 {
 	int tlnum = (int)s_tlarray.size();
 	if( (tlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= tlnum) ){
@@ -10622,10 +10708,15 @@ int OnDelMotion( int delmenuindex )
 		OnAnimMenu( true, 0 );
 	}
 
+	CreateMotionPanel();
+	if (ondelbutton) {
+		DispMotionPanel();
+	}
+
 	return 0;
 }
 
-int OnDelModel( int delmenuindex )
+int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == false
 {
 	int mdlnum = (int)s_modelindex.size();
 	if( (mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum) ){
@@ -10688,6 +10779,15 @@ int OnDelModel( int delmenuindex )
 	OnModelMenu( true, 0, 0 );
 
 	CreateModelPanel();
+	if (ondelbutton) {
+		DispModelPanel();
+	}
+
+	CreateMotionPanel();
+	//if (ondelbutton) {
+	//	DispMotionPanel();
+	//}
+
 
 	if (!s_model) {
 		OrgWindowListenMouse(false);
@@ -10737,6 +10837,7 @@ int OnDelAllModel()
 	OnModelMenu( true, -1, 0 );
 
 	CreateModelPanel();
+	CreateMotionPanel();
 
 	return 0;
 }
@@ -10811,6 +10912,17 @@ int refreshModelPanel()
 		if( s_curmodelmenuindex >= 0 ){
 			s_modelpanel.modelindex = s_curmodelmenuindex;
 			s_modelpanel.radiobutton->setSelectIndex( s_modelpanel.modelindex );
+		}
+	}
+
+	return 0;
+}
+
+int refreshMotionPanel()
+{
+	if (s_motionpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0)) {
+		if (s_model && (s_model->GetMotInfoSize() > 0) && s_motmenuindexmap[s_model] >= 0) {
+			s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);
 		}
 	}
 
@@ -12329,7 +12441,7 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 void ActivatePanel( int state )
 {
-	if (!s_timelineWnd || !s_toolWnd || !s_layerWnd || !s_modelpanel.panel)
+	if (!s_timelineWnd || !s_toolWnd || !s_layerWnd || !s_modelpanel.panel || !s_motionpanel.panel)
 		return;
 
 
@@ -12347,12 +12459,18 @@ void ActivatePanel( int state )
 		if( s_dispmodel && s_modelpanel.panel ){
 			s_modelpanel.panel->setVisible( true );
 		}
+		if (s_dispmotion && s_motionpanel.panel) {
+			s_motionpanel.panel->setVisible(true);
+		}
 	}else if( state == 0 ){
 		s_timelineWnd->setVisible( false );
 		s_toolWnd->setVisible( false );
 		s_layerWnd->setVisible( false );
 		if( s_modelpanel.panel ){
 			s_modelpanel.panel->setVisible( false );
+		}
+		if (s_motionpanel.panel) {
+			s_motionpanel.panel->setVisible(false);
 		}
 	}
 }
@@ -12373,6 +12491,10 @@ int DestroyModelPanel()
 		delete s_modelpanel.separator;
 		s_modelpanel.separator = 0;
 	}
+	if (s_modelpanel.separator2) {
+		delete s_modelpanel.separator2;
+		s_modelpanel.separator2 = 0;
+	}
 	if( !(s_modelpanel.checkvec.empty()) ){
 		int checknum = (int)s_modelpanel.checkvec.size();
 		int checkno;
@@ -12381,7 +12503,15 @@ int DestroyModelPanel()
 		}
 	}
 	s_modelpanel.checkvec.clear();
-	
+	if (!(s_modelpanel.delbutton.empty())) {
+		int buttonnum = (int)s_modelpanel.delbutton.size();
+		int buttonno;
+		for (buttonno = 0; buttonno < buttonnum; buttonno++) {
+			delete s_modelpanel.delbutton[buttonno];
+		}
+	}
+	s_modelpanel.delbutton.clear();
+
 	s_modelpanel.modelindex = -1;
 
 	return 0;
@@ -12405,7 +12535,7 @@ int CreateModelPanel()
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(2000, 0),		//位置
-		WindowSize(200,100),	//サイズ
+		WindowSize(400,460),	//サイズ
 		L"ModelPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
 		//false,
@@ -12414,6 +12544,11 @@ int CreateModelPanel()
 		70,50,70,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
+	if (!s_modelpanel.panel) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	s_modelpanel.panel->setSizeMin(WindowSize(150,150));		// 最小サイズを設定
 
@@ -12430,21 +12565,38 @@ int CreateModelPanel()
 	}
 
 	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+	if (!s_modelpanel.separator) {
+		_ASSERT(0);
+		return 1;
+	}
+	s_modelpanel.separator->setSize(WindowSize(400, 30));
+	s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, false);									// セパレータ2（境界線による横方向2分割）
+	if (!s_modelpanel.separator2) {
+		_ASSERT(0);
+		return 1;
+	}
+	s_modelpanel.separator2->setSize(WindowSize(200, 30));
 
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		CModel* curmodel = s_modelindex[modelcnt].modelptr;
 		OWP_CheckBoxA *owpCheckBox= new OWP_CheckBoxA( L"Show/Hide", curmodel->GetModelDisp() );
 		s_modelpanel.checkvec.push_back( owpCheckBox );
+		OWP_Button* owpButton = new OWP_Button(L"delete");
+		s_modelpanel.delbutton.push_back(owpButton);
 	}
 
 	s_modelpanel.panel->addParts( *(s_modelpanel.separator) );
 
 	s_modelpanel.separator->addParts1( *(s_modelpanel.radiobutton) );
+	s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
 
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
-		s_modelpanel.separator->addParts2( *curcb );
+		s_modelpanel.separator2->addParts1( *curcb );
+
+		OWP_Button* curbutton = s_modelpanel.delbutton[modelcnt];
+		s_modelpanel.separator2->addParts2(*curbutton);
 	}
 
 	s_modelpanel.modelindex = s_curmodelmenuindex;
@@ -12472,6 +12624,18 @@ int CreateModelPanel()
 				}
 			}
 		} );
+
+		s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
+			if (s_model) {
+				if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//全部消すときはメインメニューから
+					CModel* curmodel = s_modelindex[modelcnt].modelptr;
+					if (curmodel) {
+						bool ondelbutton = true;
+						OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+					}
+				}
+			}
+		});
 	}
 
 	s_modelpanel.radiobutton->setSelectListener( [](){
@@ -12494,11 +12658,187 @@ int CreateModelPanel()
 	else {
 		s_modelpanel.panel->setPos(WindowPos(600, 200));
 	}
-	s_modelpanel.panel->setSize(WindowSize(200, 100));//880
+	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
+	s_modelpanel.panel->setSize(WindowSize(400, 460));//880
 	s_modelpanel.panel->setVisible(false);
+	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+
 
 	return 0;
 }
+
+
+
+int DestroyMotionPanel()
+{
+	if (s_motionpanel.panel) {
+		s_motionpanel.panel->setVisible(false);
+		delete s_motionpanel.panel;
+		s_motionpanel.panel = 0;
+	}
+	if (s_motionpanel.radiobutton) {
+		delete s_motionpanel.radiobutton;
+		s_motionpanel.radiobutton = 0;
+	}
+	if (s_motionpanel.separator) {
+		delete s_motionpanel.separator;
+		s_motionpanel.separator = 0;
+	}
+	if (!(s_motionpanel.delbutton.empty())) {
+		int buttonnum = (int)s_motionpanel.delbutton.size();
+		int buttonno;
+		for (buttonno = 0; buttonno < buttonnum; buttonno++) {
+			delete s_motionpanel.delbutton[buttonno];
+		}
+	}
+	s_motionpanel.delbutton.clear();
+
+	s_motionpanel.modelindex = -1;
+
+	return 0;
+}
+
+int CreateMotionPanel()
+{
+	DestroyMotionPanel();
+
+	int modelnum = (int)s_modelindex.size();
+	if (modelnum <= 0) {
+		return 0;
+	}
+	if (!s_model) {
+		return 0;
+	}
+	int motionnum = s_model->GetMotInfoSize();
+	if (motionnum <= 0) {
+		return 0;
+	}
+
+	int classcnt = 0;
+	WCHAR clsname[256];
+	swprintf_s(clsname, 256, L"MotionPanel%d", classcnt);
+
+	s_motionpanel.panel = new OrgWindow(
+		1,
+		clsname,		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(2000, 0),		//位置
+		WindowSize(400, 460),	//サイズ
+		L"MotionPanel",	//タイトル
+		//s_mainhwnd,					//親ウィンドウハンドル
+		//false,
+		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+		true,					//表示・非表示状態
+		70, 50, 70,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+	if (!s_motionpanel.panel) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+
+	s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+	if (!s_motionpanel.separator) {
+		_ASSERT(0);
+		return 1;
+	}
+	s_motionpanel.separator->setSize(WindowSize(400, 30));
+
+	s_motionpanel.panel->addParts(*(s_motionpanel.separator));
+
+
+	int motioncnt = 0;
+	std::map<int, MOTINFO*>::iterator itrmi;
+	for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+		MOTINFO* curmi = (MOTINFO*)(itrmi->second);
+		if (curmi) {
+			WCHAR wmotname[MAX_PATH] = { 0L };
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
+			if (motioncnt == 0) {
+				s_motionpanel.radiobutton = new OWP_RadioButton(wmotname);
+			}
+			else {
+				s_motionpanel.radiobutton->addLine(wmotname);
+			}
+
+			motioncnt++;
+		}
+	}
+
+	s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
+
+	std::map<int, MOTINFO*>::iterator itrmi2;
+	for (itrmi2 = s_model->GetMotInfoBegin(); itrmi2 != s_model->GetMotInfoEnd(); itrmi2++) {
+		MOTINFO* curmi = (MOTINFO*)(itrmi2->second);
+		if (curmi) {
+			OWP_Button* owpButton = new OWP_Button(L"delete");
+			s_motionpanel.delbutton.push_back(owpButton);
+			s_motionpanel.separator->addParts2(*owpButton);
+		}
+	}
+
+
+	s_motionpanel.modelindex = s_curmodelmenuindex;
+	s_motionpanel.radiobutton->setSelectIndex(0);
+
+	s_motionpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+////////////
+	s_motionpanel.panel->setCloseListener([]() {
+		if (s_model) {
+			s_closemotionFlag = true;
+		}
+		});
+
+	int delmenuindex = 0;
+	for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+		MOTINFO* curmi = (MOTINFO*)(itrmi->second);
+		if (curmi) {
+			s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
+				if (s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+					bool ondelbutton = true;
+					OnDelMotion(delmenuindex, ondelbutton);
+				}
+			});
+			delmenuindex++;
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+
+	s_motionpanel.radiobutton->setSelectListener([]() {
+		if (s_model) {
+			int curindex = s_motionpanel.radiobutton->getSelectIndex();
+			if ((curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
+				int motionindex = curindex;
+				OnAnimMenu(true, motionindex, 1);
+				s_motionpanel.panel->callRewrite();
+			}
+		}
+	});
+
+
+	RECT wnd3drect;
+	if (s_mainhwnd) {
+		GetWindowRect(s_mainhwnd, &wnd3drect);
+		s_motionpanel.panel->setPos(WindowPos(wnd3drect.left + 500, wnd3drect.top + 500));
+	}
+	else {
+		s_motionpanel.panel->setPos(WindowPos(200, 200));
+	}
+	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
+	s_motionpanel.panel->setSize(WindowSize(400, 460));//880
+	s_motionpanel.panel->setVisible(false);
+	s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+
+
+	return 0;
+}
+
 
 int DestroyConvBoneWnd()
 {
@@ -17371,6 +17711,13 @@ int OnFrameCloseFlag()
 		s_dispmodel = false;
 		if (s_modelpanel.panel){
 			s_modelpanel.panel->setVisible(0);
+		}
+	}
+	if (s_closemotionFlag) {
+		s_closemotionFlag = false;
+		s_dispmotion = false;
+		if (s_motionpanel.panel) {
+			s_motionpanel.panel->setVisible(0);
 		}
 	}
 	if (s_closeconvboneFlag){
@@ -22685,6 +23032,10 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				break;
 			case ID_DISPMODELPANEL:
 				DispModelPanel();
+				//return 0;
+				break;
+			case ID_MOTIONPANEL:
+				DispMotionPanel();
 				//return 0;
 				break;
 			case ID_DISPGROUND:
