@@ -1680,7 +1680,7 @@ static int OnImpMenu( int selindex );
 static int OnDelModel( int delindex, bool ondelbutton = false );
 static int OnDelAllModel();
 static int refreshModelPanel();
-static int refreshMotionPanel();
+//static int refreshMotionPanel();
 static int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag);
 static int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext);
@@ -5539,6 +5539,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 	}else if( uMsg == WM_MOUSEWHEEL ){
+		if ((g_keybuf['T'] & 0x80) != 0) {
+			if (s_model && (s_curboneno > 0)) {
+				int delta;
+				delta = GET_WHEEL_DELTA_WPARAM(wParam);
+				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
+			}
+		}
+
+
+
 		/*
 		int delta;
 		delta = GET_WHEEL_DELTA_WPARAM(wParam);
@@ -10394,8 +10404,14 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	s_owpLTimeline->selectClear();
 
-	refreshMotionPanel();
 
+	//refreshMotionPanel();
+	int savedispflag;
+	savedispflag = s_dispmotion;
+	CreateMotionPanel();
+	if (savedispflag == 1) {
+		DispMotionPanel();
+	}
 
 	SetMainWindowTitle();
 
@@ -10530,9 +10546,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
 	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-		if (dorefreshtl) {//2021/10/11
-			CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
-		}
+		CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
 	}
 
 	SetMainWindowTitle();
@@ -10918,16 +10932,16 @@ int refreshModelPanel()
 	return 0;
 }
 
-int refreshMotionPanel()
-{
-	if (s_motionpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0)) {
-		if (s_model && (s_model->GetMotInfoSize() > 0) && s_motmenuindexmap[s_model] >= 0) {
-			s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);
-		}
-	}
-
-	return 0;
-}
+//int refreshMotionPanel()
+//{
+//	if (s_motionpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0)) {
+//		if (s_model && (s_model->GetMotInfoSize() > 0) && s_motmenuindexmap[s_model] >= 0) {
+//			s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);
+//		}
+//	}
+//
+//	return 0;
+//}
 
 int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 {
@@ -23066,7 +23080,20 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			}
 		}
 	}
-		break;
+	break;
+
+	case WM_MOUSEWHEEL:
+	{
+		if ((g_keybuf['T'] & 0x80) != 0) {
+			if (s_model && (s_curboneno > 0)) {
+				int delta;
+				delta = GET_WHEEL_DELTA_WPARAM(wParam);
+				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
+			}
+		}
+	}
+	break;
+
 	default:
 		//if (uMsg != WM_SETCURSOR) {
 			lret = DefWindowProc(hwnd, uMsg, wParam, lParam);

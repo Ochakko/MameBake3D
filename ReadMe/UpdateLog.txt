@@ -1,3 +1,13 @@
+2021/10/11_2
+	develop版(非リリース版)　MameBake3D
+
+	ジョイントを選択した後、Tキーを押しながらマウスホイールでボーン軸のツイスト回転
+	SelectJoint-->T Key + MouseWheel --> BoneAxisTwist
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/11_1
 	develop版(非リリース版)　MameBake3D
 
