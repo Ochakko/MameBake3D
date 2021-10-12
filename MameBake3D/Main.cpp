@@ -627,6 +627,7 @@ static float s_projnear = 0.01f;
 static float s_fAspectRatio = 1.0f;
 static float s_cammvstep = 100.0f;
 static int s_editmotionflag = -1;
+static int s_tkeyflag = 0;
 
 static WCHAR s_strcurrent[256] = L"Move To Current Frame";
 static WCHAR s_streditrange[256] = L"Drag Edit Range";
@@ -2248,6 +2249,7 @@ void InitApp()
 	//s_displightarrow = true;
 	s_dispconvbone = false;
 
+	s_tkeyflag = 0;//bone twist
 
 
 	s_temppath[0] = 0L;
@@ -5541,13 +5543,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}else if( uMsg == WM_MOUSEWHEEL ){
 		if ((g_keybuf['T'] & 0x80) != 0) {
 			if (s_model && (s_curboneno > 0)) {
+				s_tkeyflag = 1;
+
 				int delta;
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
-
-
 
 		/*
 		int delta;
@@ -12548,7 +12550,7 @@ int CreateModelPanel()
 		1,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(2000, 0),		//位置
+		WindowPos(1600, 0),		//位置
 		WindowSize(400,460),	//サイズ
 		L"ModelPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
@@ -12667,7 +12669,7 @@ int CreateModelPanel()
 	RECT wnd3drect;
 	if (s_mainhwnd) {
 		GetWindowRect(s_mainhwnd, &wnd3drect);
-		s_modelpanel.panel->setPos(WindowPos(wnd3drect.left + 500, wnd3drect.top + 500));
+		s_modelpanel.panel->setPos(WindowPos(wnd3drect.left + 100, wnd3drect.top + 500));
 	}
 	else {
 		s_modelpanel.panel->setPos(WindowPos(600, 200));
@@ -12796,7 +12798,14 @@ int CreateMotionPanel()
 
 
 	s_motionpanel.modelindex = s_curmodelmenuindex;
-	s_motionpanel.radiobutton->setSelectIndex(0);
+	//s_motionpanel.radiobutton->setSelectIndex(0);
+	if (s_model) {
+		s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);//!!!!
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 	s_motionpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -17117,6 +17126,12 @@ int OnFrameKeyboard()
 		g_shiftkey = false;
 	}
 
+
+	//end of BoneTwist on MouseWheel 
+	if ((s_tkeyflag != 0) && (s_editmotionflag >= 0) && ((g_keybuf['T'] & 0x80) == 0)) {
+		s_tkeyflag = 0;
+		PrepairUndo();
+	}
 
 	/*
 	if (g_controlkey == false){
@@ -23086,6 +23101,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		if ((g_keybuf['T'] & 0x80) != 0) {
 			if (s_model && (s_curboneno > 0)) {
+				s_tkeyflag = 1;
+
 				int delta;
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
