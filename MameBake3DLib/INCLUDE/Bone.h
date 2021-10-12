@@ -381,7 +381,7 @@ public:
 	ChaMatrix CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	ChaVector3 CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);
+	ChaVector3 CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcframe, ChaVector3* befeulptr = 0);
 	//ChaVector3 CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);
 	ChaVector3 CalcFBXTra(int srcmotid, double srcframe);
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);

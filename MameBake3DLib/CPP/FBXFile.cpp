@@ -2823,8 +2823,11 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 
 		lCurve = lSkel->LclRotation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
+		
+		int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			cureul = curbone->CalcFBXEulXYZ(curmotid, frameno, &befeul);
+			cureul = curbone->CalcFBXEulXYZ(notmodifyflag, curmotid, frameno, &befeul);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 

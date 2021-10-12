@@ -2366,13 +2366,16 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		isendbone = 1;
 	}
 
-	int notmodifyflag;
-	if ((srcframe == 0.0) || (srcframe == 1.0)) {
-		notmodifyflag = 1;
-	}
-	else {
-		notmodifyflag = 0;
-	}
+	//int notmodifyflag;
+	//if ((srcframe == 0.0) || (srcframe == 1.0)) {
+	//	notmodifyflag = 1;
+	//}
+	//else {
+	//	notmodifyflag = 0;
+	//}
+
+
+	int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
 
 
 	if (axiskind == -1){
@@ -4656,7 +4659,7 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	return 0;
 }
 
-ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr)
+ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcframe, ChaVector3* befeulptr)
 {
 	CMotionPoint tmpmp;
 	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
@@ -4681,11 +4684,16 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 	}
 
 	int notmodifyflag;
-	if ((srcframe == 0.0) || (srcframe == 1.0)) {
-		notmodifyflag = 1;
+	if (srcnotmodifyflag == 0) {
+		if ((srcframe == 0.0) || (srcframe == 1.0)) {
+			notmodifyflag = 1;
+		}
+		else {
+			notmodifyflag = 0;
+		}
 	}
 	else {
-		notmodifyflag = 0;
+		notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
 	}
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);

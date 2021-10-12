@@ -2552,13 +2552,17 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	//####################################
 	// 
 	// 
+	// 	notmodifyflag == 1//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+	// 
+	// 
+	// 
 	// 試行錯誤時の症状と数学を思い出し、結局次のようになった.
 	// ノイズが乗っているときにも今までで一番きれいなオイラーグラフになった.つま先に関しても改善.
 	// 
 	//座標系合わせ。軸の向きが座標系に合うように１８０度回転チェック。座標系を合わせるにはbefeulに近づければ良い.
 	// 
 	// 
-	// クォータニオンからオイラー角を計算するとき、ボーン軸に関して１８０度ねじれるような逆クオータニオンのオイラー角と同じオイラー角になる（クオータニオンにおいては180度が一回転）.
+	// クォータニオンからオイラー角を計算するとき、ボーン軸に関して１８０度ねじれるようなクオータニオンのオイラー角と同じオイラー角になる.
 	// 例えばZが１８０度回転した時、XとYは-X, -Yになる.(180 - X)では無かった.
 	// 裏返ったオイラー角の方がbefeulに近い場合を検出してオイラー角を裏返返す処理をする.
 	// 
@@ -2658,12 +2662,12 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 
 	}
 	else {
-		if (s0 <= s1) {
+		//if (s0 <= s1) {
 			eulerA->x = (float)tmpX0; eulerA->y = (float)tmpY0; eulerA->z = (float)tmpZ0;
-		}
-		else {
-			eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
-		}
+		//}
+		//else {
+		//	eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
+		//}
 	}
 
 	return 0;
