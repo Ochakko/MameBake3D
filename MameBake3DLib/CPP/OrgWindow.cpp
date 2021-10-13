@@ -44,7 +44,7 @@ namespace OrgWinGUI{
 		paintTitleBar();
 
 		//if (g_retargetbatchflag == 0) {
-		if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
+		if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0)) {
 			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
 				itr != partsList.end();
 				itr++) {

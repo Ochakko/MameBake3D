@@ -553,7 +553,7 @@ public: //accesser
 			return m_motionkey[srccookie - 1];
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);//OnAddMotion‚Ì‚Æ‚«‚É‚Í—L‚è“¾‚é
 			return 0;
 		}
 	};

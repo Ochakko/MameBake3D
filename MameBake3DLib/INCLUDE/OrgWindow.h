@@ -1262,27 +1262,30 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
 				 plItr!=partsList.end();
 				 plItr++ ){
-				WindowSize partsSize= (*plItr)->getSize();
-				int tmpPosX= e.localX- (*plItr)->getPos().x;
-				int tmpPosY= e.localY- (*plItr)->getPos().y;
-				if( 0<=tmpPosX && tmpPosX<partsSize.x &&
-					0<=tmpPosY && tmpPosY<partsSize.y ){
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX - (*plItr)->getPos().x;
+					int tmpPosY = e.localY - (*plItr)->getPos().y;
+					if (0 <= tmpPosX && tmpPosX < partsSize.x &&
+						0 <= tmpPosY && tmpPosY < partsSize.y) {
 
-					MouseEvent mouseEvent;
-					mouseEvent.globalX= e.globalX;
-					mouseEvent.globalY= e.globalY;
-					mouseEvent.localX= tmpPosX;
-					mouseEvent.localY= tmpPosY;
-					mouseEvent.altKey= e.altKey;
-					mouseEvent.shiftKey= e.shiftKey;
-					mouseEvent.ctrlKey= e.ctrlKey;
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = tmpPosX;
+						mouseEvent.localY = tmpPosY;
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
 
-					if( lButton ){
-						(*plItr)->onLButtonDown(mouseEvent);
-					}else{
-						(*plItr)->onRButtonDown(mouseEvent);
+						if (lButton) {
+							(*plItr)->onLButtonDown(mouseEvent);
+						}
+						else {
+							(*plItr)->onRButtonDown(mouseEvent);
+						}
+						return;
 					}
-					return;
 				}
 			}
 		}
@@ -1320,20 +1323,22 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
 				 plItr!=partsList.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				if(lButton){
-					(*plItr)->onLButtonUp(mouseEvent);
-				}else{
-					(*plItr)->onRButtonUp(mouseEvent);
+					if (lButton) {
+						(*plItr)->onLButtonUp(mouseEvent);
+					}
+					else {
+						(*plItr)->onRButtonUp(mouseEvent);
+					}
 				}
 			}
 		}
@@ -1357,23 +1362,25 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
 				plItr != partsList.end();
 				plItr++){
-				WindowSize partsSize = (*plItr)->getSize();
-				int tmpPosX = e.localX - (*plItr)->getPos().x;
-				int tmpPosY = e.localY - (*plItr)->getPos().y;
-				if (0 <= tmpPosX && tmpPosX<partsSize.x &&
-					0 <= tmpPosY && tmpPosY<partsSize.y){
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX - (*plItr)->getPos().x;
+					int tmpPosY = e.localY - (*plItr)->getPos().y;
+					if (0 <= tmpPosX && tmpPosX < partsSize.x &&
+						0 <= tmpPosY && tmpPosY < partsSize.y) {
 
-					MouseEvent mouseEvent;
-					mouseEvent.globalX = e.globalX;
-					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = tmpPosX;
-					mouseEvent.localY = tmpPosY;
-					mouseEvent.altKey = e.altKey;
-					mouseEvent.shiftKey = e.shiftKey;
-					mouseEvent.ctrlKey = e.ctrlKey;
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = tmpPosX;
+						mouseEvent.localY = tmpPosY;
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
 
-					(*plItr)->onMButtonDown(mouseEvent);
-					return;
+						(*plItr)->onMButtonDown(mouseEvent);
+						return;
+					}
 				}
 			}
 
@@ -1392,17 +1399,18 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
 				plItr != partsList.end();
 				plItr++){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-
-				(*plItr)->onMButtonUp(mouseEvent);
+					(*plItr)->onMButtonUp(mouseEvent);
+				}
 			}
 		}
 		void onMouseWheel(const MouseEvent& e){
@@ -1425,11 +1433,12 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
 				plItr != partsList.end();
 				plItr++){
-				WindowSize partsSize = (*plItr)->getSize();
-				int tmpPosX = e.localX - (*plItr)->getPos().x;
-				int tmpPosY = e.localY - (*plItr)->getPos().y;
-				//if (0 <= tmpPosX && tmpPosX<partsSize.x &&
-				//	0 <= tmpPosY && tmpPosY<partsSize.y){
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX - (*plItr)->getPos().x;
+					int tmpPosY = e.localY - (*plItr)->getPos().y;
+					//if (0 <= tmpPosX && tmpPosX<partsSize.x &&
+					//	0 <= tmpPosY && tmpPosY<partsSize.y){
 
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1444,6 +1453,7 @@ void s_dummyfunc()
 					(*plItr)->onMouseWheel(mouseEvent);
 					//return;
 				//}
+				}
 			}
 
 
@@ -1465,17 +1475,18 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
 				 plItr!=partsList.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				(*plItr)->onMouseMove(mouseEvent);
+					(*plItr)->onMouseMove(mouseEvent);
+				}
 			}
 		}
 
@@ -1492,17 +1503,18 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
 				plItr != partsList.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-
-				(*plItr)->onMouseHover(mouseEvent);
+					(*plItr)->onMouseHover(mouseEvent);
+				}
 			}
 		}
 		void onMouseLeave(const MouseEvent& e) {
@@ -1518,17 +1530,18 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
 				plItr != partsList.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-
-				(*plItr)->onMouseLeave(mouseEvent);
+					(*plItr)->onMouseLeave(mouseEvent);
+				}
 			}
 		}
 
@@ -1826,32 +1839,34 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList1.begin();
 				 plItr!=partsList1.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX+pos.x- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY+pos.y- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				(*plItr)->onMouseMove(mouseEvent);
+					(*plItr)->onMouseMove(mouseEvent);
+				}
 			}
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList2.begin();
 				 plItr!=partsList2.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX+pos.x- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY+pos.y- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				(*plItr)->onMouseMove(mouseEvent);
+					(*plItr)->onMouseMove(mouseEvent);
+				}
 			}
 		}
 		virtual void onMouseWheel(const MouseEvent& e) {
@@ -1859,34 +1874,36 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList1.begin();
 				plItr != partsList1.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-				mouseEvent.wheeldelta = e.wheeldelta;
-
-				(*plItr)->onMouseWheel(mouseEvent);
+					(*plItr)->onMouseWheel(mouseEvent);
+				}
 			}
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList2.begin();
 				plItr != partsList2.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-				mouseEvent.wheeldelta = e.wheeldelta;
-
-				(*plItr)->onMouseWheel(mouseEvent);
+					(*plItr)->onMouseWheel(mouseEvent);
+				}
 			}
 		}
 
@@ -1895,34 +1912,36 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList1.begin();
 				plItr != partsList1.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-				mouseEvent.wheeldelta = e.wheeldelta;
-
-				(*plItr)->onMButtonDown(mouseEvent);
+					(*plItr)->onMButtonDown(mouseEvent);
+				}
 			}
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList2.begin();
 				plItr != partsList2.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-				mouseEvent.wheeldelta = e.wheeldelta;
-
-				(*plItr)->onMButtonDown(mouseEvent);
+					(*plItr)->onMButtonDown(mouseEvent);
+				}
 			}
 
 		}
@@ -1931,34 +1950,36 @@ void s_dummyfunc()
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList1.begin();
 				plItr != partsList1.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-				mouseEvent.wheeldelta = e.wheeldelta;
-
-				(*plItr)->onMButtonUp(mouseEvent);
+					(*plItr)->onMButtonUp(mouseEvent);
+				}
 			}
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList2.begin();
 				plItr != partsList2.end();
 				plItr++) {
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+					mouseEvent.wheeldelta = e.wheeldelta;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-				mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
-				mouseEvent.wheeldelta = e.wheeldelta;
-
-				(*plItr)->onMButtonUp(mouseEvent);
+					(*plItr)->onMButtonUp(mouseEvent);
+				}
 			}
 
 		}
@@ -2071,28 +2092,30 @@ void s_dummyfunc()
 
 				for(std::list<OrgWindowParts*>::iterator plItr=partsList1.begin();
 					plItr!=partsList1.end(); plItr++ ){
+					if (*plItr) {
+						WindowSize partsSize = (*plItr)->getSize();
+						int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+						int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+						if (0 <= tmpPosX && tmpPosX < partsSize.x &&
+							0 <= tmpPosY && tmpPosY < partsSize.y) {
 
-					WindowSize partsSize= (*plItr)->getSize();
-					int tmpPosX= e.localX+pos.x- (*plItr)->getPos().x;
-					int tmpPosY= e.localY+pos.y- (*plItr)->getPos().y;
-					if( 0<=tmpPosX && tmpPosX<partsSize.x &&
-						0<=tmpPosY && tmpPosY<partsSize.y ){
+							MouseEvent mouseEvent;
+							mouseEvent.globalX = e.globalX;
+							mouseEvent.globalY = e.globalY;
+							mouseEvent.localX = tmpPosX;
+							mouseEvent.localY = tmpPosY;
+							mouseEvent.altKey = e.altKey;
+							mouseEvent.shiftKey = e.shiftKey;
+							mouseEvent.ctrlKey = e.ctrlKey;
 
-						MouseEvent mouseEvent;
-						mouseEvent.globalX= e.globalX;
-						mouseEvent.globalY= e.globalY;
-						mouseEvent.localX= tmpPosX;
-						mouseEvent.localY= tmpPosY;
-						mouseEvent.altKey= e.altKey;
-						mouseEvent.shiftKey= e.shiftKey;
-						mouseEvent.ctrlKey= e.ctrlKey;
-
-						if( lButton ){
-							(*plItr)->onLButtonDown(mouseEvent);
-						}else{
-							(*plItr)->onRButtonDown(mouseEvent);
+							if (lButton) {
+								(*plItr)->onLButtonDown(mouseEvent);
+							}
+							else {
+								(*plItr)->onRButtonDown(mouseEvent);
+							}
+							return;
 						}
-						return;
 					}
 				}
 
@@ -2101,28 +2124,30 @@ void s_dummyfunc()
 
 				for(std::list<OrgWindowParts*>::iterator plItr=partsList2.begin();
 					plItr!=partsList2.end(); plItr++ ){
+					if (*plItr) {
+						WindowSize partsSize = (*plItr)->getSize();
+						int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+						int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+						if (0 <= tmpPosX && tmpPosX < partsSize.x &&
+							0 <= tmpPosY && tmpPosY < partsSize.y) {
 
-					WindowSize partsSize= (*plItr)->getSize();
-					int tmpPosX= e.localX+pos.x- (*plItr)->getPos().x;
-					int tmpPosY= e.localY+pos.y- (*plItr)->getPos().y;
-					if( 0<=tmpPosX && tmpPosX<partsSize.x &&
-						0<=tmpPosY && tmpPosY<partsSize.y ){
+							MouseEvent mouseEvent;
+							mouseEvent.globalX = e.globalX;
+							mouseEvent.globalY = e.globalY;
+							mouseEvent.localX = tmpPosX;
+							mouseEvent.localY = tmpPosY;
+							mouseEvent.altKey = e.altKey;
+							mouseEvent.shiftKey = e.shiftKey;
+							mouseEvent.ctrlKey = e.ctrlKey;
 
-						MouseEvent mouseEvent;
-						mouseEvent.globalX= e.globalX;
-						mouseEvent.globalY= e.globalY;
-						mouseEvent.localX= tmpPosX;
-						mouseEvent.localY= tmpPosY;
-						mouseEvent.altKey= e.altKey;
-						mouseEvent.shiftKey= e.shiftKey;
-						mouseEvent.ctrlKey= e.ctrlKey;
-
-						if( lButton ){
-							(*plItr)->onLButtonDown(mouseEvent);
-						}else{
-							(*plItr)->onRButtonDown(mouseEvent);
+							if (lButton) {
+								(*plItr)->onLButtonDown(mouseEvent);
+							}
+							else {
+								(*plItr)->onRButtonDown(mouseEvent);
+							}
+							return;
 						}
-						return;
 					}
 				}
 
@@ -2142,39 +2167,43 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList1.begin();
 				 plItr!=partsList1.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX+pos.x- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY+pos.y- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				if( lButton ){
-					(*plItr)->onLButtonUp(mouseEvent);
-				}else{
-					(*plItr)->onRButtonUp(mouseEvent);
+					if (lButton) {
+						(*plItr)->onLButtonUp(mouseEvent);
+					}
+					else {
+						(*plItr)->onRButtonUp(mouseEvent);
+					}
 				}
 			}
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList2.begin();
 				 plItr!=partsList2.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX+pos.x- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY+pos.y- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				if( lButton ){
-					(*plItr)->onLButtonUp(mouseEvent);
-				}else{
-					(*plItr)->onRButtonUp(mouseEvent);
+					if (lButton) {
+						(*plItr)->onLButtonUp(mouseEvent);
+					}
+					else {
+						(*plItr)->onRButtonUp(mouseEvent);
+					}
 				}
 			}
 		}
@@ -2396,17 +2425,18 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
 				 plItr!=partsList.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX+pos.x- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY+pos.y- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				(*plItr)->onMouseMove(mouseEvent);
+					(*plItr)->onMouseMove(mouseEvent);
+				}
 			}
 		}
 
@@ -2489,27 +2519,30 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
 				 plItr!=partsList.end();
 				 plItr++ ){
-				WindowSize partsSize= (*plItr)->getSize();
-				int tmpPosX= e.localX+pos.x- (*plItr)->getPos().x;
-				int tmpPosY= e.localY+pos.y- (*plItr)->getPos().y;
-				if( 0<=tmpPosX && tmpPosX<partsSize.x &&
-					0<=tmpPosY && tmpPosY<partsSize.y ){
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+					int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+					if (0 <= tmpPosX && tmpPosX < partsSize.x &&
+						0 <= tmpPosY && tmpPosY < partsSize.y) {
 
-					MouseEvent mouseEvent;
-					mouseEvent.globalX= e.globalX;
-					mouseEvent.globalY= e.globalY;
-					mouseEvent.localX= tmpPosX;
-					mouseEvent.localY= tmpPosY;
-					mouseEvent.altKey= e.altKey;
-					mouseEvent.shiftKey= e.shiftKey;
-					mouseEvent.ctrlKey= e.ctrlKey;
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = tmpPosX;
+						mouseEvent.localY = tmpPosY;
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
 
-					if( lButton ){
-						(*plItr)->onLButtonDown(mouseEvent);
-					}else{
-						(*plItr)->onRButtonDown(mouseEvent);
+						if (lButton) {
+							(*plItr)->onLButtonDown(mouseEvent);
+						}
+						else {
+							(*plItr)->onRButtonDown(mouseEvent);
+						}
+						return;
 					}
-					return;
 				}
 			}
 
@@ -2520,20 +2553,22 @@ void s_dummyfunc()
 			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
 				 plItr!=partsList.end();
 				 plItr++ ){
+				if (*plItr) {
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX= e.globalX;
-				mouseEvent.globalY= e.globalY;
-				mouseEvent.localX= e.localX+pos.x- (*plItr)->getPos().x;
-				mouseEvent.localY= e.localY+pos.y- (*plItr)->getPos().y;
-				mouseEvent.altKey= e.altKey;
-				mouseEvent.shiftKey= e.shiftKey;
-				mouseEvent.ctrlKey= e.ctrlKey;
-
-				if( lButton ){
-					(*plItr)->onLButtonUp(mouseEvent);
-				}else{
-					(*plItr)->onRButtonUp(mouseEvent);
+					if (lButton) {
+						(*plItr)->onLButtonUp(mouseEvent);
+					}
+					else {
+						(*plItr)->onRButtonUp(mouseEvent);
+					}
 				}
 			}
 		}
@@ -8590,20 +8625,22 @@ void s_dummyfunc()
 
 			//内部パーツ
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin(); plItr != partsList.end(); plItr++){
-				WindowSize partsSize = (*plItr)->getSize();
-				int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
-				int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+					int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = tmpPosX;
-				mouseEvent.localY = tmpPosY;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = tmpPosX;
+					mouseEvent.localY = tmpPosY;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				(*plItr)->onLButtonDown(mouseEvent);
+					(*plItr)->onLButtonDown(mouseEvent);
+				}
 			}
 
 		}
@@ -8623,20 +8660,22 @@ void s_dummyfunc()
 
 			//内部パーツ
 			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin(); plItr != partsList.end(); plItr++){
-				WindowSize partsSize = (*plItr)->getSize();
-				int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
-				int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+					int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
 
-				MouseEvent mouseEvent;
-				mouseEvent.globalX = e.globalX;
-				mouseEvent.globalY = e.globalY;
-				mouseEvent.localX = tmpPosX;
-				mouseEvent.localY = tmpPosY;
-				mouseEvent.altKey = e.altKey;
-				mouseEvent.shiftKey = e.shiftKey;
-				mouseEvent.ctrlKey = e.ctrlKey;
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = tmpPosX;
+					mouseEvent.localY = tmpPosY;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
 
-				(*plItr)->onLButtonUp(mouseEvent);
+					(*plItr)->onLButtonUp(mouseEvent);
+				}
 			}
 
 			//再描画要求

@@ -5547,7 +5547,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 				int delta;
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
-				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
 
@@ -7762,6 +7762,7 @@ unsigned __stdcall ThreadFunc_MotionCacheDisp(LPVOID lpThreadParam)
 	while (InterlockedAdd(&g_motioncachebatchflag, 0) == 1) {
 		if (s_motioncachebatchwnd != 0) {
 			SendMessage(s_motioncachebatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
+			InvalidateRect(s_motioncachebatchwnd, NULL, TRUE);
 			UpdateWindow(s_motioncachebatchwnd);
 		}
 		Sleep(20);
@@ -8026,6 +8027,7 @@ unsigned __stdcall ThreadFunc_RetargetDisp(LPVOID lpThreadParam)
 	while (InterlockedAdd(&g_retargetbatchflag, 0) == 1) {
 		if (s_retargetbatchwnd != 0) {
 			SendMessage(s_retargetbatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
+			InvalidateRect(s_retargetbatchwnd, NULL, TRUE);
 			UpdateWindow(s_retargetbatchwnd);
 		}
 		Sleep(20);
@@ -8247,6 +8249,7 @@ unsigned __stdcall ThreadFunc_Bvh2FbxDisp(LPVOID lpThreadParam)
 	while (g_bvh2fbxbatchflag == 1) {
 		if (s_bvh2fbxbatchwnd != 0) {
 			SendMessage(s_bvh2fbxbatchwnd, WM_USER_FOR_BATCH_PROGRESS, 0, 0);
+			InvalidateRect(s_bvh2fbxbatchwnd, NULL, TRUE);
 			UpdateWindow(s_bvh2fbxbatchwnd);
 		}
 		Sleep(20);
@@ -10108,7 +10111,10 @@ int DispObjPanel()
 		return 0;
 	}
 
-	if( s_dispobj ){
+	bool savedispobj = s_dispobj;
+	CreateLayerWnd();
+
+	if(savedispobj){
 		s_layerWnd->setListenMouse(false);
 		s_layerWnd->setVisible( false );
 		s_dispobj = false;
@@ -10130,7 +10136,12 @@ int DispModelPanel()
 		return 0;
 	}
 
-	if( s_dispmodel ){
+	bool savedispmodel = s_dispmodel;
+	//if (!(s_modelpanel.panel)) {//このif文を入れるとretarget batchの後に表示されなくなる
+		CreateModelPanel();
+	//}
+
+	if(savedispmodel){
 		s_modelpanel.panel->setListenMouse(false);
 		s_modelpanel.panel->setVisible( false );
 		s_dispmodel = false;
@@ -10153,7 +10164,12 @@ int DispMotionPanel()
 		return 0;
 	}
 
-	if (s_dispmotion) {
+	bool savedispmotion = s_dispmotion;
+	//if (!(s_motionpanel.panel)) {
+		CreateMotionPanel();
+	//}
+
+	if (savedispmotion) {
 		s_motionpanel.panel->setListenMouse(false);
 		s_motionpanel.panel->setVisible(false);
 		s_dispmotion = false;
@@ -10219,7 +10235,7 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 	ZeroMemory( motionname, 256 );
 	SYSTEMTIME systime;
 	GetLocalTime( &systime );
-	sprintf_s( motionname, 256, "motion_%u_%u_%u_%u_%u_%u_%u",
+	sprintf_s( motionname, 256, "motion%u%u%u%u%u%u%u",
 		systime.wYear,
 		systime.wMonth,
 		systime.wDay,
@@ -11850,7 +11866,7 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 				//プログレスバーの範囲を0-300にする           
 				SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_retargetnum));
 				//現在位置を設定  
-				SendMessage(hProg, PBM_SETPOS, s_retargetcnt, 0);
+				SendMessage(hProg, PBM_SETPOS, (s_retargetcnt + 1), 0);
 				//ステップの範囲を設定 
 				//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 			}
@@ -11944,7 +11960,7 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 				//プログレスバーの範囲を0-300にする           
 				SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_motioncachenum));
 				//現在位置を設定  
-				SendMessage(hProg, PBM_SETPOS, s_motioncachecnt, 0);
+				SendMessage(hProg, PBM_SETPOS, (s_motioncachecnt + 1), 0);
 				//ステップの範囲を設定 
 				//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 			}
@@ -12038,7 +12054,7 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 				//プログレスバーの範囲を0-300にする           
 				SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_bvh2fbxnum));
 				//現在位置を設定  
-				SendMessage(hProg, PBM_SETPOS, s_bvh2fbxcnt, 0);
+				SendMessage(hProg, PBM_SETPOS, (s_bvh2fbxcnt + 1), 0);
 				//ステップの範囲を設定 
 				//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 			}
@@ -12462,32 +12478,60 @@ void ActivatePanel( int state )
 
 
 	if( state == 1 ){
-		if( s_dispmw ){
+		if( s_dispmw && s_timelineWnd){
 			s_timelineWnd->setVisible( false );
 			s_timelineWnd->setVisible( true );
 		}
-		if( s_disptool ){
+		if( s_disptool && s_toolWnd){
 			s_toolWnd->setVisible( true );
 		}
-		if( s_dispobj ){
+		if( s_dispobj && s_layerWnd){
 			s_layerWnd->setVisible( true );
 		}
-		if( s_dispmodel && s_modelpanel.panel ){
-			s_modelpanel.panel->setVisible( true );
+		if( s_dispmodel){
+			if (!(s_modelpanel.panel)) {
+				CreateModelPanel();
+			}
+			if (s_modelpanel.panel) {
+				s_modelpanel.panel->setVisible(true);
+			}
 		}
-		if (s_dispmotion && s_motionpanel.panel) {
-			s_motionpanel.panel->setVisible(true);
+		if (s_dispmotion) {
+			if (!(s_motionpanel.panel)) {
+				CreateMotionPanel();
+			}
+			if (s_motionpanel.panel) {
+				s_motionpanel.panel->setVisible(true);
+			}
 		}
 	}else if( state == 0 ){
-		s_timelineWnd->setVisible( false );
-		s_toolWnd->setVisible( false );
-		s_layerWnd->setVisible( false );
+		if (s_timelineWnd) {
+			s_timelineWnd->setVisible(false);
+		}
+		if (s_toolWnd) {
+			s_toolWnd->setVisible(false);
+		}
+
+
+		if (s_layerWnd) {
+			s_layerWnd->setVisible(false);
+		}
+		s_dispobj = false;
 		if( s_modelpanel.panel ){
 			s_modelpanel.panel->setVisible( false );
 		}
+		else {
+			CreateModelPanel();
+		}
+
+		s_dispmodel = false;
 		if (s_motionpanel.panel) {
 			s_motionpanel.panel->setVisible(false);
 		}
+		else {
+			CreateMotionPanel();
+		}
+		s_dispmotion = false;
 	}
 }
 
@@ -12550,7 +12594,7 @@ int CreateModelPanel()
 		1,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(1600, 0),		//位置
+		WindowPos(200, 600),		//位置
 		WindowSize(400,460),	//サイズ
 		L"ModelPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
@@ -12672,7 +12716,7 @@ int CreateModelPanel()
 		s_modelpanel.panel->setPos(WindowPos(wnd3drect.left + 100, wnd3drect.top + 500));
 	}
 	else {
-		s_modelpanel.panel->setPos(WindowPos(600, 200));
+		s_modelpanel.panel->setPos(WindowPos(200, 600));
 	}
 	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
 	s_modelpanel.panel->setSize(WindowSize(400, 460));//880
@@ -12738,7 +12782,7 @@ int CreateMotionPanel()
 		1,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(2000, 0),		//位置
+		WindowPos(600, 600),		//位置
 		WindowSize(400, 460),	//サイズ
 		L"MotionPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
@@ -12851,7 +12895,7 @@ int CreateMotionPanel()
 		s_motionpanel.panel->setPos(WindowPos(wnd3drect.left + 500, wnd3drect.top + 500));
 	}
 	else {
-		s_motionpanel.panel->setPos(WindowPos(200, 200));
+		s_motionpanel.panel->setPos(WindowPos(600, 600));
 	}
 	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
 	s_motionpanel.panel->setSize(WindowSize(400, 460));//880
@@ -13624,7 +13668,8 @@ int ConvBoneConvert()
 		::DSMessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
 		return 1;
 	}
-	double motleng = bvhmi->frameleng;
+	//double motleng = bvhmi->frameleng;
+	double motleng = bvhmi->frameleng - 1.0;//2021/10/13
 	AddMotion(0, motleng);
 	InitCurMotion(0, 0);
 
@@ -23105,7 +23150,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 				int delta;
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
-				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
 	}
@@ -30633,6 +30678,7 @@ void WaitRetargetThreads()
 		if (s_retargetbatchwnd) {
 			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
 		}
+		s_retargetcnt = 0;
 		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 		OnModelMenu(true, s_saveretargetmodel, 1);
 	}
@@ -30647,6 +30693,7 @@ void WaitMotionCacheThreads()
 		if (s_motioncachebatchwnd) {
 			SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
 		}
+		s_motioncachecnt = 0;
 		InterlockedExchange(&g_motioncachebatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 	}
 
@@ -30660,6 +30707,7 @@ void WaitBvh2FbxThreads()
 		if (s_bvh2fbxbatchwnd) {
 			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 		}
+		s_bvh2fbxcnt = 0;
 		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 	}
 }

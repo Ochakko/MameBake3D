@@ -2533,8 +2533,8 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	double tmpX2, tmpY2, tmpZ2;
 	double tmpX3, tmpY3, tmpZ3;
 	double tmpX4, tmpY4, tmpZ4;
-	double tmpX5, tmpY5, tmpZ5;
-	double s0, s1, s2, s3, s4, s5;
+	//double tmpX5, tmpY5, tmpZ5;
+	double s0, s1, s2, s3, s4;// , s5;
 	//double newX, newY, newZ;
 
 	tmpX0 = eulerA->x;
