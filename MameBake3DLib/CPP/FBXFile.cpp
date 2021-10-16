@@ -101,6 +101,9 @@ static int s_bvhjointnum = 0;
 //static map<CBone*, FbxNode*> s_bone2skel;
 static int s_firstoutmot;
 
+
+
+
 static CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel );
 static void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone );
 
@@ -912,7 +915,8 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	lMaterial->Diffuse.Set(FbxDouble3(mqomat->GetDif4F().x, mqomat->GetDif4F().y, mqomat->GetDif4F().z));
     lMaterial->Emissive.Set(FbxDouble3(mqomat->GetEmi3F().x, mqomat->GetEmi3F().y, mqomat->GetEmi3F().z));
     lMaterial->Ambient.Set(FbxDouble3(mqomat->GetAmb3F().x, mqomat->GetAmb3F().y, mqomat->GetAmb3F().z));
-    lMaterial->AmbientFactor.Set(1.0);
+    //lMaterial->AmbientFactor.Set(1.0);
+	lMaterial->AmbientFactor.Set(0.1);
 	FbxTexture* curtex = CreateTexture(pSdkManager, mqomat);
 	if( curtex ){
 		lMaterial->Diffuse.ConnectSrcObject( curtex );
@@ -928,6 +932,8 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
     lMaterial->Shininess.Set(0.5);
     lMaterial->Specular.Set(FbxDouble3(mqomat->GetSpc3F().x, mqomat->GetSpc3F().y, mqomat->GetSpc3F().z));
     lMaterial->SpecularFactor.Set(0.3);
+	lMaterial->EmissiveFactor.Set(0.1);
+
 
 	lNode->AddMaterial(lMaterial);
 	// We are in eByPolygon, so there's only need for index (a plane has 1 polygon).
@@ -3097,3 +3103,285 @@ int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiski
 }
 
 
+// Get the matrix of the given pose
+FbxAMatrix FbxGetPoseMatrix(FbxPose* pPose, int pNodeIndex)
+{
+	FbxAMatrix lPoseMatrix;
+	FbxMatrix lMatrix = pPose->GetMatrix(pNodeIndex);
+
+	memcpy((double*)lPoseMatrix, (double*)lMatrix, sizeof(lMatrix.mData));
+
+	return lPoseMatrix;
+}
+
+// Get the geometry offset to a node. It is never inherited by the children.
+FbxAMatrix FbxGetGeometry(FbxNode* pNode)
+{
+	if (pNode != NULL) {
+		const FbxVector4 lT = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
+		const FbxVector4 lR = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
+		const FbxVector4 lS = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
+
+		return FbxAMatrix(lT, lR, lS);
+	}
+	else {
+		FbxAMatrix initmat;
+		initmat.SetIdentity();
+		return initmat;
+	}
+}
+
+FbxAMatrix FbxGetGlobalPosition(CModel* srcmodel, FbxScene* pScene, FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition)
+{
+	FbxAMatrix lGlobalPosition;
+	bool        lPositionFound = false;
+
+	if (pPose)
+	{
+		int lNodeIndex = pPose->Find(pNode);
+
+		if (lNodeIndex > -1)
+		{
+			// The bind pose is always a global matrix.
+			// If we have a rest pose, we need to check if it is
+			// stored in global or local space.
+			if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
+			{
+				lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+			}
+			else
+			{
+				// We have a local matrix, we need to convert it to
+				// a global space matrix.
+				FbxAMatrix lParentGlobalPosition;
+
+				if (pParentGlobalPosition)
+				{
+					lParentGlobalPosition = *pParentGlobalPosition;
+				}
+				else
+				{
+					if (pNode->GetParent())
+					{
+						lParentGlobalPosition = FbxGetGlobalPosition(srcmodel, pScene, pNode->GetParent(), pTime, pPose);
+					}
+				}
+
+				FbxAMatrix lLocalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+				lGlobalPosition = lParentGlobalPosition * lLocalPosition;
+			}
+
+			lPositionFound = true;
+		}
+	}
+
+	if (!lPositionFound)
+	{
+		// There is no pose entry for that node, get the current global position instead.
+
+		// Ideally this would use parent global position and local position to compute the global position.
+		// Unfortunately the equation 
+		//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
+		// does not hold when inheritance type is other than "Parent" (RSrs).
+		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
+		//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime, fbxsdk::FbxNode::eDestinationPivot, true, false);
+		//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime, fbxsdk::FbxNode::eDestinationPivot, false, false);
+
+
+		//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+
+
+		FbxAnimEvaluator* animevaluator = pScene->GetAnimationEvaluator();
+		if (animevaluator) {
+			//animevaluator->Flush(pNode);
+			//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot);
+			lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, true, true);
+			//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, false, false);
+		}
+		else {
+			lGlobalPosition.SetIdentity();
+		}
+	}
+
+
+	return lGlobalPosition;
+}
+
+
+void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix ParentGlobalPosition)
+{
+	if (!pmodel || !curbone) {
+		return;
+	}
+
+
+	//FbxNode* pNode = pmodel->m_bone2node[curbone];
+	FbxNode* pNode = pmodel->GetBoneNode(curbone);
+
+	FbxAMatrix lGlobalPosition;
+	bool        lPositionFound = false;//バインドポーズを書き出さない場合やHipsなどの場合は０になる？
+
+	lGlobalPosition.SetIdentity();
+
+	if (pNode) {
+		if (pPose) {
+			int lNodeIndex = pPose->Find(pNode);
+			if (lNodeIndex > -1)
+			{
+				// The bind pose is always a global matrix.
+				// If we have a rest pose, we need to check if it is
+				// stored in global or local space.
+				if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
+				{
+					lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+				}
+				else
+				{
+					// We have a local matrix, we need to convert it to
+					// a global space matrix.
+					FbxAMatrix lParentGlobalPosition;
+
+					//if (pParentGlobalPosition)
+					if (curbone->GetParent())
+					{
+						lParentGlobalPosition = ParentGlobalPosition;
+					}
+					else
+					{
+						if (pNode->GetParent())
+						{
+							lParentGlobalPosition = FbxGetGlobalPosition(pmodel, pNode->GetScene(), pNode->GetParent(), pTime, pPose);
+						}
+					}
+
+					FbxAMatrix lLocalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+					lGlobalPosition = lParentGlobalPosition * lLocalPosition;
+				}
+
+				lPositionFound = true;
+			}
+		}
+	}
+
+	if (!lPositionFound)
+	{
+		// There is no pose entry for that node, get the current global position instead.
+
+		// Ideally this would use parent global position and local position to compute the global position.
+		// Unfortunately the equation 
+		//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
+		// does not hold when inheritance type is other than "Parent" (RSrs).
+		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
+		if (pNode) {
+			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+		}
+	}
+
+	ChaMatrix nodemat;
+
+	nodemat._11 = (float)lGlobalPosition.Get(0, 0);
+	nodemat._12 = (float)lGlobalPosition.Get(0, 1);
+	nodemat._13 = (float)lGlobalPosition.Get(0, 2);
+	nodemat._14 = (float)lGlobalPosition.Get(0, 3);
+
+	nodemat._21 = (float)lGlobalPosition.Get(1, 0);
+	nodemat._22 = (float)lGlobalPosition.Get(1, 1);
+	nodemat._23 = (float)lGlobalPosition.Get(1, 2);
+	nodemat._24 = (float)lGlobalPosition.Get(1, 3);
+
+	nodemat._31 = (float)lGlobalPosition.Get(2, 0);
+	nodemat._32 = (float)lGlobalPosition.Get(2, 1);
+	nodemat._33 = (float)lGlobalPosition.Get(2, 2);
+	nodemat._34 = (float)lGlobalPosition.Get(2, 3);
+
+	nodemat._41 = (float)lGlobalPosition.Get(3, 0);
+	nodemat._42 = (float)lGlobalPosition.Get(3, 1);
+	nodemat._43 = (float)lGlobalPosition.Get(3, 2);
+	nodemat._44 = (float)lGlobalPosition.Get(3, 3);
+
+	curbone->SetPositionFound(lPositionFound);//!!!
+	curbone->SetNodeMat(nodemat);
+	curbone->SetGlobalPosMat(lGlobalPosition);
+
+	ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+	ChaVector3 tmppos;
+	ChaVector3TransformCoord(&tmppos, &zeropos, &(curbone->GetNodeMat()));
+	curbone->SetJointWPos(tmppos);
+	curbone->SetJointFPos(tmppos);
+
+
+	//WCHAR wname[256];
+	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curbone->m_bonename, 256, wname, 256 );
+	//DbgOut( L"SetDefaultBonePos : %s : wpos (%f, %f, %f)\r\n", wname, curbone->m_jointfpos.x, curbone->m_jointfpos.y, curbone->m_jointfpos.z );
+
+
+	if (curbone->GetChild()) {
+		//if (curbone->GetChild()->GetChild()) {
+		FbxSetDefaultBonePosReq(pmodel, curbone->GetChild(), pTime, pPose, curbone->GetGlobalPosMat());
+		//}
+		//else {
+		//	SetDefaultBonePosReq(curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
+		//}
+	}
+	if (curbone->GetBrother()) {
+		FbxSetDefaultBonePosReq(pmodel, curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
+	}
+
+}
+
+
+// Get specific property value and connected texture if any.
+// Value = Property value * Factor property value (if no factor property, multiply by 1).
+FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial,
+	const char* pPropertyName,
+	const char* pFactorPropertyName,
+	char** ppTextureName)
+{
+	*ppTextureName = 0;
+
+	FbxDouble3 lResult(0, 0, 0);
+	const FbxProperty lProperty = pMaterial->FindProperty(pPropertyName);
+	const FbxProperty lFactorProperty = pMaterial->FindProperty(pFactorPropertyName);
+	if (lProperty.IsValid() && lFactorProperty.IsValid())
+	{
+		lResult = lProperty.Get<FbxDouble3>();
+		double lFactor = lFactorProperty.Get<FbxDouble>();
+		if (lFactor != 1)
+		{
+			lResult[0] *= lFactor;
+			lResult[1] *= lFactor;
+			lResult[2] *= lFactor;
+		}
+	}
+
+
+	return lResult;
+}
+
+int IsValidFbxCluster(FbxCluster* cluster)
+{
+	int findflag = 0;
+
+	int pointNum = cluster->GetControlPointIndicesCount();
+	int* pointAry = cluster->GetControlPointIndices();
+	double* weightAry = cluster->GetControlPointWeights();
+
+	FbxCluster::ELinkMode lClusterMode = cluster->GetLinkMode();
+
+	int index;
+	double weight;
+	for (int i2 = 0; i2 < pointNum; i2++) {
+		// 頂点インデックスとウェイトを取得
+		index = pointAry[i2];
+		weight = weightAry[i2];
+
+		if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05)) {
+			//if ((lClusterMode == FbxCluster::eAdditive)){
+			findflag = 1;
+			break;
+		}
+	}
+
+	return findflag;
+}

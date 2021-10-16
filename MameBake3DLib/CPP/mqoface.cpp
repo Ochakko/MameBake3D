@@ -92,7 +92,7 @@ int CMQOFace::GetInt( int* dstint, char* srcchar, int pos, int srcleng, int* ste
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
+		strncpy_s( tempchar, 256, srcchar + startpos, ((size_t)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		*dstint = atoi( tempchar );
@@ -128,7 +128,7 @@ int CMQOFace::GetI64( __int64* dsti64, char* srcchar, int pos, int srcleng, int*
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
+		strncpy_s( tempchar, 256, srcchar + startpos, ((size_t)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		//*dstuint = (unsigned int)atol( tempchar );
@@ -169,7 +169,7 @@ int CMQOFace::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, in
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
+		strncpy_s( tempchar, 256, srcchar + startpos, ((size_t)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		*dstfloat = (float)atof( tempchar );
@@ -409,7 +409,7 @@ int CMQOFace::SetMikoBoneName( char* srcname, int lrflag )
 			return 1;
 		}
 
-		strncpy_s( m_bonename, 256, srcname, (int)((INT64)leng1 - 2) );
+		strncpy_s( m_bonename, 256, srcname, ((size_t)leng1 - 2) );
 		m_bonename[leng1 - 2] = 0;
 		strcat_s( m_bonename, 256, Lpat );
 
@@ -423,7 +423,7 @@ int CMQOFace::SetMikoBoneName( char* srcname, int lrflag )
 			return 1;
 		}
 
-		strncpy_s( m_bonename, 256, srcname, (int)((INT64)leng1 - 2) );
+		strncpy_s( m_bonename, 256, srcname, ((size_t)leng1 - 2) );
 		m_bonename[leng1 - 2] = 0;
 		strcat_s( m_bonename, 256, Rpat );
 

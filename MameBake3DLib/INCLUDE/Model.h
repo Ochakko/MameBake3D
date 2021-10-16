@@ -724,7 +724,12 @@ private:
 	float GetFbxTargetWeight(FbxNode* pbaseNode, FbxMesh* pbaseMesh, std::string targetname, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* baseobj );
 	
 	int SetDefaultBonePos();
-	void SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix pParentGlobalPosition );
+
+
+	//SetDefaultBonePosReqは関数名にFbxを付けて FbxFile.h, FbxFile.cppに移動になりました。リンクエラーの関係で。
+	//void SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix pParentGlobalPosition );
+
+
 
 	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
 
@@ -1177,6 +1182,16 @@ public: //accesser
 		}
 		strcpy_s(dstcomment, dstlen, m_fbxcomment.Buffer());
 		return 0;
+	}
+
+	FbxNode* GetBoneNode(CBone* curbone) {
+		if (!curbone) {
+			return 0;
+		}
+		else {
+			FbxNode* pNode = m_bone2node[curbone];
+			return pNode;
+		}
 	}
 
 public:

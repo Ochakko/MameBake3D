@@ -114,15 +114,15 @@ int CExtLine::CreateBuffer( EXTLINEV* lineptr, int arrayleng, int* setnum )
 					_ASSERT( 0 );
 					return 1;
 				}
-				(lineptr + (int)((INT64)(*setnum) * 2))->pos.x = ( m_pointptr + curface->GetIndex( 0 ) )->x;
-				(lineptr + (int)((INT64)(*setnum) * 2))->pos.y = ( m_pointptr + curface->GetIndex( 0 ) )->y;
-				(lineptr + (int)((INT64)(*setnum) * 2))->pos.z = ( m_pointptr + curface->GetIndex( 0 ) )->z;
-				(lineptr + (int)((INT64)(*setnum) * 2))->pos.w = 1.0f;
+				(lineptr + ((size_t)(*setnum) * 2))->pos.x = ( m_pointptr + curface->GetIndex( 0 ) )->x;
+				(lineptr + ((size_t)(*setnum) * 2))->pos.y = ( m_pointptr + curface->GetIndex( 0 ) )->y;
+				(lineptr + ((size_t)(*setnum) * 2))->pos.z = ( m_pointptr + curface->GetIndex( 0 ) )->z;
+				(lineptr + ((size_t)(*setnum) * 2))->pos.w = 1.0f;
 
-				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.x = ( m_pointptr + curface->GetIndex( 1 ) )->x;
-				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.y = ( m_pointptr + curface->GetIndex( 1 ) )->y;
-				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.z = ( m_pointptr + curface->GetIndex( 1 ) )->z;
-				(lineptr + (int)((INT64)(*setnum) * 2 + 1))->pos.w = 1.0f;
+				(lineptr + ((size_t)(*setnum) * 2 + 1))->pos.x = ( m_pointptr + curface->GetIndex( 1 ) )->x;
+				(lineptr + ((size_t)(*setnum) * 2 + 1))->pos.y = ( m_pointptr + curface->GetIndex( 1 ) )->y;
+				(lineptr + ((size_t)(*setnum) * 2 + 1))->pos.z = ( m_pointptr + curface->GetIndex( 1 ) )->z;
+				(lineptr + ((size_t)(*setnum) * 2 + 1))->pos.w = 1.0f;
 			}
 
 			(*setnum)++;

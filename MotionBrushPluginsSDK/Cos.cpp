@@ -133,7 +133,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 				bool minusv;
 				bool div2;
 
-				startframe = (int)((INT64)srcstartframe + (INT64)repeatscnt * (INT64)frameT);
+				startframe = (int)((size_t)srcstartframe + (size_t)repeatscnt * (size_t)frameT);
 				endframe = startframe + frameT;
 				applyframe = startframe + ((int)srcapplyframe - (int)srcstartframe);
 				if (srcmirroru) {

@@ -63,7 +63,7 @@ HidDevice HidDevice::Create(char *path, UINT leng, int id)
 	//}
 
 	//devicePath = new char[sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * leng];
-	devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (UINT)((INT64)leng + 1));
+	devicePath = (char*)malloc(sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * ((size_t)leng + 1));
 	if (!devicePath) {
 		_ASSERT(0);
 		isDevice = FALSE;
@@ -71,13 +71,13 @@ HidDevice HidDevice::Create(char *path, UINT leng, int id)
 		return *this;//!!!!!!!!
 	}
 	if (devicePath) {
-		ZeroMemory(devicePath, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (UINT)((INT64)leng + 1));
+		ZeroMemory(devicePath, sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * ((size_t)leng + 1));
 	}
 	//for (UINT i = 0; i < size; i++)
 	//{
 	//	devicePath[i] = path[i];
 	//}
-	strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * (UINT)((INT64)leng + 1)), path);
+	strcpy_s(devicePath, (sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA) * ((size_t)leng + 1)), path);
 
 	//デバイスハンドルの作成
 	deviceHandle = CreateFile(

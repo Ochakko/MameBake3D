@@ -628,7 +628,7 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 	if( findflag == 0 ){
 		int curnum = n3p1->n3sm->smfacenum;
 		N3P** newsmface = 0;
-		newsmface = (N3P**)realloc( n3p1->n3sm->ppsmface, sizeof(N3P*) * (int)((INT64)curnum + 1) );
+		newsmface = (N3P**)realloc( n3p1->n3sm->ppsmface, sizeof(N3P*) * ((size_t)curnum + 1) );
 		if( !newsmface ){
 			_ASSERT( 0 );
 			return 1;
@@ -650,7 +650,7 @@ int CPolyMesh3::AddSmFace( N3P* n3p1, N3P* n3p2 )
 	if( findflag == 0 ){
 		int curnum = n3p2->n3sm->smfacenum;
 		N3P** newsmface = 0;
-		newsmface = (N3P**)realloc( n3p2->n3sm->ppsmface, sizeof(N3P*) * (int)((INT64)curnum + 1) );
+		newsmface = (N3P**)realloc( n3p2->n3sm->ppsmface, sizeof(N3P*) * ((size_t)curnum + 1) );
 		if( !newsmface ){
 			_ASSERT( 0 );
 			return 1;

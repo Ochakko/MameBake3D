@@ -376,7 +376,7 @@ int CMQOObject::GetInt( int* dstint, char* srcchar, int pos, int srcleng, int* s
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
+		strncpy_s( tempchar, 256, srcchar + startpos, ((size_t)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		*dstint = atoi( tempchar );
@@ -412,7 +412,7 @@ int CMQOObject::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, 
 
 	char tempchar[256];
 	if( (endpos - startpos < 256) && (endpos - startpos > 0) ){
-		strncpy_s( tempchar, 256, srcchar + startpos, (int)((INT64)endpos - startpos) );
+		strncpy_s( tempchar, 256, srcchar + startpos, ((size_t)endpos - startpos) );
 		tempchar[endpos - startpos] = 0;
 
 		*dstfloat = (float)atof( tempchar );
@@ -447,7 +447,7 @@ int CMQOObject::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int
 	}
 
 	if( (endpos - startpos < dstleng) && (endpos - startpos > 0) ){
-		strncpy_s( dstchar, dstleng, srcchar + startpos, (int)((INT64)endpos - startpos) );
+		strncpy_s( dstchar, dstleng, srcchar + startpos, ((size_t)endpos - startpos) );
 		*(dstchar + endpos - startpos) = 0;
 
 	}else{
@@ -1090,7 +1090,7 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				ChaVector3* dst0 = m_pointbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
+				ChaVector3* dst0 = m_pointbuf2 + ((size_t)lineno * 2 * m_lathe_seg + segno);
 				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].height;
@@ -1102,7 +1102,7 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].dist * (float)sin( rad * segno );
 
 				if( m_colorbuf2 ){
-					ChaVector4* dstcol0 = m_colorbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
+					ChaVector4* dstcol0 = m_colorbuf2 + ((size_t)lineno * 2 * m_lathe_seg + segno);
 					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 					if (dstcol0 && m_colorbuf) {
 						*dstcol0 = *(m_colorbuf + v0);
@@ -1138,7 +1138,7 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				ChaVector3* dst0 = m_pointbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
+				ChaVector3* dst0 = m_pointbuf2 + ((size_t)lineno * 2 * m_lathe_seg + segno);
 				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].dist * (float)cos( rad * segno );
@@ -1150,7 +1150,7 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].dist * (float)sin( rad * segno );
 
 				if( m_colorbuf2 ){
-					ChaVector4* dstcol0 = m_colorbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
+					ChaVector4* dstcol0 = m_colorbuf2 + ((size_t)lineno * 2 * m_lathe_seg + segno);
 					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 					if (dstcol0 && m_colorbuf) {
 						*dstcol0 = *(m_colorbuf + v0);
@@ -1185,7 +1185,7 @@ int CMQOObject::MakeLatheBuf()
 			}
 
 			for( segno = 0; segno < m_lathe_seg; segno++ ){
-				ChaVector3* dst0 = m_pointbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
+				ChaVector3* dst0 = m_pointbuf2 + ((size_t)lineno * 2 * m_lathe_seg + segno);
 				ChaVector3* dst1 = dst0 + m_lathe_seg;
 
 				dst0->x = elem[0].dist * (float)cos( rad * segno );
@@ -1197,7 +1197,7 @@ int CMQOObject::MakeLatheBuf()
 				dst1->z = elem[1].height;
 
 				if( m_colorbuf2 ){
-					ChaVector4* dstcol0 = m_colorbuf2 + (int)((INT64)lineno * 2 * m_lathe_seg + segno);
+					ChaVector4* dstcol0 = m_colorbuf2 + ((size_t)lineno * 2 * m_lathe_seg + segno);
 					ChaVector4* dstcol1 = dstcol0 + m_lathe_seg;
 
 					if (dstcol0 && m_colorbuf) {
@@ -1221,19 +1221,19 @@ int CMQOObject::MakeLatheBuf()
 
 	for( lineno = 0; lineno < linenum; lineno++ ){ 
 		for( segno = 0; segno < m_lathe_seg; segno++ ){
-			CMQOFace* dstface = m_facebuf2 + (int)((INT64)m_lathe_seg * lineno + segno);
+			CMQOFace* dstface = m_facebuf2 + ((size_t)m_lathe_seg * lineno + segno);
 			dstface->SetPointNum( 4 );
 
 			if( segno != m_lathe_seg - 1 ){
-				dstface->SetIndex( 0, (int)((INT64)lineno * 2 * m_lathe_seg + segno) );
-				dstface->SetIndex( 1, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg + segno) );
-				dstface->SetIndex( 2, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg + 1 + segno) );
-				dstface->SetIndex( 3, (int)((INT64)lineno * 2 * m_lathe_seg + 1 + segno));
+				dstface->SetIndex( 0, ((size_t)lineno * 2 * m_lathe_seg + segno) );
+				dstface->SetIndex( 1, ((size_t)lineno * 2 * m_lathe_seg + m_lathe_seg + segno) );
+				dstface->SetIndex( 2, ((size_t)lineno * 2 * m_lathe_seg + m_lathe_seg + 1 + segno) );
+				dstface->SetIndex( 3, ((size_t)lineno * 2 * m_lathe_seg + 1 + segno));
 			}else{
-				dstface->SetIndex( 0, (int)((INT64)lineno * 2 * m_lathe_seg + segno));
-				dstface->SetIndex( 1, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg + segno));
-				dstface->SetIndex( 2, (int)((INT64)lineno * 2 * m_lathe_seg + m_lathe_seg));
-				dstface->SetIndex( 3, (int)((INT64)lineno * 2 * m_lathe_seg));
+				dstface->SetIndex( 0, ((size_t)lineno * 2 * m_lathe_seg + segno));
+				dstface->SetIndex( 1, ((size_t)lineno * 2 * m_lathe_seg + m_lathe_seg + segno));
+				dstface->SetIndex( 2, ((size_t)lineno * 2 * m_lathe_seg + m_lathe_seg));
+				dstface->SetIndex( 3, ((size_t)lineno * 2 * m_lathe_seg));
 			}
 			dstface->SetHasUV( 0 );
 

@@ -7,6 +7,7 @@
 class CBVHFile;
 
 class CModel;
+class CBone;
 
 #ifdef FBXFILECPP
 
@@ -49,11 +50,28 @@ class CModel;
  */	
 	int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbxdate);
 
+
+	FbxAMatrix FbxGetGlobalPosition(CModel* srcmodel, FbxScene* pScene, FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = 0);
+	FbxAMatrix FbxGetPoseMatrix(FbxPose* pPose, int pNodeIndex);
+	FbxAMatrix FbxGetGeometry(FbxNode* pNode);
+	void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix ParentGlobalPosition);
+	FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
+	int IsValidFbxCluster(FbxCluster* cluster);
+
+
 #else
 	extern int InitializeSdkObjects();
 	extern int DestroySdkObjects();
 	extern int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate );
 	extern int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbxdate);
+
+	extern FbxAMatrix FbxGetGlobalPosition(CModel* srcmodel, FbxScene* pScene, FbxNode* pNode, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = 0);
+	extern FbxAMatrix FbxGetPoseMatrix(FbxPose* pPose, int pNodeIndex);
+	extern FbxAMatrix FbxGetGeometry(FbxNode* pNode);
+	extern void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix ParentGlobalPosition);
+	extern FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
+	extern int IsValidFbxCluster(FbxCluster* cluster);
+
 #endif
 
 #endif

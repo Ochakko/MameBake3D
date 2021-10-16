@@ -743,7 +743,7 @@ int CMQOFile::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, in
 
 	char tempchar[256];
 	if( flend - flstart < 256 ){
-		strncpy_s( tempchar, 256, srcchar + flstart, (int)((INT64)flend - flstart) );
+		strncpy_s( tempchar, 256, srcchar + flstart, ((size_t)flend - flstart) );
 		tempchar[flend - flstart] = 0;
 		*dstfloat = (float)atof( tempchar );
 	}else{

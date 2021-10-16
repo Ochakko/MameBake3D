@@ -246,7 +246,7 @@ int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
 
 
 	//wleng = (unsigned long)wcslen(outchar);
-	wcscpy_s(m_stroutput + (INT64)m_dataindex * INFOWINDOWLINEW, INFOWINDOWLINEW, outchar);
+	wcscpy_s(m_stroutput + (size_t)m_dataindex * INFOWINDOWLINEW, INFOWINDOWLINEW, outchar);
 
 	m_isfirstoutput = false;
 
@@ -294,7 +294,7 @@ void CInfoWindow::OnPaint()
 		int dispno = 0;
 		for (outputno = 0; outputno < INFOWINDOWLINEVIEW; outputno++) {
 			if ((curindex >= 0) && (curindex <= m_dataindex)) {
-				TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (INT64)curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + (INT64)curindex * INFOWINDOWLINEW));
+				TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (size_t)curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + (size_t)curindex * INFOWINDOWLINEW));
 				dispno++;
 			}
 			curindex++;
@@ -347,7 +347,7 @@ int CInfoWindow::GetStr(int srcindex, int srcoutleng, WCHAR* strout)
 	}
 
 	if ((srcindex >= 0) && (srcindex < INFOWINDOWLINEH)) {
-		wcscpy_s(strout, srcoutleng, m_stroutput + (INT64)srcindex * INFOWINDOWLINEW);
+		wcscpy_s(strout, srcoutleng, m_stroutput + (size_t)srcindex * INFOWINDOWLINEW);
 		return 0;
 	}
 	else {

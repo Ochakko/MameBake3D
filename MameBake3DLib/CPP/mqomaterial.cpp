@@ -300,7 +300,7 @@ int CMQOMaterial::SetName( char* srcchar, int pos, int srcleng, int* stepnum )
 
 	if( ((step - 1) < 256) && ((step - 1) > 0) ){
 		ZeroMemory( m_name, sizeof( char ) * 256 );
-		strncpy_s( m_name, 256, srcchar + pos + 1, (int)((INT64)step - 1) );
+		strncpy_s( m_name, 256, srcchar + pos + 1, ((size_t)step - 1) );
 		m_name[step -1] = 0;
 	}
 
@@ -515,7 +515,7 @@ int CMQOMaterial::SetTex( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( (step - 5 < 256) && (step - 5 > 0) ){
-		strncpy_s( m_tex, 256, srcchar + pos + 5, (int)((INT64)step - 5) );
+		strncpy_s( m_tex, 256, srcchar + pos + 5, ((size_t)step - 5) );
 		m_tex[step -5] = 0;
 	}
 
@@ -536,7 +536,7 @@ int CMQOMaterial::SetAlpha( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( (step - 7 < 256) && (step - 7 > 0) ){
-		strncpy_s( m_alpha, 256, srcchar + pos + 7, (int)((INT64)step - 7) );
+		strncpy_s( m_alpha, 256, srcchar + pos + 7, ((size_t)step - 7) );
 		m_alpha[step -7] = 0;
 	}
 
@@ -556,7 +556,7 @@ int CMQOMaterial::SetBump( char* srcchar, int pos, int srcleng, int* stepnum )
 	}
 
 	if( (step - 6 < 256) && (step - 6 > 0) ){
-		strncpy_s( m_bump, 256, srcchar + pos + 6, (int)((INT64)step - 6) );
+		strncpy_s( m_bump, 256, srcchar + pos + 6, ((size_t)step - 6) );
 		m_bump[step -6] = 0;
 	}
 
@@ -592,7 +592,7 @@ int CMQOMaterial::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng
 
 	char tempchar[256];
 	if( flend - flstart < 256 ){
-		strncpy_s( tempchar, 256, srcchar + flstart, (int)((INT64)flend - flstart) );
+		strncpy_s( tempchar, 256, srcchar + flstart, ((size_t)flend - flstart) );
 		tempchar[flend - flstart] = 0;
 		*dstfloat = (float)atof( tempchar );
 	}else{
@@ -630,7 +630,7 @@ int CMQOMaterial::GetInt( int* dstint, char* srcchar, int pos, int srcleng, int*
 
 	char tempchar[256];
 	if( flend - flstart < 256 ){
-		strncpy_s( tempchar, 256, srcchar + flstart, (int)((INT64)flend - flstart) );
+		strncpy_s( tempchar, 256, srcchar + flstart, ((size_t)flend - flstart) );
 		tempchar[flend - flstart] = 0;
 		*dstint = atoi( tempchar );
 	}else{
@@ -889,9 +889,9 @@ int CMQOMaterial::AddConvName( char** ppname )
 	addno = m_convnamenum - 1;
 
 	if( addno >= 1 ){
-		sprintf_s( newname, (int)((INT64)leng + 10), "%s%02d", m_name, addno );
+		sprintf_s( newname, ((size_t)leng + 10), "%s%02d", m_name, addno );
 	}else{
-		strcpy_s( newname, (int)((INT64)leng + 10), m_name );
+		strcpy_s( newname, ((size_t)leng + 10), m_name );
 	}
 
 
