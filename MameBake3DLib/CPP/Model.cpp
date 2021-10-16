@@ -3042,16 +3042,17 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	tmpspc.z = (float)lSpecular[2];
 	newmqomat->SetSpc3F( tmpspc );
 
-    //FbxProperty lShininessProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sShininess);
+    //FbxProperty lShininessProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sShininess);//<-- link error : MameBake3DLib.lib外だから？　
 	//char* shininesstex = 0;
 	//FbxProperty lShininessProperty = FbxGetMaterialProperty(pMaterial,
-	//	FbxSurfaceMaterial::sShininess, FbxSurfaceMaterial::sShininessFactor, &shininesstex);
+	//	FbxSurfaceMaterial::sShininess, FbxSurfaceMaterial::sShininessFactor, &shininesstex);//<-- sSnininessFactorは無い. sShininessは有る.
  //   if (lShininessProperty.IsValid())
  //   {
  //       double lShininess = lShininessProperty.Get<FbxDouble>();
  //       newmqomat->SetPower( static_cast<float>(lShininess) );
  //   }
-
+	FbxDouble Shininess = FbxGetMaterialShininessProperty(pMaterial);
+	newmqomat->SetPower(static_cast<float>(Shininess));
 
 //texture
 

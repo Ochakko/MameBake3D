@@ -929,7 +929,8 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
     lMaterial->DiffuseFactor.Set(1.0);
     lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
     lMaterial->ShadingModel.Set(lShadingName);
-    lMaterial->Shininess.Set(0.5);
+    //lMaterial->Shininess.Set(0.5);
+	lMaterial->Shininess.Set(mqomat->GetPower());
     lMaterial->Specular.Set(FbxDouble3(mqomat->GetSpc3F().x, mqomat->GetSpc3F().y, mqomat->GetSpc3F().z));
     lMaterial->SpecularFactor.Set(0.3);
 	lMaterial->EmissiveFactor.Set(0.1);
@@ -3355,6 +3356,18 @@ FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial,
 		}
 	}
 
+
+	return lResult;
+}
+
+FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial)
+{
+	FbxDouble lResult(0.0);
+	const FbxProperty lProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sShininess);
+	if (lProperty.IsValid())
+	{
+		lResult = lProperty.Get<FbxDouble>();
+	}
 
 	return lResult;
 }

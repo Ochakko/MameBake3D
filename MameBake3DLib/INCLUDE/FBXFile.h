@@ -56,6 +56,7 @@ class CBone;
 	FbxAMatrix FbxGetGeometry(FbxNode* pNode);
 	void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix ParentGlobalPosition);
 	FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
+	FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	int IsValidFbxCluster(FbxCluster* cluster);
 
 
@@ -70,6 +71,7 @@ class CBone;
 	extern FbxAMatrix FbxGetGeometry(FbxNode* pNode);
 	extern void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix ParentGlobalPosition);
 	extern FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
+	extern FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	extern int IsValidFbxCluster(FbxCluster* cluster);
 
 #endif
