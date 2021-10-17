@@ -70,6 +70,11 @@ int CXMLIO::WriteVoid2File( void* pvoid, unsigned int srcleng )
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		return 0;
 	}
+	if (!pvoid) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	DWORD writeleng = 0;
 	WriteFile( m_hfile, pvoid, srcleng, &writeleng, NULL );
@@ -86,6 +91,10 @@ int CXMLIO::Write2File( char* lpFormat, ... )
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		return 0;
 	}
+	if (!lpFormat) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	int ret;
 	va_list Marker;
@@ -101,6 +110,7 @@ int CXMLIO::Write2File( char* lpFormat, ... )
 	if( ret < 0 )
 		return 1;
 
+	outchar[XMLIOLINELEN - 1] = 0;
 	wleng = (unsigned long)strlen( outchar );
 	WriteFile( m_hfile, outchar, wleng, &writeleng, NULL );
 	if( wleng != writeleng ){
@@ -215,6 +225,11 @@ int CXMLIO::SetBuffer()
 
 int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, char* startpat, char* endpat, int* dstint )
 {
+	if (!xmliobuf || !startpat || !endpat || !dstint) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	int ret;
 	char* startptr;
 	startptr = strstr( xmliobuf->buf + xmliobuf->pos, startpat );
@@ -256,6 +271,11 @@ int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, char* startpat, char* endpat, int* dst
 }
 int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, char* startpat, char* endpat, float* dstfloat )
 {
+	if (!xmliobuf || !startpat || !endpat || !dstfloat) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	int ret;
 	char* startptr;
 	startptr = strstr( xmliobuf->buf + xmliobuf->pos, startpat );
@@ -297,6 +317,12 @@ int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, char* startpat, char* endpat, float*
 }
 int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, ChaVector3* dstvec )
 {
+	if (!xmliobuf || !startpat || !endpat || !dstvec) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	int ret;
 	char* startptr;
 	startptr = strstr( xmliobuf->buf + xmliobuf->pos, startpat );
@@ -362,6 +388,12 @@ int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, ChaVect
 }
 int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, char* startpat, char* endpat, CQuaternion* dstq )
 {
+	if (!xmliobuf || !startpat || !endpat || !dstq) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	int ret;
 	char* startptr;
 	startptr = strstr( xmliobuf->buf + xmliobuf->pos, startpat );
@@ -437,6 +469,12 @@ int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, char* startpat, char* endpat, CQuaternio
 }
 int CXMLIO::Read_Str( XMLIOBUF* xmliobuf, char* startpat, char* endpat, char* dststr, int arrayleng )
 {
+	if (!xmliobuf || !startpat || !endpat || !dststr) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	int ret;
 	char* startptr;
 	startptr = strstr( xmliobuf->buf + xmliobuf->pos, startpat );
@@ -475,6 +513,11 @@ int CXMLIO::Read_Str( XMLIOBUF* xmliobuf, char* startpat, char* endpat, char* ds
 
 int CXMLIO::GetInt( int* dstint, char* srcchar, int pos, int srcleng, int* stepnum )
 {
+	if (!dstint || !srcchar || !stepnum) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	char tempchar[256];
 	ZeroMemory( tempchar, sizeof( char ) * 256 );
 
@@ -489,6 +532,13 @@ int CXMLIO::GetInt( int* dstint, char* srcchar, int pos, int srcleng, int* stepn
 }
 int CXMLIO::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, int* stepnum )
 {
+	if (!dstfloat || !srcchar || !stepnum) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+
 	char* startptr = 0;
 	char* endptr = 0;
 	startptr = srcchar + pos;
@@ -523,6 +573,12 @@ int CXMLIO::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, int*
 }
 int CXMLIO::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int srcleng )
 {
+	if (!dstchar || !srcchar) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	strncpy_s( dstchar, dstleng, srcchar + pos, srcleng );
 	*( dstchar + srcleng ) = 0;
 
@@ -531,6 +587,12 @@ int CXMLIO::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int src
 
 int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBUF* dstbuf, int delpatflag )
 {
+	if (!srcbuf || !startpat || !endpat || !dstbuf) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	char* startptr = 0;
 	char* endptr = 0;
 	startptr = strstr( srcbuf->buf + srcbuf->pos, startpat );
@@ -568,6 +630,12 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBU
 
 CBone* CXMLIO::FindBoneByName(CModel* srcmodel, char* bonename, int srcleng)
 {
+	if (!srcmodel || !bonename) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
 	if (srcleng > 256){
 		_ASSERT(0);
 		return 0;

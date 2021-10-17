@@ -50,7 +50,7 @@ void CMQOFile::InitLoadParams()
 	m_modelptr = 0;
 	m_objcnt = 0;
 
-	ZeroMemory( m_linechar, LINECHARLENG );
+	ZeroMemory( m_linechar, sizeof(char) * LINECHARLENG );
 	ZeroMemory( m_wline, sizeof( WCHAR ) * LINECHARLENG );
 
 	m_state = BEGIN_NONE;
@@ -286,12 +286,12 @@ int CMQOFile::SetBuffer()
 	}
 
 	unsigned char* newbuf;
-	newbuf = (unsigned char*)malloc( sizeof( char ) * ( bufleng + 1 ) );
+	newbuf = (unsigned char*)malloc( sizeof( char ) * ((size_t)bufleng + 1 ) );
 	if( !newbuf ){
 		_ASSERT( 0 );
 		return 1;
 	}
-	ZeroMemory( newbuf, sizeof( unsigned char ) * ( bufleng + 1 ) );
+	ZeroMemory( newbuf, sizeof( unsigned char ) * ((size_t)bufleng + 1 ) );
 
 
 	DWORD rleng, readleng;
@@ -323,6 +323,9 @@ int CMQOFile::SetBuffer()
 
 int CMQOFile::CheckFileVersion()
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+	m_wline[LINECHARLENG - 1] = 0L;
+
 	int ret;
 	int leng1, leng2;
 
@@ -381,6 +384,8 @@ int CMQOFile::CheckFileVersion()
 
 int CMQOFile::GetLine( int* getlen )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	if( (mqobuf.pos >= mqobuf.bufleng) || (mqobuf.isend == 1) ){
 		mqobuf.isend = 1;
 		m_state = BEGIN_FINISH;
@@ -450,6 +455,8 @@ int CMQOFile::GetBytes( unsigned char** dstuc, int getlen )
 
 int CMQOFile::FindChunk( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int isfind = 0;
 	int ret = 0;
 	int getleng;
@@ -574,6 +581,8 @@ int CMQOFile::GetChunkType( MQOSTATE* type, char* chunkname, int nameleng )
 
 int CMQOFile::SkipChunk()
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int depth = 1;
 	int findend = 0;
 	int ret;
@@ -606,6 +615,8 @@ int CMQOFile::SkipChunk()
 
 int CMQOFile::ReadColor( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int findend = 0;
 	int getleng;
@@ -648,6 +659,8 @@ int CMQOFile::ReadColor( MQOSTATE* nextstate )
 
 int CMQOFile::ReadScene( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int findend = 0;
 	int getleng;
@@ -760,6 +773,8 @@ int CMQOFile::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, in
 
 int CMQOFile::ReadMaterial( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int findend = 0;
 	//char linechar[1024];
@@ -807,6 +822,8 @@ int CMQOFile::ReadMaterial( MQOSTATE* nextstate )
 
 int CMQOFile::ReadObject( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int findend = 0;
 	int getleng;
@@ -867,6 +884,8 @@ int CMQOFile::ReadObject( MQOSTATE* nextstate )
 
 int CMQOFile::ReadBVertex( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int getleng;
 	int vertnum;
@@ -912,6 +931,8 @@ int CMQOFile::ReadBVertex( MQOSTATE* nextstate )
 
 int CMQOFile::ReadVertex( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int vertnum;
 
@@ -964,6 +985,8 @@ int CMQOFile::ReadVertex( MQOSTATE* nextstate )
 
 int CMQOFile::ReadFace( MQOSTATE* nextstate )
 {
+	m_linechar[LINECHARLENG - 1] = 0;
+
 	int ret;
 	int facenum;
 

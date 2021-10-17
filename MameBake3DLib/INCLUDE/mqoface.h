@@ -26,7 +26,7 @@ public:
 	int CheckSameLine( CMQOFace* chkface, int* findflag );
 	int SetInvFace( CMQOFace* srcface, int offset );
 
-	int SetMikoBoneName( char* srcname, int lrflag );
+	//int SetMikoBoneName( char* srcname, int lrflag );
 	int CheckLRFlag( ChaVector3* pointptr, int* lrflagptr );
 
 private:

@@ -7247,6 +7247,7 @@ void s_dummyfunc()
 					WCHAR strmeasure[64];
 					if (ey0 >= y0) {
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", minmeasure);
+						strmeasure[64 - 1] = 0L;
 						TextOut(hdcM->hDC,
 							ex0, ey0,
 							strmeasure, (int)wcslen(strmeasure));
@@ -7276,6 +7277,7 @@ void s_dummyfunc()
 							displabel = true;
 						}
 						if (displabel) {
+							strmeasure[64 - 1] = 0L;
 							TextOut(hdcM->hDC,
 								ex0, ey0,
 								strmeasure, (int)wcslen(strmeasure));
@@ -7290,6 +7292,7 @@ void s_dummyfunc()
 					ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
 					if (ey0 >= y0) {
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", maxmeasure);
+						strmeasure[64 - 1] = 0L;
 						TextOut(hdcM->hDC,
 							ex0, ey0,
 							strmeasure, (int)wcslen(strmeasure));
@@ -7308,7 +7311,7 @@ void s_dummyfunc()
 							//if (abs(ey0 - befey0) > 20) {
 							if (abs(ey0 - befey0) > (mesurestep * 2)) {
 								swprintf_s(strmeasure, 64, L"%+3.3lf---", curmeasure);
-
+								strmeasure[64 - 1] = 0L;
 								TextOut(hdcM->hDC,
 									ex0, ey0,
 									strmeasure, (int)wcslen(strmeasure));

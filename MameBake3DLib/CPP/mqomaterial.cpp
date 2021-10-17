@@ -875,6 +875,7 @@ int CMQOMaterial::AddConvName( char** ppname )
 	}
 
 	int leng;
+	m_name[256 - 1] = 0;
 	leng = (int)strlen( m_name );
 
 	char* newname;

@@ -248,6 +248,11 @@ void DrawText11DXUT( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3d11Device
                  LPCWSTR strText, const RECT& rcScreen, XMFLOAT4 vFontColor,
                  float fBBWidth, float fBBHeight, bool bCenter )
 {
+    if (!strText) {
+        return;
+    }
+
+
     float fCharTexSizeX = 0.010526315f;
     //float fGlyphSizeX = 14.0f / fBBWidth;
     //float fGlyphSizeY = 32.0f / fBBHeight;

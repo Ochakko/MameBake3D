@@ -1196,20 +1196,24 @@ int CModel::MakeObjectName()
 		CMQOObject* curobj = itrobj->second;
 		if( curobj ){
 			char* nameptr = (char*)curobj->GetName();
-			int sdefcmp, bdefcmp;
-			sdefcmp = strncmp( nameptr, "sdef:", 5 );
-			bdefcmp = strncmp( nameptr, "bdef:", 5 );
-			if( (sdefcmp != 0) && (bdefcmp != 0) ){
-				int leng = (int)strlen( nameptr );
-				string firstname( nameptr, nameptr + leng );
-				m_objectname[ firstname ] = curobj;
-				curobj->SetDispName( firstname );
-			}else{
-				char* startptr = nameptr + 5;
-				int leng = (int)strlen( startptr );
-				string firstname( startptr, startptr + leng );
-				m_objectname[ firstname ] = curobj;
-				curobj->SetDispName( firstname );
+			if (nameptr) {
+				*(nameptr + 256 - 1) = 0;
+				int sdefcmp, bdefcmp;
+				sdefcmp = strncmp(nameptr, "sdef:", 5);
+				bdefcmp = strncmp(nameptr, "bdef:", 5);
+				if ((sdefcmp != 0) && (bdefcmp != 0)) {
+					int leng = (int)strlen(nameptr);
+					string firstname(nameptr, nameptr + leng);
+					m_objectname[firstname] = curobj;
+					curobj->SetDispName(firstname);
+				}
+				else {
+					char* startptr = nameptr + 5;
+					int leng = (int)strlen(startptr);
+					string firstname(startptr, startptr + leng);
+					m_objectname[firstname] = curobj;
+					curobj->SetDispName(firstname);
+				}
 			}
 		}
 	}
@@ -1925,7 +1929,7 @@ void CModel::FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone,
 int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dstid)
 {
 	*dstid = -1;
-	int leng = (int)strlen(srcname);
+	//int leng = (int)strlen(srcname);
 
 	int maxid = 0;
 	map<int, MOTINFO*>::iterator itrmi;

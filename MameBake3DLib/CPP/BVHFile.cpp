@@ -102,7 +102,7 @@ int CBVHFile::InitParams()
 	m_curbe = 0;
 	m_parbe = 0;
 
-	ZeroMemory( m_linechar, BVHLINELENG );
+	ZeroMemory( m_linechar, sizeof(char) * BVHLINELENG );
 	
 	m_frames = 0;
 	m_frametime = 0.00833333f;
@@ -598,7 +598,7 @@ int CBVHFile::CreateNewElem()
 		return 1;
 	}
 
-
+	m_linechar[BVHLINELENG - 1] = 0;
 	ret = newbe->SetName( m_linechar );
 	if( ret ){
 		DbgOut( L"bvhfile : CreatenewElem : newbe SetName error !!!\n" );
@@ -825,6 +825,7 @@ int CBVHFile::LoadOffset()
 		return 1;
 	}
 
+	m_linechar[BVHLINELENG - 1] = 0;
 	ret = m_curbe->SetOffset( m_linechar );
 	if( ret ){
 		DbgOut( L"bvhfile : LoadOffset : curbe SetOffset error !!!\n" );
@@ -851,6 +852,7 @@ int CBVHFile::LoadChanels()
 		return 1;
 	}
 
+	m_linechar[BVHLINELENG - 1] = 0;
 	ret = m_curbe->SetChanels( m_linechar );
 	if( ret ){
 		DbgOut( L"bvhfile : LoadChanels : curbe SetChanels error !!!\n" );
@@ -896,6 +898,7 @@ int CBVHFile::LoadFrames()
 //	}
 
 	int setflag;
+	m_linechar[BVHLINELENG - 1] = 0;
 	char* valuehead = m_linechar;
 
 	valuehead = GetDigit( valuehead, &m_frames, &setflag );
@@ -934,6 +937,7 @@ int CBVHFile::LoadFrameTime()
 //	}
 
 	int setflag;
+	m_linechar[BVHLINELENG - 1] = 0;
 	char* valuehead = m_linechar;
 
 	float dummytime;
@@ -962,6 +966,7 @@ int CBVHFile::LoadMotionParams()
 		}
 
 		int setflag;
+		m_linechar[BVHLINELENG - 1] = 0;
 		char* valuehead = m_linechar;
 
 

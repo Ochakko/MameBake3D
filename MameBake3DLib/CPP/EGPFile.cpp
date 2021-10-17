@@ -278,6 +278,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	//}EGPHEADER;
 
 	int magicstrlen;
+	dstegph->magicstr[32 - 1] = 0;
 	magicstrlen = (int)strlen(dstegph->magicstr);
 	if ((magicstrlen <= 0) || (magicstrlen >= 32)) {
 		return false;
@@ -289,6 +290,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	}
 
 	int versionstrlen;
+	dstegph->version[16 - 1] = 0;
 	versionstrlen = (int)strlen(dstegph->version);
 	if ((versionstrlen <= 0) || (versionstrlen >= 16)) {
 		return false;
@@ -300,6 +302,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	}
 	
 	int fbxdatelen;
+	dstegph->fbxdate[256 - 1] = 0;
 	fbxdatelen = (int)strlen(dstegph->fbxdate);
 	if ((fbxdatelen <= 0) || (fbxdatelen >= 256)) {
 		return false;
@@ -431,6 +434,7 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		}
 
 		int jointnamelen;
+		jointheader.jointname[256 - 1] = 0;
 		jointnamelen = (int)strlen(jointheader.jointname);
 		if ((jointnamelen <= 0) || (jointnamelen >= 256)) {
 			CloseHandle(hfile);

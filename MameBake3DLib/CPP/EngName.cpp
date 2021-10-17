@@ -18,6 +18,8 @@
 
 int TermJointRepeats(char* dstname)
 {
+	*(dstname + 256 - 1) = 0;
+
 	char pat1[256] = "_Joint";
 	char* pat1ptr = strstr(dstname, pat1);
 	if (pat1ptr){
@@ -45,6 +47,9 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 		_ASSERT( 0 );
 		return 1;
 	}
+	*(srcname + 256 - 1) = 0;
+	*(dstname + 256 - 1) = 0;
+
 
 	strcpy_s( namepm, 256, srcname );
 
@@ -123,7 +128,7 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 		}
 	}
 
-
+	*(dstname + 256 - 1) = 0;
 	TermJointRepeats(dstname);
 
 

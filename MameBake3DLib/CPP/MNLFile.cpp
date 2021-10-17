@@ -211,6 +211,7 @@ int CMNLFile::ReadMNEntry( int motionnum, int motioncnt, XMLIOBUF* xmlbuf )
 
 	char changename[256] = { 0 };
 	strcpy_s(changename, 256, mname);
+	changename[256 - 1] = 0;
 	size_t namelen = strlen(changename);
 	if (namelen <= 0) {
 		_ASSERT(0);

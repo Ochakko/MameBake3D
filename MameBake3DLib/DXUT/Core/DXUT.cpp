@@ -943,6 +943,7 @@ void DXUTParseCommandLine(WCHAR* strCommandLine,
         *strSpace = 0;
 
         DXUTOutputDebugString( L"Unrecognized flag: %ls", strFlag );
+        strFlag[MAX_PATH - 1] = 0L;
         strCmdLine += wcslen( strFlag );
     }
 

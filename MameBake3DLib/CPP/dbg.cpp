@@ -68,6 +68,7 @@ int DbgOut( WCHAR* lpFormat, ... )
 	if( ret < 0 )
 		return 1;
 
+	outchar[7000 - 1] = 0L;
 	wleng = (unsigned long)wcslen( outchar );
 	WriteFile( dbgfile, outchar, sizeof( WCHAR ) * wleng, &writeleng, NULL );
 
@@ -171,6 +172,7 @@ int CloseDbgFile()
 					ret = g_infownd->GetStr(lineno, INFOWINDOWLINEW, strline);
 					wcscat_s(strline, INFOWINDOWLINEW, L"\r\n");
 
+					strline[INFOWINDOWLINEW - 1] = 0L;
 					DWORD wleng = (unsigned long)wcslen(strline);
 					DWORD writeleng = 0;
 					WriteFile(infofile, strline, sizeof(WCHAR) * wleng, &writeleng, NULL);
@@ -206,6 +208,7 @@ int DbgWrite2File( char* lpFormat, ... )
 	if( ret < 0 )
 		return 1;
 
+	outchar[2048 - 1] = 0;
 	wleng = (unsigned long)strlen( outchar );
 	WriteFile( dbgfile, outchar, wleng, &writeleng, NULL );
 	if( wleng != writeleng ){

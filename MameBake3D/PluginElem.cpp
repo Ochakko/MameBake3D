@@ -90,7 +90,13 @@ int CPluginElem::CallOnPose( int motid )
 
 int CPluginElem::SetFilePath( WCHAR* pluginpath )
 {
+	if (!pluginpath) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	int leng;
+	*(pluginpath + MAX_PATH - 1) = 0L;//!!!
 	leng = (int)wcslen( pluginpath );
 
 	if( (leng <= 0) || (leng >= _MAX_PATH) ){
@@ -141,14 +147,8 @@ int CPluginElem::LoadPlugin()
 			return 0;
 		}
 
-		int leng;
-		leng = (int)wcslen( nameptr );
-
-		if( leng >= _MAX_PATH )
-			leng = _MAX_PATH - 1;
-
-		wcsncpy_s( pluginname, _MAX_PATH, nameptr, leng );
-		pluginname[leng] = 0;
+		wcscpy_s( pluginname, _MAX_PATH, nameptr );
+		pluginname[_MAX_PATH - 1] = 0;
 	}
 
 ////////////

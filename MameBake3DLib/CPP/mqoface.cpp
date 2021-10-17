@@ -382,67 +382,67 @@ int SortTriLine( const VOID* arg1, const VOID* arg2 )
 		return 1;
 }
 
-int CMQOFace::SetMikoBoneName( char* srcname, int lrflag )
-{
-	int leng1;
-
-	char LRpat[20] = "[]";
-	char Lpat[20] = "[L]";
-	char Rpat[20] = "[R]";
-
-	if( lrflag == 0 ){
-		leng1 = (int)strlen( srcname );
-		if( leng1 >= 256 ){
-			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
-			_ASSERT( 0 );
-			return 1;
-		}
-
-		strcpy_s( m_bonename, 256, srcname );
-
-	}else if( lrflag == 1 ){
-		leng1 = (int)strlen( srcname );
-		
-		if( (leng1 - 2 + 3) >= 256 ){
-			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
-			_ASSERT( 0 );
-			return 1;
-		}
-
-		strncpy_s( m_bonename, 256, srcname, ((size_t)leng1 - 2) );
-		m_bonename[leng1 - 2] = 0;
-		strcat_s( m_bonename, 256, Lpat );
-
-
-	}else if( lrflag == 2 ){
-		leng1 = (int)strlen( srcname );
-		
-		if( (leng1 - 2 + 3) >= 256 ){
-			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
-			_ASSERT( 0 );
-			return 1;
-		}
-
-		strncpy_s( m_bonename, 256, srcname, ((size_t)leng1 - 2) );
-		m_bonename[leng1 - 2] = 0;
-		strcat_s( m_bonename, 256, Rpat );
-
-	}else{
-		_ASSERT( 0 );
-
-		leng1 = (int)strlen( srcname );
-		if( leng1 >= 256 ){
-			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
-			_ASSERT( 0 );
-			return 1;
-		}
-
-		strcpy_s( m_bonename, 256, srcname );
-	}
-
-
-	return 0;
-}
+//int CMQOFace::SetMikoBoneName( char* srcname, int lrflag )
+//{
+//	int leng1;
+//
+//	char LRpat[20] = "[]";
+//	char Lpat[20] = "[L]";
+//	char Rpat[20] = "[R]";
+//
+//	if( lrflag == 0 ){
+//		leng1 = (int)strlen( srcname );
+//		if( leng1 >= 256 ){
+//			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
+//			_ASSERT( 0 );
+//			return 1;
+//		}
+//
+//		strcpy_s( m_bonename, 256, srcname );
+//
+//	}else if( lrflag == 1 ){
+//		leng1 = (int)strlen( srcname );
+//		
+//		if( (leng1 - 2 + 3) >= 256 ){
+//			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
+//			_ASSERT( 0 );
+//			return 1;
+//		}
+//
+//		strncpy_s( m_bonename, 256, srcname, ((size_t)leng1 - 2) );
+//		m_bonename[leng1 - 2] = 0;
+//		strcat_s( m_bonename, 256, Lpat );
+//
+//
+//	}else if( lrflag == 2 ){
+//		leng1 = (int)strlen( srcname );
+//		
+//		if( (leng1 - 2 + 3) >= 256 ){
+//			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
+//			_ASSERT( 0 );
+//			return 1;
+//		}
+//
+//		strncpy_s( m_bonename, 256, srcname, ((size_t)leng1 - 2) );
+//		m_bonename[leng1 - 2] = 0;
+//		strcat_s( m_bonename, 256, Rpat );
+//
+//	}else{
+//		_ASSERT( 0 );
+//
+//		leng1 = (int)strlen( srcname );
+//		if( leng1 >= 256 ){
+//			DbgOut( L"mqoface : SetMikoBoneName : name leng too long error !!!\n" );
+//			_ASSERT( 0 );
+//			return 1;
+//		}
+//
+//		strcpy_s( m_bonename, 256, srcname );
+//	}
+//
+//
+//	return 0;
+//}
 
 int CMQOFace::CheckLRFlag( ChaVector3* pointptr, int* lrflagptr )
 {

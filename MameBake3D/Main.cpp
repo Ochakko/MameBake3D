@@ -7353,6 +7353,7 @@ int SetBaseDir()
 	unsigned int leng;
 	ZeroMemory(g_basedir, sizeof(WCHAR)* MAX_PATH);
 	wcscpy_s(g_basedir, MAX_PATH, filename);
+	g_basedir[MAX_PATH - 1] = 0L;
 	leng = (unsigned int)wcslen(g_basedir);
 	if (wcscmp(g_basedir + leng - 1, L"\\") != 0){
 		wcscat_s(g_basedir, MAX_PATH, L"\\");
@@ -7589,6 +7590,8 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 			const WCHAR* pfind;
 			pfind = wcsstr(wpath, pattern);
 			if (pfind) {
+				wpath[MAX_PATH - 1] = 0L;
+				pattern[20 - 1] = 0L;
 				int pathleng = (int)wcslen(wpath);
 				int patternleng = (int)wcslen(pattern);
 				if ((patternleng > 0) && (pathleng > 0) && (pathleng < MAX_PATH) && (pathleng > patternleng)) {
@@ -8533,6 +8536,7 @@ int OpenFile()
 	}else{
 		int leng2;
 		while( *topchar != TEXT( '\0' ) ){
+			savepath[MULTIPATH - 1] = 0L;
 			leng2 = (int)wcslen(topchar);
 			swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s", savepath, topchar );
 
@@ -8588,6 +8592,7 @@ int OpenFile()
 				return 1;
 			}
 
+			savepath[MULTIPATH - 1] = 0L;
 			leng2 = (int)wcslen( topchar );
 			topchar = topchar + leng2 + 1;
 			namecnt++;
@@ -14619,10 +14624,11 @@ int SaveProject()
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
+	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = (int)wcslen(saveprojpath);
 	if (savepathlen > 4) {
 		WCHAR* pwext;
-		pwext = saveprojpath + (savepathlen - 1) - 3;
+		pwext = saveprojpath + ((size_t)savepathlen - 1) - 3;
 		if (wcscmp(pwext, L".cha") == 0) {
 			SYSTEMTIME localtime;
 			GetLocalTime(&localtime);
@@ -14634,12 +14640,13 @@ int SaveProject()
 			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
 				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 			if (hfile != INVALID_HANDLE_VALUE) {
-				int pathlen;
-				pathlen = (int)wcslen(saveprojpath);
-				if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+				//int pathlen;
+				//pathlen = (int)wcslen(saveprojpath);
+				//if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 					DWORD writelen = 0;
-					WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
-					_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+					WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 				}
 				CloseHandle(hfile);
 			}
@@ -14796,6 +14803,7 @@ int OpenChaFile()
 	wcscpy_s(saveprojpath, MAX_PATH, g_tmpmqopath);
 
 	WCHAR* lasten = 0;
+	g_tmpmqopath[MAX_PATH - 1] = 0L;
 	lasten = wcsrchr( g_tmpmqopath, TEXT( '\\' ) );
 	if( lasten ){
 		int leng = (int)wcslen( lasten + 1 );
@@ -14867,10 +14875,11 @@ int OpenChaFile()
 	
 	//読み込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
+	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = (int)wcslen(saveprojpath);
 	if (savepathlen > 4) {
 		WCHAR* pwext;
-		pwext = saveprojpath + (savepathlen - 1) - 3;
+		pwext = saveprojpath + ((size_t)savepathlen - 1) - 3;
 		if (wcscmp(pwext, L".cha") == 0) {
 			SYSTEMTIME localtime;
 			GetLocalTime(&localtime);
@@ -14882,12 +14891,12 @@ int OpenChaFile()
 			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
 				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 			if (hfile != INVALID_HANDLE_VALUE) {
-				int pathlen;
-				pathlen = (int)wcslen(saveprojpath);
-				if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+				//int pathlen;
+				//pathlen = (int)wcslen(saveprojpath);
+				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 					DWORD writelen = 0;
-					WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
-					_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+					WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 				}
 				CloseHandle(hfile);
 			}
@@ -16943,6 +16952,7 @@ int RotAxis(HWND hDlgWnd)
 
 	WCHAR strdeg[256] = { 0L };
 	GetWindowText(GetDlgItem(hDlgWnd, IDC_EDITDEG), strdeg, 256);
+	strdeg[256 - 1] = 0L;
 	unsigned int len = (unsigned int)wcslen(strdeg);
 	//_ASSERT(0);
 	if ((len > 0) && (len < 256)){
@@ -30720,6 +30730,7 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
+	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = (int)wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
@@ -30731,12 +30742,12 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 	hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile != INVALID_HANDLE_VALUE) {
-		int pathlen;
-		pathlen = (int)wcslen(saveprojpath);
-		if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+		//int pathlen;
+		//pathlen = (int)wcslen(saveprojpath);
+		if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 			DWORD writelen = 0;
-			WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
-			_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+			WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+			_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 		}
 		CloseHandle(hfile);
 	}
@@ -30753,6 +30764,7 @@ int SaveBatchHistory(WCHAR* selectname)
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
 	int savepathlen;
+	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = (int)wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
@@ -30764,12 +30776,12 @@ int SaveBatchHistory(WCHAR* selectname)
 	hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile != INVALID_HANDLE_VALUE) {
-		int pathlen;
-		pathlen = (int)wcslen(saveprojpath);
-		if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+		//int pathlen;
+		//pathlen = (int)wcslen(saveprojpath);
+		if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 			DWORD writelen = 0;
-			WriteFile(hfile, saveprojpath, (pathlen * sizeof(WCHAR)), &writelen, NULL);
-			_ASSERT((pathlen * sizeof(WCHAR)) == writelen);
+			WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+			_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 		}
 		CloseHandle(hfile);
 	}

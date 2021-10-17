@@ -276,7 +276,6 @@ void CInfoWindow::UpdateWindowFunc()
 void CInfoWindow::OnPaint()
 {
 	if (m_hWnd && IsWindow(m_hWnd)) {
-
 		RECT clirect;
 		GetClientRect(m_hWnd, &clirect);
 
@@ -285,19 +284,24 @@ void CInfoWindow::OnPaint()
 		Rectangle(m_hdcM->hDC, 0, 0, clirect.right, clirect.bottom);
 		m_hdcM->setFont(12, _T("ＭＳ ゴシック"));
 		SetTextColor(m_hdcM->hDC, RGB(255, 255, 255));
-		
-		//TextOut(m_hdcM->hDC, 10, 2, outchar, (int)wcslen(outchar));
 
-		//INFOWINDOWLINEH行分、古い順に描画する
-		int outputno;
-		int curindex = m_viewindex - (INFOWINDOWLINEVIEW - 1);
-		int dispno = 0;
-		for (outputno = 0; outputno < INFOWINDOWLINEVIEW; outputno++) {
-			if ((curindex >= 0) && (curindex <= m_dataindex)) {
-				TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (size_t)curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + (size_t)curindex * INFOWINDOWLINEW));
-				dispno++;
+		if (m_stroutput) {
+			//TextOut(m_hdcM->hDC, 10, 2, outchar, (int)wcslen(outchar));
+
+			//INFOWINDOWLINEH行分、古い順に描画する
+			int outputno;
+			int curindex = m_viewindex - (INFOWINDOWLINEVIEW - 1);
+			int dispno = 0;
+			for (outputno = 0; outputno < INFOWINDOWLINEVIEW; outputno++) {
+				if ((curindex >= 0) && (curindex <= m_dataindex)) {
+
+					*(m_stroutput + INFOWINDOWLINEW * INFOWINDOWLINEH - 1) = 0L;
+					TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (size_t)curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + (size_t)curindex * INFOWINDOWLINEW));
+					dispno++;
+				}
+				curindex++;
 			}
-			curindex++;
+
 		}
 		m_hdcM->endPaint();
 	}

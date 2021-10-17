@@ -1739,15 +1739,19 @@ int CMQOObject::CheckMaterialSameName( int srcmatno, map<int, CMQOMaterial*> &sr
 				}
 
 				nameptr = (char*)curmat->GetName();
-
-				leng = (int)strlen( nameptr );
-				if( leng > 2 ){
-					cmp = strcmp( nameptr + leng - 2, "[]" );
-					if( cmp == 0 ){
-						lrcnt++;
+				if (nameptr) {
+					*(nameptr + 256 - 1) = 0;
+					leng = (int)strlen(nameptr);
+					if (leng > 2) {
+						cmp = strcmp(nameptr + leng - 2, "[]");
+						if (cmp == 0) {
+							lrcnt++;
+						}
 					}
 				}
-
+				else {
+					_ASSERT(0);
+				}
 			}
 		}
 	}
