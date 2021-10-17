@@ -536,6 +536,16 @@ static HWND s_customrighwnd = 0;
 static HWND s_exportxdlghwnd = 0;
 
 
+static int s_opedelmodelcnt = -1;
+static int s_opedelmotioncnt = -1;
+static bool s_underdelmodel = false;
+static bool s_underdelmotion = false;
+static bool s_underselectmodel = false;
+static bool s_underselectmotion = false;
+static int s_opeselectmodelcnt = -1;
+static int s_opeselectmotioncnt = -1;
+
+
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
 
@@ -2235,6 +2245,15 @@ void InitApp()
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
+
+	s_opedelmodelcnt = -1;
+	s_opedelmotioncnt = -1;
+	s_underdelmodel = false;
+	s_underdelmotion = false;
+	s_opeselectmodelcnt = -1;
+	s_opeselectmotioncnt = -1;
+	s_underselectmodel = false;
+	s_underselectmotion = false;
 
 
 	s_dispanglelimit = false;
@@ -4376,82 +4395,87 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		return;
 	}
 
-
-	WCHAR sz[100];
-	swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
-	g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
-
-
-	if (g_undertrackingRMenu == 0) {
-		OnDSUpdate();
+	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectmodel) {
+		OnFrameCloseFlag();
+		OnFrameToolWnd();
 	}
+	else {
+		WCHAR sz[100];
+		swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
+		g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 
 
-	OnFrameUtCheckBox();
-	SetCamera6Angle();
-	AutoCameraTarget();
-
-	OnFrameKeyboard();
-
-	if ((g_previewFlag == 0) && (s_savepreviewFlag != 0)) {
-		s_cursorFlag = true;
-	}
-	OnFrameTimeLineWnd();
-
-
-	OnFramePlayButton();
-	OnFrameMouseButton();
-
-	s_time = fTime;
-	g_Camera->FrameMove(fElapsedTime);
-	double difftime = fTime - savetime;
-
-	s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
-	s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
-	s_matWorld._41 = 0.0f;
-	s_matWorld._42 = 0.0f;
-	s_matWorld._43 = 0.0f;
-	//s_matW = s_matWorld;
-	s_matVP = s_matView * s_matProj;
-
-	int modelno;
-	int modelnum = (int)s_modelindex.size();
-	for (modelno = 0; modelno < modelnum; modelno++){
-		s_modelindex[modelno].modelptr->SetWorldMatFromCamera(s_matWorld);
-	}
-
-	double nextframe = 0.0;
-	if (g_previewFlag){
-		if (s_model && s_model->GetCurMotInfo()){
-			if (g_previewFlag <= 3){
-				OnFramePreviewNormal(&nextframe, &difftime);
-			}
-			else if (g_previewFlag == 4){//BTの物理
-				OnFramePreviewBt(&nextframe, &difftime);
-			}
-			else if (g_previewFlag == 5){//ラグドール
-				OnFramePreviewRagdoll(&nextframe, &difftime);
-			}
-			OnTimeLineCursor(0, 0.0);
+		if (g_undertrackingRMenu == 0) {
+			OnDSUpdate();
 		}
-		else{
-			g_previewFlag = 0;
+
+
+		OnFrameUtCheckBox();
+		SetCamera6Angle();
+		AutoCameraTarget();
+
+		OnFrameKeyboard();
+
+		if ((g_previewFlag == 0) && (s_savepreviewFlag != 0)) {
+			s_cursorFlag = true;
 		}
+		OnFrameTimeLineWnd();
+
+
+		OnFramePlayButton();
+		OnFrameMouseButton();
+
+		s_time = fTime;
+		g_Camera->FrameMove(fElapsedTime);
+		double difftime = fTime - savetime;
+
+		s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
+		s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
+		s_matWorld._41 = 0.0f;
+		s_matWorld._42 = 0.0f;
+		s_matWorld._43 = 0.0f;
+		//s_matW = s_matWorld;
+		s_matVP = s_matView * s_matProj;
+
+		int modelno;
+		int modelnum = (int)s_modelindex.size();
+		for (modelno = 0; modelno < modelnum; modelno++) {
+			s_modelindex[modelno].modelptr->SetWorldMatFromCamera(s_matWorld);
+		}
+
+		double nextframe = 0.0;
+		if (g_previewFlag) {
+			if (s_model && s_model->GetCurMotInfo()) {
+				if (g_previewFlag <= 3) {
+					OnFramePreviewNormal(&nextframe, &difftime);
+				}
+				else if (g_previewFlag == 4) {//BTの物理
+					OnFramePreviewBt(&nextframe, &difftime);
+				}
+				else if (g_previewFlag == 5) {//ラグドール
+					OnFramePreviewRagdoll(&nextframe, &difftime);
+				}
+				OnTimeLineCursor(0, 0.0);
+			}
+			else {
+				g_previewFlag = 0;
+			}
+		}
+		else {
+			OnFramePreviewStop();
+		}
+		s_difftime = difftime;
+		savetime = fTime;
+
+		OnFrameCloseFlag();
+		OnFrameToolWnd();
+		OnFrameUndo(false, 0);
+
+		OnFrameUpdateGround();
+		OnFrameInitBtWorld();
+
+		OnDSMouseHereApeal();
 	}
-	else{
-		OnFramePreviewStop();
-	}
-	s_difftime = difftime;
-	savetime = fTime;
-
-	OnFrameCloseFlag();
-	OnFrameToolWnd();
-	OnFrameUndo(false, 0);
-
-	OnFrameUpdateGround();
-	OnFrameInitBtWorld();
-
-	OnDSMouseHereApeal();
 
 	s_savepreviewFlag = g_previewFlag;
 }
@@ -4695,9 +4719,6 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 		return;
 	}
 
-
-
-
     //HRESULT hr;
 
     // If the settings dialog is being shown, then
@@ -4783,26 +4804,28 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	OnRenderSetShaderConst();
 
-	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
+	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) &&
+		!s_underdelmodel && !s_underdelmotion && !s_underselectmodel && !s_underselectmotion) {
 		OnRenderModel(pd3dImmediateContext);
 		OnRenderGround(pd3dImmediateContext);
 		OnRenderBoneMark(pd3dImmediateContext);
 		OnRenderSelect(pd3dImmediateContext);
-	}
-	//OnRenderUtDialog(fElapsedTime);
-	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
-		OnRenderSprite(pd3dImmediateContext);
-	}
+		//OnRenderUtDialog(fElapsedTime);
+		if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
+			OnRenderSprite(pd3dImmediateContext);
+		}
 
-
-	DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
-	////g_HUD.OnRender(fElapsedTime);
-	if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
-		g_SampleUI.OnRender(fElapsedTime);
+		DXUT_BeginPerfEvent(DXUT_PERFEVENTCOLOR, L"HUD / Stats");
+		////g_HUD.OnRender(fElapsedTime);
+		if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
+			g_SampleUI.OnRender(fElapsedTime);
+		}
+		RenderText(fTime);
+		DXUT_EndPerfEvent();
 	}
-	RenderText(fTime);
-	DXUT_EndPerfEvent();
-
+	else {
+		OnRenderNowLoading();
+	}
 }
 
 //--------------------------------------------------------------------------------------
@@ -10324,12 +10347,16 @@ int OnRgdMorphMenu( int selindex )
 
 int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 {
+
+	s_underselectmotion = true;
+
 	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
 	InitTimelineSelection();
 
 	if (!s_model) {
 		_ASSERT(0);
 		SetMainWindowTitle();
+		s_underselectmotion = false;
 		return 0;
 	}
 
@@ -10337,6 +10364,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	if( selindex < 0 ){
 		SetMainWindowTitle();
+		s_underselectmotion = false;
 		return 0;//!!!!!!!!!
 	}
 
@@ -10353,6 +10381,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	if( !s_model || !s_owpTimeline ){
 		s_curmotid = -1;
 		SetMainWindowTitle();
+		s_underselectmotion = false;
 		return 0;//!!!!!!!!!!!!!!!!!!
 	}
 
@@ -10364,6 +10393,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 		}
 		s_curmotid = -1;
 		SetMainWindowTitle();
+		s_underselectmotion = false;
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -10438,11 +10468,15 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	SetMainWindowTitle();
 
+	s_underselectmotion = false;
+
 	return 0;
 }
 
 int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 {
+	s_underselectmodel = true;
+
 	s_customrigbone = 0;
 	
 	if (s_anglelimitdlg){
@@ -10489,6 +10523,8 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 		CreateMotionPanel();
 
 		SetMainWindowTitle();
+
+		s_underselectmodel = false;
 		return 0;//!!!!!!!!!
 	}
 
@@ -10504,6 +10540,8 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 		CreateMotionPanel();
 
 		SetMainWindowTitle();
+
+		s_underselectmodel = false;
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -10539,18 +10577,54 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 	if( s_model ){
 		if( s_model->GetRigidElemInfoSize() > 0 ){
-			CallF( OnREMenu( 0, 0 ), return 0 );
-			CallF( OnRgdMenu( 0, 0 ), return 0 );
-			CallF( OnImpMenu( 0 ), return 0 );
+			int result1 = OnREMenu( 0, 0 );
+			if (result1) {
+				s_underselectmodel = false;
+				return 0;
+			}
+			int result2 = OnRgdMenu( 0, 0 );
+			if (result2) {
+				s_underselectmodel = false;
+				return 0;
+			}
+			int result3 = OnImpMenu( 0 );
+			if (result3) {
+				s_underselectmodel = false;
+				return 0;
+			}
 		}else{
-			CallF( OnREMenu( -1, 0 ), return 0 );
-			CallF( OnRgdMenu( -1, 0 ), return 0 );
-			CallF( OnImpMenu( -1 ), return 0 );
+			int result1 = OnREMenu(-1, 0);
+			if (result1) {
+				s_underselectmodel = false;
+				return 0;
+			}
+			int result2 = OnRgdMenu(-1, 0);
+			if (result2) {
+				s_underselectmodel = false;
+				return 0;
+			}
+			int result3 = OnImpMenu(-1);
+			if (result3) {
+				s_underselectmodel = false;
+				return 0;
+			}
 		}
 	}else{
-		CallF( OnREMenu( -1, 0 ), return 0 );
-		CallF( OnRgdMenu( -1, 0 ), return 0 );
-		CallF( OnImpMenu( -1 ), return 0 );
+		int result1 = OnREMenu(-1, 0);
+		if (result1) {
+			s_underselectmodel = false;
+			return 0;
+		}
+		int result2 = OnRgdMenu(-1, 0);
+		if (result2) {
+			s_underselectmodel = false;
+			return 0;
+		}
+		int result3 = OnImpMenu(-1);
+		if (result3) {
+			s_underselectmodel = false;
+			return 0;
+		}
 	}
 
 
@@ -10573,6 +10647,8 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	}
 
 	SetMainWindowTitle();
+
+	s_underselectmodel = false;
 
 	return 0;
 }
@@ -10722,13 +10798,21 @@ int OnImpMenu( int selindex )
 
 int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = false
 {
+	s_underdelmotion = true;
+
 	int tlnum = (int)s_tlarray.size();
 	if( (tlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= tlnum) ){
+		s_underdelmotion = false;
 		return 0;
 	}
 
 	int delmotid = s_tlarray[ delmenuindex ].motionid;
-	CallF( s_model->DeleteMotion( delmotid ), return 1 );
+	int result;
+	result = s_model->DeleteMotion(delmotid);
+	if (result) {
+		s_underdelmotion = false;
+		return 1;
+	}
 
 
 	int tlno;
@@ -10750,18 +10834,24 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 		DispMotionPanel();
 	}
 
+	s_underdelmotion = false;
+
 	return 0;
 }
 
 int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == false
 {
+	s_underdelmodel = true;
+
 	int mdlnum = (int)s_modelindex.size();
 	if( (mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum) ){
+		s_underdelmodel = false;
 		return 0;
 	}
 
 	if (mdlnum == 1){
 		OnDelAllModel();//psdk rootnode初期化
+		s_underdelmodel = false;
 		return 0;
 	}
 
@@ -10829,6 +10919,8 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 	if (!s_model) {
 		OrgWindowListenMouse(false);
 	}
+
+	s_underdelmodel = false;
 
 	return 0;
 }
@@ -12629,13 +12721,15 @@ int CreateModelPanel()
 		}
 	}
 
-	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+	//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
 	if (!s_modelpanel.separator) {
 		_ASSERT(0);
 		return 1;
 	}
 	s_modelpanel.separator->setSize(WindowSize(400, 30));
-	s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, false);									// セパレータ2（境界線による横方向2分割）
+	//s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, false);									// セパレータ2（境界線による横方向2分割）
+	s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
 	if (!s_modelpanel.separator2) {
 		_ASSERT(0);
 		return 1;
@@ -12694,9 +12788,13 @@ int CreateModelPanel()
 			if (s_model) {
 				if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//全部消すときはメインメニューから
 					CModel* curmodel = s_modelindex[modelcnt].modelptr;
-					if (curmodel) {
-						bool ondelbutton = true;
-						OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+					if ((s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
+						s_underdelmodel = true;
+						//bool ondelbutton = true;
+						//OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+
+						//ここでOnDelModelを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+						s_opedelmodelcnt = modelcnt;
 					}
 				}
 			}
@@ -12706,10 +12804,14 @@ int CreateModelPanel()
 	s_modelpanel.radiobutton->setSelectListener( [](){
 		if (s_model) {
 			int curindex = s_modelpanel.radiobutton->getSelectIndex();
-			if ((curindex >= 0) && (curindex < s_modelindex.size())) {
-				s_modelpanel.modelindex = curindex;
-				OnModelMenu(true, s_modelpanel.modelindex, 1);
-				s_modelpanel.panel->callRewrite();
+			if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
+				//s_modelpanel.modelindex = curindex;
+				//OnModelMenu(true, s_modelpanel.modelindex, 1);
+				//s_modelpanel.panel->callRewrite();
+
+				//ここでOnModelMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+				s_underselectmodel = true;
+				s_opeselectmodelcnt = curindex;
 			}
 		}
 	} );
@@ -12870,9 +12972,13 @@ int CreateMotionPanel()
 		MOTINFO* curmi = (MOTINFO*)(itrmi->second);
 		if (curmi) {
 			s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-				if (s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
-					bool ondelbutton = true;
-					OnDelMotion(delmenuindex, ondelbutton);
+				if ((s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+					s_underdelmotion = true;
+					//bool ondelbutton = true;
+					//OnDelMotion(delmenuindex, ondelbutton);
+
+					//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+					s_opedelmotioncnt = delmenuindex;
 				}
 			});
 			delmenuindex++;
@@ -12885,10 +12991,14 @@ int CreateMotionPanel()
 	s_motionpanel.radiobutton->setSelectListener([]() {
 		if (s_model) {
 			int curindex = s_motionpanel.radiobutton->getSelectIndex();
-			if ((curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
-				int motionindex = curindex;
-				OnAnimMenu(true, motionindex, 1);
-				s_motionpanel.panel->callRewrite();
+			if ((s_opeselectmotioncnt < 0) && !s_underselectmotion && (curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
+				s_underselectmotion = true;
+				//int motionindex = curindex;
+				//OnAnimMenu(true, motionindex, 1);
+				//s_motionpanel.panel->callRewrite();
+
+				//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+				s_opeselectmotioncnt = curindex;
 			}
 		}
 	});
@@ -18023,6 +18133,35 @@ int OnFrameToolWnd()
 		}
 
 	}
+
+
+
+	if (s_opedelmodelcnt >= 0) {
+		int modelcnt = s_opedelmodelcnt;
+		s_opedelmodelcnt = -1;
+		bool ondelbutton = true;
+		OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+	}
+	if ((s_opeselectmodelcnt >= 0) && s_modelpanel.panel) {
+		s_modelpanel.modelindex = s_opeselectmodelcnt;
+		s_opeselectmodelcnt = -1;
+		OnModelMenu(true, s_modelpanel.modelindex, 1);
+		s_modelpanel.panel->callRewrite();
+	}
+	if (s_opedelmotioncnt >= 0) {
+		int delmenuindex = s_opedelmotioncnt;
+		s_opedelmotioncnt = -1;
+		bool ondelbutton = true;
+		OnDelMotion(delmenuindex, ondelbutton);
+	}
+	if ((s_opeselectmotioncnt >= 0) && s_motionpanel.panel) {
+		int motionindex = s_opeselectmotioncnt;
+		s_opeselectmotioncnt = -1;
+		OnAnimMenu(true, motionindex, 1);
+		s_motionpanel.panel->callRewrite();
+	}
+
+
 
 	if (s_copyFlag){
 		s_copyFlag = false;

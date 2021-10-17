@@ -1,3 +1,30 @@
+2021/10/17_2
+	ver1.0.0.16に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+	Update VisualStudio BuildSettings
+		FBX SDKへのリンクが古いものが混ざっていたのをFBXSDK2020.2に修正
+		デバッグビルドがビルドできなくなっていたのを修正
+
+	OrgWindow
+		for分の条件文でstlを宣言するのを止めてforの外で宣言
+		Listnerの初期値をdummyfuncからNULLに変更
+		ifの条件に()を出来る限り付けた
+		基底クラスのコンストラクタ呼び出しミスを修正
+
+	CRetargetFile
+		基底クラスのコンストラクタ呼び出しミスを修正
+		
+	ModelPanel, MotionPanel
+		連続して消すと落ちることがある不具合を修正
+		連続して選択を切り替えると落ちることがある不具合を修正
+		
+	
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/17_1
 	ver1.0.0.16に向けての続き
 

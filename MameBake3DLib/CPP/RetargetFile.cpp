@@ -38,6 +38,7 @@ CRetargetFile::~CRetargetFile()
 
 int CRetargetFile::InitParams()
 {
+	CXMLIO::InitParams();
 	m_convbonemap.clear();
 	m_model = 0;
 	m_bvh = 0;
@@ -47,6 +48,7 @@ int CRetargetFile::InitParams()
 
 int CRetargetFile::DestroyObjs()
 {
+	CXMLIO::DestroyObjs();
 	InitParams();
 
 	return 0;

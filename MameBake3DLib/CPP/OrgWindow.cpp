@@ -45,9 +45,8 @@ namespace OrgWinGUI{
 
 		//if (g_retargetbatchflag == 0) {
 		if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0)) {
-			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
-				itr != partsList.end();
-				itr++) {
+			std::list<OrgWindowParts*>::iterator itr;
+			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
 				if ((*itr)->getParent() && IsWindow((*itr)->getParent()->hWnd)) {
 					(*itr)->draw();
 				}
@@ -179,16 +178,16 @@ namespace OrgWinGUI{
 			}
 
 			//全ての内部パーツを描画
-			for (std::list<OrgWindowParts*>::iterator itr = partsList1.begin();
-				itr != partsList1.end(); itr++) {
+			std::list<OrgWindowParts*>::iterator itr;
+			for (itr = partsList1.begin(); itr != partsList1.end(); itr++) {
 				if(*itr){
 					(*itr)->draw();
 				}
 			}
-			for (std::list<OrgWindowParts*>::iterator itr = partsList2.begin();
-				itr != partsList2.end(); itr++) {
-				if (*itr) {
-					(*itr)->draw();
+			std::list<OrgWindowParts*>::iterator itr2;
+			for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
+				if (*itr2) {
+					(*itr2)->draw();
 				}
 			}
 
@@ -271,8 +270,8 @@ namespace OrgWinGUI{
 			for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
 				int xx = (int)(((double)i - showPos_time)*timeSize) + x0 + 1;
 
-				if (x1 + AXIS_LABEL_SIDE_MARGIN <= xx) break;
-				if (x0 - AXIS_LABEL_SIDE_MARGIN <= xx) {
+				if ((x1 + AXIS_LABEL_SIDE_MARGIN) <= xx) break;
+				if ((x0 - AXIS_LABEL_SIDE_MARGIN) <= xx) {
 					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 					MoveToEx(hdcM->hDC, xx, y1 - 5, NULL);
 					LineTo(hdcM->hDC, xx, y1);
@@ -292,7 +291,8 @@ namespace OrgWinGUI{
 			//カーソル
 			int xx = (int)((currentTime - showPos_time)*timeSize) + x0 + 1;
 			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-			if (x0 - AXIS_CURSOR_SIZE <= xx && xx <= x1 + AXIS_CURSOR_SIZE) {
+			if (((x0 - AXIS_CURSOR_SIZE) <= xx) && 
+				(xx <= (x1 + AXIS_CURSOR_SIZE))) {
 				for (int i = 0; i<AXIS_CURSOR_SIZE; i++) {
 					MoveToEx(hdcM->hDC, xx - i, y1 - i - 2, NULL);
 					LineTo(hdcM->hDC, xx + i + 1, y1 - i - 2);
@@ -324,7 +324,7 @@ namespace OrgWinGUI{
 		}
 
 		//ドラッグによる選択範囲
-		if (dragSelect && dragSelectTime1 != dragSelectTime2) {
+		if (dragSelect && (dragSelectTime1 != dragSelectTime2)) {
 			int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
 			int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
 			int xx1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
@@ -1063,12 +1063,12 @@ namespace OrgWinGUI{
 		if (currentTime <= showPos_time) {
 			showPos_time = currentTime;
 		}
-		if (showPos_time + ((double)x2 - 3 - x1) / timeSize <= currentTime) {
+		if ((showPos_time + ((double)x2 - 3 - x1) / timeSize) <= currentTime) {
 			showPos_time = currentTime - ((double)x2 - 3 - x1) / timeSize;
 		}
 
 		//リスナーコール
-		if (CallListener && this->cursorListener != NULL) {
+		if (CallListener && (this->cursorListener != NULL)) {
 			(this->cursorListener)();
 		}
 
@@ -1094,12 +1094,12 @@ namespace OrgWinGUI{
 		if (currentTime <= showPos_time) {
 			showPos_time = currentTime;
 		}
-		if (showPos_time + ((double)x2 - 3 - x1) / timeSize <= currentTime) {
+		if ((showPos_time + ((double)x2 - 3 - x1) / timeSize) <= currentTime) {
 			showPos_time = currentTime - ((double)x2 - 3 - x1) / timeSize;
 		}
 
 		//リスナーコール
-		if (CallListener && this->cursorListener != NULL) {
+		if (CallListener && (this->cursorListener != NULL)) {
 			(this->cursorListener)();
 		}
 
@@ -1167,18 +1167,20 @@ namespace OrgWinGUI{
 
 	/// Method : 再描画要求を送る
 	void OrgWindowParts::callRewrite(){
-		if( parentWindow==NULL ) return;
+		//if( parentWindow==NULL ) return;
+		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-		//再描画領域
-		RECT tmpRect;
-		tmpRect.left=   pos.x+1;
-		tmpRect.top=    pos.y+1;
-		tmpRect.right=  pos.x+size.x-1;
-		tmpRect.bottom= pos.y+size.y-1;
-		//InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
-		InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+			//再描画領域
+			RECT tmpRect;
+			tmpRect.left = pos.x + 1;
+			tmpRect.top = pos.y + 1;
+			tmpRect.right = pos.x + size.x - 1;
+			tmpRect.bottom = pos.y + size.y - 1;
+			//InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-		//draw();
+			//draw();
+		}
 	}
 
 	///<summary>

@@ -401,7 +401,7 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OrgWindowParts(){
-			parentWindow=NULL;
+			parentWindow = NULL;
 			isregistered = false;
 			isactive = false;
 			isslider = false;
@@ -441,6 +441,7 @@ void s_dummyfunc()
 		}
 
 		virtual ~OrgWindowParts(){
+			parentWindow = NULL;
 		}
 
 		////////////////////////// MemberVar /////////////////////////////
@@ -629,13 +630,18 @@ void s_dummyfunc()
 
 
 			//イベントリスナー
-			closeListener = [](){s_dummyfunc();};
+			//closeListener = [](){s_dummyfunc();};
+			closeListener = NULL;
 			keyboardListener = [](const KeyboardEvent &e){s_dummyfunc();};
 			ldownListener = []() {s_dummyfunc(); };
-			lupListener = [](){s_dummyfunc();};
-			rupListener = [](){s_dummyfunc();};
-			hoverListener = []() {s_dummyfunc(); };
-			leaveListener = []() {s_dummyfunc(); };
+			//lupListener = [](){s_dummyfunc();};
+			//rupListener = [](){s_dummyfunc();};
+			//hoverListener = []() {s_dummyfunc(); };
+			//leaveListener = []() {s_dummyfunc(); };
+			lupListener = NULL;
+			rupListener = NULL;
+			hoverListener = NULL;
+			leaveListener = NULL;
 
 			//マウスキャプチャ用のフラグ
 			mouseCaptureFlagL=mouseCaptureFlagR=false;
@@ -825,7 +831,7 @@ void s_dummyfunc()
 			currentPartsSizeY+= a.getSize().y+1;
 			partsList.push_back(&a);
 
-			if( partsAreaPos.y+currentPartsSizeY+2 >= size.y ){		//ウィンドウからはみ出る場合はサイズを調整
+			if( (partsAreaPos.y + currentPartsSizeY + 2) >= size.y ){		//ウィンドウからはみ出る場合はサイズを調整
 				setSize( WindowSize(size.x, partsAreaPos.y+currentPartsSizeY+2) );
 			}
 
@@ -859,8 +865,8 @@ void s_dummyfunc()
 			std::list<OrgWindowParts*> tmpPartsList= partsList;
 			partsList.clear();
 			currentPartsSizeY= 0;
-			for(std::list<OrgWindowParts*>::iterator itr= tmpPartsList.begin();
-				itr!=tmpPartsList.end(); itr++){
+			std::list<OrgWindowParts*>::iterator itr;
+			for(itr = tmpPartsList.begin(); itr != tmpPartsList.end(); itr++){
 				addParts(**itr);
 			}
 		}
@@ -869,9 +875,8 @@ void s_dummyfunc()
 			currentPartsSizeY= 0;
 
 			//全ての内部要素に対して位置・サイズを自動設定
-			for(std::list<OrgWindowParts*>::iterator itr=partsList.begin();
-				itr!=partsList.end(); itr++){
-
+			std::list<OrgWindowParts*>::iterator itr;
+			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
 				(*itr)->setPos(  WindowPos(  partsAreaPos.x,  partsAreaPos.y+currentPartsSizeY  ) );
 				(*itr)->setSize( WindowSize( partsAreaSize.x, partsAreaSize.y-currentPartsSizeY ) );
 				(*itr)->autoResize();
@@ -893,9 +898,9 @@ void s_dummyfunc()
 			size.y = tmpRect.bottom - tmpRect.top;
 
 			//最小ウィンドウサイズ未満になって居ないかどうか確認
-			if (size.x<sizeMin.x || size.y<sizeMin.y) {
-				if (size.x<sizeMin.x) size.x = sizeMin.x;
-				if (size.y<sizeMin.y) size.y = sizeMin.y;
+			if ((size.x < sizeMin.x) || (size.y < sizeMin.y)) {
+				if (size.x < sizeMin.x) size.x = sizeMin.x;
+				if (size.y < sizeMin.y) size.y = sizeMin.y;
 				setSize(size);
 			}
 
@@ -968,7 +973,7 @@ void s_dummyfunc()
 			//if ((_sizeMin.x >= -4000) && (_sizeMin.x <= 4000) && (_sizeMin.y >= -4000) && (_sizeMin.y <= 4000)) {
 				sizeMin = _sizeMin;
 			//}
-			if (size.x < sizeMin.x || size.y < sizeMin.y) {
+			if ((size.x < sizeMin.x) || (size.y < sizeMin.y)) {
 				if (size.x < sizeMin.x) size.x = sizeMin.x;
 				if (size.y < sizeMin.y) size.y = sizeMin.y;
 			}
@@ -1223,8 +1228,8 @@ void s_dummyfunc()
 
 			if( lButton ){
 				//タイトルバーのXボタン
-				if( xButtonX1<=e.localX && e.localX<=xButtonX2-1
-				 && xButtonY1<=e.localY && e.localY<=xButtonY2-1
+				if( (xButtonX1 <= e.localX) && (e.localX <= xButtonX2 - 1)
+				 && (xButtonY1 <= e.localY) && (e.localY <= xButtonY2 - 1)
 				 && canQuit ){
 					if(this->closeListener!=NULL){
 						(this->closeListener)();
@@ -1235,8 +1240,8 @@ void s_dummyfunc()
 
 				
 				////タイトルバー
-				if( 1<=e.localX && e.localX<=size.x-2
-				 && 1<=e.localY && e.localY<=1+2+9+1 ){
+				if( (1 <= e.localX) && (e.localX <= size.x - 2)
+				 && (1 <= e.localY) && (e.localY <= 1 + 2 + 9 + 1) ){
 					if (istopmost) {
 						SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
 					}
@@ -1245,7 +1250,7 @@ void s_dummyfunc()
 
 				//右下の隅
 				if( canChangeSize &&
-					size.x-4<=e.localX && size.y-4<=e.localY ){
+					((size.x - 4) <= e.localX) && ((size.y - 4) <= e.localY) ){
 					if (istopmost) {
 						SendMessage(hWnd, WM_NCLBUTTONDOWN, HTBOTTOMRIGHT, 0);
 					}
@@ -1259,15 +1264,14 @@ void s_dummyfunc()
 			else		  mouseCaptureFlagR=true;
 
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
-				 plItr!=partsList.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for( plItr = partsList.begin(); plItr != partsList.end(); plItr++ ){
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX - (*plItr)->getPos().x;
 					int tmpPosY = e.localY - (*plItr)->getPos().y;
-					if (0 <= tmpPosX && tmpPosX < partsSize.x &&
-						0 <= tmpPosY && tmpPosY < partsSize.y) {
+					if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
+						(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
 
 						MouseEvent mouseEvent;
 						mouseEvent.globalX = e.globalX;
@@ -1320,9 +1324,8 @@ void s_dummyfunc()
 			if( !mouseCaptureFlagL && !mouseCaptureFlagR ) ReleaseCapture();
 
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
-				 plItr!=partsList.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for( plItr = partsList.begin(); plItr!=partsList.end(); plItr++ ){
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1359,15 +1362,14 @@ void s_dummyfunc()
 			//else		  mouseCaptureFlagR = true;
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
-				plItr != partsList.end();
-				plItr++){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX - (*plItr)->getPos().x;
 					int tmpPosY = e.localY - (*plItr)->getPos().y;
-					if (0 <= tmpPosX && tmpPosX < partsSize.x &&
-						0 <= tmpPosY && tmpPosY < partsSize.y) {
+					if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
+						(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
 
 						MouseEvent mouseEvent;
 						mouseEvent.globalX = e.globalX;
@@ -1396,9 +1398,8 @@ void s_dummyfunc()
 			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) ReleaseCapture();
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
-				plItr != partsList.end();
-				plItr++){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1430,9 +1431,8 @@ void s_dummyfunc()
 			//else		  mouseCaptureFlagR = true;
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
-				plItr != partsList.end();
-				plItr++){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX - (*plItr)->getPos().x;
@@ -1466,15 +1466,14 @@ void s_dummyfunc()
 
 			//右下の隅
 			if( canChangeSize && 
-				size.x-4<=e.localX && size.y-4<=e.localY ){
+				((size.x - 4) <= e.localX) && ((size.y - 4) <= e.localY) ){
 				SetCursor((HCURSOR)LoadImage(NULL, IDC_SIZENWSE,IMAGE_CURSOR,
 											 NULL, NULL,LR_DEFAULTCOLOR | LR_SHARED));
 			}
 
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
-				 plItr!=partsList.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1500,9 +1499,8 @@ void s_dummyfunc()
 			}
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
-				plItr != partsList.end();
-				plItr++) {
+			std::list<OrgWindowParts*>::iterator plItr;
+			for ( plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1527,9 +1525,8 @@ void s_dummyfunc()
 			}
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin();
-				plItr != partsList.end();
-				plItr++) {
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1615,9 +1612,7 @@ void s_dummyfunc()
 	class OWP_Separator : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Separator(OrgWindow *_parentWindow, bool _only1line, double _centerRate=0.5, bool _divideSide=true){
-			parentWindow = _parentWindow;
-
+		OWP_Separator(OrgWindow* _parentWindow, bool _only1line, double _centerRate = 0.5, bool _divideSide = true) : OrgWindowParts() {
 			currentPartsSizeY1= 0;
 			currentPartsSizeY2= 0;
 
@@ -1708,17 +1703,17 @@ void s_dummyfunc()
 			if (only1line == true) {
 				int sizey1 = 0;
 				int sizey2 = 0;
-				for (std::list<OrgWindowParts*>::iterator itr = partsList1.begin();
-					itr != partsList1.end(); itr++) {
+				std::list<OrgWindowParts*>::iterator itr;
+				for ( itr = partsList1.begin(); itr != partsList1.end(); itr++) {
 					(*itr)->autoResize();
 					WindowSize befsize = (*itr)->getSize();
 					sizey1 += (*itr)->getSize().y;
 				}
-				for (std::list<OrgWindowParts*>::iterator itr = partsList2.begin();
-					itr != partsList2.end(); itr++) {
-					(*itr)->autoResize();
-					WindowSize befsize = (*itr)->getSize();
-					sizey2 += (*itr)->getSize().y;
+				std::list<OrgWindowParts*>::iterator itr2;
+				for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
+					(*itr2)->autoResize();
+					WindowSize befsize = (*itr2)->getSize();
+					sizey2 += (*itr2)->getSize().y;
 				}
 				size.y = max(sizey1, sizey2);
 				if (size.y == 0) {
@@ -1741,8 +1736,8 @@ void s_dummyfunc()
 			currentPartsSizeY2= 0;
 
 			//全ての内部パーツの位置とサイズを自動設定
-			for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
-				itr!=partsList1.end(); itr++){
+			std::list<OrgWindowParts*>::iterator itr;
+			for (itr = partsList1.begin(); itr != partsList1.end(); itr++) {
 				(*itr)->autoResize();//!!!!!!!!!!!!
 				WindowSize befsize = (*itr)->getSize();
 				(*itr)->setPos(  WindowPos(  partsAreaPos1.x,  partsAreaPos1.y+currentPartsSizeY1  ) );
@@ -1753,17 +1748,16 @@ void s_dummyfunc()
 				//currentPartsSizeY1+= (*itr)->getSize().y+1;
 				currentPartsSizeY1 += (*itr)->getSize().y;
 			}
-			for(std::list<OrgWindowParts*>::iterator itr=partsList2.begin();
-				itr!=partsList2.end(); itr++){
-				(*itr)->autoResize();//!!!!!!!!!!!!
-				WindowSize befsize = (*itr)->getSize();
-				(*itr)->setPos(  WindowPos(  partsAreaPos2.x,  partsAreaPos2.y+currentPartsSizeY2  ) );
-				//(*itr)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
-				(*itr)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
-				//(*itr)->autoResize();//befsizeよりも前に移動
+			std::list<OrgWindowParts*>::iterator itr2;
+			for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
+				WindowSize befsize = (*itr2)->getSize();
+				(*itr2)->setPos(  WindowPos(  partsAreaPos2.x,  partsAreaPos2.y+currentPartsSizeY2  ) );
+				//(*itr2)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
+				(*itr2)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
+				//(*itr2)->autoResize();//befsizeよりも前に移動
 
-				//currentPartsSizeY2+= (*itr)->getSize().y+1;
-				currentPartsSizeY2 += (*itr)->getSize().y;
+				//currentPartsSizeY2+= (*itr2)->getSize().y+1;
+				currentPartsSizeY2 += (*itr2)->getSize().y;
 			}
 		}
 		///	Method : 描画
@@ -1836,9 +1830,8 @@ void s_dummyfunc()
 			}
 
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList1.begin();
-				 plItr!=partsList1.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1852,28 +1845,26 @@ void s_dummyfunc()
 					(*plItr)->onMouseMove(mouseEvent);
 				}
 			}
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList2.begin();
-				 plItr!=partsList2.end();
-				 plItr++ ){
-				if (*plItr) {
+			std::list<OrgWindowParts*>::iterator plItr2;
+			for (plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+				if (*plItr2) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.localX = e.localX + pos.x - (*plItr2)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr2)->getPos().y;
 					mouseEvent.altKey = e.altKey;
 					mouseEvent.shiftKey = e.shiftKey;
 					mouseEvent.ctrlKey = e.ctrlKey;
 
-					(*plItr)->onMouseMove(mouseEvent);
+					(*plItr2)->onMouseMove(mouseEvent);
 				}
 			}
 		}
 		virtual void onMouseWheel(const MouseEvent& e) {
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList1.begin();
-				plItr != partsList1.end();
-				plItr++) {
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1888,30 +1879,28 @@ void s_dummyfunc()
 					(*plItr)->onMouseWheel(mouseEvent);
 				}
 			}
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList2.begin();
-				plItr != partsList2.end();
-				plItr++) {
-				if (*plItr) {
+			std::list<OrgWindowParts*>::iterator plItr2;
+			for (plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+				if (*plItr2) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.localX = e.localX + pos.x - (*plItr2)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr2)->getPos().y;
 					mouseEvent.altKey = e.altKey;
 					mouseEvent.shiftKey = e.shiftKey;
 					mouseEvent.ctrlKey = e.ctrlKey;
 					mouseEvent.wheeldelta = e.wheeldelta;
 
-					(*plItr)->onMouseWheel(mouseEvent);
+					(*plItr2)->onMouseWheel(mouseEvent);
 				}
 			}
 		}
 
 		virtual void onMButtonDown(const MouseEvent& e) {
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList1.begin();
-				plItr != partsList1.end();
-				plItr++) {
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1926,30 +1915,28 @@ void s_dummyfunc()
 					(*plItr)->onMButtonDown(mouseEvent);
 				}
 			}
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList2.begin();
-				plItr != partsList2.end();
-				plItr++) {
-				if (*plItr) {
+			std::list<OrgWindowParts*>::iterator plItr2;
+			for (plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+				if (*plItr2) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.localX = e.localX + pos.x - (*plItr2)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr2)->getPos().y;
 					mouseEvent.altKey = e.altKey;
 					mouseEvent.shiftKey = e.shiftKey;
 					mouseEvent.ctrlKey = e.ctrlKey;
 					mouseEvent.wheeldelta = e.wheeldelta;
 
-					(*plItr)->onMButtonDown(mouseEvent);
+					(*plItr2)->onMButtonDown(mouseEvent);
 				}
 			}
 
 		}
 		virtual void onMButtonUp(const MouseEvent& e) {
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList1.begin();
-				plItr != partsList1.end();
-				plItr++) {
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1964,21 +1951,20 @@ void s_dummyfunc()
 					(*plItr)->onMButtonUp(mouseEvent);
 				}
 			}
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList2.begin();
-				plItr != partsList2.end();
-				plItr++) {
-				if (*plItr) {
+			std::list<OrgWindowParts*>::iterator plItr2;
+			for ( plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+				if (*plItr2) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.localX = e.localX + pos.x - (*plItr2)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr2)->getPos().y;
 					mouseEvent.altKey = e.altKey;
 					mouseEvent.shiftKey = e.shiftKey;
 					mouseEvent.ctrlKey = e.ctrlKey;
 					mouseEvent.wheeldelta = e.wheeldelta;
 
-					(*plItr)->onMButtonUp(mouseEvent);
+					(*plItr2)->onMButtonUp(mouseEvent);
 				}
 			}
 
@@ -2050,12 +2036,12 @@ void s_dummyfunc()
 		/// Method : 仕切り線に触れているかどうか取得
 		bool isMouseOnHandle(const MouseEvent& e) const{
 			int centerPos= getCenterLinePos();
-			if( centerPos-LINE_MARGIN <= (divideSide?e.localX:e.localY)
-			 && (divideSide?e.localX:e.localY) <= centerPos+LINE_MARGIN ){
+			if( ((centerPos - LINE_MARGIN) <= (divideSide ? e.localX : e.localY))
+			 && ((divideSide ? e.localX : e.localY) <= (centerPos + LINE_MARGIN)) ){
 
 				int centerPos2= (divideSide?size.y:size.x)/2;
-				if( centerPos2-HANDLE_SIZE/2 <= (divideSide?e.localY:e.localX)
-				 && (divideSide?e.localY:e.localX) <= centerPos2+HANDLE_SIZE/2 ){
+				if( ((centerPos2 - HANDLE_SIZE / 2) <= (divideSide ? e.localY : e.localX))
+				 && ((divideSide ? e.localY : e.localX) <= (centerPos2 + HANDLE_SIZE / 2)) ){
 					return true;
 				}
 			}
@@ -2088,16 +2074,16 @@ void s_dummyfunc()
 				}
 
 			//内部パーツ1
-			}else if( (divideSide?e.localX:e.localY) <= getCenterLinePos() ){
+			}else if( (divideSide ? e.localX : e.localY) <= getCenterLinePos() ){
 
-				for(std::list<OrgWindowParts*>::iterator plItr=partsList1.begin();
-					plItr!=partsList1.end(); plItr++ ){
+				std::list<OrgWindowParts*>::iterator plItr;
+				for(plItr = partsList1.begin(); plItr != partsList1.end(); plItr++ ){
 					if (*plItr) {
 						WindowSize partsSize = (*plItr)->getSize();
 						int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
 						int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
-						if (0 <= tmpPosX && tmpPosX < partsSize.x &&
-							0 <= tmpPosY && tmpPosY < partsSize.y) {
+						if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
+							(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
 
 							MouseEvent mouseEvent;
 							mouseEvent.globalX = e.globalX;
@@ -2122,14 +2108,14 @@ void s_dummyfunc()
 			//内部パーツ2
 			}else{
 
-				for(std::list<OrgWindowParts*>::iterator plItr=partsList2.begin();
-					plItr!=partsList2.end(); plItr++ ){
-					if (*plItr) {
-						WindowSize partsSize = (*plItr)->getSize();
-						int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
-						int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
-						if (0 <= tmpPosX && tmpPosX < partsSize.x &&
-							0 <= tmpPosY && tmpPosY < partsSize.y) {
+				std::list<OrgWindowParts*>::iterator plItr2;
+				for (plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+					if (*plItr2) {
+						WindowSize partsSize = (*plItr2)->getSize();
+						int tmpPosX = e.localX + pos.x - (*plItr2)->getPos().x;
+						int tmpPosY = e.localY + pos.y - (*plItr2)->getPos().y;
+						if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
+							(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
 
 							MouseEvent mouseEvent;
 							mouseEvent.globalX = e.globalX;
@@ -2141,10 +2127,10 @@ void s_dummyfunc()
 							mouseEvent.ctrlKey = e.ctrlKey;
 
 							if (lButton) {
-								(*plItr)->onLButtonDown(mouseEvent);
+								(*plItr2)->onLButtonDown(mouseEvent);
 							}
 							else {
-								(*plItr)->onRButtonDown(mouseEvent);
+								(*plItr2)->onRButtonDown(mouseEvent);
 							}
 							return;
 						}
@@ -2164,9 +2150,9 @@ void s_dummyfunc()
 			}
 
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList1.begin();
-				 plItr!=partsList1.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
+
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -2185,24 +2171,23 @@ void s_dummyfunc()
 					}
 				}
 			}
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList2.begin();
-				 plItr!=partsList2.end();
-				 plItr++ ){
-				if (*plItr) {
+			std::list<OrgWindowParts*>::iterator plItr2;
+			for (plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+				if (*plItr2) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
-					mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+					mouseEvent.localX = e.localX + pos.x - (*plItr2)->getPos().x;
+					mouseEvent.localY = e.localY + pos.y - (*plItr2)->getPos().y;
 					mouseEvent.altKey = e.altKey;
 					mouseEvent.shiftKey = e.shiftKey;
 					mouseEvent.ctrlKey = e.ctrlKey;
 
 					if (lButton) {
-						(*plItr)->onLButtonUp(mouseEvent);
+						(*plItr2)->onLButtonUp(mouseEvent);
 					}
 					else {
-						(*plItr)->onRButtonUp(mouseEvent);
+						(*plItr2)->onRButtonUp(mouseEvent);
 					}
 				}
 			}
@@ -2215,17 +2200,17 @@ void s_dummyfunc()
 	class OWP_GroupBox : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_GroupBox(const TCHAR *_name ){
+		OWP_GroupBox(const TCHAR *_name ) : OrgWindowParts() {
 			name= new TCHAR[256];
 			_tcscpy_s(name,256,_name);
 
-			openListener = [](){s_dummyfunc();};
+			//openListener = [](){s_dummyfunc();};
+			openListener = NULL;
 
 			currentPartsSizeY= 0;
 
 			open= true;
 			canClose= true;
-			parentWindow = NULL;
 		}
 		~OWP_GroupBox(){
 			delete[] name;
@@ -2279,9 +2264,8 @@ void s_dummyfunc()
 				currentPartsSizeY= 0;
 
 				//全ての内部パーツの位置とサイズを自動設定
-				for(std::list<OrgWindowParts*>::iterator itr=partsList.begin();
-					itr!=partsList.end(); itr++){
-
+				std::list<OrgWindowParts*>::iterator itr;
+				for(itr = partsList.begin(); itr != partsList.end(); itr++){
 					(*itr)->setPos(  WindowPos(  partsAreaPos.x,  partsAreaPos.y+currentPartsSizeY  ) );
 					(*itr)->setSize( WindowSize( partsAreaSize.x, partsAreaSize.y-currentPartsSizeY ) );
 					(*itr)->autoResize();
@@ -2367,9 +2351,9 @@ void s_dummyfunc()
 
 			//全ての内部パーツを描画
 			if( open ){
-				for(std::list<OrgWindowParts*>::iterator itr=partsList.begin();
-					itr!=partsList.end(); itr++){
-						(*itr)->draw();
+				std::list<OrgWindowParts*>::iterator itr;
+				for(itr = partsList.begin(); itr != partsList.end(); itr++){
+					(*itr)->draw();
 				}
 			}
 
@@ -2422,9 +2406,9 @@ void s_dummyfunc()
 		///	Method : マウス移動イベント受信
 		void onMouseMove(const MouseEvent& e){
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
-				 plItr!=partsList.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -2510,21 +2494,21 @@ void s_dummyfunc()
 
 			if( lButton ){
 				//ラベルクリックで開閉
-				if( e.localY<SIZE_CLOSE_Y && canClose ){
+				if( (e.localY < SIZE_CLOSE_Y) && canClose ){
 					setOpenStatus(!open);
 				}
 			}
 
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
-				 plItr!=partsList.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
 					int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
-					if (0 <= tmpPosX && tmpPosX < partsSize.x &&
-						0 <= tmpPosY && tmpPosY < partsSize.y) {
+					if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
+						(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
 
 						MouseEvent mouseEvent;
 						mouseEvent.globalX = e.globalX;
@@ -2550,9 +2534,9 @@ void s_dummyfunc()
 		///	Method : 左右マウスボタンアップイベント受信
 		void onLRButtonUp(const MouseEvent& e, bool lButton){
 			//内部パーツ
-			for( std::list<OrgWindowParts*>::iterator plItr=partsList.begin();
-				 plItr!=partsList.end();
-				 plItr++ ){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -2580,7 +2564,7 @@ void s_dummyfunc()
 	class OWP_Label : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Label(const TCHAR *_name ){
+		OWP_Label(const TCHAR *_name ) : OrgWindowParts() {
 			name= new TCHAR[256];
 			_tcscpy_s(name,256,_name);
 		}
@@ -2686,14 +2670,14 @@ void s_dummyfunc()
 	class OWP_Button : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Button( const TCHAR *_name=_T("") ){
+		OWP_Button( const TCHAR *_name=_T("") ) : OrgWindowParts() {
 			name= new TCHAR[256];
 			_tcscpy_s(name,256,_name);
 
 
 			buttonPush=false;
-			buttonListener = [](){s_dummyfunc();};
-			parentWindow = NULL;
+			//buttonListener = [](){s_dummyfunc();};
+			buttonListener = NULL;
 		}
 		~OWP_Button(){
 			delete[] name;
@@ -2778,22 +2762,25 @@ void s_dummyfunc()
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
-			if(this->buttonListener!=NULL){
-				(this->buttonListener)();
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+
+				if (this->buttonListener != NULL) {
+					(this->buttonListener)();
+				}
+
+				buttonPush = true;
+
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+				draw();
+
+				//ボタンアップアニメーションのためのスレッド作成
+				_beginthread(drawButtonUpThread, 0, (void*)this);
 			}
-
-			buttonPush=true;
-
-			RECT tmpRect;
-			tmpRect.left=   pos.x+1;
-			tmpRect.top=    pos.y+1;
-			tmpRect.right=  pos.x+size.x-1;
-			tmpRect.bottom= pos.y+size.y-1;
-			InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
-			draw();
-
-			//ボタンアップアニメーションのためのスレッド作成
-			_beginthread(drawButtonUpThread,0,(void *)this);
 		}
 
 		/////////////////////////// Accessor /////////////////////////////
@@ -2826,12 +2813,15 @@ void s_dummyfunc()
 
 			thisClass->buttonPush=false;
 
-			RECT tmpRect;
-			tmpRect.left=   thisClass->pos.x+1;
-			tmpRect.top=    thisClass->pos.y+1;
-			tmpRect.right=  thisClass->pos.x+ thisClass->size.x-1;
-			tmpRect.bottom= thisClass->pos.y+ thisClass->size.y-1;
-			InvalidateRect( thisClass->parentWindow->getHWnd(), &tmpRect, false );
+			if (thisClass->parentWindow && IsWindow(thisClass->parentWindow->getHWnd())) {
+
+				RECT tmpRect;
+				tmpRect.left = thisClass->pos.x + 1;
+				tmpRect.top = thisClass->pos.y + 1;
+				tmpRect.right = thisClass->pos.x + thisClass->size.x - 1;
+				tmpRect.bottom = thisClass->pos.y + thisClass->size.y - 1;
+				InvalidateRect(thisClass->parentWindow->getHWnd(), &tmpRect, false);
+			}
 		}
 	};
 
@@ -2841,7 +2831,7 @@ void s_dummyfunc()
 	class OWP_PlayerButton : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_PlayerButton(){
+		OWP_PlayerButton() : OrgWindowParts() {
 			BOX_WIDTH= 11;
 			SIZE_Y= 15;
 		}
@@ -3218,7 +3208,7 @@ void s_dummyfunc()
 			for(int i=0; i<16; i++){
 
 				//まずボタンが押されたかを確認
-				if( BOX_POS_X+BOX_WIDTH*i<=e.localX && e.localX<BOX_POS_X+BOX_WIDTH*(i+1) ){
+				if( ((BOX_POS_X + BOX_WIDTH * i) <= e.localX) && (e.localX < (BOX_POS_X + BOX_WIDTH * (i+1))) ){
 				}else{
 					continue;
 				}
@@ -3346,7 +3336,8 @@ void s_dummyfunc()
 		public:
 			OneButtonParam(){
 				buttonPush= false;
-				buttonListener = [](){s_dummyfunc();};
+				//buttonListener = [](){s_dummyfunc();};
+				buttonListener = NULL;
 			}
 
 			bool buttonPush;
@@ -3480,15 +3471,14 @@ void s_dummyfunc()
 	class OWP_CheckBoxA : public OrgWindowParts {
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_CheckBoxA( const TCHAR *_name=_T(""), bool _value=false ){
-			parentWindow = NULL;
-
+		OWP_CheckBoxA( const TCHAR *_name=_T(""), bool _value=false ) : OrgWindowParts() {
 			name= new TCHAR[256];
 			_tcscpy_s(name,256,_name);
 
 			value= _value;
 
-			buttonListener = [](){s_dummyfunc();};
+			//buttonListener = [](){s_dummyfunc();};
+			buttonListener = NULL;
 		}
 		~OWP_CheckBoxA(){
 			delete[] name;
@@ -3512,7 +3502,8 @@ void s_dummyfunc()
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : value
 		void setValue(bool _value){
-			if (parentWindow) {
+			//if (parentWindow) {
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 				value = _value;
 
 				RECT tmpRect;
@@ -3553,12 +3544,12 @@ void s_dummyfunc()
 	class OWP_RadioButton : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_RadioButton( const TCHAR *name ){
+		OWP_RadioButton( const TCHAR *name ) : OrgWindowParts() {
 			nameList.push_back(name);
 			selectIndex= 0;
 
-			selectListener = [](){s_dummyfunc();};
-			parentWindow = NULL;
+			//selectListener = [](){s_dummyfunc();};
+			selectListener = NULL;
 		}
 		~OWP_RadioButton(){
 		}
@@ -3631,7 +3622,7 @@ void s_dummyfunc()
 		///	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
 			int targetIndex= (e.localY-2)/SIZE_Y;
-			if( 0<=targetIndex && targetIndex<(int)nameList.size() ){
+			if( (0 <= targetIndex) && (targetIndex < (int)nameList.size()) ){
 				setSelectIndex(targetIndex);
 			}
 		}
@@ -3668,8 +3659,10 @@ void s_dummyfunc()
 		bool deleteLine(int index){
 
 			//2つ以上の項目がある場合は指定したインデックスの項目を削除
-			if ((int)nameList.size() != 1
-			 && 0<=index && index<(int)nameList.size() ){
+			if (
+			//((int)nameList.size() != 1)
+			((int)nameList.size() >= 2)
+			 && (0 <= index) && (index < (int)nameList.size()) ){
 				for( int i=index; i<(int)nameList.size()-1; i++ ){
 					nameList[i]= nameList[i+1];
 				}
@@ -3747,13 +3740,12 @@ void s_dummyfunc()
 	class OWP_Slider : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Slider( double _value=0.0, double _maxValue=1.0, double _minValue=0.0 ){
+		OWP_Slider( double _value=0.0, double _maxValue=1.0, double _minValue=0.0 ) : OrgWindowParts() {
 			maxValue= max(_minValue,_maxValue);
 			minValue= min(_minValue,_maxValue);
 			value= max(min(_value,maxValue),minValue);
 
 			drag=false;
-			parentWindow = NULL;
 			isslider = true;//!!!!!!
 		}
 
@@ -3848,21 +3840,25 @@ void s_dummyfunc()
 		}
 		//	Method : マウスダウンイベント受信
 		void onLButtonDown(const MouseEvent& e){
-			WindowPos tmpPos= WindowPos(e.localX,e.localY)- WindowPos(AXIS_POS_X, size.y/2);
-			const int EDGE_WIDTH= 4;
-			if( -EDGE_WIDTH<=tmpPos.x && tmpPos.x<=size.x-LABEL_SIZE_X+EDGE_WIDTH &&
-				-EDGE_WIDTH-AXIS_SIZE_Y/2<=tmpPos.y && tmpPos.y<=size.y+EDGE_WIDTH+AXIS_SIZE_Y/2 ){
-				setValue( minValue+ (maxValue-minValue)* (float)tmpPos.x/(float)(size.x-AXIS_POS_X-LABEL_SIZE_X) );
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-				drag=true;
+				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
+				const int EDGE_WIDTH = 4;
+				if ((-EDGE_WIDTH <= tmpPos.x) && (tmpPos.x <= (size.x - LABEL_SIZE_X + EDGE_WIDTH)) &&
+					((-EDGE_WIDTH - AXIS_SIZE_Y / 2) <= tmpPos.y) && 
+					(tmpPos.y <= (size.y + EDGE_WIDTH + AXIS_SIZE_Y / 2))) {
+					setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
 
-				RECT tmpRect;
-				tmpRect.left=   pos.x+1;
-				tmpRect.top=    pos.y+1;
-				tmpRect.right=  pos.x+size.x-1;
-				tmpRect.bottom= pos.y+size.y-1;
-				InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+					drag = true;
 
+					RECT tmpRect;
+					tmpRect.left = pos.x + 1;
+					tmpRect.top = pos.y + 1;
+					tmpRect.right = pos.x + size.x - 1;
+					tmpRect.bottom = pos.y + size.y - 1;
+					InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+				}
 			}
 		}
 		//	Method : 左マウスボタンアップイベント受信
@@ -3871,17 +3867,20 @@ void s_dummyfunc()
 		}
 		//	Method : マウス移動イベント受信
 		void onMouseMove(const MouseEvent& e){
-			WindowPos tmpPos= WindowPos(e.localX,e.localY)- WindowPos(AXIS_POS_X, size.y/2);
-			if( drag ){
-				setValue( minValue+ (maxValue-minValue)* (float)tmpPos.x/(float)(size.x-AXIS_POS_X-LABEL_SIZE_X) );
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-				RECT tmpRect;
-				tmpRect.left=   pos.x+1;
-				tmpRect.top=    pos.y+1;
-				tmpRect.right=  pos.x+size.x-1;
-				tmpRect.bottom= pos.y+size.y-1;
-				InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
+				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
+				if (drag) {
+					setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
 
+					RECT tmpRect;
+					tmpRect.left = pos.x + 1;
+					tmpRect.top = pos.y + 1;
+					tmpRect.right = pos.x + size.x - 1;
+					tmpRect.bottom = pos.y + size.y - 1;
+					InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+				}
 			}
 		}
 
@@ -3938,23 +3937,29 @@ void s_dummyfunc()
 	class OWP_Timeline : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Timeline(const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ){
+		OWP_Timeline(const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ) : OrgWindowParts() {
 			
 			TIME_ERROR_WIDTH = 0.0001;
 
 			lineData.push_back(new LineData(0,0,_name,this,0));
 			maxTime= _maxTime;
 			timeSize= _timeSize;
-			cursorListener = [](){s_dummyfunc();};
-			selectListener = [](){s_dummyfunc();};
-			mouseMDownListener = [](){s_dummyfunc();};
-			mouseWheelListener = [](){s_dummyfunc();};
-			mouseRUpListener = [](){s_dummyfunc();};
+			//cursorListener = [](){s_dummyfunc();};
+			//selectListener = [](){s_dummyfunc();};
+			//mouseMDownListener = [](){s_dummyfunc();};
+			//mouseWheelListener = [](){s_dummyfunc();};
+			//mouseRUpListener = [](){s_dummyfunc();};
+			cursorListener = NULL;
+			selectListener = NULL;
+			mouseMDownListener = NULL;
+			mouseWheelListener = NULL;
+			mouseRUpListener = NULL;
 
 			keyShiftListener = [this](){
 				shiftKeyTime(getShiftKeyTime());
 			};
-			keyDeleteListener = [](const KeyInfo& dummy){s_dummyfunc();};
+			//keyDeleteListener = [](const KeyInfo& dummy){s_dummyfunc();};
+			keyDeleteListener = NULL;
 
 			showPos_time=0;
 			showPos_line=0;
@@ -3975,16 +3980,14 @@ void s_dummyfunc()
 			dragSelect= false;
 			dragShift= false;
 			wheeldelta = 0;
-			parentWindow = NULL;
 		}
 		~OWP_Timeline(){
 			selectAll(true);
 			deleteKey();
 
-			for(std::vector<LineData*>::iterator it=lineData.begin();
-				it!=lineData.end();
-				it++){
-				delete (*it);
+			std::vector<LineData*>::iterator itr;
+			for(itr = lineData.begin(); itr != lineData.end(); itr++){
+				delete (*itr);
 			}
 		}
 
@@ -4308,7 +4311,7 @@ void s_dummyfunc()
 			}
 
 			//再描画要求
-			if( deleteNum!=0 && rewriteOnChange ){
+			if( (deleteNum != 0) && rewriteOnChange ){
 				callRewrite();
 			}
 
@@ -4321,7 +4324,7 @@ void s_dummyfunc()
 			}
 
 			//リスナーコール
-			if(!noCallListener && this->selectListener!=NULL){
+			if(!noCallListener && (this->selectListener != NULL)){
 				(this->selectListener)();
 			}
 
@@ -4337,7 +4340,7 @@ void s_dummyfunc()
 			}
 
 			//リスナーコール
-			if(!noCallListener && this->selectListener!=NULL){
+			if(!noCallListener && (this->selectListener != NULL)){
 				(this->selectListener)();
 			}
 
@@ -4350,78 +4353,83 @@ void s_dummyfunc()
 		//MaxSelectionFrameを返す
 		double OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
-			this->selectClear();
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+				this->selectClear();
 
-			double tmpstart, tmpend;
-			if (tothelastflag == 0){
-				if (startframe <= endframe){
-					tmpstart = startframe;
-					tmpend = endframe;
+				double tmpstart, tmpend;
+				if (tothelastflag == 0) {
+					if (startframe <= endframe) {
+						tmpstart = startframe;
+						tmpend = endframe;
+					}
+					else {
+						tmpstart = endframe;
+						tmpend = startframe;
+					}
 				}
-				else{
-					tmpstart = endframe;
+				else {
+					tmpstart = startframe;
 					tmpend = startframe;
 				}
-			}
-			else{
-				tmpstart = startframe;
-				tmpend = startframe;
-			}
 
-			//double curframe = getCurrentTime();
-			double maxframe = startframe;
+				//double curframe = getCurrentTime();
+				double maxframe = startframe;
 
-			//for (int j = 0; j < (int)lineData.size(); j++){
-			int j = 1;
-			if (j < (int)lineData.size()){
-				LineData* curLineData = lineData[j];
-				if (tothelastflag == 1){
+				//for (int j = 0; j < (int)lineData.size(); j++){
+				int j = 1;
+				if (j < (int)lineData.size()) {
+					LineData* curLineData = lineData[j];
+					if (tothelastflag == 1) {
 
-					for (int i = 0; i < (int)curLineData->key.size(); i++){
-						if (curLineData->key[i]->time >= tmpstart - TIME_ERROR_WIDTH){
-							curLineData->key[i]->select = true;
-							if (maxframe < curLineData->key[i]->time){
-								maxframe = curLineData->key[i]->time;
+						for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+								curLineData->key[i]->select = true;
+								if (maxframe < curLineData->key[i]->time) {
+									maxframe = curLineData->key[i]->time;
+								}
+							}
+						}
+					}
+					else {
+
+						for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+								(curLineData->key[i]->time <= tmpend + TIME_ERROR_WIDTH)) {
+								curLineData->key[i]->select = true;
+								if (maxframe < curLineData->key[i]->time) {
+									maxframe = curLineData->key[i]->time;
+								}
 							}
 						}
 					}
 				}
-				else{
-					
-					for (int i = 0; i < (int)curLineData->key.size(); i++){
-						if ((curLineData->key[i]->time >= tmpstart - TIME_ERROR_WIDTH) &&
-							(curLineData->key[i]->time <= tmpend + TIME_ERROR_WIDTH)){
-							curLineData->key[i]->select = true;
-							if (maxframe < curLineData->key[i]->time){
-								maxframe = curLineData->key[i]->time;
-							}
-						}
-					}
-				}
-			}
 
 
-			//dragSelect = true;
-			dragSelectTime1 = tmpstart;
-			dragSelectTime2 = maxframe;
-			//showPos_time = tmpstart;
-			showPos_line = 0;
-			currentLine = 1;//!!!!!!!
+				//dragSelect = true;
+				dragSelectTime1 = tmpstart;
+				dragSelectTime2 = maxframe;
+				//showPos_time = tmpstart;
+				showPos_line = 0;
+				currentLine = 1;//!!!!!!!
 
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-			//再描画要求
-			//if (rewriteOnChange){
+				//再描画要求
+				//if (rewriteOnChange){
 				callRewrite();
-			//}
+				//}
 
-			return maxframe;
+				return maxframe;
+			}
+			else {
+				return 1.0;
+			}
 		}
 
 		/// Method : すべての選択されているキーを取得する
@@ -4487,16 +4495,16 @@ void s_dummyfunc()
 			int y3= size.y-MARGIN;
 
 			//ラベル
-			if( x0<=e.localX && e.localX<x2
-			 && y1<=e.localY && e.localY<y2 ){
+			if( (x0 <= e.localX) && (e.localX < x2) && 
+				(y1 <= e.localY) && (e.localY < y2) ){
 				setCurrentLine( showPos_line+ (e.localY-y1)/(LABEL_SIZE_Y-1) );
 
 				dragLabel=true;
 			}
 
 			//時間軸目盛り
-			if( x1-2<=e.localX && e.localX<x2
-			 && y0<=e.localY && e.localY<y2 ){
+			if( ((x1 - 2) <= e.localX) && (e.localX < x2) && 
+				(y0 <= e.localY) && (e.localY < y2) ){
 				setCurrentTime( showPos_time+ (double)(e.localX-x1)/timeSize );
 
 				dragTime=true;
@@ -4508,8 +4516,8 @@ void s_dummyfunc()
 			}
 
 			//時間軸スクロールバー
-			if( x1<=e.localX && e.localX<x2
-			 && y2<=e.localY && e.localY<y3 ){
+			if( (x1 <= e.localX) && (e.localX < x2) && 
+				(y2 <= e.localY) && (e.localY < y3) ){
 				int xx0= MARGIN+LABEL_SIZE_X;
 				int xx1= size.x-MARGIN-SCROLL_BAR_WIDTH;
 
@@ -4527,13 +4535,13 @@ void s_dummyfunc()
 			}
 
 			//ラベルスクロールバー
-			if( x2<=e.localX && e.localX<x3
-			 && y1<=e.localY && e.localY<y2 ){
+			if( (x2 <= e.localX) && (e.localX < x3) && 
+				(y1 <= e.localY) && (e.localY < y2) ){
 				int yy0= MARGIN+AXIS_SIZE_Y;
 				int yy1= size.y-MARGIN-SCROLL_BAR_WIDTH+1;
 
 				int showLineNum= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)/(LABEL_SIZE_Y-1);
-				if( showLineNum<(int)lineData.size() ){
+				if( showLineNum < (int)lineData.size() ){
 					int barSize= (yy1-yy0-4)*showLineNum/(int)lineData.size();
 
 					int movableY= yy1-yy0-barSize;
@@ -4553,11 +4561,49 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e){
-			if( !canMouseControll ) return;
-			if (g_underselecttolast || g_undereditrange){
-				g_underselecttolast = false;
-				g_undereditrange = false;
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
+				if (!canMouseControll) return;
+				if (g_underselecttolast || g_undereditrange) {
+					g_underselecttolast = false;
+					g_undereditrange = false;
+
+					//ドラッグフラグを初期化
+					dragLabel = false;
+					dragTime = false;
+					dragScrollBarLabel = false;
+					dragScrollBarTime = false;
+					dragSelect = false;
+					dragShift = false;
+
+					return;
+				}
+
+				//ドラッグ選択範囲内のキーを選択状態にする
+				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime) {
+					selectClear(true);
+					if (dragSelect) {
+
+						for (int i = min(dragSelectLine1, dragSelectLine2);
+							i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++) {
+							lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
+								max(dragSelectTime1, dragSelectTime2));
+						}
+					}
+					//リスナーコール
+					if (this->selectListener != NULL) {
+						(this->selectListener)();
+					}
+				}
+
+				//Ctrl+ドラッグによるキー移動
+				if (dragShift) {
+					//リスナーコール
+					if (this->keyShiftListener != NULL) {
+						(this->keyShiftListener)();
+					}
+					ghostShiftTime = 0.0;
+				}
 				//ドラッグフラグを初期化
 				dragLabel = false;
 				dragTime = false;
@@ -4566,50 +4612,14 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				return;
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 			}
-
-			//ドラッグ選択範囲内のキーを選択状態にする
-			if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
-				selectClear(true);
-				if (dragSelect){
-
-					for (int i = min(dragSelectLine1, dragSelectLine2);
-						i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
-						lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
-							max(dragSelectTime1, dragSelectTime2));
-					}
-				}
-				//リスナーコール
-				if (this->selectListener != NULL){
-					(this->selectListener)();
-				}
-			}
-
-		//Ctrl+ドラッグによるキー移動
-			if (dragShift){
-				//リスナーコール
-				if (this->keyShiftListener != NULL){
-					(this->keyShiftListener)();
-				}
-				ghostShiftTime = 0.0;
-			}
-			//ドラッグフラグを初期化
-			dragLabel= false;
-			dragTime= false;
-			dragScrollBarLabel= false;
-			dragScrollBarTime= false;
-			dragSelect= false;
-			dragShift= false;
-
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left=   pos.x+1;
-			tmpRect.top=    pos.y+1;
-			tmpRect.right=  pos.x+size.x-1;
-			tmpRect.bottom= pos.y+size.y-1;
-			InvalidateRect( parentWindow->getHWnd(), &tmpRect, false );
-
 		}
 		virtual void onRButtonDown(const MouseEvent& e){
 			selectClear(true);
@@ -4628,8 +4638,8 @@ void s_dummyfunc()
 			int y3 = size.y - MARGIN;
 
 			//ラベル
-			if (x0 <= e.localX && e.localX<x2
-				&& y1 <= e.localY && e.localY<y2){
+			if ((x0 <= e.localX) && (e.localX < x2) && 
+				(y1 <= e.localY) && (e.localY < y2)){
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
 
 				//dragLabel = true;
@@ -4695,11 +4705,51 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onRButtonUp(const MouseEvent& e){
-			if (!canMouseControll) return;
-			if (g_underselecttolast || g_undereditrange){
-				g_underselecttolast = false;
-				g_undereditrange = false;
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
+				if (!canMouseControll) return;
+				if (g_underselecttolast || g_undereditrange) {
+					g_underselecttolast = false;
+					g_undereditrange = false;
+
+					//ドラッグフラグを初期化
+					dragLabel = false;
+					dragTime = false;
+					dragScrollBarLabel = false;
+					dragScrollBarTime = false;
+					dragSelect = false;
+					dragShift = false;
+
+					return;
+				}
+
+				/*
+				//ドラッグ選択範囲内のキーを選択状態にする
+				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
+					selectClear(true);
+					if (dragSelect){
+
+						for (int i = min(dragSelectLine1, dragSelectLine2);
+							i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
+							lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
+								max(dragSelectTime1, dragSelectTime2));
+						}
+					}
+					//リスナーコール
+					if (this->selectListener != NULL){
+						(this->selectListener)();
+					}
+				}
+
+				//Ctrl+ドラッグによるキー移動
+				if (dragShift){
+					//リスナーコール
+					if (this->keyShiftListener != NULL){
+						(this->keyShiftListener)();
+					}
+					ghostShiftTime = 0.0;
+				}
+				*/
 				//ドラッグフラグを初期化
 				dragLabel = false;
 				dragTime = false;
@@ -4708,54 +4758,17 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				return;
-			}
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-			/*
-			//ドラッグ選択範囲内のキーを選択状態にする
-			if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
-				selectClear(true);
-				if (dragSelect){
-
-					for (int i = min(dragSelectLine1, dragSelectLine2);
-						i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
-						lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
-							max(dragSelectTime1, dragSelectTime2));
-					}
+				if (this->mouseRUpListener != NULL) {
+					(this->mouseRUpListener)();
 				}
-				//リスナーコール
-				if (this->selectListener != NULL){
-					(this->selectListener)();
-				}
-			}
-
-			//Ctrl+ドラッグによるキー移動
-			if (dragShift){
-				//リスナーコール
-				if (this->keyShiftListener != NULL){
-					(this->keyShiftListener)();
-				}
-				ghostShiftTime = 0.0;
-			}
-			*/
-			//ドラッグフラグを初期化
-			dragLabel = false;
-			dragTime = false;
-			dragScrollBarLabel = false;
-			dragScrollBarTime = false;
-			dragSelect = false;
-			dragShift = false;
-
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
-
-			if (this->mouseRUpListener != NULL){
-				(this->mouseRUpListener)();
 			}
 		}
 
@@ -4861,14 +4874,14 @@ void s_dummyfunc()
 			int y3 = size.y - MARGIN;
 
 			//ラベル
-			if (x0 <= e.localX && e.localX<x2 && y1 <= e.localY && e.localY<y2){
+			if ((x0 <= e.localX) && (e.localX < x2) && (y1 <= e.localY) && (e.localY < y2)){
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
 
 				//dragLabel = true;
 			}
 
 			//時間軸目盛り
-			if (x1 - 2 <= e.localX && e.localX<x2 && y0 <= e.localY && e.localY<y2){
+			if (((x1 - 2) <= e.localX) && (e.localX < x2) && (y0 <= e.localY) && (e.localY < y2)){
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
 
 				//dragTime = true;
@@ -4878,24 +4891,26 @@ void s_dummyfunc()
 			}
 		}
 		virtual void onMButtonUp(const MouseEvent& e){
-			if (!canMouseControll) return;
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-			//ドラッグフラグを初期化
-			dragLabel = false;
-			dragTime = false;
-			dragScrollBarLabel = false;
-			dragScrollBarTime = false;
-			dragSelect = false;
-			dragShift = false;
+				if (!canMouseControll) return;
 
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+				//ドラッグフラグを初期化
+				dragLabel = false;
+				dragTime = false;
+				dragScrollBarLabel = false;
+				dragScrollBarTime = false;
+				dragSelect = false;
+				dragShift = false;
 
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+			}
 		}
 		virtual void onMouseWheel(const MouseEvent& e){
 			wheeldelta = e.wheeldelta;
@@ -4966,12 +4981,12 @@ void s_dummyfunc()
 			if( currentLine <= showPos_line ){
 				showPos_line= currentLine;
 			}
-			if( showPos_line+showLineNum-1 <= currentLine ){
+			if( (showPos_line + showLineNum - 1) <= currentLine ){
 				showPos_line= currentLine-showLineNum+1;
 			}
 
 			//リスナーコール
-			if( !noCallListener && this->cursorListener!=NULL ){
+			if( !noCallListener && (this->cursorListener != NULL) ){
 				(this->cursorListener)();
 			}
 
@@ -5019,7 +5034,7 @@ void s_dummyfunc()
 			int y1= size.y-MARGIN-SCROLL_BAR_WIDTH+1;
 
 			int showLineNum= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)/(LABEL_SIZE_Y-1);
-			if( showLineNum<(int)lineData.size() ){
+			if( showLineNum < (int)lineData.size() ){
 				showPos_line= max(0,min( _showPosLine ,(int)lineData.size()-showLineNum));
 			}else{
 				showPos_line= 0;
@@ -5262,16 +5277,16 @@ void s_dummyfunc()
 				Rectangle(hdcM->hDC,x1-2,y0,x1+1,y1);
 				Rectangle(hdcM->hDC,x1,y0,x2,y1);
 				int x3= (int)((parent->maxTime-startTime)*timeSize) + x1+2;		//maxTime
-				if( x1<=x3 && x3<=x2 ){
+				if( (x1 <= x3) && (x3 <= x2) ){
 					MoveToEx(hdcM->hDC, x3,y0, NULL);
 					LineTo(hdcM->hDC,   x3,y1);
 				}
-				if( x1<=x3+2 && x3+2<=x2 ){
+				if( (x1 <= x3 + 2) && (x3 + 2 <= x2) ){
 					MoveToEx(hdcM->hDC, x3+2,y0, NULL);
 					LineTo(hdcM->hDC,   x3+2,y1);
 				}
 				int x4= (int)((parent->currentTime-startTime)*timeSize) + x1+1;		//currentTime
-				if( x1<=x4 && x4<x2 ){
+				if( (x1 <= x4) && (x4 < x2) ){
 					MoveToEx(hdcM->hDC, x4,y0, NULL);
 					LineTo(hdcM->hDC,   x4,y1);
 				}
@@ -5288,14 +5303,14 @@ void s_dummyfunc()
 					}
 					if( x1<=xx1 && key[i]->select ){
 
-						if( x1<=xx1-1 && xx0+1<=x2 ){
+						if( (x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2) ){
 
 							hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
 							Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
 
 						}
 
-						if( x1<=xx0 ){
+						if( x1 <= xx0 ){
 							hdcM->setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
 							MoveToEx(hdcM->hDC, xx0,y0, NULL);
 							LineTo(hdcM->hDC,   xx0,y1);
@@ -5312,9 +5327,9 @@ void s_dummyfunc()
 					if( x2 <= xx0 ){
 						break;
 					}
-					if( x1<=xx1 ){
+					if( x1 <= xx1 ){
 
-						if( x1<=xx1-1 && xx0+1<=x2 ){
+						if( (x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2) ){
 
 							if( key[i]->select ){
 								hdcM->setPenAndBrush(NULL,RGB(240,240,240));
@@ -5329,7 +5344,7 @@ void s_dummyfunc()
 
 						}
 
-						if( x1<=xx0 ){
+						if( x1 <= xx0 ){
 							hdcM->setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
 							MoveToEx(hdcM->hDC, xx0,y0, NULL);
 							LineTo(hdcM->hDC,   xx0,y1);
@@ -5345,7 +5360,7 @@ void s_dummyfunc()
 
 				if(parent->allowSameTimeKey==false){
 					int i= getKeyIndex(_time);
-					if(i!=-1){
+					if(i != -1){
 						//上書きリスナーコール
 						if( parent->keyDeleteListener!=NULL ){
 							KeyInfo ki;
@@ -5365,7 +5380,7 @@ void s_dummyfunc()
 					}
 				}
 				
-				if( _time>=parent->maxTime || _time<0.0 ){
+				if( _time>=parent->maxTime || (_time < 0.0) ){
 /*					//作成不能削除リスナーコール
 					if( parent->keyDeleteListener!=NULL ){
 						KeyInfo ki;
@@ -5378,11 +5393,11 @@ void s_dummyfunc()
 					}//*/
 					return false;
 				}
-				if(_time+_length>=parent->maxTime){
+				if((_time + _length) >= parent->maxTime){
 					_length= parent->maxTime-_time;
 				}
 
-				if(key.size()!=0){
+				if(key.size() != 0){
 					int pushPos=(int)key.size();
 					for(int i=0; i<(int)key.size(); i++){
 						if(_time <= key[i]->time){
@@ -5440,8 +5455,8 @@ void s_dummyfunc()
 			bool selectKey(const double &_time){
 
 				for(int i=0; i<(int)key.size(); i++){
-					if( (_time-TIME_ERROR_WIDTH <= key[i]->time)
-					 && (key[i]->time <= _time+TIME_ERROR_WIDTH) ){
+					if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
+						(key[i]->time <= (_time + TIME_ERROR_WIDTH)) ){
 						key[i]->select=true;
 						return true;
 					}
@@ -5473,8 +5488,8 @@ void s_dummyfunc()
 
 				int selectCount=0;
 				for(int i=0; i<(int)key.size(); i++){
-					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
-					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
+					if( ((startTime - TIME_ERROR_WIDTH) <= key[i]->time) && 
+						(key[i]->time <= (endTime + TIME_ERROR_WIDTH)) ){
 						key[i]->select=true;
 						selectCount++;
 					}
@@ -5487,8 +5502,8 @@ void s_dummyfunc()
 			int getKeyIndex(const double &_time){
 
 				for(int i=0; i<(int)key.size(); i++){
-					if( _time-TIME_ERROR_WIDTH <= key[i]->time
-					 && key[i]->time <= _time+TIME_ERROR_WIDTH ){
+					if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
+						(key[i]->time <= (_time + TIME_ERROR_WIDTH)) ){
 						return i;
 					}
 				}
@@ -5502,7 +5517,7 @@ void s_dummyfunc()
 				for(unsigned int i=0; i<(int)key.size(); i++){
 					if( key[i]->select ){
 						//リスナーコール
-						if( !noCallListener && parent->keyDeleteListener!=NULL ){
+						if( !noCallListener && (parent->keyDeleteListener != NULL) ){
 							KeyInfo ki;
 							ki.label= name.c_str();
 							ki.lineIndex= lineIndex;
@@ -5528,10 +5543,10 @@ void s_dummyfunc()
 			}
 			//	Method : 指定されたキーを削除する
 			bool deleteKey(int index, bool noCallListener=false){
-				if( (unsigned int)key.size()<=(unsigned int)index ) return false;
+				if( (unsigned int)key.size() <= (unsigned int)index ) return false;
 
 				//リスナーコール
-				if( !noCallListener && parent->keyDeleteListener!=NULL ){
+				if( !noCallListener && (parent->keyDeleteListener != NULL) ){
 					KeyInfo ki;
 					ki.label= name.c_str();
 					ki.lineIndex= lineIndex;
@@ -5552,7 +5567,7 @@ void s_dummyfunc()
 			}
 			//	Method : 指定されたキーを移動する
 			bool shiftKey(const double &shiftTime, int index){
-				if( key.size()<=(unsigned int)index ) return false;
+				if( key.size() <= (unsigned int)index ) return false;
 
 				double dstTime= key[index]->time+shiftTime;
 				int type= key[index]->type;
@@ -5564,7 +5579,7 @@ void s_dummyfunc()
 				//既にキーが存在する場合
 				if( !newKey(dstTime,type,object,length,select) ){
 					//置き換えによるキー削除リスナーコール
-					if( parent->keyDeleteListener!=NULL ){
+					if( parent->keyDeleteListener != NULL ){
 						KeyInfo ki;
 						ki.label= name.c_str();
 						ki.lineIndex= lineIndex;
@@ -5598,11 +5613,11 @@ void s_dummyfunc()
 
 				deleteKey(true);
 
-				for(std::list<Key>::iterator itr=shiftKeyList.begin();
-					itr!=shiftKeyList.end(); itr++){
+				std::list<Key>::iterator itr;
+				for(itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++){
 					if( !newKey( itr->time+shiftTime, itr->type, itr->object, itr->length, itr->select ) ){
 						//作成不能削除リスナーコール
-						if( parent->keyDeleteListener!=NULL ){
+						if( parent->keyDeleteListener != NULL ){
 							KeyInfo ki;
 							ki.label= name.c_str();
 							ki.lineIndex= lineIndex;
@@ -5676,7 +5691,7 @@ void s_dummyfunc()
 	class OWP_EulerGraph : public OrgWindowParts {
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_EulerGraph(const std::basic_string<TCHAR> &_name = _T(""), const double &_maxTime = 1.0, const double &_timeSize = 8.0) {
+		OWP_EulerGraph(const std::basic_string<TCHAR> &_name = _T(""), const double &_maxTime = 1.0, const double &_timeSize = 8.0) : OrgWindowParts() {
 
 			TIME_ERROR_WIDTH = 0.0001;
 
@@ -5692,16 +5707,22 @@ void s_dummyfunc()
 
 			maxTime = _maxTime;
 			timeSize = _timeSize;
-			cursorListener = []() {s_dummyfunc(); };
-			selectListener = []() {s_dummyfunc(); };
-			mouseMDownListener = []() {s_dummyfunc(); };
-			mouseWheelListener = []() {s_dummyfunc(); };
-			mouseRUpListener = []() {s_dummyfunc(); };
+			//cursorListener = []() {s_dummyfunc(); };
+			//selectListener = []() {s_dummyfunc(); };
+			//mouseMDownListener = []() {s_dummyfunc(); };
+			//mouseWheelListener = []() {s_dummyfunc(); };
+			//mouseRUpListener = []() {s_dummyfunc(); };
+			cursorListener = NULL;
+			selectListener = NULL;
+			mouseMDownListener = NULL;
+			mouseWheelListener = NULL;
+			mouseRUpListener = NULL;
 
 			keyShiftListener = [this]() {
 				shiftKeyTime(getShiftKeyTime());
 			};
-			keyDeleteListener = [](const KeyInfo& dummy) {s_dummyfunc(); };
+			//keyDeleteListener = [](const KeyInfo& dummy) {s_dummyfunc(); };
+			keyDeleteListener = NULL;
 
 			showPos_time = 0;
 			showPos_line = 0;
@@ -5727,7 +5748,6 @@ void s_dummyfunc()
 			maxeul = 0.0;
 			ikkind = 0;
 			isseteulminmax = false;
-			parentWindow = NULL;
 
 			dispscale = 1.0;
 			dispoffset = 0.0;
@@ -6053,7 +6073,7 @@ void s_dummyfunc()
 			}
 
 			//再描画要求
-			if (deleteNum != 0 && rewriteOnChange) {
+			if ((deleteNum != 0) && rewriteOnChange) {
 				callRewrite();
 			}
 
@@ -6066,7 +6086,7 @@ void s_dummyfunc()
 			}
 
 			//リスナーコール
-			if (!noCallListener && this->selectListener != NULL) {
+			if (!noCallListener && (this->selectListener != NULL)) {
 				(this->selectListener)();
 			}
 
@@ -6082,7 +6102,7 @@ void s_dummyfunc()
 			}
 
 			//リスナーコール
-			if (!noCallListener && this->selectListener != NULL) {
+			if (!noCallListener && (this->selectListener != NULL)) {
 				(this->selectListener)();
 			}
 
@@ -6094,76 +6114,79 @@ void s_dummyfunc()
 
 		void OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
-			this->selectClear();
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-			double tmpstart, tmpend;
-			if (tothelastflag == 0) {
-				if (startframe <= endframe) {
-					tmpstart = startframe;
-					tmpend = endframe;
+				this->selectClear();
+
+				double tmpstart, tmpend;
+				if (tothelastflag == 0) {
+					if (startframe <= endframe) {
+						tmpstart = startframe;
+						tmpend = endframe;
+					}
+					else {
+						tmpstart = endframe;
+						tmpend = startframe;
+					}
 				}
 				else {
-					tmpstart = endframe;
+					tmpstart = startframe;
 					tmpend = startframe;
 				}
-			}
-			else {
-				tmpstart = startframe;
-				tmpend = startframe;
-			}
 
-			//double curframe = getCurrentTime();
-			double maxframe = startframe;
+				//double curframe = getCurrentTime();
+				double maxframe = startframe;
 
-			//for (int j = 0; j < (int)lineData.size(); j++){
-			int j = 1;
-			if (j < (int)lineData.size()) {
-				EulLineData* curLineData = lineData[j];
-				if (tothelastflag == 1) {
+				//for (int j = 0; j < (int)lineData.size(); j++){
+				int j = 1;
+				if (j < (int)lineData.size()) {
+					EulLineData* curLineData = lineData[j];
+					if (tothelastflag == 1) {
 
-					for (int i = 0; i < (int)curLineData->key.size(); i++) {
-						if (curLineData->key[i]->time >= tmpstart - TIME_ERROR_WIDTH) {
-							curLineData->key[i]->select = true;
-							if (maxframe < curLineData->key[i]->time) {
-								maxframe = curLineData->key[i]->time;
+						for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+								curLineData->key[i]->select = true;
+								if (maxframe < curLineData->key[i]->time) {
+									maxframe = curLineData->key[i]->time;
+								}
+							}
+						}
+					}
+					else {
+
+						for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+								(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+								curLineData->key[i]->select = true;
+								if (maxframe < curLineData->key[i]->time) {
+									maxframe = curLineData->key[i]->time;
+								}
 							}
 						}
 					}
 				}
-				else {
 
-					for (int i = 0; i < (int)curLineData->key.size(); i++) {
-						if ((curLineData->key[i]->time >= tmpstart - TIME_ERROR_WIDTH) &&
-							(curLineData->key[i]->time <= tmpend + TIME_ERROR_WIDTH)) {
-							curLineData->key[i]->select = true;
-							if (maxframe < curLineData->key[i]->time) {
-								maxframe = curLineData->key[i]->time;
-							}
-						}
-					}
-				}
+
+				//dragSelect = true;
+				dragSelectTime1 = tmpstart;
+				dragSelectTime2 = maxframe;
+				//showPos_time = tmpstart;
+				showPos_line = 0;
+				currentLine = 1;//!!!!!!!
+
+								//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+				//再描画要求
+				//if (rewriteOnChange){
+				callRewrite();
+				//}
 			}
-
-
-			//dragSelect = true;
-			dragSelectTime1 = tmpstart;
-			dragSelectTime2 = maxframe;
-			//showPos_time = tmpstart;
-			showPos_line = 0;
-			currentLine = 1;//!!!!!!!
-
-							//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
-
-			//再描画要求
-			//if (rewriteOnChange){
-			callRewrite();
-			//}
 		}
 
 		/// Method : すべての選択されているキーを取得する
@@ -6229,16 +6252,16 @@ void s_dummyfunc()
 			int y3 = size.y - MARGIN;
 
 			//ラベル
-			if (x0 <= e.localX && e.localX<x2
-				&& y1 <= e.localY && e.localY<y2) {
+			if ((x0 <= e.localX) && (e.localX < x2) && 
+				(y1 <= e.localY) && (e.localY < y2)) {
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
 
 				dragLabel = true;
 			}
 
 			//時間軸目盛り
-			if (x1 - 2 <= e.localX && e.localX<x2
-				&& y0 <= e.localY && e.localY<y2) {
+			if (((x1 - 2) <= e.localX) && (e.localX < x2) && 
+				(y0 <= e.localY) && (e.localY < y2)) {
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
 
 				dragTime = true;
@@ -6250,8 +6273,8 @@ void s_dummyfunc()
 			}
 
 			//時間軸スクロールバー
-			if (x1 <= e.localX && e.localX<x2
-				&& y2 <= e.localY && e.localY<y3) {
+			if ((x1 <= e.localX) && (e.localX < x2) && 
+				(y2 <= e.localY) && (e.localY < y3)) {
 				int xx0 = MARGIN + LABEL_SIZE_X;
 				int xx1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
 
@@ -6269,8 +6292,8 @@ void s_dummyfunc()
 			}
 
 			//ラベルスクロールバー
-			if (x2 <= e.localX && e.localX<x3
-				&& y1 <= e.localY && e.localY<y2) {
+			if ((x2 <= e.localX) && (e.localX < x3) && 
+				(y1 <= e.localY) && (e.localY < y2)) {
 				int yy0 = MARGIN + AXIS_SIZE_Y;
 				int yy1 = size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
 
@@ -6295,11 +6318,49 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e) {
-			if (!canMouseControll) return;
-			if (g_underselecttolast || g_undereditrange) {
-				g_underselecttolast = false;
-				g_undereditrange = false;
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
+				if (!canMouseControll) return;
+				if (g_underselecttolast || g_undereditrange) {
+					g_underselecttolast = false;
+					g_undereditrange = false;
+
+					//ドラッグフラグを初期化
+					dragLabel = false;
+					dragTime = false;
+					dragScrollBarLabel = false;
+					dragScrollBarTime = false;
+					dragSelect = false;
+					dragShift = false;
+
+					return;
+				}
+
+				//ドラッグ選択範囲内のキーを選択状態にする
+				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime) {
+					selectClear(true);
+					if (dragSelect) {
+
+						for (int i = min(dragSelectLine1, dragSelectLine2);
+							i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++) {
+							lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
+								max(dragSelectTime1, dragSelectTime2));
+						}
+					}
+					//リスナーコール
+					if (this->selectListener != NULL) {
+						(this->selectListener)();
+					}
+				}
+
+				//Ctrl+ドラッグによるキー移動
+				if (dragShift) {
+					//リスナーコール
+					if (this->keyShiftListener != NULL) {
+						(this->keyShiftListener)();
+					}
+					ghostShiftTime = 0.0;
+				}
 				//ドラッグフラグを初期化
 				dragLabel = false;
 				dragTime = false;
@@ -6308,50 +6369,14 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				return;
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 			}
-
-			//ドラッグ選択範囲内のキーを選択状態にする
-			if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime) {
-				selectClear(true);
-				if (dragSelect) {
-
-					for (int i = min(dragSelectLine1, dragSelectLine2);
-						i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++) {
-						lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
-							max(dragSelectTime1, dragSelectTime2));
-					}
-				}
-				//リスナーコール
-				if (this->selectListener != NULL) {
-					(this->selectListener)();
-				}
-			}
-
-			//Ctrl+ドラッグによるキー移動
-			if (dragShift) {
-				//リスナーコール
-				if (this->keyShiftListener != NULL) {
-					(this->keyShiftListener)();
-				}
-				ghostShiftTime = 0.0;
-			}
-			//ドラッグフラグを初期化
-			dragLabel = false;
-			dragTime = false;
-			dragScrollBarLabel = false;
-			dragScrollBarTime = false;
-			dragSelect = false;
-			dragShift = false;
-
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
-
 		}
 		virtual void onRButtonDown(const MouseEvent& e) {
 			selectClear(true);
@@ -6370,8 +6395,8 @@ void s_dummyfunc()
 			int y3 = size.y - MARGIN;
 
 			//ラベル
-			if (x0 <= e.localX && e.localX<x2
-				&& y1 <= e.localY && e.localY<y2) {
+			if ((x0 <= e.localX) && (e.localX < x2) && 
+				(y1 <= e.localY) && (e.localY < y2)) {
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
 
 				//dragLabel = true;
@@ -6437,11 +6462,51 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onRButtonUp(const MouseEvent& e) {
-			if (!canMouseControll) return;
-			if (g_underselecttolast || g_undereditrange) {
-				g_underselecttolast = false;
-				g_undereditrange = false;
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
+				if (!canMouseControll) return;
+				if (g_underselecttolast || g_undereditrange) {
+					g_underselecttolast = false;
+					g_undereditrange = false;
+
+					//ドラッグフラグを初期化
+					dragLabel = false;
+					dragTime = false;
+					dragScrollBarLabel = false;
+					dragScrollBarTime = false;
+					dragSelect = false;
+					dragShift = false;
+
+					return;
+				}
+
+				/*
+				//ドラッグ選択範囲内のキーを選択状態にする
+				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
+				selectClear(true);
+				if (dragSelect){
+
+				for (int i = min(dragSelectLine1, dragSelectLine2);
+				i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
+				lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
+				max(dragSelectTime1, dragSelectTime2));
+				}
+				}
+				//リスナーコール
+				if (this->selectListener != NULL){
+				(this->selectListener)();
+				}
+				}
+
+				//Ctrl+ドラッグによるキー移動
+				if (dragShift){
+				//リスナーコール
+				if (this->keyShiftListener != NULL){
+				(this->keyShiftListener)();
+				}
+				ghostShiftTime = 0.0;
+				}
+				*/
 				//ドラッグフラグを初期化
 				dragLabel = false;
 				dragTime = false;
@@ -6450,54 +6515,17 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				return;
-			}
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-			/*
-			//ドラッグ選択範囲内のキーを選択状態にする
-			if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
-			selectClear(true);
-			if (dragSelect){
-
-			for (int i = min(dragSelectLine1, dragSelectLine2);
-			i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++){
-			lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
-			max(dragSelectTime1, dragSelectTime2));
-			}
-			}
-			//リスナーコール
-			if (this->selectListener != NULL){
-			(this->selectListener)();
-			}
-			}
-
-			//Ctrl+ドラッグによるキー移動
-			if (dragShift){
-			//リスナーコール
-			if (this->keyShiftListener != NULL){
-			(this->keyShiftListener)();
-			}
-			ghostShiftTime = 0.0;
-			}
-			*/
-			//ドラッグフラグを初期化
-			dragLabel = false;
-			dragTime = false;
-			dragScrollBarLabel = false;
-			dragScrollBarTime = false;
-			dragSelect = false;
-			dragShift = false;
-
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
-
-			if (this->mouseRUpListener != NULL) {
-				(this->mouseRUpListener)();
+				if (this->mouseRUpListener != NULL) {
+					(this->mouseRUpListener)();
+				}
 			}
 		}
 
@@ -6536,7 +6564,7 @@ void s_dummyfunc()
 			}
 
 			//カーソルリスナーコール
-			if (callCursorListener && this->cursorListener != NULL) {
+			if (callCursorListener && (this->cursorListener != NULL)) {
 				(this->cursorListener)();
 			}
 
@@ -6603,14 +6631,16 @@ void s_dummyfunc()
 			int y3 = size.y - MARGIN;
 
 			//ラベル
-			if (x0 <= e.localX && e.localX<x2 && y1 <= e.localY && e.localY<y2) {
+			if ((x0 <= e.localX) && (e.localX < x2) && 
+				(y1 <= e.localY) && (e.localY < y2)) {
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
 
 				//dragLabel = true;
 			}
 
 			//時間軸目盛り
-			if (x1 - 2 <= e.localX && e.localX<x2 && y0 <= e.localY && e.localY<y2) {
+			if (((x1 - 2) <= e.localX) && (e.localX < x2) && 
+				(y0 <= e.localY) && (e.localY < y2)) {
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
 
 				//dragTime = true;
@@ -6620,24 +6650,26 @@ void s_dummyfunc()
 			}
 		}
 		virtual void onMButtonUp(const MouseEvent& e) {
-			if (!canMouseControll) return;
+			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-			//ドラッグフラグを初期化
-			dragLabel = false;
-			dragTime = false;
-			dragScrollBarLabel = false;
-			dragScrollBarTime = false;
-			dragSelect = false;
-			dragShift = false;
+				if (!canMouseControll) return;
 
-			//再描画領域
-			RECT tmpRect;
-			tmpRect.left = pos.x + 1;
-			tmpRect.top = pos.y + 1;
-			tmpRect.right = pos.x + size.x - 1;
-			tmpRect.bottom = pos.y + size.y - 1;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+				//ドラッグフラグを初期化
+				dragLabel = false;
+				dragTime = false;
+				dragScrollBarLabel = false;
+				dragScrollBarTime = false;
+				dragSelect = false;
+				dragShift = false;
 
+				//再描画領域
+				RECT tmpRect;
+				tmpRect.left = pos.x + 1;
+				tmpRect.top = pos.y + 1;
+				tmpRect.right = pos.x + size.x - 1;
+				tmpRect.bottom = pos.y + size.y - 1;
+				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+			}
 		}
 		virtual void onMouseWheel(const MouseEvent& e) {
 			wheeldelta = e.wheeldelta;
@@ -6748,12 +6780,12 @@ void s_dummyfunc()
 			if (currentLine <= showPos_line) {
 				showPos_line = currentLine;
 			}
-			if (showPos_line + showLineNum - 1 <= currentLine) {
+			if ((showPos_line + showLineNum - 1 )<= currentLine) {
 				showPos_line = currentLine - showLineNum + 1;
 			}
 
 			//リスナーコール
-			if (!noCallListener && this->cursorListener != NULL) {
+			if (!noCallListener && (this->cursorListener != NULL)) {
 				(this->cursorListener)();
 			}
 
@@ -7353,7 +7385,7 @@ void s_dummyfunc()
 					}
 				}
 
-				if (_time >= parent->maxTime || _time<0.0) {
+				if ((_time >= parent->maxTime) || _time<0.0) {
 					/*					//作成不能削除リスナーコール
 					if( parent->keyDeleteListener!=NULL ){
 					KeyInfo ki;
@@ -7366,7 +7398,7 @@ void s_dummyfunc()
 					}//*/
 					return false;
 				}
-				if (_time + _length >= parent->maxTime) {
+				if ((_time + _length) >= parent->maxTime) {
 					_length = parent->maxTime - _time;
 				}
 
@@ -7426,8 +7458,8 @@ void s_dummyfunc()
 			bool selectKey(const double &_time) {
 
 				for (int i = 0; i<(int)key.size(); i++) {
-					if ((_time - TIME_ERROR_WIDTH <= key[i]->time)
-						&& (key[i]->time <= _time + TIME_ERROR_WIDTH)) {
+					if (((_time - TIME_ERROR_WIDTH) <= key[i]->time)
+						&& (key[i]->time <= (_time + TIME_ERROR_WIDTH))) {
 						key[i]->select = true;
 						return true;
 					}
@@ -7444,7 +7476,7 @@ void s_dummyfunc()
 				for (int i = 0; i<(int)key.size(); i++) {
 					//					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
 					//					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
-					if (startTime <= key[i]->time && key[i]->time<endTime) {
+					if ((startTime <= key[i]->time) && key[i]->time<endTime) {
 						key[i]->select = true;
 						selectCount++;
 					}
@@ -7459,8 +7491,8 @@ void s_dummyfunc()
 
 				int selectCount = 0;
 				for (int i = 0; i<(int)key.size(); i++) {
-					if (startTime - TIME_ERROR_WIDTH <= key[i]->time
-						&& key[i]->time <= endTime + TIME_ERROR_WIDTH) {
+					if (((startTime - TIME_ERROR_WIDTH) <= key[i]->time) && 
+						(key[i]->time <= (endTime + TIME_ERROR_WIDTH))) {
 						key[i]->select = true;
 						selectCount++;
 					}
@@ -7473,8 +7505,8 @@ void s_dummyfunc()
 			int getKeyIndex(const double &_time) {
 
 				for (int i = 0; i<(int)key.size(); i++) {
-					if (_time - TIME_ERROR_WIDTH <= key[i]->time
-						&& key[i]->time <= _time + TIME_ERROR_WIDTH) {
+					if (((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
+						(key[i]->time <= (_time + TIME_ERROR_WIDTH))) {
 						return i;
 					}
 				}
@@ -7526,7 +7558,7 @@ void s_dummyfunc()
 				if ((unsigned int)key.size() <= (unsigned int)index) return false;
 
 				//リスナーコール
-				if (!noCallListener && parent->keyDeleteListener != NULL) {
+				if (!noCallListener && (parent->keyDeleteListener != NULL)) {
 					KeyInfo ki;
 					ki.label = name.c_str();
 					ki.lineIndex = lineIndex;
@@ -7677,15 +7709,21 @@ void s_dummyfunc()
 	class OWP_LayerTable: public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_LayerTable(const TCHAR *_name ){
+		OWP_LayerTable(const TCHAR *_name ) : OrgWindowParts() {
 			name= new TCHAR[256];
 			_tcscpy_s(name,256,_name);
 
-			cursorListener = [](){s_dummyfunc();};
-			lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc();};
-			changeVisibleListener = [](int targetIndex){s_dummyfunc();};
-			changeLockListener = [](int targetIndex){s_dummyfunc();};
-			callPropertyListener = [](int targetIndex){s_dummyfunc();};
+			//cursorListener = [](){s_dummyfunc();};
+			//lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc();};
+			//changeVisibleListener = [](int targetIndex){s_dummyfunc();};
+			//changeLockListener = [](int targetIndex){s_dummyfunc();};
+			//callPropertyListener = [](int targetIndex){s_dummyfunc();};
+			cursorListener = NULL;
+			lineShiftListener = NULL;
+			changeVisibleListener = NULL;
+			changeLockListener = NULL;
+			callPropertyListener = NULL;
+
 
 			currentLine= 0;
 			showPosLine= 0;
@@ -7703,8 +7741,8 @@ void s_dummyfunc()
 		~OWP_LayerTable(){
 			delete[] name;
 
-			for(std::vector<LineData*>::iterator itr=lineData.begin();
-				itr!=lineData.end(); itr++){
+			std::vector<LineData*>::iterator itr;
+			for(itr = lineData.begin(); itr != lineData.end(); itr++){
 				delete *itr;
 			}
 		}
@@ -7723,7 +7761,7 @@ void s_dummyfunc()
 			//行データ
 			for(int i=showPosLine,j=0; i<(int)lineData.size() && j<showLineNum; i++,j++){
 				bool highLight=false;
-				if( i==currentLine ) highLight=true;
+				if( i == currentLine ) highLight=true;
 
 				lineData[i]->draw(	hdcM,
 									pos.x+MARGIN,
@@ -7732,9 +7770,9 @@ void s_dummyfunc()
 			}
 
 			//ドラッグ移動の目印
-			if( dragLine && shiftIndex!=0 ){
+			if( dragLine && (shiftIndex != 0) ){
 				int markPos= currentLine+shiftIndex-showPosLine;
-				if( 0<=shiftIndex ) markPos+=1;
+				if( 0 <= shiftIndex ) markPos+=1;
 
 				markPos= pos.y+MARGIN+ markPos*(LABEL_SIZE_Y-1);
 
@@ -7830,7 +7868,7 @@ void s_dummyfunc()
 					popPos=i;
 				}
 			}
-			if(popPos==-1) return false;
+			if(popPos == -1) return false;
 			for(int i=popPos+1; i<(int)lineData.size(); i++){
 				lineData[i-1]=lineData[i];
 			}
@@ -7843,7 +7881,7 @@ void s_dummyfunc()
 			return true;
 		}
 		bool deleteLine(int index){
-			if((unsigned int)lineData.size()<=(unsigned int)index) return false;
+			if((unsigned int)lineData.size() <= (unsigned int)index) return false;
 
 			bool ret= deleteLine(lineData[index]->name);
 
@@ -7865,15 +7903,15 @@ void s_dummyfunc()
 			int y1= size.y-MARGIN;
 
 			//ボタン
-			if( x0<=e.localX && e.localX<x1
-			 && y0<=e.localY && e.localY<y1 ){
+			if( (x0 <= e.localX) && (e.localX < x1) && 
+				(y0 <= e.localY) && (e.localY < y1) ){
 				unsigned int targetIndex= showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1);
-				if( targetIndex<=(unsigned int)lineData.size()-1 ){
+				if( targetIndex <= ((unsigned int)lineData.size() - 1) ){
 					//可視・不可視ボタン
-					if( e.localX<x0+LABEL_SIZE_Y ){
+					if( e.localX < (x0 + LABEL_SIZE_Y) ){
 						lineData[targetIndex]->visible= !lineData[targetIndex]->visible;
 						//リスナーコール
-						if( this->changeVisibleListener!=NULL ){
+						if( this->changeVisibleListener != NULL ){
 							(this->changeVisibleListener)(targetIndex);
 						}
 						dragVisibleButton= true;
@@ -7883,7 +7921,7 @@ void s_dummyfunc()
 					}else{
 						lineData[targetIndex]->lock= !lineData[targetIndex]->lock;
 						//リスナーコール
-						if( this->changeLockListener!=NULL ){
+						if( this->changeLockListener != NULL ){
 							(this->changeLockListener)(targetIndex);
 						}
 						dragLockButton= true;
@@ -7898,8 +7936,8 @@ void s_dummyfunc()
 			}
 
 			//ラベルドラッグ
-			if( x1<=e.localX && e.localX<x2
-			 && y0<=e.localY && e.localY<y1 ){
+			if( (x1 <= e.localX) && (e.localX < x2) && 
+				(y0 <= e.localY) && (e.localY < y1) ){
 				setCurrentLine( showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1) );
 
 				dragLine= true;
@@ -7907,10 +7945,10 @@ void s_dummyfunc()
 			}
 
 			//ラインスクロールバー
-			if( x2<=e.localX && e.localX<x3
-			 && y0<=e.localY && e.localY<y1 ){
+			if( (x2 <= e.localX) && (e.localX < x3) && 
+				(y0 <= e.localY) && (e.localY < y1) ){
 				int showLineNum= (y1-y0)/(LABEL_SIZE_Y-1);
-				if( showLineNum<(int)lineData.size() ){
+				if( showLineNum < (int)lineData.size() ){
 					int barSize= (y1-y0-4)*showLineNum/(int)lineData.size();
 
 					int movableY= y1-y0-barSize;
@@ -7930,11 +7968,11 @@ void s_dummyfunc()
 			//ドラッグによるキー移動
 			if( dragLine ){
 				int beforIndex= currentLine;
-				int afterIndex= max(0, min(currentLine+shiftIndex, (int)lineData.size()-1));
-				if( beforIndex!=afterIndex ){
+				int afterIndex= max(0, min(currentLine+shiftIndex, ((int)lineData.size()-1)));
+				if( beforIndex != afterIndex ){
 
 					//リスナーコール
-					if(this->lineShiftListener!=NULL){
+					if(this->lineShiftListener != NULL){
 						(this->lineShiftListener)(beforIndex,afterIndex);
 					}
 
@@ -7990,7 +8028,7 @@ void s_dummyfunc()
 				if( newCposLine <= showPosLine ){
 					showPosLine= newCposLine;
 				}
-				if( showPosLine+showLineNum-1 <= newCposLine ){
+				if( (showPosLine + showLineNum - 1) <= newCposLine ){
 					showPosLine= newCposLine-showLineNum+1;
 				}
 
@@ -8037,8 +8075,8 @@ void s_dummyfunc()
 			int y1= size.y-MARGIN;
 
 			//ラベル右クリック
-			if( x1<=e.localX && e.localX<x2
-			 && y0<=e.localY && e.localY<y1 ){
+			if( (x1 <= e.localX) && (e.localX < x2) && 
+				(y0 <= e.localY) && (e.localY < y1) ){
 				mouseRBtnOnIndex= showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1);
 
 				setCurrentLine( mouseRBtnOnIndex );
@@ -8057,10 +8095,10 @@ void s_dummyfunc()
 			int y1= size.y-MARGIN;
 
 			//プロパティコール
-			if( mouseRBtnOnIndex != -1
-			 && mouseRBtnOnIndex == showPosLine+(e.localY-y0)/(LABEL_SIZE_Y-1)
-			 && x1<=e.localX && e.localX<x2
-			 && y0<=e.localY && e.localY<y1 ){
+			if( (mouseRBtnOnIndex != -1) && 
+				(mouseRBtnOnIndex == ((showPosLine + (e.localY - y0)) / (LABEL_SIZE_Y-1))) && 
+				(x1 <= e.localX) && (e.localX < x2) && 
+				(y0 <= e.localY) && (e.localY < y1) ){
 
 				//リスナーコール
 				if( this->callPropertyListener!=NULL ){
@@ -8089,7 +8127,7 @@ void s_dummyfunc()
 			return lineData[index]->name;
 		}
 		bool setName(int index, const std::basic_string<TCHAR>& value ){
-			if( 0<=index && index<(int)lineData.size() ){
+			if( (0 <= index) && (index < (int)lineData.size()) ){
 
 				lineData[index]->name= value;
 
@@ -8121,12 +8159,12 @@ void s_dummyfunc()
 			if( currentLine <= showPosLine ){
 				showPosLine= currentLine;
 			}
-			if( showPosLine+showLineNum-1 <= currentLine ){
+			if( (showPosLine + showLineNum - 1) <= currentLine ){
 				showPosLine= currentLine-showLineNum+1;
 			}
 
 			//リスナーコール
-			if( !noCallListener && this->cursorListener!=NULL ){
+			if( !noCallListener && (this->cursorListener != NULL) ){
 				(this->cursorListener)();
 			}
 
@@ -8154,7 +8192,7 @@ void s_dummyfunc()
 			int y1= size.y-MARGIN+1;
 
 			int showLineNum= (size.y-MARGIN*2)/(LABEL_SIZE_Y-1);
-			if( showLineNum<(int)lineData.size() ){
+			if( showLineNum < (int)lineData.size() ){
 				showPosLine= max(0,min( _showPosLine ,(int)lineData.size()-showLineNum));
 			}else{
 				showPosLine= 0;
@@ -8167,8 +8205,8 @@ void s_dummyfunc()
 		}
 		/// Accessor: 可視・不可視フラグ
 		bool getVisible(const std::basic_string<TCHAR> &_name) const{
-			for(std::vector<LineData*>::const_iterator itr=lineData.begin();
-				itr!=lineData.end(); itr++){
+			std::vector<LineData*>::const_iterator itr;
+			for(itr = lineData.begin(); itr != lineData.end(); itr++){
 				if( (*itr)->name==_name ){
 					return (*itr)->visible;
 				}
@@ -8177,7 +8215,7 @@ void s_dummyfunc()
 			return false;
 		}
 		bool getVisible(int index){
-			if((unsigned int)lineData.size()<=(unsigned int)index) return false;
+			if((unsigned int)lineData.size() <= (unsigned int)index) return false;
 
 			return lineData[index]->visible;
 		}
@@ -8186,11 +8224,11 @@ void s_dummyfunc()
 				if( lineData[i]->name==_name ){
 
 					//セットする値が現在の値と異なるときのみ変更する
-					if( lineData[i]->visible!=value ){
+					if( lineData[i]->visible != value ){
 						lineData[i]->visible= value;
 
 						//リスナーコール
-						if( !noCallListener && this->changeVisibleListener!=NULL ){
+						if( !noCallListener && (this->changeVisibleListener != NULL) ){
 							(this->changeVisibleListener)((int)i);
 						}
 
@@ -8206,14 +8244,14 @@ void s_dummyfunc()
 			return false;
 		}
 		bool setVisible(int index, bool value, bool noCallListener=false){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if(lineData.size() <= (unsigned int)index) return false;
 
 			//セットする値が現在の値と異なるときのみ変更する
-			if( lineData[index]->visible!=value ){
+			if( lineData[index]->visible != value ){
 				lineData[index]->visible= value;
 
 				//リスナーコール
-				if( !noCallListener && this->changeVisibleListener!=NULL ){
+				if( !noCallListener && (this->changeVisibleListener!=NULL) ){
 					(this->changeVisibleListener)(index);
 				}
 
@@ -8226,8 +8264,8 @@ void s_dummyfunc()
 		}
 		/// Accessor: ロックフラグ
 		bool getLock(const std::basic_string<TCHAR> &_name) const{
-			for(std::vector<LineData*>::const_iterator itr=lineData.begin();
-				itr!=lineData.end(); itr++){
+			std::vector<LineData*>::const_iterator itr;
+			for(itr = lineData.begin(); itr != lineData.end(); itr++){
 				if( (*itr)->name==_name ){
 					return (*itr)->lock;
 				}
@@ -8236,7 +8274,7 @@ void s_dummyfunc()
 			return false;
 		}
 		bool getLock(int index){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if(lineData.size() <= (unsigned int)index) return false;
 
 			return lineData[index]->lock;
 		}
@@ -8245,11 +8283,11 @@ void s_dummyfunc()
 				if( lineData[i]->name==_name ){
 
 					//セットする値が現在の値と異なるときのみ変更する
-					if( lineData[i]->lock!=value ){
+					if( lineData[i]->lock != value ){
 						lineData[i]->lock= value;
 
 						//リスナーコール
-						if( !noCallListener && this->changeLockListener!=NULL ){
+						if( !noCallListener && (this->changeLockListener != NULL) ){
 							(this->changeLockListener)(i);
 						}
 
@@ -8265,14 +8303,14 @@ void s_dummyfunc()
 			return false;
 		}
 		bool setLock(int index, bool value, bool noCallListener=false){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if(lineData.size() <= (unsigned int)index) return false;
 
 			//セットする値が現在の値と異なるときのみ変更する
-			if( lineData[index]->lock!=value ){
+			if( lineData[index]->lock != value ){
 				lineData[index]->lock= value;
 
 				//リスナーコール
-				if( !noCallListener && this->changeLockListener!=NULL ){
+				if( !noCallListener && (this->changeLockListener != NULL) ){
 					(this->changeLockListener)(index);
 				}
 
@@ -8285,7 +8323,7 @@ void s_dummyfunc()
 		}
 
 		const void* getObj(int index){
-			if(lineData.size()<=(unsigned int)index) return false;
+			if(lineData.size() <= (unsigned int)index) return false;
 
 			return lineData[index]->object;
 		}
@@ -8451,15 +8489,21 @@ void s_dummyfunc()
 	class OWP_ScrollWnd : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_ScrollWnd(const TCHAR *_name){
+		OWP_ScrollWnd(const TCHAR *_name) : OrgWindowParts() {
 			name = new TCHAR[256];
 			_tcscpy_s(name, 256, _name);
 
-			cursorListener = [](){s_dummyfunc(); };
-			lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc(); };
-			changeVisibleListener = [](int targetIndex){s_dummyfunc(); };
-			changeLockListener = [](int targetIndex){s_dummyfunc(); };
-			callPropertyListener = [](int targetIndex){s_dummyfunc(); };
+			//cursorListener = [](){s_dummyfunc(); };
+			//lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc(); };
+			//changeVisibleListener = [](int targetIndex){s_dummyfunc(); };
+			//changeLockListener = [](int targetIndex){s_dummyfunc(); };
+			//callPropertyListener = [](int targetIndex){s_dummyfunc(); };
+			cursorListener = NULL;
+			lineShiftListener = NULL;
+			changeVisibleListener = NULL;
+			changeLockListener = NULL;
+			callPropertyListener = NULL;
+
 
 			currentLine = 0;
 			showPosLine = 0;
@@ -8478,7 +8522,6 @@ void s_dummyfunc()
 			currentPartsSizeY = 0;
 			open = true;
 			canClose = true;
-			parentWindow = NULL;
 
 		}
 		~OWP_ScrollWnd(){
@@ -8527,7 +8570,10 @@ void s_dummyfunc()
 		
 		/// Method : 自動サイズ設定
 		void autoResize(){
-			
+			if (!parentWindow) {
+				return;
+			}
+
 			size = parentWindow->getSize();
 			pos = WindowPos(0, 0);
 
@@ -8546,7 +8592,8 @@ void s_dummyfunc()
 
 				//全ての内部パーツの位置とサイズを自動設定
 				int starty = showPosLine * (LABEL_SIZE_Y);
-				for (std::list<OrgWindowParts*>::iterator itr = partsList.begin(); itr != partsList.end(); itr++){
+				std::list<OrgWindowParts*>::iterator itr;
+				for (itr = partsList.begin(); itr != partsList.end(); itr++){
 					(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y - starty));
 					(*itr)->setSize(WindowSize(partsAreaSize.x, partsAreaSize.y));
 					(*itr)->autoResize();
@@ -8570,8 +8617,8 @@ void s_dummyfunc()
 
 			//全ての内部パーツを描画
 			if (open){
-				for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
-					itr != partsList.end(); itr++){
+				std::list<OrgWindowParts*>::iterator itr;
+				for (itr = partsList.begin(); itr != partsList.end(); itr++){
 					(*itr)->draw();
 				}
 			}
@@ -8591,7 +8638,7 @@ void s_dummyfunc()
 				//中身
 				int barSize = (y1 - y0 - 4)*showLineNum / lineDatasize;
 				int barStart = (y1 - y0 - 4)*showPosLine / lineDatasize;
-				if (showLineNum<lineDatasize){
+				if (showLineNum < lineDatasize){
 					hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
 					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 				}
@@ -8610,10 +8657,10 @@ void s_dummyfunc()
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
 
 			//ラインスクロールバー
-			if (x2 <= e.localX && e.localX<x3
-				&& y0 <= e.localY && e.localY<y1){
+			if ((x2 <= e.localX) && (e.localX < x3) && 
+				(y0 <= e.localY) && (e.localY < y1)){
 				showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
-				if (showLineNum<lineDatasize){
+				if (showLineNum < lineDatasize){
 					int barSize = (y1 - y0) * showLineNum / lineDatasize;
 
 					int movableY = y1 - y0 - barSize;
@@ -8627,7 +8674,8 @@ void s_dummyfunc()
 			autoResize();
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
@@ -8662,7 +8710,8 @@ void s_dummyfunc()
 			autoResize();
 
 			//内部パーツ
-			for (std::list<OrgWindowParts*>::iterator plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
@@ -8759,7 +8808,7 @@ void s_dummyfunc()
 			int y1 = size.y;
 
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
-			if (showLineNum<lineDatasize){
+			if (showLineNum < lineDatasize){
 				showPosLine = max(0, min(_showPosLine, lineDatasize - showLineNum));
 			}
 			else{
