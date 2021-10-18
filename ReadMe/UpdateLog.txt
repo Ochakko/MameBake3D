@@ -1,3 +1,16 @@
+2021/10/18_4
+	ver1.0.0.16に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+	VisualStudio2019のビルドセッティングを修正 ３
+		BulletPhysicsLibプロジェクトをadd
+		bulletのソース位置はそのままでstatic libraryプロジェクト化
+	
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/18_3
 	ver1.0.0.16に向けての続き
 

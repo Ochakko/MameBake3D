@@ -108,7 +108,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\debug;..\Glut;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
@@ -157,7 +157,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Release;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\release;..\Glut;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
@@ -169,180 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\BTMANAGER\BPWorld.cpp" />
-    <ClCompile Include="..\BTSRC\Bullet3Common\b3AlignedAllocator.cpp" />
-    <ClCompile Include="..\BTSRC\Bullet3Common\b3Logging.cpp" />
-    <ClCompile Include="..\BTSRC\Bullet3Common\b3Vector3.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btAxisSweep3.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btBroadphaseProxy.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btDbvt.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btDbvtBroadphase.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btDispatcher.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCache.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btQuantizedBvh.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\BroadphaseCollision\btSimpleBroadphase.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btActivatingCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btBox2dBox2dCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btBoxBoxCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btBoxBoxDetector.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCollisionDispatcher.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCollisionObject.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCollisionWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCollisionWorldImporter.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCompoundCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btConvex2dConvex2dAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btConvexConcaveCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btConvexConvexAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btConvexPlaneCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btDefaultCollisionConfiguration.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btEmptyCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btGhostObject.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btHashedSimplePairCache.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btInternalEdgeUtility.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btManifoldResult.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btSimulationIslandManager.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btSphereBoxCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btSphereSphereCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btSphereTriangleCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\btUnionFind.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionDispatch\SphereTriangleDetector.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btBox2dShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btBoxShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btBvhTriangleMeshShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btCapsuleShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btCollisionShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btCompoundShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConcaveShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConeShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvex2dShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvexHullShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvexInternalShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvexPointCloudShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvexPolyhedron.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvexShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btConvexTriangleMeshShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btCylinderShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btEmptyShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btHeightfieldTerrainShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btMiniSDF.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btMinkowskiSumShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btMultimaterialTriangleMeshShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btMultiSphereShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btOptimizedBvh.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btPolyhedralConvexShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btScaledBvhTriangleMeshShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btSdfCollisionShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btShapeHull.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btSphereShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btStaticPlaneShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btStridingMeshInterface.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTetrahedronShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTriangleBuffer.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTriangleCallback.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTriangleIndexVertexArray.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTriangleIndexVertexMaterialArray.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTriangleMesh.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btTriangleMeshShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\CollisionShapes\btUniformScalingShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btContactProcessing.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btGenericPoolAllocator.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btGImpactBvh.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btGImpactQuantizedBvh.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btGImpactShape.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\btTriangleShapeEx.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\gim_box_set.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\gim_contact.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\gim_memory.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\Gimpact\gim_tri_collision.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btContinuousConvexCollision.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btConvexCast.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkConvexCast.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpa2.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpaPenetrationDepthSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkPairDetector.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btMinkowskiPenetrationDepthSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btPersistentManifold.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btPolyhedralContactClipping.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btRaycastCallback.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btSubSimplexConvexCast.cpp" />
-    <ClCompile Include="..\BTSRC\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Character\btKinematicCharacterController.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btBatchedConstraints.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btConeTwistConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btContactConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btFixedConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btGearConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofSpring2Constraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofSpringConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btHinge2Constraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btHingeConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btNNCGConstraintSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btPoint2PointConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolverMt.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btSliderConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btSolve2LinearConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btTypedConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\ConstraintSolver\btUniversalConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Dynamics\btRigidBody.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Dynamics\btSimpleDynamicsWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Dynamics\btSimulationIslandManagerMt.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBody.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyDynamicsWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyFixedConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyGearConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointLimitConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointMotor.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyMLCPConstraintSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodyPoint2Point.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodySliderConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Featherstone\btMultiBodySphericalJointMotor.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\MLCPSolvers\btDantzigLCP.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\MLCPSolvers\btLemkeAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\MLCPSolvers\btMLCPSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Vehicle\btRaycastVehicle.cpp" />
-    <ClCompile Include="..\BTSRC\BulletDynamics\Vehicle\btWheelInfo.cpp" />
-    <ClCompile Include="..\BTSRC\BulletInverseDynamics\details\MultiBodyTreeImpl.cpp" />
-    <ClCompile Include="..\BTSRC\BulletInverseDynamics\details\MultiBodyTreeInitCache.cpp" />
-    <ClCompile Include="..\BTSRC\BulletInverseDynamics\IDMath.cpp" />
-    <ClCompile Include="..\BTSRC\BulletInverseDynamics\MultiBodyTree.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDefaultSoftBodySolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDeformableBackwardEulerObjective.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDeformableBodySolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDeformableContactConstraint.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDeformableContactProjection.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDeformableMultiBodyConstraintSolver.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btDeformableMultiBodyDynamicsWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftBody.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftBodyHelpers.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftMultiBodyDynamicsWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftRigidCollisionAlgorithm.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftRigidDynamicsWorld.cpp" />
-    <ClCompile Include="..\BTSRC\BulletSoftBody\btSoftSoftCollisionAlgorithm.cpp" />
     <ClCompile Include="..\BTSRC\clew\clew.c" />
-    <ClCompile Include="..\BTSRC\LinearMath\btAlignedAllocator.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btConvexHull.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btConvexHullComputer.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btGeometryUtil.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btPolarDecomposition.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btQuickprof.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btSerializer.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btSerializer64.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btThreads.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\btVector3.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\TaskScheduler\btTaskScheduler.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\TaskScheduler\btThreadSupportPosix.cpp" />
-    <ClCompile Include="..\BTSRC\LinearMath\TaskScheduler\btThreadSupportWin32.cpp" />
     <ClCompile Include="..\CPP\BntFile.cpp" />
     <ClCompile Include="..\CPP\Bone.cpp" />
     <ClCompile Include="..\CPP\BtObject.cpp" />
@@ -394,7 +221,6 @@
     <ClCompile Include="..\CPP\XMLIO.cpp" />
     <ClCompile Include="..\DXUT\Core\DDSTextureLoader.cpp" />
     <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp" />
-    <ClCompile Include="..\examples\MultiThreadedDemo\CommonRigidBodyMTBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h" />

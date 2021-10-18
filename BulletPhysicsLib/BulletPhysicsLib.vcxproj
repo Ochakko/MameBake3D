@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{ca222ff8-194a-4ad3-a782-750e286a7683}</ProjectGuid>
+    <RootNamespace>BulletPhysicsLib</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;_WINDOWS;CONVD3DX11;_ITERATOR_DEBUG_LEVEL=0;BT_USE_PPL;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4305;4244;6246;4267;</DisableSpecificWarnings>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;_WINDOWS;CONVD3DX11;_ITERATOR_DEBUG_LEVEL=0;BT_USE_PPL;BT_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4305;4244;6246;4267;</DisableSpecificWarnings>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\MameBake3DLib\BTSRC\btBulletCollisionCommon.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\btBulletDynamicsCommon.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3AlignedAllocator.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3AlignedObjectArray.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3CommandLineArgs.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3FileUtils.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3HashMap.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Logging.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Matrix3x3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3MinMax.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3PoolAllocator.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3QuadWord.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Quaternion.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Random.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3ResizablePool.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Scalar.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3StackAlloc.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Transform.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3TransformUtil.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Vector3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\shared\b3Float4.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\shared\b3Int2.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\shared\b3Int4.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\shared\b3Mat3x3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\shared\b3PlatformDefinitions.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\Bullet3Common\shared\b3Quat.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btAxisSweep3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btAxisSweep3Internal.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btBroadphaseInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btBroadphaseProxy.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btDbvt.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btDbvtBroadphase.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btDispatcher.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCache.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCallback.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btQuantizedBvh.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btSimpleBroadphase.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btActivatingCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btBox2dBox2dCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btBoxBoxCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btBoxBoxDetector.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionConfiguration.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionCreateFunc.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionDispatcher.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionObject.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionObjectWrapper.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionWorldImporter.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCompoundCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvex2dConvex2dAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvexConcaveCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvexConvexAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvexPlaneCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btDefaultCollisionConfiguration.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btEmptyCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btGhostObject.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btHashedSimplePairCache.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btInternalEdgeUtility.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btManifoldResult.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSimulationIslandManager.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSphereBoxCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSphereSphereCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSphereTriangleCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btUnionFind.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\SphereTriangleDetector.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btBox2dShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btBoxShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btBvhTriangleMeshShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCapsuleShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCollisionMargin.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCollisionShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCompoundShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConcaveShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConeShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvex2dShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexHullShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexInternalShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexPointCloudShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexPolyhedron.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexTriangleMeshShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCylinderShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btEmptyShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMaterial.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMiniSDF.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMinkowskiSumShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMultimaterialTriangleMeshShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMultiSphereShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btOptimizedBvh.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btPolyhedralConvexShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btScaledBvhTriangleMeshShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btSdfCollisionShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btShapeHull.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btSphereShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btStaticPlaneShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btStridingMeshInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTetrahedronShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleBuffer.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleCallback.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleIndexVertexArray.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleIndexVertexMaterialArray.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleInfoMap.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleMesh.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleMeshShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btUniformScalingShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btBoxCollision.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btClipPolygon.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btCompoundFromGimpact.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btContactProcessing.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btContactProcessingStructs.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGenericPoolAllocator.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGeometryOperations.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactBvh.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactBvhStructs.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactMassUtil.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactQuantizedBvh.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactQuantizedBvhStructs.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactShape.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btQuantization.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btTriangleShapeEx.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_array.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_basic_geometry_operations.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_bitset.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_box_collision.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_box_set.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_clip_polygon.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_contact.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_geometry.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_geom_types.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_hash_table.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_linear_math.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_math.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_memory.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_pair.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_radixsort.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_tri_collision.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btComputeGjkEpaPenetration.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btContinuousConvexCollision.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btConvexCast.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btConvexPenetrationDepthSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btDiscreteCollisionDetectorInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkCollisionDescription.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkConvexCast.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpa2.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpa3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpaPenetrationDepthSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkPairDetector.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btManifoldPoint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btMinkowskiPenetrationDepthSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btMprPenetration.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btPersistentManifold.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btPointCollector.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btPolyhedralContactClipping.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btRaycastCallback.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btSimplexSolverInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btSubSimplexConvexCast.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Character\btCharacterControllerInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Character\btKinematicCharacterController.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btBatchedConstraints.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btConeTwistConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btConstraintSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btContactConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btContactSolverInfo.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btFixedConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGearConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofSpring2Constraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofSpringConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btHinge2Constraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btHingeConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btJacobianEntry.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btNNCGConstraintSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btPoint2PointConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolverMt.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSliderConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSolve2LinearConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSolverBody.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSolverConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btTypedConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btUniversalConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btActionInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btRigidBody.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btSimpleDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btSimulationIslandManagerMt.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBody.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyFixedConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyGearConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyInplaceSolverIslandCallback.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointFeedback.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointLimitConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointMotor.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyLink.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyLinkCollider.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyMLCPConstraintSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyPoint2Point.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodySliderConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodySolverConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodySphericalJointMotor.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btDantzigLCP.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btDantzigSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btLemkeAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btLemkeSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btMLCPSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btMLCPSolverInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btPATHSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btSolveProjectedGaussSeidel.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Vehicle\btRaycastVehicle.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Vehicle\btVehicleRaycaster.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletDynamics\Vehicle\btWheelInfo.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\IDEigenInterface.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\IDLinearMathInterface.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\IDMatVec.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\MultiBodyTreeImpl.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\MultiBodyTreeInitCache.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\IDConfig.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\IDConfigBuiltin.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\IDConfigEigen.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\IDErrorMessages.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\IDMath.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\MultiBodyTree.hpp" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btCGProjection.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btConjugateGradient.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDefaultSoftBodySolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableBackwardEulerObjective.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableBodySolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableContactConstraint.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableContactProjection.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableCorotatedForce.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableGravityForce.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableLagrangianForce.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableLinearElasticityForce.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableMassSpringForce.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableMultiBodyConstraintSolver.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableMultiBodyDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableNeoHookeanForce.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btPreconditioner.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBody.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyData.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyHelpers.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyInternals.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodySolvers.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodySolverVertexBuffer.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftMultiBodyDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftRigidCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftRigidDynamicsWorld.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftSoftCollisionAlgorithm.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSparseSDF.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\BulletSoftBody\DeformableBodyInplaceSolverIslandCallback.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\clew\clew.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btAabbUtil2.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btAlignedAllocator.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btAlignedObjectArray.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btConvexHull.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btConvexHullComputer.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btCpuFeatureUtility.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btDefaultMotionState.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btGeometryUtil.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btGrahamScan2dConvexHull.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btHashMap.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btIDebugDraw.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btImplicitQRSVD.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btList.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btMatrix3x3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btMatrixX.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btMinMax.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btMotionState.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btPolarDecomposition.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btPoolAllocator.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btQuadWord.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btQuaternion.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btQuickprof.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btRandom.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btScalar.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btSerializer.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btSpatialAlgebra.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btStackAlloc.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btThreads.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btTransform.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btTransformUtil.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\btVector3.h" />
+    <ClInclude Include="..\MameBake3DLib\BTSRC\LinearMath\TaskScheduler\btThreadSupportInterface.h" />
+    <ClInclude Include="..\MameBake3DLib\examples\MultiThreadedDemo\CommonRigidBodyMTBase.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3AlignedAllocator.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Logging.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\Bullet3Common\b3Vector3.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btAxisSweep3.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btBroadphaseProxy.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btDbvt.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btDbvtBroadphase.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btDispatcher.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btOverlappingPairCache.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btQuantizedBvh.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\BroadphaseCollision\btSimpleBroadphase.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btActivatingCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btBox2dBox2dCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btBoxBoxCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btBoxBoxDetector.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionDispatcher.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionObject.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCollisionWorldImporter.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCompoundCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvex2dConvex2dAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvexConcaveCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvexConvexAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btConvexPlaneCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btDefaultCollisionConfiguration.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btEmptyCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btGhostObject.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btHashedSimplePairCache.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btInternalEdgeUtility.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btManifoldResult.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSimulationIslandManager.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSphereBoxCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSphereSphereCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btSphereTriangleCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\btUnionFind.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionDispatch\SphereTriangleDetector.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btBox2dShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btBoxShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btBvhTriangleMeshShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCapsuleShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCollisionShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCompoundShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConcaveShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConeShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvex2dShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexHullShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexInternalShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexPointCloudShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexPolyhedron.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btConvexTriangleMeshShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btCylinderShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btEmptyShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btHeightfieldTerrainShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMiniSDF.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMinkowskiSumShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMultimaterialTriangleMeshShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btMultiSphereShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btOptimizedBvh.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btPolyhedralConvexShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btScaledBvhTriangleMeshShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btSdfCollisionShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btShapeHull.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btSphereShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btStaticPlaneShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btStridingMeshInterface.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTetrahedronShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleBuffer.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleCallback.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleIndexVertexArray.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleIndexVertexMaterialArray.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleMesh.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btTriangleMeshShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\CollisionShapes\btUniformScalingShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btContactProcessing.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGenericPoolAllocator.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactBvh.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactQuantizedBvh.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btGImpactShape.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\btTriangleShapeEx.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_box_set.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_contact.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_memory.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\Gimpact\gim_tri_collision.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btContinuousConvexCollision.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btConvexCast.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkConvexCast.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpa2.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkEpaPenetrationDepthSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btGjkPairDetector.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btMinkowskiPenetrationDepthSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btPersistentManifold.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btPolyhedralContactClipping.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btRaycastCallback.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btSubSimplexConvexCast.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Character\btKinematicCharacterController.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btBatchedConstraints.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btConeTwistConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btContactConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btFixedConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGearConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofSpring2Constraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btGeneric6DofSpringConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btHinge2Constraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btHingeConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btNNCGConstraintSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btPoint2PointConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolverMt.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSliderConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btSolve2LinearConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btTypedConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\ConstraintSolver\btUniversalConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btRigidBody.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btSimpleDynamicsWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Dynamics\btSimulationIslandManagerMt.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBody.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyDynamicsWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyFixedConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyGearConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointLimitConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyJointMotor.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyMLCPConstraintSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodyPoint2Point.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodySliderConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Featherstone\btMultiBodySphericalJointMotor.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btDantzigLCP.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btLemkeAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\MLCPSolvers\btMLCPSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Vehicle\btRaycastVehicle.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletDynamics\Vehicle\btWheelInfo.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\MultiBodyTreeImpl.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\details\MultiBodyTreeInitCache.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\IDMath.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\MultiBodyTree.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDefaultSoftBodySolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableBackwardEulerObjective.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableBodySolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableContactConstraint.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableContactProjection.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableMultiBodyConstraintSolver.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btDeformableMultiBodyDynamicsWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBody.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyHelpers.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftMultiBodyDynamicsWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftRigidCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftRigidDynamicsWorld.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\BulletSoftBody\btSoftSoftCollisionAlgorithm.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\clew\clew.c" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btAlignedAllocator.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btConvexHull.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btConvexHullComputer.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btGeometryUtil.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btPolarDecomposition.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btQuickprof.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btSerializer.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btSerializer64.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btThreads.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\btVector3.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\TaskScheduler\btTaskScheduler.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\TaskScheduler\btThreadSupportPosix.cpp" />
+    <ClCompile Include="..\MameBake3DLib\BTSRC\LinearMath\TaskScheduler\btThreadSupportWin32.cpp" />
+    <ClCompile Include="..\MameBake3DLib\examples\MultiThreadedDemo\CommonRigidBodyMTBase.cpp" />
+    <ClCompile Include="BulletPhysicsLib.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\premake4.lua" />
+    <None Include="..\MameBake3DLib\BTSRC\BulletSoftBody\premake4.lua" />
+    <None Include="..\MameBake3DLib\BTSRC\LinearMath\premake4.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\MameBake3DLib\BTSRC\BulletInverseDynamics\CMakeLists.txt" />
+    <Text Include="..\MameBake3DLib\BTSRC\BulletSoftBody\CMakeLists.txt" />
+    <Text Include="..\MameBake3DLib\BTSRC\LinearMath\CMakeLists.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

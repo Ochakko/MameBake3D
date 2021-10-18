@@ -13,6 +13,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MameBake3DLib", "..\MameBake3DLib\MameBake3DLib\MameBake3DLib.vcxproj", "{381D22C0-053F-437F-A4AB-3B57CB413001}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4290AD57-72AB-4034-AA82-1EF3D9E3D545} = {4290AD57-72AB-4034-AA82-1EF3D9E3D545}
+		{CA222FF8-194A-4AD3-A782-750E286A7683} = {CA222FF8-194A-4AD3-A782-750E286A7683}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Effects11", "..\Effects11\Effects11.vcxproj", "{4290AD57-72AB-4034-AA82-1EF3D9E3D545}"
@@ -25,6 +26,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionBrushC4", "..\MotionB
 	ProjectSection(ProjectDependencies) = postProject
 		{16FA9686-BD76-4B06-AE36-7B156CC35AFA} = {16FA9686-BD76-4B06-AE36-7B156CC35AFA}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletPhysicsLib", "..\BulletPhysicsLib\BulletPhysicsLib.vcxproj", "{CA222FF8-194A-4AD3-A782-750E286A7683}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,6 +113,18 @@ Global
 		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|Win32.Build.0 = Release|Win32
 		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|x64.ActiveCfg = Release|x64
 		{8D3E6185-2CD6-4BD6-AE1A-46525F94E827}.Release|x64.Build.0 = Release|x64
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Debug|ARM.ActiveCfg = Debug|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Debug|Win32.Build.0 = Debug|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Debug|x64.ActiveCfg = Debug|x64
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Debug|x64.Build.0 = Debug|x64
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Release|ARM.ActiveCfg = Release|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Release|ARM64.ActiveCfg = Release|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Release|Win32.ActiveCfg = Release|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Release|Win32.Build.0 = Release|Win32
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Release|x64.ActiveCfg = Release|x64
+		{CA222FF8-194A-4AD3-A782-750E286A7683}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
