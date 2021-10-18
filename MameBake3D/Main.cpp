@@ -12698,7 +12698,8 @@ int CreateModelPanel()
 		//false,
 		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
 		true,					//表示・非表示状態
-		70,50,70,				//カラー
+		//70,50,70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 	if (!s_modelpanel.panel) {
@@ -12896,7 +12897,8 @@ int CreateMotionPanel()
 		//false,
 		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
 		true,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 	if (!s_motionpanel.panel) {
@@ -13118,7 +13120,8 @@ int CreateConvBoneWnd()
 		s_mainhwnd,					//親ウィンドウハンドル
 		false,					//表示・非表示状態
 		//true,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
@@ -19301,7 +19304,9 @@ int CreateTimelineWnd()
 		L"TimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
-		70, 50, 70);				//カラー
+		//70, 50, 70);				//カラー
+		0, 0, 0);				//カラー
+
 
 	s_timelineWnd->callRewrite();
 
@@ -19375,7 +19380,9 @@ int CreateLongTimelineWnd()
 		L"EditRangeTimeLine",				//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
 		true,					//表示・非表示状態
-		70, 50, 70);				//カラー
+		//70, 50, 70);				//カラー
+		0, 0, 0);				//カラー
+
 
 	s_LtimelineWnd->callRewrite();
 
@@ -19662,7 +19669,8 @@ int CreateDmpAnimWnd()
 		_T("AnimOfDumping"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
@@ -19760,7 +19768,8 @@ int CreateMainMenuAimBarWnd()
 		_T("MainMenuAimBarWnd"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
 
@@ -19804,7 +19813,8 @@ int CreateSideMenuWnd()
 		_T("SideMenu"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
 
@@ -19891,7 +19901,8 @@ int CreatePlaceFolderWnd()
 		_T("PlaceFolderWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
 	s_placefolderlabel_1 = new OWP_Label(L"After Loading Model Data,");
@@ -19950,7 +19961,8 @@ int CreateRigidWnd()
 		_T("RigidWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
 	s_groupcheck = new OWP_CheckBoxA(L"ToAll_MeansToSetToSameGroupRigids", 0);
@@ -20668,7 +20680,8 @@ int CreateImpulseWnd()
 		_T("ImpulseWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
@@ -20798,7 +20811,8 @@ int CreateGPlaneWnd()
 		_T("GroudOfPhysics"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		false,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
@@ -20947,7 +20961,9 @@ int CreateToolWnd()
 		//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
 		s_mainhwnd,
 		true,					//表示・非表示状態
-		70, 50, 70);// ,				//カラー
+		//70, 50, 70);// ,				//カラー
+		0, 0, 0);				//カラー
+
 	//	true);// ,					//閉じられるか否か
 	//	false);					//サイズ変更の可否
 
@@ -21077,7 +21093,8 @@ int CreateLayerWnd()
 		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
 		true,					//表示・非表示状態
 		//false,					//表示・非表示状態
-		70, 50, 70,				//カラー
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 

@@ -406,9 +406,12 @@ void s_dummyfunc()
 			isactive = false;
 			isslider = false;
 
-			baseColor.r = 70;
-			baseColor.g = 50;
-			baseColor.b = 70;
+			//baseColor.r = 70;
+			//baseColor.g = 50;
+			//baseColor.b = 70;
+			baseColor.r = 0;
+			baseColor.g = 0;
+			baseColor.b = 0;
 
 
 			pos = WindowPos(0, 0);
@@ -454,7 +457,8 @@ void s_dummyfunc()
 		virtual void registmember( OrgWindow *_parentWindow,
 							 WindowPos _pos, WindowSize _size,
 							 HDCMaster* _hdcM,
-							 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
+							 //unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
+							unsigned char _baseR = 0, unsigned char _baseG = 0, unsigned char _baseB = 0) {
 			_registmember(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 			autoResize();
 		}
@@ -616,7 +620,8 @@ void s_dummyfunc()
 				   WindowPos _pos,WindowSize _size,
 				   const TCHAR *_title,
 				   HWND _hWndParent=NULL, bool _visible=true,
-				   unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70,
+				   //unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70,
+					unsigned char _baseR = 0, unsigned char _baseG = 0, unsigned char _baseB = 0,
 				   bool _canQuit=true, bool _canChangeSize=true ){
 			isactive = false;
 			listenmouse = false;
@@ -666,6 +671,7 @@ void s_dummyfunc()
 			currentPartsSizeY= 0;
 
 			isblacktheme = false;
+			//isblacktheme = true;
 
 			partsList.clear();
 
@@ -741,15 +747,21 @@ void s_dummyfunc()
 					baseB = 0;
 				}
 				else {
-					baseR = 255;
-					baseG = 128;
-					baseB = 64;
+					//baseR = 255;
+					//baseG = 128;
+					//baseB = 64;
+					baseR = 100;
+					baseG = 100;
+					baseB = 100;
 				}
 			}
 			else {
-				baseR = 70;
-				baseG = 50;
-				baseB = 70;
+				//baseR = 70;
+				//baseG = 50;
+				//baseB = 70;
+				baseR = 0;
+				baseG = 0;
+				baseB = 0;
 			}
 
 			HBRUSH brush = CreateSolidBrush(RGB(baseR, baseG, baseB));
@@ -7183,7 +7195,8 @@ void s_dummyfunc()
 
 				//ƒL[
 				if (wcscmp(L"X", name.c_str()) == 0) {
-					hdcM->setPenAndBrush(NULL, RGB(255, 0, 0));
+					//hdcM->setPenAndBrush(NULL, RGB(255, 0, 0));
+					hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
 					y2 = y0 + (int)parent->getDispOffset();
 				}
@@ -7193,7 +7206,9 @@ void s_dummyfunc()
 					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"Z", name.c_str()) == 0) {
-					hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
+					//hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
+					//hdcM->setPenAndBrush(NULL, RGB(0, 128, 255));
+					hdcM->setPenAndBrush(NULL, RGB(150, 200, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
 					y2 = y0 + (int)parent->getDispOffset();
 				}
