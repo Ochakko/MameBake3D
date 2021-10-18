@@ -169,9 +169,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\BTMANAGER\BPWorld.cpp" />
-    <ClCompile Include="..\BTSRC\btBulletCollisionAll.cpp" />
-    <ClCompile Include="..\BTSRC\btBulletDynamicsAll.cpp" />
-    <ClCompile Include="..\BTSRC\btLinearMathAll.cpp" />
     <ClCompile Include="..\BTSRC\Bullet3Common\b3AlignedAllocator.cpp" />
     <ClCompile Include="..\BTSRC\Bullet3Common\b3Logging.cpp" />
     <ClCompile Include="..\BTSRC\Bullet3Common\b3Vector3.cpp" />

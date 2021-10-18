@@ -1,3 +1,18 @@
+2021/10/18_3
+	ver1.0.0.16に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+	VisualStudio2019のビルドセッティングを修正 ２
+		bullet physicsの多重定義警告の原因判明
+		btBulletCollisionAll.cpp, btBulletDynamicsAll.cpp, btLinearMathAll.cppを
+		プロジェクトから除外
+		リンク時警告がほとんど出なくなった
+	
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/18_2
 	ver1.0.0.16に向けての続き
 
@@ -12,7 +27,7 @@
 
 	(最新exeは付いていません)
 
-2021/10/18
+2021/10/18_1
 	ver1.0.0.16に向けての続き
 
 	develop版(非リリース版)　MameBake3D
