@@ -90,6 +90,7 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;WIN32;_WIN64;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <StructMemberAlignment>Default</StructMemberAlignment>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
