@@ -148,6 +148,8 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <DisableSpecificWarnings>26451;4267;4244;</DisableSpecificWarnings>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

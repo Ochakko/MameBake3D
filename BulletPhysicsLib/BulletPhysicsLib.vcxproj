@@ -154,6 +154,8 @@
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>

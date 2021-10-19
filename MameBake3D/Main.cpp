@@ -130,6 +130,8 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 
 #include <EGPFile.h>
 
+#include <Retarget.h>
+
 #include "DSUpdateUnderTracking.h"
 #include "PluginElem.h"
 
@@ -624,7 +626,7 @@ static double s_buttonselectend = 0.0;
 static int s_buttonselecttothelast = 0;
 
 static float s_selectscale = 1.0f;
-static int s_sethipstra = 0;
+//static int s_sethipstra = 0;
 static CFrameCopyDlg s_selbonedlg;
 static int s_allmodelbone = 0;
 
@@ -1707,14 +1709,19 @@ static int DestroyConvBoneWnd();
 static int SetConvBoneModel();
 static int SetConvBoneBvh();
 static int SetConvBone( int cbno );
-static int ConvBoneConvert();
 static int SaveRetargetFile();
 static int LoadRetargetFile(WCHAR* srcfilename);
 static int SaveMotionNameListFile();
 //static int LoadMotionNameListFile(WCHAR* srcfilename);
 static int SetJointPair2ConvBoneWnd();
-static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
-static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
+
+
+//static int ConvBoneConvert();//--> RetargetMotion()に改名
+static int RetargetMotion();
+
+//MameBake3DLibのRetarget.h, Retarget.cppへ移動
+//static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
+//static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
 
 static int CalcTargetPos( ChaVector3* dstpos );
@@ -7996,7 +8003,7 @@ int RetargetFile(char* fbxpath)
 			result1 = LoadRetargetFile(wretargetfilename);
 			if (result1 == 0) {
 				int result2;
-				result2 = ConvBoneConvert();
+				result2 = RetargetMotion();
 				if (result2 != 0) {
 					_ASSERT(0);
 				}
@@ -9794,153 +9801,6 @@ void refreshTimeline(OWP_Timeline& timeline){
 }
 
 
-int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate)
-{
-	if (selfflag && !bvhbone){
-		_ASSERT(0);
-		return 1;
-	}
-	if ((selfflag == 0) && !befbvhbone){
-		_ASSERT(0);
-		return 1;
-	}
-
-	if (!s_convbone_model || !s_convbone_bvh || !srcbone){
-		_ASSERT(0);
-		return 1;
-	}
-
-	static ChaMatrix s_firsthipmat;
-	static ChaMatrix s_invfirsthipmat;
-
-	MOTINFO* bvhmi;
-	int bvhmotid;
-
-	if (s_convbone_bvh->GetMotInfoBegin() != s_convbone_bvh->GetMotInfoEnd()) {
-		bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
-		if (bvhmi) {
-			bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		}
-		else {
-			_ASSERT(0);
-			return 1;
-		}
-	}
-	else {
-		_ASSERT(0);
-		return 1;
-	}
-
-
-	CMotionPoint bvhmp;
-	if (bvhbone){
-		CMotionPoint* pbvhmp = 0;
-		pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe);
-		if (pbvhmp){
-			bvhmp = *pbvhmp;
-		}
-		else{
-			_ASSERT(0);
-			return 1;
-		}
-	}
-	else{
-		CMotionPoint* pbvhmp = 0;
-		pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe);
-		if (pbvhmp){
-			bvhmp = *pbvhmp;
-		}
-		else{
-			_ASSERT(0);
-			return 1;
-		}
-	}
-
-
-	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
-	if (modelmi){
-		int modelmotid = modelmi->motid;
-		CMotionPoint modelmp;
-		CMotionPoint* pmodelmp = 0;
-		pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe);
-		if (pmodelmp){
-			modelmp = *pmodelmp;
-		}
-		else{
-			_ASSERT(0);
-			return 1;
-		}
-
-		CMotionPoint modelparmp;
-		CMotionPoint* pmodelparmp = 0;
-		if (srcbone->GetParent()){
-			pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe);
-			if (pmodelparmp){
-				modelparmp = *pmodelparmp;
-			}
-		}
-
-
-		s_curboneno = srcbone->GetBoneNo();
-
-
-		CQuaternion rotq;
-		ChaVector3 traanim;
-
-		if (bvhbone){
-			ChaMatrix curbvhmat;
-			ChaMatrix bvhmat;
-			bvhmat = bvhmp.GetWorldMat();
-
-			ChaMatrix modelinit, invmodelinit;
-			modelinit = modelmp.GetWorldMat();
-			invmodelinit = modelmp.GetInvWorldMat();
-
-			if (srcbone == s_model->GetTopBone()){//モデル側の最初のボーンの処理時
-				s_firsthipmat = bvhmp.GetWorldMat();
-				s_firsthipmat._41 = 0.0f;
-				s_firsthipmat._42 = 0.0f;
-				s_firsthipmat._43 = 0.0f;
-				ChaMatrixInverse(&s_invfirsthipmat, NULL, &s_firsthipmat);
-				s_invfirsthipmat._41 = 0.0f;
-				s_invfirsthipmat._42 = 0.0f;
-				s_invfirsthipmat._43 = 0.0f;
-			}
-
-
-			//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
-			//curbvhmat = bvhbone->GetInvFirstMat() * s_invfirsthipmat * invmodelinit * bvhmat;
-			curbvhmat = s_invfirsthipmat * bvhbone->GetInvFirstMat() * s_firsthipmat * invmodelinit * bvhmat;//初期姿勢の変換にbvhの全体回転s_firsthipmatを考慮する。
-
-			CMotionPoint curbvhrotmp;
-			curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
-			rotq = curbvhrotmp.GetQ();
-
-			traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);
-			if (!bvhbone->GetParent()){
-				ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
-				ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
-				ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
-				traanim -= firstdiff;
-			}
-			traanim = traanim * hrate;
-
-		}
-		else{
-			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-			traanim = ChaVector3(0.0f, 0.0f, 0.0f);
-		}
-
-		if (bvhbone){
-			s_model->FKRotate(1, bvhbone, 1, traanim, srcframe, s_curboneno, rotq);
-		}
-		else{
-			s_model->FKRotate(0, befbvhbone, 0, traanim, srcframe, s_curboneno, rotq);
-		}
-	}
-
-	return 0;
-}
 
 int AddBoneTra2( ChaVector3 diffvec )
 {
@@ -13241,7 +13101,7 @@ int CreateConvBoneWnd()
 	}
 	s_convboneconvert->setButtonListener([](){
 		if (s_model) {
-			ConvBoneConvert();
+			RetargetMotion();
 		}
 	});
 
@@ -13768,86 +13628,30 @@ int LoadRetargetFile(WCHAR* srcfilename)
 }
 
 
-int ConvBoneConvert()
+int RetargetMotion()
 {
-	if (!s_convbone_model || !s_convbone_bvh){
+	//static CModel* s_convbone_model = 0;
+	//static CModel* s_convbone_model_batch = 0;
+	//static CModel* s_convbone_bvh = 0;
+
+	if (!s_convbone_model || !s_convbone_bvh) {
 		return 0;
 	}
 
-	if (s_model != s_convbone_model){
+	if (s_model != s_convbone_model) {
 		::DSMessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
 		return 1;
 	}
 
-	g_underRetargetFlag = true;//!!!!!!!!!!!!
-
-	MOTINFO* bvhmi = s_convbone_bvh->GetMotInfoBegin()->second;
-	if (!bvhmi) {
-		::DSMessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
-		return 1;
-	}
-	//double motleng = bvhmi->frameleng;
-	double motleng = bvhmi->frameleng - 1.0;//2021/10/13
-	AddMotion(0, motleng);
-	InitCurMotion(0, 0);
-
-
-	MOTINFO* modelmi = s_convbone_model->GetCurMotInfo();
-	CBone* modelbone;
-	if (modelmi) {
-		modelbone = s_convbone_model->GetTopBone();
-	}
-	else {
-		::DSMessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
-		return 1;
-	}
-
-	HINFO bvhhi;
-	bvhhi.minh = 1e7;
-	bvhhi.maxh = -1e7;
-	bvhhi.height = 0.0f;
-	s_convbone_bvh->SetFirstFrameBonePos(&bvhhi);
-
-	HINFO modelhi;
-	modelhi.minh = 1e7;
-	modelhi.maxh = -1e7;
-	modelhi.height = 0.0f;
-	s_convbone_model->SetFirstFrameBonePos(&modelhi);
-
-	float hrate;
-	if (bvhhi.height != 0.0f){
-		hrate = modelhi.height / bvhhi.height;
-	}
-	else{
-		hrate = 0.0f;
+	int result = MameBake3DLibRetarget::Retarget(s_convbone_model, s_convbone_bvh, s_matVP, s_convbonemap, AddMotion, InitCurMotion);//Retarget.h, Retarget.cpp
+	if (result) {
 		_ASSERT(0);
-	}
-
-	double frame;
-	for (frame = 0.0; frame < motleng; frame += 1.0){
-		s_sethipstra = 0;
-
-		if (modelbone){
-			s_model->SetMotionFrame(frame);
-			CBone* befbvhbone = s_convbone_bvh->GetTopBone();
-			if (befbvhbone){
-				ConvBoneConvertReq(modelbone, frame, befbvhbone, hrate);
-			}
-		}
-	}
-
-	s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-
-	g_underRetargetFlag = false;//!!!!!!!!!!!!
-
-	//if (!g_retargetbatchflag) {
-	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
-		::DSMessageBox(NULL, L"Finish of convertion.", L"check!!!", MB_OK);
+		return 1;
 	}
 
 	return 0;
-}
 
+}
 void InitMPReq(CBone* curbone, double curframe)
 {
 	if (!curbone){
@@ -13862,42 +13666,6 @@ void InitMPReq(CBone* curbone, double curframe)
 	if (curbone->GetBrother()){
 		InitMPReq(curbone->GetBrother(), curframe);
 	}
-}
-
-
-void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate)
-{
-	if (!modelbone){
-		_ASSERT(0);
-		return;
-	}
-
-	CBone* bvhbone = s_convbonemap[modelbone];
-	if (bvhbone){
-		ConvBoneRotation(1, modelbone, bvhbone, srcframe, befbvhbone, hrate);
-	}
-	else{
-		ConvBoneRotation(0, modelbone, 0, srcframe, befbvhbone, hrate);
-	}
-
-
-	if (modelbone->GetChild()){
-		if (bvhbone){
-			ConvBoneConvertReq(modelbone->GetChild(), srcframe, bvhbone, hrate);
-		}
-		else{
-			ConvBoneConvertReq(modelbone->GetChild(), srcframe, befbvhbone, hrate);
-		}
-	}
-	if (modelbone->GetBrother()){
-		//if (bvhbone){
-		//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone, hrate);
-		//}
-		//else{
-		ConvBoneConvertReq(modelbone->GetBrother(), srcframe, befbvhbone, hrate);
-		//}
-	}
-
 }
 
 

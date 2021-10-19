@@ -1,3 +1,20 @@
+2021/10/19_1
+	ver1.0.0.16に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+
+	VisualStudio2019のビルドセッティングを修正 ４
+		実行速度優先設定
+		libのサイズもsmaller
+
+	リターゲット関数をmain.cppからMameBake3DLibのRetarget.h, Retarget.cppに移動
+
+	
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/18_4
 	ver1.0.0.16に向けての続き
 

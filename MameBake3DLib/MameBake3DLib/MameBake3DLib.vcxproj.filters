@@ -180,6 +180,9 @@
     <ClCompile Include="..\BTMANAGER\BPWorld.cpp">
       <Filter>BulletWorld</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\Retarget.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1227,6 +1230,9 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\MNLFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\Retarget.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

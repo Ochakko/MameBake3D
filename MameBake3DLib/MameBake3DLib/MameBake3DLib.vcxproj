@@ -147,6 +147,7 @@
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <AdditionalOptions>/F 163835 /analyze:stacksize 163835 %(AdditionalOptions)</AdditionalOptions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -203,6 +204,7 @@
     <ClCompile Include="..\CPP\OrgWindow.cpp" />
     <ClCompile Include="..\CPP\polymesh3.cpp" />
     <ClCompile Include="..\CPP\polymesh4.cpp" />
+    <ClCompile Include="..\CPP\Retarget.cpp" />
     <ClCompile Include="..\CPP\RetargetFile.cpp" />
     <ClCompile Include="..\CPP\RigFile.cpp" />
     <ClCompile Include="..\CPP\RigidElem.cpp" />
@@ -562,6 +564,7 @@
     <ClInclude Include="..\INCLUDE\OrgWindow.h" />
     <ClInclude Include="..\INCLUDE\polymesh3.h" />
     <ClInclude Include="..\INCLUDE\polymesh4.h" />
+    <ClInclude Include="..\INCLUDE\Retarget.h" />
     <ClInclude Include="..\INCLUDE\RetargetFile.h" />
     <ClInclude Include="..\INCLUDE\RigFile.h" />
     <ClInclude Include="..\INCLUDE\RigidElem.h" />
