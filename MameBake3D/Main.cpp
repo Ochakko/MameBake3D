@@ -1138,6 +1138,8 @@ typedef struct tag_modelpanel
 	int modelindex;
 }MODELPANEL;
 static MODELPANEL s_modelpanel;
+static bool s_firstmodelpanelpos = true;
+static WindowPos s_modelpanelpos;
 
 typedef struct tag_motionpanel
 {
@@ -1148,6 +1150,8 @@ typedef struct tag_motionpanel
 	int modelindex;
 }MOTIONPANEL;
 static MOTIONPANEL s_motionpanel;
+static bool s_firstmotionpanelpos = true;
+static WindowPos s_motionpanelpos;
 
 
 static map<int, int> s_lineno2boneno;
@@ -2252,6 +2256,13 @@ void InitApp()
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
+
+	s_firstmodelpanelpos = true;
+	s_modelpanelpos = WindowPos(0, 0);;
+	s_firstmotionpanelpos = true;
+	s_motionpanelpos = WindowPos(0, 0);;
+
+
 
 	s_opedelmodelcnt = -1;
 	s_opedelmotioncnt = -1;
@@ -5516,8 +5527,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//return 0;
 				break;
 			case 40012:
+			{
+				bool savedispflag = s_dispobj;
+				s_dispobj = !savedispflag;
 				DispObjPanel();
 				//return 0;
+			}
 				break;
 			case ID_40048:
 				//DispConvBoneWindow();
@@ -5536,12 +5551,20 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//return 0;
 				break;
 			case ID_DISPMODELPANEL:
+			{
+				bool savedispflag = s_dispmodel;
+				s_dispmodel = !savedispflag;
 				DispModelPanel();
 				//return 0;
+			}
 				break;
 			case ID_MOTIONPANEL:
+			{
+				bool savedispflag = s_dispmotion;
+				s_dispmotion = !savedispflag;
 				DispMotionPanel();
 				//return 0;
+			}
 				break;
 			case ID_DISPGROUND:
 				s_dispground = !s_dispground;
@@ -8775,8 +8798,7 @@ CModel* OpenMQOFile()
 
 //	CallF( OnModelMenu( mindex, 0 ), return 0 );
 
-	CallF( CreateModelPanel(), return 0 );
-	CallF(CreateMotionPanel(), return 0);
+	DispModelPanel();
 
 	return newmodel;
 }
@@ -8995,8 +9017,6 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	}
 
 
-	CallF( CreateModelPanel(), return 0 );
-
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
@@ -9129,7 +9149,7 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 	s_model->SetMotionSpeed(g_dspeed);
 
-	CallF(CreateMotionPanel(), return 0);
+	DispModelPanel();
 
 
 	//OnAnimMenuで呼ぶ
@@ -9995,14 +10015,18 @@ int DispToolWindow()
 }
 int DispObjPanel()
 {
-	if( !s_layerWnd || !(s_layerWnd->getHWnd())){
-		return 0;
-	}
+	//#########################
+	// not toggle : 2021/10/19
+	//#########################
+
 
 	bool savedispobj = s_dispobj;
 	CreateLayerWnd();
+	if (!s_layerWnd || !(s_layerWnd->getHWnd())) {
+		return 0;
+	}
 
-	if(savedispobj){
+	if(!savedispobj){
 		s_layerWnd->setListenMouse(false);
 		s_layerWnd->setVisible( false );
 		s_dispobj = false;
@@ -10011,25 +10035,27 @@ int DispObjPanel()
 		s_layerWnd->setVisible( true );
 		s_dispobj = true;
 
-		RECT dlgrect;
-		GetWindowRect(s_layerWnd->getHWnd(), &dlgrect);
-		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		//RECT dlgrect;
+		//GetWindowRect(s_layerWnd->getHWnd(), &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 	}
 
 	return 0;
 }
 int DispModelPanel()
 {
-	if( !s_modelpanel.panel || !(s_modelpanel.panel->getHWnd())){
+	//#########################
+	// not toggle : 2021/10/19
+	//#########################
+
+
+	bool savedispmodel = s_dispmodel;
+	CreateModelPanel();
+	if (!s_modelpanel.panel || !(s_modelpanel.panel->getHWnd())) {
 		return 0;
 	}
 
-	bool savedispmodel = s_dispmodel;
-	//if (!(s_modelpanel.panel)) {//このif文を入れるとretarget batchの後に表示されなくなる
-		CreateModelPanel();
-	//}
-
-	if(savedispmodel){
+	if(!savedispmodel){
 		s_modelpanel.panel->setListenMouse(false);
 		s_modelpanel.panel->setVisible( false );
 		s_dispmodel = false;
@@ -10038,26 +10064,33 @@ int DispModelPanel()
 		s_modelpanel.panel->setVisible( true );
 		s_dispmodel = true;
 
-		RECT dlgrect;
-		GetWindowRect(s_modelpanel.panel->getHWnd(), &dlgrect);
-		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		//RECT dlgrect;
+		//GetWindowRect(s_modelpanel.panel->getHWnd(), &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 	}
+
+
+	DispMotionPanel();//!!!!!!!!!!!!!
+	DispObjPanel();//!!!!!!!!!!!!!!!!
+
 
 	return 0;
 }
 
 int DispMotionPanel()
 {
+	//#########################
+	// not toggle : 2021/10/19
+	//#########################
+
+
+	bool savedispmotion = s_dispmotion;
+	CreateMotionPanel();
 	if (!s_motionpanel.panel || !(s_motionpanel.panel->getHWnd())) {
 		return 0;
 	}
 
-	bool savedispmotion = s_dispmotion;
-	//if (!(s_motionpanel.panel)) {
-		CreateMotionPanel();
-	//}
-
-	if (savedispmotion) {
+	if (!savedispmotion) {
 		s_motionpanel.panel->setListenMouse(false);
 		s_motionpanel.panel->setVisible(false);
 		s_dispmotion = false;
@@ -10067,9 +10100,9 @@ int DispMotionPanel()
 		s_motionpanel.panel->setVisible(true);
 		s_dispmotion = true;
 
-		RECT dlgrect;
-		GetWindowRect(s_motionpanel.panel->getHWnd(), &dlgrect);
-		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		//RECT dlgrect;
+		//GetWindowRect(s_motionpanel.panel->getHWnd(), &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 	}
 
 	return 0;
@@ -10319,12 +10352,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 
 	//refreshMotionPanel();
-	int savedispflag;
-	savedispflag = s_dispmotion;
-	CreateMotionPanel();
-	if (savedispflag == 1) {
-		DispMotionPanel();
-	}
+	DispMotionPanel();
 
 	SetMainWindowTitle();
 
@@ -10380,7 +10408,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
-		CreateMotionPanel();
+		DispMotionPanel();
 
 		SetMainWindowTitle();
 
@@ -10397,7 +10425,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
-		CreateMotionPanel();
+		DispMotionPanel();
 
 		SetMainWindowTitle();
 
@@ -10416,6 +10444,10 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, L"<No Model Name>");
 	}
 
+
+
+
+
 	if( cMdlSets > 0 ){
 		CheckMenuItem( s_mainmenu, 61000 + selindex, MF_CHECKED );
 
@@ -10426,11 +10458,13 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			s_lineno2boneno = s_modelindex[selindex].lineno2boneno;
 			s_boneno2lineno = s_modelindex[selindex].boneno2lineno;
 
+			refreshModelPanel();
+
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
 	}
 	else {
-		//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+		//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
 		InitTimelineSelection();
 	}
 
@@ -10487,14 +10521,6 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 		}
 	}
 
-
-	refreshModelPanel();
-
-	bool savedispflag = s_dispmotion;
-	CreateMotionPanel();
-	if (savedispflag) {
-		DispMotionPanel();
-	}
 
 	g_SampleUI.GetSlider( IDC_SPEED )->SetValue( (int)( g_dspeed * 100.0f ) );
 	WCHAR sz[100];
@@ -10689,10 +10715,7 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 		OnAnimMenu( true, 0 );
 	}
 
-	CreateMotionPanel();
-	if (ondelbutton) {
-		DispMotionPanel();
-	}
+	DispMotionPanel();
 
 	s_underdelmotion = false;
 
@@ -10765,16 +10788,7 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 
 	OnModelMenu( true, 0, 0 );
 
-	CreateModelPanel();
-	if (ondelbutton) {
-		DispModelPanel();
-	}
-
-	CreateMotionPanel();
-	//if (ondelbutton) {
-	//	DispMotionPanel();
-	//}
-
+	DispModelPanel();
 
 	if (!s_model) {
 		OrgWindowListenMouse(false);
@@ -10825,8 +10839,7 @@ int OnDelAllModel()
 
 	OnModelMenu( true, -1, 0 );
 
-	CreateModelPanel();
-	CreateMotionPanel();
+	DispModelPanel();
 
 	return 0;
 }
@@ -10898,10 +10911,10 @@ int refreshModelPanel()
 	}
 
 	if( s_modelpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0) ){
-		if( s_curmodelmenuindex >= 0 ){
+		//if( s_curmodelmenuindex >= 0 ){
 			s_modelpanel.modelindex = s_curmodelmenuindex;
 			s_modelpanel.radiobutton->setSelectIndex( s_modelpanel.modelindex );
-		}
+		//}
 	}
 
 	return 0;
@@ -12445,22 +12458,7 @@ void ActivatePanel( int state )
 		if( s_dispobj && s_layerWnd){
 			s_layerWnd->setVisible( true );
 		}
-		if( s_dispmodel){
-			if (!(s_modelpanel.panel)) {
-				CreateModelPanel();
-			}
-			if (s_modelpanel.panel) {
-				s_modelpanel.panel->setVisible(true);
-			}
-		}
-		if (s_dispmotion) {
-			if (!(s_motionpanel.panel)) {
-				CreateMotionPanel();
-			}
-			if (s_motionpanel.panel) {
-				s_motionpanel.panel->setVisible(true);
-			}
-		}
+		
 	}else if( state == 0 ){
 		if (s_timelineWnd) {
 			s_timelineWnd->setVisible(false);
@@ -12469,27 +12467,13 @@ void ActivatePanel( int state )
 			s_toolWnd->setVisible(false);
 		}
 
-
 		if (s_layerWnd) {
 			s_layerWnd->setVisible(false);
 		}
 		s_dispobj = false;
-		if( s_modelpanel.panel ){
-			s_modelpanel.panel->setVisible( false );
-		}
-		else {
-			CreateModelPanel();
-		}
-
-		s_dispmodel = false;
-		if (s_motionpanel.panel) {
-			s_motionpanel.panel->setVisible(false);
-		}
-		else {
-			CreateMotionPanel();
-		}
-		s_dispmotion = false;
 	}
+
+	DispModelPanel();
 }
 
 
@@ -12536,6 +12520,21 @@ int DestroyModelPanel()
 
 int CreateModelPanel()
 {
+
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+		return 0;
+	}
+
+	RECT panelrect;
+	if (s_modelpanel.panel && IsWindow(s_modelpanel.panel->getHWnd())) {
+		GetWindowRect(s_modelpanel.panel->getHWnd(), &panelrect);
+		s_modelpanelpos = WindowPos(panelrect.left, panelrect.top);
+	}
+	else {
+		s_modelpanelpos = WindowPos(200, 600);
+	}
+
+
 	DestroyModelPanel();
 
 	int modelnum = (int)s_modelindex.size();
@@ -12678,14 +12677,20 @@ int CreateModelPanel()
 	} );
 
 
-	RECT wnd3drect;
-	if (s_mainhwnd) {
-		GetWindowRect(s_mainhwnd, &wnd3drect);
-		s_modelpanel.panel->setPos(WindowPos(wnd3drect.left + 100, wnd3drect.top + 500));
+	if (s_firstmodelpanelpos) {
+		RECT wnd3drect;
+		if (s_mainhwnd) {
+			GetWindowRect(s_mainhwnd, &wnd3drect);
+			s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
+		}
+		else {
+			s_modelpanelpos = WindowPos(200, 600);
+		}
+		s_firstmodelpanelpos = false;
 	}
-	else {
-		s_modelpanel.panel->setPos(WindowPos(200, 600));
-	}
+	s_modelpanel.panel->setPos(s_modelpanelpos);
+
+
 	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
 	s_modelpanel.panel->setSize(WindowSize(400, 460));//880
 	s_modelpanel.panel->setVisible(false);
@@ -12728,6 +12733,22 @@ int DestroyMotionPanel()
 
 int CreateMotionPanel()
 {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+		return 0;
+	}
+
+
+	RECT panelrect;
+	if (s_motionpanel.panel && IsWindow(s_motionpanel.panel->getHWnd())) {
+		GetWindowRect(s_motionpanel.panel->getHWnd(), &panelrect);
+		s_motionpanelpos = WindowPos(panelrect.left, panelrect.top);
+	}
+	else {
+		s_motionpanelpos = WindowPos(200, 600);
+	}
+
+
+
 	DestroyMotionPanel();
 
 	int modelnum = (int)s_modelindex.size();
@@ -12866,14 +12887,19 @@ int CreateMotionPanel()
 	});
 
 
-	RECT wnd3drect;
-	if (s_mainhwnd) {
-		GetWindowRect(s_mainhwnd, &wnd3drect);
-		s_motionpanel.panel->setPos(WindowPos(wnd3drect.left + 500, wnd3drect.top + 500));
+	if (s_firstmotionpanelpos) {
+		RECT wnd3drect;
+		if (s_mainhwnd) {
+			GetWindowRect(s_mainhwnd, &wnd3drect);
+			s_motionpanelpos = WindowPos(wnd3drect.left + 500, wnd3drect.top + 500);
+		}
+		else {
+			s_motionpanelpos = WindowPos(600, 600);
+		}
+		s_firstmotionpanelpos = false;
 	}
-	else {
-		s_motionpanel.panel->setPos(WindowPos(600, 600));
-	}
+	s_motionpanel.panel->setPos(s_motionpanelpos);
+
 	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
 	s_motionpanel.panel->setSize(WindowSize(400, 460));//880
 	s_motionpanel.panel->setVisible(false);
@@ -20838,6 +20864,10 @@ int CreateToolWnd()
 
 int CreateLayerWnd()
 {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+		return 0;
+	}
+
 	if (s_layerWnd) {
 		_ASSERT(0);
 		return 0;
@@ -23021,8 +23051,12 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//return 0;
 				break;
 			case 40012:
+			{
+				bool savedispflag = s_dispobj;
+				s_dispobj = !savedispflag;
 				DispObjPanel();
 				//return 0;
+			}
 				break;
 			case ID_40048:
 				//DispConvBoneWindow();
@@ -23039,12 +23073,20 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//return 0;
 				break;
 			case ID_DISPMODELPANEL:
+			{
+				bool savedispflag = s_dispmodel;
+				s_dispmodel = !savedispflag;
 				DispModelPanel();
 				//return 0;
+			}
 				break;
 			case ID_MOTIONPANEL:
+			{
+				bool savedispflag = s_dispmotion;
+				s_dispmotion = !savedispflag;
 				DispMotionPanel();
 				//return 0;
+			}
 				break;
 			case ID_DISPGROUND:
 				s_dispground = !s_dispground;
@@ -23190,7 +23232,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.15 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.16 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -30500,7 +30542,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.15 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.16 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

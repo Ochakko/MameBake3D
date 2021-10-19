@@ -1,3 +1,20 @@
+2021/10/19_2
+	ver1.0.0.16に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+
+
+	ModelPanel, MotionPanelの表示非表示に関する不具合修正
+
+	ModelPanel, MotionPanelの起動後の表示位置を保持するように
+
+
+	
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/19_1
 	ver1.0.0.16に向けての続き
 
