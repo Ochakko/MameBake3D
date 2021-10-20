@@ -355,26 +355,28 @@ namespace OrgWinGUI{
 			}
 		}
 
-		//時間軸スクロールバー
-		{
-			int x0 = pos.x + MARGIN + LABEL_SIZE_X;
-			int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
-			int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
-			int y1 = y0 + SCROLL_BAR_WIDTH;
+		////時間軸スクロールバー
+		//{
+		//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
+		//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
+		//	int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
+		//	int y1 = y0 + SCROLL_BAR_WIDTH;
 
-			//枠
-			hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-			Rectangle(hdcM->hDC, x0, y0, x1, y1);
+		//	//枠
+		//	//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+		//	hdcM->setPenAndBrush(RGB(255, 255, 255), NULL);
+		//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-			//中身
-			double showTimeLength = ((double)x1 - x0 - 3) / timeSize;
-			double barSize = ((double)x1 - x0 - 4)*showTimeLength / maxTime;
-			double barStart = ((double)x1 - x0 - 4)*showPos_time / maxTime;
-			if (showTimeLength<maxTime) {
-				hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
-				Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
-			}
-		}
+		//	//中身
+		//	double showTimeLength = ((double)x1 - x0 - 3) / timeSize;
+		//	double barSize = ((double)x1 - x0 - 4)*showTimeLength / maxTime;
+		//	double barStart = ((double)x1 - x0 - 4)*showPos_time / maxTime;
+		//	if (showTimeLength<maxTime) {
+		//		//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+		//		hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
+		//		Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
+		//	}
+		//}
 
 		//ラベルスクロールバー
 		{
@@ -384,7 +386,8 @@ namespace OrgWinGUI{
 			int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
 
 			//枠
-			hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+			//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 			Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
 			//中身
@@ -392,7 +395,8 @@ namespace OrgWinGUI{
 				int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
 				int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
 				if (showLineNum < (int)lineData.size()) {
-					hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					hdcM->setPenAndBrush(NULL, RGB(255,255, 255));
 					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 				}
 			}
@@ -566,7 +570,8 @@ namespace OrgWinGUI{
 		//	int y1 = y0 + SCROLL_BAR_WIDTH;
 
 		//	//枠
-		//	hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+		//	//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+		//	hdcM->setPenAndBrush(RGB(255, 255, 255), NULL);
 		//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
 		//	//中身
@@ -574,7 +579,8 @@ namespace OrgWinGUI{
 		//	double barSize = ((double)(x1 - x0 - 4))*showTimeLength / maxTime;
 		//	double barStart = ((double)(x1 - x0 - 4))*showPos_time / maxTime;
 		//	if (showTimeLength<maxTime) {
-		//		hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+		//		//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+		//		hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 		//		Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
 		//	}
 		//}

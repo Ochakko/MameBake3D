@@ -5247,7 +5247,8 @@ void s_dummyfunc()
 				int y0= posY;
 				int y1= posY+parent->LABEL_SIZE_Y;
 				if( highLight ){
-					hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
+					//hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
+					hdcM->setPenAndBrush(NULL, RGB(255, 128, 0));
 					Rectangle(hdcM->hDC,x0,y0,x1,y1);
 				}
 
@@ -8410,7 +8411,8 @@ void s_dummyfunc()
 				int x2= x0+parent->LABEL_SIZE_Y-1;
 				int x3= x2+parent->LABEL_SIZE_Y-1;
 				if( highLight ){
-					hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
+					//hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
+					hdcM->setPenAndBrush(NULL, RGB(255, 128, 0));
 					Rectangle(hdcM->hDC,x3,y0,x1,y1);
 				}
 
@@ -8647,14 +8649,16 @@ void s_dummyfunc()
 				int y1 = pos.y + size.y;
 
 				//òg
-				hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+				//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+				hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 				Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
 				//íÜêg
 				int barSize = (y1 - y0 - 4)*showLineNum / lineDatasize;
 				int barStart = (y1 - y0 - 4)*showPosLine / lineDatasize;
 				if (showLineNum < lineDatasize){
-					hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
 					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 				}
 			}

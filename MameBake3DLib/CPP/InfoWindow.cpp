@@ -284,7 +284,7 @@ void CInfoWindow::OnPaint()
 		m_hdcM->setPenAndBrush(RGB(0, 0, 0), RGB(0, 0, 0));
 		Rectangle(m_hdcM->hDC, 0, 0, clirect.right, clirect.bottom);
 		m_hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
-		SetTextColor(m_hdcM->hDC, RGB(255, 255, 255));
+		SetTextColor(m_hdcM->hDC, RGB(240, 240, 240));
 
 		if (m_stroutput) {
 			//TextOut(m_hdcM->hDC, 10, 2, outchar, (int)wcslen(outchar));

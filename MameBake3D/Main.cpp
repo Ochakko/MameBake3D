@@ -24545,7 +24545,6 @@ void OnDSUpdate()
 	DSCrossButton(firstctrlselect);
 
 
-
 	//R1ボタン：３Dウインドウ選択、カレントボーン位置へマウスジャンプ
 	DSR1ButtonSelectCurrentBone();
 	DSR1ButtonSelectMotion();
@@ -25151,13 +25150,10 @@ void SelectNextWindow(int nextwndid)
 			s_currenthwnd = hwnds[s_currentwndid];
 		}
 
-
 		bool firstctrlselect = true;
 		DSCrossButton(firstctrlselect);
 
 		GUISetVisible_Sel3D();//3DWindowを選択しているかどうかのマークを右上隅に表示
-
-
 
 	}
 	//OutputToInfoWnd(L"Button Down %d", buttonL1);
@@ -26029,6 +26025,13 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							DXUT_CONTROL_SCROLLBAR,
 						};
 						*/
+
+/* 
+//#####################################################################################################
+//プレート上で〇ボタンを押したときにマウスがコントロールへ飛ぶ。プレート上にマウスが残った方が便利だったのでコメントアウト
+//#####################################################################################################
+*
+* 
 						if (chkflag && changeflag && (s_curboneno >= 0)) {
 							if ((curdsutguikind >= SPGUISW_SPRITEFK) && (curdsutguikind <= SPGUISW_PHYSICSIK)) {
 
@@ -26271,7 +26274,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							//}
 							//ChangeCurrentBone();
 						}
-
+*/
 					}
 				}
 			}
