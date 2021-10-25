@@ -365,6 +365,7 @@ public:
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
+	int SetWorldMatFromEulAndScale(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
@@ -1072,17 +1073,23 @@ public: //accesser
 
 public:
 	FbxCluster::ELinkMode lClusterMode[MAXMOTIONNUM + 1];
+	FbxNode* pAssociateModel[MAXMOTIONNUM + 1];
+	FbxAMatrix lAssociateGlobalInitPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lAssociateGeometry[MAXMOTIONNUM + 1];
+	FbxAMatrix lAssociateGlobalCurrentPosition[MAXMOTIONNUM + 1];
+
 	FbxAMatrix lReferenceGlobalInitPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lReferenceGlobalCurrentPosition[MAXMOTIONNUM + 1];
-	FbxAMatrix lAssociateGlobalInitPosition[MAXMOTIONNUM + 1];
-	FbxAMatrix lAssociateGlobalCurrentPosition[MAXMOTIONNUM + 1];
-	FbxAMatrix lClusterGlobalInitPosition[MAXMOTIONNUM + 1];
-	//FbxAMatrix lClusterGlobalCurrentPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lReferenceGeometry[MAXMOTIONNUM + 1];
-	FbxAMatrix lAssociateGeometry[MAXMOTIONNUM + 1];
+
+	FbxNode* pClusterLink[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterGeometry[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterGlobalInitPosition[MAXMOTIONNUM + 1];
+	FbxAMatrix lClusterGlobalCurrentPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterRelativeInitPosition[MAXMOTIONNUM + 1];
 	FbxAMatrix lClusterRelativeCurrentPositionInverse[MAXMOTIONNUM + 1];
+
+	FbxAMatrix lGlobalPosition[MAXMOTIONNUM + 1];
 
 	std::vector<FbxAMatrix> vecLocalTransform;
 	std::vector<FbxAMatrix> veclClusterGlobalCurrentPosition;

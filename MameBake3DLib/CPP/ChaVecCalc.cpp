@@ -3592,6 +3592,7 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat)
 
 
 
+
 #ifdef CONVD3DX11
 DirectX::XMFLOAT2 ChaVector2::D3DX()
 {
@@ -3766,5 +3767,7 @@ void N3SM::InitParams()
 	smfacenum = 0;
 	ppsmface = 0;
 }
+
+
 
 

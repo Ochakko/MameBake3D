@@ -98,7 +98,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <AdditionalOptions>/F 163835 /analyze:stacksize 163835 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/F 168956 /analyze:stacksize 168956 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
@@ -146,7 +146,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <AdditionalOptions>/F 163835 /analyze:stacksize 163835 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/F 168956 /analyze:stacksize 168956 %(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
