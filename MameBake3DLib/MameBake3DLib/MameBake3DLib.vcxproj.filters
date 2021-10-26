@@ -168,9 +168,6 @@
     <ClCompile Include="..\BTSRC\clew\clew.c">
       <Filter>BulletSrcHeader</Filter>
     </ClCompile>
-    <ClCompile Include="..\CPP\EGPFile.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
     <ClCompile Include="..\CPP\RetargetFile.cpp">
       <Filter>disp4</Filter>
     </ClCompile>

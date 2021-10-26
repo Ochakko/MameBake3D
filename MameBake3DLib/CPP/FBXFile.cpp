@@ -3197,42 +3197,17 @@ FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScen
 
 		//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
 
-		if (usecache) {
-			if (curbone) {
-				lGlobalPosition = curbone->GetlClusterGlobalCurrentPosition(srcframe);//!!!!!!!!!!!!!!!!!!!!!!! use cache
-			}
-			else {
-				_ASSERT(0);
-				FbxAnimEvaluator* animevaluator = pScene->GetAnimationEvaluator();
-				if (animevaluator) {
-					//animevaluator->Flush(pNode);
-					//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot);
-					lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, true, true);
-					//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, false, false);
-				}
-				else {
-					lGlobalPosition.SetIdentity();
-				}
-			}
+		FbxAnimEvaluator* animevaluator = pScene->GetAnimationEvaluator();
+		if (animevaluator) {
+			//animevaluator->Flush(pNode);
+			//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot);
+			lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, true, true);
+			//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, false, false);
 		}
 		else {
-			FbxAnimEvaluator* animevaluator = pScene->GetAnimationEvaluator();
-			if (animevaluator) {
-				//animevaluator->Flush(pNode);
-				//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot);
-				lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, true, true);
-				//lGlobalPosition = animevaluator->GetNodeGlobalTransform(pNode, pTime, fbxsdk::FbxNode::eDestinationPivot, false, false);
-			}
-			else {
-				lGlobalPosition.SetIdentity();
-			}
+			lGlobalPosition.SetIdentity();
 		}
 
-	}
-
-
-	if (usecache == false) {
-		curbone->veclClusterGlobalCurrentPosition[srcframe] = lGlobalPosition;//VS‚Ìpush_back‚Í’x‚¢‚ç‚µ‚¢‚Ì‚Å
 	}
 
 	return lGlobalPosition;

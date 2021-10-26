@@ -182,7 +182,6 @@
     <ClCompile Include="..\CPP\dbg.cpp" />
     <ClCompile Include="..\CPP\DispObj.cpp" />
     <ClCompile Include="..\CPP\EditRange.cpp" />
-    <ClCompile Include="..\CPP\EGPFile.cpp" />
     <ClCompile Include="..\CPP\EngName.cpp" />
     <ClCompile Include="..\CPP\ExtLine.cpp" />
     <ClCompile Include="..\CPP\FBXBone.cpp" />

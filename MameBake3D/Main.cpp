@@ -2477,7 +2477,6 @@ void InitApp()
 		s_curaimbarno = -1;
 	}
 
-	CreateEGPBuf();
 
 	CRigidElem::InitRigidElems();
 	CBone::InitBones();
@@ -3607,7 +3606,6 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 
-	DestroyEGPBuf();
 
 	s_oprigflag = 0;
 	s_customrigbone = 0;
@@ -21546,10 +21544,12 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				//int isfirstbone = 0;
 				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO);
 
+				ChaVector3 traanim = curbone->CalcLocalTraAnim(srcmotid, srcframe);
+
 				int inittraflag1 = 0;
 				int setchildflag1 = 1;
 				int initscaleflag1 = 1;//!!!!!!!
-				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);
 			}
 		}
 	}

@@ -253,9 +253,6 @@ int CBone::InitParams()
 	m_curmp.InitParams();
 	m_axisq.InitParams();
 
-	vecLocalTransform.clear();
-	veclClusterGlobalCurrentPosition.clear();
-
 	m_motionkey.clear();
 	m_motionkey[0] = 0;
 
@@ -345,30 +342,6 @@ int CBone::InitParams()
 	m_firstgetflag = 0;//GetCurrentZeroFrameMat—p
 	ChaMatrixIdentity(&m_firstgetmatrix);//GetCurrentZeroFrameMat—p
 	ChaMatrixIdentity(&m_invfirstgetmatrix);//GetCurrentZeroFrameMat—p
-
-	int motcnt;
-	for (motcnt = 0; motcnt < (MAXMOTIONNUM + 1); motcnt++) {
-		lClusterMode[motcnt] = FbxCluster::ELinkMode::eNormalize;
-		pAssociateModel[motcnt] = 0;
-		lAssociateGlobalInitPosition[motcnt].SetIdentity();
-		lAssociateGeometry[motcnt].SetIdentity();
-		lAssociateGlobalCurrentPosition[motcnt].SetIdentity();
-
-		lReferenceGlobalInitPosition[motcnt].SetIdentity();
-		lReferenceGlobalCurrentPosition[motcnt].SetIdentity();
-		lReferenceGeometry[motcnt].SetIdentity();
-
-		pClusterLink[motcnt] = 0;
-		lClusterGeometry[motcnt].SetIdentity();
-		lClusterGlobalInitPosition[motcnt].SetIdentity();
-		lClusterGlobalCurrentPosition[motcnt].SetIdentity();
-		lClusterRelativeInitPosition[motcnt].SetIdentity();
-		lClusterRelativeCurrentPositionInverse[motcnt].SetIdentity();
-
-		lGlobalPosition[motcnt].SetIdentity();
-
-	}
-	veclClusterGlobalCurrentPosition.clear();
 
 	return 0;
 }
@@ -490,8 +463,6 @@ int CBone::DestroyObjs()
 
 	m_rigidelemname.clear();
 
-	vecLocalTransform.clear();
-	veclClusterGlobalCurrentPosition.clear();
 
 
 	return 0;

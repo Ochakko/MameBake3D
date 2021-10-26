@@ -3760,15 +3760,6 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 	if( curbone && !curbone->GetGetAnimFlag() && pNode){
 		curbone->SetGetAnimFlag( 1 );
 
-		if (m_useegpfile == false) {
-			//curbone->veclClusterGlobalCurrentPosition.clear();//!!!!!!!!!!!!!!!!!! animleng - 1個の vector
-			//curbone->veclClusterGlobalCurrentPosition.resize(animleng);//!!!!!!!!!!!!!!!
-			size_t veccursize = curbone->veclClusterGlobalCurrentPosition.size();
-			if (veccursize < (size_t)animleng) {
-				curbone->veclClusterGlobalCurrentPosition.resize((size_t)animleng);//!!!!!!!!!!!!
-			}
-		}
-
 		FbxTime fbxtime;
 		fbxtime.SetSecondDouble(0.0);
 		FbxTime difftime;
@@ -3826,7 +3817,7 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			ChaMatrix chatramat;
 			ChaMatrixIdentity(&chatramat);
 			ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
-
+			
 			//##############
 			//calc scalling
 			//##############
@@ -3839,6 +3830,34 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			//##############
 			ChaMatrix localmat;
 			localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+			//localmat = chatramat * befrotmat * chascalemat * charotmat * aftrotmat;//！！！　違う　！！！
+
+
+				//#########################################################
+				//説明しよう
+				//Fbxのローカル姿勢表現とMameBake3Dのローカル姿勢表現の互換について
+				//#########################################################
+
+				//fbxはひとつのボーンの姿勢を T * S * Rであらわす
+				//２つのボーンを表現すると　T1 S1 R1  T2 S2 R2 これは実は省略形というか効率化した形式
+
+				//本ソフトでは省略しない表現で計算していて　-T0 S0 R0 T0 Tanim_0  -Ta Sa Ra Ta Tanim_a  -Tb Sb Rb Tb Tanim_b　と解釈する
+
+				//この２つの表現形式は互換である。
+
+				//省略形を表現しなおすと　　...(T0 Tanim_a -Ta) Sa Ra   (Ta Tanim_b -Tb) Sb Rb    (Tb Tanim_c -Tc) ....
+				// LclTranslation = T0 + Tanim_a - Ta = parentjointpos + Tanim_a - jointpos (式１)
+				// 
+				//求めたいのは省略しない形式におけるTanim_aであり　式１より　Tanim_a = LclTranslation - jointpos + parentjointpos (式２)となる
+				//
+				//-Ta Sa Ra Ta Tanim_a のTanim_aが式２により求まった。
+				//この関数内では　-Ta = befrotmat, Sa = chascalemat, Ra = charotmat, Ta = aftrotmat, Tanim_a = chatramat.
+				
+
+				//ここで実はものすごいトリッキーなことが起こった？？？？？
+				//SRの前にTanimとSRの後に掛けるTanimとは同じ記号で書いたが同じとは限らない。そのようになるように(TanimにSRを施してTanim_aになるように)計算しているのであろう.たぶん.
+				//##### ここまで説明してよく分からないということがわかった。 (試行錯誤の苦行によりなんとなく出来たのである) #####	
+				
 
 			//#############
 			//set localmat
