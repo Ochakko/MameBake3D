@@ -3612,6 +3612,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		//FbxPose* pPose = GetBindPose();
 		FbxPose* pPose = NULL;
 
+
+		//pNode->EvaluateGlobalPositionは時間がかかる。キャッシュファイルが適性ならばキャッシュファイルから読み取る
 		m_useegpfile = false;
 		if (strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) {
 			//if fbx file rev. 2.3 and all of fbxcomment(include date) is match, load fbx anim cache file.  
@@ -3619,8 +3621,21 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			m_useegpfile = LoadEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
 		}
 
+		//MeshのclusterのAnim情報を取得
 		CreateMeshAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));
+
+		//sleketonのAnim情報とMeshのcluster情報から姿勢を計算する。ただしスケールは合っていない.
 		CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));
+
+
+		//endjointやNULLにもmotionpoint作成. スケール初期化スケール補正よりも前にモーションポイントを作成しておく
+		if (motioncachebatchflag == FALSE) {
+			FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);
+			if (animno == 0) {
+				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
+			}
+			////(this->m_tlFunc)( curmotid );
+		}
 
 		//scaleを初期化
 		double curframe;
@@ -3641,6 +3656,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 
 
+		//pNode->EvaluateGlobalPositionは時間がかかる。次回の読み込みのためにキャッシュファイルに保存しておく。
 		if ((strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) && !m_useegpfile) {
 			//if fbx file rev. 2.3, save fbx anim cache file.  
 			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
@@ -3650,15 +3666,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		
 		//motioncreatebatchflagが立っていた場合ここまで
 
-
-
 		if (motioncachebatchflag == FALSE) {
-			FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);
-			if (animno == 0) {
-				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
-			}
-			////(this->m_tlFunc)( curmotid );
-
 			SetCurrentMotion(curmotid);
 		}
 	}

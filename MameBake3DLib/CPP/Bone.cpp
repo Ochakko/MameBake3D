@@ -3635,7 +3635,7 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
 	if (!curmp) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 1;
 	}
 	CMotionPoint* parmp = 0;
@@ -3659,7 +3659,7 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 			axismat = curre->GetBindcapsulemat();
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);
 			ChaMatrixIdentity(&axismat);
 		}
 		axisq.RotationMatrix(axismat);
@@ -3794,7 +3794,7 @@ int CBone::SetWorldMatFromEulAndScale(int inittraflag, int setchildflag, ChaVect
 			axismat = curre->GetBindcapsulemat();
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);
 			ChaMatrixIdentity(&axismat);
 		}
 		axisq.RotationMatrix(axismat);

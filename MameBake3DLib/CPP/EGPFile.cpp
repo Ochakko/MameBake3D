@@ -70,7 +70,8 @@ typedef struct tag_egpelem
 {
 	int jointindex;
 	int frameno;
-	FbxAMatrix egp;
+	//FbxAMatrix egp;//ver0.0.0.1
+	ChaMatrix egp;//ver0.0.0.2 : 2021/10/26
 }EGPELEM;
 
 //about 800MB
@@ -80,6 +81,35 @@ static CModel* s_model = 0;
 
 static int WriteEGPFileHeader(EGPHEADER* dstegph, HANDLE file, CModel* srcmodel, char* fbxdate, int srcanimno);
 static bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pmodel, char* fbxdate, int srcanimno);
+static void ChaMatrix2FbxAMatrix(FbxAMatrix& retmat, ChaMatrix& srcmat);
+static void FbxAMatrix2ChaMatrix(ChaMatrix& retmat, FbxAMatrix srcmat);
+
+
+void ChaMatrix2FbxAMatrix(FbxAMatrix& retmat, ChaMatrix& srcmat)
+{
+	retmat.SetIdentity();
+	retmat.SetRow(0, FbxVector4(srcmat._11, srcmat._12, srcmat._13, srcmat._14));
+	retmat.SetRow(1, FbxVector4(srcmat._21, srcmat._22, srcmat._23, srcmat._24));
+	retmat.SetRow(2, FbxVector4(srcmat._31, srcmat._32, srcmat._33, srcmat._34));
+	retmat.SetRow(3, FbxVector4(srcmat._41, srcmat._42, srcmat._43, srcmat._44));
+	//retmat.SetRow(0, FbxVector4(srcmat._11, srcmat._21, srcmat._31, srcmat._41));
+	//retmat.SetRow(1, FbxVector4(srcmat._12, srcmat._22, srcmat._32, srcmat._42));
+	//retmat.SetRow(2, FbxVector4(srcmat._13, srcmat._23, srcmat._33, srcmat._43));
+	//retmat.SetRow(3, FbxVector4(srcmat._14, srcmat._24, srcmat._34, srcmat._44));
+
+}
+
+void FbxAMatrix2ChaMatrix(ChaMatrix& retmat, FbxAMatrix srcmat)
+{
+	ChaMatrixIdentity(&retmat);
+	retmat = ChaMatrix(srcmat.Get(0, 0), srcmat.Get(0, 1), srcmat.Get(0, 2), srcmat.Get(0, 3),
+		srcmat.Get(1, 0), srcmat.Get(1, 1), srcmat.Get(1, 2), srcmat.Get(1, 3),
+		srcmat.Get(2, 0), srcmat.Get(2, 1), srcmat.Get(2, 2), srcmat.Get(2, 3),
+		srcmat.Get(3, 0), srcmat.Get(3, 1), srcmat.Get(3, 2), srcmat.Get(3, 3)
+	);
+}
+
+
 
 int CreateEGPBuf()
 {
@@ -118,6 +148,10 @@ int WriteEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		_ASSERT(0);
 		return 1;
 	}
+
+	
+	SetEndOfFile(hfile);//すでにファイルが存在していた場合にまずは０サイズにする
+
 
 
 	EGPHEADER egpheader;
@@ -159,8 +193,10 @@ int WriteEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 		}
 
 		for (frameno = 0; frameno < egpheader.framenum; frameno++) {
-			FbxAMatrix curegp;
-			curegp = curbone->GetlClusterGlobalCurrentPosition(frameno);
+			FbxAMatrix fbxegp;
+			fbxegp = curbone->GetlClusterGlobalCurrentPosition(frameno);
+			ChaMatrix curegp;
+			FbxAMatrix2ChaMatrix(curegp, fbxegp);
 
 			//typedef struct tag_egpelem
 			//{
@@ -182,6 +218,10 @@ int WriteEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 			}
 		}
 	}
+
+	FlushFileBuffers(hfile);
+	SetEndOfFile(hfile);
+
 
 	CloseHandle(hfile);
 
@@ -236,7 +276,7 @@ int WriteEGPFileHeader(EGPHEADER* dstegph, HANDLE hfile, CModel* srcmodel, char*
 	ZeroMemory(dstegph, sizeof(EGPHEADER));
 
 	strcpy_s(dstegph->magicstr, 32, "EvaluateGlobalPosition");
-	strcpy_s(dstegph->version, 16, "0.0.0.1");
+	strcpy_s(dstegph->version, 16, "0.0.0.2");//ver0002 : 2021/10/26 : EGP ChaMatrix not FbxAMatrix
 	strcpy_s(dstegph->fbxdate, 256, fbxdate);
 	dstegph->animno = srcanimno;
 	dstegph->jointnum = jointnum;
@@ -296,7 +336,7 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 		return false;
 	}
 	int cmp2;
-	cmp2 = strcmp(dstegph->version, "0.0.0.1");
+	cmp2 = strcmp(dstegph->version, "0.0.0.2");//ver0002 : 2021/10/26 : EGP ChaMatrix not FbxAMatrix
 	if (cmp2 != 0) {
 		return false;
 	}
@@ -319,17 +359,17 @@ bool ValidateEGPFile(EGPHEADER* dstegph, char* srcbuf, DWORD bufleng, CModel* pm
 	MOTINFO* curmi;
 	curmi = pmodel->GetMotInfo(curmotid);
 	if (!curmi) {
-		return 1;
+		return false;
 	}
 	int framenum;
 	framenum = (int)curmi->frameleng;
 	if (framenum <= 0) {
-		return 1;
+		return false;
 	}
 	int jointnum;
 	jointnum = pmodel->GetBoneListSize();
 	if (jointnum <= 0) {
-		return 1;
+		return false;
 	}
 
 
@@ -491,10 +531,12 @@ bool LoadEGPFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno)
 				return false;
 			}
 
-			FbxAMatrix curegp;
+			ChaMatrix curegp;
+			FbxAMatrix fbxegp;
 			curegp = egpelem.egp;
+			ChaMatrix2FbxAMatrix(fbxegp, curegp);
 			//curbone->veclClusterGlobalCurrentPosition.push_back(curegp);
-			curbone->veclClusterGlobalCurrentPosition[frameno] = curegp;//VSのpush_backは遅いらしいので
+			curbone->veclClusterGlobalCurrentPosition[frameno] = fbxegp;//VSのpush_backは遅いらしいので
 		}
 	}
 

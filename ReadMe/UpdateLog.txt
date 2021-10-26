@@ -1,3 +1,19 @@
+2021/10/26_1
+	ver1.0.0.17に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+
+	EvaluateGlobalPositionキャッシュファイルEGP ver0.0.0.2
+		FbxAMatrixを書き出すのをやめてChaMatrixを書き出し
+		
+		ファイルサイズがヘッダ情報と合わずに
+		キャッシュが不正扱いされて使えないことがあったがFlushとSetEndOfFileを加えることで直った	
+	
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
 2021/10/25
 	ver1.0.0.17に向けて
 
