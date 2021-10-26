@@ -66,6 +66,9 @@ public:
 	ChaMatrix GetInvWorldMat(){ ChaMatrix invmat; ChaMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
 
+	ChaMatrix GetLocalMat() { return m_localmat; };
+	void SetLocalMat(ChaMatrix srcmat) { m_localmat = srcmat; };
+
 //btmat, btflagはCBoneに移動
 	//ChaMatrix GetBefBtMat();
 	//void SetBefBtMat(ChaMatrix srcmat);
@@ -166,6 +169,8 @@ private:
 	ChaVector3 m_localeul;
 
 	ChaMatrix m_worldmat;//ワールド変換と親の影響を受けたマトリックス
+	ChaMatrix m_localmat;//local matrix
+
 
 	ChaMatrix m_befworldmat;
 	ChaMatrix m_befeditmat;

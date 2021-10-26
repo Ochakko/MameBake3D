@@ -40,6 +40,7 @@ int CMotionPoint::InitParams()
 	m_localeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	ChaMatrixIdentity( &m_worldmat );
+	ChaMatrixIdentity(&m_localmat);
 	ChaMatrixIdentity( &m_absmat );
 	ChaMatrixIdentity( &m_befworldmat );
 	ChaMatrixIdentity( &m_befeditmat );

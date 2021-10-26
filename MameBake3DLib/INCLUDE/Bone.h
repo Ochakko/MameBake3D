@@ -365,7 +365,7 @@ public:
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
-	int SetWorldMatFromEulAndScale(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, int srcmotid, double srcframe);
+	int SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
@@ -405,6 +405,9 @@ public:
 	static void InitBones();
 	static void DestroyBones();
 	static void OnDelModel(CModel* parmodel);
+
+	ChaMatrix CalcParentGlobalMat(int srcmotid, double srcframe);
+
 
 private:
 
@@ -512,6 +515,9 @@ private:
 	void CalcBtRootDiffMatFunc(CBone* srcbone);
 
 	ChaMatrix GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag);
+
+	void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
+
 
 
 public: //accesser

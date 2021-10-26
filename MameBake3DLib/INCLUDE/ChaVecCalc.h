@@ -69,7 +69,7 @@ public:
 #endif
 
 public:
-	 float _11;
+	float _11;
 	float _12;
 	float _13;
 	float _14;

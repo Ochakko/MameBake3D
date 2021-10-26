@@ -3760,7 +3760,7 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 }
 
 
-int CBone::SetWorldMatFromEulAndScale(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 	if (!m_child) {
@@ -3826,30 +3826,45 @@ int CBone::SetWorldMatFromEulAndScale(int inittraflag, int setchildflag, ChaVect
 	GetSRTMatrix2(curlocalmat, &cursmat, &currmat, &curtmat);
 
 
+	ChaVector3 jointpos;
+	jointpos = GetJointFPos();
+	ChaVector3 parentjointpos;
+	if (GetParent()) {
+		parentjointpos = GetParent()->GetJointFPos();
+	}
+	else {
+		parentjointpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	}
+
+
 	ChaMatrix newlocalmat, newrotmat, befrotmat, aftrotmat;
 	newrotmat = newrot.MakeRotMatX();
-	ChaMatrixTranslation(&befrotmat, -GetJointFPos().x, -GetJointFPos().y, -GetJointFPos().z);
-	ChaMatrixTranslation(&aftrotmat, GetJointFPos().x, GetJointFPos().y, GetJointFPos().z);
-	//newlocalmat = befrotmat * newrotmat * aftrotmat;
-
+	ChaMatrixTranslation(&befrotmat, -jointpos.x, -jointpos.y, -jointpos.z);
+	ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
 
 	ChaMatrix newscalemat;
 	ChaMatrixScaling(&newscalemat, srcscale.x, srcscale.y, srcscale.z);//!!!!!!!!!!!!  new scale
 
 
-	newlocalmat = befrotmat * newscalemat * newrotmat * aftrotmat;//!!!!!!!!!!!!!! new scale
+	ChaMatrix tramat;
+	ChaMatrixIdentity(&tramat);
+	ChaMatrixTranslation(&tramat, srctra.x - jointpos.x + parentjointpos.x, srctra.y - jointpos.y + parentjointpos.y, srctra.z - jointpos.z + parentjointpos.z);
 
-	if (inittraflag == 0) {
-		ChaVector3 tmppos;
-		ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &newlocalmat);
-		ChaVector3 diffvec;
-		diffvec = curtrapos - tmppos;
-		ChaMatrix tmptramat;
-		ChaMatrixIdentity(&tmptramat);
-		ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
 
-		newlocalmat = newlocalmat * tmptramat;
-	}
+	newlocalmat = befrotmat * newscalemat * newrotmat * aftrotmat * tramat;
+
+
+	//if (inittraflag == 0) {
+	//	ChaVector3 tmppos;
+	//	ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &newlocalmat);
+	//	ChaVector3 diffvec;
+	//	diffvec = curtrapos - tmppos;
+	//	ChaMatrix tmptramat;
+	//	ChaMatrixIdentity(&tmptramat);
+	//	ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+
+	//	newlocalmat = newlocalmat * tmptramat;
+	//}
 
 	//if (inittraflag == 0){
 	//	ChaVector3 traanim = CalcLocalTraAnim(srcmotid, srcframe);
@@ -5515,6 +5530,43 @@ void CBone::OnDelModel(CModel* srcparmodel)
 	itrbonecnt = g_bonecntmap.find(srcparmodel);
 	if (itrbonecnt != g_bonecntmap.end()) {
 		g_bonecntmap.erase(itrbonecnt);//エントリー削除
+	}
+
+}
+
+
+ChaMatrix CBone::CalcParentGlobalMat(int srcmotid, double srcframe)
+{
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
+
+	if (!GetParent()) {
+		return retmat;
+	}
+
+
+	CalcParentGlobalMatReq(&retmat, GetParent(), srcmotid, srcframe);
+
+
+	return retmat;
+}
+
+
+void CBone::CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (!srcbone) {
+		return;
+	}
+
+	CMotionPoint* curmp;
+	curmp = srcbone->GetMotionPoint(srcmotid, srcframe);
+	if (curmp) {
+		ChaMatrix localmat = curmp->GetLocalMat();
+		*dstmat = *dstmat * localmat;//childmat * currentmat   (currentmat * parentmat)
+	}
+
+	if (srcbone->GetParent()) {
+		CalcParentGlobalMatReq(dstmat, srcbone->GetParent(), srcmotid, srcframe);
 	}
 
 }

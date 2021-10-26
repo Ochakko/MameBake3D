@@ -713,15 +713,12 @@ private:
 
 
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
-	void CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng);
 	void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng );
-	int GetMeshAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng);
 	int GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng );
 	void CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
 	void InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe);
-	void CorrectFbxScaleAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng);
 	int CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng);
 
 

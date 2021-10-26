@@ -3613,105 +3613,22 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		FbxPose* pPose = NULL;
 
 
-		//pNode->EvaluateGlobalPositionは時間がかかる。キャッシュファイルが適性ならばキャッシュファイルから読み取る
-		m_useegpfile = false;
-		if (strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) {
-			//if fbx file rev. 2.3 and all of fbxcomment(include date) is match, load fbx anim cache file.  
-			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
-			m_useegpfile = LoadEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
-		}
 
-		//MeshのclusterのAnim情報を取得
-		CreateMeshAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));
-
-		//sleketonのAnim情報とMeshのcluster情報から姿勢を計算する。ただしスケールは合っていない.
+		//Local情報からモーションを計算する
 		CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));
 
 
-		//endjointやNULLにもmotionpoint作成. スケール初期化スケール補正よりも前にモーションポイントを作成しておく
+		//motioncreatebatchflagが立っていた場合ここまで
 		if (motioncachebatchflag == FALSE) {
 			FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);
 			if (animno == 0) {
 				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
 			}
-			////(this->m_tlFunc)( curmotid );
-		}
-
-		//scaleを初期化
-		double curframe;
-		for (curframe = 0.0; curframe < (animleng - 1); curframe += 1.0) {
-			InitMpScaleReq(GetTopBone(), curmotid, curframe);
-		}
-
-
-		//正しいスケールを設定
-		map<int, CBone*>::iterator itrbone2;
-		for (itrbone2 = m_bonelist.begin(); itrbone2 != m_bonelist.end(); itrbone2++) {
-			CBone* curbone = itrbone2->second;
-			if (curbone) {
-				curbone->SetGetAnimFlag(0);
-			}
-		}
-		CorrectFbxScaleAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));
-
-
-
-		//pNode->EvaluateGlobalPositionは時間がかかる。次回の読み込みのためにキャッシュファイルに保存しておく。
-		if ((strstr(m_fbxcomment.Buffer(), "CommentForEGP_") != 0) && !m_useegpfile) {
-			//if fbx file rev. 2.3, save fbx anim cache file.  
-			//*.fbx.anim*.egp  cache result of EvaluateGlobalPosition
-			WriteEGPFile(this, m_fbxfullname, m_fbxcomment.Buffer(), animno);
-		}
-
-		
-		//motioncreatebatchflagが立っていた場合ここまで
-
-		if (motioncachebatchflag == FALSE) {
 			SetCurrentMotion(curmotid);
 		}
 	}
 
 	return 0;
-}
-
-void CModel::CreateMeshAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng)
-{
-	//static int dbgcnt = 0;
-
-	//int lSkinCount;
-
-	if (!pNode) {
-		return;
-	}
-
-
-	FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
-	if (pAttrib) {
-		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
-
-		switch (type)
-		{
-		case FbxNodeAttribute::eMesh:
-			//			case FbxNodeAttribute::eNURB:
-			//			case FbxNodeAttribute::eNURBS_SURFACE:
-			//case FbxNodeAttribute::eSkeleton:
-			GetMeshAnim(animno, pScene, pNode, pPose, pAttrib, motid, animleng);     // メッシュを作成
-
-			break;
-		default:
-			break;
-		}
-	}
-
-	int childNodeNum;
-	childNodeNum = pNode->GetChildCount();
-	for (int i = 0; i < childNodeNum; i++)
-	{
-		FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
-		CreateMeshAnimReq(animno, pScene, pPose, pChild, motid, animleng);
-	}
-
-	return;
 }
 
 
@@ -3750,46 +3667,6 @@ void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, Fbx
 	{
 		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
 		CreateFBXAnimReq( animno, pScene, pPose, pChild, motid, animleng );
-	}
-
-	return;
-}
-
-void CModel::CorrectFbxScaleAnimReq(int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng)
-{
-	//static int dbgcnt = 0;
-
-	//int lSkinCount;
-
-	if (!pNode) {
-		return;
-	}
-
-	FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
-	if (pAttrib) {
-		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
-
-		switch (type)
-		{
-			//			case FbxNodeAttribute::eMesh:
-			//			case FbxNodeAttribute::eNURB:
-			//			case FbxNodeAttribute::eNURBS_SURFACE:
-
-		case FbxNodeAttribute::eSkeleton:
-			CorrectFbxScaleAnim(animno, pScene, pNode, pPose, pAttrib, motid, animleng);     // メッシュを作成
-
-			break;
-		default:
-			break;
-		}
-	}
-
-	int childNodeNum;
-	childNodeNum = pNode->GetChildCount();
-	for (int i = 0; i < childNodeNum; i++)
-	{
-		FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
-		CorrectFbxScaleAnimReq(animno, pScene, pPose, pChild, motid, animleng);
 	}
 
 	return;
@@ -3867,105 +3744,6 @@ void CModel::CorrectFbxScaleAnimReq(int animno, FbxScene* pScene, FbxPose* pPose
 //	}
 //}
 
-int CModel::GetMeshAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng)
-{
-
-
-
-	FbxMesh *pMesh = (FbxMesh*)pAttrib;
-	if (!pMesh) {
-		return 0;
-	}
-
-
-	////dummyMeshは処理しない ---> bvhにはdummymeshしかない　コメントアウト
-	//const char* pmeshname = pMesh->GetName();
-	//if (pmeshname) {
-	//	const char* pfind = strstr(pmeshname, "_ND_dtri");
-	//	if (pfind) {
-	//		return 0;
-	//	}
-	//}
-
-
-	// スキンの数を取得
-	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
-
-	int beginthreadindex = 0;
-
-
-	for ( int i = 0; i < skinCount; ++i ) {
-	//for (int i = 0; i < skinCount; i++) {
-		// i番目のスキンを取得
-		FbxSkin* skin = (FbxSkin*)( pMesh->GetDeformer( i, FbxDeformer::eSkin ) );
-
-		// クラスターの数を取得
-		int clusterNum = skin->GetClusterCount();
-
-		for ( int j = 0; j < clusterNum; ++j ) {
-
-			// j番目のクラスタを取得
-			FbxCluster* cluster = skin->GetCluster( j );
-			FbxNode* clusterlink = (FbxNode*)cluster->GetLink();
-
-
-			//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
-			char bonename2[256];
-			strcpy_s(bonename2, 256, clusterlink->GetName());
-			TermJointRepeats(bonename2);
-			CBone* curbone = m_bonename[(char*)bonename2];
-
-			WCHAR wname[256] = { 0L };
-			ZeroMemory(wname, sizeof(WCHAR) * 256);
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256);
-
-			//if (curbone && !curbone->GetGetAnimFlag() && pNode) {
-			//	curbone->SetGetAnimFlag(1);
-			if(curbone && pNode){
-				curbone->lClusterMode[motid] = cluster->GetLinkMode();
-
-				//Associate
-				curbone->pAssociateModel[motid] = cluster->GetAssociateModel();
-				cluster->GetTransformAssociateModelMatrix(curbone->lAssociateGlobalInitPosition[motid]);
-				curbone->lAssociateGlobalInitPosition[motid].SetIdentity();
-				if (curbone->lClusterMode[motid] == FbxCluster::eAdditive && curbone->pAssociateModel[motid])
-				{
-					curbone->lAssociateGeometry[motid] = FbxGetGeometry(curbone->pAssociateModel[motid]);
-				}
-				else {
-					curbone->lAssociateGeometry[motid].SetIdentity();
-				}
-				curbone->lAssociateGlobalInitPosition[motid] *= curbone->lAssociateGeometry[motid];
-
-
-				//Reference
-				cluster->GetTransformMatrix(curbone->lReferenceGlobalInitPosition[motid]);
-				curbone->lReferenceGeometry[motid] = FbxGetGeometry(pMesh->GetNode());
-				curbone->lReferenceGlobalInitPosition[motid] *= curbone->lReferenceGeometry[motid];
-
-
-				//Cluster
-				cluster->GetTransformLinkMatrix(curbone->lClusterGlobalInitPosition[motid]);
-				curbone->pClusterLink[motid] = cluster->GetLink();
-				curbone->lClusterGeometry[motid] = FbxGetGeometry(cluster->GetLink());
-				curbone->lClusterGlobalInitPosition[motid] *= curbone->lClusterGeometry[motid];
-
-			}
-
-			//if (!curbone) {
-			//	_ASSERT(0);
-			//}
-		}
-
-
-	}
-
-
-	return 0;
-}
-
-
-
 int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng )
 {
 	//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
@@ -3999,58 +3777,72 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
 
 		//##################################
-		//calclate motion with wrong scale
+		//calclate motion by local info
 		//##################################
 
-			FbxAMatrix motionmat;
+			FbxAMatrix correctscalemat;
+			correctscalemat.SetIdentity();
+			FbxAMatrix currentmat;
+			currentmat.SetIdentity();
+			FbxAMatrix parentmat;
+			parentmat.SetIdentity();
+			const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
+			const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
+			const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
 
-			//curbone->lClusterGlobalInitPosition[motid].SetIdentity();
-			//curbone->lReferenceGlobalInitPosition[motid].SetIdentity();
+			ChaVector3 chatra = ChaVector3(lT2[0], lT2[1], lT2[2]);
+			ChaVector3 chaeul = ChaVector3(lR2[0], lR2[1], lR2[2]);
+			ChaVector3 chascale = ChaVector3(lS2[0], lS2[1], lS2[2]);
 
-			//?????????????????????????????????????????????????????????
-			//lReferenceGlobalCurrentPosition = pGlobalPosition;
-			curbone->lReferenceGlobalCurrentPosition[motid].SetIdentity();
-			//curbone->lReferenceGlobalCurrentPosition[motid] = FbxGetGlobalPosition(this, pScene, pNode, fbxtime, pPose);//pNode
-
-			// Multiply lReferenceGlobalInitPosition by Geometric Transformation
-			//lReferenceGeometry = GetGeometry(pMesh->GetNode());//##############
-			//lReferenceGlobalInitPosition *= lReferenceGeometry;//###############
-
-			// Get the link initial global position and the link current global position.
-			//pCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);//################
-			curbone->lClusterGlobalCurrentPosition[motid] = FbxGetGlobalPosition(m_useegpfile, this, pScene, curbone->pClusterLink[motid], fbxtime, (int)framecnt, pPose);//clusterLink
-			//curbone->lClusterGlobalCurrentPosition[motid] = FbxGetGlobalPosition(this, pScene, pNode, fbxtime, pPose);//pNode
-
-
-			// Compute the initial position of the link relative to the reference.
-			curbone->lClusterRelativeInitPosition[motid] = curbone->lClusterGlobalInitPosition[motid].Inverse() * curbone->lReferenceGlobalInitPosition[motid];
-
-			// Compute the current position of the link relative to the reference.
-			curbone->lClusterRelativeCurrentPositionInverse[motid] = curbone->lReferenceGlobalCurrentPosition[motid].Inverse() * curbone->lClusterGlobalCurrentPosition[motid];
-
-			// Compute the shift of the link relative to the reference.
-			motionmat = curbone->lClusterRelativeCurrentPositionInverse[motid] * curbone->lClusterRelativeInitPosition[motid];
-
-
-		//################
-		//Set Motion
-		//################
-
-			ChaMatrix xmat;
-			FbxAMatrix2ChaMatrix(xmat, motionmat);
-
-
-			if ((animno == 0) && (framecnt == 0.0)) {
-				curbone->SetFirstMat(xmat);
-				curbone->SetInitMat(xmat);
-				ChaMatrix calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
-				ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
-				ChaVector3 tmppos;
-				ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
-				curbone->SetOldJointFPos(tmppos);
+			//####################
+			//calc joint position
+			//####################
+			ChaVector3 jointpos;
+			jointpos = curbone->GetJointFPos();
+			ChaVector3 parentjointpos;
+			if (curbone->GetParent()) {
+				parentjointpos = curbone->GetParent()->GetJointFPos();
+			}
+			else {
+				parentjointpos = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 
+			//##############
+			//calc rotation
+			//##############
+			CQuaternion chaq;
+			chaq.SetRotationXYZ(0, chaeul);
+			ChaMatrix charotmat;
+			charotmat = chaq.MakeRotMatX();
 
+			ChaMatrix befrotmat, aftrotmat;
+			ChaMatrixTranslation(&befrotmat, -jointpos.x, -jointpos.y, -jointpos.z);
+			ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
+
+
+			//#################
+			//calc translation
+			//#################
+			ChaMatrix chatramat;
+			ChaMatrixIdentity(&chatramat);
+			ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
+
+			//##############
+			//calc scalling
+			//##############
+			ChaMatrix chascalemat;
+			ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
+
+
+			//##############
+			//calc localmat
+			//##############
+			ChaMatrix localmat;
+			localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+
+			//#############
+			//set localmat
+			//#############
 			CMotionPoint* curmp = 0;
 			int existflag = 0;
 			curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
@@ -4058,10 +3850,43 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				_ASSERT(0);
 				return 1;
 			}
-			curmp->SetWorldMat(xmat);//anglelimit無し
+			curmp->SetLocalMat(localmat);//anglelimit無し
 
+
+			//###############
+			//calc globalmat
+			//###############
+			ChaMatrix globalmat;
+			ChaMatrix parentglobalmat;
+			parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+			globalmat = localmat * parentglobalmat;
+
+
+			//##################
+			//Set Global Motion
+			//##################
+			if ((animno == 0) && (framecnt == 0.0)) {
+				curbone->SetFirstMat(globalmat);
+				curbone->SetInitMat(globalmat);
+				ChaMatrix calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
+				ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+				ChaVector3 tmppos;
+				ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
+				curbone->SetOldJointFPos(tmppos);
+			}
+			CMotionPoint* curmp2 = 0;
+			curmp2 = curbone->GetMotionPoint(motid, framecnt);
+			if (!curmp2) {
+				_ASSERT(0);
+				return 1;
+			}
+			curmp2->SetWorldMat(globalmat);//anglelimit無し
+
+
+			//###########
+			//step time
+			//###########
 			fbxtime = fbxtime + difftime;
-
 
 		}
 		
@@ -4087,7 +3912,7 @@ int CModel::CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, Fb
 	ZeroMemory(wname, sizeof(WCHAR) * 256);
 	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256);
 
-	if (curbone && !curbone->GetGetAnimFlag() && pNode && curbone->GetChild()) {//endjointはいじらない
+	if (curbone && !curbone->GetGetAnimFlag() && pNode) {
 		curbone->SetGetAnimFlag(1);
 
 		FbxTime fbxtime;
@@ -4133,13 +3958,14 @@ int CModel::CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, Fb
 
 				//正しいスケールで姿勢をセットし直し
 				ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1] , (float)lS2[2]);
+				ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, motid, framecnt, BEFEUL_ZERO);
 				int inittraflag1 = 0;
 				int setchildflag1 = 0;
 				int initscaleflag = 1;//!!!!!!!!!!!!
-				curbone->SetWorldMatFromEulAndScale(inittraflag1, setchildflag1, cureul, chascale, motid, framecnt);
+				curbone->SetWorldMatFromEulAndScaleAndTra(inittraflag1, setchildflag1, cureul, chascale, chatra, motid, framecnt);
 
 
 			fbxtime = fbxtime + difftime;
