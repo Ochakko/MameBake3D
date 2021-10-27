@@ -1,3 +1,22 @@
+2021/10/27_1
+	ver1.0.0.17に向けての続き
+
+	develop版(非リリース版)　MameBake3D
+
+
+	CModel::GetFbxAnimのコメント中のLclTranslationとTraAnimの関係式のチェック
+		デバッグ出力して数式が正しいことを確認
+
+	
+	ToolWindowの姿勢初期化ボタンのInitScaleメニュー実行についての修正
+		数式に基づいて修正
+	
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
+
 2021/10/26_3
 	ver1.0.0.17に向けての続き
 

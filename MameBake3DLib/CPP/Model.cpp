@@ -3902,6 +3902,30 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			curmp2->SetWorldMat(globalmat);//anglelimit無し
 
 
+
+			////############################
+			////Check For Debug
+			////############################
+			// 
+			// Tanim_a = LclTranslation - jointpos + parentjointpos (式２)の確認
+			// 		
+			//ChaVector3 traanim;
+			//traanim = curbone->CalcLocalTraAnim(motid, framecnt);
+
+			//ChaVector3 calcTraAnim;
+			//calcTraAnim = chatra - jointpos + parentjointpos;
+
+			//if (wcsstr(m_filename, L"yuri") != 0) {
+			//	WCHAR strdbg[4098];
+			//	swprintf_s(strdbg, 4098, L"#### framecnt %lf, bonename %s, LclTranslation : (%f, %f, %f), traanim : (%f, %f, %f), CalcTraAnim : (%f, %f, %f)\r\n",
+			//		framecnt, curbone->GetWBoneName(), chatra.x, chatra.y, chatra.z, traanim.x, traanim.y, traanim.z,
+			//		calcTraAnim.x, calcTraAnim.y, calcTraAnim.z);
+			//	DbgOut(strdbg);
+			//}
+
+			// Check OK.
+
+
 			//###########
 			//step time
 			//###########

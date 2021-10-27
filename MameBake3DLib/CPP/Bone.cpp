@@ -3819,8 +3819,8 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 
 	ChaMatrix tramat;
 	ChaMatrixIdentity(&tramat);
-	ChaMatrixTranslation(&tramat, srctra.x - jointpos.x + parentjointpos.x, srctra.y - jointpos.y + parentjointpos.y, srctra.z - jointpos.z + parentjointpos.z);
-
+	//ChaMatrixTranslation(&tramat, srctra.x - jointpos.x + parentjointpos.x, srctra.y - jointpos.y + parentjointpos.y, srctra.z - jointpos.z + parentjointpos.z);//Ç±ÇÍÇÕLclTranslationÇ≈Ç†ÇËÅATraAnimÇ≈ÇÕñ≥Ç¢
+	ChaMatrixTranslation(&tramat, srctra.x, srctra.y, srctra.z);//TraAnimÇÇªÇÃÇ‹Ç‹
 
 	newlocalmat = befrotmat * newscalemat * newrotmat * aftrotmat * tramat;
 
