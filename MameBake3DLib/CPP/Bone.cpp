@@ -3609,6 +3609,9 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 		//_ASSERT(0);
 		return 1;
 	}
+
+	ChaVector3 orgtraanim = CalcLocalTraAnim(srcmotid, srcframe);
+
 	CMotionPoint* parmp = 0;
 	ChaMatrix parmat;
 	ChaMatrixIdentity(&parmat);
@@ -3675,13 +3678,17 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 		newlocalmat = befrotmat * newrotmat * aftrotmat;
 	}
 	if (inittraflag == 0) {
-		ChaVector3 tmppos;
-		ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &newlocalmat);
-		ChaVector3 diffvec;
-		diffvec = curtrapos - tmppos;
+		//ChaVector3 tmppos;
+		//ChaVector3TransformCoord(&tmppos, &(GetJointFPos()), &newlocalmat);
+		//ChaVector3 diffvec;
+		//diffvec = curtrapos - tmppos;
+		//ChaMatrix tmptramat;
+		//ChaMatrixIdentity(&tmptramat);
+		//ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+
 		ChaMatrix tmptramat;
 		ChaMatrixIdentity(&tmptramat);
-		ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+		ChaMatrixTranslation(&tmptramat, orgtraanim.x, orgtraanim.y, orgtraanim.z);
 
 		newlocalmat = newlocalmat * tmptramat;
 	}

@@ -21517,10 +21517,12 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 		if (curbone->GetChild()){
 			if (initmode == INITMP_ROTTRA){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int inittraflag1 = 1;
+				ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+				//int inittraflag1 = 1;
 				int setchildflag1 = 1;
-				int initscaleflag1 = 1;//!!!!!!!
-				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
+				//int initscaleflag1 = 1;//!!!!!!!
+				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);//scaleåvéZñ≥Çµ
 			}
 			else if (initmode == INITMP_ROT){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -21546,10 +21548,10 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 
 				ChaVector3 traanim = curbone->CalcLocalTraAnim(srcmotid, srcframe);
 
-				int inittraflag1 = 0;
+				//int inittraflag1 = 0;
 				int setchildflag1 = 1;
-				int initscaleflag1 = 1;//!!!!!!!
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);
+				//int initscaleflag1 = 1;//!!!!!!!
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);//scaleåvéZñ≥Çµ
 			}
 		}
 	}

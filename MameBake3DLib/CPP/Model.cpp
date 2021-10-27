@@ -3848,8 +3848,9 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				//省略形を表現しなおすと　　...(T0 Tanim_a -Ta) Sa Ra   (Ta Tanim_b -Tb) Sb Rb    (Tb Tanim_c -Tc) ....
 				// LclTranslation = T0 + Tanim_a - Ta = parentjointpos + Tanim_a - jointpos (式１)
 				// 
-				//求めたいのは省略しない形式におけるTanim_aであり　式１より　Tanim_a = LclTranslation - jointpos + parentjointpos (式２)となる
-				//
+				//求めたいのは省略しない形式における-T S R T の後ろに掛けるTanim_aであり　式１より　Tanim_a = LclTranslation - jointpos + parentjointpos (式２)となる（トリッキー）
+				// 
+				// 
 				//-Ta Sa Ra Ta Tanim_a のTanim_aが式２により求まった。
 				//この関数内では　-Ta = befrotmat, Sa = chascalemat, Ra = charotmat, Ta = aftrotmat, Tanim_a = chatramat.
 				
