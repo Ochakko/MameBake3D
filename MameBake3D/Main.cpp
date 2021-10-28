@@ -9330,7 +9330,12 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 				});
 				s_owpLTimeline->setMouseWheelListener([]() {
 					if (s_model) {
-						s_timelinewheelFlag = true;
+						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll ‚Ì S
+							s_timelinewheelFlag = true;
+						}
+						else {
+							s_owpLTimeline->WheelShowPosTime();
+						}
 					}
 				});
 
@@ -9366,8 +9371,6 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 						s_LcursorFlag = true;
 					}
 				});
-
-
 			}
 		}
 

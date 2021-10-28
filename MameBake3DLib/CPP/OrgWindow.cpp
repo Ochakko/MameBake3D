@@ -562,7 +562,7 @@ namespace OrgWinGUI{
 		//	}
 		//}
 
-		////時間軸スクロールバー
+		////ラベルスクロールバー
 		//{
 		//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 		//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
@@ -585,7 +585,7 @@ namespace OrgWinGUI{
 		//	}
 		//}
 
-		////ラベルスクロールバー
+		////時間軸スクロールバー
 		//{
 		//	int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
 		//	int x1 = x0 + SCROLL_BAR_WIDTH + 1;

@@ -4489,6 +4489,47 @@ void s_dummyfunc()
 				callRewrite();
 			}
 		}
+
+
+
+		void WheelShowPosTime()
+		{
+			//int xx0 = MARGIN + LABEL_SIZE_X;
+			//int xx1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+			//double showTimeLength = ((double)(xx1 - xx0 - 3)) / timeSize;
+			//if (showTimeLength < maxTime) {
+				//double barSize = ((double)(xx1 - xx0 - 4)) * showTimeLength / maxTime;
+				//int movableX = xx1 - xx0 - (int)barSize;
+				//int movableXStart = xx0 + (int)barSize / 2;
+				//double showTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
+				//if (showTimeLength < maxTime) {
+				//	showPos_time = max(0, min(_showPosTime, maxTime - showTimeLength));
+				//}
+				//else {
+				//	showPos_time = 0;
+				//}
+				double newshowpostime;
+				if (wheeldelta > 0) {
+					newshowpostime = min((showPos_time + 1.0), maxTime);
+				}
+				else {
+					newshowpostime = max(0, (showPos_time - 1.0));
+				}
+				showPos_time = newshowpostime;
+				
+				//再描画要求
+				//if (rewriteOnChange) {
+					callRewrite();
+				//}
+
+				//setShowPosTime(((double)(e.localX - movableXStart)) * (maxTime - showTimeLength) / (double)movableX);
+				//dragScrollBarTime = true;
+			//}
+		}
+
+
+
+
 		///	Method : マウスダウンイベント受信
 		virtual void onLButtonDown(const MouseEvent& e){
 			selectClear(true);
@@ -4509,17 +4550,20 @@ void s_dummyfunc()
 			//ラベル
 			if( (x0 <= e.localX) && (e.localX < x2) && 
 				(y1 <= e.localY) && (e.localY < y2) ){
-				setCurrentLine( showPos_line+ (e.localY-y1)/(LABEL_SIZE_Y-1) );
 
+				setCurrentLine( showPos_line+ (e.localY-y1)/(LABEL_SIZE_Y-1) );
 				dragLabel=true;
 			}
 
-			//時間軸目盛り
-			if( ((x1 - 2) <= e.localX) && (e.localX < x2) && 
-				(y0 <= e.localY) && (e.localY < y2) ){
-				setCurrentTime( showPos_time+ (double)(e.localX-x1)/timeSize );
 
-				dragTime=true;
+			//時間軸目盛り
+			if (!dragScrollBarTime) {
+				if (((x1 - 2) <= e.localX) && (e.localX < x2) &&
+					(y0 <= e.localY) && (e.localY < y2)) {
+					setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
+
+					dragTime = true;
+				}
 			}
 
 			{//ドラッグでの範囲選択
@@ -4527,7 +4571,7 @@ void s_dummyfunc()
 				dragSelectLine1= currentLine;
 			}
 
-			//時間軸スクロールバー
+			////時間軸スクロールバー
 			if( (x1 <= e.localX) && (e.localX < x2) && 
 				(y2 <= e.localY) && (e.localY < y3) ){
 				int xx0= MARGIN+LABEL_SIZE_X;
