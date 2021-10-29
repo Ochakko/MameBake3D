@@ -108,6 +108,8 @@ previewflag 5 ÇÃçƒê∂éûÇ…ÇÕÉpÉâÉÅÅ[É^ÇåàÇﬂë≈ÇøÇé~ÇﬂÇΩ
 #include "GColiIDDlg.h"
 #include "RegistDlg.h"
 #include <GColiFile.h>
+#include "SettingsDlg.h"
+
 
 #include <math.h>
 #include <stdio.h>
@@ -585,6 +587,7 @@ static int s_onragdollik = 0;
 static int s_physicskind = 0;
 static int s_platemenukind = 0;
 static int s_platemenuno = 1;
+
 
 static CMQOMaterial* s_matred = 0;// = s_select->GetMQOMaterialByName("matred");
 static CMQOMaterial* s_ringred = 0;// = s_select->GetMQOMaterialByName("ringred");
@@ -2257,6 +2260,37 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+	g_ClearColorIndex = 0;
+	//g_ClearColor[BGCOL_MAX][4] = {
+	//	{0.0f, 0.0f, 0.0f, 1.0f},
+	//	{1.0f, 1.0f, 1.0f, 1.0f},
+	//	{0.0f, 0.0f, 1.0f, 1.0f},
+	//	{0.0f, 0.5f, 0.25f, 1.0f},
+	//	{1.0f, 0.5f, 0.5f, 1.0f}
+	//};
+	g_ClearColor[BGCOL_BLACK][0] = 0.0f;
+	g_ClearColor[BGCOL_BLACK][1] = 0.0f;
+	g_ClearColor[BGCOL_BLACK][2] = 0.0f;
+	g_ClearColor[BGCOL_BLACK][3] = 1.0f;
+	g_ClearColor[BGCOL_WHITE][0] = 1.0f;
+	g_ClearColor[BGCOL_WHITE][1] = 1.0f;
+	g_ClearColor[BGCOL_WHITE][2] = 1.0f;
+	g_ClearColor[BGCOL_WHITE][3] = 1.0f;
+	g_ClearColor[BGCOL_BLUE][0] = 0.0f;
+	g_ClearColor[BGCOL_BLUE][1] = 0.0f;
+	g_ClearColor[BGCOL_BLUE][2] = 1.0f;
+	g_ClearColor[BGCOL_BLUE][3] = 1.0f;
+	g_ClearColor[BGCOL_GREEN][0] = 0.0f;
+	g_ClearColor[BGCOL_GREEN][1] = 0.5f;
+	g_ClearColor[BGCOL_GREEN][2] = 0.25f;
+	g_ClearColor[BGCOL_GREEN][3] = 1.0f;
+	g_ClearColor[BGCOL_RED][0] = 1.0f;
+	g_ClearColor[BGCOL_RED][1] = 0.5f;
+	g_ClearColor[BGCOL_RED][2] = 0.5f;
+	g_ClearColor[BGCOL_RED][3] = 1.0f;
+
+
+
 	s_firstmodelpanelpos = true;
 	s_modelpanelpos = WindowPos(0, 0);;
 	s_firstmotionpanelpos = true;
@@ -2969,13 +3003,22 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_matyellow = s_select->GetMQOMaterialByName("matyellow");
 	_ASSERT(s_matyellow);
 
-	s_matredmat = s_matred->GetDif4F();
-	s_ringredmat = s_ringred->GetDif4F();
-	s_matbluemat = s_matblue->GetDif4F();
-	s_ringbluemat = s_ringblue->GetDif4F();
-	s_matgreenmat = s_matgreen->GetDif4F();
-	s_ringgreenmat = s_ringgreen->GetDif4F();
+	//s_matredmat = s_matred->GetDif4F();
+	//s_ringredmat = s_ringred->GetDif4F();
+	//s_matbluemat = s_matblue->GetDif4F();
+	//s_ringbluemat = s_ringblue->GetDif4F();
+	//s_matgreenmat = s_matgreen->GetDif4F();
+	//s_ringgreenmat = s_ringgreen->GetDif4F();
+	//s_matyellowmat = s_matyellow->GetDif4F();
+	s_matredmat = ChaVector4(255.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f);
+	s_ringredmat = ChaVector4(255.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f);
+	s_matbluemat = ChaVector4(150.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+	s_ringbluemat = ChaVector4(150.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+	s_matgreenmat = ChaVector4(0.0f / 255.0f, 255.0f / 255.0f, 0.0f / 255.0f, 1.0f);
+	s_ringgreenmat = ChaVector4(0.0f / 255.0f, 255.0f / 255.0f, 0.0f / 255.0f, 1.0f);
 	s_matyellowmat = s_matyellow->GetDif4F();
+
+
 
 
 	s_select_posture = new CModel();
@@ -4755,7 +4798,13 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	//float ClearColor[4] = { (64.0f / 255.0f), (128.0f / 255.0f), (255.0f / 255.0f), 1.0f };
 	ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
-	pd3dImmediateContext->ClearRenderTargetView(pRTV, ClearColor);
+	//pd3dImmediateContext->ClearRenderTargetView(pRTV, s_ClearColor);
+	if ((g_ClearColorIndex >= 0) && (g_ClearColorIndex < BGCOL_MAX)) {
+		pd3dImmediateContext->ClearRenderTargetView(pRTV, g_ClearColor[g_ClearColorIndex]);
+	}
+	else {
+		pd3dImmediateContext->ClearRenderTargetView(pRTV, ClearColor);
+	}
 	ID3D11DepthStencilView* pDSV = DXUTGetD3D11DepthStencilView();
 	pd3dImmediateContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0, 0);
 
@@ -5564,6 +5613,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//return 0;
 			}
 				break;
+			case ID_SETTINGS:
+			{
+				CSettingsDlg dlg;
+				dlg.DoModal();
+			}
+				break;
+
 			case ID_DISPGROUND:
 				s_dispground = !s_dispground;
 				//return 0;
@@ -23093,6 +23149,13 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//return 0;
 			}
 				break;
+			case ID_SETTINGS:
+			{
+				CSettingsDlg dlg;
+				dlg.DoModal();
+			}
+			break;
+
 			case ID_DISPGROUND:
 				s_dispground = !s_dispground;
 				//return 0;

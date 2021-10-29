@@ -53,6 +53,17 @@
 class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
+
+int g_ClearColorIndex = 0;
+float g_ClearColor[BGCOL_MAX][4] = {
+	{0.0f, 0.0f, 0.0f, 1.0f},
+	{1.0f, 1.0f, 1.0f, 1.0f},
+	{0.0f, 0.0f, 1.0f, 1.0f},
+	{0.0f, 0.5f, 0.25f, 1.0f},
+	{1.0f, 0.5f, 0.5f, 1.0f}
+};
+
+
 double g_befeuldiffmax = 60.0;
 int g_dsmousewait = 0;
 HBITMAP g_mouseherebmp = 0;
@@ -191,6 +202,9 @@ float* g_motionbrush_value = 0;
 
 
 #else
+extern int g_ClearColorIndex;
+extern float g_ClearColor[BGCOL_MAX][4];
+
 extern double g_befeuldiffmax;
 extern int g_dsmousewait;
 extern HBITMAP g_mouseherebmp;

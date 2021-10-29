@@ -55,6 +55,17 @@ class CMQOMaterial;
 
 enum
 {
+	BGCOL_BLACK,
+	BGCOL_WHITE,
+	BGCOL_BLUE,
+	BGCOL_GREEN,
+	BGCOL_RED,
+	BGCOL_MAX
+};
+
+
+enum
+{
 	INITMP_ROTTRA,
 	INITMP_ROT,
 	INITMP_TRA,
