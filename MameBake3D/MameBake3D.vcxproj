@@ -242,6 +242,7 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="ColiIDDlg.cpp" />
+    <ClCompile Include="CopyHistoryDlg.cpp" />
     <ClCompile Include="DSUpdateUnderTracking.cpp" />
     <ClCompile Include="FilterDlg.cpp" />
     <ClCompile Include="FrameCopyDlg.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="..\MameBake3DLib\INCLUDE\usercoef.h" />
     <ClInclude Include="..\MameBake3DLib\INCLUDE\XMLIO.h" />
     <ClInclude Include="ColiIDDlg.h" />
+    <ClInclude Include="CopyHistoryDlg.h" />
     <ClInclude Include="dlgid.h" />
     <ClInclude Include="DSUpdateUnderTracking.h" />
     <ClInclude Include="FilterDlg.h" />

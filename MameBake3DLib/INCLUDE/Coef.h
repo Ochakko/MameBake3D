@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <map>
+#include <string>
 
 class CModel;
 class CMQOMaterial;
@@ -169,6 +170,24 @@ enum {
 	BONEAXIS_GLOBAL = 2,
 	BONEAXIS_MAX
 };
+
+typedef struct tag_historyelem
+{
+	FILETIME filetime;
+	WCHAR wfilename[MAX_PATH];
+	bool operator< (const tag_historyelem& right) const {
+		LONG lRet = CompareFileTime(&filetime, &(right.filetime));
+		if (lRet < 0) {
+			return true;
+		}
+		else if (lRet > 0) {
+			return false;
+		}
+		else {
+			return (std::wstring(wfilename) < std::wstring(right.wfilename));
+		}
+	};
+}HISTORYELEM;
 
 typedef struct tag_anglelimmit
 {

@@ -109,7 +109,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #include "RegistDlg.h"
 #include <GColiFile.h>
 #include "SettingsDlg.h"
-
+#include "CopyHistoryDlg.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -167,23 +167,6 @@ typedef struct tag_spsw
 	POINT dispcenter;
 }SPGUISW;
 
-typedef struct tag_historyelem
-{
-	FILETIME filetime;
-	WCHAR wfilename[MAX_PATH];
-	bool operator< (const tag_historyelem& right) const {
-		LONG lRet = CompareFileTime(&filetime, &(right.filetime));
-		if (lRet < 0) {
-			return true;
-		}
-		else if (lRet > 0) {
-			return false;
-		}
-		else {
-			return (wstring(wfilename) < wstring(right.wfilename));
-		}
-	};
-}HISTORYELEM;
 
 //typedef struct tag_physikrec
 //{
@@ -633,6 +616,9 @@ static float s_selectscale = 1.0f;
 static CFrameCopyDlg s_selbonedlg;
 static int s_allmodelbone = 0;
 
+static std::vector<HISTORYELEM> s_cptfilename;
+static CCopyHistoryDlg s_copyhistorydlg;
+
 //float g_initcamdist = 10.0f;
 //static float s_projnear = 0.01f;
 float g_initcamdist = 50.0f;
@@ -918,6 +904,7 @@ static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
 static OWP_Button* s_toolFilterB = 0;
 static OWP_Button* s_toolInterpolateB = 0;
+static OWP_Button* s_toolSelectCopyFileName = 0;
 
 
 #define CONVBONEMAX		256
@@ -958,6 +945,7 @@ static bool s_ScloseFlag = false;
 static bool s_IcloseFlag = false;
 static bool s_GcloseFlag = false;
 static bool s_copyFlag = false;			// コピーフラグ
+static bool s_selCopyHisotryFlag = false;
 static bool s_symcopyFlag = false;
 static bool s_undersymcopyFlag = false;
 static bool s_cutFlag = false;			// カットフラグ
@@ -2291,6 +2279,7 @@ void InitApp()
 
 
 
+
 	s_firstmodelpanelpos = true;
 	s_modelpanelpos = WindowPos(0, 0);;
 	s_firstmotionpanelpos = true;
@@ -2321,11 +2310,58 @@ void InitApp()
 	s_dispconvbone = false;
 
 	s_tkeyflag = 0;//bone twist
+	s_closeFlag = false;			// 終了フラグ
+	s_closetoolFlag = false;
+	s_closeobjFlag = false;
+	s_closemodelFlag = false;
+	s_closemotionFlag = false;
+	s_closeconvboneFlag = false;
+	s_DcloseFlag = false;
+	s_RcloseFlag = false;
+	s_ScloseFlag = false;
+	s_IcloseFlag = false;
+	s_GcloseFlag = false;
+	s_copyFlag = false;			// コピーフラグ
+	s_selCopyHisotryFlag = false;
+	s_symcopyFlag = false;
+	s_undersymcopyFlag = false;
+	s_cutFlag = false;			// カットフラグ
+	s_pasteFlag = false;			// ペーストフラグ
+	s_cursorFlag = false;			// カーソル移動フラグ
+	s_selectFlag = false;			// キー選択フラグ
+	s_keyShiftFlag = false;		// キー移動フラグ
+	s_deleteFlag = false;		// キー削除フラグ
+	s_motpropFlag = false;
+	s_markFlag = false;
+	s_selboneFlag = false;
+	s_initmpFlag = false;
+	s_filterFlag = false;
+	s_interpolateFlag = false;
+	s_firstkeyFlag = false;
+	s_lastkeyFlag = false;
+	s_btresetFlag = false;
+	s_LcloseFlag = false;
+	s_LnextkeyFlag = false;
+	s_LbefkeyFlag = false;
+	s_LcursorFlag = false;			// カーソル移動フラグ
+	s_LstartFlag = false;
+	s_LstopFlag = false;
+	s_EcursorFlag = false;			// カーソル移動フラグ
+	s_timelineRUpFlag = false;
+	s_timelinembuttonFlag = false;
+	s_mbuttoncnt = 1;
+	s_timelinewheelFlag = false;
+	s_prevrangeFlag = false;
+	s_nextrangeFlag = false;
+
 
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
 	_ASSERT(s_temppath[0]);
+	s_cptfilename.clear();
+	GetCPTFileName(s_cptfilename);//s_temppathセットより後。初回。
+
 
 	InitDSValues();
 
@@ -2561,7 +2597,7 @@ void InitApp()
 	s_toolInitMPB = 0;
 	s_toolFilterB = 0;
 	s_toolInterpolateB = 0;
-
+	s_toolSelectCopyFileName = 0;
 
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
@@ -3784,6 +3820,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	if (s_toolInterpolateB) {
 		delete s_toolInterpolateB;
 		s_toolInterpolateB = 0;
+	}
+	if (s_toolSelectCopyFileName) {
+		delete s_toolSelectCopyFileName;
+		s_toolSelectCopyFileName = 0;
 	}
 
 	if (s_owpTimeline) {
@@ -18017,6 +18057,13 @@ int OnFrameToolWnd()
 
 
 
+	if (s_selCopyHisotryFlag) {
+		s_selCopyHisotryFlag = false;
+		GetCPTFileName(s_cptfilename);
+		s_copyhistorydlg.SetNames(s_cptfilename);
+		s_copyhistorydlg.DoModal();
+	}
+
 	if (s_copyFlag){
 		s_copyFlag = false;
 		s_undersymcopyFlag = false;
@@ -20822,6 +20869,7 @@ int CreateToolWnd()
 
 
 	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン target bone"));
+	s_toolSelectCopyFileName = new OWP_Button(_T("コピー履歴選択 sel cp history"));
 	s_toolCopyB = new OWP_Button(_T("コピー copy"));
 	s_toolSymCopyB = new OWP_Button(_T("対称コピー sym copy"));
 	//s_toolCutB = new OWP_Button(_T("カット"));
@@ -20834,6 +20882,7 @@ int CreateToolWnd()
 	s_toolInterpolateB = new OWP_Button(_T("補間 interpolate"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
+	s_toolWnd->addParts(*s_toolSelectCopyFileName);
 	s_toolWnd->addParts(*s_toolCopyB);
 	s_toolWnd->addParts(*s_toolSymCopyB);
 	s_toolWnd->addParts(*s_toolPasteB);
@@ -20861,7 +20910,11 @@ int CreateToolWnd()
 	});
 	//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
 	//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
-
+	s_toolSelectCopyFileName->setButtonListener([]() {
+		if (s_model) {
+			s_selCopyHisotryFlag = true;
+		}
+	});
 	s_toolCopyB->setButtonListener([](){ 
 		if (s_model) {
 			s_copyFlag = true;
@@ -20926,7 +20979,7 @@ int CreateLayerWnd()
 	}
 
 	if (s_layerWnd) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 
@@ -30958,44 +31011,6 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 
 		std::sort(vechistory.begin(), vechistory.end());
 		std::reverse(vechistory.begin(), vechistory.end());
-
-		/*int numhistory = (int)vechistory.size();
-		int dispnum = min(5, numhistory);
-
-		int foundnum = 0;
-		int historyno;
-		for (historyno = 0; historyno < numhistory; historyno++) {
-			WCHAR openfilename[MAX_PATH] = { 0L };
-			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].c_str());
-
-			HANDLE hfile;
-			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-			if (hfile != INVALID_HANDLE_VALUE) {
-				WCHAR readwstr[MAX_PATH] = { 0L };
-				DWORD readleng = 0;
-				bool bsuccess;
-				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
-				if (bsuccess) {
-					bool foundsame = false;
-					wstring newwstr = readwstr;
-					std::vector<wstring>::iterator itropenfilename;
-					for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
-						if (newwstr.compare(*itropenfilename) == 0) {
-							foundsame = true;
-						}
-					}
-					if (foundsame == false) {
-						vecopenfilename.push_back(readwstr);
-						foundnum++;
-						if (foundnum >= dispnum) {
-							break;
-						}
-					}
-				}
-				CloseHandle(hfile);
-			}
-		}*/
 	}
 
 	if (!vechistory.empty()) {
@@ -31440,7 +31455,7 @@ int WriteCPTFile()
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR cptfilename[MAX_PATH] = { 0L };
-	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04ud%02u%02u%02u%02u%02u.cpt",
+	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04u%02u%02u%02u%02u%02u.cpt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 
@@ -31608,17 +31623,29 @@ bool LoadCPTFile()
 
 	s_pastemotvec.clear();
 
-	std::vector<HISTORYELEM> cptfilename;
-	cptfilename.clear();
-	GetCPTFileName(cptfilename);
+	//std::vector<HISTORYELEM> cptfilename;
+	s_cptfilename.clear();
+	GetCPTFileName(s_cptfilename);
 
-	if (cptfilename.empty()) {
+	if (s_cptfilename.empty()) {
 		_ASSERT(0);
 		return false;
 	}
 
 	WCHAR infilename[MAX_PATH] = { 0L };
-	wcscpy_s(infilename, MAX_PATH, cptfilename[0].wfilename);
+
+	if (s_copyhistorydlg.IsCheckedMostRecent()) {
+		wcscpy_s(infilename, MAX_PATH, s_cptfilename[0].wfilename);
+	}
+	else {
+		int result = s_copyhistorydlg.GetSelectedFileName(infilename);
+		infilename[MAX_PATH - 1] = 0L;
+
+		if (result || (infilename[0] == 0L)) {
+			_ASSERT(0);
+			return false;
+		}
+	}
 
 
 	HANDLE hfile;
