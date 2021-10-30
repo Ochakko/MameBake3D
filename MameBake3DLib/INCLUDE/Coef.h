@@ -171,10 +171,25 @@ enum {
 	BONEAXIS_MAX
 };
 
+typedef struct tag_cpinfo
+{
+	WCHAR fbxname[MAX_PATH];
+	WCHAR motionname[MAX_PATH];
+	double startframe;
+	double framenum;
+	int bvhtype;//0:undef, 1-144:bvh1 - bvh144, -1:bvh_other
+	int importance;//0:undef, 1:tiny, 2:alittle, 3:normal, 4:noticed, 5:imortant, 6:very important
+	WCHAR comment[32];//WCHAR * 31文字まで。３２文字目は終端記号
+
+}CPMOTINFO;
+
+
 typedef struct tag_historyelem
 {
 	FILETIME filetime;
 	WCHAR wfilename[MAX_PATH];
+	int hascpinfo;//cpinfoにセットした場合1, セットしていない場合0
+	CPMOTINFO cpinfo;
 	bool operator< (const tag_historyelem& right) const {
 		LONG lRet = CompareFileTime(&filetime, &(right.filetime));
 		if (lRet < 0) {

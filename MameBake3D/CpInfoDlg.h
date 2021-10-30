@@ -1,7 +1,7 @@
-// InfluenceDlg.h : CSettingsDlg �̐錾
+// InfluenceDlg.h : CCpInfoDlg �̐錾
 
-#ifndef __CSettingsDlg_H_
-#define __CSettingsDlg_H_
+#ifndef __CCpInfoDlg_H_
+#define __CCpInfoDlg_H_
 
 //#include "usealt.h"
 
@@ -15,17 +15,17 @@
 #include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
-// CSettingsDlg
-class CSettingsDlg : 
-	public CAxDialogImpl<CSettingsDlg>
+// CCpInfoDlg
+class CCpInfoDlg : 
+	public CAxDialogImpl<CCpInfoDlg>
 {
 public:
-	CSettingsDlg();
-	~CSettingsDlg();
+	CCpInfoDlg();
+	~CCpInfoDlg();
 
-	enum { IDD = IDD_SETTINGSDLG };
+	enum { IDD = IDD_CPINFODLG };
 
-BEGIN_MSG_MAP(CSettingsDlg)
+BEGIN_MSG_MAP(CCpInfoDlg)
 	MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 	COMMAND_ID_HANDLER(IDOK, OnOK)
 	COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
@@ -39,6 +39,8 @@ END_MSG_MAP()
 	LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
+	int SetCpInfo(CPMOTINFO* srcpcpinfo);
+
 private:
 	void InitParams();
 	int DestroyObjs();
@@ -46,7 +48,7 @@ private:
 
 private:
 	CWindow m_dlg_wnd;
-	int m_savebgcolindex;
+	CPMOTINFO* m_pcpinfo;
 
 
 };

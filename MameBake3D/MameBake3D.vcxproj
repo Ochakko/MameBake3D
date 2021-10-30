@@ -243,6 +243,7 @@
     </ClCompile>
     <ClCompile Include="ColiIDDlg.cpp" />
     <ClCompile Include="CopyHistoryDlg.cpp" />
+    <ClCompile Include="CpInfoDlg.cpp" />
     <ClCompile Include="DSUpdateUnderTracking.cpp" />
     <ClCompile Include="FilterDlg.cpp" />
     <ClCompile Include="FrameCopyDlg.cpp" />
@@ -316,6 +317,7 @@
     <ClInclude Include="..\MameBake3DLib\INCLUDE\XMLIO.h" />
     <ClInclude Include="ColiIDDlg.h" />
     <ClInclude Include="CopyHistoryDlg.h" />
+    <ClInclude Include="CpInfoDlg.h" />
     <ClInclude Include="dlgid.h" />
     <ClInclude Include="DSUpdateUnderTracking.h" />
     <ClInclude Include="FilterDlg.h" />

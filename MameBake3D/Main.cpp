@@ -110,6 +110,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #include <GColiFile.h>
 #include "SettingsDlg.h"
 #include "CopyHistoryDlg.h"
+#include "CpInfoDlg.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -1009,8 +1010,11 @@ typedef struct tag_cpelem
 }CPELEM2;
 static vector<CPELEM2> s_copymotvec;
 static vector<CPELEM2> s_pastemotvec;
-static int WriteCPTFile();
+static int WriteCPTFile(WCHAR* dstfilename);
+static int WriteCPIFile(WCHAR* cptfilename);
 static bool LoadCPTFile();
+static int LoadCPIFile(HISTORYELEM* srcdstelem);
+
 //static int WriteTBOFile();
 //static bool LoadTBOFile();
 
@@ -18081,8 +18085,11 @@ int OnFrameToolWnd()
 
 			if (!s_copymotvec.empty()) {
 				//添付フォルダのファイルに記録
-				int result = WriteCPTFile();
+				WCHAR retcptfilename[MAX_PATH] = { 0L };
+				int result = WriteCPTFile(retcptfilename);
 				_ASSERT(result == 0);
+				int result2 = WriteCPIFile(retcptfilename);//cp info
+				_ASSERT(result2 == 0);
 			}
 
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
@@ -18108,10 +18115,12 @@ int OnFrameToolWnd()
 
 			if (!s_copymotvec.empty()) {
 				//添付フォルダのファイルに記録
-				int result = WriteCPTFile();
+				WCHAR retcptfilename[MAX_PATH] = { 0L };
+				int result = WriteCPTFile(retcptfilename);
 				_ASSERT(result == 0);
+				int result2 = WriteCPIFile(retcptfilename);//cp info
+				_ASSERT(result2 == 0);
 			}
-
 		}
 	}
 
@@ -30979,7 +30988,7 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 
 	//MB3DOpenProj_20210410215628.txt
 	WCHAR searchfilename[MAX_PATH] = { 0L };
-	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DTempCopyFrames_v1.0.0.13_*.cpt", s_temppath);
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DTempCopyFrames_v1.0.0.18_*.cpt", s_temppath);
 	HANDLE hFind;
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
@@ -31011,6 +31020,14 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 
 		std::sort(vechistory.begin(), vechistory.end());
 		std::reverse(vechistory.begin(), vechistory.end());
+
+		std::vector<HISTORYELEM>::iterator itrhistoryelem;
+		for (itrhistoryelem = vechistory.begin(); itrhistoryelem != vechistory.end(); itrhistoryelem++) {
+			HISTORYELEM curelem = *itrhistoryelem;
+			int result = LoadCPIFile(&curelem);
+			_ASSERT(result == 0);
+			*itrhistoryelem = curelem;//失敗した時にはnewelem.hascpinfo = 0がセットされている
+		}
 	}
 
 	if (!vechistory.empty()) {
@@ -31437,7 +31454,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //}
 
 
-int WriteCPTFile()
+int WriteCPTFile(WCHAR* dstfilename)
 {
 	int cpelemnum;
 	cpelemnum = (int)s_copymotvec.size();
@@ -31451,11 +31468,16 @@ int WriteCPTFile()
 		return 0;
 	}
 
+	if (!dstfilename) {
+		return 0;
+	}
+
+	*dstfilename = 0L;
 
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR cptfilename[MAX_PATH] = { 0L };
-	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.13_%04u%02u%02u%02u%02u%02u.cpt",
+	swprintf_s(cptfilename, MAX_PATH, L"%s\\MB3DTempCopyFrames_v1.0.0.18_%04u%02u%02u%02u%02u%02u.cpt",
 		s_temppath,
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 
@@ -31467,10 +31489,13 @@ int WriteCPTFile()
 		return 1;
 	}
 
+	wcscpy_s(dstfilename, MAX_PATH, cptfilename);
+	*(dstfilename + MAX_PATH - 1) = 0L;
+
 
 	char CPTheader[256];
 	::ZeroMemory(CPTheader, sizeof(char) * 256);
-	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.9");//本体ではない
+	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.18");//本体ではない
 
 	DWORD wleng = 0;
 	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
@@ -31540,10 +31565,173 @@ int WriteCPTFile()
 	}
 
 	FlushFileBuffers(hfile);
+	SetEndOfFile(hfile);
 	CloseHandle(hfile);
 
 
 	return 0;
+}
+
+int WriteCPIFile(WCHAR* srccptfilename)
+{
+
+
+	int cpelemnum;
+	cpelemnum = (int)s_copymotvec.size();
+	if (cpelemnum <= 0) {
+		return 0;
+	}
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_model->GetCurMotInfo()) {
+		return 0;
+	}
+	if (!srccptfilename) {
+		return 0;
+	}
+
+	CPMOTINFO cpinfo;
+	ZeroMemory(&cpinfo, sizeof(CPMOTINFO));
+	/*
+		typedef struct tag_cpinfo
+		{
+			WCHAR fbxname[MAX_PATH];
+			WCHAR motionname[MAX_PATH];
+			double startframe;
+			double framenum;
+			int bvhtype;//0:undef, 1-144:bvh1 - bvh144, -1:bvh_other
+			int importance;//0:undef, 1:tiny, 2:alittle, 3:normal, 4:noticed, 5:imortant, 6:very important
+			WCHAR comment[32];//WCHAR * 31文字まで。３２文字目は終端記号
+
+		}CPMOTINFO;
+	*/
+	cpinfo.startframe = s_copymotvec[0].mp.GetFrame();
+	cpinfo.framenum = s_copymotvec[cpelemnum - 1].mp.GetFrame() - cpinfo.startframe + 1;
+	wcscpy_s(cpinfo.fbxname, MAX_PATH, s_model->GetFileName());
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (!curmi) {
+		return 1;
+	}
+	WCHAR wmotname[MAX_PATH] = { 0L };
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
+	wcscpy_s(cpinfo.motionname, MAX_PATH, wmotname);
+
+	CCpInfoDlg dlg;
+	dlg.SetCpInfo(&cpinfo);
+	int dlgret = (int)dlg.DoModal();
+	if (dlgret != IDOK) {
+		return 1;
+	}
+
+
+	*(srccptfilename + MAX_PATH - 1) = 0L;
+	int cptfilenameleng = wcslen(srccptfilename);
+	if ((cptfilenameleng <= 0) || (cptfilenameleng >= MAX_PATH)) {
+		return 1;
+	}
+
+
+	//cpiファイル名はcptファイルの拡張子をcpiに変えたもの
+	WCHAR cpifilename[MAX_PATH] = { 0L };
+	wcscpy_s(cpifilename, MAX_PATH, srccptfilename);
+	WCHAR* pext;
+	pext = wcsrchr(cpifilename, TEXT('.'));
+	if (!pext) {
+		return 1;
+	}
+	*pext = 0L;
+	wcscat_s(cpifilename, MAX_PATH, L".cpi");
+
+
+	HANDLE hfile = CreateFile(cpifilename, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile == INVALID_HANDLE_VALUE) {
+		DbgOut(L"CPTFile : WriteCPTFile : file open error !!!\n");
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	char CPTheader[256];
+	::ZeroMemory(CPTheader, sizeof(char) * 256);
+	strcpy_s(CPTheader, 256, "MB3DTempCopyInfoFile ver1.0.0.18");//本体ではない
+
+	DWORD wleng = 0;
+	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
+	if (wleng != (sizeof(char) * 256)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int datasize = sizeof(CPMOTINFO);
+	wleng = 0;
+	WriteFile(hfile, &datasize, sizeof(int), &wleng, NULL);
+	if (wleng != sizeof(int)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	wleng = 0;
+	WriteFile(hfile, &cpinfo, sizeof(CPMOTINFO), &wleng, NULL);
+	if (wleng != (sizeof(CPMOTINFO))) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	FlushFileBuffers(hfile);
+	SetEndOfFile(hfile);
+	CloseHandle(hfile);
+
+	return 0;
+}
+
+
+bool ValidateCPIFile(char* dstCPIh, int* dstinfosize, char* srcbuf, DWORD bufleng)
+{
+	if (!dstCPIh || !dstinfosize || !srcbuf || (bufleng <= 0)) {
+		_ASSERT(0);
+		return false;
+	}
+
+	if (bufleng <= (sizeof(char) * 256 + sizeof(int))) {
+		_ASSERT(0);
+		return false;
+	}
+
+	MoveMemory(dstCPIh, srcbuf, sizeof(char) * 256);
+
+	int magicstrlen;
+	magicstrlen = (int)strlen(dstCPIh);
+	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
+		_ASSERT(0);
+		return false;
+	}
+	int cmp18;
+	cmp18 = strcmp(dstCPIh, "MB3DTempCopyInfoFile ver1.0.0.18");//本体ではない
+	if (cmp18 != 0) {
+		_ASSERT(0);
+		return false;
+	}
+
+
+	int infosize;
+	MoveMemory(&infosize, srcbuf + sizeof(char) * 256, sizeof(int));
+
+	DWORD datasize;
+	datasize = (bufleng - sizeof(char) * 256 - sizeof(int));
+	DWORD elemsize;
+	elemsize = sizeof(CPMOTINFO);
+
+	if ((infosize != elemsize) || (datasize != elemsize)) {
+		_ASSERT(0);
+		return false;
+	}
+
+	*dstinfosize = infosize;
+
+	return true;
+
 }
 
 
@@ -31578,16 +31766,23 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 		_ASSERT(0);
 		return false;
 	}
-	int cmp7;
-	int cmp8;
-	int cmp9;
-	cmp7 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.7");//本体ではない
-	cmp8 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.8");//本体ではない
-	cmp9 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");//本体ではない
-	if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0)) {
+	//int cmp7;
+	//int cmp8;
+	//int cmp9;
+	//cmp7 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.7");//本体ではない
+	//cmp8 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.8");//本体ではない
+	//cmp9 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");//本体ではない
+	//if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0)) {
+	//	_ASSERT(0);
+	//	return false;
+	//}
+	int cmp18;
+	cmp18 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.18");//本体ではない
+	if (cmp18 != 0) {
 		_ASSERT(0);
 		return false;
 	}
+
 
 	int cpelemnum;
 	MoveMemory(&cpelemnum, srcbuf + sizeof(char) * 256, sizeof(int));
@@ -31607,6 +31802,123 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 
 	return true;
 }
+
+int LoadCPIFile(HISTORYELEM* srcdstelem)
+{
+
+	WCHAR cpifilename[MAX_PATH] = { 0L };
+	wcscpy_s(cpifilename, MAX_PATH, srcdstelem->wfilename);
+
+	WCHAR* pdot = wcsrchr(cpifilename, TEXT('.'));
+	if (!pdot) {
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+	*pdot = 0L;
+	wcscat_s(cpifilename, MAX_PATH, L".cpi");
+
+	HANDLE hfile;
+	hfile = CreateFile(cpifilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile == INVALID_HANDLE_VALUE) {
+		_ASSERT(0);
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+
+
+	DWORD sizehigh;
+	DWORD bufleng;
+	bufleng = GetFileSize(hfile, &sizehigh);
+	if (bufleng <= 0) {
+		_ASSERT(0);
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+	if (sizehigh != 0) {
+		_ASSERT(0);
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+	char* newbuf;
+	newbuf = (char*)malloc(sizeof(char) * bufleng);//bufleng + 1
+	if (!newbuf) {
+		_ASSERT(0);
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+	ZeroMemory(newbuf, sizeof(char) * bufleng);
+	DWORD rleng, readleng;
+	rleng = bufleng;
+	BOOL bsuccess;
+	bsuccess = ReadFile(hfile, (void*)newbuf, rleng, &readleng, NULL);
+	if (!bsuccess || (rleng != readleng)) {
+		_ASSERT(0);
+		if (newbuf) {
+			free(newbuf);
+			newbuf = 0;
+		}
+		CloseHandle(hfile);
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+
+	int infosize = 0;
+	char CPIheader[256];
+	ZeroMemory(CPIheader, sizeof(char) * 256);
+	bool isvalid;
+	isvalid = ValidateCPIFile(CPIheader, &infosize, newbuf, bufleng);
+	if (!isvalid) {
+		_ASSERT(0);
+		if (newbuf) {
+			free(newbuf);
+			newbuf = 0;
+		}
+		CloseHandle(hfile);
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+
+	DWORD curpos;
+	curpos = sizeof(char) * 256 + sizeof(int);
+
+	CPMOTINFO cpmotinfo;
+	ZeroMemory(&cpmotinfo, sizeof(CPMOTINFO));
+	::MoveMemory(&cpmotinfo, newbuf + curpos, sizeof(CPMOTINFO));
+
+	cpmotinfo.fbxname[MAX_PATH - 1] = 0L;
+	cpmotinfo.motionname[MAX_PATH - 1] = 0L;
+	if (cpmotinfo.fbxname[0] == 0L) {
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+	if (cpmotinfo.motionname[0] == 0L) {
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+
+	if ((cpmotinfo.bvhtype < 0) || (cpmotinfo.bvhtype > 144)) {
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+	if ((cpmotinfo.importance < 0) || (cpmotinfo.importance > 6)) {
+		srcdstelem->hascpinfo = 0;
+		return 1;
+	}
+
+	srcdstelem->cpinfo = cpmotinfo;
+	srcdstelem->hascpinfo = 1;
+
+	if (newbuf) {
+		free(newbuf);
+		newbuf = 0;
+	}
+	CloseHandle(hfile);
+
+	return 0;
+
+}
+
 
 
 bool LoadCPTFile()
@@ -31681,11 +31993,11 @@ bool LoadCPTFile()
 	bsuccess = ReadFile(hfile, (void*)newbuf, rleng, &readleng, NULL);
 	if (!bsuccess || (rleng != readleng)) {
 		_ASSERT(0);
-		CloseHandle(hfile);
-		if (!newbuf) {
-			_ASSERT(0);
-			return false;
+		if (newbuf) {
+			free(newbuf);
+			newbuf = 0;
 		}
+		CloseHandle(hfile);
 		return false;
 	}
 

@@ -806,6 +806,7 @@ int CFrameCopyDlg::WriteTBOFile()
 
 
 		FlushFileBuffers(hfile);
+		SetEndOfFile(hfile);
 		CloseHandle(hfile);
 	}
 
