@@ -705,6 +705,10 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 					stend.wYear = _wtol(findendyear);
 					stend.wMonth = _wtol(findendmonth);
 					stend.wDay = _wtol(findendday);
+					stend.wHour = 23;
+					stend.wMinute = 59;
+					stend.wSecond = 59;
+					stend.wMilliseconds = 999;
 					SystemTimeToFileTime(&ststart, &startfiletime);
 					SystemTimeToFileTime(&stend, &endfiletime);
 
