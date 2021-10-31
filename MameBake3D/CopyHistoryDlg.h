@@ -13,6 +13,7 @@
 #include "resource.h"       // ÉÅÉCÉì ÉVÉìÉ{Éã
 
 #include <vector>
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyHistoryDlg
@@ -29,10 +30,7 @@ BEGIN_MSG_MAP(CCopyHistoryDlg)
 	MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 	COMMAND_ID_HANDLER(IDOK, OnOK)
 	COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
-	COMMAND_ID_HANDLER(IDC_BUTTON1, OnSelFbxName)
-	COMMAND_ID_HANDLER(IDC_BUTTON2, OnSelMotionName)
-	COMMAND_ID_HANDLER(IDC_BUTTON4, OnSelBvhType)
-	COMMAND_ID_HANDLER(IDC_BUTTON5, OnSelImportance)
+	COMMAND_ID_HANDLER(IDC_CHECK1, OnCheckMostRecent)
 	COMMAND_ID_HANDLER(IDC_BUTTON3, OnSearch)
 	COMMAND_ID_HANDLER(IDC_BUTTON6, OnDelete1)
 	COMMAND_ID_HANDLER(IDC_BUTTON7, OnDelete2)
@@ -54,10 +52,8 @@ END_MSG_MAP()
 	LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
-	LRESULT OnSelFbxName(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT OnSelMotionName(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT OnSelBvhType(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT OnSelImportance(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnCheckMostRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+
 	LRESULT OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	LRESULT OnDelete1(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
@@ -99,6 +95,7 @@ private:
 	int ParamsToDlg();
 
 	LRESULT OnDelete(int delid);
+	void SetEnableCtrls();
 
 private:
 	CWindow m_dlg_wnd;
@@ -108,6 +105,7 @@ private:
 	WCHAR m_selectname[MAX_PATH];
 
 	std::vector<HISTORYELEM> m_copyhistory;
+	std::vector<HISTORYELEM> m_savecopyhistory;
 
 	UINT m_ctrlid[10];
 	UINT m_startframeid[10];
@@ -116,9 +114,17 @@ private:
 	UINT m_importanceid[10];
 	UINT m_commentid[10];
 
+	UINT m_text1[10];
+	UINT m_text2[10];
+
 	WCHAR m_strimportance[7][32];
 
+	std::vector<std::wstring> m_strcombo_fbxname;
+	std::vector<std::wstring> m_strcombo_motionname;
+	std::vector<int> m_strcombo_bvhtype;
 
+
+	bool m_initsearchcomboflag;
 };
 
 #endif //__ColiIDDlg_H_
