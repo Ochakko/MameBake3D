@@ -1121,6 +1121,8 @@ static SPGUISW s_spmenuaimbar[SPMENU_MAX];
 static int s_oprigflag = 0;
 static SPGUISW s_spsel3d;
 static SPELEM s_spmousehere;
+static SPGUISW s_spikmodesw[3];
+
 
 typedef struct tag_modelpanel
 {
@@ -1753,6 +1755,10 @@ static int PickSpRig(POINT srcpos);
 //static int SetSpBtParams();
 //static int PickSpBt(POINT srcpos);
 static int SetSpMouseHereParams();
+static int SetSpIkModeSWParams();
+static int PickSpIkModeSW(POINT srcpos);
+
+
 
 static int InsertCopyMP(CBone* curbone, double curframe);
 static void InsertCopyMPReq(CBone* curbone, double curframe);
@@ -2283,7 +2289,6 @@ void InitApp()
 
 
 
-
 	s_firstmodelpanelpos = true;
 	s_modelpanelpos = WindowPos(0, 0);;
 	s_firstmotionpanelpos = true;
@@ -2312,6 +2317,8 @@ void InitApp()
 	s_dispselect = true;
 	//s_displightarrow = true;
 	s_dispconvbone = false;
+
+	s_oprigflag = 0;
 
 	s_tkeyflag = 0;//bone twist
 	s_closeFlag = false;			// 終了フラグ
@@ -2671,6 +2678,12 @@ void InitApp()
 		s_spsel3d.state = false;
 	}
 
+	{
+		ZeroMemory(&s_spikmodesw, sizeof(SPGUISW) * 3);
+		s_spikmodesw[0].state = true;//初回のGUISetVisibleで反転してfalseになる
+		s_spikmodesw[1].state = false;//初回のGUISetVisibleで反転してfalseになる
+		s_spikmodesw[2].state = false;//初回のGUISetVisibleで反転してfalseになる
+	}
 	{
 		ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
 		int spgno;
@@ -3140,13 +3153,34 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spaxis[0].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[0].sprite);
-	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.png", 0, 0), return S_FALSE);
+	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.gif", 0, 0), return S_FALSE);
 	s_spaxis[1].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[1].sprite);
-	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.png", 0, 0), return S_FALSE);
+	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.gif", 0, 0), return S_FALSE);
 	s_spaxis[2].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[2].sprite);
-	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.png", 0, 0), return S_FALSE);
+	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.gif", 0, 0), return S_FALSE);
+
+	//SpriteSwitch IKMode
+	s_spikmodesw[0].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spikmodesw[0].spriteON);
+	CallF(s_spikmodesw[0].spriteON->Create(pd3dImmediateContext, mpath, L"IKRot2ON.gif", 0, 0), return S_FALSE);
+	s_spikmodesw[0].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spikmodesw[0].spriteOFF);
+	CallF(s_spikmodesw[0].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKRot2OFF.gif", 0, 0), return S_FALSE);
+	s_spikmodesw[1].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spikmodesw[1].spriteON);
+	CallF(s_spikmodesw[1].spriteON->Create(pd3dImmediateContext, mpath, L"IKMove2ON.gif", 0, 0), return S_FALSE);
+	s_spikmodesw[1].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spikmodesw[1].spriteOFF);
+	CallF(s_spikmodesw[1].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKMove2OFF.gif", 0, 0), return S_FALSE);
+	s_spikmodesw[2].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spikmodesw[2].spriteON);
+	CallF(s_spikmodesw[2].spriteON->Create(pd3dImmediateContext, mpath, L"IKScale2ON.gif", 0, 0), return S_FALSE);
+	s_spikmodesw[2].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spikmodesw[2].spriteOFF);
+	CallF(s_spikmodesw[2].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKScale2OFF.gif", 0, 0), return S_FALSE);
+
 
 	//SpriteSwitch ON
 	s_spguisw[SPGUISW_SPRITEFK].spriteON = new CMySprite(s_pdev);
@@ -3258,20 +3292,20 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_I].sprite);
-	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.png", 0, 0), return S_FALSE);
+	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.gif", 0, 0), return S_FALSE);
 	s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_KAI].sprite);
-	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.png", 0, 0), return S_FALSE);
+	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.gif", 0, 0), return S_FALSE);
 	s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
-	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.png", 0, 0), return S_FALSE);
+	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.gif", 0, 0), return S_FALSE);
 
 	s_sprig[SPRIG_INACTIVE].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_sprig[SPRIG_INACTIVE].sprite);
-	CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRig.png", 0, 0), return S_FALSE);
+	CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigOFF.gif", 0, 0), return S_FALSE);
 	s_sprig[SPRIG_ACTIVE].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_sprig[SPRIG_ACTIVE].sprite);
-	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"ToggleRigActive.png", 0, 0), return S_FALSE);
+	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigON.gif", 0, 0), return S_FALSE);
 
 	//s_spbt.sprite = new CMySprite(s_pdev);
 	//_ASSERT(s_spbt.sprite);
@@ -3494,6 +3528,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpMenuAimBarParams();//CreateMainMenuAimBarWndよりも後
 	SetSpAxisParams();
 	SetSpGUISWParams();
+	SetSpIkModeSWParams();
 	SetSpRigidSWParams();
 	SetSpRetargetSWParams();
 	SetSpCamParams();
@@ -4347,6 +4382,23 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_spsel3d.spriteOFF = 0;
 	}
 
+	{
+		int spgno;
+		for (spgno = 0; spgno < 3; spgno++) {
+			CMySprite* curspgON = s_spikmodesw[spgno].spriteON;
+			if (curspgON) {
+				delete curspgON;
+			}
+			s_spikmodesw[spgno].spriteON = 0;
+
+			CMySprite* curspgOFF = s_spikmodesw[spgno].spriteOFF;
+			if (curspgOFF) {
+				delete curspgOFF;
+			}
+			s_spikmodesw[spgno].spriteOFF = 0;
+
+		}
+	}
 
 	{
 		int spgno;
@@ -5784,19 +5836,68 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//}
 
 		//check and op rigflag : s_oprigflag turn to 1 when RClickRigMenu selected too.
+		{
+			//IK Mode
+			int pickikmodeflag = 0;
+			pickikmodeflag = PickSpIkModeSW(ptCursor);
+			if (pickikmodeflag == 1) {
+				s_ikkind = 0;
+				s_spikmodesw[0].state = true;
+				s_spikmodesw[1].state = false;
+				s_spikmodesw[2].state = false;
+			}
+			else if (pickikmodeflag == 2) {
+				s_ikkind = 1;
+				s_spikmodesw[0].state = false;
+				s_spikmodesw[1].state = true;
+				s_spikmodesw[2].state = false;
+			}
+			else if (pickikmodeflag == 3) {
+				s_ikkind = 2;
+				s_spikmodesw[0].state = false;
+				s_spikmodesw[1].state = false;
+				s_spikmodesw[2].state = true;
+			}
+		}
+		//int oprigdoneflag = 0;
+		//if (s_oprigflag == 1) {
+		//	int pickrigflag = 0;
+		//	pickrigflag = PickSpRig(ptCursor);
+		//	if (pickrigflag == 1) {
+		//		RollbackCurBoneNo();
+		//		ToggleRig();
+		//		oprigdoneflag = 1;
+		//			
+		//		//s_oprigflag == 1 のときのpickrigflag == 1　で　ToggleRigだから　rigはオフ
+		//		s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
+		//	}
+		//	else {
+		//		//s_oprigflag == 1 のときのpickrigflag == 0　だから　rigはオン
+		//		//s_curboneno はそのまま
+		//	}
+		//}
 		int oprigdoneflag = 0;
-		if (s_oprigflag == 1) {
-			int pickrigflag = 0;
-			pickrigflag = PickSpRig(ptCursor);
-			if (pickrigflag == 1) {
+		int pickrigflag = 0;
+		pickrigflag = PickSpRig(ptCursor);
+		if (pickrigflag == 1) {
+			if (s_oprigflag == 1) {
+				
+				//オンだったRigをオフにする
+
 				RollbackCurBoneNo();
 				ToggleRig();
 				oprigdoneflag = 1;
-					
-				//s_oprigflag == 1 のときのpickrigflag == 1　で　ToggleRigだから　rigはオフ
+				
 				s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
 			}
 			else {
+
+				//オフだったリグをオンにする
+
+				RollbackCurBoneNo();
+
+				ToggleRig();
+				oprigdoneflag = 1;
 				//s_oprigflag == 1 のときのpickrigflag == 0　だから　rigはオン
 				//s_curboneno はそのまま
 			}
@@ -5821,18 +5922,20 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			RollbackCurBoneNo();
 		}else if (s_model){
 			int spakind = 0;
-			int pickrigflag = 0;
+			//int pickrigflag = 0;
 			if (s_spguisw[SPGUISW_SPRITEFK].state) {
 				spakind = PickSpAxis(ptCursor);
-				pickrigflag = PickSpRig(ptCursor);
+				//pickrigflag = PickSpRig(ptCursor);
 			}
 			if ((spakind != 0) && (s_saveboneno >= 0)){
 				RollbackCurBoneNo();
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
-			} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
-				RollbackCurBoneNo();
-				ToggleRig();
+
+			//} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
+			//	RollbackCurBoneNo();
+			//	ToggleRig();
+
 			}else{
 				if (s_oprigflag == 0){
 					if (g_shiftkey == false){
@@ -6488,7 +6591,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 	float trastep = s_totalmb.r * 0.05f;
 	int modelnum = (int)s_modelindex.size();
 	//int modelno;
-	int tmpikindex;
+	//int tmpikindex;
 
     switch( nControlID )
     {
@@ -6697,49 +6800,49 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			//}
 			break;
 
-		case IDC_COMBO_EDITMODE:
-			if( s_model ){
-				RollbackCurBoneNo();
-				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
-				tmpikindex = (int)PtrToUlong(pComboBox->GetSelectedData());
+		//case IDC_COMBO_EDITMODE:
+		//	if( s_model ){
+		//		RollbackCurBoneNo();
+		//		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
+		//		tmpikindex = (int)PtrToUlong(pComboBox->GetSelectedData());
 
-				switch( tmpikindex ){
-				case IDC_IK_ROT:
-					s_ikkind = 0;
-					refreshEulerGraph();
-					break;
-				case IDC_IK_MV:
-					s_ikkind = 1;
-					refreshEulerGraph();
-					break;
-				case IDC_IK_SC:
-					s_ikkind = 2;
-					refreshEulerGraph();
-					break;
-				//case IDC_IK_LIGHT:
-				//	s_ikkind = 2;
-				//	s_displightarrow = true;
-				//	if (s_LightCheckBox){
-				//		s_LightCheckBox->SetChecked(true);
-				//	}
-				//	break;
-				case IDC_BT_RIGID:
-					GUIMenuSetVisible(1, 1);
-					break;
-				case IDC_BT_IMP:
-					GUIMenuSetVisible(1, 2);
-					break;
-				case IDC_BT_GP:
-					GUIMenuSetVisible(1, 3);
-					break;
-				case IDC_BT_DAMP:
-					GUIMenuSetVisible(1, 4);
-					break;
-				default:
-					break;
-				}
-			}
-			break;
+		//		switch( tmpikindex ){
+		//		case IDC_IK_ROT:
+		//			s_ikkind = 0;
+		//			refreshEulerGraph();
+		//			break;
+		//		case IDC_IK_MV:
+		//			s_ikkind = 1;
+		//			refreshEulerGraph();
+		//			break;
+		//		case IDC_IK_SC:
+		//			s_ikkind = 2;
+		//			refreshEulerGraph();
+		//			break;
+		//		//case IDC_IK_LIGHT:
+		//		//	s_ikkind = 2;
+		//		//	s_displightarrow = true;
+		//		//	if (s_LightCheckBox){
+		//		//		s_LightCheckBox->SetChecked(true);
+		//		//	}
+		//		//	break;
+		//		case IDC_BT_RIGID:
+		//			GUIMenuSetVisible(1, 1);
+		//			break;
+		//		case IDC_BT_IMP:
+		//			GUIMenuSetVisible(1, 2);
+		//			break;
+		//		case IDC_BT_GP:
+		//			GUIMenuSetVisible(1, 3);
+		//			break;
+		//		case IDC_BT_DAMP:
+		//			GUIMenuSetVisible(1, 4);
+		//			break;
+		//		default:
+		//			break;
+		//		}
+		//	}
+		//	break;
 
 		case IDC_COMBO_IKLEVEL:
 			RollbackCurBoneNo();
@@ -14936,17 +15039,22 @@ int SetSpAxisParams()
 		return 0;
 	}
 
-	float spawidth = 32.0f;
-	int spashift = 12;
-	s_spaxis[0].dispcenter.x = (int)( s_mainwidth * 0.57f );
-	s_spaxis[0].dispcenter.y = (int)( 30.0f * ( (float)s_mainheight / 620.0 ) );
-	spashift = (int)( (float)spashift * ( (float)s_mainwidth / 600.0 ) ); 
+	float spawidth = 50.0f;
+	float spaheight = 50.0f;
+	int spashift = 6;
+	//s_spaxis[0].dispcenter.x = (int)( s_mainwidth * 0.57f );
+	//s_spaxis[0].dispcenter.y = (int)( 30.0f * ( (float)s_mainheight / 620.0 ) );
+	//s_spaxis[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 4;
+	//s_spaxis[0].dispcenter.y = 16 + 10;
+	s_spaxis[0].dispcenter.x = s_mainwidth - 35 - 50 - 10;
+	s_spaxis[0].dispcenter.y = 35;
+	//spashift = (int)( (float)spashift * ( (float)s_mainwidth / 600.0 ) );
 
-	s_spaxis[1].dispcenter.x = s_spaxis[0].dispcenter.x + (int)( spawidth ) + spashift;
-	s_spaxis[1].dispcenter.y = s_spaxis[0].dispcenter.y;
+	s_spaxis[1].dispcenter.x = s_spaxis[0].dispcenter.x;
+	s_spaxis[1].dispcenter.y = s_spaxis[0].dispcenter.y + (int)spaheight + spashift;
 
-	s_spaxis[2].dispcenter.x = s_spaxis[1].dispcenter.x + (int)( spawidth ) + spashift;
-	s_spaxis[2].dispcenter.y = s_spaxis[0].dispcenter.y;
+	s_spaxis[2].dispcenter.x = s_spaxis[0].dispcenter.x;
+	s_spaxis[2].dispcenter.y = s_spaxis[1].dispcenter.y + (int)spaheight + spashift;;
 
 	int spacnt;
 	for( spacnt = 0; spacnt < SPAXISNUM; spacnt++ ){
@@ -15031,7 +15139,6 @@ int SetSpRetargetSWParams()
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x = 120;
-	//s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486;
 	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 - MAINMENUAIMBARH;
 
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].dispcenter.x = s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x + (int)spgwidth + spgshift;
@@ -15236,6 +15343,52 @@ int SetSpSel3DParams()
 
 }
 
+int SetSpIkModeSWParams()
+{
+	if (!(s_spikmodesw[0].spriteON) || !(s_spikmodesw[0].spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	float spgwidth = 50.0f;
+	float spgheight = 50.0f;
+	int spgshift = 6;
+	s_spikmodesw[0].dispcenter.x = s_mainwidth - 35;
+	s_spikmodesw[0].dispcenter.y = 35;
+
+	s_spikmodesw[1].dispcenter.x = s_spikmodesw[0].dispcenter.x;
+	s_spikmodesw[1].dispcenter.y = s_spikmodesw[0].dispcenter.y + (int)spgheight + spgshift;
+
+	s_spikmodesw[2].dispcenter.x = s_spikmodesw[1].dispcenter.x;
+	s_spikmodesw[2].dispcenter.y = s_spikmodesw[1].dispcenter.y + (int)spgheight + spgshift;
+
+	int spgcnt;
+	for (spgcnt = 0; spgcnt < 3; spgcnt++) {
+		ChaVector3 disppos;
+		disppos.x = (float)(s_spikmodesw[spgcnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spikmodesw[spgcnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.z = 0.0f;
+		ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+
+		if (s_spikmodesw[spgcnt].spriteON) {
+			CallF(s_spikmodesw[spgcnt].spriteON->SetPos(disppos), return 1);
+			CallF(s_spikmodesw[spgcnt].spriteON->SetSize(dispsize), return 1);
+		}
+		else {
+			_ASSERT(0);
+		}
+		if (s_spikmodesw[spgcnt].spriteOFF) {
+			CallF(s_spikmodesw[spgcnt].spriteOFF->SetPos(disppos), return 1);
+			CallF(s_spikmodesw[spgcnt].spriteOFF->SetSize(dispsize), return 1);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+
+	return 0;
+}
 
 
 int SetSpGUISWParams()
@@ -15329,11 +15482,16 @@ int SetSpCamParams()
 		return 0;
 	}
 
-	float spawidth = 32.0f;
-	int spashift = 12;
-	s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
-	s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
-	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
+	float spawidth = 50.0f;
+	int spashift = 6;
+	//s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
+	//s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
+	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 3;
+	//s_spcam[0].dispcenter.y = 16 + 10 + (int(spawidth * 1.5f));
+	s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
+	s_spcam[0].dispcenter.y = 25 + 10;
+
+	//spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
 
 	s_spcam[1].dispcenter.x = s_spcam[0].dispcenter.x + (int)(spawidth)+spashift;
 	s_spcam[1].dispcenter.y = s_spcam[0].dispcenter.y;
@@ -15367,13 +15525,22 @@ int SetSpRigParams()
 		return 0;
 	}
 
-	float spawidth = 32.0f;
-	int spashift = 12;
+	float spawidth = 50.0f;
+	int spashift = 6;
 	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
-	s_sprig[SPRIG_INACTIVE].dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
-	s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
+	//s_sprig[SPRIG_INACTIVE].dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
+	//s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
+	s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - 50 - 6;
+	s_sprig[SPRIG_INACTIVE].dispcenter.y = 25 + 10;
 
-	s_sprig[SPRIG_ACTIVE].dispcenter = s_sprig[0].dispcenter;
+
+	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
+	//s_spcam[0].dispcenter.y = 25 + 10;
+
+
+
+	s_sprig[SPRIG_ACTIVE].dispcenter.x = s_sprig[SPRIG_INACTIVE].dispcenter.x;
+	s_sprig[SPRIG_ACTIVE].dispcenter.y = s_sprig[SPRIG_INACTIVE].dispcenter.y;
 
 
 	ChaVector3 disppos;
@@ -15469,16 +15636,16 @@ int PickSpAxis( POINT srcpos )
 	//}
 
 
-	int starty = s_spaxis[0].dispcenter.y - 16;
-	int endy = starty + 32;
+	int startx = s_spaxis[0].dispcenter.x - 25;
+	int endx = startx + 50;
 
-	if( (srcpos.y >= starty) && (srcpos.y <= endy) ){
+	if( (srcpos.x >= startx) && (srcpos.x <= endx) ){
 		int spacnt;
 		for( spacnt = 0; spacnt < SPAXISNUM; spacnt++ ){
-			int startx = s_spaxis[spacnt].dispcenter.x - 16;
-			int endx = startx + 32;
+			int starty = s_spaxis[spacnt].dispcenter.y - 25;
+			int endy = starty + 50;
 
-			if( (srcpos.x >= startx) && (srcpos.x <= endx) ){
+			if( (srcpos.y >= starty) && (srcpos.y <= endy) ){
 				switch( spacnt ){
 				case 0:
 					kind = PICK_SPA_X;
@@ -15621,6 +15788,56 @@ int PickSpRetargetSW(POINT srcpos)
 	return kind;
 }
 
+int PickSpIkModeSW(POINT srcpos)
+{
+	int kind = 0;
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	//spguisw
+	if (kind == 0) {
+		int startx = s_spikmodesw[0].dispcenter.x - 25;
+		int endx = startx + 50;
+
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			int spgcnt;
+			for (spgcnt = 0; spgcnt < 3; spgcnt++) {
+				int starty = s_spikmodesw[spgcnt].dispcenter.y - 25;
+				int endy = starty + 50 + 6;
+
+				if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+					switch (spgcnt) {
+					case 0:
+						kind = 1;
+						break;
+					case 1:
+						kind = 2;
+						break;
+					case 2:
+						kind = 3;
+						break;
+					default:
+						kind = 1;
+						break;
+					}
+					break;
+				}
+			}
+		}
+
+
+		//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
+		//	kind, srcpos.x, srcpos.y, starty, endy );
+		//int spacnt;
+		//for( spacnt = 0; spacnt < 3; spacnt++ ){
+		//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spaxis[spacnt].dispcenter.x, s_spaxis[spacnt].dispcenter.x + 32 );
+		//}
+	}
+	return kind;
+}
 
 
 int PickSpGUISW(POINT srcpos)
@@ -15701,22 +15918,22 @@ int PickSpCam(POINT srcpos)
 	//}
 
 
-	int starty = s_spcam[SPR_CAM_I].dispcenter.y - 16;
-	int endy = starty + 32;
+	int starty = s_spcam[SPR_CAM_I].dispcenter.y - 25;
+	int endy = starty + 50;
 
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
 		int spacnt;
 		for (spacnt = 0; spacnt < SPR_CAM_MAX; spacnt++){
-			int startx = s_spcam[spacnt].dispcenter.x - 16;
-			int endx = startx + 32;
+			int startx = s_spcam[spacnt].dispcenter.x - 25;
+			int endx = startx + 50;
 
 			if ((srcpos.x >= startx) && (srcpos.x <= endx)){
 				switch (spacnt){
 				case 0:
-					kind = PICK_CAMMOVE;
+					kind = PICK_CAMROT;
 					break;
 				case 1:
-					kind = PICK_CAMROT;
+					kind = PICK_CAMMOVE;
 					break;
 				case 2:
 					kind = PICK_CAMDIST;
@@ -15754,13 +15971,13 @@ int PickSpRig(POINT srcpos)
 		return 0;
 	}
 
-	int starty = s_sprig[SPRIG_INACTIVE].dispcenter.y - 16;
-	int endy = starty + 32;
+	int starty = s_sprig[SPRIG_INACTIVE].dispcenter.y - 25;
+	int endy = starty + 50;
 
 	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
-		int startx = s_sprig[SPRIG_INACTIVE].dispcenter.x - 16;
-		int endx = startx + 32;
+		int startx = s_sprig[SPRIG_INACTIVE].dispcenter.x - 25;
+		int endx = startx + 50;
 
 		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
 			pickflag = 1;
@@ -18801,8 +19018,9 @@ int CreateUtDialog()
 	s_dsutgui0.clear();
 	s_dsutguiid0.clear();
 
-	swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
+	//swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
 	//g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
+	iY += addh;
 	//g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	s_ui_lightscale = g_SampleUI.GetControl(IDC_LIGHT_SCALE);
@@ -18913,23 +19131,25 @@ int CreateUtDialog()
 	}
 	pComboBox0->SetSelectedByData(ULongToPtr(1));
 
-
-	g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, ctrlxlen, ctrlh);
-	s_ui_editmode = g_SampleUI.GetControl(IDC_COMBO_EDITMODE);
-	_ASSERT(s_ui_editmode);
-	s_dsutgui0.push_back(s_ui_editmode);
-	s_dsutguiid0.push_back(IDC_COMBO_EDITMODE);
-	CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
-	pComboBox1->RemoveAllItems();
-	pComboBox1->AddItem(L"IKRot", ULongToPtr(IDC_IK_ROT));
-	pComboBox1->AddItem(L"IKMove", ULongToPtr(IDC_IK_MV));
-	pComboBox1->AddItem(L"IKScale", ULongToPtr(IDC_IK_SC));
-	//pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
-	//pComboBox1->AddItem(L"Rigid", ULongToPtr(IDC_BT_RIGID));
-	//pComboBox1->AddItem(L"Impulse", ULongToPtr(IDC_BT_IMP));
-	//pComboBox1->AddItem(L"Ground", ULongToPtr(IDC_BT_GP));
-	//pComboBox1->AddItem(L"DampAnim", ULongToPtr(IDC_BT_DAMP));
-	pComboBox1->SetSelectedByData(ULongToPtr(0));
+	//######################################
+	//３Dウインドウ右側の３つのスプライト方式に変更
+	//######################################
+	//g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, ctrlxlen, ctrlh);
+	//s_ui_editmode = g_SampleUI.GetControl(IDC_COMBO_EDITMODE);
+	//_ASSERT(s_ui_editmode);
+	//s_dsutgui0.push_back(s_ui_editmode);
+	//s_dsutguiid0.push_back(IDC_COMBO_EDITMODE);
+	//CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
+	//pComboBox1->RemoveAllItems();
+	//pComboBox1->AddItem(L"IKRot", ULongToPtr(IDC_IK_ROT));
+	//pComboBox1->AddItem(L"IKMove", ULongToPtr(IDC_IK_MV));
+	//pComboBox1->AddItem(L"IKScale", ULongToPtr(IDC_IK_SC));
+	////pComboBox1->AddItem( L"ライト回転", ULongToPtr( IDC_IK_LIGHT ) );
+	////pComboBox1->AddItem(L"Rigid", ULongToPtr(IDC_BT_RIGID));
+	////pComboBox1->AddItem(L"Impulse", ULongToPtr(IDC_BT_IMP));
+	////pComboBox1->AddItem(L"Ground", ULongToPtr(IDC_BT_GP));
+	////pComboBox1->AddItem(L"DampAnim", ULongToPtr(IDC_BT_DAMP));
+	//pComboBox1->SetSelectedByData(ULongToPtr(0));
 	s_ikkind = 0;
 
 
@@ -21206,6 +21426,31 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		_ASSERT(0);
 	}
 
+
+
+	//IK Mode
+	if(g_previewFlag == 0){
+		int spgcnt;
+		for (spgcnt = 0; spgcnt < 3; spgcnt++) {
+			if (s_spikmodesw[spgcnt].state) {
+				if (s_spikmodesw[spgcnt].spriteON) {
+					s_spikmodesw[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				if (s_spikmodesw[spgcnt].spriteOFF) {
+					s_spikmodesw[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+		}
+	}
+
 	
 	//aimbar
 	if (g_enableDS && (s_dsdeviceid >= 0)) {
@@ -21300,27 +21545,33 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 	}
 
+
+
+
 	if (s_platemenukind == SPPLATEMENUKIND_GUI) {
 		//menu 0 : Select 3DWindow GUI
-		int spgcnt;
-		for (spgcnt = 0; spgcnt < SPGUISWNUM; spgcnt++) {
-			if (s_spguisw[spgcnt].state) {
-				if (s_spguisw[spgcnt].spriteON) {
-					s_spguisw[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+		{
+			int spgcnt;
+			for (spgcnt = 0; spgcnt < SPGUISWNUM; spgcnt++) {
+				if (s_spguisw[spgcnt].state) {
+					if (s_spguisw[spgcnt].spriteON) {
+						s_spguisw[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 				else {
-					_ASSERT(0);
-				}
-			}
-			else {
-				if (s_spguisw[spgcnt].spriteOFF) {
-					s_spguisw[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
+					if (s_spguisw[spgcnt].spriteOFF) {
+						s_spguisw[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 			}
 		}
+
 	}
 	else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
 		//menu 1 : Select SideMenu 
@@ -21388,11 +21639,13 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		}
 
 		if ((s_oprigflag >= 0) && (s_oprigflag < SPRIGMAX)) {
-			if (s_sprig[s_oprigflag].sprite) {
-				s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
+			if (s_customrigbone) {
+				if (s_sprig[s_oprigflag].sprite) {
+					s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
 			}
 		}
 
@@ -22585,7 +22838,7 @@ int ToggleRig()
 				s_customrigdlg = 0;
 			}
 
-			GUIMenuSetVisible(s_platemenukind, s_platemenuno);
+			//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 
 		}
 	}
@@ -22597,7 +22850,7 @@ int ToggleRig()
 		}
 		s_pickinfo.buttonflag = 0;
 
-		GUIMenuSetVisible(s_platemenukind, s_platemenuno);
+		//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 	}
 	return 0;
 }
