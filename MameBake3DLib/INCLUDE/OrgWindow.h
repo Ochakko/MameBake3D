@@ -6745,6 +6745,28 @@ void s_dummyfunc()
 			return -1;
 		}
 
+		void WheelShowPosTime()
+		{
+			double newshowpostime;
+			if (wheeldelta > 0) {
+				newshowpostime = min((showPos_time + 1.0), maxTime);
+			}
+			else {
+				newshowpostime = max(0, (showPos_time - 1.0));
+			}
+			showPos_time = newshowpostime;
+
+			//çƒï`âÊóvãÅ
+			//if (rewriteOnChange) {
+			//callRewrite();//Main.cpp refreshEulerGraphÇ≈çƒï`âÊÇ∑ÇÈ
+			//}
+
+			//setShowPosTime(((double)(e.localX - movableXStart)) * (maxTime - showTimeLength) / (double)movableX);
+			//dragScrollBarTime = true;
+		}
+
+
+
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : maxTime
 		void ResetScaleAndOffset()

@@ -64,6 +64,9 @@ LRESULT CSettingsDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHand
 	else if (m_dlg_wnd.IsDlgButtonChecked(IDC_RADIO5)) {
 		curbgcolindex = BGCOL_RED;
 	}
+	else if (m_dlg_wnd.IsDlgButtonChecked(IDC_RADIO6)) {
+		curbgcolindex = BGCOL_GRAY;
+	}
 
 	g_ClearColorIndex = curbgcolindex;
 
@@ -80,7 +83,7 @@ LRESULT CSettingsDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& b
 
 int CSettingsDlg::ParamsToDlg()
 {
-	m_dlg_wnd.CheckRadioButton(IDC_RADIO1, IDC_RADIO5, (g_ClearColorIndex + IDC_RADIO1));
+	m_dlg_wnd.CheckRadioButton(IDC_RADIO1, IDC_RADIO6, (g_ClearColorIndex + IDC_RADIO1));
 
 	return 0;
 }

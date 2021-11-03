@@ -980,6 +980,7 @@ static bool s_timelineRUpFlag = false;
 static bool s_timelinembuttonFlag = false;
 static int s_mbuttoncnt = 1;
 static bool s_timelinewheelFlag = false;
+static bool s_timelineshowposFlag = false;
 
 static bool s_prevrangeFlag = false;
 static bool s_nextrangeFlag = false;
@@ -2258,6 +2259,8 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+	s_ikkind = 0;
+
 	g_ClearColorIndex = 0;
 	//g_ClearColor[BGCOL_MAX][4] = {
 	//	{0.0f, 0.0f, 0.0f, 1.0f},
@@ -2286,6 +2289,10 @@ void InitApp()
 	g_ClearColor[BGCOL_RED][1] = 0.5f;
 	g_ClearColor[BGCOL_RED][2] = 0.5f;
 	g_ClearColor[BGCOL_RED][3] = 1.0f;
+	g_ClearColor[BGCOL_GRAY][0] = 0.5f;
+	g_ClearColor[BGCOL_GRAY][1] = 0.5f;
+	g_ClearColor[BGCOL_GRAY][2] = 0.5f;
+	g_ClearColor[BGCOL_GRAY][3] = 1.0f;
 
 
 
@@ -2362,6 +2369,7 @@ void InitApp()
 	s_timelinembuttonFlag = false;
 	s_mbuttoncnt = 1;
 	s_timelinewheelFlag = false;
+	s_timelineshowposFlag = false;
 	s_prevrangeFlag = false;
 	s_nextrangeFlag = false;
 
@@ -5845,18 +5853,21 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_spikmodesw[0].state = true;
 				s_spikmodesw[1].state = false;
 				s_spikmodesw[2].state = false;
+				refreshEulerGraph();
 			}
 			else if (pickikmodeflag == 2) {
 				s_ikkind = 1;
 				s_spikmodesw[0].state = false;
 				s_spikmodesw[1].state = true;
 				s_spikmodesw[2].state = false;
+				refreshEulerGraph();
 			}
 			else if (pickikmodeflag == 3) {
 				s_ikkind = 2;
 				s_spikmodesw[0].state = false;
 				s_spikmodesw[1].state = false;
 				s_spikmodesw[2].state = true;
+				refreshEulerGraph();
 			}
 		}
 		//int oprigdoneflag = 0;
@@ -9535,9 +9546,11 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 					if (s_model) {
 						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll ‚Ì S
 							s_timelinewheelFlag = true;
+							s_timelineshowposFlag = false;
 						}
 						else {
-							s_owpLTimeline->WheelShowPosTime();
+							s_timelinewheelFlag = false;
+							s_timelineshowposFlag = true;
 						}
 					}
 				});
@@ -18183,6 +18196,20 @@ int OnFrameMouseButton()
 		OnTimeLineWheel();
 	}
 
+	if (s_timelineshowposFlag) {
+		s_timelineshowposFlag = false;
+
+		if (s_owpLTimeline) {
+			s_owpLTimeline->WheelShowPosTime();
+		}
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->WheelShowPosTime();
+			refreshEulerGraph();
+		}
+		
+	}
+
+
 	if (s_timelineRUpFlag){//s_timelineWnd
 		s_timelineRUpFlag = false;
 
@@ -19150,7 +19177,8 @@ int CreateUtDialog()
 	////pComboBox1->AddItem(L"Ground", ULongToPtr(IDC_BT_GP));
 	////pComboBox1->AddItem(L"DampAnim", ULongToPtr(IDC_BT_DAMP));
 	//pComboBox1->SetSelectedByData(ULongToPtr(0));
-	s_ikkind = 0;
+	
+	//s_ikkind = 0;//InitApp()‚ÖˆÚ“®
 
 
 	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
@@ -23615,7 +23643,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.17 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.18 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -30928,7 +30956,7 @@ void SetMainWindowTitle()
 
 	//"‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.17 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.18 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
