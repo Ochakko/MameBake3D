@@ -1,3 +1,28 @@
+2021/11/04_2
+	ver1.0.0.19へむけて
+
+	ゲームパッドDualSenceが接続されていない場合
+		キーボードの矢印キーで階層構造エディタの選択移動
+		上下矢印はペアレント、チャイルドへの移動
+		左右矢印はシスター、ブラザーへの移動
+			シスター、ブラザーの選択は階層構造的分岐点である場合には分岐間移動
+			階層構造的に分岐点ではない場合には名前の中のLeftとRightを置き換えてその名前のボーンがあればそこに移動
+			(例：LeftKnee_JointからRightKnee_Jointへ選択移動)
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
+
+
+
+	ver1.0.0.18のテスト結果の一部
+		MotionBrushのfbxをUnity3D 2020.3で読み込み再生テストのスクリーンショット
+		https://twitter.com/ochakkolab/status/1455366755623202819?s=20
+
+		Unity3D上でVRoid正式版のvrmにMotionBrushのfbxモーションをリターゲットしたテスト動画
+		https://twitter.com/ochakkolab/status/1455745440763187202?s=20
+
 2021/11/04_1
 	ver1.0.0.18RC1
 

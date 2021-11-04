@@ -1281,6 +1281,7 @@ std::vector<void*> g_keypool;//allocate KEYPOOLBLKLEN Key at onse and pool
 
 void OnDSUpdate();
 static void OnDSMouseHereApeal();
+static void OnArrowKey();//DS関数でキーボードの矢印キーに対応
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -23643,7 +23644,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.18 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.19 : No.%d : ", s_appcnt);
 
 	window = CreateWindowEx(
 		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
@@ -24936,7 +24937,10 @@ void OnDSUpdate()
 {
 
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS deviceが無い場合には何もせずにリターン
+		//DS deviceが無い場合にはDS関数でキーボードの矢印キーに対応
+
+		OnArrowKey();
+
 		return;
 	}
 
@@ -25969,6 +25973,47 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 										changeflag = true;
 									}
 								}
+
+								//階層的としてのsister, brotherが無い場合には名前としてのsister, brotherをチェックする
+								if (changeflag != true) {
+									string strcurbonename = curbone->GetBoneName();
+									string strLeft = "Left";
+									string strRight = "Right";
+
+									string chkLeft = strcurbonename;
+									string chkRight = strcurbonename;
+
+
+									std::string::size_type leftpos = chkLeft.find(strLeft);
+									if (leftpos != std::string::npos) {
+										//Leftの部分をRightに変えてボーンが存在すればそのボーンに移動
+										chkLeft.replace(leftpos, strLeft.length(), strRight);
+										CBone* rightbone = s_model->GetBoneByName(chkLeft.c_str());
+										if (rightbone) {
+											int nextboneno = rightbone->GetBoneNo();
+											if (nextboneno >= 0) {
+												s_curboneno = nextboneno;
+												changeflag = true;
+											}
+										}
+									}
+									else {
+										std::string::size_type rightpos = chkRight.find(strRight);
+										if (rightpos != std::string::npos) {
+											//Rightの部分をLeftに変えてボーンが存在すればそのボーンに移動
+											chkRight.replace(rightpos, strRight.length(), strLeft);
+											CBone* leftbone = s_model->GetBoneByName(chkRight.c_str());
+											if (leftbone) {
+												int nextboneno = leftbone->GetBoneNo();
+												if (nextboneno >= 0) {
+													s_curboneno = nextboneno;
+													changeflag = true;
+												}
+											}
+										}
+									}
+
+								}
 							}
 						}
 						else if (childbutton >= 1) {
@@ -26013,6 +26058,46 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 										CBone* childbone = parentbone->GetChild();
 										if (childbone) {
 											int nextboneno = childbone->GetBoneNo();
+											if (nextboneno >= 0) {
+												s_curboneno = nextboneno;
+												changeflag = true;
+											}
+										}
+									}
+								}
+							}
+
+							//階層的としてのsister, brotherが無い場合には名前としてのsister, brotherをチェックする
+							if (changeflag != true) {
+								string strcurbonename = curbone->GetBoneName();
+								string strLeft = "Left";
+								string strRight = "Right";
+
+								string chkLeft = strcurbonename;
+								string chkRight = strcurbonename;
+
+
+								std::string::size_type leftpos = chkLeft.find(strLeft);
+								if (leftpos != std::string::npos) {
+									//Leftの部分をRightに変えてボーンが存在すればそのボーンに移動
+									chkLeft.replace(leftpos, strLeft.length(), strRight);
+									CBone* rightbone = s_model->GetBoneByName(chkLeft.c_str());
+									if (rightbone) {
+										int nextboneno = rightbone->GetBoneNo();
+										if (nextboneno >= 0) {
+											s_curboneno = nextboneno;
+											changeflag = true;
+										}
+									}
+								}
+								else {
+									std::string::size_type rightpos = chkRight.find(strRight);
+									if (rightpos != std::string::npos) {
+										//Rightの部分をLeftに変えてボーンが存在すればそのボーンに移動
+										chkRight.replace(rightpos, strRight.length(), strLeft);
+										CBone* leftbone = s_model->GetBoneByName(chkRight.c_str());
+										if (leftbone) {
+											int nextboneno = leftbone->GetBoneNo();
 											if (nextboneno >= 0) {
 												s_curboneno = nextboneno;
 												changeflag = true;
@@ -30956,7 +31041,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.18 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.19 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -32425,5 +32510,91 @@ void InitTimelineSelection()
 	g_motionbrush_applyframe = 1.0;
 	g_motionbrush_numframe = 1.0;
 	g_motionbrush_frameleng = 1;
+}
+
+
+void OnArrowKey()
+{
+
+	//マウスカーソルが起動中ソフトのウインドウ内にある場合だけ処理
+	//複数個のMotionBrushを立ち上げたときに操作中のMotionBrushだけに影響するように
+	POINT cursorpoint;
+	GetCursorPos(&cursorpoint);
+	::ScreenToClient(s_mainhwnd, &cursorpoint);
+	RECT appclientrect;
+	GetClientRect(s_mainhwnd, &appclientrect);
+	if ((cursorpoint.x < appclientrect.left) || (cursorpoint.x > appclientrect.right) || 
+		(cursorpoint.y < appclientrect.top) || (cursorpoint.y > appclientrect.bottom)) {
+		//MainWindow外につき処理しない
+		return;
+	}
+
+
+	int parentbuttonid = 4;
+	int sisterbuttonid = 5;
+	int childbuttonid = 6;
+	int brotherbuttonid = 7;
+	int accelaxisid1 = 4;//axisid
+	int accelaxisid2 = 5;//axisid
+
+	//int parentbutton = 0;
+	//int sisterbutton = 0;
+	//int childbutton = 0;
+	//int brotherbutton = 0;
+	//int accelaxis1 = 0;
+	//int accelaxis2 = 0;
+
+	//parentbutton = s_dsbuttonup[parentbuttonid];
+	//sisterbutton = s_dsbuttonup[sisterbuttonid];
+	//childbutton = s_dsbuttonup[childbuttonid];
+	//brotherbutton = s_dsbuttonup[brotherbuttonid];
+
+	//accelaxis1 = ((bool)(s_dsaxisOverSrh[accelaxisid1] + s_dsaxisMOverSrh[accelaxisid1]));
+	//accelaxis2 = ((bool)(s_dsaxisOverSrh[accelaxisid2] + s_dsaxisMOverSrh[accelaxisid2]));
+
+	s_dsbuttonup[parentbuttonid] = 0;
+	s_dsbuttonup[sisterbuttonid] = 0;
+	s_dsbuttonup[childbuttonid] = 0;
+	s_dsbuttonup[brotherbuttonid] = 0;
+	
+	s_currentwndid = MB3D_WND_TREE;
+
+
+	bool arrowkeypushed = false;
+	if (((g_savekeybuf[VK_UP] & 0x80) == 0) && ((g_keybuf[VK_UP] & 0x80) != 0)) {
+		s_dsbuttonup[parentbuttonid] = 1;
+		s_dsbuttonup[sisterbuttonid] = 0;
+		s_dsbuttonup[childbuttonid] = 0;
+		s_dsbuttonup[brotherbuttonid] = 0;
+		arrowkeypushed = true;
+	}
+	else if (((g_savekeybuf[VK_DOWN] & 0x80) == 0) && ((g_keybuf[VK_DOWN] & 0x80) != 0)) {
+		s_dsbuttonup[parentbuttonid] = 0;
+		s_dsbuttonup[sisterbuttonid] = 0;
+		s_dsbuttonup[childbuttonid] = 1;
+		s_dsbuttonup[brotherbuttonid] = 0;
+		arrowkeypushed = true;
+	}
+	else if (((g_savekeybuf[VK_LEFT] & 0x80) == 0) && ((g_keybuf[VK_LEFT] & 0x80) != 0)) {
+		s_dsbuttonup[parentbuttonid] = 0;
+		s_dsbuttonup[sisterbuttonid] = 1;
+		s_dsbuttonup[childbuttonid] = 0;
+		s_dsbuttonup[brotherbuttonid] = 0;
+		arrowkeypushed = true;
+	}
+	else if (((g_savekeybuf[VK_RIGHT] & 0x80) == 0) && ((g_keybuf[VK_RIGHT] & 0x80) != 0)) {
+		s_dsbuttonup[parentbuttonid] = 0;
+		s_dsbuttonup[sisterbuttonid] = 0;
+		s_dsbuttonup[childbuttonid] = 0;
+		s_dsbuttonup[brotherbuttonid] = 1;
+		arrowkeypushed = true;
+	}
+
+	if (arrowkeypushed == true) {
+		bool firstctrlselect = false;
+		DSCrossButtonSelectTree(firstctrlselect);
+
+	}
+
 }
 
