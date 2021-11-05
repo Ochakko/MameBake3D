@@ -1124,7 +1124,7 @@ static int s_oprigflag = 0;
 static SPGUISW s_spsel3d;
 static SPELEM s_spmousehere;
 static SPGUISW s_spikmodesw[3];
-
+static SPGUISW s_sprefpos;
 
 typedef struct tag_modelpanel
 {
@@ -1601,6 +1601,7 @@ static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag
 
 static int OnRenderSetShaderConst();
 static int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel);
 static int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext);
 static int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext);
 static int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext);
@@ -1768,6 +1769,8 @@ static int PickSpRig(POINT srcpos);
 static int SetSpMouseHereParams();
 static int SetSpIkModeSWParams();
 static int PickSpIkModeSW(POINT srcpos);
+static int SetSpRefPosSWParams();
+static int PickSpRefPosSW(POINT srcpos);
 
 
 
@@ -2701,9 +2704,13 @@ void InitApp()
 
 	{
 		ZeroMemory(&s_spikmodesw, sizeof(SPGUISW) * 3);
-		s_spikmodesw[0].state = true;//初回のGUISetVisibleで反転してfalseになる
-		s_spikmodesw[1].state = false;//初回のGUISetVisibleで反転してfalseになる
-		s_spikmodesw[2].state = false;//初回のGUISetVisibleで反転してfalseになる
+		s_spikmodesw[0].state = true;
+		s_spikmodesw[1].state = false;
+		s_spikmodesw[2].state = false;
+	}
+	{
+		ZeroMemory(&s_sprefpos, sizeof(SPGUISW));
+		s_sprefpos.state = true;
 	}
 	{
 		ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
@@ -3182,6 +3189,14 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spaxis[2].sprite);
 	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.gif", 0, 0), return S_FALSE);
 
+	//SpriteSwitch RefPos
+	s_sprefpos.spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_sprefpos.spriteON);
+	CallF(s_sprefpos.spriteON->Create(pd3dImmediateContext, mpath, L"RefPosON.gif", 0, 0), return S_FALSE);
+	s_sprefpos.spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_sprefpos.spriteOFF);
+	CallF(s_sprefpos.spriteOFF->Create(pd3dImmediateContext, mpath, L"RefPosOFF.gif", 0, 0), return S_FALSE);
+
 	//SpriteSwitch IKMode
 	s_spikmodesw[0].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spikmodesw[0].spriteON);
@@ -3550,6 +3565,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpAxisParams();
 	SetSpGUISWParams();
 	SetSpIkModeSWParams();
+	SetSpRefPosSWParams();
 	SetSpRigidSWParams();
 	SetSpRetargetSWParams();
 	SetSpCamParams();
@@ -4420,7 +4436,19 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 		}
 	}
+	{
+		CMySprite* curspgON = s_sprefpos.spriteON;
+		if (curspgON) {
+			delete curspgON;
+		}
+		s_sprefpos.spriteON = 0;
 
+		CMySprite* curspgOFF = s_sprefpos.spriteOFF;
+		if (curspgOFF) {
+			delete curspgOFF;
+		}
+		s_sprefpos.spriteOFF = 0;
+	}
 	{
 		int spgno;
 		for (spgno = 0; spgno < SPGUISWNUM; spgno++) {
@@ -5883,6 +5911,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				refreshEulerGraph();
 			}
 		}
+		{
+			//RefPos switch
+			int pickrefposflag = 0;
+			pickrefposflag = PickSpRefPosSW(ptCursor);
+			if (pickrefposflag == 1) {
+				s_sprefpos.state = !s_sprefpos.state;
+			}
+		}
+
 		//int oprigdoneflag = 0;
 		//if (s_oprigflag == 1) {
 		//	int pickrigflag = 0;
@@ -15445,6 +15482,44 @@ int SetSpIkModeSWParams()
 }
 
 
+int SetSpRefPosSWParams()
+{
+	if (!(s_sprefpos.spriteON) || !(s_sprefpos.spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	float spgwidth = 50.0f;
+	float spgheight = 50.0f;
+	int spgshift = 6;
+	s_sprefpos.dispcenter.x = s_mainwidth - 35;
+	s_sprefpos.dispcenter.y = 35 + ((int)spgheight + spgshift) * 3;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_sprefpos.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_sprefpos.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+
+	if (s_sprefpos.spriteON) {
+		CallF(s_sprefpos.spriteON->SetPos(disppos), return 1);
+		CallF(s_sprefpos.spriteON->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_sprefpos.spriteOFF) {
+		CallF(s_sprefpos.spriteOFF->SetPos(disppos), return 1);
+		CallF(s_sprefpos.spriteOFF->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
 int SetSpGUISWParams()
 {
 	if (!(s_spguisw[SPGUISW_SPRITEFK].spriteON) || !(s_spguisw[SPGUISW_SPRITEFK].spriteOFF)) {
@@ -15579,19 +15654,28 @@ int SetSpRigParams()
 		return 0;
 	}
 
+/*
+	//sprefpos
+	float spgwidth = 50.0f;
+	float spgheight = 50.0f;
+	int spgshift = 6;
+	s_sprefpos.dispcenter.x = s_mainwidth - 35;
+	s_sprefpos.dispcenter.y = 35 + ((int)spgheight + spgshift) * 3;
+*/
+
 	float spawidth = 50.0f;
+	float spaheight = 50.0f;
 	int spashift = 6;
 	spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
 	//s_sprig[SPRIG_INACTIVE].dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
 	//s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
-	s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - 50 - 6;
-	s_sprig[SPRIG_INACTIVE].dispcenter.y = 25 + 10;
-
+	//s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - 50 - 6;
+	//s_sprig[SPRIG_INACTIVE].dispcenter.y = 25 + 10;
+	s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 35;
+	s_sprig[SPRIG_INACTIVE].dispcenter.y = 35 + ((int)spaheight + spashift) * 4;
 
 	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
 	//s_spcam[0].dispcenter.y = 25 + 10;
-
-
 
 	s_sprig[SPRIG_ACTIVE].dispcenter.x = s_sprig[SPRIG_INACTIVE].dispcenter.x;
 	s_sprig[SPRIG_ACTIVE].dispcenter.y = s_sprig[SPRIG_INACTIVE].dispcenter.y;
@@ -15850,7 +15934,7 @@ int PickSpIkModeSW(POINT srcpos)
 	//	return 0;
 	//}
 
-	//spguisw
+	//spikmodesw
 	if (kind == 0) {
 		int startx = s_spikmodesw[0].dispcenter.x - 25;
 		int endx = startx + 50;
@@ -15891,6 +15975,30 @@ int PickSpIkModeSW(POINT srcpos)
 		//}
 	}
 	return kind;
+}
+
+int PickSpRefPosSW(POINT srcpos)
+{
+	int ispick = 0;
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	//sprefpos
+	int startx = s_sprefpos.dispcenter.x - 25;
+	int endx = startx + 50;
+
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+		int starty = s_sprefpos.dispcenter.y - 25;
+		int endy = starty + 50 + 6;
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			ispick = 1;
+		}
+	}
+
+	return ispick;
 }
 
 
@@ -21399,6 +21507,74 @@ int CreateLayerWnd()
 
 }
 
+int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
+{
+	if (!pd3dImmediateContext || !curmodel) {
+		return 0;
+	}
+
+	if (s_sprefpos.state) {
+		if (curmodel == s_model) {
+			int lightflag = 0;
+			int btflag = 0;
+
+			double refframe = CalcRefFrame();
+			if (refframe >= 0.0) {
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+					double saveframe = curmi->curframe;
+					if (saveframe != refframe) {
+						CBone* curbone = s_model->GetBoneByID(s_curboneno);
+						if (curbone) {
+							std::vector<ChaVector3> vecbonepos;
+							vecbonepos.clear();
+							ChaVector3 curbonepos;
+
+							double starttime, endtime;
+							if (refframe < saveframe) {
+								starttime = refframe;
+								endtime = saveframe;
+							}
+							else {
+								starttime = saveframe;
+								endtime = refframe;
+							}
+							double insideframe;
+							for (insideframe = starttime; insideframe <= endtime; insideframe += 1.0) {
+								s_model->SetMotionFrame(insideframe);
+								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+								ChaVector3TransformCoord(&curbonepos, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()));
+								vecbonepos.push_back(curbonepos);
+							}
+
+							//refframeのポーズを表示
+							s_model->SetMotionFrame(refframe);
+							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+							ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
+							s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
+
+
+							//元のフレームに戻す
+							s_model->SetMotionFrame(saveframe);
+							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+
+
+							//render arrow : selected bone : befpos --> aftpos arrow
+							CBone* childbone = curbone->GetChild();
+							if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
+								ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
+								curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
+							}
+
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+
 int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
@@ -21432,61 +21608,7 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 			curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
 
-
-			if ((curmodel == s_model) && ((g_previewFlag == 0) || (g_previewFlag == 1) || (g_previewFlag == -1))) {
-				double refframe = CalcRefFrame();
-				if (refframe >= 0.0) {
-					MOTINFO* curmi = s_model->GetCurMotInfo();
-					if (curmi) {
-						double saveframe = curmi->curframe;
-						if (saveframe != refframe) {
-							CBone* curbone = s_model->GetBoneByID(s_curboneno);
-							if (curbone) {
-								std::vector<ChaVector3> vecbonepos;
-								vecbonepos.clear();
-								ChaVector3 curbonepos;
-
-								double starttime, endtime;
-								if (refframe < saveframe) {
-									starttime = refframe;
-									endtime = saveframe;
-								}
-								else {
-									starttime = saveframe;
-									endtime = refframe;
-								}
-								double insideframe;
-								for (insideframe = starttime; insideframe <= endtime; insideframe += 1.0) {
-									s_model->SetMotionFrame(insideframe);
-									s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-									ChaVector3TransformCoord(&curbonepos, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()));
-									vecbonepos.push_back(curbonepos);
-								}
-
-								//refframeのポーズを表示
-								s_model->SetMotionFrame(refframe);
-								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-								ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
-								s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
-								
-
-								//元のフレームに戻す
-								s_model->SetMotionFrame(saveframe);
-								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-
-
-								//render arrow : selected bone : befpos --> aftpos arrow
-								CBone* childbone = curbone->GetChild();
-								if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
-									ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
-									curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
-								}
-
-							}
-						}
-					}
-				}
-			}
+			OnRenderRefPose(pd3dImmediateContext, curmodel);
 		}
 	}
 
@@ -21598,7 +21720,28 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		}
 	}
 
-	
+
+	//refpossw
+	if (g_previewFlag == 0) {
+		if (s_sprefpos.state) {
+			if (s_sprefpos.spriteON) {
+				s_sprefpos.spriteON->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			if (s_sprefpos.spriteOFF) {
+				s_sprefpos.spriteOFF->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+	}
+
+
 	//aimbar
 	if (g_enableDS && (s_dsdeviceid >= 0)) {
 
