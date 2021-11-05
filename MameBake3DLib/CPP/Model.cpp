@@ -4159,6 +4159,56 @@ DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
 	return 0;
 }
 
+int CModel::RenderRefArrow(ID3D11DeviceContext* pd3dImmediateContext, CBone* boneptr, ChaVector4 diffusemult, int refmult, std::vector<ChaVector3> vecbonepos)
+{
+	if (!pd3dImmediateContext || !boneptr) {
+		return 1;
+	}
+
+	if(vecbonepos.empty()){
+		return 0;
+	}
+	int vecsize = vecbonepos.size();
+	if (vecsize <= 1) {
+		return 0;
+	}
+
+
+	int vecno;
+	for (vecno = 0; vecno < (vecsize - 1); vecno++) {
+		ChaVector3 diffvec = vecbonepos[vecno + 1] - vecbonepos[vecno];
+		double diffleng = ChaVector3LengthDbl(&diffvec);
+		ChaVector3Normalize(&diffvec, &diffvec);
+
+		ChaVector3 orgdir = ChaVector3(1.0f, 0.0f, 0.0f);
+
+		CQuaternion rotq;
+		rotq.RotationArc(orgdir, diffvec);
+
+		ChaMatrix bmmat;
+		bmmat = rotq.MakeRotMatX();
+
+		double fscale = diffleng / 200.0f;
+		ChaMatrix scalemat;
+		ChaMatrixIdentity(&scalemat);
+		scalemat._11 = fscale;
+		scalemat._22 = fscale * (double)refmult;
+		scalemat._33 = fscale * (double)refmult;
+		bmmat = scalemat * bmmat;
+		bmmat._41 = vecbonepos[vecno].x;
+		bmmat._42 = vecbonepos[vecno].y;
+		bmmat._43 = vecbonepos[vecno].z;
+
+		g_hmWorld->SetMatrix((float*)&bmmat);
+		//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
+		this->UpdateMatrix(&bmmat, &m_matVP);
+		CallF(this->OnRender(pd3dImmediateContext, 0, diffusemult), return 1);
+	}
+
+	return 0;
+}
+
+
 
 int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark )
 {

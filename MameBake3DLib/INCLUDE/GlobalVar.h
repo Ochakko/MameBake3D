@@ -184,6 +184,8 @@ double						g_dspeed = 3.0;
 float g_ikfirst = 1.0f;
 float g_ikrate = 1.0f;
 int g_applyrate = 50;
+int g_refpos = 50;
+int g_refmult = 4.0;
 float g_physicsmvrate = 1.0f;
 //float g_physicsmvrate = 0.1f;
 
@@ -324,6 +326,8 @@ extern double						g_dspeed;
 extern float g_ikfirst;
 extern float g_ikrate;
 extern int g_applyrate;
+extern int g_refpos;
+extern int g_refmult;
 extern float g_physicsmvrate;
 
 extern float                       g_fLightScale;

@@ -976,6 +976,7 @@ public: //accesser
 	void SetBtFlag(int srcflag){ m_setbtflag = srcflag; };
 
 	CModel* GetCurColDisp(CBone* childbone);
+	CModel* GetColDisp(CBone* childbone, int srcindex);
 	void SetFirstCalcRigid(bool srcflag){
 		m_firstcalcrigid = srcflag;
 	};

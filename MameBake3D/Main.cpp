@@ -233,6 +233,7 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
+static double CalcRefFrame();
 static void ChangeCurDirFromMameMediaToTest();
 
 static int OnPluginClose();
@@ -1204,8 +1205,11 @@ static CDXUTControl* s_ui_slapplyrate = 0;
 static CDXUTControl* s_ui_motionbrush = 0;
 static CDXUTControl* s_ui_texikorder = 0;
 static CDXUTControl* s_ui_slikorder = 0;
-static CDXUTControl* s_ui_texikrate = 0;
-static CDXUTControl* s_ui_slikrate = 0;
+//static CDXUTControl* s_ui_texikrate = 0;
+//static CDXUTControl* s_ui_slikrate = 0;
+static CDXUTControl* s_ui_texref = 0;
+static CDXUTControl* s_ui_slirefpos = 0;
+static CDXUTControl* s_ui_slirefmult = 0;
 static CDXUTControl* s_ui_applytotheend = 0;
 static CDXUTControl* s_ui_slerpoff = 0;
 static CDXUTControl* s_ui_absikon = 0;
@@ -1422,6 +1426,11 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_BRUSH_MIRROR_V_DIV2		71
 
 #define IDC_IK_SC					72
+
+#define IDC_SL_REFPOS				73
+#define IDC_SL_REFARROW				74
+#define IDC_STATIC_REF				75
+#define IDC_SL_REFMULT				76
 
 
 
@@ -2510,8 +2519,11 @@ void InitApp()
 	s_ui_motionbrush = 0;
 	s_ui_texikorder = 0;
 	s_ui_slikorder = 0;
-	s_ui_texikrate = 0;
-	s_ui_slikrate = 0;
+	//s_ui_texikrate = 0;
+	//s_ui_slikrate = 0;
+	s_ui_texref = 0;
+	s_ui_slirefpos = 0;
+	s_ui_slirefmult = 0;
 	s_ui_applytotheend = 0;
 	s_ui_slerpoff = 0;
 	s_ui_absikon = 0;
@@ -6682,12 +6694,40 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		 //   swprintf_s( sz, 100, L"IK Order : %f", g_ikfirst );
    //         g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
             break;
-        case IDC_SL_IKRATE:
+   //     case IDC_SL_IKRATE:
+			//RollbackCurBoneNo();
+			//g_ikrate = (float)(g_SampleUI.GetSlider(IDC_SL_IKRATE)->GetValue()) * 0.01f;
+		 //   swprintf_s( sz, 100, L"IK Trans : %f", g_ikrate );
+   //         g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
+   //         break;
+		case IDC_SL_REFPOS:
+		{
 			RollbackCurBoneNo();
-			g_ikrate = (float)(g_SampleUI.GetSlider(IDC_SL_IKRATE)->GetValue()) * 0.01f;
-		    swprintf_s( sz, 100, L"IK Trans : %f", g_ikrate );
-            g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
-            break;
+			g_refpos = g_SampleUI.GetSlider(IDC_SL_REFPOS)->GetValue();
+			double refframe = CalcRefFrame();
+			if (refframe >= 0.0) {
+				swprintf_s(sz, 100, L"RefPos : %d%% : %d", g_refpos, (int)refframe);
+			}
+			else {
+				swprintf_s(sz, 100, L"RefPos : %d%%", g_refpos);
+			}
+			g_SampleUI.GetStatic(IDC_STATIC_REF)->SetText(sz);
+			//CEditRange::SetApplyRate((double)g_refpos);
+			//OnTimeLineSelectFromSelectedKey();
+			//if (s_editmotionflag < 0) {
+			//	int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			//	if (result) {
+			//		_ASSERT(0);
+			//	}
+			//}
+		}
+			break;
+		case IDC_SL_REFMULT:
+		{
+			RollbackCurBoneNo();
+			g_refmult = g_SampleUI.GetSlider(IDC_SL_REFMULT)->GetValue();
+		}
+		break;
 		case IDC_SL_NUMTHREAD:
 			RollbackCurBoneNo();
 			g_numthread = (int)(g_SampleUI.GetSlider(IDC_SL_NUMTHREAD)->GetValue());
@@ -6743,9 +6783,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
-		    swprintf_s( sz, 100, L"TopPos : %d", g_applyrate );
-            g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			CEditRange::SetApplyRate((double)g_applyrate);
+			swprintf_s( sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()) );
+            g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			OnTimeLineSelectFromSelectedKey();
 			if (s_editmotionflag < 0) {
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
@@ -19048,7 +19088,7 @@ int CreateUtDialog()
 
 	//swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
 	//g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
-	iY += addh;
+	//iY += addh;
 	//g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	s_ui_lightscale = g_SampleUI.GetControl(IDC_LIGHT_SCALE);
@@ -19196,7 +19236,7 @@ int CreateUtDialog()
 	//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
 	//pComboBox5->SetSelectedByData(ULongToPtr(0));
 
-	swprintf_s(sz, 100, L"TopPos : %d", g_applyrate);
+	swprintf_s(sz, 100, L"TopPos : %d%%", g_applyrate);
 	//g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, 18);
 	s_ui_texapplyrate = g_SampleUI.GetControl(IDC_STATIC_APPLYRATE);
@@ -19255,17 +19295,35 @@ int CreateUtDialog()
 	//s_dsutgui0.push_back(s_ui_slikorder);
 	//s_dsutguiid0.push_back(IDC_SL_IKFIRST);
 
-	swprintf_s(sz, 100, L"IK Trans : %f", g_ikrate);
+
+
+	//swprintf_s(sz, 100, L"IK Trans : %f", g_ikrate);
+	////g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
+	//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, 18);
+	//s_ui_texikrate = g_SampleUI.GetControl(IDC_STATIC_IKRATE);
+	//_ASSERT(s_ui_texikrate);
+	////g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+	//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += (18 + 2), 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+	//s_ui_slikrate = g_SampleUI.GetControl(IDC_SL_IKRATE);
+	//_ASSERT(s_ui_slikrate);
+	//s_dsutgui0.push_back(s_ui_slikrate);
+	//s_dsutguiid0.push_back(IDC_SL_IKRATE);
+
+	swprintf_s(sz, 100, L"ReferencePos : %d%%", g_refpos);
 	//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, 18);
-	s_ui_texikrate = g_SampleUI.GetControl(IDC_STATIC_IKRATE);
-	_ASSERT(s_ui_texikrate);
+	g_SampleUI.AddStatic(IDC_STATIC_REF, sz, 35, iY += addh, ctrlxlen, 18);
+	s_ui_texref = g_SampleUI.GetControl(IDC_STATIC_REF);
+	_ASSERT(s_ui_texref);
 	//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-	g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += (18 + 2), 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-	s_ui_slikrate = g_SampleUI.GetControl(IDC_SL_IKRATE);
-	_ASSERT(s_ui_slikrate);
-	s_dsutgui0.push_back(s_ui_slikrate);
-	s_dsutguiid0.push_back(IDC_SL_IKRATE);
+	g_SampleUI.AddSlider(IDC_SL_REFPOS, 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refpos);
+	s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOS);
+	g_SampleUI.AddSlider(IDC_SL_REFMULT, 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refmult);
+	s_ui_slirefmult = g_SampleUI.GetControl(IDC_SL_REFMULT);
+	_ASSERT(s_ui_slirefmult);
+	s_dsutgui0.push_back(s_ui_slirefpos);
+	s_dsutguiid0.push_back(IDC_SL_REFPOS);
+	s_dsutgui0.push_back(s_ui_slirefmult);
+	s_dsutguiid0.push_back(IDC_SL_REFMULT);
 
 	//g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"ApplyToTheEnd", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
 	//s_ui_applytotheend = g_SampleUI.GetControl(IDC_APPLY_TO_THEEND);
@@ -21352,6 +21410,10 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 		return 0;
 	}
 
+	if (!s_model) {
+		return 0;
+	}
+
 
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
@@ -21369,6 +21431,62 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 				btflag = 1;
 			}
 			curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+
+
+			if ((curmodel == s_model) && ((g_previewFlag == 0) || (g_previewFlag == 1) || (g_previewFlag == -1))) {
+				double refframe = CalcRefFrame();
+				if (refframe >= 0.0) {
+					MOTINFO* curmi = s_model->GetCurMotInfo();
+					if (curmi) {
+						double saveframe = curmi->curframe;
+						if (saveframe != refframe) {
+							CBone* curbone = s_model->GetBoneByID(s_curboneno);
+							if (curbone) {
+								std::vector<ChaVector3> vecbonepos;
+								vecbonepos.clear();
+								ChaVector3 curbonepos;
+
+								double starttime, endtime;
+								if (refframe < saveframe) {
+									starttime = refframe;
+									endtime = saveframe;
+								}
+								else {
+									starttime = saveframe;
+									endtime = refframe;
+								}
+								double insideframe;
+								for (insideframe = starttime; insideframe <= endtime; insideframe += 1.0) {
+									s_model->SetMotionFrame(insideframe);
+									s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+									ChaVector3TransformCoord(&curbonepos, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()));
+									vecbonepos.push_back(curbonepos);
+								}
+
+								//refframeのポーズを表示
+								s_model->SetMotionFrame(refframe);
+								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+								ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
+								s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
+								
+
+								//元のフレームに戻す
+								s_model->SetMotionFrame(saveframe);
+								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+
+
+								//render arrow : selected bone : befpos --> aftpos arrow
+								CBone* childbone = curbone->GetChild();
+								if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
+									ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
+									curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
+								}
+
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -24402,11 +24520,20 @@ void GUISetVisible_Left()
 	if (s_ui_slikorder) {
 		s_ui_slikorder->SetVisible(nextvisible);
 	}
-	if (s_ui_texikrate) {
-		s_ui_texikrate->SetVisible(nextvisible);
+	//if (s_ui_texikrate) {
+	//	s_ui_texikrate->SetVisible(nextvisible);
+	//}
+	//if (s_ui_slikrate) {
+	//	s_ui_slikrate->SetVisible(nextvisible);
+	//}
+	if (s_ui_texref) {
+		s_ui_texref->SetVisible(nextvisible);
 	}
-	if (s_ui_slikrate) {
-		s_ui_slikrate->SetVisible(nextvisible);
+	if (s_ui_slirefpos) {
+		s_ui_slirefpos->SetVisible(nextvisible);
+	}
+	if (s_ui_slirefmult) {
+		s_ui_slirefmult->SetVisible(nextvisible);
 	}
 	if (s_ui_applytotheend) {
 		s_ui_applytotheend->SetVisible(nextvisible);
@@ -32598,3 +32725,18 @@ void OnArrowKey()
 
 }
 
+double CalcRefFrame()
+{
+	double startframe = s_editrange.GetStartFrame();
+	double endframe = s_editrange.GetEndFrame();
+	if (startframe != endframe) {
+		double offset = 0;
+		double refframe = (double)((int)(startframe + (endframe - startframe) * g_refpos / 100.0 + offset));
+
+		return refframe;
+	}
+	else {
+		return -1.0;
+	}
+
+}

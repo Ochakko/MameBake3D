@@ -5162,8 +5162,39 @@ int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 	return 0;
 }
 
+CModel* CBone::GetColDisp(CBone* childbone, int srcindex)
+{
+	if ((srcindex < COL_CONE_INDEX) || (srcindex > COL_MAX)) {
+		return 0;
+	}
+	if (!childbone) {
+		return 0;
+	}
+
+	CRigidElem* curre = GetRigidElem(childbone);
+	if (!curre) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	//_ASSERT(colptr);
+	_ASSERT(childbone);
+
+	CModel* retcoldisp = m_coldisp[srcindex];
+	_ASSERT(curcoldisp);
+
+	return retcoldisp;
+
+
+}
+
+
 CModel* CBone::GetCurColDisp(CBone* childbone)
 {
+	if (!childbone) {
+		return 0;
+	}
+
 	CRigidElem* curre = GetRigidElem(childbone);
 	if (!curre){
 		_ASSERT(0);
