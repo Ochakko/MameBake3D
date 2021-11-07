@@ -22902,7 +22902,7 @@ int BoneRClick(int srcboneno)
 				}
 
 
-				AppendMenu(submenu, MF_STRING, ID_RMENU_0, L"CreateNewRig");
+				AppendMenu(submenu, MF_STRING, ID_RMENU_0 + MENUOFFSET_BONERCLICK, L"CreateNewRig");
 				int setmenuno = 1;
 				int rigno;
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++){
