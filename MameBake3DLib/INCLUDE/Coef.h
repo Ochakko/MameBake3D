@@ -240,6 +240,8 @@ typedef struct tag_customrig
 	int elemnum;
 	WCHAR rigname[256];
 	RIGELEM rigelem[MAXRIGELEMNUM];
+	int dispaxis;//操作用オブジェクト表示場所（軸）
+	int disporder;//操作用オブジェクト表示場所（番目）
 }CUSTOMRIG;
 
 typedef struct tag_hinfo

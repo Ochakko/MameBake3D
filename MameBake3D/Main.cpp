@@ -369,6 +369,10 @@ enum {
 	MB3D_WND_MAX
 };
 
+
+static int s_savebonemarkflag = 1;
+static int s_saverigidmarkflag = 1;
+
 static WCHAR s_temppath[MAX_PATH] = { 0L };
 
 
@@ -589,6 +593,11 @@ static ChaVector4 s_matgreenmat;
 static ChaVector4 s_ringgreenmat;
 static ChaVector4 s_matyellowmat;
 static ChaVector4 s_ringyellowmat;
+
+static CMQOMaterial* s_matrig = 0;
+static ChaVector4 s_matrigmat;
+
+
 
 static bool s_dispanglelimit = false;
 static HWND s_anglelimitdlg = 0;
@@ -1764,6 +1773,10 @@ static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
+static int PickRigBone(PICKINFO* ppickinfo);
+static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder);
+
+
 //static int SetSpBtParams();
 //static int PickSpBt(POINT srcpos);
 static int SetSpMouseHereParams();
@@ -2273,6 +2286,10 @@ void InitApp()
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
 	s_ikkind = 0;
+	
+
+
+
 
 	g_ClearColorIndex = 0;
 	//g_ClearColor[BGCOL_MAX][4] = {
@@ -3116,8 +3133,11 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		_ASSERT(0);
 		return S_FALSE;
 	}
-	CallF(s_rigmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 1.0f, 0), return S_FALSE);
+	CallF(s_rigmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 0.30f, 0), return S_FALSE);
 	CallF(s_rigmark->MakeDispObj(), return S_FALSE);
+	s_matrig = s_rigmark->GetMQOMaterialByName("mat1");
+	_ASSERT(s_matrig);
+	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
 
 
 	s_bmark = new CModel();
@@ -5920,23 +5940,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
-		//int oprigdoneflag = 0;
-		//if (s_oprigflag == 1) {
-		//	int pickrigflag = 0;
-		//	pickrigflag = PickSpRig(ptCursor);
-		//	if (pickrigflag == 1) {
-		//		RollbackCurBoneNo();
-		//		ToggleRig();
-		//		oprigdoneflag = 1;
-		//			
-		//		//s_oprigflag == 1 のときのpickrigflag == 1　で　ToggleRigだから　rigはオフ
-		//		s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
-		//	}
-		//	else {
-		//		//s_oprigflag == 1 のときのpickrigflag == 0　だから　rigはオン
-		//		//s_curboneno はそのまま
-		//	}
-		//}
 		int oprigdoneflag = 0;
 		int pickrigflag = 0;
 		pickrigflag = PickSpRig(ptCursor);
@@ -5944,7 +5947,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if (s_oprigflag == 1) {
 				
 				//オンだったRigをオフにする
-
 				RollbackCurBoneNo();
 				ToggleRig();
 				oprigdoneflag = 1;
@@ -5954,7 +5956,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			else {
 
 				//オフだったリグをオンにする
-
 				RollbackCurBoneNo();
 
 				ToggleRig();
@@ -6081,15 +6082,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 				}
 				else{
-					int colliobj;
-					colliobj = s_rigmark->CollisionNoBoneObj_Mouse(&s_pickinfo, "obj1");
-					if (colliobj){
-						RollbackCurBoneNo();
-						s_pickinfo.buttonflag = PICK_CENTER;
-						s_pickinfo.pickobjno = s_curboneno;
-						//_ASSERT(0);
-					}
-					else{
+					int pickrigboneno = PickRigBone(&s_pickinfo);
+					if (pickrigboneno < 0) {
+						s_curboneno = -1;
+						s_customrigbone = 0;
+
 						ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
 						s_pickinfo.pickobjno = -1;
 					}
@@ -11289,17 +11286,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 			g_hmVP->SetMatrix((float*)&s_matVP);
 
 			g_hmWorld->SetMatrix((float*)&s_selectmat);
-			if (s_oprigflag == 0){
-				RenderSelectFunc(pd3dImmediateContext);
-			}
-			else{
-				if (curboneptr == s_customrigbone){
-					RenderRigMarkFunc(pd3dImmediateContext);
-				}
-				else{
-					RenderSelectFunc(pd3dImmediateContext);
-				}
-			}
+			RenderSelectFunc(pd3dImmediateContext);
 
 
 			g_hmWorld->SetMatrix((float*)&s_selectmat_posture);
@@ -11361,15 +11348,60 @@ int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext)
 
 int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	s_rigmark->UpdateMatrix(&s_selectmat, &s_matVP);
-	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
-	int lightflag = 1;
-	//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
-	s_rigmark->OnRender(pd3dImmediateContext, lightflag, diffusemult);
-	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	if (!s_model) {
+		return 0;
+	}
+
+	g_hmVP->SetMatrix((float*)&s_matVP);
+
+
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (curmi) {
+		int curmotid = curmi->motid;
+		double curframe = curmi->curframe;
+
+		std::map<int, CBone*>::iterator itrbone;
+		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
+			CBone* curbone = (CBone*)itrbone->second;
+			if (curbone) {
+				int rigno;
+				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
+					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
+					if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
+					//if (currig.rigboneno > 0) {
+						ChaVector3 curbonepos = curbone->GetWorldPos(curmotid, curframe);
+						ChaMatrix rigmat;
+						ChaMatrixIdentity(&rigmat);
+						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder);
+
+						if (currig.dispaxis == 0) {
+							s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
+						}
+						else if (currig.dispaxis == 1) {
+							s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, 0.79f);
+						}
+						else if (currig.dispaxis == 2) {
+							s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, 0.79f);
+						}
+						s_matrig->SetDif4F(s_matrigmat);
+
+
+						g_hmWorld->SetMatrix((float*)&rigmat);
+
+						s_rigmark->UpdateMatrix(&rigmat, &s_matVP);
+						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+						pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+						int lightflag = 0;
+						//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+						ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+						s_rigmark->OnRender(pd3dImmediateContext, lightflag, diffusemult);
+						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+						pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+					}
+				}
+			}
+		}
+	}
 
 	return 0;
 }
@@ -19215,6 +19247,11 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_disprigid);
 	s_dsutguiid0.push_back(IDC_RMARK);
 
+
+	s_savebonemarkflag = 1;
+	s_saverigidmarkflag = 1;
+
+
 	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"LockToSel", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
 	s_ui_locktosel = g_SampleUI.GetControl(IDC_CAMTARGET);
 	_ASSERT(s_ui_locktosel);
@@ -21573,6 +21610,7 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 		}
 	}
 
+	return 0;
 }
 
 int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
@@ -21672,6 +21710,9 @@ int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 			//SetSelectCol();
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);
+		}
+		if ((s_model && s_model->GetModelDisp()) && (s_oprigflag != 0)) {
+			RenderRigMarkFunc(pd3dImmediateContext);
 		}
 	}
 	//else if ((g_previewFlag == 5) && (s_oprigflag == 1)){
@@ -21928,17 +21969,6 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 		}
 
-		if ((s_oprigflag >= 0) && (s_oprigflag < SPRIGMAX)) {
-			if (s_customrigbone) {
-				if (s_sprig[s_oprigflag].sprite) {
-					s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
-				}
-			}
-		}
-
 		//if (s_spbt.sprite) {
 		//	s_spbt.sprite->OnRender(pd3dImmediateContext);
 		//}
@@ -21948,14 +21978,18 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 
 	}
-	else if ((s_oprigflag == 1) && (s_oprigflag < SPRIGMAX)) {
-		if (s_sprig[s_oprigflag].sprite) {
-			s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
-		}
-		else {
-			_ASSERT(0);
-		}		
+
+	if ((s_oprigflag >= 0) && (s_oprigflag < SPRIGMAX)) {
+		//if (s_customrigbone) {
+			if (s_sprig[s_oprigflag].sprite) {
+				s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		//}
 	}
+
 
 	if (g_dsmousewait == 1) {
 		if (s_spmousehere.sprite) {
@@ -22374,6 +22408,34 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		int elemnum = s_customrig.elemnum;
 		SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_RESETCONTENT, 0, 0);
 
+
+		//dispaxis
+		WCHAR strcomboda[256] = { 0L };
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_RESETCONTENT, 0, 0);
+		wcscpy_s(strcomboda, 256, L"X");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_ADDSTRING, 0, (LPARAM)strcomboda);
+		wcscpy_s(strcomboda, 256, L"Y");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_ADDSTRING, 0, (LPARAM)strcomboda);
+		wcscpy_s(strcomboda, 256, L"Z");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_ADDSTRING, 0, (LPARAM)strcomboda);
+		if ((s_customrig.dispaxis >= 0) && (s_customrig.disporder <= 2)) {
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_SETCURSEL, s_customrig.dispaxis, 0);
+		}
+
+		//disporder
+		WCHAR strcombodo[256] = { 0L };
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_RESETCONTENT, 0, 0);
+		wcscpy_s(strcombodo, 256, L"0");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+		wcscpy_s(strcombodo, 256, L"1");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+		wcscpy_s(strcombodo, 256, L"2");
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+		if ((s_customrig.disporder >= 0) && (s_customrig.disporder <= 2)) {
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_SETCURSEL, s_customrig.disporder, 0);
+		}
+
+
 		WCHAR strcombo[256];
 		WCHAR strval[256];
 
@@ -22613,6 +22675,17 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				WCHAR strrigname[256] = { 0L };
 				GetDlgItemText(hDlgWnd, IDC_RIGNAME, strrigname, 256);
 				wcscpy_s(s_customrig.rigname, 256, strrigname);
+
+				int combonoda = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_GETCURSEL, 0, 0);
+				if ((combonoda >= 0) && (combonoda <= 2)) {
+					s_customrig.dispaxis = combonoda;
+				}
+
+				int combonodo = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_GETCURSEL, 0, 0);
+				if ((combonodo >= 0) && (combonodo <= 2)) {
+					s_customrig.disporder = combonodo;
+				}
+
 
 				int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
 				int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
@@ -23113,35 +23186,53 @@ int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 
 int ToggleRig()
 {
-	if (s_customrigbone){
+	//if (s_customrigbone){
 		if (s_oprigflag == 0){
 			s_oprigflag = 1;
-			s_curboneno = s_customrigbone->GetBoneNo();
-			s_pickinfo.buttonflag = PICK_CENTER;
+
+			if (s_BoneMarkCheckBox) {
+				s_savebonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
+				s_BoneMarkCheckBox->SetChecked(false);
+			}
+			if (s_RigidMarkCheckBox) {
+				s_saverigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
+				s_RigidMarkCheckBox->SetChecked(false);
+			}
+
+			//s_curboneno = s_customrigbone->GetBoneNo();
+			//s_pickinfo.buttonflag = PICK_CENTER;
 		}
 		else{
 			s_oprigflag = 0;
 			s_pickinfo.buttonflag = 0;
 
-			if (s_customrigdlg){
-				DestroyWindow(s_customrigdlg);
-				s_customrigdlg = 0;
+			if (s_BoneMarkCheckBox) {
+				s_BoneMarkCheckBox->SetChecked(s_savebonemarkflag == 1);
 			}
+			if (s_RigidMarkCheckBox) {
+				s_RigidMarkCheckBox->SetChecked(s_saverigidmarkflag == 1);
+			}
+
+
+			//if (s_customrigdlg){
+			//	DestroyWindow(s_customrigdlg);
+			//	s_customrigdlg = 0;
+			//}
 
 			//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 
 		}
-	}
-	else{
-		s_oprigflag = 0;
-		if (s_customrigdlg){
-			DestroyWindow(s_customrigdlg);
-			s_customrigdlg = 0;
-		}
-		s_pickinfo.buttonflag = 0;
+	//}
+	//else{
+	//	s_oprigflag = 0;
+	//	if (s_customrigdlg){
+	//		DestroyWindow(s_customrigdlg);
+	//		s_customrigdlg = 0;
+	//	}
+	//	s_pickinfo.buttonflag = 0;
 
-		//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
-	}
+	//	//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
+	//}
 	return 0;
 }
 
@@ -32881,5 +32972,159 @@ double CalcRefFrame()
 	else {
 		return -1.0;
 	}
+
+}
+
+ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder)
+{
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
+	if (!curbone) {
+		return retmat;
+	}
+
+	int multworld = 1;
+	ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
+	selm._41 = 0.0f;
+	selm._42 = 0.0f;
+	selm._43 = 0.0f;
+
+	ChaVector3 orgpos = curbone->GetJointFPos();
+	ChaVector3 bonepos = curbone->GetChildWorld();
+
+	ChaVector3 cam0, cam1;
+	ChaMatrix mwv = s_model->GetWorldMat() * s_matView;
+	ChaVector3TransformCoord(&cam0, &orgpos, &mwv);
+	cam1 = cam0 + ChaVector3(1.0f, 0.0f, 0.0f);
+
+	ChaVector3 sc0, sc1;
+	ChaVector3TransformCoord(&sc0, &cam0, &s_matProj);
+	ChaVector3TransformCoord(&sc1, &cam1, &s_matProj);
+	float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
+	if (lineleng > 0.00001f) {
+		lineleng = sqrt(lineleng);
+		s_selectscale = 0.0020f / lineleng;
+		//if ((s_oprigflag == 1) && (curbone == s_customrigbone)) {
+		s_selectscale *= 0.25f;
+		//}
+	}
+	else {
+		//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
+	}
+	
+	ChaMatrix rigmat;
+	ChaMatrixIdentity(&rigmat);
+
+	ChaMatrix scalemat;
+	ChaMatrixIdentity(&scalemat);
+	ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
+
+	ChaVector3 curbonepos = curbone->GetWorldPos(curmotid, curframe);
+	//ChaMatrix rigmat;
+	//ChaMatrixIdentity(&rigmat);
+
+	float rigorderoffset = 0.0f;
+	if (disporder == 0) {
+		rigorderoffset = 0.05f;
+	}
+	else if (disporder == 1) {
+		rigorderoffset = 0.35f;
+	}
+	else if (disporder == 2) {
+		rigorderoffset = 0.65f;
+	}
+
+
+	ChaVector3 offsetorgpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 offsetdisppos = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	if (dispaxis == 0) {
+		offsetorgpos = ChaVector3(rigorderoffset, 0.0f, 0.0f);
+		//ChaMatrixTranslation(&rigmat, curbonepos.x + rigorderoffset, curbonepos.y, curbonepos.z);
+		//s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.99f);
+	}
+	else if (dispaxis == 1) {
+		offsetorgpos = ChaVector3(0.0f, rigorderoffset, 0.0f);
+		//ChaMatrixTranslation(&rigmat, curbonepos.x, curbonepos.y + rigorderoffset, curbonepos.z);
+		//s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, 0.99f);
+	}
+	else if (dispaxis == 2) {
+		offsetorgpos = ChaVector3(0.0f, 0.0f, rigorderoffset);
+		//ChaMatrixTranslation(&rigmat, curbonepos.x, curbonepos.y, curbonepos.z + rigorderoffset);
+		//s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, 0.99f);
+	}
+	ChaVector3TransformCoord(&offsetdisppos, &offsetorgpos, &selm);
+	ChaMatrix tramat;
+	ChaMatrixIdentity(&tramat);
+	ChaMatrixTranslation(&tramat, curbonepos.x + offsetdisppos.x, curbonepos.y + offsetdisppos.y, curbonepos.z + offsetdisppos.z);
+
+	retmat = scalemat * tramat;
+
+	return retmat;
+}
+
+int PickRigBone(PICKINFO* ppickinfo)
+{
+	if (!s_model || !ppickinfo) {
+		return -1;
+	}
+
+
+
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (curmi) {
+		int curmotid = curmi->motid;
+		double curframe = curmi->curframe;
+
+		std::map<int, CBone*>::iterator itrbone;
+		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
+			CBone* curbone = (CBone*)itrbone->second;
+			if (curbone) {
+				int rigno;
+				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
+					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
+					if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
+						//s_matrig->SetDif4F(s_matrigmat);
+
+						ChaMatrix rigmat;
+						ChaMatrixIdentity(&rigmat);
+						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder);
+
+
+						g_hmWorld->SetMatrix((float*)&rigmat);
+						s_rigmark->UpdateMatrix(&rigmat, &s_matVP);
+
+
+						int chkboneno = curbone->GetBoneNo();
+
+						PICKINFO chkpickinfo;
+						chkpickinfo = *ppickinfo;
+
+						chkpickinfo.buttonflag = PICK_CENTER;
+						chkpickinfo.pickobjno = chkboneno;
+
+						int colliobj;
+						colliobj = s_rigmark->CollisionNoBoneObj_Mouse(&chkpickinfo, "obj1");
+						if (colliobj) {
+							RollbackCurBoneNo();
+
+							*ppickinfo = chkpickinfo;
+
+							s_curboneno = chkboneno;
+							Bone2CustomRig(rigno);
+
+							return chkboneno;//!!!!!!!!!!!!!!!!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!
+						}
+
+					}
+				}
+			}
+		}
+	}
+	else {
+		return -1;
+	}
+
+	return -1;
 
 }

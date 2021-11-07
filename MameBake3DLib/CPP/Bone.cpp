@@ -147,6 +147,20 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 		return 0;
 	}
 
+	if ((srccr.dispaxis < 0) || (srccr.dispaxis > 2)) {
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。dispaxis : %d", srccr.dispaxis);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+	if ((srccr.disporder < 0) || (srccr.disporder > 2)) {
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。disporder : %d", srccr.disporder);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+
+
 	int elemno;
 	for (elemno = 0; elemno < srccr.elemnum; elemno++) {
 		RIGELEM currigelem = srccr.rigelem[elemno];
@@ -5181,7 +5195,7 @@ CModel* CBone::GetColDisp(CBone* childbone, int srcindex)
 	_ASSERT(childbone);
 
 	CModel* retcoldisp = m_coldisp[srcindex];
-	_ASSERT(curcoldisp);
+	_ASSERT(retcoldisp);
 
 	return retcoldisp;
 
@@ -5578,4 +5592,24 @@ void CBone::CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmot
 		CalcParentGlobalMatReq(dstmat, srcbone->GetParent(), srcmotid, srcframe);
 	}
 
+}
+
+
+ChaVector3 CBone::GetWorldPos(int srcmotid, double srcframe)
+{
+	ChaVector3 retpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+		return retpos;
+	}
+
+
+
+	ChaVector3 jointpos;
+	jointpos = GetJointFPos();
+	ChaMatrix curworldmat;
+	curworldmat = GetWorldMat(srcmotid, srcframe);
+
+	ChaVector3TransformCoord(&retpos, &jointpos, &curworldmat);
+
+	return retpos;
 }

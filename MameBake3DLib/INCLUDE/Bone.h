@@ -821,6 +821,7 @@ public: //accesser
 		return m_firstframebonepos;
 	};
 
+	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
 
 	CModel* GetParModel(){ return m_parmodel; };
 	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodelÇ≤Ç∆ÇÃm_bonenoÇ…íçà”ÅIÅIÅI

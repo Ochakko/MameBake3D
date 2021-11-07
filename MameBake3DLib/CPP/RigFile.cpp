@@ -168,6 +168,10 @@ int CRigFile::WriteRig(CBone* srcbone)
 
 	CallF(Write2File("    <ElemNum>%d</ElemNum>\r\n", m_customrig.elemnum), return 1);
 
+	CallF(Write2File("    <DispAxis>%d</DispAxis>\r\n", m_customrig.dispaxis), return 1);
+
+	CallF(Write2File("    <DispOrder>%d</DispOrder>\r\n", m_customrig.disporder), return 1);
+
 
 	int elemno;
 	for (elemno = 0; elemno < m_customrig.elemnum; elemno++){
@@ -281,6 +285,8 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 	  <OwnerBone>koshi</OwnerBone>
 	  <RigNumber>0</RigNumber>
 	  <ElemNum>3</ElemNum>
+	  <DispAxis>0</DispAxis>
+	  <DispOrder>0</DispOrder>
 	  <RigElem>
         <RigRigName>Lte</RigRigName>
 	    <RigRigNo>0</RigRigNo>
@@ -327,6 +333,26 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 	int elemnum;
 	CallF(Read_Int(xmliobuf, "<ElemNum>", "</ElemNum>", &elemnum), return 1);
 	m_customrig.elemnum = elemnum;
+
+	int dispaxis;
+	int resultdispaxis = Read_Int(xmliobuf, "<DispAxis>", "</DispAxis>", &dispaxis);
+	if (resultdispaxis == 0) {
+		m_customrig.dispaxis = dispaxis;
+	}
+	else {
+		m_customrig.dispaxis = 0;
+	}
+
+	int disporder;
+	int resultdisporder = Read_Int(xmliobuf, "<DispOrder>", "</DispOrder>", &disporder);
+	if (resultdisporder == 0) {
+		m_customrig.disporder = disporder;
+	}
+	else {
+		m_customrig.disporder = 0;
+	}
+
+
 
 	m_customrig.useflag = 2;
 
