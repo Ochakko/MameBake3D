@@ -1232,6 +1232,9 @@
     <ClInclude Include="..\INCLUDE\Retarget.h">
       <Filter>disp4</Filter>
     </ClInclude>
+    <ClInclude Include="..\INCLUDE\DoubleWinSize.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\BTSRC\BulletSoftBody\premake4.lua">
