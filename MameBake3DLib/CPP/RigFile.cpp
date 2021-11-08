@@ -172,6 +172,7 @@ int CRigFile::WriteRig(CBone* srcbone)
 
 	CallF(Write2File("    <DispOrder>%d</DispOrder>\r\n", m_customrig.disporder), return 1);
 
+	CallF(Write2File("    <DispPosInverse>%d</DispPosInverse>\r\n", (int)(m_customrig.posinverse)), return 1);
 
 	int elemno;
 	for (elemno = 0; elemno < m_customrig.elemnum; elemno++){
@@ -352,6 +353,14 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 		m_customrig.disporder = 0;
 	}
 
+	int posinverse;
+	int resultposinverse = Read_Int(xmliobuf, "<DispPosInverse>", "</DispPosInverse>", &posinverse);
+	if (resultposinverse == 0) {
+		m_customrig.posinverse = (bool)(posinverse != 0);
+	}
+	else {
+		m_customrig.posinverse = false;
+	}
 
 
 	m_customrig.useflag = 2;

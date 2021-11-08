@@ -1774,7 +1774,7 @@ static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
 static int PickRigBone(PICKINFO* ppickinfo);
-static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder);
+static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
 
 
 //static int SetSpBtParams();
@@ -5545,7 +5545,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			GUIMenuSetVisible(-1, -1);
 			int currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM) - MENUOFFSET_BONERCLICK];
 			DispCustomRigDlg(currigno);
-
 		}
 		else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 2 + MENUOFFSET_BONERCLICK)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 3 + MENUOFFSET_BONERCLICK))) {
 			//ŽÀs
@@ -11372,7 +11371,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 						ChaVector3 curbonepos = curbone->GetWorldPos(curmotid, curframe);
 						ChaMatrix rigmat;
 						ChaMatrixIdentity(&rigmat);
-						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder);
+						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
 
 						if (currig.dispaxis == 0) {
 							s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
@@ -22435,6 +22434,14 @@ int CustomRig2Dlg(HWND hDlgWnd)
 			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_SETCURSEL, s_customrig.disporder, 0);
 		}
 
+		//posinverse
+		if (s_customrig.posinverse) {
+			CheckDlgButton(hDlgWnd, IDC_CHKINV, BST_CHECKED);
+		}
+		else {
+			CheckDlgButton(hDlgWnd, IDC_CHKINV, BST_UNCHECKED);
+		}
+
 
 		WCHAR strcombo[256];
 		WCHAR strval[256];
@@ -22686,6 +22693,12 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_customrig.disporder = combonodo;
 				}
 
+				if (IsDlgButtonChecked(hDlgWnd, IDC_CHKINV) == BST_CHECKED) {
+					s_customrig.posinverse = true;
+				}
+				else {
+					s_customrig.posinverse = false;
+				}
 
 				int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
 				int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
@@ -32975,7 +32988,7 @@ double CalcRefFrame()
 
 }
 
-ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder)
+ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -33034,6 +33047,10 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 		rigorderoffset = 0.65f;
 	}
 
+	if (posinverse) {
+		rigorderoffset *= -1.0f;
+	}
+
 
 	ChaVector3 offsetorgpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 offsetdisppos = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -33088,7 +33105,7 @@ int PickRigBone(PICKINFO* ppickinfo)
 
 						ChaMatrix rigmat;
 						ChaMatrixIdentity(&rigmat);
-						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder);
+						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
 
 
 						g_hmWorld->SetMatrix((float*)&rigmat);

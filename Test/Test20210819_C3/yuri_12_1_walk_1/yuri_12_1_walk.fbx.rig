@@ -6,8 +6,9 @@
     <OwnerBone>LeftElbow_branch_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
-    <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispAxis>1</DispAxis>
+    <DispOrder>1</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -47,8 +48,9 @@
     <OwnerBone>LeftElbow_branch_Joint</OwnerBone>
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
-    <DispAxis>1</DispAxis>
-    <DispOrder>1</DispOrder>
+    <DispAxis>0</DispAxis>
+    <DispOrder>0</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
     <RigElem>
     <RigRigName>LeftThumbDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
@@ -112,6 +114,7 @@
     <ElemNum>2</ElemNum>
     <DispAxis>2</DispAxis>
     <DispOrder>1</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -127,10 +130,10 @@
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftElbow_Joint</BoneName>
-      <AxisU>Z</AxisU>
+      <AxisU>X</AxisU>
       <RateU>1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
+      <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
@@ -142,6 +145,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -194,6 +198,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -246,6 +251,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -298,6 +304,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -350,6 +357,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -400,8 +408,9 @@
     <OwnerBone>RightElbow_branch_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
-    <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispAxis>1</DispAxis>
+    <DispOrder>1</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -441,8 +450,9 @@
     <OwnerBone>RightElbow_branch_Joint</OwnerBone>
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
-    <DispAxis>1</DispAxis>
-    <DispOrder>1</DispOrder>
+    <DispAxis>0</DispAxis>
+    <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>RightThumbDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
@@ -506,6 +516,7 @@
     <ElemNum>2</ElemNum>
     <DispAxis>2</DispAxis>
     <DispOrder>1</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -521,11 +532,11 @@
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightElbow_Joint</BoneName>
-      <AxisU>X</AxisU>
-      <RateU>0.000000</RateU>
+      <AxisU>Z</AxisU>
+      <RateU>1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Z</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -536,6 +547,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -588,6 +600,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -640,6 +653,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -692,6 +706,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -744,6 +759,7 @@
     <ElemNum>4</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -796,6 +812,7 @@
     <ElemNum>3</ElemNum>
     <DispAxis>1</DispAxis>
     <DispOrder>1</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -837,6 +854,7 @@
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -872,12 +890,44 @@
     </RigElem>
   </Bone>
   <Bone>
+    <RigName>Rig0</RigName>
+    <OwnerBone>LeftAnkle_end_Joint</OwnerBone>
+    <RigNumber>0</RigNumber>
+    <ElemNum>2</ElemNum>
+    <DispAxis>2</DispAxis>
+    <DispOrder>1</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
+    <RigElem>
+    <RigRigName>!noname!</RigRigName>
+    <RigRigNo>-1</RigRigNo>
+      <BoneName>LeftAnkle_end_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <EnableU>1</EnableU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+      <EnableV>1</EnableV>
+    </RigElem>
+    <RigElem>
+    <RigRigName>!noname!</RigRigName>
+    <RigRigNo>-1</RigRigNo>
+      <BoneName>LeftAnkle_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <EnableU>1</EnableU>
+      <AxisV>Y</AxisV>
+      <RateV>1.000000</RateV>
+      <EnableV>1</EnableV>
+    </RigElem>
+  </Bone>
+  <Bone>
     <RigName>Front</RigName>
     <OwnerBone>RightAnkle_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>1</DispAxis>
     <DispOrder>1</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -919,6 +969,7 @@
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -947,6 +998,37 @@
       <BoneName>RightHip_Joint</BoneName>
       <AxisU>X</AxisU>
       <RateU>1.000000</RateU>
+      <EnableU>1</EnableU>
+      <AxisV>Y</AxisV>
+      <RateV>1.000000</RateV>
+      <EnableV>1</EnableV>
+    </RigElem>
+  </Bone>
+  <Bone>
+    <RigName>Rig0</RigName>
+    <OwnerBone>RightAnkle_end_Joint</OwnerBone>
+    <RigNumber>0</RigNumber>
+    <ElemNum>2</ElemNum>
+    <DispAxis>2</DispAxis>
+    <DispOrder>1</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
+    <RigElem>
+    <RigRigName>!noname!</RigRigName>
+    <RigRigNo>-1</RigRigNo>
+      <BoneName>RightAnkle_end_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
+      <EnableU>1</EnableU>
+      <AxisV>X</AxisV>
+      <RateV>0.000000</RateV>
+      <EnableV>1</EnableV>
+    </RigElem>
+    <RigElem>
+    <RigRigName>!noname!</RigRigName>
+    <RigRigNo>-1</RigRigNo>
+      <BoneName>RightAnkle_Joint</BoneName>
+      <AxisU>X</AxisU>
+      <RateU>0.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
       <RateV>1.000000</RateV>
