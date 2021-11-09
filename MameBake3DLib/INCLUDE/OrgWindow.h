@@ -1,17 +1,6 @@
 #ifndef ORGWINDOWH
 #define ORGWINDOWH
 
-
-//###################################################################################################
-// WindowSize Width * 2, Height * 2の縦横２倍にするオプションを有効にするには DoubleWinSize.hをincludeする。
-// 今のところDoubleWinSize.hをインクルードしているのはmain.cppとOrgWindow.hの２つ。
-// DoubleWinSize.hのインクルードをコメントアウトすれば元の小さいウインドウサイズになる。
-// MotionBrushリリース時にはexeの名前を変えて両方ビルドして両方配布する予定。
-//###################################################################################################
-#include <DoubleWinSize.h>
-
-
-
 #include <crtdbg.h>
 #include <windows.h>
 #include <tchar.h>
@@ -26,6 +15,8 @@
 
 //#include <d3dx9.h>
 #include <ChaVecCalc.h>
+
+
 
 //#define EULPOOLBLKLEN	2048
 //#define EULPOOLBLKLEN	65536
@@ -55,6 +46,8 @@ extern int g_currentsubmenuid;
 extern POINT g_currentsubmenupos;
 extern bool g_enableDS;
 extern int g_submenuwidth;
+extern bool g_4kresolution;
+
 
 
 static double TIME_ERROR_WIDTH = 0.0001;
@@ -5819,6 +5812,14 @@ void s_dummyfunc()
 
 			dispscale = 1.0;
 			dispoffset = 0.0;
+
+			if (g_4kresolution) {
+				GRAPH_SIZE_Y = 170 * 2;
+			}
+			else {
+				GRAPH_SIZE_Y = 170;
+			}
+
 		}
 		~OWP_EulerGraph() {
 			selectAll(true);
@@ -7765,11 +7766,10 @@ void s_dummyfunc()
 
 		//static const int GRAPH_SIZE_Y = 60;
 		//static const int GRAPH_SIZE_Y = 120;
-#ifdef DOUBLEWINSIZE
-		static const int GRAPH_SIZE_Y = 170 * 2;
-#else
-		static const int GRAPH_SIZE_Y = 170;
-#endif
+		
+		//static const int GRAPH_SIZE_Y = 170;
+		int GRAPH_SIZE_Y;//constructorでセット
+		
 		static const int LABEL_SIZE_Y = 20;
 		//static const int LABEL_SIZE_X= 75;
 		//static const int LABEL_SIZE_X= 250;
@@ -8995,6 +8995,5 @@ void s_dummyfunc()
 //}
 
 }
-
 
 #endif

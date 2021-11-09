@@ -207,6 +207,7 @@ float* g_motionbrush_value = 0;
 extern int g_ClearColorIndex;
 extern float g_ClearColor[BGCOL_MAX][4];
 
+
 extern double g_befeuldiffmax;
 extern int g_dsmousewait;
 extern HBITMAP g_mouseherebmp;

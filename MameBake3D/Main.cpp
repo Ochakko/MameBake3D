@@ -50,14 +50,6 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 */
 
 
-//###################################################################################################
-// WindowSize Width * 2, Height * 2の縦横２倍にするオプションを有効にするには DoubleWinSize.hをincludeする。
-// 今のところDoubleWinSize.hをインクルードしているのはmain.cppとOrgWindow.hの２つ。
-// DoubleWinSize.hのインクルードをコメントアウトすれば元の小さいウインドウサイズになる。
-// MotionBrushリリース時にはexeの名前を変えて両方ビルドして両方配布する予定。
-//###################################################################################################
-#include <DoubleWinSize.h>
-
 
 #include "useatl.h"
 
@@ -162,12 +154,6 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #define WM_USER_FOR_BATCH_PROGRESS	(WM_USER + 1)
 
 #define MAXPLUGIN	255
-
-#ifdef DOUBLEWINSIZE
-int s_winsizemult = 2;
-#else
-int s_winsizemult = 1;
-#endif
 
 
 
@@ -738,20 +724,17 @@ static HMENU	s_cursubmenu = 0;
 
 //static int s_mainwidth = 600;
 //static int s_mainheight = 620;
-#ifdef DOUBLEWINSIZE
-static int s_mainwidth = 800 * s_winsizemult;
-#else
 static int s_mainwidth = 800;
-#endif
 //static int s_mainheight = 820;
 //static int s_mainheight = 600;
 //static int s_mainheight = 520;
-static int s_mainheight = (520 * s_winsizemult - MAINMENUAIMBARH);
-static int s_bufwidth = (800 * s_winsizemult);
+static int s_mainheight = (520 - MAINMENUAIMBARH);
+static int s_bufwidth = 800;
 //static int s_bufheight = 600;
-static int s_bufheight = (520 * s_winsizemult - MAINMENUAIMBARH);
+static int s_bufheight = (520 - MAINMENUAIMBARH);
 static int s_infowinwidth = s_mainwidth;
-static int s_infowinheight = (600 * s_winsizemult - s_mainheight - MAINMENUAIMBARH);
+static int s_infowinheight = 600 - s_mainheight - MAINMENUAIMBARH;
+
 
 static ID3D11Device* s_pdev = 0;
 
@@ -1307,6 +1290,8 @@ static void ShowLimitEulerWnd(bool srcflag);
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
 
+bool g_4kresolution = false;
+
 ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
 
 
@@ -1578,6 +1563,8 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 
 
 void InitApp();
+void CheckResolution();
+
 //HRESULT LoadMesh( ID3D11Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText(double fTime );
 static void InfoBvh2FbxBatchCnt();
@@ -2016,6 +2003,8 @@ INT WINAPI wWinMain(
 
 	SetBaseDir();
 	
+
+	//s_appcntのセット。CheckResolution()よりも前
 	s_appcnt = 0;
 	s_launchbyc4 = 0;
 	int    i;
@@ -2041,6 +2030,10 @@ INT WINAPI wWinMain(
 
 
 	OpenDbgFile(s_appcnt);
+
+
+	//2K TV or 4K TV. Create*Window()よりも前
+	CheckResolution();
 
 
 
@@ -2293,6 +2286,49 @@ INT WINAPI wWinMain(
 //--------------------------------------------------------------------------------------
 // Initialize the app 
 //--------------------------------------------------------------------------------------
+void CheckResolution()
+{
+	g_4kresolution = false;
+
+/*
+//基準とする大きさ　mainwindowの大きさ
+(1216 + 450) * 2, (950 - MAINMENUAIMBARH) * 2
+*/
+
+	if ((s_appcnt == 0) && (s_launchbyc4 == 0)) {
+
+		HWND desktopwnd;
+		desktopwnd = ::GetDesktopWindow();
+		if (desktopwnd) {
+			RECT desktoprect;
+			::GetClientRect(desktopwnd, &desktoprect);
+			if ((desktoprect.right >= ((1216 + 450) * 2)) && (desktoprect.bottom >= ((950 - MAINMENUAIMBARH) * 2))) {
+
+				g_4kresolution = true;//!!!!!!!!!!!!!!!!
+
+				s_mainwidth = 800 * 2;
+				s_mainheight = (520 * 2 - MAINMENUAIMBARH);
+				s_bufwidth = (800 * 2);
+				s_bufheight = (520 * 2 - MAINMENUAIMBARH);
+				s_infowinwidth = s_mainwidth;
+				s_infowinheight = (600 * 2 - s_mainheight - MAINMENUAIMBARH);
+			}
+		}
+	}
+
+
+	if (!g_4kresolution) {
+		s_mainwidth = 800;
+		s_mainheight = (520 - MAINMENUAIMBARH);
+		s_bufwidth = (800);
+		s_bufheight = (520 - MAINMENUAIMBARH);
+		s_infowinwidth = s_mainwidth;
+		s_infowinheight = (600 - s_mainheight - MAINMENUAIMBARH);
+	}
+
+}
+
+
 void InitApp()
 {
 	InitializeCriticalSection(&s_CritSection_LTimeline);
@@ -11283,9 +11319,9 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 			if ((s_oprigflag == 1) && (curboneptr == s_customrigbone)){
 				s_selectscale *= 0.25f;
 			}
-#ifdef DOUBLEWINSIZE
-			s_selectscale *= 0.5f;
-#endif
+			if (g_4kresolution) {
+				s_selectscale *= 0.5f;
+			}
 		}
 		else{
 			//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
@@ -13350,8 +13386,8 @@ int CreateConvBoneWnd()
 		0,
 		L"convbone0",		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(900 * s_winsizemult, 200 * s_winsizemult),		//位置
-		WindowSize(200 * s_winsizemult, 100 * s_winsizemult),	//サイズ
+		WindowPos(900, 200),		//位置
+		WindowSize(200, 100),	//サイズ
 		L"ConvBoneWnd",	//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
 		false,					//表示・非表示状態
@@ -13361,7 +13397,7 @@ int CreateConvBoneWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_convboneWnd->setSizeMin(WindowSize(150 * s_winsizemult, 150 * s_winsizemult));		// 最小サイズを設定
+	s_convboneWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
 	s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
 	s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
@@ -13493,22 +13529,14 @@ int CreateConvBoneWnd()
 		}
 	});
 
-
-
-
-	//s_convboneWnd->setSize(WindowSize(450 * s_winsizemult, 858 * s_winsizemult));//880
-	//s_convboneWnd->setPos(WindowPos(1200 * s_winsizemult, 32));
-
-#ifdef DOUBLEWINSIZE
-	s_convboneWnd->setSize(WindowSize(450 * s_winsizemult + 16, 858 * s_winsizemult + MAINMENUAIMBARH));
-#else
-	s_convboneWnd->setSize(WindowSize(450, 858));
-#endif
-
-	s_convboneWnd->setPos(WindowPos(1200 * s_winsizemult, MAINMENUAIMBARH));
-
-
-
+	if (g_4kresolution) {
+		s_convboneWnd->setSize(WindowSize(450 * 2 + 16, 858 * 2 + MAINMENUAIMBARH));
+		s_convboneWnd->setPos(WindowPos(1200 * 2, MAINMENUAIMBARH));
+	}
+	else {
+		s_convboneWnd->setSize(WindowSize(450, 858));
+		s_convboneWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
+	}
 
 	s_convboneWnd->setVisible(false);
 
@@ -15249,11 +15277,11 @@ int SetSpRigidSWParams()
 	
 	
 	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
-#ifdef DOUBLEWINSIZE
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH + 32;
-#else
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].y = 486 - MAINMENUAIMBARH;
-#endif
+	if (g_4kresolution) {
+		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+	}else{
+		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
+	}
 
 
 	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.x = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x + (int)spgwidth + spgshift;
@@ -15308,12 +15336,12 @@ int SetSpRetargetSWParams()
 	
 	
 	//s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 - MAINMENUAIMBARH;
-#ifdef DOUBLEWINSIZE
-	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH + 32;
-#else
-	s_spretargetsw[SPRETARGETSW_RETARGET].y = 486 - MAINMENUAIMBARH;
-#endif
-
+	if (g_4kresolution) {
+		s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+	}
+	else {
+		s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 - MAINMENUAIMBARH;
+	}
 
 
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].dispcenter.x = s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x + (int)spgwidth + spgshift;
@@ -15433,11 +15461,12 @@ int SetSpAimBarParams()
 	
 	
 	//s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2) - MAINMENUAIMBARH;
-#ifdef DOUBLEWINSIZE
-	s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH + 32 + 16 + 4;
-#else
-	s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2) - MAINMENUAIMBARH;
-#endif
+	if (g_4kresolution) {
+		s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32 + 16 + 4;
+	}
+	else {
+		s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2) - MAINMENUAIMBARH;
+	}
 
 	
 	s_spaimbar[SPAIMBAR_2].dispcenter.x = s_spaimbar[SPAIMBAR_1].dispcenter.x + (int)spgwidth + spgshift;
@@ -15629,11 +15658,13 @@ int SetSpGUISWParams()
 		int spretshift = 0;
 		s_spret2prev.dispcenter.x = (LONG)(16.0f + 8.0f);
 		//s_spret2prev.dispcenter.y = 486;
-#ifdef DOUBLEWINSIZE
-		s_spret2prev.dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH + 32;
-#else
-		s_spret2prev.dispcenter.y = 486 - MAINMENUAIMBARH;
-#endif
+		if (g_4kresolution) {
+			s_spret2prev.dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+		}
+		else {
+			s_spret2prev.dispcenter.y = 486 - MAINMENUAIMBARH;
+		}
+
 		ChaVector3 disppos;
 		disppos.x = (float)(s_spret2prev.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spret2prev.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
@@ -15658,11 +15689,12 @@ int SetSpGUISWParams()
 	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486;
 
 	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH;
-#ifdef DOUBLEWINSIZE
-	s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH + 32;
-#else
-	s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 - MAINMENUAIMBARH;
-#endif
+	if (g_4kresolution) {
+		s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+	}
+	else {
+		s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 - MAINMENUAIMBARH;
+	}
 
 	s_spguisw[SPGUISW_LEFT].dispcenter.x = s_spguisw[SPGUISW_SPRITEFK].dispcenter.x + (int)spgwidth + spgshift;
 	s_spguisw[SPGUISW_LEFT].dispcenter.y = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y;
@@ -17082,20 +17114,28 @@ int DispAngleLimitDlg()
 	}
 
 	SetParent(s_anglelimitdlg, s_mainhwnd);
-	SetWindowPos(
-		s_anglelimitdlg,
-		HWND_TOP,
-		1200 * s_winsizemult,
-		32,
-#ifdef DOUBLEWINSIZE
-		450 * s_winsizemult + 16,
-#else
-		450,
-#endif
-		858 * s_winsizemult + 32,
-		SWP_SHOWWINDOW
-	);
-
+	if (g_4kresolution) {
+		SetWindowPos(
+			s_anglelimitdlg,
+			HWND_TOP,
+			1200 * 2,
+			32,
+			450 * 2 + 16,
+			858 * 2 + 32,
+			SWP_SHOWWINDOW
+		);
+	}
+	else {
+		SetWindowPos(
+			s_anglelimitdlg,
+			HWND_TOP,
+			1200,
+			32,
+			450,
+			858 + 32,
+			SWP_SHOWWINDOW
+		);
+	}
 
 	//s_dseullimitctrls.push_back(IDD_ANGLELIMITDLG);
 	s_dseullimitctrls.push_back(IDC_BONEAXIS);
@@ -19726,25 +19766,50 @@ int CreateUtDialog()
 
 int CreateTimelineWnd()
 {
-	s_timelineWnd = new OrgWindow(
-		0,
-		L"TimeLine",				//ウィンドウクラス名
-		GetModuleHandle(NULL),	//インスタンスハンドル
-		//WindowPos(0, 0),		//位置
-		//WindowSize(400, 600),	//サイズ
-		WindowPos(0, MAINMENUAIMBARH),		//位置
-#ifdef DOUBLEWINSIZE
-		WindowSize(400 * s_winsizemult, (600 - MAINMENUAIMBARH) * s_winsizemult + MAINMENUAIMBARH),	//サイズ 
-#else
-		WindowSize(400 * s_winsizemult, (600 - MAINMENUAIMBARH)),	//サイズ 
-#endif
-		//WindowSize(150,540),	//サイズ
-		L"TimeLine",				//タイトル
-		s_mainhwnd,					//親ウィンドウハンドル
-		true,					//表示・非表示状態
-		//70, 50, 70);				//カラー
-		0, 0, 0);				//カラー
 
+	s_rctreewnd.top = MAINMENUAIMBARH;
+	s_rctreewnd.left = 0;
+
+
+	if (g_4kresolution) {
+
+		s_timelineWnd = new OrgWindow(
+			0,
+			L"TimeLine",				//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(0, 0),		//位置
+			//WindowSize(400, 600),	//サイズ
+			WindowPos(0, MAINMENUAIMBARH),		//位置
+			WindowSize(400 * 2, (600 - MAINMENUAIMBARH) * 2 + MAINMENUAIMBARH),	//サイズ 
+			//WindowSize(150,540),	//サイズ
+			L"TimeLine",				//タイトル
+			s_mainhwnd,					//親ウィンドウハンドル
+			true,					//表示・非表示状態
+			//70, 50, 70);				//カラー
+			0, 0, 0);				//カラー
+
+		s_rctreewnd.right = 400 * 2;
+		s_rctreewnd.bottom = 600 * 2;
+	}
+	else {
+		s_timelineWnd = new OrgWindow(
+			0,
+			L"TimeLine",				//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(0, 0),		//位置
+			//WindowSize(400, 600),	//サイズ
+			WindowPos(0, MAINMENUAIMBARH),		//位置
+			WindowSize(400, (600 - MAINMENUAIMBARH)),	//サイズ 
+			//WindowSize(150,540),	//サイズ
+			L"TimeLine",				//タイトル
+			s_mainhwnd,					//親ウィンドウハンドル
+			true,					//表示・非表示状態
+			//70, 50, 70);				//カラー
+			0, 0, 0);				//カラー
+
+		s_rctreewnd.right = 400;
+		s_rctreewnd.bottom = 600;
+	}
 
 	s_timelineWnd->callRewrite();
 
@@ -19794,10 +19859,6 @@ int CreateTimelineWnd()
 		}
 	});
 
-	s_rctreewnd.top = MAINMENUAIMBARH;
-	s_rctreewnd.left = 0;
-	s_rctreewnd.right = 400 * s_winsizemult;
-	s_rctreewnd.bottom = 600 * s_winsizemult;
 
 	return 0;
 }
@@ -19807,19 +19868,48 @@ int CreateLongTimelineWnd()
 
 	//////////
 	///////// Long Timeline
-	s_LtimelineWnd = new OrgWindow(
-		0,
-		L"EditRangeTimeLine",				//ウィンドウクラス名
-		GetModuleHandle(NULL),	//インスタンスハンドル
-		//WindowPos( 250, 825 ),		//位置
-		//WindowPos(200, 645),		//位置
-		WindowPos(230 * s_winsizemult, 600 * s_winsizemult),		//位置
-		WindowSize(970 * s_winsizemult, 290 * s_winsizemult),	//サイズ
-		L"EditRangeTimeLine",				//タイトル
-		s_mainhwnd,					//親ウィンドウハンドル
-		true,					//表示・非表示状態
-		//70, 50, 70);				//カラー
-		0, 0, 0);				//カラー
+
+	s_rcltwnd.top = 0;
+	s_rcltwnd.left = 0;
+
+	if (g_4kresolution) {
+		s_LtimelineWnd = new OrgWindow(
+			0,
+			L"EditRangeTimeLine",				//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos( 250, 825 ),		//位置
+			//WindowPos(200, 645),		//位置
+			WindowPos(230 * 2, 600 * 2),		//位置
+			WindowSize(970 * 2, 290 * 2),	//サイズ
+			L"EditRangeTimeLine",				//タイトル
+			s_mainhwnd,					//親ウィンドウハンドル
+			true,					//表示・非表示状態
+			//70, 50, 70);				//カラー
+			0, 0, 0);				//カラー
+
+		s_rcltwnd.bottom = 290 * 2;
+		s_rcltwnd.right = 970 * 2;
+
+	}
+	else {
+		s_LtimelineWnd = new OrgWindow(
+			0,
+			L"EditRangeTimeLine",				//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos( 250, 825 ),		//位置
+			//WindowPos(200, 645),		//位置
+			WindowPos(230, 600),		//位置
+			WindowSize(970, 290),	//サイズ
+			L"EditRangeTimeLine",				//タイトル
+			s_mainhwnd,					//親ウィンドウハンドル
+			true,					//表示・非表示状態
+			//70, 50, 70);				//カラー
+			0, 0, 0);				//カラー
+
+		s_rcltwnd.bottom = 290;
+		s_rcltwnd.right = 970;
+
+	}
 
 
 	s_LtimelineWnd->callRewrite();
@@ -20081,10 +20171,6 @@ int CreateLongTimelineWnd()
 
 	});
 
-	s_rcltwnd.top = 0;
-	s_rcltwnd.left = 0;
-	s_rcltwnd.bottom = 290 * s_winsizemult;
-	s_rcltwnd.right = 970 * s_winsizemult;
 
 	return 0;
 }
@@ -20095,26 +20181,43 @@ int CreateDmpAnimWnd()
 	s_dsdampctrls.clear();
 
 	/////////
-	s_dmpanimWnd = new OrgWindow(
-		0,
-		_T("dampAnimWindow"),		//ウィンドウクラス名
-		GetModuleHandle(NULL),	//インスタンスハンドル
-		//WindowPos(0, 400),		//位置//
-		WindowPos(2000, 0),
-		//WindowSize(450,880),		//サイズ
-		//WindowSize(450, 120),		//サイズ
-#ifdef DOUBLEWINSIZE
-		WindowSize(450 * s_winsizemult + 16, (780 - MAINMENUAIMBARH) * s_winsizemult + MAINMENUAIMBARH),		//サイズ
-#else
-		WindowSize(450, 780),		//サイズ
-#endif
-		_T("AnimOfDumping"),	//タイトル
-		s_mainhwnd,	//親ウィンドウハンドル
-		false,					//表示・非表示状態
-		//70, 50, 70,				//カラー
-		0, 0, 0,				//カラー
-		true,					//閉じられるか否か
-		true);					//サイズ変更の可否
+
+	if (g_4kresolution) {
+		s_dmpanimWnd = new OrgWindow(
+			0,
+			_T("dampAnimWindow"),		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(0, 400),		//位置//
+			WindowPos(2000, 0),
+			//WindowSize(450,880),		//サイズ
+			//WindowSize(450, 120),		//サイズ
+			WindowSize(450 * 2 + 16, (780 - MAINMENUAIMBARH) * 2 + MAINMENUAIMBARH),		//サイズ
+			_T("AnimOfDumping"),	//タイトル
+			s_mainhwnd,	//親ウィンドウハンドル
+			false,					//表示・非表示状態
+			//70, 50, 70,				//カラー
+			0, 0, 0,				//カラー
+			true,					//閉じられるか否か
+			true);					//サイズ変更の可否
+	}
+	else {
+		s_dmpanimWnd = new OrgWindow(
+			0,
+			_T("dampAnimWindow"),		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(0, 400),		//位置//
+			WindowPos(2000, 0),
+			//WindowSize(450,880),		//サイズ
+			//WindowSize(450, 120),		//サイズ
+			WindowSize(450, 780),		//サイズ
+			_T("AnimOfDumping"),	//タイトル
+			s_mainhwnd,	//親ウィンドウハンドル
+			false,					//表示・非表示状態
+			//70, 50, 70,				//カラー
+			0, 0, 0,				//カラー
+			true,					//閉じられるか否か
+			true);					//サイズ変更の可否
+	}
 
 	s_dmpgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidsMeansToSetToSameGroup", 0);
 	s_dmpanimLlabel = new OWP_Label(L"posSpringDumpingPerFrame");
@@ -20188,12 +20291,14 @@ int CreateDmpAnimWnd()
 		}
 	});
 
-#ifdef DOUBLEWINSIZE
-	s_dmpanimWnd->setSize(WindowSize(450 * s_winsizemult + 16, 858 * s_winsizemult + MAINMENUAIMBARH));
-#else
-	s_dmpanimWnd->setSize(WindowSize(450, 858));
-#endif
-	s_dmpanimWnd->setPos(WindowPos(1200 * s_winsizemult, MAINMENUAIMBARH));
+	if (g_4kresolution) {
+		s_dmpanimWnd->setSize(WindowSize(450 * 2 + 16, 858 * 2 + MAINMENUAIMBARH));
+		s_dmpanimWnd->setPos(WindowPos(1200 * 2, MAINMENUAIMBARH));
+	}
+	else {
+		s_dmpanimWnd->setSize(WindowSize(450, 858));
+		s_dmpanimWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
+	}
 
 
 	return 0;
@@ -20210,13 +20315,14 @@ int CreateMainMenuAimBarWnd()
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450,680),		//サイズ
 		//WindowSize(450, 760),		//サイズ
-		WindowSize(1200 * s_winsizemult, MAINMENUAIMBARH),		//サイズ
+		WindowSize(1200, MAINMENUAIMBARH),		//サイズ
 		_T("MainMenuAimBarWnd"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
 		//70, 50, 70,				//カラー
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
+
 
 
 	//s_sidemenuWnd->setCloseListener([]() { s_ScloseFlag = true; });
@@ -20228,15 +20334,22 @@ int CreateMainMenuAimBarWnd()
 	s_mainmenuaimbarWnd->addParts(*s_mainmenulabel);
 
 
-	s_mainmenuaimbarWnd->setPos(WindowPos(0, 0));
-	s_mainmenuaimbarWnd->setSize(WindowSize(1200 * s_winsizemult, MAINMENUAIMBARH));
-	s_mainmenuaimbarWnd->callRewrite();						//再描画
-
 	//450, 32
 	s_rcmainmenuaimbarwnd.top = 0;
 	s_rcmainmenuaimbarwnd.left = 0;
 	s_rcmainmenuaimbarwnd.bottom = MAINMENUAIMBARH;
-	s_rcmainmenuaimbarwnd.right = 1200 * s_winsizemult;
+
+
+	s_mainmenuaimbarWnd->setPos(WindowPos(0, 0));
+	if (g_4kresolution) {
+		s_mainmenuaimbarWnd->setSize(WindowSize(1200 * 2, MAINMENUAIMBARH));
+		s_rcmainmenuaimbarwnd.right = 1200 * 2;
+	}
+	else {
+		s_mainmenuaimbarWnd->setSize(WindowSize(1200, MAINMENUAIMBARH));
+		s_rcmainmenuaimbarwnd.right = 1200;
+	}
+	s_mainmenuaimbarWnd->callRewrite();						//再描画
 
 
 	return 0;
@@ -20245,27 +20358,42 @@ int CreateMainMenuAimBarWnd()
 
 int CreateSideMenuWnd()
 {
-
-	s_sidemenuWnd = new OrgWindow(
-		0,
-		_T("SideMenuWindow"),		//ウィンドウクラス名
-		GetModuleHandle(NULL),	//インスタンスハンドル
-								//WindowPos(100, 200),		//位置
-		WindowPos(2000, 0),
-		//WindowSize(450,880),		//サイズ
-		//WindowSize(450,680),		//サイズ
-		//WindowSize(450, 760),		//サイズ
-#ifdef DOUBLEWINSIZE
-		WindowSize(450 * s_winsizemult + 16, MAINMENUAIMBARH),		//サイズ
-#else
-		WindowSize(450, MAINMENUAIMBARH),		//サイズ
-#endif
-		_T("SideMenu"),	//タイトル
-		s_mainhwnd,	//親ウィンドウハンドル
-		true,					//表示・非表示状態
-		//70, 50, 70,				//カラー
-		0, 0, 0,				//カラー
-		true, true);					//サイズ変更の可否
+	if (g_4kresolution) {
+		s_sidemenuWnd = new OrgWindow(
+			0,
+			_T("SideMenuWindow"),		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+									//WindowPos(100, 200),		//位置
+			WindowPos(2000, 0),
+			//WindowSize(450,880),		//サイズ
+			//WindowSize(450,680),		//サイズ
+			//WindowSize(450, 760),		//サイズ
+			WindowSize(450 * 2 + 16, MAINMENUAIMBARH),		//サイズ
+			_T("SideMenu"),	//タイトル
+			s_mainhwnd,	//親ウィンドウハンドル
+			true,					//表示・非表示状態
+			//70, 50, 70,				//カラー
+			0, 0, 0,				//カラー
+			true, true);					//サイズ変更の可否
+	}
+	else {
+		s_sidemenuWnd = new OrgWindow(
+			0,
+			_T("SideMenuWindow"),		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+									//WindowPos(100, 200),		//位置
+			WindowPos(2000, 0),
+			//WindowSize(450,880),		//サイズ
+			//WindowSize(450,680),		//サイズ
+			//WindowSize(450, 760),		//サイズ
+			WindowSize(450, MAINMENUAIMBARH),		//サイズ
+			_T("SideMenu"),	//タイトル
+			s_mainhwnd,	//親ウィンドウハンドル
+			true,					//表示・非表示状態
+			//70, 50, 70,				//カラー
+			0, 0, 0,				//カラー
+			true, true);					//サイズ変更の可否
+	}
 
 
 	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
@@ -20323,7 +20451,12 @@ int CreateSideMenuWnd()
 		s_sidemenuWnd->callRewrite();						//再描画
 	});
 
-	s_sidemenuWnd->setPos(WindowPos(1200 * s_winsizemult, 0));
+	if (g_4kresolution) {
+		s_sidemenuWnd->setPos(WindowPos(1200 * 2, 0));
+	}
+	else {
+		s_sidemenuWnd->setPos(WindowPos(1200, 0));
+	}
 	s_sidemenuWnd->callRewrite();						//再描画
 
 	//450, 32
@@ -20331,11 +20464,12 @@ int CreateSideMenuWnd()
 	s_rcsidemenuwnd.left = 0;
 	s_rcsidemenuwnd.bottom = MAINMENUAIMBARH;
 
-#ifdef DOUBLEWINSIZE
-	s_rcsidemenuwnd.right = 450 * s_winsizemult + 16;
-#else
-	s_rcsidemenuwnd.right = 450;
-#endif
+	if (g_4kresolution) {
+		s_rcsidemenuwnd.right = 450 * 2 + 16;
+	}
+	else {
+		s_rcsidemenuwnd.right = 450;
+	}
 
 	return 0;
 }
@@ -20351,7 +20485,7 @@ int CreatePlaceFolderWnd()
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450,680),		//サイズ
 		//WindowSize(450, 760),		//サイズ
-		WindowSize(450 * s_winsizemult, 780 * s_winsizemult),		//サイズ
+		WindowSize(450, 780),		//サイズ
 		_T("PlaceFolderWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
@@ -20368,13 +20502,15 @@ int CreatePlaceFolderWnd()
 	s_placefolderWnd->addParts(*s_placefolderlabel_3);
 
 	//s_placefolderWnd->setSize(WindowSize(450 * s_winsizemult, 858 * s_winsizemult));//880
-#ifdef DOUBLEWINSIZE
-	s_placefolderWnd->setSize(WindowSize(450 * s_winsizemult + 16, 858 * s_winsizemult + MAINMENUAIMBARH));
-#else
-	s_placefolderWnd->setSize(WindowSize(450, 858));
-#endif
+	if (g_4kresolution) {
+		s_placefolderWnd->setSize(WindowSize(450 * 2 + 16, 858 * 2 + MAINMENUAIMBARH));
+		s_placefolderWnd->setPos(WindowPos(1200 * 2, MAINMENUAIMBARH));
+	}
+	else {
+		s_placefolderWnd->setSize(WindowSize(450, 858));
+		s_placefolderWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
+	}
 
-	s_placefolderWnd->setPos(WindowPos(1200 * s_winsizemult, MAINMENUAIMBARH));
 
 	s_placefolderWnd->callRewrite();						//再描画
 
@@ -20417,7 +20553,7 @@ int CreateRigidWnd()
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450,680),		//サイズ
 		//WindowSize(450, 760),		//サイズ
-		WindowSize(450 * s_winsizemult, 780 * s_winsizemult),		//サイズ
+		WindowSize(450, 780),		//サイズ
 		_T("RigidWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
@@ -21108,13 +21244,15 @@ int CreateRigidWnd()
 	});
 
 //	s_rigidWnd->setSize(WindowSize(450 * s_winsizemult, 858 * s_winsizemult));//880
-#ifdef DOUBLEWINSIZE
-	s_rigidWnd->setSize(WindowSize(450 * s_winsizemult + 16, 858 * s_winsizemult + MAINMENUAIMBARH));
-#else
-	s_rigidWnd->setSize(WindowSize(450, 858));
-#endif
+	if (g_4kresolution) {
+		s_rigidWnd->setSize(WindowSize(450 * 2 + 16, 858 * 2 + MAINMENUAIMBARH));
+		s_rigidWnd->setPos(WindowPos(1200 * 2, MAINMENUAIMBARH));
+	}
+	else {
+		s_rigidWnd->setSize(WindowSize(450, 858));
+		s_rigidWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
+	}
 
-	s_rigidWnd->setPos(WindowPos(1200 * s_winsizemult, MAINMENUAIMBARH));
 
 	s_rigidWnd->callRewrite();						//再描画
 	s_rigidWnd->setVisible(false);
@@ -21122,13 +21260,14 @@ int CreateRigidWnd()
 	s_rcrigidwnd.top = MAINMENUAIMBARH;
 	s_rcrigidwnd.left = 0;
 
-#ifdef DOUBLEWINSIZE
-	s_rcrigidwnd.bottom = 858 * s_winsizemult + MAINMENUAIMBARH;
-	s_rcrigidwnd.right = 450 * s_winsizemult + 16;
-#else
-	s_rcrigidwnd.bottom = 858;
-	s_rcrigidwnd.right = 450;
-#endif
+	if (g_4kresolution) {
+		s_rcrigidwnd.bottom = 858 * 2 + MAINMENUAIMBARH;
+		s_rcrigidwnd.right = 450 * 2 + 16;
+	}
+	else {
+		s_rcrigidwnd.bottom = 858;
+		s_rcrigidwnd.right = 450;
+	}
 
 
 	return 0;
@@ -21147,7 +21286,7 @@ int CreateImpulseWnd()
 		//WindowPos(400, 400),		//位置
 		WindowPos(2000, 0),
 		//WindowSize(450, 200),		//サイズ
-		WindowSize(450 * s_winsizemult, 780 * s_winsizemult),		//サイズ
+		WindowSize(450, 780),		//サイズ
 		//WindowSize(200,110),		//サイズ
 		_T("ImpulseWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -21258,14 +21397,15 @@ int CreateImpulseWnd()
 	});
 	//////////
 	//s_impWnd->setSize(WindowSize(450 * s_winsizemult, 858 * s_winsizemult));
-#ifdef DOUBLEWINSIZE
-	s_impWnd->setSize(WindowSize(450 * s_winsizemult + 16, 858 * s_winsizemult + MAINMENUAIMBARH));
-#else
-	s_impWnd->setSize(WindowSize(450, 858));
-#endif
-
-	s_impWnd->setPos(WindowPos(1200 * s_winsizemult, MAINMENUAIMBARH));
-
+	if (g_4kresolution) {
+		s_impWnd->setSize(WindowSize(450 * 2 + 16, 858 * 2 + MAINMENUAIMBARH));
+		s_impWnd->setPos(WindowPos(1200 * 2, MAINMENUAIMBARH));
+	}
+	else {
+		s_impWnd->setSize(WindowSize(450, 858));
+		s_impWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
+	}
+	
 
 	return 0;
 }
@@ -21284,7 +21424,7 @@ int CreateGPlaneWnd()
 		WindowPos(2000, 0),		//位置
 		//WindowPos(400, 660),		//位置
 		//WindowSize(450, 320),		//サイズ
-		WindowSize(450 * s_winsizemult, 780 * s_winsizemult),		//サイズ
+		WindowSize(450, 780),		//サイズ
 		//WindowSize(200,110),		//サイズ
 		_T("GroudOfPhysics"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -21417,15 +21557,14 @@ int CreateGPlaneWnd()
 	});
 
 //	s_gpWnd->setSize(WindowSize(450 * s_winsizemult, 858 * s_winsizemult));
-#ifdef DOUBLEWINSIZE
-	s_gpWnd->setSize(WindowSize(450 * s_winsizemult + 16, 858 * s_winsizemult + MAINMENUAIMBARH));
-#else
-	s_gpWnd->setSize(WindowSize(450, 858));
-#endif
-
-
-	s_gpWnd->setPos(WindowPos(1200 * s_winsizemult, MAINMENUAIMBARH));
-
+	if (g_4kresolution) {
+		s_gpWnd->setSize(WindowSize(450 * 2 + 16, 858 * 2 + MAINMENUAIMBARH));
+		s_gpWnd->setPos(WindowPos(1200 * 2, MAINMENUAIMBARH));
+	}
+	else {
+		s_gpWnd->setSize(WindowSize(450, 858));
+		s_gpWnd->setPos(WindowPos(1200, MAINMENUAIMBARH));
+	}
 
 	return 0;
 }
@@ -21434,20 +21573,38 @@ int CreateToolWnd()
 {
 	/////////
 	// ツールウィンドウを作成してボタン類を追加
-	s_toolWnd = new OrgWindow(
-		0,
-		L"ToolWindow_",		//ウィンドウクラス名
-		GetModuleHandle(NULL),	//インスタンスハンドル
-		//WindowPos(400, 580),		//位置
-		//WindowPos(50, 645),		//位置
-		WindowPos(2000, 600),		//位置
-		WindowSize(230 * s_winsizemult, 290 * s_winsizemult),		//サイズ
-		L"ToolWindow",	//タイトル
-		//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
-		s_mainhwnd,
-		true,					//表示・非表示状態
-		//70, 50, 70);// ,				//カラー
-		0, 0, 0);				//カラー
+	if (g_4kresolution) {
+		s_toolWnd = new OrgWindow(
+			0,
+			L"ToolWindow_",		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(400, 580),		//位置
+			//WindowPos(50, 645),		//位置
+			WindowPos(2000, 600),		//位置
+			WindowSize(230 * 2, 290 * 2),		//サイズ
+			L"ToolWindow",	//タイトル
+			//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
+			s_mainhwnd,
+			true,					//表示・非表示状態
+			//70, 50, 70);// ,				//カラー
+			0, 0, 0);				//カラー
+	}
+	else {
+		s_toolWnd = new OrgWindow(
+			0,
+			L"ToolWindow_",		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(400, 580),		//位置
+			//WindowPos(50, 645),		//位置
+			WindowPos(2000, 600),		//位置
+			WindowSize(230, 290),		//サイズ
+			L"ToolWindow",	//タイトル
+			//s_timelineWnd->getHWnd(),	//親ウィンドウハンドル
+			s_mainhwnd,
+			true,					//表示・非表示状態
+			//70, 50, 70);// ,				//カラー
+			0, 0, 0);				//カラー
+	}
 
 	//	true);// ,					//閉じられるか否か
 	//	false);					//サイズ変更の可否
@@ -21544,15 +21701,23 @@ int CreateToolWnd()
 		}
 	});
 
-	s_toolWnd->setPos(WindowPos(0, 600 * s_winsizemult));
+	s_rctoolwnd.top = 0;
+	s_rctoolwnd.left = 0;
+	if (g_4kresolution) {
+		s_toolWnd->setPos(WindowPos(0, 600 * 2));
+		s_rctoolwnd.bottom = 290 * 2;
+		s_rctoolwnd.right = 230 * 2;
+	}
+	else {
+		s_toolWnd->setPos(WindowPos(0, 600));
+		s_rctoolwnd.bottom = 290;
+		s_rctoolwnd.right = 230;
+	}
+	
 
 	s_toolWnd->autoResizeAllParts();
 	s_toolWnd->refreshPosAndSize();//これを呼ばないと1回目のクリック位置がずれることがある。
 
-	s_rctoolwnd.top = 0;
-	s_rctoolwnd.left = 0;
-	s_rctoolwnd.bottom = 290 * s_winsizemult;
-	s_rctoolwnd.right = 230 * s_winsizemult;
 
 	return 0;
 
@@ -21573,25 +21738,48 @@ int CreateLayerWnd()
 
 	////
 	// ウィンドウを作成
-	s_layerWnd = new OrgWindow(
-		1,
-		_T("LayerTool"),		//ウィンドウクラス名
-		GetModuleHandle(NULL),	//インスタンスハンドル
-		//WindowPos(800, 500),		//位置
-		//WindowPos(250, 645),		//位置
-		//WindowPos(250, 660),		//位置
-		WindowPos(2000, 660),		//位置
-		WindowSize(150 * s_winsizemult, 200 * s_winsizemult),		//サイズ
-		_T("LayerTool"),	//タイトル
-		//s_mainhwnd,					//親ウィンドウハンドル
-		//s_3dwnd,
-		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
-		true,					//表示・非表示状態
-		//false,					//表示・非表示状態
-		//70, 50, 70,				//カラー
-		0, 0, 0,				//カラー
-		true,					//閉じられるか否か
-		true);					//サイズ変更の可否
+	if (g_4kresolution) {
+		s_layerWnd = new OrgWindow(
+			1,
+			_T("LayerTool"),		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(800, 500),		//位置
+			//WindowPos(250, 645),		//位置
+			//WindowPos(250, 660),		//位置
+			WindowPos(2000, 660),		//位置
+			WindowSize(150 * 2, 200 * 2),		//サイズ
+			_T("LayerTool"),	//タイトル
+			//s_mainhwnd,					//親ウィンドウハンドル
+			//s_3dwnd,
+			NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+			true,					//表示・非表示状態
+			//false,					//表示・非表示状態
+			//70, 50, 70,				//カラー
+			0, 0, 0,				//カラー
+			true,					//閉じられるか否か
+			true);					//サイズ変更の可否
+	}
+	else {
+		s_layerWnd = new OrgWindow(
+			1,
+			_T("LayerTool"),		//ウィンドウクラス名
+			GetModuleHandle(NULL),	//インスタンスハンドル
+			//WindowPos(800, 500),		//位置
+			//WindowPos(250, 645),		//位置
+			//WindowPos(250, 660),		//位置
+			WindowPos(2000, 660),		//位置
+			WindowSize(150, 200),		//サイズ
+			_T("LayerTool"),	//タイトル
+			//s_mainhwnd,					//親ウィンドウハンドル
+			//s_3dwnd,
+			NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+			true,					//表示・非表示状態
+			//false,					//表示・非表示状態
+			//70, 50, 70,				//カラー
+			0, 0, 0,				//カラー
+			true,					//閉じられるか否か
+			true);					//サイズ変更の可否
+	}
 
 	// レイヤーウィンドウパーツを作成
 	s_owpLayerTable = new OWP_LayerTable(_T("レイヤーテーブル"));
@@ -22432,27 +22620,28 @@ int DispCustomRigDlg(int rigno)
 
 	SetParent(s_customrigdlg, s_mainhwnd);
 
-#ifdef DOUBLEWINSIZE
-	SetWindowPos(
-		s_customrigdlg,
-		HWND_TOP,
-		1200 * s_winsizemult,
-		32,
-		450 * s_winsizemult + 16,
-		858 * s_winsizemult + 32,
-		SWP_SHOWWINDOW
-	);
-#else
-	SetWindowPos(
-		s_customrigdlg,
-		HWND_TOP,
-		1200,
-		MAINMENUAIMBARH,
-		450,
-		858,
-		SWP_SHOWWINDOW
-	);
-#endif
+	if (g_4kresolution) {
+		SetWindowPos(
+			s_customrigdlg,
+			HWND_TOP,
+			1200 * 2,
+			32,
+			450 * 2 + 16,
+			858 * 2 + 32,
+			SWP_SHOWWINDOW
+		);
+	}
+	else {
+		SetWindowPos(
+			s_customrigdlg,
+			HWND_TOP,
+			1200,
+			MAINMENUAIMBARH,
+			450,
+			858,
+			SWP_SHOWWINDOW
+		);
+	}
 
 	ShowWindow(s_customrigdlg, SW_SHOW);
 	UpdateWindow(s_customrigdlg);
@@ -24086,8 +24275,9 @@ HWND CreateMainWindow()
 
 	//MotionBrushC4.exeが起動していればそのウインドウを親にする
 	HWND parenthwnd = 0;
-	EnumWindows(EnumWindowsProc, (LPARAM)&parenthwnd);
-
+	if (s_launchbyc4 != 0) {
+		EnumWindows(EnumWindowsProc, (LPARAM)&parenthwnd);
+	}
 
 
 	HWND window;
@@ -24151,17 +24341,34 @@ HWND CreateMainWindow()
 	WCHAR strwindowname[MAX_PATH] = { 0L };
 	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.19 : No.%d : ", s_appcnt);
 
-	window = CreateWindowEx(
-		WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
-		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-		//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-#ifdef DOUBLEWINSIZE
-		0, 0, (1216 + 450) * s_winsizemult, (950 - MAINMENUAIMBARH) * s_winsizemult,
-#else
-		0, 0, (1216 + 450), 950,
-#endif
-		parenthwnd, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
-	);
+	s_rcmainwnd.top = 0;
+	s_rcmainwnd.left = 0;
+
+
+	if (g_4kresolution) {
+		window = CreateWindowEx(
+			WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
+			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+			//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+			0, 0, (1216 + 450) * 2, (950 - MAINMENUAIMBARH) * 2,
+			parenthwnd, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
+		);
+
+		s_rcmainwnd.right = (1216 + 450) * 2;
+		s_rcmainwnd.bottom = 950 * 2;
+	}
+	else {
+		window = CreateWindowEx(
+			WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
+			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+			//CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+			0, 0, (1216 + 450), 950,
+			parenthwnd, s_mainmenu, (HINSTANCE)GetModuleHandle(NULL), NULL
+		);
+
+		s_rcmainwnd.right = (1216 + 450);
+		s_rcmainwnd.bottom = 950;
+	}
 	if (!window)
 	{
 		OutputDebugString(TEXT("Error: ウィンドウが作成できません。\n"));
@@ -24170,14 +24377,10 @@ HWND CreateMainWindow()
 
 
 
-	s_rcmainwnd.top = 0;
-	s_rcmainwnd.left = 0;
-	s_rcmainwnd.right = (1216 + 450) * s_winsizemult;
-	s_rcmainwnd.bottom = 950 * s_winsizemult;
 
 	s_mainhwnd = window;
 
-	if (parenthwnd) {
+	if ((s_launchbyc4 != 0) && parenthwnd) {
 		SetParent(s_mainhwnd, parenthwnd);
 		//::MessageBox(s_mainhwnd, L"setparent", L"check!!!", MB_OK);
 	}
@@ -24189,11 +24392,12 @@ HWND CreateMainWindow()
 		RECT desktoprect;
 		::GetClientRect(desktopwnd, &desktoprect);
 		if ((s_appcnt == 0) && (desktoprect.right >= 3840) && (desktoprect.bottom >= 2160)) {
-#ifdef DOUBLEWINSIZE
-			SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
-#else
-			SetWindowPos(s_mainhwnd, HWND_TOP, 1100, 1000, 0, 0, SWP_NOSIZE);
-#endif
+			if (g_4kresolution) {
+				SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
+			}
+			else {
+				SetWindowPos(s_mainhwnd, HWND_TOP, 1100, 1000, 0, 0, SWP_NOSIZE);
+			}
 		}
 		else if (s_appcnt == 1) {
 			SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
@@ -24223,8 +24427,13 @@ HWND Create3DWnd()
 	}
 	s_3dwnd = 0;
 
-
-	hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, 450 * s_winsizemult, 0);
+	if (g_4kresolution) {
+		hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, 450 * 2, 0);
+	}
+	else {
+		hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, 450, 0);
+	}
+	
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 0;
@@ -24277,7 +24486,13 @@ HWND Create3DWnd()
 	::GetWindowRect(s_3dwnd, &winrect);
 	//::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
 	//::MoveWindow(s_3dwnd, 400, 0, s_mainwidth, s_mainheight, TRUE);
-	::MoveWindow(s_3dwnd, 400 * s_winsizemult, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+	if (g_4kresolution) {
+		::MoveWindow(s_3dwnd, 400 * 2, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+	}
+	else {
+		::MoveWindow(s_3dwnd, 400, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+	}
+	
 
 	s_rc3dwnd.top = MAINMENUAIMBARH;
 	s_rc3dwnd.left = 0;
@@ -24307,13 +24522,29 @@ CInfoWindow* CreateInfoWnd()
 	int cxframe = GetSystemMetrics(SM_CXFRAME);
 	int cyframe = GetSystemMetrics(SM_CYFRAME);
 
+	s_rcinfownd.top = s_mainheight + 3 * cyframe + MAINMENUAIMBARH;
+	s_rcinfownd.bottom = (s_infowinheight + 2 * cyframe);
+	s_rcinfownd.right = s_infowinwidth;
+	s_rcinfownd.left = 400;
+
 	CInfoWindow* newinfownd = new CInfoWindow();
 	if (newinfownd) {
 
 		int ret;
-		ret = newinfownd->CreateInfoWindow(s_mainhwnd,
-			400 * s_winsizemult, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
-			s_infowinwidth, s_infowinheight + 2 * cyframe);
+		if (g_4kresolution) {
+			ret = newinfownd->CreateInfoWindow(s_mainhwnd,
+				400 * 2, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
+				s_infowinwidth, s_infowinheight + 2 * cyframe);
+
+			s_rcinfownd.left = 400 * 2;
+		}
+		else {
+			ret = newinfownd->CreateInfoWindow(s_mainhwnd,
+				400, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
+				s_infowinwidth, s_infowinheight + 2 * cyframe);
+
+			s_rcinfownd.left = 400;
+		}
 
 		if (ret == 0) {
 			g_infownd = newinfownd;
@@ -24327,10 +24558,6 @@ CInfoWindow* CreateInfoWnd()
 
 	}
 
-	s_rcinfownd.top = s_mainheight + 3 * cyframe + MAINMENUAIMBARH;
-	s_rcinfownd.left = 400 * s_winsizemult;
-	s_rcinfownd.bottom = (s_infowinheight + 2 * cyframe);
-	s_rcinfownd.right = s_infowinwidth;
 
 
 	return newinfownd;
