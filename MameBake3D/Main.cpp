@@ -11728,25 +11728,24 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 				vechistory.clear();
-				bool notfoundfirst = false;
-				if (hFind == INVALID_HANDLE_VALUE) {
-					notfoundfirst = true;
+				bool notfoundfirst = true;
+				if (hFind != INVALID_HANDLE_VALUE) {
+					notfoundfirst = false;
+					do {
+						if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+
+							HISTORYELEM curelem;
+							curelem.filetime = win32fd.ftCreationTime;
+
+							//printf("%s\n", win32fd.cFileName);
+							curelem.wfilename[MAX_PATH - 1] = { 0L };
+							swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+							vechistory.push_back(curelem);
+						}
+					} while (FindNextFile(hFind, &win32fd));
+					FindClose(hFind);
 				}
-				do {
-					if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-						
-						HISTORYELEM curelem;
-						curelem.filetime = win32fd.ftCreationTime;
-						
-						//printf("%s\n", win32fd.cFileName);
-						curelem.wfilename[MAX_PATH - 1] = { 0L };
-						swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
-
-						vechistory.push_back(curelem);
-					}
-				} while (FindNextFile(hFind, &win32fd));
-				FindClose(hFind);
-
 
 				if (!vechistory.empty()) {
 
@@ -18447,7 +18446,10 @@ int OnFrameTimeLineWnd()
 			//これがないとモーション停止ボタンを押した後にselect表示されない。
 			s_buttonselectstart = s_editrange.GetStartFrame();
 			s_buttonselectend = s_editrange.GetEndFrame();
-			OnTimeLineButtonSelectFromSelectStartEnd(0);
+			
+			if (s_copyKeyInfoList.size() == 0) {//フレームを選択していないときだけ呼ぶ。選択済のときにTimeline::OnSelectButtonがループするのを防止
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
+			}
 		}
 
 		//s_underselectingframe = 1;
@@ -19338,6 +19340,15 @@ int CreateUtDialog()
 //utguikind == 0
 //################
 	//iY += 24;
+
+	if (g_4kresolution) {
+		iY = s_mainheight - (520 - MAINMENUAIMBARH);
+	}
+	else {
+		iY = 0;
+	}
+
+
 	s_dsutgui0.clear();
 	s_dsutguiid0.clear();
 
@@ -23761,16 +23772,20 @@ int OnTimeLineSelectFromSelectedKey()
 int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 {
 	s_buttonselecttothelast = tothelastflag;
-	if (s_owpLTimeline) {
-		s_owpLTimeline->selectClear(false);
-		if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastの際には　範囲を指定していなくても実行
-			double tmpmaxselectionframe;
-			tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
-			s_buttonselectend = tmpmaxselectionframe;//tothelast対応
-		}
-	}
 
-	OnTimeLineSelectFromSelectedKey();
+	if ((s_copyKeyInfoList.size() > 0) || tothelastflag) {//2021/11/09 選択済の場合にはそのまま　これがないと１フレーム長選択でOnButtonSelectがループする
+		if (s_owpLTimeline) {
+			s_owpLTimeline->selectClear(false);//フレームに色付選択していない場合には呼ばれないので再帰ループしない
+			//if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastの際には　範囲を指定していなくても実行
+			//if ((s_buttonselectstart <= s_buttonselectend) || tothelastflag) {//2021/11/09
+				double tmpmaxselectionframe;
+				tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
+				s_buttonselectend = tmpmaxselectionframe;//tothelast対応
+			//}
+		}
+
+		OnTimeLineSelectFromSelectedKey();
+	}
 
 	return 0;
 }
@@ -32022,24 +32037,23 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 	vechistory.clear();
-	bool notfoundfirst = false;
-	if (hFind == INVALID_HANDLE_VALUE) {
-		notfoundfirst = true;
+	bool notfoundfirst = true;
+	if (hFind != INVALID_HANDLE_VALUE) {
+		notfoundfirst = false;
+		do {
+			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+				HISTORYELEM curelem;
+				curelem.filetime = win32fd.ftCreationTime;
+
+				//printf("%s\n", win32fd.cFileName);
+				curelem.wfilename[MAX_PATH - 1] = { 0L };
+				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+				vechistory.push_back(curelem);
+			}
+		} while (FindNextFile(hFind, &win32fd));
+		FindClose(hFind);
 	}
-	do {
-		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-			HISTORYELEM curelem;
-			curelem.filetime = win32fd.ftCreationTime;
-
-			//printf("%s\n", win32fd.cFileName);
-			curelem.wfilename[MAX_PATH - 1] = { 0L };
-			swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
-
-			vechistory.push_back(curelem);
-		}
-	} while (FindNextFile(hFind, &win32fd));
-	FindClose(hFind);
-
 
 	if (!vechistory.empty()) {
 
@@ -32112,24 +32126,23 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 	//std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 	vechistory.clear();
-	bool notfoundfirst = false;
-	if (hFind == INVALID_HANDLE_VALUE) {
-		notfoundfirst = true;
+	bool notfoundfirst = true;
+	if (hFind != INVALID_HANDLE_VALUE) {
+		notfoundfirst = false;
+		do {
+			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+				HISTORYELEM curelem;
+				curelem.filetime = win32fd.ftCreationTime;
+
+				//printf("%s\n", win32fd.cFileName);
+				curelem.wfilename[MAX_PATH - 1] = { 0L };
+				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+				vechistory.push_back(curelem);
+			}
+		} while (FindNextFile(hFind, &win32fd));
+		FindClose(hFind);
 	}
-	do {
-		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-			HISTORYELEM curelem;
-			curelem.filetime = win32fd.ftCreationTime;
-
-			//printf("%s\n", win32fd.cFileName);
-			curelem.wfilename[MAX_PATH - 1] = { 0L };
-			swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
-
-			vechistory.push_back(curelem);
-		}
-	} while (FindNextFile(hFind, &win32fd));
-	FindClose(hFind);
-
 
 	if (!vechistory.empty()) {
 
@@ -32175,24 +32188,23 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
 
 	vechistory.clear();
-	bool notfoundfirst = false;
-	if (hFind == INVALID_HANDLE_VALUE) {
-		notfoundfirst = true;
+	bool notfoundfirst = true;
+	if (hFind != INVALID_HANDLE_VALUE) {
+		notfoundfirst = false;
+		do {
+			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+				HISTORYELEM curelem;
+				curelem.filetime = win32fd.ftCreationTime;
+
+				//printf("%s\n", win32fd.cFileName);
+				curelem.wfilename[MAX_PATH - 1] = { 0L };
+				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+				vechistory.push_back(curelem);
+			}
+		} while (FindNextFile(hFind, &win32fd));
+		FindClose(hFind);
 	}
-	do {
-		if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-			HISTORYELEM curelem;
-			curelem.filetime = win32fd.ftCreationTime;
-
-			//printf("%s\n", win32fd.cFileName);
-			curelem.wfilename[MAX_PATH - 1] = { 0L };
-			swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
-
-			vechistory.push_back(curelem);
-		}
-	} while (FindNextFile(hFind, &win32fd));
-	FindClose(hFind);
-
 
 	if (!vechistory.empty()) {
 

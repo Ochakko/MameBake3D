@@ -691,7 +691,7 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 		}else{
 			curtech = g_hRenderBoneL0;
 			pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
-			_ASSERT(0);
+			//_ASSERT(0);
 		}
 
 		//// no lighting test

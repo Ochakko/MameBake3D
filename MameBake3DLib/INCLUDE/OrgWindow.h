@@ -4645,7 +4645,8 @@ void s_dummyfunc()
 					if (dragSelect) {
 
 						for (int i = min(dragSelectLine1, dragSelectLine2);
-							i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size(); i++) {
+							(i <= max(dragSelectLine1, dragSelectLine2) && i < (signed int)lineData.size());
+							i++) {
 							lineData[i]->selectKey(min(dragSelectTime1, dragSelectTime2),
 								max(dragSelectTime1, dragSelectTime2));
 						}
@@ -5534,7 +5535,7 @@ void s_dummyfunc()
 				for(int i=0; i<(int)key.size(); i++){
 //					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
 //					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
-					if( startTime<=key[i]->time && key[i]->time<endTime ){
+					if((startTime <= key[i]->time) && (key[i]->time <= endTime)){//endTime ==�܂ށ@2021/11/09
 						key[i]->select=true;
 						selectCount++;
 					}
