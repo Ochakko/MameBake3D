@@ -3829,6 +3829,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
 	}
+	
+	if (s_copyhistorydlg.GetCreatedFlag() == true) {
+		s_copyhistorydlg.DestroyWindow();
+	}
 
 
 	CloseDbgFile();
@@ -17414,6 +17418,32 @@ int DispRotAxisDlg()
 		_ASSERT(0);
 		return 1;
 	}
+
+	SetParent(s_rotaxisdlg, s_mainhwnd);
+	if (g_4kresolution) {
+		SetWindowPos(
+			s_rotaxisdlg,
+			HWND_TOP,
+			1200 * 2,
+			32,
+			450 * 2 + 16,
+			858 * 2 + 32,
+			SWP_SHOWWINDOW
+		);
+	}
+	else {
+		SetWindowPos(
+			s_rotaxisdlg,
+			HWND_TOP,
+			1200,
+			32,
+			450,
+			858 + 32,
+			SWP_SHOWWINDOW
+		);
+	}
+
+
 	ShowWindow(s_rotaxisdlg, SW_SHOW);
 	UpdateWindow(s_rotaxisdlg);
 
@@ -18605,9 +18635,40 @@ int OnFrameToolWnd()
 
 	if (s_selCopyHisotryFlag) {
 		s_selCopyHisotryFlag = false;
+
+		GUIMenuSetVisible(-1, -1);
+
 		GetCPTFileName(s_cptfilename);
+		//s_copyhistorydlg.SetNames(s_cptfilename);
+		//s_copyhistorydlg.DoModal();
+		if (s_copyhistorydlg.GetCreatedFlag() == false) {
+			s_copyhistorydlg.Create(s_mainhwnd);
+		}
+		SetParent(s_copyhistorydlg.m_hWnd, s_mainhwnd);
+		if (g_4kresolution) {
+			SetWindowPos(
+				s_copyhistorydlg.m_hWnd,
+				HWND_TOP,
+				1200 * 2,
+				32,
+				450 * 2 + 16,
+				858 * 2 + 32,
+				SWP_SHOWWINDOW
+			);
+		}
+		else {
+			SetWindowPos(
+				s_copyhistorydlg.m_hWnd,
+				HWND_TOP,
+				1200,
+				32,
+				450,
+				858 + 32,
+				SWP_SHOWWINDOW
+			);
+		}
+		s_copyhistorydlg.ShowWindow(SW_SHOW);
 		s_copyhistorydlg.SetNames(s_cptfilename);
-		s_copyhistorydlg.DoModal();
 	}
 
 	if (s_copyFlag){
@@ -18635,6 +18696,12 @@ int OnFrameToolWnd()
 			}
 
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+
+
+			if (s_copyhistorydlg.GetCreatedFlag() == true) {
+				GetCPTFileName(s_cptfilename);
+				s_copyhistorydlg.SetNames(s_cptfilename);
+			}
 		}
 	}
 
@@ -18662,6 +18729,11 @@ int OnFrameToolWnd()
 				_ASSERT(result == 0);
 				int result2 = WriteCPIFile(retcptfilename);//cp info
 				_ASSERT(result2 == 0);
+			}
+
+			if (s_copyhistorydlg.GetCreatedFlag() == true) {
+				GetCPTFileName(s_cptfilename);
+				s_copyhistorydlg.SetNames(s_cptfilename);
 			}
 		}
 	}
@@ -24179,10 +24251,12 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//return 0;
 				break;
 			case ID_40049:
+				GUIMenuSetVisible(-1, -1);
 				DispAngleLimitDlg();
 				//return 0;
 				break;
 			case ID_40050:
+				GUIMenuSetVisible(-1, -1);
 				DispRotAxisDlg();
 				//return 0;
 				break;
@@ -25438,6 +25512,26 @@ void ShowDampAnimWnd(bool srcflag)
 void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 {
 	if ((srcmenukind >= SPPLATEMENUKIND_GUI) && (srcmenukind <= SPPLATEMENUKIND_RETARGET)) {
+
+		//platemenu用のウインドウ以外を閉じるまたは破棄する
+		if (s_copyhistorydlg.GetCreatedFlag() == true) {
+			s_copyhistorydlg.ShowWindow(SW_HIDE);
+		}
+		if (s_anglelimitdlg) {
+			DestroyWindow(s_anglelimitdlg);
+			s_anglelimitdlg = 0;
+		}
+		if (s_rotaxisdlg) {
+			DestroyWindow(s_rotaxisdlg);
+			s_rotaxisdlg = 0;
+		}
+		if (s_customrigdlg) {
+			DestroyWindow(s_customrigdlg);
+			s_customrigdlg = 0;
+		}
+
+		
+		//プレート
 		s_platemenukind = srcmenukind;
 
 		switch (s_platemenukind) {

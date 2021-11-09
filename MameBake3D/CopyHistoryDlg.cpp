@@ -29,6 +29,8 @@ int CCopyHistoryDlg::DestroyObjs()
 
 void CCopyHistoryDlg::InitParams()
 {
+	m_createdflag = false;
+
 	m_ischeckedmostrecent = true;
 	ZeroMemory(m_selectname, sizeof(WCHAR) * MAX_PATH);
 
@@ -142,20 +144,40 @@ void CCopyHistoryDlg::InitParams()
 
 }
 
-LRESULT CCopyHistoryDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+//LRESULT CCopyHistoryDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+//{
+//	int ret;
+//
+//	InitCommonControls();
+//
+//	m_dlg_wnd = m_hWnd;
+//
+//	ret = ParamsToDlg();
+//	_ASSERT( !ret );
+//
+//
+//	return 1;  // システムにフォーカスを設定させます
+//}
+
+LRESULT CCopyHistoryDlg::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	int ret;
-
+	//int ret;
+	
 	InitCommonControls();
-
-	m_dlg_wnd = m_hWnd;
-
-	ret = ParamsToDlg();
-	_ASSERT( !ret );
-
-
-	return 1;  // システムにフォーカスを設定させます
+	
+	//m_dlg_wnd = m_hWnd;
+	
+	//ret = ParamsToDlg();
+	//_ASSERT( !ret );
+	
+	return 0;
 }
+LRESULT CCopyHistoryDlg::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	return 0;
+}
+
+
 
 LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
@@ -177,20 +199,26 @@ LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bH
 
 
 	m_initsearchcomboflag = false;
-	EndDialog(wID);
+	//EndDialog(wID);
+	//DestroyWindow();
+	ShowWindow(SW_HIDE);
 	return 0;
 }
 
 LRESULT CCopyHistoryDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	m_initsearchcomboflag = false;
-	EndDialog(wID);
+	//EndDialog(wID);
+	//DestroyWindow();
+	ShowWindow(SW_HIDE);
 	return 0;
 }
 
 int CCopyHistoryDlg::ParamsToDlg()
 {
 	//m_dlg_wnd.CheckRadioButton(IDC_RADIO1, IDC_RADIO5, (g_ClearColorIndex + IDC_RADIO1));
+
+	m_dlg_wnd = m_hWnd;
 
 	bool ischeck = false;
 	int nameno;
@@ -540,7 +568,10 @@ int CCopyHistoryDlg::SetNames(std::vector<HISTORYELEM>& copyhistory)
 
 	m_namenum = min(10, m_copyhistory.size());
 	
-	//ParamsToDlg();//表示されていないときにはm_hWndがNULLの場合がある
+	ParamsToDlg();//表示されていないときにはm_hWndがNULLの場合があるのでShowWindowの後でSetNamesを呼ぶ
+
+
+	m_createdflag = true;
 
 	return 0;
 
