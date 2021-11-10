@@ -4410,7 +4410,7 @@ void s_dummyfunc()
 
 						for (int i = 0; i < (int)curLineData->key.size(); i++) {
 							if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-								(curLineData->key[i]->time <= tmpend + TIME_ERROR_WIDTH)) {
+								(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
 								curLineData->key[i]->select = true;
 								if (maxframe < curLineData->key[i]->time) {
 									maxframe = curLineData->key[i]->time;

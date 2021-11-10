@@ -993,6 +993,7 @@ static bool s_EcursorFlag = false;			// カーソル移動フラグ
 static bool s_timelineRUpFlag = false;
 static bool s_timelinembuttonFlag = false;
 static int s_mbuttoncnt = 1;
+static double s_mbuttonstart = 0.0;
 static bool s_timelinewheelFlag = false;
 static bool s_timelineshowposFlag = false;
 
@@ -2455,6 +2456,7 @@ void InitApp()
 	s_timelineRUpFlag = false;
 	s_timelinembuttonFlag = false;
 	s_mbuttoncnt = 1;
+	s_mbuttonstart = 0.0;
 	s_timelinewheelFlag = false;
 	s_timelineshowposFlag = false;
 	s_prevrangeFlag = false;
@@ -5223,7 +5225,8 @@ void RenderText( double fTime )
 
     g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
     //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
-	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
+	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
+	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
 	if (s_onefps == 1) {
 		g_pTxtHelper->DrawFormattedTextLine(L" ");
 		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
@@ -9669,12 +9672,12 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 				s_owpLTimeline->setMouseMDownListener([]() {
 					if (s_model) {
 						s_timelinembuttonFlag = true;
-						if (s_mbuttoncnt == 0) {
-							s_mbuttoncnt = 1;
-						}
-						else {
-							s_mbuttoncnt = 0;
-						}
+						//if (s_mbuttoncnt == 0) {
+						//	s_mbuttoncnt = 1;
+						//}
+						//else {
+						//	s_mbuttoncnt = 0;
+						//}
 					}
 				});
 				s_owpLTimeline->setMouseWheelListener([]() {
@@ -9682,6 +9685,7 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll の S
 							s_timelinewheelFlag = true;
 							s_timelineshowposFlag = false;
+							s_LcursorFlag = true;
 						}
 						else {
 							s_timelinewheelFlag = false;
@@ -18477,9 +18481,9 @@ int OnFrameTimeLineWnd()
 			s_buttonselectstart = s_editrange.GetStartFrame();
 			s_buttonselectend = s_editrange.GetEndFrame();
 			
-			if (s_copyKeyInfoList.size() == 0) {//フレームを選択していないときだけ呼ぶ。選択済のときにTimeline::OnSelectButtonがループするのを防止
+			//if (s_copyKeyInfoList.size() == 0) {//フレームを選択していないときだけ呼ぶ。選択済のときにTimeline::OnSelectButtonがループするのを防止
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
-			}
+			//}
 		}
 
 		//s_underselectingframe = 1;
@@ -18487,6 +18491,8 @@ int OnFrameTimeLineWnd()
 
 		if (g_previewFlag != 0) {
 			//これがないとモーション再生中にselectが表示されない。
+			s_buttonselectstart = s_previewrange.GetStartFrame();
+			s_buttonselectend = s_previewrange.GetEndFrame();
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 		}
 
@@ -19149,25 +19155,44 @@ int OnFramePlayButton()
 		//先頭フレームへ
 		s_firstkeyFlag = false;
 		g_previewFlag = 0;
-		if (s_owpTimeline){
-			s_owpLTimeline->setCurrentTime(1.0, true);
-			s_owpEulerGraph->setCurrentTime(1.0, false);
-		}
+		//if (s_owpTimeline){
+		//	s_owpLTimeline->setCurrentTime(1.0, true);
+		//	s_owpEulerGraph->setCurrentTime(1.0, false);
+		//}
+		double newframe = 1.0;
+		s_buttonselectstart = newframe;
+		s_buttonselectend = newframe;
+		OnTimeLineButtonSelectFromSelectStartEnd(0);
 	}
 	if (s_lastkeyFlag){
 		//最終フレームへ
 		s_lastkeyFlag = false;
 		g_previewFlag = 0;
+		//if (s_model){
+		//	if (s_owpTimeline){
+		//		MOTINFO* curmi = s_model->GetCurMotInfo();
+		//		if (curmi){
+		//			double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
+		//			s_owpLTimeline->setCurrentTime(lastframe, true);
+		//			s_owpEulerGraph->setCurrentTime(lastframe, false);
+		//		}
+		//	}
+		//}
+		double newframe = 1.0;
+		//if (s_owpLTimeline) {
+		//	newframe = s_owpLTimeline->getMaxTime();
+		//}
 		if (s_model){
 			if (s_owpTimeline){
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
-					double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
-					s_owpLTimeline->setCurrentTime(lastframe, true);
-					s_owpEulerGraph->setCurrentTime(lastframe, false);
+					newframe = max(0.0, s_model->GetCurMotInfo()->frameleng - 1.0);
 				}
 			}
 		}
+		s_buttonselectstart = newframe;
+		s_buttonselectend = newframe;
+		OnTimeLineButtonSelectFromSelectStartEnd(0);
 	}
 	return 0;
 }
@@ -20013,11 +20038,20 @@ int CreateLongTimelineWnd()
 			s_LstartFlag = true; g_previewFlag = -1;
 		}
 	});
+	
+
 	s_owpPlayerButton->setFrontStepButtonListener([](){ 
 		if (s_model) {
 			s_LstartFlag = true; s_lastkeyFlag = true;
 		}
 	});
+	s_owpPlayerButton->setBackStepButtonListener([]() {
+		if (s_model) {
+			s_LstartFlag = true; s_firstkeyFlag = true;
+		}
+	});
+
+
 	s_owpPlayerButton->setOneFpsButtonListener([]() {
 		if (s_model) {
 			int tmponefps;
@@ -20034,11 +20068,6 @@ int CreateLongTimelineWnd()
 				tmponefps = 0;
 			}
 			s_onefps = tmponefps;
-		}
-	});
-	s_owpPlayerButton->setBackStepButtonListener([](){
-		if (s_model) {
-			s_LstartFlag = true; s_firstkeyFlag = true;
 		}
 	});
 	s_owpPlayerButton->setStopButtonListener([]() {  		
@@ -23845,19 +23874,24 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 {
 	s_buttonselecttothelast = tothelastflag;
 
-	if ((s_copyKeyInfoList.size() > 0) || tothelastflag) {//2021/11/09 選択済の場合にはそのまま　これがないと１フレーム長選択でOnButtonSelectがループする
-		if (s_owpLTimeline) {
-			s_owpLTimeline->selectClear(false);//フレームに色付選択していない場合には呼ばれないので再帰ループしない
-			//if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastの際には　範囲を指定していなくても実行
-			//if ((s_buttonselectstart <= s_buttonselectend) || tothelastflag) {//2021/11/09
-				double tmpmaxselectionframe;
-				tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
-				s_buttonselectend = tmpmaxselectionframe;//tothelast対応
-			//}
-		}
-
-		OnTimeLineSelectFromSelectedKey();
+	if ((s_underselectingframe == 0) && s_timelinewheelFlag) {
+		s_owpLTimeline->selectClear(false);
+		return 0;
 	}
+
+	//if ((s_copyKeyInfoList.size() > 0) || tothelastflag) {//2021/11/09 選択済の場合にはそのまま　これがないと１フレーム長選択でOnButtonSelectがループする
+	if (s_owpLTimeline) {
+		s_owpLTimeline->selectClear(false);//フレームに色付選択していない場合には呼ばれないので再帰ループしない
+		//if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastの際には　範囲を指定していなくても実行
+		//if ((s_buttonselectstart <= s_buttonselectend) || tothelastflag) {//2021/11/09
+			double tmpmaxselectionframe;
+			tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
+			s_buttonselectend = tmpmaxselectionframe;//tothelast対応
+		//}
+	}
+
+	OnTimeLineSelectFromSelectedKey();
+	//}
 
 	return 0;
 }
@@ -23890,7 +23924,7 @@ int OnTimeLineCursor(int mbuttonflag, double newframe)
 int OnTimeLineMButtonDown(bool ctrlshiftflag)
 {
 	//if (s_underselectingframe == 0){
-	if (s_mbuttoncnt == 0) {
+	if (s_mbuttoncnt == 1) {
 		if (ctrlshiftflag == false) {
 			s_underselectingframe = 1;
 		}
@@ -23901,6 +23935,7 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 			if (s_owpLTimeline) {
 				s_buttonselectstart = s_owpLTimeline->getCurrentTime();
 				s_buttonselectend = s_buttonselectstart;
+				s_mbuttonstart = s_buttonselectstart;//2021/11/10
 				OnTimeLineCursor(1, 0.0);
 			}
 		}
@@ -23909,6 +23944,15 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 		s_underselectingframe = 0;
 		OnTimeLineButtonSelectFromSelectStartEnd(0);
 	}
+
+	s_mbuttoncnt = (int)(!(s_mbuttoncnt == 1));
+	//if (s_mbuttoncnt == 0) {
+	//	s_mbuttoncnt = 1;
+	//}
+	//else {
+	//	s_mbuttoncnt = 0;
+	//}
+
 
 	DbgOut(L"OnTimeLineMButtonDown : underselectingframe %d, start %lf, end %lf\r\n", s_underselectingframe, s_buttonselectstart, s_buttonselectend);
 
@@ -23980,7 +24024,19 @@ int OnTimeLineWheel()
 
 			//timeline
 			if (delta2 != 0.0) {
-				s_buttonselectend += delta2;
+				if (s_buttonselectstart == s_mbuttonstart) {
+					s_buttonselectend += delta2;
+				}
+				else {
+					s_buttonselectstart += delta2;
+				}
+				if (s_buttonselectstart > s_buttonselectend) {
+					double tmp;
+					tmp = s_buttonselectstart;
+					s_buttonselectstart = s_buttonselectend;
+					s_buttonselectend = tmp;
+				}
+				
 				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %lf\r\n", s_buttonselectstart, s_buttonselectend, delta2);
 
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
@@ -24012,9 +24068,11 @@ int OnTimeLineWheel()
 				double newframe = curframe + delta2;
 				s_buttonselectstart = newframe;
 				s_buttonselectend = newframe;
-				s_editrange.Clear();
-				s_owpLTimeline->selectClear();
-				OnTimeLineCursor(2, newframe);
+				//s_editrange.Clear();
+				//s_owpLTimeline->selectClear();
+				//OnTimeLineCursor(2, newframe);
+
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
 			}
 
 		}
