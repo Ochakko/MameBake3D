@@ -236,6 +236,7 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
+static float CalcSelectScale(CBone* curboneptr);
 static double CalcRefFrame();
 static void ChangeCurDirFromMameMediaToTest();
 
@@ -11287,6 +11288,42 @@ int refreshModelPanel()
 //	return 0;
 //}
 
+
+float CalcSelectScale(CBone* curboneptr)
+{
+	MODELBOUND mb;
+	s_model->GetModelBound(&mb);
+	double modelr = (double)mb.r;
+
+	ChaVector3 orgcenterpos = curboneptr->GetJointFPos();
+	ChaVector3 orgedgepos = ChaVector3(orgcenterpos.x, orgcenterpos.y + 100.0f, orgcenterpos.z);
+	ChaVector3 dispcenterpos, dispedgepos;
+	ChaVector3TransformCoord(&dispcenterpos, &orgcenterpos, &s_selm);
+	ChaVector3TransformCoord(&dispedgepos, &orgedgepos, &s_selm);
+	double lineleng = (dispedgepos.x - dispcenterpos.x) * (dispedgepos.x - dispcenterpos.x) + (dispedgepos.y - dispcenterpos.y) * (dispedgepos.y - dispcenterpos.y);
+	if (lineleng > 0.00001) {
+		lineleng = sqrt(lineleng);
+
+		//s_selectscale = 0.0020f / lineleng;
+		//s_selectscale = (modelr * 0.015f * 0.75f) / (lineleng * 100.0f);
+		s_selectscale = (float)((modelr * 0.40) / lineleng);// *(s_camdist / g_initcamdist);
+
+		if (s_oprigflag == 1) {
+			s_selectscale *= 0.25f;
+			//s_selectscale *= 0.50f;
+		}
+		if (g_4kresolution) {
+			s_selectscale *= 0.5f;
+		}
+	}
+	else {
+		//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
+	}
+
+	return s_selectscale;
+}
+
+
 int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 {
 	if( s_curboneno < 0 ){
@@ -11309,34 +11346,14 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 			s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 0, multworld, 0);
 		}
 
-		ChaVector3 orgpos = curboneptr->GetJointFPos();
-		ChaVector3 bonepos = curboneptr->GetChildWorld();
 
-		ChaVector3 cam0, cam1;
-		ChaMatrix mwv = s_model->GetWorldMat() * s_matView;
-		ChaVector3TransformCoord( &cam0, &orgpos, &mwv );
-		cam1 = cam0 + ChaVector3( 1.0f, 0.0f, 0.0f );
+		CalcSelectScale(curboneptr);//s_selectscaleにセット
 
-		ChaVector3 sc0, sc1;
-		ChaVector3TransformCoord( &sc0, &cam0, &s_matProj );
-		ChaVector3TransformCoord( &sc1, &cam1, &s_matProj );
-		float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
-		if( lineleng > 0.00001f ){
-			lineleng = sqrt( lineleng );
-			s_selectscale = 0.0020f / lineleng;
-			if ((s_oprigflag == 1) && (curboneptr == s_customrigbone)){
-				s_selectscale *= 0.25f;
-			}
-			if (g_4kresolution) {
-				s_selectscale *= 0.5f;
-			}
-		}
-		else{
-			//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
-		}
 		ChaMatrix scalemat;
 		ChaMatrixIdentity( &scalemat );
 		ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
+
+		ChaVector3 bonepos = curboneptr->GetWorldPos(curmi->motid, curmi->curframe);
 
 		s_selectmat = scalemat * s_selm;
 		s_selectmat._41 = bonepos.x;
@@ -16643,7 +16660,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 		tempvalue = 0;
 	}
 
-	if (onrefreshflag == false) {
+	if (onrefreshflag == false) {//Refresh関数以外から呼び出したとき
 
 		if(s_owpTimeline)
 			s_owpTimeline->setMaxTime(frameleng);//!!!!!!!!!!!!!!!!!!!!!
@@ -23943,6 +23960,14 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 	else {
 		s_underselectingframe = 0;
 		OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+		if (s_editmotionflag < 0) {
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
+			}
+		}
+
 	}
 
 	s_mbuttoncnt = (int)(!(s_mbuttoncnt == 1));
@@ -33541,39 +33566,14 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	selm._42 = 0.0f;
 	selm._43 = 0.0f;
 
-	ChaVector3 orgpos = curbone->GetJointFPos();
-	ChaVector3 bonepos = curbone->GetChildWorld();
 
-	ChaVector3 cam0, cam1;
-	ChaMatrix mwv = s_model->GetWorldMat() * s_matView;
-	ChaVector3TransformCoord(&cam0, &orgpos, &mwv);
-	cam1 = cam0 + ChaVector3(1.0f, 0.0f, 0.0f);
-
-	ChaVector3 sc0, sc1;
-	ChaVector3TransformCoord(&sc0, &cam0, &s_matProj);
-	ChaVector3TransformCoord(&sc1, &cam1, &s_matProj);
-	float lineleng = (sc0.x - sc1.x) * (sc0.x - sc1.x) + (sc0.y - sc1.y) * (sc0.y - sc1.y);
-	if (lineleng > 0.00001f) {
-		lineleng = sqrt(lineleng);
-		s_selectscale = 0.0020f / lineleng;
-		//if ((s_oprigflag == 1) && (curbone == s_customrigbone)) {
-		s_selectscale *= 0.25f;
-		//}
-	}
-	else {
-		//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
-	}
+	CalcSelectScale(curbone);//s_selectscaleにセット
 	
-	ChaMatrix rigmat;
-	ChaMatrixIdentity(&rigmat);
-
 	ChaMatrix scalemat;
 	ChaMatrixIdentity(&scalemat);
 	ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
 	ChaVector3 curbonepos = curbone->GetWorldPos(curmotid, curframe);
-	//ChaMatrix rigmat;
-	//ChaMatrixIdentity(&rigmat);
 
 	float rigorderoffset = 0.0f;
 	if (disporder == 0) {
@@ -33596,18 +33596,12 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 
 	if (dispaxis == 0) {
 		offsetorgpos = ChaVector3(rigorderoffset, 0.0f, 0.0f);
-		//ChaMatrixTranslation(&rigmat, curbonepos.x + rigorderoffset, curbonepos.y, curbonepos.z);
-		//s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.99f);
 	}
 	else if (dispaxis == 1) {
 		offsetorgpos = ChaVector3(0.0f, rigorderoffset, 0.0f);
-		//ChaMatrixTranslation(&rigmat, curbonepos.x, curbonepos.y + rigorderoffset, curbonepos.z);
-		//s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, 0.99f);
 	}
 	else if (dispaxis == 2) {
 		offsetorgpos = ChaVector3(0.0f, 0.0f, rigorderoffset);
-		//ChaMatrixTranslation(&rigmat, curbonepos.x, curbonepos.y, curbonepos.z + rigorderoffset);
-		//s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, 0.99f);
 	}
 	ChaVector3TransformCoord(&offsetdisppos, &offsetorgpos, &selm);
 	ChaMatrix tramat;
