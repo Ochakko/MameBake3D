@@ -191,6 +191,7 @@ LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bH
 	}
 
 	if ((selectedno >= 0) && (selectedno < m_namenum)) {
+		m_selectname[MAX_PATH - 1] = 0L;
 		wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[selectedno].wfilename);
 		m_selectname[MAX_PATH - 1] = 0L;
 	}
@@ -852,5 +853,61 @@ LRESULT CCopyHistoryDlg::OnDelete(int delid)
 }
 
 
+LRESULT CCopyHistoryDlg::OnRadio1(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(0);
+}
+LRESULT CCopyHistoryDlg::OnRadio2(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(1);
+}
+LRESULT CCopyHistoryDlg::OnRadio3(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(2);
+}
+LRESULT CCopyHistoryDlg::OnRadio4(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(3);
+}
+LRESULT CCopyHistoryDlg::OnRadio5(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(4);
+}
+LRESULT CCopyHistoryDlg::OnRadio6(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(5);
+}
+LRESULT CCopyHistoryDlg::OnRadio7(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(6);
+}
+LRESULT CCopyHistoryDlg::OnRadio8(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(7);
+}
+LRESULT CCopyHistoryDlg::OnRadio9(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(8);
+}
+LRESULT CCopyHistoryDlg::OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	return OnRadio(9);
+}
 
+LRESULT CCopyHistoryDlg::OnRadio(int radioid)
+{
+	if ((radioid < 0) || (radioid >= m_namenum)) {
+		return 0;
+	}
 
+	if (m_namenum != m_copyhistory.size()) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	m_selectname[MAX_PATH - 1] = 0L;
+	wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[radioid].wfilename);
+	m_selectname[MAX_PATH - 1] = 0L;
+
+	return 0;
+}

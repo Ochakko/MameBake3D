@@ -1216,7 +1216,7 @@ void s_dummyfunc()
 		//	endPaint();
 		//}
 		///	Method : 左右マウスボタンダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1225,13 +1225,13 @@ void s_dummyfunc()
 			}
 			onLRButtonDown(e,true);
 		}
-		void onRButtonDown(const MouseEvent& e){
+		virtual void onRButtonDown(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
 			onLRButtonDown(e,false);
 		}
-		void onLRButtonDown(const MouseEvent& e, bool lButton){
+		virtual void onLRButtonDown(const MouseEvent& e, bool lButton){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1310,7 +1310,7 @@ void s_dummyfunc()
 			}
 		}
 		//	Method : 左右マウスボタンアップイベント受信
-		void onLButtonUp(const MouseEvent& e){
+		virtual void onLButtonUp(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1320,7 +1320,7 @@ void s_dummyfunc()
 			}
 			onLRButtonUp(e,true);
 		}
-		void onRButtonUp(const MouseEvent& e){
+		virtual void onRButtonUp(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1329,7 +1329,7 @@ void s_dummyfunc()
 				(this->rupListener)();
 			}
 		}
-		void onLRButtonUp(const MouseEvent& e, bool lButton){
+		virtual void onLRButtonUp(const MouseEvent& e, bool lButton){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1361,7 +1361,7 @@ void s_dummyfunc()
 				}
 			}
 		}
-		void onMButtonDown(const MouseEvent& e){
+		virtual void onMButtonDown(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1403,7 +1403,7 @@ void s_dummyfunc()
 			}
 
 		}
-		void onMButtonUp(const MouseEvent& e){
+		virtual void onMButtonUp(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1430,7 +1430,7 @@ void s_dummyfunc()
 				}
 			}
 		}
-		void onMouseWheel(const MouseEvent& e){
+		virtual void onMouseWheel(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1475,7 +1475,7 @@ void s_dummyfunc()
 
 		}
 		//	Method : マウス移動イベント受信
-		void onMouseMove(const MouseEvent& e){
+		virtual void onMouseMove(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1505,7 +1505,7 @@ void s_dummyfunc()
 			}
 		}
 
-		void onMouseHover(const MouseEvent& e) {
+		virtual void onMouseHover(const MouseEvent& e) {
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1531,7 +1531,7 @@ void s_dummyfunc()
 				}
 			}
 		}
-		void onMouseLeave(const MouseEvent& e) {
+		virtual void onMouseLeave(const MouseEvent& e) {
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
@@ -1559,7 +1559,7 @@ void s_dummyfunc()
 		}
 
 		//	Method : キーボードイベント受信
-		void onKeyboard(const KeyboardEvent& e){
+		virtual void onKeyboard(const KeyboardEvent& e){
 			if( this->keyboardListener!=NULL ){
 				(this->keyboardListener)(e);
 			}
@@ -1709,7 +1709,7 @@ void s_dummyfunc()
 
 
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			//パーツエリアの位置とサイズを設定
 			int onelineheight = 16;
 			int centerPos= getCenterLinePos();
@@ -1777,7 +1777,7 @@ void s_dummyfunc()
 			}
 		}
 		///	Method : 描画
-		void draw();
+		virtual void draw();
 		//void draw(){
 		//	//枠を書く
 		//	int centerPos= getCenterLinePos();
@@ -1813,21 +1813,21 @@ void s_dummyfunc()
 		//	}
 		//}
 		///	Method : 左右マウスボタンダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,true);
 		}
-		void onRButtonDown(const MouseEvent& e){
+		virtual void onRButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,false);
 		}
 		///	Method : 左右マウスボタンアップイベント受信
-		void onLButtonUp(const MouseEvent& e){
+		virtual void onLButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,true);
 		}
-		void onRButtonUp(const MouseEvent& e){
+		virtual void onRButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,false);
 		}
 		///	Method : マウス移動イベント受信
-		void onMouseMove(const MouseEvent& e){
+		virtual void onMouseMove(const MouseEvent& e){
 
 			//カーソル変更
 			if( canShift && isMouseOnHandle(e) ){
@@ -2272,7 +2272,7 @@ void s_dummyfunc()
 			}
 		}
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			if( open ){
 				//パーツエリアの位置とサイズを設定
 				partsAreaPos=  pos+ WindowPos( 3, SIZE_CLOSE_Y+2 );
@@ -2298,7 +2298,7 @@ void s_dummyfunc()
 			}
 		}
 		///	Method : 描画
-		void draw(){
+		virtual void draw(){
 			//枠を書く
 			if( open ){
 				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),RGB(baseColor.r,baseColor.g,baseColor.b));
@@ -2406,21 +2406,21 @@ void s_dummyfunc()
 
 		}
 		///	Method : 左右マウスボタンダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,true);
 		}
-		void onRButtonDown(const MouseEvent& e){
+		virtual void onRButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,false);
 		}
 		///	Method : 左右マウスボタンアップイベント受信
-		void onLButtonUp(const MouseEvent& e){
+		virtual void onLButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,true);
 		}
-		void onRButtonUp(const MouseEvent& e){
+		virtual void onRButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,false);
 		}
 		///	Method : マウス移動イベント受信
-		void onMouseMove(const MouseEvent& e){
+		virtual void onMouseMove(const MouseEvent& e){
 			//内部パーツ
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
@@ -2590,11 +2590,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
 		//	Method : 描画
-		void draw(){
+		virtual void draw(){
 			//名前
 			int pos1x= pos.x+NAME_POS_X;
 			int pos1y= pos.y+size.y/2-5;
@@ -2701,11 +2701,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
 		//	Method : 描画
-		void draw(){
+		virtual void draw(){
 			drawEdge();
 
 			//ボックス
@@ -2777,7 +2777,7 @@ void s_dummyfunc()
 
 		}
 		//	Method : マウスダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (this->buttonListener != NULL) {
@@ -2879,11 +2879,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
 		//	Method : 描画
-		void draw(){
+		virtual void draw(){
 			drawEdge();
 
 			//全てのボタンについて繰り返す
@@ -3218,7 +3218,7 @@ void s_dummyfunc()
 		}
 
 		//	Method : マウスダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 
 			//全てのボタンについて繰り返す
 			for(int i=0; i<16; i++){
@@ -3502,13 +3502,13 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
 		//	Method : 描画
-		void draw();
+		virtual void draw();
 		//	Method : マウスダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			//if ((e.localX >= pos.x) && (e.localX <= (pos.x + size.x)) && 
 			//	(e.localY >= pos.y) && (e.localY <= (pos.y + size.y))) {
 				setValue(value ^ true);
@@ -3572,11 +3572,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y = SIZE_Y*(int)nameList.size() + 4;
 		}
 		///	Method : 描画
-		void draw(){
+		virtual void draw(){
 			drawEdge();
 
 			//ラジオボタンの数だけ繰り返す
@@ -3636,7 +3636,7 @@ void s_dummyfunc()
 			}
 		}
 		///	Method : マウスダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			int targetIndex= (e.localY-2)/SIZE_Y;
 			if( (0 <= targetIndex) && (targetIndex < (int)nameList.size()) ){
 				setSelectIndex(targetIndex);
@@ -3767,11 +3767,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
 		//	Method : 描画
-		void draw(){
+		virtual void draw(){
 			drawEdge();
 
 
@@ -3855,7 +3855,7 @@ void s_dummyfunc()
 
 		}
 		//	Method : マウスダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
@@ -3878,11 +3878,11 @@ void s_dummyfunc()
 			}
 		}
 		//	Method : 左マウスボタンアップイベント受信
-		void onLButtonUp(const MouseEvent& e){
+		virtual void onLButtonUp(const MouseEvent& e){
 			drag=false;
 		}
 		//	Method : マウス移動イベント受信
-		void onMouseMove(const MouseEvent& e){
+		virtual void onMouseMove(const MouseEvent& e){
 			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
@@ -4014,7 +4014,7 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y-= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)%(LABEL_SIZE_Y-1);
 		}
 		WindowPos getCurrentLinePos()
@@ -5840,11 +5840,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize() {
+		virtual void autoResize() {
 			//size.y -= (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) % (LABEL_SIZE_Y - 1);
 		}
 		//	Method : 描画
-		void draw();
+		virtual void draw();
 		//void draw() {
 		//	//drawEdge();
 
@@ -7847,11 +7847,11 @@ void s_dummyfunc()
 
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			size.y-= (size.y-MARGIN*2)%(LABEL_SIZE_Y-1)-1;
 		}
 		//	Method : 描画
-		void draw(){
+		virtual void draw(){
 			drawEdge();
 
 			int showLineNum= (size.y-MARGIN*2)/(LABEL_SIZE_Y-1);
@@ -7990,7 +7990,7 @@ void s_dummyfunc()
 			return ret;
 		}
 		///	Method : マウス左ボタンダウンイベント受信
-		void onLButtonDown(const MouseEvent& e){
+		virtual void onLButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
 			int x0= MARGIN;
@@ -8060,7 +8060,7 @@ void s_dummyfunc()
 
 		}
 		///	Method : 左マウスボタンアップイベント受信
-		void onLButtonUp(const MouseEvent& e){
+		virtual void onLButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
 			//ドラッグによるキー移動
@@ -8107,7 +8107,7 @@ void s_dummyfunc()
 			}
 		}
 		///	Method : マウス移動イベント受信
-		void onMouseMove(const MouseEvent& e){
+		virtual void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
 			int x0= MARGIN;
@@ -8162,7 +8162,7 @@ void s_dummyfunc()
 			}
 		}
 		///	Method : 右マウスボタンダウンイベント受信
-		void onRButtonDown(const MouseEvent& e){
+		virtual void onRButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
 			int x0= MARGIN;
@@ -8182,7 +8182,7 @@ void s_dummyfunc()
 
 		}
 		///	Method : 右マウスボタンアップイベント受信
-		void onRButtonUp(const MouseEvent& e){
+		virtual void onRButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
 			int x0= MARGIN;
@@ -8668,7 +8668,7 @@ void s_dummyfunc()
 		}
 		
 		/// Method : 自動サイズ設定
-		void autoResize(){
+		virtual void autoResize(){
 			if (!parentWindow) {
 				return;
 			}
@@ -8711,7 +8711,7 @@ void s_dummyfunc()
 		}
 		
 		//	Method : 描画
-		void draw(){
+		virtual void draw(){
 			drawEdge();
 
 			//全ての内部パーツを描画

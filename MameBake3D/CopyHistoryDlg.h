@@ -44,6 +44,16 @@ BEGIN_MSG_MAP(CCopyHistoryDlg)
 	COMMAND_ID_HANDLER(IDC_BUTTON13, OnDelete8)
 	COMMAND_ID_HANDLER(IDC_BUTTON14, OnDelete9)
 	COMMAND_ID_HANDLER(IDC_BUTTON15, OnDelete10)
+	COMMAND_ID_HANDLER(IDC_RADIO1, OnRadio1)
+	COMMAND_ID_HANDLER(IDC_RADIO2, OnRadio2)
+	COMMAND_ID_HANDLER(IDC_RADIO3, OnRadio3)
+	COMMAND_ID_HANDLER(IDC_RADIO4, OnRadio4)
+	COMMAND_ID_HANDLER(IDC_RADIO5, OnRadio5)
+	COMMAND_ID_HANDLER(IDC_RADIO6, OnRadio6)
+	COMMAND_ID_HANDLER(IDC_RADIO7, OnRadio7)
+	COMMAND_ID_HANDLER(IDC_RADIO8, OnRadio8)
+	COMMAND_ID_HANDLER(IDC_RADIO9, OnRadio9)
+	COMMAND_ID_HANDLER(IDC_RADIO10, OnRadio10)
 END_MSG_MAP()
 // ハンドラのプロトタイプ:
 //  LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -71,6 +81,16 @@ END_MSG_MAP()
 	LRESULT OnDelete9(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnDelete10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
+	LRESULT OnRadio1(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio2(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio3(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio4(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio5(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio6(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio7(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio8(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio9(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 
 	int SetNames(std::vector<HISTORYELEM>& copyhistory);
@@ -104,6 +124,7 @@ private:
 	int ParamsToDlg();
 
 	LRESULT OnDelete(int delid);
+	LRESULT OnRadio(int radioid);
 	void SetEnableCtrls();
 
 private:

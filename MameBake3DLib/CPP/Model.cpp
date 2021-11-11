@@ -6431,6 +6431,10 @@ int CModel::SetAllBtgData( int gid, int reindex, float btg )
 }
 void CModel::SetBtgDataReq( int gid, int reindex, CBone* srcbone, float btg )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 		if (srcbone->GetParent()){
 			char* filename = m_rigideleminfo[reindex].filename;
@@ -6469,6 +6473,10 @@ int CModel::SetAllSphrateData(int gid, int rgdindex, float srcval)
 }
 void CModel::SetSphrateDataReq(int gid, int rgdindex, CBone* srcbone, float srcval)
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if (rgdindex < 0) {
 		return;
 	}
@@ -6510,6 +6518,10 @@ int CModel::SetAllBoxzrateData(int gid, int rgdindex, float srcval)
 }
 void CModel::SetBoxzrateDataReq(int gid, int rgdindex, CBone * srcbone, float srcval)
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if (rgdindex < 0) {
 		return;
 	}
@@ -6551,6 +6563,10 @@ int CModel::SetAllSkipflagData(int gid, int rgdindex, bool srcval)
 }
 void CModel::SetSkipflagDataReq(int gid, int rgdindex, CBone* srcbone, bool srcval)
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if (rgdindex < 0) {
 		return;
 	}
@@ -6592,6 +6608,10 @@ int CModel::SetAllForbidrotData(int gid, int rgdindex, bool srcval)
 }
 void CModel::SetForbidrotDataReq(int gid, int rgdindex, CBone* srcbone, bool srcval)
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if (rgdindex < 0) {
 		return;
 	}
@@ -6633,6 +6653,10 @@ int CModel::SetAllColtypeData(int gid, int rgdindex, int srcval)
 }
 void CModel::SetColtypeDataReq(int gid, int rgdindex, CBone* srcbone, int srcval)
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if (rgdindex < 0) {
 		return;
 	}
@@ -6674,6 +6698,10 @@ int CModel::SetAllBtforceData(int rgdindex, bool srcval)
 }
 void CModel::SetBtforceDataReq(int rgdindex, CBone* srcbone, bool srcval)
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if (rgdindex < 0) {
 		return;
 	}
@@ -6711,6 +6739,10 @@ int CModel::SetAllDampAnimData( int gid, int rgdindex, float valL, float valA )
 }
 void CModel::SetDampAnimDataReq( int gid, int rgdindex, CBone* srcbone, float valL, float valA )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if( rgdindex < 0 ){
 		return;
 	}
@@ -6754,6 +6786,10 @@ int CModel::SetAllImpulseData( int gid, float impx, float impy, float impz )
 
 void CModel::SetImpulseDataReq( int gid, CBone* srcbone, ChaVector3 srcimp )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if ((m_rgdindex < 0) || (m_rgdindex >= (int)m_rigideleminfo.size())){
 		return;
 	}
@@ -6872,6 +6908,10 @@ int CModel::SetAllDmpData( int gid, int reindex, float ldmp, float admp )
 }
 void CModel::SetDmpDataReq( int gid, int reindex, CBone* srcbone, float ldmp, float admp )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if( srcbone->GetParent() ){
 		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
@@ -6958,6 +6998,10 @@ int CModel::SetAllRestData( int gid, int reindex, float rest, float fric )
 
 void CModel::SetRestDataReq( int gid, int reindex, CBone* srcbone, float rest, float fric )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if( srcbone->GetParent() ){
 		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
@@ -6997,6 +7041,10 @@ int CModel::SetAllKData( int gid, int reindex, int srclk, int srcak, float srccu
 }
 void CModel::SetKDataReq( int gid, int reindex, CBone* srcbone, int srclk, int srcak, float srccuslk, float srccusak )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if( srcbone->GetParent() ){
 		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;
@@ -7039,6 +7087,10 @@ int CModel::SetAllMassData( int gid, int reindex, float srcmass )
 }
 void CModel::SetMassDataReq( int gid, int reindex, CBone* srcbone, float srcmass )
 {
+	if (!srcbone) {
+		return;
+	}
+
 	if( srcbone->GetParent() ){
 		if ((reindex >= 0) && (reindex < (int)m_rigideleminfo.size())){
 			char* filename = m_rigideleminfo[reindex].filename;

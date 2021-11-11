@@ -826,9 +826,9 @@ static OWP_CheckBoxA* s_groupcheck = 0;
 static OWP_Slider* s_sphrateSlider = 0;
 static OWP_Slider* s_boxzSlider = 0;
 static OWP_Slider* s_massSlider = 0;
-static OWP_Separator* s_massSeparator = 0;
-static OWP_Separator* s_massSeparator1 = 0;
-static OWP_Separator* s_massSeparator2 = 0;
+//static OWP_Separator* s_massSeparator = 0;
+//static OWP_Separator* s_massSeparator1 = 0;
+//static OWP_Separator* s_massSeparator2 = 0;
 static OWP_Button* s_massB = 0;
 static OWP_Button* s_thicknessB = 0;
 static OWP_Button* s_depthB = 0;
@@ -4036,18 +4036,18 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_massSLlabel;
 		s_massSLlabel = 0;
 	}
-	if (s_massSeparator) {
-		delete s_massSeparator;
-		s_massSeparator = 0;
-	}
-	if (s_massSeparator1) {
-		delete s_massSeparator1;
-		s_massSeparator1 = 0;
-	}
-	if (s_massSeparator2) {
-		delete s_massSeparator2;
-		s_massSeparator2 = 0;
-	}
+	//if (s_massSeparator) {
+	//	delete s_massSeparator;
+	//	s_massSeparator = 0;
+	//}
+	//if (s_massSeparator1) {
+	//	delete s_massSeparator1;
+	//	s_massSeparator1 = 0;
+	//}
+	//if (s_massSeparator2) {
+	//	delete s_massSeparator2;
+	//	s_massSeparator2 = 0;
+	//}
 	if (s_massB) {
 		delete s_massB;
 		s_massB = 0;
@@ -20694,9 +20694,9 @@ int CreateRigidWnd()
 	s_sphrateSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
-	s_massSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_massSeparator1 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_massSeparator2 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	//s_massSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	//s_massSeparator1 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+	//s_massSeparator2 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_massB = new OWP_Button(L"MassToAll");
 	s_thicknessB = new OWP_Button(L"ThicknessToAll");
 	s_depthB = new OWP_Button(L"DepthToAll");
@@ -20790,22 +20790,25 @@ int CreateRigidWnd()
 	s_rigidWnd->addParts(*s_groupcheck);
 	s_rigidWnd->addParts(*s_shplabel);
 	s_rigidWnd->addParts(*s_sphrateSlider);
+	s_rigidWnd->addParts(*s_thicknessB);
 	s_rigidWnd->addParts(*s_boxzlabel);
 	s_rigidWnd->addParts(*s_boxzSlider);
+	s_rigidWnd->addParts(*s_depthB);
 	s_rigidWnd->addParts(*s_massSLlabel);
 	s_rigidWnd->addParts(*s_massSlider);
-	
-	//s_rigidWnd->addParts(*s_massB);
-	//s_massB->setColor(64, 128, 128);
-	//s_thicknessB->setColor(64, 128, 128);
-	//s_depthB->setColor(64, 128, 128);
-	s_rigidWnd->addParts(*s_massSeparator);
-	s_massSeparator->addParts1(*s_massSeparator1);
-	s_massSeparator->addParts2(*s_massSeparator2);
-	s_massSeparator1->addParts1(*s_massB);
-	s_massSeparator1->addParts2(*s_thicknessB);
-	s_massSeparator2->addParts1(*s_depthB);
-	//s_massSeparator2->addParts2(*s_massspacelabel);
+	s_rigidWnd->addParts(*s_massB);
+
+	////s_rigidWnd->addParts(*s_massB);
+	////s_massB->setColor(64, 128, 128);
+	////s_thicknessB->setColor(64, 128, 128);
+	////s_depthB->setColor(64, 128, 128);
+	//s_rigidWnd->addParts(*s_massSeparator);
+	//s_massSeparator->addParts1(*s_massSeparator1);
+	//s_massSeparator->addParts2(*s_massSeparator2);
+	//s_massSeparator1->addParts1(*s_massB);
+	//s_massSeparator1->addParts2(*s_thicknessB);
+	//s_massSeparator2->addParts1(*s_depthB);
+	////s_massSeparator2->addParts2(*s_massspacelabel);
 
 	s_rigidWnd->addParts(*s_lenglabel);
 
