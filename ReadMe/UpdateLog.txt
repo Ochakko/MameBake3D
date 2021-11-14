@@ -1,3 +1,7 @@
+2021/11/14
+	おちゃっこLAB日記：Unity上でVRoidモデルにモーキャプデータを再生させる方法
+	https://ochakkolab.jp/diary_win.html#MotionBrush_20211114
+
 2021/11/11_2
 	ver1.0.0.19正式版
 
