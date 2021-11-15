@@ -22,6 +22,10 @@
 //2021/11/04
 #define MB2VERSION 10019
 
+//2021/11/15
+#define MB2VERSION 10020
+
+
 CPluginElem::CPluginElem()
 {
 	ZeroMemory( filepath, sizeof( char ) * _MAX_PATH );
