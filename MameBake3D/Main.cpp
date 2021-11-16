@@ -154,7 +154,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 #define WM_USER_FOR_BATCH_PROGRESS	(WM_USER + 1)
 
 #define MAXPLUGIN	255
-
+#define OPENHISTORYMAXNUM	10
 
 
 typedef struct tag_spaxis
@@ -2329,16 +2329,16 @@ void CheckResolution()
 				s_totalwndheight = (950 - MAINMENUAIMBARH) * 2;
 				s_2ndposy = 600 * 2;
 
-				s_toolwidth = 230 * 2;
+				s_toolwidth = 230 * 2 - 60;
 				//s_toolheight = 290 * 2;
 				//s_toolheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
 				s_toolheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
-				s_mainwidth = 800 * 2 + 340 + 450 - 64;
+				s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60;
 				s_mainheight = (520 * 2 - MAINMENUAIMBARH);
 				
 				//s_bufwidth = (800 * 2);
-				s_bufwidth = 800 * 2 + 340 + 450 - 64;
+				s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60;
 				s_bufheight = (520 * 2 - MAINMENUAIMBARH);
 
 
@@ -10226,7 +10226,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 
 	//選択時刻を設定
 	timeline.setCurrentLine( 0 );
-	s_owpLTimeline->setCurrentTime( 0.0, true );
+	s_owpLTimeline->setCurrentTime(1.0, true);
 	//timeline.setCurrentTime(0.0);
 
 
@@ -10247,7 +10247,7 @@ void refreshTimeline(OWP_Timeline& timeline){
 	//}
 
 	refreshEulerGraph();
-	s_owpEulerGraph->setCurrentTime(0.0, false);
+	s_owpEulerGraph->setCurrentTime(1.0, false);
 }
 
 
@@ -10744,7 +10744,8 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 			CallF( s_model->SetCurrentMotion( selmotid ), return 1 );
 			//EraseKeyList();
 			s_owpTimeline->setCurrentLine( 0 );
-			s_owpTimeline->setCurrentTime( 0.0 );
+			//s_owpTimeline->setCurrentTime( 0.0 );
+			s_owpTimeline->setCurrentTime(1.0);
 			s_curmotid = selmotid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 			if (dorefreshflag) {
@@ -10758,7 +10759,8 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	if( s_owpTimeline && dorefreshflag){
 		//タイムラインのキーを設定
 		refreshTimeline(*s_owpTimeline);
-		s_owpTimeline->setCurrentTime( 0.0 );
+		//s_owpTimeline->setCurrentTime( 0.0 );
+		s_owpTimeline->setCurrentTime(1.0);
 	}
 
 	//MOTINFO* curmi = s_model->GetCurMotInfo();
@@ -10772,7 +10774,8 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 		}
 	}else{
 		if( s_model ){
-			double curframe = s_model->GetCurMotInfo()->curframe;
+			//double curframe = s_model->GetCurMotInfo()->curframe;
+			double curframe = 1.0;
 			s_owpLTimeline->setCurrentTime( curframe, true );
 			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
@@ -10785,6 +10788,10 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	DispMotionPanel();
 
 	SetMainWindowTitle();
+
+
+	InitTimelineSelection();
+
 
 	s_underselectmotion = false;
 
@@ -10893,10 +10900,10 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
 	}
-	else {
+	//else {
 		//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
 		InitTimelineSelection();
-	}
+	//}
 
 
 	if( s_model ){
@@ -11781,7 +11788,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				GetbvhHistoryDir(vecopenfilename);
 
 				int radiocnt = 0;
-				int radionum = min(5, (int)vecopenfilename.size());
+				int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
 				if (radionum != 0) {
 					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
 				}
@@ -11812,6 +11819,37 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				else {
 					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
 				}
+				if (radionum >= 6) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), vecopenfilename[5].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), L"Loading History not Exist.");
+				}
+				if (radionum >= 7) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), vecopenfilename[6].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), L"Loading History not Exist.");
+				}
+				if (radionum >= 8) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), vecopenfilename[7].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), L"Loading History not Exist.");
+				}
+				if (radionum >= 9) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), vecopenfilename[8].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), L"Loading History not Exist.");
+				}
+				if (radionum >= 10) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), vecopenfilename[9].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), L"Loading History not Exist.");
+				}
+
 
 			}
 			else {
@@ -11851,7 +11889,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					std::reverse(vechistory.begin(), vechistory.end());
 
 					int numhistory = (int)vechistory.size();
-					int dispnum = min(5, numhistory);
+					int dispnum = min(OPENHISTORYMAXNUM, numhistory);
 
 
 
@@ -11892,7 +11930,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				}
 
 				int radiocnt = 0;
-				int radionum = min(5, (int)vecopenfilename.size());
+				int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
 				if (radionum != 0) {
 					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
 				}
@@ -11923,6 +11961,36 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				else {
 					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
 				}
+				if (radionum >= 6) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), vecopenfilename[5].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), L"Loading History not Exist.");
+				}
+				if (radionum >= 7) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), vecopenfilename[6].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), L"Loading History not Exist.");
+				}
+				if (radionum >= 8) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), vecopenfilename[7].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), L"Loading History not Exist.");
+				}
+				if (radionum >= 9) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), vecopenfilename[8].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), L"Loading History not Exist.");
+				}
+				if (radionum >= 10) {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), vecopenfilename[9].c_str());
+				}
+				else {
+					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), L"Loading History not Exist.");
+				}
 			}
 
 			RECT dlgrect;
@@ -11944,11 +12012,21 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						UINT ischecked3 = 0;
 						UINT ischecked4 = 0;
 						UINT ischecked5 = 0;
+						UINT ischecked6 = 0;
+						UINT ischecked7 = 0;
+						UINT ischecked8 = 0;
+						UINT ischecked9 = 0;
+						UINT ischecked10 = 0;
 						ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO1);
 						ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO2);
 						ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO3);
 						ischecked4 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO4);
 						ischecked5 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO5);
+						ischecked6 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO6);
+						ischecked7 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO7);
+						ischecked8 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO8);
+						ischecked9 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO9);
+						ischecked10 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO10);
 						if (ischecked1 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
 							GetDlgItemTextW(hDlgWnd, IDC_RADIO1, checkedpath, MAX_PATH);
@@ -11986,6 +12064,41 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						else if (ischecked5 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
 							GetDlgItemTextW(hDlgWnd, IDC_RADIO5, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked6 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO6, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked7 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO7, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked8 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO8, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked9 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO9, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked10 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADIO10, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
@@ -16872,13 +16985,13 @@ int ExportFBXFile()
 	}
 
 	g_previewFlag = 0; 
-	s_owpLTimeline->setCurrentTime( 0.0, true );
+	s_owpLTimeline->setCurrentTime(0.0, true);
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel && curmodel->GetCurMotInfo() ){
-			curmodel->SetMotionFrame( 0.0 );
+			curmodel->SetMotionFrame(0.0);
 		}
 	}
 
@@ -16983,13 +17096,13 @@ int ExportBntFile()
 	}
 
 	g_previewFlag = 0; 
-	s_owpLTimeline->setCurrentTime( 0.0, true );
+	s_owpLTimeline->setCurrentTime(0.0, true);
 
 	vector<MODELELEM>::iterator itrmodel;
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel && curmodel->GetCurMotInfo() ){
-			curmodel->SetMotionFrame( 0.0 );
+			curmodel->SetMotionFrame(0.0);
 		}
 	}
 
@@ -17069,6 +17182,10 @@ int ExportBntFile()
 int AddEditRangeHistory()
 {
 	static int s_historycnt = 0;
+
+	if (!s_editrangehistory) {
+		return 0;
+	}
 
 	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)){
 		_ASSERT(0);
@@ -18072,24 +18189,31 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			int firstflag = 0;
 			curmodel->SetMotionFrame(*pnextframe);
-			//if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
-			if((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
+			////if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
+			//if((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
+			//	curmodel->ZeroBtCnt();
+			//	//g_previewFlag = 0;
+			//	//StartBt(curmodel, firstmodelflag, 2, 0);
+			//	//firstflag = 1;
+
+			//	curmodel->SetKinematicFlag();
+			//	//!!curmodel->SetBtEquilibriumPoint();
+
+			//}
+
+
+
+			if ((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
 				curmodel->ZeroBtCnt();
-				//g_previewFlag = 0;
-				//StartBt(curmodel, firstmodelflag, 2, 0);
-				//firstflag = 1;
-
-				curmodel->SetKinematicFlag();
-				//!!curmodel->SetBtEquilibriumPoint();
-
+				StartBt(curmodel, TRUE, 2, 1);//flag = 2 --> resetflag = 1
 			}
-
-			//UpdateBtSimu(*pnextframe, curmodel);
-			if (curmodel && curmodel->GetCurMotInfo()){
-				curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
+			else {
+				//UpdateBtSimu(*pnextframe, curmodel);
+				if (curmodel && curmodel->GetCurMotInfo()) {
+					curmodel->Motion2Bt(firstflag, *pnextframe, &curmodel->GetWorldMat(), &s_matVP, s_curboneno);
+				}
+				curmodel->PlusPlusBtCnt();
 			}
-			curmodel->PlusPlusBtCnt();
-
 		}
 	}
 
@@ -18104,7 +18228,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 			CModel* curmodel = itrmodel->modelptr;
-			if (curmodel) {
+			//if (curmodel) {
+			if(curmodel && (curmodel->GetBtCnt() != 0)){
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 
@@ -23721,7 +23846,7 @@ int OnTimeLineSelectFromSelectedKey()
 
 	s_editrange.Clear();
 	if (s_model && s_model->GetCurMotInfo()) {
-		if (s_owpTimeline && s_owpLTimeline) {
+		if (s_owpTimeline && s_owpLTimeline && s_owpEulerGraph) {
 			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
 			int keynum;
 			double startframe, endframe, applyframe;
@@ -23759,7 +23884,7 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 {
 	s_buttonselecttothelast = tothelastflag;
 
-	if ((s_underselectingframe == 0) && s_timelinewheelFlag) {
+	if (s_owpLTimeline && (s_underselectingframe == 0) && s_timelinewheelFlag) {
 		s_owpLTimeline->selectClear(false);
 		return 0;
 	}
@@ -32124,7 +32249,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 		std::reverse(vechistory.begin(), vechistory.end());
 
 		int numhistory = (int)vechistory.size();
-		int dispnum = min(5, numhistory);
+		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
 
 		int foundnum = 0;
 		int historyno;
@@ -32275,7 +32400,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 		std::reverse(vechistory.begin(), vechistory.end());
 
 		int numhistory = (int)vechistory.size();
-		int dispnum = min(5, numhistory);
+		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
 
 		int foundnum = 0;
 		int historyno;
@@ -33334,6 +33459,25 @@ void InitTimelineSelection()
 	g_motionbrush_applyframe = 1.0;
 	g_motionbrush_numframe = 1.0;
 	g_motionbrush_frameleng = 1;
+
+	if (s_owpTimeline) {
+		s_owpTimeline->setCurrentTime(1.0, false);
+	}
+	if (s_owpLTimeline) {
+		s_owpLTimeline->setCurrentTime(1.0, false);
+	}
+	
+	//if (s_model) {
+	//	MOTINFO* curmi;
+	//	curmi = s_model->GetCurMotInfo();
+	//	if (curmi) {
+	//		s_model->SetMotionFrame(1.0);
+	//	}
+	//}
+
+	int tothelastflag = 0;
+	OnTimeLineButtonSelectFromSelectStartEnd(tothelastflag);
+
 }
 
 

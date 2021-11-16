@@ -1990,7 +1990,8 @@ int CModel::AddMotion(char* srcname, WCHAR* wfilename, double srcleng, int* dsti
 
 	newmi->motid = newid;
 	newmi->frameleng = srcleng;
-	newmi->curframe = 0.0;
+	//newmi->curframe = 0.0;
+	newmi->curframe = 1.0;
 	newmi->speed = 1.0;
 	newmi->loopflag = 1;
 
@@ -2028,6 +2029,9 @@ int CModel::SetCurrentMotion( int srcmotid )
 			}
 		}
 		//ResetMotionCache();
+
+		m_curmotinfo->curframe = 1.0;
+
 		return 0;
 	}
 }
@@ -2496,6 +2500,8 @@ int CModel::AdvanceTime( int onefps, CEditRange srcrange, int previewflag, doubl
 		rangestart = 1.0;
 		rangeend = curmotinfo->frameleng - 1.0;
 	}
+
+	rangestart = max(1.0, rangestart);
 
 
 	if( previewflag >= 0 ){
