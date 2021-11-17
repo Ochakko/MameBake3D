@@ -148,7 +148,7 @@ int CLmtFile::WriteLmt( CBone* srcbone )
 	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
 
 
-	ANGLELIMIT anglelimit = srcbone->GetAngleLimit();
+	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(0, 0, 0.0);
 
 	char strboneaxistype[3][256] = {"Current", "Parent", "Global"};
 	if ((anglelimit.boneaxiskind >= 0) && (anglelimit.boneaxiskind <= 2)){
@@ -182,12 +182,18 @@ int CLmtFile::WriteLmt( CBone* srcbone )
 
 	CallF(Write2File("      <Lower_X>%d</Lower_X>\r\n", anglelimit.lower[0]), return 1);
 	CallF(Write2File("      <Upper_X>%d</Upper_X>\r\n", anglelimit.upper[0]), return 1);
+	//CallF(Write2File("      <Apply_X>%d</Apply_X>\r\n", (int)anglelimit.applyeul[0]), return 1);
+	//CallF(Write2File("      <Chk_X>%f</Chk_X>\r\n", (int)anglelimit.chkeul.x), return 1);
 
 	CallF(Write2File("      <Lower_Y>%d</Lower_Y>\r\n", anglelimit.lower[1]), return 1);
 	CallF(Write2File("      <Upper_Y>%d</Upper_Y>\r\n", anglelimit.upper[1]), return 1);
+	//CallF(Write2File("      <Apply_Y>%d</Apply_Y>\r\n", (int)anglelimit.applyeul[1]), return 1);
+	//CallF(Write2File("      <Chk_Y>%f</Chk_Y>\r\n", (int)anglelimit.chkeul.y), return 1);
 
 	CallF(Write2File("      <Lower_Z>%d</Lower_Z>\r\n", anglelimit.lower[2]), return 1);
 	CallF(Write2File("      <Upper_Z>%d</Upper_Z>\r\n", anglelimit.upper[2]), return 1);
+	//CallF(Write2File("      <Apply_Z>%d</Apply_Z>\r\n", (int)anglelimit.applyeul[2]), return 1);
+	//CallF(Write2File("      <Chk_Z>%f</Chk_Z>\r\n", (int)anglelimit.chkeul.x), return 1);
 
 	CallF( Write2File( "  </Bone>\r\n" ), return 1);
 
@@ -421,6 +427,8 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	if ((tmpint >= -180) && (tmpint <= 180)){
 		m_anglelimit.upper[0] = tmpint;
 	}
+	m_anglelimit.applyeul[0] = 0;
+
 
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Lower_Y>", "</Lower_Y>", &tmpint), return 1);
@@ -432,6 +440,8 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	if ((tmpint >= -180) && (tmpint <= 180)){
 		m_anglelimit.upper[1] = tmpint;
 	}
+	m_anglelimit.applyeul[1] = 0;
+
 
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Lower_Z>", "</Lower_Z>", &tmpint), return 1);
@@ -443,6 +453,13 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	if ((tmpint >= -180) && (tmpint <= 180)){
 		m_anglelimit.upper[2] = tmpint;
 	}
+	m_anglelimit.applyeul[2] = 0;
+
+
+	m_anglelimit.chkeul[AXIS_X] = 0.0f;
+	m_anglelimit.chkeul[AXIS_Y] = 0.0f;
+	m_anglelimit.chkeul[AXIS_Z] = 0.0f;
+
 
 	curbone->SetAngleLimit(m_anglelimit);
 

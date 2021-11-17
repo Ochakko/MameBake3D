@@ -628,7 +628,9 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				float l_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusLk();
 				float a_cusk = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetCusAk();
 				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
-				ANGLELIMIT anglelimit = chilbto->m_bone->GetAngleLimit();
+
+				ANGLELIMIT anglelimit;
+				anglelimit = chilbto->m_bone->GetAngleLimit(0, 0, 0.0);
 
 
 				int dofid;
@@ -896,7 +898,12 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 		btGeneric6DofSpringConstraint* dofC = m_constraint[constno].constraint;
 		CBtObject* childbto = m_constraint[constno].childbto;
 		if (childbto && childbto->m_bone){
-			ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
+
+			ANGLELIMIT anglelimit;
+			ZeroMemory(&anglelimit, sizeof(ANGLELIMIT));
+			anglelimit = childbto->m_bone->GetAngleLimit(0, 0, 0.0);
+			//ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
+
 			int forbidrotflag = childbto->m_bone->GetRigidElem(childbto->m_endbone)->GetForbidRotFlag();
 
 			//if (forbidrotflag == 0){

@@ -215,6 +215,9 @@ typedef struct tag_anglelimmit
 	//from -180 to 180 : the case lower -180 and upper 180, limit is off.
 	int lower[AXIS_MAX];
 	int upper[AXIS_MAX];
+
+	bool applyeul[AXIS_MAX];
+	float chkeul[AXIS_MAX];
 }ANGLELIMIT;
 
 typedef struct tag_rigtrans

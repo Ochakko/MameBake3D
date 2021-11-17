@@ -935,7 +935,7 @@ public: //accesser
 		}
 	};
 
-	ANGLELIMIT GetAngleLimit();
+	ANGLELIMIT GetAngleLimit(int getchkflag, int curmotid, double curframe);
 	void SetAngleLimit(ANGLELIMIT srclimit);
 
 	int GetFreeCustomRigNo();

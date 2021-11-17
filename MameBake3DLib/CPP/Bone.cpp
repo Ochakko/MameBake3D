@@ -4241,9 +4241,20 @@ ChaVector3 CBone::LimitEul(ChaVector3 srceul)
 	return reteul;
 }
 
-ANGLELIMIT CBone::GetAngleLimit()
+ANGLELIMIT CBone::GetAngleLimit(int getchkflag, int curmotid, double curframe)
 {
 	::SetAngleLimitOff(&m_anglelimit);
+
+	if (getchkflag == 1) {
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+		cureul = CalcLocalEulXYZ(m_anglelimit.boneaxiskind, curmotid, curframe, BEFEUL_BEFFRAME);
+
+		m_anglelimit.chkeul[AXIS_X] = cureul.x;
+		m_anglelimit.chkeul[AXIS_Y] = cureul.y;
+		m_anglelimit.chkeul[AXIS_Z] = cureul.z;
+	}
+
 	return m_anglelimit;
 };
 void CBone::SetAngleLimit(ANGLELIMIT srclimit)

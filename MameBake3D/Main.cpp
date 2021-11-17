@@ -542,6 +542,8 @@ static bool s_underselectmotion = false;
 static int s_opeselectmodelcnt = -1;
 static int s_opeselectmotioncnt = -1;
 
+static int s_underanglelimithscroll = 0;
+
 
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
@@ -1716,11 +1718,13 @@ static int CheckRigRigCombo(HWND hDlgWnd, int elemno);
 static int EnableRigAxisUV(HWND hDlgWnd);
 
 //angle limit dlg
-static int Bone2AngleLimit();
+static int Bone2AngleLimit(int setcheckflag);
 static int AngleLimit2Bone();
 static int AngleLimit2Dlg(HWND hDlgWnd);
 static int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit);
 static int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr);
+static int InitAngleLimitSliderFloat(HWND hDlgWnd, int slresid, int txtresid, float srclimit);
+static int GetAngleLimitSliderValFloat(HWND hDlgWnd, int slresid, int txtresid, float* dstptr);
 
 static int InitRotAxis();
 static int RotAxis(HWND hDlgWnd);
@@ -2474,6 +2478,7 @@ void InitApp()
 	s_underselectmodel = false;
 	s_underselectmotion = false;
 
+	s_underanglelimithscroll = 0;
 
 	s_dispanglelimit = false;
 	s_dispsampleui = true;
@@ -3894,6 +3899,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	s_editrangehistoryno = 0;
 
 	if (s_anglelimitdlg) {
+		s_underanglelimithscroll = 0;
 		DestroyWindow(s_anglelimitdlg);
 		s_anglelimitdlg = 0;
 	}
@@ -7002,6 +7008,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			if (s_model){
 				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
 				g_boneaxis = (int)PtrToUlong(pComboBox->GetSelectedData());
+
 			}
 			break;
 		case IDC_COMBO_BONE:
@@ -10805,6 +10812,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	s_customrigbone = 0;
 	
 	if (s_anglelimitdlg){
+		s_underanglelimithscroll = 0;
 		DestroyWindow(s_anglelimitdlg);
 		s_anglelimitdlg = 0;
 	}
@@ -17281,6 +17289,8 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 
 int DispAngleLimitDlg()
 {
+	s_underanglelimithscroll = 0;
+
 	if (s_anglelimitdlg){
 		//already opened
 		return 0;
@@ -17302,8 +17312,8 @@ int DispAngleLimitDlg()
 
 	s_dseullimitctrls.clear();
 
-
-	Bone2AngleLimit();
+	int setcheckflag = 1;
+	Bone2AngleLimit(setcheckflag);
 
 	/*
 	int dlgret;
@@ -17355,7 +17365,7 @@ int DispAngleLimitDlg()
 	return 0;
 }
 
-int Bone2AngleLimit()
+int Bone2AngleLimit(int setcheckflag)
 {
 	if (!s_model){
 		return 0;
@@ -17367,14 +17377,49 @@ int Bone2AngleLimit()
 		return 0;
 	}
 
-	s_anglelimitbone = s_model->GetBoneByID(s_curboneno);
+	ANGLELIMIT saveal;
+	saveal = s_anglelimit;
+
+
+	CBone* curbone;
+	curbone = s_model->GetBoneByID(s_curboneno);
+
+	//オイラーグラフの表示と合わせるために選択ジョイントの１階層親のジョイントを扱う //2021/11/17
+	if (curbone) {
+		if (curbone->GetParent()) {
+			s_anglelimitbone = curbone->GetParent();
+		}
+		else {
+			s_anglelimitbone = curbone;
+		}
+	}
+	else {
+		s_anglelimitbone = 0;
+	}
+
 	if (s_anglelimitbone){
-		s_anglelimit = s_anglelimitbone->GetAngleLimit();
+		MOTINFO* curmi;
+		curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			s_anglelimit = s_anglelimitbone->GetAngleLimit(1, curmi->motid, curmi->curframe);
+		}
 	}
 	else{
 		_ASSERT(0);
 		InitAngleLimit(&s_anglelimit);
 	}
+
+	//setcheckflag == 0のときにはチェックボックスの状態を変えずに復元する
+	if (setcheckflag == 0) {
+		s_anglelimit.applyeul[AXIS_X] = saveal.applyeul[AXIS_X];
+		s_anglelimit.applyeul[AXIS_Y] = saveal.applyeul[AXIS_Y];
+		s_anglelimit.applyeul[AXIS_Z] = saveal.applyeul[AXIS_Z];
+
+		s_anglelimit.via180flag[AXIS_X] = saveal.via180flag[AXIS_X];
+		s_anglelimit.via180flag[AXIS_Y] = saveal.via180flag[AXIS_Y];
+		s_anglelimit.via180flag[AXIS_Z] = saveal.via180flag[AXIS_Z];
+	}
+
 
 	return 0;
 }
@@ -17398,8 +17443,48 @@ int AngleLimit2Bone()
 		_ASSERT(0);
 	}
 
+
+	MOTINFO* curmi;
+	curmi = s_model->GetCurMotInfo();
+	if (curmi) {
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+		//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+		//befeul = cureul;//!!!!!!!
+		cureul = s_anglelimitbone->CalcLocalEulXYZ(s_anglelimit.boneaxiskind, curmi->motid, curmi->curframe, BEFEUL_BEFFRAME);
+		//cureul = s_anglelimitbone->CalcLocalEulXYZ(g_boneaxis, curmi->motid, curmi->curframe, BEFEUL_BEFFRAME);
+		
+		neweul = cureul;
+		if (s_anglelimit.applyeul[AXIS_X]) {
+			neweul.x = s_anglelimit.chkeul[AXIS_X];
+		}
+		if (s_anglelimit.applyeul[AXIS_Y]) {
+			neweul.y = s_anglelimit.chkeul[AXIS_Y];
+		}
+		if (s_anglelimit.applyeul[AXIS_Z]) {
+			neweul.z = s_anglelimit.chkeul[AXIS_Z];
+		}
+
+		int ismovable = s_anglelimitbone->ChkMovableEul(neweul);
+		if (ismovable == 1) {
+			int inittraflag = 0;
+			int setchildflag = 1;
+			int initscaleflag = 0;
+			s_anglelimitbone->SetWorldMatFromEul(inittraflag, setchildflag, neweul, curmi->motid, curmi->curframe, initscaleflag);
+			s_anglelimit.chkeul[AXIS_X] = neweul.x;
+			s_anglelimit.chkeul[AXIS_Y] = neweul.y;
+			s_anglelimit.chkeul[AXIS_Z] = neweul.z;
+		}
+		else {
+			s_anglelimit.chkeul[AXIS_X] = cureul.x;
+			s_anglelimit.chkeul[AXIS_Y] = cureul.y;
+			s_anglelimit.chkeul[AXIS_Z] = cureul.z;
+		}
+	}
+
 	return 0;
 }
+
 int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit)
 {
 	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETRANGEMIN, (WPARAM)TRUE, (LPARAM)-180);
@@ -17407,15 +17492,37 @@ int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit)
 
 	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_CLEARTICS, 0, 0);
 	int tickcnt;
-	for (tickcnt = 0; tickcnt <= 36; tickcnt++){
-		int tickval = -180 + 10 * tickcnt;
+	for (tickcnt = 0; tickcnt <= 36; tickcnt++) {
+		int tickval = (-180 + 10 * tickcnt);
 		SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETTIC, 1, (LPARAM)(LONG)tickval);
 	}
 
 	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)srclimit);
 
-	WCHAR strval[256] = {0L};
+	WCHAR strval[256] = { 0L };
 	swprintf_s(strval, 256, L"%d", srclimit);
+	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
+
+	return 0;
+}
+
+
+int InitAngleLimitSliderFloat(HWND hDlgWnd, int slresid, int txtresid, float srclimit)
+{
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETRANGEMIN, (WPARAM)TRUE, (LPARAM)-180);
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETRANGEMAX, (WPARAM)TRUE, (LPARAM)180);
+
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_CLEARTICS, 0, 0);
+	int tickcnt;
+	for (tickcnt = 0; tickcnt <= 36; tickcnt++){
+		int tickval = (-180 + 10 * tickcnt);
+		SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETTIC, 1, (LPARAM)(LONG)tickval);
+	}
+
+	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)((int)(srclimit + 0.1f)));
+
+	WCHAR strval[256] = {0L};
+	swprintf_s(strval, 256, L"%.1f", srclimit);
 	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
 
 	return 0;
@@ -17431,6 +17538,20 @@ int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr)
 
 	return 0;
 }
+
+int GetAngleLimitSliderValFloat(HWND hDlgWnd, int slresid, int txtresid, float* dstptr)
+{
+	int curval = (int)SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_GETPOS, 0, 0);
+	float curvalfloat = (float)curval;
+
+	*dstptr = curval;
+	WCHAR strval[256];
+	swprintf_s(strval, 256, L"%.1f", curvalfloat);
+	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
+
+	return 0;
+}
+
 
 int AngleLimit2Dlg(HWND hDlgWnd)
 {
@@ -17451,12 +17572,15 @@ int AngleLimit2Dlg(HWND hDlgWnd)
 
 		InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
 		InitAngleLimitSlider(hDlgWnd, IDC_SLXU, IDC_XUVAL, s_anglelimit.upper[AXIS_X]);
+		InitAngleLimitSliderFloat(hDlgWnd, IDC_SLCHKX, IDC_CHKXVAL, s_anglelimit.chkeul[AXIS_X]);
 
 		InitAngleLimitSlider(hDlgWnd, IDC_SLYL, IDC_YLVAL, s_anglelimit.lower[AXIS_Y]);
 		InitAngleLimitSlider(hDlgWnd, IDC_SLYU, IDC_YUVAL, s_anglelimit.upper[AXIS_Y]);
+		InitAngleLimitSliderFloat(hDlgWnd, IDC_SLCHKY, IDC_CHKYVAL, s_anglelimit.chkeul[AXIS_Y]);
 
 		InitAngleLimitSlider(hDlgWnd, IDC_SLZL, IDC_ZLVAL, s_anglelimit.lower[AXIS_Z]);
 		InitAngleLimitSlider(hDlgWnd, IDC_SLZU, IDC_ZUVAL, s_anglelimit.upper[AXIS_Z]);
+		InitAngleLimitSliderFloat(hDlgWnd, IDC_SLCHKZ, IDC_CHKZVAL, s_anglelimit.chkeul[AXIS_Z]);
 
 		if (s_anglelimit.via180flag[0] == 1){
 			CheckDlgButton(hDlgWnd, IDC_CHECKX, BST_CHECKED);
@@ -17476,6 +17600,27 @@ int AngleLimit2Dlg(HWND hDlgWnd)
 		else{
 			CheckDlgButton(hDlgWnd, IDC_CHECKZ, BST_UNCHECKED);
 		}
+
+
+		if (s_anglelimit.applyeul[AXIS_X] == 1) {
+			CheckDlgButton(hDlgWnd, IDC_APPLYX, BST_CHECKED);
+		}
+		else {
+			CheckDlgButton(hDlgWnd, IDC_APPLYX, BST_UNCHECKED);
+		}
+		if (s_anglelimit.applyeul[AXIS_Y] == 1) {
+			CheckDlgButton(hDlgWnd, IDC_APPLYY, BST_CHECKED);
+		}
+		else {
+			CheckDlgButton(hDlgWnd, IDC_APPLYY, BST_UNCHECKED);
+		}
+		if (s_anglelimit.applyeul[AXIS_Z] == 1) {
+			CheckDlgButton(hDlgWnd, IDC_APPLYZ, BST_CHECKED);
+		}
+		else {
+			CheckDlgButton(hDlgWnd, IDC_APPLYZ, BST_UNCHECKED);
+		}
+
 	}
 	else{
 		_ASSERT(0);
@@ -17493,6 +17638,12 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			return FALSE;
 		}
 		break;
+	case WM_LBUTTONDOWN:
+		s_underanglelimithscroll = 1;
+		break;
+	case WM_LBUTTONUP:
+		s_underanglelimithscroll = 0;
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDC_BONEAXIS:
@@ -17503,36 +17654,70 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				}
 			}
 			break;
-		case IDOK:
-			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKX) == BST_CHECKED){
+		case IDC_APPLYX:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYX) == BST_CHECKED) {
+				s_anglelimit.applyeul[AXIS_X] = true;
+			}
+			else {
+				s_anglelimit.applyeul[AXIS_X] = false;
+			}
+			AngleLimit2Bone();
+			break;
+		case IDC_APPLYY:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYY) == BST_CHECKED) {
+				s_anglelimit.applyeul[AXIS_Y] = true;
+			}
+			else {
+				s_anglelimit.applyeul[AXIS_Y] = false;
+			}
+			AngleLimit2Bone();
+			break;
+		case IDC_APPLYZ:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYZ) == BST_CHECKED) {
+				s_anglelimit.applyeul[AXIS_Z] = true;
+			}
+			else {
+				s_anglelimit.applyeul[AXIS_Z] = false;
+			}
+			AngleLimit2Bone();
+			break;
+
+		case IDC_CHECKX:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKX) == BST_CHECKED) {
 				s_anglelimit.via180flag[AXIS_X] = 1;
 			}
-			else{
+			else {
 				s_anglelimit.via180flag[AXIS_X] = 0;
 			}
-			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKY) == BST_CHECKED){
+			AngleLimit2Bone();
+			break;
+		case IDC_CHECKY:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKY) == BST_CHECKED) {
 				s_anglelimit.via180flag[AXIS_Y] = 1;
 			}
-			else{
+			else {
 				s_anglelimit.via180flag[AXIS_Y] = 0;
 			}
-			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKZ) == BST_CHECKED){
+			AngleLimit2Bone();
+			break;
+		case IDC_CHECKZ:
+			if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKZ) == BST_CHECKED) {
 				s_anglelimit.via180flag[AXIS_Z] = 1;
 			}
-			else{
+			else {
 				s_anglelimit.via180flag[AXIS_Z] = 0;
 			}
-
 			AngleLimit2Bone();
-			
-			//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
-			Bone2AngleLimit();
-			//AngleLimit2Dlg(s_anglelimitdlg);
-			ChangeCurrentBone();
-
-
-			//EndDialog(hDlgWnd, IDOK);
 			break;
+
+		case TB_THUMBTRACK:
+			s_underanglelimithscroll = 1;
+			break;
+		case TB_THUMBPOSITION:
+			s_underanglelimithscroll = 0;
+			break;
+		//case IDOK:
+			//break;
 		case IDCANCEL:
 			//EndDialog(hDlgWnd, IDCANCEL);
 			break;
@@ -17542,6 +17727,7 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		break;
 	case WM_CLOSE:
 		if (s_anglelimitdlg){
+			s_underanglelimithscroll = 0;
 			DestroyWindow(s_anglelimitdlg);
 			s_anglelimitdlg = 0;
 		}
@@ -17552,23 +17738,55 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ctrlwnd = (HWND)lp;
 
 			if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLXL)){
+				s_underanglelimithscroll = 1;
 				GetAngleLimitSliderVal(hDlgWnd, IDC_SLXL, IDC_XLVAL, &(s_anglelimit.lower[AXIS_X]));
 			}
 			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLXU)){
+				s_underanglelimithscroll = 1;
 				GetAngleLimitSliderVal(hDlgWnd, IDC_SLXU, IDC_XUVAL, &(s_anglelimit.upper[AXIS_X]));
 			}
 			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLYL)){
+				s_underanglelimithscroll = 1;
 				GetAngleLimitSliderVal(hDlgWnd, IDC_SLYL, IDC_YLVAL, &(s_anglelimit.lower[AXIS_Y]));
 			}
 			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLYU)){
+				s_underanglelimithscroll = 1;
 				GetAngleLimitSliderVal(hDlgWnd, IDC_SLYU, IDC_YUVAL, &(s_anglelimit.upper[AXIS_Y]));
 			}
 			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLZL)){
+				s_underanglelimithscroll = 1;
 				GetAngleLimitSliderVal(hDlgWnd, IDC_SLZL, IDC_ZLVAL, &(s_anglelimit.lower[AXIS_Z]));
 			}
 			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLZU)){
+				s_underanglelimithscroll = 1;
 				GetAngleLimitSliderVal(hDlgWnd, IDC_SLZU, IDC_ZUVAL, &(s_anglelimit.upper[AXIS_Z]));
 			}
+
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLCHKX)) {
+				s_underanglelimithscroll = 1;
+				GetAngleLimitSliderValFloat(hDlgWnd, IDC_SLCHKX, IDC_CHKXVAL, &(s_anglelimit.chkeul[AXIS_X]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLCHKY)) {
+				s_underanglelimithscroll = 1;
+				GetAngleLimitSliderValFloat(hDlgWnd, IDC_SLCHKY, IDC_CHKYVAL, &(s_anglelimit.chkeul[AXIS_Y]));
+			}
+			else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLCHKZ)) {
+				s_underanglelimithscroll = 1;
+				GetAngleLimitSliderValFloat(hDlgWnd, IDC_SLCHKZ, IDC_CHKZVAL, &(s_anglelimit.chkeul[AXIS_Z]));
+			}
+
+			AngleLimit2Bone();
+
+			//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
+			int setcheckflag = 1;
+			Bone2AngleLimit(setcheckflag);
+			//AngleLimit2Dlg(s_anglelimitdlg);
+			ChangeCurrentBone();
+			//EndDialog(hDlgWnd, IDOK);
+
+			UpdateEditedEuler();
+
+			break;
 		}
 		break;
 	default:
@@ -17853,7 +18071,8 @@ int ChangeCurrentBone()
 			SetDmpWndParams();
 			RigidElem2WndParam();
 			if (s_anglelimitdlg) {
-				Bone2AngleLimit();
+				int setcheckflag = 1;
+				Bone2AngleLimit(setcheckflag);
 				AngleLimit2Dlg(s_anglelimitdlg);
 			}
 
@@ -18687,6 +18906,17 @@ int OnFrameTimeLineWnd()
 				}
 			}
 		}
+
+		if (s_anglelimitdlg) {
+			int setcheckflag = 0;
+			if (s_underanglelimithscroll == 0) {//HScroll中に値を取得して設定するとスライダーが動かないから
+				AngleLimit2Bone();
+				Bone2AngleLimit(setcheckflag);
+				AngleLimit2Dlg(s_anglelimitdlg);
+			}
+		}
+
+
 	}
 
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
@@ -25480,6 +25710,7 @@ void ShowLimitEulerWnd(bool srcflag)
 		if (s_bpWorld) {
 			if (srcflag == true) {
 				if (s_anglelimitdlg) {
+					s_underanglelimithscroll = 0;
 					DestroyWindow(s_anglelimitdlg);
 					s_anglelimitdlg = 0;
 				}
@@ -25490,6 +25721,7 @@ void ShowLimitEulerWnd(bool srcflag)
 			}
 			else {
 				if (s_anglelimitdlg) {
+					s_underanglelimithscroll = 0;
 					DestroyWindow(s_anglelimitdlg);
 					s_anglelimitdlg = 0;
 				}
@@ -25612,6 +25844,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			s_copyhistorydlg.ShowWindow(SW_HIDE);
 		}
 		if (s_anglelimitdlg) {
+			s_underanglelimithscroll = 0;
 			DestroyWindow(s_anglelimitdlg);
 			s_anglelimitdlg = 0;
 		}
