@@ -1530,6 +1530,11 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 		return 0;//!!!!!!!!!!!!
 	}
 
+
+	//if (m_topbone) {
+	//	m_topbone->InitAddLimitQAll();
+	//}
+
 	int curmotid = m_curmotinfo->motid;
 	double curframe = m_curmotinfo->curframe;
 
@@ -1540,6 +1545,11 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 			curbone->UpdateMatrix( curmotid, curframe, wmat, vpmat );
 		}
 	}
+
+	//if (m_topbone) {
+	//	m_topbone->RotQAddLimitQAll(curmotid, curframe);
+	//}
+
 
 	/*
 	// for morph anim
@@ -3494,9 +3504,9 @@ void CModel::InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe)
 {
 	if (curbone) {
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		int paraxsiflag1 = 1;
+		int paraxiskind = -1;//2021/11/18
 		//int isfirstbone = 0;
-		cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_ZERO);
+		cureul = curbone->CalcLocalEulXYZ(paraxiskind, srcmotid, srcframe, BEFEUL_ZERO);
 
 		int inittraflag1 = 0;
 		int setchildflag1 = 1;
@@ -4010,8 +4020,8 @@ int CModel::CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, Fb
 				ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1] , (float)lS2[2]);
 				ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int paraxsiflag1 = 1;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, motid, framecnt, BEFEUL_ZERO);
+				int paraxiskind = -1;//2021/11/18
+				cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, framecnt, BEFEUL_ZERO);
 				int inittraflag1 = 0;
 				int setchildflag1 = 0;
 				int initscaleflag = 1;//!!!!!!!!!!!!
@@ -4792,9 +4802,9 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 
 				//オイラー角初期化
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int paraxsiflag = 1;
+				int paraxiskind = -1;//2021/11/18
 				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag, motid, (double)framecnt, BEFEUL_ZERO);
+				cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, (double)framecnt, BEFEUL_ZERO);
 				curbone->SetLocalEul(motid, (double)framecnt, cureul);
 
 			}
@@ -5500,6 +5510,42 @@ void CModel::CreateBtObjectReq( CBtObject* parbt, CBone* parentbone, CBone* curb
 		}
 	}
 }
+
+
+void CModel::CalcRigidElem()
+{
+	CalcRigidElemReq(m_topbone);
+}
+
+
+void CModel::CalcRigidElemReq(CBone* curbone)
+{
+	if (!curbone) {
+		return;
+	}
+
+	int onfirstcreate = 1;
+
+	//int setstartflag;
+	//if (onfirstcreate != 0) {
+		if (curbone->GetParent()) {
+			curbone->GetParent()->CalcRigidElemParams(curbone, onfirstcreate);//firstflag 1
+		}
+		//curbone->SetStartMat2( curbone->GetCurMp().GetWorldMat() );
+		curbone->SetStartMat2(curbone->GetCurrentZeroFrameMat(0));
+	//}
+
+	if (curbone->GetChild()) {
+		CalcRigidElemReq(curbone->GetChild());
+	}
+	if (curbone->GetBrother()) {
+		CalcRigidElemReq(curbone->GetBrother());
+	}
+
+
+}
+
+
 
 void CModel::CalcBtAxismat(int onfirstcreate)
 {
@@ -10647,10 +10693,10 @@ void CModel::CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe)
 	}
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	int paraxsiflag = 1;
+	int paraxiskind = -1;//2021/11/18
 	//int isfirstbone = 0;
 	//cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
-	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_BEFFRAME);
+	cureul = curbone->CalcLocalEulXYZ(paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
 	curbone->SetLocalEul(srcmotid, srcframe, cureul);
 
 	if (curbone->GetChild()){

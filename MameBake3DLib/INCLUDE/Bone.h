@@ -95,6 +95,8 @@ public:
  */
 	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
 
+	int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
+
 /**
  * @fn
  * AddMotionPoint
@@ -260,6 +262,9 @@ public:
  */
 	CMotionPoint* RotBoneQReq(bool infooutflag, CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
+	CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
+
+
 /**
 
 */
@@ -330,6 +335,7 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp );
+	int CalcCurrentLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
 
 	int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
 /**
@@ -361,10 +367,13 @@ public:
 	int CalcBoneDepth();
 
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
+
 	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
+	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 befeul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
 	int SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
@@ -407,6 +416,9 @@ public:
 	static void OnDelModel(CModel* parmodel);
 
 	ChaMatrix CalcParentGlobalMat(int srcmotid, double srcframe);
+
+	void InitAddLimitQAll();
+	void RotQAddLimitQAll(int srcmotid, double srcframe);
 
 
 private:
@@ -518,6 +530,9 @@ private:
 
 	void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
 
+
+	void InitAddLimitQReq(CBone* srcbone);
+	void RotQAddLimitQReq(CBone* srcbone, int srcmotid, double srcframe);
 
 
 public: //accesser
@@ -936,7 +951,7 @@ public: //accesser
 	};
 
 	ANGLELIMIT GetAngleLimit(int getchkflag, int curmotid, double curframe);
-	void SetAngleLimit(ANGLELIMIT srclimit);
+	void SetAngleLimit(ANGLELIMIT srclimit, int srcmotid, double srcframe);
 
 	int GetFreeCustomRigNo();
 	CUSTOMRIG CBone::GetFreeCustomRig();
@@ -1053,6 +1068,15 @@ public: //accesser
 		return m_extendflag;
 	};
 
+	void InitAddLimitQ()
+	{
+		m_addlimitq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+	void Add2AddLimitQ(CQuaternion srcq);
+	CQuaternion GetAddLimitQ()
+	{
+		return m_addlimitq;
+	}
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1119,6 +1143,7 @@ private:
 	CQuaternion m_tmpq;
 	ChaMatrix m_tmpsymmat;
 
+	CQuaternion m_addlimitq;
 
 	ChaMatrix m_btmat;
 	ChaMatrix m_befbtmat;

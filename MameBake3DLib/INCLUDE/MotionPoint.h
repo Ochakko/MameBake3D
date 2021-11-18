@@ -61,8 +61,11 @@ public:
 	};
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
 
-	ChaMatrix GetWorldMat(){ return m_worldmat; };
+	ChaMatrix GetWorldMat();
 	void SetWorldMat(ChaMatrix srcmat){ SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
+	//void SetNewWorldMat(CBone* ownerbone, ChaMatrix srcmat);//after limit eul
+
+
 	ChaMatrix GetInvWorldMat(){ ChaMatrix invmat; ChaMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
 
@@ -140,7 +143,10 @@ public:
 	{
 		m_allocheadflag = srcflag;
 	};
-
+	//CBone* GetNewWMOwner()
+	//{
+	//	return m_newwmowner;
+	//}
 
 
 	static CMotionPoint* GetNewMP();
@@ -150,6 +156,7 @@ public:
 
 private:
 	int DestroyObjs();
+	//void UpdateChildNewWorldMatReq(CBone* srcbone, int broflag);
 
 
 private:
@@ -183,6 +190,8 @@ private:
 	//ChaMatrix m_befbtmat;
 	//int m_setbtflag;
 
+	//CBone* m_newwmowner;
+	//ChaMatrix m_newworldmat;
 
 	CMotionPoint* m_prev;
 	CMotionPoint* m_next;

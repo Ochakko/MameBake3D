@@ -45,6 +45,9 @@ int CMotionPoint::InitParams()
 	ChaMatrixIdentity( &m_befworldmat );
 	ChaMatrixIdentity( &m_befeditmat );
 
+	//m_newwmowner = 0;
+	//ChaMatrixIdentity(&m_newworldmat);
+
 	m_prev = 0;
 	m_next = 0;
 
@@ -459,4 +462,84 @@ void CMotionPoint::DestroyMotionPoints() {
 		}
 	}
 	s_mppool.clear();
+}
+
+//void CMotionPoint::SetNewWorldMat(CBone* ownerbone, ChaMatrix srcmat)//after limit eul
+//{
+//	if (!ownerbone) {
+//		return;
+//	}
+//
+//	m_newwmowner = ownerbone;
+//	m_newworldmat = srcmat;
+//
+//	if (ownerbone->GetChild()) {
+//		UpdateChildNewWorldMatReq(ownerbone->GetChild(), 0);
+//	}
+//}
+
+//void CMotionPoint::UpdateChildNewWorldMatReq(CBone* srcbone, int broflag)
+//{
+//	if (!srcbone) {
+//		return;
+//	}
+//
+//
+//	if (srcbone->GetParent() && !GetNewWMOwner()) {
+//		ChaMatrix newmat;
+//		ChaMatrix oldparmat;
+//		ChaMatrix newparmat;
+//		newparmat = srcbone->GetParent()->GetCurMp().GetWorldMat();
+//		oldparmat = srcbone->GetParent()->GetCurMp().GetWorldMat(true);
+//
+//		//newmat = m_worldmat * ChaMatrixInv(oldparmat) * newparmat;
+//		newmat = srcbone->GetCurMp().GetWorldMat(true) * ChaMatrixInv(oldparmat) * newparmat;
+//
+//
+//		srcbone->GetCurMp().SetNewWorldMat(srcbone, newmat);//curmpはカレント情報コピー用だからcurmpにセットしてもモーション再生時に情報は保持されない
+//	
+//	}
+//
+//
+//	if (srcbone->GetChild()) {
+//		UpdateChildNewWorldMatReq(srcbone->GetChild(), 1);
+//	}
+//	if ((broflag == 1) && srcbone->GetBrother()) {
+//		UpdateChildNewWorldMatReq(srcbone->GetBrother(), 1);
+//	}
+//
+//}
+
+
+ChaMatrix CMotionPoint::GetWorldMat()
+{
+	return m_worldmat;
+
+	//if (!m_newwmowner) {
+	//	return m_worldmat;
+	//}
+
+	//if (retoldflag == true) {
+	//	return m_worldmat;
+	//}
+
+	//return m_newworldmat;
+
+
+	//if (m_newwmowner->GetParent()) {
+	//	ChaMatrix newmat;
+	//	ChaMatrix oldparmat;
+	//	ChaMatrix newparmat;
+	//	newparmat = m_newwmowner->GetParent()->GetCurMp().GetWorldMat();
+	//	oldparmat = m_newwmowner->GetParent()->GetCurMp().GetWorldMat(true);
+
+	//	//newmat = m_worldmat * ChaMatrixInv(oldparmat) * newparmat;
+	//	newmat = m_newworldmat * ChaMatrixInv(oldparmat) * newparmat;
+
+	//	return newmat;
+
+	//}
+	//else {
+	//	return m_worldmat;
+	//}
 }

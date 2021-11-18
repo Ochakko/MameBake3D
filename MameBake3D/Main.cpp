@@ -1616,6 +1616,7 @@ static int CreateToolWnd();
 static int CreateLayerWnd();
 static int CreatePlaceFolderWnd();
 
+static int OnFrameAngleLimit();
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
 static int OnFramePreviewStop();
@@ -6303,321 +6304,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 	}
 	else if (uMsg == WM_MOUSEMOVE){
+
 		OnMouseMoveFunc();
 
-/*
-		if (s_pickinfo.buttonflag == PICK_CENTER){
-			if (s_model){
-				if (g_previewFlag == 0){
-
-					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-					POINT ptCursor;
-					GetCursorPos(&ptCursor);
-					::ScreenToClient(s_3dwnd, &ptCursor);
-					s_pickinfo.mousepos = ptCursor;
-
-					ChaVector3 tmpsc;
-					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
-					if (s_model){
-						if (s_oprigflag == 0){
-							ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
-							CallF(CalcTargetPos(&targetpos), return 1);
-							if (s_ikkind == 0){
-								s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
-							}
-							else if (s_ikkind == 1){
-								ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
-								AddBoneTra2(diffvec);
-								s_editmotionflag = s_curboneno;
-							}
-						}
-						else{
-							if (s_customrigbone){
-								float deltau = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) * 0.5f;
-								float deltav = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-								if (g_controlkey == true){
-									deltau *= 0.250f;
-									deltav *= 0.250f;
-								}
-
-								s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
-
-								s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
-								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-								s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
-								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-								s_editmotionflag = s_curboneno;
-							}
-						}
-						s_ikcnt++;
-					}
-				}
-				else if (g_previewFlag == 5){
-					if (s_model){
-						//if (s_onragdollik == 0){
-						//	StartBt(1, 1);
-						//}
-						s_onragdollik = 1;
-					}
-				}
-			}
-		}
-		else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)){
-			if (s_model){
-				if (g_previewFlag == 0){
-					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-					POINT ptCursor;
-					GetCursorPos(&ptCursor);
-					::ScreenToClient(s_3dwnd, &ptCursor);
-					s_pickinfo.mousepos = ptCursor;
-
-					ChaVector3 tmpsc;
-					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
-					if (g_previewFlag == 0){
-						float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
-						if (g_controlkey == true){
-							deltax *= 0.250f;
-						}
-						if (s_ikkind == 0){
-							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
-						}
-						else{
-							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-							s_editmotionflag = s_curboneno;
-						}
-						s_ikcnt++;
-					}
-				}
-				else if (g_previewFlag == 5){
-					if (s_model){
-						s_onragdollik = 2;
-					}
-				}
-			}
-		}
-		else if ((s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z)){
-			if (s_model){
-				if (g_previewFlag == 0){
-					s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
-
-					s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-					POINT ptCursor;
-					GetCursorPos(&ptCursor);
-					::ScreenToClient(s_3dwnd, &ptCursor);
-					s_pickinfo.mousepos = ptCursor;
-
-					ChaVector3 tmpsc;
-					s_model->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
-					if (g_previewFlag == 0){
-						float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
-						if (g_controlkey == true){
-							deltax *= 0.250f;
-						}
-
-						if (s_ikkind == 0){
-							s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
-						}
-						else{
-							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-							s_editmotionflag = s_curboneno;
-						}
-						s_ikcnt++;
-					}
-				}
-				else if (g_previewFlag == 5){
-					if (s_model){
-						s_onragdollik = 3;
-					}
-				}
-			}
-		}
-		else if (s_pickinfo.buttonflag == PICK_CAMMOVE){
-
-			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_3dwnd, &ptCursor);
-			s_pickinfo.mousepos = ptCursor;
-
-			ChaVector3 cammv;
-			cammv.x = ((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * -s_cammvstep;
-			cammv.y = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * s_cammvstep;
-			cammv.z = 0.0f;
-			if (g_controlkey == true){
-				cammv *= 0.250f;
-			}
-
-
-			ChaMatrix matview;
-			ChaVector3 weye, wat;
-			matview = s_matView;
-			weye = g_camEye;
-			wat = g_camtargetpos;
-
-			ChaVector3 cameye, camat;
-			ChaVector3TransformCoord(&cameye, &weye, &matview);
-			ChaVector3TransformCoord(&camat, &wat, &matview);
-
-			ChaVector3 aftcameye, aftcamat;
-			aftcameye = cameye + cammv;
-			aftcamat = camat + cammv;
-
-			ChaMatrix invmatview;
-			ChaMatrixInverse(&invmatview, NULL, &matview);
-
-			ChaVector3 neweye, newat;
-			ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
-			ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
-
-			g_Camera->SetViewParams(&neweye, &newat);
-
-
-
-			g_camEye = neweye;
-			g_camtargetpos = newat;
-			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-			ChaVector3 diffv;
-			diffv = neweye - newat;
-			s_camdist = ChaVector3LengthDbl(&diffv);
-
-
-		}
-		else if (s_pickinfo.buttonflag == PICK_CAMROT){
-			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_3dwnd, &ptCursor);
-			s_pickinfo.mousepos = ptCursor;
-
-			float roty, rotxz;
-			rotxz = -((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * 250.0f;
-			roty = ((float)s_pickinfo.mousepos.y - (float)s_pickinfo.mousebefpos.y) / (float)s_pickinfo.winy * 250.0f;
-			if (g_controlkey == true){
-				rotxz *= 0.250f;
-				roty *= 0.250f;
-			}
-
-			ChaMatrix matview;
-			ChaVector3 weye, wat;
-			weye = g_camEye;
-			wat = g_camtargetpos;
-
-			ChaVector3 viewvec, upvec, rotaxisy, rotaxisxz;
-			viewvec = wat - weye;
-			ChaVector3Normalize(&viewvec, &viewvec);
-			upvec = ChaVector3(0.000001f, 1.0f, 0.0f);
-
-			float chkdot;
-			chkdot = ChaVector3Dot(&viewvec, &upvec);
-			if (fabs(chkdot) < 0.99965f){
-				ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
-				ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
-
-				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-				ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			}
-			else if (chkdot >= 0.99965f){
-				rotaxisxz = upvec;
-				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-				ChaVector3Normalize(&rotaxisy, &rotaxisy);
-				if (roty < 0.0f){
-					roty = 0.0f;
-				}
-				else{
-				}
-			}
-			else{
-				rotaxisxz = upvec;
-				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-				ChaVector3Normalize(&rotaxisy, &rotaxisy);
-				if (roty > 0.0f){
-					roty = 0.0f;
-				}
-				else{
-					//rotyだけ回す。
-				}
-			}
-
-
-			if (s_model && (s_curboneno >= 0) && s_camtargetflag){
-				CBone* curbone = s_model->GetBoneByID(s_curboneno);
-				_ASSERT(curbone);
-				if (curbone){
-					g_camtargetpos = curbone->GetChildWorld();
-				}
-			}
-
-
-			ChaMatrix befrotmat, rotmaty, rotmatxz, aftrotmat;
-			ChaMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
-			ChaMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
-			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-			ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
-
-			ChaMatrix mat;
-			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-			ChaVector3 neweye;
-			ChaVector3TransformCoord(&neweye, &weye, &mat);
-
-			float chkdot2;
-			ChaVector3 newviewvec = weye - neweye;
-			ChaVector3Normalize(&newviewvec, &newviewvec);
-			chkdot2 = ChaVector3Dot(&newviewvec, &upvec);
-			if (fabs(chkdot2) < 0.99965f){
-				ChaVector3Cross(&rotaxisxz, (const ChaVector3*)&upvec, (const ChaVector3*)&viewvec);
-				ChaVector3Normalize(&rotaxisxz, &rotaxisxz);
-
-				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-				ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			}
-			else{
-				roty = 0.0f;
-				rotaxisxz = upvec;
-				ChaVector3Cross(&rotaxisy, (const ChaVector3*)&viewvec, (const ChaVector3*)&rotaxisxz);
-				ChaVector3Normalize(&rotaxisy, &rotaxisy);
-			}
-			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);
-			ChaMatrixRotationAxis(&rotmatxz, &rotaxisxz, roty * (float)DEG2PAI);
-			mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
-			ChaVector3TransformCoord(&neweye, &weye, &mat);
-
-			g_Camera->SetViewParams(&neweye, &g_camtargetpos);
-
-			g_camEye = neweye;
-			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-			ChaVector3 diffv;
-			diffv = neweye - g_camtargetpos;
-			s_camdist = ChaVector3LengthDbl(&diffv);
-
-
-		}else if (s_pickinfo.buttonflag == PICK_CAMDIST){
-			s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_3dwnd, &ptCursor);
-			s_pickinfo.mousepos = ptCursor;
-
-			float deltadist = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-			//float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
-			//float deltadist = mdelta * s_camdist * 0.0010f;
-			if (g_controlkey == true){
-				deltadist *= 0.250f;
-			}
-
-			s_camdist += deltadist;
-			if (s_camdist < 0.0001f){
-				s_camdist = 0.0001f;
-			}
-
-			ChaVector3 camvec = g_camEye - g_camtargetpos;
-			ChaVector3Normalize(&camvec, &camvec);
-			g_camEye = g_camtargetpos + camvec * s_camdist;
-			ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-		}
-*/
 	}else if( uMsg == WM_LBUTTONUP ){
 
 
@@ -17312,6 +17001,7 @@ int DispAngleLimitDlg()
 
 	s_dseullimitctrls.clear();
 
+	s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 	int setcheckflag = 1;
 	Bone2AngleLimit(setcheckflag);
 
@@ -17402,6 +17092,15 @@ int Bone2AngleLimit(int setcheckflag)
 		curmi = s_model->GetCurMotInfo();
 		if (curmi) {
 			s_anglelimit = s_anglelimitbone->GetAngleLimit(1, curmi->motid, curmi->curframe);
+
+
+			s_anglelimit.chkeul[AXIS_X] = min(s_anglelimit.upper[AXIS_X], s_anglelimit.chkeul[AXIS_X]);
+			s_anglelimit.chkeul[AXIS_Y] = min(s_anglelimit.upper[AXIS_Y], s_anglelimit.chkeul[AXIS_Y]);
+			s_anglelimit.chkeul[AXIS_Z] = min(s_anglelimit.upper[AXIS_Z], s_anglelimit.chkeul[AXIS_Z]);
+
+			s_anglelimit.chkeul[AXIS_X] = max(s_anglelimit.lower[AXIS_X], s_anglelimit.chkeul[AXIS_X]);
+			s_anglelimit.chkeul[AXIS_Y] = max(s_anglelimit.lower[AXIS_Y], s_anglelimit.chkeul[AXIS_Y]);
+			s_anglelimit.chkeul[AXIS_Z] = max(s_anglelimit.lower[AXIS_Z], s_anglelimit.chkeul[AXIS_Z]);
 		}
 	}
 	else{
@@ -17436,51 +17135,61 @@ int AngleLimit2Bone()
 		return 0;
 	}
 
-	if (s_anglelimitbone){
-		s_anglelimitbone->SetAngleLimit(s_anglelimit);
-	}
-	else{
-		_ASSERT(0);
-	}
+	//if (g_previewFlag == 0) {
+		if (s_anglelimitbone) {
+			MOTINFO* curmi = s_model->GetCurMotInfo();
+			if (curmi) {
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+				ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+				////cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+				////befeul = cureul;//!!!!!!!
+				//cureul = s_anglelimitbone->CalcLocalEulXYZ(s_anglelimit.boneaxiskind, curmi->motid, curmi->curframe, BEFEUL_BEFFRAME);
+				cureul = s_anglelimitbone->GetLocalEul(curmi->motid, (double)((int)(curmi->curframe + 0.1)));
 
+				////cureul = s_anglelimitbone->CalcLocalEulXYZ(g_boneaxis, curmi->motid, curmi->curframe, BEFEUL_BEFFRAME);
 
-	MOTINFO* curmi;
-	curmi = s_model->GetCurMotInfo();
-	if (curmi) {
-		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
-		//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-		//befeul = cureul;//!!!!!!!
-		cureul = s_anglelimitbone->CalcLocalEulXYZ(s_anglelimit.boneaxiskind, curmi->motid, curmi->curframe, BEFEUL_BEFFRAME);
-		//cureul = s_anglelimitbone->CalcLocalEulXYZ(g_boneaxis, curmi->motid, curmi->curframe, BEFEUL_BEFFRAME);
-		
-		neweul = cureul;
-		if (s_anglelimit.applyeul[AXIS_X]) {
-			neweul.x = s_anglelimit.chkeul[AXIS_X];
-		}
-		if (s_anglelimit.applyeul[AXIS_Y]) {
-			neweul.y = s_anglelimit.chkeul[AXIS_Y];
-		}
-		if (s_anglelimit.applyeul[AXIS_Z]) {
-			neweul.z = s_anglelimit.chkeul[AXIS_Z];
-		}
+				//cureul.x = s_anglelimit.chkeul[AXIS_X];
+				//cureul.y = s_anglelimit.chkeul[AXIS_Y];
+				//cureul.z = s_anglelimit.chkeul[AXIS_Z];
 
-		int ismovable = s_anglelimitbone->ChkMovableEul(neweul);
-		if (ismovable == 1) {
-			int inittraflag = 0;
-			int setchildflag = 1;
-			int initscaleflag = 0;
-			s_anglelimitbone->SetWorldMatFromEul(inittraflag, setchildflag, neweul, curmi->motid, curmi->curframe, initscaleflag);
-			s_anglelimit.chkeul[AXIS_X] = neweul.x;
-			s_anglelimit.chkeul[AXIS_Y] = neweul.y;
-			s_anglelimit.chkeul[AXIS_Z] = neweul.z;
+				neweul = cureul;
+				if (s_anglelimit.applyeul[AXIS_X]) {
+					neweul.x = s_anglelimit.chkeul[AXIS_X];
+				}
+				if (s_anglelimit.applyeul[AXIS_Y]) {
+					neweul.y = s_anglelimit.chkeul[AXIS_Y];
+				}
+				if (s_anglelimit.applyeul[AXIS_Z]) {
+					neweul.z = s_anglelimit.chkeul[AXIS_Z];
+				}
+
+				//s_anglelimit.chkeul[AXIS_X] = neweul.x;
+				//s_anglelimit.chkeul[AXIS_Y] = neweul.y;
+				//s_anglelimit.chkeul[AXIS_Z] = neweul.z;
+
+				int ismovable = s_anglelimitbone->ChkMovableEul(neweul);
+				if (ismovable == 1) {
+					//int inittraflag = 0;
+					//int setchildflag = 1;
+					//int initscaleflag = 0;
+					//s_anglelimitbone->SetWorldMatFromEul(inittraflag, setchildflag, neweul, curmi->motid, curmi->curframe, initscaleflag);
+					s_anglelimit.chkeul[AXIS_X] = neweul.x;
+					s_anglelimit.chkeul[AXIS_Y] = neweul.y;
+					s_anglelimit.chkeul[AXIS_Z] = neweul.z;
+				}
+				else {
+					s_anglelimit.chkeul[AXIS_X] = cureul.x;
+					s_anglelimit.chkeul[AXIS_Y] = cureul.y;
+					s_anglelimit.chkeul[AXIS_Z] = cureul.z;
+				}
+
+				s_anglelimitbone->SetAngleLimit(s_anglelimit, curmi->motid, (double)((int)(curmi->curframe + 0.1)));
+			}
+
 		}
-		else {
-			s_anglelimit.chkeul[AXIS_X] = cureul.x;
-			s_anglelimit.chkeul[AXIS_Y] = cureul.y;
-			s_anglelimit.chkeul[AXIS_Z] = cureul.z;
-		}
-	}
+			
+		//}
+	//}
 
 	return 0;
 }
@@ -17777,6 +17486,15 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 			AngleLimit2Bone();
 
+			if (s_model) {
+				if (s_owpLTimeline) {
+					double curframe = s_owpLTimeline->getCurrentTime();
+					s_model->SetMotionFrame(curframe);
+					//s_model->CalcRigidElem();
+					s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+				}
+			}
+
 			//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
 			int setcheckflag = 1;
 			Bone2AngleLimit(setcheckflag);
@@ -17785,6 +17503,9 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			//EndDialog(hDlgWnd, IDOK);
 
 			UpdateEditedEuler();
+
+
+			s_underanglelimithscroll = 0;
 
 			break;
 		}
@@ -18072,6 +17793,7 @@ int ChangeCurrentBone()
 			RigidElem2WndParam();
 			if (s_anglelimitdlg) {
 				int setcheckflag = 1;
+				//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);//commentout
 				Bone2AngleLimit(setcheckflag);
 				AngleLimit2Dlg(s_anglelimitdlg);
 			}
@@ -18249,6 +17971,27 @@ int OnFrameUtCheckBox()
 	return 0;
 }
 
+int OnFrameAngleLimit()
+{
+	if (s_anglelimitdlg) {
+		int setcheckflag = 0;
+		if (s_model && (s_underanglelimithscroll == 0)) {//HScroll中に値を取得して設定するとスライダーが動かないから
+			//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);//commentout
+			Bone2AngleLimit(setcheckflag);
+			AngleLimit2Dlg(s_anglelimitdlg);
+			if (g_previewFlag == 0) {//underchecking
+				AngleLimit2Bone();
+			}
+			UpdateWindow(s_anglelimitdlg);
+
+			//Bone2AngleLimit(setcheckflag);
+			//AngleLimit2Dlg(s_anglelimitdlg);
+		}
+	}
+
+	return 0;
+}
+
 int OnFramePreviewStop()
 {
 	if (!s_owpLTimeline) {
@@ -18265,6 +18008,7 @@ int OnFramePreviewStop()
 			if (curmodel && curmodel->GetCurMotInfo()) {
 				curmodel->SetMotionFrame(currenttime);
 			}
+
 			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		}
 	}
@@ -18545,6 +18289,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		if (curmodel->GetBtCnt() <= 10) {
 			curmodel->SetKinematicFlag();
 			curmodel->SetMotionFrame(*pnextframe);
+
 			//UpdateBtSimu(*pnextframe, curmodel);
 			if (curmodel && curmodel->GetCurMotInfo()) {
 				int firstflag = 1;
@@ -18635,48 +18380,6 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 
 	}
-
-
-	//else{
-	//	if (s_underikflag == 1){
-	//		curmodel->BulletSimulationStop();
-	//		s_underikflag = 0;
-	//	}
-	//}
-
-	/*
-	if (s_oprigflag == 0){
-	ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
-	CallF(CalcTargetPos(&targetpos), return 1);
-	if (s_ikkind == 0){
-	s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
-	}
-	else if (s_ikkind == 1){
-	ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
-	AddBoneTra2(diffvec);
-	s_editmotionflag = s_curboneno;
-	}
-	}
-	else{
-	if (s_customrigbone){
-	float deltau = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) * 0.5f;
-	float deltav = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
-	if (g_controlkey == true){
-	deltau *= 0.250f;
-	deltav *= 0.250f;
-	}
-
-	s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
-
-	s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig);
-	s_model->UpdateMatrix(&s_matW, &s_matVP);
-	s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig);
-	s_model->UpdateMatrix(&s_matW, &s_matVP);
-	s_editmotionflag = s_curboneno;
-	}
-	}
-	*/
-
 
 
 	//curmodel->SetMotionFrame(s_editrange.GetStartFrame());
@@ -18841,13 +18544,38 @@ int OnFrameTimeLineWnd()
 	// カーソル移動フラグを確認 //////////////////////////////////////////////////
 
 
-	if (g_previewFlag != 0) {
+	if (g_previewFlag != 0) {//underchecking
+
+		//カレントフレームの１フレームを選択状態にしてしまうのでfalseにする
 		s_cursorFlag = false;
 		s_LcursorFlag = false;
 		s_keyShiftFlag = false;
 		return 0;
 	}
 
+	if (s_LstartFlag) {
+		s_LstartFlag = false;
+		s_buttonselectstart = s_editrange.GetStartFrame();
+		s_buttonselectend = s_editrange.GetEndFrame();
+		if (s_owpTimeline) {
+			s_owpTimeline->setCurrentTime(s_buttonselectstart, false);
+		}
+		if (s_owpLTimeline) {
+			s_owpLTimeline->setCurrentTime(s_buttonselectstart, false);
+		}
+		vector<MODELELEM>::iterator itrmodel;
+		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+			CModel* curmodel = itrmodel->modelptr;
+			if (curmodel && curmodel->GetCurMotInfo()) {
+				curmodel->SetMotionFrame(s_buttonselectstart);
+				curmodel->UpdateMatrix(&s_matWorld, &s_matVP);
+			}
+		}
+
+		int setcheckflag = 1;
+		Bone2AngleLimit(setcheckflag);
+
+	}
 
 
 	if (s_cursorFlag) {
@@ -18857,7 +18585,7 @@ int OnFrameTimeLineWnd()
 			GetCurrentBoneFromTimeline(&s_curboneno);
 
 			// カーソル位置を姿勢に反映。
-			if (g_previewFlag == 0) {
+			if (g_previewFlag == 0) {//underchecking
 				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
 
 				vector<MODELELEM>::iterator itrmodel;
@@ -18895,7 +18623,7 @@ int OnFrameTimeLineWnd()
 		}
 
 		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
-			if (g_previewFlag == 0) {
+			if (g_previewFlag == 0) {//underchecking
 				double curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
 				vector<MODELELEM>::iterator itrmodel;
 				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
@@ -18907,17 +18635,23 @@ int OnFrameTimeLineWnd()
 			}
 		}
 
-		if (s_anglelimitdlg) {
-			int setcheckflag = 0;
-			if (s_underanglelimithscroll == 0) {//HScroll中に値を取得して設定するとスライダーが動かないから
-				AngleLimit2Bone();
-				Bone2AngleLimit(setcheckflag);
-				AngleLimit2Dlg(s_anglelimitdlg);
-			}
-		}
+		OnFrameAngleLimit();
+
+		//if (s_anglelimitdlg) {
+		//	int setcheckflag = 0;
+		//	if (s_underanglelimithscroll == 0) {//HScroll中に値を取得して設定するとスライダーが動かないから
+		//		AngleLimit2Bone();
+		//		Bone2AngleLimit(setcheckflag);
+		//		AngleLimit2Dlg(s_anglelimitdlg);
+		//	}
+		//}
 
 
 	}
+
+
+
+
 
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
 	//if (s_keyShiftFlag){
@@ -20384,24 +20118,24 @@ int CreateLongTimelineWnd()
 
 	s_owpPlayerButton->setFrontPlayButtonListener([]() { 
 		if (s_model) {
-			s_LstartFlag = true; g_previewFlag = 1;
+			s_LstartFlag = true; s_LcursorFlag = true;  g_previewFlag = 1;
 		}
 	});
 	s_owpPlayerButton->setBackPlayButtonListener([](){  
 		if (s_model) {
-			s_LstartFlag = true; g_previewFlag = -1;
+			s_LstartFlag = true; s_LcursorFlag = true; g_previewFlag = -1;
 		}
 	});
 	
 
 	s_owpPlayerButton->setFrontStepButtonListener([](){ 
 		if (s_model) {
-			s_LstartFlag = true; s_lastkeyFlag = true;
+			s_LstartFlag = true; s_LcursorFlag = true; s_lastkeyFlag = true;
 		}
 	});
 	s_owpPlayerButton->setBackStepButtonListener([]() {
 		if (s_model) {
-			s_LstartFlag = true; s_firstkeyFlag = true;
+			s_LstartFlag = true; s_LcursorFlag = true; s_firstkeyFlag = true;
 		}
 	});
 
@@ -20426,19 +20160,19 @@ int CreateLongTimelineWnd()
 	});
 	s_owpPlayerButton->setStopButtonListener([]() {  		
 		if (s_model) {
-			s_LstopFlag = true; g_previewFlag = 0;
+			s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
 		}
 	});
 	s_owpPlayerButton->setResetButtonListener([](){ 
 		if (s_model) {
 			if (s_owpLTimeline) {
-				s_LstopFlag = true; g_previewFlag = 0; s_owpLTimeline->setCurrentTime(1.0, true); s_owpEulerGraph->setCurrentTime(1.0, false);
+				s_LstopFlag = true; g_previewFlag = 0;  s_LcursorFlag = true; s_owpLTimeline->setCurrentTime(1.0, true); s_owpEulerGraph->setCurrentTime(1.0, false);
 			}
 		}
 	});
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  
 		if (s_model) {
-			g_underselecttolast = true; g_selecttolastFlag = true;
+			g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
 		}
 	});
 	s_owpPlayerButton->setBtResetButtonListener([](){  
@@ -22372,7 +22106,7 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if ((g_previewFlag != 4) && (g_previewFlag != 5)){
-		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) && (g_bonemarkflag != 0)){
+		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) && (g_bonemarkflag != 0)){//underchecking
 			//SetSelectCol();
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);

@@ -645,6 +645,7 @@ public:
 	int BulletSimulationStart();
 	int ApplyBtToMotion();
 	void CalcBtAxismat(int onfirstcreate);
+	void CalcRigidElem();
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void SetKinematicFlagReq(CBtObject* srcbto);
 
@@ -743,6 +744,7 @@ private:
 	void CreateBtObjectReq( CBtObject* parbt, CBone* parentbone, CBone* curbone );
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
+	void CalcRigidElemReq(CBone* curbone);
 	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );
 	void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag);
 	void SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);

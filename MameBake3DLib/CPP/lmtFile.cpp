@@ -461,7 +461,7 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	m_anglelimit.chkeul[AXIS_Z] = 0.0f;
 
 
-	curbone->SetAngleLimit(m_anglelimit);
+	curbone->SetAngleLimit(m_anglelimit, -1, 0.0);
 
 
 	return 0;
