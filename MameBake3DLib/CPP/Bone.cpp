@@ -360,6 +360,8 @@ int CBone::InitParams()
 	ChaMatrixIdentity(&m_firstgetmatrix);//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_invfirstgetmatrix);//GetCurrentZeroFrameMat用
 
+	m_befupdatetime = -1.0;
+
 	return 0;
 }
 
@@ -512,19 +514,26 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 	int existflag = 0;
 
 	if ((g_previewFlag != 5) || (m_parmodel && (m_parmodel->GetBtCnt() == 0))){
-
-
-		if (srcframe >= 0.0){
+		if (srcframe >= 0.0) {
 			//CallF(CalcFBXMotion(srcmotid, srcframe, &m_curmp, &existflag), return 1);
 			//ChaMatrix tmpmat = m_curmp.GetWorldMat();// **wmat;
 
 			ChaMatrix newworldmat;
 			ChaMatrixIdentity(&newworldmat);
 
-			ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-			ChaVector3 neweul = LimitEul(orgeul);
-			SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
-			newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+			if (g_limitdegflag == 1) {
+				//制限角度有り
+				ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+				ChaVector3 neweul = LimitEul(orgeul);
+				SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+				newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+			}
+			else {
+				//制限角度無し
+				CallF(CalcFBXMotion(srcmotid, srcframe, &m_curmp, &existflag), return 1);
+				newworldmat = m_curmp.GetWorldMat();// **wmat;
+			}
+
 			ChaMatrix tmpmat = newworldmat * *wmat;
 			m_curmp.SetWorldMat(newworldmat);//underchecking
 
@@ -539,7 +548,7 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 			ChaVector3TransformCoord(&m_childscreen, &m_childworld, vpmat);
 			//ChaVector3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
 		}
-		else{
+		else {
 			m_curmp.InitParams();
 			m_curmp.SetWorldMat(*wmat);
 		}
@@ -547,7 +556,6 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 		if (m_parmodel->GetBtCnt() == 0) {
 			SetBtMat(m_curmp.GetWorldMat());
 		}
-
 	}
 	else{
 		//RagdollIK時のボーン選択対策
@@ -570,6 +578,9 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 		//ChaVector3TransformCoord(&m_childworld, &jpos, &(GetBtMat()));
 		ChaVector3TransformCoord(&m_childscreen, &m_childworld, vpmat);
 	}
+
+	m_befupdatetime = srcframe;
+
 	return 0;
 }
 
@@ -4937,12 +4948,30 @@ void CBone::SetAngleLimit(ANGLELIMIT srclimit, int srcmotid, double srcframe)
 	m_anglelimit.chkeul[AXIS_Y] = limiteul.y;
 	m_anglelimit.chkeul[AXIS_Z] = limiteul.z;
 
-	if ((srcmotid >= 1) && (srcframe >= 0.0)) {
-		int inittraflag = 0;
-		int setchildflag = 1;
-		int initscaleflag = 0;
-		SetWorldMatFromEul(inittraflag, setchildflag, neweul, srcmotid, srcframe, initscaleflag);
-	}
+	//chkチェックスライダーは操作用ではなくリファレンス用にする。元データを上書きしないため。
+	//if ((srcmotid >= 1) && (srcframe >= 0.0)) {
+	//	//int inittraflag = 0;
+	//	//int setchildflag = 1;
+	//	//int initscaleflag = 0;
+	//	//SetWorldMatFromEul(inittraflag, setchildflag, neweul, srcmotid, srcframe, initscaleflag);
+	//	ChaMatrix newworldmat;
+	//	ChaMatrixIdentity(&newworldmat);
+	//	//if (g_limitdegflag == 1) {
+	//	//制限角度有り
+	//	ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+	//	ChaVector3 neweul = LimitEul(orgeul);
+	//	SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+	//	newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+	//	//}
+	//	//else {
+	//	//	//制限角度無し
+	//	//	CallF(CalcFBXMotion(srcmotid, srcframe, &m_curmp, &existflag), return 1);
+	//	//	newworldmat = m_curmp.GetWorldMat();// **wmat;
+	//	//}
+	//	//ChaMatrix tmpmat = newworldmat * *wmat;
+	//	//m_curmp.SetWorldMat(newworldmat);//underchecking
+	//	m_curmp.SetWorldMat(newworldmat);
+	//}
 
 };
 

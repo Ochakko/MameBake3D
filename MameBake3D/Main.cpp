@@ -18062,6 +18062,11 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 		}
 	}
 
+	if (s_anglelimitdlg) {
+		UpdateEditedEuler();
+	}
+
+
 	//playerButton‚Ìonefpsƒ{ƒ^ƒ“
 	if (s_onefps == 1) {
 		Sleep(1000);//1fps

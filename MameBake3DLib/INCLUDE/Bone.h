@@ -1190,6 +1190,9 @@ private:
 
 	bool m_extendflag;
 
+	double m_befupdatetime;
+
+
 	CBone* m_parent;
 	CBone* m_child;
 	CBone* m_brother;
