@@ -355,6 +355,7 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, co
 
 
 void ChaMatrixIdentity(ChaMatrix* pdst);
+void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
 void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz);
 void ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc);
@@ -427,6 +428,7 @@ extern double ChaVector3LengthSqDbl(ChaVector3* psrc);
 extern ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, const ChaMatrix* pM);
 
 extern void ChaMatrixIdentity(ChaMatrix* pdst);
+extern void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 extern void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
 extern void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz);
 extern void ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc);

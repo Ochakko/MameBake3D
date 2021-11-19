@@ -4438,16 +4438,25 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 					if (boneptr->GetSelectFlag() & 2){
 						bcircleptr->SetColor(ChaVector4(0.0f, 0.0f, 1.0f, 0.7f));
 						bsize = ChaVector2(0.050f, 0.050f);
+						if (g_4kresolution) {
+							bsize = bsize * 0.5f;
+						}
 						bcircleptr->SetSize(bsize);
 					}
 					else if (boneptr->GetSelectFlag() & 1){
 						bcircleptr->SetColor(ChaVector4(1.0f, 0.0f, 0.0f, 0.7f));
 						bsize = ChaVector2(0.025f, 0.025f);
+						if (g_4kresolution) {
+							bsize = bsize * 0.5f;
+						}
 						bcircleptr->SetSize(bsize);
 					}
 					else{
 						bcircleptr->SetColor(ChaVector4(1.0f, 1.0f, 1.0f, 0.7f));
 						bsize = ChaVector2(0.025f, 0.025f);
+						if (g_4kresolution) {
+							bsize = bsize * 0.5f;
+						}
 						bcircleptr->SetSize(bsize);
 					}
 					CallF(bcircleptr->OnRender(pd3dImmediateContext), return 1);

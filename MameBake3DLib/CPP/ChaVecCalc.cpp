@@ -2883,6 +2883,48 @@ void ChaMatrixIdentity(ChaMatrix* pdst)
 	pdst->_44 = 1.0f;
 }
 
+void ChaMatrixNormalizeRot(ChaMatrix* pdst)
+{
+	if (!pdst) {
+		return;
+	}
+
+	ChaMatrix srcmat = *pdst;
+
+	ChaVector3 vecx, vecy, vecz;
+	vecx.x = srcmat._11;
+	vecx.y = srcmat._12;
+	vecx.z = srcmat._13;
+
+	vecy.x = srcmat._21;
+	vecy.y = srcmat._22;
+	vecy.z = srcmat._23;
+
+	vecz.x = srcmat._31;
+	vecz.y = srcmat._32;
+	vecz.z = srcmat._33;
+
+	ChaVector3Normalize(&vecx, &vecx);
+	ChaVector3Normalize(&vecy, &vecy);
+	ChaVector3Normalize(&vecz, &vecz);
+
+	pdst->_11 = vecx.x;
+	pdst->_12 = vecx.y;
+	pdst->_13 = vecx.z;
+
+	pdst->_21 = vecy.x;
+	pdst->_22 = vecy.y;
+	pdst->_23 = vecy.z;
+
+	pdst->_31 = vecz.x;
+	pdst->_32 = vecz.y;
+	pdst->_33 = vecz.z;
+
+
+}
+
+
+
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 {
 	if (!pdst || !psrc){

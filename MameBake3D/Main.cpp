@@ -11072,30 +11072,41 @@ float CalcSelectScale(CBone* curboneptr)
 	s_model->GetModelBound(&mb);
 	double modelr = (double)mb.r;
 
-	ChaVector3 orgcenterpos = curboneptr->GetJointFPos();
-	ChaVector3 orgedgepos = ChaVector3(orgcenterpos.x, orgcenterpos.y + 100.0f, orgcenterpos.z);
-	ChaVector3 dispcenterpos, dispedgepos;
-	ChaVector3TransformCoord(&dispcenterpos, &orgcenterpos, &s_selm);
-	ChaVector3TransformCoord(&dispedgepos, &orgedgepos, &s_selm);
-	double lineleng = (dispedgepos.x - dispcenterpos.x) * (dispedgepos.x - dispcenterpos.x) + (dispedgepos.y - dispcenterpos.y) * (dispedgepos.y - dispcenterpos.y);
-	if (lineleng > 0.00001) {
-		lineleng = sqrt(lineleng);
-
-		//s_selectscale = 0.0020f / lineleng;
-		//s_selectscale = (modelr * 0.015f * 0.75f) / (lineleng * 100.0f);
-		s_selectscale = (float)((modelr * 0.40) / lineleng);// *(s_camdist / g_initcamdist);
-
-		if (s_oprigflag == 1) {
-			s_selectscale *= 0.25f;
-			//s_selectscale *= 0.50f;
-		}
-		if (g_4kresolution) {
-			s_selectscale *= 0.5f;
-		}
+	s_selectscale = modelr * 0.0050;
+	if (s_oprigflag == 1) {
+		s_selectscale *= 0.25f;
+		//s_selectscale *= 0.50f;
 	}
-	else {
-		//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
+	if (g_4kresolution) {
+		s_selectscale *= 0.5f;
 	}
+
+
+	//ChaMatrix selm;
+	//selm = s_selm;
+	//ChaMatrixNormalizeRot(&selm);
+	//ChaVector3 orgcenterpos = curboneptr->GetJointFPos();
+	//ChaVector3 orgedgepos = ChaVector3(orgcenterpos.x, orgcenterpos.y + 100.0f, orgcenterpos.z);
+	//ChaVector3 dispcenterpos, dispedgepos;
+	//ChaVector3TransformCoord(&dispcenterpos, &orgcenterpos, &selm);
+	//ChaVector3TransformCoord(&dispedgepos, &orgedgepos, &selm);
+	//double lineleng = (dispedgepos.x - dispcenterpos.x) * (dispedgepos.x - dispcenterpos.x) + (dispedgepos.y - dispcenterpos.y) * (dispedgepos.y - dispcenterpos.y);
+	//if (lineleng > 0.00001) {
+	//	lineleng = sqrt(lineleng);
+	//	//s_selectscale = 0.0020f / lineleng;
+	//	//s_selectscale = (modelr * 0.015f * 0.75f) / (lineleng * 100.0f);
+	//	s_selectscale = (float)((modelr * 0.40) / lineleng);// *(s_camdist / g_initcamdist);
+	//	if (s_oprigflag == 1) {
+	//		s_selectscale *= 0.25f;
+	//		//s_selectscale *= 0.50f;
+	//	}
+	//	if (g_4kresolution) {
+	//		s_selectscale *= 0.5f;
+	//	}
+	//}
+	//else {
+	//	//s_selectscaleの計算はしない。s_selectscaleは前回の計算値を使用。
+	//}
 
 	return s_selectscale;
 }
@@ -11132,16 +11143,23 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 
 		ChaVector3 bonepos = curboneptr->GetWorldPos(curmi->motid, curmi->curframe);
 
-		s_selectmat = scalemat * s_selm;
+		//s_selectmat = scalemat * s_selm;
+		s_selectmat = s_selm;
+		ChaMatrixNormalizeRot(&s_selectmat);
+		s_selectmat = scalemat * s_selectmat;
+
 		s_selectmat._41 = bonepos.x;
 		s_selectmat._42 = bonepos.y;
 		s_selectmat._43 = bonepos.z;
 
-		s_selectmat_posture = scalemat * s_selm_posture;
+		//s_selectmat_posture = scalemat * s_selm_posture;
+		s_selectmat_posture = s_selm_posture;
+		ChaMatrixNormalizeRot(&s_selectmat_posture);
+		s_selectmat_posture = scalemat * s_selectmat_posture;
+
 		s_selectmat_posture._41 = bonepos.x;
 		s_selectmat_posture._42 = bonepos.y;
 		s_selectmat_posture._43 = bonepos.z;
-
 
 		if (renderflag){
 			g_hmVP->SetMatrix((float*)&s_matVP);
@@ -33663,6 +33681,18 @@ int PickRigBone(PICKINFO* ppickinfo)
 							*ppickinfo = chkpickinfo;
 
 							s_curboneno = chkboneno;
+
+							if (s_owpTimeline) {
+								s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+								//WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
+								//POINT mousepos;
+								//mousepos.x = currentpos.x;
+								//mousepos.y = currentpos.y;
+								//::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
+								//::SetCursorPos(mousepos.x, mousepos.y);
+							}
+							ChangeCurrentBone();//2021/11/19
+
 							Bone2CustomRig(rigno);
 
 							return chkboneno;//!!!!!!!!!!!!!!!!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!
