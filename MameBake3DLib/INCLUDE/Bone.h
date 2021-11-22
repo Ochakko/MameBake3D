@@ -148,7 +148,7 @@ public:
  * @return 成功したら０。
  * @detail existptrの内容が１のとき、ちょうどの時間の姿勢はppbefにセットされる。
  */
-	int GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr );
+	int GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr, bool onaddmotion = false );
 
 /**
  * @fn
@@ -402,7 +402,7 @@ public:
 	int ChkMovableEul(ChaVector3 srceul);
 
 
-	int SetCurrentMotion(int srcmotid);
+	int SetCurrentMotion(int srcmotid, double animleng);
 	void ResetMotionCache();
 
 	ChaMatrix GetCurrentZeroFrameMat(int updateflag);//current motionのframe 0のworldmat
@@ -420,6 +420,8 @@ public:
 	void InitAddLimitQAll();
 	void RotQAddLimitQAll(int srcmotid, double srcframe);
 
+
+	int CreateIndexedMotionPoint(int srcmotid, double animleng);
 
 private:
 
@@ -936,12 +938,12 @@ public: //accesser
 		return m_firstaxismatZ;
 	};
 
-	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe){
+	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe, bool onaddmotion = false){
 		//存在するときだけ返す。
 		CMotionPoint* pbef = 0;
 		CMotionPoint* pnext = 0;
 		int existflag = 0;
-		GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, &existflag);
+		GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, &existflag, onaddmotion);
 		if (existflag == 1){
 			return pbef;
 		}
@@ -1017,10 +1019,7 @@ public: //accesser
 	int GetExcludeMv(){
 		return m_excludemv;
 	};
-	void SetCurMotID(int srcmotid)
-	{
-		m_curmotid = srcmotid;
-	};
+	void SetCurMotID(int srcmotid);
 	int GetCurMotID()
 	{
 		return m_curmotid;
@@ -1117,6 +1116,9 @@ private:
 	CMotionPoint m_befmp;//一回前の姿勢データ。
 	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidごとのキャッシュ
 
+	std::vector<CMotionPoint*> m_indexedmp;
+	CMotionPoint m_dummymp;
+
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
 
 	ChaMatrix m_laxismat;//Zボーンのaxismat
@@ -1191,6 +1193,8 @@ private:
 	bool m_extendflag;
 
 	double m_befupdatetime;
+
+
 
 
 	CBone* m_parent;

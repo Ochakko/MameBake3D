@@ -230,6 +230,7 @@ public:
  * @return ¬Œ÷‚µ‚½‚ç‚OB
  */
 	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat );
+	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 
 /**
  * @fn

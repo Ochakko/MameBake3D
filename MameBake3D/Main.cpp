@@ -2866,7 +2866,8 @@ void InitApp()
 	}
 	{
 		ZeroMemory(&s_sprefpos, sizeof(SPGUISW));
-		s_sprefpos.state = true;
+		//s_sprefpos.state = true;
+		s_sprefpos.state = false;//2021/11/22 ReferencePose Off by default
 	}
 	{
 		ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
@@ -22002,7 +22003,8 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							double insideframe;
 							for (insideframe = starttime; insideframe <= endtime; insideframe += 1.0) {
 								s_model->SetMotionFrame(insideframe);
-								s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+								//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+								s_model->HierarchyRouteUpdateMatrix(curbone, &s_model->GetWorldMat(), &s_matVP);//高速化：関係ボーンルート限定アップデート
 								ChaVector3TransformCoord(&curbonepos, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()));
 								vecbonepos.push_back(curbonepos);
 							}
@@ -24491,7 +24493,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.20 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.21 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -31983,7 +31985,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.20 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.21 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

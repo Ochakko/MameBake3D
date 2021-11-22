@@ -1611,6 +1611,46 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	return 0;
 }
 
+int CModel::HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	m_matWorld = *wmat;
+	m_matVP = *vpmat;
+
+	if (!m_curmotinfo) {
+		return 0;//!!!!!!!!!!!!
+	}
+
+	if (!srcbone) {
+		return 0;
+	}
+
+	std::vector<CBone*> vecroute;
+	vecroute.clear();
+	
+	CBone* routebone = srcbone;
+	while (routebone) {
+		vecroute.push_back(routebone);
+		routebone = routebone->GetParent();
+	}
+	std::reverse(vecroute.begin(), vecroute.end());
+
+	int curmotid = m_curmotinfo->motid;
+	double curframe = m_curmotinfo->curframe;
+
+	std::vector<CBone*>::iterator itrbone;
+	for (itrbone = vecroute.begin(); itrbone != vecroute.end(); itrbone++) {
+		CBone* curbone = *itrbone;
+		if (curbone) {
+			curbone->UpdateMatrix(curmotid, curframe, wmat, vpmat);
+		}
+	}
+
+	return 0;
+
+}
+
+
+
 /***
 int CModel::ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename )
 {
@@ -2035,7 +2075,7 @@ int CModel::SetCurrentMotion( int srcmotid )
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
 			if (curbone) {
-				curbone->SetCurrentMotion(srcmotid);
+				curbone->SetCurrentMotion(srcmotid, m_curmotinfo->frameleng);
 			}
 		}
 		//ResetMotionCache();
@@ -3910,13 +3950,14 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
 				curbone->SetOldJointFPos(tmppos);
 			}
-			CMotionPoint* curmp2 = 0;
-			curmp2 = curbone->GetMotionPoint(motid, framecnt);
-			if (!curmp2) {
-				_ASSERT(0);
-				return 1;
-			}
-			curmp2->SetWorldMat(globalmat);//anglelimit無し
+			//CMotionPoint* curmp2 = 0;
+			//curmp2 = curbone->GetMotionPoint(motid, framecnt);//この時点ではまだCBone::m_indexedmpが空
+			//if (!curmp2) {
+			//	_ASSERT(0);
+			//	return 1;
+			//}
+			//curmp2->SetWorldMat(globalmat);//anglelimit無し
+			curmp->SetWorldMat(globalmat);//anglelimit無し
 
 
 
@@ -3949,8 +3990,6 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			fbxtime = fbxtime + difftime;
 
 		}
-		
-
 
 	}
 
@@ -4793,7 +4832,8 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 		ChaMatrixIdentity( &mvmat );
 
 		CMotionPoint* pcurmp = 0;
-		pcurmp = curbone->GetMotionPoint(motid, frame);
+		bool onaddmotion = true;
+		pcurmp = curbone->GetMotionPoint(motid, frame, onaddmotion);
 		if(!pcurmp){
 			int exist2 = 0;
 			CMotionPoint* newmp = curbone->AddMotionPoint( motid, frame, &exist2 );
