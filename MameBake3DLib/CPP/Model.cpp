@@ -3675,17 +3675,43 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 
 		//motioncreatebatchflagが立っていた場合ここまで
-		if (motioncachebatchflag == FALSE) {
+		//if (motioncachebatchflag == FALSE) {
 			FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);
 			if (animno == 0) {
 				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
 			}
+
+			CreateIndexedMotionPointReq(m_topbone, curmotid, animleng);
+
 			SetCurrentMotion(curmotid);
-		}
+		//}
+
+
 	}
 
 	return 0;
 }
+
+void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng) 
+{
+	if (!srcbone) {
+		return;
+	}
+
+
+	int result;
+	result = srcbone->CreateIndexedMotionPoint(srcmotid, srcanimleng);
+	_ASSERT(result == 0);
+
+
+	if (srcbone->GetChild()) {
+		CreateIndexedMotionPointReq(srcbone->GetChild(), srcmotid, srcanimleng);
+	}
+	if (srcbone->GetBrother()) {
+		CreateIndexedMotionPointReq(srcbone->GetBrother(), srcmotid, srcanimleng);
+	}
+}
+
 
 
 void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng )
@@ -10066,11 +10092,13 @@ int CModel::FKRotate(int reqflag, CBone* bvhbone, int traflag, ChaVector3 traani
 		return 1;
 	}
 
+	bool onaddmotion = true;//for getbychain
+
 	CBone* curbone = firstbone;
 	CBone* parentbone = curbone->GetParent();
 	CMotionPoint* parmp = 0;
 	if (parentbone){
-		parmp = parentbone->GetMotionPoint(m_curmotinfo->motid, srcframe);
+		parmp = parentbone->GetMotionPoint(m_curmotinfo->motid, srcframe, onaddmotion);
 	}
 
 	if (reqflag == 1){
@@ -10664,7 +10692,8 @@ void CModel::SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo
 		CMotionPoint* curmp = 0;
 		double curframe = 0.0;
 
-		curmp = srcbone->GetMotionPoint(srcmotid, curframe);
+		bool onaddmotion = true;//for getbychain
+		curmp = srcbone->GetMotionPoint(srcmotid, curframe, onaddmotion);
 		if (!curmp){
 			_ASSERT(0);
 		}

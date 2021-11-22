@@ -577,6 +577,7 @@ public:
 
 	int FillUpEmptyMotion(int motid);
 
+
 	int SetAllSphrateData(int gid, int rgdindex, float srcval);
 	int SetAllBoxzrateData(int gid, int rgdindex, float srcval);
 	int SetAllSkipflagData(int gid, int rgdindex, bool srcval);
@@ -685,7 +686,7 @@ private:
 	void CreateBtConstraintReq( CBtObject* curbto );
 	//void CreateBtConstraintReq(CBone* curbone);
 
-
+	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);
 
 	//void UpdateMatrixReq( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, 
 	//	ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );

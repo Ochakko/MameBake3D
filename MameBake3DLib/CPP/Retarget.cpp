@@ -190,10 +190,11 @@ namespace MameBake3DLibRetarget {
 		}
 
 
+		bool onaddmotion = true;//for getbychain
 		CMotionPoint bvhmp;
 		if (bvhbone) {
 			CMotionPoint* pbvhmp = 0;
-			pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe);
+			pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
 			if (pbvhmp) {
 				bvhmp = *pbvhmp;
 			}
@@ -204,7 +205,7 @@ namespace MameBake3DLibRetarget {
 		}
 		else {
 			CMotionPoint* pbvhmp = 0;
-			pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe);
+			pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
 			if (pbvhmp) {
 				bvhmp = *pbvhmp;
 			}
@@ -220,7 +221,7 @@ namespace MameBake3DLibRetarget {
 			int modelmotid = modelmi->motid;
 			CMotionPoint modelmp;
 			CMotionPoint* pmodelmp = 0;
-			pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe);
+			pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe, onaddmotion);
 			if (pmodelmp) {
 				modelmp = *pmodelmp;
 			}
@@ -232,7 +233,7 @@ namespace MameBake3DLibRetarget {
 			CMotionPoint modelparmp;
 			CMotionPoint* pmodelparmp = 0;
 			if (srcbone->GetParent()) {
-				pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe);
+				pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe, onaddmotion);
 				if (pmodelparmp) {
 					modelparmp = *pmodelparmp;
 				}

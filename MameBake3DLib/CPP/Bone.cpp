@@ -360,6 +360,8 @@ int CBone::InitParams()
 	ChaMatrixIdentity(&m_firstgetmatrix);//GetCurrentZeroFrameMat用
 	ChaMatrixIdentity(&m_invfirstgetmatrix);//GetCurrentZeroFrameMat用
 
+	m_indexedmotionpoint.clear();
+	m_initindexedmotionpoint.clear();
 	m_dummymp.InitParams();
 
 
@@ -690,7 +692,11 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 		newmp->SetFrame(srcframe);
 
 		if (pbef){
-			CallF(pbef->AddToNext(newmp), return 0);
+			int result = pbef->AddToNext(newmp);
+			if (result) {
+				LeaveCriticalSection(&m_CritSection_AddMP);
+				return 0;
+			}
 		}
 		else{
 			m_motionkey[srcmotid - 1] = newmp;
@@ -698,6 +704,14 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 				newmp->SetNext(pnext);
 			}
 		}
+
+		std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+		itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+		if (itrvecmpmap != m_indexedmotionpoint.end()) {
+			//(itrvecmpmap->second).clear();
+			(itrvecmpmap->second)[(int)(srcframe + 0.0001)] = newmp;//indexedmotionpointはモーションポイントの実体管理用ではなくインデックス用、作成と破棄はチェインで行うので上書きしても良い。
+		}
+
 	}
 
 	LeaveCriticalSection(&m_CritSection_AddMP);
@@ -729,6 +743,13 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 	CMotionPoint* pbef = 0;
 	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
 	CMotionPoint* pcur = 0;
+	std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
+
+
+	int curframeindex = (int)(srcframe + 0.0001);
+	int nextframeindex = curframeindex + 1;
+
+
 
 	*existptr = 0;
 
@@ -744,7 +765,33 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 		pcur = m_motionkey[srcmotid - 1];
 	}	
 
-	if (onaddmotion == true) {
+	bool getbychain;
+	getbychain = onaddmotion;
+
+	//getbychain = true;
+	if (getbychain == false) {
+		
+		//get by indexed のフラグ指定の場合にもindexedの準備が出来ていない場合はget by chainで取得する
+
+		if (m_initindexedmotionpoint.size() <= srcmotid) {
+			getbychain = true;
+		}
+		else {
+			std::map<int, bool>::iterator itrinitflag;
+			itrinitflag = m_initindexedmotionpoint.find(srcmotid);
+			if (itrinitflag == m_initindexedmotionpoint.end()) {
+				getbychain = true;
+			}
+			else {
+				if (itrinitflag->second == false) {
+					getbychain = true;
+				}
+			}
+		}
+	}
+
+
+	if (getbychain == true) {
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 		//キャッシュをチェックする
 		if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
@@ -793,11 +840,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 #endif
 	}
 	else {
-
-		int curframeindex = (int)(srcframe + 0.0001);
-		int nextframeindex = curframeindex + 1;
-
-		if (m_indexedmp.size() <= curframeindex) {
+		if ((srcmotid <= 0) || (srcmotid > m_indexedmotionpoint.size())) {
 			//AddMotionPointから呼ばれるときに通る場合は正常
 			*ppbef = 0;
 			*ppnext = 0;
@@ -805,21 +848,53 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 			LeaveCriticalSection(&m_CritSection_GetBefNext);
 			return 0;
 		}
+		else {
+			itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+			if (itrvecmpmap == m_indexedmotionpoint.end()) {
+				*ppbef = 0;
+				*ppnext = 0;
+				//_ASSERT(0);
+				LeaveCriticalSection(&m_CritSection_GetBefNext);
+				return 0;
 
-		*ppbef = m_indexedmp[curframeindex];
+			}
+		}
+
+		//CMotionPoint* testmp = (itrvecmpmap->second)[curframeindex];
+
+		if (curframeindex < (itrvecmpmap->second).size()) {
+			*ppbef = (itrvecmpmap->second)[curframeindex];
+		}
+		else {
+			if ((itrvecmpmap->second).size() >= 1) {
+				*ppbef = (itrvecmpmap->second)[(itrvecmpmap->second).size() - 1];
+			}
+			else {
+				*ppbef = 0;
+			}
+		}
+		
 		if (*ppbef) {
 			double mpframe = (*ppbef)->GetFrame();
-			if ((mpframe >= (double)(curframeindex - 0.0001)) && (mpframe <= (double)(curframeindex + 0.0001))) {
+			if ((mpframe >= ((double)curframeindex - 0.0001)) && (mpframe <= ((double)curframeindex + 0.0001))) {
 				*existptr = 1;
 			}
 			else {
 				*existptr = 0;
 			}
-			if (nextframeindex < m_indexedmp.size()) {
-				*ppnext = m_indexedmp[nextframeindex];
+
+
+			if (nextframeindex < (itrvecmpmap->second).size()) {
+				*ppnext = (itrvecmpmap->second)[nextframeindex];
 			}
 			else {
-				*ppnext = 0;
+				if ((itrvecmpmap->second).size() >= 1) {
+					*ppnext = (itrvecmpmap->second)[(itrvecmpmap->second).size() - 1];
+				}
+				else {
+					*ppnext = 0;
+				}
+				
 			}
 		}
 		else {
@@ -922,6 +997,17 @@ int CBone::DeleteMotion( int srcmotid )
 	//m_motionkey.erase( itrmp );
 	m_motionkey[srcmotid - 1] = 0;////2021/08/26 eraseするとアクセスするためのインデックスがsrcmotid - 1ではなくなる
 
+
+
+	std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+	itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+	if (itrvecmpmap != m_indexedmotionpoint.end()) {
+		(itrvecmpmap->second).clear();
+	}
+
+	m_initindexedmotionpoint[srcmotid] = false;
+
+
 	return 0;
 }
 
@@ -949,6 +1035,19 @@ int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 		}
 		curmp = nextmp;
 	}
+
+	std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+	itrvecmpmap = m_indexedmotionpoint.find(motid);
+	if (itrvecmpmap != m_indexedmotionpoint.end()) {
+		//(itrvecmpmap->second).clear();
+
+		double delframeno;
+		for (delframeno = srcleng; delframeno < (itrvecmpmap->second).size(); delframeno++) {
+			(itrvecmpmap->second)[delframeno] = 0;
+		}
+		(itrvecmpmap->second).resize(srcleng);
+	}
+
 
 	return 0;
 }
@@ -1977,6 +2076,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 
 CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat)
 {
+	bool onaddmotion = true;//for getbychain
 	int existflag = 0;
 	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
 	if( !existflag || !curmp ){
@@ -2324,6 +2424,17 @@ int CBone::DestroyMotionKey( int srcmotid )
 	}
 
 	m_motionkey[srcmotid - 1] = NULL;
+
+
+
+	std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+	itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+	if (itrvecmpmap != m_indexedmotionpoint.end()) {
+		(itrvecmpmap->second).clear();
+	}
+
+	m_initindexedmotionpoint[srcmotid] = false;
+
 
 	return 0;
 }
@@ -5999,9 +6110,9 @@ int CBone::SetCurrentMotion(int srcmotid, double animleng)
 	SetCurMotID(srcmotid);
 	//ResetMotionCache();
 
-	int result;
-	result = CreateIndexedMotionPoint(srcmotid, animleng);
-	_ASSERT(result == 0);
+	//int result;
+	//result = CreateIndexedMotionPoint(srcmotid, animleng);
+	//_ASSERT(result == 0);
 
 	return 0;
 }
@@ -6424,8 +6535,6 @@ void CBone::SetCurMotID(int srcmotid)
 
 int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 {
-	m_indexedmp.clear();
-	
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
 		_ASSERT(0);
 		return 1;
@@ -6435,6 +6544,26 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 		return 1;
 	}
 
+
+
+	std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+	itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+	if (itrvecmpmap == m_indexedmotionpoint.end()) {
+		std::vector<CMotionPoint*> newvecmp;
+		m_indexedmotionpoint[srcmotid] = newvecmp;//STL 参照されていれば無くならない？？？
+
+		std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap2;
+		itrvecmpmap2 = m_indexedmotionpoint.find(srcmotid);
+		if (itrvecmpmap2 == m_indexedmotionpoint.end()) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		itrvecmpmap = itrvecmpmap2;
+	}
+
+	(itrvecmpmap->second).clear();
+	
 
 	CMotionPoint* curmp = m_motionkey[srcmotid - 1];
 	if (curmp) {
@@ -6447,22 +6576,25 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 
 				if ((mpframe >= 0.0) && (mpframe < animleng) &&
 					(mpframe >= (frameno - 0.0001)) && (mpframe <= (frameno + 0.0001))) {
-					m_indexedmp.push_back(curmp);
+					(itrvecmpmap->second).push_back(curmp);
 				}
 				else {
 					//for safety
-					m_indexedmp.push_back(&m_dummymp);
+					(itrvecmpmap->second).push_back(&m_dummymp);
 				}
 				curmp = curmp->GetNext();
 			}
 			else {
-				m_indexedmp.push_back(&m_dummymp);
+				(itrvecmpmap->second).push_back(&m_dummymp);
 			}
 		}
 	}
 	else {
 		return 0;
 	}
+
+
+	m_initindexedmotionpoint[srcmotid] = true;
 
 	return 0;
 

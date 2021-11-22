@@ -1116,7 +1116,9 @@ private:
 	CMotionPoint m_befmp;//一回前の姿勢データ。
 	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidごとのキャッシュ
 
-	std::vector<CMotionPoint*> m_indexedmp;
+	//std::vector<CMotionPoint*> m_indexedmp;
+	std::map<int, std::vector<CMotionPoint*>> m_indexedmotionpoint;
+	std::map<int, bool> m_initindexedmotionpoint;
 	CMotionPoint m_dummymp;
 
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
