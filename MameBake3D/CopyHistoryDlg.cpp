@@ -725,6 +725,7 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 			for (nameno1 = 0; nameno1 < namenum1; nameno1++) {
 				if (copyhistory4[nameno1].hascpinfo == 1) {
 					FILETIME srcfiletime = copyhistory4[nameno1].filetime;
+					FILETIME localfiletime;
 					FILETIME startfiletime;
 					FILETIME endfiletime;
 					SYSTEMTIME ststart;
@@ -744,7 +745,10 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 					SystemTimeToFileTime(&ststart, &startfiletime);
 					SystemTimeToFileTime(&stend, &endfiletime);
 
-					if ((CompareFileTime(&srcfiletime, &startfiletime) >= 0) && (CompareFileTime(&srcfiletime, &endfiletime) <= 0)) {
+					FileTimeToLocalFileTime(&srcfiletime, &localfiletime);
+
+					//if ((CompareFileTime(&srcfiletime, &startfiletime) >= 0) && (CompareFileTime(&srcfiletime, &endfiletime) <= 0)) {
+					if ((CompareFileTime(&localfiletime, &startfiletime) >= 0) && (CompareFileTime(&localfiletime, &endfiletime) <= 0)) {
 						copyhistory5.push_back(copyhistory4[nameno1]);
 					}
 				}

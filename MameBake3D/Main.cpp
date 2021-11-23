@@ -11078,9 +11078,9 @@ float CalcSelectScale(CBone* curboneptr)
 		s_selectscale *= 0.25f;
 		//s_selectscale *= 0.50f;
 	}
-	if (g_4kresolution) {
+	//if (g_4kresolution) {
 		s_selectscale *= 0.5f;
-	}
+	//}
 
 
 	//ChaMatrix selm;
