@@ -870,7 +870,8 @@ void s_dummyfunc()
 			tmpRect.bottom= size.y;
 			InvalidateRect( hWnd, &tmpRect, false );
 			
-			for (std::list<OrgWindowParts*>::iterator itr = partsList.begin(); itr != partsList.end(); itr++) {
+			std::list<OrgWindowParts*>::iterator itr;
+			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
 				//(*itr)->draw();
 				(*itr)->callRewrite();
 			}
@@ -5189,9 +5190,8 @@ void s_dummyfunc()
 			//}
 			~LineData(){
 				if (!key.empty()) {
-					for (std::vector<Key*>::iterator it = key.begin();
-						it != key.end();
-						it++) {
+					std::vector<Key*>::iterator it;
+					for (it = key.begin(); it != key.end(); it++) {
 						//delete (*it);
 						((Key*)(*it))->InvalidateKeys();
 					}
@@ -5826,9 +5826,8 @@ void s_dummyfunc()
 			selectAll(true);
 			deleteKey();
 
-			for (std::vector<EulLineData*>::iterator it = lineData.begin();
-				it != lineData.end();
-				it++) {
+			std::vector<EulLineData*>::iterator it;
+			for (it = lineData.begin(); it != lineData.end(); it++) {
 				delete (*it);
 			}
 		}
@@ -7041,9 +7040,8 @@ void s_dummyfunc()
 			//	_ASSERT_EXPR(0, L"コピーコンストラクタは使えません");
 			//};
 			~EulLineData() {
-				for (std::vector<EulKey*>::iterator it = key.begin();
-					it != key.end();
-					it++) {
+				std::vector<EulKey*>::iterator it;
+				for (it = key.begin(); it != key.end(); it++) {
 					//delete (*it);
 					(*it)->InvalidateEulKeys();
 				}
@@ -7721,8 +7719,8 @@ void s_dummyfunc()
 
 				deleteKey(true);
 
-				for (std::list<EulKey>::iterator itr = shiftKeyList.begin();
-					itr != shiftKeyList.end(); itr++) {
+				std::list<EulKey>::iterator itr;
+				for (itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++) {
 					if (!newKey(itr->time + shiftTime, itr->type, itr->value, itr->length, itr->select)) {
 						//作成不能削除リスナーコール
 						if (parent->keyDeleteListener != NULL) {

@@ -36,6 +36,10 @@ using namespace std;
 using namespace OrgWinGUI;
 
 
+//制限角度に遊びを設ける
+#define EULLIMITPLAY	5
+
+
 map<CModel*,int> g_bonecntmap;
 /*
 extern WCHAR g_basedir[MAX_PATH];
@@ -529,7 +533,14 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 			if (g_limitdegflag == 1) {
 				//制限角度有り
 				ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-				ChaVector3 neweul = LimitEul(orgeul);
+				int ismovable = ChkMovableEul(orgeul);
+				ChaVector3 neweul;
+				if (ismovable == 1) {
+					neweul = orgeul;
+				}
+				else {
+					neweul = LimitEul(orgeul);
+				}
 				SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
 				newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
 			}
@@ -719,6 +730,28 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 	return newmp;
 }
 
+void CBone::ResizeIndexedMotionPointReq(int srcmotid, double animleng)
+{
+	ResizeIndexedMotionPoint(srcmotid, animleng);
+
+	if (GetChild()) {
+		GetChild()->ResizeIndexedMotionPointReq(srcmotid, animleng);
+	}
+	if (GetBrother()) {
+		GetBrother()->ResizeIndexedMotionPointReq(srcmotid, animleng);
+	}
+}
+
+
+int CBone::ResizeIndexedMotionPoint(int srcmotid, double animleng)
+{
+	std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+	itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+	if (itrvecmpmap != m_indexedmotionpoint.end()) {
+		(itrvecmpmap->second).resize((int)(animleng + 0.0001));
+	}
+	return 0;
+}
 
 
 int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr )
@@ -4944,6 +4977,15 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 				}
 			}
 			else {
+				//ChaVector3 limiteul;
+				//limiteul = LimitEul(neweul);
+				//if (IsSameEul(oldeul, neweul) == 0) {
+				//	int inittraflag0 = 0;
+				//	SetWorldMatFromEul(inittraflag0, setchildflag, limiteul, srcmotid, srcframe);//setchildflag有り!!!!
+				//}
+				//else {
+				//	curmp->SetBefWorldMat(curmp->GetWorldMat());
+				//}
 				curmp->SetBefWorldMat(curmp->GetWorldMat());
 			}
 		}
@@ -4988,12 +5030,13 @@ int CBone::ChkMovableEul(ChaVector3 srceul)
 
 	for (axiskind = AXIS_X; axiskind <= AXIS_Z; axiskind++){
 		if (m_anglelimit.via180flag[axiskind] == 0){
-			if ((m_anglelimit.lower[axiskind] > (int)chkval[axiskind]) || (m_anglelimit.upper[axiskind] < (int)chkval[axiskind])){
+			if ((m_anglelimit.lower[axiskind] > (int)chkval[axiskind]) || (m_anglelimit.upper[axiskind] < (int)chkval[axiskind])) {
 				dontmove++;
 			}
 		}
 		else{
-			if ((m_anglelimit.lower[axiskind] <= (int)chkval[axiskind]) && (m_anglelimit.upper[axiskind] >= (int)chkval[axiskind])){
+			//180度線(-180度線)を越えるように動く場合
+			if ((m_anglelimit.lower[axiskind] <= (int)chkval[axiskind]) && (m_anglelimit.upper[axiskind] >= (int)chkval[axiskind])) {
 				dontmove++;
 			}
 		}
@@ -5010,14 +5053,24 @@ int CBone::ChkMovableEul(ChaVector3 srceul)
 
 float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 {
+
 	SetAngleLimitOff(&m_anglelimit);
 	if (m_anglelimit.limitoff[srckind] == 1){
 		return srcval;
 	}
 	else{
 		float newval;
-		newval = min(srcval, (float)m_anglelimit.upper[srckind]);
-		newval = max(newval, (float)m_anglelimit.lower[srckind]);
+		if (abs(m_anglelimit.upper[srckind] - m_anglelimit.lower[srckind]) > EULLIMITPLAY) {
+			//リミット付近でもIKが動くためには遊びの部分が必要
+			newval = min(srcval, (float)(m_anglelimit.upper[srckind] - EULLIMITPLAY));
+			newval = max(newval, (float)(m_anglelimit.lower[srckind] + EULLIMITPLAY));
+		}
+		else {
+			//lowerとupperの間がEULLIMITPLAYより小さいとき
+			newval = min(srcval, (float)(m_anglelimit.upper[srckind]));
+			newval = max(newval, (float)(m_anglelimit.lower[srckind]));
+		}
+
 		return newval;
 	}
 }
@@ -6461,10 +6514,23 @@ ChaVector3 CBone::GetWorldPos(int srcmotid, double srcframe)
 
 	ChaVector3 jointpos;
 	jointpos = GetJointFPos();
-	ChaMatrix curworldmat;
-	curworldmat = GetWorldMat(srcmotid, srcframe);
+	//ChaMatrix curworldmat;
+	//curworldmat = GetWorldMat(srcmotid, srcframe);
+	//ChaVector3TransformCoord(&retpos, &jointpos, &curworldmat);
 
-	ChaVector3TransformCoord(&retpos, &jointpos, &curworldmat);
+	ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+	int ismovable = ChkMovableEul(orgeul);
+	ChaVector3 neweul;
+	if (ismovable == 1) {
+		neweul = orgeul;
+	}
+	else {
+		neweul = LimitEul(orgeul);
+	}
+	SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+	ChaMatrix newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+
+	ChaVector3TransformCoord(&retpos, &jointpos, &newworldmat);
 
 	return retpos;
 }

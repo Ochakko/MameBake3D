@@ -608,7 +608,9 @@ static ChaVector4 s_matrigmat;
 static bool s_dispanglelimit = false;
 static HWND s_anglelimitdlg = 0;
 static ANGLELIMIT s_anglelimit;
+static ANGLELIMIT s_anglelimitcopy;
 static CBone* s_anglelimitbone = 0;
+static bool s_beflimitdegflag = true;
 
 static HWND s_rotaxisdlg = 0;
 static int s_rotaxiskind = AXIS_X;
@@ -2425,7 +2427,7 @@ void InitApp()
 	s_ikkind = 0;
 	
 
-
+	s_beflimitdegflag = g_limitdegflag;
 
 
 	g_ClearColorIndex = 0;
@@ -2749,7 +2751,11 @@ void InitApp()
 	s_reindexmap.clear();
 	s_rgdindexmap.clear();
 
+	s_anglelimitbone = 0;
 	s_anglelimitdlg = 0;
+	InitAngleLimit(&s_anglelimit);
+	InitAngleLimit(&s_anglelimitcopy);
+
 	s_rotaxisdlg = 0;
 
 	g_motionbrush_method = 0;
@@ -9325,6 +9331,11 @@ int InitCurMotion(int selectflag, double expandmotion)
 			}
 			else if (expandmotion > 0){//ƒ‚[ƒVƒ‡ƒ“’·‚ð’·‚­‚µ‚½Û‚ÉA’·‚­‚È‚Á‚½•ª‚Ì‰Šú‰»‚ð‚·‚é
 				double oldframeleng = expandmotion;
+
+				if (topbone) {
+					topbone->ResizeIndexedMotionPointReq(curmi->motid, motleng);
+				}
+
 				double frame;
 				for (frame = oldframeleng; frame < motleng; frame += 1.0){
 					if (topbone){
@@ -9551,7 +9562,8 @@ int UpdateEditedEuler()
 			//int check = (int)s_parentcheck->getValue();
 			//if (check == 1) {
 				CBone* parentbone = curbone->GetParent();
-				if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
+				//if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
+				if(parentbone){
 					curbone = parentbone;
 				}
 			//}
@@ -9598,6 +9610,7 @@ int UpdateEditedEuler()
 
 			for (curtime = startframe; curtime <= endframe; curtime += 1.0) {
 				const WCHAR* wbonename = curbone->GetWBoneName();
+				ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 				//befeul = cureul;//!!!!!!!
@@ -9605,7 +9618,16 @@ int UpdateEditedEuler()
 				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
 					if (s_ikkind == 0) {//‰ñ“]
-						cureul = curmp->GetLocalEul();
+						orgeul = curmp->GetLocalEul();
+						if (g_limitdegflag == true) {//ƒvƒŒƒrƒ…[‚ÅŽ~‚Ü‚ç‚È‚©‚Á‚½ƒtƒŒ[ƒ€‚É‚Â‚¢‚Ä‚à§ŒÀŠp“x‚Æ§ŒÀŠp“x‚Ì—V‚Ñ‚ð”½‰f
+							int ismovable = curbone->ChkMovableEul(orgeul);
+							if (ismovable == 1) {
+								cureul = orgeul;
+							}
+							else {
+								cureul = curbone->LimitEul(orgeul);
+							}
+						}
 						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 						//befeul = cureul;//!!!!!!!
 					}
@@ -9747,7 +9769,8 @@ void refreshEulerGraph()
 					//int check = s_parentcheck->getValue();
 					//if (check == 1) {
 						CBone* parentbone = curbone->GetParent();
-						if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
+						//if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
+						if (parentbone) {
 							curbone = parentbone;
 						}
 					//}
@@ -9770,6 +9793,7 @@ void refreshEulerGraph()
 					}
 					for (curtime = 0; curtime < frameleng; curtime++) {
 						const WCHAR* wbonename = curbone->GetWBoneName();
+						ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
 						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 						//befeul = cureul;//!!!!!!!
@@ -9777,7 +9801,16 @@ void refreshEulerGraph()
 						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
 							if (s_ikkind == 0) {//‰ñ“]
-								cureul = curmp->GetLocalEul();
+								orgeul = curmp->GetLocalEul();
+								if (g_limitdegflag == true) {//ƒvƒŒƒrƒ…[‚ÅŽ~‚Ü‚ç‚È‚©‚Á‚½ƒtƒŒ[ƒ€‚É‚Â‚¢‚Ä‚à§ŒÀŠp“x‚Æ§ŒÀŠp“x‚Ì—V‚Ñ‚ð”½‰f
+									int ismovable = curbone->ChkMovableEul(orgeul);
+									if (ismovable == 1) {
+										cureul = orgeul;
+									}
+									else {
+										cureul = curbone->LimitEul(orgeul);
+									}
+								}
 								//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 								//befeul = cureul;//!!!!!!!
 							}
@@ -11073,13 +11106,13 @@ float CalcSelectScale(CBone* curboneptr)
 	s_model->GetModelBound(&mb);
 	double modelr = (double)mb.r;
 
-	s_selectscale = modelr * 0.0050;
+	s_selectscale = modelr * 0.0020;
 	if (s_oprigflag == 1) {
-		s_selectscale *= 0.25f;
+		s_selectscale *= 0.125f;
 		//s_selectscale *= 0.50f;
 	}
 	//if (g_4kresolution) {
-		s_selectscale *= 0.5f;
+	//	s_selectscale *= 0.5f;
 	//}
 
 
@@ -16668,6 +16701,11 @@ int SetLTimelineMark( int curboneno )
 	if( (curboneno >= 0) && s_model && s_owpTimeline && s_owpLTimeline ){
 		CBone* curbone = s_model->GetBoneByID( curboneno );
 		if( curbone ){
+			CBone* parentbone = curbone->GetParent();
+			if (parentbone) {
+				curbone = parentbone;
+			}
+
 			int curlineno = s_boneno2lineno[ curboneno ];
 			if( curlineno >= 0 ){
 				s_owpLTimeline->deleteLine( 2 );
@@ -17444,6 +17482,78 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		case TB_THUMBPOSITION:
 			s_underanglelimithscroll = 0;
 			break;
+		case IDC_BUTTON1:
+		{
+			//CopyToSymBone
+			if (s_anglelimitbone && s_anglelimitdlg) {
+				int symboneno = 0;
+				int existflag = 0;
+				s_model->GetSymBoneNo(s_anglelimitbone->GetBoneNo(), &symboneno, &existflag);
+				if (symboneno >= 0) {
+					CBone* symbone = s_model->GetBoneByID(symboneno);
+					if (symbone) {
+						ANGLELIMIT symanglelimit = s_anglelimit;
+						//symanglelimit.lower[1] *= -1;
+						symanglelimit.lower[2] *= -1;
+						//symanglelimit.upper[1] *= -1;
+						symanglelimit.upper[2] *= -1;
+
+						MOTINFO* curmi;
+						curmi = s_model->GetCurMotInfo();
+						if (curmi) {
+							symbone->SetAngleLimit(symanglelimit, curmi->motid, curmi->curframe);
+						}
+					}
+				}
+			}
+		}
+			break;
+		case IDC_BUTTON2:
+		{
+			//CopyFromSymBone
+			if (s_anglelimitbone && s_anglelimitdlg) {
+				int symboneno = 0;
+				int existflag = 0;
+				s_model->GetSymBoneNo(s_anglelimitbone->GetBoneNo(), &symboneno, &existflag);
+				if (symboneno >= 0) {
+					CBone* symbone = s_model->GetBoneByID(symboneno);
+					if (symbone) {
+						MOTINFO* curmi;
+						curmi = s_model->GetCurMotInfo();
+						if (curmi) {
+							ANGLELIMIT anglelimit = symbone->GetAngleLimit(0, curmi->motid, curmi->curframe);
+							ANGLELIMIT symanglelimit = anglelimit;
+							//symanglelimit.lower[1] *= -1;
+							symanglelimit.lower[2] *= -1;
+							//symanglelimit.upper[1] *= -1;
+							symanglelimit.upper[2] *= -1;
+
+							//s_anglelimitbone->SetAngleLimit(symanglelimit, curmi->motid, curmi->curframe);
+							s_anglelimit = symanglelimit;
+							AngleLimit2Bone();
+							AngleLimit2Dlg(s_anglelimitdlg);
+						}
+					}
+				}
+			}
+		}
+			break;
+		case IDC_BUTTON3:
+		{
+			if (s_anglelimitbone && s_anglelimitdlg) {
+				s_anglelimitcopy = s_anglelimit;
+			}
+		}
+			break;
+		case IDC_BUTTON4:
+		{
+			if (s_anglelimitbone && s_anglelimitdlg) {
+				s_anglelimit = s_anglelimitcopy;
+				AngleLimit2Bone();
+				AngleLimit2Dlg(s_anglelimitdlg);
+			}
+		}
+			break;
 		//case IDOK:
 			//break;
 		case IDCANCEL:
@@ -17975,7 +18085,11 @@ int OnFrameUtCheckBox()
 		g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
 	}
 	if (s_LimitDegCheckBox) {
-		g_limitdegflag = (int)s_LimitDegCheckBox->GetChecked();
+		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
+		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
+			refreshEulerGraph();
+		}
+		s_beflimitdegflag = g_limitdegflag;
 	}
 	if (s_BrushMirrorUCheckBox) {
 		g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
@@ -22728,31 +22842,17 @@ int DispCustomRigDlg(int rigno)
 		CustomRig2Dlg(s_customrigdlg);
 	}
 	
-
 	SetParent(s_customrigdlg, s_mainhwnd);
+	SetWindowPos(
+		s_customrigdlg,
+		HWND_TOP,
+		s_timelinewidth + s_mainwidth + 16,
+		s_sidemenuheight,
+		s_sidewidth,
+		s_sideheight,
+		SWP_SHOWWINDOW
+	);
 
-	if (g_4kresolution) {
-		SetWindowPos(
-			s_customrigdlg,
-			HWND_TOP,
-			1200 * 2,
-			32,
-			450 * 2 + 16,
-			858 * 2 + 32,
-			SWP_SHOWWINDOW
-		);
-	}
-	else {
-		SetWindowPos(
-			s_customrigdlg,
-			HWND_TOP,
-			1200,
-			MAINMENUAIMBARH,
-			450,
-			858,
-			SWP_SHOWWINDOW
-		);
-	}
 
 	ShowWindow(s_customrigdlg, SW_SHOW);
 	UpdateWindow(s_customrigdlg);

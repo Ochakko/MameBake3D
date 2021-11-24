@@ -2201,54 +2201,135 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 		return 0;
 	}
 
-	int findflag = 0;
-	WCHAR findname[256];
-	ZeroMemory( findname, sizeof( WCHAR ) * 256 );
-	wcscpy_s( findname, 256, srcbone->GetWBoneName() );
-
-	WCHAR* lpat = wcsstr( findname, L"_L_" );
-	if( lpat ){
-		*lpat = TEXT( '_' );
-		*(lpat + 1) = TEXT( 'R' );
-		*(lpat + 2) = TEXT( '_' );
-		//wcsncat_s( findname, 256, L"_R_", 3 );
-		findflag = 1;
-	}else{
-		WCHAR* rpat = wcsstr( findname, L"_R_" );
-		if( rpat ){
-			*rpat = TEXT( '_' );
-			*(rpat + 1) = TEXT( 'L' );
-			*(rpat + 2) = TEXT( '_' );
-			//wcsncat_s( findname, 256, L"_L_", 3 );
-			findflag = 1;
-		}
-	}
+	//int findflag = 0;
+	//WCHAR findname[256];
+	//ZeroMemory( findname, sizeof( WCHAR ) * 256 );
+	//wcscpy_s( findname, 256, srcbone->GetWBoneName() );
+	//WCHAR* lpat = wcsstr( findname, L"_L_" );
+	//if( lpat ){
+	//	*lpat = TEXT( '_' );
+	//	*(lpat + 1) = TEXT( 'R' );
+	//	*(lpat + 2) = TEXT( '_' );
+	//	//wcsncat_s( findname, 256, L"_R_", 3 );
+	//	findflag = 1;
+	//}else{
+	//	WCHAR* rpat = wcsstr( findname, L"_R_" );
+	//	if( rpat ){
+	//		*rpat = TEXT( '_' );
+	//		*(rpat + 1) = TEXT( 'L' );
+	//		*(rpat + 2) = TEXT( '_' );
+	//		//wcsncat_s( findname, 256, L"_L_", 3 );
+	//		findflag = 1;
+	//	}
+	//}
+	//int setflag = 0;
+	////if( findflag == 0 ){
+	////	*dstboneno = srcboneno;
+	////	*existptr = 0;
+	////}else{
+	//if (findflag != 0){
+	//	CBone* dstbone = 0;
+	//	map<int, CBone*>::iterator itrbone;
+	//	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
+	//		CBone* chkbone = itrbone->second;
+	//		if( chkbone && (wcscmp( findname, chkbone->GetWBoneName() ) == 0) ){
+	//			dstbone = chkbone;
+	//			break;
+	//		}
+	//	}
+	//	if( dstbone ){
+	//		*dstboneno = dstbone->GetBoneNo();
+	//		*existptr = 1;
+	//		setflag = 1;
+	//	}
+	//	//else{
+	//	//	*dstboneno = srcboneno;
+	//	//	*existptr = 0;
+	//	//}
+	//}
 
 	int setflag = 0;
-	//if( findflag == 0 ){
-	//	*dstboneno = srcboneno;
-	//	*existptr = 0;
-	//}else{
-	if (findflag != 0){
-		CBone* dstbone = 0;
-		map<int, CBone*>::iterator itrbone;
-		for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
-			CBone* chkbone = itrbone->second;
-			if( chkbone && (wcscmp( findname, chkbone->GetWBoneName() ) == 0) ){
-				dstbone = chkbone;
-				break;
+	{
+		string strcurbonename = srcbone->GetBoneName();
+		string strLeft = "Left";
+		string strRight = "Right";
+
+		string chkLeft = strcurbonename;
+		string chkRight = strcurbonename;
+
+		std::string::size_type leftpos = chkLeft.find(strLeft);
+		if (leftpos != std::string::npos) {
+			//Leftの部分をRightに変えてボーンが存在すればそのボーンに移動
+			chkLeft.replace(leftpos, strLeft.length(), strRight);
+			CBone* rightbone = GetBoneByName(chkLeft.c_str());
+			if (rightbone) {
+				int nextboneno = rightbone->GetBoneNo();
+				if (nextboneno >= 0) {
+					*dstboneno = nextboneno;
+					*existptr = 1;
+					setflag = true;
+				}
 			}
 		}
-		if( dstbone ){
-			*dstboneno = dstbone->GetBoneNo();
-			*existptr = 1;
-			setflag = 1;
+		else {
+			std::string::size_type rightpos = chkRight.find(strRight);
+			if (rightpos != std::string::npos) {
+				//Rightの部分をLeftに変えてボーンが存在すればそのボーンに移動
+				chkRight.replace(rightpos, strRight.length(), strLeft);
+				CBone* leftbone = GetBoneByName(chkRight.c_str());
+				if (leftbone) {
+					int nextboneno = leftbone->GetBoneNo();
+					if (nextboneno >= 0) {
+						*dstboneno = nextboneno;
+						*existptr = 1;
+						setflag = true;
+					}
+				}
+			}
 		}
-		//else{
-		//	*dstboneno = srcboneno;
-		//	*existptr = 0;
-		//}
 	}
+
+	if(setflag == 0)
+	{
+		string strcurbonename = srcbone->GetBoneName();
+		string strLeft = "_L_";
+		string strRight = "_R_";
+
+		string chkLeft = strcurbonename;
+		string chkRight = strcurbonename;
+
+		std::string::size_type leftpos = chkLeft.find(strLeft);
+		if (leftpos != std::string::npos) {
+			//_L_の部分を_R_に変えてボーンが存在すればそのボーンに移動
+			chkLeft.replace(leftpos, strLeft.length(), strRight);
+			CBone* rightbone = GetBoneByName(chkLeft.c_str());
+			if (rightbone) {
+				int nextboneno = rightbone->GetBoneNo();
+				if (nextboneno >= 0) {
+					*dstboneno = nextboneno;
+					*existptr = 1;
+					setflag = true;
+				}
+			}
+		}
+		else {
+			std::string::size_type rightpos = chkRight.find(strRight);
+			if (rightpos != std::string::npos) {
+				//_R_の部分を_L_に変えてボーンが存在すればそのボーンに移動
+				chkRight.replace(rightpos, strRight.length(), strLeft);
+				CBone* leftbone = GetBoneByName(chkRight.c_str());
+				if (leftbone) {
+					int nextboneno = leftbone->GetBoneNo();
+					if (nextboneno >= 0) {
+						*dstboneno = nextboneno;
+						*existptr = 1;
+						setflag = true;
+					}
+				}
+			}
+		}
+	}
+
 
 	if (setflag == 0){
 		CBone* symposbone = GetSymPosBone(srcbone);

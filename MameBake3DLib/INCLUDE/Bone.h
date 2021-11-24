@@ -423,6 +423,11 @@ public:
 
 	int CreateIndexedMotionPoint(int srcmotid, double animleng);
 
+	int ResizeIndexedMotionPoint(int srcmotid, double animleng);
+	void ResizeIndexedMotionPointReq(int srcmotid, double animleng);
+
+	ChaVector3 LimitEul(ChaVector3 srceul);
+
 private:
 
 /**
@@ -524,7 +529,6 @@ private:
 
 	void InitAngleLimit();
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
-	ChaVector3 LimitEul(ChaVector3 srceul);
 	int InitCustomRig();
 	void CalcBtRootDiffMatFunc(CBone* srcbone);
 
