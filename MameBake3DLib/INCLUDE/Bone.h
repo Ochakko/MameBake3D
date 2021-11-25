@@ -843,7 +843,7 @@ public: //accesser
 	};
 
 	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
-	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe);
+	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0);
 	ChaMatrix GetCurrentLimitedWorldMat();
 
 

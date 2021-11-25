@@ -84,7 +84,13 @@ namespace MameBake3DLibRetarget {
 			//s_sethipstra = 0;
 
 			if (modelbone) {
+				ChaMatrix dummyvpmat;
+				ChaMatrixIdentity(&dummyvpmat);
+				srcbvhmodel->SetMotionFrame(frame);
+				srcbvhmodel->UpdateMatrix(&(srcbvhmodel->GetWorldMat()), &dummyvpmat);
 				srcmodel->SetMotionFrame(frame);
+				srcmodel->UpdateMatrix(&(srcmodel->GetWorldMat()), &dummyvpmat);
+
 				CBone* befbvhbone = srcbvhmodel->GetTopBone();
 
 				ChaMatrix sfirsthipmat;
@@ -193,26 +199,28 @@ namespace MameBake3DLibRetarget {
 		bool onaddmotion = true;//for getbychain
 		CMotionPoint bvhmp;
 		if (bvhbone) {
-			CMotionPoint* pbvhmp = 0;
-			pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
-			if (pbvhmp) {
-				bvhmp = *pbvhmp;
-			}
-			else {
-				_ASSERT(0);
-				return 1;
-			}
+			//CMotionPoint* pbvhmp = 0;
+			//pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
+			//if (pbvhmp) {
+			//	bvhmp = *pbvhmp;
+			//}
+			//else {
+			//	_ASSERT(0);
+			//	return 1;
+			//}
+			bvhmp = bvhbone->GetCurMp();
 		}
 		else {
-			CMotionPoint* pbvhmp = 0;
-			pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
-			if (pbvhmp) {
-				bvhmp = *pbvhmp;
-			}
-			else {
-				_ASSERT(0);
-				return 1;
-			}
+			//CMotionPoint* pbvhmp = 0;
+			//pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
+			//if (pbvhmp) {
+			//	bvhmp = *pbvhmp;
+			//}
+			//else {
+			//	_ASSERT(0);
+			//	return 1;
+			//}
+			bvhmp = befbvhbone->GetCurMp();
 		}
 
 

@@ -1180,8 +1180,10 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentZeroFrameMat(0)));
 			}
 			else {
-				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurMp().GetWorldMat()));
-				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurMp().GetWorldMat()));
+				//ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurMp().GetWorldMat()));
+				//ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurMp().GetWorldMat()));
+				ChaVector3TransformCoord(&aftbonepos, &(GetJointFPos()), &(GetCurrentLimitedWorldMat()));
+				ChaVector3TransformCoord(&aftchildpos, &(childbone->GetJointFPos()), &(GetCurrentLimitedWorldMat()));
 			}
 		}
 		else {
@@ -2251,6 +2253,7 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 	}
 	return curmp;
 }
+//CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat)
 
 
 
@@ -6545,7 +6548,7 @@ void CBone::CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmot
 
 }
 
-ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe)
+ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul)//default : dstneweul = 0
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -6570,6 +6573,11 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe)
 		}
 		SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
 		retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+
+		if (dstneweul) {
+			*dstneweul = neweul;
+		}
+
 	}
 	else {
 		//êßå¿äpìxñ≥Çµ
@@ -6577,6 +6585,11 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe)
 		int existflag = 0;
 		CallF(CalcFBXMotion(srcmotid, srcframe, &calcmp, &existflag), return retmat);
 		retmat = calcmp.GetWorldMat();// **wmat;
+
+		if (dstneweul) {
+			ChaVector3 cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
+			*dstneweul = cureul;
+		}
 	}
 
 

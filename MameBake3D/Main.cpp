@@ -611,6 +611,8 @@ static ANGLELIMIT s_anglelimit;
 static ANGLELIMIT s_anglelimitcopy;
 static CBone* s_anglelimitbone = 0;
 static bool s_beflimitdegflag = true;
+static bool s_savelimitdegflag = true;
+
 
 static HWND s_rotaxisdlg = 0;
 static int s_rotaxiskind = AXIS_X;
@@ -2428,6 +2430,8 @@ void InitApp()
 	
 
 	s_beflimitdegflag = g_limitdegflag;
+	s_savelimitdegflag = g_limitdegflag;
+
 
 
 	g_ClearColorIndex = 0;
@@ -8226,6 +8230,11 @@ int RetargetBatch()
 		return 0;
 	}
 
+
+	s_savelimitdegflag = g_limitdegflag;
+	g_limitdegflag = false;
+
+
 	//if (!s_convbone_model || !s_convbone_bvh) {
 	//}
 	//if (s_model != s_convbone_model) {
@@ -8293,6 +8302,9 @@ int RetargetBatch()
 			_ASSERT(0);
 			if (curlpidl)
 				CoTaskMemFree(curlpidl);
+
+			g_limitdegflag = s_savelimitdegflag;
+
 			return 1;
 		}
 
@@ -9618,18 +9630,7 @@ int UpdateEditedEuler()
 				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
 					if (s_ikkind == 0) {//‰ñ“]
-						orgeul = curmp->GetLocalEul();
-						if (g_limitdegflag == true) {//ƒvƒŒƒrƒ…[‚Å~‚Ü‚ç‚È‚©‚Á‚½ƒtƒŒ[ƒ€‚É‚Â‚¢‚Ä‚à§ŒÀŠp“x‚Æ§ŒÀŠp“x‚Ì—V‚Ñ‚ğ”½‰f
-							int ismovable = curbone->ChkMovableEul(orgeul);
-							if (ismovable == 1) {
-								cureul = orgeul;
-							}
-							else {
-								cureul = curbone->LimitEul(orgeul);
-							}
-						}
-						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-						//befeul = cureul;//!!!!!!!
+						curbone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
 					}
 					else if(s_ikkind == 1){//ˆÚ“®
 						cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
@@ -9801,18 +9802,7 @@ void refreshEulerGraph()
 						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
 							if (s_ikkind == 0) {//‰ñ“]
-								orgeul = curmp->GetLocalEul();
-								if (g_limitdegflag == true) {//ƒvƒŒƒrƒ…[‚Å~‚Ü‚ç‚È‚©‚Á‚½ƒtƒŒ[ƒ€‚É‚Â‚¢‚Ä‚à§ŒÀŠp“x‚Æ§ŒÀŠp“x‚Ì—V‚Ñ‚ğ”½‰f
-									int ismovable = curbone->ChkMovableEul(orgeul);
-									if (ismovable == 1) {
-										cureul = orgeul;
-									}
-									else {
-										cureul = curbone->LimitEul(orgeul);
-									}
-								}
-								//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
-								//befeul = cureul;//!!!!!!!
+								curbone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
 							}
 							else if (s_ikkind == 1) {//ˆÚ“®
 								cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
@@ -32203,6 +32193,9 @@ void WaitRetargetThreads()
 		}
 		s_retargetcnt = 0;
 		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSE‚Å•Ï‚í‚é‰Â”\«‚ ‚è
+
+		g_limitdegflag = s_savelimitdegflag;
+
 		OnModelMenu(true, s_saveretargetmodel, 1);
 	}
 
