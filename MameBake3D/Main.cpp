@@ -17334,6 +17334,7 @@ int AngleLimit2Dlg(HWND hDlgWnd)
 		wcscpy_s(strcombo, 256, L"GlobalBoneAxis");
 		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
 		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_SETCURSEL, s_anglelimit.boneaxiskind, 0);
+		EnableWindow(GetDlgItem(hDlgWnd, IDC_BONEAXIS), FALSE);//固定値
 
 
 		InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
@@ -17413,12 +17414,15 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDC_BONEAXIS:
-			{
-				int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_GETCURSEL, 0, 0);
-				if ((combono >= BONEAXIS_CURRENT) && (combono <= BONEAXIS_GLOBAL)){
-					s_anglelimit.boneaxiskind = combono;
-				}
-			}
+
+			//lmtファイルによる固定値
+
+			//{
+			//	int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_GETCURSEL, 0, 0);
+			//	if ((combono >= BONEAXIS_CURRENT) && (combono <= BONEAXIS_GLOBAL)){
+			//		s_anglelimit.boneaxiskind = combono;
+			//	}
+			//}
 			break;
 		case IDC_APPLYX:
 			if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYX) == BST_CHECKED) {
@@ -19305,7 +19309,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 					parmp->SetBefWorldMat(parmp->GetWorldMat());
 					bool infooutflag = false;
-					srcbone->RotBoneQReq(infooutflag, parmp, curmotid, newframe, dummyq, 0, dummytra);
+					srcbone->RotBoneQReq(infooutflag, parentbone, curmotid, newframe, dummyq, 0, dummytra);
 					//_ASSERT(0);
 				}
 			}

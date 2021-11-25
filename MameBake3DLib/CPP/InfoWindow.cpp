@@ -275,6 +275,14 @@ void CInfoWindow::UpdateWindowFunc()
 
 void CInfoWindow::OnPaint()
 {
+	int lineview;
+	if (g_4kresolution) {
+		lineview = INFOWINDOWLINEVIEW * 2;
+	}
+	else {
+		lineview = INFOWINDOWLINEVIEW;
+	}
+
 	if (m_hWnd && IsWindow(m_hWnd)) {
 		RECT clirect;
 		GetClientRect(m_hWnd, &clirect);
@@ -291,9 +299,9 @@ void CInfoWindow::OnPaint()
 
 			//INFOWINDOWLINEH行分、古い順に描画する
 			int outputno;
-			int curindex = m_viewindex - (INFOWINDOWLINEVIEW - 1);
+			int curindex = m_viewindex - (lineview - 1);
 			int dispno = 0;
-			for (outputno = 0; outputno < INFOWINDOWLINEVIEW; outputno++) {
+			for (outputno = 0; outputno < lineview; outputno++) {
 				if ((curindex >= 0) && (curindex <= m_dataindex)) {
 
 					*(m_stroutput + INFOWINDOWLINEW * INFOWINDOWLINEH - 1) = 0L;
@@ -311,6 +319,13 @@ void CInfoWindow::OnPaint()
 void CInfoWindow::onMouseWheel(const OrgWinGUI::MouseEvent& e)
 {
 	//ホイールで描画する行をシフトする。
+	int lineview;
+	if (g_4kresolution) {
+		lineview = INFOWINDOWLINEVIEW * 2;
+	}
+	else {
+		lineview = INFOWINDOWLINEVIEW;
+	}
 
 	if (e.wheeldelta < 0) {
 		m_viewindex++;
@@ -321,8 +336,8 @@ void CInfoWindow::onMouseWheel(const OrgWinGUI::MouseEvent& e)
 	}
 	else if (e.wheeldelta > 0) {
 		m_viewindex--;
-		if (m_viewindex < (INFOWINDOWLINEVIEW - 1)) {
-			m_viewindex = (INFOWINDOWLINEVIEW - 1);
+		if (m_viewindex < (lineview - 1)) {
+			m_viewindex = (lineview - 1);
 		}
 		UpdateWindow();
 	}

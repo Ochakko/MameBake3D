@@ -7689,7 +7689,7 @@ int CModel::SetBefEditMat( CEditRange* erptr, CBone* curbone, int maxlevel )
 		double startframe, endframe, applyframe;
 		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 		double curframe;
-		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
+		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0){
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 			if(editmp){
@@ -7796,9 +7796,15 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 				}
 
 				ChaVector3 parworld, chilworld;
-				//ChaVector3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
-				ChaVector3TransformCoord( &parworld, &(parentbone->GetJointFPos()), &(parentbone->GetCurMp().GetWorldMat()) );
-				ChaVector3TransformCoord(&chilworld, &(firstbone->GetJointFPos()), &(firstbone->GetParent()->GetCurMp().GetWorldMat()));
+				{
+					////ChaVector3TransformCoord( &chilworld, &(curbone->GetJointFPos()), &(curbone->GetCurMp().GetWorldMat()) );
+					//ChaVector3TransformCoord( &parworld, &(parentbone->GetJointFPos()), &(parentbone->GetCurMp().GetWorldMat()) );
+					//ChaVector3TransformCoord(&chilworld, &(firstbone->GetJointFPos()), &(firstbone->GetParent()->GetCurMp().GetWorldMat()));
+					parworld = parentbone->GetWorldPos(m_curmotinfo->motid, m_curmotinfo->curframe);
+					ChaMatrix parworldmat = firstbone->GetParent()->GetLimitedWorldMat(m_curmotinfo->motid, m_curmotinfo->curframe);
+					ChaVector3TransformCoord(&chilworld, &(firstbone->GetJointFPos()), &(parworldmat));
+				}
+
 
 				ChaVector3 parbef, chilbef, tarbef;
 				parbef = parworld;
@@ -7830,25 +7836,31 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					if (keynum >= 2) {
 						int keyno = 0;
 						double curframe;
-						for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
-							CMotionPoint* curparmp;
-							curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-							CMotionPoint* aplyparmp;
-							aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-							if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
-								ChaMatrix curparrotmat = curparmp->GetWorldMat();
+						for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+
+							//CMotionPoint* curparmp;
+							//curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+							//CMotionPoint* aplyparmp;
+							//aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+							//if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
+							if (g_pseudolocalflag == 1) {
+								//ChaMatrix curparrotmat = curparmp->GetWorldMat();
+								ChaMatrix curparrotmat = parentbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
 								curparrotmat._41 = 0.0f;
 								curparrotmat._42 = 0.0f;
 								curparrotmat._43 = 0.0f;
-								ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+								//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+								ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
 								invcurparrotmat._41 = 0.0f;
 								invcurparrotmat._42 = 0.0f;
 								invcurparrotmat._43 = 0.0f;
-								ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+								//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+								ChaMatrix aplyparrotmat = parentbone->GetLimitedWorldMat(m_curmotinfo->motid, applyframe);
 								aplyparrotmat._41 = 0.0f;
 								aplyparrotmat._42 = 0.0f;
 								aplyparrotmat._43 = 0.0f;
-								ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+								//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+								ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
 								invaplyparrotmat._41 = 0.0f;
 								invaplyparrotmat._42 = 0.0f;
 								invaplyparrotmat._43 = 0.0f;
@@ -9219,7 +9231,8 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 							selectmat = curbone->CalcManipulatorMatrix(1, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
 							ChaMatrixInverse(&invselectmat, NULL, &selectmat);
 
-							ChaMatrix rotinvworld = curbone->GetCurMp().GetInvWorldMat();
+							//ChaMatrix rotinvworld = curbone->GetCurMp().GetInvWorldMat();
+							ChaMatrix rotinvworld = curbone->GetCurrentLimitedWorldMat();
 							rotinvworld._41 = 0.0f;
 							rotinvworld._42 = 0.0f;
 							rotinvworld._43 = 0.0f;
@@ -9240,26 +9253,39 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 								double curframe;
 								for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 
-									CMotionPoint* curparmp = 0;
-									CMotionPoint* aplyparmp = 0;
-									if (parentbone){
-										curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-										aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+									//CMotionPoint* curparmp = 0;
+									//CMotionPoint* aplyparmp = 0;
+									//if (parentbone){
+									//	curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+									//	aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+									//}
+									CBone* aplybone;
+									if (parentbone) {
+										aplybone = parentbone;
 									}
-									if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
-										ChaMatrix curparrotmat = curparmp->GetWorldMat();
+									else {
+										aplybone = curbone;
+									}
+
+									//if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
+									if (aplybone && (g_pseudolocalflag == 1)) {
+										//ChaMatrix curparrotmat = curparmp->GetWorldMat();
+										ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
 										curparrotmat._41 = 0.0f;
 										curparrotmat._42 = 0.0f;
 										curparrotmat._43 = 0.0f;
-										ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+										//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+										ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
 										invcurparrotmat._41 = 0.0f;
 										invcurparrotmat._42 = 0.0f;
 										invcurparrotmat._43 = 0.0f;
-										ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+										//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+										ChaMatrix aplyparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
 										aplyparrotmat._41 = 0.0f;
 										aplyparrotmat._42 = 0.0f;
 										aplyparrotmat._43 = 0.0f;
-										ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+										//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+										ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
 										invaplyparrotmat._41 = 0.0f;
 										invaplyparrotmat._42 = 0.0f;
 										invaplyparrotmat._43 = 0.0f;
@@ -9836,7 +9862,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			ChaMatrixInverse(&invselectmat, NULL, &selectmat);
 
 
-			ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
+			//ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
+			ChaMatrix rotinvworld = firstbone->GetCurrentLimitedWorldMat();
 			rotinvworld._41 = 0.0f;
 			rotinvworld._42 = 0.0f;
 			rotinvworld._43 = 0.0f;
@@ -9854,33 +9881,46 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			if (keynum >= 2){
 				int keyno = 0;
 				double curframe;
-				for (curframe = startframe; curframe <= endframe; curframe += 1.0){
+				for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0){
 
-					CMotionPoint* curparmp = 0;
-					CMotionPoint* aplyparmp = 0;
+					//CMotionPoint* curparmp = 0;
+					//CMotionPoint* aplyparmp = 0;
+					//if (parentbone) {
+					//	curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+					//	aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					//}
+					//else {
+					//	//parentboneが無いときには、curparmpとapplyparmpはcurrentboneのもの
+					//	curparmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
+					//	aplyparmp = curbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+					//}
+					CBone* aplybone;
 					if (parentbone) {
-						curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-						aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+						aplybone = parentbone;
 					}
 					else {
-						//parentboneが無いときには、curparmpとapplyparmpはcurrentboneのもの
-						curparmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-						aplyparmp = curbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
+						aplybone = curbone;
 					}
-					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
-						ChaMatrix curparrotmat = curparmp->GetWorldMat();
+
+					//if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
+					if (curbone && aplybone && (g_pseudolocalflag == 1)) {
+						//ChaMatrix curparrotmat = curparmp->GetWorldMat();
+						ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
 						curparrotmat._41 = 0.0f;
 						curparrotmat._42 = 0.0f;
 						curparrotmat._43 = 0.0f;
-						ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+						//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+						ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
 						invcurparrotmat._41 = 0.0f;
 						invcurparrotmat._42 = 0.0f;
 						invcurparrotmat._43 = 0.0f;
-						ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+						//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+						ChaMatrix aplyparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
 						aplyparrotmat._41 = 0.0f;
 						aplyparrotmat._42 = 0.0f;
 						aplyparrotmat._43 = 0.0f;
-						ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+						//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+						ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
 						invaplyparrotmat._41 = 0.0f;
 						invaplyparrotmat._42 = 0.0f;
 						invaplyparrotmat._43 = 0.0f;

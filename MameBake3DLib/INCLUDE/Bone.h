@@ -260,10 +260,9 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* RotBoneQReq(bool infooutflag, CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
+	CMotionPoint* RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
-	CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
-
+	//CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
 /**
 
@@ -427,6 +426,7 @@ public:
 	void ResizeIndexedMotionPointReq(int srcmotid, double animleng);
 
 	ChaVector3 LimitEul(ChaVector3 srceul);
+	void SetBefWorldMatReq(int srcmotid, double srcframe);
 
 private:
 
@@ -843,6 +843,9 @@ public: //accesser
 	};
 
 	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
+	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe);
+	ChaMatrix GetCurrentLimitedWorldMat();
+
 
 	CModel* GetParModel(){ return m_parmodel; };
 	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodelごとのm_bonenoに注意！！！
@@ -1199,8 +1202,6 @@ private:
 	bool m_extendflag;
 
 	double m_befupdatetime;
-
-
 
 
 	CBone* m_parent;

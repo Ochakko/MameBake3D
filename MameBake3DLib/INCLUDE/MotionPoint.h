@@ -148,6 +148,14 @@ public:
 	//	return m_newwmowner;
 	//}
 
+	//void SetSetBefWorldMatFlag()
+	//{
+	//	m_setbefworldmatflag = true;
+	//}
+	//bool GetSetBefWorldMatFlag()
+	//{
+	//	return m_setbefworldmatflag;
+	//}
 
 	static CMotionPoint* GetNewMP();
 	static void InvalidateMotionPoint(CMotionPoint* srcmp);
@@ -183,6 +191,9 @@ private:
 	ChaMatrix m_befeditmat;
 
 	ChaMatrix m_absmat;
+
+
+	bool m_setbefworldmatflag;
 
 
 	//btmat‚ÍCBone‚ÉˆÚ“®
