@@ -6542,7 +6542,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_PHYSICS_MV_SLIDER:
 			RollbackCurBoneNo();
 			g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
-			swprintf_s(sz, 100, L"PhysEditRate : %.3f", g_physicsmvrate);
+			swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
 			g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
 			break;
 		//case IDC_APPLY_BT:
@@ -20096,7 +20096,7 @@ int CreateUtDialog()
 	iY = s_mainheight - 210 - addh;
 	startx = s_mainwidth - 150;
 
-	swprintf_s(sz, 100, L"PhysEditRate : %.3f", g_physicsmvrate);
+	swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
 	//g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, 18);
 	s_ui_texphysmv = g_SampleUI.GetControl(IDC_STATIC_PHYSICS_MV_SLIDER);
@@ -27149,13 +27149,30 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 						if (changeflag && (s_curboneno >= 0)) {
 							if (s_owpTimeline) {
 								s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
-								WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
-								POINT mousepos;
-								mousepos.x = currentpos.x;
-								mousepos.y = currentpos.y;
 
-								::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
-								::SetCursorPos(mousepos.x, mousepos.y);
+
+								//マウスがタイムライン上にあった場合にだけマウスの位置を選択位置へ移動
+								//他のダイアログなどを設定中にカーソルがタイムラインに飛ばないように。
+
+								POINT cursorpos;
+								GetCursorPos(&cursorpos);
+								ScreenToClient(s_timelineWnd->getHWnd(), &cursorpos);
+								RECT timelinerect;
+								GetClientRect(s_timelineWnd->getHWnd(), &timelinerect);
+								if ((cursorpos.x >= timelinerect.left) && (cursorpos.x <= timelinerect.right) &&
+									(cursorpos.y >= timelinerect.top) && (cursorpos.y <= timelinerect.bottom)) {
+
+									WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
+									POINT mousepos;
+									mousepos.x = currentpos.x;
+									mousepos.y = currentpos.y;
+
+									::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
+									::SetCursorPos(mousepos.x, mousepos.y);
+								}
+
+
+
 							}
 							ChangeCurrentBone();
 						}

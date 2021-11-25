@@ -19,6 +19,7 @@
 
 //ï\é¶Ç∑ÇÈçsêî
 #define INFOWINDOWLINEVIEW 4
+#define INFOWINDOWLINEVIEW4K 10
 
 class CInfoWindow
 {

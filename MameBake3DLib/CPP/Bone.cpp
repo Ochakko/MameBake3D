@@ -2169,7 +2169,11 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 		if (m_child){
 			if (setmatflag == 0){
 				ChaMatrix limitedworldmat;
-				limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);
+				
+				
+				//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//‚±‚±‚ðGetLimitedWorldMat‚É‚·‚é‚Æ‚P‰ñ–Ú‚ÌIK‚ª—‚ê‚éB‚Q‰ñ–Ú‚ÌIKˆÈ~‚ÍOKB
+				limitedworldmat = GetWorldMat(srcmotid, srcframe);
+
 
 				ChaVector3 rotcenter;// = m_childworld;
 				//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
@@ -6049,7 +6053,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 
 ChaVector3 CBone::GetChildWorld(){
 	if (g_previewFlag != 5){
-		ChaVector3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
+		//ChaVector3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
+		ChaVector3TransformCoord(&m_childworld, &m_jointfpos, &(GetCurrentLimitedWorldMat()));
 	}
 	else{
 		ChaMatrix wmat;

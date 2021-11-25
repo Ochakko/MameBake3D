@@ -277,7 +277,7 @@ void CInfoWindow::OnPaint()
 {
 	int lineview;
 	if (g_4kresolution) {
-		lineview = INFOWINDOWLINEVIEW * 2;
+		lineview = INFOWINDOWLINEVIEW4K;
 	}
 	else {
 		lineview = INFOWINDOWLINEVIEW;
@@ -321,7 +321,7 @@ void CInfoWindow::onMouseWheel(const OrgWinGUI::MouseEvent& e)
 	//ホイールで描画する行をシフトする。
 	int lineview;
 	if (g_4kresolution) {
-		lineview = INFOWINDOWLINEVIEW * 2;
+		lineview = INFOWINDOWLINEVIEW4K;
 	}
 	else {
 		lineview = INFOWINDOWLINEVIEW;

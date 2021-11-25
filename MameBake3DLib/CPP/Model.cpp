@@ -2538,10 +2538,12 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 		ChaMatrix mW;
 		if (g_previewFlag != 5){
 			if (curbone->GetParent()) {
-				mW = curbone->GetParent()->GetCurMp().GetWorldMat();
+				//mW = curbone->GetParent()->GetCurMp().GetWorldMat();
+				mW = curbone->GetParent()->GetCurrentLimitedWorldMat();
 			}
 			else {
-				mW = curbone->GetCurMp().GetWorldMat();
+				//mW = curbone->GetCurMp().GetWorldMat();
+				mW = curbone->GetCurrentLimitedWorldMat();
 			}
 		}
 		else{
@@ -4065,8 +4067,7 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			//}
 			//curmp2->SetWorldMat(globalmat);//anglelimit無し
 			curmp->SetWorldMat(globalmat);//anglelimit無し
-
-
+				  
 
 			////############################
 			////Check For Debug
@@ -8248,9 +8249,11 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 	}
 
 
-	int calcnum = 1;
 
-	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	//float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	int calcnum = 1;
+	//int calcnum = 4;//ctrlを押しながらドラッグでdelta * 0.25になっている。
+	float rotrad = delta / 10.0f * (float)PAI / 12.0f / (float)calcnum * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
 	if (fabs(rotrad) < (0.020 * DEG2PAI)) {
 		return 0;
 	}
@@ -9771,12 +9774,16 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 
 	//int calcnum = 3;
-	int calcnum = 1;//今はtargetposを細かく刻んでいないので１で良い
+	//int calcnum = 1;//今はtargetposを細かく刻んでいないので１で良い
 
-	float rotrad = delta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
-	if (fabs(rotrad) < (0.020 * DEG2PAI)){
+	int calcnum = 1;
+	//int calcnum = 4;//ctrlを押しながらドラッグでdelta * 0.25になっている.多フレーム選択時の重さを考えると処理を重くすることは出来ないのでゆっくりドラッグする他ない.
+	float rotrad = delta / 10.0f * (float)PAI / 12.0f * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
+	if (fabs(rotrad) < (0.020 * DEG2PAI)) {
 		return 0;
 	}
+
+
 
 	int keynum;
 	double startframe, endframe, applyframe;
