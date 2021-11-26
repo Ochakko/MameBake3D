@@ -151,10 +151,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftThumbDistal_end_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>1.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
-      <RateV>1.000000</RateV>
+      <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -446,7 +446,7 @@
     </RigElem>
   </Bone>
   <Bone>
-    <RigName>FiveFingersClose</RigName>
+    <RigName>Close</RigName>
     <OwnerBone>RightElbow_branch_Joint</OwnerBone>
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
@@ -457,32 +457,32 @@
     <RigRigName>RightThumbDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
       <BoneName>RightElbow_branch_Joint</BoneName>
-      <AxisU>X</AxisU>
-      <RateU>-1.000000</RateU>
+      <AxisU>Z</AxisU>
+      <RateU>3.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Y</AxisV>
+      <RateV>3.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>RightIndexDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
       <BoneName>RightElbow_Joint</BoneName>
-      <AxisU>X</AxisU>
+      <AxisU>Z</AxisU>
       <RateU>3.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>3.000000</RateV>
+      <AxisV>Y</AxisV>
+      <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>RightMiddleDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
       <BoneName>RightShoulder_Joint</BoneName>
-      <AxisU>X</AxisU>
+      <AxisU>Z</AxisU>
       <RateU>3.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
+      <AxisV>Y</AxisV>
       <RateV>3.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
@@ -490,10 +490,10 @@
     <RigRigName>RightRingDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
       <BoneName>RightCollar_Joint</BoneName>
-      <AxisU>X</AxisU>
+      <AxisU>Z</AxisU>
       <RateU>3.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
+      <AxisV>Y</AxisV>
       <RateV>3.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
@@ -553,7 +553,7 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightThumbDistal_end_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>1.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
@@ -564,7 +564,7 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightThumbDistal_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
@@ -575,7 +575,7 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightThumbIntermediate_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
@@ -586,9 +586,9 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightThumbProximal_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>2.000000</RateU>
+      <RateU>-2.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
+      <AxisV>Z</AxisV>
       <RateV>1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>

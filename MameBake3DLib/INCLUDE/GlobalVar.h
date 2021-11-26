@@ -63,6 +63,7 @@ float g_ClearColor[BGCOL_MAX][4] = {
 	{1.0f, 0.5f, 0.5f, 1.0f}
 };
 
+bool g_bakelimiteulonsave = false;
 
 double g_befeuldiffmax = 60.0;
 int g_dsmousewait = 0;
@@ -186,8 +187,10 @@ float g_ikrate = 1.0f;
 int g_applyrate = 50;
 int g_refpos = 50;
 int g_refmult = 4.0;
-float g_physicsmvrate = 1.0f;
-//float g_physicsmvrate = 0.1f;
+//float g_physicsmvrate = 1.0f;
+////float g_physicsmvrate = 0.1f;
+//float g_physicsmvrate = 0.5f;
+float g_physicsmvrate = 0.3f;
 
 float                       g_fLightScale;
 int                         g_nNumActiveLights;
@@ -206,6 +209,8 @@ float* g_motionbrush_value = 0;
 #else
 extern int g_ClearColorIndex;
 extern float g_ClearColor[BGCOL_MAX][4];
+
+extern bool g_bakelimiteulonsave;
 
 
 extern double g_befeuldiffmax;

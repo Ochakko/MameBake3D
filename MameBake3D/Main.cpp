@@ -6341,6 +6341,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//ReleaseCapture();
 		s_wmlbuttonup = 1;
 
+
 		if (s_model && (s_onragdollik != 0)){
 			//s_model->BulletSimulationStop();
 			//s_model->SetBtKinFlagReq(s_model->GetTopBt(), 1);
@@ -8233,6 +8234,9 @@ int RetargetBatch()
 
 	s_savelimitdegflag = g_limitdegflag;
 	g_limitdegflag = false;
+	if (s_LimitDegCheckBox) {
+		s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	}
 
 
 	//if (!s_convbone_model || !s_convbone_bvh) {
@@ -8304,6 +8308,9 @@ int RetargetBatch()
 				CoTaskMemFree(curlpidl);
 
 			g_limitdegflag = s_savelimitdegflag;
+			if (s_LimitDegCheckBox) {
+				s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+			}
 
 			return 1;
 		}
@@ -14943,6 +14950,15 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					}
 				}
 			}
+
+			if (g_bakelimiteulonsave) {
+				CheckDlgButton(hDlgWnd, IDC_CHECK1, BST_CHECKED);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_CHECK1, BST_UNCHECKED);
+			}
+			
+
 			RECT dlgrect;
 			GetWindowRect(hDlgWnd, &dlgrect);
 			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
@@ -14955,6 +14971,9 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
+		{
+
+
 			s_savechadlghwnd = 0;
 			KillTimer(hDlgWnd, s_savechaproctimer);
 
@@ -14962,7 +14981,18 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			GetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir, MAX_PATH);
 			wcscpy_s(s_chasavename, 64, s_projectname);
 			wcscpy_s(s_chasavedir, MAX_PATH, s_projectdir);
+
+
+			UINT ischecked = IsDlgButtonChecked(hDlgWnd, IDC_CHECK1);
+			if (ischecked == BST_CHECKED) {
+				g_bakelimiteulonsave = true;
+			}
+			else {
+				g_bakelimiteulonsave = false;
+			}
+
 			EndDialog(hDlgWnd, IDOK);
+		}
 			break;
 		case IDCANCEL:
 			s_savechadlghwnd = 0;
@@ -22820,6 +22850,12 @@ int DispCustomRigDlg(int rigno)
 	if (s_model->GetOldAxisFlagAtLoading() == 1){
 		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"error!!!", MB_OK);
 		return 0;
+	}
+
+	//古いダイアログを閉じる
+	if (s_customrigdlg) {
+		DestroyWindow(s_customrigdlg);
+		s_customrigdlg = 0;
 	}
 
 	Bone2CustomRig(rigno);
@@ -32212,6 +32248,9 @@ void WaitRetargetThreads()
 		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 
 		g_limitdegflag = s_savelimitdegflag;
+		if (s_LimitDegCheckBox) {
+			s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+		}
 
 		OnModelMenu(true, s_saveretargetmodel, 1);
 	}

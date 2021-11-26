@@ -32,6 +32,8 @@
 #include <bvhelem.h>
 #include <bvhfile.h>
 
+#include <GlobalVar.h>
+
 #define KARCH_ENV_WIN
 
 
@@ -2832,6 +2834,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 
 		for (frameno = 0; frameno <= maxframe; frameno++){
 			cureul = curbone->CalcFBXEulXYZ(notmodifyflag, curmotid, frameno, &befeul);
+					
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 

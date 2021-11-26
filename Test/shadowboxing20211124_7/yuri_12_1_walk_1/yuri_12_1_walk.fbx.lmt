@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <Lmt>
     <FileInfo>1001-02</FileInfo>
-    <FileComment>CommentForEGP_20211124101006</FileComment>
+    <FileComment>CommentForEGP_20211124101006</FileComment>    
   <Bone>
     <Name>Hip_Joint</Name>
     <BoneAxisType>Current</BoneAxisType>
@@ -461,10 +461,10 @@
       <Via180_Z>0</Via180_Z>
       <Lower_X>-126</Lower_X>
       <Upper_X>170</Upper_X>
-      <Lower_Y>-79</Lower_Y>
-      <Upper_Y>27</Upper_Y>
+      <Lower_Y>-135</Lower_Y>
+      <Upper_Y>52</Upper_Y>
       <Lower_Z>-54</Lower_Z>
-      <Upper_Z>69</Upper_Z>
+      <Upper_Z>91</Upper_Z>
   </Bone>
   <Bone>
     <Name>LeftElbow_Joint</Name>
@@ -1157,9 +1157,9 @@
       <Via180_Z>0</Via180_Z>
       <Lower_X>-126</Lower_X>
       <Upper_X>170</Upper_X>
-      <Lower_Y>-79</Lower_Y>
-      <Upper_Y>27</Upper_Y>
-      <Lower_Z>-69</Lower_Z>
+      <Lower_Y>-135</Lower_Y>
+      <Upper_Y>52</Upper_Y>
+      <Lower_Z>-91</Lower_Z>
       <Upper_Z>54</Upper_Z>
   </Bone>
   <Bone>
