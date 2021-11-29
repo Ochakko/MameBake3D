@@ -54,6 +54,7 @@ class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
 
+int g_usephysik = 0;
 int g_ClearColorIndex = 0;
 float g_ClearColor[BGCOL_MAX][4] = {
 	{0.0f, 0.0f, 0.0f, 1.0f},
@@ -123,6 +124,7 @@ int g_bonemarkflag = 1;
 int g_rigidmarkflag = 1;
 int g_pseudolocalflag = 1;
 int g_wallscrapingikflag = 1;
+int g_prepcntonphysik = 30;
 int g_boneaxis = 1;//parent
 //int g_boneaxis = 0;//current
 int g_brushrepeats = 1;
@@ -208,6 +210,7 @@ float* g_motionbrush_value = 0;
 
 
 #else
+extern int g_usephysik;
 extern int g_ClearColorIndex;
 extern float g_ClearColor[BGCOL_MAX][4];
 
@@ -272,6 +275,7 @@ extern int g_bonemarkflag;
 extern int g_rigidmarkflag;
 extern int g_pseudolocalflag;
 extern int g_wallscrapingikflag;
+extern int g_prepcntonphysik;
 extern int g_boneaxis;
 extern int g_brushrepeats;
 extern int g_brushmirrorUflag;

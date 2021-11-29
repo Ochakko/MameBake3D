@@ -113,6 +113,8 @@ PseudoLocalIKは常にオンになります
 #include <RigidElemFile.h>
 #include <RigidElem.h>
 #include <MNLFile.h>
+#include "IniFile.h"
+
 
 #include <BtObject.h>
 #include <fbxsdk.h>
@@ -211,7 +213,8 @@ static double s_reccnt = 0;
 
 static int s_appcnt = 0;
 static int s_launchbyc4 = 0;
-
+static int s_launchc4diffx = 0;
+static int s_launchc4diffy = 0;
 static int s_onefps = 0;
 
 
@@ -1697,6 +1700,9 @@ static int StartBt( CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero
 static int StopBt();
 static int GetShaderHandle();
 static int SetBaseDir();
+static int LoadIniFile();
+static int SaveIniFile();
+
 
 static int OpenFile();
 static int BVH2FBX();
@@ -2053,6 +2059,8 @@ INT WINAPI wWinMain(
 
 	SetBaseDir();
 	
+	LoadIniFile();
+
 
 	//s_appcntのセット。CheckResolution()よりも前
 	s_appcnt = 0;
@@ -2073,8 +2081,22 @@ INT WINAPI wWinMain(
 				wcscpy_s(strprogno, MAX_PATH, lplpszArgs[i]);
 				s_appcnt = _wtoi(strprogno);
 			}
+		}else if(wcscmp(lplpszArgs[i], L"-diffx") == 0) {
+			if ((i + 1) < nArgs) {
+				i++;
+				WCHAR strdiffx[MAX_PATH] = { 0L };
+				wcscpy_s(strdiffx, MAX_PATH, lplpszArgs[i]);
+				s_launchc4diffx = _wtoi(strdiffx);
+			}
+		}else if (wcscmp(lplpszArgs[i], L"-diffy") == 0) {
+			if ((i + 1) < nArgs) {
+				i++;
+				WCHAR strdiffy[MAX_PATH] = { 0L };
+				wcscpy_s(strdiffy, MAX_PATH, lplpszArgs[i]);
+				s_launchc4diffy = _wtoi(strdiffy);
+			}
 		}
-	}
+}
 
 	LocalFree(lplpszArgs);
 
@@ -2473,7 +2495,7 @@ void InitApp()
 
 
 
-	g_ClearColorIndex = 0;
+	//g_ClearColorIndex = 0;//inifileで読み込み
 	//g_ClearColor[BGCOL_MAX][4] = {
 	//	{0.0f, 0.0f, 0.0f, 1.0f},
 	//	{1.0f, 1.0f, 1.0f, 1.0f},
@@ -3373,8 +3395,16 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	WCHAR* lasten = 0;
 	WCHAR* last2en = 0;
 	lasten = wcsrchr(path, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
 	*lasten = 0L;
 	last2en = wcsrchr(path, TEXT('\\'));
+	if (!last2en) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
 	*last2en = 0L;
 	wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
 	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.dds", 0, 0), return S_FALSE);
@@ -3385,8 +3415,16 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	lasten = 0;
 	last2en = 0;
 	lasten = wcsrchr(mpath, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
 	*lasten = 0L;
 	last2en = wcsrchr(mpath, TEXT('\\'));
+	if (!last2en) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
 	*last2en = 0L;
 	wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
 
@@ -3856,6 +3894,8 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	OrgWindowListenMouse(false);
 	
+	SaveIniFile();
+
 	OnPluginClose();
 	if (s_plugin) {
 		delete[] s_plugin;
@@ -6558,6 +6598,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
   //          }
   //          break;
 		case IDC_BTSTART:
+			s_savelimitdegflag = g_limitdegflag;//StopBtでsaveに戻すのでsaveにセットだけしておく
 			StartBt(s_model, TRUE, 0, 1);
 			break;
 		case IDC_BTRECSTART:
@@ -6575,10 +6616,20 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			break;
 		case IDC_PHYSICS_IK:
 			s_physicskind = 0;
+			s_savelimitdegflag = g_limitdegflag;
+			g_limitdegflag = false;
+			if (s_LimitDegCheckBox) {
+				s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+			}
 			StartBt(s_model, TRUE, 1, 1);
 			break;
 		case IDC_PHYSICS_MV_IK:
 			s_physicskind = 1;
+			s_savelimitdegflag = g_limitdegflag;
+			g_limitdegflag = false;
+			if (s_LimitDegCheckBox) {
+				s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+			}
 			StartBt(s_model, TRUE, 1, 1);
 			break;
 		case IDC_PHYSICS_MV_SLIDER:
@@ -6597,6 +6648,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_STOP_BT:
 		case IDC_PHYSICS_IK_STOP:
 			StopBt();
+			//g_limitdegflag = s_savelimitdegflag;//StopBt内で呼ぶ
 			break;
 
         case IDC_LIGHT_SCALE:
@@ -14228,6 +14280,10 @@ int StopBt()
 
 
 	g_previewFlag = 0;
+	g_limitdegflag = s_savelimitdegflag;
+	if (s_LimitDegCheckBox) {
+		s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	}
 
 	return 0;
 }
@@ -18506,7 +18562,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//}
 
 
-		if (curmodel->GetBtCnt() <= 10) {
+		if (curmodel->GetBtCnt() <= g_prepcntonphysik) {
 			curmodel->SetKinematicFlag();
 			curmodel->SetMotionFrame(*pnextframe);
 
@@ -18628,7 +18684,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 		//ドラッグ中だけ記録
 		if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
 			//60 x 30 frames limit : 30 sec limit
-			if ((curmodel->GetBtCnt() > 10) && (s_reccnt < MAXPHYSIKRECCNT)) {
+			if ((curmodel->GetBtCnt() > g_prepcntonphysik) && (s_reccnt < MAXPHYSIKRECCNT)) {
 				s_rectime = (double)((int)s_reccnt);
 				s_model->PhysIKRec(s_rectime);
 				s_reccnt++;
@@ -19688,8 +19744,16 @@ int InitPluginMenu()
 	WCHAR* lasten = 0;
 	WCHAR* last2en = 0;
 	lasten = wcsrchr(plugindir, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
 	*lasten = 0L;
 	last2en = wcsrchr(plugindir, TEXT('\\'));
+	if (!last2en) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
 	*last2en = 0L;
 	wcscat_s(plugindir, MAX_PATH, L"\\BrushesFolder\\");
 
@@ -20204,24 +20268,27 @@ int CreateUtDialog()
 	s_dsutgui3.push_back(s_ui_slphysmv);
 	s_dsutguiid3.push_back(IDC_PHYSICS_MV_SLIDER);
 
-	iY += 10;
-	g_SampleUI.AddButton(IDC_PHYSICS_IK, L"PhysRotStart", startx, iY += addh, 100, ctrlh);
-	s_ui_physrotstart = g_SampleUI.GetControl(IDC_PHYSICS_IK);
-	_ASSERT(s_ui_physrotstart);
-	s_dsutgui3.push_back(s_ui_physrotstart);
-	s_dsutguiid3.push_back(IDC_PHYSICS_IK);
-	iY += 5;
-	g_SampleUI.AddButton(IDC_PHYSICS_MV_IK, L"PhysMvStart", startx, iY += addh, 100, ctrlh);
-	s_ui_physmvstart = g_SampleUI.GetControl(IDC_PHYSICS_MV_IK);
-	_ASSERT(s_ui_physmvstart);
-	s_dsutgui3.push_back(s_ui_physmvstart);
-	s_dsutguiid3.push_back(IDC_PHYSICS_MV_IK);
-	iY += 5;
-	g_SampleUI.AddButton(IDC_PHYSICS_IK_STOP, L"PhysIkStop", startx, iY += addh, 100, ctrlh);
-	s_ui_physikstop = g_SampleUI.GetControl(IDC_PHYSICS_IK_STOP);
-	_ASSERT(s_ui_physikstop);
-	s_dsutgui3.push_back(s_ui_physikstop);
-	s_dsutguiid3.push_back(IDC_PHYSICS_IK_STOP);
+
+	if (g_usephysik == 1) {//MotionBrush%d.iniファイルを編集してUsePhysIKに１を指定した時のみのオプション機能（乱れやすい。少しだけ動かして物理的なノイズを加える位の役には立つかもしれないのでオプションとして残す。）
+		iY += 10;
+		g_SampleUI.AddButton(IDC_PHYSICS_IK, L"PhysRotStart", startx, iY += addh, 100, ctrlh);
+		s_ui_physrotstart = g_SampleUI.GetControl(IDC_PHYSICS_IK);
+		_ASSERT(s_ui_physrotstart);
+		s_dsutgui3.push_back(s_ui_physrotstart);
+		s_dsutguiid3.push_back(IDC_PHYSICS_IK);
+		iY += 5;
+		g_SampleUI.AddButton(IDC_PHYSICS_MV_IK, L"PhysMvStart", startx, iY += addh, 100, ctrlh);
+		s_ui_physmvstart = g_SampleUI.GetControl(IDC_PHYSICS_MV_IK);
+		_ASSERT(s_ui_physmvstart);
+		s_dsutgui3.push_back(s_ui_physmvstart);
+		s_dsutguiid3.push_back(IDC_PHYSICS_MV_IK);
+		iY += 5;
+		g_SampleUI.AddButton(IDC_PHYSICS_IK_STOP, L"PhysIkStop", startx, iY += addh, 100, ctrlh);
+		s_ui_physikstop = g_SampleUI.GetControl(IDC_PHYSICS_IK_STOP);
+		_ASSERT(s_ui_physikstop);
+		s_dsutgui3.push_back(s_ui_physikstop);
+		s_dsutguiid3.push_back(IDC_PHYSICS_IK_STOP);
+	}
 
 
 	//iY += 5;
@@ -24731,17 +24798,40 @@ HWND CreateMainWindow()
 		::GetClientRect(desktopwnd, &desktoprect);
 		//if ((s_appcnt == 0) && (desktoprect.right >= 3840) && (desktoprect.bottom >= 2160)) {
 		if (s_appcnt == 0) {
-			if (g_4kresolution) {
-				SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
+			//if (g_4kresolution) {
+			//	SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
+			//}
+			//else {
+			//	if (s_launchbyc4 == 0) {
+			//		SetWindowPos(s_mainhwnd, HWND_TOP, 1100, 1000, 0, 0, SWP_NOSIZE);
+			//	}
+			//	else {
+			//		SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
+			//	}
+			//}
+			if (s_launchbyc4 == 0) {
+
+				//desktopの中心にメインウインドウの中心が来るように移動
+
+				int desktopcenterx, desktopcentery;
+				desktopcenterx = (desktoprect.left + desktoprect.right) / 2;
+				desktopcentery = (desktoprect.top + desktoprect.bottom) / 2;
+
+				int currentcenterx, currentcentery;
+				currentcenterx = s_totalwndwidth / 2;
+				currentcentery = s_totalwndheight / 2;
+
+				int diffx, diffy;
+				diffx = desktopcenterx - currentcenterx;
+				diffy = desktopcentery - currentcentery;
+
+				SetWindowPos(s_mainhwnd, HWND_TOP, diffx, diffy, 0, 0, SWP_NOSIZE);
+
 			}
 			else {
-				if (s_launchbyc4 == 0) {
-					SetWindowPos(s_mainhwnd, HWND_TOP, 1100, 1000, 0, 0, SWP_NOSIZE);
-				}
-				else {
-					SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
-				}
+				SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
 			}
+
 		}
 		else if (s_appcnt == 1) {
 			SetWindowPos(s_mainhwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE);
@@ -33934,3 +34024,61 @@ int PickRigBone(PICKINFO* ppickinfo)
 	return -1;
 
 }
+
+int LoadIniFile()
+{
+	WCHAR path[MAX_PATH] = { 0L };
+	wcscpy_s(path, MAX_PATH, g_basedir);
+	WCHAR* lasten = 0;
+	WCHAR* last2en = 0;
+	lasten = wcsrchr(path, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
+		return 1;
+	}
+	*lasten = 0L;
+	last2en = wcsrchr(path, TEXT('\\'));
+	if (!last2en) {
+		_ASSERT(0);
+		return 1;
+	}
+	*last2en = 0L;
+
+	WCHAR inifilepath[MAX_PATH] = { 0L };
+	swprintf_s(inifilepath, MAX_PATH, L"%s\\MotionBrush%d.ini", path, s_appcnt);
+
+	CIniFile inifile;
+	inifile.LoadIniFile(inifilepath);
+
+	return 0;
+}
+
+int SaveIniFile()
+{
+	WCHAR path[MAX_PATH] = { 0L };
+	wcscpy_s(path, MAX_PATH, g_basedir);
+	WCHAR* lasten = 0;
+	WCHAR* last2en = 0;
+	lasten = wcsrchr(path, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
+		return 1;
+	}
+	*lasten = 0L;
+	last2en = wcsrchr(path, TEXT('\\'));
+	if (!last2en) {
+		_ASSERT(0);
+		return 1;
+	}
+	*last2en = 0L;
+
+	WCHAR inifilepath[MAX_PATH] = { 0L };
+	swprintf_s(inifilepath, MAX_PATH, L"%s\\MotionBrush%d.ini", path, s_appcnt);
+
+	CIniFile inifile;
+	inifile.WriteIniFile(inifilepath);
+
+	return 0;
+}
+
+

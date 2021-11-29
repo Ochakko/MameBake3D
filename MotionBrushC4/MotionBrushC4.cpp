@@ -231,22 +231,89 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
    //   CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
+
    HWND hWnd = 0;
-   if (dlg.m_w2 && dlg.m_h2) {
-       hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-           0, 0, (1216 + 450) * 2 + 16, (950) * 2 + 62, nullptr, nullptr, hInstance, nullptr);
-   }
-   else if (dlg.m_w2) {
-       hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-           0, 0, (1216 + 450) * 2 + 16, (950) + 62, nullptr, nullptr, hInstance, nullptr);
-   }
-   else if (dlg.m_h2) {
-       hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-           0, 0, (1216 + 450) + 16, (950) * 2 + 62, nullptr, nullptr, hInstance, nullptr);
+   int diffx = 0;
+   int diffy = 0;
+
+
+   HWND desktopwnd;
+   desktopwnd = ::GetDesktopWindow();
+   if (desktopwnd) {
+       RECT desktoprect;
+       ::GetClientRect(desktopwnd, &desktoprect);
+
+       if (dlg.m_w2 && dlg.m_h2) {
+           if (((desktoprect.right - desktoprect.left) >= ((1216 + 450) * 2 + 16)) && ((desktoprect.bottom - desktoprect.top) >= (950 * 2 + 62))) {
+
+                int desktopcenterx, desktopcentery;
+                desktopcenterx = (desktoprect.left + desktoprect.right) / 2;
+                desktopcentery = (desktoprect.top + desktoprect.bottom) / 2;
+
+                int currentcenterx, currentcentery;
+                currentcenterx = ((1216 + 450) * 2 + 16) / 2;
+                currentcentery = (950 * 2 + 62) / 2;
+
+                diffx = desktopcenterx - currentcenterx;
+                diffy = desktopcentery - currentcentery;
+
+                hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+                    diffx, diffy, (1216 + 450) * 2 + 16, 950 * 2 + 62, nullptr, nullptr, hInstance, nullptr);
+           }
+           else {
+               return FALSE;
+           }
+       }
+       else if (dlg.m_w2) {
+           if (((desktoprect.right - desktoprect.left) >= ((1216 + 450) * 2 + 16)) && ((desktoprect.bottom - desktoprect.top) >= (950 + 62))) {
+
+               int desktopcenterx, desktopcentery;
+               desktopcenterx = (desktoprect.left + desktoprect.right) / 2;
+               desktopcentery = (desktoprect.top + desktoprect.bottom) / 2;
+
+               int currentcenterx, currentcentery;
+               currentcenterx = ((1216 + 450) * 2 + 16) / 2;
+               currentcentery = (950 + 62) / 2;
+
+               diffx = desktopcenterx - currentcenterx;
+               diffy = desktopcentery - currentcentery;
+
+               hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+                   diffx, diffy, (1216 + 450) * 2 + 16, 950 + 62, nullptr, nullptr, hInstance, nullptr);
+           }
+           else {
+               return FALSE;
+           }
+       }
+       else if (dlg.m_h2) {
+           if (((desktoprect.right - desktoprect.left) >= ((1216 + 450) + 16)) && ((desktoprect.bottom - desktoprect.top) >= ((950) + 62))) {
+
+               int desktopcenterx, desktopcentery;
+               desktopcenterx = (desktoprect.left + desktoprect.right) / 2;
+               desktopcentery = (desktoprect.top + desktoprect.bottom) / 2;
+
+               int currentcenterx, currentcentery;
+               currentcenterx = ((1216 + 450) + 16) / 2;
+               currentcentery = (950 * 2 + 62) / 2;
+
+               diffx = desktopcenterx - currentcenterx;
+               diffy = desktopcentery - currentcentery;
+
+               hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+                   diffx, diffy, (1216 + 450) + 16, 950 * 2 + 62, nullptr, nullptr, hInstance, nullptr);
+           }
+           else {
+               return FALSE;
+           }
+       }
+       else {
+           return FALSE;
+       }
    }
    else {
        return FALSE;
    }
+
    //window = CreateWindowEx(
    //    WS_EX_LEFT, WINDOWS_CLASS_NAME, strwindowname,
    //    WS_OVERLAPPEDWINDOW | WS_VISIBLE,
@@ -272,7 +339,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //PROCESS_INFORMATION pi1;
    //ZeroMemory(&pi1, sizeof(pi1));
    WCHAR strcmdline1[MAX_PATH] = { 0L };
-   swprintf_s(strcmdline1, MAX_PATH, L"\"%s\" -progno 1", path);
+   swprintf_s(strcmdline1, MAX_PATH, L"\"%s\" -progno 1 -diffx %d -diffy %d", path, diffx, diffy);
    //si1.dwX = 0;
    //si1.dwY = 0;
    // Start the child process. 
@@ -305,7 +372,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        //si2.cb = sizeof(si2);
        //ZeroMemory(&pi2, sizeof(pi2));
        WCHAR strcmdline2[MAX_PATH] = { 0L };
-       swprintf_s(strcmdline2, MAX_PATH, L"\"%s\" -progno 2", path);
+       swprintf_s(strcmdline2, MAX_PATH, L"\"%s\" -progno 2 -diffx %d -diffy %d", path, diffx, diffy);
        //si2.dwX = (1216 + 450);
        //si2.dwY = 0;
        // Start the child process. 
@@ -339,7 +406,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        //si3.cb = sizeof(si3);
        //ZeroMemory(&pi3, sizeof(pi3));
        WCHAR strcmdline3[MAX_PATH] = { 0L };
-       swprintf_s(strcmdline3, MAX_PATH, L"\"%s\" -progno 3", path);
+       swprintf_s(strcmdline3, MAX_PATH, L"\"%s\" -progno 3 -diffx %d -diffy %d", path, diffx, diffy);
        //si3.dwX = 0;
        //si3.dwY = 950;
        // Start the child process. 
@@ -373,7 +440,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        //si4.cb = sizeof(si4);
        //ZeroMemory(&pi4, sizeof(pi4));
        WCHAR strcmdline4[MAX_PATH] = { 0L };
-       swprintf_s(strcmdline4, MAX_PATH, L"\"%s\" -progno 4", path);
+       swprintf_s(strcmdline4, MAX_PATH, L"\"%s\" -progno 4 -diffx %d -diffy %d", path, diffx, diffy);
        //si4.dwX = 0;
        //si4.dwY = 0;
        // Start the child process. 
