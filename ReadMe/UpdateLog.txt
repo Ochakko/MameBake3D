@@ -1,3 +1,15 @@
+2021/11/29_2
+	ver1.0.0.22へ向けて
+
+	Documents/TroubleShootingにドキュメント追加
+	WhyYZEulValueIsChangeWhenDragX.docx追加
+	(X軸をドラッグした時になぜY軸とZ軸のオイラー角が変化するのかについて)
+
+	少ししかテストしていないdevelop版
+
+	(最新exeは付いていません)
+
+
 2021/11/29_1
 	ver1.0.0.22へ向けて
 
