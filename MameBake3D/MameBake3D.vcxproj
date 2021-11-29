@@ -254,6 +254,7 @@
     <ClCompile Include="PluginElem.cpp" />
     <ClCompile Include="RegistDlg.cpp" />
     <ClCompile Include="RMenuMain.cpp" />
+    <ClCompile Include="SelectLSDlg.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
@@ -331,6 +332,7 @@
     <ClInclude Include="RegistDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RMenuMain.h" />
+    <ClInclude Include="SelectLSDlg.h" />
     <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="useatl.h" />

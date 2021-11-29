@@ -50,6 +50,23 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 */
 
 
+/*
+* 
+* 2021/11/29
+3DウインドウのPseudoLocalのチェックボックスは画面に出なくなりました
+PseudoLocalIKは常にオンになります
+
+3Dウインドウに新たにWallScrapingIKチェックボックスが加わりました
+壁すりIKのオンとオフを指定するためのものです
+壁すりIKとは
+制限角度を越えてIK操作を行おうとした場合に
+制限に達した成分以外は変化させるIKのことです
+壁すりIKをオンにすることで制限角度下でも動かしやすいIK操作が可能です
+言い方を変えると
+壁すりIKをオフにするとXYZどれかの軸が制限値に達した場合にIKで動かすことが難しくなります
+
+*/
+
 
 #include "useatl.h"
 
@@ -138,6 +155,8 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 
 #include "DSUpdateUnderTracking.h"
 #include "PluginElem.h"
+
+#include "SelectLSDlg.h"
 
 //#include <uxtheme.h>
 //#pragma ( lib, "UxTheme.lib" )
@@ -1220,7 +1239,8 @@ CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_RigidMarkCheckBox = 0;
-CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
+//CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
+CDXUTCheckBox* s_WallScrapingIKCheckBox = 0;
 CDXUTCheckBox* s_LimitDegCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
@@ -1261,7 +1281,8 @@ static CDXUTControl* s_ui_ifmirrorvdiv2 = 0;
 //Left 2nd
 static CDXUTControl* s_ui_texthreadnum = 0;
 static CDXUTControl* s_ui_slthreadnum = 0;
-static CDXUTControl* s_ui_pseudolocal = 0;
+//static CDXUTControl* s_ui_pseudolocal = 0;
+static CDXUTControl* s_ui_wallscrapingik = 0;
 static CDXUTControl* s_ui_limiteul = 0;
 static CDXUTControl* s_ui_texspeed = 0;
 static CDXUTControl* s_ui_speed = 0;
@@ -1471,6 +1492,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_STATIC_REF				75
 #define IDC_SL_REFMULT				76
 
+#define IDC_WALLSCRAPINGIK			77
+
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1587,7 +1610,7 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 
 
 void InitApp();
-void CheckResolution();
+int CheckResolution();
 
 //HRESULT LoadMesh( ID3D11Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
 void RenderText(double fTime );
@@ -2060,7 +2083,10 @@ INT WINAPI wWinMain(
 
 
 	//2K TV or 4K TV. Create*Window()よりも前
-	CheckResolution();
+	int chkresult = CheckResolution();
+	if (chkresult != 0) {//大小選択ダイアログでキャンセルボタンを押した場合はアプリ終了
+		return 0;
+	}
 
 
 
@@ -2313,7 +2339,7 @@ INT WINAPI wWinMain(
 //--------------------------------------------------------------------------------------
 // Initialize the app 
 //--------------------------------------------------------------------------------------
-void CheckResolution()
+int CheckResolution()
 {
 	g_4kresolution = false;
 
@@ -2331,45 +2357,56 @@ void CheckResolution()
 			::GetClientRect(desktopwnd, &desktoprect);
 			if ((desktoprect.right >= (s_totalwndwidth * 2)) && (desktoprect.bottom >= ((s_totalwndheight - MAINMENUAIMBARH) * 2))) {
 
-				g_4kresolution = true;//!!!!!!!!!!!!!!!!
+				CSelectLSDlg dlg;
+				int dlgret = (int)dlg.DoModal();
+				if (dlgret != IDOK) {
+					return 1;//キャンセルボタンはアプリ終了
+				}
+				BOOL selectL = dlg.GetIsLarge();//4K可能の場合には大小を選択可能
+				if (selectL == TRUE) {
+					g_4kresolution = true;//!!!!!!!!!!!!!!!!
 
 
-				s_totalwndwidth = (1216 + 450) * 2;
-				s_totalwndheight = (950 - MAINMENUAIMBARH) * 2;
-				s_2ndposy = 600 * 2;
+					s_totalwndwidth = (1216 + 450) * 2;
+					s_totalwndheight = (950 - MAINMENUAIMBARH) * 2;
+					s_2ndposy = 600 * 2;
 
-				s_toolwidth = 230 * 2 - 60;
-				//s_toolheight = 290 * 2;
-				//s_toolheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
-				s_toolheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
+					s_toolwidth = 230 * 2 - 60;
+					//s_toolheight = 290 * 2;
+					//s_toolheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
+					s_toolheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
-				s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60;
-				s_mainheight = (520 * 2 - MAINMENUAIMBARH);
-				
-				//s_bufwidth = (800 * 2);
-				s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60;
-				s_bufheight = (520 * 2 - MAINMENUAIMBARH);
+					s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60;
+					s_mainheight = (520 * 2 - MAINMENUAIMBARH);
+
+					//s_bufwidth = (800 * 2);
+					s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60;
+					s_bufheight = (520 * 2 - MAINMENUAIMBARH);
 
 
-				//s_timelinewidth = 400 * 2;
-				s_timelinewidth = s_toolwidth;
-				s_timelineheight = s_2ndposy - MAINMENUAIMBARH;
+					//s_timelinewidth = 400 * 2;
+					s_timelinewidth = s_toolwidth;
+					s_timelineheight = s_2ndposy - MAINMENUAIMBARH;
 
-				//s_longtimelinewidth = 970 * 2;
-				s_longtimelinewidth = s_mainwidth;
-				//s_longtimelineheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
-				s_longtimelineheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
+					//s_longtimelinewidth = 970 * 2;
+					s_longtimelinewidth = s_mainwidth;
+					//s_longtimelineheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
+					s_longtimelineheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
-				s_infowinwidth = s_mainwidth;
-				s_infowinheight = (s_2ndposy - s_mainheight - MAINMENUAIMBARH);
+					s_infowinwidth = s_mainwidth;
+					s_infowinheight = (s_2ndposy - s_mainheight - MAINMENUAIMBARH);
 
-				//s_sidemenuwidth = 450 * 2 + 16;
-				s_sidemenuwidth = 450 + 16 + 64;
-				s_sidemenuheight = MAINMENUAIMBARH;
+					//s_sidemenuwidth = 450 * 2 + 16;
+					s_sidemenuwidth = 450 + 16 + 64;
+					s_sidemenuheight = MAINMENUAIMBARH;
 
-				s_sidewidth = s_sidemenuwidth;
-				//s_sideheight = (s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28) * 2 + MAINMENUAIMBARH;
-				s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2;
+					s_sidewidth = s_sidemenuwidth;
+					//s_sideheight = (s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28) * 2 + MAINMENUAIMBARH;
+					s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2;
+				}
+				else {
+					g_4kresolution = false;
+				}			
 			}
 		}
 	}
@@ -2410,6 +2447,8 @@ void CheckResolution()
 
 	}
 
+
+	return 0;
 }
 
 
@@ -2664,7 +2703,8 @@ void InitApp()
 	s_AbsIKCheckBox = 0;
 	s_BoneMarkCheckBox = 0;
 	s_RigidMarkCheckBox = 0;
-	s_PseudoLocalCheckBox = 0;
+	//s_PseudoLocalCheckBox = 0;
+	s_WallScrapingIKCheckBox = 0;
 	s_LimitDegCheckBox = 0;
 	s_BrushMirrorUCheckBox = 0;
 	s_BrushMirrorVCheckBox = 0;
@@ -2701,7 +2741,8 @@ void InitApp()
 	//Left 2nd
 	s_ui_texthreadnum = 0;
 	s_ui_slthreadnum = 0;
-	s_ui_pseudolocal = 0;
+	//s_ui_pseudolocal = 0;
+	s_ui_wallscrapingik = 0;
 	s_ui_limiteul = 0;
 	s_ui_texspeed = 0;
 	s_ui_speed = 0;
@@ -9712,9 +9753,15 @@ int UpdateEditedEuler()
 				unsigned int scaleindex;
 				for (scaleindex = 0; scaleindex < curmi->frameleng; scaleindex++) {
 					double curscalevalue;
-					curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
-					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);
+					if ((scaleindex >= (int)g_motionbrush_startframe) && (scaleindex <= (int)g_motionbrush_endframe) && (scaleindex < (int)g_motionbrush_frameleng)) {
+						curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
+					}
+					else {
+						curscalevalue = 0.0 * (scalemax - scalemin) + scalemin;
+					}
+					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);//setkey
 				}
+
 			}
 
 			//_ASSERT(0);
@@ -9883,12 +9930,16 @@ void refreshEulerGraph()
 						}
 
 						
-						for (curtime = 0; curtime < frameleng; curtime++) {
-							int scaleindex;
-							scaleindex = (int)curtime;
+						unsigned int scaleindex;
+						for (scaleindex = 0; scaleindex < frameleng; scaleindex++) {
 							double curscalevalue;
-							curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
-							s_owpEulerGraph->newKey(_T("S"), (double)curtime, curscalevalue);
+							if ((scaleindex >= (int)g_motionbrush_startframe) && (scaleindex <= (int)g_motionbrush_endframe) && (scaleindex < (int)g_motionbrush_frameleng)) {
+								curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
+							}
+							else {
+								curscalevalue = 0.0 * (scalemax - scalemin) + scalemin;
+							}
+							s_owpEulerGraph->newKey(_T("S"), (double)scaleindex, curscalevalue);//newkey
 						}
 					}
 				}
@@ -15654,7 +15705,8 @@ int SetSpGUISWParams()
 
 
 
-	float spgwidth = 140.0f;
+	//float spgwidth = 140.0f;
+	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_spguisw[SPGUISW_SPRITEFK].dispcenter.x = 120;
@@ -16137,8 +16189,10 @@ int PickSpGUISW(POINT srcpos)
 		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 			int spgcnt;
 			for (spgcnt = 0; spgcnt < SPGUISWNUM; spgcnt++) {
-				int startx = s_spguisw[spgcnt].dispcenter.x - 70;
-				int endx = startx + 140 + 6;
+				//int startx = s_spguisw[spgcnt].dispcenter.x - 70;
+				//int endx = startx + 140 + 6;
+				int startx = s_spguisw[spgcnt].dispcenter.x - 62;
+				int endx = startx + 124 + 6;
 
 				if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 					switch (spgcnt) {
@@ -17655,7 +17709,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ChangeCurrentBone();
 			//EndDialog(hDlgWnd, IDOK);
 
-			UpdateEditedEuler();
+			//UpdateEditedEuler();//selectした範囲のみ
+			refreshEulerGraph();//モーション全体
 
 
 			s_underanglelimithscroll = 0;
@@ -18105,8 +18160,11 @@ int OnFrameUtCheckBox()
 	if (s_RigidMarkCheckBox) {
 		g_rigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
 	}
-	if (s_PseudoLocalCheckBox) {
-		g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	//if (s_PseudoLocalCheckBox) {
+	//	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
+	//}
+	if (s_WallScrapingIKCheckBox) {
+		g_wallscrapingikflag = (int)s_WallScrapingIKCheckBox->GetChecked();
 	}
 	if (s_LimitDegCheckBox) {
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
@@ -20024,11 +20082,19 @@ int CreateUtDialog()
 	s_dsutgui1.push_back(s_ui_speed);//!!!!!!!!!!!!!!!! dsutgui1
 	s_dsutguiid1.push_back(IDC_SPEED);
 
-	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-	s_ui_pseudolocal = g_SampleUI.GetControl(IDC_PSEUDOLOCAL);
-	_ASSERT(s_ui_pseudolocal);
-	s_dsutgui1.push_back(s_ui_pseudolocal);
-	s_dsutguiid1.push_back(IDC_PSEUDOLOCAL);
+	//g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
+	//s_ui_pseudolocal = g_SampleUI.GetControl(IDC_PSEUDOLOCAL);
+	//_ASSERT(s_ui_pseudolocal);
+	//s_dsutgui1.push_back(s_ui_pseudolocal);
+	//s_dsutguiid1.push_back(IDC_PSEUDOLOCAL);
+
+	g_SampleUI.AddCheckBox(IDC_WALLSCRAPINGIK, L"WallScrapingIK", startx, iY += addh, checkboxxlen, 16, (g_wallscrapingikflag == 1), 0U, false, &s_WallScrapingIKCheckBox);
+	s_ui_wallscrapingik = g_SampleUI.GetControl(IDC_WALLSCRAPINGIK);
+	_ASSERT(s_ui_wallscrapingik);
+	s_dsutgui1.push_back(s_ui_wallscrapingik);
+	s_dsutguiid1.push_back(IDC_WALLSCRAPINGIK);
+
+
 	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
 	s_ui_limiteul = g_SampleUI.GetControl(IDC_LIMITDEG);
 	_ASSERT(s_ui_limiteul);
@@ -24623,7 +24689,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.21 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.22 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -25492,8 +25558,11 @@ void GUISetVisible_Left2nd()
 
 	
 	
-	if (s_ui_pseudolocal) {
-		s_ui_pseudolocal->SetVisible(nextvisible);
+	//if (s_ui_pseudolocal) {
+	//	s_ui_pseudolocal->SetVisible(nextvisible);
+	//}
+	if (s_ui_wallscrapingik) {
+		s_ui_wallscrapingik->SetVisible(nextvisible);
 	}
 	if (s_ui_limiteul) {
 		s_ui_limiteul->SetVisible(nextvisible);
@@ -32132,7 +32201,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.21 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.22 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

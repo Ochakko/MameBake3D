@@ -26,6 +26,27 @@ LRESULT CLocateMBDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 	SetWnd();
 	ParamsToDlg();
 
+#define MAINMENUAIMBARH		32
+
+	int totalwndwidth = (1216 + 450) * 2;
+	int totalwndheight = (950 - MAINMENUAIMBARH) * 2;
+
+	int dlgposx = 0;
+	int dlgposy = 0;
+
+	HWND desktopwnd;
+	desktopwnd = ::GetDesktopWindow();
+	if (desktopwnd) {
+		RECT desktoprect;
+		::GetClientRect(desktopwnd, &desktoprect);
+		//if ((desktoprect.right >= (totalwndwidth * 2)) && (desktoprect.bottom >= ((totalwndheight - MAINMENUAIMBARH) * 2))) {
+		//}
+
+		dlgposx = (desktoprect.left + desktoprect.right) / 2;
+		dlgposy = (desktoprect.top + desktoprect.bottom) / 2;
+	}
+	::MoveWindow(m_dlg_wnd, dlgposx, dlgposy, 157 * 2, 96 * 2, TRUE);
+
 	return 1;  // システムにフォーカスを設定させます
 }
 

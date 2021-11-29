@@ -5022,15 +5022,19 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 				}
 			}
 			else {
-				//############################################
-				//　遊び付きリミテッドIK
-				//############################################
-
-				ChaVector3 limiteul;
-				limiteul = LimitEul(neweul);
-				if (IsSameEul(oldeul, neweul) == 0) {
-					int inittraflag0 = 0;
-					SetWorldMatFromEul(inittraflag0, setchildflag, limiteul, srcmotid, srcframe);//setchildflag有り!!!!
+				if (g_wallscrapingikflag == 1) {
+					//############################################
+					//　遊び付きリミテッドIK
+					//############################################
+					ChaVector3 limiteul;
+					limiteul = LimitEul(neweul);
+					if (IsSameEul(oldeul, neweul) == 0) {
+						int inittraflag0 = 0;
+						SetWorldMatFromEul(inittraflag0, setchildflag, limiteul, srcmotid, srcframe);//setchildflag有り!!!!
+					}
+					else {
+						curmp->SetBefWorldMat(curmp->GetWorldMat());
+					}
 				}
 				else {
 					curmp->SetBefWorldMat(curmp->GetWorldMat());
