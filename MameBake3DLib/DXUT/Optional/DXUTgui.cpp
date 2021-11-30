@@ -3513,7 +3513,8 @@ void CDXUTRadioButton::SetCheckedInternal( bool bChecked, bool bClearGroup, bool
 CDXUTComboBox::CDXUTComboBox( _In_opt_ CDXUTDialog* pDialog ) noexcept :
     m_iSelected(-1),
     m_iFocused(-1),
-    m_nDropHeight(100),
+    //m_nDropHeight(100),
+    m_nDropHeight(200),
     m_ScrollBar( pDialog ),
     m_nSBWidth(16),
     m_bOpened(false),
