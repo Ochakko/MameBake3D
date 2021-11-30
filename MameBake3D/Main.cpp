@@ -3470,35 +3470,35 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	//SpriteSwitch ON
 	s_spguisw[SPGUISW_SPRITEFK].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteON);
-	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateSpriteFK140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_SpriteIK140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT].spriteON);
-	CallF(s_spguisw[SPGUISW_LEFT].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_LEFT].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BasicSettings1140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT2ND].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT2ND].spriteON);
-	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft2nd140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BasicSettings2140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON);
-	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateBulletPhysics140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteON);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlatePhysicsIK140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Option1140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
 	s_spguisw[SPGUISW_SPRITEFK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateSpriteFK140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_SpriteIK140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT].spriteOFF);
-	CallF(s_spguisw[SPGUISW_LEFT].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_LEFT].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BasicSettings1140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_LEFT2ND].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_LEFT2ND].spriteOFF);
-	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLeft2nd140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BasicSettings2140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF);
-	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateBulletPhysics140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlatePhysicsIK140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Option1140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
