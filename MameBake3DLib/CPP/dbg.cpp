@@ -42,7 +42,7 @@ void OutputToInfoWnd(WCHAR* lpFormat, ...)
 			swprintf_s(strlineno, L"L%d", g_infownd->GetDataIndex() + 1);
 		}
 
-		g_infownd->OutputInfo(L"%s : %s", strlineno, outchar);
+		g_infownd->OutputInfo(L"%s: %s", strlineno, outchar);
 		g_infownd->UpdateWindow();
 
 	}

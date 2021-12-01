@@ -89,8 +89,8 @@ int CMySprite::InitParams()
 
 	m_pos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	m_size = ChaVector2( 1.0f, 1.0f );
-	//m_col = ChaVector4( 1.0f, 1.0f, 1.0f, 1.0f );
-	m_col = ChaVector4(0.5f, 0.5f, 0.5f, 1.0f);
+	m_col = ChaVector4( 1.0f, 1.0f, 1.0f, 1.0f );
+	//m_col = ChaVector4(0.5f, 0.5f, 0.5f, 1.0f);
 	m_spriteoffset = ChaVector3(0.0f, 0.0f, 0.0f);
 	m_spritescale = ChaVector2(1.0f, 1.0f);
 

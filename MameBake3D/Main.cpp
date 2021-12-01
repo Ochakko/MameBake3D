@@ -1184,6 +1184,8 @@ static SPGUISW s_spsel3d;
 static SPELEM s_spmousehere;
 static SPGUISW s_spikmodesw[3];
 static SPGUISW s_sprefpos;
+static SPELEM s_mousecenteron;
+
 
 typedef struct tag_modelpanel
 {
@@ -1826,6 +1828,7 @@ static int SetSpSel3DParams();
 static int SetSpAimBarParams();
 static int SetSpMenuAimBarParams();
 static int SetSpAxisParams();
+static int SetSpMouseCenterParams();
 static int PickSpAxis( POINT srcpos );
 static int SetSpGUISWParams();
 static int PickSpGUISW(POINT srcpos);
@@ -2419,12 +2422,12 @@ int CheckResolution()
 					s_infowinheight = (s_2ndposy - s_mainheight - MAINMENUAIMBARH);
 
 					//s_sidemenuwidth = 450 * 2 + 16;
-					s_sidemenuwidth = 450 + 16 + 64;
+					s_sidemenuwidth = 450 + 16 + 64 - 4;
 					s_sidemenuheight = MAINMENUAIMBARH;
 
 					s_sidewidth = s_sidemenuwidth;
 					//s_sideheight = (s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28) * 2 + MAINMENUAIMBARH;
-					s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2;
+					s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2 - 4;
 				}
 				else {
 					g_4kresolution = false;
@@ -2442,7 +2445,7 @@ int CheckResolution()
 
 		s_toolwidth = 230;
 		//s_toolheight = 290;
-		s_toolheight = s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18;
+		s_toolheight = s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 28;
 
 		s_mainwidth = 800 - 64;
 		s_mainheight = (520 - MAINMENUAIMBARH);
@@ -2455,13 +2458,13 @@ int CheckResolution()
 		s_timelineheight = s_2ndposy - MAINMENUAIMBARH;
 
 		s_longtimelinewidth = 970 - 64;
-		s_longtimelineheight = s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18;
+		s_longtimelineheight = s_toolheight;
 
 
 		s_infowinwidth = s_mainwidth;
 		s_infowinheight = (s_2ndposy - s_mainheight - MAINMENUAIMBARH);
 
-		s_sidemenuwidth = 450 + 64;
+		s_sidemenuwidth = 450 + 64 - 4;
 		s_sidemenuheight = MAINMENUAIMBARH;
 
 		s_sidewidth = s_sidemenuwidth;
@@ -2910,6 +2913,7 @@ void InitApp()
 	//ZeroMemory(&s_spbt, sizeof(SPELEM));
 	ZeroMemory(&s_spmousehere, sizeof(SPELEM));
 	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
+	ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
 
 	{
 		ZeroMemory(&s_spaimbar, sizeof(SPGUISW) * SPAIMBARNUM);
@@ -3627,6 +3631,9 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spret2prev.sprite);
 	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return S_FALSE);
 
+	s_mousecenteron.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_mousecenteron.sprite);
+	CallF(s_mousecenteron.sprite->Create(pd3dImmediateContext, mpath, L"MouseCenterButtonON.png", 0, 0), return S_FALSE);
 
 	///////
 	//s_pdev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -3821,6 +3828,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpRigParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
+	SetSpMouseCenterParams();
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
 	//g_HUD.SetSize(170, 170);
@@ -4792,6 +4800,13 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete curspret;
 	}
 	s_spret2prev.sprite = 0;
+
+
+	CMySprite* curspm = s_mousecenteron.sprite;
+	if (curspm) {
+		delete curspm;
+	}
+	s_mousecenteron.sprite = 0;
 
 
 	if (g_Camera) {
@@ -15348,7 +15363,8 @@ int SetSpRigidSWParams()
 		return 0;
 	}
 
-	float spgwidth = 140.0f;
+	//float spgwidth = 140.0f;
+	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x = 120;
@@ -15408,7 +15424,8 @@ int SetSpRetargetSWParams()
 		return 0;
 	}
 
-	float spgwidth = 140.0f;
+	//float spgwidth = 140.0f;
+	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x = 120;
@@ -15532,7 +15549,8 @@ int SetSpAimBarParams()
 		return 0;
 	}
 
-	float spgwidth = 140.0f;
+	//float spgwidth = 140.0f;
+	float spgwidth = 124.0f;
 	float spgheight = 6.0f;
 	int spgshift = 6;
 	s_spaimbar[SPAIMBAR_1].dispcenter.x = 120;
@@ -15589,12 +15607,67 @@ int SetSpAimBarParams()
 
 }
 
+int SetSpMouseCenterParams()
+{
+	if (!s_mousecenteron.sprite) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	//float spgwidth = 91.0f;
+	//float spgheight = 145.0f;
+	//float spgwidth = 50;
+	//float spgheight = 67;
+	float spgwidth = 50.0f * 0.6f;
+	float spgheight = 67.0f * 0.6f;
+	int spgshift = 6;
+
+	_ASSERT(s_3dwnd);
+	RECT clientrect;
+	::GetClientRect(s_3dwnd, &clientrect);
+
+	//s_spsel3d.dispcenter.x = (LONG)(clientrect.right - spgwidth / 2 - 20);
+	//s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
+	s_mousecenteron.dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 6;
+	s_mousecenteron.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_mousecenteron.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_mousecenteron.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+
+	if (s_mousecenteron.sprite) {
+		CallF(s_mousecenteron.sprite->SetPos(disppos), return 1);
+		CallF(s_mousecenteron.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	
+	return 0;
+
+}
+
 int SetSpSel3DParams()
 {
 	if (!(s_spsel3d.spriteON) || !(s_spsel3d.spriteOFF)) {
 		_ASSERT(0);
 		return 0;
 	}
+
+
+/*
+	float spawidth = 50.0f;
+	int spashift = 6;
+	//s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
+	//s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
+	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 3;
+	//s_spcam[0].dispcenter.y = 16 + 10 + (int(spawidth * 1.5f));
+	s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
+	s_spcam[0].dispcenter.y = 25 + 10;
+*/
+
 
 	//float spgwidth = 91.0f;
 	//float spgheight = 145.0f;
@@ -15606,7 +15679,9 @@ int SetSpSel3DParams()
 	RECT clientrect;
 	::GetClientRect(s_3dwnd, &clientrect);
 
-	s_spsel3d.dispcenter.x = (LONG)(clientrect.right - spgwidth / 2 - 20);
+	//s_spsel3d.dispcenter.x = (LONG)(clientrect.right - spgwidth / 2 - 20);
+	//s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
+	s_spsel3d.dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 7;
 	s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
 
 	ChaVector3 disppos;
@@ -16055,7 +16130,7 @@ int PickSpRigidSW(POINT srcpos)
 			int spgcnt;
 			for (spgcnt = 0; spgcnt < 4; spgcnt++) {
 				int startx = s_sprigidsw[spgcnt].dispcenter.x - 70;
-				int endx = startx + 140 + 6;
+				int endx = startx + 124 + 6;
 
 				if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 					switch (spgcnt) {
@@ -16122,7 +16197,7 @@ int PickSpRetargetSW(POINT srcpos)
 			for (sprcnt = 0; sprcnt < SPRETARGETSWNUM; sprcnt++) {
 
 				int startx = s_spretargetsw[sprcnt].dispcenter.x - 70;
-				int endx = startx + 140 + 6;
+				int endx = startx + 124 + 6;
 
 				if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 					kind = sprcnt + 1;
@@ -22432,6 +22507,9 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		_ASSERT(0);
 	}
 
+	if ((s_mbuttoncnt == 0) && (s_mousecenteron.sprite)) {
+		s_mousecenteron.sprite->OnRender(pd3dImmediateContext);
+	}
 
 
 	//IK Mode
@@ -25010,8 +25088,8 @@ CInfoWindow* CreateInfoWnd()
 			//OutputToInfoWnd(L"InfoWindow initialized 1");
 			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 6,000 lines.");
 			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
-			OutputToInfoWnd(L"If the most newest line is shown at lowest position, auto scroll works.Save to info_(date).txt on exit application.");
-			OutputToInfoWnd(L"上：古,下：新。6,000行。ホイールでスクロール。一番新しいものを表示している時auto scroll。終了時にinfo_日時.txtにセーブ。");
+			OutputToInfoWnd(L"If the most newest line is shown at lowest position, AutoScroll works.Save to info_(date).txt on exit.");
+			OutputToInfoWnd(L"上：古,下：新。6,000行。ホイールでスクロール。一番新しいものを表示している時AutoScroll。終了時にinfo_日時.txtにセーブ。");
 		}
 
 	}
