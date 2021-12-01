@@ -2041,6 +2041,77 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 		g_wmatDirectSetFlag = true;
 		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
+
+
+
+		////ChaVector3 cureul;
+		////cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
+		//ChaMatrix parentmat;
+		//if (GetParent()) {
+		//	CMotionPoint* parentmp;
+		//	parentmp = GetParent()->GetMotionPoint(srcmotid, srcframe);
+		//	if (parentmp) {
+		//		parentmat = parentmp->GetWorldMat();
+		//	}
+		//	else {
+		//		ChaMatrixIdentity(&parentmat);
+		//	}
+		//}
+		//else {
+		//	ChaMatrixIdentity(&parentmat);
+		//}
+
+		//ChaMatrix curlocalmat;
+		//curlocalmat = curmp->GetWorldMat() * ChaMatrixInv(parentmat);
+		//ChaMatrix cursmat, currmat, curtmat;
+		//GetSRTMatrix2(curlocalmat, &cursmat, &currmat, &curtmat);
+
+		//ChaVector3 cursvec, curtvec;
+		//GetSRTMatrix(curlocalmat, &cursvec, &currmat, &curtvec);
+
+		//ChaVector3 curtraanim;
+		//curtraanim = CalcLocalTraAnim(srcmotid, srcframe);
+		//ChaMatrix curtanimmat;
+		//ChaMatrixIdentity(&curtanimmat);
+		//ChaMatrixTranslation(&curtanimmat, curtraanim.x, curtraanim.y, curtraanim.z);
+
+		////CQuaternion rotq;
+		////rotq.SetRotationXYZ(0, cureul);
+		////ChaVector3 curtra;
+		////curtra = CalcLocalTraAnim(srcmotid, srcframe);
+		////ChaMatrix curtramat;
+		////ChaMatrixIdentity(&curtramat);
+		////ChaMatrixTranslation(&curtramat, curtra.x, curtra.y, curtra.z);
+
+
+		//ChaVector3 curpos = GetJointFPos();
+		//ChaMatrix beftramat;
+		//ChaMatrixIdentity(&beftramat);
+		//ChaMatrixTranslation(&beftramat, -curpos.x, -curpos.y, -curpos.z);
+		//ChaMatrix afttramat;
+		//ChaMatrixIdentity(&afttramat);
+		//ChaMatrixTranslation(&afttramat, curpos.x, curpos.y, curpos.z);
+		//ChaMatrix scalemat;
+		//ChaMatrixIdentity(&scalemat);
+		//ChaMatrixScaling(&scalemat, srcscale.x, srcscale.y, srcscale.z);
+		////ChaMatrix tramat;
+		////tramat = beftramat * scalemat * afttramat;
+		//////ChaMatrix tmpmat = curmp->GetWorldMat() * tramat;
+		////ChaMatrix tmpmat = tramat * curmp->GetWorldMat();
+		////g_wmatDirectSetFlag = true;
+		////SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+		////g_wmatDirectSetFlag = false;
+
+		//ChaMatrix newmat;
+		//newmat = beftramat * scalemat * cursmat * currmat * afttramat * curtanimmat * parentmat;
+
+		////g_wmatDirectSetFlag = true;
+		////SetWorldMat(infooutflag, 0, srcmotid, srcframe, newmat);
+		////g_wmatDirectSetFlag = false;
+
+		//curmp->SetWorldMat(newmat);
+
+
 	}
 
 	curmp->SetAbsMat(curmp->GetWorldMat());
@@ -2179,6 +2250,8 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 				//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
 				ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &limitedworldmat);
 				ChaMatrix befrot, aftrot;
+				ChaMatrixIdentity(&befrot);
+				ChaMatrixIdentity(&aftrot);
 				ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 				ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 				ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;

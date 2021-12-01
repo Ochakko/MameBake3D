@@ -10172,23 +10172,27 @@ int AddBoneScale2(ChaVector3 diffvec)
 
 	float scaleval;
 
+	float upval = 1.1f;
+	float downval = 0.9f;
+
+
 	if (fabs(diffvec.x) >= fabs(diffvec.y)) {
 		if (fabs(diffvec.x) >= fabs(diffvec.z)) {
 			//xÅ‘å
 			if (diffvec.x >= 0.0) {
-				scaleval = 1.1f;
+				scaleval = upval;
 			}
 			else {
-				scaleval = 0.9f;
+				scaleval = downval;
 			}
 		}
 		else {
 			//zÅ‘å
 			if (diffvec.z >= 0.0) {
-				scaleval = 1.1f;
+				scaleval = upval;
 			}
 			else {
-				scaleval = 0.9f;
+				scaleval = downval;
 			}
 		}
 	}
@@ -10196,19 +10200,19 @@ int AddBoneScale2(ChaVector3 diffvec)
 		if (fabs(diffvec.y) >= fabs(diffvec.z)) {
 			//yÅ‘å
 			if (diffvec.y >= 0.0) {
-				scaleval = 1.1f;
+				scaleval = upval;
 			}
 			else {
-				scaleval = 0.9f;
+				scaleval = downval;
 			}
 		}
 		else {
 			//zÅ‘å
 			if (diffvec.z >= 0.0) {
-				scaleval = 1.1f;
+				scaleval = upval;
 			}
 			else {
-				scaleval = 0.9f;
+				scaleval = downval;
 			}
 		}
 	}
@@ -10237,12 +10241,16 @@ int AddBoneScale(int kind, float srcscale)
 		return 0;
 	}
 
+	float upval = 1.1f;
+	float downval = 0.9f;
+
+
 	float scaleval;
 	if (srcscale >= 0.0) {
-		scaleval = 1.1f;
+		scaleval = upval;
 	}
 	else {
-		scaleval = 0.9f;
+		scaleval = downval;
 	}
 
 	s_model->FKBoneScaleAxis(0, &s_editrange, s_curboneno, kind, scaleval);
@@ -14958,7 +14966,11 @@ int SaveProject()
 	}
 
 
-
+	s_savelimitdegflag = g_limitdegflag;
+	g_limitdegflag = g_bakelimiteulonsave;
+	if (s_LimitDegCheckBox) {
+		s_LimitDegCheckBox->SetChecked(g_bakelimiteulonsave);
+	}
 
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -14986,6 +14998,10 @@ int SaveProject()
 	int result = chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½B", L"Error", MB_OK);
+		g_limitdegflag = s_savelimitdegflag;
+		if (s_LimitDegCheckBox) {
+			s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
+		}
 		return 1;
 	}
 
@@ -15020,6 +15036,12 @@ int SaveProject()
 			}
 		}
 	}
+
+	g_limitdegflag = s_savelimitdegflag;
+	if (s_LimitDegCheckBox) {
+		s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
+	}
+
 
 	return 0;
 }

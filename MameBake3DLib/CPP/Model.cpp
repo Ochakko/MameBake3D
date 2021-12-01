@@ -10527,7 +10527,7 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 			//}else{
 			//	changerate = 1.0 / (endframe - applyframe + 1);
 			//}
-			changerate = (double)(*(g_motionbrush_value + (int)curframe));
+			changerate = (double)(*(g_motionbrush_value + (int)(curframe + 0.0001)));
 
 
 			if (keyno == 0) {
@@ -10545,24 +10545,24 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 					//curtra = addtra * (float)currate2;
 					ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
 					ChaVector3 curscale;
-					curscale = iniscale + scalediffvec * (float)changerate;
+					curscale = iniscale + (scalediffvec * (float)changerate);
 
 					//currate2 = changerate * keyno;
 					//ChaVector3 curtra;
 					//curtra = (1.0 - currate2) * addtra;
 
-					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, curframe, curscale);
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), curscale);
 				}
 				else {
-					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, curframe, scalevec);
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), scalevec);
 				}
 			}
 			else {
 				if (keyno == 0) {
-					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, curframe, scalevec);
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), scalevec);
 				}
 				else {
-					curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
+					curbone->SetAbsMatReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), firstframe);
 				}
 			}
 			keyno++;
@@ -10570,7 +10570,7 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 		}
 	}
 	else {
-		curbone->AddBoneScaleReq(0, m_curmotinfo->motid, startframe, scalevec);
+		curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(startframe + 0.0001)), scalevec);
 	}
 
 

@@ -447,24 +447,48 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 	len2 = VecLength(vec2);
 	len3 = VecLength(vec3);
 
-	if ((fabs(len1) - 1.0) < 0.0001) {
+	//ŽŸ‚ÌƒRƒƒ“ƒgƒAƒEƒgƒR[ƒh‚Å‚Ík¬o—ˆ‚È‚¢
+	//if ((fabs(len1) - 1.0) < 0.0001) {
+	//	len1 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
+	//}
+	//if (fabs(len1) < 0.0001) {
+	//	len1 = 0.0001;//0scale‹ÖŽ~
+	//}
+	//if ((fabs(len2) - 1.0) < 0.0001) {
+	//	len2 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
+	//}
+	//if (fabs(len2) < 0.0001) {
+	//	len2 = 0.0001;//0scale‹ÖŽ~
+	//}
+	//if ((fabs(len3) - 1.0) < 0.0001) {
+	//	len3 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
+	//}
+	//if (fabs(len3) < 0.0001) {
+	//	len3 = 0.0001;//0scale‹ÖŽ~
+	//}
+
+
+	//2021/12/01
+	if (((len1 - 1.0) > 0.0) && ((len1 - 1.0) < 0.00001)) {
 		len1 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (fabs(len1) < 0.0001) {
-		len1 = 0.0001;//0scale‹ÖŽ~
+	if (len1 < 0.00001) {
+		len1 = 0.00001;//0scale‹ÖŽ~
 	}
-	if ((fabs(len2) - 1.0) < 0.0001) {
+	if (((len2 - 1.0) > 0.0) && ((len2 - 1.0) < 0.00001)) {
 		len2 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (fabs(len2) < 0.0001) {
-		len2 = 0.0001;//0scale‹ÖŽ~
+	if (len2 < 0.00001) {
+		len2 = 0.00001;//0scale‹ÖŽ~
 	}
-	if ((fabs(len3) - 1.0) < 0.0001) {
+	if (((len3 - 1.0) > 0.0) && ((len3 - 1.0) < 0.00001)) {
 		len3 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (fabs(len3) < 0.0001) {
-		len3 = 0.0001;//0scale‹ÖŽ~
+	if (len3 < 0.00001) {
+		len3 = 0.00001;//0scale‹ÖŽ~
 	}
+
+
 	svecptr->x = (float)len1;
 	svecptr->y = (float)len2;
 	svecptr->z = (float)len3;
