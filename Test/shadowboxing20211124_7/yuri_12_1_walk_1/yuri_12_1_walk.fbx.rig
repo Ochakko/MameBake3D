@@ -44,7 +44,7 @@
     </RigElem>
   </Bone>
   <Bone>
-    <RigName>LeftElbow_branch_Joint_Rig1</RigName>
+    <RigName>Close5Left</RigName>
     <OwnerBone>LeftElbow_branch_Joint</OwnerBone>
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
@@ -184,7 +184,7 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftThumbProximal_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>-2.000000</RateU>
+      <RateU>-1.800000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
       <RateV>-1.000000</RateV>
@@ -446,7 +446,7 @@
     </RigElem>
   </Bone>
   <Bone>
-    <RigName>Close</RigName>
+    <RigName>Close5Right</RigName>
     <OwnerBone>RightElbow_branch_Joint</OwnerBone>
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
@@ -458,10 +458,10 @@
     <RigRigNo>0</RigRigNo>
       <BoneName>RightElbow_branch_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>3.000000</RateU>
+      <RateU>1.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
-      <RateV>3.000000</RateV>
+      <RateV>1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -586,7 +586,7 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightThumbProximal_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>-2.000000</RateU>
+      <RateU>-1.800000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
       <RateV>1.000000</RateV>

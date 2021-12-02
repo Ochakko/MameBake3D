@@ -1883,7 +1883,7 @@ static HKEY s_hkey;
 static int RegistKey();
 static int IsRegist();
 
-
+static int TimelineCursorToMotion();
 static int OnTimeLineCursor(int mbuttonflag, double newframe);
 static int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag);
 static int OnTimeLineSelectFromSelectedKey();
@@ -6195,6 +6195,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		int pickrigflag = 0;
 		pickrigflag = PickSpRig(ptCursor);
 		if (pickrigflag == 1) {
+
+
+			//開いている設定ダイアログを閉じないと、設定ダイアログのrigboneと新たなrigboneが異なってしまい、Applyボタンで異なるリグを保存することがある
+			if (s_customrigdlg) {
+				DestroyWindow(s_customrigdlg);
+				s_customrigdlg = 0;
+			}
+
+
 			if (s_oprigflag == 1) {
 				
 				//オンだったRigをオフにする
@@ -18994,6 +19003,29 @@ int GetCurrentBoneFromTimeline(int* dstboneno)
 }
 
 
+int TimelineCursorToMotion()
+{
+	if (s_owpTimeline && s_model && s_model->GetCurMotInfo()) {
+
+		GetCurrentBoneFromTimeline(&s_curboneno);
+
+		// カーソル位置を姿勢に反映。
+		if (g_previewFlag == 0) {//underchecking
+			double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
+
+			vector<MODELELEM>::iterator itrmodel;
+			for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+				CModel* curmodel = itrmodel->modelptr;
+				if (curmodel && curmodel->GetCurMotInfo()) {
+					curmodel->SetMotionFrame(curframe);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+
 int OnFrameTimeLineWnd()
 {
 	// カーソル移動フラグを確認 //////////////////////////////////////////////////
@@ -19035,23 +19067,7 @@ int OnFrameTimeLineWnd()
 
 	if (s_cursorFlag) {
 		s_cursorFlag = false;
-		if (s_owpTimeline && s_model && s_model->GetCurMotInfo()) {
-
-			GetCurrentBoneFromTimeline(&s_curboneno);
-
-			// カーソル位置を姿勢に反映。
-			if (g_previewFlag == 0) {//underchecking
-				double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
-
-				vector<MODELELEM>::iterator itrmodel;
-				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-					CModel* curmodel = itrmodel->modelptr;
-					if (curmodel && curmodel->GetCurMotInfo()) {
-						curmodel->SetMotionFrame(curframe);
-					}
-				}
-			}
-		}
+		TimelineCursorToMotion();
 	}
 
 	if (s_LcursorFlag) {
@@ -19844,12 +19860,14 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			SetLTimelineMark(s_curboneno);
 		}
 
+
 		//Sleep(500);
-		Sleep(30);
+		//Sleep(30);
 	}
 
 
 	OnGUIEventSpeed();
+
 
 
 	return 0;
@@ -34177,6 +34195,16 @@ int PickRigBone(PICKINFO* ppickinfo)
 							*ppickinfo = chkpickinfo;
 
 							s_curboneno = chkboneno;
+
+
+							CBone* chkbone = s_model->GetBoneByID(s_curboneno);
+							if (chkbone != s_customrigbone) {
+								//開いている設定ダイアログを閉じないと、設定ダイアログのrigboneと新たなrigboneが異なってしまい、Applyボタンで異なるリグを保存することがある
+								if (s_customrigdlg) {
+									DestroyWindow(s_customrigdlg);
+									s_customrigdlg = 0;
+								}
+							}
 
 							if (s_owpTimeline) {
 								s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);

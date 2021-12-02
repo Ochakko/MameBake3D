@@ -250,7 +250,11 @@ int CFrameCopyDlg::FillTree()
 		HTREEITEM* curti = &(itrtree->second);
 		TreeView_Expand( m_tree_wnd, *curti, TVE_EXPAND );
 	}
-	TreeView_SelectSetFirstVisible( m_tree_wnd, m_selecteditem );
+
+
+	//TreeView_SelectSetFirstVisible( m_tree_wnd, m_selecteditem );
+	TreeView_SelectSetFirstVisible(m_tree_wnd, TreeView_GetRoot(m_tree_wnd));
+
 
 	return 0;
 }

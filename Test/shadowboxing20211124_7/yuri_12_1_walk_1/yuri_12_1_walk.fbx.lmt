@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <Lmt>
     <FileInfo>1001-02</FileInfo>
-    <FileComment>CommentForEGP_20211124101006</FileComment>    
+    <FileComment>CommentForEGP_20211124101006</FileComment> 
   <Bone>
     <Name>Hip_Joint</Name>
     <BoneAxisType>Current</BoneAxisType>
@@ -1213,12 +1213,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-106</Lower_X>
-      <Upper_X>52</Upper_X>
-      <Lower_Y>-10</Lower_Y>
-      <Upper_Y>55</Upper_Y>
-      <Lower_Z>-23</Lower_Z>
-      <Upper_Z>31</Upper_Z>
+      <Lower_X>-36</Lower_X>
+      <Upper_X>100</Upper_X>
+      <Lower_Y>-7</Lower_Y>
+      <Upper_Y>40</Upper_Y>
+      <Lower_Z>-7</Lower_Z>
+      <Upper_Z>25</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightThumbProximal_Joint</Name>
@@ -1243,11 +1243,11 @@
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
       <Lower_X>0</Lower_X>
-      <Upper_X>17</Upper_X>
+      <Upper_X>21</Upper_X>
       <Lower_Y>0</Lower_Y>
-      <Upper_Y>77</Upper_Y>
-      <Lower_Z>0</Lower_Z>
-      <Upper_Z>10</Upper_Z>
+      <Upper_Y>30</Upper_Y>
+      <Lower_Z>-3</Lower_Z>
+      <Upper_Z>0</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightThumbIntermediate_Joint</Name>
@@ -1271,12 +1271,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
-      <Upper_X>4</Upper_X>
+      <Lower_X>-7</Lower_X>
+      <Upper_X>0</Upper_X>
       <Lower_Y>0</Lower_Y>
-      <Upper_Y>38</Upper_Y>
+      <Upper_Y>51</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>2</Upper_Z>
+      <Upper_Z>7</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightThumbDistal_Joint</Name>
@@ -1300,12 +1300,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
-      <Upper_X>4</Upper_X>
+      <Lower_X>-6</Lower_X>
+      <Upper_X>0</Upper_X>
       <Lower_Y>0</Lower_Y>
-      <Upper_Y>38</Upper_Y>
+      <Upper_Y>48</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>4</Upper_Z>
+      <Upper_Z>3</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightThumbDistal_end_Joint</Name>
@@ -1358,12 +1358,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
+      <Lower_X>-2</Lower_X>
       <Upper_X>0</Upper_X>
-      <Lower_Y>0</Lower_Y>
+      <Lower_Y>-2</Lower_Y>
       <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>101</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightIndexIntermediate_Joint</Name>
@@ -1387,12 +1387,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
-      <Upper_X>6</Upper_X>
-      <Lower_Y>-1</Lower_Y>
+      <Lower_X>-8</Lower_X>
+      <Upper_X>0</Upper_X>
+      <Lower_Y>-13</Lower_Y>
       <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>100</Upper_Z>
+      <Upper_Z>101</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightIndexDistal_Joint</Name>
@@ -1416,12 +1416,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
-      <Upper_X>8</Upper_X>
-      <Lower_Y>0</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_X>-14</Lower_X>
+      <Upper_X>0</Upper_X>
+      <Lower_Y>-5</Lower_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>100</Upper_Z>
+      <Upper_Z>101</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightIndexDistal_end_Joint</Name>
@@ -1474,12 +1474,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-1</Lower_X>
+      <Lower_X>-2</Lower_X>
       <Upper_X>0</Upper_X>
-      <Lower_Y>0</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_Y>-2</Lower_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>99</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightMiddleIntermediate_Joint</Name>
@@ -1503,12 +1503,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-6</Lower_X>
+      <Lower_X>-4</Lower_X>
       <Upper_X>0</Upper_X>
-      <Lower_Y>0</Lower_Y>
-      <Upper_Y>1</Upper_Y>
+      <Lower_Y>-8</Lower_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>100</Upper_Z>
+      <Upper_Z>102</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightMiddleDistal_Joint</Name>
@@ -1532,12 +1532,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
+      <Lower_X>-6</Lower_X>
       <Upper_X>0</Upper_X>
-      <Lower_Y>0</Lower_Y>
+      <Lower_Y>-9</Lower_Y>
       <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>101</Upper_Z>
+      <Upper_Z>102</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightMiddleDistal_end_Joint</Name>
@@ -1590,12 +1590,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-1</Lower_X>
+      <Lower_X>-2</Lower_X>
       <Upper_X>0</Upper_X>
-      <Lower_Y>0</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_Y>-2</Lower_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>99</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightRingIntermediate_Joint</Name>
@@ -1619,12 +1619,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
-      <Upper_X>2</Upper_X>
-      <Lower_Y>0</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_X>-4</Lower_X>
+      <Upper_X>0</Upper_X>
+      <Lower_Y>-5</Lower_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>100</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightRingDistal_Joint</Name>
@@ -1648,12 +1648,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-8</Lower_X>
-      <Upper_X>0</Upper_X>
+      <Lower_X>0</Lower_X>
+      <Upper_X>7</Upper_X>
       <Lower_Y>0</Lower_Y>
-      <Upper_Y>3</Upper_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>100</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightRingDistal_end_Joint</Name>
@@ -1706,12 +1706,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-1</Lower_X>
+      <Lower_X>-2</Lower_X>
       <Upper_X>0</Upper_X>
-      <Lower_Y>0</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_Y>-2</Lower_Y>
+      <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>99</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightLittleIntermediate_Joint</Name>
@@ -1735,12 +1735,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>0</Lower_X>
-      <Upper_X>4</Upper_X>
-      <Lower_Y>-2</Lower_Y>
+      <Lower_X>-16</Lower_X>
+      <Upper_X>0</Upper_X>
+      <Lower_Y>-4</Lower_Y>
       <Upper_Y>0</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>99</Upper_Z>
+      <Upper_Z>101</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightLittleDistal_Joint</Name>
@@ -1764,12 +1764,12 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-4</Lower_X>
+      <Lower_X>-1</Lower_X>
       <Upper_X>0</Upper_X>
       <Lower_Y>0</Lower_Y>
-      <Upper_Y>3</Upper_Y>
+      <Upper_Y>2</Upper_Y>
       <Lower_Z>0</Lower_Z>
-      <Upper_Z>100</Upper_Z>
+      <Upper_Z>103</Upper_Z>
   </Bone>
   <Bone>
     <Name>RightLittleDistal_end_Joint</Name>
