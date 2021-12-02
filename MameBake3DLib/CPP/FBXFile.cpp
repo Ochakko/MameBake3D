@@ -918,7 +918,8 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
     lMaterial->Emissive.Set(FbxDouble3(mqomat->GetEmi3F().x, mqomat->GetEmi3F().y, mqomat->GetEmi3F().z));
     lMaterial->Ambient.Set(FbxDouble3(mqomat->GetAmb3F().x, mqomat->GetAmb3F().y, mqomat->GetAmb3F().z));
     //lMaterial->AmbientFactor.Set(1.0);
-	lMaterial->AmbientFactor.Set(0.1);
+	//lMaterial->AmbientFactor.Set(0.1);
+	lMaterial->AmbientFactor.Set(g_AmbientFactorAtSaving);
 	FbxTexture* curtex = CreateTexture(pSdkManager, mqomat);
 	if( curtex ){
 		lMaterial->Diffuse.ConnectSrcObject( curtex );
@@ -928,14 +929,17 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 		lNode->SetShadingMode(FbxNode::eHardShading);
 	}
 
-    lMaterial->DiffuseFactor.Set(1.0);
+    //lMaterial->DiffuseFactor.Set(1.0);
+	lMaterial->DiffuseFactor.Set(g_DiffuseFactorAtSaving);
     lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
     lMaterial->ShadingModel.Set(lShadingName);
     //lMaterial->Shininess.Set(0.5);
 	lMaterial->Shininess.Set(mqomat->GetPower());
     lMaterial->Specular.Set(FbxDouble3(mqomat->GetSpc3F().x, mqomat->GetSpc3F().y, mqomat->GetSpc3F().z));
-    lMaterial->SpecularFactor.Set(0.3);
-	lMaterial->EmissiveFactor.Set(0.1);
+    //lMaterial->SpecularFactor.Set(0.3);
+	lMaterial->SpecularFactor.Set(g_SpecularFactorAtSaving);
+	//lMaterial->EmissiveFactor.Set(0.1);
+	lMaterial->EmissiveFactor.Set(g_EmissiveFactorAtSaving);
 
 
 	lNode->AddMaterial(lMaterial);
@@ -2596,7 +2600,7 @@ FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CBone** p
 	lMaterial->ShadingModel.Set(lShadingName);
 	lMaterial->Shininess.Set(0.5);
 	lMaterial->Specular.Set(FbxDouble3(0.0, 0.0, 0.0));
-	lMaterial->SpecularFactor.Set(0.3);
+	lMaterial->SpecularFactor.Set(1.0);
 
 	lNode->AddMaterial(lMaterial);
 	// We are in eBY_POLYGON, so there's only need for index (a plane has 1 polygon).

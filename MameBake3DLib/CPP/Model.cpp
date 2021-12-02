@@ -3168,9 +3168,9 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	}
 	ChaVector3 tmpemi;
 
-	tmpemi.x = (float)lEmissive[0];
-	tmpemi.y = (float)lEmissive[1];
-	tmpemi.z = (float)lEmissive[2];
+	tmpemi.x = (float)lEmissive[0] * g_EmissiveFactorAtLoading;
+	tmpemi.y = (float)lEmissive[1] * g_EmissiveFactorAtLoading;
+	tmpemi.z = (float)lEmissive[2] * g_EmissiveFactorAtLoading;
 	newmqomat->SetEmi3F( tmpemi );
 
 
@@ -3181,9 +3181,9 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 		DbgOut( L"SetMQOMaterial : ambtexture find\r\n" );
 	}
 	ChaVector3 tmpamb;
-	tmpamb.x = (float)lAmbient[0];
-	tmpamb.y = (float)lAmbient[1];
-	tmpamb.z = (float)lAmbient[2];
+	tmpamb.x = (float)lAmbient[0] * g_AmbientFactorAtLoading;
+	tmpamb.y = (float)lAmbient[1] * g_AmbientFactorAtLoading;
+	tmpamb.z = (float)lAmbient[2] * g_AmbientFactorAtLoading;
 	newmqomat->SetAmb3F( tmpamb );
 
 	char* diffusetex = 0;
@@ -3194,9 +3194,9 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 		DbgOut( L"SetMQOMaterial : diffusetexture find\r\n" );
 	}
 	ChaVector4 tmpdif;
-	tmpdif.x = (float)lDiffuse[0];
-	tmpdif.y = (float)lDiffuse[1];
-	tmpdif.z = (float)lDiffuse[2];
+	tmpdif.x = (float)lDiffuse[0] * g_DiffuseFactorAtLoading;
+	tmpdif.y = (float)lDiffuse[1] * g_DiffuseFactorAtLoading;
+	tmpdif.z = (float)lDiffuse[2] * g_DiffuseFactorAtLoading;
 	tmpdif.w = 1.0f;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	newmqomat->SetDif4F( tmpdif );
 
@@ -3208,9 +3208,9 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 		DbgOut( L"SetMQOMaterial : spctexture find\r\n" );
 	}
 	ChaVector3 tmpspc;
-	tmpspc.x = (float)lSpecular[0];
-	tmpspc.y = (float)lSpecular[1];
-	tmpspc.z = (float)lSpecular[2];
+	tmpspc.x = (float)lSpecular[0] * g_SpecularFactorAtLoading;
+	tmpspc.y = (float)lSpecular[1] * g_SpecularFactorAtLoading;
+	tmpspc.z = (float)lSpecular[2] * g_SpecularFactorAtLoading;
 	newmqomat->SetSpc3F( tmpspc );
 
     //FbxProperty lShininessProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sShininess);//<-- link error : MameBake3DLib.lib外だから？　

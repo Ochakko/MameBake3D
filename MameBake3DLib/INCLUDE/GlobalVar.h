@@ -54,6 +54,15 @@ class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
 
+float g_AmbientFactorAtLoading = 1.0f;
+float g_DiffuseFactorAtLoading = 1.0f;
+float g_SpecularFactorAtLoading = 1.0f;
+float g_EmissiveFactorAtLoading = 1.0f;
+float g_AmbientFactorAtSaving = 1.0f;
+float g_DiffuseFactorAtSaving = 1.0f;
+float g_SpecularFactorAtSaving = 1.0f;
+float g_EmissiveFactorAtSaving = 1.0f;
+
 int g_usephysik = 0;
 int g_ClearColorIndex = 0;
 float g_ClearColor[BGCOL_MAX][4] = {
@@ -210,6 +219,15 @@ float* g_motionbrush_value = 0;
 
 
 #else
+extern float g_AmbientFactorAtLoading;
+extern float g_DiffuseFactorAtLoading;
+extern float g_SpecularFactorAtLoading;
+extern float g_EmissiveFactorAtLoading;
+extern float g_AmbientFactorAtSaving;
+extern float g_DiffuseFactorAtSaving;
+extern float g_SpecularFactorAtSaving;
+extern float g_EmissiveFactorAtSaving;
+
 extern int g_usephysik;
 extern int g_ClearColorIndex;
 extern float g_ClearColor[BGCOL_MAX][4];

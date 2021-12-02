@@ -1,5 +1,23 @@
 2021/12/03
-	1.0.0.22正式版
+	MotoinBrush 1.0.0.22正式版
+
+	iniファイルにロード時とセーブ時のマテリアル倍率項目を追加
+
+	Documents/TroubleShootingフォルダにドキュメント追加
+		DifferenceMaterialBetweenMotionBrushAndMaya.docx
+
+
+	サンプルマテリアル調整
+
+
+	基本機能のテスト済
+
+
+	(最新exeは付いていません)
+
+
+2021/12/02_2
+	1.0.0.22RC8
 
 	リグダイアログを開いたままリグを操作してからダイアログのApplyボタンを押すと
 	異なるリグに保存することがある不具合修正
@@ -15,8 +33,8 @@
 
 
 	Documents/TroubleShootingフォルダにドキュメント追加
-		タイムラインをホイールで移動する場合に０フレームに戻らないときは
-		Ctrl+Zでアンドゥしたがフレーム１に移動してフレーム選択が復元されないとき
+		ACaseNotMoveToZeroFrameThoughRollMouseWheelToZeroframe.docx
+		ACaseNotRestoreSelectionOfFramesAfterUndoOperation.docx
 
 
 	bvh2Fbx batchテスト済

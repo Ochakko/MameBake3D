@@ -86,6 +86,16 @@ int CIniFile::WriteIniInfo()
 	CallF(Write2File("    <UsePhysIK>%d</UsePhysIK>\r\n", g_usephysik), return 1);
 	CallF(Write2File("    <PrepCntOnPhysIK>%d</PrepCntOnPhysIK>\r\n", g_prepcntonphysik), return 1);
 
+	CallF(Write2File("    <AmbientFactorAtLoading>%f</AmbientFactorAtLoading>\r\n", g_AmbientFactorAtLoading), return 1);
+	CallF(Write2File("    <DiffuseFactorAtLoading>%f</DiffuseFactorAtLoading>\r\n", g_DiffuseFactorAtLoading), return 1);
+	CallF(Write2File("    <SpecularFactorAtLoading>%f</SpecularFactorAtLoading>\r\n", g_SpecularFactorAtLoading), return 1);
+	CallF(Write2File("    <EmissiveFactorAtLoading>%f</EmissiveFactorAtLoading>\r\n", g_EmissiveFactorAtLoading), return 1);
+
+	CallF(Write2File("    <AmbientFactorAtLoading>%f</AmbientFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <DiffuseFactorAtLoading>%f</DiffuseFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <SpecularFactorAtLoading>%f</SpecularFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <EmissiveFactorAtLoading>%f</EmissiveFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+
 	CallF(Write2File("  </IniFileBody>\r\n"), return 1);
 
 	return 0;
@@ -209,5 +219,125 @@ int CIniFile::ReadIniInfo(XMLIOBUF* xmlbuf )
 	}
 
 
+
+	int result4, result5, result6, result7;
+	float AmbientFactorAtLoading, DiffuseFactorAtLoading, SpecularFactorAtLoading, EmissiveFactorAtLoading;
+
+	result4 = Read_Float(xmlbuf, "<AmbientFactorAtLoading>", "</AmbientFactorAtLoading>", &AmbientFactorAtLoading);
+	if (result4 == 0) {
+		if ((AmbientFactorAtLoading >= 0.0) && (AmbientFactorAtLoading <= 100.0f)) {
+			g_AmbientFactorAtLoading = AmbientFactorAtLoading;
+		}
+		else {
+			g_AmbientFactorAtLoading = 1.0f;
+		}
+	}
+	else {
+		g_AmbientFactorAtLoading = 1.0f;
+	}
+	result5 = Read_Float(xmlbuf, "<DiffuseFactorAtLoading>", "</DiffuseFactorAtLoading>", &DiffuseFactorAtLoading);
+	if (result5 == 0) {
+		if ((DiffuseFactorAtLoading >= 0.0) && (DiffuseFactorAtLoading <= 100.0f)) {
+			g_DiffuseFactorAtLoading = DiffuseFactorAtLoading;
+		}
+		else {
+			g_DiffuseFactorAtLoading = 1.0f;
+		}
+	}
+	else {
+		g_DiffuseFactorAtLoading = 1.0f;
+	}
+	result6 = Read_Float(xmlbuf, "<SpecularFactorAtLoading>", "</SpecularFactorAtLoading>", &SpecularFactorAtLoading);
+	if (result6 == 0) {
+		if ((SpecularFactorAtLoading >= 0.0) && (SpecularFactorAtLoading <= 100.0f)) {
+			g_SpecularFactorAtLoading = SpecularFactorAtLoading;
+		}
+		else {
+			g_SpecularFactorAtLoading = 1.0f;
+		}
+	}
+	else {
+		g_SpecularFactorAtLoading = 1.0f;
+	}
+	result7 = Read_Float(xmlbuf, "<EmissiveFactorAtLoading>", "</EmissiveFactorAtLoading>", &EmissiveFactorAtLoading);
+	if (result7 == 0) {
+		if ((EmissiveFactorAtLoading >= 0.0) && (EmissiveFactorAtLoading <= 100.0f)) {
+			g_EmissiveFactorAtLoading = EmissiveFactorAtLoading;
+		}
+		else {
+			g_EmissiveFactorAtLoading = 1.0f;
+		}
+	}
+	else {
+		g_EmissiveFactorAtLoading = 1.0f;
+	}
+
+
+	int result8, result9, result10, result11;
+	float AmbientFactorAtSaving, DiffuseFactorAtSaving, SpecularFactorAtSaving, EmissiveFactorAtSaving;
+
+	result8 = Read_Float(xmlbuf, "<AmbientFactorAtSaving>", "</AmbientFactorAtSaving>", &AmbientFactorAtSaving);
+	if (result8 == 0) {
+		if ((AmbientFactorAtSaving >= 0.0) && (AmbientFactorAtSaving <= 100.0f)) {
+			g_AmbientFactorAtSaving = AmbientFactorAtSaving;
+		}
+		else {
+			g_AmbientFactorAtSaving = 1.0f;
+		}
+	}
+	else {
+		g_AmbientFactorAtSaving = 1.0f;
+	}
+	result9 = Read_Float(xmlbuf, "<DiffuseFactorAtSaving>", "</DiffuseFactorAtSaving>", &DiffuseFactorAtSaving);
+	if (result9 == 0) {
+		if ((DiffuseFactorAtSaving >= 0.0) && (DiffuseFactorAtSaving <= 100.0f)) {
+			g_DiffuseFactorAtSaving = DiffuseFactorAtSaving;
+		}
+		else {
+			g_DiffuseFactorAtSaving = 1.0f;
+		}
+	}
+	else {
+		g_DiffuseFactorAtSaving = 1.0f;
+	}
+	result10 = Read_Float(xmlbuf, "<SpecularFactorAtSaving>", "</SpecularFactorAtSaving>", &SpecularFactorAtSaving);
+	if (result10 == 0) {
+		if ((SpecularFactorAtSaving >= 0.0) && (SpecularFactorAtSaving <= 100.0f)) {
+			g_SpecularFactorAtSaving = SpecularFactorAtSaving;
+		}
+		else {
+			g_SpecularFactorAtSaving = 1.0f;
+		}
+	}
+	else {
+		g_SpecularFactorAtSaving = 1.0f;
+	}
+	result11 = Read_Float(xmlbuf, "<EmissiveFactorAtSaving>", "</EmissiveFactorAtSaving>", &EmissiveFactorAtSaving);
+	if (result11 == 0) {
+		if ((EmissiveFactorAtSaving >= 0.0) && (EmissiveFactorAtSaving <= 100.0f)) {
+			g_EmissiveFactorAtSaving = EmissiveFactorAtSaving;
+		}
+		else {
+			g_EmissiveFactorAtSaving = 1.0f;
+		}
+	}
+	else {
+		g_EmissiveFactorAtSaving = 1.0f;
+	}
+
+
+
+
+/*
+	CallF(Write2File("    <AmbientFactorAtLoading>%f</AmbientFactorAtLoading>\r\n", g_AmbientFactorAtLoading), return 1);
+	CallF(Write2File("    <DiffuseFactorAtLoading>%f</DiffuseFactorAtLoading>\r\n", g_DiffuseFactorAtLoading), return 1);
+	CallF(Write2File("    <SpecularFactorAtLoading>%f</SpecularFactorAtLoading>\r\n", g_SpecularFactorAtLoading), return 1);
+	CallF(Write2File("    <EmissiveFactorAtLoading>%f</EmissiveFactorAtLoading>\r\n", g_EmissiveFactorAtLoading), return 1);
+
+	CallF(Write2File("    <AmbientFactorAtLoading>%f</AmbientFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <DiffuseFactorAtLoading>%f</DiffuseFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <SpecularFactorAtLoading>%f</SpecularFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <EmissiveFactorAtLoading>%f</EmissiveFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+*/
 	return 0;
 }
