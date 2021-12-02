@@ -630,7 +630,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
 
 				ANGLELIMIT anglelimit;
-				anglelimit = chilbto->m_bone->GetAngleLimit(0, 0, 0.0);
+				anglelimit = chilbto->m_bone->GetAngleLimit(0);
 
 
 				int dofid;
@@ -901,7 +901,7 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 
 			ANGLELIMIT anglelimit;
 			ZeroMemory(&anglelimit, sizeof(ANGLELIMIT));
-			anglelimit = childbto->m_bone->GetAngleLimit(0, 0, 0.0);
+			anglelimit = childbto->m_bone->GetAngleLimit(0);
 			//ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
 
 			int forbidrotflag = childbto->m_bone->GetRigidElem(childbto->m_endbone)->GetForbidRotFlag();

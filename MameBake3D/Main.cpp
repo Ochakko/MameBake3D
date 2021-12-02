@@ -17375,7 +17375,7 @@ int Bone2AngleLimit(int setcheckflag)
 		MOTINFO* curmi;
 		curmi = s_model->GetCurMotInfo();
 		if (curmi) {
-			s_anglelimit = s_anglelimitbone->GetAngleLimit(1, curmi->motid, curmi->curframe);
+			s_anglelimit = s_anglelimitbone->GetAngleLimit(1);
 
 
 			s_anglelimit.chkeul[AXIS_X] = min(s_anglelimit.upper[AXIS_X], s_anglelimit.chkeul[AXIS_X]);
@@ -17467,7 +17467,7 @@ int AngleLimit2Bone()
 					s_anglelimit.chkeul[AXIS_Z] = cureul.z;
 				}
 
-				s_anglelimitbone->SetAngleLimit(s_anglelimit, curmi->motid, (double)((int)(curmi->curframe + 0.1)));
+				s_anglelimitbone->SetAngleLimit(s_anglelimit);
 			}
 
 		}
@@ -17732,7 +17732,7 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						MOTINFO* curmi;
 						curmi = s_model->GetCurMotInfo();
 						if (curmi) {
-							symbone->SetAngleLimit(symanglelimit, curmi->motid, curmi->curframe);
+							symbone->SetAngleLimit(symanglelimit);
 						}
 					}
 				}
@@ -17752,7 +17752,7 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						MOTINFO* curmi;
 						curmi = s_model->GetCurMotInfo();
 						if (curmi) {
-							ANGLELIMIT anglelimit = symbone->GetAngleLimit(0, curmi->motid, curmi->curframe);
+							ANGLELIMIT anglelimit = symbone->GetAngleLimit(0);
 							ANGLELIMIT symanglelimit = anglelimit;
 							//symanglelimit.lower[1] *= -1;
 							symanglelimit.lower[2] *= -1;
@@ -17782,6 +17782,88 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				s_anglelimit = s_anglelimitcopy;
 				AngleLimit2Bone();
 				AngleLimit2Dlg(s_anglelimitdlg);
+			}
+		}
+			break;
+		case IDC_RESETLIM:
+		{
+			if (s_model && s_anglelimitdlg) {
+				s_model->ResetAngleLimit(180);
+
+				Bone2AngleLimit(0);
+				AngleLimit2Dlg(s_anglelimitdlg);
+				UpdateWindow(s_anglelimitdlg);
+			}
+		}
+			break;
+		case IDC_RESET0:
+		{
+			if (s_model && s_anglelimitdlg) {
+				s_model->ResetAngleLimit(0);
+
+				Bone2AngleLimit(0);
+				AngleLimit2Dlg(s_anglelimitdlg);
+				UpdateWindow(s_anglelimitdlg);
+			}
+		}
+			break;
+		case IDC_REPLACE180TO170:
+		{
+			if (s_model && s_anglelimitdlg) {
+				s_model->AngleLimitReplace180to170();
+
+				Bone2AngleLimit(0);
+				AngleLimit2Dlg(s_anglelimitdlg);
+				UpdateWindow(s_anglelimitdlg);
+			}
+
+		}
+			break;
+		case IDC_LIMITFROMMOTION:
+		{
+			if (s_model && s_anglelimitdlg) {
+				MOTINFO* curmi;
+				curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+
+					s_savelimitdegflag = g_limitdegflag;
+					g_limitdegflag = false;
+					if (s_LimitDegCheckBox) {
+						s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+					}
+
+
+					//UINT checkadditive;
+					//checkadditive = IsDlgButtonChecked(s_anglelimitdlg, IDC_ADDITIVE);
+					//if (checkadditive != BST_CHECKED) {
+					//	SendMessage(s_anglelimitdlg, WM_COMMAND, IDC_RESETLIM, 0);
+					//}
+
+					int curmotid;
+					double curmotleng;
+					curmotid = curmi->motid;
+					curmotleng = curmi->frameleng;
+
+					double curframe;
+					for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
+						s_model->SetMotionFrame(curframe);
+						s_model->UpdateMatrix(&(s_model->GetWorldMat()), &s_matVP);
+						s_model->AdditiveCurrentToAngleLimit();
+					}
+
+
+					g_limitdegflag = s_savelimitdegflag;
+					if (s_LimitDegCheckBox) {
+						s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+					}
+
+					s_model->SetMotionFrame(1.0);
+					s_model->UpdateMatrix(&(s_model->GetWorldMat()), &s_matVP);
+					Bone2AngleLimit(0);
+					AngleLimit2Dlg(s_anglelimitdlg);
+					UpdateWindow(s_anglelimitdlg);
+
+				}
 			}
 		}
 			break;

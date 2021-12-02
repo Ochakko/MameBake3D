@@ -2709,7 +2709,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 	return 0;
 }
 
-int CBone::CalcCurrentLocalInfo(int motid, double frameno, CMotionPoint* pdstmp)
+int CBone::CalcCurrentLocalInfo(CMotionPoint* pdstmp)
 {
 	CMotionPoint curmp;
 	CMotionPoint parmp;
@@ -3025,7 +3025,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 }
 
 
-ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
+ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
@@ -3057,7 +3057,7 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, int srcmotid, double srcf
 
 	CMotionPoint tmpmp;
 	//CalcLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
-	CalcCurrentLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
+	CalcCurrentLocalInfo(&tmpmp);//local!!!
 
 	ChaMatrix axismat;
 	CQuaternion axisq;
@@ -3129,20 +3129,22 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, int srcmotid, double srcf
 		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
 	}
 
-	CMotionPoint* curmp;
-	curmp = GetMotionPoint(srcmotid, srcframe);
-	if (curmp) {
-		ChaVector3 oldeul = curmp->GetLocalEul();
-		if (IsSameEul(oldeul, cureul) == 0) {
-			return cureul;
-		}
-		else {
-			return oldeul;
-		}
-	}
-	else {
-		return cureul;
-	}
+	//CMotionPoint* curmp;
+	//curmp = GetMotionPoint(srcmotid, srcframe);
+	//if (curmp) {
+	//	ChaVector3 oldeul = curmp->GetLocalEul();
+	//	if (IsSameEul(oldeul, cureul) == 0) {
+	//		return cureul;
+	//	}
+	//	else {
+	//		return oldeul;
+	//	}
+	//}
+	//else {
+	//	return cureul;
+	//}
+
+	return cureul;
 }
 
 
@@ -5214,7 +5216,7 @@ ChaVector3 CBone::LimitEul(ChaVector3 srceul)
 	return reteul;
 }
 
-ANGLELIMIT CBone::GetAngleLimit(int getchkflag, int curmotid, double curframe)
+ANGLELIMIT CBone::GetAngleLimit(int getchkflag)
 {
 	::SetAngleLimitOff(&m_anglelimit);
 
@@ -5229,7 +5231,7 @@ ANGLELIMIT CBone::GetAngleLimit(int getchkflag, int curmotid, double curframe)
 		//cureul = CalcCurrentLocalEulXYZ(m_anglelimit.boneaxiskind, curmotid, curframe, BEFEUL_BEFFRAME);
 
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		cureul = CalcCurrentLocalEulXYZ(-1, curmotid, curframe, BEFEUL_BEFFRAME);
+		cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
 		ChaVector3 neweul = LimitEul(cureul);
 
 		m_anglelimit.chkeul[AXIS_X] = neweul.x;
@@ -5239,7 +5241,7 @@ ANGLELIMIT CBone::GetAngleLimit(int getchkflag, int curmotid, double curframe)
 
 	return m_anglelimit;
 };
-void CBone::SetAngleLimit(ANGLELIMIT srclimit, int srcmotid, double srcframe)
+void CBone::SetAngleLimit(ANGLELIMIT srclimit)
 {
 	m_anglelimit = srclimit;
 
@@ -6956,3 +6958,89 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 
 
 }
+
+int CBone::ResetAngleLimit(int srcval)
+{
+	int newlimit;
+	newlimit = min(180, srcval);
+	newlimit = max(0, newlimit);
+
+
+	m_anglelimit.lower[0] = -newlimit;
+	m_anglelimit.lower[1] = -newlimit;
+	m_anglelimit.lower[2] = -newlimit;
+
+	m_anglelimit.upper[0] = newlimit;
+	m_anglelimit.upper[1] = newlimit;
+	m_anglelimit.upper[2] = newlimit;
+
+	return 0;
+}
+
+int CBone::AngleLimitReplace180to170()
+{
+
+	//+180, -180‚¾‚¯170, -170‚É•ÏŠ·
+
+	if (m_anglelimit.lower[0] == -180) {
+		m_anglelimit.lower[0] = -170;
+	}
+	if (m_anglelimit.lower[1] == -180) {
+		m_anglelimit.lower[1] = -170;
+	}
+	if (m_anglelimit.lower[2] == -180) {
+		m_anglelimit.lower[2] = -170;
+	}
+
+
+	if (m_anglelimit.upper[0] == 180) {
+		m_anglelimit.upper[0] = 170;
+	}
+	if (m_anglelimit.upper[1] == 180) {
+		m_anglelimit.upper[1] = 170;
+	}
+	if (m_anglelimit.upper[2] == 180) {
+		m_anglelimit.upper[2] = 170;
+	}
+
+	return 0;
+}
+
+int CBone::AdditiveCurrentToAngleLimit()
+{
+	ChaVector3 cureul;
+	cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
+
+	AdditiveToAngleLimit(cureul);
+
+
+	return 0;
+}
+
+int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
+{
+	if ((int)cureul.x < m_anglelimit.lower[0]) {
+		m_anglelimit.lower[0] = cureul.x;
+	}
+	if ((int)cureul.y < m_anglelimit.lower[1]) {
+		m_anglelimit.lower[1] = cureul.y;
+	}
+	if ((int)cureul.z < m_anglelimit.lower[2]) {
+		m_anglelimit.lower[2] = cureul.z;
+	}
+
+
+	if ((int)cureul.x > m_anglelimit.upper[0]) {
+		m_anglelimit.upper[0] = cureul.x;
+	}
+	if ((int)cureul.y > m_anglelimit.upper[1]) {
+		m_anglelimit.upper[1] = cureul.y;
+	}
+	if ((int)cureul.z > m_anglelimit.upper[2]) {
+		m_anglelimit.upper[2] = cureul.z;
+	}
+
+	return 0;
+}
+
+

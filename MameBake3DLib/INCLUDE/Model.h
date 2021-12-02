@@ -664,6 +664,10 @@ public:
 	void ApplyPhysIkRec();
 	void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
 
+	int ResetAngleLimit(int srcval);
+	int AngleLimitReplace180to170();
+	int AdditiveCurrentToAngleLimit();
+
 private:
 	int InitParams();
 	int DestroyObjs();

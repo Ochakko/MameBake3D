@@ -334,7 +334,7 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp );
-	int CalcCurrentLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
+	int CalcCurrentLocalInfo(CMotionPoint* pdstmp);
 
 	int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
 /**
@@ -366,7 +366,7 @@ public:
 	int CalcBoneDepth();
 
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
+	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 
 	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
@@ -427,6 +427,11 @@ public:
 
 	ChaVector3 LimitEul(ChaVector3 srceul);
 	void SetBefWorldMatReq(int srcmotid, double srcframe);
+
+	int ResetAngleLimit(int srcval);
+	int AngleLimitReplace180to170();
+	int AdditiveCurrentToAngleLimit();
+	int AdditiveToAngleLimit(ChaVector3 cureul);
 
 private:
 
@@ -959,8 +964,8 @@ public: //accesser
 		}
 	};
 
-	ANGLELIMIT GetAngleLimit(int getchkflag, int curmotid, double curframe);
-	void SetAngleLimit(ANGLELIMIT srclimit, int srcmotid, double srcframe);
+	ANGLELIMIT GetAngleLimit(int getchkflag);
+	void SetAngleLimit(ANGLELIMIT srclimit);
 
 	int GetFreeCustomRigNo();
 	CUSTOMRIG CBone::GetFreeCustomRig();

@@ -11775,3 +11775,41 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 	}
 
 }
+
+int CModel::ResetAngleLimit(int srcval)
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->ResetAngleLimit(srcval);
+		}
+	}
+	return 0;
+}
+
+int CModel::AngleLimitReplace180to170()
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->AngleLimitReplace180to170();
+		}
+	}
+	return 0;
+}
+
+
+int CModel::AdditiveCurrentToAngleLimit()
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->AdditiveCurrentToAngleLimit();
+		}
+	}
+	return 0;
+}
+
