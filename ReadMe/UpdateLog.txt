@@ -1,3 +1,25 @@
+2021/12/03_3
+	MotionBrushはver1.0.0.7に続きver1.0.0.22で２回目の完成！！
+	お疲れさまでした！！
+	やること候補リストは増えていますが
+	致命的エラーがみつからなければ対応しない可能性
+	動画や日記は続く予定
+
+	Information
+	  MotoinBrush 1.0.0.22実行ファイル2021/12/08夕方公開予定
+	　(現在ver1.0.0.21公開中)
+	  https://www.vector.co.jp/soft/winnt/art/se523002.html
+
+	  日記：Unity3DとVRoid正式版との連携方法について
+	  https://ochakkolab.jp/diary_win.html#MotionBrush_20211114
+
+	  日記：コピー履歴機能の使い方メモ
+	  https://ochakkolab.jp/diary_win.html#MotionBrush_20211203_1
+
+	  おちゃっこLAB　MotionBrush(MameBake3D)のページ
+	  https://ochakkolab.jp/LABMenu/MameBake3D.html
+
+
 2021/12/03
 	MotoinBrush 1.0.0.22正式版
 
