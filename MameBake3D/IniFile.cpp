@@ -91,10 +91,10 @@ int CIniFile::WriteIniInfo()
 	CallF(Write2File("    <SpecularFactorAtLoading>%f</SpecularFactorAtLoading>\r\n", g_SpecularFactorAtLoading), return 1);
 	CallF(Write2File("    <EmissiveFactorAtLoading>%f</EmissiveFactorAtLoading>\r\n", g_EmissiveFactorAtLoading), return 1);
 
-	CallF(Write2File("    <AmbientFactorAtLoading>%f</AmbientFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
-	CallF(Write2File("    <DiffuseFactorAtLoading>%f</DiffuseFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
-	CallF(Write2File("    <SpecularFactorAtLoading>%f</SpecularFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
-	CallF(Write2File("    <EmissiveFactorAtLoading>%f</EmissiveFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <AmbientFactorAtSaving>%f</AmbientFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <DiffuseFactorAtSaving>%f</DiffuseFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <SpecularFactorAtSaving>%f</SpecularFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
+	CallF(Write2File("    <EmissiveFactorAtSaving>%f</EmissiveFactorAtSaving>\r\n", g_AmbientFactorAtSaving), return 1);
 
 	CallF(Write2File("  </IniFileBody>\r\n"), return 1);
 
