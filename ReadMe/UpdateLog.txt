@@ -1,3 +1,8 @@
+2021/12/05
+	Information
+	日記：制限角度の設定と制限角度下でのIKについてメモ
+	https://ochakkolab.jp/diary_win.html#MotionBrush_20211205_1
+
 2021/12/03_3
 	MotionBrushはver1.0.0.7に続きver1.0.0.22で２回目の完成！！
 	お疲れさまでした！！
