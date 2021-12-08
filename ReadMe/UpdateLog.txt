@@ -1,3 +1,20 @@
+2021/12/08
+  Information
+    MotionBrush 1.0.0.22
+    1.0.0.1, 1.0.0.7に続く３度目の完成版公開開始！！
+    Vector様のサイトにて配布中
+　  https://www.vector.co.jp/soft/winnt/art/se523002.html
+
+
+  　日記更新
+　  カスタムリグについてメモ
+  　https://ochakkolab.jp/diary_win.html#MotionBrush_20211208_1
+
+  　おちゃっこLAB
+    https://ochakkolab.jp/
+
+    おちゃっこLABのMameBake3Dのページ
+    https://ochakkolab.jp/LABMenu/MameBake3D.html
 
 2021/12/06
 	Information
