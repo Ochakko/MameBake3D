@@ -62,7 +62,7 @@ public:
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
 
 	ChaMatrix GetWorldMat();
-	void SetWorldMat(ChaMatrix srcmat){ SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
+	void SetWorldMat(ChaMatrix srcmat) { m_calclimitedwm = 0; SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
 	//void SetNewWorldMat(CBone* ownerbone, ChaMatrix srcmat);//after limit eul
 
 
@@ -143,6 +143,23 @@ public:
 	{
 		m_allocheadflag = srcflag;
 	};
+
+	void SetCalcLimitedWM(int srcval) {
+		m_calclimitedwm = srcval;
+	};
+	int GetCalcLimitedWM()
+	{
+		return m_calclimitedwm;
+	};
+
+	void SetLimitedWM(ChaMatrix srcmat)
+	{
+		m_limitedwm = srcmat;
+	};
+	ChaMatrix GetLimitedWM() {
+		return m_limitedwm;
+	}
+
 	//CBone* GetNewWMOwner()
 	//{
 	//	return m_newwmowner;
@@ -203,6 +220,10 @@ private:
 
 	//CBone* m_newwmowner;
 	//ChaMatrix m_newworldmat;
+
+	int m_calclimitedwm;
+	ChaMatrix m_limitedwm;
+
 
 	CMotionPoint* m_prev;
 	CMotionPoint* m_next;

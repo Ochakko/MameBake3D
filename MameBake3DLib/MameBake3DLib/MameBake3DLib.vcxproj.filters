@@ -180,6 +180,9 @@
     <ClCompile Include="..\CPP\Retarget.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\ThreadsUpdateMatrix.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1230,6 +1233,9 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\Retarget.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadsUpdateMatrix.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

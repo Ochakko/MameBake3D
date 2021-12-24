@@ -1611,6 +1611,25 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	return 0;
 }
 
+int CModel::UpdateLimitedWM(int srcmotid, double srcframe)
+{
+	if (!m_curmotinfo) {
+		return 0;//!!!!!!!!!!!!
+	}
+
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->UpdateLimitedWorldMat(srcmotid, srcframe);
+		}
+	}
+
+	return 0;
+}
+
+
+
 int CModel::HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
 	m_matWorld = *wmat;
@@ -5770,6 +5789,7 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 	SetBtMotionReq( m_topbt, wmat, vpmat );
 
+
 	//SetBtMotionPostReq(m_topbt, wmat, vpmat);
 	if (srcbone && srcbone->GetParent()) {
 		CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
@@ -5780,6 +5800,9 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//kinematicadjust = 0
 
 		FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
+
+		InitBtMatTraAnimReq(m_topbt);
+
 
 		BtMat2BtObjReq(m_topbt, wmat, vpmat);
 		RecalcConstraintFrameABReq(m_topbt);
@@ -5932,8 +5955,41 @@ MOTINFO* CModel::GetRgdMorphInfo()
 }
 
 
+void CModel::InitBtMatTraAnimReq(CBtObject* curbto)
+{
+	if (!curbto) {
+		return;
+	}
+
+	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
+		CBone* curbone = curbto->GetBone();
+
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		int paraxsiflag1 = 1;
+		//int isfirstbone = 0;
+		cureul = curbone->CalcBtLocalEulXYZ(paraxsiflag1, BEFEUL_ZERO);
+
+		int inittraflag1 = 1;
+		int setchildflag1 = 1;
+		curbone->SetBtWorldMatFromEul(setchildflag1, cureul);
+
+	}
+	int chilno;
+	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+		CBtObject* chilbto = curbto->GetChildBt(chilno);
+		if (chilbto) {
+			InitBtMatTraAnimReq(chilbto);
+		}
+	}
+}
+
+
 void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat )
 {
+	if (!curbto) {
+		return;
+	}
+
 	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()){
 		CBone* curbone = curbto->GetBone();
 		if (curbone){
@@ -5944,6 +6000,16 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 				curbto->SetBtMotion();
 			}
 		}
+
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		int paraxsiflag1 = 1;
+		//int isfirstbone = 0;
+		cureul = curbone->CalcBtLocalEulXYZ(paraxsiflag1, BEFEUL_ZERO);
+
+		int inittraflag1 = 1;
+		int setchildflag1 = 1;
+		curbone->SetBtWorldMatFromEul(setchildflag1, cureul);
+
 	}
 	int chilno;
 	for( chilno = 0; chilno < curbto->GetChildBtSize(); chilno++ ){
@@ -8166,9 +8232,15 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					//}
 						bool infooutflag = true;
 					int onlycheck = 1;
-					int isbonemovable = parentbone->SetWorldMat(infooutflag, 1, curmi->motid, curframe, newbtmat, onlycheck);
-					if (isbonemovable == 0) {
-						return 0;//!!!!!!!!!!!!!!!!!!!!!!!!!
+					int isbonemovable;
+					if (g_limitdegflag == true) {
+						isbonemovable = parentbone->SetWorldMat(infooutflag, 1, curmi->motid, curframe, newbtmat, onlycheck);
+						if (isbonemovable == 0) {
+							return 0;//!!!!!!!!!!!!!!!!!!!!!!!!!
+						}
+					}
+					else {
+						isbonemovable = 1;
 					}
 
 					ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat(0);
@@ -8383,7 +8455,13 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 			bool infooutflag = true;
 			int onlycheck = 1;
-			int isbonemovable = parentbone->SetWorldMat(infooutflag, 1, m_curmotinfo->motid, startframe, newbtmat1, onlycheck);
+			int isbonemovable;
+			if (g_limitdegflag == true) {
+				isbonemovable = parentbone->SetWorldMat(infooutflag, 1, m_curmotinfo->motid, startframe, newbtmat1, onlycheck);
+			}
+			else {
+				isbonemovable = 1;
+			}
 			//parentbone->RotBoneQReq(0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
 			if (isbonemovable == 1) {
 				ChaMatrix invfirstmat = parentbone->GetCurrentZeroFrameInvMat(0);

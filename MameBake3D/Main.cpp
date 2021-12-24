@@ -160,6 +160,9 @@ PseudoLocalIKは常にオンになります
 
 #include "SelectLSDlg.h"
 
+#include <ThreadsUpdateMatrix.h>
+
+
 //#include <uxtheme.h>
 //#pragma ( lib, "UxTheme.lib" )
 
@@ -208,6 +211,9 @@ typedef struct tag_spsw
 //static void PhysIKRecReq(CBone* srcbone, double srcrectime);
 //static void ApplyPhysIkRec();
 //static void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
+
+static CThreadsUpdateMatrix s_tum;
+
 static double s_rectime = 0.0;
 static double s_reccnt = 0;
 
@@ -235,6 +241,12 @@ HWND s_motioncachebatchwnd;
 HANDLE s_motioncachehandle1;
 HANDLE s_motioncachehandle2;
 static void WaitMotionCacheThreads();
+
+
+static LONG s_progressnum = 0;
+static LONG s_progresscnt = 0;
+HWND s_progresswnd;
+
 
 static vector<wstring> s_retargetout;
 static LONG s_retargetnum = 0;
@@ -1032,6 +1044,8 @@ static bool s_LcursorFlag = false;			// カーソル移動フラグ
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
 
+static bool s_calclimitedwmFlag = false;
+
 static bool s_EcursorFlag = false;			// カーソル移動フラグ
 
 
@@ -1612,6 +1626,7 @@ LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
+LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
 void InitApp();
@@ -1654,6 +1669,7 @@ static int OnFrameUtCheckBox();
 static int OnFramePreviewStop();
 static int OnFramePreviewNormal(double* pnextframe, double* pdifftime);
 static int OnFramePreviewBt(double* pnextframe, double* pdifftime);
+int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel);
 static int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime);
 static int OnFrameCloseFlag();
 static int OnFrameTimeLineWnd();
@@ -1712,6 +1728,7 @@ static void FindF(std::vector<wstring>& out, const wstring& directory, const wst
 static int BVH2FBXBatch();
 static int MotionCacheBatch();
 static int RetargetBatch();
+static int CalcLimitedWorldMat();
 static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
@@ -1724,7 +1741,7 @@ static int SaveGcoFile();
 static int ExportFBXFile();
 
 static void refreshTimeline( OWP_Timeline& timeline ); 
-static void refreshEulerGraph();
+static int refreshEulerGraph();
 static int AddBoneTra( int kind, float srctra );
 static int AddBoneTra2( ChaVector3 diffvec );
 //static int AddBoneTraPhysics(ChaVector3 diffvec);
@@ -1884,7 +1901,7 @@ static int RegistKey();
 static int IsRegist();
 
 static int TimelineCursorToMotion();
-static int OnTimeLineCursor(int mbuttonflag, double newframe);
+int OnTimeLineCursor(int mbuttonflag, double newframe);
 static int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag);
 static int OnTimeLineSelectFromSelectedKey();
 static int OnTimeLineMButtonDown(bool ctrlshiftflag);
@@ -2612,7 +2629,7 @@ void InitApp()
 	s_prevrangeFlag = false;
 	s_nextrangeFlag = false;
 
-
+	s_calclimitedwmFlag = false;
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -2983,6 +3000,13 @@ void InitApp()
     g_fLightScale = 1.0f;
 
 	//CreateUtDialog();
+
+
+
+	//CThreadsUpdateMatrix
+	s_tum.InitParams();
+	s_tum.CreateThreads();
+
 
 
 //////////
@@ -4018,6 +4042,11 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 
+
+	s_tum.DestroyObjs();
+
+
+
 	CloseDbgFile();
 	if (g_infownd) {
 		delete g_infownd;
@@ -4950,6 +4979,9 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		OnFrameInitBtWorld();
 
 		OnDSMouseHereApeal();
+
+
+		//s_tum.WaitUpdateMatrix();
 	}
 
 	s_savepreviewFlag = g_previewFlag;
@@ -6622,6 +6654,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
   //          }
   //          break;
 		case IDC_BTSTART:
+			CalcLimitedWorldMat();
 			s_savelimitdegflag = g_limitdegflag;//StopBtでsaveに戻すのでsaveにセットだけしておく
 			StartBt(s_model, TRUE, 0, 1);
 			break;
@@ -6633,6 +6666,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
 			}
 			else {
+				CalcLimitedWorldMat();
 				g_btsimurecflag = true;
 				StartBt(s_model, TRUE, 0, 1);
 			}
@@ -8288,6 +8322,98 @@ int RetargetFile(char* fbxpath)
 	return 0;
 }
 
+
+int CalcLimitedWorldMat()
+{
+	if (!s_model) {
+		return 0;
+	}
+
+
+	CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG3), NULL, (DLGPROC)ProgressDlgProc);
+	RECT rect;
+	GetWindowRect(s_LtimelineWnd->getHWnd(), &rect);
+	SetWindowPos(s_progresswnd, HWND_TOP, rect.left, rect.top, 0, 0, SWP_NOSIZE);
+	ShowWindow(s_progresswnd, SW_SHOW);
+	UpdateWindow(s_progresswnd);
+
+
+	int modelcnt = 0;
+	int modelnum = s_modelindex.size();
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		modelcnt++;
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel) {
+			MOTINFO* curmi;
+			curmi = curmodel->GetCurMotInfo();
+			if (!curmi) {
+				return 0;
+			}
+
+			double frameleng = curmi->frameleng;
+			s_progressnum = (int)frameleng;
+			s_progresscnt = 0;
+
+			if (s_progresswnd) {
+				HWND hProg;
+				hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
+				if (hProg) {
+					SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, 100));
+					SendMessage(hProg, PBM_SETPOS, (WPARAM)0, 0);
+					UpdateWindow(s_progresswnd);
+				}
+			}
+
+			int dbgcnt = 0;
+			double curframe;
+			for (curframe = 0.0; curframe < frameleng; curframe += 1.0) {
+				
+				s_progresscnt = (int)curframe;
+
+				dbgcnt++;
+				if (((dbgcnt % 10) == 0) || (curframe == 0.0)) {
+					if (s_progresswnd) {
+						HWND hProg2;
+						hProg2 = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
+						if (hProg2) {
+							//現在位置を設定 
+							int curpercent = (int)((double)s_progresscnt / (double)s_progressnum * 100.0);
+							curpercent = min(100, curpercent);
+							curpercent = max(0, curpercent);
+							SendMessage(hProg2, PBM_SETPOS, (WPARAM)curpercent, 0);
+						}
+					}
+					if (s_progresswnd) {
+						WCHAR strnumcnt[1024] = { 0L };
+						swprintf_s(strnumcnt, 1024, L"%d / %d chara (cnt / num)", modelcnt, modelnum);
+						SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+
+						UpdateWindow(s_progresswnd);
+					}
+					//SleepEx(1, TRUE);
+				}
+
+				curmodel->UpdateLimitedWM(curmi->motid, curframe);
+
+			}
+
+		}
+	}
+
+	if (s_progresswnd) {
+		SendMessage(s_progresswnd, WM_CLOSE, 0, 0);
+	}
+
+
+	return 0;
+}
+
+
+
+
+
 unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
 {
 
@@ -9849,13 +9975,13 @@ int UpdateEditedEuler()
 	return 0;
 }
 
-void refreshEulerGraph()
+int refreshEulerGraph()
 {
 
 	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
 
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
-		return;
+		return 0;
 	}
 
 	//if (s_model && (s_model->GetLoadedFlag() == false)) {
@@ -10026,6 +10152,7 @@ void refreshEulerGraph()
 
 	}
 
+	return 0;
 }
 
 
@@ -12435,6 +12562,104 @@ LRESULT CALLBACK MotionCacheBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 }
 
 
+LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	//static int s_timerid = 371;
+
+	WCHAR strnumcnt[1024] = { 0L };
+	HWND hProg;
+	HWND hCancel;
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		s_progresswnd = hDlgWnd;
+
+		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_progresscnt + 1), s_progressnum);
+		SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+		hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
+		if (hProg) {
+			//プログレスバーの範囲         
+			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, 100));
+			//ステップの範囲を設定 
+			SendMessage(hProg, PBM_SETSTEP, 1, 0);
+			//現在位置を設定  
+			SendMessage(hProg, PBM_SETPOS, 0, 0);
+		}
+
+		//SetTimer(hDlgWnd, s_timerid, 100, NULL);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			//if (s_progresswnd) {
+			//	if (s_timerid != 0) {
+			//		KillTimer(s_progresswnd, s_timerid);
+			//		s_timerid = 0;
+			//	}
+			//	DestroyWindow(s_progresswnd);
+			//	s_progresswnd = 0;
+			//}
+			//InterlockedExchange(&g_progressflag, 2);
+			////EndDialog(hDlgWnd, IDOK);
+			break;
+		case IDCANCEL:
+			//if (s_progresswnd) {
+			//	if (s_timerid != 0) {
+			//		KillTimer(s_progresswnd, s_timerid);
+			//		s_timerid = 0;
+			//	}
+			//	DestroyWindow(s_progresswnd);
+			//	s_progresswnd = 0;
+			//}
+			//InterlockedExchange(&g_progressflag, 2);
+			////EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			break;
+		}
+		break;
+	case WM_USER_FOR_BATCH_PROGRESS:
+	//case WM_TIMER:
+	//	swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_progresscnt + 1), s_progressnum);
+	//	SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+
+	//	if (s_progresswnd) {
+	//		//HWND hProg;
+	//		hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
+	//		if (hProg) {
+	//			//プログレスバーの範囲を0-300にする           
+	//			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_progressnum));
+	//			//現在位置を設定  
+	//			SendMessage(hProg, PBM_SETPOS, (s_progresscnt + 1), 0);
+	//			//ステップの範囲を設定 
+	//			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
+	//		}
+	//		UpdateWindow(s_progresswnd);
+	//	}
+		break;
+	case WM_CLOSE:
+		if (s_progresswnd) {
+			//if (s_timerid != 0) {
+			//	KillTimer(s_progresswnd, s_timerid);
+			//	s_timerid = 0;
+			//}
+			DestroyWindow(s_progresswnd);
+			s_progresswnd = 0;
+		}
+		//InterlockedExchange(&g_progressflag, 2);
+		//EndDialog(hDlgWnd, IDOK);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
+}
+
+
+
+
 LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	static int s_timerid = 371;
@@ -14522,6 +14747,8 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					pmodel->SetCurrentRigidElem(s_rgdindexmap[pmodel]);//s_rgdindexをmodelごとに持つ必要あり！！！
 
 					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
+
+					//s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 
 				//ラグドールの時のERPは決め打ち
 					s_bpWorld->setGlobalERP(0.0);// ERP
@@ -17954,7 +18181,9 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			//EndDialog(hDlgWnd, IDOK);
 
 			//UpdateEditedEuler();//selectした範囲のみ
+
 			refreshEulerGraph();//モーション全体
+			//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
 
 
 			s_underanglelimithscroll = 0;
@@ -18256,7 +18485,11 @@ int ChangeCurrentBone()
 			if ((s_befbone != curbone) || (s_befmodel != s_model)) {
 				//if (s_owpTimeline) {
 					//refreshTimeline(*s_owpTimeline);
+				
 				refreshEulerGraph();
+				//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
+
+
 				//}
 			}
 
@@ -18414,6 +18647,7 @@ int OnFrameUtCheckBox()
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
 		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
 			refreshEulerGraph();
+			//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
 		}
 		s_beflimitdegflag = g_limitdegflag;
 	}
@@ -18472,6 +18706,8 @@ int OnFramePreviewStop()
 		}
 	}
 
+	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ブロッキング
+
 	return 0;
 }
 
@@ -18520,9 +18756,12 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 			curmodel->UpdateMatrix(&curmodel->GetWorldMat(), &s_matVP);
 		}
 	}
+	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ブロッキング
+
 
 	if (s_anglelimitdlg) {
 		UpdateEditedEuler();
+		//s_tum.UpdateEditedEuler(UpdateEditedEuler);//非ブロッキング
 	}
 
 
@@ -18537,6 +18776,8 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 
 	return 0;
 }
+
+
 
 int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 {
@@ -18669,6 +18910,9 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				}
 			}
 		}
+
+		//s_tum.SetBtMotion(OnFramePreviewBtAftFunc, s_modelindex, *pnextframe);
+
 	}
 
 	//playerButtonのonefpsボタン
@@ -18682,6 +18926,26 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 	return 0;
 }
+
+int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel)
+{
+	if (curmodel && (curmodel->GetBtCnt() != 0)) {
+		if (curmodel && curmodel->GetCurMotInfo()) {
+			curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, nextframe, &curmodel->GetWorldMat(), &s_matVP);
+
+			//60 x 30 frames limit : 30 sec limit
+			if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+				s_rectime = (double)((int)s_reccnt);
+				s_model->PhysIKRec(s_rectime);
+				s_reccnt++;
+			}
+		}
+	}
+
+	return 0;
+}
+
+
 
 void UpdateBtSimu(double nextframe, CModel* curmodel)
 {
@@ -19040,6 +19304,8 @@ int OnFrameTimeLineWnd()
 		return 0;
 	}
 
+
+
 	if (s_LstartFlag) {
 		s_LstartFlag = false;
 		s_buttonselectstart = s_editrange.GetStartFrame();
@@ -19055,7 +19321,8 @@ int OnFrameTimeLineWnd()
 			CModel* curmodel = itrmodel->modelptr;
 			if (curmodel && curmodel->GetCurMotInfo()) {
 				curmodel->SetMotionFrame(s_buttonselectstart);
-				curmodel->UpdateMatrix(&s_matWorld, &s_matVP);
+				//curmodel->UpdateMatrix(&s_matWorld, &s_matVP);
+				curmodel->UpdateMatrix(&(curmodel->GetWorldMat()), &s_matVP);//2021/12/21
 			}
 		}
 
@@ -19153,6 +19420,7 @@ int OnFrameMouseButton()
 		if (s_owpEulerGraph) {
 			s_owpEulerGraph->WheelShowPosTime();
 			refreshEulerGraph();
+			//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
 		}
 		
 	}
@@ -19754,6 +20022,12 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 
 int OnFramePlayButton()
 {
+	if (s_calclimitedwmFlag) {
+		s_calclimitedwmFlag = false;
+		CalcLimitedWorldMat();
+	}
+
+
 	if (s_firstkeyFlag){
 		//先頭フレームへ
 		s_firstkeyFlag = false;
@@ -20610,12 +20884,12 @@ int CreateLongTimelineWnd()
 
 	s_owpPlayerButton->setFrontPlayButtonListener([]() { 
 		if (s_model) {
-			s_LstartFlag = true; s_LcursorFlag = true;  g_previewFlag = 1;
+			s_calclimitedwmFlag = true; s_LstartFlag = true; s_LcursorFlag = true;  g_previewFlag = 1;
 		}
 	});
 	s_owpPlayerButton->setBackPlayButtonListener([](){  
 		if (s_model) {
-			s_LstartFlag = true; s_LcursorFlag = true; g_previewFlag = -1;
+			s_calclimitedwmFlag = true; s_LstartFlag = true; s_LcursorFlag = true; g_previewFlag = -1;
 		}
 	});
 	
@@ -24358,9 +24632,9 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 	return 0;
 }
 
-int OnTimeLineCursor(int mbuttonflag, double newframe)
+int OnTimeLineCursorFunc(int mbuttonflag, double newframe)
 {
-	if (g_previewFlag != 0){
+	if (g_previewFlag != 0) {
 		return 0;
 	}
 
@@ -24379,6 +24653,33 @@ int OnTimeLineCursor(int mbuttonflag, double newframe)
 			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 	}
+
+	return 0;
+}
+
+int OnTimeLineCursor(int mbuttonflag, double newframe)
+{
+	s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
+
+	//if (g_previewFlag != 0){
+	//	return 0;
+	//}
+
+	//if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
+	//	double curframe;
+	//	if (mbuttonflag != 2) {
+	//		curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
+	//		s_owpTimeline->setCurrentTime(curframe, false);
+	//		//s_owpLTimeline->setCurrentTime(curframe, false);
+	//		s_owpEulerGraph->setCurrentTime(curframe, false);
+	//	}
+	//	else {
+	//		curframe = newframe;
+	//		s_owpTimeline->setCurrentTime(curframe, false);
+	//		s_owpLTimeline->setCurrentTime(curframe, false);
+	//		s_owpEulerGraph->setCurrentTime(curframe, false);
+	//	}
+	//}
 
 	return 0;
 }

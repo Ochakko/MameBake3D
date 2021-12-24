@@ -97,6 +97,9 @@ public:
 
 	int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
 
+	int UpdateLimitedWorldMat(int srcmotid, double srcframe);
+
+	
 /**
  * @fn
  * AddMotionPoint
@@ -121,6 +124,7 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr );
+	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0);
 
 /**
  * @fn
@@ -335,6 +339,7 @@ public:
  */
 	int CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp );
 	int CalcCurrentLocalInfo(CMotionPoint* pdstmp);
+	int CalcBtLocalInfo(CMotionPoint* pdstmp);
 
 	int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
 /**
@@ -367,11 +372,13 @@ public:
 
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
+	ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 
 	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
 	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
+	int SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul);
 	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 befeul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
 	int SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);

@@ -218,6 +218,7 @@
     </ClCompile>
     <ClCompile Include="..\CPP\TexBank.cpp" />
     <ClCompile Include="..\CPP\TexElem.cpp" />
+    <ClCompile Include="..\CPP\ThreadsUpdateMatrix.cpp" />
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
     <ClCompile Include="..\CPP\XMLIO.cpp" />
     <ClCompile Include="..\DXUT\Core\DDSTextureLoader.cpp" />
@@ -571,6 +572,7 @@
     <ClInclude Include="..\INCLUDE\stdafx.h" />
     <ClInclude Include="..\INCLUDE\TexBank.h" />
     <ClInclude Include="..\INCLUDE\TexElem.h" />
+    <ClInclude Include="..\INCLUDE\ThreadsUpdateMatrix.h" />
     <ClInclude Include="..\INCLUDE\UndoMotion.h" />
     <ClInclude Include="..\INCLUDE\usercoef.h" />
     <ClInclude Include="..\INCLUDE\XMLIO.h" />

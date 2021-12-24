@@ -50,6 +50,8 @@ int CMotionPoint::InitParams()
 
 	m_setbefworldmatflag = false;
 
+	m_calclimitedwm = 0;
+	ChaMatrixIdentity(&m_limitedwm);
 
 	m_prev = 0;
 	m_next = 0;

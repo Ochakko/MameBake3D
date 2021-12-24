@@ -231,6 +231,7 @@ public:
  */
 	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat );
 	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
+	int UpdateLimitedWM(int srcmotid, double srcframe);
 
 /**
  * @fn
@@ -760,6 +761,7 @@ private:
 	void AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot = 0);
 	void AdjustBtMatToCurrent(CBone* curbone);
 	void AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot = 0);
+	void InitBtMatTraAnimReq(CBtObject* curbto);
 
 	void BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
 	void RecalcConstraintFrameABReq(CBtObject* curbto);
