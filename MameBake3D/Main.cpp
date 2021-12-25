@@ -731,7 +731,7 @@ using namespace OrgWinGUI;
 
 static ChaMatrix s_inimat;
 static double s_time = 0.0;
-static double s_difftime = 0.0;
+//static double s_difftime = 0.0;
 static int s_ikkind = 0;
 
 //PICKRANGEを大きくするとジョイントではなく疑似ボーンドラッグまで可能になるが、マニピュレータのリングのpickが難しくなる
@@ -1044,7 +1044,7 @@ static bool s_LcursorFlag = false;			// カーソル移動フラグ
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
 
-static bool s_calclimitedwmFlag = false;
+static int s_calclimitedwmFlag = 0;
 
 static bool s_EcursorFlag = false;			// カーソル移動フラグ
 
@@ -1676,6 +1676,7 @@ static int OnFrameTimeLineWnd();
 static int OnFrameMouseButton();
 static int OnFrameToolWnd();
 static int OnFramePlayButton();
+static int OnFrameStartPreview(double curtime, double* psavetime);
 //static int OnFrame();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
@@ -2629,7 +2630,7 @@ void InitApp()
 	s_prevrangeFlag = false;
 	s_nextrangeFlag = false;
 
-	s_calclimitedwmFlag = false;
+	s_calclimitedwmFlag = 0;
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -4913,6 +4914,8 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 			OnDSUpdate();
 		}
 
+		OnFrameStartPreview(fTime, &savetime);
+
 
 		OnFrameUtCheckBox();
 		SetCamera6Angle();
@@ -4968,8 +4971,12 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		else {
 			OnFramePreviewStop();
 		}
-		s_difftime = difftime;
+		//s_difftime = difftime;
 		savetime = fTime;
+
+
+
+
 
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
@@ -6654,9 +6661,11 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
   //          }
   //          break;
 		case IDC_BTSTART:
-			CalcLimitedWorldMat();
-			s_savelimitdegflag = g_limitdegflag;//StopBtでsaveに戻すのでsaveにセットだけしておく
-			StartBt(s_model, TRUE, 0, 1);
+			//CalcLimitedWorldMat();
+			//s_savelimitdegflag = g_limitdegflag;//StopBtでsaveに戻すのでsaveにセットだけしておく
+			//StartBt(s_model, TRUE, 0, 1);
+			s_calclimitedwmFlag = 10;
+
 			break;
 		case IDC_BTRECSTART:
 		{
@@ -6666,9 +6675,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
 			}
 			else {
-				CalcLimitedWorldMat();
-				g_btsimurecflag = true;
-				StartBt(s_model, TRUE, 0, 1);
+				//CalcLimitedWorldMat();
+				//g_btsimurecflag = true;
+				//StartBt(s_model, TRUE, 0, 1);
+				s_calclimitedwmFlag = 11;
 			}
 		}
 			break;
@@ -12568,7 +12578,6 @@ LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	WCHAR strnumcnt[1024] = { 0L };
 	HWND hProg;
-	HWND hCancel;
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -18805,6 +18814,23 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	//	}
 	//}
 
+	if (g_previewFlag != 0) {
+		if (s_savepreviewFlag == 0) {
+			//preview start frame
+			s_previewrange = s_editrange;
+			double rangestart;
+			if (s_previewrange.IsSameStartAndEnd()) {
+				rangestart = 1.0;
+			}
+			else {
+				rangestart = s_previewrange.GetStartFrame();
+			}
+			s_model->SetMotionFrame(rangestart);
+			*pdifftime = 0.0;
+		}
+	}
+
+
 	//CModel* curmodel = s_model;
 
 	bool recstopflag = false;
@@ -20020,12 +20046,56 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 	return 0;
 }
 
-int OnFramePlayButton()
+int OnFrameStartPreview(double curtime, double* psavetime)
 {
-	if (s_calclimitedwmFlag) {
-		s_calclimitedwmFlag = false;
+
+	//normal preview start
+	if (s_calclimitedwmFlag == 2) {
+		s_calclimitedwmFlag = 0;
+		*psavetime = curtime;
+	}
+	if (s_calclimitedwmFlag == 1) {
+		s_calclimitedwmFlag = 2;
 		CalcLimitedWorldMat();
 	}
+
+
+	//bullet simulation start
+	//if (s_calclimitedwmFlag == 13) {
+	//	s_calclimitedwmFlag = 0;
+	//	*psavetime = curtime;
+	//}
+
+	if (s_calclimitedwmFlag == 24) {
+		s_calclimitedwmFlag = 0;
+		StartBt(s_model, TRUE, 0, 1);
+		*psavetime = curtime;
+	}
+	if ((s_calclimitedwmFlag >= 20) && (s_calclimitedwmFlag <= 23)) {
+		//これがないと物理が乱れる
+		s_calclimitedwmFlag++;
+	}
+	if (s_calclimitedwmFlag == 10) {
+		s_calclimitedwmFlag = 20;
+		CalcLimitedWorldMat();
+		*psavetime = curtime;
+	}
+	if (s_calclimitedwmFlag == 11) {
+		s_calclimitedwmFlag = 20;
+		CalcLimitedWorldMat();
+		g_btsimurecflag = true;
+		*psavetime = curtime;
+	}
+
+
+
+
+	return 0;
+}
+
+
+int OnFramePlayButton()
+{
 
 
 	if (s_firstkeyFlag){
@@ -20884,12 +20954,12 @@ int CreateLongTimelineWnd()
 
 	s_owpPlayerButton->setFrontPlayButtonListener([]() { 
 		if (s_model) {
-			s_calclimitedwmFlag = true; s_LstartFlag = true; s_LcursorFlag = true;  g_previewFlag = 1;
+			s_calclimitedwmFlag = 1; s_LstartFlag = true; s_LcursorFlag = true;  g_previewFlag = 1;
 		}
 	});
 	s_owpPlayerButton->setBackPlayButtonListener([](){  
 		if (s_model) {
-			s_calclimitedwmFlag = true; s_LstartFlag = true; s_LcursorFlag = true; g_previewFlag = -1;
+			s_calclimitedwmFlag = 1; s_LstartFlag = true; s_LcursorFlag = true; g_previewFlag = -1;
 		}
 	});
 	
