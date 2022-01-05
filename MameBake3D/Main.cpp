@@ -5526,7 +5526,7 @@ void PrepairUndo()
 		if (s_model) {
 			CreateTimeLineMark();
 			SetLTimelineMark(s_curboneno);
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 		s_editmotionflag = -1;
 	}
@@ -10769,7 +10769,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	if( saveundoflag == 1 ){
 		if( s_model ){
-			s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 	}else{
 		if( s_model ){
@@ -19500,7 +19500,7 @@ int OnFrameToolWnd()
 		s_interpolateFlag = false;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
-			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, (double)g_applyrate);
 
 			//int keynum;
 			//double startframe, endframe, applyframe;
@@ -19513,7 +19513,7 @@ int OnFrameToolWnd()
 
 			UpdateEditedEuler();
 
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 
 	}
@@ -19598,7 +19598,7 @@ int OnFrameToolWnd()
 				_ASSERT(result2 == 0);
 			}
 
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 
 
 			if (s_copyhistorydlg.GetCreatedFlag() == true) {
@@ -19703,7 +19703,7 @@ int OnFrameToolWnd()
 			}
 
 			UpdateEditedEuler();
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 
 	}
@@ -19755,7 +19755,7 @@ int OnFrameToolWnd()
 		s_filterFlag = false;
 
 		if (s_model){
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 
 		s_editrange.Clear();
@@ -19773,7 +19773,7 @@ int OnFrameToolWnd()
 					UpdateEditedEuler();
 
 					if (s_model){
-						s_model->SaveUndoMotion(s_curboneno, s_curbaseno);
+						s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 					}
 				}
 				else{
@@ -19799,7 +19799,7 @@ int OnFrameToolWnd()
 		if( s_model && s_owpTimeline && s_model->m_curmotinfo){
 		s_owpTimeline->deleteKey();
 		//motionpoint‚Ìdelete‚Ídelete Listener‚Å‚·‚éB
-		s_model->SaveUndoMotion( s_curboneno, s_curbaseno );
+		s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 		***/
 	}
@@ -20147,6 +20147,11 @@ int OnFramePlayButton()
 
 int OnFrameUndo(bool fromds, int fromdskind)
 {
+	bool undodoneflag = false;
+	double tmpselectstart = 1.0;
+	double tmpselectend = 1.0;
+	double tmpapplyrate = 50.0;
+
 	///////////// undo
 	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))){
 
@@ -20154,12 +20159,13 @@ int OnFrameUndo(bool fromds, int fromdskind)
 
 		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)){
 			//redo
-			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
+			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+			undodoneflag = true;
 		}
 		else if((fromds && (fromdskind == 0)) || !fromds){
 			//undo
-			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno);//!!!!!!!!!!!
-
+			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+			undodoneflag = true;
 		}
 
 		//s_copyKeyInfoList.clear();
@@ -20211,6 +20217,33 @@ int OnFrameUndo(bool fromds, int fromdskind)
 
 
 	OnGUIEventSpeed();
+
+	if (s_model && undodoneflag) {
+		MOTINFO* curmi;
+		curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			s_buttonselectstart = max(0.0, tmpselectstart);
+			s_buttonselectstart = min((curmi->frameleng - 1.0), s_buttonselectstart);
+
+			s_buttonselectend = max(0.0, tmpselectend);
+			s_buttonselectend = min((curmi->frameleng - 1.0), s_buttonselectend);
+
+			
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+
+			g_applyrate = (int)tmpapplyrate;
+			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
+				g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->SetValue(g_applyrate);
+			}
+
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
+			}
+
+		}
+	}
 
 
 

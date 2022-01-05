@@ -14,6 +14,7 @@ class CBone;
 class CMotionPoint;
 class CMQOObject;
 class CMorphKey;
+class CEditRange;
 
 class CUndoMotion
 {
@@ -22,8 +23,8 @@ public:
 	~CUndoMotion();
 
 	int ClearData();
-	int SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno );
-	int RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno );
+	int SaveUndoMotion(CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate);
+	int RollBackMotion(CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate);
 
 private:
 	int InitParams();
@@ -51,6 +52,11 @@ private:
 
 	int m_curboneno;
 	int m_curbaseno;
+
+	int m_keynum;
+	double m_startframe;
+	double m_endframe;
+	double m_applyrate;
 };
 
 

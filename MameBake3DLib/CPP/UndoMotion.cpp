@@ -23,6 +23,8 @@
 //#include <quaternion.h>
 //#include <VecMath.h>
 #include <ChaVecCalc.h>
+#include <EditRange.h>
+
 
 #include <string>
 
@@ -59,6 +61,12 @@ int CUndoMotion::InitParams()
 	m_curbaseno = -1;
 
 	m_bonemotmark.clear();
+
+	m_keynum = 1;
+	m_startframe = 1.0;
+	m_endframe = 1.0;
+	m_applyrate = 50.0;
+
 
 	return 0;
 }
@@ -105,8 +113,12 @@ int CUndoMotion::DestroyObjs()
 }
 
 
-int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
+int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate)
 {
+	if (!pmodel) {
+		return 0;
+	}
+
 	if( !pmodel->GetCurMotInfo() ){
 		return 0;
 	}
@@ -117,6 +129,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 	if( pmodel->GetBoneListSize()<= 0 ){
 		return 0;
 	}
+
+	
 
 	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
 	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
@@ -244,14 +258,51 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno )
 	m_curboneno = curboneno;
 	m_curbaseno = curbaseno;
 
+	if (srcer) {
+		double tmpapplyframe;
+		srcer->GetRange(&m_keynum, &m_startframe, &m_endframe, &tmpapplyframe);
+		m_applyrate = srcapplyrate;
+	}
+	else {
+		m_keynum = 1;
+		m_startframe = 1.0;
+		m_endframe = 1.0;
+		m_applyrate = 50.0;
+	}
+
 	m_validflag = 1;
 
 	return 0;
 }
-int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno )
+int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate)
 {
 	if( m_validflag != 1 ){
 		_ASSERT( 0 );
+		return 1;
+	}
+	if (!pmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (!curboneno) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (!curbaseno) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (!dststartframe)
+	{
+		_ASSERT(0);
+		return 1;
+	}
+	if (!dstendframe) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (!dstapplyrate) {
+		_ASSERT(0);
 		return 1;
 	}
 
@@ -299,8 +350,14 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno 
 	MoveMemory( chkmotinfo, &m_savemotinfo, sizeof( MOTINFO ) );
 	pmodel->SetCurMotInfo( chkmotinfo );
 
+
 	*curboneno = m_curboneno;
 	*curbaseno = m_curbaseno;
+
+
+	*dststartframe = m_startframe;
+	*dstendframe = m_endframe;
+	*dstapplyrate = m_applyrate;
 
 	return 0;
 }

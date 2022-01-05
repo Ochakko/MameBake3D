@@ -10710,14 +10710,14 @@ int CModel::InitUndoMotion( int saveflag )
 	m_undoid = 0;
 
 	if( saveflag ){
-		m_undomotion[0].SaveUndoMotion( this, -1, -1 );
+		m_undomotion[0].SaveUndoMotion( this, -1, -1, 0, 50.0 );
 	}
 
 
 	return 0;
 }
 
-int CModel::SaveUndoMotion( int curboneno, int curbaseno )
+int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate )
 {
 	if( m_bonelist.empty() || !m_curmotinfo ){
 		return 0;
@@ -10730,11 +10730,11 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno )
 	}
 	m_undoid = nextundoid;
 
-	CallF( m_undomotion[m_undoid].SaveUndoMotion( this, curboneno, curbaseno ), return 1 );
+	CallF( m_undomotion[m_undoid].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate), return 1 );
 
 	return 0;
 }
-int CModel::RollBackUndoMotion( int redoflag, int* curboneno, int* curbaseno )
+int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate)
 {
 	if( m_bonelist.empty() || !m_curmotinfo ){
 		return 0;
@@ -10748,7 +10748,7 @@ int CModel::RollBackUndoMotion( int redoflag, int* curboneno, int* curbaseno )
 	}
 
 	if( rbundoid >= 0 ){
-		m_undomotion[ rbundoid ].RollBackMotion( this, curboneno, curbaseno );
+		m_undomotion[ rbundoid ].RollBackMotion(this, curboneno, curbaseno, dststartframe, dstendframe, dstapplyrate);
 		m_undoid = rbundoid;
 	}
 
