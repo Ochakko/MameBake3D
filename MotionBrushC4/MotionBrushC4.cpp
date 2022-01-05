@@ -8,6 +8,7 @@
 
 //#include <iostream.h>
 #include <Shlwapi.h>
+#include <psapi.h>
 
 #include <crtdbg.h>
 
@@ -27,6 +28,36 @@ static STARTUPINFO si3;
 static PROCESS_INFORMATION pi3;
 static STARTUPINFO si4;
 static PROCESS_INFORMATION pi4;
+
+typedef struct tag_infoforclose
+{
+    DWORD hprocid;
+    HWND hwnd;
+}INFOFORCLOSE;
+
+
+BOOL CALLBACK EnumWindowsProcForClose(HWND hWnd, LPARAM pinfo)
+{
+    if (!pinfo) {
+        return FALSE;
+    }
+    INFOFORCLOSE* infofc = (INFOFORCLOSE*)pinfo;
+
+    //終了したいプロセスのprocid取得
+    DWORD hprocid = infofc->hprocid;
+
+    //列挙したウインドウのprocid取得
+    DWORD chkprocid = 0;
+    ::GetWindowThreadProcessId(hWnd, &chkprocid);
+
+    //同じプロセスIDを探す
+    if (chkprocid == hprocid)
+    {
+        infofc->hwnd = hWnd;
+        return FALSE;
+    }
+    return TRUE;
+}
 
 
 // このコード モジュールに含まれる関数の宣言を転送します:
@@ -142,6 +173,9 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     return RegisterClassExW(&wcex);
 }
+
+
+
 
 //
 //   関数: InitInstance(HINSTANCE, int)
@@ -261,6 +295,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
                     diffx, diffy, (1216 + 450) * 2 + 16, 950 * 2 + 62, nullptr, nullptr, hInstance, nullptr);
            }
            else {
+               ::MessageBox(NULL, L"この実行ファイルは4KTV接続時用です。", L"終了します", MB_OK);
                return FALSE;
            }
        }
@@ -282,6 +317,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
                    diffx, diffy, (1216 + 450) * 2 + 16, 950 + 62, nullptr, nullptr, hInstance, nullptr);
            }
            else {
+               ::MessageBox(NULL, L"この実行ファイルは4KTV接続時用です。", L"終了します", MB_OK);
                return FALSE;
            }
        }
@@ -303,6 +339,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
                    diffx, diffy, (1216 + 450) + 16, 950 * 2 + 62, nullptr, nullptr, hInstance, nullptr);
            }
            else {
+               ::MessageBox(NULL, L"この実行ファイルは4KTV接続時用です。", L"終了します", MB_OK);
                return FALSE;
            }
        }
@@ -364,6 +401,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //// Close process and thread handles. 
    //CloseHandle(pi1.hProcess);
    //CloseHandle(pi1.hThread);
+
+
 
    if (dlg.m_w2) {
        //STARTUPINFO si2;
@@ -465,6 +504,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        //// Close process and thread handles. 
        //CloseHandle(pi4.hProcess);
        //CloseHandle(pi4.hThread);
+
    }
 
    return TRUE;
@@ -509,7 +549,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hWnd, &ps);
         }
         break;
-    case WM_DESTROY:
+    case WM_CLOSE:
         //// Wait until child process exits.
         //WaitForSingleObject(pi4.hProcess, INFINITE);
         //// Close process and thread handles. 
@@ -517,43 +557,130 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //CloseHandle(pi4.hThread);
 
         if (pi1.hProcess) {
-            TerminateProcess(pi1.hProcess, 0);
-            WaitForSingleObject(pi1.hProcess, INFINITE);
-            CloseHandle(pi1.hProcess);
-            CloseHandle(pi1.hThread);
+            //TerminateProcess(pi1.hProcess, 0);
+
+            INFOFORCLOSE infofc1;
+            ZeroMemory(&infofc1, sizeof(INFOFORCLOSE));
+            infofc1.hprocid = pi1.dwProcessId;
+            EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc1);
+            if (infofc1.hwnd != 0) {
+                ::PostMessage(infofc1.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                //::PostMessage(infofc1.hwnd, WM_CLOSE, 0, 0);
+                //::PostMessage(infofc1.hwnd, WM_DESTROY, 0, 0);
+                //WaitForSingleObject(pi1.hProcess, INFINITE);
+            }
         }
-        pi1.hProcess = 0;
-        pi1.hThread = 0;
 
         if (pi2.hProcess) {
-            TerminateProcess(pi2.hProcess, 0);
-            WaitForSingleObject(pi2.hProcess, INFINITE);
-            CloseHandle(pi2.hProcess);
-            CloseHandle(pi2.hThread);
+            //TerminateProcess(pi2.hProcess, 0);
+
+            INFOFORCLOSE infofc2;
+            ZeroMemory(&infofc2, sizeof(INFOFORCLOSE));
+            infofc2.hprocid = pi2.dwProcessId;
+            EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc2);
+            if (infofc2.hwnd != 0) {
+                ::PostMessage(infofc2.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                //::PostMessage(infofc2.hwnd, WM_CLOSE, 0, 0);
+                //::PostMessage(infofc2.hwnd, WM_DESTROY, 0, 0);
+                //WaitForSingleObject(pi2.hProcess, INFINITE);
+            }
         }
-        pi2.hProcess = 0;
-        pi2.hThread = 0;
 
         if (pi3.hProcess) {
-            TerminateProcess(pi3.hProcess, 0);
-            WaitForSingleObject(pi3.hProcess, INFINITE);
-            CloseHandle(pi3.hProcess);
-            CloseHandle(pi3.hThread);
+            //TerminateProcess(pi3.hProcess, 0);
+
+           INFOFORCLOSE infofc3;
+            ZeroMemory(&infofc3, sizeof(INFOFORCLOSE));
+            infofc3.hprocid = pi3.dwProcessId;
+            EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc3);
+            if (infofc3.hwnd != 0) {
+                ::PostMessage(infofc3.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                //::PostMessage(infofc3.hwnd, WM_CLOSE, 0, 0);
+                //::PostMessage(infofc3.hwnd, WM_DESTROY, 0, 0);
+                //WaitForSingleObject(pi3.hProcess, INFINITE);
+            }
         }
-        pi3.hProcess = 0;
-        pi3.hThread = 0;
 
 
         if (pi4.hProcess) {
-            TerminateProcess(pi4.hProcess, 0);
-            WaitForSingleObject(pi4.hProcess, INFINITE);
-            CloseHandle(pi4.hProcess);
-            CloseHandle(pi4.hThread);
+            //TerminateProcess(pi4.hProcess, 0);
+
+            INFOFORCLOSE infofc4;
+            ZeroMemory(&infofc4, sizeof(INFOFORCLOSE));
+            infofc4.hprocid = pi4.dwProcessId;
+            EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc4);
+            if (infofc4.hwnd != 0) {
+                ::PostMessage(infofc4.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                //::PostMessage(infofc4.hwnd, WM_CLOSE, 0, 0);
+                //::PostMessage(infofc4.hwnd, WM_DESTROY, 0, 0);
+                //WaitForSingleObject(pi4.hProcess, INFINITE);
+            }
         }
-        pi4.hProcess = 0;
-        pi4.hThread = 0;
+
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //! 
+        
+        {
+            //int appcnt = 0;
+            //int appnum = 0;
+            //HANDLE happs[4];
+            //if (pi1.hProcess) {
+            //    happs[appcnt++] = pi1.hProcess;
+            //}
+            //if (pi2.hProcess) {
+            //    happs[appcnt++] = pi2.hProcess;
+            //}
+            //if (pi3.hProcess) {
+            //    happs[appcnt++] = pi3.hProcess;
+            //}
+            //if (pi4.hProcess) {
+            //    happs[appcnt++] = pi4.hProcess;
+            //}
+            //appnum = appcnt;
+            //while (1) {
+            //    DWORD dwret = WaitForMultipleObjects(appnum, happs, TRUE, 100);
+            //    if (dwret != WAIT_TIMEOUT) {
+            //        break;
+            //    }
+            //}
+
+
+            Sleep(2000);
+
+
+            if (pi1.hProcess) {
+                TerminateProcess(pi1.hProcess, 0);
+                CloseHandle(pi1.hProcess);
+                CloseHandle(pi1.hThread);
+            }
+            if (pi2.hProcess) {
+                TerminateProcess(pi2.hProcess, 0);
+                CloseHandle(pi2.hProcess);
+                CloseHandle(pi2.hThread);
+            }
+            if (pi3.hProcess) {
+                TerminateProcess(pi3.hProcess, 0);
+                CloseHandle(pi3.hProcess);
+                CloseHandle(pi3.hThread);
+            }
+            if (pi4.hProcess) {
+                TerminateProcess(pi4.hProcess, 0);
+                CloseHandle(pi4.hProcess);
+                CloseHandle(pi4.hThread);
+            }
+            pi1.hProcess = 0;
+            pi1.hThread = 0;
+            pi2.hProcess = 0;
+            pi2.hThread = 0;
+            pi3.hProcess = 0;
+            pi3.hThread = 0;
+            pi4.hProcess = 0;
+            pi4.hThread = 0;
+        }
 
         PostQuitMessage(0);
+
+
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

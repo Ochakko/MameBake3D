@@ -1051,6 +1051,43 @@ namespace OrgWinGUI{
 
 	}
 
+	double OWP_Timeline::calcShowPosTime(double srctime)
+	{
+		double newshowpostime = showPos_time;
+
+		if ((g_underselectingframe != 0) || (g_previewFlag != 0)) {
+
+			int x1 = MARGIN + LABEL_SIZE_X;
+			int x2 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+
+			if (srctime <= showPos_time) {
+				newshowpostime = srctime;
+			}
+			if ((newshowpostime + ((double)x2 - 3 - x1) / timeSize) <= srctime) {
+				newshowpostime = srctime - ((double)x2 - 3 - x1) / timeSize;
+			}
+		}
+		else {
+			//カレントフレームがタイムラインのセンターに来るように計算
+
+			int x0 = MARGIN + LABEL_SIZE_X;
+			int x1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+
+			double curshowTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
+			newshowpostime = srctime - curshowTimeLength / 2.0;
+
+			if (curshowTimeLength < maxTime) {
+				//showPos_time= max(0,min( _showPosTime, maxTime-showTimeLength));
+				newshowpostime = max(0, min(newshowpostime, maxTime - curshowTimeLength / 2.0));
+			}
+			else {
+				newshowpostime = 0;
+			}
+		}
+
+		return newshowpostime;
+	}
+
 
 	void OWP_Timeline::setCurrentTime(double _currentTime, bool CallListener) {
 		static int s_paintcnt = 0;
@@ -1065,13 +1102,7 @@ namespace OrgWinGUI{
 		}
 
 		currentTime = min(max(_currentTime, 0), maxTime);
-
-		if (currentTime <= showPos_time) {
-			showPos_time = currentTime;
-		}
-		if ((showPos_time + ((double)x2 - 3 - x1) / timeSize) <= currentTime) {
-			showPos_time = currentTime - ((double)x2 - 3 - x1) / timeSize;
-		}
+		showPos_time = calcShowPosTime(currentTime);
 
 		//リスナーコール
 		if (CallListener && (this->cursorListener != NULL)) {
@@ -1084,6 +1115,42 @@ namespace OrgWinGUI{
 		}
 	}
 
+	double OWP_EulerGraph::calcShowPosTime(double srctime)
+	{
+		double newshowpostime = showPos_time;
+
+		if ((g_underselectingframe != 0) || (g_previewFlag != 0)) {
+
+			int x1 = MARGIN + LABEL_SIZE_X;
+			int x2 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+
+			if (srctime <= showPos_time) {
+				newshowpostime = srctime;
+			}
+			if ((newshowpostime + ((double)x2 - 3 - x1) / timeSize) <= srctime) {
+				newshowpostime = srctime - ((double)x2 - 3 - x1) / timeSize;
+			}
+		}
+		else {
+			//カレントフレームがタイムラインのセンターに来るように計算
+
+			int x0 = MARGIN + LABEL_SIZE_X;
+			int x1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
+
+			double curshowTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
+			newshowpostime = srctime - curshowTimeLength / 2.0;
+
+			if (curshowTimeLength < maxTime) {
+				//showPos_time= max(0,min( _showPosTime, maxTime-showTimeLength));
+				newshowpostime = max(0, min(newshowpostime, maxTime - curshowTimeLength / 2.0));
+			}
+			else {
+				newshowpostime = 0;
+			}
+		}
+
+		return newshowpostime;
+	}
 	void OWP_EulerGraph::setCurrentTime(double _currentTime, bool CallListener) {
 		static int s_paintcnt = 0;
 		s_paintcnt++;
@@ -1096,13 +1163,7 @@ namespace OrgWinGUI{
 		}
 
 		currentTime = min(max(_currentTime, 0), maxTime);
-
-		if (currentTime <= showPos_time) {
-			showPos_time = currentTime;
-		}
-		if ((showPos_time + ((double)x2 - 3 - x1) / timeSize) <= currentTime) {
-			showPos_time = currentTime - ((double)x2 - 3 - x1) / timeSize;
-		}
+		showPos_time = calcShowPosTime(currentTime);
 
 		//リスナーコール
 		if (CallListener && (this->cursorListener != NULL)) {

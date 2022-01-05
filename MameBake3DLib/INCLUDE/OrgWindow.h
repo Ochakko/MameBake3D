@@ -5071,22 +5071,15 @@ void s_dummyfunc()
 		double getShowPosTime() const{
 			return showPos_time;
 		}
-		void setShowPosTime(const double &_showPosTime){
-			int x0= MARGIN+LABEL_SIZE_X;
-			int x1= size.x-MARGIN-SCROLL_BAR_WIDTH;
-
-			double showTimeLength= ((double)(x1-x0-3))/timeSize;
-			if( showTimeLength<maxTime ){
-				showPos_time= max(0,min( _showPosTime, maxTime-showTimeLength));
-			}else{
-				showPos_time= 0;
-			}
+		double calcShowPosTime(double _showPosTime);
+		void setShowPosTime(const double& _showPosTime) {
+			showPos_time = calcShowPosTime(_showPosTime);
 
 			//Ä•`‰æ—v‹
-			if( rewriteOnChange ){
+			if (rewriteOnChange) {
 				callRewrite();
 			}
-		}
+		};
 		//	Accessor : showPos_line
 		int getShowPosLine() const{
 			return showPos_line;
@@ -6899,23 +6892,15 @@ void s_dummyfunc()
 		double getShowPosTime() const {
 			return showPos_time;
 		}
-		void setShowPosTime(const double &_showPosTime) {
-			int x0 = MARGIN + LABEL_SIZE_X;
-			int x1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
-
-			double showTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
-			if (showTimeLength<maxTime) {
-				showPos_time = max(0, min(_showPosTime, maxTime - showTimeLength));
-			}
-			else {
-				showPos_time = 0;
-			}
+		double calcShowPosTime(double _showPosTime);
+		void setShowPosTime(const double& _showPosTime) {
+			showPos_time = calcShowPosTime(_showPosTime);
 
 			//Ä•`‰æ—v‹
 			if (rewriteOnChange) {
 				callRewrite();
 			}
-		}
+		};
 		//	Accessor : showPos_line
 		int getShowPosLine() const {
 			return showPos_line;
