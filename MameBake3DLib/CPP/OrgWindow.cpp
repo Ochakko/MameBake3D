@@ -16,7 +16,7 @@ extern std::vector<void*> g_eulpool;//allocate EULPOOLBLKLEN motoinpoints at ons
 extern std::vector<void*> g_keypool;//allocate KEYPOOLBLKLEN motoinpoints at onse and pool 
 
 extern LONG g_bvh2fbxbatchflag;
-extern LONG g_motioncachebatchflag;
+//extern LONG g_motioncachebatchflag;
 extern LONG g_retargetbatchflag;
 
 namespace OrgWinGUI{
@@ -44,7 +44,8 @@ namespace OrgWinGUI{
 		paintTitleBar();
 
 		//if (g_retargetbatchflag == 0) {
-		if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0)) {
+		//if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0)) {
+		if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0)) {
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
 				if ((*itr)->getParent() && IsWindow((*itr)->getParent()->hWnd)) {

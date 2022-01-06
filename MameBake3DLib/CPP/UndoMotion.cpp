@@ -35,7 +35,7 @@ using namespace std;
 
 
 extern LONG g_bvh2fbxbatchflag;
-extern LONG g_motioncachebatchflag;
+//extern LONG g_motioncachebatchflag;
 extern LONG g_retargetbatchflag;
 
 
@@ -133,7 +133,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 	
 
 	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
-	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 		return 0;
 	}
 
