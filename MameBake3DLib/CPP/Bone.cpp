@@ -7242,6 +7242,14 @@ ChaVector3 CBone::GetWorldPos(int srcmotid, double srcframe)
 	jointpos = GetJointFPos();
 	ChaMatrix newworldmat = GetLimitedWorldMat(srcmotid, srcframe);
 
+
+	//2022/01/07 マニピュレータをキャラクター位置に出すため
+	if (GetParModel()) {
+		ChaMatrix wm = GetParModel()->GetWorldMat();
+		newworldmat = newworldmat * wm;
+	}
+
+
 	ChaVector3TransformCoord(&retpos, &jointpos, &newworldmat);
 
 	return retpos;

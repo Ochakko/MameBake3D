@@ -795,7 +795,7 @@ static int s_sidemenuheight = MAINMENUAIMBARH;
 static int s_sidewidth = s_sidemenuwidth;
 static int s_sideheight = s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28;
 
-
+static int s_guibarX0 = 120;
 
 static ID3D11Device* s_pdev = 0;
 
@@ -868,9 +868,9 @@ static OWP_Separator* s_sidemenusp = 0;
 static OWP_Separator* s_sidemenusp1 = 0;
 static OWP_Separator* s_sidemenusp2 = 0;
 static OWP_Button* s_sidemenu_rigid = 0;
-static OWP_Button* s_sidemenu_impulse = 0;
-static OWP_Button* s_sidemenu_ground = 0;
-static OWP_Button* s_sidemenu_dampanim = 0;
+static OWP_Button* s_sidemenu_limiteul = 0;
+static OWP_Button* s_sidemenu_copyhistory = 0;
+static OWP_Button* s_sidemenu_retarget = 0;
 
 static OrgWindow* s_mainmenuaimbarWnd = 0;
 static OWP_Label* s_mainmenulabel = 0;
@@ -1793,6 +1793,7 @@ static int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
 static int OnSetMotSpeed();
 
 static int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu );
+static int SetTimelineHasRigFlag();
 static int OnREMenu( int selindex, int callbymenu );
 static int OnRgdMenu( int selindex, int callbymenu );
 static int OnImpMenu( int selindex );
@@ -1805,6 +1806,7 @@ static int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext);
 //static int SetSelectState(ID3D11DeviceContext* pd3dImmediateContext);
+
 
 static int CreateModelPanel();
 static int DestroyModelPanel();
@@ -2446,6 +2448,11 @@ int CheckResolution()
 					s_sidewidth = s_sidemenuwidth;
 					//s_sideheight = (s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28) * 2 + MAINMENUAIMBARH;
 					s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2 - 4;
+
+
+					//s_guibarX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
+					s_guibarX0 = s_mainwidth / 2 - 130 * 2;
+
 				}
 				else {
 					g_4kresolution = false;
@@ -2488,6 +2495,8 @@ int CheckResolution()
 		s_sidewidth = s_sidemenuwidth;
 		s_sideheight = s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28;
 
+		s_guibarX0 = 120;
+
 	}
 
 
@@ -2507,6 +2516,8 @@ void InitApp()
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
+
+	g_wallscrapingikflag = 0;
 
 	s_ikkind = 0;
 	
@@ -4478,17 +4489,17 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_sidemenu_rigid;
 		s_sidemenu_rigid = 0;
 	}
-	if (s_sidemenu_impulse) {
-		delete s_sidemenu_impulse;
-		s_sidemenu_impulse = 0;
+	if (s_sidemenu_limiteul) {
+		delete s_sidemenu_limiteul;
+		s_sidemenu_limiteul = 0;
 	}
-	if (s_sidemenu_ground) {
-		delete s_sidemenu_ground;
-		s_sidemenu_ground = 0;
+	if (s_sidemenu_copyhistory) {
+		delete s_sidemenu_copyhistory;
+		s_sidemenu_copyhistory = 0;
 	}
-	if (s_sidemenu_dampanim) {
-		delete s_sidemenu_dampanim;
-		s_sidemenu_dampanim = 0;
+	if (s_sidemenu_retarget) {
+		delete s_sidemenu_retarget;
+		s_sidemenu_retarget = 0;
 	}
 	if (s_sidemenusp) {
 		delete s_sidemenusp;
@@ -4506,17 +4517,17 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_sidemenu_rigid;
 		s_sidemenu_rigid = 0;
 	}
-	if (s_sidemenu_impulse) {
-		delete s_sidemenu_impulse;
-		s_sidemenu_impulse = 0;
+	if (s_sidemenu_limiteul) {
+		delete s_sidemenu_limiteul;
+		s_sidemenu_limiteul = 0;
 	}
-	if (s_sidemenu_ground) {
-		delete s_sidemenu_ground;
-		s_sidemenu_ground = 0;
+	if (s_sidemenu_copyhistory) {
+		delete s_sidemenu_copyhistory;
+		s_sidemenu_copyhistory = 0;
 	}
-	if (s_sidemenu_dampanim) {
-		delete s_sidemenu_dampanim;
-		s_sidemenu_dampanim = 0;
+	if (s_sidemenu_retarget) {
+		delete s_sidemenu_retarget;
+		s_sidemenu_retarget = 0;
 	}
 	if (s_sidemenuWnd) {
 		delete s_sidemenuWnd;
@@ -5850,7 +5861,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			switch( menuid ){
 			case ID_40047:
 				// "ï“èWÅEïœä∑"
-				// "É{Å[Éìé≤ÇZÇ…çƒåvéZ"
+				// "É{Å[Éìé≤ÇXÇ…çƒåvéZ"
 				ActivatePanel(0);
 				//RecalcBoneAxisX(0);
 				RecalcAxisX_All();
@@ -6242,20 +6253,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						ChangeCurrentBone();
 
 						
-
-
-						if (s_model->GetInitAxisMatX() == 0){
-							s_owpLTimeline->setCurrentTime(0.0, true);
-							s_owpEulerGraph->setCurrentTime(0.0, false);
-							s_model->SetMotionFrame(0.0);
-							s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-
-
-							//Ç±Ç±Ç≈AxisMatXÇÃèâä˙âª
-							s_model->CreateBtObject(1);
-							s_model->CalcBtAxismat(2);//2
-							s_model->SetInitAxisMatX(1);
-						}
+						//if (s_model->GetInitAxisMatX() == 0){//OnAnimMenuÇ…à⁄ìÆ
+						//	s_owpLTimeline->setCurrentTime(0.0, true);
+						//	s_owpEulerGraph->setCurrentTime(0.0, false);
+						//	s_model->SetMotionFrame(0.0);
+						//	s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+						//	//Ç±Ç±Ç≈AxisMatXÇÃèâä˙âª
+						//	s_model->CreateBtObject(1);
+						//	s_model->CalcBtAxismat(2);//2
+						//	s_model->SetInitAxisMatX(1);
+						//}
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
 
@@ -9240,6 +9247,8 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 //::MessageBox(s_mainhwnd, L"check 8", L"check!!!", MB_OK);
 
 
+	SetTimelineHasRigFlag();
+
 	return newmodel;
 }
 
@@ -9623,18 +9632,20 @@ int UpdateEditedEuler()
 					scalemax = maxval + 10.0;
 				}
 
-
 				unsigned int scaleindex;
 				for (scaleindex = 0; scaleindex < curmi->frameleng; scaleindex++) {
 					double curscalevalue;
 					if ((scaleindex >= (int)g_motionbrush_startframe) && (scaleindex <= (int)g_motionbrush_endframe) && (scaleindex < (int)g_motionbrush_frameleng)) {
-						curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
+						curscalevalue = (double)(*(g_motionbrush_value + scaleindex));// *(scalemax - scalemin) + scalemin;
+						curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 					}
 					else {
-						curscalevalue = 0.0 * (scalemax - scalemin) + scalemin;
+						curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
+						curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 					}
 					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);//setkey
 				}
+
 
 			}
 
@@ -9808,10 +9819,12 @@ int refreshEulerGraph()
 						for (scaleindex = 0; scaleindex < frameleng; scaleindex++) {
 							double curscalevalue;
 							if ((scaleindex >= (int)g_motionbrush_startframe) && (scaleindex <= (int)g_motionbrush_endframe) && (scaleindex < (int)g_motionbrush_frameleng)) {
-								curscalevalue = (double)(*(g_motionbrush_value + scaleindex)) * (scalemax - scalemin) + scalemin;
+								curscalevalue = (double)(*(g_motionbrush_value + scaleindex));// *(scalemax - scalemin) + scalemin;
+								curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 							}
 							else {
-								curscalevalue = 0.0 * (scalemax - scalemin) + scalemin;
+								curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
+								curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 							}
 							s_owpEulerGraph->newKey(_T("S"), (double)scaleindex, curscalevalue);//newkey
 						}
@@ -10456,6 +10469,21 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	s_underselectmotion = false;
 
+
+
+
+	if (s_model->GetInitAxisMatX() == 0){//OnAnimMenuÇ…à⁄ìÆ
+		s_owpLTimeline->setCurrentTime(0.0, true);
+		s_owpEulerGraph->setCurrentTime(0.0, false);
+		s_model->SetMotionFrame(0.0);
+		s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+		//Ç±Ç±Ç≈AxisMatXÇÃèâä˙âª
+		s_model->CreateBtObject(1);
+		s_model->CalcBtAxismat(2);//2
+		s_model->SetInitAxisMatX(1);
+	}
+
+
 	return 0;
 }
 
@@ -10633,6 +10661,8 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	}
 
 	SetMainWindowTitle();
+
+	SetTimelineHasRigFlag();
 
 	s_underselectmodel = false;
 
@@ -15141,7 +15171,7 @@ int SetSpRigidSWParams()
 	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x = 120;
+	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x = s_guibarX0;
 	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486;
 	
 	
@@ -15202,7 +15232,7 @@ int SetSpRetargetSWParams()
 	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
-	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x = 120;
+	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x = s_guibarX0;
 	
 	
 	//s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 - MAINMENUAIMBARH;
@@ -15327,7 +15357,7 @@ int SetSpAimBarParams()
 	float spgwidth = 124.0f;
 	float spgheight = 6.0f;
 	int spgshift = 6;
-	s_spaimbar[SPAIMBAR_1].dispcenter.x = 120;
+	s_spaimbar[SPAIMBAR_1].dispcenter.x = s_guibarX0;
 	//s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2);
 	
 	
@@ -15584,7 +15614,8 @@ int SetSpGUISWParams()
 		float spretwidth = 32.0f;
 		float spretheight = 32.0f;
 		int spretshift = 0;
-		s_spret2prev.dispcenter.x = (LONG)(16.0f + 8.0f);
+		//s_spret2prev.dispcenter.x = (LONG)(16.0f + 8.0f);
+		s_spret2prev.dispcenter.x = s_guibarX0 - 70 - (LONG)(16.0f + 8.0f);
 		//s_spret2prev.dispcenter.y = 486;
 		if (g_4kresolution) {
 			s_spret2prev.dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
@@ -15614,7 +15645,7 @@ int SetSpGUISWParams()
 	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
-	s_spguisw[SPGUISW_SPRITEFK].dispcenter.x = 120;
+	s_spguisw[SPGUISW_SPRITEFK].dispcenter.x = s_guibarX0;
 	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486;
 
 	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH;
@@ -16605,40 +16636,41 @@ int SetTimelineMark()
 
 //	s_owpTimeline->deleteKey();
 
-	map<int,CBone*>::iterator itrbone;
-	for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-		CBone* curbone = itrbone->second;
-		if( curbone ){
-			int curlineno = s_boneno2lineno[ curbone->GetBoneNo() ];
-			if( curlineno >= 0 ){
-				double curframe;
-				for( curframe = 0.0; curframe < s_model->GetCurMotInfo()->frameleng; curframe += 1.0 ){
-					KeyInfo chkki = s_owpTimeline->ExistKey( curlineno, curframe );
-					if( chkki.lineIndex >= 0 ){
-						s_owpTimeline->deleteKey( curlineno, curframe );
-					}
-				}
-			}
-		}
-	}
+	//map<int,CBone*>::iterator itrbone;
+	//for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	//	CBone* curbone = itrbone->second;
+	//	if( curbone ){
+	//		int curlineno = s_boneno2lineno[ curbone->GetBoneNo() ];
+	//		if( curlineno >= 0 ){
+	//			double curframe;
+	//			for( curframe = 0.0; curframe < s_model->GetCurMotInfo()->frameleng; curframe += 1.0 ){
+	//				KeyInfo chkki = s_owpTimeline->ExistKey( curlineno, curframe );
+	//				if( chkki.lineIndex >= 0 ){
+	//					s_owpTimeline->deleteKey( curlineno, curframe );
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
-	for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-		CBone* curbone = itrbone->second;
-		if( curbone ){
-			int curlineno = s_boneno2lineno[ curbone->GetBoneNo() ];
-			if( curlineno >= 0 ){
-				map<int, map<double, int>>::iterator itrcur;
-				itrcur = curbone->FindMotMarkOfMap( s_model->GetCurMotInfo()->motid );
-				if( itrcur != curbone->GetMotMarkOfMapBegin() ){
-					map<double, int>::iterator itrmark;
-					for( itrmark = itrcur->second.begin(); itrmark != itrcur->second.end(); itrmark++ ){
-						double curframe = itrmark->first;
-						s_owpTimeline->newKey( curbone->GetWBoneName(), curframe, 0 );
-					}
-				}
-			}
-		}
-	}
+	//map<int, CBone*>::iterator itrbone;
+	//for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	//	CBone* curbone = itrbone->second;
+	//	if( curbone ){
+	//		int curlineno = s_boneno2lineno[ curbone->GetBoneNo() ];
+	//		if( curlineno >= 0 ){
+	//			map<int, map<double, int>>::iterator itrcur;
+	//			itrcur = curbone->FindMotMarkOfMap( s_model->GetCurMotInfo()->motid );
+	//			if( itrcur != curbone->GetMotMarkOfMapBegin() ){
+	//				map<double, int>::iterator itrmark;
+	//				for( itrmark = itrcur->second.begin(); itrmark != itrcur->second.end(); itrmark++ ){
+	//					double curframe = itrmark->first;
+	//					s_owpTimeline->newKey( curbone->GetWBoneName(), curframe, 0 );
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
 	s_owpTimeline->callRewrite();
 	s_owpTimeline->setRewriteOnChangeFlag(true);		//çƒï`âÊóvãÅÇçƒäJ
@@ -20087,11 +20119,18 @@ int CreateUtDialog()
 //################
 	//iY += 24;
 
+	int iX0;
+
 	if (g_4kresolution) {
-		iY = s_mainheight - (520 - MAINMENUAIMBARH);
+		//iY = s_mainheight - (520 - MAINMENUAIMBARH);
+		//iY = s_mainheight - 210 - addh - 10;
+		//iY = s_mainheight - 210 - 10;
+		iY = s_mainheight - 210 - 10 - 3 * addh;
+		iX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
 	}
 	else {
 		iY = 0;
+		iX0 = 0;
 	}
 
 
@@ -20102,18 +20141,18 @@ int CreateUtDialog()
 	//g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
 	//iY += addh;
 	//g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
-	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
+	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, iX0 + 50, iY, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	s_ui_lightscale = g_SampleUI.GetControl(IDC_LIGHT_SCALE);
 	_ASSERT(s_ui_lightscale);
 	s_dsutgui0.push_back(s_ui_lightscale);
 	s_dsutguiid0.push_back(IDC_LIGHT_SCALE);
 
-	g_SampleUI.AddCheckBox(IDC_BMARK, L"DispBone", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
+	g_SampleUI.AddCheckBox(IDC_BMARK, L"DispBone", iX0 + 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
 	s_ui_dispbone = g_SampleUI.GetControl(IDC_BMARK);
 	_ASSERT(s_ui_dispbone);
 	s_dsutgui0.push_back(s_ui_dispbone);
 	s_dsutguiid0.push_back(IDC_BMARK);
-	g_SampleUI.AddCheckBox(IDC_RMARK, L"DispRigid", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_RigidMarkCheckBox);
+	g_SampleUI.AddCheckBox(IDC_RMARK, L"DispRigid", iX0 + 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_RigidMarkCheckBox);
 	s_ui_disprigid = g_SampleUI.GetControl(IDC_RMARK);
 	_ASSERT(s_ui_disprigid);
 	s_dsutgui0.push_back(s_ui_disprigid);
@@ -20124,7 +20163,7 @@ int CreateUtDialog()
 	s_saverigidmarkflag = 1;
 
 
-	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"LockToSel", 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
+	g_SampleUI.AddCheckBox(IDC_CAMTARGET, L"LockToSel", iX0 + 25, iY += addh, ctrlxlen, 16, false, 0U, false, &s_CamTargetCheckBox);
 	s_ui_locktosel = g_SampleUI.GetControl(IDC_CAMTARGET);
 	_ASSERT(s_ui_locktosel);
 	s_dsutgui0.push_back(s_ui_locktosel);
@@ -20149,7 +20188,7 @@ int CreateUtDialog()
 	iY += addh;
 	***/
 	//iY += 24;
-	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, 35, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, iX0 + 35, iY += addh, ctrlxlen, ctrlh);
 	s_ui_boneaxis = g_SampleUI.GetControl(IDC_COMBO_BONEAXIS);
 	_ASSERT(s_ui_boneaxis);
 	s_dsutgui0.push_back(s_ui_boneaxis);
@@ -20200,7 +20239,7 @@ int CreateUtDialog()
 
 	//iY += addh;
 
-	g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, 35, iY += addh, ctrlxlen, ctrlh);
+	g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 35, iY += addh, ctrlxlen, ctrlh);
 	s_ui_iklevel = g_SampleUI.GetControl(IDC_COMBO_IKLEVEL);
 	_ASSERT(s_ui_iklevel);
 	s_dsutgui0.push_back(s_ui_iklevel);
@@ -20216,30 +20255,41 @@ int CreateUtDialog()
 	}
 	pComboBox0->SetSelectedByData(ULongToPtr(1));
 
-	//######################################
-	//ÇRDÉEÉCÉìÉhÉEâEë§ÇÃÇRÇ¬ÇÃÉXÉvÉâÉCÉgï˚éÆÇ…ïœçX
-	//######################################
-	//g_SampleUI.AddComboBox(IDC_COMBO_EDITMODE, 35, iY += addh, ctrlxlen, ctrlh);
-	//s_ui_editmode = g_SampleUI.GetControl(IDC_COMBO_EDITMODE);
-	//_ASSERT(s_ui_editmode);
-	//s_dsutgui0.push_back(s_ui_editmode);
-	//s_dsutguiid0.push_back(IDC_COMBO_EDITMODE);
-	//CDXUTComboBox* pComboBox1 = g_SampleUI.GetComboBox(IDC_COMBO_EDITMODE);
-	//pComboBox1->RemoveAllItems();
-	//pComboBox1->AddItem(L"IKRot", ULongToPtr(IDC_IK_ROT));
-	//pComboBox1->AddItem(L"IKMove", ULongToPtr(IDC_IK_MV));
-	//pComboBox1->AddItem(L"IKScale", ULongToPtr(IDC_IK_SC));
-	////pComboBox1->AddItem( L"ÉâÉCÉgâÒì]", ULongToPtr( IDC_IK_LIGHT ) );
-	////pComboBox1->AddItem(L"Rigid", ULongToPtr(IDC_BT_RIGID));
-	////pComboBox1->AddItem(L"Impulse", ULongToPtr(IDC_BT_IMP));
-	////pComboBox1->AddItem(L"Ground", ULongToPtr(IDC_BT_GP));
-	////pComboBox1->AddItem(L"DampAnim", ULongToPtr(IDC_BT_DAMP));
-	//pComboBox1->SetSelectedByData(ULongToPtr(0));
-	
-	//s_ikkind = 0;//InitApp()Ç÷à⁄ìÆ
+	if (g_4kresolution) {
+		swprintf_s(sz, 100, L"ReferencePos : %d%%", g_refpos);
+		//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
+		g_SampleUI.AddStatic(IDC_STATIC_REF, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
+		s_ui_texref = g_SampleUI.GetControl(IDC_STATIC_REF);
+		_ASSERT(s_ui_texref);
+		//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+		g_SampleUI.AddSlider(IDC_SL_REFPOS, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refpos);
+		s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOS);
+		g_SampleUI.AddSlider(IDC_SL_REFMULT, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refmult);
+		s_ui_slirefmult = g_SampleUI.GetControl(IDC_SL_REFMULT);
+		_ASSERT(s_ui_slirefmult);
+		s_dsutgui0.push_back(s_ui_slirefpos);
+		s_dsutguiid0.push_back(IDC_SL_REFPOS);
+		s_dsutgui0.push_back(s_ui_slirefmult);
+		s_dsutguiid0.push_back(IDC_SL_REFMULT);
+	}
 
 
-	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, 35, iY += addh, ctrlxlen + 25, ctrlh);
+
+	if (g_4kresolution) {
+		//iY = s_mainheight - (520 - MAINMENUAIMBARH);
+		//iY = s_mainheight - 210 - 3 * addh - 10;
+		//iY = s_mainheight - 210 - 4 * addh - 10;
+		iY = s_mainheight - 210 - 2 * addh - 10;
+		iX0 = s_mainwidth / 2 - 180 - 180 - 40;
+	}
+	else {
+		//ÇªÇÃÇ‹Ç‹ë±Ç´
+		iY += addh;
+		iX0 = 0;
+	}
+
+
+	g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, iX0 + 35, iY, ctrlxlen + 25, ctrlh);
 	s_ui_motionbrush = g_SampleUI.GetControl(IDC_COMBO_MOTIONBRUSH_METHOD);
 	_ASSERT(s_ui_motionbrush);
 	s_dsutgui0.push_back(s_ui_motionbrush);
@@ -20253,13 +20303,15 @@ int CreateUtDialog()
 	//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
 	//pComboBox5->SetSelectedByData(ULongToPtr(0));
 
+
+
 	swprintf_s(sz, 100, L"TopPos : %d%%", g_applyrate);
 	//g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, 18);
+	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
 	s_ui_texapplyrate = g_SampleUI.GetControl(IDC_STATIC_APPLYRATE);
 	_ASSERT(s_ui_texapplyrate);
 	//g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += addh, 100, ctrlh, 0, 100, g_applyrate);
-	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_applyrate);
+	g_SampleUI.AddSlider(IDC_SL_APPLYRATE, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_applyrate);
 	s_ui_slapplyrate = g_SampleUI.GetControl(IDC_SL_APPLYRATE);
 	_ASSERT(s_ui_slapplyrate);
 	CEditRange::SetApplyRate(g_applyrate);
@@ -20272,29 +20324,29 @@ int CreateUtDialog()
 	//swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
 	swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
 	//g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, 35, iY += addh, ctrlxlen, 18);
+	g_SampleUI.AddStatic(IDC_STATIC_BRUSHREPEATS, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
 	s_ui_texbrushrepeats = g_SampleUI.GetControl(IDC_STATIC_BRUSHREPEATS);
 	_ASSERT(s_ui_texbrushrepeats);
 	//g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, 50, iY += addh, 100, ctrlh, 0, 10, (int)g_brushrepeats);
-	g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, 50, iY += (18 + 2), 100, ctrlh, 0, 10, (int)g_brushrepeats);
+	g_SampleUI.AddSlider(IDC_SL_BRUSHREPEATS, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 10, (int)g_brushrepeats);
 	s_ui_brushrepeats = g_SampleUI.GetControl(IDC_SL_BRUSHREPEATS);
 	_ASSERT(s_ui_brushrepeats);
 	s_dsutgui0.push_back(s_ui_brushrepeats);
 	s_dsutguiid0.push_back(IDC_SL_BRUSHREPEATS);
 
-	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_U, L"Brsh Mirror U", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_BrushMirrorUCheckBox);
+	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_U, L"Brsh Mirror U", iX0 + 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_BrushMirrorUCheckBox);
 	s_ui_brushmirroru = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_U);
 	_ASSERT(s_ui_brushmirroru);
 	s_dsutgui0.push_back(s_ui_brushmirroru);
 	s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_U);
 
-	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V, L"Brsh Mirror V", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_BrushMirrorVCheckBox);
+	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V, L"Brsh Mirror V", iX0 + 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_BrushMirrorVCheckBox);
 	s_ui_brushmirrorv = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_V);
 	_ASSERT(s_ui_brushmirrorv);
 	s_dsutgui0.push_back(s_ui_brushmirrorv);
 	s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_V);
 
-	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V_DIV2, L"If Mirror V then Div2", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_IfMirrorVDiv2CheckBox);
+	g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V_DIV2, L"If Mirror V then Div2", iX0 + 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_IfMirrorVDiv2CheckBox);
 	s_ui_ifmirrorvdiv2 = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_V_DIV2);
 	_ASSERT(s_ui_ifmirrorvdiv2);
 	s_dsutgui0.push_back(s_ui_ifmirrorvdiv2);
@@ -20326,21 +20378,23 @@ int CreateUtDialog()
 	//s_dsutgui0.push_back(s_ui_slikrate);
 	//s_dsutguiid0.push_back(IDC_SL_IKRATE);
 
-	swprintf_s(sz, 100, L"ReferencePos : %d%%", g_refpos);
-	//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	g_SampleUI.AddStatic(IDC_STATIC_REF, sz, 35, iY += addh, ctrlxlen, 18);
-	s_ui_texref = g_SampleUI.GetControl(IDC_STATIC_REF);
-	_ASSERT(s_ui_texref);
-	//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-	g_SampleUI.AddSlider(IDC_SL_REFPOS, 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refpos);
-	s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOS);
-	g_SampleUI.AddSlider(IDC_SL_REFMULT, 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refmult);
-	s_ui_slirefmult = g_SampleUI.GetControl(IDC_SL_REFMULT);
-	_ASSERT(s_ui_slirefmult);
-	s_dsutgui0.push_back(s_ui_slirefpos);
-	s_dsutguiid0.push_back(IDC_SL_REFPOS);
-	s_dsutgui0.push_back(s_ui_slirefmult);
-	s_dsutguiid0.push_back(IDC_SL_REFMULT);
+	if (g_4kresolution == false) {
+		swprintf_s(sz, 100, L"ReferencePos : %d%%", g_refpos);
+		//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
+		g_SampleUI.AddStatic(IDC_STATIC_REF, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
+		s_ui_texref = g_SampleUI.GetControl(IDC_STATIC_REF);
+		_ASSERT(s_ui_texref);
+		//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
+		g_SampleUI.AddSlider(IDC_SL_REFPOS, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refpos);
+		s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOS);
+		g_SampleUI.AddSlider(IDC_SL_REFMULT, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refmult);
+		s_ui_slirefmult = g_SampleUI.GetControl(IDC_SL_REFMULT);
+		_ASSERT(s_ui_slirefmult);
+		s_dsutgui0.push_back(s_ui_slirefpos);
+		s_dsutguiid0.push_back(IDC_SL_REFPOS);
+		s_dsutgui0.push_back(s_ui_slirefmult);
+		s_dsutguiid0.push_back(IDC_SL_REFMULT);
+	}
 
 	//g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"ApplyToTheEnd", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
 	//s_ui_applytotheend = g_SampleUI.GetControl(IDC_APPLY_TO_THEEND);
@@ -20486,8 +20540,14 @@ int CreateUtDialog()
 	s_dsutgui3.clear();
 	s_dsutguiid3.clear();
 
-	iY = s_mainheight - 210 - addh;
-	startx = s_mainwidth - 150;
+	if (g_4kresolution) {
+		iY = s_mainheight - 210 - addh;
+		startx = s_mainwidth / 2 - 50 + 130 + 140;
+	}
+	else {
+		iY = s_mainheight - 210 - addh;
+		startx = s_mainwidth - 150;
+	}
 
 	swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
 	//g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, startx, iY += addh, ctrlxlen, ctrlh);
@@ -21092,15 +21152,15 @@ int CreateSideMenuWnd()
 	s_sidemenusp->addParts2(*s_sidemenusp2);
 
 	s_sidemenu_rigid = new OWP_Button(L"Rigid");
-	s_sidemenu_impulse = new OWP_Button(L"Impulse");
-	s_sidemenu_ground = new OWP_Button(L"Ground");
-	s_sidemenu_dampanim = new OWP_Button(L"Damp");
+	s_sidemenu_limiteul = new OWP_Button(L"LimitEul");
+	s_sidemenu_copyhistory = new OWP_Button(L"CopyHistory");
+	s_sidemenu_retarget = new OWP_Button(L"Retarget");
 
 	s_sidemenusp1->addParts1(*s_sidemenu_rigid);
-	s_sidemenusp1->addParts2(*s_sidemenu_impulse);
+	s_sidemenusp1->addParts2(*s_sidemenu_limiteul);
 
-	s_sidemenusp2->addParts1(*s_sidemenu_ground);
-	s_sidemenusp2->addParts2(*s_sidemenu_dampanim);
+	s_sidemenusp2->addParts1(*s_sidemenu_copyhistory);
+	s_sidemenusp2->addParts2(*s_sidemenu_retarget);
 
 
 	s_sidemenuWnd->setCloseListener([]() { 
@@ -21116,24 +21176,23 @@ int CreateSideMenuWnd()
 		}
 		s_sidemenuWnd->callRewrite();						//çƒï`âÊ
 	});
-	s_sidemenu_impulse->setButtonListener([]() {
+	s_sidemenu_limiteul->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			s_platemenukind = 1;
+			s_platemenukind = 2;
 			GUIMenuSetVisible(s_platemenukind, 2);
 		}
 		s_sidemenuWnd->callRewrite();						//çƒï`âÊ
 	});
-	s_sidemenu_ground->setButtonListener([]() {
+	s_sidemenu_copyhistory->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			s_platemenukind = 1;
-			GUIMenuSetVisible(s_platemenukind, 3);
+			s_selCopyHisotryFlag = true;
 		}
 		s_sidemenuWnd->callRewrite();						//çƒï`âÊ
 	});
-	s_sidemenu_dampanim->setButtonListener([]() {
+	s_sidemenu_retarget->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
-			s_platemenukind = 1;
-			GUIMenuSetVisible(s_platemenukind, 4);
+			s_platemenukind = 2;
+			GUIMenuSetVisible(s_platemenukind, 1);
 		}
 		s_sidemenuWnd->callRewrite();						//çƒï`âÊ
 	});
@@ -25022,7 +25081,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.22 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.23 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -32557,7 +32616,7 @@ void SetMainWindowTitle()
 
 	//"Ç‹ÇﬂÇŒÇØÇRD (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.22 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.23 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -34357,4 +34416,21 @@ int SaveIniFile()
 	return 0;
 }
 
+int SetTimelineHasRigFlag()
+{
+	if (!s_owpTimeline) {
+		return 0;
+	}
+
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
+		CBone* curbone = (CBone*)itrbone->second;
+		if (curbone) {
+			bool hasrigflag = s_model->ChkBoneHasRig(curbone);
+			s_owpTimeline->setHasRigFlag(curbone->GetWBoneName(), hasrigflag);
+		}
+	}
+
+	return 0;
+}
 

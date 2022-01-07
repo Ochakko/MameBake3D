@@ -669,6 +669,8 @@ public:
 	int AngleLimitReplace180to170();
 	int AdditiveCurrentToAngleLimit();
 
+	bool ChkBoneHasRig(CBone* srcbone);
+
 private:
 	int InitParams();
 	int DestroyObjs();

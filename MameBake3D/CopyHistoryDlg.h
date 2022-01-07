@@ -54,6 +54,7 @@ BEGIN_MSG_MAP(CCopyHistoryDlg)
 	COMMAND_ID_HANDLER(IDC_RADIO8, OnRadio8)
 	COMMAND_ID_HANDLER(IDC_RADIO9, OnRadio9)
 	COMMAND_ID_HANDLER(IDC_RADIO10, OnRadio10)
+	COMMAND_ID_HANDLER(IDC_CHECK1, OnChkRecent)
 END_MSG_MAP()
 // ハンドラのプロトタイプ:
 //  LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -92,6 +93,7 @@ END_MSG_MAP()
 	LRESULT OnRadio9(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
+	LRESULT OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	int SetNames(std::vector<HISTORYELEM>& copyhistory);
 

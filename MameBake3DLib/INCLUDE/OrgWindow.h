@@ -4262,6 +4262,22 @@ void s_dummyfunc()
 			}
 			return false;
 		}
+		bool setHasRigFlag(const std::basic_string<TCHAR>& _name, bool flag) {
+			for (int i = 0; i < (int)lineData.size(); i++) {
+				if (lineData[i]->name == _name) {
+					bool ret = lineData[i]->setHasRigFlag(flag);
+
+					//再描画要求
+					if (ret && rewriteOnChange) {
+						callRewrite();
+					}
+					return ret;
+				}
+			}
+			return false;
+
+		}
+
 
 		//	Method : キーを削除
 		bool deleteKey(const std::basic_string<TCHAR>& _name, double time){
@@ -5177,6 +5193,7 @@ void s_dummyfunc()
 				parent= _parent;
 				lineIndex= _lineIndex;
 				key.clear();
+				hasrigflag = false;
 			}
 			//LineData( const LineData& a ){
 			//	_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
@@ -5189,6 +5206,16 @@ void s_dummyfunc()
 						((Key*)(*it))->InvalidateKeys();
 					}
 				}
+			}
+
+			bool setHasRigFlag(bool flag)
+			{
+				hasrigflag = flag;
+				return true;
+			}
+			bool getHasRigFlag()
+			{
+				return hasrigflag;
 			}
 
 			//キーデータクラス---------------
@@ -5267,6 +5294,7 @@ void s_dummyfunc()
 			std::vector<Key*> key;
 			unsigned int lineIndex;
 			int depth;
+			bool hasrigflag;
 
 			//////////////////////////// Method //////////////////////////////
 			//	Method : 描画
@@ -5296,7 +5324,9 @@ void s_dummyfunc()
 
 				//ラベル
 				hdcM->setFont(12,_T("ＭＳ ゴシック"));
-				if( m_nullflag == 0 ){
+				if (hasrigflag) {
+					SetTextColor(hdcM->hDC, RGB(0, 255, 0));
+				}else if( m_nullflag == 0 ){
 					SetTextColor(hdcM->hDC, RGB(220,220,220));
 				}else if(m_nullflag == 1){
 					SetTextColor(hdcM->hDC, RGB(0,220,220));

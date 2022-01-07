@@ -900,18 +900,29 @@ LRESULT CCopyHistoryDlg::OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOO
 
 LRESULT CCopyHistoryDlg::OnRadio(int radioid)
 {
-	if ((radioid < 0) || (radioid >= m_namenum)) {
-		return 0;
-	}
 
-	if (m_namenum != m_copyhistory.size()) {
+	int chknamenum = min(10, m_copyhistory.size());
+	if (chknamenum != m_namenum) {
 		_ASSERT(0);
 		return 1;
 	}
 
+	if ((radioid < 0) || (radioid >= m_namenum)) {
+		return 0;
+	}
+
+	//OKƒ{ƒ^ƒ“‚ð‰Ÿ‚³‚È‚¢‚Å‚à”½‰f‚³‚ê‚é‚æ‚¤‚É
 	m_selectname[MAX_PATH - 1] = 0L;
 	wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[radioid].wfilename);
 	m_selectname[MAX_PATH - 1] = 0L;
 
+	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
+
+	return 0;
+}
+
+LRESULT CCopyHistoryDlg::OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
 	return 0;
 }

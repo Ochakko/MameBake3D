@@ -1960,6 +1960,9 @@ int CModel::FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& line
 				timeline.newLine(depth, 1, curbone->GetWBoneName());
 			}
 
+			timeline.setHasRigFlag(curbone->GetWBoneName(), ChkBoneHasRig(curbone));
+
+
 			lineno2boneno[lineno] = curbone->GetBoneNo();
 			boneno2lineno[curbone->GetBoneNo()] = lineno;
 			lineno++;
@@ -2001,6 +2004,9 @@ void CModel::FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone,
 	}else{
 		timeline.newLine(depth, 1, curbone->GetWBoneName());
 	}
+
+	timeline.setHasRigFlag(curbone->GetWBoneName(), ChkBoneHasRig(curbone));
+
 
 	lineno2boneno[ *linenoptr ] = curbone->GetBoneNo();
 	boneno2lineno[ curbone->GetBoneNo() ] = *linenoptr;
@@ -11891,3 +11897,20 @@ int CModel::AdditiveCurrentToAngleLimit()
 	return 0;
 }
 
+bool CModel::ChkBoneHasRig(CBone* srcbone)
+{
+	if (srcbone) {
+		int rigno;
+		for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
+			CUSTOMRIG currig = srcbone->GetCustomRig(rigno);
+			if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
+				return true;
+			}
+		}
+	}
+	else {
+		return false;
+	}
+
+	return false;
+}
