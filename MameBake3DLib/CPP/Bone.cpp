@@ -5711,6 +5711,17 @@ CUSTOMRIG CBone::GetFreeCustomRig()
 	}
 }
 
+int CBone::InvalidateCustomRig(int rigno)
+{
+	if ((rigno >= 0) && (rigno < MAXRIGNUM)) {
+		::InitCustomRig(&m_customrig[rigno], this, rigno);
+		m_customrig[rigno].useflag = 0;
+	}
+
+	return 0;
+}
+
+
 CUSTOMRIG CBone::GetCustomRig(int rigno)
 {
 	if ((rigno >= 0) && (rigno < MAXRIGNUM)){

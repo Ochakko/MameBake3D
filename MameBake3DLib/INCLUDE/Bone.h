@@ -975,7 +975,8 @@ public: //accesser
 	void SetAngleLimit(ANGLELIMIT srclimit);
 
 	int GetFreeCustomRigNo();
-	CUSTOMRIG CBone::GetFreeCustomRig();
+	CUSTOMRIG GetFreeCustomRig();
+	int InvalidateCustomRig(int rigno);
 	CUSTOMRIG GetCustomRig(int rigno);
 	void SetCustomRig(CUSTOMRIG srccr);
 

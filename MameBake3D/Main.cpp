@@ -1759,6 +1759,7 @@ static int DispMotionPanel();
 static int DispAngleLimitDlg();
 static int DispRotAxisDlg();
 static int DispCustomRigDlg(int rigno);
+static int InvalidateCustomRig(int rigno);
 static int BoneRClick(int srcboneno);
 
 //CustomRigDlg
@@ -5793,6 +5794,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if (s_customrigbone) {
 				s_oprigflag = 1;
 			}
+		}
+		else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 3 + MENUOFFSET_BONERCLICK)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 4 + MENUOFFSET_BONERCLICK))) {
+			//削除(無効化)
+			int currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM * 3) - MENUOFFSET_BONERCLICK];
+			InvalidateCustomRig(currigno);
 		}
 
 
@@ -23323,6 +23329,46 @@ int DispCustomRigDlg(int rigno)
 	return 0;
 }
 
+int InvalidateCustomRig(int rigno)
+{
+	if (!s_model) {
+		return 0;
+	}
+	if (s_curboneno < 0) {
+		return 0;
+	}
+	if (!s_model->GetTopBone()) {
+		return 0;
+	}
+	if (s_model->GetOldAxisFlagAtLoading() == 1) {
+		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"error!!!", MB_OK);
+		return 0;
+	}
+
+	s_customrigbone = s_model->GetBoneByID(s_curboneno);
+	if (s_customrigbone) {
+		if ((rigno >= 0) && (rigno < MAXRIGNUM)) {
+			s_customrigbone->InvalidateCustomRig(rigno);
+		}
+	}
+
+	//古いダイアログを閉じる
+	if (s_customrigdlg) {
+		DestroyWindow(s_customrigdlg);
+		s_customrigdlg = 0;
+	}
+
+	s_customrigbone = 0;
+	s_oprigflag = 0;
+
+
+	SetTimelineHasRigFlag();
+
+
+	return 0;
+}
+
+
 int Bone2CustomRig(int rigno)
 {
 	if (!s_model){
@@ -23765,12 +23811,16 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 				CustomRig2Bone();
 
+				SetTimelineHasRigFlag();
+
 				//EndDialog(hDlgWnd, IDOK);
 			}
 			break;
 			case IDCANCEL:
 				s_customrighwnd = 0;
 				//EndDialog(hDlgWnd, IDCANCEL);
+				SetTimelineHasRigFlag();
+
 				break;
 			default:
 				return FALSE;
@@ -23946,8 +23996,10 @@ int BoneRClick(int srcboneno)
 
 						int subsubid1 = setmenuid + MAXRIGNUM;
 						int subsubid2 = setmenuid + MAXRIGNUM * 2;
+						int subsubid3 = setmenuid + MAXRIGNUM * 3;
 						AppendMenu(subsubmenu, MF_STRING, subsubid1, L"SettingOfRig");
 						AppendMenu(subsubmenu, MF_STRING, subsubid2, L"Execute Rig");
+						AppendMenu(subsubmenu, MF_STRING, subsubid3, L"Invalidate Rig");
 
 						setmenuno++;
 					}
@@ -34421,6 +34473,10 @@ int SetTimelineHasRigFlag()
 	if (!s_owpTimeline) {
 		return 0;
 	}
+	if (!s_model) {
+		return 0;
+	}
+
 
 	std::map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
