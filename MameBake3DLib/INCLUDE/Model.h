@@ -232,6 +232,7 @@ public:
 	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat );
 	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int UpdateLimitedWM(int srcmotid, double srcframe);
+	int ClearLimitedWM(int srcmotid, double srcframe);
 
 /**
  * @fn

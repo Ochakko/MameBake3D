@@ -596,6 +596,8 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 	return 0;
 }
 
+
+
 int CBone::UpdateLimitedWorldMat(int srcmotid, double srcframe0)
 {
 	int existflag = 0;
@@ -617,6 +619,25 @@ int CBone::UpdateLimitedWorldMat(int srcmotid, double srcframe0)
 
 }
 
+int CBone::ClearLimitedWorldMat(int srcmotid, double srcframe0)
+{
+	int existflag = 0;
+
+	ChaMatrix newworldmat;
+	ChaMatrixIdentity(&newworldmat);
+
+	//§ŒÀŠp“x—L‚è
+	double srcframe = (double)((int)(srcframe0 + 0.0001));
+	CMotionPoint* orgbefmp = 0;
+	CMotionPoint* orgnextmp = 0;
+	GetBefNextMP(srcmotid, srcframe, &orgbefmp, &orgnextmp, &existflag);
+	if ((existflag == 1) && orgbefmp) {
+		orgbefmp->SetCalcLimitedWM(0);
+	}
+
+	return 0;
+
+}
 
 
 //int CBone::UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat)

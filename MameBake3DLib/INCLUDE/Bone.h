@@ -98,6 +98,7 @@ public:
 	int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
 
 	int UpdateLimitedWorldMat(int srcmotid, double srcframe);
+	int ClearLimitedWorldMat(int srcmotid, double srcframe);
 
 	
 /**

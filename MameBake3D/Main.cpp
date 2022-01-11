@@ -274,6 +274,8 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
+static int ClearLimitedWM();
+
 static float CalcSelectScale(CBone* curboneptr);
 static double CalcRefFrame();
 static void ChangeCurDirFromMameMediaToTest();
@@ -1646,6 +1648,7 @@ static int RollbackCurBoneNo();
 static void PrepairUndo();
 static int OnFrameUndo(bool fromds, int fromdskind);
 static void OnGUIEventSpeed();
+static int SetShowPosTime();
 
 static void AutoCameraTarget();
 
@@ -5345,7 +5348,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	OnRenderSetShaderConst();
 
 	//if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) &&
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && 
+	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_calclimitedwmflag, 0) == 0) &&
 		!s_underdelmodel && !s_underdelmotion && !s_underselectmodel && !s_underselectmotion) {
 		OnRenderModel(pd3dImmediateContext);
 		OnRenderGround(pd3dImmediateContext);
@@ -17523,7 +17526,10 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						curmi = s_model->GetCurMotInfo();
 						if (curmi) {
 							symbone->SetAngleLimit(symanglelimit);
+
+							ClearLimitedWM();//2022/01/11
 						}
+						
 					}
 				}
 			}
@@ -17553,7 +17559,10 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 							s_anglelimit = symanglelimit;
 							AngleLimit2Bone();
 							AngleLimit2Dlg(s_anglelimitdlg);
+
+							ClearLimitedWM();//2022/01/11
 						}
+						
 					}
 				}
 			}
@@ -17561,6 +17570,7 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			break;
 		case IDC_BUTTON3:
 		{
+			//copy button
 			if (s_anglelimitbone && s_anglelimitdlg) {
 				s_anglelimitcopy = s_anglelimit;
 			}
@@ -17568,9 +17578,13 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			break;
 		case IDC_BUTTON4:
 		{
+			//paste button
 			if (s_anglelimitbone && s_anglelimitdlg) {
 				s_anglelimit = s_anglelimitcopy;
 				AngleLimit2Bone();
+
+				ClearLimitedWM();//2022/01/11
+
 				AngleLimit2Dlg(s_anglelimitdlg);
 			}
 		}
@@ -17579,6 +17593,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		{
 			if (s_model && s_anglelimitdlg) {
 				s_model->ResetAngleLimit(180);
+
+				ClearLimitedWM();//2022/01/11
 
 				Bone2AngleLimit(0);
 				AngleLimit2Dlg(s_anglelimitdlg);
@@ -17591,6 +17607,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			if (s_model && s_anglelimitdlg) {
 				s_model->ResetAngleLimit(0);
 
+				ClearLimitedWM();//2022/01/11
+
 				Bone2AngleLimit(0);
 				AngleLimit2Dlg(s_anglelimitdlg);
 				UpdateWindow(s_anglelimitdlg);
@@ -17601,6 +17619,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		{
 			if (s_model && s_anglelimitdlg) {
 				s_model->AngleLimitReplace180to170();
+
+				ClearLimitedWM();//2022/01/11
 
 				Bone2AngleLimit(0);
 				AngleLimit2Dlg(s_anglelimitdlg);
@@ -17646,6 +17666,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (s_LimitDegCheckBox) {
 						s_LimitDegCheckBox->SetChecked(g_limitdegflag);
 					}
+
+					ClearLimitedWM();//2022/01/11
 
 					s_model->SetMotionFrame(1.0);
 					s_model->UpdateMatrix(&(s_model->GetWorldMat()), &s_matVP);
@@ -17717,6 +17739,8 @@ LRESULT CALLBACK AngleLimitDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			}
 
 			AngleLimit2Bone();
+
+			ClearLimitedWM();//2022/01/11
 
 			if (s_model) {
 				if (s_owpLTimeline) {
@@ -18135,14 +18159,21 @@ int OnFrameKeyboard()
 	}
 	*/
 
-	if (g_ctrlshiftkeyformb == false) {
-		if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)) {
-			if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)) {
-				g_ctrlshiftkeyformb = true;
-				//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
-			}
-		}
-	}
+
+
+	//####################################################################################################################
+	//Undo,RedoのRedoのコマンドキーがCtrl + Shift + Zなので,　MButton用のキーとしてCtrl + Shiftは使えない。コメントアウト　2022/01/11
+	//####################################################################################################################
+	//if (g_ctrlshiftkeyformb == false) {
+	//	if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)) {
+	//		if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)) {
+	//			g_ctrlshiftkeyformb = true;
+	//			//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
+	//		}
+	//	}
+	//}
+
+
 
 	if (g_keybuf['A'] & 0x80) {
 		s_akeycnt++;
@@ -18444,7 +18475,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			if ((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
 				curmodel->ZeroBtCnt();
-				StartBt(curmodel, TRUE, 2, 1);//flag = 2 --> resetflag = 1
+				//StartBt(curmodel, TRUE, 2, 1);//flag = 2 --> resetflag = 1  //短いリターゲットモデルが頻繁に呼び出し重すぎるし他のモデルも揺れなくなる。作り直さなくても良いのでコメントアウト.　2022/01/11
 			}
 			else {
 				//UpdateBtSimu(*pnextframe, curmodel);
@@ -18470,7 +18501,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			//if (curmodel) {
 			if(curmodel && (curmodel->GetBtCnt() != 0)){
 				if (curmodel && curmodel->GetCurMotInfo()) {
-					curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+					curmodel->SetBtMotion(0, 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);//第一引数は物理IK用
 
 					//60 x 30 frames limit : 30 sec limit
 					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
@@ -19938,6 +19970,8 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			if (result) {
 				_ASSERT(0);
 			}
+
+			SetShowPosTime();
 
 		}
 	}
@@ -34485,6 +34519,46 @@ int SetTimelineHasRigFlag()
 			bool hasrigflag = s_model->ChkBoneHasRig(curbone);
 			s_owpTimeline->setHasRigFlag(curbone->GetWBoneName(), hasrigflag);
 		}
+	}
+
+	return 0;
+}
+
+
+int ClearLimitedWM()
+{
+	if (!s_model) {
+		return 0;
+	}
+	MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (!curmi) {
+		return 0;
+	}
+
+	double frameleng = curmi->frameleng;
+
+	double curframe;
+	for (curframe = 0.0; curframe < frameleng; curframe += 1.0) {
+		s_model->ClearLimitedWM(curmi->motid, curframe);
+	}
+
+	return 0;
+}
+
+int SetShowPosTime()
+{
+
+	double startframe, endframe, applyframe;
+	int selnum;
+	s_editrange.GetRange(&selnum, &startframe, &endframe, &applyframe);
+
+	double curframe = applyframe;
+
+	if (s_owpTimeline) {
+		s_owpTimeline->setShowPosTime(curframe);
+	}
+	if (s_owpLTimeline) {
+		s_owpLTimeline->setShowPosTime(curframe);
 	}
 
 	return 0;

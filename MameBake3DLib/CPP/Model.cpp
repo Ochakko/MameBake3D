@@ -1611,6 +1611,24 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	return 0;
 }
 
+int CModel::ClearLimitedWM(int srcmotid, double srcframe)
+{
+	if (!m_curmotinfo) {
+		return 0;//!!!!!!!!!!!!
+	}
+
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->ClearLimitedWorldMat(srcmotid, srcframe);
+		}
+	}
+
+	return 0;
+}
+
+
 int CModel::UpdateLimitedWM(int srcmotid, double srcframe)
 {
 	if (!m_curmotinfo) {
@@ -5797,7 +5815,7 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 
 	//SetBtMotionPostReq(m_topbt, wmat, vpmat);
-	if (srcbone && srcbone->GetParent()) {
+	if (srcbone && srcbone->GetParent()) {//物理IK用
 		CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
 		SetBtMotionPostLowerReq(startbto, wmat, vpmat, 1);//kinematicadjust = 0
 		SetBtMotionPostUpperReq(startbto, wmat, vpmat);
