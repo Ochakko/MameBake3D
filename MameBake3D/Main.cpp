@@ -8060,30 +8060,41 @@ int CalcLimitedWorldMat()
 		return 0;
 	}
 
-	if (InterlockedAdd(&g_calclimitedwmflag, 0) != 0) {//if already under calc, return 0.
-		return 0;
+	if (0) {
+		//どうしてもプレビューが遅い場合に実行する。
+
+
+		if (InterlockedAdd(&g_calclimitedwmflag, 0) != 0) {//if already under calc, return 0.
+			return 0;
+		}
+
+
+		InterlockedExchange(&g_calclimitedwmflag, (LONG)1);//mark started
+
+
+		CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG3), NULL, (DLGPROC)ProgressDlgProc);
+		RECT rect;
+		GetWindowRect(s_LtimelineWnd->getHWnd(), &rect);
+		SetWindowPos(s_progresswnd, HWND_TOP, rect.left, rect.top, 0, 0, SWP_NOSIZE);
+		ShowWindow(s_progresswnd, SW_SHOW);
+		UpdateWindow(s_progresswnd);
+
+		unsigned int threadaddr1 = 0;
+		HANDLE hthread = (HANDLE)_beginthreadex(
+			NULL, 0, &ThreadFunc_CalcLimitedWM,
+			(void*)0,
+			0, &threadaddr1);
+
+		//WiatForしない場合には先に閉じてもOK
+		if (hthread && (hthread != INVALID_HANDLE_VALUE)) {
+			CloseHandle(hthread);
+		}
+
 	}
+	else {
+		//特に気にしない場合にはこちら
 
-
-	InterlockedExchange(&g_calclimitedwmflag, (LONG)1);//mark started
-
-
-	CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG3), NULL, (DLGPROC)ProgressDlgProc);
-	RECT rect;
-	GetWindowRect(s_LtimelineWnd->getHWnd(), &rect);
-	SetWindowPos(s_progresswnd, HWND_TOP, rect.left, rect.top, 0, 0, SWP_NOSIZE);
-	ShowWindow(s_progresswnd, SW_SHOW);
-	UpdateWindow(s_progresswnd);
-
-	unsigned int threadaddr1 = 0;
-	HANDLE hthread = (HANDLE)_beginthreadex(
-		NULL, 0, &ThreadFunc_CalcLimitedWM,
-		(void*)0,
-		0, &threadaddr1);
-
-	//WiatForしない場合には先に閉じてもOK
-	if (hthread && (hthread != INVALID_HANDLE_VALUE)) {
-		CloseHandle(hthread);
+		InterlockedExchange(&g_calclimitedwmflag, (LONG)2);//mark finished
 	}
 
 	return 0;
@@ -13029,7 +13040,7 @@ int CreateMotionPanel()
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(600, s_2ndposy),		//位置
-		WindowSize(400, 460),	//サイズ
+		WindowSize(400, 700),	//サイズ
 		L"MotionPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
 		//false,
@@ -13158,7 +13169,7 @@ int CreateMotionPanel()
 	s_motionpanel.panel->setPos(s_motionpanelpos);
 
 	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
-	s_motionpanel.panel->setSize(WindowSize(400, 460));//880
+	s_motionpanel.panel->setSize(WindowSize(400, 700));//880
 	s_motionpanel.panel->setVisible(false);
 	s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
 
@@ -25167,7 +25178,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.23 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.24 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -32702,7 +32713,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.23 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.24 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

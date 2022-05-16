@@ -98,9 +98,12 @@ int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = (float)((double)dirm._11 * (double)srcvec->x + (double)dirm._21 * (double)srcvec->y + (double)dirm._31 * (double)srcvec->z + (double)dirm._41);
-	dstvec->y = (float)((double)dirm._12 * (double)srcvec->x + (double)dirm._22 * (double)srcvec->y + (double)dirm._32 * (double)srcvec->z + (double)dirm._42);
-	dstvec->z = (float)((double)dirm._13 * (double)srcvec->x + (double)dirm._23 * (double)srcvec->y + (double)dirm._33 * (double)srcvec->z + (double)dirm._43);
+	ChaVector3 tmpsrcvec = *srcvec;//dstvecとsrcvecが同一ポインタの場合に対応
+	
+
+	dstvec->x = (float)((double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41);
+	dstvec->y = (float)((double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42);
+	dstvec->z = (float)((double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43);
 
 	return 0;
 }
@@ -116,9 +119,11 @@ int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = (float)((double)dirm._11 * (double)srcvec->x + (double)dirm._21 * (double)srcvec->y + (double)dirm._31 * (double)srcvec->z + (double)dirm._41);
-	dstvec->y = (float)((double)dirm._12 * (double)srcvec->x + (double)dirm._22 * (double)srcvec->y + (double)dirm._32 * (double)srcvec->z + (double)dirm._42);
-	dstvec->z = (float)((double)dirm._13 * (double)srcvec->x + (double)dirm._23 * (double)srcvec->y + (double)dirm._33 * (double)srcvec->z + (double)dirm._43);
+	ChaVector3 tmpsrcvec = *srcvec;//dstvecとsrcvecが同一ポインタの場合に対応
+
+	dstvec->x = (float)((double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41);
+	dstvec->y = (float)((double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42);
+	dstvec->z = (float)((double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43);
 
 
 	return 0;
@@ -135,9 +140,11 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	dstvec->x = (float)((double)dirm._11 * (double)srcvec->x + (double)dirm._21 * (double)srcvec->y + (double)dirm._31 * (double)srcvec->z + (double)dirm._41);
-	dstvec->y = (float)((double)dirm._12 * (double)srcvec->x + (double)dirm._22 * (double)srcvec->y + (double)dirm._32 * (double)srcvec->z + (double)dirm._42);
-	dstvec->z = (float)((double)dirm._13 * (double)srcvec->x + (double)dirm._23 * (double)srcvec->y + (double)dirm._33 * (double)srcvec->z + (double)dirm._43);
+	ChaVector3 tmpsrcvec = *srcvec;//dstvecとsrcvecが同一ポインタの場合に対応
+
+	dstvec->x = (float)((double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41);
+	dstvec->y = (float)((double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42);
+	dstvec->z = (float)((double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43);
 
 	return 0;
 }
@@ -2273,6 +2280,15 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 
 	ChaVector3 Euler;
 
+	CQuaternion iniq;
+
+	CQuaternion QinvZ;
+	CQuaternion EQinvZ;
+	ChaVector3 EinvZ;
+	
+	CQuaternion QinvY;
+	CQuaternion EQinvYZ;
+	ChaVector3 EinvY;
 
 	ChaVector3 axisXVec(1.0f, 0.0f, 0.0f);
 	ChaVector3 axisYVec(0.0f, 1.0f, 0.0f);
@@ -2285,7 +2301,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) == 0.0f) {
+	if (lengthVec(&shadowVec) <= 1e-5) {
 		Euler.z = 90.0f;
 	}
 	else {
@@ -2298,11 +2314,19 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	//	Euler.z = -Euler.z;
 	//}
 
-	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
-	shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+	EinvZ = ChaVector3(0.0f, 0.0f, -Euler.z);
+	QinvZ.SetRotationXYZ(&iniq, EinvZ);
+	EQinvZ = QinvZ * EQ;
+	EQinvZ.Rotate(&targetVec, axisXVec);
+	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = 0.0f;
-	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0f) {
+	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+
+	//vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
+	//shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
+	//shadowVec.y = 0.0f;
+	//shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) <= 1e-5) {
 		Euler.y = 90.0f;
 	}
 	else {
@@ -2316,14 +2340,22 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	//}
 
 
-	EQ.Rotate(&targetVec, axisZVec);
-	vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
-	targetVec = tmpVec;
-	vec3RotateY(&tmpVec, -Euler.y, &targetVec);
+	EinvY = ChaVector3(0.0f, -Euler.y, 0.0f);
+	QinvY.SetRotationXYZ(&iniq, EinvY);
+	EQinvYZ = QinvY * QinvZ * EQ;
+	EQinvYZ.Rotate(&targetVec, axisZVec);
 	shadowVec.x = 0.0f;
-	shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
-	shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) == 0.0) {
+	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
+	shadowVec.z = (float)vecDotVec(&targetVec, &axisZVec);
+
+	//EQ.Rotate(&targetVec, axisZVec);
+	//vec3RotateZ(&tmpVec, -Euler.z, &targetVec);
+	//targetVec = tmpVec;
+	//vec3RotateY(&tmpVec, -Euler.y, &targetVec);
+	//shadowVec.x = 0.0f;
+	//shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
+	//shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
+	if (lengthVec(&shadowVec) <= 1e-5) {
 		Euler.x = 90.0f;
 	}
 	else {
