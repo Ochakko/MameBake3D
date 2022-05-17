@@ -8060,9 +8060,7 @@ int CalcLimitedWorldMat()
 		return 0;
 	}
 
-	if (0) {
-		//どうしてもプレビューが遅い場合に実行する。
-
+	if (g_limitdegflag == 1) {
 
 		if (InterlockedAdd(&g_calclimitedwmflag, 0) != 0) {//if already under calc, return 0.
 			return 0;
@@ -8092,7 +8090,6 @@ int CalcLimitedWorldMat()
 
 	}
 	else {
-		//特に気にしない場合にはこちら
 
 		InterlockedExchange(&g_calclimitedwmflag, (LONG)2);//mark finished
 	}
