@@ -4906,23 +4906,49 @@ void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtO
 
 FbxPose* CModel::GetBindPose()
 {
+	//###################################################################################
+	//商用のfbxにはbindposeを取得できないものがあるが、そういうfbxには手を出さない方針で
+	//###################################################################################
 
 	if (!m_pscene) {
 		return 0;
 	}
 	FbxPose* bindpose = 0;
+	FbxPose* lastpose = 0;
+	int lastpindex = 0;
 	FbxPose* curpose = m_pscene->GetPose(0);
+	lastpose = curpose;
 	int curpindex = 1;
 	while (curpose){
 		if (curpose->IsBindPose()){
 			bindpose = curpose;//最後のバインドポーズ
 		}
+		lastpose = curpose;
+		lastpindex = curpindex;
 		curpose = m_pscene->GetPose(curpindex);
 		curpindex++;
 	}
 	if (!bindpose){
-		//::MessageBoxA(NULL, "バインドポーズがありません。", "警告", MB_OK);
+		::MessageBoxA(NULL, "バインドポーズがありません。", "警告", MB_OK);
+		//if (lastpose) {
+		//	bindpose = lastpose;
+		//	char strmes[256] = { 0 };
+		//	sprintf_s(strmes, 256, "%d番目のポーズをバインドポーズとして使用します。", lastpindex);
+		//	::MessageBoxA(NULL, strmes, "注意", MB_OK);
+		//}
+		//else {
+		//	//bindpose = m_pscene->GetPose(0);
+		//	bindpose = 0;
+		//	::MessageBoxA(NULL, "ポーズが１つもありません。", "注意", MB_OK);
+		//}
+
 		bindpose = m_pscene->GetPose(0);
+		if (!bindpose) {
+			bindpose = m_pscene->GetPose(-1);
+			if (!bindpose) {
+				::MessageBoxA(NULL, "ポーズが１つもありません。", "警告", MB_OK);
+			}
+		}
 	}
 	return bindpose;
 }
@@ -4935,6 +4961,7 @@ int CModel::SetDefaultBonePos()
 	}
 
 	FbxPose* bindpose = GetBindPose();
+
 
 	FbxTime pTime;
 	pTime.SetSecondDouble( 0.0 );

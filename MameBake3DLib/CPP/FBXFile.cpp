@@ -3236,6 +3236,12 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 
 	lGlobalPosition.SetIdentity();
 
+
+	//FbxSkeleton* pskeleton = pNode->GetSkeleton();
+
+
+
+
 	if (pNode) {
 		if (pPose) {
 			int lNodeIndex = pPose->Find(pNode);

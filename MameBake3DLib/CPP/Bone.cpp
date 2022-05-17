@@ -3046,6 +3046,7 @@ ChaVector3 CBone::GetJointFPos()
 	else{
 		return m_oldjointfpos;
 	}
+
 }
 void CBone::SetJointFPos(ChaVector3 srcpos)
 { 
