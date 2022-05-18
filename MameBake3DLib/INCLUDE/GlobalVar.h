@@ -99,7 +99,8 @@ bool g_selecttolastFlag = false;
 bool g_underselecttolast = false;
 bool g_undereditrange = false;
 
-bool g_limitdegflag = true;
+//bool g_limitdegflag = true;
+bool g_limitdegflag = false;
 bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 

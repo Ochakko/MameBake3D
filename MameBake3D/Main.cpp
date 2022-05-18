@@ -20494,7 +20494,8 @@ int CreateUtDialog()
 	s_dsutguiid1.push_back(IDC_WALLSCRAPINGIK);
 
 
-	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
+	//g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
+	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", startx, iY += addh, checkboxxlen, 16, g_limitdegflag, 0U, false, &s_LimitDegCheckBox);
 	s_ui_limiteul = g_SampleUI.GetControl(IDC_LIMITDEG);
 	_ASSERT(s_ui_limiteul);
 	s_dsutgui1.push_back(s_ui_limiteul);
