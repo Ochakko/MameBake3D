@@ -3532,7 +3532,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteON);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Option1140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Experimental140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
 	s_spguisw[SPGUISW_SPRITEFK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteOFF);
@@ -3548,7 +3548,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Option1140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Experimental140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
