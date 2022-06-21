@@ -9556,6 +9556,12 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 		return;
 	}
 
+
+
+
+
+
+
 	if (srcbone){
 		int curmotid = GetCurMotInfo()->motid;
 		CMotionPoint startmp, endmp;
@@ -9570,7 +9576,8 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 
 		double frame;
 		for (frame = srcstartframe; frame <= srcendframe; frame += 1.0){
-			double slerpt;
+
+			//double slerpt;
 			CQuaternion setq;
 			ChaVector3 settra;
 			if (IsTimeEqual(frame, srcstartframe)){
@@ -9582,9 +9589,20 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 				settra = endtra;
 			}
 			else{
-				slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeは冒頭でreturnしている。
-				startq.Slerp2(endq, slerpt, &setq);
-				settra = starttra + (endtra - starttra) * slerpt;
+				//slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeは冒頭でreturnしている。
+				//startq.Slerp2(endq, slerpt, &setq);
+				//settra = starttra + (endtra - starttra) * slerpt;
+
+				double changerate;
+				if ((frame >= g_motionbrush_startframe) && (frame <= g_motionbrush_endframe)) {
+					changerate = (double)(*(g_motionbrush_value + (int)(frame + 0.1)));
+				}
+				else {
+					changerate = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeは冒頭でreturnしている。
+				}
+				startq.Slerp2(endq, changerate, &setq);
+				settra = starttra + (endtra - starttra) * changerate;
+
 			}
 			int setchildflag1 = 1;
 			CQuaternion iniq;

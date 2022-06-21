@@ -35,7 +35,7 @@
 //#define MB2VERSION 10023
 
 //2022/05/17
-#define MB2VERSION 10024
+#define MB2VERSION 10025
 
 
 
