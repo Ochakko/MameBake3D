@@ -241,14 +241,14 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 									//repeatscnt == 0 ‚Åminusv‚Í–³‚¢
 
 									//curscale = (float)((1.0 + cos(PI + PI * (((double)endframe - (double)framecnt) / (double)halfcnt2))) * 0.5);
-									curscale = 1.0f - (float)(pow((((double)applyframe - (double)framecnt) / (double)halfcnt2), 2.0));
+									curscale = 1.0f - (float)(pow(1.0 - (((double)framecnt - (double)startframe) / (double)halfcnt1), 2.0));
 									if (div2) {
 										curscale = (curscale + 1.0f) * 0.5f;
 									}
 								}
 								else {
 									//curscale = (float)((1.0 + cos(PI + PI * (((double)endframe - (double)framecnt) / (double)halfcnt2))) * 0.5);
-									curscale = 1.0f - (float)(pow((((double)applyframe - (double)framecnt) / (double)halfcnt2), 2.0));
+									curscale = 1.0f - (float)(pow(1.0 - (((double)framecnt - (double)startframe) / (double)halfcnt1), 2.0));
 									if (minusv) {
 										curscale *= -1.0f;
 									}
@@ -298,12 +298,12 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 
 									if (div2) {
 										//curscale = (float)(cos(PI + PI * (((double)framecnt - (double)startframe) / (double)halfcnt1)));
-										curscale = (float)(pow((((double)endframe - (double)framecnt) / (double)halfcnt1), 2.0));
+										curscale = (float)(pow(1.0 - (((double)framecnt - (double)applyframe) / (double)halfcnt2), 2.0));
 										curscale = (curscale + 1.0f) * 0.5f;
 									}
 									else {
 										//curscale = (float)((1.0 + cos(PI + PI * (((double)framecnt - (double)startframe) / (double)halfcnt1))) * 0.5);
-										curscale = (float)(pow((((double)endframe - (double)framecnt) / (double)halfcnt1), 2.0));
+										curscale = (float)(pow(1.0 - (((double)framecnt - (double)applyframe) / (double)halfcnt2), 2.0));
 										if (minusv) {
 											curscale *= -1.0f;
 										}
@@ -311,7 +311,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 								}
 								else {
 									//curscale = (float)((1.0 + cos(PI + PI * (((double)framecnt - (double)startframe) / (double)halfcnt1))) * 0.5);
-									curscale = (float)(pow((((double)endframe - (double)framecnt) / (double)halfcnt1), 2.0));
+									curscale = (float)(pow(1.0 - (((double)framecnt - (double)applyframe) / (double)halfcnt2), 2.0));
 									if (minusv) {
 										curscale *= -1.0f;
 									}
