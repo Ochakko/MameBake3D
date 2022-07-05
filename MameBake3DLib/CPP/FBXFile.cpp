@@ -123,6 +123,9 @@ static bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* 
 static bool CreateScene(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate );
 static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene, char* fbxdate );
 static FbxNode* CreateFbxMesh( FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj );
+static int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxMesh* lMesh, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj);
+static int CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj, CMQOMaterial* mqomat, int curtrinum);
+
 //static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
 //static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
 //static void LinkMeshToSkeletonReq( CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* lMesh, CMQOObject* curobj, CModel* pmodel );
@@ -542,7 +545,8 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	sceneInfo->mSubject = "skinmesh and animation";
 	sceneInfo->mAuthor = "OchakkoLab";
 	//sceneInfo->mRevision = "rev. 2.2";
-	sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
+	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
+	sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
 	sceneInfo->mKeywords = "skinmesh animation";
 	//sceneInfo->mComment = "no particular comments required.";
 	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
@@ -755,9 +759,13 @@ int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObjec
 FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj)
 {
 	CPolyMesh4* pm4 = curobj->GetPm4();
-	_ASSERT( pm4 );
-	CMQOMaterial* mqomat = curobj->GetMaterialBegin()->second;
-	_ASSERT( mqomat );
+	if (pm4 == NULL) {
+		_ASSERT(0);
+		return NULL;
+	}
+
+	//CMQOMaterial* mqomat = curobj->GetMaterialBegin()->second;
+	//_ASSERT( mqomat );
 	if (!pm4->GetOrgPointBuf()){
 		return 0;// RootNode
 	}
@@ -891,11 +899,84 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 		return NULL;
 	}
 
-	// add material to the node. 
-	// the material can't in different document with the geometry node or in sub-document
-	// we create a simple material here which belong to main document
+
+	int result2 = CreateFbxMaterial(pSdkManager, pScene, lNode, lMesh, lMaterialElement, pmodel, curobj);
+	if (result2 != 0) {
+		_ASSERT(0);
+	}
+
+	// Set the Index to the material
+	int materialindex = 0;
+	int befmaterialindex = -1;
+	//for(int i=0; i<lMesh->GetPolygonCount(); ++i){
+	for (int i = 0; i<lMesh->GetPolygonCount(); i++){
+		
+		int materialindex = pm4->GetMaterialNoFromFaceNo(i);
+
+		////for debug
+		//if (materialindex != befmaterialindex) {
+		//	_ASSERT(0);
+		//}
+
+		lMaterialElement->GetIndexArray().SetAt(i, materialindex);
+
+		
+		//lMaterialElement->GetIndexArray().SetAt(i,0);
+
+
+
+		befmaterialindex = materialindex;
+	}
+
+	return lNode;
+}
+
+int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxMesh* lMesh, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj)
+{
+	if (!curobj) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//CPolyMesh3* pm3 = curobj->GetPm3();
+	CPolyMesh4* pm4 = curobj->GetPm4();
+
+	int materialnum;
+	//if (pm3) {
+	//	materialnum = 1;
+	//	CMQOMaterial* curmqomat = curobj->GetMaterialBegin()->second;
+	//	if (curmqomat != NULL) {
+	//		CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, lMesh->GetPolygonCount());
+	//	}
+	//}
+	//else 
+	if (pm4) {
+		materialnum = pm4->GetDispMaterialNum();
+		int materialcnt;
+		for (materialcnt = 0; materialcnt < materialnum; materialcnt++) {
+			CMQOMaterial* curmqomat = 0;
+			int curoffset = 0;
+			int curtrinum = 0;
+			int result1 = pm4->GetDispMaterial(materialcnt, &curmqomat, &curoffset, &curtrinum);
+			if ((result1 == 0) && (curmqomat != NULL) && (curtrinum > 0)) {
+				CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, curtrinum);
+			}
+		}
+		lMaterialElement->GetIndexArray().SetCount(lMesh->GetPolygonCount());
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+}
+
+int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj, CMQOMaterial* mqomat, int curtrinum)
+{
 	static int s_matcnt = 0;
 	s_matcnt++;
+
 
 	char matname[256];
 	char tmpname[256] = { 0 };
@@ -911,32 +992,32 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	//sprintf_s( matname, 256, "%s_%d", mqomat->GetName(), s_matcnt );
 	//FbxString lMaterialName = mqomat->name;
 	FbxString lMaterialName = matname;
-	FbxString lShadingName  = "Phong";
-	FbxSurfacePhong* lMaterial = FbxSurfacePhong::Create( pScene, lMaterialName.Buffer() );
+	FbxString lShadingName = "Phong";
+	FbxSurfacePhong* lMaterial = FbxSurfacePhong::Create(pScene, lMaterialName.Buffer());
 
 	lMaterial->Diffuse.Set(FbxDouble3(mqomat->GetDif4F().x, mqomat->GetDif4F().y, mqomat->GetDif4F().z));
-    lMaterial->Emissive.Set(FbxDouble3(mqomat->GetEmi3F().x, mqomat->GetEmi3F().y, mqomat->GetEmi3F().z));
-    lMaterial->Ambient.Set(FbxDouble3(mqomat->GetAmb3F().x, mqomat->GetAmb3F().y, mqomat->GetAmb3F().z));
-    //lMaterial->AmbientFactor.Set(1.0);
+	lMaterial->Emissive.Set(FbxDouble3(mqomat->GetEmi3F().x, mqomat->GetEmi3F().y, mqomat->GetEmi3F().z));
+	lMaterial->Ambient.Set(FbxDouble3(mqomat->GetAmb3F().x, mqomat->GetAmb3F().y, mqomat->GetAmb3F().z));
+	//lMaterial->AmbientFactor.Set(1.0);
 	//lMaterial->AmbientFactor.Set(0.1);
 	lMaterial->AmbientFactor.Set(g_AmbientFactorAtSaving);
 	FbxTexture* curtex = CreateTexture(pSdkManager, mqomat);
-	if( curtex ){
-		lMaterial->Diffuse.ConnectSrcObject( curtex );
+	if (curtex) {
+		lMaterial->Diffuse.ConnectSrcObject(curtex);
 		lNode->SetShadingMode(FbxNode::eTextureShading);
 	}
-	else{
+	else {
 		lNode->SetShadingMode(FbxNode::eHardShading);
 	}
 
-    //lMaterial->DiffuseFactor.Set(1.0);
+	//lMaterial->DiffuseFactor.Set(1.0);
 	lMaterial->DiffuseFactor.Set(g_DiffuseFactorAtSaving);
-    lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
-    lMaterial->ShadingModel.Set(lShadingName);
-    //lMaterial->Shininess.Set(0.5);
+	lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
+	lMaterial->ShadingModel.Set(lShadingName);
+	//lMaterial->Shininess.Set(0.5);
 	lMaterial->Shininess.Set(mqomat->GetPower());
-    lMaterial->Specular.Set(FbxDouble3(mqomat->GetSpc3F().x, mqomat->GetSpc3F().y, mqomat->GetSpc3F().z));
-    //lMaterial->SpecularFactor.Set(0.3);
+	lMaterial->Specular.Set(FbxDouble3(mqomat->GetSpc3F().x, mqomat->GetSpc3F().y, mqomat->GetSpc3F().z));
+	//lMaterial->SpecularFactor.Set(0.3);
 	lMaterial->SpecularFactor.Set(g_SpecularFactorAtSaving);
 	//lMaterial->EmissiveFactor.Set(0.1);
 	lMaterial->EmissiveFactor.Set(g_EmissiveFactorAtSaving);
@@ -944,15 +1025,16 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 
 	lNode->AddMaterial(lMaterial);
 	// We are in eByPolygon, so there's only need for index (a plane has 1 polygon).
-	lMaterialElement->GetIndexArray().SetCount( lMesh->GetPolygonCount() );
-	// Set the Index to the material
-	//for(int i=0; i<lMesh->GetPolygonCount(); ++i){
-	for (int i = 0; i<lMesh->GetPolygonCount(); i++){
-		lMaterialElement->GetIndexArray().SetAt(i,0);
-	}
+	
+	
+	
+	//lMaterialElement->GetIndexArray().SetCount(lMesh->GetPolygonCount());
 
-	return lNode;
+
+
+	return 0;
 }
+
 
 FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
 {

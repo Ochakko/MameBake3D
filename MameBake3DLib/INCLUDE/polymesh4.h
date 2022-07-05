@@ -171,6 +171,43 @@ public:
 		}
 	}
 
+	int GetMaterialNoFromFaceNo(int srcfaceno)
+	{
+		CMQOMaterial* prevmat = 0;
+		int retmaterialcnt = 0;
+
+
+		int materialnum = GetDispMaterialNum();
+		int materialcnt;
+		for (materialcnt = 0; materialcnt < materialnum; materialcnt++) {
+
+			CMQOMaterial* chkmat = 0;
+			int chkoffset = 0;
+			int chktrinum = 0;
+			int result = GetDispMaterial(materialcnt, &chkmat, &chkoffset, &chktrinum);
+			if (result == 0) {
+				int chkstartface = chkoffset / 3;
+				int chkendface = chkstartface + chktrinum;
+
+				if (chkstartface <= srcfaceno) {
+					prevmat = chkmat;
+					retmaterialcnt = materialcnt;
+				}
+				else if (chkstartface > srcfaceno) {
+					break;
+				}
+			}
+		}
+
+		if (prevmat != NULL) {
+			return retmaterialcnt;
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+	}
+
 
 
 private:
