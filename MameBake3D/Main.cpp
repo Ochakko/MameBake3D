@@ -8919,6 +8919,10 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 
 	static int modelcnt = 0;
+
+	WCHAR fbxpath0[MAX_PATH] = { 0L };
+	wcscpy_s(fbxpath0, MAX_PATH, g_tmpmqopath);
+
 	WCHAR modelname[MAX_PATH] = {0L};
 	WCHAR* lasten;
 	lasten = wcsrchr( g_tmpmqopath, TEXT('\\') );
@@ -9267,6 +9271,45 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 
 
 	SetTimelineHasRigFlag();
+
+
+//############################
+//############################
+
+	//読み込み処理が成功してから履歴を保存する。fbxファイル。
+	int savepathlen;
+	fbxpath0[MAX_PATH - 1] = 0L;
+	savepathlen = (int)wcslen(fbxpath0);
+	if (savepathlen > 4) {
+		WCHAR* pwext;
+		pwext = fbxpath0 + ((size_t)savepathlen - 1) - 3;
+		if (wcscmp(pwext, L".fbx") == 0) {
+			SYSTEMTIME localtime;
+			GetLocalTime(&localtime);
+			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04u%02u%02u%02u%02u%02u.txt",
+				s_temppath,
+				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+			HANDLE hfile;
+			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				//int pathlen;
+				//pathlen = (int)wcslen(saveprojpath);
+				//if ((pathlen > 0) && (pathlen < MAX_PATH)) {
+				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
+					DWORD writelen = 0;
+					WriteFile(hfile, fbxpath0, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
+
+
+
+
 
 	return newmodel;
 }

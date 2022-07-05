@@ -52,6 +52,8 @@ void CPolyMesh4::InitParams()
 {
 	m_normalmappingmode = 0;//0:polygonvertex, 1:controlpoint
 
+	m_materialoffset.clear();
+
 	m_orgpointnum = 0;
 	m_orgfacenum = 0;
 	m_facenum = 0;
@@ -217,6 +219,9 @@ int CPolyMesh4::CreatePM4(int normalmappingmode, int pointnum, int facenum, int 
 	ZeroMemory(m_dirtyflag, sizeof(int) * m_orgpointnum);
 
 
+	m_materialoffset.clear();
+
+
 	int tmpleng, tmpmatnum;
 	SetOptV( m_dispv, &tmpleng, &tmpmatnum, srcmat );
 //	CallF( SetOptV( m_dispv, m_pm3inf, &tmpleng, &tmpmatnum, srcmat ), return 1 );
@@ -308,6 +313,10 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 	int beffaceno = 0;
 	CMQOFace* curface = 0;
 	CMQOFace* befface = 0;
+
+	CMQOMaterial* befmaterial = 0;
+	CMQOMaterial* curmaterial = 0;
+	
 	for( fno = 0; fno < m_facenum; fno++ ){
 		curface = m_triface + fno;
 		curfaceno = fno;
@@ -315,6 +324,14 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 		if( dispv ){
 			int vi[3] = {0, 2, 1};
 			int fbx2020NormalVi[3] = { 0, 1, 2 };
+
+
+			int materialindex = curface->GetMaterialNo();
+			curmaterial = GetMaterialFromNo(srcmat, curface->GetMaterialNo());
+
+			if ((fno == 0) || (curmaterial != befmaterial)) {
+				m_materialoffset[setno * 3] = curmaterial;
+			}
 
 			int vcnt;
 			for( vcnt = 0; vcnt < 3; vcnt++ ){
@@ -387,6 +404,9 @@ int CPolyMesh4::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 					*(m_dispindex + setno * 3 + vcnt) = setno * 3 + vcnt;
 				}
 			}
+
+
+			befmaterial = curmaterial;
 
 		}
 		setno ++;

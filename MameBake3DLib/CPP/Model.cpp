@@ -2885,10 +2885,21 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 //	newobj->m_morphnum = morphnum;
 
 //マテリアル
+	int materialNum_ = 1;
 	FbxNode* node = pMesh->GetNode();
 	if ( node != 0 ) {
 		// マテリアルの数
-		int materialNum_ = node->GetMaterialCount();
+		materialNum_ = node->GetMaterialCount();
+		
+
+		//for dbginfo
+		//if (materialNum_ != 1) {
+			//char strinfo[MAX_PATH] = { 0 };
+			//sprintf_s(strinfo, MAX_PATH, "mesh %s, materialNum_ %d", pNode->GetName(), materialNum_);
+			//::MessageBoxA(NULL, strinfo, "check!!!", MB_OK);
+		//}
+
+
 		// マテリアル情報を取得
 		//for( int i = 0; i < materialNum_; ++i ) {
 		for (int i = 0; i < materialNum_; i++) {
@@ -2934,6 +2945,10 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 	}
 
+
+	const FbxLayerElementMaterial* pPolygonMaterials = pMesh->GetElementMaterial();
+	FbxGeometryElement::EMappingMode materialmappingMode = pPolygonMaterials->GetMappingMode();
+
 	newobj->SetFace( PolygonNum );
 	newobj->SetFaceBuf( new CMQOFace[ PolygonNum ] );
 	for ( int p = 0; p < PolygonNum; p++ ) {
@@ -2946,15 +2961,41 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 		CMQOFace* curface = newobj->GetFaceBuf() + p;
 		curface->SetPointNum( IndexNumInPolygon );
 
+		curface->SetFaceNo(p);
+		curface->SetBoneType(MIKOBONE_NONE);
+
+
+
+		if (pPolygonMaterials) {
+			int lookupIndex = 0;
+			switch (materialmappingMode) {
+			case FbxGeometryElement::eByPolygon:
+				lookupIndex = p;//triangleNo.
+				break;
+			case FbxGeometryElement::eAllSame:
+				lookupIndex = 0;
+				break;
+			default:
+				lookupIndex = 0;
+				break;
+			}
+			int materialIndex = pPolygonMaterials->mIndexArray->GetAt(lookupIndex);
+			if ((materialIndex >= 0) && (materialIndex < materialNum_)) {
+				curface->SetMaterialNo(materialIndex);
+			}
+		}
+		else {
+			curface->SetMaterialNo(0);
+		}
+
 		for ( int n = 0; n < IndexNumInPolygon; n++ ) {
 			// ポリゴンpを構成するn番目の頂点のインデックス番号
 			int IndexNumber = pMesh->GetPolygonVertex( p, n );
-			curface->SetFaceNo( p );
 			curface->SetIndex(  n, IndexNumber );
-			curface->SetMaterialNo( 0 );
-			curface->SetBoneType( MIKOBONE_NONE );
 		}
 	}
+
+
 
 	/*
     // Populate the array with vertex attribute, if by control point.

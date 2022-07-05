@@ -11,7 +11,7 @@
 #include <crtdbg.h>
 
 #include <map>
-using namespace std;
+//using namespace std;
 
 class CMQOObject;
 class CMQOMaterial;
@@ -26,23 +26,23 @@ public:
 	CPolyMesh4();
 	~CPolyMesh4();
 
-	int CreatePM4( int normalmappingmode, int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, map<int,CMQOMaterial*>& srcmat );
+	int CreatePM4( int normalmappingmode, int pointnum, int facenum, int normalleng, int uvleng, ChaVector3* pointptr, ChaVector3* nptr, ChaVector2* uvptr, CMQOFace* faceptr, std::map<int,CMQOMaterial*>& srcmat );
 	
-	int ChkAlphaNum( map<int,CMQOMaterial*>& srcmat );
+	int ChkAlphaNum( std::map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
 
 	int SetPm3Inf( CMQOObject* srcobj );
 	int UpdateMorphBuffer( ChaVector3* mpoint );
 
-	int DumpInfBone( CMQOObject* srcobj, map<int,CBone*>& srcbonelist );
-	int SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clusterno, map<int,CBone*>& srcbonelist );
+	int DumpInfBone( CMQOObject* srcobj, std::map<int,CBone*>& srcbonelist );
+	int SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clusterno, std::map<int,CBone*>& srcbonelist );
 
 private:
 	void InitParams();
 	void DestroyObjs();
 
 	int SetTriFace( CMQOFace* faceptr, int* numptr );
-	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, map<int,CMQOMaterial*>& srcmat );
+	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, std::map<int,CMQOMaterial*>& srcmat );
 	int SetLastValidVno();
 
 public:
@@ -122,6 +122,57 @@ public:
 	ChaVector3 GetNormalByControlPointNo(int vno);
 	ChaVector2 GetUVByControlPointNo(int vno);
 
+	int GetDispMaterialNum()
+	{
+		return m_materialoffset.size();
+	}
+	int GetDispMaterial(int srcindex, CMQOMaterial** dstmaterial, int* dstoffset, int* dsttrinum) 
+	{
+		if ((!dstmaterial) || (!dstoffset)) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		*dstmaterial = NULL;
+		*dstoffset = 0;
+		*dsttrinum = 0;
+
+		bool findflag = false;
+
+		if ((srcindex >= 0) && (srcindex < GetDispMaterialNum())) {
+			int indexcnt = 0;
+			std::map<int, CMQOMaterial*>::iterator itrmaterial;
+			for (itrmaterial = m_materialoffset.begin(); itrmaterial != m_materialoffset.end(); itrmaterial++) {
+				if (indexcnt == srcindex) {
+					*dstoffset = itrmaterial->first;
+					*dstmaterial = itrmaterial->second;
+					findflag = true;
+				}
+				else if (indexcnt == (srcindex + 1)) {
+					if (findflag == true) {
+						int nextindex = itrmaterial->first;
+						*dsttrinum = (nextindex - *dstoffset) / 3;
+						return 0;
+					}
+				}
+				if (indexcnt == (GetDispMaterialNum() - 1)) {
+					if (findflag == true) {
+						*dsttrinum = (GetFaceNum() * 3 - *dstoffset) / 3;
+						return 0;
+					}
+				}
+				indexcnt++;
+			}
+
+			return 1;
+		}
+		else {
+			return 1;
+		}
+	}
+
+
+
 private:
 	int m_normalmappingmode;//0:polygonvertex, 1:controlpoint
 
@@ -142,6 +193,10 @@ private:
 	int*	m_orgindex;
 	int*	m_fbxindex;
 	int m_createoptflag;
+
+	std::map<int, CMQOMaterial*> m_materialoffset;
+
+
 
 	MODELBOUND	m_bound;
 
