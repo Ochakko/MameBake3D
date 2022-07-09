@@ -22727,8 +22727,17 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 				btflag = 0;
 			}
 			else{
-				btflag = 1;
+				if (g_previewFlag == 4) {
+					btflag = 1;
+				}
+				else {
+					//previewFlag == 5
+					if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
+						btflag = 2;//2022/07/09
+					}
+				}
 			}
+
 			curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
 
 			OnRenderRefPose(pd3dImmediateContext, curmodel);

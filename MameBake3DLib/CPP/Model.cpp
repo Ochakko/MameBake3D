@@ -1917,13 +1917,42 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		CMotionPoint tmpmp = curbone->GetCurMp();
 		if( btflag == 0 ){
 			set4x4[clcnt] = tmpmp.GetWorldMat();
-			//set4x4[clcnt] = ChaMatrixTranspose(tmpmp.GetWorldMat());
-		}else{
-			set4x4[clcnt] = curbone->GetBtMat();
-			//set4x4[clcnt] = ChaMatrixTranspose(curbone->GetBtMat());
+		}else if(btflag == 1){
+			//物理シミュ
+			
+			if (curbone->GetChild()) {
+				set4x4[clcnt] = curbone->GetBtMat();
+			}
+			else {
+				//2022/07/09
+				//endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
+				set4x4[clcnt] = tmpmp.GetWorldMat();
+			}
+		}
+		else if (btflag == 2) {
+			//物理IK
+
+			if (curbone->GetChild()) {
+				set4x4[clcnt] = curbone->GetBtMat();
+			}
+			else {
+				//2022/07/09
+				//endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
+				CBone* parentbone = curbone->GetParent();
+				if (parentbone) {
+					set4x4[clcnt] = parentbone->GetBtMat();
+				}
+				else {
+					set4x4[clcnt] = curbone->GetBtMat();
+				}
+			}
+		}
+		else {
+			set4x4[clcnt] = tmpmp.GetWorldMat();
 		}
 		setclcnt++;
 	}
+
 
 	if(setclcnt > 0 ){
 		_ASSERT(setclcnt <= MAXCLUSTERNUM);
@@ -2945,29 +2974,31 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 
 	}
 
+	const FbxLayerElementMaterial* pPolygonMaterials = NULL;
+	FbxGeometryElement::EMappingMode materialmappingMode = FbxGeometryElement::eAllSame;
+	pPolygonMaterials = pMesh->GetElementMaterial();
+	if (pPolygonMaterials != NULL) {
+		materialmappingMode = pPolygonMaterials->GetMappingMode();
+	}
 
-	const FbxLayerElementMaterial* pPolygonMaterials = pMesh->GetElementMaterial();
-	FbxGeometryElement::EMappingMode materialmappingMode = pPolygonMaterials->GetMappingMode();
-
-	newobj->SetFace( PolygonNum );
-	newobj->SetFaceBuf( new CMQOFace[ PolygonNum ] );
-	for ( int p = 0; p < PolygonNum; p++ ) {
-		int IndexNumInPolygon = pMesh->GetPolygonSize( p );  // p番目のポリゴンの頂点数
-		if( (IndexNumInPolygon != 3) && (IndexNumInPolygon != 4) ){
-			_ASSERT( 0 );
+	newobj->SetFace(PolygonNum);
+	newobj->SetFaceBuf(new CMQOFace[PolygonNum]);
+	for (int p = 0; p < PolygonNum; p++) {
+		int IndexNumInPolygon = pMesh->GetPolygonSize(p);  // p番目のポリゴンの頂点数
+		if ((IndexNumInPolygon != 3) && (IndexNumInPolygon != 4)) {
+			_ASSERT(0);
 			return 0;
 		}
-		
+
 		CMQOFace* curface = newobj->GetFaceBuf() + p;
-		curface->SetPointNum( IndexNumInPolygon );
+		curface->SetPointNum(IndexNumInPolygon);
 
 		curface->SetFaceNo(p);
 		curface->SetBoneType(MIKOBONE_NONE);
 
 
-
+		int lookupIndex = 0;
 		if (pPolygonMaterials) {
-			int lookupIndex = 0;
 			switch (materialmappingMode) {
 			case FbxGeometryElement::eByPolygon:
 				lookupIndex = p;//triangleNo.
@@ -2985,15 +3016,17 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 			}
 		}
 		else {
+			lookupIndex = 0;
 			curface->SetMaterialNo(0);
 		}
 
-		for ( int n = 0; n < IndexNumInPolygon; n++ ) {
+		for (int n = 0; n < IndexNumInPolygon; n++) {
 			// ポリゴンpを構成するn番目の頂点のインデックス番号
-			int IndexNumber = pMesh->GetPolygonVertex( p, n );
-			curface->SetIndex(  n, IndexNumber );
+			int IndexNumber = pMesh->GetPolygonVertex(p, n);
+			curface->SetIndex(n, IndexNumber);
 		}
 	}
+	
 
 
 
@@ -5182,7 +5215,14 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 	if( srcbone ){
 		if (!srcbone->GetParent() || (srcbone->GetParent() && (srcbone->GetParent()->GetTmpKinematic() == false))) {
 			int cmp0 = strncmp(srcbone->GetBoneName(), "BT_", 3);
-			if ((cmp0 == 0) || (srcbone->GetBtForce() == 1)) {
+			const char* pcomp1 = strstr(srcbone->GetBoneName(), "Hair1_");
+			const char* pcomp2 = strstr(srcbone->GetBoneName(), "Hair2_");
+			const char* pcomp3 = strstr(srcbone->GetBoneName(), "Hair3_");
+			const char* pcomp4 = strstr(srcbone->GetBoneName(), "Hair4_");
+			const char* pcomp5 = strstr(srcbone->GetBoneName(), "Hair5_");
+			const char* pcomp6 = strstr(srcbone->GetBoneName(), "Hair6_");
+
+			if ((cmp0 == 0) || (pcomp2 != NULL) || (pcomp3 != NULL) || (pcomp4 != NULL) || (pcomp5 != NULL) || (pcomp6 != NULL) || (srcbone->GetBtForce() == 1)) {
 				if (srcbone->GetParent()) {
 					CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
 					if (curre) {
@@ -5898,8 +5938,20 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 		BtMat2BtObjReq(m_topbt, wmat, vpmat);
 		RecalcConstraintFrameABReq(m_topbt);
+
 		m_physicsikcnt++;
 	}
+
+
+	//#########################################################################################
+	//2022/07/09
+	//endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
+	//SetChaderConst()内で上記対策処理
+	//#########################################################################################
+
+
+
+
 
 	//if (g_previewFlag == 5){
 	//	if (m_topbt){
@@ -6092,7 +6144,8 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 				curbto->SetBtMotion();
 			}
 		}
-
+		
+		/*
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag1 = 1;
 		//int isfirstbone = 0;
@@ -6100,9 +6153,12 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 
 		int inittraflag1 = 1;
 		int setchildflag1 = 1;
-		curbone->SetBtWorldMatFromEul(setchildflag1, cureul);
+		curbone->SetBtWorldMatFromEul(setchildflag1, cureul);//SetBtWorldMatFromEul関数内で設定部分がコメントアウトされていた
+		*/
 
 	}
+
+
 	int chilno;
 	for( chilno = 0; chilno < curbto->GetChildBtSize(); chilno++ ){
 		CBtObject* chilbto = curbto->GetChildBt( chilno );
