@@ -5200,7 +5200,12 @@ void CModel::SetBtKinFlagReq( CBtObject* srcbto, int oncreateflag )
 			const char* pcomp5 = strstr(srcbone->GetBoneName(), "Hair5_");
 			const char* pcomp6 = strstr(srcbone->GetBoneName(), "Hair6_");
 
-			if ((cmp0 == 0) || (pcomp2 != NULL) || (pcomp3 != NULL) || (pcomp4 != NULL) || (pcomp5 != NULL) || (pcomp6 != NULL) || (srcbone->GetBtForce() == 1)) {
+			if ((cmp0 == 0) || (pcomp1 != NULL) || (pcomp2 != NULL) || (pcomp3 != NULL) || (pcomp4 != NULL) || (pcomp5 != NULL) || (pcomp6 != NULL)) {
+				//2022/07/11 auto simu settings force
+				srcbone->SetBtForce(1);
+			}
+
+			if (srcbone->GetBtForce() == 1) {
 				if (srcbone->GetParent()) {
 					CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
 					if (curre) {
