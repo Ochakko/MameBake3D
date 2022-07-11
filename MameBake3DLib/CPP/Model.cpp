@@ -1919,33 +1919,11 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 			set4x4[clcnt] = tmpmp.GetWorldMat();
 		}else if(btflag == 1){
 			//物理シミュ
-			
-			if (curbone->GetChild()) {
-				set4x4[clcnt] = curbone->GetBtMat();
-			}
-			else {
-				//2022/07/09
-				//endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
-				set4x4[clcnt] = tmpmp.GetWorldMat();
-			}
+			set4x4[clcnt] = curbone->GetBtMat();
 		}
 		else if (btflag == 2) {
 			//物理IK
-
-			if (curbone->GetChild()) {
-				set4x4[clcnt] = curbone->GetBtMat();
-			}
-			else {
-				//2022/07/09
-				//endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
-				CBone* parentbone = curbone->GetParent();
-				if (parentbone) {
-					set4x4[clcnt] = parentbone->GetBtMat();
-				}
-				else {
-					set4x4[clcnt] = curbone->GetBtMat();
-				}
-			}
+			set4x4[clcnt] = curbone->GetBtMat();
 		}
 		else {
 			set4x4[clcnt] = tmpmp.GetWorldMat();
@@ -5945,11 +5923,36 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 	//#########################################################################################
 	//2022/07/09
-	//endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
-	//SetChaderConst()内で上記対策処理
+	// endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
+	//2022/07/11
+	// SetShaderConstから本関数SetBtMotionに処理を移動。
 	//#########################################################################################
-
-
+	map<int, CBone*>::iterator itrbone2;
+	for (itrbone2 = m_bonelist.begin(); itrbone2 != m_bonelist.end(); itrbone2++) {
+		CBone* curbone2 = itrbone2->second;
+		if (curbone2) {
+			if (curbone2->GetChild() == NULL) {
+				CBtObject* startbto2 = curbone2->GetParent()->GetBtObject(curbone2);
+				if(startbto2 != NULL) {
+					if (ragdollflag == 0) {
+						CMotionPoint tmpmp1 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+						curbone2->SetBtMat(tmpmp1.GetWorldMat());
+					}
+					else {
+						if (curbone2->GetParent() != NULL) {
+							//CMotionPoint tmpmp2 = curbone2->GetParent()->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+							//curbone2->SetBtMat(tmpmp2.GetWorldMat());
+							curbone2->SetBtMat(curbone2->GetParent()->GetBtMat());
+						}
+						else {
+							CMotionPoint tmpmp3 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+							curbone2->SetBtMat(tmpmp3.GetWorldMat());
+						}
+					}
+				}
+			}
+		}
+	}
 
 
 
