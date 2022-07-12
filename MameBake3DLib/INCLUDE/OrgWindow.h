@@ -417,6 +417,7 @@ void s_dummyfunc()
 			baseColor.g = 0;
 			baseColor.b = 0;
 
+			textColor = RGB(255, 255, 255);
 
 			pos = WindowPos(0, 0);
 			size = WindowSize(0, 0);
@@ -559,12 +560,23 @@ void s_dummyfunc()
 	//		draw();
 		}
 
+		COLORREF getTextColor() const {
+			return textColor;
+		}
+		void setTextColor(unsigned char srcr, unsigned char srcg, unsigned char srcb) {
+			textColor = RGB(srcr, srcg, srcb);
+		}
+		void setTextColor(COLORREF srccol) {
+			textColor = srccol;
+		}
+
 	protected:
 		////////////////////////// MemberVar /////////////////////////////
 		OrgWindow *parentWindow;
 		WindowPos  pos;
 		WindowSize size;
 		color_tag baseColor;
+		COLORREF textColor;
 
 		HDCMaster *hdcM;
 		bool isregistered;
@@ -2733,15 +2745,18 @@ void s_dummyfunc()
 			pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 			pos1y= pos.y+size.y/2-5;
 			hdcM->setFont(12,_T("ＭＳ ゴシック"));
-			TCHAR* isToAll = 0;
-			isToAll = _tcsstr(name, _T("ToAll"));
-			if(!isToAll){
-				SetTextColor(hdcM->hDC, RGB(240, 240, 240));
-			}
-			else {
-				//名前にToAllとついていた場合には、特殊ボタンとして色を変える
-				SetTextColor(hdcM->hDC, RGB(64, 128 + 32, 128 + 32));
-			}
+			//TCHAR* isToAll = 0;
+			//isToAll = _tcsstr(name, _T("ToAll"));
+			//if(!isToAll){
+			//	SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+			//}
+			//else {
+			//	//名前にToAllとついていた場合には、特殊ボタンとして色を変える
+			//	SetTextColor(hdcM->hDC, RGB(64, 128 + 32, 128 + 32));
+			//}
+			
+			SetTextColor(hdcM->hDC, OrgWindowParts::getTextColor());
+
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
 					 name, (int)_tcslen(name));

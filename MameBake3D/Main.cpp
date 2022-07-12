@@ -21394,7 +21394,7 @@ int CreateRigidWnd()
 	s_massspacelabel = new OWP_Label(L"(Space4)");
 	s_validSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_skipB = new OWP_Button(L"ToAll");
-	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid", 1);
+	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid (有効/無効)", 1);
 	s_forbidSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_forbidB = new OWP_Button(L"ToAll");
 	s_forbidrot = new OWP_CheckBoxA(L"ForbidRot", 0);
@@ -21461,6 +21461,28 @@ int CreateRigidWnd()
 	s_dmpB = new OWP_Button(L"DumpingToAll");
 	s_groupB = new OWP_Button(L"SetRigidGroupIDForConflict");
 	s_gcoliB = new OWP_Button(L"SetGroundGroupIDForConflict");
+
+
+
+
+	COLORREF colorToAll = RGB(64, 128 + 32, 128 + 32);
+	COLORREF colorValidInvalid = RGB(168, 129, 129);
+
+	s_groupcheck->setTextColor(colorToAll);
+	s_massB->setTextColor(colorToAll);
+	s_thicknessB->setTextColor(colorToAll);
+	s_depthB->setTextColor(colorToAll);
+	s_skipB->setTextColor(colorToAll);
+	s_forbidB->setTextColor(colorToAll);
+	s_btgB->setTextColor(colorToAll);
+	s_btforceB->setTextColor(colorToAll);
+	s_colB->setTextColor(colorToAll);
+	s_dmpB->setTextColor(colorToAll);
+
+	s_rigidskip->setTextColor(colorValidInvalid);
+	s_btforce->setTextColor(colorValidInvalid);
+
+
 
 	int slw = 350;
 
@@ -22722,7 +22744,7 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 		if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelが作成途中の場合を考えて、先頭から２つのpublicデータメンバーを参照する
 			int lightflag = 1;
 			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-			int btflag;
+			int btflag = 0;
 			if ((g_previewFlag != 4) && (g_previewFlag != 5)){
 				btflag = 0;
 			}

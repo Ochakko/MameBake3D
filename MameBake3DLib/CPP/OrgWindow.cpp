@@ -1014,7 +1014,8 @@ namespace OrgWinGUI{
 			pos1x = pos.x + BOX_POS_X + BOX_WIDTH + 3;
 			pos1y = pos.y + size.y / 2 - 5;
 			hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
-			SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+			//SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+			SetTextColor(hdcM->hDC, OrgWindowParts::getTextColor());
 			TextOut(hdcM->hDC,
 				pos1x, pos1y,
 				name, (int)_tcslen(name));
