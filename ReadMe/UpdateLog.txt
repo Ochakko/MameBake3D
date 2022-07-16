@@ -1,12 +1,32 @@
-2022/07/06
-	MotionBrush 1.0.0.25
+2022/07
+	MotionBrushFree 1.0.0.25
+
+	フリーウェア化して名前をMotionBrushからMotionBrushFreeに変更
 
 	インストーラ対応
 
 	Toolウインドウの補間ボタンのバージョンアップ
 		モーションの補間時に選択中のブラシカーブを適用するように。
+	
+	1メッシュに付き複数マテリアルが指定されていても読み込めるように。
+		VRoidのvrmファイルから変換したfbxファイルも読み込めるように。
+		VRoid1.4.1以降のHair1からHair6のジョイントに自動で物理シミュ設定。
+
+	エンドジョイントも物理シミュ対応
+		エンドジョイントが頂点に対して影響度を持っている場合にも物理シミュが機能。
 
 	Punch1ブラシとPunch2ブラシのデバッグ
+		
+	RigidParams設定ウインドウ
+		rotSpring CustomValueの最小値(10.0)を2.0に変更
+
+	Testフォルダにサンプル追加
+		Test/VRoid_131追加
+			VRoidから変換したfbxのサンプル。chaファイルをオープンしてご覧ください。
+
+		Test/RetargetSettingFileExample/vroid141_bvh131.rtg追加
+			VRoidから変換したfbxに対するリターゲット設定ファイルとして使用ください
+
 		
 
 2022/05/18

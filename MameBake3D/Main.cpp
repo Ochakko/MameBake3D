@@ -21445,7 +21445,8 @@ int CreateRigidWnd()
 	//s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
-	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300
+	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300 ver10024
+	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
 	s_aklabel = new OWP_Label(L"rotSpring customValue");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
@@ -21478,6 +21479,9 @@ int CreateRigidWnd()
 	s_btforceB->setTextColor(colorToAll);
 	s_colB->setTextColor(colorToAll);
 	s_dmpB->setTextColor(colorToAll);
+	s_kB->setTextColor(colorToAll);
+	s_restB->setTextColor(colorToAll);
+
 
 	s_rigidskip->setTextColor(colorValidInvalid);
 	s_btforce->setTextColor(colorValidInvalid);
@@ -25165,7 +25169,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lp) {
 	WCHAR strWindowText[1024];
 	GetWindowTextW(hwnd, strWindowText, 1024);
-	if (wcsstr(strWindowText, L"MotionBrushC4") != 0) {
+	if (wcsstr(strWindowText, L"MotionBrushFreeC4") != 0) {
 		if (lp) {
 			*((HWND*)lp) = hwnd;
 		}
@@ -25186,7 +25190,7 @@ HWND CreateMainWindow()
 	s_mainhwnd = 0;
 
 
-	//MotionBrushC4.exeが起動していればそのウインドウを親にする
+	//MotionBrushFC4.exeが起動していればそのウインドウを親にする
 	HWND parenthwnd = 0;
 	if (s_launchbyc4 != 0) {
 		EnumWindows(EnumWindowsProc, (LPARAM)&parenthwnd);
@@ -25252,7 +25256,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrush Ver1.0.0.25 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"MotionBrushFree Ver1.0.0.25 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -32787,7 +32791,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrush Ver1.0.0.25 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrushFree Ver1.0.0.25 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

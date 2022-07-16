@@ -209,7 +209,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    WCHAR path1[MAX_PATH] = { 0L };
    //wcscpy_s(path1, MAX_PATH, L".\\MotionBrush.exe");
-   wcscpy_s(path1, MAX_PATH, L".\\MotionBrushFree2.exe");
+   wcscpy_s(path1, MAX_PATH, L".\\MotionBrushFree.exe");
    WCHAR path2[MAX_PATH] = { 0L };
    wcscpy_s(path2, MAX_PATH, L"..\\MameBake3D\\x64\\Release\\MameBake3D.exe");
    WCHAR path3[MAX_PATH] = { 0L };
