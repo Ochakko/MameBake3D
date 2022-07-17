@@ -593,14 +593,31 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBU
 	}
 
 
+	//strstr中にバッファ範囲を越えないようにチェック　2022/07/17
+
+	int chkendpos1;
+	chkendpos1 = srcbuf->pos + strlen(startpat);
+	int chkendpos2;
+	chkendpos2 = srcbuf->pos + strlen(startpat) + strlen(endpat);
+	if ((chkendpos1 > srcbuf->bufleng) || (chkendpos2 > srcbuf->bufleng)) {
+		//end of file
+		return 1;
+	}
+
+
 	char* startptr = 0;
 	char* endptr = 0;
-	startptr = strstr( srcbuf->buf + srcbuf->pos, startpat );
-	endptr = strstr( srcbuf->buf + srcbuf->pos, endpat );
+	startptr = strstr(srcbuf->buf + srcbuf->pos, startpat);
+	//endptr = strstr( srcbuf->buf + srcbuf->pos, endpat );//場所移動。　2022/07/17
 
-	int spatlen = (int)strlen( startpat );
-	if( delpatflag && startpat ){
-		startptr += spatlen;
+	int spatlen = (int)strlen(startpat);
+	//if (delpatflag && startpat) {
+	if (delpatflag && startpat && startptr) {//2022/07/17
+		startptr = startptr + spatlen;//2022/07/17
+	}
+
+	if (startptr != 0) {
+		endptr = strstr(startptr, endpat);//startpatよりも後を検索する //2022/07/17
 	}
 
 	if( !startptr || !endptr ){
@@ -613,8 +630,9 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBU
 
 	int chkendpos;
 	chkendpos = (int)( endptr + epatlen - srcbuf->buf );
-	if( (chkendpos >= srcbuf->bufleng) || (endptr < startptr) ){
-//		_ASSERT( 0 );
+	//if( (chkendpos >= srcbuf->bufleng) || (endptr < startptr) ){
+	if( (chkendpos > srcbuf->bufleng) || (endptr < startptr) ){//2022/07/17
+		//_ASSERT( 0 );
 		return 1;
 	}
 
