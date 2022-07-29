@@ -423,6 +423,7 @@ public:
 	static void OnDelModel(CModel* parmodel);
 
 	ChaMatrix CalcParentGlobalMat(int srcmotid, double srcframe);
+	ChaMatrix CalcParentGlobalSRT();
 
 	void InitAddLimitQAll();
 	void RotQAddLimitQAll(int srcmotid, double srcframe);
@@ -548,6 +549,7 @@ private:
 	ChaMatrix GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag);
 
 	void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
+	void CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone);
 
 
 	void InitAddLimitQReq(CBone* srcbone);
@@ -1098,6 +1100,31 @@ public: //accesser
 		return m_addlimitq;
 	}
 
+	CQuaternion GetLocalR0() {
+		return m_localR0;
+	}
+	void SetLocalR0(CQuaternion srcq) {
+		m_localR0 = srcq;
+	}
+	ChaMatrix GetLocalS0() {
+		return m_localS0;
+	}
+	void SetLocalS0(ChaMatrix srcval) {
+		m_localS0 = srcval;
+	}
+	ChaMatrix GetLocalT0() {
+		return m_localT0;
+	}
+	void SetLocalT0(ChaMatrix srcval) {
+		m_localT0 = srcval;
+	}
+	ChaMatrix GetFirstSRT() {
+		return m_firstSRT;
+	}
+	void SetFirstSRT(ChaMatrix srcval) {
+		m_firstSRT = srcval;
+	}
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1125,6 +1152,12 @@ private:
 	int m_upkind;//m_gaxismatXpar計算時のupvec
 
 	bool m_posefoundflag;//BindPoseの中にこのボーンの位置情報があった場合true。
+
+
+	ChaMatrix m_localS0;//local Scale at Frame0
+	CQuaternion m_localR0;//local Rotation at Frame0
+	ChaMatrix m_localT0;//local Translation at Frame0
+	ChaMatrix m_firstSRT;//SRT matrix at Frame0
 
 	ChaVector3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
 	ChaVector3 m_childscreen;//ボーンの子供のWVP適用後の座標。

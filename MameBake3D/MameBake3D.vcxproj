@@ -110,7 +110,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;FBXSDK_SHARED;WIN32;_WIN64;_DEBUG;_WINDOWS;CONVD3DX11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\Glut;.\x64\Debug;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Glut;.\x64\Debug;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\lib\vs2019\x64\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;winmm.lib;comctl32.lib;wininet.lib;opengl32.lib;glu32.lib;MameBake3DLib.lib;D3DCompiler.lib;Usp10.lib;Shlwapi.lib;DS4HidInputLib.lib;UxTheme.lib;msimg32.lib;gdiplus.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -170,7 +170,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;FBXSDK_SHARED;WIN32;_WIN64;NDEBUG;_WINDOWS;CONVD3DX11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -192,7 +192,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\Glut;.\x64\Release;C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\lib\vs2019\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Glut;.\x64\Release;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\lib\vs2019\x64\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;winmm.lib;comctl32.lib;wininet.lib;opengl32.lib;glu32.lib;MameBake3DLib.lib;D3DCompiler.lib;Usp10.lib;Shlwapi.lib;DS4HidInputLib.lib;UxTheme.lib;msimg32.lib;gdiplus.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;</IgnoreSpecificDefaultLibraries>
     </Link>

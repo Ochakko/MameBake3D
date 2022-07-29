@@ -57,7 +57,6 @@
 #include <string>
 
 #include <fbxsdk.h>
-
 #include <fbxsdk/scene/shading/fbxlayeredtexture.h>
 #include <fbxsdk/scene/animation/fbxanimevaluator.h>
 
@@ -453,6 +452,8 @@ int CModel::InitParams()
 
 	ZeroMemory(m_fbxfullname, sizeof(WCHAR) * MAX_PATH);
 	m_useegpfile = false;
+
+	m_hasbindpose = 1;
 
 	//ZeroMemory(m_armpparams, sizeof(FUNCMPPARAMS*) * 6);
 	//ZeroMemory(m_arhthread, sizeof(HANDLE) * 6);
@@ -3773,7 +3774,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 		
 		////RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
-		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);
+		//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);//2022/07/28コメントアウト
 
 
 
@@ -4020,6 +4021,18 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 	if( curbone && !curbone->GetGetAnimFlag() && pNode){
 		curbone->SetGetAnimFlag( 1 );
 
+		int iships = 0;
+		char* phips = strstr(bonename2, "Hips");
+		if (phips) {
+			iships = 1;
+		}
+		else {
+			iships = 0;
+		}
+
+
+
+
 		FbxTime fbxtime;
 		fbxtime.SetSecondDouble(0.0);
 		FbxTime difftime;
@@ -4037,13 +4050,93 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			currentmat.SetIdentity();
 			FbxAMatrix parentmat;
 			parentmat.SetIdentity();
-			const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
-			const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
-			const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
+			//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
+			//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
+			//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
+			const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+			const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+			const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+			FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot);
+
 
 			ChaVector3 chatra = ChaVector3(lT2[0], lT2[1], lT2[2]);
 			ChaVector3 chaeul = ChaVector3(lR2[0], lR2[1], lR2[2]);
 			ChaVector3 chascale = ChaVector3(lS2[0], lS2[1], lS2[2]);
+			ChaMatrix chaSRT;
+			chaSRT = ChaMatrixFromFbxAMatrix(lSRT);
+		
+
+			
+			//if ((GetHasBindPose() == 0) && (framecnt == 0.0)) {//2022/07/28
+			//	//ChaVector3 tmpjointpos;
+			//	//tmpjointpos = curbone->GetJointFPos();
+			//	//ChaVector3 truejointpos;
+			//	//truejointpos = tmpjointpos - chatra;
+			//	////truejointpos = chatra - tmpjointpos;
+			//	//curbone->SetJointFPos(truejointpos);
+
+			//	
+			//	CQuaternion chaq;
+			//	chaq.SetRotationXYZ(0, chaeul);
+			//	ChaMatrix charotmat;
+			//	charotmat = chaq.MakeRotMatX();
+
+			//	ChaMatrix chatramat;
+			//	ChaMatrixIdentity(&chatramat);
+			//	ChaMatrixTranslation(&chatramat, chatra.x, chatra.y, chatra.z);
+
+			//	ChaMatrix chascalemat;
+			//	ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
+
+			//	ChaMatrix firstSRT = chascalemat * charotmat * chatramat;
+			//	curbone->SetFirstSRT(firstSRT);
+
+			//	ChaMatrix globalSRT;
+			//	ChaMatrix parentglobalSRT;
+			//	parentglobalSRT = curbone->CalcParentGlobalSRT();
+			//	globalSRT = firstSRT * parentglobalSRT;
+
+
+
+			//	ChaMatrix fposmat = curbone->GetNodeMat() * ChaMatrixInv(globalSRT);
+			//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+			//	ChaVector3 truefpos;
+			//	ChaVector3TransformCoord(&truefpos, &zeropos, &fposmat);
+
+
+			//	FbxAMatrix fbxmat;
+			//	fbxmat.SetIdentity();
+			//	fbxmat.SetRow(0, FbxVector4(fposmat._11, fposmat._12, fposmat._13, fposmat._14));
+			//	fbxmat.SetRow(1, FbxVector4(fposmat._21, fposmat._22, fposmat._23, fposmat._24));
+			//	fbxmat.SetRow(2, FbxVector4(fposmat._31, fposmat._32, fposmat._33, fposmat._34));
+			//	fbxmat.SetRow(3, FbxVector4(fposmat._41, fposmat._42, fposmat._43, fposmat._44));
+			//	
+
+			//	curbone->SetPositionFound(true);//!!!
+			//	//curbone->SetNodeMat(fposmat);
+			//	//curbone->SetGlobalPosMat(fbxmat);
+			//	//curbone->SetJointFPos(truefpos);
+			//	//curbone->SetJointWPos(truefpos);
+
+			//	//FbxNode::Pivots pivots = pNode->GetPivots();
+			//	//FbxVector4 fbxpos4 = pivots.GetPreRotation(0);
+			//	FbxVector4 fbxpos4 = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+			//	//FbxDouble3 fbxpos3 = pNode->LclTranslation;
+			//	ChaVector3 truefpos;
+			//	truefpos.x = fbxpos4[0];
+			//	truefpos.y = fbxpos4[1];
+			//	truefpos.z = fbxpos4[2];
+
+
+			//	curbone->SetJointFPos(truefpos);
+			//	curbone->SetJointWPos(truefpos);
+
+
+			//}
+
+
+
+
 
 			//####################
 			//calc joint position
@@ -4071,6 +4164,7 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
 
 
+
 			//#################
 			//calc translation
 			//#################
@@ -4078,6 +4172,7 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			ChaMatrixIdentity(&chatramat);
 			ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
 			
+
 			//##############
 			//calc scalling
 			//##############
@@ -4085,12 +4180,246 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
 
 
+
+			//Set Local frame0
+			if (framecnt == 0.0) {
+				curbone->SetLocalR0(chaq);
+				curbone->SetLocalT0(chatramat);
+				curbone->SetLocalS0(chascalemat);
+				curbone->SetFirstSRT(chaSRT);
+			}
+
+
 			//##############
 			//calc localmat
 			//##############
 			ChaMatrix localmat;
-			localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
-			//localmat = chatramat * befrotmat * chascalemat * charotmat * aftrotmat;//！！！　違う　！！！
+
+			//ChaMatrixIdentity(&localmat);
+
+
+			if (GetHasBindPose()) {
+				localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+
+
+				//localmat = chatramat * befrotmat * chascalemat * charotmat * aftrotmat;//！！！　違う　！！！
+			}
+			else {
+
+				//####################################################################################################################################################
+				//2022/07/28 - 2022/07/29 工事中　注意　まだ変な姿勢になります
+				// fbxファイルが１つもバインドポーズを持っていない場合、０フレームにアニメーションが設定されていない場合に限り、モーションは正常に再生されるでしょう。
+				// At cases that fbx dont have any bind pose, only when no animation on 0 frame, motion will be played normally.
+				//Caution !!! Under Constructing !!! still strange pose !!!
+				//####################################################################################################################################################
+
+
+				//localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+
+
+
+				//ChaMatrix curlocalmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+				//ChaMatrix nodemat = curbone->GetNodeMat();
+				//ChaMatrix localnodemat;
+				//if (curbone->GetParent()) {
+				//	ChaMatrix parentnodemat = curbone->GetParent()->GetNodeMat();
+				//	localnodemat = nodemat * ChaMatrixInv(parentnodemat);
+				//}
+				//else {
+				//	localnodemat = nodemat;
+				//}
+
+				//localmat = ChaMatrixInv(localnodemat) * curlocalmat;
+
+			
+
+				//if ((framecnt == 0.0) || (iships == 1)) {
+				if (framecnt == 0.0) {
+
+					ChaMatrixIdentity(&localmat);
+
+					ChaMatrix localmat0 = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+					curbone->SetFirstSRT(localmat0);
+				}
+				else {
+					CQuaternion localR0 = curbone->GetLocalR0();
+					ChaMatrix localS0 = curbone->GetLocalS0();
+					ChaMatrix localT0 = curbone->GetLocalT0();
+
+					CQuaternion invlocalR0;
+					localR0.inv(&invlocalR0);
+
+					ChaMatrix nodemat = curbone->GetNodeMat();
+					ChaMatrix localnodemat;
+					if (curbone->GetParent()) {
+						ChaMatrix parentnodemat = curbone->GetParent()->GetNodeMat();
+						localnodemat = nodemat * ChaMatrixInv(parentnodemat);
+					}
+					else {
+						localnodemat = nodemat;
+					}
+
+					CQuaternion nodeR;
+					//nodeR.RotationMatrix(nodemat);
+					nodeR.RotationMatrix(localnodemat);
+					CQuaternion invnodeR;
+					nodeR.inv(&invnodeR);
+
+					CQuaternion bindR;
+					bindR = invlocalR0 * nodeR;
+					CQuaternion invbindR;
+					bindR.inv(&invbindR);
+
+					CQuaternion rot0;
+					rot0 = invbindR * localR0;
+					CQuaternion invrot0;
+					rot0.inv(&invrot0);
+
+
+					//CQuaternion diffq = chaq * invlocalR0;
+					CQuaternion diffq = invlocalR0 * chaq;
+					//CQuaternion diffq = invlocalR0 * chaq * localR0;
+					//CQuaternion diffq = localR0 * chaq * invlocalR0;
+					//CQuaternion diffq = chaq;
+					//CQuaternion diffq;
+					//if (iships == 1) {
+					//	diffq = chaq * invlocalR0;
+					//}
+					//else {
+					//	diffq = chaq;
+					//}
+
+					//CQuaternion diffq = invnodeR * chaq;
+					//CQuaternion diffq = chaq * invnodeR;
+					//CQuaternion diffq = invbindR * chaq;
+					//CQuaternion diffq = chaq * invbindR;
+					//CQuaternion diffq = chaq * bindR;
+					//CQuaternion diffq = bindR * chaq;
+					//CQuaternion diffq = chaq * invrot0;
+					//CQuaternion diffq = invrot0 * chaq;
+
+					//CQuaternion diffq = invlocalR0 * chaq * nodeR;
+					//CQuaternion diffq = invlocalR0 * nodeR * chaq;
+					//CQuaternion diffq = nodeR * chaq * invlocalR0;
+					//CQuaternion diffq = nodeR * invlocalR0 * chaq;
+					//CQuaternion diffq = chaq * nodeR * invlocalR0;
+					//CQuaternion diffq = chaq * invlocalR0 * nodeR;
+					
+					//CQuaternion diffq = invlocalR0 * chaq * bindR;
+					//CQuaternion diffq = invlocalR0 * bindR * chaq;
+					//CQuaternion diffq = bindR * chaq * invlocalR0;
+					//CQuaternion diffq = bindR * invlocalR0 * chaq;
+					//CQuaternion diffq = chaq * bindR * invlocalR0;
+					//CQuaternion diffq = chaq * invlocalR0 * bindR;
+
+
+					//CQuaternion diffq = invbindR * chaq * invlocalR0 * bindR;
+					//CQuaternion diffq = invbindR * invlocalR0 * chaq * bindR;
+					//CQuaternion diffq = invbindR * (chaq * invlocalR0) * bindR;
+					//CQuaternion diffq = invbindR * (invlocalR0 * chaq) * bindR;
+
+
+
+
+					//CQuaternion diffq = invlocalR0 * chaq * localR0;
+
+
+
+					//CQuaternion diffq = invbindR * (invlocalR0 * chaq * localR0) * bindR;
+
+
+					//CQuaternion diffq = invlocalR0 * chaq * invnodeR;
+					//CQuaternion diffq = invlocalR0 * invnodeR * chaq;
+					//CQuaternion diffq = invnodeR * chaq * invlocalR0;
+					//CQuaternion diffq = invnodeR * invlocalR0 * chaq;
+					//CQuaternion diffq = chaq * invnodeR * invlocalR0;
+					//CQuaternion diffq = chaq * invlocalR0 * invnodeR;
+
+
+
+
+					//CQuaternion diffq = invlocalR0 * invnodeR * chaq;
+
+					ChaMatrix diffS = ChaMatrixInv(localS0) * chascalemat;
+					ChaMatrix diffT = ChaMatrixInv(localT0) * chatramat;
+
+
+					localmat = befrotmat * diffS * diffq.MakeRotMatX() * aftrotmat * diffT;
+					//localmat = befrotmat * diffS * (diffq * nodeR).MakeRotMatX() * aftrotmat * diffT;
+					//localmat = befrotmat * diffS * (diffq * invnodeR).MakeRotMatX() * aftrotmat * diffT;
+					//localmat = befrotmat * diffS * (nodeR * diffq).MakeRotMatX() * aftrotmat * diffT;
+					
+					
+					
+					//CQuaternion diffchaq;
+					//diffchaq.SetRotationXYZ(&localR0, chaeul);				
+					//CQuaternion diffq;
+					//diffq = localR0 * diffchaq * invlocalR0;
+					////localmat = befrotmat * diffchaq.MakeRotMatX() * aftrotmat;
+					//localmat = befrotmat * diffq.MakeRotMatX() * aftrotmat;
+
+
+
+					//ChaMatrix localmat0 = befrotmat * localS0 * localR0.MakeRotMatX() * aftrotmat * localT0;
+					//ChaMatrix localmat1 = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+					//ChaMatrix difflocalmat = ChaMatrixInv(localmat0) * localmat1;
+					//ChaMatrix difflocalmat = localmat1 * ChaMatrixInv(localmat0);
+
+
+
+
+
+					//ChaMatrix difflocalSR = difflocalmat;
+					//difflocalSR._41 = 0.0f;
+					//difflocalSR._42 = 0.0f;
+					//difflocalSR._43 = 0.0f;
+					//ChaMatrix difflocalT;
+					//ChaMatrixIdentity(&difflocalT);
+					//ChaMatrixTranslation(&difflocalT, difflocalmat._41, difflocalmat._42, difflocalmat._43);
+
+
+
+
+					//localmat = difflocalmat;
+					//localmat = befrotmat * difflocalSR * aftrotmat;// *difflocalT;
+
+
+
+					//ChaMatrix local0 = befrotmat * curbone->GetFirstSRT();
+					//ChaMatrix local1 = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+					//ChaMatrix local1 = befrotmat * chaSRT;
+					
+					//localmat = befrotmat * chaSRT * ChaMatrixInv(local0) * aftrotmat;
+					//localmat = befrotmat * ChaMatrixInv(local0) * chaSRT * aftrotmat;
+					//localmat = ChaMatrixInv(local0) * chaSRT;
+					//localmat = chaSRT * ChaMatrixInv(local0);
+					//localmat = chaSRT;
+					//localmat = befrotmat * chaSRT * aftrotmat;
+
+					//localmat = befrotmat * chaSRT * ChaMatrixInv(local0);
+					//localmat = befrotmat * ChaMatrixInv(local0) * chaSRT;
+
+
+
+					// !!!! local0の41,42,43を０にしてbefrot とaftrotの間でごにょごにょする？？？
+
+
+
+
+					//localmat = local1 * ChaMatrixInv(local0);
+					//localmat = ChaMatrixInv(local0) * local1;
+					//localmat = local0 * local1 * ChaMatrixInv(local0);
+					//localmat = ChaMatrixInv(local0) * local1 * local0;
+
+
+
+
+
+
+				}
+			}
+
+
 
 
 				//#########################################################
@@ -4138,8 +4467,34 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			//###############
 			ChaMatrix globalmat;
 			ChaMatrix parentglobalmat;
-			parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+			//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+			if (curbone->GetParent()) {
+				parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
+			}
+			else {
+				ChaMatrixIdentity(&parentglobalmat);
+			}
+
+																			
+																			
 			globalmat = localmat * parentglobalmat;
+
+
+			//globalmat = ChaMatrixInv(curbone->GetNodeMat()) * localmat * parentglobalmat;
+			//globalmat = befrotmat * ChaMatrixInv(curbone->GetFirstSRT()) * localmat * aftrotmat * parentglobalmat;
+
+
+
+			//ChaMatrix nodemat = curbone->GetNodeMat();
+			//CQuaternion nodeR;
+			//nodeR.RotationMatrix(nodemat);
+			//CQuaternion invnodeR;
+			//nodeR.inv(&invnodeR);
+			//globalmat = nodeR.MakeRotMatX() * localmat * parentglobalmat;
+			//globalmat = invnodeR.MakeRotMatX() * localmat * parentglobalmat;
+			//globalmat = localmat * nodeR.MakeRotMatX() * parentglobalmat;
+			//globalmat = localmat * invnodeR.MakeRotMatX() * parentglobalmat;
+
 
 
 			//##################
@@ -5001,6 +5356,12 @@ FbxPose* CModel::GetBindPose()
 				::MessageBoxA(NULL, "ポーズが１つもありません。", "警告", MB_OK);
 			}
 		}
+
+		SetHasBindPose(0);
+
+	}
+	else {
+		SetHasBindPose(1);
 	}
 	return bindpose;
 }

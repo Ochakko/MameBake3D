@@ -1626,7 +1626,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
 		////pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
-		pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);
+		//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);//2022/07/28コメントアウト
 
 	}
 
@@ -3385,26 +3385,7 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 	}
 
 	ChaMatrix nodemat;
-
-	nodemat._11 = (float)lGlobalPosition.Get(0, 0);
-	nodemat._12 = (float)lGlobalPosition.Get(0, 1);
-	nodemat._13 = (float)lGlobalPosition.Get(0, 2);
-	nodemat._14 = (float)lGlobalPosition.Get(0, 3);
-
-	nodemat._21 = (float)lGlobalPosition.Get(1, 0);
-	nodemat._22 = (float)lGlobalPosition.Get(1, 1);
-	nodemat._23 = (float)lGlobalPosition.Get(1, 2);
-	nodemat._24 = (float)lGlobalPosition.Get(1, 3);
-
-	nodemat._31 = (float)lGlobalPosition.Get(2, 0);
-	nodemat._32 = (float)lGlobalPosition.Get(2, 1);
-	nodemat._33 = (float)lGlobalPosition.Get(2, 2);
-	nodemat._34 = (float)lGlobalPosition.Get(2, 3);
-
-	nodemat._41 = (float)lGlobalPosition.Get(3, 0);
-	nodemat._42 = (float)lGlobalPosition.Get(3, 1);
-	nodemat._43 = (float)lGlobalPosition.Get(3, 2);
-	nodemat._44 = (float)lGlobalPosition.Get(3, 3);
+	nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 	curbone->SetPositionFound(lPositionFound);//!!!
 	curbone->SetNodeMat(nodemat);

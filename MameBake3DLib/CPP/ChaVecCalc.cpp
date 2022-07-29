@@ -41,6 +41,8 @@
 #include <vector>
 #include <algorithm>
 
+
+
 #include <crtdbg.h>
 
 
@@ -618,6 +620,35 @@ ChaMatrix TransZeroMat(ChaMatrix srcmat)
 	retmat._43 = 0.0f;
 
 	return retmat;
+}
+
+ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat)
+{
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
+
+	retmat._11 = (float)srcmat.Get(0, 0);
+	retmat._12 = (float)srcmat.Get(0, 1);
+	retmat._13 = (float)srcmat.Get(0, 2);
+	retmat._14 = (float)srcmat.Get(0, 3);
+
+	retmat._21 = (float)srcmat.Get(1, 0);
+	retmat._22 = (float)srcmat.Get(1, 1);
+	retmat._23 = (float)srcmat.Get(1, 2);
+	retmat._24 = (float)srcmat.Get(1, 3);
+
+	retmat._31 = (float)srcmat.Get(2, 0);
+	retmat._32 = (float)srcmat.Get(2, 1);
+	retmat._33 = (float)srcmat.Get(2, 2);
+	retmat._34 = (float)srcmat.Get(2, 3);
+
+	retmat._41 = (float)srcmat.Get(3, 0);
+	retmat._42 = (float)srcmat.Get(3, 1);
+	retmat._43 = (float)srcmat.Get(3, 2);
+	retmat._44 = (float)srcmat.Get(3, 3);
+
+	return retmat;
+
 }
 
 ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)

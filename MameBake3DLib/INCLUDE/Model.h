@@ -1210,6 +1210,13 @@ public: //accesser
 		}
 	}
 
+	int GetHasBindPose() {
+		return m_hasbindpose;
+	}
+	void SetHasBindPose(int srcval) {
+		m_hasbindpose = srcval;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1226,6 +1233,8 @@ private:
 	int m_modelno;//モデルのID
 	float m_loadmult;//表示倍率
 	int m_oldaxis_atloading;//FBX読み込み時に旧データ互換チェックボックスにチェックをしていたかどうか。
+	int m_hasbindpose;
+
 
 	WCHAR m_filename[MAX_PATH];//モデルファイル名、フルパス。
 	WCHAR m_dirname[MAX_PATH];//モデルファイルのディレクトリのパス。ファイル名の手前まで。末尾に\\無し。

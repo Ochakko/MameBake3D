@@ -276,6 +276,10 @@ int CBone::InitParams()
 
 	m_addlimitq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
+	ChaMatrixIdentity(&m_localS0);
+	m_localR0.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	ChaMatrixIdentity(&m_localT0);
+	ChaMatrixIdentity(&m_firstSRT);
 
 
 	m_tmpkinematic = false;
@@ -7161,6 +7165,43 @@ void CBone::CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmot
 	}
 
 }
+
+
+//SRTŒ`Ž®
+ChaMatrix CBone::CalcParentGlobalSRT()
+{
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
+
+	if (!GetParent()) {
+		return retmat;
+	}
+
+
+	CalcParentGlobalSRTReq(&retmat, GetParent());
+
+
+	return retmat;
+}
+
+//SRTŒ`Ž®
+void CBone::CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
+{
+	if (!srcbone) {
+		return;
+	}
+
+	ChaMatrix firstSRT = srcbone->GetFirstSRT();
+	*dstmat = *dstmat * firstSRT;//childmat * currentmat   (currentmat * parentmat)
+
+	if (srcbone->GetParent()) {
+		CalcParentGlobalSRTReq(dstmat, srcbone->GetParent());
+	}
+
+}
+
+
+
 
 ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul)//default : dstneweul = 0
 {

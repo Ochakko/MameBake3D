@@ -12,10 +12,22 @@ class btVector3;
 //struct D3DXVECTOR4;
 //struct D3DXQUATERNION;
 
+
+
 #include <coef.h>
+
+//2022/07/29   for FbxAMatrix
+#include <fbxsdk.h>
+#include <fbxsdk/scene/shading/fbxlayeredtexture.h>
+#include <fbxsdk/scene/animation/fbxanimevaluator.h>
+
+
 
 
 //class
+
+
+
 
 class ChaMatrix
 {
@@ -412,6 +424,8 @@ CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 
 ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
 
+ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat);
+
 #else
 extern BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul);
 extern ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
@@ -483,7 +497,7 @@ extern ChaMatrix ChaMatrixInv(ChaMatrix srcmat);
 extern CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 
 extern ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
-
+extern ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat);
 
 #endif
 
