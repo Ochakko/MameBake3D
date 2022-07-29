@@ -280,6 +280,7 @@ int CBone::InitParams()
 	m_localR0.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 	ChaMatrixIdentity(&m_localT0);
 	ChaMatrixIdentity(&m_firstSRT);
+	ChaMatrixIdentity(&m_firstGlobalSRT);
 
 
 	m_tmpkinematic = false;
@@ -2998,6 +2999,11 @@ int CBone::CalcFirstFrameBonePos(ChaMatrix srcmat)
 {
 	ChaVector3 jpos = GetJointFPos();
 	ChaVector3TransformCoord(&m_firstframebonepos, &jpos, &srcmat);
+	
+	
+	//ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);//2022/07/29
+	//ChaVector3TransformCoord(&m_firstframebonepos, &zeropos, &(GetFirstMat()));
+
 
 	//if ((m_firstframebonepos.x == 0.0f) && (m_firstframebonepos.y == 0.0f) && (m_firstframebonepos.z == 0.0f)){
 	//	_ASSERT(0);

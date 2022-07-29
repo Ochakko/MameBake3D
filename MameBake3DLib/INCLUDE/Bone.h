@@ -1124,6 +1124,12 @@ public: //accesser
 	void SetFirstSRT(ChaMatrix srcval) {
 		m_firstSRT = srcval;
 	}
+	ChaMatrix GetFirstGlobalSRT() {
+		return m_firstGlobalSRT;
+	}
+	void SetFirstGlobalSRT(ChaMatrix srcval) {
+		m_firstGlobalSRT = srcval;
+	}
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1158,6 +1164,8 @@ private:
 	CQuaternion m_localR0;//local Rotation at Frame0
 	ChaMatrix m_localT0;//local Translation at Frame0
 	ChaMatrix m_firstSRT;//SRT matrix at Frame0
+	ChaMatrix m_firstGlobalSRT;//globalSRT matrix at Frame0
+
 
 	ChaVector3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
 	ChaVector3 m_childscreen;//ボーンの子供のWVP適用後の座標。

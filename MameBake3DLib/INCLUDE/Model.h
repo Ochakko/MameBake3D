@@ -677,7 +677,7 @@ private:
 	int DestroyObjs();
 	int CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext);
 
-
+	MODELBOUND CalcBoneBound();
 	int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
 
 	int DestroyMaterial();

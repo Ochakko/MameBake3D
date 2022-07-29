@@ -1372,6 +1372,10 @@ void OnDSUpdate();
 static void OnDSMouseHereApeal();
 static void OnArrowKey();//DS関数でキーボードの矢印キーに対応
 
+
+static void CalcTotalBound();
+
+
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
@@ -2521,6 +2525,13 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+
+	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
+	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
+	s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
+	s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
+
+
 	g_wallscrapingikflag = 0;
 
 	s_ikkind = 0;
@@ -3158,21 +3169,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	//}
 	////g_pTxtHelper = new CDXUTTextHelper(NULL, NULL, g_pFont, g_pSprite, 15);
 
-	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
-	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
-	s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
-	s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
-	g_vCenter = s_totalmb.center;
-	float fObjectRadius = s_totalmb.r;
-	//ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
 
-	//hr = CDXUTDirectionWidget::StaticOnD3D11CreateDevice(pd3dDevice);
-	//if (FAILED(hr)) {
-	//	_ASSERT(0);
-	//	return hr;
-	//}
-	for (int i = 0; i < MAX_LIGHTS; i++)
-		g_LightControl[i].SetRadius(fObjectRadius);
 
 	//DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
 	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
@@ -3303,33 +3300,10 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	}
 
 
+	CalcTotalBound();
+
+
 	CallF(GetShaderHandle(), return S_FALSE);
-
-
-	// Setup the camera's view parameters
-	//	g_Camera->SetProjParams( D3DX_PI / 4, 1.0f, g_initnear, 4.0f * g_initcamdist );
-	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist);
-	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-
-
-	//ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
-	//ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
-	//g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
-	//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
-
-
-	s_camdist = g_initcamdist;
-	g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, g_initcamdist);
-	g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
-	g_befcamEye = g_camEye;
-	g_befcamtargetpos = g_camtargetpos;
-	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
-	s_matView = g_Camera->GetViewMatrix();
-	s_matProj = g_Camera->GetProjMatrix();
 
 
 
@@ -8835,45 +8809,11 @@ CModel* OpenMQOFile()
 	//	}
 	//}
 
-	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.r = 0.0f;
-
-	vector<MODELELEM>::iterator itrmodel;
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-		CModel* curmodel = itrmodel->modelptr;
-		MODELBOUND mb;
-		curmodel->GetModelBound( &mb );
-		AddModelBound( &s_totalmb, &mb );
-	}
-
-    FLOAT fObjectRadius;
-	g_vCenter = s_totalmb.center;
-	fObjectRadius = s_totalmb.r;
-
-    //ChaMatrixTranslation( &g_mCenterWorld, -g_vCenter.x, -g_vCenter.y, -g_vCenter.z );
-
-    for( int i = 0; i < MAX_LIGHTS; i++ )
-		g_LightControl[i].SetRadius( fObjectRadius );
-
-
-    ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
-    g_Camera->SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
-
-	s_camdist = g_initcamdist;
-	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, g_initcamdist );
-	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	g_befcamEye = g_camEye;
-	g_befcamtargetpos = g_camtargetpos;
-	//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
-	s_matView = g_Camera->GetViewMatrix();
-	s_matProj = g_Camera->GetProjMatrix();
+	//s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
+	//s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+	//s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
+	//s_totalmb.r = 0.0f;
+	CalcTotalBound();
 
 
 	CallF( AddMotion( 0 ), return 0 );
@@ -8889,6 +8829,71 @@ CModel* OpenMQOFile()
 
 	return newmodel;
 }
+
+void CalcTotalBound()
+{
+
+	//s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
+	//s_totalmb.max = ChaVector3(50.0f, 50.0f, 50.0f);
+	//s_totalmb.min = ChaVector3(-50.0f, -50.0f, -50.0f);
+	//s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
+
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		CModel* curmodel = itrmodel->modelptr;
+		MODELBOUND mb;
+		curmodel->GetModelBound(&mb);
+		if (mb.r != 0.0f) {
+			AddModelBound(&s_totalmb, &mb);
+		}
+	}
+
+	if (s_nowloading && s_3dwnd) {
+		OnRenderNowLoading();
+	}
+
+	FLOAT fObjectRadius;
+	g_vCenter = s_totalmb.center;
+	fObjectRadius = s_totalmb.r;
+	if (fObjectRadius < 0.1f) {
+		fObjectRadius = 10.0f;
+	}
+
+	s_cammvstep = fObjectRadius;
+
+	DbgOut(L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
+		s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z);
+
+
+	s_projnear = fObjectRadius * 0.01f;
+	g_initcamdist = fObjectRadius * 3.0f;
+	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+
+
+	for (int i = 0; i < MAX_LIGHTS; i++)
+		g_LightControl[i].SetRadius(fObjectRadius);
+
+
+	ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
+	ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
+	g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
+	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+
+	s_camdist = fObjectRadius * 4.0f;
+	g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f);
+	g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
+	g_befcamEye = g_camEye;
+	g_befcamtargetpos = g_camtargetpos;
+	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	s_matView = g_Camera->GetViewMatrix();
+	s_matProj = g_Camera->GetProjMatrix();
+
+}
+
 
 CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 {
@@ -9033,65 +9038,8 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		OnRenderNowLoading();
 	}
 
-	s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
-	s_totalmb.r = 0.0f;
 
-	vector<MODELELEM>::iterator itrmodel;
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
-		CModel* curmodel = itrmodel->modelptr;
-		MODELBOUND mb;
-		curmodel->GetModelBound( &mb );
-		if( mb.r != 0.0f ){
-			AddModelBound( &s_totalmb, &mb );
-		}
-	}
-
-	if (s_nowloading && s_3dwnd) {
-		OnRenderNowLoading();
-	}
-
-    FLOAT fObjectRadius;
-	g_vCenter = s_totalmb.center;
-	fObjectRadius = s_totalmb.r;
-	if( fObjectRadius < 0.1f ){
-		fObjectRadius = 10.0f;
-	}
-
-	s_cammvstep = fObjectRadius;
-
-DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
-	s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z );
-
-
-	s_projnear = fObjectRadius * 0.01f;
-	g_initcamdist = fObjectRadius * 3.0f;
-	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-
-	
-    for( int i = 0; i < MAX_LIGHTS; i++ )
-		g_LightControl[i].SetRadius( fObjectRadius );
-
-
-    ChaVector3 vecEye( 0.0f, 0.0f, g_initcamdist );
-    ChaVector3 vecAt ( 0.0f, 0.0f, -0.0f );
-	g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
-    g_Camera->SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f );
-
-	s_camdist = fObjectRadius * 4.0f;
-	g_camEye = ChaVector3( 0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f );
-	g_camtargetpos = ChaVector3( 0.0f, fObjectRadius * 0.5f, -0.0f );
-	g_befcamEye = g_camEye;
-	g_befcamtargetpos = g_camtargetpos;
-	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
-	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
-	s_matView = g_Camera->GetViewMatrix();
-	s_matProj = g_Camera->GetProjMatrix();
-
+	CalcTotalBound();
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
 	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
@@ -9118,6 +9066,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//	_ASSERT( 0 );
 
 //::MessageBox(s_mainhwnd, L"check 1", L"check!!!", MB_OK);
+
+	CalcTotalBound();
+
 
 
 	if (s_nowloading && s_3dwnd) {
@@ -9248,6 +9199,9 @@ DbgOut( L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 	//	s_model->CreateBtObject(1);//初回
 	//	s_model->CalcBoneEul(-1);
 	//}
+
+
+
 
 	CallF(s_model->DbgDump(), return 0);
 
