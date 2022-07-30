@@ -3387,7 +3387,9 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 	ChaMatrix nodemat;
 	nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
-	curbone->SetPositionFound(lPositionFound);//!!!
+	//curbone->SetPositionFound(lPositionFound);//!!!
+	curbone->SetPositionFound(true);//!!! 2022/07/30 bone mark‚ð•\Ž¦‚·‚é‚½‚ßtrue‚ÉB
+
 	curbone->SetNodeMat(nodemat);
 	curbone->SetGlobalPosMat(lGlobalPosition);
 

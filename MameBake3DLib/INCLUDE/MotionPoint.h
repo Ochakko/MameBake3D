@@ -160,6 +160,15 @@ public:
 		return m_limitedwm;
 	}
 
+	void SetSRT(ChaMatrix srcmat) 
+	{
+		m_SRT = srcmat;
+	}
+	ChaMatrix GetSRT()
+	{
+		return m_SRT;
+	}
+
 	//CBone* GetNewWMOwner()
 	//{
 	//	return m_newwmowner;
@@ -208,6 +217,8 @@ private:
 	ChaMatrix m_befeditmat;
 
 	ChaMatrix m_absmat;
+
+	ChaMatrix m_SRT;
 
 
 	bool m_setbefworldmatflag;

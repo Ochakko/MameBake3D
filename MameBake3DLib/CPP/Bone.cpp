@@ -7174,7 +7174,7 @@ void CBone::CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmot
 
 
 //SRT形式
-ChaMatrix CBone::CalcParentGlobalSRT()
+ChaMatrix CBone::CalcParentGlobalSRT(int srcmotid, double srcframe)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -7184,16 +7184,54 @@ ChaMatrix CBone::CalcParentGlobalSRT()
 	}
 
 
-	CalcParentGlobalSRTReq(&retmat, GetParent());
+	CalcParentGlobalSRTReq(&retmat, GetParent(), srcmotid, srcframe);
 
 
 	return retmat;
 }
 
 //SRT形式
-void CBone::CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
+void CBone::CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe)
 {
-	if (!srcbone) {
+	if (!srcbone || !dstmat) {
+		return;
+	}
+
+	CMotionPoint* mpptr = GetMotionPoint(srcmotid, srcframe);
+	if (!mpptr) {
+		return;
+	}
+
+	ChaMatrix curSRT = mpptr->GetSRT();
+	*dstmat = *dstmat * curSRT;//childmat * currentmat   (currentmat * parentmat)
+
+	if (srcbone->GetParent()) {
+		CalcParentGlobalSRTReq(dstmat, srcbone->GetParent(), srcmotid, srcframe);
+	}
+
+}
+
+//SRT形式
+ChaMatrix CBone::CalcFirstParentGlobalSRT()
+{
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
+
+	if (!GetParent()) {
+		return retmat;
+	}
+
+
+	CalcFirstParentGlobalSRTReq(&retmat, GetParent());
+
+
+	return retmat;
+}
+
+//SRT形式
+void CBone::CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
+{
+	if (!srcbone || !dstmat) {
 		return;
 	}
 
@@ -7201,11 +7239,10 @@ void CBone::CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
 	*dstmat = *dstmat * firstSRT;//childmat * currentmat   (currentmat * parentmat)
 
 	if (srcbone->GetParent()) {
-		CalcParentGlobalSRTReq(dstmat, srcbone->GetParent());
+		CalcFirstParentGlobalSRTReq(dstmat, srcbone->GetParent());
 	}
 
 }
-
 
 
 

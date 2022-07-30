@@ -4138,53 +4138,55 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
 			const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
 			FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot);
+			FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
 
 
-			ChaVector3 chatra = ChaVector3(lT2[0], lT2[1], lT2[2]);
-			ChaVector3 chaeul = ChaVector3(lR2[0], lR2[1], lR2[2]);
-			ChaVector3 chascale = ChaVector3(lS2[0], lS2[1], lS2[2]);
+			ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
+			ChaVector3 chaeul = ChaVector3((float)lR2[0], (float)lR2[1], (float)lR2[2]);
+			ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1], (float)lS2[2]);
 			ChaMatrix chaSRT;
 			chaSRT = ChaMatrixFromFbxAMatrix(lSRT);
-		
+			ChaMatrix chaGlobalSRT;
+			chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
 
 			
-			if ((GetHasBindPose() == 0) && (framecnt == 0.0) && (animno == 0)) {
-				//#########################################################################################
-				//2022/07/28-2022/07/29  bindpose無し、0フレームアニメ在りの場合のジョイント位置計算し直し
-				//#########################################################################################
+			//if ((GetHasBindPose() == 0) && (framecnt == 0.0) && (animno == 0)) {
+			//	//#########################################################################################
+			//	//2022/07/28-2022/07/29  bindpose無し、0フレームアニメ在りの場合のジョイント位置計算し直し
+			//	//#########################################################################################
 
-				//ChaMatrix firstSRT = chascalemat * charotmat * chatramat;
-				ChaMatrix firstSRT = chaSRT;
-				curbone->SetFirstSRT(firstSRT);
+			//	//ChaMatrix firstSRT = chascalemat * charotmat * chatramat;
+			//	ChaMatrix firstSRT = chaSRT;
+			//	curbone->SetFirstSRT(firstSRT);
 
-				
-				ChaMatrix globalSRT;
-				ChaMatrix parentglobalSRT;
-				parentglobalSRT = curbone->CalcParentGlobalSRT();
-				globalSRT = firstSRT * parentglobalSRT;
-				curbone->SetFirstGlobalSRT(globalSRT);
-
-
-				ChaMatrix newnodemat = curbone->GetNodeMat() * ChaMatrixInv(globalSRT);
-				ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-				ChaVector3 truefpos;
-				ChaVector3TransformCoord(&truefpos, &zeropos, &newnodemat);
+			//	
+			//	ChaMatrix globalSRT;
+			//	ChaMatrix parentglobalSRT;
+			//	parentglobalSRT = curbone->CalcParentGlobalSRT();
+			//	globalSRT = firstSRT * parentglobalSRT;
+			//	curbone->SetFirstGlobalSRT(globalSRT);
 
 
-				FbxAMatrix fbxmat;
-				fbxmat.SetIdentity();
-				fbxmat.SetRow(0, FbxVector4(newnodemat._11, newnodemat._12, newnodemat._13, newnodemat._14));
-				fbxmat.SetRow(1, FbxVector4(newnodemat._21, newnodemat._22, newnodemat._23, newnodemat._24));
-				fbxmat.SetRow(2, FbxVector4(newnodemat._31, newnodemat._32, newnodemat._33, newnodemat._34));
-				fbxmat.SetRow(3, FbxVector4(newnodemat._41, newnodemat._42, newnodemat._43, newnodemat._44));
-				
-				curbone->SetPositionFound(true);//!!!
-				//curbone->SetPositionFound(false);//!!!
-				curbone->SetNodeMat(newnodemat);
-				curbone->SetGlobalPosMat(fbxmat);
-				curbone->SetJointFPos(truefpos);
-				//curbone->SetJointWPos(truefpos);//0frameのアニメ付きジョイント位置を保持するため、ここでは更新しない。
-			}
+			//	ChaMatrix newnodemat = curbone->GetNodeMat() * ChaMatrixInv(globalSRT);
+			//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+			//	ChaVector3 truefpos;
+			//	ChaVector3TransformCoord(&truefpos, &zeropos, &newnodemat);
+
+
+			//	FbxAMatrix fbxmat;
+			//	fbxmat.SetIdentity();
+			//	fbxmat.SetRow(0, FbxVector4(newnodemat._11, newnodemat._12, newnodemat._13, newnodemat._14));
+			//	fbxmat.SetRow(1, FbxVector4(newnodemat._21, newnodemat._22, newnodemat._23, newnodemat._24));
+			//	fbxmat.SetRow(2, FbxVector4(newnodemat._31, newnodemat._32, newnodemat._33, newnodemat._34));
+			//	fbxmat.SetRow(3, FbxVector4(newnodemat._41, newnodemat._42, newnodemat._43, newnodemat._44));
+			//	
+			//	curbone->SetPositionFound(true);//!!!
+			//	//curbone->SetPositionFound(false);//!!!
+			//	curbone->SetNodeMat(newnodemat);
+			//	curbone->SetGlobalPosMat(fbxmat);
+			//	curbone->SetJointFPos(truefpos);
+			//	//curbone->SetJointWPos(truefpos);//0frameのアニメ付きジョイント位置を保持するため、ここでは更新しない。
+			//}
 
 
 
@@ -4238,7 +4240,7 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				curbone->SetLocalR0(chaq);
 				curbone->SetLocalT0(chatramat);
 				curbone->SetLocalS0(chascalemat);
-				//curbone->SetFirstSRT(chaSRT);//もっと上で設定
+				curbone->SetFirstSRT(chaSRT);
 			}
 
 
@@ -4247,10 +4249,50 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 			//##############
 			ChaMatrix localmat;
 			ChaMatrixIdentity(&localmat);
+			ChaMatrix globalmat;
+			ChaMatrixIdentity(&globalmat);
+
+			CMotionPoint* curmp = 0;
+			int existflag = 0;
+			curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+			if (!curmp) {
+				_ASSERT(0);
+				return 1;
+			}
+
+			curmp->SetSRT(chaSRT);
+			//curmp->SetSRT(befrotmat * chaSRT);//!!!!!!!!!!!!!
 
 
 			if (GetHasBindPose()) {
+				//######################################
+				// バインドポーズがある場合
+				//######################################
+
 				localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+
+
+				//#############
+				//set localmat
+				//#############
+				curmp->SetLocalMat(localmat);//anglelimit無し
+
+
+				//###############
+				//calc globalmat
+				//###############
+				ChaMatrix parentglobalmat;
+				//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+				if (curbone->GetParent()) {
+					parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
+				}
+				else {
+					ChaMatrixIdentity(&parentglobalmat);
+				}
+
+				globalmat = localmat * parentglobalmat;
+				curmp->SetWorldMat(globalmat);//anglelimit無し
+
 			}
 			else {
 				//############################################################
@@ -4258,28 +4300,28 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				// 0フレームにアニメーションが設定してあっても正常に再生可能
 				//############################################################
 
-				//ChaMatrix fposmat = curbone->GetNodeMat() * ChaMatrixInv(curbone->GetFirstGlobalSRT());
 
-				//ChaMatrix localmat1 = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
-				ChaMatrix localmat1 = chaSRT;
-				//ChaMatrix invlocal0 = ChaMatrixInv(curbone->GetNodeMat()) * aftrotmat;
-				ChaMatrix invlocal0 = ChaMatrixInv(curbone->GetNodeMat());
-				
-				//localmat = localmat1 * invlocal0;
-				//localmat = befrotmat * (localmat1 * invlocal0) * aftrotmat;
-				//localmat = befrotmat * (localmat1 * invlocal0);
-
-				localmat = befrotmat * (invlocal0 * localmat1) * aftrotmat;
+				//###############
+				//calc globalmat
+				//###############
+				globalmat = (ChaMatrixInv(curbone->GetNodeMat())* chaGlobalSRT);
+				curmp->SetWorldMat(globalmat);//anglelimit無し
 
 
-				//localmat = invlocal0 * localmat1;
-				//localmat = befrotmat * localmat1 * invlocal0;
-				//localmat = befrotmat * invlocal0 * localmat1 * aftrotmat;
-				
-				
-				//localmat = befrotmat * localmat1 * invlocal0 * aftrotmat;
-				//localmat = befrotmat * localmat1;
-				//localmat = localmat1;
+				//#############
+				//set localmat
+				//#############
+				ChaMatrix parentglobalmat;
+				//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+				if (curbone->GetParent()) {
+					parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
+				}
+				else {
+					ChaMatrixIdentity(&parentglobalmat);
+				}
+				localmat = globalmat * ChaMatrixInv(parentglobalmat);
+				curmp->SetLocalMat(localmat);//anglelimit無し
+
 			}
 
 
@@ -4312,37 +4354,10 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				//##### ここまで説明してよく分からないということがわかった。 (試行錯誤の苦行によりなんとなく出来たのである) #####	
 				
 
-			//#############
-			//set localmat
-			//#############
-			CMotionPoint* curmp = 0;
-			int existflag = 0;
-			curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
-			if (!curmp) {
-				_ASSERT(0);
-				return 1;
-			}
-			curmp->SetLocalMat(localmat);//anglelimit無し
-
-
-			//###############
-			//calc globalmat
-			//###############
-			ChaMatrix globalmat;
-			ChaMatrix parentglobalmat;
-			//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-			if (curbone->GetParent()) {
-				parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
-			}
-			else {
-				ChaMatrixIdentity(&parentglobalmat);
-			}
-														
-			globalmat = localmat * parentglobalmat;
 
 
 			//##################
-			//Set Global Motion
+			//For old version
 			//##################
 			if ((animno == 0) && (framecnt == 0.0)) {
 				curbone->SetFirstMat(globalmat);
@@ -4358,14 +4373,6 @@ int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* p
 				ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
 				curbone->SetOldJointFPos(tmppos);
 			}
-			//CMotionPoint* curmp2 = 0;
-			//curmp2 = curbone->GetMotionPoint(motid, framecnt);//この時点ではまだCBone::m_indexedmpが空
-			//if (!curmp2) {
-			//	_ASSERT(0);
-			//	return 1;
-			//}
-			//curmp2->SetWorldMat(globalmat);//anglelimit無し
-			curmp->SetWorldMat(globalmat);//anglelimit無し
 				  
 
 			////############################

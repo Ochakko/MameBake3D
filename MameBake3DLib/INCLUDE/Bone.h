@@ -423,7 +423,8 @@ public:
 	static void OnDelModel(CModel* parmodel);
 
 	ChaMatrix CalcParentGlobalMat(int srcmotid, double srcframe);
-	ChaMatrix CalcParentGlobalSRT();
+	ChaMatrix CalcFirstParentGlobalSRT();
+	ChaMatrix CalcParentGlobalSRT(int srcmotid, double srcframe);
 
 	void InitAddLimitQAll();
 	void RotQAddLimitQAll(int srcmotid, double srcframe);
@@ -549,7 +550,8 @@ private:
 	ChaMatrix GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag);
 
 	void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
-	void CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone);
+	void CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone);
+	void CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
 
 
 	void InitAddLimitQReq(CBone* srcbone);
