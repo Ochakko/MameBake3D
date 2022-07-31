@@ -4204,13 +4204,13 @@ void s_dummyfunc()
 		
 
 		//	Method : 行を追加	(既に同名のキーがある場合はFalseを返す)
-		bool newLine(int _depth, int nullflag, const std::basic_string<TCHAR>& _name){
+		bool newLine(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, COLORREF srctextcol = RGB(255, 255, 255)){
 			for(int i=0; i<(int)lineData.size(); i++){
 				if(lineData[i]->name==_name){
 					return false;
 				}
 			}
-			lineData.push_back(new LineData(_depth, nullflag, _name, this, (int)lineData.size()));
+			lineData.push_back(new LineData(_depth, nullflag, _name, this, (int)lineData.size(), srctextcol));
 
 			//再描画要求
 			if( rewriteOnChange ){
@@ -5201,7 +5201,7 @@ void s_dummyfunc()
 		//行データクラス-------------
 		public: class LineData{
 		public:
-			LineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex){
+			LineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex, COLORREF srctextcol = RGB(256,256, 256)){
 				depth = _depth;
 				m_nullflag = nullflag;
 				name= _name;
@@ -5209,6 +5209,7 @@ void s_dummyfunc()
 				lineIndex= _lineIndex;
 				key.clear();
 				hasrigflag = false;
+				textcol = srctextcol;
 			}
 			//LineData( const LineData& a ){
 			//	_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
@@ -5310,6 +5311,7 @@ void s_dummyfunc()
 			unsigned int lineIndex;
 			int depth;
 			bool hasrigflag;
+			COLORREF textcol;
 
 			//////////////////////////// Method //////////////////////////////
 			//	Method : 描画
@@ -5339,20 +5341,27 @@ void s_dummyfunc()
 
 				//ラベル
 				hdcM->setFont(12,_T("ＭＳ ゴシック"));
-				if (hasrigflag) {
-					SetTextColor(hdcM->hDC, RGB(0, 255, 0));
-				}else if( m_nullflag == 0 ){
-					SetTextColor(hdcM->hDC, RGB(220,220,220));
-				}else if(m_nullflag == 1){
-					SetTextColor(hdcM->hDC, RGB(0,220,220));
-				}
-				else if (m_nullflag == 2) {
-					SetTextColor(hdcM->hDC, RGB(64, 128, 255));
+				if (textcol == RGB(255, 255, 255)) {
+					if (hasrigflag) {
+						SetTextColor(hdcM->hDC, RGB(0, 255, 0));
+					}
+					else if (m_nullflag == 0) {
+						SetTextColor(hdcM->hDC, RGB(220, 220, 220));
+					}
+					else if (m_nullflag == 1) {
+						SetTextColor(hdcM->hDC, RGB(0, 220, 220));
+					}
+					else if (m_nullflag == 2) {
+						SetTextColor(hdcM->hDC, RGB(64, 128, 255));
+					}
+					else {
+						//_ASSERT(0);
+						SetTextColor(hdcM->hDC, RGB(255, 0, 0));
+						return;
+					}
 				}
 				else {
-					//_ASSERT(0);
-					SetTextColor(hdcM->hDC, RGB(255, 0, 0));
-					return;
+					SetTextColor(hdcM->hDC, textcol);
 				}
 
 				std::basic_string<TCHAR> prname;
@@ -7369,7 +7378,7 @@ void s_dummyfunc()
 				if (wcscmp(L"X", name.c_str()) == 0) {
 					int fontsize = 12;
 					hdcM->setFont(fontsize, _T("ＭＳ ゴシック"));
-					SetTextColor(hdcM->hDC, RGB(255, 255, 255));
+					//SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 
 
 					double mesurestep;
@@ -7403,6 +7412,7 @@ void s_dummyfunc()
 					if (ey0 >= y0) {
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", minmeasure);
 						strmeasure[64 - 1] = 0L;
+						SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 						TextOut(hdcM->hDC,
 							ex0, ey0,
 							strmeasure, (int)wcslen(strmeasure));
@@ -7433,6 +7443,7 @@ void s_dummyfunc()
 						}
 						if (displabel) {
 							strmeasure[64 - 1] = 0L;
+							SetTextColor(hdcM->hDC, RGB(168, 129, 129));
 							TextOut(hdcM->hDC,
 								ex0, ey0,
 								strmeasure, (int)wcslen(strmeasure));
@@ -7448,6 +7459,7 @@ void s_dummyfunc()
 					if (ey0 >= y0) {
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", maxmeasure);
 						strmeasure[64 - 1] = 0L;
+						SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 						TextOut(hdcM->hDC,
 							ex0, ey0,
 							strmeasure, (int)wcslen(strmeasure));
@@ -7467,6 +7479,7 @@ void s_dummyfunc()
 							if (abs(ey0 - befey0) > (mesurestep * 2)) {
 								swprintf_s(strmeasure, 64, L"%+3.3lf---", curmeasure);
 								strmeasure[64 - 1] = 0L;
+								SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 								TextOut(hdcM->hDC,
 									ex0, ey0,
 									strmeasure, (int)wcslen(strmeasure));

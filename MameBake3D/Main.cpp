@@ -13320,6 +13320,14 @@ int CreateConvBoneWnd()
 	s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
 	s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
 
+
+	COLORREF importantcol = RGB(168, 129, 129);
+	s_convboneconvert->setTextColor(importantcol);
+	s_rtgfilesave->setTextColor(importantcol);
+	s_rtgfileload->setTextColor(importantcol);
+	
+
+
 	s_convboneSCWnd->addParts(*s_convbonesp);
 
 
@@ -16738,8 +16746,9 @@ int SetLTimelineMark( int curboneno )
 				s_owpLTimeline->deleteLine( 2 );
 
 				WCHAR markname[256] = {0L};
-				swprintf_s( markname, 256, L"Mark:%s", curbone->GetWBoneName() );
-				s_owpLTimeline->newLine(0, 0, markname);
+				//swprintf_s( markname, 256, L"Mark:%s", curbone->GetWBoneName() );
+				swprintf_s(markname, 256, L"%s", curbone->GetWBoneName());
+				s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
 
 				double frame;
 				for( frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0 ){
