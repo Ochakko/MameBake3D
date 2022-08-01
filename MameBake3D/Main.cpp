@@ -178,7 +178,10 @@ PseudoLocalIKは常にオンになります
 #define WM_USER_FOR_BATCH_PROGRESS	(WM_USER + 1)
 
 #define MAXPLUGIN	255
-#define OPENHISTORYMAXNUM	10
+
+//#define OPENHISTORYMAXNUM	10
+//2022/08/01
+#define OPENHISTORYMAXNUM	20
 
 
 typedef struct tag_spaxis
@@ -1741,6 +1744,7 @@ static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
 static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename);
+static int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha);
 static int GetCPTFileName(std::vector<HISTORYELEM>& dstcptfilename);
 static int SaveProject();
 static int SaveREFile();
@@ -1925,6 +1929,12 @@ static void RecalcAxisX_All();
 static int GetSymRootMode();
 
 static int UpdateEditedEuler();
+
+
+static void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename);
+static bool FindAtTheLast(std::wstring const& strsource, std::wstring const& strpat);
+
+
 
 
 static std::wstring ReplaceString
@@ -11463,6 +11473,138 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 ////
 ////}
 
+
+void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
+{
+	int radiocnt = 0;
+	int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
+	if (radionum != 0) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
+	}
+	if (radionum >= 2) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
+	}
+	if (radionum >= 3) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
+	}
+	if (radionum >= 4) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
+	}
+	if (radionum >= 5) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
+	}
+	if (radionum >= 6) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), vecopenfilename[5].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), L"Loading History not Exist.");
+	}
+	if (radionum >= 7) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), vecopenfilename[6].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), L"Loading History not Exist.");
+	}
+	if (radionum >= 8) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), vecopenfilename[7].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), L"Loading History not Exist.");
+	}
+	if (radionum >= 9) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), vecopenfilename[8].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), L"Loading History not Exist.");
+	}
+	if (radionum >= 10) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), vecopenfilename[9].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), L"Loading History not Exist.");
+	}
+
+	if (radionum >= 11) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO11), vecopenfilename[10].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO11), L"Loading History not Exist.");
+	}
+	if (radionum >= 12) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO12), vecopenfilename[11].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO12), L"Loading History not Exist.");
+	}
+	if (radionum >= 13) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO13), vecopenfilename[12].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO13), L"Loading History not Exist.");
+	}
+	if (radionum >= 14) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO14), vecopenfilename[13].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO14), L"Loading History not Exist.");
+	}
+	if (radionum >= 15) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO15), vecopenfilename[14].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO15), L"Loading History not Exist.");
+	}
+	if (radionum >= 16) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO16), vecopenfilename[15].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO16), L"Loading History not Exist.");
+	}
+	if (radionum >= 17) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO17), vecopenfilename[16].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO17), L"Loading History not Exist.");
+	}
+	if (radionum >= 18) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO18), vecopenfilename[17].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO18), L"Loading History not Exist.");
+	}
+	if (radionum >= 19) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO19), vecopenfilename[18].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO19), L"Loading History not Exist.");
+	}
+	if (radionum >= 20) {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO20), vecopenfilename[19].c_str());
+	}
+	else {
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO20), L"Loading History not Exist.");
+	}
+
+}
+
+
+
+
 LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	
@@ -11500,6 +11642,8 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	static int s_openmqoproctimer = 336;
 	static bool s_refokflag = false;
 
+	static int s_filter_cha = 1;
+
 	switch (msg) {
 		case WM_INITDIALOG: 
 			{
@@ -11509,215 +11653,30 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 			SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
 
+			if (s_filter_cha == 1) {
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+			}
+			else {
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+			}
+
+
 			if (s_filterindex == 5) {
 				//bvh2FBXの単体ファイル履歴
 				std::vector<wstring> vecopenfilename;
 				GetbvhHistoryDir(vecopenfilename);
 
-				int radiocnt = 0;
-				int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
-				if (radionum != 0) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
-				}
-				if (radionum >= 2) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
-				}
-				if (radionum >= 3) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
-				}
-				if (radionum >= 4) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
-				}
-				if (radionum >= 5) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
-				}
-				if (radionum >= 6) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), vecopenfilename[5].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), L"Loading History not Exist.");
-				}
-				if (radionum >= 7) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), vecopenfilename[6].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), L"Loading History not Exist.");
-				}
-				if (radionum >= 8) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), vecopenfilename[7].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), L"Loading History not Exist.");
-				}
-				if (radionum >= 9) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), vecopenfilename[8].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), L"Loading History not Exist.");
-				}
-				if (radionum >= 10) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), vecopenfilename[9].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), L"Loading History not Exist.");
-				}
-
+				SetDlgHistory(hDlgWnd, vecopenfilename);
 
 			}
 			else {
-				//MB3DOpenProj_20210410215628.txt
-				WCHAR searchfilename[MAX_PATH] = { 0L };
-				swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProj_*.txt", s_temppath);
-				HANDLE hFind;
-				WIN32_FIND_DATA win32fd;
-				hFind = FindFirstFileW(searchfilename, &win32fd);
+				//cha, fbxファイル履歴
+				std::vector<wstring> vecopenfilename;
+				GetchaHistoryDir(vecopenfilename, s_filter_cha);
 
-				std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
-				std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
-
-				vechistory.clear();
-				bool notfoundfirst = true;
-				if (hFind != INVALID_HANDLE_VALUE) {
-					notfoundfirst = false;
-					do {
-						if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-
-							HISTORYELEM curelem;
-							curelem.filetime = win32fd.ftCreationTime;
-
-							//printf("%s\n", win32fd.cFileName);
-							curelem.wfilename[MAX_PATH - 1] = { 0L };
-							swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
-
-							vechistory.push_back(curelem);
-						}
-					} while (FindNextFile(hFind, &win32fd));
-					FindClose(hFind);
-				}
-
-				if (!vechistory.empty()) {
-
-					std::sort(vechistory.begin(), vechistory.end());
-					std::reverse(vechistory.begin(), vechistory.end());
-
-					int numhistory = (int)vechistory.size();
-					int dispnum = min(OPENHISTORYMAXNUM, numhistory);
-
-
-
-					int foundnum = 0;
-					int historyno;
-					for (historyno = 0; historyno < numhistory; historyno++) {
-						WCHAR openfilename[MAX_PATH] = { 0L };
-						wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
-
-						HANDLE hfile;
-						hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-							FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-						if (hfile != INVALID_HANDLE_VALUE) {
-							WCHAR readwstr[MAX_PATH] = { 0L };
-							DWORD readleng = 0;
-							bool bsuccess;
-							bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
-							if (bsuccess) {
-								bool foundsame = false;
-								wstring newwstr = readwstr;
-								std::vector<wstring>::iterator itropenfilename;
-								for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
-									if (newwstr.compare(*itropenfilename) == 0) {
-										foundsame = true;
-									}
-								}
-								if (foundsame == false) {
-									vecopenfilename.push_back(readwstr);
-									foundnum++;
-									if (foundnum >= dispnum) {
-										break;
-									}
-								}
-							}
-							CloseHandle(hfile);
-						}
-					}
-				}
-
-				int radiocnt = 0;
-				int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
-				if (radionum != 0) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
-				}
-				if (radionum >= 2) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
-				}
-				if (radionum >= 3) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
-				}
-				if (radionum >= 4) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
-				}
-				if (radionum >= 5) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
-				}
-				if (radionum >= 6) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), vecopenfilename[5].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), L"Loading History not Exist.");
-				}
-				if (radionum >= 7) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), vecopenfilename[6].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), L"Loading History not Exist.");
-				}
-				if (radionum >= 8) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), vecopenfilename[7].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), L"Loading History not Exist.");
-				}
-				if (radionum >= 9) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), vecopenfilename[8].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), L"Loading History not Exist.");
-				}
-				if (radionum >= 10) {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), vecopenfilename[9].c_str());
-				}
-				else {
-					SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), L"Loading History not Exist.");
-				}
+				SetDlgHistory(hDlgWnd, vecopenfilename);
 			}
 
 			RECT dlgrect;
@@ -11867,6 +11826,46 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenametreeview = 0;
 				}
 					break;
+
+
+				case IDC_FILTER_CHA:
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+					s_filter_cha = 1;
+
+					if (s_filterindex == 5) {
+						//bvh2FBXの単体ファイル履歴
+						std::vector<wstring> vecopenfilename;
+						GetbvhHistoryDir(vecopenfilename);
+						SetDlgHistory(hDlgWnd, vecopenfilename);
+					}
+					else {
+						//cha, fbxファイル履歴
+						std::vector<wstring> vecopenfilename;
+						GetchaHistoryDir(vecopenfilename, s_filter_cha);
+						SetDlgHistory(hDlgWnd, vecopenfilename);
+					}
+					break;
+
+
+				case IDC_FILTER_FBX:
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+					s_filter_cha = 2;
+					if (s_filterindex == 5) {
+						//bvh2FBXの単体ファイル履歴
+						std::vector<wstring> vecopenfilename;
+						GetbvhHistoryDir(vecopenfilename);
+						SetDlgHistory(hDlgWnd, vecopenfilename);
+					}
+					else {
+						//cha, fbxファイル履歴
+						std::vector<wstring> vecopenfilename;
+						GetchaHistoryDir(vecopenfilename, s_filter_cha);
+						SetDlgHistory(hDlgWnd, vecopenfilename);
+					}
+					break;
+
 				default:
                     return FALSE;
             }
@@ -32971,6 +32970,125 @@ int SaveBatchHistory(WCHAR* selectname)
 	}
 
 	return 0;
+}
+
+bool FindAtTheLast(std::wstring const& strsource, std::wstring const& strpat) {
+	if (strsource.length() < strpat.length()) {
+		return false;
+	}
+	return (strsource.rfind(strpat) == (strsource.size() - strpat.size()));
+}
+
+int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
+{
+	dstvecopenfilename.clear();
+
+	//MB3DOpenProj_20210410215628.txt
+	WCHAR searchfilename[MAX_PATH] = { 0L };
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProj_*.txt", s_temppath);
+	HANDLE hFind;
+	WIN32_FIND_DATA win32fd;
+	hFind = FindFirstFileW(searchfilename, &win32fd);
+
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
+	vechistory.clear();
+	bool notfoundfirst = true;
+	if (hFind != INVALID_HANDLE_VALUE) {
+		notfoundfirst = false;
+		do {
+			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+
+				HISTORYELEM curelem;
+				curelem.filetime = win32fd.ftCreationTime;
+
+				//printf("%s\n", win32fd.cFileName);
+				curelem.wfilename[MAX_PATH - 1] = { 0L };
+				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+				vechistory.push_back(curelem);
+			}
+		} while (FindNextFile(hFind, &win32fd));
+		FindClose(hFind);
+	}
+
+	if (!vechistory.empty()) {
+
+		std::sort(vechistory.begin(), vechistory.end());
+		std::reverse(vechistory.begin(), vechistory.end());
+
+		int numhistory = (int)vechistory.size();
+		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
+
+
+
+		int foundnum = 0;
+		int historyno;
+		for (historyno = 0; historyno < numhistory; historyno++) {
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
+
+			HANDLE hfile;
+			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				WCHAR readwstr[MAX_PATH] = { 0L };
+				DWORD readleng = 0;
+				bool bsuccess;
+				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+				if (bsuccess) {
+					bool foundsame = false;
+					wstring newwstr = readwstr;
+					std::vector<wstring>::iterator itropenfilename;
+					for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+						if (newwstr.compare(*itropenfilename) == 0) {
+							foundsame = true;
+						}
+					}
+					if (foundsame == false) {
+						bool filtermatch = false;
+						if (filter_cha == 1) {
+							if (FindAtTheLast(newwstr, L".cha")) {
+								filtermatch = true;
+							}
+							else {
+								filtermatch = false;
+							}
+						}
+						else {
+							if (FindAtTheLast(newwstr, L".fbx")) {
+								filtermatch = true;
+							}
+							else {
+								filtermatch = false;
+							}
+						}
+
+
+						if (filtermatch == true) {
+							vecopenfilename.push_back(readwstr);
+							foundnum++;
+						}
+						if (foundnum >= dispnum) {
+							break;
+						}
+					}
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
+
+
+	if (!vecopenfilename.empty()) {
+		dstvecopenfilename = vecopenfilename;
+	}
+	else {
+		dstvecopenfilename.clear();
+	}
+	return 0;
+
 }
 
 

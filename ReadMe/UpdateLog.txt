@@ -1,3 +1,10 @@
+2022/08/01
+	MotionBrushFree 1.0.0.26に向けて
+
+	FileメニューのOpen時のダイアログ改良
+		履歴１０件を２０件に変更
+		Filter *.chaボタンとFilter *.fbxボタンを追加。履歴に拡張子フィルター。
+
 2022/07/31
 	MotionBrushFree 1.0.0.26に向けて
 
