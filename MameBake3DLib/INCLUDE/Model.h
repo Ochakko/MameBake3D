@@ -643,7 +643,7 @@ public:
 
 	CBone* GetSymPosBone(CBone* srcbone);
 
-	int InterpolateBetweenSelection(double srcstartframe, double srcendframe);
+	int InterpolateBetweenSelection(double srcstartframe, double srcendframe, CBone* srcbone, int srckind);
 
 	int BulletSimulationStop();
 	int BulletSimulationStart();
@@ -810,7 +810,7 @@ private:
 	int AdjustBoneTra( CEditRange* erptr, CBone* lastpar );
 
 	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
-	void InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe);
+	void InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe, bool oneflag);
 
 
 	int DbgDumpBoneReq(CBone* boneptr, int broflag);

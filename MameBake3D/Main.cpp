@@ -984,7 +984,9 @@ static OWP_Button* s_toolMarkB = 0;
 static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
 static OWP_Button* s_toolFilterB = 0;
-static OWP_Button* s_toolInterpolateB = 0;
+static OWP_Button* s_toolInterpolate1B = 0;
+static OWP_Button* s_toolInterpolate2B = 0;
+static OWP_Button* s_toolInterpolate3B = 0;
 static OWP_Button* s_toolSelectCopyFileName = 0;
 
 
@@ -1040,7 +1042,7 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static bool s_filterFlag = false;
-static bool s_interpolateFlag = false;
+static int s_interpolateState = 0;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -2656,7 +2658,7 @@ void InitApp()
 	s_selboneFlag = false;
 	s_initmpFlag = false;
 	s_filterFlag = false;
-	s_interpolateFlag = false;
+	s_interpolateState = 0;
 	s_firstkeyFlag = false;
 	s_lastkeyFlag = false;
 	s_btresetFlag = false;
@@ -2923,7 +2925,9 @@ void InitApp()
 	s_toolSelBoneB = 0;
 	s_toolInitMPB = 0;
 	s_toolFilterB = 0;
-	s_toolInterpolateB = 0;
+	s_toolInterpolate1B = 0;
+	s_toolInterpolate2B = 0;
+	s_toolInterpolate3B = 0;
 	s_toolSelectCopyFileName = 0;
 
 	s_customrigbone = 0;
@@ -4192,9 +4196,17 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_toolFilterB;
 		s_toolFilterB = 0;
 	}
-	if (s_toolInterpolateB) {
-		delete s_toolInterpolateB;
-		s_toolInterpolateB = 0;
+	if (s_toolInterpolate1B) {
+		delete s_toolInterpolate1B;
+		s_toolInterpolate1B = 0;
+	}
+	if (s_toolInterpolate2B) {
+		delete s_toolInterpolate2B;
+		s_toolInterpolate2B = 0;
+	}
+	if (s_toolInterpolate3B) {
+		delete s_toolInterpolate3B;
+		s_toolInterpolate3B = 0;
 	}
 	if (s_toolSelectCopyFileName) {
 		delete s_toolSelectCopyFileName;
@@ -19088,8 +19100,7 @@ int OnFrameToolWnd()
 		InitMpFromTool();
 	}
 
-	if (s_interpolateFlag){
-		s_interpolateFlag = false;
+	if (s_interpolateState != 0){
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
 			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, (double)g_applyrate);
@@ -19101,13 +19112,22 @@ int OnFrameToolWnd()
 			//s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 			//s_model->InterpolateBetweenSelection(startframe, endframe);
 
-			s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend);
+			CBone* curbone = 0;
+			if (s_curboneno >= 0) {
+				curbone = s_model->GetBoneByID(s_curboneno);
+			}
+			else {
+				curbone = 0;
+			}
+
+			s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
 
 			UpdateEditedEuler();
 
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 
+		s_interpolateState = 0;
 	}
 
 
@@ -22386,7 +22406,9 @@ int CreateToolWnd()
 	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
 	s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
 	s_toolFilterB = new OWP_Button(_T("平滑化 smoothing"));
-	s_toolInterpolateB = new OWP_Button(_T("補間 interpolate"));
+	s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
+	s_toolInterpolate2B = new OWP_Button(_T("補間(one) interpolate"));
+	s_toolInterpolate3B = new OWP_Button(_T("補間(deeper) interpolate"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -22397,7 +22419,9 @@ int CreateToolWnd()
 	//s_toolWnd->addParts(*s_toolMarkB);
 	s_toolWnd->addParts(*s_toolMotPropB);
 	s_toolWnd->addParts(*s_toolFilterB);
-	s_toolWnd->addParts(*s_toolInterpolateB);
+	s_toolWnd->addParts(*s_toolInterpolate1B);
+	s_toolWnd->addParts(*s_toolInterpolate2B);
+	s_toolWnd->addParts(*s_toolInterpolate3B);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -22407,7 +22431,9 @@ int CreateToolWnd()
 	//s_dstoolctrls.push_back(s_toolMarkB);
 	s_dstoolctrls.push_back(s_toolMotPropB);
 	s_dstoolctrls.push_back(s_toolFilterB);
-	s_dstoolctrls.push_back(s_toolInterpolateB);
+	s_dstoolctrls.push_back(s_toolInterpolate1B);
+	s_dstoolctrls.push_back(s_toolInterpolate2B);
+	s_dstoolctrls.push_back(s_toolInterpolate3B);
 
 
 	s_toolWnd->setCloseListener([](){ 
@@ -22458,9 +22484,19 @@ int CreateToolWnd()
 			s_filterFlag = true;
 		}
 	});
-	s_toolInterpolateB->setButtonListener([]() { 
-		if (s_model) {
-			s_interpolateFlag = true;
+	s_toolInterpolate1B->setButtonListener([]() { 
+		if (s_model && (s_interpolateState == 0)) {
+			s_interpolateState = 1;//all
+		}
+	});
+	s_toolInterpolate2B->setButtonListener([]() {
+		if (s_model && (s_interpolateState == 0)) {
+			s_interpolateState = 2;//one
+		}
+	});
+	s_toolInterpolate3B->setButtonListener([]() {
+		if (s_model && (s_interpolateState == 0)) {
+			s_interpolateState = 3;//deeper
 		}
 	});
 

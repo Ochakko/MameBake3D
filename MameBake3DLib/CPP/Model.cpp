@@ -9853,20 +9853,40 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 	}
 }
 
-int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe)
+int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe, CBone* srcbone, int srckind)
 {
 	if (!GetCurMotInfo()){
 		return 0;
 	}
 
-	InterpolateBetweenSelectionReq(GetTopBone(), srcstartframe, srcendframe);
+
+	if (srckind == 1) {
+		//all
+		bool oneflag = false;
+		InterpolateBetweenSelectionReq(GetTopBone(), srcstartframe, srcendframe, oneflag);
+	}
+	else if (srckind == 2) {
+		//one
+		bool oneflag = true;
+		InterpolateBetweenSelectionReq(srcbone, srcstartframe, srcendframe, oneflag);
+
+	}
+	else if (srckind == 3) {
+		//deeper
+		bool oneflag = false;
+		InterpolateBetweenSelectionReq(srcbone, srcstartframe, srcendframe, oneflag);
+	}
+	else {
+		//unknown
+	}
+
 
 	UpdateMatrix(&m_matWorld, &m_matVP);
 
 	return 0;
 }
 
-void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe)
+void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe, bool oneflag)
 {
 	if (!srcbone){
 		return;
@@ -9877,12 +9897,6 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 	if (!GetCurMotInfo()){
 		return;
 	}
-
-
-
-
-
-
 
 	if (srcbone){
 		int curmotid = GetCurMotInfo()->motid;
@@ -9931,11 +9945,14 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 			srcbone->SetWorldMatFromQAndTra(setchildflag1, iniq, setq, settra, curmotid, frame);
 		}
 
-		if (srcbone->GetChild()){
-			InterpolateBetweenSelectionReq(srcbone->GetChild(), srcstartframe, srcendframe);
-		}
-		if (srcbone->GetBrother()){
-			InterpolateBetweenSelectionReq(srcbone->GetBrother(), srcstartframe, srcendframe);
+
+		if (oneflag == false) {
+			if (srcbone->GetChild()) {
+				InterpolateBetweenSelectionReq(srcbone->GetChild(), srcstartframe, srcendframe, oneflag);
+			}
+			if (srcbone->GetBrother()) {
+				InterpolateBetweenSelectionReq(srcbone->GetBrother(), srcstartframe, srcendframe, oneflag);
+			}
 		}
 	}
 }
