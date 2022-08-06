@@ -148,6 +148,7 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <AdditionalOptions>/F 168956 /analyze:stacksize 168956 %(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,7 +160,7 @@
     <Lib>
       <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Release;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\lib\vs2019\x64\release;..\Glut;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
