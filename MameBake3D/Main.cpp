@@ -11491,125 +11491,125 @@ void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
 	int radiocnt = 0;
 	int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
 	if (radionum != 0) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), vecopenfilename[0].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI51), vecopenfilename[0].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO1), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI51), L"Loading History not Exist.");
 	}
 	if (radionum >= 2) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), vecopenfilename[1].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI52), vecopenfilename[1].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO2), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI52), L"Loading History not Exist.");
 	}
 	if (radionum >= 3) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), vecopenfilename[2].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI53), vecopenfilename[2].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO3), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI53), L"Loading History not Exist.");
 	}
 	if (radionum >= 4) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), vecopenfilename[3].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI54), vecopenfilename[3].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO4), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI54), L"Loading History not Exist.");
 	}
 	if (radionum >= 5) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), vecopenfilename[4].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI55), vecopenfilename[4].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO5), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI55), L"Loading History not Exist.");
 	}
 	if (radionum >= 6) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), vecopenfilename[5].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI56), vecopenfilename[5].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO6), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI56), L"Loading History not Exist.");
 	}
 	if (radionum >= 7) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), vecopenfilename[6].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI57), vecopenfilename[6].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO7), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI57), L"Loading History not Exist.");
 	}
 	if (radionum >= 8) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), vecopenfilename[7].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI58), vecopenfilename[7].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO8), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI58), L"Loading History not Exist.");
 	}
 	if (radionum >= 9) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), vecopenfilename[8].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI59), vecopenfilename[8].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO9), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI59), L"Loading History not Exist.");
 	}
 	if (radionum >= 10) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), vecopenfilename[9].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI60), vecopenfilename[9].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO10), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI60), L"Loading History not Exist.");
 	}
 
 	if (radionum >= 11) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO11), vecopenfilename[10].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI61), vecopenfilename[10].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO11), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI61), L"Loading History not Exist.");
 	}
 	if (radionum >= 12) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO12), vecopenfilename[11].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI62), vecopenfilename[11].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO12), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI62), L"Loading History not Exist.");
 	}
 	if (radionum >= 13) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO13), vecopenfilename[12].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI63), vecopenfilename[12].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO13), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI63), L"Loading History not Exist.");
 	}
 	if (radionum >= 14) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO14), vecopenfilename[13].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI64), vecopenfilename[13].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO14), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI64), L"Loading History not Exist.");
 	}
 	if (radionum >= 15) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO15), vecopenfilename[14].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI65), vecopenfilename[14].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO15), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI65), L"Loading History not Exist.");
 	}
 	if (radionum >= 16) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO16), vecopenfilename[15].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI66), vecopenfilename[15].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO16), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI66), L"Loading History not Exist.");
 	}
 	if (radionum >= 17) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO17), vecopenfilename[16].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI67), vecopenfilename[16].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO17), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI67), L"Loading History not Exist.");
 	}
 	if (radionum >= 18) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO18), vecopenfilename[17].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI68), vecopenfilename[17].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO18), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI68), L"Loading History not Exist.");
 	}
 	if (radionum >= 19) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO19), vecopenfilename[18].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI69), vecopenfilename[18].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO19), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI69), L"Loading History not Exist.");
 	}
 	if (radionum >= 20) {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO20), vecopenfilename[19].c_str());
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI70), vecopenfilename[19].c_str());
 	}
 	else {
-		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADIO20), L"Loading History not Exist.");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI70), L"Loading History not Exist.");
 	}
 
 }
@@ -11715,19 +11715,39 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						UINT ischecked8 = 0;
 						UINT ischecked9 = 0;
 						UINT ischecked10 = 0;
-						ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO1);
-						ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO2);
-						ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO3);
-						ischecked4 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO4);
-						ischecked5 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO5);
-						ischecked6 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO6);
-						ischecked7 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO7);
-						ischecked8 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO8);
-						ischecked9 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO9);
-						ischecked10 = IsDlgButtonChecked(hDlgWnd, IDC_RADIO10);
+						UINT ischecked11 = 0;
+						UINT ischecked12 = 0;
+						UINT ischecked13 = 0;
+						UINT ischecked14 = 0;
+						UINT ischecked15 = 0;
+						UINT ischecked16 = 0;
+						UINT ischecked17 = 0;
+						UINT ischecked18 = 0;
+						UINT ischecked19 = 0;
+						UINT ischecked20 = 0;
+						ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADI51);
+						ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADI52);
+						ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADI53);
+						ischecked4 = IsDlgButtonChecked(hDlgWnd, IDC_RADI54);
+						ischecked5 = IsDlgButtonChecked(hDlgWnd, IDC_RADI55);
+						ischecked6 = IsDlgButtonChecked(hDlgWnd, IDC_RADI56);
+						ischecked7 = IsDlgButtonChecked(hDlgWnd, IDC_RADI57);
+						ischecked8 = IsDlgButtonChecked(hDlgWnd, IDC_RADI58);
+						ischecked9 = IsDlgButtonChecked(hDlgWnd, IDC_RADI59);
+						ischecked10 = IsDlgButtonChecked(hDlgWnd, IDC_RADI60);
+						ischecked11 = IsDlgButtonChecked(hDlgWnd, IDC_RADI61);
+						ischecked12 = IsDlgButtonChecked(hDlgWnd, IDC_RADI62);
+						ischecked13 = IsDlgButtonChecked(hDlgWnd, IDC_RADI63);
+						ischecked14 = IsDlgButtonChecked(hDlgWnd, IDC_RADI64);
+						ischecked15 = IsDlgButtonChecked(hDlgWnd, IDC_RADI65);
+						ischecked16 = IsDlgButtonChecked(hDlgWnd, IDC_RADI66);
+						ischecked17 = IsDlgButtonChecked(hDlgWnd, IDC_RADI67);
+						ischecked18 = IsDlgButtonChecked(hDlgWnd, IDC_RADI68);
+						ischecked19 = IsDlgButtonChecked(hDlgWnd, IDC_RADI69);
+						ischecked20 = IsDlgButtonChecked(hDlgWnd, IDC_RADI70);
 						if (ischecked1 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO1, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI51, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
@@ -11737,7 +11757,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						}
 						else if (ischecked2 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO2, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI52, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
@@ -11747,56 +11767,132 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 						}
 						else if (ischecked3 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO3, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI53, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked4 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO4, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI54, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked5 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO5, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI55, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked6 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO6, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI56, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked7 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO7, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI57, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked8 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO8, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI58, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked9 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO9, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI59, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
 						}
 						else if (ischecked10 == BST_CHECKED) {
 							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADIO10, checkedpath, MAX_PATH);
+							GetDlgItemTextW(hDlgWnd, IDC_RADI60, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked11 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI61, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+							else {
+								g_tmpmqopath[0] = 0L;
+							}
+						}
+						else if (ischecked12 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI62, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+							else {
+								g_tmpmqopath[0] = 0L;
+							}
+						}
+						else if (ischecked13 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI63, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked14 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI64, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked15 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI65, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked16 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI66, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked17 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI67, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked18 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI68, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked19 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI69, checkedpath, MAX_PATH);
+							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+							}
+						}
+						else if (ischecked20 == BST_CHECKED) {
+							WCHAR checkedpath[MAX_PATH] = { 0L };
+							GetDlgItemTextW(hDlgWnd, IDC_RADI70, checkedpath, MAX_PATH);
 							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 							}
@@ -15031,6 +15127,37 @@ int OpenChaFile()
 	//g_tmpmqopathはプロジェクト読み込み時にプロジェクトファイル内に記述されているファイル名に変わっていくので先に保存しておく。
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
 	wcscpy_s(saveprojpath, MAX_PATH, g_tmpmqopath);
+	
+	//先に履歴を保存する。chaファイルだけ。
+	int savepathlen;
+	saveprojpath[MAX_PATH - 1] = 0L;
+	savepathlen = (int)wcslen(saveprojpath);
+	if (savepathlen > 4) {
+		WCHAR* pwext;
+		pwext = saveprojpath + ((size_t)savepathlen - 1) - 3;
+		if (wcscmp(pwext, L".cha") == 0) {
+			SYSTEMTIME localtime;
+			GetLocalTime(&localtime);
+			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04u%02u%02u%02u%02u%02u.txt",
+				s_temppath,
+				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+			HANDLE hfile;
+			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				//int pathlen;
+				//pathlen = (int)wcslen(saveprojpath);
+				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
+					DWORD writelen = 0;
+					WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
+
 
 	WCHAR* lasten = 0;
 	g_tmpmqopath[MAX_PATH - 1] = 0L;
@@ -15097,41 +15224,13 @@ int OpenChaFile()
 	int ret = chafile.LoadChaFile( g_tmpmqopath, OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu );
 	if (ret == 1) {
 		_ASSERT(0);
+		SetCursor(oldcursor);
 		return 1;
 	}
 	//OnAddMotion(s_model->GetCurMotInfo()->motid);
 
 	SetCursor(oldcursor);
 	
-	//読み込み処理が成功してから履歴を保存する。chaファイルだけ。
-	int savepathlen;
-	saveprojpath[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(saveprojpath);
-	if (savepathlen > 4) {
-		WCHAR* pwext;
-		pwext = saveprojpath + ((size_t)savepathlen - 1) - 3;
-		if (wcscmp(pwext, L".cha") == 0) {
-			SYSTEMTIME localtime;
-			GetLocalTime(&localtime);
-			WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
-			swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProj_%04u%02u%02u%02u%02u%02u.txt",
-				s_temppath,
-				localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
-			HANDLE hfile;
-			hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
-				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-			if (hfile != INVALID_HANDLE_VALUE) {
-				//int pathlen;
-				//pathlen = (int)wcslen(saveprojpath);
-				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
-					DWORD writelen = 0;
-					WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
-					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
-				}
-				CloseHandle(hfile);
-			}
-		}
-	}
 
 	//ChangeCurrentBone();
 
