@@ -6121,25 +6121,33 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 	SetBtMotionReq( m_topbt, wmat, vpmat );
 
+	if (g_previewFlag == 5) {
+		//物理IK用
+		
+		//SetBtMotionPostReq(m_topbt, wmat, vpmat);
+		if (srcbone && srcbone->GetParent()) {
+			CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
+			SetBtMotionPostLowerReq(startbto, wmat, vpmat, 1);//kinematicadjust = 0
+			SetBtMotionPostUpperReq(startbto, wmat, vpmat);
+			//SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//mass0adjust = 0
+			SetBtMotionMass0BottomUpReq(m_topbt, wmat, vpmat);//for mass0
+			SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//kinematicadjust = 0
 
-	//SetBtMotionPostReq(m_topbt, wmat, vpmat);
-	if (srcbone && srcbone->GetParent()) {//物理IK用
-		CBtObject* startbto = srcbone->GetParent()->GetBtObject(srcbone);
-		SetBtMotionPostLowerReq(startbto, wmat, vpmat, 1);//kinematicadjust = 0
-		SetBtMotionPostUpperReq(startbto, wmat, vpmat);
-		//SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//mass0adjust = 0
-		SetBtMotionMass0BottomUpReq(m_topbt, wmat, vpmat);//for mass0
-		SetBtMotionPostLowerReq(m_topbt, wmat, vpmat, 0);//kinematicadjust = 0
+			FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
 
-		FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
+			InitBtMatTraAnimReq(m_topbt);
 
-		InitBtMatTraAnimReq(m_topbt);
+			
+			BtMat2BtObjReq(m_topbt, wmat, vpmat);
+			RecalcConstraintFrameABReq(m_topbt);
 
-
-		BtMat2BtObjReq(m_topbt, wmat, vpmat);
-		RecalcConstraintFrameABReq(m_topbt);
-
-		m_physicsikcnt++;
+			m_physicsikcnt++;
+		}
+	}
+	else {
+		if (srcbone && srcbone->GetParent()) {
+			RecalcConstraintFrameABReq(m_topbt);
+		}
 	}
 
 

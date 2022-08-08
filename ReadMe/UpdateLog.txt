@@ -1,4 +1,11 @@
 2022/08
+	MotionBrushFree 1.0.0.26へ向けて
+
+	物理シミュレーションの高速化
+		物理IKだけで必要な処理を条件文内に入れた
+
+
+2022/08
 	MotionBrushFree 1.0.0.25
 
 	フリーウェア化して名前をMotionBrushからMotionBrushFreeに変更

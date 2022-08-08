@@ -514,7 +514,9 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	//dsttra.getBasis().setEulerZYX(eul.x * PAI / 180.0, eul.y * PAI / 180.0, eul.z * PAI / 180.0);
 	////dsttra.getBasis().setRotation(btQuaternion(rotq.x, rotq.y, rotq.z, rotq.w));
 	
+
 	dsttra.setRotation(btQuaternion(invrotq.x, invrotq.y, invrotq.z, invrotq.w));
+
 
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
 	btTransform invtra = rigidtra.inverse();
@@ -1148,46 +1150,15 @@ int CBtObject::SetBtMotion()
 	diffxworld = invxworld * newxworld;
 
 
+
 	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
 		//m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
 		m_bone->SetBtFlag(1);
 	}
 
-	/*
-	
-	//boneleng 0 対策はCreateObjectの剛体のサイズを決めるところで最小値を設定することにしたので、以下はコメントアウト。
 
-	if( m_boneleng > 0.00001f ){
-		//ボーンの親と子供が同位置ではない場合。
-		//剛体シミュレーション開始時の行列に、開始時からの変化分を掛ける。
-		curmp = m_bone->GetCurMp();
-		curmp.SetBtMat( m_bone->GetStartMat2() * diffxworld );
-		m_bone->SetCurMp( curmp );
-	}else{
-		//ボーンの親と子供が同位置の場合。
-		if( m_parbt->m_bone ){
-			//親側ボーンの親ボーンがある場合。
-			//剛体シミュレーション開始時の行列に、親ボーンの変化分を掛ける。
-			ChaMatrix invstart;
-			ChaMatrixInverse( &invstart, NULL, &(m_parbt->m_bone->GetStartMat2()) );
-			ChaMatrix diffmat;
-			diffmat = invstart * m_parbt->m_bone->GetCurMp().GetBtMat();
-			curmp = m_bone->GetCurMp();
-			curmp.SetBtMat( m_bone->GetStartMat2() * diffmat );
-			m_bone->SetCurMp( curmp );
-		}else{
-			//剛体シミュレーション行列のままとする。
-			curmp = m_bone->GetCurMp();
-			curmp.SetBtMat( m_bone->GetStartMat2() );
-			m_bone->SetCurMp( curmp );
-		}
-	}
-
-	curmp = m_bone->GetCurMp();
-	curmp.SetBtFlag( 1 );
-	m_bone->SetCurMp( curmp );
-	*/
+	//boneleng 0 対策はCreateObjectの剛体のサイズを決めるところで最小値を設定することにした。
 
 	return 0;
 }
