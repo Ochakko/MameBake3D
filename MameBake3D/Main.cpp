@@ -11919,17 +11919,32 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
-					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-						s_refokflag = true;
+					if (g_enableDS == true) {
+						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+							s_refokflag = true;
+						}
+
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+						UnhookWinEvent(hhook);
 					}
-					
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					UnhookWinEvent(hhook);
+					else {
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+							s_refokflag = true;
+						}
+
+					}
+
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 				}
@@ -12063,16 +12078,29 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		{
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
-			HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-				WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-			if (GetOpenFileNameW(&ofn) == IDOK) {
-				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+			if (g_enableDS == true) {
+				HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+					WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+				}
+
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+				UnhookWinEvent(hhook);
+			}
+			else {
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+				}
 			}
 
-			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-			UnhookWinEvent(hhook);
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
 		}
@@ -12490,16 +12518,29 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
-					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+					if (g_enableDS == true) {
+						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+						}
+
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+						UnhookWinEvent(hhook);
+					}
+					else {
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+						}
 					}
 
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					UnhookWinEvent(hhook);
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 				}
@@ -12587,16 +12628,28 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
-					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+					if (g_enableDS == true) {
+						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+						}
+
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+						UnhookWinEvent(hhook);
 					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					UnhookWinEvent(hhook);
+					else {
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+						}
+					}
+					
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 				}
@@ -12685,16 +12738,29 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
-					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+					if (g_enableDS == true) {
+						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+						}
+
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+						UnhookWinEvent(hhook);
 					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					UnhookWinEvent(hhook);
+					else {
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+						}
+					}
+					
+					
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 				}
@@ -12779,16 +12845,30 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
-					HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-						WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
+					if (g_enableDS == true) {
+						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
+						}
+
+						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+						UnhookWinEvent(hhook);
+					}
+					else {
+						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+
+						if (GetOpenFileNameW(&ofn) == IDOK) {
+							SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
+						}
 					}
 
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					UnhookWinEvent(hhook);
+
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 				}
