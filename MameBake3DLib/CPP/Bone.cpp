@@ -32,6 +32,11 @@
 #include <EngName.h>
 //#include <BoneProp.h>
 
+
+//for __nop()
+#include <intrin.h>
+
+
 using namespace std;
 using namespace OrgWinGUI;
 
@@ -524,7 +529,7 @@ int CBone::AddChild( CBone* childptr )
 }
 
 
-int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat )
+int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread)
 {
 	int existflag = 0;
 
@@ -539,7 +544,8 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 			if (g_limitdegflag == 1) {
 				//制限角度有り
 
-				int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat);//計算済を取得。計算していなかったら計算する。
+				int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, 0, callingbythread);//計算済を取得。計算していなかったら計算する。
+				
 				//if (calcflag != 1) {
 				//	newworldmat = GetLimitedWorldMat(srcmotid, srcframe);
 				//}
@@ -550,20 +556,26 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 				newworldmat = m_curmp.GetWorldMat();// **wmat;
 			}
 
-			ChaMatrix tmpmat = newworldmat * *wmat;
-			//m_curmp.SetWorldMat(newworldmat);//underchecking
-			m_curmp.SetWorldMat(tmpmat);//2021/12/21
+
+			//制限角度無し　又は　制限角度有で並列化無しの場合はグローバルも計算
+			//制限角度有で並列化している場合には　この関数ではローカルだけ計算　後でメインスレッドから再帰的にグローバルを計算
+			if ((g_limitdegflag == 0) || (callingbythread == false)) {
+				ChaMatrix tmpmat = newworldmat * *wmat;
+				//m_curmp.SetWorldMat(newworldmat);//underchecking
+				m_curmp.SetWorldMat(tmpmat);//2021/12/21
 
 
-			ChaVector3 jpos = GetJointFPos();
-			ChaVector3TransformCoord(&m_childworld, &jpos, &m_curmp.GetWorldMat());
-			//ChaVector3TransformCoord(&m_childworld, &jpos, &newworldmat);
+				ChaVector3 jpos = GetJointFPos();
+				ChaVector3TransformCoord(&m_childworld, &jpos, &m_curmp.GetWorldMat());
+				//ChaVector3TransformCoord(&m_childworld, &jpos, &newworldmat);
 
-			ChaMatrix wvpmat = m_curmp.GetWorldMat() * *vpmat;
-			//ChaMatrix wvpmat = newworldmat * *vpmat;
+				ChaMatrix wvpmat = m_curmp.GetWorldMat() * *vpmat;
+				//ChaMatrix wvpmat = newworldmat * *vpmat;
 
-			ChaVector3TransformCoord(&m_childscreen, &m_childworld, vpmat);
-			//ChaVector3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
+				ChaVector3TransformCoord(&m_childscreen, &m_childworld, vpmat);
+				//ChaVector3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
+			}
+
 		}
 		else {
 			m_curmp.InitParams();
@@ -613,7 +625,8 @@ int CBone::UpdateLimitedWorldMat(int srcmotid, double srcframe0)
 	//制限角度有り
 	double srcframe = (double)((int)(srcframe0 + 0.0001));
 	CMotionPoint* orgbefmp = 0;
-	int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, &orgbefmp);
+	bool callingbythread = false;
+	int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, &orgbefmp, callingbythread);
 	//if ((calcflag != 1) && orgbefmp) {//計算済で無い場合だけ計算する
 	if (calcflag == 1) {
 		orgbefmp->SetLimitedWM(newworldmat);
@@ -809,7 +822,7 @@ int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr,
 	return 0;
 }
 
-int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp)//default : pporgbefmp = 0
+int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp, bool callingbythread)//default : pporgbefmp = 0, default : callingbythread = false
 {
 	int ret;
 	int existflag = 0;
@@ -837,7 +850,7 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 			else {
 				//計算済では無い
 				//ChaMatrixIdentity(plimitedworldmat);
-				*plimitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);
+				*plimitedworldmat = GetLimitedWorldMat(srcmotid, srcframe, 0, callingbythread);
 				if (pporgbefmp) {
 					*pporgbefmp = befptr;
 				}
@@ -866,7 +879,11 @@ void CBone::ResetMotionCache()
 
 int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr, bool onaddmotion)//default : onaddmotion = false
 {
-	EnterCriticalSection(&m_CritSection_GetBefNext);
+	//########################################################################################
+	//並列化はボーン単位にするはずなので　クリティカルセクションにはエンターしないことにする
+	//########################################################################################
+
+	//EnterCriticalSection(&m_CritSection_GetBefNext);
 
 	CMotionPoint* pbef = 0;
 	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
@@ -886,7 +903,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 		*ppbef = 0;
 		*ppnext = 0;
 		//_ASSERT(0);
-		LeaveCriticalSection(&m_CritSection_GetBefNext);
+		//LeaveCriticalSection(&m_CritSection_GetBefNext);
 		return 0;
 	}
 	else {
@@ -973,7 +990,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 			*ppbef = 0;
 			*ppnext = 0;
 			//_ASSERT(0);
-			LeaveCriticalSection(&m_CritSection_GetBefNext);
+			//LeaveCriticalSection(&m_CritSection_GetBefNext);
 			return 0;
 		}
 		else {
@@ -982,7 +999,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 				*ppbef = 0;
 				*ppnext = 0;
 				//_ASSERT(0);
-				LeaveCriticalSection(&m_CritSection_GetBefNext);
+				//LeaveCriticalSection(&m_CritSection_GetBefNext);
 				return 0;
 
 			}
@@ -1031,7 +1048,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 		}
 	}
 
-	LeaveCriticalSection(&m_CritSection_GetBefNext);
+	//LeaveCriticalSection(&m_CritSection_GetBefNext);
 
 	return 0;
 }
@@ -4910,6 +4927,32 @@ int CBone::SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul)//initscalef
 	return 0;
 }
 
+int CBone::CalcWorldMatFromEulForThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	ChaVector3 orgeul, neweul;
+	GetTempLocalEul(&orgeul, &neweul);
+	ChaMatrix newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+
+	ChaMatrix tmpmat = newworldmat * *wmat;
+	//m_curmp.SetWorldMat(newworldmat);//underchecking
+	m_curmp.SetWorldMat(tmpmat);//2021/12/21
+
+
+	ChaVector3 jpos = GetJointFPos();
+	ChaVector3TransformCoord(&m_childworld, &jpos, &m_curmp.GetWorldMat());
+	//ChaVector3TransformCoord(&m_childworld, &jpos, &newworldmat);
+
+	ChaMatrix wvpmat = m_curmp.GetWorldMat() * *vpmat;
+	//ChaMatrix wvpmat = newworldmat * *vpmat;
+
+	ChaVector3TransformCoord(&m_childscreen, &m_childworld, vpmat);
+	//ChaVector3TransformCoord(&m_childscreen, &m_childworld, &wvpmat);
+
+
+
+	return 0;
+}
+
 
 ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 befeul, int srcmotid, double srcframe, int initscaleflag)//initscaleflag = 1 : default
 {
@@ -7246,7 +7289,7 @@ void CBone::CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
 
 
 
-ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul)//default : dstneweul = 0
+ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul, bool callingbythread)//default : dstneweul = 0, default : callingbythread = false
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -7270,10 +7313,17 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 			neweul = LimitEul(orgeul);
 		}
 		SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
-		retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
-
 		if (dstneweul) {
 			*dstneweul = neweul;
+		}
+
+		SetTempLocalEul(orgeul, neweul);
+
+		if (callingbythread == false) {
+			retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+		}
+		else {
+			ChaMatrixIdentity(&retmat);
 		}
 
 	}
@@ -7530,5 +7580,231 @@ int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 
 	return 0;
 }
+
+
+
+
+
+//##############################
+//###   CBoneUpdateMatrix
+//##############################
+
+
+CBoneUpdateMatrix::CBoneUpdateMatrix()
+{
+	m_exit_state = 0;
+	m_start_state = 0;
+	m_hthread = INVALID_HANDLE_VALUE;
+	InitializeCriticalSection(&m_CritSection_UpdateMatrix);
+	ClearBoneList();
+
+
+	motid = 0;
+	frame = 0.0;
+	//wmat = 0;
+	//vpmat = 0;
+	ChaMatrixIdentity(&wmat);
+	ChaMatrixIdentity(&vpmat);
+
+}
+CBoneUpdateMatrix::~CBoneUpdateMatrix()
+{
+
+	InterlockedExchange(&m_exit_state, 1L);
+	if (m_hEvent != NULL) {
+		SetEvent(m_hEvent);
+	}
+	
+	Sleep(10);
+
+	DeleteCriticalSection(&m_CritSection_UpdateMatrix);
+	ClearBoneList();
+	if (m_hEvent != NULL) {
+		CloseHandle(m_hEvent);
+	}
+}
+
+int CBoneUpdateMatrix::CreateThread()
+{
+	if (m_hthread != INVALID_HANDLE_VALUE) {
+		//already created error
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (m_hEvent == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	unsigned int threadaddr1 = 0;
+	m_hthread = (HANDLE)_beginthreadex(
+		NULL, 0, &ThreadFunc_UpdateMatrixCaller,
+		(void*)this,
+		0, &threadaddr1);
+
+	//WiatForしない場合には先に閉じてもOK
+	if (m_hthread && (m_hthread != INVALID_HANDLE_VALUE)) {
+		CloseHandle(m_hthread);
+	}
+
+	return 0;
+
+}
+
+unsigned __stdcall CBoneUpdateMatrix::ThreadFunc_UpdateMatrixCaller(LPVOID lpThreadParam)
+{
+	if (!lpThreadParam) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CBoneUpdateMatrix* curcontext = (CBoneUpdateMatrix*)lpThreadParam;
+	if (curcontext) {
+		curcontext->ThreadFunc_UpdateMatrix();
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+}
+int CBoneUpdateMatrix::ThreadFunc_UpdateMatrix()
+{
+
+	while (InterlockedAdd(&m_exit_state, 0) != 1) {
+
+		if (g_HighRpmMode == true) {
+
+			//###########################
+			// 高回転モード　: High rpm
+			//###########################
+
+			if (InterlockedAdd(&m_start_state, 0) == 1) {
+				EnterCriticalSection(&m_CritSection_UpdateMatrix);
+				if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+					int bonecount;
+					for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+						CBone* curbone = m_bonelist[bonecount];
+						if (curbone) {
+							bool callingbythread = true;
+							curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+						}
+					}
+				}
+				InterlockedExchange(&m_start_state, 0L);
+				LeaveCriticalSection(&m_CritSection_UpdateMatrix);
+			}
+			else {
+				//__nop();
+				Sleep(0);
+			}
+
+		}
+		else {
+
+			//############################
+			// eco モード
+			//############################
+
+			DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
+			ResetEvent(m_hEvent);
+			switch (dwWaitResult)
+			{
+				// Event object was signaled
+			case WAIT_OBJECT_0:
+			{
+				EnterCriticalSection(&m_CritSection_UpdateMatrix);
+				if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+
+					int bonecount;
+					for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+						CBone* curbone = m_bonelist[bonecount];
+						if (curbone) {
+							bool callingbythread = true;
+							curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+						}
+					}
+				}
+
+				InterlockedExchange(&m_start_state, 0L);
+				LeaveCriticalSection(&m_CritSection_UpdateMatrix);
+
+			}
+			break;
+
+			// An error occurred
+			default:
+				//printf("Wait error (%d)\n", GetLastError());
+				//return 0;
+				break;
+			}
+		}
+	}
+
+
+
+	return 0;
+}
+
+
+int CBoneUpdateMatrix::ClearBoneList()
+{
+	m_bonenum = 0;
+	ZeroMemory(m_bonelist, sizeof(CBone*) * MAXBONEUPDATE);
+
+	return 0;
+}
+int CBoneUpdateMatrix::SetBoneList(int srcindex, CBone* srcbone)
+{
+	if ((srcindex < 0) || (srcindex >= MAXBONEUPDATE)) {
+		_ASSERT(0);
+		return -1;
+	}
+
+	if (srcindex != m_bonenum) {
+		_ASSERT(0);
+		return -1;
+	}
+
+	m_bonelist[srcindex] = srcbone;
+
+	m_bonenum++;
+
+	return m_bonenum;
+}
+
+bool CBoneUpdateMatrix::IsFinished()
+{
+	if (InterlockedAdd(&m_start_state, 0) == 1) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+void CBoneUpdateMatrix::UpdateMatrix(int srcmotid, double srcframe, ChaMatrix* srcwmat, ChaMatrix* srcvpmat)
+{
+
+	//####################################################################
+	//## g_limitdegflag == 1　の場合にはローカルの計算だけ並列化
+	//####################################################################
+
+	EnterCriticalSection(&m_CritSection_UpdateMatrix);
+	motid = srcmotid;
+	frame = srcframe;
+	wmat = *srcwmat;
+	vpmat = *srcvpmat;
+	LeaveCriticalSection(&m_CritSection_UpdateMatrix);
+	InterlockedExchange(&m_start_state, 1L);
+	SetEvent(m_hEvent);
+
+
+}
+
 
 

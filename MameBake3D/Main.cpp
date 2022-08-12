@@ -1266,7 +1266,8 @@ CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 //CDXUTCheckBox* s_SlerpOffCheckBox = 0;
-CDXUTCheckBox* s_AbsIKCheckBox = 0;
+//CDXUTCheckBox* s_AbsIKCheckBox = 0;
+CDXUTCheckBox* s_HighRpmCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_RigidMarkCheckBox = 0;
 //CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
@@ -1299,7 +1300,8 @@ static CDXUTControl* s_ui_slirefpos = 0;
 static CDXUTControl* s_ui_slirefmult = 0;
 static CDXUTControl* s_ui_applytotheend = 0;
 static CDXUTControl* s_ui_slerpoff = 0;
-static CDXUTControl* s_ui_absikon = 0;
+//static CDXUTControl* s_ui_absikon = 0;
+static CDXUTControl* s_ui_highrpmon = 0;
 
 static CDXUTControl* s_ui_texbrushrepeats = 0;
 static CDXUTControl* s_ui_brushrepeats = 0;
@@ -1527,6 +1529,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_SL_REFMULT				76
 
 #define IDC_WALLSCRAPINGIK			77
+#define IDC_HIGHRPM					78
 
 
 
@@ -2519,7 +2522,6 @@ int CheckResolution()
 
 	}
 
-
 	return 0;
 }
 
@@ -2537,6 +2539,8 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+
+	g_HighRpmMode = false;
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
@@ -2787,7 +2791,8 @@ void InitApp()
 	//s_LightCheckBox = 0;
 	s_ApplyEndCheckBox = 0;
 	//s_SlerpOffCheckBox = 0;
-	s_AbsIKCheckBox = 0;
+	//s_AbsIKCheckBox = 0;
+	s_HighRpmCheckBox = 0;
 	s_BoneMarkCheckBox = 0;
 	s_RigidMarkCheckBox = 0;
 	//s_PseudoLocalCheckBox = 0;
@@ -2818,7 +2823,8 @@ void InitApp()
 	s_ui_slirefmult = 0;
 	s_ui_applytotheend = 0;
 	s_ui_slerpoff = 0;
-	s_ui_absikon = 0;
+	//s_ui_absikon = 0;
+	s_ui_highrpmon = 0;
 	s_ui_texbrushrepeats = 0;
 	s_ui_brushrepeats = 0;
 	s_ui_brushmirroru = 0;
@@ -6889,7 +6895,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_SLERP_OFF:
 			RollbackCurBoneNo();
 			break;
-		case IDC_ABS_IK:
+		//case IDC_ABS_IK:
+		case IDC_HIGHRPM:
 			RollbackCurBoneNo();
 			break;
 		case IDC_PSEUDOLOCAL:
@@ -18419,8 +18426,11 @@ int OnFrameUtCheckBox()
 {
 	//g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
 	//g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
-	if (s_AbsIKCheckBox) {
-		g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
+	//if (s_AbsIKCheckBox) {
+	//	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
+	//}
+	if (s_HighRpmCheckBox) {
+		g_HighRpmMode = (int)s_HighRpmCheckBox->GetChecked();
 	}
 	if (s_BoneMarkCheckBox) {
 		g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
@@ -19970,36 +19980,42 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 
 	//normal preview start
 	if (s_calclimitedwmState == 2) {
-		if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
-			DispProgressCalcLimitedWM();
-		}
-		else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
+
+		//2022/08/12 リアルタイム計算に変更
+
+		//if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
+		//	DispProgressCalcLimitedWM();
+		//}
+		//else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
 			s_calclimitedwmState = 0;
 			g_previewFlag = 1;//!!!!!!
 			InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
-		}
+		//}
 		*psavetime = curtime;
 	}
 	if (s_calclimitedwmState == 1) {
 		s_calclimitedwmState = 2;
-		CalcLimitedWorldMat();
+		//CalcLimitedWorldMat();//2022/08/12 リアルタイム計算に変更
 	}
 
 	//preview to backword
 	if (s_calclimitedwmState == 22) {
-		if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
-			DispProgressCalcLimitedWM();
-		}
-		else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
+
+		//2022/08/12 リアルタイム計算に変更
+
+		//if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
+		//	DispProgressCalcLimitedWM();
+		//}
+		//else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
 			s_calclimitedwmState = 0;
 			g_previewFlag = -1;//!!!!!
 			InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
-		}
+		//}
 		*psavetime = curtime;
 	}
 	if (s_calclimitedwmState == 11) {
 		s_calclimitedwmState = 22;
-		CalcLimitedWorldMat();
+		//CalcLimitedWorldMat();//2022/08/12 リアルタイム計算に変更
 	}
 
 
@@ -20013,22 +20029,25 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 		s_calclimitedwmState++;
 	}
 	if(s_calclimitedwmState == 102){
-		if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
-			DispProgressCalcLimitedWM();
-		}
-		else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
+
+		//2022/08/12 リアルタイム計算に変更
+
+		//if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
+		//	DispProgressCalcLimitedWM();
+		//}
+		//else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
 			s_calclimitedwmState = 103;
 			InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
-		}
+		//}
 	}
 	if (s_calclimitedwmState == 101) {
 		s_calclimitedwmState = 102;
-		CalcLimitedWorldMat();
+		//CalcLimitedWorldMat();//2022/08/12 リアルタイム計算に変更
 		*psavetime = curtime;
 	}
 	if (s_calclimitedwmState == 1001) {
 		s_calclimitedwmState = 102;
-		CalcLimitedWorldMat();
+		//CalcLimitedWorldMat();//2022/08/12 リアルタイム計算に変更
 		g_btsimurecflag = true;//rec flag
 		*psavetime = curtime;
 	}
@@ -20706,11 +20725,18 @@ int CreateUtDialog()
 	_ASSERT(s_ui_limiteul);
 	s_dsutgui1.push_back(s_ui_limiteul);
 	s_dsutguiid1.push_back(IDC_LIMITDEG);
-	g_SampleUI.AddCheckBox(IDC_ABS_IK, L"AbsIKOn", startx, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
-	s_ui_absikon = g_SampleUI.GetControl(IDC_ABS_IK);
-	_ASSERT(s_ui_absikon);
-	s_dsutgui1.push_back(s_ui_absikon);
-	s_dsutguiid1.push_back(IDC_ABS_IK);
+	//g_SampleUI.AddCheckBox(IDC_ABS_IK, L"AbsIKOn", startx, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
+	//s_ui_absikon = g_SampleUI.GetControl(IDC_ABS_IK);
+	//_ASSERT(s_ui_absikon);
+	//s_dsutgui1.push_back(s_ui_absikon);
+	//s_dsutguiid1.push_back(IDC_ABS_IK);
+	g_SampleUI.AddCheckBox(IDC_HIGHRPM, L"high rpm", startx, iY += addh, checkboxxlen, 16, false, 0U, false, &s_HighRpmCheckBox);
+	s_ui_highrpmon = g_SampleUI.GetControl(IDC_HIGHRPM);
+	_ASSERT(s_ui_highrpmon);
+	s_dsutgui1.push_back(s_ui_highrpmon);
+	s_dsutguiid1.push_back(IDC_HIGHRPM);
+
+
 
 //################
 //utguikind == 2
@@ -26340,8 +26366,11 @@ void GUISetVisible_Left2nd()
 	if (s_ui_speed) {
 		s_ui_speed->SetVisible(nextvisible);
 	}
-	if (s_ui_absikon) {
-		s_ui_absikon->SetVisible(nextvisible);
+	//if (s_ui_absikon) {
+	//	s_ui_absikon->SetVisible(nextvisible);
+	//}
+	if (s_ui_highrpmon) {
+		s_ui_highrpmon->SetVisible(nextvisible);
 	}
 
 	s_spguisw[SPGUISW_LEFT2ND].state = nextvisible;

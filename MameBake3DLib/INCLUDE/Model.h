@@ -27,6 +27,7 @@ class CMQOMaterial;
 class CMQOObject;
 class CMQOFace;
 class CBone;
+class CBoneUpdateMatrix;
 class CMySprite;
 class CMotionPoint;
 class CQuaternion;
@@ -74,6 +75,10 @@ typedef struct tag_physikrec
 }PHYSIKREC;
 
 #define MAXPHYSIKRECCNT		(60 * 60)
+#define MAXUPDATEMATRIXTHREAD 4
+//#define MAXUPDATEMATRIXTHREAD 12
+//#define MAXUPDATEMATRIXTHREAD 2
+//#define MAXUPDATEMATRIXTHREAD 8
 
 class CModel
 {
@@ -234,6 +239,9 @@ public:
 	int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
 
+	void WaitUpdateMatrixFinished();
+	void CalcWorldMatFromEulReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+
 /**
  * @fn
  * SetShaderConst
@@ -371,7 +379,8 @@ public:
 	int DestroyPhysicsPosConstraintUpper(CBone* srcbone);
 	int CreatePhysicsPosConstraintLower(CBone* srcbone);
 	int DestroyPhysicsPosConstraintLower(CBone* srcbone);
-	
+
+
 	int Mass0_All(bool setflag);
 	int Mass0_Upper(bool setflag, CBone* srcbone);
 	int Mass0_Lower(bool setflag, CBone* srcbone);
@@ -684,6 +693,10 @@ private:
 	int DestroyObject();
 	int DestroyAncObj();
 	int DestroyAllMotionInfo();
+	
+	int CreateBoneUpdateMatrix();
+	int DestroyBoneUpdateMatrix();
+
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
@@ -1249,6 +1262,11 @@ private:
 	CBone* m_topbone;//一番親のボーン。
 	CBtObject* m_topbt;//一番親のbullet剛体オブジェクト。
 	//float m_btgscale;//bulletの重力に掛け算するスケール。--> m_rigideleminfoのbtgscaleに移動。
+
+
+	CBoneUpdateMatrix* m_boneupdatematrix;
+
+
 
 	map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。

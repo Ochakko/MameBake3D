@@ -74,6 +74,12 @@
 #include <DXUT.h>
 #include <io.h>
 
+
+//for __nop()
+#include <intrin.h>
+
+
+
 ////######################################
 //// Custom stream 
 //
@@ -450,6 +456,9 @@ int CModel::InitParams()
 	m_physikrec.clear();
 	m_phyikrectime = 0.0;
 
+	m_bonelist.clear();
+	m_boneupdatematrix = 0;
+
 	ZeroMemory(m_fbxfullname, sizeof(WCHAR) * MAX_PATH);
 	m_useegpfile = false;
 
@@ -532,10 +541,87 @@ int CModel::DestroyObjs()
 
 	DestroyBtObject();
 
+	DestroyBoneUpdateMatrix();
+
+
 	InitParams();
 
 	return 0;
 }
+
+int CModel::CreateBoneUpdateMatrix()
+{
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_boneupdatematrix = new CBoneUpdateMatrix[MAXUPDATEMATRIXTHREAD];
+	if (!m_boneupdatematrix) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < MAXUPDATEMATRIXTHREAD; createno++) {
+		CBoneUpdateMatrix* curupdate = m_boneupdatematrix + createno;
+		curupdate->ClearBoneList();
+		curupdate->CreateThread();
+	}
+
+
+
+	int threadcount = 0;
+	int befthreadcount = 0;
+	int bonenointhread = 0;
+	int bonecount;
+	int bonenum = m_bonelist.size();
+	int maxbonenuminthread = bonenum / MAXUPDATEMATRIXTHREAD + 1;
+
+
+
+	for (bonecount = 0; bonecount < bonenum; bonecount++) {
+		CBone* curbone = m_bonelist[bonecount];
+		if (curbone) {
+			CBoneUpdateMatrix* curupdate = m_boneupdatematrix + threadcount;
+
+			curupdate->SetBoneList(bonenointhread, curbone);
+
+			//threadcount++;
+			//threadcount = (threadcount % MAXUPDATEMATRIXTHREAD);
+			//if (threadcount == 0) {
+			//	bonenointhread++;
+			//}
+
+
+			threadcount = bonecount / maxbonenuminthread;
+			
+			if (threadcount == befthreadcount) {
+				bonenointhread++;
+			}
+			else {
+				bonenointhread = 0;
+			}
+
+			befthreadcount = threadcount;
+		}
+	}
+
+	return 0;
+}
+
+
+
+int CModel::DestroyBoneUpdateMatrix()
+{
+
+	if (m_boneupdatematrix) {
+		delete[] m_boneupdatematrix;
+	}
+
+	return 0;
+}
+
 
 int CModel::DestroyFBXSDK()
 {
@@ -738,7 +824,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 		wcscpy_s( m_filename, MAX_PATH, fullname );
 	}
 
-
+	DestroyBoneUpdateMatrix();
 	DestroyMaterial();
 	DestroyObject();
 
@@ -883,6 +969,11 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	//CreateExtendBoneReq(m_topbone);
 
 _ASSERT(m_bonelist[0]);
+
+
+	CreateBoneUpdateMatrix();
+
+
 
 	CreateFBXMeshReq( pRootNode );
 
@@ -1603,6 +1694,55 @@ void CModel::Motion2BtReq( CBtObject* srcbto )
 	}
 }
 
+void CModel::WaitUpdateMatrixFinished()
+{
+	if (m_boneupdatematrix != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < MAXUPDATEMATRIXTHREAD; updatecount++) {
+				CBoneUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == MAXUPDATEMATRIXTHREAD) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
+}
+
+void CModel::CalcWorldMatFromEulReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
+{
+	if (srcbone) {
+
+
+		srcbone->CalcWorldMatFromEulForThread(srcmotid, srcframe, wmat, vpmat);
+
+
+		if (srcbone->GetBrother()) {
+			CalcWorldMatFromEulReq(srcbone->GetBrother(), srcmotid, srcframe, wmat, vpmat);
+		}
+		if (srcbone->GetChild()) {
+			CalcWorldMatFromEulReq(srcbone->GetChild(), srcmotid, srcframe, wmat, vpmat);
+		}
+	}
+}
+
+
 int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 {
 	m_matWorld = *wmat;
@@ -1620,13 +1760,35 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	int curmotid = m_curmotinfo->motid;
 	double curframe = m_curmotinfo->curframe;
 
-	map<int, CBone*>::iterator itrbone;
-	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
-		CBone* curbone = itrbone->second;
-		if( curbone ){
-			curbone->UpdateMatrix( curmotid, curframe, wmat, vpmat );
+
+	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (MAXUPDATEMATRIXTHREAD * 4))) {
+		int updatecount;
+		for (updatecount = 0; updatecount < MAXUPDATEMATRIXTHREAD; updatecount++) {
+			CBoneUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
+			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
+		}
+
+		WaitUpdateMatrixFinished();
+
+		if (g_limitdegflag == 1) {
+			CalcWorldMatFromEulReq(m_topbone, curmotid, curframe, wmat, vpmat);
 		}
 	}
+	else {
+		map<int, CBone*>::iterator itrbone;
+		for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
+			CBone* curbone = itrbone->second;
+			if( curbone ){
+				curbone->UpdateMatrix( curmotid, curframe, wmat, vpmat );
+			}
+		}
+	}
+
+
+
+
+
+
 
 	//if (m_topbone) {
 	//	m_topbone->RotQAddLimitQAll(curmotid, curframe);

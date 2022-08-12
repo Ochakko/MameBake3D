@@ -63,6 +63,8 @@ float g_DiffuseFactorAtSaving = 1.0f;
 float g_SpecularFactorAtSaving = 1.0f;
 float g_EmissiveFactorAtSaving = 1.0f;
 
+bool g_HighRpmMode = false;
+
 int g_usephysik = 0;
 int g_ClearColorIndex = 0;
 float g_ClearColor[BGCOL_MAX][4] = {
@@ -230,6 +232,8 @@ extern float g_AmbientFactorAtSaving;
 extern float g_DiffuseFactorAtSaving;
 extern float g_SpecularFactorAtSaving;
 extern float g_EmissiveFactorAtSaving;
+
+extern bool g_HighRpmMode;
 
 extern int g_usephysik;
 extern int g_ClearColorIndex;

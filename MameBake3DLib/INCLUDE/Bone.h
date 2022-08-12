@@ -22,13 +22,56 @@
 
 
 #define BONEPOOLBLKLEN	256
-
+#define MAXBONEUPDATE	256
 
 class CMQOFace;
 class CMotionPoint;
 class CRigidElem;
 class CBtObject;
 class CModel;
+
+
+
+
+class CBone;
+class CBoneUpdateMatrix
+{
+public:
+	CBoneUpdateMatrix();
+	~CBoneUpdateMatrix();
+
+	int CreateThread();
+	int ClearBoneList();
+	int SetBoneList(int srcindex, CBone* srcbone);
+	void UpdateMatrix(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	bool IsFinished();
+
+private:
+	static unsigned __stdcall ThreadFunc_UpdateMatrixCaller(LPVOID lpThreadParam);
+	int ThreadFunc_UpdateMatrix();
+
+
+private:
+	CRITICAL_SECTION m_CritSection_UpdateMatrix;
+	HANDLE m_hEvent; //手動リセットイベント
+
+	HANDLE m_hthread;
+	LONG m_exit_state;
+	LONG m_start_state;
+
+	int m_bonenum;
+	CBone* m_bonelist[MAXBONEUPDATE];
+
+	int motid;
+	double frame;
+	ChaMatrix wmat;
+	ChaMatrix vpmat;
+};
+
+
+
+
+
 
 class CBone
 {
@@ -93,7 +136,7 @@ public:
  * @return 成功したら０。
  * @detail 指定モーションの指定時間の姿勢を計算する。グローバルな姿勢の計算である。
  */
-	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
+	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false );
 
 	int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
 
@@ -125,7 +168,7 @@ public:
  * @return 成功したら０。
  */
 	int CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr );
-	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0);
+	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, bool callingbythread = false);
 
 /**
  * @fn
@@ -381,6 +424,7 @@ public:
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
 	int SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul);
 	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 befeul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
+	int CalcWorldMatFromEulForThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
@@ -860,7 +904,7 @@ public: //accesser
 	};
 
 	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
-	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0);
+	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, bool callingbythread = false);
 	ChaMatrix GetCurrentLimitedWorldMat();
 
 
@@ -1133,6 +1177,20 @@ public: //accesser
 		m_firstGlobalSRT = srcval;
 	}
 
+	void SetTempLocalEul(ChaVector3 srcorgeul, ChaVector3 srcneweul)
+	{
+		m_temporgeul = srcorgeul;
+		m_tempneweul = srcneweul;
+	}
+	void GetTempLocalEul(ChaVector3* dstorgeul, ChaVector3* dstneweul)
+	{
+		if (!dstorgeul || !dstneweul) {
+			return;
+		}
+		*dstorgeul = m_temporgeul;
+		*dstneweul = m_tempneweul;
+	}
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1217,7 +1275,6 @@ private:
 	ChaMatrix m_befbtmat;
 	int m_setbtflag;
 
-
 	ChaVector3 m_firstframebonepos;
 
 	ANGLELIMIT m_anglelimit;
@@ -1259,6 +1316,10 @@ private:
 	bool m_extendflag;
 
 	double m_befupdatetime;
+
+
+	ChaVector3 m_temporgeul;//制限角度有り、並列化の際の一時置き場
+	ChaVector3 m_tempneweul;//制限角度有り、並列化の際の一時置き場
 
 
 	CBone* m_parent;
