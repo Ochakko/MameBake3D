@@ -75,10 +75,16 @@ typedef struct tag_physikrec
 }PHYSIKREC;
 
 #define MAXPHYSIKRECCNT		(60 * 60)
+
+//########################################
+//UpdateMatrix用のスレッドの数
+//最大値であってカレントの設定値ではない
+//########################################
 #define MAXUPDATEMATRIXTHREAD 4
 //#define MAXUPDATEMATRIXTHREAD 12
 //#define MAXUPDATEMATRIXTHREAD 2
 //#define MAXUPDATEMATRIXTHREAD 8
+
 
 class CModel
 {
@@ -681,6 +687,8 @@ public:
 
 	bool ChkBoneHasRig(CBone* srcbone);
 
+	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreads変更時にも呼ぶ
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -694,7 +702,7 @@ private:
 	int DestroyAncObj();
 	int DestroyAllMotionInfo();
 	
-	int CreateBoneUpdateMatrix();
+	//int CreateBoneUpdateMatrix();//publicへ移動
 	int DestroyBoneUpdateMatrix();
 
 

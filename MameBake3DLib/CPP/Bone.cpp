@@ -7621,6 +7621,7 @@ CBoneUpdateMatrix::~CBoneUpdateMatrix()
 	ClearBoneList();
 	if (m_hEvent != NULL) {
 		CloseHandle(m_hEvent);
+		m_hEvent = NULL;
 	}
 }
 

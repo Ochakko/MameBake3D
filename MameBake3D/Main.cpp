@@ -68,6 +68,30 @@ PseudoLocalIKは常にオンになります
 */
 
 
+/*
+*
+* 2022/08/13
+
+UpdateMatrixをマルチスレッド化しました
+
+3Dウインドウに新たにhigh rpmチェックボックスとUpdateMatrixThreadsスライダーが加わりました
+high rpmチェックボックスとUpdateMatrixThreadsスライダーはペアで使います。
+
+UpdateMatrixThreadsスライダーはUpdateMatrix計算時のスレッドの数を指定するためのもので１から４まであります
+スレッドの数は１モデルあたりのスレッド数です
+
+high rpmはスレッドを高回転させるかどうかを指定します
+スレッド数を増やすだけでは表示速度は速くならないことが多い
+スレッド数を適切に増やしてhigh rpmをオンにすると高速化することが多い
+高速化する場合にはその分CPUの稼働率は高くなります
+
+現時点における課題として
+制限角度(LimitEul)をオンにした場合の最適化が未着手なのでUpdateMatrixThreadsとhigh rpmで遅くなることが多いこと
+
+*/
+
+
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -1042,6 +1066,7 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static bool s_filterFlag = false;
+static bool s_changeupdatethreadsFlag = false;
 static int s_interpolateState = 0;
 
 static bool s_firstkeyFlag = false;
@@ -1313,6 +1338,8 @@ static CDXUTControl* s_ui_ifmirrorvdiv2 = 0;
 //Left 2nd
 static CDXUTControl* s_ui_texthreadnum = 0;
 static CDXUTControl* s_ui_slthreadnum = 0;
+static CDXUTControl* s_ui_umthreads = 0;
+static CDXUTControl* s_ui_slumthreads = 0;
 //static CDXUTControl* s_ui_pseudolocal = 0;
 static CDXUTControl* s_ui_wallscrapingik = 0;
 static CDXUTControl* s_ui_limiteul = 0;
@@ -1530,6 +1557,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 #define IDC_WALLSCRAPINGIK			77
 #define IDC_HIGHRPM					78
+#define IDC_SL_UMTHREADS			79
+#define IDC_STATIC_UMTHREADS		80
 
 
 
@@ -1940,6 +1969,7 @@ static void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename);
 static bool FindAtTheLast(std::wstring const& strsource, std::wstring const& strpat);
 
 
+static int ChangeUpdateMatrixThreads();
 
 
 static std::wstring ReplaceString
@@ -2541,6 +2571,7 @@ void InitApp()
 
 
 	g_HighRpmMode = false;
+	g_UpdateMatrixThreads = 2;
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
@@ -2681,7 +2712,7 @@ void InitApp()
 	s_timelineshowposFlag = false;
 	s_prevrangeFlag = false;
 	s_nextrangeFlag = false;
-
+	s_changeupdatethreadsFlag = false;
 	s_calclimitedwmState = 0;
 
 	s_temppath[0] = 0L;
@@ -2834,6 +2865,8 @@ void InitApp()
 	//Left 2nd
 	s_ui_texthreadnum = 0;
 	s_ui_slthreadnum = 0;
+	s_ui_umthreads = 0;
+	s_ui_slumthreads = 0;
 	//s_ui_pseudolocal = 0;
 	s_ui_wallscrapingik = 0;
 	s_ui_limiteul = 0;
@@ -4018,6 +4051,195 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		g_pDSStateZCmpAlways = 0;
 	}
 
+
+
+	//#######################################################################
+	// UTDXDialogのデストラクタで　RemoveAllControllsが呼ばれてdeleteされる
+	// ここでdeleteしてしまうと、RemoveAllControllsでエラーになる
+	// コメントアウトする
+	//#######################################################################
+	//if (s_ui_lightscale) {
+	//	delete s_ui_lightscale;
+	//	s_ui_lightscale = 0;
+	//}
+	//if (s_ui_dispbone) {
+	//	delete s_ui_dispbone;
+	//	s_ui_dispbone = 0;
+	//}
+	//if (s_ui_disprigid) {
+	//	delete s_ui_disprigid;
+	//	s_ui_disprigid = 0;
+	//}
+	//if (s_ui_boneaxis) {
+	//	delete s_ui_boneaxis;
+	//	s_ui_boneaxis = 0;
+	//}
+	//if (s_ui_bone) {
+	//	delete s_ui_bone;
+	//	s_ui_bone = 0;
+	//}
+	//if (s_ui_locktosel) {
+	//	delete s_ui_locktosel;
+	//	s_ui_locktosel = 0;
+	//}
+	//if (s_ui_iklevel) {
+	//	delete s_ui_iklevel;
+	//	s_ui_iklevel = 0;
+	//}
+	//if (s_ui_editmode) {
+	//	delete s_ui_editmode;
+	//	s_ui_editmode = 0;
+	//}
+	//if (s_ui_texapplyrate) {
+	//	delete s_ui_texapplyrate;
+	//	s_ui_texapplyrate = 0;
+	//}
+	//if (s_ui_slapplyrate) {
+	//	delete s_ui_slapplyrate;
+	//	s_ui_slapplyrate = 0;
+	//}
+	//if (s_ui_motionbrush) {
+	//	delete s_ui_motionbrush;
+	//	s_ui_motionbrush = 0;
+	//}
+	//if (s_ui_texikorder) {
+	//	delete s_ui_texikorder;
+	//	s_ui_texikorder = 0;
+	//}
+	//if (s_ui_slikorder) {
+	//	delete s_ui_slikorder;
+	//	s_ui_slikorder = 0;
+	//}
+	//if (s_ui_texref) {
+	//	delete s_ui_texref;
+	//	s_ui_texref = 0;
+	//}
+	//if (s_ui_slirefpos) {
+	//	delete s_ui_slirefpos;
+	//	s_ui_slirefpos = 0;
+	//}
+	//if (s_ui_slirefmult) {
+	//	delete s_ui_slirefmult;
+	//	s_ui_slirefmult = 0;
+	//}
+	//if (s_ui_applytotheend) {
+	//	delete s_ui_applytotheend;
+	//	s_ui_applytotheend = 0;
+	//}
+	//if (s_ui_slerpoff) {
+	//	delete s_ui_slerpoff;
+	//	s_ui_slerpoff = 0;
+	//}
+	//if (s_ui_highrpmon) {
+	//	delete s_ui_highrpmon;
+	//	s_ui_highrpmon = 0;
+	//}
+	//if (s_ui_texbrushrepeats) {
+	//	delete s_ui_texbrushrepeats;
+	//	s_ui_texbrushrepeats = 0;
+	//}
+	//if (s_ui_brushrepeats) {
+	//	delete s_ui_brushrepeats;
+	//	s_ui_brushrepeats = 0;
+	//}
+	//if (s_ui_brushmirroru) {
+	//	delete s_ui_brushmirroru;
+	//	s_ui_brushmirroru = 0;
+	//}
+	//if (s_ui_brushmirrorv) {
+	//	delete s_ui_brushmirrorv;
+	//	s_ui_brushmirrorv = 0;
+	//}
+	//if (s_ui_ifmirrorvdiv2) {
+	//	delete s_ui_ifmirrorvdiv2;
+	//	s_ui_ifmirrorvdiv2 = 0;
+	//}
+	////Left 2nd
+	//if (s_ui_texthreadnum) {
+	//	delete s_ui_texthreadnum;
+	//	s_ui_texthreadnum = 0;
+	//}
+	//if (s_ui_slthreadnum) {
+	//	delete s_ui_slthreadnum;
+	//	s_ui_slthreadnum = 0;
+	//}
+	//if (s_ui_umthreads) {
+	//	delete s_ui_umthreads;
+	//	s_ui_umthreads = 0;
+	//}
+	//if (s_ui_slumthreads) {
+	//	delete s_ui_slumthreads;
+	//	s_ui_slumthreads = 0;
+	//}
+	//if (s_ui_wallscrapingik) {
+	//	delete s_ui_wallscrapingik;
+	//	s_ui_wallscrapingik = 0;
+	//}
+	//if (s_ui_limiteul) {
+	//	delete s_ui_limiteul;
+	//	s_ui_limiteul = 0;
+	//}
+	//if (s_ui_texspeed) {
+	//	delete s_ui_texspeed;
+	//	s_ui_texspeed = 0;
+	//}
+	//if (s_ui_speed) {
+	//	delete s_ui_speed;
+	//	s_ui_speed = 0;
+	//}
+	////Bullet
+	//if (s_ui_btstart) {
+	//	delete s_ui_btstart;
+	//	s_ui_btstart = 0;
+	//}
+	//if (s_ui_btrecstart) {
+	//	delete s_ui_btrecstart;
+	//	s_ui_btrecstart = 0;
+	//}
+	//if (s_ui_stopbt) {
+	//	delete s_ui_stopbt;
+	//	s_ui_stopbt = 0;
+	//}
+	//if (s_ui_texbtcalccnt) {
+	//	delete s_ui_texbtcalccnt;
+	//	s_ui_texbtcalccnt = 0;
+	//}
+	//if (s_ui_btcalccnt) {
+	//	delete s_ui_btcalccnt;
+	//	s_ui_btcalccnt = 0;
+	//}
+	//if (s_ui_texerp) {
+	//	delete s_ui_texerp;
+	//	s_ui_texerp = 0;
+	//}
+	//if (s_ui_erp) {
+	//	delete s_ui_erp;
+	//	s_ui_erp = 0;
+	//}
+	////PhysicsIK
+	//if (s_ui_texphysmv) {
+	//	delete s_ui_texphysmv;
+	//	s_ui_texphysmv = 0;
+	//}
+	//if (s_ui_slphysmv) {
+	//	delete s_ui_slphysmv;
+	//	s_ui_slphysmv = 0;
+	//}
+	//if (s_ui_physrotstart) {
+	//	delete s_ui_physrotstart;
+	//	s_ui_physrotstart = 0;
+	//}
+	//if (s_ui_physmvstart) {
+	//	delete s_ui_physmvstart;
+	//	s_ui_physmvstart = 0;
+	//}
+	//if (s_ui_physikstop) {
+	//	delete s_ui_physikstop;
+	//	s_ui_physikstop = 0;
+	//}
+
+
+
 	g_DialogResourceManager.OnD3D11DestroyDevice();
 	//g_SettingsDlg.OnD3D11DestroyDevice();
 	CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();
@@ -4933,6 +5155,8 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		WCHAR sz[100];
 		swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
 		g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
+		swprintf_s(sz, 100, L"UpdateThreads:%d", g_UpdateMatrixThreads);
+		g_SampleUI.GetStatic(IDC_STATIC_UMTHREADS)->SetText(sz);
 
 
 		if (g_undertrackingRMenu == 0) {
@@ -6716,6 +6940,15 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
 			g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
 			s_bpWorld->setNumThread(g_numthread);
+			break;
+		case IDC_SL_UMTHREADS:
+			RollbackCurBoneNo();
+			g_UpdateMatrixThreads = (int)(g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->GetValue());
+			swprintf_s(sz, 100, L"UpdateThreads:%d", g_UpdateMatrixThreads);
+			g_SampleUI.GetStatic(IDC_STATIC_UMTHREADS)->SetText(sz);
+
+			s_changeupdatethreadsFlag = true;
+
 			break;
 		case IDC_SL_BRUSHREPEATS:
 			RollbackCurBoneNo();
@@ -18462,6 +18695,13 @@ int OnFrameUtCheckBox()
 		g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
 	}
 
+
+	if (s_changeupdatethreadsFlag) {
+		ChangeUpdateMatrixThreads();
+		s_changeupdatethreadsFlag = false;
+	}
+
+
 	return 0;
 }
 
@@ -20772,20 +21012,23 @@ int CreateUtDialog()
 	s_dsutgui2.push_back(s_ui_stopbt);
 	s_dsutguiid2.push_back(IDC_STOP_BT);
 
-	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
+
+	swprintf_s(sz, 100, L"UpdateThreads : %d", g_UpdateMatrixThreads);
 	//g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, ctrlh);
-	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, 18);
-	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
-	_ASSERT(s_ui_texthreadnum);
+	g_SampleUI.AddStatic(IDC_STATIC_UMTHREADS, sz, startx, iY += addh2, ctrlxlen, 18);
+	s_ui_umthreads = g_SampleUI.GetControl(IDC_STATIC_UMTHREADS);
+	_ASSERT(s_ui_umthreads);
 	//g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh2, 100, ctrlh, 1, 4, g_numthread);
-	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += (18 + 2), 100, ctrlh, 1, 4, g_numthread);
-	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
-	_ASSERT(s_ui_slthreadnum);
-	s_dsutgui2.push_back(s_ui_slthreadnum);
-	s_dsutguiid2.push_back(IDC_SL_NUMTHREAD);
+	g_SampleUI.AddSlider(IDC_SL_UMTHREADS, startx, iY += (18 + 2), 100, ctrlh, 1, MAXUPDATEMATRIXTHREAD, g_UpdateMatrixThreads);
+	s_ui_slumthreads = g_SampleUI.GetControl(IDC_SL_UMTHREADS);
+	_ASSERT(s_ui_slumthreads);
+	s_dsutgui1.push_back(s_ui_slumthreads);//s_dsutgui1
+	s_dsutguiid1.push_back(IDC_SL_UMTHREADS);//s_dsutgui1
+	
 
 
-	iY = s_mainheight - 210;
+	//iY = s_mainheight - 210;
+	iY = s_mainheight - 210 - addh;
 	startx = s_mainwidth / 2 - 50 + 130;
 
 	swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
@@ -20812,6 +21055,17 @@ int CreateUtDialog()
 	s_dsutgui2.push_back(s_ui_erp);
 	s_dsutguiid2.push_back(IDC_ERP);
 
+	swprintf_s(sz, 100, L"ThreadNum : %d(%d)", g_numthread, gNumIslands);
+	//g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, ctrlh);
+	g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, startx, iY += addh2, ctrlxlen, 18);
+	s_ui_texthreadnum = g_SampleUI.GetControl(IDC_STATIC_NUMTHREAD);
+	_ASSERT(s_ui_texthreadnum);
+	//g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += addh2, 100, ctrlh, 1, 4, g_numthread);
+	g_SampleUI.AddSlider(IDC_SL_NUMTHREAD, startx, iY += (18 + 2), 100, ctrlh, 1, 4, g_numthread);
+	s_ui_slthreadnum = g_SampleUI.GetControl(IDC_SL_NUMTHREAD);
+	_ASSERT(s_ui_slthreadnum);
+	s_dsutgui2.push_back(s_ui_slthreadnum);
+	s_dsutguiid2.push_back(IDC_SL_NUMTHREAD);
 
 
 //################
@@ -26372,6 +26626,13 @@ void GUISetVisible_Left2nd()
 	if (s_ui_highrpmon) {
 		s_ui_highrpmon->SetVisible(nextvisible);
 	}
+	if (s_ui_umthreads) {
+		s_ui_umthreads->SetVisible(nextvisible);
+	}
+	if (s_ui_slumthreads) {
+		s_ui_slumthreads->SetVisible(nextvisible);
+	}
+
 
 	s_spguisw[SPGUISW_LEFT2ND].state = nextvisible;
 }
@@ -34977,4 +35238,19 @@ int SetShowPosTime()
 
 	return 0;
 }
+
+int ChangeUpdateMatrixThreads()
+{
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel) {
+			curmodel->CreateBoneUpdateMatrix();
+		}
+	}
+
+	return 0;
+}
+
+
 

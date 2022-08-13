@@ -551,19 +551,24 @@ int CModel::DestroyObjs()
 
 int CModel::CreateBoneUpdateMatrix()
 {
+
+	DestroyBoneUpdateMatrix();
+	Sleep(100);
+
+
 	if (m_bonelist[0] == NULL) {
 		_ASSERT(0);
 		return 1;
 	}
 
 
-	m_boneupdatematrix = new CBoneUpdateMatrix[MAXUPDATEMATRIXTHREAD];
+	m_boneupdatematrix = new CBoneUpdateMatrix[g_UpdateMatrixThreads];
 	if (!m_boneupdatematrix) {
 		_ASSERT(0);
 		return 1;
 	}
 	int createno;
-	for (createno = 0; createno < MAXUPDATEMATRIXTHREAD; createno++) {
+	for (createno = 0; createno < g_UpdateMatrixThreads; createno++) {
 		CBoneUpdateMatrix* curupdate = m_boneupdatematrix + createno;
 		curupdate->ClearBoneList();
 		curupdate->CreateThread();
@@ -576,7 +581,7 @@ int CModel::CreateBoneUpdateMatrix()
 	int bonenointhread = 0;
 	int bonecount;
 	int bonenum = m_bonelist.size();
-	int maxbonenuminthread = bonenum / MAXUPDATEMATRIXTHREAD + 1;
+	int maxbonenuminthread = bonenum / g_UpdateMatrixThreads + 1;
 
 
 
@@ -588,7 +593,7 @@ int CModel::CreateBoneUpdateMatrix()
 			curupdate->SetBoneList(bonenointhread, curbone);
 
 			//threadcount++;
-			//threadcount = (threadcount % MAXUPDATEMATRIXTHREAD);
+			//threadcount = (threadcount % g_UpdateMatrixThreads);
 			//if (threadcount == 0) {
 			//	bonenointhread++;
 			//}
@@ -618,6 +623,7 @@ int CModel::DestroyBoneUpdateMatrix()
 	if (m_boneupdatematrix) {
 		delete[] m_boneupdatematrix;
 	}
+	m_boneupdatematrix = 0;
 
 	return 0;
 }
@@ -1702,14 +1708,14 @@ void CModel::WaitUpdateMatrixFinished()
 		while (yetflag == true) {
 			int finishedcount = 0;
 			int updatecount;
-			for (updatecount = 0; updatecount < MAXUPDATEMATRIXTHREAD; updatecount++) {
+			for (updatecount = 0; updatecount < g_UpdateMatrixThreads; updatecount++) {
 				CBoneUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
 				if (curupdate->IsFinished()) {
 					finishedcount++;
 				}
 			}
 
-			if (finishedcount == MAXUPDATEMATRIXTHREAD) {
+			if (finishedcount == g_UpdateMatrixThreads) {
 				yetflag = false;
 				return;
 			}
@@ -1761,9 +1767,9 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	double curframe = m_curmotinfo->curframe;
 
 
-	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (MAXUPDATEMATRIXTHREAD * 4))) {
+	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (g_UpdateMatrixThreads * 4))) {
 		int updatecount;
-		for (updatecount = 0; updatecount < MAXUPDATEMATRIXTHREAD; updatecount++) {
+		for (updatecount = 0; updatecount < g_UpdateMatrixThreads; updatecount++) {
 			CBoneUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
 			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
 		}
