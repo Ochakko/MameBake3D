@@ -241,6 +241,11 @@ typedef struct tag_spsw
 
 static CThreadsUpdateMatrix s_tum;
 
+//#define FPSSAVENUM 100
+#define FPSSAVENUM 60
+static double s_fps100[FPSSAVENUM];
+static int s_fps100index = 0;
+
 static double s_rectime = 0.0;
 static double s_reccnt = 0;
 
@@ -2569,9 +2574,14 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
-
 	g_HighRpmMode = false;
 	g_UpdateMatrixThreads = 2;
+
+	int saveno;
+	for (saveno = 0; saveno < FPSSAVENUM; saveno++) {
+		s_fps100[saveno] = 60.0;
+	}
+	s_fps100index = 0;
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
@@ -5614,6 +5624,20 @@ void RenderText( double fTime )
 		g_calcfps = 100.0;
 	}
 
+	double avrgfps = 0.0;
+	s_fps100[s_fps100index] = g_calcfps;
+	int saveno;
+	for (saveno = 0; saveno < FPSSAVENUM; saveno++) {
+		avrgfps += s_fps100[saveno];
+	}
+	avrgfps /= (double)FPSSAVENUM;
+	s_fps100index++;
+	if (s_fps100index >= FPSSAVENUM) {
+		s_fps100index = 0;
+	}
+
+
+
     // The helper object simply helps keep track of text position, and color
     // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
     // If NULL is passed in as the sprite object, then it will work fine however the 
@@ -5632,7 +5656,8 @@ void RenderText( double fTime )
     g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
     //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
 	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
-	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
+	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
+	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", avrgfps, g_previewFlag, s_mbuttoncnt);
 	if (s_onefps == 1) {
 		g_pTxtHelper->DrawFormattedTextLine(L" ");
 		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
