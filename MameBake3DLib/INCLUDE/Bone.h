@@ -22,7 +22,12 @@
 
 
 #define BONEPOOLBLKLEN	256
-#define MAXBONEUPDATE	256
+
+
+//ÉXÉåÉbÉhÇPÇ¬ÇÃèÍçáÇ‡Ç†ÇÈÇÃÇ≈512Ç‹Ç≈Ç…ÇµÇΩ
+//#define MAXBONEUPDATE	256
+#define MAXBONEUPDATE	512
+
 
 class CMQOFace;
 class CMotionPoint;
@@ -143,7 +148,9 @@ public:
 	int UpdateLimitedWorldMat(int srcmotid, double srcframe);
 	int ClearLimitedWorldMat(int srcmotid, double srcframe);
 
-	
+	//int GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread); // default : callingbythread = false
+	int GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread = false);
+
 /**
  * @fn
  * AddMotionPoint

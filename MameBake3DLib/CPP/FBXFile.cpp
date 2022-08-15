@@ -3324,51 +3324,51 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 
 
 
-	if (pNode) {
-		if (pPose) {
-			int lNodeIndex = pPose->Find(pNode);
-			if (lNodeIndex > -1)
-			{
-				// The bind pose is always a global matrix.
-				// If we have a rest pose, we need to check if it is
-				// stored in global or local space.
-				if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
-				{
-					lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
-				}
-				else
-				{
-					// We have a local matrix, we need to convert it to
-					// a global space matrix.
-					FbxAMatrix lParentGlobalPosition;
+	//if (pNode) {
+	//	if (pPose) {
+	//		int lNodeIndex = pPose->Find(pNode);
+	//		if (lNodeIndex > -1)
+	//		{
+	//			// The bind pose is always a global matrix.
+	//			// If we have a rest pose, we need to check if it is
+	//			// stored in global or local space.
+	//			if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
+	//			{
+	//				lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+	//			}
+	//			else
+	//			{
+	//				// We have a local matrix, we need to convert it to
+	//				// a global space matrix.
+	//				FbxAMatrix lParentGlobalPosition;
 
-					//if (pParentGlobalPosition)
-					if (curbone->GetParent())
-					{
-						lParentGlobalPosition = *ParentGlobalPosition;
-					}
-					else
-					{
-						if (pNode->GetParent())
-						{
-							//time == 0.0だけのキャッシュ無し先行計算
-							bool usecache = false;
-							int dummyframe = 0;
-							lParentGlobalPosition = FbxGetGlobalPosition(usecache, pmodel, pNode->GetScene(), pNode->GetParent(), pTime, dummyframe, pPose);
-						}
-					}
+	//				//if (pParentGlobalPosition)
+	//				if (curbone->GetParent())
+	//				{
+	//					lParentGlobalPosition = *ParentGlobalPosition;
+	//				}
+	//				else
+	//				{
+	//					if (pNode->GetParent())
+	//					{
+	//						//time == 0.0だけのキャッシュ無し先行計算
+	//						bool usecache = false;
+	//						int dummyframe = 0;
+	//						lParentGlobalPosition = FbxGetGlobalPosition(usecache, pmodel, pNode->GetScene(), pNode->GetParent(), pTime, dummyframe, pPose);
+	//					}
+	//				}
 
-					FbxAMatrix lLocalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
-					lGlobalPosition = lParentGlobalPosition * lLocalPosition;
-				}
+	//				FbxAMatrix lLocalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+	//				lGlobalPosition = lParentGlobalPosition * lLocalPosition;
+	//			}
 
-				lPositionFound = true;
-			}
-		}
-	}
+	//			lPositionFound = true;
+	//		}
+	//	}
+	//}
 
-	if (!lPositionFound)
-	{
+	//if (!lPositionFound)
+	//{
 		// There is no pose entry for that node, get the current global position instead.
 
 		// Ideally this would use parent global position and local position to compute the global position.
@@ -3382,7 +3382,7 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
 		}
 
-	}
+	//}
 
 	ChaMatrix nodemat;
 	nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);

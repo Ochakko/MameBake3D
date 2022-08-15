@@ -35,14 +35,14 @@
 #define USE_DIRECT3D11_3
 #endif
 
-// #define DXUT_AUTOLIB to automatically include the libs needed for DXUT 
-#ifdef DXUT_AUTOLIB
-#pragma comment( lib, "comctl32.lib" )
-#pragma comment( lib, "dxguid.lib" )
-#pragma comment( lib, "d3dcompiler.lib" )
-#pragma comment( lib, "ole32.lib" )
-#pragma comment( lib, "uuid.lib" )
-#endif
+//// #define DXUT_AUTOLIB to automatically include the libs needed for DXUT 
+//#ifdef DXUT_AUTOLIB
+//#pragma comment( lib, "comctl32.lib" )
+//#pragma comment( lib, "dxguid.lib" )
+//#pragma comment( lib, "d3dcompiler.lib" )
+//#pragma comment( lib, "ole32.lib" )
+//#pragma comment( lib, "uuid.lib" )
+//#endif
 
 #pragma warning( disable : 4481 )
 
@@ -63,9 +63,9 @@
 #include <stdio.h>
 
 // CRT's memory leak detection
-#if defined(DEBUG) || defined(_DEBUG)
+//#if defined(DEBUG) || defined(_DEBUG)
 #include <crtdbg.h>
-#endif
+//#endif
 
 // Direct3D11 includes
 #include <d3dcommon.h>

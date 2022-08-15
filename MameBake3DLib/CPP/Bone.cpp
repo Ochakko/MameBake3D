@@ -7582,7 +7582,96 @@ int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 }
 
 
+//int CBone::GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread) // default : callingbythread = false
+int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
+{
 
+	//if (curbone && !curbone->GetGetAnimFlag()) {
+	//	curbone->SetGetAnimFlag(1);
+	int bonecount;
+	for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+		CBone* curbone = *(bonelist + bonecount);
+		if (curbone && !curbone->GetGetAnimFlag()) {
+			curbone->SetGetAnimFlag(1);
+		}
+	}
+
+
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble(0.0);
+	FbxTime difftime;
+	difftime.SetSecondDouble(1.0 / 30);
+	double framecnt;
+	//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+	//for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//関数呼び出し時にanimleng - 1している
+
+
+	FbxAMatrix correctscalemat;
+	correctscalemat.SetIdentity();
+	FbxAMatrix currentmat;
+	currentmat.SetIdentity();
+	FbxAMatrix parentmat;
+	parentmat.SetIdentity();
+	//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
+	//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
+	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
+	//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+	//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+	//FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+	//FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+
+
+	for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+
+		for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+			CBone* curbone = *(bonelist + bonecount);
+			FbxNode* pNode = *(nodelist + bonecount);
+			if (curbone && pNode) {
+				FbxAMatrix lGlobalSRT;
+
+				EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+				lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
+				LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+
+				ChaMatrix chaGlobalSRT;
+				chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+
+				////##############
+				////calc localmat
+				////##############
+				ChaMatrix localmat;
+				ChaMatrixIdentity(&localmat);
+				ChaMatrix globalmat;
+				ChaMatrixIdentity(&globalmat);
+
+				CMotionPoint* curmp = 0;
+				int existflag = 0;
+				//curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+				curmp = curbone->GetMotionPoint(motid, framecnt);
+				if (!curmp) {
+					_ASSERT(0);
+					//return 1;
+					curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+				}
+
+				//###############
+				//calc globalmat
+				//###############
+				globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
+				curmp->SetWorldMat(globalmat);//anglelimit無し
+
+			}
+		}
+
+		fbxtime = fbxtime + difftime;
+	}
+
+	Sleep(0);
+
+
+	return 0;
+}
 
 
 //##############################
@@ -7795,14 +7884,19 @@ void CBoneUpdateMatrix::UpdateMatrix(int srcmotid, double srcframe, ChaMatrix* s
 	//## g_limitdegflag == 1　の場合にはローカルの計算だけ並列化
 	//####################################################################
 
-	EnterCriticalSection(&m_CritSection_UpdateMatrix);
-	motid = srcmotid;
-	frame = srcframe;
-	wmat = *srcwmat;
-	vpmat = *srcvpmat;
-	LeaveCriticalSection(&m_CritSection_UpdateMatrix);
-	InterlockedExchange(&m_start_state, 1L);
-	SetEvent(m_hEvent);
+	if (m_bonenum > 0) {
+		EnterCriticalSection(&m_CritSection_UpdateMatrix);
+		motid = srcmotid;
+		frame = srcframe;
+		wmat = *srcwmat;
+		vpmat = *srcvpmat;
+		LeaveCriticalSection(&m_CritSection_UpdateMatrix);
+		InterlockedExchange(&m_start_state, 1L);
+		SetEvent(m_hEvent);
+	}
+	else {
+		InterlockedExchange(&m_start_state, 0L);
+	}
 
 
 }

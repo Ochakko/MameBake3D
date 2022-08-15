@@ -442,12 +442,16 @@ static DWORD s_rigidflag = 0;
 
 CModel::CModel()
 {
+	InitializeCriticalSection(&m_CritSection_Node);
+
 	InitParams();
 	s_alloccnt++;
 	m_modelno = s_alloccnt;
 }
 CModel::~CModel()
 {
+	DeleteCriticalSection(&m_CritSection_Node);
+
 	DestroyObjs();
 }
 int CModel::InitParams()
@@ -458,6 +462,9 @@ int CModel::InitParams()
 
 	m_bonelist.clear();
 	m_boneupdatematrix = 0;
+	m_LoadFbxAnim = 0;
+
+	m_loadbonecount = 0;
 
 	ZeroMemory(m_fbxfullname, sizeof(WCHAR) * MAX_PATH);
 	m_useegpfile = false;
@@ -542,6 +549,7 @@ int CModel::DestroyObjs()
 	DestroyBtObject();
 
 	DestroyBoneUpdateMatrix();
+	DestroyLoadFbxAnim();
 
 
 	InitParams();
@@ -1089,8 +1097,11 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 
 	this->m_tlFunc = tlfunc;//未使用
 
+
 	FbxNode *pRootNode = pscene->GetRootNode();
 	CallF( CreateFBXAnim( pscene, pRootNode, motioncachebatchflag ), return 1 );
+
+
 
 	/*
 	map<int, CBone*>::iterator itrbone;
@@ -4012,6 +4023,11 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 	int animno;
 	for( animno = 0; animno < lAnimStackCount; animno++ ){
+
+
+
+
+
 		// select the base layer from the animation stack
 		//char* animname = mAnimStackNameArray[animno]->Buffer();
 		//MessageBoxA( NULL, animname, "check", MB_OK );
@@ -4024,8 +4040,6 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		
 		////RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
 		//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);//2022/07/28コメントアウト
-
-
 
 
 		FbxAnimLayer * mCurrentAnimLayer;
@@ -4099,7 +4113,31 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 
 		//Local情報からモーションを計算する
-		CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));
+		m_loadbonecount = 0;
+
+		if (animno == 0) {
+			CreateLoadFbxAnim(pScene);
+			CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));//マルチスレッド読み込み準備
+		}
+
+		//マルチスレッド読み込み
+		//if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= (LOADFBXANIMTHREAD * 4))) {
+		if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= 2)) {
+			int loadcount;
+			for (loadcount = 0; loadcount < LOADFBXANIMTHREAD; loadcount++) {
+				CLoadFbxAnim* curload = m_LoadFbxAnim + loadcount;
+				curload->LoadFbxAnim(animno, curmotid, (animleng - 1));
+			}
+
+			WaitLoadFbxAnimFinished();//読み込み終了待ち
+			//SetWorldMatFromLocalMat(curmotid);//並列化出来なかった計算をする
+
+		}
+		else {
+		}
+		if (animno == (lAnimStackCount - 1)) {
+			DestroyLoadFbxAnim();
+		}
 
 
 		//motioncreatebatchflagが立っていた場合ここまで
@@ -4163,8 +4201,33 @@ void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, Fbx
 //			case FbxNodeAttribute::eNURB:
 //			case FbxNodeAttribute::eNURBS_SURFACE:
 			case FbxNodeAttribute::eSkeleton:
-				GetFBXAnim( animno, pScene, pNode, pPose, pAttrib, motid, animleng );     // メッシュを作成
+				{
+					//GetFBXAnim( animno, pNode, motid, animleng );
 
+					if (m_LoadFbxAnim) {
+						//マルチスレッド読み込み準備
+						char bonename2[256];
+						strcpy_s(bonename2, 256, pNode->GetName());
+						TermJointRepeats(bonename2);
+						CBone* curbone = m_bonename[(char*)bonename2];
+						if (curbone) {
+							int threadcount;
+							int bonenointhread;
+							int bonenum;
+							int maxbonenuminthread;
+
+							bonenum = m_bonelist.size();
+							maxbonenuminthread = bonenum / LOADFBXANIMTHREAD + 1;
+							threadcount = m_loadbonecount / maxbonenuminthread;
+							CLoadFbxAnim* curload = m_LoadFbxAnim + threadcount;
+							if (curload) {
+								bonenointhread = curload->GetBoneNum();
+								curload->SetBoneList(bonenointhread, pNode, curbone);
+								m_loadbonecount++;
+							}
+						}
+					}
+				}
 				break;
 			default:
 				break;
@@ -4254,330 +4317,423 @@ void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, Fbx
 //	}
 //}
 
-int CModel::GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng )
+
+//#################################################
+// マルチスレッド化のためにCBoneに移動 2022/08/14
+//#################################################
+
+//int CModel::GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread) // default : callingbythread = false
+//{
+//	//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
+//	char bonename2[256];
+//	//strcpy_s(bonename2, 256, clusterlink->GetName());
+//	strcpy_s(bonename2, 256, pNode->GetName());
+//	TermJointRepeats(bonename2);
+//	CBone* curbone = m_bonename[ (char*)bonename2 ];
+//
+//	WCHAR wname[256]={0L};
+//	ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+//	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 );
+//
+//	if( curbone && !curbone->GetGetAnimFlag() && pNode){
+//		curbone->SetGetAnimFlag( 1 );
+//
+//		int iships = 0;
+//		char* phips = strstr(bonename2, "Hips");
+//		if (phips) {
+//			iships = 1;
+//		}
+//		else {
+//			iships = 0;
+//		}
+//
+//
+//
+//
+//		FbxTime fbxtime;
+//		fbxtime.SetSecondDouble(0.0);
+//		FbxTime difftime;
+//		difftime.SetSecondDouble(1.0 / 30);
+//		double framecnt;
+//		//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+//		for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//関数呼び出し時にanimleng - 1している
+//
+//		//##################################
+//		//calclate motion by local info
+//		//##################################
+//
+//			FbxAMatrix correctscalemat;
+//			correctscalemat.SetIdentity();
+//			FbxAMatrix currentmat;
+//			currentmat.SetIdentity();
+//			FbxAMatrix parentmat;
+//			parentmat.SetIdentity();
+//			//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
+//			//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
+//			//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
+//			const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+//			const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+//			const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+//			FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot);
+//			FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
+//
+//
+//			ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
+//			ChaVector3 chaeul = ChaVector3((float)lR2[0], (float)lR2[1], (float)lR2[2]);
+//			ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1], (float)lS2[2]);
+//			ChaMatrix chaSRT;
+//			chaSRT = ChaMatrixFromFbxAMatrix(lSRT);
+//			ChaMatrix chaGlobalSRT;
+//			chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+//
+//			
+//			//if ((GetHasBindPose() == 0) && (framecnt == 0.0) && (animno == 0)) {
+//			//	//#########################################################################################
+//			//	//2022/07/28-2022/07/29  bindpose無し、0フレームアニメ在りの場合のジョイント位置計算し直し
+//			//	//#########################################################################################
+//
+//			//	//ChaMatrix firstSRT = chascalemat * charotmat * chatramat;
+//			//	ChaMatrix firstSRT = chaSRT;
+//			//	curbone->SetFirstSRT(firstSRT);
+//
+//			//	
+//			//	ChaMatrix globalSRT;
+//			//	ChaMatrix parentglobalSRT;
+//			//	parentglobalSRT = curbone->CalcParentGlobalSRT();
+//			//	globalSRT = firstSRT * parentglobalSRT;
+//			//	curbone->SetFirstGlobalSRT(globalSRT);
+//
+//
+//			//	ChaMatrix newnodemat = curbone->GetNodeMat() * ChaMatrixInv(globalSRT);
+//			//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+//			//	ChaVector3 truefpos;
+//			//	ChaVector3TransformCoord(&truefpos, &zeropos, &newnodemat);
+//
+//
+//			//	FbxAMatrix fbxmat;
+//			//	fbxmat.SetIdentity();
+//			//	fbxmat.SetRow(0, FbxVector4(newnodemat._11, newnodemat._12, newnodemat._13, newnodemat._14));
+//			//	fbxmat.SetRow(1, FbxVector4(newnodemat._21, newnodemat._22, newnodemat._23, newnodemat._24));
+//			//	fbxmat.SetRow(2, FbxVector4(newnodemat._31, newnodemat._32, newnodemat._33, newnodemat._34));
+//			//	fbxmat.SetRow(3, FbxVector4(newnodemat._41, newnodemat._42, newnodemat._43, newnodemat._44));
+//			//	
+//			//	curbone->SetPositionFound(true);//!!!
+//			//	//curbone->SetPositionFound(false);//!!!
+//			//	curbone->SetNodeMat(newnodemat);
+//			//	curbone->SetGlobalPosMat(fbxmat);
+//			//	curbone->SetJointFPos(truefpos);
+//			//	//curbone->SetJointWPos(truefpos);//0frameのアニメ付きジョイント位置を保持するため、ここでは更新しない。
+//			//}
+//
+//
+//
+//
+//
+//			//####################
+//			//calc joint position
+//			//####################
+//			ChaVector3 jointpos;
+//			jointpos = curbone->GetJointFPos();
+//			ChaVector3 parentjointpos;
+//			if (curbone->GetParent()) {
+//				parentjointpos = curbone->GetParent()->GetJointFPos();
+//			}
+//			else {
+//				parentjointpos = ChaVector3(0.0f, 0.0f, 0.0f);
+//			}
+//
+//			//##############
+//			//calc rotation
+//			//##############
+//			CQuaternion chaq;
+//			chaq.SetRotationXYZ(0, chaeul);
+//			ChaMatrix charotmat;
+//			charotmat = chaq.MakeRotMatX();
+//
+//			ChaMatrix befrotmat, aftrotmat;
+//			ChaMatrixTranslation(&befrotmat, -jointpos.x, -jointpos.y, -jointpos.z);
+//			ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
+//
+//
+//
+//			//#################
+//			//calc translation
+//			//#################
+//			ChaMatrix chatramat;
+//			ChaMatrixIdentity(&chatramat);
+//			ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
+//			
+//
+//			//##############
+//			//calc scalling
+//			//##############
+//			ChaMatrix chascalemat;
+//			ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
+//
+//
+//
+//			//Set Local frame0
+//			if (framecnt == 0.0) {
+//				curbone->SetLocalR0(chaq);
+//				curbone->SetLocalT0(chatramat);
+//				curbone->SetLocalS0(chascalemat);
+//				curbone->SetFirstSRT(chaSRT);
+//			}
+//
+//
+//			//##############
+//			//calc localmat
+//			//##############
+//			ChaMatrix localmat;
+//			ChaMatrixIdentity(&localmat);
+//			ChaMatrix globalmat;
+//			ChaMatrixIdentity(&globalmat);
+//
+//			CMotionPoint* curmp = 0;
+//			int existflag = 0;
+//			curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+//			if (!curmp) {
+//				_ASSERT(0);
+//				return 1;
+//			}
+//
+//			curmp->SetSRT(chaSRT);
+//			//curmp->SetSRT(befrotmat * chaSRT);//!!!!!!!!!!!!!
+//
+//
+//			if (GetHasBindPose()) {
+//				//######################################
+//				// バインドポーズがある場合
+//				//######################################
+//
+//				localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+//
+//
+//				//#############
+//				//set localmat
+//				//#############
+//				curmp->SetLocalMat(localmat);//anglelimit無し
+//
+//
+//
+//				if (callingbythread == false) {//並列化していない場合に実行。並列化時には他のboneの姿勢に依存しないように。
+//					//###############
+//					//calc globalmat
+//					//###############
+//					ChaMatrix parentglobalmat;
+//					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+//					if (curbone->GetParent()) {
+//						parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
+//					}
+//					else {
+//						ChaMatrixIdentity(&parentglobalmat);
+//					}
+//
+//					globalmat = localmat * parentglobalmat;
+//					curmp->SetWorldMat(globalmat);//anglelimit無し
+//				}
+//
+//			}
+//			else {
+//				//############################################################
+//				// バインドポーズが無い場合
+//				// 0フレームにアニメーションが設定してあっても正常に再生可能
+//				//############################################################
+//
+//
+//				//###############
+//				//calc globalmat
+//				//###############
+//				globalmat = (ChaMatrixInv(curbone->GetNodeMat())* chaGlobalSRT);
+//				curmp->SetWorldMat(globalmat);//anglelimit無し
+//
+//
+//
+//				if (callingbythread == false) {//並列化していない場合に実行。並列化時には他のboneの姿勢に依存しないように。
+//
+//					//#############
+//					//set localmat
+//					//#############
+//					ChaMatrix parentglobalmat;
+//					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+//					if (curbone->GetParent()) {
+//						parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
+//					}
+//					else {
+//						ChaMatrixIdentity(&parentglobalmat);
+//					}
+//					localmat = globalmat * ChaMatrixInv(parentglobalmat);
+//					curmp->SetLocalMat(localmat);//anglelimit無し
+//				}
+//			}
+//
+//
+//
+//
+//				//#########################################################
+//				//説明しよう
+//				//Fbxのローカル姿勢表現とMameBake3Dのローカル姿勢表現の互換について
+//				//#########################################################
+//
+//				//fbxはひとつのボーンの姿勢を T * S * Rであらわす
+//				//２つのボーンを表現すると　T1 S1 R1  T2 S2 R2 これは実は省略形というか効率化した形式
+//
+//				//本ソフトでは省略しない表現で計算していて　-T0 S0 R0 T0 Tanim_0  -Ta Sa Ra Ta Tanim_a  -Tb Sb Rb Tb Tanim_b　と解釈する
+//
+//				//この２つの表現形式は互換である。
+//
+//				//省略形を表現しなおすと　　...(T0 Tanim_a -Ta) Sa Ra   (Ta Tanim_b -Tb) Sb Rb    (Tb Tanim_c -Tc) ....
+//				// LclTranslation = T0 + Tanim_a - Ta = parentjointpos + Tanim_a - jointpos (式１)
+//				// 
+//				//求めたいのは省略しない形式における-T S R T の後ろに掛けるTanim_aであり　式１より　Tanim_a = LclTranslation - jointpos + parentjointpos (式２)となる（トリッキー）
+//				// 
+//				// 
+//				//-Ta Sa Ra Ta Tanim_a のTanim_aが式２により求まった。
+//				//この関数内では　-Ta = befrotmat, Sa = chascalemat, Ra = charotmat, Ta = aftrotmat, Tanim_a = chatramat.
+//				
+//
+//				//ここで実はものすごいトリッキーなことが起こった？？？？？
+//				//SRの前にTanimとSRの後に掛けるTanimとは同じ記号で書いたが同じとは限らない。そのようになるように(TanimにSRを施してTanim_aになるように)計算しているのであろう.たぶん.
+//				//##### ここまで説明してよく分からないということがわかった。 (試行錯誤の苦行によりなんとなく出来たのである) #####	
+//				
+//
+//
+//
+//			//##################
+//			//For old version
+//			//##################
+//			if ((animno == 0) && (framecnt == 0.0)) {
+//				curbone->SetFirstMat(globalmat);
+//				curbone->SetInitMat(globalmat);
+//				//ChaMatrix calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
+//
+//				//curbone->SetFirstMat(curbone->GetNodeMat());//!!!!!!!!!! 2022/07/29
+//				//curbone->SetInitMat(curbone->GetNodeMat());//!!!!!!!!!! 2022/07/29
+//				ChaMatrix calcmat = curbone->GetNodeMat();//!!!!!!!!!! 2022/07/29
+//
+//				ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+//				ChaVector3 tmppos;
+//				ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
+//				curbone->SetOldJointFPos(tmppos);
+//			}
+//				  
+//
+//			////############################
+//			////Check For Debug
+//			////############################
+//			// 
+//			// Tanim_a = LclTranslation - jointpos + parentjointpos (式２)の確認
+//			// 		
+//			//ChaVector3 traanim;
+//			//traanim = curbone->CalcLocalTraAnim(motid, framecnt);
+//
+//			//ChaVector3 calcTraAnim;
+//			//calcTraAnim = chatra - jointpos + parentjointpos;
+//
+//			//if (wcsstr(m_filename, L"yuri") != 0) {
+//			//	WCHAR strdbg[4098];
+//			//	swprintf_s(strdbg, 4098, L"#### framecnt %lf, bonename %s, LclTranslation : (%f, %f, %f), traanim : (%f, %f, %f), CalcTraAnim : (%f, %f, %f)\r\n",
+//			//		framecnt, curbone->GetWBoneName(), chatra.x, chatra.y, chatra.z, traanim.x, traanim.y, traanim.z,
+//			//		calcTraAnim.x, calcTraAnim.y, calcTraAnim.z);
+//			//	DbgOut(strdbg);
+//			//}
+//
+//			// Check OK.
+//
+//
+//			//###########
+//			//step time
+//			//###########
+//			fbxtime = fbxtime + difftime;
+//
+//			Sleep(0);
+//		}
+//
+//	}
+//
+//	return 0;
+//}
+
+
+int CModel::SetWorldMatFromLocalMat(int srcmotid)
 {
-	//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
-	char bonename2[256];
-	//strcpy_s(bonename2, 256, clusterlink->GetName());
-	strcpy_s(bonename2, 256, pNode->GetName());
-	TermJointRepeats(bonename2);
-	CBone* curbone = m_bonename[ (char*)bonename2 ];
-
-	WCHAR wname[256]={0L};
-	ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)bonename2, 256, wname, 256 );
-
-	if( curbone && !curbone->GetGetAnimFlag() && pNode){
-		curbone->SetGetAnimFlag( 1 );
-
-		int iships = 0;
-		char* phips = strstr(bonename2, "Hips");
-		if (phips) {
-			iships = 1;
-		}
-		else {
-			iships = 0;
-		}
-
-
-
-
-		FbxTime fbxtime;
-		fbxtime.SetSecondDouble(0.0);
-		FbxTime difftime;
-		difftime.SetSecondDouble(1.0 / 30);
-		double framecnt;
-		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
-
-		//##################################
-		//calclate motion by local info
-		//##################################
-
-			FbxAMatrix correctscalemat;
-			correctscalemat.SetIdentity();
-			FbxAMatrix currentmat;
-			currentmat.SetIdentity();
-			FbxAMatrix parentmat;
-			parentmat.SetIdentity();
-			//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
-			//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
-			//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
-			const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
-			const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
-			const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
-			FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot);
-			FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
-
-
-			ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
-			ChaVector3 chaeul = ChaVector3((float)lR2[0], (float)lR2[1], (float)lR2[2]);
-			ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1], (float)lS2[2]);
-			ChaMatrix chaSRT;
-			chaSRT = ChaMatrixFromFbxAMatrix(lSRT);
-			ChaMatrix chaGlobalSRT;
-			chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-
-			
-			//if ((GetHasBindPose() == 0) && (framecnt == 0.0) && (animno == 0)) {
-			//	//#########################################################################################
-			//	//2022/07/28-2022/07/29  bindpose無し、0フレームアニメ在りの場合のジョイント位置計算し直し
-			//	//#########################################################################################
-
-			//	//ChaMatrix firstSRT = chascalemat * charotmat * chatramat;
-			//	ChaMatrix firstSRT = chaSRT;
-			//	curbone->SetFirstSRT(firstSRT);
-
-			//	
-			//	ChaMatrix globalSRT;
-			//	ChaMatrix parentglobalSRT;
-			//	parentglobalSRT = curbone->CalcParentGlobalSRT();
-			//	globalSRT = firstSRT * parentglobalSRT;
-			//	curbone->SetFirstGlobalSRT(globalSRT);
-
-
-			//	ChaMatrix newnodemat = curbone->GetNodeMat() * ChaMatrixInv(globalSRT);
-			//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-			//	ChaVector3 truefpos;
-			//	ChaVector3TransformCoord(&truefpos, &zeropos, &newnodemat);
-
-
-			//	FbxAMatrix fbxmat;
-			//	fbxmat.SetIdentity();
-			//	fbxmat.SetRow(0, FbxVector4(newnodemat._11, newnodemat._12, newnodemat._13, newnodemat._14));
-			//	fbxmat.SetRow(1, FbxVector4(newnodemat._21, newnodemat._22, newnodemat._23, newnodemat._24));
-			//	fbxmat.SetRow(2, FbxVector4(newnodemat._31, newnodemat._32, newnodemat._33, newnodemat._34));
-			//	fbxmat.SetRow(3, FbxVector4(newnodemat._41, newnodemat._42, newnodemat._43, newnodemat._44));
-			//	
-			//	curbone->SetPositionFound(true);//!!!
-			//	//curbone->SetPositionFound(false);//!!!
-			//	curbone->SetNodeMat(newnodemat);
-			//	curbone->SetGlobalPosMat(fbxmat);
-			//	curbone->SetJointFPos(truefpos);
-			//	//curbone->SetJointWPos(truefpos);//0frameのアニメ付きジョイント位置を保持するため、ここでは更新しない。
-			//}
-
-
-
-
-
-			//####################
-			//calc joint position
-			//####################
-			ChaVector3 jointpos;
-			jointpos = curbone->GetJointFPos();
-			ChaVector3 parentjointpos;
-			if (curbone->GetParent()) {
-				parentjointpos = curbone->GetParent()->GetJointFPos();
-			}
-			else {
-				parentjointpos = ChaVector3(0.0f, 0.0f, 0.0f);
-			}
-
-			//##############
-			//calc rotation
-			//##############
-			CQuaternion chaq;
-			chaq.SetRotationXYZ(0, chaeul);
-			ChaMatrix charotmat;
-			charotmat = chaq.MakeRotMatX();
-
-			ChaMatrix befrotmat, aftrotmat;
-			ChaMatrixTranslation(&befrotmat, -jointpos.x, -jointpos.y, -jointpos.z);
-			ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
-
-
-
-			//#################
-			//calc translation
-			//#################
-			ChaMatrix chatramat;
-			ChaMatrixIdentity(&chatramat);
-			ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
-			
-
-			//##############
-			//calc scalling
-			//##############
-			ChaMatrix chascalemat;
-			ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
-
-
-
-			//Set Local frame0
-			if (framecnt == 0.0) {
-				curbone->SetLocalR0(chaq);
-				curbone->SetLocalT0(chatramat);
-				curbone->SetLocalS0(chascalemat);
-				curbone->SetFirstSRT(chaSRT);
-			}
-
-
-			//##############
-			//calc localmat
-			//##############
-			ChaMatrix localmat;
-			ChaMatrixIdentity(&localmat);
-			ChaMatrix globalmat;
-			ChaMatrixIdentity(&globalmat);
-
-			CMotionPoint* curmp = 0;
-			int existflag = 0;
-			curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
-			if (!curmp) {
-				_ASSERT(0);
-				return 1;
-			}
-
-			curmp->SetSRT(chaSRT);
-			//curmp->SetSRT(befrotmat * chaSRT);//!!!!!!!!!!!!!
-
-
-			if (GetHasBindPose()) {
-				//######################################
-				// バインドポーズがある場合
-				//######################################
-
-				localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
-
-
-				//#############
-				//set localmat
-				//#############
-				curmp->SetLocalMat(localmat);//anglelimit無し
-
-
-				//###############
-				//calc globalmat
-				//###############
-				ChaMatrix parentglobalmat;
-				//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-				if (curbone->GetParent()) {
-					parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
-				}
-				else {
-					ChaMatrixIdentity(&parentglobalmat);
-				}
-
-				globalmat = localmat * parentglobalmat;
-				curmp->SetWorldMat(globalmat);//anglelimit無し
-
-			}
-			else {
-				//############################################################
-				// バインドポーズが無い場合
-				// 0フレームにアニメーションが設定してあっても正常に再生可能
-				//############################################################
-
-
-				//###############
-				//calc globalmat
-				//###############
-				globalmat = (ChaMatrixInv(curbone->GetNodeMat())* chaGlobalSRT);
-				curmp->SetWorldMat(globalmat);//anglelimit無し
-
-
-				//#############
-				//set localmat
-				//#############
-				ChaMatrix parentglobalmat;
-				//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-				if (curbone->GetParent()) {
-					parentglobalmat = curbone->GetParent()->GetWorldMat(motid, framecnt);
-				}
-				else {
-					ChaMatrixIdentity(&parentglobalmat);
-				}
-				localmat = globalmat * ChaMatrixInv(parentglobalmat);
-				curmp->SetLocalMat(localmat);//anglelimit無し
-
-			}
-
-
-
-
-				//#########################################################
-				//説明しよう
-				//Fbxのローカル姿勢表現とMameBake3Dのローカル姿勢表現の互換について
-				//#########################################################
-
-				//fbxはひとつのボーンの姿勢を T * S * Rであらわす
-				//２つのボーンを表現すると　T1 S1 R1  T2 S2 R2 これは実は省略形というか効率化した形式
-
-				//本ソフトでは省略しない表現で計算していて　-T0 S0 R0 T0 Tanim_0  -Ta Sa Ra Ta Tanim_a  -Tb Sb Rb Tb Tanim_b　と解釈する
-
-				//この２つの表現形式は互換である。
-
-				//省略形を表現しなおすと　　...(T0 Tanim_a -Ta) Sa Ra   (Ta Tanim_b -Tb) Sb Rb    (Tb Tanim_c -Tc) ....
-				// LclTranslation = T0 + Tanim_a - Ta = parentjointpos + Tanim_a - jointpos (式１)
-				// 
-				//求めたいのは省略しない形式における-T S R T の後ろに掛けるTanim_aであり　式１より　Tanim_a = LclTranslation - jointpos + parentjointpos (式２)となる（トリッキー）
-				// 
-				// 
-				//-Ta Sa Ra Ta Tanim_a のTanim_aが式２により求まった。
-				//この関数内では　-Ta = befrotmat, Sa = chascalemat, Ra = charotmat, Ta = aftrotmat, Tanim_a = chatramat.
-				
-
-				//ここで実はものすごいトリッキーなことが起こった？？？？？
-				//SRの前にTanimとSRの後に掛けるTanimとは同じ記号で書いたが同じとは限らない。そのようになるように(TanimにSRを施してTanim_aになるように)計算しているのであろう.たぶん.
-				//##### ここまで説明してよく分からないということがわかった。 (試行錯誤の苦行によりなんとなく出来たのである) #####	
-				
-
-
-
-			//##################
-			//For old version
-			//##################
-			if ((animno == 0) && (framecnt == 0.0)) {
-				curbone->SetFirstMat(globalmat);
-				curbone->SetInitMat(globalmat);
-				//ChaMatrix calcmat = curbone->GetNodeMat() * curbone->GetInvFirstMat();
-
-				//curbone->SetFirstMat(curbone->GetNodeMat());//!!!!!!!!!! 2022/07/29
-				//curbone->SetInitMat(curbone->GetNodeMat());//!!!!!!!!!! 2022/07/29
-				ChaMatrix calcmat = curbone->GetNodeMat();//!!!!!!!!!! 2022/07/29
-
-				ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
-				ChaVector3 tmppos;
-				ChaVector3TransformCoord(&tmppos, &zeropos, &calcmat);
-				curbone->SetOldJointFPos(tmppos);
-			}
-				  
-
-			////############################
-			////Check For Debug
-			////############################
-			// 
-			// Tanim_a = LclTranslation - jointpos + parentjointpos (式２)の確認
-			// 		
-			//ChaVector3 traanim;
-			//traanim = curbone->CalcLocalTraAnim(motid, framecnt);
-
-			//ChaVector3 calcTraAnim;
-			//calcTraAnim = chatra - jointpos + parentjointpos;
-
-			//if (wcsstr(m_filename, L"yuri") != 0) {
-			//	WCHAR strdbg[4098];
-			//	swprintf_s(strdbg, 4098, L"#### framecnt %lf, bonename %s, LclTranslation : (%f, %f, %f), traanim : (%f, %f, %f), CalcTraAnim : (%f, %f, %f)\r\n",
-			//		framecnt, curbone->GetWBoneName(), chatra.x, chatra.y, chatra.z, traanim.x, traanim.y, traanim.z,
-			//		calcTraAnim.x, calcTraAnim.y, calcTraAnim.z);
-			//	DbgOut(strdbg);
-			//}
-
-			// Check OK.
-
-
-			//###########
-			//step time
-			//###########
-			fbxtime = fbxtime + difftime;
-
-		}
-
+	MOTINFO* curmi = GetMotInfo(srcmotid);
+	if (curmi) {
+		double animlen = curmi->frameleng;
+
+		SetWorldMatFromLocalMatReq(srcmotid, animlen, m_topbone);
 	}
-
 	return 0;
 }
 
+void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone)
+{
+	if (srcbone) {
+		double curframe;
+		for (curframe = 0.0; curframe < animlen; curframe += 1.0) {//関数呼び出し時にanimleng - 1している
+
+			CMotionPoint* curmp;
+			curmp = srcbone->GetMotionPoint(srcmotid, curframe);
+			if (curmp) {
+				if (GetHasBindPose()) {
+					//######################################
+					// バインドポーズがある場合
+					//######################################
+
+					ChaMatrix localmat;
+					localmat = curmp->GetLocalMat();
+
+					//###############
+					//calc globalmat
+					//###############
+					ChaMatrix parentglobalmat;
+					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+					if (srcbone->GetParent()) {
+						parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
+					}
+					else {
+						ChaMatrixIdentity(&parentglobalmat);
+					}
+
+					ChaMatrix globalmat = localmat * parentglobalmat;
+					curmp->SetWorldMat(globalmat);//anglelimit無し
+
+				}
+				else {
+					//############################################################
+					// バインドポーズが無い場合
+					// 0フレームにアニメーションが設定してあっても正常に再生可能
+					//############################################################
+
+					ChaMatrix globalmat;
+					globalmat = curmp->GetWorldMat();
+
+					//#############
+					//set localmat
+					//#############
+					ChaMatrix parentglobalmat;
+					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+					if (srcbone->GetParent()) {
+						parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
+					}
+					else {
+						ChaMatrixIdentity(&parentglobalmat);
+					}
+					ChaMatrix localmat = globalmat * ChaMatrixInv(parentglobalmat);
+					curmp->SetLocalMat(localmat);//anglelimit無し
+				}
+
+			}
+		}
+
+		if (srcbone->GetChild()) {
+			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetChild());
+		}
+		if (srcbone->GetBrother()) {
+			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetBrother());
+		}
+	}
+}
 
 
 int CModel::CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng)
@@ -12494,3 +12650,364 @@ bool CModel::ChkBoneHasRig(CBone* srcbone)
 
 	return false;
 }
+
+
+
+//##############################
+//###   CLoadFbxAnim
+//##############################
+
+int CModel::CreateLoadFbxAnim(FbxScene* pscene)
+{
+	DestroyLoadFbxAnim();
+	Sleep(100);
+
+
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_LoadFbxAnim = new CLoadFbxAnim[LOADFBXANIMTHREAD];
+	if (!m_LoadFbxAnim) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < LOADFBXANIMTHREAD; createno++) {
+		CLoadFbxAnim* curload = m_LoadFbxAnim + createno;
+		curload->SetScene(pscene);
+		curload->SetModel(this);
+		curload->ClearBoneList();
+		curload->CreateThread();
+	}
+
+
+
+	//int threadcount = 0;
+	//int befthreadcount = 0;
+	//int bonenointhread = 0;
+	//int bonecount;
+	//int bonenum = m_bonelist.size();
+	//int maxbonenuminthread = bonenum / LOADFBXANIMTHREAD + 1;
+
+
+
+	//for (bonecount = 0; bonecount < bonenum; bonecount++) {
+	//	CBone* curbone = m_bonelist[bonecount];
+	//	if (curbone) {
+	//		CLoadFbxAnim* curload = m_LoadFbxAnim + threadcount;
+
+	//		curload->SetBoneList(bonenointhread, curbone);
+
+	//		//threadcount++;
+	//		//threadcount = (threadcount % LOADFBXANIMTHREAD);
+	//		//if (threadcount == 0) {
+	//		//	bonenointhread++;
+	//		//}
+
+
+	//		threadcount = bonecount / maxbonenuminthread;
+
+	//		if (threadcount == befthreadcount) {
+	//			bonenointhread++;
+	//		}
+	//		else {
+	//			bonenointhread = 0;
+	//		}
+
+	//		befthreadcount = threadcount;
+	//	}
+	//}
+
+	return 0;
+
+}
+
+int CModel::DestroyLoadFbxAnim()
+{
+	if (m_LoadFbxAnim) {
+		delete[] m_LoadFbxAnim;
+	}
+	m_LoadFbxAnim = 0;
+
+	return 0;
+}
+
+void CModel::WaitLoadFbxAnimFinished()
+{
+	if (m_LoadFbxAnim != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int loadcount;
+			for (loadcount = 0; loadcount < LOADFBXANIMTHREAD; loadcount++) {
+				CLoadFbxAnim* curload = m_LoadFbxAnim + loadcount;
+				if (curload->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == LOADFBXANIMTHREAD) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+			Sleep(0);
+		}
+
+	}
+
+}
+
+CLoadFbxAnim::CLoadFbxAnim()
+{
+
+	m_exit_state = 0;
+	m_start_state = 0;
+	m_hthread = INVALID_HANDLE_VALUE;
+	InitializeCriticalSection(&m_CritSection_LoadFbxAnim);
+	ClearBoneList();
+
+	m_pscene = 0;
+	m_model = 0;
+	m_animno = 0;
+	m_motid = 0;
+	m_animleng = 1.0;
+}
+CLoadFbxAnim::~CLoadFbxAnim()
+{
+
+	InterlockedExchange(&m_exit_state, 1L);
+	if (m_hEvent != NULL) {
+		SetEvent(m_hEvent);
+	}
+
+	Sleep(10);
+
+	DeleteCriticalSection(&m_CritSection_LoadFbxAnim);
+	ClearBoneList();
+	if (m_hEvent != NULL) {
+		CloseHandle(m_hEvent);
+		m_hEvent = NULL;
+	}
+}
+
+int CLoadFbxAnim::CreateThread()
+{
+	if (m_hthread != INVALID_HANDLE_VALUE) {
+		//already created error
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (m_hEvent == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	unsigned int threadaddr1 = 0;
+	m_hthread = (HANDLE)_beginthreadex(
+		NULL, 0, &ThreadFunc_LoadFbxAnimCaller,
+		(void*)this,
+		0, &threadaddr1);
+
+	//WiatForしない場合には先に閉じてもOK
+	if (m_hthread && (m_hthread != INVALID_HANDLE_VALUE)) {
+		CloseHandle(m_hthread);
+	}
+
+	return 0;
+
+}
+
+unsigned __stdcall CLoadFbxAnim::ThreadFunc_LoadFbxAnimCaller(LPVOID lpThreadParam)
+{
+	if (!lpThreadParam) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CLoadFbxAnim* curcontext = (CLoadFbxAnim*)lpThreadParam;
+	if (curcontext) {
+		curcontext->ThreadFunc_LoadFbxAnim();
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+}
+int CLoadFbxAnim::ThreadFunc_LoadFbxAnim()
+{
+
+
+	CLoadFbxAnim* curload = this;//for debug
+
+
+
+	while (InterlockedAdd(&m_exit_state, 0) != 1) {
+
+		//if (g_HighRpmMode == true) {
+
+			//###########################
+			// 高回転モード　: High rpm
+			//###########################
+
+			if (InterlockedAdd(&m_start_state, 0) == 1) {
+				EnterCriticalSection(&m_CritSection_LoadFbxAnim);
+				if (m_model) {
+					if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
+						CBone* firstbone = m_bonelist[0];
+						bool callingbythread = true;
+						firstbone->GetFBXAnim(m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
+
+						//int bonecount;
+						//for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+						//	CBone* curbone = m_bonelist[bonecount];
+						//	FbxUInt64 curnodeindex = m_nodelist[bonecount];
+						//	if (curbone) {
+						//		bool callingbythread = true;
+						//		CModel* curmodel = GetModel();
+						//		if (curmodel) {
+						//			curbone->GetFBXAnim(GetScene(), m_animno, curnodeindex, m_motid, m_animleng, callingbythread);
+						//		}
+						//
+						//		//Sleep(0);
+						//	}
+						//}
+					}
+				}
+				InterlockedExchange(&m_start_state, 0L);
+				LeaveCriticalSection(&m_CritSection_LoadFbxAnim);
+			}
+			else {
+				//__nop();
+				Sleep(0);
+			}
+
+
+		//}
+		//else {
+
+		//	//############################
+		//	// eco モード
+		//	//############################
+
+		//	DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
+		//	ResetEvent(m_hEvent);
+		//	switch (dwWaitResult)
+		//	{
+		//		// Event object was signaled
+		//	case WAIT_OBJECT_0:
+		//	{
+		//		EnterCriticalSection(&m_CritSection_LoadFbxAnim);
+		//		if (m_model) {
+		//			if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
+		//				int bonecount;
+		//				for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+		//					CBone* curbone = m_bonelist[bonecount];
+		//					FbxNode* curnode = m_nodelist[bonecount];
+		//					if (curbone && curnode) {
+		//						bool callingbythread = true;
+		//						m_model->GetFbxAnim(m_animno, curnode, m_motid, m_animleng, callingbythread);
+		//					}
+		//				}
+		//			}
+		//		}
+		//		InterlockedExchange(&m_start_state, 0L);
+		//		LeaveCriticalSection(&m_CritSection_LoadFbxAnim);
+
+		//	}
+		//	break;
+
+		//	// An error occurred
+		//	default:
+		//		//printf("Wait error (%d)\n", GetLastError());
+		//		//return 0;
+		//		break;
+		//	}
+		//}
+	}
+
+
+
+	return 0;
+}
+
+
+int CLoadFbxAnim::ClearBoneList()
+{
+	m_bonenum = 0;
+	ZeroMemory(m_bonelist, sizeof(CBone*) * MAXLOADFBXANIMBONE);
+	ZeroMemory(m_nodelist, sizeof(FbxNode*) * MAXLOADFBXANIMBONE);
+
+	return 0;
+}
+int CLoadFbxAnim::SetBoneList(int srcindex, FbxNode* srcnode, CBone* srcbone)
+{
+	if ((srcindex < 0) || (srcindex >= MAXLOADFBXANIMBONE)) {
+		_ASSERT(0);
+		return -1;
+	}
+
+	if (srcindex != m_bonenum) {
+		_ASSERT(0);
+		return -1;
+	}
+
+	m_bonelist[srcindex] = srcbone;
+	m_nodelist[srcindex] = srcnode;
+
+	m_bonenum++;
+
+	return m_bonenum;
+}
+
+bool CLoadFbxAnim::IsFinished()
+{
+	if (InterlockedAdd(&m_start_state, 0) == 1) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+void CLoadFbxAnim::LoadFbxAnim(int srcanimno, int srcmotid, double srcanimleng)
+{
+	
+	CLoadFbxAnim* curload = this;//for debug
+
+
+	//####################################################################
+	//## g_limitdegflag == 1　の場合にはローカルの計算だけ並列化
+	//####################################################################
+
+	if ((m_bonenum > 0) && (GetScene()) && (GetModel())) {
+		EnterCriticalSection(&m_CritSection_LoadFbxAnim);
+		m_animno = srcanimno;
+		m_motid = srcmotid;
+		m_animleng = srcanimleng;
+		LeaveCriticalSection(&m_CritSection_LoadFbxAnim);
+		InterlockedExchange(&m_start_state, 1L);
+		SetEvent(m_hEvent);
+	}
+	else {
+		InterlockedExchange(&m_start_state, 0L);
+	}
+
+
+}
+
+

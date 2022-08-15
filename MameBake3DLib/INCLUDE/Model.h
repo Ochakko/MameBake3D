@@ -85,6 +85,72 @@ typedef struct tag_physikrec
 //#define MAXUPDATEMATRIXTHREAD 2
 //#define MAXUPDATEMATRIXTHREAD 8
 
+#define LOADFBXANIMTHREAD 4
+//#define LOADFBXANIMTHREAD 8
+//#define MAXLOADFBXANIMBONE	512
+
+class CModel;
+class CLoadFbxAnim
+{
+public:
+	CLoadFbxAnim();
+	~CLoadFbxAnim();
+
+	int CreateThread();
+	int ClearBoneList();
+	int SetBoneList(int srcindex, FbxNode* srcnodeindex, CBone* srcbone);
+	void LoadFbxAnim(int srcanimno, int srcmotid, double srcanimleng);
+	bool IsFinished();
+
+
+public:
+	int GetBoneNum()
+	{
+		return m_bonenum;
+	}
+
+	void SetModel(CModel* srcmodel)
+	{
+		m_model = srcmodel;
+	}
+	CModel* GetModel()
+	{
+		return m_model;
+	}
+
+	void SetScene(FbxScene* pscene)
+	{
+		m_pscene = pscene;
+	}
+	FbxScene* GetScene()
+	{
+		return m_pscene;
+	}
+private:
+	static unsigned __stdcall ThreadFunc_LoadFbxAnimCaller(LPVOID lpThreadParam);
+	int ThreadFunc_LoadFbxAnim();
+
+private:
+	CRITICAL_SECTION m_CritSection_LoadFbxAnim;
+	HANDLE m_hEvent; //手動リセットイベント
+
+	HANDLE m_hthread;
+	LONG m_exit_state;
+	LONG m_start_state;
+
+	FbxScene* m_pscene;
+	CModel* m_model;
+	int m_bonenum;
+	CBone* m_bonelist[MAXLOADFBXANIMBONE];
+	FbxNode* m_nodelist[MAXLOADFBXANIMBONE];
+
+	int m_animno;
+	int m_motid;
+	double m_animleng;
+};
+
+
+
 
 class CModel
 {
@@ -688,6 +754,7 @@ public:
 	bool ChkBoneHasRig(CBone* srcbone);
 
 	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreads変更時にも呼ぶ
+	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CLoadFbxAnimからも呼ぶ CBoneに移動
 
 private:
 	int InitParams();
@@ -705,6 +772,11 @@ private:
 	//int CreateBoneUpdateMatrix();//publicへ移動
 	int DestroyBoneUpdateMatrix();
 
+	int CreateLoadFbxAnim(FbxScene* pscene);
+	int DestroyLoadFbxAnim();
+	void WaitLoadFbxAnimFinished();
+	int SetWorldMatFromLocalMat(int srcmotid);
+	void SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone);
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
@@ -746,7 +818,7 @@ private:
 
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
 	void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng );
-	int GetFBXAnim( int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute *pAttrib, int motid, double animleng );
+	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//publicへ移動
 	void CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
@@ -1246,6 +1318,7 @@ public:
 	bool m_loadedflag;//初期の読み込み処理が終了したらtrue;
 	bool m_modeldisp;//表示するかどうか
 	bool m_createbtflag;//CreateBtObjectを読んだことがあればtrue。
+	CRITICAL_SECTION m_CritSection_Node;
 
 private:
 	
@@ -1273,7 +1346,7 @@ private:
 
 
 	CBoneUpdateMatrix* m_boneupdatematrix;
-
+	CLoadFbxAnim* m_LoadFbxAnim;
 
 
 	map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
@@ -1334,6 +1407,8 @@ private:
 	std::vector<PHYSIKREC> m_physikrec;
 	double m_phyikrectime;
 
+
+	int m_loadbonecount;//GetFbxAnim用
 };
 
 #endif
