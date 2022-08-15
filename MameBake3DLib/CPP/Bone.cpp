@@ -543,8 +543,14 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 
 			if (g_limitdegflag == 1) {
 				//êßå¿äpìxóLÇË
-
-				int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, 0, callingbythread);//åvéZçœÇéÊìæÅBåvéZÇµÇƒÇ¢Ç»Ç©Ç¡ÇΩÇÁåvéZÇ∑ÇÈÅB
+				int callingstate;
+				if (callingbythread == true) {
+					callingstate = 1;
+				}
+				else {
+					callingstate = 0;
+				}
+				int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, 0, callingstate);//åvéZçœÇéÊìæÅBåvéZÇµÇƒÇ¢Ç»Ç©Ç¡ÇΩÇÁåvéZÇ∑ÇÈÅB
 				
 				//if (calcflag != 1) {
 				//	newworldmat = GetLimitedWorldMat(srcmotid, srcframe);
@@ -625,8 +631,9 @@ int CBone::UpdateLimitedWorldMat(int srcmotid, double srcframe0)
 	//êßå¿äpìxóLÇË
 	double srcframe = (double)((int)(srcframe0 + 0.0001));
 	CMotionPoint* orgbefmp = 0;
-	bool callingbythread = false;
-	int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, &orgbefmp, callingbythread);
+	//bool callingbythread = false;
+	int callingstate = 0;
+	int calcflag = GetCalclatedLimitedWM(srcmotid, srcframe, &newworldmat, &orgbefmp, callingstate);
 	//if ((calcflag != 1) && orgbefmp) {//åvéZçœÇ≈ñ≥Ç¢èÍçáÇæÇØåvéZÇ∑ÇÈ
 	if (calcflag == 1) {
 		orgbefmp->SetLimitedWM(newworldmat);
@@ -822,8 +829,10 @@ int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr,
 	return 0;
 }
 
-int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp, bool callingbythread)//default : pporgbefmp = 0, default : callingbythread = false
+int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp, int callingstate)//default : pporgbefmp = 0, default : callingstate = 0
 {
+	//callingstate : 0->fullcalc, 1->bythread only current calc, 2->after thread, use result by threading calc
+
 	int ret;
 	int existflag = 0;
 	CMotionPoint* befptr = 0;
@@ -850,7 +859,7 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 			else {
 				//åvéZçœÇ≈ÇÕñ≥Ç¢
 				//ChaMatrixIdentity(plimitedworldmat);
-				*plimitedworldmat = GetLimitedWorldMat(srcmotid, srcframe, 0, callingbythread);
+				*plimitedworldmat = GetLimitedWorldMat(srcmotid, srcframe, 0, callingstate);
 				if (pporgbefmp) {
 					*pporgbefmp = befptr;
 				}
@@ -4929,13 +4938,29 @@ int CBone::SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul)//initscalef
 
 int CBone::CalcWorldMatFromEulForThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
-	ChaVector3 orgeul, neweul;
-	GetTempLocalEul(&orgeul, &neweul);
-	ChaMatrix newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+	//############################################################
+	//g_limitdegflag == 1ÇÃÇ∆Ç´Ç…ï¿óÒâªåvéZå„ÇÃèàóùÇ∆ÇµÇƒåƒÇŒÇÍÇÈ
+	//############################################################
+
+	//ChaVector3 orgeul, neweul;
+	//GetTempLocalEul(&orgeul, &neweul);
+	//ChaMatrix newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+
+	ChaMatrix newworldmat;
+	ChaMatrixIdentity(&newworldmat);
+	int callingstate = 2;//!!!!!!!!!!!!!!!!!!!
+	GetCalclatedLimitedWM(srcmotid, (double)((int)(srcframe + 0.1)), &newworldmat, 0, callingstate);
 
 	ChaMatrix tmpmat = newworldmat * *wmat;
 	//m_curmp.SetWorldMat(newworldmat);//underchecking
 	m_curmp.SetWorldMat(tmpmat);//2021/12/21
+
+
+	CMotionPoint* pmp = GetMotionPoint(srcmotid, (double)((int)(srcframe + 0.1)));
+	if (pmp) {
+		pmp->SetLimitedWM(newworldmat);
+		pmp->SetCalcLimitedWM(1);
+	}
 
 
 	ChaVector3 jpos = GetJointFPos();
@@ -4978,13 +5003,15 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 	ChaMatrix parmat;
 	ChaMatrixIdentity(&parmat);
 	if (m_parent) {
-		//parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
-		//////parmp = &(m_parent->GetCurMp());
-		////parmp = &(m_parent->m_curmp);
-		//if (parmp) {
-		//	parmat = parmp->GetWorldMat();
-		//}
+		////parmp = m_parent->GetMotionPoint(srcmotid, srcframe);
+		////////parmp = &(m_parent->GetCurMp());
+		//////parmp = &(m_parent->m_curmp);
+		////if (parmp) {
+		////	parmat = parmp->GetWorldMat();
+		////}
+
 		parmat = m_parent->GetLimitedWorldMat(srcmotid, srcframe);
+
 	}
 
 	ChaMatrix axismat;
@@ -7289,8 +7316,11 @@ void CBone::CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
 
 
 
-ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul, bool callingbythread)//default : dstneweul = 0, default : callingbythread = false
+ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul, int callingstate)//default : dstneweul = 0, default : callingstate = 0
 {
+	//callingstate : 0->fullcalc, 1->bythread only current calc, 2->after thread, use result by threading calc
+
+
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
@@ -7300,32 +7330,48 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 	if (g_limitdegflag == 1) {
 		//êßå¿äpìxóLÇË
 
-//####################################################################
+//#################################################################################
 //ääÇÁÇ©Ç…Ç∑ÇÈÇΩÇﬂÇ…ÅAå„Ç≈srcframeÇ∆+1Ç≈ÇQÉZÉbÉgåvéZÇµÇƒï‚ä‘åvéZÇ∑ÇÈÇ©Ç‡ÇµÇÍÇ»Ç¢
-//####################################################################
-		ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-		int ismovable = ChkMovableEul(orgeul);
+//#################################################################################
+
+		ChaVector3 orgeul;
 		ChaVector3 neweul;
-		if (ismovable == 1) {
-			neweul = orgeul;
-		}
-		else {
-			neweul = LimitEul(orgeul);
-		}
-		SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
-		if (dstneweul) {
-			*dstneweul = neweul;
-		}
 
-		SetTempLocalEul(orgeul, neweul);
+		CMotionPoint* curmp = GetMotionPoint(srcmotid, (double)((int)(srcframe + 0.1)));
+		if (curmp) {
+			if (curmp->GetCalcLimitedWM() == 1) {
+				//åvéZçœÇÃèÍçá
+				retmat = curmp->GetLimitedWM();
+			}
+			else {
+				//åvéZçœÇ≈ñ≥Ç¢èÍçá
+				if ((callingstate == 0) || (callingstate == 1)) {
+					orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+					int ismovable = ChkMovableEul(orgeul);
+					if (ismovable == 1) {
+						neweul = orgeul;
+					}
+					else {
+						neweul = LimitEul(orgeul);
+					}
+					SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+					if (dstneweul) {
+						*dstneweul = neweul;
+					}
+					SetTempLocalEul(orgeul, neweul);
+				}
+				else {
+					GetTempLocalEul(&orgeul, &neweul);
+				}
 
-		if (callingbythread == false) {
-			retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+				if ((callingstate == 0) || (callingstate == 2)) {
+					retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+				}
+				else {
+					ChaMatrixIdentity(&retmat);
+				}
+			}
 		}
-		else {
-			ChaMatrixIdentity(&retmat);
-		}
-
 	}
 	else {
 		//êßå¿äpìxñ≥Çµ

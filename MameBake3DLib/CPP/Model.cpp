@@ -539,6 +539,13 @@ int CModel::InitParams()
 }
 int CModel::DestroyObjs()
 {
+	//スレッドを先に止める
+	DestroyBoneUpdateMatrix();
+	DestroyLoadFbxAnim();
+
+
+
+
 	DestroyMaterial();
 	DestroyObject();
 	DestroyAncObj();
@@ -548,8 +555,6 @@ int CModel::DestroyObjs()
 
 	DestroyBtObject();
 
-	DestroyBoneUpdateMatrix();
-	DestroyLoadFbxAnim();
 
 
 	InitParams();

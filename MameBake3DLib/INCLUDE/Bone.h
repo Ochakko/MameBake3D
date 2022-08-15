@@ -175,7 +175,7 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr );
-	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, bool callingbythread = false);
+	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, int callingstate = 0);
 
 /**
  * @fn
@@ -911,7 +911,7 @@ public: //accesser
 	};
 
 	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
-	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, bool callingbythread = false);
+	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
 	ChaMatrix GetCurrentLimitedWorldMat();
 
 
