@@ -1115,32 +1115,8 @@ int CBtObject::SetBtMotion()
 
 	btTransform worldtra;
 	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
-	btMatrix3x3 worldmat = worldtra.getBasis();
-	btVector3 worldpos = worldtra.getOrigin();
-	btVector3 tmpcol[3];//行列のカラム表現。
-	int colno;
-	for (colno = 0; colno < 3; colno++){
-		tmpcol[colno] = worldmat.getColumn(colno);
-		//		tmpcol[colno] = worldmat.getRow( colno );
-	}
-
 	ChaMatrix newxworld;
-	ChaMatrixIdentity(&newxworld);
-	newxworld._11 = tmpcol[0].x();
-	newxworld._12 = tmpcol[0].y();
-	newxworld._13 = tmpcol[0].z();
-
-	newxworld._21 = tmpcol[1].x();
-	newxworld._22 = tmpcol[1].y();
-	newxworld._23 = tmpcol[1].z();
-
-	newxworld._31 = tmpcol[2].x();
-	newxworld._32 = tmpcol[2].y();
-	newxworld._33 = tmpcol[2].z();
-
-	newxworld._41 = worldpos.x();
-	newxworld._42 = worldpos.y();
-	newxworld._43 = worldpos.z();
+	newxworld = ChaMatrixFromBtTransform(&(worldtra.getBasis()), &(worldtra.getOrigin()));
 
 	ChaMatrix invxworld;
 	ChaMatrixInverse( &invxworld, NULL, &m_xworld );
@@ -1149,14 +1125,11 @@ int CBtObject::SetBtMotion()
 	ChaMatrix diffxworld;
 	diffxworld = invxworld * newxworld;
 
-
-
 	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
-		//m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
+		////m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
 		m_bone->SetBtFlag(1);
 	}
-
 
 	//boneleng 0 対策はCreateObjectの剛体のサイズを決めるところで最小値を設定することにした。
 
