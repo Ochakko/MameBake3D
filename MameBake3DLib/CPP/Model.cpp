@@ -450,7 +450,8 @@ CModel::CModel()
 }
 CModel::~CModel()
 {
-	DeleteCriticalSection(&m_CritSection_Node);
+	//DeleteCriticalSection(&m_CritSection_Node);//DestroyObjsのthread終了よりも後に移動
+
 
 	DestroyObjs();
 }
@@ -542,7 +543,7 @@ int CModel::DestroyObjs()
 	//スレッドを先に止める
 	DestroyBoneUpdateMatrix();
 	DestroyLoadFbxAnim();
-
+	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
 
 
 
