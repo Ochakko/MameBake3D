@@ -1023,7 +1023,7 @@ static OWP_Button* s_toolSelectCopyFileName = 0;
 static OrgWindow* s_convboneWnd = 0;
 static OWP_ScrollWnd* s_convboneSCWnd = 0;
 static int s_convbonenum = 0;
-static OWP_Button* s_cbselmodel = 0;
+static OWP_Label* s_cbselmodel = 0;
 static OWP_Button* s_cbselbvh = 0;
 static OWP_Label* s_convbonemidashi[2];
 static OWP_Label* s_modelbone[CONVBONEMAX];
@@ -5815,23 +5815,24 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		menuid = LOWORD( wParam );
 		int modelnum = (int)s_modelindex.size();
 
-		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEMODEL)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEMODEL))) {
-			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEMODEL;
-			s_convbone_model = s_modelindex[modelindex].modelptr;
+		//if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEMODEL)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEMODEL))) {
+		//	int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEMODEL;
+		//	s_convbone_model = s_modelindex[modelindex].modelptr;
 
-			WCHAR strmes[1024];
-			if (!s_convbone_model) {
-				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-				::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
-			}
-			else {
-				swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
-				s_cbselmodel->setName(strmes);
-			}
-		}
+		//	WCHAR strmes[1024];
+		//	if (!s_convbone_model) {
+		//		swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+		//		::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
+		//	}
+		//	else {
+		//		swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
+		//		s_cbselmodel->setName(strmes);
+		//	}
+		//}
 
 
-		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
+		//else 
+		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
 			s_convbone_bvh = s_modelindex[modelindex].modelptr;
 			WCHAR strmes[1024];
@@ -5843,10 +5844,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			else {
 				swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
 				s_cbselbvh->setName(strmes);
+				COLORREF importantcol = RGB(168, 129, 129);
+				s_cbselbvh->setTextColor(importantcol);
 				s_maxboneno = s_convbone_bvh->GetBoneListSize();
 			}
 		}
-
 
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid <= (ID_RMENU_0 + s_maxboneno + 1 + MENUOFFSET_SETCONVBONE))) {
 			if (menuid == (ID_RMENU_0 + 0 + MENUOFFSET_SETCONVBONE)) {
@@ -13705,6 +13707,14 @@ int CreateConvBoneWnd()
 
 	s_dsretargetctrls.clear();
 
+	if (!s_model) {
+		_ASSERT(0);
+		::MessageBox(s_mainhwnd, L"modelメニューでmodelを選択して下さい", L"model not selected !!!", MB_OK);
+		return 0;
+	}
+	s_convbone_model = s_model;
+
+
 	s_convbonenum = s_model->GetBoneListSize();
 	if (s_convbonenum >= CONVBONEMAX){
 		_ASSERT(0);
@@ -13764,7 +13774,11 @@ int CreateConvBoneWnd()
 
 	s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// セパレータ1（境界線による横方向2分割）
 
-	s_cbselmodel = new OWP_Button(L"SelectShapeModel");
+	//s_cbselmodel = new OWP_Button(L"SelectShapeModel");
+	WCHAR strtext[256] = { 0L };
+	swprintf_s(strtext, 256, L"Model: %s", s_model->GetFileName());
+	s_cbselmodel = new OWP_Label(strtext);
+
 	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
 	s_convboneconvert = new OWP_Button(L"ConvertButton");
 	s_rtgfilesave = new OWP_Button(L"Save RtgFile");
@@ -13777,7 +13791,8 @@ int CreateConvBoneWnd()
 	s_convboneconvert->setTextColor(importantcol);
 	s_rtgfilesave->setTextColor(importantcol);
 	s_rtgfileload->setTextColor(importantcol);
-	
+	s_cbselbvh->setTextColor(importantcol);
+	s_cbselmodel->setTextColor(importantcol);
 
 
 	s_convboneSCWnd->addParts(*s_convbonesp);
@@ -13821,12 +13836,12 @@ int CreateConvBoneWnd()
 	});
 
 
-	s_cbselmodel->setButtonListener([](){
-		if (s_model) {
-			SetConvBoneModel();
-			s_convboneWnd->callRewrite();
-		}
-	});
+	//s_cbselmodel->setButtonListener([](){
+	//	if (s_model) {
+	//		SetConvBoneModel();
+	//		s_convboneWnd->callRewrite();
+	//	}
+	//});
 	s_cbselbvh->setButtonListener([](){
 		if (s_model) {
 			if (!s_convbone_model || (s_convbone_model != s_model)) {
@@ -13874,82 +13889,83 @@ int CreateConvBoneWnd()
 	return 0;
 }
 
-int SetConvBoneModel()
-{
-	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0){
-		return 0;
-	}
+//int SetConvBoneModel()
+//{
+//	int modelnum = (int)s_modelindex.size();
+//	if (modelnum <= 0){
+//		return 0;
+//	}
+//
+//	HWND parwnd;
+//	//parwnd = s_convboneWnd->getHWnd();
+//	parwnd = s_3dwnd;
+//
+//	CRMenuMain* rmenu;
+//	rmenu = new CRMenuMain(IDR_RMENU);
+//	if (!rmenu){
+//		return 1;
+//	}
+//	int ret;
+//	ret = rmenu->Create(parwnd, MENUOFFSET_SETCONVBONEMODEL);
+//	if (ret){
+//		return 1;
+//	}
+//
+//	HMENU submenu = rmenu->GetSubMenu();
+//
+//	int menunum;
+//	menunum = GetMenuItemCount(submenu);
+//	int menuno;
+//	for (menuno = 0; menuno < menunum; menuno++)
+//	{
+//		RemoveMenu(submenu, 0, MF_BYPOSITION);
+//	}
+//
+//	int modelno;
+//	for (modelno = 0; modelno < modelnum; modelno++){
+//		CModel* curmodel = s_modelindex[modelno].modelptr;
+//		if (curmodel){
+//			const WCHAR* modelname = curmodel->GetFileName();
+//			if (modelname){
+//				int setmenuid = ID_RMENU_0 + modelno + MENUOFFSET_SETCONVBONEMODEL;
+//				AppendMenu(submenu, MF_STRING, setmenuid, modelname);
+//			}
+//		}
+//	}
+//
+//
+//	POINT pt;
+//	GetCursorPos(&pt);
+//	//::ScreenToClient(parwnd, &pt);
+//
+//	s_cursubmenu = rmenu->GetSubMenu();
+//
+//	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+//	int menuid;
+//	menuid = rmenu->TrackPopupMenu(pt);
+//	//if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + modelnum))) {
+//	//	int modelindex = menuid - ID_RMENU_0;
+//	//	s_convbone_model = s_modelindex[modelindex].modelptr;
+//
+//	//	WCHAR strmes[1024];
+//	//	if (!s_convbone_model) {
+//	//		swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+//	//		::DSMessageBox(NULL, strmes, L"check", MB_OK);
+//	//	}
+//	//	else {
+//	//		swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
+//	//		s_cbselmodel->setName(strmes);
+//	//	}
+//	//}
+//
+//
+//	rmenu->Destroy();
+//	delete rmenu;
+//	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+//
+//	return 0;
+//}
 
-	HWND parwnd;
-	//parwnd = s_convboneWnd->getHWnd();
-	parwnd = s_3dwnd;
-
-	CRMenuMain* rmenu;
-	rmenu = new CRMenuMain(IDR_RMENU);
-	if (!rmenu){
-		return 1;
-	}
-	int ret;
-	ret = rmenu->Create(parwnd, MENUOFFSET_SETCONVBONEMODEL);
-	if (ret){
-		return 1;
-	}
-
-	HMENU submenu = rmenu->GetSubMenu();
-
-	int menunum;
-	menunum = GetMenuItemCount(submenu);
-	int menuno;
-	for (menuno = 0; menuno < menunum; menuno++)
-	{
-		RemoveMenu(submenu, 0, MF_BYPOSITION);
-	}
-
-	int modelno;
-	for (modelno = 0; modelno < modelnum; modelno++){
-		CModel* curmodel = s_modelindex[modelno].modelptr;
-		if (curmodel){
-			const WCHAR* modelname = curmodel->GetFileName();
-			if (modelname){
-				int setmenuid = ID_RMENU_0 + modelno + MENUOFFSET_SETCONVBONEMODEL;
-				AppendMenu(submenu, MF_STRING, setmenuid, modelname);
-			}
-		}
-	}
-
-
-	POINT pt;
-	GetCursorPos(&pt);
-	//::ScreenToClient(parwnd, &pt);
-
-	s_cursubmenu = rmenu->GetSubMenu();
-
-	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-	int menuid;
-	menuid = rmenu->TrackPopupMenu(pt);
-	//if ((menuid >= ID_RMENU_0) && (menuid < (ID_RMENU_0 + modelnum))) {
-	//	int modelindex = menuid - ID_RMENU_0;
-	//	s_convbone_model = s_modelindex[modelindex].modelptr;
-
-	//	WCHAR strmes[1024];
-	//	if (!s_convbone_model) {
-	//		swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-	//		::DSMessageBox(NULL, strmes, L"check", MB_OK);
-	//	}
-	//	else {
-	//		swprintf_s(strmes, 1024, L"%s", s_convbone_model->GetFileName());
-	//		s_cbselmodel->setName(strmes);
-	//	}
-	//}
-
-
-	rmenu->Destroy();
-	delete rmenu;
-	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-
-	return 0;
-}
 int SetConvBoneBvh()
 {
 	int modelnum = (int)s_modelindex.size();

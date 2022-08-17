@@ -2612,7 +2612,8 @@ void s_dummyfunc()
 			int pos1x= pos.x+NAME_POS_X;
 			int pos1y= pos.y+size.y/2-5;
 			hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
-			SetTextColor(hdcM->hDC,RGB(240,240,240));
+			//SetTextColor(hdcM->hDC,RGB(240,240,240));
+			SetTextColor(hdcM->hDC, OrgWindowParts::getTextColor());
 			TextOut( hdcM->hDC,
 					 pos1x, pos1y,
 					 name, (int)_tcslen(name));
