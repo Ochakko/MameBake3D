@@ -1071,7 +1071,11 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static bool s_filterFlag = false;
+static bool s_delmodelFlag = false;
+static bool s_delallmodelFlag = false;
 static bool s_changeupdatethreadsFlag = false;
+static bool s_newmotFlag = false;
+static bool s_delcurmotFlag = false;
 static int s_interpolateState = 0;
 
 static bool s_firstkeyFlag = false;
@@ -2716,6 +2720,8 @@ void InitApp()
 	s_EcursorFlag = false;			// カーソル移動フラグ
 	s_timelineRUpFlag = false;
 	s_timelinembuttonFlag = false;
+	s_delmodelFlag = false;
+	s_delallmodelFlag = false;
 	s_mbuttoncnt = 1;
 	s_mbuttonstart = 0.0;
 	s_timelinewheelFlag = false;
@@ -2723,6 +2729,8 @@ void InitApp()
 	s_prevrangeFlag = false;
 	s_nextrangeFlag = false;
 	s_changeupdatethreadsFlag = false;
+	s_newmotFlag = false;
+	s_delcurmotFlag = false;
 	s_calclimitedwmState = 0;
 
 	s_temppath[0] = 0L;
@@ -6186,7 +6194,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 ***/
 			case ID_SAVEPROJ_40035:
-				//FBX Fileは201300で書き出し
 				if( s_registflag == 1 ){
 					ActivatePanel( 0 );
 					SaveProject();
@@ -6285,22 +6292,26 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//return 0;
 				break;
 			case ID_NEWMOT:
-				AddMotion( 0 );
-				InitCurMotion(0, 0);
-				//return 0;
+				s_newmotFlag = true;
+				//AddMotion( 0 );
+				//InitCurMotion(0, 0);
+				////return 0;
 				break;
 			case ID_DELCURMOT:
 				if (s_model) {
-					OnDelMotion(s_motmenuindexmap[s_model]);
+					s_delcurmotFlag = true;
+					//OnDelMotion(s_motmenuindexmap[s_model]);
 				}
 				//return 0;
 				break;
 			case ID_DELMODEL:
-				OnDelModel( s_curmodelmenuindex );
+				s_delmodelFlag = true;
+				//OnDelModel( s_curmodelmenuindex );
 				//return 0;
 				break;
 			case ID_DELALLMODEL:
-				OnDelAllModel();
+				s_delallmodelFlag = true;
+				//OnDelAllModel();
 				//return 0;
 				break;
 			default:
@@ -10583,7 +10594,17 @@ int AddMotion( WCHAR* wfilename, double srcmotleng )
 	else{
 		motleng = srcmotleng;
 	}
-	CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
+
+	s_model->WaitUpdateMatrixFinished();//2022/08/18
+	WCHAR* addwfilename;
+	if (wfilename) {
+		addwfilename = wfilename;
+	}
+	else {
+		addwfilename = L"ForEmpty";
+	}
+	//CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
+	CallF( s_model->AddMotion( motionname, addwfilename, motleng, &newmotid ), return 1 );
 	//_ASSERT(0);
 
 	CallF( AddTimeLine( newmotid, true ), return 1 );
@@ -11119,6 +11140,11 @@ int OnImpMenu( int selindex )
 
 int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = false
 {
+	if (s_underdelmotion == true) {
+		//再入防止
+		return 0;
+	}
+
 	s_underdelmotion = true;
 
 	int tlnum = (int)s_tlarray.size();
@@ -11126,9 +11152,14 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 		s_underdelmotion = false;
 		return 0;
 	}
+	if ((ondelbutton == true) && (tlnum <= 1)) {
+		s_underdelmotion = false;
+		return 0;
+	}
 
 	int delmotid = s_tlarray[ delmenuindex ].motionid;
 	int result;
+	s_model->WaitUpdateMatrixFinished();//2022/08/18
 	result = s_model->DeleteMotion(delmotid);
 	if (result) {
 		s_underdelmotion = false;
@@ -11144,11 +11175,10 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 
 	int newtlnum = (int)s_tlarray.size();
 	if( newtlnum == 0 ){
-		AddMotion( 0 );
+		AddMotion(L"forempty", 100.0);
 		InitCurMotion(0, 0);
-	}else{
-		OnAnimMenu( true, 0 );
 	}
+	OnAnimMenu(true, 0);
 
 	DispMotionPanel();
 
@@ -11181,6 +11211,8 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		//if (itrbonecnt != g_bonecntmap.end()){
 		//	g_bonecntmap.erase(itrbonecnt);
 		//}
+
+		delmodel->WaitUpdateMatrixFinished();//2022/08/18
 
 		CBone::OnDelModel(delmodel);
 
@@ -11247,6 +11279,7 @@ int OnDelAllModel()
 	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
 		CModel* delmodel = itrmodel->modelptr;
 		if( delmodel ){
+			delmodel->WaitUpdateMatrixFinished();//2022/08/18
 			CBone::OnDelModel(delmodel);
 
 			FbxScene* pscene = delmodel->GetScene();
@@ -13568,38 +13601,51 @@ int CreateMotionPanel()
 		}
 		});
 
-	int delmenuindex = 0;
-	for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
-		MOTINFO* curmi = (MOTINFO*)(itrmi->second);
-		if (curmi) {
-			s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-				if ((s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
-					s_underdelmotion = true;
-					//bool ondelbutton = true;
-					//OnDelMotion(delmenuindex, ondelbutton);
+	//int delmenuindex = 0;
+	//for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+	//	MOTINFO* curmi = (MOTINFO*)(itrmi->second);
+	//	if (curmi) {
+	//		s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
+	//			if ((s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+	//				s_opedelmotioncnt = delmenuindex;
+	//				//s_underdelmotion = true;//OnDelMotionでセット2022/08/18
+	//				//bool ondelbutton = true;
+	//				//OnDelMotion(delmenuindex, ondelbutton);
 
-					//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-					s_opedelmotioncnt = delmenuindex;
-				}
-			});
-			delmenuindex++;
-		}
-		else {
-			_ASSERT(0);
-		}
+	//				//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+	//			}
+	//		});
+	//		delmenuindex++;
+	//	}
+	//	else {
+	//		_ASSERT(0);
+	//	}
+	//}
+	int delmenuindex = 0;
+	for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
+		s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
+			if ((s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+				s_opedelmotioncnt = delmenuindex;
+				//s_underdelmotion = true;//OnDelMotionでセット2022/08/18
+				//bool ondelbutton = true;
+				//OnDelMotion(delmenuindex, ondelbutton);
+
+				//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+			}
+		});
 	}
 
 	s_motionpanel.radiobutton->setSelectListener([]() {
 		if (s_model) {
 			int curindex = s_motionpanel.radiobutton->getSelectIndex();
 			if ((s_opeselectmotioncnt < 0) && !s_underselectmotion && (curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
+				s_opeselectmotioncnt = curindex;
 				s_underselectmotion = true;
 				//int motionindex = curindex;
 				//OnAnimMenu(true, motionindex, 1);
 				//s_motionpanel.panel->callRewrite();
 
 				//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-				s_opeselectmotioncnt = curindex;
 			}
 		}
 	});
@@ -17010,6 +17056,26 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	//int keynum;
 	double startframe, endframe;
 	//s_editrange.GetRange(&keynum, &startframe, &endframe);
+
+	if (!s_model) {
+		return -1;
+	}
+	if (!s_model->GetCurMotInfo()) {
+		return -1;
+	}
+
+
+	if ((srcstart < 0.0) || (srcend < 0.0)) {
+		_ASSERT(0);
+		return -1;
+	}
+	if (srcstart > srcend) {
+		double tmp = srcstart;
+		srcstart = srcend;
+		srcend = tmp;
+	}
+
+
 	startframe = srcstart;
 	endframe = srcend;
 
@@ -17020,6 +17086,10 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	}
 
 	int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
+	if ((frameleng <= 0) || (frameleng > 100000)) {
+		_ASSERT(0);
+		return -1;
+	}
 
 	g_motionbrush_startframe = startframe;
 	g_motionbrush_endframe = endframe;
@@ -19543,17 +19613,17 @@ int OnFrameToolWnd()
 	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
 
 	if (s_selboneFlag){
-		s_selboneFlag = false;
 		if (s_model && s_owpTimeline && s_owpLTimeline){
 			s_selbonedlg.SetModel(s_model);
 			s_underframecopydlg = true;
 			s_selbonedlg.DoModal();
 			s_underframecopydlg = false;
 		}
+
+		s_selboneFlag = false;
 	}
 
 	if (s_markFlag){
-		s_markFlag = false;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline){
 			double curltime = s_owpLTimeline->getCurrentTime();
@@ -19562,12 +19632,15 @@ int OnFrameToolWnd()
 				s_owpLTimeline->newKey(s_strmark, curltime, 0);
 			}
 		}
+
+		s_markFlag = false;
 	}
 
 	if (s_initmpFlag){
-		s_initmpFlag = false;
 
 		InitMpFromTool();
+
+		s_initmpFlag = false;
 	}
 
 	if (s_interpolateState != 0){
@@ -19601,36 +19674,38 @@ int OnFrameToolWnd()
 	}
 
 
-
 	if (s_opedelmodelcnt >= 0) {
 		int modelcnt = s_opedelmodelcnt;
-		s_opedelmodelcnt = -1;
 		bool ondelbutton = true;
 		OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+
+		s_opedelmodelcnt = -1;
 	}
 	if ((s_opeselectmodelcnt >= 0) && s_modelpanel.panel) {
 		s_modelpanel.modelindex = s_opeselectmodelcnt;
-		s_opeselectmodelcnt = -1;
 		OnModelMenu(true, s_modelpanel.modelindex, 1);
 		s_modelpanel.panel->callRewrite();
+
+		s_opeselectmodelcnt = -1;
 	}
 	if (s_opedelmotioncnt >= 0) {
 		int delmenuindex = s_opedelmotioncnt;
-		s_opedelmotioncnt = -1;
 		bool ondelbutton = true;
 		OnDelMotion(delmenuindex, ondelbutton);
+
+		s_opedelmotioncnt = -1;
 	}
 	if ((s_opeselectmotioncnt >= 0) && s_motionpanel.panel) {
 		int motionindex = s_opeselectmotioncnt;
-		s_opeselectmotioncnt = -1;
 		OnAnimMenu(true, motionindex, 1);
 		s_motionpanel.panel->callRewrite();
+
+		s_opeselectmotioncnt = -1;
 	}
 
 
 
 	if (s_selCopyHisotryFlag) {
-		s_selCopyHisotryFlag = false;
 
 		GUIMenuSetVisible(-1, -1);
 
@@ -19654,11 +19729,11 @@ int OnFrameToolWnd()
 
 		s_copyhistorydlg.ShowWindow(SW_SHOW);
 		s_copyhistorydlg.SetNames(s_cptfilename);
+
+		s_selCopyHisotryFlag = false;
 	}
 
 	if (s_copyFlag){
-		s_copyFlag = false;
-		s_undersymcopyFlag = false;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
 			s_copymotvec.clear();
@@ -19688,11 +19763,12 @@ int OnFrameToolWnd()
 				s_copyhistorydlg.SetNames(s_cptfilename);
 			}
 		}
+
+		s_copyFlag = false;
+		s_undersymcopyFlag = false;
 	}
 
 	if (s_symcopyFlag){
-		s_symcopyFlag = false;
-		s_undersymcopyFlag = true;
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
 			int symrootmode = GetSymRootMode();
@@ -19721,12 +19797,13 @@ int OnFrameToolWnd()
 				s_copyhistorydlg.SetNames(s_cptfilename);
 			}
 		}
+
+		s_symcopyFlag = false;
+		s_undersymcopyFlag = true;
 	}
 
 
 	if (s_pasteFlag){
-		s_pasteFlag = false;
-
 
 		//添付ファイルを読み取ってs_pastemotvecに格納する
 		s_pastemotvec.clear();
@@ -19788,10 +19865,10 @@ int OnFrameToolWnd()
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 
+		s_pasteFlag = false;
 	}
 
 	if (s_motpropFlag){
-		s_motpropFlag = false;
 
 		if (s_model && s_model->GetCurMotInfo()){
 			int dlgret;
@@ -19811,6 +19888,8 @@ int OnFrameToolWnd()
 				OnAnimMenu(true, s_motmenuindexmap[s_model]);
 			}
 		}
+
+		s_motpropFlag = false;
 	}
 
 	/*
@@ -19834,7 +19913,6 @@ int OnFrameToolWnd()
 	*/
 
 	if (s_filterFlag == true){
-		s_filterFlag = false;
 
 		if (s_model){
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
@@ -19864,14 +19942,34 @@ int OnFrameToolWnd()
 			}
 		}
 
-
+		s_filterFlag = false;
 	}
 
 	if (s_btresetFlag == true) {
-		s_btresetFlag = false;
 		if (s_model) {
 			StartBt(s_model, TRUE, 2, 1);//flag = 2 --> resetflag = 1
 		}
+
+		s_btresetFlag = false;
+	}
+
+	if (s_newmotFlag == true) {
+		AddMotion(0);
+		s_newmotFlag = false;
+	}
+
+	if (s_delcurmotFlag == true) {
+		OnDelMotion(s_motmenuindexmap[s_model]);
+		s_delcurmotFlag = false;
+	}
+
+	if (s_delmodelFlag == true) {
+		OnDelModel(s_curmodelmenuindex);
+		s_delmodelFlag = false;
+	}
+	if (s_delallmodelFlag == true) {
+		OnDelAllModel();
+		s_delallmodelFlag = false;
 	}
 
 
@@ -25614,22 +25712,26 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//return 0;
 				break;
 			case ID_NEWMOT:
-				AddMotion(0);
-				InitCurMotion(0, 0);
+				s_newmotFlag = true;
+				//AddMotion(0);
+				//InitCurMotion(0, 0);
 				//return 0;
 				break;
 			case ID_DELCURMOT:
 				if (s_model) {
-					OnDelMotion(s_motmenuindexmap[s_model]);
+					s_delcurmotFlag = true;
+					//OnDelMotion(s_motmenuindexmap[s_model]);
 				}
 				//return 0;
 				break;
 			case ID_DELMODEL:
-				OnDelModel(s_curmodelmenuindex);
+				s_delmodelFlag = true;
+				//OnDelModel(s_curmodelmenuindex);
 				//return 0;
 				break;
 			case ID_DELALLMODEL:
-				OnDelAllModel();
+				s_delallmodelFlag = true;
+				//OnDelAllModel();
 				//return 0;
 				break;
 			default:

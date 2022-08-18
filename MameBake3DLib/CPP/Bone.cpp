@@ -588,7 +588,7 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 			m_curmp.SetWorldMat(*wmat);
 		}
 
-		if (m_parmodel->GetBtCnt() == 0) {
+		if (m_parmodel && (m_parmodel->GetBtCnt() == 0)) {//2022/08/18 add checking m_parmodel
 			SetBtMat(m_curmp.GetWorldMat());
 		}
 	}
@@ -3075,12 +3075,16 @@ int CBone::CalcBoneDepth()
 
 ChaVector3 CBone::GetJointFPos()
 {
-	
-	if (m_parmodel->GetOldAxisFlagAtLoading() == 0){
-		return m_jointfpos;
+	if (m_parmodel) {
+		if (m_parmodel->GetOldAxisFlagAtLoading() == 0) {
+			return m_jointfpos;
+		}
+		else {
+			return m_oldjointfpos;
+		}
 	}
-	else{
-		return m_oldjointfpos;
+	else {
+		return ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
 }
@@ -7696,9 +7700,13 @@ int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int 
 				//curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
 				curmp = curbone->GetMotionPoint(motid, framecnt);
 				if (!curmp) {
-					_ASSERT(0);
+					//_ASSERT(0);
 					//return 1;
 					curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+					if (!curmp) {
+						_ASSERT(0);
+						return 1;
+					}
 				}
 
 				//###############

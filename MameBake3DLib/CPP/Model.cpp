@@ -542,7 +542,9 @@ int CModel::DestroyObjs()
 {
 	//スレッドを先に止める
 	DestroyBoneUpdateMatrix();
+	WaitUpdateMatrixFinished();
 	DestroyLoadFbxAnim();
+	WaitLoadFbxAnimFinished();
 	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
 
 
