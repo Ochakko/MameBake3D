@@ -7738,6 +7738,8 @@ CBoneUpdateMatrix::CBoneUpdateMatrix()
 	m_exit_state = 0;
 	m_start_state = 0;
 	m_hthread = INVALID_HANDLE_VALUE;
+	m_hEvent = NULL;
+	m_hExitEvent = NULL;
 	InitializeCriticalSection(&m_CritSection_UpdateMatrix);
 	ClearBoneList();
 
@@ -7757,14 +7759,23 @@ CBoneUpdateMatrix::~CBoneUpdateMatrix()
 	if (m_hEvent != NULL) {
 		SetEvent(m_hEvent);
 	}
+	InterlockedExchange(&m_start_state, 1L);//ŒvŽZ‚µ‚È‚¢‚ÆŠÖ”‚ðI—¹‚Å‚«‚È‚¢‚±‚Æ‚à‚ ‚é
 	
-	Sleep(10);
+	//Sleep(10);
+	if (m_hExitEvent != NULL) {
+		WaitForSingleObject(m_hExitEvent, INFINITE);
+	}
+
 
 	DeleteCriticalSection(&m_CritSection_UpdateMatrix);
 	ClearBoneList();
 	if (m_hEvent != NULL) {
 		CloseHandle(m_hEvent);
 		m_hEvent = NULL;
+	}
+	if (m_hExitEvent != NULL) {
+		CloseHandle(m_hExitEvent);
+		m_hExitEvent = NULL;
 	}
 }
 
@@ -7818,6 +7829,11 @@ unsigned __stdcall CBoneUpdateMatrix::ThreadFunc_UpdateMatrixCaller(LPVOID lpThr
 }
 int CBoneUpdateMatrix::ThreadFunc_UpdateMatrix()
 {
+	m_hExitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (m_hExitEvent == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	while (InterlockedAdd(&m_exit_state, 0) != 1) {
 
@@ -7828,19 +7844,24 @@ int CBoneUpdateMatrix::ThreadFunc_UpdateMatrix()
 			//###########################
 
 			if (InterlockedAdd(&m_start_state, 0) == 1) {
-				EnterCriticalSection(&m_CritSection_UpdateMatrix);
-				if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
-					int bonecount;
-					for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-						CBone* curbone = m_bonelist[bonecount];
-						if (curbone) {
-							bool callingbythread = true;
-							curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+				if (InterlockedAdd(&m_exit_state, 0) != 1) {//I—¹‚µ‚Ä‚¢‚È‚¢ê‡
+					EnterCriticalSection(&m_CritSection_UpdateMatrix);
+					if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+						int bonecount;
+						for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+							CBone* curbone = m_bonelist[bonecount];
+							if (curbone) {
+								bool callingbythread = true;
+								curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+							}
 						}
 					}
+					InterlockedExchange(&m_start_state, 0L);
+					LeaveCriticalSection(&m_CritSection_UpdateMatrix);
 				}
-				InterlockedExchange(&m_start_state, 0L);
-				LeaveCriticalSection(&m_CritSection_UpdateMatrix);
+				else {
+					InterlockedExchange(&m_start_state, 0L);
+				}
 			}
 			else {
 				//__nop();
@@ -7889,7 +7910,9 @@ int CBoneUpdateMatrix::ThreadFunc_UpdateMatrix()
 		}
 	}
 
-
+	if (m_hExitEvent != NULL) {
+		SetEvent(m_hExitEvent);
+	}
 
 	return 0;
 }

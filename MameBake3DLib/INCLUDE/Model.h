@@ -133,6 +133,7 @@ private:
 private:
 	CRITICAL_SECTION m_CritSection_LoadFbxAnim;
 	HANDLE m_hEvent; //手動リセットイベント
+	HANDLE m_hExitEvent; //手動リセットイベント
 
 	HANDLE m_hthread;
 	LONG m_exit_state;
@@ -1347,7 +1348,8 @@ private:
 
 	CBoneUpdateMatrix* m_boneupdatematrix;
 	CLoadFbxAnim* m_LoadFbxAnim;
-
+	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
+	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
 
 	map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。

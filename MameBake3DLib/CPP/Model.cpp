@@ -464,6 +464,10 @@ int CModel::InitParams()
 	m_bonelist.clear();
 	m_boneupdatematrix = 0;
 	m_LoadFbxAnim = 0;
+	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
+	m_creatednum_loadfbxanim = 0;//スレッド数の変化に対応。作成済の数。処理用。
+
+
 
 	m_loadbonecount = 0;
 
@@ -540,6 +544,8 @@ int CModel::InitParams()
 }
 int CModel::DestroyObjs()
 {
+	InitUndoMotion(0);
+
 	//スレッドを先に止める
 	DestroyBoneUpdateMatrix();
 	WaitUpdateMatrixFinished();
@@ -627,6 +633,9 @@ int CModel::CreateBoneUpdateMatrix()
 			befthreadcount = threadcount;
 		}
 	}
+
+	m_creatednum_boneupdatematrix = g_UpdateMatrixThreads;
+
 
 	return 0;
 }
@@ -1727,14 +1736,14 @@ void CModel::WaitUpdateMatrixFinished()
 		while (yetflag == true) {
 			int finishedcount = 0;
 			int updatecount;
-			for (updatecount = 0; updatecount < g_UpdateMatrixThreads; updatecount++) {
+			for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
 				CBoneUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
 				if (curupdate->IsFinished()) {
 					finishedcount++;
 				}
 			}
 
-			if (finishedcount == g_UpdateMatrixThreads) {
+			if (finishedcount == m_creatednum_boneupdatematrix) {
 				yetflag = false;
 				return;
 			}
@@ -1786,9 +1795,9 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	double curframe = m_curmotinfo->curframe;
 
 
-	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (g_UpdateMatrixThreads * 4))) {
+	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 4))) {
 		int updatecount;
-		for (updatecount = 0; updatecount < g_UpdateMatrixThreads; updatecount++) {
+		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
 			CBoneUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
 			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
 		}
@@ -4132,7 +4141,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		//if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= (LOADFBXANIMTHREAD * 4))) {
 		if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= 2)) {
 			int loadcount;
-			for (loadcount = 0; loadcount < LOADFBXANIMTHREAD; loadcount++) {
+			for (loadcount = 0; loadcount < m_creatednum_loadfbxanim; loadcount++) {
 				CLoadFbxAnim* curload = m_LoadFbxAnim + loadcount;
 				curload->LoadFbxAnim(animno, curmotid, (animleng - 1));
 			}
@@ -4225,7 +4234,7 @@ void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, Fbx
 							int maxbonenuminthread;
 
 							bonenum = m_bonelist.size();
-							maxbonenuminthread = bonenum / LOADFBXANIMTHREAD + 1;
+							maxbonenuminthread = bonenum / m_creatednum_loadfbxanim + 1;
 							threadcount = m_loadbonecount / maxbonenuminthread;
 							CLoadFbxAnim* curload = m_LoadFbxAnim + threadcount;
 							if (curload) {
@@ -12729,6 +12738,8 @@ int CModel::CreateLoadFbxAnim(FbxScene* pscene)
 	//	}
 	//}
 
+	m_creatednum_loadfbxanim = LOADFBXANIMTHREAD;
+
 	return 0;
 
 }
@@ -12751,14 +12762,14 @@ void CModel::WaitLoadFbxAnimFinished()
 		while (yetflag == true) {
 			int finishedcount = 0;
 			int loadcount;
-			for (loadcount = 0; loadcount < LOADFBXANIMTHREAD; loadcount++) {
+			for (loadcount = 0; loadcount < m_creatednum_loadfbxanim; loadcount++) {
 				CLoadFbxAnim* curload = m_LoadFbxAnim + loadcount;
 				if (curload->IsFinished()) {
 					finishedcount++;
 				}
 			}
 
-			if (finishedcount == LOADFBXANIMTHREAD) {
+			if (finishedcount == m_creatednum_loadfbxanim) {
 				yetflag = false;
 				return;
 			}
@@ -12781,6 +12792,8 @@ CLoadFbxAnim::CLoadFbxAnim()
 	m_exit_state = 0;
 	m_start_state = 0;
 	m_hthread = INVALID_HANDLE_VALUE;
+	m_hEvent = NULL;
+	m_hExitEvent = NULL;
 	InitializeCriticalSection(&m_CritSection_LoadFbxAnim);
 	ClearBoneList();
 
@@ -12797,8 +12810,13 @@ CLoadFbxAnim::~CLoadFbxAnim()
 	if (m_hEvent != NULL) {
 		SetEvent(m_hEvent);
 	}
+	InterlockedExchange(&m_start_state, 1L);//計算しないと関数を終了できないこともある
 
-	Sleep(10);
+	//Sleep(10);
+	if (m_hExitEvent != NULL) {
+		WaitForSingleObject(m_hExitEvent, INFINITE);
+	}
+
 
 	DeleteCriticalSection(&m_CritSection_LoadFbxAnim);
 	ClearBoneList();
@@ -12806,6 +12824,11 @@ CLoadFbxAnim::~CLoadFbxAnim()
 		CloseHandle(m_hEvent);
 		m_hEvent = NULL;
 	}
+	if (m_hExitEvent != NULL) {
+		CloseHandle(m_hExitEvent);
+		m_hExitEvent = NULL;
+	}
+
 }
 
 int CLoadFbxAnim::CreateThread()
@@ -12859,6 +12882,12 @@ unsigned __stdcall CLoadFbxAnim::ThreadFunc_LoadFbxAnimCaller(LPVOID lpThreadPar
 int CLoadFbxAnim::ThreadFunc_LoadFbxAnim()
 {
 
+	m_hExitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (m_hExitEvent == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	CLoadFbxAnim* curload = this;//for debug
 
@@ -12873,31 +12902,36 @@ int CLoadFbxAnim::ThreadFunc_LoadFbxAnim()
 			//###########################
 
 			if (InterlockedAdd(&m_start_state, 0) == 1) {
-				EnterCriticalSection(&m_CritSection_LoadFbxAnim);
-				if (m_model) {
-					if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
-						CBone* firstbone = m_bonelist[0];
-						bool callingbythread = true;
-						firstbone->GetFBXAnim(m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
+				if (InterlockedAdd(&m_exit_state, 0) != 1) {//終了していない場合
+					EnterCriticalSection(&m_CritSection_LoadFbxAnim);
+					if (m_model) {
+						if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
+							CBone* firstbone = m_bonelist[0];
+							bool callingbythread = true;
+							firstbone->GetFBXAnim(m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
 
-						//int bonecount;
-						//for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-						//	CBone* curbone = m_bonelist[bonecount];
-						//	FbxUInt64 curnodeindex = m_nodelist[bonecount];
-						//	if (curbone) {
-						//		bool callingbythread = true;
-						//		CModel* curmodel = GetModel();
-						//		if (curmodel) {
-						//			curbone->GetFBXAnim(GetScene(), m_animno, curnodeindex, m_motid, m_animleng, callingbythread);
-						//		}
-						//
-						//		//Sleep(0);
-						//	}
-						//}
+							//int bonecount;
+							//for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+							//	CBone* curbone = m_bonelist[bonecount];
+							//	FbxUInt64 curnodeindex = m_nodelist[bonecount];
+							//	if (curbone) {
+							//		bool callingbythread = true;
+							//		CModel* curmodel = GetModel();
+							//		if (curmodel) {
+							//			curbone->GetFBXAnim(GetScene(), m_animno, curnodeindex, m_motid, m_animleng, callingbythread);
+							//		}
+							//
+							//		//Sleep(0);
+							//	}
+							//}
+						}
 					}
+					InterlockedExchange(&m_start_state, 0L);
+					LeaveCriticalSection(&m_CritSection_LoadFbxAnim);
 				}
-				InterlockedExchange(&m_start_state, 0L);
-				LeaveCriticalSection(&m_CritSection_LoadFbxAnim);
+				else {
+					InterlockedExchange(&m_start_state, 0L);
+				}
 			}
 			else {
 				//__nop();
@@ -12948,8 +12982,10 @@ int CLoadFbxAnim::ThreadFunc_LoadFbxAnim()
 		//}
 	}
 
-
-
+	if (m_hExitEvent != NULL) {
+		SetEvent(m_hExitEvent);
+	}
+	
 	return 0;
 }
 

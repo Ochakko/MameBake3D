@@ -9685,6 +9685,9 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 			newtle.motionid = newmotid;
 			s_tlarray.push_back(newtle);
 
+			s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;//2022/08/19
+
+
 			s_model->SetCurrentMotion(newmotid);
 		}
 
@@ -11140,20 +11143,20 @@ int OnImpMenu( int selindex )
 
 int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = false
 {
-	if (s_underdelmotion == true) {
-		//再入防止
-		return 0;
-	}
+	//if (s_underdelmotion == true) {
+	//	//再入防止
+	//	return 0;
+	//}
 
-	s_underdelmotion = true;
+	//s_underdelmotion = true;
 
 	int tlnum = (int)s_tlarray.size();
 	if( (tlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= tlnum) ){
-		s_underdelmotion = false;
+		//s_underdelmotion = false;
 		return 0;
 	}
 	if ((ondelbutton == true) && (tlnum <= 1)) {
-		s_underdelmotion = false;
+		//s_underdelmotion = false;
 		return 0;
 	}
 
@@ -11161,17 +11164,33 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 	int result;
 	s_model->WaitUpdateMatrixFinished();//2022/08/18
 	result = s_model->DeleteMotion(delmotid);
-	if (result) {
-		s_underdelmotion = false;
-		return 1;
-	}
+	//if (result) {
+	//	//s_underdelmotion = false;
+	//	return 1;
+	//}
 
 
+	//vector<TLELEM> tmptlarray;
+	//tmptlarray = s_tlarray;
+	//s_tlarray.clear();
+	//int tlno;
+	//int settlcount = 0;
+	//for (tlno = 0; tlno < tlnum; tlno++) {
+	//	if (tlno != delmenuindex) {
+	//		s_tlarray[settlcount] = tmptlarray[tlno];
+	//		settlcount++;
+	//	}
+	//}
 	int tlno;
-	for (tlno = delmenuindex; tlno < (tlnum - 1); tlno++) {
-		s_tlarray[tlno] = s_tlarray[tlno + 1];
+	//for (tlno = delmenuindex; tlno < (tlnum - 1); tlno++) {
+	//	s_tlarray[tlno] = s_tlarray[tlno + 1];
+	//}
+	std::vector<TLELEM>::iterator itrtl = s_tlarray.begin();
+	for (tlno = 0; tlno < delmenuindex; tlno++) {
+		itrtl++;
 	}
-	s_tlarray.pop_back();
+	s_tlarray.erase(itrtl);
+	//s_tlarray.pop_back();
 
 	int newtlnum = (int)s_tlarray.size();
 	if( newtlnum == 0 ){
@@ -11182,24 +11201,24 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 
 	DispMotionPanel();
 
-	s_underdelmotion = false;
+	//s_underdelmotion = false;
 
 	return 0;
 }
 
 int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == false
 {
-	s_underdelmodel = true;
+	//s_underdelmodel = true;
 
 	int mdlnum = (int)s_modelindex.size();
 	if( (mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum) ){
-		s_underdelmodel = false;
+		//s_underdelmodel = false;
 		return 0;
 	}
 
 	if (mdlnum == 1){
 		OnDelAllModel();//psdk rootnode初期化
-		s_underdelmodel = false;
+		//s_underdelmodel = false;
 		return 0;
 	}
 
@@ -11224,15 +11243,34 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		delete delmodel;
 	}
 
+	
+	//vector<MODELELEM> tmpmodelindex;
+	//tmpmodelindex = s_modelindex;
+	//s_modelindex.clear();
+	//int modelno;
+	//int setmodelcount = 0;
+	//for (modelno = 0; modelno < mdlnum; modelno++) {
+	//	if (modelno != delmenuindex) {
+	//		s_modelindex[setmodelcount] = tmpmodelindex[modelno];
+	//		setmodelcount++;
+	//	}
+	//}
 	int mdlno;
-	for( mdlno = delmenuindex; mdlno < (mdlnum - 1); mdlno++ ){
-		s_modelindex[ mdlno ].tlarray.clear();
-		s_modelindex[ mdlno ].boneno2lineno.clear();
-		s_modelindex[ mdlno ].lineno2boneno.clear();
+	//for( mdlno = delmenuindex; mdlno < (mdlnum - 1); mdlno++ ){
+	//	s_modelindex[ mdlno ].tlarray.clear();
+	//	s_modelindex[ mdlno ].boneno2lineno.clear();
+	//	s_modelindex[ mdlno ].lineno2boneno.clear();
 
-		s_modelindex[ mdlno ] = s_modelindex[ mdlno + 1 ];
+	//	s_modelindex[ mdlno ] = s_modelindex[ mdlno + 1 ];
+	//}
+	std::vector<MODELELEM>::iterator itrmodel = s_modelindex.begin();
+	for (mdlno = 0; mdlno < delmenuindex; mdlno++) {
+		itrmodel++;
 	}
-	s_modelindex.pop_back();
+	s_modelindex.erase(itrmodel);
+	//s_modelindex.pop_back();
+
+
 
 	if( s_modelindex.empty() ){
 		s_curboneno = -1;
@@ -11242,11 +11280,14 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		s_motmenuindexmap.clear();
 		s_lineno2boneno.clear();
 		s_boneno2lineno.clear();
-	}else{
+	}
+	else{
 		s_curboneno = -1;
 		s_model = s_modelindex[ 0 ].modelptr;
 		if (s_model) {
 			s_motmenuindexmap[s_model] = s_modelindex[0].motmenuindex;
+			//s_modelindex[0].motmenuindex = 0;
+			//s_motmenuindexmap[s_model] = s_modelindex[0].motmenuindex;
 		}
 		s_tlarray = s_modelindex[0].tlarray;
 		s_lineno2boneno = s_modelindex[0].lineno2boneno;
@@ -11261,7 +11302,7 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		OrgWindowListenMouse(false);
 	}
 
-	s_underdelmodel = false;
+	//s_underdelmodel = false;
 
 	return 0;
 }
@@ -13398,13 +13439,18 @@ int CreateModelPanel()
 			if (s_model) {
 				if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//全部消すときはメインメニューから
 					CModel* curmodel = s_modelindex[modelcnt].modelptr;
-					if ((s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
+					if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motion削除と同時は禁止 
+						(s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
 						s_underdelmodel = true;
 						//bool ondelbutton = true;
 						//OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
 
 						//ここでOnDelModelを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
 						s_opedelmodelcnt = modelcnt;
+
+						s_model = 0;//カレントモデルに影響しないように
+
+						Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
 					}
 				}
 			}
@@ -13624,13 +13670,16 @@ int CreateMotionPanel()
 	int delmenuindex = 0;
 	for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
 		s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-			if ((s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+			if ((s_underdelmodel ==false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
+				(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
 				s_opedelmotioncnt = delmenuindex;
-				//s_underdelmotion = true;//OnDelMotionでセット2022/08/18
+				s_underdelmotion = true;
 				//bool ondelbutton = true;
 				//OnDelMotion(delmenuindex, ondelbutton);
 
 				//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+
+				Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
 			}
 		});
 	}
@@ -19674,12 +19723,13 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_opedelmodelcnt >= 0) {
+	if ((s_opedelmodelcnt >= 0) && (s_underdelmodel == true)) {
 		int modelcnt = s_opedelmodelcnt;
 		bool ondelbutton = true;
 		OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
 
 		s_opedelmodelcnt = -1;
+		s_underdelmodel = false;
 	}
 	if ((s_opeselectmodelcnt >= 0) && s_modelpanel.panel) {
 		s_modelpanel.modelindex = s_opeselectmodelcnt;
@@ -19688,12 +19738,13 @@ int OnFrameToolWnd()
 
 		s_opeselectmodelcnt = -1;
 	}
-	if (s_opedelmotioncnt >= 0) {
+	if ((s_opedelmotioncnt >= 0) && (s_underdelmotion == true)) {
 		int delmenuindex = s_opedelmotioncnt;
 		bool ondelbutton = true;
 		OnDelMotion(delmenuindex, ondelbutton);
 
 		s_opedelmotioncnt = -1;
+		s_underdelmotion = false;
 	}
 	if ((s_opeselectmotioncnt >= 0) && s_motionpanel.panel) {
 		int motionindex = s_opeselectmotioncnt;
@@ -19959,16 +20010,22 @@ int OnFrameToolWnd()
 	}
 
 	if (s_delcurmotFlag == true) {
+		s_underdelmotion = true;
 		OnDelMotion(s_motmenuindexmap[s_model]);
+		s_underdelmotion = false;
 		s_delcurmotFlag = false;
 	}
 
 	if (s_delmodelFlag == true) {
+		s_underdelmodel = true;
 		OnDelModel(s_curmodelmenuindex);
+		s_underdelmodel = false;
 		s_delmodelFlag = false;
 	}
 	if (s_delallmodelFlag == true) {
+		s_underdelmodel = true;
 		OnDelAllModel();
+		s_underdelmodel = false;
 		s_delallmodelFlag = false;
 	}
 
@@ -25254,7 +25311,26 @@ int OnTimeLineCursorFunc(int mbuttonflag, double newframe)
 
 int OnTimeLineCursor(int mbuttonflag, double newframe)
 {
-	s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
+	//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
+
+	if ((s_delmodelFlag == false) && (s_delallmodelFlag == false) && (s_delcurmotFlag == false) &&
+		(s_opedelmodelcnt < 0) && (s_opedelmotioncnt < 0) && (s_opeselectmodelcnt < 0) && (s_opeselectmotioncnt < 0) &&
+		(s_underdelmotion == false) && (s_underdelmodel == false))// &&
+		//s_model && (s_model->GetLoadedFlag() == true) && 
+		//(g_underRetargetFlag == false))
+	{
+		//OnTimeLineCursorFunc(mbuttonflag, newframe);
+		s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
+	}
+	else {
+		double curframe = 1.0;
+		s_owpTimeline->setCurrentTime(curframe, false);
+		s_owpLTimeline->setCurrentTime(curframe, false);
+		s_owpEulerGraph->setCurrentTime(curframe, false);
+	}
+
+
+
 
 	//if (g_previewFlag != 0){
 	//	return 0;

@@ -59,6 +59,7 @@ private:
 private:
 	CRITICAL_SECTION m_CritSection_UpdateMatrix;
 	HANDLE m_hEvent; //手動リセットイベント
+	HANDLE m_hExitEvent; //手動リセットイベント
 
 	HANDLE m_hthread;
 	LONG m_exit_state;
