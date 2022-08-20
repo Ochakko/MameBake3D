@@ -3496,7 +3496,8 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 
 	ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
 	ChaVector3 tmppos;
-	ChaVector3TransformCoord(&tmppos, &zeropos, &(curbone->GetNodeMat()));
+	ChaMatrix tmpnm = curbone->GetNodeMat();
+	ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
 	curbone->SetJointWPos(tmppos);
 	curbone->SetJointFPos(tmppos);
 

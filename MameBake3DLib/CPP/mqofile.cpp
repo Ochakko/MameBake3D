@@ -23,6 +23,9 @@
 #include <iostream>
 #include <iterator>
 
+using namespace std;
+
+
 #define BUFBLOCKLEN	2048
 
 

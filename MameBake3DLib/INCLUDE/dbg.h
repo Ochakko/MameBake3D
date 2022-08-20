@@ -18,28 +18,28 @@
 	HANDLE dbgfile = 0;
 	HANDLE infofile = 0;
 
-	int DbgOut( WCHAR* lpFormat, ... );
+	int DbgOut( const WCHAR* lpFormat, ... );
 
 	int DbgOutB( void* lpvoid, int datsize );
-	int DbgWrite2File( char* lpFormat, ... );
+	int DbgWrite2File( const char* lpFormat, ... );
 	int SetTabChar( int tabnum );		
-	void ErrorMessage(char* szMessage, HRESULT hr);
+	void ErrorMessage(const char* szMessage, HRESULT hr);
 	int OpenDbgFile(int srcappcnt);
 	int CloseDbgFile();
 
-	void OutputToInfoWnd(WCHAR* lpFormat, ...);
+	void OutputToInfoWnd(const WCHAR* lpFormat, ...);
 
 #else
 	extern HANDLE dbgfile;
 	extern HANDLE infofile;
 
-	extern int DbgOut( WCHAR* lpFormat, ... );
+	extern int DbgOut( const WCHAR* lpFormat, ... );
 	extern int DbgOutB( void* lpvoid, int datsize );
-	extern int DbgWrite2File( char* lpFormat, ... );
+	extern int DbgWrite2File(const char* lpFormat, ... );
 	extern int SetTabChar( int tabnum );
-	extern void ErrorMessage(char* szMessage, HRESULT hr);
+	extern void ErrorMessage(const char* szMessage, HRESULT hr);
 	extern int OpenDbgFile(int srcappcnt);
 	extern int CloseDbgFile();
-	extern void OutputToInfoWnd(WCHAR* lpFormat, ...);
+	extern void OutputToInfoWnd(const WCHAR* lpFormat, ...);
 #endif
 

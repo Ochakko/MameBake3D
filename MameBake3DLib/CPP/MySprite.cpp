@@ -183,7 +183,7 @@ int CMySprite::CreateDecl()
 }
 
 //int CMySprite::Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol )
-int CMySprite::Create(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool)
+int CMySprite::Create(ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* srcpath, const WCHAR* srcname, int srctransparent, int srcpool)
 {
 	CallF( CreateDecl(), return 1 );
 

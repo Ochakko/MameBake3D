@@ -263,11 +263,12 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	//}
 
 	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
+	ChaMatrix tmpzerofm = m_bone->GetCurrentZeroFrameMat(0);
 	parentposA = m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetCurrentZeroFrameMat(0));
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &tmpzerofm);
 	childposA = m_endbone->GetJointFPos();
 	//ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetCurrentZeroFrameMat(0));
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_bone->GetCurrentZeroFrameMat(0));
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &tmpzerofm);
 	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = (float)ChaVector3LengthDbl(&diffA);
 
@@ -525,20 +526,23 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	parentposA = curbto->m_bone->GetJointFPos();
 	childposA = curbto->m_endbone->GetJointFPos();
 	if (setstartflag == 1) {
-		ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurrentZeroFrameMat(0));
+		ChaMatrix tmpzerofm = curbto->m_bone->GetCurrentZeroFrameMat(0);
+		ChaVector3TransformCoord(&aftparentposA, &parentposA, &tmpzerofm);
 		//ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurrentZeroFrameMat(0));
-		ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_bone->GetCurrentZeroFrameMat(0));
+		ChaVector3TransformCoord(&aftchildposA, &childposA, &tmpzerofm);
 	}
 	else {
 		if (g_previewFlag != 5) {
-			ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetCurMp().GetWorldMat());
+			ChaMatrix tmpwm = curbto->m_bone->GetCurMp().GetWorldMat();
+			ChaVector3TransformCoord(&aftparentposA, &parentposA, &tmpwm);
 			//ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetCurMp().GetWorldMat());
-			ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_bone->GetCurMp().GetWorldMat());
+			ChaVector3TransformCoord(&aftchildposA, &childposA, &tmpwm);
 		}
 		else {
-			ChaVector3TransformCoord(&aftparentposA, &parentposA, &curbto->m_bone->GetBtMat());
+			ChaMatrix tmpbtmat = curbto->m_bone->GetBtMat();
+			ChaVector3TransformCoord(&aftparentposA, &parentposA, &tmpbtmat);
 			//ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_endbone->GetBtMat());
-			ChaVector3TransformCoord(&aftchildposA, &childposA, &curbto->m_bone->GetBtMat());
+			ChaVector3TransformCoord(&aftchildposA, &childposA, &tmpbtmat);
 		}
 	}
 	if (chilflag == 0){

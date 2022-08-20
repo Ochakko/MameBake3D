@@ -129,7 +129,7 @@
       <AdditionalIncludeDirectories>..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -154,7 +154,7 @@
       <AdditionalIncludeDirectories>..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

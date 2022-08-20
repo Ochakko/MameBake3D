@@ -70,9 +70,9 @@ public:
 	int GetRange( int* numptr, double* startptr, double* endptr, double* applyptr );
 
 
-	CEditRange CEditRange::operator= (CEditRange srcrange);
-	bool CEditRange::operator== (const CEditRange &er) const { return ((m_startframe == er.m_startframe) && (m_endframe == er.m_endframe) && (m_applyframe == er.m_applyframe)); };
-	bool CEditRange::operator!= (const CEditRange &er) const { return !(*this == er); };
+	CEditRange operator= (CEditRange srcrange);
+	bool operator== (const CEditRange &er) const { return ((m_startframe == er.m_startframe) && (m_endframe == er.m_endframe) && (m_applyframe == er.m_applyframe)); };
+	bool operator!= (const CEditRange &er) const { return !(*this == er); };
 
 
 	int GetSetFlag(){ return m_setflag; };

@@ -198,7 +198,7 @@ int CInfoWindow::CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, i
 
 }
 
-int CInfoWindow::OutputInfo(WCHAR* lpFormat, ...)
+int CInfoWindow::OutputInfo(const WCHAR* lpFormat, ...)
 {
 	if (!m_hWnd) {
 		return 0;

@@ -86,7 +86,7 @@ int CXMLIO::WriteVoid2File( void* pvoid, unsigned int srcleng )
 }
 
 
-int CXMLIO::Write2File( char* lpFormat, ... )
+int CXMLIO::Write2File( const char* lpFormat, ... )
 {
 	if( m_hfile == INVALID_HANDLE_VALUE ){
 		return 0;
@@ -223,7 +223,7 @@ int CXMLIO::SetBuffer()
 	return 0;
 }
 
-int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, char* startpat, char* endpat, int* dstint )
+int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat, int* dstint )
 {
 	if (!xmliobuf || !startpat || !endpat || !dstint) {
 		_ASSERT(0);
@@ -269,7 +269,7 @@ int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, char* startpat, char* endpat, int* dst
 
 	return 0;
 }
-int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, char* startpat, char* endpat, float* dstfloat )
+int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat, float* dstfloat )
 {
 	if (!xmliobuf || !startpat || !endpat || !dstfloat) {
 		_ASSERT(0);
@@ -315,7 +315,7 @@ int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, char* startpat, char* endpat, float*
 
 	return 0;
 }
-int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, ChaVector3* dstvec )
+int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat, ChaVector3* dstvec )
 {
 	if (!xmliobuf || !startpat || !endpat || !dstvec) {
 		_ASSERT(0);
@@ -386,7 +386,7 @@ int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, char* startpat, char* endpat, ChaVect
 
 	return 0;
 }
-int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, char* startpat, char* endpat, CQuaternion* dstq )
+int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat, CQuaternion* dstq )
 {
 	if (!xmliobuf || !startpat || !endpat || !dstq) {
 		_ASSERT(0);
@@ -467,7 +467,7 @@ int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, char* startpat, char* endpat, CQuaternio
 
 	return 0;
 }
-int CXMLIO::Read_Str( XMLIOBUF* xmliobuf, char* startpat, char* endpat, char* dststr, int arrayleng )
+int CXMLIO::Read_Str( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat, char* dststr, int arrayleng )
 {
 	if (!xmliobuf || !startpat || !endpat || !dststr) {
 		_ASSERT(0);
@@ -571,7 +571,7 @@ int CXMLIO::GetFloat( float* dstfloat, char* srcchar, int pos, int srcleng, int*
 
 	return 0;
 }
-int CXMLIO::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int srcleng )
+int CXMLIO::GetName( char* dstchar, int dstleng, const char* srcchar, int pos, int srcleng )
 {
 	if (!dstchar || !srcchar) {
 		_ASSERT(0);
@@ -585,7 +585,7 @@ int CXMLIO::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int src
 	return 0;
 }
 
-int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, char* startpat, char* endpat, XMLIOBUF* dstbuf, int delpatflag )
+int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* endpat, XMLIOBUF* dstbuf, int delpatflag )
 {
 	if (!srcbuf || !startpat || !endpat || !dstbuf) {
 		_ASSERT(0);

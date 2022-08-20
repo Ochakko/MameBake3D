@@ -55,7 +55,8 @@ unsigned __stdcall ThreadFunc_UpdateMatrix0(LPVOID lpThreadParam)
 			for (modelno = 0; modelno < modelnum; modelno++) {
 				CModel* curmodel = ptum->m_updatemodellist0[modelno];
 				if (curmodel) {
-					curmodel->UpdateMatrix(&(curmodel->GetWorldMat()), &(ptum->m_matVP));
+					ChaMatrix tmpwm = curmodel->GetWorldMat();
+					curmodel->UpdateMatrix(&tmpwm, &(ptum->m_matVP));
 				}
 			}
 			InterlockedExchange(&(ptum->m_underupdatematrix0), (LONG)2);
@@ -115,7 +116,8 @@ unsigned __stdcall ThreadFunc_UpdateMatrix1(LPVOID lpThreadParam)
 			for (modelno = 0; modelno < modelnum; modelno++) {
 				CModel* curmodel = ptum->m_updatemodellist1[modelno];
 				if (curmodel) {
-					curmodel->UpdateMatrix(&(curmodel->GetWorldMat()), &(ptum->m_matVP));
+					ChaMatrix tmpwm = curmodel->GetWorldMat();
+					curmodel->UpdateMatrix(&tmpwm, &(ptum->m_matVP));
 				}
 			}
 			InterlockedExchange(&(ptum->m_underupdatematrix1), (LONG)2);
@@ -177,7 +179,8 @@ unsigned __stdcall ThreadFunc_UpdateMatrix2(LPVOID lpThreadParam)
 			for (modelno = 0; modelno < modelnum; modelno++) {
 				CModel* curmodel = ptum->m_updatemodellist2[modelno];
 				if (curmodel) {
-					curmodel->UpdateMatrix(&(curmodel->GetWorldMat()), &(ptum->m_matVP));
+					ChaMatrix tmpwm = curmodel->GetWorldMat();
+					curmodel->UpdateMatrix(&tmpwm, &(ptum->m_matVP));
 				}
 			}
 			InterlockedExchange(&(ptum->m_underupdatematrix2), (LONG)2);

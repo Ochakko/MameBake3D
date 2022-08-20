@@ -119,7 +119,7 @@ public:
  * @return 成功したら０。
  * @detail charのボーンの名前はWCHARに変換されてボーンのUNICODE名もセットされる。
  */
-	int SetName( char* srcname );
+	int SetName( const char* srcname );
 
 /**
  * @fn 

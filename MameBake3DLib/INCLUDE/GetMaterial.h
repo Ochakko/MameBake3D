@@ -3,7 +3,7 @@
 
 #include <mqomaterial.h>
 #include <map>
-using namespace std;
+//using namespace std;
 
 /**
  * @fn
@@ -13,6 +13,6 @@ using namespace std;
  * @param (int matno) IN 材質番号。
  * @return CMQOMaterial* 材質番号に該当する材質へのポインタ。
  */
-CMQOMaterial* GetMaterialFromNo( map<int,CMQOMaterial*>& srcmat, int matno );
+CMQOMaterial* GetMaterialFromNo( std::map<int,CMQOMaterial*>& srcmat, int matno );
 
 #endif

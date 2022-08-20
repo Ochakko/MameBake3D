@@ -17,7 +17,7 @@
 #include <dbg.h>
 #include <map>
 
-using namespace std;
+//using namespace std;
 
 //class ID3D11Device;
 

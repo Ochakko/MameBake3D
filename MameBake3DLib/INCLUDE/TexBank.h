@@ -5,7 +5,7 @@
 #include <ChaVecCalc.h>
 #include <wchar.h>
 #include <map>
-using namespace std;
+//using namespace std;
 
 
 //class ID3D11Device;
@@ -19,7 +19,7 @@ public:
 	~CTexBank();
 
 	//int AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol, int* dstid );
-	int AddTex(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, int* dstid);
+	int AddTex(ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* srcpath, const WCHAR* srcname, int srctransparent, int srcpool, int* dstid);
 
 	int Invalidate( int invalmode );
 	int Restore(ID3D11DeviceContext* pd3dImmediateContext);
@@ -39,11 +39,11 @@ private:
 	int InitParams();
 	int DestroyObjs();
 
-	CTexElem* ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent );
+	CTexElem* ExistTex( const WCHAR* srcpath, const WCHAR* srcname, int srctransparent );
 
 private:
 	ID3D11Device* m_pdev;
-	map<int, CTexElem*> m_texmap;
+	std::map<int, CTexElem*> m_texmap;
 };
 #endif
 

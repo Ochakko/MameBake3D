@@ -23,11 +23,11 @@
 #include <iterator>
 
 
-CMQOMaterial* GetMaterialFromNo( map<int, CMQOMaterial*>& srcmaterial, int matno )
+CMQOMaterial* GetMaterialFromNo(std::map<int, CMQOMaterial*>& srcmaterial, int matno)
 {
 	CMQOMaterial* retmat = 0;
 
-	map<int,CMQOMaterial*>::iterator itr= srcmaterial.find(matno); 
+	std::map<int,CMQOMaterial*>::iterator itr= srcmaterial.find(matno); 
 	if( itr == srcmaterial.end() ) { 
 		return 0;
 	}else{ 

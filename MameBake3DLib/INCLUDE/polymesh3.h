@@ -9,7 +9,7 @@
 //#include <infelem.h>
 
 #include <map>
-using namespace std;
+//using namespace std;
 
 class CMQOObject;
 class CMQOMaterial;
@@ -25,12 +25,12 @@ public:
 	~CPolyMesh3();
 
 	int CreatePM3( int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
-		map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat );
+		std::map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat );
 	
 	//int SetIndexBuf();	
 	//int InvIndexBuf();
 
-	int ChkAlphaNum( map<int,CMQOMaterial*>& srcmat );
+	int ChkAlphaNum(std::map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
 
 	//int CalcInfNoSkin( CBone* applybone );
@@ -53,7 +53,7 @@ private:
 	int AddSmFace( N3P* n3p1, N3P* n3p2 );
 	//int CalcSMNormal();
 
-	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, map<int,CMQOMaterial*>& srcmat );
+	int SetOptV( PM3DISPV* optv, int* pleng, int* matnum, std::map<int,CMQOMaterial*>& srcmat );
 
 
 /***

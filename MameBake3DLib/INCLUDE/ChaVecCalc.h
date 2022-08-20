@@ -33,17 +33,17 @@ class ChaMatrix
 {
 public:
 	ChaMatrix();
-	ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44);
+	ChaMatrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44);
 
 #ifdef CONVD3DX11
-	ChaMatrix::ChaMatrix(DirectX::XMMATRIX m);
+	ChaMatrix(DirectX::XMMATRIX m);
 #endif
 
 	~ChaMatrix();
 
-	ChaMatrix ChaMatrix::operator= (ChaMatrix m);
+	ChaMatrix operator= (ChaMatrix m);
 #ifdef CONVD3DX11
-	ChaMatrix ChaMatrix::operator= (DirectX::XMMATRIX m);
+	ChaMatrix operator= (DirectX::XMMATRIX m);
 #endif
 
 	ChaMatrix operator* (float srcw) const;
@@ -64,7 +64,7 @@ public:
 	//ChaMatrix &operator/= (const ChaMatrix &m);
 	ChaMatrix operator- () const;
 
-	bool ChaMatrix::operator== (const ChaMatrix &m) const {
+	bool operator== (const ChaMatrix &m) const {
 		bool result;
 		result = _11 == m._11 && _12 == m._12 && _13 == m._13 && _14 == m._14 &&
 			_21 == m._21 && _22 == m._22 && _23 == m._23 && _24 == m._24 &&
@@ -72,7 +72,7 @@ public:
 			_41 == m._41 && _42 == m._42 && _43 == m._43 && _44 == m._44;
 		return result;
 	};
-	bool ChaMatrix::operator!= (const ChaMatrix &m) const {
+	bool operator!= (const ChaMatrix &m) const {
 		return !(*this == m);
 	};
 
@@ -112,7 +112,7 @@ public:
 	ChaVector2(float srcx, float srcy);
 	~ChaVector2();
 
-	ChaVector2 ChaVector2::operator= (ChaVector2 v);
+	ChaVector2 operator= (ChaVector2 v);
 	ChaVector2 operator* (float srcw) const;
 	ChaVector2 &operator*= (float srcw);
 	ChaVector2 operator/ (float srcw) const;
@@ -154,7 +154,7 @@ public:
 	ChaVector3(DirectX::XMVECTOR v);
 	~ChaVector3();
 
-	ChaVector3 ChaVector3::operator= (ChaVector3 v);
+	ChaVector3 operator= (ChaVector3 v);
 	ChaVector3 operator* (float srcw) const;
 	ChaVector3 &operator*= (float srcw);
 	ChaVector3 operator/ (float srcw) const;
@@ -199,7 +199,7 @@ public:
 	ChaVector4(float srcx, float srcy, float srcz, float srcw);
 	~ChaVector4();
 
-	ChaVector4 ChaVector4::operator= (ChaVector4 v);
+	ChaVector4 operator= (ChaVector4 v);
 	ChaVector4 operator* (float srcw) const;
 	ChaVector4 &operator*= (float srcw);
 	ChaVector4 operator/ (float srcw) const;
@@ -260,7 +260,7 @@ public:
 	void MakeFromD3DXMat(ChaMatrix eulmat);
 
 	//CQuaternion operator= (const CQuaternion &q) const;
-	CQuaternion CQuaternion::operator= (CQuaternion q);
+	CQuaternion operator= (CQuaternion q);
 	CQuaternion operator* (float srcw) const;
 	CQuaternion &operator*= (float srcw);
 	CQuaternion operator/ (float srcw) const;
@@ -281,10 +281,10 @@ public:
 	//CQuaternion inv () const;
 	CQuaternion normalize();
 
-	int CQuaternion::inv(CQuaternion* dstq);
+	int inv(CQuaternion* dstq);
 
-	bool CQuaternion::operator== (const CQuaternion &q) const { return w == q.w && x == q.x && y == q.y && z == q.z; }
-	bool CQuaternion::operator!= (const CQuaternion &q) const { return !(*this == q); }
+	bool operator== (const CQuaternion &q) const { return w == q.w && x == q.x && y == q.y && z == q.z; }
+	bool operator!= (const CQuaternion &q) const { return !(*this == q); }
 
 	//float DotProduct(CQuaternion srcq);
 	double DotProduct(CQuaternion srcq);

@@ -666,13 +666,16 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 
 			hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
 			_ASSERT(SUCCEEDED(hr));
-			hr = g_hambient->SetRawValue(&(curmat->GetAmb3F()), 0, sizeof(ChaVector3));
+			ChaVector3 tmpamb = curmat->GetAmb3F();
+			hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
-			hr = g_hspecular->SetRawValue(&(curmat->GetSpc3F()), 0, sizeof(ChaVector3));
+			ChaVector3 tmpspc = curmat->GetSpc3F();
+			hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
 			hr = g_hpower->SetFloat(curmat->GetPower());
 			_ASSERT(SUCCEEDED(hr));
-			hr = g_hemissive->SetRawValue(&(curmat->GetEmi3F()), 0, sizeof(ChaVector3));
+			ChaVector3 tmpemi = curmat->GetEmi3F();
+				hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
 			hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
@@ -1149,20 +1152,21 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 
 		hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
 		_ASSERT(SUCCEEDED(hr));
-		hr = g_hambient->SetRawValue(&(curmat->GetAmb3F()), 0, sizeof(ChaVector3));
+		ChaVector3 tmpamb = curmat->GetAmb3F();
+		hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
-		hr = g_hspecular->SetRawValue(&(curmat->GetSpc3F()), 0, sizeof(ChaVector3));
+		ChaVector3 tmpspc = curmat->GetSpc3F();
+		hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
 		hr = g_hpower->SetFloat(curmat->GetPower());
 		_ASSERT(SUCCEEDED(hr));
-		hr = g_hemissive->SetRawValue(&(curmat->GetEmi3F()), 0, sizeof(ChaVector3));
+		ChaVector3 tmpemi = curmat->GetEmi3F();
+		hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
 		hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
 		hr = g_hPm3Offset->SetRawValue(&m_scaleoffset, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
-
-
 
 
 		if (diffuse.w <= 0.99999f) {

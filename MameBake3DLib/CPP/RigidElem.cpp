@@ -135,9 +135,11 @@ float CRigidElem::GetBoneLeng()
 
 	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
 	parentposA = m_bone->GetJointFPos();
-	ChaVector3TransformCoord(&aftparentposA, &parentposA, &m_bone->GetInitMat());
+	ChaMatrix tmpim = m_bone->GetInitMat();
+	ChaVector3TransformCoord(&aftparentposA, &parentposA, &tmpim);
 	childposA = m_endbone->GetJointFPos();
-	ChaVector3TransformCoord(&aftchildposA, &childposA, &m_endbone->GetInitMat());
+	ChaMatrix tmpendim = m_endbone->GetInitMat();
+	ChaVector3TransformCoord(&aftchildposA, &childposA, &tmpendim);
 	ChaVector3 diffA = childposA - parentposA;
 	m_boneleng = (float)ChaVector3LengthDbl(&diffA);
 

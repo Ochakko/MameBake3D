@@ -78,7 +78,7 @@ public:
 	const char* GetName(){
 		return m_name;
 	};
-	void SetName( char* srcname ){
+	void SetName( const char* srcname ){
 		strcpy_s( m_name, 256, srcname );
 	};
 
@@ -134,24 +134,24 @@ public:
 	const char* GetTex(){
 		return m_tex;
 	};
-	void SetTex( char* srcname ){
+	void SetTex(const char* srcname ){
 		strcpy_s( m_tex, 256, srcname );
 	};
-	void Add2Tex( char* srcname ){
+	void Add2Tex(const char* srcname ){
 		strcat_s( m_tex, 256, srcname );
 	};
 
 	const char* GetAlpha(){
 		return m_alpha;
 	};
-	void SetAlpha( char* srcname ){
+	void SetAlpha(const char* srcname ){
 		strcpy_s( m_alpha, 256, srcname );
 	};
 
 	const char* GetBump(){
 		return m_bump;
 	};
-	void SetBump( char* srcname ){
+	void SetBump(const char* srcname ){
 		strcpy_s( m_bump, 256, srcname );
 	};
 

@@ -20,7 +20,7 @@ public:
 	~CMySprite();
 
 	//int Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol );
-	int Create(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool);
+	int Create(ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* srcpath, const WCHAR* srcname, int srctransparent, int srcpool);
 	int CreateDecl();
 	int SetPos( ChaVector3 srcpos );
 	int SetSize( ChaVector2 srcsize );

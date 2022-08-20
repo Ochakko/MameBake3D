@@ -21,7 +21,7 @@
 
 #include <UndoMotion.h>
 
-using namespace std;
+//using namespace std;
 
 class CMQOMaterial;
 class CMQOObject;
@@ -186,7 +186,7 @@ public:
  * @return 成功したら０。
  * @detail texpool引数にはデフォルト値があるので省略可能。
  */
-	int LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, int ismedia, int texpool = 0 );
+	int LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, float srcmult, int ismedia, int texpool = 0 );
 	
 /**
  * @fn
@@ -203,7 +203,7 @@ public:
  * @param (int forcenewaxisflag) 過渡期ファイルのフラグ。
  * @return 成功したら０。
  */
-	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, WCHAR* wfile, WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag, BOOL motioncachebatchflag);
+	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag, BOOL motioncachebatchflag);
 
 /**
  * @fn
@@ -334,7 +334,7 @@ public:
  * @param (map<int, int>& boneno2lineno) OUT ボーンIDからタイムラインの行番号を検索するためのmap。
  * @return 成功したら０。
  */
-	int FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, map<int, int>& lineno2boneno, map<int, int>& boneno2lineno );
+	int FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno );
 
 /**
  * @fn
@@ -346,7 +346,7 @@ public:
  * @param (int* dstid) OUT アニメーションの選択に使用するIDがセットされる。
  * @return 成功したら０。
  */
-	int AddMotion( char* srcname, WCHAR* wfilename, double srcleng, int* dstid );
+	int AddMotion( const char* srcname, const WCHAR* wfilename, double srcleng, int* dstid );
 
 /**
  * @fn
@@ -535,7 +535,7 @@ public:
  * @param (char* objnameptr) IN 調べたいオブジェクトの名前を指定する。
  * @return ２D位置にオブジェクトがあれば１、無ければ０を返す。
  */
-	int CollisionNoBoneObj_Mouse( PICKINFO* pickinfo, char* objnameptr );
+	int CollisionNoBoneObj_Mouse( PICKINFO* pickinfo, const char* objnameptr );
 
 /**
  * @fn
@@ -647,7 +647,7 @@ public:
  * @return 成功したら０。
  * @detail 表示するとき１、しないとき０。
  */
-	int SetDispFlag( char* objname, int flag );
+	int SetDispFlag( const char* objname, int flag );
 
 /**
  * @fn
@@ -688,7 +688,7 @@ public:
 	int CreateRigidElem();
 	int SetCurrentRigidElem( int curindex );
 	REINFO GetCurrentRigidElemInfo(int* retindex);
-	void CreateRigidElemReq( CBone* curbone, int reflag, string rename, int impflag, string impname );
+	void CreateRigidElemReq( CBone* curbone, int reflag, std::string rename, int impflag, std::string impname );
 	int SetBtEquilibriumPoint();
 	int SetBtEquilibriumPointReq( CBtObject* srcbto );
 	void SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind);
@@ -794,7 +794,7 @@ private:
 	//	ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
 
 	void FillTimelineReq( OrgWinGUI::OWP_Timeline& timeline, CBone* curbone, int* linenoptr, 
-		map<int, int>& lineno2boneno, map<int, int>& boneno2lineno, int broflag );
+		std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno, int broflag );
 
 	void SetSelectFlagReq( CBone* boneptr, int broflag );
 	int CalcMouseLocalRay( PICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr );
@@ -959,7 +959,7 @@ public: //accesser
 		return (int)m_object.size();
 	};
 	CMQOObject* GetMqoObject( int srcobjno ){
-		map<int, CMQOObject*>::iterator itrobj;
+		std::map<int, CMQOObject*>::iterator itrobj;
 		itrobj = m_object.find(srcobjno);
 		if (itrobj != m_object.end()){
 			return itrobj->second;
@@ -979,8 +979,8 @@ public: //accesser
 		m_object[ srcindex ] = srcobj;
 	};
 
-	CBone* GetBoneByName( string srcname ){
-		map<string, CBone*>::iterator itrbone;
+	CBone* GetBoneByName(std::string srcname ){
+		std::map<std::string, CBone*>::iterator itrbone;
 		itrbone = m_bonename.find(srcname);
 		if (itrbone != m_bonename.end()){
 			return itrbone->second;
@@ -1016,7 +1016,7 @@ public: //accesser
 		return m_bonelist.end();
 	};
 	CBone* GetBoneByID( int srcid ){
-		map<int, CBone*>::iterator itrbone;
+		std::map<int, CBone*>::iterator itrbone;
 		itrbone = m_bonelist.find(srcid);
 		if (itrbone != m_bonelist.end()){
 			return itrbone->second;
@@ -1126,11 +1126,11 @@ public: //accesser
 	int GetImpInfoSize(){
 		return (int)m_impinfo.size();
 	};
-	string GetImpInfo( int srcindex ){
+	std::string GetImpInfo( int srcindex ){
 		return m_impinfo[ srcindex ];
 	};
-	string GetCurImpName(){
-		string curimpname = m_impinfo[m_curimpindex];
+	std::string GetCurImpName(){
+		std::string curimpname = m_impinfo[m_curimpindex];
 		return curimpname;
 	};
 	void PushBackImpInfo( std::string srcname )
@@ -1186,7 +1186,7 @@ public: //accesser
 		m_material[ srcindex ] = srcmat;
 	};
 
-	CMQOMaterial* GetMQOMaterialByName( string srcname ){
+	CMQOMaterial* GetMQOMaterialByName(std::string srcname ){
 		return m_materialname[ srcname ];
 	};
 	std::map<std::string,CMQOMaterial*>::iterator GetMQOMaterialNameBegin(){
@@ -1228,9 +1228,9 @@ public: //accesser
 		m_oldaxis_atloading = srcflag;
 	};
 
-	CMQOObject* GetObjectByName(string strname)
+	CMQOObject* GetObjectByName(std::string strname)
 	{
-		map<string, CMQOObject*>::iterator itrobjname;
+		std::map<std::string, CMQOObject*>::iterator itrobjname;
 		itrobjname = m_objectname.find(strname);
 		if (itrobjname == m_objectname.end()){
 			return 0;
@@ -1337,9 +1337,9 @@ private:
 	char m_defaultrename[MAX_PATH];//RigidEelemファイル*.refのデフォルトのファイル名。
 	char m_defaultimpname[MAX_PATH];//インパルスファイル*.impのデフォルトのファイル名。
 
-	map<int, CMQOObject*> m_object;//オブジェクト。別の言葉でいうと３Dモデルにおける名前が付けられているパーツや部品。
-	map<int, CBone*> m_bonelist;//ボーンをボーンIDから検索できるようにしたmap。
-	map<string, CBone*> m_bonename;//ボーンを名前から検索できるようにしたmap。
+	std::map<int, CMQOObject*> m_object;//オブジェクト。別の言葉でいうと３Dモデルにおける名前が付けられているパーツや部品。
+	std::map<int, CBone*> m_bonelist;//ボーンをボーンIDから検索できるようにしたmap。
+	std::map<std::string, CBone*> m_bonename;//ボーンを名前から検索できるようにしたmap。
 
 	CBone* m_topbone;//一番親のボーン。
 	CBtObject* m_topbt;//一番親のbullet剛体オブジェクト。
@@ -1351,11 +1351,11 @@ private:
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
 
-	map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
+	std::map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。
 
-	vector<REINFO> m_rigideleminfo;//剛体設定ファイル*.refのファイル情報のvector。
-	vector<string> m_impinfo;//インパルスファイル*.impのファイル名のvector。
+	std::vector<REINFO> m_rigideleminfo;//剛体設定ファイル*.refのファイル情報のvector。
+	std::vector<std::string> m_impinfo;//インパルスファイル*.impのファイル名のvector。
 
 	int m_curreindex;//現在有効になっている剛体ファイルのインデックス。剛体ファイルは複数読み込むことが出来て、カレントを設定できる。
 	int m_curimpindex;//現在有効になっているインパルスファイルのインデックス。インパルスファイルは複数読み込むことが出来、カレントを設定できる。
@@ -1365,8 +1365,8 @@ private:
 	float m_tmpmotspeed;//モーション再生倍率の一時保存用。
 
 	//polymesh3用のマテリアル。polymesh4はmqoobjectのmqomaterialを使用する。
-	map<int, CMQOMaterial*> m_material;
-	map<string, CMQOMaterial*> m_materialname;
+	std::map<int, CMQOMaterial*> m_material;
+	std::map<std::string, CMQOMaterial*> m_materialname;
 
 	FbxScene* m_pscene;//FBX SDKのシーンへのポインタ。CModel内でアロケート。
 	FbxArray<FbxString*> mAnimStackNameArray;//アニメーション名を保存するFBX形式のデータ。
@@ -1386,16 +1386,16 @@ private:
 	ChaMatrix m_matWorld;//ワールド変換行列。
 	ChaMatrix m_matVP;//View * Projection 変換行列。
 
-	map<CMQOObject*, FBXOBJ*> m_fbxobj;//FbxNodeのラッパークラスとCMQOObjectとのmap。
-	map<string, CMQOObject*> m_objectname;//CMQOObjectを名前で検索するためのmap。
+	std::map<CMQOObject*, FBXOBJ*> m_fbxobj;//FbxNodeのラッパークラスとCMQOObjectとのmap。
+	std::map<std::string, CMQOObject*> m_objectname;//CMQOObjectを名前で検索するためのmap。
 
 
 	int (*m_tlFunc)( int srcmotid );//Main.cppに実態があるタイムライン初期化用の関数へのポインタ。データ読み込み時にCModelから初期化関数を呼ぶ。
 
 	mutable FbxTime mStart, mStop, mFrameTime, mFrameTime2;//Fbxでの時間表現。アニメーションの時間(フレーム)指定などに使用。
 
-	map<CBone*, FbxNode*> m_bone2node;//ボーンとFbxNodeの対応表。FbxNodeはFBXファイル内のオブジェクトの階層をたどる際などに利用する。
-	map<CBone*,CBone*> m_rigidbone;//剛体１つはボーン１つに対応している。ボーンは親のジョイントと子供のジョイントからなる。ジョイントとボーンは同じように呼ぶことがある。剛体の親ボーンを子供ボーンからけんさくすることに使用する。
+	std::map<CBone*, FbxNode*> m_bone2node;//ボーンとFbxNodeの対応表。FbxNodeはFBXファイル内のオブジェクトの階層をたどる際などに利用する。
+	std::map<CBone*,CBone*> m_rigidbone;//剛体１つはボーン１つに対応している。ボーンは親のジョイントと子供のジョイントからなる。ジョイントとボーンは同じように呼ぶことがある。剛体の親ボーンを子供ボーンからけんさくすることに使用する。
 
 	int m_texpool;//Direct3Dのテクスチャ作成プール（場所）。システムメモリかビデオメモリかマネージドか選ぶ。通常は0でビデオメモリを指定する。
 	ChaVector3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。

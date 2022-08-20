@@ -2458,7 +2458,7 @@ void s_dummyfunc()
 		const TCHAR* getName() const{
 			return name;
 		}
-		void setName( TCHAR *value ){
+		void setName( const TCHAR *value ){
 			_tcscpy_s(name,256,value);
 
 			callRewrite();
@@ -2680,7 +2680,7 @@ void s_dummyfunc()
 
 		}
 		/// Method : ì‡óeïœçX
-		void setName( TCHAR *value ){
+		void setName(const TCHAR *value ){
 			_tcscpy_s(name,256,value);
 
 			callRewrite();
@@ -2821,7 +2821,7 @@ void s_dummyfunc()
 		void setButtonListener(std::function<void()> listener){
 			this->buttonListener= listener;
 		}
-		void setName(TCHAR *value){
+		void setName(const TCHAR *value){
 			_tcscpy_s(name, 256, value);
 
 			callRewrite();
@@ -5268,7 +5268,7 @@ void s_dummyfunc()
 					m_allocheadflag = 0;//1: head pointer at allocated
 				};
 
-				void OWP_Timeline::LineData::Key::InvalidateKeys();
+				void InvalidateKeys();
 
 				int GetUseFlag()
 				{
@@ -7153,7 +7153,7 @@ void s_dummyfunc()
 					return neweulblk;
 				};
 				
-				void OWP_EulerGraph::EulLineData::EulKey::InvalidateEulKeys();
+				void InvalidateEulKeys();
 
 
 				int GetUseFlag()
@@ -8463,7 +8463,7 @@ void s_dummyfunc()
 		}
 
 		const void* getObj(int index){
-			if(lineData.size() <= (unsigned int)index) return false;
+			if(lineData.size() <= (unsigned int)index) return 0;
 
 			return lineData[index]->object;
 		}

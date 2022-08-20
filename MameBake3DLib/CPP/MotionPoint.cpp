@@ -245,7 +245,8 @@ int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 
 	if (boneptr){
 		ChaVector3 aftpos;
-		ChaVector3TransformCoord(&aftpos, &boneptr->GetJointFPos(), &srcmat);
+		ChaVector3 tmpfpos = boneptr->GetJointFPos();
+		ChaVector3TransformCoord(&aftpos, &tmpfpos, &srcmat);
 		m_tra = aftpos - boneptr->GetJointFPos();
 
 

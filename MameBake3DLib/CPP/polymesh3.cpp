@@ -31,6 +31,9 @@
 #include <iostream>
 #include <iterator>
 
+using namespace std;
+
+
 #ifndef LINECHARLENG
 #define LINECHARLENG 2048
 #endif

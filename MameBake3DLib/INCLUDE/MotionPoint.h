@@ -39,7 +39,7 @@ public:
 
 
 
-	CMotionPoint CMotionPoint::operator= (CMotionPoint mp);
+	CMotionPoint operator= (CMotionPoint mp);
 
 public:
 	//accesser

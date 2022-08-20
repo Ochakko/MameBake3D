@@ -29,7 +29,7 @@ namespace MameBake3DLibRetarget {
 	static int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& sfirsthipmat, ChaMatrix& sinvfirsthipmat);
 
 
-	int Retarget(CModel* srcmodel, CModel* srcbvhmodel, ChaMatrix smatVP, std::map<CBone*, CBone*>& sconvbonemap, int (*srcAddMotionFunc)(WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
+	int Retarget(CModel* srcmodel, CModel* srcbvhmodel, ChaMatrix smatVP, std::map<CBone*, CBone*>& sconvbonemap, int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
 	{
 		if (!srcmodel || !srcbvhmodel || !srcAddMotionFunc || !srcInitCurMotionFunc) {
 			return 0;
@@ -87,9 +87,11 @@ namespace MameBake3DLibRetarget {
 				ChaMatrix dummyvpmat;
 				ChaMatrixIdentity(&dummyvpmat);
 				srcbvhmodel->SetMotionFrame(frame);
-				srcbvhmodel->UpdateMatrix(&(srcbvhmodel->GetWorldMat()), &dummyvpmat);
+				ChaMatrix tmpbvhwm = srcbvhmodel->GetWorldMat();
+				ChaMatrix tmpwm = srcmodel->GetWorldMat();
+				srcbvhmodel->UpdateMatrix(&tmpbvhwm, &dummyvpmat);
 				srcmodel->SetMotionFrame(frame);
-				srcmodel->UpdateMatrix(&(srcmodel->GetWorldMat()), &dummyvpmat);
+				srcmodel->UpdateMatrix(&tmpwm, &dummyvpmat);
 
 				CBone* befbvhbone = srcbvhmodel->GetTopBone();
 
@@ -104,7 +106,8 @@ namespace MameBake3DLibRetarget {
 			}
 		}
 
-		srcmodel->UpdateMatrix(&srcmodel->GetWorldMat(), &smatVP);
+		ChaMatrix tmpwm = srcmodel->GetWorldMat();
+		srcmodel->UpdateMatrix(&tmpwm, &smatVP);
 
 		g_underRetargetFlag = false;//!!!!!!!!!!!!
 

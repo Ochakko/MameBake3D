@@ -22,6 +22,9 @@
 #include <iostream>
 #include <iterator>
 
+using namespace std;
+
+
 extern WCHAR g_basedir[ MAX_PATH ];
 
 CTexBank::CTexBank( ID3D11Device* pdev )
@@ -57,7 +60,7 @@ int CTexBank::DestroyObjs()
 	return 0;
 }
 
-CTexElem* CTexBank::ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent )
+CTexElem* CTexBank::ExistTex( const WCHAR* srcpath, const WCHAR* srcname, int srctransparent )
 {
 	map<int,CTexElem*>::iterator finditr = m_texmap.end();
 
@@ -82,7 +85,7 @@ CTexElem* CTexBank::ExistTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent
 }
 
 //int CTexBank::AddTex( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol, int* dstid )
-int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext, WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, int* dstid)
+int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext,const WCHAR* srcpath, const WCHAR* srcname, int srctransparent, int srcpool, int* dstid)
 {
 	*dstid = -1;
 

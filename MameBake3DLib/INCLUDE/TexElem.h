@@ -38,14 +38,14 @@ public:
 	const WCHAR* GetName(){
 		return m_name;
 	};
-	void SetName( WCHAR* srcval ){
+	void SetName( const WCHAR* srcval ){
 		wcscpy_s( m_name, MAX_PATH, srcval );
 	};
 
 	const WCHAR* GetPath(){
 		return m_path;
 	};
-	void SetPath( WCHAR* srcval ){
+	void SetPath( const WCHAR* srcval ){
 		wcscpy_s( m_path, MAX_PATH, srcval );
 	};
 

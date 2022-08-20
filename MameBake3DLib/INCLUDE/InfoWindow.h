@@ -28,7 +28,7 @@ public:
 	~CInfoWindow();
 
 	int CreateInfoWindow(HWND srcparentwnd, int srcposx, int srcposy, int srcwidth, int srcheight);
-	int OutputInfo(WCHAR* lpFormat, ...);
+	int OutputInfo(const WCHAR* lpFormat, ...);
 
 
 	void UpdateWindow();

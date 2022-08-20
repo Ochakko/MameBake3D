@@ -17,7 +17,7 @@
 #include <InfoWindow.h>
 
 //Global Func
-void OutputToInfoWnd(WCHAR* lpFormat, ...)
+void OutputToInfoWnd(const WCHAR* lpFormat, ...)
 {
 	if (g_infownd) {
 		int ret;
@@ -48,7 +48,7 @@ void OutputToInfoWnd(WCHAR* lpFormat, ...)
 	}
 }
 
-int DbgOut( WCHAR* lpFormat, ... )
+int DbgOut( const WCHAR* lpFormat, ... )
 {
 	if( !dbgfile ){
 		return 0;
@@ -92,7 +92,7 @@ int DbgOutB( void* lpvoid, int datsize )
 
 }
 
-void ErrorMessage(WCHAR* szMessage, HRESULT hr)
+void ErrorMessage(const WCHAR* szMessage, HRESULT hr)
 {
     if(HRESULT_FACILITY(hr) == FACILITY_WINDOWS)
 		hr = HRESULT_CODE(hr);
@@ -188,7 +188,7 @@ int CloseDbgFile()
 	return 0;
 }
 
-int DbgWrite2File( char* lpFormat, ... )
+int DbgWrite2File( const char* lpFormat, ... )
 {
 	if( dbgfile == INVALID_HANDLE_VALUE ){
 		return 0;
