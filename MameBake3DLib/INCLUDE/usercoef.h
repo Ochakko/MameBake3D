@@ -33,7 +33,6 @@
 #define MAXCLUSTERNUM	200
 
 
-#define MAXLOADFBXANIMBONE	512
 
 enum {
 	INDX,

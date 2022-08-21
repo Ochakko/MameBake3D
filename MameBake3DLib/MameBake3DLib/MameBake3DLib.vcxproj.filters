@@ -180,7 +180,16 @@
     <ClCompile Include="..\CPP\Retarget.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
-    <ClCompile Include="..\CPP\ThreadsUpdateMatrix.cpp">
+    <ClCompile Include="..\CPP\ThreadingBase.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingLoadFbx.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingUpdateMatrix.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingUpdateTimeline.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1235,7 +1244,16 @@
     <ClInclude Include="..\INCLUDE\Retarget.h">
       <Filter>disp4</Filter>
     </ClInclude>
-    <ClInclude Include="..\INCLUDE\ThreadsUpdateMatrix.h">
+    <ClInclude Include="..\INCLUDE\ThreadingBase.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingLoadFbx.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingUpdateMatrix.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingUpdateTimeline.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

@@ -184,7 +184,7 @@ high rpmはスレッドを高回転させるかどうかを指定します
 
 #include "SelectLSDlg.h"
 
-#include <ThreadsUpdateMatrix.h>
+#include <ThreadingUpdateTimeline.h>
 
 
 //#include <uxtheme.h>
@@ -247,7 +247,7 @@ typedef struct tag_spsw
 //static void ApplyPhysIkRec();
 //static void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
 
-static CThreadsUpdateMatrix s_tum;
+static CThreadingUpdateTimeline* s_updatetimeline = 0;
 
 //#define FPSSAVENUM 100
 #define FPSSAVENUM 60
@@ -1987,6 +1987,7 @@ static bool FindAtTheLast(std::wstring const& strsource, std::wstring const& str
 
 
 static int ChangeUpdateMatrixThreads();
+static int FindModelIndex(CModel* srcmodel);
 
 
 static std::wstring ReplaceString
@@ -3115,9 +3116,11 @@ void InitApp()
 
 
 
-	//CThreadsUpdateMatrix
-	s_tum.InitParams();
-	s_tum.CreateThreads();
+	s_updatetimeline = new CThreadingUpdateTimeline();
+	if(!s_updatetimeline){
+		return;
+	}
+	s_updatetimeline->CreateThread();
 
 
 
@@ -4005,6 +4008,12 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	
 	SaveIniFile();
 
+	if (s_updatetimeline) {
+		delete s_updatetimeline;
+		s_updatetimeline = 0;
+	}
+
+
 	OnPluginClose();
 	if (s_plugin) {
 		delete[] s_plugin;
@@ -4307,9 +4316,6 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_copyhistorydlg.DestroyWindow();
 	}
 
-
-
-	s_tum.DestroyObjs();
 
 
 
@@ -5239,7 +5245,9 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 				else if (g_previewFlag == 5) {//ラグドール
 					OnFramePreviewRagdoll(&nextframe, &difftime);
 				}
-				OnTimeLineCursor(0, 0.0);
+				else {
+					OnTimeLineCursor(0, 0.0);
+				}
 			}
 			else {
 				g_previewFlag = 0;
@@ -9574,10 +9582,6 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		}
 	}
 
-
-
-
-
 	return newmodel;
 }
 
@@ -9698,10 +9702,15 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 			newtle.motionid = newmotid;
 			s_tlarray.push_back(newtle);
 
-			s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;//2022/08/19
+			//2022/08/21
+			int currentmodelindex = FindModelIndex(s_model);
+			if (currentmodelindex >= 0) {
+				s_modelindex[currentmodelindex].tlarray = s_tlarray;//2022/08/19
+			}
 
-
-			s_model->SetCurrentMotion(newmotid);
+			if (s_model) {
+				s_model->SetCurrentMotion(newmotid);
+			}
 		}
 
 		if (s_LtimelineWnd && s_owpPlayerButton) {
@@ -19161,6 +19170,12 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 	}
 
+	//if (s_anglelimitdlg) {
+	//	UpdateEditedEuler();
+	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//非ブロッキング
+	//}
+
+
 	//playerButtonのonefpsボタン
 	if (s_onefps == 1) {
 		Sleep(1000);//1fps
@@ -19399,6 +19414,12 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 
 	s_befunderikflag = s_underikflag;
+
+	//if (s_anglelimitdlg) {
+	//	UpdateEditedEuler();
+	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//非ブロッキング
+	//}
+
 
 	return 0;
 }
@@ -25324,9 +25345,7 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 
 int OnTimeLineCursorFunc(int mbuttonflag, double newframe)
 {
-	if (g_previewFlag != 0) {
-		return 0;
-	}
+
 
 	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 		double curframe;
@@ -25357,8 +25376,17 @@ int OnTimeLineCursor(int mbuttonflag, double newframe)
 		//s_model && (s_model->GetLoadedFlag() == true) && 
 		//(g_underRetargetFlag == false))
 	{
-		//OnTimeLineCursorFunc(mbuttonflag, newframe);
-		s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
+		OnTimeLineCursorFunc(mbuttonflag, newframe);
+		//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
+		//if (s_updatetimeline) {
+		//	s_updatetimeline->UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);
+		//	while (s_updatetimeline->IsFinished() == false) {
+		//		timeBeginPeriod(1);
+		//		SleepEx(0, TRUE);
+		//		//SleepEx(1, TRUE);
+		//		timeEndPeriod(1);
+		//	}
+		//}
 	}
 	else {
 		double curframe = 1.0;
@@ -35509,6 +35537,28 @@ int ChangeUpdateMatrixThreads()
 	}
 
 	return 0;
+}
+
+int FindModelIndex(CModel* srcmodel)
+{
+	if (!srcmodel) {
+		return -1;
+	}
+
+	int modelnum = s_modelindex.size();
+	if (modelnum <= 0) {
+		return -1;
+	}
+
+	int modelno;
+	for (modelno = 0; modelno < modelnum; modelno++) {
+		MODELELEM curme = s_modelindex[modelno];
+		if (curme.modelptr == srcmodel) {
+			return modelno;//!!!!!!!!!!!!!!
+		}
+	}
+
+	return -1;
 }
 
 

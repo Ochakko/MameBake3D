@@ -21,19 +21,22 @@
 
 #include <UndoMotion.h>
 
+
+
 //using namespace std;
 
 class CMQOMaterial;
 class CMQOObject;
 class CMQOFace;
 class CBone;
-class CBoneUpdateMatrix;
 class CMySprite;
 class CMotionPoint;
 class CQuaternion;
 class CBtObject;
 class CRigidElem;
 class CEditRange;
+class CThreadingLoadFbx;
+class CThreadingUpdateMatrix;
 
 typedef struct funcmpparams
 {
@@ -88,68 +91,6 @@ typedef struct tag_physikrec
 #define LOADFBXANIMTHREAD 4
 //#define LOADFBXANIMTHREAD 8
 //#define MAXLOADFBXANIMBONE	512
-
-class CModel;
-class CLoadFbxAnim
-{
-public:
-	CLoadFbxAnim();
-	~CLoadFbxAnim();
-
-	int CreateThread();
-	int ClearBoneList();
-	int SetBoneList(int srcindex, FbxNode* srcnodeindex, CBone* srcbone);
-	void LoadFbxAnim(int srcanimno, int srcmotid, double srcanimleng);
-	bool IsFinished();
-
-
-public:
-	int GetBoneNum()
-	{
-		return m_bonenum;
-	}
-
-	void SetModel(CModel* srcmodel)
-	{
-		m_model = srcmodel;
-	}
-	CModel* GetModel()
-	{
-		return m_model;
-	}
-
-	void SetScene(FbxScene* pscene)
-	{
-		m_pscene = pscene;
-	}
-	FbxScene* GetScene()
-	{
-		return m_pscene;
-	}
-private:
-	static unsigned __stdcall ThreadFunc_LoadFbxAnimCaller(LPVOID lpThreadParam);
-	int ThreadFunc_LoadFbxAnim();
-
-private:
-	CRITICAL_SECTION m_CritSection_LoadFbxAnim;
-	HANDLE m_hEvent; //手動リセットイベント
-	HANDLE m_hExitEvent; //手動リセットイベント
-
-	HANDLE m_hthread;
-	LONG m_exit_state;
-	LONG m_start_state;
-
-	FbxScene* m_pscene;
-	CModel* m_model;
-	int m_bonenum;
-	CBone* m_bonelist[MAXLOADFBXANIMBONE];
-	FbxNode* m_nodelist[MAXLOADFBXANIMBONE];
-
-	int m_animno;
-	int m_motid;
-	double m_animleng;
-};
-
 
 
 
@@ -755,7 +696,7 @@ public:
 	bool ChkBoneHasRig(CBone* srcbone);
 
 	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreads変更時にも呼ぶ
-	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CLoadFbxAnimからも呼ぶ CBoneに移動
+	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxからも呼ぶ CBoneに移動
 
 private:
 	int InitParams();
@@ -1346,8 +1287,8 @@ private:
 	//float m_btgscale;//bulletの重力に掛け算するスケール。--> m_rigideleminfoのbtgscaleに移動。
 
 
-	CBoneUpdateMatrix* m_boneupdatematrix;
-	CLoadFbxAnim* m_LoadFbxAnim;
+	CThreadingUpdateMatrix* m_boneupdatematrix;
+	CThreadingLoadFbx* m_LoadFbxAnim;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
 
