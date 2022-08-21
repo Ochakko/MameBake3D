@@ -944,7 +944,7 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	//for(int i=0; i<lMesh->GetPolygonCount(); ++i){
 	for (int i = 0; i<lMesh->GetPolygonCount(); i++){
 		
-		int materialindex = pm4->GetMaterialNoFromFaceNo(i);
+		materialindex = pm4->GetMaterialNoFromFaceNo(i);
 
 		////for debug
 		//if (materialindex != befmaterialindex) {

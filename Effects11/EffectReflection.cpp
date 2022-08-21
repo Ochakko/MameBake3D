@@ -3,15 +3,13 @@
 //
 // Direct3D 11 Effects public reflection APIs
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
 //--------------------------------------------------------------------------------------
 
-//#include "pchfx.h"
-#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\pchfx.h"
-
+#include "pchfx.h"
 
 namespace D3DX11Effects
 {
@@ -936,7 +934,7 @@ HRESULT SConstantBuffer::GetDesc(_Out_ D3DX11_EFFECT_VARIABLE_DESC *pDesc)
     pDesc->Semantic = nullptr;
     pDesc->BufferOffset = 0;
 
-    if (ExplicitBindPoint != -1)
+    if (ExplicitBindPoint != static_cast<uint32_t>(- 1))
     {
         pDesc->ExplicitBindPoint = ExplicitBindPoint;
         pDesc->Flags |= D3DX11_EFFECT_VARIABLE_EXPLICIT_BIND_POINT;
@@ -1440,6 +1438,10 @@ HRESULT SPassBlock::GetShaderDescHelper(D3DX11_PASS_SHADER_DESC *pDesc)
 
     ApplyPassAssignments();
 
+#ifdef _PREFAST_
+#pragma prefast(push)
+#pragma prefast(disable:__WARNING_UNUSED_POINTER_ASSIGNMENT, "pFuncName used in DPF")
+#endif
     switch (EShaderType)
     {
     case EOT_VertexShader:
@@ -1458,20 +1460,20 @@ HRESULT SPassBlock::GetShaderDescHelper(D3DX11_PASS_SHADER_DESC *pDesc)
         pShaderBlock = BackingStore.pGeometryShaderBlock;
         break;
     case EOT_HullShader5:
-#pragma prefast(suppress:__WARNING_UNUSED_POINTER_ASSIGNMENT, "pFuncName used in DPF")
         pFuncName = "ID3DX11EffectPass::GetHullShaderDesc";
         pShaderBlock = BackingStore.pHullShaderBlock;
         break;
     case EOT_DomainShader5:
-#pragma prefast(suppress:__WARNING_UNUSED_POINTER_ASSIGNMENT, "pFuncName used in DPF")
         pFuncName = "ID3DX11EffectPass::GetDomainShaderDesc";
         pShaderBlock = BackingStore.pDomainShaderBlock;
         break;
     case EOT_ComputeShader5:
-#pragma prefast(suppress:__WARNING_UNUSED_POINTER_ASSIGNMENT, "pFuncName used in DPF")
         pFuncName = "ID3DX11EffectPass::GetComputeShaderDesc";
         pShaderBlock = BackingStore.pComputeShaderBlock;
         break;
+#ifdef _PREFAST_
+#pragma prefast(pop)
+#endif
     default:
         assert(0);
     }
@@ -1629,7 +1631,6 @@ HRESULT SPassBlock::Apply(_In_ uint32_t Flags, _In_ ID3D11DeviceContext* pContex
     pEffect->ApplyPassBlock(this);
     pEffect->m_pContext = nullptr;
 
-lExit:
     return hr;
 }
 

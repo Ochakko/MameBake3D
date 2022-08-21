@@ -3,7 +3,7 @@
 //
 // Direct3D 11 shader effects precompiled header
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
@@ -36,8 +36,7 @@
 #undef DEFINE_GUID
 #include "INITGUID.h"
 
-//#include "d3dx11effect.h"
-#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\inc\d3dx11effect.h"
+#include "d3dx11effect.h"
 
 #define UNUSED -1
 
@@ -45,16 +44,12 @@
 
 #define offsetof_fx( a, b ) (uint32_t)offsetof( a, b )
 
-//#include "d3dxGlobal.h"
-#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\inc\d3dxGlobal.h" 
+#include "d3dxGlobal.h"
 
-#include <stddef.h>
-#include <stdlib.h>
+#include <cstddef>
+#include <cstdlib>
 
-//#include "Effect.h"
-#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\Effect.h"
-//#include "EffectStateBase11.h"
-#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\Binary\EffectStateBase11.h"
-//#include "EffectLoad.h"
-#include "e:\PG\MameBake3D_git\MameBake3D\Effects11\EffectLoad.h"
+#include "Effect.h"
+#include "EffectStateBase11.h"
+#include "EffectLoad.h"
 

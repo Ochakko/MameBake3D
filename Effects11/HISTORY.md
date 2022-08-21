@@ -4,6 +4,17 @@ http://go.microsoft.com/fwlink/?LinkId=271568
 
 ## Release History
 
+## August 17, 2022 (11.28)
+* CMake and MSBuild project updates
+
+## May 23, 2022 (11.27)
+* Add VS 2022 projects, retired VS 2017 projects
+* Update build switches for SDL recommendations
+* CMake project cleanup, added CMakePresets.json
+
+## December 2, 2021
+* Minor project cleanup
+
 ## February 7, 2021
 * Added CMake project
 * Removed Windows Vista support
