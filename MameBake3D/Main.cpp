@@ -21348,7 +21348,7 @@ int CreateUtDialog()
 	s_dsutguiid3.push_back(IDC_PHYSICS_MV_SLIDER);
 
 
-	if (g_usephysik == 1) {//MotionBrush%d.iniファイルを編集してUsePhysIKに１を指定した時のみのオプション機能（乱れやすい。少しだけ動かして物理的なノイズを加える位の役には立つかもしれないのでオプションとして残す。）
+	if (g_usephysik == 1) {//EditMot%d.iniファイルを編集してUsePhysIKに１を指定した時のみのオプション機能（乱れやすい。少しだけ動かして物理的なノイズを加える位の役には立つかもしれないのでオプションとして残す。）
 		iY += 10;
 		g_SampleUI.AddButton(IDC_PHYSICS_IK, L"PhysRotStart", startx, iY += addh, 100, ctrlh);
 		s_ui_physrotstart = g_SampleUI.GetControl(IDC_PHYSICS_IK);
@@ -25911,7 +25911,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lp) {
 	WCHAR strWindowText[1024];
 	GetWindowTextW(hwnd, strWindowText, 1024);
-	if (wcsstr(strWindowText, L"MotionBrushFreeC4") != 0) {
+	if (wcsstr(strWindowText, L"EditMotC4") != 0) {
 		if (lp) {
 			*((HWND*)lp) = hwnd;
 		}
@@ -25932,7 +25932,7 @@ HWND CreateMainWindow()
 	s_mainhwnd = 0;
 
 
-	//MotionBrushFC4.exeが起動していればそのウインドウを親にする
+	//EditMotC4.exeが起動していればそのウインドウを親にする
 	HWND parenthwnd = 0;
 	if (s_launchbyc4 != 0) {
 		EnumWindows(EnumWindowsProc, (LPARAM)&parenthwnd);
@@ -25998,7 +25998,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"MotionBrushFree Ver1.0.0.26 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.26 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -33545,7 +33545,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"MotionBrushFree Ver1.0.0.26 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.26 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -35162,7 +35162,7 @@ void OnArrowKey()
 {
 
 	//マウスカーソルが起動中ソフトのウインドウ内にある場合だけ処理
-	//複数個のMotionBrushを立ち上げたときに操作中のMotionBrushだけに影響するように
+	//複数個のEditMotを立ち上げたときに操作中のEditMotだけに影響するように
 	POINT cursorpoint;
 	GetCursorPos(&cursorpoint);
 	::ScreenToClient(s_mainhwnd, &cursorpoint);
@@ -35428,7 +35428,7 @@ int LoadIniFile()
 	*last2en = 0L;
 
 	WCHAR inifilepath[MAX_PATH] = { 0L };
-	swprintf_s(inifilepath, MAX_PATH, L"%s\\MotionBrush%d.ini", path, s_appcnt);
+	swprintf_s(inifilepath, MAX_PATH, L"%s\\EditMot%d.ini", path, s_appcnt);
 
 	CIniFile inifile;
 	inifile.LoadIniFile(inifilepath);
@@ -35456,7 +35456,7 @@ int SaveIniFile()
 	*last2en = 0L;
 
 	WCHAR inifilepath[MAX_PATH] = { 0L };
-	swprintf_s(inifilepath, MAX_PATH, L"%s\\MotionBrush%d.ini", path, s_appcnt);
+	swprintf_s(inifilepath, MAX_PATH, L"%s\\EditMot%d.ini", path, s_appcnt);
 
 	CIniFile inifile;
 	inifile.WriteIniFile(inifilepath);

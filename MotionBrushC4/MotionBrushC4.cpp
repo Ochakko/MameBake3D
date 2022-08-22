@@ -209,7 +209,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    WCHAR path1[MAX_PATH] = { 0L };
    //wcscpy_s(path1, MAX_PATH, L".\\MotionBrush.exe");
-   wcscpy_s(path1, MAX_PATH, L".\\MotionBrushFree.exe");
+   //wcscpy_s(path1, MAX_PATH, L".\\MotionBrushFree.exe");
+   wcscpy_s(path1, MAX_PATH, L".\\EditMot.exe");
    WCHAR path2[MAX_PATH] = { 0L };
    wcscpy_s(path2, MAX_PATH, L"..\\MameBake3D\\x64\\Release\\MameBake3D.exe");
    WCHAR path3[MAX_PATH] = { 0L };
@@ -565,7 +566,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             infofc1.hprocid = pi1.dwProcessId;
             EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc1);
             if (infofc1.hwnd != 0) {
-                ::PostMessage(infofc1.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                ::PostMessage(infofc1.hwnd, WM_QUIT, 0, 0);//EditMot*.iniを出力するにはこの呼び出し
                 //::PostMessage(infofc1.hwnd, WM_CLOSE, 0, 0);
                 //::PostMessage(infofc1.hwnd, WM_DESTROY, 0, 0);
                 //WaitForSingleObject(pi1.hProcess, INFINITE);
@@ -580,7 +581,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             infofc2.hprocid = pi2.dwProcessId;
             EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc2);
             if (infofc2.hwnd != 0) {
-                ::PostMessage(infofc2.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                ::PostMessage(infofc2.hwnd, WM_QUIT, 0, 0);//EditMot*.iniを出力するにはこの呼び出し
                 //::PostMessage(infofc2.hwnd, WM_CLOSE, 0, 0);
                 //::PostMessage(infofc2.hwnd, WM_DESTROY, 0, 0);
                 //WaitForSingleObject(pi2.hProcess, INFINITE);
@@ -595,7 +596,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             infofc3.hprocid = pi3.dwProcessId;
             EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc3);
             if (infofc3.hwnd != 0) {
-                ::PostMessage(infofc3.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                ::PostMessage(infofc3.hwnd, WM_QUIT, 0, 0);//EditMot*.iniを出力するにはこの呼び出し
                 //::PostMessage(infofc3.hwnd, WM_CLOSE, 0, 0);
                 //::PostMessage(infofc3.hwnd, WM_DESTROY, 0, 0);
                 //WaitForSingleObject(pi3.hProcess, INFINITE);
@@ -611,7 +612,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             infofc4.hprocid = pi4.dwProcessId;
             EnumWindows(EnumWindowsProcForClose, (LPARAM)&infofc4);
             if (infofc4.hwnd != 0) {
-                ::PostMessage(infofc4.hwnd, WM_QUIT, 0, 0);//MotionBrush*.iniを出力するにはこの呼び出し
+                ::PostMessage(infofc4.hwnd, WM_QUIT, 0, 0);//EditMot*.iniを出力するにはこの呼び出し
                 //::PostMessage(infofc4.hwnd, WM_CLOSE, 0, 0);
                 //::PostMessage(infofc4.hwnd, WM_DESTROY, 0, 0);
                 //WaitForSingleObject(pi4.hProcess, INFINITE);

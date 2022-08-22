@@ -5045,7 +5045,10 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 		////	parmat = parmp->GetWorldMat();
 		////}
 
-		parmat = m_parent->GetLimitedWorldMat(srcmotid, srcframe);
+		//2022/08/22
+		//parmat = m_parent->GetLimitedWorldMat(srcmotid, srcframe);
+		int callingstate = 3;
+		parmat = m_parent->GetLimitedWorldMat(srcmotid, srcframe, 0, callingstate);
 
 	}
 
@@ -7356,7 +7359,7 @@ void CBone::CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
 
 ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul, int callingstate)//default : dstneweul = 0, default : callingstate = 0
 {
-	//callingstate : 0->fullcalc, 1->bythread only current calc, 2->after thread, use result by threading calc
+	//callingstate : 0->fullcalc, 1->bythread only current calc, 2->after thread, use result by threading calc, 3->get calclated parents wm
 
 
 	ChaMatrix retmat;
@@ -7377,7 +7380,7 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, (double)((int)(srcframe + 0.1)));
 		if (curmp) {
-			if ((curmp->GetCalcLimitedWM() == 1) && (g_previewFlag != 4) && (g_previewFlag != 5)) {
+			if ((curmp->GetCalcLimitedWM() == 1) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
 				//計算済の場合 物理では無い場合
 				retmat = curmp->GetLimitedWM();
 			}
@@ -7402,9 +7405,27 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 					GetTempLocalEul(&orgeul, &neweul);
 				}
 
-				if ((callingstate == 0) || (callingstate == 2)) {
+				//if ((callingstate == 0) || (callingstate == 2)) {
+				if ((callingstate == 0) || (callingstate == 2) || (callingstate == 3)) {
 					retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
 				}
+				//else if (callingstate == 3) {
+				//	//2022/08/22
+				//	//物理時　計算済のparent(この関数内においてはcurrent)のwmを参照　不具合エフェクト：指の先が遅れて動く
+				//	if (GetChild()) {
+				//		retmat = GetBtMat();
+				//	}
+				//	else {
+				//		//endjoint対策　この対策をしない場合、指の先が遅れて動く
+				//		if (GetParent()) {
+				//			retmat = GetParent()->GetBtMat();
+				//		}
+				//		else {
+				//			retmat = GetBtMat();
+				//		}
+				//	}
+				//	
+				//}
 				else {
 					ChaMatrixIdentity(&retmat);
 				}

@@ -59,7 +59,7 @@ MBPLUGIN_EXPORT int MBGetPlugInID(DWORD* Product, DWORD* ID)
 //---------------------------------------------------------------------------
 //  MBGetPlugInName
 //    プラグイン名を返す。
-//    MotionBrushのブラシの種類のコンボボックスに、この名前が表示される。
+//    EditMotのブラシの種類のコンボボックスに、この名前が表示される。
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 {
@@ -69,7 +69,7 @@ MBPLUGIN_EXPORT const WCHAR* MBGetPlugInName(void)
 
 //---------------------------------------------------------------------------
 //  MBOnClose
-//    MotionBrushが終了する直前にMotionBrushから呼ばれる。
+//    EditMotが終了する直前にEditMotから呼ばれる。
 //---------------------------------------------------------------------------
 MBPLUGIN_EXPORT int MBOnClose(void)
 {
@@ -88,7 +88,7 @@ MBPLUGIN_EXPORT int MBOnPose(int motid)
 
 //----------------------------------------------------------------------------
 //  MBOnSelectPlugin
-//  MotionBrushで複数フレームを選択した時、ブラシの種類を選んだ時、ブラシのパラメータを変えたときに呼ばれます。
+//  EditMotで複数フレームを選択した時、ブラシの種類を選んだ時、ブラシのパラメータを変えたときに呼ばれます。
 //  選択された複数フレーム分のブラシ値を計算して配列dstvalueにセットします。
 //----------------------------------------------------------------------------
 MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe, double srcapplyframe, double srcframeleng, int srcrepeats, int srcmirroru, int srcmirrorv, int srcdiv2, float* dstvalue)
@@ -96,7 +96,7 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 	int MB2version;
 	if (MBGetVersion) {
 		MBGetVersion(&MB2version);
-		//Write2File( L"MotionBrush version : %d\r\n", MB2version );
+		//Write2File( L"EditMot version : %d\r\n", MB2version );
 	}
 
 	if ((srcstartframe >= 0.0) && (srcstartframe < 1e5) && (srcendframe >= srcstartframe) && (srcendframe < 1e5) &&
@@ -311,7 +311,6 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 	}
 
 
-	//MessageBox( NULL, L"SawMotionBrushの処理を終わりました。", L"SawMotionBrush", MB_OK );
 
 	return 0;
 }

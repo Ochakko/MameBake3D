@@ -7333,12 +7333,12 @@ void s_dummyfunc()
 				else if (wcscmp(L"S", name.c_str()) == 0) {
 					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
-					y2 = y0;//MotionBrushは初期位置
+					y2 = y0;//EditMotは初期位置
 				}
 				else {
 					hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
-					y2 = y0;//MotionBrushは初期位置
+					y2 = y0;//EditMotは初期位置
 				}
 
 				//if (eulrange < 10.0) {
