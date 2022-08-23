@@ -3438,8 +3438,22 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 	//FbxSkeleton* pskeleton = pNode->GetSkeleton();
 
 
+	int bvhflag = 0;
+	if (pmodel->GetScene()) {
+		FbxDocumentInfo* sceneinfo = pmodel->GetScene()->GetSceneInfo();
+		if (sceneinfo) {
+			FbxString mKeywords = "BVH animation";
+			if (sceneinfo->mKeywords == mKeywords) {
+				bvhflag = 1;//!!!!!! bvh‚ðFBX‚É•ÏŠ·‚µ‚Ä•Û‘¶‚µA‚»‚ê‚ð“Ç‚Ýž‚ñ‚Å‚©‚ç•Û‘¶‚·‚éê‡
+			}
+		}
+	}
 
-	if (pmodel->GetHasBindPose()) {
+
+	if ((bvhflag == 0) && 
+		pmodel->GetHasBindPose()) {
+
+
 		if (pNode) {
 			if (pPose) {
 				int lNodeIndex = pPose->Find(pNode);

@@ -92,12 +92,25 @@ int CThreadingLoadFbx::ThreadFunc()
 
 		if (InterlockedAdd(&m_start_state, 0) == 1) {
 			if (InterlockedAdd(&m_exit_state, 0) != 1) {//I—¹‚µ‚Ä‚¢‚È‚¢ê‡
+
+
+				int bvhflag = 0;
+				if (GetScene()) {
+					FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
+					if (sceneinfo) {
+						FbxString mKeywords = "BVH animation";
+						if (sceneinfo->mKeywords == mKeywords) {
+							bvhflag = 1;//!!!!!! bvh‚ðFBX‚É•ÏŠ·‚µ‚Ä•Û‘¶‚µA‚»‚ê‚ð“Ç‚Ýž‚ñ‚Å‚©‚ç•Û‘¶‚·‚éê‡
+						}
+					}
+				}
+
 				EnterCriticalSection(&m_CritSection);
 				if (m_model) {
 					if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
 						CBone* firstbone = m_bonelist[0];
 						bool callingbythread = true;
-						firstbone->GetFBXAnim(m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
+						firstbone->GetFBXAnim(bvhflag, m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
 					}
 				}
 				InterlockedExchange(&m_start_state, 0L);

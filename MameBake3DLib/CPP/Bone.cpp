@@ -7790,7 +7790,7 @@ int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 //	return 0;
 //}
 
-int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
+int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
 {
 
 	//if (curbone && !curbone->GetGetAnimFlag()) {
@@ -7827,7 +7827,10 @@ int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int 
 	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 	//FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
 	//FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
-	if (GetParModel() && GetParModel()->GetHasBindPose()) {
+
+	if ((bvhflag == 0) && 
+		GetParModel() && GetParModel()->GetHasBindPose()) {
+
 		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
 
 			for (bonecount = 0; bonecount < srcbonenum; bonecount++) {

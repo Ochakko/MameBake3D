@@ -101,7 +101,7 @@ public:
 	int ClearLimitedWorldMat(int srcmotid, double srcframe);
 
 	//int GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread); // default : callingbythread = false
-	int GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread = false);
+	int GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread = false);
 
 /**
  * @fn

@@ -4580,13 +4580,31 @@ int CModel::SetWorldMatFromLocalMat(int srcmotid)
 void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone)
 {
 	if (srcbone) {
+
+		int bvhflag = 0;
+		if (GetScene()) {
+			FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
+			if (sceneinfo) {
+				FbxString mKeywords = "BVH animation";
+				if (sceneinfo->mKeywords == mKeywords) {
+					bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
+				}
+			}
+		}
+
+
 		double curframe;
 		for (curframe = 0.0; curframe < animlen; curframe += 1.0) {//関数呼び出し時にanimleng - 1している
 
 			CMotionPoint* curmp;
 			curmp = srcbone->GetMotionPoint(srcmotid, curframe);
 			if (curmp) {
-				if (GetHasBindPose()) {
+
+
+				if ((bvhflag == 0) && 
+					GetHasBindPose()) {
+
+
 					//######################################
 					// バインドポーズがある場合
 					//######################################
