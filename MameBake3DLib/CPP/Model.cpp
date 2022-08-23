@@ -4042,8 +4042,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			}
 
 			WaitLoadFbxAnimFinished();//読み込み終了待ち
-			//SetWorldMatFromLocalMat(curmotid);//並列化出来なかった計算をする
-
+			SetWorldMatFromLocalMat(curmotid);//並列化出来なかった計算をする
 		}
 		else {
 		}

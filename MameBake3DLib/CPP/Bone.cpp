@@ -352,6 +352,7 @@ int CBone::InitParams()
 	m_type = FBXBONE_NONE;
 
 	ChaMatrixIdentity( &m_nodemat );
+	m_bindmat.SetIdentity();
 
 	m_jointwpos = ChaVector3( 0.0f, 0.0f, 0.0f );
 	m_jointfpos = ChaVector3( 0.0f, 0.0f, 0.0f );
@@ -7688,6 +7689,107 @@ int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 
 
 //int CBone::GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread) // default : callingbythread = false
+//int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
+//{
+//
+//	//if (curbone && !curbone->GetGetAnimFlag()) {
+//	//	curbone->SetGetAnimFlag(1);
+//	int bonecount;
+//	for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+//		CBone* curbone = *(bonelist + bonecount);
+//		if (curbone && !curbone->GetGetAnimFlag()) {
+//			curbone->SetGetAnimFlag(1);
+//		}
+//	}
+//
+//
+//	FbxTime fbxtime;
+//	fbxtime.SetSecondDouble(0.0);
+//	FbxTime difftime;
+//	difftime.SetSecondDouble(1.0 / 30);
+//	double framecnt;
+//	//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+//	//for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//ŠÖ”ŒÄ‚Ño‚µŽž‚Éanimleng - 1‚µ‚Ä‚¢‚é
+//
+//
+//	FbxAMatrix correctscalemat;
+//	correctscalemat.SetIdentity();
+//	FbxAMatrix currentmat;
+//	currentmat.SetIdentity();
+//	FbxAMatrix parentmat;
+//	parentmat.SetIdentity();
+//	//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
+//	//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
+//	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
+//	//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+//	//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+//	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+//	//FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+//	//FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+//
+//
+//	for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+//
+//		for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+//			CBone* curbone = *(bonelist + bonecount);
+//			FbxNode* pNode = *(nodelist + bonecount);
+//			if (curbone && pNode) {
+//				FbxAMatrix lGlobalSRT;
+//
+//				EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+//				lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
+//				LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+//
+//				ChaMatrix chaGlobalSRT;
+//				chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+//
+//				////##############
+//				////Add MotionPoint
+//				////##############
+//				ChaMatrix localmat;
+//				ChaMatrixIdentity(&localmat);
+//				ChaMatrix globalmat;
+//				ChaMatrixIdentity(&globalmat);
+//
+//				CMotionPoint* curmp = 0;
+//				int existflag = 0;
+//				//curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+//				curmp = curbone->GetMotionPoint(motid, framecnt);
+//				if (!curmp) {
+//					//_ASSERT(0);
+//					//return 1;
+//					curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+//					if (!curmp) {
+//						_ASSERT(0);
+//						return 1;
+//					}
+//				}
+//
+//				//###############
+//				//calc globalmat
+//				//###############
+//				if (curbone->GetParModel() && curbone->GetParModel()->GetHasBindPose()) {
+//					ChaMatrix chabindmat = ChaMatrixFromFbxAMatrix(curbone->GetBindMat());
+//					globalmat = (ChaMatrixInv(chabindmat) * chaGlobalSRT);
+//				}
+//				else {
+//					globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
+//				}
+//				//globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
+//				curmp->SetWorldMat(globalmat);//anglelimit–³‚µ
+//
+//			}
+//		}
+//
+//		fbxtime = fbxtime + difftime;
+//	}
+//
+//	Sleep(0);
+//
+//
+//	return 0;
+//}
+
 int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
 {
 
@@ -7725,55 +7827,149 @@ int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int 
 	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 	//FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
 	//FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+	if (GetParModel() && GetParModel()->GetHasBindPose()) {
+		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+
+			for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+				CBone* curbone = *(bonelist + bonecount);
+				FbxNode* pNode = *(nodelist + bonecount);
+				if (curbone && pNode) {
+					FbxAMatrix lGlobalSRT;
+
+					EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+					const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+					const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+					const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+					LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+
+					ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
+					ChaVector3 chaeul = ChaVector3((float)lR2[0], (float)lR2[1], (float)lR2[2]);
+					ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1], (float)lS2[2]);
+
+					//####################
+					//calc joint position
+					//####################
+					ChaVector3 jointpos;
+					jointpos = curbone->GetJointFPos();
+					ChaVector3 parentjointpos;
+					if (curbone->GetParent()) {
+						parentjointpos = curbone->GetParent()->GetJointFPos();
+					}
+					else {
+						parentjointpos = ChaVector3(0.0f, 0.0f, 0.0f);
+					}
+
+					//##############
+					//calc rotation
+					//##############
+					CQuaternion chaq;
+					chaq.SetRotationXYZ(0, chaeul);
+					ChaMatrix charotmat;
+					charotmat = chaq.MakeRotMatX();
+
+					ChaMatrix befrotmat, aftrotmat;
+					ChaMatrixTranslation(&befrotmat, -jointpos.x, -jointpos.y, -jointpos.z);
+					ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
+
+					//#################
+					//calc translation
+					//#################
+					ChaMatrix chatramat;
+					ChaMatrixIdentity(&chatramat);
+					ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
+
+					//##############
+					//calc scalling
+					//##############
+					ChaMatrix chascalemat;
+					ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
+
+					//Set Local frame0
+					if (framecnt == 0.0) {
+						curbone->SetLocalR0(chaq);
+						curbone->SetLocalT0(chatramat);
+						curbone->SetLocalS0(chascalemat);
+						//curbone->SetFirstSRT(chaSRT);
+					}
 
 
-	for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+					//##############
+					//calc localmat
+					//##############
+					ChaMatrix localmat;
+					ChaMatrixIdentity(&localmat);
+					ChaMatrix globalmat;
+					ChaMatrixIdentity(&globalmat);
 
-		for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
-			CBone* curbone = *(bonelist + bonecount);
-			FbxNode* pNode = *(nodelist + bonecount);
-			if (curbone && pNode) {
-				FbxAMatrix lGlobalSRT;
-
-				EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
-				lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
-				LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
-
-				ChaMatrix chaGlobalSRT;
-				chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-
-				////##############
-				////calc localmat
-				////##############
-				ChaMatrix localmat;
-				ChaMatrixIdentity(&localmat);
-				ChaMatrix globalmat;
-				ChaMatrixIdentity(&globalmat);
-
-				CMotionPoint* curmp = 0;
-				int existflag = 0;
-				//curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
-				curmp = curbone->GetMotionPoint(motid, framecnt);
-				if (!curmp) {
-					//_ASSERT(0);
-					//return 1;
+					CMotionPoint* curmp = 0;
+					int existflag = 0;
 					curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
 					if (!curmp) {
 						_ASSERT(0);
 						return 1;
 					}
+
+					localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+
+					//#############
+					//set localmat
+					//#############
+					curmp->SetLocalMat(localmat);//anglelimit–³‚µ
+
 				}
-
-				//###############
-				//calc globalmat
-				//###############
-				globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
-				curmp->SetWorldMat(globalmat);//anglelimit–³‚µ
-
 			}
+			fbxtime = fbxtime + difftime;
 		}
+	}
+	else {
+		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
 
-		fbxtime = fbxtime + difftime;
+			for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+				CBone* curbone = *(bonelist + bonecount);
+				FbxNode* pNode = *(nodelist + bonecount);
+				if (curbone && pNode) {
+					FbxAMatrix lGlobalSRT;
+
+					EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+					lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
+					LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+
+					ChaMatrix chaGlobalSRT;
+					chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+
+					////##############
+					////Add MotionPoint
+					////##############
+					ChaMatrix localmat;
+					ChaMatrixIdentity(&localmat);
+					ChaMatrix globalmat;
+					ChaMatrixIdentity(&globalmat);
+
+					CMotionPoint* curmp = 0;
+					int existflag = 0;
+					//curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+					curmp = curbone->GetMotionPoint(motid, framecnt);
+					if (!curmp) {
+						//_ASSERT(0);
+						//return 1;
+						curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+						if (!curmp) {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+
+					//###############
+					//calc globalmat
+					//###############
+					globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
+					//globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
+					curmp->SetWorldMat(globalmat);//anglelimit–³‚µ
+
+				}
+			}
+			fbxtime = fbxtime + difftime;
+		}
 	}
 
 	Sleep(0);
@@ -7781,4 +7977,5 @@ int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int 
 
 	return 0;
 }
+
 
