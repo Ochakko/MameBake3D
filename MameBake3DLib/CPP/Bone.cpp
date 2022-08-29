@@ -789,8 +789,9 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 			//(itrvecmpmap->second).clear();
 			(itrvecmpmap->second)[(int)(srcframe + 0.0001)] = newmp;//indexedmotionpointはモーションポイントの実体管理用ではなくインデックス用、作成と破棄はチェインで行うので上書きしても良い。
 		}
-
 	}
+
+
 
 	LeaveCriticalSection(&m_CritSection_AddMP);
 
@@ -1314,8 +1315,15 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 
 	if (bindflag == 1) {
 		//bind pose
-		aftbonepos = GetJointFPos();
-		aftchildpos = childbone->GetJointFPos();
+		//aftbonepos = GetJointFPos();
+		//aftchildpos = childbone->GetJointFPos();
+		ChaVector3 tmpfpos = GetJointFPos();
+		ChaVector3 tmpchildfpos = childbone->GetJointFPos();
+		ChaMatrix tmpzerofm = GetCurrentZeroFrameMat(0);
+		ChaMatrix tmpchildzerofm = GetCurrentZeroFrameMat(0);
+		ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
+		ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpchildzerofm);
+
 	}
 	else {
 		ChaVector3 tmpfpos = GetJointFPos();
@@ -7688,107 +7696,6 @@ int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 }
 
 
-//int CBone::GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread) // default : callingbythread = false
-//int CBone::GetFBXAnim(CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
-//{
-//
-//	//if (curbone && !curbone->GetGetAnimFlag()) {
-//	//	curbone->SetGetAnimFlag(1);
-//	int bonecount;
-//	for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
-//		CBone* curbone = *(bonelist + bonecount);
-//		if (curbone && !curbone->GetGetAnimFlag()) {
-//			curbone->SetGetAnimFlag(1);
-//		}
-//	}
-//
-//
-//	FbxTime fbxtime;
-//	fbxtime.SetSecondDouble(0.0);
-//	FbxTime difftime;
-//	difftime.SetSecondDouble(1.0 / 30);
-//	double framecnt;
-//	//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
-//	//for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//関数呼び出し時にanimleng - 1している
-//
-//
-//	FbxAMatrix correctscalemat;
-//	correctscalemat.SetIdentity();
-//	FbxAMatrix currentmat;
-//	currentmat.SetIdentity();
-//	FbxAMatrix parentmat;
-//	parentmat.SetIdentity();
-//	//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eDestinationPivot);
-//	//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eDestinationPivot);
-//	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eDestinationPivot);
-//	//const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-//	//const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-//	//const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
-//	//FbxAMatrix lSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
-//	//FbxAMatrix lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
-//
-//
-//	for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
-//
-//		for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
-//			CBone* curbone = *(bonelist + bonecount);
-//			FbxNode* pNode = *(nodelist + bonecount);
-//			if (curbone && pNode) {
-//				FbxAMatrix lGlobalSRT;
-//
-//				EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
-//				lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
-//				LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
-//
-//				ChaMatrix chaGlobalSRT;
-//				chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-//
-//				////##############
-//				////Add MotionPoint
-//				////##############
-//				ChaMatrix localmat;
-//				ChaMatrixIdentity(&localmat);
-//				ChaMatrix globalmat;
-//				ChaMatrixIdentity(&globalmat);
-//
-//				CMotionPoint* curmp = 0;
-//				int existflag = 0;
-//				//curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
-//				curmp = curbone->GetMotionPoint(motid, framecnt);
-//				if (!curmp) {
-//					//_ASSERT(0);
-//					//return 1;
-//					curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
-//					if (!curmp) {
-//						_ASSERT(0);
-//						return 1;
-//					}
-//				}
-//
-//				//###############
-//				//calc globalmat
-//				//###############
-//				if (curbone->GetParModel() && curbone->GetParModel()->GetHasBindPose()) {
-//					ChaMatrix chabindmat = ChaMatrixFromFbxAMatrix(curbone->GetBindMat());
-//					globalmat = (ChaMatrixInv(chabindmat) * chaGlobalSRT);
-//				}
-//				else {
-//					globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
-//				}
-//				//globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
-//				curmp->SetWorldMat(globalmat);//anglelimit無し
-//
-//			}
-//		}
-//
-//		fbxtime = fbxtime + difftime;
-//	}
-//
-//	Sleep(0);
-//
-//
-//	return 0;
-//}
 
 int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread)
 {
@@ -7976,6 +7883,115 @@ int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int src
 	}
 
 	Sleep(0);
+
+
+	return 0;
+}
+
+
+int CBone::InitMP(int srcmotid, double srcframe)
+{
+	//###################################################################################		
+	//InitMP 初期姿勢。２つ目以降のモーションの初期姿勢。リターゲットの初期姿勢に関わる。
+	//###################################################################################
+
+
+	if (srcmotid == 1) {
+		return 0;
+	}
+
+	CMotionPoint* firstmp = GetMotionPoint(1, 0.0);
+	if (firstmp) {
+		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+		if (!curmp) {
+			int existflag = 0;
+			curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
+		}
+		if (curmp) {
+			ChaMatrix firstanim = firstmp->GetWorldMat();
+
+			curmp->SetWorldMat(firstanim);
+			//SetInitMat(xmat);
+			////オイラー角初期化
+			//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			//int paraxsiflag = 1;
+			//cureul = CalcLocalEulXYZ(paraxsiflag, 1, 0.0, BEFEUL_ZERO);
+			ChaVector3 cureul = GetLocalEul(1, 0.0);
+			SetLocalEul(srcmotid, srcframe, cureul);
+
+			SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
+		}
+	}
+
+
+	////###################################################################################		
+	////InitMP 初期姿勢。２つ目以降のモーションの初期姿勢。リターゲットの初期姿勢に関わる。
+	////###################################################################################
+	//if (newmp && (srcmotid != 1)) {
+	//	ChaMatrix xmat = GetFirstMat();
+	//	newmp->SetWorldMat(xmat);
+	//	//SetInitMat(xmat);
+	//	////オイラー角初期化
+	//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//	int paraxsiflag = 1;
+	//	cureul = CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
+	//	SetLocalEul(srcmotid, srcframe, cureul);
+	//}
+
+
+
+	//ChaMatrix parfirstmat, invparfirstmat;
+	//ChaMatrixIdentity(&parfirstmat);
+	//ChaMatrixIdentity(&invparfirstmat);
+	//if (parentbone) {
+	//	double zeroframe = 0.0;
+	//	int existz = 0;
+	//	CMotionPoint* parmp = parentbone->AddMotionPoint(motid, zeroframe, &existz);
+	//	if (existz && parmp) {
+	//		parfirstmat = parmp->GetWorldMat();//!!!!!!!!!!!!!! この時点ではm_matWorldが掛かっていないから後で修正必要かも？？
+	//		ChaMatrixInverse(&invparfirstmat, NULL, &parfirstmat);
+	//	}
+	//	else {
+	//		ChaMatrixIdentity(&parfirstmat);
+	//		ChaMatrixIdentity(&invparfirstmat);
+	//	}
+	//}
+
+	//double framecnt;
+	//for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {
+	//	double frame = framecnt;
+
+	//	ChaMatrix mvmat;
+	//	ChaMatrixIdentity(&mvmat);
+
+	//	CMotionPoint* pcurmp = 0;
+	//	bool onaddmotion = true;
+	//	pcurmp = curbone->GetMotionPoint(motid, frame, onaddmotion);
+	//	if (!pcurmp) {
+	//		int exist2 = 0;
+	//		CMotionPoint* newmp = curbone->AddMotionPoint(motid, frame, &exist2);
+	//		if (!newmp) {
+	//			_ASSERT(0);
+	//			return;
+	//		}
+
+	//		if (parentbone) {
+	//			int exist3 = 0;
+	//			CMotionPoint* parmp = parentbone->AddMotionPoint(motid, frame, &exist3);
+	//			ChaMatrix tmpmat = parentbone->GetInvFirstMat() * parmp->GetWorldMat();//!!!!!!!!!!!!!!!!!! endjointはこれでうまく行くが、floatと分岐が不動になる。
+	//			//newmp->SetBefWorldMat(tmpmat);
+	//			newmp->SetWorldMat(tmpmat);//anglelimit無し
+
+	//			//オイラー角初期化
+	//			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//			int paraxiskind = -1;//2021/11/18
+	//			//int isfirstbone = 0;
+	//			cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, (double)framecnt, BEFEUL_ZERO);
+	//			curbone->SetLocalEul(motid, (double)framecnt, cureul);
+
+	//		}
+	//	}
+	//}
 
 
 	return 0;

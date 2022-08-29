@@ -698,6 +698,10 @@ public:
 	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreadsïœçXéûÇ…Ç‡åƒÇ‘
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxÇ©ÇÁÇ‡åƒÇ‘ CBoneÇ…à⁄ìÆ
 
+	void InitMPReq(CBone* curbone, int srcmotid, double curframe);
+	int InitMP(CBone* curbone, int srcmotid, double curframe);
+
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -717,8 +721,8 @@ private:
 	int CreateLoadFbxAnim(FbxScene* pscene);
 	int DestroyLoadFbxAnim();
 	void WaitLoadFbxAnimFinished();
-	int SetWorldMatFromLocalMat(int srcmotid);
-	void SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone);
+	int SetWorldMatFromLocalMat(int srcmotid, bool isfirstmot);
+	void SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot);
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 

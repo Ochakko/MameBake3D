@@ -446,6 +446,8 @@ public:
 	int AdditiveCurrentToAngleLimit();
 	int AdditiveToAngleLimit(ChaVector3 cureul);
 
+	int InitMP(int srcmotid, double srcframelen);
+
 private:
 
 /**

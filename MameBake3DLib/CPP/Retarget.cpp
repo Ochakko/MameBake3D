@@ -45,7 +45,7 @@ namespace MameBake3DLibRetarget {
 		//double motleng = bvhmi->frameleng;
 		double motleng = bvhmi->frameleng - 1.0;//2021/10/13
 		(srcAddMotionFunc)(0, motleng);
-		(srcInitCurMotionFunc)(0, 0);
+		//(srcInitCurMotionFunc)(0, 0);//CModel::AddMotionで初期化することにしたのでコメントアウト　2022/08/28
 
 
 		MOTINFO* modelmi = srcmodel->GetCurMotInfo();
@@ -280,7 +280,35 @@ namespace MameBake3DLibRetarget {
 
 				//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
 				//curbvhmat = bvhbone->GetInvFirstMat() * sinvfirsthipmat * invmodelinit * bvhmat;
-				curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//初期姿勢の変換にbvhの全体回転sfirsthipmatを考慮する。
+				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26までの式。初期姿勢の変換にbvhの全体回転sfirsthipmatを考慮する。
+				
+
+				//1.0.0.26からは
+				//bvhは読み込み時に０フレームアニメがIdentityになるように読み込んでいる。model側はInvBindPose * AnimMatのように読み込んでいる。
+				//1.0.0.27からは０フレームアニメの編集に対応。
+				//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//式10027_1 うまく行く
+
+				
+				//式10027_1の行列掛け算部分をクォータニオンにしてジンバルロックが起こりにくくしてみる
+				ChaMatrix invfirsthipS, invfirsthipR, invfirsthipT;
+				ChaMatrix firstS, firstR, firstT;
+				ChaMatrix firsthipS, firsthipR, firsthipT;
+				ChaMatrix invmodelS, invmodelR, invmodelT;
+				GetSRTMatrix2(sinvfirsthipmat, &invfirsthipS, &invfirsthipR, &invfirsthipT);
+				GetSRTMatrix2(srcbone->GetFirstMat(), &firstS, &firstR, &firstT);
+				GetSRTMatrix2(sfirsthipmat, &firsthipS, &firsthipR, &firsthipT);
+				GetSRTMatrix2(invmodelinit, &invmodelS, &invmodelR, &invmodelT);
+				CQuaternion invfirsthipQ, firstQ, firsthipQ, invmodelQ;
+				invfirsthipQ.RotationMatrix(invfirsthipR);
+				firstQ.RotationMatrix(firstR);
+				firsthipQ.RotationMatrix(firsthipR);
+				invmodelQ.RotationMatrix(invmodelR);
+				CQuaternion convQ;
+				convQ = invmodelQ * firsthipQ * firstQ * invfirsthipQ;
+				curbvhmat = convQ.MakeRotMatX() * bvhmat;//式10027_2
+
+
+
 
 				CMotionPoint curbvhrotmp;
 				curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);

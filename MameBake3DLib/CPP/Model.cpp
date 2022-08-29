@@ -2271,6 +2271,13 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 
 
 
+	//初期化　2022/08/28
+	SetCurrentMotion(newid);
+	double framecnt;
+	for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
+		InitMPReq(m_topbone, newid, framecnt);
+	}
+	
 
 	*dstid = newid;
 
@@ -4042,7 +4049,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			}
 
 			WaitLoadFbxAnimFinished();//読み込み終了待ち
-			SetWorldMatFromLocalMat(curmotid);//並列化出来なかった計算をする
+			SetWorldMatFromLocalMat(curmotid, (animno == 0));//並列化出来なかった計算をする SetFirstMotも
 		}
 		else {
 		}
@@ -4053,7 +4060,11 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 		//motioncreatebatchflagが立っていた場合ここまで
 		//if (motioncachebatchflag == FALSE) {
-			FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);
+			
+
+			//FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);//nullジョイント対策？ 初期姿勢で初期化する処理はmotid==1以外のときにAddMotion内で行う
+		
+
 			if (animno == 0) {
 				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
 			}
@@ -4566,18 +4577,18 @@ void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, Fbx
 //}
 
 
-int CModel::SetWorldMatFromLocalMat(int srcmotid)
+int CModel::SetWorldMatFromLocalMat(int srcmotid, bool isfirstmot)
 {
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi) {
 		double animlen = curmi->frameleng;
 
-		SetWorldMatFromLocalMatReq(srcmotid, animlen, m_topbone);
+		SetWorldMatFromLocalMatReq(srcmotid, animlen, m_topbone, isfirstmot);
 	}
 	return 0;
 }
 
-void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone)
+void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot)
 {
 	if (srcbone) {
 
@@ -4626,6 +4637,11 @@ void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* src
 
 					ChaMatrix globalmat = localmat * parentglobalmat;
 					curmp->SetWorldMat(globalmat);//anglelimit無し
+					
+
+					if (isfirstmot && (curframe == 0.0)) {
+						srcbone->SetFirstMat(globalmat);
+					}
 
 				}
 				else {
@@ -4636,6 +4652,10 @@ void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* src
 
 					ChaMatrix globalmat;
 					globalmat = curmp->GetWorldMat();
+
+					if (isfirstmot && (curframe == 0.0)) {
+						srcbone->SetFirstMat(globalmat);
+					}
 
 					//#############
 					//set localmat
@@ -4656,10 +4676,10 @@ void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* src
 		}
 
 		if (srcbone->GetChild()) {
-			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetChild());
+			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetChild(), isfirstmot);
 		}
 		if (srcbone->GetBrother()) {
-			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetBrother());
+			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetBrother(), isfirstmot);
 		}
 	}
 }
@@ -5513,57 +5533,8 @@ void CModel::FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBon
 		return;
 	}
 
-	ChaMatrix parfirstmat, invparfirstmat;
-	ChaMatrixIdentity( &parfirstmat );
-	ChaMatrixIdentity( &invparfirstmat );
-	if( parentbone ){
-		double zeroframe = 0.0;
-		int existz = 0;
-		CMotionPoint* parmp = parentbone->AddMotionPoint( motid, zeroframe, &existz );
-		if( existz && parmp ){
-			parfirstmat = parmp->GetWorldMat();//!!!!!!!!!!!!!! この時点ではm_matWorldが掛かっていないから後で修正必要かも？？
-			ChaMatrixInverse( &invparfirstmat, NULL, &parfirstmat );
-		}else{
-			ChaMatrixIdentity( &parfirstmat );
-			ChaMatrixIdentity( &invparfirstmat );			
-		}
-	}
+	curbone->InitMP(motid, animleng);
 
-	double framecnt;
-	for( framecnt = 0.0; framecnt < animleng; framecnt+=1.0 ){
-		double frame = framecnt;
-
-		ChaMatrix mvmat;
-		ChaMatrixIdentity( &mvmat );
-
-		CMotionPoint* pcurmp = 0;
-		bool onaddmotion = true;
-		pcurmp = curbone->GetMotionPoint(motid, frame, onaddmotion);
-		if(!pcurmp){
-			int exist2 = 0;
-			CMotionPoint* newmp = curbone->AddMotionPoint( motid, frame, &exist2 );
-			if( !newmp ){
-				_ASSERT( 0 );
-				return;
-			}
-
-			if( parentbone ){
-				int exist3 = 0;
-				CMotionPoint* parmp = parentbone->AddMotionPoint( motid, frame, &exist3 );
-				ChaMatrix tmpmat = parentbone->GetInvFirstMat() * parmp->GetWorldMat();//!!!!!!!!!!!!!!!!!! endjointはこれでうまく行くが、floatと分岐が不動になる。
-				//newmp->SetBefWorldMat(tmpmat);
-				newmp->SetWorldMat(tmpmat);//anglelimit無し
-
-				//オイラー角初期化
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int paraxiskind = -1;//2021/11/18
-				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, (double)framecnt, BEFEUL_ZERO);
-				curbone->SetLocalEul(motid, (double)framecnt, cureul);
-
-			}
-		}
-	}
 
 	if( curbone->GetChild() ){
 		FillUpEmptyKeyReq( motid, animleng, curbone->GetChild(), curbone );
@@ -12832,3 +12803,65 @@ void CModel::WaitUpdateMatrixFinished()
 }
 
 
+
+void CModel::InitMPReq(CBone* curbone, int srcmotid, double curframe)
+{
+	if (!curbone) {
+		return;
+	}
+
+	InitMP(curbone, srcmotid, curframe);
+
+	if (curbone->GetChild()) {
+		InitMPReq(curbone->GetChild(), srcmotid, curframe);
+	}
+	if (curbone->GetBrother()) {
+		InitMPReq(curbone->GetBrother(), srcmotid, curframe);
+	}
+}
+
+
+
+int CModel::InitMP(CBone* curbone, int srcmotid, double curframe)
+{
+	//CMotionPoint* pcurmp = 0;
+	//pcurmp = curbone->GetMotionPoint(GetCurMotInfo()->motid, curframe);
+
+	//if (pcurmp) {
+
+	//	//pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
+
+	//	ChaMatrix xmat = curbone->GetFirstMat();
+	//	pcurmp->SetWorldMat(xmat);
+	//	curbone->SetInitMat(xmat);
+
+	//}
+	//else {
+	//	CMotionPoint* curmp3 = 0;
+	//	int existflag3 = 0;
+	//	curmp3 = curbone->AddMotionPoint(GetCurMotInfo()->motid, curframe, &existflag3);
+	//	if (!curmp3) {
+	//		_ASSERT(0);
+	//		return 1;
+	//	}
+	//	ChaMatrix xmat = curbone->GetFirstMat();
+	//	curmp3->SetWorldMat(xmat);
+	//	curbone->SetInitMat(xmat);
+	//	//_ASSERT( 0 );
+	//}
+
+	////オイラー角初期化
+	//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//int paraxsiflag = 1;
+	////int isfirstbone = 0;
+	//cureul = curbone->CalcLocalEulXYZ(paraxsiflag, GetCurMotInfo()->motid, curframe, BEFEUL_ZERO);
+	//curbone->SetLocalEul(GetCurMotInfo()->motid, curframe, cureul);
+
+	
+	if (curbone) {
+		curbone->InitMP(srcmotid, curframe);
+	}
+	
+
+	return 0;
+}

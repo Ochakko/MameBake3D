@@ -1943,8 +1943,8 @@ static int InsertSymMP(CBone* curbone, double curframe, int symrootmode);
 static void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode);
 
 static int InitMpFromTool();
-static int InitMP( CBone* curbone, double curframe );
-static void InitMPReq(CBone* curbone, double curframe);
+//static int InitMP( CBone* curbone, double curframe );
+//static void InitMPReq(CBone* curbone, double curframe);
 static int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe);
 static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe);
 
@@ -5368,42 +5368,6 @@ int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
 }
 
 
-int InitMP( CBone* curbone, double curframe )
-{
-	CMotionPoint* pcurmp = 0;
-	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
-
-	if(pcurmp){
-
-		//pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
-
-		ChaMatrix xmat = curbone->GetFirstMat();
-		pcurmp->SetWorldMat(xmat);
-		curbone->SetInitMat(xmat);
-
-	}else{
-		CMotionPoint* curmp3 = 0;
-		int existflag3 = 0;
-		curmp3 = curbone->AddMotionPoint(s_model->GetCurMotInfo()->motid, curframe, &existflag3);
-		if (!curmp3){
-			_ASSERT(0);
-			return 1;
-		}
-		ChaMatrix xmat = curbone->GetFirstMat();
-		curmp3->SetWorldMat(xmat);
-		curbone->SetInitMat(xmat);
-		//_ASSERT( 0 );
-	}
-
-	//ƒIƒCƒ‰[Šp‰Šú‰»
-	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	int paraxsiflag = 1;
-	//int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulXYZ(paraxsiflag, s_model->GetCurMotInfo()->motid, curframe, BEFEUL_ZERO);
-	curbone->SetLocalEul(s_model->GetCurMotInfo()->motid, curframe, cureul);
-
-	return 0;
-}
 
 int AdjustBoneTra( CBone* curbone, double curframe )
 {
@@ -9601,7 +9565,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 					double curframe = itrcp->time;
 					if (topbone){
 						s_model->SetMotionFrame(curframe);
-						InitMPReq(topbone, curframe);
+						s_model->InitMPReq(topbone, curmi->motid, curframe);
 					}
 				}
 			}
@@ -9616,7 +9580,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 				for (frame = oldframeleng; frame < motleng; frame += 1.0){
 					if (topbone){
 						s_model->SetMotionFrame(frame);
-						InitMPReq(topbone, frame);
+						s_model->InitMPReq(topbone, curmi->motid, frame);
 					}
 				}
 			}
@@ -9625,7 +9589,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 				for (frame = 0.0; frame < motleng; frame += 1.0){
 					if (topbone){
 						s_model->SetMotionFrame(frame);
-						InitMPReq(topbone, frame);
+						s_model->InitMPReq(topbone, curmi->motid, frame);
 					}
 				}
 			}
@@ -10631,6 +10595,8 @@ int AddMotion( const WCHAR* wfilename, double srcmotleng )
 	//CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
 	CallF( s_model->AddMotion( motionname, addwfilename, motleng, &newmotid ), return 1 );
 	//_ASSERT(0);
+
+
 
 	CallF( AddTimeLine( newmotid, true ), return 1 );
 
@@ -14532,21 +14498,6 @@ int RetargetMotion()
 
 	return 0;
 
-}
-void InitMPReq(CBone* curbone, double curframe)
-{
-	if (!curbone){
-		return;
-	}
-
-	InitMP(curbone, curframe);
-
-	if (curbone->GetChild()){
-		InitMPReq(curbone->GetChild(), curframe);
-	}
-	if (curbone->GetBrother()){
-		InitMPReq(curbone->GetBrother(), curframe);
-	}
 }
 
 
