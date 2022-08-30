@@ -1012,6 +1012,7 @@ static OWP_Label* s_gfriclabel = 0;
 static OrgWindow* s_toolWnd = 0;		
 static OWP_Separator* s_toolSeparator = 0;
 static OWP_Button* s_toolCopyB = 0;
+static OWP_Button* s_toolZeroFrameB = 0;
 static OWP_Button* s_toolSymCopyB = 0;
 static OWP_Button* s_toolCutB = 0;
 static OWP_Button* s_toolPasteB = 0;
@@ -1065,6 +1066,8 @@ static bool s_ScloseFlag = false;
 static bool s_IcloseFlag = false;
 static bool s_GcloseFlag = false;
 static bool s_copyFlag = false;			// コピーフラグ
+static bool s_zeroFrameFlag = false;
+static bool s_oneFrameFlag = false;
 static bool s_selCopyHisotryFlag = false;
 static bool s_symcopyFlag = false;
 static bool s_undersymcopyFlag = false;
@@ -1094,6 +1097,7 @@ static bool s_LcloseFlag = false;
 static bool s_LnextkeyFlag = false;
 static bool s_LbefkeyFlag = false;
 static bool s_LcursorFlag = false;			// カーソル移動フラグ
+static bool s_LupFlag = false;
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
 
@@ -2702,6 +2706,8 @@ void InitApp()
 	s_IcloseFlag = false;
 	s_GcloseFlag = false;
 	s_copyFlag = false;			// コピーフラグ
+	s_zeroFrameFlag = false;
+	s_oneFrameFlag = false;
 	s_selCopyHisotryFlag = false;
 	s_symcopyFlag = false;
 	s_undersymcopyFlag = false;
@@ -2724,6 +2730,7 @@ void InitApp()
 	s_LnextkeyFlag = false;
 	s_LbefkeyFlag = false;
 	s_LcursorFlag = false;			// カーソル移動フラグ
+	s_LupFlag = false;
 	s_LstartFlag = false;
 	s_LstopFlag = false;
 	s_EcursorFlag = false;			// カーソル移動フラグ
@@ -2982,6 +2989,7 @@ void InitApp()
 	s_toolWnd = 0;
 	s_toolSeparator = 0;
 	s_toolCopyB = 0;
+	s_toolZeroFrameB = 0;
 	s_toolSymCopyB = 0;
 	s_toolCutB = 0;
 	s_toolPasteB = 0;
@@ -4422,6 +4430,11 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_toolCopyB;
 		s_toolCopyB = 0;
 	}
+	if (s_toolZeroFrameB) {
+		delete s_toolZeroFrameB;
+		s_toolZeroFrameB = 0;
+	}
+
 	if (s_toolSymCopyB) {
 		delete s_toolSymCopyB;
 		s_toolSymCopyB = 0;
@@ -19527,10 +19540,32 @@ int OnFrameTimeLineWnd()
 		return 0;
 	}
 
+	if (s_zeroFrameFlag) {
+		if (s_model) {
+			if (s_owpTimeline && s_owpLTimeline && s_owpEulerGraph) {
+				s_buttonselectstart = 0.0;
+				s_buttonselectend = 0.0;
+				s_buttonselecttothelast = 0;
+				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
+			}
+		}
+		s_zeroFrameFlag = false;
+	}
+
+	if (s_oneFrameFlag) {
+		if (s_model) {
+			if (s_owpTimeline && s_owpLTimeline && s_owpEulerGraph) {
+				s_buttonselectstart = 1.0;
+				s_buttonselectend = 1.0;
+				s_buttonselecttothelast = 0;
+				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
+			}
+		}
+		s_oneFrameFlag = false;
+	}
 
 
 	if (s_LstartFlag) {
-		s_LstartFlag = false;
 		s_buttonselectstart = s_editrange.GetStartFrame();
 		s_buttonselectend = s_editrange.GetEndFrame();
 		if (s_owpTimeline) {
@@ -19553,17 +19588,130 @@ int OnFrameTimeLineWnd()
 		int setcheckflag = 1;
 		Bone2AngleLimit(setcheckflag);
 
+		s_LstartFlag = false;
 	}
 
 
 	if (s_cursorFlag) {
-		s_cursorFlag = false;
 		TimelineCursorToMotion();
+		s_cursorFlag = false;
 	}
 
-	if (s_LcursorFlag) {
-		s_LcursorFlag = false;
+	if (s_LupFlag) {
+		if (s_owpLTimeline) {
+			if (g_previewFlag == 0) {
+				if (s_prevrangeFlag || s_nextrangeFlag) {
+					RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
+					s_buttonselectstart = s_editrange.GetStartFrame();
+					s_buttonselectend = s_editrange.GetEndFrame();
 
+					g_underselectingframe = 0;
+
+					if (s_editmotionflag < 0) {
+						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+						if (result) {
+							_ASSERT(0);
+						}
+					}
+
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+				}
+				else if (g_selecttolastFlag == false) {
+
+					if (!s_LstopFlag) {
+						if (s_selectFlag) {
+							s_selectFlag = false;
+							s_selectKeyInfoList.clear();
+							s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
+							s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+							s_buttonselectstart = s_editrange.GetStartFrame();
+							s_buttonselectend = s_editrange.GetEndFrame();
+							g_underselectingframe = 0;
+							//_ASSERT(0);
+						}
+						else {
+							s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+							s_buttonselectend = s_owpLTimeline->getCurrentTime();
+							g_underselectingframe = 0;
+							//_ASSERT(0);
+						}
+
+						if (s_editmotionflag < 0) {
+							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+							if (result) {
+								_ASSERT(0);
+							}
+						}
+
+						OnTimeLineButtonSelectFromSelectStartEnd(0);
+					}
+					else {
+						//停止ボタンが押されたとき
+						//_ASSERT(0);
+						s_buttonselectstart = s_editrange.GetStartFrame();
+						s_buttonselectend = s_editrange.GetEndFrame();
+						g_underselectingframe = 0;
+						//_ASSERT(0);
+
+						//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+						//if (result) {
+						//	_ASSERT(0);
+						//}
+
+						OnTimeLineButtonSelectFromSelectStartEnd(0);
+						//_ASSERT(0);
+					}
+
+				}
+				else {
+					//ToTheLastFrame
+					OnTimeLineButtonSelectFromSelectStartEnd(1);
+
+					s_buttonselectstart = s_editrange.GetStartFrame();
+					s_buttonselectend = s_editrange.GetEndFrame();
+
+					if (s_editmotionflag < 0) {
+						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+						if (result) {
+							_ASSERT(0);
+						}
+					}
+
+					g_underselectingframe = 0;//!!!! 2021/06/18
+				}
+
+
+			}
+			else {
+				//再生ボタンが押されたとき
+				//_ASSERT(0);
+				s_buttonselectstart = s_editrange.GetStartFrame();
+				s_buttonselectend = s_editrange.GetEndFrame();
+				g_underselectingframe = 0;
+				//_ASSERT(0);
+
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				if (result) {
+					_ASSERT(0);
+				}
+
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+			}
+		}
+
+		s_LstartFlag = false;
+		s_LstopFlag = false;
+		g_selecttolastFlag = false;
+		s_prevrangeFlag = false;
+		s_nextrangeFlag = false;
+
+
+		s_LupFlag = false;
+	}
+
+
+	if (s_LcursorFlag) {
 		if (g_underselectingframe == 0) {
 			//これがないとモーション停止ボタンを押した後にselect表示されない。
 			s_buttonselectstart = s_editrange.GetStartFrame();
@@ -19608,7 +19756,7 @@ int OnFrameTimeLineWnd()
 		//	}
 		//}
 
-
+		s_LcursorFlag = false;
 	}
 
 
@@ -19664,6 +19812,8 @@ int OnFrameMouseButton()
 
 int OnFrameToolWnd()
 {
+
+
 	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
 
 	if (s_selboneFlag){
@@ -19789,6 +19939,8 @@ int OnFrameToolWnd()
 		s_selCopyHisotryFlag = false;
 	}
 
+
+
 	if (s_copyFlag){
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
@@ -19823,6 +19975,7 @@ int OnFrameToolWnd()
 		s_copyFlag = false;
 		s_undersymcopyFlag = false;
 	}
+
 
 	if (s_symcopyFlag){
 
@@ -21492,10 +21645,14 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setResetButtonListener([](){ 
 		if (s_model) {
 			if (s_owpLTimeline) {
-				s_LstopFlag = true; g_previewFlag = 0;  s_LcursorFlag = true; s_owpLTimeline->setCurrentTime(1.0, true); s_owpEulerGraph->setCurrentTime(1.0, false);
+				s_LstopFlag = true;
+				g_previewFlag = 0;
+				s_LcursorFlag = true;
+				s_oneFrameFlag = true;
 			}
 		}
 	});
+
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  
 		if (s_model) {
 			g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
@@ -21586,115 +21743,8 @@ int CreateLongTimelineWnd()
 	});
 	s_LtimelineWnd->setLUpListener([](){
 		if (s_model) {
-			if (s_owpLTimeline) {
-				if (g_previewFlag == 0) {
-					if (s_prevrangeFlag || s_nextrangeFlag) {
-						RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
-						s_buttonselectstart = s_editrange.GetStartFrame();
-						s_buttonselectend = s_editrange.GetEndFrame();
-
-						g_underselectingframe = 0;
-
-						if (s_editmotionflag < 0) {
-							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-							if (result) {
-								_ASSERT(0);
-							}
-						}
-
-						OnTimeLineButtonSelectFromSelectStartEnd(0);
-					}
-					else if (g_selecttolastFlag == false) {
-
-						if (!s_LstopFlag) {
-							if (s_selectFlag) {
-								s_selectFlag = false;
-								s_selectKeyInfoList.clear();
-								s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
-								s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
-								s_buttonselectstart = s_editrange.GetStartFrame();
-								s_buttonselectend = s_editrange.GetEndFrame();
-								g_underselectingframe = 0;
-								//_ASSERT(0);
-							}
-							else {
-								s_buttonselectstart = s_owpLTimeline->getCurrentTime();
-								s_buttonselectend = s_owpLTimeline->getCurrentTime();
-								g_underselectingframe = 0;
-								//_ASSERT(0);
-							}
-
-							if (s_editmotionflag < 0) {
-								int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-								if (result) {
-									_ASSERT(0);
-								}
-							}
-
-							OnTimeLineButtonSelectFromSelectStartEnd(0);
-						}
-						else {
-							//停止ボタンが押されたとき
-							//_ASSERT(0);
-							s_buttonselectstart = s_editrange.GetStartFrame();
-							s_buttonselectend = s_editrange.GetEndFrame();
-							g_underselectingframe = 0;
-							//_ASSERT(0);
-
-							//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-							//if (result) {
-							//	_ASSERT(0);
-							//}
-
-							OnTimeLineButtonSelectFromSelectStartEnd(0);
-							//_ASSERT(0);
-						}
-
-					}
-					else {
-						//ToTheLastFrame
-						OnTimeLineButtonSelectFromSelectStartEnd(1);
-
-						s_buttonselectstart = s_editrange.GetStartFrame();
-						s_buttonselectend = s_editrange.GetEndFrame();
-
-						if (s_editmotionflag < 0) {
-							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-							if (result) {
-								_ASSERT(0);
-							}
-						}
-
-						g_underselectingframe = 0;//!!!! 2021/06/18
-					}
-
-
-				}
-				else {
-					//再生ボタンが押されたとき
-					//_ASSERT(0);
-					s_buttonselectstart = s_editrange.GetStartFrame();
-					s_buttonselectend = s_editrange.GetEndFrame();
-					g_underselectingframe = 0;
-					//_ASSERT(0);
-
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
-						_ASSERT(0);
-					}
-
-					OnTimeLineButtonSelectFromSelectStartEnd(0);
-
-				}
-			}
-
-			s_LstartFlag = false;
-			s_LstopFlag = false;
-			g_selecttolastFlag = false;
-			s_prevrangeFlag = false;
-			s_nextrangeFlag = false;
+			s_LupFlag = true;
 		}
-
 	});
 
 
@@ -23068,8 +23118,9 @@ int CreateToolWnd()
 	s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
 	s_toolFilterB = new OWP_Button(_T("平滑化 smoothing"));
 	s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
-	s_toolInterpolate2B = new OWP_Button(_T("補間(one) interpolate"));
-	s_toolInterpolate3B = new OWP_Button(_T("補間(deeper) interpolate"));
+	s_toolInterpolate2B = new OWP_Button(_T("補間(One) interpolate"));
+	s_toolInterpolate3B = new OWP_Button(_T("補間(Deeper) interpolate"));
+	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -23083,6 +23134,7 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolInterpolate1B);
 	s_toolWnd->addParts(*s_toolInterpolate2B);
 	s_toolWnd->addParts(*s_toolInterpolate3B);
+	s_toolWnd->addParts(*s_toolZeroFrameB);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -23095,7 +23147,7 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolInterpolate1B);
 	s_dstoolctrls.push_back(s_toolInterpolate2B);
 	s_dstoolctrls.push_back(s_toolInterpolate3B);
-
+	s_dstoolctrls.push_back(s_toolZeroFrameB);
 
 	s_toolWnd->setCloseListener([](){ 
 		if (s_model) {
@@ -23114,6 +23166,17 @@ int CreateToolWnd()
 			s_copyFlag = true;
 		}
 	});
+	s_toolZeroFrameB->setButtonListener([]() {
+		if (s_model) {
+			if (s_owpLTimeline) {
+				s_LstopFlag = true; 
+				g_previewFlag = 0;  
+				s_LcursorFlag = true; 
+				s_zeroFrameFlag = true;
+			}
+		}
+	});
+
 	s_toolSymCopyB->setButtonListener([](){ 
 		if (s_model) {
 			s_symcopyFlag = true;
