@@ -23118,8 +23118,8 @@ int CreateToolWnd()
 	s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
 	s_toolFilterB = new OWP_Button(_T("平滑化 smoothing"));
 	s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
-	s_toolInterpolate2B = new OWP_Button(_T("補間(One) interpolate"));
-	s_toolInterpolate3B = new OWP_Button(_T("補間(Deeper) interpolate"));
+	s_toolInterpolate2B = new OWP_Button(_T("補間(Parent One) interpolate"));
+	s_toolInterpolate3B = new OWP_Button(_T("補間(Parent Deeper) interpolate"));
 	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
@@ -23215,12 +23215,12 @@ int CreateToolWnd()
 	});
 	s_toolInterpolate2B->setButtonListener([]() {
 		if (s_model && (s_interpolateState == 0)) {
-			s_interpolateState = 2;//one
+			s_interpolateState = 2;//parent one
 		}
 	});
 	s_toolInterpolate3B->setButtonListener([]() {
 		if (s_model && (s_interpolateState == 0)) {
-			s_interpolateState = 3;//deeper
+			s_interpolateState = 3;//parent deeper
 		}
 	});
 

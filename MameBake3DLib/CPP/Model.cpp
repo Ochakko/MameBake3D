@@ -10147,6 +10147,17 @@ int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe
 		return 0;
 	}
 
+	if (!srcbone) {
+		return 0;
+	}
+
+	CBone* parentone;
+	if (srcbone->GetParent()) {
+		parentone = srcbone->GetParent();
+	}
+	else {
+		parentone = srcbone;
+	}
 
 	if (srckind == 1) {
 		//all
@@ -10154,15 +10165,15 @@ int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe
 		InterpolateBetweenSelectionReq(GetTopBone(), srcstartframe, srcendframe, oneflag);
 	}
 	else if (srckind == 2) {
-		//one
+		//parent one
 		bool oneflag = true;
-		InterpolateBetweenSelectionReq(srcbone, srcstartframe, srcendframe, oneflag);
+		InterpolateBetweenSelectionReq(parentone, srcstartframe, srcendframe, oneflag);
 
 	}
 	else if (srckind == 3) {
-		//deeper
+		//parent deeper
 		bool oneflag = false;
-		InterpolateBetweenSelectionReq(srcbone, srcstartframe, srcendframe, oneflag);
+		InterpolateBetweenSelectionReq(parentone, srcstartframe, srcendframe, oneflag);
 	}
 	else {
 		//unknown
