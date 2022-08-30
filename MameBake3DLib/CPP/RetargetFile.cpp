@@ -202,13 +202,46 @@ int CRetargetFile::ReadRetargetInfo( int jointcnt, XMLIOBUF* xmlbuf )
 	CBone* bvhjoint = 0;
 	char modeljointname[MAX_PATH] = { 0 };
 	char bvhjointname[MAX_PATH] = { 0 };
+	char modeljointname2[MAX_PATH] = { 0 };
+	char bvhjointname2[MAX_PATH] = { 0 };
+
+	//#######################################################################
+	//名前に_Jointが付いているものと付いていないものの２通りずつチェックする
+	//#######################################################################
 
 	CallF( Read_Str( xmlbuf, "<ModelJoint>", "</ModelJoint>", modeljointname, MAX_PATH ), return 1 );
 	CallF( Read_Str( xmlbuf, "<BvhJoint>", "</BvhJoint>", bvhjointname, MAX_PATH ), return 1 );
+	strcpy_s(modeljointname2, MAX_PATH, modeljointname);
+	strcpy_s(bvhjointname2, MAX_PATH, bvhjointname);
+
+
+	char* modelsuffixjoint = strstr(modeljointname2, "_Joint");
+	char* bvhsuffixjoint = strstr(bvhjointname2, "_Joint");
+	if (modelsuffixjoint) {
+		*modelsuffixjoint = 0;
+	}
+	else {
+		strcat_s(modeljointname2, MAX_PATH, "_Joint");
+	}
+	if (bvhsuffixjoint) {
+		*bvhsuffixjoint = 0;
+	}
+	else {
+		strcat_s(bvhjointname2, MAX_PATH, "_Joint");
+	}
+
+
 
 	modeljoint = m_model->GetBoneByName(modeljointname);
+	if (!modeljoint) {
+		modeljoint = m_model->GetBoneByName(modeljointname2);
+	}
+	bvhjoint = m_bvh->GetBoneByName(bvhjointname);
+	if (!bvhjoint) {
+		bvhjoint = m_bvh->GetBoneByName(bvhjointname2);
+	}
+
 	if (modeljoint) {
-		bvhjoint = m_bvh->GetBoneByName(bvhjointname);
 		if (bvhjoint) {
 			m_convbonemap[modeljoint] = bvhjoint;
 		}

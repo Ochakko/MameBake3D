@@ -5866,6 +5866,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_convbonemap[modelbone] = 0;
 				}
 				s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
+				s_bvhbone[s_bvhbone_cbno]->callRewrite();
 			}
 			else {
 				int boneno = menuid - ID_RMENU_0 - 1 - MENUOFFSET_SETCONVBONE;
@@ -5879,6 +5880,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						s_convbonemap[modelbone] = 0;
 					}
 					s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
+					s_bvhbone[s_bvhbone_cbno]->callRewrite();
 
 					swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
 					::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
@@ -5886,6 +5888,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				else {
 					swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
 					s_bvhbone[s_bvhbone_cbno]->setName(strmes);
+					s_bvhbone[s_bvhbone_cbno]->callRewrite();
 					s_bvhbone_bone[s_bvhbone_cbno] = curbone;
 
 					CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
@@ -14179,7 +14182,7 @@ int SetConvBone( int cbno )
 		RemoveMenu(submenu, 0, MF_BYPOSITION);
 	}
 
-	int setmenuid0 = ID_RMENU_0 + 0;
+	int setmenuid0 = ID_RMENU_0 + 0 + MENUOFFSET_SETCONVBONE;
 	AppendMenu(submenu, MF_STRING, setmenuid0, L"NotSet");
 
 	int maxboneno = 0;
