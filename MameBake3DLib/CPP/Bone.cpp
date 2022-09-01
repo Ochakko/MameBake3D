@@ -7900,7 +7900,7 @@ int CBone::InitMP(int srcmotid, double srcframe)
 		return 0;
 	}
 
-	CMotionPoint* firstmp = GetMotionPoint(1, 0.0);
+	CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
 	if (firstmp) {
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
 		if (!curmp) {
@@ -7916,7 +7916,7 @@ int CBone::InitMP(int srcmotid, double srcframe)
 			//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 			//int paraxsiflag = 1;
 			//cureul = CalcLocalEulXYZ(paraxsiflag, 1, 0.0, BEFEUL_ZERO);
-			ChaVector3 cureul = GetLocalEul(1, 0.0);
+			ChaVector3 cureul = GetLocalEul(1, 0.0);//motid == 1は１つ目のモーション
 			SetLocalEul(srcmotid, srcframe, cureul);
 
 			SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果

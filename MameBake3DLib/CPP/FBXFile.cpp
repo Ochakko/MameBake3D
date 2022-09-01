@@ -1935,31 +1935,12 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 
 
 	if ((s_bvhflag == 0) && fbxbone->GetBone() && (s_model->GetOldAxisFlagAtLoading() == 0)){
-		//if (s_model->GetHasBindPose()) {
-		//	//2022/08/23
-		//	//本来、bindmatとnodematは別のものである
-		//	lBindMatrix = fbxbone->GetBone()->GetBindMat();//!!!!!!!!!!!!!!!!!!
-		//	return;//!!!!!!!!!!!!!!!!!!!!!!!
-		//}
-		//else {
-		//	ChaMatrix zeroanim;//2022/08/18
-		//	ChaMatrixIdentity(&zeroanim);
-		//	CMotionPoint* firstmp = fbxbone->GetBone()->GetMotionPoint(s_zeroframemotid, 0.0);
-		//	if (firstmp) {
-		//		//0フレームを編集した場合にはzeroanimはIdentity以外の姿勢になっている
-		//		zeroanim = firstmp->GetWorldMat();
-		//		tramat = fbxbone->GetBone()->GetNodeMat() * zeroanim;
-		//	}
-		//	else {
-		//		tramat = fbxbone->GetBone()->GetNodeMat() * zeroanim;
-		//	}
-		//}
 
 		tramat = fbxbone->GetBone()->GetNodeMat();
 
 	}
 	else{
-		//bvhはfbxに変換してから使う。bvhの０フレームをこのソフトで編集する予定は今は無い。よってzeroanimは考えない。
+		//bvhはfbxに変換してから使う。bvhの０フレームをこのソフトで編集する予定は今は無い。
 		ChaVector3 diffvec = curpos - parentpos;
 		float leng = (float)ChaVector3LengthDbl(&diffvec);
 		if (leng >= 0.00001f){
@@ -3450,9 +3431,7 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 	}
 
 
-	if ((bvhflag == 0) && 
-		pmodel->GetHasBindPose()) {
-
+	if ((bvhflag == 0) && pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
 
 		if (pNode) {
 			if (pPose) {
@@ -3496,7 +3475,9 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 				}
 			}
 		}
+	}
 
+	if (lPositionFound) {
 		curbone->SetBindMat(lGlobalPosition);
 
 		ChaMatrix nodemat;
@@ -3514,18 +3495,17 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 		ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
 		curbone->SetJointWPos(tmppos);
 		curbone->SetJointFPos(tmppos);
-
 	}
 	else {
-		//if (!lPositionFound)
-		//{
-			// There is no pose entry for that node, get the current global position instead.
+	//if (!lPositionFound)
+	//{
+		// There is no pose entry for that node, get the current global position instead.
 
-			// Ideally this would use parent global position and local position to compute the global position.
-			// Unfortunately the equation 
-			//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
-			// does not hold when inheritance type is other than "Parent" (RSrs).
-			// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
+		// Ideally this would use parent global position and local position to compute the global position.
+		// Unfortunately the equation 
+		//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
+		// does not hold when inheritance type is other than "Parent" (RSrs).
+		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
 
 		if (pNode) {
 			//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
@@ -3550,30 +3530,6 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 
 		//}
 	}
-
-
-
-
-	//ChaMatrix nodemat;
-	//nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
-
-	////curbone->SetPositionFound(lPositionFound);//!!!
-	//curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
-
-	//curbone->SetNodeMat(nodemat);
-	//curbone->SetGlobalPosMat(lGlobalPosition);
-
-	//ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
-	//ChaVector3 tmppos;
-	//ChaMatrix tmpnm = curbone->GetNodeMat();
-	//ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
-	//curbone->SetJointWPos(tmppos);
-	//curbone->SetJointFPos(tmppos);
-
-
-
-
-
 
 	//WCHAR wname[256];
 	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );

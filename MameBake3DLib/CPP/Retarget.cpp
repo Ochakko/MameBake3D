@@ -285,16 +285,27 @@ namespace MameBake3DLibRetarget {
 
 				//1.0.0.26からは
 				//bvhは読み込み時に０フレームアニメがIdentityになるように読み込んでいる。model側はInvBindPose * AnimMatのように読み込んでいる。
-				//1.0.0.27からは０フレームアニメの編集に対応。
-				//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//式10027_1 うまく行く
-
 				
+				
+				//###################################################################################################################
+				//1.0.0.27からは０フレームアニメの編集に対応。
+				//０フレームに対応可能なのは非bvhのモデル。非bvhの場合、０フレームアニメがIdentityになるようには読まない。
+				//非bvhの場合にはBindPoseと0フレームアニメの両方が存在する。よって０フレームアニメの編集をして書き出しても正常。
+				//一方、bvhの場合、０フレームアニメがIdentityになるように読み込む。そのためリターゲットの数式が簡略化される。
+				//
+				//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//式10027_1 うまく行く
+				//###################################################################################################################
+
+				//####################################################################################
 				//式10027_1の行列掛け算部分をクォータニオンにしてジンバルロックが起こりにくくしてみる
+				//####################################################################################
 				ChaMatrix invfirsthipS, invfirsthipR, invfirsthipT;
 				ChaMatrix firstS, firstR, firstT;
 				ChaMatrix firsthipS, firsthipR, firsthipT;
 				ChaMatrix invmodelS, invmodelR, invmodelT;
 				GetSRTMatrix2(sinvfirsthipmat, &invfirsthipS, &invfirsthipR, &invfirsthipT);
+				//SetFirstMatは　CBone::InitMP　で行う。InitMPはCModel::AddMotionから呼ばれる。
+				//InitMPは最初のモーションの０フレームアニメで新規モーションの全フレームを初期化する。
 				GetSRTMatrix2(srcbone->GetFirstMat(), &firstS, &firstR, &firstT);
 				GetSRTMatrix2(sfirsthipmat, &firsthipS, &firsthipR, &firsthipT);
 				GetSRTMatrix2(invmodelinit, &invmodelS, &invmodelR, &invmodelT);

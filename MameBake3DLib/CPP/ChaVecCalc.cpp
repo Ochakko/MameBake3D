@@ -2400,7 +2400,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	//}
 
 	//ModifyEuler(&Euler, &befeul);
-	ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);
+	//ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);//10027 CommentOut. 処理が重いわりにたまにしか役に立たないので。しばらくコメントアウト。
 	*reteul = Euler;
 
 	return 0;

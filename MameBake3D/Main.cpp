@@ -184,7 +184,7 @@ high rpmはスレッドを高回転させるかどうかを指定します
 
 #include "SelectLSDlg.h"
 
-#include <ThreadingUpdateTimeline.h>
+//#include <ThreadingUpdateTimeline.h>
 
 
 //#include <uxtheme.h>
@@ -247,7 +247,7 @@ typedef struct tag_spsw
 //static void ApplyPhysIkRec();
 //static void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
 
-static CThreadingUpdateTimeline* s_updatetimeline = 0;
+//static CThreadingUpdateTimeline* s_updatetimeline = 0;
 
 //#define FPSSAVENUM 100
 #define FPSSAVENUM 60
@@ -3124,11 +3124,11 @@ void InitApp()
 
 
 
-	s_updatetimeline = new CThreadingUpdateTimeline();
-	if(!s_updatetimeline){
-		return;
-	}
-	s_updatetimeline->CreateThread();
+	//s_updatetimeline = new CThreadingUpdateTimeline();
+	//if(!s_updatetimeline){
+	//	return;
+	//}
+	//s_updatetimeline->CreateThread();
 
 
 
@@ -4016,10 +4016,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	
 	SaveIniFile();
 
-	if (s_updatetimeline) {
-		delete s_updatetimeline;
-		s_updatetimeline = 0;
-	}
+	//if (s_updatetimeline) {
+	//	delete s_updatetimeline;
+	//	s_updatetimeline = 0;
+	//}
 
 
 	OnPluginClose();
@@ -26015,7 +26015,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.26 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.27 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -33562,7 +33562,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.26 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.27 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

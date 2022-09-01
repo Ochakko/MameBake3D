@@ -205,25 +205,32 @@ int CRetargetFile::ReadRetargetInfo( int jointcnt, XMLIOBUF* xmlbuf )
 	char modeljointname2[MAX_PATH] = { 0 };
 	char bvhjointname2[MAX_PATH] = { 0 };
 
-	//#######################################################################
-	//名前に_Jointが付いているものと付いていないものの２通りずつチェックする
-	//#######################################################################
+	//#############################################################################
+	//名前の最後に_Jointが付いているものと付いていないものの２通りずつチェックする
+	//#############################################################################
 
 	CallF( Read_Str( xmlbuf, "<ModelJoint>", "</ModelJoint>", modeljointname, MAX_PATH ), return 1 );
 	CallF( Read_Str( xmlbuf, "<BvhJoint>", "</BvhJoint>", bvhjointname, MAX_PATH ), return 1 );
 	strcpy_s(modeljointname2, MAX_PATH, modeljointname);
 	strcpy_s(bvhjointname2, MAX_PATH, bvhjointname);
 
+	modeljointname[MAX_PATH - 1] = 0;
+	bvhjointname[MAX_PATH - 1] = 0;
+	modeljointname2[MAX_PATH - 1] = 0;
+	bvhjointname2[MAX_PATH - 1] = 0;
+
+	int modelnamelen = strlen(modeljointname);
+	int bvhnamelen = strlen(bvhjointname);
 
 	char* modelsuffixjoint = strstr(modeljointname2, "_Joint");
 	char* bvhsuffixjoint = strstr(bvhjointname2, "_Joint");
-	if (modelsuffixjoint) {
+	if (modelsuffixjoint && ((INT64)modelnamelen - (INT64)(modelsuffixjoint - modeljointname2) == strlen("_Joint"))) {
 		*modelsuffixjoint = 0;
 	}
 	else {
 		strcat_s(modeljointname2, MAX_PATH, "_Joint");
 	}
-	if (bvhsuffixjoint) {
+	if (bvhsuffixjoint && ((INT64)bvhnamelen - (INT64)(bvhsuffixjoint - bvhjointname2) == strlen("_Joint"))) {
 		*bvhsuffixjoint = 0;
 	}
 	else {
