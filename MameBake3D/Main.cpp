@@ -11836,60 +11836,81 @@ void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
 {
 	int radiocnt = 0;
 	int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
+
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI51), L"");
 	if (radionum != 0) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI51), vecopenfilename[0].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI51), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI52), L"");
 	if (radionum >= 2) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI52), vecopenfilename[1].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI52), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI53), L"");
 	if (radionum >= 3) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI53), vecopenfilename[2].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI53), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI54), L"");
 	if (radionum >= 4) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI54), vecopenfilename[3].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI54), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI55), L"");
 	if (radionum >= 5) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI55), vecopenfilename[4].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI55), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI56), L"");
 	if (radionum >= 6) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI56), vecopenfilename[5].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI56), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI57), L"");
 	if (radionum >= 7) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI57), vecopenfilename[6].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI57), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI58), L"");
 	if (radionum >= 8) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI58), vecopenfilename[7].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI58), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI59), L"");
 	if (radionum >= 9) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI59), vecopenfilename[8].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI59), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI60), L"");
 	if (radionum >= 10) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI60), vecopenfilename[9].c_str());
 	}
@@ -11897,60 +11918,79 @@ void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI60), L"Loading History not Exist.");
 	}
 
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI61), L"");
 	if (radionum >= 11) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI61), vecopenfilename[10].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI61), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI62), L"");
 	if (radionum >= 12) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI62), vecopenfilename[11].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI62), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI63), L"");
 	if (radionum >= 13) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI63), vecopenfilename[12].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI63), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI64), L"");
 	if (radionum >= 14) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI64), vecopenfilename[13].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI64), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI65), L"");
 	if (radionum >= 15) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI65), vecopenfilename[14].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI65), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI66), L"");
 	if (radionum >= 16) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI66), vecopenfilename[15].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI66), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI67), L"");
 	if (radionum >= 17) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI67), vecopenfilename[16].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI67), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI68), L"");
 	if (radionum >= 18) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI68), vecopenfilename[17].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI68), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI69), L"");
 	if (radionum >= 19) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI69), vecopenfilename[18].c_str());
 	}
 	else {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI69), L"Loading History not Exist.");
 	}
+
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI70), L"");
 	if (radionum >= 20) {
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI70), vecopenfilename[19].c_str());
 	}
@@ -33810,6 +33850,7 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 
 				HISTORYELEM curelem;
+				curelem.Init();
 				curelem.filetime = win32fd.ftCreationTime;
 
 				//printf("%s\n", win32fd.cFileName);
@@ -33925,9 +33966,11 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 		do {
 			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 				HISTORYELEM curelem;
+				curelem.Init();
 				curelem.filetime = win32fd.ftCreationTime;
 
 				//printf("%s\n", win32fd.cFileName);
+				curelem.wfilename[0] = { 0L };
 				curelem.wfilename[MAX_PATH - 1] = { 0L };
 				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
 
@@ -33949,6 +33992,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 		int historyno;
 		for (historyno = 0; historyno < numhistory; historyno++) {
 			WCHAR openfilename[MAX_PATH] = { 0L };
+			openfilename[0] = { 0L };
 			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
 
 			HANDLE hfile;
@@ -33956,6 +34000,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 			if (hfile != INVALID_HANDLE_VALUE) {
 				WCHAR readwstr[MAX_PATH] = { 0L };
+				readwstr[0L] = { 0L };
 				DWORD readleng = 0;
 				bool bsuccess;
 				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
@@ -33999,6 +34044,7 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 
 	//MB3DOpenProj_20210410215628.txt
 	WCHAR searchfilename[MAX_PATH] = { 0L };
+	searchfilename[0] = { 0L };
 	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DTempCopyFrames_v1.0.0.18_*.cpt", s_temppath);
 	HANDLE hFind;
 	WIN32_FIND_DATA win32fd;
@@ -34014,10 +34060,12 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 		do {
 			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 				HISTORYELEM curelem;
+				curelem.Init();
 				curelem.filetime = win32fd.ftCreationTime;
 
 				//printf("%s\n", win32fd.cFileName);
 				curelem.wfilename[MAX_PATH - 1] = { 0L };
+				curelem.wfilename[0] = { 0L };
 				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
 
 				vechistory.push_back(curelem);
@@ -34033,7 +34081,9 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 
 		std::vector<HISTORYELEM>::iterator itrhistoryelem;
 		for (itrhistoryelem = vechistory.begin(); itrhistoryelem != vechistory.end(); itrhistoryelem++) {
-			HISTORYELEM curelem = *itrhistoryelem;
+			HISTORYELEM curelem;
+			curelem.Init();
+			curelem = *itrhistoryelem;
 			int result = LoadCPIFile(&curelem);
 			_ASSERT(result == 0);
 			*itrhistoryelem = curelem;//Ž¸”s‚µ‚½Žž‚É‚Ínewelem.hascpinfo = 0‚ªƒZƒbƒg‚³‚ê‚Ä‚¢‚é
@@ -34076,6 +34126,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 		do {
 			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 				HISTORYELEM curelem;
+				curelem.Init();
 				curelem.filetime = win32fd.ftCreationTime;
 
 				//printf("%s\n", win32fd.cFileName);
@@ -34816,6 +34867,7 @@ int LoadCPIFile(HISTORYELEM* srcdstelem)
 {
 
 	WCHAR cpifilename[MAX_PATH] = { 0L };
+	cpifilename[0] = { 0L };
 	wcscpy_s(cpifilename, MAX_PATH, srcdstelem->wfilename);
 
 	WCHAR* pdot = wcsrchr(cpifilename, TEXT('.'));

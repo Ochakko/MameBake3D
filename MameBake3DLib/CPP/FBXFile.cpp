@@ -653,6 +653,7 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	AnimateMorph(pScene, pmodel);
 
 	WriteBindPose(pScene, s_bvhflag);
+	
 
 	if( s_ai ){
 		free( s_ai );
@@ -3405,7 +3406,6 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 	if (!pmodel || !curbone) {
 		return;
 	}
-
 
 	//FbxNode* pNode = pmodel->m_bone2node[curbone];
 	FbxNode* pNode = pmodel->GetBoneNode(curbone);

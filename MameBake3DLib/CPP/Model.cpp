@@ -5470,25 +5470,25 @@ FbxPose* CModel::GetBindPose()
 		curpindex++;
 	}
 	if (!bindpose){
-		::MessageBoxA(NULL, "バインドポーズがありません。", "警告", MB_OK);
-		//if (lastpose) {
-		//	bindpose = lastpose;
-		//	char strmes[256] = { 0 };
-		//	sprintf_s(strmes, 256, "%d番目のポーズをバインドポーズとして使用します。", lastpindex);
-		//	::MessageBoxA(NULL, strmes, "注意", MB_OK);
-		//}
-		//else {
-		//	//bindpose = m_pscene->GetPose(0);
-		//	bindpose = 0;
-		//	::MessageBoxA(NULL, "ポーズが１つもありません。", "注意", MB_OK);
-		//}
+		//::MessageBoxA(NULL, "バインドポーズがありません。", "警告", MB_OK);
+		////if (lastpose) {
+		////	bindpose = lastpose;
+		////	char strmes[256] = { 0 };
+		////	sprintf_s(strmes, 256, "%d番目のポーズをバインドポーズとして使用します。", lastpindex);
+		////	::MessageBoxA(NULL, strmes, "注意", MB_OK);
+		////}
+		////else {
+		////	//bindpose = m_pscene->GetPose(0);
+		////	bindpose = 0;
+		////	::MessageBoxA(NULL, "ポーズが１つもありません。", "注意", MB_OK);
+		////}
 
 		bindpose = m_pscene->GetPose(0);
 		if (!bindpose) {
 			bindpose = m_pscene->GetPose(-1);
-			if (!bindpose) {
-				::MessageBoxA(NULL, "ポーズが１つもありません。", "警告", MB_OK);
-			}
+			//if (!bindpose) {
+			//	::MessageBoxA(NULL, "ポーズが１つもありません。", "警告", MB_OK);
+			//}
 		}
 
 		SetHasBindPose(0);

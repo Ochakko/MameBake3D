@@ -211,41 +211,49 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 		}
 	}
 
-	BOOL bret;
-	BOOL bcancel;
-	WCHAR srcpath[MAX_PATH] = {0L};
-	WCHAR dstpath[MAX_PATH] = {0L};
-	/*
-	//FBXファイルのコピー
-	swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), curmodel->GetFileName() );
-	swprintf_s( dstpath, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName() );
 
-	int chksame = wcscmp( curmodel->GetDirName(), charafolder );
-	if( chksame != 0 ){
-		bcancel = FALSE;
-		bret = CopyFileEx( srcpath, dstpath, NULL, NULL, &bcancel, 0 );
-		if( bret == 0 ){
-			_ASSERT( 0 );
-			return 1;
-		}
-	}
-	*/
-
-
-	WCHAR wcfbxfilename[MAX_PATH] = { 0L };//WCHAR
-	char fbxpath[MAX_PATH] = { 0 };//UTF-8
-	swprintf_s(wcfbxfilename, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName());
-	WideCharToMultiByte(CP_UTF8, 0, wcfbxfilename, -1, fbxpath, MAX_PATH, NULL, NULL);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
 	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
-	int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath, fbxdate);
-	if (ret1) {
-		_ASSERT(!ret1);
-		return 1;
+
+
+
+	if (curmodel->GetHasBindPose() == false) {
+		//##########################################################################
+		//RokokoなどのBindPoseが無いfbxに関しては改変保存せずにfbxをコピーするだけ。
+		//##########################################################################
+		BOOL bret;
+		BOOL bcancel;
+		WCHAR srcpath[MAX_PATH] = { 0L };
+		WCHAR dstpath[MAX_PATH] = { 0L };
+		//FBXファイルのコピー
+		swprintf_s(srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), curmodel->GetFileName());
+		swprintf_s(dstpath, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName());
+
+		int chksame = wcscmp(curmodel->GetDirName(), charafolder);
+		if (chksame != 0) {
+			bcancel = FALSE;
+			bret = CopyFileEx(srcpath, dstpath, NULL, NULL, &bcancel, 0);
+			if (bret == 0) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
 	}
+	else {
+		WCHAR wcfbxfilename[MAX_PATH] = { 0L };//WCHAR
+		char fbxpath[MAX_PATH] = { 0 };//UTF-8
+		swprintf_s(wcfbxfilename, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName());
+		WideCharToMultiByte(CP_UTF8, 0, wcfbxfilename, -1, fbxpath, MAX_PATH, NULL, NULL);
+		int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath, fbxdate);
+		if (ret1) {
+			_ASSERT(!ret1);
+			return 1;
+		}
+	}
+	
 
 	if (curmodel->GetOldAxisFlagAtLoading() == 0){
 		WCHAR lmtname[MAX_PATH] = { 0L };
@@ -284,31 +292,39 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	}
 	***/
 	
-	//FBXファイルの場合のテクスチャ
-	map<int,CMQOObject*>::iterator itrobj;
-	for( itrobj = curmodel->GetMqoObjectBegin(); itrobj != curmodel->GetMqoObjectEnd(); itrobj++ ){
-		CMQOObject* curobj = itrobj->second;
-		if( curobj ){
-			map<int,CMQOMaterial*>::iterator itr;
-			for( itr = curobj->GetMaterialBegin(); itr != curobj->GetMaterialEnd(); itr++ ){
-				CMQOMaterial* curmqomat = itr->second;
-				if( curmqomat && *(curmqomat->GetTex()) && (curmqomat->GetTexID() >= 0) ){
-					WCHAR wtex[256] = {0L};
-					MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curmqomat->GetTex(), 256, wtex, 256 );
-					swprintf_s( srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), wtex );
-					swprintf_s( dstpath, MAX_PATH, L"%s\\%s", charafolder, wtex );
+	{
+		BOOL bret;
+		BOOL bcancel;
+		WCHAR srcpath[MAX_PATH] = { 0L };
+		WCHAR dstpath[MAX_PATH] = { 0L };
+		//################################
+		//FBXファイルの場合のテクスチャ
+		//################################
+		map<int, CMQOObject*>::iterator itrobj;
+		for (itrobj = curmodel->GetMqoObjectBegin(); itrobj != curmodel->GetMqoObjectEnd(); itrobj++) {
+			CMQOObject* curobj = itrobj->second;
+			if (curobj) {
+				map<int, CMQOMaterial*>::iterator itr;
+				for (itr = curobj->GetMaterialBegin(); itr != curobj->GetMaterialEnd(); itr++) {
+					CMQOMaterial* curmqomat = itr->second;
+					if (curmqomat && *(curmqomat->GetTex()) && (curmqomat->GetTexID() >= 0)) {
+						WCHAR wtex[256] = { 0L };
+						MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmqomat->GetTex(), 256, wtex, 256);
+						swprintf_s(srcpath, MAX_PATH, L"%s\\%s", curmodel->GetDirName(), wtex);
+						swprintf_s(dstpath, MAX_PATH, L"%s\\%s", charafolder, wtex);
 
-					int chksame = wcscmp( curmodel->GetDirName(), charafolder );
-					if( chksame != 0 ){
-						bcancel = FALSE;
-						bret = CopyFileEx( srcpath, dstpath, NULL, NULL, &bcancel, 0 );
-						if( bret == 0 ){
-							_ASSERT( 0 );
-							return 1;
+						int chksame = wcscmp(curmodel->GetDirName(), charafolder);
+						if (chksame != 0) {
+							bcancel = FALSE;
+							bret = CopyFileEx(srcpath, dstpath, NULL, NULL, &bcancel, 0);
+							if (bret == 0) {
+								_ASSERT(0);
+								return 1;
+							}
 						}
 					}
-				}
 
+				}
 			}
 		}
 	}
