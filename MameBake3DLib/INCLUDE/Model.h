@@ -1256,6 +1256,20 @@ public: //accesser
 		m_hasbindpose = srcval;
 	}
 
+	bool GetFromNoBindPoseFlag() {
+		return m_fromNoBindPose;
+	}
+	void SetFromNoBindPoseFlag(bool srcflag) {
+		m_fromNoBindPose = srcflag;
+	}
+
+	bool GetFromBvhFlag() {
+		return m_fromBvh;
+	}
+	void SetFromBvhFlag(bool srcflag) {
+		m_fromBvh = srcflag;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1275,6 +1289,8 @@ private:
 	int m_oldaxis_atloading;//FBX読み込み時に旧データ互換チェックボックスにチェックをしていたかどうか。
 	int m_hasbindpose;
 
+	bool m_fromBvh;
+	bool m_fromNoBindPose;
 
 	WCHAR m_filename[MAX_PATH];//モデルファイル名、フルパス。
 	WCHAR m_dirname[MAX_PATH];//モデルファイルのディレクトリのパス。ファイル名の手前まで。末尾に\\無し。

@@ -95,14 +95,20 @@ int CThreadingLoadFbx::ThreadFunc()
 
 
 				int bvhflag = 0;
-				if (GetScene()) {
-					FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
-					if (sceneinfo) {
-						FbxString mKeywords = "BVH animation";
-						if (sceneinfo->mKeywords == mKeywords) {
-							bvhflag = 1;//!!!!!! bvh‚ðFBX‚É•ÏŠ·‚µ‚Ä•Û‘¶‚µA‚»‚ê‚ð“Ç‚Ýž‚ñ‚Å‚©‚ç•Û‘¶‚·‚éê‡
-						}
-					}
+				//if (GetScene()) {
+				//	FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
+				//	if (sceneinfo) {
+				//		FbxString mKeywords = "BVH animation";
+				//		if (sceneinfo->mKeywords == mKeywords) {
+				//			bvhflag = 1;//!!!!!! bvh‚ðFBX‚É•ÏŠ·‚µ‚Ä•Û‘¶‚µA‚»‚ê‚ð“Ç‚Ýž‚ñ‚Å‚©‚ç•Û‘¶‚·‚éê‡
+				//		}
+				//	}
+				//}
+				if (GetModel() && GetModel()->GetFromBvhFlag()) {
+					bvhflag = 1;
+				}
+				else {
+					bvhflag = 0;
 				}
 
 				EnterCriticalSection(&m_CritSection);

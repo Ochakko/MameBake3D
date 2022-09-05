@@ -6,6 +6,7 @@
 class CQuaternion;
 class btMatrix3x3;
 class btVector3;
+class ChaVector3;
 //struct D3DXMATRIX;
 //struct D3DXVECTOR2;
 //struct D3DXVECTOR3;
@@ -25,7 +26,6 @@ class btVector3;
 
 
 //class
-
 
 
 
@@ -79,6 +79,13 @@ public:
 #ifdef CONVD3DX11
 	DirectX::XMMATRIX D3DX();
 #endif
+	void SetIdentity();
+	FbxAMatrix FBXAMATRIX();
+	void SetTranslation(ChaVector3 srctra);//èâä˙âªÇµÇ»Ç¢
+	void SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul);//èâä˙âªÇµÇ»Ç¢
+	void SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq);//èâä˙âªÇµÇ»Ç¢
+	void SetScale(ChaVector3 srcscale);//èâä˙âªÇµÇ»Ç¢
+	void SetBasis(ChaMatrix srcmat);//èâä˙âªÇµÇ»Ç¢Å@copy3x3
 
 public:
 	float _11;
@@ -175,6 +182,11 @@ public:
 
 	bool operator== (const ChaVector3 &v) const { return x == v.x && y == v.y && z == v.z; };
 	bool operator!= (const ChaVector3 &v) const { return !(*this == v); };
+
+	ChaMatrix MakeTraMat();
+	ChaMatrix MakeInvTraMat();
+	ChaMatrix MakeXYZRotMat(CQuaternion* srcaxisq);
+	ChaMatrix MakeScaleMat();
 
 #ifdef CONVD3DX11
 	DirectX::XMFLOAT3 D3DX();
@@ -282,6 +294,7 @@ public:
 	CQuaternion normalize();
 
 	int inv(CQuaternion* dstq);
+	CQuaternion inverse();
 
 	bool operator== (const CQuaternion &q) const { return w == q.w && x == q.x && y == q.y && z == q.z; }
 	bool operator!= (const CQuaternion &q) const { return !(*this == q); }

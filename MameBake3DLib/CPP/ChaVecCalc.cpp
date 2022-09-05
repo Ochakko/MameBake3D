@@ -802,6 +802,48 @@ ChaVector3 &ChaVector3::operator-= (const ChaVector3 &v) { *this = *this - v; re
 ChaVector3 ChaVector3::operator- () const { return *this * -1.0; }
 
 
+ChaMatrix ChaVector3::MakeTraMat()
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+	retmat._41 = x;
+	retmat._42 = y;
+	retmat._43 = z;
+	return retmat;
+}
+ChaMatrix ChaVector3::MakeInvTraMat()
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+	retmat._41 = -x;
+	retmat._42 = -y;
+	retmat._43 = -z;
+	return retmat;
+}
+ChaMatrix ChaVector3::MakeXYZRotMat(CQuaternion* srcaxisq)
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	CQuaternion rotq;
+	rotq.SetRotationXYZ(srcaxisq, *this);
+	
+	retmat = rotq.MakeRotMatX();
+	return retmat;
+}
+ChaMatrix ChaVector3::MakeScaleMat()
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	retmat._11 = x;
+	retmat._22 = y;
+	retmat._33 = z;
+	return retmat;
+}
+
+
+
 
 ChaVector4::ChaVector4()
 {
@@ -888,6 +930,77 @@ ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, floa
 	_43 = m43;
 	_44 = m44;
 
+}
+
+void ChaMatrix::SetIdentity()
+{
+	ChaMatrixIdentity(this);
+}
+
+FbxAMatrix ChaMatrix::FBXAMATRIX()
+{
+	FbxAMatrix retmat;
+	retmat.SetIdentity();
+	retmat.SetRow(0, FbxVector4(_11, _12, _13, _14));
+	retmat.SetRow(1, FbxVector4(_21, _22, _23, _24));
+	retmat.SetRow(2, FbxVector4(_31, _32, _33, _34));
+	retmat.SetRow(3, FbxVector4(_41, _42, _43, _44));
+	return retmat;
+}
+
+void ChaMatrix::SetTranslation(ChaVector3 srctra)
+{
+	//‰Šú‰»‚µ‚È‚¢
+
+	_41 = srctra.x;
+	_42 = srctra.y;
+	_43 = srctra.z;
+}
+void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul)
+{
+	//‰Šú‰»‚µ‚È‚¢
+	ChaMatrix rotmat = srceul.MakeXYZRotMat(srcaxisq);
+	SetBasis(rotmat);
+}
+void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq)
+{
+	//‰Šú‰»‚µ‚È‚¢
+
+	CQuaternion EQ;
+	if (srcaxisq) {
+		EQ = srcaxisq->inverse() * srcq * *srcaxisq;
+	}
+	else {
+		EQ = srcq;
+	}
+
+	ChaMatrix rotmat = srcq.MakeRotMatX();
+	SetBasis(rotmat);
+
+}
+void ChaMatrix::SetScale(ChaVector3 srcscale)
+{
+	//‰Šú‰»‚µ‚È‚¢
+
+	_11 = srcscale.x;
+	_22 = srcscale.y;
+	_33 = srcscale.z;
+
+}
+void ChaMatrix::SetBasis(ChaMatrix srcmat)
+{
+	//‰Šú‰»‚µ‚È‚¢@copy3x3
+	_11 = srcmat._11;
+	_12 = srcmat._12;
+	_13 = srcmat._13;
+
+	_21 = srcmat._21;
+	_22 = srcmat._22;
+	_23 = srcmat._23;
+
+	_31 = srcmat._31;
+	_32 = srcmat._32;
+	_33 = srcmat._33;
 }
 
 #ifdef CONVD3DX11
@@ -1934,6 +2047,13 @@ int CQuaternion::inv(CQuaternion* dstq)
 	*dstq = dstq->normalize();
 
 	return 0;
+}
+
+CQuaternion CQuaternion::inverse()
+{
+	CQuaternion retq;
+	this->inv(&retq);
+	return retq;
 }
 
 int CQuaternion::RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1)

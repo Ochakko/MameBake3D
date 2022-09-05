@@ -378,7 +378,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
 int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate )
 {
 
-	s_bvhflag = 0;
+	s_bvhflag = 0;//ここは初期化の意味。CreateScene()でセット。
 	s_pSdkManager = psdk;
 	s_model = pmodel;
 	if( s_fbxbone ){
@@ -441,7 +441,8 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 	sceneInfo->mSubject = "skinmesh and animation";
 	sceneInfo->mAuthor = "OchakkoLab";
 	//sceneInfo->mRevision = "rev. 2.2";
-	sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
+	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
+	sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
 	sceneInfo->mKeywords = "BVH animation";
 	//sceneInfo->mComment = "no particular comments required.";
 	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
@@ -535,13 +536,20 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	s_model = pmodel;
 
 	//source sceneがbvhから作られたFBXかどうかを判定
-	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
-	if (sceneinfo) {
-		FbxString mKeywords = "BVH animation";
-		if (sceneinfo->mKeywords == mKeywords) {
-			s_bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
-		}
+	//FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
+	//if (sceneinfo) {
+	//	FbxString mKeywords = "BVH animation";
+	//	if (sceneinfo->mKeywords == mKeywords) {
+	//		s_bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
+	//	}
+	//}
+	if (pmodel->GetFromBvhFlag()) {
+		s_bvhflag = 1;
 	}
+	else {
+		s_bvhflag = 0;
+	}
+
 
 
 	// create scene info
@@ -551,8 +559,15 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	sceneInfo->mAuthor = "OchakkoLab";
 	//sceneInfo->mRevision = "rev. 2.2";
 	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
-	sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
-	sceneInfo->mKeywords = "skinmesh animation";
+	//sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
+	sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+	if (pmodel->GetHasBindPose() && (pmodel->GetFromNoBindPoseFlag() == false)) {
+		sceneInfo->mKeywords = "skinmesh animation";
+	}
+	else {
+		sceneInfo->mKeywords = "skinmesh animation, start from no bindpose fbx";
+	}
+	
 	//sceneInfo->mComment = "no particular comments required.";
 	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
 
@@ -3420,14 +3435,20 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 
 
 	int bvhflag = 0;
-	if (pmodel->GetScene()) {
-		FbxDocumentInfo* sceneinfo = pmodel->GetScene()->GetSceneInfo();
-		if (sceneinfo) {
-			FbxString mKeywords = "BVH animation";
-			if (sceneinfo->mKeywords == mKeywords) {
-				bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
-			}
-		}
+	//if (pmodel->GetScene()) {
+	//	FbxDocumentInfo* sceneinfo = pmodel->GetScene()->GetSceneInfo();
+	//	if (sceneinfo) {
+	//		FbxString mKeywords = "BVH animation";
+	//		if (sceneinfo->mKeywords == mKeywords) {
+	//			bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
+	//		}
+	//	}
+	//}
+	if (pmodel->GetFromBvhFlag()) {
+		bvhflag = 1;
+	}
+	else {
+		bvhflag = 0;
 	}
 
 

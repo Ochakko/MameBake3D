@@ -462,6 +462,9 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	m_fromBvh = false;
+	m_fromNoBindPose = false;
+
 	m_physikrec0.clear();
 	m_physikrec.clear();
 	m_phyikrectime = 0.0;
@@ -878,8 +881,25 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 					m_oldaxis_atloading = 1;//!!!!!!!!!!!!!!!!!!!!
 				}
 			}
+
+			FbxString bvhmark = "BVH animation";
+			if (sceneinfo->mKeywords == bvhmark) {
+				SetFromBvhFlag(true);
+			}
+			else {
+				SetFromBvhFlag(false);
+			}
+
+			FbxString nobindposemark = "skinmesh animation, start from no bindpose fbx";
+			if (sceneinfo->mKeywords == nobindposemark) {
+				SetFromNoBindPoseFlag(true);
+			}
+			else {
+				SetFromNoBindPoseFlag(false);
+			}
 		}
 	}
+
 
 //	CallF( InitFBXManager( &pSdkManager, &pImporter, &pScene, utf8path ), return 1 );
 
@@ -4593,16 +4613,21 @@ void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* src
 	if (srcbone) {
 
 		int bvhflag = 0;
-		if (GetScene()) {
-			FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
-			if (sceneinfo) {
-				FbxString mKeywords = "BVH animation";
-				if (sceneinfo->mKeywords == mKeywords) {
-					bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
-				}
-			}
+		//if (GetScene()) {
+		//	FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
+		//	if (sceneinfo) {
+		//		FbxString mKeywords = "BVH animation";
+		//		if (sceneinfo->mKeywords == mKeywords) {
+		//			bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
+		//		}
+		//	}
+		//}
+		if (GetFromBvhFlag()) {
+			bvhflag = 1;
 		}
-
+		else {
+			bvhflag = 0;
+		}
 
 		double curframe;
 		for (curframe = 0.0; curframe < animlen; curframe += 1.0) {//関数呼び出し時にanimleng - 1している
