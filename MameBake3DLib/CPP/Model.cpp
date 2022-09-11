@@ -5517,7 +5517,7 @@ FbxPose* CModel::GetBindPose()
 		}
 
 		SetHasBindPose(0);
-
+		SetFromNoBindPoseFlag(true);
 	}
 	else {
 		SetHasBindPose(1);

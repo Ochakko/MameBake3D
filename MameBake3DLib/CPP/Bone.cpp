@@ -2836,7 +2836,7 @@ int CBone::CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp )
 			}else{
 				CMotionPoint inimp;
 				*pdstmp = inimp;
-				_ASSERT( 0 );
+				//_ASSERT( 0 );
 				return 0;
 			}
 		}else{
@@ -6283,6 +6283,41 @@ ChaVector3 CBone::CalcLocalSymTraAnim(int srcmotid, double srcframe)
 
 }
 
+ChaVector3 CBone::CalcFbxScaleAnim(bool fromnobindpose, int srcmotid, double srcframe)
+{
+	//############################
+	//fbx書き出し専用
+	//############################
+
+	//############################################################################
+	// 2022/09/12 
+	// fromnobindpose : bindpose無しのfbx書き出し：NodeMatを掛けた姿勢を書き出す。
+	//############################################################################
+
+	if (fromnobindpose == false) {
+		return CalcLocalScaleAnim(srcmotid, srcframe);
+	}
+	else {
+		ChaVector3 svec, tvec;
+		ChaMatrix rmat;
+		ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
+
+		ChaMatrix wmanim = GetWorldMat(srcmotid, srcframe);
+		ChaMatrix fbxwm = GetNodeMat() * wmanim;
+		ChaMatrix parentfbxwm;
+		parentfbxwm.SetIdentity();
+		if (GetParent()) {
+			ChaMatrix parentwmanim = GetParent()->GetWorldMat(srcmotid, srcframe);
+			parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+		}
+
+		ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+
+		GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
+		return svec;
+	}
+}
+
 
 
 ChaVector3 CBone::CalcLocalScaleAnim(int srcmotid, double srcframe)
@@ -6367,17 +6402,214 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	return 0;
 }
 
-ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcframe, ChaVector3* befeulptr)
+ChaVector3 CBone::CalcFBXEulXYZ(bool fromnobindpose, int srcnotmodifyflag, int srcmotid, double srcframe, ChaVector3* befeulptr)
 {
+
+	//############################
+	// fbx書き出し専用
+	//############################
+
+	//############################################################################
+	// 2022/09/12 
+	// fromnobindpose : bindpose無しのfbx書き出し：NodeMatを掛けた姿勢を書き出す。
+	//############################################################################
+
+
 	//####################################
 	//必要ノイズ付与機能付き　: FBX書き出し時のみ使用
 	//####################################
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	if (g_bakelimiteulonsave == false) {
-		CMotionPoint tmpmp;
-		CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+
+	if (fromnobindpose == false) {
+		if (g_bakelimiteulonsave == false) {
+			CMotionPoint tmpmp;
+			CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+
+			int isfirstbone;
+			if (GetParent()) {
+				isfirstbone = 0;
+			}
+			else {
+				isfirstbone = 1;
+			}
+			int isendbone;
+			if (GetChild()) {
+				if (GetChild()->GetChild()) {
+					isendbone = 0;
+				}
+				else {
+					isendbone = 1;
+				}
+			}
+			else {
+				isendbone = 1;
+			}
+
+			int notmodifyflag;
+			if (srcnotmodifyflag == 0) {
+				if ((srcframe == 0.0) || (srcframe == 1.0)) {
+					notmodifyflag = 1;
+				}
+				else {
+					notmodifyflag = 0;
+				}
+			}
+			else {
+				notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+			}
+
+			ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			if (befeulptr) {
+				befeul = *befeulptr;
+			}
+
+			//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
+			tmpmp.GetQ().CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		}
+		else {
+			//必要ノイズを加えるためCalcLocalEulXYZを展開記述してq.Q2Eulをq.CalcFBXEulXYZに置き換え
+			//ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+
+			//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+
+			//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+			const WCHAR* bonename = GetWBoneName();
+			if (wcscmp(bonename, L"RootNode") == 0) {
+				return cureul;//!!!!!!!!!!!!!!!!!!!!!!!!
+			}
+
+			//if (befeulkind == BEFEUL_BEFFRAME){
+			//	//1つ前のフレームのEULはすでに計算されていると仮定する。
+			//	double befframe;
+			//	befframe = srcframe - 1.0;
+			//	if (befframe >= -0.0001){
+			//		CMotionPoint* befmp;
+			//		befmp = GetMotionPoint(srcmotid, befframe);
+			//		if (befmp){
+			//			befeul = befmp->GetLocalEul();
+			//		}
+			//	}
+			//}
+			//else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
+			//	befeul = *directbefeul;
+			//}
+
+			CMotionPoint tmpmp;
+			CalcLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
+
+			//ChaMatrix axismat;
+			//CQuaternion axisq;
+			////int multworld = 0;//local!!!
+			////axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
+			////axisq.RotationMatrix(axismat);
+
+			int isfirstbone = 0;
+			int isendbone = 0;
+
+			if (GetParent()) {
+				//CRigidElem* curre = GetParent()->GetRigidElem(this);
+				//if (curre) {
+				//	axismat = curre->GetBindcapsulemat();
+				//}
+				//else {
+				//	//_ASSERT(0);
+				//	ChaMatrixIdentity(&axismat);
+				//}
+				//axisq.RotationMatrix(axismat);
+
+				isfirstbone = 0;
+			}
+			else {
+				//ChaMatrixIdentity(&axismat);
+				//axisq.SetParams(1.0, 0.0, 0.0, 0.0);
+
+				isfirstbone = 1;
+			}
+
+			if (GetChild()) {
+				if (GetChild()->GetChild()) {
+					isendbone = 0;
+				}
+				else {
+					isendbone = 1;
+				}
+			}
+			else {
+				isendbone = 1;
+			}
+
+			//int notmodifyflag;
+			//if ((srcframe == 0.0) || (srcframe == 1.0)) {
+			//	notmodifyflag = 1;
+			//}
+			//else {
+			//	notmodifyflag = 0;
+			//}
+
+
+			int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+
+			ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			if (befeulptr) {
+				befeul = *befeulptr;
+			}
+
+			//if (axiskind == -1) {
+			//	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL) {
+			//		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			//	}
+			//	else {
+			//		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			//	}
+			//}
+			//else if (axiskind != BONEAXIS_GLOBAL) {
+			//	tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			//}
+			//else {
+				//tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodifyflag);//#####################
+		//}
+
+			CMotionPoint* curmp;
+			curmp = GetMotionPoint(srcmotid, srcframe);
+			if (curmp) {
+				ChaVector3 oldeul = curmp->GetLocalEul();
+				if (IsSameEul(oldeul, orgeul) == 0) {
+					cureul = orgeul;
+				}
+				else {
+					cureul = oldeul;
+				}
+			}
+			else {
+				cureul = orgeul;
+			}
+
+			int ismovable = ChkMovableEul(cureul);
+			if (ismovable != 1) {
+				cureul = LimitEul(cureul);
+			}
+		}
+	}
+	else {
+		ChaMatrix wmanim = GetWorldMat(srcmotid, srcframe);
+		ChaMatrix fbxwm = GetNodeMat() * wmanim;
+		ChaMatrix parentfbxwm;
+		parentfbxwm.SetIdentity();
+		if (GetParent()) {
+			ChaMatrix parentwmanim = GetParent()->GetWorldMat(srcmotid, srcframe);
+			parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+		}
+
+		ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+		CQuaternion fbxq;
+		fbxq.RotationMatrix(localfbxmat);
+
 
 		int isfirstbone;
 		if (GetParent()) {
@@ -6417,136 +6649,10 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcfr
 			befeul = *befeulptr;
 		}
 
-		//tmpmp.GetQ().CalcFBXEul(0, befeul, &cureul, isfirstbone);
-		tmpmp.GetQ().CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		fbxq.CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+
 	}
-	else {
-		//必要ノイズを加えるためCalcLocalEulXYZを展開記述してq.Q2Eulをq.CalcFBXEulXYZに置き換え
-		//ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-		
-		//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-
-		//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-
-		const WCHAR* bonename = GetWBoneName();
-		if (wcscmp(bonename, L"RootNode") == 0) {
-			return cureul;//!!!!!!!!!!!!!!!!!!!!!!!!
-		}
-
-		//if (befeulkind == BEFEUL_BEFFRAME){
-		//	//1つ前のフレームのEULはすでに計算されていると仮定する。
-		//	double befframe;
-		//	befframe = srcframe - 1.0;
-		//	if (befframe >= -0.0001){
-		//		CMotionPoint* befmp;
-		//		befmp = GetMotionPoint(srcmotid, befframe);
-		//		if (befmp){
-		//			befeul = befmp->GetLocalEul();
-		//		}
-		//	}
-		//}
-		//else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
-		//	befeul = *directbefeul;
-		//}
-
-		CMotionPoint tmpmp;
-		CalcLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
-
-		//ChaMatrix axismat;
-		//CQuaternion axisq;
-		////int multworld = 0;//local!!!
-		////axismat = CalcManipulatorMatrix(1, 0, multworld, srcmotid, srcframe);
-		////axisq.RotationMatrix(axismat);
-
-		int isfirstbone = 0;
-		int isendbone = 0;
-
-		if (GetParent()) {
-			//CRigidElem* curre = GetParent()->GetRigidElem(this);
-			//if (curre) {
-			//	axismat = curre->GetBindcapsulemat();
-			//}
-			//else {
-			//	//_ASSERT(0);
-			//	ChaMatrixIdentity(&axismat);
-			//}
-			//axisq.RotationMatrix(axismat);
-
-			isfirstbone = 0;
-		}
-		else {
-			//ChaMatrixIdentity(&axismat);
-			//axisq.SetParams(1.0, 0.0, 0.0, 0.0);
-
-			isfirstbone = 1;
-		}
-
-		if (GetChild()) {
-			if (GetChild()->GetChild()) {
-				isendbone = 0;
-			}
-			else {
-				isendbone = 1;
-			}
-		}
-		else {
-			isendbone = 1;
-		}
-
-		//int notmodifyflag;
-		//if ((srcframe == 0.0) || (srcframe == 1.0)) {
-		//	notmodifyflag = 1;
-		//}
-		//else {
-		//	notmodifyflag = 0;
-		//}
-
-
-		int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
-
-		ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		if (befeulptr) {
-			befeul = *befeulptr;
-		}
-
-		//if (axiskind == -1) {
-		//	if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL) {
-		//		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
-		//	}
-		//	else {
-		//		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
-		//	}
-		//}
-		//else if (axiskind != BONEAXIS_GLOBAL) {
-		//	tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
-		//}
-		//else {
-			//tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
-			tmpmp.GetQ().CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodifyflag);//#####################
-		//}
-
-		CMotionPoint* curmp;
-		curmp = GetMotionPoint(srcmotid, srcframe);
-		if (curmp) {
-			ChaVector3 oldeul = curmp->GetLocalEul();
-			if (IsSameEul(oldeul, orgeul) == 0) {
-				cureul = orgeul;
-			}
-			else {
-				cureul = oldeul;
-			}
-		}
-		else {
-			cureul = orgeul;
-		}
-		
-		int ismovable = ChkMovableEul(cureul);
-		if (ismovable != 1) {
-			cureul = LimitEul(cureul);
-		}
-	}
+	
 	return cureul;
 
 }
@@ -6574,22 +6680,49 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcfr
 //	return cureul;
 //
 //}
-ChaVector3 CBone::CalcFBXTra(int srcmotid, double srcframe)
+ChaVector3 CBone::CalcFBXTra(bool fromnobindpose, int srcmotid, double srcframe)
 {
-	CMotionPoint tmpmp;
-	CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+	//############################
+	// fbx書き出し専用
+	//############################
 
-	ChaVector3 orgtra;
-	CBone* parentbone = GetParent();
-	if (parentbone){
-		orgtra = GetJointFPos() - parentbone->GetJointFPos();
-	}
-	else{
-		orgtra = GetJointFPos();
-	}
+	//############################################################################
+	// 2022/09/12 
+	// fromnobindpose : bindpose無しのfbx書き出し：NodeMatを掛けた姿勢を書き出す。
+	//############################################################################
 
-	ChaVector3 fbxtra = orgtra + tmpmp.GetTra();
-	return fbxtra;
+
+	if (fromnobindpose == false) {
+		CMotionPoint tmpmp;
+		CalcLocalInfo(srcmotid, srcframe, &tmpmp);
+
+		ChaVector3 orgtra;
+		CBone* parentbone = GetParent();
+		if (parentbone) {
+			orgtra = GetJointFPos() - parentbone->GetJointFPos();
+		}
+		else {
+			orgtra = GetJointFPos();
+		}
+
+		ChaVector3 fbxtra = orgtra + tmpmp.GetTra();
+		return fbxtra;
+	}
+	else {
+		ChaMatrix wmanim = GetWorldMat(srcmotid, srcframe);
+		ChaMatrix fbxwm = GetNodeMat() * wmanim;
+		ChaMatrix parentfbxwm;
+		parentfbxwm.SetIdentity();
+		if (GetParent()) {
+			ChaMatrix parentwmanim = GetParent()->GetWorldMat(srcmotid, srcframe);
+			parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+		}
+
+		ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+
+		ChaVector3 fbxtra = ChaVector3(localfbxmat._41, localfbxmat._42, localfbxmat._43);
+		return fbxtra;
+	}
 
 }
 

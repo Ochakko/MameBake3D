@@ -145,7 +145,7 @@ static void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose );
 
 
 static void AnimateSkeleton(FbxScene* pScene, CModel* pmodel);
-static void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax );
+static void AnimateBoneReq( bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax );
 static int AnimateMorph(FbxScene* pScene, CModel* pmodel);
 
 static void AnimateSkeletonOfBVH( FbxScene* pScene );
@@ -164,9 +164,9 @@ static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene*
 
 static void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lMatrix);
 
-static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
-static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
-static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimTra(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimRot(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimScale(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
 static int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 static int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 
@@ -667,9 +667,11 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
     AnimateSkeleton(pScene, pmodel);
 	AnimateMorph(pScene, pmodel);
 
-	WriteBindPose(pScene, s_bvhflag);
+	if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
+		WriteBindPose(pScene, s_bvhflag);
+	}
 	
-
+	
 	if( s_ai ){
 		free( s_ai );
 		s_ai = 0;
@@ -1670,7 +1672,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 		pmodel->SetCurrentMotion( curmotid );
 
 		s_firstanimout = 1;
-		AnimateBoneReq( s_fbxbone, lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
@@ -1682,7 +1684,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 }
 
-void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe )
+void AnimateBoneReq(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe)
 {
 
 	static int s_dbgcnt = 0;
@@ -1721,35 +1723,35 @@ void AnimateBoneReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, 
 
 
 
-			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimTra(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimTra(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimTra(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimRot(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimRot(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimRot(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
-			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimScale(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimScale(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimScale(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
 
 		}
 	}
 
 	if( fbxbone->GetChild() ){
-		AnimateBoneReq( fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(fromnobindpose, fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
 	}
 	if( fbxbone->GetBrother() ){
-		AnimateBoneReq( fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(fromnobindpose, fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
 	}
 }
 
@@ -2916,7 +2918,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 }
 
 
-static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+static int WriteFBXAnimTra(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -2957,7 +2959,7 @@ static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		lCurve = lSkel->LclTranslation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			fbxtra = curbone->CalcFBXTra(curmotid, frameno);
+			fbxtra = curbone->CalcFBXTra(fromnobindpose, curmotid, frameno);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 			switch (axiskind){
@@ -2987,7 +2989,7 @@ static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 
 	return 0;
 }
-static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+static int WriteFBXAnimRot(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3032,7 +3034,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
 
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			cureul = curbone->CalcFBXEulXYZ(notmodifyflag, curmotid, frameno, &befeul);
+			cureul = curbone->CalcFBXEulXYZ(fromnobindpose, notmodifyflag, curmotid, frameno, &befeul);
 					
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
@@ -3064,7 +3066,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 }
 
 
-static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+static int WriteFBXAnimScale(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3108,7 +3110,7 @@ static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int cu
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++) {
 			//cureul = curbone->CalcFBXEul(curmotid, frameno, &befeul);
-			cureul = curbone->CalcLocalScaleAnim(curmotid, frameno);
+			cureul = curbone->CalcFbxScaleAnim(fromnobindpose, curmotid, frameno);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 
@@ -3498,7 +3500,7 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 		}
 	}
 
-	if (lPositionFound) {
+	if (lPositionFound) {//BindPoseがある場合。bvhはこちらではなくelseの方
 		curbone->SetBindMat(lGlobalPosition);
 
 		ChaMatrix nodemat;
@@ -3518,8 +3520,6 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 		curbone->SetJointFPos(tmppos);
 	}
 	else {
-	//if (!lPositionFound)
-	//{
 		// There is no pose entry for that node, get the current global position instead.
 
 		// Ideally this would use parent global position and local position to compute the global position.

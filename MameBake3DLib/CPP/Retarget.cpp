@@ -280,12 +280,14 @@ namespace MameBake3DLibRetarget {
 
 				//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
 				//curbvhmat = bvhbone->GetInvFirstMat() * sinvfirsthipmat * invmodelinit * bvhmat;
-				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26までの式。初期姿勢の変換にbvhの全体回転sfirsthipmatを考慮する。
+				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26になる前までの式。初期姿勢の変換にbvhの全体回転sfirsthipmatを考慮する。
 				
-
+				//#############################################################################################################################
 				//1.0.0.26からは
-				//bvhは読み込み時に０フレームアニメがIdentityになるように読み込んでいる。model側はInvBindPose * AnimMatのように読み込んでいる。
-				
+				//bvhは読み込み時に０フレームアニメがIdentityになるように読み込む。model側はInvJonitPos * AnimMatのように読み込むようにした。
+				//model側は０フレーム編集に対応した。
+				//以上の変更に対応するためにretargetの数式も修正。
+				//#############################################################################################################################
 				
 				//###################################################################################################################
 				//1.0.0.27からは０フレームアニメの編集に対応。
@@ -294,9 +296,6 @@ namespace MameBake3DLibRetarget {
 				//一方、bvhの場合、０フレームアニメがIdentityになるように読み込む。そのためリターゲットの数式が簡略化される。
 				//###################################################################################################################
 				//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//式10027_1 うまく行く
-
-
-
 
 				////####################################################################################
 				////式10027_1の行列掛け算部分をクォータニオンにしてジンバルロックが起こりにくくしてみる
