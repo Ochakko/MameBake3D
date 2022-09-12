@@ -48,7 +48,9 @@ extern bool g_enableDS;
 extern int g_submenuwidth;
 extern bool g_4kresolution;
 
-
+extern double g_motionbrush_startframe;
+extern double g_motionbrush_endframe;
+extern int g_previewFlag;
 
 static double TIME_ERROR_WIDTH = 0.0001;
 
@@ -4430,26 +4432,57 @@ void s_dummyfunc()
 					LineData* curLineData = lineData[j];
 					if (tothelastflag == 1) {
 
-						for (int i = 0; i < (int)curLineData->key.size(); i++) {
-							if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
-								curLineData->key[i]->select = true;
-								if (maxframe < curLineData->key[i]->time) {
-									maxframe = curLineData->key[i]->time;
+						//maxframe = (double)(curLineData->key.size() - 1);
+
+						int startindex = curLineData->getKeyIndex(tmpstart);
+						if (startindex >= 0) {
+							for (int i = startindex; i < (int)curLineData->key.size(); i++) {
+								if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+									curLineData->key[i]->select = true;
+									if (maxframe < curLineData->key[i]->time) {
+										maxframe = curLineData->key[i]->time;
+									}
 								}
 							}
 						}
+
+						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+						//	if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+						//		curLineData->key[i]->select = true;
+						//		if (maxframe < curLineData->key[i]->time) {
+						//			maxframe = curLineData->key[i]->time;
+						//		}
+						//	}
+						//}
 					}
 					else {
 
-						for (int i = 0; i < (int)curLineData->key.size(); i++) {
-							if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-								(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
-								curLineData->key[i]->select = true;
-								if (maxframe < curLineData->key[i]->time) {
-									maxframe = curLineData->key[i]->time;
+						//maxframe = tmpend;
+
+						int startindex = curLineData->getKeyIndex(tmpstart);
+						int endindex = curLineData->getKeyIndex(tmpend);
+						if ((startindex >= 0) && (endindex >= 0)) {
+							for (int i = startindex; i <= endindex; i++) {
+								if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+									(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+									curLineData->key[i]->select = true;
+									if (maxframe < curLineData->key[i]->time) {
+										maxframe = curLineData->key[i]->time;
+									}
 								}
 							}
 						}
+
+
+						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+						//	if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+						//		(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+						//		curLineData->key[i]->select = true;
+						//		if (maxframe < curLineData->key[i]->time) {
+						//			maxframe = curLineData->key[i]->time;
+						//		}
+						//	}
+						//}
 					}
 				}
 
@@ -5404,64 +5437,105 @@ void s_dummyfunc()
 				//ゴーストキー
 				x1++; x2--;
 				y0++; y1--;
-				for(int i=0; i<(int)key.size(); i++){
-					int xx0= (int)((key[i]->time-startTime+parent->ghostShiftTime)*timeSize) + x1;
-					int xx1= (int)(key[i]->length*timeSize) + xx0 + 1;
+				//for(int i=0; i<(int)key.size(); i++){
+				//	int xx0= (int)((key[i]->time-startTime+parent->ghostShiftTime)*timeSize) + x1;
+				//	int xx1= (int)(key[i]->length*timeSize) + xx0 + 1;
 
-					if( x2 <= xx0 ){
-						break;
-					}
-					if( x1<=xx1 && key[i]->select ){
+				//	if( x2 <= xx0 ){
+				//		break;
+				//	}
+				//	if( x1<=xx1 && key[i]->select ){
 
-						if( (x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2) ){
+				//		if( (x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2) ){
 
-							hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
-							Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
+				//			hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
+				//			Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
 
-						}
+				//		}
 
-						if( x1 <= xx0 ){
-							hdcM->setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
-							MoveToEx(hdcM->hDC, xx0,y0, NULL);
-							LineTo(hdcM->hDC,   xx0,y1);
-						}
+				//		if( x1 <= xx0 ){
+				//			hdcM->setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
+				//			MoveToEx(hdcM->hDC, xx0,y0, NULL);
+				//			LineTo(hdcM->hDC,   xx0,y1);
+				//		}
 
-					}
-				}
+				//	}
+				//}
 
 				//キー
-				for(int i=0; i<(int)key.size(); i++){
-					int xx0= (int)((key[i]->time-startTime)*timeSize) + x1;
-					int xx1= (int)(key[i]->length*timeSize) + xx0 + 1;
+				int startindex = getKeyIndex(startTime);
+				if (startindex >= 0) {
+					for (int i = startindex; i < (int)key.size(); i++) {
+						int xx0 = (int)((key[i]->time - startTime) * timeSize) + x1;
+						int xx1 = (int)(key[i]->length * timeSize) + xx0 + 1;
 
-					if( x2 <= xx0 ){
-						break;
-					}
-					if( x1 <= xx1 ){
+						if (x2 <= xx0) {
+							break;
+						}
+						if (x1 <= xx1) {
 
-						if( (x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2) ){
+							if ((x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2)) {
 
-							if( key[i]->select ){
-								hdcM->setPenAndBrush(NULL,RGB(240,240,240));
-								Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
-								hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
-								Rectangle(hdcM->hDC,max(xx0+2,x1),y0+2,min(xx1-2,x2),y1-2);
+								//if (key[i]->select) {
+								if((key[i]->select) || ((g_previewFlag != 0) && (key[i]->time >= g_motionbrush_startframe) && (key[i]->time <= g_motionbrush_endframe))){
+								
+									//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
+									hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
+									Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
+									hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
+									Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
 
-							}else{
-								hdcM->setPenAndBrush(NULL,RGB(240,240,240));
-								Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
+								}
+								else {
+									hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
+									Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
+								}
+
+							}
+
+							if (x1 <= xx0) {
+								hdcM->setPenAndBrush(RGB(baseR, baseG, baseB), NULL);
+								MoveToEx(hdcM->hDC, xx0, y0, NULL);
+								LineTo(hdcM->hDC, xx0, y1);
 							}
 
 						}
-
-						if( x1 <= xx0 ){
-							hdcM->setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
-							MoveToEx(hdcM->hDC, xx0,y0, NULL);
-							LineTo(hdcM->hDC,   xx0,y1);
-						}
-
 					}
 				}
+
+
+				//for(int i=0; i<(int)key.size(); i++){
+				//	int xx0= (int)((key[i]->time-startTime)*timeSize) + x1;
+				//	int xx1= (int)(key[i]->length*timeSize) + xx0 + 1;
+
+				//	if( x2 <= xx0 ){
+				//		break;
+				//	}
+				//	if( x1 <= xx1 ){
+
+				//		if( (x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2) ){
+
+				//			if( key[i]->select ){
+				//				hdcM->setPenAndBrush(NULL,RGB(240,240,240));
+				//				Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
+				//				hdcM->setPenAndBrush(NULL,RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)));
+				//				Rectangle(hdcM->hDC,max(xx0+2,x1),y0+2,min(xx1-2,x2),y1-2);
+
+				//			}else{
+				//				hdcM->setPenAndBrush(NULL,RGB(240,240,240));
+				//				Rectangle(hdcM->hDC,max(xx0+1,x1),y0+1,min(xx1-1,x2),y1-1);
+				//			}
+
+				//		}
+
+				//		if( x1 <= xx0 ){
+				//			hdcM->setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
+				//			MoveToEx(hdcM->hDC, xx0,y0, NULL);
+				//			LineTo(hdcM->hDC,   xx0,y1);
+				//		}
+
+				//	}
+				//}
 
 			}
 
@@ -5507,34 +5581,18 @@ void s_dummyfunc()
 					_length= parent->maxTime-_time;
 				}
 
-				if(key.size() != 0){
-					int pushPos=(int)key.size();
-					for(int i=0; i<(int)key.size(); i++){
-						if(_time <= key[i]->time){
-							pushPos=i;
-							break;
-						}
-					}
-					key.push_back(key[(int)key.size()-1]);
-					for(int i=(int)key.size()-2; i>pushPos; i--){
-						key[i]=key[i-1];
-					}
-					//key[pushPos]= new Key(_time,_type,_object,_length,_select);
-					Key* newkey = (Key*)GetNewKey();
-					if (newkey) {
-						newkey->SetParams(_time, _type, _object, _length, _select);
-						key[pushPos] = newkey;
-					}
-					else {
-						_ASSERT(0);
-						return false;
-					}
 
-				}else{
-					//key.push_back(new Key(_time,_type,_object,_length,_select));
+				unsigned int currentindex = (unsigned int)(_time + 0.1);
+				if (key.size() != currentindex) {
+					//1.0.0.28 : key[] become fullframe time index array. key[(int)time].
+					_ASSERT(0);
+					return false;
+				}
+				else {
 					Key* newkey = (Key*)GetNewKey();
 					if (newkey) {
 						newkey->SetParams(_time, _type, _object, _length, _select);
+						//key[currentindex] = newkey;
 						key.push_back(newkey);
 					}
 					else {
@@ -5542,8 +5600,45 @@ void s_dummyfunc()
 						return false;
 					}
 				}
-				
 				return true;
+
+				//if(key.size() != 0){
+				//	int pushPos=(int)key.size();
+				//	for(int i=0; i<(int)key.size(); i++){
+				//		if(_time <= key[i]->time){
+				//			pushPos=i;
+				//			break;
+				//		}
+				//	}
+				//	key.push_back(key[(int)key.size()-1]);
+				//	for(int i=(int)key.size()-2; i>pushPos; i--){
+				//		key[i]=key[i-1];
+				//	}
+				//	//key[pushPos]= new Key(_time,_type,_object,_length,_select);
+				//	Key* newkey = (Key*)GetNewKey();
+				//	if (newkey) {
+				//		newkey->SetParams(_time, _type, _object, _length, _select);
+				//		key[pushPos] = newkey;
+				//	}
+				//	else {
+				//		_ASSERT(0);
+				//		return false;
+				//	}
+
+				//}else{
+				//	//key.push_back(new Key(_time,_type,_object,_length,_select));
+				//	Key* newkey = (Key*)GetNewKey();
+				//	if (newkey) {
+				//		newkey->SetParams(_time, _type, _object, _length, _select);
+				//		key.push_back(newkey);
+				//	}
+				//	else {
+				//		_ASSERT(0);
+				//		return false;
+				//	}
+				//}
+				//
+				//return true;
 			}
 
 
@@ -5564,13 +5659,19 @@ void s_dummyfunc()
 			//	Method : 指定された時刻にあるキーをひとつ選択する
 			bool selectKey(const double &_time){
 
-				for(int i=0; i<(int)key.size(); i++){
-					if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
-						(key[i]->time <= (_time + TIME_ERROR_WIDTH)) ){
-						key[i]->select=true;
-						return true;
-					}
+				int currentindex = getKeyIndex(_time);
+				if (currentindex >= 0) {
+					key[currentindex]->select = true;
+					return true;
 				}
+
+				//for(int i=0; i<(int)key.size(); i++){
+				//	if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
+				//		(key[i]->time <= (_time + TIME_ERROR_WIDTH)) ){
+				//		key[i]->select=true;
+				//		return true;
+				//	}
+				//}
 				parent->ghostShiftTime=0;
 				return false;
 
@@ -5579,15 +5680,29 @@ void s_dummyfunc()
 			///			 厳密モード(startTime<=keyTime<endTime)
 			int selectKey(const double &startTime, const double &endTime){
 
-				int selectCount=0;
-				for(int i=0; i<(int)key.size(); i++){
-//					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
-//					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
-					if((startTime <= key[i]->time) && (key[i]->time <= endTime)){//endTime ==含む　2021/11/09
-						key[i]->select=true;
-						selectCount++;
+				int selectCount = 0;
+				int startindex, endindex;
+				startindex = getKeyIndex(startTime);
+				endindex = getKeyIndex(endTime);
+				if ((startindex >= 0) && (endindex >= 0)) {
+					for (int i = startindex; i <= endindex; i++) {
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==含む　2021/11/09
+							key[i]->select = true;
+							selectCount++;
+						}
 					}
 				}
+
+
+//				int selectCount=0;
+//				for(int i=0; i<(int)key.size(); i++){
+////					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
+////					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
+//					if((startTime <= key[i]->time) && (key[i]->time <= endTime)){//endTime ==含む　2021/11/09
+//						key[i]->select=true;
+//						selectCount++;
+//					}
+//				}
 				parent->ghostShiftTime=0;
 				return selectCount;
 
@@ -5596,28 +5711,49 @@ void s_dummyfunc()
 			///			 大雑把モード(startTime-TIME_ERROR_WIDTH<=keyTime<=endTime+TIME_ERROR_WIDTH)
 			int selectKey2(const double &startTime, const double &endTime){
 
-				int selectCount=0;
-				for(int i=0; i<(int)key.size(); i++){
-					if( ((startTime - TIME_ERROR_WIDTH) <= key[i]->time) && 
-						(key[i]->time <= (endTime + TIME_ERROR_WIDTH)) ){
-						key[i]->select=true;
-						selectCount++;
+				int selectCount = 0;
+				int startindex, endindex;
+				startindex = getKeyIndex(startTime);
+				endindex = getKeyIndex(endTime);
+				if ((startindex >= 0) && (endindex >= 0)) {
+					for (int i = startindex; i <= endindex; i++) {
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==含む　2021/11/09
+							key[i]->select = true;
+							selectCount++;
+						}
 					}
 				}
+
+				//int selectCount=0;
+				//for(int i=0; i<(int)key.size(); i++){
+				//	if( ((startTime - TIME_ERROR_WIDTH) <= key[i]->time) && 
+				//		(key[i]->time <= (endTime + TIME_ERROR_WIDTH)) ){
+				//		key[i]->select=true;
+				//		selectCount++;
+				//	}
+				//}
 				parent->ghostShiftTime=0;
 				return selectCount;
 
 			}
 			//	Method : 指定された時刻にあるキーのインデックスをひとつ取得する
 			int getKeyIndex(const double &_time){
-
-				for(int i=0; i<(int)key.size(); i++){
-					if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
-						(key[i]->time <= (_time + TIME_ERROR_WIDTH)) ){
-						return i;
-					}
+				
+				unsigned int currentindex = (unsigned int)(_time + 0.1);
+				if (key.size() <= currentindex) {
+					return -1;
 				}
-				return -1;
+				else {
+					return currentindex;
+				}
+
+				//for(int i=0; i<(int)key.size(); i++){
+				//	if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
+				//		(key[i]->time <= (_time + TIME_ERROR_WIDTH)) ){
+				//		return i;
+				//	}
+				//}
+				//return -1;
 
 			}
 			//	Method : 選択されているキーをすべて削除する
@@ -6260,26 +6396,56 @@ void s_dummyfunc()
 					EulLineData* curLineData = lineData[j];
 					if (tothelastflag == 1) {
 
-						for (int i = 0; i < (int)curLineData->key.size(); i++) {
-							if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
-								curLineData->key[i]->select = true;
-								if (maxframe < curLineData->key[i]->time) {
-									maxframe = curLineData->key[i]->time;
+						//maxframe = (double)(curLineData->key.size() - 1);
+
+						int startindex = curLineData->getKeyIndex(tmpstart);
+						if (startindex >= 0) {
+							for (int i = startindex; i < (int)curLineData->key.size(); i++) {
+								if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+									curLineData->key[i]->select = true;
+									if (maxframe < curLineData->key[i]->time) {
+										maxframe = curLineData->key[i]->time;
+									}
 								}
 							}
 						}
+
+						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+						//	if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+						//		curLineData->key[i]->select = true;
+						//		if (maxframe < curLineData->key[i]->time) {
+						//			maxframe = curLineData->key[i]->time;
+						//		}
+						//	}
+						//}
 					}
 					else {
 
-						for (int i = 0; i < (int)curLineData->key.size(); i++) {
-							if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-								(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
-								curLineData->key[i]->select = true;
-								if (maxframe < curLineData->key[i]->time) {
-									maxframe = curLineData->key[i]->time;
+						//maxframe = tmpend;
+
+						int startindex = curLineData->getKeyIndex(tmpstart);
+						int endindex = curLineData->getKeyIndex(tmpend);
+						if ((startindex >= 0) && (endindex >= 0)) {
+							for (int i = startindex; i <= endindex; i++) {
+								if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+									(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+									curLineData->key[i]->select = true;
+									if (maxframe < curLineData->key[i]->time) {
+										maxframe = curLineData->key[i]->time;
+									}
 								}
 							}
 						}
+
+						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+						//	if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+						//		(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+						//		curLineData->key[i]->select = true;
+						//		if (maxframe < curLineData->key[i]->time) {
+						//			maxframe = curLineData->key[i]->time;
+						//		}
+						//	}
+						//}
 					}
 				}
 
@@ -7348,31 +7514,66 @@ void s_dummyfunc()
 					eulrange = 1.0;
 				}
 
-				for (int i = 0; i < (int)key.size(); i++) {
-					//valueが増える方向を上方向に。座標系は下方向にプラス。
-					//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
-					int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
-					int ey1 = ey0 + DOT_SIZE_Y;
+				int startindex = getKeyIndex(startTime);
+				if (startindex >= 0) {
+					for (int i = startindex; i < (int)key.size(); i++) {
+						//valueが増える方向を上方向に。座標系は下方向にプラス。
+						//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
+						int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+						int ey1 = ey0 + DOT_SIZE_Y;
 
-					int ex0 = (int)((key[i]->time - startTime)*timeSize) + x1;
-					int ex1 = ex0 + DOT_SIZE_X;
+						int ex0 = (int)((key[i]->time - startTime) * timeSize) + x1;
+						int ex1 = ex0 + DOT_SIZE_X;
 
-					if ((key[i]->time - startTime) < 0.0) {
-						continue;
+						if ((key[i]->time - startTime) < 0.0) {
+							//continue;
+							break;
+						}
+						if (ex1 > x2) {
+							break;
+						}
+
+						if (ey0 < y0) {
+							continue;
+						}
+
+						//if (key[i]->select) {
+						//}
+						//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
+
+						if (ex0 >= x1) {
+							Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
+						}
+						
 					}
-					if (ex1 > x2) {
-						break;
-					}
-
-					if (ey0 < y0) {
-						continue;
-					}
-
-					//if (key[i]->select) {
-					//}
-					//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
-					Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
 				}
+
+
+				//for (int i = 0; i < (int)key.size(); i++) {
+				//	//valueが増える方向を上方向に。座標系は下方向にプラス。
+				//	//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
+				//	int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+				//	int ey1 = ey0 + DOT_SIZE_Y;
+
+				//	int ex0 = (int)((key[i]->time - startTime)*timeSize) + x1;
+				//	int ex1 = ex0 + DOT_SIZE_X;
+
+				//	if ((key[i]->time - startTime) < 0.0) {
+				//		continue;
+				//	}
+				//	if (ex1 > x2) {
+				//		break;
+				//	}
+
+				//	if (ey0 < y0) {
+				//		continue;
+				//	}
+
+				//	//if (key[i]->select) {
+				//	//}
+				//	//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
+				//	Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
+				//}
 
 
 				//目盛り 10度単位
@@ -7539,34 +7740,65 @@ void s_dummyfunc()
 					_length = parent->maxTime - _time;
 				}
 
-				if (key.size() != 0) {
-					int pushPos = (int)key.size();
-					for (int i = 0; i<(int)key.size(); i++) {
-						if (_time <= key[i]->time) {
-							pushPos = i;
-							break;
-						}
-					}
-					key.push_back(key[(int)key.size() - 1]);
-					for (int i = (int)key.size() - 2; i>pushPos; i--) {
-						key[i] = key[i - 1];
-					}
-					//key[pushPos] = new EulKey(_time, _type, _value, _length, _select);
-					key[pushPos] = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
-					key[pushPos]->SetParams(_time, _type, _value, _length, _select);
+				unsigned int currentindex = (unsigned int)(_time + 0.1);
 
+				if(currentindex == key.size()){
+					EulKey* newkey = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
+					if (newkey) {
+						//key[currentindex] = newkey;
+						key.push_back(newkey);
+						key[currentindex]->SetParams(_time, _type, _value, _length, _select);
+					}
+					else {
+						_ASSERT(0);
+						return false;
+					}
+				}
+				else if ((currentindex >= 0) && (currentindex <= (key.size() - 1))) {
+					EulKey* currentkey = key[currentindex];
+					if (currentkey) {
+						currentkey->SetParams(_time, _type, _value, _length, _select);
+					}
+					else {
+						_ASSERT(0);
+						return false;
+					}
 				}
 				else {
-					//key.push_back(new EulKey(_time, _type, _value, _length, _select));
-					OWP_EulerGraph::EulLineData::EulKey* neweulkey;
-					neweulkey = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
-					if (neweulkey) {
-						neweulkey->SetParams(_time, _type, _value, _length, _select);
-						key.push_back(neweulkey);
-					}
+					_ASSERT(0);
+					return false;
 				}
-
 				return true;
+
+
+				//if (key.size() != 0) {
+				//	int pushPos = (int)key.size();
+				//	for (int i = 0; i<(int)key.size(); i++) {
+				//		if (_time <= key[i]->time) {
+				//			pushPos = i;
+				//			break;
+				//		}
+				//	}
+				//	key.push_back(key[(int)key.size() - 1]);
+				//	for (int i = (int)key.size() - 2; i>pushPos; i--) {
+				//		key[i] = key[i - 1];
+				//	}
+				//	//key[pushPos] = new EulKey(_time, _type, _value, _length, _select);
+				//	key[pushPos] = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
+				//	key[pushPos]->SetParams(_time, _type, _value, _length, _select);
+
+				//}
+				//else {
+				//	//key.push_back(new EulKey(_time, _type, _value, _length, _select));
+				//	OWP_EulerGraph::EulLineData::EulKey* neweulkey;
+				//	neweulkey = (OWP_EulerGraph::EulLineData::EulKey*)GetNewEulKey();
+				//	if (neweulkey) {
+				//		neweulkey->SetParams(_time, _type, _value, _length, _select);
+				//		key.push_back(neweulkey);
+				//	}
+				//}
+
+				//return true;
 			}
 			//	Method : キーに値を設定する。
 			bool setKey(const double &_time, int _type = 0, double _value = 0.0) {
@@ -7594,13 +7826,19 @@ void s_dummyfunc()
 			//	Method : 指定された時刻にあるキーをひとつ選択する
 			bool selectKey(const double &_time) {
 
-				for (int i = 0; i<(int)key.size(); i++) {
-					if (((_time - TIME_ERROR_WIDTH) <= key[i]->time)
-						&& (key[i]->time <= (_time + TIME_ERROR_WIDTH))) {
-						key[i]->select = true;
-						return true;
-					}
+				int currentindex = getKeyIndex(_time);
+				if (currentindex >= 0) {
+					key[currentindex]->select = true;
+					return true;
 				}
+
+				//for (int i = 0; i<(int)key.size(); i++) {
+				//	if (((_time - TIME_ERROR_WIDTH) <= key[i]->time)
+				//		&& (key[i]->time <= (_time + TIME_ERROR_WIDTH))) {
+				//		key[i]->select = true;
+				//		return true;
+				//	}
+				//}
 				parent->ghostShiftTime = 0;
 				return false;
 
@@ -7608,16 +7846,28 @@ void s_dummyfunc()
 			///	Method : 指定された時刻範囲にあるキーをすべて選択する
 			///			 厳密モード(startTime<=keyTime<endTime)
 			int selectKey(const double &startTime, const double &endTime) {
-
 				int selectCount = 0;
-				for (int i = 0; i<(int)key.size(); i++) {
-					//					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
-					//					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
-					if ((startTime <= key[i]->time) && key[i]->time<endTime) {
-						key[i]->select = true;
-						selectCount++;
+				int startindex, endindex;
+				startindex = getKeyIndex(startTime);
+				endindex = getKeyIndex(endTime);
+				if ((startindex >= 0) && (endindex >= 0)) {
+					for (int i = startindex; i <= endindex; i++) {
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==含む　2021/11/09
+							key[i]->select = true;
+							selectCount++;
+						}
 					}
 				}
+
+				//int selectCount = 0;
+				//for (int i = 0; i<(int)key.size(); i++) {
+				//	//					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
+				//	//					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
+				//	if ((startTime <= key[i]->time) && key[i]->time<endTime) {
+				//		key[i]->select = true;
+				//		selectCount++;
+				//	}
+				//}
 				parent->ghostShiftTime = 0;
 				return selectCount;
 
@@ -7627,13 +7877,26 @@ void s_dummyfunc()
 			int selectKey2(const double &startTime, const double &endTime) {
 
 				int selectCount = 0;
-				for (int i = 0; i<(int)key.size(); i++) {
-					if (((startTime - TIME_ERROR_WIDTH) <= key[i]->time) && 
-						(key[i]->time <= (endTime + TIME_ERROR_WIDTH))) {
-						key[i]->select = true;
-						selectCount++;
+				int startindex, endindex;
+				startindex = getKeyIndex(startTime);
+				endindex = getKeyIndex(endTime);
+				if ((startindex >= 0) && (endindex >= 0)) {
+					for (int i = startindex; i <= endindex; i++) {
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==含む　2021/11/09
+							key[i]->select = true;
+							selectCount++;
+						}
 					}
 				}
+
+				//int selectCount = 0;
+				//for (int i = 0; i<(int)key.size(); i++) {
+				//	if (((startTime - TIME_ERROR_WIDTH) <= key[i]->time) && 
+				//		(key[i]->time <= (endTime + TIME_ERROR_WIDTH))) {
+				//		key[i]->select = true;
+				//		selectCount++;
+				//	}
+				//}
 				parent->ghostShiftTime = 0;
 				return selectCount;
 
@@ -7641,13 +7904,21 @@ void s_dummyfunc()
 			//	Method : 指定された時刻にあるキーのインデックスをひとつ取得する
 			int getKeyIndex(const double &_time) {
 
-				for (int i = 0; i<(int)key.size(); i++) {
-					if (((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
-						(key[i]->time <= (_time + TIME_ERROR_WIDTH))) {
-						return i;
-					}
+				int timeindex = (int)(_time + 0.1);
+				if (key.size() <= timeindex) {
+					return -1;
 				}
-				return -1;
+				else {
+					return timeindex;
+				}
+
+				//for (int i = 0; i<(int)key.size(); i++) {
+				//	if (((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
+				//		(key[i]->time <= (_time + TIME_ERROR_WIDTH))) {
+				//		return i;
+				//	}
+				//}
+				//return -1;
 
 			}
 			//	Method : 選択されているキーをすべて削除する
