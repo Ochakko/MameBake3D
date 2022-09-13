@@ -1890,6 +1890,7 @@ static int LoadRetargetFile(WCHAR* srcfilename);
 static int SaveMotionNameListFile();
 //static int LoadMotionNameListFile(WCHAR* srcfilename);
 static int SetJointPair2ConvBoneWnd();
+static int InitJointPair2ConvBoneWnd();
 
 
 //static int ConvBoneConvert();//--> RetargetMotion()に改名
@@ -11236,6 +11237,14 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 	s_tlarray.erase(itrtl);
 	//s_tlarray.pop_back();
 
+
+	//2022/09/13
+	int currentmodelindex = FindModelIndex(s_model);
+	if (currentmodelindex >= 0) {
+		s_modelindex[currentmodelindex].tlarray = s_tlarray;//2022/09/13
+	}
+
+
 	int newtlnum = (int)s_tlarray.size();
 	if( newtlnum == 0 ){
 		AddMotion(L"forempty", 100.0);
@@ -14191,6 +14200,13 @@ int SetConvBoneBvh()
 	//parwnd = s_convboneWnd->getHWnd();
 	parwnd = s_3dwnd;
 
+
+	//###############################
+	//joint対応表リセット 2022/09/13
+	//###############################
+	InitJointPair2ConvBoneWnd();
+
+
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
 	if (!rmenu){
@@ -14366,6 +14382,32 @@ int SetConvBone( int cbno )
 	rmenu->Destroy();
 	delete rmenu;
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+
+	return 0;
+}
+
+int InitJointPair2ConvBoneWnd()
+{
+	if (!s_model) {
+		return 0;
+	}
+
+	s_convbonemap.clear();
+
+
+	WCHAR bvhbonename[MAX_PATH];
+	int cbno = 0;
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
+			(s_bvhbone[cbno])->setName(bvhbonename);
+			s_bvhbone_bone[cbno] = 0;
+
+			cbno++;
+		}
+	}
 
 	return 0;
 }

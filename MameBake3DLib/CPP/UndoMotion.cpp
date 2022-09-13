@@ -160,8 +160,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 			CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, srcer->GetStartFrame());
 			//CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, 0.0);
 			if (!firstsrcmp) {
-				_ASSERT(0);
-				return 1;
+				//_ASSERT(0);
+				return 2;
 			}
 			CMotionPoint* firstundomp = 0;
 			map<CBone*, CMotionPoint*>::iterator itrbone2mp;

@@ -312,7 +312,7 @@ namespace OrgWinGUI{
 
 		//行データ
 		int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
-		if (getDispKeyFlag() == true) {
+		//if (getDispKeyFlag() == true) {
 			for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < showLineNum; i++, j++) {
 				bool highLight = false;
 				if (i == currentLine) highLight = true;
@@ -355,7 +355,7 @@ namespace OrgWinGUI{
 					}
 				}
 			}
-		}
+		//}
 
 		
 

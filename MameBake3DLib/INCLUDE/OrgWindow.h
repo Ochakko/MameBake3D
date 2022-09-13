@@ -5445,7 +5445,7 @@ void s_dummyfunc()
 					else {
 						//_ASSERT(0);
 						SetTextColor(hdcM->hDC, RGB(255, 0, 0));
-						return;
+						//return;
 					}
 				}
 				else {

@@ -1133,6 +1133,10 @@ int CBone::CalcFBXFrame(double srcframe, CMotionPoint* befptr, CMotionPoint* nex
 
 int CBone::DeleteMotion( int srcmotid )
 {
+	//#######################################################
+	//削除によりm_motionkeyに空きが出来るがmotidは変わらない
+	//#######################################################
+
 	map<int, CMotionPoint*>::iterator itrmp;
 	itrmp = m_motionkey.find( srcmotid - 1 );//2021/08/26
 	if( itrmp != m_motionkey.end() ){
@@ -3785,7 +3789,7 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 	if (m_parent) {
 		pparmp = m_parent->GetMotionPoint(srcmotid, srcframe);
 		if (!pparmp) {
-			_ASSERT(0);
+			//_ASSERT(0);
 			return selm;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
 	}
@@ -8033,7 +8037,31 @@ int CBone::InitMP(int srcmotid, double srcframe)
 		return 0;
 	}
 
-	CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
+	//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+	//CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
+
+	int firstmotid = 1;
+	MOTINFO* firstmi = 0;
+	if (GetParModel()) {
+		int dbgcount = 0;
+		while (!firstmi) {
+			firstmi = GetParModel()->GetMotInfo(firstmotid);
+			if (firstmi) {
+				break;
+			}
+			firstmotid++;
+			dbgcount++;
+			if (dbgcount >= MAXMOTIONNUM) {
+				break;
+			}
+		}
+	}
+	if (!firstmi) {
+		_ASSERT(0);
+		return 1;
+	}
+	CMotionPoint* firstmp = GetMotionPoint(firstmotid, 0.0);
+
 	if (firstmp) {
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
 		if (!curmp) {
@@ -8049,7 +8077,12 @@ int CBone::InitMP(int srcmotid, double srcframe)
 			//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 			//int paraxsiflag = 1;
 			//cureul = CalcLocalEulXYZ(paraxsiflag, 1, 0.0, BEFEUL_ZERO);
-			ChaVector3 cureul = GetLocalEul(1, 0.0);//motid == 1は１つ目のモーション
+
+
+			//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+			//ChaVector3 cureul = GetLocalEul(1, 0.0);//motid == 1は１つ目のモーション
+			ChaVector3 cureul = GetLocalEul(firstmotid, 0.0);//motid == 1は１つ目のモーション
+			
 			SetLocalEul(srcmotid, srcframe, cureul);
 
 			SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果

@@ -2380,6 +2380,10 @@ int CModel::GetMotionSpeed( double* dstspeed )
 
 int CModel::DeleteMotion( int motid )
 {
+	//##############################################################
+	//削除によりmapのm_motinfo[]の添え字は変わるがmotidは変わらない
+	//##############################################################
+
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
@@ -2388,13 +2392,13 @@ int CModel::DeleteMotion( int motid )
 		}
 	}
 
-
 	int miindex;
 	miindex = MotionID2Index(motid);
 	if (miindex >= 0) {
 		MOTINFO* delmi = m_motinfo[miindex];
 		if (delmi) {
-			delete delmi;
+			//delete delmi;
+			free(delmi);
 		}
 
 		std::map<int, MOTINFO*> tmpmimap;
@@ -11459,6 +11463,8 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 		return 0;
 	}
 
+	int saveundoid = m_undoid;
+
 	int nextundoid;
 	nextundoid = m_undoid + 1;
 	if( nextundoid >= m_undoSavedNum){
@@ -11466,7 +11472,13 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 	}
 	m_undoid = nextundoid;
 
-	CallF( m_undomotion[m_undoid].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate), return 1 );
+	int result = m_undomotion[m_undoid].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate);
+	if (result == 1) {//result == 2はエラーにしない
+		_ASSERT(0);
+
+		m_undoid = saveundoid;
+		return 1;
+	}
 
 	m_undoSavedNum++;
 	if (m_undoSavedNum > UNDOMAX) {
