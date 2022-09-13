@@ -5536,10 +5536,11 @@ void s_dummyfunc()
 									if ((key[i]->select) || ((g_previewFlag != 0) && (key[i]->time >= g_motionbrush_startframe) && (key[i]->time <= g_motionbrush_endframe))) {
 
 										//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
-										hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
+										//hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
+										hdcM->setPenAndBrush(NULL, RGB(64, 128, 255));
 										Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
-										hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
-										Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
+										//hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
+										//Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
 
 									}
 									else {
@@ -7634,6 +7635,8 @@ void s_dummyfunc()
 					eulrange = 1.0;
 				}
 
+
+				bool firstdrawflag = true;
 				int startindex = getKeyIndex(startTime);
 				if (startindex >= 0) {
 					int currentkeynum = (int)key.size();
@@ -7666,7 +7669,15 @@ void s_dummyfunc()
 						//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
 
 						if (ex0 >= x1) {
-							Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
+							if (firstdrawflag == true) {
+								MoveToEx(hdcM->hDC, ex0, ey0, NULL);
+								firstdrawflag = false;
+							}
+							else {
+								LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 Rectangle‚æ‚è‚àLineTo‚Ì•û‚ª•`‰æ‚ª‘¬‚¢
+							}
+
+							//Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
 						}						
 					}
 				}
@@ -7705,18 +7716,31 @@ void s_dummyfunc()
 					hdcM->setFont(fontsize, _T("‚l‚r ƒSƒVƒbƒN"));
 					//SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 
-
 					double mesurestep;
-					if (parent->ikkind == 0) {
-						mesurestep = 10.0;
-					}
-					else if (parent->ikkind == 1) {
-						mesurestep = 2.0;
+					//if (parent->ikkind == 0) {
+					//	mesurestep = 10.0;
+					//}
+					//else if (parent->ikkind == 1) {
+					//	mesurestep = 2.0;
+					//}
+					//else {
+					//	mesurestep = 10.0;
+					//}
+					if (parent->maxeul != parent->mineul) {
+						mesurestep = (parent->maxeul - parent->mineul) / 6.0;
 					}
 					else {
-						mesurestep = 10.0;
+						if (parent->ikkind == 0) {
+							mesurestep = 10.0;
+						}
+						else if (parent->ikkind == 1) {
+							mesurestep = 2.0;
+						}
+						else {
+							mesurestep = 10.0;
+						}
 					}
-
+					
 					int befey0 = 0;
 					//int mindiv = (int)((parent->mineul - 1.0) / (double)mesurestep);
 					double mindiv = parent->mineul / mesurestep;
@@ -7741,9 +7765,9 @@ void s_dummyfunc()
 						TextOut(hdcM->hDC,
 							ex0, ey0,
 							strmeasure, (int)wcslen(strmeasure));
-						hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-						MoveToEx(hdcM->hDC, x1, ey0, NULL);
-						LineTo(hdcM->hDC, x2, ey0);
+						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+						//LineTo(hdcM->hDC, x2, ey0);
 					}
 					befey0 = ey0;//!!!!!!!!!!!!!!!
 
@@ -7772,9 +7796,9 @@ void s_dummyfunc()
 							TextOut(hdcM->hDC,
 								ex0, ey0,
 								strmeasure, (int)wcslen(strmeasure));
-							hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-							MoveToEx(hdcM->hDC, x1, ey0, NULL);
-							LineTo(hdcM->hDC, x2, ey0);
+							//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+							//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+							//LineTo(hdcM->hDC, x2, ey0);
 						}
 					}
 					//max
@@ -7788,9 +7812,9 @@ void s_dummyfunc()
 						TextOut(hdcM->hDC,
 							ex0, ey0,
 							strmeasure, (int)wcslen(strmeasure));
-						hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-						MoveToEx(hdcM->hDC, x1, ey0, NULL);
-						LineTo(hdcM->hDC, x2, ey0);
+						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+						//LineTo(hdcM->hDC, x2, ey0);
 					}
 
 					//between min and max
@@ -7809,9 +7833,9 @@ void s_dummyfunc()
 									ex0, ey0,
 									strmeasure, (int)wcslen(strmeasure));
 
-								hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-								MoveToEx(hdcM->hDC, x1, ey0, NULL);
-								LineTo(hdcM->hDC, x2, ey0);
+								//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+								//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+								//LineTo(hdcM->hDC, x2, ey0);
 
 								befey0 = ey0;
 							}
