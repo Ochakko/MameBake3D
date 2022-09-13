@@ -1797,9 +1797,11 @@ static int CalcLimitedWorldMat();
 static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
+static int SaveRtgHistory(WCHAR* selectname);
 static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename);
 static int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha);
 static int GetCPTFileName(std::vector<HISTORYELEM>& dstcptfilename);
+static int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename);
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -5732,6 +5734,9 @@ void RenderText( double fTime )
 
 void PrepairUndo()
 {
+	//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
+	//その影響で選択範囲の未編集状態も保存する必要が生じた
+	//よって次のif文はコメントアウト
 	//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
 		if (s_model) {
 			CreateTimeLineMark();
@@ -6715,7 +6720,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_onragdollik = 0;
 
 
-		PrepairUndo();
+		PrepairUndo();//３Dウインドウでの編集後状態保存を想定
 	
 	}else if( uMsg == WM_RBUTTONDOWN ){
 		
@@ -12045,7 +12050,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	//ofn.hwndOwner = hDlgWnd;
 	ofn.hwndOwner = s_3dwnd;
 	ofn.hInstance = 0;
-	ofn.lpstrFilter = L"project(*.cha)chara(*.fbx)\0*.cha;*.fbx\0Rigid(*.ref)\0*.ref\0Impulse(*.imp)\0*.imp\0Ground(*.gco)\0*.gco\0BVH(*.bvh)\0*.bvh\0MNL(*.mnl)\0*.mnl\0";
+	ofn.lpstrFilter = L"project(*.cha)chara(*.fbx)\0*.cha;*.fbx\0Rigid(*.ref)\0*.ref\0Impulse(*.imp)\0*.imp\0Ground(*.gco)\0*.gco\0BVH(*.bvh)\0*.bvh\0MNL(*.mnl)\0*.mnl\0Retarget(*.rtg)\0*.rtg\0";
 	ofn.lpstrCustomFilter = NULL;
 	ofn.nMaxCustFilter = 0;
 	ofn.nFilterIndex = s_filterindex;
@@ -12076,6 +12081,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	static int s_filter_cha = 1;
 
+
 	switch (msg) {
 		case WM_INITDIALOG: 
 			{
@@ -12084,14 +12090,23 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 			SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 			SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
-
-			if (s_filter_cha == 1) {
-				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
-				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+			
+			if (s_filterindex != 7) {
+				if (s_filter_cha == 1) {
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
+				}
+				else {
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
+				}
 			}
 			else {
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
-				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
 			}
 
 
@@ -12101,9 +12116,14 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				GetbvhHistoryDir(vecopenfilename);
 
 				SetDlgHistory(hDlgWnd, vecopenfilename);
-
 			}
-			else {
+			else if (s_filterindex == 7) {
+				//retarget fileの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				GetRtgHistoryDir(vecopenfilename);
+
+				SetDlgHistory(hDlgWnd, vecopenfilename);
+			}else{
 				//cha, fbxファイル履歴
 				std::vector<wstring> vecopenfilename;
 				GetchaHistoryDir(vecopenfilename, s_filter_cha);
@@ -12372,39 +12392,59 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 				case IDC_FILTER_CHA:
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
-					s_filter_cha = 1;
+					if (s_filterindex != 7) {
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
+						s_filter_cha = 1;
 
-					if (s_filterindex == 5) {
-						//bvh2FBXの単体ファイル履歴
-						std::vector<wstring> vecopenfilename;
-						GetbvhHistoryDir(vecopenfilename);
-						SetDlgHistory(hDlgWnd, vecopenfilename);
-					}
-					else {
-						//cha, fbxファイル履歴
-						std::vector<wstring> vecopenfilename;
-						GetchaHistoryDir(vecopenfilename, s_filter_cha);
-						SetDlgHistory(hDlgWnd, vecopenfilename);
+						if (s_filterindex == 5) {
+							//bvh2FBXの単体ファイル履歴
+							std::vector<wstring> vecopenfilename;
+							GetbvhHistoryDir(vecopenfilename);
+							SetDlgHistory(hDlgWnd, vecopenfilename);
+						}
+						else {
+							//cha, fbxファイル履歴
+							std::vector<wstring> vecopenfilename;
+							GetchaHistoryDir(vecopenfilename, s_filter_cha);
+							SetDlgHistory(hDlgWnd, vecopenfilename);
+						}
 					}
 					break;
 
 
 				case IDC_FILTER_FBX:
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
-					s_filter_cha = 2;
-					if (s_filterindex == 5) {
-						//bvh2FBXの単体ファイル履歴
-						std::vector<wstring> vecopenfilename;
-						GetbvhHistoryDir(vecopenfilename);
-						SetDlgHistory(hDlgWnd, vecopenfilename);
+					if (s_filterindex != 7) {
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
+						s_filter_cha = 2;
+
+						if (s_filterindex == 5) {
+							//bvh2FBXの単体ファイル履歴
+							std::vector<wstring> vecopenfilename;
+							GetbvhHistoryDir(vecopenfilename);
+							SetDlgHistory(hDlgWnd, vecopenfilename);
+						}
+						else {
+							//cha, fbxファイル履歴
+							std::vector<wstring> vecopenfilename;
+							GetchaHistoryDir(vecopenfilename, s_filter_cha);
+							SetDlgHistory(hDlgWnd, vecopenfilename);
+						}
 					}
-					else {
-						//cha, fbxファイル履歴
+					break;
+
+				case IDC_FILTER_RTG:
+					if (s_filterindex == 7) {
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
+
+						//Retarget fileの単体ファイル履歴
 						std::vector<wstring> vecopenfilename;
-						GetchaHistoryDir(vecopenfilename, s_filter_cha);
+						GetRtgHistoryDir(vecopenfilename);
 						SetDlgHistory(hDlgWnd, vecopenfilename);
 					}
 					break;
@@ -14495,29 +14535,29 @@ int LoadRetargetFile(WCHAR* srcfilename)
 	s_convbonemap.clear();
 
 
-	OPENFILENAME ofn;
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	//ofn.hwndOwner = hDlgWnd;
-	ofn.hwndOwner = s_3dwnd;
-	ofn.hInstance = 0;
-	ofn.lpstrFilter = L"Retarget(*.rtg)\0*.rtg\0";
-	ofn.lpstrCustomFilter = NULL;
-	ofn.nMaxCustFilter = 0;
-	ofn.nFilterIndex = 0;
-	ofn.lpstrFile = g_tmpmqopath;
-	ofn.nMaxFile = MULTIPATH;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = L"GetFileNameDlg";
-	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-	ofn.nFileOffset = 0;
-	ofn.nFileExtension = 0;
-	ofn.lpstrDefExt = NULL;
-	ofn.lCustData = NULL;
-	ofn.lpfnHook = NULL;
-	ofn.lpTemplateName = NULL;
+	//OPENFILENAME ofn;
+	//ofn.lStructSize = sizeof(OPENFILENAME);
+	////ofn.hwndOwner = hDlgWnd;
+	//ofn.hwndOwner = s_3dwnd;
+	//ofn.hInstance = 0;
+	//ofn.lpstrFilter = L"Retarget(*.rtg)\0*.rtg\0";
+	//ofn.lpstrCustomFilter = NULL;
+	//ofn.nMaxCustFilter = 0;
+	//ofn.nFilterIndex = 0;
+	//ofn.lpstrFile = g_tmpmqopath;
+	//ofn.nMaxFile = MULTIPATH;
+	//ofn.lpstrFileTitle = NULL;
+	//ofn.nMaxFileTitle = 0;
+	//ofn.lpstrInitialDir = NULL;
+	//ofn.lpstrTitle = L"GetFileNameDlg";
+	////ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	//ofn.nFileOffset = 0;
+	//ofn.nFileExtension = 0;
+	//ofn.lpstrDefExt = NULL;
+	//ofn.lCustData = NULL;
+	//ofn.lpfnHook = NULL;
+	//ofn.lpTemplateName = NULL;
 
 	int result = 0;
 
@@ -14528,24 +14568,59 @@ int LoadRetargetFile(WCHAR* srcfilename)
 			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-		if (GetOpenFileNameW(&ofn) == IDOK) {
-			CRetargetFile rtgfile;
-			result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
-			if (result == 0) {
-				//if (g_retargetbatchflag == 0) {
-				if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
-					SetJointPair2ConvBoneWnd();
-				}
+		int dlgret;
+		s_filterindex = 7;
+		dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_OPENMQODLG),
+			s_3dwnd, (DLGPROC)OpenMqoDlgProc);
+		if ((dlgret != IDOK) || !g_tmpmqopath[0]) {
+			return 0;
+		}
+
+
+		WCHAR savepath[MULTIPATH];
+		MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+
+
+		//rtgファイルを読み込む
+		CRetargetFile rtgfile;
+		result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
+		if (result == 0) {
+			//if (g_retargetbatchflag == 0) {
+			if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
+				SetJointPair2ConvBoneWnd();
 			}
 		}
 
-	}
-	else {
+		SaveRtgHistory(savepath);
+
+
+		//if (GetOpenFileNameW(&ofn) == IDOK) {
+		//	CRetargetFile rtgfile;
+		//	result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
+		//	if (result == 0) {
+		//		//if (g_retargetbatchflag == 0) {
+		//		if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
+		//			SetJointPair2ConvBoneWnd();
+		//		}
+		//	}
+		//}
+
+		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+		UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
-		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+	}
+	else {
+		//s_getfilenamehwnd = 0;
+		//s_getfilenametreeview = 0;
+		//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		//InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+
+		//ファイル名指定時はそのまま開く
+		//バッチからも呼ばれる
 
 		CRetargetFile rtgfile;
 		result = rtgfile.LoadRetargetFile(srcfilename, s_convbone_model, s_convbone_bvh, s_convbonemap);
@@ -14556,10 +14631,10 @@ int LoadRetargetFile(WCHAR* srcfilename)
 			}
 		}
 
-		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-		UnhookWinEvent(hhook);
-		s_getfilenamehwnd = 0;
-		s_getfilenametreeview = 0;
+		//InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+		//UnhookWinEvent(hhook);
+		//s_getfilenamehwnd = 0;
+		//s_getfilenametreeview = 0;
 	}
 	return result;
 }
@@ -15098,7 +15173,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 	//curmodel : 引数で渡されたmodel
 	if (s_model && (curmodel == s_model)) {
-		PrepairUndo();
+		PrepairUndo();//物理REC様に保存
 	}
 
 
@@ -18812,7 +18887,7 @@ int OnFrameKeyboard()
 	//end of BoneTwist on MouseWheel 
 	if ((s_tkeyflag != 0) && (s_editmotionflag >= 0) && ((g_keybuf['T'] & 0x80) == 0)) {
 		s_tkeyflag = 0;
-		PrepairUndo();
+		PrepairUndo();//ツイスト保存
 	}
 
 	/*
@@ -19187,7 +19262,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	if (s_model && (recstopflag == true)) {
 		StopBt();
 		s_model->ApplyPhysIkRec();
-		PrepairUndo();
+		PrepairUndo();//物理REC用保存
 		g_btsimurecflag = false;
 	}
 	else {
@@ -19702,7 +19777,7 @@ int OnFrameTimeLineWnd()
 					if (s_owpLTimeline) {
 						//s_editmotionflag = s_curboneno;
 						s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-						PrepairUndo();
+						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 					}
 
 				}
@@ -19739,7 +19814,7 @@ int OnFrameTimeLineWnd()
 						if (s_owpLTimeline) {
 							//s_editmotionflag = s_curboneno;
 							s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-							PrepairUndo();
+							PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 						}
 
 
@@ -19780,7 +19855,7 @@ int OnFrameTimeLineWnd()
 					if (s_owpLTimeline) {
 						//s_editmotionflag = s_curboneno;
 						s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-						PrepairUndo();
+						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 					}
 
 
@@ -25576,7 +25651,7 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 			if (s_owpLTimeline) {
 				s_editmotionflag = s_curboneno;
 				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-				PrepairUndo();
+				PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 			}
 		}
 
@@ -33259,7 +33334,7 @@ void DSAimBarOK()
 			}
 
 			//MainWindow MsgProc ; Prepair For Undo
-			PrepairUndo();
+			PrepairUndo();//メニューバーOK後の保存
 
 			s_wmlbuttonup = 1;
 
@@ -33826,6 +33901,40 @@ void WaitRetargetThreads()
 //	}
 //}
 
+int SaveRtgHistory(WCHAR* selectname)
+{
+	WCHAR saveprojpath[MAX_PATH] = { 0L };
+	wcscpy_s(saveprojpath, MAX_PATH, selectname);
+
+	//書き込み処理が成功してから履歴を保存する。rtgファイル。
+	int savepathlen;
+	saveprojpath[MAX_PATH - 1] = 0L;
+	savepathlen = (int)wcslen(saveprojpath);
+	SYSTEMTIME localtime;
+	GetLocalTime(&localtime);
+	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
+	swprintf_s(HistoryForOpeningProjectWithGamePad, MAX_PATH, L"%s\\MB3DOpenProjRtgDir_%04u%02u%02u%02u%02u%02u.txt",
+		s_temppath,
+		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
+	HANDLE hfile;
+	hfile = CreateFile(HistoryForOpeningProjectWithGamePad, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
+		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (hfile != INVALID_HANDLE_VALUE) {
+		//int pathlen;
+		//pathlen = (int)wcslen(saveprojpath);
+		if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
+			DWORD writelen = 0;
+			WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+			_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
+		}
+		CloseHandle(hfile);
+	}
+
+	return 0;
+}
+
+
+
 int Savebvh2FBXHistory(WCHAR* selectname)
 {
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
@@ -34002,6 +34111,99 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 		}
 	}
 
+
+	if (!vecopenfilename.empty()) {
+		dstvecopenfilename = vecopenfilename;
+	}
+	else {
+		dstvecopenfilename.clear();
+	}
+	return 0;
+
+}
+
+int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
+{
+	dstvecopenfilename.clear();
+	//ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
+
+
+	//MB3DOpenProj_20210410215628.txt
+	WCHAR searchfilename[MAX_PATH] = { 0L };
+	swprintf_s(searchfilename, MAX_PATH, L"%sMB3DOpenProjRtgDir_*.txt", s_temppath);
+	HANDLE hFind;
+	WIN32_FIND_DATA win32fd;
+	hFind = FindFirstFileW(searchfilename, &win32fd);
+
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpファイル名
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpファイル内に書いてあるopenfilename
+
+	vechistory.clear();
+	bool notfoundfirst = true;
+	if (hFind != INVALID_HANDLE_VALUE) {
+		notfoundfirst = false;
+		do {
+			if ((win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+				HISTORYELEM curelem;
+				curelem.Init();
+				curelem.filetime = win32fd.ftCreationTime;
+
+				//printf("%s\n", win32fd.cFileName);
+				curelem.wfilename[0] = { 0L };
+				curelem.wfilename[MAX_PATH - 1] = { 0L };
+				swprintf_s(curelem.wfilename, MAX_PATH, L"%s%s", s_temppath, win32fd.cFileName);
+
+				vechistory.push_back(curelem);
+			}
+		} while (FindNextFile(hFind, &win32fd));
+		FindClose(hFind);
+	}
+
+	if (!vechistory.empty()) {
+
+		std::sort(vechistory.begin(), vechistory.end());
+		std::reverse(vechistory.begin(), vechistory.end());
+
+		int numhistory = (int)vechistory.size();
+		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
+
+		int foundnum = 0;
+		int historyno;
+		for (historyno = 0; historyno < numhistory; historyno++) {
+			WCHAR openfilename[MAX_PATH] = { 0L };
+			openfilename[0] = { 0L };
+			wcscpy_s(openfilename, MAX_PATH, vechistory[historyno].wfilename);
+
+			HANDLE hfile;
+			hfile = CreateFileW(openfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+				FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			if (hfile != INVALID_HANDLE_VALUE) {
+				WCHAR readwstr[MAX_PATH] = { 0L };
+				readwstr[0L] = { 0L };
+				DWORD readleng = 0;
+				bool bsuccess;
+				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
+				if (bsuccess) {
+					bool foundsame = false;
+					wstring newwstr = readwstr;
+					std::vector<wstring>::iterator itropenfilename;
+					for (itropenfilename = vecopenfilename.begin(); itropenfilename != vecopenfilename.end(); itropenfilename++) {
+						if (newwstr.compare(*itropenfilename) == 0) {
+							foundsame = true;
+						}
+					}
+					if (foundsame == false) {
+						vecopenfilename.push_back(readwstr);
+						foundnum++;
+						if (foundnum >= dispnum) {
+							break;
+						}
+					}
+				}
+				CloseHandle(hfile);
+			}
+		}
+	}
 
 	if (!vecopenfilename.empty()) {
 		dstvecopenfilename = vecopenfilename;

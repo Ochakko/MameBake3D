@@ -5537,9 +5537,9 @@ void s_dummyfunc()
 
 										//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
 										//hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
-										hdcM->setPenAndBrush(NULL, RGB(64, 128, 255));
+										hdcM->setPenAndBrush(NULL, RGB(64, 128, 255));//AO
 										Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
-										//hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
+										//hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));//ŽlŠp‚Ì’†g‚ð•‚­”²‚­‚Æ‚«‚Í‚±‚Ì‚Qs
 										//Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
 
 									}
