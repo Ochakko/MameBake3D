@@ -3990,10 +3990,11 @@ void s_dummyfunc()
 			mouseWheelListener = NULL;
 			mouseRUpListener = NULL;
 
-			keyShiftListener = [this](){
-				shiftKeyTime(getShiftKeyTime());
-			};
-			//keyDeleteListener = [](const KeyInfo& dummy){s_dummyfunc();};
+			//keyShiftListener = [this](){
+			//	shiftKeyTime(getShiftKeyTime());
+			//};
+			////keyDeleteListener = [](const KeyInfo& dummy){s_dummyfunc();};
+			keyShiftListener = NULL;
 			keyDeleteListener = NULL;
 
 			showPos_time=0;
@@ -4015,6 +4016,9 @@ void s_dummyfunc()
 			dragSelect= false;
 			dragShift= false;
 			wheeldelta = 0;
+
+			dispkeyflag = false;
+
 		}
 		~OWP_Timeline(){
 			selectAll(true);
@@ -4297,63 +4301,63 @@ void s_dummyfunc()
 		}
 
 
-		//	Method : キーを削除
-		bool deleteKey(const std::basic_string<TCHAR>& _name, double time){
-			for(int i=0; i<(int)lineData.size(); i++){
-				if(lineData[i]->name==_name){
-					selectClear();
-					bool ret= lineData[i]->selectKey(time);
-					lineData[i]->deleteKey();
+		////	Method : キーを削除
+		//bool deleteKey(const std::basic_string<TCHAR>& _name, double time){
+		//	for(int i=0; i<(int)lineData.size(); i++){
+		//		if(lineData[i]->name==_name){
+		//			selectClear();
+		//			bool ret= lineData[i]->selectKey(time);
+		//			lineData[i]->deleteKey();
 
-					//再描画要求
-					if( ret && rewriteOnChange ){
-						callRewrite();
-					}
-					return ret;
-				}
-			}
-			return false;
-		}
-		bool deleteKey(const std::basic_string<TCHAR>& _name, int index){
-			for(int i=0; i<(int)lineData.size(); i++){
-				if(lineData[i]->name==_name){
-					bool ret= lineData[i]->deleteKey(index);
+		//			//再描画要求
+		//			if( ret && rewriteOnChange ){
+		//				callRewrite();
+		//			}
+		//			return ret;
+		//		}
+		//	}
+		//	return false;
+		//}
+		//bool deleteKey(const std::basic_string<TCHAR>& _name, int index){
+		//	for(int i=0; i<(int)lineData.size(); i++){
+		//		if(lineData[i]->name==_name){
+		//			bool ret= lineData[i]->deleteKey(index);
 
-					//再描画要求
-					if( ret && rewriteOnChange ){
-						callRewrite();
-					}
-					return ret;
-				}
-			}
-			return false;
-		}
-		bool deleteKey(int lineIndex, double time){
-			if((unsigned int)lineData.size()<=(unsigned int)lineIndex) return false;
+		//			//再描画要求
+		//			if( ret && rewriteOnChange ){
+		//				callRewrite();
+		//			}
+		//			return ret;
+		//		}
+		//	}
+		//	return false;
+		//}
+		//bool deleteKey(int lineIndex, double time){
+		//	if((unsigned int)lineData.size()<=(unsigned int)lineIndex) return false;
 
-			selectClear();
-			bool ret= lineData[lineIndex]->selectKey(time);
-			lineData[lineIndex]->deleteKey();
+		//	selectClear();
+		//	bool ret= lineData[lineIndex]->selectKey(time);
+		//	lineData[lineIndex]->deleteKey();
 
-			//再描画要求
-			if( ret && rewriteOnChange ){
-				callRewrite();
-			}
+		//	//再描画要求
+		//	if( ret && rewriteOnChange ){
+		//		callRewrite();
+		//	}
 
-			return ret;
-		}
-		bool deleteKey(int lineIndex, int keyIndex){
-			if((unsigned int)lineData.size()<=(unsigned int)lineIndex) return false;
+		//	return ret;
+		//}
+		//bool deleteKey(int lineIndex, int keyIndex){
+		//	if((unsigned int)lineData.size()<=(unsigned int)lineIndex) return false;
 
-			bool ret= lineData[lineIndex]->deleteKey(keyIndex);
+		//	bool ret= lineData[lineIndex]->deleteKey(keyIndex);
 
-			//再描画要求
-			if( ret && rewriteOnChange ){
-				callRewrite();
-			}
+		//	//再描画要求
+		//	if( ret && rewriteOnChange ){
+		//		callRewrite();
+		//	}
 
-			return ret;
-		}
+		//	return ret;
+		//}
 		unsigned int deleteKey(){
 			unsigned int deleteNum= 0;
 
@@ -4430,59 +4434,66 @@ void s_dummyfunc()
 				int j = 1;
 				if (j < (int)lineData.size()) {
 					LineData* curLineData = lineData[j];
-					if (tothelastflag == 1) {
+					if (curLineData) {
+						if (tothelastflag == 1) {
 
-						//maxframe = (double)(curLineData->key.size() - 1);
+							//maxframe = (double)(curLineData->key.size() - 1);
 
-						int startindex = curLineData->getKeyIndex(tmpstart);
-						if (startindex >= 0) {
-							for (int i = startindex; i < (int)curLineData->key.size(); i++) {
-								if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
-									curLineData->key[i]->select = true;
-									if (maxframe < curLineData->key[i]->time) {
-										maxframe = curLineData->key[i]->time;
+							int startindex = curLineData->getKeyIndex(tmpstart);
+							if (startindex >= 0) {
+								int currentkeynum = (int)curLineData->key.size();
+								for (int i = startindex; i < currentkeynum; i++) {
+									if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+										curLineData->key[i]->select = true;
+										if (maxframe < curLineData->key[i]->time) {
+											maxframe = curLineData->key[i]->time;
+										}
 									}
 								}
 							}
+							curLineData->setMinSelected(startindex);
+							curLineData->setMaxSelected(max(0, (int)curLineData->key.size() - 1));
+
+							//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							//	if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+							//		curLineData->key[i]->select = true;
+							//		if (maxframe < curLineData->key[i]->time) {
+							//			maxframe = curLineData->key[i]->time;
+							//		}
+							//	}
+							//}
 						}
+						else {
 
-						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
-						//	if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
-						//		curLineData->key[i]->select = true;
-						//		if (maxframe < curLineData->key[i]->time) {
-						//			maxframe = curLineData->key[i]->time;
-						//		}
-						//	}
-						//}
-					}
-					else {
+							//maxframe = tmpend;
 
-						//maxframe = tmpend;
-
-						int startindex = curLineData->getKeyIndex(tmpstart);
-						int endindex = curLineData->getKeyIndex(tmpend);
-						if ((startindex >= 0) && (endindex >= 0)) {
-							for (int i = startindex; i <= endindex; i++) {
-								if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-									(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
-									curLineData->key[i]->select = true;
-									if (maxframe < curLineData->key[i]->time) {
-										maxframe = curLineData->key[i]->time;
+							int startindex = curLineData->getKeyIndex(tmpstart);
+							int endindex = curLineData->getKeyIndex(tmpend);
+							if ((startindex >= 0) && (endindex >= 0)) {
+								for (int i = startindex; i <= endindex; i++) {
+									if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+										(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+										curLineData->key[i]->select = true;
+										if (maxframe < curLineData->key[i]->time) {
+											maxframe = curLineData->key[i]->time;
+										}
 									}
 								}
 							}
+							curLineData->setMinSelected(startindex);
+							curLineData->setMaxSelected(endindex);
+
+
+							//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							//	if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+							//		(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+							//		curLineData->key[i]->select = true;
+							//		if (maxframe < curLineData->key[i]->time) {
+							//			maxframe = curLineData->key[i]->time;
+							//		}
+							//	}
+							//}
 						}
-
-
-						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
-						//	if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-						//		(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
-						//		curLineData->key[i]->select = true;
-						//		if (maxframe < curLineData->key[i]->time) {
-						//			maxframe = curLineData->key[i]->time;
-						//		}
-						//	}
-						//}
 					}
 				}
 
@@ -4521,20 +4532,26 @@ void s_dummyfunc()
 
 			for(int i=0; i<(int)lineData.size(); i++){
 				LineData *curLineData= lineData[i];
+				if (curLineData) {
+					int curkeynum = (int)curLineData->key.size();
 
-				int curkeynum = (int)curLineData->key.size();
+					//for(int j=0; j<curkeynum; j++){
+					int startindex = max(curLineData->getMinSelected(), 0);
+					int endindex = min((curLineData->getMaxSelected() + 1), curkeynum);
+					if ((startindex >= 0) && (endindex >= 0)) {
+						for (int j = startindex; j < endindex; j++) {//2022/09/12
+							LineData::Key* curKey = curLineData->key[j];
 
-				for(int j=0; j<curkeynum; j++){
-					LineData::Key *curKey= lineData[i]->key[j];
-
-					if( curKey->select ){
-						KeyInfo tmp;
-						tmp.label= curLineData->name.c_str();
-						tmp.time= curKey->time;
-						tmp.lineIndex= i;
-						tmp.timeIndex= j;
-						tmp.object= curKey->object;
-						ret.push_back(tmp);
+							if (curKey->select) {
+								KeyInfo tmp;
+								tmp.label = curLineData->name.c_str();
+								tmp.time = curKey->time;
+								tmp.lineIndex = i;
+								tmp.timeIndex = j;
+								tmp.object = curKey->object;
+								ret.push_back(tmp);
+							}
+						}
 					}
 				}
 			}
@@ -4548,17 +4565,17 @@ void s_dummyfunc()
 //_ASSERT(0);
 			return ret;
 		}
-		/// Method : 全ての選択されているキーを移動する
-		void shiftKeyTime(const double &shiftTime){
-			for(int i=0; i<(int)lineData.size(); i++){
-				lineData[i]->shiftKey(shiftTime);
-			}
+		///// Method : 全ての選択されているキーを移動する
+		//void shiftKeyTime(const double &shiftTime){
+		//	for(int i=0; i<(int)lineData.size(); i++){
+		//		lineData[i]->shiftKey(shiftTime);
+		//	}
 
-			//再描画要求
-			if( rewriteOnChange ){
-				callRewrite();
-			}
-		}
+		//	//再描画要求
+		//	if( rewriteOnChange ){
+		//		callRewrite();
+		//	}
+		//}
 
 
 
@@ -4587,6 +4604,11 @@ void s_dummyfunc()
 				}
 				showPos_time = newshowpostime;
 				
+				for (int i = 0; i < (int)lineData.size(); i++) {
+					lineData[i]->selectKey(showPos_time);
+				}
+
+
 				//再描画要求
 				//if (rewriteOnChange) {
 					callRewrite();
@@ -5070,6 +5092,15 @@ void s_dummyfunc()
 				callRewrite();
 			}
 		}
+		bool getDispKeyFlag()
+		{
+			return dispkeyflag;
+		}
+		void setDispKeyFlag(bool srcflag)
+		{
+			dispkeyflag = srcflag;
+		}
+
 		/// Accessor : timeSnapSize
 		double getTimeSnapSize() const{
 			return timeSnapSize;
@@ -5232,6 +5263,9 @@ void s_dummyfunc()
 		std::function<void()> mouseRUpListener;
 		std::function<void(const KeyInfo&)> keyDeleteListener;
 
+		bool dispkeyflag;
+
+
 		//行データクラス-------------
 		public: class LineData{
 		public:
@@ -5244,6 +5278,8 @@ void s_dummyfunc()
 				key.clear();
 				hasrigflag = false;
 				textcol = srctextcol;
+				minselected = 0;
+				maxselected = 0;
 			}
 			//LineData( const LineData& a ){
 			//	_ASSERT_EXPR( 0, L"コピーコンストラクタは使えません" );
@@ -5268,6 +5304,22 @@ void s_dummyfunc()
 				return hasrigflag;
 			}
 
+			int getMinSelected()
+			{
+				return minselected;
+			}
+			void setMinSelected(int srcval)
+			{
+				minselected = srcval;
+			}
+			int getMaxSelected()
+			{
+				return maxselected;
+			}
+			void setMaxSelected(int srcval)
+			{
+				maxselected = srcval;
+			}
 			//キーデータクラス---------------
 			class Key{
 			public:
@@ -5346,6 +5398,8 @@ void s_dummyfunc()
 			int depth;
 			bool hasrigflag;
 			COLORREF textcol;
+			int minselected;//2022/09/12 : key[].selectの検索ヒント
+			int maxselected;//2022/09/12 : key[].selectの検索ヒント
 
 			//////////////////////////// Method //////////////////////////////
 			//	Method : 描画
@@ -5463,45 +5517,49 @@ void s_dummyfunc()
 				//}
 
 				//キー
-				int startindex = getKeyIndex(startTime);
-				if (startindex >= 0) {
-					for (int i = startindex; i < (int)key.size(); i++) {
-						int xx0 = (int)((key[i]->time - startTime) * timeSize) + x1;
-						int xx1 = (int)(key[i]->length * timeSize) + xx0 + 1;
+				if (parent->getDispKeyFlag()) {//2022/09/12
+					int startindex = getKeyIndex(startTime);
+					if (startindex >= 0) {
+						int currentkeynum = (int)key.size();
+						for (int i = startindex; i < currentkeynum; i++) {
+							int xx0 = (int)((key[i]->time - startTime) * timeSize) + x1;
+							int xx1 = (int)(key[i]->length * timeSize) + xx0 + 1;
 
-						if (x2 <= xx0) {
-							break;
-						}
-						if (x1 <= xx1) {
+							if (x2 <= xx0) {
+								break;
+							}
+							if (x1 <= xx1) {
 
-							if ((x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2)) {
+								if ((x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2)) {
 
-								//if (key[i]->select) {
-								if((key[i]->select) || ((g_previewFlag != 0) && (key[i]->time >= g_motionbrush_startframe) && (key[i]->time <= g_motionbrush_endframe))){
-								
-									//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
-									hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
-									Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
-									hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
-									Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
+									//if (key[i]->select) {
+									if ((key[i]->select) || ((g_previewFlag != 0) && (key[i]->time >= g_motionbrush_startframe) && (key[i]->time <= g_motionbrush_endframe))) {
+
+										//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
+										hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
+										Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
+										hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
+										Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
+
+									}
+									else {
+										hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
+										Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
+									}
 
 								}
-								else {
-									hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
-									Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
+
+								if (x1 <= xx0) {
+									hdcM->setPenAndBrush(RGB(baseR, baseG, baseB), NULL);
+									MoveToEx(hdcM->hDC, xx0, y0, NULL);
+									LineTo(hdcM->hDC, xx0, y1);
 								}
 
 							}
-
-							if (x1 <= xx0) {
-								hdcM->setPenAndBrush(RGB(baseR, baseG, baseB), NULL);
-								MoveToEx(hdcM->hDC, xx0, y0, NULL);
-								LineTo(hdcM->hDC, xx0, y1);
-							}
-
 						}
 					}
 				}
+				
 
 
 				//for(int i=0; i<(int)key.size(); i++){
@@ -5645,13 +5703,15 @@ void s_dummyfunc()
 
 			//	Method : すべてのキーの選択を解除する
 			void selectClear(){
-				for(int i=0; i<(int)key.size(); i++){
+				int currentkeynum = (int)key.size();
+				for(int i = 0; i < currentkeynum; i++){
 					key[i]->select=false;
 				}
 			}
 			//	Method : すべてのキーを選択する
 			void selectAll(){
-				for(int i=0; i<(int)key.size(); i++){
+				int currentkeynum = (int)key.size();
+				for(int i = 0; i < currentkeynum; i++){
 					key[i]->select=true;
 				}
 				parent->ghostShiftTime=0;
@@ -5664,6 +5724,8 @@ void s_dummyfunc()
 					key[currentindex]->select = true;
 					return true;
 				}
+				setMinSelected(currentindex);
+				setMaxSelected(currentindex);
 
 				//for(int i=0; i<(int)key.size(); i++){
 				//	if( ((_time - TIME_ERROR_WIDTH) <= key[i]->time) && 
@@ -5692,7 +5754,8 @@ void s_dummyfunc()
 						}
 					}
 				}
-
+				setMinSelected(startindex);
+				setMaxSelected(endindex);
 
 //				int selectCount=0;
 //				for(int i=0; i<(int)key.size(); i++){
@@ -5723,6 +5786,8 @@ void s_dummyfunc()
 						}
 					}
 				}
+				setMinSelected(startindex);
+				setMaxSelected(endindex);
 
 				//int selectCount=0;
 				//for(int i=0; i<(int)key.size(); i++){
@@ -5756,20 +5821,21 @@ void s_dummyfunc()
 				//return -1;
 
 			}
-			//	Method : 選択されているキーをすべて削除する
-			unsigned int deleteKey(bool noCallListener=false){
-
-				unsigned int deleteNum=0;
-				for(unsigned int i=0; i<(int)key.size(); i++){
-					if( key[i]->select ){
+			////	Method : 選択されているキーをすべて削除する
+			//unsigned int deleteKey(bool noCallListener=false){
+			//	Method : キーをすべて削除する
+			unsigned int deleteKey(bool noCallListener = false) {
+				unsigned int deleteNum = 0;
+				for (unsigned int i = 0; i < (int)key.size(); i++) {
+					//if (key[i]->select) {
 						//リスナーコール
-						if( !noCallListener && (parent->keyDeleteListener != NULL) ){
+						if (!noCallListener && (parent->keyDeleteListener != NULL)) {
 							KeyInfo ki;
-							ki.label= name.c_str();
-							ki.lineIndex= lineIndex;
-							ki.time= key[i]->time;
-							ki.timeIndex= -1;
-							ki.object= key[i]->object;
+							ki.label = name.c_str();
+							ki.lineIndex = lineIndex;
+							ki.time = key[i]->time;
+							ki.timeIndex = -1;
+							ki.object = key[i]->object;
 							(parent->keyDeleteListener)(ki);
 						}
 
@@ -5777,120 +5843,133 @@ void s_dummyfunc()
 						key[i]->InvalidateKeys();
 
 						deleteNum++;
-					}else{
-						key[i-deleteNum]=key[i];
-					}
+					//}
+					//else {
+					//	key[i - deleteNum] = key[i];
+					//}
 				}
-				for(unsigned int i=0; i<deleteNum; i++){
-					key.pop_back();
-				}
+				//for (unsigned int i = 0; i < deleteNum; i++) {
+				//	key.pop_back();
+				//}
+				key.clear();
+
 				return deleteNum;
 
 			}
-			//	Method : 指定されたキーを削除する
-			bool deleteKey(int index, bool noCallListener=false){
-				if( (unsigned int)key.size() <= (unsigned int)index ) return false;
+			////	Method : 指定されたキーを削除する
+			//bool deleteKey(int index, bool noCallListener=false){
+			//	if( (unsigned int)key.size() <= (unsigned int)index ) return false;
 
-				//リスナーコール
-				if( !noCallListener && (parent->keyDeleteListener != NULL) ){
-					KeyInfo ki;
-					ki.label= name.c_str();
-					ki.lineIndex= lineIndex;
-					ki.time= key[index]->time;
-					ki.timeIndex= -1;
-					ki.object= key[index]->object;
-					(parent->keyDeleteListener)(ki);
-				}
+			//	//リスナーコール
+			//	if( !noCallListener && (parent->keyDeleteListener != NULL) ){
+			//		KeyInfo ki;
+			//		ki.label= name.c_str();
+			//		ki.lineIndex= lineIndex;
+			//		ki.time= key[index]->time;
+			//		ki.timeIndex= -1;
+			//		ki.object= key[index]->object;
+			//		(parent->keyDeleteListener)(ki);
+			//	}
 
-				//delete key[index];
-				key[index]->InvalidateKeys();
+			//	//delete key[index];
+			//	key[index]->InvalidateKeys();
 
-				for(int i=index; i<(int)key.size(); i++){
-					key[i-1]=key[i];
-				}
-				key.pop_back();
-				return true;
-			}
-			//	Method : 指定されたキーを移動する
-			bool shiftKey(const double &shiftTime, int index){
-				if( key.size() <= (unsigned int)index ) return false;
-
-				double dstTime= key[index]->time+shiftTime;
-				int type= key[index]->type;
-				double length= key[index]->length;
-				bool select= key[index]->select;
-				void *object= key[index]->object;
-				deleteKey(index,true);
-
-				//既にキーが存在する場合
-				if( !newKey(dstTime,type,object,length,select) ){
-					//置き換えによるキー削除リスナーコール
-					if( parent->keyDeleteListener != NULL ){
-						KeyInfo ki;
-						ki.label= name.c_str();
-						ki.lineIndex= lineIndex;
-						ki.time= dstTime;
-						ki.timeIndex= -1;
-						ki.object= object;
-						(parent->keyDeleteListener)(ki);
-					}
-
-					//存在するキーの値を置き換え後のキーの値に変更
-					int dstIndex= getKeyIndex(dstTime);
-					key[dstIndex]->type= type;
-					key[dstIndex]->length= length;
-					key[dstIndex]->object= object;
-				}
-
-				return true;
-			}
-			//	Method : 選択されているキーをすべて移動する
-			unsigned int shiftKey(const double &shiftTime){
-
-				unsigned int shiftNum=0;
-				std::list<Key> shiftKeyList;
-				for(int i=0; i<(int)key.size(); i++){
-					if( key[i]->select ){
-						shiftKeyList.push_back(*(key[i]));
-//						shiftKey(shiftTime,i);
-						shiftNum++;
-					}
-				}
-
-				deleteKey(true);
-
-				std::list<Key>::iterator itr;
-				for(itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++){
-					if( !newKey( itr->time+shiftTime, itr->type, itr->object, itr->length, itr->select ) ){
-						//作成不能削除リスナーコール
-						if( parent->keyDeleteListener != NULL ){
-							KeyInfo ki;
-							ki.label= name.c_str();
-							ki.lineIndex= lineIndex;
-							ki.time= itr->time+shiftTime;
-							ki.timeIndex= -1;
-							ki.object= itr->object;
-							(parent->keyDeleteListener)(ki);
-						}
-					}
-				}
-
-				return shiftNum;
-			}
-			//	Method : 選択されているキーをゴーストキーの位置へすべて移動する
-			unsigned int shiftKey(){
-				return shiftKey(parent->ghostShiftTime);
-			}
+			//	for(int i=index; i<(int)key.size(); i++){
+			//		key[i-1]=key[i];
+			//	}
+			//	key.pop_back();
+			//	return true;
+			//}
+//			//	Method : 指定されたキーを移動する
+//			bool shiftKey(const double &shiftTime, int index){
+//				if( key.size() <= (unsigned int)index ) return false;
+//
+//				double dstTime= key[index]->time+shiftTime;
+//				int type= key[index]->type;
+//				double length= key[index]->length;
+//				bool select= key[index]->select;
+//				void *object= key[index]->object;
+//				deleteKey(index,true);
+//
+//				//既にキーが存在する場合
+//				if( !newKey(dstTime,type,object,length,select) ){
+//					//置き換えによるキー削除リスナーコール
+//					if( parent->keyDeleteListener != NULL ){
+//						KeyInfo ki;
+//						ki.label= name.c_str();
+//						ki.lineIndex= lineIndex;
+//						ki.time= dstTime;
+//						ki.timeIndex= -1;
+//						ki.object= object;
+//						(parent->keyDeleteListener)(ki);
+//					}
+//
+//					//存在するキーの値を置き換え後のキーの値に変更
+//					int dstIndex= getKeyIndex(dstTime);
+//					key[dstIndex]->type= type;
+//					key[dstIndex]->length= length;
+//					key[dstIndex]->object= object;
+//				}
+//
+//				return true;
+//			}
+//			//	Method : 選択されているキーをすべて移動する
+//			unsigned int shiftKey(const double &shiftTime){
+//
+//				unsigned int shiftNum=0;
+//				std::list<Key> shiftKeyList;
+//				for(int i=0; i<(int)key.size(); i++){
+//					if( key[i]->select ){
+//						shiftKeyList.push_back(*(key[i]));
+////						shiftKey(shiftTime,i);
+//						shiftNum++;
+//					}
+//				}
+//
+//				deleteKey(true);
+//
+//				std::list<Key>::iterator itr;
+//				for(itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++){
+//					if( !newKey( itr->time+shiftTime, itr->type, itr->object, itr->length, itr->select ) ){
+//						//作成不能削除リスナーコール
+//						if( parent->keyDeleteListener != NULL ){
+//							KeyInfo ki;
+//							ki.label= name.c_str();
+//							ki.lineIndex= lineIndex;
+//							ki.time= itr->time+shiftTime;
+//							ki.timeIndex= -1;
+//							ki.object= itr->object;
+//							(parent->keyDeleteListener)(ki);
+//						}
+//					}
+//				}
+//
+//				return shiftNum;
+//			}
+//			//	Method : 選択されているキーをゴーストキーの位置へすべて移動する
+//			unsigned int shiftKey(){
+//				return shiftKey(parent->ghostShiftTime);
+//			}
 
 			/////////////////////////// Accessor /////////////////////////////
 			int getSelectNum(){
 
 				int selectCount=0;
-				for(int i=0; i<(int)key.size(); i++){
-					if( key[i]->select ){
-						selectCount++;
+				int currentkeynum = (int)key.size();
+				int startindex = max(getMinSelected(), 0);
+				int endindex = min((getMaxSelected() + 1), currentkeynum);
+				if ((startindex >= 0) && (endindex >= 0)) {
+					for (int j = startindex; j < endindex; j++) {//2022/09/12
+						if (key[j]->select) {
+							selectCount++;
+						}
 					}
 				}
+				//for(int i = 0; i < currentkeynum; i++){
+				//	if( key[i]->select ){
+				//		selectCount++;
+				//	}
+				//}
 				return selectCount;
 
 			}
@@ -5964,10 +6043,11 @@ void s_dummyfunc()
 			mouseWheelListener = NULL;
 			mouseRUpListener = NULL;
 
-			keyShiftListener = [this]() {
-				shiftKeyTime(getShiftKeyTime());
-			};
-			//keyDeleteListener = [](const KeyInfo& dummy) {s_dummyfunc(); };
+			//keyShiftListener = [this]() {
+			//	shiftKeyTime(getShiftKeyTime());
+			//};
+			////keyDeleteListener = [](const KeyInfo& dummy) {s_dummyfunc(); };
+			keyShiftListener = NULL;
 			keyDeleteListener = NULL;
 
 			showPos_time = 0;
@@ -6261,63 +6341,63 @@ void s_dummyfunc()
 			}
 			return false;
 		}
-		//	Method : キーを削除
-		bool deleteKey(const std::basic_string<TCHAR>& _name, double time) {
-			for (int i = 0; i<(int)lineData.size(); i++) {
-				if (lineData[i]->name == _name) {
-					selectClear();
-					bool ret = lineData[i]->selectKey(time);
-					lineData[i]->deleteKey();
+		////	Method : キーを削除
+		//bool deleteKey(const std::basic_string<TCHAR>& _name, double time) {
+		//	for (int i = 0; i<(int)lineData.size(); i++) {
+		//		if (lineData[i]->name == _name) {
+		//			selectClear();
+		//			bool ret = lineData[i]->selectKey(time);
+		//			lineData[i]->deleteKey();
 
-					//再描画要求
-					if (ret && rewriteOnChange) {
-						callRewrite();
-					}
-					return ret;
-				}
-			}
-			return false;
-		}
-		bool deleteKey(const std::basic_string<TCHAR>& _name, int index) {
-			for (int i = 0; i<(int)lineData.size(); i++) {
-				if (lineData[i]->name == _name) {
-					bool ret = lineData[i]->deleteKey(index);
+		//			//再描画要求
+		//			if (ret && rewriteOnChange) {
+		//				callRewrite();
+		//			}
+		//			return ret;
+		//		}
+		//	}
+		//	return false;
+		//}
+		//bool deleteKey(const std::basic_string<TCHAR>& _name, int index) {
+		//	for (int i = 0; i<(int)lineData.size(); i++) {
+		//		if (lineData[i]->name == _name) {
+		//			bool ret = lineData[i]->deleteKey(index);
 
-					//再描画要求
-					if (ret && rewriteOnChange) {
-						callRewrite();
-					}
-					return ret;
-				}
-			}
-			return false;
-		}
-		bool deleteKey(int lineIndex, double time) {
-			if ((unsigned int)lineData.size() <= (unsigned int)lineIndex) return false;
+		//			//再描画要求
+		//			if (ret && rewriteOnChange) {
+		//				callRewrite();
+		//			}
+		//			return ret;
+		//		}
+		//	}
+		//	return false;
+		//}
+		//bool deleteKey(int lineIndex, double time) {
+		//	if ((unsigned int)lineData.size() <= (unsigned int)lineIndex) return false;
 
-			selectClear();
-			bool ret = lineData[lineIndex]->selectKey(time);
-			lineData[lineIndex]->deleteKey();
+		//	selectClear();
+		//	bool ret = lineData[lineIndex]->selectKey(time);
+		//	lineData[lineIndex]->deleteKey();
 
-			//再描画要求
-			if (ret && rewriteOnChange) {
-				callRewrite();
-			}
+		//	//再描画要求
+		//	if (ret && rewriteOnChange) {
+		//		callRewrite();
+		//	}
 
-			return ret;
-		}
-		bool deleteKey(int lineIndex, int keyIndex) {
-			if ((unsigned int)lineData.size() <= (unsigned int)lineIndex) return false;
+		//	return ret;
+		//}
+		//bool deleteKey(int lineIndex, int keyIndex) {
+		//	if ((unsigned int)lineData.size() <= (unsigned int)lineIndex) return false;
 
-			bool ret = lineData[lineIndex]->deleteKey(keyIndex);
+		//	bool ret = lineData[lineIndex]->deleteKey(keyIndex);
 
-			//再描画要求
-			if (ret && rewriteOnChange) {
-				callRewrite();
-			}
+		//	//再描画要求
+		//	if (ret && rewriteOnChange) {
+		//		callRewrite();
+		//	}
 
-			return ret;
-		}
+		//	return ret;
+		//}
 		unsigned int deleteKey() {
 			unsigned int deleteNum = 0;
 
@@ -6394,58 +6474,66 @@ void s_dummyfunc()
 				int j = 1;
 				if (j < (int)lineData.size()) {
 					EulLineData* curLineData = lineData[j];
-					if (tothelastflag == 1) {
+					if (curLineData) {
+						if (tothelastflag == 1) {
 
-						//maxframe = (double)(curLineData->key.size() - 1);
+							//maxframe = (double)(curLineData->key.size() - 1);
 
-						int startindex = curLineData->getKeyIndex(tmpstart);
-						if (startindex >= 0) {
-							for (int i = startindex; i < (int)curLineData->key.size(); i++) {
-								if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
-									curLineData->key[i]->select = true;
-									if (maxframe < curLineData->key[i]->time) {
-										maxframe = curLineData->key[i]->time;
+							int startindex = curLineData->getKeyIndex(tmpstart);
+							if (startindex >= 0) {
+								int currentkeynum = (int)curLineData->key.size();
+								for (int i = startindex; i < currentkeynum; i++) {
+									if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+										curLineData->key[i]->select = true;
+										if (maxframe < curLineData->key[i]->time) {
+											maxframe = curLineData->key[i]->time;
+										}
 									}
 								}
 							}
+							curLineData->setMinSelected(startindex);
+							curLineData->setMaxSelected(max(0, (int)curLineData->key.size() - 1));
+
+							//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							//	if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
+							//		curLineData->key[i]->select = true;
+							//		if (maxframe < curLineData->key[i]->time) {
+							//			maxframe = curLineData->key[i]->time;
+							//		}
+							//	}
+							//}
 						}
+						else {
 
-						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
-						//	if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
-						//		curLineData->key[i]->select = true;
-						//		if (maxframe < curLineData->key[i]->time) {
-						//			maxframe = curLineData->key[i]->time;
-						//		}
-						//	}
-						//}
-					}
-					else {
+							//maxframe = tmpend;
 
-						//maxframe = tmpend;
-
-						int startindex = curLineData->getKeyIndex(tmpstart);
-						int endindex = curLineData->getKeyIndex(tmpend);
-						if ((startindex >= 0) && (endindex >= 0)) {
-							for (int i = startindex; i <= endindex; i++) {
-								if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-									(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
-									curLineData->key[i]->select = true;
-									if (maxframe < curLineData->key[i]->time) {
-										maxframe = curLineData->key[i]->time;
+							int startindex = curLineData->getKeyIndex(tmpstart);
+							int endindex = curLineData->getKeyIndex(tmpend);
+							if ((startindex >= 0) && (endindex >= 0)) {
+								for (int i = startindex; i <= endindex; i++) {
+									if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+										(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+										curLineData->key[i]->select = true;
+										if (maxframe < curLineData->key[i]->time) {
+											maxframe = curLineData->key[i]->time;
+										}
 									}
 								}
 							}
-						}
+							curLineData->setMinSelected(startindex);
+							curLineData->setMaxSelected(endindex);
 
-						//for (int i = 0; i < (int)curLineData->key.size(); i++) {
-						//	if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
-						//		(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
-						//		curLineData->key[i]->select = true;
-						//		if (maxframe < curLineData->key[i]->time) {
-						//			maxframe = curLineData->key[i]->time;
-						//		}
-						//	}
-						//}
+
+							//for (int i = 0; i < (int)curLineData->key.size(); i++) {
+							//	if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
+							//		(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
+							//		curLineData->key[i]->select = true;
+							//		if (maxframe < curLineData->key[i]->time) {
+							//			maxframe = curLineData->key[i]->time;
+							//		}
+							//	}
+							//}
+						}
 					}
 				}
 
@@ -6479,24 +6567,30 @@ void s_dummyfunc()
 
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				EulLineData *curLineData = lineData[i];
+				if (curLineData) {
+					int curkeynum = (int)curLineData->key.size();
 
-				int curkeynum = (int)curLineData->key.size();
+					//for (int j = 0; j<curkeynum; j++) {
+					int startindex = max(curLineData->getMinSelected(), 0);
+					int endindex = min((curLineData->getMaxSelected() + 1), curkeynum);
+					if ((startindex >= 0) && (endindex >= 0)) {
+						for (int j = startindex; j < endindex; j++) {//2022/09/12
+							EulLineData::EulKey* curKey = curLineData->key[j];
 
-				for (int j = 0; j<curkeynum; j++) {
-					EulLineData::EulKey *curKey = lineData[i]->key[j];
-
-					if (curKey->select) {
-						KeyInfo tmp;
-						tmp.label = curLineData->name.c_str();
-						tmp.time = curKey->time;
-						tmp.lineIndex = i;
-						tmp.timeIndex = j;
-						tmp.object = NULL;// curKey->object;
-						ret.push_back(tmp);
+							if (curKey->select) {
+								KeyInfo tmp;
+								tmp.label = curLineData->name.c_str();
+								tmp.time = curKey->time;
+								tmp.lineIndex = i;
+								tmp.timeIndex = j;
+								tmp.object = NULL;// curKey->object;
+								ret.push_back(tmp);
+							}
+						}
 					}
 				}
+				
 			}
-
 			if ((ret.size() == 1) && ((*ret.begin()).time != currentTime)) {
 				//初期状態。セレクトではない。
 				(lineData[(*ret.begin()).lineIndex])->key[(*ret.begin()).timeIndex]->select = false;
@@ -6506,17 +6600,17 @@ void s_dummyfunc()
 			//_ASSERT(0);
 			return ret;
 		}
-		/// Method : 全ての選択されているキーを移動する
-		void shiftKeyTime(const double &shiftTime) {
-			for (int i = 0; i<(int)lineData.size(); i++) {
-				lineData[i]->shiftKey(shiftTime);
-			}
+		///// Method : 全ての選択されているキーを移動する
+		//void shiftKeyTime(const double &shiftTime) {
+		//	for (int i = 0; i<(int)lineData.size(); i++) {
+		//		lineData[i]->shiftKey(shiftTime);
+		//	}
 
-			//再描画要求
-			if (rewriteOnChange) {
-				callRewrite();
-			}
-		}
+		//	//再描画要求
+		//	if (rewriteOnChange) {
+		//		callRewrite();
+		//	}
+		//}
 		///	Method : マウスダウンイベント受信
 		virtual void onLButtonDown(const MouseEvent& e) {
 			selectClear(true);
@@ -6982,6 +7076,11 @@ void s_dummyfunc()
 			}
 			showPos_time = newshowpostime;
 
+			for (int i = 0; i < (int)lineData.size(); i++) {
+				lineData[i]->selectKey(showPos_time);
+			}
+
+
 			//再描画要求
 			//if (rewriteOnChange) {
 			//callRewrite();//Main.cpp refreshEulerGraphで再描画する
@@ -7240,6 +7339,8 @@ void s_dummyfunc()
 				name = _name;
 				parent = _parent;
 				lineIndex = _lineIndex;
+				minselected = 0;
+				maxselected = 0;
 				//InitEulKeys();
 			};
 			//EulLineData(const EulLineData& a) {
@@ -7263,6 +7364,23 @@ void s_dummyfunc()
 			//class OWP_EulerGraph::EulLineData::EulKey;
 			//static OWP_EulerGraph::EulLineData::EulKey* OWP_EulerGraph::EulLineData::GetNewEulKey();
 			//static void OWP_EulerGraph::EulLineData::InvalidateEulKeys(OWP_EulerGraph::EulLineData::EulKey* srceul);
+
+			int getMinSelected()
+			{
+				return minselected;
+			}
+			void setMinSelected(int srcval)
+			{
+				minselected = srcval;
+			}
+			int getMaxSelected()
+			{
+				return maxselected;
+			}
+			void setMaxSelected(int srcval)
+			{
+				maxselected = srcval;
+			}
 
 
 			//キーデータクラス---------------
@@ -7368,6 +7486,8 @@ void s_dummyfunc()
 			std::vector<OWP_EulerGraph::EulLineData::EulKey*> key;
 			unsigned int lineIndex;
 			int depth;
+			int minselected;//2022/09/12 : key[].selected検索のヒント
+			int maxselected;//2022/09/12 : key[].selected検索のヒント
 
 
 			int getValue(double srcframe, double* dstvalue);
@@ -7516,7 +7636,15 @@ void s_dummyfunc()
 
 				int startindex = getKeyIndex(startTime);
 				if (startindex >= 0) {
-					for (int i = startindex; i < (int)key.size(); i++) {
+					int currentkeynum = (int)key.size();
+					for (int i = startindex; i < currentkeynum; i++) {
+						//for (int i = 0; i < (int)key.size(); i++) {
+
+						if ((key[i]->time - startTime) < 0.0) {
+							continue;
+							//break;
+						}
+
 						//valueが増える方向を上方向に。座標系は下方向にプラス。
 						//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 						int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
@@ -7525,10 +7653,6 @@ void s_dummyfunc()
 						int ex0 = (int)((key[i]->time - startTime) * timeSize) + x1;
 						int ex1 = ex0 + DOT_SIZE_X;
 
-						if ((key[i]->time - startTime) < 0.0) {
-							//continue;
-							break;
-						}
 						if (ex1 > x2) {
 							break;
 						}
@@ -7543,8 +7667,7 @@ void s_dummyfunc()
 
 						if (ex0 >= x1) {
 							Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
-						}
-						
+						}						
 					}
 				}
 
@@ -7812,15 +7935,22 @@ void s_dummyfunc()
 			}
 			//	Method : すべてのキーの選択を解除する
 			void selectClear() {
-				for (int i = 0; i<(int)key.size(); i++) {
+				int currentkeynum = (int)key.size();
+				for (int i = 0; i < currentkeynum; i++) {
 					key[i]->select = false;
 				}
+				setMinSelected(0);
+				setMaxSelected(0);
 			}
 			//	Method : すべてのキーを選択する
 			void selectAll() {
-				for (int i = 0; i<(int)key.size(); i++) {
+				int currentkeynum = (int)key.size();
+				for (int i = 0; i < currentkeynum; i++) {
 					key[i]->select = true;
 				}
+				setMinSelected(0);
+				setMaxSelected(max(0, (int)key.size() - 1));
+
 				parent->ghostShiftTime = 0;
 			}
 			//	Method : 指定された時刻にあるキーをひとつ選択する
@@ -7831,6 +7961,9 @@ void s_dummyfunc()
 					key[currentindex]->select = true;
 					return true;
 				}
+				setMinSelected(currentindex);
+				setMaxSelected(currentindex);
+
 
 				//for (int i = 0; i<(int)key.size(); i++) {
 				//	if (((_time - TIME_ERROR_WIDTH) <= key[i]->time)
@@ -7858,6 +7991,9 @@ void s_dummyfunc()
 						}
 					}
 				}
+				setMinSelected(startindex);
+				setMaxSelected(endindex);
+
 
 				//int selectCount = 0;
 				//for (int i = 0; i<(int)key.size(); i++) {
@@ -7888,6 +8024,9 @@ void s_dummyfunc()
 						}
 					}
 				}
+
+				setMinSelected(startindex);
+				setMaxSelected(endindex);
 
 				//int selectCount = 0;
 				//for (int i = 0; i<(int)key.size(); i++) {
@@ -7921,7 +8060,9 @@ void s_dummyfunc()
 				//return -1;
 
 			}
-			//	Method : 選択されているキーをすべて削除する
+			////	Method : 選択されているキーをすべて削除する
+			//unsigned int deleteKey(bool noCallListener = false) {
+			//	Method : キーをすべて削除する
 			unsigned int deleteKey(bool noCallListener = false) {
 				//EulKeyの場合　全てInvalidate
 				unsigned int deleteNum;
@@ -7957,111 +8098,112 @@ void s_dummyfunc()
 				//for (unsigned int i = 0; i<deleteNum; i++) {
 				//	key.pop_back();
 				//}
-				
+
 				return deleteNum;
 
 			}
-			//	Method : 指定されたキーを削除する
-			bool deleteKey(int index, bool noCallListener = false) {
-				if ((unsigned int)key.size() <= (unsigned int)index) return false;
+			////	Method : 指定されたキーを削除する
+			//bool deleteKey(int index, bool noCallListener = false) {
+			//	if ((unsigned int)key.size() <= (unsigned int)index) return false;
 
-				//リスナーコール
-				if (!noCallListener && (parent->keyDeleteListener != NULL)) {
-					KeyInfo ki;
-					ki.label = name.c_str();
-					ki.lineIndex = lineIndex;
-					ki.time = key[index]->time;
-					ki.timeIndex = -1;
-					ki.object = NULL;// key[index]->object;
-					(parent->keyDeleteListener)(ki);
-				}
+			//	//リスナーコール
+			//	if (!noCallListener && (parent->keyDeleteListener != NULL)) {
+			//		KeyInfo ki;
+			//		ki.label = name.c_str();
+			//		ki.lineIndex = lineIndex;
+			//		ki.time = key[index]->time;
+			//		ki.timeIndex = -1;
+			//		ki.object = NULL;// key[index]->object;
+			//		(parent->keyDeleteListener)(ki);
+			//	}
 
-				//delete key[index];
-				key[index]->InvalidateEulKeys();
+			//	//delete key[index];
+			//	key[index]->InvalidateEulKeys();
 
-				for (int i = index; i<(int)key.size(); i++) {
-					key[i - 1] = key[i];
-				}
-				key.pop_back();
-				return true;
-			}
-			//	Method : 指定されたキーを移動する
-			bool shiftKey(const double &shiftTime, int index) {
-				if (key.size() <= (unsigned int)index) return false;
+			//	for (int i = index; i<(int)key.size(); i++) {
+			//		key[i - 1] = key[i];
+			//	}
+			//	key.pop_back();
+			//	return true;
+			//}
+			////	Method : 指定されたキーを移動する
+			//bool shiftKey(const double &shiftTime, int index) {
+			//	if (key.size() <= (unsigned int)index) return false;
 
-				double dstTime = key[index]->time + shiftTime;
-				int type = key[index]->type;
-				double length = key[index]->length;
-				bool select = key[index]->select;
-				void *object = NULL;// key[index]->object;
-				double value = key[index]->value;
-				deleteKey(index, true);
+			//	double dstTime = key[index]->time + shiftTime;
+			//	int type = key[index]->type;
+			//	double length = key[index]->length;
+			//	bool select = key[index]->select;
+			//	void *object = NULL;// key[index]->object;
+			//	double value = key[index]->value;
+			//	deleteKey(index, true);
 
-				//既にキーが存在する場合
-				if (!newKey(dstTime, type, value, length, select)) {
-					//置き換えによるキー削除リスナーコール
-					if (parent->keyDeleteListener != NULL) {
-						KeyInfo ki;
-						ki.label = name.c_str();
-						ki.lineIndex = lineIndex;
-						ki.time = dstTime;
-						ki.timeIndex = -1;
-						ki.object = object;
-						(parent->keyDeleteListener)(ki);
-					}
+			//	//既にキーが存在する場合
+			//	if (!newKey(dstTime, type, value, length, select)) {
+			//		//置き換えによるキー削除リスナーコール
+			//		if (parent->keyDeleteListener != NULL) {
+			//			KeyInfo ki;
+			//			ki.label = name.c_str();
+			//			ki.lineIndex = lineIndex;
+			//			ki.time = dstTime;
+			//			ki.timeIndex = -1;
+			//			ki.object = object;
+			//			(parent->keyDeleteListener)(ki);
+			//		}
 
-					//存在するキーの値を置き換え後のキーの値に変更
-					int dstIndex = getKeyIndex(dstTime);
-					key[dstIndex]->type = type;
-					key[dstIndex]->length = length;
-					key[dstIndex]->value = value;
-				}
+			//		//存在するキーの値を置き換え後のキーの値に変更
+			//		int dstIndex = getKeyIndex(dstTime);
+			//		key[dstIndex]->type = type;
+			//		key[dstIndex]->length = length;
+			//		key[dstIndex]->value = value;
+			//	}
 
-				return true;
-			}
-			//	Method : 選択されているキーをすべて移動する
-			unsigned int shiftKey(const double &shiftTime) {
+			//	return true;
+			//}
+			////	Method : 選択されているキーをすべて移動する
+			//unsigned int shiftKey(const double &shiftTime) {
 
-				unsigned int shiftNum = 0;
-				std::list<EulKey> shiftKeyList;
-				for (int i = 0; i<(int)key.size(); i++) {
-					if (key[i]->select) {
-						shiftKeyList.push_back(*(key[i]));
-						//						shiftKey(shiftTime,i);
-						shiftNum++;
-					}
-				}
+			//	unsigned int shiftNum = 0;
+			//	std::list<EulKey> shiftKeyList;
+			//	for (int i = 0; i<(int)key.size(); i++) {
+			//		if (key[i]->select) {
+			//			shiftKeyList.push_back(*(key[i]));
+			//			//						shiftKey(shiftTime,i);
+			//			shiftNum++;
+			//		}
+			//	}
 
-				deleteKey(true);
+			//	deleteKey(true);
 
-				std::list<EulKey>::iterator itr;
-				for (itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++) {
-					if (!newKey(itr->time + shiftTime, itr->type, itr->value, itr->length, itr->select)) {
-						//作成不能削除リスナーコール
-						if (parent->keyDeleteListener != NULL) {
-							KeyInfo ki;
-							ki.label = name.c_str();
-							ki.lineIndex = lineIndex;
-							ki.time = itr->time + shiftTime;
-							ki.timeIndex = -1;
-							ki.object = NULL;// itr->object;
-							(parent->keyDeleteListener)(ki);
-						}
-					}
-				}
+			//	std::list<EulKey>::iterator itr;
+			//	for (itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++) {
+			//		if (!newKey(itr->time + shiftTime, itr->type, itr->value, itr->length, itr->select)) {
+			//			//作成不能削除リスナーコール
+			//			if (parent->keyDeleteListener != NULL) {
+			//				KeyInfo ki;
+			//				ki.label = name.c_str();
+			//				ki.lineIndex = lineIndex;
+			//				ki.time = itr->time + shiftTime;
+			//				ki.timeIndex = -1;
+			//				ki.object = NULL;// itr->object;
+			//				(parent->keyDeleteListener)(ki);
+			//			}
+			//		}
+			//	}
 
-				return shiftNum;
-			}
-			//	Method : 選択されているキーをゴーストキーの位置へすべて移動する
-			unsigned int shiftKey() {
-				return shiftKey(parent->ghostShiftTime);
-			}
+			//	return shiftNum;
+			//}
+			////	Method : 選択されているキーをゴーストキーの位置へすべて移動する
+			//unsigned int shiftKey() {
+			//	return shiftKey(parent->ghostShiftTime);
+			//}
 
 			/////////////////////////// Accessor /////////////////////////////
 			int getSelectNum() {
 
 				int selectCount = 0;
-				for (int i = 0; i<(int)key.size(); i++) {
+				int currentkeynum = (int)key.size();
+				for (int i = 0; i < currentkeynum; i++) {
 					if (key[i]->select) {
 						selectCount++;
 					}

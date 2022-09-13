@@ -225,6 +225,11 @@ int CMotionPoint::LeaveFromChain( int srcmotid, CBone* boneptr )
 
 int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 {
+	if (!srcmp) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	m_frame = srcmp->m_frame;
 	//m_eul = srcmp->m_eul;
 	m_tra = srcmp->m_tra;

@@ -312,49 +312,52 @@ namespace OrgWinGUI{
 
 		//çsÉfÅ[É^
 		int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
-		for (int i = showPos_line, j = 0; i<(int)lineData.size() && j<showLineNum; i++, j++) {
-			bool highLight = false;
-			if (i == currentLine) highLight = true;
-			if (i >= 0) {
-				lineData[i]->draw(hdcM,
-					pos.x + MARGIN,
-					pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
-					size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
-					timeSize, showPos_time, highLight);
+		if (getDispKeyFlag() == true) {
+			for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < showLineNum; i++, j++) {
+				bool highLight = false;
+				if (i == currentLine) highLight = true;
+				if (i >= 0) {
+					lineData[i]->draw(hdcM,
+						pos.x + MARGIN,
+						pos.y + MARGIN + AXIS_SIZE_Y + j * (LABEL_SIZE_Y - 1),
+						size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
+						timeSize, showPos_time, highLight);
+				}
+			}
+			//ÉhÉâÉbÉOÇ…ÇÊÇÈëIëîÕàÕ
+			if (dragSelect && (dragSelectTime1 != dragSelectTime2)) {
+				int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
+				int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
+				int xx1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
+				int yy1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
+				int x0 = xx0 + (int)((min(dragSelectTime1, dragSelectTime2) - showPos_time) * timeSize);
+				int x1 = xx0 + (int)((max(dragSelectTime1, dragSelectTime2) - showPos_time) * timeSize);
+				int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line) * (LABEL_SIZE_Y - 1) + 1;
+				int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1) * (LABEL_SIZE_Y - 1) - 1;
+
+				{//ògï`âÊ
+					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+					if (xx0 <= x0) {		//ç∂òg
+						MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
+						LineTo(hdcM->hDC, x0, min(y1, yy1));
+					}
+					if (x1 <= xx1) {		//âEòg
+						MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
+						LineTo(hdcM->hDC, x1, min(y1, yy1));
+					}
+					if (yy0 <= y0) {		//è„òg
+						MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
+						LineTo(hdcM->hDC, min(x1, xx1), y0);
+					}
+					if (y1 <= yy1) {		//â∫òg
+						MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
+						LineTo(hdcM->hDC, min(x1, xx1), y1);
+					}
+				}
 			}
 		}
 
-		//ÉhÉâÉbÉOÇ…ÇÊÇÈëIëîÕàÕ
-		if (dragSelect && (dragSelectTime1 != dragSelectTime2)) {
-			int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
-			int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
-			int xx1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
-			int yy1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
-			int x0 = xx0 + (int)((min(dragSelectTime1, dragSelectTime2) - showPos_time)* timeSize);
-			int x1 = xx0 + (int)((max(dragSelectTime1, dragSelectTime2) - showPos_time)* timeSize);
-			int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line)* (LABEL_SIZE_Y - 1) + 1;
-			int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1)* (LABEL_SIZE_Y - 1) - 1;
-
-			{//ògï`âÊ
-				hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-				if (xx0 <= x0) {		//ç∂òg
-					MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
-					LineTo(hdcM->hDC, x0, min(y1, yy1));
-				}
-				if (x1 <= xx1) {		//âEòg
-					MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
-					LineTo(hdcM->hDC, x1, min(y1, yy1));
-				}
-				if (yy0 <= y0) {		//è„òg
-					MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
-					LineTo(hdcM->hDC, min(x1, xx1), y0);
-				}
-				if (y1 <= yy1) {		//â∫òg
-					MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
-					LineTo(hdcM->hDC, min(x1, xx1), y1);
-				}
-			}
-		}
+		
 
 		////éûä‘é≤ÉXÉNÉçÅ[ÉãÉoÅ[
 		//{

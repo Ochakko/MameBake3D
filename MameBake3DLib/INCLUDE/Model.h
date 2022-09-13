@@ -1362,6 +1362,7 @@ private:
 	ChaVector3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。
 	CUndoMotion m_undomotion[ UNDOMAX ];//アンドゥー機能のためのCUndoMotionの配列。CUndoMotionの１つのインスタンスは１フレーム分のモーションを保存する。
 	int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
+	int m_undoSavedNum;//保存中のアンドゥーの数
 
 	ChaMatrix m_worldmat;
 	ChaVector3 m_modelposition;

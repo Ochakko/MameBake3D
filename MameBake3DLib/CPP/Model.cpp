@@ -11442,9 +11442,11 @@ int CModel::InitUndoMotion( int saveflag )
 	}
 
 	m_undoid = 0;
+	m_undoSavedNum = 0;
 
 	if( saveflag ){
 		m_undomotion[0].SaveUndoMotion( this, -1, -1, 0, 50.0 );
+		m_undoSavedNum = 1;
 	}
 
 
@@ -11459,12 +11461,18 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 
 	int nextundoid;
 	nextundoid = m_undoid + 1;
-	if( nextundoid >= UNDOMAX ){
+	if( nextundoid >= m_undoSavedNum){
 		nextundoid = 0;
 	}
 	m_undoid = nextundoid;
 
 	CallF( m_undomotion[m_undoid].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate), return 1 );
+
+	m_undoSavedNum++;
+	if (m_undoSavedNum > UNDOMAX) {
+		m_undoSavedNum = UNDOMAX;
+	}
+
 
 	return 0;
 }
@@ -11494,10 +11502,10 @@ int CModel::GetValidUndoID( int* rbundoid )
 
 	int chkcnt;
 	int curid = m_undoid;
-	for( chkcnt = 0; chkcnt < UNDOMAX; chkcnt++ ){
+	for( chkcnt = 0; chkcnt < m_undoSavedNum; chkcnt++ ){
 		curid = curid - 1;
 		if( curid < 0 ){
-			curid = UNDOMAX - 1;
+			curid = m_undoSavedNum - 1;
 		}
 
 		if( m_undomotion[curid].GetValidFlag() == 1 ){
@@ -11514,9 +11522,9 @@ int CModel::GetValidRedoID( int* rbundoid )
 
 	int chkcnt;
 	int curid = m_undoid;
-	for( chkcnt = 0; chkcnt < UNDOMAX; chkcnt++ ){
+	for( chkcnt = 0; chkcnt < m_undoSavedNum; chkcnt++ ){
 		curid = curid + 1;
-		if( curid >= UNDOMAX ){
+		if( curid >= m_undoSavedNum){
 			curid = 0;
 		}
 
