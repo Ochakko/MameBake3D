@@ -343,6 +343,8 @@ enum {
 	PICK_SPA_X,
 	PICK_SPA_Y,
 	PICK_SPA_Z,
+	PICK_UNDO,
+	PICK_REDO,
 	PICK_MAX
 };
 

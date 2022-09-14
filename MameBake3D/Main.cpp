@@ -1064,6 +1064,8 @@ static bool s_RcloseFlag = false;
 static bool s_ScloseFlag = false;
 static bool s_IcloseFlag = false;
 static bool s_GcloseFlag = false;
+static bool s_undoFlag = false;
+static bool s_redoFlag = false;
 static bool s_copyFlag = false;			// コピーフラグ
 static bool s_zeroFrameFlag = false;
 static bool s_oneFrameFlag = false;
@@ -1238,6 +1240,7 @@ enum {
 
 #define SPPLAYERBUTTONNUM	16
 
+static SPELEM s_spundo[2];
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
 static SPELEM s_sprig[SPRIGMAX];//inactive, active
@@ -1708,6 +1711,7 @@ static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
 static void PrepairUndo();
 static int OnFrameUndo(bool fromds, int fromdskind);
+static int OnSpriteUndo();
 static void OnGUIEventSpeed();
 static int SetShowPosTime();
 
@@ -1917,8 +1921,10 @@ static int SetSpSel3DParams();
 static int SetSpAimBarParams();
 static int SetSpMenuAimBarParams();
 static int SetSpAxisParams();
+static int SetSpUndoParams();
 static int SetSpMouseCenterParams();
 static int PickSpAxis( POINT srcpos );
+static int PickSpUndo(POINT srcpos);
 static int SetSpGUISWParams();
 static int PickSpGUISW(POINT srcpos);
 static int SetSpRigidSWParams();
@@ -2707,6 +2713,8 @@ void InitApp()
 	s_ScloseFlag = false;
 	s_IcloseFlag = false;
 	s_GcloseFlag = false;
+	s_undoFlag = false;
+	s_redoFlag = false;
 	s_copyFlag = false;			// コピーフラグ
 	s_zeroFrameFlag = false;
 	s_oneFrameFlag = false;
@@ -3047,6 +3055,7 @@ void InitApp()
 	s_bvhbone_cbno = 0;
 
 
+	ZeroMemory(s_spundo, sizeof(SPELEM) * 2);
 	ZeroMemory(s_spaxis, sizeof( SPAXIS ) * SPAXISNUM);
 	ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
 	ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
@@ -3546,6 +3555,14 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	*last2en = 0L;
 	wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
 
+
+	s_spundo[0].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spundo[0].sprite);
+	CallF(s_spundo[0].sprite->Create(pd3dImmediateContext, mpath, L"Undo_1.png", 0, 0), return S_FALSE);
+	s_spundo[1].sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spundo[1].sprite);
+	CallF(s_spundo[1].sprite->Create(pd3dImmediateContext, mpath, L"Redo_1.png", 0, 0), return S_FALSE);
+
 	s_spaxis[0].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spaxis[0].sprite);
 	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.gif", 0, 0), return S_FALSE);
@@ -3933,6 +3950,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpAimBarParams();
 	SetSpMenuAimBarParams();//CreateMainMenuAimBarWndよりも後
 	SetSpAxisParams();
+	SetSpUndoParams();
 	SetSpGUISWParams();
 	SetSpIkModeSWParams();
 	SetSpRefPosSWParams();
@@ -4950,6 +4968,18 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 	{
+		//static SPELEM s_spundo[2];
+		int spno;
+		for (spno = 0; spno < 2; spno++) {
+			CMySprite* cursp = s_spundo[spno].sprite;
+			if (cursp) {
+				delete cursp;
+			}
+			s_spundo[spno].sprite = 0;
+		}
+	}
+
+	{
 		//static SPAXIS s_spaxis[3];
 		int spno;
 		for (spno = 0; spno < SPAXISNUM; spno++) {
@@ -5741,17 +5771,23 @@ void RenderText( double fTime )
 
 void PrepairUndo()
 {
-	//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
-	//その影響で選択範囲の未編集状態も保存する必要が生じた
-	//よって次のif文はコメントアウト
-	//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
+	if ((s_undoFlag == false) && (s_redoFlag == false)) {//UndoRedoボタンを押した場合にはSaveUndoしない
+
+		//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
+		//その影響で選択範囲の未編集状態も保存する必要が生じた
+		//よって次のif文はコメントアウト
+		//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
+
+
 		if (s_model) {
 			CreateTimeLineMark();
 			SetLTimelineMark(s_curboneno);
 			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 		s_editmotionflag = -1;
-	//}
+
+		//}
+	}
 }
 
 
@@ -6396,6 +6432,31 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		POINT ptCursor;
 		GetCursorPos( &ptCursor );
 		::ScreenToClient( s_3dwnd, &ptCursor );
+
+		{
+			//UndoRedo
+			int pickundo = 0;
+			pickundo = PickSpUndo(ptCursor);
+			if (pickundo == PICK_UNDO) {
+				//RollbackCurBoneNo();
+				if ((s_undoFlag == false) && (s_redoFlag == false)) {
+					s_undoFlag = true;
+				}
+				//PostMessage(s_mainhwnd, WM_KEYDOWN, VK_CONTROL | 'Z', 0);
+				//PostMessage(s_3dwnd, WM_KEYDOWN, VK_CONTROL | 'Z', 0);
+			}
+			else if (pickundo == PICK_REDO)
+			{
+				//RollbackCurBoneNo();
+				if ((s_undoFlag == false) && (s_redoFlag == false)) {
+					s_redoFlag = true;					
+				}
+				//PostMessage(s_mainhwnd, WM_KEYDOWN, VK_CONTROL | VK_SHIFT | 'Z', 0);
+				//PostMessage(s_3dwnd, WM_KEYDOWN, VK_CONTROL | VK_SHIFT | 'Z', 0);
+			}
+		}
+
+
 		s_pickinfo.clickpos = ptCursor;
 		s_pickinfo.mousepos = ptCursor;
 		s_pickinfo.mousebefpos = ptCursor;
@@ -6720,15 +6781,26 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_model->ApplyPhysIkRec();
 		}
 
-		UpdateEditedEuler();
+		if ((s_undoFlag == false) && (s_redoFlag == false)) {
+			UpdateEditedEuler();
 
-		s_pickinfo.buttonflag = 0;
-		s_ikcnt = 0;
-		s_onragdollik = 0;
+			s_pickinfo.buttonflag = 0;
+			s_ikcnt = 0;
+			s_onragdollik = 0;
 
+			if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
+				PrepairUndo();//３Dウインドウでの編集後状態保存を想定		
+			}
 
-		PrepairUndo();//３Dウインドウでの編集後状態保存を想定
-	
+		}
+		else {
+			s_pickinfo.buttonflag = 0;
+			s_ikcnt = 0;
+			s_onragdollik = 0;
+
+			OnSpriteUndo();
+		}
+
 	}else if( uMsg == WM_RBUTTONDOWN ){
 		
 		BoneRClick(-1);
@@ -15897,6 +15969,46 @@ int OnSetMotSpeed()
 	return 0;
 }
 
+int SetSpUndoParams()
+{
+	if (!(s_spundo[0].sprite)) {
+		return 0;
+	}
+
+	float spawidth = 50.0f;
+	float spaheight = 50.0f;
+	int spashift = 6;
+	//s_spundo[0].dispcenter.x = (int)( s_mainwidth * 0.57f );
+	//s_spundo[0].dispcenter.y = (int)( 30.0f * ( (float)s_mainheight / 620.0 ) );
+	//s_spundo[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 4;
+	//s_spundo[0].dispcenter.y = 16 + 10;
+	s_spundo[0].dispcenter.x = s_mainwidth - 35 - 50 - 10;
+	s_spundo[0].dispcenter.y = 35 + ((int)spaheight + spashift) * 3;
+	//spashift = (int)( (float)spashift * ( (float)s_mainwidth / 600.0 ) );
+
+	s_spundo[1].dispcenter.x = s_spundo[0].dispcenter.x;
+	s_spundo[1].dispcenter.y = s_spundo[0].dispcenter.y + (int)spaheight + spashift;
+
+	int spacnt;
+	for (spacnt = 0; spacnt < 2; spacnt++) {
+		ChaVector3 disppos;
+		disppos.x = (float)(s_spundo[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spundo[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.z = 0.0f;
+		ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+		if (s_spundo[spacnt].sprite) {
+			CallF(s_spundo[spacnt].sprite->SetPos(disppos), return 1);
+			CallF(s_spundo[spacnt].sprite->SetSize(dispsize), return 1);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+
+	return 0;
+
+}
+
 
 int SetSpAxisParams()
 {
@@ -16638,6 +16750,55 @@ int SetSpMouseHereParams()
 //
 //}
 
+int PickSpUndo(POINT srcpos)
+{
+	int kind = 0;
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	if (!s_model) {
+		return 0;
+	}
+
+
+
+	int startx = s_spundo[0].dispcenter.x - 25;
+	int endx = startx + 50;
+
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+		int spacnt;
+		for (spacnt = 0; spacnt < 2; spacnt++) {
+			int starty = s_spundo[spacnt].dispcenter.y - 25;
+			int endy = starty + 50;
+
+			if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+				switch (spacnt) {
+				case 0:
+					kind = PICK_UNDO;
+					break;
+				case 1:
+					kind = PICK_REDO;
+					break;
+				default:
+					break;
+				}
+				break;
+			}
+		}
+	}
+
+
+	//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
+	//	kind, srcpos.x, srcpos.y, starty, endy );
+	//int spacnt;
+	//for( spacnt = 0; spacnt < 3; spacnt++ ){
+	//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spundo[spacnt].dispcenter.x, s_spundo[spacnt].dispcenter.x + 32 );
+	//}
+
+	return kind;
+}
 
 
 int PickSpAxis( POINT srcpos )
@@ -20930,30 +21091,147 @@ int OnFramePlayButton()
 	return 0;
 }
 
-
-int OnFrameUndo(bool fromds, int fromdskind)
+int OnSpriteUndo()
 {
+	static bool s_underoperation = false;//再入禁止用
+	if (s_underoperation == true) {
+		return 0;
+	}
+	s_underoperation = true;
+
+
 	bool undodoneflag = false;
 	double tmpselectstart = 1.0;
 	double tmpselectend = 1.0;
 	double tmpapplyrate = 50.0;
 
 	///////////// undo
-	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))){
+	if (s_model && (s_undoFlag == true)) {
+		//undo
+		StopBt();
+		s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+		undodoneflag = true;
+		s_undoFlag = false;
+	}
+	else if (s_model && (s_redoFlag == true))
+	{
+		//redo
+		StopBt();
+		s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+		undodoneflag = true;
+		s_redoFlag = false;
+	}
 
+	if (s_model && (undodoneflag == true)) {
+		//s_copyKeyInfoList.clear();
+		//s_deletedKeyInfoList.clear();
+		//s_selectKeyInfoList.clear();
+
+		if (s_model->GetCurMotInfo()->motid != s_curmotid) {
+			int chkcnt = 0;
+			int findflag = 0;
+			map<int, MOTINFO*>::iterator itrmi;
+			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+				MOTINFO* curmi = itrmi->second;
+				if (curmi) {
+					if (curmi == s_model->GetCurMotInfo()) {
+						findflag = 1;
+						break;
+					}
+					chkcnt++;
+				}
+			}
+
+			if (findflag == 1) {
+				int selindex;
+				selindex = chkcnt;
+				OnAnimMenu(true, selindex, 0);
+			}
+		}
+		else {
+			if (s_model) {
+				//メニュー書き換え, timeline update
+				OnAnimMenu(true, s_motmenuindexmap[s_model], 0);
+			}
+		}
+
+		if (s_curboneno >= 0) {
+			int curlineno = s_boneno2lineno[s_curboneno];
+			if (s_owpTimeline) {
+				s_owpTimeline->setCurrentLine(curlineno, true);
+			}
+
+			SetTimelineMark();
+			SetLTimelineMark(s_curboneno);
+		}
+
+		OnGUIEventSpeed();
+
+		MOTINFO* curmi;
+		curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			s_buttonselectstart = max(0.0, tmpselectstart);
+			s_buttonselectstart = min((curmi->frameleng - 1.0), s_buttonselectstart);
+
+			s_buttonselectend = max(0.0, tmpselectend);
+			s_buttonselectend = min((curmi->frameleng - 1.0), s_buttonselectend);
+
+
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+
+			g_applyrate = (int)tmpapplyrate;
+			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
+				g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->SetValue(g_applyrate);
+			}
+
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
+			}
+
+			SetShowPosTime();
+
+		}
+	}
+
+
+	s_underoperation = false;
+
+	return 0;
+
+}
+int OnFrameUndo(bool fromds, int fromdskind)
+{
+	static bool s_underoperation = false;//再入禁止用
+	if (s_underoperation == true) {
+		return 0;
+	}
+	s_underoperation = true;
+
+
+	bool undodoneflag = false;
+	double tmpselectstart = 1.0;
+	double tmpselectend = 1.0;
+	double tmpapplyrate = 50.0;
+
+	///////////// undo
+	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))) {
 		StopBt();
 
-		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)){
+		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)) {
 			//redo
 			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
 			undodoneflag = true;
 		}
-		else if((fromds && (fromdskind == 0)) || !fromds){
+		else if ((fromds && (fromdskind == 0)) || !fromds) {
 			//undo
 			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
 			undodoneflag = true;
 		}
+	}
 
+	if(s_model && (undodoneflag == true)){
 		//s_copyKeyInfoList.clear();
 		//s_deletedKeyInfoList.clear();
 		//s_selectKeyInfoList.clear();
@@ -20996,15 +21274,8 @@ int OnFrameUndo(bool fromds, int fromdskind)
 			SetLTimelineMark(s_curboneno);
 		}
 
+		OnGUIEventSpeed();
 
-		//Sleep(500);
-		//Sleep(30);
-	}
-
-
-	OnGUIEventSpeed();
-
-	if (s_model && undodoneflag) {
 		MOTINFO* curmi;
 		curmi = s_model->GetCurMotInfo();
 		if (curmi) {
@@ -21034,6 +21305,7 @@ int OnFrameUndo(bool fromds, int fromdskind)
 	}
 
 
+	s_underoperation = false;
 
 	return 0;
 }
@@ -24047,6 +24319,17 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				_ASSERT(0);
 			}
 		}
+
+		int spucnt;
+		for (spucnt = 0; spucnt < 2; spucnt++) {
+			if (s_spundo[spucnt].sprite) {
+				s_spundo[spucnt].sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+
 
 		//if (s_spbt.sprite) {
 		//	s_spbt.sprite->OnRender(pd3dImmediateContext);

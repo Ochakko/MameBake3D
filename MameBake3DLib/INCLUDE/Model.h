@@ -1366,6 +1366,7 @@ private:
 	//int m_undoSavedNum;//•Û‘¶’†‚ÌƒAƒ“ƒhƒD[‚Ì”
 	int m_undo_readpoint;
 	int m_undo_writepoint;
+	int m_undo_firstflag;
 
 	ChaMatrix m_worldmat;
 	ChaVector3 m_modelposition;

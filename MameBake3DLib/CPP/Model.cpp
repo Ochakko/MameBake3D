@@ -11440,6 +11440,8 @@ int CModel::ImpulseBoneRagdoll(int onlyoneflag, CEditRange* erptr, int srcboneno
 
 int CModel::InitUndoMotion( int saveflag )
 {
+	m_undo_firstflag = true;
+
 	int undono;
 	for( undono = 0; undono < UNDOMAX; undono++ ){
 		m_undomotion[ undono ].ClearData();
@@ -11455,6 +11457,9 @@ int CModel::InitUndoMotion( int saveflag )
 		int result = m_undomotion[m_undo_writepoint].SaveUndoMotion( this, -1, -1, 0, 50.0 );
 		if (result == 1) {
 			m_undo_writepoint = savewritepoint;
+		}
+		else {
+			m_undo_firstflag = false;
 		}
 	}
 
@@ -11485,6 +11490,7 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 	else {
 		//成功した場合
 		m_undo_readpoint = m_undo_writepoint;
+		m_undo_firstflag = false;
 	}
 
 
@@ -11497,6 +11503,10 @@ int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, dou
 	//undoによって次回のsave位置は変わらない
 
 	if( m_bonelist.empty() || !m_curmotinfo ){
+		return 0;
+	}
+
+	if (m_undo_firstflag) {
 		return 0;
 	}
 
@@ -11519,7 +11529,13 @@ int CModel::GetNewUndoID()
 	//Save用のundoid
 	int writepoint = m_undo_writepoint;
 
-	writepoint++;
+	if (m_undo_firstflag == false) {
+		writepoint++;
+	}
+	else {
+		writepoint = 0;
+	}
+	
 	if (writepoint >= UNDOMAX) {
 		writepoint = 0;
 	}
