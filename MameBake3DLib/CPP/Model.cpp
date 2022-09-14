@@ -11445,12 +11445,17 @@ int CModel::InitUndoMotion( int saveflag )
 		m_undomotion[ undono ].ClearData();
 	}
 
-	m_undoid = 0;
-	m_undoSavedNum = 0;
+	m_undo_readpoint = 0;
+	m_undo_writepoint = 0;
+
+	int savewritepoint = m_undo_writepoint;
+	m_undo_writepoint = GetNewUndoID();
 
 	if( saveflag ){
-		m_undomotion[0].SaveUndoMotion( this, -1, -1, 0, 50.0 );
-		m_undoSavedNum = 1;
+		int result = m_undomotion[m_undo_writepoint].SaveUndoMotion( this, -1, -1, 0, 50.0 );
+		if (result == 1) {
+			m_undo_writepoint = savewritepoint;
+		}
 	}
 
 
@@ -11459,65 +11464,80 @@ int CModel::InitUndoMotion( int saveflag )
 
 int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate )
 {
+	//saveによって次回のundo位置は変わる
+	//undoによって次回のsave位置は変わらない
+
+
 	if( m_bonelist.empty() || !m_curmotinfo ){
 		return 0;
 	}
 
-	int saveundoid = m_undoid;
+	int saveundoid = m_undo_writepoint;
+	m_undo_writepoint = GetNewUndoID();
 
-	int nextundoid;
-	nextundoid = m_undoid + 1;
-	if( nextundoid >= m_undoSavedNum){
-		nextundoid = 0;
-	}
-	m_undoid = nextundoid;
-
-	int result = m_undomotion[m_undoid].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate);
+	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate);
 	if (result == 1) {//result == 2はエラーにしない
 		_ASSERT(0);
 
-		m_undoid = saveundoid;
+		m_undo_writepoint = saveundoid;
 		return 1;
 	}
-
-	m_undoSavedNum++;
-	if (m_undoSavedNum > UNDOMAX) {
-		m_undoSavedNum = UNDOMAX;
+	else {
+		//成功した場合
+		m_undo_readpoint = m_undo_writepoint;
 	}
+
 
 
 	return 0;
 }
 int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate)
 {
+	//saveによって次回のundo位置は変わる
+	//undoによって次回のsave位置は変わらない
+
 	if( m_bonelist.empty() || !m_curmotinfo ){
 		return 0;
 	}
 
-	int rbundoid = -1;
+	int savereadpoint = m_undo_readpoint;
 	if( redoflag == 0 ){
-		GetValidUndoID( &rbundoid );
+		m_undo_readpoint = GetValidUndoID();
 	}else{
-		GetValidRedoID( &rbundoid );
+		m_undo_readpoint = GetValidRedoID();
 	}
 
-	if( rbundoid >= 0 ){
-		m_undomotion[ rbundoid ].RollBackMotion(this, curboneno, curbaseno, dststartframe, dstendframe, dstapplyrate);
-		m_undoid = rbundoid;
+	if(m_undo_readpoint >= 0 ){
+		int result = m_undomotion[m_undo_readpoint].RollBackMotion(this, curboneno, curbaseno, dststartframe, dstendframe, dstapplyrate);
 	}
 
 	return 0;
 }
-int CModel::GetValidUndoID( int* rbundoid )
+
+int CModel::GetNewUndoID()
 {
+	//Save用のundoid
+	int writepoint = m_undo_writepoint;
+
+	writepoint++;
+	if (writepoint >= UNDOMAX) {
+		writepoint = 0;
+	}
+
+	return writepoint;
+}
+int CModel::GetValidUndoID()
+{
+	//undo用のid
+
 	int retid = -1;
 
 	int chkcnt;
-	int curid = m_undoid;
-	for( chkcnt = 0; chkcnt < m_undoSavedNum; chkcnt++ ){
+	int curid = m_undo_readpoint;
+	for( chkcnt = 0; chkcnt < UNDOMAX; chkcnt++ ){
 		curid = curid - 1;
 		if( curid < 0 ){
-			curid = m_undoSavedNum - 1;
+			curid = UNDOMAX - 1;
 		}
 
 		if( m_undomotion[curid].GetValidFlag() == 1 ){
@@ -11525,18 +11545,20 @@ int CModel::GetValidUndoID( int* rbundoid )
 			break;
 		}
 	}
-	*rbundoid = retid;
-	return 0;
+
+	return retid;
 }
-int CModel::GetValidRedoID( int* rbundoid )
+int CModel::GetValidRedoID()
 {
+	//redo用のid
+
 	int retid = -1;
 
 	int chkcnt;
-	int curid = m_undoid;
-	for( chkcnt = 0; chkcnt < m_undoSavedNum; chkcnt++ ){
+	int curid = m_undo_readpoint;
+	for( chkcnt = 0; chkcnt < UNDOMAX; chkcnt++ ){
 		curid = curid + 1;
-		if( curid >= m_undoSavedNum){
+		if( curid >= UNDOMAX){
 			curid = 0;
 		}
 
@@ -11545,9 +11567,8 @@ int CModel::GetValidRedoID( int* rbundoid )
 			break;
 		}
 	}
-	*rbundoid = retid;
 
-	return 0;
+	return retid;
 }
 
 int CModel::AddBoneMotMark( OWP_Timeline* owpTimeline, int curboneno, int curlineno, double startframe, double endframe, int flag )

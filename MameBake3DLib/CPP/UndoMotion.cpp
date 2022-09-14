@@ -116,22 +116,22 @@ int CUndoMotion::DestroyObjs()
 int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate)
 {
 	if (!pmodel) {
-		return 0;
+		return 2;
 	}
 
 	if( !pmodel->GetCurMotInfo() ){
-		return 0;
+		return 2;
 	}
 
 	if( pmodel->GetCurMotInfo()->motid < 0 ){
-		return 0;
+		return 2;
 	}
 	if( pmodel->GetBoneListSize()<= 0 ){
-		return 0;
+		return 2;
 	}
 
 	if (!srcer) {
-		return 0;
+		return 2;
 	}
 
 
@@ -139,7 +139,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
 	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) && (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
-		return 0;
+		return 2;
 	}
 
 
@@ -173,6 +173,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 				firstundomp = CMotionPoint::GetNewMP();
 				if (!firstundomp) {
 					_ASSERT(0);
+					SetValidFlag(0);
 					return 1;
 				}
 				m_bone2mp[curbone] = firstundomp;
@@ -199,6 +200,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 						undomp = CMotionPoint::GetNewMP();
 						if (!undomp) {
 							_ASSERT(0);
+							SetValidFlag(0);
 							return 1;
 						}
 						befundomp->AddToNext(undomp);
@@ -208,6 +210,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 				}
 				else {
 					_ASSERT(0);
+					SetValidFlag(0);
 					return 1;
 				}
 
@@ -293,38 +296,39 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 {
 	if( m_validflag != 1 ){
 		_ASSERT( 0 );
-		return 1;
+		return 2;
 	}
 	if (!pmodel) {
 		_ASSERT(0);
-		return 1;
+		return 2;
 	}
 	if (!curboneno) {
 		_ASSERT(0);
-		return 1;
+		return 2;
 	}
 	if (!curbaseno) {
 		_ASSERT(0);
-		return 1;
+		return 2;
 	}
 	if (!dststartframe)
 	{
 		_ASSERT(0);
-		return 1;
+		return 2;
 	}
 	if (!dstendframe) {
 		_ASSERT(0);
-		return 1;
+		return 2;
 	}
 	if (!dstapplyrate) {
 		_ASSERT(0);
-		return 1;
+		return 2;
 	}
 
 	int setmotid = m_savemotinfo.motid;
 	MOTINFO* chkmotinfo = pmodel->GetMotInfo( setmotid );
 	if( !chkmotinfo ){
 		_ASSERT( 0 );
+		SetValidFlag(0);//!!!!!!!!!!!!!!!
 		return 1;
 	}
 

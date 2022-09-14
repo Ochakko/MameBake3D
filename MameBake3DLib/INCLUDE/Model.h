@@ -840,8 +840,9 @@ private:
 
 	void ResetBtReq( CBtObject* curbto );
 
-	int GetValidUndoID( int* rbundoid );
-	int GetValidRedoID( int* rbundoid );
+	int GetNewUndoID();//Save用のundoid
+	int GetValidUndoID();//undo用のid
+	int GetValidRedoID();//redo用のid
 
 	int SetBefEditMat( CEditRange* erptr, CBone* curbone, int maxlevel );
 	int SetBefEditMatFK( CEditRange* erptr, CBone* curbone );
@@ -1361,8 +1362,10 @@ private:
 	int m_texpool;//Direct3Dのテクスチャ作成プール（場所）。システムメモリかビデオメモリかマネージドか選ぶ。通常は0でビデオメモリを指定する。
 	ChaVector3 m_ikrotaxis;//IK, FKでボーン回転するための回転軸を一時的に保存する。
 	CUndoMotion m_undomotion[ UNDOMAX ];//アンドゥー機能のためのCUndoMotionの配列。CUndoMotionの１つのインスタンスは１フレーム分のモーションを保存する。
-	int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
-	int m_undoSavedNum;//保存中のアンドゥーの数
+	//int m_undoid;//アンドゥー用データをリングバッファで使用するための現在位置へのインデックス。
+	//int m_undoSavedNum;//保存中のアンドゥーの数
+	int m_undo_readpoint;
+	int m_undo_writepoint;
 
 	ChaMatrix m_worldmat;
 	ChaVector3 m_modelposition;

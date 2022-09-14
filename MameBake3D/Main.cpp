@@ -5193,7 +5193,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	//if((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)){
 	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 		OnFrameBatchThread();
-		return;
+		return;//!!!!!!!!!!!!!!!!!!!
 	}
 
 	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectmodel) {
@@ -5500,6 +5500,12 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 		OnRenderNowLoading();
 		return;
 	}
+
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+		//OnRenderNowLoading();
+		return;
+	}
+
 
     //HRESULT hr;
 
