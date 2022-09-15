@@ -67,6 +67,7 @@ int CUndoMotion::InitParams()
 	m_endframe = 1.0;
 	m_applyrate = 50.0;
 
+	m_brushstate.Init();
 
 	return 0;
 }
@@ -113,7 +114,7 @@ int CUndoMotion::DestroyObjs()
 }
 
 
-int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate)
+int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate)
 {
 	if (!pmodel) {
 		return 2;
@@ -134,6 +135,8 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 		return 2;
 	}
 
+
+	m_brushstate = srcbrushstate;
 
 
 	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
@@ -292,7 +295,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 
 	return 0;
 }
-int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate)
+int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate)
 {
 	if( m_validflag != 1 ){
 		_ASSERT( 0 );
@@ -323,6 +326,12 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 		_ASSERT(0);
 		return 2;
 	}
+	if (!dstbrushstate) {
+		_ASSERT(0);
+		return 2;
+	}
+
+	*dstbrushstate = m_brushstate;
 
 	int setmotid = m_savemotinfo.motid;
 	MOTINFO* chkmotinfo = pmodel->GetMotInfo( setmotid );

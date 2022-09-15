@@ -711,6 +711,8 @@ static double s_buttonselectstart = 0.0;
 static double s_buttonselectend = 0.0;
 static int s_buttonselecttothelast = 0;
 
+
+
 static float s_selectscale = 1.0f;
 //static int s_sethipstra = 0;
 static CFrameCopyDlg s_selbonedlg;
@@ -1025,7 +1027,8 @@ static OWP_Button* s_toolInterpolate1B = 0;
 static OWP_Button* s_toolInterpolate2B = 0;
 static OWP_Button* s_toolInterpolate3B = 0;
 static OWP_Button* s_toolSelectCopyFileName = 0;
-
+static OWP_Button* s_toolSkipRenderBoneMarkB = 0;
+static OWP_Button* s_toolSkipRenderBoneMarkB2 = 0;
 
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
@@ -1089,6 +1092,7 @@ static bool s_changeupdatethreadsFlag = false;
 static bool s_newmotFlag = false;
 static bool s_delcurmotFlag = false;
 static int s_interpolateState = 0;
+static int s_skipJointMark = 0;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -1101,6 +1105,7 @@ static bool s_LcursorFlag = false;			// カーソル移動フラグ
 static bool s_LupFlag = false;
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
+static int s_LstopDoneCount = 0;
 
 static int s_calclimitedwmState = 0;
 
@@ -1710,10 +1715,14 @@ static int OnMouseMoveFunc();
 static void OnUserFrameMove(double fTime, float fElapsedTime);
 static int RollbackCurBoneNo();
 static void PrepairUndo();
+static void RollbackBrushState(BRUSHSTATE srcbrushstate);
 static int OnFrameUndo(bool fromds, int fromdskind);
 static int OnSpriteUndo();
 static void OnGUIEventSpeed();
 static int SetShowPosTime();
+
+static void SavePlayingStartEnd();
+static void SetButtonStartEndFromPlaying();
 
 static void AutoCameraTarget();
 
@@ -1959,6 +1968,8 @@ static int InitMpFromTool();
 //static void InitMPReq(CBone* curbone, double curframe);
 static int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe);
 static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe);
+
+static void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag);
 
 static int AdjustBoneTra( CBone* curbone, double frame );
 static int CreateTimeLineMark( int topboneno = -1 );
@@ -2733,6 +2744,7 @@ void InitApp()
 	s_initmpFlag = false;
 	s_filterFlag = false;
 	s_interpolateState = 0;
+	s_skipJointMark = 0;
 	s_firstkeyFlag = false;
 	s_lastkeyFlag = false;
 	s_btresetFlag = false;
@@ -2743,6 +2755,7 @@ void InitApp()
 	s_LupFlag = false;
 	s_LstartFlag = false;
 	s_LstopFlag = false;
+	s_LstopDoneCount = 0;
 	s_EcursorFlag = false;			// カーソル移動フラグ
 	s_timelineRUpFlag = false;
 	s_timelinembuttonFlag = false;
@@ -3013,6 +3026,8 @@ void InitApp()
 	s_toolInterpolate2B = 0;
 	s_toolInterpolate3B = 0;
 	s_toolSelectCopyFileName = 0;
+	s_toolSkipRenderBoneMarkB = 0;
+	s_toolSkipRenderBoneMarkB2 = 0;
 
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
@@ -3020,6 +3035,9 @@ void InitApp()
 	g_underselectingframe = 0;
 	s_buttonselectstart = 0.0;
 	s_buttonselectend = 0.0;
+
+	g_playingstart = 1.0;
+	g_playingend = 1.0;
 
 	s_editrangehistoryno = 0;
 	s_editrangesetindex = 0;
@@ -4507,6 +4525,15 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_toolSelectCopyFileName;
 		s_toolSelectCopyFileName = 0;
 	}
+	if (s_toolSkipRenderBoneMarkB) {
+		delete s_toolSkipRenderBoneMarkB;
+		s_toolSkipRenderBoneMarkB = 0;
+	}
+	if (s_toolSkipRenderBoneMarkB2) {
+		delete s_toolSkipRenderBoneMarkB2;
+		s_toolSkipRenderBoneMarkB2 = 0;
+	}
+
 
 	if (s_owpTimeline) {
 		delete s_owpTimeline;
@@ -5782,7 +5809,23 @@ void PrepairUndo()
 		if (s_model) {
 			CreateTimeLineMark();
 			SetLTimelineMark(s_curboneno);
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+
+			BRUSHSTATE brushstate;
+			brushstate.Init();
+			brushstate.brushmirrorUflag = g_brushmirrorUflag;
+			brushstate.brushmirrorVflag = g_brushmirrorVflag;
+			brushstate.ifmirrorVDiv2flag = g_ifmirrorVDiv2flag;
+			brushstate.limitdegflag = g_limitdegflag;
+			brushstate.motionbrush_method = g_motionbrush_method;
+			brushstate.wallscrapingikflag = g_wallscrapingikflag;
+			brushstate.brushrepeats = g_brushrepeats;
+
+			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//長いフレームの保存は数秒時間がかかることがあるので砂時計カーソルにする
+
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate, brushstate);
+
+			SetCursor(oldcursor);//カーソルを元に戻す
+
 		}
 		s_editmotionflag = -1;
 
@@ -7153,6 +7196,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_COMBO_MOTIONBRUSH_METHOD:
 			RollbackCurBoneNo();
 			if (s_model) {
+				int saveval = g_motionbrush_method;
 				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
 				g_motionbrush_method = (int)PtrToUlong(pComboBox->GetSelectedData());
 				if (s_editmotionflag < 0) {
@@ -7160,6 +7204,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					if (result) {
 						_ASSERT(0);
 					}
+				}
+				if (g_motionbrush_method != saveval) {
+					PrepairUndo();
 				}
 			}
 			break;
@@ -10894,8 +10941,11 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	//}
 
 	if( saveundoflag == 1 ){
-		if( s_model ){
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+		//if( s_model ){
+		//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+		//}
+		if (s_model) {
+			PrepairUndo();
 		}
 	}else{
 		if( s_model ){
@@ -17586,6 +17636,9 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	}
 
 
+	SavePlayingStartEnd();
+
+
 	return 0;
 }
 
@@ -19197,25 +19250,56 @@ int OnFrameUtCheckBox()
 	//if (s_PseudoLocalCheckBox) {
 	//	g_pseudolocalflag = (int)s_PseudoLocalCheckBox->GetChecked();
 	//}
+
+
+	//sliderだがPrepairUndoの処理箇所をまとめる意味でここに書く
+	if (g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)) {
+		int saveval = g_brushrepeats;
+		g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
+		if (s_model && (saveval != g_brushrepeats)) {
+			PrepairUndo();
+		}
+	}
+	
+
+
 	if (s_WallScrapingIKCheckBox) {
+		int saveval = g_wallscrapingikflag;
 		g_wallscrapingikflag = (int)s_WallScrapingIKCheckBox->GetChecked();
+		if (s_model && (saveval != g_wallscrapingikflag)) {
+			PrepairUndo();
+		}
 	}
 	if (s_LimitDegCheckBox) {
+		bool saveval = g_limitdegflag;
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
 		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
 			refreshEulerGraph();
 			//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
+			PrepairUndo();
 		}
 		s_beflimitdegflag = g_limitdegflag;
 	}
 	if (s_BrushMirrorUCheckBox) {
+		int saveval = g_brushmirrorUflag;
 		g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
+		if (s_model && (saveval != g_brushmirrorUflag)) {
+			PrepairUndo();
+		}
 	}
 	if (s_BrushMirrorVCheckBox) {
+		int saveval = g_brushmirrorVflag;
 		g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
+		if (s_model && (saveval != g_brushmirrorVflag)) {
+			PrepairUndo();
+		}
 	}
 	if (s_IfMirrorVDiv2CheckBox) {
+		int saveval = g_ifmirrorVDiv2flag;
 		g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
+		if (s_model && (saveval != g_ifmirrorVDiv2flag)) {
+			PrepairUndo();
+		}
 	}
 
 
@@ -19992,7 +20076,10 @@ int OnFrameTimeLineWnd()
 				}
 				else if (g_selecttolastFlag == false) {
 
-					if (!s_LstopFlag) {
+					if (!s_LstopFlag && (s_LstopDoneCount != 1)) {//s_LstopDoneFlag == 1 : stopボタンを押して１回目のup処理はスキップ　選択範囲を保つため
+					//LupとLstopのどちらが先に実行されるかが確定しない場合がある　
+					//stop処理の直後にここが実行されると選択範囲が　カレント１フレーム長になってしまう　よってstopとCount==1のときはスキップ
+					//Lupが先に実行された場合に次のLupもスキップされる副作用
 						if (s_selectFlag) {
 							s_selectFlag = false;
 							s_selectKeyInfoList.clear();
@@ -20028,22 +20115,25 @@ int OnFrameTimeLineWnd()
 
 
 					}
-					else {
-						//停止ボタンが押されたとき
-						//_ASSERT(0);
-						s_buttonselectstart = s_editrange.GetStartFrame();
-						s_buttonselectend = s_editrange.GetEndFrame();
-						g_underselectingframe = 0;
-						//_ASSERT(0);
+					//else {
+					//	//停止ボタンが押されたとき
+					//	//_ASSERT(0);
+					//	//s_buttonselectstart = s_editrange.GetStartFrame();
+					//	//s_buttonselectend = s_editrange.GetEndFrame();
 
-						//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-						//if (result) {
-						//	_ASSERT(0);
-						//}
+					//	SetButtonStartEndFromPlaying();
 
-						OnTimeLineButtonSelectFromSelectStartEnd(0);
-						//_ASSERT(0);
-					}
+					//	g_underselectingframe = 0;
+					//	//_ASSERT(0);
+
+					//	//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					//	//if (result) {
+					//	//	_ASSERT(0);
+					//	//}
+
+					//	OnTimeLineButtonSelectFromSelectStartEnd(0);
+					//	//_ASSERT(0);
+					//}
 
 				}
 				else {
@@ -20092,7 +20182,10 @@ int OnFrameTimeLineWnd()
 		}
 
 		s_LstartFlag = false;
-		s_LstopFlag = false;
+		//s_LstopFlag = false;
+		if (s_LstopDoneCount == 1) {
+			s_LstopDoneCount = 2;//２回 lupをスキップしないように
+		}
 		g_selecttolastFlag = false;
 		s_prevrangeFlag = false;
 		s_nextrangeFlag = false;
@@ -20103,25 +20196,25 @@ int OnFrameTimeLineWnd()
 
 
 	if (s_LcursorFlag) {
-		if (g_underselectingframe == 0) {
-			//これがないとモーション停止ボタンを押した後にselect表示されない。
-			s_buttonselectstart = s_editrange.GetStartFrame();
-			s_buttonselectend = s_editrange.GetEndFrame();
-			
-			//if (s_copyKeyInfoList.size() == 0) {//フレームを選択していないときだけ呼ぶ。選択済のときにTimeline::OnSelectButtonがループするのを防止
-				OnTimeLineButtonSelectFromSelectStartEnd(0);
-			//}
-		}
+		//if (g_underselectingframe == 0) {
+		//	//これがないとモーション停止ボタンを押した後にselect表示されない。
+		//	s_buttonselectstart = s_editrange.GetStartFrame();
+		//	s_buttonselectend = s_editrange.GetEndFrame();
+		//	
+		//	//if (s_copyKeyInfoList.size() == 0) {//フレームを選択していないときだけ呼ぶ。選択済のときにTimeline::OnSelectButtonがループするのを防止
+		//		OnTimeLineButtonSelectFromSelectStartEnd(0);
+		//	//}
+		//}
 
 		//g_underselectingframe = 1;
 		OnTimeLineCursor(0, 0.0);
 
-		if (g_previewFlag != 0) {
-			//これがないとモーション再生中にselectが表示されない。
-			s_buttonselectstart = s_previewrange.GetStartFrame();
-			s_buttonselectend = s_previewrange.GetEndFrame();
-			OnTimeLineButtonSelectFromSelectStartEnd(0);
-		}
+		//if (g_previewFlag != 0) {
+		//	//これがないとモーション再生中にselectが表示されない。
+		//	s_buttonselectstart = s_previewrange.GetStartFrame();
+		//	s_buttonselectend = s_previewrange.GetEndFrame();
+		//	OnTimeLineButtonSelectFromSelectStartEnd(0);
+		//}
 
 		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 			if (g_previewFlag == 0) {//underchecking
@@ -20151,6 +20244,31 @@ int OnFrameTimeLineWnd()
 	}
 
 
+	if (s_LstopFlag) {
+		//停止ボタンが押されたとき
+		//_ASSERT(0);
+		//s_buttonselectstart = s_editrange.GetStartFrame();
+		//s_buttonselectend = s_editrange.GetEndFrame();
+
+		SetButtonStartEndFromPlaying();
+
+		g_underselectingframe = 0;
+		//_ASSERT(0);
+
+		//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+		//if (result) {
+		//	_ASSERT(0);
+		//}
+
+		OnTimeLineButtonSelectFromSelectStartEnd(0);
+		//_ASSERT(0);
+
+		if ((s_LstopDoneCount == 0) || (s_LstopDoneCount == 2)) {
+			s_LstopDoneCount = 1;//Lupで選択範囲がカレントフレーム１つになるのを防ぐ
+		}
+		
+		s_LstopFlag = false;
+	}
 
 
 
@@ -20238,6 +20356,25 @@ int OnFrameToolWnd()
 		s_initmpFlag = false;
 	}
 
+	if (s_skipJointMark != 0) {
+
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
+			CBone* curbone = 0;
+			if (s_curboneno >= 0) {
+				curbone = s_model->GetBoneByID(s_curboneno);
+			}
+			else {
+				curbone = 0;
+			}
+
+			SkipJointMarkReq(s_skipJointMark, curbone, false);
+
+		}
+
+		s_skipJointMark = 0;
+	}
+
+
 	if (s_interpolateState != 0){
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
@@ -20262,7 +20399,10 @@ int OnFrameToolWnd()
 
 			UpdateEditedEuler();
 
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			if (s_model) {
+				PrepairUndo();
+			}
 		}
 
 		s_interpolateState = 0;
@@ -20354,7 +20494,10 @@ int OnFrameToolWnd()
 				_ASSERT(result2 == 0);
 			}
 
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			if (s_model) {
+				PrepairUndo();
+			}
 
 
 			if (s_copyhistorydlg.GetCreatedFlag() == true) {
@@ -20462,7 +20605,10 @@ int OnFrameToolWnd()
 			}
 
 			UpdateEditedEuler();
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			if (s_model) {
+				PrepairUndo();
+			}
 		}
 
 		s_pasteFlag = false;
@@ -20514,8 +20660,11 @@ int OnFrameToolWnd()
 
 	if (s_filterFlag == true){
 
-		if (s_model){
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+		//if (s_model){
+		//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+		//}
+		if (s_model) {
+			PrepairUndo();
 		}
 
 		s_editrange.Clear();
@@ -20532,8 +20681,11 @@ int OnFrameToolWnd()
 
 					UpdateEditedEuler();
 
-					if (s_model){
-						s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+					//if (s_model){
+					//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+					//}
+					if (s_model) {
+						PrepairUndo();
 					}
 				}
 				else{
@@ -21105,11 +21257,17 @@ int OnSpriteUndo()
 	double tmpselectend = 1.0;
 	double tmpapplyrate = 50.0;
 
+	BRUSHSTATE brushstate;
+	brushstate.Init();
+
+
 	///////////// undo
 	if (s_model && (s_undoFlag == true)) {
 		//undo
 		StopBt();
-		s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+		s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+		RollbackBrushState(brushstate);
+
 		undodoneflag = true;
 		s_undoFlag = false;
 	}
@@ -21117,7 +21275,9 @@ int OnSpriteUndo()
 	{
 		//redo
 		StopBt();
-		s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+		s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+		RollbackBrushState(brushstate);
+
 		undodoneflag = true;
 		s_redoFlag = false;
 	}
@@ -21215,18 +21375,25 @@ int OnFrameUndo(bool fromds, int fromdskind)
 	double tmpselectend = 1.0;
 	double tmpapplyrate = 50.0;
 
+	BRUSHSTATE brushstate;
+	brushstate.Init();
+
 	///////////// undo
 	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))) {
 		StopBt();
 
 		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)) {
 			//redo
-			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+			RollbackBrushState(brushstate);
+
 			undodoneflag = true;
 		}
 		else if ((fromds && (fromdskind == 0)) || !fromds) {
 			//undo
-			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate);//!!!!!!!!!!!
+			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+			RollbackBrushState(brushstate);
+
 			undodoneflag = true;
 		}
 	}
@@ -22062,6 +22229,17 @@ int CreateTimelineWnd()
 	return 0;
 }
 
+void SavePlayingStartEnd()
+{
+	g_playingstart = g_motionbrush_startframe;
+	g_playingend = g_motionbrush_endframe;
+}
+void SetButtonStartEndFromPlaying()
+{
+	s_buttonselectstart = g_playingstart;
+	s_buttonselectend = g_playingend;
+}
+
 int CreateLongTimelineWnd()
 {
 
@@ -22123,6 +22301,7 @@ int CreateLongTimelineWnd()
 
 	s_owpPlayerButton->setOneFpsButtonListener([]() {
 		if (s_model) {
+
 			int tmponefps;
 			if (s_onefps == 0) {
 				tmponefps = 1;
@@ -23623,6 +23802,8 @@ int CreateToolWnd()
 	s_toolInterpolate2B = new OWP_Button(_T("補間(Parent One) interpolate"));
 	s_toolInterpolate3B = new OWP_Button(_T("補間(Parent Deeper) interpolate"));
 	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
+	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
+	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -23637,6 +23818,8 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolInterpolate2B);
 	s_toolWnd->addParts(*s_toolInterpolate3B);
 	s_toolWnd->addParts(*s_toolZeroFrameB);
+	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
+	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -23650,6 +23833,9 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolInterpolate2B);
 	s_dstoolctrls.push_back(s_toolInterpolate3B);
 	s_dstoolctrls.push_back(s_toolZeroFrameB);
+	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
+	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
+
 
 	s_toolWnd->setCloseListener([](){ 
 		if (s_model) {
@@ -23725,6 +23911,18 @@ int CreateToolWnd()
 			s_interpolateState = 3;//parent deeper
 		}
 	});
+	s_toolSkipRenderBoneMarkB->setButtonListener([]() {
+		if (s_model && (s_skipJointMark == 0)) {
+			s_skipJointMark = 1;//deeper
+		}
+	});
+	s_toolSkipRenderBoneMarkB2->setButtonListener([]() {
+		if (s_model && (s_skipJointMark == 0)) {
+			s_skipJointMark = 2;//deeper
+		}
+		});
+
+
 
 	s_rctoolwnd.top = 0;
 	s_rctoolwnd.left = 0;
@@ -24417,6 +24615,30 @@ int OnRenderUtDialog(ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTi
 	return 0;
 }
 
+void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag)
+{
+	if (srcbone) {
+
+		if (srcstate == 1) {
+			srcbone->SetSkipRenderBoneMark(true);
+		}
+		else if (srcstate == 2) {
+			srcbone->SetSkipRenderBoneMark(false);
+		}
+		
+
+		if (setbrotherflag) {
+			if (srcbone->GetBrother()) {
+				SkipJointMarkReq(srcstate, srcbone->GetBrother(), setbrotherflag);
+			}
+		}
+		if (srcbone->GetChild()) {
+			SkipJointMarkReq(srcstate, srcbone->GetChild(), true);
+		}
+	}
+
+
+}
 
 int InitMpFromTool()
 {
@@ -36235,5 +36457,47 @@ int FindModelIndex(CModel* srcmodel)
 	return -1;
 }
 
+void RollbackBrushState(BRUSHSTATE srcbrushstate)
+{
+	g_brushmirrorUflag = srcbrushstate.brushmirrorUflag;
+	g_brushmirrorVflag = srcbrushstate.brushmirrorVflag;
+	g_ifmirrorVDiv2flag = srcbrushstate.ifmirrorVDiv2flag;
+	g_limitdegflag = srcbrushstate.limitdegflag;
+	g_motionbrush_method = srcbrushstate.motionbrush_method;
+	g_wallscrapingikflag = srcbrushstate.wallscrapingikflag;
+	g_brushrepeats = srcbrushstate.brushrepeats;
 
+	if (s_BrushMirrorUCheckBox) {
+		s_BrushMirrorUCheckBox->SetChecked((bool)g_brushmirrorUflag);
+	}
+	if (s_BrushMirrorVCheckBox) {
+		s_BrushMirrorVCheckBox->SetChecked((bool)g_brushmirrorVflag);
+	}
+	if (s_IfMirrorVDiv2CheckBox) {
+		s_IfMirrorVDiv2CheckBox->SetChecked((bool)g_ifmirrorVDiv2flag);
+	}
+	if (s_LimitDegCheckBox) {
+		s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	}
+	if (s_WallScrapingIKCheckBox) {
+		s_WallScrapingIKCheckBox->SetChecked((bool)g_wallscrapingikflag);
+	}
+
+	CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
+	if (pComboBox) {
+		pComboBox->SetSelectedByData(ULongToPtr(g_motionbrush_method));
+	}
+
+	CDXUTSlider* pslider = g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS);
+	if(pslider){
+		pslider->SetValue(g_brushrepeats);
+		CDXUTStatic* pstatic = g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS);
+		if (pstatic) {
+			WCHAR sz[100] = { 0L };
+			swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
+			pstatic->SetText(sz);
+		}
+	}
+
+}
 

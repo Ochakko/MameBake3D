@@ -382,6 +382,7 @@ int CBone::InitParams()
 
 	m_befupdatetime = -1.0;
 
+	m_skipRenderBoneMark = false;
 
 	return 0;
 }

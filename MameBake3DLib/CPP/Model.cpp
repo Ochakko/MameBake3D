@@ -5021,7 +5021,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 			map<int, CBone*>::iterator itrbone;
 			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 				CBone* boneptr = itrbone->second;
-				if (boneptr){
+				if (boneptr && !boneptr->GetSkipRenderBoneMark()){
 					CBone* childbone = boneptr->GetChild();
 					while (childbone){
 						int renderflag = 0;
@@ -5103,7 +5103,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 			CBone* boneptr = itrbone->second;
-			if (boneptr){
+			if (boneptr && !boneptr->GetSkipRenderBoneMark()){
 				CBone* childbone = boneptr->GetChild();
 				while (childbone){
 					CRigidElem* curre = boneptr->GetRigidElem(childbone);
@@ -5180,7 +5180,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 			map<int, CBone*>::iterator itrbone;
 			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 				CBone* boneptr = itrbone->second;
-				if (boneptr && (boneptr->GetType() == FBXBONE_NORMAL)){
+				if (boneptr && (boneptr->GetType() == FBXBONE_NORMAL) && !boneptr->GetSkipRenderBoneMark()){
 
 					ChaMatrix bcmat;
 					bcmat = boneptr->GetCurMp().GetWorldMat();
@@ -5249,7 +5249,7 @@ void CModel::RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObje
 
 	CBone* srcbone = srcbto->GetBone();
 	CBone* childbone = srcbto->GetEndBone();
-	if (srcbone && childbone){
+	if (srcbone && childbone && !srcbone->GetSkipRenderBoneMark()){
 		//if (srcbone->GetParent()){
 			//CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
 		CRigidElem* curre = srcbone->GetRigidElem(childbone);
@@ -5299,7 +5299,7 @@ void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtO
 
 	CBone* srcbone = srcbto->GetBone();
 	CBone* childbone = srcbto->GetEndBone();
-	if (srcbone && childbone){
+	if (srcbone && childbone && !srcbone->GetSkipRenderBoneMark()){
 		CRigidElem* curre = srcbone->GetRigidElem(childbone);
 		if (curre){
 			if (childbone && (childbone->GetType() == FBXBONE_NORMAL)){
@@ -11454,7 +11454,17 @@ int CModel::InitUndoMotion( int saveflag )
 	m_undo_writepoint = GetNewUndoID();
 
 	if( saveflag ){
-		int result = m_undomotion[m_undo_writepoint].SaveUndoMotion( this, -1, -1, 0, 50.0 );
+		BRUSHSTATE brushstate;
+		brushstate.Init();
+		brushstate.brushmirrorUflag = g_brushmirrorUflag;
+		brushstate.brushmirrorVflag = g_brushmirrorVflag;
+		brushstate.ifmirrorVDiv2flag = g_ifmirrorVDiv2flag;
+		brushstate.limitdegflag = g_limitdegflag;
+		brushstate.motionbrush_method = g_motionbrush_method;
+		brushstate.wallscrapingikflag = g_wallscrapingikflag;
+		brushstate.brushrepeats = g_brushrepeats;
+
+		int result = m_undomotion[m_undo_writepoint].SaveUndoMotion( this, -1, -1, 0, 50.0, brushstate );
 		if (result == 1) {
 			m_undo_writepoint = savewritepoint;
 		}
@@ -11467,7 +11477,7 @@ int CModel::InitUndoMotion( int saveflag )
 	return 0;
 }
 
-int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate )
+int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate)
 {
 	//saveによって次回のundo位置は変わる
 	//undoによって次回のsave位置は変わらない
@@ -11480,7 +11490,7 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 	int saveundoid = m_undo_writepoint;
 	m_undo_writepoint = GetNewUndoID();
 
-	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate);
+	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate, srcbrushstate);
 	if (result == 1) {//result == 2はエラーにしない
 		_ASSERT(0);
 
@@ -11497,7 +11507,7 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 
 	return 0;
 }
-int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate)
+int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate)
 {
 	//saveによって次回のundo位置は変わる
 	//undoによって次回のsave位置は変わらない
@@ -11518,7 +11528,7 @@ int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, dou
 	}
 
 	if(m_undo_readpoint >= 0 ){
-		int result = m_undomotion[m_undo_readpoint].RollBackMotion(this, curboneno, curbaseno, dststartframe, dstendframe, dstapplyrate);
+		int result = m_undomotion[m_undo_readpoint].RollBackMotion(this, curboneno, curbaseno, dststartframe, dstendframe, dstapplyrate, dstbrushstate);
 	}
 
 	return 0;

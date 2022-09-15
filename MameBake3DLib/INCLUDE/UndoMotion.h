@@ -23,8 +23,8 @@ public:
 	~CUndoMotion();
 
 	int ClearData();
-	int SaveUndoMotion(CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate);
-	int RollBackMotion(CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate);
+	int SaveUndoMotion(CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate);
+	int RollBackMotion(CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate);
 
 private:
 	int InitParams();
@@ -57,6 +57,8 @@ private:
 	double m_startframe;
 	double m_endframe;
 	double m_applyrate;
+
+	BRUSHSTATE m_brushstate;
 };
 
 

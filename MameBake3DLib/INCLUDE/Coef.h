@@ -546,6 +546,28 @@ typedef struct tag_pm3inf
 	int boneindex[4];
 }PM3INF;
 
+typedef struct tag_brushstate
+{
+	int motionbrush_method;
+	int wallscrapingikflag;
+	bool limitdegflag;
+	int brushmirrorUflag;
+	int brushmirrorVflag;
+	int ifmirrorVDiv2flag;
+	int brushrepeats;
+
+	void Init()
+	{
+		motionbrush_method = 0;
+		wallscrapingikflag = 0;
+		limitdegflag = false;
+		brushmirrorUflag = 0;
+		brushmirrorVflag = 0;
+		ifmirrorVDiv2flag = 0;
+		brushrepeats = 1;
+	};
+}BRUSHSTATE;
+
 
 // error code
 // d3dapp.h ‚©‚çˆÚ“®B

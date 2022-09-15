@@ -221,6 +221,8 @@ double g_motionbrush_applyframe = 0.0;
 double g_motionbrush_numframe = 0.0;
 int g_motionbrush_frameleng = 0;
 float* g_motionbrush_value = 0;
+double g_playingstart = 1.0;
+double g_playingend = 1.0;
 
 
 
@@ -382,6 +384,8 @@ extern double g_motionbrush_numframe;
 extern int g_motionbrush_frameleng;
 extern float* g_motionbrush_value;
 
+extern double g_playingstart;
+extern double g_playingend;
 
 #endif
 

@@ -1155,6 +1155,14 @@ public: //accesser
 		*dstorgeul = m_temporgeul;
 		*dstneweul = m_tempneweul;
 	}
+	void SetSkipRenderBoneMark(bool srcval)
+	{
+		m_skipRenderBoneMark = srcval;
+	}
+	bool GetSkipRenderBoneMark()
+	{
+		return m_skipRenderBoneMark;
+	}
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1286,6 +1294,8 @@ private:
 
 	ChaVector3 m_temporgeul;//制限角度有り、並列化の際の一時置き場
 	ChaVector3 m_tempneweul;//制限角度有り、並列化の際の一時置き場
+
+	bool m_skipRenderBoneMark;
 
 
 	CBone* m_parent;

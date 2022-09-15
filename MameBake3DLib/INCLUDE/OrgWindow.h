@@ -52,6 +52,10 @@ extern double g_motionbrush_startframe;
 extern double g_motionbrush_endframe;
 extern int g_previewFlag;
 
+extern double g_playingstart;
+extern double g_playingend;
+
+
 static double TIME_ERROR_WIDTH = 0.0001;
 
 namespace OrgWinGUI{
@@ -5533,8 +5537,8 @@ void s_dummyfunc()
 								if ((x1 <= (xx1 - 1)) && ((xx0 + 1) <= x2)) {
 
 									//if (key[i]->select) {
-									if ((key[i]->select) || ((g_previewFlag != 0) && (key[i]->time >= g_motionbrush_startframe) && (key[i]->time <= g_motionbrush_endframe))) {
-
+									//if ((key[i]->select) || ((g_previewFlag != 0) && (key[i]->time >= g_motionbrush_startframe) && (key[i]->time <= g_motionbrush_endframe))) {
+									if((key[i]->time >= g_playingstart) && (key[i]->time <= g_playingend)){
 										//hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
 										//hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
 										hdcM->setPenAndBrush(NULL, RGB(64, 128, 255));//AO
