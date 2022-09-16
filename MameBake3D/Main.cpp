@@ -20027,7 +20027,16 @@ int OnFrameTimeLineWnd()
 				s_buttonselectstart = 0.0;
 				s_buttonselectend = 0.0;
 				s_buttonselecttothelast = 0;
+				g_playingstart = 0.0;
+				g_playingend = 0.0;
 				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
+
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
 			}
 		}
 		s_zeroFrameFlag = false;
@@ -20039,7 +20048,16 @@ int OnFrameTimeLineWnd()
 				s_buttonselectstart = 1.0;
 				s_buttonselectend = 1.0;
 				s_buttonselecttothelast = 0;
+				g_playingstart = 1.0;
+				g_playingend = 1.0;
 				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
+
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
 			}
 		}
 		s_oneFrameFlag = false;
@@ -26342,6 +26360,14 @@ int OnTimeLineWheel()
 				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %lf\r\n", s_buttonselectstart, s_buttonselectend, delta2);
 
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+
 			}
 		}
 		else {
@@ -26375,6 +26401,14 @@ int OnTimeLineWheel()
 				//OnTimeLineCursor(2, newframe);
 
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+
 			}
 
 		}
