@@ -20267,6 +20267,12 @@ int OnFrameTimeLineWnd()
 			s_LstopDoneCount = 1;//Lupで選択範囲がカレントフレーム１つになるのを防ぐ
 		}
 		
+		//if (s_owpLTimeline) {
+		//	//s_editmotionflag = s_curboneno;
+		//	s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+		//	PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+		//}
+
 		s_LstopFlag = false;
 	}
 
@@ -21338,7 +21344,7 @@ int OnSpriteUndo()
 
 
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
-
+			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
 			g_applyrate = (int)tmpapplyrate;
 			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
@@ -21350,7 +21356,7 @@ int OnSpriteUndo()
 				_ASSERT(0);
 			}
 
-			SetShowPosTime();
+			//SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
 		}
 	}
@@ -21454,7 +21460,7 @@ int OnFrameUndo(bool fromds, int fromdskind)
 
 			
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
-
+			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
 			g_applyrate = (int)tmpapplyrate;
 			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
@@ -21466,7 +21472,7 @@ int OnFrameUndo(bool fromds, int fromdskind)
 				_ASSERT(0);
 			}
 
-			SetShowPosTime();
+			//SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
 		}
 	}
