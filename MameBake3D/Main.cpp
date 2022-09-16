@@ -5558,10 +5558,12 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 		return;
 	}
 
-	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
-		//OnRenderNowLoading();
-		return;
-	}
+
+	//OnRenderNowLoadingも何も無しだとdevice->Presentで固まる。 OnRenderNowLoadingを入れると３Dモデル表示がちらつく。よって通常描画する。
+	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+	//	//OnRenderNowLoading();
+	//	return;
+	//}
 
 
     //HRESULT hr;
@@ -10935,6 +10937,10 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 		s_owpTimeline->setCurrentTime(1.0);
 	}
 
+
+	OnSetMotSpeed();//2022/09/16
+
+
 	//MOTINFO* curmi = s_model->GetCurMotInfo();
 	//if (curmi) {
 	//	OnAddMotion(curmi->motid);
@@ -16008,8 +16014,33 @@ int OpenChaFile()
 
 int OnSetMotSpeed()
 {
-	s_model->GetCurMotInfo()->speed = s_model->GetTmpMotSpeed();//!!!!!!!!!!!!!!!!!!!
+	//s_model->GetCurMotInfo()->speed = s_model->GetTmpMotSpeed();//!!!!!!!!!!!!!!!!!!!
+	//g_dspeed = s_model->GetTmpMotSpeed();
+
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_model->GetCurMotInfo()) {
+		return 0;
+	}
+	if (!g_SampleUI.GetSlider(IDC_SPEED)) {
+		return 0;
+	}
+	if (!g_SampleUI.GetStatic(IDC_SPEED_STATIC)) {
+		return 0;
+	}
+
+	//SetMotionSpeed() : モーションごとのスピード
+	//SetTmpMotSpeed() : モーションが変わってもスライダー指定のスピード
+	//モーションが変わってもスライダー指定のスピードを維持するようにする
+	//g_dspeed = s_model->GetCurMotInfo()->speed;
 	g_dspeed = s_model->GetTmpMotSpeed();
+	int modelno;
+	int modelnum = s_modelindex.size();
+	for (modelno = 0; modelno < modelnum; modelno++) {
+		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
+	}
+
 
 	g_SampleUI.GetSlider( IDC_SPEED )->SetValue( (int)( g_dspeed * 100.0f ) );
 	WCHAR sz[100];
@@ -34403,7 +34434,16 @@ void OnGUIEventSpeed()
 
 	RollbackCurBoneNo();
 	g_dspeed = (float)((double)g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010);
+
+
+	//for (modelno = 0; modelno < modelnum; modelno++) {
+	//	s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
+	//}
+
+	//SetMotionSpeed() : モーションごとのスピード
+	//SetTmpMotSpeed() : モーションが変わってもスライダー指定のスピード
 	for (modelno = 0; modelno < modelnum; modelno++) {
+		s_modelindex[modelno].modelptr->SetTmpMotSpeed(g_dspeed);
 		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
 	}
 

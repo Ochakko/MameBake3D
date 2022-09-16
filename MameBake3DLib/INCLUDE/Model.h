@@ -1114,6 +1114,9 @@ public: //accesser
 	float GetTmpMotSpeed(){
 		return m_tmpmotspeed;
 	};
+	void SetTmpMotSpeed(float srcval) {
+		m_tmpmotspeed = srcval;
+	};
 
 	int GetMQOMaterialSize(){
 		return (int)m_material.size();
