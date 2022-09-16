@@ -2669,7 +2669,7 @@ int CModel::PickBone( PICKINFO* pickinfo )
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		if( curbone ){
+		if( curbone && !curbone->GetSkipRenderBoneMark()){//ボーンマーク表示をスキップしているボーンはPick対象から外す 2022/09/16
 			cmpsc.x = ( 1.0f + curbone->GetChildScreen().x ) * fw;
 			cmpsc.y = ( 1.0f - curbone->GetChildScreen().y ) * fh;
 			cmpsc.z = curbone->GetChildScreen().z;
