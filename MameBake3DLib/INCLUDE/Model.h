@@ -652,7 +652,7 @@ public:
 	float GetTargetWeight( int motid, double dframe, double timescale, CMQOObject* baseobj, std::string targetname );
 
 
-	int SetFirstFrameBonePos(HINFO* phinfo);
+	int SetFirstFrameBonePos(HINFO* phinfo, CBone* srchipsbone = 0);
 
 	int RecalcBoneAxisX(CBone* srcbone);
 
@@ -1000,6 +1000,8 @@ public: //accesser
 	CBone* GetTopBone(){
 		return m_topbone;
 	};
+	void GetHipsBoneReq(CBone* srcbone, CBone** dstppbone);
+
 
 	CBtObject* GetTopBt(){
 		return m_topbt;

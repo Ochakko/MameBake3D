@@ -51,24 +51,55 @@ namespace MameBake3DLibRetarget {
 		MOTINFO* modelmi = srcmodel->GetCurMotInfo();
 		CBone* modelbone;
 		if (modelmi) {
-			modelbone = srcmodel->GetTopBone();
+			CBone* modeltopbone = srcmodel->GetTopBone();
+			CBone* modelhipsbone = 0;
+			if (!modeltopbone) {
+				::MessageBox(NULL, L"modelside bone is not found error.", L"error!!!", MB_OK);
+				return 1;
+			}
+			else {
+				srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
+				if (modelhipsbone) {
+					modelbone = modelhipsbone;
+				}
+				else {
+					modelbone = modeltopbone;
+				}
+			}
+			//modelbone = srcmodel->GetTopBone();
 		}
 		else {
 			::MessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
 			return 1;
 		}
 
+
+		CBone* bvhtopbone = 0;
+		CBone* bvhhipsbone = 0;
+		CBone* befbvhbone = 0;
+		bvhtopbone = srcbvhmodel->GetTopBone();
+		if (bvhtopbone) {
+			srcbvhmodel->GetHipsBoneReq(bvhtopbone, &bvhhipsbone);
+			if (bvhhipsbone) {
+				befbvhbone = bvhhipsbone;
+			}
+			else {
+				befbvhbone = bvhtopbone;
+			}
+		}
+
+
 		HINFO bvhhi;
 		bvhhi.minh = 1e7;
 		bvhhi.maxh = -1e7;
 		bvhhi.height = 0.0f;
-		srcbvhmodel->SetFirstFrameBonePos(&bvhhi);
+		srcbvhmodel->SetFirstFrameBonePos(&bvhhi, befbvhbone);//hips指定
 
 		HINFO modelhi;
 		modelhi.minh = 1e7;
 		modelhi.maxh = -1e7;
 		modelhi.height = 0.0f;
-		srcmodel->SetFirstFrameBonePos(&modelhi);
+		srcmodel->SetFirstFrameBonePos(&modelhi, modelbone);//hips指定
 
 		float hrate;
 		if (bvhhi.height != 0.0f) {
@@ -93,7 +124,8 @@ namespace MameBake3DLibRetarget {
 				srcmodel->SetMotionFrame(frame);
 				srcmodel->UpdateMatrix(&tmpwm, &dummyvpmat);
 
-				CBone* befbvhbone = srcbvhmodel->GetTopBone();
+				//CBone* befbvhbone = srcbvhmodel->GetTopBone();
+
 
 				ChaMatrix sfirsthipmat;
 				ChaMatrix sinvfirsthipmat;
@@ -266,7 +298,21 @@ namespace MameBake3DLibRetarget {
 				modelinit = modelmp.GetWorldMat();
 				invmodelinit = modelmp.GetInvWorldMat();
 
-				if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
+				CBone* modelbone = 0;
+				CBone* modeltopbone = srcmodel->GetTopBone();
+				CBone* modelhipsbone = 0;
+				if(modeltopbone) {
+					srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
+					if (modelhipsbone) {
+						modelbone = modelhipsbone;
+					}
+					else {
+						modelbone = modeltopbone;
+					}
+				}
+
+				//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
+				if (modelbone && (srcbone == modelbone)) {//モデル側の最初のボーンの処理時
 					sfirsthipmat = bvhmp.GetWorldMat();
 					sfirsthipmat._41 = 0.0f;
 					sfirsthipmat._42 = 0.0f;

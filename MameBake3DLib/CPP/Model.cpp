@@ -11667,7 +11667,7 @@ float CModel::GetFbxTargetWeight(FbxNode* pbaseNode, FbxMesh* pbaseMesh, std::st
 
 }
 
-int CModel::SetFirstFrameBonePos(HINFO* phinfo)
+int CModel::SetFirstFrameBonePos(HINFO* phinfo, CBone* srchipsbone)
 {
 	int motid = m_curmotinfo->motid;
 	if (motid < 0){
@@ -11679,7 +11679,13 @@ int CModel::SetFirstFrameBonePos(HINFO* phinfo)
 		return 0;
 	}
 
-	SetFirstFrameBonePosReq(GetTopBone(), motid, phinfo);
+	if (srchipsbone) {
+		SetFirstFrameBonePosReq(srchipsbone, motid, phinfo);
+	}
+	else {
+		SetFirstFrameBonePosReq(GetTopBone(), motid, phinfo);
+	}
+	
 
 	if (phinfo->maxh >= phinfo->minh){
 		phinfo->height = phinfo->maxh - phinfo->minh;
@@ -12968,3 +12974,25 @@ int CModel::InitMP(CBone* curbone, int srcmotid, double curframe)
 
 	return 0;
 }
+
+void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
+{
+	if (srcbone && dstppbone && !(*dstppbone)) {
+		const char strpat[20] = "Hips";
+		const char* hipsptr = strstr(srcbone->GetBoneName(), strpat);
+		if (hipsptr) {
+			*dstppbone = srcbone;
+			return;
+		}
+
+		if (!(*dstppbone)) {
+			if (srcbone->GetBrother()) {
+				GetHipsBoneReq(srcbone->GetBrother(), dstppbone);
+			}
+			if (srcbone->GetChild()) {
+				GetHipsBoneReq(srcbone->GetChild(), dstppbone);
+			}
+		}
+	}
+}
+
