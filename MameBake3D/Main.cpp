@@ -2547,6 +2547,8 @@ int CheckResolution()
 					//s_guibarX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
 					s_guibarX0 = s_mainwidth / 2 - 130 * 2;
 
+					g_4kresolution = true;
+
 				}
 				else {
 					g_4kresolution = false;
@@ -9800,6 +9802,9 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 			s_timelineWnd->addParts(*s_owpTimeline);
 
 
+			//１クリック目問題対応
+			s_timelineWnd->refreshPosAndSize();//2022/09/20
+
 
 			//		s_owpTimeline->timeSize = 4.0;
 			//		s_owpTimeline->callRewrite();						//再描画
@@ -9886,11 +9891,11 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 1);//parentcheck ON by default
 				//s_LtimelineWnd->addParts(*s_parentcheck);
 				//s_LTSeparator->addParts2(*s_parentcheck);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!parentwindow libfbxdll error 2021/03/04 comment out tmp
-				s_parentcheck->setButtonListener([]() { 
-					if (s_model) {
-						refreshEulerGraph();
-					}
-				});
+				//s_parentcheck->setButtonListener([]() { 
+				//	if (s_model) {
+				//		refreshEulerGraph();
+				//	}
+				//});
 
 
 				if (s_owpEulerGraph) {
@@ -9905,11 +9910,21 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 				//s_owpEulerGraph->setSize(graphsize);
 				//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
 				//s_owpEulerGraph->setPos(graphpos);
-				s_owpEulerGraph->setCursorListener([]() { 
-					if (s_model) {
-						s_LcursorFlag = true;
-					}
-				});
+				//s_owpEulerGraph->setCursorListener([]() { 
+				//	if (s_model) {
+				//		s_LcursorFlag = true;
+				//	}
+				//});
+
+
+
+
+				//2022/09/20 １クリック目がおかしくなる不具合を解消
+				s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
+				s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
+				s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
+				s_LtimelineWnd->refreshPosAndSize();//2022/09/20
+
 			}
 		}
 
@@ -13751,6 +13766,7 @@ int CreateModelPanel()
 
 	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
 	s_modelpanel.panel->setSize(WindowSize(400, 460));//880
+
 	s_modelpanel.panel->setVisible(false);
 	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
 
@@ -14240,6 +14256,10 @@ int CreateConvBoneWnd()
 
 	s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_convboneWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+
+	//１クリック目問題対応
+	s_convboneWnd->refreshPosAndSize();//2022/09/20
+
 
 	s_convboneWnd->setVisible(false);
 
@@ -22281,6 +22301,7 @@ int CreateTimelineWnd()
 	});
 
 
+
 	return 0;
 }
 
@@ -22332,12 +22353,14 @@ int CreateLongTimelineWnd()
 
 	s_owpPlayerButton->setFrontPlayButtonListener([]() { 
 		if (s_model) {
-			s_calclimitedwmState = 1; s_LstartFlag = true; s_LcursorFlag = true;;
+			s_calclimitedwmState = 1; s_LstartFlag = true; s_LcursorFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setBackPlayButtonListener([](){  
 		if (s_model) {
 			s_calclimitedwmState = 11; s_LstartFlag = true; s_LcursorFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	
@@ -22345,11 +22368,13 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setFrontStepButtonListener([](){ 
 		if (s_model) {
 			s_LstartFlag = true; s_LcursorFlag = true; s_lastkeyFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setBackStepButtonListener([]() {
 		if (s_model) {
 			s_LstartFlag = true; s_LcursorFlag = true; s_firstkeyFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 
@@ -22371,11 +22396,14 @@ int CreateLongTimelineWnd()
 				tmponefps = 0;
 			}
 			s_onefps = tmponefps;
+
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setStopButtonListener([]() {  		
 		if (s_model) {
 			s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setResetButtonListener([](){ 
@@ -22385,6 +22413,7 @@ int CreateLongTimelineWnd()
 				g_previewFlag = 0;
 				s_LcursorFlag = true;
 				s_oneFrameFlag = true;
+				//s_LtimelineWnd->setDoneFlag(1);
 			}
 		}
 	});
@@ -22392,22 +22421,26 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  
 		if (s_model) {
 			g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setBtResetButtonListener([](){  
 		if (s_model) {
 			s_btresetFlag = true;
 			//StartBt(s_model, TRUE, 0, 1);
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setPrevRangeButtonListener([](){  
 		if (s_model) {
 			g_undereditrange = true; s_prevrangeFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setNextRangeButtonListener([](){  
 		if (s_model) {
 			g_undereditrange = true; s_nextrangeFlag = true;
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setPlusDispButtonListener([]() {
@@ -22417,6 +22450,7 @@ int CreateLongTimelineWnd()
 			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
 			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
 			//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setMinusDispButtonListener([]() {
@@ -22426,21 +22460,25 @@ int CreateLongTimelineWnd()
 			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
 			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
 			//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setResetDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->ResetScaleAndOffset();
+			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 
@@ -22466,7 +22504,6 @@ int CreateLongTimelineWnd()
 	//####################################
 	//s_LtimelineWndのラムダ　s_owpLTimelineではない。
 	//####################################
-	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
 	s_LtimelineWnd->setCloseListener([](){ 
 		if (s_model) {
 			s_LcloseFlag = true;
@@ -22485,7 +22522,9 @@ int CreateLongTimelineWnd()
 
 
 	s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
+	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
 	s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
+	//s_LtimelineWnd->refreshPosAndSize();//2022/09/20
 	s_LtimelineWnd->callRewrite();
 
 	return 0;
@@ -22586,6 +22625,10 @@ int CreateDmpAnimWnd()
 
 	s_dmpanimWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_dmpanimWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+
+	//１クリック目問題対応
+	s_dmpanimWnd->refreshPosAndSize();//2022/09/20
+
 	s_dmpanimWnd->callRewrite();
 
 	return 0;
@@ -22638,6 +22681,10 @@ int CreateMainMenuAimBarWnd()
 	//}
 	s_mainmenuaimbarWnd->setSize(WindowSize(s_mainwidth + s_timelinewidth + 16, MAINMENUAIMBARH));
 	s_rcmainmenuaimbarwnd.right = s_mainwidth + s_timelinewidth + 16;
+
+	//１クリック目問題対応
+	s_mainmenuaimbarWnd->refreshPosAndSize();//2022/09/20
+
 
 	s_mainmenuaimbarWnd->callRewrite();						//再描画
 
@@ -22730,6 +22777,10 @@ int CreateSideMenuWnd()
 	s_rcsidemenuwnd.bottom = s_sidemenuheight;
 	s_rcsidemenuwnd.right = s_sidemenuwidth;
 
+	//１クリック目問題対応
+	s_sidemenuWnd->refreshPosAndSize();//2022/09/20
+
+
 	s_sidemenuWnd->callRewrite();						//再描画
 
 
@@ -22765,6 +22816,10 @@ int CreatePlaceFolderWnd()
 	
 	s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_placefolderWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+
+	//１クリック目問題対応
+	s_placefolderWnd->refreshPosAndSize();//2022/09/20
+
 
 	s_placefolderWnd->callRewrite();						//再描画
 
@@ -23524,6 +23579,9 @@ int CreateRigidWnd()
 	s_rigidWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_rigidWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
 
+	//１クリック目問題対応
+	s_rigidWnd->refreshPosAndSize();//2022/09/20
+
 
 	s_rigidWnd->callRewrite();						//再描画
 	s_rigidWnd->setVisible(false);
@@ -23662,6 +23720,10 @@ int CreateImpulseWnd()
 
 	s_impWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_impWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+
+	//１クリック目問題対応
+	s_impWnd->refreshPosAndSize();//2022/09/20
+
 	s_impWnd->callRewrite();
 
 	return 0;
@@ -23812,6 +23874,10 @@ int CreateGPlaneWnd()
 
 	s_gpWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_gpWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+
+	//１クリック目問題対応
+	s_gpWnd->refreshPosAndSize();//2022/09/20
+
 	s_gpWnd->callRewrite();
 
 	return 0;

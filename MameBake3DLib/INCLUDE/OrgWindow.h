@@ -428,6 +428,9 @@ void s_dummyfunc()
 			pos = WindowPos(0, 0);
 			size = WindowSize(0, 0);
 			hdcM = 0;
+
+			isplayerbutton = false;
+			lrbuttondone = false;
 		}
 		OrgWindowParts( const OrgWindowParts& a ){
 			operator=(a);
@@ -453,6 +456,27 @@ void s_dummyfunc()
 		{
 			return isslider;
 		}
+		void setIsPlayerButton(bool srcflag) {
+			isplayerbutton = srcflag;
+		}
+		bool getIsPlayerButton()
+		{
+			return isplayerbutton;
+		}
+
+		OrgWindow* getParentWindow()
+		{
+			return parentWindow;
+		}
+		void setDoneFlag(bool srcflag)
+		{
+			lrbuttondone = srcflag;
+		}
+		bool getDoneFlag()
+		{
+			return lrbuttondone;
+		}
+
 
 		virtual ~OrgWindowParts(){
 			parentWindow = NULL;
@@ -588,7 +612,8 @@ void s_dummyfunc()
 		bool isregistered;
 		bool isactive;
 		bool isslider;
-
+		bool isplayerbutton;
+		bool lrbuttondone;
 		//////////////////////////// Method //////////////////////////////
 		//	Method : 親ウィンドウに登録
 		void _registmember( OrgWindow *_parentWindow,
@@ -645,6 +670,9 @@ void s_dummyfunc()
 				   //unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70,
 					unsigned char _baseR = 0, unsigned char _baseG = 0, unsigned char _baseB = 0,
 				   bool _canQuit=true, bool _canChangeSize=true ){
+
+			parentwindow = 0;
+
 			isactive = false;
 			listenmouse = false;
 			istopmost = srcistopmost;
@@ -669,7 +697,7 @@ void s_dummyfunc()
 			rupListener = NULL;
 			hoverListener = NULL;
 			leaveListener = NULL;
-
+			
 			//マウスキャプチャ用のフラグ
 			mouseCaptureFlagL=mouseCaptureFlagR=false;
 
@@ -694,6 +722,8 @@ void s_dummyfunc()
 
 			isblacktheme = false;
 			//isblacktheme = true;
+
+			lrbuttondone = false;
 
 			partsList.clear();
 
@@ -753,6 +783,15 @@ void s_dummyfunc()
 		bool getListenMouse()
 		{
 			return listenmouse;
+		}
+
+		void setDoneFlag(bool srcflag)
+		{
+			lrbuttondone = srcflag;
+		}
+		bool getDoneFlag()
+		{
+			return lrbuttondone;
 		}
 
 		//////////////////////////// Method //////////////////////////////
@@ -868,6 +907,10 @@ void s_dummyfunc()
 			if( (partsAreaPos.y + currentPartsSizeY + 2) >= size.y ){		//ウィンドウからはみ出る場合はサイズを調整
 				setSize( WindowSize(size.x, partsAreaPos.y+currentPartsSizeY+2) );
 			}
+
+
+			//refreshPosAndSize();//2022/09/20
+
 
 			RECT tmpRect;
 			tmpRect.left=   a.getPos().x+1;
@@ -1062,6 +1105,8 @@ void s_dummyfunc()
 			}
 		}
 
+
+
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		HWND hWnd,hWndParent;
@@ -1103,6 +1148,10 @@ void s_dummyfunc()
 
 		bool isblacktheme;
 		bool listenmouse;
+
+		OrgWindow* parentwindow;
+		bool lrbuttondone;
+
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ウィンドウクラスを登録
 
@@ -1299,31 +1348,47 @@ void s_dummyfunc()
 			else		  mouseCaptureFlagR=true;
 
 			//内部パーツ
+			setDoneFlag(false);
 			std::list<OrgWindowParts*>::iterator plItr;
-			for( plItr = partsList.begin(); plItr != partsList.end(); plItr++ ){
-				if (*plItr) {
-					WindowSize partsSize = (*plItr)->getSize();
-					int tmpPosX = e.localX - (*plItr)->getPos().x;
-					int tmpPosY = e.localY - (*plItr)->getPos().y;
-					if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
-						(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
+			int loopcount;
+			for (loopcount = 0; loopcount < 2; loopcount++) {
+				for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+					if (((loopcount == 0) && *plItr && ((*plItr)->getIsPlayerButton())) ||
+						((loopcount == 1) && *plItr && !((*plItr)->getIsPlayerButton())) && !getDoneFlag()) {
+						WindowSize partsSize = (*plItr)->getSize();
+						int tmpPosX = e.localX - (*plItr)->getPos().x;
+						int tmpPosY = e.localY - (*plItr)->getPos().y;
+						if ((0 <= tmpPosX) && (tmpPosX < partsSize.x) &&
+							(0 <= tmpPosY) && (tmpPosY < partsSize.y)) {
 
-						MouseEvent mouseEvent;
-						mouseEvent.globalX = e.globalX;
-						mouseEvent.globalY = e.globalY;
-						mouseEvent.localX = tmpPosX;
-						mouseEvent.localY = tmpPosY;
-						mouseEvent.altKey = e.altKey;
-						mouseEvent.shiftKey = e.shiftKey;
-						mouseEvent.ctrlKey = e.ctrlKey;
 
-						if (lButton) {
-							(*plItr)->onLButtonDown(mouseEvent);
+							MouseEvent mouseEvent;
+							mouseEvent.globalX = e.globalX;
+							mouseEvent.globalY = e.globalY;
+							mouseEvent.localX = tmpPosX;
+							mouseEvent.localY = tmpPosY;
+							mouseEvent.altKey = e.altKey;
+							mouseEvent.shiftKey = e.shiftKey;
+							mouseEvent.ctrlKey = e.ctrlKey;
+
+							if (lButton) {
+								(*plItr)->onLButtonDown(mouseEvent);
+							}
+							else {
+								(*plItr)->onRButtonDown(mouseEvent);
+							}
+							//setDoneFlag(1);
+							//return;
+
+							//if ((*plItr)->getIsPlayerButton()) {
+							//	return;
+							//}
+
+							(*plItr)->setDoneFlag(true);
+							setDoneFlag(true);
+							return;
+
 						}
-						else {
-							(*plItr)->onRButtonDown(mouseEvent);
-						}
-						return;
 					}
 				}
 			}
@@ -1359,9 +1424,11 @@ void s_dummyfunc()
 			if( !mouseCaptureFlagL && !mouseCaptureFlagR ) ReleaseCapture();
 
 			//内部パーツ
+			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for( plItr = partsList.begin(); plItr!=partsList.end(); plItr++ ){
-				if (*plItr) {
+				//if (*plItr && (*plItr)->getParentWindow() && ((*plItr)->getParentWindow()->getDoneFlag())) {
+				if (*plItr && (*plItr)->getDoneFlag()) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
@@ -1377,8 +1444,15 @@ void s_dummyfunc()
 					else {
 						(*plItr)->onRButtonUp(mouseEvent);
 					}
+					//setDoneFlag(0);
+					//return;
+
+					(*plItr)->setDoneFlag(0);
+					return;
+
 				}
 			}
+			setDoneFlag(false);
 		}
 		virtual void onMButtonDown(const MouseEvent& e){
 			if (!listenmouse) {
@@ -1397,8 +1471,10 @@ void s_dummyfunc()
 			//else		  mouseCaptureFlagR = true;
 
 			//内部パーツ
+			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+				//if (*plItr && (*plItr)->getParentWindow() && !((*plItr)->getParentWindow()->getDoneFlag())) {
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX - (*plItr)->getPos().x;
@@ -1416,7 +1492,9 @@ void s_dummyfunc()
 						mouseEvent.ctrlKey = e.ctrlKey;
 
 						(*plItr)->onMButtonDown(mouseEvent);
-						return;
+						//setDoneFlag(1);
+
+						//return;
 					}
 				}
 			}
@@ -1433,8 +1511,10 @@ void s_dummyfunc()
 			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) ReleaseCapture();
 
 			//内部パーツ
+			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+				//if (*plItr && (*plItr)->getParentWindow() && ((*plItr)->getParentWindow()->getDoneFlag())) {
 				if (*plItr) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
@@ -1446,6 +1526,8 @@ void s_dummyfunc()
 					mouseEvent.ctrlKey = e.ctrlKey;
 
 					(*plItr)->onMButtonUp(mouseEvent);
+					//setDoneFlag(0);
+					//return;
 				}
 			}
 		}
@@ -1466,8 +1548,10 @@ void s_dummyfunc()
 			//else		  mouseCaptureFlagR = true;
 
 			//内部パーツ
+			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
+				//if (*plItr && (*plItr)->getParentWindow() && !((*plItr)->getParentWindow()->getDoneFlag())) {
 				if (*plItr) {
 					WindowSize partsSize = (*plItr)->getSize();
 					int tmpPosX = e.localX - (*plItr)->getPos().x;
@@ -1486,6 +1570,7 @@ void s_dummyfunc()
 					mouseEvent.wheeldelta = e.wheeldelta;
 
 					(*plItr)->onMouseWheel(mouseEvent);
+					//setDoneFlag(1);
 					//return;
 				//}
 				}
@@ -1509,7 +1594,8 @@ void s_dummyfunc()
 			//内部パーツ
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
-				if (*plItr) {
+				//if (*plItr) {
+				if (*plItr && (*plItr)->getDoneFlag()) {
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
@@ -1648,6 +1734,7 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_Separator(OrgWindow* _parentWindow, bool _only1line, double _centerRate = 0.5, bool _divideSide = true) : OrgWindowParts() {
+			parentWindow = _parentWindow;
 			currentPartsSizeY1= 0;
 			currentPartsSizeY2= 0;
 
@@ -2873,6 +2960,7 @@ void s_dummyfunc()
 		OWP_PlayerButton() : OrgWindowParts() {
 			BOX_WIDTH= 11;
 			SIZE_Y= 15;
+			setIsPlayerButton(true);
 		}
 		~OWP_PlayerButton(){
 		}
