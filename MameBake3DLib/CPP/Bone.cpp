@@ -2339,7 +2339,7 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 
 
 //CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CMotionPoint* parmp, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat)
-CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat)
+CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat, bool onretarget)
 {
 	bool onaddmotion = true;//for getbychain
 	int existflag = 0;
@@ -2422,22 +2422,39 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 				ChaMatrixIdentity(&aftrot);
 				ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 				ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
-				ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-
-				//ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
-				ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
-				ChaVector3 tmppos;
-				ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
-				ChaVector3 diffvec;
-				diffvec = rotcenter - tmppos;
-				ChaMatrix tmptramat;
-				ChaMatrixIdentity(&tmptramat);
-				ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
-				ChaMatrix tmpmat;
-				tmpmat = tmpmat0 * tmptramat * tramat;
 																  
-				//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
-				SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+
+				ChaMatrix tmpmat;
+				if ((onretarget == false) && (IsHipsBone() == true)) {
+					//Hipsの場合　localTraAnimも回転する
+
+					tmpmat = limitedworldmat * rotq.MakeRotMatX();
+
+					g_wmatDirectSetFlag = true;
+					SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+					g_wmatDirectSetFlag = false;
+				}
+				else {
+					//localTraAnimは回転しない
+
+					ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+
+					//ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
+					ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
+					ChaVector3 tmppos;
+					ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
+					ChaVector3 diffvec;
+					diffvec = rotcenter - tmppos;
+					ChaMatrix tmptramat;
+					ChaMatrixIdentity(&tmptramat);
+					ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+					tmpmat = tmpmat0 * tmptramat * tramat;
+
+					//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
+					SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+				}
+
+
 				if (bvhbone){
 					bvhbone->SetTmpMat(tmpmat);
 				}
@@ -8164,4 +8181,31 @@ int CBone::InitMP(int srcmotid, double srcframe)
 	return 0;
 }
 
+
+bool CBone::IsHipsBone()
+{
+	if (strlen(GetBoneName()) <= 0) {
+		return false;
+	}
+
+	const char strpat[20] = "Hips";
+	const char* hipsptr = strstr(GetBoneName(), strpat);//strstr
+	if (hipsptr) {
+		return true;
+	}
+	else {
+		const char strpat2[20] = "Hip";
+		if (strcmp(GetBoneName(), strpat2) == 0) {//strcmp
+			return true;
+		}
+		else {
+			const char strpat3[20] = "Hip_Joint";
+			if (strcmp(GetBoneName(), strpat3) == 0) {//strcmp
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 

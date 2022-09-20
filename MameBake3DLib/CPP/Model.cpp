@@ -11022,7 +11022,7 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 
 
 //int CModel::FKRotate( double srcframe, int srcboneno, ChaMatrix srcmat )
-int CModel::FKRotate(int reqflag, CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, CQuaternion rotq, int setmatflag, ChaMatrix* psetmat)
+int CModel::FKRotate(bool onretarget, int reqflag, CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, CQuaternion rotq, int setmatflag, ChaMatrix* psetmat)
 {
 
 	if( srcboneno < 0 ){
@@ -11047,7 +11047,7 @@ int CModel::FKRotate(int reqflag, CBone* bvhbone, int traflag, ChaVector3 traani
 
 	if (reqflag == 1){
 		bool infooutflag = true;
-		curbone->RotBoneQReq(infooutflag, 0, m_curmotinfo->motid, srcframe, rotq, bvhbone, traanim, setmatflag, psetmat);
+		curbone->RotBoneQReq(infooutflag, 0, m_curmotinfo->motid, srcframe, rotq, bvhbone, traanim, setmatflag, psetmat, onretarget);
 	}
 	else if(bvhbone){
 		ChaMatrix setmat = bvhbone->GetTmpMat();
@@ -12978,9 +12978,8 @@ int CModel::InitMP(CBone* curbone, int srcmotid, double curframe)
 void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 {
 	if (srcbone && dstppbone && !(*dstppbone)) {
-		const char strpat[20] = "Hips";
-		const char* hipsptr = strstr(srcbone->GetBoneName(), strpat);
-		if (hipsptr) {
+
+		if (srcbone->IsHipsBone()) {
 			*dstppbone = srcbone;
 			return;
 		}

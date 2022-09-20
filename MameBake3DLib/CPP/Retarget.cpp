@@ -87,7 +87,7 @@ namespace MameBake3DLibRetarget {
 				befbvhbone = bvhtopbone;
 			}
 		}
-
+		//befbvhbone = srcbvhmodel->GetTopBone();
 
 		HINFO bvhhi;
 		bvhhi.minh = 1e7;
@@ -124,7 +124,7 @@ namespace MameBake3DLibRetarget {
 				srcmodel->SetMotionFrame(frame);
 				srcmodel->UpdateMatrix(&tmpwm, &dummyvpmat);
 
-				//CBone* befbvhbone = srcbvhmodel->GetTopBone();
+				CBone* befbvhbone = srcbvhmodel->GetTopBone();
 
 
 				ChaMatrix sfirsthipmat;
@@ -387,11 +387,12 @@ namespace MameBake3DLibRetarget {
 				traanim = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 
+			bool onretarget = true;
 			if (bvhbone) {
-				srcmodel->FKRotate(1, bvhbone, 1, traanim, srcframe, curboneno, rotq);
+				srcmodel->FKRotate(onretarget, 1, bvhbone, 1, traanim, srcframe, curboneno, rotq);
 			}
 			else {
-				srcmodel->FKRotate(0, befbvhbone, 0, traanim, srcframe, curboneno, rotq);
+				srcmodel->FKRotate(onretarget, 0, befbvhbone, 0, traanim, srcframe, curboneno, rotq);
 			}
 		}
 
