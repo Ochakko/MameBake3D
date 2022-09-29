@@ -2969,6 +2969,31 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+動画　EditMot アップデート2022/09
+https://youtu.be/4J-sD2t_qG8
+
+動画　EditMotの使いどころの使い方
+https://youtu.be/1Fa7Y5Ojidk
+
+動画　EditMotの基本操作
+https://youtu.be/ZHDBf-QSjl4
+
+動画　MotionBrushFreeフリーウェア化して公開開始
+https://youtu.be/qFGGUuA21O8
+
+2021/07/07
+動画【モーションツール】ver1.0.0.7完成版のいいところ【完成しますた】
+https://youtu.be/nApvd9___mQ
+
+2021/06/19
+動画【MotionBrush】リターゲット結果を簡単修正【流し込み】
+https://youtu.be/AEMJ_Yp5Fig
+
+2021/06/11
+動画【MotionBrush】リターゲットバッチ処理機能付きました【ver1.0.0.3】
+https://youtu.be/YW5fu4SdU1k
+
 2021/05/01_3
 動画【物理シミュのベイク】MameBake3Dで物理をベイク【フレーム範囲指定OK】
 https://youtu.be/E-w6tpksu4I
