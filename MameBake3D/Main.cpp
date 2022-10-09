@@ -183,6 +183,10 @@ high rpmはスレッドを高回転させるかどうかを指定します
 
 #include "SelectLSDlg.h"
 
+//display undoR undoW
+#include "UndoSprite.h"
+
+
 //#include <ThreadingUpdateTimeline.h>
 
 
@@ -854,6 +858,9 @@ static CModel* s_rigmark = NULL;
 //static CModel* s_dummytri = NULL;
 static CMySprite* s_bcircle = 0;
 static CMySprite* s_kinsprite = 0;
+
+static CUndoSprite* s_undosprite = 0;
+
 
 static int s_fbxbunki = 1;
 
@@ -2626,6 +2633,8 @@ void InitApp()
 	s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
 	s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
 
+	s_undosprite = 0;
+
 
 	g_wallscrapingikflag = 0;
 
@@ -3576,6 +3585,21 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
 
 
+	
+	if (s_undosprite) {
+		delete s_undosprite;
+		s_undosprite = 0;
+	}
+	s_undosprite = new CUndoSprite();
+	if (!s_undosprite) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
+	CallF(s_undosprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
+
+
+
+
 	s_spundo[0].sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spundo[0].sprite);
 	CallF(s_spundo[0].sprite->Create(pd3dImmediateContext, mpath, L"Undo_1.png", 0, 0), return S_FALSE);
@@ -3965,6 +3989,10 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	
 	g_SampleUI.SetLocation(0, 0);
 	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
+
+	if (s_undosprite) {
+		s_undosprite->SetParams(s_mainwidth, s_mainheight);
+	}
 
 	SetSpSel3DParams();
 	SetSpAimBarParams();
@@ -4398,7 +4426,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	s_modelindex.clear();
 	s_model = 0;
 
-
+	if (s_undosprite) {
+		delete s_undosprite;
+		s_undosprite = 0;
+	}
 
 
 	if (s_select) {
@@ -5733,7 +5764,21 @@ void RenderText( double fTime )
     //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
 	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
 	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
-	g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", avrgfps, g_previewFlag, s_mbuttoncnt);
+
+	//int undoR = 0;
+	//int undoW = 0;
+	//int undo1st = 0;
+	//if (s_model) {
+	//	undoR = s_model->GetCurrentUndoR();
+	//	undoW = s_model->GetCurrentUndoW();
+	//	undo1st = s_model->GetCurrentUndo1st();
+	//}
+	//g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d undoR %d undoW %d undo1st %d", 
+	//	avrgfps, g_previewFlag, s_mbuttoncnt, undoR, undoW ,undo1st);
+
+
+	g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
+		avrgfps, g_previewFlag, s_mbuttoncnt);
 	if (s_onefps == 1) {
 		g_pTxtHelper->DrawFormattedTextLine(L" ");
 		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
@@ -5802,13 +5847,14 @@ void RenderText( double fTime )
 
 void PrepairUndo()
 {
-	if ((s_undoFlag == false) && (s_redoFlag == false)) {//UndoRedoボタンを押した場合にはSaveUndoしない
-
+	//リターゲットバッチ中はSaveUndoしない
+	//モデル削除時、モーション削除時はSaveUndoしない
+	//UndoRedoボタンを押した場合にはSaveUndoしない
+	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) && (s_underdelmotion == 0) && (s_undoFlag == false) && (s_redoFlag == false)) {
 		//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
 		//その影響で選択範囲の未編集状態も保存する必要が生じた
 		//よって次のif文はコメントアウト
 		//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
-
 
 		if (s_model) {
 			CreateTimeLineMark();
@@ -24396,6 +24442,13 @@ int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 
 int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 {
+
+	//Undoの読み込みポイントと書き込みポイントを表示
+	if ((g_previewFlag == 0) && s_undosprite && s_model) {
+		s_undosprite->Render(pd3dImmediateContext, s_model->GetCurrentUndoR(), s_model->GetCurrentUndoW());
+	}
+
+
 	if (s_spret2prev.sprite) {
 		s_spret2prev.sprite->OnRender(pd3dImmediateContext);
 	}

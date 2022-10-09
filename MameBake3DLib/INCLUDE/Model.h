@@ -1276,6 +1276,17 @@ public: //accesser
 		m_fromBvh = srcflag;
 	}
 
+	int GetCurrentUndoR() {
+		return m_undo_readpoint;
+	}
+	int GetCurrentUndoW() {
+		return m_undo_writepoint;
+	}
+	int GetCurrentUndo1st() {
+		return m_undo_firstflag;
+	}
+
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];

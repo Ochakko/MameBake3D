@@ -11563,7 +11563,8 @@ int CModel::GetValidUndoID()
 	for( chkcnt = 0; chkcnt < UNDOMAX; chkcnt++ ){
 		curid = curid - 1;
 		if( curid < 0 ){
-			curid = UNDOMAX - 1;
+			//curid = UNDOMAX - 1;
+			curid = m_undo_writepoint;//配列の最後では無く記録の最後
 		}
 
 		if( m_undomotion[curid].GetValidFlag() == 1 ){
