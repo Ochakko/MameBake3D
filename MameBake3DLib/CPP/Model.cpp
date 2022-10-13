@@ -1726,7 +1726,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 2))) {
 
 		//WaitUpdateMatrixFinished();//needwaitfinishedがfalseのときにも必要
-		//SwapCurrentMotionPoint();
+		//SwapCurrentMotionPoint();//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
 
 		int updatecount;
 		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
@@ -1734,7 +1734,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
 		}
 
-		//if (needwaitfinished) {
+		//if (needwaitfinished) {//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
 			WaitUpdateMatrixFinished();
 		//}
 		
