@@ -1964,33 +1964,33 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 		if (leng >= 0.00001f){
 			//tramat = CalcAxisMatX_aft(parentpos, curpos);
 			calcbone.CalcAxisMatZ_aft(parentpos, curpos, &tramat);
-			tramat._41 = curpos.x;
-			tramat._42 = curpos.y;
-			tramat._43 = curpos.z;
+			tramat.data[12] = curpos.x;
+			tramat.data[13] = curpos.y;
+			tramat.data[14] = curpos.z;
 		}
 		else{
 			ChaMatrixIdentity(&tramat);
-			tramat._41 = curpos.x;
-			tramat._42 = curpos.y;
-			tramat._43 = curpos.z;
+			tramat.data[12] = curpos.x;
+			tramat.data[13] = curpos.y;
+			tramat.data[14] = curpos.z;
 		}
 	}
-	lBindMatrix[0][0] = tramat._11;
-	lBindMatrix[0][1] = tramat._12;
-	lBindMatrix[0][2] = tramat._13;
-	lBindMatrix[0][3] = tramat._14;
-	lBindMatrix[1][0] = tramat._21;
-	lBindMatrix[1][1] = tramat._22;
-	lBindMatrix[1][2] = tramat._23;
-	lBindMatrix[1][3] = tramat._24;
-	lBindMatrix[2][0] = tramat._31;
-	lBindMatrix[2][1] = tramat._32;
-	lBindMatrix[2][2] = tramat._33;
-	lBindMatrix[2][3] = tramat._34;
-	lBindMatrix[3][0] = tramat._41;
-	lBindMatrix[3][1] = tramat._42;
-	lBindMatrix[3][2] = tramat._43;
-	lBindMatrix[3][3] = tramat._44;
+	lBindMatrix[0][0] = tramat.data[0];
+	lBindMatrix[0][1] = tramat.data[1];
+	lBindMatrix[0][2] = tramat.data[2];
+	lBindMatrix[0][3] = tramat.data[3];
+	lBindMatrix[1][0] = tramat.data[4];
+	lBindMatrix[1][1] = tramat.data[5];
+	lBindMatrix[1][2] = tramat.data[6];
+	lBindMatrix[1][3] = tramat.data[7];
+	lBindMatrix[2][0] = tramat.data[8];
+	lBindMatrix[2][1] = tramat.data[9];
+	lBindMatrix[2][2] = tramat.data[10];
+	lBindMatrix[2][3] = tramat.data[11];
+	lBindMatrix[3][0] = tramat.data[12];
+	lBindMatrix[3][1] = tramat.data[13];
+	lBindMatrix[3][2] = tramat.data[14];
+	lBindMatrix[3][3] = tramat.data[15];
 
 	return;
 }

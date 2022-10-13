@@ -233,13 +233,59 @@ namespace OrgWinGUI{
 	{
 	}
 
+	void OWP_EulerGraph::callRewrite()
+	{
+		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			//const int AXIS_CURSOR_SIZE = 4;
+			//const int AXIS_LABEL_SIDE_MARGIN = 7;
+
+			////目盛り線 & ラベル
+			//int x0 = pos.x + MARGIN + LABEL_SIZE_X;
+			//int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
+			//int y0 = pos.y + MARGIN;
+			//int y1 = y0 + AXIS_SIZE_Y + 1;
+
+			////for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
+			//int minx = 0;
+			//int maxx = (int)(((double)showPos_width) * timeSize) + x0 + 1;
+
+			RECT tmpRect;
+			tmpRect.left = 0;
+			//tmpRect.left = minx;
+			tmpRect.top = 0;
+			tmpRect.right = size.x;
+			//tmpRect.right = maxx;
+			tmpRect.bottom = size.y + 30;
+			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+			//draw();
+
+		}
+	}
+
+
 	void OWP_Timeline::callRewrite()
 	{
 		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			//const int AXIS_CURSOR_SIZE = 4;
+			//const int AXIS_LABEL_SIDE_MARGIN = 7;
+
+			////目盛り線 & ラベル
+			//int x0 = pos.x + MARGIN + LABEL_SIZE_X;
+			//int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
+			//int y0 = pos.y + MARGIN;
+			//int y1 = y0 + AXIS_SIZE_Y + 1;
+
+			//for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
+			//int minx = 0;
+			//int maxx = (int)(((double)showPos_width) * timeSize) + x0 + 1;
+
 			RECT tmpRect;
 			tmpRect.left = 0;
+			//tmpRect.left = minx;
 			tmpRect.top = 0;
-			tmpRect.right = size.x;
+			tmpRect.right = size.x + 20;
+			//tmpRect.right = maxx;
 			tmpRect.bottom = size.y;
 			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
@@ -268,7 +314,24 @@ namespace OrgWinGUI{
 			int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 			int y0 = pos.y + MARGIN;
 			int y1 = y0 + AXIS_SIZE_Y + 1;
-			for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
+
+			int startindex;
+			int endindex;
+			if (g_previewFlag == 0) {
+				startindex = (int)showPos_time;
+				endindex = (int)maxTime;
+			}
+			else {
+				startindex = max(0, ((int)currentTime - KEYNUM_ONPREVIEW));
+				endindex = min(maxTime, ((int)currentTime + KEYNUM_ONPREVIEW));
+			}
+
+			//int endtime = min((int)(showPos_time + showPos_width), (int)maxTime);
+			//int endtime = min((int)(showPos_time + 1), (int)maxTime);
+
+			//for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
+			//for (int i = (int)showPos_time; i <= endtime; i++) {
+			for (int i = startindex; i <= endindex; i++) {
 				int xx = (int)(((double)i - showPos_time)*timeSize) + x0 + 1;
 
 				if ((x1 + AXIS_LABEL_SIDE_MARGIN) <= xx) break;
@@ -312,96 +375,107 @@ namespace OrgWinGUI{
 
 		//行データ
 		int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
+
+		int linenum;
+		if (g_previewFlag == 0) {
+			linenum = showLineNum;
+		}
+		else {
+			linenum = min(1, showLineNum);
+		}
+
 		//if (getDispKeyFlag() == true) {
-			for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < showLineNum; i++, j++) {
-				bool highLight = false;
-				if (i == currentLine) highLight = true;
-				if (i >= 0) {
-					lineData[i]->draw(hdcM,
-						pos.x + MARGIN,
-						pos.y + MARGIN + AXIS_SIZE_Y + j * (LABEL_SIZE_Y - 1),
-						size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
-						timeSize, showPos_time, highLight);
+		//for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < showLineNum; i++, j++) {
+		for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < linenum; i++, j++) {
+			bool highLight = false;
+			if (i == currentLine) highLight = true;
+			if (i >= 0) {
+				lineData[i]->draw(hdcM,
+					pos.x + MARGIN,
+					pos.y + MARGIN + AXIS_SIZE_Y + j * (LABEL_SIZE_Y - 1),
+					size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
+					timeSize, showPos_time, highLight);
+			}
+		}
+		//ドラッグによる選択範囲
+		if (dragSelect && (dragSelectTime1 != dragSelectTime2)) {
+			int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
+			int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
+			int xx1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
+			int yy1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
+			int x0 = xx0 + (int)((min(dragSelectTime1, dragSelectTime2) - showPos_time) * timeSize);
+			int x1 = xx0 + (int)((max(dragSelectTime1, dragSelectTime2) - showPos_time) * timeSize);
+			int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line) * (LABEL_SIZE_Y - 1) + 1;
+			int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1) * (LABEL_SIZE_Y - 1) - 1;
+
+			{//枠描画
+				hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+				if (xx0 <= x0) {		//左枠
+					MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
+					LineTo(hdcM->hDC, x0, min(y1, yy1));
+				}
+				if (x1 <= xx1) {		//右枠
+					MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
+					LineTo(hdcM->hDC, x1, min(y1, yy1));
+				}
+				if (yy0 <= y0) {		//上枠
+					MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
+					LineTo(hdcM->hDC, min(x1, xx1), y0);
+				}
+				if (y1 <= yy1) {		//下枠
+					MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
+					LineTo(hdcM->hDC, min(x1, xx1), y1);
 				}
 			}
-			//ドラッグによる選択範囲
-			if (dragSelect && (dragSelectTime1 != dragSelectTime2)) {
-				int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
-				int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
-				int xx1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
-				int yy1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
-				int x0 = xx0 + (int)((min(dragSelectTime1, dragSelectTime2) - showPos_time) * timeSize);
-				int x1 = xx0 + (int)((max(dragSelectTime1, dragSelectTime2) - showPos_time) * timeSize);
-				int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line) * (LABEL_SIZE_Y - 1) + 1;
-				int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1) * (LABEL_SIZE_Y - 1) - 1;
+			
+			//}
 
-				{//枠描画
-					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-					if (xx0 <= x0) {		//左枠
-						MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
-						LineTo(hdcM->hDC, x0, min(y1, yy1));
+
+
+			////時間軸スクロールバー
+			//{
+			//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
+			//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
+			//	int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
+			//	int y1 = y0 + SCROLL_BAR_WIDTH;
+
+			//	//枠
+			//	//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+			//	hdcM->setPenAndBrush(RGB(255, 255, 255), NULL);
+			//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
+
+			//	//中身
+			//	double showTimeLength = ((double)x1 - x0 - 3) / timeSize;
+			//	double barSize = ((double)x1 - x0 - 4)*showTimeLength / maxTime;
+			//	double barStart = ((double)x1 - x0 - 4)*showPos_time / maxTime;
+			//	if (showTimeLength<maxTime) {
+			//		//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+			//		hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
+			//		Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
+			//	}
+			//}
+
+			//ラベルスクロールバー
+			{
+				int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
+				int x1 = x0 + SCROLL_BAR_WIDTH + 1;
+				int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
+				int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
+
+				//枠
+				//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+				hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+				Rectangle(hdcM->hDC, x0, y0, x1, y1);
+
+				//中身
+				if (lineData.size() > 0) {
+					int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
+					int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
+					if (showLineNum < (int)lineData.size()) {
+						//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+						hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
+						Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 					}
-					if (x1 <= xx1) {		//右枠
-						MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
-						LineTo(hdcM->hDC, x1, min(y1, yy1));
-					}
-					if (yy0 <= y0) {		//上枠
-						MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
-						LineTo(hdcM->hDC, min(x1, xx1), y0);
-					}
-					if (y1 <= yy1) {		//下枠
-						MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
-						LineTo(hdcM->hDC, min(x1, xx1), y1);
-					}
-				}
-			}
-		//}
-
-		
-
-		////時間軸スクロールバー
-		//{
-		//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
-		//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
-		//	int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
-		//	int y1 = y0 + SCROLL_BAR_WIDTH;
-
-		//	//枠
-		//	//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-		//	hdcM->setPenAndBrush(RGB(255, 255, 255), NULL);
-		//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
-
-		//	//中身
-		//	double showTimeLength = ((double)x1 - x0 - 3) / timeSize;
-		//	double barSize = ((double)x1 - x0 - 4)*showTimeLength / maxTime;
-		//	double barStart = ((double)x1 - x0 - 4)*showPos_time / maxTime;
-		//	if (showTimeLength<maxTime) {
-		//		//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
-		//		hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));
-		//		Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
-		//	}
-		//}
-
-		//ラベルスクロールバー
-		{
-			int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
-			int x1 = x0 + SCROLL_BAR_WIDTH + 1;
-			int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
-			int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
-
-			//枠
-			//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-			Rectangle(hdcM->hDC, x0, y0, x1, y1);
-
-			//中身
-			if (lineData.size() > 0) {
-				int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
-				int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
-				if (showLineNum < (int)lineData.size()) {
-					//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
-					hdcM->setPenAndBrush(NULL, RGB(255,255, 255));
-					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 				}
 			}
 		}
@@ -1094,7 +1168,8 @@ namespace OrgWinGUI{
 	}
 
 
-	void OWP_Timeline::setCurrentTime(double _currentTime, bool CallListener) {
+	void OWP_Timeline::setCurrentTime(double _currentTime, bool CallListener, bool needRewrite) {
+		//default : CallListener = false, needRewrite = true (OWP_EulerGraphのneedRewriteは falseがdefault)
 		static int s_paintcnt = 0;
 		s_paintcnt++;
 
@@ -1115,7 +1190,7 @@ namespace OrgWinGUI{
 		}
 
 		//再描画要求
-		if (rewriteOnChange) {
+		if (needRewrite && rewriteOnChange) {
 			callRewrite();
 		}
 	}
@@ -1156,7 +1231,8 @@ namespace OrgWinGUI{
 
 		return newshowpostime;
 	}
-	void OWP_EulerGraph::setCurrentTime(double _currentTime, bool CallListener) {
+	void OWP_EulerGraph::setCurrentTime(double _currentTime, bool CallListener, bool needRewrite) {
+		//default : CallListener = false, needRewrite = false(OWP_timelineのneedRewriteは trueがdefault)
 		static int s_paintcnt = 0;
 		s_paintcnt++;
 
@@ -1176,7 +1252,8 @@ namespace OrgWinGUI{
 		}
 
 		//再描画要求
-		if (rewriteOnChange) {
+		//if (rewriteOnChange) {
+		if (needRewrite && rewriteOnChange) {
 			callRewrite();
 		}
 	}

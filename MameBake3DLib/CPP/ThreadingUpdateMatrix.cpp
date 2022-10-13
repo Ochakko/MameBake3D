@@ -85,9 +85,9 @@ int CThreadingUpdateMatrix::ThreadFunc()
 			// 高回転モード　: High rpm
 			//###########################
 
-			if (InterlockedAdd(&m_start_state, 0) == 1) {
-				if (InterlockedAdd(&m_exit_state, 0) != 1) {//終了していない場合
-					EnterCriticalSection(&m_CritSection);
+			if (InterlockedAdd(&m_start_state, 0) == 1) {//計算開始命令をキャッチ
+				if (InterlockedAdd(&m_exit_state, 0) != 1) {//スレッドが終了していない場合
+					EnterCriticalSection(&m_CritSection);//再入防止
 					if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
 						int bonecount;
 						for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
@@ -102,10 +102,14 @@ int CThreadingUpdateMatrix::ThreadFunc()
 					LeaveCriticalSection(&m_CritSection);
 				}
 				else {
+					//スレッド終了フラグが立っていた場合
 					InterlockedExchange(&m_start_state, 0L);
 				}
 			}
 			else {
+
+				//計算は終了していて計算命令待ち状態
+
 				//__nop();
 				//Sleep(0);
 				timeBeginPeriod(1);

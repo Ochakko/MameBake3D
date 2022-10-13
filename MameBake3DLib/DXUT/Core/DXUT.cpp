@@ -277,7 +277,8 @@ public:
         m_state.m_OverrideAdapterOrdinal = -1;
         m_state.m_OverrideOutput = -1;
         //m_state.m_OverrideForceVsync = -1;//!!!!!! org
-		m_state.m_OverrideForceVsync = 1;//!!!!!!
+		//m_state.m_OverrideForceVsync = 1;//!!!!!!
+        m_state.m_OverrideForceVsync = 0;//!!!!!!
         m_state.m_AutoChangeAdapter = true;
         m_state.m_ShowMsgBoxOnError = true;
         m_state.m_AllowShortcutKeysWhenWindowed = true;
@@ -1304,7 +1305,8 @@ LRESULT CALLBACK DXUTStaticWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
                             dwFlags = GetDXUTState().GetCurrentDeviceSettings()->d3d11.PresentFlags;
 
                         auto pSwapChain = DXUTGetDXGISwapChain();
-                        hr = pSwapChain->Present( 0, dwFlags );
+                        //hr = pSwapChain->Present( 0, dwFlags );
+                        hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!
                         if( DXGI_STATUS_OCCLUDED == hr )
                         {
                             // There is a window covering our entire rendering area.
@@ -2933,7 +2935,8 @@ void WINAPI DXUTRender3DEnvironment()
     UINT SyncInterval = GetDXUTState().GetCurrentDeviceSettings()->d3d11.SyncInterval;
 
     // Show the frame on the primary surface.
-    hr = pSwapChain->Present( SyncInterval, dwFlags );
+    //hr = pSwapChain->Present( SyncInterval, dwFlags );
+    hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if( DXGI_STATUS_OCCLUDED == hr )
     {
         // There is a window covering our entire rendering area.

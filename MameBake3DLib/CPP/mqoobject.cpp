@@ -1658,9 +1658,9 @@ int CMQOObject::MultVertex()
 int CMQOObject::Multiple( float multiple )
 {
 	ChaMatrixIdentity( &m_multmat );
-	m_multmat._11 = multiple;
-	m_multmat._22 = multiple;
-	m_multmat._33 = -multiple;
+	m_multmat.data[0] = multiple;
+	m_multmat.data[5] = multiple;
+	m_multmat.data[10] = -multiple;
 
 	return 0;
 }

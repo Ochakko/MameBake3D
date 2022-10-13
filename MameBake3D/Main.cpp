@@ -5326,9 +5326,9 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 		s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
 		s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
-		s_matWorld._41 = 0.0f;
-		s_matWorld._42 = 0.0f;
-		s_matWorld._43 = 0.0f;
+		s_matWorld.data[12] = 0.0f;
+		s_matWorld.data[13] = 0.0f;
+		s_matWorld.data[14] = 0.0f;
 		//s_matW = s_matWorld;
 		s_matVP = s_matView * s_matProj;
 
@@ -5337,6 +5337,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		for (modelno = 0; modelno < modelnum; modelno++) {
 			s_modelindex[modelno].modelptr->SetWorldMatFromCamera(s_matWorld);
 		}
+
 
 		double nextframe = 0.0;
 		if (g_previewFlag) {
@@ -5364,9 +5365,6 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		}
 		//s_difftime = difftime;
 		savetime = fTime;
-
-
-
 
 
 		OnFrameCloseFlag();
@@ -5419,9 +5417,9 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
 	ChaVector3 localscale = curbone->CalcLocalScaleAnim(s_model->GetCurMotInfo()->motid, curframe);
 	
-	localmat._41 += curanimtra.x;
-	localmat._42 += curanimtra.y;
-	localmat._43 += curanimtra.z;
+	localmat.data[12] += curanimtra.x;
+	localmat.data[13] += curanimtra.y;
+	localmat.data[14] += curanimtra.z;
 
 
 	//localmat._11 *= localscale.x;
@@ -5585,6 +5583,7 @@ void OnRenderNowLoading()
 void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, double fTime,
 	float fElapsedTime, void* pUserContext)
 {
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -5777,8 +5776,11 @@ void RenderText( double fTime )
 	//	avrgfps, g_previewFlag, s_mbuttoncnt, undoR, undoW ,undo1st);
 
 
-	g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
-		avrgfps, g_previewFlag, s_mbuttoncnt);
+	//g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
+	//	avrgfps, g_previewFlag, s_mbuttoncnt);
+
+	g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f", avrgfps);
+
 	if (s_onefps == 1) {
 		g_pTxtHelper->DrawFormattedTextLine(L" ");
 		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
@@ -6797,9 +6799,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					int multworld = 1;
 					//s_ikselectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
 					s_ikselectmat = s_selm;
-					s_ikselectmat._41 = 0.0f;
-					s_ikselectmat._42 = 0.0f;
-					s_ikselectmat._43 = 0.0f;
+					s_ikselectmat.data[12] = 0.0f;
+					s_ikselectmat.data[13] = 0.0f;
+					s_ikselectmat.data[14] = 0.0f;
 				}
 			}
 		}
@@ -11771,27 +11773,27 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		ChaMatrixNormalizeRot(&s_selectmat);
 		s_selectmat = scalemat * s_selectmat;
 
-		s_selectmat._41 = bonepos.x;
-		s_selectmat._42 = bonepos.y;
-		s_selectmat._43 = bonepos.z;
+		s_selectmat.data[12] = bonepos.x;
+		s_selectmat.data[13] = bonepos.y;
+		s_selectmat.data[14] = bonepos.z;
 
 		//s_selectmat_posture = scalemat * s_selm_posture;
 		s_selectmat_posture = s_selm_posture;
 		ChaMatrixNormalizeRot(&s_selectmat_posture);
 		s_selectmat_posture = scalemat * s_selectmat_posture;
 
-		s_selectmat_posture._41 = bonepos.x;
-		s_selectmat_posture._42 = bonepos.y;
-		s_selectmat_posture._43 = bonepos.z;
+		s_selectmat_posture.data[12] = bonepos.x;
+		s_selectmat_posture.data[13] = bonepos.y;
+		s_selectmat_posture.data[14] = bonepos.z;
 
 		if (renderflag){
-			g_hmVP->SetMatrix((float*)&s_matVP);
+			g_hmVP->SetMatrix((float*)&(s_matVP.data[0]));
 
-			g_hmWorld->SetMatrix((float*)&s_selectmat);
+			g_hmWorld->SetMatrix((float*)&(s_selectmat.data[0]));
 			RenderSelectFunc(pd3dImmediateContext);
 
 
-			g_hmWorld->SetMatrix((float*)&s_selectmat_posture);
+			g_hmWorld->SetMatrix((float*)&(s_selectmat_posture.data[0]));
 			if (s_oprigflag == 0) {
 				RenderSelectPostureFunc(pd3dImmediateContext);
 			}
@@ -11854,7 +11856,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 		return 0;
 	}
 
-	g_hmVP->SetMatrix((float*)&s_matVP);
+	g_hmVP->SetMatrix((float*)&(s_matVP.data[0]));
 
 
 	MOTINFO* curmi = s_model->GetCurMotInfo();
@@ -11888,7 +11890,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 						s_matrig->SetDif4F(s_matrigmat);
 
 
-						g_hmWorld->SetMatrix((float*)&rigmat);
+						g_hmWorld->SetMatrix((float*)&(rigmat.data[0]));
 
 						s_rigmark->UpdateMatrix(&rigmat, &s_matVP);
 						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
@@ -17365,8 +17367,13 @@ int PickSpRig(POINT srcpos)
 
 int SetSelectState()
 {
+
+	if ((g_previewFlag != 0) && (g_previewFlag != 5)) {
+		return 0;
+	}
+
 	//if( !s_select || !s_model || g_previewFlag ){
-	if (!s_select || !s_model || (g_previewFlag == 4)){
+	if (!s_select || !s_model || (g_previewFlag == 5)){
 		return 0;
 	}
 
@@ -19044,9 +19051,9 @@ int RotAxis(HWND hDlgWnd)
 			newnodemat = nodemat * invnoderot.MakeRotMatX() * rotq.MakeRotMatX() * noderot.MakeRotMatX();
 
 			ChaVector3 bonepos = curbone->GetJointFPos();
-			newnodemat._41 = bonepos.x;
-			newnodemat._42 = bonepos.y;
-			newnodemat._43 = bonepos.z;
+			newnodemat.data[12] = bonepos.x;
+			newnodemat.data[13] = bonepos.y;
+			newnodemat.data[14] = bonepos.z;
 
 			curbone->SetNodeMat(newnodemat);
 
@@ -19491,7 +19498,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 
 #ifndef SKIP_EULERGRAPH__
 	s_owpLTimeline->setCurrentTime(*pnextframe, false);
-	s_owpEulerGraph->setCurrentTime(*pnextframe, false);
+	s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
 #endif
 
 
@@ -19502,6 +19509,9 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 			curmodel->UpdateMatrix(&tmpwm, &s_matVP);
 		}
 	}
+
+
+
 	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ブロッキング
 
 
@@ -19610,7 +19620,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			if (firstmodelflag) {
 #ifndef SKIP_EULERGRAPH__
 				s_owpLTimeline->setCurrentTime(*pnextframe, false);
-				s_owpEulerGraph->setCurrentTime(*pnextframe, false);
+				s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
 #endif
 				firstmodelflag = 0;
 			}
@@ -19898,7 +19908,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 
 #ifndef SKIP_EULERGRAPH__
 	s_owpLTimeline->setCurrentTime(*pnextframe, false);
-	s_owpEulerGraph->setCurrentTime(*pnextframe, false);
+	s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
 #endif
 
 
@@ -19907,7 +19917,7 @@ int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
 	if (curmodel && curmodel->GetCurMotInfo()){
 		ChaMatrix tmpwm = curmodel->GetWorldMat();
 		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 1, *pnextframe, &tmpwm, &s_matVP);
-		curmodel->UpdateMatrix(&tmpwm, &s_matVP);
+		curmodel->UpdateMatrix(&tmpwm, &s_matVP, true);
 		curmodel->PlusPlusBtCnt();
 
 		//ドラッグ中だけ記録
@@ -20377,6 +20387,14 @@ int OnFrameTimeLineWnd()
 
 		OnTimeLineButtonSelectFromSelectStartEnd(0);
 		//_ASSERT(0);
+
+		if (s_owpLTimeline && s_owpEulerGraph) {
+			//プレビュー後に　CallRewrite --> InvalidateRect --> draw()を呼ぶため
+			double currenttime = s_owpLTimeline->getCurrentTime();
+			s_owpLTimeline->setCurrentTime(currenttime, false, true);
+			s_owpEulerGraph->setCurrentTime(currenttime, false, true);
+		}
+
 
 		if ((s_LstopDoneCount == 0) || (s_LstopDoneCount == 2)) {
 			s_LstopDoneCount = 1;//Lupで選択範囲がカレントフレーム１つになるのを防ぐ
@@ -21608,7 +21626,7 @@ int OnFrameUpdateGround()
 
 	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG){
 		ChaMatrix gpmat = s_inimat;
-		gpmat._42 = s_bpWorld->m_gplaneh;
+		gpmat.data[13] = s_bpWorld->m_gplaneh;
 		s_gplane->UpdateMatrix(&gpmat, &s_matVP);
 	}
 	return 0;
@@ -24369,7 +24387,7 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if (s_ground && s_dispground){
-		g_hmWorld->SetMatrix((float*)&s_matWorld);
+		g_hmWorld->SetMatrix((float*)&(s_matWorld.data[0]));
 		//g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -24377,8 +24395,8 @@ int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 	}
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
 		ChaMatrix gpmat = s_inimat;
-		gpmat._42 = s_bpWorld->m_gplaneh;
-		g_hmWorld->SetMatrix((float*)&gpmat);
+		gpmat.data[13] = s_bpWorld->m_gplaneh;
+		g_hmWorld->SetMatrix((float*)&(gpmat.data[0]));
 		//g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -24746,7 +24764,7 @@ int OnRenderSetShaderConst()
 	ChaVector4 vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
-	g_hmVP->SetMatrix((float*)&s_matVP);
+	g_hmVP->SetMatrix((float*)&(s_matVP.data[0]));
 	//g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
 	////g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelへ
 
@@ -26945,7 +26963,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.29 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.30 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -28697,9 +28715,9 @@ void DSR1ButtonSelectCurrentBone()
 				CBone* boneptr = s_model->GetBoneByID(s_curboneno);
 				if (boneptr) {
 					ChaVector3 jointpos;
-					jointpos.x = s_selectmat._41;
-					jointpos.y = s_selectmat._42;
-					jointpos.z = s_selectmat._43;
+					jointpos.x = s_selectmat.data[12];
+					jointpos.y = s_selectmat.data[13];
+					jointpos.z = s_selectmat.data[14];
 
 					ChaMatrix bcmat;
 					bcmat = boneptr->GetCurMp().GetWorldMat();
@@ -34492,7 +34510,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.29 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.30 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -36364,9 +36382,9 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 
 	int multworld = 1;
 	ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
-	selm._41 = 0.0f;
-	selm._42 = 0.0f;
-	selm._43 = 0.0f;
+	selm.data[12] = 0.0f;
+	selm.data[13] = 0.0f;
+	selm.data[14] = 0.0f;
 
 
 	CalcSelectScale(curbone);//s_selectscaleにセット
@@ -36443,7 +36461,7 @@ int PickRigBone(PICKINFO* ppickinfo)
 						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
 
 
-						g_hmWorld->SetMatrix((float*)&rigmat);
+						g_hmWorld->SetMatrix((float*)&(rigmat.data[0]));
 						s_rigmark->UpdateMatrix(&rigmat, &s_matVP);
 
 

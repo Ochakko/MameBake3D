@@ -314,13 +314,13 @@ namespace MameBake3DLibRetarget {
 				//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
 				if (modelbone && (srcbone == modelbone)) {//モデル側の最初のボーンの処理時
 					sfirsthipmat = bvhmp.GetWorldMat();
-					sfirsthipmat._41 = 0.0f;
-					sfirsthipmat._42 = 0.0f;
-					sfirsthipmat._43 = 0.0f;
+					sfirsthipmat.data[12] = 0.0f;
+					sfirsthipmat.data[13] = 0.0f;
+					sfirsthipmat.data[14] = 0.0f;
 					ChaMatrixInverse(&sinvfirsthipmat, NULL, &sfirsthipmat);
-					sinvfirsthipmat._41 = 0.0f;
-					sinvfirsthipmat._42 = 0.0f;
-					sinvfirsthipmat._43 = 0.0f;
+					sinvfirsthipmat.data[12] = 0.0f;
+					sinvfirsthipmat.data[13] = 0.0f;
+					sinvfirsthipmat.data[14] = 0.0f;
 				}
 
 

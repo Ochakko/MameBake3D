@@ -41,13 +41,84 @@
 #include <vector>
 #include <algorithm>
 
+#include <intrin.h>
 
 
 #include <crtdbg.h>
 
-
-
 extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
+
+
+
+
+//########################################################################################################
+// 	ここから　//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
+//########################################################################################################
+#define MakeShuffleMask(x,y,z,w)           (x | (y<<2) | (z<<4) | (w<<6))
+
+// vec(0, 1, 2, 3) -> (vec[x], vec[y], vec[z], vec[w])
+#define VecSwizzleMask(vec, mask)          _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(vec), mask))
+#define VecSwizzle(vec, x, y, z, w)        VecSwizzleMask(vec, MakeShuffleMask(x,y,z,w))
+#define VecSwizzle1(vec, x)                VecSwizzleMask(vec, MakeShuffleMask(x,x,x,x))
+// special swizzle
+#define VecSwizzle_0022(vec)               _mm_moveldup_ps(vec)
+#define VecSwizzle_1133(vec)               _mm_movehdup_ps(vec)
+
+// return (vec1[x], vec1[y], vec2[z], vec2[w])
+#define VecShuffle(vec1, vec2, x,y,z,w)    _mm_shuffle_ps(vec1, vec2, MakeShuffleMask(x,y,z,w))
+// special shuffle
+#define VecShuffle_0101(vec1, vec2)        _mm_movelh_ps(vec1, vec2)
+#define VecShuffle_2323(vec1, vec2)        _mm_movehl_ps(vec2, vec1)
+
+// for row major matrix
+// we use __m128 to represent 2x2 matrix as A = | A0  A1 |
+//                                              | A2  A3 |
+// 2x2 row major Matrix multiply A*B
+__forceinline __m128 Mat2Mul(__m128 vec1, __m128 vec2)
+{
+	return
+		_mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 3, 0, 3)),
+			_mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
+}
+// 2x2 row major Matrix adjugate multiply (A#)*B
+__forceinline __m128 Mat2AdjMul(__m128 vec1, __m128 vec2)
+{
+	return
+		_mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 3, 0, 0), vec2),
+			_mm_mul_ps(VecSwizzle(vec1, 1, 1, 2, 2), VecSwizzle(vec2, 2, 3, 0, 1)));
+
+}
+// 2x2 row major Matrix multiply adjugate A*(B#)
+__forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
+{
+	return
+		_mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 0, 3, 0)),
+			_mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
+}
+//########################################################################################################
+// 	ここまで　//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
+//########################################################################################################
+
+
+//###########################################################################################################
+// ここから　https://www.isus.jp/games/using-simd-technologies-on-intel-architecture-to-speed-up-game-code/
+//###########################################################################################################
+#define SHUFFLE_PARAM(x, y, z, w) ((x) | ((y) << 2) | ((z) << 4) | ((w) << 6))
+//同じ要素の値を同時に計算するため、4 つの同じ単精度浮動小数点値を 1 つの __m128 データに設定します。
+
+#define _mm_madd_ps(a, b, c) _mm_add_ps(_mm_mul_ps((a), (b)), (c))
+
+
+#define _mm_replicate_x_ps(v) _mm_shuffle_ps((v), (v), SHUFFLE_PARAM(0, 0, 0, 0))
+
+#define _mm_replicate_y_ps(v) _mm_shuffle_ps((v), (v), SHUFFLE_PARAM(1, 1, 1, 1))
+
+#define _mm_replicate_z_ps(v) _mm_shuffle_ps((v), (v), SHUFFLE_PARAM(2, 2, 2, 2))
+
+#define _mm_replicate_w_ps(v) _mm_shuffle_ps((v), (v), SHUFFLE_PARAM(3, 3, 3, 3))
+//###########################################################################################################
+// ここまで　https://www.isus.jp/games/using-simd-technologies-on-intel-architecture-to-speed-up-game-code/
+//###########################################################################################################
 
 
 								//BoneProp
@@ -102,10 +173,10 @@ int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 
 	ChaVector3 tmpsrcvec = *srcvec;//dstvecとsrcvecが同一ポインタの場合に対応
 	
-
-	dstvec->x = (float)((double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41);
-	dstvec->y = (float)((double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42);
-	dstvec->z = (float)((double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43);
+	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &dirm);
+	//dstvec->x = (float)((double)dirm.data[0] * (double)tmpsrcvec.x + (double)dirm.data[4] * (double)tmpsrcvec.y + (double)dirm.data[8] * (double)tmpsrcvec.z + (double)dirm.data[12]);
+	//dstvec->y = (float)((double)dirm.data[1] * (double)tmpsrcvec.x + (double)dirm.data[5] * (double)tmpsrcvec.y + (double)dirm.data[9] * (double)tmpsrcvec.z + (double)dirm.data[13]);
+	//dstvec->z = (float)((double)dirm.data[2] * (double)tmpsrcvec.x + (double)dirm.data[6] * (double)tmpsrcvec.y + (double)dirm.data[10] * (double)tmpsrcvec.z + (double)dirm.data[14]);
 
 	return 0;
 }
@@ -123,9 +194,10 @@ int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 
 	ChaVector3 tmpsrcvec = *srcvec;//dstvecとsrcvecが同一ポインタの場合に対応
 
-	dstvec->x = (float)((double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41);
-	dstvec->y = (float)((double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42);
-	dstvec->z = (float)((double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43);
+	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &dirm);
+	//dstvec->x = (float)((double)dirm.data[0] * (double)tmpsrcvec.x + (double)dirm.data[4] * (double)tmpsrcvec.y + (double)dirm.data[8] * (double)tmpsrcvec.z + (double)dirm.data[12]);
+	//dstvec->y = (float)((double)dirm.data[1] * (double)tmpsrcvec.x + (double)dirm.data[5] * (double)tmpsrcvec.y + (double)dirm.data[9] * (double)tmpsrcvec.z + (double)dirm.data[13]);
+	//dstvec->z = (float)((double)dirm.data[2] * (double)tmpsrcvec.x + (double)dirm.data[6] * (double)tmpsrcvec.y + (double)dirm.data[10] * (double)tmpsrcvec.z + (double)dirm.data[14]);
 
 
 	return 0;
@@ -144,9 +216,10 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 
 	ChaVector3 tmpsrcvec = *srcvec;//dstvecとsrcvecが同一ポインタの場合に対応
 
-	dstvec->x = (float)((double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41);
-	dstvec->y = (float)((double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42);
-	dstvec->z = (float)((double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43);
+	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &dirm);
+	//dstvec->x = (float)((double)dirm.data[0] * (double)tmpsrcvec.x + (double)dirm.data[4] * (double)tmpsrcvec.y + (double)dirm.data[8] * (double)tmpsrcvec.z + (double)dirm.data[12]);
+	//dstvec->y = (float)((double)dirm.data[1] * (double)tmpsrcvec.x + (double)dirm.data[5] * (double)tmpsrcvec.y + (double)dirm.data[9] * (double)tmpsrcvec.z + (double)dirm.data[13]);
+	//dstvec->z = (float)((double)dirm.data[2] * (double)tmpsrcvec.x + (double)dirm.data[6] * (double)tmpsrcvec.y + (double)dirm.data[10] * (double)tmpsrcvec.z + (double)dirm.data[14]);
 
 	return 0;
 }
@@ -304,17 +377,17 @@ int IsInitRot(ChaMatrix srcmat)
 	float d21, d22, d23;
 	float d31, d32, d33;
 
-	d11 = srcmat._11 - 1.0f;
-	d12 = srcmat._12 - 0.0f;
-	d13 = srcmat._13 - 0.0f;
+	d11 = srcmat.data[0] - 1.0f;
+	d12 = srcmat.data[1] - 0.0f;
+	d13 = srcmat.data[2] - 0.0f;
 
-	d21 = srcmat._21 - 0.0f;
-	d22 = srcmat._22 - 1.0f;
-	d23 = srcmat._23 - 0.0f;
+	d21 = srcmat.data[4] - 0.0f;
+	d22 = srcmat.data[5] - 1.0f;
+	d23 = srcmat.data[6] - 0.0f;
 
-	d31 = srcmat._31 - 0.0f;
-	d32 = srcmat._32 - 0.0f;
-	d33 = srcmat._33 - 1.0f;
+	d31 = srcmat.data[8] - 0.0f;
+	d32 = srcmat.data[9] - 0.0f;
+	d33 = srcmat.data[10] - 1.0f;
 
 	float dmin = 0.000001f;
 
@@ -337,10 +410,10 @@ int IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 
 	float dmin = 0.000001f;
 
-	if ((fabs(diffmat._11) <= dmin) && (fabs(diffmat._12) <= dmin) && (fabs(diffmat._13) <= dmin) && (fabs(diffmat._14) <= dmin) &&
-		(fabs(diffmat._21) <= dmin) && (fabs(diffmat._22) <= dmin) && (fabs(diffmat._23) <= dmin) && (fabs(diffmat._24) <= dmin) &&
-		(fabs(diffmat._31) <= dmin) && (fabs(diffmat._32) <= dmin) && (fabs(diffmat._33) <= dmin) && (fabs(diffmat._34) <= dmin) &&
-		(fabs(diffmat._41) <= dmin) && (fabs(diffmat._42) <= dmin) && (fabs(diffmat._43) <= dmin) && (fabs(diffmat._44) <= dmin)
+	if ((fabs(diffmat.data[0]) <= dmin) && (fabs(diffmat.data[1]) <= dmin) && (fabs(diffmat.data[2]) <= dmin) && (fabs(diffmat.data[3]) <= dmin) &&
+		(fabs(diffmat.data[4]) <= dmin) && (fabs(diffmat.data[5]) <= dmin) && (fabs(diffmat.data[6]) <= dmin) && (fabs(diffmat.data[7]) <= dmin) &&
+		(fabs(diffmat.data[8]) <= dmin) && (fabs(diffmat.data[9]) <= dmin) && (fabs(diffmat.data[10]) <= dmin) && (fabs(diffmat.data[11]) <= dmin) &&
+		(fabs(diffmat.data[12]) <= dmin) && (fabs(diffmat.data[13]) <= dmin) && (fabs(diffmat.data[14]) <= dmin) && (fabs(diffmat.data[15]) <= dmin)
 		) {
 		retval = 1;
 	}
@@ -430,26 +503,26 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 
 	ChaMatrix tmpmat1 = srcmat;
 
-	tvecptr->x = tmpmat1._41;
-	tvecptr->y = tmpmat1._42;
-	tvecptr->z = tmpmat1._43;
+	tvecptr->x = tmpmat1.data[12];
+	tvecptr->y = tmpmat1.data[13];
+	tvecptr->z = tmpmat1.data[14];
 
-	tmpmat1._41 = 0.0f;
-	tmpmat1._42 = 0.0f;
-	tmpmat1._43 = 0.0f;
+	tmpmat1.data[12] = 0.0f;
+	tmpmat1.data[13] = 0.0f;
+	tmpmat1.data[14] = 0.0f;
 
 	ChaVector3 vec1, vec2, vec3;
-	vec1.x = tmpmat1._11;
-	vec1.y = tmpmat1._12;
-	vec1.z = tmpmat1._13;
+	vec1.x = tmpmat1.data[0];
+	vec1.y = tmpmat1.data[1];
+	vec1.z = tmpmat1.data[2];
 
-	vec2.x = tmpmat1._21;
-	vec2.y = tmpmat1._22;
-	vec2.z = tmpmat1._23;
+	vec2.x = tmpmat1.data[4];
+	vec2.y = tmpmat1.data[5];
+	vec2.z = tmpmat1.data[6];
 
-	vec3.x = tmpmat1._31;
-	vec3.y = tmpmat1._32;
-	vec3.z = tmpmat1._33;
+	vec3.x = tmpmat1.data[8];
+	vec3.y = tmpmat1.data[9];
+	vec3.z = tmpmat1.data[10];
 
 	double len1, len2, len3;
 	len1 = VecLength(vec1);
@@ -503,36 +576,36 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 	svecptr->z = (float)len3;
 
 	if (len1 != 0.0) {
-		rmatptr->_11 = (float)((double)tmpmat1._11 / len1);
-		rmatptr->_12 = (float)((double)tmpmat1._12 / len1);
-		rmatptr->_13 = (float)((double)tmpmat1._13 / len1);
+		rmatptr->data[0] = (float)((double)tmpmat1.data[0] / len1);
+		rmatptr->data[1] = (float)((double)tmpmat1.data[1] / len1);
+		rmatptr->data[2] = (float)((double)tmpmat1.data[2] / len1);
 	}
 	else {
-		rmatptr->_11 = 1.0f;
-		rmatptr->_12 = 0.0f;
-		rmatptr->_13 = 0.0f;
+		rmatptr->data[0] = 1.0f;
+		rmatptr->data[1] = 0.0f;
+		rmatptr->data[2] = 0.0f;
 	}
 
 	if (len2 != 0.0f) {
-		rmatptr->_21 = (float)((double)tmpmat1._21 / len2);
-		rmatptr->_22 = (float)((double)tmpmat1._22 / len2);
-		rmatptr->_23 = (float)((double)tmpmat1._23 / len2);
+		rmatptr->data[4] = (float)((double)tmpmat1.data[4] / len2);
+		rmatptr->data[5] = (float)((double)tmpmat1.data[5] / len2);
+		rmatptr->data[6] = (float)((double)tmpmat1.data[6] / len2);
 	}
 	else {
-		rmatptr->_21 = 0.0f;
-		rmatptr->_22 = 1.0f;
-		rmatptr->_23 = 0.0f;
+		rmatptr->data[4] = 0.0f;
+		rmatptr->data[5] = 1.0f;
+		rmatptr->data[6] = 0.0f;
 	}
 
 	if (len3 != 0.0f) {
-		rmatptr->_31 = (float)((double)tmpmat1._31 / len3);
-		rmatptr->_32 = (float)((double)tmpmat1._32 / len3);
-		rmatptr->_33 = (float)((double)tmpmat1._33 / len3);
+		rmatptr->data[8] = (float)((double)tmpmat1.data[8] / len3);
+		rmatptr->data[9] = (float)((double)tmpmat1.data[9] / len3);
+		rmatptr->data[10] = (float)((double)tmpmat1.data[10] / len3);
 	}
 	else {
-		rmatptr->_31 = 0.0f;
-		rmatptr->_32 = 0.0f;
-		rmatptr->_33 = 1.0f;
+		rmatptr->data[8] = 0.0f;
+		rmatptr->data[9] = 0.0f;
+		rmatptr->data[10] = 1.0f;
 	}
 
 
@@ -573,36 +646,36 @@ ChaMatrix GetS0RTMatrix(ChaMatrix srcmat)
 	retm = srcmat;
 
 	if (svec.x != 0.0f) {
-		retm._11 = (float)((double)retm._11 / (double)svec.x);
-		retm._12 = (float)((double)retm._12 / (double)svec.x);
-		retm._13 = (float)((double)retm._13 / (double)svec.x);
+		retm.data[0] = (float)((double)retm.data[0] / (double)svec.x);
+		retm.data[1] = (float)((double)retm.data[1] / (double)svec.x);
+		retm.data[2] = (float)((double)retm.data[2] / (double)svec.x);
 	}
 	else {
-		retm._11 = 1.0f;
-		retm._12 = 0.0f;
-		retm._13 = 0.0f;
+		retm.data[0] = 1.0f;
+		retm.data[1] = 0.0f;
+		retm.data[2] = 0.0f;
 	}
 
 	if (svec.y != 0.0f) {
-		retm._21 = (float)((double)retm._21 / (double)svec.y);
-		retm._22 = (float)((double)retm._22 / (double)svec.y);
-		retm._23 = (float)((double)retm._23 / (double)svec.y);
+		retm.data[4] = (float)((double)retm.data[4] / (double)svec.y);
+		retm.data[5] = (float)((double)retm.data[5] / (double)svec.y);
+		retm.data[6] = (float)((double)retm.data[6] / (double)svec.y);
 	}
 	else {
-		retm._21 = 0.0f;
-		retm._22 = 1.0f;
-		retm._23 = 0.0f;
+		retm.data[4] = 0.0f;
+		retm.data[5] = 1.0f;
+		retm.data[6] = 0.0f;
 	}
 
 	if (svec.z != 0.0f) {
-		retm._31 = (float)((double)retm._31 / (double)svec.z);
-		retm._32 = (float)((double)retm._32 / (double)svec.z);
-		retm._33 = (float)((double)retm._33 / (double)svec.z);
+		retm.data[8] = (float)((double)retm.data[8] / (double)svec.z);
+		retm.data[9] = (float)((double)retm.data[9] / (double)svec.z);
+		retm.data[10] = (float)((double)retm.data[10] / (double)svec.z);
 	}
 	else {
-		retm._31 = 0.0f;
-		retm._32 = 0.0f;
-		retm._33 = 1.0f;
+		retm.data[8] = 0.0f;
+		retm.data[9] = 0.0f;
+		retm.data[10] = 1.0f;
 	}
 
 	return retm;
@@ -615,9 +688,9 @@ ChaMatrix TransZeroMat(ChaMatrix srcmat)
 {
 	ChaMatrix retmat;
 	retmat = srcmat;
-	retmat._41 = 0.0f;
-	retmat._42 = 0.0f;
-	retmat._43 = 0.0f;
+	retmat.data[12] = 0.0f;
+	retmat.data[13] = 0.0f;
+	retmat.data[14] = 0.0f;
 
 	return retmat;
 }
@@ -627,25 +700,25 @@ ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat)
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
 
-	retmat._11 = (float)srcmat.Get(0, 0);
-	retmat._12 = (float)srcmat.Get(0, 1);
-	retmat._13 = (float)srcmat.Get(0, 2);
-	retmat._14 = (float)srcmat.Get(0, 3);
+	retmat.data[0] = (float)srcmat.Get(0, 0);
+	retmat.data[1] = (float)srcmat.Get(0, 1);
+	retmat.data[2] = (float)srcmat.Get(0, 2);
+	retmat.data[3] = (float)srcmat.Get(0, 3);
 
-	retmat._21 = (float)srcmat.Get(1, 0);
-	retmat._22 = (float)srcmat.Get(1, 1);
-	retmat._23 = (float)srcmat.Get(1, 2);
-	retmat._24 = (float)srcmat.Get(1, 3);
+	retmat.data[4] = (float)srcmat.Get(1, 0);
+	retmat.data[5] = (float)srcmat.Get(1, 1);
+	retmat.data[6] = (float)srcmat.Get(1, 2);
+	retmat.data[7] = (float)srcmat.Get(1, 3);
 
-	retmat._31 = (float)srcmat.Get(2, 0);
-	retmat._32 = (float)srcmat.Get(2, 1);
-	retmat._33 = (float)srcmat.Get(2, 2);
-	retmat._34 = (float)srcmat.Get(2, 3);
+	retmat.data[8] = (float)srcmat.Get(2, 0);
+	retmat.data[9] = (float)srcmat.Get(2, 1);
+	retmat.data[10] = (float)srcmat.Get(2, 2);
+	retmat.data[11] = (float)srcmat.Get(2, 3);
 
-	retmat._41 = (float)srcmat.Get(3, 0);
-	retmat._42 = (float)srcmat.Get(3, 1);
-	retmat._43 = (float)srcmat.Get(3, 2);
-	retmat._44 = (float)srcmat.Get(3, 3);
+	retmat.data[12] = (float)srcmat.Get(3, 0);
+	retmat.data[13] = (float)srcmat.Get(3, 1);
+	retmat.data[14] = (float)srcmat.Get(3, 2);
+	retmat.data[15] = (float)srcmat.Get(3, 3);
 
 	return retmat;
 
@@ -666,17 +739,17 @@ ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)
 		//tmpcol[colno] = worldmat.getRow( colno );
 	}
 
-	retmat._11 = tmpcol[0].x();
-	retmat._12 = tmpcol[0].y();
-	retmat._13 = tmpcol[0].z();
+	retmat.data[0] = tmpcol[0].x();
+	retmat.data[1] = tmpcol[0].y();
+	retmat.data[2] = tmpcol[0].z();
 
-	retmat._21 = tmpcol[1].x();
-	retmat._22 = tmpcol[1].y();
-	retmat._23 = tmpcol[1].z();
+	retmat.data[4] = tmpcol[1].x();
+	retmat.data[5] = tmpcol[1].y();
+	retmat.data[6] = tmpcol[1].z();
 
-	retmat._31 = tmpcol[2].x();
-	retmat._32 = tmpcol[2].y();
-	retmat._33 = tmpcol[2].z();
+	retmat.data[8] = tmpcol[2].x();
+	retmat.data[9] = tmpcol[2].y();
+	retmat.data[10] = tmpcol[2].z();
 
 	return retmat;
 }
@@ -693,21 +766,21 @@ ChaMatrix ChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector3* srcpivot)
 		//tmpcol[colno] = worldmat.getRow( colno );
 	}
 
-	retmat._11 = tmpcol[0].x();
-	retmat._12 = tmpcol[0].y();
-	retmat._13 = tmpcol[0].z();
+	retmat.data[0] = tmpcol[0].x();
+	retmat.data[1] = tmpcol[0].y();
+	retmat.data[2] = tmpcol[0].z();
 
-	retmat._21 = tmpcol[1].x();
-	retmat._22 = tmpcol[1].y();
-	retmat._23 = tmpcol[1].z();
+	retmat.data[4] = tmpcol[1].x();
+	retmat.data[5] = tmpcol[1].y();
+	retmat.data[6] = tmpcol[1].z();
 
-	retmat._31 = tmpcol[2].x();
-	retmat._32 = tmpcol[2].y();
-	retmat._33 = tmpcol[2].z();
+	retmat.data[8] = tmpcol[2].x();
+	retmat.data[9] = tmpcol[2].y();
+	retmat.data[10] = tmpcol[2].z();
 
-	retmat._41 = srcpivot->x();
-	retmat._42 = srcpivot->y();
-	retmat._43 = srcpivot->z();
+	retmat.data[12] = srcpivot->x();
+	retmat.data[13] = srcpivot->y();
+	retmat.data[14] = srcpivot->z();
 
 	return retmat;
 }
@@ -806,18 +879,18 @@ ChaMatrix ChaVector3::MakeTraMat()
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
-	retmat._41 = x;
-	retmat._42 = y;
-	retmat._43 = z;
+	retmat.data[12] = x;
+	retmat.data[13] = y;
+	retmat.data[14] = z;
 	return retmat;
 }
 ChaMatrix ChaVector3::MakeInvTraMat()
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
-	retmat._41 = -x;
-	retmat._42 = -y;
-	retmat._43 = -z;
+	retmat.data[12] = -x;
+	retmat.data[13] = -y;
+	retmat.data[14] = -z;
 	return retmat;
 }
 ChaMatrix ChaVector3::MakeXYZRotMat(CQuaternion* srcaxisq)
@@ -836,9 +909,9 @@ ChaMatrix ChaVector3::MakeScaleMat()
 	ChaMatrix retmat;
 	retmat.SetIdentity();
 
-	retmat._11 = x;
-	retmat._22 = y;
-	retmat._33 = z;
+	retmat.data[0] = x;
+	retmat.data[5] = y;
+	retmat.data[10] = z;
 	return retmat;
 }
 
@@ -886,49 +959,69 @@ ChaVector4 ChaVector4::operator- () const { return *this * -1.0; }
 
 ChaMatrix::ChaMatrix()
 {
-	_11 = 1.0f;
-	_12 = 0.0f;
-	_13 = 0.0f;
-	_14 = 0.0f;
+	data[0] = 1.0f;
+	data[1] = 0.0f;
+	data[2] = 0.0f;
+	data[3] = 0.0f;
 
-	_21 = 0.0f;
-	_22 = 1.0f;
-	_23 = 0.0f;
-	_24 = 0.0f;
+	data[4] = 0.0f;
+	data[5] = 1.0f;
+	data[6] = 0.0f;
+	data[7] = 0.0f;
 
-	_31 = 0.0f;
-	_32 = 0.0f;
-	_33 = 1.0f;
-	_34 = 0.0f;
+	data[8] = 0.0f;
+	data[9] = 0.0f;
+	data[10] = 1.0f;
+	data[11] = 0.0f;
 
-	_41 = 0.0f;
-	_42 = 0.0f;
-	_43 = 0.0f;
-	_44 = 1.0f;
+	data[12] = 0.0f;
+	data[13] = 0.0f;
+	data[14] = 0.0f;
+	data[15] = 1.0f;
+
+	//_11 = 1.0f;
+	//_12 = 0.0f;
+	//_13 = 0.0f;
+	//data[3] = 0.0f;
+
+	//data[4] = 0.0f;
+	//data[5] = 1.0f;
+	//data[6] = 0.0f;
+	//data[7] = 0.0f;
+
+	//data[8] = 0.0f;
+	//data[9] = 0.0f;
+	//data[10] = 1.0f;
+	//data[11] = 0.0f;
+
+	//data[12] = 0.0f;
+	//data[13] = 0.0f;
+	//data[14] = 0.0f;
+	//data[15] = 1.0f;
 
 }
 
 ChaMatrix::ChaMatrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44)
 {
-	_11 = m11;
-	_12 = m12;
-	_13 = m13;
-	_14 = m14;
+	data[0] = m11;
+	data[1] = m12;
+	data[2] = m13;
+	data[3] = m14;
 
-	_21 = m21;
-	_22 = m22;
-	_23 = m23;
-	_24 = m24;
+	data[4] = m21;
+	data[5] = m22;
+	data[6] = m23;
+	data[7] = m24;
 
-	_31 = m31;
-	_32 = m32;
-	_33 = m33;
-	_34 = m34;
+	data[8] = m31;
+	data[9] = m32;
+	data[10] = m33;
+	data[11] = m34;
 
-	_41 = m41;
-	_42 = m42;
-	_43 = m43;
-	_44 = m44;
+	data[12] = m41;
+	data[13] = m42;
+	data[14] = m43;
+	data[15] = m44;
 
 }
 
@@ -941,10 +1034,10 @@ FbxAMatrix ChaMatrix::FBXAMATRIX()
 {
 	FbxAMatrix retmat;
 	retmat.SetIdentity();
-	retmat.SetRow(0, FbxVector4(_11, _12, _13, _14));
-	retmat.SetRow(1, FbxVector4(_21, _22, _23, _24));
-	retmat.SetRow(2, FbxVector4(_31, _32, _33, _34));
-	retmat.SetRow(3, FbxVector4(_41, _42, _43, _44));
+	retmat.SetRow(0, FbxVector4(data[0], data[1], data[2], data[3]));
+	retmat.SetRow(1, FbxVector4(data[4], data[5], data[6], data[7]));
+	retmat.SetRow(2, FbxVector4(data[8], data[9], data[10], data[11]));
+	retmat.SetRow(3, FbxVector4(data[12], data[13], data[14], data[15]));
 	return retmat;
 }
 
@@ -952,9 +1045,9 @@ void ChaMatrix::SetTranslation(ChaVector3 srctra)
 {
 	//初期化しない
 
-	_41 = srctra.x;
-	_42 = srctra.y;
-	_43 = srctra.z;
+	data[12] = srctra.x;
+	data[13] = srctra.y;
+	data[14] = srctra.z;
 }
 void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul)
 {
@@ -982,68 +1075,69 @@ void ChaMatrix::SetScale(ChaVector3 srcscale)
 {
 	//初期化しない
 
-	_11 = srcscale.x;
-	_22 = srcscale.y;
-	_33 = srcscale.z;
+	data[0] = srcscale.x;
+	data[5] = srcscale.y;
+	data[10] = srcscale.z;
 
 }
 void ChaMatrix::SetBasis(ChaMatrix srcmat)
 {
 	//初期化しない　copy3x3
-	_11 = srcmat._11;
-	_12 = srcmat._12;
-	_13 = srcmat._13;
+	data[0] = srcmat.data[0];
+	data[1] = srcmat.data[1];
+	data[2] = srcmat.data[2];
 
-	_21 = srcmat._21;
-	_22 = srcmat._22;
-	_23 = srcmat._23;
+	data[4] = srcmat.data[4];
+	data[5] = srcmat.data[5];
+	data[6] = srcmat.data[6];
 
-	_31 = srcmat._31;
-	_32 = srcmat._32;
-	_33 = srcmat._33;
+	data[8] = srcmat.data[8];
+	data[9] = srcmat.data[9];
+	data[10] = srcmat.data[10];
 }
 
 #ifdef CONVD3DX11
-ChaMatrix::ChaMatrix(DirectX::XMMATRIX m) {
-	_11 = m.r[0].m128_f32[0];
-	_12 = m.r[0].m128_f32[1];
-	_13 = m.r[0].m128_f32[2];
-	_14 = m.r[0].m128_f32[3];
+ChaMatrix::ChaMatrix(DirectX::XMMATRIX m)
+{
+	data[0] = m.r[0].m128_f32[0];
+	data[1] = m.r[0].m128_f32[1];
+	data[2] = m.r[0].m128_f32[2];
+	data[3] = m.r[0].m128_f32[3];
 
-	_21 = m.r[1].m128_f32[0];
-	_22 = m.r[1].m128_f32[1];
-	_23 = m.r[1].m128_f32[2];
-	_24 = m.r[1].m128_f32[3];
+	data[4] = m.r[1].m128_f32[0];
+	data[5] = m.r[1].m128_f32[1];
+	data[6] = m.r[1].m128_f32[2];
+	data[7] = m.r[1].m128_f32[3];
 
-	_31 = m.r[2].m128_f32[0];
-	_32 = m.r[2].m128_f32[1];
-	_33 = m.r[2].m128_f32[2];
-	_34 = m.r[2].m128_f32[3];
+	data[8] = m.r[2].m128_f32[0];
+	data[9] = m.r[2].m128_f32[1];
+	data[10] = m.r[2].m128_f32[2];
+	data[11] = m.r[2].m128_f32[3];
 
-	_41 = m.r[3].m128_f32[0];
-	_42 = m.r[3].m128_f32[1];
-	_43 = m.r[3].m128_f32[2];
-	_44 = m.r[3].m128_f32[3];
+	data[12] = m.r[3].m128_f32[0];
+	data[13] = m.r[3].m128_f32[1];
+	data[14] = m.r[3].m128_f32[2];
+	data[15] = m.r[3].m128_f32[3];
 
 	//_11 = m.r[0].m128_f32[0];
 	//_12 = m.r[1].m128_f32[0];
 	//_13 = m.r[2].m128_f32[0];
-	//_14 = m.r[3].m128_f32[0];
+	//data[3] = m.r[3].m128_f32[0];
 
-	//_21 = m.r[0].m128_f32[1];
-	//_22 = m.r[1].m128_f32[1];
-	//_23 = m.r[2].m128_f32[1];
-	//_24 = m.r[3].m128_f32[1];
+	//data[4] = m.r[0].m128_f32[1];
+	//data[5] = m.r[1].m128_f32[1];
+	//data[6] = m.r[2].m128_f32[1];
+	//data[7] = m.r[3].m128_f32[1];
 
-	//_31 = m.r[0].m128_f32[2];
-	//_32 = m.r[1].m128_f32[2];
-	//_33 = m.r[2].m128_f32[2];
-	//_34 = m.r[3].m128_f32[2];
+	//data[8] = m.r[0].m128_f32[2];
+	//data[9] = m.r[1].m128_f32[2];
+	//data[10] = m.r[2].m128_f32[2];
+	//data[11] = m.r[3].m128_f32[2];
 
-	//_41 = m.r[0].m128_f32[3];
-	//_42 = m.r[1].m128_f32[3];
-	//_43 = m.r[2].m128_f32[3];
-	//_44 = m.r[3].m128_f32[3];
+	//data[12] = m.r[0].m128_f32[3];
+	//data[13] = m.r[1].m128_f32[3];
+	//data[14] = m.r[2].m128_f32[3];
+	//data[15] = m.r[3].m128_f32[3];
 
 };
 #endif
@@ -1058,25 +1152,31 @@ ChaMatrix::~ChaMatrix()
 
 
 ChaMatrix ChaMatrix::operator= (ChaMatrix m) { 
-	this->_11 = m._11; 
-	this->_12 = m._12; 
-	this->_13 = m._13;
-	this->_14 = m._14;
-	
-	this->_21 = m._21;
-	this->_22 = m._22;
-	this->_23 = m._23;
-	this->_24 = m._24;
 
-	this->_31 = m._31;
-	this->_32 = m._32;
-	this->_33 = m._33;
-	this->_34 = m._34;
+	//this->data[0] = m.data[0]; 
+	//this->data[1] = m.data[1]; 
+	//this->data[2] = m.data[2];
+	//this->data[3] = m.data[3];
+	//
+	//this->data[4] = m.data[4];
+	//this->data[5] = m.data[5];
+	//this->data[6] = m.data[6];
+	//this->data[7] = m.data[7];
 
-	this->_41 = m._41;
-	this->_42 = m._42;
-	this->_43 = m._43;
-	this->_44 = m._44;
+	//this->data[8] = m.data[8];
+	//this->data[9] = m.data[9];
+	//this->data[10] = m.data[10];
+	//this->data[11] = m.data[11];
+
+	//this->data[12] = m.data[12];
+	//this->data[13] = m.data[13];
+	//this->data[14] = m.data[14];
+	//this->data[15] = m.data[15];
+
+	this->mVec[0] = m.mVec[0];
+	this->mVec[1] = m.mVec[1];
+	this->mVec[2] = m.mVec[2];
+	this->mVec[3] = m.mVec[3];
 
 	return *this;
 };
@@ -1084,39 +1184,64 @@ ChaMatrix ChaMatrix::operator= (ChaMatrix m) {
 
 
 ChaMatrix ChaMatrix::operator* (float srcw) const {
-	return ChaMatrix((float)((double)this->_11 * (double)srcw), (float)((double)this->_12 * (double)srcw), (float)((double)this->_13 * (double)srcw), (float)((double)this->_14 * (double)srcw),
-		(float)((double)this->_21 * (double)srcw), (float)((double)this->_22 * (double)srcw), (float)((double)this->_23 * (double)srcw), (float)((double)this->_24 * (double)srcw),
-		(float)((double)this->_31 * (double)srcw), (float)((double)this->_32 * (double)srcw), (float)((double)this->_33 * (double)srcw), (float)((double)this->_34 * (double)srcw),
-		(float)((double)this->_41 * (double)srcw), (float)((double)this->_42 * (double)srcw), (float)((double)this->_43 * (double)srcw), (float)((double)this->_44 * (double)srcw));
+	ChaMatrix retmat;
+	__m128 multcoef = _mm_setr_ps(srcw, srcw, srcw, srcw);
+	retmat.mVec[0] = _mm_mul_ps(multcoef, mVec[0]);
+	retmat.mVec[1] = _mm_mul_ps(multcoef, mVec[1]);
+	retmat.mVec[2] = _mm_mul_ps(multcoef, mVec[2]);
+	retmat.mVec[3] = _mm_mul_ps(multcoef, mVec[3]);
+	return retmat;
+
+	//return ChaMatrix((float)((double)this->data[0] * (double)srcw), (float)((double)this->data[1] * (double)srcw), (float)((double)this->data[2] * (double)srcw), (float)((double)this->data[3] * (double)srcw),
+	//	(float)((double)this->data[4] * (double)srcw), (float)((double)this->data[5] * (double)srcw), (float)((double)this->data[6] * (double)srcw), (float)((double)this->data[7] * (double)srcw),
+	//	(float)((double)this->data[8] * (double)srcw), (float)((double)this->data[9] * (double)srcw), (float)((double)this->data[10] * (double)srcw), (float)((double)this->data[11] * (double)srcw),
+	//	(float)((double)this->data[12] * (double)srcw), (float)((double)this->data[13] * (double)srcw), (float)((double)this->data[14] * (double)srcw), (float)((double)this->data[15] * (double)srcw));
 }
 ChaMatrix &ChaMatrix::operator*= (float srcw) { *this = *this * srcw; return *this; }
 ChaMatrix ChaMatrix::operator/ (float srcw) const {
-	if (srcw != 0.0f) {
-		return ChaMatrix((float)((double)this->_11 / (double)srcw), (float)((double)this->_12 / (double)srcw), (float)((double)this->_13 / (double)srcw), (float)((double)this->_14 / (double)srcw),
-			(float)((double)this->_21 / (double)srcw), (float)((double)this->_22 / (double)srcw), (float)((double)this->_23 / (double)srcw), (float)((double)this->_24 / (double)srcw),
-			(float)((double)this->_31 / (double)srcw), (float)((double)this->_32 / (double)srcw), (float)((double)this->_33 / (double)srcw), (float)((double)this->_34 / (double)srcw),
-			(float)((double)this->_41 / (double)srcw), (float)((double)this->_42 / (double)srcw), (float)((double)this->_43 / (double)srcw), (float)((double)this->_44 / (double)srcw));
+	ChaMatrix retmat;
+
+	if (fabs(srcw) >= 1e-5) {
+		const __m128 inverseOne = _mm_setr_ps(1.f, 1.f, 1.f, 1.f);
+		__m128 divcoef = _mm_setr_ps(srcw, srcw, srcw, srcw);
+		__m128 multcoef = _mm_div_ps(inverseOne, divcoef);
+		retmat.mVec[0] = _mm_mul_ps(multcoef, mVec[0]);
+		retmat.mVec[1] = _mm_mul_ps(multcoef, mVec[1]);
+		retmat.mVec[2] = _mm_mul_ps(multcoef, mVec[2]);
+		retmat.mVec[3] = _mm_mul_ps(multcoef, mVec[3]);
+		return retmat;
 	}
 	else {
-		ChaMatrix retmat;
 		ChaMatrixIdentity(&retmat);
 		return retmat;
 	}
+
+	//if (srcw != 0.0f) {
+	//	return ChaMatrix((float)((double)this->data[0] / (double)srcw), (float)((double)this->data[1] / (double)srcw), (float)((double)this->data[2] / (double)srcw), (float)((double)this->data[3] / (double)srcw),
+	//		(float)((double)this->data[4] / (double)srcw), (float)((double)this->data[5] / (double)srcw), (float)((double)this->data[6] / (double)srcw), (float)((double)this->data[7] / (double)srcw),
+	//		(float)((double)this->data[8] / (double)srcw), (float)((double)this->data[9] / (double)srcw), (float)((double)this->data[10] / (double)srcw), (float)((double)this->data[11] / (double)srcw),
+	//		(float)((double)this->data[12] / (double)srcw), (float)((double)this->data[13] / (double)srcw), (float)((double)this->data[14] / (double)srcw), (float)((double)this->data[15] / (double)srcw));
+	//}
+	//else {
+	//	ChaMatrix retmat;
+	//	ChaMatrixIdentity(&retmat);
+	//	return retmat;
+	//}
 }
 ChaMatrix &ChaMatrix::operator/= (float srcw) { *this = *this / srcw; return *this; }
 ChaMatrix ChaMatrix::operator* (double srcw) const {
-	return ChaMatrix((float)((double)this->_11 * srcw), (float)((double)this->_12 * srcw), (float)((double)this->_13 * srcw), (float)((double)this->_14 * srcw),
-		(float)((double)this->_21 * srcw), (float)((double)this->_22 * srcw), (float)((double)this->_23 * srcw), (float)((double)this->_24 * srcw),
-		(float)((double)this->_31 * srcw), (float)((double)this->_32 * srcw), (float)((double)this->_33 * srcw), (float)((double)this->_34 * srcw),
-		(float)((double)this->_41 * srcw), (float)((double)this->_42 * srcw), (float)((double)this->_43 * srcw), (float)((double)this->_44 * srcw));
+	return ChaMatrix((float)((double)this->data[0] * srcw), (float)((double)this->data[1] * srcw), (float)((double)this->data[2] * srcw), (float)((double)this->data[3] * srcw),
+		(float)((double)this->data[4] * srcw), (float)((double)this->data[5] * srcw), (float)((double)this->data[6] * srcw), (float)((double)this->data[7] * srcw),
+		(float)((double)this->data[8] * srcw), (float)((double)this->data[9] * srcw), (float)((double)this->data[10] * srcw), (float)((double)this->data[11] * srcw),
+		(float)((double)this->data[12] * srcw), (float)((double)this->data[13] * srcw), (float)((double)this->data[14] * srcw), (float)((double)this->data[15] * srcw));
 }
 ChaMatrix& ChaMatrix::operator*= (double srcw) { *this = *this * srcw; return *this; }
 ChaMatrix ChaMatrix::operator/ (double srcw) const {
 	if (srcw != 0.0) {
-		return ChaMatrix((float)((double)this->_11 / srcw), (float)((double)this->_12 / srcw), (float)((double)this->_13 / srcw), (float)((double)this->_14 / srcw),
-			(float)((double)this->_21 / srcw), (float)((double)this->_22 / srcw), (float)((double)this->_23 / srcw), (float)((double)this->_24 / srcw),
-			(float)((double)this->_31 / srcw), (float)((double)this->_32 / srcw), (float)((double)this->_33 / srcw), (float)((double)this->_34 / srcw),
-			(float)((double)this->_41 / srcw), (float)((double)this->_42 / srcw), (float)((double)this->_43 / srcw), (float)((double)this->_44 / srcw));
+		return ChaMatrix((float)((double)this->data[0] / srcw), (float)((double)this->data[1] / srcw), (float)((double)this->data[2] / srcw), (float)((double)this->data[3] / srcw),
+			(float)((double)this->data[4] / srcw), (float)((double)this->data[5] / srcw), (float)((double)this->data[6] / srcw), (float)((double)this->data[7] / srcw),
+			(float)((double)this->data[8] / srcw), (float)((double)this->data[9] / srcw), (float)((double)this->data[10] / srcw), (float)((double)this->data[11] / srcw),
+			(float)((double)this->data[12] / srcw), (float)((double)this->data[13] / srcw), (float)((double)this->data[14] / srcw), (float)((double)this->data[15] / srcw));
 	}
 	else {
 		ChaMatrix retmat;
@@ -1128,89 +1253,157 @@ ChaMatrix& ChaMatrix::operator/= (double srcw) { *this = *this / srcw; return *t
 
 
 
-ChaMatrix ChaMatrix::operator+ (const ChaMatrix &m) const { 
-	return ChaMatrix(
-		_11 + m._11, _12 + m._12, _13 + m._13, _14 + m._14,
-		_21 + m._21, _22 + m._22, _23 + m._23, _24 + m._24,
-		_31 + m._31, _32 + m._32, _33 + m._33, _34 + m._34,
-		_41 + m._41, _42 + m._42, _43 + m._43, _44 + m._44
-		);
+ChaMatrix ChaMatrix::operator+ (const ChaMatrix &m) const {
+	ChaMatrix retmat;
+	retmat.mVec[0] = _mm_add_ps(m.mVec[0], mVec[0]);
+	retmat.mVec[1] = _mm_add_ps(m.mVec[1], mVec[1]);
+	retmat.mVec[2] = _mm_add_ps(m.mVec[2], mVec[2]);
+	retmat.mVec[3] = _mm_add_ps(m.mVec[3], mVec[3]);
+	return retmat;
+
+	//return ChaMatrix(
+	//	data[0] + m.data[0], data[1] + m.data[1], data[2] + m.data[2], data[3] + m.data[3],
+	//	data[4] + m.data[4], data[5] + m.data[5], data[6] + m.data[6], data[7] + m.data[7],
+	//	data[8] + m.data[8], data[9] + m.data[9], data[10] + m.data[10], data[11] + m.data[11],
+	//	data[12] + m.data[12], data[13] + m.data[13], data[14] + m.data[14], data[15] + m.data[15]
+	//	);
 }
 ChaMatrix &ChaMatrix::operator+= (const ChaMatrix &m) { *this = *this + m; return *this; }
 
 ChaMatrix ChaMatrix::operator- (const ChaMatrix &m) const { 
-	return ChaMatrix(
-	_11 - m._11, _12 - m._12, _13 - m._13, _14 - m._14,
-	_21 - m._21, _22 - m._22, _23 - m._23, _24 - m._24,
-	_31 - m._31, _32 - m._32, _33 - m._33, _34 - m._34,
-	_41 - m._41, _42 - m._42, _43 - m._43, _44 - m._44
-	); }
+	ChaMatrix retmat;
+	retmat.mVec[0] = _mm_sub_ps(mVec[0], m.mVec[0]);
+	retmat.mVec[1] = _mm_sub_ps(mVec[1], m.mVec[1]);
+	retmat.mVec[2] = _mm_sub_ps(mVec[2], m.mVec[2]);
+	retmat.mVec[3] = _mm_sub_ps(mVec[3], m.mVec[3]);
+	return retmat;
+
+	//return ChaMatrix(
+	//data[0] - m.data[0], data[1] - m.data[1], data[2] - m.data[2], data[3] - m.data[3],
+	//data[4] - m.data[4], data[5] - m.data[5], data[6] - m.data[6], data[7] - m.data[7],
+	//data[8] - m.data[8], data[9] - m.data[9], data[10] - m.data[10], data[11] - m.data[11],
+	//data[12] - m.data[12], data[13] - m.data[13], data[14] - m.data[14], data[15] - m.data[15]
+	//); 
+}
 ChaMatrix &ChaMatrix::operator-= (const ChaMatrix &m) { *this = *this - m; return *this; }
 
 
-ChaMatrix ChaMatrix::operator* (const ChaMatrix &m) const {
-	//*this * m
-	double m_11 = (double)m._11;
-	double m_12 = (double)m._12;
-	double m_13 = (double)m._13;
-	double m_14 = (double)m._14;
-	double m_21 = (double)m._21;
-	double m_22 = (double)m._22;
-	double m_23 = (double)m._23;
-	double m_24 = (double)m._24;
-	double m_31 = (double)m._31;
-	double m_32 = (double)m._32;
-	double m_33 = (double)m._33;
-	double m_34 = (double)m._34;
-	double m_41 = (double)m._41;
-	double m_42 = (double)m._42;
-	double m_43 = (double)m._43;
-	double m_44 = (double)m._44;
-
+ChaMatrix ChaMatrix::operator* (const ChaMatrix& m) const {
 	ChaMatrix res;
-	res._11 = (float)(m_11 * (double)_11 + m_21 * (double)_12 + m_31 * (double)_13 + m_41 * (double)_14);
-	res._21 = (float)(m_11 * (double)_21 + m_21 * (double)_22 + m_31 * (double)_23 + m_41 * (double)_24);
-	res._31 = (float)(m_11 * (double)_31 + m_21 * (double)_32 + m_31 * (double)_33 + m_41 * (double)_34);
-	res._41 = (float)(m_11 * (double)_41 + m_21 * (double)_42 + m_31 * (double)_43 + m_41 * (double)_44);
 
-	res._12 = (float)(m_12 * (double)_11 + m_22 * (double)_12 + m_32 * (double)_13 + m_42 * (double)_14);
-	res._22 = (float)(m_12 * (double)_21 + m_22 * (double)_22 + m_32 * (double)_23 + m_42 * (double)_24);
-	res._32 = (float)(m_12 * (double)_31 + m_22 * (double)_32 + m_32 * (double)_33 + m_42 * (double)_34);
-	res._42 = (float)(m_12 * (double)_41 + m_22 * (double)_42 + m_32 * (double)_43 + m_42 * (double)_44);
+	__m128  xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7;
+	
+	//xmm4 = _mm_loadu_ps(&m.data[0]);
+	//xmm5 = _mm_loadu_ps(&m.data[4]);
+	//xmm6 = _mm_loadu_ps(&m.data[8]);
+	//xmm7 = _mm_loadu_ps(&m.data[12]);
+	xmm4 = m.mVec[0];
+	xmm5 = m.mVec[1];
+	xmm6 = m.mVec[2];
+	xmm7 = m.mVec[3];
 
-	res._13 = (float)(m_13 * (double)_11 + m_23 * (double)_12 + m_33 * (double)_13 + m_43 * (double)_14);
-	res._23 = (float)(m_13 * (double)_21 + m_23 * (double)_22 + m_33 * (double)_23 + m_43 * (double)_24);
-	res._33 = (float)(m_13 * (double)_31 + m_23 * (double)_32 + m_33 * (double)_33 + m_43 * (double)_34);
-	res._43 = (float)(m_13 * (double)_41 + m_23 * (double)_42 + m_33 * (double)_43 + m_43 * (double)_44);
+	// column0
+	xmm0 = _mm_load1_ps(&data[0]);
+	xmm1 = _mm_load1_ps(&data[1]);
+	xmm2 = _mm_load1_ps(&data[2]);
+	xmm3 = _mm_load1_ps(&data[3]);
+	
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_mul_ps(xmm1, xmm5);
+	//xmm2 = _mm_mul_ps(xmm2, xmm6);
+	//xmm3 = _mm_mul_ps(xmm3, xmm7);
+	//
+	//xmm0 = _mm_add_ps(xmm0, xmm1);
+	//xmm2 = _mm_add_ps(xmm2, xmm3);
+	//xmm0 = _mm_add_ps(xmm0, xmm2);
+	//_mm_storeu_ps(&res.data[0], xmm0);
 
-	res._14 = (float)(m_14 * (double)_11 + m_24 * (double)_12 + m_34 * (double)_13 + m_44 * (double)_14);
-	res._24 = (float)(m_14 * (double)_21 + m_24 * (double)_22 + m_34 * (double)_23 + m_44 * (double)_24);
-	res._34 = (float)(m_14 * (double)_31 + m_24 * (double)_32 + m_34 * (double)_33 + m_44 * (double)_34);
-	res._44 = (float)(m_14 * (double)_41 + m_24 * (double)_42 + m_34 * (double)_43 + m_44 * (double)_44);
+	xmm0 = _mm_mul_ps(xmm0, xmm4);
+	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
 
-	//ChaMatrix res;
-	//res._11 = m._11 * _11 + m._21 * _12 + m._31 * _13 + m._41 * _14;
-	//res._21 = m._11 * _21 + m._21 * _22 + m._31 * _23 + m._41 * _24;
-	//res._31 = m._11 * _31 + m._21 * _32 + m._31 * _33 + m._41 * _34;
-	//res._41 = m._11 * _41 + m._21 * _42 + m._31 * _43 + m._41 * _44;
+	res.mVec[0] = xmm3;
 
-	//res._12 = m._12 * _11 + m._22 * _12 + m._32 * _13 + m._42 * _14;
-	//res._22 = m._12 * _21 + m._22 * _22 + m._32 * _23 + m._42 * _24;
-	//res._32 = m._12 * _31 + m._22 * _32 + m._32 * _33 + m._42 * _34;
-	//res._42 = m._12 * _41 + m._22 * _42 + m._32 * _43 + m._42 * _44;
+	
+	// column1
+	xmm0 = _mm_load1_ps(&data[4]);
+	xmm1 = _mm_load1_ps(&data[5]);
+	xmm2 = _mm_load1_ps(&data[6]);
+	xmm3 = _mm_load1_ps(&data[7]);
+	
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_mul_ps(xmm1, xmm5);
+	//xmm2 = _mm_mul_ps(xmm2, xmm6);
+	//xmm3 = _mm_mul_ps(xmm3, xmm7);
+	//
+	//xmm0 = _mm_add_ps(xmm0, xmm1);
+	//xmm2 = _mm_add_ps(xmm2, xmm3);
+	//xmm0 = _mm_add_ps(xmm0, xmm2);
+	//
+	//_mm_storeu_ps(&res.data[4], xmm0);
 
-	//res._13 = m._13 * _11 + m._23 * _12 + m._33 * _13 + m._43 * _14;
-	//res._23 = m._13 * _21 + m._23 * _22 + m._33 * _23 + m._43 * _24;
-	//res._33 = m._13 * _31 + m._23 * _32 + m._33 * _33 + m._43 * _34;
-	//res._43 = m._13 * _41 + m._23 * _42 + m._33 * _43 + m._43 * _44;
+	xmm0 = _mm_mul_ps(xmm0, xmm4);
+	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
 
-	//res._14 = m._14 * _11 + m._24 * _12 + m._34 * _13 + m._44 * _14;
-	//res._24 = m._14 * _21 + m._24 * _22 + m._34 * _23 + m._44 * _24;
-	//res._34 = m._14 * _31 + m._24 * _32 + m._34 * _33 + m._44 * _34;
-	//res._44 = m._14 * _41 + m._24 * _42 + m._34 * _43 + m._44 * _44;
+	res.mVec[1] = xmm3;
+
+
+	// column2
+	xmm0 = _mm_load1_ps(&data[8]);
+	xmm1 = _mm_load1_ps(&data[9]);
+	xmm2 = _mm_load1_ps(&data[10]);
+	xmm3 = _mm_load1_ps(&data[11]);
+	
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_mul_ps(xmm1, xmm5);
+	//xmm2 = _mm_mul_ps(xmm2, xmm6);
+	//xmm3 = _mm_mul_ps(xmm3, xmm7);
+	//
+	//xmm0 = _mm_add_ps(xmm0, xmm1);
+	//xmm2 = _mm_add_ps(xmm2, xmm3);
+	//xmm0 = _mm_add_ps(xmm0, xmm2);
+	//
+	//_mm_storeu_ps(&res.data[8], xmm0);
+
+	xmm0 = _mm_mul_ps(xmm0, xmm4);
+	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
+
+	res.mVec[2] = xmm3;
+
+
+
+	// column3
+	xmm0 = _mm_load1_ps(&data[12]);
+	xmm1 = _mm_load1_ps(&data[13]);
+	xmm2 = _mm_load1_ps(&data[14]);
+	xmm3 = _mm_load1_ps(&data[15]);
+	
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_mul_ps(xmm1, xmm5);
+	//xmm2 = _mm_mul_ps(xmm2, xmm6);
+	//xmm3 = _mm_mul_ps(xmm3, xmm7);
+	//
+	//xmm0 = _mm_add_ps(xmm0, xmm1);
+	//xmm2 = _mm_add_ps(xmm2, xmm3);
+	//xmm0 = _mm_add_ps(xmm0, xmm2);
+	//
+	//_mm_storeu_ps(&res.data[12], xmm0);
+
+	xmm0 = _mm_mul_ps(xmm0, xmm4);
+	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
+
+	res.mVec[3] = xmm3;
 
 	return res;
 }
+
 
 ChaMatrix &ChaMatrix::operator*= (const ChaMatrix &m) { *this = *this * m; return *this; }
 ChaMatrix ChaMatrix::operator- () const { return *this * -1.0; }
@@ -1625,44 +1818,47 @@ ChaMatrix CQuaternion::MakeRotMatX()
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
 
+	float data[16];
+	ZeroMemory(data, sizeof(float) * 16);
+
 	//転置
-	double _11 = 1.0 - 2.0 * ((double)y * (double)y + (double)z * (double)z);
-	double _21 = 2.0 * ((double)x * (double)y - (double)z * (double)w);
-	double _31 = 2.0 * ((double)z * (double)x + (double)w * (double)y);
+	data[0] = (float)(1.0 - 2.0 * ((double)y * (double)y + (double)z * (double)z));
+	data[4] = (float)(2.0 * ((double)x * (double)y - (double)z * (double)w));
+	data[8] = (float)(2.0 * ((double)z * (double)x + (double)w * (double)y));
 
-	double _12 = 2.0 * ((double)x * (double)y + (double)z * (double)w);
-	double _22 = 1.0 - 2.0 * ((double)z * (double)z + (double)x * (double)x);
-	double _32 = 2.0 * ((double)y * (double)z - (double)w * (double)x);
+	data[1] = (float)(2.0 * ((double)x * (double)y + (double)z * (double)w));
+	data[5] = (float)(1.0 - 2.0 * ((double)z * (double)z + (double)x * (double)x));
+	data[9] = (float)(2.0 * ((double)y * (double)z - (double)w * (double)x));
 
-	double _13 = 2.0 * ((double)z * (double)x - (double)w * (double)y);
-	double _23 = 2.0 * ((double)y * (double)z + (double)x * (double)w);
-	double _33 = 1.0 - 2.0 * ((double)y * (double)y + (double)x * (double)x);
+	data[2] = (float)(2.0 * ((double)z * (double)x - (double)w * (double)y));
+	data[6] = (float)(2.0 * ((double)y * (double)z + (double)x * (double)w));
+	data[10] = (float)(1.0 - 2.0 * ((double)y * (double)y + (double)x * (double)x));
 
-	retmat._11 = (float)_11;
-	retmat._21 = (float)_21;
-	retmat._31 = (float)_31;
+	retmat.data[0] = (float)data[0];
+	retmat.data[4] = (float)data[4];
+	retmat.data[8] = (float)data[8];
 
-	retmat._12 = (float)_12;
-	retmat._22 = (float)_22;
-	retmat._32 = (float)_32;
+	retmat.data[1] = (float)data[1];
+	retmat.data[5] = (float)data[5];
+	retmat.data[9] = (float)data[9];
 
-	retmat._13 = (float)_13;
-	retmat._23 = (float)_23;
-	retmat._33 = (float)_33;
+	retmat.data[2] = (float)data[2];
+	retmat.data[6] = (float)data[6];
+	retmat.data[10] = (float)data[10];
 
 
 	/*
-	retmat._11 = 1.0 - 2.0 * (y * y + z * z);
+	retmat.data[0] = 1.0 - 2.0 * (y * y + z * z);
 	retmat._12 = 2.0 * (x * y - z * w);
 	retmat._13 = 2.0 * (z * x + w * y);
 
-	retmat._21 = 2.0 * (x * y + z * w);
-	retmat._22 = 1.0 - 2.0 * (z * z + x * x);
-	retmat._23 = 2.0 * (y * z - w * x);
+	retmat.data[4] = 2.0 * (x * y + z * w);
+	retmat.data[5] = 1.0 - 2.0 * (z * z + x * x);
+	retmat.data[6] = 2.0 * (y * z - w * x);
 
-	retmat._31 = 2.0 * (z * x - w * y);
-	retmat._32 = 2.0 * (y * z + x * w);
-	retmat._33 = 1.0 - 2.0 * (y * y + x * x);
+	retmat.data[8] = 2.0 * (z * x - w * y);
+	retmat.data[9] = 2.0 * (y * z + x * w);
+	retmat.data[10] = 1.0 - 2.0 * (y * y + x * x);
 	*/
 
 	/*
@@ -1694,22 +1890,22 @@ void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 
 	float m[4][4];
 
-	m[0][0] = rmat._11;
-	m[0][1] = rmat._12;
-	m[0][2] = rmat._13;
-	m[0][3] = rmat._14;
-	m[1][0] = rmat._21;
-	m[1][1] = rmat._22;
-	m[1][2] = rmat._23;
-	m[1][3] = rmat._24;
-	m[2][0] = rmat._31;
-	m[2][1] = rmat._32;
-	m[2][2] = rmat._33;
-	m[2][3] = rmat._34;
-	m[3][0] = rmat._41;
-	m[3][1] = rmat._42;
-	m[3][2] = rmat._43;
-	m[3][3] = rmat._44;
+	m[0][0] = rmat.data[0];
+	m[0][1] = rmat.data[1];
+	m[0][2] = rmat.data[2];
+	m[0][3] = rmat.data[3];
+	m[1][0] = rmat.data[4];
+	m[1][1] = rmat.data[5];
+	m[1][2] = rmat.data[6];
+	m[1][3] = rmat.data[7];
+	m[2][0] = rmat.data[8];
+	m[2][1] = rmat.data[9];
+	m[2][2] = rmat.data[10];
+	m[2][3] = rmat.data[11];
+	m[3][0] = rmat.data[12];
+	m[3][1] = rmat.data[13];
+	m[3][2] = rmat.data[14];
+	m[3][3] = rmat.data[15];
 
 	int i, maxi;
 	FLOAT maxdiag;
@@ -1779,9 +1975,9 @@ void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 
 	//ChaMatrix tmpmat;
 	//tmpmat = srcmat;
-	//tmpmat._41 = 0.0f;
-	//tmpmat._42 = 0.0f;
-	//tmpmat._43 = 0.0f;
+	//tmpmat.data[12] = 0.0f;
+	//tmpmat.data[13] = 0.0f;
+	//tmpmat.data[14] = 0.0f;
 
 	//D3DXQUATERNION qx;
 	//D3DXQuaternionRotationMatrix(&qx, &tmpmat);
@@ -2203,9 +2399,9 @@ int CQuaternion::vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 	dirm = dirq.MakeRotMatX();
 
 	double tmpx, tmpy, tmpz;
-	tmpx = (double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41;
-	tmpy = (double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42;
-	tmpz = (double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43;
+	tmpx = (double)dirm.data[0] * (double)tmpsrcvec.x + (double)dirm.data[4] * (double)tmpsrcvec.y + (double)dirm.data[8] * (double)tmpsrcvec.z + (double)dirm.data[12];
+	tmpy = (double)dirm.data[1] * (double)tmpsrcvec.x + (double)dirm.data[5] * (double)tmpsrcvec.y + (double)dirm.data[9] * (double)tmpsrcvec.z + (double)dirm.data[13];
+	tmpz = (double)dirm.data[2] * (double)tmpsrcvec.x + (double)dirm.data[6] * (double)tmpsrcvec.y + (double)dirm.data[10] * (double)tmpsrcvec.z + (double)dirm.data[14];
 
 	dstvec->x = (float)tmpx;
 	dstvec->y = (float)tmpy;
@@ -2228,9 +2424,9 @@ int CQuaternion::vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 
 	double tmpx, tmpy, tmpz;
 
-	tmpx = (double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41;
-	tmpy = (double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42;
-	tmpz = (double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43;
+	tmpx = (double)dirm.data[0] * (double)tmpsrcvec.x + (double)dirm.data[4] * (double)tmpsrcvec.y + (double)dirm.data[8] * (double)tmpsrcvec.z + (double)dirm.data[12];
+	tmpy = (double)dirm.data[1] * (double)tmpsrcvec.x + (double)dirm.data[5] * (double)tmpsrcvec.y + (double)dirm.data[9] * (double)tmpsrcvec.z + (double)dirm.data[13];
+	tmpz = (double)dirm.data[2] * (double)tmpsrcvec.x + (double)dirm.data[6] * (double)tmpsrcvec.y + (double)dirm.data[10] * (double)tmpsrcvec.z + (double)dirm.data[14];
 
 	dstvec->x = (float)tmpx;
 	dstvec->y = (float)tmpy;
@@ -2254,9 +2450,9 @@ int CQuaternion::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 
 	double tmpx, tmpy, tmpz;
 
-	tmpx = (double)dirm._11 * (double)tmpsrcvec.x + (double)dirm._21 * (double)tmpsrcvec.y + (double)dirm._31 * (double)tmpsrcvec.z + (double)dirm._41;
-	tmpy = (double)dirm._12 * (double)tmpsrcvec.x + (double)dirm._22 * (double)tmpsrcvec.y + (double)dirm._32 * (double)tmpsrcvec.z + (double)dirm._42;
-	tmpz = (double)dirm._13 * (double)tmpsrcvec.x + (double)dirm._23 * (double)tmpsrcvec.y + (double)dirm._33 * (double)tmpsrcvec.z + (double)dirm._43;
+	tmpx = (double)dirm.data[0] * (double)tmpsrcvec.x + (double)dirm.data[4] * (double)tmpsrcvec.y + (double)dirm.data[8] * (double)tmpsrcvec.z + (double)dirm.data[12];
+	tmpy = (double)dirm.data[1] * (double)tmpsrcvec.x + (double)dirm.data[5] * (double)tmpsrcvec.y + (double)dirm.data[9] * (double)tmpsrcvec.z + (double)dirm.data[13];
+	tmpz = (double)dirm.data[2] * (double)tmpsrcvec.x + (double)dirm.data[6] * (double)tmpsrcvec.y + (double)dirm.data[10] * (double)tmpsrcvec.z + (double)dirm.data[14];
 
 	dstvec->x = (float)tmpx;
 	dstvec->y = (float)tmpy;
@@ -3045,17 +3241,17 @@ CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat)
 	ChaMatrix xmat;
 	ChaMatrixIdentity(&xmat);
 
-	xmat._11 = tmpcol[0].x();
-	xmat._12 = tmpcol[0].y();
-	xmat._13 = tmpcol[0].z();
+	xmat.data[0] = tmpcol[0].x();
+	xmat.data[1] = tmpcol[0].y();
+	xmat.data[2] = tmpcol[0].z();
 
-	xmat._21 = tmpcol[1].x();
-	xmat._22 = tmpcol[1].y();
-	xmat._23 = tmpcol[1].z();
+	xmat.data[4] = tmpcol[1].x();
+	xmat.data[5] = tmpcol[1].y();
+	xmat.data[6] = tmpcol[1].z();
 
-	xmat._31 = tmpcol[2].x();
-	xmat._32 = tmpcol[2].y();
-	xmat._33 = tmpcol[2].z();
+	xmat.data[8] = tmpcol[2].x();
+	xmat.data[9] = tmpcol[2].y();
+	xmat.data[10] = tmpcol[2].z();
 
 	retq.RotationMatrix(xmat);
 	return retq;
@@ -3069,25 +3265,25 @@ void ChaMatrixIdentity(ChaMatrix* pdst)
 	if (!pdst){
 		return;
 	}
-	pdst->_11 = 1.0f;
-	pdst->_12 = 0.0f;
-	pdst->_13 = 0.0f;
-	pdst->_14 = 0.0f;
+	pdst->data[0] = 1.0f;
+	pdst->data[1] = 0.0f;
+	pdst->data[2] = 0.0f;
+	pdst->data[3] = 0.0f;
 
-	pdst->_21 = 0.0f;
-	pdst->_22 = 1.0f;
-	pdst->_23 = 0.0f;
-	pdst->_24 = 0.0f;
+	pdst->data[4] = 0.0f;
+	pdst->data[5] = 1.0f;
+	pdst->data[6] = 0.0f;
+	pdst->data[7] = 0.0f;
 
-	pdst->_31 = 0.0f;
-	pdst->_32 = 0.0f;
-	pdst->_33 = 1.0f;
-	pdst->_34 = 0.0f;
+	pdst->data[8] = 0.0f;
+	pdst->data[9] = 0.0f;
+	pdst->data[10] = 1.0f;
+	pdst->data[11] = 0.0f;
 
-	pdst->_41 = 0.0f;
-	pdst->_42 = 0.0f;
-	pdst->_43 = 0.0f;
-	pdst->_44 = 1.0f;
+	pdst->data[12] = 0.0f;
+	pdst->data[13] = 0.0f;
+	pdst->data[14] = 0.0f;
+	pdst->data[15] = 1.0f;
 }
 
 void ChaMatrixNormalizeRot(ChaMatrix* pdst)
@@ -3099,134 +3295,225 @@ void ChaMatrixNormalizeRot(ChaMatrix* pdst)
 	ChaMatrix srcmat = *pdst;
 
 	ChaVector3 vecx, vecy, vecz;
-	vecx.x = srcmat._11;
-	vecx.y = srcmat._12;
-	vecx.z = srcmat._13;
+	vecx.x = srcmat.data[0];
+	vecx.y = srcmat.data[1];
+	vecx.z = srcmat.data[2];
 
-	vecy.x = srcmat._21;
-	vecy.y = srcmat._22;
-	vecy.z = srcmat._23;
+	vecy.x = srcmat.data[4];
+	vecy.y = srcmat.data[5];
+	vecy.z = srcmat.data[6];
 
-	vecz.x = srcmat._31;
-	vecz.y = srcmat._32;
-	vecz.z = srcmat._33;
+	vecz.x = srcmat.data[8];
+	vecz.y = srcmat.data[9];
+	vecz.z = srcmat.data[10];
 
 	ChaVector3Normalize(&vecx, &vecx);
 	ChaVector3Normalize(&vecy, &vecy);
 	ChaVector3Normalize(&vecz, &vecz);
 
-	pdst->_11 = vecx.x;
-	pdst->_12 = vecx.y;
-	pdst->_13 = vecx.z;
+	pdst->data[0] = vecx.x;
+	pdst->data[1] = vecx.y;
+	pdst->data[2] = vecx.z;
 
-	pdst->_21 = vecy.x;
-	pdst->_22 = vecy.y;
-	pdst->_23 = vecy.z;
+	pdst->data[4] = vecy.x;
+	pdst->data[5] = vecy.y;
+	pdst->data[6] = vecy.z;
 
-	pdst->_31 = vecz.x;
-	pdst->_32 = vecz.y;
-	pdst->_33 = vecz.z;
+	pdst->data[8] = vecz.x;
+	pdst->data[9] = vecz.y;
+	pdst->data[10] = vecz.z;
 
 
 }
 
-
-
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 {
-	if (!pdst || !psrc){
+	//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
+
+	if (!pdst || !psrc) {
 		return;
 	}
 
 	ChaMatrix res;
-	double detA;
-	double a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44;
-	double b11, b12, b13, b14, b21, b22, b23, b24, b31, b32, b33, b34, b41, b42, b43, b44;
+	// use block matrix method
+	// A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
 
-	a11 = psrc->_11;
-	a12 = psrc->_12;
-	a13 = psrc->_13;
-	a14 = psrc->_14;
+	// sub matrices
+	__m128 A = VecShuffle_0101(psrc->mVec[0], psrc->mVec[1]);
+	__m128 B = VecShuffle_2323(psrc->mVec[0], psrc->mVec[1]);
+	__m128 C = VecShuffle_0101(psrc->mVec[2], psrc->mVec[3]);
+	__m128 D = VecShuffle_2323(psrc->mVec[2], psrc->mVec[3]);
 
-	a21 = psrc->_21;
-	a22 = psrc->_22;
-	a23 = psrc->_23;
-	a24 = psrc->_24;
+#if 0
+	__m128 detA = _mm_set1_ps(psrc->m[0][0] * psrc->m[1][1] - psrc->m[0][1] * psrc->m[1][0]);
+	__m128 detB = _mm_set1_ps(psrc->m[0][2] * psrc->m[1][3] - psrc->m[0][3] * psrc->m[1][2]);
+	__m128 detC = _mm_set1_ps(psrc->m[2][0] * psrc->m[3][1] - psrc->m[2][1] * psrc->m[3][0]);
+	__m128 detD = _mm_set1_ps(psrc->m[2][2] * psrc->m[3][3] - psrc->m[2][3] * psrc->m[3][2]);
+#else
+	// determinant as (|A| |B| |C| |D|)
+	__m128 detSub = _mm_sub_ps(
+		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 0, 2, 0, 2), VecShuffle(psrc->mVec[1], psrc->mVec[3], 1, 3, 1, 3)),
+		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 1, 3, 1, 3), VecShuffle(psrc->mVec[1], psrc->mVec[3], 0, 2, 0, 2))
+	);
+	__m128 detA = VecSwizzle1(detSub, 0);
+	__m128 detB = VecSwizzle1(detSub, 1);
+	__m128 detC = VecSwizzle1(detSub, 2);
+	__m128 detD = VecSwizzle1(detSub, 3);
+#endif
 
-	a31 = psrc->_31;
-	a32 = psrc->_32;
-	a33 = psrc->_33;
-	a34 = psrc->_34;
+	// let iM = 1/|M| * | X  Y |
+	//                  | Z  W |
 
-	a41 = psrc->_41;
-	a42 = psrc->_42;
-	a43 = psrc->_43;
-	a44 = psrc->_44;
+	// D#C
+	__m128 D_C = Mat2AdjMul(D, C);
+	// A#B
+	__m128 A_B = Mat2AdjMul(A, B);
+	// X# = |D|A - B(D#C)
+	__m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
+	// W# = |A|D - C(A#B)
+	__m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), Mat2Mul(C, A_B));
 
-	detA = (a11 * a22 * a33 * a44) + (a11 * a23 * a34 * a42) + (a11 * a24 * a32 * a43)
-		+ (a12 * a21 * a34 * a43) + (a12 * a23 * a31 * a44) + (a12 * a24 * a33 * a41)
-		+ (a13 * a21 * a32 * a44) + (a13 * a22 * a34 * a41) + (a13 * a24 * a31 * a42)
-		+ (a14 * a21 * a33 * a42) + (a14 * a22 * a31 * a43) + (a14 * a23 * a32 * a41)
-		- (a11 * a22 * a34 * a43) - (a11 * a23 * a32 * a44) - (a11 * a24 * a33 * a42)
-		- (a12 * a21 * a33 * a44) - (a12 * a23 * a34 * a41) - (a12 * a24 * a31 * a43)
-		- (a13 * a21 * a34 * a42) - (a13 * a22 * a31 * a44) - (a13 * a24 * a32 * a41)
-		- (a14 * a21 * a32 * a43) - (a14 * a22 * a33 * a41) - (a14 * a23 * a31 * a42);
+	// |M| = |A|*|D| + ... (continue later)
+	__m128 detM = _mm_mul_ps(detA, detD);
 
-	if (pdet){
-		*pdet = (float)detA;
+	// Y# = |B|C - D(A#B)#
+	__m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), Mat2MulAdj(D, A_B));
+	// Z# = |C|B - A(D#C)#
+	__m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), Mat2MulAdj(A, D_C));
+
+	// |M| = |A|*|D| + |B|*|C| ... (continue later)
+	detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
+
+	// tr((A#B)(D#C))
+	__m128 tr = _mm_mul_ps(A_B, VecSwizzle(D_C, 0, 2, 1, 3));
+	tr = _mm_hadd_ps(tr, tr);
+	tr = _mm_hadd_ps(tr, tr);
+	// |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
+	detM = _mm_sub_ps(detM, tr);
+
+
+	float checkdetM4[4];
+	_mm_store_ps(checkdetM4, detM);
+	if (fabs(checkdetM4[3]) >= 1e-5) {
+		const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
+		// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
+		__m128 rDetM = _mm_div_ps(adjSignMask, detM);
+
+		X_ = _mm_mul_ps(X_, rDetM);
+		Y_ = _mm_mul_ps(Y_, rDetM);
+		Z_ = _mm_mul_ps(Z_, rDetM);
+		W_ = _mm_mul_ps(W_, rDetM);
+
+		// apply adjugate and store, here we combine adjugate shuffle and store shuffle
+		res.mVec[0] = VecShuffle(X_, Y_, 3, 1, 3, 1);
+		res.mVec[1] = VecShuffle(X_, Y_, 2, 0, 2, 0);
+		res.mVec[2] = VecShuffle(Z_, W_, 3, 1, 3, 1);
+		res.mVec[3] = VecShuffle(Z_, W_, 2, 0, 2, 0);
+
+		*pdst = res;
 	}
-
-
-	if (detA == 0.0){
+	else {
 		*pdst = *psrc;
-		return;//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
-
-
-
-	b11 = (a22 * a33 * a44) + (a23 * a34 * a42) + (a24 * a32 * a43) - (a22 * a34 * a43) - (a23 * a32 * a44) - (a24 * a33 * a42);
-	b12 = (a12 * a34 * a43) + (a13 * a32 * a44) + (a14 * a33 * a42) - (a12 * a33 * a44) - (a13 * a34 * a42) - (a14 * a32 * a43);
-	b13 = (a12 * a23 * a44) + (a13 * a24 * a42) + (a14 * a22 * a43) - (a12 * a24 * a43) - (a13 * a22 * a44) - (a14 * a23 * a42);
-	b14 = (a12 * a24 * a33) + (a13 * a22 * a34) + (a14 * a23 * a32) - (a12 * a23 * a34) - (a13 * a24 * a32) - (a14 * a22 * a33);
-
-	b21 = (a21 * a34 * a43) + (a23 * a31 * a44) + (a24 * a33 * a41) - (a21 * a33 * a44) - (a23 * a34 * a41) - (a24 * a31 * a43);
-	b22 = (a11 * a33 * a44) + (a13 * a34 * a41) + (a14 * a31 * a43) - (a11 * a34 * a43) - (a13 * a31 * a44) - (a14 * a33 * a41);
-	b23 = (a11 * a24 * a43) + (a13 * a21 * a44) + (a14 * a23 * a41) - (a11 * a23 * a44) - (a13 * a24 * a41) - (a14 * a21 * a43);
-	b24 = (a11 * a23 * a34) + (a13 * a24 * a31) + (a14 * a21 * a33) - (a11 * a24 * a33) - (a13 * a21 * a34) - (a14 * a23 * a31);
-
-	b31 = (a21 * a32 * a44) + (a22 * a34 * a41) + (a24 * a31 * a42) - (a21 * a34 * a42) - (a22 * a31 * a44) - (a24 * a32 * a41);
-	b32 = (a11 * a34 * a42) + (a12 * a31 * a44) + (a14 * a32 * a41) - (a11 * a32 * a44) - (a12 * a34 * a41) - (a14 * a31 * a42);
-	b33 = (a11 * a22 * a44) + (a12 * a24 * a41) + (a14 * a21 * a42) - (a11 * a24 * a42) - (a12 * a21 * a44) - (a14 * a22 * a41);
-	b34 = (a11 * a24 * a32) + (a12 * a21 * a34) + (a14 * a22 * a31) - (a11 * a22 * a34) - (a12 * a24 * a31) - (a14 * a21 * a32);
-
-	b41 = (a21 * a33 * a42) + (a22 * a31 * a43) + (a23 * a32 * a41) - (a21 * a32 * a43) - (a22 * a33 * a41) - (a23 * a31 * a42);
-	b42 = (a11 * a32 * a43) + (a12 * a33 * a41) + (a13 * a31 * a42) - (a11 * a33 * a42) - (a12 * a31 * a43) - (a13 * a32 * a41);
-	b43 = (a11 * a23 * a42) + (a12 * a21 * a43) + (a13 * a22 * a41) - (a11 * a22 * a43) - (a12 * a23 * a41) - (a13 * a21 * a42);
-	b44 = (a11 * a22 * a33) + (a12 * a23 * a31) + (a13 * a21 * a32) - (a11 * a23 * a32) - (a12 * a21 * a33) - (a13 * a22 * a31);
-
-	res._11 = (float)(b11 / detA);
-	res._12 = (float)(b12 / detA);
-	res._13 = (float)(b13 / detA);
-	res._14 = (float)(b14 / detA);
-
-	res._21 = (float)(b21 / detA);
-	res._22 = (float)(b22 / detA);
-	res._23 = (float)(b23 / detA);
-	res._24 = (float)(b24 / detA);
-
-	res._31 = (float)(b31 / detA);
-	res._32 = (float)(b32 / detA);
-	res._33 = (float)(b33 / detA);
-	res._34 = (float)(b34 / detA);
-
-	res._41 = (float)(b41 / detA);
-	res._42 = (float)(b42 / detA);
-	res._43 = (float)(b43 / detA);
-	res._44 = (float)(b44 / detA);
-
-	*pdst = res;
 }
+
+//void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
+//{
+//	if (!pdst || !psrc) {
+//		return;
+//	}
+//
+//	ChaMatrix res;
+//	double detA;
+//	double a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44;
+//	double b11, b12, b13, b14, b21, b22, b23, b24, b31, b32, b33, b34, b41, b42, b43, b44;
+//
+//	a11 = psrc->_11;
+//	a12 = psrc->_12;
+//	a13 = psrc->_13;
+//	a14 = psrc->_14;
+//
+//	a21 = psrc->_21;
+//	a22 = psrc->_22;
+//	a23 = psrc->_23;
+//	a24 = psrc->_24;
+//
+//	a31 = psrc->_31;
+//	a32 = psrc->_32;
+//	a33 = psrc->_33;
+//	a34 = psrc->_34;
+//
+//	a41 = psrc->_41;
+//	a42 = psrc->_42;
+//	a43 = psrc->_43;
+//	a44 = psrc->_44;
+//
+//	detA = (a11 * a22 * a33 * a44) + (a11 * a23 * a34 * a42) + (a11 * a24 * a32 * a43)
+//		+ (a12 * a21 * a34 * a43) + (a12 * a23 * a31 * a44) + (a12 * a24 * a33 * a41)
+//		+ (a13 * a21 * a32 * a44) + (a13 * a22 * a34 * a41) + (a13 * a24 * a31 * a42)
+//		+ (a14 * a21 * a33 * a42) + (a14 * a22 * a31 * a43) + (a14 * a23 * a32 * a41)
+//		- (a11 * a22 * a34 * a43) - (a11 * a23 * a32 * a44) - (a11 * a24 * a33 * a42)
+//		- (a12 * a21 * a33 * a44) - (a12 * a23 * a34 * a41) - (a12 * a24 * a31 * a43)
+//		- (a13 * a21 * a34 * a42) - (a13 * a22 * a31 * a44) - (a13 * a24 * a32 * a41)
+//		- (a14 * a21 * a32 * a43) - (a14 * a22 * a33 * a41) - (a14 * a23 * a31 * a42);
+//
+//	if (pdet) {
+//		*pdet = (float)detA;
+//	}
+//
+//
+//	if (detA == 0.0) {
+//		*pdst = *psrc;
+//		return;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+//	}
+//
+//
+//
+//
+//	b11 = (a22 * a33 * a44) + (a23 * a34 * a42) + (a24 * a32 * a43) - (a22 * a34 * a43) - (a23 * a32 * a44) - (a24 * a33 * a42);
+//	b12 = (a12 * a34 * a43) + (a13 * a32 * a44) + (a14 * a33 * a42) - (a12 * a33 * a44) - (a13 * a34 * a42) - (a14 * a32 * a43);
+//	b13 = (a12 * a23 * a44) + (a13 * a24 * a42) + (a14 * a22 * a43) - (a12 * a24 * a43) - (a13 * a22 * a44) - (a14 * a23 * a42);
+//	b14 = (a12 * a24 * a33) + (a13 * a22 * a34) + (a14 * a23 * a32) - (a12 * a23 * a34) - (a13 * a24 * a32) - (a14 * a22 * a33);
+//
+//	b21 = (a21 * a34 * a43) + (a23 * a31 * a44) + (a24 * a33 * a41) - (a21 * a33 * a44) - (a23 * a34 * a41) - (a24 * a31 * a43);
+//	b22 = (a11 * a33 * a44) + (a13 * a34 * a41) + (a14 * a31 * a43) - (a11 * a34 * a43) - (a13 * a31 * a44) - (a14 * a33 * a41);
+//	b23 = (a11 * a24 * a43) + (a13 * a21 * a44) + (a14 * a23 * a41) - (a11 * a23 * a44) - (a13 * a24 * a41) - (a14 * a21 * a43);
+//	b24 = (a11 * a23 * a34) + (a13 * a24 * a31) + (a14 * a21 * a33) - (a11 * a24 * a33) - (a13 * a21 * a34) - (a14 * a23 * a31);
+//
+//	b31 = (a21 * a32 * a44) + (a22 * a34 * a41) + (a24 * a31 * a42) - (a21 * a34 * a42) - (a22 * a31 * a44) - (a24 * a32 * a41);
+//	b32 = (a11 * a34 * a42) + (a12 * a31 * a44) + (a14 * a32 * a41) - (a11 * a32 * a44) - (a12 * a34 * a41) - (a14 * a31 * a42);
+//	b33 = (a11 * a22 * a44) + (a12 * a24 * a41) + (a14 * a21 * a42) - (a11 * a24 * a42) - (a12 * a21 * a44) - (a14 * a22 * a41);
+//	b34 = (a11 * a24 * a32) + (a12 * a21 * a34) + (a14 * a22 * a31) - (a11 * a22 * a34) - (a12 * a24 * a31) - (a14 * a21 * a32);
+//
+//	b41 = (a21 * a33 * a42) + (a22 * a31 * a43) + (a23 * a32 * a41) - (a21 * a32 * a43) - (a22 * a33 * a41) - (a23 * a31 * a42);
+//	b42 = (a11 * a32 * a43) + (a12 * a33 * a41) + (a13 * a31 * a42) - (a11 * a33 * a42) - (a12 * a31 * a43) - (a13 * a32 * a41);
+//	b43 = (a11 * a23 * a42) + (a12 * a21 * a43) + (a13 * a22 * a41) - (a11 * a22 * a43) - (a12 * a23 * a41) - (a13 * a21 * a42);
+//	b44 = (a11 * a22 * a33) + (a12 * a23 * a31) + (a13 * a21 * a32) - (a11 * a23 * a32) - (a12 * a21 * a33) - (a13 * a22 * a31);
+//
+//	res._11 = (float)(b11 / detA);
+//	res._12 = (float)(b12 / detA);
+//	res._13 = (float)(b13 / detA);
+//	res._14 = (float)(b14 / detA);
+//
+//	res._21 = (float)(b21 / detA);
+//	res._22 = (float)(b22 / detA);
+//	res._23 = (float)(b23 / detA);
+//	res._24 = (float)(b24 / detA);
+//
+//	res._31 = (float)(b31 / detA);
+//	res._32 = (float)(b32 / detA);
+//	res._33 = (float)(b33 / detA);
+//	res._34 = (float)(b34 / detA);
+//
+//	res._41 = (float)(b41 / detA);
+//	res._42 = (float)(b42 / detA);
+//	res._43 = (float)(b43 / detA);
+//	res._44 = (float)(b44 / detA);
+//
+//	*pdst = res;
+//}
+
 
 void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 {
@@ -3234,51 +3521,70 @@ void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 		return;
 	}
 
-	pdst->_41 = srcx;
-	pdst->_42 = srcy;
-	pdst->_43 = srcz;
+	pdst->data[12] = srcx;
+	pdst->data[13] = srcy;
+	pdst->data[14] = srcz;
 }
 
 void ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
 {
-	float m[4][4];
+	pdst->data[0] = psrc->data[0];
+	pdst->data[1] = psrc->data[4];
+	pdst->data[2] = psrc->data[8];
+	pdst->data[3] = psrc->data[12];
 
-	m[0][0] = psrc->_11;
-	m[0][1] = psrc->_12;
-	m[0][2] = psrc->_13;
-	m[0][3] = psrc->_14;
-	m[1][0] = psrc->_21;
-	m[1][1] = psrc->_22;
-	m[1][2] = psrc->_23;
-	m[1][3] = psrc->_24;
-	m[2][0] = psrc->_31;
-	m[2][1] = psrc->_32;
-	m[2][2] = psrc->_33;
-	m[2][3] = psrc->_34;
-	m[3][0] = psrc->_41;
-	m[3][1] = psrc->_42;
-	m[3][2] = psrc->_43;
-	m[3][3] = psrc->_44;
+	pdst->data[4] = psrc->data[1];
+	pdst->data[5] = psrc->data[5];
+	pdst->data[6] = psrc->data[9];
+	pdst->data[7] = psrc->data[13];
 
-	pdst->_11 = m[0][0];
-	pdst->_12 = m[1][0];
-	pdst->_13 = m[2][0];
-	pdst->_14 = m[3][0];
+	pdst->data[8] = psrc->data[2];
+	pdst->data[9] = psrc->data[6];
+	pdst->data[10] = psrc->data[10];
+	pdst->data[11] = psrc->data[14];
 
-	pdst->_21 = m[0][1];
-	pdst->_22 = m[1][1];
-	pdst->_23 = m[2][1];
-	pdst->_24 = m[3][1];
+	pdst->data[12] = psrc->data[3];
+	pdst->data[13] = psrc->data[7];
+	pdst->data[14] = psrc->data[11];
+	pdst->data[15] = psrc->data[15];
 
-	pdst->_31 = m[0][2];
-	pdst->_32 = m[1][2];
-	pdst->_33 = m[2][2];
-	pdst->_34 = m[3][2];
+	//float m[4][4];
+	//m[0][0] = psrc->data[0];
+	//m[0][1] = psrc->data[1];
+	//m[0][2] = psrc->data[2];
+	//m[0][3] = psrc->data[3];
+	//m[1][0] = psrc->data[4];
+	//m[1][1] = psrc->data[5];
+	//m[1][2] = psrc->data[6];
+	//m[1][3] = psrc->data[7];
+	//m[2][0] = psrc->data[8];
+	//m[2][1] = psrc->data[9];
+	//m[2][2] = psrc->data[10];
+	//m[2][3] = psrc->data[11];
+	//m[3][0] = psrc->data[12];
+	//m[3][1] = psrc->data[13];
+	//m[3][2] = psrc->data[14];
+	//m[3][3] = psrc->data[15];
 
-	pdst->_41 = m[0][3];
-	pdst->_42 = m[1][3];
-	pdst->_43 = m[2][3];
-	pdst->_44 = m[3][3];
+	//pdst->data[0] = m[0][0];
+	//pdst->data[1] = m[1][0];
+	//pdst->data[2] = m[2][0];
+	//pdst->data[3] = m[3][0];
+
+	//pdst->data[4] = m[0][1];
+	//pdst->data[5] = m[1][1];
+	//pdst->data[6] = m[2][1];
+	//pdst->data[7] = m[3][1];
+
+	//pdst->data[8] = m[0][2];
+	//pdst->data[9] = m[1][2];
+	//pdst->data[10] = m[2][2];
+	//pdst->data[11] = m[3][2];
+
+	//pdst->data[12] = m[0][3];
+	//pdst->data[13] = m[1][3];
+	//pdst->data[14] = m[2][3];
+	//pdst->data[15] = m[3][3];
 
 }
 
@@ -3337,31 +3643,60 @@ void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc){
 		return;
 	}
 
-	ChaVector3 src = *psrc;
+	__m128 srcx = _mm_load1_ps(&psrc->x);
+	__m128 srcy = _mm_load1_ps(&psrc->y);
+	__m128 srcz = _mm_load1_ps(&psrc->z);
 
-	double mag = (double)src.x * (double)src.x + (double)src.y * (double)src.y + (double)src.z * (double)src.z;
-	if (mag != 0.0){
-		double divval = ::sqrt(mag);
-		if (divval != 0.0) {
-			double tmpx = src.x / divval;
-			double tmpy = src.y / divval;
-			double tmpz = src.z / divval;
-			pdst->x = (float)tmpx;
-			pdst->y = (float)tmpy;
-			pdst->z = (float)tmpz;
-		}
-		else {
-			pdst->x = src.x;
-			pdst->y = src.y;
-			pdst->z = src.z;
-		}
+	__m128 mulx = _mm_mul_ps(srcx, srcx);
+	__m128 maddxy = _mm_madd_ps(srcy, srcy, mulx);
+	__m128 maddxyz = _mm_madd_ps(srcz, srcz, maddxy);
+
+	float check[4];
+	_mm_store_ps(check, maddxyz);
+	if (check[0] >= 1e-7) {
+		__m128 invsqrt = _mm_rsqrt_ps(maddxyz);//平方根の逆数
+
+		__m128 srcxyz1 = _mm_setr_ps(psrc->x, psrc->y, psrc->z, 0.0f);
+		__m128 mresult = _mm_mul_ps(srcxyz1, invsqrt);
+
+		float result[4];
+		_mm_store_ps(result, mresult);
+
+		pdst->x = result[0];
+		pdst->y = result[1];
+		pdst->z = result[2];
 	}
-	else{
+	else {
 		//*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
-		pdst->x = src.x;
-		pdst->y = src.y;
-		pdst->z = src.z;
+		pdst->x = psrc->x;
+		pdst->y = psrc->y;
+		pdst->z = psrc->z;
 	}
+
+	//ChaVector3 src = *psrc;
+	//double mag = (double)src.x * (double)src.x + (double)src.y * (double)src.y + (double)src.z * (double)src.z;
+	//if (mag != 0.0){
+	//	double divval = ::sqrt(mag);
+	//	if (divval != 0.0) {
+	//		double tmpx = src.x / divval;
+	//		double tmpy = src.y / divval;
+	//		double tmpz = src.z / divval;
+	//		pdst->x = (float)tmpx;
+	//		pdst->y = (float)tmpy;
+	//		pdst->z = (float)tmpz;
+	//	}
+	//	else {
+	//		pdst->x = src.x;
+	//		pdst->y = src.y;
+	//		pdst->z = src.z;
+	//	}
+	//}
+	//else{
+	//	//*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
+	//	pdst->x = src.x;
+	//	pdst->y = src.y;
+	//	pdst->z = src.z;
+	//}
 }
 
 float ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2)
@@ -3399,23 +3734,61 @@ void ChaVector3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix*
 		return;
 	}
 
-	double tmpx, tmpy, tmpz, tmpw;
-	tmpx = (double)srcmat->_11 * (double)srcvec->x + (double)srcmat->_21 * (double)srcvec->y + (double)srcmat->_31 * (double)srcvec->z + (double)srcmat->_41;
-	tmpy = (double)srcmat->_12 * (double)srcvec->x + (double)srcmat->_22 * (double)srcvec->y + (double)srcmat->_32 * (double)srcvec->z + (double)srcmat->_42;
-	tmpz = (double)srcmat->_13 * (double)srcvec->x + (double)srcmat->_23 * (double)srcvec->y + (double)srcmat->_33 * (double)srcvec->z + (double)srcmat->_43;
-	tmpw = (double)srcmat->_14 * (double)srcvec->x + (double)srcmat->_24 * (double)srcvec->y + (double)srcmat->_34 * (double)srcvec->z + (double)srcmat->_44;
+	//float src4fl[4] = { srcvec->x, srcvec->y, srcvec->z, 1.0f };
+	//__m128 ma_col_0 = _mm_load_ps(src4fl);
+	const __m128 ma_col_0 = _mm_setr_ps(srcvec->x, srcvec->y, srcvec->z, 1.0f);
 
-	if (tmpw != 0.0){
-		dstvec->x = (float)(tmpx / tmpw);
-		dstvec->y = (float)(tmpy / tmpw);
-		dstvec->z = (float)(tmpz / tmpw);
+
+	__m128 resultX;
+	__m128 resultXY;
+	__m128 resultXYZ;
+	__m128 resultXYZW;
+	resultX = _mm_mul_ps(srcmat->mVec[0], _mm_replicate_x_ps(ma_col_0));
+	resultXY = _mm_madd_ps(srcmat->mVec[1], _mm_replicate_y_ps(ma_col_0), resultX);
+	resultXYZ = _mm_madd_ps(srcmat->mVec[2], _mm_replicate_z_ps(ma_col_0), resultXY);
+	resultXYZW = _mm_madd_ps(srcmat->mVec[3], _mm_replicate_w_ps(ma_col_0), resultXYZ);
+
+
+	//x/tmpw, y/tmpw, z/tmpw, w/tmpw
+	float checkw4[4];
+	_mm_store_ps(checkw4, resultXYZW);
+	if (fabs(checkw4[3]) >= 1e-5) {
+		const __m128 inverseOne = _mm_setr_ps(1.f, 1.f, 1.f, 1.f);
+		const __m128 resultw = VecSwizzle1(resultXYZW, 3);
+		__m128 rDetM = _mm_div_ps(inverseOne, resultw);
+		resultXYZW = _mm_mul_ps(resultXYZW, rDetM);
+
+
+		float resultfl4[4];
+		_mm_store_ps(resultfl4, resultXYZW);
+
+		dstvec->x = resultfl4[0];
+		dstvec->y = resultfl4[1];
+		dstvec->z = resultfl4[2];
 	}
-	else{
+	else {
 		//dstvec->x = 0.0f;
 		//dstvec->y = 0.0f;
 		//dstvec->z = 0.0f;
 		*dstvec = *srcvec;
 	}
+
+	//tmpx = (double)srcmat->_11 * (double)srcvec->x + (double)srcmat->data[4] * (double)srcvec->y + (double)srcmat->data[8] * (double)srcvec->z + (double)srcmat->data[12];
+	//tmpy = (double)srcmat->_12 * (double)srcvec->x + (double)srcmat->data[5] * (double)srcvec->y + (double)srcmat->data[9] * (double)srcvec->z + (double)srcmat->data[13];
+	//tmpz = (double)srcmat->_13 * (double)srcvec->x + (double)srcmat->data[6] * (double)srcvec->y + (double)srcmat->data[10] * (double)srcvec->z + (double)srcmat->data[14];
+	//tmpw = (double)srcmat->data[3] * (double)srcvec->x + (double)srcmat->data[7] * (double)srcvec->y + (double)srcmat->data[11] * (double)srcvec->z + (double)srcmat->data[15];
+
+	//if (tmpw != 0.0){
+	//	dstvec->x = (float)(tmpx / tmpw);
+	//	dstvec->y = (float)(tmpy / tmpw);
+	//	dstvec->z = (float)(tmpz / tmpw);
+	//}
+	//else{
+	//	//dstvec->x = 0.0f;
+	//	//dstvec->y = 0.0f;
+	//	//dstvec->z = 0.0f;
+	//	*dstvec = *srcvec;
+	//}
 }
 
 /*
@@ -3446,10 +3819,10 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *dstvec, const ChaVector3* srcv
 	}
 
 	double tmpx, tmpy, tmpz, tmpw;
-	tmpx = (double)srcmat->_11 * (double)srcvec->x + (double)srcmat->_21 * (double)srcvec->y + (double)srcmat->_31 * (double)srcvec->z;// +(double)srcmat->_41;
-	tmpy = (double)srcmat->_12 * (double)srcvec->x + (double)srcmat->_22 * (double)srcvec->y + (double)srcmat->_32 * (double)srcvec->z;// + (double)srcmat->_42;
-	tmpz = (double)srcmat->_13 * (double)srcvec->x + (double)srcmat->_23 * (double)srcvec->y + (double)srcmat->_33 * (double)srcvec->z;// + (double)srcmat->_43;
-	tmpw = (double)srcmat->_14 * (double)srcvec->x + (double)srcmat->_24 * (double)srcvec->y + (double)srcmat->_34 * (double)srcvec->z;// + (double)srcmat->_44;
+	tmpx = (double)srcmat->data[0] * (double)srcvec->x + (double)srcmat->data[4] * (double)srcvec->y + (double)srcmat->data[8] * (double)srcvec->z;// +(double)srcmat->data[12];
+	tmpy = (double)srcmat->data[1] * (double)srcvec->x + (double)srcmat->data[5] * (double)srcvec->y + (double)srcmat->data[9] * (double)srcvec->z;// + (double)srcmat->data[13];
+	tmpz = (double)srcmat->data[2] * (double)srcvec->x + (double)srcmat->data[6] * (double)srcvec->y + (double)srcmat->data[10] * (double)srcvec->z;// + (double)srcmat->data[14];
+	tmpw = (double)srcmat->data[3] * (double)srcvec->x + (double)srcmat->data[7] * (double)srcvec->y + (double)srcmat->data[11] * (double)srcvec->z;// + (double)srcmat->data[15];
 
 	if (tmpw != 0.0) {
 		dstvec->x = (float)(tmpx / tmpw);
@@ -3503,9 +3876,9 @@ void ChaMatrixScaling(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 		return;
 	}
 
-	pdst->_11 = srcx;
-	pdst->_22 = srcy;
-	pdst->_33 = srcz;
+	pdst->data[0] = srcx;
+	pdst->data[5] = srcy;
+	pdst->data[10] = srcz;
 }
 
 void ChaMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec)
@@ -3540,25 +3913,25 @@ xaxis.z           yaxis.z           zaxis.z          0
 	traz = -ChaVector3Dot(&zaxis, camEye);
 
 
-	dstviewmat->_11 = xaxis.x;
-	dstviewmat->_21 = xaxis.y;
-	dstviewmat->_31 = xaxis.z;
-	dstviewmat->_41 = trax;
+	dstviewmat->data[0] = xaxis.x;
+	dstviewmat->data[4] = xaxis.y;
+	dstviewmat->data[8] = xaxis.z;
+	dstviewmat->data[12] = trax;
 
-	dstviewmat->_12 = yaxis.x;
-	dstviewmat->_22 = yaxis.y;
-	dstviewmat->_32 = yaxis.z;
-	dstviewmat->_42 = tray;
+	dstviewmat->data[1] = yaxis.x;
+	dstviewmat->data[5] = yaxis.y;
+	dstviewmat->data[9] = yaxis.z;
+	dstviewmat->data[13] = tray;
 
-	dstviewmat->_13 = zaxis.x;
-	dstviewmat->_23 = zaxis.y;
-	dstviewmat->_33 = zaxis.z;
-	dstviewmat->_43 = traz;
+	dstviewmat->data[2] = zaxis.x;
+	dstviewmat->data[6] = zaxis.y;
+	dstviewmat->data[10] = zaxis.z;
+	dstviewmat->data[14] = traz;
 
-	dstviewmat->_14 = 0.0f;
-	dstviewmat->_24 = 0.0f;
-	dstviewmat->_34 = 0.0f;
-	dstviewmat->_44 = 1.0f;
+	dstviewmat->data[3] = 0.0f;
+	dstviewmat->data[7] = 0.0f;
+	dstviewmat->data[11] = 0.0f;
+	dstviewmat->data[15] = 1.0f;
 
 
 }
@@ -3591,25 +3964,25 @@ ChaMatrix* ChaMatrixOrthoOffCenterRH(ChaMatrix* pOut, float l, float r, float t,
 	}
 
 
-	pOut->_11 = (float)(2.0 / ((double)r - (double)l));
-	pOut->_12 = 0.0f;
-	pOut->_13 = 0.0f;
-	pOut->_14 = 0.0f;
+	pOut->data[0] = (float)(2.0 / ((double)r - (double)l));
+	pOut->data[1] = 0.0f;
+	pOut->data[2] = 0.0f;
+	pOut->data[3] = 0.0f;
 
-	pOut->_21 = 0.0f;
-	pOut->_22 = (float)(2.0 / ((double)t - (double)b));
-	pOut->_23 = 0.0f;
-	pOut->_24 = 0.0f;
+	pOut->data[4] = 0.0f;
+	pOut->data[5] = (float)(2.0 / ((double)t - (double)b));
+	pOut->data[6] = 0.0f;
+	pOut->data[7] = 0.0f;
 
-	pOut->_31 = 0.0f;
-	pOut->_32 = 0.0f;
-	pOut->_33 = (float)(1.0 / ((double)zn - (double)zf));
-	pOut->_34 = 0.0f;
+	pOut->data[8] = 0.0f;
+	pOut->data[9] = 0.0f;
+	pOut->data[10] = (float)(1.0 / ((double)zn - (double)zf));
+	pOut->data[11] = 0.0f;
 
-	pOut->_41 = (float)(((double)l + (double)r) / ((double)l - (double)r));
-	pOut->_42 = (float)(((double)t + (double)b) / ((double)b - (double)t));
-	pOut->_43 = (float)((double)zn / ((double)zn - (double)zf));
-	pOut->_44 = 1.0f;
+	pOut->data[12] = (float)(((double)l + (double)r) / ((double)l - (double)r));
+	pOut->data[13] = (float)(((double)t + (double)b) / ((double)b - (double)t));
+	pOut->data[14] = (float)((double)zn / ((double)zn - (double)zf));
+	pOut->data[15] = 1.0f;
 
 	return pOut;
 }
@@ -3654,25 +4027,25 @@ ChaMatrix* ChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, float Aspect, 
 		h = c / s;
 		w = h / (double)Aspect;
 
-		pOut->_11 = (float)w;
-		pOut->_12 = 0.0f;
-		pOut->_13 = 0.0f;
-		pOut->_14 = 0.0f;
+		pOut->data[0] = (float)w;
+		pOut->data[1] = 0.0f;
+		pOut->data[2] = 0.0f;
+		pOut->data[3] = 0.0f;
 
-		pOut->_21 = 0;
-		pOut->_22 = (float)h;
-		pOut->_23 = 0.0f;
-		pOut->_24 = 0.0f;
+		pOut->data[4] = 0;
+		pOut->data[5] = (float)h;
+		pOut->data[6] = 0.0f;
+		pOut->data[7] = 0.0f;
 
-		pOut->_31 = 0.0f;
-		pOut->_32 = 0.0f;
-		pOut->_33 = (float)((double)zf / ((double)zn - (double)zf));
-		pOut->_34 = -1.0f;
+		pOut->data[8] = 0.0f;
+		pOut->data[9] = 0.0f;
+		pOut->data[10] = (float)((double)zf / ((double)zn - (double)zf));
+		pOut->data[11] = -1.0f;
 
-		pOut->_41 = 0.0f;
-		pOut->_42 = 0.0f;
-		pOut->_43 = (float)((double)zn * (double)zf / ((double)zn - (double)zf));
-		pOut->_44 = 0.0f;
+		pOut->data[12] = 0.0f;
+		pOut->data[13] = 0.0f;
+		pOut->data[14] = (float)((double)zn * (double)zf / ((double)zn - (double)zf));
+		pOut->data[15] = 0.0f;
 	}
 	else {
 		ChaMatrixIdentity(pOut);
@@ -3814,25 +4187,25 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat)
 	ChaMatrix retmat;
 
 
-	retmat._11 = tmpmat._11;
-	retmat._12 = tmpmat._21;
-	retmat._13 = tmpmat._31;
-	retmat._14 = tmpmat._41;
+	retmat.data[0] = tmpmat.data[0];
+	retmat.data[1] = tmpmat.data[4];
+	retmat.data[2] = tmpmat.data[8];
+	retmat.data[3] = tmpmat.data[12];
 
-	retmat._21 = tmpmat._12;
-	retmat._22 = tmpmat._22;
-	retmat._23 = tmpmat._32;
-	retmat._24 = tmpmat._42;
+	retmat.data[4] = tmpmat.data[1];
+	retmat.data[5] = tmpmat.data[5];
+	retmat.data[6] = tmpmat.data[9];
+	retmat.data[7] = tmpmat.data[13];
 
-	retmat._31 = tmpmat._13;
-	retmat._32 = tmpmat._23;
-	retmat._33 = tmpmat._33;
-	retmat._34 = tmpmat._43;
+	retmat.data[8] = tmpmat.data[2];
+	retmat.data[9] = tmpmat.data[6];
+	retmat.data[10] = tmpmat.data[10];
+	retmat.data[11] = tmpmat.data[14];
 
-	retmat._41 = tmpmat._14;
-	retmat._42 = tmpmat._24;
-	retmat._43 = tmpmat._34;
-	retmat._44 = tmpmat._44;
+	retmat.data[12] = tmpmat.data[3];
+	retmat.data[13] = tmpmat.data[7];
+	retmat.data[14] = tmpmat.data[11];
+	retmat.data[15] = tmpmat.data[15];
 
 
 	return retmat;
@@ -3882,45 +4255,45 @@ DirectX::XMFLOAT4 ChaVector4::D3DX()
 
 
 ChaMatrix ChaMatrix::operator= (DirectX::XMMATRIX m) {
-	this->_11 = m.r[0].m128_f32[0];
-	this->_12 = m.r[0].m128_f32[1];
-	this->_13 = m.r[0].m128_f32[2];
-	this->_14 = m.r[0].m128_f32[3];
+	this->data[0] = m.r[0].m128_f32[0];
+	this->data[1] = m.r[0].m128_f32[1];
+	this->data[2] = m.r[0].m128_f32[2];
+	this->data[3] = m.r[0].m128_f32[3];
 
-	this->_21 = m.r[1].m128_f32[0];
-	this->_22 = m.r[1].m128_f32[1];
-	this->_23 = m.r[1].m128_f32[2];
-	this->_24 = m.r[1].m128_f32[3];
+	this->data[4] = m.r[1].m128_f32[0];
+	this->data[5] = m.r[1].m128_f32[1];
+	this->data[6] = m.r[1].m128_f32[2];
+	this->data[7] = m.r[1].m128_f32[3];
 
-	this->_31 = m.r[2].m128_f32[0];
-	this->_32 = m.r[2].m128_f32[1];
-	this->_33 = m.r[2].m128_f32[2];
-	this->_34 = m.r[2].m128_f32[3];
+	this->data[8] = m.r[2].m128_f32[0];
+	this->data[9] = m.r[2].m128_f32[1];
+	this->data[10] = m.r[2].m128_f32[2];
+	this->data[11] = m.r[2].m128_f32[3];
 
-	this->_41 = m.r[3].m128_f32[0];
-	this->_42 = m.r[3].m128_f32[1];
-	this->_43 = m.r[3].m128_f32[2];
-	this->_44 = m.r[3].m128_f32[3];
+	this->data[12] = m.r[3].m128_f32[0];
+	this->data[13] = m.r[3].m128_f32[1];
+	this->data[14] = m.r[3].m128_f32[2];
+	this->data[15] = m.r[3].m128_f32[3];
 
 	//this->_11 = m.r[0].m128_f32[0];
 	//this->_12 = m.r[1].m128_f32[0];
 	//this->_13 = m.r[2].m128_f32[0];
-	//this->_14 = m.r[3].m128_f32[0];
+	//this->data[3] = m.r[3].m128_f32[0];
 
-	//this->_21 = m.r[0].m128_f32[1];
-	//this->_22 = m.r[1].m128_f32[1];
-	//this->_23 = m.r[2].m128_f32[1];
-	//this->_24 = m.r[3].m128_f32[1];
+	//this->data[4] = m.r[0].m128_f32[1];
+	//this->data[5] = m.r[1].m128_f32[1];
+	//this->data[6] = m.r[2].m128_f32[1];
+	//this->data[7] = m.r[3].m128_f32[1];
 
-	//this->_31 = m.r[0].m128_f32[2];
-	//this->_32 = m.r[1].m128_f32[2];
-	//this->_33 = m.r[2].m128_f32[2];
-	//this->_34 = m.r[3].m128_f32[2];
+	//this->data[8] = m.r[0].m128_f32[2];
+	//this->data[9] = m.r[1].m128_f32[2];
+	//this->data[10] = m.r[2].m128_f32[2];
+	//this->data[11] = m.r[3].m128_f32[2];
 
-	//this->_41 = m.r[0].m128_f32[3];
-	//this->_42 = m.r[1].m128_f32[3];
-	//this->_43 = m.r[2].m128_f32[3];
-	//this->_44 = m.r[3].m128_f32[3];
+	//this->data[12] = m.r[0].m128_f32[3];
+	//this->data[13] = m.r[1].m128_f32[3];
+	//this->data[14] = m.r[2].m128_f32[3];
+	//this->data[15] = m.r[3].m128_f32[3];
 
 
 	return *this;
@@ -3929,45 +4302,45 @@ ChaMatrix ChaMatrix::operator= (DirectX::XMMATRIX m) {
 DirectX::XMMATRIX ChaMatrix::D3DX()
 {
 	DirectX::XMMATRIX retm;
-	retm.r[0].m128_f32[0] = _11;
-	retm.r[0].m128_f32[1] = _12;
-	retm.r[0].m128_f32[2] = _13;
-	retm.r[0].m128_f32[3] = _14;
+	retm.r[0].m128_f32[0] = data[0];
+	retm.r[0].m128_f32[1] = data[1];
+	retm.r[0].m128_f32[2] = data[2];
+	retm.r[0].m128_f32[3] = data[3];
 
-	retm.r[1].m128_f32[0] = _21;
-	retm.r[1].m128_f32[1] = _22;
-	retm.r[1].m128_f32[2] = _23;
-	retm.r[1].m128_f32[3] = _24;
+	retm.r[1].m128_f32[0] = data[4];
+	retm.r[1].m128_f32[1] = data[5];
+	retm.r[1].m128_f32[2] = data[6];
+	retm.r[1].m128_f32[3] = data[7];
 
-	retm.r[2].m128_f32[0] = _31;
-	retm.r[2].m128_f32[1] = _32;
-	retm.r[2].m128_f32[2] = _33;
-	retm.r[2].m128_f32[3] = _34;
+	retm.r[2].m128_f32[0] = data[8];
+	retm.r[2].m128_f32[1] = data[9];
+	retm.r[2].m128_f32[2] = data[10];
+	retm.r[2].m128_f32[3] = data[11];
 
-	retm.r[3].m128_f32[0] = _41;
-	retm.r[3].m128_f32[1] = _42;
-	retm.r[3].m128_f32[2] = _43;
-	retm.r[3].m128_f32[3] = _44;
+	retm.r[3].m128_f32[0] = data[12];
+	retm.r[3].m128_f32[1] = data[13];
+	retm.r[3].m128_f32[2] = data[14];
+	retm.r[3].m128_f32[3] = data[15];
 
 	//retm.r[0].m128_f32[0] = _11;
-	//retm.r[1].m128_f32[0] = _12;
+	//retm.r[1].m128_f32[0] = data[1];
 	//retm.r[2].m128_f32[0] = _13;
-	//retm.r[3].m128_f32[0] = _14;
+	//retm.r[3].m128_f32[0] = data[3];
 
-	//retm.r[0].m128_f32[1] = _21;
-	//retm.r[2].m128_f32[1] = _22;
-	//retm.r[3].m128_f32[1] = _23;
-	//retm.r[4].m128_f32[1] = _24;
+	//retm.r[0].m128_f32[1] = data[4];
+	//retm.r[2].m128_f32[1] = data[5];
+	//retm.r[3].m128_f32[1] = data[6];
+	//retm.r[4].m128_f32[1] = data[7];
 
-	//retm.r[0].m128_f32[2] = _31;
-	//retm.r[1].m128_f32[2] = _32;
-	//retm.r[2].m128_f32[2] = _33;
-	//retm.r[3].m128_f32[2] = _34;
+	//retm.r[0].m128_f32[2] = data[8];
+	//retm.r[1].m128_f32[2] = data[9];
+	//retm.r[2].m128_f32[2] = data[10];
+	//retm.r[3].m128_f32[2] = data[11];
 
-	//retm.r[0].m128_f32[3] = _41;
-	//retm.r[1].m128_f32[3] = _42;
-	//retm.r[2].m128_f32[3] = _43;
-	//retm.r[3].m128_f32[3] = _44;
+	//retm.r[0].m128_f32[3] = data[12];
+	//retm.r[1].m128_f32[3] = data[13];
+	//retm.r[2].m128_f32[3] = data[14];
+	//retm.r[3].m128_f32[3] = data[15];
 
 	return retm;
 }

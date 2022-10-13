@@ -27,7 +27,22 @@ class ChaVector3;
 
 //class
 
+//template<class T> struct Property {
+//	T& r;
+//	operator T() { return (T)r; }
+//	void operator =(const T v) { r = v; }
+//};
 
+//namespace mc {
+//	template<class T> struct property {
+//		T _v;
+//		operator T() { return _v; }
+//		void operator=(const T& v) { _v = v; }
+//		T* operator->() { return &_v; }
+//		T& operator *() { return  _v; }
+//		friend std::ostream& operator<<(std::ostream& os, const property& it) { return os << it._v; }
+//	};
+//}
 
 class ChaMatrix
 {
@@ -66,10 +81,10 @@ public:
 
 	bool operator== (const ChaMatrix &m) const {
 		bool result;
-		result = _11 == m._11 && _12 == m._12 && _13 == m._13 && _14 == m._14 &&
-			_21 == m._21 && _22 == m._22 && _23 == m._23 && _24 == m._24 &&
-			_31 == m._31 && _32 == m._32 && _33 == m._33 && _34 == m._34 &&
-			_41 == m._41 && _42 == m._42 && _43 == m._43 && _44 == m._44;
+		result = data[0] == m.data[0] && data[1] == m.data[1] && data[2] == m.data[2] && data[3] == m.data[3] &&
+			data[4] == m.data[4] && data[5] == m.data[5] && data[6] == m.data[6] && data[7] == m.data[7] &&
+			data[8] == m.data[8] && data[9] == m.data[9] && data[10] == m.data[10] && data[11] == m.data[11] &&
+			data[12] == m.data[12] && data[13] == m.data[13] && data[14] == m.data[14] && data[15] == m.data[15];
 		return result;
 	};
 	bool operator!= (const ChaMatrix &m) const {
@@ -87,26 +102,14 @@ public:
 	void SetScale(ChaVector3 srcscale);//‰Šú‰»‚µ‚È‚¢
 	void SetBasis(ChaMatrix srcmat);//‰Šú‰»‚µ‚È‚¢@copy3x3
 
+
 public:
-	float _11;
-	float _12;
-	float _13;
-	float _14;
+	union
+	{
+		float data[16];
+		__m128 mVec[4];
+	};
 
-	float _21;
-	float _22;
-	float _23;
-	float _24;
-
-	float _31;
-	float _32;
-	float _33;
-	float _34;
-
-	float _41;
-	float _42;
-	float _43;
-	float _44;
 
 };
 

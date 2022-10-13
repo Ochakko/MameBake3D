@@ -803,9 +803,9 @@ int CBVHElem::CalcDiffTra( int frameno, ChaVector3* pdifftra )
 {
 
 	ChaMatrix rotmat = (qptr + frameno)->MakeRotMatX();
-	rotmat._41 += (trans + frameno)->x;
-	rotmat._42 += (trans + frameno)->y;
-	rotmat._43 += (trans + frameno)->z;
+	rotmat.data[12] += (trans + frameno)->x;
+	rotmat.data[13] += (trans + frameno)->y;
+	rotmat.data[14] += (trans + frameno)->z;
 
 	ChaVector3 aftpos( 0.0f, 0.0f, 0.0f );
 	ChaVector3TransformCoord( &aftpos, &position, &rotmat );

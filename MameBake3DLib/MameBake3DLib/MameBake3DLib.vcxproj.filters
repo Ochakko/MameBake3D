@@ -192,6 +192,12 @@
     <ClCompile Include="..\CPP\ThreadingUpdateTimeline.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\DXUT\Core\DXUT.cpp">
+      <Filter>DXUT_WIC_DDS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DXUT\Core\DXUTmisc.cpp">
+      <Filter>DXUT_WIC_DDS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">

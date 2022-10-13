@@ -172,7 +172,7 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;FBXSDK_SHARED;WIN32;_WIN64;NDEBUG;_WINDOWS;CONVD3DX11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\include;..\MameBake3DLib\INCLUDE;..\MameBake3DLib\DXUT\Core;..\MameBake3DLib\DXUT\Optional;..\MameBake3DLib\BTMANAGER;..\MameBake3DLib\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <WholeProgramOptimization>false</WholeProgramOptimization>

@@ -156,25 +156,25 @@ int CLmtFile::WriteLmt( CBone* srcbone )
 	}
 
 	ChaMatrix nodemat = srcbone->GetNodeMat();
-	CallF(Write2File("      <NodeMatrix_11>%f</NodeMatrix_11>\r\n", nodemat._11), return 1);
-	CallF(Write2File("      <NodeMatrix_12>%f</NodeMatrix_12>\r\n", nodemat._12), return 1);
-	CallF(Write2File("      <NodeMatrix_13>%f</NodeMatrix_13>\r\n", nodemat._13), return 1);
-	CallF(Write2File("      <NodeMatrix_14>%f</NodeMatrix_14>\r\n", nodemat._14), return 1);
+	CallF(Write2File("      <NodeMatrix_11>%f</NodeMatrix_11>\r\n", nodemat.data[0]), return 1);
+	CallF(Write2File("      <NodeMatrix_12>%f</NodeMatrix_12>\r\n", nodemat.data[1]), return 1);
+	CallF(Write2File("      <NodeMatrix_13>%f</NodeMatrix_13>\r\n", nodemat.data[2]), return 1);
+	CallF(Write2File("      <NodeMatrix_14>%f</NodeMatrix_14>\r\n", nodemat.data[3]), return 1);
 
-	CallF(Write2File("      <NodeMatrix_21>%f</NodeMatrix_21>\r\n", nodemat._21), return 1);
-	CallF(Write2File("      <NodeMatrix_22>%f</NodeMatrix_22>\r\n", nodemat._22), return 1);
-	CallF(Write2File("      <NodeMatrix_23>%f</NodeMatrix_23>\r\n", nodemat._23), return 1);
-	CallF(Write2File("      <NodeMatrix_24>%f</NodeMatrix_24>\r\n", nodemat._24), return 1);
+	CallF(Write2File("      <NodeMatrix_21>%f</NodeMatrix_21>\r\n", nodemat.data[4]), return 1);
+	CallF(Write2File("      <NodeMatrix_22>%f</NodeMatrix_22>\r\n", nodemat.data[5]), return 1);
+	CallF(Write2File("      <NodeMatrix_23>%f</NodeMatrix_23>\r\n", nodemat.data[6]), return 1);
+	CallF(Write2File("      <NodeMatrix_24>%f</NodeMatrix_24>\r\n", nodemat.data[7]), return 1);
 
-	CallF(Write2File("      <NodeMatrix_31>%f</NodeMatrix_31>\r\n", nodemat._31), return 1);
-	CallF(Write2File("      <NodeMatrix_32>%f</NodeMatrix_32>\r\n", nodemat._32), return 1);
-	CallF(Write2File("      <NodeMatrix_33>%f</NodeMatrix_33>\r\n", nodemat._33), return 1);
-	CallF(Write2File("      <NodeMatrix_34>%f</NodeMatrix_34>\r\n", nodemat._34), return 1);
+	CallF(Write2File("      <NodeMatrix_31>%f</NodeMatrix_31>\r\n", nodemat.data[8]), return 1);
+	CallF(Write2File("      <NodeMatrix_32>%f</NodeMatrix_32>\r\n", nodemat.data[9]), return 1);
+	CallF(Write2File("      <NodeMatrix_33>%f</NodeMatrix_33>\r\n", nodemat.data[10]), return 1);
+	CallF(Write2File("      <NodeMatrix_34>%f</NodeMatrix_34>\r\n", nodemat.data[11]), return 1);
 
-	CallF(Write2File("      <NodeMatrix_41>%f</NodeMatrix_41>\r\n", nodemat._41), return 1);
-	CallF(Write2File("      <NodeMatrix_42>%f</NodeMatrix_42>\r\n", nodemat._42), return 1);
-	CallF(Write2File("      <NodeMatrix_43>%f</NodeMatrix_43>\r\n", nodemat._43), return 1);
-	CallF(Write2File("      <NodeMatrix_44>%f</NodeMatrix_44>\r\n", nodemat._44), return 1);
+	CallF(Write2File("      <NodeMatrix_41>%f</NodeMatrix_41>\r\n", nodemat.data[12]), return 1);
+	CallF(Write2File("      <NodeMatrix_42>%f</NodeMatrix_42>\r\n", nodemat.data[13]), return 1);
+	CallF(Write2File("      <NodeMatrix_43>%f</NodeMatrix_43>\r\n", nodemat.data[14]), return 1);
+	CallF(Write2File("      <NodeMatrix_44>%f</NodeMatrix_44>\r\n", nodemat.data[15]), return 1);
 
 	CallF(Write2File("      <Via180_X>%d</Via180_X>\r\n", anglelimit.via180flag[0]), return 1);
 	CallF(Write2File("      <Via180_Y>%d</Via180_Y>\r\n", anglelimit.via180flag[1]), return 1);
@@ -378,25 +378,25 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	ChaMatrix nodemat;
 	ChaMatrixIdentity(&nodemat);
 
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_11>", "</NodeMatrix_11>", &nodemat._11), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_12>", "</NodeMatrix_12>", &nodemat._12), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_13>", "</NodeMatrix_13>", &nodemat._13), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_14>", "</NodeMatrix_14>", &nodemat._14), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_11>", "</NodeMatrix_11>", &nodemat.data[0]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_12>", "</NodeMatrix_12>", &nodemat.data[1]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_13>", "</NodeMatrix_13>", &nodemat.data[2]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_14>", "</NodeMatrix_14>", &nodemat.data[3]), return 1);
 
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_21>", "</NodeMatrix_21>", &nodemat._21), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_22>", "</NodeMatrix_22>", &nodemat._22), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_23>", "</NodeMatrix_23>", &nodemat._23), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_24>", "</NodeMatrix_24>", &nodemat._24), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_21>", "</NodeMatrix_21>", &nodemat.data[4]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_22>", "</NodeMatrix_22>", &nodemat.data[5]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_23>", "</NodeMatrix_23>", &nodemat.data[6]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_24>", "</NodeMatrix_24>", &nodemat.data[7]), return 1);
 
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_31>", "</NodeMatrix_31>", &nodemat._31), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_32>", "</NodeMatrix_32>", &nodemat._32), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_33>", "</NodeMatrix_33>", &nodemat._33), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_34>", "</NodeMatrix_34>", &nodemat._34), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_31>", "</NodeMatrix_31>", &nodemat.data[8]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_32>", "</NodeMatrix_32>", &nodemat.data[9]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_33>", "</NodeMatrix_33>", &nodemat.data[10]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_34>", "</NodeMatrix_34>", &nodemat.data[11]), return 1);
 
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_41>", "</NodeMatrix_41>", &nodemat._41), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_42>", "</NodeMatrix_42>", &nodemat._42), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_43>", "</NodeMatrix_43>", &nodemat._43), return 1);
-	CallF(Read_Float(xmliobuf, "<NodeMatrix_44>", "</NodeMatrix_44>", &nodemat._44), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_41>", "</NodeMatrix_41>", &nodemat.data[12]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_42>", "</NodeMatrix_42>", &nodemat.data[13]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_43>", "</NodeMatrix_43>", &nodemat.data[14]), return 1);
+	CallF(Read_Float(xmliobuf, "<NodeMatrix_44>", "</NodeMatrix_44>", &nodemat.data[15]), return 1);
 
 	curbone->SetNodeMat(nodemat);
 

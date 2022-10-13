@@ -420,10 +420,10 @@ static void FbxAMatrix2ChaMatrix(ChaMatrix& retmat, FbxAMatrix srcmat);
 void ChaMatrix2FbxAMatrix(FbxAMatrix& retmat, ChaMatrix& srcmat)
 {
 	retmat.SetIdentity();
-	retmat.SetRow(0, FbxVector4(srcmat._11, srcmat._12, srcmat._13, srcmat._14));
-	retmat.SetRow(1, FbxVector4(srcmat._21, srcmat._22, srcmat._23, srcmat._24));
-	retmat.SetRow(2, FbxVector4(srcmat._31, srcmat._32, srcmat._33, srcmat._34));
-	retmat.SetRow(3, FbxVector4(srcmat._41, srcmat._42, srcmat._43, srcmat._44));
+	retmat.SetRow(0, FbxVector4(srcmat.data[0], srcmat.data[1], srcmat.data[2], srcmat.data[3]));
+	retmat.SetRow(1, FbxVector4(srcmat.data[4], srcmat.data[5], srcmat.data[6], srcmat.data[7]));
+	retmat.SetRow(2, FbxVector4(srcmat.data[8], srcmat.data[9], srcmat.data[10], srcmat.data[11]));
+	retmat.SetRow(3, FbxVector4(srcmat.data[12], srcmat.data[13], srcmat.data[14], srcmat.data[15]));
 	//retmat.SetRow(0, FbxVector4(srcmat._11, srcmat._21, srcmat._31, srcmat._41));
 	//retmat.SetRow(1, FbxVector4(srcmat._12, srcmat._22, srcmat._32, srcmat._42));
 	//retmat.SetRow(2, FbxVector4(srcmat._13, srcmat._23, srcmat._33, srcmat._43));
@@ -544,6 +544,8 @@ int CModel::InitParams()
 	//g_motionbrush_endframe = 0.0;
 	//g_motionbrush_numframe = 1;
 	//g_motionbrush_value = 0;
+
+	ZeroMemory(m_setfl4x4, sizeof(float) * 16 * MAXCLUSTERNUM);//SetShaderConst用
 
 
 	InitUndoMotion( 0 );
@@ -957,9 +959,9 @@ _ASSERT(m_bonelist[0]);
 
 	ChaMatrix offsetmat;
 	ChaMatrixIdentity( &offsetmat );
-	offsetmat._11 = srcmult;
-	offsetmat._22 = srcmult;
-	offsetmat._33 = srcmult;
+	offsetmat.data[0] = srcmult;
+	offsetmat.data[5] = srcmult;
+	offsetmat.data[10] = srcmult;
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
@@ -1690,8 +1692,19 @@ void CModel::CalcWorldMatFromEulReq(CBone* srcbone, int srcmotid, double srcfram
 	}
 }
 
+int CModel::SwapCurrentMotionPoint()
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->SwapCurrentMotionPoint();
+		}
+	}
+	return 0;
+}
 
-int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
+int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished ) // default : needwaitfinished = false
 {
 	m_matWorld = *wmat;
 	m_matVP = *vpmat;
@@ -1709,14 +1722,22 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat )
 	double curframe = m_curmotinfo->curframe;
 
 
-	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 4))) {
+	//if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 4))) {
+	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 2))) {
+
+		//WaitUpdateMatrixFinished();//needwaitfinishedがfalseのときにも必要
+		//SwapCurrentMotionPoint();
+
 		int updatecount;
 		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
 			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
 			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
 		}
 
-		WaitUpdateMatrixFinished();
+		//if (needwaitfinished) {
+			WaitUpdateMatrixFinished();
+		//}
+		
 
 		if (g_limitdegflag == 1) {
 			CalcWorldMatFromEulReq(m_topbone, curmotid, curframe, wmat, vpmat);
@@ -2085,16 +2106,21 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		return 0;//!!!!!!!!!!!
 	}
 
-	g_hmWorld->SetMatrix((float*)&m_worldmat);
+	g_hmWorld->SetMatrix((float*)&(m_worldmat.data[0]));
 	//g_pEffect->SetMatrix(g_hmWorld, &(m_worldmat.D3DX()));
 
 
-	ChaMatrix set4x4[MAXCLUSTERNUM];
-	int inicnt;
-	for (inicnt = 0; inicnt < MAXCLUSTERNUM; inicnt++) {
-		ChaMatrixIdentity(&(set4x4[inicnt]));
-	}
-	//ZeroMemory( &set4x4[0], sizeof( ChaMatrix ) * MAXCLUSTERNUM );
+	//ChaMatrix set4x4[MAXCLUSTERNUM];
+
+	//float setfl4x4[16 * MAXCLUSTERNUM];//メンバーに
+	
+	//ZeroMemory(&(setfl4x4[0]), sizeof(float) * 16 * MAXCLUSTERNUM);
+
+	//int inicnt;
+	//for (inicnt = 0; inicnt < MAXCLUSTERNUM; inicnt++) {
+	//	ChaMatrixIdentity(&(set4x4[inicnt]));
+	//}
+	////ZeroMemory( &set4x4[0], sizeof( ChaMatrix ) * MAXCLUSTERNUM );
 
 	int setclcnt = 0;
 	int clcnt;
@@ -2106,19 +2132,23 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		}
 
 
-		CMotionPoint tmpmp = curbone->GetCurMp();
+		//CMotionPoint tmpmp = curbone->GetCurMp();
 		if( btflag == 0 ){
-			set4x4[clcnt] = tmpmp.GetWorldMat();
+			//set4x4[clcnt] = tmpmp.GetWorldMat();
+			MoveMemory(&(m_setfl4x4[16 * clcnt]), &(curbone->GetCurMp().GetWorldMat().data[0]), sizeof(float) * 16);
 		}else if(btflag == 1){
 			//物理シミュ
-			set4x4[clcnt] = curbone->GetBtMat();
+			//set4x4[clcnt] = curbone->GetBtMat();
+			MoveMemory(&(m_setfl4x4[16 * clcnt]), &(curbone->GetBtMat().data[0]), sizeof(float) * 16);
 		}
 		else if (btflag == 2) {
 			//物理IK
-			set4x4[clcnt] = curbone->GetBtMat();
+			//set4x4[clcnt] = curbone->GetBtMat();
+			MoveMemory(&(m_setfl4x4[16 * clcnt]), &(curbone->GetBtMat().data[0]), sizeof(float) * 16);
 		}
 		else {
-			set4x4[clcnt] = tmpmp.GetWorldMat();
+			//set4x4[clcnt] = tmpmp.GetWorldMat();
+			MoveMemory(&(m_setfl4x4[16 * clcnt]), &(curbone->GetCurMp().GetWorldMat().data[0]), sizeof(float) * 16);
 		}
 		setclcnt++;
 	}
@@ -2128,7 +2158,10 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		_ASSERT(setclcnt <= MAXCLUSTERNUM);
 
 		HRESULT hr = S_OK;
-		hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, setclcnt);
+		hr = g_hm4x4Mat->SetMatrixArray((float*)(&m_setfl4x4[0]), 0, setclcnt);
+		//hr = g_hm4x4Mat->SetRawValue((float*)(&setfl4x4[0]), 0, sizeof(float) * 16 * setclcnt);
+
+
 		//hr = g_hm4x4Mat->SetMatrixArray((float*)(&set4x4[0]), 0, MAXCLUSTERNUM);
 
 		//hr = g_hm4x4Mat->SetRawValue((float*)(&set4x4[0]), 0, sizeof(float) * 16 * MAXCLUSTERNUM);
@@ -4962,15 +4995,15 @@ int CModel::RenderRefArrow(ID3D11DeviceContext* pd3dImmediateContext, CBone* bon
 		double fscale = diffleng / 200.0f;
 		ChaMatrix scalemat;
 		ChaMatrixIdentity(&scalemat);
-		scalemat._11 = fscale;
-		scalemat._22 = fscale * (double)refmult;
-		scalemat._33 = fscale * (double)refmult;
+		scalemat.data[0] = fscale;
+		scalemat.data[5] = fscale * (double)refmult;
+		scalemat.data[10] = fscale * (double)refmult;
 		bmmat = scalemat * bmmat;
-		bmmat._41 = vecbonepos[vecno].x;
-		bmmat._42 = vecbonepos[vecno].y;
-		bmmat._43 = vecbonepos[vecno].z;
+		bmmat.data[12] = vecbonepos[vecno].x;
+		bmmat.data[13] = vecbonepos[vecno].y;
+		bmmat.data[14] = vecbonepos[vecno].z;
 
-		g_hmWorld->SetMatrix((float*)&bmmat);
+		g_hmWorld->SetMatrix((float*)&(bmmat.data[0]));
 		//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 		this->UpdateMatrix(&bmmat, &m_matVP);
 		CallF(this->OnRender(pd3dImmediateContext, 0, diffusemult), return 1);
@@ -5064,17 +5097,17 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 							ChaMatrix scalemat;
 							ChaMatrixIdentity(&scalemat);
 							fscale = diffleng / 50.0f;
-							scalemat._11 = fscale;
-							scalemat._22 = fscale;
-							scalemat._33 = fscale;
+							scalemat.data[0] = fscale;
+							scalemat.data[5] = fscale;
+							scalemat.data[10] = fscale;
 
 							bmmat = scalemat * bmmat;
 
-							bmmat._41 = aftbonepos.x;
-							bmmat._42 = aftbonepos.y;
-							bmmat._43 = aftbonepos.z;
+							bmmat.data[12] = aftbonepos.x;
+							bmmat.data[13] = aftbonepos.y;
+							bmmat.data[14] = aftbonepos.z;
 
-							g_hmWorld->SetMatrix((float*)&bmmat);
+							g_hmWorld->SetMatrix((float*)&(bmmat.data[0]));
 							//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 							bmarkptr->UpdateMatrix(&bmmat, &m_matVP);
 							ChaVector4 difmult;
@@ -5111,7 +5144,7 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 						boneptr->CalcRigidElemParams(childbone, 0);
 
 						ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
-						g_hmWorld->SetMatrix((float*)&(worldcapsulemat));
+						g_hmWorld->SetMatrix((float*)&(worldcapsulemat.data[0]));
 						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
 						//g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
 						//boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
@@ -5264,7 +5297,7 @@ void CModel::RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObje
 			//srcbone->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
 
 			ChaMatrix tmpcapmat = curre->GetCapsulemat(0);
-			g_hmWorld->SetMatrix((float*)&tmpcapmat);
+			g_hmWorld->SetMatrix((float*)&(tmpcapmat.data[0]));
 			srcbone->GetCurColDisp(childbone)->UpdateMatrix(&tmpcapmat, &m_matVP);
 			ChaVector4 difmult;
 			//if( boneptr->GetSelectFlag() & 4 ){
@@ -6714,9 +6747,9 @@ void CModel::AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot
 	}
 
 	if (ChaVector3LengthDbl(&adjustvec) >= 0.050f) {
-		tmat._41 += adjustvec.x;
-		tmat._42 += adjustvec.y;
-		tmat._43 += adjustvec.z;
+		tmat.data[12] += adjustvec.x;
+		tmat.data[13] += adjustvec.y;
+		tmat.data[14] += adjustvec.z;
 
 		ChaMatrix newmat;
 		newmat = smat * rmat * tmat;
@@ -6751,9 +6784,9 @@ void CModel::AdjustBtMatToCurrent(CBone* curbone)
 	//ChaVector3 adjustvec = ChaVector3(0.0, 0.0, 0.0);//for debug
 
 	if (ChaVector3LengthDbl(&adjustvec) >= 0.050f) {
-		tmat._41 += adjustvec.x;
-		tmat._42 += adjustvec.y;
-		tmat._43 += adjustvec.z;
+		tmat.data[12] += adjustvec.x;
+		tmat.data[13] += adjustvec.y;
+		tmat.data[14] += adjustvec.z;
 
 		ChaMatrix newmat;
 		newmat = smat * rmat * tmat;
@@ -6815,9 +6848,9 @@ void CModel::AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot)
 
 
 	if (ChaVector3LengthDbl(&adjustvec) >= 0.050f) {
-		tmat._41 += adjustvec.x;
-		tmat._42 += adjustvec.y;
-		tmat._43 += adjustvec.z;
+		tmat.data[12] += adjustvec.x;
+		tmat.data[13] += adjustvec.y;
+		tmat.data[14] += adjustvec.z;
 
 		ChaMatrix newmat;
 		newmat = smat * rmat * tmat;
@@ -8592,24 +8625,24 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 							if (g_pseudolocalflag == 1) {
 								//ChaMatrix curparrotmat = curparmp->GetWorldMat();
 								ChaMatrix curparrotmat = parentbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-								curparrotmat._41 = 0.0f;
-								curparrotmat._42 = 0.0f;
-								curparrotmat._43 = 0.0f;
+								curparrotmat.data[12] = 0.0f;
+								curparrotmat.data[13] = 0.0f;
+								curparrotmat.data[14] = 0.0f;
 								//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
 								ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-								invcurparrotmat._41 = 0.0f;
-								invcurparrotmat._42 = 0.0f;
-								invcurparrotmat._43 = 0.0f;
+								invcurparrotmat.data[12] = 0.0f;
+								invcurparrotmat.data[13] = 0.0f;
+								invcurparrotmat.data[14] = 0.0f;
 								//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
 								ChaMatrix aplyparrotmat = parentbone->GetLimitedWorldMat(m_curmotinfo->motid, applyframe);
-								aplyparrotmat._41 = 0.0f;
-								aplyparrotmat._42 = 0.0f;
-								aplyparrotmat._43 = 0.0f;
+								aplyparrotmat.data[12] = 0.0f;
+								aplyparrotmat.data[13] = 0.0f;
+								aplyparrotmat.data[14] = 0.0f;
 								//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
 								ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-								invaplyparrotmat._41 = 0.0f;
-								invaplyparrotmat._42 = 0.0f;
-								invaplyparrotmat._43 = 0.0f;
+								invaplyparrotmat.data[12] = 0.0f;
+								invaplyparrotmat.data[13] = 0.0f;
+								invaplyparrotmat.data[14] = 0.0f;
 
 								ChaMatrix transmat2;
 								transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
@@ -9100,17 +9133,17 @@ int CModel::PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, 
 
 		//ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
 		ChaMatrix rotinvworld = ChaMatrixInv(firstbone->GetBtMat());
-		rotinvworld._41 = 0.0f;
-		rotinvworld._42 = 0.0f;
-		rotinvworld._43 = 0.0f;
+		rotinvworld.data[12] = 0.0f;
+		rotinvworld.data[13] = 0.0f;
+		rotinvworld.data[14] = 0.0f;
 		ChaMatrix rotselect = selectmat;
-		rotselect._41 = 0.0f;
-		rotselect._42 = 0.0f;
-		rotselect._43 = 0.0f;
+		rotselect.data[12] = 0.0f;
+		rotselect.data[13] = 0.0f;
+		rotselect.data[14] = 0.0f;
 		ChaMatrix rotinvselect = invselectmat;
-		rotinvselect._41 = 0.0f;
-		rotinvselect._42 = 0.0f;
-		rotinvselect._43 = 0.0f;
+		rotinvselect.data[12] = 0.0f;
+		rotinvselect.data[13] = 0.0f;
+		rotinvselect.data[14] = 0.0f;
 
 		CQuaternion rotq;
 		if (parentbone) {
@@ -9640,9 +9673,9 @@ int CModel::PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, in
 										btMatrix3x3 rotworldmat;
 										rotworldmat.setIdentity();
 										rotworldmat.setValue(
-											rotmat2._11, rotmat2._12, rotmat2._13,
-											rotmat2._21, rotmat2._22, rotmat2._23,
-											rotmat2._31, rotmat2._32, rotmat2._33);
+											rotmat2.data[0], rotmat2.data[1], rotmat2.data[2],
+											rotmat2.data[4], rotmat2.data[5], rotmat2.data[6],
+											rotmat2.data[8], rotmat2.data[9], rotmat2.data[10]);
 
 										btMatrix3x3 setrotmat;
 										setrotmat = curworldmat * rotworldmat;
@@ -10004,17 +10037,17 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 
 							//ChaMatrix rotinvworld = curbone->GetCurMp().GetInvWorldMat();
 							ChaMatrix rotinvworld = curbone->GetCurrentLimitedWorldMat();
-							rotinvworld._41 = 0.0f;
-							rotinvworld._42 = 0.0f;
-							rotinvworld._43 = 0.0f;
+							rotinvworld.data[12] = 0.0f;
+							rotinvworld.data[13] = 0.0f;
+							rotinvworld.data[14] = 0.0f;
 							ChaMatrix rotselect = selectmat;
-							rotselect._41 = 0.0f;
-							rotselect._42 = 0.0f;
-							rotselect._43 = 0.0f;
+							rotselect.data[12] = 0.0f;
+							rotselect.data[13] = 0.0f;
+							rotselect.data[14] = 0.0f;
 							ChaMatrix rotinvselect = invselectmat;
-							rotinvselect._41 = 0.0f;
-							rotinvselect._42 = 0.0f;
-							rotinvselect._43 = 0.0f;
+							rotinvselect.data[12] = 0.0f;
+							rotinvselect.data[13] = 0.0f;
+							rotinvselect.data[14] = 0.0f;
 
 
 							CQuaternion rotq;
@@ -10042,24 +10075,24 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 									if (aplybone && (g_pseudolocalflag == 1)) {
 										//ChaMatrix curparrotmat = curparmp->GetWorldMat();
 										ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-										curparrotmat._41 = 0.0f;
-										curparrotmat._42 = 0.0f;
-										curparrotmat._43 = 0.0f;
+										curparrotmat.data[12] = 0.0f;
+										curparrotmat.data[13] = 0.0f;
+										curparrotmat.data[14] = 0.0f;
 										//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
 										ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-										invcurparrotmat._41 = 0.0f;
-										invcurparrotmat._42 = 0.0f;
-										invcurparrotmat._43 = 0.0f;
+										invcurparrotmat.data[12] = 0.0f;
+										invcurparrotmat.data[13] = 0.0f;
+										invcurparrotmat.data[14] = 0.0f;
 										//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
 										ChaMatrix aplyparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-										aplyparrotmat._41 = 0.0f;
-										aplyparrotmat._42 = 0.0f;
-										aplyparrotmat._43 = 0.0f;
+										aplyparrotmat.data[12] = 0.0f;
+										aplyparrotmat.data[13] = 0.0f;
+										aplyparrotmat.data[14] = 0.0f;
 										//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
 										ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-										invaplyparrotmat._41 = 0.0f;
-										invaplyparrotmat._42 = 0.0f;
-										invaplyparrotmat._43 = 0.0f;
+										invaplyparrotmat.data[12] = 0.0f;
+										invaplyparrotmat.data[13] = 0.0f;
+										invaplyparrotmat.data[14] = 0.0f;
 
 										ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 										ChaMatrix transmat2;
@@ -10391,17 +10424,17 @@ int CModel::TwistBoneAxisDelta(CEditRange* erptr, int srcboneno, float delta, in
 
 
 			ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
-			rotinvworld._41 = 0.0f;
-			rotinvworld._42 = 0.0f;
-			rotinvworld._43 = 0.0f;
+			rotinvworld.data[12] = 0.0f;
+			rotinvworld.data[13] = 0.0f;
+			rotinvworld.data[14] = 0.0f;
 			ChaMatrix rotselect = selectmat;
-			rotselect._41 = 0.0f;
-			rotselect._42 = 0.0f;
-			rotselect._43 = 0.0f;
+			rotselect.data[12] = 0.0f;
+			rotselect.data[13] = 0.0f;
+			rotselect.data[14] = 0.0f;
 			ChaMatrix rotinvselect = invselectmat;
-			rotinvselect._41 = 0.0f;
-			rotinvselect._42 = 0.0f;
-			rotinvselect._43 = 0.0f;
+			rotinvselect.data[12] = 0.0f;
+			rotinvselect.data[13] = 0.0f;
+			rotinvselect.data[14] = 0.0f;
 
 			CQuaternion rotq;
 
@@ -10423,21 +10456,21 @@ int CModel::TwistBoneAxisDelta(CEditRange* erptr, int srcboneno, float delta, in
 					}
 					if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
 						ChaMatrix curparrotmat = curparmp->GetWorldMat();
-						curparrotmat._41 = 0.0f;
-						curparrotmat._42 = 0.0f;
-						curparrotmat._43 = 0.0f;
+						curparrotmat.data[12] = 0.0f;
+						curparrotmat.data[13] = 0.0f;
+						curparrotmat.data[14] = 0.0f;
 						ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
-						invcurparrotmat._41 = 0.0f;
-						invcurparrotmat._42 = 0.0f;
-						invcurparrotmat._43 = 0.0f;
+						invcurparrotmat.data[12] = 0.0f;
+						invcurparrotmat.data[13] = 0.0f;
+						invcurparrotmat.data[14] = 0.0f;
 						ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
-						aplyparrotmat._41 = 0.0f;
-						aplyparrotmat._42 = 0.0f;
-						aplyparrotmat._43 = 0.0f;
+						aplyparrotmat.data[12] = 0.0f;
+						aplyparrotmat.data[13] = 0.0f;
+						aplyparrotmat.data[14] = 0.0f;
 						ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
-						invaplyparrotmat._41 = 0.0f;
-						invaplyparrotmat._42 = 0.0f;
-						invaplyparrotmat._43 = 0.0f;
+						invaplyparrotmat.data[12] = 0.0f;
+						invaplyparrotmat.data[13] = 0.0f;
+						invaplyparrotmat.data[14] = 0.0f;
 
 						//ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 						ChaMatrix transmat = localq.MakeRotMatX();//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -10687,17 +10720,17 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			//ChaMatrix rotinvworld = firstbone->GetCurMp().GetInvWorldMat();
 			ChaMatrix rotinvworld = firstbone->GetCurrentLimitedWorldMat();
-			rotinvworld._41 = 0.0f;
-			rotinvworld._42 = 0.0f;
-			rotinvworld._43 = 0.0f;
+			rotinvworld.data[12] = 0.0f;
+			rotinvworld.data[13] = 0.0f;
+			rotinvworld.data[14] = 0.0f;
 			ChaMatrix rotselect = selectmat;
-			rotselect._41 = 0.0f;
-			rotselect._42 = 0.0f;
-			rotselect._43 = 0.0f;
+			rotselect.data[12] = 0.0f;
+			rotselect.data[13] = 0.0f;
+			rotselect.data[14] = 0.0f;
 			ChaMatrix rotinvselect = invselectmat;
-			rotinvselect._41 = 0.0f;
-			rotinvselect._42 = 0.0f;
-			rotinvselect._43 = 0.0f;
+			rotinvselect.data[12] = 0.0f;
+			rotinvselect.data[13] = 0.0f;
+			rotinvselect.data[14] = 0.0f;
 
 			CQuaternion rotq;
 
@@ -10729,24 +10762,24 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					if (curbone && aplybone && (g_pseudolocalflag == 1)) {
 						//ChaMatrix curparrotmat = curparmp->GetWorldMat();
 						ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-						curparrotmat._41 = 0.0f;
-						curparrotmat._42 = 0.0f;
-						curparrotmat._43 = 0.0f;
+						curparrotmat.data[12] = 0.0f;
+						curparrotmat.data[13] = 0.0f;
+						curparrotmat.data[14] = 0.0f;
 						//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
 						ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-						invcurparrotmat._41 = 0.0f;
-						invcurparrotmat._42 = 0.0f;
-						invcurparrotmat._43 = 0.0f;
+						invcurparrotmat.data[12] = 0.0f;
+						invcurparrotmat.data[13] = 0.0f;
+						invcurparrotmat.data[14] = 0.0f;
 						//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
 						ChaMatrix aplyparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-						aplyparrotmat._41 = 0.0f;
-						aplyparrotmat._42 = 0.0f;
-						aplyparrotmat._43 = 0.0f;
+						aplyparrotmat.data[12] = 0.0f;
+						aplyparrotmat.data[13] = 0.0f;
+						aplyparrotmat.data[14] = 0.0f;
 						//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
 						ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-						invaplyparrotmat._41 = 0.0f;
-						invaplyparrotmat._42 = 0.0f;
-						invaplyparrotmat._43 = 0.0f;
+						invaplyparrotmat.data[12] = 0.0f;
+						invaplyparrotmat.data[13] = 0.0f;
+						invaplyparrotmat.data[14] = 0.0f;
 
 						ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
 						ChaMatrix transmat2;
@@ -10913,9 +10946,9 @@ int CModel::RotateXDelta( CEditRange* erptr, int srcboneno, float delta )
 	int multworld = 1;
 	selectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
 	ChaMatrixInverse(&invselectmat, NULL, &selectmat);
-	selectmat._41 = 0.0f;
-	selectmat._42 = 0.0f;
-	selectmat._43 = 0.0f;
+	selectmat.data[12] = 0.0f;
+	selectmat.data[13] = 0.0f;
+	selectmat.data[14] = 0.0f;
 
 	axis0 = ChaVector3( 1.0f, 0.0f, 0.0f );
 	ChaVector3TransformCoord( &rotaxis, &axis0, &selectmat );
@@ -11755,9 +11788,9 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 				else{
 					ChaMatrixIdentity(&axismat);
 				}
-				axismat._41 = curbone->GetJointFPos().x;
-				axismat._42 = curbone->GetJointFPos().y;
-				axismat._43 = curbone->GetJointFPos().z;
+				axismat.data[12] = curbone->GetJointFPos().x;
+				axismat.data[13] = curbone->GetJointFPos().y;
+				axismat.data[14] = curbone->GetJointFPos().z;
 				curbone->SetNodeMat(axismat);
 			}
 		}
@@ -11771,9 +11804,9 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 		else{
 			ChaMatrixIdentity(&axismat);
 		}
-		axismat._41 = srcbone->GetJointFPos().x;
-		axismat._42 = srcbone->GetJointFPos().y;
-		axismat._43 = srcbone->GetJointFPos().z;
+		axismat.data[12] = srcbone->GetJointFPos().x;
+		axismat.data[13] = srcbone->GetJointFPos().y;
+		axismat.data[14] = srcbone->GetJointFPos().z;
 		srcbone->SetNodeMat(axismat);
 	}
 

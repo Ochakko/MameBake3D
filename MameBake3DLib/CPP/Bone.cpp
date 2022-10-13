@@ -274,6 +274,7 @@ int CBone::InitParams()
 	m_extendflag = false;
 
 	m_curmp.InitParams();
+	m_calccurmp.InitParams();
 	m_axisq.InitParams();
 
 	m_motionkey.clear();
@@ -1091,8 +1092,11 @@ int CBone::CalcFBXFrame(double srcframe, CMotionPoint* befptr, CMotionPoint* nex
 		dstmpptr->SetWorldMat(tmpmat);
 		dstmpptr->SetFrame(srcframe);
 
-		dstmpptr->SetPrev(befptr);
-		dstmpptr->SetNext(nextptr);
+		//dstmpptr->SetPrev(befptr);
+		//dstmpptr->SetNext(nextptr);
+
+
+
 
 		//ChaMatrix newmat;
 		//ChaMatrix orgparmat;
@@ -1282,17 +1286,17 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 
 
 	ChaMatrixIdentity( &m_laxismat );
-	m_laxismat._11 = vecx1.x;
-	m_laxismat._12 = vecx1.y;
-	m_laxismat._13 = vecx1.z;
+	m_laxismat.data[0] = vecx1.x;
+	m_laxismat.data[1] = vecx1.y;
+	m_laxismat.data[2] = vecx1.z;
 
-	m_laxismat._21 = vecy1.x;
-	m_laxismat._22 = vecy1.y;
-	m_laxismat._23 = vecy1.z;
+	m_laxismat.data[4] = vecy1.x;
+	m_laxismat.data[5] = vecy1.y;
+	m_laxismat.data[6] = vecy1.z;
 
-	m_laxismat._31 = vecz1.x;
-	m_laxismat._32 = vecz1.y;
-	m_laxismat._33 = vecz1.z;
+	m_laxismat.data[8] = vecz1.x;
+	m_laxismat.data[9] = vecz1.y;
+	m_laxismat.data[10] = vecz1.z;
 
 	m_axisq.RotationMatrix(m_laxismat);
 
@@ -1374,9 +1378,9 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 	ChaMatrixIdentity(&retmat);
 	if (aftbonepos == aftchildpos){
 		*dstmat = retmat;
-		dstmat->_41 = aftbonepos.x;
-		dstmat->_42 = aftbonepos.y;
-		dstmat->_43 = aftbonepos.z;
+		dstmat->data[12] = aftbonepos.x;
+		dstmat->data[13] = aftbonepos.y;
+		dstmat->data[14] = aftbonepos.z;
 		//_ASSERT(0);
 		return 0.0f;
 	}
@@ -1547,22 +1551,22 @@ float CBone::CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int
 
 	ChaMatrixIdentity(dstmat);
 	if (illeagalflag == 0){
-		dstmat->_11 = vecx1.x;
-		dstmat->_12 = vecx1.y;
-		dstmat->_13 = vecx1.z;
+		dstmat->data[0] = vecx1.x;
+		dstmat->data[1] = vecx1.y;
+		dstmat->data[2] = vecx1.z;
 
-		dstmat->_21 = vecy1.x;
-		dstmat->_22 = vecy1.y;
-		dstmat->_23 = vecy1.z;
+		dstmat->data[4] = vecy1.x;
+		dstmat->data[5] = vecy1.y;
+		dstmat->data[6] = vecy1.z;
 
-		dstmat->_31 = vecz1.x;
-		dstmat->_32 = vecz1.y;
-		dstmat->_33 = vecz1.z;
+		dstmat->data[8] = vecz1.x;
+		dstmat->data[9] = vecz1.y;
+		dstmat->data[10] = vecz1.z;
 	}
 
-	dstmat->_41 = aftbonepos.x;
-	dstmat->_42 = aftbonepos.y;
-	dstmat->_43 = aftbonepos.z;
+	dstmat->data[12] = aftbonepos.x;
+	dstmat->data[13] = aftbonepos.y;
+	dstmat->data[14] = aftbonepos.z;
 
 	ChaVector3 diffvec = aftbonepos - aftchildpos;
 	float retleng = (float)ChaVector3LengthDbl(&diffvec);
@@ -1727,17 +1731,17 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* d
 	ChaVector3Normalize(&vecy1, &vecy1);
 
 
-	retmat._11 = vecx1.x;
-	retmat._12 = vecx1.y;
-	retmat._13 = vecx1.z;
+	retmat.data[0] = vecx1.x;
+	retmat.data[1] = vecx1.y;
+	retmat.data[2] = vecx1.z;
 
-	retmat._21 = vecy1.x;
-	retmat._22 = vecy1.y;
-	retmat._23 = vecy1.z;
+	retmat.data[4] = vecy1.x;
+	retmat.data[5] = vecy1.y;
+	retmat.data[6] = vecy1.z;
 
-	retmat._31 = vecz1.x;
-	retmat._32 = vecz1.y;
-	retmat._33 = vecz1.z;
+	retmat.data[8] = vecz1.x;
+	retmat.data[9] = vecz1.y;
+	retmat.data[10] = vecz1.z;
 
 	*dstmat = retmat;
 
@@ -1820,17 +1824,17 @@ int CBone::CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat )
 
 	ChaMatrixIdentity( dstmat );
 	if( illeagalflag == 0 ){
-		dstmat->_11 = vecx1.x;
-		dstmat->_12 = vecx1.y;
-		dstmat->_13 = vecx1.z;
+		dstmat->data[0] = vecx1.x;
+		dstmat->data[1] = vecx1.y;
+		dstmat->data[2] = vecx1.z;
 
-		dstmat->_21 = vecy1.x;
-		dstmat->_22 = vecy1.y;
-		dstmat->_23 = vecy1.z;
+		dstmat->data[4] = vecy1.x;
+		dstmat->data[5] = vecy1.y;
+		dstmat->data[6] = vecy1.z;
 
-		dstmat->_31 = vecz1.x;
-		dstmat->_32 = vecz1.y;
-		dstmat->_33 = vecz1.z;
+		dstmat->data[8] = vecz1.x;
+		dstmat->data[9] = vecz1.y;
+		dstmat->data[10] = vecz1.z;
 	}
 
 	return 0;
@@ -2012,19 +2016,19 @@ int CBone::CalcAxisMat( int firstflag, float delta )
 int CBone::CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy )
 {
 	ChaMatrix startpar0 = axismatpar;
-	startpar0._41 = 0.0f;
-	startpar0._42 = 0.0f;
-	startpar0._43 = 0.0f;
+	startpar0.data[12] = 0.0f;
+	startpar0.data[13] = 0.0f;
+	startpar0.data[14] = 0.0f;
 
 	ChaMatrix starty = gaxisy;
-	starty._41 = 0.0f;
-	starty._42 = 0.0f;
-	starty._43 = 0.0f;
+	starty.data[12] = 0.0f;
+	starty.data[13] = 0.0f;
+	starty.data[14] = 0.0f;
 
 	ChaMatrix motmat0 = motmat;
-	motmat0._41 = 0.0f;
-	motmat0._42 = 0.0f;
-	motmat0._43 = 0.0f;
+	motmat0.data[12] = 0.0f;
+	motmat0.data[13] = 0.0f;
+	motmat0.data[14] = 0.0f;
 
 	ChaMatrix invmotmat;
 	ChaMatrixInverse( &invmotmat, NULL, &motmat0 );
@@ -3748,9 +3752,9 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 	}
 
 	if (settraflag == 0){
-		selm._41 = 0.0f;
-		selm._42 = 0.0f;
-		selm._43 = 0.0f;
+		selm.data[12] = 0.0f;
+		selm.data[13] = 0.0f;
+		selm.data[14] = 0.0f;
 	}
 	else{
 		ChaVector3 aftjpos;
@@ -3758,9 +3762,9 @@ ChaMatrix CBone::CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, i
 		ChaVector3 tmpparfpos = GetParent()->GetJointFPos();
 		ChaVector3TransformCoord(&aftjpos, &tmpparfpos, &parworldmat);
 
-		selm._41 = aftjpos.x;
-		selm._42 = aftjpos.y;
-		selm._43 = aftjpos.z;
+		selm.data[12] = aftjpos.x;
+		selm.data[13] = aftjpos.y;
+		selm.data[14] = aftjpos.z;
 	}
 
 	ChaMatrix retm = GetS0RTMatrix(selm);
@@ -4013,20 +4017,20 @@ ChaMatrix CBone::CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimi
 	}
 
 	if (settraflag == 0) {
-		selm._41 = 0.0f;
-		selm._42 = 0.0f;
-		selm._43 = 0.0f;
-		selm._44 = 1.0f;
+		selm.data[12] = 0.0f;
+		selm.data[13] = 0.0f;
+		selm.data[14] = 0.0f;
+		selm.data[15] = 1.0f;
 	}
 	else {
 		ChaVector3 aftjpos;
 		ChaVector3 tmpparfpos = GetParent()->GetJointFPos();
 		ChaVector3TransformCoord(&aftjpos, &tmpparfpos, &parworldmat);
 
-		selm._41 = aftjpos.x;
-		selm._42 = aftjpos.y;
-		selm._43 = aftjpos.z;
-		selm._44 = 1.0f;
+		selm.data[12] = aftjpos.x;
+		selm.data[13] = aftjpos.y;
+		selm.data[14] = aftjpos.z;
+		selm.data[15] = 1.0f;
 	}
 
 
@@ -5961,21 +5965,21 @@ ChaMatrix CBone::CalcSymXMat2(int srcmotid, double srcframe, int symrootmode)
 	ChaVector3 curanimtra = CalcLocalSymTraAnim(srcmotid, srcframe);//traanim‚àsym‘Î‰ž
 
 	if (GetParent()){
-		directsetmat._41 += -curanimtra.x;//inv signe
-		directsetmat._42 += curanimtra.y;
-		directsetmat._43 += curanimtra.z;
+		directsetmat.data[12] += -curanimtra.x;//inv signe
+		directsetmat.data[13] += curanimtra.y;
+		directsetmat.data[14] += curanimtra.z;
 	}
 	else{
 		//root bone
 		if (symrootmode & SYMROOTBONE_SYMPOS){
-			directsetmat._41 += -curanimtra.x;//inv signe
-			directsetmat._42 += curanimtra.y;
-			directsetmat._43 += curanimtra.z;
+			directsetmat.data[12] += -curanimtra.x;//inv signe
+			directsetmat.data[13] += curanimtra.y;
+			directsetmat.data[14] += curanimtra.z;
 		}
 		else{
-			directsetmat._41 += curanimtra.x;//same signe
-			directsetmat._42 += curanimtra.y;
-			directsetmat._43 += curanimtra.z;
+			directsetmat.data[12] += curanimtra.x;//same signe
+			directsetmat.data[13] += curanimtra.y;
+			directsetmat.data[14] += curanimtra.z;
 		}
 	}
 
@@ -6077,9 +6081,9 @@ ChaMatrix CBone::CalcLocalSymScaleRotMat(int rotcenterflag, int srcmotid, double
 			ChaMatrixIdentity(&symscalemat);
 			ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
 
-			retmat._41 = 0.0f;
-			retmat._42 = 0.0f;
-			retmat._43 = 0.0f;
+			retmat.data[12] = 0.0f;
+			retmat.data[13] = 0.0f;
+			retmat.data[14] = 0.0f;
 
 			if (rotcenterflag == 1){
 				ChaMatrix befrotmat, aftrotmat;
@@ -6742,7 +6746,7 @@ ChaVector3 CBone::CalcFBXTra(bool fromnobindpose, int srcmotid, double srcframe)
 
 		ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
 
-		ChaVector3 fbxtra = ChaVector3(localfbxmat._41, localfbxmat._42, localfbxmat._43);
+		ChaVector3 fbxtra = ChaVector3(localfbxmat.data[12], localfbxmat.data[13], localfbxmat.data[14]);
 		return fbxtra;
 	}
 
@@ -8207,5 +8211,12 @@ bool CBone::IsHipsBone()
 	}
 
 	return false;
+}
+
+
+int CBone::SwapCurrentMotionPoint()
+{
+	m_curmp.CopyMP(&m_calccurmp);
+	return 0;
 }
 

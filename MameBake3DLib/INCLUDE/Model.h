@@ -83,10 +83,10 @@ typedef struct tag_physikrec
 //UpdateMatrix用のスレッドの数
 //最大値であってカレントの設定値ではない
 //########################################
-#define MAXUPDATEMATRIXTHREAD 4
+//#define MAXUPDATEMATRIXTHREAD 4
 //#define MAXUPDATEMATRIXTHREAD 12
 //#define MAXUPDATEMATRIXTHREAD 2
-//#define MAXUPDATEMATRIXTHREAD 8
+#define MAXUPDATEMATRIXTHREAD 8
 
 #define LOADFBXANIMTHREAD 4
 //#define LOADFBXANIMTHREAD 8
@@ -248,7 +248,8 @@ public:
  * @param (ChaMatrix* vpmat) IN View * Projection変換行列。
  * @return 成功したら０。
  */
-	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat );
+	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
+	int SwapCurrentMotionPoint();
 	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
@@ -1222,9 +1223,9 @@ public: //accesser
 	};
 	void SetWorldMatFromCamera(ChaMatrix srcmat){
 		m_worldmat = srcmat;
-		m_worldmat._41 = m_modelposition.x;
-		m_worldmat._42 = m_modelposition.y;
-		m_worldmat._43 = m_modelposition.z;
+		m_worldmat.data[12] = m_modelposition.x;
+		m_worldmat.data[13] = m_modelposition.y;
+		m_worldmat.data[14] = m_modelposition.z;
 	};
 	ChaMatrix GetWorldMat()
 	{
@@ -1390,6 +1391,9 @@ private:
 	std::vector<PHYSIKREC> m_physikrec0;
 	std::vector<PHYSIKREC> m_physikrec;
 	double m_phyikrectime;
+
+
+	float m_setfl4x4[16 * MAXCLUSTERNUM];//SetShaderConst用
 
 
 	int m_loadbonecount;//GetFbxAnim用

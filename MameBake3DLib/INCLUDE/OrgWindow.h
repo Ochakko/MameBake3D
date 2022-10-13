@@ -24,6 +24,8 @@
 #define EULPOOLBLKLEN	4096
 #define KEYPOOLBLKLEN	4096
 
+#define KEYNUM_ONPREVIEW	5
+
 struct KeyInfo{
 	const TCHAR *label;
 	double time;
@@ -33,6 +35,7 @@ struct KeyInfo{
 	void *object;
 };
 
+extern bool g_4kresolution;//Main.cpp
 extern bool g_selecttolastFlag;//Main.cpp
 extern bool g_underselecttolast;//Main.cpp
 extern bool g_undereditrange;//Main.cpp
@@ -4090,6 +4093,12 @@ void s_dummyfunc()
 			keyDeleteListener = NULL;
 
 			showPos_time=0;
+			if (g_4kresolution) {
+				showPos_width = 261.0;
+			}
+			else {
+				showPos_width = 76.0;
+			}
 			showPos_line=0;
 			currentTime=0;
 			currentLine=0;
@@ -5218,7 +5227,7 @@ void s_dummyfunc()
 		double getCurrentTime() const{
 			return currentTime;
 		}
-		void setCurrentTime(double _currentTime, bool CallListener = false);
+		void setCurrentTime(double _currentTime, bool CallListener = false, bool needRewrite = true);
 		//	Accessor : currentLine
 		int getCurrentLine() const{
 			return currentLine;
@@ -5344,7 +5353,7 @@ void s_dummyfunc()
 
 	private:
 		////////////////////////// MemberVar /////////////////////////////
-		double maxTime,currentTime,showPos_time;
+		double maxTime,currentTime,showPos_time,showPos_width;
 		int currentLine,showPos_line;
 		int wheeldelta;
 		std::function<void()> cursorListener;
@@ -6146,6 +6155,12 @@ void s_dummyfunc()
 			keyDeleteListener = NULL;
 
 			showPos_time = 0;
+			if (g_4kresolution) {
+				showPos_width = 261.0;
+			}
+			else {
+				showPos_width = 76.0;
+			}
 			showPos_line = 0;
 			currentTime = 0;
 			currentLine = 0;
@@ -6201,6 +6216,8 @@ void s_dummyfunc()
 		virtual void autoResize() {
 			//size.y -= (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) % (LABEL_SIZE_Y - 1);
 		}
+		virtual void callRewrite();
+
 		//	Method : •`‰æ
 		virtual void draw();
 		//void draw() {
@@ -7266,7 +7283,7 @@ void s_dummyfunc()
 		double getCurrentTime() const {
 			return currentTime;
 		}
-		void setCurrentTime(double _currentTime, bool CallListener = false);
+		void setCurrentTime(double _currentTime, bool CallListener = false, bool needRewrite = false);
 		//	Accessor : currentLine
 		int getCurrentLine() const {
 			return currentLine;
@@ -7408,7 +7425,7 @@ void s_dummyfunc()
 	
 	private:
 		////////////////////////// MemberVar /////////////////////////////
-		double maxTime, currentTime, showPos_time;
+		double maxTime, currentTime, showPos_time, showPos_width;
 		int currentLine, showPos_line;
 		int wheeldelta;
 		std::function<void()> cursorListener;
@@ -7731,10 +7748,27 @@ void s_dummyfunc()
 
 
 				bool firstdrawflag = true;
-				int startindex = getKeyIndex(startTime);
+				int startindex;// = getKeyIndex(startTime);
+				if (g_previewFlag == 0) {
+					startindex = getKeyIndex(startTime);
+				}
+				else {
+					startindex = max(0, (getKeyIndex(parent->currentTime) - KEYNUM_ONPREVIEW));
+				}
+
+
 				if (startindex >= 0) {
 					int currentkeynum = (int)key.size();
-					for (int i = startindex; i < currentkeynum; i++) {
+					//int endkey = min(currentkeynum, (startindex + (int)parent->showPos_width));
+					int endkey;// = min(currentkeynum, (startindex + 1));
+					if (g_previewFlag == 0) {
+						endkey = currentkeynum;
+					}
+					else {
+						endkey = min(currentkeynum, (startindex + KEYNUM_ONPREVIEW));
+					}
+					//for (int i = startindex; i < currentkeynum; i++) {
+					for (int i = startindex; i < endkey; i++) {
 						//for (int i = 0; i < (int)key.size(); i++) {
 
 						if ((key[i]->time - startTime) < 0.0) {

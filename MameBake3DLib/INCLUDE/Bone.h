@@ -94,6 +94,9 @@ public:
  * @detail 指定モーションの指定時間の姿勢を計算する。グローバルな姿勢の計算である。
  */
 	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false );
+	int SwapCurrentMotionPoint();
+
+
 
 	int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
 
@@ -1209,7 +1212,8 @@ private:
 
 
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
-	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。
+	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。 ### 計算済 ###
+	CMotionPoint m_calccurmp;////現在のWVP適用後の姿勢データ。 ### 計算中 ###
 	CMotionPoint m_befmp;//一回前の姿勢データ。
 	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidごとのキャッシュ
 

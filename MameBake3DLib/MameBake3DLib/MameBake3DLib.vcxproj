@@ -145,7 +145,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/F 168956 /analyze:stacksize 168956 %(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -227,6 +227,8 @@
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
     <ClCompile Include="..\CPP\XMLIO.cpp" />
     <ClCompile Include="..\DXUT\Core\DDSTextureLoader.cpp" />
+    <ClCompile Include="..\DXUT\Core\DXUT.cpp" />
+    <ClCompile Include="..\DXUT\Core\DXUTmisc.cpp" />
     <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
