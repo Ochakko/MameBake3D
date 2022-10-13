@@ -427,7 +427,7 @@ namespace OrgWinGUI{
 					LineTo(hdcM->hDC, min(x1, xx1), y1);
 				}
 			}
-			
+
 			//}
 
 
@@ -454,31 +454,33 @@ namespace OrgWinGUI{
 			//		Rectangle(hdcM->hDC, x0 + 2 + (int)barStart, y0 + 2, x0 + 2 + (int)(barStart + barSize), y1 - 2);
 			//	}
 			//}
+		}
 
-			//ラベルスクロールバー
-			{
-				int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
-				int x1 = x0 + SCROLL_BAR_WIDTH + 1;
-				int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
-				int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
+		//ラベルスクロールバー
+		if(g_previewFlag == 0)
+		{
+			int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
+			int x1 = x0 + SCROLL_BAR_WIDTH + 1;
+			int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
+			int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
 
-				//枠
-				//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-				hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-				Rectangle(hdcM->hDC, x0, y0, x1, y1);
+			//枠
+			//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+			Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-				//中身
-				if (lineData.size() > 0) {
-					int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
-					int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
-					if (showLineNum < (int)lineData.size()) {
-						//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
-						hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
-						Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
-					}
+			//中身
+			if (lineData.size() > 0) {
+				int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
+				int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
+				if (showLineNum < (int)lineData.size()) {
+					//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
+					Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 				}
 			}
 		}
+		
 
 		{
 			if (g_dsmousewait == 1) {

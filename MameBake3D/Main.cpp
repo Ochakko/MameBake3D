@@ -183,9 +183,11 @@ high rpmはスレッドを高回転させるかどうかを指定します
 
 #include "SelectLSDlg.h"
 
-//display undoR undoW
+//display undoR undoW sprite
 #include "UndoSprite.h"
 
+//display Fps sprite
+#include "FpsSprite.h"
 
 //#include <ThreadingUpdateTimeline.h>
 
@@ -253,9 +255,10 @@ typedef struct tag_spsw
 //static CThreadingUpdateTimeline* s_updatetimeline = 0;
 
 //#define FPSSAVENUM 100
-#define FPSSAVENUM 60
+#define FPSSAVENUM 120
 static double s_fps100[FPSSAVENUM];
 static int s_fps100index = 0;
+static double s_avrgfps = 0.0;
 
 static double s_rectime = 0.0;
 static double s_reccnt = 0;
@@ -860,6 +863,7 @@ static CMySprite* s_bcircle = 0;
 static CMySprite* s_kinsprite = 0;
 
 static CUndoSprite* s_undosprite = 0;
+static CFpsSprite* s_fpssprite = 0;
 
 
 static int s_fbxbunki = 1;
@@ -2627,6 +2631,8 @@ void InitApp()
 		s_fps100[saveno] = 60.0;
 	}
 	s_fps100index = 0;
+	s_avrgfps = 0.0;
+
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
@@ -2634,6 +2640,7 @@ void InitApp()
 	s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
 
 	s_undosprite = 0;
+	s_fpssprite = 0;
 
 
 	g_wallscrapingikflag = 0;
@@ -3598,6 +3605,17 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_undosprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
 
 
+	if (s_fpssprite) {
+		delete s_fpssprite;
+		s_fpssprite = 0;
+	}
+	s_fpssprite = new CFpsSprite();
+	if (!s_fpssprite) {
+		_ASSERT(0);
+		return S_FALSE;
+	}
+	CallF(s_fpssprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
+
 
 
 	s_spundo[0].sprite = new CMySprite(s_pdev);
@@ -3992,6 +4010,9 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 
 	if (s_undosprite) {
 		s_undosprite->SetParams(s_mainwidth, s_mainheight);
+	}
+	if (s_fpssprite) {
+		s_fpssprite->SetParams(s_mainwidth, s_mainheight);
 	}
 
 	SetSpSel3DParams();
@@ -4429,6 +4450,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	if (s_undosprite) {
 		delete s_undosprite;
 		s_undosprite = 0;
+	}
+	if (s_fpssprite) {
+		delete s_fpssprite;
+		s_fpssprite = 0;
 	}
 
 
@@ -5730,118 +5755,119 @@ void RenderText( double fTime )
 		g_calcfps = 100.0;
 	}
 
-	double avrgfps = 0.0;
-	s_fps100[s_fps100index] = g_calcfps;
-	int saveno;
-	for (saveno = 0; saveno < FPSSAVENUM; saveno++) {
-		avrgfps += s_fps100[saveno];
+	s_avrgfps = 0.0;
+	if ((s_fps100index >= 0) && (s_fps100index < FPSSAVENUM)) {
+		s_fps100[s_fps100index] = g_calcfps;
+		int saveno;
+		for (saveno = 0; saveno < FPSSAVENUM; saveno++) {
+			s_avrgfps += s_fps100[saveno];
+		}
+		s_avrgfps /= (double)FPSSAVENUM;
+		s_fps100index++;
+		if (s_fps100index >= FPSSAVENUM) {
+			s_fps100index = 0;
+		}
 	}
-	avrgfps /= (double)FPSSAVENUM;
-	s_fps100index++;
-	if (s_fps100index >= FPSSAVENUM) {
-		s_fps100index = 0;
-	}
 
 
 
-    // The helper object simply helps keep track of text position, and color
-    // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
-    // If NULL is passed in as the sprite object, then it will work fine however the 
-    // pFont->DrawText() will not be batched together.  Batching calls will improves perf.
-    //CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 15 );
-	//CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 18 );
+ //   // The helper object simply helps keep track of text position, and color
+ //   // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
+ //   // If NULL is passed in as the sprite object, then it will work fine however the 
+ //   // pFont->DrawText() will not be batched together.  Batching calls will improves perf.
+ //   //CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 15 );
+	////CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 18 );
 
-    // Output statistics
-    g_pTxtHelper->Begin();
-    //g_pTxtHelper->SetInsertionPos( 2, 0 );
-	g_pTxtHelper->SetInsertionPos(175, 0);
-    g_pTxtHelper->SetForegroundColor( DirectX::XMFLOAT4( 1.0f, 1.0f, 0.0f, 1.0f ) );
-    //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
-    //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
+ //   // Output statistics
+ //   g_pTxtHelper->Begin();
+ //   //g_pTxtHelper->SetInsertionPos( 2, 0 );
+	//g_pTxtHelper->SetInsertionPos(175, 0);
+ //   g_pTxtHelper->SetForegroundColor( DirectX::XMFLOAT4( 1.0f, 1.0f, 0.0f, 1.0f ) );
+ //   //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
+ //   //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
-    g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
-    //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
-	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
-	//g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
+ //   g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
+ //   //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
+	////g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
+	////g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
 
-	//int undoR = 0;
-	//int undoW = 0;
-	//int undo1st = 0;
-	//if (s_model) {
-	//	undoR = s_model->GetCurrentUndoR();
-	//	undoW = s_model->GetCurrentUndoW();
-	//	undo1st = s_model->GetCurrentUndo1st();
+	////int undoR = 0;
+	////int undoW = 0;
+	////int undo1st = 0;
+	////if (s_model) {
+	////	undoR = s_model->GetCurrentUndoR();
+	////	undoW = s_model->GetCurrentUndoW();
+	////	undo1st = s_model->GetCurrentUndo1st();
+	////}
+	////g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d undoR %d undoW %d undo1st %d", 
+	////	avrgfps, g_previewFlag, s_mbuttoncnt, undoR, undoW ,undo1st);
+
+
+	////g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
+	////	avrgfps, g_previewFlag, s_mbuttoncnt);
+
+	//g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f", avrgfps);
+
+	//if (s_onefps == 1) {
+	//	g_pTxtHelper->DrawFormattedTextLine(L" ");
+	//	g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
 	//}
-	//g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d undoR %d undoW %d undo1st %d", 
-	//	avrgfps, g_previewFlag, s_mbuttoncnt, undoR, undoW ,undo1st);
-
-
-	//g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
-	//	avrgfps, g_previewFlag, s_mbuttoncnt);
-
-	g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f", avrgfps);
-
-	if (s_onefps == 1) {
-		g_pTxtHelper->DrawFormattedTextLine(L" ");
-		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
-	}
-	else if (s_onefps == 2) {
-		g_pTxtHelper->DrawFormattedTextLine(L" ");
-		g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 2 fps");
-	}
-
-	//int tmpnum;
-	//double tmpstart, tmpend, tmpapply;
-	//s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
-    //g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
-    //g_pTxtHelper->DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
-
-	//if (s_model && (s_curboneno >= 0)){
-	//	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	//	if (curbone){
-	//		MOTINFO* curmi = s_model->GetCurMotInfo();
-	//		if (curmi){
-	//			const WCHAR* wbonename = curbone->GetWBoneName();
-	//			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	//			int paraxsiflag = 1;
-	//			int isfirstbone = 0;
-	//			cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-	//			ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
-	//			curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
-	//			//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
-	//			g_pTxtHelper->DrawFormattedTextLine(L"selected bone : %s", wbonename);
-	//			g_pTxtHelper->DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
-	//			g_pTxtHelper->DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
-	//		}
-	//	}
+	//else if (s_onefps == 2) {
+	//	g_pTxtHelper->DrawFormattedTextLine(L" ");
+	//	g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 2 fps");
 	//}
 
-/***
-    // Draw help
-    if( g_bShowHelp )
-    {
-        const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D11BackBufferSurfaceDesc();
-        g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
-        g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
-        g_pTxtHelper->DrawTextLine( L"Controls:" );
+	////int tmpnum;
+	////double tmpstart, tmpend, tmpapply;
+	////s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
+ //   //g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+ //   //g_pTxtHelper->DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
 
-        g_pTxtHelper->SetInsertionPos( 20, pd3dsdBackBuffer->Height - 15 * 5 );
-        g_pTxtHelper->DrawTextLine( L"Rotate model: Left mouse button\n"
-                                L"Rotate light: Right mouse button\n"
-                                L"Rotate camera: Middle mouse button\n"
-                                L"Zoom camera: Mouse wheel scroll\n" );
+	////if (s_model && (s_curboneno >= 0)){
+	////	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	////	if (curbone){
+	////		MOTINFO* curmi = s_model->GetCurMotInfo();
+	////		if (curmi){
+	////			const WCHAR* wbonename = curbone->GetWBoneName();
+	////			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	////			int paraxsiflag = 1;
+	////			int isfirstbone = 0;
+	////			cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+	////			ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
+	////			curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
+	////			//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
+	////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone : %s", wbonename);
+	////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
+	////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
+	////		}
+	////	}
+	////}
 
-        g_pTxtHelper->SetInsertionPos( 250, pd3dsdBackBuffer->Height - 15 * 5 );
-        g_pTxtHelper->DrawTextLine( L"Hide help: F1\n"
-                                L"Quit: ESC\n" );
-    }
-    else
-    {
-        g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
-        g_pTxtHelper->DrawTextLine( L"Press F1 for help" );
-    }
-***/
-    g_pTxtHelper->End();
+ //   //// Draw help
+ //   //if( g_bShowHelp )
+ //   //{
+ //   //    const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D11BackBufferSurfaceDesc();
+ //   //    g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
+ //   //    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
+ //   //    g_pTxtHelper->DrawTextLine( L"Controls:" );
+
+ //   //    g_pTxtHelper->SetInsertionPos( 20, pd3dsdBackBuffer->Height - 15 * 5 );
+ //   //    g_pTxtHelper->DrawTextLine( L"Rotate model: Left mouse button\n"
+ //   //                            L"Rotate light: Right mouse button\n"
+ //   //                            L"Rotate camera: Middle mouse button\n"
+ //   //                            L"Zoom camera: Mouse wheel scroll\n" );
+
+ //   //    g_pTxtHelper->SetInsertionPos( 250, pd3dsdBackBuffer->Height - 15 * 5 );
+ //   //    g_pTxtHelper->DrawTextLine( L"Hide help: F1\n"
+ //   //                            L"Quit: ESC\n" );
+ //   //}
+ //   //else
+ //   //{
+ //   //    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+ //   //    g_pTxtHelper->DrawTextLine( L"Press F1 for help" );
+ //   //}
+
+	//g_pTxtHelper->End();
 
 
 	s_savetime = fTime;
@@ -24464,6 +24490,10 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 	//Undoの読み込みポイントと書き込みポイントを表示
 	if ((g_previewFlag == 0) && s_undosprite && s_model) {
 		s_undosprite->Render(pd3dImmediateContext, s_model->GetCurrentUndoR(), s_model->GetCurrentUndoW());
+	}
+	if (s_fpssprite && s_model) {
+		int dispfps = (int)(s_avrgfps + 0.5);
+		s_fpssprite->Render(pd3dImmediateContext, dispfps);
 	}
 
 

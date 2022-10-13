@@ -147,7 +147,7 @@ int CUndoSprite::SetParams(int srcmainwidth, int srcmainheight)
 
 	//m_pointR[0].x = 175;
 	m_pointR[0].x = 180;
-	m_pointR[0].y = 30;
+	m_pointR[0].y = 40;
 	{
 		int spacnt;
 		for (spacnt = 1; spacnt < 4; spacnt++) {
@@ -157,7 +157,7 @@ int CUndoSprite::SetParams(int srcmainwidth, int srcmainheight)
 	}
 
 	m_pointW[0].x = m_pointR[3].x + (int)spawidth + spashift + 5;
-	m_pointW[0].y = 30;
+	m_pointW[0].y = 40;
 	{
 		int spacnt;
 		for (spacnt = 1; spacnt < 4; spacnt++) {
@@ -225,9 +225,9 @@ int CUndoSprite::Render(ID3D11DeviceContext* pd3dImmediateContext, int undoR, in
 	m_indexW[0] = 11;//W_32x32.png
 
 	int decindex;
+	int curR = undoR;
+	int curW = undoW;
 	for (decindex = 0; decindex < 3; decindex++) {
-		int curR = undoR;
-		int curW = undoW;
 		if ((curR < 0) || (curR >= UNDOMAX)) {
 			_ASSERT(0);
 			return 1;
@@ -243,10 +243,25 @@ int CUndoSprite::Render(ID3D11DeviceContext* pd3dImmediateContext, int undoR, in
 			divval *= 10;
 		}
 
-		m_indexR[decindex + 1] = curR / divval;//int
+		int tmpindexR = curR / divval;
+		if ((tmpindexR >= 0) && (tmpindexR <= 9)) {
+			m_indexR[decindex + 1] = curR / divval;//int
+		}
+		else {
+			_ASSERT(0);
+			m_indexR[decindex + 1] = 0;
+		}
 		curR = curR - (m_indexR[decindex + 1] * divval);
 
-		m_indexW[decindex + 1] = curW / divval;//int
+		
+		int tmpindexW = curW / divval;
+		if ((tmpindexW >= 0) && (tmpindexW <= 9)) {
+			m_indexW[decindex + 1] = curW / divval;//int
+		}
+		else {
+			_ASSERT(0);
+			m_indexW[decindex + 1] = 0;//int
+		}
 		curW = curW - (m_indexW[decindex + 1] * divval);
 	}
 

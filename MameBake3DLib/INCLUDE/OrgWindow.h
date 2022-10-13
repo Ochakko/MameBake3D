@@ -7729,6 +7729,13 @@ void s_dummyfunc()
 					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"S", name.c_str()) == 0) {
+
+					if ((g_previewFlag) != 0 && (g_previewFlag != 5)) {
+
+						return;//!!!!!!!!!!!!!!! preview時にはブラシラインは表示しない
+					}
+
+
 					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
 					y2 = y0;//EditMotは初期位置
@@ -7753,7 +7760,7 @@ void s_dummyfunc()
 					startindex = getKeyIndex(startTime);
 				}
 				else {
-					startindex = max(0, (getKeyIndex(parent->currentTime) - KEYNUM_ONPREVIEW));
+					startindex = max(0, (getKeyIndex(parent->currentTime) - KEYNUM_ONPREVIEW * 2));
 				}
 
 
@@ -7765,10 +7772,11 @@ void s_dummyfunc()
 						endkey = currentkeynum;
 					}
 					else {
-						endkey = min(currentkeynum, (startindex + KEYNUM_ONPREVIEW));
+						//endkey = min(currentkeynum, (startindex + KEYNUM_ONPREVIEW));
+						endkey = min(currentkeynum, getKeyIndex(parent->currentTime));
 					}
 					//for (int i = startindex; i < currentkeynum; i++) {
-					for (int i = startindex; i < endkey; i++) {
+					for (int i = startindex; i <= endkey; i++) {
 						//for (int i = 0; i < (int)key.size(); i++) {
 
 						if ((key[i]->time - startTime) < 0.0) {
@@ -7784,7 +7792,7 @@ void s_dummyfunc()
 						int ex0 = (int)((key[i]->time - startTime) * timeSize) + x1;
 						int ex1 = ex0 + DOT_SIZE_X;
 
-						if (ex1 > x2) {
+						if (ex1 > (x2 + DOT_SIZE_X)) {
 							break;
 						}
 
@@ -7805,6 +7813,11 @@ void s_dummyfunc()
 								LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
 							}
 
+							if((g_previewFlag != 0) && (g_previewFlag != 5)){
+								if (i == endkey) {
+									Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + 2, ey0 + 2);
+								}
+							}
 							//Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
 						}						
 					}

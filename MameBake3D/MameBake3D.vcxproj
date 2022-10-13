@@ -249,6 +249,7 @@
     <ClCompile Include="CpInfoDlg.cpp" />
     <ClCompile Include="DSUpdateUnderTracking.cpp" />
     <ClCompile Include="FilterDlg.cpp" />
+    <ClCompile Include="FpsSprite.cpp" />
     <ClCompile Include="FrameCopyDlg.cpp" />
     <ClCompile Include="GColiIDDlg.cpp" />
     <ClCompile Include="GetDlgParams.cpp" />
@@ -328,6 +329,7 @@
     <ClInclude Include="DSUpdateUnderTracking.h" />
     <ClInclude Include="FilterDlg.h" />
     <ClInclude Include="FilterType.h" />
+    <ClInclude Include="FpsSprite.h" />
     <ClInclude Include="FrameCopyDlg.h" />
     <ClInclude Include="GColiIDDlg.h" />
     <ClInclude Include="GetDlgParams.h" />
