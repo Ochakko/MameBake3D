@@ -636,7 +636,7 @@ int CBone::UpdateLimitedWorldMat(int srcmotid, double srcframe0)
 	//if ((calcflag != 1) && orgbefmp) {//計算済で無い場合だけ計算する
 	if (calcflag == 1) {
 		orgbefmp->SetLimitedWM(newworldmat);
-		orgbefmp->SetCalcLimitedWM(1);
+		orgbefmp->SetCalcLimitedWM(2);
 	}
 
 	return 0;
@@ -848,7 +848,7 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 		beflimitedmat.SetIdentity();
 		resultmat.SetIdentity();
 
-		if ((befptr->GetCalcLimitedWM() == 1) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
+		if ((befptr->GetCalcLimitedWM() == 2) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
 			//計算済
 			beflimitedmat = befptr->GetLimitedWM();
 			if (pporgbefmp) {
@@ -862,6 +862,12 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 			if (pporgbefmp) {
 				*pporgbefmp = befptr;
 			}
+			//if (callingstate == 1) {
+			//	befptr->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
+			//}
+			//else {
+			//	befptr->SetCalcLimitedWM(2);//前処理済のフラグ。後処理済は２
+			//}
 		}
 
 
@@ -869,7 +875,7 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 		nextlimitedmat = beflimitedmat;//nextptrがNULLのときの補間対策
 
 		if (nextptr) {
-			if ((nextptr->GetCalcLimitedWM() == 1) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
+			if ((nextptr->GetCalcLimitedWM() == 2) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
 				//計算済
 				nextlimitedmat = nextptr->GetLimitedWM();
 			}
@@ -877,6 +883,12 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 				//計算済では無い
 				//ChaMatrixIdentity(plimitedworldmat);
 				nextlimitedmat = GetLimitedWorldMat(srcmotid, (double)((int)(nextptr->GetFrame() + 0.0001)), 0, callingstate);
+				//if (callingstate == 1) {
+				//	nextptr->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
+				//}
+				//else {
+				//	nextptr->SetCalcLimitedWM(2);//前処理済のフラグ。後処理済は２
+				//}
 			}
 
 			double diffframe = nextptr->GetFrame() - befptr->GetFrame();
@@ -5049,12 +5061,12 @@ int CBone::CalcWorldMatFromEulForThread(int srcmotid, double srcframe, ChaMatrix
 	GetCalclatedLimitedWM(srcmotid, befframe, &befworldmat, &pbefmp, callingstate);
 	GetCalclatedLimitedWM(srcmotid, aftframe, &aftworldmat, &paftmp, callingstate);
 	if (pbefmp) {
-		pbefmp->SetLimitedWM(befworldmat);
-		pbefmp->SetCalcLimitedWM(1);
+		//pbefmp->SetLimitedWM(befworldmat);
+		//pbefmp->SetCalcLimitedWM(2);//前処理済１，後処理済２
 
 		if (paftmp) {
-			paftmp->SetLimitedWM(aftworldmat);
-			paftmp->SetCalcLimitedWM(1);
+			//paftmp->SetLimitedWM(aftworldmat);
+			//paftmp->SetCalcLimitedWM(2);//前処理済１，後処理済２
 
 			double diffframe = paftmp->GetFrame() - pbefmp->GetFrame();
 			if (diffframe != 0.0) {
@@ -7601,8 +7613,9 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, (double)((int)(srcframe + 0.1)));
 		if (curmp) {
-			if ((curmp->GetCalcLimitedWM() == 1) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
+			if ((curmp->GetCalcLimitedWM() == 2) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
 				//計算済の場合 物理では無い場合
+				//GetCalcLimitedWM() : 前処理済１，後処理済２
 				retmat = curmp->GetLimitedWM();
 				if (dstneweul) {
 					*dstneweul = curmp->GetLocalEul();
@@ -7610,29 +7623,82 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 			}
 			else {
 				//計算済で無い場合
-				if ((callingstate == 0) || (callingstate == 1)) {
-					orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-					int ismovable = ChkMovableEul(orgeul);
-					if (ismovable == 1) {
-						neweul = orgeul;
-					}
-					else {
-						neweul = LimitEul(orgeul);
-					}
-					SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
-					if (dstneweul) {
-						*dstneweul = neweul;
-					}
-					SetTempLocalEul(orgeul, neweul);
+				if (callingstate == 1) {
+					//前処理が出来てない(ボーン構造順に呼び出していないのでLocal計算が出来ない)ので何もしない。
+					//callingstate = 2での呼び出しに任せる。
 				}
 				else {
-					GetTempLocalEul(&orgeul, &neweul);
+					if (curmp->GetCalcLimitedWM() == 2) {
+						//計算済の場合
+						GetTempLocalEul(&orgeul, &neweul);
+					}
+					else {
+						//未計算の場合
+						orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+						int ismovable = ChkMovableEul(orgeul);
+						if (ismovable == 1) {
+							neweul = orgeul;
+						}
+						else {
+							neweul = LimitEul(orgeul);
+						}
+						SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+						if (dstneweul) {
+							*dstneweul = neweul;
+						}
+						SetTempLocalEul(orgeul, neweul);
+					}
 				}
 
 				//if ((callingstate == 0) || (callingstate == 2)) {
-				if ((callingstate == 0) || (callingstate == 2) || (callingstate == 3)) {
-					retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+				//	if (curmp->GetCalcLimitedWM() == 0) {
+				//		//未計算の場合
+				//		orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+				//		int ismovable = ChkMovableEul(orgeul);
+				//		if (ismovable == 1) {
+				//			neweul = orgeul;
+				//		}
+				//		else {
+				//			neweul = LimitEul(orgeul);
+				//		}
+				//		SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+				//		if (dstneweul) {
+				//			*dstneweul = neweul;
+				//		}
+				//		SetTempLocalEul(orgeul, neweul);
+				//	}
+				//	else if (curmp->GetCalcLimitedWM() == 1) {
+				//		//前処理済
+				//		GetTempLocalEul(&orgeul, &neweul);
+				//	}
+				//	else if (curmp->GetCalcLimitedWM() == 2) {
+				//		//後処理済
+				//		GetTempLocalEul(&orgeul, &neweul);
+				//	}
+				//	else {
+				//		//unknown case
+				//		_ASSERT(0);
+				//		GetTempLocalEul(&orgeul, &neweul);
+				//	}
+				//}
+				//else {
+				//	GetTempLocalEul(&orgeul, &neweul);
+				//}
+
+				////if ((callingstate == 0) || (callingstate == 2)) {
+				//if ((callingstate == 0) || (callingstate == 2) || (callingstate == 3)) {
+				//	retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+				//}
+
+				if (curmp->GetCalcLimitedWM() == 2) {
+					retmat = curmp->GetLimitedWM();
 				}
+				else {
+					retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+					curmp->SetLimitedWM(retmat);
+				}
+
+
 				//else if (callingstate == 3) {
 				//	//2022/08/22
 				//	//物理時　計算済のparent(この関数内においてはcurrent)のwmを参照　不具合エフェクト：指の先が遅れて動く
@@ -7650,11 +7716,19 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 				//	}
 				//	
 				//}
-				else {
-					ChaMatrixIdentity(&retmat);
-				}
+				//else {
+				//	ChaMatrixIdentity(&retmat);
+				//}
 			}
 		}
+
+		if (callingstate == 1) {
+			curmp->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
+		}
+		else {
+			curmp->SetCalcLimitedWM(2);//前処理済のフラグ。後処理済は２
+		}
+
 	}
 	else {
 		//制限角度無し
