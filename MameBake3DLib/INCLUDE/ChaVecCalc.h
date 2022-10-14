@@ -342,6 +342,8 @@ public:
 	//inout : srcdstq
 	int InOrder(CQuaternion* srcdstq);
 
+	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);
+
 private:
 
 	double vecDotVec(ChaVector3* vec1, ChaVector3* vec2);
@@ -352,7 +354,7 @@ private:
 	int vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 
 	//int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
-	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);
+	//int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);//public‚ÉˆÚ“®
 	int GetRound(float srcval);
 
 	float QuaternionLimitPhai(float srcphai);

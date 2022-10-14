@@ -702,6 +702,7 @@ public:
 	void InitMPReq(CBone* curbone, int srcmotid, double curframe);
 	int InitMP(CBone* curbone, int srcmotid, double curframe);
 
+	int Adjust180Deg(CBone* srcbone);
 
 private:
 	int InitParams();

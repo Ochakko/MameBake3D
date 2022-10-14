@@ -249,14 +249,17 @@ namespace OrgWinGUI{
 			//int minx = 0;
 			//int maxx = (int)(((double)showPos_width) * timeSize) + x0 + 1;
 
-			RECT tmpRect;
-			tmpRect.left = 0;
-			//tmpRect.left = minx;
-			tmpRect.top = 0;
-			tmpRect.right = size.x;
-			//tmpRect.right = maxx;
-			tmpRect.bottom = size.y + 30;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+			//RECT tmpRect;
+			//tmpRect.left = 0;
+			////tmpRect.left = minx;
+			//tmpRect.top = 0;
+			//tmpRect.right = size.x;
+			////tmpRect.right = maxx;
+			//tmpRect.bottom = size.y + 40;
+			//InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+			InvalidateRect(parentWindow->getHWnd(), NULL, false);
+
 
 			//draw();
 
@@ -280,14 +283,17 @@ namespace OrgWinGUI{
 			//int minx = 0;
 			//int maxx = (int)(((double)showPos_width) * timeSize) + x0 + 1;
 
-			RECT tmpRect;
-			tmpRect.left = 0;
-			//tmpRect.left = minx;
-			tmpRect.top = 0;
-			tmpRect.right = size.x + 20;
-			//tmpRect.right = maxx;
-			tmpRect.bottom = size.y;
-			InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+			//RECT tmpRect;
+			//tmpRect.left = 0;
+			////tmpRect.left = minx;
+			//tmpRect.top = 0;
+			//tmpRect.right = size.x + 20;
+			////tmpRect.right = maxx;
+			//tmpRect.bottom = size.y;
+			//InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+
+			InvalidateRect(parentWindow->getHWnd(), NULL, false);
+
 
 			//draw();
 

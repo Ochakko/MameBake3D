@@ -451,6 +451,8 @@ public:
 
 	int InitMP(int srcmotid, double srcframelen);
 
+	int Adjust180Deg(int srcmotid, double srcleng);
+
 private:
 
 /**

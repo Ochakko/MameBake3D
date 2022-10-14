@@ -13029,3 +13029,17 @@ void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 	}
 }
 
+//int CModel::Adjust180Deg(CBone* srcbone)
+//{
+//	if (srcbone) {
+//		MOTINFO* curmi = GetCurMotInfo();
+//		if (curmi) {
+//			int srcmotid = curmi->motid;
+//			double srcleng = curmi->frameleng;
+//			srcbone->Adjust180Deg(srcmotid, srcleng);
+//		}
+//	}
+//	return 0;
+//}
+
+

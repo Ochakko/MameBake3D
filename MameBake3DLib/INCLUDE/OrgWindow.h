@@ -7882,7 +7882,7 @@ void s_dummyfunc()
 						}
 					}
 					
-					int befey0 = 0;
+					//int befey0 = 0;
 					//int mindiv = (int)((parent->mineul - 1.0) / (double)mesurestep);
 					double mindiv = parent->mineul / mesurestep;
 					//int minmeasure = (mindiv - 1) * mesurestep;
@@ -7893,11 +7893,12 @@ void s_dummyfunc()
 					double maxmeasure = maxdiv * mesurestep;
 
 
+					int prevy0 = y0;
+
 					//min
 					//int ey0 = (parent->maxeul - minmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 					int ey0 = (int)((parent->maxeul - minmeasure) / eulrange * (y1 - y0) + y2);
 					int ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
-
 					WCHAR strmeasure[64];
 					if (ey0 >= y0) {
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", minmeasure);
@@ -7909,8 +7910,10 @@ void s_dummyfunc()
 						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
 						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
 						//LineTo(hdcM->hDC, x2, ey0);
+
+						prevy0 = y0;
 					}
-					befey0 = ey0;//!!!!!!!!!!!!!!!
+					//befey0 = ey0;//!!!!!!!!!!!!!!!
 
 
 					//ikkind
@@ -7942,21 +7945,6 @@ void s_dummyfunc()
 							//LineTo(hdcM->hDC, x2, ey0);
 						}
 					}
-					//max
-					//ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
-					ey0 = (int)((parent->maxeul - maxmeasure) / eulrange * (y1 - y0) + y2);
-					ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
-					if (ey0 >= y0) {
-						swprintf_s(strmeasure, 64, L"%+3.3lf---", maxmeasure);
-						strmeasure[64 - 1] = 0L;
-						SetTextColor(hdcM->hDC, RGB(255, 255, 255));
-						TextOut(hdcM->hDC,
-							ex0, ey0,
-							strmeasure, (int)wcslen(strmeasure));
-						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
-						//LineTo(hdcM->hDC, x2, ey0);
-					}
 
 					//between min and max
 					for (double curmeasure = minmeasure + mesurestep; curmeasure < maxmeasure; curmeasure += mesurestep) {
@@ -7964,9 +7952,9 @@ void s_dummyfunc()
 						//ey0 = (parent->maxeul - curmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 						ey0 = (int)((parent->maxeul - curmeasure) / eulrange * (y1 - y0) + y2);
 						ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
-						if (ey0 >= y0) {
+						if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//文字フォントサイズを考慮
 							//if (abs(ey0 - befey0) > 20) {
-							if (abs(ey0 - befey0) > (mesurestep * 2)) {
+							//if (abs(ey0 - befey0) > (mesurestep * 2)) {
 								swprintf_s(strmeasure, 64, L"%+3.3lf---", curmeasure);
 								strmeasure[64 - 1] = 0L;
 								SetTextColor(hdcM->hDC, RGB(255, 255, 255));
@@ -7978,11 +7966,33 @@ void s_dummyfunc()
 								//MoveToEx(hdcM->hDC, x1, ey0, NULL);
 								//LineTo(hdcM->hDC, x2, ey0);
 
-								befey0 = ey0;
-							}
+								//befey0 = ey0;
+
+
+							//}
+								prevy0 = ey0;
 						}
 					}
-					
+
+
+					//max
+					//ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
+					ey0 = (int)((parent->maxeul - maxmeasure) / eulrange * (y1 - y0) + y2);
+					ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
+					if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//文字フォントサイズを考慮
+						swprintf_s(strmeasure, 64, L"%+3.3lf---", maxmeasure);
+						strmeasure[64 - 1] = 0L;
+						SetTextColor(hdcM->hDC, RGB(255, 255, 255));
+						TextOut(hdcM->hDC,
+							ex0, ey0,
+							strmeasure, (int)wcslen(strmeasure));
+						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+						//LineTo(hdcM->hDC, x2, ey0);
+
+						prevy0 = ey0;
+					}
+
 				}
 			}
 

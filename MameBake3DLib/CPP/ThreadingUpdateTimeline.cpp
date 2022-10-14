@@ -38,6 +38,7 @@
 
 using namespace std;
 
+extern int g_previewFlag;
 
 CThreadingUpdateTimeline::CThreadingUpdateTimeline()
 {
@@ -77,7 +78,7 @@ int CThreadingUpdateTimeline::ThreadFunc()
 
 	while (InterlockedAdd(&m_exit_state, 0) != 1) {
 
-		if (g_HighRpmMode == true) {
+		if ((g_HighRpmMode == true) && (g_previewFlag != 0)) {//プレビュー中だけ
 
 			//###########################
 			// 高回転モード　: High rpm

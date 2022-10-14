@@ -160,7 +160,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 			// first MotionPoint
 			//###################
 
-			CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, srcer->GetStartFrame());
+			CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, (double)((int)(srcer->GetStartFrame() + 0.1)));
 			//CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, 0.0);
 			if (!firstsrcmp) {
 				//_ASSERT(0);
@@ -195,7 +195,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 			CMotionPoint* undomp = firstundomp;
 			for (currenttime = (srcer->GetStartFrame() + 1.0); currenttime <= srcer->GetEndFrame(); currenttime += 1.0) {
 			//for (currenttime = 1.0; currenttime < (pmodel->GetCurMotInfo()->frameleng - 1.0); currenttime += 1.0) {
-				srcmp = curbone->GetMotionPoint(curmotid, currenttime);
+				srcmp = curbone->GetMotionPoint(curmotid, (double)((int)(currenttime + 0.1)));
 				undomp = 0;
 				if (srcmp && befundomp) {
 					undomp = befundomp->GetNext();
@@ -366,14 +366,24 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 
 		if (curbone) {
 			CMotionPoint* srcmp = m_bone2mp[curbone];
+			CMotionPoint* befdstmp = 0;
 			while (srcmp && (srcmp->GetUndoValidFlag() == 1)) {
 				double srcframe = srcmp->GetFrame();
-				CMotionPoint* dstmp = curbone->GetMotionPoint(setmotid, srcframe);
-				if (dstmp) {
-					dstmp->CopyMP(srcmp);
+				CMotionPoint* dstmp = curbone->GetMotionPoint(setmotid, (double)((int)(srcframe + 0.1)));
+				if (!dstmp) {
+					dstmp = CMotionPoint::GetNewMP();
+					if (!dstmp) {
+						_ASSERT(0);
+						SetValidFlag(0);
+						return 1;
+					}
+					if (befdstmp) {
+						befdstmp->AddToNext(dstmp);
+					}
 				}
-
+				dstmp->CopyMP(srcmp);
 				srcmp = srcmp->GetNext();
+				befdstmp = dstmp;
 			}
 			curbone->SetMotMarkOfMap2(setmotid, m_bonemotmark[curbone]);
 		}

@@ -1040,6 +1040,8 @@ static OWP_Button* s_toolInterpolate3B = 0;
 static OWP_Button* s_toolSelectCopyFileName = 0;
 static OWP_Button* s_toolSkipRenderBoneMarkB = 0;
 static OWP_Button* s_toolSkipRenderBoneMarkB2 = 0;
+static OWP_Button* s_tool180deg = 0;
+
 
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
@@ -1104,6 +1106,8 @@ static bool s_newmotFlag = false;
 static bool s_delcurmotFlag = false;
 static int s_interpolateState = 0;
 static int s_skipJointMark = 0;
+static bool s_180DegFlag = false;
+
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -2789,6 +2793,7 @@ void InitApp()
 	s_newmotFlag = false;
 	s_delcurmotFlag = false;
 	s_calclimitedwmState = 0;
+	s_180DegFlag = false;
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -3046,6 +3051,7 @@ void InitApp()
 	s_toolSelectCopyFileName = 0;
 	s_toolSkipRenderBoneMarkB = 0;
 	s_toolSkipRenderBoneMarkB2 = 0;
+	s_tool180deg = 0;
 
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
@@ -4590,6 +4596,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	if (s_toolSkipRenderBoneMarkB2) {
 		delete s_toolSkipRenderBoneMarkB2;
 		s_toolSkipRenderBoneMarkB2 = 0;
+	}
+	if (s_tool180deg) {
+		delete s_tool180deg;
+		s_tool180deg = 0;
 	}
 
 
@@ -14843,6 +14853,12 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_OPENMQODLG),
 			s_3dwnd, (DLGPROC)OpenMqoDlgProc);
 		if ((dlgret != IDOK) || !g_tmpmqopath[0]) {
+
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			UnhookWinEvent(hhook);
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+
 			return 0;
 		}
 
@@ -20437,6 +20453,7 @@ int OnFrameTimeLineWnd()
 
 
 
+
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
 	//if (s_keyShiftFlag){
 		s_keyShiftFlag = false;
@@ -20500,6 +20517,36 @@ int OnFrameToolWnd()
 
 		s_selboneFlag = false;
 	}
+
+	if (s_180DegFlag) {
+		//if (s_model && (s_curboneno >= 0)) {
+		//	CBone* curbone = 0;
+		//	CBone* adjustbone = 0;
+		//	if (s_curboneno >= 0) {
+		//		curbone = s_model->GetBoneByID(s_curboneno);
+		//	}
+		//	else {
+		//		curbone = 0;
+		//	}
+		//	if (curbone) {
+		//		if (curbone->GetParent()) {
+		//			adjustbone = curbone->GetParent();
+		//		}
+		//		else {
+		//			adjustbone = curbone;
+		//		}
+		//	}
+
+		//	if (adjustbone) {
+		//		s_model->Adjust180Deg(adjustbone);
+		//		refreshEulerGraph();
+		//	}
+		//}
+		s_180DegFlag = false;
+	}
+
+
+
 
 	if (s_markFlag){
 
@@ -21434,7 +21481,6 @@ int OnSpriteUndo()
 		RollbackBrushState(brushstate);
 
 		undodoneflag = true;
-		s_undoFlag = false;
 	}
 	else if (s_model && (s_redoFlag == true))
 	{
@@ -21444,7 +21490,6 @@ int OnSpriteUndo()
 		RollbackBrushState(brushstate);
 
 		undodoneflag = true;
-		s_redoFlag = false;
 	}
 
 	if (s_model && (undodoneflag == true)) {
@@ -21481,13 +21526,15 @@ int OnSpriteUndo()
 		}
 
 		if (s_curboneno >= 0) {
-			int curlineno = s_boneno2lineno[s_curboneno];
-			if (s_owpTimeline) {
-				s_owpTimeline->setCurrentLine(curlineno, true);
-			}
+			//int curlineno = s_boneno2lineno[s_curboneno];
+			//if (s_owpTimeline) {
+			//	s_owpTimeline->setCurrentLine(curlineno, true);
+			//}
 
-			SetTimelineMark();
-			SetLTimelineMark(s_curboneno);
+			//SetTimelineMark();
+			//SetLTimelineMark(s_curboneno);
+
+			ChangeCurrentBone();
 		}
 
 		OnGUIEventSpeed();
@@ -21520,6 +21567,8 @@ int OnSpriteUndo()
 		}
 	}
 
+	s_undoFlag = false;
+	s_redoFlag = false;
 
 	s_underoperation = false;
 
@@ -24015,6 +24064,7 @@ int CreateToolWnd()
 	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
 	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
 	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
+	//s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -24031,6 +24081,7 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolZeroFrameB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
+	//s_toolWnd->addParts(*s_tool180deg);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -24046,6 +24097,7 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolZeroFrameB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
+	//s_dstoolctrls.push_back(s_tool180deg);
 
 
 	s_toolWnd->setCloseListener([](){ 
@@ -24131,8 +24183,12 @@ int CreateToolWnd()
 		if (s_model && (s_skipJointMark == 0)) {
 			s_skipJointMark = 2;//deeper
 		}
-		});
-
+	});
+	//s_tool180deg->setButtonListener([]() {
+	//	if (s_model && (s_180DegFlag == false)) {
+	//		s_180DegFlag = true;
+	//	}
+	//});
 
 
 	s_rctoolwnd.top = 0;

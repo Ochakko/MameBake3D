@@ -8276,3 +8276,27 @@ int CBone::SwapCurrentMotionPoint()
 	return 0;
 }
 
+//int CBone::Adjust180Deg(int srcmotid, double srcleng)
+//{
+//	double curframe;
+//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+//	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+//
+//	befeul = CalcLocalEulXYZ(-1, srcmotid, 0.0, BEFEUL_BEFFRAME);
+//
+//	for (curframe = 1.0; curframe < srcleng; curframe += 1.0) {
+//		int paraxsiflag1 = 1;
+//		cureul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(curframe + 0.1)), BEFEUL_BEFFRAME);
+//		CQuaternion curq;
+//		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
+//
+//		int inittraflag1 = 0;
+//		int setchildflag1 = 1;
+//		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
+//
+//		befeul = cureul;
+//	}
+//
+//	return 0;
+//}
+
