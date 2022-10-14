@@ -19208,10 +19208,12 @@ int ChangeCurrentBone()
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
 			if (curbone) {
 				CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
-				//ANGLELIMIT anglelimit = curbone->GetAngleLimit();
-				//pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
-				//g_boneaxis = anglelimit.boneaxiskind;
-				g_boneaxis = (int)PtrToUlong(pComboBox3->GetSelectedData());
+				if (pComboBox3) {
+					//ANGLELIMIT anglelimit = curbone->GetAngleLimit();
+					//pComboBox3->SetSelectedByData(ULongToPtr(anglelimit.boneaxiskind));
+					//g_boneaxis = anglelimit.boneaxiskind;
+					g_boneaxis = (int)PtrToUlong(pComboBox3->GetSelectedData());
+				}
 			}
 
 			SetRigidLeng();
@@ -19228,6 +19230,9 @@ int ChangeCurrentBone()
 			//if (s_befbone != curbone) {
 			//	refreshEulerGraph();
 			//}
+
+
+			//選択ボーンに変更が有った場合
 			if ((s_befbone != curbone) || (s_befmodel != s_model)) {
 				//if (s_owpTimeline) {
 					//refreshTimeline(*s_owpTimeline);
@@ -19237,6 +19242,9 @@ int ChangeCurrentBone()
 
 
 				//}
+
+
+				PrepairUndo();
 			}
 
 
@@ -21473,6 +21481,8 @@ int OnSpriteUndo()
 	brushstate.Init();
 
 
+
+
 	///////////// undo
 	if (s_model && (s_undoFlag == true)) {
 		//undo
@@ -21497,7 +21507,7 @@ int OnSpriteUndo()
 		//s_deletedKeyInfoList.clear();
 		//s_selectKeyInfoList.clear();
 
-		if (s_model->GetCurMotInfo()->motid != s_curmotid) {
+		if (s_model->GetCurMotInfo() && (s_model->GetCurMotInfo()->motid != s_curmotid)) {
 			int chkcnt = 0;
 			int findflag = 0;
 			map<int, MOTINFO*>::iterator itrmi;
@@ -21526,15 +21536,14 @@ int OnSpriteUndo()
 		}
 
 		if (s_curboneno >= 0) {
-			//int curlineno = s_boneno2lineno[s_curboneno];
-			//if (s_owpTimeline) {
-			//	s_owpTimeline->setCurrentLine(curlineno, true);
-			//}
-
-			//SetTimelineMark();
-			//SetLTimelineMark(s_curboneno);
-
 			ChangeCurrentBone();
+
+			int curlineno = s_boneno2lineno[s_curboneno];
+			if (s_owpTimeline) {
+				s_owpTimeline->setCurrentLine(curlineno, true);
+			}
+			SetTimelineMark();
+			SetLTimelineMark(s_curboneno);
 		}
 
 		OnGUIEventSpeed();
@@ -21566,6 +21575,13 @@ int OnSpriteUndo()
 
 		}
 	}
+
+
+	//select復元
+	//s_pickinfo.buttonflag = PICK_CENTER;
+	s_pickinfo.pickobjno = s_curboneno;
+
+
 
 	s_undoFlag = false;
 	s_redoFlag = false;
@@ -21583,108 +21599,20 @@ int OnFrameUndo(bool fromds, int fromdskind)
 	}
 	s_underoperation = true;
 
-
-	bool undodoneflag = false;
-	double tmpselectstart = 1.0;
-	double tmpselectend = 1.0;
-	double tmpapplyrate = 50.0;
-
-	BRUSHSTATE brushstate;
-	brushstate.Init();
-
 	///////////// undo
 	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))) {
-		StopBt();
 
-		if ((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)) {
+		if (((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)) && (s_undoFlag == false) && (s_redoFlag == false)) {
 			//redo
-			s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
-			RollbackBrushState(brushstate);
-
-			undodoneflag = true;
+			s_redoFlag = true;
+			OnSpriteUndo();
 		}
-		else if ((fromds && (fromdskind == 0)) || !fromds) {
+		else if (((fromds && (fromdskind == 0)) || !fromds) && (s_undoFlag == false) && (s_redoFlag == false)) {
 			//undo
-			s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
-			RollbackBrushState(brushstate);
-
-			undodoneflag = true;
+			s_undoFlag = true;
+			OnSpriteUndo();
 		}
 	}
-
-	if(s_model && (undodoneflag == true)){
-		//s_copyKeyInfoList.clear();
-		//s_deletedKeyInfoList.clear();
-		//s_selectKeyInfoList.clear();
-
-		if (s_model->GetCurMotInfo()->motid != s_curmotid){
-			int chkcnt = 0;
-			int findflag = 0;
-			map<int, MOTINFO*>::iterator itrmi;
-			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++){
-				MOTINFO* curmi = itrmi->second;
-				if (curmi) {
-					if (curmi == s_model->GetCurMotInfo()) {
-						findflag = 1;
-						break;
-					}
-					chkcnt++;
-				}
-			}
-
-			if (findflag == 1){
-				int selindex;
-				selindex = chkcnt;
-				OnAnimMenu(true, selindex, 0);
-			}
-		}
-		else{
-			if (s_model) {
-				//メニュー書き換え, timeline update
-				OnAnimMenu(true, s_motmenuindexmap[s_model], 0);
-			}
-		}
-
-		if (s_curboneno >= 0) {
-			int curlineno = s_boneno2lineno[s_curboneno];
-			if (s_owpTimeline) {
-				s_owpTimeline->setCurrentLine(curlineno, true);
-			}
-
-			SetTimelineMark();
-			SetLTimelineMark(s_curboneno);
-		}
-
-		OnGUIEventSpeed();
-
-		MOTINFO* curmi;
-		curmi = s_model->GetCurMotInfo();
-		if (curmi) {
-			s_buttonselectstart = max(0.0, tmpselectstart);
-			s_buttonselectstart = min((curmi->frameleng - 1.0), s_buttonselectstart);
-
-			s_buttonselectend = max(0.0, tmpselectend);
-			s_buttonselectend = min((curmi->frameleng - 1.0), s_buttonselectend);
-
-			
-			OnTimeLineButtonSelectFromSelectStartEnd(0);
-			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
-
-			g_applyrate = (int)tmpapplyrate;
-			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
-				g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->SetValue(g_applyrate);
-			}
-
-			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
-				_ASSERT(0);
-			}
-
-			//SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
-
-		}
-	}
-
 
 	s_underoperation = false;
 

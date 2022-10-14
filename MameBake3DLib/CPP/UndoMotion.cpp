@@ -370,6 +370,8 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 			while (srcmp && (srcmp->GetUndoValidFlag() == 1)) {
 				double srcframe = srcmp->GetFrame();
 				CMotionPoint* dstmp = curbone->GetMotionPoint(setmotid, (double)((int)(srcframe + 0.1)));
+
+				//モーションが長くなる場合
 				if (!dstmp) {
 					dstmp = CMotionPoint::GetNewMP();
 					if (!dstmp) {
@@ -381,6 +383,7 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 						befdstmp->AddToNext(dstmp);
 					}
 				}
+
 				dstmp->CopyMP(srcmp);
 				srcmp = srcmp->GetNext();
 				befdstmp = dstmp;
@@ -401,6 +404,20 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 		//	//curbone->SetMotionKey(setmotid, undofirstmp);
 		//	curbone->SetMotMarkOfMap2(setmotid, m_bonemotmark[curbone]);
 		//}
+	}
+
+
+	//モーションが短くなった場合に対応
+	double oldleng = chkmotinfo->frameleng;
+	double newleng = m_savemotinfo.frameleng;
+	if (oldleng > newleng) {
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				curbone->DeleteMPOutOfRange(setmotid, newleng - 1.0);
+			}
+		}
 	}
 
 

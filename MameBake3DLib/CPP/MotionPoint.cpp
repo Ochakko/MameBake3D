@@ -164,6 +164,11 @@ int CMotionPoint::SetQ( CQuaternion* axisq, CQuaternion newq )
 
 int CMotionPoint::AddToPrev( CMotionPoint* addmp )
 {
+	if (!addmp) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	CMotionPoint *saveprev, *savenext;
 	saveprev = m_prev;
 	savenext = m_next;
@@ -182,6 +187,11 @@ int CMotionPoint::AddToPrev( CMotionPoint* addmp )
 
 int CMotionPoint::AddToNext( CMotionPoint* addmp )
 {
+	if (!addmp) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	CMotionPoint *saveprev, *savenext;
 	saveprev = m_prev;
 	savenext = m_next;
