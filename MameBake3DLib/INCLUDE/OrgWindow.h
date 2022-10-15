@@ -7769,11 +7769,11 @@ void s_dummyfunc()
 					//int endkey = min(currentkeynum, (startindex + (int)parent->showPos_width));
 					int endkey;// = min(currentkeynum, (startindex + 1));
 					if (g_previewFlag == 0) {
-						endkey = currentkeynum;
+						endkey = currentkeynum - 1;
 					}
 					else {
 						//endkey = min(currentkeynum, (startindex + KEYNUM_ONPREVIEW));
-						endkey = min(currentkeynum, getKeyIndex(parent->currentTime));
+						endkey = min((currentkeynum - 1), getKeyIndex(parent->currentTime));
 					}
 					//for (int i = startindex; i < currentkeynum; i++) {
 					for (int i = startindex; i <= endkey; i++) {
