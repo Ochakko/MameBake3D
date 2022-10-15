@@ -848,7 +848,7 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 		beflimitedmat.SetIdentity();
 		resultmat.SetIdentity();
 
-		if ((befptr->GetCalcLimitedWM() == 2) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
+		if (befptr->GetCalcLimitedWM() == 2) {
 			//計算済
 			beflimitedmat = befptr->GetLimitedWM();
 			if (pporgbefmp) {
@@ -862,12 +862,6 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 			if (pporgbefmp) {
 				*pporgbefmp = befptr;
 			}
-			//if (callingstate == 1) {
-			//	befptr->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
-			//}
-			//else {
-			//	befptr->SetCalcLimitedWM(2);//前処理済のフラグ。後処理済は２
-			//}
 		}
 
 
@@ -883,12 +877,6 @@ int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plim
 				//計算済では無い
 				//ChaMatrixIdentity(plimitedworldmat);
 				nextlimitedmat = GetLimitedWorldMat(srcmotid, (double)((int)(nextptr->GetFrame() + 0.0001)), 0, callingstate);
-				//if (callingstate == 1) {
-				//	nextptr->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
-				//}
-				//else {
-				//	nextptr->SetCalcLimitedWM(2);//前処理済のフラグ。後処理済は２
-				//}
 			}
 
 			double diffframe = nextptr->GetFrame() - befptr->GetFrame();
@@ -7613,7 +7601,7 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, (double)((int)(srcframe + 0.1)));
 		if (curmp) {
-			if ((curmp->GetCalcLimitedWM() == 2) && (g_previewFlag != 4) && (g_previewFlag != 5)) {//物理のときには計算し直さないとオイラーグラフが破線状になる
+			if (curmp->GetCalcLimitedWM() == 2) {
 				//計算済の場合 物理では無い場合
 				//GetCalcLimitedWM() : 前処理済１，後処理済２
 				retmat = curmp->GetLimitedWM();
@@ -7650,45 +7638,6 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 					}
 				}
 
-				//if ((callingstate == 0) || (callingstate == 2)) {
-				//	if (curmp->GetCalcLimitedWM() == 0) {
-				//		//未計算の場合
-				//		orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-				//		int ismovable = ChkMovableEul(orgeul);
-				//		if (ismovable == 1) {
-				//			neweul = orgeul;
-				//		}
-				//		else {
-				//			neweul = LimitEul(orgeul);
-				//		}
-				//		SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
-				//		if (dstneweul) {
-				//			*dstneweul = neweul;
-				//		}
-				//		SetTempLocalEul(orgeul, neweul);
-				//	}
-				//	else if (curmp->GetCalcLimitedWM() == 1) {
-				//		//前処理済
-				//		GetTempLocalEul(&orgeul, &neweul);
-				//	}
-				//	else if (curmp->GetCalcLimitedWM() == 2) {
-				//		//後処理済
-				//		GetTempLocalEul(&orgeul, &neweul);
-				//	}
-				//	else {
-				//		//unknown case
-				//		_ASSERT(0);
-				//		GetTempLocalEul(&orgeul, &neweul);
-				//	}
-				//}
-				//else {
-				//	GetTempLocalEul(&orgeul, &neweul);
-				//}
-
-				////if ((callingstate == 0) || (callingstate == 2)) {
-				//if ((callingstate == 0) || (callingstate == 2) || (callingstate == 3)) {
-				//	retmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
-				//}
 
 				if (curmp->GetCalcLimitedWM() == 2) {
 					retmat = curmp->GetLimitedWM();
