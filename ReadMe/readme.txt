@@ -2970,6 +2970,10 @@ https://youtu.be/YeM43To-xCg
 
 /////////// 以下、説明動画
 
+【告知】EditMot 1.0.0.30【モーキャプ編集ソフト】
+動画リンク
+https://youtu.be/1hE2d4g_Ijw
+
 動画　EditMot アップデート2022/09
 https://youtu.be/4J-sD2t_qG8
 
