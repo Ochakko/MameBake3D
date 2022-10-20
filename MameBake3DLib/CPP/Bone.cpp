@@ -8134,9 +8134,11 @@ int CBone::InitMP(int srcmotid, double srcframe)
 	//###################################################################################
 
 
-	//if (srcmotid == 1) {//2022/10/20 CommentOut To Handle Models Not Have Motion On Load
-	//	return 0;
-	//}
+	//この関数は処理に時間が掛かる
+	//CModel読み込み中で　読み込み中のモーション数が０で無い場合には　InitMPする必要は無い(モーションの値で上書きする)ので　リターンする
+	if (GetParModel() && (GetParModel()->GetLoadedFlag() == false) && (GetParModel()->GetLoadingMotionCount() > 0)) {//2022/10/20
+		return 0;
+	}
 
 	//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
 	//CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
@@ -8163,10 +8165,10 @@ int CBone::InitMP(int srcmotid, double srcframe)
 	}
 	CMotionPoint* firstmp = GetMotionPoint(firstmotid, 0.0);
 	if (!firstmp) {
+		//Motionを持たないfbx読み込みのフォロー
 		int existflag = 0;
 		firstmp = AddMotionPoint(firstmotid, 0.0, &existflag);
 	}
-
 
 	if (firstmp) {
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);

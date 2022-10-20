@@ -1291,6 +1291,12 @@ public: //accesser
 		return m_undo_firstflag;
 	}
 
+	int GetLoadingMotionCount() {
+		return m_loadingmotionnum;
+	}
+	void SetLoadingMotionCount(int srcval) {
+		m_loadingmotionnum = srcval;
+	}
 
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
@@ -1396,6 +1402,7 @@ private:
 	std::vector<PHYSIKREC> m_physikrec;
 	double m_phyikrectime;
 
+	int m_loadingmotionnum;//ローディング中のfbxに含まれるモーションの数
 
 	float m_setfl4x4[16 * MAXCLUSTERNUM];//SetShaderConst用
 

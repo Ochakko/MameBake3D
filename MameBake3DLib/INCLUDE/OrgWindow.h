@@ -7709,19 +7709,28 @@ void s_dummyfunc()
 				double eulrange;
 				int y2;
 
+				bool sgraph = false;
+
 				//キー
 				if (wcscmp(L"X", name.c_str()) == 0) {
+					sgraph = false;
+
 					//hdcM->setPenAndBrush(NULL, RGB(255, 0, 0));
 					hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
 					y2 = y0 + (int)parent->getDispOffset();
+
 				}
 				else if (wcscmp(L"Y", name.c_str()) == 0) {
+					sgraph = false;
+
 					hdcM->setPenAndBrush(NULL, RGB(0, 255, 0));
 					eulrange = abs(parent->maxeul - parent->mineul) / parent->getDispScale();
 					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"Z", name.c_str()) == 0) {
+					sgraph = false;
+
 					//hdcM->setPenAndBrush(NULL, RGB(0, 0, 255));
 					//hdcM->setPenAndBrush(NULL, RGB(0, 128, 255));
 					hdcM->setPenAndBrush(NULL, RGB(150, 200, 255));
@@ -7729,6 +7738,7 @@ void s_dummyfunc()
 					y2 = y0 + (int)parent->getDispOffset();
 				}
 				else if (wcscmp(L"S", name.c_str()) == 0) {
+					sgraph = true;
 
 					if ((g_previewFlag) != 0 && (g_previewFlag != 5)) {
 
@@ -7738,12 +7748,12 @@ void s_dummyfunc()
 
 					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
-					y2 = y0;//EditMotは初期位置
+					y2 = y0;//MotionBrushは初期位置
 				}
 				else {
 					hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
-					y2 = y0;//EditMotは初期位置
+					y2 = y0;//MotionBrushは初期位置
 				}
 
 				//if (eulrange < 10.0) {
@@ -7766,20 +7776,28 @@ void s_dummyfunc()
 
 				if (startindex >= 0) {
 					int currentkeynum = (int)key.size();
+					int currenttimeindex = getKeyIndex(parent->currentTime);
+
 					//int endkey = min(currentkeynum, (startindex + (int)parent->showPos_width));
 					int endkey;// = min(currentkeynum, (startindex + 1));
-					if (g_previewFlag == 0) {
+					if ((g_previewFlag == 0) || (g_previewFlag == 5)) {
 						endkey = currentkeynum - 1;
 					}
 					else {
 						//endkey = min(currentkeynum, (startindex + KEYNUM_ONPREVIEW));
-						endkey = min((currentkeynum - 1), getKeyIndex(parent->currentTime));
+						endkey = min((currentkeynum - 1), currenttimeindex);
 					}
+
+					int prevex0;
+					int prevey0;
+
 					//for (int i = startindex; i < currentkeynum; i++) {
 					for (int i = startindex; i <= endkey; i++) {
 						//for (int i = 0; i < (int)key.size(); i++) {
 
-						if ((key[i]->time - startTime) < 0.0) {
+						double keytime = key[i]->time;
+
+						if ((keytime - startTime) < 0.0) {
 							continue;
 							//break;
 						}
@@ -7789,8 +7807,15 @@ void s_dummyfunc()
 						int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
 						int ey1 = ey0 + DOT_SIZE_Y;
 
-						int ex0 = (int)((key[i]->time - startTime) * timeSize) + x1;
+						int ex0 = (int)((keytime - startTime) * timeSize) + x1;
 						int ex1 = ex0 + DOT_SIZE_X;
+
+						if (i == startindex) {
+							prevex0 = ex0;
+							prevey0 = ey0;
+						}
+
+
 
 						if (ex1 > (x2 + DOT_SIZE_X)) {
 							break;
@@ -7805,21 +7830,49 @@ void s_dummyfunc()
 						//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
 
 						if (ex0 >= x1) {
-							if (firstdrawflag == true) {
-								MoveToEx(hdcM->hDC, ex0, ey0, NULL);
-								firstdrawflag = false;
+							//if (firstdrawflag == true) {
+							//	MoveToEx(hdcM->hDC, prevex0, prevey0, NULL);
+							//	firstdrawflag = false;
+							//}
+							//else {
+							//	LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
+							//}
+
+							MoveToEx(hdcM->hDC, prevex0, prevey0, NULL);
+							LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
+
+
+							//Ellipse and line at current, Lines at both of edge.
+							if (i == currenttimeindex) {
+								if (!sgraph && ((g_previewFlag != 0) && (g_previewFlag != 5))) {
+									//再生中にcurrenttimeにサークル表示
+									Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + 2, ey0 + 2);
+								}
+								else {
+									if (sgraph) {
+										//再生中以外　ブラシ色で　currenttimeに　縦線
+										//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+										MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+										LineTo(hdcM->hDC, ex0, y1);
+									}
+								}
 							}
 							else {
-								LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
-							}
-
-							if((g_previewFlag != 0) && (g_previewFlag != 5)){
-								if (i == endkey) {
-									Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + 2, ey0 + 2);
+								//再生していないとき　ブラシ色で　選択両端に　縦線
+								if (sgraph && ((g_previewFlag == 0) || (g_previewFlag == 5))) {
+									if ((keytime == g_playingstart) || (keytime == g_playingend)) {
+										//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+										MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+										LineTo(hdcM->hDC, ex0, y1);
+									}
 								}
 							}
 							//Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
+
 						}						
+
+						prevex0 = ex0;
+						prevey0 = ey0;
 					}
 				}
 

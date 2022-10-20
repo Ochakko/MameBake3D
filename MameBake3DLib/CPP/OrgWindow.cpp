@@ -308,6 +308,7 @@ namespace OrgWinGUI{
 		//	}
 		//}
 
+
 		drawEdge();
 
 		//時間軸目盛り
@@ -323,37 +324,58 @@ namespace OrgWinGUI{
 
 			int startindex;
 			int endindex;
-			if (g_previewFlag == 0) {
+			if ((g_previewFlag == 0) || (g_previewFlag == 5)) {
 				startindex = (int)showPos_time;
 				endindex = (int)maxTime;
+
+				//int endtime = min((int)(showPos_time + showPos_width), (int)maxTime);
+				//int endtime = min((int)(showPos_time + 1), (int)maxTime);
+
+				//for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
+				//for (int i = (int)showPos_time; i <= endtime; i++) {
+				for (int i = startindex; i <= endindex; i++) {
+					int xx = (int)(((double)i - showPos_time) * timeSize) + x0 + 1;
+
+					if ((x1 + AXIS_LABEL_SIDE_MARGIN) <= xx) break;
+					if ((x0 - AXIS_LABEL_SIDE_MARGIN) <= xx) {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+						MoveToEx(hdcM->hDC, xx, y1 - 5, NULL);
+						LineTo(hdcM->hDC, xx, y1);
+
+						if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))) {
+							TCHAR tmpChar[20];
+							_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
+							hdcM->setFont(12, _T("ＭＳ ゴシック"));
+							SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+							TextOut(hdcM->hDC,
+								xx - (int)((double)_tcslen(tmpChar) * 2.0), y0,
+								tmpChar, (int)_tcslen(tmpChar));
+						}
+					}
+				}
 			}
 			else {
+				//モーション再生中は　目盛り部分に　カレントタイムの数値だけを表示
+
 				startindex = max(0, ((int)currentTime - KEYNUM_ONPREVIEW));
 				endindex = min(maxTime, ((int)currentTime + KEYNUM_ONPREVIEW));
-			}
 
-			//int endtime = min((int)(showPos_time + showPos_width), (int)maxTime);
-			//int endtime = min((int)(showPos_time + 1), (int)maxTime);
+				int xx = (int)((currentTime - showPos_time) * timeSize) + x0 + 1;
 
-			//for (int i = (int)showPos_time; i <= (int)maxTime; i++) {
-			//for (int i = (int)showPos_time; i <= endtime; i++) {
-			for (int i = startindex; i <= endindex; i++) {
-				int xx = (int)(((double)i - showPos_time)*timeSize) + x0 + 1;
+				if ((x1 + AXIS_LABEL_SIDE_MARGIN) > xx) {
+					if ((x0 - AXIS_LABEL_SIDE_MARGIN) <= xx) {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+						//MoveToEx(hdcM->hDC, xx, y1 - 5, NULL);
+						//LineTo(hdcM->hDC, xx, y1);
 
-				if ((x1 + AXIS_LABEL_SIDE_MARGIN) <= xx) break;
-				if ((x0 - AXIS_LABEL_SIDE_MARGIN) <= xx) {
-					hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-					MoveToEx(hdcM->hDC, xx, y1 - 5, NULL);
-					LineTo(hdcM->hDC, xx, y1);
-
-					if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))) {
 						TCHAR tmpChar[20];
-						_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
+						_stprintf_s(tmpChar, 20, _T("%d"), (int)currentTime);
 						hdcM->setFont(12, _T("ＭＳ ゴシック"));
 						SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 						TextOut(hdcM->hDC,
-							xx - (int)((double)_tcslen(tmpChar)*2.0), y0,
+							xx - (int)((double)_tcslen(tmpChar) * 12.0) - 12, y0 + 18,
 							tmpChar, (int)_tcslen(tmpChar));
+
 					}
 				}
 			}
@@ -378,6 +400,7 @@ namespace OrgWinGUI{
 		}
 
 		drawEdge(false);
+
 
 		//行データ
 		int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);

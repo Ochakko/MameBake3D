@@ -465,6 +465,8 @@ int CModel::InitParams()
 	m_fromBvh = false;
 	m_fromNoBindPose = false;
 
+	m_loadingmotionnum = 0;
+
 	m_physikrec0.clear();
 	m_physikrec.clear();
 	m_phyikrectime = 0.0;
@@ -3989,6 +3991,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 	pScene->FillAnimStackNameArray(mAnimStackNameArray);
     const int lAnimStackCount = mAnimStackNameArray.GetCount();
+
+	SetLoadingMotionCount(lAnimStackCount);
 
 	DbgOut( L"FBX anim num %d\r\n", lAnimStackCount );
 
