@@ -7617,6 +7617,8 @@ void s_dummyfunc()
 					return;
 				}
 
+				const int AXIS_CURSOR_SIZE = 4;
+
 				unsigned char baseR = parent->baseColor.r;
 				unsigned char baseG = parent->baseColor.g;
 				unsigned char baseB = parent->baseColor.b;
@@ -7740,11 +7742,10 @@ void s_dummyfunc()
 				else if (wcscmp(L"S", name.c_str()) == 0) {
 					sgraph = true;
 
-					if ((g_previewFlag) != 0 && (g_previewFlag != 5)) {
-
-						return;//!!!!!!!!!!!!!!! preview時にはブラシラインは表示しない
-					}
-
+					//2022/10/20 CommentOut : スケールの色で選択範囲の両端に垂直線を引くために　returnしないことに
+					//if ((g_previewFlag) != 0 && (g_previewFlag != 5)) {
+					//	return;//!!!!!!!!!!!!!!! preview時にはブラシラインは表示しない
+					//}
 
 					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
@@ -7773,8 +7774,8 @@ void s_dummyfunc()
 					startindex = max(0, (getKeyIndex(parent->currentTime) - KEYNUM_ONPREVIEW * 2));
 				}
 
-
-				if (startindex >= 0) {
+				//スケール表示時　再生中はグラフ非表示　ただし下方コードにて　両端の垂直ラインは描画
+				if ((startindex >= 0) && !(sgraph && (g_previewFlag != 0) && (g_previewFlag != 5))) {
 					int currentkeynum = (int)key.size();
 					int currenttimeindex = getKeyIndex(parent->currentTime);
 
@@ -7787,9 +7788,6 @@ void s_dummyfunc()
 						//endkey = min(currentkeynum, (startindex + KEYNUM_ONPREVIEW));
 						endkey = min((currentkeynum - 1), currenttimeindex);
 					}
-
-					int prevex0;
-					int prevey0;
 
 					//for (int i = startindex; i < currentkeynum; i++) {
 					for (int i = startindex; i <= endkey; i++) {
@@ -7810,13 +7808,6 @@ void s_dummyfunc()
 						int ex0 = (int)((keytime - startTime) * timeSize) + x1;
 						int ex1 = ex0 + DOT_SIZE_X;
 
-						if (i == startindex) {
-							prevex0 = ex0;
-							prevey0 = ey0;
-						}
-
-
-
 						if (ex1 > (x2 + DOT_SIZE_X)) {
 							break;
 						}
@@ -7830,51 +7821,93 @@ void s_dummyfunc()
 						//Rectangle(hdcM->hDC, max(ex0 + 2, ex1), ey0 + 2, min(ex1 - 2, x2), ey1 - 2);
 
 						if (ex0 >= x1) {
-							//if (firstdrawflag == true) {
-							//	MoveToEx(hdcM->hDC, prevex0, prevey0, NULL);
-							//	firstdrawflag = false;
-							//}
-							//else {
-							//	LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
-							//}
-
-							MoveToEx(hdcM->hDC, prevex0, prevey0, NULL);
-							LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
-
-
-							//Ellipse and line at current, Lines at both of edge.
-							if (i == currenttimeindex) {
-								if (!sgraph && ((g_previewFlag != 0) && (g_previewFlag != 5))) {
-									//再生中にcurrenttimeにサークル表示
-									Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + 2, ey0 + 2);
-								}
-								else {
-									if (sgraph) {
-										//再生中以外　ブラシ色で　currenttimeに　縦線
-										//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-										MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
-										LineTo(hdcM->hDC, ex0, y1);
-									}
-								}
+							if (firstdrawflag == true) {
+								MoveToEx(hdcM->hDC, ex0, ey0, NULL);
+								firstdrawflag = false;
 							}
 							else {
-								//再生していないとき　ブラシ色で　選択両端に　縦線
-								if (sgraph && ((g_previewFlag == 0) || (g_previewFlag == 5))) {
-									if ((keytime == g_playingstart) || (keytime == g_playingend)) {
-										//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-										MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
-										LineTo(hdcM->hDC, ex0, y1);
-									}
-								}
+								LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 RectangleよりもLineToの方が描画が速い
 							}
+
 							//Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
-
 						}						
-
-						prevex0 = ex0;
-						prevey0 = ey0;
 					}
 				}
+
+
+			//Ellipse and line at current.
+			//カレント位置に丸マーク　カレント位置に垂直ライン
+				{
+					int i = getKeyIndex(parent->currentTime);
+					double keytime = key[i]->time;
+					int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+					int ey1 = ey0 + DOT_SIZE_Y;
+					int ex0 = (int)((keytime - startTime) * timeSize) + x1;
+					int ex1 = ex0 + DOT_SIZE_X;
+					if (!sgraph && ((g_previewFlag != 0) && (g_previewFlag != 5))) {
+						//再生中にcurrenttimeにサークル表示
+						Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + AXIS_CURSOR_SIZE + 2, ey0 + 2);
+					}
+					else if (sgraph && ((g_previewFlag == 0)) || (g_previewFlag == 5)) {
+						//再生中以外　ブラシ色で　currenttimeに　縦線
+						//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+						MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+						LineTo(hdcM->hDC, ex0, y1);
+					}
+				}
+
+
+			//Lines at both of edge
+			//選択両端に　垂直ライン
+				if (sgraph) {
+
+					int i;
+					int ey0;
+					int ey1;
+					int ex0;
+					int ex1;
+					double keytime;
+
+					int startedge;
+					int endedge;
+					if ((g_previewFlag == 0) || (g_previewFlag == 5)){
+						startedge = g_motionbrush_startframe;
+						endedge = g_motionbrush_endframe;
+					}else{
+						startedge = g_playingstart;
+						endedge = g_playingend;
+					}
+
+					//vert startedge
+					i = startedge;
+					keytime = key[i]->time;
+					ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+					ey1 = ey0 + DOT_SIZE_Y;
+					ex0 = (int)((keytime - startTime) * timeSize) + x1;
+					ex1 = ex0 + DOT_SIZE_X;
+					if (ex0 >= x1) {
+						//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+						MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+						LineTo(hdcM->hDC, ex0, y1);
+					}
+
+					//vert endedge
+					i = endedge;
+					keytime = key[i]->time;
+					ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+					ey1 = ey0 + DOT_SIZE_Y;
+					ex0 = (int)((keytime - startTime) * timeSize) + x1;
+					ex1 = ex0 + DOT_SIZE_X;
+					if (ex0 >= x1) {
+						//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+						MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
+						LineTo(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, y1);
+					}
+				}
+
+
+
+
 
 
 				//for (int i = 0; i < (int)key.size(); i++) {

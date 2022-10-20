@@ -48,7 +48,7 @@ class CMQOMaterial;
 #define COLOF_CHARA_0	(CGP_GROUND | CGP_CHARA)
 #define COLOF_CHARA_1	CGP_CHARA
 
-#define UNDOMAX 200
+#define UNDOMAX 999
 
 //bone‚²‚Æ‚ÌRIG”z—ñ’·
 #define MAXRIGNUM	10

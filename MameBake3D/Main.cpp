@@ -531,7 +531,6 @@ static HWND s_restorehwnd = 0;
 static POINT s_restorecursorpos;
 static int s_currentctrlid = -1;
 static HWND s_currentctrlhwnd = 0;
-static int s_wmlbuttonup = 0;
 //#define SUBMENUNUM	10
 //static int g_currentsubmenuid = 0;//globalへ
 static int s_currentsubmenuitemid = 0;
@@ -543,6 +542,15 @@ static HWND s_getfilenametreeview = 0;
 
 static int s_getsym_retmode = 0;
 
+
+static int s_wmlbuttonup = 0;//ゲームパッド用フラグ
+static bool s_utBrushRepeatsFlag = false;//UTDialogのBrushRepeatsスライダー値変更
+static bool s_utApplyRateFlag = false;//UTDialogのApplyRateスライダー値変更
+static bool s_utCommandBrushRepeats = false;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
+static bool s_utCommandApplyRate = false;//MsgProcのWM_COMMANDのApplyRateスライダー
+static bool s_BrushMirrorUCheckBoxFlag = false;//UTDialogの
+static bool s_BrushMirrorVCheckBoxFlag = false;//UTDialogの
+static bool s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogの
 
 
 typedef struct tag_enumdist
@@ -2636,6 +2644,15 @@ void InitApp()
 	}
 	s_fps100index = 0;
 	s_avrgfps = 0.0;
+
+	s_utBrushRepeatsFlag = false;//UTDialogのBrushRepeatsスライダー値変更
+	s_utApplyRateFlag = false;//UTDialogのApplyRateスライダー値変更
+	s_utCommandBrushRepeats = false;//MsgProcのWM_COMMANDのApplyRateスライダー
+	s_utCommandApplyRate = false;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
+	s_BrushMirrorUCheckBoxFlag = false;//UTDialogの
+	s_BrushMirrorVCheckBoxFlag = false;//UTDialogの
+	s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogの
+
 
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -6017,7 +6034,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 		//else 
-		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
+
+
+		if (menuid == IDC_SL_BRUSHREPEATS) {
+			s_utCommandBrushRepeats = true;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
+		}
+		else if (menuid == IDC_SL_APPLYRATE) {
+			s_utCommandApplyRate = true;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
+		}
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
 			s_convbone_bvh = s_modelindex[modelindex].modelptr;
 			WCHAR strmes[1024];
@@ -6540,6 +6565,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 	}else if( (uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK) ){
+
 		if (s_curboneno >= 0){
 			s_saveboneno = s_curboneno;
 		}
@@ -6882,6 +6908,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	}else if( uMsg == WM_LBUTTONUP ){
 
 
+
 		//if (s_dispmodel && s_modelpanel.panel && s_modelpanel.separator) {
 		//	POINT tmppos;
 		//	GetCursorPos(&tmppos);
@@ -6900,8 +6927,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			ReleaseCapture();
 		//}
 		//ReleaseCapture();
-		s_wmlbuttonup = 1;
-
+		s_wmlbuttonup = 1;//ゲームパッド用フラグ
 
 		if (s_model && (s_onragdollik != 0)){
 			//s_model->BulletSimulationStop();
@@ -7066,6 +7092,30 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 	//int modelno;
 	//int tmpikindex;
 
+	///////////////////////////////////////////////////
+	//????????NM_RELEASEDCAPTUREを捕まえたかった、、、
+	///////////////////////////////////////////////////
+	//WORD hword, lword;
+	//hword = HIWORD(nEvent);
+	//lword = LOWORD(nEvent);
+	//if (hword == WM_NOTIFY) {
+	//	int a;
+	//	a = 1;
+	//}
+	//if (lword == NM_RELEASEDCAPTURE) {
+	//	int b;
+	//	b = 1;
+	//}
+	//if (nEvent == WM_NOTIFY) {
+	//	int c;
+	//	c = 1;
+	//}
+	//if(nEvent == NM_RELEASEDCAPTURE) {
+	//	int d;
+	//	d = 1;
+	//}
+
+
     switch( nControlID )
     {
   //      case IDC_ACTIVE_LIGHT:
@@ -7203,65 +7253,75 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			s_changeupdatethreadsFlag = true;
 
 			break;
-		case IDC_SL_BRUSHREPEATS:
-			RollbackCurBoneNo();
-			g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
-			swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
-			g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
-			if (s_editmotionflag < 0) {
-				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if (result) {
-					_ASSERT(0);
-				}
-			}
-			break;
 		case IDC_BRUSH_MIRROR_U:
 			if (s_BrushMirrorUCheckBox) {
 				g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
-				if (s_editmotionflag < 0) {
+				if (s_editmotionflag < 0) {//IK中でないとき
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 					if (result) {
 						_ASSERT(0);
 					}
+					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 				}
+				s_BrushMirrorUCheckBoxFlag = true;//UTDialogの
 			}
 			break;
 		case IDC_BRUSH_MIRROR_V:
 			if (s_BrushMirrorVCheckBox) {
 				g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
-				if (s_editmotionflag < 0) {
+				if (s_editmotionflag < 0) {//IK中でないとき
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 					if (result) {
 						_ASSERT(0);
 					}
+					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 				}
+				s_BrushMirrorVCheckBoxFlag = true;//UTDialogの
 			}
 			break;
 		case IDC_BRUSH_MIRROR_V_DIV2:
 			if (s_IfMirrorVDiv2CheckBox) {
-				g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
-				if (s_editmotionflag < 0) {
+				if (s_editmotionflag < 0) {//IK中でないとき
+					g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 					if (result) {
 						_ASSERT(0);
 					}
+					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+				}
+				s_IfMirrorVDiv2CheckBoxFlag = true;//UTDialogの
+			}
+			break;
+		case IDC_SL_BRUSHREPEATS:
+			RollbackCurBoneNo();
+			g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
+			swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
+			g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
+			if (s_editmotionflag < 0) {//IK中でないとき
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				if (result) {
+					_ASSERT(0);
 				}
 			}
+			s_utBrushRepeatsFlag = true;
+			//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 			break;
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
 			CEditRange::SetApplyRate((double)g_applyrate);
 			swprintf_s( sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()) );
-            g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
+			g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			OnTimeLineSelectFromSelectedKey();
-			if (s_editmotionflag < 0) {
+			if (s_editmotionflag < 0) {//IK中でないとき
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if (result) {
 					_ASSERT(0);
 				}
 			}
-            break;
+			s_utApplyRateFlag = true;
+			//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			break;
 
         case IDC_SPEED:
 			OnGUIEventSpeed();
@@ -19397,6 +19457,15 @@ int OnFrameKeyboard()
 
 int OnFrameUtCheckBox()
 {
+	static int save_wallscrapingikflag = g_wallscrapingikflag;
+	static bool save_limitdegflag = g_limitdegflag;
+	static int save_brushmirrorUflag = g_brushmirrorUflag;
+	static int save_brushmirrorVflag = g_brushmirrorVflag;
+	static int save_ifmirrorVDiv2flag = g_ifmirrorVDiv2flag;
+	static int save_brushrepeats = g_brushrepeats;
+	static int save_applyrate = g_applyrate;
+
+
 	//g_applyendflag = (int)s_ApplyEndCheckBox->GetChecked();
 	//g_slerpoffflag = (int)s_SlerpOffCheckBox->GetChecked();
 	//if (s_AbsIKCheckBox) {
@@ -19416,26 +19485,15 @@ int OnFrameUtCheckBox()
 	//}
 
 
-	//sliderだがPrepairUndoの処理箇所をまとめる意味でここに書く
-	if (g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)) {
-		int saveval = g_brushrepeats;
-		g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
-		if (s_model && (saveval != g_brushrepeats)) {
-			PrepairUndo();
-		}
-	}
-	
-
 
 	if (s_WallScrapingIKCheckBox) {
-		int saveval = g_wallscrapingikflag;
 		g_wallscrapingikflag = (int)s_WallScrapingIKCheckBox->GetChecked();
-		if (s_model && (saveval != g_wallscrapingikflag)) {
+		if (s_model && (save_wallscrapingikflag != g_wallscrapingikflag)) {
 			PrepairUndo();
 		}
+		save_wallscrapingikflag = g_wallscrapingikflag;
 	}
 	if (s_LimitDegCheckBox) {
-		bool saveval = g_limitdegflag;
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
 		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
 			refreshEulerGraph();
@@ -19444,32 +19502,68 @@ int OnFrameUtCheckBox()
 		}
 		s_beflimitdegflag = g_limitdegflag;
 	}
-	if (s_BrushMirrorUCheckBox) {
-		int saveval = g_brushmirrorUflag;
-		g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
-		if (s_model && (saveval != g_brushmirrorUflag)) {
+
+	if (s_BrushMirrorUCheckBoxFlag) {
+		//g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
+		if (s_model && (save_brushmirrorUflag != g_brushmirrorUflag)) {
 			PrepairUndo();
 		}
+		save_brushmirrorUflag = g_brushmirrorUflag;
+		s_BrushMirrorUCheckBoxFlag = false;
 	}
-	if (s_BrushMirrorVCheckBox) {
-		int saveval = g_brushmirrorVflag;
-		g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
-		if (s_model && (saveval != g_brushmirrorVflag)) {
+	if (s_BrushMirrorVCheckBoxFlag) {
+		//g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
+		if (s_model && (save_brushmirrorVflag != g_brushmirrorVflag)) {
 			PrepairUndo();
 		}
+		save_brushmirrorVflag = g_brushmirrorVflag;
+		s_BrushMirrorVCheckBoxFlag = false;
 	}
-	if (s_IfMirrorVDiv2CheckBox) {
-		int saveval = g_ifmirrorVDiv2flag;
-		g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
-		if (s_model && (saveval != g_ifmirrorVDiv2flag)) {
+	if (s_IfMirrorVDiv2CheckBoxFlag) {
+		//g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
+		if (s_model && (save_ifmirrorVDiv2flag != g_ifmirrorVDiv2flag)) {
 			PrepairUndo();
 		}
+		save_ifmirrorVDiv2flag = g_ifmirrorVDiv2flag;
+		s_IfMirrorVDiv2CheckBoxFlag = false;
 	}
 
 
 	if (s_changeupdatethreadsFlag) {
 		ChangeUpdateMatrixThreads();
 		s_changeupdatethreadsFlag = false;
+	}
+
+
+	//if (s_utBrushRepeatsFlag && s_utCommandBrushRepeats) {//値が変わって　かつ　マウスアップのとき
+	if (s_utBrushRepeatsFlag) {//値が変わったとき
+		//WCHAR sz[100] = { 0L };
+		//g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
+		//swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
+		//g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
+		if (s_model && (save_brushrepeats != g_brushrepeats)) {
+			PrepairUndo();
+		}
+		save_brushrepeats = g_brushrepeats;
+
+		s_utBrushRepeatsFlag = false;//OnGUIEventのBrushRepaetsスライダー
+		s_utCommandBrushRepeats = false;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
+	}
+
+	//if (s_utApplyRateFlag && s_utCommandApplyRate) {//値が変わって　かつ　マウスアップのとき
+	if (s_utApplyRateFlag) {//値が変わったとき
+		//WCHAR sz[100] = { 0L };
+		//g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
+		//CEditRange::SetApplyRate((double)g_applyrate);
+		//swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()));
+		//g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE)->SetText(sz);
+		if (s_model && (save_applyrate != g_applyrate)) {
+			PrepairUndo();
+		}
+		save_applyrate = g_applyrate;
+
+		s_utApplyRateFlag = false;//OnGUIEventのApplyRateスライダー
+		s_utCommandApplyRate = false;//MsgProcのWM_COMMANDのApplyRateスライダー
 	}
 
 
@@ -21498,7 +21592,8 @@ int OnSpriteUndo()
 		//undo
 		StopBt();
 		s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
-		RollbackBrushState(brushstate);
+		
+		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
 		undodoneflag = true;
 	}
@@ -21507,7 +21602,8 @@ int OnSpriteUndo()
 		//redo
 		StopBt();
 		s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
-		RollbackBrushState(brushstate);
+		
+		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
 		undodoneflag = true;
 	}
@@ -21571,10 +21667,18 @@ int OnSpriteUndo()
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
+
+			//注意：applyrateはbrushstateには入っていない
 			g_applyrate = (int)tmpapplyrate;
 			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
 				g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->SetValue(g_applyrate);
+
+				WCHAR sz[100] = { 0L };
+				CEditRange::SetApplyRate((double)g_applyrate);
+				swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()));
+				g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE)->SetText(sz);
 			}
+
 
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 			if (result) {
