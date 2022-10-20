@@ -106,7 +106,8 @@ namespace MameBake3DLibRetarget {
 			hrate = modelhi.height / bvhhi.height;
 		}
 		else {
-			hrate = 0.0f;
+			//hrate = 0.0f;
+			hrate = 1.0f;
 			_ASSERT(0);
 		}
 

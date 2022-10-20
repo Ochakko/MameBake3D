@@ -8130,13 +8130,13 @@ int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int src
 int CBone::InitMP(int srcmotid, double srcframe)
 {
 	//###################################################################################		
-	//InitMP 初期姿勢。２つ目以降のモーションの初期姿勢。リターゲットの初期姿勢に関わる。
+	//InitMP 初期姿勢。リターゲットの初期姿勢に関わる。
 	//###################################################################################
 
 
-	if (srcmotid == 1) {
-		return 0;
-	}
+	//if (srcmotid == 1) {//2022/10/20 CommentOut To Handle Models Not Have Motion On Load
+	//	return 0;
+	//}
 
 	//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
 	//CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
@@ -8162,6 +8162,11 @@ int CBone::InitMP(int srcmotid, double srcframe)
 		return 1;
 	}
 	CMotionPoint* firstmp = GetMotionPoint(firstmotid, 0.0);
+	if (!firstmp) {
+		int existflag = 0;
+		firstmp = AddMotionPoint(firstmotid, 0.0, &existflag);
+	}
+
 
 	if (firstmp) {
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);

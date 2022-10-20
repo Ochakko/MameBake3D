@@ -921,7 +921,7 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 			//	dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
 			//}
 
-			if (forbidrotflag == 0){
+			if ((forbidrotflag == 0) || (g_limitdegflag != 0)){
 				//XYZ
 				//dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
 				//dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));

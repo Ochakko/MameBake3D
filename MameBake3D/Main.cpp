@@ -9584,6 +9584,9 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	//if( (int)s_modelindex.size() >= 2 )
 	//	_ASSERT( 0 );
 
+
+
+
 //::MessageBox(s_mainhwnd, L"check 1", L"check!!!", MB_OK);
 
 	CalcTotalBound();
@@ -9658,6 +9661,9 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 //::MessageBox(s_mainhwnd, L"check 4", L"check!!!", MB_OK);
 
+
+
+	//Handle a model not has motion.
 	int motnum = s_model->GetMotInfoSize();
 	if (motnum == 0){
 		CallF(AddMotion(0), return 0);
@@ -9667,6 +9673,9 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 		InitCurMotion(0, 0);
 	}
+
+
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -12593,6 +12602,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
                     break;
                 case IDCANCEL:
 					s_mqodlghwnd = 0;
+					g_tmpmqopath[0] = 0;
 					KillTimer(hDlgWnd, s_openmqoproctimer);
                     EndDialog(hDlgWnd, IDCANCEL);
 					return TRUE;
@@ -26977,7 +26987,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.30 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.31 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -34524,7 +34534,7 @@ void SetMainWindowTitle()
 
 	//"‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.30 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.31 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

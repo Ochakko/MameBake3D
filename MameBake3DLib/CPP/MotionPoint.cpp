@@ -45,6 +45,9 @@ int CMotionPoint::InitParams()
 	ChaMatrixIdentity( &m_befworldmat );
 	ChaMatrixIdentity( &m_befeditmat );
 
+	
+
+
 	ChaMatrixIdentity(&m_SRT);
 
 	//m_newwmowner = 0;

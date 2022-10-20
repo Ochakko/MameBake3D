@@ -50,7 +50,10 @@
 //#define MB2VERSION 10029
 
 //2022/10/13
-#define MB2VERSION 10030
+//#define MB2VERSION 10030
+
+//2022/10/20
+#define MB2VERSION 10031
 
 
 CPluginElem::CPluginElem()

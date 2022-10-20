@@ -704,6 +704,9 @@ public:
 
 	int Adjust180Deg(CBone* srcbone);
 
+	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
+
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -786,7 +789,7 @@ private:
 
 
 
-	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
+	//void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );//public‚Ö
 
 	int SetMaterialName();
 

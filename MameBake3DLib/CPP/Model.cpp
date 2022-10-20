@@ -3996,131 +3996,131 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		_ASSERT( 0 );
 		return 0;
 	}
-
-	int animno;
-	for( animno = 0; animno < lAnimStackCount; animno++ ){
-
-
-
-
-
-		// select the base layer from the animation stack
-		//char* animname = mAnimStackNameArray[animno]->Buffer();
-		//MessageBoxA( NULL, animname, "check", MB_OK );
-		FbxAnimStack * lCurrentAnimationStack = m_pscene->FindMember<FbxAnimStack>(mAnimStackNameArray[animno]->Buffer());
-		if (lCurrentAnimationStack == NULL){
-			_ASSERT( 0 );
-			return 1;
-		}
-
-		
-		////RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
-		//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);//2022/07/28コメントアウト
-
-
-		FbxAnimLayer * mCurrentAnimLayer;
-		mCurrentAnimLayer = lCurrentAnimationStack->GetMember<FbxAnimLayer>();
-
-		//pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
-		pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
-		//pScene->GetAnimationEvaluator()->SetContext(lCurrentAnimationStack);
-		
-
-
-		//pScene->GetRootNode()->ConvertPivotAnimationRecursive( mAnimStackNameArray[animno]->Buffer(), FbxNode::eDestinationPivot, 30.0, true );
-		//pScene->GetRootNode()->ConvertPivotAnimationRecursive( mAnimStackNameArray[animno]->Buffer(), FbxNode::eSourcePivot, 30.0, true );
-
-		FbxTakeInfo* lCurrentTakeInfo = pScene->GetTakeInfo(*(mAnimStackNameArray[animno]));
-		if (lCurrentTakeInfo)
-		{
-			mStart = lCurrentTakeInfo->mLocalTimeSpan.GetStart();
-			mStop = lCurrentTakeInfo->mLocalTimeSpan.GetStop();
-
-			double dstart = mStart.GetSecondDouble();
-			double dstop = mStop.GetSecondDouble();
-//_ASSERT( 0 );
-		}
-		else
-		{
-			_ASSERT( 0 );
-			// Take the time line value
-			FbxTimeSpan lTimeLineTimeSpan;
-			pScene->GetGlobalSettings().GetTimelineDefaultTimeSpan(lTimeLineTimeSpan);
-			mStart = lTimeLineTimeSpan.GetStart();
-			mStop  = lTimeLineTimeSpan.GetStop();
-		}
-
-
-//		int animleng = (int)mStop.GetFrame();// - mStart.GetFrame() + 1;		
-		//mFrameTime.SetTime(0, 0, 0, 1, 0, pScene->GetGlobalSettings().GetTimeMode());
-		//mFrameTime2.SetTime(0, 0, 0, 1, 0, pScene->GetGlobalSettings().GetTimeMode());
-		mFrameTime.SetSecondDouble( 1.0 / 30.0 );
-		mFrameTime2.SetSecondDouble( 1.0 / 30.0 );
-		//mFrameTime.SetSecondDouble( 1.0 / 300.0 );
-		//mFrameTime2.SetSecondDouble( 1.0 / 300.0 );
-	
-
-		double animleng = (int)( (mStop.GetSecondDouble() - mStart.GetSecondDouble()) * 30.0 );
-
-		DbgOut( L"FBX anim %d, animleng %lf\r\n", animno, animleng );
+	else {
+		int animno;
+		for (animno = 0; animno < lAnimStackCount; animno++) {
 
 
 
 
-		int curmotid = -1;
-		AddMotion( mAnimStackNameArray[animno]->Buffer(), 0, (animleng - 1), &curmotid );// animleng - 1 !!!!!
 
-
-		map<int,CBone*>::iterator itrbone;
-		for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
-			CBone* curbone = itrbone->second;
-			if( curbone ){
-				curbone->SetGetAnimFlag( 0 );
-			}
-		}
-
-        //FbxPose* pPose = pScene->GetPose( animno );
-		//FbxPose* pPose = pScene->GetPose( 10 );
-		
-//!!!!!!!!!!!!!!!!!!!!!		
-		//FbxPose* pPose = GetBindPose();
-		FbxPose* pPose = NULL;
-
-
-
-		//Local情報からモーションを計算する
-		m_loadbonecount = 0;
-
-		if (animno == 0) {
-			CreateLoadFbxAnim(pScene);
-			CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));//マルチスレッド読み込み準備
-		}
-
-		//マルチスレッド読み込み
-		//if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= (LOADFBXANIMTHREAD * 4))) {
-		if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= 2)) {
-			int loadcount;
-			for (loadcount = 0; loadcount < m_creatednum_loadfbxanim; loadcount++) {
-				CThreadingLoadFbx* curload = m_LoadFbxAnim + loadcount;
-				curload->LoadFbxAnim(animno, curmotid, (animleng - 1));
+			// select the base layer from the animation stack
+			//char* animname = mAnimStackNameArray[animno]->Buffer();
+			//MessageBoxA( NULL, animname, "check", MB_OK );
+			FbxAnimStack* lCurrentAnimationStack = m_pscene->FindMember<FbxAnimStack>(mAnimStackNameArray[animno]->Buffer());
+			if (lCurrentAnimationStack == NULL) {
+				_ASSERT(0);
+				return 1;
 			}
 
-			WaitLoadFbxAnimFinished();//読み込み終了待ち
-			SetWorldMatFromLocalMat(curmotid, (animno == 0));//並列化出来なかった計算をする SetFirstMotも
-		}
-		else {
-		}
-		if (animno == (lAnimStackCount - 1)) {
-			DestroyLoadFbxAnim();
-		}
+
+			////RokDeBone2のデータを読み込んだ場合にはZXYをXYZにコンバートする
+			//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lCurrentAnimationStack, FbxNode::eDestinationPivot, 30.0, true);//2022/07/28コメントアウト
 
 
-		//motioncreatebatchflagが立っていた場合ここまで
-		//if (motioncachebatchflag == FALSE) {
-			
+			FbxAnimLayer* mCurrentAnimLayer;
+			mCurrentAnimLayer = lCurrentAnimationStack->GetMember<FbxAnimLayer>();
 
-			//FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);//nullジョイント対策？ 初期姿勢で初期化する処理はmotid==1以外のときにAddMotion内で行う
-		
+			//pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
+			pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
+			//pScene->GetAnimationEvaluator()->SetContext(lCurrentAnimationStack);
+
+
+
+			//pScene->GetRootNode()->ConvertPivotAnimationRecursive( mAnimStackNameArray[animno]->Buffer(), FbxNode::eDestinationPivot, 30.0, true );
+			//pScene->GetRootNode()->ConvertPivotAnimationRecursive( mAnimStackNameArray[animno]->Buffer(), FbxNode::eSourcePivot, 30.0, true );
+
+			FbxTakeInfo* lCurrentTakeInfo = pScene->GetTakeInfo(*(mAnimStackNameArray[animno]));
+			if (lCurrentTakeInfo)
+			{
+				mStart = lCurrentTakeInfo->mLocalTimeSpan.GetStart();
+				mStop = lCurrentTakeInfo->mLocalTimeSpan.GetStop();
+
+				double dstart = mStart.GetSecondDouble();
+				double dstop = mStop.GetSecondDouble();
+				//_ASSERT( 0 );
+			}
+			else
+			{
+				_ASSERT(0);
+				// Take the time line value
+				FbxTimeSpan lTimeLineTimeSpan;
+				pScene->GetGlobalSettings().GetTimelineDefaultTimeSpan(lTimeLineTimeSpan);
+				mStart = lTimeLineTimeSpan.GetStart();
+				mStop = lTimeLineTimeSpan.GetStop();
+			}
+
+
+			//		int animleng = (int)mStop.GetFrame();// - mStart.GetFrame() + 1;		
+					//mFrameTime.SetTime(0, 0, 0, 1, 0, pScene->GetGlobalSettings().GetTimeMode());
+					//mFrameTime2.SetTime(0, 0, 0, 1, 0, pScene->GetGlobalSettings().GetTimeMode());
+			mFrameTime.SetSecondDouble(1.0 / 30.0);
+			mFrameTime2.SetSecondDouble(1.0 / 30.0);
+			//mFrameTime.SetSecondDouble( 1.0 / 300.0 );
+			//mFrameTime2.SetSecondDouble( 1.0 / 300.0 );
+
+
+			double animleng = (int)((mStop.GetSecondDouble() - mStart.GetSecondDouble()) * 30.0);
+
+			DbgOut(L"FBX anim %d, animleng %lf\r\n", animno, animleng);
+
+
+
+
+			int curmotid = -1;
+			AddMotion(mAnimStackNameArray[animno]->Buffer(), 0, (animleng - 1), &curmotid);// animleng - 1 !!!!!
+
+
+			map<int, CBone*>::iterator itrbone;
+			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+				CBone* curbone = itrbone->second;
+				if (curbone) {
+					curbone->SetGetAnimFlag(0);
+				}
+			}
+
+			//FbxPose* pPose = pScene->GetPose( animno );
+			//FbxPose* pPose = pScene->GetPose( 10 );
+
+	//!!!!!!!!!!!!!!!!!!!!!		
+			//FbxPose* pPose = GetBindPose();
+			FbxPose* pPose = NULL;
+
+
+
+			//Local情報からモーションを計算する
+			m_loadbonecount = 0;
+
+			if (animno == 0) {
+				CreateLoadFbxAnim(pScene);
+				CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));//マルチスレッド読み込み準備
+			}
+
+			//マルチスレッド読み込み
+			//if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= (LOADFBXANIMTHREAD * 4))) {
+			if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= 2)) {
+				int loadcount;
+				for (loadcount = 0; loadcount < m_creatednum_loadfbxanim; loadcount++) {
+					CThreadingLoadFbx* curload = m_LoadFbxAnim + loadcount;
+					curload->LoadFbxAnim(animno, curmotid, (animleng - 1));
+				}
+
+				WaitLoadFbxAnimFinished();//読み込み終了待ち
+				SetWorldMatFromLocalMat(curmotid, (animno == 0));//並列化出来なかった計算をする SetFirstMotも
+			}
+			else {
+			}
+			if (animno == (lAnimStackCount - 1)) {
+				DestroyLoadFbxAnim();
+			}
+
+
+			//motioncreatebatchflagが立っていた場合ここまで
+			//if (motioncachebatchflag == FALSE) {
+
+
+				//FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);//nullジョイント対策？ 初期姿勢で初期化する処理はmotid==1以外のときにAddMotion内で行う
+
 
 			if (animno == 0) {
 				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
@@ -4129,10 +4129,11 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			CreateIndexedMotionPointReq(m_topbone, curmotid, animleng);
 
 			SetCurrentMotion(curmotid);
-		//}
-
-
+			//}
+		}
 	}
+
+	
 
 	return 0;
 }
