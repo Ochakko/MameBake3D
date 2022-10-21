@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+﻿//--------------------------------------------------------------------------------------
 // File: DXUT.cpp
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -12,6 +12,10 @@
 #ifndef NDEBUG
 #include <dxgidebug.h>
 #endif
+
+
+extern bool g_VSync;//GlobalVar.h
+
 
 #define DXUT_MIN_WINDOW_SIZE_X 200
 #define DXUT_MIN_WINDOW_SIZE_Y 200
@@ -277,8 +281,8 @@ public:
         m_state.m_OverrideAdapterOrdinal = -1;
         m_state.m_OverrideOutput = -1;
         //m_state.m_OverrideForceVsync = -1;//!!!!!! org
-		//m_state.m_OverrideForceVsync = 1;//!!!!!!
-        m_state.m_OverrideForceVsync = 0;//!!!!!!
+		m_state.m_OverrideForceVsync = 1;//!!!!!! 1でデバイスを作成しておいてg_VSyncがfalseになったらPresent(0,0)に切り替える
+        //m_state.m_OverrideForceVsync = 0;//!!!!!!
         m_state.m_AutoChangeAdapter = true;
         m_state.m_ShowMsgBoxOnError = true;
         m_state.m_AllowShortcutKeysWhenWindowed = true;
@@ -1305,8 +1309,14 @@ LRESULT CALLBACK DXUTStaticWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
                             dwFlags = GetDXUTState().GetCurrentDeviceSettings()->d3d11.PresentFlags;
 
                         auto pSwapChain = DXUTGetDXGISwapChain();
-                        //hr = pSwapChain->Present( 0, dwFlags );
-                        hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!
+
+                        if (g_VSync) {
+                            hr = pSwapChain->Present(0, dwFlags);
+                        }
+                        else {
+                            hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!
+                        }                        
+
                         if( DXGI_STATUS_OCCLUDED == hr )
                         {
                             // There is a window covering our entire rendering area.
@@ -2935,8 +2945,14 @@ void WINAPI DXUTRender3DEnvironment()
     UINT SyncInterval = GetDXUTState().GetCurrentDeviceSettings()->d3d11.SyncInterval;
 
     // Show the frame on the primary surface.
-    //hr = pSwapChain->Present( SyncInterval, dwFlags );
-    hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (g_VSync) {
+        hr = pSwapChain->Present( SyncInterval, dwFlags );
+    }
+    else {
+        hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    }
+
+
     if( DXGI_STATUS_OCCLUDED == hr )
     {
         // There is a window covering our entire rendering area.

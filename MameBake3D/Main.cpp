@@ -2641,6 +2641,7 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+	g_VSync = false;
 	g_HighRpmMode = false;
 	g_UpdateMatrixThreads = 2;
 
@@ -7458,6 +7459,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			RollbackCurBoneNo();
 			break;
 		case IDC_LIMITDEG:
+			RollbackCurBoneNo();
+			break;
+		case IDC_VSYNC:
 			RollbackCurBoneNo();
 			break;
 
@@ -15170,10 +15174,11 @@ int StopBt()
 
 
 	g_previewFlag = 0;
-	g_limitdegflag = s_savelimitdegflag;
-	if (s_LimitDegCheckBox) {
-		s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-	}
+
+	////g_limitdegflag = s_savelimitdegflag;
+	////if (s_LimitDegCheckBox) {
+	////	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	////}
 
 	return 0;
 }
@@ -19477,6 +19482,10 @@ int OnFrameUtCheckBox()
 	//if (s_AbsIKCheckBox) {
 	//	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	//}
+
+	if (s_VSyncCheckBox) {
+		g_VSync = (bool)s_VSyncCheckBox->GetChecked();
+	}
 	if (s_HighRpmCheckBox) {
 		g_HighRpmMode = (int)s_HighRpmCheckBox->GetChecked();
 	}
@@ -21934,11 +21943,6 @@ int CreateUtDialog()
 	s_dsutgui0.clear();
 	s_dsutguiid0.clear();
 
-	//swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
-	//g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, 35, iY, ctrlxlen, ctrlh);
-	//iY += addh;
-	//g_SampleUI.AddSlider(IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
-
 	swprintf_s(sz, 100, L"Light Scale");
 	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, iX0 + 25, iY, ctrlxlen, 18);
 	s_ui_texlight = g_SampleUI.GetControl(IDC_LIGHT_SCALE_STATIC);
@@ -21974,24 +21978,6 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_locktosel);
 	s_dsutguiid0.push_back(IDC_CAMTARGET);
 
-
-	/***
-	swprintf_s( sz, 100, L"# Lights: %d", g_nNumActiveLights );
-	g_SampleUI.AddStatic( IDC_NUM_LIGHTS_STATIC, sz, 35, iY += addh, ctrlxlen, ctrlh );
-	g_SampleUI.AddSlider( IDC_NUM_LIGHTS, 50, iY += addh, 100, ctrlh, 1, MAX_LIGHTS, g_nNumActiveLights );
-
-	//iY += 24;
-	swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
-	g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY += addh, ctrlxlen, ctrlh );
-	g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += addh, 100, ctrlh, 0, 20, ( int )( g_fLightScale * 10.0f ) );
-
-	//iY += 24;
-	g_SampleUI.AddButton( IDC_ACTIVE_LIGHT, L"Change active light (K)", 35, iY += addh, ctrlxlen, ctrlh, 'K' );
-
-	g_SampleUI.AddCheckBox( IDC_LIGHT_DISP, L"ÉâÉCÉgñÓàÛÇï\é¶Ç∑ÇÈ", 25, iY += addh, 450, 16, true, 0U, false, &s_LightCheckBox );
-
-	iY += addh;
-	***/
 
 	//iY += addh;
 
@@ -22128,77 +22114,6 @@ int CreateUtDialog()
 
 
 
-	//if (g_4kresolution) {
-	//	swprintf_s(sz, 100, L"ReferencePos : %d%%", g_refpos);
-	//	//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	//	g_SampleUI.AddStatic(IDC_STATIC_REF, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
-	//	s_ui_texref = g_SampleUI.GetControl(IDC_STATIC_REF);
-	//	_ASSERT(s_ui_texref);
-	//	//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-	//	g_SampleUI.AddSlider(IDC_SL_REFPOS, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refpos);
-	//	s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOS);
-	//	g_SampleUI.AddSlider(IDC_SL_REFMULT, iX0 + 50, iY += (18 + 2), 100, ctrlh, 0, 100, g_refmult);
-	//	s_ui_slirefmult = g_SampleUI.GetControl(IDC_SL_REFMULT);
-	//	_ASSERT(s_ui_slirefmult);
-	//	s_dsutgui0.push_back(s_ui_slirefpos);
-	//	s_dsutguiid0.push_back(IDC_SL_REFPOS);
-	//	s_dsutgui0.push_back(s_ui_slirefmult);
-	//	s_dsutguiid0.push_back(IDC_SL_REFMULT);
-	//}
-
-
-
-	
-
-
-	//g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_V_DIV2, L"If Mirror V then Div2", iX0 + 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_IfMirrorVDiv2CheckBox);
-	//s_ui_ifmirrorvdiv2 = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_V_DIV2);
-	//_ASSERT(s_ui_ifmirrorvdiv2);
-	//s_dsutgui0.push_back(s_ui_ifmirrorvdiv2);
-	//s_dsutguiid0.push_back(IDC_BRUSH_MIRROR_V_DIV2);
-
-
-	////swprintf_s( sz, 100, L"IK First Rate : %f", g_ikfirst );
-	//swprintf_s(sz, 100, L"IK Order : %f", g_ikfirst);
-	//g_SampleUI.AddStatic(IDC_STATIC_IKFIRST, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	//s_ui_texikorder = g_SampleUI.GetControl(IDC_STATIC_IKFIRST);
-	//_ASSERT(s_ui_texikorder);
-	//g_SampleUI.AddSlider(IDC_SL_IKFIRST, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikfirst * 25.0f));
-	//s_ui_slikorder = g_SampleUI.GetControl(IDC_SL_IKFIRST);
-	//_ASSERT(s_ui_slikorder);
-	//s_dsutgui0.push_back(s_ui_slikorder);
-	//s_dsutguiid0.push_back(IDC_SL_IKFIRST);
-
-
-
-	//swprintf_s(sz, 100, L"IK Trans : %f", g_ikrate);
-	////g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
-	//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, 18);
-	//s_ui_texikrate = g_SampleUI.GetControl(IDC_STATIC_IKRATE);
-	//_ASSERT(s_ui_texikrate);
-	////g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-	//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += (18 + 2), 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-	//s_ui_slikrate = g_SampleUI.GetControl(IDC_SL_IKRATE);
-	//_ASSERT(s_ui_slikrate);
-	//s_dsutgui0.push_back(s_ui_slikrate);
-	//s_dsutguiid0.push_back(IDC_SL_IKRATE);
-
-
-	//g_SampleUI.AddCheckBox(IDC_APPLY_TO_THEEND, L"ApplyToTheEnd", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_ApplyEndCheckBox);
-	//s_ui_applytotheend = g_SampleUI.GetControl(IDC_APPLY_TO_THEEND);
-	//_ASSERT(s_ui_applytotheend);
-	//s_dsutgui0.push_back(s_ui_applytotheend);
-	//s_dsutguiid0.push_back(IDC_APPLY_TO_THEEND);
-
-	//g_SampleUI.AddCheckBox(IDC_SLERP_OFF, L"SlerpIKOff", 25, iY += addh, checkboxxlen, 16, false, 0U, false, &s_SlerpOffCheckBox);
-	//s_ui_slerpoff = g_SampleUI.GetControl(IDC_SLERP_OFF);
-	//_ASSERT(s_ui_slerpoff);
-	//s_dsutgui0.push_back(s_ui_slerpoff);
-	//s_dsutguiid0.push_back(IDC_SLERP_OFF);
-	//	g_SampleUI.AddCheckBox(IDC_PSEUDOLOCAL, L"PseudoLocal(ã^éóÉçÅ[ÉJÉã)", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_PseudoLocalCheckBox);
-//	g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"âÒì]äpìxêßå¿ÇÇ∑ÇÈ", 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
-
-
 //################
 //utguikind == 1
 //################
@@ -22225,13 +22140,6 @@ int CreateUtDialog()
 		s_dsutgui1.push_back(s_ui_motionbrush);
 		s_dsutguiid1.push_back(IDC_COMBO_MOTIONBRUSH_METHOD);
 		InitPluginMenu();
-		//CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
-		//pComboBox5->RemoveAllItems();
-		//pComboBox5->AddItem(L"Linear", ULongToPtr(0));
-		//pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
-		//pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
-		//pComboBox5->AddItem(L"Rect", ULongToPtr(3));
-		//pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 
 		//swprintf_s(sz, 100, L"TopPos : %d%% ", g_applyrate);
@@ -22394,7 +22302,7 @@ int CreateUtDialog()
 
 	{//ExperimentalêVãK
 		//g_SampleUI.AddCheckBox(IDC_WALLSCRAPINGIK, L"VSync", startx, iY += addh, checkboxxlen, 16, (g_wallscrapingikflag == 1), 0U, false, &s_WallScrapingIKCheckBox);
-		g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY += addh, checkboxxlen, 16, true, 0U, false, &s_VSyncCheckBox);
+		g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY += addh, checkboxxlen, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
 		s_ui_vsync = g_SampleUI.GetControl(IDC_VSYNC);
 		_ASSERT(s_ui_vsync);
 		s_dsutgui3.push_back(s_ui_vsync);

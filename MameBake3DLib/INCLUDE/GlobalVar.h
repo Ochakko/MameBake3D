@@ -63,6 +63,7 @@ float g_DiffuseFactorAtSaving = 1.0f;
 float g_SpecularFactorAtSaving = 1.0f;
 float g_EmissiveFactorAtSaving = 1.0f;
 
+bool g_VSync = false;
 bool g_HighRpmMode = false;
 int g_UpdateMatrixThreads = 2;
 
@@ -236,6 +237,7 @@ extern float g_DiffuseFactorAtSaving;
 extern float g_SpecularFactorAtSaving;
 extern float g_EmissiveFactorAtSaving;
 
+extern bool g_VSync;
 extern bool g_HighRpmMode;
 extern int g_UpdateMatrixThreads;
 
