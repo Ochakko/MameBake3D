@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+﻿//--------------------------------------------------------------------------------------
 // File: DXUTgui.cpp
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -4378,6 +4378,16 @@ bool CDXUTSlider::HandleMouse( UINT uMsg, const POINT& pt, WPARAM wParam, LPARAM
 
             break;
         }
+
+        //case WM_NOTIFY://2022/10/21  LBUTTONUPより後　編集確定
+        //{
+        //    if (wParam == (WPARAM)NM_RELEASEDCAPTURE) {
+        //        m_pDialog->SendEvent(EVENT_SLIDER_RELEASEDCAPTURE, true, this);
+        //        return true;                
+        //    }
+        //    break;
+        //}
+
 
         case WM_MOUSEMOVE:
         {

@@ -230,6 +230,7 @@
     <ClCompile Include="..\DXUT\Core\DXUT.cpp" />
     <ClCompile Include="..\DXUT\Core\DXUTmisc.cpp" />
     <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp" />
+    <ClCompile Include="..\DXUT\Optional\DXUTgui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h" />
@@ -533,6 +534,7 @@
     <ClInclude Include="..\DXUT\Core\DDSTextureLoader.h" />
     <ClInclude Include="..\DXUT\Core\DXUT.h" />
     <ClInclude Include="..\DXUT\Core\WICTextureLoader.h" />
+    <ClInclude Include="..\DXUT\Optional\DXUTgui.h" />
     <ClInclude Include="..\examples\MultiThreadedDemo\CommonRigidBodyMTBase.h" />
     <ClInclude Include="..\INCLUDE\BntFile.h" />
     <ClInclude Include="..\INCLUDE\Bone.h" />

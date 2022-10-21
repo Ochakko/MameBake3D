@@ -546,8 +546,6 @@ static int s_getsym_retmode = 0;
 static int s_wmlbuttonup = 0;//ゲームパッド用フラグ
 static bool s_utBrushRepeatsFlag = false;//UTDialogのBrushRepeatsスライダー値変更
 static bool s_utApplyRateFlag = false;//UTDialogのApplyRateスライダー値変更
-static bool s_utCommandBrushRepeats = false;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
-static bool s_utCommandApplyRate = false;//MsgProcのWM_COMMANDのApplyRateスライダー
 static bool s_BrushMirrorUCheckBoxFlag = false;//UTDialogの
 static bool s_BrushMirrorVCheckBoxFlag = false;//UTDialogの
 static bool s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogの
@@ -1865,6 +1863,9 @@ static int DispCustomRigDlg(int rigno);
 static int InvalidateCustomRig(int rigno);
 static int BoneRClick(int srcboneno);
 
+static int DisplayApplyRateText();
+
+
 //CustomRigDlg
 static int Bone2CustomRig(int rigno);
 static int CustomRig2Bone();
@@ -2401,7 +2402,6 @@ INT WINAPI wWinMain(
 	}
 
 
-
 	if (!Create3DWnd()) {
 		_ASSERT(0);
 		return 1;
@@ -2419,6 +2419,9 @@ INT WINAPI wWinMain(
 	CreateInfoWnd();
 	CreateSideMenuWnd();
 	CreateMainMenuAimBarWnd();	
+
+
+
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -2647,8 +2650,6 @@ void InitApp()
 
 	s_utBrushRepeatsFlag = false;//UTDialogのBrushRepeatsスライダー値変更
 	s_utApplyRateFlag = false;//UTDialogのApplyRateスライダー値変更
-	s_utCommandBrushRepeats = false;//MsgProcのWM_COMMANDのApplyRateスライダー
-	s_utCommandApplyRate = false;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
 	s_BrushMirrorUCheckBoxFlag = false;//UTDialogの
 	s_BrushMirrorVCheckBoxFlag = false;//UTDialogの
 	s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogの
@@ -5338,6 +5339,9 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		return;//!!!!!!!!!!!!!!!!!!!
 	}
 
+	DisplayApplyRateText();
+
+
 	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectmodel) {
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
@@ -5951,6 +5955,18 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_sampleuihwnd = hWnd;
 	}
 
+	////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	////DXUTのスライダーのマウスアップを捕まえたかった
+	////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//if (uMsg == WM_NOTIFY) {
+	//	int c;
+	//	c = 1;
+	//}
+	//if(wParam == NM_RELEASEDCAPTURE) {
+	//	int d;
+	//	d = 1;
+	//}
+
 
 
 //	DbgOut( L"msgproc!!! %d, %d\r\n", uMsg, WM_LBUTTONDOWN );
@@ -6035,14 +6051,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		//else 
 
-
-		if (menuid == IDC_SL_BRUSHREPEATS) {
-			s_utCommandBrushRepeats = true;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
-		}
-		else if (menuid == IDC_SL_APPLYRATE) {
-			s_utCommandApplyRate = true;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
-		}
-		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
+		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
 			s_convbone_bvh = s_modelindex[modelindex].modelptr;
 			WCHAR strmes[1024];
@@ -6116,6 +6125,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_copyKeyInfoList.clear();
 				s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 				s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+				CEditRange::SetApplyRate((double)g_applyrate);
 
 				if (subid == 0) {
 					list<KeyInfo>::iterator itrcp;
@@ -7092,28 +7102,11 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 	//int modelno;
 	//int tmpikindex;
 
-	///////////////////////////////////////////////////
-	//????????NM_RELEASEDCAPTUREを捕まえたかった、、、
-	///////////////////////////////////////////////////
-	//WORD hword, lword;
-	//hword = HIWORD(nEvent);
-	//lword = LOWORD(nEvent);
-	//if (hword == WM_NOTIFY) {
-	//	int a;
-	//	a = 1;
+	//if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {
+	//	int e;
+	//	e = 1;
 	//}
-	//if (lword == NM_RELEASEDCAPTURE) {
-	//	int b;
-	//	b = 1;
-	//}
-	//if (nEvent == WM_NOTIFY) {
-	//	int c;
-	//	c = 1;
-	//}
-	//if(nEvent == NM_RELEASEDCAPTURE) {
-	//	int d;
-	//	d = 1;
-	//}
+
 
 
     switch( nControlID )
@@ -7303,24 +7296,29 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					_ASSERT(0);
 				}
 			}
-			s_utBrushRepeatsFlag = true;
-			//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
+			//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE) {
+				s_utBrushRepeatsFlag = true;//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			}
 			break;
 		case IDC_SL_APPLYRATE:
 			RollbackCurBoneNo();
 			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
 			CEditRange::SetApplyRate((double)g_applyrate);
-			swprintf_s( sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()) );
-			g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
+			//swprintf_s( sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()) );
+			//g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			OnTimeLineSelectFromSelectedKey();
+			DisplayApplyRateText();
 			if (s_editmotionflag < 0) {//IK中でないとき
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if (result) {
 					_ASSERT(0);
 				}
 			}
-			s_utApplyRateFlag = true;
-			//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
+			//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE){
+				s_utApplyRateFlag = true;//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			}
 			break;
 
         case IDC_SPEED:
@@ -17763,7 +17761,8 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	g_motionbrush_numframe = endframe - startframe + 1;
 	g_motionbrush_frameleng = frameleng;
 
-	g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+	//g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+	g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (double)((int)g_applyrate + 0.49) / 100.0 + 0.49));//editrangeと同じ式
 	if ((g_motionbrush_applyframe < 0) || (g_motionbrush_applyframe > endframe)) {
 		_ASSERT(0);
 		return -1;
@@ -19535,8 +19534,7 @@ int OnFrameUtCheckBox()
 	}
 
 
-	//if (s_utBrushRepeatsFlag && s_utCommandBrushRepeats) {//値が変わって　かつ　マウスアップのとき
-	if (s_utBrushRepeatsFlag) {//値が変わったとき
+	if (s_utBrushRepeatsFlag) {//値が変わって　かつ　マウスアップのとき
 		//WCHAR sz[100] = { 0L };
 		//g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
 		//swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
@@ -19547,11 +19545,9 @@ int OnFrameUtCheckBox()
 		save_brushrepeats = g_brushrepeats;
 
 		s_utBrushRepeatsFlag = false;//OnGUIEventのBrushRepaetsスライダー
-		s_utCommandBrushRepeats = false;//MsgProcのWM_COMMANDのBrushRepeatsスライダー
 	}
 
-	//if (s_utApplyRateFlag && s_utCommandApplyRate) {//値が変わって　かつ　マウスアップのとき
-	if (s_utApplyRateFlag) {//値が変わったとき
+	if (s_utApplyRateFlag) {//値が変わって　かつ　マウスアップのとき
 		//WCHAR sz[100] = { 0L };
 		//g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
 		//CEditRange::SetApplyRate((double)g_applyrate);
@@ -19563,7 +19559,6 @@ int OnFrameUtCheckBox()
 		save_applyrate = g_applyrate;
 
 		s_utApplyRateFlag = false;//OnGUIEventのApplyRateスライダー
-		s_utCommandApplyRate = false;//MsgProcのWM_COMMANDのApplyRateスライダー
 	}
 
 
@@ -20349,6 +20344,7 @@ int OnFrameTimeLineWnd()
 					if (s_owpLTimeline) {
 						//s_editmotionflag = s_curboneno;
 						s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+						CEditRange::SetApplyRate((double)g_applyrate);
 						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 					}
 
@@ -20364,6 +20360,7 @@ int OnFrameTimeLineWnd()
 							s_selectKeyInfoList.clear();
 							s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
 							s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+							CEditRange::SetApplyRate((double)g_applyrate);
 							s_buttonselectstart = s_editrange.GetStartFrame();
 							s_buttonselectend = s_editrange.GetEndFrame();
 							g_underselectingframe = 0;
@@ -20389,6 +20386,7 @@ int OnFrameTimeLineWnd()
 						if (s_owpLTimeline) {
 							//s_editmotionflag = s_curboneno;
 							s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+							CEditRange::SetApplyRate((double)g_applyrate);
 							PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 						}
 
@@ -20433,6 +20431,7 @@ int OnFrameTimeLineWnd()
 					if (s_owpLTimeline) {
 						//s_editmotionflag = s_curboneno;
 						s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+						CEditRange::SetApplyRate((double)g_applyrate);
 						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 					}
 
@@ -20888,6 +20887,7 @@ int OnFrameToolWnd()
 			if (s_model && s_model->GetCurMotInfo()) {
 				if (s_owpTimeline && s_owpLTimeline) {
 					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+					CEditRange::SetApplyRate((double)g_applyrate);
 					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 				}
 			}
@@ -20995,6 +20995,7 @@ int OnFrameToolWnd()
 		if (s_model && s_model->GetCurMotInfo()){
 			if (s_owpTimeline && s_owpLTimeline){
 				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+				CEditRange::SetApplyRate((double)g_applyrate);
 				int keynum;
 				double startframe, endframe, applyframe;
 				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
@@ -21664,20 +21665,13 @@ int OnSpriteUndo()
 			s_buttonselectend = min((curmi->frameleng - 1.0), s_buttonselectend);
 
 
+			//注意：applyrateはbrushstateには入っていない
+			g_applyrate = (int)tmpapplyrate;
+			CEditRange::SetApplyRate((double)g_applyrate);
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
-
-			//注意：applyrateはbrushstateには入っていない
-			g_applyrate = (int)tmpapplyrate;
-			if (g_SampleUI.GetSlider(IDC_SL_APPLYRATE)) {
-				g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->SetValue(g_applyrate);
-
-				WCHAR sz[100] = { 0L };
-				CEditRange::SetApplyRate((double)g_applyrate);
-				swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()));
-				g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE)->SetText(sz);
-			}
+			DisplayApplyRateText();
 
 
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
@@ -22097,8 +22091,10 @@ int CreateUtDialog()
 	//pComboBox5->SetSelectedByData(ULongToPtr(0));
 
 
+	//swprintf_s(sz, 100, L"TopPos : %d%% ", g_applyrate);
+	CEditRange::SetApplyRate((double)g_applyrate);
 
-	swprintf_s(sz, 100, L"TopPos : %d%%", g_applyrate);
+	swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, 1);// current frame is 1 at first.
 	//g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 	g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
 	s_ui_texapplyrate = g_SampleUI.GetControl(IDC_STATIC_APPLYRATE);
@@ -26354,6 +26350,8 @@ int OnTimeLineSelectFromSelectedKey()
 	if (s_model && s_model->GetCurMotInfo()) {
 		if (s_owpTimeline && s_owpLTimeline && s_owpEulerGraph) {
 			s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+			CEditRange::SetApplyRate((double)g_applyrate);
+
 			int keynum;
 			double startframe, endframe, applyframe;
 			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
@@ -26524,6 +26522,7 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 			if (s_owpLTimeline) {
 				s_editmotionflag = s_curboneno;
 				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+				CEditRange::SetApplyRate((double)g_applyrate);
 				PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 			}
 		}
@@ -36846,3 +36845,20 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 
 }
 
+int DisplayApplyRateText()
+{
+	if (s_spguisw[SPGUISW_LEFT].state) {
+		CDXUTSlider* pslider = g_SampleUI.GetSlider(IDC_SL_APPLYRATE);
+		if (pslider) {
+			pslider->SetValue(g_applyrate);
+			CDXUTStatic* pstatic = g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE);
+			if (pstatic) {
+				WCHAR sz[100] = { 0L };
+				swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()));
+				g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE)->SetText(sz);
+			}
+		}
+	}
+
+	return 0;
+}

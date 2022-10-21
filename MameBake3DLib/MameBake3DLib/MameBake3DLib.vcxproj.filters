@@ -198,6 +198,9 @@
     <ClCompile Include="..\DXUT\Core\DXUTmisc.cpp">
       <Filter>DXUT_WIC_DDS</Filter>
     </ClCompile>
+    <ClCompile Include="..\DXUT\Optional\DXUTgui.cpp">
+      <Filter>DXUT_WIC_DDS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1261,6 +1264,9 @@
     </ClInclude>
     <ClInclude Include="..\INCLUDE\ThreadingUpdateTimeline.h">
       <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DXUT\Optional\DXUTgui.h">
+      <Filter>DXUT_WIC_DDS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

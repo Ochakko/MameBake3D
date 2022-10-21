@@ -12496,7 +12496,8 @@ void CModel::ApplyPhysIkRec()
 		g_motionbrush_endframe = endframe;
 		g_motionbrush_numframe = endframe - startframe + 1;
 		g_motionbrush_frameleng = frameleng;
-		g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+		//g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
+		g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (double)((int)g_applyrate + 0.49) / 100.0 + 0.49));//editrangeと同じ式
 	*/
 	if (g_btsimurecflag == false) {
 		//Physics IK

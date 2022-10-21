@@ -107,7 +107,7 @@ public:
 	void SetSetFlag(int srcflag){ m_setflag = srcflag; };
 	void SetSetCnt(int srccnt){ m_setcnt = srccnt; };
 
-	static void SetApplyRate(double srcrate){ s_applyrate = srcrate; };
+	static void SetApplyRate(double srcrate){ s_applyrate = (double)((int)(srcrate + 0.49)); };
 
 private:
 

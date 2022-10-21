@@ -25,6 +25,10 @@
 #define EVENT_SLIDER_VALUE_CHANGED          0x0501
 #define EVENT_SLIDER_VALUE_CHANGED_UP       0x0502
 
+//2022/10/21
+#define EVENT_SLIDER_RELEASEDCAPTURE        0x0503
+
+
 #define EVENT_EDITBOX_STRING                0x0601
 // EVENT_EDITBOX_CHANGE is sent when the listbox content changes
 // due to user input.
