@@ -58,8 +58,8 @@ int CEditRange::SetRangeOne(double srcframe)
 {
 	m_ki.clear();
 
-	m_startframe = (double)((int)(srcframe + 0.49));
-	m_endframe = (double)((int)(srcframe + 0.49));
+	m_startframe = (double)((int)(srcframe + 0.1));
+	m_endframe = (double)((int)(srcframe + 0.1));
 	return 0;
 }
 
@@ -89,11 +89,11 @@ int CEditRange::SetRange( std::list<KeyInfo> srcki, double srcframe )
 
 	m_keynum = num;
 	if( m_keynum >= 1 ){
-		m_startframe = (double)((int)(minframe + 0.49));
-		m_endframe = (double)((int)(maxframe + 0.49));
+		m_startframe = (double)((int)(minframe + 0.1));
+		m_endframe = (double)((int)(maxframe + 0.1));
 	}else{
-		m_startframe = (double)((int)(srcframe + 0.49));
-		m_endframe = (double)((int)(srcframe + 0.49));
+		m_startframe = (double)((int)(srcframe + 0.1));
+		m_endframe = (double)((int)(srcframe + 0.1));
 	}
 
 	return 0;
@@ -118,7 +118,16 @@ int CEditRange::GetRange( int* numptr, double* startptr, double* endptr, double*
 	//	offset = 1.0;
 	//}
 
-	m_applyframe = (double)( (int)( m_startframe + (m_endframe - m_startframe) * (double)((int)s_applyrate + offset) / 100.0 + offset ) );
+	if (s_applyrate == 0.0) {
+		m_applyframe = m_startframe;
+	}
+	else if (s_applyrate == 100.0) {
+		m_applyframe = m_endframe;
+	}
+	else {
+		m_applyframe = (double)((int)(m_startframe + (m_endframe - m_startframe) * (s_applyrate / 100.0)));
+	}
+	
 	*applyptr = m_applyframe;
 
 	return 0;

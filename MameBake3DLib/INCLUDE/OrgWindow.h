@@ -4094,7 +4094,7 @@ void s_dummyfunc()
 
 			showPos_time=0;
 			if (g_4kresolution) {
-				showPos_width = 261.0;
+				showPos_width = 280.0;
 			}
 			else {
 				showPos_width = 76.0;
@@ -5718,6 +5718,8 @@ void s_dummyfunc()
 							(parent->keyDeleteListener)(ki);
 						}
 
+						key[i]->time = _time;//2022/10/22
+
 						key[i]->type=   _type;
 						key[i]->length= _length;
 						key[i]->select= _select;
@@ -6156,7 +6158,7 @@ void s_dummyfunc()
 
 			showPos_time = 0;
 			if (g_4kresolution) {
-				showPos_width = 261.0;
+				showPos_width = 280.0;
 			}
 			else {
 				showPos_width = 76.0;
@@ -6371,7 +6373,8 @@ void s_dummyfunc()
 					return false;
 				}
 			}
-			lineData.push_back(new EulLineData(_depth, nullflag, _name, this, (int)lineData.size()));
+			EulLineData* neweulline = new EulLineData(_depth, nullflag, _name, this, (int)lineData.size());
+			lineData.push_back(neweulline);
 
 			//再描画要求
 			if (rewriteOnChange) {
@@ -7265,6 +7268,9 @@ void s_dummyfunc()
 		void setTimeSnapSize(const double &value) {
 			timeSnapSize = value;
 		}
+		double getShowposWidth() const {
+			return showPos_width;
+		}
 		/// Accessor : rewriteOnChange
 		bool getRewriteOnChangeFlag() const {
 			return rewriteOnChange;
@@ -7453,6 +7459,7 @@ void s_dummyfunc()
 				lineIndex = _lineIndex;
 				minselected = 0;
 				maxselected = 0;
+				key.clear();
 				//InitEulKeys();
 			};
 			//EulLineData(const EulLineData& a) {
@@ -7627,6 +7634,7 @@ void s_dummyfunc()
 				int offsetY = -32;//!!!!!!!!!!! 左上が０で上がマイナス、上に16
 				posY += offsetY;//!!!!!!!!!!!
 
+
 				int x0 = posX;
 				int x1 = posX + parent->LABEL_SIZE_X;
 				int x2 = posX + width;
@@ -7767,7 +7775,7 @@ void s_dummyfunc()
 
 				bool firstdrawflag = true;
 				int startindex;// = getKeyIndex(startTime);
-				if (g_previewFlag == 0) {
+				if ((g_previewFlag == 0) || (g_previewFlag == 5)) {
 					startindex = getKeyIndex(startTime);
 				}
 				else {
@@ -7812,6 +7820,7 @@ void s_dummyfunc()
 							break;
 						}
 
+						
 						if (ey0 < y0) {
 							continue;
 						}
@@ -7830,7 +7839,10 @@ void s_dummyfunc()
 							}
 
 							//Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
-						}						
+						}
+						else {
+							_ASSERT(0);
+						}
 					}
 				}
 
@@ -7838,30 +7850,36 @@ void s_dummyfunc()
 			//Ellipse and line at current.
 			//カレント位置に丸マーク　カレント位置に垂直ライン
 				{
-					int i = getKeyIndex(parent->currentTime);
-					double keytime = key[i]->time;
-					int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
-					int ey1 = ey0 + DOT_SIZE_Y;
-					int ex0 = (int)((keytime - startTime) * timeSize) + x1;
-					int ex1 = ex0 + DOT_SIZE_X;
-					if (!sgraph && ((g_previewFlag != 0) && (g_previewFlag != 5))) {
-						//再生中にcurrenttimeにサークル表示
-						Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + AXIS_CURSOR_SIZE + 2, ey0 + 2);
-					}
-					else if (sgraph && ((g_previewFlag == 0)) || (g_previewFlag == 5)) {
-						//再生中以外　ブラシ色で　currenttimeに　縦線
-						//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-						MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
-						LineTo(hdcM->hDC, ex0, y1);
+					double keytime = parent->currentTime;
+					int currentindex = getKeyIndex(keytime);
+					if ((currentindex >= 0) && (currentindex < key.size())) {
+						int ey0 = (int)((parent->maxeul - key[currentindex]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+						int ey1 = ey0 + DOT_SIZE_Y;
+						int ex0 = ((int)keytime - (int)startTime) * (int)timeSize + x1;
+						int ex1 = ex0 + DOT_SIZE_X;
+
+						//timeline cursor
+						//int xx = (int)((parent->currentTime - parent->getShowPosTime()) * timeSize) + x1 + 1;
+
+
+						if (!sgraph && ((g_previewFlag != 0) && (g_previewFlag != 5))) {
+							//再生中にcurrenttimeにサークル表示
+							Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + AXIS_CURSOR_SIZE + 2, ey0 + 2);
+						}
+						else if (sgraph && ((g_previewFlag == 0)) || (g_previewFlag == 5)) {
+							//再生中以外　ブラシ色で　currenttimeに　縦線
+							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+							MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+							LineTo(hdcM->hDC, ex0, y1);
+						}
 					}
 				}
-
 
 			//Lines at both of edge
 			//選択両端に　垂直ライン
 				if (sgraph) {
 
-					int i;
+					int edgeindex;
 					int ey0;
 					int ey1;
 					int ex0;
@@ -7879,29 +7897,33 @@ void s_dummyfunc()
 					}
 
 					//vert startedge
-					i = startedge;
-					keytime = key[i]->time;
-					ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
-					ey1 = ey0 + DOT_SIZE_Y;
-					ex0 = (int)((keytime - startTime) * timeSize) + x1;
-					ex1 = ex0 + DOT_SIZE_X;
-					if (ex0 >= x1) {
-						//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-						MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
-						LineTo(hdcM->hDC, ex0, y1);
+					edgeindex = startedge;
+					if ((edgeindex >= 0) && (edgeindex < key.size())) {
+						keytime = key[edgeindex]->time;
+						ey0 = (int)((parent->maxeul - key[edgeindex]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+						ey1 = ey0 + DOT_SIZE_Y;
+						ex0 = (int)((keytime - startTime) * timeSize) + x1;
+						ex1 = ex0 + DOT_SIZE_X;
+						if (ex0 >= x1) {
+							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+							MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+							LineTo(hdcM->hDC, ex0, y1);
+						}
 					}
 
 					//vert endedge
-					i = endedge;
-					keytime = key[i]->time;
-					ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
-					ey1 = ey0 + DOT_SIZE_Y;
-					ex0 = (int)((keytime - startTime) * timeSize) + x1;
-					ex1 = ex0 + DOT_SIZE_X;
-					if (ex0 >= x1) {
-						//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-						MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
-						LineTo(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, y1);
+					edgeindex = endedge;
+					if ((edgeindex >= 0) && (edgeindex < key.size())) {
+						keytime = key[edgeindex]->time;
+						ey0 = (int)((parent->maxeul - key[edgeindex]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+						ey1 = ey0 + DOT_SIZE_Y;
+						ex0 = (int)((keytime - startTime) * timeSize) + x1;
+						ex1 = ex0 + DOT_SIZE_X;
+						if (ex0 >= x1) {
+							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+							MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
+							LineTo(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, y1);
+						}
 					}
 				}
 
@@ -8098,6 +8120,8 @@ void s_dummyfunc()
 							ki.object = NULL;// key[i]->value;
 							(parent->keyDeleteListener)(ki);
 						}
+
+						key[i]->time = _time;//2022/10/22
 
 						key[i]->type = _type;
 						key[i]->length = _length;
@@ -8303,13 +8327,13 @@ void s_dummyfunc()
 			}
 			//	Method : 指定された時刻にあるキーのインデックスをひとつ取得する
 			int getKeyIndex(const double &_time) {
-
-				int timeindex = (int)(_time + 0.1);
-				if (key.size() <= timeindex) {
+				//int timeindex = (int)(_time + 0.1);
+				unsigned int currentindex = (unsigned int)(_time + 0.1);
+				if (key.size() <= currentindex) {
 					return -1;
 				}
 				else {
-					return timeindex;
+					return currentindex;
 				}
 
 				//for (int i = 0; i<(int)key.size(); i++) {

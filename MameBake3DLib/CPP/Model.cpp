@@ -4072,7 +4072,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 
 			int curmotid = -1;
-			AddMotion(mAnimStackNameArray[animno]->Buffer(), 0, (animleng - 1), &curmotid);// animleng - 1 !!!!!
+			//AddMotion(mAnimStackNameArray[animno]->Buffer(), 0, (animleng - 1), &curmotid);// animleng - 1 !!!!!
+			AddMotion(mAnimStackNameArray[animno]->Buffer(), 0, animleng, &curmotid);//2022/10/21 : animleng - 1だと最終フレームにモーションポイントが出来ない
 
 
 			map<int, CBone*>::iterator itrbone;
@@ -4097,7 +4098,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 			if (animno == 0) {
 				CreateLoadFbxAnim(pScene);
-				CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));//マルチスレッド読み込み準備
+				//CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, (animleng - 1));//マルチスレッド読み込み準備
+				CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
 			}
 
 			//マルチスレッド読み込み
@@ -4106,7 +4108,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				int loadcount;
 				for (loadcount = 0; loadcount < m_creatednum_loadfbxanim; loadcount++) {
 					CThreadingLoadFbx* curload = m_LoadFbxAnim + loadcount;
-					curload->LoadFbxAnim(animno, curmotid, (animleng - 1));
+					//curload->LoadFbxAnim(animno, curmotid, (animleng - 1));
+					curload->LoadFbxAnim(animno, curmotid, animleng);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
 				}
 
 				WaitLoadFbxAnimFinished();//読み込み終了待ち
@@ -4127,7 +4130,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 
 			if (animno == 0) {
-				CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
+				//CallF(CreateFBXShape(mCurrentAnimLayer, (animleng - 1), mStart, mFrameTime2), return 1);
+				CallF(CreateFBXShape(mCurrentAnimLayer, animleng, mStart, mFrameTime2), return 1);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
 			}
 
 			CreateIndexedMotionPointReq(m_topbone, curmotid, animleng);
@@ -12496,8 +12500,6 @@ void CModel::ApplyPhysIkRec()
 		g_motionbrush_endframe = endframe;
 		g_motionbrush_numframe = endframe - startframe + 1;
 		g_motionbrush_frameleng = frameleng;
-		//g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
-		g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (double)((int)g_applyrate + 0.49) / 100.0 + 0.49));//editrangeと同じ式
 	*/
 	if (g_btsimurecflag == false) {
 		//Physics IK
@@ -13035,17 +13037,17 @@ void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 	}
 }
 
-//int CModel::Adjust180Deg(CBone* srcbone)
-//{
-//	if (srcbone) {
-//		MOTINFO* curmi = GetCurMotInfo();
-//		if (curmi) {
-//			int srcmotid = curmi->motid;
-//			double srcleng = curmi->frameleng;
-//			srcbone->Adjust180Deg(srcmotid, srcleng);
-//		}
-//	}
-//	return 0;
-//}
+int CModel::Adjust180Deg(CBone* srcbone)
+{
+	if (srcbone) {
+		MOTINFO* curmi = GetCurMotInfo();
+		if (curmi) {
+			int srcmotid = curmi->motid;
+			double srcleng = curmi->frameleng;
+			srcbone->Adjust180Deg(srcmotid, srcleng);
+		}
+	}
+	return 0;
+}
 
 

@@ -7976,7 +7976,8 @@ int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int src
 	if ((bvhflag == 0) && 
 		GetParModel() && GetParModel()->GetHasBindPose()) {
 
-		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+		//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+		for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//2022/10/21 : 最終フレームにモーションポイントが無い問題対応
 
 			for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
 				CBone* curbone = *(bonelist + bonecount);
@@ -8070,7 +8071,8 @@ int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int src
 		}
 	}
 	else {
-		for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+		//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+		for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//2022/10/21 : 最終フレームにモーションポイントが無い問題対応
 
 			for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
 				CBone* curbone = *(bonelist + bonecount);
@@ -8306,27 +8308,27 @@ int CBone::SwapCurrentMotionPoint()
 	return 0;
 }
 
-//int CBone::Adjust180Deg(int srcmotid, double srcleng)
-//{
-//	double curframe;
-//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-//	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-//
-//	befeul = CalcLocalEulXYZ(-1, srcmotid, 0.0, BEFEUL_BEFFRAME);
-//
-//	for (curframe = 1.0; curframe < srcleng; curframe += 1.0) {
-//		int paraxsiflag1 = 1;
-//		cureul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(curframe + 0.1)), BEFEUL_BEFFRAME);
-//		CQuaternion curq;
-//		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
-//
-//		int inittraflag1 = 0;
-//		int setchildflag1 = 1;
-//		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
-//
-//		befeul = cureul;
-//	}
-//
-//	return 0;
-//}
+int CBone::Adjust180Deg(int srcmotid, double srcleng)
+{
+	double curframe;
+	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	befeul = CalcLocalEulXYZ(-1, srcmotid, 0.0, BEFEUL_BEFFRAME);
+
+	for (curframe = 1.0; curframe < srcleng; curframe += 1.0) {
+		int paraxsiflag1 = 1;
+		cureul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(curframe + 0.1)), BEFEUL_BEFFRAME);
+		CQuaternion curq;
+		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
+
+		int inittraflag1 = 0;
+		int setchildflag1 = 1;
+		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
+
+		befeul = cureul;
+	}
+
+	return 0;
+}
 

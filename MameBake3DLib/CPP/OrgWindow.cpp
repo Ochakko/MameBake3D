@@ -611,13 +611,17 @@ namespace OrgWinGUI{
 		int showLineNum = 4;
 		//for (int i = showPos_line, j = 0; i<(int)lineData.size() && j<showLineNum; i++, j++) {
 		
+
+		showPos_time = calcShowPosTime(currentTime);//2022/10/22
+
+
 		if (lineData.size() >= 4) {//X, Y, Z, Brush
 
 			int drawnum = min((int)lineData.size(), showLineNum);
 
 			for (int i = 0; i < drawnum; i++) {
 				bool highLight = false;
-				//if (i == currentLine) highLight = true;
+				////if (i == currentLine) highLight = true;
 				lineData[i]->draw(hdcM,
 					pos.x + MARGIN,
 					//pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
@@ -1195,7 +1199,9 @@ namespace OrgWinGUI{
 			}
 		}
 
-		return newshowpostime;
+		//2022/10/22 グラフ描画開始位置が中途半端な位置にならないようにintキャストしてから返す
+		//intキャストしない場合　例えば　オイラーグラフの選択範囲のカレントライン描画位置が　タイムラインのRectangleと微妙に位置ずれする
+		return (double)((int)newshowpostime);
 	}
 
 
@@ -1260,7 +1266,9 @@ namespace OrgWinGUI{
 			}
 		}
 
-		return newshowpostime;
+		//2022/10/22 グラフ描画開始位置が中途半端な位置にならないようにintキャストしてから返す
+		//intキャストしない場合　例えば　オイラーグラフの選択範囲のカレントライン描画位置が　タイムラインのRectangleと微妙に位置ずれする
+		return (double)((int)newshowpostime);
 	}
 	void OWP_EulerGraph::setCurrentTime(double _currentTime, bool CallListener, bool needRewrite) {
 		//default : CallListener = false, needRewrite = false(OWP_timelineのneedRewriteは trueがdefault)

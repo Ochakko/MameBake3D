@@ -3711,7 +3711,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteON);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Experimental140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
 	s_spguisw[SPGUISW_SPRITEFK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteOFF);
@@ -3727,7 +3727,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_PHYSICSIK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Experimental140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
@@ -7317,6 +7317,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			//g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
 			OnTimeLineSelectFromSelectedKey();
 			DisplayApplyRateText();
+			SetShowPosTime();//2022/10/22
 			if (s_editmotionflag < 0) {//IK中でないとき
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if (result) {
@@ -10174,35 +10175,40 @@ int UpdateEditedEuler()
 			//s_buttonselectstart = s_editrange.GetStartFrame();
 			//s_buttonselectend = s_editrange.GetEndFrame();
 
-			double startframe, endframe;
-			//if (g_previewFlag == 0) {
-			//	startframe = s_buttonselectstart;
-			//	endframe = s_buttonselectend;
-			//}
-			//else {
-				if (s_model->GetCurMotInfo()) {
-					double frameleng = s_model->GetCurMotInfo()->frameleng;
-					double currenttime = s_owpEulerGraph->getCurrentTime();
+			double startframe, endframe, frameleng;
+			////if (g_previewFlag == 0) {
+			////	startframe = s_buttonselectstart;
+			////	endframe = s_buttonselectend;
+			////}
+			////else {
+			//	if (s_model->GetCurMotInfo()) {
+			//		double frameleng = s_model->GetCurMotInfo()->frameleng;
+			//		double currenttime = s_owpEulerGraph->getCurrentTime();
 
-					double startoffset;
-					double endoffset;
-					if (g_4kresolution) {
-						startoffset = 150.0;
-						endoffset = 260.0;
-					}
-					else {
-						startoffset = 50.0;
-						endoffset = 80.0;
-					}
+			//		double startoffset;
+			//		double endoffset;
+			//		if (g_4kresolution) {
+			//			startoffset = 150.0;
+			//			endoffset = 260.0;
+			//		}
+			//		else {
+			//			startoffset = 50.0;
+			//			endoffset = 80.0;
+			//		}
 
-					startframe = max(0, (currenttime - startoffset));
-					endframe = min(frameleng, (startframe + endoffset));
-				}
-				else {
-					startframe = s_buttonselectstart;
-					endframe = s_buttonselectend;
-				}
-			//}
+			//		startframe = max(0, (currenttime - startoffset));
+			//		endframe = min(frameleng, (startframe + endoffset));
+			//	}
+			//	else {
+			//		startframe = s_buttonselectstart;
+			//		endframe = s_buttonselectend;
+			//	}
+			////}
+
+			frameleng = s_model->GetCurMotInfo()->frameleng;
+			startframe = s_owpLTimeline->getShowPosTime();
+			endframe = min(frameleng, startframe + s_owpEulerGraph->getShowposWidth());
+				
 			double firstframe;
 			firstframe = max((startframe - 1.0), 0.0);
 
@@ -10483,14 +10489,14 @@ int refreshEulerGraph()
 						unsigned int scaleindex;
 						for (scaleindex = 0; scaleindex < (unsigned int)frameleng; scaleindex++) {
 							double curscalevalue;
-							if ((scaleindex >= (unsigned int)g_motionbrush_startframe) && (scaleindex <= (unsigned int)g_motionbrush_endframe) && (scaleindex < (unsigned int)g_motionbrush_frameleng)) {
+							//if ((scaleindex >= (unsigned int)g_motionbrush_startframe) && (scaleindex <= (unsigned int)g_motionbrush_endframe) && (scaleindex < (unsigned int)g_motionbrush_frameleng)) {
 								curscalevalue = (double)(*(g_motionbrush_value + scaleindex));// *(scalemax - scalemin) + scalemin;
 								curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
-							}
-							else {
-								curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
-								curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
-							}
+							//}
+							//else {
+							//	curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
+							//	curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
+							//}
 							s_owpEulerGraph->newKey(_T("S"), (double)scaleindex, curscalevalue);//newkey
 						}
 					}
@@ -17774,7 +17780,17 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	g_motionbrush_frameleng = frameleng;
 
 	//g_motionbrush_applyframe = startframe + (endframe - startframe) * g_applyrate * 0.01;
-	g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (double)((int)g_applyrate + 0.49) / 100.0 + 0.49));//editrangeと同じ式
+	if (g_applyrate == 0.0) {
+		g_motionbrush_applyframe = startframe;
+	}
+	else if (g_applyrate == 100.0) {
+		g_motionbrush_applyframe = endframe;
+	}
+	else {
+		g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (g_applyrate / 100.0)));//editrangeと同じ式
+	}
+	
+
 	if ((g_motionbrush_applyframe < 0) || (g_motionbrush_applyframe > endframe)) {
 		_ASSERT(0);
 		return -1;
@@ -17815,21 +17831,21 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 		//}
 
 
-		ZeroMemory(g_motionbrush_value, sizeof(float) * (unsigned int)g_motionbrush_frameleng);//2022/09/12
+		//ZeroMemory(g_motionbrush_value, sizeof(float) * (unsigned int)g_motionbrush_frameleng);//2022/09/12
 
 		int cpframe;
-		//for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
-		for (cpframe = (int)g_motionbrush_startframe; cpframe <= (int)g_motionbrush_endframe; cpframe++) {//2022/09/12
+		for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
+		//for (cpframe = (int)g_motionbrush_startframe; cpframe <= (int)g_motionbrush_endframe; cpframe++) {//2022/09/12
 			float cpvalue;
 
-			if ((cpframe >= (int)g_motionbrush_startframe) && (cpframe <= (int)g_motionbrush_endframe)) {
+			//if ((cpframe >= (int)g_motionbrush_startframe) && (cpframe <= (int)g_motionbrush_endframe)) {
 				cpvalue = *(tempvalue + cpframe);
 				cpvalue = min(1.0f, cpvalue);
 				cpvalue = max(-1.0f, cpvalue);
-			}
-			else {
-				cpvalue = 0.0f;
-			}
+			//}
+			//else {
+			//	cpvalue = 0.0f;
+			//}
 
 			*(g_motionbrush_value + cpframe) = cpvalue;
 		}
@@ -20431,10 +20447,38 @@ int OnFrameTimeLineWnd()
 				}
 				else {
 					//ToTheLastFrame
-					OnTimeLineButtonSelectFromSelectStartEnd(1);
+					//OnTimeLineButtonSelectFromSelectStartEnd(1);
+					//
+					//s_buttonselectstart = s_editrange.GetStartFrame();
+					//s_buttonselectend = s_editrange.GetEndFrame();
+					////double currentframe = (double)((int)(s_buttonselectstart + (s_buttonselectend - s_buttonselectstart) * (g_applyrate / 100.0)));//editrangeと同じ式
 
-					s_buttonselectstart = s_editrange.GetStartFrame();
-					s_buttonselectend = s_editrange.GetEndFrame();
+
+					s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+					if (s_model && s_model->GetCurMotInfo()) {
+						s_buttonselectend = s_model->GetCurMotInfo()->frameleng - 1.0;
+					}
+					else {
+						s_buttonselectend = s_buttonselectstart;
+					}
+					g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
+					CEditRange::SetApplyRate((double)g_applyrate);
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+					OnTimeLineSelectFromSelectedKey();
+					DisplayApplyRateText();
+					SetShowPosTime();
+
+
+					//if (s_owpLTimeline) {//2022/10/22
+					//	s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+					//	g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
+					//	CEditRange::SetApplyRate((double)g_applyrate);
+					//	double applyframe = s_editrange.GetApplyFrame();
+					//	//s_owpTimeline->setCurrentTime(applyframe, false, true);
+					//	s_owpLTimeline->setCurrentTime(applyframe, true);
+					//	s_owpEulerGraph->setCurrentTime(applyframe, false, true);
+					//	SetShowPosTime();
+					//}
 
 					if (s_editmotionflag < 0) {
 						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
@@ -20442,15 +20486,15 @@ int OnFrameTimeLineWnd()
 							_ASSERT(0);
 						}
 					}
+					PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 
-					//2022/09/13
-					if (s_owpLTimeline) {
-						//s_editmotionflag = s_curboneno;
-						s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-						CEditRange::SetApplyRate((double)g_applyrate);
-						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
-					}
-
+					////2022/09/13
+					//if (s_owpLTimeline) {
+					//	//s_editmotionflag = s_curboneno;
+					//	s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+					//	CEditRange::SetApplyRate((double)g_applyrate);
+					//	PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+					//}
 
 					g_underselectingframe = 0;//!!!! 2021/06/18
 				}
@@ -20646,29 +20690,29 @@ int OnFrameToolWnd()
 	}
 
 	if (s_180DegFlag) {
-		//if (s_model && (s_curboneno >= 0)) {
-		//	CBone* curbone = 0;
-		//	CBone* adjustbone = 0;
-		//	if (s_curboneno >= 0) {
-		//		curbone = s_model->GetBoneByID(s_curboneno);
-		//	}
-		//	else {
-		//		curbone = 0;
-		//	}
-		//	if (curbone) {
-		//		if (curbone->GetParent()) {
-		//			adjustbone = curbone->GetParent();
-		//		}
-		//		else {
-		//			adjustbone = curbone;
-		//		}
-		//	}
+		if (s_model && (s_curboneno >= 0)) {
+			CBone* curbone = 0;
+			CBone* adjustbone = 0;
+			if (s_curboneno >= 0) {
+				curbone = s_model->GetBoneByID(s_curboneno);
+			}
+			else {
+				curbone = 0;
+			}
+			if (curbone) {
+				if (curbone->GetParent()) {
+					adjustbone = curbone->GetParent();
+				}
+				else {
+					adjustbone = curbone;
+				}
+			}
 
-		//	if (adjustbone) {
-		//		s_model->Adjust180Deg(adjustbone);
-		//		refreshEulerGraph();
-		//	}
-		//}
+			if (adjustbone) {
+				s_model->Adjust180Deg(adjustbone);
+				refreshEulerGraph();
+			}
+		}
 		s_180DegFlag = false;
 	}
 
@@ -22554,8 +22598,11 @@ int CreateLongTimelineWnd()
 
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  
 		if (s_model) {
-			g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
-			//s_LtimelineWnd->setDoneFlag(1);
+			//g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
+
+			g_underselecttolast = false;  s_LcursorFlag = true; g_selecttolastFlag = true;
+
+			////s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
 	s_owpPlayerButton->setBtResetButtonListener([](){  
@@ -24059,7 +24106,7 @@ int CreateToolWnd()
 	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
 	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
 	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
-	//s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
+	s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -24076,7 +24123,7 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolZeroFrameB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
-	//s_toolWnd->addParts(*s_tool180deg);
+	s_toolWnd->addParts(*s_tool180deg);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -24092,7 +24139,7 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolZeroFrameB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
-	//s_dstoolctrls.push_back(s_tool180deg);
+	s_dstoolctrls.push_back(s_tool180deg);
 
 
 	s_toolWnd->setCloseListener([](){ 
@@ -24179,11 +24226,11 @@ int CreateToolWnd()
 			s_skipJointMark = 2;//deeper
 		}
 	});
-	//s_tool180deg->setButtonListener([]() {
-	//	if (s_model && (s_180DegFlag == false)) {
-	//		s_180DegFlag = true;
-	//	}
-	//});
+	s_tool180deg->setButtonListener([]() {
+		if (s_model && (s_180DegFlag == false)) {
+			s_180DegFlag = true;
+		}
+	});
 
 
 	s_rctoolwnd.top = 0;
@@ -27854,7 +27901,6 @@ void GUISetVisible_Left()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_LEFT].state);
 
-
 	int ctrlno;
 	for (ctrlno = 0; ctrlno < s_dsutgui0.size(); ctrlno++) {
 		CDXUTControl* curctrl = s_dsutgui0[ctrlno];
@@ -27862,85 +27908,6 @@ void GUISetVisible_Left()
 			curctrl->SetVisible(nextvisible);
 		}
 	}
-
-
-	//if (s_ui_lightscale) {
-	//	s_ui_lightscale->SetVisible(nextvisible);
-	//}
-	//if (s_ui_dispbone) {
-	//	s_ui_dispbone->SetVisible(nextvisible);
-	//}
-	//if (s_ui_disprigid) {
-	//	s_ui_disprigid->SetVisible(nextvisible);
-	//}
-	//if (s_ui_boneaxis) {
-	//	s_ui_boneaxis->SetVisible(nextvisible);
-	//}
-	//if (s_ui_bone) {
-	//	s_ui_bone->SetVisible(nextvisible);
-	//}
-	//if (s_ui_locktosel) {
-	//	s_ui_locktosel->SetVisible(nextvisible);
-	//}
-	//if (s_ui_iklevel) {
-	//	s_ui_iklevel->SetVisible(nextvisible);
-	//}
-	//if (s_ui_editmode) {
-	//	s_ui_editmode->SetVisible(nextvisible);
-	//}
-	//if (s_ui_texapplyrate) {
-	//	s_ui_texapplyrate->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slapplyrate) {
-	//	s_ui_slapplyrate->SetVisible(nextvisible);
-	//}
-	//if (s_ui_motionbrush) {
-	//	s_ui_motionbrush->SetVisible(nextvisible);
-	//}
-	//if (s_ui_texikorder) {
-	//	s_ui_texikorder->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slikorder) {
-	//	s_ui_slikorder->SetVisible(nextvisible);
-	//}
-	////if (s_ui_texikrate) {
-	////	s_ui_texikrate->SetVisible(nextvisible);
-	////}
-	////if (s_ui_slikrate) {
-	////	s_ui_slikrate->SetVisible(nextvisible);
-	////}
-	//if (s_ui_texref) {
-	//	s_ui_texref->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slirefpos) {
-	//	s_ui_slirefpos->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slirefmult) {
-	//	s_ui_slirefmult->SetVisible(nextvisible);
-	//}
-	//if (s_ui_applytotheend) {
-	//	s_ui_applytotheend->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slerpoff) {
-	//	s_ui_slerpoff->SetVisible(nextvisible);
-	//}
-
-
-	//if (s_ui_texbrushrepeats) {
-	//	s_ui_texbrushrepeats->SetVisible(nextvisible);
-	//}
-	//if (s_ui_brushrepeats) {
-	//	s_ui_brushrepeats->SetVisible(nextvisible);
-	//}
-	//if (s_ui_brushmirroru) {
-	//	s_ui_brushmirroru->SetVisible(nextvisible);
-	//}
-	//if (s_ui_brushmirrorv) {
-	//	s_ui_brushmirrorv->SetVisible(nextvisible);
-	//}
-	//if (s_ui_ifmirrorvdiv2) {
-	//	s_ui_ifmirrorvdiv2->SetVisible(nextvisible);
-	//}
 
 	s_spguisw[SPGUISW_LEFT].state = nextvisible;
 
@@ -27957,36 +27924,6 @@ void GUISetVisible_Left2nd()
 		}
 	}
 
-	
-	////if (s_ui_pseudolocal) {
-	////	s_ui_pseudolocal->SetVisible(nextvisible);
-	////}
-	//if (s_ui_wallscrapingik) {
-	//	s_ui_wallscrapingik->SetVisible(nextvisible);
-	//}
-	//if (s_ui_limiteul) {
-	//	s_ui_limiteul->SetVisible(nextvisible);
-	//}
-	//if (s_ui_texspeed) {
-	//	s_ui_texspeed->SetVisible(nextvisible);
-	//}
-	//if (s_ui_speed) {
-	//	s_ui_speed->SetVisible(nextvisible);
-	//}
-	////if (s_ui_absikon) {
-	////	s_ui_absikon->SetVisible(nextvisible);
-	////}
-	//if (s_ui_highrpmon) {
-	//	s_ui_highrpmon->SetVisible(nextvisible);
-	//}
-	//if (s_ui_umthreads) {
-	//	s_ui_umthreads->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slumthreads) {
-	//	s_ui_slumthreads->SetVisible(nextvisible);
-	//}
-
-
 	s_spguisw[SPGUISW_LEFT2ND].state = nextvisible;
 }
 void GUISetVisible_Bullet()
@@ -28001,36 +27938,6 @@ void GUISetVisible_Bullet()
 		}
 	}
 
-
-	//if (s_ui_texthreadnum) {
-	//	s_ui_texthreadnum->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slthreadnum) {
-	//	s_ui_slthreadnum->SetVisible(nextvisible);
-	//}
-	//if (s_ui_btstart) {
-	//	s_ui_btstart->SetVisible(nextvisible);
-	//}
-	//if (s_ui_btrecstart) {
-	//	s_ui_btrecstart->SetVisible(nextvisible);
-	//}
-	//if (s_ui_stopbt) {
-	//	s_ui_stopbt->SetVisible(nextvisible);
-	//}
-	//if (s_ui_texbtcalccnt) {
-	//	s_ui_texbtcalccnt->SetVisible(nextvisible);
-	//}
-	//if (s_ui_btcalccnt) {
-	//	s_ui_btcalccnt->SetVisible(nextvisible);
-	//}
-	//if (s_ui_texerp) {
-	//	s_ui_texerp->SetVisible(nextvisible);
-	//}
-	//if (s_ui_erp) {
-	//	s_ui_erp->SetVisible(nextvisible);
-	//}
-
-
 	s_spguisw[SPGUISW_BULLETPHYSICS].state = nextvisible;
 }
 void GUISetVisible_PhysicsIK()
@@ -28044,22 +27951,6 @@ void GUISetVisible_PhysicsIK()
 			curctrl->SetVisible(nextvisible);
 		}
 	}
-
-	//if (s_ui_texphysmv) {
-	//	s_ui_texphysmv->SetVisible(nextvisible);
-	//}
-	//if (s_ui_slphysmv) {
-	//	s_ui_slphysmv->SetVisible(nextvisible);
-	//}
-	//if (s_ui_physrotstart) {
-	//	s_ui_physrotstart->SetVisible(nextvisible);
-	//}
-	//if (s_ui_physmvstart) {
-	//	s_ui_physmvstart->SetVisible(nextvisible);
-	//}
-	//if (s_ui_physikstop) {
-	//	s_ui_physikstop->SetVisible(nextvisible);
-	//}
 
 	s_spguisw[SPGUISW_PHYSICSIK].state = nextvisible;
 }
@@ -36740,19 +36631,32 @@ int ClearLimitedWM()
 
 int SetShowPosTime()
 {
+	if (s_owpTimeline && s_owpLTimeline) {
+		double startframe, endframe, applyframe;
+		int selnum;
+		s_editrange.GetRange(&selnum, &startframe, &endframe, &applyframe);
 
-	double startframe, endframe, applyframe;
-	int selnum;
-	s_editrange.GetRange(&selnum, &startframe, &endframe, &applyframe);
+		double curframe = applyframe;
+		double startedgeframe = max(1.0, (double)((int)(curframe - s_owpEulerGraph->getShowposWidth() / 2.0)));
+		//double startedgeframe = max(1.0, (double)((int)(curframe - s_owpEulerGraph->getShowposWidth())));
 
-	double curframe = applyframe;
+		//s_owpTimeline->setShowPosTime(curframe);
+		//s_owpLTimeline->setShowPosTime(curframe);
+		//s_owpEulerGraph->setShowPosTime(curframe);
 
-	if (s_owpTimeline) {
-		s_owpTimeline->setShowPosTime(curframe);
+		s_owpTimeline->setShowPosTime(startedgeframe);
+		s_owpLTimeline->setShowPosTime(startedgeframe);
+		s_owpEulerGraph->setShowPosTime(startedgeframe);
+		//s_owpTimeline->setShowPosTime(curframe);
+		//s_owpLTimeline->setShowPosTime(curframe);
+		//s_owpEulerGraph->setShowPosTime(curframe);
+
+
+		s_owpTimeline->setCurrentTime(curframe, false);
+		s_owpLTimeline->setCurrentTime(curframe, true);
+		s_owpEulerGraph->setCurrentTime(curframe, false);
 	}
-	if (s_owpLTimeline) {
-		s_owpLTimeline->setShowPosTime(curframe);
-	}
+
 
 	return 0;
 }
@@ -36838,7 +36742,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 
 int DisplayApplyRateText()
 {
-	if (s_spguisw[SPGUISW_LEFT].state) {
+	if (s_spguisw[SPGUISW_LEFT2ND].state) {
 		CDXUTSlider* pslider = g_SampleUI.GetSlider(IDC_SL_APPLYRATE);
 		if (pslider) {
 			pslider->SetValue(g_applyrate);
