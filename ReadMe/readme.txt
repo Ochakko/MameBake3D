@@ -29,6 +29,13 @@ MayaIndie(Subscription FBXの確認はMayaでする)
 
 
 
+Testディレクトリのモデルデータ作成にはVRoidStudioを使用しています
+https://vroid.com/studio
+
+
+
+
+
 開発環境(2021/03/19_2時点)を書きます。
 FBXSDKは2020.2(VC2019)
 Microsoft MultiThreadLibrary PPL.
@@ -2969,6 +2976,9 @@ https://youtu.be/YeM43To-xCg
 
 
 /////////// 以下、説明動画
+
+【モーキャプツール】EditMot 1.0.0.31【１分紹介】
+https://youtu.be/3Azcq_we_B0
 
 【告知】EditMot 1.0.0.30【モーキャプ編集ソフト】
 動画リンク
