@@ -25,8 +25,8 @@ extern LONG g_retargetbatchflag;
 
 namespace MameBake3DLibRetarget {
 
-	static void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& sfirsthipmat, ChaMatrix& sinvfirsthipmat, std::map<CBone*, CBone*>& sconvbonemap);
-	static int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& sfirsthipmat, ChaMatrix& sinvfirsthipmat);
+	static void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat, std::map<CBone*, CBone*>& sconvbonemap);
+	static int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat);
 
 
 	int Retarget(CModel* srcmodel, CModel* srcbvhmodel, ChaMatrix smatVP, std::map<CBone*, CBone*>& sconvbonemap, int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
@@ -128,13 +128,13 @@ namespace MameBake3DLibRetarget {
 				CBone* befbvhbone = srcbvhmodel->GetTopBone();
 
 
-				ChaMatrix sfirsthipmat;
-				ChaMatrix sinvfirsthipmat;
-				ChaMatrixIdentity(&sfirsthipmat);
-				ChaMatrixIdentity(&sinvfirsthipmat);
+				ChaMatrix firsthipbvhmat;
+				ChaMatrix firsthipmodelmat;
+				ChaMatrixIdentity(&firsthipbvhmat);
+				ChaMatrixIdentity(&firsthipmodelmat);
 
 				if (befbvhbone) {
-					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, befbvhbone, hrate, sfirsthipmat, sinvfirsthipmat, sconvbonemap);
+					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
 				}
 			}
 		}
@@ -155,7 +155,7 @@ namespace MameBake3DLibRetarget {
 
 
 
-	void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& sfirsthipmat, ChaMatrix& sinvfirsthipmat, std::map<CBone*, CBone*>& sconvbonemap)
+	void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat, std::map<CBone*, CBone*>& sconvbonemap)
 	{
 		if (!srcmodel || !srcbvhmodel) {
 			return;
@@ -168,19 +168,19 @@ namespace MameBake3DLibRetarget {
 
 		CBone* bvhbone = sconvbonemap[modelbone];
 		if (bvhbone) {
-			ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate, sfirsthipmat, sinvfirsthipmat);
+			ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat);
 		}
 		else {
-			ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate, sfirsthipmat, sinvfirsthipmat);
+			ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat);
 		}
 
 
 		if (modelbone->GetChild()) {
 			if (bvhbone) {
-				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, bvhbone, hrate, sfirsthipmat, sinvfirsthipmat, sconvbonemap);
+				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, bvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
 			}
 			else {
-				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, befbvhbone, hrate, sfirsthipmat, sinvfirsthipmat, sconvbonemap);
+				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
 			}
 		}
 		if (modelbone->GetBrother()) {
@@ -188,13 +188,13 @@ namespace MameBake3DLibRetarget {
 			//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone, hrate);
 			//}
 			//else{
-			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(), srcframe, befbvhbone, hrate, sfirsthipmat, sinvfirsthipmat, sconvbonemap);
+			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(), srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
 			//}
 		}
 
 	}
 
-	int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& sfirsthipmat, ChaMatrix& sinvfirsthipmat)
+	int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat)
 	{
 		if (selfflag && !bvhbone) {
 			_ASSERT(0);
@@ -302,7 +302,7 @@ namespace MameBake3DLibRetarget {
 				CBone* modelbone = 0;
 				CBone* modeltopbone = srcmodel->GetTopBone();
 				CBone* modelhipsbone = 0;
-				if(modeltopbone) {
+				if (modeltopbone) {
 					srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
 					if (modelhipsbone) {
 						modelbone = modelhipsbone;
@@ -314,28 +314,29 @@ namespace MameBake3DLibRetarget {
 
 				//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
 				if (modelbone && (srcbone == modelbone)) {//モデル側の最初のボーンの処理時
-					sfirsthipmat = bvhmp.GetWorldMat();
-					sfirsthipmat.data[12] = 0.0f;
-					sfirsthipmat.data[13] = 0.0f;
-					sfirsthipmat.data[14] = 0.0f;
-					ChaMatrixInverse(&sinvfirsthipmat, NULL, &sfirsthipmat);
-					sinvfirsthipmat.data[12] = 0.0f;
-					sinvfirsthipmat.data[13] = 0.0f;
-					sinvfirsthipmat.data[14] = 0.0f;
+					firsthipbvhmat = bvhmp.GetWorldMat();
+					firsthipbvhmat.data[12] = 0.0f;
+					firsthipbvhmat.data[13] = 0.0f;
+					firsthipbvhmat.data[14] = 0.0f;
+
+					firsthipmodelmat = modelmp.GetWorldMat();
+					firsthipmodelmat.data[12] = 0.0f;
+					firsthipmodelmat.data[13] = 0.0f;
+					firsthipmodelmat.data[14] = 0.0f;
 				}
 
 
 				//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
 				//curbvhmat = bvhbone->GetInvFirstMat() * sinvfirsthipmat * invmodelinit * bvhmat;
 				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26になる前までの式。初期姿勢の変換にbvhの全体回転sfirsthipmatを考慮する。
-				
+
 				//#############################################################################################################################
 				//1.0.0.26からは
 				//bvhは読み込み時に０フレームアニメがIdentityになるように読み込む。model側はInvJonitPos * AnimMatのように読み込むようにした。
 				//model側は０フレーム編集に対応した。
 				//以上の変更に対応するためにretargetの数式も修正。
 				//#############################################################################################################################
-				
+
 				//###################################################################################################################
 				//1.0.0.27からは０フレームアニメの編集に対応。
 				//０フレームに対応可能なのは非bvhのモデル。非bvhの場合、０フレームアニメがIdentityになるようには読まない。
@@ -347,25 +348,73 @@ namespace MameBake3DLibRetarget {
 				////####################################################################################
 				////式10027_1の行列掛け算部分をクォータニオンにしてジンバルロックが起こりにくくしてみる
 				////####################################################################################
-				ChaMatrix invfirsthipS, invfirsthipR, invfirsthipT;
-				ChaMatrix firstS, firstR, firstT;
-				ChaMatrix firsthipS, firsthipR, firsthipT;
-				ChaMatrix invmodelS, invmodelR, invmodelT;
-				GetSRTMatrix2(sinvfirsthipmat, &invfirsthipS, &invfirsthipR, &invfirsthipT);
+
+				////####################################################################################
+				////式10032  bvh側の０フレーム対応とmodel側の０フレーム対応を修正して　合体！！
+				////####################################################################################
+
+
+				//FirstMatについて
 				//SetFirstMatは　CBone::InitMP　で行う。InitMPはCModel::AddMotionから呼ばれる。
 				//InitMPは最初のモーションの０フレームアニメで新規モーションの全フレームを初期化する。
-				GetSRTMatrix2(srcbone->GetFirstMat(), &firstS, &firstR, &firstT);
-				GetSRTMatrix2(sfirsthipmat, &firsthipS, &firsthipR, &firsthipT);
-				GetSRTMatrix2(invmodelinit, &invmodelS, &invmodelR, &invmodelT);
-				CQuaternion invfirsthipQ, firstQ, firsthipQ, invmodelQ;
-				invfirsthipQ.RotationMatrix(invfirsthipR);
-				firstQ.RotationMatrix(firstR);
-				firsthipQ.RotationMatrix(firsthipR);
-				invmodelQ.RotationMatrix(invmodelR);
-				CQuaternion convQ;
-				convQ = invmodelQ * firsthipQ * firstQ * invfirsthipQ;
-				curbvhmat = convQ.MakeRotMatX() * bvhmat;//式10027_2
 
+
+				ChaMatrix firsthipmodelS, firsthipmodelR, firsthipmodelT;
+				ChaMatrix invfirsthipmodelS, invfirsthipmodelR, invfirsthipmodelT;
+				ChaMatrix firstmodelS, firstmodelR, firstmodelT;
+				ChaMatrix invfirstmodelS, invfirstmodelR, invfirstmodelT;
+				CQuaternion firsthipmodelQ, invfirsthipmodelQ, firstmodelQ, invfirstmodelQ;
+				GetSRTMatrix2(firsthipmodelmat, &firsthipmodelS, &firsthipmodelR, &firsthipmodelT);
+				GetSRTMatrix2(ChaMatrixInv(firsthipmodelmat), &invfirsthipmodelS, &invfirsthipmodelR, &invfirsthipmodelT);
+				GetSRTMatrix2(modelbone->GetFirstMat(), &firstmodelS, &firstmodelR, &firstmodelT);
+				GetSRTMatrix2(ChaMatrixInv(modelbone->GetFirstMat()), &invfirstmodelS, &invfirstmodelR, &invfirstmodelT);
+				firsthipmodelQ.RotationMatrix(firsthipmodelR);
+				invfirsthipmodelQ.RotationMatrix(invfirsthipmodelR);
+				firstmodelQ.RotationMatrix(firstmodelR);
+				invfirstmodelQ.RotationMatrix(invfirstmodelR);
+
+				ChaMatrix modelS, modelR, modelT;
+				ChaMatrix invmodelS, invmodelR, invmodelT;
+				CQuaternion modelQ, invmodelQ;
+				GetSRTMatrix2(modelinit, &modelS, &modelR, &modelT);
+				modelQ.RotationMatrix(modelR);
+				GetSRTMatrix2(invmodelinit, &invmodelS, &invmodelR, &invmodelT);
+				invmodelQ.RotationMatrix(invmodelR);
+
+
+
+				ChaMatrix zeroframemodelmat, invzeroframemodelmat;
+				CQuaternion zeroframemodelQ, invzeroframemodelQ;
+				zeroframemodelmat = srcbone->GetCurrentZeroFrameMat(1);
+				zeroframemodelQ.RotationMatrix(zeroframemodelmat);
+				invzeroframemodelmat = ChaMatrixInv(zeroframemodelmat);
+				invzeroframemodelQ.RotationMatrix(invzeroframemodelmat);
+
+
+
+
+				ChaMatrix firsthipbvhS, firsthipbvhR, firsthipbvhT;
+				ChaMatrix invfirsthipbvhS, invfirsthipbvhR, invfirsthipbvhT;
+				ChaMatrix firstbvhS, firstbvhR, firstbvhT;
+				ChaMatrix invfirstbvhS, invfirstbvhR, invfirstbvhT;
+				CQuaternion firsthipbvhQ, invfirsthipbvhQ, firstbvhQ, invfirstbvhQ;
+				GetSRTMatrix2(firsthipbvhmat, &firsthipbvhS, &firsthipbvhR, &firsthipbvhT);
+				GetSRTMatrix2(ChaMatrixInv(firsthipbvhmat), &invfirsthipbvhS, &invfirsthipbvhR, &invfirsthipbvhT);
+				GetSRTMatrix2(bvhbone->GetFirstMat(), &firstbvhS, &firstbvhR, &firstbvhT);
+				GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstbvhS, &invfirstbvhR, &invfirstbvhT);
+				firsthipbvhQ.RotationMatrix(firsthipbvhR);
+				invfirsthipbvhQ.RotationMatrix(invfirsthipbvhR);
+				firstbvhQ.RotationMatrix(firstbvhR);
+				invfirstbvhQ.RotationMatrix(invfirstbvhR);
+
+
+
+				//以下３行　式10032
+				CQuaternion convQ;
+				convQ = invfirsthipbvhQ * invfirstbvhQ * firsthipbvhQ * invfirsthipmodelQ * invmodelQ * zeroframemodelQ * firsthipmodelQ;
+				curbvhmat = convQ.MakeRotMatX() * bvhmat;
+
+				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//10026までの式
 
 
 
