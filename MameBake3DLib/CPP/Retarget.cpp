@@ -291,29 +291,32 @@ namespace MameBake3DLibRetarget {
 			ChaVector3 traanim;
 
 			if (bvhbone) {
-				ChaMatrix curbvhmat;
-				ChaMatrix bvhmat;
-				bvhmat = bvhmp.GetWorldMat();
+				//ChaMatrix curbvhmat;
+				//ChaMatrix bvhmat;
+				//bvhmat = bvhmp.GetWorldMat();
 
-				ChaMatrix modelinit, invmodelinit;
-				modelinit = modelmp.GetWorldMat();
-				invmodelinit = modelmp.GetInvWorldMat();
+				//ChaMatrix modelinit, invmodelinit;
+				//modelinit = modelmp.GetWorldMat();
+				//invmodelinit = modelmp.GetInvWorldMat();
 
-				CBone* modelbone = 0;
+				CBone* modelfirstbone = 0;
 				CBone* modeltopbone = srcmodel->GetTopBone();
 				CBone* modelhipsbone = 0;
 				if (modeltopbone) {
 					srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
 					if (modelhipsbone) {
-						modelbone = modelhipsbone;
+						modelfirstbone = modelhipsbone;
 					}
 					else {
-						modelbone = modeltopbone;
+						modelfirstbone = modeltopbone;
 					}
 				}
 
 				//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
-				if (modelbone && (srcbone == modelbone)) {//モデル側の最初のボーンの処理時
+				if (modelfirstbone && (srcbone == modelfirstbone)) {//モデル側の最初のボーンの処理時
+
+					//firsthipbvhmatとfirsthipmodelmatは　この関数の参照引数　一度セットして使いまわす
+					
 					firsthipbvhmat = bvhmp.GetWorldMat();
 					firsthipbvhmat.data[12] = 0.0f;
 					firsthipbvhmat.data[13] = 0.0f;
@@ -349,70 +352,67 @@ namespace MameBake3DLibRetarget {
 				////式10027_1の行列掛け算部分をクォータニオンにしてジンバルロックが起こりにくくしてみる
 				////####################################################################################
 
-				////####################################################################################
-				////式10032  bvh側の０フレーム対応とmodel側の０フレーム対応を修正して　合体！！
-				////####################################################################################
-
 
 				//FirstMatについて
 				//SetFirstMatは　CBone::InitMP　で行う。InitMPはCModel::AddMotionから呼ばれる。
 				//InitMPは最初のモーションの０フレームアニメで新規モーションの全フレームを初期化する。
 
 
+				////##############################################################################################################################
+				////式10032  bvh側の０フレーム対応とmodel側の０フレーム対応を修正して　合体！！
+				//// 前提１：リターゲット条件は bvh側とmodel側の見かけ上のポーズが同じであること
+				//// 前提２：bvh側は０フレーム姿勢がidentity(０フレームにアニメが付いる場合はジョイント位置に落とし込み姿勢はidentity). 
+				//// 前提３：model側は０フレームにアニメ成分を残している
+				//// 前提２と前提３については　fbxの読み込み方をそのようにしてある(bvh側にはバインドポーズが無いことが多いからこのようにしてある)
+				////##############################################################################################################################
+
+				//model firsthip
 				ChaMatrix firsthipmodelS, firsthipmodelR, firsthipmodelT;
 				ChaMatrix invfirsthipmodelS, invfirsthipmodelR, invfirsthipmodelT;
-				ChaMatrix firstmodelS, firstmodelR, firstmodelT;
-				ChaMatrix invfirstmodelS, invfirstmodelR, invfirstmodelT;
-				CQuaternion firsthipmodelQ, invfirsthipmodelQ, firstmodelQ, invfirstmodelQ;
+				CQuaternion firsthipmodelQ, invfirsthipmodelQ;
 				GetSRTMatrix2(firsthipmodelmat, &firsthipmodelS, &firsthipmodelR, &firsthipmodelT);
 				GetSRTMatrix2(ChaMatrixInv(firsthipmodelmat), &invfirsthipmodelS, &invfirsthipmodelR, &invfirsthipmodelT);
-				GetSRTMatrix2(modelbone->GetFirstMat(), &firstmodelS, &firstmodelR, &firstmodelT);
-				GetSRTMatrix2(ChaMatrixInv(modelbone->GetFirstMat()), &invfirstmodelS, &invfirstmodelR, &invfirstmodelT);
 				firsthipmodelQ.RotationMatrix(firsthipmodelR);
 				invfirsthipmodelQ.RotationMatrix(invfirsthipmodelR);
-				firstmodelQ.RotationMatrix(firstmodelR);
-				invfirstmodelQ.RotationMatrix(invfirstmodelR);
 
-				ChaMatrix modelS, modelR, modelT;
+				//model current
 				ChaMatrix invmodelS, invmodelR, invmodelT;
-				CQuaternion modelQ, invmodelQ;
-				GetSRTMatrix2(modelinit, &modelS, &modelR, &modelT);
-				modelQ.RotationMatrix(modelR);
-				GetSRTMatrix2(invmodelinit, &invmodelS, &invmodelR, &invmodelT);
+				CQuaternion invmodelQ;
+				GetSRTMatrix2(modelmp.GetInvWorldMat(), &invmodelS, &invmodelR, &invmodelT);
 				invmodelQ.RotationMatrix(invmodelR);
 
-
-
-				ChaMatrix zeroframemodelmat, invzeroframemodelmat;
-				CQuaternion zeroframemodelQ, invzeroframemodelQ;
+				//model zeroframe anim
+				ChaMatrix zeroframemodelmat;
+				CQuaternion zeroframemodelQ;
 				zeroframemodelmat = srcbone->GetCurrentZeroFrameMat(1);
 				zeroframemodelQ.RotationMatrix(zeroframemodelmat);
-				invzeroframemodelmat = ChaMatrixInv(zeroframemodelmat);
-				invzeroframemodelQ.RotationMatrix(invzeroframemodelmat);
 
 
-
-
+				//bvh firsthip
 				ChaMatrix firsthipbvhS, firsthipbvhR, firsthipbvhT;
 				ChaMatrix invfirsthipbvhS, invfirsthipbvhR, invfirsthipbvhT;
-				ChaMatrix firstbvhS, firstbvhR, firstbvhT;
-				ChaMatrix invfirstbvhS, invfirstbvhR, invfirstbvhT;
-				CQuaternion firsthipbvhQ, invfirsthipbvhQ, firstbvhQ, invfirstbvhQ;
+				CQuaternion firsthipbvhQ, invfirsthipbvhQ;
 				GetSRTMatrix2(firsthipbvhmat, &firsthipbvhS, &firsthipbvhR, &firsthipbvhT);
 				GetSRTMatrix2(ChaMatrixInv(firsthipbvhmat), &invfirsthipbvhS, &invfirsthipbvhR, &invfirsthipbvhT);
-				GetSRTMatrix2(bvhbone->GetFirstMat(), &firstbvhS, &firstbvhR, &firstbvhT);
-				GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstbvhS, &invfirstbvhR, &invfirstbvhT);
 				firsthipbvhQ.RotationMatrix(firsthipbvhR);
 				invfirsthipbvhQ.RotationMatrix(invfirsthipbvhR);
-				firstbvhQ.RotationMatrix(firstbvhR);
+
+				//bvh zeroframe globalposition
+				ChaMatrix invfirstbvhS, invfirstbvhR, invfirstbvhT;
+				CQuaternion invfirstbvhQ;
+				GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstbvhS, &invfirstbvhR, &invfirstbvhT);
 				invfirstbvhQ.RotationMatrix(invfirstbvhR);
 
 
 
-				//以下３行　式10032
+
+				//以下４行　式10032　　　
+				ChaMatrix curbvhmat;
 				CQuaternion convQ;
 				convQ = invfirsthipbvhQ * invfirstbvhQ * firsthipbvhQ * invfirsthipmodelQ * invmodelQ * zeroframemodelQ * firsthipmodelQ;
-				curbvhmat = convQ.MakeRotMatX() * bvhmat;
+				curbvhmat = convQ.MakeRotMatX() * bvhmp.GetWorldMat();
+				//補足：invmodelQ * zeroframemodelQは　model側の０フレームポーズからの変化分のインバース. bvh側は０フレームがidentityになるように読み込んでいる 
+
 
 				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//10026までの式
 
