@@ -1217,11 +1217,11 @@ enum {
 	SPPLATEMENUKINDNUM
 };
 enum {
-	SPGUISW_SPRITEFK,
-	SPGUISW_LEFT,
-	SPGUISW_LEFT2ND,
+	SPGUISW_CAMERA_AND_IK,
+	SPGUISW_DISP_AND_LIMITS,
+	SPGUISW_BRUSHPARAMS,
 	SPGUISW_BULLETPHYSICS,
-	SPGUISW_PHYSICSIK,
+	SPGUISW_VSYNC_AND_REFPOS,
 	SPGUISWNUM
 };
 //#define SPGUISWNUM	5
@@ -3697,37 +3697,37 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 
 	//SpriteSwitch ON
-	s_spguisw[SPGUISW_SPRITEFK].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteON);
-	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_LEFT].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_LEFT].spriteON);
-	CallF(s_spguisw[SPGUISW_LEFT].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_LEFT2ND].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_LEFT2ND].spriteON);
-	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140ON.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON);
+	CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140ON.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON);
+	CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140ON.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_BRUSHPARAMS].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_BRUSHPARAMS].spriteON);
+	CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON);
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_PHYSICSIK].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteON);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140ON.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON);
+	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
-	s_spguisw[SPGUISW_SPRITEFK].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_SPRITEFK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_SPRITEFK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_LEFT].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_LEFT].spriteOFF);
-	CallF(s_spguisw[SPGUISW_LEFT].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_LEFT2ND].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_LEFT2ND].spriteOFF);
-	CallF(s_spguisw[SPGUISW_LEFT2ND].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140OFF.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF);
+	CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140OFF.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF);
+	CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140OFF.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF);
+	CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF);
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_PHYSICSIK].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF);
-	CallF(s_spguisw[SPGUISW_PHYSICSIK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140OFF.png", 0, 0), return S_FALSE);
+	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF);
+	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
@@ -3949,6 +3949,26 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	wcscpy_s(initialdir, MAX_PATH, g_basedir);
 	wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
 	SetCurrentDirectoryW(initialdir);
+
+
+
+	////check
+	//double test0 = 0.0;
+	//double test1 = 1.0;
+	//double test0add01 = (double)((int)(test0 + 0.1));
+	//double test0add049 = (double)((int)(test0 + 0.49));
+	//double test1add01 = (double)((int)(test1 + 0.1));
+	//double test1add049 = (double)((int)(test1 + 0.49));
+	//WCHAR strtest[1024] = { 0L };
+	//swprintf_s(strtest, 1024, L"test0add01 %f, test0add049 %f, test1add01 %f, test1add049 %f",
+	//	test0add01, test0add049, test1add01, test1add049);
+	//::MessageBox(NULL, strtest, L"Check", MB_OK);
+
+
+
+
+
+
 
 	return S_OK;
 }
@@ -6742,14 +6762,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
 		
 		int spckind = 0;
-		if (s_spguisw[SPGUISW_SPRITEFK].state && ((spckind = PickSpCam(ptCursor)) != 0)) {
+		if (s_spguisw[SPGUISW_CAMERA_AND_IK].state && ((spckind = PickSpCam(ptCursor)) != 0)) {
 			s_pickinfo.buttonflag = spckind;
 			s_pickinfo.pickobjno = -1;
 			RollbackCurBoneNo();
 		}else if (s_model){
 			int spakind = 0;
 			//int pickrigflag = 0;
-			if (s_spguisw[SPGUISW_SPRITEFK].state) {
+			if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 				spakind = PickSpAxis(ptCursor);
 				//pickrigflag = PickSpRig(ptCursor);
 			}
@@ -6902,7 +6922,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
 		if (s_model && (g_previewFlag == 5)) {
 			if ((s_pickinfo.pickobjno >= 0)){// && 
-				//((s_spguisw[SPGUISW_SPRITEFK].state == false)) || (PickSpBt(ptCursor) == 0))){//物理IK中でジョイントをクリックしていて、Applyボタンを押していないとき
+				//((s_spguisw[SPGUISW_CAMERA_AND_IK].state == false)) || (PickSpBt(ptCursor) == 0))){//物理IK中でジョイントをクリックしていて、Applyボタンを押していないとき
 				StartBt(s_model, TRUE, 1, 1);
 				//s_model->BulletSimulationStart();
 			}
@@ -16771,7 +16791,7 @@ int SetSpRefPosSWParams()
 
 int SetSpGUISWParams()
 {
-	if (!(s_spguisw[SPGUISW_SPRITEFK].spriteON) || !(s_spguisw[SPGUISW_SPRITEFK].spriteOFF)) {
+	if (!(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) || !(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF)) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -16815,28 +16835,28 @@ int SetSpGUISWParams()
 	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
-	s_spguisw[SPGUISW_SPRITEFK].dispcenter.x = s_guibarX0;
-	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486;
+	s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.x = s_guibarX0;
+	//s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y = 486;
 
-	//s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH;
+	//s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y = 486 * s_winsizemult - MAINMENUAIMBARH;
 	if (g_4kresolution) {
-		s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+		s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
 	}
 	else {
-		s_spguisw[SPGUISW_SPRITEFK].dispcenter.y = 486 - MAINMENUAIMBARH;
+		s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y = 486 - MAINMENUAIMBARH;
 	}
 
-	s_spguisw[SPGUISW_LEFT].dispcenter.x = s_spguisw[SPGUISW_SPRITEFK].dispcenter.x + (int)spgwidth + spgshift;
-	s_spguisw[SPGUISW_LEFT].dispcenter.y = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y;
+	s_spguisw[SPGUISW_DISP_AND_LIMITS].dispcenter.x = s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.x + (int)spgwidth + spgshift;
+	s_spguisw[SPGUISW_DISP_AND_LIMITS].dispcenter.y = s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y;
 
-	s_spguisw[SPGUISW_LEFT2ND].dispcenter.x = s_spguisw[SPGUISW_LEFT].dispcenter.x + (int)spgwidth + spgshift;
-	s_spguisw[SPGUISW_LEFT2ND].dispcenter.y = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y;
+	s_spguisw[SPGUISW_BRUSHPARAMS].dispcenter.x = s_spguisw[SPGUISW_DISP_AND_LIMITS].dispcenter.x + (int)spgwidth + spgshift;
+	s_spguisw[SPGUISW_BRUSHPARAMS].dispcenter.y = s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y;
 
-	s_spguisw[SPGUISW_BULLETPHYSICS].dispcenter.x = s_spguisw[SPGUISW_LEFT2ND].dispcenter.x + (int)spgwidth + spgshift;
-	s_spguisw[SPGUISW_BULLETPHYSICS].dispcenter.y = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y;
+	s_spguisw[SPGUISW_BULLETPHYSICS].dispcenter.x = s_spguisw[SPGUISW_BRUSHPARAMS].dispcenter.x + (int)spgwidth + spgshift;
+	s_spguisw[SPGUISW_BULLETPHYSICS].dispcenter.y = s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y;
 
-	s_spguisw[SPGUISW_PHYSICSIK].dispcenter.x = s_spguisw[SPGUISW_BULLETPHYSICS].dispcenter.x + (int)spgwidth + spgshift;
-	s_spguisw[SPGUISW_PHYSICSIK].dispcenter.y = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y;
+	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].dispcenter.x = s_spguisw[SPGUISW_BULLETPHYSICS].dispcenter.x + (int)spgwidth + spgshift;
+	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].dispcenter.y = s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y;
 
 	int spgcnt;
 	for (spgcnt = 0; spgcnt < SPGUISWNUM; spgcnt++) {
@@ -17337,7 +17357,7 @@ int PickSpGUISW(POINT srcpos)
 
 	//spguisw
 	if (kind == 0) {
-		int starty = s_spguisw[SPGUISW_SPRITEFK].dispcenter.y - 14;
+		int starty = s_spguisw[SPGUISW_CAMERA_AND_IK].dispcenter.y - 14;
 		int endy = starty + 28;
 
 
@@ -17352,19 +17372,19 @@ int PickSpGUISW(POINT srcpos)
 				if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 					switch (spgcnt) {
 					case 0:
-						kind = (SPGUISW_SPRITEFK + 2);
+						kind = (SPGUISW_CAMERA_AND_IK + 2);
 						break;
 					case 1:
-						kind = (SPGUISW_LEFT + 2);
+						kind = (SPGUISW_DISP_AND_LIMITS + 2);
 						break;
 					case 2:
-						kind = (SPGUISW_LEFT2ND + 2);
+						kind = (SPGUISW_BRUSHPARAMS + 2);
 						break;
 					case 3:
 						kind = (SPGUISW_BULLETPHYSICS + 2);
 						break;
 					case 4:
-						kind = (SPGUISW_PHYSICSIK + 2);
+						kind = (SPGUISW_VSYNC_AND_REFPOS + 2);
 						break;
 					default:
 						kind = 1;
@@ -17535,7 +17555,7 @@ int SetSelectState()
 
 	int spakind = 0;
 	int spckind = 0;
-	if (s_spguisw[SPGUISW_SPRITEFK].state) {
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 		spakind = PickSpAxis(ptCursor);
 		spckind = PickSpCam(ptCursor);
 	}
@@ -24817,7 +24837,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		}
 	}
 
-	if (s_spguisw[SPGUISW_SPRITEFK].state) {
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 
 		int spacnt;
 		for (spacnt = 0; spacnt < SPAXISNUM; spacnt++) {
@@ -27888,18 +27908,18 @@ void GUISetVisible_AimBar()
 
 void GUISetVisible_SpriteFK()
 {
-	bool nextvisible = !(s_spguisw[SPGUISW_SPRITEFK].state);
+	bool nextvisible = !(s_spguisw[SPGUISW_CAMERA_AND_IK].state);
 
 	//SpritePlateは常に５枚表示
 
 	//FK用のスプライトの表示のオンオフフラグの設定
 
-	s_spguisw[SPGUISW_SPRITEFK].state = nextvisible;
+	s_spguisw[SPGUISW_CAMERA_AND_IK].state = nextvisible;
 }
 
 void GUISetVisible_Left()
 {
-	bool nextvisible = !(s_spguisw[SPGUISW_LEFT].state);
+	bool nextvisible = !(s_spguisw[SPGUISW_DISP_AND_LIMITS].state);
 
 	int ctrlno;
 	for (ctrlno = 0; ctrlno < s_dsutgui0.size(); ctrlno++) {
@@ -27909,12 +27929,12 @@ void GUISetVisible_Left()
 		}
 	}
 
-	s_spguisw[SPGUISW_LEFT].state = nextvisible;
+	s_spguisw[SPGUISW_DISP_AND_LIMITS].state = nextvisible;
 
 }
 void GUISetVisible_Left2nd()
 {
-	bool nextvisible = !(s_spguisw[SPGUISW_LEFT2ND].state);
+	bool nextvisible = !(s_spguisw[SPGUISW_BRUSHPARAMS].state);
 
 	int ctrlno;
 	for (ctrlno = 0; ctrlno < s_dsutgui1.size(); ctrlno++) {
@@ -27924,7 +27944,7 @@ void GUISetVisible_Left2nd()
 		}
 	}
 
-	s_spguisw[SPGUISW_LEFT2ND].state = nextvisible;
+	s_spguisw[SPGUISW_BRUSHPARAMS].state = nextvisible;
 }
 void GUISetVisible_Bullet()
 {
@@ -27942,7 +27962,7 @@ void GUISetVisible_Bullet()
 }
 void GUISetVisible_PhysicsIK()
 {
-	bool nextvisible = !(s_spguisw[SPGUISW_PHYSICSIK].state);
+	bool nextvisible = !(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state);
 
 	int ctrlno;
 	for (ctrlno = 0; ctrlno < s_dsutgui3.size(); ctrlno++) {
@@ -27952,7 +27972,7 @@ void GUISetVisible_PhysicsIK()
 		}
 	}
 
-	s_spguisw[SPGUISW_PHYSICSIK].state = nextvisible;
+	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state = nextvisible;
 }
 
 void ShowRetargetWnd(bool srcflag)
@@ -29705,11 +29725,11 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 
 						if (parentbutton >= 1) {
 							curdsutguino--;
-							int guigroupid = curdsutguikind;//guikindからSPGUISW?_*への変換。guikind(1)がSPGUISW_LEFT(1)で、guikind(3)がSPGUISW_PHYSICSIK(3)
+							int guigroupid = curdsutguikind;//guikindからSPGUISW?_*への変換。guikind(1)がSPGUISW_DISP_AND_LIMITS(1)で、guikind(3)がSPGUISW_VSYNC_AND_REFPOS(3)
 							switch (guigroupid) {
-							case SPGUISW_SPRITEFK:
+							case SPGUISW_CAMERA_AND_IK:
 							{
-								if (s_spguisw[SPGUISW_SPRITEFK].state) {
+								if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 									if (curdsutguino >= SPR_CAM_MAX) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
@@ -29725,9 +29745,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 								}
 							}
 							break;
-							case SPGUISW_LEFT:
+							case SPGUISW_DISP_AND_LIMITS:
 							{
-								if (s_spguisw[SPGUISW_LEFT].state) {
+								if (s_spguisw[SPGUISW_DISP_AND_LIMITS].state) {
 									if (curdsutguino >= guisize0) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
@@ -29744,9 +29764,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							}
 							break;
 
-							case SPGUISW_LEFT2ND:
+							case SPGUISW_BRUSHPARAMS:
 							{
-								if (s_spguisw[SPGUISW_LEFT2ND].state) {
+								if (s_spguisw[SPGUISW_BRUSHPARAMS].state) {
 									if (curdsutguino >= guisize1) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
@@ -29782,9 +29802,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							}
 							break;
 
-							case SPGUISW_PHYSICSIK:
+							case SPGUISW_VSYNC_AND_REFPOS:
 							{
-								if (s_spguisw[SPGUISW_PHYSICSIK].state) {
+								if (s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state) {
 									if (curdsutguino >= guisize3) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認 ring
 									}
@@ -29814,7 +29834,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							int dbgcnt = 0;
 							while (chkflag == false) {
 								int curgroupid = curdsutguikind;
-								if ((curgroupid >= SPGUISW_SPRITEFK) && (curgroupid <= SPGUISW_PHYSICSIK)) {
+								if ((curgroupid >= SPGUISW_CAMERA_AND_IK) && (curgroupid <= SPGUISW_VSYNC_AND_REFPOS)) {
 									if (s_spguisw[curgroupid].state) {
 										changeflag = true;
 										chkflag = true;
@@ -29831,7 +29851,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 									//break;
 								}
 								dbgcnt++;
-								if (dbgcnt >= (SPGUISW_PHYSICSIK - SPGUISW_SPRITEFK + 1)) {//1周分チェックしたら抜ける
+								if (dbgcnt >= (SPGUISW_VSYNC_AND_REFPOS - SPGUISW_CAMERA_AND_IK + 1)) {//1周分チェックしたら抜ける
 									changeflag = false;
 									chkflag = true;
 									break;
@@ -29849,9 +29869,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							curdsutguino++;
 							int guigroupid = curdsutguikind;//guikindからSPGUISW?_*への変換。
 							switch (guigroupid) {
-							case SPGUISW_SPRITEFK:
+							case SPGUISW_CAMERA_AND_IK:
 							{
-								if (s_spguisw[SPGUISW_SPRITEFK].state) {
+								if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 									if (curdsutguino >= SPR_CAM_MAX) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認 ring
 									}
@@ -29868,9 +29888,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							}
 							break;
 
-							case SPGUISW_LEFT:
+							case SPGUISW_DISP_AND_LIMITS:
 							{
-								if (s_spguisw[SPGUISW_LEFT].state) {
+								if (s_spguisw[SPGUISW_DISP_AND_LIMITS].state) {
 									if (curdsutguino >= guisize0) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
@@ -29887,9 +29907,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							}
 							break;
 
-							case SPGUISW_LEFT2ND:
+							case SPGUISW_BRUSHPARAMS:
 							{
-								if (s_spguisw[SPGUISW_LEFT2ND].state) {
+								if (s_spguisw[SPGUISW_BRUSHPARAMS].state) {
 									if (curdsutguino >= guisize1) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
@@ -29925,9 +29945,9 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							}
 							break;
 
-							case SPGUISW_PHYSICSIK:
+							case SPGUISW_VSYNC_AND_REFPOS:
 							{
-								if (s_spguisw[SPGUISW_PHYSICSIK].state) {
+								if (s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state) {
 									if (curdsutguino >= guisize3) {
 										curdsutguino = 0;//size >= 1は関数先頭で確認　ring
 									}
@@ -29958,7 +29978,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							int dbgcnt = 0;
 							while (chkflag == false) {
 								int curgroupid = curdsutguikind;
-								if ((curgroupid >= SPGUISW_SPRITEFK) && (curgroupid <= SPGUISW_PHYSICSIK)) {
+								if ((curgroupid >= SPGUISW_CAMERA_AND_IK) && (curgroupid <= SPGUISW_VSYNC_AND_REFPOS)) {
 									if (s_spguisw[curgroupid].state) {
 										changeflag = true;
 										chkflag = true;
@@ -29969,13 +29989,13 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 									}
 								}
 								else {
-									curdsutguikind = SPGUISW_PHYSICSIK;//ring
+									curdsutguikind = SPGUISW_VSYNC_AND_REFPOS;//ring
 									//changeflag = false;
 									//chkflag = true;
 									//break;
 								}
 								dbgcnt++;
-								if (dbgcnt >= (SPGUISW_PHYSICSIK - SPGUISW_SPRITEFK + 1)) {//1周分チェックしたら抜ける
+								if (dbgcnt >= (SPGUISW_VSYNC_AND_REFPOS - SPGUISW_CAMERA_AND_IK + 1)) {//1周分チェックしたら抜ける
 									changeflag = false;
 									chkflag = true;
 									break;
@@ -30007,13 +30027,13 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 *
 * 
 						if (chkflag && changeflag && (s_curboneno >= 0)) {
-							if ((curdsutguikind >= SPGUISW_SPRITEFK) && (curdsutguikind <= SPGUISW_PHYSICSIK)) {
+							if ((curdsutguikind >= SPGUISW_CAMERA_AND_IK) && (curdsutguikind <= SPGUISW_VSYNC_AND_REFPOS)) {
 
 								s_curdsutguikind = curdsutguikind;
 								s_curdsutguino = curdsutguino;
 								int guigroupid = s_curdsutguikind;
 								switch (guigroupid) {
-								case SPGUISW_SPRITEFK:
+								case SPGUISW_CAMERA_AND_IK:
 								{
 									if ((s_curdsutguino >= 0) && (s_curdsutguino < SPR_CAM_MAX)) {
 										POINT ctrlpos;
@@ -30026,7 +30046,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 								}
 								break;
 
-								case SPGUISW_LEFT:
+								case SPGUISW_DISP_AND_LIMITS:
 									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize0) && s_dsutgui0[s_curdsutguino]) {
 										//s_dsutgui0[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui0[s_curdsutguino]->OnFocusIn();
@@ -30079,7 +30099,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 									}
 									break;
 
-								case SPGUISW_LEFT2ND:
+								case SPGUISW_BRUSHPARAMS:
 									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize1) && s_dsutgui1[s_curdsutguino]) {
 										//s_dsutgui1[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui1[s_curdsutguino]->OnFocusIn();
@@ -30184,7 +30204,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 									}
 									break;
 
-								case SPGUISW_PHYSICSIK:
+								case SPGUISW_VSYNC_AND_REFPOS:
 									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize3) && s_dsutgui3[s_curdsutguino]) {
 										//s_dsutgui3[s_curdsutguino]->SetTextColor(0xFF0000FF);
 										//s_dsutgui3[s_curdsutguino]->OnFocusIn();
@@ -36742,7 +36762,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 
 int DisplayApplyRateText()
 {
-	if (s_spguisw[SPGUISW_LEFT2ND].state) {
+	if (s_spguisw[SPGUISW_BRUSHPARAMS].state) {
 		CDXUTSlider* pslider = g_SampleUI.GetSlider(IDC_SL_APPLYRATE);
 		if (pslider) {
 			pslider->SetValue(g_applyrate);

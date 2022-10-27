@@ -220,13 +220,13 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 				befundomp = undomp;
 			}
 
-			undomp = undomp->GetNext();
-			while (undomp){
-				undomp->SetUndoValidFlag(0);
+			if (undomp) {
 				undomp = undomp->GetNext();
+				while (undomp) {
+					undomp->SetUndoValidFlag(0);
+					undomp = undomp->GetNext();
+				}
 			}
-
-
 
 			map<double, int> tmpmap;
 			curbone->GetMotMarkOfMap2(curmotid, tmpmap);
