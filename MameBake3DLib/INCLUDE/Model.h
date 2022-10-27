@@ -702,7 +702,7 @@ public:
 	void InitMPReq(CBone* curbone, int srcmotid, double curframe);
 	int InitMP(CBone* curbone, int srcmotid, double curframe);
 
-	int Adjust180Deg(CBone* srcbone);
+	void Adjust180DegReq(CBone* srcbone);
 
 	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
 

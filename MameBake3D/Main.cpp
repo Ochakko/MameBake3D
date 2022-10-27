@@ -64,6 +64,8 @@ PseudoLocalIKは常にオンになります
 言い方を変えると
 壁すりIKをオフにするとXYZどれかの軸が制限値に達した場合にIKで動かすことが難しくなります
 
+補足：WallScrapingIKの使いどころとしてはRigによる指の開閉(それ以外の使いどころはあまり確認されていないが　指の開閉には必須) (2022/10/27追記)
+
 */
 
 
@@ -84,11 +86,32 @@ high rpmはスレッドを高回転させるかどうかを指定します
 スレッド数を適切に増やしてhigh rpmをオンにすると高速化することが多い
 高速化する場合にはその分CPUの稼働率は高くなります
 
-現時点における課題として
-制限角度(LimitEul)をオンにした場合の最適化が未着手なのでUpdateMatrixThreadsとhigh rpmで遅くなることが多いこと
-
+high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 */
 
+
+/*
+* 2022/10/27
+* 
+* タイムラインの選択範囲のスタートとエンドのための変数が何種類もあって分かりづらい件
+* 
+* 次の１から５の５種類もある
+* 1, s_buttonselectstart, s_buttonselectend
+* 2, s_editrange
+* 3, g_motionbrush_startframe, g_motionbrush_endframe
+* 4, g_playingstart, g_playingend
+* 5, s_owpLTimeline->getShowPosTime(), s_owpLTimeline->getShowPosTime() + s_owpEulerGraph->getShowposWidth()
+* 
+* １はロングタイムラインをマウスで選択中にセットする　プレビュー時にカーソルイベントが起きて１フレームだけの選択になったときに曖昧
+* ２も１とほぼ同じだが　タイミングが少し異なる　１と２は片方から片方へ相互にセットしあうことがある
+* ３はロングタイムラインをマウスで選択終了した時にMotionBrushを作成するときにセット　プレビュー中も保持していることが多いがタイムライン選択終了まで曖昧
+* ４はプレビュー時に１が保持されないことを回避するために　プレビューの開始時と終了時に保存とレストアをする
+* ５はタイムラインに実際に表示されている時間の範囲　getShowPosTime()は表示開始ぴったりの値　getShowPoseTime() + getShowposWidth()は実際の表示より少し後方
+* 
+* １から５を用途により使い分ける
+* （こんなことになったのは　プレビュー時に　１フレームだけの選択状態になることが大きい）
+* 
+*/
 
 
 #include "useatl.h"
@@ -10268,10 +10291,10 @@ int UpdateEditedEuler()
 					befeul = cureul;
 				}
 
-
-				s_owpEulerGraph->setKey(_T("X"), (double)curtime, cureul.x);
-				s_owpEulerGraph->setKey(_T("Y"), (double)curtime, cureul.y);
-				s_owpEulerGraph->setKey(_T("Z"), (double)curtime, cureul.z);
+				bool needCallRewrite = false;
+				s_owpEulerGraph->setKey(needCallRewrite, _T("X"), (double)curtime, cureul.x);
+				s_owpEulerGraph->setKey(needCallRewrite, _T("Y"), (double)curtime, cureul.y);
+				s_owpEulerGraph->setKey(needCallRewrite, _T("Z"), (double)curtime, cureul.z);
 
 				if (minfirstflag == 1) {
 					minval = min(cureul.z, min(cureul.x, cureul.y));
@@ -10333,7 +10356,8 @@ int UpdateEditedEuler()
 						curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
 						curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 					}
-					s_owpEulerGraph->setKey(_T("S"), (double)scaleindex, curscalevalue);//setkey
+					bool needCallRewrite = false;
+					s_owpEulerGraph->setKey(needCallRewrite, _T("S"), (double)scaleindex, curscalevalue);//setkey
 				}
 
 
@@ -10451,10 +10475,10 @@ int refreshEulerGraph()
 							befeul = cureul;
 						}
 
-
-						s_owpEulerGraph->newKey(_T("X"), (double)curtime, cureul.x);
-						s_owpEulerGraph->newKey(_T("Y"), (double)curtime, cureul.y);
-						s_owpEulerGraph->newKey(_T("Z"), (double)curtime, cureul.z);
+						bool needCallRewrite = false;
+						s_owpEulerGraph->newKey(needCallRewrite, _T("X"), (double)curtime, cureul.x);
+						s_owpEulerGraph->newKey(needCallRewrite, _T("Y"), (double)curtime, cureul.y);
+						s_owpEulerGraph->newKey(needCallRewrite, _T("Z"), (double)curtime, cureul.z);
 						//s_owpEulerGraph->newKey(_T("S"), (double)curtime, 0.0);
 						
 
@@ -10517,10 +10541,13 @@ int refreshEulerGraph()
 							//	curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
 							//	curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 							//}
-							s_owpEulerGraph->newKey(_T("S"), (double)scaleindex, curscalevalue);//newkey
+							bool needCallRewrite = false;
+							s_owpEulerGraph->newKey(needCallRewrite, _T("S"), (double)scaleindex, curscalevalue);//newkey
 						}
 					}
 				}
+
+				s_owpEulerGraph->callRewrite();
 			}
 		}
 
@@ -20729,8 +20756,9 @@ int OnFrameToolWnd()
 			}
 
 			if (adjustbone) {
-				s_model->Adjust180Deg(adjustbone);
+				s_model->Adjust180DegReq(adjustbone);
 				refreshEulerGraph();
+				PrepairUndo();//2022/10/27
 			}
 		}
 		s_180DegFlag = false;

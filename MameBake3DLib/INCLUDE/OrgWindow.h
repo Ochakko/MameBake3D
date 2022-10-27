@@ -5273,9 +5273,9 @@ void s_dummyfunc()
 			showPos_time = calcShowPosTime(_showPosTime);
 
 			//再描画要求
-			if (rewriteOnChange) {
-				callRewrite();
-			}
+			//if (rewriteOnChange) {
+			//	callRewrite();
+			//}
 		};
 		//	Accessor : showPos_line
 		int getShowPosLine() const{
@@ -6427,13 +6427,13 @@ void s_dummyfunc()
 			return ret;
 		}
 		//	Method : キーを追加
-		bool newKey(const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0, const double &length = 1.0) {
+		bool newKey(bool needCallRewrite, const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0, const double &length = 1.0) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				if (lineData[i]->name == _name) {
 					bool ret = lineData[i]->newKey(time, 0, _value, length);
 
 					//再描画要求
-					if (ret && rewriteOnChange) {
+					if (needCallRewrite && ret && rewriteOnChange) {
 						callRewrite();
 					}
 					return ret;
@@ -6442,15 +6442,15 @@ void s_dummyfunc()
 			return false;
 		}
 		//	Method : キーに値をセット
-		bool setKey(const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0) {
+		bool setKey(bool needCallRewrite, const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				if (lineData[i]->name == _name) {
 					bool ret = lineData[i]->setKey(time, 0, _value);
 
 					//再描画要求
-					//if (ret && rewriteOnChange) {
-					//	callRewrite();
-					//}
+					if (needCallRewrite && ret && rewriteOnChange) {
+						callRewrite();
+					}
 					return ret;
 				}
 			}
@@ -7335,9 +7335,9 @@ void s_dummyfunc()
 			showPos_time = calcShowPosTime(_showPosTime);
 
 			//再描画要求
-			if (rewriteOnChange) {
-				callRewrite();
-			}
+			//if (rewriteOnChange) {
+			//	callRewrite();
+			//}
 		};
 		//	Accessor : showPos_line
 		int getShowPosLine() const {

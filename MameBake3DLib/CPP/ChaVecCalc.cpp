@@ -41,7 +41,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <intrin.h>
 
 
 #include <crtdbg.h>

@@ -8323,7 +8323,8 @@ int CBone::Adjust180Deg(int srcmotid, double srcleng)
 		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
 
 		int inittraflag1 = 0;
-		int setchildflag1 = 1;
+		//int setchildflag1 = 1;
+		int setchildflag1 = 0;
 		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
 
 		befeul = cureul;
