@@ -1374,6 +1374,7 @@ CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
 CDXUTCheckBox* s_IfMirrorVDiv2CheckBox = 0;
 CDXUTCheckBox* s_VSyncCheckBox = 0;
+CDXUTCheckBox* s_PreciseCheckBox = 0;
 
 
 
@@ -1407,6 +1408,7 @@ static CDXUTControl* s_ui_brushrepeats = 0;
 static CDXUTControl* s_ui_brushmirroru = 0;
 static CDXUTControl* s_ui_brushmirrorv = 0;
 static CDXUTControl* s_ui_ifmirrorvdiv2 = 0;
+static CDXUTControl* s_ui_precise = 0;
 
 
 //Left 2nd
@@ -1636,6 +1638,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_STATIC_UMTHREADS		80
 
 #define IDC_VSYNC					81
+#define IDC_PRECISEONPREVIEWTOO		82
+
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -2664,6 +2668,8 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+	g_preciseOnPreviewToo = false;
+
 	g_VSync = false;
 	g_HighRpmMode = false;
 	g_UpdateMatrixThreads = 2;
@@ -2958,6 +2964,7 @@ void InitApp()
 	s_BrushMirrorVCheckBox = 0;
 	s_IfMirrorVDiv2CheckBox = 0;
 	s_VSyncCheckBox = 0;
+	s_PreciseCheckBox = 0;
 
 	//Left
 	s_ui_lightscale = 0;
@@ -3000,6 +3007,7 @@ void InitApp()
 	s_ui_texspeed = 0;
 	s_ui_speed = 0;
 	s_ui_vsync = 0;
+	s_ui_precise = 0;
 
 	//Bullet
 	s_ui_btstart = 0;
@@ -19546,6 +19554,9 @@ int OnFrameUtCheckBox()
 	//	g_absikflag = (int)s_AbsIKCheckBox->GetChecked();
 	//}
 
+	if (s_PreciseCheckBox) {
+		g_preciseOnPreviewToo = (bool)s_PreciseCheckBox->GetChecked();
+	}
 	if (s_VSyncCheckBox) {
 		g_VSync = (bool)s_VSyncCheckBox->GetChecked();
 	}
@@ -20276,7 +20287,7 @@ int GetCurrentBoneFromTimeline(int* dstboneno)
 	if (s_model && s_owpTimeline){
 		int curlineno = s_owpTimeline->getCurrentLine();// 選択行
 		if (curlineno >= 0){
-			*dstboneno = s_lineno2boneno[curlineno];
+			*dstboneno = s_lineno2boneno[curlineno];//*(&s_curboneno)
 			SetLTimelineMark(s_curboneno);
 			ChangeCurrentBone();
 		}
@@ -20318,11 +20329,19 @@ int OnFrameTimeLineWnd()
 
 	if (g_previewFlag != 0) {//underchecking
 
+		if (g_preciseOnPreviewToo) {
+			//2022/10/27 再生中でも選択ジョイント変更処理はする
+			GetCurrentBoneFromTimeline(&s_curboneno);
+		}
+
 		//カレントフレームの１フレームを選択状態にしてしまうのでfalseにする
 		s_cursorFlag = false;
 		s_LcursorFlag = false;
 		s_keyShiftFlag = false;
-		return 0;
+		s_LupFlag = false;
+		s_cursorFlag = false;
+
+		return 0;//!!!!!!!!!!!!!!!!!!!!!
 	}
 
 	if (s_zeroFrameFlag) {
@@ -22110,6 +22129,14 @@ int CreateUtDialog()
 	boneaxisindex = 2;
 	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
 	pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
+
+
+	g_SampleUI.AddCheckBox(IDC_PRECISEONPREVIEWTOO, L"PreciseOnPreviewToo", iX0 + 35, iY += addh, checkboxxlen, 16, g_preciseOnPreviewToo, 0U, false, &s_PreciseCheckBox);
+	s_ui_precise = g_SampleUI.GetControl(IDC_PRECISEONPREVIEWTOO);
+	_ASSERT(s_ui_precise);
+	s_dsutgui0.push_back(s_ui_precise);
+	s_dsutguiid0.push_back(IDC_PRECISEONPREVIEWTOO);
+
 
 
 	if (g_4kresolution) {

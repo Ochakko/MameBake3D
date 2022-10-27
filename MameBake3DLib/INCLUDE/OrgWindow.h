@@ -59,6 +59,8 @@ extern double g_playingstart;
 extern double g_playingend;
 extern int g_underselectingframe;
 
+extern bool g_preciseOnPreviewToo;
+
 static double TIME_ERROR_WIDTH = 0.0001;
 
 namespace OrgWinGUI{
@@ -5618,7 +5620,7 @@ void s_dummyfunc()
 				//}
 
 				//キー
-				if (parent->getDispKeyFlag()) {//2022/09/12
+				if (parent->getDispKeyFlag()) {//2022/09/12 LTimelineの場合に表示　Timelineの場合非表示
 					int startindex = getKeyIndex(startTime);
 					if (startindex >= 0) {
 						int currentkeynum = (int)key.size();
@@ -7775,14 +7777,14 @@ void s_dummyfunc()
 
 				bool firstdrawflag = true;
 				int startindex;// = getKeyIndex(startTime);
-				if ((g_previewFlag == 0) || (g_previewFlag == 5)) {
+				if ((g_previewFlag == 0) || (g_previewFlag == 5) || g_preciseOnPreviewToo) {
 					startindex = getKeyIndex(startTime);
 				}
 				else {
 					startindex = max(0, (getKeyIndex(parent->currentTime) - KEYNUM_ONPREVIEW * 2));
 				}
 
-				//スケール表示時　再生中はグラフ非表示　ただし下方コードにて　両端の垂直ラインは描画
+				//スケール表示時　再生中はSグラフ非表示　ただし下方コードにて　両端の垂直ラインは描画
 				if ((startindex >= 0) && !(sgraph && (g_previewFlag != 0) && (g_previewFlag != 5))) {
 					int currentkeynum = (int)key.size();
 					int currenttimeindex = getKeyIndex(parent->currentTime);

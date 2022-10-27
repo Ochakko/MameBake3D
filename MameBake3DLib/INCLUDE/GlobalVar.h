@@ -54,6 +54,8 @@ class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
 
+bool g_preciseOnPreviewToo = false;
+
 float g_AmbientFactorAtLoading = 1.0f;
 float g_DiffuseFactorAtLoading = 1.0f;
 float g_SpecularFactorAtLoading = 1.0f;
@@ -228,6 +230,8 @@ double g_playingend = 1.0;
 
 
 #else
+extern bool g_preciseOnPreviewToo;
+
 extern float g_AmbientFactorAtLoading;
 extern float g_DiffuseFactorAtLoading;
 extern float g_SpecularFactorAtLoading;

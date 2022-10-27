@@ -406,7 +406,7 @@ namespace OrgWinGUI{
 		int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
 
 		int linenum;
-		if (g_previewFlag == 0) {
+		if ((g_previewFlag == 0) || g_preciseOnPreviewToo) {
 			linenum = showLineNum;
 		}
 		else {
