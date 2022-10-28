@@ -1615,6 +1615,51 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
 	return 0;
 }
 
+int CQuaternion::SetRotationRadXYZ(CQuaternion* axisq, ChaVector3 srcrad)
+{
+	// X軸、Y軸、Z軸の順番で、回転する、クォータニオンをセットする。
+
+	CQuaternion axisQ, invaxisQ;
+	if (axisq) {
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+	}
+	else {
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+
+	CQuaternion q, qx, qy, qz;
+	float cosx, sinx, cosy, siny, cosz, sinz;
+
+
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai((double)srcrad.x);
+	phaiy = QuaternionLimitPhai((double)srcrad.y);
+	phaiz = QuaternionLimitPhai((double)srcrad.z);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
+
+	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
+	qy.SetParams(cosy, 0.0f, siny, 0.0f);
+	qz.SetParams(cosz, 0.0f, 0.0f, sinz);
+
+	//q = axisQ * qy * qx * qz * invaxisQ;
+	q = axisQ * qz * qy * qx * invaxisQ;
+
+
+	*this = q;
+
+	return 0;
+}
+
+
 int CQuaternion::SetRotationXYZ(CQuaternion* axisq, double degx, double degy, double degz)
 {
 	// X軸、Y軸、Z軸の順番で、回転する、クォータニオンをセットする。
@@ -1654,6 +1699,47 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, double degx, double degy, do
 
 	return 0;
 }
+
+int CQuaternion::SetRotationRadXYZ(CQuaternion* axisq, double radx, double rady, double radz)
+{
+	// X軸、Y軸、Z軸の順番で、回転する、クォータニオンをセットする。
+	CQuaternion axisQ, invaxisQ;
+	if (axisq) {
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+	}
+	else {
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	CQuaternion q, qx, qy, qz;
+	float cosx, sinx, cosy, siny, cosz, sinz;
+
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai(radx);
+	phaiy = QuaternionLimitPhai(rady);
+	phaiz = QuaternionLimitPhai(radz);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
+
+	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
+	qy.SetParams(cosy, 0.0f, siny, 0.0f);
+	qz.SetParams(cosz, 0.0f, 0.0f, sinz);
+
+	//q = axisQ * qy * qx * qz * invaxisQ;
+	q = axisQ * qz * qy * qx * invaxisQ;
+
+	*this = q;
+
+	return 0;
+}
+
 
 int CQuaternion::SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg)
 {

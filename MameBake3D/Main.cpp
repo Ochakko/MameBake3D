@@ -24195,7 +24195,7 @@ int CreateToolWnd()
 	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
 	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
 	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
-	s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
+	//s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -24212,7 +24212,7 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolZeroFrameB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
-	s_toolWnd->addParts(*s_tool180deg);
+	//s_toolWnd->addParts(*s_tool180deg);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -24228,7 +24228,7 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolZeroFrameB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
-	s_dstoolctrls.push_back(s_tool180deg);
+	//s_dstoolctrls.push_back(s_tool180deg);
 
 
 	s_toolWnd->setCloseListener([](){ 
@@ -24315,11 +24315,11 @@ int CreateToolWnd()
 			s_skipJointMark = 2;//deeper
 		}
 	});
-	s_tool180deg->setButtonListener([]() {
-		if (s_model && (s_180DegFlag == false)) {
-			s_180DegFlag = true;
-		}
-	});
+	//s_tool180deg->setButtonListener([]() {
+	//	if (s_model && (s_180DegFlag == false)) {
+	//		s_180DegFlag = true;
+	//	}
+	//});
 
 
 	s_rctoolwnd.top = 0;

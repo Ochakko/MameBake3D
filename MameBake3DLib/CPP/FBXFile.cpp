@@ -3543,18 +3543,21 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 			//####################################
 			//joint‚ÌŒü‚«‚ÌŽæ“¾‚ª•s–¾@ŽŽsöŒë’†
 			//####################################
-			////FbxVector4 attrorient = pNode->GetPreRotation(FbxNode::eSourcePivot);
-			////FbxVector4 attrorient = pNode->GetPostRotation(FbxNode::eSourcePivot);
-			////FbxVector4 attrorient = pNode->GetRotationOffset(FbxNode::eSourcePivot);
-			////FbxVector4 attrorient = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+			//FbxVector4 attrorient = pNode->GetPreRotation(FbxNode::eSourcePivot);
+			//FbxVector4 attrorient = pNode->GetPostRotation(FbxNode::eSourcePivot);
+			//FbxVector4 attrorient = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+			//FbxVector4 attrorient = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+			// 
 			//FbxNode* parnode = pNode->GetParent();
-			////pNode->SetTarget(parnode);
+			//FbxNode* childnode = pNode->GetChild(0);
+			//pNode->SetTarget(childnode);
 			//if (parnode) {
 			//	parnode->SetTarget(pNode);
 			//}
 			//FbxVector4 attrorient = pNode->GetPostTargetRotation();
+
 			//CQuaternion orientq;
-			//orientq.SetRotationXYZ(0, ChaVector3(attrorient[0], attrorient[1], attrorient[2]));
+			//orientq.SetRotationRadXYZ(0, ChaVector3(attrorient[0], attrorient[1], attrorient[2]));
 			//ChaMatrix orientmat = orientq.MakeRotMatX();
 
 			////nodemat = orientmat * nodemat0;

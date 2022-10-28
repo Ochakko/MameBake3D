@@ -262,8 +262,10 @@ public:
 	int SetAxisAndRot(ChaVector3 srcaxis, double phai);
 
 	int SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg);
+	int SetRotationRadXYZ(CQuaternion* axisq, ChaVector3 srcrad);
 	int SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg);
 	int SetRotationXYZ(CQuaternion* axisq, double degx, double degy, double degz);
+	int SetRotationRadXYZ(CQuaternion* axisq, double radx, double rady, double radz);
 	int SetRotationZXY(CQuaternion* axisq, double degx, double degy, double degz);
 	//int GetAxisAndRot(ChaVector3* axisvecptr, float* frad);
 	//int QuaternionToAxisAngle(ChaVector3* dstaxis, float* dstrad);
