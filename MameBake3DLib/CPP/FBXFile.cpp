@@ -3418,9 +3418,9 @@ FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScen
 }
 
 
-void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition)
+void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition)
 {
-	if (!pmodel || !curbone) {
+	if (!pScene || !pmodel || !curbone) {
 		return;
 	}
 
@@ -3528,12 +3528,39 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 		// does not hold when inheritance type is other than "Parent" (RSrs).
 		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
 
+		ChaMatrix nodemat;
+
+
 		if (pNode) {
 			//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
 			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+			ChaMatrix nodemat0;
+			nodemat0 = ChaMatrixFromFbxAMatrix(lGlobalPosition);//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
+		
+
+			nodemat = nodemat0;
+
+			//####################################
+			//jointの向きの取得が不明　試行錯誤中
+			//####################################
+			////FbxVector4 attrorient = pNode->GetPreRotation(FbxNode::eSourcePivot);
+			////FbxVector4 attrorient = pNode->GetPostRotation(FbxNode::eSourcePivot);
+			////FbxVector4 attrorient = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+			////FbxVector4 attrorient = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+			//FbxNode* parnode = pNode->GetParent();
+			////pNode->SetTarget(parnode);
+			//if (parnode) {
+			//	parnode->SetTarget(pNode);
+			//}
+			//FbxVector4 attrorient = pNode->GetPostTargetRotation();
+			//CQuaternion orientq;
+			//orientq.SetRotationXYZ(0, ChaVector3(attrorient[0], attrorient[1], attrorient[2]));
+			//ChaMatrix orientmat = orientq.MakeRotMatX();
+
+			////nodemat = orientmat * nodemat0;
+			//nodemat = nodemat0 * orientmat;
 		}
-		ChaMatrix nodemat;
-		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+
 
 		//curbone->SetPositionFound(lPositionFound);//!!!
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
@@ -3561,14 +3588,14 @@ void FbxSetDefaultBonePosReq(CModel* pmodel, CBone* curbone, const FbxTime& pTim
 	if (curbone->GetChild()) {
 		//if (curbone->GetChild()->GetChild()) {
 		FbxAMatrix parentposition = curbone->GetGlobalPosMat();
-		FbxSetDefaultBonePosReq(pmodel, curbone->GetChild(), pTime, pPose, &parentposition);
+		FbxSetDefaultBonePosReq(pScene, pmodel, curbone->GetChild(), pTime, pPose, &parentposition);
 		//}
 		//else {
 		//	SetDefaultBonePosReq(curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
 		//}
 	}
 	if (curbone->GetBrother()) {
-		FbxSetDefaultBonePosReq(pmodel, curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
+		FbxSetDefaultBonePosReq(pScene, pmodel, curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
 	}
 
 }

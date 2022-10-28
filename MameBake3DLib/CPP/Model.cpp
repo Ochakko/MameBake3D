@@ -3986,7 +3986,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 	s_dbgcnt++;
 
 
-	SetDefaultBonePos();
+	SetDefaultBonePos(pScene);
 
 
 	pScene->FillAnimStackNameArray(mAnimStackNameArray);
@@ -5572,9 +5572,9 @@ FbxPose* CModel::GetBindPose()
 }
 
 
-int CModel::SetDefaultBonePos()
+int CModel::SetDefaultBonePos(FbxScene* pScene)
 {
-	if( !m_topbone ){
+	if( !pScene || !m_topbone ){
 		return 0;
 	}
 
@@ -5590,7 +5590,7 @@ int CModel::SetDefaultBonePos()
 	FbxAMatrix inimat;
 	inimat.SetIdentity();
 	if( secbone ){
-		FbxSetDefaultBonePosReq( this, secbone, pTime, bindpose, &inimat );
+		FbxSetDefaultBonePosReq(pScene, this, secbone, pTime, bindpose, &inimat);
 	}
 
 	return 0;
