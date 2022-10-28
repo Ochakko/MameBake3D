@@ -14893,6 +14893,11 @@ int SaveRetargetFile()
 
 	ChangeCurDirFromMameMediaToTest();
 
+	int result = 0;
+	WCHAR savepath[MULTIPATH];
+	ZeroMemory(savepath, sizeof(WCHAR) * MULTIPATH);
+
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
@@ -14931,10 +14936,19 @@ int SaveRetargetFile()
 	}
 
 	if (GetOpenFileNameW(&ofn) == IDOK) {
+
+		MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//MULTIPATH‚Å‚Í‚È‚¢
+
 		CRetargetFile rtgfile;
-		int result;
 		result = rtgfile.WriteRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
 	}
+
+
+	//—š—ð‚ð•Û‘¶
+	if ((result == 0) && (savepath[0] != 0L)) {
+		SaveRtgHistory(savepath);
+	}
+
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 	UnhookWinEvent(hhook);
@@ -27815,8 +27829,11 @@ int OnMouseMoveFunc()
 		}
 
 		s_camdist += deltadist;
-		if (s_camdist < 0.0001f) {
-			s_camdist = 0.0001f;
+		//if (s_camdist < 0.0001f) {
+		//	s_camdist = 0.0001f;
+		//}
+		if (s_camdist < 0.01f) {//2022/10/29 0.0001‚Å‚Í‹ß‚Ã‚«‚·‚¬‚½‚Æ‚«‚ÉŒÅ‚Ü‚é‚Ì‚Å0.01‚É•ÏX
+			s_camdist = 0.01f;
 		}
 
 		ChaVector3 camvec = g_camEye - g_camtargetpos;
