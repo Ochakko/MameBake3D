@@ -145,7 +145,7 @@ static void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose );
 
 
 static void AnimateSkeleton(FbxScene* pScene, CModel* pmodel);
-static void AnimateBoneReq( bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax );
+static void AnimateBoneReq(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax);
 static int AnimateMorph(FbxScene* pScene, CModel* pmodel);
 
 static void AnimateSkeletonOfBVH( FbxScene* pScene );
@@ -162,11 +162,13 @@ static void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, F
 static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CBone** ppsetbone);
 static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int* bonecnt);
 
+
+static ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone);//pNode = pmodel->GetBoneNode(curbone)を内部で使用
 static void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lMatrix);
 
-static int WriteFBXAnimTra(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
-static int WriteFBXAnimRot(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
-static int WriteFBXAnimScale(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
 static int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 static int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 
@@ -442,7 +444,8 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 	sceneInfo->mAuthor = "OchakkoLab";
 	//sceneInfo->mRevision = "rev. 2.2";
 	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
-	sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+	sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
 	sceneInfo->mKeywords = "BVH animation";
 	//sceneInfo->mComment = "no particular comments required.";
 	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
@@ -560,7 +563,8 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	//sceneInfo->mRevision = "rev. 2.2";
 	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
 	//sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
-	sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+	sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
 	if (pmodel->GetHasBindPose() && (pmodel->GetFromNoBindPoseFlag() == false)) {
 		sceneInfo->mKeywords = "skinmesh animation";
 	}
@@ -1673,7 +1677,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 		s_firstanimout = 1;
 		//AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
-		AnimateBoneReq(true, s_fbxbone, lAnimLayer, curmotid, maxframe);
+		AnimateBoneReq(s_fbxbone, lAnimLayer, curmotid, maxframe);
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
@@ -1685,7 +1689,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 }
 
-void AnimateBoneReq(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe)
+void AnimateBoneReq(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe)
 {
 
 	static int s_dbgcnt = 0;
@@ -1723,36 +1727,27 @@ void AnimateBoneReq(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimL
 			s_dbgcnt++;
 
 
+			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
-			WriteFBXAnimTra(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimTra(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimTra(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
-			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
-			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-
-			WriteFBXAnimRot(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimRot(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimRot(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
-
-			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			//WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
-
-			WriteFBXAnimScale(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimScale(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimScale(fromnobindpose, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
 
 		}
 	}
 
 	if( fbxbone->GetChild() ){
-		AnimateBoneReq(fromnobindpose, fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
 	}
 	if( fbxbone->GetBrother() ){
-		AnimateBoneReq(fromnobindpose, fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
 	}
 }
 
@@ -1885,6 +1880,101 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 	if( fbxbone->GetBrother() ){
 		WriteBindPoseReq( fbxbone->GetBrother(), lPose );
 	}
+}
+
+
+ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetBoneNode(curbone)を内部で使用
+{
+	//parentにSetNodeMat()されていることが前提
+	//Reqで呼び出す
+
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	FbxNode* pNode = pmodel->GetBoneNode(curbone);
+	if (pNode) {
+		FbxDouble3 fbxLclPos = pNode->LclTranslation.Get();
+		FbxDouble3 fbxRotOff = pNode->RotationOffset.Get();
+		FbxDouble3 fbxRotPiv = pNode->RotationPivot.Get();
+		FbxDouble3 fbxPreRot = pNode->PreRotation.Get();
+		FbxDouble3 fbxLclRot = pNode->LclRotation.Get();
+		FbxDouble3 fbxPostRot = pNode->PostRotation.Get();
+		FbxDouble3 fbxSclOff = pNode->ScalingOffset.Get();
+		FbxDouble3 fbxSclPiv = pNode->ScalingPivot.Get();
+		FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
+
+		bool rotationActive = pNode->RotationActive.Get();
+
+		//Local Matrix = LclTranslation * RotationOffset * RotationPivot *
+		//	PreRotation * LclRotation * PostRotation * RotationPivotInverse *
+		//	ScalingOffset * ScalingPivot * LclScaling * ScalingPivotInverse
+
+		ChaMatrix localnodemat;
+		localnodemat.SetIdentity();
+
+		ChaMatrix tramat0, tramat1, tramat2;
+		ChaMatrix scalemat;
+		CQuaternion lclrotq, prerotq, postrotq, rotq;
+		ChaMatrix rotmat;
+		tramat0.SetIdentity();
+		tramat1.SetIdentity();
+		tramat2.SetIdentity();
+		scalemat.SetIdentity();
+		lclrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		prerotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		postrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		rotmat.SetIdentity();
+
+		tramat0.SetTranslation(ChaVector3((float)-fbxSclPiv[0], (float)-fbxSclPiv[1], (float)-fbxSclPiv[2]));
+		scalemat.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
+		tramat1.SetTranslation(
+			ChaVector3((float)(fbxSclOff[0] + fbxSclPiv[0] - fbxRotPiv[0]),
+				(float)(fbxSclOff[1] + fbxSclPiv[1] - fbxRotPiv[1]),
+				(float)(fbxSclOff[2] + fbxSclPiv[2] - fbxRotPiv[2])));
+		lclrotq.SetRotationRadXYZ(0, fbxLclRot[0], fbxLclRot[1], fbxLclRot[2]);
+		prerotq.SetRotationRadXYZ(0, fbxPreRot[0], fbxPreRot[1], fbxPreRot[2]);
+		postrotq.SetRotationRadXYZ(0, fbxPostRot[0], fbxPostRot[1], fbxPostRot[2]);
+
+		if (rotationActive) {
+			rotq = lclrotq;
+		}
+		else {
+			rotq = postrotq * lclrotq * prerotq;
+		}
+		rotmat = rotq.MakeRotMatX();
+
+		tramat1.SetTranslation(
+			ChaVector3((float)(fbxSclOff[0] + fbxSclPiv[0] - fbxRotPiv[0]),
+				(float)(fbxSclOff[1] + fbxSclPiv[1] - fbxRotPiv[1]),
+				(float)(fbxSclOff[2] + fbxSclPiv[2] - fbxRotPiv[2])));
+		tramat2.SetTranslation(
+			ChaVector3((float)(fbxLclPos[0] + fbxRotOff[0] + fbxRotPiv[0]),
+				(float)(fbxLclPos[1] + fbxRotOff[1] + fbxRotPiv[1]),
+				(float)(fbxLclPos[2] + fbxRotOff[2] + fbxRotPiv[2])));
+
+		localnodemat = tramat0 * scalemat * tramat1 * rotmat * tramat2;
+		//curbone->SetLocalNodeMat(localnodemat);
+
+		retmat = localnodemat;
+
+
+		//ChaMatrix parentglobalnodemat;
+		//ChaMatrix globalnodemat;
+		//parentglobalnodemat.SetIdentity();
+		//globalnodemat.SetIdentity();
+
+		//if (curbone->GetParent()) {
+		//	parentglobalnodemat = curbone->GetParent()->GetNodeMat();
+		//}
+		//globalnodemat = localnodemat * parentglobalnodemat;
+
+		//curbone->SetNodeMat(globalnodemat);
+
+		//retmat = globalnodemat;
+	}
+
+	return retmat;
 }
 
 void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
@@ -2919,7 +3009,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 }
 
 
-static int WriteFBXAnimTra(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -2960,7 +3050,7 @@ static int WriteFBXAnimTra(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer*
 		lCurve = lSkel->LclTranslation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			fbxtra = curbone->CalcFBXTra(fromnobindpose, curmotid, frameno);
+			fbxtra = curbone->CalcFBXTra(curmotid, frameno);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 			switch (axiskind){
@@ -2990,7 +3080,7 @@ static int WriteFBXAnimTra(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer*
 
 	return 0;
 }
-static int WriteFBXAnimRot(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3035,7 +3125,7 @@ static int WriteFBXAnimRot(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer*
 		int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
 
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			cureul = curbone->CalcFBXEulXYZ(fromnobindpose, notmodifyflag, curmotid, frameno, &befeul);
+			cureul = curbone->CalcFBXEulXYZ(notmodifyflag, curmotid, frameno, &befeul);
 					
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
@@ -3067,7 +3157,7 @@ static int WriteFBXAnimRot(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer*
 }
 
 
-static int WriteFBXAnimScale(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3111,7 +3201,7 @@ static int WriteFBXAnimScale(bool fromnobindpose, CFBXBone* fbxbone, FbxAnimLaye
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++) {
 			//cureul = curbone->CalcFBXEul(curmotid, frameno, &befeul);
-			cureul = curbone->CalcFbxScaleAnim(fromnobindpose, curmotid, frameno);
+			cureul = curbone->CalcFbxScaleAnim(curmotid, frameno);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 
@@ -3455,8 +3545,8 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	}
 
 
-	//if ((bvhflag == 0) && pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
-	if (bvhflag == 0) {
+	if ((bvhflag == 0) && pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
+	//if (bvhflag == 0) {
 		if (pNode) {
 			if (pPose) {
 				int lNodeIndex = pPose->Find(pNode);
@@ -3530,39 +3620,27 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
 
 		ChaMatrix nodemat;
-
+		nodemat.SetIdentity();
 
 		if (pNode) {
 			//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
+			//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
+			//！！！！　BindMatが設定してある場合はそちらを使う　！！！！
 			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
-			ChaMatrix nodemat0;
-			nodemat0 = ChaMatrixFromFbxAMatrix(lGlobalPosition);//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
-		
+			nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
-			nodemat = nodemat0;
-
-			//####################################
-			//jointの向きの取得が不明　試行錯誤中
-			//####################################
-			//FbxVector4 attrorient = pNode->GetPreRotation(FbxNode::eSourcePivot);
-			//FbxVector4 attrorient = pNode->GetPostRotation(FbxNode::eSourcePivot);
-			//FbxVector4 attrorient = pNode->GetRotationOffset(FbxNode::eSourcePivot);
-			//FbxVector4 attrorient = pNode->GetRotationPivot(FbxNode::eSourcePivot);
-			// 
-			//FbxNode* parnode = pNode->GetParent();
-			//FbxNode* childnode = pNode->GetChild(0);
-			//pNode->SetTarget(childnode);
-			//if (parnode) {
-			//	parnode->SetTarget(pNode);
+			//##########################################################################################################
+			//以下のComment out部分　test中　
+			//リターゲットすると　bvh121の最後から２つ目のモーションで　でんぐり返し中に足がクロスする　回転軸が違う？
+			//##########################################################################################################
+			//ChaMatrix localnodemat;
+			//localnodemat = CalcLocalNodeMat(pmodel, curbone);// !!! support prerot postrot ...etc.
+			//ChaMatrix parentnodemat;
+			//parentnodemat.SetIdentity();
+			//if (curbone->GetParent()) {
+			//	parentnodemat = curbone->GetParent()->GetNodeMat();
 			//}
-			//FbxVector4 attrorient = pNode->GetPostTargetRotation();
-
-			//CQuaternion orientq;
-			//orientq.SetRotationRadXYZ(0, ChaVector3(attrorient[0], attrorient[1], attrorient[2]));
-			//ChaMatrix orientmat = orientq.MakeRotMatX();
-
-			////nodemat = orientmat * nodemat0;
-			//nodemat = nodemat0 * orientmat;
+			//nodemat = localnodemat * parentnodemat;
 		}
 
 

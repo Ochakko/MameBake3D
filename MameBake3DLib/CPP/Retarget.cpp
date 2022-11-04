@@ -422,7 +422,7 @@ namespace MameBake3DLibRetarget {
 				curbvhmat =
 					(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
 					(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * firsthipmodelmat) *
-					bvhmp.GetWorldMat();//VRoid OK. yuri : bvh120 腕の開きがボーンマークとポリゴンとで位置がずれている
+					bvhmp.GetWorldMat();
 
 				//curbvhmat =
 				//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *

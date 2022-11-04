@@ -463,8 +463,7 @@ CModel::~CModel()
 int CModel::InitParams()
 {
 	m_fromBvh = false;
-	//m_fromNoBindPose = false;
-	m_fromNoBindPose = true;
+	m_fromNoBindPose = false;
 
 	m_loadingmotionnum = 0;
 
@@ -485,8 +484,7 @@ int CModel::InitParams()
 	ZeroMemory(m_fbxfullname, sizeof(WCHAR) * MAX_PATH);
 	m_useegpfile = false;
 
-	//m_hasbindpose = 1;
-	m_hasbindpose = 0;// for debug 2022 / 10 / 29
+	m_hasbindpose = 1;
 
 	//ZeroMemory(m_armpparams, sizeof(FUNCMPPARAMS*) * 6);
 	//ZeroMemory(m_arhthread, sizeof(HANDLE) * 6);
@@ -4116,7 +4114,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				}
 
 				WaitLoadFbxAnimFinished();//読み込み終了待ち
-				SetWorldMatFromLocalMat(curmotid, (animno == 0));//並列化出来なかった計算をする SetFirstMotも
+				PostLoadFbxAnim(curmotid, (animno == 0));//並列化出来なかった計算をする SetFirstMotも
 			}
 			else {
 			}
@@ -4646,114 +4644,54 @@ void CModel::CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, Fbx
 //}
 
 
-int CModel::SetWorldMatFromLocalMat(int srcmotid, bool isfirstmot)
+int CModel::PostLoadFbxAnim(int srcmotid, bool isfirstmot)
 {
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi) {
 		double animlen = curmi->frameleng;
 
-		SetWorldMatFromLocalMatReq(srcmotid, animlen, m_topbone, isfirstmot);
+		PostLoadFbxAnimReq(srcmotid, animlen, m_topbone, isfirstmot);
 	}
 	return 0;
 }
 
-void CModel::SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot)
+void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot)
 {
 	if (srcbone) {
-
-		int bvhflag = 0;
-		//if (GetScene()) {
-		//	FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
-		//	if (sceneinfo) {
-		//		FbxString mKeywords = "BVH animation";
-		//		if (sceneinfo->mKeywords == mKeywords) {
-		//			bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
-		//		}
-		//	}
-		//}
-		if (GetFromBvhFlag()) {
-			bvhflag = 1;
-		}
-		else {
-			bvhflag = 0;
-		}
-
 		double curframe;
 		for (curframe = 0.0; curframe < animlen; curframe += 1.0) {//関数呼び出し時にanimleng - 1している
 
 			CMotionPoint* curmp;
 			curmp = srcbone->GetMotionPoint(srcmotid, curframe);
-			if (curmp) {
+			if (curmp) {				
+				ChaMatrix globalmat;
+				globalmat = curmp->GetWorldMat();
 
+				if (isfirstmot && (curframe == 0.0)) {
+					srcbone->SetFirstMat(globalmat);
+				}
 
-				if ((bvhflag == 0) && 
-					GetHasBindPose()) {
-
-
-					//######################################
-					// バインドポーズがある場合
-					//######################################
-
-					ChaMatrix localmat;
-					localmat = curmp->GetLocalMat();
-
-					//###############
-					//calc globalmat
-					//###############
-					ChaMatrix parentglobalmat;
-					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-					if (srcbone->GetParent()) {
-						parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
-					}
-					else {
-						ChaMatrixIdentity(&parentglobalmat);
-					}
-
-					ChaMatrix globalmat = localmat * parentglobalmat;
-					curmp->SetWorldMat(globalmat);//anglelimit無し
-					
-
-					if (isfirstmot && (curframe == 0.0)) {
-						srcbone->SetFirstMat(globalmat);
-					}
-
+				//#############
+				//set localmat
+				//#############
+				ChaMatrix parentglobalmat;
+				//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+				if (srcbone->GetParent()) {
+					parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
 				}
 				else {
-					//############################################################
-					// バインドポーズが無い場合
-					// 0フレームにアニメーションが設定してあっても正常に再生可能
-					//############################################################
-
-					ChaMatrix globalmat;
-					globalmat = curmp->GetWorldMat();
-
-					if (isfirstmot && (curframe == 0.0)) {
-						srcbone->SetFirstMat(globalmat);
-					}
-
-					//#############
-					//set localmat
-					//#############
-					ChaMatrix parentglobalmat;
-					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-					if (srcbone->GetParent()) {
-						parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
-					}
-					else {
-						ChaMatrixIdentity(&parentglobalmat);
-					}
-					ChaMatrix localmat = globalmat * ChaMatrixInv(parentglobalmat);
-					curmp->SetLocalMat(localmat);//anglelimit無し
+					ChaMatrixIdentity(&parentglobalmat);
 				}
-
+				ChaMatrix localmat = globalmat * ChaMatrixInv(parentglobalmat);
+				curmp->SetLocalMat(localmat);//anglelimit無し
 			}
 		}
 
 		if (srcbone->GetChild()) {
-			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetChild(), isfirstmot);
+			PostLoadFbxAnimReq(srcmotid, animlen, srcbone->GetChild(), isfirstmot);
 		}
 		if (srcbone->GetBrother()) {
-			SetWorldMatFromLocalMatReq(srcmotid, animlen, srcbone->GetBrother(), isfirstmot);
+			PostLoadFbxAnimReq(srcmotid, animlen, srcbone->GetBrother(), isfirstmot);
 		}
 	}
 }

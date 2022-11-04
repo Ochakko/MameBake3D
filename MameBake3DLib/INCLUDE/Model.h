@@ -727,8 +727,8 @@ private:
 	int CreateLoadFbxAnim(FbxScene* pscene);
 	int DestroyLoadFbxAnim();
 	void WaitLoadFbxAnimFinished();
-	int SetWorldMatFromLocalMat(int srcmotid, bool isfirstmot);
-	void SetWorldMatFromLocalMatReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot);
+	int PostLoadFbxAnim(int srcmotid, bool isfirstmot);
+	void PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot);
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
@@ -1265,14 +1265,14 @@ public: //accesser
 		return m_hasbindpose;
 	}
 	void SetHasBindPose(int srcval) {
-		//m_hasbindpose = srcval;//comment out for debug 2022/10/29
+		m_hasbindpose = srcval;
 	}
 
 	bool GetFromNoBindPoseFlag() {
 		return m_fromNoBindPose;
 	}
 	void SetFromNoBindPoseFlag(bool srcflag) {
-		//m_fromNoBindPose = srcflag;//comment out for debug 2022/10/29
+		m_fromNoBindPose = srcflag;
 	}
 
 	bool GetFromBvhFlag() {
