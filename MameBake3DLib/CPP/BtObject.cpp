@@ -348,10 +348,10 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 	//-0.374995, 0.249996, 0.000000
 	ChaMatrixIdentity( &m_cen2parY );
-	m_cen2parY.data[12] = 0.0f;
+	m_cen2parY.data[MATI_41] = 0.0f;
 	//m_cen2parY._42 = -m_boneleng * 0.5f;
-	m_cen2parY.data[13] = 0.0f;
-	m_cen2parY.data[14] = 0.0f;
+	m_cen2parY.data[MATI_42] = 0.0f;
+	m_cen2parY.data[MATI_43] = 0.0f;
 //	m_cen2parY._41 = 0.0f - -0.374995f;
 //	m_cen2parY._42 = -m_boneleng * 0.5f - 0.249996f;
 //	m_cen2parY._43 = 0.0f;
@@ -359,14 +359,14 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 	ChaVector3 partocen = centerA - aftparentposA;
 	ChaMatrixIdentity( &m_par2cen );
-	m_par2cen.data[12] = partocen.x;
-	m_par2cen.data[13] = partocen.y;
-	m_par2cen.data[14] = partocen.z;
+	m_par2cen.data[MATI_41] = partocen.x;
+	m_par2cen.data[MATI_42] = partocen.y;
+	m_par2cen.data[MATI_43] = partocen.z;
 
 	m_transmat = startrot;
-	m_transmat.data[12] = centerA.x;
-	m_transmat.data[13] = centerA.y;
-	m_transmat.data[14] = centerA.z;
+	m_transmat.data[MATI_41] = centerA.x;
+	m_transmat.data[MATI_42] = centerA.y;
+	m_transmat.data[MATI_43] = centerA.z;
 
 //m_transmat = curre->m_capsulemat;
 
@@ -396,21 +396,21 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 	ChaMatrixIdentity( &m_xworld );
 
-	m_xworld.data[0] = tmpcol[0].x();
-	m_xworld.data[1] = tmpcol[0].y();
-	m_xworld.data[2] = tmpcol[0].z();
+	m_xworld.data[MATI_11] = tmpcol[0].x();
+	m_xworld.data[MATI_12] = tmpcol[0].y();
+	m_xworld.data[MATI_13] = tmpcol[0].z();
 
-	m_xworld.data[4] = tmpcol[1].x();
-	m_xworld.data[5] = tmpcol[1].y();
-	m_xworld.data[6] = tmpcol[1].z();
+	m_xworld.data[MATI_21] = tmpcol[1].x();
+	m_xworld.data[MATI_22] = tmpcol[1].y();
+	m_xworld.data[MATI_23] = tmpcol[1].z();
 
-	m_xworld.data[8] = tmpcol[2].x();
-	m_xworld.data[9] = tmpcol[2].y();
-	m_xworld.data[10] = tmpcol[2].z();
+	m_xworld.data[MATI_31] = tmpcol[2].x();
+	m_xworld.data[MATI_32] = tmpcol[2].y();
+	m_xworld.data[MATI_33] = tmpcol[2].z();
 
-	m_xworld.data[12] = worldpos.x();
-	m_xworld.data[13] = worldpos.y();
-	m_xworld.data[14] = worldpos.z();
+	m_xworld.data[MATI_41] = worldpos.x();
+	m_xworld.data[MATI_42] = worldpos.y();
+	m_xworld.data[MATI_43] = worldpos.z();
 
 
 	return 0;
@@ -501,7 +501,7 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	ChaMatrixIdentity(&transmatx);
 	//int setstartflag = 1;
 
-	curbto->m_bone->CalcAxisMatX(0, curbto->m_endbone, &transmatx, setstartflag);
+	curbto->m_bone->CalcAxisMatX_RigidBody(0, curbto->m_endbone, &transmatx, setstartflag);
 
 	CQuaternion rotq;
 	rotq.RotationMatrix(transmatx);
@@ -1166,21 +1166,21 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 
 	ChaMatrix newxworld;
 	ChaMatrixIdentity(&newxworld);
-	newxworld.data[0] = tmpcol[0].x();
-	newxworld.data[1] = tmpcol[0].y();
-	newxworld.data[2] = tmpcol[0].z();
+	newxworld.data[MATI_11] = tmpcol[0].x();
+	newxworld.data[MATI_12] = tmpcol[0].y();
+	newxworld.data[MATI_13] = tmpcol[0].z();
 
-	newxworld.data[4] = tmpcol[1].x();
-	newxworld.data[5] = tmpcol[1].y();
-	newxworld.data[6] = tmpcol[1].z();
+	newxworld.data[MATI_21] = tmpcol[1].x();
+	newxworld.data[MATI_22] = tmpcol[1].y();
+	newxworld.data[MATI_23] = tmpcol[1].z();
 
-	newxworld.data[8] = tmpcol[2].x();
-	newxworld.data[9] = tmpcol[2].y();
-	newxworld.data[10] = tmpcol[2].z();
+	newxworld.data[MATI_31] = tmpcol[2].x();
+	newxworld.data[MATI_32] = tmpcol[2].y();
+	newxworld.data[MATI_33] = tmpcol[2].z();
 
-	newxworld.data[12] = worldpos.x();
-	newxworld.data[13] = worldpos.y();
-	newxworld.data[14] = worldpos.z();
+	newxworld.data[MATI_41] = worldpos.x();
+	newxworld.data[MATI_42] = worldpos.y();
+	newxworld.data[MATI_43] = worldpos.z();
 
 	ChaMatrix invxworld;
 	ChaMatrixInverse(&invxworld, NULL, &m_xworld);
@@ -1343,7 +1343,7 @@ int CBtObject::CalcConstraintTransformA(btTransform& dsttraA, btQuaternion& rotA
 
 	ChaMatrix transmatx;
 	ChaMatrixIdentity(&transmatx);
-	m_bone->CalcAxisMatX(0, m_endbone, &transmatx, 0);
+	m_bone->CalcAxisMatX_RigidBody(0, m_endbone, &transmatx, 0);
 	CQuaternion rotq;
 	rotq.RotationMatrix(transmatx);
 	CQuaternion invrotq;

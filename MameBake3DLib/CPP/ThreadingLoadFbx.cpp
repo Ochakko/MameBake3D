@@ -111,16 +111,26 @@ int CThreadingLoadFbx::ThreadFunc()
 					bvhflag = 0;
 				}
 
-				EnterCriticalSection(&m_CritSection);
+				//EnterCriticalSection(&m_CritSection);//呼び出し側で処理終了を待つので不要
 				if (m_model) {
 					if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
-						CBone* firstbone = m_bonelist[0];
-						bool callingbythread = true;
-						firstbone->GetFBXAnim(bvhflag, m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
+						//CBone* firstbone = m_bonelist[0];
+						//bool callingbythread = true;
+						//firstbone->GetFBXAnim(bvhflag, m_bonelist, m_nodelist, m_bonenum, m_animno, m_motid, m_animleng, callingbythread);
+						
+						bool callingbythread = true; 
+						int boneno;
+						for (boneno = 0; boneno < m_bonenum; boneno++) {
+							CBone* curbone = m_bonelist[boneno];
+							FbxNode* curnode = m_nodelist[boneno];
+							if (curbone && curnode) {
+								curbone->GetFBXAnim(bvhflag, curnode, m_animno, m_motid, m_animleng, callingbythread);
+							}
+						}
 					}
 				}
 				InterlockedExchange(&m_start_state, 0L);
-				LeaveCriticalSection(&m_CritSection);
+				//LeaveCriticalSection(&m_CritSection);
 			}
 			else {
 				InterlockedExchange(&m_start_state, 0L);

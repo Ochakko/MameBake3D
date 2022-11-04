@@ -44,6 +44,32 @@ class ChaVector3;
 //	};
 //}
 
+
+//ChaMatrix‚Ìdata[]‚Ìindex‚ð‚í‚©‚è‚â‚·‚­
+enum {
+	MATI_11,
+	MATI_12,
+	MATI_13,
+	MATI_14,
+
+	MATI_21,
+	MATI_22,
+	MATI_23,
+	MATI_24,
+
+	MATI_31,
+	MATI_32,
+	MATI_33,
+	MATI_34,
+
+	MATI_41,
+	MATI_42,
+	MATI_43,
+	MATI_44,
+
+	MATI_MAX
+};
+
 class ChaMatrix
 {
 public:
@@ -81,10 +107,10 @@ public:
 
 	bool operator== (const ChaMatrix &m) const {
 		bool result;
-		result = data[0] == m.data[0] && data[1] == m.data[1] && data[2] == m.data[2] && data[3] == m.data[3] &&
-			data[4] == m.data[4] && data[5] == m.data[5] && data[6] == m.data[6] && data[7] == m.data[7] &&
-			data[8] == m.data[8] && data[9] == m.data[9] && data[10] == m.data[10] && data[11] == m.data[11] &&
-			data[12] == m.data[12] && data[13] == m.data[13] && data[14] == m.data[14] && data[15] == m.data[15];
+		result = data[0] == m.data[MATI_11] && data[1] == m.data[MATI_12] && data[2] == m.data[MATI_13] && data[3] == m.data[MATI_14] &&
+			data[4] == m.data[MATI_21] && data[5] == m.data[MATI_22] && data[6] == m.data[MATI_23] && data[7] == m.data[MATI_24] &&
+			data[8] == m.data[MATI_31] && data[9] == m.data[MATI_32] && data[10] == m.data[MATI_33] && data[11] == m.data[MATI_34] &&
+			data[12] == m.data[MATI_41] && data[13] == m.data[MATI_42] && data[14] == m.data[MATI_43] && data[15] == m.data[MATI_44];
 		return result;
 	};
 	bool operator!= (const ChaMatrix &m) const {

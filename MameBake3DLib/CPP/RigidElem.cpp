@@ -150,10 +150,17 @@ float CRigidElem::GetBoneLeng()
 
 ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe, int multworld)//default of multworld = 1
 {
-	int calccapsuleflag = 1;
-	m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 0, 1, multworld, calczeroframe);
-	return m_capsulemat;
+	//int calccapsuleflag = 1;
+	//m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 1, multworld, calczeroframe);
+	if (m_endbone && m_endbone->GetParent()) {
+		m_endbone->GetParent()->CalcAxisMatX_RigidBody(0, m_endbone, &m_capsulemat, calczeroframe);
+	}
+	else {
+		m_capsulemat.SetIdentity();
+	}
 
+
+	return m_capsulemat;
 }
 
 

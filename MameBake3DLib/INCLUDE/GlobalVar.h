@@ -54,6 +54,7 @@ class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
 
+bool g_tpose = true;
 bool g_preciseOnPreviewToo = false;
 
 float g_AmbientFactorAtLoading = 1.0f;
@@ -143,8 +144,8 @@ int g_pseudolocalflag = 1;
 //int g_wallscrapingikflag = 1;
 int g_wallscrapingikflag = 0;
 int g_prepcntonphysik = 30;
-int g_boneaxis = 1;//parent
-//int g_boneaxis = 0;//current
+//int g_boneaxis = 1;//parent
+int g_boneaxis = 0;//current 2022/10/31
 int g_brushrepeats = 1;
 int g_brushmirrorUflag = 0;
 int g_brushmirrorVflag = 0;
@@ -230,6 +231,7 @@ double g_playingend = 1.0;
 
 
 #else
+extern bool g_tpose;
 extern bool g_preciseOnPreviewToo;
 
 extern float g_AmbientFactorAtLoading;

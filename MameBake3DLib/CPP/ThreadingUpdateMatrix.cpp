@@ -89,7 +89,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 
 			if (InterlockedAdd(&m_start_state, 0) == 1) {//計算開始命令をキャッチ
 				if (InterlockedAdd(&m_exit_state, 0) != 1) {//スレッドが終了していない場合
-					EnterCriticalSection(&m_CritSection);//再入防止
+					//EnterCriticalSection(&m_CritSection);//再入防止 呼び出し側で処理終了を待つので不要
 					if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
 						int bonecount;
 						for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
@@ -101,7 +101,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 						}
 					}
 					InterlockedExchange(&m_start_state, 0L);
-					LeaveCriticalSection(&m_CritSection);
+					//LeaveCriticalSection(&m_CritSection);
 				}
 				else {
 					//スレッド終了フラグが立っていた場合

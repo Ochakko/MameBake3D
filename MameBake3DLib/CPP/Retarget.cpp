@@ -42,8 +42,8 @@ namespace MameBake3DLibRetarget {
 			::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
 			return 1;
 		}
-		//double motleng = bvhmi->frameleng;
-		double motleng = bvhmi->frameleng - 1.0;//2021/10/13
+		double motleng = bvhmi->frameleng;//2022/11/01
+		//double motleng = bvhmi->frameleng - 1.0;//2021/10/13
 		(srcAddMotionFunc)(0, motleng);
 		//(srcInitCurMotionFunc)(0, 0);//CModel::AddMotionで初期化することにしたのでコメントアウト　2022/08/28
 
@@ -318,14 +318,14 @@ namespace MameBake3DLibRetarget {
 					//firsthipbvhmatとfirsthipmodelmatは　この関数の参照引数　一度セットして使いまわす
 					
 					firsthipbvhmat = bvhmp.GetWorldMat();
-					firsthipbvhmat.data[12] = 0.0f;
-					firsthipbvhmat.data[13] = 0.0f;
-					firsthipbvhmat.data[14] = 0.0f;
+					firsthipbvhmat.data[MATI_41] = 0.0f;
+					firsthipbvhmat.data[MATI_42] = 0.0f;
+					firsthipbvhmat.data[MATI_43] = 0.0f;
 
 					firsthipmodelmat = modelmp.GetWorldMat();
-					firsthipmodelmat.data[12] = 0.0f;
-					firsthipmodelmat.data[13] = 0.0f;
-					firsthipmodelmat.data[14] = 0.0f;
+					firsthipmodelmat.data[MATI_41] = 0.0f;
+					firsthipmodelmat.data[MATI_42] = 0.0f;
+					firsthipmodelmat.data[MATI_43] = 0.0f;
 				}
 
 

@@ -104,8 +104,10 @@ public:
 	int ClearLimitedWorldMat(int srcmotid, double srcframe);
 
 	//int GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread); // default : callingbythread = false
-	int GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread = false);
-
+	//int GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread = false);
+	int GetFBXAnim(int bvhflag, FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread = false);
+	//int AddMotionPointAll(int srcmotid, double animleng);
+	
 /**
  * @fn
  * AddMotionPoint
@@ -202,7 +204,10 @@ public:
  * @detail 計算したデータは、ボーンの位置にマニピュレータを表示するための変換行列に使用する。現在はCalcAxisMatZ関数でボーンの変換行列を計算している。
  */
 	//int CalcAxisMat( int firstflag, float delta );
-	float CalcAxisMatX(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);
+	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
+	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ボーン軸がX軸
+	float CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
+	float CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータY軸向き
 
 
 /**
@@ -380,9 +385,8 @@ public:
 	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 
-	ChaMatrix CalcManipulatorMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
-	//ChaMatrix CalcManipulatorPostureMatrix(int anglelimitaxisflag, int settraflag, int multworld, int srcmotid, double srcframe);
-	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int anglelimitaxisflag, int settraflag, int multworld, int calczeroframe);
+	ChaMatrix CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
+	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int settraflag, int multworld, int calczeroframe);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
 	int SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul);
 	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 befeul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
@@ -1170,6 +1174,15 @@ public: //accesser
 	{
 		return m_skipRenderBoneMark;
 	}
+	
+	void SetFbxNodeOnLoad(FbxNode* srcnode)
+	{
+		m_fbxnodeonload = srcnode;
+	}
+	FbxNode* GetFbxNodeOnLoad() {
+		return m_fbxnodeonload;
+	}
+
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1305,6 +1318,7 @@ private:
 
 	bool m_skipRenderBoneMark;
 
+	FbxNode* m_fbxnodeonload;//2022/11/01
 
 	CBone* m_parent;
 	CBone* m_child;

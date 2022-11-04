@@ -24,7 +24,7 @@ public:
 	virtual void DestroyObjs();
 
 	int ClearBoneList();
-	int SetBoneList(int srcindex, FbxNode* srcnodeindex, CBone* srcbone);
+	int SetBoneList(int srcindex, FbxNode* srcnode, CBone* srcbone);
 	void LoadFbxAnim(int srcanimno, int srcmotid, double srcanimleng);
 	//bool IsFinished();
 

@@ -88,7 +88,16 @@ typedef struct tag_physikrec
 //#define MAXUPDATEMATRIXTHREAD 2
 #define MAXUPDATEMATRIXTHREAD 8
 
-#define LOADFBXANIMTHREAD 4
+
+//############ 2022/11/01 #########################################################
+//LoadFbxは　同期の必要回数が多すぎるので　別スレッド１つの方が速い
+//LOADFBXANIMTHREADを1以外にする場合には
+//CBone::GetFbxAnim内のpNode->EvaluateGlobalTransformをCriticalSectionで囲む必要有
+//#################################################################################
+#define LOADFBXANIMTHREAD 1
+
+
+//#define LOADFBXANIMTHREAD 4
 //#define LOADFBXANIMTHREAD 8
 //#define MAXLOADFBXANIMBONE	512
 
@@ -660,7 +669,7 @@ public:
 	int CalcBoneEul(int srcmotid);
 	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
 
-	int RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
+	int RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);
 	int PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();
@@ -716,6 +725,8 @@ private:
 	MODELBOUND CalcBoneBound();
 	int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
 
+	//int AddMotionPointAll(int srcmotid, double animleng);
+
 	int DestroyMaterial();
 	int DestroyObject();
 	int DestroyAncObj();
@@ -769,7 +780,7 @@ private:
 
 
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
-	void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng );
+	//void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng );
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//publicへ移動
 	void CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
@@ -1060,6 +1071,20 @@ public: //accesser
 	void SetCurMotInfo( MOTINFO* srcinfo ){
 		m_curmotinfo = srcinfo;
 	};
+	MOTINFO* GetFirstValidMotInfo()
+	{
+		MOTINFO* retmi = 0;
+		std::map<int, MOTINFO*>::iterator itrmi;
+		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++) {
+			MOTINFO* curmi = itrmi->second;
+			if (curmi) {//NULLではないとき
+				retmi = curmi;
+				break;
+			}
+		}
+		return retmi;
+	};
+
 
 	CRigidElem* GetRigidElem(int srcboneno);
 	CRigidElem* GetRgdRigidElem(int srcrgdindex, int srcboneno);
@@ -1228,9 +1253,9 @@ public: //accesser
 	};
 	void SetWorldMatFromCamera(ChaMatrix srcmat){
 		m_worldmat = srcmat;
-		m_worldmat.data[12] = m_modelposition.x;
-		m_worldmat.data[13] = m_modelposition.y;
-		m_worldmat.data[14] = m_modelposition.z;
+		m_worldmat.data[MATI_41] = m_modelposition.x;
+		m_worldmat.data[MATI_42] = m_modelposition.y;
+		m_worldmat.data[MATI_43] = m_modelposition.z;
 	};
 	ChaMatrix GetWorldMat()
 	{
