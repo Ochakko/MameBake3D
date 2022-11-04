@@ -463,7 +463,8 @@ CModel::~CModel()
 int CModel::InitParams()
 {
 	m_fromBvh = false;
-	m_fromNoBindPose = false;
+	//m_fromNoBindPose = false;
+	m_fromNoBindPose = true;
 
 	m_loadingmotionnum = 0;
 
@@ -484,7 +485,8 @@ int CModel::InitParams()
 	ZeroMemory(m_fbxfullname, sizeof(WCHAR) * MAX_PATH);
 	m_useegpfile = false;
 
-	m_hasbindpose = 1;
+	//m_hasbindpose = 1;
+	m_hasbindpose = 0;// for debug 2022 / 10 / 29
 
 	//ZeroMemory(m_armpparams, sizeof(FUNCMPPARAMS*) * 6);
 	//ZeroMemory(m_arhthread, sizeof(HANDLE) * 6);
@@ -5521,6 +5523,23 @@ FbxPose* CModel::GetBindPose()
 	//###################################################################################
 	//商用のfbxにはbindposeを取得できないものがあるが、そういうfbxには手を出さない方針で
 	//###################################################################################
+
+
+/*
+		if (pNode) {
+			if (pPose) {
+				int lNodeIndex = pPose->Find(pNode);
+				if (lNodeIndex > -1)
+				{
+					// The bind pose is always a global matrix.
+					// If we have a rest pose, we need to check if it is
+					// stored in global or local space.
+					if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
+					{
+						lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+					}
+*/
+
 
 	if (!m_pscene) {
 		return 0;

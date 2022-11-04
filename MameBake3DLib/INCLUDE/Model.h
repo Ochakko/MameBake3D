@@ -1264,14 +1264,14 @@ public: //accesser
 		return m_hasbindpose;
 	}
 	void SetHasBindPose(int srcval) {
-		m_hasbindpose = srcval;
+		//m_hasbindpose = srcval;//comment out for debug 2022/10/29
 	}
 
 	bool GetFromNoBindPoseFlag() {
 		return m_fromNoBindPose;
 	}
 	void SetFromNoBindPoseFlag(bool srcflag) {
-		m_fromNoBindPose = srcflag;
+		//m_fromNoBindPose = srcflag;//comment out for debug 2022/10/29
 	}
 
 	bool GetFromBvhFlag() {

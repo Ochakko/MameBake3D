@@ -667,9 +667,9 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
     AnimateSkeleton(pScene, pmodel);
 	AnimateMorph(pScene, pmodel);
 
-	if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
+	//if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
 		WriteBindPose(pScene, s_bvhflag);
-	}
+	//}
 	
 	
 	if( s_ai ){
@@ -1672,7 +1672,8 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 		pmodel->SetCurrentMotion( curmotid );
 
 		s_firstanimout = 1;
-		AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
+		//AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(true, s_fbxbone, lAnimLayer, curmotid, maxframe);
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
@@ -3454,8 +3455,8 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	}
 
 
-	if ((bvhflag == 0) && pmodel->GetHasBindPose()) {//Pose‚ª‚ ‚éê‡‚Å‚àBindPose‚Å‚È‚¢ê‡‚ÍœŠO‚·‚é
-
+	//if ((bvhflag == 0) && pmodel->GetHasBindPose()) {//Pose‚ª‚ ‚éê‡‚Å‚àBindPose‚Å‚È‚¢ê‡‚ÍœŠO‚·‚é
+	if (bvhflag == 0) {
 		if (pNode) {
 			if (pPose) {
 				int lNodeIndex = pPose->Find(pNode);

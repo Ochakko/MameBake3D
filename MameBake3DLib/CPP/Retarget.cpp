@@ -406,16 +406,42 @@ namespace MameBake3DLibRetarget {
 
 
 
-				//以下４行　式10032　　　
+				////以下４行　式10032　　　
+				//ChaMatrix curbvhmat;
+				//CQuaternion convQ;
+				//convQ = invfirsthipbvhQ * invfirstbvhQ * firsthipbvhQ * invfirsthipmodelQ * invmodelQ * zeroframemodelQ * firsthipmodelQ;
+				//curbvhmat = convQ.MakeRotMatX() * bvhmp.GetWorldMat();
+				////補足：invmodelQ * zeroframemodelQは　model側の０フレームポーズからの変化分のインバース. bvh側は０フレームがidentityになるように読み込んでいる 
+
+
+				////curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//10026までの式
+
+
+
 				ChaMatrix curbvhmat;
-				CQuaternion convQ;
-				convQ = invfirsthipbvhQ * invfirstbvhQ * firsthipbvhQ * invfirsthipmodelQ * invmodelQ * zeroframemodelQ * firsthipmodelQ;
-				curbvhmat = convQ.MakeRotMatX() * bvhmp.GetWorldMat();
-				//補足：invmodelQ * zeroframemodelQは　model側の０フレームポーズからの変化分のインバース. bvh側は０フレームがidentityになるように読み込んでいる 
+				curbvhmat =
+					(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
+					(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * firsthipmodelmat) *
+					bvhmp.GetWorldMat();//VRoid OK. yuri : bvh120 腕の開きがボーンマークとポリゴンとで位置がずれている
 
+				//curbvhmat =
+				//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
+				//	(ChaMatrixInv(srcbone->GetNodeMat()) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * srcbone->GetNodeMat()) *
+				//	bvhmp.GetWorldMat();//yuri : bvh120 腕の開きがボーンマークとポリゴンとで位置がずれている
 
-				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//10026までの式
+				//curbvhmat =
+				//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
+				//	(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * srcbone->GetNodeMat()) * firsthipmodelmat) *
+				//	bvhmp.GetWorldMat();//yuri : bvh120 腕の開きがボーンマークとポリゴンとで位置がずれている
 
+				//curbvhmat =
+				//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
+				//	(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * srcbone->GetFirstMat()) * firsthipmodelmat) *
+				//	bvhmp.GetWorldMat();//yuri : bvh120 腕の開きがボーンマークとポリゴンとで位置がずれている
+
+				//curbvhmat =
+				//	ChaMatrixInv(firsthipbvhmat) * srcbone->GetFirstMat() * firsthipbvhmat * ChaMatrixInv(modelmp.GetWorldMat()) *
+				//	bvhmp.GetWorldMat();//yuri : bvh120 腕の開きがボーンマークとポリゴンとで位置がずれている
 
 
 				CMotionPoint curbvhrotmp;
