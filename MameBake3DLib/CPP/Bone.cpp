@@ -780,12 +780,16 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 			}
 		}
 
-		std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
-		itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
-		if (itrvecmpmap != m_indexedmotionpoint.end()) {
-			//(itrvecmpmap->second).clear();
-			(itrvecmpmap->second)[(int)(srcframe + 0.0001)] = newmp;//indexedmotionpointはモーションポイントの実体管理用ではなくインデックス用、作成と破棄はチェインで行うので上書きしても良い。
-		}
+
+		//Comment out 2022/10/30 push_back対応が難しいので　AddMotionPoint, 長さが変わるInitMp処理時に　呼び出し側でCreateIndexedMotionPointを呼ぶ
+		//GetMotionPointなどは　indexをチェックして　エントリーが無い場合には　チェインを辿る
+		//std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+		//itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+		//if (itrvecmpmap != m_indexedmotionpoint.end()) {
+		//	//(itrvecmpmap->second).clear();
+		//	int frameindex = (int)(srcframe + 0.0001);
+		//	(itrvecmpmap->second)[frameindex] = newmp;//indexedmotionpointはモーションポイントの実体管理用ではなくインデックス用、作成と破棄はチェインで行うので上書きしても良い。
+		//}
 	}
 
 
@@ -795,28 +799,28 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 	return newmp;
 }
 
-void CBone::ResizeIndexedMotionPointReq(int srcmotid, double animleng)
-{
-	ResizeIndexedMotionPoint(srcmotid, animleng);
+//void CBone::ResizeIndexedMotionPointReq(int srcmotid, double animleng)
+//{
+//	ResizeIndexedMotionPoint(srcmotid, animleng);
+//
+//	if (GetChild()) {
+//		GetChild()->ResizeIndexedMotionPointReq(srcmotid, animleng);
+//	}
+//	if (GetBrother()) {
+//		GetBrother()->ResizeIndexedMotionPointReq(srcmotid, animleng);
+//	}
+//}
 
-	if (GetChild()) {
-		GetChild()->ResizeIndexedMotionPointReq(srcmotid, animleng);
-	}
-	if (GetBrother()) {
-		GetBrother()->ResizeIndexedMotionPointReq(srcmotid, animleng);
-	}
-}
 
-
-int CBone::ResizeIndexedMotionPoint(int srcmotid, double animleng)
-{
-	std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
-	itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
-	if (itrvecmpmap != m_indexedmotionpoint.end()) {
-		(itrvecmpmap->second).resize((int)(animleng + 0.0001));
-	}
-	return 0;
-}
+//int CBone::ResizeIndexedMotionPoint(int srcmotid, double animleng)
+//{
+//	//std::map<int, vector<CMotionPoint*>>::iterator itrvecmpmap;
+//	//itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+//	//if (itrvecmpmap != m_indexedmotionpoint.end()) {
+//	//	(itrvecmpmap->second).resize((int)(animleng + 0.0001));
+//	//}
+//	return 0;
+//}
 
 
 int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr )
@@ -930,7 +934,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 
 	*existptr = 0;
 
-	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size()) || (curframeindex < 0)) {
 		//AddMotionPointから呼ばれるときに通る場合は正常
 		*ppbef = 0;
 		*ppnext = 0;
@@ -963,6 +967,21 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 				if (itrinitflag->second == false) {
 					getbychain = true;
 				}
+			}
+		}
+	}
+
+	if (getbychain == false) {
+		//indexのframe長のチェック
+
+		std::map<int, std::vector<CMotionPoint*>>::iterator itrchkimp;
+		itrchkimp = m_indexedmotionpoint.find(srcmotid);
+		if (itrchkimp == m_indexedmotionpoint.end()) {
+			getbychain = true;
+		}
+		else {
+			if (curframeindex >= (itrchkimp->second).size()) {
+				getbychain = true;
 			}
 		}
 	}
@@ -2153,8 +2172,10 @@ int CBone::SetCurrentRigidElem( std::string curname )
 CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra)
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
-	if( !curmp || !existflag ){
+	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
+	//if( !curmp || !existflag ){
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if(!curmp){
 		_ASSERT( 0 );
 		return 0;
 	}
@@ -2196,8 +2217,10 @@ CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double src
 CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale)
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
-	if (!curmp || !existflag) {
+	//CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
+	//if (!curmp || !existflag) {
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if(!curmp){
 		_ASSERT(0);
 		return 0;
 	}
@@ -2322,15 +2345,19 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 	//dst : curmp parmp
 
 	int existflag0 = 0;
-	CMotionPoint* srcmp = AddMotionPoint( srcmotid, srcframe, &existflag0 );
-	if( !existflag0 || !srcmp ){
+	//CMotionPoint* srcmp = AddMotionPoint( srcmotid, srcframe, &existflag0 );
+	//if( !existflag0 || !srcmp ){
+	CMotionPoint* srcmp = GetMotionPoint(srcmotid, srcframe);
+	if (!srcmp) {
 		_ASSERT( 0 );
 		return 0;
 	}
 
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, dstframe, &existflag );
-	if( !existflag || !curmp ){
+	//CMotionPoint* curmp = AddMotionPoint( srcmotid, dstframe, &existflag );
+	//if( !existflag || !curmp ){
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if (!curmp) {
 		_ASSERT( 0 );
 		return 0;
 	}
@@ -2365,8 +2392,10 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 {
 	bool onaddmotion = true;//for getbychain
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
-	if( !existflag || !curmp ){
+	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
+	//if( !existflag || !curmp ){
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if (!curmp) {
 		_ASSERT( 0 );
 		return 0;
 	}
@@ -2689,8 +2718,10 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcframe, ChaMatrix srcmat)
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
-	if (!existflag || !curmp){
+	//CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
+	//if (!existflag || !curmp){
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if (!curmp) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -2717,15 +2748,19 @@ CMotionPoint* CBone::RotBoneQOne(CMotionPoint* parmp, int srcmotid, double srcfr
 CMotionPoint* CBone::SetAbsMatReq( int broflag, int srcmotid, double srcframe, double firstframe )
 {
 	int existflag = 0;
-	CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
-	if( !existflag || !curmp ){
+	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
+	//if( !existflag || !curmp ){
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+	if (!curmp) {
 		_ASSERT( 0 );
 		return 0;
 	}
 
 	int existflag2 = 0;
-	CMotionPoint* firstmp = AddMotionPoint( srcmotid, firstframe, &existflag2 );
-	if( !existflag2 || !firstmp ){
+	//CMotionPoint* firstmp = AddMotionPoint( srcmotid, firstframe, &existflag2 );
+	//if( !existflag2 || !firstmp ){
+	CMotionPoint* firstmp = GetMotionPoint(srcmotid, srcframe);
+	if (!firstmp) {
 		_ASSERT( 0 );
 		return 0;
 	}
@@ -7810,7 +7845,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 		itrvecmpmap = itrvecmpmap2;
 	}
 
-	(itrvecmpmap->second).clear();
+	(itrvecmpmap->second).clear();//!!!!!!!!!!!!!!!
 	
 
 	CMotionPoint* curmp = m_motionkey[srcmotid - 1];

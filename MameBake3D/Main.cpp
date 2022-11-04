@@ -9915,53 +9915,61 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 int InitCurMotion(int selectflag, double expandmotion)
 {
-	MOTINFO* curmi = s_model->GetCurMotInfo();
-	if (curmi){
-		//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
-		CBone* topbone = s_model->GetTopBone();
-		if (topbone){
-			double motleng = curmi->frameleng;
-			//_ASSERT(0);
+	if (s_model) {
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
+			CBone* topbone = s_model->GetTopBone();
+			if (topbone) {
+				double motleng = curmi->frameleng;
+				//_ASSERT(0);
 
-			if (selectflag == 1){//called from tool panel : init selected time range
-				list<KeyInfo>::iterator itrcp;
-				for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-					double curframe = itrcp->time;
-					if (topbone){
-						s_model->SetMotionFrame(curframe);
-						s_model->InitMPReq(topbone, curmi->motid, curframe);
+				if (selectflag == 1) {//called from tool panel : init selected time range
+					list<KeyInfo>::iterator itrcp;
+					for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
+						double curframe = itrcp->time;
+						if (topbone) {
+							s_model->SetMotionFrame(curframe);
+							s_model->InitMPReq(topbone, curmi->motid, curframe);
+						}
 					}
 				}
-			}
-			else if (expandmotion > 0){//モーション長を長くした際に、長くなった分の初期化をする
-				double oldframeleng = expandmotion;
+				else if (expandmotion > 0) {//モーション長を長くした際に、長くなった分の初期化をする
+					double oldframeleng = expandmotion;
 
-				if (topbone) {
-					topbone->ResizeIndexedMotionPointReq(curmi->motid, motleng);
-				}
+					//if (topbone) {
+						//topbone->ResizeIndexedMotionPointReq(curmi->motid, motleng);
+					//}
 
-				double frame;
-				for (frame = oldframeleng; frame < motleng; frame += 1.0){
-					if (topbone){
-						s_model->SetMotionFrame(frame);
-						s_model->InitMPReq(topbone, curmi->motid, frame);
+					double frame;
+					for (frame = oldframeleng; frame < motleng; frame += 1.0) {
+						if (topbone) {
+							s_model->SetMotionFrame(frame);
+							s_model->InitMPReq(topbone, curmi->motid, frame);
+						}
 					}
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), curmi->motid, motleng);
 				}
-			}
-			else{
-				double frame;
-				for (frame = 0.0; frame < motleng; frame += 1.0){
-					if (topbone){
-						s_model->SetMotionFrame(frame);
-						s_model->InitMPReq(topbone, curmi->motid, frame);
+				else {
+					double frame;
+					for (frame = 0.0; frame < motleng; frame += 1.0) {
+						if (topbone) {
+							s_model->SetMotionFrame(frame);
+							s_model->InitMPReq(topbone, curmi->motid, frame);
+						}
 					}
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), curmi->motid, motleng);
 				}
 			}
 		}
+		else {
+			_ASSERT(0);
+		}
 	}
-	else{
+	else {
 		_ASSERT(0);
 	}
+
 	return 0;
 };
 

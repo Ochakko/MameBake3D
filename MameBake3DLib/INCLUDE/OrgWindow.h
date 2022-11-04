@@ -35,6 +35,7 @@ struct KeyInfo{
 	void *object;
 };
 
+extern int g_endappflag;
 extern bool g_4kresolution;//Main.cpp
 extern bool g_selecttolastFlag;//Main.cpp
 extern bool g_underselecttolast;//Main.cpp
@@ -766,6 +767,10 @@ void s_dummyfunc()
 				DestroyWindow(hWnd);
 				hWndAndClassMap.erase(hWnd);	//hWndとこのクラスのインスタンスポインタの対応表更新
 			}
+
+			hWnd = NULL;
+			hWndParent = NULL;
+			parentwindow = 0;
 
 			delete[] szclassName;
 			delete[] title;
@@ -2893,7 +2898,7 @@ void s_dummyfunc()
 		}
 		//	Method : マウスダウンイベント受信
 		virtual void onLButtonDown(const MouseEvent& e){
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (this->buttonListener != NULL) {
 					(this->buttonListener)();
@@ -3635,7 +3640,7 @@ void s_dummyfunc()
 		//	Accessor : value
 		void setValue(bool _value){
 			//if (parentWindow) {
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 				value = _value;
 
 				RECT tmpRect;
@@ -3972,7 +3977,7 @@ void s_dummyfunc()
 		}
 		//	Method : マウスダウンイベント受信
 		virtual void onLButtonDown(const MouseEvent& e){
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
 				const int EDGE_WIDTH = 4;
@@ -3999,7 +4004,7 @@ void s_dummyfunc()
 		}
 		//	Method : マウス移動イベント受信
 		virtual void onMouseMove(const MouseEvent& e){
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
 				if (drag) {
@@ -4511,7 +4516,7 @@ void s_dummyfunc()
 		//MaxSelectionFrameを返す
 		double OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 				this->selectClear();
 
 				double tmpstart, tmpend;
@@ -4812,7 +4817,7 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e){
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (!canMouseControll) return;
 				if (g_underselecttolast || g_undereditrange) {
@@ -4957,7 +4962,7 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onRButtonUp(const MouseEvent& e){
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (!canMouseControll) return;
 				if (g_underselecttolast || g_undereditrange) {
@@ -5143,7 +5148,7 @@ void s_dummyfunc()
 			}
 		}
 		virtual void onMButtonUp(const MouseEvent& e){
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (!canMouseControll) return;
 
@@ -6564,7 +6569,7 @@ void s_dummyfunc()
 
 		void OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				this->selectClear();
 
@@ -6812,7 +6817,7 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e) {
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (!canMouseControll) return;
 				if (g_underselecttolast || g_undereditrange) {
@@ -6956,7 +6961,7 @@ void s_dummyfunc()
 		}
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onRButtonUp(const MouseEvent& e) {
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (!canMouseControll) return;
 				if (g_underselecttolast || g_undereditrange) {
@@ -7144,7 +7149,7 @@ void s_dummyfunc()
 			}
 		}
 		virtual void onMButtonUp(const MouseEvent& e) {
-			if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 				if (!canMouseControll) return;
 

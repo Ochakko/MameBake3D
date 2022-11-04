@@ -2332,9 +2332,10 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 	SetCurrentMotion(newid);
 	double framecnt;
 	for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
-		InitMPReq(m_topbone, newid, framecnt);
+		InitMPReq(m_topbone, newid, framecnt);//motionpoint作成もする
 	}
 	
+	CreateIndexedMotionPointReq(m_topbone, newid, srcleng);//2022/10/30
 
 	*dstid = newid;
 

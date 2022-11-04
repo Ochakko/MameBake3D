@@ -438,8 +438,8 @@ public:
 
 	int CreateIndexedMotionPoint(int srcmotid, double animleng);
 
-	int ResizeIndexedMotionPoint(int srcmotid, double animleng);
-	void ResizeIndexedMotionPointReq(int srcmotid, double animleng);
+	//int ResizeIndexedMotionPoint(int srcmotid, double animleng);
+	//void ResizeIndexedMotionPointReq(int srcmotid, double animleng);
 
 	ChaVector3 LimitEul(ChaVector3 srceul);
 	void SetBefWorldMatReq(int srcmotid, double srcframe);

@@ -235,7 +235,7 @@ namespace OrgWinGUI{
 
 	void OWP_EulerGraph::callRewrite()
 	{
-		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+		if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 			//const int AXIS_CURSOR_SIZE = 4;
 			//const int AXIS_LABEL_SIDE_MARGIN = 7;
 
@@ -269,7 +269,7 @@ namespace OrgWinGUI{
 
 	void OWP_Timeline::callRewrite()
 	{
-		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+		if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 			//const int AXIS_CURSOR_SIZE = 4;
 			//const int AXIS_LABEL_SIDE_MARGIN = 7;
 
@@ -1356,7 +1356,7 @@ namespace OrgWinGUI{
 	/// Method : Ä•`‰æ—v‹‚ğ‘—‚é
 	void OrgWindowParts::callRewrite(){
 		//if( parentWindow==NULL ) return;
-		if (parentWindow && IsWindow(parentWindow->getHWnd())) {
+		if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
 			//Ä•`‰æ—Ìˆæ
 			RECT tmpRect;

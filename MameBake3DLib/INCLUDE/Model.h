@@ -706,6 +706,7 @@ public:
 
 	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
 
+	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);
 
 private:
 	int InitParams();
@@ -738,7 +739,7 @@ private:
 	void CreateBtConstraintReq( CBtObject* curbto );
 	//void CreateBtConstraintReq(CBone* curbone);
 
-	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);
+	//void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);//public‚Ö
 
 	//void UpdateMatrixReq( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, 
 	//	ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
