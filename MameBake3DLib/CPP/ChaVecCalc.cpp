@@ -3206,7 +3206,6 @@ int CQuaternion::GetRound(float srcval)
 //
 int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag)
 {
-
 	int noise[4] = { 0, 1, 0, -1 };
 	static int dbgcnt = 0;
 

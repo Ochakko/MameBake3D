@@ -4687,6 +4687,43 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone, bo
 			}
 		}
 
+		//#####################################################################################################
+		//念のために　ジョイントの向きを強制リセットしていたころの　ソースをコメントアウトして残す　2022/10/31
+		//#####################################################################################################
+		//if ((bvhflag == 0) &&
+		//	GetHasBindPose()) {
+		//
+		//
+		//	//######################################
+		//	// バインドポーズがある場合
+		//	//######################################
+		//
+		//	ChaMatrix localmat;
+		//	localmat = curmp->GetLocalMat();
+		//
+		//	//###############
+		//	//calc globalmat
+		//	//###############
+		//	ChaMatrix parentglobalmat;
+		//	//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
+		//	if (srcbone->GetParent()) {
+		//		parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
+		//	}
+		//	else {
+		//		ChaMatrixIdentity(&parentglobalmat);
+		//	}
+		//
+		//	ChaMatrix globalmat = localmat * parentglobalmat;
+		//	curmp->SetWorldMat(globalmat);//anglelimit無し
+		//
+		//
+		//	if (isfirstmot && (curframe == 0.0)) {
+		//		srcbone->SetFirstMat(globalmat);
+		//	}
+		//
+		//}
+
+
 		if (srcbone->GetChild()) {
 			PostLoadFbxAnimReq(srcmotid, animlen, srcbone->GetChild(), isfirstmot);
 		}

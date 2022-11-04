@@ -7901,6 +7901,107 @@ int CBone::GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int src
 
 	Sleep(0);
 
+	//#####################################################################################################
+	//念のために　ジョイントの向きを強制リセットしていたころの　ソースをコメントアウトして残す　2022/10/31
+	//#####################################################################################################
+	//if ((bvhflag == 0) &&
+	//	GetParModel() && GetParModel()->GetHasBindPose()) {
+	//
+	//	//for (framecnt = 0.0; framecnt < (animleng - 1); framecnt += 1.0) {
+	//	for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {//2022/10/21 : 最終フレームにモーションポイントが無い問題対応
+	//
+	//		for (bonecount = 0; bonecount < srcbonenum; bonecount++) {
+	//			CBone* curbone = *(bonelist + bonecount);
+	//			FbxNode* pNode = *(nodelist + bonecount);
+	//			if (curbone && pNode) {
+	//				FbxAMatrix lGlobalSRT;
+	//
+	//				EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+	//				const FbxVector4 lT2 = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+	//				const FbxVector4 lR2 = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+	//				const FbxVector4 lS2 = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+	//				LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
+	//
+	//				ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
+	//				ChaVector3 chaeul = ChaVector3((float)lR2[0], (float)lR2[1], (float)lR2[2]);
+	//				ChaVector3 chascale = ChaVector3((float)lS2[0], (float)lS2[1], (float)lS2[2]);
+	//
+	//				//####################
+	//				//calc joint position
+	//				//####################
+	//				ChaVector3 jointpos;
+	//				jointpos = curbone->GetJointFPos();
+	//				ChaVector3 parentjointpos;
+	//				if (curbone->GetParent()) {
+	//					parentjointpos = curbone->GetParent()->GetJointFPos();
+	//				}
+	//				else {
+	//					parentjointpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	//				}
+	//
+	//				//##############
+	//				//calc rotation
+	//				//##############
+	//				CQuaternion chaq;
+	//				chaq.SetRotationXYZ(0, chaeul);
+	//				ChaMatrix charotmat;
+	//				charotmat = chaq.MakeRotMatX();
+	//
+	//				ChaMatrix befrotmat, aftrotmat;
+	//				ChaMatrixTranslation(&befrotmat, -jointpos.x, -jointpos.y, -jointpos.z);
+	//				ChaMatrixTranslation(&aftrotmat, jointpos.x, jointpos.y, jointpos.z);
+	//
+	//				//#################
+	//				//calc translation
+	//				//#################
+	//				ChaMatrix chatramat;
+	//				ChaMatrixIdentity(&chatramat);
+	//				ChaMatrixTranslation(&chatramat, chatra.x - jointpos.x + parentjointpos.x, chatra.y - jointpos.y + parentjointpos.y, chatra.z - jointpos.z + parentjointpos.z);
+	//
+	//				//##############
+	//				//calc scalling
+	//				//##############
+	//				ChaMatrix chascalemat;
+	//				ChaMatrixScaling(&chascalemat, chascale.x, chascale.y, chascale.z);
+	//
+	//				//Set Local frame0
+	//				if (framecnt == 0.0) {
+	//					curbone->SetLocalR0(chaq);
+	//					curbone->SetLocalT0(chatramat);
+	//					curbone->SetLocalS0(chascalemat);
+	//					//curbone->SetFirstSRT(chaSRT);
+	//				}
+	//
+	//
+	//				//##############
+	//				//calc localmat
+	//				//##############
+	//				ChaMatrix localmat;
+	//				ChaMatrixIdentity(&localmat);
+	//				ChaMatrix globalmat;
+	//				ChaMatrixIdentity(&globalmat);
+	//
+	//				CMotionPoint* curmp = 0;
+	//				int existflag = 0;
+	//				curmp = curbone->AddMotionPoint(motid, framecnt, &existflag);
+	//				if (!curmp) {
+	//					_ASSERT(0);
+	//					return 1;
+	//				}
+	//
+	//				localmat = befrotmat * chascalemat * charotmat * aftrotmat * chatramat;
+	//
+	//				//#############
+	//				//set localmat
+	//				//#############
+	//				curmp->SetLocalMat(localmat);//anglelimit無し
+	//
+	//			}
+	//		}
+	//		fbxtime = fbxtime + difftime;
+	//	}
+	//}
+
 
 	return 0;
 }

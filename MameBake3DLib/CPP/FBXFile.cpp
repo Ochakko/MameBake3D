@@ -1887,6 +1887,7 @@ ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetB
 {
 	//parentにSetNodeMat()されていることが前提
 	//Reqで呼び出す
+	//テスト中　未採用
 
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -3527,25 +3528,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	//FbxSkeleton* pskeleton = pNode->GetSkeleton();
 
 
-	int bvhflag = 0;
-	//if (pmodel->GetScene()) {
-	//	FbxDocumentInfo* sceneinfo = pmodel->GetScene()->GetSceneInfo();
-	//	if (sceneinfo) {
-	//		FbxString mKeywords = "BVH animation";
-	//		if (sceneinfo->mKeywords == mKeywords) {
-	//			bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
-	//		}
-	//	}
-	//}
-	if (pmodel->GetFromBvhFlag()) {
-		bvhflag = 1;
-	}
-	else {
-		bvhflag = 0;
-	}
-
-
-	if ((bvhflag == 0) && pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
+	if ((pmodel->GetFromBvhFlag() == false) && pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
 	//if (bvhflag == 0) {
 		if (pNode) {
 			if (pPose) {
@@ -3625,12 +3608,14 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		if (pNode) {
 			//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
 			//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
-			//！！！！　BindMatが設定してある場合はそちらを使う　！！！！
+			//BindMatが設定されていない場合(ここを実行する場合)にはうまくいく
+			//！！！！　BindMatが設定してある場合はBindMatを使う　！！！！
 			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
 			nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
+
 			//##########################################################################################################
-			//以下のComment out部分　test中　
+			//以下のComment out部分　!!!! test中 !!!!
 			//リターゲットすると　bvh121の最後から２つ目のモーションで　でんぐり返し中に足がクロスする　回転軸が違う？
 			//##########################################################################################################
 			//ChaMatrix localnodemat;
