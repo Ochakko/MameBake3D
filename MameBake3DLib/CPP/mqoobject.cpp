@@ -1920,21 +1920,22 @@ int CMQOObject::CollisionLocal_Ray( ChaVector3 startlocal, ChaVector3 dirlocal )
 	int fno;
 	int hitflag;
 	int justflag;
+	float justval = 0.01f;
 	for( fno = 0; fno < face_count; fno++ ){
 		hitflag = 0;
 		justflag = 0;
 		CMQOFace* curface = faceptr + fno;
 		if( curface->GetPointNum() == 3 ){
-			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, 0.01f, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, justval, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
 		}else if( curface->GetPointNum() == 4 ){
-			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, 0.01f, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, justval, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
-			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 2 ), curface->GetIndex( 3 ), pointptr, startlocal, dirlocal, 0.01f, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 2 ), curface->GetIndex( 3 ), pointptr, startlocal, dirlocal, justval, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}

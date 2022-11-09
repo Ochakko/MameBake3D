@@ -466,9 +466,10 @@ namespace MameBake3DLibRetarget {
 
 
 
-				CMotionPoint curbvhrotmp;
-				curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
-				rotq = curbvhrotmp.GetQ();//‰ñ“]‚¾‚¯g—p
+				//CMotionPoint curbvhrotmp;
+				//curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
+				//rotq = curbvhrotmp.GetQ();//‰ñ“]‚¾‚¯g—p
+				rotq.RotationMatrix(curbvhmat);
 
 				traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);//ˆÚ“®‚Í‚±‚¿‚ç‚©‚çæ“¾
 				if (!bvhbone->GetParent()) {

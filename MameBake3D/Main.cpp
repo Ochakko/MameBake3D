@@ -6603,7 +6603,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 				int delta;
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
-				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_ikselectmat = s_selm;
+				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
 
@@ -27127,7 +27129,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 				int delta;
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
-				s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_ikselectmat = s_selm;
+				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
 	}
@@ -27591,8 +27595,8 @@ int OnMouseMoveFunc()
 							s_model->UpdateMatrix(&tmpwm, &s_matVP);
 							s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig, s_pickinfo.buttonflag);
 							s_model->UpdateMatrix(&tmpwm, &s_matVP);
-							//s_editmotionflag = s_curboneno;
-							s_editmotionflag = 0;
+							s_editmotionflag = s_curboneno;
+							//s_editmotionflag = 0;//これを０にすると　oprigflag == 1の状態でアンドゥした時に　アンドゥ用の保存が走って　保存が増えて状態が戻らない
 						}
 					}
 					s_ikcnt++;
@@ -27607,8 +27611,7 @@ int OnMouseMoveFunc()
 				}
 			}
 		}
-	}
-	else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)) {
+	}else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)) {
 		if (s_model) {
 			if (g_previewFlag == 0) {
 				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
@@ -27628,7 +27631,7 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
-					else if(s_ikkind == 1){
+					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
 						s_editmotionflag = s_curboneno;
 					}
@@ -27669,7 +27672,7 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
-					else if(s_ikkind == 1){
+					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
 						s_editmotionflag = s_curboneno;
 					}
@@ -27743,7 +27746,7 @@ int OnMouseMoveFunc()
 	}
 	else if (s_pickinfo.buttonflag == PICK_CAMROT) {
 
-	//not use quaternion yet int this part, so ジンバルロック未回避.
+		//not use quaternion yet int this part, so ジンバルロック未回避.
 
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
@@ -36535,9 +36538,12 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	int multworld = 1;
 	ChaMatrix selm;
 	selm.SetIdentity();
+	//int multworld = 1;
+	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, multworld, curmotid, curframe);
 	if (curbone && curbone->GetParent()) {
 		curbone->GetParent()->CalcAxisMatX_Manipulator(0, curbone, &selm, 0);
+		//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
 	}
 	else {
 		selm.SetIdentity();

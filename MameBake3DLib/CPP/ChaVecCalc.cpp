@@ -3410,193 +3410,201 @@ void ChaMatrixNormalizeRot(ChaMatrix* pdst)
 
 }
 
-void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
-{
-	//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
 
-	if (!pdst || !psrc) {
-		return;
-	}
-
-	ChaMatrix res;
-	// use block matrix method
-	// A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
-
-	// sub matrices
-	__m128 A = VecShuffle_0101(psrc->mVec[0], psrc->mVec[1]);
-	__m128 B = VecShuffle_2323(psrc->mVec[0], psrc->mVec[1]);
-	__m128 C = VecShuffle_0101(psrc->mVec[2], psrc->mVec[3]);
-	__m128 D = VecShuffle_2323(psrc->mVec[2], psrc->mVec[3]);
-
-#if 0
-	__m128 detA = _mm_set1_ps(psrc->m[0][0] * psrc->m[1][1] - psrc->m[0][1] * psrc->m[1][0]);
-	__m128 detB = _mm_set1_ps(psrc->m[0][2] * psrc->m[1][3] - psrc->m[0][3] * psrc->m[1][2]);
-	__m128 detC = _mm_set1_ps(psrc->m[2][0] * psrc->m[3][1] - psrc->m[2][1] * psrc->m[3][0]);
-	__m128 detD = _mm_set1_ps(psrc->m[2][2] * psrc->m[3][3] - psrc->m[2][3] * psrc->m[3][2]);
-#else
-	// determinant as (|A| |B| |C| |D|)
-	__m128 detSub = _mm_sub_ps(
-		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 0, 2, 0, 2), VecShuffle(psrc->mVec[1], psrc->mVec[3], 1, 3, 1, 3)),
-		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 1, 3, 1, 3), VecShuffle(psrc->mVec[1], psrc->mVec[3], 0, 2, 0, 2))
-	);
-	__m128 detA = VecSwizzle1(detSub, 0);
-	__m128 detB = VecSwizzle1(detSub, 1);
-	__m128 detC = VecSwizzle1(detSub, 2);
-	__m128 detD = VecSwizzle1(detSub, 3);
-#endif
-
-	// let iM = 1/|M| * | X  Y |
-	//                  | Z  W |
-
-	// D#C
-	__m128 D_C = Mat2AdjMul(D, C);
-	// A#B
-	__m128 A_B = Mat2AdjMul(A, B);
-	// X# = |D|A - B(D#C)
-	__m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
-	// W# = |A|D - C(A#B)
-	__m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), Mat2Mul(C, A_B));
-
-	// |M| = |A|*|D| + ... (continue later)
-	__m128 detM = _mm_mul_ps(detA, detD);
-
-	// Y# = |B|C - D(A#B)#
-	__m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), Mat2MulAdj(D, A_B));
-	// Z# = |C|B - A(D#C)#
-	__m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), Mat2MulAdj(A, D_C));
-
-	// |M| = |A|*|D| + |B|*|C| ... (continue later)
-	detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
-
-	// tr((A#B)(D#C))
-	__m128 tr = _mm_mul_ps(A_B, VecSwizzle(D_C, 0, 2, 1, 3));
-	tr = _mm_hadd_ps(tr, tr);
-	tr = _mm_hadd_ps(tr, tr);
-	// |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
-	detM = _mm_sub_ps(detM, tr);
-
-
-	float checkdetM4[4];
-	_mm_store_ps(checkdetM4, detM);
-	if (fabs(checkdetM4[3]) >= 1e-5) {
-		const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
-		// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
-		__m128 rDetM = _mm_div_ps(adjSignMask, detM);
-
-		X_ = _mm_mul_ps(X_, rDetM);
-		Y_ = _mm_mul_ps(Y_, rDetM);
-		Z_ = _mm_mul_ps(Z_, rDetM);
-		W_ = _mm_mul_ps(W_, rDetM);
-
-		// apply adjugate and store, here we combine adjugate shuffle and store shuffle
-		res.mVec[0] = VecShuffle(X_, Y_, 3, 1, 3, 1);
-		res.mVec[1] = VecShuffle(X_, Y_, 2, 0, 2, 0);
-		res.mVec[2] = VecShuffle(Z_, W_, 3, 1, 3, 1);
-		res.mVec[3] = VecShuffle(Z_, W_, 2, 0, 2, 0);
-
-		*pdst = res;
-	}
-	else {
-		*pdst = *psrc;
-	}
-
-}
-
+//#####################################################################################
+//2022/11/06 テスト中　問題発生　表示には問題は出ていなかったが
+//３Dオブジェクトをマウスでピックする部分で　ピックの精度が著しく落ちて使えなかった
+//なぜかはよくわかっていないが　doubleの AVXを使わないと　精度が間に合わないのが問題？
+//この数式のまま　AVX2に移行することは可能だろうか？と考え中
+//とりあえずコメントアウト　
+//#####################################################################################
 //void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 //{
+//	//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
+//
 //	if (!pdst || !psrc) {
 //		return;
 //	}
 //
 //	ChaMatrix res;
-//	double detA;
-//	double a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44;
-//	double b11, b12, b13, b14, b21, b22, b23, b24, b31, b32, b33, b34, b41, b42, b43, b44;
+//	// use block matrix method
+//	// A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
 //
-//	a11 = psrc->_11;
-//	a12 = psrc->_12;
-//	a13 = psrc->_13;
-//	a14 = psrc->_14;
+//	// sub matrices
+//	__m128 A = VecShuffle_0101(psrc->mVec[0], psrc->mVec[1]);
+//	__m128 B = VecShuffle_2323(psrc->mVec[0], psrc->mVec[1]);
+//	__m128 C = VecShuffle_0101(psrc->mVec[2], psrc->mVec[3]);
+//	__m128 D = VecShuffle_2323(psrc->mVec[2], psrc->mVec[3]);
 //
-//	a21 = psrc->_21;
-//	a22 = psrc->_22;
-//	a23 = psrc->_23;
-//	a24 = psrc->_24;
+//#if 0
+//	__m128 detA = _mm_set1_ps(psrc->m[0][0] * psrc->m[1][1] - psrc->m[0][1] * psrc->m[1][0]);
+//	__m128 detB = _mm_set1_ps(psrc->m[0][2] * psrc->m[1][3] - psrc->m[0][3] * psrc->m[1][2]);
+//	__m128 detC = _mm_set1_ps(psrc->m[2][0] * psrc->m[3][1] - psrc->m[2][1] * psrc->m[3][0]);
+//	__m128 detD = _mm_set1_ps(psrc->m[2][2] * psrc->m[3][3] - psrc->m[2][3] * psrc->m[3][2]);
+//#else
+//	// determinant as (|A| |B| |C| |D|)
+//	__m128 detSub = _mm_sub_ps(
+//		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 0, 2, 0, 2), VecShuffle(psrc->mVec[1], psrc->mVec[3], 1, 3, 1, 3)),
+//		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 1, 3, 1, 3), VecShuffle(psrc->mVec[1], psrc->mVec[3], 0, 2, 0, 2))
+//	);
+//	__m128 detA = VecSwizzle1(detSub, 0);
+//	__m128 detB = VecSwizzle1(detSub, 1);
+//	__m128 detC = VecSwizzle1(detSub, 2);
+//	__m128 detD = VecSwizzle1(detSub, 3);
+//#endif
 //
-//	a31 = psrc->_31;
-//	a32 = psrc->_32;
-//	a33 = psrc->_33;
-//	a34 = psrc->_34;
+//	// let iM = 1/|M| * | X  Y |
+//	//                  | Z  W |
 //
-//	a41 = psrc->_41;
-//	a42 = psrc->_42;
-//	a43 = psrc->_43;
-//	a44 = psrc->_44;
+//	// D#C
+//	__m128 D_C = Mat2AdjMul(D, C);
+//	// A#B
+//	__m128 A_B = Mat2AdjMul(A, B);
+//	// X# = |D|A - B(D#C)
+//	__m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
+//	// W# = |A|D - C(A#B)
+//	__m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), Mat2Mul(C, A_B));
 //
-//	detA = (a11 * a22 * a33 * a44) + (a11 * a23 * a34 * a42) + (a11 * a24 * a32 * a43)
-//		+ (a12 * a21 * a34 * a43) + (a12 * a23 * a31 * a44) + (a12 * a24 * a33 * a41)
-//		+ (a13 * a21 * a32 * a44) + (a13 * a22 * a34 * a41) + (a13 * a24 * a31 * a42)
-//		+ (a14 * a21 * a33 * a42) + (a14 * a22 * a31 * a43) + (a14 * a23 * a32 * a41)
-//		- (a11 * a22 * a34 * a43) - (a11 * a23 * a32 * a44) - (a11 * a24 * a33 * a42)
-//		- (a12 * a21 * a33 * a44) - (a12 * a23 * a34 * a41) - (a12 * a24 * a31 * a43)
-//		- (a13 * a21 * a34 * a42) - (a13 * a22 * a31 * a44) - (a13 * a24 * a32 * a41)
-//		- (a14 * a21 * a32 * a43) - (a14 * a22 * a33 * a41) - (a14 * a23 * a31 * a42);
+//	// |M| = |A|*|D| + ... (continue later)
+//	__m128 detM = _mm_mul_ps(detA, detD);
 //
-//	if (pdet) {
-//		*pdet = (float)detA;
+//	// Y# = |B|C - D(A#B)#
+//	__m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), Mat2MulAdj(D, A_B));
+//	// Z# = |C|B - A(D#C)#
+//	__m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), Mat2MulAdj(A, D_C));
+//
+//	// |M| = |A|*|D| + |B|*|C| ... (continue later)
+//	detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
+//
+//	// tr((A#B)(D#C))
+//	__m128 tr = _mm_mul_ps(A_B, VecSwizzle(D_C, 0, 2, 1, 3));
+//	tr = _mm_hadd_ps(tr, tr);
+//	tr = _mm_hadd_ps(tr, tr);
+//	// |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
+//	detM = _mm_sub_ps(detM, tr);
+//
+//
+//	float checkdetM4[4];
+//	_mm_store_ps(checkdetM4, detM);
+//	if (fabs(checkdetM4[3]) >= 1e-5) {
+//		const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
+//		// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
+//		__m128 rDetM = _mm_div_ps(adjSignMask, detM);
+//
+//		X_ = _mm_mul_ps(X_, rDetM);
+//		Y_ = _mm_mul_ps(Y_, rDetM);
+//		Z_ = _mm_mul_ps(Z_, rDetM);
+//		W_ = _mm_mul_ps(W_, rDetM);
+//
+//		// apply adjugate and store, here we combine adjugate shuffle and store shuffle
+//		res.mVec[0] = VecShuffle(X_, Y_, 3, 1, 3, 1);
+//		res.mVec[1] = VecShuffle(X_, Y_, 2, 0, 2, 0);
+//		res.mVec[2] = VecShuffle(Z_, W_, 3, 1, 3, 1);
+//		res.mVec[3] = VecShuffle(Z_, W_, 2, 0, 2, 0);
+//
+//		*pdst = res;
 //	}
-//
-//
-//	if (detA == 0.0) {
+//	else {
 //		*pdst = *psrc;
-//		return;//!!!!!!!!!!!!!!!!!!!!!!!!!!
 //	}
 //
-//
-//
-//
-//	b11 = (a22 * a33 * a44) + (a23 * a34 * a42) + (a24 * a32 * a43) - (a22 * a34 * a43) - (a23 * a32 * a44) - (a24 * a33 * a42);
-//	b12 = (a12 * a34 * a43) + (a13 * a32 * a44) + (a14 * a33 * a42) - (a12 * a33 * a44) - (a13 * a34 * a42) - (a14 * a32 * a43);
-//	b13 = (a12 * a23 * a44) + (a13 * a24 * a42) + (a14 * a22 * a43) - (a12 * a24 * a43) - (a13 * a22 * a44) - (a14 * a23 * a42);
-//	b14 = (a12 * a24 * a33) + (a13 * a22 * a34) + (a14 * a23 * a32) - (a12 * a23 * a34) - (a13 * a24 * a32) - (a14 * a22 * a33);
-//
-//	b21 = (a21 * a34 * a43) + (a23 * a31 * a44) + (a24 * a33 * a41) - (a21 * a33 * a44) - (a23 * a34 * a41) - (a24 * a31 * a43);
-//	b22 = (a11 * a33 * a44) + (a13 * a34 * a41) + (a14 * a31 * a43) - (a11 * a34 * a43) - (a13 * a31 * a44) - (a14 * a33 * a41);
-//	b23 = (a11 * a24 * a43) + (a13 * a21 * a44) + (a14 * a23 * a41) - (a11 * a23 * a44) - (a13 * a24 * a41) - (a14 * a21 * a43);
-//	b24 = (a11 * a23 * a34) + (a13 * a24 * a31) + (a14 * a21 * a33) - (a11 * a24 * a33) - (a13 * a21 * a34) - (a14 * a23 * a31);
-//
-//	b31 = (a21 * a32 * a44) + (a22 * a34 * a41) + (a24 * a31 * a42) - (a21 * a34 * a42) - (a22 * a31 * a44) - (a24 * a32 * a41);
-//	b32 = (a11 * a34 * a42) + (a12 * a31 * a44) + (a14 * a32 * a41) - (a11 * a32 * a44) - (a12 * a34 * a41) - (a14 * a31 * a42);
-//	b33 = (a11 * a22 * a44) + (a12 * a24 * a41) + (a14 * a21 * a42) - (a11 * a24 * a42) - (a12 * a21 * a44) - (a14 * a22 * a41);
-//	b34 = (a11 * a24 * a32) + (a12 * a21 * a34) + (a14 * a22 * a31) - (a11 * a22 * a34) - (a12 * a24 * a31) - (a14 * a21 * a32);
-//
-//	b41 = (a21 * a33 * a42) + (a22 * a31 * a43) + (a23 * a32 * a41) - (a21 * a32 * a43) - (a22 * a33 * a41) - (a23 * a31 * a42);
-//	b42 = (a11 * a32 * a43) + (a12 * a33 * a41) + (a13 * a31 * a42) - (a11 * a33 * a42) - (a12 * a31 * a43) - (a13 * a32 * a41);
-//	b43 = (a11 * a23 * a42) + (a12 * a21 * a43) + (a13 * a22 * a41) - (a11 * a22 * a43) - (a12 * a23 * a41) - (a13 * a21 * a42);
-//	b44 = (a11 * a22 * a33) + (a12 * a23 * a31) + (a13 * a21 * a32) - (a11 * a23 * a32) - (a12 * a21 * a33) - (a13 * a22 * a31);
-//
-//	res._11 = (float)(b11 / detA);
-//	res._12 = (float)(b12 / detA);
-//	res._13 = (float)(b13 / detA);
-//	res._14 = (float)(b14 / detA);
-//
-//	res._21 = (float)(b21 / detA);
-//	res._22 = (float)(b22 / detA);
-//	res._23 = (float)(b23 / detA);
-//	res._24 = (float)(b24 / detA);
-//
-//	res._31 = (float)(b31 / detA);
-//	res._32 = (float)(b32 / detA);
-//	res._33 = (float)(b33 / detA);
-//	res._34 = (float)(b34 / detA);
-//
-//	res._41 = (float)(b41 / detA);
-//	res._42 = (float)(b42 / detA);
-//	res._43 = (float)(b43 / detA);
-//	res._44 = (float)(b44 / detA);
-//
-//	*pdst = res;
 //}
+
+void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
+{
+	if (!pdst || !psrc) {
+		return;
+	}
+
+	ChaMatrix res;
+	double detA;
+	double a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44;
+	double b11, b12, b13, b14, b21, b22, b23, b24, b31, b32, b33, b34, b41, b42, b43, b44;
+
+	a11 = psrc->data[MATI_11];
+	a12 = psrc->data[MATI_12];
+	a13 = psrc->data[MATI_13];
+	a14 = psrc->data[MATI_14];
+
+	a21 = psrc->data[MATI_21];
+	a22 = psrc->data[MATI_22];
+	a23 = psrc->data[MATI_23];
+	a24 = psrc->data[MATI_24];
+
+	a31 = psrc->data[MATI_31];
+	a32 = psrc->data[MATI_32];
+	a33 = psrc->data[MATI_33];
+	a34 = psrc->data[MATI_34];
+
+	a41 = psrc->data[MATI_41];
+	a42 = psrc->data[MATI_42];
+	a43 = psrc->data[MATI_43];
+	a44 = psrc->data[MATI_44];
+
+	detA = (a11 * a22 * a33 * a44) + (a11 * a23 * a34 * a42) + (a11 * a24 * a32 * a43)
+		+ (a12 * a21 * a34 * a43) + (a12 * a23 * a31 * a44) + (a12 * a24 * a33 * a41)
+		+ (a13 * a21 * a32 * a44) + (a13 * a22 * a34 * a41) + (a13 * a24 * a31 * a42)
+		+ (a14 * a21 * a33 * a42) + (a14 * a22 * a31 * a43) + (a14 * a23 * a32 * a41)
+		- (a11 * a22 * a34 * a43) - (a11 * a23 * a32 * a44) - (a11 * a24 * a33 * a42)
+		- (a12 * a21 * a33 * a44) - (a12 * a23 * a34 * a41) - (a12 * a24 * a31 * a43)
+		- (a13 * a21 * a34 * a42) - (a13 * a22 * a31 * a44) - (a13 * a24 * a32 * a41)
+		- (a14 * a21 * a32 * a43) - (a14 * a22 * a33 * a41) - (a14 * a23 * a31 * a42);
+
+	if (pdet) {
+		*pdet = (float)detA;
+	}
+
+
+	if (detA == 0.0) {
+		*pdst = *psrc;
+		return;//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+
+
+
+
+	b11 = (a22 * a33 * a44) + (a23 * a34 * a42) + (a24 * a32 * a43) - (a22 * a34 * a43) - (a23 * a32 * a44) - (a24 * a33 * a42);
+	b12 = (a12 * a34 * a43) + (a13 * a32 * a44) + (a14 * a33 * a42) - (a12 * a33 * a44) - (a13 * a34 * a42) - (a14 * a32 * a43);
+	b13 = (a12 * a23 * a44) + (a13 * a24 * a42) + (a14 * a22 * a43) - (a12 * a24 * a43) - (a13 * a22 * a44) - (a14 * a23 * a42);
+	b14 = (a12 * a24 * a33) + (a13 * a22 * a34) + (a14 * a23 * a32) - (a12 * a23 * a34) - (a13 * a24 * a32) - (a14 * a22 * a33);
+
+	b21 = (a21 * a34 * a43) + (a23 * a31 * a44) + (a24 * a33 * a41) - (a21 * a33 * a44) - (a23 * a34 * a41) - (a24 * a31 * a43);
+	b22 = (a11 * a33 * a44) + (a13 * a34 * a41) + (a14 * a31 * a43) - (a11 * a34 * a43) - (a13 * a31 * a44) - (a14 * a33 * a41);
+	b23 = (a11 * a24 * a43) + (a13 * a21 * a44) + (a14 * a23 * a41) - (a11 * a23 * a44) - (a13 * a24 * a41) - (a14 * a21 * a43);
+	b24 = (a11 * a23 * a34) + (a13 * a24 * a31) + (a14 * a21 * a33) - (a11 * a24 * a33) - (a13 * a21 * a34) - (a14 * a23 * a31);
+
+	b31 = (a21 * a32 * a44) + (a22 * a34 * a41) + (a24 * a31 * a42) - (a21 * a34 * a42) - (a22 * a31 * a44) - (a24 * a32 * a41);
+	b32 = (a11 * a34 * a42) + (a12 * a31 * a44) + (a14 * a32 * a41) - (a11 * a32 * a44) - (a12 * a34 * a41) - (a14 * a31 * a42);
+	b33 = (a11 * a22 * a44) + (a12 * a24 * a41) + (a14 * a21 * a42) - (a11 * a24 * a42) - (a12 * a21 * a44) - (a14 * a22 * a41);
+	b34 = (a11 * a24 * a32) + (a12 * a21 * a34) + (a14 * a22 * a31) - (a11 * a22 * a34) - (a12 * a24 * a31) - (a14 * a21 * a32);
+
+	b41 = (a21 * a33 * a42) + (a22 * a31 * a43) + (a23 * a32 * a41) - (a21 * a32 * a43) - (a22 * a33 * a41) - (a23 * a31 * a42);
+	b42 = (a11 * a32 * a43) + (a12 * a33 * a41) + (a13 * a31 * a42) - (a11 * a33 * a42) - (a12 * a31 * a43) - (a13 * a32 * a41);
+	b43 = (a11 * a23 * a42) + (a12 * a21 * a43) + (a13 * a22 * a41) - (a11 * a22 * a43) - (a12 * a23 * a41) - (a13 * a21 * a42);
+	b44 = (a11 * a22 * a33) + (a12 * a23 * a31) + (a13 * a21 * a32) - (a11 * a23 * a32) - (a12 * a21 * a33) - (a13 * a22 * a31);
+
+	res.data[MATI_11] = (float)(b11 / detA);
+	res.data[MATI_12] = (float)(b12 / detA);
+	res.data[MATI_13] = (float)(b13 / detA);
+	res.data[MATI_14] = (float)(b14 / detA);
+
+	res.data[MATI_21] = (float)(b21 / detA);
+	res.data[MATI_22] = (float)(b22 / detA);
+	res.data[MATI_23] = (float)(b23 / detA);
+	res.data[MATI_24] = (float)(b24 / detA);
+
+	res.data[MATI_31] = (float)(b31 / detA);
+	res.data[MATI_32] = (float)(b32 / detA);
+	res.data[MATI_33] = (float)(b33 / detA);
+	res.data[MATI_34] = (float)(b34 / detA);
+
+	res.data[MATI_41] = (float)(b41 / detA);
+	res.data[MATI_42] = (float)(b42 / detA);
+	res.data[MATI_43] = (float)(b43 / detA);
+	res.data[MATI_44] = (float)(b44 / detA);
+
+	*pdst = res;
+}
 
 
 void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
@@ -3612,25 +3620,34 @@ void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 
 void ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
 {
-	pdst->data[MATI_11] = psrc->data[MATI_11];
-	pdst->data[MATI_12] = psrc->data[MATI_21];
-	pdst->data[MATI_13] = psrc->data[MATI_31];
-	pdst->data[MATI_14] = psrc->data[MATI_41];
+	if (!pdst || !psrc) {
+		_ASSERT(0);
+		return;
+	}
 
-	pdst->data[MATI_21] = psrc->data[MATI_12];
-	pdst->data[MATI_22] = psrc->data[MATI_22];
-	pdst->data[MATI_23] = psrc->data[MATI_32];
-	pdst->data[MATI_24] = psrc->data[MATI_42];
+	ChaMatrix savesrc;
+	savesrc = *psrc;
 
-	pdst->data[MATI_31] = psrc->data[MATI_13];
-	pdst->data[MATI_32] = psrc->data[MATI_23];
-	pdst->data[MATI_33] = psrc->data[MATI_33];
-	pdst->data[MATI_34] = psrc->data[MATI_43];
 
-	pdst->data[MATI_41] = psrc->data[MATI_14];
-	pdst->data[MATI_42] = psrc->data[MATI_24];
-	pdst->data[MATI_43] = psrc->data[MATI_34];
-	pdst->data[MATI_44] = psrc->data[MATI_44];
+	pdst->data[MATI_11] = savesrc.data[MATI_11];
+	pdst->data[MATI_12] = savesrc.data[MATI_21];
+	pdst->data[MATI_13] = savesrc.data[MATI_31];
+	pdst->data[MATI_14] = savesrc.data[MATI_41];
+
+	pdst->data[MATI_21] = savesrc.data[MATI_12];
+	pdst->data[MATI_22] = savesrc.data[MATI_22];
+	pdst->data[MATI_23] = savesrc.data[MATI_32];
+	pdst->data[MATI_24] = savesrc.data[MATI_42];
+
+	pdst->data[MATI_31] = savesrc.data[MATI_13];
+	pdst->data[MATI_32] = savesrc.data[MATI_23];
+	pdst->data[MATI_33] = savesrc.data[MATI_33];
+	pdst->data[MATI_34] = savesrc.data[MATI_43];
+
+	pdst->data[MATI_41] = savesrc.data[MATI_14];
+	pdst->data[MATI_42] = savesrc.data[MATI_24];
+	pdst->data[MATI_43] = savesrc.data[MATI_34];
+	pdst->data[MATI_44] = savesrc.data[MATI_44];
 
 	//float m[4][4];
 	//m[0][0] = psrc->data[MATI_11];

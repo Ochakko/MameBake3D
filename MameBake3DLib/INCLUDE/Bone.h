@@ -385,8 +385,11 @@ public:
 	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 
-	ChaMatrix CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
-	ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int settraflag, int multworld, int calczeroframe);
+
+	//manipulator行列の計算には　CalcAxisX_Manipulator()を使う
+	//ChaMatrix CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
+	//ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int settraflag, int multworld, int calczeroframe);
+
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
 	int SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul);
 	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 befeul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
