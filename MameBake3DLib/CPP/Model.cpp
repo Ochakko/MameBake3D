@@ -8704,17 +8704,14 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								invaplyparrotq.RotationMatrix(invaplyparrotmat);
 								curparrotq.RotationMatrix(curparrotmat);
 
-								//ChaMatrix transmat2;
-								//transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
-								////CMotionPoint transmp;
-								////transmp.CalcQandTra(transmat2, firstbone);
-								////rotq = transmp.GetQ();
-								//rotq.RotationMatrix(transmat2);
-
-
 								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
 								//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
-								rotq = invcurparrotq * aplyparrotq * rotq0 * invaplyparrotq * curparrotq;
+								ChaMatrix transmat2;
+								transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
+								//CMotionPoint transmp;
+								//transmp.CalcQandTra(transmat2, firstbone);
+								//rotq = transmp.GetQ();
+								rotq.RotationMatrix(transmat2);
 								
 							}
 							else {
@@ -10236,24 +10233,14 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 										invaplyparrotmat.data[MATI_42] = 0.0f;
 										invaplyparrotmat.data[MATI_43] = 0.0f;
 
-										//ChaMatrix transmat = rotinvselect * localq.MakeRotMatX() * rotselect;
-										//ChaMatrix transmat2;
-										//transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
-										////CMotionPoint transmp;
-										////transmp.CalcQandTra(transmat2, curbone);
-										////rotq = transmp.GetQ();
-										//rotq.RotationMatrix(transmat2);
-
-										CQuaternion invcurparrotq, aplyparrotq, invaplyparrotq, curparrotq;
-										invcurparrotq.RotationMatrix(invcurparrotmat);
-										aplyparrotq.RotationMatrix(aplyparrotmat);
-										invaplyparrotq.RotationMatrix(invaplyparrotmat);
-										curparrotq.RotationMatrix(curparrotmat);
-
 										//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
 										//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
-										rotq = invcurparrotq * aplyparrotq * localq * invaplyparrotq * curparrotq;//2022/11/06 q
-
+										ChaMatrix transmat2;
+										transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
+										//CMotionPoint transmp;
+										//transmp.CalcQandTra(transmat2, curbone);
+										//rotq = transmp.GetQ();
+										rotq.RotationMatrix(transmat2);
 
 									}
 									else{
@@ -10947,15 +10934,14 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					invaplyparrotq.RotationMatrix(invaplyparrotmat);
 					curparrotq.RotationMatrix(curparrotmat);
 
-					//ChaMatrix transmat2;
-					//transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
-					////transmat2 = invcurparrotmat * transmat * curparrotmat;
-					//rotq.RotationMatrix(transmat2);
-
 
 					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
 					//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
-					rotq = invcurparrotq * aplyparrotq * localq * invaplyparrotq * curparrotq;
+					ChaMatrix transmat2;
+					transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
+					rotq.RotationMatrix(transmat2);
+
+
 
 
 

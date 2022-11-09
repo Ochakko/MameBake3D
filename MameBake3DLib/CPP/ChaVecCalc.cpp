@@ -1184,48 +1184,53 @@ ChaMatrix ChaMatrix::operator= (ChaMatrix m) {
 
 ChaMatrix ChaMatrix::operator* (float srcw) const {
 	ChaMatrix retmat;
-	__m128 multcoef = _mm_setr_ps(srcw, srcw, srcw, srcw);
-	retmat.mVec[0] = _mm_mul_ps(multcoef, mVec[0]);
-	retmat.mVec[1] = _mm_mul_ps(multcoef, mVec[1]);
-	retmat.mVec[2] = _mm_mul_ps(multcoef, mVec[2]);
-	retmat.mVec[3] = _mm_mul_ps(multcoef, mVec[3]);
-	return retmat;
 
-	//return ChaMatrix((float)((double)this->data[MATI_11] * (double)srcw), (float)((double)this->data[MATI_12] * (double)srcw), (float)((double)this->data[MATI_13] * (double)srcw), (float)((double)this->data[MATI_14] * (double)srcw),
-	//	(float)((double)this->data[MATI_21] * (double)srcw), (float)((double)this->data[MATI_22] * (double)srcw), (float)((double)this->data[MATI_23] * (double)srcw), (float)((double)this->data[MATI_24] * (double)srcw),
-	//	(float)((double)this->data[MATI_31] * (double)srcw), (float)((double)this->data[MATI_32] * (double)srcw), (float)((double)this->data[MATI_33] * (double)srcw), (float)((double)this->data[MATI_34] * (double)srcw),
-	//	(float)((double)this->data[MATI_41] * (double)srcw), (float)((double)this->data[MATI_42] * (double)srcw), (float)((double)this->data[MATI_43] * (double)srcw), (float)((double)this->data[MATI_44] * (double)srcw));
+	//2022/11/08
+	//精度の問題　AVX2に置き換えるまでコメントアウト
+	//__m128 multcoef = _mm_setr_ps(srcw, srcw, srcw, srcw);
+	//retmat.mVec[0] = _mm_mul_ps(multcoef, mVec[0]);
+	//retmat.mVec[1] = _mm_mul_ps(multcoef, mVec[1]);
+	//retmat.mVec[2] = _mm_mul_ps(multcoef, mVec[2]);
+	//retmat.mVec[3] = _mm_mul_ps(multcoef, mVec[3]);
+	//return retmat;
+
+	return ChaMatrix((float)((double)this->data[MATI_11] * (double)srcw), (float)((double)this->data[MATI_12] * (double)srcw), (float)((double)this->data[MATI_13] * (double)srcw), (float)((double)this->data[MATI_14] * (double)srcw),
+		(float)((double)this->data[MATI_21] * (double)srcw), (float)((double)this->data[MATI_22] * (double)srcw), (float)((double)this->data[MATI_23] * (double)srcw), (float)((double)this->data[MATI_24] * (double)srcw),
+		(float)((double)this->data[MATI_31] * (double)srcw), (float)((double)this->data[MATI_32] * (double)srcw), (float)((double)this->data[MATI_33] * (double)srcw), (float)((double)this->data[MATI_34] * (double)srcw),
+		(float)((double)this->data[MATI_41] * (double)srcw), (float)((double)this->data[MATI_42] * (double)srcw), (float)((double)this->data[MATI_43] * (double)srcw), (float)((double)this->data[MATI_44] * (double)srcw));
 }
 ChaMatrix &ChaMatrix::operator*= (float srcw) { *this = *this * srcw; return *this; }
 ChaMatrix ChaMatrix::operator/ (float srcw) const {
 	ChaMatrix retmat;
 
-	if (fabs(srcw) >= 1e-5) {
-		const __m128 inverseOne = _mm_setr_ps(1.f, 1.f, 1.f, 1.f);
-		__m128 divcoef = _mm_setr_ps(srcw, srcw, srcw, srcw);
-		__m128 multcoef = _mm_div_ps(inverseOne, divcoef);
-		retmat.mVec[0] = _mm_mul_ps(multcoef, mVec[0]);
-		retmat.mVec[1] = _mm_mul_ps(multcoef, mVec[1]);
-		retmat.mVec[2] = _mm_mul_ps(multcoef, mVec[2]);
-		retmat.mVec[3] = _mm_mul_ps(multcoef, mVec[3]);
-		return retmat;
-	}
-	else {
-		ChaMatrixIdentity(&retmat);
-		return retmat;
-	}
-
-	//if (srcw != 0.0f) {
-	//	return ChaMatrix((float)((double)this->data[MATI_11] / (double)srcw), (float)((double)this->data[MATI_12] / (double)srcw), (float)((double)this->data[MATI_13] / (double)srcw), (float)((double)this->data[MATI_14] / (double)srcw),
-	//		(float)((double)this->data[MATI_21] / (double)srcw), (float)((double)this->data[MATI_22] / (double)srcw), (float)((double)this->data[MATI_23] / (double)srcw), (float)((double)this->data[MATI_24] / (double)srcw),
-	//		(float)((double)this->data[MATI_31] / (double)srcw), (float)((double)this->data[MATI_32] / (double)srcw), (float)((double)this->data[MATI_33] / (double)srcw), (float)((double)this->data[MATI_34] / (double)srcw),
-	//		(float)((double)this->data[MATI_41] / (double)srcw), (float)((double)this->data[MATI_42] / (double)srcw), (float)((double)this->data[MATI_43] / (double)srcw), (float)((double)this->data[MATI_44] / (double)srcw));
+	//2022/11/08
+	//精度の問題　AVX2に置き換えるまでコメントアウト
+	//if (fabs(srcw) >= 1e-5) {
+	//	const __m128 inverseOne = _mm_setr_ps(1.f, 1.f, 1.f, 1.f);
+	//	__m128 divcoef = _mm_setr_ps(srcw, srcw, srcw, srcw);
+	//	__m128 multcoef = _mm_div_ps(inverseOne, divcoef);
+	//	retmat.mVec[0] = _mm_mul_ps(multcoef, mVec[0]);
+	//	retmat.mVec[1] = _mm_mul_ps(multcoef, mVec[1]);
+	//	retmat.mVec[2] = _mm_mul_ps(multcoef, mVec[2]);
+	//	retmat.mVec[3] = _mm_mul_ps(multcoef, mVec[3]);
+	//	return retmat;
 	//}
 	//else {
-	//	ChaMatrix retmat;
 	//	ChaMatrixIdentity(&retmat);
 	//	return retmat;
 	//}
+
+	if (srcw != 0.0f) {
+		return ChaMatrix((float)((double)this->data[MATI_11] / (double)srcw), (float)((double)this->data[MATI_12] / (double)srcw), (float)((double)this->data[MATI_13] / (double)srcw), (float)((double)this->data[MATI_14] / (double)srcw),
+			(float)((double)this->data[MATI_21] / (double)srcw), (float)((double)this->data[MATI_22] / (double)srcw), (float)((double)this->data[MATI_23] / (double)srcw), (float)((double)this->data[MATI_24] / (double)srcw),
+			(float)((double)this->data[MATI_31] / (double)srcw), (float)((double)this->data[MATI_32] / (double)srcw), (float)((double)this->data[MATI_33] / (double)srcw), (float)((double)this->data[MATI_34] / (double)srcw),
+			(float)((double)this->data[MATI_41] / (double)srcw), (float)((double)this->data[MATI_42] / (double)srcw), (float)((double)this->data[MATI_43] / (double)srcw), (float)((double)this->data[MATI_44] / (double)srcw));
+	}
+	else {
+		ChaMatrix retmat;
+		ChaMatrixIdentity(&retmat);
+		return retmat;
+	}
 }
 ChaMatrix &ChaMatrix::operator/= (float srcw) { *this = *this / srcw; return *this; }
 ChaMatrix ChaMatrix::operator* (double srcw) const {
@@ -1253,19 +1258,19 @@ ChaMatrix& ChaMatrix::operator/= (double srcw) { *this = *this / srcw; return *t
 
 
 ChaMatrix ChaMatrix::operator+ (const ChaMatrix &m) const {
-	ChaMatrix retmat;
-	retmat.mVec[0] = _mm_add_ps(m.mVec[0], mVec[0]);
-	retmat.mVec[1] = _mm_add_ps(m.mVec[1], mVec[1]);
-	retmat.mVec[2] = _mm_add_ps(m.mVec[2], mVec[2]);
-	retmat.mVec[3] = _mm_add_ps(m.mVec[3], mVec[3]);
-	return retmat;
+	//ChaMatrix retmat;
+	//retmat.mVec[0] = _mm_add_ps(m.mVec[0], mVec[0]);
+	//retmat.mVec[1] = _mm_add_ps(m.mVec[1], mVec[1]);
+	//retmat.mVec[2] = _mm_add_ps(m.mVec[2], mVec[2]);
+	//retmat.mVec[3] = _mm_add_ps(m.mVec[3], mVec[3]);
+	//return retmat;
 
-	//return ChaMatrix(
-	//	data[MATI_11] + m.data[MATI_11], data[MATI_12] + m.data[MATI_12], data[MATI_13] + m.data[MATI_13], data[MATI_14] + m.data[MATI_14],
-	//	data[MATI_21] + m.data[MATI_21], data[MATI_22] + m.data[MATI_22], data[MATI_23] + m.data[MATI_23], data[MATI_24] + m.data[MATI_24],
-	//	data[MATI_31] + m.data[MATI_31], data[MATI_32] + m.data[MATI_32], data[MATI_33] + m.data[MATI_33], data[MATI_34] + m.data[MATI_34],
-	//	data[MATI_41] + m.data[MATI_41], data[MATI_42] + m.data[MATI_42], data[MATI_43] + m.data[MATI_43], data[MATI_44] + m.data[MATI_44]
-	//	);
+	return ChaMatrix(
+		data[MATI_11] + m.data[MATI_11], data[MATI_12] + m.data[MATI_12], data[MATI_13] + m.data[MATI_13], data[MATI_14] + m.data[MATI_14],
+		data[MATI_21] + m.data[MATI_21], data[MATI_22] + m.data[MATI_22], data[MATI_23] + m.data[MATI_23], data[MATI_24] + m.data[MATI_24],
+		data[MATI_31] + m.data[MATI_31], data[MATI_32] + m.data[MATI_32], data[MATI_33] + m.data[MATI_33], data[MATI_34] + m.data[MATI_34],
+		data[MATI_41] + m.data[MATI_41], data[MATI_42] + m.data[MATI_42], data[MATI_43] + m.data[MATI_43], data[MATI_44] + m.data[MATI_44]
+		);
 }
 ChaMatrix &ChaMatrix::operator+= (const ChaMatrix &m) { *this = *this + m; return *this; }
 
@@ -1288,119 +1293,162 @@ ChaMatrix &ChaMatrix::operator-= (const ChaMatrix &m) { *this = *this - m; retur
 
 
 ChaMatrix ChaMatrix::operator* (const ChaMatrix& m) const {
+
+	//2022/11/08
+	//精度の問題　AVX2に置き換えるまでコメントアウト
+	//ChaMatrix res;
+	//__m128  xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7;
+	//
+	////xmm4 = _mm_loadu_ps(&m.data[MATI_11]);
+	////xmm5 = _mm_loadu_ps(&m.data[MATI_21]);
+	////xmm6 = _mm_loadu_ps(&m.data[MATI_31]);
+	////xmm7 = _mm_loadu_ps(&m.data[MATI_41]);
+	//xmm4 = m.mVec[0];
+	//xmm5 = m.mVec[1];
+	//xmm6 = m.mVec[2];
+	//xmm7 = m.mVec[3];
+
+	//// column0
+	//xmm0 = _mm_load1_ps(&data[MATI_11]);
+	//xmm1 = _mm_load1_ps(&data[MATI_12]);
+	//xmm2 = _mm_load1_ps(&data[MATI_13]);
+	//xmm3 = _mm_load1_ps(&data[MATI_14]);
+	//
+	////xmm0 = _mm_mul_ps(xmm0, xmm4);
+	////xmm1 = _mm_mul_ps(xmm1, xmm5);
+	////xmm2 = _mm_mul_ps(xmm2, xmm6);
+	////xmm3 = _mm_mul_ps(xmm3, xmm7);
+	////
+	////xmm0 = _mm_add_ps(xmm0, xmm1);
+	////xmm2 = _mm_add_ps(xmm2, xmm3);
+	////xmm0 = _mm_add_ps(xmm0, xmm2);
+	////_mm_storeu_ps(&res.data[MATI_11], xmm0);
+
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	//xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	//xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
+
+	//res.mVec[0] = xmm3;
+
+	//
+	//// column1
+	//xmm0 = _mm_load1_ps(&data[MATI_21]);
+	//xmm1 = _mm_load1_ps(&data[MATI_22]);
+	//xmm2 = _mm_load1_ps(&data[MATI_23]);
+	//xmm3 = _mm_load1_ps(&data[MATI_24]);
+	//
+	////xmm0 = _mm_mul_ps(xmm0, xmm4);
+	////xmm1 = _mm_mul_ps(xmm1, xmm5);
+	////xmm2 = _mm_mul_ps(xmm2, xmm6);
+	////xmm3 = _mm_mul_ps(xmm3, xmm7);
+	////
+	////xmm0 = _mm_add_ps(xmm0, xmm1);
+	////xmm2 = _mm_add_ps(xmm2, xmm3);
+	////xmm0 = _mm_add_ps(xmm0, xmm2);
+	////
+	////_mm_storeu_ps(&res.data[MATI_21], xmm0);
+
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	//xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	//xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
+
+	//res.mVec[1] = xmm3;
+
+
+	//// column2
+	//xmm0 = _mm_load1_ps(&data[MATI_31]);
+	//xmm1 = _mm_load1_ps(&data[MATI_32]);
+	//xmm2 = _mm_load1_ps(&data[MATI_33]);
+	//xmm3 = _mm_load1_ps(&data[MATI_34]);
+	//
+	////xmm0 = _mm_mul_ps(xmm0, xmm4);
+	////xmm1 = _mm_mul_ps(xmm1, xmm5);
+	////xmm2 = _mm_mul_ps(xmm2, xmm6);
+	////xmm3 = _mm_mul_ps(xmm3, xmm7);
+	////
+	////xmm0 = _mm_add_ps(xmm0, xmm1);
+	////xmm2 = _mm_add_ps(xmm2, xmm3);
+	////xmm0 = _mm_add_ps(xmm0, xmm2);
+	////
+	////_mm_storeu_ps(&res.data[MATI_31], xmm0);
+
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	//xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	//xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
+
+	//res.mVec[2] = xmm3;
+
+
+
+	//// column3
+	//xmm0 = _mm_load1_ps(&data[MATI_41]);
+	//xmm1 = _mm_load1_ps(&data[MATI_42]);
+	//xmm2 = _mm_load1_ps(&data[MATI_43]);
+	//xmm3 = _mm_load1_ps(&data[MATI_44]);
+	//
+	////xmm0 = _mm_mul_ps(xmm0, xmm4);
+	////xmm1 = _mm_mul_ps(xmm1, xmm5);
+	////xmm2 = _mm_mul_ps(xmm2, xmm6);
+	////xmm3 = _mm_mul_ps(xmm3, xmm7);
+	////
+	////xmm0 = _mm_add_ps(xmm0, xmm1);
+	////xmm2 = _mm_add_ps(xmm2, xmm3);
+	////xmm0 = _mm_add_ps(xmm0, xmm2);
+	////
+	////_mm_storeu_ps(&res.data[MATI_41], xmm0);
+
+	//xmm0 = _mm_mul_ps(xmm0, xmm4);
+	//xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
+	//xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
+	//xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
+
+	//res.mVec[3] = xmm3;
+
+
+	//*this * m
+	double m_11 = (double)m.data[MATI_11];
+	double m_12 = (double)m.data[MATI_12];
+	double m_13 = (double)m.data[MATI_13];
+	double m_14 = (double)m.data[MATI_14];
+	double m_21 = (double)m.data[MATI_21];
+	double m_22 = (double)m.data[MATI_22];
+	double m_23 = (double)m.data[MATI_23];
+	double m_24 = (double)m.data[MATI_24];
+	double m_31 = (double)m.data[MATI_31];
+	double m_32 = (double)m.data[MATI_32];
+	double m_33 = (double)m.data[MATI_33];
+	double m_34 = (double)m.data[MATI_34];
+	double m_41 = (double)m.data[MATI_41];
+	double m_42 = (double)m.data[MATI_42];
+	double m_43 = (double)m.data[MATI_43];
+	double m_44 = (double)m.data[MATI_44];
+
 	ChaMatrix res;
+	res.data[MATI_11] = (float)(m_11 * (double)data[MATI_11] + m_21 * (double)data[MATI_12] + m_31 * (double)data[MATI_13] + m_41 * (double)data[MATI_14]);
+	res.data[MATI_21] = (float)(m_11 * (double)data[MATI_21] + m_21 * (double)data[MATI_22] + m_31 * (double)data[MATI_23] + m_41 * (double)data[MATI_24]);
+	res.data[MATI_31] = (float)(m_11 * (double)data[MATI_31] + m_21 * (double)data[MATI_32] + m_31 * (double)data[MATI_33] + m_41 * (double)data[MATI_34]);
+	res.data[MATI_41] = (float)(m_11 * (double)data[MATI_41] + m_21 * (double)data[MATI_42] + m_31 * (double)data[MATI_43] + m_41 * (double)data[MATI_44]);
 
-	__m128  xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7;
-	
-	//xmm4 = _mm_loadu_ps(&m.data[MATI_11]);
-	//xmm5 = _mm_loadu_ps(&m.data[MATI_21]);
-	//xmm6 = _mm_loadu_ps(&m.data[MATI_31]);
-	//xmm7 = _mm_loadu_ps(&m.data[MATI_41]);
-	xmm4 = m.mVec[0];
-	xmm5 = m.mVec[1];
-	xmm6 = m.mVec[2];
-	xmm7 = m.mVec[3];
+	res.data[MATI_12] = (float)(m_12 * (double)data[MATI_11] + m_22 * (double)data[MATI_12] + m_32 * (double)data[MATI_13] + m_42 * (double)data[MATI_14]);
+	res.data[MATI_22] = (float)(m_12 * (double)data[MATI_21] + m_22 * (double)data[MATI_22] + m_32 * (double)data[MATI_23] + m_42 * (double)data[MATI_24]);
+	res.data[MATI_32] = (float)(m_12 * (double)data[MATI_31] + m_22 * (double)data[MATI_32] + m_32 * (double)data[MATI_33] + m_42 * (double)data[MATI_34]);
+	res.data[MATI_42] = (float)(m_12 * (double)data[MATI_41] + m_22 * (double)data[MATI_42] + m_32 * (double)data[MATI_43] + m_42 * (double)data[MATI_44]);
 
-	// column0
-	xmm0 = _mm_load1_ps(&data[MATI_11]);
-	xmm1 = _mm_load1_ps(&data[MATI_12]);
-	xmm2 = _mm_load1_ps(&data[MATI_13]);
-	xmm3 = _mm_load1_ps(&data[MATI_14]);
-	
-	//xmm0 = _mm_mul_ps(xmm0, xmm4);
-	//xmm1 = _mm_mul_ps(xmm1, xmm5);
-	//xmm2 = _mm_mul_ps(xmm2, xmm6);
-	//xmm3 = _mm_mul_ps(xmm3, xmm7);
-	//
-	//xmm0 = _mm_add_ps(xmm0, xmm1);
-	//xmm2 = _mm_add_ps(xmm2, xmm3);
-	//xmm0 = _mm_add_ps(xmm0, xmm2);
-	//_mm_storeu_ps(&res.data[MATI_11], xmm0);
+	res.data[MATI_13] = (float)(m_13 * (double)data[MATI_11] + m_23 * (double)data[MATI_12] + m_33 * (double)data[MATI_13] + m_43 * (double)data[MATI_14]);
+	res.data[MATI_23] = (float)(m_13 * (double)data[MATI_21] + m_23 * (double)data[MATI_22] + m_33 * (double)data[MATI_23] + m_43 * (double)data[MATI_24]);
+	res.data[MATI_33] = (float)(m_13 * (double)data[MATI_31] + m_23 * (double)data[MATI_32] + m_33 * (double)data[MATI_33] + m_43 * (double)data[MATI_34]);
+	res.data[MATI_43] = (float)(m_13 * (double)data[MATI_41] + m_23 * (double)data[MATI_42] + m_33 * (double)data[MATI_43] + m_43 * (double)data[MATI_44]);
 
-	xmm0 = _mm_mul_ps(xmm0, xmm4);
-	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
-	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
-	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
-
-	res.mVec[0] = xmm3;
-
-	
-	// column1
-	xmm0 = _mm_load1_ps(&data[MATI_21]);
-	xmm1 = _mm_load1_ps(&data[MATI_22]);
-	xmm2 = _mm_load1_ps(&data[MATI_23]);
-	xmm3 = _mm_load1_ps(&data[MATI_24]);
-	
-	//xmm0 = _mm_mul_ps(xmm0, xmm4);
-	//xmm1 = _mm_mul_ps(xmm1, xmm5);
-	//xmm2 = _mm_mul_ps(xmm2, xmm6);
-	//xmm3 = _mm_mul_ps(xmm3, xmm7);
-	//
-	//xmm0 = _mm_add_ps(xmm0, xmm1);
-	//xmm2 = _mm_add_ps(xmm2, xmm3);
-	//xmm0 = _mm_add_ps(xmm0, xmm2);
-	//
-	//_mm_storeu_ps(&res.data[MATI_21], xmm0);
-
-	xmm0 = _mm_mul_ps(xmm0, xmm4);
-	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
-	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
-	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
-
-	res.mVec[1] = xmm3;
-
-
-	// column2
-	xmm0 = _mm_load1_ps(&data[MATI_31]);
-	xmm1 = _mm_load1_ps(&data[MATI_32]);
-	xmm2 = _mm_load1_ps(&data[MATI_33]);
-	xmm3 = _mm_load1_ps(&data[MATI_34]);
-	
-	//xmm0 = _mm_mul_ps(xmm0, xmm4);
-	//xmm1 = _mm_mul_ps(xmm1, xmm5);
-	//xmm2 = _mm_mul_ps(xmm2, xmm6);
-	//xmm3 = _mm_mul_ps(xmm3, xmm7);
-	//
-	//xmm0 = _mm_add_ps(xmm0, xmm1);
-	//xmm2 = _mm_add_ps(xmm2, xmm3);
-	//xmm0 = _mm_add_ps(xmm0, xmm2);
-	//
-	//_mm_storeu_ps(&res.data[MATI_31], xmm0);
-
-	xmm0 = _mm_mul_ps(xmm0, xmm4);
-	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
-	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
-	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
-
-	res.mVec[2] = xmm3;
-
-
-
-	// column3
-	xmm0 = _mm_load1_ps(&data[MATI_41]);
-	xmm1 = _mm_load1_ps(&data[MATI_42]);
-	xmm2 = _mm_load1_ps(&data[MATI_43]);
-	xmm3 = _mm_load1_ps(&data[MATI_44]);
-	
-	//xmm0 = _mm_mul_ps(xmm0, xmm4);
-	//xmm1 = _mm_mul_ps(xmm1, xmm5);
-	//xmm2 = _mm_mul_ps(xmm2, xmm6);
-	//xmm3 = _mm_mul_ps(xmm3, xmm7);
-	//
-	//xmm0 = _mm_add_ps(xmm0, xmm1);
-	//xmm2 = _mm_add_ps(xmm2, xmm3);
-	//xmm0 = _mm_add_ps(xmm0, xmm2);
-	//
-	//_mm_storeu_ps(&res.data[MATI_41], xmm0);
-
-	xmm0 = _mm_mul_ps(xmm0, xmm4);
-	xmm1 = _mm_madd_ps(xmm1, xmm5, xmm0);
-	xmm2 = _mm_madd_ps(xmm2, xmm6, xmm1);
-	xmm3 = _mm_madd_ps(xmm3, xmm7, xmm2);
-
-	res.mVec[3] = xmm3;
+	res.data[MATI_14] = (float)(m_14 * (double)data[MATI_11] + m_24 * (double)data[MATI_12] + m_34 * (double)data[MATI_13] + m_44 * (double)data[MATI_14]);
+	res.data[MATI_24] = (float)(m_14 * (double)data[MATI_21] + m_24 * (double)data[MATI_22] + m_34 * (double)data[MATI_23] + m_44 * (double)data[MATI_24]);
+	res.data[MATI_34] = (float)(m_14 * (double)data[MATI_31] + m_24 * (double)data[MATI_32] + m_34 * (double)data[MATI_33] + m_44 * (double)data[MATI_34]);
+	res.data[MATI_44] = (float)(m_14 * (double)data[MATI_41] + m_24 * (double)data[MATI_42] + m_34 * (double)data[MATI_43] + m_44 * (double)data[MATI_44]);
 
 	return res;
+
 }
 
 
@@ -3744,60 +3792,63 @@ void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc){
 		return;
 	}
 
-	__m128 srcx = _mm_load1_ps(&psrc->x);
-	__m128 srcy = _mm_load1_ps(&psrc->y);
-	__m128 srcz = _mm_load1_ps(&psrc->z);
 
-	__m128 mulx = _mm_mul_ps(srcx, srcx);
-	__m128 maddxy = _mm_madd_ps(srcy, srcy, mulx);
-	__m128 maddxyz = _mm_madd_ps(srcz, srcz, maddxy);
+	//2022/11/08
+	//精度の問題　AVX2に置き換えるまでコメントアウト
+	//__m128 srcx = _mm_load1_ps(&psrc->x);
+	//__m128 srcy = _mm_load1_ps(&psrc->y);
+	//__m128 srcz = _mm_load1_ps(&psrc->z);
 
-	float check[4];
-	_mm_store_ps(check, maddxyz);
-	if (check[0] >= 1e-7) {
-		__m128 invsqrt = _mm_rsqrt_ps(maddxyz);//平方根の逆数
+	//__m128 mulx = _mm_mul_ps(srcx, srcx);
+	//__m128 maddxy = _mm_madd_ps(srcy, srcy, mulx);
+	//__m128 maddxyz = _mm_madd_ps(srcz, srcz, maddxy);
 
-		__m128 srcxyz1 = _mm_setr_ps(psrc->x, psrc->y, psrc->z, 0.0f);
-		__m128 mresult = _mm_mul_ps(srcxyz1, invsqrt);
+	//float check[4];
+	//_mm_store_ps(check, maddxyz);
+	//if (check[0] >= 1e-7) {
+	//	__m128 invsqrt = _mm_rsqrt_ps(maddxyz);//平方根の逆数
 
-		float result[4];
-		_mm_store_ps(result, mresult);
+	//	__m128 srcxyz1 = _mm_setr_ps(psrc->x, psrc->y, psrc->z, 0.0f);
+	//	__m128 mresult = _mm_mul_ps(srcxyz1, invsqrt);
 
-		pdst->x = result[0];
-		pdst->y = result[1];
-		pdst->z = result[2];
-	}
-	else {
-		//*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
-		pdst->x = psrc->x;
-		pdst->y = psrc->y;
-		pdst->z = psrc->z;
-	}
+	//	float result[4];
+	//	_mm_store_ps(result, mresult);
 
-	//ChaVector3 src = *psrc;
-	//double mag = (double)src.x * (double)src.x + (double)src.y * (double)src.y + (double)src.z * (double)src.z;
-	//if (mag != 0.0){
-	//	double divval = ::sqrt(mag);
-	//	if (divval != 0.0) {
-	//		double tmpx = src.x / divval;
-	//		double tmpy = src.y / divval;
-	//		double tmpz = src.z / divval;
-	//		pdst->x = (float)tmpx;
-	//		pdst->y = (float)tmpy;
-	//		pdst->z = (float)tmpz;
-	//	}
-	//	else {
-	//		pdst->x = src.x;
-	//		pdst->y = src.y;
-	//		pdst->z = src.z;
-	//	}
+	//	pdst->x = result[0];
+	//	pdst->y = result[1];
+	//	pdst->z = result[2];
 	//}
-	//else{
+	//else {
 	//	//*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
-	//	pdst->x = src.x;
-	//	pdst->y = src.y;
-	//	pdst->z = src.z;
+	//	pdst->x = psrc->x;
+	//	pdst->y = psrc->y;
+	//	pdst->z = psrc->z;
 	//}
+
+	ChaVector3 src = *psrc;
+	double mag = (double)src.x * (double)src.x + (double)src.y * (double)src.y + (double)src.z * (double)src.z;
+	if (mag != 0.0){
+		double divval = ::sqrt(mag);
+		if (divval != 0.0) {
+			double tmpx = src.x / divval;
+			double tmpy = src.y / divval;
+			double tmpz = src.z / divval;
+			pdst->x = (float)tmpx;
+			pdst->y = (float)tmpy;
+			pdst->z = (float)tmpz;
+		}
+		else {
+			pdst->x = src.x;
+			pdst->y = src.y;
+			pdst->z = src.z;
+		}
+	}
+	else{
+		//*pdst = ChaVector3(0.0f, 0.0f, 0.0f);
+		pdst->x = src.x;
+		pdst->y = src.y;
+		pdst->z = src.z;
+	}
 }
 
 float ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2)
