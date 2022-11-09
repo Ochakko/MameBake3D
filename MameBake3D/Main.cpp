@@ -21783,7 +21783,7 @@ int OnSpriteUndo()
 	if (s_model && (s_undoFlag == true)) {
 		//undo
 		StopBt();
-		s_model->RollBackUndoMotion(0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+		s_model->RollBackUndoMotion(s_mainhwnd, 0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
 		
 		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
@@ -21793,7 +21793,7 @@ int OnSpriteUndo()
 	{
 		//redo
 		StopBt();
-		s_model->RollBackUndoMotion(1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+		s_model->RollBackUndoMotion(s_mainhwnd, 1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
 		
 		RollbackBrushState(brushstate);//ブラシパラメータ復元
 

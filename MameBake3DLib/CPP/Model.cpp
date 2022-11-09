@@ -8704,7 +8704,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								invaplyparrotq.RotationMatrix(invaplyparrotmat);
 								curparrotq.RotationMatrix(curparrotmat);
 
-								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
+								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
 								//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
 								ChaMatrix transmat2;
 								transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
@@ -10233,7 +10233,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 										invaplyparrotmat.data[MATI_42] = 0.0f;
 										invaplyparrotmat.data[MATI_43] = 0.0f;
 
-										//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
+										//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
 										//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
 										ChaMatrix transmat2;
 										transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
@@ -10935,7 +10935,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					curparrotq.RotationMatrix(curparrotmat);
 
 
-					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
+					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
 					//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
 					ChaMatrix transmat2;
 					transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
@@ -11671,7 +11671,7 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 
 	return 0;
 }
-int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate)
+int CModel::RollBackUndoMotion(HWND hmainwnd, int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate)
 {
 	//saveによって次回のundo位置は変わる
 	//undoによって次回のsave位置は変わらない
@@ -11684,11 +11684,36 @@ int CModel::RollBackUndoMotion(int redoflag, int* curboneno, int* curbaseno, dou
 		return 0;
 	}
 
+
+	//2022/11/08
+	//アンドゥリドゥの保存バッファは　リングバッファとして使う
+	//一番古い保存と一番新しい保存の間を　古い保存へアンドゥする場合には　バッファの最初と最後の境界を越える
+	//一番古い保存と一番新しい保存の間を　新しい保存へリドゥする場合にも　バッファの最初と最後の境界を越える
+	//しかし　
+	//古い保存から新しい保存へはアンドゥ出来ない && 新しい保存よりも古い保存へはリドゥ出来ない
+	//
+	//アンドゥリドゥは変更部分についてだけ行っている 上記の禁止をしないとすると
+	//例えば　一番新しい保存から一番古い保存へとリドゥするとしたら　一番新しい保存から一番古い保存までの間の全てのアンドゥを実行しなければならない　(それをしないことにした)
+
+
 	int savereadpoint = m_undo_readpoint;
 	if( redoflag == 0 ){
-		m_undo_readpoint = GetValidUndoID();
+		int tmpreadpoint = GetValidUndoID();
+		if (tmpreadpoint == m_undo_writepoint) {//2022/11/08
+			::MessageBox(hmainwnd, L"最初の保存ポイントよりも昔にはアンドゥ出来ません。", L"can't go to older than the oldest.", MB_OK);
+			//returnせずにそのままのm_undo_readpointでRollBackMotionすることにより　ブラシ状態を保つ
+		}
+		else {
+			m_undo_readpoint = tmpreadpoint;
+		}
 	}else{
-		m_undo_readpoint = GetValidRedoID();
+		if (m_undo_readpoint == m_undo_writepoint) {//2022/11/08
+			::MessageBox(hmainwnd, L"書き出しポイントよりも未来にはリドゥ出来ません。", L"can't go to newer than the newest.", MB_OK);
+			//returnせずにそのままのm_undo_readpointでRollBackMotionすることにより　ブラシ状態を保つ
+		}
+		else {
+			m_undo_readpoint = GetValidRedoID();
+		}
 	}
 
 	if(m_undo_readpoint >= 0 ){
