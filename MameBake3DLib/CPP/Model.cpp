@@ -8716,7 +8716,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								curparrotq.RotationMatrix(curparrotmat);
 
 								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
-								//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
+								//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 								ChaMatrix transmat2;
 								transmat2 = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
 								//CMotionPoint transmp;
@@ -10222,8 +10222,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 									//if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
 									if (aplybone && (g_pseudolocalflag == 1)) {
 										//ChaMatrix curparrotmat = curparmp->GetWorldMat();
-										//ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-										ChaMatrix curparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);//2022/11/06 aplybone
+										ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);//curbone curframe
 										curparrotmat.data[MATI_41] = 0.0f;
 										curparrotmat.data[MATI_42] = 0.0f;
 										curparrotmat.data[MATI_43] = 0.0f;
@@ -10245,7 +10244,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 										invaplyparrotmat.data[MATI_43] = 0.0f;
 
 										//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
-										//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
+										//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 										ChaMatrix transmat2;
 										transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
 										//CMotionPoint transmp;
@@ -10947,7 +10946,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 
 					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
-					//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
+					//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 					ChaMatrix transmat2;
 					transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
 					rotq.RotationMatrix(transmat2);
