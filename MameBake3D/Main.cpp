@@ -22134,6 +22134,51 @@ int CreateUtDialog()
 	s_dsutgui0.clear();
 	s_dsutguiid0.clear();
 
+
+	if (g_4kresolution) {
+		
+		//2022/11/08
+		//4KTVでウインドウ大を選んだ場合　コンボボックスは見切れないように　一番上に配置
+
+		g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 35, 20, ctrlxlen, ctrlh);//Comboの要素が見切れないようになるべく上方に配置
+		s_ui_iklevel = g_SampleUI.GetControl(IDC_COMBO_IKLEVEL);
+		_ASSERT(s_ui_iklevel);
+		s_dsutgui0.push_back(s_ui_iklevel);
+		s_dsutguiid0.push_back(IDC_COMBO_IKLEVEL);
+		CDXUTComboBox* pComboBox0 = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
+		pComboBox0->RemoveAllItems();
+		int level;
+		for (level = 0; level < 15; level++) {
+			ULONG levelval = (ULONG)level;
+			WCHAR strlevel[256];
+			swprintf_s(strlevel, 256, L"%02d", level);
+			pComboBox0->AddItem(strlevel, ULongToPtr(levelval));
+		}
+		pComboBox0->SetSelectedByData(ULongToPtr(1));
+
+		g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, (s_mainwidth / 2 - 180 - 180 - 40 + 35), 20, ctrlxlen, ctrlh);
+		s_ui_boneaxis = g_SampleUI.GetControl(IDC_COMBO_BONEAXIS);
+		_ASSERT(s_ui_boneaxis);
+		s_dsutgui0.push_back(s_ui_boneaxis);
+		s_dsutguiid0.push_back(IDC_COMBO_BONEAXIS);
+		CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+		pComboBox3->RemoveAllItems();
+		WCHAR straxis[256];
+		ULONG boneaxisindex;
+		swprintf_s(straxis, 256, L"CurrentBoneAxis");
+		boneaxisindex = 0;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		swprintf_s(straxis, 256, L"ParentBoneAxis");
+		boneaxisindex = 1;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		swprintf_s(straxis, 256, L"GlobalBoneAxis");
+		boneaxisindex = 2;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
+	}
+
+
+
 	swprintf_s(sz, 100, L"Light Scale");
 	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, iX0 + 25, iY, ctrlxlen, 18);
 	s_ui_texlight = g_SampleUI.GetControl(IDC_LIGHT_SCALE_STATIC);
@@ -22172,53 +22217,48 @@ int CreateUtDialog()
 
 	//iY += addh;
 
-	g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 35, iY += addh, ctrlxlen, ctrlh);//Comboの要素が見切れないようになるべく上方に配置
-	s_ui_iklevel = g_SampleUI.GetControl(IDC_COMBO_IKLEVEL);
-	_ASSERT(s_ui_iklevel);
-	s_dsutgui0.push_back(s_ui_iklevel);
-	s_dsutguiid0.push_back(IDC_COMBO_IKLEVEL);
-	CDXUTComboBox* pComboBox0 = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
-	pComboBox0->RemoveAllItems();
-	int level;
-	for (level = 0; level < 15; level++){
-		ULONG levelval = (ULONG)level;
-		WCHAR strlevel[256];
-		swprintf_s(strlevel, 256, L"%02d", level);
-		pComboBox0->AddItem(strlevel, ULongToPtr(levelval));
+	if (g_4kresolution == false) {
+		//2022/11/08
+		//4KTVではない場合　コンボボックスはコンパクトに見切れない程度に上に配置　(g_4kresolution == true時は上述)
+
+		g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 25, iY += addh, ctrlxlen, ctrlh);
+		s_ui_iklevel = g_SampleUI.GetControl(IDC_COMBO_IKLEVEL);
+		_ASSERT(s_ui_iklevel);
+		s_dsutgui0.push_back(s_ui_iklevel);
+		s_dsutguiid0.push_back(IDC_COMBO_IKLEVEL);
+		CDXUTComboBox* pComboBox0 = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
+		pComboBox0->RemoveAllItems();
+		int level;
+		for (level = 0; level < 15; level++) {
+			ULONG levelval = (ULONG)level;
+			WCHAR strlevel[256];
+			swprintf_s(strlevel, 256, L"%02d", level);
+			pComboBox0->AddItem(strlevel, ULongToPtr(levelval));
+		}
+		pComboBox0->SetSelectedByData(ULongToPtr(1));
+
+		g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, iX0 + 25, iY += addh, ctrlxlen, ctrlh);
+		s_ui_boneaxis = g_SampleUI.GetControl(IDC_COMBO_BONEAXIS);
+		_ASSERT(s_ui_boneaxis);
+		s_dsutgui0.push_back(s_ui_boneaxis);
+		s_dsutguiid0.push_back(IDC_COMBO_BONEAXIS);
+		CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+		pComboBox3->RemoveAllItems();
+		WCHAR straxis[256];
+		ULONG boneaxisindex;
+		swprintf_s(straxis, 256, L"CurrentBoneAxis");
+		boneaxisindex = 0;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		swprintf_s(straxis, 256, L"ParentBoneAxis");
+		boneaxisindex = 1;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		swprintf_s(straxis, 256, L"GlobalBoneAxis");
+		boneaxisindex = 2;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
 	}
-	pComboBox0->SetSelectedByData(ULongToPtr(1));
 
-
-	//iY += 24;
-
-	//g_SampleUI.AddCheckBox(IDC_TPOSE_MANIPULATOR, L"T Pose Manipulator", iX0 + 35, iY += addh, checkboxxlen, 16, g_tpose, 0U, false, &s_TPoseCheckBox);
-	//s_ui_tpose = g_SampleUI.GetControl(IDC_TPOSE_MANIPULATOR);
-	//_ASSERT(s_ui_tpose);
-	//s_dsutgui0.push_back(s_ui_tpose);
-	//s_dsutguiid0.push_back(IDC_TPOSE_MANIPULATOR);
-
-	g_SampleUI.AddComboBox(IDC_COMBO_BONEAXIS, iX0 + 35, iY += addh, ctrlxlen, ctrlh);
-	s_ui_boneaxis = g_SampleUI.GetControl(IDC_COMBO_BONEAXIS);
-	_ASSERT(s_ui_boneaxis);
-	s_dsutgui0.push_back(s_ui_boneaxis);
-	s_dsutguiid0.push_back(IDC_COMBO_BONEAXIS);
-	CDXUTComboBox* pComboBox3 = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
-	pComboBox3->RemoveAllItems();
-	WCHAR straxis[256];
-	ULONG boneaxisindex;
-	swprintf_s(straxis, 256, L"CurrentBoneAxis");
-	boneaxisindex = 0;
-	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	swprintf_s(straxis, 256, L"ParentBoneAxis");
-	boneaxisindex = 1;
-	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	swprintf_s(straxis, 256, L"GlobalBoneAxis");
-	boneaxisindex = 2;
-	pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-	pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
-
-
-	g_SampleUI.AddCheckBox(IDC_PRECISEONPREVIEWTOO, L"PreciseOnPreviewToo", iX0 + 35, iY += addh, checkboxxlen, 16, g_preciseOnPreviewToo, 0U, false, &s_PreciseCheckBox);
+	g_SampleUI.AddCheckBox(IDC_PRECISEONPREVIEWTOO, L"PreciseOnPreviewToo", iX0 + 25, iY += addh, checkboxxlen, 16, g_preciseOnPreviewToo, 0U, false, &s_PreciseCheckBox);
 	s_ui_precise = g_SampleUI.GetControl(IDC_PRECISEONPREVIEWTOO);
 	_ASSERT(s_ui_precise);
 	s_dsutgui0.push_back(s_ui_precise);
