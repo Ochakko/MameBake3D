@@ -21898,8 +21898,24 @@ int OnFrameUndo(bool fromds, int fromdskind)
 	}
 	s_underoperation = true;
 
-	///////////// undo
-	if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))) {
+
+	//2022/11/07 playerbuttonのprevrange, nextrangeに　undo, redoとして対応
+
+
+	if (s_undoFlag == true) {
+		//playerbutton prevrange
+		//undo
+		s_undoFlag = true;
+		OnSpriteUndo();
+	}
+	else if (s_redoFlag == true) {
+		//playerbutton nextrange
+		//redo
+		s_redoFlag = true;
+		OnSpriteUndo();
+	}
+	//keyboard event
+	else if (fromds || (s_model && g_controlkey && (g_keybuf['Z'] & 0x80) && !(g_savekeybuf['Z'] & 0x80))) {
 
 		if (((fromds && (fromdskind == 1)) || (g_keybuf[VK_SHIFT] & 0x80)) && (s_undoFlag == false) && (s_redoFlag == false)) {
 			//redo
@@ -22762,6 +22778,8 @@ int CreateLongTimelineWnd()
 		if (s_model) {
 			//g_undereditrange = true; s_prevrangeFlag = true;
 			////s_LtimelineWnd->setDoneFlag(1);
+
+			RollbackCurBoneNo();//2022/11/07
 			s_undoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　アンドゥに
 		}
 	});
@@ -22769,6 +22787,8 @@ int CreateLongTimelineWnd()
 		if (s_model) {
 			//g_undereditrange = true; s_nextrangeFlag = true;
 			////s_LtimelineWnd->setDoneFlag(1);
+
+			RollbackCurBoneNo();//2022/11/07
 			s_redoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　リドゥに
 		}
 	});
