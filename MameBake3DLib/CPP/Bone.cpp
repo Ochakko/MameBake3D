@@ -2745,18 +2745,25 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 																  
 
 				ChaMatrix tmpmat;
-				if ((onretarget == false) && (IsHipsBone() == true)) {
-					//Hipsの場合　localTraAnimも回転する
+				//################################################################################################
+				//2022/11/08 comment out
+				// translateが設定されているHipsの親として原点にRootを自動作成(Rootがまだ無ければ)することで対応
+				//################################################################################################
+				//if ((onretarget == false) && (IsHipsBone() == true)) {
+				//	//Hipsの場合　localTraAnimも回転する
 
-					tmpmat = limitedworldmat * rotq.MakeRotMatX();
+				//	tmpmat = limitedworldmat * rotq.MakeRotMatX();
 
-					g_wmatDirectSetFlag = true;
-					SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-					g_wmatDirectSetFlag = false;
-				}
-				else {
+				//	g_wmatDirectSetFlag = true;
+				//	SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+				//	g_wmatDirectSetFlag = false;
+				//}
+				//else {
+					//#########################################################################################################################
+					//2022/11/08
 					//localTraAnimは回転しない
-
+					//例えば　原点以外にあるHipsで移動を回転すると　意図とは違う動きをするから　移動回転しない　全体回転はRootジョイントで行う
+					//#########################################################################################################################
 					ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
 
 					//ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
@@ -2772,7 +2779,7 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 
 					//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
 					SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-				}
+				//}
 
 
 				if (bvhbone){
@@ -7170,17 +7177,18 @@ int CBone::InitMP(int srcmotid, double srcframe)
 
 	//この関数は処理に時間が掛かる
 	//CModel読み込み中で　読み込み中のモーション数が０で無い場合には　InitMPする必要は無い(モーションの値で上書きする)ので　リターンする
-	if ((GetParModel()->GetLoadedFlag() == false) && (GetParModel()->GetLoadingMotionCount() > 0)) {//2022/10/20
+	//
+	//2022/11/08
+	//ただし　RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがあるので　RootとReferenceについてはここではリターンしない
+	if ((strstr(GetBoneName(), "Root") == 0) && (strstr(GetBoneName(), "Reference") == 0) &&
+		(GetParModel()->GetLoadedFlag() == false) && (GetParModel()->GetLoadingMotionCount() > 0)) {//2022/10/20
 		return 0;
 	}
-
 
 	//firstmpが無い場合のダミーの初期化モーションポイント
 	//初期化されたworldmatがあれば良い
 	CMotionPoint initmp;
 	initmp.InitParams();
-
-
 
 
 	//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
@@ -7207,6 +7215,13 @@ int CBone::InitMP(int srcmotid, double srcframe)
 	}
 	else {
 		firstmp = GetMotionPoint(firstmotid, 0.0);
+	}
+
+	if (!firstmp && ((strstr(GetBoneName(), "Root") != 0) || (strstr(GetBoneName(), "Reference") != 0))) {
+		//2022/11/08
+		//RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがある
+		//RootとReferenceボーンの内　モーションポイントが無い場合についても　ここで対応
+		firstmp = &initmp;
 	}
 
 

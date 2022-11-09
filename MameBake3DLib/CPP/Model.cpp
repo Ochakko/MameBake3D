@@ -3675,50 +3675,50 @@ DbgOut( L"SetMQOMaterial : texture %s\r\n", wname );
 //    return lResult;
 //}
 
-void CModel::CreateExtendBoneReq(CBone* srcbone)
-{
-	if (srcbone) {
-		if (!srcbone->GetExtendFlag() && !srcbone->GetChild()) {
-			CBone* newbone = CBone::GetNewBone(this);
-			_ASSERT(newbone);
-			if (!newbone) {
-				_ASSERT(0);
-				return;
-			}
-			newbone->SetExtendFlag(true);
-			srcbone->AddChild(newbone);
-
-			char newbonename[256];
-			strcpy_s(newbonename, 256, "ext_");
-			strcat_s(newbonename, 256, srcbone->GetBoneName());
-			newbone->SetName(newbonename);
-
-			newbone->SetTopBoneFlag(0);
-			m_bonelist[newbone->GetBoneNo()] = newbone;
-			m_bonename[newbone->GetBoneName()] = newbone;
-
-			//if (type == FbxNodeAttribute::eSkeleton) {
-			newbone->SetType(FBXBONE_NORMAL);
-			//}
-			//else if (type == FbxNodeAttribute::eNull) {
-			//	newbone->SetType(FBXBONE_NULL);
-			//}
-			//else {
-			//	_ASSERT(0);
-			//}
-
-		}
-		else {
-			if (srcbone->GetChild()) {
-				CreateExtendBoneReq(srcbone->GetChild());
-			}
-		}
-
-		if (srcbone->GetBrother()) {
-			CreateExtendBoneReq(srcbone->GetBrother());
-		}
-	}
-}
+//void CModel::CreateExtendBoneReq(CBone* srcbone)
+//{
+//	if (srcbone) {
+//		if (!srcbone->GetExtendFlag() && !srcbone->GetChild()) {
+//			CBone* newbone = CBone::GetNewBone(this);
+//			_ASSERT(newbone);
+//			if (!newbone) {
+//				_ASSERT(0);
+//				return;
+//			}
+//			newbone->SetExtendFlag(true);
+//			srcbone->AddChild(newbone);
+//
+//			char newbonename[256];
+//			strcpy_s(newbonename, 256, "ext_");
+//			strcat_s(newbonename, 256, srcbone->GetBoneName());
+//			newbone->SetName(newbonename);
+//
+//			newbone->SetTopBoneFlag(0);
+//			m_bonelist[newbone->GetBoneNo()] = newbone;
+//			m_bonename[newbone->GetBoneName()] = newbone;
+//
+//			//if (type == FbxNodeAttribute::eSkeleton) {
+//			newbone->SetType(FBXBONE_NORMAL);
+//			//}
+//			//else if (type == FbxNodeAttribute::eNull) {
+//			//	newbone->SetType(FBXBONE_NULL);
+//			//}
+//			//else {
+//			//	_ASSERT(0);
+//			//}
+//
+//		}
+//		else {
+//			if (srcbone->GetChild()) {
+//				CreateExtendBoneReq(srcbone->GetChild());
+//			}
+//		}
+//
+//		if (srcbone->GetBrother()) {
+//			CreateExtendBoneReq(srcbone->GetBrother());
+//		}
+//	}
+//}
 
 
 
@@ -3789,7 +3789,6 @@ void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 				//pNode->SetRotationOrder(FbxNode::eSourcePivot , lRotationOrder0 );
 				//pNode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
 				
-				DbgOut( L"CreateFBXBoneReq : skeleton : %s\r\n", wname );
 				if (strcmp(pNode->GetName(), "RootNode") != 0){
 					if (parnode && (strcmp(parnode->GetName(), "RootNode") != 0)){
 						GetFBXBone(pScene, type, pAttrib, pNode, parentbonenode);
@@ -3822,100 +3821,112 @@ void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 	return;
 }
 
-int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
+CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, FbxNode* parnode)
 {
 	int settopflag = 0;
-	//CBone* newbone = new CBone( this );
+
 	CBone* newbone = CBone::GetNewBone(this);
-	_ASSERT( newbone );
-	if (!newbone){
+	_ASSERT(newbone);
+	if (!newbone) {
 		_ASSERT(0);
-		return 1;
+		return 0;
 	}
 
 	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 	newbone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!!
 
 	char newbonename[256];
-	strcpy_s(newbonename, 256, curnode->GetName());
+	if (!curnode) {
+		//Rootボーン作成
+		strcpy_s(newbonename, 256, "Root");
+	}
+	else {
+		//通常のボーン作成
+		strcpy_s(newbonename, 256, curnode->GetName());
+	}
 	TermJointRepeats(newbonename);
 	newbone->SetName(newbonename);
 	newbone->SetFbxNodeOnLoad(curnode);
-	
-	newbone->SetTopBoneFlag( 0 );
+
 	m_bonelist[newbone->GetBoneNo()] = newbone;
-	m_bonename[ newbone->GetBoneName() ] = newbone;
+	m_bonename[newbone->GetBoneName()] = newbone;
 
 	//const char* strextend;
 	//strextend = strstr(newbone->GetBoneName(), "_extend_");
 	//if (!strextend) {
-		if (type == FbxNodeAttribute::eSkeleton) {
-			newbone->SetType(FBXBONE_NORMAL);
-		}
-		else if (type == FbxNodeAttribute::eNull) {
-			newbone->SetType(FBXBONE_NULL);
-		}
-		else {
-			_ASSERT(0);
-		}
+	if (type == FbxNodeAttribute::eSkeleton) {
+		newbone->SetType(FBXBONE_NORMAL);
+	}
+	else if (type == FbxNodeAttribute::eNull) {
+		newbone->SetType(FBXBONE_NULL);
+	}
+	else {
+		_ASSERT(0);
+	}
 	//}
 	//else {
 	//	newbone->SetType(FBXBONE_NULL);
 	//}
-
-//	if( !parnode ){
-//		m_firstbone = curnode;
-//	}
-	if( !m_topbone ){
+	if (!m_topbone) {
 		m_topbone = newbone;
 		m_bone2node[newbone] = curnode;
+		newbone->SetTopBoneFlag(1);
 		settopflag = 1;
-	}else{
+	}
+	else {
 		m_bone2node[newbone] = curnode;
+		newbone->SetTopBoneFlag(0);
 	}
 
-	EFbxRotationOrder lRotationOrderSource;
-	curnode->GetRotationOrder (FbxNode::eSourcePivot, lRotationOrderSource);
-	EFbxRotationOrder lRotationOrderDest = eEulerXYZ;
-	curnode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrderDest );
 
-	if( parnode ){
+	if (parnode) {
 		//const char* parentbonename = parnode->GetName();
 		char parentbonename[256];
 		strcpy_s(parentbonename, 256, parnode->GetName());
 		TermJointRepeats(parentbonename);
 
-		CBone* parentbone = m_bonename[ parentbonename ];
-		if( parentbone ){
-			parentbone->AddChild( newbone );
-//_ASSERT(0);
-		}else{
-			/***
-			FbxNodeAttribute *parattr = parnode->GetNodeAttribute();
-			if( parattr ){
-				FbxNodeAttribute::EType type = parattr->GetAttributeType();
-				if( type == FbxNodeAttribute::eSkeleton ){
-					_ASSERT( 0 );
-				}else if( type == FbxNodeAttribute::eNull ){
-					_ASSERT( 0 );
-				}else{
-					_ASSERT( 0 );
-				}
-			}else{
-				_ASSERT( 0 );
-			}
-			***/
-			::MessageBoxA( NULL, "GetFBXBone : parentbone NULL error ", parentbonename, MB_OK );
+		CBone* parentbone = m_bonename[parentbonename];
+		if (parentbone) {
+			parentbone->AddChild(newbone);
+			//_ASSERT(0);
 		}
-	}else{
-		if( settopflag == 0 ){
-			//_ASSERT( 0 );
-			m_topbone->AddChild( newbone );
-		}else{
+		else {
+			::MessageBoxA(NULL, "GetFBXBone : parentbone NULL error ", parentbonename, MB_OK);
+		}
+	}
+	else {
+		if (settopflag == 0) {
+			//この関数呼び出し時にparnode == 0で　この関数呼び出し以前にm_topboneがすでにセットされている場合
+			m_topbone->AddChild(newbone);
+		}
+		else {
 			//_ASSERT(0);
 			//::MessageBoxA( NULL, "GetFBXBone : parentbone NULL error ", nodename, MB_OK );
 		}
 	}
+
+
+	return newbone;
+
+}
+
+
+int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
+{
+	if (!pScene || !pAttrib || !curnode) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CBone* tmptopbone = m_topbone;
+	CBone* newbone = 0;
+	if (!m_topbone && (strstr(curnode->GetName(), "Root") == 0) && (strstr(curnode->GetName(), "Reference") == 0)) {
+		//最初のボーンで　名前にRootもReferenceも無い場合　Rootボーンを作成
+		tmptopbone = CreateNewFbxBone(FbxNodeAttribute::eSkeleton, 0, 0);
+	}
+
+	//通常のボーン　または　名前にRoot, Referenceが入っている場合のボーン　作成
+	newbone = CreateNewFbxBone(type, curnode, parnode);
 
 	return 0;
 }
