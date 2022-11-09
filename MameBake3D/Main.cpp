@@ -7205,16 +7205,16 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			s_calclimitedwmState = 101;
 			break;
 		case IDC_BTRECSTART:
-		{
-			if (g_motionbrush_numframe < 10) {
-				WCHAR strmes[1024] = {0L};
-				swprintf_s(strmes, 1024, L"複数フレームを選択してから再試行してください。\nRetry after selecting frames range.");
-				::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
+			{
+				if (g_motionbrush_numframe < 10) {
+					WCHAR strmes[1024] = {0L};
+					swprintf_s(strmes, 1024, L"複数フレームを選択してから再試行してください。\nRetry after selecting frames range.");
+					::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
+				}
+				else {
+					s_calclimitedwmState = 1001;
+				}
 			}
-			else {
-				s_calclimitedwmState = 1001;
-			}
-		}
 			break;
 		case IDC_PHYSICS_IK:
 			s_physicskind = 0;
@@ -15280,7 +15280,13 @@ int StopBt()
 	}
 
 
-	g_previewFlag = 0;
+
+	//g_previewFlag = 0;
+
+	//2022/11/07 btrec終了時にも　timeline表示を正常にするために　playerbuttonのpreviewstopと同じ処理をする
+	s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
+
+
 
 	////g_limitdegflag = s_savelimitdegflag;
 	////if (s_LimitDegCheckBox) {
@@ -19951,6 +19957,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				}
 				curmodel->PlusPlusBtCnt();
 			}
+
+
 		}
 	}
 

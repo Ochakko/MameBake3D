@@ -8710,6 +8710,10 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								////transmp.CalcQandTra(transmat2, firstbone);
 								////rotq = transmp.GetQ();
 								//rotq.RotationMatrix(transmat2);
+
+
+								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
+								//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
 								rotq = invcurparrotq * aplyparrotq * rotq0 * invaplyparrotq * curparrotq;
 								
 							}
@@ -8803,6 +8807,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 			currate = (float)pow( (double)g_ikrate, (double)g_ikfirst * (double)levelcnt );
 		}
 
+		//絶対モードの場合
 		if( (calccnt == (calcnum - 1)) && g_absikflag && lastpar ){
 			AdjustBoneTra( erptr, lastpar );
 		}
@@ -10045,7 +10050,8 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 					list<KeyInfo> tmplist;
 					tmplist.push_back( tmpki );
 					tmper.SetRange( tmplist, curframe );
-					FKBoneTra( 0, &tmper, lastpar->GetBoneNo(), diffpos );
+					//FKBoneTra( 0, &tmper, lastpar->GetBoneNo(), diffpos );
+					FKBoneTra(1, &tmper, lastpar->GetBoneNo(), diffpos);//2022/11/07 FKBoneTra内でframeno loopしないように　onlyoneflag = 1
 				}
 			}
 			keyno++;
@@ -10244,6 +10250,8 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 										invaplyparrotq.RotationMatrix(invaplyparrotmat);
 										curparrotq.RotationMatrix(curparrotmat);
 
+										//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
+										//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
 										rotq = invcurparrotq * aplyparrotq * localq * invaplyparrotq * curparrotq;//2022/11/06 q
 
 
@@ -10900,8 +10908,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			}
 			ChaVector3Normalize(&axis0, &axis0);
 			localq.SetAxisAndRot(axis0, rotrad2);
-			ChaMatrix transmat;
-			transmat = localq.MakeRotMatX();
+			//ChaMatrix transmat;
+			//transmat = localq.MakeRotMatX();
 
 			CQuaternion rotq;
 
@@ -10933,11 +10941,23 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					invaplyparrotmat.data[MATI_42] = 0.0f;
 					invaplyparrotmat.data[MATI_43] = 0.0f;
 
+					CQuaternion invcurparrotq, aplyparrotq, invaplyparrotq, curparrotq;
+					invcurparrotq.RotationMatrix(invcurparrotmat);
+					aplyparrotq.RotationMatrix(aplyparrotmat);
+					invaplyparrotq.RotationMatrix(invaplyparrotmat);
+					curparrotq.RotationMatrix(curparrotmat);
 
-					ChaMatrix transmat2;
-					transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
-					//transmat2 = invcurparrotmat * transmat * curparrotmat;
-					rotq.RotationMatrix(transmat2);
+					//ChaMatrix transmat2;
+					//transmat2 = invcurparrotmat * aplyparrotmat * transmat * invaplyparrotmat * curparrotmat;
+					////transmat2 = invcurparrotmat * transmat * curparrotmat;
+					//rotq.RotationMatrix(transmat2);
+
+
+					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　befpivot * rotq * pivotを掛ける
+					//つまり　A = currentworldmat, B = rotq.MakeRotMatX()とすると A * (invA * B * A)
+					rotq = invcurparrotq * aplyparrotq * localq * invaplyparrotq * curparrotq;
+
+
 
 					double changerate;
 					changerate = (double)(*(g_motionbrush_value + (int)curframe));
@@ -10980,9 +11000,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			}
 			else{
-				CMotionPoint transmp;
-				rotq.RotationMatrix(transmat);
+				//CMotionPoint transmp;
+				//rotq.RotationMatrix(transmat);
 
+				rotq = localq;
 				bool infooutflag = true;
 				aplybone->RotBoneQReq(infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, rotq);
 			}
@@ -11005,6 +11026,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			levelcnt++;
 		}
 
+		//絶対モードの場合
 		if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone){
 			AdjustBoneTra(erptr, lastbone);
 		}
@@ -11252,7 +11274,8 @@ int CModel::FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int
 	return 0;
 }
 
-int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra )
+//default:onlyoneframe = 0.0. onlyoneflag == 1のとき　onlyoneframeだけを処理
+int CModel::FKBoneTra(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra, double onlyoneframe)
 {
 
 	if( srcboneno < 0 ){
@@ -11273,7 +11296,14 @@ int CModel::FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVec
 
 	int keynum;
 	double startframe, endframe, applyframe;
-	erptr->GetRange( &keynum, &startframe, &endframe, &applyframe );
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+	if (onlyoneflag == 0) {
+	}
+	else {
+		startframe = onlyoneframe;
+		endframe = onlyoneframe;
+	}
+	
 
 	curbone = firstbone;
 	double firstframe = 0.0;

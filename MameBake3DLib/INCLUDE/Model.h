@@ -468,7 +468,7 @@ public:
  * @param (ChaVector3 addtra) IN 移動分のベクトル。
  * @return 成功したら０。
  */
-	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra );
+	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
 
 	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta);
 
