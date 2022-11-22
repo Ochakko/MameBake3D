@@ -572,7 +572,8 @@ static bool s_utApplyRateFlag = false;//UTDialogのApplyRateスライダー値変更
 static bool s_BrushMirrorUCheckBoxFlag = false;//UTDialogの
 static bool s_BrushMirrorVCheckBoxFlag = false;//UTDialogの
 static bool s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogの
-
+static bool s_LimitDegCheckBoxFlag = false;//UTDialogの
+static bool s_WallScrapingCheckBoxFlag = false;//UTDialogの
 
 typedef struct tag_enumdist
 {
@@ -2688,8 +2689,8 @@ void InitApp()
 	s_BrushMirrorUCheckBoxFlag = false;//UTDialogの
 	s_BrushMirrorVCheckBoxFlag = false;//UTDialogの
 	s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogの
-
-
+	s_LimitDegCheckBoxFlag = false;
+	s_WallScrapingCheckBoxFlag = false;
 
 	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
 	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
@@ -7524,6 +7525,11 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			break;
 		case IDC_LIMITDEG:
 			RollbackCurBoneNo();
+			s_LimitDegCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
+			break;
+		case IDC_WALLSCRAPINGIK:
+			RollbackCurBoneNo();
+			s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
 			break;
 		case IDC_VSYNC:
 			RollbackCurBoneNo();
@@ -9877,6 +9883,20 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	//ShowRigidWnd(true);
 
 //::MessageBox(s_mainhwnd, L"check 7", L"check!!!", MB_OK);
+
+
+
+	{
+		//2022/11/23
+		//VRoidの髪の毛ジョイントが多く　顔がみえなくなるので　読み込み時に自動的に　頭のジョイントマークをスキップ設定
+		CBone* vroidheadjoint = s_model->GetBoneByName("J_Bip_C_Head");
+		if (!vroidheadjoint) {
+			vroidheadjoint = s_model->GetBoneByName("J_Bip_C_Head_Joint");
+		}
+		if (vroidheadjoint) {
+			SkipJointMarkReq(1, vroidheadjoint, false);
+		}
+	}
 
 
 	if (s_nowloading && s_3dwnd) {
@@ -19637,14 +19657,15 @@ int OnFrameUtCheckBox()
 
 
 
-	if (s_WallScrapingIKCheckBox) {
+	if (s_WallScrapingIKCheckBox && s_WallScrapingCheckBoxFlag) {
 		g_wallscrapingikflag = (int)s_WallScrapingIKCheckBox->GetChecked();
 		if (s_model && (save_wallscrapingikflag != g_wallscrapingikflag)) {
 			PrepairUndo();
 		}
 		save_wallscrapingikflag = g_wallscrapingikflag;
+		s_WallScrapingCheckBoxFlag = false;
 	}
-	if (s_LimitDegCheckBox) {
+	if (s_LimitDegCheckBox && s_LimitDegCheckBoxFlag) {
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
 		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
 			refreshEulerGraph();
@@ -19652,6 +19673,7 @@ int OnFrameUtCheckBox()
 			PrepairUndo();
 		}
 		s_beflimitdegflag = g_limitdegflag;
+		s_LimitDegCheckBoxFlag = false;
 	}
 
 	if (s_BrushMirrorUCheckBoxFlag) {
@@ -22547,7 +22569,6 @@ int CreateUtDialog()
 	}
 
 	{//Experimental新規
-		//g_SampleUI.AddCheckBox(IDC_WALLSCRAPINGIK, L"VSync", startx, iY += addh, checkboxxlen, 16, (g_wallscrapingikflag == 1), 0U, false, &s_WallScrapingIKCheckBox);
 		g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY += addh, checkboxxlen, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
 		s_ui_vsync = g_SampleUI.GetControl(IDC_VSYNC);
 		_ASSERT(s_ui_vsync);
@@ -27306,7 +27327,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.34 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.0.0.35 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -34733,7 +34754,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.34 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.0.0.35 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
