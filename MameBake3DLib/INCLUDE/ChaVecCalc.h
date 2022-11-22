@@ -471,6 +471,7 @@ CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
 
 ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat);
+ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat);
 
 #else
 extern BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul);
@@ -544,6 +545,7 @@ extern CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat);
 
 extern ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat);
 extern ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat);
+extern ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat);
 
 #endif
 

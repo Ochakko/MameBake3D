@@ -445,7 +445,12 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 	//sceneInfo->mRevision = "rev. 2.2";
 	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
 	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
-	sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
+	//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
+	sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+	//######################################################################
+	//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
+	//######################################################################
+
 	sceneInfo->mKeywords = "BVH animation";
 	//sceneInfo->mComment = "no particular comments required.";
 	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
@@ -564,7 +569,13 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
 	//sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
 	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
-	sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
+	//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
+	sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+	//######################################################################
+	//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
+	//######################################################################
+
+
 	if (pmodel->GetHasBindPose() && (pmodel->GetFromNoBindPoseFlag() == false)) {
 		sceneInfo->mKeywords = "skinmesh animation";
 	}
@@ -1983,9 +1994,13 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 	int notexistflag = 0;
 
 	ChaVector3 curpos, parentpos;
+	ChaMatrix bvhmat;
+	bvhmat.SetIdentity();
+
 	if (s_bvhflag == 1){
 		CBVHElem* curbone = fbxbone->GetBvhElem();
 		if (curbone){
+			bvhmat = *(curbone->GetTransMat());
 			curpos = curbone->GetPosition();
 
 			CFBXBone* parfbxbone;
@@ -2052,21 +2067,15 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 	else{
 		//bvhはfbxに変換してから使う。bvhの０フレームをこのソフトで編集する予定は今は無い。
 		ChaVector3 diffvec = curpos - parentpos;
-		float leng = (float)ChaVector3LengthDbl(&diffvec);
-		if (leng >= 0.00001f){
-			//tramat = CalcAxisMatX_aft(parentpos, curpos);
-			calcbone.CalcAxisMatZ_aft(parentpos, curpos, &tramat);
-			tramat.data[MATI_41] = curpos.x;
-			tramat.data[MATI_42] = curpos.y;
-			tramat.data[MATI_43] = curpos.z;
-		}
-		else{
-			ChaMatrixIdentity(&tramat);
-			tramat.data[MATI_41] = curpos.x;
-			tramat.data[MATI_42] = curpos.y;
-			tramat.data[MATI_43] = curpos.z;
-		}
+
+		//2022/11/23 rev. 2.7以降
+		//一般のデータをみると　bindmatは　グローバル軸になっていた(マニピュレータ軸は別件)
+		tramat.SetIdentity();
+		tramat.data[MATI_41] = curpos.x;
+		tramat.data[MATI_42] = curpos.y;
+		tramat.data[MATI_43] = curpos.z;
 	}
+
 	lBindMatrix[0][0] = tramat.data[MATI_11];
 	lBindMatrix[0][1] = tramat.data[MATI_12];
 	lBindMatrix[0][2] = tramat.data[MATI_13];
@@ -3528,7 +3537,24 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	//FbxSkeleton* pskeleton = pNode->GetSkeleton();
 
 
-	if ((pmodel->GetFromBvhFlag() == false) && pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
+	//2022/11/23
+	bool oldbvh = false;
+	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
+	if (sceneinfo) {
+		FbxString oldauther = "OpenRDB user";
+		if (sceneinfo->mAuthor == oldauther) {
+			_ASSERT(0);
+			FbxString currentrev = "rev. 2.7";
+			if (sceneinfo->mRevision != currentrev) {
+				oldbvh = true;//!!!!!!!!!!!!!!!!!!!!
+			}
+		}
+	}
+
+
+	if ((pmodel->GetFromBvhFlag() == false) && 
+		((pmodel->GetFromBvhFlag() == true) && (oldbvh == false)) &&
+		pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
 	//if (bvhflag == 0) {
 		if (pNode) {
 			if (pPose) {

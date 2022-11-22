@@ -105,7 +105,7 @@ public:
 
 	//int GetFBXAnim(FbxScene* pscene, int animno, FbxUInt64 nodeindex, int motid, double animleng, bool callingbythread); // default : callingbythread = false
 	//int GetFBXAnim(int bvhflag, CBone** bonelist, FbxNode** nodelist, int srcbonenum, int animno, int motid, double animleng, bool callingbythread = false);
-	int GetFBXAnim(int bvhflag, FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread = false);
+	int GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread = false);
 	//int AddMotionPointAll(int srcmotid, double animleng);
 	
 /**
@@ -207,8 +207,7 @@ public:
 	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
 	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ボーン軸がX軸
 	float CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
-	float CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータY軸向き
-
+	float CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータX軸向き
 
 /**
  * @fn

@@ -93,24 +93,6 @@ int CThreadingLoadFbx::ThreadFunc()
 		if (InterlockedAdd(&m_start_state, 0) == 1) {
 			if (InterlockedAdd(&m_exit_state, 0) != 1) {//終了していない場合
 
-
-				int bvhflag = 0;
-				//if (GetScene()) {
-				//	FbxDocumentInfo* sceneinfo = GetScene()->GetSceneInfo();
-				//	if (sceneinfo) {
-				//		FbxString mKeywords = "BVH animation";
-				//		if (sceneinfo->mKeywords == mKeywords) {
-				//			bvhflag = 1;//!!!!!! bvhをFBXに変換して保存し、それを読み込んでから保存する場合
-				//		}
-				//	}
-				//}
-				if (GetModel() && GetModel()->GetFromBvhFlag()) {
-					bvhflag = 1;
-				}
-				else {
-					bvhflag = 0;
-				}
-
 				//EnterCriticalSection(&m_CritSection);//呼び出し側で処理終了を待つので不要
 				if (m_model) {
 					if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
@@ -124,7 +106,7 @@ int CThreadingLoadFbx::ThreadFunc()
 							CBone* curbone = m_bonelist[boneno];
 							FbxNode* curnode = m_nodelist[boneno];
 							if (curbone && curnode) {
-								curbone->GetFBXAnim(bvhflag, curnode, m_animno, m_motid, m_animleng, callingbythread);
+								curbone->GetFBXAnim(curnode, m_animno, m_motid, m_animleng, callingbythread);
 							}
 						}
 					}

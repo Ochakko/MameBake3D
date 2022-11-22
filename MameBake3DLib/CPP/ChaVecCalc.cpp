@@ -4364,6 +4364,59 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat)
 }
 
 
+ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	
+	float leng = (float)ChaVector3LengthDbl(&vecx);
+	if (leng < 0.00001f) {
+		retmat.SetIdentity();
+		return retmat;
+	}
+
+
+	ChaVector3Normalize(&vecx, &vecx);
+
+	//###########################################################################################
+	//convmatのvecxをbonevecにする　それに合わせて３軸が互いに垂直になるようにvecy, veczを求める
+	//###########################################################################################
+	ChaVector3 axisx = vecx;
+	ChaVector3 axisy0 = ChaVector3(srcmat.data[MATI_21], srcmat.data[MATI_22], srcmat.data[MATI_23]);
+	ChaVector3 axisz0 = ChaVector3(srcmat.data[MATI_31], srcmat.data[MATI_32], srcmat.data[MATI_33]);
+
+	ChaVector3 axisy1, axisz1;
+	ChaVector3Cross(&axisy1, &axisz0, &axisx);
+	ChaVector3Normalize(&axisy1, &axisy1);
+	ChaVector3Cross(&axisz1, &axisx, &axisy1);
+	ChaVector3Normalize(&axisz1, &axisz1);
+
+	//#####################################
+	//求めた変換ベクトルで　変換行列を作成
+	//#####################################
+	retmat.data[MATI_11] = axisx.x;
+	retmat.data[MATI_12] = axisx.y;
+	retmat.data[MATI_13] = axisx.z;
+
+	retmat.data[MATI_21] = axisy1.x;
+	retmat.data[MATI_22] = axisy1.y;
+	retmat.data[MATI_23] = axisy1.z;
+
+	retmat.data[MATI_31] = axisz1.x;
+	retmat.data[MATI_32] = axisz1.y;
+	retmat.data[MATI_33] = axisz1.z;
+
+	//#########################################################
+	//位置は　ボーンの親の位置　つまりカレントジョイントの位置
+	//#########################################################
+	retmat.data[MATI_41] = srcpos.x;
+	retmat.data[MATI_42] = srcpos.y;
+	retmat.data[MATI_43] = srcpos.z;
+
+	return retmat;
+
+}
 
 
 

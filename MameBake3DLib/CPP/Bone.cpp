@@ -1714,47 +1714,19 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	bonevec = endpos - startpos;
 	ChaVector3Normalize(&bonevec, &bonevec);
 
+
 	//###########################################################################################
 	//convmatのvecxをbonevecにする　それに合わせて３軸が互いに垂直になるようにvecy, veczを求める
 	//###########################################################################################
-	ChaVector3 axisx = bonevec;
-	ChaVector3 axisy0 = ChaVector3(convmat.data[MATI_21], convmat.data[MATI_22], convmat.data[MATI_23]);
-	ChaVector3 axisz0 = ChaVector3(convmat.data[MATI_31], convmat.data[MATI_32], convmat.data[MATI_33]);
-
-	ChaVector3 axisy1, axisz1;
-	ChaVector3Cross(&axisy1, &axisz0, &axisx);
-	ChaVector3Normalize(&axisy1, &axisy1);
-	ChaVector3Cross(&axisz1, &axisx, &axisy1);
-	ChaVector3Normalize(&axisz1, &axisz1);
-
-	//#####################################
-	//求めた変換ベクトルで　変換行列を作成
-	//#####################################
-	dstmat->SetIdentity();
-	dstmat->data[MATI_11] = axisx.x;
-	dstmat->data[MATI_12] = axisx.y;
-	dstmat->data[MATI_13] = axisx.z;
-
-	dstmat->data[MATI_21] = axisy1.x;
-	dstmat->data[MATI_22] = axisy1.y;
-	dstmat->data[MATI_23] = axisy1.z;
-
-	dstmat->data[MATI_31] = axisz1.x;
-	dstmat->data[MATI_32] = axisz1.y;
-	dstmat->data[MATI_33] = axisz1.z;
-
 	//#########################################################
 	//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 	//#########################################################
-	dstmat->data[MATI_41] = aftbonepos.x;
-	dstmat->data[MATI_42] = aftbonepos.y;
-	dstmat->data[MATI_41] = aftbonepos.z;
+	*dstmat = CalcAxisMatX(bonevec, aftbonepos, convmat);//ChaVecCalc.cpp
 
 
 
 	return retleng;
 }
-
 
 
 float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
@@ -1857,39 +1829,10 @@ float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* d
 	//###########################################################################################
 	//convmatのvecxをbonevecにする　それに合わせて３軸が互いに垂直になるようにvecy, veczを求める
 	//###########################################################################################
-	ChaVector3 axisx = bonevec;
-	ChaVector3 axisy0 = ChaVector3(convmat.data[MATI_21], convmat.data[MATI_22], convmat.data[MATI_23]);
-	ChaVector3 axisz0 = ChaVector3(convmat.data[MATI_31], convmat.data[MATI_32], convmat.data[MATI_33]);
-
-	ChaVector3 axisy1, axisz1;
-	ChaVector3Cross(&axisy1, &axisz0, &axisx);
-	ChaVector3Normalize(&axisy1, &axisy1);
-	ChaVector3Cross(&axisz1, &axisx, &axisy1);
-	ChaVector3Normalize(&axisz1, &axisz1);
-
-	//#####################################
-	//求めた変換ベクトルで　変換行列を作成
-	//#####################################
-	dstmat->SetIdentity();
-	dstmat->data[MATI_11] = axisx.x;
-	dstmat->data[MATI_12] = axisx.y;
-	dstmat->data[MATI_13] = axisx.z;
-
-	dstmat->data[MATI_21] = axisy1.x;
-	dstmat->data[MATI_22] = axisy1.y;
-	dstmat->data[MATI_23] = axisy1.z;
-
-	dstmat->data[MATI_31] = axisz1.x;
-	dstmat->data[MATI_32] = axisz1.y;
-	dstmat->data[MATI_33] = axisz1.z;
-
 	//#########################################################
 	//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 	//#########################################################
-	dstmat->data[MATI_41] = aftbonepos.x;
-	dstmat->data[MATI_42] = aftbonepos.y;
-	dstmat->data[MATI_43] = aftbonepos.z;
-
+	*dstmat = CalcAxisMatX(bonevec, aftbonepos, convmat);//ChaVecCalc.cpp
 
 	ChaVector3 diffvec = aftbonepos - aftchildpos;
 	float retleng = (float)ChaVector3LengthDbl(&diffvec);
@@ -6889,7 +6832,7 @@ int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 	return 0;
 }
 
-int CBone::GetFBXAnim(int bvhflag, FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread)
+int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread)
 {
 	if (GetGetAnimFlag() == 0) {
 		SetGetAnimFlag(1);
