@@ -25347,7 +25347,7 @@ int InitMpFromTool()
 int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
 	if (curbone){
-		if (curbone->GetChild()){
+		//if (curbone->GetChild()){//2022/11/23 CommentOut なぜこのif文があったのか？ 不具合によりエンドジョイントにモーションポイントが無かったから？
 			if (initmode == INITMP_ROTTRA){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -25386,7 +25386,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				//int initscaleflag1 = 1;//!!!!!!!
 				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);//scale計算無し
 			}
-		}
+		//}
 	}
 	return 0;
 }
