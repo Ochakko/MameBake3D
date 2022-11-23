@@ -237,7 +237,7 @@
     <RigName>L_Thumb</RigName>
     <OwnerBone>J_Bip_L_Thumb3_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
-    <ElemNum>3</ElemNum>
+    <ElemNum>2</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
@@ -246,10 +246,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_L_Thumb3_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>-1.000000</RateU>
+      <RateU>-0.100000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
-      <RateV>-1.000000</RateV>
+      <RateV>-0.100000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -257,21 +257,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_L_Thumb2_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>-1.000000</RateU>
+      <RateU>-0.850000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
-      <RateV>-1.000000</RateV>
-      <EnableV>1</EnableV>
-    </RigElem>
-    <RigElem>
-    <RigRigName>!noname!</RigRigName>
-    <RigRigNo>-1</RigRigNo>
-      <BoneName>J_Bip_L_Thumb1_Joint</BoneName>
-      <AxisU>Y</AxisU>
-      <RateU>-1.000000</RateU>
-      <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>-1.000000</RateV>
+      <RateV>-0.850000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -511,7 +500,7 @@
     <RigName>R_Thumb</RigName>
     <OwnerBone>J_Bip_R_Thumb3_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
-    <ElemNum>3</ElemNum>
+    <ElemNum>2</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
@@ -520,10 +509,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_R_Thumb3_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>0.100000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <RateV>0.100000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -531,21 +520,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_R_Thumb2_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>0.850000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
-      <EnableV>1</EnableV>
-    </RigElem>
-    <RigElem>
-    <RigRigName>!noname!</RigRigName>
-    <RigRigNo>-1</RigRigNo>
-      <BoneName>J_Bip_R_Thumb1_Joint</BoneName>
-      <AxisU>Y</AxisU>
-      <RateU>1.000000</RateU>
-      <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <RateV>0.850000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
