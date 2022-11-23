@@ -522,7 +522,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 
 	s_firstoutmot = 1;
 
-	WriteBindPose(pScene, 1);
+	//WriteBindPose(pScene, 1);//2022/11/23 bvh2fbxの場合にはbindmatを書き込まない 生成したfbx読み込み時にNodeMatが作成される
 
 	if( s_ai ){
 		free( s_ai );
@@ -2068,8 +2068,7 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 		//bvhはfbxに変換してから使う。bvhの０フレームをこのソフトで編集する予定は今は無い。
 		ChaVector3 diffvec = curpos - parentpos;
 
-		//2022/11/23 rev. 2.7以降
-		//一般のデータをみると　bindmatは　グローバル軸になっていた(マニピュレータ軸は別件)
+		////2022/11/23 rev. 2.7以降 bvh2fbx時にはここを通らない(bindmatは書き込まない)
 		tramat.SetIdentity();
 		tramat.data[MATI_41] = curpos.x;
 		tramat.data[MATI_42] = curpos.y;
@@ -3552,8 +3551,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	}
 
 
-	if ((pmodel->GetFromBvhFlag() == false) && 
-		((pmodel->GetFromBvhFlag() == true) && (oldbvh == false)) &&
+	if (((pmodel->GetFromBvhFlag() == false) || ((pmodel->GetFromBvhFlag() == true) && (oldbvh == false))) &&
 		pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
 	//if (bvhflag == 0) {
 		if (pNode) {
