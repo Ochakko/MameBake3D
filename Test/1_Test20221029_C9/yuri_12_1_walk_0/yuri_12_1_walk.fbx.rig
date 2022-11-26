@@ -142,7 +142,7 @@
     <RigName>Close</RigName>
     <OwnerBone>LeftThumbDistal_end_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
-    <ElemNum>4</ElemNum>
+    <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
@@ -151,10 +151,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftThumbDistal_end_Joint</BoneName>
       <AxisU>Y</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Z</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Y</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -164,8 +164,8 @@
       <AxisU>Y</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Z</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Y</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -175,18 +175,7 @@
       <AxisU>Y</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Z</AxisV>
-      <RateV>0.000000</RateV>
-      <EnableV>1</EnableV>
-    </RigElem>
-    <RigElem>
-    <RigRigName>!noname!</RigRigName>
-    <RigRigNo>-1</RigRigNo>
-      <BoneName>LeftThumbProximal_Joint</BoneName>
-      <AxisU>Y</AxisU>
-      <RateU>-1.800000</RateU>
-      <EnableU>1</EnableU>
-      <AxisV>Z</AxisV>
+      <AxisV>Y</AxisV>
       <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
@@ -204,10 +193,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftIndexDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -217,8 +206,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -228,8 +217,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -239,8 +228,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -257,10 +246,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftMiddleDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -270,8 +259,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -281,8 +270,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -292,8 +281,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -310,10 +299,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftRingDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -324,7 +313,7 @@
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
-      <RateV>0.000000</RateV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -334,8 +323,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -345,8 +334,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -363,10 +352,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>LeftLittleDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -376,8 +365,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -387,8 +376,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -398,8 +387,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -472,7 +461,7 @@
       <RateU>3.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Y</AxisV>
-      <RateV>0.000000</RateV>
+      <RateV>3.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -544,7 +533,7 @@
     <RigName>Close</RigName>
     <OwnerBone>RightThumbDistal_end_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
-    <ElemNum>4</ElemNum>
+    <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
@@ -581,17 +570,6 @@
       <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
-    <RigElem>
-    <RigRigName>!noname!</RigRigName>
-    <RigRigNo>-1</RigRigNo>
-      <BoneName>RightThumbProximal_Joint</BoneName>
-      <AxisU>Y</AxisU>
-      <RateU>-1.800000</RateU>
-      <EnableU>1</EnableU>
-      <AxisV>Z</AxisV>
-      <RateV>1.000000</RateV>
-      <EnableV>1</EnableV>
-    </RigElem>
   </Bone>
   <Bone>
     <RigName>Close</RigName>
@@ -605,11 +583,11 @@
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightIndexDistal_end_Joint</BoneName>
-      <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <AxisU>Y</AxisU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -619,8 +597,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -630,8 +608,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -641,8 +619,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -659,10 +637,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightMiddleDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -672,8 +650,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -683,8 +661,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -694,8 +672,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -712,10 +690,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightRingDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -725,8 +703,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -736,8 +714,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -747,8 +725,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -765,10 +743,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>RightLittleDistal_end_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>0.000000</RateU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -778,8 +756,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -789,8 +767,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>0.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -800,8 +778,8 @@
       <AxisU>Z</AxisU>
       <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>Y</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Z</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
