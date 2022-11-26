@@ -1112,6 +1112,7 @@ static bool s_IcloseFlag = false;
 static bool s_GcloseFlag = false;
 static bool s_undoFlag = false;
 static bool s_redoFlag = false;
+static bool s_undoredoFromPlayerButton = false;
 static bool s_copyFlag = false;			// コピーフラグ
 static bool s_zeroFrameFlag = false;
 //static bool s_oneFrameFlag = false;
@@ -2801,6 +2802,7 @@ void InitApp()
 	s_GcloseFlag = false;
 	s_undoFlag = false;
 	s_redoFlag = false;
+	s_undoredoFromPlayerButton = false;
 	s_copyFlag = false;			// コピーフラグ
 	s_zeroFrameFlag = false;
 	//s_oneFrameFlag = false;
@@ -5971,6 +5973,7 @@ void PrepairUndo()
 	//リターゲットバッチ中はSaveUndoしない
 	//モデル削除時、モーション削除時はSaveUndoしない
 	//UndoRedoボタンを押した場合にはSaveUndoしない
+
 	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) && (s_underdelmotion == 0) && (s_undoFlag == false) && (s_redoFlag == false)) {
 		//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
 		//その影響で選択範囲の未編集状態も保存する必要が生じた
@@ -20579,7 +20582,15 @@ int OnFrameTimeLineWnd()
 					//s_editmotionflag = s_curboneno;
 					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
 					CEditRange::SetApplyRate((double)g_applyrate);
-					PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+
+					if (s_undoredoFromPlayerButton == false) {
+						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+					}
+					else {
+						//playerbuttonからのundoredo時には　SaveUndoMotionしない
+						s_undoredoFromPlayerButton = false;
+					}
+					
 				}
 			}
 		}
@@ -20588,31 +20599,35 @@ int OnFrameTimeLineWnd()
 	if (s_LupFlag) {
 		if (s_owpLTimeline) {
 			if (g_previewFlag == 0) {
-				if (s_prevrangeFlag || s_nextrangeFlag) {
-					RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
-					s_buttonselectstart = s_editrange.GetStartFrame();
-					s_buttonselectend = s_editrange.GetEndFrame();
+				//###################################################
+				//prevrange nextrangeは　undo redo処理に変わりました
+				//選択範囲だけの　履歴機能は　コメントアウト
+				//###################################################
+				//if (s_prevrangeFlag || s_nextrangeFlag) {
+				//	RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
+				//	s_buttonselectstart = s_editrange.GetStartFrame();
+				//	s_buttonselectend = s_editrange.GetEndFrame();
 
-					g_underselectingframe = 0;
+				//	g_underselectingframe = 0;
 
-					if (s_editmotionflag < 0) {
-						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-						if (result) {
-							_ASSERT(0);
-						}
-					}
+				//	if (s_editmotionflag < 0) {
+				//		int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				//		if (result) {
+				//			_ASSERT(0);
+				//		}
+				//	}
 
-					OnTimeLineButtonSelectFromSelectStartEnd(0);
+				//	OnTimeLineButtonSelectFromSelectStartEnd(0);
 
-					//2022/09/13
-					if (s_owpLTimeline) {
-						//s_editmotionflag = s_curboneno;
-						s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-						CEditRange::SetApplyRate((double)g_applyrate);
-						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
-					}
+				//	//2022/09/13
+				//	if (s_owpLTimeline) {
+				//		//s_editmotionflag = s_curboneno;
+				//		s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+				//		CEditRange::SetApplyRate((double)g_applyrate);
+				//		PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+				//	}
 
-				}
+				//}
 			}
 			else {
 				//再生ボタンが押されたとき
@@ -22741,6 +22756,10 @@ int CreateLongTimelineWnd()
 
 			RollbackCurBoneNo();//2022/11/07
 			s_undoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　アンドゥに
+
+			//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
+			//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
+			s_undoredoFromPlayerButton = true;
 		}
 	});
 	s_owpPlayerButton->setNextRangeButtonListener([](){  
@@ -22750,6 +22769,10 @@ int CreateLongTimelineWnd()
 
 			RollbackCurBoneNo();//2022/11/07
 			s_redoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　リドゥに
+
+			//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
+			//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
+			s_undoredoFromPlayerButton = true;
 		}
 	});
 	s_owpPlayerButton->setPlusDispButtonListener([]() {
