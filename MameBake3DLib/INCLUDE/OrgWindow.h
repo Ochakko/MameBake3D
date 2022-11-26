@@ -3354,11 +3354,11 @@ void s_dummyfunc()
 				OneButtonParam *btnPrm;
 				switch(i){
 				case 0: btnPrm= &reset; break;
-				case 1: btnPrm= &backStep; break;
+				case 1: btnPrm= &backStep; break;//step to one
 				case 2: btnPrm= &backPlay; break;
 				case 3: btnPrm= &stop; break;
 				case 4: btnPrm= &frontPlay; break;
-				case 5: btnPrm= &frontStep; break;
+				case 5: btnPrm = &frontStep; break;//step to the last
 				case 6: btnPrm = &onefps; break;
 				case 7: btnPrm = &selecttolast; break;
 				case 8: btnPrm = &btreset; break;

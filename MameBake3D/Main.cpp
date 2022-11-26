@@ -1114,7 +1114,7 @@ static bool s_undoFlag = false;
 static bool s_redoFlag = false;
 static bool s_copyFlag = false;			// コピーフラグ
 static bool s_zeroFrameFlag = false;
-static bool s_oneFrameFlag = false;
+//static bool s_oneFrameFlag = false;
 static bool s_selCopyHisotryFlag = false;
 static bool s_symcopyFlag = false;
 static bool s_undersymcopyFlag = false;
@@ -1803,7 +1803,6 @@ static int OnFrameCloseFlag();
 static int OnFrameTimeLineWnd();
 static int OnFrameMouseButton();
 static int OnFrameToolWnd();
-static int OnFramePlayButton();
 static int OnFrameStartPreview(double curtime, double* psavetime);
 static int OnFrameBatchThread();
 //static int OnFrame();
@@ -2804,7 +2803,7 @@ void InitApp()
 	s_redoFlag = false;
 	s_copyFlag = false;			// コピーフラグ
 	s_zeroFrameFlag = false;
-	s_oneFrameFlag = false;
+	//s_oneFrameFlag = false;
 	s_selCopyHisotryFlag = false;
 	s_symcopyFlag = false;
 	s_undersymcopyFlag = false;
@@ -5437,7 +5436,6 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		OnFrameTimeLineWnd();
 
 
-		OnFramePlayButton();
 		OnFrameMouseButton();
 
 		s_time = fTime;
@@ -20439,38 +20437,85 @@ int OnFrameTimeLineWnd()
 				g_playingstart = 0.0;
 				g_playingend = 0.0;
 				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
-
-				if (s_editmotionflag < 0) {
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
-						_ASSERT(0);
-					}
+				SetShowPosTime();
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				if (result) {
+					_ASSERT(0);
 				}
+				PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+				g_underselectingframe = 0;
 			}
 		}
 		s_zeroFrameFlag = false;
 	}
 
-	if (s_oneFrameFlag) {
+	if (s_firstkeyFlag) {
 		if (s_model) {
-			if (s_owpTimeline && s_owpLTimeline && s_owpEulerGraph) {
-				s_buttonselectstart = 1.0;
-				s_buttonselectend = 1.0;
-				s_buttonselecttothelast = 0;
-				g_playingstart = 1.0;
-				g_playingend = 1.0;
-				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
-
-				if (s_editmotionflag < 0) {
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
-						_ASSERT(0);
-					}
-				}
+			s_buttonselectstart = 1.0;
+			s_buttonselectend = 1.0;
+			s_buttonselecttothelast = 0;
+			g_playingstart = 1.0;
+			g_playingend = 1.0;
+			OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
+			SetShowPosTime();
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
 			}
+			PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+			g_underselectingframe = 0;
 		}
-		s_oneFrameFlag = false;
+		s_firstkeyFlag = false;
 	}
+
+	if (s_lastkeyFlag) {
+		if (s_model) {
+			double lastframe = s_model->GetCurMotInfo()->frameleng - 1.0;
+
+			s_buttonselectstart = lastframe;
+			s_buttonselectend = lastframe;
+			s_buttonselecttothelast = 0;
+			g_playingstart = lastframe;
+			g_playingend = lastframe;
+			OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
+			SetShowPosTime();
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
+			}
+			PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+			g_underselectingframe = 0;
+		}
+		s_lastkeyFlag = false;
+	}
+
+	if (g_selecttolastFlag) {
+		if (s_model) {
+			s_buttonselectstart = s_owpLTimeline->getCurrentTime();
+			if (s_model && s_model->GetCurMotInfo()) {
+				s_buttonselectend = s_model->GetCurMotInfo()->frameleng - 1.0;
+			}
+			else {
+				s_buttonselectend = s_buttonselectstart;
+			}
+			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
+			CEditRange::SetApplyRate((double)g_applyrate);
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
+			OnTimeLineSelectFromSelectedKey();
+			DisplayApplyRateText();
+			SetShowPosTime();
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if (result) {
+				_ASSERT(0);
+			}
+			PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+
+			g_underselectingframe = 0;
+		}
+		g_selecttolastFlag = false;
+	}
+
+
 
 
 	if (s_LstartFlag) {
@@ -20567,38 +20612,6 @@ int OnFrameTimeLineWnd()
 						PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 					}
 
-				}
-				else if (g_selecttolastFlag == true) {
-					//ToTheLastFrame
-					//OnTimeLineButtonSelectFromSelectStartEnd(1);
-					//
-					//s_buttonselectstart = s_editrange.GetStartFrame();
-					//s_buttonselectend = s_editrange.GetEndFrame();
-					////double currentframe = (double)((int)(s_buttonselectstart + (s_buttonselectend - s_buttonselectstart) * (g_applyrate / 100.0)));//editrangeと同じ式
-
-					s_buttonselectstart = s_owpLTimeline->getCurrentTime();
-					if (s_model && s_model->GetCurMotInfo()) {
-						s_buttonselectend = s_model->GetCurMotInfo()->frameleng - 1.0;
-					}
-					else {
-						s_buttonselectend = s_buttonselectstart;
-					}
-					g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
-					CEditRange::SetApplyRate((double)g_applyrate);
-					OnTimeLineButtonSelectFromSelectStartEnd(0);
-					OnTimeLineSelectFromSelectedKey();
-					DisplayApplyRateText();
-					SetShowPosTime();
-
-					if (s_editmotionflag < 0) {
-						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-						if (result) {
-							_ASSERT(0);
-						}
-					}
-					PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
-
-					g_underselectingframe = 0;
 				}
 			}
 			else {
@@ -21637,55 +21650,6 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 }
 
 
-int OnFramePlayButton()
-{
-
-
-	if (s_firstkeyFlag){
-		//先頭フレームへ
-		s_firstkeyFlag = false;
-		g_previewFlag = 0;
-		//if (s_owpTimeline){
-		//	s_owpLTimeline->setCurrentTime(1.0, true);
-		//	s_owpEulerGraph->setCurrentTime(1.0, false);
-		//}
-		double newframe = 1.0;
-		s_buttonselectstart = newframe;
-		s_buttonselectend = newframe;
-		OnTimeLineButtonSelectFromSelectStartEnd(0);
-	}
-	if (s_lastkeyFlag){
-		//最終フレームへ
-		s_lastkeyFlag = false;
-		g_previewFlag = 0;
-		//if (s_model){
-		//	if (s_owpTimeline){
-		//		MOTINFO* curmi = s_model->GetCurMotInfo();
-		//		if (curmi){
-		//			double lastframe = max(0, s_model->GetCurMotInfo()->frameleng - 1.0);
-		//			s_owpLTimeline->setCurrentTime(lastframe, true);
-		//			s_owpEulerGraph->setCurrentTime(lastframe, false);
-		//		}
-		//	}
-		//}
-		double newframe = 1.0;
-		//if (s_owpLTimeline) {
-		//	newframe = s_owpLTimeline->getMaxTime();
-		//}
-		if (s_model){
-			if (s_owpTimeline){
-				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi){
-					newframe = max(0.0, s_model->GetCurMotInfo()->frameleng - 1.0);
-				}
-			}
-		}
-		s_buttonselectstart = newframe;
-		s_buttonselectend = newframe;
-		OnTimeLineButtonSelectFromSelectStartEnd(0);
-	}
-	return 0;
-}
 
 int OnSpriteUndo()
 {
@@ -22676,16 +22640,32 @@ int CreateLongTimelineWnd()
 	});
 	
 
-	s_owpPlayerButton->setFrontStepButtonListener([](){ 
+	s_owpPlayerButton->setFrontStepButtonListener([](){
+		//##################################
+		//means to step to the last frame
+		//##################################
 		if (s_model) {
-			s_LstartFlag = true; s_LcursorFlag = true; s_lastkeyFlag = true;
+			//s_LstartFlag = true; s_LcursorFlag = true; s_lastkeyFlag = true;
 			//s_LtimelineWnd->setDoneFlag(1);
+
+			s_LstopFlag = true;
+			g_previewFlag = 0;
+			s_LcursorFlag = true;
+			s_lastkeyFlag = true;
 		}
 	});
 	s_owpPlayerButton->setBackStepButtonListener([]() {
+		//##################################
+		//means to step to the first frame
+		//##################################
 		if (s_model) {
-			s_LstartFlag = true; s_LcursorFlag = true; s_firstkeyFlag = true;
+			//s_LstartFlag = true; s_LcursorFlag = true; s_firstkeyFlag = true;
 			//s_LtimelineWnd->setDoneFlag(1);
+
+			s_LstopFlag = true;
+			g_previewFlag = 0;
+			s_LcursorFlag = true;
+			s_firstkeyFlag = true;
 		}
 	});
 
@@ -22717,13 +22697,16 @@ int CreateLongTimelineWnd()
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
 	});
-	s_owpPlayerButton->setResetButtonListener([](){ 
+	s_owpPlayerButton->setResetButtonListener([](){
+		//##############################################
+		// means to stop preview and step to first key 
+		//##############################################
 		if (s_model) {
 			if (s_owpLTimeline) {
 				s_LstopFlag = true;
 				g_previewFlag = 0;
 				s_LcursorFlag = true;
-				s_oneFrameFlag = true;
+				s_firstkeyFlag = true;
 				//s_LtimelineWnd->setDoneFlag(1);
 			}
 		}
@@ -22732,10 +22715,16 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setSelectToLastButtonListener([](){  
 		if (s_model) {
 			//g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
-
-			g_underselecttolast = false;  s_LcursorFlag = true; g_selecttolastFlag = true;
-
+			//g_underselecttolast = false;  s_LcursorFlag = true; g_selecttolastFlag = true;
 			////s_LtimelineWnd->setDoneFlag(1);
+
+			if (s_owpLTimeline) {
+				s_LstopFlag = true;
+				g_previewFlag = 0;
+				s_LcursorFlag = true;
+				g_selecttolastFlag = true;
+				//s_LtimelineWnd->setDoneFlag(1);
+			}
 		}
 	});
 	s_owpPlayerButton->setBtResetButtonListener([](){  
