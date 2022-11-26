@@ -4540,7 +4540,7 @@ void s_dummyfunc()
 
 				//for (int j = 0; j < (int)lineData.size(); j++){
 				int j = 1;
-				if (j < (int)lineData.size()) {
+				if (j < (int)lineData.size()) {//lineのインデックス
 					LineData* curLineData = lineData[j];
 					if (curLineData) {
 						if (tothelastflag == 1) {
@@ -4550,7 +4550,7 @@ void s_dummyfunc()
 							int startindex = curLineData->getKeyIndex(tmpstart);
 							if (startindex >= 0) {
 								int currentkeynum = (int)curLineData->key.size();
-								for (int i = startindex; i < currentkeynum; i++) {
+								for (int i = startindex; i < currentkeynum; i++) {//keyのインデックス
 									if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
 										curLineData->key[i]->select = true;
 										if (maxframe < curLineData->key[i]->time) {
@@ -4578,7 +4578,7 @@ void s_dummyfunc()
 							int startindex = curLineData->getKeyIndex(tmpstart);
 							int endindex = curLineData->getKeyIndex(tmpend);
 							if ((startindex >= 0) && (endindex >= 0)) {
-								for (int i = startindex; i <= endindex; i++) {
+								for (int i = startindex; i <= endindex; i++) {//keyのインデックス
 									if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
 										(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
 										curLineData->key[i]->select = true;

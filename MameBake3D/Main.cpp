@@ -820,7 +820,7 @@ static int s_ikkind = 0;
 
 //PICKRANGEを大きくするとジョイントではなく疑似ボーンドラッグまで可能になるが、マニピュレータのリングのpickが難しくなる
 #define PICKRANGE	16
-static PICKINFO s_pickinfo;
+static UIPICKINFO s_pickinfo;
 static vector<TLELEM> s_tlarray;
 
 
@@ -1150,7 +1150,7 @@ static bool s_LcursorFlag = false;			// カーソル移動フラグ
 static bool s_LupFlag = false;
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
-static int s_LstopDoneCount = 0;
+//static int s_LstopDoneCount = 0;
 
 static int s_calclimitedwmState = 0;
 
@@ -1999,7 +1999,7 @@ static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
-static int PickRigBone(PICKINFO* ppickinfo);
+static int PickRigBone(UIPICKINFO* ppickinfo);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
 
 
@@ -2831,7 +2831,7 @@ void InitApp()
 	s_LupFlag = false;
 	s_LstartFlag = false;
 	s_LstopFlag = false;
-	s_LstopDoneCount = 0;
+	//s_LstopDoneCount = 0;
 	s_EcursorFlag = false;			// カーソル移動フラグ
 	s_timelineRUpFlag = false;
 	s_timelinembuttonFlag = false;
@@ -3248,7 +3248,7 @@ void InitApp()
 
 
 //////////
-	ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
+	::ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 
 	s_modelpanel.panel = 0;
 	s_modelpanel.radiobutton = 0;
@@ -6886,16 +6886,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 									s_pickinfo.buttonflag = PICK_Z;
 								}
 								else{
-									ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+									ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 								}
 							}
 							else{
-								ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+								ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 								s_pickinfo.pickobjno = -1;
 							}
 						//}
 						//else{
-						//	ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+						//	ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 						//}
 					}
 				}
@@ -6905,7 +6905,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						s_curboneno = -1;
 						s_customrigbone = 0;
 
-						ZeroMemory(&s_pickinfo, sizeof(PICKINFO));
+						ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 						s_pickinfo.pickobjno = -1;
 					}
 				}
@@ -6917,7 +6917,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//}
 			}
 		}else{
-			ZeroMemory( &s_pickinfo, sizeof( PICKINFO ) );
+			ZeroMemory( &s_pickinfo, sizeof( UIPICKINFO ) );
 			s_pickinfo.pickobjno = -1;
 		}
 
@@ -17642,8 +17642,8 @@ int SetSelectState()
 		s_select->SetDispFlag( "ringZ", 0 );
 	}
 ////////
-	PICKINFO pickinfo;
-	ZeroMemory( &pickinfo, sizeof( PICKINFO ) );
+	UIPICKINFO pickinfo;
+	ZeroMemory( &pickinfo, sizeof( UIPICKINFO ) );
 	POINT ptCursor;
 	GetCursorPos( &ptCursor );
 	::ScreenToClient( s_3dwnd, &ptCursor );
@@ -17714,11 +17714,11 @@ int SetSelectState()
 				else if (colliobjz || colliringz){
 					pickinfo.buttonflag = PICK_Z;
 				}else{
-					ZeroMemory( &pickinfo, sizeof( PICKINFO ) );
+					ZeroMemory( &pickinfo, sizeof( UIPICKINFO ) );
 					pickinfo.pickobjno = -1;
 				}
 			}else{
-				ZeroMemory( &pickinfo, sizeof( PICKINFO ) );
+				ZeroMemory( &pickinfo, sizeof( UIPICKINFO ) );
 				pickinfo.pickobjno = -1;
 			}
 		}
@@ -20505,6 +20505,41 @@ int OnFrameTimeLineWnd()
 		s_cursorFlag = false;
 	}
 
+
+	//selectFlagは　タイムライン選択範囲が１フレームでも変わるとtrueになる
+	if (s_selectFlag) {//selectFlagとLupFlagは本来は別物　しかしLupのときだけ処理するものがある
+		if (s_owpLTimeline) {
+			s_selectFlag = false;
+			s_selectKeyInfoList.clear();
+			s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
+			s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
+			CEditRange::SetApplyRate((double)g_applyrate);
+			s_buttonselectstart = s_editrange.GetStartFrame();
+			s_buttonselectend = s_editrange.GetEndFrame();
+			g_underselectingframe = 0;
+			//_ASSERT(0);
+
+			if (s_LupFlag) {//selectFlagとLupFlagは本来は別物　しかしLupのときだけ処理するものがある
+				if (s_editmotionflag < 0) {
+					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+					if (result) {
+						_ASSERT(0);
+					}
+				}
+
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
+
+				//2022/09/13
+				if (s_owpLTimeline) {
+					//s_editmotionflag = s_curboneno;
+					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+					CEditRange::SetApplyRate((double)g_applyrate);
+					PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
+				}
+			}
+		}
+	}
+
 	if (s_LupFlag) {
 		if (s_owpLTimeline) {
 			if (g_previewFlag == 0) {
@@ -20533,78 +20568,13 @@ int OnFrameTimeLineWnd()
 					}
 
 				}
-				else if (g_selecttolastFlag == false) {
-
-					if (!s_LstopFlag && (s_LstopDoneCount != 1)) {//s_LstopDoneFlag == 1 : stopボタンを押して１回目のup処理はスキップ　選択範囲を保つため
-					//LupとLstopのどちらが先に実行されるかが確定しない場合がある　
-					//stop処理の直後にここが実行されると選択範囲が　カレント１フレーム長になってしまう　よってstopとCount==1のときはスキップ
-					//Lupが先に実行された場合に次のLupもスキップされる副作用
-						if (s_selectFlag) {
-							s_selectFlag = false;
-							s_selectKeyInfoList.clear();
-							s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
-							s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
-							CEditRange::SetApplyRate((double)g_applyrate);
-							s_buttonselectstart = s_editrange.GetStartFrame();
-							s_buttonselectend = s_editrange.GetEndFrame();
-							g_underselectingframe = 0;
-							//_ASSERT(0);
-						}
-						else {
-							s_buttonselectstart = s_owpLTimeline->getCurrentTime();
-							s_buttonselectend = s_owpLTimeline->getCurrentTime();
-							g_underselectingframe = 0;
-							//_ASSERT(0);
-						}
-
-						if (s_editmotionflag < 0) {
-							int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-							if (result) {
-								_ASSERT(0);
-							}
-						}
-
-						OnTimeLineButtonSelectFromSelectStartEnd(0);
-
-						//2022/09/13
-						if (s_owpLTimeline) {
-							//s_editmotionflag = s_curboneno;
-							s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-							CEditRange::SetApplyRate((double)g_applyrate);
-							PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
-						}
-
-
-					}
-					//else {
-					//	//停止ボタンが押されたとき
-					//	//_ASSERT(0);
-					//	//s_buttonselectstart = s_editrange.GetStartFrame();
-					//	//s_buttonselectend = s_editrange.GetEndFrame();
-
-					//	SetButtonStartEndFromPlaying();
-
-					//	g_underselectingframe = 0;
-					//	//_ASSERT(0);
-
-					//	//int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					//	//if (result) {
-					//	//	_ASSERT(0);
-					//	//}
-
-					//	OnTimeLineButtonSelectFromSelectStartEnd(0);
-					//	//_ASSERT(0);
-					//}
-
-				}
-				else {
+				else if (g_selecttolastFlag == true) {
 					//ToTheLastFrame
 					//OnTimeLineButtonSelectFromSelectStartEnd(1);
 					//
 					//s_buttonselectstart = s_editrange.GetStartFrame();
 					//s_buttonselectend = s_editrange.GetEndFrame();
 					////double currentframe = (double)((int)(s_buttonselectstart + (s_buttonselectend - s_buttonselectstart) * (g_applyrate / 100.0)));//editrangeと同じ式
-
 
 					s_buttonselectstart = s_owpLTimeline->getCurrentTime();
 					if (s_model && s_model->GetCurMotInfo()) {
@@ -20620,18 +20590,6 @@ int OnFrameTimeLineWnd()
 					DisplayApplyRateText();
 					SetShowPosTime();
 
-
-					//if (s_owpLTimeline) {//2022/10/22
-					//	s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-					//	g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
-					//	CEditRange::SetApplyRate((double)g_applyrate);
-					//	double applyframe = s_editrange.GetApplyFrame();
-					//	//s_owpTimeline->setCurrentTime(applyframe, false, true);
-					//	s_owpLTimeline->setCurrentTime(applyframe, true);
-					//	s_owpEulerGraph->setCurrentTime(applyframe, false, true);
-					//	SetShowPosTime();
-					//}
-
 					if (s_editmotionflag < 0) {
 						int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 						if (result) {
@@ -20640,18 +20598,8 @@ int OnFrameTimeLineWnd()
 					}
 					PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 
-					////2022/09/13
-					//if (s_owpLTimeline) {
-					//	//s_editmotionflag = s_curboneno;
-					//	s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-					//	CEditRange::SetApplyRate((double)g_applyrate);
-					//	PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
-					//}
-
-					g_underselectingframe = 0;//!!!! 2021/06/18
+					g_underselectingframe = 0;
 				}
-
-
 			}
 			else {
 				//再生ボタンが押されたとき
@@ -20672,10 +20620,6 @@ int OnFrameTimeLineWnd()
 		}
 
 		s_LstartFlag = false;
-		//s_LstopFlag = false;
-		if (s_LstopDoneCount == 1) {
-			s_LstopDoneCount = 2;//２回 lupをスキップしないように
-		}
 		g_selecttolastFlag = false;
 		s_prevrangeFlag = false;
 		s_nextrangeFlag = false;
@@ -20686,25 +20630,7 @@ int OnFrameTimeLineWnd()
 
 
 	if (s_LcursorFlag) {
-		//if (g_underselectingframe == 0) {
-		//	//これがないとモーション停止ボタンを押した後にselect表示されない。
-		//	s_buttonselectstart = s_editrange.GetStartFrame();
-		//	s_buttonselectend = s_editrange.GetEndFrame();
-		//	
-		//	//if (s_copyKeyInfoList.size() == 0) {//フレームを選択していないときだけ呼ぶ。選択済のときにTimeline::OnSelectButtonがループするのを防止
-		//		OnTimeLineButtonSelectFromSelectStartEnd(0);
-		//	//}
-		//}
-
-		//g_underselectingframe = 1;
 		OnTimeLineCursor(0, 0.0);
-
-		//if (g_previewFlag != 0) {
-		//	//これがないとモーション再生中にselectが表示されない。
-		//	s_buttonselectstart = s_previewrange.GetStartFrame();
-		//	s_buttonselectend = s_previewrange.GetEndFrame();
-		//	OnTimeLineButtonSelectFromSelectStartEnd(0);
-		//}
 
 		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 			if (g_previewFlag == 0) {//underchecking
@@ -20720,15 +20646,6 @@ int OnFrameTimeLineWnd()
 		}
 
 		OnFrameAngleLimit();
-
-		//if (s_anglelimitdlg) {
-		//	int setcheckflag = 0;
-		//	if (s_underanglelimithscroll == 0) {//HScroll中に値を取得して設定するとスライダーが動かないから
-		//		AngleLimit2Bone();
-		//		Bone2AngleLimit(setcheckflag);
-		//		AngleLimit2Dlg(s_anglelimitdlg);
-		//	}
-		//}
 
 		s_LcursorFlag = false;
 	}
@@ -20759,17 +20676,6 @@ int OnFrameTimeLineWnd()
 			s_owpLTimeline->setCurrentTime(currenttime, false, true);
 			s_owpEulerGraph->setCurrentTime(currenttime, false, true);
 		}
-
-
-		if ((s_LstopDoneCount == 0) || (s_LstopDoneCount == 2)) {
-			s_LstopDoneCount = 1;//Lupで選択範囲がカレントフレーム１つになるのを防ぐ
-		}
-		
-		//if (s_owpLTimeline) {
-		//	//s_editmotionflag = s_curboneno;
-		//	s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-		//	PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
-		//}
 
 		s_LstopFlag = false;
 	}
@@ -21881,11 +21787,11 @@ int OnSpriteUndo()
 			//注意：applyrateはbrushstateには入っていない
 			g_applyrate = (int)tmpapplyrate;
 			CEditRange::SetApplyRate((double)g_applyrate);
-			OnTimeLineButtonSelectFromSelectStartEnd(0);
+			
+			OnTimeLineButtonSelectFromSelectStartEnd(0);					
 			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
 			DisplayApplyRateText();
-
 
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 			if (result) {
@@ -21894,6 +21800,10 @@ int OnSpriteUndo()
 
 			//SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
+			SavePlayingStartEnd();
+
+			//s_selectFlag = true;
+			//s_LupFlag = true;
 		}
 	}
 
@@ -36688,7 +36598,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	return retmat;
 }
 
-int PickRigBone(PICKINFO* ppickinfo)
+int PickRigBone(UIPICKINFO* ppickinfo)
 {
 	if (!s_model || !ppickinfo) {
 		return -1;
@@ -36722,7 +36632,7 @@ int PickRigBone(PICKINFO* ppickinfo)
 
 						int chkboneno = curbone->GetBoneNo();
 
-						PICKINFO chkpickinfo;
+						UIPICKINFO chkpickinfo;
 						chkpickinfo = *ppickinfo;
 
 						chkpickinfo.buttonflag = PICK_CENTER;

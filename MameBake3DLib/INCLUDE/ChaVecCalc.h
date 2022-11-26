@@ -562,10 +562,12 @@ typedef  struct tag_rpselem
 }RPSELEM;
 
 
-typedef  struct tag_pickinfo
+
+typedef  struct tag_ui_pickinfo
 {
-	int buttonflag;//WM_LBUTTONDOWN-->PICK_L, WM_RBUTTONDOWN-->PICK_R, WM_MBUTTONDOWN-->PICK_M。押していないとき-->PICK_NONE。
-				   //以下、buttonflagがPICK_NONE以外の時に意味を持つ。
+	int buttonflag;
+	//WM_LBUTTONDOWN-->PICK_L, WM_RBUTTONDOWN-->PICK_R, WM_MBUTTONDOWN-->PICK_M。押していないとき-->PICK_NONE。
+	//以下、buttonflagがPICK_NONE以外の時に意味を持つ。
 	POINT mousepos;
 	POINT mousebefpos;
 	POINT clickpos;
@@ -577,7 +579,8 @@ typedef  struct tag_pickinfo
 	int pickobjno;
 	ChaVector3 objscreen;
 	ChaVector3 objworld;
-}PICKINFO;
+}UIPICKINFO;
+
 
 typedef  struct tag_cpmot
 {

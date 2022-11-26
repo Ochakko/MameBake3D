@@ -372,11 +372,11 @@ public:
  * @fn
  * PickBone
  * @breaf 指定した画面の２D座標に近いボーンを取得する。
- * @param (PICKINFO* pickinfo) INOUT 取得情報へのポインタ。
+ * @param (UIPICKINFO* pickinfo) INOUT 取得情報へのポインタ。
  * @return 成功したら０。
  * @detail pickinfoにウインドウのサイズとクリックした２D座標とボーンとの最大距離を指定して呼び出す。
  */
-	int PickBone( PICKINFO* pickinfo );
+	int PickBone( UIPICKINFO* pickinfo );
 
 /**
  * @fn
@@ -482,11 +482,11 @@ public:
  * @fn
  * CollisionNoBoneObj_Mouse
  * @breaf 画面の２Dの位置にオブジェクトがあるかどうか調べる。
- * @param (PICKINFO* pickinfo) INOUT 画面の２D座標と最大距離を指定する。
+ * @param (UIPICKINFO* pickinfo) INOUT 画面の２D座標と最大距離を指定する。
  * @param (char* objnameptr) IN 調べたいオブジェクトの名前を指定する。
  * @return ２D位置にオブジェクトがあれば１、無ければ０を返す。
  */
-	int CollisionNoBoneObj_Mouse( PICKINFO* pickinfo, const char* objnameptr );
+	int CollisionNoBoneObj_Mouse( UIPICKINFO* pickinfo, const char* objnameptr );
 
 /**
  * @fn
@@ -759,7 +759,7 @@ private:
 		std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno, int broflag );
 
 	void SetSelectFlagReq( CBone* boneptr, int broflag );
-	int CalcMouseLocalRay( PICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr );
+	int CalcMouseLocalRay( UIPICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr );
 	CBone* GetCalcRootBone( CBone* firstbone, int maxlevel );
 	//void CalcXTransformMatrixReq( CBone* srcbone, ChaMatrix parenttra, float mult );
 

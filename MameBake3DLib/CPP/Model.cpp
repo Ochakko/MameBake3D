@@ -2685,7 +2685,7 @@ CBone* CModel::GetSymPosBone(CBone* srcbone)
 }
 
 
-int CModel::PickBone( PICKINFO* pickinfo )
+int CModel::PickBone( UIPICKINFO* pickinfo )
 {
 	pickinfo->pickobjno = -1;
 
@@ -2755,7 +2755,7 @@ void CModel::SetSelectFlagReq( CBone* boneptr, int broflag )
 }
 
 
-int CModel::CollisionNoBoneObj_Mouse( PICKINFO* pickinfo, const char* objnameptr )
+int CModel::CollisionNoBoneObj_Mouse( UIPICKINFO* pickinfo, const char* objnameptr )
 {
 	//当たったら１、当たらなかったら０を返す。エラーも０を返す。
 
@@ -2773,7 +2773,7 @@ int CModel::CollisionNoBoneObj_Mouse( PICKINFO* pickinfo, const char* objnameptr
 	return colli;
 }
 
-int CModel::CalcMouseLocalRay( PICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr )
+int CModel::CalcMouseLocalRay( UIPICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr )
 {
 	ChaVector3 startsc, endsc;
 	float rayx, rayy;
