@@ -414,6 +414,8 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, co
 
 
 void ChaMatrixIdentity(ChaMatrix* pdst);
+ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//回転成分だけの行列にする
+CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixを受け取って　CQuaternionを返す
 void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
 void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz);
@@ -490,6 +492,8 @@ extern double ChaVector3LengthSqDbl(ChaVector3* psrc);
 extern ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, const ChaMatrix* pM);
 
 extern void ChaMatrixIdentity(ChaMatrix* pdst);
+extern ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//回転成分だけの行列にする
+extern CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixを受け取って　CQuaternionを返す
 extern void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 extern void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
 extern void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz);

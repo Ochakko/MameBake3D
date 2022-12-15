@@ -3464,6 +3464,34 @@ void ChaMatrixIdentity(ChaMatrix* pdst)
 	pdst->data[MATI_44] = 1.0f;
 }
 
+CQuaternion ChaMatrix2Q(ChaMatrix srcmat)//ChaMatrix‚ğó‚¯æ‚Á‚Ä@CQuaternion‚ğ•Ô‚·
+{
+	CQuaternion retq;
+	retq.RotationMatrix(srcmat);
+	return retq;
+}
+
+ChaMatrix ChaMatrixRot(ChaMatrix srcmat)//‰ñ“]¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	retmat.data[MATI_11] = srcmat.data[MATI_11];
+	retmat.data[MATI_12] = srcmat.data[MATI_12];
+	retmat.data[MATI_13] = srcmat.data[MATI_13];
+
+	retmat.data[MATI_21] = srcmat.data[MATI_21];
+	retmat.data[MATI_22] = srcmat.data[MATI_22];
+	retmat.data[MATI_23] = srcmat.data[MATI_23];
+
+	retmat.data[MATI_31] = srcmat.data[MATI_31];
+	retmat.data[MATI_32] = srcmat.data[MATI_32];
+	retmat.data[MATI_33] = srcmat.data[MATI_33];
+
+	return retmat;
+
+}
+
 void ChaMatrixNormalizeRot(ChaMatrix* pdst)
 {
 	if (!pdst) {

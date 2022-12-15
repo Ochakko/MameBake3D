@@ -6491,7 +6491,7 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 			FindAndSetKinematicReq(m_topbt, wmat, vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
 
-			InitBtMatTraAnimReq(m_topbt);
+			//InitBtMatTraAnimReq(m_topbt);//2022/12/15 comment out
 
 			
 			BtMat2BtObjReq(m_topbt, wmat, vpmat);
@@ -6688,33 +6688,33 @@ MOTINFO* CModel::GetRgdMorphInfo()
 }
 
 
-void CModel::InitBtMatTraAnimReq(CBtObject* curbto)
-{
-	if (!curbto) {
-		return;
-	}
-
-	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
-		CBone* curbone = curbto->GetBone();
-
-		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		int paraxsiflag1 = 1;
-		//int isfirstbone = 0;
-		cureul = curbone->CalcBtLocalEulXYZ(paraxsiflag1, BEFEUL_BEFFRAME);
-
-		int inittraflag1 = 1;
-		int setchildflag1 = 1;
-		curbone->SetBtWorldMatFromEul(setchildflag1, cureul);
-
-	}
-	int chilno;
-	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
-		CBtObject* chilbto = curbto->GetChildBt(chilno);
-		if (chilbto) {
-			InitBtMatTraAnimReq(chilbto);
-		}
-	}
-}
+//void CModel::InitBtMatTraAnimReq(CBtObject* curbto)
+//{
+//	if (!curbto) {
+//		return;
+//	}
+//
+//	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
+//		CBone* curbone = curbto->GetBone();
+//
+//		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+//		int paraxsiflag1 = 1;
+//		//int isfirstbone = 0;
+//		cureul = curbone->CalcBtLocalEulXYZ(paraxsiflag1, BEFEUL_BEFFRAME);
+//
+//		int inittraflag1 = 1;
+//		int setchildflag1 = 1;
+//		curbone->SetBtWorldMatFromEul(setchildflag1, cureul);
+//
+//	}
+//	int chilno;
+//	for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+//		CBtObject* chilbto = curbto->GetChildBt(chilno);
+//		if (chilbto) {
+//			InitBtMatTraAnimReq(chilbto);
+//		}
+//	}
+//}
 
 
 void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat )
