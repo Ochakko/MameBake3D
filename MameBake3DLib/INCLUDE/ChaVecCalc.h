@@ -358,7 +358,7 @@ public:
 	//ç∂ÇÀÇ∂
 	//int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 	//int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
-	int Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);//bulletÇ‡XYZÇÃèá
+	int Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
 	//int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 
 
@@ -370,6 +370,7 @@ public:
 	//inout : srcdstq
 	int InOrder(CQuaternion* srcdstq);
 
+	int ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag);
 	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);
 
 private:

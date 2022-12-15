@@ -411,7 +411,7 @@ public:
 	ChaMatrix CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	ChaVector3 CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcframe, ChaVector3* befeulptr = 0);//2022/09/12 fbx書き出し専用
+	ChaVector3 CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);//2022/09/12 fbx書き出し専用
 	ChaVector3 CalcFBXTra(int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);

@@ -3976,7 +3976,7 @@ void CModel::InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe)
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxiskind = -1;//2021/11/18
 		//int isfirstbone = 0;
-		cureul = curbone->CalcLocalEulXYZ(paraxiskind, srcmotid, srcframe, BEFEUL_ZERO);
+		cureul = curbone->CalcLocalEulXYZ(paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
 
 		int inittraflag1 = 0;
 		int setchildflag1 = 1;
@@ -4857,7 +4857,7 @@ int CModel::CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, Fb
 				ChaVector3 chatra = ChaVector3((float)lT2[0], (float)lT2[1], (float)lT2[2]);
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxiskind = -1;//2021/11/18
-				cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, framecnt, BEFEUL_ZERO);
+				cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, framecnt, BEFEUL_BEFFRAME);
 				int inittraflag1 = 0;
 				int setchildflag1 = 0;
 				int initscaleflag = 1;//!!!!!!!!!!!!
@@ -6700,7 +6700,7 @@ void CModel::InitBtMatTraAnimReq(CBtObject* curbto)
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag1 = 1;
 		//int isfirstbone = 0;
-		cureul = curbone->CalcBtLocalEulXYZ(paraxsiflag1, BEFEUL_ZERO);
+		cureul = curbone->CalcBtLocalEulXYZ(paraxsiflag1, BEFEUL_BEFFRAME);
 
 		int inittraflag1 = 1;
 		int setchildflag1 = 1;

@@ -751,14 +751,15 @@ int CBVHElem::ConvXYZRot()
 	for (frameno = 0; frameno < framenum; frameno++) {
 		CQuaternion* curq;
 		curq = (qptr + frameno);
-		int notmodifyflag;
-		if ((frameno == 0) || (frameno == 1)) {
-			notmodifyflag = 1;
-		}
-		else {
-			notmodifyflag = 0;
-		}
-		curq->CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		//int notmodifyflag;
+		//if ((frameno == 0) || (frameno == 1)) {
+		//	notmodifyflag = 1;
+		//}
+		//else {
+		//	notmodifyflag = 0;
+		//}
+		int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
+		curq->CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		*(xyzrot + frameno) = cureul;
 		if ((frameno == 0) || (frameno == 1) || IsValidNewEul(cureul, befeul)) {
 			befeul = cureul;

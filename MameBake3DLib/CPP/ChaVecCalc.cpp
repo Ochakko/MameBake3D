@@ -2738,7 +2738,7 @@ int CQuaternion::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 //}
 
 
-int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag)
+int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 
 	CQuaternion axisQ, invaxisQ, EQ;
@@ -2845,6 +2845,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 
 	//ModifyEuler(&Euler, &befeul);
 	//ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);//10027 CommentOut. ˆ—‚ªd‚¢‚í‚è‚É‚½‚Ü‚É‚µ‚©–ð‚É—§‚½‚È‚¢‚Ì‚ÅB‚µ‚Î‚ç‚­ƒRƒƒ“ƒgƒAƒEƒgB
+	ModifyEuler360(&Euler, &befeul, notmodify180flag);
 	*reteul = Euler;
 
 	return 0;
@@ -3055,6 +3056,56 @@ BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul)
 }
 
 
+int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag)
+{
+	//#########################################################
+	// 2022/12/04
+	//+-180dgree‚É§ŒÀ‚¹‚¸‚É@ƒIƒCƒ‰[Šp‚ð˜A‘±‚³‚¹‚é‚½‚ß‚ÌŠÖ”
+	//#########################################################
+
+	float tmpX0, tmpY0, tmpZ0;
+	tmpX0 = eulerA->x + 360.0f * this->GetRound((eulerB->x - eulerA->x) / 360.0f);
+	tmpY0 = eulerA->y + 360.0f * this->GetRound((eulerB->y - eulerA->y) / 360.0f);
+	tmpZ0 = eulerA->z + 360.0f * this->GetRound((eulerB->z - eulerA->z) / 360.0f);
+
+
+	//############################################################################################
+	//Q2EulXYZ‚Éaxisq‚ðŽw’è‚µ‚ÄŒÄ‚Ño‚µ‚½ê‡
+	//invaxisq * *this * axisq‚É‚æ‚Á‚Ä@‚P‚W‚O“x•ªƒIƒCƒ‰[Šp‚ª‰ñ“]‚·‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å‘Îô
+	// ‚½‚¾‚µ@befframe‚ª0ƒtƒŒ[ƒ€‚Ìê‡‚É‚Í@‚P‚W‚O“x•ª‰ñ“]ƒ`ƒFƒbƒN‚Í‚µ‚È‚¢(‚P‚W‚O“x‰ñ“]‚ð‹–‚·)
+	//############################################################################################
+	if (notmodify180flag == 0) {
+		float thdeg = 165.0f;
+		if ((tmpX0 - eulerB->x) >= thdeg) {
+			tmpX0 -= 180.0f;
+		}
+		if ((eulerB->x - tmpX0) >= thdeg) {
+			tmpX0 += 180.0f;
+		}
+
+		if ((tmpY0 - eulerB->y) >= thdeg) {
+			tmpY0 -= 180.0f;
+		}
+		if ((eulerB->y - tmpY0) >= thdeg) {
+			tmpY0 += 180.0f;
+		}
+
+		if ((tmpZ0 - eulerB->z) >= thdeg) {
+			tmpZ0 -= 180.0f;
+		}
+		if ((eulerB->z - tmpZ0) >= thdeg) {
+			tmpZ0 += 180.0f;
+		}
+	}
+
+	eulerA->x = tmpX0;
+	eulerA->y = tmpY0;
+	eulerA->z = tmpZ0;
+
+	return 0;
+}
+
+
 int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag)
 {
 
@@ -3247,7 +3298,7 @@ int CQuaternion::GetRound(float srcval)
 	}
 }
 //
-int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag)
+int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 	int noise[4] = { 0, 1, 0, -1 };
 	static int dbgcnt = 0;
@@ -3255,7 +3306,7 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3
 	ChaVector3 tmpeul(0.0f, 0.0f, 0.0f);
 	if (IsInit() == 0) {
 		//Q2Eul(axisq, befeul, &tmpeul);
-		Q2EulXYZ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodifyflag);
+		Q2EulXYZ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 		//Q2EulYXZ(axisq, befeul, &tmpeul);
 		//Q2EulZXY(axisq, befeul, &tmpeul);
 	}

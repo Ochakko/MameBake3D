@@ -3460,21 +3460,21 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		return cureul;//!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
-	//if (befeulkind == BEFEUL_BEFFRAME){
-	//	//1つ前のフレームのEULはすでに計算されていると仮定する。
-	//	double befframe;
-	//	befframe = srcframe - 1.0;
-	//	if (befframe >= -0.0001){
-	//		CMotionPoint* befmp;
-	//		befmp = GetMotionPoint(srcmotid, befframe);
-	//		if (befmp){
-	//			befeul = befmp->GetLocalEul();
-	//		}
-	//	}
-	//}
-	//else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
-	//	befeul = *directbefeul;
-	//}
+	if (befeulkind == BEFEUL_BEFFRAME){
+		//1つ前のフレームのEULはすでに計算されていると仮定する。
+		double befframe;
+		befframe = srcframe - 1.0;
+		if (befframe >= -0.0001){
+			CMotionPoint* befmp;
+			befmp = GetMotionPoint(srcmotid, befframe);
+			if (befmp){
+				befeul = befmp->GetLocalEul();
+			}
+		}
+	}
+	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
+		befeul = *directbefeul;
+	}
 
 	CMotionPoint tmpmp;
 	CalcLocalInfo(srcmotid, srcframe, &tmpmp);//local!!!
@@ -3529,22 +3529,22 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//}
 
 
-	int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
 
 
 	if (axiskind == -1){
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL){
-			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		}
 		else{
-			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		}
 	}
 	else if (axiskind != BONEAXIS_GLOBAL){
-		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else{
-		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	}
 
 	CMotionPoint* curmp;
@@ -3650,22 +3650,22 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind
 	//}
 
 
-	int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
 
 
 	if (axiskind == -1) {
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL) {
-			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		}
 		else {
-			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		}
 	}
 	else if (axiskind != BONEAXIS_GLOBAL) {
-		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else {
-		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	}
 
 	//CMotionPoint* curmp;
@@ -3772,22 +3772,22 @@ ChaVector3 CBone::CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, Cha
 	//}
 
 
-	int notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
+	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
 
 
 	if (axiskind == -1) {
 		if (m_anglelimit.boneaxiskind != BONEAXIS_GLOBAL) {
-			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		}
 		else {
-			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+			tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 		}
 	}
 	else if (axiskind != BONEAXIS_GLOBAL) {
-		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		tmpmp.GetQ().Q2EulXYZ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else {
-		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodifyflag);
+		tmpmp.GetQ().Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	}
 
 	//CMotionPoint* curmp;
@@ -5536,7 +5536,7 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	return 0;
 }
 
-ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcframe, ChaVector3* befeulptr)
+ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr)
 {
 
 	//############################
@@ -5594,7 +5594,8 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcfr
 		isendbone = 1;
 	}
 
-	int notmodifyflag = 0;
+	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
+
 	//if (srcnotmodifyflag == 0) {
 	//	if ((srcframe == 0.0) || (srcframe == 1.0)) {
 	//		notmodifyflag = 1;
@@ -5612,7 +5613,7 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcnotmodifyflag, int srcmotid, double srcfr
 		befeul = *befeulptr;
 	}
 
-	fbxq.CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodifyflag);
+	fbxq.CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodify180flag);
 
 	if (g_bakelimiteulonsave == true) {
 		//制限角度モーションをベイクする場合
