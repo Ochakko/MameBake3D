@@ -54,6 +54,20 @@ class CMQOMaterial;
 #define MAXRIGNUM	10
 #define MAXRIGELEMNUM	5
 
+
+enum
+{
+	//CQuaternion::Q2EulXYZusingMat()
+
+	ROTORDER_XYZ,
+	ROTORDER_YZX,
+	ROTORDER_ZXY,
+	ROTORDER_XZY,
+	ROTORDER_YXZ,
+	ROTORDER_ZYX,
+	ROTORDER_MAX
+};
+
 enum
 {
 	BGCOL_BLACK,

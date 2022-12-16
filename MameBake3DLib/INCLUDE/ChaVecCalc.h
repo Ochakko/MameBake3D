@@ -358,7 +358,8 @@ public:
 	//ç∂ÇÀÇ∂
 	//int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 	//int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
-	int Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
+	int Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
+	int Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
 	//int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 
 

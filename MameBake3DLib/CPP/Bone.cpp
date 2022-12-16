@@ -3517,7 +3517,8 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		eulmat = GetNodeMat() * curwm;
 		eulq.RotationMatrix(eulmat);
 	}
-	eulq.Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);//2022/12/15 test
+	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
@@ -3669,8 +3670,8 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind
 		eulmat = GetNodeMat() * curwm;
 		eulq.RotationMatrix(eulmat);
 	}
-	eulq.Q2EulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);//2022/12/15 test
-
+	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 
 	CMotionPoint* curmp;

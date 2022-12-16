@@ -2737,8 +2737,230 @@ int CQuaternion::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 //	return 0;
 //}
 
+int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
+{
+	const double DIVVALMIN = 1e-4;
 
-int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
+	CQuaternion axisQ, invaxisQ, EQ;
+	if (axisq) {
+		axisQ = *axisq;
+		axisQ.inv(&invaxisQ);
+		EQ = invaxisQ * *this * axisQ;
+	}
+	else {
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		EQ = *this;
+	}
+
+	ChaMatrix rotmat;
+	rotmat = EQ.MakeRotMatX();
+
+	double m00 = rotmat.data[MATI_11];
+	double m01 = rotmat.data[MATI_12];
+	double m02 = rotmat.data[MATI_13];
+
+	double m10 = rotmat.data[MATI_21];
+	double m11 = rotmat.data[MATI_22];
+	double m12 = rotmat.data[MATI_23];
+
+	double m20 = rotmat.data[MATI_31];
+	double m21 = rotmat.data[MATI_32];
+	double m22 = rotmat.data[MATI_33];
+
+	//rotorder
+	//#0:xyz
+	//#1:yzx
+	//#2:zxy
+	//#3:xzy
+	//#4:yxz
+	//#5:zyx
+
+	double x = 0.0;
+	double y = 0.0;
+	double z = 0.0;
+
+	double alpha, beta, gamma;
+	double cosbeta;
+
+	if (rotorder == 0) {
+		//:#xyz
+		gamma = atan2(m01, m00);
+		beta = asin(-m02);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(m12 / cosbeta);
+			if (m22 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(-m10, m11);
+			beta = asin(-m02);
+			alpha = 0.0;
+		}
+		x = alpha;
+		y = beta;
+		z = gamma;
+	}
+	else if(rotorder == 1) {
+		//:#yzx
+		gamma = atan2(m12, m11);
+		beta = asin(-m10);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(m20 / cosbeta);
+			if (m00 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(-m21, m22);
+			beta = asin(-m10);
+			alpha = 0.0;
+		}
+		x = gamma;
+		y = alpha;
+		z = beta;
+	}
+	else if (rotorder == 2) {
+		//#zxy
+		gamma = atan2(m20, m22);
+		beta = asin(-m21);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(m01 / cosbeta);
+			if (m11 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(-m02, m00);
+			beta = asin(-m21);
+			alpha = 0.0;
+		}
+		x = beta;
+		y = gamma;
+		z = alpha;
+	}
+	else if (rotorder == 3) {
+		//#xzy
+		gamma = atan2(-m02, m00);
+		beta = asin(m01);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(-m21 / cosbeta);
+			if (m11 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(m20, m22);
+			beta = asin(m01);
+			alpha = 0.0;
+		}
+		x = alpha;
+		y = gamma;
+		z = beta;
+	}
+	else if (rotorder == 4) {
+		//#yxz
+		gamma = atan2(-m10, m11);
+		beta = asin(m12);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(-m02 / cosbeta);
+			if (m22 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(m01, m00);
+			beta = asin(m12);
+			alpha = 0.0;
+		}
+		x = beta;
+		y = alpha;
+		z = gamma;
+	}
+	else if (rotorder == 5) {
+		//#zyx
+		gamma = atan2(-m21, m22);
+		beta = asin(m20);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(-m10 / cosbeta);
+			if (m00 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(m12, m11);
+			beta = asin(m20);
+			alpha = 0.0;
+		}
+		x = gamma;
+		y = beta;
+		z = alpha;
+	}
+	else {
+		//print('Q2Euler : unknown rotateOrder : calc using default order');
+		_ASSERT(0);
+		//:#xyz
+		gamma = atan2(m01, m00);
+		beta = asin(-m02);
+		cosbeta = cos(beta);
+		if (fabs(cosbeta) > DIVVALMIN) {
+			alpha = asin(m12 / cosbeta);
+			if (m22 < 0.0) {
+				alpha = PAI - alpha;
+			}
+		}
+		else {
+			gamma = atan2(-m10, m11);
+			beta = asin(-m02);
+			alpha = 0.0;
+		}
+		x = alpha;
+		y = beta;
+		z = gamma;
+	}
+
+	const double PI2 = PAI * 2.0;
+
+	if (x > PAI) {
+		x -= PI2;
+	}
+	else if (x < -PAI) {
+		x += PI2;
+	}
+
+	if (y > PAI) {
+		y -= PI2;
+	}
+	else if (y < -PAI) {
+		y += PI2;
+	}
+	
+	if (z > PAI) {
+		z -= PI2;
+	}
+	else if (z < -PAI) {
+		z += PI2;
+	}
+
+	ChaVector3 Euler;
+	Euler.x = (float)(x * 180.0 / PAI);
+	Euler.y = (float)(y * 180.0 / PAI);
+	Euler.z = (float)(z * 180.0 / PAI);
+	ModifyEuler360(&Euler, &befeul, notmodify180flag);
+
+	*reteul = Euler;
+	return 0;
+}
+
+
+int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 
 	//2022/12/16 ZEROVECLEN
@@ -3308,10 +3530,8 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3
 
 	ChaVector3 tmpeul(0.0f, 0.0f, 0.0f);
 	if (IsInit() == 0) {
-		//Q2Eul(axisq, befeul, &tmpeul);
-		Q2EulXYZ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
-		//Q2EulYXZ(axisq, befeul, &tmpeul);
-		//Q2EulZXY(axisq, befeul, &tmpeul);
+		//Q2EulXYZusingMat(ROTORDER_XYZ, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
+		Q2EulXYZusingQ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else {
 		//FBX書き出しの際にアニメーションに「ある程度の大きさの変化」がないとキーが省略されてしまう。
