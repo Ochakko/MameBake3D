@@ -634,6 +634,36 @@ void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, Cha
 	*tmatptr = tmat;
 }
 
+void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaVector3 srcjointfpos, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
+{
+	if (!smatptr || !rmatptr || !tmatptr || !tanimmatptr) {
+		_ASSERT(0);
+		return;
+	}
+
+	ChaMatrix befrotmat, aftrotmat;
+	befrotmat.SetIdentity();
+	aftrotmat.SetIdentity();
+	befrotmat.SetTranslation(-srcjointfpos);
+	aftrotmat.SetTranslation(srcjointfpos);
+
+	GetSRTMatrix2(srcmat, smatptr, rmatptr, tmatptr);
+
+	ChaMatrix matwithouttraanim;
+	matwithouttraanim = befrotmat * *smatptr * *rmatptr * aftrotmat;
+
+	ChaVector3 srpos, localpos;
+	ChaVector3TransformCoord(&srpos, &srcjointfpos, &matwithouttraanim);
+	ChaVector3TransformCoord(&localpos, &srcjointfpos, &srcmat);
+	ChaVector3 traanim;
+	traanim = localpos - srpos;
+
+	tanimmatptr->SetIdentity();
+	ChaMatrixTranslation(tanimmatptr, traanim.x, traanim.y, traanim.z);
+
+	return;
+}
+
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat) 
 {
 	//Šg‘åk¬‚ğ‰Šú‰»‚µ‚½RTs—ñ‚ğ•Ô‚·
@@ -2964,7 +2994,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 {
 
 	//2022/12/16 ZEROVECLEN
-	const double ZEROVECLEN = 1e-6;
+	//const double ZEROVECLEN = 1e-6;
+	const double ZEROVECLEN = 1e-4;
 
 	CQuaternion axisQ, invaxisQ, EQ;
 	if (axisq) {
