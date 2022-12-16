@@ -634,18 +634,21 @@ void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, Cha
 	*tmatptr = tmat;
 }
 
-void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaVector3 srcjointfpos, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
+void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
 {
 	if (!smatptr || !rmatptr || !tmatptr || !tanimmatptr) {
 		_ASSERT(0);
 		return;
 	}
 
+	ChaVector3 jointfpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	jointfpos = ChaMatrixTraVec(srcnodemat);
+
 	ChaMatrix befrotmat, aftrotmat;
 	befrotmat.SetIdentity();
 	aftrotmat.SetIdentity();
-	befrotmat.SetTranslation(-srcjointfpos);
-	aftrotmat.SetTranslation(srcjointfpos);
+	befrotmat.SetTranslation(-jointfpos);
+	aftrotmat.SetTranslation(jointfpos);
 
 	GetSRTMatrix2(srcmat, smatptr, rmatptr, tmatptr);
 
@@ -653,8 +656,8 @@ void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaVector3 srcjoin
 	matwithouttraanim = befrotmat * *smatptr * *rmatptr * aftrotmat;
 
 	ChaVector3 srpos, localpos;
-	ChaVector3TransformCoord(&srpos, &srcjointfpos, &matwithouttraanim);
-	ChaVector3TransformCoord(&localpos, &srcjointfpos, &srcmat);
+	ChaVector3TransformCoord(&srpos, &jointfpos, &matwithouttraanim);
+	ChaVector3TransformCoord(&localpos, &jointfpos, &srcmat);
 	ChaVector3 traanim;
 	traanim = localpos - srpos;
 
@@ -662,6 +665,55 @@ void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaVector3 srcjoin
 	ChaMatrixTranslation(tanimmatptr, traanim.x, traanim.y, traanim.z);
 
 	return;
+}
+
+ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	if (!srcrmat) {
+		_ASSERT(0);
+		return retmat;
+	}
+	if (sflag && !srcsmat) {
+		_ASSERT(0);
+		return retmat;
+	}
+	if (tanimflag && !srctanimmat) {
+		_ASSERT(0);
+		return retmat;
+	}
+
+	ChaVector3 jointfpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	jointfpos = ChaMatrixTraVec(srcnodemat);
+
+	ChaMatrix befrotmat, aftrotmat;
+	befrotmat.SetIdentity();
+	aftrotmat.SetIdentity();
+	befrotmat.SetTranslation(-jointfpos);
+	aftrotmat.SetTranslation(jointfpos);
+
+	//calc local srt matrix
+	if (sflag == true) {
+		if (tanimflag == true) {
+			retmat = befrotmat * *srcsmat * *srcrmat * aftrotmat * *srctanimmat;
+		}
+		else {
+			retmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;
+		}
+	}
+	else {
+		if (tanimflag == true) {
+			retmat = befrotmat * *srcrmat * aftrotmat * *srctanimmat;
+		}
+		else {
+			retmat = befrotmat * *srcrmat * aftrotmat;
+		}
+	}
+
+	return retmat;
+
 }
 
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat) 
@@ -3730,20 +3782,109 @@ ChaMatrix ChaMatrixRot(ChaMatrix srcmat)//回転成分だけの行列にする
 	ChaMatrix retmat;
 	retmat.SetIdentity();
 
-	retmat.data[MATI_11] = srcmat.data[MATI_11];
-	retmat.data[MATI_12] = srcmat.data[MATI_12];
-	retmat.data[MATI_13] = srcmat.data[MATI_13];
+	ChaVector3 rotx, roty, rotz;
+	rotx = ChaVector3(srcmat.data[MATI_11], srcmat.data[MATI_12], srcmat.data[MATI_13]);
+	roty = ChaVector3(srcmat.data[MATI_21], srcmat.data[MATI_22], srcmat.data[MATI_23]);
+	rotz = ChaVector3(srcmat.data[MATI_31], srcmat.data[MATI_32], srcmat.data[MATI_33]);
+	ChaVector3Normalize(&rotx, &rotx);
+	ChaVector3Normalize(&roty, &roty);
+	ChaVector3Normalize(&rotz, &rotz);
 
-	retmat.data[MATI_21] = srcmat.data[MATI_21];
-	retmat.data[MATI_22] = srcmat.data[MATI_22];
-	retmat.data[MATI_23] = srcmat.data[MATI_23];
+	retmat.data[MATI_11] = rotx.x;
+	retmat.data[MATI_12] = rotx.y;
+	retmat.data[MATI_13] = rotx.z;
 
-	retmat.data[MATI_31] = srcmat.data[MATI_31];
-	retmat.data[MATI_32] = srcmat.data[MATI_32];
-	retmat.data[MATI_33] = srcmat.data[MATI_33];
+	retmat.data[MATI_21] = roty.x;
+	retmat.data[MATI_22] = roty.y;
+	retmat.data[MATI_23] = roty.z;
+
+	retmat.data[MATI_31] = rotz.x;
+	retmat.data[MATI_32] = rotz.y;
+	retmat.data[MATI_33] = rotz.z;
 
 	return retmat;
 
+}
+
+ChaMatrix ChaMatrixScale(ChaMatrix srcmat)//スケール成分だけの行列にする
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	ChaVector3 rotx, roty, rotz;
+	rotx = ChaVector3(srcmat.data[MATI_11], srcmat.data[MATI_12], srcmat.data[MATI_13]);
+	roty = ChaVector3(srcmat.data[MATI_21], srcmat.data[MATI_22], srcmat.data[MATI_23]);
+	rotz = ChaVector3(srcmat.data[MATI_31], srcmat.data[MATI_32], srcmat.data[MATI_33]);
+
+	float scalex, scaley, scalez;
+	scalex = (float)ChaVector3LengthDbl(&rotx);
+	scaley = (float)ChaVector3LengthDbl(&roty);
+	scalez = (float)ChaVector3LengthDbl(&rotz);
+
+	retmat.data[MATI_11] = scalex;
+	retmat.data[MATI_22] = scaley;
+	retmat.data[MATI_33] = scalez;
+
+	return retmat;
+}
+
+ChaMatrix ChaMatrixTra(ChaMatrix srcmat)//移動成分だけの行列にする
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	retmat.data[MATI_41] = srcmat.data[MATI_41];
+	retmat.data[MATI_42] = srcmat.data[MATI_42];
+	retmat.data[MATI_43] = srcmat.data[MATI_43];
+
+	return retmat;
+}
+
+ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat)//スケール成分のベクトルを取得
+{
+	ChaVector3 rotx, roty, rotz;
+	rotx = ChaVector3(srcmat.data[MATI_11], srcmat.data[MATI_12], srcmat.data[MATI_13]);
+	roty = ChaVector3(srcmat.data[MATI_21], srcmat.data[MATI_22], srcmat.data[MATI_23]);
+	rotz = ChaVector3(srcmat.data[MATI_31], srcmat.data[MATI_32], srcmat.data[MATI_33]);
+
+	float scalex, scaley, scalez;
+	scalex = (float)ChaVector3LengthDbl(&rotx);
+	scaley = (float)ChaVector3LengthDbl(&roty);
+	scalez = (float)ChaVector3LengthDbl(&rotz);
+
+	ChaVector3 retvec;
+	retvec.x = scalex;
+	retvec.y = scaley;
+	retvec.z = scalez;
+
+	return retvec;
+}
+ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat)//回転成分のベクトルを取得
+{
+	//ローカルオイラー角を取得するためには
+	//srcmatには　GetNodeMat * GetWorldMat * Inv(GetParent()->GetWorldMat) * Inv(GetParent()->GetNodeMat) を渡す
+	//ジョイントのオイラー角を取得する場合には　CBone::CalcLocalEulXYZ()を使う
+	
+	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	int isfirstbone = 0;
+	int isendbone = 0;
+	int notmodify180flag = 1;
+
+	CQuaternion eulq;
+	eulq.Q2EulXYZusingQ(0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);
+
+	return reteul;
+}
+ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat)//移動成分のベクトルを取得
+{
+	ChaVector3 rettra;
+	rettra.x = srcmat.data[MATI_41];
+	rettra.y = srcmat.data[MATI_42];
+	rettra.z = srcmat.data[MATI_43];
+
+	return rettra;
 }
 
 void ChaMatrixNormalizeRot(ChaMatrix* pdst)

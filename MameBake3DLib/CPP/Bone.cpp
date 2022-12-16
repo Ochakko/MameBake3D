@@ -4131,32 +4131,12 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 	ChaMatrix newlocalrotmat = CalcLocalRotMatFromEul(srceul, srcmotid, srcframe);
 
 	ChaMatrix cursmat, currmat, curtmat, curtanimmat;
-	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), GetJointFPos(), &cursmat, &currmat, &curtmat, &curtanimmat);
-
-
-	ChaMatrix befrotmat, aftrotmat;
-	befrotmat.SetIdentity();
-	aftrotmat.SetIdentity();
-	befrotmat.SetTranslation(-GetJointFPos());
-	aftrotmat.SetTranslation(GetJointFPos());
+	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), &cursmat, &currmat, &curtmat, &curtanimmat);
 
 	ChaMatrix newlocalmat;
-	if (initscaleflag == 0) {
-		if (inittraflag == 0) {
-			newlocalmat = befrotmat * cursmat * newlocalrotmat * aftrotmat * curtanimmat;
-		}
-		else {
-			newlocalmat = befrotmat * cursmat * newlocalrotmat * aftrotmat;
-		}
-	}
-	else {
-		if (inittraflag == 0) {
-			newlocalmat = befrotmat * newlocalrotmat * aftrotmat * curtanimmat;
-		}
-		else {
-			newlocalmat = befrotmat * newlocalrotmat * aftrotmat;
-		}
-	}
+	bool sflag = (initscaleflag == 0);
+	bool tanimflag = (inittraflag == 0);
+	newlocalmat = ChaMatrixFromSRTraAnim(sflag, tanimflag, GetNodeMat(), &cursmat, &newlocalrotmat, &curtanimmat);
 
 
 	ChaMatrix newmat;
@@ -4206,24 +4186,13 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 	ChaMatrix newlocalrotmat = CalcLocalRotMatFromEul(srceul, srcmotid, srcframe);
 
 	ChaMatrix cursmat, currmat, curtmat, curtanimmat;
-	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), GetJointFPos(), &cursmat, &currmat, &curtmat, &curtanimmat);
+	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), &cursmat, &currmat, &curtmat, &curtanimmat);
 
-
-	ChaMatrix befrotmat, aftrotmat;
-	befrotmat.SetIdentity();
-	aftrotmat.SetIdentity();
-	befrotmat.SetTranslation(-GetJointFPos());
-	aftrotmat.SetTranslation(GetJointFPos());
 
 	ChaMatrix newlocalmat;
-
-	if (inittraflag == 0) {
-		newlocalmat = befrotmat * newscalemat * newlocalrotmat * aftrotmat * newtramat;
-	}
-	else {
-		newlocalmat = befrotmat * newscalemat * newlocalrotmat * aftrotmat;
-	}
-	
+	bool sflag = true;
+	bool tanimflag = (inittraflag == 0);
+	newlocalmat = ChaMatrixFromSRTraAnim(sflag, tanimflag, GetNodeMat(), &newscalemat, &newlocalrotmat, &newtramat);
 
 	ChaMatrix newmat;
 	if (GetParent()) {
@@ -4233,8 +4202,6 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 		newmat = newlocalmat;
 	}
 
-	//CMotionPoint* curmp;
-	//curmp = GetMotionPoint(srcmotid, srcframe);
 	if (curmp) {
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newmat);
@@ -4290,17 +4257,12 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 	}
 
 	ChaMatrix cursmat, currmat, curtmat, curtanimmat;
-	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), GetJointFPos(), &cursmat, &currmat, &curtmat, &curtanimmat);
-
-
-	ChaMatrix befrotmat, aftrotmat;
-	befrotmat.SetIdentity();
-	aftrotmat.SetIdentity();
-	befrotmat.SetTranslation(-GetJointFPos());
-	aftrotmat.SetTranslation(GetJointFPos());
+	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), &cursmat, &currmat, &curtmat, &curtanimmat);
 
 	ChaMatrix newlocalmat;
-	newlocalmat = befrotmat * newlocalrotmat * aftrotmat * newtramat;
+	bool sflag = false;
+	bool tanimflag = true;
+	newlocalmat = ChaMatrixFromSRTraAnim(sflag, tanimflag, GetNodeMat(), 0, &newlocalrotmat, &newtramat);
 
 	ChaMatrix newmat;
 	if (GetParent()) {
@@ -4368,17 +4330,13 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVect
 	ChaMatrix newlocalrotmat = CalcLocalRotMatFromEul(srceul, srcmotid, srcframe);
 
 	ChaMatrix cursmat, currmat, curtmat, curtanimmat;
-	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), GetJointFPos(), &cursmat, &currmat, &curtmat, &curtanimmat);
-
-
-	ChaMatrix befrotmat, aftrotmat;
-	befrotmat.SetIdentity();
-	aftrotmat.SetIdentity();
-	befrotmat.SetTranslation(-GetJointFPos());
-	aftrotmat.SetTranslation(GetJointFPos());
+	GetSRTandTraAnim((curmp->GetWorldMat() * ChaMatrixInv(parmat)), GetNodeMat(), &cursmat, &currmat, &curtmat, &curtanimmat);
 
 	ChaMatrix newlocalmat;
-	newlocalmat = befrotmat * newlocalrotmat * aftrotmat * newtramat;
+	bool sflag = false;
+	bool tanimflag = true;
+	newlocalmat = ChaMatrixFromSRTraAnim(sflag, tanimflag, GetNodeMat(), 0, &newlocalrotmat, &newtramat);
+
 
 	ChaMatrix newmat;
 	if (GetParent()) {

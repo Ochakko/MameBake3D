@@ -415,7 +415,12 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, co
 
 
 void ChaMatrixIdentity(ChaMatrix* pdst);
+ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//スケール成分だけの行列にする
 ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//回転成分だけの行列にする
+ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//移動成分だけの行列にする
+ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//スケール成分のベクトルを取得
+ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat);//回転成分のベクトルを取得
+ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//移動成分のベクトルを取得
 CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixを受け取って　CQuaternionを返す
 void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
@@ -462,7 +467,8 @@ bool IsTimeEqual(double srctime1, double srctime2);
 double VecLength(ChaVector3 srcvec);
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
 void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr);
-void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaVector3 srcjointfpos, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr);
+void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr);
+ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat);
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//拡大縮小を初期化したRT行列を返す
 
 ChaMatrix TransZeroMat(ChaMatrix srcmat);
@@ -494,7 +500,12 @@ extern double ChaVector3LengthSqDbl(ChaVector3* psrc);
 extern ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, const ChaMatrix* pM);
 
 extern void ChaMatrixIdentity(ChaMatrix* pdst);
+extern ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//スケール成分だけの行列にする
 extern ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//回転成分だけの行列にする
+extern ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//移動成分だけの行列にする
+extern ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//スケール成分のベクトルを取得
+extern ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat);//回転成分のベクトルを取得
+extern ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//移動成分のベクトルを取得
 extern CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixを受け取って　CQuaternionを返す
 extern void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 extern void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
@@ -540,7 +551,8 @@ extern bool IsTimeEqual(double srctime1, double srctime2);
 extern double VecLength(ChaVector3 srcvec);
 extern void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
 extern void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr);
-extern void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaVector3 srcjointfpos, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr);
+extern void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr);
+extern ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat);
 extern ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//拡大縮小を初期化したRT行列を返す
 
 extern ChaMatrix TransZeroMat(ChaMatrix srcmat);
