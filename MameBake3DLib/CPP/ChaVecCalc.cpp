@@ -2741,6 +2741,9 @@ int CQuaternion::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 
+	//2022/12/16 ZEROVECLEN
+	const double ZEROVECLEN = 1e-6;
+
 	CQuaternion axisQ, invaxisQ, EQ;
 	if (axisq) {
 		axisQ = *axisq;
@@ -2776,7 +2779,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) <= 1e-5) {
+	if (lengthVec(&shadowVec) <= ZEROVECLEN) {
 		Euler.z = 90.0f;
 	}
 	else {
@@ -2801,7 +2804,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	//shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	//shadowVec.y = 0.0f;
 	//shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) <= 1e-5) {
+	if (lengthVec(&shadowVec) <= ZEROVECLEN) {
 		Euler.y = 90.0f;
 	}
 	else {
@@ -2830,7 +2833,7 @@ int CQuaternion::Q2EulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* ret
 	//shadowVec.x = 0.0f;
 	//shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	//shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) <= 1e-5) {
+	if (lengthVec(&shadowVec) <= ZEROVECLEN) {
 		Euler.x = 90.0f;
 	}
 	else {

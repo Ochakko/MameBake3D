@@ -522,7 +522,8 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 
 	s_firstoutmot = 1;
 
-	//WriteBindPose(pScene, 1);//2022/11/23 bvh2fbx‚Ìê‡‚É‚Íbindmat‚ğ‘‚«‚Ü‚È‚¢ ¶¬‚µ‚½fbx“Ç‚İ‚İ‚ÉNodeMat‚ªì¬‚³‚ê‚é
+	//2022/11/23 bvh2fbx‚Ìê‡‚É‚Íbindmat‚ğ‘‚«‚Ü‚È‚¢ ¶¬‚µ‚½fbx“Ç‚İ‚İ‚ÉNodeMat‚ªì¬‚³‚ê‚é
+	//WriteBindPose(pScene, 1);
 
 	if( s_ai ){
 		free( s_ai );
