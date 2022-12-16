@@ -10740,7 +10740,7 @@ int AddBoneTra( int kind, float srctra )
 		return 0;
 	}
 
-	s_model->FKBoneTraAxis(0, &s_editrange, s_curboneno, kind, srctra);
+	s_model->FKBoneTraAxis(0, &s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
 
 
 	s_editmotionflag = s_curboneno;
@@ -27663,7 +27663,7 @@ int OnMouseMoveFunc()
 	else if ((s_pickinfo.buttonflag == PICK_SPA_X) || (s_pickinfo.buttonflag == PICK_SPA_Y) || (s_pickinfo.buttonflag == PICK_SPA_Z)) {
 		if (s_model) {
 			if (g_previewFlag == 0) {
-				s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;
+				s_pickinfo.buttonflag = s_pickinfo.buttonflag - PICK_SPA_X + PICK_X;//!!!!!!!!!
 
 				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 				POINT ptCursor;
@@ -27684,11 +27684,11 @@ int OnMouseMoveFunc()
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 					}
 					else if (s_ikkind == 1) {
-						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+						AddBoneTra(s_pickinfo.buttonflag, deltax * 0.1f);
 						s_editmotionflag = s_curboneno;
 					}
 					else if (s_ikkind == 2) {
-						AddBoneScale(s_pickinfo.buttonflag - PICK_X, deltax);
+						AddBoneScale(s_pickinfo.buttonflag, deltax);
 						s_editmotionflag = s_curboneno;
 					}
 					s_ikcnt++;

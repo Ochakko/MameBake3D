@@ -11218,7 +11218,7 @@ int CModel::FKRotate(bool onretarget, int reqflag, CBone* bvhbone, int traflag, 
 }
 
 
-int CModel::FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta)
+int CModel::FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta, ChaMatrix selectmat)
 {
 	if ((srcboneno < 0) && !GetTopBone()){
 		return 0;
@@ -11235,31 +11235,19 @@ int CModel::FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int
 	ChaVector3 vecy(0.0f, 1.0f, 0.0f);
 	ChaVector3 vecz(0.0f, 0.0f, 1.0f);
 
-	//int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//ChaMatrix selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);
-	ChaMatrix selectmat;
-	selectmat.SetIdentity();
-	if (curbone && curbone->GetParent()) {
-		curbone->GetParent()->CalcAxisMatX_Manipulator(0, curbone, &selectmat, 0);
-	}
-	else {
-		selectmat.SetIdentity();
-	}
-
 	if (axiskind == 0){
-		ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
+		basevec = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
 	}
 	else if (axiskind == 1){
-		ChaVector3TransformCoord(&basevec, &vecy, &selectmat);
+		basevec = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
 	}
 	else if (axiskind == 2){
-		ChaVector3TransformCoord(&basevec, &vecz, &selectmat);
+		basevec = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
 	}
 	else{
 		_ASSERT(0);
-		ChaVector3TransformCoord(&basevec, &vecx, &selectmat);
+		basevec = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
 	}
-
 	ChaVector3Normalize(&basevec, &basevec);
 
 	ChaVector3 addtra;

@@ -470,7 +470,7 @@ public:
  */
 	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
 
-	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta);
+	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta, ChaMatrix selectmat);
 
 
 	int FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 scalevec);
