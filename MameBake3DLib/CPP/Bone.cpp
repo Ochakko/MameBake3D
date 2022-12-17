@@ -565,6 +565,22 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 				//制限角度無し
 				CallF(CalcFBXMotion(srcmotid, srcframe, &m_curmp, &existflag), return 1);
 				newworldmat = m_curmp.GetWorldMat();// **wmat;
+
+
+				//2022/12/17
+				//オイラー角情報更新
+				//if (callingbythread == false) {//worldmatに変更が無いときにthreadで呼ばれる　よってローカル計算可能
+					CMotionPoint* mpptr = GetMotionPoint(srcmotid, srcframe);
+					if (mpptr) {
+						ChaMatrix wm = mpptr->GetWorldMat();
+						ChaVector3 cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
+						mpptr->SetLocalEul(cureul);
+					}
+					else {
+						_ASSERT(0);
+					}
+				//}
+
 			}
 
 			//制限角度無し　又は　制限角度有で並列化無しの場合はグローバルも計算
@@ -649,8 +665,8 @@ int CBone::ClearLimitedWorldMat(int srcmotid, double srcframe0)
 {
 	int existflag = 0;
 
-	ChaMatrix newworldmat;
-	ChaMatrixIdentity(&newworldmat);
+	//ChaMatrix newworldmat;
+	//ChaMatrixIdentity(&newworldmat);
 
 	//制限角度有り
 	double srcframe = (double)((int)(srcframe0 + 0.0001));
@@ -3450,6 +3466,14 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 
 ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
+	//##############################################################################
+	//2022/12/17
+	//この関数の呼び出し元でLimitEul()をする
+	//Parentの姿勢に関しては計算済のGetParent()->GetLimitedWorldMat()を使用
+	//モーション全体のオイラー角計算し直しは　この関数ではなく　UpdateMatrixを使用
+	//##############################################################################
+
+
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -4025,7 +4049,7 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 //	return 0;
 //}
 
-int CBone::CalcWorldMatFromEulForThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
+int CBone::CalcWorldMatAfterThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
 	//############################################################
 	//g_limitdegflag == 1のときに並列化計算後の処理として呼ばれる
@@ -4432,7 +4456,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		//neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 		neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
 
-		curmp->SetWorldMat(saveworldmat);
+		curmp->SetWorldMat(saveworldmat);//!!!!!!!!!!
 
 		ismovable = ChkMovableEul(neweul);
 		if (infooutflag == true) {
@@ -5394,7 +5418,8 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 
 		int ismovable = ChkMovableEul(cureul);
 		if (ismovable != 1) {
-			cureul = LimitEul(cureul);
+			//cureul = LimitEul(cureul);
+			cureul = befeul;//制限に引っ掛かった場合　壁すりせず　動かさず　befeulと同じ
 		}
 	}
 	else {
@@ -6232,6 +6257,38 @@ void CBone::CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
 
 }
 
+ChaVector3 CBone::CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe)
+{
+	ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
+	int ismovable = ChkMovableEul(orgeul);
+	if (ismovable == 1) {
+		neweul = orgeul;
+	}
+	else {
+		if (g_wallscrapingikflag == 1) {
+			neweul = LimitEul(orgeul);//壁すりIK用
+		}
+		else {
+			double befframe = (double)((int)(srcframe - 1.0 + 0.1));
+			CMotionPoint* befmp = GetMotionPoint(srcmotid, befframe);
+			if (befmp) {
+				ChaVector3 befeul = befmp->GetLocalEul();
+				neweul = befeul;
+			}
+			else {
+				_ASSERT(0);
+				neweul = orgeul;
+			}
+		}
+	}
+	SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+	SetTempLocalEul(orgeul, neweul);
+
+	return neweul;
+}
 
 
 ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul, int callingstate)//default : dstneweul = 0, default : callingstate = 0
@@ -6279,19 +6336,11 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 					}
 					else {
 						//未計算の場合
-						orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-						int ismovable = ChkMovableEul(orgeul);
-						if (ismovable == 1) {
-							neweul = orgeul;
-						}
-						else {
-							neweul = LimitEul(orgeul);
-						}
-						SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
-						if (dstneweul) {
-							*dstneweul = neweul;
-						}
-						SetTempLocalEul(orgeul, neweul);
+						neweul = CalcLocalEulAndSetLimitedEul(srcmotid, (double)((int)(srcframe + 0.1)));
+					}
+
+					if (dstneweul) {
+						*dstneweul = neweul;
 					}
 				}
 
@@ -6382,16 +6431,8 @@ ChaMatrix CBone::GetCurrentLimitedWorldMat()
 //####################################################################
 //滑らかにするために、後でsrcframeと+1で２セット計算して補間計算するかもしれない
 //####################################################################
-		ChaVector3 orgeul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcframe + 0.1)), BEFEUL_BEFFRAME);
-		int ismovable = ChkMovableEul(orgeul);
 		ChaVector3 neweul;
-		if (ismovable == 1) {
-			neweul = orgeul;
-		}
-		else {
-			neweul = LimitEul(orgeul);
-		}
-		SetLocalEul(srcmotid, (double)((int)(srcframe + 0.1)), neweul);//!!!!!!!!!!!!
+		neweul = CalcLocalEulAndSetLimitedEul(srcmotid, (double)((int)(srcframe + 0.1)));
 		retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
 	}
 	else {

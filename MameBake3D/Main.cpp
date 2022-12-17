@@ -1839,7 +1839,7 @@ static int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, 
 static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
 
 static int ChangeCurrentBone();
-static int ChangeLimitDegFlag(bool srcflag);
+static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag);
 
 static int InitCurMotion(int selectflag, double expandmotion);
 
@@ -1929,6 +1929,7 @@ static int AngleDlg2AngleLimit(HWND hDlgWnd);//2022/12/05
 static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//2022/12/05
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
+static int UpdateWMandEul();
 
 static int InitRotAxis();
 static int RotAxis(HWND hDlgWnd);
@@ -7235,7 +7236,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_PHYSICS_IK:
 			s_physicskind = 0;
 			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false);
+			ChangeLimitDegFlag(false, true);
 			//g_limitdegflag = false;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -7245,7 +7246,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_PHYSICS_MV_IK:
 			s_physicskind = 1;
 			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false);
+			ChangeLimitDegFlag(false, true);
 			//g_limitdegflag = false;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -8811,7 +8812,7 @@ int RetargetBatch()
 
 
 	s_savelimitdegflag = g_limitdegflag;
-	ChangeLimitDegFlag(false);
+	ChangeLimitDegFlag(false, true);
 	//g_limitdegflag = false;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -8886,7 +8887,7 @@ int RetargetBatch()
 			if (curlpidl)
 				CoTaskMemFree(curlpidl);
 
-			ChangeLimitDegFlag(s_savelimitdegflag);
+			ChangeLimitDegFlag(s_savelimitdegflag, true);
 			//g_limitdegflag = s_savelimitdegflag;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -16002,7 +16003,7 @@ int SaveProject()
 
 
 	s_savelimitdegflag = g_limitdegflag;
-	ChangeLimitDegFlag(g_bakelimiteulonsave);
+	ChangeLimitDegFlag(g_bakelimiteulonsave, true);
 	//g_limitdegflag = g_bakelimiteulonsave;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(g_bakelimiteulonsave);
@@ -16035,7 +16036,7 @@ int SaveProject()
 	int result = chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
-		ChangeLimitDegFlag(s_savelimitdegflag);
+		ChangeLimitDegFlag(s_savelimitdegflag, true);
 		//g_limitdegflag = s_savelimitdegflag;
 		//if (s_LimitDegCheckBox) {
 		//	s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
@@ -16075,7 +16076,7 @@ int SaveProject()
 		}
 	}
 
-	ChangeLimitDegFlag(s_savelimitdegflag);
+	ChangeLimitDegFlag(s_savelimitdegflag, true);
 	//g_limitdegflag = s_savelimitdegflag;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
@@ -18953,7 +18954,28 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 	return 0;
 }
 
+int UpdateWMandEul()
+{
+	if (s_model) {
+		ChaMatrix tmpwm = s_model->GetWorldMat();
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			double curframe;
+			for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
+				s_model->SetMotionFrame(curframe);
+				s_model->UpdateMatrix(&tmpwm, &s_matVP);
+			}
+		}
 
+		{
+			double curframe = s_owpLTimeline->getCurrentTime();
+			s_model->SetMotionFrame(curframe);
+			s_model->UpdateMatrix(&tmpwm, &s_matVP);
+		}
+	}
+
+	return 0;
+}
 
 
 int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default : setcursorflag = true
@@ -18978,34 +19000,12 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	}
 	
 	ClearLimitedWM();
+	UpdateWMandEul();
 
-	//if (s_model) {
-	//	if (s_owpLTimeline) {
-	//		double curframe = s_owpLTimeline->getCurrentTime();
-	//		s_model->SetMotionFrame(curframe);
-	//		ChaMatrix tmpwm = s_model->GetWorldMat();
-	//		s_model->UpdateMatrix(&tmpwm, &s_matVP);
-	//	}
+	//if (s_model && s_model->GetCurMotInfo()) {
+	//	int curmotid = s_model->GetCurMotInfo()->motid;
+	//	s_model->CalcBoneEul(curmotid);
 	//}
-
-	if (s_model) {
-		ChaMatrix tmpwm = s_model->GetWorldMat();
-		MOTINFO* curmi = s_model->GetCurMotInfo();
-		if (curmi) {
-			double curframe;
-			for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
-				s_model->SetMotionFrame(curframe);
-				s_model->UpdateMatrix(&tmpwm, &s_matVP);
-			}
-		}
-
-		{
-			double curframe = s_owpLTimeline->getCurrentTime();
-			s_model->SetMotionFrame(curframe);
-			s_model->UpdateMatrix(&tmpwm, &s_matVP);
-		}
-	}
-
 
 	//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
 	Bone2AngleLimit();
@@ -19035,6 +19035,12 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			Bone2AngleLimit();
 			AngleLimit2Dlg(hDlgWnd);
 			ClearLimitedWM();//2022/12/06
+
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_RESETLIM_CURRENT), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_RESET0_CURRENT), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_REPLACE180TO170_CURRENT), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_LIMITFROMMOTION_CURRENT), FALSE);
+
 			return FALSE;
 		}
 		break;
@@ -19061,68 +19067,6 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			//	}
 			//}
 			break;
-		//case IDC_APPLYX:
-		//	if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYX) == BST_CHECKED) {
-		//		s_anglelimit.applyeul[AXIS_X] = true;
-		//	}
-		//	else {
-		//		s_anglelimit.applyeul[AXIS_X] = false;
-		//	}
-		//	AngleLimit2Bone();
-		//	break;
-		//case IDC_APPLYY:
-		//	if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYY) == BST_CHECKED) {
-		//		s_anglelimit.applyeul[AXIS_Y] = true;
-		//	}
-		//	else {
-		//		s_anglelimit.applyeul[AXIS_Y] = false;
-		//	}
-		//	AngleLimit2Bone();
-		//	break;
-		//case IDC_APPLYZ:
-		//	if (IsDlgButtonChecked(hDlgWnd, IDC_APPLYZ) == BST_CHECKED) {
-		//		s_anglelimit.applyeul[AXIS_Z] = true;
-		//	}
-		//	else {
-		//		s_anglelimit.applyeul[AXIS_Z] = false;
-		//	}
-		//	AngleLimit2Bone();
-		//	break;
-
-		//case IDC_CHECKX:
-		//	if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKX) == BST_CHECKED) {
-		//		s_anglelimit.via180flag[AXIS_X] = 1;
-		//	}
-		//	else {
-		//		s_anglelimit.via180flag[AXIS_X] = 0;
-		//	}
-		//	AngleLimit2Bone();
-		//	break;
-		//case IDC_CHECKY:
-		//	if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKY) == BST_CHECKED) {
-		//		s_anglelimit.via180flag[AXIS_Y] = 1;
-		//	}
-		//	else {
-		//		s_anglelimit.via180flag[AXIS_Y] = 0;
-		//	}
-		//	AngleLimit2Bone();
-		//	break;
-		//case IDC_CHECKZ:
-		//	if (IsDlgButtonChecked(hDlgWnd, IDC_CHECKZ) == BST_CHECKED) {
-		//		s_anglelimit.via180flag[AXIS_Z] = 1;
-		//	}
-		//	else {
-		//		s_anglelimit.via180flag[AXIS_Z] = 0;
-		//	}
-		//	AngleLimit2Bone();
-		//	break;
-
-		//case TB_THUMBTRACK:
-		//	s_underanglelimithscroll = 1;
-		//	break;
-		//case TB_THUMBPOSITION:
-		//	s_underanglelimithscroll = 0;
-		//	break;
 
 		case IDC_APPLYEDIT:
 			{
@@ -19267,7 +19211,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 
 					s_savelimitdegflag = g_limitdegflag;
-					ChangeLimitDegFlag(false);
+					ChangeLimitDegFlag(false, true);
 					//g_limitdegflag = false;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -19293,7 +19237,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 						s_model->AdditiveCurrentToAngleLimit();
 					}
 
-					ChangeLimitDegFlag(s_savelimitdegflag);
+					ChangeLimitDegFlag(s_savelimitdegflag, true);
 					//g_limitdegflag = s_savelimitdegflag;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -19318,105 +19262,105 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			break;
 
 			
-	//To Current Bone
-		case IDC_RESETLIM_CURRENT:
-		{
-			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
-				s_model->ResetAngleLimit(180, s_anglelimitbone);//2022/12/05 curbone引数追加
+	//To Current Bone  カレントだけの処理だとグラフがおかしいので止め
+		//case IDC_RESETLIM_CURRENT:
+		//{
+		//	if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+		//		s_model->ResetAngleLimit(180, s_anglelimitbone);//2022/12/05 curbone引数追加
 
-				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
+		//		UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-				AngleLimit2Dlg(s_anglelimitdlg);
-				UpdateWindow(s_anglelimitdlg);
-			}
-		}
-		break;
-		case IDC_RESET0_CURRENT:
-		{
-			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
-				s_model->ResetAngleLimit(0, s_anglelimitbone);//2022/12/05 curbone引数追加
+		//		AngleLimit2Dlg(s_anglelimitdlg);
+		//		UpdateWindow(s_anglelimitdlg);
+		//	}
+		//}
+		//break;
+		//case IDC_RESET0_CURRENT:
+		//{
+		//	if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+		//		s_model->ResetAngleLimit(0, s_anglelimitbone);//2022/12/05 curbone引数追加
 
-				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
+		//		UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-				AngleLimit2Dlg(s_anglelimitdlg);
-				UpdateWindow(s_anglelimitdlg);
-			}
-		}
-		break;
-		case IDC_REPLACE180TO170_CURRENT:
-		{
-			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
-				s_model->AngleLimitReplace180to170(s_anglelimitbone);//2022/12/05 curbone引数追加
+		//		AngleLimit2Dlg(s_anglelimitdlg);
+		//		UpdateWindow(s_anglelimitdlg);
+		//	}
+		//}
+		//break;
+		//case IDC_REPLACE180TO170_CURRENT:
+		//{
+		//	if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+		//		s_model->AngleLimitReplace180to170(s_anglelimitbone);//2022/12/05 curbone引数追加
 
-				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
+		//		UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-				AngleLimit2Dlg(s_anglelimitdlg);
-				UpdateWindow(s_anglelimitdlg);
-			}
+		//		AngleLimit2Dlg(s_anglelimitdlg);
+		//		UpdateWindow(s_anglelimitdlg);
+		//	}
 
-		}
-		break;
-		case IDC_LIMITFROMMOTION_CURRENT:
-		{
-			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
-				MOTINFO* curmi;
-				curmi = s_model->GetCurMotInfo();
-				if (curmi) {
+		//}
+		//break;
+		//case IDC_LIMITFROMMOTION_CURRENT:
+		//{
+		//	if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+		//		MOTINFO* curmi;
+		//		curmi = s_model->GetCurMotInfo();
+		//		if (curmi) {
 
-					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
-					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-
-
-					s_savelimitdegflag = g_limitdegflag;
-					ChangeLimitDegFlag(false);
-					//g_limitdegflag = false;
-					//if (s_LimitDegCheckBox) {
-					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-					//}
+		//			//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
+		//			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
-					//UINT checkadditive;
-					//checkadditive = IsDlgButtonChecked(s_anglelimitdlg, IDC_ADDITIVE);
-					//if (checkadditive != BST_CHECKED) {
-					//	SendMessage(s_anglelimitdlg, WM_COMMAND, IDC_RESETLIM, 0);
-					//}
-
-					int curmotid;
-					double curmotleng;
-					curmotid = curmi->motid;
-					curmotleng = curmi->frameleng;
-
-					double curframe;
-					for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
-						s_model->SetMotionFrame(curframe);
-						ChaMatrix tmpwm = s_model->GetWorldMat();
-						s_model->UpdateMatrix(&tmpwm, &s_matVP);
-						s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curbone引数追加
-					}
-
-					ChangeLimitDegFlag(s_savelimitdegflag);
-					//g_limitdegflag = s_savelimitdegflag;
-					//if (s_LimitDegCheckBox) {
-					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-					//}
-
-					bool setcursorflag = false;
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
-
-					//s_model->SetMotionFrame(1.0);
-					//ChaMatrix tmpwm = s_model->GetWorldMat();
-					//s_model->UpdateMatrix(&tmpwm, &s_matVP);
-
-					AngleLimit2Dlg(s_anglelimitdlg);
-					UpdateWindow(s_anglelimitdlg);
+		//			s_savelimitdegflag = g_limitdegflag;
+		//			ChangeLimitDegFlag(false, true);
+		//			//g_limitdegflag = false;
+		//			//if (s_LimitDegCheckBox) {
+		//			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+		//			//}
 
 
-					//カーソルを元に戻す
-					SetCursor(oldcursor);
-				}
-			}
-		}
-		break;
+		//			//UINT checkadditive;
+		//			//checkadditive = IsDlgButtonChecked(s_anglelimitdlg, IDC_ADDITIVE);
+		//			//if (checkadditive != BST_CHECKED) {
+		//			//	SendMessage(s_anglelimitdlg, WM_COMMAND, IDC_RESETLIM, 0);
+		//			//}
+
+		//			int curmotid;
+		//			double curmotleng;
+		//			curmotid = curmi->motid;
+		//			curmotleng = curmi->frameleng;
+
+		//			double curframe;
+		//			for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
+		//				s_model->SetMotionFrame(curframe);
+		//				ChaMatrix tmpwm = s_model->GetWorldMat();
+		//				s_model->UpdateMatrix(&tmpwm, &s_matVP);
+		//				s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curbone引数追加
+		//			}
+
+		//			ChangeLimitDegFlag(s_savelimitdegflag, true);
+		//			//g_limitdegflag = s_savelimitdegflag;
+		//			//if (s_LimitDegCheckBox) {
+		//			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+		//			//}
+
+		//			bool setcursorflag = false;
+		//			UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
+
+		//			//s_model->SetMotionFrame(1.0);
+		//			//ChaMatrix tmpwm = s_model->GetWorldMat();
+		//			//s_model->UpdateMatrix(&tmpwm, &s_matVP);
+
+		//			AngleLimit2Dlg(s_anglelimitdlg);
+		//			UpdateWindow(s_anglelimitdlg);
+
+
+		//			//カーソルを元に戻す
+		//			SetCursor(oldcursor);
+		//		}
+		//	}
+		//}
+		//break;
 
 
 			
@@ -19428,6 +19372,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			break;
 		default:
 			return FALSE;
+			break;
 		}
 		break;
 	case WM_CLOSE:
@@ -19437,83 +19382,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			s_anglelimitdlg = 0;
 		}
 		break;
-	//case WM_HSCROLL:
-	//	{
-	//		HWND ctrlwnd;
-	//		ctrlwnd = (HWND)lp;
-
-	//		if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLXL)){
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderVal(hDlgWnd, IDC_SLXL, IDC_XLVAL, &(s_anglelimit.lower[AXIS_X]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLXU)){
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderVal(hDlgWnd, IDC_SLXU, IDC_XUVAL, &(s_anglelimit.upper[AXIS_X]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLYL)){
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderVal(hDlgWnd, IDC_SLYL, IDC_YLVAL, &(s_anglelimit.lower[AXIS_Y]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLYU)){
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderVal(hDlgWnd, IDC_SLYU, IDC_YUVAL, &(s_anglelimit.upper[AXIS_Y]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLZL)){
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderVal(hDlgWnd, IDC_SLZL, IDC_ZLVAL, &(s_anglelimit.lower[AXIS_Z]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLZU)){
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderVal(hDlgWnd, IDC_SLZU, IDC_ZUVAL, &(s_anglelimit.upper[AXIS_Z]));
-	//		}
-
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLCHKX)) {
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderValFloat(hDlgWnd, IDC_SLCHKX, IDC_CHKXVAL, &(s_anglelimit.chkeul[AXIS_X]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLCHKY)) {
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderValFloat(hDlgWnd, IDC_SLCHKY, IDC_CHKYVAL, &(s_anglelimit.chkeul[AXIS_Y]));
-	//		}
-	//		else if (ctrlwnd == GetDlgItem(hDlgWnd, IDC_SLCHKZ)) {
-	//			s_underanglelimithscroll = 1;
-	//			GetAngleLimitSliderValFloat(hDlgWnd, IDC_SLCHKZ, IDC_CHKZVAL, &(s_anglelimit.chkeul[AXIS_Z]));
-	//		}
-
-	//		AngleLimit2Bone();
-
-	//		ClearLimitedWM();//2022/01/11
-
-	//		if (s_model) {
-	//			if (s_owpLTimeline) {
-	//				double curframe = s_owpLTimeline->getCurrentTime();
-	//				s_model->SetMotionFrame(curframe);
-	//				//s_model->CalcRigidElem();
-	//				ChaMatrix tmpwm = s_model->GetWorldMat();
-	//				s_model->UpdateMatrix(&tmpwm, &s_matVP);
-	//			}
-	//		}
-
-	//		//読み込みなおし：lowerとupperは大小関係で入れ替わることがあるため適用後読み込みなおす。
-	//		int setcheckflag = 1;
-	//		Bone2AngleLimit(setcheckflag);
-	//		//AngleLimit2Dlg(s_anglelimitdlg);
-	//		ChangeCurrentBone();
-	//		//EndDialog(hDlgWnd, IDOK);
-
-	//		//UpdateEditedEuler();//selectした範囲のみ
-
-	//		refreshEulerGraph();//モーション全体
-	//		//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
-
-
-	//		s_underanglelimithscroll = 0;
-
-	//		break;
-	//	}
-		break;
 	default:
 		return FALSE;
+		break;
 	}
 	return TRUE;
 
@@ -19834,21 +19705,35 @@ int ChangeCurrentBone()
 	return 0;
 }
 
-int ChangeLimitDegFlag(bool srcflag)
+int ChangeLimitDegFlag(bool srcflag, bool setcheckflag)
 {
+	//処理中にチェックボックスの状態を変えることが出来ないように　砂時計カーソルにする
+	HCURSOR oldcursor = NULL;
+	oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+
 	g_limitdegflag = srcflag;
-	if (s_LimitDegCheckBox) {
-		s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	if (setcheckflag && s_LimitDegCheckBox) {
+		s_LimitDegCheckBox->SetChecked(g_limitdegflag);//!!!!! 副作用として　SaveUndoMotionが働く
 	}
 
-	if (s_model && s_model->GetCurMotInfo()) {
-		int curmotid = s_model->GetCurMotInfo()->motid;
-		s_model->CalcBoneEul(curmotid);
-		refreshEulerGraph();
-	}
-	else {
-		_ASSERT(0);
-		return 1;
+	ClearLimitedWM();
+	UpdateWMandEul();
+	refreshEulerGraph();
+
+	//if (s_model && s_model->GetCurMotInfo()) {
+	//	int curmotid = s_model->GetCurMotInfo()->motid;
+	//	s_model->CalcBoneEul(curmotid);
+	//	refreshEulerGraph();
+	//}
+	//else {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
+
+	if (oldcursor != NULL) {
+		//カーソルを元に戻す
+		SetCursor(oldcursor);
 	}
 
 	return 0;
@@ -20034,9 +19919,11 @@ int OnFrameUtCheckBox()
 	if (s_LimitDegCheckBox && s_LimitDegCheckBoxFlag) {
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
 		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
-			s_model->CalcBoneEul(s_model->GetCurMotInfo()->motid);
-			refreshEulerGraph();
-			//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
+			//s_model->CalcBoneEul(s_model->GetCurMotInfo()->motid);
+			//refreshEulerGraph();
+			////s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
+
+			ChangeLimitDegFlag(g_limitdegflag, false);
 			PrepairUndo();
 		}
 		s_beflimitdegflag = g_limitdegflag;
@@ -35174,7 +35061,7 @@ void WaitRetargetThreads()
 		s_retargetcnt = 0;
 		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 
-		ChangeLimitDegFlag(s_savelimitdegflag);
+		ChangeLimitDegFlag(s_savelimitdegflag, true);
 		//g_limitdegflag = s_savelimitdegflag;
 		//if (s_LimitDegCheckBox) {
 		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -37244,7 +37131,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 	g_brushmirrorUflag = srcbrushstate.brushmirrorUflag;
 	g_brushmirrorVflag = srcbrushstate.brushmirrorVflag;
 	g_ifmirrorVDiv2flag = srcbrushstate.ifmirrorVDiv2flag;
-	ChangeLimitDegFlag(srcbrushstate.limitdegflag);
+	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false);
 	//g_limitdegflag = srcbrushstate.limitdegflag;
 	g_motionbrush_method = srcbrushstate.motionbrush_method;
 	g_wallscrapingikflag = srcbrushstate.wallscrapingikflag;

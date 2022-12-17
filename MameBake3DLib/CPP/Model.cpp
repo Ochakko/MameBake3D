@@ -1677,19 +1677,19 @@ void CModel::Motion2BtReq( CBtObject* srcbto )
 }
 
 
-void CModel::CalcWorldMatFromEulReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
+void CModel::CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
 	if (srcbone) {
 
 
-		srcbone->CalcWorldMatFromEulForThread(srcmotid, srcframe, wmat, vpmat);
+		srcbone->CalcWorldMatAfterThread(srcmotid, srcframe, wmat, vpmat);
 
 
 		if (srcbone->GetBrother()) {
-			CalcWorldMatFromEulReq(srcbone->GetBrother(), srcmotid, srcframe, wmat, vpmat);
+			CalcWorldMatAfterThreadReq(srcbone->GetBrother(), srcmotid, srcframe, wmat, vpmat);
 		}
 		if (srcbone->GetChild()) {
-			CalcWorldMatFromEulReq(srcbone->GetChild(), srcmotid, srcframe, wmat, vpmat);
+			CalcWorldMatAfterThreadReq(srcbone->GetChild(), srcmotid, srcframe, wmat, vpmat);
 		}
 	}
 }
@@ -1742,7 +1742,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 		
 
 		if (g_limitdegflag == 1) {
-			CalcWorldMatFromEulReq(m_topbone, curmotid, curframe, wmat, vpmat);
+			CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);
 		}
 	}
 	else {
@@ -11991,6 +11991,7 @@ int CModel::CalcBoneEul(int srcmotid)
 		if (mi){
 			double frame;
 			for (frame = 0.0; frame < mi->frameleng; frame += 1.0){
+			//for (frame = 1.0; frame < mi->frameleng; frame += 1.0) {//0frameは計算スキップ
 				CalcBoneEulReq(GetTopBone(), mi->motid, frame);
 			}
 		}

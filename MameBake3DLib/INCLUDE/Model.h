@@ -264,7 +264,7 @@ public:
 	int ClearLimitedWM(int srcmotid, double srcframe);
 
 	void WaitUpdateMatrixFinished();
-	void CalcWorldMatFromEulReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 
 /**
  * @fn
