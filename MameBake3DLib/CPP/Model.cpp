@@ -12845,39 +12845,54 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 
 }
 
-int CModel::ResetAngleLimit(int srcval)
+int CModel::ResetAngleLimit(int srcval, CBone* srcbone)
 {
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
-		CBone* curbone = itrbone->second;
-		if (curbone) {
-			curbone->ResetAngleLimit(srcval);
+	if (!srcbone) {
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				curbone->ResetAngleLimit(srcval);
+			}
 		}
+	}
+	else {
+		srcbone->ResetAngleLimit(srcval);
 	}
 	return 0;
 }
 
-int CModel::AngleLimitReplace180to170()
+int CModel::AngleLimitReplace180to170(CBone* srcbone)
 {
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
-		CBone* curbone = itrbone->second;
-		if (curbone) {
-			curbone->AngleLimitReplace180to170();
+	if (!srcbone) {
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				curbone->AngleLimitReplace180to170();
+			}
 		}
+	}
+	else {
+		srcbone->AngleLimitReplace180to170();
 	}
 	return 0;
 }
 
 
-int CModel::AdditiveCurrentToAngleLimit()
+int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 {
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
-		CBone* curbone = itrbone->second;
-		if (curbone) {
-			curbone->AdditiveCurrentToAngleLimit();
+	if (!srcbone) {
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				curbone->AdditiveCurrentToAngleLimit();
+			}
 		}
+	}
+	else {
+		srcbone->AdditiveCurrentToAngleLimit();
 	}
 	return 0;
 }

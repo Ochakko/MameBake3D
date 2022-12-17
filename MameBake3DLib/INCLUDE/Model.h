@@ -699,9 +699,9 @@ public:
 	void ApplyPhysIkRec();
 	void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
 
-	int ResetAngleLimit(int srcval);
-	int AngleLimitReplace180to170();
-	int AdditiveCurrentToAngleLimit();
+	int ResetAngleLimit(int srcval, CBone* srcbone = 0);
+	int AngleLimitReplace180to170(CBone* srcbone = 0);
+	int AdditiveCurrentToAngleLimit(CBone* srcbone = 0);
 
 	bool ChkBoneHasRig(CBone* srcbone);
 

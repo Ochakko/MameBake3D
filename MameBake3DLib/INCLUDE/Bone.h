@@ -455,7 +455,7 @@ public:
 	int ResetAngleLimit(int srcval);
 	int AngleLimitReplace180to170();
 	int AdditiveCurrentToAngleLimit();
-	int AdditiveToAngleLimit(ChaVector3 cureul);
+	//int AdditiveToAngleLimit(ChaVector3 cureul);//フルフレーム計算して最大最小をセットするように変更したため　この関数は使用しない
 
 	int InitMP(int srcmotid, double srcframelen);
 
@@ -562,6 +562,7 @@ private:
 
 	void InitAngleLimit();
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
+	int SwapAngleLimitUpperLowerIfRev();
 	int InitCustomRig();
 	void CalcBtRootDiffMatFunc(CBone* srcbone);
 

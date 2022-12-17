@@ -3506,7 +3506,8 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 
 		ChaMatrix curwm, parentwm, eulmat;
 		curwm = GetWorldMat(srcmotid, srcframe);
-		parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+		//parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+		parentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//currentboneは呼び出し下でリミットを掛けるが　parentはリミット済のものを取得する
 		eulq = ChaMatrix2Q(ChaMatrixInv(GetParent()->GetNodeMat())) * ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());//2022/12/14 mesh付きのfbxでOK
 	}
 	else {
@@ -4501,6 +4502,9 @@ int CBone::ChkMovableEul(ChaVector3 srceul)
 		return 1;//movable
 	}
 
+	SetAngleLimitOff(&m_anglelimit);
+
+
 	int dontmove = 0;
 	int axiskind;
 
@@ -4510,16 +4514,18 @@ int CBone::ChkMovableEul(ChaVector3 srceul)
 	chkval[2] = srceul.z;
 
 	for (axiskind = AXIS_X; axiskind <= AXIS_Z; axiskind++){
-		if (m_anglelimit.via180flag[axiskind] == 0){
-			if ((m_anglelimit.lower[axiskind] > (int)chkval[axiskind]) || (m_anglelimit.upper[axiskind] < (int)chkval[axiskind])) {
-				dontmove++;
-			}
-		}
-		else{
-			//180度線(-180度線)を越えるように動く場合
-			if ((m_anglelimit.lower[axiskind] <= (int)chkval[axiskind]) && (m_anglelimit.upper[axiskind] >= (int)chkval[axiskind])) {
-				dontmove++;
-			}
+		if (m_anglelimit.limitoff[axiskind] == 0) {
+			//if (m_anglelimit.via180flag[axiskind] == 0) {
+				if ((m_anglelimit.lower[axiskind] > (int)chkval[axiskind]) || (m_anglelimit.upper[axiskind] < (int)chkval[axiskind])) {
+					dontmove++;
+				}
+			//}
+			//else {
+			//	//180度線(-180度線)を越えるように動く場合
+			//	if ((m_anglelimit.lower[axiskind] <= (int)chkval[axiskind]) && (m_anglelimit.upper[axiskind] >= (int)chkval[axiskind])) {
+			//		dontmove++;
+			//	}
+			//}
 		}
 	}
 
@@ -4540,16 +4546,24 @@ float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 		return srcval;
 	}
 	else{
-		float newval;
+		float newval = srcval;
 		if (abs(m_anglelimit.upper[srckind] - m_anglelimit.lower[srckind]) > EULLIMITPLAY) {
 			//リミット付近でもIKが動くためには遊びの部分が必要
-			newval = min(srcval, (float)(m_anglelimit.upper[srckind] - EULLIMITPLAY));
-			newval = max(newval, (float)(m_anglelimit.lower[srckind] + EULLIMITPLAY));
+			if (srcval > m_anglelimit.upper[srckind]) {
+				newval = min(srcval, (float)(m_anglelimit.upper[srckind] - EULLIMITPLAY));
+			}
+			else if (srcval < m_anglelimit.lower[srckind]) {
+				newval = max(srcval, (float)(m_anglelimit.lower[srckind] + EULLIMITPLAY));
+			}
 		}
 		else {
 			//lowerとupperの間がEULLIMITPLAYより小さいとき
-			newval = min(srcval, (float)(m_anglelimit.upper[srckind]));
-			newval = max(newval, (float)(m_anglelimit.lower[srckind]));
+			if (srcval > m_anglelimit.upper[srckind]) {
+				newval = min(srcval, (float)(m_anglelimit.upper[srckind]));
+			}
+			else if (srcval < m_anglelimit.lower[srckind]) {
+				newval = max(srcval, (float)(m_anglelimit.lower[srckind]));
+			}
 		}
 
 		return newval;
@@ -4582,45 +4596,82 @@ ANGLELIMIT CBone::GetAngleLimit(int getchkflag)
 		////cureul = CalcLocalEulXYZ(m_anglelimit.boneaxiskind, curmotid, curframe, BEFEUL_BEFFRAME);
 		//cureul = CalcCurrentLocalEulXYZ(m_anglelimit.boneaxiskind, curmotid, curframe, BEFEUL_BEFFRAME);
 
-		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
-		ChaVector3 neweul = LimitEul(cureul);
+		if (m_parmodel) {
+			MOTINFO* curmi = m_parmodel->GetCurMotInfo();
+			if (curmi) {
+				int curmotid = curmi->motid;
+				int curframe = curmi->curframe;
 
-		m_anglelimit.chkeul[AXIS_X] = neweul.x;
-		m_anglelimit.chkeul[AXIS_Y] = neweul.y;
-		m_anglelimit.chkeul[AXIS_Z] = neweul.z;
+				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+				ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+				//cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
+				cureul = CalcLocalEulXYZ(-1, m_curmotid, curframe, BEFEUL_BEFFRAME, 0);
+				if (g_limitdegflag) {
+					neweul = LimitEul(cureul);
+				}
+				else {
+					neweul = cureul;
+				}
+
+				m_anglelimit.chkeul[AXIS_X] = neweul.x;
+				m_anglelimit.chkeul[AXIS_Y] = neweul.y;
+				m_anglelimit.chkeul[AXIS_Z] = neweul.z;
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			_ASSERT(0);
+		}
+
+
+		//m_anglelimit.chkeul[AXIS_X] = neweul.x;
+		//m_anglelimit.chkeul[AXIS_Y] = neweul.y;
+		//m_anglelimit.chkeul[AXIS_Z] = neweul.z;
 	}
 
 	return m_anglelimit;
 };
-void CBone::SetAngleLimit(ANGLELIMIT srclimit)
+
+int CBone::SwapAngleLimitUpperLowerIfRev()
 {
-	m_anglelimit = srclimit;
-
 	int axiskind;
-	for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
-		if (m_anglelimit.lower[axiskind] < -180){
-			m_anglelimit.lower[axiskind] = -180;
-		}
-		else if (m_anglelimit.lower[axiskind] > 180){
-			m_anglelimit.lower[axiskind] = 180;
-		}
-
-		if (m_anglelimit.upper[axiskind] < -180){
-			m_anglelimit.upper[axiskind] = -180;
-		}
-		else if (m_anglelimit.upper[axiskind] > 180){
-			m_anglelimit.upper[axiskind] = 180;
-		}
-
-		if (m_anglelimit.lower[axiskind] > m_anglelimit.upper[axiskind]){
-			_ASSERT(0);
+	for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++) {
+		if (m_anglelimit.lower[axiskind] > m_anglelimit.upper[axiskind]) {
+			//_ASSERT(0);
 			//swap
 			int tmpval = m_anglelimit.lower[axiskind];
 			m_anglelimit.lower[axiskind] = m_anglelimit.upper[axiskind];
 			m_anglelimit.upper[axiskind] = tmpval;
 		}
 	}
+
+	return 0;
+}
+
+void CBone::SetAngleLimit(ANGLELIMIT srclimit)
+{
+	m_anglelimit = srclimit;
+
+	//int axiskind;
+	//for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
+		//if (m_anglelimit.lower[axiskind] < -180){
+		//	m_anglelimit.lower[axiskind] = -180;
+		//}
+		//else if (m_anglelimit.lower[axiskind] > 180){
+		//	m_anglelimit.lower[axiskind] = 180;
+		//}
+
+		//if (m_anglelimit.upper[axiskind] < -180){
+		//	m_anglelimit.upper[axiskind] = -180;
+		//}
+		//else if (m_anglelimit.upper[axiskind] > 180){
+		//	m_anglelimit.upper[axiskind] = 180;
+		//}
+	//}
+
+	SwapAngleLimitUpperLowerIfRev();
 	SetAngleLimitOff(&m_anglelimit);
 
 	ChaVector3 neweul;
@@ -4628,7 +4679,12 @@ void CBone::SetAngleLimit(ANGLELIMIT srclimit)
 	neweul.y = m_anglelimit.chkeul[AXIS_Y];
 	neweul.z = m_anglelimit.chkeul[AXIS_Z];
 	ChaVector3 limiteul;
-	limiteul = LimitEul(neweul);
+	if (g_limitdegflag) {
+		limiteul = LimitEul(neweul);
+	}
+	else {
+		limiteul = neweul;
+	}
 	m_anglelimit.chkeul[AXIS_X] = limiteul.x;
 	m_anglelimit.chkeul[AXIS_Y] = limiteul.y;
 	m_anglelimit.chkeul[AXIS_Z] = limiteul.z;
@@ -6456,8 +6512,9 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 int CBone::ResetAngleLimit(int srcval)
 {
 	int newlimit;
-	newlimit = min(180, srcval);
-	newlimit = max(0, newlimit);
+	//newlimit = min(180, srcval);
+	//newlimit = max(0, newlimit);
+	newlimit = srcval;
 
 
 	m_anglelimit.lower[0] = -newlimit;
@@ -6502,40 +6559,149 @@ int CBone::AngleLimitReplace180to170()
 
 int CBone::AdditiveCurrentToAngleLimit()
 {
-	ChaVector3 cureul;
-	cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
+	//#########################################################################################################################
+	//2022/12/17
+	//カレントフレームだけの計算だと　0リセットの影響や制限の影響のあるbefeulを参照するので　オーバー180の計算がうまくいかない
+	//よって全フレームのオイラー角を計算して　最大値と最小値を求めて　それを制限としてセットする
+	//#########################################################################################################################
 
-	AdditiveToAngleLimit(cureul);
+	if (m_parmodel) {
+		MOTINFO* curmi = m_parmodel->GetCurMotInfo();
+		if (curmi) {
+			int curmotid = curmi->motid;
+			double frameleng = curmi->frameleng;
+			double curframe;
+
+			ChaVector3 calceul;
+			float cureul[3];
+			float maxeul[3] = { FLT_MIN, FLT_MIN, FLT_MIN };//必ず更新されるようにMIN
+			float mineul[3] = { FLT_MAX, FLT_MAX, FLT_MAX };//必ず更新されるようにMAX
+			for (curframe = 1.0; curframe < (frameleng - 1.0); curframe += 1.0) {
+				calceul = CalcLocalEulXYZ(-1, curmotid, curframe, BEFEUL_BEFFRAME, 0);
+				cureul[0] = calceul.x;
+				cureul[1] = calceul.y;
+				cureul[2] = calceul.z;
+
+				int axiskind;
+				for (axiskind = 0; axiskind < 3; axiskind++) {
+					if (cureul[axiskind] > maxeul[axiskind]) {
+						maxeul[axiskind] = cureul[axiskind];
+					}
+					if (cureul[axiskind] < mineul[axiskind]) {
+						mineul[axiskind] = cureul[axiskind];
+					}
+				}
+			}
+
+			int axiskind2;
+			for (axiskind2 = 0; axiskind2 < 3; axiskind2++) {
+				m_anglelimit.upper[axiskind2] = maxeul[axiskind2];
+				m_anglelimit.lower[axiskind2] = mineul[axiskind2];
+			}
+		}
+	}
+
+
+	//if (m_parmodel) {
+	//	MOTINFO* curmi = m_parmodel->GetCurMotInfo();
+	//	if (curmi) {
+	//		int curmotid = curmi->motid;
+	//		int curframe = curmi->curframe;
+	//		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//		cureul = CalcLocalEulXYZ(-1, m_curmotid, curframe, BEFEUL_BEFFRAME, 0);
+	//		AdditiveToAngleLimit(cureul);
+	//	}
+	//	else {
+	//		_ASSERT(0);
+	//	}
+	//}
+	//else {
+	//	_ASSERT(0);
+	//}
 
 
 	return 0;
 }
 
-int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
-{
-	if ((int)cureul.x < m_anglelimit.lower[0]) {
-		m_anglelimit.lower[0] = cureul.x;
-	}
-	if ((int)cureul.y < m_anglelimit.lower[1]) {
-		m_anglelimit.lower[1] = cureul.y;
-	}
-	if ((int)cureul.z < m_anglelimit.lower[2]) {
-		m_anglelimit.lower[2] = cureul.z;
-	}
-
-
-	if ((int)cureul.x > m_anglelimit.upper[0]) {
-		m_anglelimit.upper[0] = cureul.x;
-	}
-	if ((int)cureul.y > m_anglelimit.upper[1]) {
-		m_anglelimit.upper[1] = cureul.y;
-	}
-	if ((int)cureul.z > m_anglelimit.upper[2]) {
-		m_anglelimit.upper[2] = cureul.z;
-	}
-
-	return 0;
-}
+//int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
+//{
+//
+//	if ( m_anglelimit.lower[AXIS_X] > (int)cureul.x) {
+//		m_anglelimit.lower[AXIS_X] = (int)cureul.x;
+//	}
+//	if (m_anglelimit.lower[AXIS_Y] > (int)cureul.y) {
+//		m_anglelimit.lower[AXIS_Y] = (int)cureul.y;
+//	}
+//	if (m_anglelimit.lower[AXIS_Z] > (int)cureul.z) {
+//		m_anglelimit.lower[AXIS_Z] = (int)cureul.z;
+//	}
+//
+//	if ((int)cureul.x > m_anglelimit.upper[AXIS_X]) {
+//		m_anglelimit.upper[AXIS_X] = (int)cureul.x;
+//	}
+//	if ((int)cureul.y > m_anglelimit.upper[AXIS_Y]) {
+//		m_anglelimit.upper[AXIS_Y] = (int)cureul.y;
+//	}
+//	if ((int)cureul.z > m_anglelimit.upper[AXIS_Z]) {
+//		m_anglelimit.upper[AXIS_Z] = (int)cureul.z;
+//	}
+//
+//
+//	//#################################################################################################
+//	//2022/12/06
+//	//floatの角度にintの制限をかける際　差分が遊びより小さい場合に　モーションがぶるぶるすることがある
+//	//遊びよりも大きな値分　絶対値の内側に折り込む
+//	//#################################################################################################
+//	//if ( (m_anglelimit.lower[0] - (int)cureul.x) > EULLIMITPLAY) {
+//	//	m_anglelimit.lower[0] = cureul.x + EULLIMITPLAY;
+//	//}
+//	//if ((m_anglelimit.lower[1] - (int)cureul.y) > EULLIMITPLAY) {
+//	//	m_anglelimit.lower[1] = cureul.y + EULLIMITPLAY;
+//	//}
+//	//if ((m_anglelimit.lower[2] - (int)cureul.z) > EULLIMITPLAY) {
+//	//	m_anglelimit.lower[2] = cureul.z + EULLIMITPLAY;
+//	//}
+//	//if (((int)cureul.x - m_anglelimit.upper[0]) > EULLIMITPLAY) {
+//	//	m_anglelimit.upper[0] = cureul.x - EULLIMITPLAY;
+//	//}
+//	//if (((int)cureul.y - m_anglelimit.upper[1]) > EULLIMITPLAY) {
+//	//	m_anglelimit.upper[1] = cureul.y - EULLIMITPLAY;
+//	//}
+//	//if (((int)cureul.z - m_anglelimit.upper[2]) > EULLIMITPLAY) {
+//	//	m_anglelimit.upper[2] = cureul.z - EULLIMITPLAY;
+//	//}
+//
+//
+//	SwapAngleLimitUpperLowerIfRev();
+//
+//
+//
+//	//#######################################################################################
+//	//2022/12/06 Comment out
+//	//floatの角度にintの制限をかける際　差分が遊びより小さい場合に　モーションがぶるぶるする 
+//	//#######################################################################################
+//	//if ((int)cureul.x < m_anglelimit.lower[0]) {
+//	//	m_anglelimit.lower[0] = cureul.x;
+//	//}
+//	//if ((int)cureul.y < m_anglelimit.lower[1]) {
+//	//	m_anglelimit.lower[1] = cureul.y;
+//	//}
+//	//if ((int)cureul.z < m_anglelimit.lower[2]) {
+//	//	m_anglelimit.lower[2] = cureul.z;
+//	//}
+//
+//	//if ((int)cureul.x > m_anglelimit.upper[0]) {
+//	//	m_anglelimit.upper[0] = cureul.x;
+//	//}
+//	//if ((int)cureul.y > m_anglelimit.upper[1]) {
+//	//	m_anglelimit.upper[1] = cureul.y;
+//	//}
+//	//if ((int)cureul.z > m_anglelimit.upper[2]) {
+//	//	m_anglelimit.upper[2] = cureul.z;
+//	//}
+//
+//	return 0;
+//}
 
 int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread)
 {
@@ -6852,7 +7018,7 @@ int CBone::InitMP(int srcmotid, double srcframe)
 	}
 
 	//この関数は処理に時間が掛かる
-	//CModel読み込み中で　読み込み中のモーション数が０で無い場合には　InitMPする必要は無い(モーションの値で上書きする)ので　リターンする
+	//CModel読み込み中で　読み込み中のモーション数が０以外の場合には　InitMPする必要は無い(モーションの値で上書きする)ので　リターンする
 	//
 	//2022/11/08
 	//ただし　RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがあるので　RootとReferenceについてはここではリターンしない
