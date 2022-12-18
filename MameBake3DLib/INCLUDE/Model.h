@@ -702,6 +702,7 @@ public:
 	int ResetAngleLimit(int srcval, CBone* srcbone = 0);
 	int AngleLimitReplace180to170(CBone* srcbone = 0);
 	int AdditiveCurrentToAngleLimit(CBone* srcbone = 0);
+	int AdditiveAllMotionsToAngleLimit();
 
 	bool ChkBoneHasRig(CBone* srcbone);
 

@@ -2701,7 +2701,7 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 		ChaMatrixIdentity(&tramat);
 		ChaMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
 
-		if (m_child){
+		//if (m_child){
 			if (setmatflag == 0){
 				ChaMatrix limitedworldmat;
 				
@@ -2772,42 +2772,42 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 					bvhbone->SetTmpMat(tmpmat);
 				}
 			}
-		}
-		else{
-			ChaVector3 rotcenter;// = m_childworld;
-			ChaVector3 tmpfpos = GetJointFPos();
-			ChaMatrix tmpwm = curmp->GetWorldMat();
-			ChaVector3TransformCoord(&rotcenter, &tmpfpos, &tmpwm);
-			//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &limitedworldmat);
-			ChaMatrix befrot, aftrot;
-			ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-			ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
-			ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-			//ChaMatrix tmpmat = curmp->GetWorldMat() * rotmat * tramat;
-			//ChaMatrix tmpmat = GetS0RTMatrix(curmp->GetWorldMat()) * rotmat * tramat;
+		//}
+		//else{
+		//	ChaVector3 rotcenter;// = m_childworld;
+		//	ChaVector3 tmpfpos = GetJointFPos();
+		//	ChaMatrix tmpwm = curmp->GetWorldMat();
+		//	ChaVector3TransformCoord(&rotcenter, &tmpfpos, &tmpwm);
+		//	//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &limitedworldmat);
+		//	ChaMatrix befrot, aftrot;
+		//	ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+		//	ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+		//	ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+		//	//ChaMatrix tmpmat = curmp->GetWorldMat() * rotmat * tramat;
+		//	//ChaMatrix tmpmat = GetS0RTMatrix(curmp->GetWorldMat()) * rotmat * tramat;
 
-			ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
-			//ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
-			ChaVector3 tmppos;
-			ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
-			ChaVector3 diffvec;
-			diffvec = rotcenter - tmppos;
-			ChaMatrix tmptramat;
-			ChaMatrixIdentity(&tmptramat);
-			ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
-			ChaMatrix tmpmat;
-			tmpmat = tmpmat0 * tmptramat * tramat;
-
-
-			g_wmatDirectSetFlag = true;//!!!!!!!! ################# 2021/11/24 comment out
-			SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-			g_wmatDirectSetFlag = false;//!!!!!!! ################# 2021/11/24 comment out
-			if (bvhbone){
-				bvhbone->SetTmpMat(tmpmat);
-			}
+		//	ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
+		//	//ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
+		//	ChaVector3 tmppos;
+		//	ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
+		//	ChaVector3 diffvec;
+		//	diffvec = rotcenter - tmppos;
+		//	ChaMatrix tmptramat;
+		//	ChaMatrixIdentity(&tmptramat);
+		//	ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+		//	ChaMatrix tmpmat;
+		//	tmpmat = tmpmat0 * tmptramat * tramat;
 
 
-		}
+		//	g_wmatDirectSetFlag = true;//!!!!!!!! ################# 2021/11/24 comment out
+		//	SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+		//	g_wmatDirectSetFlag = false;//!!!!!!! ################# 2021/11/24 comment out
+		//	if (bvhbone){
+		//		bvhbone->SetTmpMat(tmpmat);
+		//	}
+
+
+		//}
 	}
 
 
@@ -4439,7 +4439,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 
 	if ((g_wmatDirectSetFlag == false) && (g_underRetargetFlag == false)){
 		ChaMatrix saveworldmat;
-		saveworldmat = curmp->GetWorldMat();
+		saveworldmat = curmp->GetWorldMat();//!!!!!!!!! 変更前を保存
 
 		ChaVector3 oldeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxsiflag = 1;
@@ -4456,7 +4456,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		//neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
 		neweul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
 
-		curmp->SetWorldMat(saveworldmat);//!!!!!!!!!!
+		curmp->SetWorldMat(saveworldmat);//!!!!!!!!!! 元に戻す
 
 		ismovable = ChkMovableEul(neweul);
 		if (infooutflag == true) {
@@ -6617,7 +6617,7 @@ int CBone::AdditiveCurrentToAngleLimit()
 			float cureul[3];
 			float maxeul[3] = { FLT_MIN, FLT_MIN, FLT_MIN };//必ず更新されるようにMIN
 			float mineul[3] = { FLT_MAX, FLT_MAX, FLT_MAX };//必ず更新されるようにMAX
-			for (curframe = 1.0; curframe < (frameleng - 1.0); curframe += 1.0) {
+			for (curframe = 1.0; curframe < frameleng; curframe += 1.0) {
 				calceul = CalcLocalEulXYZ(-1, curmotid, curframe, BEFEUL_BEFFRAME, 0);
 				cureul[0] = calceul.x;
 				cureul[1] = calceul.y;
@@ -6663,6 +6663,77 @@ int CBone::AdditiveCurrentToAngleLimit()
 
 	return 0;
 }
+
+int CBone::AdditiveAllMotionsToAngleLimit()
+{
+	if (m_parmodel) {
+
+		float maxeul[3] = { FLT_MIN, FLT_MIN, FLT_MIN };//必ず更新されるようにMIN
+		float mineul[3] = { FLT_MAX, FLT_MAX, FLT_MAX };//必ず更新されるようにMAX
+
+		int motionnum = m_parmodel->GetMotInfoSize();
+		if (motionnum >= 1) {
+			std::map<int, MOTINFO*>::iterator itrmi;
+			for (itrmi = m_parmodel->GetMotInfoBegin(); itrmi != m_parmodel->GetMotInfoEnd(); itrmi++) {
+				MOTINFO* curmi = itrmi->second;
+				if (curmi) {
+					int curmotid = curmi->motid;
+					double frameleng = curmi->frameleng;
+					double curframe;
+
+					ChaVector3 calceul;
+					float cureul[3];
+
+					for (curframe = 1.0; curframe < frameleng; curframe += 1.0) {
+						calceul = CalcLocalEulXYZ(-1, curmotid, curframe, BEFEUL_BEFFRAME, 0);
+						cureul[0] = calceul.x;
+						cureul[1] = calceul.y;
+						cureul[2] = calceul.z;
+
+						int axiskind;
+						for (axiskind = 0; axiskind < 3; axiskind++) {
+							if (cureul[axiskind] > maxeul[axiskind]) {
+								maxeul[axiskind] = cureul[axiskind];
+							}
+							if (cureul[axiskind] < mineul[axiskind]) {
+								mineul[axiskind] = cureul[axiskind];
+							}
+						}
+					}
+
+				}
+			}
+
+			int axiskind2;
+			for (axiskind2 = 0; axiskind2 < 3; axiskind2++) {
+				m_anglelimit.upper[axiskind2] = maxeul[axiskind2];
+				m_anglelimit.lower[axiskind2] = mineul[axiskind2];
+			}
+		}
+	}
+
+
+	//if (m_parmodel) {
+	//	MOTINFO* curmi = m_parmodel->GetCurMotInfo();
+	//	if (curmi) {
+	//		int curmotid = curmi->motid;
+	//		int curframe = curmi->curframe;
+	//		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//		cureul = CalcLocalEulXYZ(-1, m_curmotid, curframe, BEFEUL_BEFFRAME, 0);
+	//		AdditiveToAngleLimit(cureul);
+	//	}
+	//	else {
+	//		_ASSERT(0);
+	//	}
+	//}
+	//else {
+	//	_ASSERT(0);
+	//}
+
+
+	return 0;
+}
+
 
 //int CBone::AdditiveToAngleLimit(ChaVector3 cureul)
 //{

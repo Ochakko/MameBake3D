@@ -1839,7 +1839,7 @@ static int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, 
 static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
 
 static int ChangeCurrentBone();
-static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag);
+static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag);
 
 static int InitCurMotion(int selectflag, double expandmotion);
 
@@ -7236,7 +7236,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_PHYSICS_IK:
 			s_physicskind = 0;
 			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false, true);
+			ChangeLimitDegFlag(false, true, true);
 			//g_limitdegflag = false;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -7246,7 +7246,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		case IDC_PHYSICS_MV_IK:
 			s_physicskind = 1;
 			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false, true);
+			ChangeLimitDegFlag(false, true, true);
 			//g_limitdegflag = false;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -8812,7 +8812,7 @@ int RetargetBatch()
 
 
 	s_savelimitdegflag = g_limitdegflag;
-	ChangeLimitDegFlag(false, true);
+	ChangeLimitDegFlag(false, true, true);
 	//g_limitdegflag = false;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -8887,7 +8887,7 @@ int RetargetBatch()
 			if (curlpidl)
 				CoTaskMemFree(curlpidl);
 
-			ChangeLimitDegFlag(s_savelimitdegflag, true);
+			ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 			//g_limitdegflag = s_savelimitdegflag;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -8946,6 +8946,9 @@ int RetargetBatch()
 	}
 
 	//InterlockedExchange(&g_retargetbatchflag, 0);//スレッドを立ててすぐに出ていくのでここではフラグはそのまま
+
+
+	//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//WaitRetargetThreads()で行うので　ここでは呼ばない
 
 
 	return 0;
@@ -16003,7 +16006,7 @@ int SaveProject()
 
 
 	s_savelimitdegflag = g_limitdegflag;
-	ChangeLimitDegFlag(g_bakelimiteulonsave, true);
+	ChangeLimitDegFlag(g_bakelimiteulonsave, true, true);
 	//g_limitdegflag = g_bakelimiteulonsave;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(g_bakelimiteulonsave);
@@ -16036,7 +16039,7 @@ int SaveProject()
 	int result = chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
-		ChangeLimitDegFlag(s_savelimitdegflag, true);
+		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 		//g_limitdegflag = s_savelimitdegflag;
 		//if (s_LimitDegCheckBox) {
 		//	s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
@@ -16076,7 +16079,7 @@ int SaveProject()
 		}
 	}
 
-	ChangeLimitDegFlag(s_savelimitdegflag, true);
+	ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 	//g_limitdegflag = s_savelimitdegflag;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
@@ -19211,7 +19214,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 
 					s_savelimitdegflag = g_limitdegflag;
-					ChangeLimitDegFlag(false, true);
+					ChangeLimitDegFlag(false, true, true);
 					//g_limitdegflag = false;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -19229,15 +19232,18 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					curmotid = curmi->motid;
 					curmotleng = curmi->frameleng;
 
-					double curframe;
-					for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
-						s_model->SetMotionFrame(curframe);
-						ChaMatrix tmpwm = s_model->GetWorldMat();
-						s_model->UpdateMatrix(&tmpwm, &s_matVP);
-						s_model->AdditiveCurrentToAngleLimit();
-					}
+					//double curframe;
+					//for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
+					//	s_model->SetMotionFrame(curframe);
+					//	ChaMatrix tmpwm = s_model->GetWorldMat();
+					//	s_model->UpdateMatrix(&tmpwm, &s_matVP);
+					//	s_model->AdditiveCurrentToAngleLimit();
+					//}
 
-					ChangeLimitDegFlag(s_savelimitdegflag, true);
+					s_model->AdditiveCurrentToAngleLimit();//内部で全フレーム分処理
+
+
+					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
 					//g_limitdegflag = s_savelimitdegflag;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -19260,6 +19266,47 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			}
 		}
 			break;
+
+	//To AllBones From AllMotions
+		case IDC_LIMITFROMALLMOTIONS:
+		{
+			if (s_model && s_anglelimitdlg) {
+				MOTINFO* curmi;
+				curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+
+					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
+					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+
+					s_savelimitdegflag = g_limitdegflag;
+					ChangeLimitDegFlag(false, true, true);
+					//g_limitdegflag = false;
+					//if (s_LimitDegCheckBox) {
+					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+					//}
+
+					s_model->AdditiveAllMotionsToAngleLimit();//内部で全モーション全フレーム分処理
+
+
+					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
+
+					bool setcursorflag = false;
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
+
+					//s_model->SetMotionFrame(1.0);
+					//ChaMatrix tmpwm = s_model->GetWorldMat();
+					//s_model->UpdateMatrix(&tmpwm, &s_matVP);
+
+					AngleLimit2Dlg(s_anglelimitdlg);
+					UpdateWindow(s_anglelimitdlg);
+
+					//カーソルを元に戻す
+					SetCursor(oldcursor);
+				}
+			}
+		}
+		break;
 
 			
 	//To Current Bone  カレントだけの処理だとグラフがおかしいので止め
@@ -19705,7 +19752,7 @@ int ChangeCurrentBone()
 	return 0;
 }
 
-int ChangeLimitDegFlag(bool srcflag, bool setcheckflag)
+int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 {
 	//処理中にチェックボックスの状態を変えることが出来ないように　砂時計カーソルにする
 	HCURSOR oldcursor = NULL;
@@ -19717,9 +19764,11 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag)
 		s_LimitDegCheckBox->SetChecked(g_limitdegflag);//!!!!! 副作用として　SaveUndoMotionが働く
 	}
 
-	ClearLimitedWM();
-	UpdateWMandEul();
-	refreshEulerGraph();
+	if (updateeulflag) {
+		ClearLimitedWM();
+		UpdateWMandEul();
+		refreshEulerGraph();
+	}
 
 	//if (s_model && s_model->GetCurMotInfo()) {
 	//	int curmotid = s_model->GetCurMotInfo()->motid;
@@ -19923,7 +19972,7 @@ int OnFrameUtCheckBox()
 			//refreshEulerGraph();
 			////s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
 
-			ChangeLimitDegFlag(g_limitdegflag, false);
+			ChangeLimitDegFlag(g_limitdegflag, false, true);
 			PrepairUndo();
 		}
 		s_beflimitdegflag = g_limitdegflag;
@@ -22039,6 +22088,7 @@ int OnSpriteUndo()
 			//保存時とは制限角度が異なっている可能性があるので　制限角度のために再計算
 			//#########################################################################
 			ClearLimitedWM();
+			UpdateWMandEul();//2022/12/18
 			refreshEulerGraph();
 
 
@@ -35061,7 +35111,7 @@ void WaitRetargetThreads()
 		s_retargetcnt = 0;
 		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
 
-		ChangeLimitDegFlag(s_savelimitdegflag, true);
+		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 		//g_limitdegflag = s_savelimitdegflag;
 		//if (s_LimitDegCheckBox) {
 		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -37131,7 +37181,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 	g_brushmirrorUflag = srcbrushstate.brushmirrorUflag;
 	g_brushmirrorVflag = srcbrushstate.brushmirrorVflag;
 	g_ifmirrorVDiv2flag = srcbrushstate.ifmirrorVDiv2flag;
-	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false);
+	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false, false);//RollbackBrushState呼び出し元の下方にてUpdateWMandEul();を呼ぶので３番目の引数はfalse
 	//g_limitdegflag = srcbrushstate.limitdegflag;
 	g_motionbrush_method = srcbrushstate.motionbrush_method;
 	g_wallscrapingikflag = srcbrushstate.wallscrapingikflag;

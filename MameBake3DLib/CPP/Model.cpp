@@ -12898,6 +12898,21 @@ int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 	return 0;
 }
 
+int CModel::AdditiveAllMotionsToAngleLimit()
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			curbone->AdditiveAllMotionsToAngleLimit();
+		}
+	}
+
+	return 0;
+
+}
+
+
 bool CModel::ChkBoneHasRig(CBone* srcbone)
 {
 	if (srcbone) {
