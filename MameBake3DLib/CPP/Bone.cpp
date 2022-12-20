@@ -2701,113 +2701,76 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 		ChaMatrixIdentity(&tramat);
 		ChaMatrixTranslation(&tramat, traanim.x, traanim.y, traanim.z);
 
-		//if (m_child){
-			if (setmatflag == 0){
-				ChaMatrix limitedworldmat;
+		if (setmatflag == 0){
+			ChaMatrix limitedworldmat;
 				
 				
-				//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//ここをGetLimitedWorldMatにすると１回目のIKが乱れる。２回目のIK以降はOK。
-				limitedworldmat = GetWorldMat(srcmotid, srcframe);
+			//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//ここをGetLimitedWorldMatにすると１回目のIKが乱れる。２回目のIK以降はOK。
+			limitedworldmat = GetWorldMat(srcmotid, srcframe);
 
 
-				ChaVector3 rotcenter;// = m_childworld;
-				//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
-				ChaVector3 tmpfpos = GetJointFPos();
-				ChaVector3TransformCoord(&rotcenter, &tmpfpos, &limitedworldmat);
-				ChaMatrix befrot, aftrot;
-				ChaMatrixIdentity(&befrot);
-				ChaMatrixIdentity(&aftrot);
-				ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-				ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
+			ChaVector3 rotcenter;// = m_childworld;
+			//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &(curmp->GetWorldMat()));
+			ChaVector3 tmpfpos = GetJointFPos();
+			ChaVector3TransformCoord(&rotcenter, &tmpfpos, &limitedworldmat);
+			ChaMatrix befrot, aftrot;
+			ChaMatrixIdentity(&befrot);
+			ChaMatrixIdentity(&aftrot);
+			ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
+			ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
 																  
 
-				ChaMatrix tmpmat;
-				//################################################################################################
-				//2022/11/08 comment out
-				// translateが設定されているHipsの親として原点にRootを自動作成(Rootがまだ無ければ)することで対応
-				//################################################################################################
-				//if ((onretarget == false) && (IsHipsBone() == true)) {
-				//	//Hipsの場合　localTraAnimも回転する
+			ChaMatrix tmpmat;
+			//################################################################################################
+			//2022/11/08 comment out
+			// translateが設定されているHipsの親として原点にRootを自動作成(Rootがまだ無ければ)することで対応
+			//################################################################################################
+			//if ((onretarget == false) && (IsHipsBone() == true)) {
+			//	//Hipsの場合　localTraAnimも回転する
 
-				//	tmpmat = limitedworldmat * rotq.MakeRotMatX();
+			//	tmpmat = limitedworldmat * rotq.MakeRotMatX();
 
-				//	g_wmatDirectSetFlag = true;
-				//	SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-				//	g_wmatDirectSetFlag = false;
-				//}
-				//else {
-					//#########################################################################################################################
-					//2022/11/08
-					//localTraAnimは回転しない
-					//例えば　原点以外にあるHipsで移動を回転すると　意図とは違う動きをするから　移動回転しない　全体回転はRootジョイントで行う
-					//#########################################################################################################################
-					ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
+			//	g_wmatDirectSetFlag = true;
+			//	SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+			//	g_wmatDirectSetFlag = false;
+			//}
+			//else {
+				//#########################################################################################################################
+				//2022/11/08
+				//localTraAnimは回転しない
+				//例えば　原点以外にあるHipsで移動を回転すると　意図とは違う動きをするから　移動回転しない　全体回転はRootジョイントで行う
+				//#########################################################################################################################
+				ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
 
-					//ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
-					ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
-					ChaVector3 tmppos;
-					ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
-					ChaVector3 diffvec;
-					diffvec = rotcenter - tmppos;
-					ChaMatrix tmptramat;
-					ChaMatrixIdentity(&tmptramat);
-					ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
-					tmpmat = tmpmat0 * tmptramat * tramat;
+				//ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
+				ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
+				ChaVector3 tmppos;
+				ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
+				ChaVector3 diffvec;
+				diffvec = rotcenter - tmppos;
+				ChaMatrix tmptramat;
+				ChaMatrixIdentity(&tmptramat);
+				ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
+				tmpmat = tmpmat0 * tmptramat * tramat;
 
-					//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
-					SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-				//}
-
-
-				if (bvhbone){
-					bvhbone->SetTmpMat(tmpmat);
-				}
-			}
-			else{
-				ChaMatrix tmpmat = *psetmat;
-				g_wmatDirectSetFlag = true;
+				//directflagまたはunderRetargetFlagがないときはtramat成分は無視され、SetWorldMatFromEul中でbone::CalcLocalTraAnimの値が適用される。
 				SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-				g_wmatDirectSetFlag = false;
-				if (bvhbone){
-					bvhbone->SetTmpMat(tmpmat);
-				}
+			//}
+
+
+			if (bvhbone){
+				bvhbone->SetTmpMat(tmpmat);
 			}
-		//}
-		//else{
-		//	ChaVector3 rotcenter;// = m_childworld;
-		//	ChaVector3 tmpfpos = GetJointFPos();
-		//	ChaMatrix tmpwm = curmp->GetWorldMat();
-		//	ChaVector3TransformCoord(&rotcenter, &tmpfpos, &tmpwm);
-		//	//ChaVector3TransformCoord(&rotcenter, &(GetJointFPos()), &limitedworldmat);
-		//	ChaMatrix befrot, aftrot;
-		//	ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
-		//	ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
-		//	ChaMatrix rotmat = befrot * rotq.MakeRotMatX() * aftrot;
-		//	//ChaMatrix tmpmat = curmp->GetWorldMat() * rotmat * tramat;
-		//	//ChaMatrix tmpmat = GetS0RTMatrix(curmp->GetWorldMat()) * rotmat * tramat;
-
-		//	ChaMatrix tmpmat0 = curmp->GetWorldMat() * rotmat;// *tramat;
-		//	//ChaMatrix tmpmat0 = limitedworldmat * rotmat;// *tramat;
-		//	ChaVector3 tmppos;
-		//	ChaVector3TransformCoord(&tmppos, &tmpfpos, &tmpmat0);
-		//	ChaVector3 diffvec;
-		//	diffvec = rotcenter - tmppos;
-		//	ChaMatrix tmptramat;
-		//	ChaMatrixIdentity(&tmptramat);
-		//	ChaMatrixTranslation(&tmptramat, diffvec.x, diffvec.y, diffvec.z);
-		//	ChaMatrix tmpmat;
-		//	tmpmat = tmpmat0 * tmptramat * tramat;
-
-
-		//	g_wmatDirectSetFlag = true;//!!!!!!!! ################# 2021/11/24 comment out
-		//	SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
-		//	g_wmatDirectSetFlag = false;//!!!!!!! ################# 2021/11/24 comment out
-		//	if (bvhbone){
-		//		bvhbone->SetTmpMat(tmpmat);
-		//	}
-
-
-		//}
+		}
+		else{
+			ChaMatrix tmpmat = *psetmat;
+			g_wmatDirectSetFlag = true;
+			SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
+			g_wmatDirectSetFlag = false;
+			if (bvhbone){
+				bvhbone->SetTmpMat(tmpmat);
+			}
+		}
 	}
 
 
@@ -3480,9 +3443,9 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	const WCHAR* bonename = GetWBoneName();
-	if (wcscmp(bonename, L"RootNode") == 0){
-		return cureul;//!!!!!!!!!!!!!!!!!!!!!!!!
-	}
+	//if (wcscmp(bonename, L"RootNode") == 0){
+	//	return cureul;//!!!!!!!!!!!!!!!!!!!!!!!!
+	//}
 
 	if (befeulkind == BEFEUL_BEFFRAME){
 		//1つ前のフレームのEULはすでに計算されていると仮定する。
@@ -3522,7 +3485,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		isendbone = 1;
 	}
 
-	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
+	//int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
 
 	CQuaternion eulq;
 	if (GetParent()) {
@@ -3532,18 +3495,38 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		curwm = GetWorldMat(srcmotid, srcframe);
 		//parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
 		parentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//currentboneは呼び出し下でリミットを掛けるが　parentはリミット済のものを取得する
-		eulq = ChaMatrix2Q(ChaMatrixInv(GetParent()->GetNodeMat())) * ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());//2022/12/14 mesh付きのfbxでOK
+		eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 	}
 	else {
 		isfirstbone = 1;
 
 		ChaMatrix curwm, eulmat;
 		curwm = GetWorldMat(srcmotid, srcframe);
-		eulq = ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());
+		eulq = ChaMatrix2Q(curwm);
 	}
-	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
-	eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
+	int notmodify180flag = 1;
+	//if (srcframe <= 1.01) {
+	//	//befframeが0フレームの場合には　180度ずれチェックをしない
+	//	notmodify180flag = 1;
+	//}
+	//else {
+	//	notmodify180flag = 0;
+	//}
+
+	CQuaternion axisq;
+	axisq.RotationMatrix(GetNodeMat());
+	//if (GetParent()) {
+	//	axisq.RotationMatrix(GetParent()->GetNodeMat());
+	//}
+	//else {
+	//	axisq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//}
+
+	eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, &axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	//eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
@@ -3589,17 +3572,19 @@ ChaMatrix CBone::CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, int src
 		ishipsjoint = false;
 	}
 
-	CQuaternion newrot0;
-	newrot0.SetRotationXYZ(0, srceul);//GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat()) の　GLOBAL軸オイラー角
-
-	//########### CalcLocalEulXYZ()におけるeulmatは式１################################################################
-	//eulmat = GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat());//式１　//CalcLocalEulXYZ()
-	// 式２で　curwm * invparentwm　の回転に修正する
-	//#################################################################################################################
-	//newrotmat = invnoderot.MakeRotMatX() * newrot.MakeRotMatX() * parentnoderot.MakeRotMatX();//式２　//curwm * invparentwmの回転
-
 	CQuaternion newrot;
-	newrot = parentnoderot * newrot0 * invnoderot;
+	//newrot0.SetRotationXYZ(0, srceul);//GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat()) の　GLOBAL軸オイラー角
+	////########### CalcLocalEulXYZ()におけるeulmatは式１################################################################
+	////eulmat = GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat());//式１　//CalcLocalEulXYZ()
+	//// 式２で　curwm * invparentwm　の回転に修正する
+	////#################################################################################################################
+	////newrotmat = invnoderot.MakeRotMatX() * newrot.MakeRotMatX() * parentnoderot.MakeRotMatX();//式２　//curwm * invparentwmの回転
+	//CQuaternion newrot;
+	//newrot = parentnoderot * newrot0 * invnoderot;
+
+
+	newrot.SetRotationXYZ(&noderot, srceul);//(curwm * ChaMatrixInv(parentwm)　の　NodeMat軸のオイラー角 2022/12/20 こっちの方がMayaに近い
+
 
 	ChaMatrix retlocalrotmat;
 	retlocalrotmat = newrot.MakeRotMatX();
@@ -3685,17 +3670,23 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind
 		ChaMatrix curwm, parentwm, eulmat;
 		curwm = GetCurMp().GetWorldMat();
 		parentwm = GetParent()->GetCurMp().GetWorldMat();
-		eulq = ChaMatrix2Q(ChaMatrixInv(GetParent()->GetNodeMat())) * ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());//2022/12/14 mesh付きのfbxでOK
+		//eulq = ChaMatrix2Q(ChaMatrixInv(GetParent()->GetNodeMat())) * ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());//2022/12/14 mesh付きのfbxでOK
+		eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 	}
 	else {
 		isfirstbone = 1;
 
 		ChaMatrix curwm, eulmat;
 		curwm = GetCurMp().GetWorldMat();
-		eulq = ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());
+		//eulq = ChaMatrix2Q(curwm) * ChaMatrix2Q(GetNodeMat());
+		eulq = ChaMatrix2Q(curwm);
 	}
 	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
-	eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	//eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+
+	CQuaternion axisq;
+	axisq.RotationMatrix(GetNodeMat());
+	eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 
 	CMotionPoint* curmp;

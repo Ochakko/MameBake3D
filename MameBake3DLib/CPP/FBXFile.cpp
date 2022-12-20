@@ -3606,7 +3606,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		//curbone->SetPositionFound(lPositionFound);//!!!
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone mark‚ð•\Ž¦‚·‚é‚½‚ßtrue‚ÉB
 
-		curbone->SetNodeMat(nodemat);
+		curbone->SetNodeMat(nodemat);//2022/12/19
 		curbone->SetGlobalPosMat(lGlobalPosition);
 
 		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
