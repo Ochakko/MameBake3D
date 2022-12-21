@@ -354,7 +354,8 @@ int CBone::InitParams()
 
 	m_type = FBXBONE_NONE;
 
-	ChaMatrixIdentity( &m_nodemat );
+	ChaMatrixIdentity(&m_nodemat);
+	ChaMatrixIdentity(&m_nodeanimmat);
 	m_bindmat.SetIdentity();
 
 	m_jointwpos = ChaVector3( 0.0f, 0.0f, 0.0f );
@@ -1466,6 +1467,70 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 	return 0;
 }
 
+//float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
+//{
+//	if (!childbone || !dstmat) {
+//		_ASSERT(0);
+//		return 0.0f;
+//	}
+//
+//	ChaMatrix resultmat;
+//	resultmat.SetIdentity();
+//	ChaMatrix childmat;
+//	childmat.SetIdentity();
+//
+//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+//	ChaVector3 aftjointpos, aftchildjointpos;
+//	resultmat = GetNodeMat() * GetCurrentLimitedWorldMat();
+//	childmat = childbone->GetNodeMat() * childbone->GetCurrentLimitedWorldMat();
+//
+//	ChaVector3TransformCoord(&aftjointpos, &zeropos, &resultmat);
+//	ChaVector3TransformCoord(&aftchildjointpos, &zeropos, &childmat);
+//
+//	ChaVector3 vecforleng;
+//	vecforleng = aftchildjointpos - aftjointpos;
+//	float retleng = (float)ChaVector3LengthDbl(&vecforleng);
+//
+//
+//	resultmat.data[MATI_41] = aftjointpos.x;
+//	resultmat.data[MATI_42] = aftjointpos.y;
+//	resultmat.data[MATI_43] = aftjointpos.z;
+//
+//	return retleng;
+//
+//}
+//
+//float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
+//{
+//	if (!childbone || !dstmat) {
+//		_ASSERT(0);
+//		return 0.0f;
+//	}
+//
+//	ChaMatrix resultmat;
+//	resultmat.SetIdentity();
+//	ChaMatrix childmat;
+//	childmat.SetIdentity();
+//
+//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+//	ChaVector3 aftjointpos, aftchildjointpos;
+//	resultmat = GetNodeMat() * GetCurrentZeroFrameMat(1);
+//	childmat = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
+//
+//	ChaVector3TransformCoord(&aftjointpos, &zeropos, &resultmat);
+//	ChaVector3TransformCoord(&aftchildjointpos, &zeropos, &childmat);
+//
+//	ChaVector3 vecforleng;
+//	vecforleng = aftchildjointpos - aftjointpos;
+//	float retleng = (float)ChaVector3LengthDbl(&vecforleng);
+//
+//	resultmat.data[MATI_41] = aftjointpos.x;
+//	resultmat.data[MATI_42] = aftjointpos.y;
+//	resultmat.data[MATI_43] = aftjointpos.z;
+//
+//	return retleng;
+//
+//}
 
 float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
@@ -1515,6 +1580,8 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	//else {
 	//}
 
+	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+
 	ChaVector3 tmpfpos = GetJointFPos();
 	ChaVector3 tmpchildfpos = childbone->GetJointFPos();
 	ChaVector3 tmpparentfpos;
@@ -1525,19 +1592,19 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 		tmpparentfpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
-	ChaMatrix tmpzerofm = GetCurrentZeroFrameMat(1);
-	ChaMatrix tmplimwm = GetCurrentLimitedWorldMat();
-	ChaMatrix tmpbtmat = GetBtMat();
-	ChaMatrix tmpchildzerofm = childbone->GetCurrentZeroFrameMat(1);
-	ChaMatrix tmpchildlimwm = childbone->GetCurrentLimitedWorldMat();
+	ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(1);
+	ChaMatrix tmplimwm = GetNodeMat() * GetCurrentLimitedWorldMat();
+	ChaMatrix tmpbtmat = GetNodeMat() * GetBtMat();
+	ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
+	ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentLimitedWorldMat();
 	//ChaMatrix tmpchildbtmat;
 	ChaMatrix tmpparentzerofm;
 	ChaMatrix tmpparentlimwm;
 	ChaMatrix tmpparentbtmat;
 	if (GetParent()) {
-		tmpparentzerofm = GetParent()->GetCurrentZeroFrameMat(1);
-		tmpparentlimwm = GetParent()->GetCurrentLimitedWorldMat();
-		tmpparentbtmat = GetParent()->GetBtMat();
+		tmpparentzerofm = GetParent()->GetNodeMat() * GetParent()->GetCurrentZeroFrameMat(1);
+		tmpparentlimwm = GetParent()->GetNodeMat() * GetParent()->GetCurrentLimitedWorldMat();
+		tmpparentbtmat = GetParent()->GetNodeMat() * GetParent()->GetBtMat();
 	}
 	else {
 		tmpparentzerofm.SetIdentity();
@@ -1548,123 +1615,27 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 
 	ChaMatrix convmat;
 	convmat.SetIdentity();
-	if (bindflag == 1) {
-		//bind pose
-		ChaVector3TransformCoord(&aftparentpos, &tmpparentfpos, &tmpparentzerofm);
-		ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
-		ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpchildzerofm);
 
-		if (g_boneaxis == 0) {
-			//current bone axis
-			convmat = tmpzerofm;
-		}
-		else if (g_boneaxis == 1) {
-			//parent bone axis
-			convmat = tmpparentzerofm;
-		}
-		else if (g_boneaxis == 2) {
-			//global axis
-			convmat.SetIdentity();
-		}
-		else {
-			convmat = tmpzerofm;
-		}
+	ChaVector3TransformCoord(&aftparentpos, &zeropos, &tmpparentlimwm);
+	ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmplimwm);
+	ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildlimwm);
+
+	if (g_boneaxis == 0) {
+		//current bone axis
+		convmat = tmplimwm;
+	}
+	else if (g_boneaxis == 1) {
+		//parent bone axis
+		convmat = tmpparentlimwm;
+	}
+	else if (g_boneaxis == 2) {
+		//global axis
+		convmat.SetIdentity();
 	}
 	else {
-		if (g_previewFlag != 5) {
-
-
-			if (setstartflag == 1) {
-				ChaVector3TransformCoord(&aftparentpos, &tmpparentfpos, &tmpparentzerofm);
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpzerofm);
-
-				if (g_boneaxis == 0) {
-					//current bone axis
-					convmat = tmpzerofm;
-				}
-				else if (g_boneaxis == 1) {
-					//parent bone axis
-					convmat = tmpparentzerofm;
-				}
-				else if (g_boneaxis == 2) {
-					//global axis
-					convmat.SetIdentity();
-				}
-				else {
-					convmat = tmpzerofm;
-				}
-
-			}
-			else {
-				ChaVector3TransformCoord(&aftparentpos, &tmpparentfpos, &tmpparentlimwm);
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmplimwm);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmplimwm);
-
-				if (g_boneaxis == 0) {
-					//current bone axis
-					convmat = tmplimwm;
-				}
-				else if (g_boneaxis == 1) {
-					//parent bone axis
-					convmat = tmpparentlimwm;
-				}
-				else if (g_boneaxis == 2) {
-					//global axis
-					convmat.SetIdentity();
-				}
-				else {
-					convmat = tmplimwm;
-				}
-
-			}
-		}
-		else {
-			if (setstartflag == 1) {
-				ChaVector3TransformCoord(&aftparentpos, &tmpparentfpos, &tmpparentzerofm);
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpzerofm);
-
-				if (g_boneaxis == 0) {
-					//current bone axis
-					convmat = tmpzerofm;
-				}
-				else if (g_boneaxis == 1) {
-					//parent bone axis
-					convmat = tmpparentzerofm;
-				}
-				else if (g_boneaxis == 2) {
-					//global axis
-					convmat.SetIdentity();
-				}
-				else {
-					convmat = tmpzerofm;
-				}
-
-			}
-			else {
-				ChaVector3TransformCoord(&aftparentpos, &tmpparentfpos, &tmpparentbtmat);
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpbtmat);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpbtmat);
-
-				if (g_boneaxis == 0) {
-					//current bone axis
-					convmat = tmpbtmat;
-				}
-				else if (g_boneaxis == 1) {
-					//parent bone axis
-					convmat = tmpparentbtmat;
-				}
-				else if (g_boneaxis == 2) {
-					//global axis
-					convmat.SetIdentity();
-				}
-				else {
-					convmat = tmpbtmat;
-				}
-			}
-		}
+		convmat = tmplimwm;
 	}
+
 
 
 	//カレント変換したボーン軸
@@ -1768,6 +1739,7 @@ float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* d
 		return 0.0f;
 	}
 
+	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	ChaVector3 tmpfpos = GetJointFPos();
 	ChaVector3 tmpchildfpos = childbone->GetJointFPos();
@@ -1776,53 +1748,53 @@ float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* d
 
 	if (bindflag == 1) {
 		//bind pose
-		ChaMatrix tmpzerofm = GetCurrentZeroFrameMat(1);
-		ChaMatrix tmpchildzerofm = childbone->GetCurrentZeroFrameMat(1);
-		ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
-		ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpchildzerofm);
+		ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(1);
+		ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
+		ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpzerofm);
+		ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildzerofm);
 
 		convmat = tmpzerofm;
 	}
 	else {
 		if (g_previewFlag != 5) {
-			ChaMatrix tmpzerofm = GetCurrentZeroFrameMat(0);
-			ChaMatrix tmplimwm = GetCurrentLimitedWorldMat();
-			ChaMatrix tmpchildzerofm = childbone->GetCurrentZeroFrameMat(0);
-			ChaMatrix tmpchildlimwm = childbone->GetCurrentLimitedWorldMat();
+			ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(1);
+			ChaMatrix tmplimwm = GetNodeMat() * GetCurrentLimitedWorldMat();
+			ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
+			ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentLimitedWorldMat();
 
 			if (setstartflag == 1) {
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpzerofm);
+				ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpzerofm);
+				ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildzerofm);
 
 				convmat = tmpzerofm;
 			}
 			else {
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmplimwm);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmplimwm);
+				ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmplimwm);
+				ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildlimwm);
 
 				convmat = tmplimwm;
 			}
 		}
 		else {
-			ChaMatrix tmpzerofm = GetCurrentZeroFrameMat(0);
-			ChaMatrix tmpbtmat = GetBtMat();
+			ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(1);
+			ChaMatrix tmpbtmat = GetNodeMat() * GetBtMat();
+			ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
+			ChaMatrix tmpchildbtmat = childbone->GetNodeMat() * childbone->GetBtMat();
 			if (setstartflag == 1) {
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpzerofm);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpzerofm);
+				ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpzerofm);
+				ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildzerofm);
 
 				convmat = tmpzerofm;
 			}
 			else {
-				ChaVector3TransformCoord(&aftbonepos, &tmpfpos, &tmpbtmat);
-				ChaVector3TransformCoord(&aftchildpos, &tmpchildfpos, &tmpbtmat);
+				ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpbtmat);
+				ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildbtmat);
 
 				convmat = tmpbtmat;
 			}
 		}
 	}
-
-
-
+	
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
 	if (aftbonepos == aftchildpos) {
@@ -3353,8 +3325,12 @@ int CBone::GetBoneNum()
 
 int CBone::CalcFirstFrameBonePos(ChaMatrix srcmat)
 {
-	ChaVector3 jpos = GetJointFPos();
-	ChaVector3TransformCoord(&m_firstframebonepos, &jpos, &srcmat);
+	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3TransformCoord(&m_firstframebonepos, &zeropos, &srcmat);
+
+
+	//ChaVector3 jpos = GetJointFPos();
+	//ChaVector3TransformCoord(&m_firstframebonepos, &jpos, &srcmat);
 	
 	
 	//ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);//2022/07/29
@@ -6886,7 +6862,8 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//FirstMot
 			//##########
 			if ((animno == 0) && (framecnt == 0.0)) {
-				SetFirstMat(globalmat);
+				//SetFirstMat(globalmat);
+				SetFirstMat(chaGlobalSRT);
 			}
 
 
@@ -7172,7 +7149,7 @@ int CBone::InitMP(int srcmotid, double srcframe)
 
 	if (firstmp) {
 		ChaMatrix firstanim = firstmp->GetWorldMat();
-		SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
+		//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
 
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
 		if (!curmp) {

@@ -312,12 +312,31 @@ namespace MameBake3DLibRetarget {
 					}
 				}
 
+				CBone* bvhfirstbone = 0;
+				CBone* bvhtopbone = srcbvhmodel->GetTopBone();
+				CBone* bvhhipsbone = 0;
+				if (bvhtopbone) {
+					srcbvhmodel->GetHipsBoneReq(bvhtopbone, &bvhhipsbone);
+					if (bvhhipsbone) {
+						bvhfirstbone = bvhhipsbone;
+					}
+					else {
+						bvhfirstbone = bvhtopbone;
+					}
+				}
+
+
 				//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
 				if (modelfirstbone && (srcbone == modelfirstbone)) {//モデル側の最初のボーンの処理時
 
 					//firsthipbvhmatとfirsthipmodelmatは　この関数の参照引数　一度セットして使いまわす
 					
-					firsthipbvhmat = bvhmp.GetWorldMat();
+					//#######################################################################################
+					//2022/12/21 ver1.1.0.10へ向けて
+					//式10033と前提条件を合わせる
+					//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
+					//#######################################################################################
+					firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetWorldMat();
 					firsthipbvhmat.data[MATI_41] = 0.0f;
 					firsthipbvhmat.data[MATI_42] = 0.0f;
 					firsthipbvhmat.data[MATI_43] = 0.0f;
@@ -366,120 +385,166 @@ namespace MameBake3DLibRetarget {
 				//// 前提２と前提３については　fbxの読み込み方をそのようにしてある(bvh側にはバインドポーズが無いことが多いからこのようにしてある)
 				////##############################################################################################################################
 
-			//######
-			//model
-			//######
-				//model firsthip
-				ChaMatrix firsthipmodelS, firsthipmodelR, firsthipmodelT;
-				ChaMatrix invfirsthipmodelS, invfirsthipmodelR, invfirsthipmodelT;
-				CQuaternion firsthipmodelQ, invfirsthipmodelQ;
-				GetSRTMatrix2(firsthipmodelmat, &firsthipmodelS, &firsthipmodelR, &firsthipmodelT);
-				GetSRTMatrix2(ChaMatrixInv(firsthipmodelmat), &invfirsthipmodelS, &invfirsthipmodelR, &invfirsthipmodelT);
-				firsthipmodelQ.RotationMatrix(firsthipmodelR);
-				invfirsthipmodelQ.RotationMatrix(invfirsthipmodelR);
+				if (modelfirstbone && bvhfirstbone) {
 
-				//model firstframe globalposition
-				//ChaMatrix invfirstmodelS, invfirstmodelR, invfirstmodelT;
-				//CQuaternion invfirstmodelQ;
-				//GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstmodelS, &invfirstmodelR, &invfirstmodelT);
-				//invfirstmodelQ.RotationMatrix(invfirstmodelR);
-
-				//model current
-				ChaMatrix invmodelS, invmodelR, invmodelT;
-				CQuaternion invmodelQ;
-				GetSRTMatrix2(ChaMatrixInv(modelmp.GetWorldMat()), &invmodelS, &invmodelR, &invmodelT);
-				invmodelQ.RotationMatrix(invmodelR);
-
-				//model zeroframe anim
-				ChaMatrix zeroframemodelmat;
-				CQuaternion zeroframemodelQ;
-				zeroframemodelmat = srcbone->GetCurrentZeroFrameMat(1);
-				zeroframemodelQ.RotationMatrix(zeroframemodelmat);
+					//#######################################################################################
+					//2022/12/21 ver1.1.0.10へ向けて
+					//式10033と前提条件を合わせる
+					//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
+					//#######################################################################################
+					ChaMatrix offsetforbvhmat, offsetformodelmat;
+					offsetforbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat();
+					offsetformodelmat.SetIdentity();
 
 
-			//######
-			//bvh
-			//######
-				//bvh firsthip
-				ChaMatrix firsthipbvhS, firsthipbvhR, firsthipbvhT;
-				ChaMatrix invfirsthipbvhS, invfirsthipbvhR, invfirsthipbvhT;
-				CQuaternion firsthipbvhQ, invfirsthipbvhQ;
-				GetSRTMatrix2(firsthipbvhmat, &firsthipbvhS, &firsthipbvhR, &firsthipbvhT);
-				GetSRTMatrix2(ChaMatrixInv(firsthipbvhmat), &invfirsthipbvhS, &invfirsthipbvhR, &invfirsthipbvhT);
-				firsthipbvhQ.RotationMatrix(firsthipbvhR);
-				invfirsthipbvhQ.RotationMatrix(invfirsthipbvhR);
+					//######
+					//model
+					//######
+						//model firsthip
+					ChaMatrix firsthipmodelS, firsthipmodelR, firsthipmodelT;
+					ChaMatrix invfirsthipmodelS, invfirsthipmodelR, invfirsthipmodelT;
+					CQuaternion firsthipmodelQ, invfirsthipmodelQ;
+					GetSRTMatrix2(firsthipmodelmat, &firsthipmodelS, &firsthipmodelR, &firsthipmodelT);
+					GetSRTMatrix2(ChaMatrixInv(firsthipmodelmat), &invfirsthipmodelS, &invfirsthipmodelR, &invfirsthipmodelT);
+					firsthipmodelQ.RotationMatrix(firsthipmodelR);
+					invfirsthipmodelQ.RotationMatrix(invfirsthipmodelR);
 
-				////bvh firstframe globalposition
-				//ChaMatrix invfirstbvhS, invfirstbvhR, invfirstbvhT;
-				//CQuaternion invfirstbvhQ;
-				//GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstbvhS, &invfirstbvhR, &invfirstbvhT);
-				//invfirstbvhQ.RotationMatrix(invfirstbvhR);
+					//model firstframe globalposition
+					//ChaMatrix invfirstmodelS, invfirstmodelR, invfirstmodelT;
+					//CQuaternion invfirstmodelQ;
+					//GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstmodelS, &invfirstmodelR, &invfirstmodelT);
+					//invfirstmodelQ.RotationMatrix(invfirstmodelR);
 
-				////bvh zeroframe anim
-				//ChaMatrix zeroframebvhmat;
-				//CQuaternion zeroframebvhQ;
-				//zeroframebvhmat = bvhbone->GetCurrentZeroFrameMat(1);
-				//zeroframebvhQ.RotationMatrix(zeroframebvhmat);
-				//bvh invzeroframe anim
-				ChaMatrix invzeroframebvhmat;
-				CQuaternion invzeroframebvhQ;
-				invzeroframebvhmat = ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1));
-				invzeroframebvhQ.RotationMatrix(invzeroframebvhmat);
+					//model current
+					ChaMatrix invmodelcurrentmat;
+					ChaMatrix invmodelS, invmodelR, invmodelT;
+					CQuaternion invmodelQ;
+					//invmodelcurrentmat = ChaMatrixInv(srcbone->GetNodeMat() * modelmp.GetWorldMat());
+					invmodelcurrentmat = ChaMatrixInv(offsetformodelmat * modelmp.GetWorldMat());
+					GetSRTMatrix2(invmodelcurrentmat, &invmodelS, &invmodelR, &invmodelT);
+					invmodelQ.RotationMatrix(invmodelR);
 
-				//bvh current
-				ChaMatrix bvhS, bvhR, bvhT;
-				CQuaternion bvhQ;
-				GetSRTMatrix2(bvhmp.GetWorldMat(), &bvhS, &bvhR, &bvhT);
-				bvhQ.RotationMatrix(bvhR);
-				////bvh inv current
-				//ChaMatrix invbvhS, invbvhR, invbvhT;
-				//CQuaternion invbvhQ;
-				//GetSRTMatrix2(ChaMatrixInv(bvhmp.GetWorldMat()), &invbvhS, &invbvhR, &invbvhT);
-				//invbvhQ.RotationMatrix(invbvhR);
+					//model zeroframe anim
+					ChaMatrix zeroframemodelmat;
+					CQuaternion zeroframemodelQ;
+					//zeroframemodelmat = srcbone->GetNodeMat() * srcbone->GetCurrentZeroFrameMat(1);
+					zeroframemodelmat = offsetformodelmat * srcbone->GetCurrentZeroFrameMat(1);
+					zeroframemodelQ.RotationMatrix(zeroframemodelmat);
 
 
+					//######
+					//bvh
+					//######
+						//bvh firsthip
+					ChaMatrix firsthipbvhS, firsthipbvhR, firsthipbvhT;
+					ChaMatrix invfirsthipbvhS, invfirsthipbvhR, invfirsthipbvhT;
+					CQuaternion firsthipbvhQ, invfirsthipbvhQ;
+					GetSRTMatrix2(firsthipbvhmat, &firsthipbvhS, &firsthipbvhR, &firsthipbvhT);
+					GetSRTMatrix2(ChaMatrixInv(firsthipbvhmat), &invfirsthipbvhS, &invfirsthipbvhR, &invfirsthipbvhT);
+					firsthipbvhQ.RotationMatrix(firsthipbvhR);
+					invfirsthipbvhQ.RotationMatrix(invfirsthipbvhR);
 
-				////以下４行　式10032　　　
-				//ChaMatrix curbvhmat;
-				//CQuaternion convQ;
-				//convQ = invfirsthipbvhQ * invfirstbvhQ * firsthipbvhQ * invfirsthipmodelQ * invmodelQ * zeroframemodelQ * firsthipmodelQ;
-				//curbvhmat = convQ.MakeRotMatX() * bvhmp.GetWorldMat();
-				////補足：invmodelQ * zeroframemodelQは　model側の０フレームポーズからの変化分のインバース. bvh側は０フレームがidentityになるように読み込んでいる 
-				////curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//10026までの式
+					////bvh firstframe globalposition
+					ChaMatrix firstbvhS, firstbvhR, firstbvhT;
+					CQuaternion firstbvhQ;
+					ChaMatrix invfirstbvhS, invfirstbvhR, invfirstbvhT;
+					CQuaternion invfirstbvhQ;
+					GetSRTMatrix2(bvhbone->GetFirstMat(), &firstbvhS, &firstbvhR, &firstbvhT);
+					firstbvhQ.RotationMatrix(firstbvhR);
+					GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstbvhS, &invfirstbvhR, &invfirstbvhT);
+					invfirstbvhQ.RotationMatrix(invfirstbvhR);
+
+					////bvh zeroframe anim
+					//ChaMatrix zeroframebvhmat;
+					//CQuaternion zeroframebvhQ;
+					//zeroframebvhmat = bvhbone->GetCurrentZeroFrameMat(1);
+					//zeroframebvhQ.RotationMatrix(zeroframebvhmat);
+					//bvh invzeroframe anim
+					ChaMatrix zeroframebvhmat;
+					ChaMatrix invzeroframebvhmat;
+					CQuaternion invzeroframebvhQ;
+					zeroframebvhmat = offsetforbvhmat * bvhbone->GetCurrentZeroFrameMat(1);
+					//invzeroframebvhmat = ChaMatrixInv(bvhbone->GetNodeMat() * bvhbone->GetCurrentZeroFrameMat(1));
+					invzeroframebvhmat = ChaMatrixInv(zeroframebvhmat);
+					invzeroframebvhQ.RotationMatrix(invzeroframebvhmat);
+
+					//bvh current
+					ChaMatrix bvhcurrentmat, invbvhcurrentmat;
+					ChaMatrix bvhS, bvhR, bvhT;
+					CQuaternion bvhQ;
+					//bvhcurrentmat = bvhbone->GetNodeMat() * bvhmp.GetWorldMat();
+					bvhcurrentmat = offsetforbvhmat * bvhmp.GetWorldMat();
+					invbvhcurrentmat = ChaMatrixInv(bvhcurrentmat);
+					GetSRTMatrix2(bvhcurrentmat, &bvhS, &bvhR, &bvhT);
+					bvhQ.RotationMatrix(bvhR);
+					////bvh inv current
+					//ChaMatrix invbvhS, invbvhR, invbvhT;
+					//CQuaternion invbvhQ;
+					//GetSRTMatrix2(ChaMatrixInv(bvhmp.GetWorldMat()), &invbvhS, &invbvhR, &invbvhT);
+					//invbvhQ.RotationMatrix(invbvhR);
 
 
 				//10033準備の式
-				//ChaMatrix curbvhmat;
-				//curbvhmat =
-				//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
-				//	(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * firsthipmodelmat) *
-				//	bvhmp.GetWorldMat();//2022/10/30 テスト(bvh120, bvh121, Rokoko)済　OK
+					//ChaMatrix curbvhmat;
+					//curbvhmat =
+					//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
+					//	(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * firsthipmodelmat) *
+					//	bvhmp.GetWorldMat();//2022/10/30 テスト(bvh120, bvh121, Rokoko)済　OK
 
-				//式10033
-				//2022/10/30テストの式をクォータニオン(及びクォータニオンの掛け算の順番)にして　ジンバルロックが起こり難いように
-				ChaMatrix curbvhmat;
-				CQuaternion convQ;
-				convQ = bvhQ * 
+				//式10033 以下６行
+					ChaMatrix curbvhmat;
+					CQuaternion convQ;
+					convQ = bvhQ *
 						(invfirsthipmodelQ * (zeroframemodelQ * invmodelQ) * firsthipmodelQ) *
 						(invfirsthipbvhQ * invzeroframebvhQ * firsthipbvhQ);
-				curbvhmat = convQ.MakeRotMatX();//2022/10/31 テスト(bvh120, bvh121, Rokoko)済　OK
+					curbvhmat = convQ.MakeRotMatX();//2022/12/21 テスト(bvh121, Rokokoバインドポーズ無し, Rokokoバインドポーズ有り)済　OK
+					//式10033
+					//2022/10/30テストの式をクォータニオン(及びクォータニオンの掛け算の順番)にして　ジンバルロックが起こり難いように
 
 
+					rotq.RotationMatrix(curbvhmat);//回転だけ採用する
 
-				//CMotionPoint curbvhrotmp;
-				//curbvhrotmp.CalcQandTra(curbvhmat, bvhbone);
-				//rotq = curbvhrotmp.GetQ();//回転だけ使用
-				rotq.RotationMatrix(curbvhmat);
 
-				traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);//移動はこちらから取得
-				if (!bvhbone->GetParent()) {
-					ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
-					ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
-					ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
-					traanim -= firstdiff;
+					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);//移動はこちらから取得
+					//if (!bvhbone->GetParent()) {
+					//	ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
+					//	ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
+					//	ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
+					//	traanim -= firstdiff;
+					//}
+					//traanim = traanim * hrate;
+
+
+					//##########################################################################
+					//2022/12/21
+					//hipsジョイントのTraAnimだけ計算　hipsジョイント以外のTraAnimはゼロとする
+					//##########################################################################
+					ChaMatrix bvhsmat, bvhrmat, bvhtmat, bvhtanimmat;
+					if (bvhbone == bvhhipsbone) {
+						if (bvhbone->GetParent()) {
+							ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, srcframe);
+							GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), &bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
+						}
+						else {
+							GetSRTandTraAnim(bvhmp.GetWorldMat(), bvhbone->GetNodeMat(), &bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
+						}
+						traanim = ChaMatrixTraVec(bvhtanimmat);
+
+						ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
+						ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
+						ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
+						traanim -= firstdiff;
+
+						traanim = traanim * hrate;
+					}
+					else {
+						traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+					}
 				}
-				traanim = traanim * hrate;
-
+				else {
+					rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+					traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+				}
 			}
 			else {
 				rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);

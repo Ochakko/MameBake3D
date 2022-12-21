@@ -163,7 +163,7 @@ static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CB
 static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int* bonecnt);
 
 
-static ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone);//pNode = pmodel->GetBoneNode(curbone)を内部で使用
+static int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat);//pNode = pmodel->GetBoneNode(curbone)を内部で使用
 static void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lMatrix);
 
 static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
@@ -1895,11 +1895,17 @@ void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose )
 }
 
 
-ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetBoneNode(curbone)を内部で使用
+int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat)//pNode = pmodel->GetBoneNode(curbone)を内部で使用
 {
 	//parentにSetNodeMat()されていることが前提
 	//Reqで呼び出す
 	//テスト中　未採用
+
+	if (!dstnodemat || !dstnodeanimmat) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -1922,13 +1928,14 @@ ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetB
 		//	PreRotation * LclRotation * PostRotation * RotationPivotInverse *
 		//	ScalingOffset * ScalingPivot * LclScaling * ScalingPivotInverse
 
-		ChaMatrix localnodemat;
+		ChaMatrix localnodemat, localnodeanimmat;
 		localnodemat.SetIdentity();
+		localnodeanimmat.SetIdentity();
 
 		ChaMatrix tramat0, tramat1, tramat2;
 		ChaMatrix scalemat;
-		CQuaternion lclrotq, prerotq, postrotq, rotq;
-		ChaMatrix rotmat;
+		CQuaternion lclrotq, prerotq, postrotq, rotq, rotwithanimq;
+		ChaMatrix rotmat, rotwithanimmat;
 		tramat0.SetIdentity();
 		tramat1.SetIdentity();
 		tramat2.SetIdentity();
@@ -1937,7 +1944,9 @@ ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetB
 		prerotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		postrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		rotwithanimq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		rotmat.SetIdentity();
+		rotwithanimmat.SetIdentity();
 
 		tramat0.SetTranslation(ChaVector3((float)-fbxSclPiv[0], (float)-fbxSclPiv[1], (float)-fbxSclPiv[2]));
 		scalemat.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
@@ -1945,15 +1954,20 @@ ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetB
 			ChaVector3((float)(fbxSclOff[0] + fbxSclPiv[0] - fbxRotPiv[0]),
 				(float)(fbxSclOff[1] + fbxSclPiv[1] - fbxRotPiv[1]),
 				(float)(fbxSclOff[2] + fbxSclPiv[2] - fbxRotPiv[2])));
-		lclrotq.SetRotationRadXYZ(0, fbxLclRot[0], fbxLclRot[1], fbxLclRot[2]);
-		prerotq.SetRotationRadXYZ(0, fbxPreRot[0], fbxPreRot[1], fbxPreRot[2]);
-		postrotq.SetRotationRadXYZ(0, fbxPostRot[0], fbxPostRot[1], fbxPostRot[2]);
+		//lclrotq.SetRotationRadXYZ(0, fbxLclRot[0], fbxLclRot[1], fbxLclRot[2]);
+		//prerotq.SetRotationRadXYZ(0, fbxPreRot[0], fbxPreRot[1], fbxPreRot[2]);
+		//postrotq.SetRotationRadXYZ(0, fbxPostRot[0], fbxPostRot[1], fbxPostRot[2]);
+		lclrotq.SetRotationXYZ(0, fbxLclRot[0], fbxLclRot[1], fbxLclRot[2]);
+		prerotq.SetRotationXYZ(0, fbxPreRot[0], fbxPreRot[1], fbxPreRot[2]);
+		postrotq.SetRotationXYZ(0, fbxPostRot[0], fbxPostRot[1], fbxPostRot[2]);
 
 		if (rotationActive) {
-			rotq = lclrotq;
+			rotwithanimq = postrotq * lclrotq * prerotq;//lclrotqは０フレームアニメ成分と思われる
+			rotq = postrotq * prerotq;
 		}
 		else {
-			rotq = postrotq * lclrotq * prerotq;
+			//rotq = lclrotq;//lclrotqは０フレームアニメ成分と思われる
+			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 		rotmat = rotq.MakeRotMatX();
 
@@ -1966,28 +1980,31 @@ ChaMatrix CalcLocalNodeMat(CModel* pmodel, CBone* curbone)//pNode = pmodel->GetB
 				(float)(fbxLclPos[1] + fbxRotOff[1] + fbxRotPiv[1]),
 				(float)(fbxLclPos[2] + fbxRotOff[2] + fbxRotPiv[2])));
 
-		localnodemat = tramat0 * scalemat * tramat1 * rotmat * tramat2;
+		localnodeanimmat = tramat0 * scalemat * tramat1 * rotwithanimmat * tramat2;//with 0frame anim
+		localnodemat = tramat0 * scalemat * tramat1 * rotmat * tramat2;//without 0frame anim
 		//curbone->SetLocalNodeMat(localnodemat);
 
-		retmat = localnodemat;
+		*dstnodeanimmat = localnodeanimmat;
+		*dstnodemat = localnodemat;
 
 
 		//ChaMatrix parentglobalnodemat;
 		//ChaMatrix globalnodemat;
 		//parentglobalnodemat.SetIdentity();
 		//globalnodemat.SetIdentity();
-
 		//if (curbone->GetParent()) {
 		//	parentglobalnodemat = curbone->GetParent()->GetNodeMat();
 		//}
 		//globalnodemat = localnodemat * parentglobalnodemat;
-
 		//curbone->SetNodeMat(globalnodemat);
-
 		//retmat = globalnodemat;
 	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
-	return retmat;
+	return 0;
 }
 
 void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
@@ -3600,13 +3617,30 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	if (lPositionFound) {//BindPoseがある場合。bvhはこちらではなくelseの方
 		curbone->SetBindMat(lGlobalPosition);
 
-		ChaMatrix nodemat;
+		ChaMatrix nodemat, nodeanimmat;
+		nodemat.SetIdentity();
+		nodeanimmat.SetIdentity();
+		ChaMatrix localnodemat, localnodeanimmat;
+		CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);// !!! support prerot postrot ...etc.
+		ChaMatrix parentnodemat, parentnodeanimmat;
+		parentnodemat.SetIdentity();
+		parentnodeanimmat.SetIdentity();
+		if (curbone->GetParent()) {
+			parentnodemat = curbone->GetParent()->GetNodeMat();
+			parentnodeanimmat = curbone->GetParent()->GetNodeAnimMat();
+		}
+		//nodemat = localnodemat * parentnodemat;
+		nodeanimmat = localnodeanimmat * parentnodeanimmat;
+
 		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+
 
 		//curbone->SetPositionFound(lPositionFound);//!!!
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
 
 		curbone->SetNodeMat(nodemat);//2022/12/19
+		curbone->SetNodeAnimMat(nodeanimmat);//2022/12/21
+
 		curbone->SetGlobalPosMat(lGlobalPosition);
 
 		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
@@ -3625,30 +3659,30 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		// does not hold when inheritance type is other than "Parent" (RSrs).
 		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
 
-		ChaMatrix nodemat;
+		ChaMatrix nodemat, nodeanimmat;
 		nodemat.SetIdentity();
+		nodeanimmat.SetIdentity();
 
 		if (pNode) {
 			//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
 			//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
 			//BindMatが設定されていない場合(ここを実行する場合)にはうまくいく
 			//！！！！　BindMatが設定してある場合はBindMatを使う　！！！！
-			lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
-			nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+			//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+			//nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 
-			//##########################################################################################################
-			//以下のComment out部分　!!!! test中 !!!!
-			//リターゲットすると　bvh121の最後から２つ目のモーションで　でんぐり返し中に足がクロスする　回転軸が違う？
-			//##########################################################################################################
-			//ChaMatrix localnodemat;
-			//localnodemat = CalcLocalNodeMat(pmodel, curbone);// !!! support prerot postrot ...etc.
-			//ChaMatrix parentnodemat;
-			//parentnodemat.SetIdentity();
-			//if (curbone->GetParent()) {
-			//	parentnodemat = curbone->GetParent()->GetNodeMat();
-			//}
-			//nodemat = localnodemat * parentnodemat;
+			ChaMatrix localnodemat, localnodeanimmat;
+			CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);// !!! support prerot postrot ...etc.
+			ChaMatrix parentnodemat, parentnodeanimmat;
+			parentnodemat.SetIdentity();
+			parentnodeanimmat.SetIdentity();
+			if (curbone->GetParent()) {
+				parentnodemat = curbone->GetParent()->GetNodeMat();
+				parentnodeanimmat = curbone->GetParent()->GetNodeAnimMat();
+			}
+			nodemat = localnodemat * parentnodemat;
+			nodeanimmat = localnodeanimmat * parentnodeanimmat;
 		}
 
 
@@ -3656,6 +3690,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
 
 		curbone->SetNodeMat(nodemat);
+		curbone->SetNodeMat(nodeanimmat);
 		curbone->SetGlobalPosMat(lGlobalPosition);
 
 		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);

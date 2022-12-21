@@ -4728,9 +4728,9 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone, bo
 				ChaMatrix globalmat;
 				globalmat = curmp->GetWorldMat();
 
-				if (isfirstmot && (curframe == 0.0)) {
-					srcbone->SetFirstMat(globalmat);
-				}
+				//if (isfirstmot && (curframe == 0.0)) {
+				//	srcbone->SetFirstMat(globalmat);
+				//}
 
 				//#############
 				//set localmat

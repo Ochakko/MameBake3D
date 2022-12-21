@@ -669,6 +669,16 @@ public: //accesser
 		return retmat;
 	};
 	void SetNodeMat( ChaMatrix srcmat ){ m_nodemat = srcmat; };
+
+	ChaMatrix GetNodeAnimMat() { return m_nodeanimmat; };
+	ChaMatrix GetInvNodeAnimMat() {
+		ChaMatrix retmat;
+		ChaMatrixInverse(&retmat, NULL, &m_nodeanimmat);
+		return retmat;
+	};
+	void SetNodeAnimMat(ChaMatrix srcmat) { m_nodeanimmat = srcmat; };
+
+
 	FbxAMatrix GetBindMat() {
 		return m_bindmat;
 	}
@@ -1256,7 +1266,10 @@ private:
 	ChaMatrix m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
 
 	int m_getanimflag;//FBXファイルを読み込む際にアニメーションを読み込んだら１。
-	ChaMatrix m_nodemat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
+	
+	ChaMatrix m_nodemat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。(0frameアニメ無し)
+	ChaMatrix m_nodeanimmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。(0frameアニメ有り)
+
 	FbxAMatrix m_bindmat;//getpose bindpose
 	ChaMatrix m_firstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
 	ChaMatrix m_invfirstmat;//ジョイントの初期位置を計算するときに使用する。FBX読み込み時にセットして使用する。
