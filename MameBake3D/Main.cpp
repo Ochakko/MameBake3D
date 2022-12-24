@@ -2684,6 +2684,7 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+	g_rotatetanim = true;
 	g_tpose = true;
 	g_preciseOnPreviewToo = false;
 

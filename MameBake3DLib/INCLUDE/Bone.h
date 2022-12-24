@@ -287,7 +287,8 @@ public:
 
 	ChaMatrix CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat, ChaMatrix* dstparentwm);
 	ChaMatrix CalcNewLocalTAnimMatFromQofIK(int srcmotid, double srcframe,
-		ChaMatrix srcnewlocalrotmat, ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, ChaMatrix srcparentwm);
+		ChaMatrix srcnewlocalrotmat, ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, 
+		ChaMatrix srcparentwm, ChaVector3 oneframetraanim);
 
 	//CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
