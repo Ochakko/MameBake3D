@@ -445,7 +445,7 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータのリングまたは球でボーン軸に関して回転するときに呼ばれる。
  */
-	int RotateXDelta( CEditRange* erptr, int srcboneno, float delta );
+	//int RotateXDelta( CEditRange* erptr, int srcboneno, float delta );
 
 /**
  * @fn

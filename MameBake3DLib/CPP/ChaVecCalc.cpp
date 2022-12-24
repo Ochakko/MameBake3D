@@ -636,6 +636,10 @@ void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, Cha
 
 void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
 {
+	//###################
+	//For Local Posture
+	//###################
+
 	if (!smatptr || !rmatptr || !tmatptr || !tanimmatptr) {
 		_ASSERT(0);
 		return;
@@ -669,6 +673,10 @@ void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr
 
 ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
 {
+	//###################
+	//For Local Posture
+	//###################
+
 	ChaMatrix retmat;
 	retmat.SetIdentity();
 

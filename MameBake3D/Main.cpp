@@ -5608,34 +5608,34 @@ int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
 
 
 
-int AdjustBoneTra( CBone* curbone, double curframe )
-{
-	CMotionPoint* pcurmp = 0;
-	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
-	if(pcurmp){
-		ChaVector3 orgpos;
-		ChaVector3 tmpfpos = curbone->GetJointFPos();
-		ChaMatrix tmpbefwm = pcurmp->GetBefWorldMat();
-		ChaVector3TransformCoord( &orgpos, &tmpfpos, &tmpbefwm);
-
-		ChaVector3 newpos;
-		ChaMatrix tmpwm = pcurmp->GetWorldMat();
-		ChaVector3TransformCoord( &newpos, &tmpfpos, &tmpwm);
-
-		ChaVector3 diffpos;
-		diffpos = orgpos - newpos;
-
-		CEditRange tmper;
-		KeyInfo tmpki;
-		tmpki.time = curframe;
-		list<KeyInfo> tmplist;
-		tmplist.push_back( tmpki );
-		tmper.SetRange( tmplist, curframe );
-		s_model->FKBoneTra( 0, &tmper, curbone->GetBoneNo(), diffpos );
-	}
-
-	return 0;
-}
+//int AdjustBoneTra( CBone* curbone, double curframe )
+//{
+//	CMotionPoint* pcurmp = 0;
+//	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
+//	if(pcurmp){
+//		ChaVector3 orgpos;
+//		ChaVector3 tmpfpos = curbone->GetJointFPos();
+//		ChaMatrix tmpbefwm = pcurmp->GetBefWorldMat();
+//		ChaVector3TransformCoord( &orgpos, &tmpfpos, &tmpbefwm);
+//
+//		ChaVector3 newpos;
+//		ChaMatrix tmpwm = pcurmp->GetWorldMat();
+//		ChaVector3TransformCoord( &newpos, &tmpfpos, &tmpwm);
+//
+//		ChaVector3 diffpos;
+//		diffpos = orgpos - newpos;
+//
+//		CEditRange tmper;
+//		KeyInfo tmpki;
+//		tmpki.time = curframe;
+//		list<KeyInfo> tmplist;
+//		tmplist.push_back( tmpki );
+//		tmper.SetRange( tmplist, curframe );
+//		s_model->FKBoneTra( 0, &tmper, curbone->GetBoneNo(), diffpos );
+//	}
+//
+//	return 0;
+//}
 
 
 //--------------------------------------------------------------------------------------
@@ -21642,7 +21642,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 					parmp->SetBefWorldMat(parmp->GetWorldMat());
 					bool infooutflag = false;
-					srcbone->RotBoneQReq(infooutflag, parentbone, curmotid, newframe, dummyq, 0, dummytra);
+					srcbone->RotBoneQReq(infooutflag, parentbone, curmotid, newframe, dummyq, parmp->GetWorldMat(), parmp->GetWorldMat(), 0, dummytra);
 					//_ASSERT(0);
 				}
 			}

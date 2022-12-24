@@ -3621,7 +3621,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		nodemat.SetIdentity();
 		nodeanimmat.SetIdentity();
 		ChaMatrix localnodemat, localnodeanimmat;
-		CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);// !!! support prerot postrot ...etc.
+		CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);//2022/12/21 support prerot postrot ...etc.
 		ChaMatrix parentnodemat, parentnodeanimmat;
 		parentnodemat.SetIdentity();
 		parentnodeanimmat.SetIdentity();
@@ -3673,7 +3673,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 
 
 			ChaMatrix localnodemat, localnodeanimmat;
-			CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);// !!! support prerot postrot ...etc.
+			CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);//2022/12/21 support prerot postrot ...etc.
 			ChaMatrix parentnodemat, parentnodeanimmat;
 			parentnodemat.SetIdentity();
 			parentnodeanimmat.SetIdentity();

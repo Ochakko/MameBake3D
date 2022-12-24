@@ -40,6 +40,7 @@ namespace MameBake3DLibRetarget {
 		MOTINFO* bvhmi = srcbvhmodel->GetMotInfoBegin()->second;
 		if (!bvhmi) {
 			::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
+			g_underRetargetFlag = false;
 			return 1;
 		}
 		double motleng = bvhmi->frameleng;//2022/11/01
@@ -55,6 +56,7 @@ namespace MameBake3DLibRetarget {
 			CBone* modelhipsbone = 0;
 			if (!modeltopbone) {
 				::MessageBox(NULL, L"modelside bone is not found error.", L"error!!!", MB_OK);
+				g_underRetargetFlag = false;
 				return 1;
 			}
 			else {
@@ -70,6 +72,7 @@ namespace MameBake3DLibRetarget {
 		}
 		else {
 			::MessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
+			g_underRetargetFlag = false;
 			return 1;
 		}
 
@@ -521,6 +524,10 @@ namespace MameBake3DLibRetarget {
 					//##########################################################################
 					ChaMatrix bvhsmat, bvhrmat, bvhtmat, bvhtanimmat;
 					if (bvhbone == bvhhipsbone) {
+						//2022/12/22 : リターゲットモデル間の移動の倍率hrateを適切にするのが難しい
+						//例えばhrateが大きすぎると　手足が長すぎる変な表示になる
+						//よってtraanimを適用するやり方としては合っているのだが　hipsだけtraanimを適用することにした
+
 						if (bvhbone->GetParent()) {
 							ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, srcframe);
 							GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), &bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
@@ -530,16 +537,25 @@ namespace MameBake3DLibRetarget {
 						}
 						traanim = ChaMatrixTraVec(bvhtanimmat);
 
+						//if (bvhbone == bvhhipsbone) {
 						ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
 						ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
 						ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
 						traanim -= firstdiff;
+						//}
 
 						traanim = traanim * hrate;
 					}
 					else {
+						//2022/12/22 : リターゲットモデル間の移動の倍率hrateを適切にするのが難しい
+						//例えばhrateが大きすぎると　手足が長すぎる変な表示になる
+						//よってtraanimを適用するやり方としては合っているのだが　hipsだけtraanimを適用することにした
+
 						traanim = ChaVector3(0.0f, 0.0f, 0.0f);
 					}
+					
+					//traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+
 				}
 				else {
 					rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
