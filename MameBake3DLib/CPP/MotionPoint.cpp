@@ -58,6 +58,11 @@ int CMotionPoint::InitParams()
 	m_calclimitedwm = 0;
 	ChaMatrixIdentity(&m_limitedwm);
 
+	m_savesmat.SetIdentity();
+	m_savermat.SetIdentity();
+	m_savetmat.SetIdentity();
+	m_savetanimmat.SetIdentity();
+
 	m_prev = 0;
 	m_next = 0;
 

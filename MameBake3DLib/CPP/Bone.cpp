@@ -537,6 +537,12 @@ int CBone::AddChild( CBone* childptr )
 
 int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread)
 {
+
+	//2022/12/26 注意書追加
+	//UpdateMatrixのsrcframeは経過時間計算を考慮した　浮動小数有りの時間が渡される
+	//GetMotionPoint, GetBefNextMP, GetWorldMatは intに丸めてからdoubleにして検索する
+	//姿勢計算は　intに丸めたフレームとその次のフレームの姿勢の間を補間計算して求める
+
 	int existflag = 0;
 
 	if ((g_previewFlag != 5) || (m_parmodel && (m_parmodel->GetBtCnt() == 0))){
@@ -1046,7 +1052,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 
 	*existptr = 0;
 
-	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size()) || (curframeindex < 0)) {
+	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
 		//AddMotionPointから呼ばれるときに通る場合は正常
 		*ppbef = 0;
 		*ppnext = 0;
@@ -1055,7 +1061,20 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 		return 0;
 	}
 	else {
-		pcur = m_motionkey[srcmotid - 1];
+		if (curframeindex < 0) {
+			*ppbef = 0;
+			*ppnext = 0;
+
+			if (srcmotid >= 1) {
+				m_cachebefmp[srcmotid - 1] = NULL;
+			}
+			//_ASSERT(0);
+			//LeaveCriticalSection(&m_CritSection_GetBefNext);
+			return 0;
+		}
+		else {
+			pcur = m_motionkey[srcmotid - 1];
+		}
 	}	
 
 	bool getbychain;
@@ -1104,26 +1123,30 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 	if (getbychain == true) {
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 		//キャッシュをチェックする
-		if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid] &&
-			((m_cachebefmp[srcmotid])->GetUseFlag() == 1) &&
-			((m_cachebefmp[srcmotid])->GetFrame() <= (srcframe + 0.0001))) {
+		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid - 1] &&
+			((m_cachebefmp[srcmotid - 1])->GetUseFlag() == 1) &&
+			//((m_cachebefmp[srcmotid - 1])->GetFrame() <= (srcframe + 0.0001))) {
+			((m_cachebefmp[srcmotid - 1])->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
 			//高速化のため途中からの検索にする
-			pcur = m_cachebefmp[srcmotid];
+			pcur = m_cachebefmp[srcmotid - 1];
 		}
 #endif
 
 		while (pcur) {
 
-			if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
+			//if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
+			if ((pcur->GetFrame() >= ((double)curframeindex - 0.0001)) && (pcur->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
 				*existptr = 1;
 				pbef = pcur;
 				break;
 			}
-			else if (pcur->GetFrame() > srcframe) {
+			//else if (pcur->GetFrame() > srcframe) {
+			else if (pcur->GetFrame() > ((double)curframeindex + 0.0001)) {//2022/12/26
 				*existptr = 0;
 				break;
 			}
 			else {
+				//for loop
 				pbef = pcur;
 				pcur = pcur->GetNext();
 			}
@@ -1212,12 +1235,18 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 	//m_cachebefmp = pbef;
-	if ((srcmotid >= 0) && (srcmotid <= MAXMOTIONNUM)) {
-		if (pbef) {
-			m_cachebefmp[srcmotid] = pbef->GetPrev();
+	if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM)) {
+		if (*ppbef) {
+			if ((*ppbef)->GetPrev()) {
+				m_cachebefmp[srcmotid - 1] = (*ppbef)->GetPrev();
+			}
+			else {
+				m_cachebefmp[srcmotid - 1] = (*ppbef);
+			}
 		}
 		else {
-			m_cachebefmp[srcmotid] = m_motionkey[srcmotid - 1];
+			//m_cachebefmp[srcmotid - 1] = m_motionkey[srcmotid - 1];
+			m_cachebefmp[srcmotid - 1] = NULL;
 		}
 	}
 #endif
@@ -2828,7 +2857,52 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 	return curmp;
 }
 
-CMotionPoint* CBone::RotAndTraBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
+
+int CBone::SaveSRT(int srcmotid, double srcstartframe, double srcendframe)
+{
+	double calcstartframe, calcendframe;
+	calcendframe = (double)((int)(srcendframe + 0.1));
+	if (srcstartframe >= (1.0 - 0.1)) {
+		calcstartframe = (double)((int)(srcstartframe - 1.0 + 0.1));
+	}
+	else {
+		calcstartframe = 0.0;
+	}
+
+	double curframe;
+	for (curframe = calcstartframe; curframe <= calcendframe; curframe += 1.0) {
+		CMotionPoint* curmp;
+		curmp = GetMotionPoint(srcmotid, curframe);
+		if (curmp) {
+			ChaMatrix curwm, parentwm, localmat;
+			curwm = curmp->GetWorldMat();
+			if (GetParent()) {
+				parentwm = GetParent()->GetWorldMat(srcmotid, curframe);
+				localmat = curwm * ChaMatrixInv(parentwm);
+			}
+			else {
+				parentwm.SetIdentity();
+				localmat = curwm;
+			}
+
+			ChaMatrix smat, rmat, tmat, tanimmat;
+			smat.SetIdentity();
+			rmat.SetIdentity();
+			tmat.SetIdentity();
+			tanimmat.SetIdentity();
+			GetSRTandTraAnim(localmat, GetNodeMat(), &smat, &rmat, &tmat, &tanimmat);
+			curmp->SetSaveSRTandTraAnim(smat, rmat, tmat, tanimmat);
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 	CQuaternion qForRot, CQuaternion qForTra, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm)
 {
 	//#######################################################################
@@ -2980,10 +3054,10 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool infooutflag, CBone* parentbone, int 
 	curmp->SetAbsMat(curmp->GetWorldMat());
 
 	if (m_child && curmp) {
-		m_child->RotAndTraBoneQReq(infooutflag, this, srcmotid, srcframe, qForRot, qForTra, currentbefwm, currentnewwm);//default param ??????
+		m_child->RotAndTraBoneQReq(srcstartframe, infooutflag, this, srcmotid, srcframe, qForRot, qForTra, currentbefwm, currentnewwm);//default param ??????
 	}
 	if (m_brother && parentbone) {
-		m_brother->RotAndTraBoneQReq(infooutflag, parentbone, srcmotid, srcframe, qForRot, qForTra, srcbefparentwm, srcnewparentwm);//default param ??????
+		m_brother->RotAndTraBoneQReq(srcstartframe, infooutflag, parentbone, srcmotid, srcframe, qForRot, qForTra, srcbefparentwm, srcnewparentwm);//default param ??????
 	}
 	return curmp;
 }
@@ -3749,33 +3823,33 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	}
 }
 
-ChaMatrix CBone::CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, int srcframe)
+ChaMatrix CBone::CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, double srcframe)
 {
 	CQuaternion noderot;
 	CQuaternion invnoderot;
 	noderot.RotationMatrix(GetNodeMat());
 	noderot.inv(&invnoderot);
-	CQuaternion parentnoderot;
-	CQuaternion invparentnoderot;
-	if (GetParent()) {
-		parentnoderot.RotationMatrix(GetParent()->GetNodeMat());
-		parentnoderot.inv(&invparentnoderot);
-	}
-	else {
-		parentnoderot.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		invparentnoderot.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	}
+	//CQuaternion parentnoderot;
+	//CQuaternion invparentnoderot;
+	//if (GetParent()) {
+	//	parentnoderot.RotationMatrix(GetParent()->GetNodeMat());
+	//	parentnoderot.inv(&invparentnoderot);
+	//}
+	//else {
+	//	parentnoderot.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//	invparentnoderot.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//}
 
 
-	const WCHAR* bonename = GetWBoneName();
-	bool ishipsjoint = false;
-	if ((wcscmp(bonename, L"Hips_Joint") == 0) || (wcscmp(bonename, L"hips_Joint") == 0) ||
-		(wcscmp(bonename, L"Hips") == 0) || (wcscmp(bonename, L"hips") == 0)) {
-		ishipsjoint = true;
-	}
-	else {
-		ishipsjoint = false;
-	}
+	//const WCHAR* bonename = GetWBoneName();
+	//bool ishipsjoint = false;
+	//if ((wcscmp(bonename, L"Hips_Joint") == 0) || (wcscmp(bonename, L"hips_Joint") == 0) ||
+	//	(wcscmp(bonename, L"Hips") == 0) || (wcscmp(bonename, L"hips") == 0)) {
+	//	ishipsjoint = true;
+	//}
+	//else {
+	//	ishipsjoint = false;
+	//}
 
 	CQuaternion newrot;
 	//newrot0.SetRotationXYZ(0, srceul);//GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat()) の　GLOBAL軸オイラー角
@@ -3788,7 +3862,9 @@ ChaMatrix CBone::CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, int src
 	//newrot = parentnoderot * newrot0 * invnoderot;
 
 
-	newrot.SetRotationXYZ(&noderot, srceul);//(curwm * ChaMatrixInv(parentwm)　の　NodeMat軸のオイラー角 2022/12/20 こっちの方がMayaに近い
+	//(curwm * ChaMatrixInv(parentwm)　の　NodeMat軸のオイラー角 2022/12/20 こっちの方がMayaに近い
+	//その後　NodeMatに０フレームアニメを含めないように計算して　Mayaのオイラー角と一致
+	newrot.SetRotationXYZ(&noderot, srceul);
 
 
 	ChaMatrix retlocalrotmat;
@@ -3941,17 +4017,22 @@ ChaMatrix CBone::CalcCurrentLocalRotMatFromEul(ChaVector3 srceul)
 		ishipsjoint = false;
 	}
 
-	CQuaternion newrot0;
-	newrot0.SetRotationXYZ(0, srceul);//GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat()) の　GLOBAL軸オイラー角
 
-	//########### CalcLocalEulXYZ()におけるeulmatは式１################################################################
-	//eulmat = GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat());//式１　//CalcLocalEulXYZ()
-	// 式２で　curwm * invparentwm　の回転に修正する
-	//#################################################################################################################
-	//newrotmat = invnoderot.MakeRotMatX() * newrot.MakeRotMatX() * parentnoderot.MakeRotMatX();//式２　//curwm * invparentwmの回転
+	//CQuaternion newrot0;
+	//newrot0.SetRotationXYZ(0, srceul);//GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat()) の　GLOBAL軸オイラー角
+	////########### CalcLocalEulXYZ()におけるeulmatは式１################################################################
+	////eulmat = GetNodeMat() * (curwm * ChaMatrixInv(parentwm)) * ChaMatrixInv(GetParent()->GetNodeMat());//式１　//CalcLocalEulXYZ()
+	//// 式２で　curwm * invparentwm　の回転に修正する
+	////#################################################################################################################
+	////newrotmat = invnoderot.MakeRotMatX() * newrot.MakeRotMatX() * parentnoderot.MakeRotMatX();//式２　//curwm * invparentwmの回転
+	//CQuaternion newrot;
+	//newrot = parentnoderot * newrot0 * invnoderot;
 
+
+	//2022/12/26 CalcLocalRotMatFromEulと合わせる
 	CQuaternion newrot;
-	newrot = parentnoderot * newrot0 * invnoderot;
+	newrot.SetRotationXYZ(&noderot, srceul);
+
 
 	ChaMatrix retlocalrotmat;
 	retlocalrotmat = newrot.MakeRotMatX();

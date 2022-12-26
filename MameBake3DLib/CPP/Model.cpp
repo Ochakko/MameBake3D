@@ -8690,6 +8690,8 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					CQuaternion qForTra;
 
 
+					parentbone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
+
 					if (keynum >= 2) {
 						int keyno = 0;
 						double curframe;
@@ -8777,15 +8779,18 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 									qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 									qForTra.Slerp2(endq, 1.0 - changerate, &curqForTra);
 
-									parentbone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForTra, dummyparentwm, dummyparentwm);
+									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+										infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForTra, dummyparentwm, dummyparentwm);
 								}
 								else {
-									parentbone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
 								}
 							}
 							else {
 								if (keyno == 0) {
-									parentbone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
 								}
 								else {
 									parentbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
@@ -8798,7 +8803,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 						bool infooutflag = true;
 						qForRot = rotq0;
 						qForTra = rotq0;
-						parentbone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+						parentbone->RotAndTraBoneQReq(m_curmotinfo->curframe, infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
 					}
 
 
@@ -10942,6 +10947,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			CQuaternion qForRot;
 			CQuaternion qForTra;
 
+
+			aplybone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
+
+
 			if (keynum >= 2){
 				int keyno = 0;
 				double curframe;
@@ -11024,15 +11033,18 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 							qForTra.Slerp2(endq, 1.0 - changerate, &curqForTra);
 
-							aplybone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForTra, dummyparentwm, dummyparentwm);
+							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+								infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForTra, dummyparentwm, dummyparentwm);
 						}
 						else{
-							aplybone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
 						}
 					}
 					else{
 						if (keyno == 0){
-							aplybone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
 						}
 						else{
 							aplybone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
@@ -11049,7 +11061,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				qForRot = localq;
 				qForTra = localq;
 				bool infooutflag = true;
-				aplybone->RotAndTraBoneQReq(infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+				aplybone->RotAndTraBoneQReq(m_curmotinfo->curframe, 
+					infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
 			}
 
 

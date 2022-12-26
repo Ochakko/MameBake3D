@@ -116,7 +116,7 @@ int CPluginElem::CreateMotionBrush(double srcstartframe, double srcendframe, dou
 		}
 		else {
 			_ASSERT(0);
-			return 1;
+			return 2;//ƒtƒŒ[ƒ€”ÍˆÍŠO‚Í2‚ğ•Ô‚·
 		}
 	}
 

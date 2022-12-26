@@ -282,13 +282,15 @@ public:
 	CMotionPoint* RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, 
 		CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm, 
 		CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0, bool onretarget = false);
-	CMotionPoint* RotAndTraBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
+	CMotionPoint* RotAndTraBoneQReq(double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 		CQuaternion qForRot, CQuaternion qForTra, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm);
 
 	ChaMatrix CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat, ChaMatrix* dstparentwm);
 	ChaMatrix CalcNewLocalTAnimMatFromQofIK(int srcmotid, double srcframe,
 		ChaMatrix srcnewlocalrotmat, ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, 
 		ChaMatrix srcparentwm, ChaVector3 oneframetraanim);
+
+	int SaveSRT(int srcmotid, double srcstartframe, double srcendframe);
 
 	//CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
@@ -397,7 +399,7 @@ public:
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	//ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
-	ChaMatrix CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, int srcframe);
+	ChaMatrix CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, double srcframe);
 	ChaMatrix CalcCurrentLocalRotMatFromEul(ChaVector3 srceul);
 	ChaVector3 CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe);
 

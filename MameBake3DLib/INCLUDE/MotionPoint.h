@@ -169,6 +169,34 @@ public:
 		return m_SRT;
 	}
 
+	void SetSaveSRTandTraAnim(ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctmat, ChaMatrix srctanimmat) {
+		m_savesmat = srcsmat;
+		m_savermat = srcrmat;
+		m_savetmat = srctmat;
+		m_savetanimmat = srctanimmat;
+	}
+	int GetSaveSRTandTraAnim(ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttmat, ChaMatrix* dsttanimmat) {
+		//if (!dstsmat || !dstrmat || !dsttmat || !dsttanimmat) {
+		//	_ASSERT(0);
+		//	return 1;
+		//}
+		if (dstsmat) {
+			*dstsmat = m_savesmat;
+		}
+		if (dstrmat) {
+			*dstrmat = m_savermat;
+		}
+		if (dsttmat) {
+			*dsttmat = m_savetmat;
+		}
+		if (dsttanimmat) {
+			*dsttanimmat = m_savetanimmat;
+		}
+		
+		return 0;
+	}
+
+
 	//CBone* GetNewWMOwner()
 	//{
 	//	return m_newwmowner;
@@ -234,6 +262,12 @@ private:
 
 	int m_calclimitedwm;
 	ChaMatrix m_limitedwm;
+
+	ChaMatrix m_savesmat;
+	ChaMatrix m_savermat;
+	ChaMatrix m_savetmat;
+	ChaMatrix m_savetanimmat;
+
 
 
 	CMotionPoint* m_prev;

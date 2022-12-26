@@ -496,6 +496,11 @@ double VecLength(ChaVector3 srcvec)
 
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr)
 {
+	if (!svecptr || !rmatptr || !tvecptr) {
+		_ASSERT(0);
+		return;
+	}
+
 	*svecptr = ChaVector3(1.0f, 1.0f, 1.0f);
 	ChaMatrixIdentity(rmatptr);
 	*tvecptr = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -670,6 +675,68 @@ void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr
 
 	return;
 }
+
+ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat)
+{
+	//###################
+	//For Local Posture
+	//###################
+
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	if (!srcrmat) {
+		_ASSERT(0);
+		return retmat;
+	}
+	if (sflag && !srcsmat) {
+		_ASSERT(0);
+		return retmat;
+	}
+	if (tflag && !srctmat) {
+		_ASSERT(0);
+		return retmat;
+	}
+
+	ChaVector3 jointfpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	jointfpos = ChaMatrixTraVec(srcnodemat);
+
+	ChaMatrix befrotmat, aftrotmat;
+	befrotmat.SetIdentity();
+	aftrotmat.SetIdentity();
+	befrotmat.SetTranslation(-jointfpos);
+	aftrotmat.SetTranslation(jointfpos);
+
+	//calc local srt matrix
+	if (sflag == true) {
+		if (tflag == true) {
+			retmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;
+			//retmat = *srcsmat * *srcrmat * *srctmat;
+			retmat.data[MATI_41] = srctmat->data[MATI_41];
+			retmat.data[MATI_42] = srctmat->data[MATI_42];
+			retmat.data[MATI_43] = srctmat->data[MATI_43];
+		}
+		else {
+			retmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;
+		}
+	}
+	else {
+		if (tflag == true) {
+			retmat = befrotmat * *srcrmat * aftrotmat;
+			//retmat = *srcrmat * *srctmat;
+			retmat.data[MATI_41] = srctmat->data[MATI_41];
+			retmat.data[MATI_42] = srctmat->data[MATI_42];
+			retmat.data[MATI_43] = srctmat->data[MATI_43];
+		}
+		else {
+			retmat = befrotmat * *srcrmat * aftrotmat;
+		}
+	}
+
+	return retmat;
+
+}
+
 
 ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
 {

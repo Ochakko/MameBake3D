@@ -7342,8 +7342,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
 				if (s_editmotionflag < 0) {//IK中でないとき
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 				}
@@ -7355,8 +7357,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
 				if (s_editmotionflag < 0) {//IK中でないとき
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 				}
@@ -7368,8 +7372,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				if (s_editmotionflag < 0) {//IK中でないとき
 					g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 				}
@@ -7383,8 +7389,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
 			if (s_editmotionflag < 0) {//IK中でないとき
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if (result) {
+				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 					_ASSERT(0);
+					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+					PostQuitMessage(result);
 				}
 			}
 			if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
@@ -7403,8 +7411,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			SetShowPosTime();//2022/10/22
 			if (s_editmotionflag < 0) {//IK中でないとき
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if (result) {
+				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 					_ASSERT(0);
+					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+					PostQuitMessage(result);
 				}
 			}
 			if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
@@ -7439,8 +7449,10 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 				g_motionbrush_method = (int)PtrToUlong(pComboBox->GetSelectedData());
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 				}
 				if (g_motionbrush_method != saveval) {
@@ -10475,8 +10487,10 @@ int refreshEulerGraph()
 
 		//if (!g_motionbrush_value || (g_motionbrush_frameleng != frameleng)) {
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
 			}
 		//}
 
@@ -17910,8 +17924,8 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 
 	if ((srcstart < 0.0) || (srcend < 0.0)) {
-		_ASSERT(0);
-		return -1;
+		//_ASSERT(0);
+		return 2;//フレーム,フレーム長範囲外は 2 を返す
 	}
 	if (srcstart > srcend) {
 		double tmp = srcstart;
@@ -17931,8 +17945,8 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 	int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 	if ((frameleng <= 0) || (frameleng > 100000)) {
-		_ASSERT(0);
-		return -1;
+		//_ASSERT(0);
+		return 2;//フレーム,フレーム長範囲外は 2 を返す
 	}
 
 	g_motionbrush_startframe = startframe;
@@ -17953,8 +17967,8 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	
 
 	if ((g_motionbrush_applyframe < 0) || (g_motionbrush_applyframe > endframe)) {
-		_ASSERT(0);
-		return -1;
+		//_ASSERT(0);
+		return 2;//フレーム,フレーム長範囲外は 2 を返す
 	}
 
 	g_motionbrush_value = (float*)malloc(sizeof(float) * (g_motionbrush_frameleng + 1));
@@ -17978,40 +17992,52 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	if (s_plugin && (g_motionbrush_method >= 0) && (g_motionbrush_method <= MAXPLUGIN)) {
 		s_onselectplugin = 1;
 
-		int pluginno;
-		for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
-			if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
-				//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
-				ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_ifmirrorVDiv2flag, tempvalue);
-				_ASSERT(!ret);
+
+		//このif文はプラグイン内にも推奨
+		if ((g_motionbrush_startframe >= 0.0) && (g_motionbrush_startframe < 1e5) && 
+			(g_motionbrush_endframe >= g_motionbrush_startframe) && (g_motionbrush_endframe < 1e5) &&
+			(g_motionbrush_applyframe >= g_motionbrush_startframe) && (g_motionbrush_applyframe <= g_motionbrush_endframe) &&
+			(g_motionbrush_frameleng > g_motionbrush_endframe) && (g_motionbrush_frameleng < 1e5) &&
+			(g_brushrepeats >= 1) && (g_brushrepeats <= 10) &&
+			tempvalue) {
+
+			int pluginno;
+			for (pluginno = 0; pluginno < MAXPLUGIN; pluginno++) {
+				if ((s_plugin + pluginno)->menuid == g_motionbrush_method) {
+					//DbgOut( "viewer : OnSelectPlugin : pluginno %d, menuid %d\r\n", pluginno, menuid );
+					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_ifmirrorVDiv2flag, tempvalue);
+					if ((ret != 0) && (ret != 2)) {
+						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(ret);
+					}
+				}
 			}
-		}
 
-		//if (g_motionbrush_applyframe == g_motionbrush_startframe) {
-		//	_ASSERT(0);
-		//}
+			//ZeroMemory(g_motionbrush_value, sizeof(float) * (unsigned int)g_motionbrush_frameleng);//2022/09/12
 
+			int cpframe;
+			for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
+				//for (cpframe = (int)g_motionbrush_startframe; cpframe <= (int)g_motionbrush_endframe; cpframe++) {//2022/09/12
+				float cpvalue;
 
-		//ZeroMemory(g_motionbrush_value, sizeof(float) * (unsigned int)g_motionbrush_frameleng);//2022/09/12
-
-		int cpframe;
-		for (cpframe = 0; cpframe < (int)g_motionbrush_frameleng; cpframe++) {
-		//for (cpframe = (int)g_motionbrush_startframe; cpframe <= (int)g_motionbrush_endframe; cpframe++) {//2022/09/12
-			float cpvalue;
-
-			//if ((cpframe >= (int)g_motionbrush_startframe) && (cpframe <= (int)g_motionbrush_endframe)) {
+				//if ((cpframe >= (int)g_motionbrush_startframe) && (cpframe <= (int)g_motionbrush_endframe)) {
 				cpvalue = *(tempvalue + cpframe);
 				cpvalue = min(1.0f, cpvalue);
 				cpvalue = max(-1.0f, cpvalue);
-			//}
-			//else {
-			//	cpvalue = 0.0f;
-			//}
+				//}
+				//else {
+				//	cpvalue = 0.0f;
+				//}
 
-			*(g_motionbrush_value + cpframe) = cpvalue;
+				*(g_motionbrush_value + cpframe) = cpvalue;
+			}
+
 		}
-
-
+		else {
+			//後処理のためにreturnせずにretにセットする
+			ret = 2;//フレーム,フレーム長範囲外は 2 を返す
+		}
 
 		s_onselectplugin = 0;
 	}
@@ -18043,7 +18069,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	SavePlayingStartEnd();
 
 
-	return 0;
+	return ret;
 }
 
 
@@ -20744,8 +20770,10 @@ int OnFrameTimeLineWnd()
 				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
 				SetShowPosTime();
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if (result) {
+				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 					_ASSERT(0);
+					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+					PostQuitMessage(result);
 				}
 				PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 				g_underselectingframe = 0;
@@ -20764,8 +20792,10 @@ int OnFrameTimeLineWnd()
 			OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
 			SetShowPosTime();
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
 			}
 			PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 			g_underselectingframe = 0;
@@ -20785,8 +20815,10 @@ int OnFrameTimeLineWnd()
 			OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
 			SetShowPosTime();
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
 			}
 			PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 			g_underselectingframe = 0;
@@ -20810,8 +20842,10 @@ int OnFrameTimeLineWnd()
 			DisplayApplyRateText();
 			SetShowPosTime();
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
 			}
 			PrepairUndo();//LTimelineの選択後かつ編集前の保存を想定
 
@@ -20871,8 +20905,10 @@ int OnFrameTimeLineWnd()
 			if (s_LupFlag) {//selectFlagとLupFlagは本来は別物　しかしLupのときだけ処理するものがある
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 				}
 
@@ -20939,8 +20975,10 @@ int OnFrameTimeLineWnd()
 				//_ASSERT(0);
 
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if (result) {
+				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 					_ASSERT(0);
+					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+					PostQuitMessage(result);
 				}
 
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
@@ -22074,8 +22112,10 @@ int OnSpriteUndo()
 			DisplayApplyRateText();
 
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
 			}
 
 			//SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
@@ -26983,8 +27023,10 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 
 		if (s_editmotionflag < 0) {
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if (result) {
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
 			}
 
 			//2022/09/13
@@ -27096,8 +27138,10 @@ int OnTimeLineWheel()
 
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 				}
 
@@ -27137,8 +27181,10 @@ int OnTimeLineWheel()
 
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if (result) {
+					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 						_ASSERT(0);
+						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+						PostQuitMessage(result);
 					}
 				}
 
