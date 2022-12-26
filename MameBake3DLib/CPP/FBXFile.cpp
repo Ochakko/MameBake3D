@@ -1932,13 +1932,14 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		localnodemat.SetIdentity();
 		localnodeanimmat.SetIdentity();
 
-		ChaMatrix tramat0, tramat1, tramat2;
+		ChaMatrix tramat0, tramat1, tramat2_0, tramat2_anim;
 		ChaMatrix scalemat;
 		CQuaternion lclrotq, prerotq, postrotq, rotq, rotwithanimq;
 		ChaMatrix rotmat, rotwithanimmat;
 		tramat0.SetIdentity();
 		tramat1.SetIdentity();
-		tramat2.SetIdentity();
+		tramat2_0.SetIdentity();
+		tramat2_anim.SetIdentity();
 		scalemat.SetIdentity();
 		lclrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		prerotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -1975,13 +1976,19 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 			ChaVector3((float)(fbxSclOff[0] + fbxSclPiv[0] - fbxRotPiv[0]),
 				(float)(fbxSclOff[1] + fbxSclPiv[1] - fbxRotPiv[1]),
 				(float)(fbxSclOff[2] + fbxSclPiv[2] - fbxRotPiv[2])));
-		tramat2.SetTranslation(
+
+
+		tramat2_0.SetTranslation(
+			ChaVector3((float)(fbxRotOff[0] + fbxRotPiv[0]),
+				(float)(fbxRotOff[1] + fbxRotPiv[1]),
+				(float)(fbxRotOff[2] + fbxRotPiv[2])));
+		tramat2_anim.SetTranslation(//lclposは０フレームアニメ成分だと思われる
 			ChaVector3((float)(fbxLclPos[0] + fbxRotOff[0] + fbxRotPiv[0]),
 				(float)(fbxLclPos[1] + fbxRotOff[1] + fbxRotPiv[1]),
 				(float)(fbxLclPos[2] + fbxRotOff[2] + fbxRotPiv[2])));
 
-		localnodeanimmat = tramat0 * scalemat * tramat1 * rotwithanimmat * tramat2;//with 0frame anim
-		localnodemat = tramat0 * scalemat * tramat1 * rotmat * tramat2;//without 0frame anim
+		localnodeanimmat = tramat0 * scalemat * tramat1 * rotwithanimmat * tramat2_anim;//with 0frame anim
+		localnodemat = tramat0 * scalemat * tramat1 * rotmat * tramat2_0;//without 0frame anim
 		//curbone->SetLocalNodeMat(localnodemat);
 
 		*dstnodeanimmat = localnodeanimmat;
@@ -3690,7 +3697,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
 
 		curbone->SetNodeMat(nodemat);
-		curbone->SetNodeMat(nodeanimmat);
+		curbone->SetNodeAnimMat(nodeanimmat);
 		curbone->SetGlobalPosMat(lGlobalPosition);
 
 		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
