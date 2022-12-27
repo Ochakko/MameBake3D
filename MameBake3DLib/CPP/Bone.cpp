@@ -2709,21 +2709,30 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromQofIK(int srcmotid, double srcframe,
 		//newtanimvec = traanim + ChaMatrixTraVec(srctanimmat);//現在のtanimに引数で移動分を指定する場合
 		ChaVector3 difftanimvec;
 		difftanimvec = ChaMatrixTraVec(srctanimmat) - zeroframetanim;//現在のtanimと0frameのtanimの差分
-		
+		//difftanimvec = ChaMatrixTraVec(srctanimmat);
+
+
+		CQuaternion nodeq;
 		CQuaternion curq;
 		CQuaternion newlocalrotq;
 		CQuaternion additionallocalrotq;
 		ChaMatrix additionallocalrotmat;
+		nodeq.RotationMatrix(GetNodeMat());
 		additionallocalrotmat.SetIdentity();
 		curq.RotationMatrix(srcrmat);
 		newlocalrotq.RotationMatrix(srcnewlocalrotmat);
+
 		additionallocalrotq = curq.inverse() * newlocalrotq;//!!!!!!!
+		//additionallocalrotq = nodeq * (curq.inverse() * newlocalrotq) * nodeq.inverse();//!!!!!!!
+		//additionallocalrotq = nodeq.inverse() * (curq.inverse() * newlocalrotq) * nodeq;//!!!!!!!
+		
 		additionallocalrotmat = additionallocalrotq.MakeRotMatX();
 
 		ChaVector3 diffanimvecrotated;
 		ChaVector3TransformCoord(&diffanimvecrotated, &difftanimvec, &additionallocalrotmat);//vector回転のために　回転行列で変換
 		newtanimmatrotated.SetIdentity();
 		newtanimmatrotated.SetTranslation(diffanimvecrotated + zeroframetanim);
+		//newtanimmatrotated.SetTranslation(diffanimvecrotated);
 	}
 	else {
 		//リターゲット時には　traanimをそのままセットするので　traanimの回転はしない
@@ -2905,14 +2914,12 @@ int CBone::SaveSRT(int srcmotid, double srcstartframe, double srcendframe)
 CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 	CQuaternion qForRot, CQuaternion qForTra, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm)
 {
-	//#######################################################################
+	//######################################
 	//IK用.　RetargetはRotBoneQReq()を使用
 	//hipsはtanimを qForTra で回転する
-	//hips以外はtanimを 回転しない
-	//#######################################################################
+	//hips以外はtanimを qForRot　で回転する
+	//######################################
 
-	bool onaddmotion = true;//for getbychain
-	int existflag = 0;
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
 	if (!curmp) {
 		_ASSERT(0);
@@ -2958,87 +2965,99 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 		ishipsjoint = IsHipsBone();
 
 
-		//calc zeroframe traanim
-		ChaVector3 zeroframetraanim = ChaVector3(0.0f, 0.0f, 0.0f);
-		{
-			ChaMatrix zeroframewm, zeroframeparentwm, zeroframelocalmat;
-			zeroframewm = GetWorldMat(srcmotid, 0.0);
-			if (GetParent()) {
-				zeroframeparentwm = GetParent()->GetWorldMat(srcmotid, 0.0);
-				zeroframelocalmat = zeroframewm * ChaMatrixInv(zeroframeparentwm);
-			}
-			else {
-				zeroframeparentwm.SetIdentity();
-				zeroframelocalmat = zeroframewm;
-			}
-
-			ChaMatrix zerosmat, zerormat, zerotmat, zerotanimmat;
-			zerosmat.SetIdentity();
-			zerormat.SetIdentity();
-			zerotmat.SetIdentity();
-			zerotanimmat.SetIdentity();
-			GetSRTandTraAnim(zeroframelocalmat, GetNodeMat(), &zerosmat, &zerormat, &zerotmat, &zerotanimmat);
-			zeroframetraanim = ChaMatrixTraVec(zerotanimmat);
-		}
-
-
-		//calc new local rot
-		ChaMatrix newlocalrotmatForRot;
-		ChaMatrix smatForRot, rmatForRot, tmatForRot, tanimmatForRot;
-		ChaMatrix parentwmForRot;
-		newlocalrotmatForRot.SetIdentity();
-		smatForRot.SetIdentity();
-		rmatForRot.SetIdentity();
-		tmatForRot.SetIdentity();
-		tanimmatForRot.SetIdentity();
-		parentwmForRot.SetIdentity();
-		newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot, &parentwmForRot);
-
-
-		ChaMatrix newlocalrotmatForTra;
-		ChaMatrix smatForTra, rmatForTra, tmatForTra, tanimmatForTra;
-		ChaMatrix parentwmForTra;
-		newlocalrotmatForTra.SetIdentity();
-		smatForTra.SetIdentity();
-		rmatForTra.SetIdentity();
-		tmatForTra.SetIdentity();
-		tanimmatForTra.SetIdentity();
-		parentwmForTra.SetIdentity();
-
-		//calc new tanim rotated
-		ChaMatrix newtanimmatrotated;
-		newtanimmatrotated.SetIdentity();
-		if (g_rotatetanim == true) {//3DWindow GUIで切り替え予定
-			//hips or other
-			if (ishipsjoint == true) {
-				//only hipsjoint !!!!!! traanimを qForTra で回転する 
-				//0frameのtraanimからの差分を回転する
-				
-				//2022/12/24現在　Rokokoのhipsだけうまくいかない　！！！！！
-				
-				newlocalrotmatForTra = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, qForTra, &smatForTra, &rmatForTra, &tanimmatForTra, &parentwmForTra);
-				newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, srcframe, newlocalrotmatForTra, smatForTra, rmatForTra, tanimmatForTra, parentwmForTra, zeroframetraanim);
-			}
-			else {
-				//other joints !!!! traanimを qForRot で回転する
-				//Rokoko(一定値の非回転前提tanimが設定されている)対応のため　0frameのtraanimからの差分を回転する
-				//Rokokoのhips以外　うまくいく
-				newlocalrotmatForTra = newlocalrotmatForRot;
-				newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, srcframe, newlocalrotmatForRot, smatForRot, rmatForRot, tanimmatForRot, parentwmForRot, zeroframetraanim);
-			}
+		ChaMatrix currentwm;
+		//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//ここをGetLimitedWorldMatにすると１回目のIKが乱れる。２回目のIK以降はOK。
+		currentwm = GetWorldMat(srcmotid, srcframe);
+		ChaMatrix parentwm;
+		CQuaternion parentq;
+		CQuaternion invparentq;
+		if (GetParent()) {
+			parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+			parentq.RotationMatrix(parentwm);
+			invparentq.RotationMatrix(ChaMatrixInv(parentwm));
 		}
 		else {
-			//traanimは 回転しない
-			newlocalrotmatForTra = newlocalrotmatForRot;
-			newtanimmatrotated = tanimmatForRot;
+			parentwm.SetIdentity();
+			parentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 
+		//Get startframeframe traanim : SRT保存はCModel::IKRotate* から呼び出すCBone::SaveSRT()で行っている
+		//ChaVector3 startframetraanim = ChaVector3(0.0f, 0.0f, 0.0f);
+		ChaMatrix startframetraanimmat;
+		startframetraanimmat.SetIdentity();
+		{
+			//CMotionPoint* zeromp = GetMotionPoint(srcmotid, 0.0);
+			CMotionPoint* startframemp = GetMotionPoint(srcmotid, srcstartframe);
+			if (startframemp) {
+				ChaMatrix smat0, rmat0, tmat0, tanimmat0;
+				smat0.SetIdentity();
+				rmat0.SetIdentity();
+				tmat0.SetIdentity();
+				tanimmat0.SetIdentity();
+				//CModel::IKRotate* から呼び出したCBone::SaveSRT()で保存したSRTを取得
+				startframemp->GetSaveSRTandTraAnim(&smat0, &rmat0, &tmat0, &tanimmat0);
+				startframetraanimmat = tanimmat0;
+			}
+			else {
+				startframetraanimmat.SetIdentity();
+			}
+		}
+		ChaMatrix currenttraanimmat;
+		curmp->GetSaveSRTandTraAnim(0, 0, 0, &currenttraanimmat);
 
-		//#### SRTAnimからローカル行列組み立て ####
-		ChaMatrix newlocalmat;
-		newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);
+
+
 		ChaMatrix newwm;
-		newwm = newlocalmat * parentwmForRot;//globalにする
+		newwm.SetIdentity();
+
+		if (ishipsjoint == true) {
+			//#############################################################################################################################
+			//2022/12/27
+			//hispについて　移動も回転するには　について
+			//InvCurNodeTra * curS * curR * CurNodecur * TAnim * CurNodeTra * ParentWM に対して　回転qForTraを加え　curTAnimも回転するには
+			//イメージとしては　curwmの親の位置に　qForTra処理を加えるイメージ
+			//実際には
+			//curTAnimとCurNodeTraは両方とも移動成分のみであるから可換であるから
+			//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForTra * CurNodeTra * ParentWM
+			//currentwm * InvCurNode * qForTra * CurNodeTra * ParentWM
+			//#############################################################################################################################
+			newwm = currentwm * ChaMatrixInv(parentwm) *
+				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForTra.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
+				parentwm;
+		}
+		else {
+			//other joints !!!! traanimを qForRot で回転する
+
+			//calc new local rot
+			ChaMatrix newlocalrotmatForRot;
+			ChaMatrix smatForRot, rmatForRot, tmatForRot, tanimmatForRot;
+			ChaMatrix parentwmForRot;
+			newlocalrotmatForRot.SetIdentity();
+			smatForRot.SetIdentity();
+			rmatForRot.SetIdentity();
+			tmatForRot.SetIdentity();
+			tanimmatForRot.SetIdentity();
+			parentwmForRot.SetIdentity();
+			newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot, &parentwmForRot);
+
+			ChaMatrix newtanimmatrotated;
+			newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, srcframe, newlocalrotmatForRot, 
+				smatForRot, rmatForRot, tanimmatForRot, parentwmForRot, ChaMatrixTraVec(startframetraanimmat));
+
+
+			////	//traanimを 回転しないとき
+			////	newlocalrotmatForTra = newlocalrotmatForRot;
+			////	newtanimmatrotated = tanimmatForRot;
+
+
+			//#### SRTAnimからローカル行列組み立て ####
+			ChaMatrix newlocalmat;
+			newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), 
+				&smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);//ForRot
+			newwm = newlocalmat * parentwmForRot;//globalにする
+
+		}
 
 		SetWorldMat(infooutflag, 0, srcmotid, srcframe, newwm);
 

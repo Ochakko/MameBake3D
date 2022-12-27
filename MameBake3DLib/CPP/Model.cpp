@@ -8734,8 +8734,8 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 								ChaMatrix transmat2ForRot;
 								ChaMatrix transmat2ForTra;
-								transmat2ForTra = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
-								transmat2ForRot = rotq0.MakeRotMatX();
+								transmat2ForRot = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
+								transmat2ForTra = rotq0.MakeRotMatX();
 								//CMotionPoint transmp;
 								//transmp.CalcQandTra(transmat2, firstbone);
 								//rotq = transmp.GetQ();
@@ -11002,8 +11002,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					//####################################################################
 
 
-					transmat2ForTra = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
-					transmat2ForRot = localq.MakeRotMatX();//for hips edit
+					transmat2ForRot = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
+					transmat2ForTra = localq.MakeRotMatX();//for hips edit
 					qForRot.RotationMatrix(transmat2ForRot);
 					qForTra.RotationMatrix(transmat2ForTra);
 
