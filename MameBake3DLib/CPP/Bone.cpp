@@ -3022,14 +3022,26 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 			//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForTra * CurNodeTra * ParentWM
 			//currentwm * InvCurNode * qForTra * CurNodeTra * ParentWM
 			//#############################################################################################################################
+			//newwm = currentwm * ChaMatrixInv(parentwm) *
+			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForTra.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
+			//	parentwm;
+
 			newwm = currentwm * ChaMatrixInv(parentwm) *
-				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForTra.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
+				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForTra.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat * 
 				parentwm;
+
 		}
 		else {
 			//other joints !!!! traanimを qForRot で回転する
 
-			//calc new local rot
+
+			////以下３行　hipsと同じようにすると　traanimが設定してあるジョイントで　回転軸がマニピュレータと合わない
+			//newwm = currentwm * ChaMatrixInv(parentwm) *
+			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat *
+			//	parentwm;
+
+
+			////calc new local rot
 			ChaMatrix newlocalrotmatForRot;
 			ChaMatrix smatForRot, rmatForRot, tmatForRot, tanimmatForRot;
 			ChaMatrix parentwmForRot;
