@@ -2824,7 +2824,7 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 
 			ChaMatrix bvhtraanim;
 			bvhtraanim.SetIdentity();
-			bvhtraanim.SetTranslation(traanim);//引数そのまま
+			bvhtraanim.SetTranslation(ChaMatrixTraVec(tanimmat) + traanim);//元のtanim + 引数traanim
 
 			//#### SRTAnimからローカル行列組み立て ####
 			ChaMatrix newlocalmat;
@@ -2912,11 +2912,11 @@ int CBone::SaveSRT(int srcmotid, double srcstartframe, double srcendframe)
 }
 
 CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
-	CQuaternion qForRot, CQuaternion qForTra, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm)
+	CQuaternion qForRot, CQuaternion qForHipsRot, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm)
 {
 	//######################################
 	//IK用.　RetargetはRotBoneQReq()を使用
-	//hipsはtanimを qForTra で回転する
+	//hipsはtanimを qForHipsRot で回転する
 	//hips以外はtanimを qForRot　で回転する
 	//######################################
 
@@ -3011,23 +3011,37 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 		ChaMatrix newwm;
 		newwm.SetIdentity();
 
+
+		//###########################################################################################################
+		//2022/12/29 Memo
+		//Hipsのときには　追加分の回転を後ろから掛ける
+		//その際にTraAnimよりも後ろから掛けることにより TraAnimを回転する
+		// 
+		//Hips以外の時には　qForRotの内容にトリックがあって　追加分の回転を "実質的には"前から掛けている
+		//この場合　TraAnimだけを別途回転してセットする必要がある
+		// 
+		//なぜ　Hips以外の時にHipsと同じシンプルな式を使えないかというと
+		//体全体を回転した時などに　体に対する回転の向きを維持する必要があるので　後ろから掛けることが出来ないため
+		//###########################################################################################################
+
+
 		if (ishipsjoint == true) {
 			//#############################################################################################################################
 			//2022/12/27
 			//hispについて　移動も回転するには　について
-			//InvCurNodeTra * curS * curR * CurNodecur * TAnim * CurNodeTra * ParentWM に対して　回転qForTraを加え　curTAnimも回転するには
-			//イメージとしては　curwmの親の位置に　qForTra処理を加えるイメージ
+			//InvCurNodeTra * curS * curR * CurNodeTra * TAnim * ParentWM に対して　回転qForHipsRotを加え　curTAnimも回転するには
+			//イメージとしては　curwmの親の位置に　qForHipsRot処理を加えるイメージ
 			//実際には
 			//curTAnimとCurNodeTraは両方とも移動成分のみであるから可換であるから
-			//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForTra * CurNodeTra * ParentWM
-			//currentwm * InvCurNode * qForTra * CurNodeTra * ParentWM
+			//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForHipsRot * CurNodeTra * ParentWM
+			//currentwm * InvCurNode * qForHipsRot * CurNodeTra * ParentWM
 			//#############################################################################################################################
 			//newwm = currentwm * ChaMatrixInv(parentwm) *
-			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForTra.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
+			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
 			//	parentwm;
 
 			newwm = currentwm * ChaMatrixInv(parentwm) *
-				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForTra.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat * 
+				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat * 
 				parentwm;
 
 		}
@@ -3059,7 +3073,7 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 
 
 			////	//traanimを 回転しないとき
-			////	newlocalrotmatForTra = newlocalrotmatForRot;
+			////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
 			////	newtanimmatrotated = tanimmatForRot;
 
 
@@ -3085,10 +3099,10 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 	curmp->SetAbsMat(curmp->GetWorldMat());
 
 	if (m_child && curmp) {
-		m_child->RotAndTraBoneQReq(srcstartframe, infooutflag, this, srcmotid, srcframe, qForRot, qForTra, currentbefwm, currentnewwm);//default param ??????
+		m_child->RotAndTraBoneQReq(srcstartframe, infooutflag, this, srcmotid, srcframe, qForRot, qForHipsRot, currentbefwm, currentnewwm);//default param ??????
 	}
 	if (m_brother && parentbone) {
-		m_brother->RotAndTraBoneQReq(srcstartframe, infooutflag, parentbone, srcmotid, srcframe, qForRot, qForTra, srcbefparentwm, srcnewparentwm);//default param ??????
+		m_brother->RotAndTraBoneQReq(srcstartframe, infooutflag, parentbone, srcmotid, srcframe, qForRot, qForHipsRot, srcbefparentwm, srcnewparentwm);//default param ??????
 	}
 	return curmp;
 }

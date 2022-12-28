@@ -8687,7 +8687,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					rotq0.SetAxisAndRot( rotaxis2, rotrad2 );
 
 					CQuaternion qForRot;
-					CQuaternion qForTra;
+					CQuaternion qForHipsRot;
 
 
 					parentbone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
@@ -8733,19 +8733,19 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
 								//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 								ChaMatrix transmat2ForRot;
-								ChaMatrix transmat2ForTra;
+								ChaMatrix transmat2ForHipsRot;
 								transmat2ForRot = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
-								transmat2ForTra = rotq0.MakeRotMatX();
+								transmat2ForHipsRot = rotq0.MakeRotMatX();
 								//CMotionPoint transmp;
 								//transmp.CalcQandTra(transmat2, firstbone);
 								//rotq = transmp.GetQ();
 								qForRot.RotationMatrix(transmat2ForRot);
-								qForTra.RotationMatrix(transmat2ForTra);
+								qForHipsRot.RotationMatrix(transmat2ForHipsRot);
 
 							}
 							else {
 								qForRot = rotq0;
-								qForTra = rotq0;
+								qForHipsRot = rotq0;
 							}
 
 							double changerate;
@@ -8774,23 +8774,23 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 								if (g_slerpoffflag == 0) {
 									CQuaternion endq;
 									CQuaternion curqForRot;
-									CQuaternion curqForTra;
+									CQuaternion curqForHipsRot;
 									endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 									qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
-									qForTra.Slerp2(endq, 1.0 - changerate, &curqForTra);
+									qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
 									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
-										infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForTra, dummyparentwm, dummyparentwm);
+										infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
 								}
 								else {
 									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
-										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 								}
 							}
 							else {
 								if (keyno == 0) {
 									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
-										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 								}
 								else {
 									parentbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
@@ -8802,8 +8802,8 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					else {
 						bool infooutflag = true;
 						qForRot = rotq0;
-						qForTra = rotq0;
-						parentbone->RotAndTraBoneQReq(m_curmotinfo->curframe, infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+						qForHipsRot = rotq0;
+						parentbone->RotAndTraBoneQReq(m_curmotinfo->curframe, infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 					}
 
 
@@ -10945,7 +10945,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			//transmat = localq.MakeRotMatX();
 
 			CQuaternion qForRot;
-			CQuaternion qForTra;
+			CQuaternion qForHipsRot;
 
 
 			aplybone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
@@ -10989,7 +10989,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
 					//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 					ChaMatrix transmat2ForRot;
-					ChaMatrix transmat2ForTra;
+					ChaMatrix transmat2ForHipsRot;
 
 					//hisp移動はうまくいくが　回転がおかしい 　hips以外は良い
 					//transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
@@ -11003,9 +11003,9 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 
 					transmat2ForRot = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
-					transmat2ForTra = localq.MakeRotMatX();//for hips edit
+					transmat2ForHipsRot = localq.MakeRotMatX();//for hips edit
 					qForRot.RotationMatrix(transmat2ForRot);
-					qForTra.RotationMatrix(transmat2ForTra);
+					qForHipsRot.RotationMatrix(transmat2ForHipsRot);
 
 
 
@@ -11028,23 +11028,23 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 						if (g_slerpoffflag == 0){
 							CQuaternion endq;
 							CQuaternion curqForRot;
-							CQuaternion curqForTra;
+							CQuaternion curqForHipsRot;
 							endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 							qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
-							qForTra.Slerp2(endq, 1.0 - changerate, &curqForTra);
+							qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
 							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
-								infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForTra, dummyparentwm, dummyparentwm);
+								infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
 						}
 						else{
 							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
-								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 						}
 					}
 					else{
 						if (keyno == 0){
 							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
-								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 						}
 						else{
 							aplybone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
@@ -11059,10 +11059,10 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				//rotq.RotationMatrix(transmat);
 
 				qForRot = localq;
-				qForTra = localq;
+				qForHipsRot = localq;
 				bool infooutflag = true;
 				aplybone->RotAndTraBoneQReq(m_curmotinfo->curframe, 
-					infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForTra, dummyparentwm, dummyparentwm);
+					infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 			}
 
 
