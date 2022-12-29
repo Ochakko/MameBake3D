@@ -2416,7 +2416,7 @@ int CBone::SetCurrentRigidElem( std::string curname )
 }
 
 
-CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra)
+CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm)
 {
 	int existflag = 0;
 	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
@@ -2427,17 +2427,27 @@ CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double src
 		return 0;
 	}
 
+	ChaMatrix currentbefwm;
+	ChaMatrix currentnewwm;
+	currentbefwm.SetIdentity();
+	currentnewwm.SetIdentity();
+	currentbefwm = GetWorldMat(srcmotid, srcframe);
+
+
 	bool infooutflag = false;
 
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if( parmp ){
-		ChaMatrix invbefpar;
-		ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
-		ChaMatrixInverse( &invbefpar, NULL, &tmpparbefwm );
-		ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		//ChaMatrix invbefpar;
+		//ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
+		//ChaMatrixInverse( &invbefpar, NULL, &tmpparbefwm );
+		//ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		ChaMatrix tmpmat = curmp->GetWorldMat() * ChaMatrixInv(befparentwm) * newparentwm;
 		g_wmatDirectSetFlag = true;
 		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
+
+		currentnewwm = GetWorldMat(srcmotid, srcframe);
 	}
 	else{
 		ChaMatrix tramat;
@@ -2446,22 +2456,24 @@ CMotionPoint* CBone::AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double src
 		g_wmatDirectSetFlag = true;
 		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
+
+		currentnewwm = GetWorldMat(srcmotid, srcframe);
 	}
 
 	curmp->SetAbsMat( curmp->GetWorldMat() );
 
 	if (m_child){
-		m_child->AddBoneTraReq(curmp, srcmotid, srcframe, srctra);
+		m_child->AddBoneTraReq(curmp, srcmotid, srcframe, srctra, currentbefwm, currentnewwm);
 	}
 	if (m_brother && parmp){
-		m_brother->AddBoneTraReq(parmp, srcmotid, srcframe, srctra);
+		m_brother->AddBoneTraReq(parmp, srcmotid, srcframe, srctra, befparentwm, newparentwm);
 	}
 
 	return curmp;
 }
 
 
-CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale)
+CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale, ChaMatrix befparentwm, ChaMatrix newparentwm)
 {
 	int existflag = 0;
 	//CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
@@ -2472,18 +2484,28 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 		return 0;
 	}
 
+	ChaMatrix currentbefwm;
+	ChaMatrix currentnewwm;
+	currentbefwm.SetIdentity();
+	currentnewwm.SetIdentity();
+	currentbefwm = GetWorldMat(srcmotid, srcframe);
+
+
 	bool infooutflag = false;
 
 
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
 	if (parmp) {
-		ChaMatrix invbefpar;
-		ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
-		ChaMatrixInverse(&invbefpar, NULL, &tmpparbefwm);
-		ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		//ChaMatrix invbefpar;
+		//ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
+		//ChaMatrixInverse(&invbefpar, NULL, &tmpparbefwm);
+		//ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		ChaMatrix tmpmat = curmp->GetWorldMat() * ChaMatrixInv(befparentwm) * newparentwm;
 		g_wmatDirectSetFlag = true;
 		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
+
+		currentnewwm = GetWorldMat(srcmotid, srcframe);
 	}
 	else {
 		ChaVector3 curpos = GetJointFPos();
@@ -2501,7 +2523,7 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 		SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 		g_wmatDirectSetFlag = false;
 
-
+		currentnewwm = GetWorldMat(srcmotid, srcframe);
 
 		////ChaVector3 cureul;
 		////cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
@@ -2576,10 +2598,10 @@ CMotionPoint* CBone::AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double s
 	curmp->SetAbsMat(curmp->GetWorldMat());
 
 	if (m_child) {
-		m_child->AddBoneScaleReq(curmp, srcmotid, srcframe, srcscale);
+		m_child->AddBoneScaleReq(curmp, srcmotid, srcframe, srcscale, currentbefwm, currentnewwm);
 	}
 	if (m_brother && parmp) {
-		m_brother->AddBoneScaleReq(parmp, srcmotid, srcframe, srcscale);
+		m_brother->AddBoneScaleReq(parmp, srcmotid, srcframe, srcscale, befparentwm, newparentwm);
 	}
 
 	return curmp;
@@ -4211,7 +4233,7 @@ ChaMatrix CBone::CalcCurrentLocalRotMatFromEul(ChaVector3 srceul)
 
 
 
-int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag)//initscaleflag = 1 : default
+int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag)//initscaleflag = 1 : default
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 
@@ -4229,8 +4251,7 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srce
 		return 1;
 	}
 
-	ChaMatrix befwm = curmp->GetBefWorldMat();
-
+	//ChaMatrix befwm = curmp->GetBefWorldMat();
 
 	ChaMatrix newworldmat = CalcWorldMatFromEul(inittraflag, setchildflag, srceul, srcmotid, srcframe, initscaleflag);
 
@@ -4504,7 +4525,7 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 
 
 
-int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 	//if (!m_child) {
@@ -4524,7 +4545,7 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 		return 1;
 	}
 
-	ChaMatrix befwm = curmp->GetBefWorldMat();
+	//ChaMatrix befwm = curmp->GetBefWorldMat();
 
 	ChaMatrix parmat;
 	ChaMatrix parnodemat;
@@ -4577,7 +4598,7 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 
 
 
-int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe)
 {
 	if (!m_child){
 		return 0;
@@ -4599,7 +4620,7 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 		return 1;
 	}
 
-	ChaMatrix befwm = curmp->GetBefWorldMat();
+	//ChaMatrix befwm = curmp->GetBefWorldMat();
 
 	ChaMatrix parmat;
 	ChaMatrix parnodemat;
@@ -4650,7 +4671,7 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, CQuaternion axisq, CQuaterni
 }
 
 
-int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe)
+int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe)
 {
 	//anglelimitをした後のオイラー角が渡される。anglelimitはCBone::SetWorldMatで処理する。
 	
@@ -4672,7 +4693,7 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaVector3 srceul, ChaVect
 		return 1;
 	}
 
-	ChaMatrix befwm = curmp->GetBefWorldMat();
+	//ChaMatrix befwm = curmp->GetBefWorldMat();
 
 	ChaMatrix parmat;
 	ChaMatrix parnodemat;
@@ -4812,6 +4833,12 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		//IK時には　saveworldmatのtanimを使用
 		//この違いにより　SetWorldMatFromEulで参照するGetWorldMatの値が変わる
 		//動かさないときの巻き戻し方も変わる
+		// 
+		//2022/12/29
+		//関数の呼び出し状況によってbefworldmatの内容が変わるのは不味いので
+		//明示的に引数として渡すことにした(他のIK用のReq関数についても)
+		//GetBefWorldMat()は使用しないことにした
+		//よってsaveworldmatでのSetWorldMat()は要らなくなった
 		//######################################################################
 		//if (g_underRetargetFlag == false) {
 		//	curmp->SetWorldMat(saveworldmat);
@@ -4827,7 +4854,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 				if (IsSameEul(oldeul, neweul) == 0) {
 					int inittraflag0 = 0;
 					SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
-						neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, srcframe);//setchildflag有り!!!!
+						saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, srcframe);//setchildflag有り!!!!
 					//if(g_underRetargetFlag == true){
 						curmp->SetBefWorldMat(saveworldmat);
 					//}
@@ -4853,7 +4880,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					if (IsSameEul(oldeul, neweul) == 0) {
 						int inittraflag0 = 0;
 						SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
-							limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, srcframe);//setchildflag有り!!!!
+							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, srcframe);//setchildflag有り!!!!
 						//if (g_underRetargetFlag == true) {
 							curmp->SetBefWorldMat(saveworldmat);
 						//}
@@ -7711,28 +7738,28 @@ int CBone::SwapCurrentMotionPoint()
 	return 0;
 }
 
-int CBone::Adjust180Deg(int srcmotid, double srcleng)
-{
-	double curframe;
-	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-
-	befeul = CalcLocalEulXYZ(-1, srcmotid, 0.0, BEFEUL_BEFFRAME);
-
-	for (curframe = 1.0; curframe < srcleng; curframe += 1.0) {
-		int paraxsiflag1 = 1;
-		cureul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(curframe + 0.1)), BEFEUL_BEFFRAME);
-		CQuaternion curq;
-		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
-
-		int inittraflag1 = 0;
-		//int setchildflag1 = 1;
-		int setchildflag1 = 0;
-		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
-
-		befeul = cureul;
-	}
-
-	return 0;
-}
+//int CBone::Adjust180Deg(int srcmotid, double srcleng)
+//{
+//	double curframe;
+//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+//	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+//
+//	befeul = CalcLocalEulXYZ(-1, srcmotid, 0.0, BEFEUL_BEFFRAME);
+//
+//	for (curframe = 1.0; curframe < srcleng; curframe += 1.0) {
+//		int paraxsiflag1 = 1;
+//		cureul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(curframe + 0.1)), BEFEUL_BEFFRAME);
+//		CQuaternion curq;
+//		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
+//
+//		int inittraflag1 = 0;
+//		//int setchildflag1 = 1;
+//		int setchildflag1 = 0;
+//		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
+//
+//		befeul = cureul;
+//	}
+//
+//	return 0;
+//}
 

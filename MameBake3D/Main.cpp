@@ -21115,30 +21115,30 @@ int OnFrameToolWnd()
 	}
 
 	if (s_180DegFlag) {
-		if (s_model && (s_curboneno >= 0)) {
-			CBone* curbone = 0;
-			CBone* adjustbone = 0;
-			if (s_curboneno >= 0) {
-				curbone = s_model->GetBoneByID(s_curboneno);
-			}
-			else {
-				curbone = 0;
-			}
-			if (curbone) {
-				if (curbone->GetParent()) {
-					adjustbone = curbone->GetParent();
-				}
-				else {
-					adjustbone = curbone;
-				}
-			}
+		//if (s_model && (s_curboneno >= 0)) {
+		//	CBone* curbone = 0;
+		//	CBone* adjustbone = 0;
+		//	if (s_curboneno >= 0) {
+		//		curbone = s_model->GetBoneByID(s_curboneno);
+		//	}
+		//	else {
+		//		curbone = 0;
+		//	}
+		//	if (curbone) {
+		//		if (curbone->GetParent()) {
+		//			adjustbone = curbone->GetParent();
+		//		}
+		//		else {
+		//			adjustbone = curbone;
+		//		}
+		//	}
 
-			if (adjustbone) {
-				s_model->Adjust180DegReq(adjustbone);
-				refreshEulerGraph();
-				PrepairUndo();//2022/10/27
-			}
-		}
+		//	if (adjustbone) {
+		//		s_model->Adjust180DegReq(adjustbone);
+		//		refreshEulerGraph();
+		//		PrepairUndo();//2022/10/27
+		//	}
+		//}
 		s_180DegFlag = false;
 	}
 
@@ -25629,13 +25629,15 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
 				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);//scaleåvéZñ≥Çµ
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, srcframe);//scaleåvéZñ≥Çµ
 			}
 			else if (initmode == INITMP_ROT){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag0 = 0;
 				int setchildflag1 = 1;
-				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, cureul, srcmotid, srcframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
+				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, befwm, cureul, srcmotid, srcframe);
 			}
 			else if (initmode == INITMP_TRA){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -25645,7 +25647,8 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
-				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
+				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, srcframe);
 			}
 			else if (initmode == INITMP_SCALE) {
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -25658,7 +25661,8 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				//int inittraflag1 = 0;
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, cureul, traanim, srcmotid, srcframe);//scaleåvéZñ≥Çµ
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, srcframe);//scaleåvéZñ≥Çµ
 			}
 		//}
 	}

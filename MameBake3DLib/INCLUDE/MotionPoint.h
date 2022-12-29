@@ -81,7 +81,13 @@ public:
 	//void SetBtFlag(int srcflag);
 
 
-	ChaMatrix GetBefWorldMat(){ return m_befworldmat; };
+	//2022/12/29
+	//関数の呼び出し状況によってbefworldmatの内容が変わるのは不味いので
+	//明示的に引数として渡すことにした(他のIK用のReq関数についても)
+	//GetBefWorldMat()は使用しないことにした
+	//
+	//ChaMatrix GetBefWorldMat(){ return m_befworldmat; };
+
 	void SetBefWorldMat( ChaMatrix srcmat ){ m_befworldmat = srcmat; };
 
 	ChaMatrix GetBefEditMat(){ return m_befeditmat; };

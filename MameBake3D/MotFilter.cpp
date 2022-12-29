@@ -285,7 +285,8 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 		}
 
 		for (frame = srcstartframe; frame <= srcendframe; frame++){
-			curbone->SetWorldMatFromEulAndTra(1, m_smootheul[frame - srcstartframe], m_smoothtra[frame - srcstartframe], srcmotid, (double)frame);
+			ChaMatrix befwm = curbone->GetWorldMat(srcmotid, (double)frame);
+			curbone->SetWorldMatFromEulAndTra(1, befwm, m_smootheul[frame - srcstartframe], m_smoothtra[frame - srcstartframe], srcmotid, (double)frame);
 			//curbone->SetWorldMatFromEul(0, 1, m_smootheul[frame - srcstartframe], srcmotid, (double)frame);
 		}
 

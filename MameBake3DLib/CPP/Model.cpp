@@ -3981,7 +3981,8 @@ void CModel::InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe)
 		int inittraflag1 = 0;
 		int setchildflag1 = 1;
 		int initscaleflag1 = 1;//!!!!!!!
-		curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
+		ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
+		curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, srcframe, initscaleflag1);
 
 		if (curbone->GetChild()) {
 			InitMpScaleReq(curbone->GetChild(), srcmotid, srcframe);
@@ -4861,7 +4862,8 @@ int CModel::CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, Fb
 				int inittraflag1 = 0;
 				int setchildflag1 = 0;
 				int initscaleflag = 1;//!!!!!!!!!!!!
-				curbone->SetWorldMatFromEulAndScaleAndTra(inittraflag1, setchildflag1, cureul, chascale, chatra, motid, framecnt);
+				ChaMatrix befwm = curbone->GetWorldMat(motid, framecnt);
+				curbone->SetWorldMatFromEulAndScaleAndTra(inittraflag1, setchildflag1, befwm, cureul, chascale, chatra, motid, framecnt);
 
 
 			fbxtime = fbxtime + difftime;
@@ -10483,7 +10485,8 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 			}
 			int setchildflag1 = 1;
 			CQuaternion iniq;
-			srcbone->SetWorldMatFromQAndTra(setchildflag1, iniq, setq, settra, curmotid, frame);
+			ChaMatrix befwm = srcbone->GetWorldMat(curmotid, frame);
+			srcbone->SetWorldMatFromQAndTra(setchildflag1, befwm, iniq, setq, settra, curmotid, frame);
 		}
 
 
@@ -11356,6 +11359,9 @@ int CModel::FKBoneTra(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVect
 	curbone = firstbone;
 	double firstframe = 0.0;
 
+	ChaMatrix dummyparentwm;
+	dummyparentwm.SetIdentity();//Req関数の最初の呼び出し時は　Identityを渡せばよい
+
 	if( keynum >= 2 ){
 		//float changerate = 1.0f / (float)(endframe - startframe + 1);
 
@@ -11369,6 +11375,7 @@ int CModel::FKBoneTra(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVect
 			//	changerate = 1.0 / (endframe - applyframe + 1);
 			//}
 			changerate = (double)(*(g_motionbrush_value + (int)curframe));
+
 
 			if( keyno == 0 ){
 				firstframe = curframe;
@@ -11390,22 +11397,22 @@ int CModel::FKBoneTra(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVect
 					//ChaVector3 curtra;
 					//curtra = (1.0 - currate2) * addtra;
 
-					curbone->AddBoneTraReq( 0, m_curmotinfo->motid, curframe, curtra );
+					curbone->AddBoneTraReq(0, m_curmotinfo->motid, curframe, curtra, dummyparentwm, dummyparentwm);
 				}else{
-					curbone->AddBoneTraReq( 0, m_curmotinfo->motid, curframe, addtra );
+					curbone->AddBoneTraReq(0, m_curmotinfo->motid, curframe, addtra, dummyparentwm, dummyparentwm);
 				}
 			}else{
 				if( keyno == 0 ){
-					curbone->AddBoneTraReq( 0, m_curmotinfo->motid, curframe, addtra );
+					curbone->AddBoneTraReq(0, m_curmotinfo->motid, curframe, addtra, dummyparentwm, dummyparentwm);
 				}else{
-					curbone->SetAbsMatReq( 0, m_curmotinfo->motid, curframe, firstframe );
+					curbone->SetAbsMatReq(0, m_curmotinfo->motid, curframe, firstframe);
 				}
 			}
 			keyno++;
 
 		}
 	}else{
-		curbone->AddBoneTraReq( 0, m_curmotinfo->motid,  startframe, addtra );
+		curbone->AddBoneTraReq(0, m_curmotinfo->motid,  startframe, addtra, dummyparentwm, dummyparentwm);
 	}
 
 
@@ -11557,6 +11564,10 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 	curbone = firstbone;
 	double firstframe = 0.0;
 
+	ChaMatrix dummyparentwm;
+	dummyparentwm.SetIdentity();//Req関数の最初の呼び出し時は　Identityを渡せばよい
+
+
 	if (keynum >= 2) {
 		//float changerate = 1.0f / (float)(endframe - startframe + 1);
 
@@ -11593,15 +11604,15 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 					//ChaVector3 curtra;
 					//curtra = (1.0 - currate2) * addtra;
 
-					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), curscale);
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), curscale, dummyparentwm, dummyparentwm);
 				}
 				else {
-					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), scalevec);
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), scalevec, dummyparentwm, dummyparentwm);
 				}
 			}
 			else {
 				if (keyno == 0) {
-					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), scalevec);
+					curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), scalevec, dummyparentwm, dummyparentwm);
 				}
 				else {
 					curbone->SetAbsMatReq(0, m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), firstframe);
@@ -11612,7 +11623,7 @@ int CModel::FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVe
 		}
 	}
 	else {
-		curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(startframe + 0.0001)), scalevec);
+		curbone->AddBoneScaleReq(0, m_curmotinfo->motid, (double)((int)(startframe + 0.0001)), scalevec, dummyparentwm, dummyparentwm);
 	}
 
 
@@ -13302,25 +13313,25 @@ void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 	}
 }
 
-void CModel::Adjust180DegReq(CBone* srcbone)
-{
-	if (srcbone) {
-		MOTINFO* curmi = GetCurMotInfo();
-		if (curmi) {
-			int srcmotid = curmi->motid;
-			double srcleng = curmi->frameleng;
-			srcbone->Adjust180Deg(srcmotid, srcleng);
-
-
-			if (srcbone->GetBrother()) {
-				Adjust180DegReq(srcbone->GetBrother());
-			}
-			if (srcbone->GetChild()) {
-				Adjust180DegReq(srcbone->GetChild());
-			}
-		}
-	}
-	return;
-}
+//void CModel::Adjust180DegReq(CBone* srcbone)
+//{
+//	if (srcbone) {
+//		MOTINFO* curmi = GetCurMotInfo();
+//		if (curmi) {
+//			int srcmotid = curmi->motid;
+//			double srcleng = curmi->frameleng;
+//			srcbone->Adjust180Deg(srcmotid, srcleng);
+//
+//
+//			if (srcbone->GetBrother()) {
+//				Adjust180DegReq(srcbone->GetBrother());
+//			}
+//			if (srcbone->GetChild()) {
+//				Adjust180DegReq(srcbone->GetChild());
+//			}
+//		}
+//	}
+//	return;
+//}
 
 
