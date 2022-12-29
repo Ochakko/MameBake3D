@@ -388,7 +388,8 @@ int IsInitRot(ChaMatrix srcmat)
 	d32 = srcmat.data[MATI_32] - 0.0f;
 	d33 = srcmat.data[MATI_33] - 1.0f;
 
-	float dmin = 0.000001f;
+	//float dmin = 0.000001f;
+	float dmin = 0.000010f;
 
 	if ((fabs(d11) <= dmin) && (fabs(d12) <= dmin) && (fabs(d13) <= dmin) &&
 		(fabs(d21) <= dmin) && (fabs(d22) <= dmin) && (fabs(d23) <= dmin) &&
@@ -399,6 +400,12 @@ int IsInitRot(ChaMatrix srcmat)
 	return retval;
 }
 
+int IsInitMat(ChaMatrix srcmat) 
+{
+	ChaMatrix mat1;
+	mat1.SetIdentity();
+	return IsSameMat(srcmat, mat1);
+}
 
 int IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 {
@@ -407,7 +414,8 @@ int IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 	ChaMatrix diffmat;
 	diffmat = srcmat1 - srcmat2;
 
-	float dmin = 0.000001f;
+	//float dmin = 0.000001f;
+	float dmin = 0.000010f;
 
 	if ((fabs(diffmat.data[MATI_11]) <= dmin) && (fabs(diffmat.data[MATI_12]) <= dmin) && (fabs(diffmat.data[MATI_13]) <= dmin) && (fabs(diffmat.data[MATI_14]) <= dmin) &&
 		(fabs(diffmat.data[MATI_21]) <= dmin) && (fabs(diffmat.data[MATI_22]) <= dmin) && (fabs(diffmat.data[MATI_23]) <= dmin) && (fabs(diffmat.data[MATI_24]) <= dmin) &&
@@ -944,6 +952,7 @@ ChaMatrix ChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector3* srcpivot)
 ChaMatrix ChaMatrixInv(ChaMatrix srcmat)
 {
 	ChaMatrix retmat;
+	retmat.SetIdentity();
 	ChaMatrixInverse(&retmat, NULL, &srcmat);
 	return retmat;
 }
@@ -2519,13 +2528,23 @@ int CQuaternion::Q2X(DirectX::XMFLOAT4* dstx, CQuaternion srcq)
 
 int CQuaternion::inv(CQuaternion* dstq)
 {
+	if (dstq) {
+		if (IsInit() == 0) {//2022/12/29
+			dstq->w = w;
+			dstq->x = -x;
+			dstq->y = -y;
+			dstq->z = -z;
 
-	dstq->w = w;
-	dstq->x = -x;
-	dstq->y = -y;
-	dstq->z = -z;
-
-	*dstq = dstq->normalize();
+			*dstq = dstq->normalize();
+		}
+		else {
+			dstq->SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		}
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 	return 0;
 }
@@ -3687,7 +3706,7 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3
 	static int dbgcnt = 0;
 
 	ChaVector3 tmpeul(0.0f, 0.0f, 0.0f);
-	if (IsInit() == 0) {
+	if (axisq || (IsInit() == 0)) {
 		//Q2EulXYZusingMat(ROTORDER_XYZ, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 		Q2EulXYZusingQ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 	}
@@ -4019,88 +4038,98 @@ void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 	}
 
 	ChaMatrix res;
-	// use block matrix method
-	// A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
+	res.SetIdentity();
 
-	// sub matrices
-	__m128 A = VecShuffle_0101(psrc->mVec[0], psrc->mVec[1]);
-	__m128 B = VecShuffle_2323(psrc->mVec[0], psrc->mVec[1]);
-	__m128 C = VecShuffle_0101(psrc->mVec[2], psrc->mVec[3]);
-	__m128 D = VecShuffle_2323(psrc->mVec[2], psrc->mVec[3]);
-
-#if 0
-	__m128 detA = _mm_set1_ps(psrc->m[0][0] * psrc->m[1][1] - psrc->m[0][1] * psrc->m[1][0]);
-	__m128 detB = _mm_set1_ps(psrc->m[0][2] * psrc->m[1][3] - psrc->m[0][3] * psrc->m[1][2]);
-	__m128 detC = _mm_set1_ps(psrc->m[2][0] * psrc->m[3][1] - psrc->m[2][1] * psrc->m[3][0]);
-	__m128 detD = _mm_set1_ps(psrc->m[2][2] * psrc->m[3][3] - psrc->m[2][3] * psrc->m[3][2]);
-#else
-	// determinant as (|A| |B| |C| |D|)
-	__m128 detSub = _mm_sub_ps(
-		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 0, 2, 0, 2), VecShuffle(psrc->mVec[1], psrc->mVec[3], 1, 3, 1, 3)),
-		_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 1, 3, 1, 3), VecShuffle(psrc->mVec[1], psrc->mVec[3], 0, 2, 0, 2))
-	);
-	__m128 detA = VecSwizzle1(detSub, 0);
-	__m128 detB = VecSwizzle1(detSub, 1);
-	__m128 detC = VecSwizzle1(detSub, 2);
-	__m128 detD = VecSwizzle1(detSub, 3);
-#endif
-
-	// let iM = 1/|M| * | X  Y |
-	//                  | Z  W |
-
-	// D#C
-	__m128 D_C = Mat2AdjMul(D, C);
-	// A#B
-	__m128 A_B = Mat2AdjMul(A, B);
-	// X# = |D|A - B(D#C)
-	__m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
-	// W# = |A|D - C(A#B)
-	__m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), Mat2Mul(C, A_B));
-
-	// |M| = |A|*|D| + ... (continue later)
-	__m128 detM = _mm_mul_ps(detA, detD);
-
-	// Y# = |B|C - D(A#B)#
-	__m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), Mat2MulAdj(D, A_B));
-	// Z# = |C|B - A(D#C)#
-	__m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), Mat2MulAdj(A, D_C));
-
-	// |M| = |A|*|D| + |B|*|C| ... (continue later)
-	detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
-
-	// tr((A#B)(D#C))
-	__m128 tr = _mm_mul_ps(A_B, VecSwizzle(D_C, 0, 2, 1, 3));
-	tr = _mm_hadd_ps(tr, tr);
-	tr = _mm_hadd_ps(tr, tr);
-	// |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
-	detM = _mm_sub_ps(detM, tr);
-
-
-	float checkdetM4[4];
-	_mm_store_ps(checkdetM4, detM);
-	//if (fabs(checkdetM4[3]) >= 1e-5) {
-	if (fabs(checkdetM4[3]) >= FLT_MIN) {//2022/11/23 ChkRayにおいて最小距離より近いものは当たりにしている　1e-5では最小距離の精度が無かった　この値ならOK
-		const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
-		// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
-		__m128 rDetM = _mm_div_ps(adjSignMask, detM);
-
-		X_ = _mm_mul_ps(X_, rDetM);
-		Y_ = _mm_mul_ps(Y_, rDetM);
-		Z_ = _mm_mul_ps(Z_, rDetM);
-		W_ = _mm_mul_ps(W_, rDetM);
-
-		// apply adjugate and store, here we combine adjugate shuffle and store shuffle
-		res.mVec[0] = VecShuffle(X_, Y_, 3, 1, 3, 1);
-		res.mVec[1] = VecShuffle(X_, Y_, 2, 0, 2, 0);
-		res.mVec[2] = VecShuffle(Z_, W_, 3, 1, 3, 1);
-		res.mVec[3] = VecShuffle(Z_, W_, 2, 0, 2, 0);
-
-		*pdst = res;
+	if (IsInitMat(*psrc) == 1) {
+		//case src is Identity.
+		pdst->SetIdentity();
+		if (pdet) {
+			*pdet = 1.0f;
+		}
 	}
 	else {
-		*pdst = *psrc;
-	}
+		// use block matrix method
+		// A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
 
+		// sub matrices
+		__m128 A = VecShuffle_0101(psrc->mVec[0], psrc->mVec[1]);
+		__m128 B = VecShuffle_2323(psrc->mVec[0], psrc->mVec[1]);
+		__m128 C = VecShuffle_0101(psrc->mVec[2], psrc->mVec[3]);
+		__m128 D = VecShuffle_2323(psrc->mVec[2], psrc->mVec[3]);
+
+#if 0
+		__m128 detA = _mm_set1_ps(psrc->m[0][0] * psrc->m[1][1] - psrc->m[0][1] * psrc->m[1][0]);
+		__m128 detB = _mm_set1_ps(psrc->m[0][2] * psrc->m[1][3] - psrc->m[0][3] * psrc->m[1][2]);
+		__m128 detC = _mm_set1_ps(psrc->m[2][0] * psrc->m[3][1] - psrc->m[2][1] * psrc->m[3][0]);
+		__m128 detD = _mm_set1_ps(psrc->m[2][2] * psrc->m[3][3] - psrc->m[2][3] * psrc->m[3][2]);
+#else
+		// determinant as (|A| |B| |C| |D|)
+		__m128 detSub = _mm_sub_ps(
+			_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 0, 2, 0, 2), VecShuffle(psrc->mVec[1], psrc->mVec[3], 1, 3, 1, 3)),
+			_mm_mul_ps(VecShuffle(psrc->mVec[0], psrc->mVec[2], 1, 3, 1, 3), VecShuffle(psrc->mVec[1], psrc->mVec[3], 0, 2, 0, 2))
+		);
+		__m128 detA = VecSwizzle1(detSub, 0);
+		__m128 detB = VecSwizzle1(detSub, 1);
+		__m128 detC = VecSwizzle1(detSub, 2);
+		__m128 detD = VecSwizzle1(detSub, 3);
+#endif
+
+		// let iM = 1/|M| * | X  Y |
+		//                  | Z  W |
+
+		// D#C
+		__m128 D_C = Mat2AdjMul(D, C);
+		// A#B
+		__m128 A_B = Mat2AdjMul(A, B);
+		// X# = |D|A - B(D#C)
+		__m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
+		// W# = |A|D - C(A#B)
+		__m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), Mat2Mul(C, A_B));
+
+		// |M| = |A|*|D| + ... (continue later)
+		__m128 detM = _mm_mul_ps(detA, detD);
+
+		// Y# = |B|C - D(A#B)#
+		__m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), Mat2MulAdj(D, A_B));
+		// Z# = |C|B - A(D#C)#
+		__m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), Mat2MulAdj(A, D_C));
+
+		// |M| = |A|*|D| + |B|*|C| ... (continue later)
+		detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
+
+		// tr((A#B)(D#C))
+		__m128 tr = _mm_mul_ps(A_B, VecSwizzle(D_C, 0, 2, 1, 3));
+		tr = _mm_hadd_ps(tr, tr);
+		tr = _mm_hadd_ps(tr, tr);
+		// |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
+		detM = _mm_sub_ps(detM, tr);
+
+
+		float checkdetM4[4];
+		_mm_store_ps(checkdetM4, detM);
+		//if (fabs(checkdetM4[3]) >= 1e-5) {
+		if (fabs(checkdetM4[3]) >= FLT_MIN) {//2022/11/23 ChkRayにおいて最小距離より近いものは当たりにしている　1e-5では最小距離の精度が無かった　この値ならOK
+			const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
+			// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
+			__m128 rDetM = _mm_div_ps(adjSignMask, detM);
+
+			X_ = _mm_mul_ps(X_, rDetM);
+			Y_ = _mm_mul_ps(Y_, rDetM);
+			Z_ = _mm_mul_ps(Z_, rDetM);
+			W_ = _mm_mul_ps(W_, rDetM);
+
+			// apply adjugate and store, here we combine adjugate shuffle and store shuffle
+			res.mVec[0] = VecShuffle(X_, Y_, 3, 1, 3, 1);
+			res.mVec[1] = VecShuffle(X_, Y_, 2, 0, 2, 0);
+			res.mVec[2] = VecShuffle(Z_, W_, 3, 1, 3, 1);
+			res.mVec[3] = VecShuffle(Z_, W_, 2, 0, 2, 0);
+
+			*pdst = res;
+		}
+		else {
+			*pdst = *psrc;
+		}
+	}
 }
 
 //void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)

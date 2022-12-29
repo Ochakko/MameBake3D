@@ -1134,14 +1134,14 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 
 		while (pcur) {
 
-			//if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {
-			if ((pcur->GetFrame() >= ((double)curframeindex - 0.0001)) && (pcur->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
+			if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {//ジャスト判定　ジャストの場合補間無し
+			//if ((pcur->GetFrame() >= ((double)curframeindex - 0.0001)) && (pcur->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26 これでは補間が効かない
 				*existptr = 1;
 				pbef = pcur;
 				break;
 			}
-			//else if (pcur->GetFrame() > srcframe) {
-			else if (pcur->GetFrame() > ((double)curframeindex + 0.0001)) {//2022/12/26
+			else if (pcur->GetFrame() > srcframe) {//過ぎてしまった場合
+			//else if (pcur->GetFrame() > ((double)curframeindex + 0.0001)) {//2022/12/26
 				*existptr = 0;
 				break;
 			}
@@ -1151,7 +1151,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 				pcur = pcur->GetNext();
 			}
 		}
-		*ppbef = pbef;
+		*ppbef = pbef;//過ぎてしまった１つ前のモーションポイントをセット
 
 		if (*existptr) {
 			*ppnext = pbef->GetNext();
