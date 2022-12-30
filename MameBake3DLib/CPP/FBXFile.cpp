@@ -446,7 +446,8 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
 	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
 	//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
-	sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+	//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+	sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
 	//######################################################################
 	//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
 	//######################################################################
@@ -571,7 +572,8 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 	//sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
 	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
 	//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
-	sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+	//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+	sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
 	//######################################################################
 	//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
 	//######################################################################
@@ -3566,8 +3568,10 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		FbxString oldauther = "OpenRDB user";
 		if (sceneinfo->mAuthor == oldauther) {
 			_ASSERT(0);
-			FbxString currentrev = "rev. 2.7";
-			if (sceneinfo->mRevision != currentrev) {
+			FbxString currentrev1 = "rev. 2.7";
+			FbxString currentrev2 = "rev. 2.8";
+			//2.7, 2.8が内容変更後の新バージョン
+			if ((sceneinfo->mRevision != currentrev1) && (sceneinfo->mRevision != currentrev2)) {
 				oldbvh = true;//!!!!!!!!!!!!!!!!!!!!
 			}
 		}

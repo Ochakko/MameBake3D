@@ -129,6 +129,17 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2022/12/30
+* オイラー角の数値は　Mayaライク(こちらでテストした６種類ほどのfbxではMayaと一致)な　１種類のオイラー角
+* オイラー角は１種類だが　回転、移動、拡大する際のマニピュレータの軸は　４種類
+* マニピュレータ軸４種は　BONEAXIS_CURRENT, BONEAXIS_PARENT, BONEAXIS_GLOBAL, BONEAXIS_BINDPOSE
+* BONEAXIS_BINDPOSEは今回新規
+* 本来は　同じ姿勢でも計算時の軸が異なるとオイラー角も異なる(だがオイラー角は１種類の表示にしている)
+* オイラー角計算時の軸はBONEAXIS_BINDPOSEと同等(GLOBAL以外の場合には　軸にカレントボーンの姿勢を掛けて表示)
+* 操作中、操作後にも各種軸はブレないことを確認
+* 
+*/
 
 
 #include "useatl.h"
@@ -22449,14 +22460,17 @@ int CreateUtDialog()
 		pComboBox3->RemoveAllItems();
 		WCHAR straxis[256];
 		ULONG boneaxisindex;
-		swprintf_s(straxis, 256, L"CurrentBoneAxis");
-		boneaxisindex = 0;
+		swprintf_s(straxis, 256, L"Current");
+		boneaxisindex = BONEAXIS_CURRENT;
 		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-		swprintf_s(straxis, 256, L"ParentBoneAxis");
-		boneaxisindex = 1;
+		swprintf_s(straxis, 256, L"Parent");
+		boneaxisindex = BONEAXIS_PARENT;
 		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-		swprintf_s(straxis, 256, L"GlobalBoneAxis");
-		boneaxisindex = 2;
+		swprintf_s(straxis, 256, L"Global");
+		boneaxisindex = BONEAXIS_GLOBAL;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		swprintf_s(straxis, 256, L"BindPose");
+		boneaxisindex = BONEAXIS_BINDPOSE;
 		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
 		pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
 	}
@@ -22530,14 +22544,17 @@ int CreateUtDialog()
 		pComboBox3->RemoveAllItems();
 		WCHAR straxis[256];
 		ULONG boneaxisindex;
-		swprintf_s(straxis, 256, L"CurrentBoneAxis");
-		boneaxisindex = 0;
+		swprintf_s(straxis, 256, L"Current");
+		boneaxisindex = BONEAXIS_CURRENT;
 		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-		swprintf_s(straxis, 256, L"ParentBoneAxis");
-		boneaxisindex = 1;
+		swprintf_s(straxis, 256, L"Parent");
+		boneaxisindex = BONEAXIS_PARENT;
 		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
-		swprintf_s(straxis, 256, L"GlobalBoneAxis");
-		boneaxisindex = 2;
+		swprintf_s(straxis, 256, L"Global");
+		boneaxisindex = BONEAXIS_GLOBAL;
+		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
+		swprintf_s(straxis, 256, L"BindPose");
+		boneaxisindex = BONEAXIS_BINDPOSE;
 		pComboBox3->AddItem(straxis, ULongToPtr(boneaxisindex));
 		pComboBox3->SetSelectedByData(ULongToPtr((LONG)g_boneaxis));
 	}
