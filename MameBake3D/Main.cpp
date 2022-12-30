@@ -114,6 +114,23 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 */
 
 
+/*
+* 2022/12/30
+* IKFK　と　オイラーグラフに表示する情報について
+* 回転操作はIK(子供ジョイントをドラッグして親ジョイント中心に回転)
+* 移動操作と拡大操作はFK(操作するジョイント自体をドラッグして　操作するジョイント自体の状態を編集)
+* 
+* 上記のIKとFKの切り替えは　回転、移動、拡大に関する　直感的操作に基づくものと思っている
+* 
+* 回転、移動、拡大を切り替えると　オイラーグラフに表示するジョイント情報も変わる
+* 回転の時には　選択しているジョイントの親のジョイントのオイラー角を表示
+* 移動、拡大時には　選択しているジョイント自身の　移動または拡大情報を表示
+* グラフ上段左側に　赤い字で　操作するジョイントの名前を表示
+* 
+*/
+
+
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -6744,6 +6761,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_spikmodesw[0].state = true;
 				s_spikmodesw[1].state = false;
 				s_spikmodesw[2].state = false;
+				SetLTimelineMark(s_curboneno);//グラフの操作ジョイント名表示も
 				refreshEulerGraph();
 			}
 			else if (pickikmodeflag == 2) {
@@ -6751,6 +6769,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_spikmodesw[0].state = false;
 				s_spikmodesw[1].state = true;
 				s_spikmodesw[2].state = false;
+				SetLTimelineMark(s_curboneno);//グラフの操作ジョイント名表示も
 				refreshEulerGraph();
 			}
 			else if (pickikmodeflag == 3) {
@@ -6758,6 +6777,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_spikmodesw[0].state = false;
 				s_spikmodesw[1].state = false;
 				s_spikmodesw[2].state = true;
+				SetLTimelineMark(s_curboneno);//グラフの操作ジョイント名表示も
 				refreshEulerGraph();
 			}
 		}
@@ -10273,18 +10293,15 @@ int UpdateEditedEuler()
 	}
 
 
-	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	if (curbone) {
-		//if (s_parentcheck) {
-			//int check = (int)s_parentcheck->getValue();
-			//if (check == 1) {
-				CBone* parentbone = curbone->GetParent();
-				//if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
-				if(parentbone){
-					curbone = parentbone;
-				}
-			//}
-		//}
+	CBone* opebone = s_model->GetBoneByID(s_curboneno);
+	if (opebone) {
+		CBone* parentbone = opebone->GetParent();
+		if (s_ikkind == 0) {
+			//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
+			if (parentbone) {
+				opebone = parentbone;
+			}
+		}
 
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
@@ -10357,22 +10374,22 @@ int UpdateEditedEuler()
 			}
 
 			for (curtime = startframe; curtime <= endframe; curtime += 1.0) {
-				const WCHAR* wbonename = curbone->GetWBoneName();
+				const WCHAR* wbonename = opebone->GetWBoneName();
 				ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+				//cureul = opebone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 				//befeul = cureul;//!!!!!!!
 
-				CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
+				CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
 					if (s_ikkind == 0) {//回転
-						curbone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
+						opebone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
 					}
 					else if(s_ikkind == 1){//移動
-						cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+						cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
 					}
 					else if (s_ikkind == 2) {//スケール
-						cureul = curbone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
+						cureul = opebone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
 					}
 				}
 				else {
@@ -10514,18 +10531,15 @@ int refreshEulerGraph()
 
 
 		if (s_model && (s_curboneno >= 0)){
-			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			if (curbone){
-				//if (s_parentcheck) {
-					//int check = s_parentcheck->getValue();
-					//if (check == 1) {
-						CBone* parentbone = curbone->GetParent();
-						//if ((s_ikkind == 0) && parentbone) {//!!!!!!!!!!!!
-						if (parentbone) {
-							curbone = parentbone;
-						}
-					//}
-				//}
+			CBone* opebone = s_model->GetBoneByID(s_curboneno);
+			if (opebone){
+				CBone* parentbone = opebone->GetParent();
+				if (s_ikkind == 0) {
+					//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
+					if (parentbone) {
+						opebone = parentbone;
+					}
+				}
 
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi){
@@ -10543,22 +10557,22 @@ int refreshEulerGraph()
 						befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 					}
 					for (curtime = 0; curtime < frameleng; curtime++) {
-						const WCHAR* wbonename = curbone->GetWBoneName();
+						const WCHAR* wbonename = opebone->GetWBoneName();
 						ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
 						ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-						//cureul = curbone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
+						//cureul = opebone->CalcFBXEul(curmi->motid, (double)curtime, &befeul);
 						//befeul = cureul;//!!!!!!!
 
-						CMotionPoint* curmp = curbone->GetMotionPoint(curmi->motid, (double)curtime);
+						CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
 							if (s_ikkind == 0) {//回転
-								curbone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
+								opebone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
 							}
 							else if (s_ikkind == 1) {//移動
-								cureul = curbone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+								cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
 							}
 							else if (s_ikkind == 2) {//スケール
-								cureul = curbone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
+								cureul = opebone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
 							}
 						}
 						else {
@@ -10716,9 +10730,9 @@ void refreshTimeline(OWP_Timeline& timeline){
 	//	map<int, CBone*>::iterator itrbone;
 	//	for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
 	//		ULONG boneno = (ULONG)itrbone->first;
-	//		CBone* curbone = itrbone->second;
-	//		if( curbone && (boneno >= 0) ){
-	//			char* nameptr = (char*)curbone->GetBoneName();
+	//		CBone* opebone = itrbone->second;
+	//		if( opebone && (boneno >= 0) ){
+	//			char* nameptr = (char*)opebone->GetBoneName();
 	//			WCHAR wname[256];
 	//			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
 	//			pComboBox->AddItem( wname, ULongToPtr( boneno ) );
@@ -18164,29 +18178,36 @@ int SetLTimelineMark( int curboneno )
 	}
 
 	if( (curboneno >= 0) && s_model && s_owpTimeline && s_owpLTimeline ){
-		CBone* curbone = s_model->GetBoneByID( curboneno );
-		if( curbone ){
-			CBone* parentbone = curbone->GetParent();
-			if (parentbone) {
-				curbone = parentbone;
+		CBone* opebone = s_model->GetBoneByID( curboneno );
+		if( opebone ){
+			CBone* parentbone = opebone->GetParent();
+			if (s_ikkind == 0) {
+				//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
+				if (parentbone) {
+					opebone = parentbone;
+				}
 			}
 
-			int curlineno = s_boneno2lineno[ curboneno ];
-			if( curlineno >= 0 ){
-				s_owpLTimeline->deleteLine( 2 );
+			int opeboneno = opebone->GetBoneNo();
+			if (opeboneno >= 0) {
+				int curlineno = s_boneno2lineno[opeboneno];
+				if (curlineno >= 0) {
+					s_owpLTimeline->deleteLine(2);
 
-				WCHAR markname[256] = {0L};
-				//swprintf_s( markname, 256, L"Mark:%s", curbone->GetWBoneName() );
-				swprintf_s(markname, 256, L"%s", curbone->GetWBoneName());
-				s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
+					WCHAR markname[256] = { 0L };
+					//swprintf_s( markname, 256, L"Mark:%s", opebone->GetWBoneName() );
+					swprintf_s(markname, 256, L"%s", opebone->GetWBoneName());
+					s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
 
-				double frame;
-				for( frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0 ){
-					KeyInfo chkki = s_owpTimeline->ExistKey( curlineno, frame );
-					if( chkki.lineIndex >= 0 ){
-						s_owpLTimeline->newKey( markname, frame, 0 );
+					double frame;
+					for (frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0) {
+						KeyInfo chkki = s_owpTimeline->ExistKey(curlineno, frame);
+						if (chkki.lineIndex >= 0) {
+							s_owpLTimeline->newKey(markname, frame, 0);
+						}
 					}
 				}
+
 			}
 		}
 	}
