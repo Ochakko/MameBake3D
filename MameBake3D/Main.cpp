@@ -1828,7 +1828,7 @@ static int CreateToolWnd();
 static int CreateLayerWnd();
 static int CreatePlaceFolderWnd();
 
-static int OnFrameAngleLimit();
+static int OnFrameAngleLimit(bool updateonlycheckeul);
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
 static int OnFramePreviewStop();
@@ -1947,7 +1947,7 @@ static int EnableRigAxisUV(HWND hDlgWnd);
 //angle limit dlg
 static int Bone2AngleLimit();
 static int AngleLimit2Bone();
-static int AngleLimit2Dlg(HWND hDlgWnd);
+static int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul);
 static int InitAngleLimitEdit(HWND hDlgWnd, int editresid, int srclimit);
 static int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit);
 static int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr);
@@ -5537,6 +5537,13 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 		OnFrameUpdateGround();
 		OnFrameInitBtWorld();
+
+
+		if (s_spretargetsw[1].state == true) {
+			bool updateonlycheckeul = true;
+			OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 AngleLimitDlgのcheck値のリアルタイム更新のため
+		}
+
 
 		OnDSMouseHereApeal();
 
@@ -18853,35 +18860,42 @@ int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 
 
 
-int AngleLimit2Dlg(HWND hDlgWnd)
+int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 {
 	if (s_anglelimitbone){
-		SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
+
+		if (updateonlycheckeul == false) {
+			
+			SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
+
+			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_RESETCONTENT, 0, 0);
+			WCHAR strcombo[256];
+			wcscpy_s(strcombo, 256, L"CurrentBoneAxis");
+			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			wcscpy_s(strcombo, 256, L"ParentBoneAxis");
+			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			wcscpy_s(strcombo, 256, L"GlobalBoneAxis");
+			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
+			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_SETCURSEL, s_anglelimit.boneaxiskind, 0);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_BONEAXIS), FALSE);//固定値
 
 
-		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_RESETCONTENT, 0, 0);
-		WCHAR strcombo[256];
-		wcscpy_s(strcombo, 256, L"CurrentBoneAxis");
-		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
-		wcscpy_s(strcombo, 256, L"ParentBoneAxis");
-		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
-		wcscpy_s(strcombo, 256, L"GlobalBoneAxis");
-		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
-		SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_SETCURSEL, s_anglelimit.boneaxiskind, 0);
-		EnableWindow(GetDlgItem(hDlgWnd, IDC_BONEAXIS), FALSE);//固定値
+			//入力フィールドを毎フレーム更新すると　入力できないので　updateonlycheckeulのときには更新しない
+			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_XL, s_anglelimit.lower[AXIS_X]);
+			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_XU, s_anglelimit.upper[AXIS_X]);
+
+			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_YL, s_anglelimit.lower[AXIS_Y]);
+			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_YU, s_anglelimit.upper[AXIS_Y]);
+
+			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_ZL, s_anglelimit.lower[AXIS_Z]);
+			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_ZU, s_anglelimit.upper[AXIS_Z]);
+		}
 
 
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_XL, s_anglelimit.lower[AXIS_X]);
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_XU, s_anglelimit.upper[AXIS_X]);
 		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_CHKX, s_anglelimit.chkeul[AXIS_X]);
-
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_YL, s_anglelimit.lower[AXIS_Y]);
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_YU, s_anglelimit.upper[AXIS_Y]);
 		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_CHKY, s_anglelimit.chkeul[AXIS_Y]);
-
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_ZL, s_anglelimit.lower[AXIS_Z]);
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_ZU, s_anglelimit.upper[AXIS_Z]);
 		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_CHKZ, s_anglelimit.chkeul[AXIS_Z]);
+
 
 		//InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
 		//InitAngleLimitSlider(hDlgWnd, IDC_SLXU, IDC_XUVAL, s_anglelimit.upper[AXIS_X]);
@@ -19095,7 +19109,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 	case WM_INITDIALOG:
 		{
 			Bone2AngleLimit();
-			AngleLimit2Dlg(hDlgWnd);
+			bool updateonlycheckeul = false;
+			AngleLimit2Dlg(hDlgWnd, updateonlycheckeul);
 			ClearLimitedWM();//2022/12/06
 
 			EnableWindow(GetDlgItem(hDlgWnd, IDC_RESETLIM_CURRENT), FALSE);
@@ -19192,7 +19207,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 							s_anglelimit = symanglelimit;
 							UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE);
 
-							AngleLimit2Dlg(s_anglelimitdlg);
+							bool updateonlycheckeul = false;
+							AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 							UpdateWindow(s_anglelimitdlg);
 
 						}
@@ -19216,7 +19232,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			if (s_anglelimitbone && s_anglelimitdlg) {
 				s_anglelimit = s_anglelimitcopy;
 				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE);
-				AngleLimit2Dlg(s_anglelimitdlg);
+				bool updateonlycheckeul = false;
+				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 			}
 		}
@@ -19231,7 +19248,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-				AngleLimit2Dlg(s_anglelimitdlg);
+				bool updateonlycheckeul = false;
+				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 			}
 		}
@@ -19243,7 +19261,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-				AngleLimit2Dlg(s_anglelimitdlg);
+				bool updateonlycheckeul = false;
+				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 			}
 		}
@@ -19255,7 +19274,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-				AngleLimit2Dlg(s_anglelimitdlg);
+				bool updateonlycheckeul = false;
+				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 			}
 
@@ -19315,7 +19335,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//ChaMatrix tmpwm = s_model->GetWorldMat();
 					//s_model->UpdateMatrix(&tmpwm, &s_matVP);
 					
-					AngleLimit2Dlg(s_anglelimitdlg);
+					bool updateonlycheckeul = false;
+					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 					UpdateWindow(s_anglelimitdlg);
 
 
@@ -19357,7 +19378,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//ChaMatrix tmpwm = s_model->GetWorldMat();
 					//s_model->UpdateMatrix(&tmpwm, &s_matVP);
 
-					AngleLimit2Dlg(s_anglelimitdlg);
+					bool updateonlycheckeul = false;
+					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 					UpdateWindow(s_anglelimitdlg);
 
 					//カーソルを元に戻す
@@ -19775,7 +19797,8 @@ int ChangeCurrentBone()
 			if (s_anglelimitdlg) {
 				//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);//commentout
 				Bone2AngleLimit();
-				AngleLimit2Dlg(s_anglelimitdlg);
+				bool updateonlycheckeul = false;
+				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 			}
 
 			//if (s_befbone != curbone) {
@@ -20101,16 +20124,23 @@ int OnFrameUtCheckBox()
 	return 0;
 }
 
-int OnFrameAngleLimit()
+int OnFrameAngleLimit(bool updateonlycheckeul)
 {
 	if (s_anglelimitdlg) {
 		if (s_model && (s_underanglelimithscroll == 0)) {//HScroll中に値を取得して設定するとスライダーが動かないから
 			//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);//commentout
+			
+
 			Bone2AngleLimit();
-			AngleLimit2Dlg(s_anglelimitdlg);
-			if (g_previewFlag == 0) {//underchecking
-				AngleLimit2Bone();
+			AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
+
+
+			if (updateonlycheckeul == false) {
+				if (g_previewFlag == 0) {//underchecking
+					AngleLimit2Bone();
+				}
 			}
+			
 			UpdateWindow(s_anglelimitdlg);
 
 			//Bone2AngleLimit(setcheckflag);
@@ -21044,7 +21074,8 @@ int OnFrameTimeLineWnd()
 			}
 		}
 
-		OnFrameAngleLimit();
+		//bool updateonlycheckeul = true;
+		//OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 commentout OnFrameUserMove()にて毎フレームupdateonlycheckeul = trueで呼び出す 
 
 		s_LcursorFlag = false;
 	}
