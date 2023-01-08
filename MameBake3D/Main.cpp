@@ -139,7 +139,19 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * オイラー角計算時の軸はBONEAXIS_BINDPOSEと同等(GLOBAL以外の場合には　軸にカレントボーンの姿勢を掛けて表示)
 * 操作中、操作後にも各種軸はブレないことを確認
 * 
+* 
+* 2023/01/08追記
+* 何十回もIK時に軸がブレないテストをした
+* 非常にゆっくり動かすテストも何回もした
+* その内１回だけ軸が微妙にブレたことがあったので念のためにメモ
+* どのようにブレたかというと
+* CQauternionとChaMatrixのinverse()関数の最初の部分でIsInit(), IsInitMat()を呼び出し
+* Identity状態であるときには　計算せずにIdentityを返すようにした直後に起きた
+* よって　もし問題があるとすれば　IsInit, IsInitMat内における　同値とみなす差異の閾値に問題がある(と思う)
+* 今後　IsInit, IsInitMat内で使用する閾値は調整する可能性がある
+* 
 */
+
 
 
 #include "useatl.h"
@@ -27680,7 +27692,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.10 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.11 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -35107,7 +35119,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.10 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.11 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

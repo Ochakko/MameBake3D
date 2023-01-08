@@ -518,44 +518,40 @@ namespace MameBake3DLibRetarget {
 					//traanim = traanim * hrate;
 
 
-					//##########################################################################
-					//2022/12/21
-					//hipsジョイントのTraAnimだけ計算　hipsジョイント以外のTraAnimはゼロとする
-					//##########################################################################
+
+
+					//################################################################################
+					//2023/01/08
+					//Hipsジョイント以外のTraAnimも有効に
+					// 
+					//リターゲット条件は　modelとbvhの０フレームの見かけ上の姿勢が同じことであるから
+					//リターゲット時にTraAnimとして計算すべきは　０フレームからの変化分である
+					//################################################################################
+
 					ChaMatrix bvhsmat, bvhrmat, bvhtmat, bvhtanimmat;
-					if (bvhbone == bvhhipsbone) {
-						//2022/12/22 : リターゲットモデル間の移動の倍率hrateを適切にするのが難しい
-						//例えばhrateが大きすぎると　手足が長すぎる変な表示になる
-						//よってtraanimを適用するやり方としては合っているのだが　hipsだけtraanimを適用することにした
+					ChaMatrix bvhsmat0, bvhrmat0, bvhtmat0, bvhtanimmat0;
 
-						if (bvhbone->GetParent()) {
-							ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, srcframe);
-							GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), &bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
-						}
-						else {
-							GetSRTandTraAnim(bvhmp.GetWorldMat(), bvhbone->GetNodeMat(), &bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
-						}
-						traanim = ChaMatrixTraVec(bvhtanimmat);
+					if (bvhbone->GetParent()) {
+						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, srcframe);
+						GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
+							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
-						//if (bvhbone == bvhhipsbone) {
-						ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
-						ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
-						ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
-						traanim -= firstdiff;
-						//}
-
-						traanim = traanim * hrate;
+						//calc 0 frame
+						ChaMatrix parentwm0 = bvhbone->GetParent()->GetWorldMat(bvhmotid, 0.0);
+						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(), 
+							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
 					else {
-						//2022/12/22 : リターゲットモデル間の移動の倍率hrateを適切にするのが難しい
-						//例えばhrateが大きすぎると　手足が長すぎる変な表示になる
-						//よってtraanimを適用するやり方としては合っているのだが　hipsだけtraanimを適用することにした
+						GetSRTandTraAnim(bvhmp.GetWorldMat(), bvhbone->GetNodeMat(), 
+							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
-						traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+						//calc 0 frame
+						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0), bvhbone->GetNodeMat(),
+							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
-					
-					//traanim = ChaVector3(0.0f, 0.0f, 0.0f);
-
+					//traanim = ChaMatrixTraVec(bvhtanimmat);
+					traanim = ChaMatrixTraVec(bvhtanimmat) - ChaMatrixTraVec(bvhtanimmat0);//2023/01/08
+					traanim = traanim * hrate;
 				}
 				else {
 					rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
