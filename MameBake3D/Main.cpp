@@ -8350,16 +8350,19 @@ int SetBaseDir()
 		}
 	}
 
-	unsigned int leng;
+	size_t leng;
 	ZeroMemory(g_basedir, sizeof(WCHAR)* MAX_PATH);
 	wcscpy_s(g_basedir, MAX_PATH, filename);
 	g_basedir[MAX_PATH - 1] = 0L;
-	leng = (unsigned int)wcslen(g_basedir);
-	if (wcscmp(g_basedir + leng - 1, L"\\") != 0){
-		wcscat_s(g_basedir, MAX_PATH, L"\\");
+	leng = wcslen(g_basedir);
+	if ((leng >= 1) && (leng <= (MAX_PATH - 2))) {//１文字追加分を考慮
+		if (wcscmp(g_basedir + leng - 1, L"\\") != 0) {
+			wcscat_s(g_basedir, MAX_PATH, L"\\");
+		}
 	}
-
-
+	else {
+		_ASSERT(0);
+	}
 	DbgOut(L"SetBaseDir : %s\r\n", g_basedir);
 
 	return 0;
@@ -8592,13 +8595,16 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 			if (pfind) {
 				wpath[MAX_PATH - 1] = 0L;
 				pattern[20 - 1] = 0L;
-				int pathleng = (int)wcslen(wpath);
-				int patternleng = (int)wcslen(pattern);
+				size_t pathleng = wcslen(wpath);
+				size_t patternleng = wcslen(pattern);
 				if ((patternleng > 0) && (pathleng > 0) && (pathleng < MAX_PATH) && (pathleng > patternleng)) {
 					WCHAR chkterm = *(pfind + patternleng);
 					if (chkterm == 0L) {//patternの次の文字がNULLの場合
 						out.push_back(fullFileName);
 					}
+				}
+				else {
+					_ASSERT(0);
 				}
 			}
 		}
@@ -9319,10 +9325,16 @@ int OpenFile()
 	ZeroMemory(savepath, sizeof(WCHAR) * MULTIPATH);
 	MoveMemory( savepath, g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 
-	int leng;
+	size_t leng;
 	int namecnt = 0;
 	savepath[MULTIPATH - 1] = 0L;
-	leng = (int)wcslen( savepath );
+	leng = wcslen(savepath);
+	if ((leng <= 0) && (leng >= MULTIPATH)) {
+		_ASSERT(0);
+		s_nowloading = false;
+		return 0;
+	}
+
 	WCHAR* topchar = savepath + leng;
 	if( *topchar == TEXT( '\0' ) ){
 		WCHAR* extptr = 0;
@@ -9392,11 +9404,11 @@ int OpenFile()
 		}
 
 	}else{
-		int leng2;
+		size_t leng2;
 		while( *topchar != TEXT( '\0' ) ){
 			savepath[MULTIPATH - 1] = 0L;
-			leng2 = (int)wcslen(topchar);
-			swprintf_s( g_tmpmqopath, MULTIPATH, L"%s\\%s", savepath, topchar );
+			//leng2 = wcslen(topchar);
+			swprintf_s(g_tmpmqopath, MULTIPATH, L"%s\\%s", savepath, topchar);
 
 			WCHAR* extptr = 0;
 			extptr = wcsrchr( g_tmpmqopath, TEXT( '.' ) );
@@ -9451,9 +9463,18 @@ int OpenFile()
 			}
 
 			savepath[MULTIPATH - 1] = 0L;
-			leng2 = (int)wcslen( topchar );
-			topchar = topchar + leng2 + 1;
-			namecnt++;
+			leng2 = wcslen( topchar );
+			if ((leng2 > 0) && (leng2 < MULTIPATH)) {
+				topchar = topchar + leng2 + 1;
+				namecnt++;
+			}
+			else {
+				WCHAR strerror[MAX_PATH * 2] = { 0L };
+				swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
+				MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
+				s_nowloading = false;
+				return 1;
+			}
 		}
 	}
 
@@ -10008,10 +10029,10 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 //############################
 
 	//読み込み処理が成功してから履歴を保存する。fbxファイル。
-	int savepathlen;
+	size_t savepathlen;
 	fbxpath0[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(fbxpath0);
-	if (savepathlen > 4) {
+	savepathlen = wcslen(fbxpath0);
+	if ((savepathlen > 4) && (savepathlen < MAX_PATH)) {
 		WCHAR* pwext;
 		pwext = fbxpath0 + ((size_t)savepathlen - 1) - 3;
 		if (wcscmp(pwext, L".fbx") == 0) {
@@ -16061,7 +16082,7 @@ int SaveProject()
 	int dlgret;
 	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SAVECHADLG),
 		s_3dwnd, (DLGPROC)SaveChaDlgProc);
-	if ((dlgret != IDOK) || !s_projectname[0] || !s_projectdir[0]) {
+	if ((dlgret != IDOK) || !s_projectname[0] || !s_projectdir[0] || !s_chasavename[0]) {
 		return 0;
 	}
 
@@ -16110,10 +16131,10 @@ int SaveProject()
 
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
-	int savepathlen;
+	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(saveprojpath);
-	if (savepathlen > 4) {
+	savepathlen = wcslen(saveprojpath);
+	if ((savepathlen > 4) && (savepathlen < MAX_PATH)) {
 		WCHAR* pwext;
 		pwext = saveprojpath + ((size_t)savepathlen - 1) - 3;
 		if (wcscmp(pwext, L".cha") == 0) {
@@ -16320,10 +16341,10 @@ int OpenChaFile()
 	wcscpy_s(saveprojpath, MAX_PATH, g_tmpmqopath);
 	
 	//先に履歴を保存する。chaファイルだけ。
-	int savepathlen;
+	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(saveprojpath);
-	if (savepathlen > 4) {
+	savepathlen = wcslen(saveprojpath);
+	if ((savepathlen > 4) && (savepathlen < MAX_PATH)) {
 		WCHAR* pwext;
 		pwext = saveprojpath + ((size_t)savepathlen - 1) - 3;
 		if (wcscmp(pwext, L".cha") == 0) {
@@ -16353,16 +16374,21 @@ int OpenChaFile()
 	WCHAR* lasten = 0;
 	g_tmpmqopath[MAX_PATH - 1] = 0L;
 	lasten = wcsrchr( g_tmpmqopath, TEXT( '\\' ) );
-	if( lasten ){
-		int leng = (int)wcslen( lasten + 1 );
-		if( leng < 64 ){
-			wcscpy_s( s_chasavename, 64, lasten + 1 );
+	if( lasten && (*(lasten + 1) != 0L)){
+		size_t leng = wcslen( lasten + 1 );
+		if((leng > 0) && (leng < 64)){
+			wcscpy_s(s_chasavename, 64, lasten + 1);
 			WCHAR* peri = wcsrchr( s_chasavename, TEXT( '.' ) );
 			if( peri ){
 				*peri = 0L;
 			}
 		}
 	}
+	else {
+		//s_chasavenameは更新しない
+	}
+	//念のために終端
+	s_chasavename[64 - 1] = 0L;
 
 
 	WCHAR tmpdir[MAX_PATH];
@@ -18817,14 +18843,15 @@ int CheckStr_SInt(const WCHAR* srcstr)
 	if (!srcstr) {
 		return 1;
 	}
-	size_t strlen = wcslen(srcstr);
-	if (strlen >= ANGLEDLGEDITLEN) {
+	size_t strleng = wcslen(srcstr);
+	if ((strleng <= 0) || (strleng >= ANGLEDLGEDITLEN)) {
+		_ASSERT(0);
 		return 1;
 	}
 
 	bool errorflag = false;
 	size_t strindex;
-	for (strindex = 0; strindex < strlen; strindex++) {
+	for (strindex = 0; strindex < strleng; strindex++) {
 		WCHAR curwc = *(srcstr + strindex);
 		if (((curwc >= '0') && (curwc <= '9')) || (curwc == '+') || (curwc == '-')) {
 
@@ -19650,7 +19677,7 @@ int RotAxis(HWND hDlgWnd)
 	WCHAR strdeg[256] = { 0L };
 	GetWindowText(GetDlgItem(hDlgWnd, IDC_EDITDEG), strdeg, 256);
 	strdeg[256 - 1] = 0L;
-	unsigned int len = (unsigned int)wcslen(strdeg);
+	size_t len = wcslen(strdeg);
 	//_ASSERT(0);
 	if ((len > 0) && (len < 256)){
 		s_rotaxisdeg = (float)_wtof(strdeg);
@@ -35294,9 +35321,9 @@ int SaveRtgHistory(WCHAR* selectname)
 	wcscpy_s(saveprojpath, MAX_PATH, selectname);
 
 	//書き込み処理が成功してから履歴を保存する。rtgファイル。
-	int savepathlen;
+	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(saveprojpath);
+	savepathlen = wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
@@ -35329,9 +35356,9 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
-	int savepathlen;
+	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(saveprojpath);
+	savepathlen = wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
@@ -35363,9 +35390,9 @@ int SaveBatchHistory(WCHAR* selectname)
 
 
 	//書き込み処理が成功してから履歴を保存する。chaファイルだけ。
-	int savepathlen;
+	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
-	savepathlen = (int)wcslen(saveprojpath);
+	savepathlen = wcslen(saveprojpath);
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	WCHAR HistoryForOpeningProjectWithGamePad[MAX_PATH] = { 0L };
@@ -36347,8 +36374,9 @@ int WriteCPIFile(WCHAR* srccptfilename)
 
 
 	*(srccptfilename + MAX_PATH - 1) = 0L;
-	int cptfilenameleng = wcslen(srccptfilename);
+	size_t cptfilenameleng = wcslen(srccptfilename);
 	if ((cptfilenameleng <= 0) || (cptfilenameleng >= MAX_PATH)) {
+		_ASSERT(0);
 		return 1;
 	}
 
@@ -36422,8 +36450,8 @@ bool ValidateCPIFile(char* dstCPIh, int* dstinfosize, char* srcbuf, DWORD buflen
 
 	MoveMemory(dstCPIh, srcbuf, sizeof(char) * 256);
 
-	int magicstrlen;
-	magicstrlen = (int)strlen(dstCPIh);
+	size_t magicstrlen;
+	magicstrlen = strlen(dstCPIh);
 	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
 		_ASSERT(0);
 		return false;
@@ -36481,8 +36509,8 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 	//	int reserved;
 	//}CPTHEADER;
 
-	int magicstrlen;
-	magicstrlen = (int)strlen(dstCPTh);
+	size_t magicstrlen;
+	magicstrlen = strlen(dstCPTh);
 	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
 		_ASSERT(0);
 		return false;

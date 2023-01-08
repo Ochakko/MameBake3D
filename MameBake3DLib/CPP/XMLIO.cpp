@@ -251,8 +251,8 @@ int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, const char* startpat, const char* endp
 		return 1;
 	}
 
-
-	char* srcchar = startptr + (int)strlen( startpat );
+	size_t startpatlen = strlen(startpat);//bufにstartpatが含まれていることは確定している
+	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
 		_ASSERT( 0 );
@@ -297,7 +297,8 @@ int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, const char* startpat, const char* en
 		return 1;
 	}
 
-	char* srcchar = startptr + (int)strlen( startpat );
+	size_t startpatlen = strlen(startpat);//bufにstartpatが含まれていることは確定している
+	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
 		//_ASSERT( 0 );
@@ -344,7 +345,8 @@ int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, const char* startpat, const char* end
 		return 1;
 	}
 
-	char* srcchar = startptr + (int)strlen( startpat );
+	size_t startpatlen = strlen(startpat);//bufにstartpatが含まれていることは確定している
+	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
 		_ASSERT( 0 );
@@ -415,7 +417,8 @@ int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat
 		return 1;
 	}
 
-	char* srcchar = startptr + (int)strlen( startpat );
+	size_t startpatlen = strlen(startpat);//bufにstartpatが含まれていることは確定している
+	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
 		_ASSERT( 0 );
@@ -495,7 +498,8 @@ int CXMLIO::Read_Str( XMLIOBUF* xmliobuf, const char* startpat, const char* endp
 		return 1;
 	}
 
-	char* srcchar = startptr + (int)strlen( startpat );
+	size_t startpatlen = strlen(startpat);//bufにstartpatが含まれていることは確定している
+	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= arrayleng) ){
 		_ASSERT( 0 );
@@ -610,7 +614,7 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 	startptr = strstr(srcbuf->buf + srcbuf->pos, startpat);
 	//endptr = strstr( srcbuf->buf + srcbuf->pos, endpat );//場所移動。　2022/07/17
 
-	int spatlen = (int)strlen(startpat);
+	size_t spatlen = strlen(startpat);
 	//if (delpatflag && startpat) {
 	if (delpatflag && startpat && startptr) {//2022/07/17
 		startptr = startptr + spatlen;//2022/07/17
@@ -625,8 +629,8 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 		return 1;
 	}
 
-	int epatlen;
-	epatlen = (int)strlen( endpat );
+	size_t epatlen;
+	epatlen = strlen( endpat );
 
 	int chkendpos;
 	chkendpos = (int)( endptr + epatlen - srcbuf->buf );

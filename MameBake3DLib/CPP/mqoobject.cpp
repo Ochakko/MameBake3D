@@ -260,7 +260,8 @@ int CMQOObject::SetParams( char* srcchar, int srcleng )
 		"locking"
 	};
 
-	int patno, patleng;
+	int patno;
+	size_t patleng;
 	int pos = 0;
 	int cmp;
 
@@ -270,7 +271,7 @@ int CMQOObject::SetParams( char* srcchar, int srcleng )
 			pos++;
 		}
 		
-		patleng = (int)strlen( pat[patno] );
+		patleng = strlen( pat[patno] );
 		cmp = strncmp( pat[patno], srcchar + pos, patleng );
 		if( cmp == 0 ){
 
@@ -469,13 +470,13 @@ int CMQOObject::SetVertex( int* vertnum, char* srcchar, int srcleng )
 	int ret;
 
 	char headerchar1[] = "vertex";
-	int headerleng1 = (int)strlen( headerchar1 );
+	size_t headerleng1 = strlen( headerchar1 );
 	char* find1;
 	find1 = strstr( srcchar, headerchar1 );
 
 
 	char headerchar2[] = "Vector";
-	int headerleng2 = (int)strlen( headerchar2 );
+	size_t headerleng2 = strlen( headerchar2 );
 	char* find2;
 	find2 = strstr( srcchar, headerchar2 );
 
@@ -567,7 +568,7 @@ int CMQOObject::SetFace( int* facenum, char* srcchar, int srcleng )
 
 	int ret;
 	char headerchar[] = "face";
-	int headerleng = (int)strlen( headerchar );
+	size_t headerleng = strlen( headerchar );
 
 	char* find;
 	find = strstr( srcchar, headerchar );
@@ -1721,7 +1722,7 @@ int CMQOObject::CheckMaterialSameName( int srcmatno, map<int, CMQOMaterial*> &sr
 	int lrcnt = 0;
 
 	char* nameptr;
-	int leng;
+	size_t leng;
 	int cmp;
 
 	for( fno = 0; fno < m_face; fno++ ){
@@ -1741,8 +1742,8 @@ int CMQOObject::CheckMaterialSameName( int srcmatno, map<int, CMQOMaterial*> &sr
 				nameptr = (char*)curmat->GetName();
 				if (nameptr) {
 					*(nameptr + 256 - 1) = 0;
-					leng = (int)strlen(nameptr);
-					if (leng > 2) {
+					leng = strlen(nameptr);
+					if ((leng > 2) && (leng < 256)) {
 						cmp = strcmp(nameptr + leng - 2, "[]");
 						if (cmp == 0) {
 							lrcnt++;

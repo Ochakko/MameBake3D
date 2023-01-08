@@ -56,7 +56,8 @@ int DbgOut( const WCHAR* lpFormat, ... )
 
 	int ret;
 	va_list Marker;
-	unsigned long wleng, writeleng;
+	size_t wleng;
+	DWORD writeleng;
 	WCHAR outchar[7000];
 			
 	ZeroMemory( outchar, sizeof( WCHAR ) * 7000 );
@@ -69,9 +70,11 @@ int DbgOut( const WCHAR* lpFormat, ... )
 		return 1;
 
 	outchar[7000 - 1] = 0L;
-	wleng = (unsigned long)wcslen( outchar );
-	WriteFile( dbgfile, outchar, sizeof( WCHAR ) * wleng, &writeleng, NULL );
-
+	wleng = wcslen( outchar );
+	if ((wleng > 0) && (wleng < 7000)) {
+		WriteFile(dbgfile, outchar, sizeof(WCHAR) * wleng, &writeleng, NULL);
+	}
+	
 	return 0;
 	
 }

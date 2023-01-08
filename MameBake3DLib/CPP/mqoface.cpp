@@ -200,7 +200,7 @@ int CMQOFace::SetParams( char* srcchar, int srcleng )
 
 //index
 	char patv[] = "V(";
-	int patvleng = (int)strlen( patv );
+	size_t patvleng = strlen(patv);
 	find = strstr( srcchar, patv );
 	if( !find ){
 		DbgOut( L"MQOFace : SetParams : find patv error !!!\r\n" );
@@ -221,7 +221,7 @@ int CMQOFace::SetParams( char* srcchar, int srcleng )
 	}
 //materialno
 	char patm[] = "M(";
-	int patmleng = (int)strlen( patm );
+	size_t patmleng = strlen( patm );
 	find = strstr( srcchar, patm );
 	if( find ){	
 		pos = (int)( find + patmleng - srcchar );
@@ -230,7 +230,7 @@ int CMQOFace::SetParams( char* srcchar, int srcleng )
 	}
 //uv
 	char patuv[] = "UV(";
-	int patuvleng = (int)strlen( patuv );
+	size_t patuvleng = strlen( patuv );
 	find = strstr( srcchar, patuv );
 	if( find ){
 		m_hasuv = 1;//!!!!!!!!!
@@ -261,7 +261,7 @@ int CMQOFace::SetParams( char* srcchar, int srcleng )
 
 //col
 	char patcol[] = "COL(";
-	int patcolleng = (int)strlen( patcol );
+	size_t patcolleng = strlen( patcol );
 	find = strstr( srcchar, patcol );
 
 	if( find ){

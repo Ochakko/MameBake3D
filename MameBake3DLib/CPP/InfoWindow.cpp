@@ -305,7 +305,14 @@ void CInfoWindow::OnPaint()
 				if ((curindex >= 0) && (curindex <= m_dataindex)) {
 
 					*(m_stroutput + INFOWINDOWLINEW * INFOWINDOWLINEH - 1) = 0L;
-					TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (size_t)curindex * INFOWINDOWLINEW, (int)wcslen(m_stroutput + (size_t)curindex * INFOWINDOWLINEW));
+					size_t infolen;
+					infolen = wcslen(m_stroutput + (size_t)curindex * INFOWINDOWLINEW);
+					if ((infolen > 0) && (infolen < INFOWINDOWLINEW)) {
+						TextOut(m_hdcM->hDC, 5, 5 + 15 * dispno, m_stroutput + (size_t)curindex * INFOWINDOWLINEW, (int)infolen);
+					}
+					else {
+						_ASSERT(0);
+					}
 					dispno++;
 				}
 				curindex++;

@@ -153,9 +153,9 @@ int CPluginElem::SetFilePath( WCHAR* pluginpath )
 		return 1;
 	}
 
-	int leng;
+	size_t leng;
 	*(pluginpath + MAX_PATH - 1) = 0L;//!!!
-	leng = (int)wcslen( pluginpath );
+	leng = wcslen( pluginpath );
 
 	if( (leng <= 0) || (leng >= _MAX_PATH) ){
 		DbgOut( L"pluginelem : SetFilePath : leng error !!!\n" );

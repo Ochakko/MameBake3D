@@ -3329,7 +3329,7 @@ void s_dummyfunc()
 				int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
 				const WCHAR* pjointname = getJointName();
 				if (pjointname) {
-					int jointnamelen = (int)wcslen(pjointname);
+					size_t jointnamelen = wcslen(pjointname);
 					if ((jointnamelen >= 1) && (jointnamelen <= 1020)) {
 						hdcM->setFont(18, _T("ＭＳ ゴシック"));
 						SetTextColor(hdcM->hDC, RGB(168, 129, 129));
@@ -8084,14 +8084,20 @@ void s_dummyfunc()
 					if (ey0 >= y0) {
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", minmeasure);
 						strmeasure[64 - 1] = 0L;
-						SetTextColor(hdcM->hDC, RGB(255, 255, 255));
-						TextOut(hdcM->hDC,
-							ex0, ey0,
-							strmeasure, (int)wcslen(strmeasure));
-						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
-						//LineTo(hdcM->hDC, x2, ey0);
-
+						size_t measurelen;
+						measurelen = wcslen(strmeasure);
+						if ((measurelen > 0) && (measurelen < 64)) {
+							SetTextColor(hdcM->hDC, RGB(255, 255, 255));
+							TextOut(hdcM->hDC,
+								ex0, ey0,
+								strmeasure, (int)measurelen);
+							//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+							//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+							//LineTo(hdcM->hDC, x2, ey0);
+						}
+						else {
+							_ASSERT(0);
+						}
 						prevy0 = y0;
 					}
 					//befey0 = ey0;//!!!!!!!!!!!!!!!
@@ -8121,13 +8127,22 @@ void s_dummyfunc()
 						}
 						if (displabel) {
 							strmeasure[64 - 1] = 0L;
-							SetTextColor(hdcM->hDC, RGB(168, 129, 129));
-							TextOut(hdcM->hDC,
-								ex0, ey0,
-								strmeasure, (int)wcslen(strmeasure));
-							//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-							//MoveToEx(hdcM->hDC, x1, ey0, NULL);
-							//LineTo(hdcM->hDC, x2, ey0);
+							size_t measurelen;
+							measurelen = wcslen(strmeasure);
+							if ((measurelen > 0) && (measurelen < 64)) {
+
+								SetTextColor(hdcM->hDC, RGB(168, 129, 129));
+								TextOut(hdcM->hDC,
+									ex0, ey0,
+									strmeasure, (int)measurelen);
+								//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+								//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+								//LineTo(hdcM->hDC, x2, ey0);
+							}
+							else {
+								_ASSERT(0);
+							}
+
 						}
 					}
 
@@ -8142,16 +8157,23 @@ void s_dummyfunc()
 							//if (abs(ey0 - befey0) > (mesurestep * 2)) {
 								swprintf_s(strmeasure, 64, L"%+3.3lf---", curmeasure);
 								strmeasure[64 - 1] = 0L;
-								SetTextColor(hdcM->hDC, RGB(255, 255, 255));
-								TextOut(hdcM->hDC,
-									ex0, ey0,
-									strmeasure, (int)wcslen(strmeasure));
+								size_t measurelen;
+								measurelen = wcslen(strmeasure);
+								if ((measurelen > 0) && (measurelen < 64)) {
+									SetTextColor(hdcM->hDC, RGB(255, 255, 255));
+									TextOut(hdcM->hDC,
+										ex0, ey0,
+										strmeasure, (int)measurelen);
 
-								//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-								//MoveToEx(hdcM->hDC, x1, ey0, NULL);
-								//LineTo(hdcM->hDC, x2, ey0);
+									//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+									//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+									//LineTo(hdcM->hDC, x2, ey0);
 
-								//befey0 = ey0;
+									//befey0 = ey0;
+								}
+								else {
+									_ASSERT(0);
+								}
 
 
 							//}
@@ -8167,13 +8189,20 @@ void s_dummyfunc()
 					if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//文字フォントサイズを考慮
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", maxmeasure);
 						strmeasure[64 - 1] = 0L;
-						SetTextColor(hdcM->hDC, RGB(255, 255, 255));
-						TextOut(hdcM->hDC,
-							ex0, ey0,
-							strmeasure, (int)wcslen(strmeasure));
-						//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
-						//MoveToEx(hdcM->hDC, x1, ey0, NULL);
-						//LineTo(hdcM->hDC, x2, ey0);
+						size_t measurelen;
+						measurelen = wcslen(strmeasure);
+						if ((measurelen > 0) && (measurelen < 64)) {
+							SetTextColor(hdcM->hDC, RGB(255, 255, 255));
+							TextOut(hdcM->hDC,
+								ex0, ey0,
+								strmeasure, (int)measurelen);
+							//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
+							//MoveToEx(hdcM->hDC, x1, ey0, NULL);
+							//LineTo(hdcM->hDC, x2, ey0);
+						}
+						else {
+							_ASSERT(0);
+						}
 
 						prevy0 = ey0;
 					}

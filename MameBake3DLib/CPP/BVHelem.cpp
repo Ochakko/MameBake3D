@@ -135,11 +135,15 @@ char* CBVHElem::GetFloat( char* srcstr, float* dstfloat, int* dstsetflag )
 	char* valuehead = srcstr;
 
 	int curpos;
-	int strleng;
+	size_t strleng;
 
 	curpos = 0;
-	strleng = (int)strlen( srcstr );
-
+	strleng = strlen(srcstr);
+	if ((strleng <= 0) || (strleng > 2048)) {
+		_ASSERT(0);
+		*dstsetflag = 0;//
+		return 0;
+	}
 
 	//先頭の非数字をスキップ
 	while( (curpos < strleng) && ( (isdigit( *valuehead ) == 0) && (*valuehead != '-'))  ){
@@ -191,10 +195,15 @@ char* CBVHElem::GetDigit( char* srcstr, int* dstint, int* dstsetflag )
 	char* valuehead = srcstr;
 
 	int curpos;
-	int strleng;
+	size_t strleng;
 
 	curpos = 0;
-	strleng = (int)strlen( srcstr );
+	strleng = strlen( srcstr );
+	if ((strleng <= 0) || (strleng > 2048)) {
+		_ASSERT(0);
+		*dstsetflag = 0;//
+		return 0;
+	}
 
 	//先頭の非数字をスキップ
 	while( (curpos < strleng) && ( (isdigit( *valuehead ) == 0) && (*valuehead != '-'))  ){
@@ -242,10 +251,15 @@ char* CBVHElem::GetChanelType( char* srcstr, int* dstint, int* dstsetflag )
 	char* valuehead = srcstr;
 
 	int curpos;
-	int strleng;
+	size_t strleng;
 
 	curpos = 0;
-	strleng = (int)strlen( srcstr );
+	strleng = strlen( srcstr );
+	if ((strleng <= 0) || (strleng > 2048)) {
+		_ASSERT(0);
+		*dstsetflag = 0;//
+		return 0;
+	}
 
 	//先頭の非アルファベットをスキップ
 	while( (curpos < strleng) && (isalpha( *valuehead ) == 0) ){
@@ -320,7 +334,12 @@ char* CBVHElem::GetChanelType( char* srcstr, int* dstint, int* dstsetflag )
 
 int CBVHElem::SetName( char* srcname )
 {
-	int totalleng = (int)strlen( srcname );
+	size_t totalleng = strlen( srcname );
+	if ((totalleng <= 0) || (totalleng > 2048)) {
+		DbgOut(L"bvhelem : SetName : too long name error !!!\n");
+		_ASSERT(0);
+		return 1;
+	}
 
 	int startpos = 0;
 	int spaceflag;
@@ -773,11 +792,21 @@ int CBVHElem::ConvXYZRot()
 
 int CBVHElem::CheckNotAlNumName( char** ppdstname )
 {
-	int leng;
-	leng = (int)strlen( name );
+	if(!ppdstname){
+		_ASSERT(0);
+		return 1;
+	}
+
+	size_t leng;
+	leng = strlen( name );
+	if ((leng <= 0) || (leng > 2048)) {
+		_ASSERT(0);
+		*ppdstname = 0;
+		return 1;
+	}
 
 	int curc;
-	int cno;
+	size_t cno;
 	int findflag = 0;
 	int chk;
 	for( cno = 0; cno < leng; cno++ ){

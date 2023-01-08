@@ -597,12 +597,18 @@ char* btCollisionWorldImporter::duplicateName(const char* name)
 {
 	if (name)
 	{
-		int l = (int)strlen(name);
-		char* newName = new char[l + 1];
-		memcpy(newName, name, l);
-		newName[l] = 0;
-		m_allocatedNames.push_back(newName);
-		return newName;
+		size_t l = strlen(name);
+		if ((l > 0) && (l < 4098)) {
+			char* newName = new char[l + 1];
+			memcpy(newName, name, l);
+			newName[l] = 0;
+			m_allocatedNames.push_back(newName);
+			return newName;
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
 	}
 	return 0;
 }

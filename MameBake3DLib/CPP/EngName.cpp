@@ -68,25 +68,31 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 	}
 
 
-	int namelen = (int)strlen( srcname );
-
-	int nameno;
 	int findilleagal = 0;
-	int alnum;
-	char curc;
-	for( nameno = 0; nameno < namelen; nameno++ ){
-		curc = namepm[nameno];
-		if( ((curc >= 'a') && (curc <= 'z')) || ((curc >= 'A') && (curc <= 'Z')) || ((curc >= '0') && (curc <= '9')) || 
-			(curc == '_') ){
-			alnum = 1;
-		}else{
-			alnum = 0;
-		}
+	size_t namelen = strlen( srcname );
+	if ((namelen > 0) && (namelen < dstleng)) {
+		size_t nameno;
+		int alnum;
+		char curc;
+		for (nameno = 0; nameno < namelen; nameno++) {
+			curc = namepm[nameno];
+			if (((curc >= 'a') && (curc <= 'z')) || ((curc >= 'A') && (curc <= 'Z')) || ((curc >= '0') && (curc <= '9')) ||
+				(curc == '_')) {
+				alnum = 1;
+			}
+			else {
+				alnum = 0;
+			}
 
-		if( alnum == 0 ){
-			findilleagal = 1;
-			break;
+			if (alnum == 0) {
+				findilleagal = 1;
+				break;
+			}
 		}
+	}
+	else {
+		_ASSERT(0);
+		findilleagal = 1;
 	}
 
 	if( findilleagal != 0 ){

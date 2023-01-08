@@ -341,7 +341,7 @@ int CMQOFile::CheckFileVersion()
 	}
 	
 	char pat1[] = "Metasequoia Document";
-	int pat1leng = (int)strlen( pat1 );
+	size_t pat1leng = strlen( pat1 );
 	int cmp1 = 1;//!!!
 
 	if( pat1leng <= leng1 )
@@ -361,7 +361,7 @@ int CMQOFile::CheckFileVersion()
 	}
 
 	char pat2[] = "Format Text Ver 1.0";
-	int pat2leng = (int)strlen( pat2 );
+	size_t pat2leng = strlen( pat2 );
 	int cmp2 = 1;//!!!
 
 	if( pat2leng <= leng2 )
@@ -369,7 +369,7 @@ int CMQOFile::CheckFileVersion()
 
 	if( cmp2 ){
 		char pat3[] = "Format Text Ver 1.1";
-		int pat3leng = (int)strlen(pat3);
+		size_t pat3leng = strlen(pat3);
 		int cmp3 = 1;//!!!
 
 		if (pat3leng <= leng2)
@@ -519,8 +519,8 @@ int CMQOFile::GetChunkType( MQOSTATE* type, char* chunkname, int nameleng )
 		if( isfind == 1 )
 			break;
 
-		int patleng;
-		patleng = (int)strlen( chunkpat[patno] );
+		size_t patleng;
+		patleng = strlen( chunkpat[patno] );
 		int cmp = 1;
 		if( nameleng >= patleng ){
 			cmp = strncmp( chunkpat[patno], namehead, patleng );
@@ -642,13 +642,24 @@ int CMQOFile::ReadColor( MQOSTATE* nextstate )
 		if( (getleng >= 3) && (strstr( m_linechar, "}\r\n" ) != NULL) ){
 			findend = 1;
 		}else{
-			ret = currentobj->SetColor( m_linechar, (int)strlen( m_linechar ) );
-			if( ret ){
-				DbgOut( L"MQOFile : ReadColor : SetColor error !!!" );
-				_ASSERT( 0 );
+			size_t lineleng;
+			m_linechar[LINECHARLENG - 1] = 0;
+			lineleng = strlen(m_linechar);
+			if ((lineleng > 0) && (lineleng < LINECHARLENG)) {
+				ret = currentobj->SetColor(m_linechar, lineleng);
+				if (ret) {
+					DbgOut(L"MQOFile : ReadColor : SetColor error !!!");
+					_ASSERT(0);
+					*nextstate = BEGIN_FINISH;
+					return 1;
+				}
+			}
+			else {
+				DbgOut(L"MQOFile : ReadColor : SetColor error !!!");
+				_ASSERT(0);
 				*nextstate = BEGIN_FINISH;
 				return 1;
-			}			
+			}
 		}
 	}
 	
@@ -688,45 +699,48 @@ int CMQOFile::ReadScene( MQOSTATE* nextstate )
 				ambient.g = 0.25f;
 				ambient.b = 0.25f;
 				
-				int leng;
-				leng = (int)strlen( m_linechar );
+				size_t leng;
+				m_linechar[LINECHARLENG - 1] = 0;
+				leng = strlen( m_linechar );
+				if ((leng > 0) && (leng < LINECHARLENG)) {
+					int step;
+					int cnt;
+					float dstfloat;
+					int stepnum;
+					stepnum = 4;
+					for (cnt = 0; cnt < 3; cnt++) {
+						ret = GetFloat(&dstfloat, m_linechar, stepnum, leng, &step);
+						if (ret)
+							return ret;
 
-				int step;
-				int cnt;
-				float dstfloat;
-				int stepnum;
-				stepnum = 4;
-				for( cnt = 0; cnt < 3; cnt++ ){		
-					ret = GetFloat( &dstfloat, m_linechar, stepnum, leng, &step ); 
-					if( ret )
-						return ret;
+						switch (cnt) {
+						case 0:
+							ambient.r = dstfloat;
+							break;
+						case 1:
+							ambient.g = dstfloat;
+							break;
+						case 2:
+							ambient.b = dstfloat;
+							break;
+						default:
+							break;
+						}
 
-					switch( cnt ){
-					case 0:
-						ambient.r = dstfloat;
-						break;
-					case 1:
-						ambient.g = dstfloat;
-						break;
-					case 2:
-						ambient.b = dstfloat;
-						break;
-					default:
-						break;
+						stepnum += step;
 					}
 
-					stepnum += step;
+					m_scene_ambient.x = ambient.r;
+					m_scene_ambient.y = ambient.g;
+					m_scene_ambient.z = ambient.b;
+					m_scene_ambient.w = ambient.a;
+					DbgOut(L"mqofile : Scene : ambient %f %f %f\r\n", ambient.r, ambient.g, ambient.b);
 				}
-		
-				m_scene_ambient.x = ambient.r;
-				m_scene_ambient.y = ambient.g;
-				m_scene_ambient.z = ambient.b;
-				m_scene_ambient.w = ambient.a;
-				DbgOut( L"mqofile : Scene : ambient %f %f %f\r\n", ambient.r, ambient.g, ambient.b );
-
+				else {
+					_ASSERT(0);
+					break;
+				}
 			}
-
-
 		}
 	}
 
@@ -805,7 +819,9 @@ int CMQOFile::ReadMaterial( MQOSTATE* nextstate )
 
 //DbgOut( L"MQOFile : ReadMaterial : SetParams : %s\n", m_linechar );
 			matno = m_modelptr->GetMQOMaterialSize();
-			ret = newmat->SetParams( matno, m_scene_ambient, m_linechar, (int)strlen( m_linechar ) );
+			m_linechar[LINECHARLENG - 1] = 0;
+			size_t lineleng = strlen(m_linechar);
+			ret = newmat->SetParams( matno, m_scene_ambient, m_linechar, (int)lineleng );
 			if( ret ){
 				DbgOut( L"MQOFile : ReadMaterial : newmat SetParams error !!!" );
 				_ASSERT( 0 );
@@ -844,7 +860,9 @@ int CMQOFile::ReadObject( MQOSTATE* nextstate )
 	currentobj = newobj;//!!!!
 
 	//nameのセット
-	ret = newobj->SetParams( m_linechar, (int)strlen( m_linechar ) );
+	m_linechar[LINECHARLENG - 1] = 0;
+	size_t lineleng = strlen(m_linechar);
+	ret = newobj->SetParams( m_linechar, (int)lineleng );
 	if( ret ){
 		DbgOut( L"MQOFile : ReadObject : newobj SetParams error !!!" );
 		_ASSERT( 0 );
@@ -864,12 +882,16 @@ int CMQOFile::ReadObject( MQOSTATE* nextstate )
 
 		}else if( (getleng >= 3) && (strstr( m_linechar, "{\r\n" ) != NULL) ){
 			//子チャンクをチェック
-			ret = GetChunkType( nextstate, m_linechar, (int)strlen( m_linechar ) );
+			m_linechar[LINECHARLENG - 1] = 0;
+			size_t lineleng = strlen(m_linechar);
+			ret = GetChunkType( nextstate, m_linechar, (int)lineleng );
 			_ASSERT( !ret );
 			return 0;
 		}else{
 			//DbgOut( L"MQOFile : ReadObject : SetParams : %s\n", m_linechar );
-			ret = newobj->SetParams( m_linechar, (int)strlen( m_linechar ) );
+			m_linechar[LINECHARLENG - 1] = 0;
+			size_t lineleng = strlen(m_linechar);
+			ret = newobj->SetParams( m_linechar, (int)lineleng );
 			if( ret ){
 				DbgOut( L"MQOFile : ReadObject : newobj SetParams error !!!" );
 				_ASSERT( 0 );
@@ -901,7 +923,9 @@ int CMQOFile::ReadBVertex( MQOSTATE* nextstate )
 		return ret;
 	}
 
-	ret = currentobj->SetVertex( &vertnum, m_linechar, (int)strlen( m_linechar ) );
+	m_linechar[LINECHARLENG - 1] = 0;
+	size_t lineleng = strlen(m_linechar);
+	ret = currentobj->SetVertex( &vertnum, m_linechar, (int)lineleng );
 	if( ret ){
 		DbgOut( L"MQOFile : ReadBVertex : SetVertex error !!!" );
 		_ASSERT( 0 );
@@ -941,7 +965,9 @@ int CMQOFile::ReadVertex( MQOSTATE* nextstate )
 
 	_ASSERT( currentobj );
 
-	ret = currentobj->SetVertex( &vertnum, m_linechar, (int)strlen( m_linechar ) );
+	m_linechar[LINECHARLENG - 1] = 0;
+	size_t lineleng = strlen(m_linechar);
+	ret = currentobj->SetVertex( &vertnum, m_linechar, (int)lineleng );
 	if( ret ){
 		DbgOut( L"MQOFile : ReadVertex : SetVertex error !!!" );
 		_ASSERT( 0 );
@@ -994,7 +1020,9 @@ int CMQOFile::ReadFace( MQOSTATE* nextstate )
 	int facenum;
 
 	_ASSERT( currentobj );
-	ret = currentobj->SetFace( &facenum, m_linechar, (int)strlen( m_linechar ) );
+	m_linechar[LINECHARLENG - 1] = 0;
+	size_t lineleng = strlen(m_linechar);
+	ret = currentobj->SetFace( &facenum, m_linechar, (int)lineleng );
 	if( ret ){
 		DbgOut( L"MQOFile : ReadFace : SetFace error !!!" );
 		_ASSERT( 0 );

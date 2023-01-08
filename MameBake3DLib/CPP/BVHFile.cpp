@@ -389,29 +389,36 @@ int CBVHFile::CheckFileHeader()
 	char headerstr2[20] = "HIERARCHY\n";
 	char headerstr3[20] = "HIERARCHY\r";
 
-	int headerleng;
+	size_t headerleng;
 
 	char* findptr;
 	findptr = strstr( m_buf, headerstr );
 	if( findptr )
-		headerleng = (int)strlen( headerstr );
+		headerleng = strlen( headerstr );
 
 	if( !findptr ){
 		findptr = strstr( m_buf, headerstr2 );
 		if( findptr )
-			headerleng = (int)strlen( headerstr2 );
+			headerleng = strlen( headerstr2 );
 	}
 	if( !findptr ){
 		findptr = strstr( m_buf, headerstr3 );
 		if( findptr )
-			headerleng = (int)strlen( headerstr3 );
+			headerleng = strlen( headerstr3 );
 	}
 
 	if( findptr ){
-		int leng;
-		leng = (int)( findptr - m_buf + headerleng );
-		m_pos += leng;//!!!!!!!
-		return 0;
+		size_t leng;
+		leng = ( findptr - m_buf + headerleng );
+		if ((leng > 0) && (leng < 20)) {
+			m_pos += (DWORD)leng;//!!!!!!!
+			return 0;
+		}
+		else {
+			DbgOut(L"bvhfile : CheckFileHeader : this file is not BVH format error !!!\n");
+			_ASSERT(0);
+			return 1;
+		}
 
 	}else{
 		DbgOut( L"bvhfile : CheckFileHeader : this file is not BVH format error !!!\n" );
@@ -461,13 +468,15 @@ int CBVHFile::GetStateAndLine()
 	int patno;
 	int matchflag;
 	int findpat = -1;
-	int patleng;
+	size_t patleng;
 	for( patno = STATE_ROOT; patno <= STATE_FRAMETIME; patno++ ){
-		patleng = (int)strlen( bvhpat[patno] );
-		matchflag = strncmp( m_buf + startpos, bvhpat[patno], patleng );
-		if( matchflag == 0 ){
-			findpat = patno;
-			break;
+		patleng = strlen( bvhpat[patno] );
+		if ((patleng > 0) && (patleng < 20)) {
+			matchflag = strncmp(m_buf + startpos, bvhpat[patno], patleng);
+			if (matchflag == 0) {
+				findpat = patno;
+				break;
+			}
 		}
 	}
 	if( findpat >= 0 ){
@@ -559,14 +568,16 @@ int CBVHFile::GetState()
 	int patno;
 	int matchflag;
 	int findpat = -1;
-	int patleng;
+	size_t patleng;
 	for( patno = STATE_ROOT; patno <= STATE_FRAMETIME; patno++ ){
-		patleng = (int)strlen( bvhpat[patno] );
-//		matchflag = strncmp( m_buf + m_pos, bvhpat[patno], patleng );
-		matchflag = strncmp( m_buf + startpos, bvhpat[patno], patleng );
-		if( matchflag == 0 ){
-			findpat = patno;
-			break;
+		patleng = strlen( bvhpat[patno] );
+		if ((patleng > 0) && (patleng < 20)) {
+			//		matchflag = strncmp( m_buf + m_pos, bvhpat[patno], patleng );
+			matchflag = strncmp(m_buf + startpos, bvhpat[patno], patleng);
+			if (matchflag == 0) {
+				findpat = patno;
+				break;
+			}
 		}
 	}
 
@@ -1017,10 +1028,15 @@ char* CBVHFile::GetFloat( char* srcstr, float* dstfloat, int* dstsetflag )
 	char* valuehead = srcstr;
 
 	int curpos;
-	int strleng;
+	size_t strleng;
 
 	curpos = 0;
-	strleng = (int)strlen( srcstr );
+	strleng = strlen( srcstr );
+	if ((strleng <= 0) || (strleng > 2048)) {
+		_ASSERT(0);
+		*dstsetflag = 0;//
+		return 0;
+	}
 
 
 	//先頭の非数字をスキップ
@@ -1073,10 +1089,15 @@ char* CBVHFile::GetDigit( char* srcstr, int* dstint, int* dstsetflag )
 	char* valuehead = srcstr;
 
 	int curpos;
-	int strleng;
+	size_t strleng;
 
 	curpos = 0;
-	strleng = (int)strlen( srcstr );
+	strleng = strlen( srcstr );
+	if ((strleng <= 0) || (strleng > 2048)) {
+		_ASSERT(0);
+		*dstsetflag = 0;//
+		return 0;
+	}
 
 	//先頭の非数字をスキップ
 	while( (curpos < strleng) && ( (isdigit( *valuehead ) == 0) && (*valuehead != '-'))  ){

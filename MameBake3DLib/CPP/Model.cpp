@@ -1385,17 +1385,29 @@ int CModel::MakeObjectName()
 				sdefcmp = strncmp(nameptr, "sdef:", 5);
 				bdefcmp = strncmp(nameptr, "bdef:", 5);
 				if ((sdefcmp != 0) && (bdefcmp != 0)) {
-					int leng = (int)strlen(nameptr);
-					string firstname(nameptr, nameptr + leng);
-					m_objectname[firstname] = curobj;
-					curobj->SetDispName(firstname);
+					size_t leng = strlen(nameptr);
+					if ((leng > 0) && (leng < 4098)) {
+						string firstname(nameptr, nameptr + leng);
+						m_objectname[firstname] = curobj;
+						curobj->SetDispName(firstname);
+					}
+					else {
+						_ASSERT(0);
+						curobj->SetDispName("MakeObjecctName_Error");
+					}
 				}
 				else {
 					char* startptr = nameptr + 5;
-					int leng = (int)strlen(startptr);
-					string firstname(startptr, startptr + leng);
-					m_objectname[firstname] = curobj;
-					curobj->SetDispName(firstname);
+					size_t leng = strlen(startptr);
+					if ((leng > 0) && (leng < 4098)) {
+						string firstname(startptr, startptr + leng);
+						m_objectname[firstname] = curobj;
+						curobj->SetDispName(firstname);
+					}
+					else {
+						_ASSERT(0);
+						curobj->SetDispName("MakeObjecctName_Error");
+					}
 				}
 			}
 		}

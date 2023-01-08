@@ -55,7 +55,7 @@ int CMQOMaterial::SetParams( int srcno, ChaVector4 srcsceneamb, char* srcchar, i
 		"\"" //！！！tex, alpha, bumpよりも後でないとだめ。
 	};
 
-	int pos = 0;
+	size_t pos = 0;
 	int stepnum;
 	int ret;
 
@@ -67,7 +67,8 @@ int CMQOMaterial::SetParams( int srcno, ChaVector4 srcsceneamb, char* srcchar, i
 		}
 
 		int cmp;
-		int patno, patleng;
+		int patno;
+		size_t patleng;
 
 		int isfind = 0;
 
@@ -75,8 +76,10 @@ int CMQOMaterial::SetParams( int srcno, ChaVector4 srcsceneamb, char* srcchar, i
 			if( isfind == 1 )
 				break;
 
-			patleng = (int)strlen( pat[patno] );
-			if( srcleng - pos >= patleng ){
+			patleng = strlen( pat[patno] );
+			//if (srcleng - pos >= patleng) {
+			if ((patleng < srcleng) && (pos <= (srcleng - patleng))) {//2023/01/09 unsigned
+
 				cmp = strncmp( pat[patno], srcchar + pos, patleng );
 				if( cmp == 0 ){
 					isfind = 1;
@@ -874,31 +877,40 @@ int CMQOMaterial::AddConvName( char** ppname )
 		m_ppconvname = newconvname;
 	}
 
-	int leng;
+	size_t leng;
 	m_name[256 - 1] = 0;
-	leng = (int)strlen( m_name );
+	leng = strlen( m_name );
+	if ((leng > 0) && (leng < 1024)) {
+		char* newname = 0;
+		newname = (char*)malloc(sizeof(char) * leng + 10);
+		if (!newname) {
+			DbgOut(L"mqomaterial : AddConvName : newname alloc error !!!\r\n");
+			_ASSERT(0);
+			return 1;
+		}
 
-	char* newname;
-	newname = (char*)malloc( sizeof( char ) * leng + 10 );
-	if( !newname ){
-		DbgOut( L"mqomaterial : AddConvName : newname alloc error !!!\r\n" );
-		_ASSERT( 0 );
-		return 1;
+		int addno;
+		addno = m_convnamenum - 1;
+
+		if (addno >= 1) {
+			sprintf_s(newname, ((size_t)leng + 10), "%s%02d", m_name, addno);
+		}
+		else {
+			strcpy_s(newname, ((size_t)leng + 10), m_name);
+		}
+
+		*(m_ppconvname + m_convnamenum - 1) = newname;
+		*ppname = newname;
+
+	}
+	else {
+		_ASSERT(0);
+		*(m_ppconvname + m_convnamenum - 1) = 0;
+		*ppname = 0;
+		return 1;//error!!!!
 	}
 
-	int addno;
-	addno = m_convnamenum - 1;
 
-	if( addno >= 1 ){
-		sprintf_s( newname, ((size_t)leng + 10), "%s%02d", m_name, addno );
-	}else{
-		strcpy_s( newname, ((size_t)leng + 10), m_name );
-	}
-
-
-	*( m_ppconvname + m_convnamenum - 1 ) = newname;
-
-	*ppname = newname;
 
 	return 0;
 }

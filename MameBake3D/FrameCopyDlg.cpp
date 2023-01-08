@@ -848,8 +848,8 @@ bool CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufl
 	//	int reserved;
 	//}CPTHEADER;
 
-	int magicstrlen;
-	magicstrlen = (int)strlen(dstTBOheader);
+	size_t magicstrlen;
+	magicstrlen = strlen(dstTBOheader);
 	if ((magicstrlen <= 0) || (magicstrlen >= 256)) {
 		_ASSERT(0);
 		return false;
