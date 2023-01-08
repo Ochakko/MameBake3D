@@ -819,7 +819,7 @@ static int s_tkeyflag = 0;
 
 static WCHAR s_strcurrent[256] = L"Move To Current Frame";
 static WCHAR s_streditrange[256] = L"Drag Edit Range";
-static WCHAR s_strmark[256] = L"Mark Key Line";
+static WCHAR s_strmark[256] = L"LongTimeLine";
 
 
 
@@ -10111,7 +10111,8 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 		if (!s_owpTimeline) {
 			//OWP_Timeline* owpTimeline = 0;
 			//タイムラインのGUIパーツを生成
-			s_owpTimeline = new OWP_Timeline(L"testmotion", 100.0, 4.0);
+			bool shortlabel = false;
+			s_owpTimeline = new OWP_Timeline(shortlabel, L"testmotion", 100.0, 4.0);
 			s_owpTimeline->setDispKeyFlag(false);//高速化のためkey表示無し
 
 			// カーソル移動時のイベントリスナーに
@@ -10190,7 +10191,8 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 					delete s_owpLTimeline;
 					s_owpLTimeline = 0;
 				}
-				s_owpLTimeline = new OWP_Timeline(L"EditRangeTimeLine");
+				bool shortlabel = true;
+				s_owpLTimeline = new OWP_Timeline(shortlabel, L"EditRangeTimeLine");
 				s_owpLTimeline->setDispKeyFlag(true);
 				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
 				s_LTSeparator->addParts1(*s_owpLTimeline);
@@ -18222,12 +18224,12 @@ int SetLTimelineMark( int curboneno )
 			if (opeboneno >= 0) {
 				int curlineno = s_boneno2lineno[opeboneno];
 				if (curlineno >= 0) {
-					s_owpLTimeline->deleteLine(2);
+					//s_owpLTimeline->deleteLine(2);
 
 					WCHAR markname[256] = { 0L };
-					//swprintf_s( markname, 256, L"Mark:%s", opebone->GetWBoneName() );
+					////swprintf_s( markname, 256, L"Mark:%s", opebone->GetWBoneName() );
 					swprintf_s(markname, 256, L"%s", opebone->GetWBoneName());
-					s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
+					//s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
 
 					if (s_owpPlayerButton) {
 						s_owpPlayerButton->setJointName(markname);//2023/01/08

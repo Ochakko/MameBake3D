@@ -3446,11 +3446,14 @@ void s_dummyfunc()
 		//	Accessor : buttonListener
 		void setJointName(const WCHAR* srcjointname) {
 			if (srcjointname) {
+				strjointname[1024 - 1] = 0L;//念のため終端
 				wcscpy_s(strjointname, 1024, srcjointname);
+				strjointname[1024 - 1] = 0L;//念のため終端
 			}
 		}
 		const WCHAR* getJointName()
 		{
+			strjointname[1024 - 1] = 0L;//念のため終端
 			return &(strjointname[0]);
 		}
 
@@ -4122,7 +4125,7 @@ void s_dummyfunc()
 	class OWP_Timeline : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Timeline(const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ) : OrgWindowParts() {
+		OWP_Timeline(const bool srcshortlabel, const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ) : OrgWindowParts() {
 			
 			TIME_ERROR_WIDTH = 0.0001;
 
@@ -4152,7 +4155,8 @@ void s_dummyfunc()
 				showPos_width = 280.0;
 			}
 			else {
-				showPos_width = 76.0;
+				//showPos_width = 76.0;
+				showPos_width = 93.0;//2023/01/08
 			}
 			showPos_line=0;
 			currentTime=0;
@@ -4175,6 +4179,13 @@ void s_dummyfunc()
 
 			dispkeyflag = false;
 
+			shortlabel = srcshortlabel;
+			if (shortlabel) {
+				LABEL_SIZE_X = 135;
+			}
+			else {
+				LABEL_SIZE_X = 280;
+			}
 		}
 		~OWP_Timeline(){
 			selectAll(true);
@@ -6147,7 +6158,13 @@ void s_dummyfunc()
 		static const int LABEL_SIZE_Y= 15;
 		//static const int LABEL_SIZE_X= 75;
 		//static const int LABEL_SIZE_X= 250;
-		static const int LABEL_SIZE_X = 280;
+
+
+		//static const int LABEL_SIZE_X = 280;
+		int LABEL_SIZE_X = 280;
+		bool shortlabel = false;
+
+
 		static const int AXIS_SIZE_Y= 15;
 		static const int SCROLL_BAR_WIDTH= 10;
 		static const int MARGIN= 3;
@@ -6216,7 +6233,8 @@ void s_dummyfunc()
 				showPos_width = 280.0;
 			}
 			else {
-				showPos_width = 76.0;
+				//showPos_width = 76.0;
+				showPos_width = 93.0;//2023/01/08
 			}
 			showPos_line = 0;
 			currentTime = 0;
@@ -8083,18 +8101,22 @@ void s_dummyfunc()
 					bool displabel = false;
 					//ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;//
 					ey0 = (int)((parent->maxeul - maxmeasure) / eulrange * (y1 - y0) + y2);//
-					ex0 = (int)(x0 + parent->LABEL_SIZE_X - 17 * fontsize);//
+					//ex0 = (int)(x0 + parent->LABEL_SIZE_X - 17 * fontsize);//
+					ex0 = (int)(x0 + 5);//2023/01/08
 					if (ey0 >= y0) {
 						if (parent->ikkind == 0) {
-							swprintf_s(strmeasure, 64, L"LocalRot(parjoint)");
+							//swprintf_s(strmeasure, 64, L"LocalRot(parjoint)");
+							swprintf_s(strmeasure, 64, L"Rot");
 							displabel = true;
 						}
 						else if (parent->ikkind == 1) {
-							swprintf_s(strmeasure, 64, L"LocalPos(curjoint)");
+							//swprintf_s(strmeasure, 64, L"LocalPos(curjoint)");
+							swprintf_s(strmeasure, 64, L"Tra");
 							displabel = true;
 						}
 						else if (parent->ikkind == 2) {
-							swprintf_s(strmeasure, 64, L"LocalScale(curjoint)");
+							//swprintf_s(strmeasure, 64, L"LocalScale(curjoint)");
+							swprintf_s(strmeasure, 64, L"Scale");
 							displabel = true;
 						}
 						if (displabel) {
@@ -8569,7 +8591,12 @@ void s_dummyfunc()
 		static const int LABEL_SIZE_Y = 20;
 		//static const int LABEL_SIZE_X= 75;
 		//static const int LABEL_SIZE_X= 250;
-		static const int LABEL_SIZE_X = 280;
+		
+		
+		//static const int LABEL_SIZE_X = 280;
+		static const int LABEL_SIZE_X = 135;//2023/01/08 owp_timelineのshortlabelと合わせる
+
+
 		static const int AXIS_SIZE_Y = 15;
 		static const int SCROLL_BAR_WIDTH = 10;
 		static const int MARGIN = 3;
