@@ -1023,6 +1023,16 @@ void s_dummyfunc()
 			}
 		}
 		//	Accessor : size
+		WindowSize getSizeSimple() {
+			if (hWnd == NULL) _ASSERT_EXPR(0, L"hWnd = NULL");
+			if (hWnd) {
+				return size;
+			}
+			else {
+				_ASSERT(0);
+				return WindowSize(0, 0);
+			}
+		}
 		WindowSize getSize(){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
 			if (hWnd) {
@@ -2971,6 +2981,7 @@ void s_dummyfunc()
 			BOX_WIDTH= 11;
 			SIZE_Y= 15;
 			setIsPlayerButton(true);
+			wcscpy_s(strjointname, 1024, L"Unknown joint");
 		}
 		~OWP_PlayerButton(){
 		}
@@ -3306,6 +3317,31 @@ void s_dummyfunc()
 				}break;
 				}
 			}
+
+
+
+			//2023/01/08
+			//ジョイント名を　大きく　タイムライン上の　真ん中に表示
+			if(getParent()){
+				WindowSize parentsize = getParent()->getSizeSimple();
+				//int pos1x = pos.x + BOX_POS_X + BOX_WIDTH * 18;
+				int pos1x = pos.x + parentsize.x / 2;
+				int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
+				const WCHAR* pjointname = getJointName();
+				if (pjointname) {
+					int jointnamelen = (int)wcslen(pjointname);
+					if ((jointnamelen >= 1) && (jointnamelen <= 1020)) {
+						hdcM->setFont(18, _T("ＭＳ ゴシック"));
+						SetTextColor(hdcM->hDC, RGB(168, 129, 129));
+						TextOut(hdcM->hDC,
+							pos1x, pos1y,
+							pjointname, jointnamelen);
+					}
+				}
+			}
+
+
+
 			{
 				if (g_dsmousewait == 1) {
 					POINT mousepoint;
@@ -3408,6 +3444,16 @@ void s_dummyfunc()
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : buttonListener
+		void setJointName(const WCHAR* srcjointname) {
+			if (srcjointname) {
+				wcscpy_s(strjointname, 1024, srcjointname);
+			}
+		}
+		const WCHAR* getJointName()
+		{
+			return &(strjointname[0]);
+		}
+
 		void setFrontPlayButtonListener(std::function<void()> listener){
 			frontPlay.buttonListener= listener;
 		}
@@ -3485,6 +3531,8 @@ void s_dummyfunc()
 		int SIZE_Y;
 		static const int BOX_POS_X= 3;
 		int BOX_WIDTH;
+
+		WCHAR strjointname[1024] = { 0L };
 
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ボタンアップのスレッド

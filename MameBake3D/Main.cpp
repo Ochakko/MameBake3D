@@ -18229,6 +18229,11 @@ int SetLTimelineMark( int curboneno )
 					swprintf_s(markname, 256, L"%s", opebone->GetWBoneName());
 					s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
 
+					if (s_owpPlayerButton) {
+						s_owpPlayerButton->setJointName(markname);//2023/01/08
+					}
+
+
 					double frame;
 					for (frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0) {
 						KeyInfo chkki = s_owpTimeline->ExistKey(curlineno, frame);
