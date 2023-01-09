@@ -2100,7 +2100,7 @@ static int RegistKey();
 static int IsRegist();
 
 static int TimelineCursorToMotion();
-int OnTimeLineCursor(int mbuttonflag, double newframe);
+int OnTimeLineCursor();
 static int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag);
 static int OnTimeLineSelectFromSelectedKey();
 static int OnTimeLineMButtonDown(bool ctrlshiftflag);
@@ -4174,7 +4174,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpRigParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
-	SetSpMouseCenterParams();
+	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
+
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
 	//g_HUD.SetSize(170, 170);
@@ -5528,7 +5529,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 					OnFramePreviewRagdoll(&nextframe, &difftime);
 				}
 				else {
-					OnTimeLineCursor(0, 0.0);
+					OnTimeLineCursor();
 				}
 				
 			}
@@ -16849,8 +16850,14 @@ int SetSpMouseCenterParams()
 
 	//s_spsel3d.dispcenter.x = (LONG)(clientrect.right - spgwidth / 2 - 20);
 	//s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
-	s_mousecenteron.dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 6;
-	s_mousecenteron.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
+	//s_mousecenteron.dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 6;
+	//s_mousecenteron.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
+
+
+	s_mousecenteron.dispcenter.x = s_spcam[2].dispcenter.x + (int)spgwidth + spgshift + 25;
+	s_mousecenteron.dispcenter.y = s_spcam[2].dispcenter.y;
+	//s_spcam[2].dispcenter.x = s_spcam[1].dispcenter.x + (int)(spawidth)+spashift;
+	//s_spcam[2].dispcenter.y = s_spcam[0].dispcenter.y;
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_mousecenteron.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
@@ -21007,7 +21014,13 @@ int OnFrameTimeLineWnd()
 			CEditRange::SetApplyRate((double)g_applyrate);
 			s_buttonselectstart = s_editrange.GetStartFrame();
 			s_buttonselectend = s_editrange.GetEndFrame();
-			g_underselectingframe = 0;
+			
+
+			if (s_mbuttoncnt != 0) {//2023/01/09 mbutton + wheelで選択を継続するため s_mbuttoncnt == 0のときには初期化しない
+				g_underselectingframe = 0;
+			}
+			
+			
 			//_ASSERT(0);
 
 			if (s_LupFlag) {//selectFlagとLupFlagは本来は別物　しかしLupのときだけ処理するものがある
@@ -21105,7 +21118,7 @@ int OnFrameTimeLineWnd()
 
 
 	if (s_LcursorFlag) {
-		OnTimeLineCursor(0, 0.0);
+		OnTimeLineCursor();
 
 		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 			if (g_previewFlag == 0) {//underchecking
@@ -21175,6 +21188,7 @@ int OnFrameMouseButton()
 		g_ctrlshiftkeyformb = false;
 	}
 	if (s_timelinewheelFlag || (g_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))){
+	//if (s_timelinewheelFlag || (g_underselectingframe == 1) || (g_underselectingframe == 2)) {//wheeldeltaの値は取得後も消えない仕様のためこの条件だと止まらなくなる
 		s_timelinewheelFlag = false;//OnTimeLineWheelの後ろにするとホイールしない？？？
 		OnTimeLineWheel();
 	}
@@ -27038,30 +27052,20 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 	return 0;
 }
 
-int OnTimeLineCursorFunc(int mbuttonflag, double newframe)
+int OnTimeLineCursorFunc()
 {
-
-
 	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 		double curframe;
-		if (mbuttonflag != 2) {
-			curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
-			s_owpTimeline->setCurrentTime(curframe, false);
-			//s_owpLTimeline->setCurrentTime(curframe, false);
-			s_owpEulerGraph->setCurrentTime(curframe, false);
-		}
-		else {
-			curframe = newframe;
-			s_owpTimeline->setCurrentTime(curframe, false);
-			s_owpLTimeline->setCurrentTime(curframe, false);
-			s_owpEulerGraph->setCurrentTime(curframe, false);
-		}
+		curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
+		s_owpTimeline->setCurrentTime(curframe, false);
+		//s_owpLTimeline->setCurrentTime(curframe, false);
+		s_owpEulerGraph->setCurrentTime(curframe, false);
 	}
 
 	return 0;
 }
 
-int OnTimeLineCursor(int mbuttonflag, double newframe)
+int OnTimeLineCursor()
 {
 	//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
 
@@ -27071,7 +27075,7 @@ int OnTimeLineCursor(int mbuttonflag, double newframe)
 		//s_model && (s_model->GetLoadedFlag() == true) && 
 		//(g_underRetargetFlag == false))
 	{
-		OnTimeLineCursorFunc(mbuttonflag, newframe);
+		OnTimeLineCursorFunc();
 		//UpdateEditedEuler();
 		//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
 		//if (s_updatetimeline) {
@@ -27132,7 +27136,7 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 				s_buttonselectstart = s_owpLTimeline->getCurrentTime();
 				s_buttonselectend = s_buttonselectstart;
 				s_mbuttonstart = s_buttonselectstart;//2021/11/10
-				OnTimeLineCursor(1, 0.0);
+				OnTimeLineCursor();
 			}
 		}
 	}
