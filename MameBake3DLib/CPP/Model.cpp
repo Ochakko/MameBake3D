@@ -1742,11 +1742,14 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 		//WaitUpdateMatrixFinished();//needwaitfinishedがfalseのときにも必要
 		//SwapCurrentMotionPoint();//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
 
-		int updatecount;
-		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
-			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
-			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
+		if (g_limitdegflag == 0) {//limitdeg時には　CalcWorldMatAfterThreadReqで全て計算　階層順に計算する必要があるため
+			int updatecount;
+			for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
+				CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
+				curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
+			}
 		}
+
 
 		//if (needwaitfinished) {//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
 			WaitUpdateMatrixFinished();
@@ -10485,12 +10488,13 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 				//settra = starttra + (endtra - starttra) * slerpt;
 
 				double changerate;
-				if ((frame >= g_motionbrush_startframe) && (frame <= g_motionbrush_endframe)) {
+				if ((frame >= srcstartframe) && (frame <= srcendframe)) {
 					changerate = (double)(*(g_motionbrush_value + (int)(frame + 0.1)));
 				}
 				else {
 					changerate = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeは冒頭でreturnしている。
 				}
+				
 				startq.Slerp2(endq, changerate, &setq);
 				settra = starttra + (endtra - starttra) * changerate;
 
@@ -12910,7 +12914,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			}
 			else if (btbone->GetParent()) {
 				//endjointでparentがある場合
-				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, srcframe);
+				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, srcframe);//limited????
 				btbone->SetWorldMat(infooutflag, 0, curmi->motid, srcframe, parsetmat);
 				//btbone->SetWorldMat(1, curmi->motid, srcframe, parsetmat);
 			}

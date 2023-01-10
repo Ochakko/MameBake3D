@@ -3789,12 +3789,12 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 
 ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
-	//##############################################################################
+	//###################################################################################################################
 	//2022/12/17
 	//この関数の呼び出し元でLimitEul()をする
-	//Parentの姿勢に関しては計算済のGetParent()->GetLimitedWorldMat()を使用
+	//Parentの姿勢に関しては計算済のGetParent()->GetWorldMat()を使用 : curwmに掛かっているのはLimitedではないparentwm
 	//モーション全体のオイラー角計算し直しは　この関数ではなく　UpdateMatrixを使用
-	//##############################################################################
+	//###################################################################################################################
 
 
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
@@ -3853,8 +3853,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 
 		ChaMatrix curwm, parentwm, eulmat;
 		curwm = GetWorldMat(srcmotid, srcframe);
-		//parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
-		parentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//currentboneは呼び出し下でリミットを掛けるが　parentはリミット済のものを取得する
+		parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
 		eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 	}
 	else {
@@ -4419,58 +4418,23 @@ int CBone::CalcWorldMatAfterThread(int srcmotid, double srcframe, ChaMatrix* wma
 	//GetTempLocalEul(&orgeul, &neweul);
 	//ChaMatrix newworldmat = CalcWorldMatFromEul(0, 1, neweul, orgeul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
 
-	ChaMatrix befworldmat;
-	ChaMatrixIdentity(&befworldmat);
-	ChaMatrix aftworldmat;
-	ChaMatrixIdentity(&aftworldmat);
-	ChaMatrix resultmat;
-	ChaMatrixIdentity(&resultmat);
+	ChaMatrix limworldmat;
+	ChaMatrixIdentity(&limworldmat);
 
 	int callingstate = 2;//!!!!!!!!!!!!!!!!!!!
 
 	CMotionPoint* pbefmp = 0;
-	CMotionPoint* paftmp = 0;
-	double befframe = (double)((int)(srcframe + 0.0001));
-	double aftframe = befframe + 1.0;
-	GetCalclatedLimitedWM(srcmotid, befframe, &befworldmat, &pbefmp, callingstate);
-	GetCalclatedLimitedWM(srcmotid, aftframe, &aftworldmat, &paftmp, callingstate);
-	if (pbefmp) {
-		//pbefmp->SetLimitedWM(befworldmat);
-		//pbefmp->SetCalcLimitedWM(2);//前処理済１，後処理済２
 
-		if (paftmp) {
-			//paftmp->SetLimitedWM(aftworldmat);
-			//paftmp->SetCalcLimitedWM(2);//前処理済１，後処理済２
+	GetCalclatedLimitedWM(srcmotid, srcframe, &limworldmat, &pbefmp, callingstate);//srcframeのbefaftによる補間もしている
 
-			double diffframe = paftmp->GetFrame() - pbefmp->GetFrame();
-			if (diffframe != 0.0) {
-				double t = (srcframe - pbefmp->GetFrame()) / diffframe;
-				resultmat = befworldmat + (aftworldmat - befworldmat) * (float)t;
-			}
-			else {
-				resultmat = befworldmat;
-			}
-		}
-		else {
-			resultmat = befworldmat;
-		}
-	}
-	else {
-		resultmat.SetIdentity();
-	}
-	//GetCalclatedLimitedWM(srcmotid, (double)((int)(srcframe + 0.1)), &newworldmat, 0, callingstate);
-	//ChaMatrix tmpmat = newworldmat * *wmat;
-
-	ChaMatrix tmpmat = resultmat * *wmat;
+	ChaMatrix tmpmat = limworldmat * *wmat;
 	m_curmp.SetWorldMat(tmpmat);//2021/12/21
-
 
 	//CMotionPoint* pmp = GetMotionPoint(srcmotid, (double)((int)(srcframe + 0.1)));
 	//if (pmp) {
 	//	pmp->SetLimitedWM(newworldmat);
 	//	pmp->SetCalcLimitedWM(1);
 	//}
-
  
 	ChaVector3 jpos = GetJointFPos();
 	ChaMatrix tmpwm = m_curmp.GetWorldMat();
@@ -4509,7 +4473,7 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは　limitedではないparentwm
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4526,7 +4490,8 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 
 	ChaMatrix newmat;
 	if (GetParent()) {
-		newmat = newlocalmat * parmat;
+		ChaMatrix limitedparmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/10 : limitedwm計算時には　limitedparentwmを掛ける
+		newmat = newlocalmat * limitedparmat;
 	}
 	else {
 		newmat = newlocalmat;
@@ -4566,7 +4531,7 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは　limitedではないparentwm
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4583,7 +4548,8 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 
 	ChaMatrix newmat;
 	if (GetParent()) {
-		newmat = newlocalmat * parmat;
+		ChaMatrix limitedparmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/10 : limitedwm計算時には　limitedparentwmを掛ける
+		newmat = newlocalmat * limitedparmat;
 	}
 	else {
 		newmat = newlocalmat;
@@ -4641,7 +4607,7 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curmwに掛かっているのは　limitedではないparentwm
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4655,7 +4621,8 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion
 
 	ChaMatrix newmat;
 	if (GetParent()) {
-		newmat = newlocalmat * parmat;
+		ChaMatrix limitedparmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/10 : limitedwm計算時には　limitedparentwmを掛ける
+		newmat = newlocalmat * limitedparmat;
 	}
 	else {
 		newmat = newlocalmat;
@@ -4714,7 +4681,7 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは limitedではないparentwm
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4731,7 +4698,8 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector
 
 	ChaMatrix newmat;
 	if (GetParent()) {
-		newmat = newlocalmat * parmat;
+		ChaMatrix limitedparmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/10 : limitedwm計算時には　limitedparentwmを掛ける
+		newmat = newlocalmat * limitedparmat;
 	}
 	else {
 		newmat = newlocalmat;
@@ -4808,7 +4776,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		saveworldmat = curmp->GetWorldMat();//!!!!!!!!! 変更前を保存
 		ChaMatrix befparentwm;
 		if (GetParent()) {
-			befparentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+			befparentwm = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは limitedではないparentwm
 		}
 		else {
 			befparentwm.SetIdentity();
@@ -4858,7 +4826,13 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		//	curmp->SetWorldMat(saveworldmat);
 		//}
 		
-		ismovable = ChkMovableEul(neweul);
+		if (g_limitdegflag == 1) {
+			ismovable = ChkMovableEul(neweul);
+		}
+		else {
+			ismovable = 1;
+		}
+		
 		if (infooutflag == true) {
 			OutputToInfoWnd(L"CBone::SetWorldMat : %s : frame %5.1lf : neweul [%f, %f, %f] : ismovable %d", GetWBoneName(), srcframe, neweul.x, neweul.y, neweul.z, ismovable);
 		}
@@ -4951,9 +4925,11 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 
 int CBone::ChkMovableEul(ChaVector3 srceul)
 {
-	if (g_limitdegflag == false){
-		return 1;//movable
-	}
+
+	//2023/01/10 : 事前計算しておきたい場合などがあるので　以下３行の条件はこの関数の呼び出し元で行う
+	//if (g_limitdegflag == false){
+	//	return 1;//movable
+	//}
 
 	SetAngleLimitOff(&m_anglelimit);
 
@@ -5513,6 +5489,9 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 
 	ChaMatrix curmat;
 	curmat = GetWorldMat(srcmotid, srcframe);
+	//GetCalclatedLimitedWM(srcmotid, srcframe, &curmat);//2023/01/10
+	
+	
 	//ChaMatrix curmats0;
 	//curmats0 = GetS0RTMatrix(curmat);
 
@@ -5530,6 +5509,7 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	invparmat = parmat;
 	if (GetParent()){
 		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		//parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//parentはリミット済のものを取得する
 		ChaMatrixInverse(&invparmat, NULL, &parmat);
 	}
 
@@ -6703,15 +6683,41 @@ ChaVector3 CBone::CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe)
 			neweul = LimitEul(orgeul);//壁すりIK用
 		}
 		else {
-			double befframe = (double)((int)(srcframe - 1.0 + 0.1));
-			CMotionPoint* befmp = GetMotionPoint(srcmotid, befframe);
-			if (befmp) {
-				ChaVector3 befeul = befmp->GetLocalEul();
-				neweul = befeul;
+			//double befframe = (double)((int)(srcframe - 1.0 + 0.1));
+			//CMotionPoint* befmp = GetMotionPoint(srcmotid, befframe);
+			//if (befmp) {
+			//	ChaVector3 befeul = befmp->GetLocalEul();
+			//	neweul = befeul;
+			//}
+			//else {
+			//	_ASSERT(0);
+			//	neweul = orgeul;
+			//}
+
+
+			double befframe;
+			if (srcframe >= (1.0 - 0.001)) {
+				befframe = (double)((int)(srcframe - 1.0 + 0.1));
 			}
 			else {
-				_ASSERT(0);
-				neweul = orgeul;
+				befframe = 0.0;
+			}
+			neweul = orgeul;
+			ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			while (befframe >= 0.0) {
+				CMotionPoint* befmp = GetMotionPoint(srcmotid, befframe);
+				if (befmp) {
+					befeul = befmp->GetLocalEul();
+				}
+				else {
+					break;
+				}
+				int isbefmovable = ChkMovableEul(befeul);
+				if (isbefmovable == 1) {
+					neweul = befeul;
+					break;
+				}
+				befframe -= 1.0;
 			}
 		}
 	}
@@ -6759,31 +6765,30 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 				if (callingstate == 1) {
 					//前処理が出来てない(ボーン構造順に呼び出していないのでLocal計算が出来ない)ので何もしない。
 					//callingstate = 2での呼び出しに任せる。
+
+					//前処理をするかもしれないが　現状：curmp->SetCalcLimitedWM(1);だけする。
+					curmp->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
 				}
 				else {
 					if (curmp->GetCalcLimitedWM() == 2) {
 						//計算済の場合
 						GetTempLocalEul(&orgeul, &neweul);
+
+						retmat = curmp->GetLimitedWM();
 					}
 					else {
 						//未計算の場合
 						neweul = CalcLocalEulAndSetLimitedEul(srcmotid, (double)((int)(srcframe + 0.1)));
+						retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+						curmp->SetLimitedWM(retmat);
 					}
 
 					if (dstneweul) {
 						*dstneweul = neweul;
 					}
-				}
 
-
-				if (curmp->GetCalcLimitedWM() == 2) {
-					retmat = curmp->GetLimitedWM();
+					curmp->SetCalcLimitedWM(2);//後処理済
 				}
-				else {
-					retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
-					curmp->SetLimitedWM(retmat);
-				}
-
 
 				//else if (callingstate == 3) {
 				//	//2022/08/22
@@ -6806,13 +6811,6 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 				//	ChaMatrixIdentity(&retmat);
 				//}
 			}
-		}
-
-		if (callingstate == 1) {
-			curmp->SetCalcLimitedWM(1);//前処理済のフラグ。後処理済は２
-		}
-		else {
-			curmp->SetCalcLimitedWM(2);//前処理済のフラグ。後処理済は２
 		}
 
 	}

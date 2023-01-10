@@ -152,6 +152,19 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2023/01/10
+* 各種姿勢計算時のParentのLimited姿勢の使い方についてメモ
+* 
+* currentworldmatとしてGetWorldMatを使用する場合
+* 親として掛かっているのは　Limitedではない普通のGetParent()->GetWorldMatであるから
+* ローカル行列は　通常通り　localmat = GetWorldMat() * ChaMatrixInv(GetParent()->GetWorldMat())となる
+* 
+* 古いローカル行列において　古いscaleやtraanimを求める　
+* 別途求めたneweulに　制限を掛けて　古いscale, traanimとあわせて　新しいnewlocalmatを求める
+* 
+* 新しいnewlocalをグローバルにするために掛ける親行列は　GetParent()->GetCalclatedLimitedWM()である
+*/
 
 
 #include "useatl.h"
@@ -19077,10 +19090,14 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 		s_anglelimit.lower[AXIS_Z] = val_zl;
 		s_anglelimit.upper[AXIS_Z] = val_zu;
+
+		return 0;
+	}
+	else {
+		return 1;
 	}
 
 
-	return 0;
 }
 
 int UpdateWMandEul()
@@ -20102,7 +20119,8 @@ int OnFrameUtCheckBox()
 	}
 	if (s_LimitDegCheckBox && s_LimitDegCheckBoxFlag) {
 		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
-		if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
+		//if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
+		if (s_model && s_model->GetCurMotInfo() && (g_limitdegflag != s_beflimitdegflag)) {
 			//s_model->CalcBoneEul(s_model->GetCurMotInfo()->motid);
 			//refreshEulerGraph();
 			////s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
