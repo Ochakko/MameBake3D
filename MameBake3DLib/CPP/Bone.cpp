@@ -1496,74 +1496,10 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 	return 0;
 }
 
-//float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
-//{
-//	if (!childbone || !dstmat) {
-//		_ASSERT(0);
-//		return 0.0f;
-//	}
-//
-//	ChaMatrix resultmat;
-//	resultmat.SetIdentity();
-//	ChaMatrix childmat;
-//	childmat.SetIdentity();
-//
-//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-//	ChaVector3 aftjointpos, aftchildjointpos;
-//	resultmat = GetNodeMat() * GetCurrentLimitedWorldMat();
-//	childmat = childbone->GetNodeMat() * childbone->GetCurrentLimitedWorldMat();
-//
-//	ChaVector3TransformCoord(&aftjointpos, &zeropos, &resultmat);
-//	ChaVector3TransformCoord(&aftchildjointpos, &zeropos, &childmat);
-//
-//	ChaVector3 vecforleng;
-//	vecforleng = aftchildjointpos - aftjointpos;
-//	float retleng = (float)ChaVector3LengthDbl(&vecforleng);
-//
-//
-//	resultmat.data[MATI_41] = aftjointpos.x;
-//	resultmat.data[MATI_42] = aftjointpos.y;
-//	resultmat.data[MATI_43] = aftjointpos.z;
-//
-//	return retleng;
-//
-//}
-//
-//float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
-//{
-//	if (!childbone || !dstmat) {
-//		_ASSERT(0);
-//		return 0.0f;
-//	}
-//
-//	ChaMatrix resultmat;
-//	resultmat.SetIdentity();
-//	ChaMatrix childmat;
-//	childmat.SetIdentity();
-//
-//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-//	ChaVector3 aftjointpos, aftchildjointpos;
-//	resultmat = GetNodeMat() * GetCurrentZeroFrameMat(1);
-//	childmat = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
-//
-//	ChaVector3TransformCoord(&aftjointpos, &zeropos, &resultmat);
-//	ChaVector3TransformCoord(&aftchildjointpos, &zeropos, &childmat);
-//
-//	ChaVector3 vecforleng;
-//	vecforleng = aftchildjointpos - aftjointpos;
-//	float retleng = (float)ChaVector3LengthDbl(&vecforleng);
-//
-//	resultmat.data[MATI_41] = aftjointpos.x;
-//	resultmat.data[MATI_42] = aftjointpos.y;
-//	resultmat.data[MATI_43] = aftjointpos.z;
-//
-//	return retleng;
-//
-//}
 
 float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
-	//################################################################################################################################################
+	//############################################################################################
 	//2022/11/04
 	//マニピュレータの姿勢計算関数
 	//以前のCalcAxisMatXを改造
@@ -1571,7 +1507,19 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	//しかし　位置だけから計算すると　IK操作時のマニピュレータのIK平面がブレてしまう
 	//これを解決するには　ボーンの姿勢行列を加工して　マニピュレータ行列を求めることが有効だった
 	//ボーンの姿勢と　マニピュレータ行列の関係式が決まっていれば　IK中でもIK平面がブレない
-	//################################################################################################################################################
+	//############################################################################################
+
+
+	//#########################################################################################################################
+	//2023/01/11
+	//AXISKIND_CURRENTについて
+	//この関数は GetParent()->CalcAxisMatX_Manipulator( , childbone, ,,)のように呼び出される
+	//つまり選択中のジョイントの親としての関数が呼び出されている
+	//EditMot(MameBake3D)においては　回転用のマニピュレータの操作は　IK　つまり　子供ジョイントドラッグで親ジョイントを回転する
+	//マニピュレータは　子供ジョイント位置に表示するが　その軸の向きは　Parentの姿勢を反映したものとなる
+	//よってAXISKIND_CURRENTの場合　親からみた　currentのNodeMatにcurrentのGetLimitedWorldMatを掛けたものが基準となる
+	//#########################################################################################################################
+
 
 	ChaVector3 aftbonepos;
 	ChaVector3 aftchildpos;
@@ -3884,8 +3832,6 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 
 	eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, &axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
-	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
-	//eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, srcframe);
@@ -4048,6 +3994,7 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind
 	CQuaternion axisq;
 	axisq.RotationMatrix(GetNodeMat());
 	eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, &axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 
 	CMotionPoint* curmp;

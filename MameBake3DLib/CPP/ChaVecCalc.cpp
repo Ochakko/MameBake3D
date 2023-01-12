@@ -3131,6 +3131,7 @@ int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 b
 	Euler.z = (float)(z * 180.0 / PAI);
 	ModifyEuler360(&Euler, &befeul, notmodify180flag);
 
+
 	*reteul = Euler;
 	return 0;
 }
@@ -3140,8 +3141,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 {
 
 	//2022/12/16 ZEROVECLEN
-	//const double ZEROVECLEN = 1e-6;
-	const double ZEROVECLEN = 1e-4;
+	const double ZEROVECLEN = 1e-6;
+	//const double ZEROVECLEN = 1e-4;
 
 	CQuaternion axisQ, invaxisQ, EQ;
 	if (axisq) {
@@ -3173,15 +3174,20 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 
 	ChaVector3 targetVec, shadowVec;
 	ChaVector3 tmpVec;
+	double shadowLeng;
+	const float thdeg = 165.0f;
+	float tmpX0, tmpY0, tmpZ0;
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
 	shadowVec.y = (float)vecDotVec(&targetVec, &axisYVec);
 	shadowVec.z = 0.0f;
-	if (lengthVec(&shadowVec) <= ZEROVECLEN) {
+	shadowLeng = lengthVec(&shadowVec);
+	if (shadowLeng <= ZEROVECLEN) {
 		Euler.z = 90.0f;
 	}
 	else {
+		shadowVec = shadowVec / shadowLeng;//normalize
 		Euler.z = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
 	}
 	if (vecDotVec(&shadowVec, &axisYVec) < 0.0) {
@@ -3190,6 +3196,15 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
 	//	Euler.z = -Euler.z;
 	//}
+	tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);
+	if ((tmpZ0 - befeul.z) >= thdeg) {
+		tmpZ0 -= 180.0f;
+	}
+	if ((befeul.z - tmpZ0) >= thdeg) {
+		tmpZ0 += 180.0f;
+	}
+	Euler.z = tmpZ0;
+
 
 	EinvZ = ChaVector3(0.0f, 0.0f, -Euler.z);
 	QinvZ.SetRotationXYZ(&iniq, EinvZ);
@@ -3203,10 +3218,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//shadowVec.x = (float)vecDotVec(&tmpVec, &axisXVec);
 	//shadowVec.y = 0.0f;
 	//shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) <= ZEROVECLEN) {
+
+	shadowLeng = lengthVec(&shadowVec);
+	if (shadowLeng <= ZEROVECLEN) {
 		Euler.y = 90.0f;
 	}
 	else {
+		shadowVec = shadowVec / shadowLeng;//normalize
 		Euler.y = (float)aCos(vecDotVec(&shadowVec, &axisXVec) / lengthVec(&shadowVec));
 	}
 	if (vecDotVec(&shadowVec, &axisZVec) > 0.0) {
@@ -3215,6 +3233,14 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
 	//	Euler.y = -Euler.y;
 	//}
+	tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);
+	if ((tmpY0 - befeul.y) >= thdeg) {
+		tmpY0 -= 180.0f;
+	}
+	if ((befeul.y - tmpY0) >= thdeg) {
+		tmpY0 += 180.0f;
+	}
+	Euler.y = tmpY0;
 
 
 	EinvY = ChaVector3(0.0f, -Euler.y, 0.0f);
@@ -3232,10 +3258,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//shadowVec.x = 0.0f;
 	//shadowVec.y = (float)vecDotVec(&tmpVec, &axisYVec);
 	//shadowVec.z = (float)vecDotVec(&tmpVec, &axisZVec);
-	if (lengthVec(&shadowVec) <= ZEROVECLEN) {
+
+	shadowLeng = lengthVec(&shadowVec);
+	if (shadowLeng <= ZEROVECLEN) {
 		Euler.x = 90.0f;
 	}
 	else {
+		shadowVec = shadowVec / shadowLeng;//normalize
 		Euler.x = (float)aCos(vecDotVec(&shadowVec, &axisZVec) / lengthVec(&shadowVec));
 	}
 	if (vecDotVec(&shadowVec, &axisYVec) > 0.0) {
@@ -3244,10 +3273,28 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
 	//}
+	tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);
+	if ((tmpX0 - befeul.x) >= thdeg) {
+		tmpX0 -= 180.0f;
+	}
+	if ((befeul.x - tmpX0) >= thdeg) {
+		tmpX0 += 180.0f;
+	}
+	Euler.x = tmpX0;
 
+
+	//###################################################################################################################################
+	//2023/01/12
+	//Rokokoのfbx読み込みテストと　rootjointをIKで２回転するテストをして　オイラーグラフを観察
+	//ModifyEulerは　後処理としてではなく　XYZそれぞれの角度を求める際に　その都度補正する必要があった
+	//(そのようにしないと　Y軸を２回転する間に　Y軸が９０どの範囲しか動かずに　XとZが１８０度ずつ変化する階段状のグラフになってしまった)
+	//よって　後処理としてのModifyEuler*はコメントアウトして　各角度を求める部分で処理した
+	//###################################################################################################################################
 	//ModifyEuler(&Euler, &befeul);
 	//ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);//10027 CommentOut. 処理が重いわりにたまにしか役に立たないので。しばらくコメントアウト。
-	ModifyEuler360(&Euler, &befeul, notmodify180flag);
+	//ModifyEuler360(&Euler, &befeul, notmodify180flag);
+	//ModifyEuler360(&Euler, &befeul, 0);
+
 	*reteul = Euler;
 
 	return 0;
@@ -3707,8 +3754,8 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3
 
 	ChaVector3 tmpeul(0.0f, 0.0f, 0.0f);
 	if (axisq || (IsInit() == 0)) {
-		//Q2EulXYZusingMat(ROTORDER_XYZ, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 		Q2EulXYZusingQ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
+		//Q2EulXYZusingMat(ROTORDER_XYZ, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else {
 		//FBX書き出しの際にアニメーションに「ある程度の大きさの変化」がないとキーが省略されてしまう。
@@ -3968,6 +4015,8 @@ ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat)//回転成分のベクトルを取得
 
 	CQuaternion eulq;
 	eulq.Q2EulXYZusingQ(0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);
+	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);
+
 
 	return reteul;
 }

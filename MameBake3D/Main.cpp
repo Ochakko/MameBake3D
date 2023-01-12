@@ -156,7 +156,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 2023/01/10
 * 各種姿勢計算時のParentのLimited姿勢の使い方についてメモ
 * 
-* currentworldmatとしてGetWorldMatを使用する場合
+* currentworldmatとしてGetWorldMat(モーション元データ)を使用する場合
 * 親として掛かっているのは　Limitedではない普通のGetParent()->GetWorldMatであるから
 * ローカル行列は　通常通り　localmat = GetWorldMat() * ChaMatrixInv(GetParent()->GetWorldMat())となる
 * 
@@ -164,6 +164,9 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 別途求めたneweulに　制限を掛けて　古いscale, traanimとあわせて　新しいnewlocalmatを求める
 * 
 * 新しいnewlocalをグローバルにするために掛ける親行列は　GetParent()->GetCalclatedLimitedWM()である
+* 
+* そして新しいグローバル行列は　m_curmpにセットするかもしくは　SetLimitedWorldMatにセットする
+* (ただしIK操作時には元データに格納する)
 */
 
 
