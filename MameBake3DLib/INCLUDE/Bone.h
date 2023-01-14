@@ -132,7 +132,6 @@ public:
  * @return 成功したら０。
  */
 	int CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr );
-	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, int callingstate = 0);
 
 /**
  * @fn
@@ -285,10 +284,9 @@ public:
 	CMotionPoint* RotAndTraBoneQReq(double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 		CQuaternion qForRot, CQuaternion qForHipsRot, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm);
 
-	ChaMatrix CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat, ChaMatrix* dstparentwm);
-	ChaMatrix CalcNewLocalTAnimMatFromQofIK(int srcmotid, double srcframe,
-		ChaMatrix srcnewlocalrotmat, ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, 
-		ChaMatrix srcparentwm, ChaVector3 oneframetraanim);
+	ChaMatrix CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat);
+	ChaMatrix CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat, 
+		ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, ChaVector3 oneframetraanim);
 
 	int SaveSRT(int srcmotid, double srcstartframe, double srcendframe);
 
@@ -912,7 +910,13 @@ public: //accesser
 	};
 
 	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
+
+	//補間無し
 	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
+
+	//補間有り : 覚え方メモ：　計算済(Calclated)のLimitedWMを補間する関数として始まり　その後　未計算時にも対応した
+	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, int callingstate = 0);
+
 	ChaMatrix GetCurrentLimitedWorldMat();
 
 

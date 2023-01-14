@@ -3196,12 +3196,15 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
 	//	Euler.z = -Euler.z;
 	//}
-	tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);
-	if ((tmpZ0 - befeul.z) >= thdeg) {
-		tmpZ0 -= 180.0f;
-	}
-	if ((befeul.z - tmpZ0) >= thdeg) {
-		tmpZ0 += 180.0f;
+	tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//オーバー１８０度
+	if (notmodify180flag == 0) {
+		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+		if ((tmpZ0 - befeul.z) >= thdeg) {
+			tmpZ0 -= 180.0f;
+		}
+		if ((befeul.z - tmpZ0) >= thdeg) {
+			tmpZ0 += 180.0f;
+		}
 	}
 	Euler.z = tmpZ0;
 
@@ -3233,12 +3236,15 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
 	//	Euler.y = -Euler.y;
 	//}
-	tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);
-	if ((tmpY0 - befeul.y) >= thdeg) {
-		tmpY0 -= 180.0f;
-	}
-	if ((befeul.y - tmpY0) >= thdeg) {
-		tmpY0 += 180.0f;
+	tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//オーバー１８０度
+	if (notmodify180flag == 0) {
+		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+		if ((tmpY0 - befeul.y) >= thdeg) {
+			tmpY0 -= 180.0f;
+		}
+		if ((befeul.y - tmpY0) >= thdeg) {
+			tmpY0 += 180.0f;
+		}
 	}
 	Euler.y = tmpY0;
 
@@ -3273,12 +3279,15 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
 	//}
-	tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);
-	if ((tmpX0 - befeul.x) >= thdeg) {
-		tmpX0 -= 180.0f;
-	}
-	if ((befeul.x - tmpX0) >= thdeg) {
-		tmpX0 += 180.0f;
+	tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//オーバー１８０度
+	if (notmodify180flag == 0) {
+		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+		if ((tmpX0 - befeul.x) >= thdeg) {
+			tmpX0 -= 180.0f;
+		}
+		if ((befeul.x - tmpX0) >= thdeg) {
+			tmpX0 += 180.0f;
+		}
 	}
 	Euler.x = tmpX0;
 
@@ -3287,7 +3296,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//2023/01/12
 	//Rokokoのfbx読み込みテストと　rootjointをIKで２回転するテストをして　オイラーグラフを観察
 	//ModifyEulerは　後処理としてではなく　XYZそれぞれの角度を求める際に　その都度補正する必要があった
-	//(そのようにしないと　Y軸を２回転する間に　Y軸が９０どの範囲しか動かずに　XとZが１８０度ずつ変化する階段状のグラフになってしまった)
+	//(そのようにしないと　Y軸を２回転する間に　Y軸が９０度の範囲しか動かずに　XとZが１８０度ずつ変化する階段状のグラフになってしまった)
 	//よって　後処理としてのModifyEuler*はコメントアウトして　各角度を求める部分で処理した
 	//###################################################################################################################################
 	//ModifyEuler(&Euler, &befeul);
@@ -4000,7 +4009,7 @@ ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat)//スケール成分のベクトルを取得
 
 	return retvec;
 }
-ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat)//回転成分のベクトルを取得
+ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//回転成分のベクトルを取得
 {
 	//ローカルオイラー角を取得するためには
 	//srcmatには　GetNodeMat * GetWorldMat * Inv(GetParent()->GetWorldMat) * Inv(GetParent()->GetNodeMat) を渡す
@@ -4011,7 +4020,6 @@ ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat)//回転成分のベクトルを取得
 
 	int isfirstbone = 0;
 	int isendbone = 0;
-	int notmodify180flag = 1;
 
 	CQuaternion eulq;
 	eulq.Q2EulXYZusingQ(0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);

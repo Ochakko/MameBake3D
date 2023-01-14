@@ -954,6 +954,14 @@ int CBone::CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr,
 
 int CBone::GetCalclatedLimitedWM(int srcmotid, double srcframe0, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp, int callingstate)//default : pporgbefmp = 0, default : callingstate = 0
 {
+
+
+	//###########################
+	//時間に関する姿勢の補間有り
+	//###########################
+
+
+
 	//callingstate : 0->fullcalc, 1->bythread only current calc, 2->after thread, use result by threading calc
 
 	int ret;
@@ -1521,6 +1529,9 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	//#########################################################################################################################
 
 
+	bool ishipsjoint = IsHipsBone();
+
+
 	ChaVector3 aftbonepos;
 	ChaVector3 aftchildpos;
 	ChaVector3 aftparentpos;
@@ -1597,20 +1608,31 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmplimwm);
 	ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildlimwm);
 
-	if ((g_boneaxis == BONEAXIS_CURRENT) || (g_boneaxis == BONEAXIS_BINDPOSE)) {
-		//current bone axis
-		convmat = tmplimwm;
-	}
-	else if (g_boneaxis == BONEAXIS_PARENT) {
-		//parent bone axis
-		convmat = tmpparentlimwm;
-	}
-	else if (g_boneaxis == BONEAXIS_GLOBAL) {
-		//global axis
-		convmat.SetIdentity();
+	if (ishipsjoint == false) {
+
+		//hipsjointではない場合
+
+		if ((g_boneaxis == BONEAXIS_CURRENT) || (g_boneaxis == BONEAXIS_BINDPOSE)) {
+			//current bone axis
+			convmat = tmplimwm;
+		}
+		else if (g_boneaxis == BONEAXIS_PARENT) {
+			//parent bone axis
+			convmat = tmpparentlimwm;
+		}
+		else if (g_boneaxis == BONEAXIS_GLOBAL) {
+			//global axis
+			convmat.SetIdentity();
+		}
+		else {
+			convmat = tmplimwm;
+		}
 	}
 	else {
-		convmat = tmplimwm;
+		//2023/01/14
+		//hipsjointの場合には　IK回転として　Global回転するしかない(移動成分も回転する)ので　マニピュレータもそれに合わせる
+		//global axis
+		convmat.SetIdentity();
 	}
 
 
@@ -1622,7 +1644,7 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 
 
 
-	if ((aftbonepos == aftchildpos) || (g_boneaxis == BONEAXIS_GLOBAL)) {
+	if ((aftbonepos == aftchildpos) || (g_boneaxis == BONEAXIS_GLOBAL) || (ishipsjoint == true)) {
 		//ボーンの長さが０のとき　Identity回転　ボーン軸の種類がグローバルの場合　Identity回転
 		dstmat->SetIdentity();
 		//#########################################################
@@ -2617,11 +2639,11 @@ CMotionPoint* CBone::PasteRotReq( int srcmotid, double srcframe, double dstframe
 
 }
 
-ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat, ChaMatrix* dstparentwm)
+ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat)
 {
 	ChaMatrix newlocalrotmat;
 	newlocalrotmat.SetIdentity();
-	if (!dstsmat || !dstrmat || !dsttanimmat || !dstparentwm) {
+	if (!dstsmat || !dstrmat || !dsttanimmat) {
 		_ASSERT(0);
 		return newlocalrotmat;
 	}
@@ -2629,11 +2651,17 @@ ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQua
 	ChaMatrix currentwm;
 	//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//ここをGetLimitedWorldMatにすると１回目のIKが乱れる。２回目のIK以降はOK。
 	currentwm = GetWorldMat(srcmotid, srcframe);
+
 	ChaMatrix parentwm;
 	CQuaternion parentq;
 	CQuaternion invparentq;
 	if (GetParent()) {
-		parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+		if (g_underIKRot == false) {
+			parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		parentq.RotationMatrix(parentwm);
 		invparentq.RotationMatrix(ChaMatrixInv(parentwm));
 	}
@@ -2672,15 +2700,12 @@ ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQua
 	if (dsttanimmat) {
 		*dsttanimmat = tanimmat;
 	}
-	if (dstparentwm) {
-		*dstparentwm = parentwm;
-	}
 
 	return newlocalrotmat;
 }
 
-ChaMatrix CBone::CalcNewLocalTAnimMatFromQofIK(int srcmotid, double srcframe, 
-	ChaMatrix srcnewlocalrotmat, ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, ChaMatrix srcparentwm, ChaVector3 zeroframetanim)
+ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat, 
+	ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, ChaVector3 zeroframetanim)
 {
 	//############# 引数traanimはローカル姿勢 ###########
 
@@ -2737,9 +2762,9 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 	CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat, bool onretarget)
 {
 
-	//###############################################
-	//Retarget用. IK用にはRotAndTraBoneQReq()を使用
-	//###############################################
+	//##############################################################
+	//Retarget専用. IK用にはRotAndTraBoneQReq()を使用
+	//##############################################################
 
 	bool onaddmotion = true;//for getbychain
 	int existflag = 0;
@@ -2793,14 +2818,12 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 		if (setmatflag == 0){
 			ChaMatrix newlocalrotmat;
 			ChaMatrix smat, rmat, tmat, tanimmat;
-			ChaMatrix parentwm;
 			newlocalrotmat.SetIdentity();
 			smat.SetIdentity();
 			rmat.SetIdentity();
 			tmat.SetIdentity();
 			tanimmat.SetIdentity();
-			parentwm.SetIdentity();
-			newlocalrotmat = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, rotq, &smat, &rmat, &tanimmat, &parentwm);
+			newlocalrotmat = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, rotq, &smat, &rmat, &tanimmat);
 
 			//ChaMatrix newtanimmatrotated;
 			//newtanimmatrotated.SetIdentity();
@@ -2814,7 +2837,14 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 			ChaMatrix newlocalmat;
 			//newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &newtanimmatrotated);
 			newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &bvhtraanim);
-			ChaMatrix newwm;
+			ChaMatrix newwm, parentwm;
+			if (GetParent()) {
+				parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+				//GetParent()->GetCalclatedLimitedWM(srcmotid, srcframe, &parentwm);
+			}
+			else {
+				parentwm.SetIdentity();
+			}
 			newwm = newlocalmat * parentwm;//globalにする
 
 			SetWorldMat(infooutflag, 0, srcmotid, srcframe, newwm);
@@ -2870,7 +2900,12 @@ int CBone::SaveSRT(int srcmotid, double srcstartframe, double srcendframe)
 			ChaMatrix curwm, parentwm, localmat;
 			curwm = curmp->GetWorldMat();
 			if (GetParent()) {
-				parentwm = GetParent()->GetWorldMat(srcmotid, curframe);
+				if (g_underIKRot == false) {
+					parentwm = GetParent()->GetWorldMat(srcmotid, curframe);
+				}
+				else {
+					parentwm = GetParent()->GetLimitedWorldMat(srcmotid, curframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+				}
 				localmat = curwm * ChaMatrixInv(parentwm);
 			}
 			else {
@@ -2917,7 +2952,7 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 	currentbefwm = GetWorldMat(srcmotid, srcframe);
 
 	if (parentbone) {
-		//再帰から呼び出し
+		//再帰から呼び出し 再帰の２回目以降
 		CMotionPoint* parmp = parentbone->GetMotionPoint(srcmotid, srcframe);
 		if (parmp) {
 			//befparmat = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
@@ -2930,16 +2965,6 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 			SetWorldMat(infooutflag, 0, srcmotid, srcframe, tmpmat);
 			g_wmatDirectSetFlag = false;
 		}
-		//if (bvhbone) {
-		//	if (m_child) {
-		//		bvhbone->SetTmpMat(curmp->GetWorldMat());
-		//		//bvhbone->SetTmpMat(limitedworldmat);
-		//	}
-		//	else {
-		//		//bvhbone->SetTmpMat(newparmat);
-		//		bvhbone->SetTmpMat(newparmat);
-		//	}
-		//}
 
 		currentnewwm = GetWorldMat(srcmotid, srcframe);
 	}
@@ -2952,16 +2977,18 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 		ChaMatrix currentwm;
 		//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//ここをGetLimitedWorldMatにすると１回目のIKが乱れる。２回目のIK以降はOK。
 		currentwm = GetWorldMat(srcmotid, srcframe);
-		ChaMatrix parentwm;
+		ChaMatrix parentwm, parentlimitedwm;
 		CQuaternion parentq;
 		CQuaternion invparentq;
 		if (GetParent()) {
 			parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+			parentlimitedwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
 			parentq.RotationMatrix(parentwm);
 			invparentq.RotationMatrix(ChaMatrixInv(parentwm));
 		}
 		else {
 			parentwm.SetIdentity();
+			parentlimitedwm.SetIdentity();
 			parentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 			invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		}
@@ -3010,6 +3037,12 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 
 
 		if (ishipsjoint == true) {
+
+			//############
+			//Hips Joint
+			//############
+
+
 			//#############################################################################################################################
 			//2022/12/27
 			//hispについて　移動も回転するには　について
@@ -3024,13 +3057,19 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
 			//	parentwm;
 
-			newwm = currentwm * ChaMatrixInv(parentwm) *
+			newwm = currentwm * ChaMatrixInv(parentlimitedwm) *
 				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat * 
-				parentwm;
+				parentlimitedwm;
+
+			SetWorldMat(infooutflag, 0, srcmotid, srcframe, newwm);
+			currentnewwm = GetWorldMat(srcmotid, srcframe);
 
 		}
 		else {
-			//other joints !!!! traanimを qForRot で回転する
+
+		//###############################################
+		//other joints !!!! traanimを qForRot で回転する
+		//###############################################
 
 
 			////以下３行　hipsと同じようにすると　traanimが設定してあるジョイントで　回転軸がマニピュレータと合わない
@@ -3039,22 +3078,28 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 			//	parentwm;
 
 
+
+		//########################################################################
+		//2023/01/14
+		//指のRigでテストしたところ 制限角度有りの場合に　traanimが不正になった
+		//２段階に分けて計算することにより解決
+		//########################################################################
+
+		//#############################################################
+		//２段階処理の１段目：回転だけを変更して確定するための　１段目
+		//#############################################################
 			////calc new local rot
 			ChaMatrix newlocalrotmatForRot;
 			ChaMatrix smatForRot, rmatForRot, tmatForRot, tanimmatForRot;
-			ChaMatrix parentwmForRot;
 			newlocalrotmatForRot.SetIdentity();
 			smatForRot.SetIdentity();
 			rmatForRot.SetIdentity();
 			tmatForRot.SetIdentity();
 			tanimmatForRot.SetIdentity();
-			parentwmForRot.SetIdentity();
-			newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot, &parentwmForRot);
+			newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
 
 			ChaMatrix newtanimmatrotated;
-			newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, srcframe, newlocalrotmatForRot, 
-				smatForRot, rmatForRot, tanimmatForRot, parentwmForRot, ChaMatrixTraVec(startframetraanimmat));
-
+			newtanimmatrotated = tanimmatForRot;//１段目では　traanimを 回転しない
 
 			////	//traanimを 回転しないとき
 			////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
@@ -3063,20 +3108,61 @@ CMotionPoint* CBone::RotAndTraBoneQReq(double srcstartframe, bool infooutflag, C
 
 			//#### SRTAnimからローカル行列組み立て ####
 			ChaMatrix newlocalmat;
-			newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), 
+			newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
 				&smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);//ForRot
-			newwm = newlocalmat * parentwmForRot;//globalにする
+			//newwm = newlocalmat * parentwmForRot;//globalにする
+			newwm = newlocalmat * parentlimitedwm;//globalにする
+
+			SetWorldMat(infooutflag, 0, srcmotid, srcframe, newwm);
+			currentnewwm = GetWorldMat(srcmotid, srcframe);
+
+
+
+		//#####################################################################################################
+		//２段階処理の２段目：角度制限オンオフを考慮し　回転を確定させた後　移動アニメを回転するための　２段目
+		//#####################################################################################################
+
+				////calc new local rot
+			ChaMatrix tmplocalmat;
+			tmplocalmat = currentnewwm * ChaMatrixInv(parentlimitedwm);
+
+			//ChaMatrix newlocalrotmatForRot2;
+			ChaMatrix smatForRot2, rmatForRot2, tmatForRot2, tanimmatForRot2;
+			//newlocalrotmatForRot2.SetIdentity();
+			smatForRot2.SetIdentity();
+			rmatForRot2.SetIdentity();
+			tmatForRot2.SetIdentity();
+			tanimmatForRot2.SetIdentity();
+
+			//newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, srcframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
+			GetSRTandTraAnim(tmplocalmat, GetNodeMat(), &smatForRot2, &rmatForRot2, &tmatForRot2, &tanimmatForRot2);
+
+
+			//２段目では　確定した回転によりtraanimを回転する
+			ChaMatrix newtanimmatrotated2;
+			newtanimmatrotated2 = CalcNewLocalTAnimMatFromSRTraAnim(rmatForRot2,
+				smatForRot, rmatForRot, tanimmatForRot, ChaMatrixTraVec(startframetraanimmat));
+
+			////	//traanimを 回転しないとき
+			////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
+			////	newtanimmatrotated = tanimmatForRot;
+
+
+			//#### SRTAnimからローカル行列組み立て ####
+			ChaMatrix newlocalmat2;
+			newlocalmat2 = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
+				&smatForRot, &rmatForRot2, &newtanimmatrotated2);//ForRot
+			//newwm = newlocalmat * parentwmForRot;//globalにする
+			newwm = newlocalmat2 * parentlimitedwm;//globalにする
+
+			g_wmatDirectSetFlag = true;
+			SetWorldMat(infooutflag, 0, srcmotid, srcframe, newwm);
+			g_wmatDirectSetFlag = false;
+			currentnewwm = GetWorldMat(srcmotid, srcframe);
+
 
 		}
 
-		SetWorldMat(infooutflag, 0, srcmotid, srcframe, newwm);
-
-		//if (bvhbone) {
-		//	//bvhbone->SetTmpMat(tmpmat);
-		//	bvhbone->SetTmpMat(newwm);
-		//}
-
-		currentnewwm = GetWorldMat(srcmotid, srcframe);
 	}
 
 
@@ -3793,7 +3879,6 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		isendbone = 1;
 	}
 
-	//int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
 
 	CQuaternion eulq;
 	if (GetParent()) {
@@ -3801,7 +3886,12 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 
 		ChaMatrix curwm, parentwm, eulmat;
 		curwm = GetWorldMat(srcmotid, srcframe);
-		parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+		if (g_underIKRot == false) {
+			parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 	}
 	else {
@@ -3812,14 +3902,19 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		eulq = ChaMatrix2Q(curwm);
 	}
 
+
+	//2023/01/14
+	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
+	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	int notmodify180flag = 1;
-	//if (srcframe <= 1.01) {
-	//	//befframeが0フレームの場合には　180度ずれチェックをしない
-	//	notmodify180flag = 1;
-	//}
-	//else {
-	//	notmodify180flag = 0;
-	//}
+	if (srcframe <= 1.01) {
+		//0フレームと１フレームは　180度ずれチェックをしない
+		notmodify180flag = 1;
+	}
+	else {
+		notmodify180flag = 0;
+	}
+
 
 	CQuaternion axisq;
 	axisq.RotationMatrix(GetNodeMat());
@@ -3968,7 +4063,17 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind
 		isendbone = 1;
 	}
 
-	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
+	//2023/01/14
+	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
+	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
+	int notmodify180flag = 1;
+	if (curframe <= 1.01) {
+		//0フレームと１フレームは　180度ずれチェックをしない
+		notmodify180flag = 1;
+	}
+	else {
+		notmodify180flag = 0;
+	}
 
 	CQuaternion eulq;
 	if (GetParent()) {
@@ -4420,7 +4525,12 @@ ChaMatrix CBone::CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVecto
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは　limitedではないparentwm
+		if (g_underIKRot == false) {
+			parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4478,7 +4588,12 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは　limitedではないparentwm
+		if (g_underIKRot == false) {
+			parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4554,7 +4669,12 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curmwに掛かっているのは　limitedではないparentwm
+		if (g_underIKRot == false) {
+			parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4628,7 +4748,12 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&parnodemat);
 	if (GetParent()) {
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは limitedではないparentwm
+		if (g_underIKRot == false) {
+			parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		parnodemat = GetParent()->GetNodeMat();
 	}
 
@@ -4716,6 +4841,9 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		return 0;
 	}
 
+
+	curmp->SetCalcLimitedWM(0);//2023/01/14 limited　フラグ　リセット
+
 	int ismovable = 0;
 
 	if ((g_wmatDirectSetFlag == false) && (g_underRetargetFlag == false)){
@@ -4723,7 +4851,12 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		saveworldmat = curmp->GetWorldMat();//!!!!!!!!! 変更前を保存
 		ChaMatrix befparentwm;
 		if (GetParent()) {
-			befparentwm = GetParent()->GetWorldMat(srcmotid, srcframe);//curwmに掛かっているのは limitedではないparentwm
+			if (g_underIKRot == false) {
+				befparentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+			}
+			else {
+				befparentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+			}
 		}
 		else {
 			befparentwm.SetIdentity();
@@ -5455,8 +5588,12 @@ ChaVector3 CBone::CalcLocalTraAnim(int srcmotid, double srcframe)
 	ChaMatrixIdentity(&parmat);
 	invparmat = parmat;
 	if (GetParent()){
-		parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
-		//parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//parentはリミット済のものを取得する
+		if (g_underIKRot == false) {
+			parmat = GetParent()->GetWorldMat(srcmotid, srcframe);
+		}
+		else {
+			parmat = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+		}
 		ChaMatrixInverse(&invparmat, NULL, &parmat);
 	}
 
@@ -5736,19 +5873,17 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 		isendbone = 1;
 	}
 
-	int notmodify180flag = 1;//!!!! 165度以上のIK編集のために　180度チェックはしない
-
-	//if (srcnotmodifyflag == 0) {
-	//	if ((srcframe == 0.0) || (srcframe == 1.0)) {
-	//		notmodifyflag = 1;
-	//	}
-	//	else {
-	//		notmodifyflag = 0;
-	//	}
-	//}
-	//else {
-	//	notmodifyflag = 1;//!!!! bvh-->fbx書き出し時にはmodifyeulerで裏返りチェックをするが、それ以外の時は２重に処理しないように裏返りチェックをしない
-	//}
+	//2023/01/14
+	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
+	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
+	int notmodify180flag = 1;
+	if (srcframe <= 1.01) {
+		//0フレームと１フレームは　180度ずれチェックをしない
+		notmodify180flag = 1;
+	}
+	else {
+		notmodify180flag = 0;
+	}
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 	if (befeulptr) {
@@ -6677,6 +6812,12 @@ ChaVector3 CBone::CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe)
 
 ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul, int callingstate)//default : dstneweul = 0, default : callingstate = 0
 {
+
+	//###########################
+	//時間に関する姿勢の補間無し
+	//###########################
+
+
 	//callingstate : 0->fullcalc, 1->bythread only current calc, 2->after thread, use result by threading calc, 3->get calclated parents wm
 
 
@@ -6763,10 +6904,18 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 	}
 	else {
 		//制限角度無し
-		CMotionPoint calcmp;
-		int existflag = 0;
-		CallF(CalcFBXMotion(srcmotid, srcframe, &calcmp, &existflag), return retmat);
-		retmat = calcmp.GetWorldMat();// **wmat;
+		//CMotionPoint calcmp;
+		//int existflag = 0;
+		//CallF(CalcFBXMotion(srcmotid, srcframe, &calcmp, &existflag), return retmat);//コメントにあるように時間に関する補間は必要ないのでコメントアウト2023/01/14
+		//retmat = calcmp.GetWorldMat();// **wmat;
+
+		CMotionPoint* curmp = GetMotionPoint(srcmotid, srcframe);
+		if (curmp) {
+			retmat = curmp->GetWorldMat();
+		}
+		else {
+			retmat.SetIdentity();
+		}
 
 		if (dstneweul) {
 			ChaVector3 cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);

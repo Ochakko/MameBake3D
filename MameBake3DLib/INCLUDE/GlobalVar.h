@@ -97,6 +97,7 @@ ID3D11ShaderResourceView* g_presview = 0;
 
 bool g_underloading = false;
 int g_underselectingframe = 0;
+bool g_underIKRot = false;
 
 int	g_numthread = 3;
 double g_btcalccnt = 3.0;
@@ -270,6 +271,7 @@ extern ID3D11ShaderResourceView* g_presview;
 
 extern bool g_underloading;
 extern int g_underselectingframe;
+extern bool g_underIKRot;
 
 extern int	g_numthread;
 extern double g_btcalccnt;

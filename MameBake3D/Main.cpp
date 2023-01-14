@@ -166,7 +166,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 新しいnewlocalをグローバルにするために掛ける親行列は　GetParent()->GetCalclatedLimitedWM()である
 * 
 * そして新しいグローバル行列は　m_curmpにセットするかもしくは　SetLimitedWorldMatにセットする
-* (ただしIK操作時には元データに格納する)
+*
+* ただしIK操作時には元データに格納するので　parentwmにはLimitedを使う
 */
 
 
@@ -2743,6 +2744,8 @@ void InitApp()
 	g_rotatetanim = true;
 	g_tpose = true;
 	g_preciseOnPreviewToo = false;
+
+	g_underIKRot = false;
 
 
 	g_VSync = false;

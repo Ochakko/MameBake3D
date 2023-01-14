@@ -419,7 +419,7 @@ ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//スケール成分だけの行列にする
 ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//回転成分だけの行列にする
 ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//移動成分だけの行列にする
 ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//スケール成分のベクトルを取得
-ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat);//回転成分のベクトルを取得
+ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag);//回転成分のベクトルを取得
 ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//移動成分のベクトルを取得
 CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixを受け取って　CQuaternionを返す
 void ChaMatrixNormalizeRot(ChaMatrix* pdst);
@@ -505,7 +505,7 @@ extern ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//スケール成分だけの行列にする
 extern ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//回転成分だけの行列にする
 extern ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//移動成分だけの行列にする
 extern ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//スケール成分のベクトルを取得
-extern ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat);//回転成分のベクトルを取得
+extern ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag);//回転成分のベクトルを取得
 extern ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//移動成分のベクトルを取得
 extern CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixを受け取って　CQuaternionを返す
 extern void ChaMatrixNormalizeRot(ChaMatrix* pdst);
