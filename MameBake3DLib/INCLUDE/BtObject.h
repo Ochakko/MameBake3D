@@ -69,7 +69,7 @@ public:
  * @breaf 剛体シミュレーションの行列からシミュレーション適用後の行列を計算する。
  * @return 成功したら０。
  */
-	int SetBtMotion();
+	int SetBtMotion(ChaMatrix curtraanim);
 
 	int SetCapsuleBtMotion(CRigidElem* srcre);
 
@@ -339,6 +339,8 @@ private:
 
 
 	ChaVector3 m_btpos;//Motion2Btで計算した剛体の位置
+
+	CQuaternion m_btq;//CreateObjectで設定した剛体の初期の向き
 };
 
 

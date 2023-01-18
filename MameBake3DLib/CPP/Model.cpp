@@ -5208,7 +5208,9 @@ int CModel::RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bm
 					if (curre){
 						boneptr->CalcRigidElemParams(childbone, 0);
 
-						ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
+						//ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
+						ChaMatrix worldcapsulemat = curre->GetCapsulematForColiShape(0) * GetWorldMat();//2023/01/18
+
 						g_hmWorld->SetMatrix((float*)&(worldcapsulemat.data[MATI_11]));
 						boneptr->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
 						//g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
@@ -5361,7 +5363,10 @@ void CModel::RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObje
 			//g_hmWorld->SetMatrix((float*)&(worldcapsulemat));
 			//srcbone->GetCurColDisp(childbone)->UpdateMatrix(&worldcapsulemat, &m_matVP);
 
-			ChaMatrix tmpcapmat = curre->GetCapsulemat(0);
+			
+			//ChaMatrix tmpcapmat = curre->GetCapsulemat(0);
+			ChaMatrix tmpcapmat = curre->GetCapsulematForColiShape(0);//2023/01/18
+
 			g_hmWorld->SetMatrix((float*)&(tmpcapmat.data[MATI_11]));
 			srcbone->GetCurColDisp(childbone)->UpdateMatrix(&tmpcapmat, &m_matVP);
 			ChaVector4 difmult;
@@ -6512,15 +6517,15 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 
 			
 			BtMat2BtObjReq(m_topbt, wmat, vpmat);
-			RecalcConstraintFrameABReq(m_topbt);
+			//RecalcConstraintFrameABReq(m_topbt);
 
 			m_physicsikcnt++;
 		}
 	}
 	else {
-		if (srcbone && srcbone->GetParent()) {
-			RecalcConstraintFrameABReq(m_topbt);
-		}
+		//if (srcbone && srcbone->GetParent()) {
+		//	RecalcConstraintFrameABReq(m_topbt);
+		//}
 	}
 
 
@@ -6530,18 +6535,22 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 	//2022/07/11
 	// SetShaderConstから本関数SetBtMotionに処理を移動。
 	//#########################################################################################
+
+	double roundingframe = (double)((int)(curframe + 0.0001));
+
 	map<int, CBone*>::iterator itrbone2;
 	for (itrbone2 = m_bonelist.begin(); itrbone2 != m_bonelist.end(); itrbone2++) {
 		CBone* curbone2 = itrbone2->second;
 		if (curbone2) {
 			if (curbone2->GetChild() == NULL) {
-				CBtObject* startbto2 = curbone2->GetParent()->GetBtObject(curbone2);
-				if(startbto2 != NULL) {
-					if (ragdollflag == 0) {
-						CMotionPoint tmpmp1 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
-						curbone2->SetBtMat(tmpmp1.GetWorldMat());
-					}
-					else {
+				if (curbone2->GetParent()) {
+					//CBtObject* startbto2 = curbone2->GetParent()->GetBtObject(curbone2);
+					//if (startbto2 != NULL) {
+						//if (ragdollflag == 0) {
+							//CMotionPoint tmpmp1 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+							//curbone2->SetBtMat(tmpmp1.GetWorldMat());
+						//}
+						//else {
 						if (curbone2->GetParent() != NULL) {
 							//CMotionPoint tmpmp2 = curbone2->GetParent()->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
 							//curbone2->SetBtMat(tmpmp2.GetWorldMat());
@@ -6551,7 +6560,12 @@ int CModel::SetBtMotion(CBone* srcbone, int ragdollflag, double srcframe, ChaMat
 							CMotionPoint tmpmp3 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
 							curbone2->SetBtMat(tmpmp3.GetWorldMat());
 						}
-					}
+						//}
+					//}
+				}
+				else {
+					CMotionPoint tmpmp4 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+					curbone2->SetBtMat(tmpmp4.GetWorldMat());
 				}
 			}
 		}
@@ -6742,12 +6756,45 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 
 	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()){
 		CBone* curbone = curbto->GetBone();
+		CBone* childbone = curbto->GetEndBone();
+
+		ChaMatrix curtraanim;
+		curtraanim.SetIdentity();
+		if (m_curmotinfo) {
+			int curmotid = m_curmotinfo->motid;
+			double curframe = m_curmotinfo->curframe;
+
+			//if (curbone->IsHipsBone() && (curframe >= 50.0)) {
+			//	_ASSERT(0);//for debug
+			//}
+
+			//ChaMatrix curwm = curbone->GetWorldMat(curmotid, curframe);
+			ChaMatrix curwm = curbone->GetCurMp().GetWorldMat();
+			ChaMatrix parentwm;
+			if (curbone->GetParent()) {
+				//parentwm = curbone->GetParent()->GetWorldMat(curmotid, curframe);
+				parentwm = curbone->GetParent()->GetCurMp().GetWorldMat();
+			}
+			else {
+				parentwm.SetIdentity();
+			}
+			ChaMatrix curlocalmat;
+			curlocalmat = curwm * ChaMatrixInv(parentwm);
+
+			ChaMatrix smat, rmat, tmat;
+			GetSRTandTraAnim(curlocalmat, curbone->GetNodeMat(), &smat, &rmat, &tmat, &curtraanim);
+		}
+		else {
+			curtraanim.SetIdentity();
+		}
+
+
 		if (curbone){
 			if (g_previewFlag == 4){
-				curbto->SetBtMotion();
+				curbto->SetBtMotion(curtraanim);
 			}
 			else if (g_previewFlag == 5){
-				curbto->SetBtMotion();
+				curbto->SetBtMotion(curtraanim);
 			}
 		}
 		

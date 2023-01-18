@@ -153,7 +153,8 @@ ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe, int multworld)//default o
 	//int calccapsuleflag = 1;
 	//m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 1, multworld, calczeroframe);
 	if (m_endbone && m_endbone->GetParent()) {
-		m_endbone->GetParent()->CalcAxisMatX_RigidBody(0, m_endbone, &m_capsulemat, calczeroframe);
+		bool dir2xflag = false;
+		m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &m_capsulemat, calczeroframe);
 	}
 	else {
 		m_capsulemat.SetIdentity();
@@ -162,6 +163,31 @@ ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe, int multworld)//default o
 
 	return m_capsulemat;
 }
+
+ChaMatrix CRigidElem::GetCapsulematForColiShape(int calczeroframe, int multworld)//default of multworld = 1
+{
+	//######################################################################################
+	//2023/01/18
+	//RigidBodyの形状の表示用の姿勢計算をdir2xflag = trueで行う　(モーションとは軸が異なる)
+	//######################################################################################
+
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	//int calccapsuleflag = 1;
+	//m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 1, multworld, calczeroframe);
+	if (m_endbone && m_endbone->GetParent()) {
+		bool dir2xflag = true;
+		m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &retmat, calczeroframe);
+	}
+	else {
+		retmat.SetIdentity();
+	}
+
+	return retmat;
+}
+
+
 
 
 

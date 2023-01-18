@@ -171,6 +171,27 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 */
 
 
+/*
+* 2023/01/18
+* 通常モーションと物理シミュの相互変換について
+* 通常モーションの軸を変更したので　物理剛体の軸と一致していない状態が続いていた
+* 物理剛体の軸を　変更した通常モーションの軸と合わせることで　処理が簡単になった
+* 剛体の軸は　GetCapsulemat(内部でCalcAxisMatX_RigidBobdyのdir2xflag = false)によって求められる
+* 通常モーション-->物理モーション変換：Motion2Bt()
+* 物理モーション-->通常モーション変換：SetBtMotion()
+* 上記両方の変換において　軸を合わせたことにより回転情報がそのままの値で　やり取りできるようになった
+* 
+* 変更により物理シミュがより安定したので　今までの設定のままだと　動きが硬くなった
+* 柔らかい動きにするために　
+* 　g_btcalccntの初期値を３から１　回転バネのスライダー範囲を[0, 1]　STOP_CFMの値を０から0.5　に変更
+*   setEquiliburiumPoint呼び出しは　オブジェクト作成時のみ
+* 　サンプルの重力値も　大幅に小さく設定
+* 表示回数fps依存で動きが硬くなったり柔らかくなったりする　物理の作業の際にはVSync(fps一定)チェックボックスにチェック
+* モーション再生スピードによっても　物理シミュ結果は大きく変わります　Speedスライダーで調整
+*/
+
+
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -2740,6 +2761,8 @@ void InitApp()
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
+
+	g_btcalccnt = 1.0;
 
 	g_rotatetanim = true;
 	g_tpose = true;
@@ -23767,7 +23790,8 @@ int CreateRigidWnd()
 	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300 ver10024
-	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
+	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
+	s_akSlider = new OWP_Slider(g_initcusak, 1.0f, 0.0f);//2023/01/18
 	s_aklabel = new OWP_Label(L"rotSpring customValue");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
@@ -27754,7 +27778,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.11 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.12 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -35181,7 +35205,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.11 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.12 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

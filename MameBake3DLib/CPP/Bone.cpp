@@ -538,10 +538,13 @@ int CBone::AddChild( CBone* childptr )
 int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread)
 {
 
-	//2022/12/26 注意書追加
+	//2023/01/18 注意書修正
 	//UpdateMatrixのsrcframeは経過時間計算を考慮した　浮動小数有りの時間が渡される
-	//GetMotionPoint, GetBefNextMP, GetWorldMatは intに丸めてからdoubleにして検索する
-	//姿勢計算は　intに丸めたフレームとその次のフレームの姿勢の間を補間計算して求める
+	//GetMotionPoint, GetWorldMatは intに丸めてからdoubleにして検索する justでtimeが一致しないとMotionPointが返らない
+	//一方で　GetBefNextMPには　フレーム間姿勢の補間のために　小数有りの時間を渡す　justが無くても　befとnextを返す
+
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
 
 	int existflag = 0;
 
@@ -577,10 +580,10 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 				//2022/12/17
 				//オイラー角情報更新
 				//if (callingbythread == false) {//worldmatに変更が無いときにthreadで呼ばれる　よってローカル計算可能
-					CMotionPoint* mpptr = GetMotionPoint(srcmotid, srcframe);
+					CMotionPoint* mpptr = GetMotionPoint(srcmotid, roundingframe);
 					if (mpptr) {
 						ChaMatrix wm = mpptr->GetWorldMat();
-						ChaVector3 cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_BEFFRAME);
+						ChaVector3 cureul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 						mpptr->SetLocalEul(cureul);
 					}
 					else {
@@ -1585,6 +1588,7 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	ChaMatrix tmpbtmat = GetNodeMat() * GetBtMat();
 	ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
 	ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentLimitedWorldMat();
+	ChaMatrix tmpchildbtmat = childbone->GetNodeMat() * childbone->GetBtMat();
 	//ChaMatrix tmpchildbtmat;
 	ChaMatrix tmpparentzerofm;
 	ChaMatrix tmpparentlimwm;
@@ -1604,9 +1608,16 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	ChaMatrix convmat;
 	convmat.SetIdentity();
 
-	ChaVector3TransformCoord(&aftparentpos, &zeropos, &tmpparentlimwm);
-	ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmplimwm);
-	ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildlimwm);
+	if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+		ChaVector3TransformCoord(&aftparentpos, &zeropos, &tmpparentlimwm);
+		ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmplimwm);
+		ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildlimwm);
+	}
+	else {
+		ChaVector3TransformCoord(&aftparentpos, &zeropos, &tmpparentbtmat);
+		ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpbtmat);
+		ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildbtmat);
+	}
 
 	if (ishipsjoint == false) {
 
@@ -1614,11 +1625,22 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 
 		if ((g_boneaxis == BONEAXIS_CURRENT) || (g_boneaxis == BONEAXIS_BINDPOSE)) {
 			//current bone axis
-			convmat = tmplimwm;
+			if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+				convmat = tmplimwm;
+			}
+			else {
+				convmat = tmpbtmat;
+			}
+			
 		}
 		else if (g_boneaxis == BONEAXIS_PARENT) {
 			//parent bone axis
-			convmat = tmpparentlimwm;
+			if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+				convmat = tmpparentlimwm;
+			}
+			else {
+				convmat = tmpparentbtmat;
+			}
 		}
 		else if (g_boneaxis == BONEAXIS_GLOBAL) {
 			//global axis
@@ -1729,13 +1751,22 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 }
 
 
-float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
+float CBone::CalcAxisMatX_RigidBody(bool dir2xflag, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
 	//#############################################################################################
 	//2022/11/03
 	//RigidBody用　basevecは マニピュレータと同じvecx(RigidBody形状はCapsule_dirX.mqo)
 	//CalcAxisMatX_Manipulatorと違うところは　g_ikaxis_kindによらず　RigidBody用の計算をするところ
 	//#############################################################################################
+
+	//########################################################################################################################
+	//2023/01/18
+	//dir2xflagを追加
+	//bullet physicsのrigidbodyの回転モーションの軸を　通常モーションの軸と合わせるためには　NodeMatをX軸に向けないことが必要
+	//dir2xflag == falseのときには　NodeMatをX軸に向けない
+	// 
+	//カプセル形状の表示のためには　NodeMatをX軸に向ける必要がある　この時には dir2xflagをtrueにしてこの関数を呼ぶ
+	//########################################################################################################################
 
 	ChaVector3 aftbonepos;
 	ChaVector3 aftchildpos;
@@ -1769,7 +1800,7 @@ float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* d
 		convmat = tmpzerofm;
 	}
 	else {
-		if (g_previewFlag != 5) {
+		if ((g_previewFlag != 5) && (g_previewFlag != 4)) {
 			ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(1);
 			ChaMatrix tmplimwm = GetNodeMat() * GetCurrentLimitedWorldMat();
 			ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(1);
@@ -1833,8 +1864,16 @@ float CBone::CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* d
 	//#########################################################
 	//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 	//#########################################################
-	*dstmat = CalcAxisMatX(bonevec, aftbonepos, convmat);//ChaVecCalc.cpp
+	
 
+	//2023/01/18
+	if (dir2xflag == true) {
+		*dstmat = CalcAxisMatX(bonevec, aftbonepos, convmat);//ChaVecCalc.cpp
+	}
+	else {
+		*dstmat = convmat;
+	}
+	
 	ChaVector3 diffvec = aftbonepos - aftchildpos;
 	float retleng = (float)ChaVector3LengthDbl(&diffvec);
 
@@ -2136,7 +2175,8 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 
 	ChaMatrix bindcapsulemat;
 	ChaMatrixIdentity(&bindcapsulemat);
-	float diffleng = CalcAxisMatX_RigidBody(1, childbone, &bindcapsulemat, 1);
+	bool dir2xflag = false;
+	float diffleng = CalcAxisMatX_RigidBody(dir2xflag, 1, childbone, &bindcapsulemat, 1);
 
 
 	float cylileng = curre->GetCylileng();
@@ -6059,6 +6099,13 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, 
 }
 */
 
+
+
+//#################################################
+//2023/01/18
+//通常モーションと物理剛体の軸合わせをしたので
+//回転情報は通常モーションと物理とで共通となった
+//#################################################
 int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
 {
 	ChaMatrixIdentity(dstmat);
@@ -6069,35 +6116,31 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 	}
 
 	ChaVector3 jointfpos;
-	ChaMatrix firstmat;
-	ChaMatrix invfirstmat;
 	ChaMatrix curworld;
 	ChaMatrix befworld;
 	ChaMatrix invbefworld;
-	ChaMatrix diffworld;
 	ChaVector3 rigidcenter;
-	ChaMatrix multmat;
-	ChaMatrix tramat;
-
-
-	//firstmat = GetFirstMat();
-	firstmat = GetCurrentZeroFrameMat(0);
-	ChaMatrixInverse(&invfirstmat, NULL, &firstmat);
+	ChaMatrix rotmat;
+	ChaMatrix tramat, childtramat;
 
 	ChaMatrix befbtmat;
-	if (GetBtFlag() == 0){
+	befbtmat = GetBtMat();
+
+	//if (GetBtFlag() == 0){
 		//再帰処理中のまだ未セットの状態の場合
-		befbtmat = GetBtMat();
-	}
-	else{
-		//再帰処理中のすでにセットした状態の場合
-		befbtmat = GetBefBtMat();
-	}
+		//befbtmat = GetBtMat();
+	//}
+	//else{
+	//	//再帰処理中のすでにセットした状態の場合
+	//	befbtmat = GetBefBtMat();
+	//}
+
+
 
 	//current
 	if (GetBtKinFlag() == 1){
-		diffworld = invfirstmat * GetCurMp().GetWorldMat();
 		tramat = GetCurMp().GetWorldMat();
+		rotmat = ChaMatrixRot(tramat);
 
 		jointfpos = GetJointFPos();
 		ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
@@ -6108,8 +6151,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 	else{
 		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
 		if (srcmodel->GetBtCnt() == 0){
-			diffworld = invfirstmat * GetCurMp().GetWorldMat();
 			tramat = GetCurMp().GetWorldMat();
+			rotmat = ChaMatrixRot(tramat);
 
 			jointfpos = GetJointFPos();
 			ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
@@ -6136,18 +6179,18 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 				ChaMatrixTranslation(&diffmvmat, diffmv.x, diffmv.y, diffmv.z);
 
 				ChaMatrixInverse(&invbefworld, NULL, &befworld);
-				ChaMatrix newtramat = befbtmat * diffmvmat;
-
-				diffworld = invfirstmat * newtramat;
+				
+				tramat = befbtmat * diffmvmat;
+				rotmat = ChaMatrixRot(tramat);
 
 				m_btparentpos = curparentpos;
 				jointfpos = childbone->GetJointFPos();
 				//ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &befbtmat);
-				ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &newtramat);
+				ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
 			}
 			else{
-				diffworld = invfirstmat * befbtmat;
 				tramat = befbtmat;
+				rotmat = ChaMatrixRot(tramat);				
 
 				jointfpos = GetJointFPos();
 				ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
@@ -6157,23 +6200,134 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 		}
 	}
 
-	//multmat = srcre->GetBindcapsulemat() * diffworld;
-	CBtObject* curbto = GetBtObject(childbone);
-	if (curbto) {
-		multmat = curbto->GetFirstTransformMatX() * diffworld;
-	}
-	else {
-		multmat = GetCurrentZeroFrameMat(0) * diffworld;
-		_ASSERT(0);
-	}
 	rigidcenter = (m_btparentpos + m_btchildpos) * 0.5f;
 
-	*dstmat = multmat;
+	*dstmat = rotmat;
 	*dstpos = rigidcenter;
 
 	return 0;
 }
 
+
+//###################################################################################
+//2023/01/18よりも前のバージョン
+//通常モーションと物理剛体の軸が異なる場合の　diffを使ったやり方
+//軸合わせをしたので　回転情報をそのままセットする方法に変えた　よってコメントアウト
+//###################################################################################
+//int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
+//{
+//	ChaMatrixIdentity(dstmat);
+//	*dstpos = ChaVector3(0.0f, 0.0f, 0.0f);
+//
+//	if (!childbone || !dstmat || !dstpos) {
+//		return 1;
+//	}
+//
+//	ChaVector3 jointfpos;
+//	ChaMatrix firstmat;
+//	ChaMatrix invfirstmat;
+//	ChaMatrix curworld;
+//	ChaMatrix befworld;
+//	ChaMatrix invbefworld;
+//	ChaMatrix diffworld;
+//	ChaVector3 rigidcenter;
+//	ChaMatrix multmat;
+//	ChaMatrix tramat;
+//
+//
+//	//firstmat = GetFirstMat();
+//	firstmat = GetCurrentZeroFrameMat(0);
+//	ChaMatrixInverse(&invfirstmat, NULL, &firstmat);
+//
+//	ChaMatrix befbtmat;
+//	if (GetBtFlag() == 0) {
+//		//再帰処理中のまだ未セットの状態の場合
+//		befbtmat = GetBtMat();
+//	}
+//	else {
+//		//再帰処理中のすでにセットした状態の場合
+//		befbtmat = GetBefBtMat();
+//	}
+//
+//	//current
+//	if (GetBtKinFlag() == 1) {
+//		diffworld = invfirstmat * GetCurMp().GetWorldMat();
+//		tramat = GetCurMp().GetWorldMat();
+//
+//		jointfpos = GetJointFPos();
+//		ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
+//		jointfpos = childbone->GetJointFPos();
+//		ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
+//
+//	}
+//	else {
+//		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
+//		if (srcmodel->GetBtCnt() == 0) {
+//			diffworld = invfirstmat * GetCurMp().GetWorldMat();
+//			tramat = GetCurMp().GetWorldMat();
+//
+//			jointfpos = GetJointFPos();
+//			ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
+//			jointfpos = childbone->GetJointFPos();
+//			ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
+//		}
+//		else {
+//			if (GetParent() && (GetParent()->GetBtKinFlag() == 1)) {
+//				//ここでのBtMatは一回前の姿勢。
+//
+//				//BtMatにアニメーションの移動成分のみを掛けたものを新しい姿勢行列として子供ジョイント位置を計算してシミュレーションに使用する。
+//				curworld = GetCurMp().GetWorldMat();
+//				//befworld = GetCurMp().GetBefWorldMat();
+//				befworld = GetCurrentZeroFrameMat(0);
+//
+//				ChaVector3 befparentpos, curparentpos;
+//				jointfpos = GetJointFPos();
+//				ChaVector3TransformCoord(&befparentpos, &jointfpos, &befworld);
+//				ChaVector3TransformCoord(&curparentpos, &jointfpos, &curworld);
+//				ChaVector3 diffmv = curparentpos - befparentpos;
+//
+//				ChaMatrix diffmvmat;
+//				ChaMatrixIdentity(&diffmvmat);
+//				ChaMatrixTranslation(&diffmvmat, diffmv.x, diffmv.y, diffmv.z);
+//
+//				ChaMatrixInverse(&invbefworld, NULL, &befworld);
+//				ChaMatrix newtramat = befbtmat * diffmvmat;
+//
+//				diffworld = invfirstmat * newtramat;
+//
+//				m_btparentpos = curparentpos;
+//				jointfpos = childbone->GetJointFPos();
+//				//ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &befbtmat);
+//				ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &newtramat);
+//			}
+//			else {
+//				diffworld = invfirstmat * befbtmat;
+//				tramat = befbtmat;
+//
+//				jointfpos = GetJointFPos();
+//				ChaVector3TransformCoord(&m_btparentpos, &jointfpos, &tramat);
+//				jointfpos = childbone->GetJointFPos();
+//				ChaVector3TransformCoord(&m_btchildpos, &jointfpos, &tramat);
+//			}
+//		}
+//	}
+//
+//	//multmat = srcre->GetBindcapsulemat() * diffworld;
+//	CBtObject* curbto = GetBtObject(childbone);
+//	if (curbto) {
+//		multmat = curbto->GetFirstTransformMatX() * diffworld;
+//	}
+//	else {
+//		multmat = GetCurrentZeroFrameMat(0) * diffworld;
+//		_ASSERT(0);
+//	}
+//	rigidcenter = (m_btparentpos + m_btchildpos) * 0.5f;
+//
+//	*dstmat = multmat;
+//	*dstpos = rigidcenter;
+//
+//	return 0;
+//}
 
 ChaVector3 CBone::GetChildWorld(){
 	if (g_previewFlag != 5){

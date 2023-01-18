@@ -206,7 +206,7 @@ public:
 	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
 	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ボーン軸がX軸
 	float CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
-	float CalcAxisMatX_RigidBody(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータX軸向き
+	float CalcAxisMatX_RigidBody(bool dir2xflag, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータX軸向き
 
 /**
  * @fn

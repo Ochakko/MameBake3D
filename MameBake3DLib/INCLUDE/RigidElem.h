@@ -101,6 +101,7 @@ public: //accesser
 
 	ChaMatrix GetCapsulemat(int calczeroframe, int multworld = 1);
 	//void SetCapsulemat( ChaMatrix srcmat ){ m_capsulemat = srcmat; };
+	ChaMatrix GetCapsulematForColiShape(int calczeroframe, int multworld = 1);
 
 	ChaMatrix GetFirstcapsulemat(){ return m_firstcapsulemat; };
 	void SetFirstcapsulemat( ChaMatrix srcmat ){ m_firstcapsulemat = srcmat; };

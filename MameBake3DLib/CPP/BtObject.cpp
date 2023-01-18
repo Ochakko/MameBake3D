@@ -88,6 +88,7 @@ int CBtObject::InitParams()
 	m_FrameB.setIdentity();
 	m_firstTransformMat.setIdentity();//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
 
+	m_btq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
 	return 0;
 }
@@ -346,6 +347,10 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	transform.setOrigin( btv );
 
 
+	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
+
+
+
 	//-0.374995, 0.249996, 0.000000
 	ChaMatrixIdentity( &m_cen2parY );
 	m_cen2parY.data[MATI_41] = 0.0f;
@@ -501,7 +506,8 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	ChaMatrixIdentity(&transmatx);
 	//int setstartflag = 1;
 
-	curbto->m_bone->CalcAxisMatX_RigidBody(0, curbto->m_endbone, &transmatx, setstartflag);
+	bool dir2xflag = false;
+	curbto->m_bone->CalcAxisMatX_RigidBody(dir2xflag, 0, curbto->m_endbone, &transmatx, setstartflag);
 
 	CQuaternion rotq;
 	rotq.RotationMatrix(transmatx);
@@ -728,7 +734,8 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						//0-2:linear, 3-5:angular
 						//dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
 						if (g_previewFlag != 5) {
-							dofC->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0), dofcindex);//CFM 0 壊れにくい
+							//dofC->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0), dofcindex);//CFM 0 壊れにくい
+							dofC->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0.50), dofcindex);//CFM 0 壊れにくい
 							dofC->setParam(BT_CONSTRAINT_STOP_ERP, btScalar(g_erp), dofcindex);//ERP(0-1) 値大 --> エラー補正大
 						}
 						else {
@@ -1068,9 +1075,9 @@ int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter, int co
 	m_btpos = ChaVector3(srcrigidcenter.x, srcrigidcenter.y, srcrigidcenter.z);
 
 	//constraintのFrameA, FrameBの更新
-	if (constraintupdateflag == 1) {
-		RecalcConstraintFrameAB();
-	}
+	//if (constraintupdateflag == 1) {
+	//	RecalcConstraintFrameAB();
+	//}
 	return 0;
 
 }
@@ -1094,7 +1101,7 @@ void CBtObject::RecalcConstraintFrameAB()
 
 				if (m_rigidbody && childbto->m_rigidbody) {
 					dofC->setFrames(FrameA, FrameB);
-					dofC->setEquilibriumPoint();
+					//dofC->setEquilibriumPoint();
 					dofC->calculateTransforms();
 				}
 
@@ -1104,38 +1111,92 @@ void CBtObject::RecalcConstraintFrameAB()
 	}
 }
 
-int CBtObject::SetBtMotion()
+int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 {
-	if( m_topflag == 1 ){
+	if (m_topflag == 1) {
 		return 0;
 	}
-	if( !m_rigidbody ){
+	if (!m_rigidbody) {
 		return 0;
 	}
-	if( !m_rigidbody->getMotionState() ){
-		_ASSERT( 0 );
+	if (!m_rigidbody->getMotionState()) {
+		_ASSERT(0);
 		return 0;
 	}
 
+	ChaVector3 orgpos, orgchildpos, aftpos, aftchildpos;
+	ChaMatrix zerowm;
+	orgpos = m_bone->GetJointFPos();
+	orgchildpos = m_endbone->GetJointFPos();
+	zerowm = m_bone->GetCurrentZeroFrameMat(1);
+	ChaVector3TransformCoord(&aftpos, &orgpos, &zerowm);
+	ChaVector3TransformCoord(&aftchildpos, &orgchildpos, &zerowm);
+	ChaMatrix befpivotmat, aftpivotmat;
+	befpivotmat.SetIdentity();
+	aftpivotmat.SetIdentity();
+	befpivotmat.SetTranslation(-orgpos);
+	aftpivotmat.SetTranslation(orgpos);
+
+
 	btTransform worldtra;
-	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
+	m_rigidbody->getMotionState()->getWorldTransform(worldtra);
 	ChaMatrix newxworld;
 	newxworld = ChaMatrixFromBtTransform(&(worldtra.getBasis()), &(worldtra.getOrigin()));
 
-	ChaMatrix invxworld;
-	ChaMatrixInverse( &invxworld, NULL, &m_xworld );
-	//invxworld = GetInvFirstTransformMatX();
+	btTransform parentworldtra;
+	ChaMatrix parentnewxworld;
+	if (GetParBt() && GetParBt()->GetRigidBody()) {
+		GetParBt()->GetRigidBody()->getMotionState()->getWorldTransform(parentworldtra);
+		parentnewxworld = ChaMatrixFromBtTransform(&(parentworldtra.getBasis()), &(parentworldtra.getOrigin()));
+	}
+	else {
+		parentworldtra.setIdentity();
+		parentnewxworld.SetIdentity();
+	}
 
-	ChaMatrix diffxworld;
-	diffxworld = invxworld * newxworld;
+	ChaMatrix xlocal;
+	xlocal = newxworld * ChaMatrixInv(parentnewxworld);
+	ChaMatrix localrotmat;
+	localrotmat = ChaMatrixRot(xlocal);
+
+	ChaMatrix setwm;
+	ChaMatrix localmat;
+	localmat = befpivotmat * localrotmat * aftpivotmat * curtraanim;
+	ChaMatrix parentbtmat;
+	if (m_bone->GetParent()) {
+		parentbtmat = m_bone->GetParent()->GetBtMat();
+	}
+	else {
+		parentbtmat.SetIdentity();
+	}
+
+	setwm = localmat * parentbtmat;
 
 	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
+	//if (m_bone->GetBtFlag() == 0) {
 		////m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
-		m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
+		m_bone->SetBtMat(setwm);
 		m_bone->SetBtFlag(1);
 	}
 
 	//boneleng 0 対策はCreateObjectの剛体のサイズを決めるところで最小値を設定することにした。
+
+
+
+	//#########################################################################################################################
+	//次のコメントアウト部分は　通常モーションと剛体の軸が異なる場合に有効
+	//2023/01/18から　通常モーションと剛体の軸合わせをしたので　回転情報をそのまま相互流用可能になり　diffを使わないことにした
+	//#########################################################################################################################
+	//ChaMatrix invxworld;
+	//ChaMatrixInverse( &invxworld, NULL, &m_xworld );
+	////invxworld = GetInvFirstTransformMatX();
+	//ChaMatrix diffxworld;
+	//diffxworld = invxworld * newxworld;
+	//if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
+	//	////m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	//	m_bone->SetBtMat(m_bone->GetCurrentZeroFrameMat(0) * diffxworld);
+	//	m_bone->SetBtFlag(1);
+	//}
 
 	return 0;
 }
@@ -1343,7 +1404,8 @@ int CBtObject::CalcConstraintTransformA(btTransform& dsttraA, btQuaternion& rotA
 
 	ChaMatrix transmatx;
 	ChaMatrixIdentity(&transmatx);
-	m_bone->CalcAxisMatX_RigidBody(0, m_endbone, &transmatx, 0);
+	bool dir2xflag = false;
+	m_bone->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &transmatx, 0);
 	CQuaternion rotq;
 	rotq.RotationMatrix(transmatx);
 	CQuaternion invrotq;
