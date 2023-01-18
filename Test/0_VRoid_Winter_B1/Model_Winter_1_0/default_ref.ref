@@ -209,7 +209,7 @@
       <ChildName>J_Bip_C_Neck_Joint</ChildName>
       <ColType>3</ColType>
       <SkipFlag>0</SkipFlag>
-      <ShpRate>2.488889</ShpRate>
+      <ShpRate>3.555556</ShpRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1581,9 +1581,9 @@
     <BTKIN>0</BTKIN>
     <RigidElem>
       <ChildName>J_Bip_L_UpperArm_Joint</ChildName>
-      <ColType>1</ColType>
+      <ColType>3</ColType>
       <SkipFlag>0</SkipFlag>
-      <ShpRate>1.955556</ShpRate>
+      <ShpRate>2.711111</ShpRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1609,9 +1609,9 @@
     <BTKIN>0</BTKIN>
     <RigidElem>
       <ChildName>J_Bip_L_LowerArm_Joint</ChildName>
-      <ColType>1</ColType>
+      <ColType>3</ColType>
       <SkipFlag>0</SkipFlag>
-      <ShpRate>1.955556</ShpRate>
+      <ShpRate>1.111111</ShpRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2053,9 +2053,9 @@
     <BTKIN>0</BTKIN>
     <RigidElem>
       <ChildName>J_Bip_R_UpperArm_Joint</ChildName>
-      <ColType>1</ColType>
+      <ColType>3</ColType>
       <SkipFlag>0</SkipFlag>
-      <ShpRate>1.955556</ShpRate>
+      <ShpRate>2.622222</ShpRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2081,9 +2081,9 @@
     <BTKIN>0</BTKIN>
     <RigidElem>
       <ChildName>J_Bip_R_LowerArm_Joint</ChildName>
-      <ColType>1</ColType>
+      <ColType>3</ColType>
       <SkipFlag>0</SkipFlag>
-      <ShpRate>1.955556</ShpRate>
+      <ShpRate>1.111111</ShpRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
