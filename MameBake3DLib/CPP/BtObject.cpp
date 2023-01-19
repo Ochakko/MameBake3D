@@ -298,58 +298,81 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 		rrate = 0.90;
 	}
 
+	//剛体の初期姿勢
+	ChaMatrix startrot = curre->GetCapsulemat(1);
+	CQuaternion startrotq;
+	startrotq.RotationMatrix(startrot);
+	btScalar qx = startrotq.x;
+	btScalar qy = startrotq.y;
+	btScalar qz = startrotq.z;
+	btScalar qw = startrotq.w;
+	btQuaternion btq(qx, qy, qz, qw);
+	centerA = (aftparentposA + aftchildposA) * 0.5f;
+	//centerA = aftparentposA;
+	btVector3 btv(btScalar(centerA.x), btScalar(centerA.y), btScalar(centerA.z));
+	btTransform transform;
+	transform.setIdentity();
+	transform.setRotation(btq);
+	transform.setOrigin(btv);
+	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
+
+
+	//コリジョン形状の初期姿勢
+	//剛体の初期姿勢は　dir2xしないNodeMatなので　コリジョンの向きとは異なる
+	//コリジョンの向きは　dir2xしなければならない
+	//dir2xした向きをローカル情報として設定する
+	ChaMatrix shapemat;
+	bool dir2xflag = false;
+	m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &shapemat, 1);
+	ChaMatrix localshapemat;
+	localshapemat = shapemat * ChaMatrixInv(startrot);
+	CQuaternion localshapeq;
+	localshapeq.RotationMatrix(ChaMatrixRot(localshapemat));
+	btScalar localqx = localshapeq.x;
+	btScalar localqy = localshapeq.y;
+	btScalar localqz = localshapeq.z;
+	btScalar localqw = localshapeq.w;
+	btQuaternion localbtq(localqx, localqy, localqz, localqw);
+	btVector3 localbtv(0.0f, 0.0f, 0.0f);
+	btTransform localtransform;
+	localtransform.setIdentity();
+	localtransform.setRotation(localbtq);
+	localtransform.setOrigin(localbtv);
+
+
+
+	btCompoundShape* compound = new btCompoundShape();//任意の形状OK.　任意のローカル姿勢OK.　複数形状OK.
+
 
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
-		m_colshape = new btCapsuleShape(btScalar(r * rrate), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		_ASSERT( m_colshape );
+		btCapsuleShape* newcapsule;
+		newcapsule = new btCapsuleShape(btScalar(r * rrate), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		compound->addChildShape(localtransform, newcapsule);
 	}else if( curre->GetColtype() == COL_CONE_INDEX ){
-		m_colshape = new btConeShape(btScalar(r * rrate), btScalar(h * lengrate));
-		_ASSERT( m_colshape );
+		btConeShape* newcone;
+		newcone = new btConeShape(btScalar(r * rrate), btScalar(h * lengrate));
+		compound->addChildShape(localtransform, newcone);
 	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
-		m_colshape = new btSphereShape(btScalar(r * rrate));
-		_ASSERT( m_colshape );
+		btSphereShape* newsphere;
+		newsphere = new btSphereShape(btScalar(r * rrate));
+		compound->addChildShape(localtransform, newsphere);
 	}else if( curre->GetColtype() == COL_BOX_INDEX ){
-		m_colshape = new btBoxShape(btVector3(btScalar(r * rrate), btScalar(h * lengrate), btScalar(z * rrate)));
-		_ASSERT( m_colshape );
+		btBoxShape* newbox;
+		newbox = new btBoxShape(btVector3(btScalar(r * rrate), btScalar(h * lengrate), btScalar(z * rrate)));
+		compound->addChildShape(localtransform, newbox);
 	}else{
 		_ASSERT( 0 );
 		return 1;
 	}
+
+	m_colshape = compound;
 
 
 //	if( m_boneleng < 0.00001f ){
 //		_ASSERT( 0 );
 //	}
 
-
-	ChaMatrix startrot = curre->GetCapsulemat(1);
-	//ChaMatrix startrot = m_bone->CalcManipulatorPostureMatrix(0, 0, 1);
-
 	//m_transmat = startrot;
-
-
-	CQuaternion startrotq;
-	startrotq.RotationMatrix(startrot);
-
-	btScalar qx = startrotq.x;
-	btScalar qy = startrotq.y;
-	btScalar qz = startrotq.z;
-	btScalar qw = startrotq.w;
-	btQuaternion btq( qx, qy, qz, qw );
-
-	centerA = ( aftparentposA + aftchildposA ) * 0.5f;
-	//centerA = aftparentposA;
-	btVector3 btv( btScalar( centerA.x ), btScalar( centerA.y ), btScalar( centerA.z ) );
-
-	btTransform transform;
-	transform.setIdentity();
-	transform.setRotation( btq );
-	transform.setOrigin( btv );
-
-
-	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
-
-
 
 	//-0.374995, 0.249996, 0.000000
 	ChaMatrixIdentity( &m_cen2parY );
@@ -382,6 +405,8 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 		_ASSERT(0);
 		return 1;
 	}
+
+
 
 	btTransform worldtra;
 	m_rigidbody->getMotionState()->getWorldTransform( worldtra );
@@ -1156,12 +1181,13 @@ int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 
 	ChaMatrix xlocal;
 	xlocal = newxworld * ChaMatrixInv(parentnewxworld);
-	ChaMatrix localrotmat;
-	localrotmat = ChaMatrixRot(xlocal);
+	ChaMatrix xlocalrotmat;
+	xlocalrotmat = ChaMatrixRot(xlocal);
+
 
 	ChaMatrix setwm;
 	ChaMatrix localmat;
-	localmat = befpivotmat * localrotmat * aftpivotmat * curtraanim;
+	localmat = befpivotmat * xlocalrotmat * aftpivotmat * curtraanim;
 	ChaMatrix parentbtmat;
 	if (m_bone->GetParent()) {
 		parentbtmat = m_bone->GetParent()->GetBtMat();

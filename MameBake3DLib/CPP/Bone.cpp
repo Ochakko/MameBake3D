@@ -6202,6 +6202,7 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 
 	rigidcenter = (m_btparentpos + m_btchildpos) * 0.5f;
 
+
 	*dstmat = rotmat;
 	*dstpos = rigidcenter;
 
