@@ -322,7 +322,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	//コリジョンの向きは　dir2xしなければならない
 	//dir2xした向きをローカル情報として設定する
 	ChaMatrix shapemat;
-	bool dir2xflag = false;
+	bool dir2xflag = true;
 	m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &shapemat, 1);
 	ChaMatrix localshapemat;
 	localshapemat = shapemat * ChaMatrixInv(startrot);
