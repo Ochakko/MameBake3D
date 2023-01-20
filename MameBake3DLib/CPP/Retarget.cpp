@@ -128,7 +128,7 @@ namespace MameBake3DLibRetarget {
 				srcmodel->SetMotionFrame(frame);
 				srcmodel->UpdateMatrix(&tmpwm, &dummyvpmat);
 
-				CBone* befbvhbone = srcbvhmodel->GetTopBone();
+				CBone* befbvhbone2 = srcbvhmodel->GetTopBone();
 
 
 				ChaMatrix firsthipbvhmat;
@@ -136,8 +136,8 @@ namespace MameBake3DLibRetarget {
 				ChaMatrixIdentity(&firsthipbvhmat);
 				ChaMatrixIdentity(&firsthipmodelmat);
 
-				if (befbvhbone) {
-					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
+				if (befbvhbone2) {
+					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, befbvhbone2, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
 				}
 			}
 		}

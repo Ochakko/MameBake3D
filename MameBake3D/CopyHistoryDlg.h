@@ -125,15 +125,15 @@ private:
 	int DestroyObjs();
 	int ParamsToDlg();
 
-	LRESULT OnDelete(int delid);
-	LRESULT OnRadio(int radioid);
+	LRESULT OnDelete(size_t delid);
+	LRESULT OnRadio(size_t radioid);
 	void SetEnableCtrls();
 
 private:
 	bool m_createdflag;
 	CWindow m_dlg_wnd;
 
-	int m_namenum;
+	size_t m_namenum;
 	bool m_ischeckedmostrecent;
 	WCHAR m_selectname[MAX_PATH];
 

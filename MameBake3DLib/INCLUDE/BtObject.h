@@ -189,8 +189,11 @@ public: //accesser
 	CBone* GetEndBone(){ return m_endbone; };
 	void SetEndBone( CBone* srcbone ){ m_endbone = srcbone; };
 
-	btCollisionShape* GetColShape(){ return m_colshape; };
-	void SetColShape( btCollisionShape* srcshape ){ m_colshape = srcshape; };
+	//btCollisionShape* GetColShape(){ return m_colshape; };
+	//void SetColShape( btCollisionShape* srcshape ){ m_colshape = srcshape; };
+	btCompoundShape* GetColShape() { return m_colshape; };
+	void SetColShape(btCompoundShape* srcshape) { m_colshape = srcshape; };
+
 
 	btRigidBody* GetRigidBody(){ return m_rigidbody; };
 	void SetRigidBody( btRigidBody* srcbody ){ m_rigidbody = srcbody; };
@@ -311,7 +314,8 @@ private:
 	CBone* m_endbone;//剛体の子供側のボーン
 
 
-	btCollisionShape* m_colshape;//bulletのあたり判定形状データ。
+	//btCollisionShape* m_colshape;//bulletのあたり判定形状データ。
+	btCompoundShape* m_colshape;
 	btRigidBody* m_rigidbody;//ブレットの剛体データ。	
 	std::vector<CONSTRAINTELEM> m_constraint;//thisと子供のBtObjectをつなぐコンストレイントのvector。
 	

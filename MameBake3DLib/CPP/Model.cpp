@@ -434,10 +434,11 @@ void ChaMatrix2FbxAMatrix(FbxAMatrix& retmat, ChaMatrix& srcmat)
 void FbxAMatrix2ChaMatrix(ChaMatrix& retmat, FbxAMatrix srcmat)
 {
 	ChaMatrixIdentity(&retmat);
-	retmat = ChaMatrix(srcmat.Get(0, 0), srcmat.Get(0, 1), srcmat.Get(0, 2), srcmat.Get(0, 3),
-		srcmat.Get(1, 0), srcmat.Get(1, 1), srcmat.Get(1, 2), srcmat.Get(1, 3),
-		srcmat.Get(2, 0), srcmat.Get(2, 1), srcmat.Get(2, 2), srcmat.Get(2, 3),
-		srcmat.Get(3, 0), srcmat.Get(3, 1), srcmat.Get(3, 2), srcmat.Get(3, 3)
+	retmat = ChaMatrix(
+		(float)srcmat.Get(0, 0), (float)srcmat.Get(0, 1), (float)srcmat.Get(0, 2), (float)srcmat.Get(0, 3),
+		(float)srcmat.Get(1, 0), (float)srcmat.Get(1, 1), (float)srcmat.Get(1, 2), (float)srcmat.Get(1, 3),
+		(float)srcmat.Get(2, 0), (float)srcmat.Get(2, 1), (float)srcmat.Get(2, 2), (float)srcmat.Get(2, 3),
+		(float)srcmat.Get(3, 0), (float)srcmat.Get(3, 1), (float)srcmat.Get(3, 2), (float)srcmat.Get(3, 3)
 	);
 }
 
@@ -1256,7 +1257,7 @@ MODELBOUND CModel::CalcBoneBound()
 
 	center = (min + max) * 0.5f;
 	ChaVector3 diff = center - min;
-	r = ChaVector3LengthDbl(&diff);
+	r = (float)ChaVector3LengthDbl(&diff);
 
 	mb.min = min;
 	mb.max = max;
@@ -5037,7 +5038,7 @@ int CModel::RenderRefArrow(ID3D11DeviceContext* pd3dImmediateContext, CBone* bon
 	if(vecbonepos.empty()){
 		return 0;
 	}
-	int vecsize = vecbonepos.size();
+	int vecsize = (int)vecbonepos.size();
 	if (vecsize <= 1) {
 		return 0;
 	}
@@ -5060,9 +5061,9 @@ int CModel::RenderRefArrow(ID3D11DeviceContext* pd3dImmediateContext, CBone* bon
 		double fscale = diffleng / 200.0f;
 		ChaMatrix scalemat;
 		ChaMatrixIdentity(&scalemat);
-		scalemat.data[MATI_11] = fscale;
-		scalemat.data[MATI_22] = fscale * (double)refmult;
-		scalemat.data[MATI_33] = fscale * (double)refmult;
+		scalemat.data[MATI_11] = (float)(fscale);
+		scalemat.data[MATI_22] = (float)(fscale * (double)refmult);
+		scalemat.data[MATI_33] = (float)(fscale * (double)refmult);
 		bmmat = scalemat * bmmat;
 		bmmat.data[MATI_41] = vecbonepos[vecno].x;
 		bmmat.data[MATI_42] = vecbonepos[vecno].y;
@@ -6852,8 +6853,8 @@ void CModel::AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot
 	if (adjustrot == 1) {
 		ChaVector3 childpos;
 		ChaVector3 tmpchildfpos = childbone->GetJointFPos();
-		ChaMatrix tmpbtmat = curbone->GetBtMat();
-		ChaVector3TransformCoord(&childpos, &tmpchildfpos, &tmpbtmat);
+		ChaMatrix tmpbtmat2 = curbone->GetBtMat();
+		ChaVector3TransformCoord(&childpos, &tmpchildfpos, &tmpbtmat2);
 
 		ChaVector3 oldbonevec = childpos - curpos1;
 		ChaVector3Normalize(&oldbonevec, &oldbonevec);
@@ -6869,7 +6870,7 @@ void CModel::AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot
 		rmat = rmat * addrotq.MakeRotMatX();
 
 		currentmat = smat * rmat * tmat;
-		ChaVector3 tmpfpos = curbone->GetJointFPos();
+		//ChaVector3 tmpfpos = curbone->GetJointFPos();
 		ChaVector3TransformCoord(&curpos1, &tmpfpos, &currentmat);
 		adjustvec = curpos2 - curpos1;
 		GetSRTMatrix2(currentmat, &smat, &rmat, &tmat);
@@ -9076,9 +9077,9 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 					rotq1.SetAxisAndRot(rotaxis2, rotrad2);
 
 					ChaVector3 rotcenter;
-					ChaVector3 tmpparentfpos = parentbone->GetJointFPos();
-					ChaMatrix tmpparentbtmat = parentbone->GetBtMat();
-					ChaVector3TransformCoord(&rotcenter, &tmpparentfpos, &tmpparentbtmat);
+					ChaVector3 tmpparentfpos2 = parentbone->GetJointFPos();
+					ChaMatrix tmpparentbtmat2 = parentbone->GetBtMat();
+					ChaVector3TransformCoord(&rotcenter, &tmpparentfpos2, &tmpparentbtmat2);
 					ChaMatrix befrot, aftrot;
 					ChaMatrixTranslation(&befrot, -rotcenter.x, -rotcenter.y, -rotcenter.z);
 					ChaMatrixTranslation(&aftrot, rotcenter.x, rotcenter.y, rotcenter.z);
@@ -9087,7 +9088,7 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 					ChaMatrix tmpmat0 = parentbone->GetBtMat() * rotmat1;// *tramat;
 					ChaVector3 tmppos;
-					ChaVector3TransformCoord(&tmppos, &tmpparentfpos, &tmpmat0);
+					ChaVector3TransformCoord(&tmppos, &tmpparentfpos2, &tmpmat0);
 					ChaVector3 diffvec;
 					diffvec = rotcenter - tmppos;
 					ChaMatrix tmptramat;
@@ -9097,8 +9098,8 @@ int CModel::PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, i
 
 
 					ChaVector3 childworld1;
-					ChaVector3 tmpchildfpos = childbone->GetJointFPos();
-					ChaVector3TransformCoord(&childworld1, &tmpchildfpos, &newbtmat1);
+					ChaVector3 tmpchildfpos2 = childbone->GetJointFPos();
+					ChaVector3TransformCoord(&childworld1, &tmpchildfpos2, &newbtmat1);
 					child2target = targetpos - childworld1;
 					dist1 = ChaVector3LengthDbl(&child2target);
 
@@ -13120,7 +13121,7 @@ int CModel::CreateLoadFbxAnim(FbxScene* pscene)
 	int befthreadcount = 0;
 	int bonenointhread = 0;
 	int bonecount;
-	int bonenum = m_bonelist.size();
+	int bonenum = (int)m_bonelist.size();
 	int maxbonenuminthread = bonenum / LOADFBXANIMTHREAD + 1;
 
 	for (bonecount = 0; bonecount < bonenum; bonecount++) {
@@ -13227,7 +13228,7 @@ int CModel::CreateBoneUpdateMatrix()
 	int befthreadcount = 0;
 	int bonenointhread = 0;
 	int bonecount;
-	int bonenum = m_bonelist.size();
+	int bonenum = (int)m_bonelist.size();
 	int maxbonenuminthread = bonenum / g_UpdateMatrixThreads + 1;
 
 

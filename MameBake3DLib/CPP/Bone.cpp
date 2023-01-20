@@ -1408,11 +1408,13 @@ int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 	if (itrvecmpmap != m_indexedmotionpoint.end()) {
 		//(itrvecmpmap->second).clear();
 
-		double delframeno;
-		for (delframeno = srcleng; delframeno < (itrvecmpmap->second).size(); delframeno++) {
+		size_t delframeno;
+		size_t roundingleng;
+		roundingleng = (size_t)(srcleng + 0.0001);
+		for (delframeno = roundingleng; delframeno < (itrvecmpmap->second).size(); delframeno++) {
 			(itrvecmpmap->second)[delframeno] = 0;
 		}
-		(itrvecmpmap->second).resize(srcleng);
+		(itrvecmpmap->second).resize(roundingleng);
 	}
 
 
@@ -5149,7 +5151,7 @@ ANGLELIMIT CBone::GetAngleLimit(int getchkflag)
 			MOTINFO* curmi = m_parmodel->GetCurMotInfo();
 			if (curmi) {
 				int curmotid = curmi->motid;
-				int curframe = curmi->curframe;
+				int curframe = (int)(curmi->curframe + 0.0001);
 
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -7316,8 +7318,8 @@ int CBone::AdditiveCurrentToAngleLimit()
 
 			int axiskind2;
 			for (axiskind2 = 0; axiskind2 < 3; axiskind2++) {
-				m_anglelimit.upper[axiskind2] = maxeul[axiskind2];
-				m_anglelimit.lower[axiskind2] = mineul[axiskind2];
+				m_anglelimit.upper[axiskind2] = (int)(maxeul[axiskind2] + 0.0001f);
+				m_anglelimit.lower[axiskind2] = (int)(mineul[axiskind2] + 0.0001f);
 			}
 		}
 	}
@@ -7386,8 +7388,8 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 
 			int axiskind2;
 			for (axiskind2 = 0; axiskind2 < 3; axiskind2++) {
-				m_anglelimit.upper[axiskind2] = maxeul[axiskind2];
-				m_anglelimit.lower[axiskind2] = mineul[axiskind2];
+				m_anglelimit.upper[axiskind2] = (int)(maxeul[axiskind2] + 0.0001f);
+				m_anglelimit.lower[axiskind2] = (int)(mineul[axiskind2] + 0.0001f);
 			}
 		}
 	}

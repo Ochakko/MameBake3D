@@ -183,8 +183,8 @@ LRESULT CCopyHistoryDlg::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
-	int selectedno = 0;//チェックされていない場合(あり得ないが)、一番最初
-	int nameno;
+	size_t selectedno = 0;//チェックされていない場合(あり得ないが)、一番最初
+	size_t nameno;
 	for (nameno = 0; nameno < m_namenum; nameno++) {
 		if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno]) && (m_copyhistory[nameno].hascpinfo == 1)) {
 			selectedno = nameno;
@@ -224,7 +224,7 @@ int CCopyHistoryDlg::ParamsToDlg()
 	m_dlg_wnd = m_hWnd;
 
 	bool ischeck = false;
-	int nameno;
+	size_t nameno;
 	for (nameno = 0; nameno < m_namenum; nameno++) {
 
 		WCHAR dispname[MAX_PATH] = { 0L };
@@ -282,7 +282,7 @@ int CCopyHistoryDlg::ParamsToDlg()
 			m_dlg_wnd.SetDlgItemTextW(m_commentid[nameno], L"Invalid.");
 		}
 	}
-	int nameno2;
+	size_t nameno2;
 	for (nameno2 = m_namenum; nameno2 < 10; nameno2++) {
 		m_dlg_wnd.SetDlgItemTextW(m_ctrlid[nameno2], L"no more.");
 		m_dlg_wnd.SetDlgItemTextW(m_startframeid[nameno2], L"no more.");
@@ -310,8 +310,8 @@ int CCopyHistoryDlg::ParamsToDlg()
 		m_strcombo_motionname.clear();
 		m_strcombo_bvhtype.clear();
 
-		int srcnum = m_savecopyhistory.size();//検索候補はsavecopyhistoryから取得する
-		int srcno;
+		size_t srcnum = m_savecopyhistory.size();//検索候補はsavecopyhistoryから取得する
+		size_t srcno;
 		for (srcno = 0; srcno < srcnum; srcno++) {
 			if (m_savecopyhistory[srcno].hascpinfo == 1) {
 				wstring curfbxname = m_savecopyhistory[srcno].cpinfo.fbxname;
@@ -375,8 +375,8 @@ int CCopyHistoryDlg::ParamsToDlg()
 			combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)L"----");
 			combofbxnamewnd.SendMessage(CB_SETITEMDATA, 0, (LPARAM)0);
 
-			int fbxnamenum = m_strcombo_fbxname.size();
-			int fbxnameno;
+			size_t fbxnamenum = m_strcombo_fbxname.size();
+			size_t fbxnameno;
 			for (fbxnameno = 0; fbxnameno < fbxnamenum; fbxnameno++) {
 				WCHAR tempchar[MAX_PATH];
 				ZeroMemory(tempchar, sizeof(WCHAR) * MAX_PATH);
@@ -394,8 +394,8 @@ int CCopyHistoryDlg::ParamsToDlg()
 			combomotionnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)L"----");
 			combomotionnamewnd.SendMessage(CB_SETITEMDATA, 0, (LPARAM)0);
 
-			int motionnamenum = m_strcombo_motionname.size();
-			int motionnameno;
+			size_t motionnamenum = m_strcombo_motionname.size();
+			size_t motionnameno;
 			for (motionnameno = 0; motionnameno < motionnamenum; motionnameno++) {
 				WCHAR tempchar[MAX_PATH];
 				ZeroMemory(tempchar, sizeof(WCHAR) * MAX_PATH);
@@ -413,8 +413,8 @@ int CCopyHistoryDlg::ParamsToDlg()
 			combobvhtypewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)L"----");
 			combobvhtypewnd.SendMessage(CB_SETITEMDATA, 0, (LPARAM)0);
 
-			int bvhtypenum = m_strcombo_bvhtype.size();
-			int bvhtypeno;
+			size_t bvhtypenum = m_strcombo_bvhtype.size();
+			size_t bvhtypeno;
 			for (bvhtypeno = 0; bvhtypeno < bvhtypenum; bvhtypeno++) {
 				WCHAR tempchar[MAX_PATH];
 				ZeroMemory(tempchar, sizeof(WCHAR) * MAX_PATH);
@@ -670,7 +670,7 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	std::vector<HISTORYELEM> copyhistory2;
 	copyhistory2.clear();
 	{
-		int namenum1 = copyhistory1.size();
+		size_t namenum1 = copyhistory1.size();
 		if (findfbxnameflag) {
 			int nameno1;
 			for (nameno1 = 0; nameno1 < namenum1; nameno1++) {
@@ -690,7 +690,7 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	std::vector<HISTORYELEM> copyhistory3;
 	copyhistory3.clear();
 	{
-		int namenum1 = copyhistory2.size();
+		size_t namenum1 = copyhistory2.size();
 		if (findmotionnameflag) {
 			int nameno1;
 			for (nameno1 = 0; nameno1 < namenum1; nameno1++) {
@@ -710,9 +710,9 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	std::vector<HISTORYELEM> copyhistory4;
 	copyhistory4.clear();
 	{
-		int namenum1 = copyhistory3.size();
+		size_t namenum1 = copyhistory3.size();
 		if (findbvhtypeflag) {
-			int nameno1;
+			size_t nameno1;
 			for (nameno1 = 0; nameno1 < namenum1; nameno1++) {
 				if (copyhistory3[nameno1].hascpinfo == 1) {
 					WCHAR srcbvhtype[MAX_PATH] = { 0L };
@@ -733,9 +733,9 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	std::vector<HISTORYELEM> copyhistory5;
 	copyhistory5.clear();
 	{
-		int namenum1 = copyhistory4.size();
+		size_t namenum1 = copyhistory4.size();
 		if (finddateflag) {
-			int nameno1;
+			size_t nameno1;
 			for (nameno1 = 0; nameno1 < namenum1; nameno1++) {
 				if (copyhistory4[nameno1].hascpinfo == 1) {
 					FILETIME srcfiletime = copyhistory4[nameno1].filetime;
@@ -746,12 +746,12 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 					SYSTEMTIME stend;
 					ZeroMemory(&ststart, sizeof(SYSTEMTIME));
 					ZeroMemory(&stend, sizeof(SYSTEMTIME));
-					ststart.wYear = _wtol(findstartyear);
-					ststart.wMonth = _wtol(findstartmonth);
-					ststart.wDay = _wtol(findstartday);
-					stend.wYear = _wtol(findendyear);
-					stend.wMonth = _wtol(findendmonth);
-					stend.wDay = _wtol(findendday);
+					ststart.wYear = (WORD)_wtol(findstartyear);
+					ststart.wMonth = (WORD)_wtol(findstartmonth);
+					ststart.wDay = (WORD)_wtol(findstartday);
+					stend.wYear = (WORD)_wtol(findendyear);
+					stend.wMonth = (WORD)_wtol(findendmonth);
+					stend.wDay = (WORD)_wtol(findendday);
 					stend.wHour = 23;
 					stend.wMinute = 59;
 					stend.wSecond = 59;
@@ -827,9 +827,9 @@ LRESULT CCopyHistoryDlg::OnDelete10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 	return OnDelete(9);
 }
 
-LRESULT CCopyHistoryDlg::OnDelete(int delid)
+LRESULT CCopyHistoryDlg::OnDelete(size_t delid)
 {
-	if ((delid < 0) || (delid >= m_namenum)) {
+	if (delid >= m_namenum) {
 		return 0;
 	}
 
@@ -912,16 +912,16 @@ LRESULT CCopyHistoryDlg::OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOO
 	return OnRadio(9);
 }
 
-LRESULT CCopyHistoryDlg::OnRadio(int radioid)
+LRESULT CCopyHistoryDlg::OnRadio(size_t radioid)
 {
 
-	int chknamenum = min(10, m_copyhistory.size());
+	size_t chknamenum = min(10, m_copyhistory.size());
 	if (chknamenum != m_namenum) {
 		_ASSERT(0);
 		return 1;
 	}
 
-	if ((radioid < 0) || (radioid >= m_namenum)) {
+	if (radioid >= m_namenum) {
 		return 0;
 	}
 

@@ -262,7 +262,7 @@ int CMQOObject::SetParams( char* srcchar, int srcleng )
 
 	int patno;
 	size_t patleng;
-	int pos = 0;
+	size_t pos = 0;
 	int cmp;
 
 	int stepnum;
@@ -276,28 +276,33 @@ int CMQOObject::SetParams( char* srcchar, int srcleng )
 		if( cmp == 0 ){
 
 			pos += patleng;//!!!
+			if (pos >= INT_MAX) {
+				DbgOut(L"MQOObject : SetParams : pos overflow error !!!");
+				_ASSERT(0);
+				return 1;
+			}
 
 			switch( patno ){
 			case 0:
-				CallF( GetName( m_name, 256, srcchar, pos, srcleng ), return 1 );
+				CallF( GetName( m_name, 256, srcchar, (int)pos, srcleng ), return 1 );
 				break;
 			case 1:
-				CallF( GetInt( &m_patch, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_patch, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 2:
-				CallF( GetInt( &m_segment, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_segment, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 3:
-				CallF( GetInt( &m_shading, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_shading, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 4:
-				CallF( GetFloat( &m_facet, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetFloat( &m_facet, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 5:
-				CallF( GetInt( &m_color_type, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_color_type, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 6:
-				CallF( GetFloat( &m_color.x, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetFloat( &m_color.x, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				pos += stepnum;
 				if( pos >= srcleng ){
 					DbgOut( L"MQOObject : SetParams : GetFloat : pos error !!!" );
@@ -306,7 +311,7 @@ int CMQOObject::SetParams( char* srcchar, int srcleng )
 				}
 
 
-				CallF( GetFloat( &m_color.y, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetFloat( &m_color.y, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				pos += stepnum;
 				if( pos >= srcleng ){
 					DbgOut( L"MQOObject : SetParams : GetFloat : pos error !!!" );
@@ -314,32 +319,32 @@ int CMQOObject::SetParams( char* srcchar, int srcleng )
 					return 1;
 				}
 
-				CallF( GetFloat( &m_color.z, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetFloat( &m_color.z, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 7:
-				CallF( GetInt( &m_mirror_axis, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_mirror_axis, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 8:
-				CallF( GetFloat( &m_mirror_dis, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetFloat( &m_mirror_dis, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				m_issetmirror_dis = 1;//!!!!
 				break;
 			case 9:
-				CallF( GetInt( &m_mirror, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_mirror, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 10:
-				CallF( GetInt( &m_lathe_axis, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_lathe_axis, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 11:
-				CallF( GetInt( &m_lathe_seg, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_lathe_seg, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 12:
-				CallF( GetInt( &m_lathe, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_lathe, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 13:
-				CallF( GetInt( &m_visible, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_visible, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			case 14:
-				CallF( GetInt( &m_locking, srcchar, pos, srcleng, &stepnum ), return 1 );
+				CallF( GetInt( &m_locking, srcchar, (int)pos, srcleng, &stepnum ), return 1 );
 				break;
 			default:
 				_ASSERT( 0 );
@@ -1063,7 +1068,7 @@ int CMQOObject::MakeLatheBuf()
 	LATHEELEM elem[2];
 	float mag, rad;
 	int segno;
-	rad = 2.0f * PI / m_lathe_seg;
+	rad = (float)(2.0 * PI / (double)m_lathe_seg);
 
 	for( lineno = 0; lineno < linenum; lineno++ ){
 		faceno = *(lineno2faceno + lineno);

@@ -107,8 +107,15 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 		(srcrepeats >= 1) && (srcrepeats <= 10) &&
 		dstvalue) {
 
-		double numframe = srcendframe - srcstartframe + 1;
-		::memset(dstvalue, 0, sizeof(float) * srcframeleng);
+		//rounding value
+		int rstartframe, rendframe, rapplyframe, rframeleng;
+		rstartframe = (int)(srcstartframe + 0.0001);
+		rendframe = (int)(srcendframe + 0.0001);
+		rapplyframe = (int)(srcapplyframe + 0.0001);
+		rframeleng = (int)(srcframeleng + 0.0001);
+
+		int numframe = rendframe - rstartframe + 1;
+		::memset(dstvalue, 0, sizeof(float) * rframeleng);
 
 
 		//‚PŽüŠú‚ª‚RƒtƒŒ[ƒ€ˆÈã‚É‚È‚é‚æ‚¤‚ÉŽÀÛ‚ÌŒJ‚è•Ô‚µ‰ñ”‚ÆŽüŠú‚ð’²®‚·‚é
@@ -116,14 +123,13 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 		repeats = srcrepeats;
 		int frameT;//ŽüŠú(ƒtƒŒ[ƒ€”)
 		frameT = (int)(numframe / srcrepeats);
-		while ((frameT >= (srcapplyframe + 1)) && (frameT < 3) && (repeats >= 2)) {
+		while ((frameT >= (rapplyframe + 1)) && (frameT < 3) && (repeats >= 2)) {
 			repeats--;
 			frameT = (int)(numframe / srcrepeats);
 		}
 
 		if (frameT >= 3) {
-			double halfcnt1, halfcnt2;
-			double tangent1, tangent2;
+			int halfcnt1, halfcnt2;
 
 
 			int repeatscnt;
@@ -135,9 +141,9 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 				bool minusv;
 				bool div2;
 
-				startframe = srcstartframe + repeatscnt * frameT;
+				startframe = rstartframe + repeatscnt * frameT;
 				endframe = startframe + frameT;
-				applyframe = startframe + (srcapplyframe - srcstartframe);
+				applyframe = startframe + (rapplyframe - rstartframe);
 				if (srcmirroru) {
 					if ((repeatscnt % 2) == 0) {
 						invu = false;
@@ -172,12 +178,10 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 				int framecnt;
 				halfcnt1 = (applyframe - startframe);
 				halfcnt2 = (endframe - applyframe);
-				tangent1 = 1.0 / halfcnt1;
-				tangent2 = 1.0 / halfcnt2;
 
 				for (framecnt = startframe; framecnt <= endframe; framecnt++) {
 					float curscale;
-					if ((framecnt >= (int)startframe) && (framecnt <= endframe)) {
+					if ((framecnt >= startframe) && (framecnt <= endframe)) {
 						//if ((framecnt == startframe) || (framecnt == endframe)) {
 						//	//‹éŒ`ˆÈŠO@—¼’[‚O
 						//	curscale = 0.0;
@@ -213,16 +217,16 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 
 								//repeatscnt == 0 ‚Åminusv‚Í–³‚¢
 
-								curscale = (framecnt - startframe) / halfcnt1;
+								curscale = (float)(((double)framecnt - (double)startframe) / (double)halfcnt1);
 								//curscale = (curscale + 1.0) * 0.5f;
 							}
 							else {
-								curscale = (framecnt - startframe) / halfcnt1;
+								curscale = (float)(((double)framecnt - (double)startframe) / (double)halfcnt1);
 								if (minusv) {
 									curscale *= -1.0f;
 								}
 								if (div2) {
-									curscale = (curscale + 1.0) * 0.5f;
+									curscale = (curscale + 1.0f) * 0.5f;
 								}
 							}
 						}
@@ -234,24 +238,24 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 										curscale = 0.0f;
 									}
 									else {
-										curscale = (endframe - framecnt) / halfcnt2;
+										curscale = (float)(((double)endframe - (double)framecnt) / (double)halfcnt2);
 										//curscale = (curscale + 1.0) * 0.5f;
 									}
 								}
 								else {
-									curscale = (endframe - framecnt) / halfcnt2;
+									curscale = (float)(((double)endframe - (double)framecnt) / (double)halfcnt2);
 									if (minusv) {
 										curscale *= -1.0f;
 									}
 								}
 							}
 							else {
-								curscale = (endframe - framecnt) / halfcnt2;
+								curscale = (float)(((double)endframe - (double)framecnt) / (double)halfcnt2);
 								if (minusv) {
 									curscale *= -1.0f;
 								}
 								if (div2) {
-									curscale = (curscale + 1.0) * 0.5f;
+									curscale = (curscale + 1.0f) * 0.5f;
 								}
 							}
 						}
@@ -261,35 +265,35 @@ MBPLUGIN_EXPORT int MBCreateMotionBrush(double srcstartframe, double srcendframe
 								curscale *= -1.0f;
 							}
 							if (div2) {
-								curscale = (curscale + 1.0) * 0.5f;
+								curscale = (curscale + 1.0f) * 0.5f;
 							}
 						}
 						else {
 							_ASSERT(0);
-							curscale = 0.0;
+							curscale = 0.0f;
 						}
 					}
 					else {
 						//‘I‘ð”ÍˆÍˆÈŠO‚O
-						curscale = 0.0;
+						curscale = 0.0f;
 					}
-					*(dstvalue + (int)framecnt) = curscale;
+					*(dstvalue + framecnt) = curscale;
 				}
 
 				
 			}
 		}
 		else {
-			double framecnt;
-			for (framecnt = 0.0; framecnt < srcframeleng; framecnt++) {
+			int framecnt;
+			for (framecnt = 0; framecnt < rframeleng; framecnt++) {
 				float curscale;
-				if ((framecnt >= (int)srcstartframe) && (framecnt <= srcendframe)) {
-					curscale = 1.0;
+				if ((framecnt >= rstartframe) && (framecnt <= rendframe)) {
+					curscale = 1.0f;
 				}
 				else {
-					curscale = 0.0;
+					curscale = 0.0f;
 				}
-				*(dstvalue + (int)framecnt) = curscale;
+				*(dstvalue + framecnt) = curscale;
 			}
 		}
 	}

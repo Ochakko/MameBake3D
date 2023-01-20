@@ -599,9 +599,9 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 
 	//strstr中にバッファ範囲を越えないようにチェック　2022/07/17
 
-	int chkendpos1;
+	size_t chkendpos1;
 	chkendpos1 = srcbuf->pos + strlen(startpat);
-	int chkendpos2;
+	size_t chkendpos2;
 	chkendpos2 = srcbuf->pos + strlen(startpat) + strlen(endpat);
 	if ((chkendpos1 > srcbuf->bufleng) || (chkendpos2 > srcbuf->bufleng)) {
 		//end of file

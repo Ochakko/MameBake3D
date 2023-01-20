@@ -124,7 +124,14 @@ public:
 
 	int GetDispMaterialNum()
 	{
-		return m_materialoffset.size();
+		size_t tmpsize = m_materialoffset.size();
+		if (tmpsize < INT_MAX) {
+			return (int)tmpsize;
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
 	}
 	int GetDispMaterial(int srcindex, CMQOMaterial** dstmaterial, int* dstoffset, int* dsttrinum) 
 	{

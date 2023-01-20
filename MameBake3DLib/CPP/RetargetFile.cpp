@@ -219,8 +219,8 @@ int CRetargetFile::ReadRetargetInfo( int jointcnt, XMLIOBUF* xmlbuf )
 	modeljointname2[MAX_PATH - 1] = 0;
 	bvhjointname2[MAX_PATH - 1] = 0;
 
-	int modelnamelen = strlen(modeljointname);
-	int bvhnamelen = strlen(bvhjointname);
+	int modelnamelen = (int)strlen(modeljointname);
+	int bvhnamelen = (int)strlen(bvhjointname);
 
 	char* modelsuffixjoint = strstr(modeljointname2, "_Joint");
 	char* bvhsuffixjoint = strstr(bvhjointname2, "_Joint");

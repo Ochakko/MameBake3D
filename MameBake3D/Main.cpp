@@ -2005,7 +2005,8 @@ static int EnableRigAxisUV(HWND hDlgWnd);
 static int Bone2AngleLimit();
 static int AngleLimit2Bone();
 static int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul);
-static int InitAngleLimitEdit(HWND hDlgWnd, int editresid, int srclimit);
+static int InitAngleLimitEditInt(HWND hDlgWnd, int editresid, int srclimit);
+static int InitAngleLimitEditFloat(HWND hDlgWnd, int editresid, float srcfloat);
 static int InitAngleLimitSlider(HWND hDlgWnd, int slresid, int txtresid, int srclimit);
 static int GetAngleLimitSliderVal(HWND hDlgWnd, int slresid, int txtresid, int* dstptr);
 static int InitAngleLimitSliderFloat(HWND hDlgWnd, int slresid, int txtresid, float srclimit);
@@ -2308,6 +2309,9 @@ INT WINAPI wWinMain(
 
 	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
+	//_CrtSetBreakAlloc(3879301);
+	//_CrtSetBreakAlloc(3879304);
+	//_CrtSetBreakAlloc(3879308);
 
 	//_CrtSetBreakAlloc(297);
 	//_CrtSetBreakAlloc(303);
@@ -3333,8 +3337,10 @@ void InitApp()
     g_bEnablePreshader = true;
 
     for( int i = 0; i < MAX_LIGHTS; i++ ){
-        g_LightControl[i].SetLightDirection( ChaVector3( sinf( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ),
-                                                          0, -cosf( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ) ).D3DX() );
+        g_LightControl[i].SetLightDirection( 
+			ChaVector3( (float)sin( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ),
+                        0.0f, 
+				        (float)-cos( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ) ).D3DX() );
 	}
 
     g_nActiveLight = 0;
@@ -6720,7 +6726,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
-				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
 
@@ -8764,7 +8770,7 @@ int RetargetFile(char* fbxpath)
 unsigned __stdcall ThreadFunc_CalcLimitedWM(LPVOID lpThreadParam)
 {
 	int modelcnt = 0;
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 
 
 	InterlockedExchange(&s_progressmodelnum, modelnum);
@@ -10101,7 +10107,7 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 				//if ((pathlen > 0) && (pathlen < MAX_PATH)) {
 				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 					DWORD writelen = 0;
-					WriteFile(hfile, fbxpath0, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					WriteFile(hfile, fbxpath0, (DWORD)(savepathlen * sizeof(WCHAR)), &writelen, NULL);
 					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 				}
 				CloseHandle(hfile);
@@ -12077,7 +12083,7 @@ float CalcSelectScale(CBone* curboneptr)
 	s_model->GetModelBound(&mb);
 	double modelr = (double)mb.r;
 
-	s_selectscale = modelr * 0.0020;
+	s_selectscale = (float)(modelr * 0.0020);
 	if (s_oprigflag == 1) {
 		s_selectscale *= 0.125f;
 		//s_selectscale *= 0.50f;
@@ -16203,7 +16209,7 @@ int SaveProject()
 				//if ((pathlen > 0) && (pathlen < MAX_PATH)) {
 				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 					DWORD writelen = 0;
-					WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					WriteFile(hfile, saveprojpath, (DWORD)(savepathlen * sizeof(WCHAR)), &writelen, NULL);
 					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 				}
 				CloseHandle(hfile);
@@ -16412,7 +16418,7 @@ int OpenChaFile()
 				//pathlen = (int)wcslen(saveprojpath);
 				if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 					DWORD writelen = 0;
-					WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+					WriteFile(hfile, saveprojpath, (DWORD)(savepathlen * sizeof(WCHAR)), &writelen, NULL);
 					_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 				}
 				CloseHandle(hfile);
@@ -16528,8 +16534,8 @@ int OnSetMotSpeed()
 	//モーションが変わってもスライダー指定のスピードを維持するようにする
 	//g_dspeed = s_model->GetCurMotInfo()->speed;
 	g_dspeed = s_model->GetTmpMotSpeed();
-	int modelno;
-	int modelnum = s_modelindex.size();
+	size_t modelno;
+	size_t modelnum = s_modelindex.size();
 	for (modelno = 0; modelno < modelnum; modelno++) {
 		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
 	}
@@ -18817,11 +18823,19 @@ int AngleLimit2Bone()
 	return 0;
 }
 
-int InitAngleLimitEdit(HWND hDlgWnd, int editresid, int srclimit)
+int InitAngleLimitEditInt(HWND hDlgWnd, int editresid, int srclimit)
 {
 	WCHAR strlimit[ANGLEDLGEDITLEN] = { 0L };
 	swprintf_s(strlimit, ANGLEDLGEDITLEN, L"%d", srclimit);
 	SetDlgItemText(hDlgWnd, editresid, strlimit);
+
+	return 0;
+}
+int InitAngleLimitEditFloat(HWND hDlgWnd, int editresid, float srcfloat)
+{
+	WCHAR strfloat[ANGLEDLGEDITLEN] = { 0L };
+	swprintf_s(strfloat, ANGLEDLGEDITLEN, L"%.1f", srcfloat);
+	SetDlgItemText(hDlgWnd, editresid, strfloat);
 
 	return 0;
 }
@@ -18886,7 +18900,7 @@ int GetAngleLimitSliderValFloat(HWND hDlgWnd, int slresid, int txtresid, float* 
 	int curval = (int)SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_GETPOS, 0, 0);
 	float curvalfloat = (float)curval;
 
-	*dstptr = curval;
+	*dstptr = curvalfloat;
 	WCHAR strval[256];
 	swprintf_s(strval, 256, L"%.1f", curvalfloat);
 	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
@@ -18983,20 +18997,20 @@ int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 
 
 			//入力フィールドを毎フレーム更新すると　入力できないので　updateonlycheckeulのときには更新しない
-			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_XL, s_anglelimit.lower[AXIS_X]);
-			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_XU, s_anglelimit.upper[AXIS_X]);
+			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_XL, s_anglelimit.lower[AXIS_X]);
+			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_XU, s_anglelimit.upper[AXIS_X]);
 
-			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_YL, s_anglelimit.lower[AXIS_Y]);
-			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_YU, s_anglelimit.upper[AXIS_Y]);
+			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_YL, s_anglelimit.lower[AXIS_Y]);
+			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_YU, s_anglelimit.upper[AXIS_Y]);
 
-			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_ZL, s_anglelimit.lower[AXIS_Z]);
-			InitAngleLimitEdit(hDlgWnd, IDC_EDIT_ZU, s_anglelimit.upper[AXIS_Z]);
+			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_ZL, s_anglelimit.lower[AXIS_Z]);
+			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_ZU, s_anglelimit.upper[AXIS_Z]);
 		}
 
 
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_CHKX, s_anglelimit.chkeul[AXIS_X]);
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_CHKY, s_anglelimit.chkeul[AXIS_Y]);
-		InitAngleLimitEdit(hDlgWnd, IDC_EDIT_CHKZ, s_anglelimit.chkeul[AXIS_Z]);
+		InitAngleLimitEditFloat(hDlgWnd, IDC_EDIT_CHKX, s_anglelimit.chkeul[AXIS_X]);
+		InitAngleLimitEditFloat(hDlgWnd, IDC_EDIT_CHKY, s_anglelimit.chkeul[AXIS_Y]);
+		InitAngleLimitEditFloat(hDlgWnd, IDC_EDIT_CHKZ, s_anglelimit.chkeul[AXIS_Z]);
 
 
 		//InitAngleLimitSlider(hDlgWnd, IDC_SLXL, IDC_XLVAL, s_anglelimit.lower[AXIS_X]);
@@ -27678,7 +27692,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
-				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 			}
 		}
 	}
@@ -35316,8 +35330,8 @@ void OnGUIEventSpeed()
 	//SetMotionSpeed() : モーションごとのスピード
 	//SetTmpMotSpeed() : モーションが変わってもスライダー指定のスピード
 	for (modelno = 0; modelno < modelnum; modelno++) {
-		s_modelindex[modelno].modelptr->SetTmpMotSpeed(g_dspeed);
-		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
+		s_modelindex[modelno].modelptr->SetTmpMotSpeed((float)g_dspeed);
+		s_modelindex[modelno].modelptr->SetMotionSpeed((float)g_dspeed);
 	}
 
 	WCHAR sz[100] = { 0L };
@@ -35397,7 +35411,7 @@ int SaveRtgHistory(WCHAR* selectname)
 		//pathlen = (int)wcslen(saveprojpath);
 		if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 			DWORD writelen = 0;
-			WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+			WriteFile(hfile, saveprojpath, (DWORD)(savepathlen * sizeof(WCHAR)), &writelen, NULL);
 			_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 		}
 		CloseHandle(hfile);
@@ -35432,7 +35446,7 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 		//pathlen = (int)wcslen(saveprojpath);
 		if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 			DWORD writelen = 0;
-			WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+			WriteFile(hfile, saveprojpath, (DWORD)(savepathlen * sizeof(WCHAR)), &writelen, NULL);
 			_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 		}
 		CloseHandle(hfile);
@@ -35466,7 +35480,7 @@ int SaveBatchHistory(WCHAR* selectname)
 		//pathlen = (int)wcslen(saveprojpath);
 		if ((savepathlen > 0) && (savepathlen < MAX_PATH)) {
 			DWORD writelen = 0;
-			WriteFile(hfile, saveprojpath, (savepathlen * sizeof(WCHAR)), &writelen, NULL);
+			WriteFile(hfile, saveprojpath, (DWORD)(savepathlen * sizeof(WCHAR)), &writelen, NULL);
 			_ASSERT((savepathlen * sizeof(WCHAR)) == writelen);
 		}
 		CloseHandle(hfile);
@@ -37386,7 +37400,7 @@ int FindModelIndex(CModel* srcmodel)
 		return -1;
 	}
 
-	int modelnum = s_modelindex.size();
+	int modelnum = (int)s_modelindex.size();
 	if (modelnum <= 0) {
 		return -1;
 	}

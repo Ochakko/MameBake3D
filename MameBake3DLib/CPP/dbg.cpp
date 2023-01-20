@@ -72,7 +72,7 @@ int DbgOut( const WCHAR* lpFormat, ... )
 	outchar[7000 - 1] = 0L;
 	wleng = wcslen( outchar );
 	if ((wleng > 0) && (wleng < 7000)) {
-		WriteFile(dbgfile, outchar, sizeof(WCHAR) * wleng, &writeleng, NULL);
+		WriteFile(dbgfile, outchar, (DWORD)(sizeof(WCHAR) * wleng), &writeleng, NULL);
 	}
 	
 	return 0;

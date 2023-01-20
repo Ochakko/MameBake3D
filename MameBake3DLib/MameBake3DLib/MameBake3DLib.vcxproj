@@ -92,7 +92,8 @@
       <AdditionalIncludeDirectories>..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\..\Effects11;..\..\Effects11\Inc;..\..\Effects11\Binary;..\Effects11;..\Effects11\Inc;..\Effects11\Binary;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <DisableSpecificWarnings>4305;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -140,7 +141,8 @@
       <AdditionalIncludeDirectories>..\INCLUDE;..\DXUT\Core;..\DXUT\Optional;..\..\Effects11;..\..\Effects11\Inc;..\..\Effects11\Binary;..\Effects11;..\Effects11\Inc;..\Effects11\Binary;..\BTMANAGER;..\BTSRC;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <DisableSpecificWarnings>4305;4244;6246;4267;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>

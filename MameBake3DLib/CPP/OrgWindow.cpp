@@ -358,7 +358,7 @@ namespace OrgWinGUI{
 				//モーション再生中は　目盛り部分に　カレントタイムの数値だけを表示
 
 				startindex = max(0, ((int)currentTime - KEYNUM_ONPREVIEW));
-				endindex = min(maxTime, ((int)currentTime + KEYNUM_ONPREVIEW));
+				endindex = min((int)(maxTime + 0.0001), ((int)currentTime + KEYNUM_ONPREVIEW));
 
 				int xx = (int)((currentTime - showPos_time) * timeSize) + x0 + 1;
 

@@ -105,6 +105,20 @@ int CBtObject::DestroyObjs()
 	}
 	m_constraint.clear();
 
+
+
+	if (m_colshape) {
+		//2023/01/20 メモリリークしないように　btCompoundShapeにaddShapeした形状をdeleteする
+		btCollisionShape* pchildshape = m_colshape->getChildShape(0);//今のところShapeは１個だけと決まっているから
+		if (pchildshape) {
+			delete pchildshape;
+		}
+
+		delete m_colshape;
+		m_colshape = 0;
+	}
+
+
 	if( m_rigidbody ){
 		if( m_rigidbody->getMotionState() ){
 			delete m_rigidbody->getMotionState();
@@ -114,10 +128,6 @@ int CBtObject::DestroyObjs()
 		m_rigidbody = 0;
 	}
 
-	if( m_colshape ){
-		delete m_colshape;
-		m_colshape = 0;
-	}
 
 	DestroyPhysicsPosConstraint();
 
@@ -237,6 +247,10 @@ int CBtObject::AddChild( CBtObject* addbt )
 
 int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone )
 {
+
+	DestroyObjs();//2023/01/20
+
+
 	m_bone = curbone;
 	m_parentbone = parentbone;
 	m_parbt = parbt;
@@ -318,7 +332,7 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 
 	//コリジョン形状の初期姿勢
-	//剛体の初期姿勢は　dir2xしないNodeMatなので　コリジョンの向きとは異なる
+	//剛体の初期姿勢は　dir2xしないNodeMat(モーションの軸と合わせるため)なので　コリジョンの向きとは異なる
 	//コリジョンの向きは　dir2xしなければならない
 	//dir2xした向きをローカル情報として設定する
 	ChaMatrix shapemat;
@@ -341,31 +355,31 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 
 
 
-	btCompoundShape* compound = new btCompoundShape();//任意の形状OK.　任意のローカル姿勢OK.　複数形状OK.
+	btCompoundShape* compoundshape = new btCompoundShape();//任意の形状OK.　任意のローカル姿勢OK.　複数形状OK.
 
 
 	if( curre->GetColtype() == COL_CAPSULE_INDEX ){
 		btCapsuleShape* newcapsule;
 		newcapsule = new btCapsuleShape(btScalar(r * rrate), btScalar(h * lengrate));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		compound->addChildShape(localtransform, newcapsule);
+		compoundshape->addChildShape(localtransform, newcapsule);
 	}else if( curre->GetColtype() == COL_CONE_INDEX ){
 		btConeShape* newcone;
 		newcone = new btConeShape(btScalar(r * rrate), btScalar(h * lengrate));
-		compound->addChildShape(localtransform, newcone);
+		compoundshape->addChildShape(localtransform, newcone);
 	}else if( curre->GetColtype() == COL_SPHERE_INDEX ){
 		btSphereShape* newsphere;
 		newsphere = new btSphereShape(btScalar(r * rrate));
-		compound->addChildShape(localtransform, newsphere);
+		compoundshape->addChildShape(localtransform, newsphere);
 	}else if( curre->GetColtype() == COL_BOX_INDEX ){
 		btBoxShape* newbox;
 		newbox = new btBoxShape(btVector3(btScalar(r * rrate), btScalar(h * lengrate), btScalar(z * rrate)));
-		compound->addChildShape(localtransform, newbox);
+		compoundshape->addChildShape(localtransform, newbox);
 	}else{
 		_ASSERT( 0 );
 		return 1;
 	}
 
-	m_colshape = compound;
+	m_colshape = compoundshape;
 
 
 //	if( m_boneleng < 0.00001f ){

@@ -3335,7 +3335,7 @@ void s_dummyfunc()
 						SetTextColor(hdcM->hDC, RGB(168, 129, 129));
 						TextOut(hdcM->hDC,
 							pos1x, pos1y,
-							pjointname, jointnamelen);
+							pjointname, (int)jointnamelen);
 					}
 				}
 			}
@@ -7962,11 +7962,11 @@ void s_dummyfunc()
 					int startedge;
 					int endedge;
 					if ((g_previewFlag == 0) || (g_previewFlag == 5)){
-						startedge = g_motionbrush_startframe;
-						endedge = g_motionbrush_endframe;
+						startedge = (int)(g_motionbrush_startframe + 0.0001);
+						endedge = (int)(g_motionbrush_endframe + 0.0001);
 					}else{
-						startedge = g_playingstart;
-						endedge = g_playingend;
+						startedge = (int)(g_playingstart + 0.0001);
+						endedge = (int)(g_playingend + 0.0001);
 					}
 
 					//vert startedge

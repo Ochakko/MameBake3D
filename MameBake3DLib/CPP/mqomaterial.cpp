@@ -85,63 +85,63 @@ int CMQOMaterial::SetParams( int srcno, ChaVector4 srcsceneamb, char* srcchar, i
 					isfind = 1;
 					switch( patno ){
 					case 0:
-						ret = SetCol( srcchar, pos, srcleng, &stepnum );
+						ret = SetCol( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 1:
-						ret = SetDif( srcchar, pos, srcleng, &stepnum );
+						ret = SetDif( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 2:
-						ret = SetAmb( srcchar, pos, srcleng, &stepnum );
+						ret = SetAmb( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 3:
-						ret = SetEmi( srcchar, pos, srcleng, &stepnum );
+						ret = SetEmi( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 4:
-						ret = SetSpc( srcchar, pos, srcleng, &stepnum );
+						ret = SetSpc( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 5:
-						ret = SetPower( srcchar, pos, srcleng, &stepnum );
+						ret = SetPower( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 6:
-						ret = SetTex( srcchar, pos, srcleng, &stepnum );
+						ret = SetTex( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 7:
-						ret = SetAlpha( srcchar, pos, srcleng, &stepnum );
+						ret = SetAlpha( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 8:
-						ret = SetBump( srcchar, pos, srcleng, &stepnum );
+						ret = SetBump( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 9:
-						ret = SetShader( srcchar, pos, srcleng, &stepnum );
+						ret = SetShader( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 10:
-						ret = SetVcolFlag( srcchar, pos, srcleng, &stepnum );
+						ret = SetVcolFlag( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;
 					case 11:
 						//DbgOut( L"MQOMaterial : SetParams : SetName %d\r\n", pos );
-						ret = SetName( srcchar, pos, srcleng, &stepnum );
+						ret = SetName( srcchar, (int)pos, srcleng, &stepnum );
 						if( ret )
 							return ret;
 						break;

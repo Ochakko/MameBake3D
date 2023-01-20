@@ -646,7 +646,7 @@ int CMQOFile::ReadColor( MQOSTATE* nextstate )
 			m_linechar[LINECHARLENG - 1] = 0;
 			lineleng = strlen(m_linechar);
 			if ((lineleng > 0) && (lineleng < LINECHARLENG)) {
-				ret = currentobj->SetColor(m_linechar, lineleng);
+				ret = currentobj->SetColor(m_linechar, (int)lineleng);
 				if (ret) {
 					DbgOut(L"MQOFile : ReadColor : SetColor error !!!");
 					_ASSERT(0);
@@ -709,7 +709,7 @@ int CMQOFile::ReadScene( MQOSTATE* nextstate )
 					int stepnum;
 					stepnum = 4;
 					for (cnt = 0; cnt < 3; cnt++) {
-						ret = GetFloat(&dstfloat, m_linechar, stepnum, leng, &step);
+						ret = GetFloat(&dstfloat, m_linechar, stepnum, (int)leng, &step);
 						if (ret)
 							return ret;
 
@@ -883,15 +883,15 @@ int CMQOFile::ReadObject( MQOSTATE* nextstate )
 		}else if( (getleng >= 3) && (strstr( m_linechar, "{\r\n" ) != NULL) ){
 			//子チャンクをチェック
 			m_linechar[LINECHARLENG - 1] = 0;
-			size_t lineleng = strlen(m_linechar);
-			ret = GetChunkType( nextstate, m_linechar, (int)lineleng );
+			size_t lineleng2 = strlen(m_linechar);
+			ret = GetChunkType( nextstate, m_linechar, (int)lineleng2 );
 			_ASSERT( !ret );
 			return 0;
 		}else{
 			//DbgOut( L"MQOFile : ReadObject : SetParams : %s\n", m_linechar );
 			m_linechar[LINECHARLENG - 1] = 0;
-			size_t lineleng = strlen(m_linechar);
-			ret = newobj->SetParams( m_linechar, (int)lineleng );
+			size_t lineleng3 = strlen(m_linechar);
+			ret = newobj->SetParams( m_linechar, (int)lineleng3 );
 			if( ret ){
 				DbgOut( L"MQOFile : ReadObject : newobj SetParams error !!!" );
 				_ASSERT( 0 );

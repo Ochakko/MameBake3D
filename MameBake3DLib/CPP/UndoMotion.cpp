@@ -411,9 +411,9 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 	double oldleng = chkmotinfo->frameleng;
 	double newleng = m_savemotinfo.frameleng;
 	if (oldleng > newleng) {
-		map<int, CBone*>::iterator itrbone;
-		for (itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++) {
-			CBone* curbone = itrbone->second;
+		map<int, CBone*>::iterator itrbone2;
+		for (itrbone2 = pmodel->GetBoneListBegin(); itrbone2 != pmodel->GetBoneListEnd(); itrbone2++) {
+			CBone* curbone = itrbone2->second;
 			if (curbone) {
 				curbone->DeleteMPOutOfRange(setmotid, newleng - 1.0);
 			}

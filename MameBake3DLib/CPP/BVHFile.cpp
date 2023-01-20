@@ -468,9 +468,9 @@ int CBVHFile::GetStateAndLine()
 	int patno;
 	int matchflag;
 	int findpat = -1;
-	size_t patleng;
+	int patleng;
 	for( patno = STATE_ROOT; patno <= STATE_FRAMETIME; patno++ ){
-		patleng = strlen( bvhpat[patno] );
+		patleng = (int)strlen( bvhpat[patno] );
 		if ((patleng > 0) && (patleng < 20)) {
 			matchflag = strncmp(m_buf + startpos, bvhpat[patno], patleng);
 			if (matchflag == 0) {
@@ -481,10 +481,10 @@ int CBVHFile::GetStateAndLine()
 	}
 	if( findpat >= 0 ){
 		retstate = patno;
-		m_pos = startpos + patleng;//!!!!!!!!!!!!!!!!!!
+		m_pos = (DWORD)(startpos + patleng);//!!!!!!!!!!!!!!!!!!
 	}else{
 		//_ASSERT( 0 );
-		m_pos = endpos;
+		m_pos = (DWORD)endpos;
 	}
 
 	if( (retstate == STATE_MOTION) || (retstate == STATE_BRACE1) || (retstate == STATE_BRACE2) ){
