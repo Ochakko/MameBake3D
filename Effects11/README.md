@@ -6,11 +6,11 @@ http://go.microsoft.com/fwlink/?LinkId=271568
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-**August 17, 2022**
+**December 10, 2022**
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render state, and runtime variables together.
 
-This code is designed to build with Visual Studio 2019 (16.9 or later) or Visual Studio 2022. Use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)) or later is required.
+This code is designed to build with Visual Studio 2019 (16.11 or later) or Visual Studio 2022. Use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)) or later is required.
 
 These components are designed to work without requiring any content from the legacy DirectX SDK. For details, see [Where is the DirectX SDK?](https://aka.ms/dxsdk).
 
@@ -37,6 +37,10 @@ Documentation is available on the [GitHub wiki](https://github.com/Microsoft/FX1
 ## Notices
 
 All content and source code for this package are subject to the terms of the [MIT License](https://github.com/microsoft/FX11/blob/main/LICENSE).
+
+## Release Notes
+
+* The library can be built with Visual C++ or with clang/LLVM for Windows. The code is not conformant enough to support the GNUC (MinGW) compiler.
 
 ## Support
 
