@@ -3,7 +3,7 @@
 //
 // Dialog for selection of device settings 
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -12,7 +12,7 @@
 
 #include "DXUT.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 
 //--------------------------------------------------------------------------------------
 // Internal functions forward declarations
@@ -115,19 +115,10 @@ void CD3DSettingsDlg::Init( CDXUTDialogResourceManager* pManager, LPCWSTR pszCon
 //--------------------------------------------------------------------------------------
 void CD3DSettingsDlg::CreateControls()
 {
-/*
-//hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-//	OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-//	L"MS ゴシック", &g_pFont);
-//	//L"Arial", &g_pFont10);
-*/
-
     // Set up main settings dialog
     m_Dialog.EnableKeyboardInput( true );
-    //m_Dialog.SetFont( 0, L"Arial", 15, FW_NORMAL );
-    //m_Dialog.SetFont( 1, L"Arial", 28, FW_BOLD );
-	m_Dialog.SetFont(0, L"MS ゴシック", 10, FW_NORMAL);
-	m_Dialog.SetFont(1, L"MS ゴシック", 15, FW_BOLD);
+    m_Dialog.SetFont( 0, L"Arial", 15, FW_NORMAL );
+    m_Dialog.SetFont( 1, L"Arial", 28, FW_BOLD );
 
     // Right-justify static controls
     auto pElement = m_Dialog.GetDefaultElement( DXUT_CONTROL_STATIC, 0 );
@@ -211,10 +202,8 @@ void CD3DSettingsDlg::CreateControls()
     // Set up mode change dialog
     m_RevertModeDialog.EnableKeyboardInput( true );
     m_RevertModeDialog.EnableNonUserEvents( true );
-    //m_RevertModeDialog.SetFont( 0, L"Arial", 15, FW_NORMAL );
-    //m_RevertModeDialog.SetFont( 1, L"Arial", 28, FW_BOLD );
-	m_RevertModeDialog.SetFont(0, L"MS ゴシック", 10, FW_NORMAL);
-	m_RevertModeDialog.SetFont(1, L"MS ゴシック", 15, FW_BOLD);
+    m_RevertModeDialog.SetFont( 0, L"Arial", 15, FW_NORMAL );
+    m_RevertModeDialog.SetFont( 1, L"Arial", 28, FW_BOLD );
 
     pElement = m_RevertModeDialog.GetDefaultElement( DXUT_CONTROL_STATIC, 0 );
     if( pElement )
@@ -529,11 +518,8 @@ void WINAPI CD3DSettingsDlg::StaticOnModeChangeTimer( UINT nIDEvent, void* pUser
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CD3DSettingsDlg::OnEvent( UINT nEvent, int nControlID, CDXUTControl* pControl )
+void CD3DSettingsDlg::OnEvent( UINT, int nControlID, CDXUTControl* )
 {
-    UNREFERENCED_PARAMETER(nEvent);
-    UNREFERENCED_PARAMETER(pControl);
-
     switch( nControlID )
     {
         case DXUTSETTINGSDLG_ADAPTER:
@@ -1473,7 +1459,7 @@ HRESULT CD3DSettingsDlg::UpdateD3D11Resolutions()
 
         for (size_t idm = 0; idm < pOutputInfo->displayModeList.size(); idm++)
         {
-            auto DisplayMode = pOutputInfo->displayModeList[idm];
+            auto const& DisplayMode = pOutputInfo->displayModeList[idm];
             float fAspect = (float) DisplayMode.Width / (float) DisplayMode.Height;
 
             if (DisplayMode.Format == g_DeviceSettings.d3d11.sd.BufferDesc.Format)

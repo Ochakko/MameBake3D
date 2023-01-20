@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 // File: DXUTRes.cpp
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -8213,7 +8213,7 @@ static const DWORD g_DXUTGUITextureSrcData[] =
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 
-static const UINT g_DXUTGUITextureSrcDataSizeInBytes = 262272;
+static constexpr UINT g_DXUTGUITextureSrcDataSizeInBytes = 262272;
 
 static const DWORD g_DXUTArrowMeshSrcData[] =
 {
@@ -8288,7 +8288,7 @@ static const DWORD g_DXUTArrowMeshSrcData[] =
     0x156e5c3f, 0xc4db201f, 0x7b8fc5c7, 0xf7e2221b, 0x0000001f
 };
 
-static const UINT g_DXUTArrowMeshSrcDataSizeInBytes = 2193;
+static constexpr UINT g_DXUTArrowMeshSrcDataSizeInBytes = 2193;
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_

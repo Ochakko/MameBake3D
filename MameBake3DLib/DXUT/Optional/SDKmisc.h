@@ -3,7 +3,7 @@
 //
 // Various helper functionality that is shared between SDK samples
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -74,7 +74,7 @@ public:
         m_pt.y = y;
     }
     void SetForegroundColor( _In_ DirectX::XMFLOAT4 clr ) { m_clr = clr; }
-    void SetForegroundColor( _In_ DirectX::FXMVECTOR clr ) { XMStoreFloat4( &m_clr, clr ); }
+    void XM_CALLCONV SetForegroundColor( _In_ DirectX::FXMVECTOR clr ) { XMStoreFloat4( &m_clr, clr ); }
 
     void    Begin();
     HRESULT DrawFormattedTextLine( _In_z_ const WCHAR* strMsg, ... );

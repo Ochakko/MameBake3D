@@ -8,14 +8,14 @@
 // full-featured texture capture, DDS writer, and texture processing pipeline,
 // see the 'Texconv' sample and the 'DirectXTex' library.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
-#include "stdafx.h"
-#include "dxut.h"
+
+#include "DXUT.h"
 
 // Does not capture 1D textures or 3D textures (volume maps)
 
@@ -25,9 +25,13 @@
 
 #include "ScreenGrab.h"
 
-#include <assert.h>
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <memory>
+#include <new>
+#include <tuple>
 
 #include <wincodec.h>
 
@@ -44,7 +48,7 @@ using Microsoft::WRL::ComPtr;
 // Macros
 //--------------------------------------------------------------------------------------
 #ifndef MAKEFOURCC
-    #define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
                 ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
                 ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
 #endif /* defined(MAKEFOURCC) */
@@ -56,9 +60,9 @@ using Microsoft::WRL::ComPtr;
 //--------------------------------------------------------------------------------------
 namespace
 {
-    #pragma pack(push,1)
+#pragma pack(push,1)
 
-    #define DDS_MAGIC 0x20534444 // "DDS "
+#define DDS_MAGIC 0x20534444 // "DDS "
 
     struct DDS_PIXELFORMAT
     {
@@ -72,20 +76,20 @@ namespace
         uint32_t    ABitMask;
     };
 
-    #define DDS_FOURCC      0x00000004  // DDPF_FOURCC
-    #define DDS_RGB         0x00000040  // DDPF_RGB
-    #define DDS_RGBA        0x00000041  // DDPF_RGB | DDPF_ALPHAPIXELS
-    #define DDS_LUMINANCE   0x00020000  // DDPF_LUMINANCE
-    #define DDS_LUMINANCEA  0x00020001  // DDPF_LUMINANCE | DDPF_ALPHAPIXELS
-    #define DDS_ALPHA       0x00000002  // DDPF_ALPHA
-    #define DDS_BUMPDUDV    0x00080000  // DDPF_BUMPDUDV
+#define DDS_FOURCC      0x00000004  // DDPF_FOURCC
+#define DDS_RGB         0x00000040  // DDPF_RGB
+#define DDS_RGBA        0x00000041  // DDPF_RGB | DDPF_ALPHAPIXELS
+#define DDS_LUMINANCE   0x00020000  // DDPF_LUMINANCE
+#define DDS_LUMINANCEA  0x00020001  // DDPF_LUMINANCE | DDPF_ALPHAPIXELS
+#define DDS_ALPHA       0x00000002  // DDPF_ALPHA
+#define DDS_BUMPDUDV    0x00080000  // DDPF_BUMPDUDV
 
-    #define DDS_HEADER_FLAGS_TEXTURE        0x00001007  // DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT 
-    #define DDS_HEADER_FLAGS_MIPMAP         0x00020000  // DDSD_MIPMAPCOUNT
-    #define DDS_HEADER_FLAGS_PITCH          0x00000008  // DDSD_PITCH
-    #define DDS_HEADER_FLAGS_LINEARSIZE     0x00080000  // DDSD_LINEARSIZE
+#define DDS_HEADER_FLAGS_TEXTURE        0x00001007  // DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT
+#define DDS_HEADER_FLAGS_MIPMAP         0x00020000  // DDSD_MIPMAPCOUNT
+#define DDS_HEADER_FLAGS_PITCH          0x00000008  // DDSD_PITCH
+#define DDS_HEADER_FLAGS_LINEARSIZE     0x00080000  // DDSD_LINEARSIZE
 
-    #define DDS_SURFACE_FLAGS_TEXTURE 0x00001000 // DDSCAPS_TEXTURE
+#define DDS_SURFACE_FLAGS_TEXTURE 0x00001000 // DDSCAPS_TEXTURE
 
     struct DDS_HEADER
     {
@@ -114,7 +118,7 @@ namespace
         uint32_t        reserved;
     };
 
-    #pragma pack(pop)
+#pragma pack(pop)
 
     const DDS_PIXELFORMAT DDSPF_DXT1 =
     { sizeof(DDS_PIXELFORMAT), DDS_FOURCC, MAKEFOURCC('D','X','T','1'), 0, 0, 0, 0, 0 };
@@ -211,7 +215,7 @@ namespace
             {
                 FILE_DISPOSITION_INFO info = {};
                 info.DeleteFile = TRUE;
-                (void)SetFileInformationByHandle(m_handle, FileDispositionInfo, &info, sizeof(info));
+                std::ignore = SetFileInformationByHandle(m_handle, FileDispositionInfo, &info, sizeof(info));
             }
         }
 
@@ -552,7 +556,7 @@ namespace
         }
         else
         {
-            size_t bpp = BitsPerPixel(fmt);
+            const size_t bpp = BitsPerPixel(fmt);
             if (!bpp)
                 return E_INVALIDARG;
 
@@ -561,13 +565,13 @@ namespace
             numBytes = rowBytes * height;
         }
 
-#if defined(_M_IX86) || defined(_M_ARM) || defined(_M_HYBRID_X86_ARM64)
+    #if defined(_M_IX86) || defined(_M_ARM) || defined(_M_HYBRID_X86_ARM64)
         static_assert(sizeof(size_t) == 4, "Not a 32-bit platform!");
         if (numBytes > UINT32_MAX || rowBytes > UINT32_MAX || numRows > UINT32_MAX)
             return HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW);
-#else
+    #else
         static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
-#endif
+    #endif
 
         if (outNumBytes)
         {
@@ -657,7 +661,7 @@ namespace
 
             assert(pTemp);
 
-            DXGI_FORMAT fmt = EnsureNotTypeless(desc.Format);
+            const DXGI_FORMAT fmt = EnsureNotTypeless(desc.Format);
 
             UINT support = 0;
             hr = d3dDevice->CheckFormatSupport(fmt, &support);
@@ -671,7 +675,7 @@ namespace
             {
                 for (UINT level = 0; level < desc.MipLevels; ++level)
                 {
-                    UINT index = D3D11CalcSubresource(level, item, desc.MipLevels);
+                    const UINT index = D3D11CalcSubresource(level, item, desc.MipLevels);
                     pContext->ResolveSubresource(pTemp.Get(), index, pSource, index, fmt);
                 }
             }
@@ -719,7 +723,7 @@ namespace
 
     BOOL WINAPI InitializeWICFactory(PINIT_ONCE, PVOID, PVOID* ifactory) noexcept
     {
-#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
+    #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
         HRESULT hr = CoCreateInstance(
             CLSID_WICImagingFactory2,
             nullptr,
@@ -745,17 +749,17 @@ namespace
             );
             return SUCCEEDED(hr) ? TRUE : FALSE;
         }
-#else
+    #else
         return SUCCEEDED(CoCreateInstance(
             CLSID_WICImagingFactory,
             nullptr,
             CLSCTX_INPROC_SERVER,
             __uuidof(IWICImagingFactory),
             ifactory)) ? TRUE : FALSE;
-#endif
+    #endif
     }
 
-    IWICImagingFactory* _GetWIC() noexcept
+    IWICImagingFactory* GetWIC() noexcept
     {
         static INIT_ONCE s_initOnce = INIT_ONCE_STATIC_INIT;
 
@@ -791,9 +795,11 @@ HRESULT DirectX::SaveDDSTextureToFile(
 
     // Create file
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-    ScopedHandle hFile(safe_handle(CreateFile2(fileName, GENERIC_WRITE | DELETE, 0, CREATE_ALWAYS, nullptr)));
+    ScopedHandle hFile(safe_handle(CreateFile2(fileName,
+        GENERIC_WRITE | DELETE, 0, CREATE_ALWAYS, nullptr)));
 #else
-    ScopedHandle hFile(safe_handle(CreateFileW(fileName, GENERIC_WRITE | DELETE, 0, nullptr, CREATE_ALWAYS, 0, nullptr)));
+    ScopedHandle hFile(safe_handle(CreateFileW(fileName,
+        GENERIC_WRITE | DELETE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr)));
 #endif
     if (!hFile)
         return HRESULT_FROM_WIN32(GetLastError());
@@ -801,7 +807,7 @@ HRESULT DirectX::SaveDDSTextureToFile(
     auto_delete_file delonfail(hFile.get());
 
     // Setup header
-    const size_t MAX_HEADER_SIZE = sizeof(uint32_t) + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10);
+    constexpr size_t MAX_HEADER_SIZE = sizeof(uint32_t) + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10);
     uint8_t fileHeader[MAX_HEADER_SIZE] = {};
 
     *reinterpret_cast<uint32_t*>(&fileHeader[0]) = DDS_MAGIC;
@@ -909,7 +915,7 @@ HRESULT DirectX::SaveDDSTextureToFile(
 
     uint8_t* dptr = pixels.get();
 
-    size_t msize = std::min<size_t>(rowPitch, mapped.RowPitch);
+    const size_t msize = std::min<size_t>(rowPitch, mapped.RowPitch);
     for (size_t h = 0; h < rowCount; ++h)
     {
         memcpy_s(dptr, rowPitch, sptr, msize);
@@ -1007,7 +1013,7 @@ HRESULT DirectX::SaveWICTextureToFile(
         return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
     }
 
-    auto pWIC = _GetWIC();
+    auto pWIC = GetWIC();
     if (!pWIC)
         return E_NOINTERFACE;
 
@@ -1046,7 +1052,7 @@ HRESULT DirectX::SaveWICTextureToFile(
         VARIANT varValue;
         varValue.vt = VT_BOOL;
         varValue.boolVal = VARIANT_TRUE;
-        (void)props->Write(1, &option, &varValue);
+        std::ignore = props->Write(1, &option, &varValue);
     }
 
     if (setCustomProps)
@@ -1077,7 +1083,7 @@ HRESULT DirectX::SaveWICTextureToFile(
         // Screenshots don't typically include the alpha channel of the render target
         switch (desc.Format)
         {
-#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
+        #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
         case DXGI_FORMAT_R32G32B32A32_FLOAT:
         case DXGI_FORMAT_R16G16B16A16_FLOAT:
             if (g_WIC2)
@@ -1089,7 +1095,7 @@ HRESULT DirectX::SaveWICTextureToFile(
                 targetGuid = GUID_WICPixelFormat24bppBGR;
             }
             break;
-#endif
+        #endif
 
         case DXGI_FORMAT_R16G16B16A16_UNORM: targetGuid = GUID_WICPixelFormat48bppBGR; break;
         case DXGI_FORMAT_B5G5R5A1_UNORM:     targetGuid = GUID_WICPixelFormat16bppBGR555; break;
@@ -1132,37 +1138,37 @@ HRESULT DirectX::SaveWICTextureToFile(
         if (memcmp(&guidContainerFormat, &GUID_ContainerFormatPng, sizeof(GUID)) == 0)
         {
             // Set Software name
-            (void)metawriter->SetMetadataByName(L"/tEXt/{str=Software}", &value);
+            std::ignore = metawriter->SetMetadataByName(L"/tEXt/{str=Software}", &value);
 
             // Set sRGB chunk
             if (sRGB)
             {
                 value.vt = VT_UI1;
                 value.bVal = 0;
-                (void)metawriter->SetMetadataByName(L"/sRGB/RenderingIntent", &value);
+                std::ignore = metawriter->SetMetadataByName(L"/sRGB/RenderingIntent", &value);
             }
             else
             {
                 // add gAMA chunk with gamma 1.0
                 value.vt = VT_UI4;
                 value.uintVal = 100000; // gama value * 100,000 -- i.e. gamma 1.0
-                (void)metawriter->SetMetadataByName(L"/gAMA/ImageGamma", &value);
+                std::ignore = metawriter->SetMetadataByName(L"/gAMA/ImageGamma", &value);
 
                 // remove sRGB chunk which is added by default.
-                (void)metawriter->RemoveMetadataByName(L"/sRGB/RenderingIntent");
+                std::ignore = metawriter->RemoveMetadataByName(L"/sRGB/RenderingIntent");
             }
         }
         else
         {
             // Set Software name
-            (void)metawriter->SetMetadataByName(L"System.ApplicationName", &value);
+            std::ignore = metawriter->SetMetadataByName(L"System.ApplicationName", &value);
 
             if (sRGB)
             {
                 // Set EXIF Colorspace of sRGB
                 value.vt = VT_UI2;
                 value.uiVal = 1;
-                (void)metawriter->SetMetadataByName(L"System.Image.ColorSpace", &value);
+                std::ignore = metawriter->SetMetadataByName(L"System.Image.ColorSpace", &value);
             }
         }
     }
@@ -1172,7 +1178,7 @@ HRESULT DirectX::SaveWICTextureToFile(
     if (FAILED(hr))
         return hr;
 
-    uint64_t imageSize = uint64_t(mapped.RowPitch) * uint64_t(desc.Height);
+    const uint64_t imageSize = uint64_t(mapped.RowPitch) * uint64_t(desc.Height);
     if (imageSize > UINT32_MAX)
     {
         pContext->Unmap(pStaging.Get(), 0);

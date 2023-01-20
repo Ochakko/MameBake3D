@@ -6,14 +6,14 @@
 // applications should avoid this file format in favor of a destination format that 
 // meets the specific needs of the application.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
-#include "SDKMesh.h"
-#include "SDKMisc.h"
+#include "SDKmesh.h"
+#include "SDKmisc.h"
 
 using namespace DirectX;
 
@@ -362,7 +362,6 @@ HRESULT CDXUTSDKMesh::CreateFromMemory( ID3D11Device* pDev11,
 
     // update bounding volume 
     SDKMESH_MESH* currentMesh = &m_pMeshArray[0];
-    int tris = 0;
     for (UINT meshi=0; meshi < m_pMeshHeader->NumMeshes; ++meshi) {
         lower.x = FLT_MAX; lower.y = FLT_MAX; lower.z = FLT_MAX;
         upper.x = -FLT_MAX; upper.y = -FLT_MAX; upper.z = -FLT_MAX;
@@ -411,7 +410,6 @@ HRESULT CDXUTSDKMesh::CreateFromMemory( ID3D11Device* pDev11,
                 }else {
                     current_ind = ind[vertind];
                 }
-                tris++;
                 XMFLOAT3 *pt = (XMFLOAT3*)&(verts[stride * current_ind]);
                 if (pt->x < lower.x) {
                     lower.x = pt->x;
@@ -704,9 +702,7 @@ CDXUTSDKMesh::CDXUTSDKMesh() noexcept :
     m_NumOutstandingResources(0),
     m_bLoading(false),
     m_hFile(0),
-    m_hFileMappingObject(0),
     m_pDev11(nullptr),
-    m_pDevContext11(nullptr),
     m_pStaticMeshData(nullptr),
     m_pHeapData(nullptr),
     m_pAnimationData(nullptr),

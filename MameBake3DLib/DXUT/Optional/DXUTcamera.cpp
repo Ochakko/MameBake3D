@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------------------
 // File: DXUTcamera.cpp
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -253,7 +253,7 @@ CBaseCamera::CBaseCamera() noexcept :
 // Client can call this to change the position and direction of camera
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CBaseCamera::SetViewParams( FXMVECTOR vEyePt, FXMVECTOR vLookatPt )
+void CBaseCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
 {
     XMStoreFloat3( &m_vEye, vEyePt );
     XMStoreFloat3( &m_vDefaultEye, vEyePt );
@@ -300,11 +300,8 @@ void CBaseCamera::SetProjParams( float fFOV, float fAspect, float fNearPlane, fl
 // Call this from your message proc so this class can handle window messages
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-LRESULT CBaseCamera::HandleMessages( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT CBaseCamera::HandleMessages( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    UNREFERENCED_PARAMETER( hWnd );
-    UNREFERENCED_PARAMETER( lParam );
-
     switch( uMsg )
     {
         case WM_KEYDOWN:
@@ -982,7 +979,7 @@ void CModelViewerCamera::Reset()
 // Override for setting the view parameters
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CModelViewerCamera::SetViewParams( FXMVECTOR vEyePt, FXMVECTOR vLookatPt )
+void CModelViewerCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
 {
     CBaseCamera::SetViewParams( vEyePt, vLookatPt );
 
@@ -1111,10 +1108,8 @@ CDXUTDirectionWidget::CDXUTDirectionWidget() noexcept :
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
 LRESULT CDXUTDirectionWidget::HandleMessages( HWND hWnd, UINT uMsg,
-                                              WPARAM wParam, LPARAM lParam )
+                                              WPARAM, LPARAM lParam )
 {
-    UNREFERENCED_PARAMETER(wParam);
-
     switch( uMsg )
     {
         case WM_LBUTTONDOWN:
@@ -1222,12 +1217,8 @@ HRESULT CDXUTDirectionWidget::UpdateLightDir()
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDirectionWidget::OnRender( FXMVECTOR color, CXMMATRIX mView, CXMMATRIX mProj, FXMVECTOR vEyePt )
+HRESULT CDXUTDirectionWidget::OnRender(CXMVECTOR, CXMMATRIX, CXMMATRIX, CXMVECTOR)
 {
-    UNREFERENCED_PARAMETER(color);
-    UNREFERENCED_PARAMETER(mView);
-    UNREFERENCED_PARAMETER(mProj);
-    UNREFERENCED_PARAMETER(vEyePt);
     // TODO - 
     return S_OK;
 }
@@ -1235,10 +1226,8 @@ HRESULT CDXUTDirectionWidget::OnRender( FXMVECTOR color, CXMMATRIX mView, CXMMAT
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDirectionWidget::StaticOnD3D11CreateDevice( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext )
+HRESULT CDXUTDirectionWidget::StaticOnD3D11CreateDevice( ID3D11Device*, ID3D11DeviceContext*)
 {
-    UNREFERENCED_PARAMETER(pd3dDevice);
-    UNREFERENCED_PARAMETER(pd3dImmediateContext);
     // TODO -
     return S_OK;
 }

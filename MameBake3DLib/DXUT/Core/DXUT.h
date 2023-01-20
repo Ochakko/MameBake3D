@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------------------
 // File: DXUT.h
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -51,12 +51,18 @@
 #define NOMINMAX
 #endif
 
-#include <windows.h>
+#include <cassert>
+#include <climits>
+#include <cmath>
+#include <cstdio>
+#include <new>
+#include <tuple>
+
+#include <Windows.h>
 #include <initguid.h>
 #include <assert.h>
 #include <commctrl.h> // for InitCommonControls() 
 #include <shellapi.h> // for ExtractIcon()
-#include <new.h>      // for placement new
 #include <shlobj.h>
 #include <math.h>
 #include <limits.h>
@@ -85,6 +91,10 @@
 // DirectXMath includes
 #include <DirectXMath.h>
 #include <DirectXColors.h>
+
+#if (DIRECTX_MATH_VERSION < 315)
+#define XM_ALIGNED_DATA(x) __declspec(align(x))
+#endif
 
 // WIC includes
 #include <wincodec.h>
@@ -131,7 +141,7 @@
     ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #endif
 
-#define DXUT_VERSION 1125
+#define DXUT_VERSION 1130
 
 //--------------------------------------------------------------------------------------
 // Structs

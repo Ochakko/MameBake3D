@@ -3,17 +3,16 @@
 //
 // DirectX Error Library
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //--------------------------------------------------------------------------------------
-#include "stdafx.h"
-#include "dxut.h"
+#include "DXUT.h"
 
 // This version only supports UNICODE.
 
 #include "dxerr.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <ddraw.h>
 #include <d3d10_1.h>
@@ -47,11 +46,11 @@
 
 //--------------------------------------------------------------------------------------
 #define  CHK_ERR(hrchk, strOut) \
-        case hrchk: \
+        case static_cast<HRESULT>(hrchk): \
              return L##strOut;
 
 #define  CHK_ERRA(hrchk) \
-        case hrchk: \
+        case static_cast<HRESULT>(hrchk): \
              return L## #hrchk;
 
 #define HRESULT_FROM_WIN32b(x) ((HRESULT)(x) <= 0 ? ((HRESULT)(x)) : ((HRESULT) (((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000)))
@@ -152,35 +151,35 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
         CHK_ERRA(DV_E_DVASPECT)
         CHK_ERRA(DV_E_DVTARGETDEVICE_SIZE)
         CHK_ERRA(DV_E_NOIVIEWOBJECT)
-        CHK_ERRA(DRAGDROP_E_FIRST)
-        CHK_ERRA(DRAGDROP_E_LAST)
-        CHK_ERRA(DRAGDROP_S_FIRST)
-        CHK_ERRA(DRAGDROP_S_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(DRAGDROP_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(DRAGDROP_E_LAST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(DRAGDROP_S_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(DRAGDROP_S_LAST))
 //        CHK_ERRA(DRAGDROP_E_NOTREGISTERED)
         CHK_ERRA(DRAGDROP_E_ALREADYREGISTERED)
         CHK_ERRA(DRAGDROP_E_INVALIDHWND)
-        CHK_ERRA(CLASSFACTORY_E_FIRST)
-        CHK_ERRA(CLASSFACTORY_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CLASSFACTORY_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CLASSFACTORY_E_LAST))
         CHK_ERRA(CLASSFACTORY_S_FIRST)
         CHK_ERRA(CLASSFACTORY_S_LAST)
 //        CHK_ERRA(CLASS_E_NOAGGREGATION)
         CHK_ERRA(CLASS_E_CLASSNOTAVAILABLE)
         CHK_ERRA(CLASS_E_NOTLICENSED)
-        CHK_ERRA(MARSHAL_E_FIRST)
-        CHK_ERRA(MARSHAL_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(MARSHAL_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(MARSHAL_E_LAST))
         CHK_ERRA(MARSHAL_S_FIRST)
         CHK_ERRA(MARSHAL_S_LAST)
-        CHK_ERRA(DATA_E_FIRST)
-        CHK_ERRA(DATA_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(DATA_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(DATA_E_LAST))
         CHK_ERRA(DATA_S_FIRST)
         CHK_ERRA(DATA_S_LAST)
-        CHK_ERRA(VIEW_E_FIRST)
-        CHK_ERRA(VIEW_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(VIEW_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(VIEW_E_LAST))
         CHK_ERRA(VIEW_S_FIRST)
         CHK_ERRA(VIEW_S_LAST)
 //        CHK_ERRA(VIEW_E_DRAW)
-        CHK_ERRA(REGDB_E_FIRST)
-        CHK_ERRA(REGDB_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(REGDB_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(REGDB_E_LAST))
         CHK_ERRA(REGDB_S_FIRST)
         CHK_ERRA(REGDB_S_LAST)
 //        CHK_ERRA(REGDB_E_READREGDB)
@@ -189,12 +188,12 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
         CHK_ERRA(REGDB_E_INVALIDVALUE)
         CHK_ERRA(REGDB_E_CLASSNOTREG)
         CHK_ERRA(REGDB_E_IIDNOTREG)
-        CHK_ERRA(CAT_E_FIRST)
-        CHK_ERRA(CAT_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CAT_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CAT_E_LAST))
 //        CHK_ERRA(CAT_E_CATIDNOEXIST)
 //        CHK_ERRA(CAT_E_NODESCRIPTION)
-        CHK_ERRA(CS_E_FIRST)
-        CHK_ERRA(CS_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CS_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CS_E_LAST))
 //        CHK_ERRA(CS_E_PACKAGE_NOTFOUND)
         CHK_ERRA(CS_E_NOT_DELETABLE)
         CHK_ERRA(CS_E_CLASS_NOTFOUND)
@@ -207,33 +206,33 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
         CHK_ERRA(CS_E_ADMIN_LIMIT_EXCEEDED)
         CHK_ERRA(CS_E_SCHEMA_MISMATCH)
 //        CHK_ERRA(CS_E_INTERNAL_ERROR)
-        CHK_ERRA(CACHE_E_FIRST)
-        CHK_ERRA(CACHE_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CACHE_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CACHE_E_LAST))
         CHK_ERRA(CACHE_S_FIRST)
         CHK_ERRA(CACHE_S_LAST)
 //        CHK_ERRA(CACHE_E_NOCACHE_UPDATED)
-        CHK_ERRA(OLEOBJ_E_FIRST)
-        CHK_ERRA(OLEOBJ_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(OLEOBJ_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(OLEOBJ_E_LAST))
         CHK_ERRA(OLEOBJ_S_FIRST)
         CHK_ERRA(OLEOBJ_S_LAST)
 //        CHK_ERRA(OLEOBJ_E_NOVERBS)
         CHK_ERRA(OLEOBJ_E_INVALIDVERB)
-        CHK_ERRA(CLIENTSITE_E_FIRST)
-        CHK_ERRA(CLIENTSITE_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CLIENTSITE_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CLIENTSITE_E_LAST))
         CHK_ERRA(CLIENTSITE_S_FIRST)
         CHK_ERRA(CLIENTSITE_S_LAST)
         CHK_ERRA(INPLACE_E_NOTUNDOABLE)
         CHK_ERRA(INPLACE_E_NOTOOLSPACE)
 //        CHK_ERRA(INPLACE_E_FIRST)
-        CHK_ERRA(INPLACE_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(INPLACE_E_LAST))
         CHK_ERRA(INPLACE_S_FIRST)
         CHK_ERRA(INPLACE_S_LAST)
-        CHK_ERRA(ENUM_E_FIRST)
-        CHK_ERRA(ENUM_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(ENUM_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(ENUM_E_LAST))
         CHK_ERRA(ENUM_S_FIRST)
         CHK_ERRA(ENUM_S_LAST)
-        CHK_ERRA(CONVERT10_E_FIRST)
-        CHK_ERRA(CONVERT10_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CONVERT10_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CONVERT10_E_LAST))
         CHK_ERRA(CONVERT10_S_FIRST)
         CHK_ERRA(CONVERT10_S_LAST)
 //        CHK_ERRA(CONVERT10_E_OLESTREAM_GET)
@@ -243,8 +242,8 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
         CHK_ERRA(CONVERT10_E_STG_FMT)
         CHK_ERRA(CONVERT10_E_STG_NO_STD_STREAM)
         CHK_ERRA(CONVERT10_E_STG_DIB_TO_BITMAP)
-        CHK_ERRA(CLIPBRD_E_FIRST)
-        CHK_ERRA(CLIPBRD_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CLIPBRD_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CLIPBRD_E_LAST))
         CHK_ERRA(CLIPBRD_S_FIRST)
         CHK_ERRA(CLIPBRD_S_LAST)
 //        CHK_ERRA(CLIPBRD_E_CANT_OPEN)
@@ -252,8 +251,8 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
         CHK_ERRA(CLIPBRD_E_CANT_SET)
         CHK_ERRA(CLIPBRD_E_BAD_DATA)
         CHK_ERRA(CLIPBRD_E_CANT_CLOSE)
-        CHK_ERRA(MK_E_FIRST)
-        CHK_ERRA(MK_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(MK_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(MK_E_LAST))
         CHK_ERRA(MK_S_FIRST)
         CHK_ERRA(MK_S_LAST)
 //        CHK_ERRA(MK_E_CONNECTMANUALLY)
@@ -2114,8 +2113,8 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
 //        CHK_ERRA(EVENT_E_CANT_MODIFY_OR_DELETE_CONFIGURED_OBJECT)
 //        CHK_ERRA(EVENT_E_INVALID_EVENT_CLASS_PARTITION)
 //        CHK_ERRA(EVENT_E_PER_USER_SID_NOT_LOGGED_ON)
-        CHK_ERRA(CONTEXT_E_FIRST)
-        CHK_ERRA(CONTEXT_E_LAST)
+        CHK_ERRA(_HRESULT_TYPEDEF_(CONTEXT_E_FIRST))
+        CHK_ERRA(_HRESULT_TYPEDEF_(CONTEXT_E_LAST))
         CHK_ERRA(CONTEXT_S_FIRST)
         CHK_ERRA(CONTEXT_S_LAST)
         CHK_ERRA(CONTEXT_E_ABORTED)
@@ -3263,10 +3262,10 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
 // -------------------------------------------------------------
 // xaudio2.h error codes
 // -------------------------------------------------------------
-        CHK_ERRA(XAUDIO2_E_INVALID_CALL)
-        CHK_ERRA(XAUDIO2_E_XMA_DECODER_ERROR)
-        CHK_ERRA(XAUDIO2_E_XAPO_CREATION_FAILED)
-        CHK_ERRA(XAUDIO2_E_DEVICE_INVALIDATED)
+        CHK_ERRA(_HRESULT_TYPEDEF_(XAUDIO2_E_INVALID_CALL))
+        CHK_ERRA(_HRESULT_TYPEDEF_(XAUDIO2_E_XMA_DECODER_ERROR))
+        CHK_ERRA(_HRESULT_TYPEDEF_(XAUDIO2_E_XAPO_CREATION_FAILED))
+        CHK_ERRA(_HRESULT_TYPEDEF_(XAUDIO2_E_DEVICE_INVALIDATED))
 
 // -------------------------------------------------------------
 // xapo.h error codes
@@ -3285,11 +3284,11 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
 #undef CHK_ERR_WIN32_ONLY
 
 #define  CHK_ERRA(hrchk) \
-        case hrchk: \
+        case static_cast<HRESULT>(hrchk): \
              wcscpy_s( desc, count, L## #hrchk ); break;
 
 #define  CHK_ERR(hrchk, strOut) \
-        case hrchk: \
+        case static_cast<HRESULT>(hrchk): \
              wcscpy_s( desc, count, L##strOut ); break;
 
 
@@ -3304,8 +3303,9 @@ void WINAPI DXGetErrorDescriptionW( _In_ HRESULT hr, _Out_cap_(count) WCHAR* des
     // First try to see if FormatMessage knows this hr
     LPWSTR errorText = nullptr;
 
-    DWORD result = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM |FORMAT_MESSAGE_ALLOCATE_BUFFER, nullptr, hr, 
-                                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&errorText, 0, nullptr );
+    DWORD result = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS| FORMAT_MESSAGE_ALLOCATE_BUFFER,
+                                   nullptr, static_cast<DWORD>(hr),
+                                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(&errorText), 0, nullptr );
 
     if (result > 0 && errorText)
     {
@@ -3590,10 +3590,10 @@ void WINAPI DXGetErrorDescriptionW( _In_ HRESULT hr, _Out_cap_(count) WCHAR* des
 // -------------------------------------------------------------
 // xaudio2.h error codes
 // -------------------------------------------------------------
-        CHK_ERR(XAUDIO2_E_INVALID_CALL, "Invalid XAudio2 API call or arguments")
-        CHK_ERR(XAUDIO2_E_XMA_DECODER_ERROR, "Hardware XMA decoder error")
-        CHK_ERR(XAUDIO2_E_XAPO_CREATION_FAILED, "Failed to create an audio effect")
-        CHK_ERR(XAUDIO2_E_DEVICE_INVALIDATED, "Device invalidated (unplugged, disabled, etc)")
+        CHK_ERR(_HRESULT_TYPEDEF_(XAUDIO2_E_INVALID_CALL), "Invalid XAudio2 API call or arguments")
+        CHK_ERR(_HRESULT_TYPEDEF_(XAUDIO2_E_XMA_DECODER_ERROR), "Hardware XMA decoder error")
+        CHK_ERR(_HRESULT_TYPEDEF_(XAUDIO2_E_XAPO_CREATION_FAILED), "Failed to create an audio effect")
+        CHK_ERR(_HRESULT_TYPEDEF_(XAUDIO2_E_DEVICE_INVALIDATED), "Device invalidated (unplugged, disabled, etc)")
 
 // -------------------------------------------------------------
 // xapo.h error codes
@@ -3608,10 +3608,8 @@ void WINAPI DXGetErrorDescriptionW( _In_ HRESULT hr, _Out_cap_(count) WCHAR* des
 HRESULT WINAPI DXTraceW( _In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr,
                          _In_opt_ const WCHAR* strMsg, _In_ bool bPopMsgBox )
 {
-    WCHAR strBufferFile[MAX_PATH];
     WCHAR strBufferLine[128];
     WCHAR strBufferError[256];
-    WCHAR strBufferMsg[1024];
     WCHAR strBuffer[BUFFER_SIZE];
 
     swprintf_s( strBufferLine, 128, L"%lu", dwLine );
@@ -3636,10 +3634,12 @@ HRESULT WINAPI DXTraceW( _In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HR
 
     if( bPopMsgBox )
     {
+        WCHAR strBufferFile[MAX_PATH];
         wcscpy_s( strBufferFile, MAX_PATH, L"" );
         if( strFile )
             wcscpy_s( strBufferFile, MAX_PATH, strFile );
 
+        WCHAR strBufferMsg[1024];
         wcscpy_s( strBufferMsg, 1024, L"" );
         if( nMsgLen > 0 )
             swprintf_s( strBufferMsg, 1024, L"Calling: %ls\n", strMsg );

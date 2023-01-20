@@ -22,8 +22,9 @@
 
 	コンパイル時の警告を解決(ただしbullet以外)
 
-	MicrosoftのEffects11をdec2022にアップデート
+	外部ライブラリのMicrosoftのEffects11をdec2022にアップデート
 
+	外部ライブラリのMicrosoftのDXUTをdec2022にアップデートしてマージ
 
 	サンプル物理パラメータ修正
 		Test/0_VRoid_Winter_B1

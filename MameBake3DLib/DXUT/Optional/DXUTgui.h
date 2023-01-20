@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------------------
 // File: DXUTgui.h
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -486,25 +486,15 @@ public:
     // Windows message handler
     virtual bool MsgProc( _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam )
     {
-        UNREFERENCED_PARAMETER(uMsg);
-        UNREFERENCED_PARAMETER(wParam);
-        UNREFERENCED_PARAMETER(lParam);
         return false;
     }
 
     virtual bool HandleKeyboard( _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam )
     {
-        UNREFERENCED_PARAMETER(uMsg);
-        UNREFERENCED_PARAMETER(wParam);
-        UNREFERENCED_PARAMETER(lParam);
         return false;
     }
     virtual bool HandleMouse( _In_ UINT uMsg, _In_ const POINT& pt, _In_ WPARAM wParam, _In_ LPARAM lParam )
     {
-        UNREFERENCED_PARAMETER(uMsg);
-        UNREFERENCED_PARAMETER(pt);
-        UNREFERENCED_PARAMETER(wParam);
-        UNREFERENCED_PARAMETER(lParam);
         return false;
     }
 
@@ -607,9 +597,8 @@ public:
     CDXUTStatic( _In_opt_ CDXUTDialog* pDialog = nullptr ) noexcept;
 
     virtual void Render( _In_ float fElapsedTime ) override;
-    virtual bool ContainsPoint( _In_ const POINT& pt ) override
+    virtual bool ContainsPoint( _In_ const POINT& /*pt*/ ) override
     {
-        UNREFERENCED_PARAMETER( pt );
         return false;
     }
 

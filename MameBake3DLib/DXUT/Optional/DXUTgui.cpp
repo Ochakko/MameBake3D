@@ -1,7 +1,7 @@
-﻿//--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 // File: DXUTgui.cpp
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -10,14 +10,12 @@
 
 #include "DXUT.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "DXUTres.h"
 
-#include "SDKMisc.h"
+#include "SDKmisc.h"
 
 #include "DDSTextureLoader.h"
-#include <d3d11shader.h>
-
 
 using namespace DirectX;
 
@@ -619,10 +617,10 @@ HRESULT CDXUTDialog::OnRender( _In_ float fElapsedTime )
 
         DXUT_SCREEN_VERTEX_10 vertices[4] =
         {
-            Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopLeft ), 0.0f, 0.0f,
-            Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopRight ), 1.0f, 0.0f,
-            Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomLeft ), 0.0f, 1.0f,
-            Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomRight ), 1.0f, 1.0f,
+            { Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopLeft), 0.0f, 0.0f },
+            { Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopRight), 1.0f, 0.0f },
+            { Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomLeft), 0.0f, 1.0f },
+            { Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomRight), 1.0f, 1.0f },
         };
 
         //DXUT_SCREEN_VERTEX_10 *pVB;
@@ -1122,9 +1120,8 @@ void CDXUTDialog::SetControlEnabled( _In_ int ID, _In_ bool bEnabled )
 
 
 //--------------------------------------------------------------------------------------
-void CDXUTDialog::OnMouseUp( _In_ const POINT& pt )
+void CDXUTDialog::OnMouseUp( _In_ const POINT& )
 {
-    UNREFERENCED_PARAMETER(pt);
     s_pControlPressed = nullptr;
     m_pControlMouseOver = nullptr;
 }
@@ -1610,10 +1607,8 @@ void CDXUTDialog::RequestFocus( _In_ CDXUTControl* pControl )
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDialog::DrawRect( const RECT* pRect, DWORD color )
+HRESULT CDXUTDialog::DrawRect( const RECT*, DWORD )
 {
-    UNREFERENCED_PARAMETER(pRect);
-    UNREFERENCED_PARAMETER(color);
     // TODO -
     return E_FAIL;
 }
@@ -1705,15 +1700,12 @@ HRESULT CDXUTDialog::DrawSprite( CDXUTElement* pElement, const RECT* prcDest, fl
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDialog::CalcTextRect( LPCWSTR strText, CDXUTElement* pElement, const RECT* prcDest, int nCount )
+HRESULT CDXUTDialog::CalcTextRect( LPCWSTR, CDXUTElement* pElement, const RECT*, int)
 {
     auto pFontNode = GetFont( pElement->iFont );
     if( !pFontNode )
         return E_FAIL;
 
-    UNREFERENCED_PARAMETER(strText);
-    UNREFERENCED_PARAMETER(prcDest);
-    UNREFERENCED_PARAMETER(nCount);
     // TODO -
 
     return S_OK;
@@ -2298,12 +2290,8 @@ CDXUTDialogResourceManager::~CDXUTDialogResourceManager()
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-bool CDXUTDialogResourceManager::MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+bool CDXUTDialogResourceManager::MsgProc( HWND, UINT, WPARAM, LPARAM )
 {
-    UNREFERENCED_PARAMETER(hWnd);
-    UNREFERENCED_PARAMETER(uMsg);
-    UNREFERENCED_PARAMETER(wParam);
-    UNREFERENCED_PARAMETER(lParam);
     return false;
 }
 
@@ -2316,37 +2304,16 @@ HRESULT CDXUTDialogResourceManager::OnD3D11CreateDevice( ID3D11Device* pd3dDevic
 
     HRESULT hr = S_OK;
 
-	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined( DEBUG ) || defined( _DEBUG )
-	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
-	// Setting this flag improves the shader debugging experience, but still allows 
-	// the shaders to be optimized and to run exactly the way they will run in 
-	// the release configuration of this program.
-	dwShaderFlags |= D3DCOMPILE_DEBUG;
-#endif
-
     // Compile Shaders
     ID3DBlob* pVSBlob = nullptr;
     ID3DBlob* pPSBlob = nullptr;
     ID3DBlob* pPSUntexBlob = nullptr;
-    V_RETURN( D3DCompile( g_strUIEffectFile, g_uUIEffectFileSize, "none", nullptr, nullptr, "VS", 
-		"vs_4_0_level_9_1", 
-		D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY,
-		//"vs_4_0_level_11_0",
-		//dwShaderFlags,
-		0, &pVSBlob, nullptr ) );
-    V_RETURN( D3DCompile( g_strUIEffectFile, g_uUIEffectFileSize, "none", nullptr, nullptr, "PS", 
-		"ps_4_0_level_9_1", 
-        D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY,
-		//"ps_4_0_level_11_0",
-		//dwShaderFlags,
-		0, &pPSBlob, nullptr ) );
-    V_RETURN( D3DCompile( g_strUIEffectFile, g_uUIEffectFileSize, "none", nullptr, nullptr, "PSUntex", 
-		"ps_4_0_level_9_1", 
-        D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY, 
-		//"ps_4_0_level_11_0",
-		//dwShaderFlags,
-		0, &pPSUntexBlob, nullptr ) );
+    V_RETURN( D3DCompile( g_strUIEffectFile, g_uUIEffectFileSize, "none", nullptr, nullptr, "VS", "vs_4_0_level_9_1", 
+         D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY, 0, &pVSBlob, nullptr ) );
+    V_RETURN( D3DCompile( g_strUIEffectFile, g_uUIEffectFileSize, "none", nullptr, nullptr, "PS", "ps_4_0_level_9_1", 
+         D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY, 0, &pPSBlob, nullptr ) );
+    V_RETURN( D3DCompile( g_strUIEffectFile, g_uUIEffectFileSize, "none", nullptr, nullptr, "PSUntex", "ps_4_0_level_9_1", 
+         D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY, 0, &pPSUntexBlob, nullptr ) );
 
     // Create Shaders
     V_RETURN( pd3dDevice->CreateVertexShader( pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &m_pVSRenderUI11 ) );
@@ -2375,7 +2342,6 @@ HRESULT CDXUTDialogResourceManager::OnD3D11CreateDevice( ID3D11Device* pd3dDevic
     RSDesc.DepthClipEnable = TRUE;
     RSDesc.FillMode = D3D11_FILL_SOLID;
     RSDesc.FrontCounterClockwise = FALSE;
-	//RSDesc.FrontCounterClockwise = TRUE;//!!!!!!!!!!
     RSDesc.MultisampleEnable = TRUE;
     RSDesc.ScissorEnable = FALSE;
     RSDesc.SlopeScaledDepthBias = 0.0f;
@@ -3089,11 +3055,8 @@ bool CDXUTButton::HandleKeyboard( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-bool CDXUTButton::HandleMouse( UINT uMsg, const POINT& pt, WPARAM wParam, LPARAM lParam )
+bool CDXUTButton::HandleMouse( UINT uMsg, const POINT& pt, WPARAM, LPARAM)
 {
-    UNREFERENCED_PARAMETER(wParam);
-    UNREFERENCED_PARAMETER(lParam);
-
     if( !m_bEnabled || !m_bVisible )
         return false;
 
@@ -4379,16 +4342,6 @@ bool CDXUTSlider::HandleMouse( UINT uMsg, const POINT& pt, WPARAM wParam, LPARAM
             break;
         }
 
-        //case WM_NOTIFY://2022/10/21  LBUTTONUPより後　編集確定
-        //{
-        //    if (wParam == (WPARAM)NM_RELEASEDCAPTURE) {
-        //        m_pDialog->SendEvent(EVENT_SLIDER_RELEASEDCAPTURE, true, this);
-        //        return true;                
-        //    }
-        //    break;
-        //}
-
-
         case WM_MOUSEMOVE:
         {
             if( m_bPressed )
@@ -4445,9 +4398,6 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
     if( m_bVisible == false )
         return;
 
-    int nOffsetX = 0;
-    int nOffsetY = 0;
-
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
     if( m_bVisible == false )
@@ -4461,16 +4411,10 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
     else if( m_bPressed )
     {
         iState = DXUT_STATE_PRESSED;
-
-        nOffsetX = 1;
-        nOffsetY = 2;
     }
     else if( m_bMouseOver )
     {
         iState = DXUT_STATE_MOUSEOVER;
-
-        nOffsetX = -1;
-        nOffsetY = -2;
     }
     else if( m_bHasFocus )
     {
@@ -6047,7 +5991,7 @@ bool CDXUTEditBox::MsgProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 case 16:  // Ctrl P
                 case 27:  // Ctrl [
                 case 29:  // Ctrl ]
-                case 28:  // Ctrl \ 
+                case 28:  // Ctrl \ (backslash)
                     break;
 
                 default:
@@ -6225,7 +6169,7 @@ void CDXUTEditBox::ParseFloatArray( float* pNumbers, int nCount )
             ++pEnd;
 
         // Copy the token to our buffer
-        int nTokenLen = min( sizeof( wszToken ) / sizeof( wszToken[0] ) - 1, int( pEnd - pToken ) );
+        int nTokenLen = std::min<int>( sizeof( wszToken ) / sizeof( wszToken[0] ) - 1, int( pEnd - pToken ) );
         wcscpy_s( wszToken, nTokenLen, pToken );
         *pNumbers = ( float )wcstod( wszToken, nullptr );
         ++nWritten;
