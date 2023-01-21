@@ -102,7 +102,8 @@ bool g_underIKRot = false;
 int	g_numthread = 3;
 
 //double g_btcalccnt = 3.0;
-double g_btcalccnt = 1.0;//2023/01/18
+//double g_btcalccnt = 1.0;//2023/01/18
+double g_btcalccnt = 2.0;//2023/01/21 : Main.cpp InitApp()ì‡Ç≈ÉZÉbÉgÇµíºÇµÇƒÇ¢ÇÈÇÃÇ≈íçà”
 
 int g_dbgloadcnt = 0;
 double g_calcfps = 60.0;
@@ -125,8 +126,8 @@ ChaVector3 g_befcamEye = ChaVector3(0.0f, 0.0f, 0.0f);
 ChaVector3 g_befcamtargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 float g_l_kval[3] = { 1.0f, powf(10.0f, 2.61f), 2000.0f };//
-//float g_a_kval[3] = { 0.1f, powf(10.0f, 0.3f), 70.0f };//
-float g_a_kval[3] = { 0.0f, 0.5f, 1.0f };//2023/01/18
+float g_a_kval[3] = { 0.1f, powf(10.0f, 0.3f), 70.0f };//
+//float g_a_kval[3] = { 0.0f, 0.5f, 1.0f };//2023/01/18
 float g_initcuslk = 1e2;
 //float g_initcuslk = 2000.0f;
 //float g_initcuslk = 100.0f;

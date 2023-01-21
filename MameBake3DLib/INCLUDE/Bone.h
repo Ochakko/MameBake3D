@@ -430,7 +430,7 @@ public:
 	ChaVector3 CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);//2022/09/12 fbx書き出し専用
 	ChaVector3 CalcFBXTra(int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
 	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
-	int CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);
+	int CalcNewBtMat(CModel* srcmodel, int srcmotid, double srcframe, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);
 
 	int LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext);
 
@@ -1070,6 +1070,13 @@ public: //accesser
 		//}
 		m_btmat = srcmat;
 	};
+	void SetBtEul(ChaVector3 srceul) {
+		m_bteul = srceul;
+	}
+	ChaVector3 GetBtEul() {
+		return m_bteul;
+	}
+
 
 	int GetBtFlag(){ return m_setbtflag; };
 	void SetBtFlag(int srcflag){ m_setbtflag = srcflag; };
@@ -1308,6 +1315,7 @@ private:
 	ChaMatrix m_btmat;
 	ChaMatrix m_befbtmat;
 	int m_setbtflag;
+	ChaVector3 m_bteul;
 
 	ChaVector3 m_firstframebonepos;
 

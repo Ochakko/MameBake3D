@@ -304,7 +304,7 @@ int CBone::InitParams()
 	ChaMatrixIdentity(&m_btmat);
 	ChaMatrixIdentity(&m_befbtmat);
 	m_setbtflag = 0;
-
+	m_bteul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	m_btparentpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	m_btchildpos = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -3873,6 +3873,9 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//###################################################################################################################
 
 
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -3886,7 +3889,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	if (befeulkind == BEFEUL_BEFFRAME){
 		//1つ前のフレームのEULはすでに計算されていると仮定する。
 		double befframe;
-		befframe = srcframe - 1.0;
+		befframe = roundingframe - 1.0;
 		if (befframe >= -0.0001){
 			CMotionPoint* befmp;
 			befmp = GetMotionPoint(srcmotid, befframe);
@@ -3927,12 +3930,12 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		isfirstbone = 0;
 
 		ChaMatrix curwm, parentwm, eulmat;
-		curwm = GetWorldMat(srcmotid, srcframe);
+		curwm = GetWorldMat(srcmotid, roundingframe);
 		if (g_underIKRot == false) {
-			parentwm = GetParent()->GetWorldMat(srcmotid, srcframe);
+			parentwm = GetParent()->GetWorldMat(srcmotid, roundingframe);
 		}
 		else {
-			parentwm = GetParent()->GetLimitedWorldMat(srcmotid, srcframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
+			parentwm = GetParent()->GetLimitedWorldMat(srcmotid, roundingframe);//2023/01/14 指のRigを動かす場合に不具合が出てLimitedに修正
 		}
 		eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 	}
@@ -3940,7 +3943,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		isfirstbone = 1;
 
 		ChaMatrix curwm, eulmat;
-		curwm = GetWorldMat(srcmotid, srcframe);
+		curwm = GetWorldMat(srcmotid, roundingframe);
 		eulq = ChaMatrix2Q(curwm);
 	}
 
@@ -3949,7 +3952,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
 	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	int notmodify180flag = 1;
-	if (srcframe <= 1.01) {
+	if (roundingframe <= 1.01) {
 		//0フレームと１フレームは　180度ずれチェックをしない
 		notmodify180flag = 1;
 	}
@@ -3971,7 +3974,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, &axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 	CMotionPoint* curmp;
-	curmp = GetMotionPoint(srcmotid, srcframe);
+	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp){
 		ChaVector3 oldeul = curmp->GetLocalEul();
 		if (IsSameEul(oldeul, cureul) == 0){
@@ -5155,15 +5158,20 @@ ANGLELIMIT CBone::GetAngleLimit(int getchkflag)
 
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
-				//cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
-				cureul = CalcLocalEulXYZ(-1, m_curmotid, curframe, BEFEUL_BEFFRAME, 0);
-				if (g_limitdegflag) {
-					neweul = LimitEul(cureul);
+				if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+					//cureul = CalcCurrentLocalEulXYZ(-1, BEFEUL_BEFFRAME);
+					cureul = CalcLocalEulXYZ(-1, m_curmotid, curframe, BEFEUL_BEFFRAME, 0);
+					if (g_limitdegflag) {
+						neweul = LimitEul(cureul);
+					}
+					else {
+						neweul = cureul;
+					}
+
 				}
 				else {
-					neweul = cureul;
+					neweul = GetBtEul();
 				}
-
 				m_anglelimit.chkeul[AXIS_X] = neweul.x;
 				m_anglelimit.chkeul[AXIS_Y] = neweul.y;
 				m_anglelimit.chkeul[AXIS_Z] = neweul.z;
@@ -6108,7 +6116,7 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, 
 //通常モーションと物理剛体の軸合わせをしたので
 //回転情報は通常モーションと物理とで共通となった
 //#################################################
-int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
+int CBone::CalcNewBtMat(CModel* srcmodel, int srcmotid, double srcframe, CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
 {
 	ChaMatrixIdentity(dstmat);
 	*dstpos = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -6138,10 +6146,15 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 	//}
 
 
+	ChaMatrix limitedwm;
+	limitedwm.SetIdentity();
+	GetCalclatedLimitedWM(srcmotid, srcframe, &limitedwm);
+
 
 	//current
 	if (GetBtKinFlag() == 1){
-		tramat = GetCurMp().GetWorldMat();
+		//tramat = GetCurMp().GetWorldMat();
+		tramat = limitedwm;
 		rotmat = ChaMatrixRot(tramat);
 
 		jointfpos = GetJointFPos();
@@ -6153,7 +6166,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 	else{
 		//シミュ結果をそのまま。アニメーションは考慮しなくてよい。
 		if (srcmodel->GetBtCnt() == 0){
-			tramat = GetCurMp().GetWorldMat();
+			//tramat = GetCurMp().GetWorldMat();
+			tramat = limitedwm;
 			rotmat = ChaMatrixRot(tramat);
 
 			jointfpos = GetJointFPos();
@@ -6166,7 +6180,8 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CRigidElem* srcre, CBone* childbone, C
 				//ここでのBtMatは一回前の姿勢。
 
 				//BtMatにアニメーションの移動成分のみを掛けたものを新しい姿勢行列として子供ジョイント位置を計算してシミュレーションに使用する。
-				curworld = GetCurMp().GetWorldMat();
+				//curworld = GetCurMp().GetWorldMat();
+				curworld = limitedwm;
 				//befworld = GetCurMp().GetBefWorldMat();
 				befworld = GetCurrentZeroFrameMat(0);
 				

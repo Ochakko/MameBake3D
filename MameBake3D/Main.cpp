@@ -197,7 +197,25 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
-
+/*
+* 2023/01/21
+* 物理シミュの動きが格段に柔らかく　かつ　制限角度が効くように
+* 
+* なぜ私のbulletPhysicsだけ動きが硬いのかとずっとおかしいと思っていたのだが　原因判明＆解決
+* 
+* CBtObject::SetEquilibriumPoint(剛体作成時に呼び出す関数)内にて　setAngularLowerLimitとsetAngularUpperLimitを呼び出している
+* このときのif文が　何年間にも渡って間違っていた
+* 現在の角度から動かないようにする部分が　通常のシミュ時に有効になっていた
+* 修正した
+* 回転バネのスライダー範囲は元に戻した　g_btcalccntの初期値は２にした
+* 
+* 物理シミュの動きが格段に柔らかく　かつ　制限角度が効くようになった
+* と同時に
+* 物理シミュをする場合には　ヘアージョイントに制限角度(*.lmtファイル)を設定し　LimitEulチェックボックスにチェックを入れることが必要になった　
+* 
+* サンプルの物理設定も更新
+* 
+*/
 
 #include "useatl.h"
 
@@ -2773,7 +2791,7 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
-	g_btcalccnt = 1.0;
+	g_btcalccnt = 2.0;
 
 	g_rotatetanim = true;
 	g_tpose = true;
@@ -10415,7 +10433,7 @@ int UpdateEditedEuler()
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
 
-			double curtime;
+			int curtime;
 			float minval = 0.0f;
 			float maxval = 0.0f;
 			int minfirstflag, maxfirstflag;
@@ -10438,7 +10456,7 @@ int UpdateEditedEuler()
 			//s_buttonselectstart = s_editrange.GetStartFrame();
 			//s_buttonselectend = s_editrange.GetEndFrame();
 
-			double startframe, endframe, frameleng;
+			int startframe, endframe, frameleng;
 			////if (g_previewFlag == 0) {
 			////	startframe = s_buttonselectstart;
 			////	endframe = s_buttonselectend;
@@ -10468,21 +10486,21 @@ int UpdateEditedEuler()
 			//	}
 			////}
 
-			frameleng = s_model->GetCurMotInfo()->frameleng;
-			startframe = s_owpLTimeline->getShowPosTime();
-			endframe = min(frameleng, startframe + s_owpEulerGraph->getShowposWidth());
+			frameleng = (int)(s_model->GetCurMotInfo()->frameleng + 0.0001);
+			startframe = (int)(s_owpLTimeline->getShowPosTime() + 0.0001);
+			endframe = (int)(min(frameleng, startframe + s_owpEulerGraph->getShowposWidth()));
 				
-			double firstframe;
-			firstframe = max((startframe - 1.0), 0.0);
+			int firstframe;
+			firstframe = max((startframe - 1), 0);
 
 			ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 			int ret;
-			ret = s_owpEulerGraph->getEuler(firstframe, &befeul);
+			ret = s_owpEulerGraph->getEuler((double)firstframe, &befeul);
 			if (ret) {
 				befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
 
-			for (curtime = startframe; curtime <= endframe; curtime += 1.0) {
+			for (curtime = startframe; curtime <= endframe; curtime++) {
 				const WCHAR* wbonename = opebone->GetWBoneName();
 				ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -10545,7 +10563,6 @@ int UpdateEditedEuler()
 				}
 
 			}
-
 
 			s_owpEulerGraph->setEulMinMax(s_ikkind, minval, maxval);
 
@@ -10731,7 +10748,6 @@ int refreshEulerGraph()
 
 					}
 
-					//_ASSERT(0);
 					s_owpEulerGraph->setEulMinMax(s_ikkind, minval, maxval);
 
 					if (g_motionbrush_value) {
@@ -23811,8 +23827,8 @@ int CreateRigidWnd()
 	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
 	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300 ver10024
-	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
-	s_akSlider = new OWP_Slider(g_initcusak, 1.0f, 0.0f);//2023/01/18
+	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
+	//s_akSlider = new OWP_Slider(g_initcusak, 1.0f, 0.0f);//2023/01/18
 	s_aklabel = new OWP_Label(L"rotSpring customValue");
 
 	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);

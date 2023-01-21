@@ -245,7 +245,7 @@ int CBtObject::AddChild( CBtObject* addbt )
 	return 0;
 }
 
-int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone )
+int CBtObject::CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone)
 {
 
 	DestroyObjs();//2023/01/20
@@ -329,6 +329,15 @@ int CBtObject::CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone
 	transform.setRotation(btq);
 	transform.setOrigin(btv);
 	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
+
+
+	ChaVector3 starteul = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 befeul = m_bone->GetLocalEul(srcmotid, srcframe);
+	CQuaternion axisq;
+	axisq.RotationMatrix(m_bone->GetNodeMat());
+	int notmodify180flag = 0;
+	startrotq.Q2EulXYZusingQ(&axisq, befeul, &starteul, 0, 0, notmodify180flag);
+	m_bone->SetBtEul(starteul);
 
 
 	//ƒRƒŠƒWƒ‡ƒ“Œ`ó‚Ì‰Šúp¨
@@ -650,6 +659,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 			angPAI2 = 90.0f * (float)DEG2PAI;
 			angPAI = 180.0f * (float)DEG2PAI;
 
+
 			float lmax, lmin;
 			lmin = -10000.0f;
 			lmax = 10000.0f;
@@ -967,87 +977,91 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 			//	dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
 			//}
 
-			if ((forbidrotflag == 0) || (g_limitdegflag != 0)){
-				//XYZ
-				//dofC->setAngularLowerLimit(btVector3(anglelimit.lower[0] * PAI / 180.0f, anglelimit.lower[1] * PAI / 180.0f, anglelimit.lower[2] * PAI / 180.0f));
-				//dofC->setAngularUpperLimit(btVector3(anglelimit.upper[0] * PAI / 180.0f, anglelimit.upper[1] * PAI / 180.0f, anglelimit.upper[2] * PAI / 180.0f));
-
-				ChaMatrix eulaxismat;
-				CQuaternion eulaxisq;
-				int multworld = 0;//local!!!
-				CRigidElem* curre = childbto->m_bone->GetRigidElem(childbto->m_endbone);
-				if (curre) {
-					eulaxismat = curre->GetBindcapsulemat();
-				}
-				else {
-					_ASSERT(0);
-					ChaMatrixIdentity(&eulaxismat);
-				}
-				eulaxisq.RotationMatrix(eulaxismat);
-
-
-				ChaVector3 lowereul, uppereul;
-				lowereul = ChaVector3(btScalar(anglelimit.lower[0]), btScalar(anglelimit.lower[1]), btScalar(anglelimit.lower[2]));
-				uppereul = ChaVector3(btScalar(anglelimit.upper[0]), btScalar(anglelimit.upper[1]), btScalar(anglelimit.upper[2]));
-
-				CQuaternion lowereulq;
-				lowereulq.SetRotationXYZ(&eulaxisq, lowereul);
-				CQuaternion uppereulq;
-				uppereulq.SetRotationXYZ(&eulaxisq, uppereul);
-
-				btTransform lowereultra;
-				btTransform uppereultra;
-				lowereultra.setIdentity();
-				uppereultra.setIdentity();
-				btQuaternion lowerbteulq(lowereulq.x, lowereulq.y, lowereulq.z, lowereulq.w);
-				btQuaternion upperbteulq(uppereulq.x, uppereulq.y, uppereulq.z, uppereulq.w);
-				lowereultra.setRotation(lowerbteulq);
-				uppereultra.setRotation(upperbteulq);
-				btScalar lowereulz, lowereuly, lowereulx;
-				btScalar uppereulz, uppereuly, uppereulx;
-				lowereultra.getBasis().getEulerZYX(lowereulz, lowereuly, lowereulx, 1);//ŠÖ”–¼‚Æ‚Í— • ‚É‰ñ“]‡˜‚Æ‚µ‚Ä‚ÍXYZ
-				uppereultra.getBasis().getEulerZYX(uppereulz, uppereuly, uppereulx, 1);//ŠÖ”–¼‚Æ‚Í— • ‚É‰ñ“]‡˜‚Æ‚µ‚Ä‚ÍXYZ
-
-
-				btScalar startx, endx, starty, endy, startz, endz;
-				if (lowereulx <= uppereulx) {
-					startx = lowereulx;
-					endx = uppereulx;
-				}
-				else {
-					startx = uppereulx;
-					endx = lowereulx;
-				}
-				if (lowereuly <= uppereuly) {
-					starty = lowereuly;
-					endy = uppereuly;
-				}
-				else {
-					starty = uppereuly;
-					endy = lowereuly;
-				}
-				if (lowereulz <= uppereulz) {
-					startz = lowereulz;
-					endz = uppereulz;
-				}
-				else {
-					startz = uppereulz;
-					endz = lowereulz;
-				}
-
-				dofC->setAngularLowerLimit(btVector3(startx, starty, startz));
-				dofC->setAngularUpperLimit(btVector3(endx, endy, endz));
-			}
-			else{
+			if (forbidrotflag == 1) {
+				//can't rot
 				dofC->calculateTransforms();
 				btScalar currentx = dofC->getAngle(0);
 				btScalar currenty = dofC->getAngle(1);
 				btScalar currentz = dofC->getAngle(2);
 				dofC->setAngularLowerLimit(btVector3(btScalar(currentx - 1.0 * (float)DEG2PAI), btScalar(currenty - 1.0 * (float)DEG2PAI), btScalar(currentz - 1.0 * (float)DEG2PAI)));
 				dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 1.0 * (float)DEG2PAI), btScalar(currenty + 1.0 * (float)DEG2PAI), btScalar(currentz + 1.0 * (float)DEG2PAI)));
+			}
+			else {
+				if (g_limitdegflag != 0) {
+					//limited rot
+					ChaMatrix eulaxismat;
+					CQuaternion eulaxisq;
+					int multworld = 0;//local!!!
+					//CRigidElem* curre = childbto->m_bone->GetRigidElem(childbto->m_endbone);
+					//if (curre) {
+					//	eulaxismat = curre->GetBindcapsulemat();
+					//}
+					//else {
+					//	_ASSERT(0);
+					//	ChaMatrixIdentity(&eulaxismat);
+					//}
+					eulaxismat = childbto->m_bone->GetNodeMat();//!!!!!!!!!
+					eulaxisq.RotationMatrix(eulaxismat);
 
-				//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-				//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+
+					ChaVector3 lowereul, uppereul;
+					lowereul = ChaVector3(btScalar(anglelimit.lower[0]), btScalar(anglelimit.lower[1]), btScalar(anglelimit.lower[2]));
+					uppereul = ChaVector3(btScalar(anglelimit.upper[0]), btScalar(anglelimit.upper[1]), btScalar(anglelimit.upper[2]));
+
+					CQuaternion lowereulq;
+					lowereulq.SetRotationXYZ(&eulaxisq, lowereul);
+					CQuaternion uppereulq;
+					uppereulq.SetRotationXYZ(&eulaxisq, uppereul);
+
+					btTransform lowereultra;
+					btTransform uppereultra;
+					lowereultra.setIdentity();
+					uppereultra.setIdentity();
+					btQuaternion lowerbteulq(lowereulq.x, lowereulq.y, lowereulq.z, lowereulq.w);
+					btQuaternion upperbteulq(uppereulq.x, uppereulq.y, uppereulq.z, uppereulq.w);
+					lowereultra.setRotation(lowerbteulq);
+					uppereultra.setRotation(upperbteulq);
+					btScalar lowereulz, lowereuly, lowereulx;
+					btScalar uppereulz, uppereuly, uppereulx;
+					lowereultra.getBasis().getEulerZYX(lowereulz, lowereuly, lowereulx, 1);//ŠÖ”–¼‚Æ‚Í— • ‚É‰ñ“]‡˜‚Æ‚µ‚Ä‚ÍXYZ
+					uppereultra.getBasis().getEulerZYX(uppereulz, uppereuly, uppereulx, 1);//ŠÖ”–¼‚Æ‚Í— • ‚É‰ñ“]‡˜‚Æ‚µ‚Ä‚ÍXYZ
+
+
+					btScalar startx, endx, starty, endy, startz, endz;
+					if (lowereulx <= uppereulx) {
+						startx = lowereulx;
+						endx = uppereulx;
+					}
+					else {
+						startx = uppereulx;
+						endx = lowereulx;
+					}
+					if (lowereuly <= uppereuly) {
+						starty = lowereuly;
+						endy = uppereuly;
+					}
+					else {
+						starty = uppereuly;
+						endy = lowereuly;
+					}
+					if (lowereulz <= uppereulz) {
+						startz = lowereulz;
+						endz = uppereulz;
+					}
+					else {
+						startz = uppereulz;
+						endz = lowereulz;
+					}
+
+					dofC->setAngularLowerLimit(btVector3(startx, starty, startz));
+					dofC->setAngularUpperLimit(btVector3(endx, endy, endz));
+
+				}
+				else {
+					//free rot
+					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+					dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
+				}
 			}
 		}
 	}
@@ -1061,7 +1075,7 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 	return 0;
 }
 
-int CBtObject::Motion2Bt(CModel* srcmodel)
+int CBtObject::Motion2Bt(CModel* srcmodel, int srcmotid, double srcframe)
 {
 	if( m_topflag == 1 ){
 		return 0;
@@ -1086,7 +1100,7 @@ int CBtObject::Motion2Bt(CModel* srcmodel)
 	if( curre ){
 		ChaMatrix newrotmat;
 		ChaVector3 newrigidpos;
-		GetBone()->CalcNewBtMat(srcmodel, curre, GetEndBone(), &newrotmat, &newrigidpos);
+		GetBone()->CalcNewBtMat(srcmodel, srcmotid, srcframe, curre, GetEndBone(), &newrotmat, &newrigidpos);
 
 		SetPosture2Bt(newrotmat, newrigidpos);
 
@@ -1198,7 +1212,6 @@ int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 	ChaMatrix xlocalrotmat;
 	xlocalrotmat = ChaMatrixRot(xlocal);
 
-
 	ChaMatrix setwm;
 	ChaMatrix localmat;
 	localmat = befpivotmat * xlocalrotmat * aftpivotmat * curtraanim;
@@ -1209,13 +1222,26 @@ int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 	else {
 		parentbtmat.SetIdentity();
 	}
-
 	setwm = localmat * parentbtmat;
+
+
+	//calc BtEul
+	CQuaternion curlocalq;
+	curlocalq.RotationMatrix(xlocalrotmat);	
+	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	int ismovable = 1;
+	int notmodify180flag = 1;
+	ChaVector3 befeul = m_bone->GetBtEul();
+	CQuaternion axisq;
+	axisq.RotationMatrix(m_bone->GetNodeMat());
+	curlocalq.Q2EulXYZusingQ(&axisq, befeul, &cureul, 0, 0, notmodify180flag);
+
 
 	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
 	//if (m_bone->GetBtFlag() == 0) {
 		////m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(setwm);
+		m_bone->SetBtEul(cureul);
 		m_bone->SetBtFlag(1);
 	}
 

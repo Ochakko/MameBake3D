@@ -52,7 +52,7 @@ public:
  * @param (CBone* childbone) IN 剛体の子供側のボーン。
  * @return 成功したら０。
  */
-	int CreateObject( CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone );
+	int CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone);
 
 /**
  * @fn
@@ -82,7 +82,7 @@ public:
  * @return 成功したら０。
  * @detail Motion2Btを呼んでからSetBtMotionを呼ぶ。
  */
-	int Motion2Bt(CModel* srcmodel);
+	int Motion2Bt(CModel* srcmodel, int srcmotid, double srcframe);
 
 	int SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter, int constraintupdateflag = 1);
 
