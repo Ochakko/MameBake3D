@@ -213,6 +213,8 @@ namespace MameBake3DLibRetarget {
 			return 1;
 		}
 
+		double roundingframe = (double)((int)(srcframe + 0.0001));
+
 		//static ChaMatrix s_firsthipmat;
 		//static ChaMatrix s_invfirsthipmat;
 
@@ -239,7 +241,7 @@ namespace MameBake3DLibRetarget {
 		CMotionPoint bvhmp;
 		if (bvhbone) {
 			//CMotionPoint* pbvhmp = 0;
-			//pbvhmp = bvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
+			//pbvhmp = bvhbone->GetMotionPoint(bvhmotid, roundingframe, onaddmotion);
 			//if (pbvhmp) {
 			//	bvhmp = *pbvhmp;
 			//}
@@ -251,7 +253,7 @@ namespace MameBake3DLibRetarget {
 		}
 		else {
 			//CMotionPoint* pbvhmp = 0;
-			//pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, srcframe, onaddmotion);
+			//pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, roundingframe, onaddmotion);
 			//if (pbvhmp) {
 			//	bvhmp = *pbvhmp;
 			//}
@@ -268,7 +270,7 @@ namespace MameBake3DLibRetarget {
 			int modelmotid = modelmi->motid;
 			CMotionPoint modelmp;
 			CMotionPoint* pmodelmp = 0;
-			pmodelmp = srcbone->GetMotionPoint(modelmotid, srcframe, onaddmotion);
+			pmodelmp = srcbone->GetMotionPoint(modelmotid, roundingframe, onaddmotion);
 			if (pmodelmp) {
 				modelmp = *pmodelmp;
 			}
@@ -280,7 +282,7 @@ namespace MameBake3DLibRetarget {
 			CMotionPoint modelparmp;
 			CMotionPoint* pmodelparmp = 0;
 			if (srcbone->GetParent()) {
-				pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, srcframe, onaddmotion);
+				pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, roundingframe, onaddmotion);
 				if (pmodelparmp) {
 					modelparmp = *pmodelparmp;
 				}
@@ -508,7 +510,7 @@ namespace MameBake3DLibRetarget {
 					rotq.RotationMatrix(curbvhmat);//‰ñ“]‚¾‚¯Ì—p‚·‚é
 
 
-					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, srcframe);//ˆÚ“®‚Í‚±‚¿‚ç‚©‚çŽæ“¾
+					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, roundingframe);//ˆÚ“®‚Í‚±‚¿‚ç‚©‚çŽæ“¾
 					//if (!bvhbone->GetParent()) {
 					//	ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
 					//	ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
@@ -532,7 +534,7 @@ namespace MameBake3DLibRetarget {
 					ChaMatrix bvhsmat0, bvhrmat0, bvhtmat0, bvhtanimmat0;
 
 					if (bvhbone->GetParent()) {
-						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, srcframe);
+						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, roundingframe);
 						GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
@@ -565,10 +567,10 @@ namespace MameBake3DLibRetarget {
 
 			bool onretarget = true;
 			if (bvhbone) {
-				srcmodel->FKRotate(onretarget, 1, bvhbone, 1, traanim, srcframe, curboneno, rotq);
+				srcmodel->FKRotate(onretarget, 1, bvhbone, 1, traanim, roundingframe, curboneno, rotq);
 			}
 			else {
-				srcmodel->FKRotate(onretarget, 0, befbvhbone, 0, traanim, srcframe, curboneno, rotq);
+				srcmodel->FKRotate(onretarget, 0, befbvhbone, 0, traanim, roundingframe, curboneno, rotq);
 			}
 		}
 

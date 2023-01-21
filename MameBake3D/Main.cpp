@@ -217,6 +217,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2023/01/21
+* 計算されないフレームが出来る潜在的不具合を解決
+* 
+* 時間はdoubleであるが　(int)に丸めた丁度のフレームにしかデータが無いものがいくつかある
+* CBone::GetMotionPoint()とCBone::GetWorldMat()とCBone::SetWorldMat()とCBone::GetLimitedWorldMat()は丁度のフレームにしかデータが無い
+* それらを呼び出す際には　丁度の時間を渡さなければならない
+* 
+* 一方で　プレビュー時には
+* 小数の時間の前後のデータを補間して　滑らかに表示(Speedスライダーの値を小さくして再生しても補間して動く)する
+* 滑らかに表示するための関数には　小数の時間を渡す
+* それらは　CBone::UpdateMatrix()とCBone::GetCalclatedLimitedWM()である
+* 
+*/
+
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -25834,6 +25850,8 @@ int InitMpFromTool()
 
 int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
 	if (curbone){
 		//if (curbone->GetChild()){//2022/11/23 CommentOut なぜこのif文があったのか？ 不具合によりエンドジョイントにモーションポイントが無かったから？
 			if (initmode == INITMP_ROTTRA){
@@ -25842,41 +25860,41 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				//int inittraflag1 = 1;
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
-				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, srcframe, initscaleflag1);
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, srcframe);//scale計算無し
+				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, roundingframe, initscaleflag1);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
 			}
 			else if (initmode == INITMP_ROT){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag0 = 0;
 				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
-				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, befwm, cureul, srcmotid, srcframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, befwm, cureul, srcmotid, roundingframe);
 			}
 			else if (initmode == INITMP_TRA){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_BEFFRAME);
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
-				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, srcframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe);
 			}
 			else if (initmode == INITMP_SCALE) {
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, srcframe, BEFEUL_BEFFRAME);
+				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
-				ChaVector3 traanim = curbone->CalcLocalTraAnim(srcmotid, srcframe);
+				ChaVector3 traanim = curbone->CalcLocalTraAnim(srcmotid, roundingframe);
 
 				//int inittraflag1 = 0;
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, srcframe);//scale計算無し
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
 			}
 		//}
 	}

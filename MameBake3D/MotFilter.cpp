@@ -168,17 +168,17 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 		ZeroMemory(m_smoothtra, sizeof(ChaVector3) * frameleng);
 
 		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		for (frame = srcstartframe; frame <= srcendframe; frame++){
+		for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
 			CMotionPoint curmp;
 			curbone->CalcLocalInfo(srcmotid, (double)frame, &curmp);
 			ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, &befeul);// axiskind = -1 --> m_anglelimitÇÃç¿ïWån
 			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimitÇÃç¿ïWån
 			ChaVector3 curtra = curbone->CalcLocalTraAnim(srcmotid, (double)frame);
 
-			*(m_eul + frame - srcstartframe) = cureul;
-			*(m_tra + frame - srcstartframe) = curtra;
+			*(m_eul + frame - (int)(srcstartframe + 0.0001)) = cureul;
+			*(m_tra + frame - (int)(srcstartframe + 0.0001)) = curtra;
 			//befeul = cureul;
-			if ((frame == srcstartframe) || IsValidNewEul(cureul, befeul)) {
+			if ((frame == (int)(srcstartframe + 0.0001)) || IsValidNewEul(cureul, befeul)) {
 				befeul = cureul;
 			}
 		}
@@ -192,22 +192,22 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 			break;
 		case AVGF_MOVING:					//à⁄ìÆïΩãœ
 			//ïΩääâªèàóù
-			for (frame = srcstartframe; frame <= srcendframe; frame++){
+			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
 				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
 				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
 				for (int k = -half_filtersize; k <= half_filtersize; k++){
-					int index = frame + k - srcstartframe;
+					int index = frame + k - (int)(srcstartframe + 0.0001);
 					if ((index < 0) || (index >= frameleng)){
-						tmp_vec3 += m_eul[frame - srcstartframe];
-						tmp_pos3 += m_tra[frame - srcstartframe];
+						tmp_vec3 += m_eul[frame - (int)(srcstartframe + 0.0001)];
+						tmp_pos3 += m_tra[frame - (int)(srcstartframe + 0.0001)];
 					}
 					else{
 						tmp_vec3 += m_eul[index];
 						tmp_pos3 += m_tra[index];
 					}
 				}
-				m_smootheul[frame - srcstartframe] = tmp_vec3 / (float)m_filtersize;
-				m_smoothtra[frame - srcstartframe] = tmp_pos3 / (float)m_filtersize;
+				m_smootheul[frame - (int)(srcstartframe + 0.0001)] = tmp_vec3 / (float)m_filtersize;
+				m_smoothtra[frame - (int)(srcstartframe + 0.0001)] = tmp_pos3 / (float)m_filtersize;
 			}
 			break;
 
@@ -223,24 +223,24 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 			}
 			denomVal = 1.0 / (double)sumd;
 
-			for (frame = srcstartframe; frame <= srcendframe; frame++){
+			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
 				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
 				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
 				for (int k = -m_filtersize; k <= 0; k++){
-					int index = frame + k - srcstartframe;
+					int index = frame + k - (int)(srcstartframe + 0.0001);
 					coef = k + m_filtersize;
 					weightVal = (float)(denomVal * (double)coef);
 					if ((index < 0) || (index >= frameleng)){
-						tmp_vec3 = tmp_vec3 + m_eul[frame - srcstartframe] * weightVal;
-						tmp_pos3 = tmp_pos3 + m_tra[frame - srcstartframe] * weightVal;
+						tmp_vec3 = tmp_vec3 + m_eul[frame - (int)(srcstartframe + 0.0001)] * weightVal;
+						tmp_pos3 = tmp_pos3 + m_tra[frame - (int)(srcstartframe + 0.0001)] * weightVal;
 					}
 					else{
 						tmp_vec3 = tmp_vec3 + m_eul[index] * weightVal;
 						tmp_pos3 = tmp_pos3 + m_tra[index] * weightVal;
 					}
 				}
-				m_smootheul[frame - srcstartframe] = tmp_vec3;
-				m_smoothtra[frame - srcstartframe] = tmp_pos3;
+				m_smootheul[frame - (int)(srcstartframe + 0.0001)] = tmp_vec3;
+				m_smoothtra[frame - (int)(srcstartframe + 0.0001)] = tmp_pos3;
 			}
 			break;
 		}
@@ -258,27 +258,27 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 			}
 			normalizeVal = 1.0 / (double)sum;
 
-			for (frame = srcstartframe; frame <= srcendframe; frame++){
+			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
 				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
 				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
 				for (int k = -half_filtersize; k <= half_filtersize; k++){
-					int index = frame + k - srcstartframe;
+					int index = frame + k - (int)(srcstartframe + 0.0001);
 					r = k + half_filtersize;
 					if (r > N){
 						r = N;//!!!!!!!!!!!!!!!!!
 					}
 					normalDistVal = (float)(normalizeVal * (double)Combi(N, r));
 					if ((index < 0) || (index >= frameleng)){
-						tmp_vec3 = tmp_vec3 + m_eul[frame - srcstartframe] * normalDistVal;
-						tmp_pos3 = tmp_pos3 + m_tra[frame - srcstartframe] * normalDistVal;
+						tmp_vec3 = tmp_vec3 + m_eul[frame - (int)(srcstartframe + 0.0001)] * normalDistVal;
+						tmp_pos3 = tmp_pos3 + m_tra[frame - (int)(srcstartframe + 0.0001)] * normalDistVal;
 					}
 					else{
 						tmp_vec3 = tmp_vec3 + m_eul[index] * normalDistVal;
 						tmp_pos3 = tmp_pos3 + m_tra[index] * normalDistVal;
 					}
 				}
-				m_smootheul[frame - srcstartframe] = tmp_vec3;
-				m_smoothtra[frame - srcstartframe] = tmp_pos3;
+				m_smootheul[frame - (int)(srcstartframe + 0.0001)] = tmp_vec3;
+				m_smoothtra[frame - (int)(srcstartframe + 0.0001)] = tmp_pos3;
 			}
 
 			break;

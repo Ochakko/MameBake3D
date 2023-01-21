@@ -1762,7 +1762,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 		
 
 		if (g_limitdegflag == 1) {
-			CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);
+			CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);//curframe : 時間補間有り
 		}
 	}
 	else {
@@ -1864,17 +1864,20 @@ int CModel::ClearLimitedWM(int srcmotid, double srcframe)
 }
 
 
+//for just time(rounding time)
 int CModel::UpdateLimitedWM(int srcmotid, double srcframe)
 {
 	if (!m_curmotinfo) {
 		return 0;//!!!!!!!!!!!!
 	}
 
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 		CBone* curbone = itrbone->second;
 		if (curbone) {
-			curbone->UpdateLimitedWorldMat(srcmotid, srcframe);
+			curbone->UpdateLimitedWorldMat(srcmotid, roundingframe);
 		}
 	}
 
@@ -3992,23 +3995,25 @@ FbxAnimLayer* CModel::GetAnimLayer( int motid )
 
 void CModel::InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe)
 {
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
 	if (curbone) {
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		int paraxiskind = -1;//2021/11/18
 		//int isfirstbone = 0;
-		cureul = curbone->CalcLocalEulXYZ(paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
+		cureul = curbone->CalcLocalEulXYZ(paraxiskind, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
 		int inittraflag1 = 0;
 		int setchildflag1 = 1;
 		int initscaleflag1 = 1;//!!!!!!!
-		ChaMatrix befwm = curbone->GetWorldMat(srcmotid, srcframe);
-		curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, srcframe, initscaleflag1);
+		ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+		curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe, initscaleflag1);
 
 		if (curbone->GetChild()) {
-			InitMpScaleReq(curbone->GetChild(), srcmotid, srcframe);
+			InitMpScaleReq(curbone->GetChild(), srcmotid, roundingframe);
 		}
 		if (curbone->GetBrother()) {
-			InitMpScaleReq(curbone->GetBrother(), srcmotid, srcframe);
+			InitMpScaleReq(curbone->GetBrother(), srcmotid, roundingframe);
 		}
 
 	}
@@ -6768,7 +6773,7 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 
 	if (m_curmotinfo) {
 		int curmotid = m_curmotinfo->motid;
-		double curframe = m_curmotinfo->curframe;
+		double curframe = m_curmotinfo->curframe;//curframe : 時間補間有り
 
 		if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
 			CBone* curbone = curbto->GetBone();
@@ -8638,7 +8643,7 @@ int CModel::SetBefEditMatFK( CEditRange* erptr, CBone* curbone )
 		double startframe, endframe, applyframe;
 		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 		double curframe;
-		for (curframe = startframe; curframe <= endframe; curframe += 1.0){
+		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0){
 
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
@@ -10137,7 +10142,7 @@ int CModel::AdjustBoneTra( CEditRange* erptr, CBone* lastpar )
 	if( lastpar && (keynum >= 2) ){
 		int keyno = 0;
 		double curframe;
-		for( curframe = startframe; curframe <= endframe; curframe += 1.0 ){
+		for( curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0 ){
 			if( keyno >= 1 ){
 				CMotionPoint* pcurmp = 0;
 				int curmotid = m_curmotinfo->motid;
@@ -10535,16 +10540,16 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 		endtra = srcbone->CalcLocalTraAnim(curmotid, srcendframe);
 
 		double frame;
-		for (frame = srcstartframe; frame <= srcendframe; frame += 1.0){
+		for (frame = (double)((int)(srcstartframe + 0.0001)); frame <= (double)((int)(srcendframe + 0.0001)); frame += 1.0){
 
 			//double slerpt;
 			CQuaternion setq;
 			ChaVector3 settra;
-			if (IsTimeEqual(frame, srcstartframe)){
+			if (IsTimeEqual(frame, (double)((int)(srcstartframe + 0.0001)))){
 				setq = startq;
 				settra = starttra;
 			}
-			else if (IsTimeEqual(frame, srcendframe)){
+			else if (IsTimeEqual(frame, (double)((int)(srcendframe + 0.0001)))){
 				setq = endq;
 				settra = endtra;
 			}
@@ -10554,11 +10559,11 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 				//settra = starttra + (endtra - starttra) * slerpt;
 
 				double changerate;
-				if ((frame >= srcstartframe) && (frame <= srcendframe)) {
+				if ((frame >= (double)((int)(srcstartframe + 0.0001))) && (frame <= (double)((int)(srcendframe + 0.0001)))) {
 					changerate = (double)(*(g_motionbrush_value + (int)(frame + 0.1)));
 				}
 				else {
-					changerate = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeは冒頭でreturnしている。
+					changerate = ((double)frame - (double)((int)(srcstartframe + 0.0001))) / ((double)((int)(srcendframe + 0.0001)) - (double)((int)(srcstartframe + 0.0001)));//srcendframe==srcstartframeは冒頭でreturnしている。
 				}
 				
 				startq.Slerp2(endq, changerate, &setq);
@@ -11350,27 +11355,29 @@ int CModel::FKRotate(bool onretarget, int reqflag, CBone* bvhbone, int traflag, 
 		return 1;
 	}
 
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
 	bool onaddmotion = true;//for getbychain
 
 	CBone* curbone = firstbone;
 	CBone* parentbone = curbone->GetParent();
 	CMotionPoint* parmp = 0;
 	if (parentbone){
-		parmp = parentbone->GetMotionPoint(m_curmotinfo->motid, srcframe, onaddmotion);
+		parmp = parentbone->GetMotionPoint(m_curmotinfo->motid, roundingframe, onaddmotion);
 	}
 
 	if (reqflag == 1){
 		ChaMatrix dummyparentwm;
 		dummyparentwm.SetIdentity();
 		bool infooutflag = true;
-		curbone->RotBoneQReq(infooutflag, 0, m_curmotinfo->motid, srcframe, rotq, dummyparentwm, dummyparentwm, 
+		curbone->RotBoneQReq(infooutflag, 0, m_curmotinfo->motid, roundingframe, rotq, dummyparentwm, dummyparentwm,
 			bvhbone, traanim, setmatflag, psetmat, onretarget);
 	}
 	else if(bvhbone){
 		ChaMatrix setmat = bvhbone->GetTmpMat();
 		//int setmatflag1 = 1;
-		curbone->RotBoneQOne(parmp, m_curmotinfo->motid, srcframe, setmat);
-		//curbone->RotBoneQReq(0, m_curmotinfo->motid, srcframe, rotq, bvhbone, traanim, setmatflag1, &setmat);
+		curbone->RotBoneQOne(parmp, m_curmotinfo->motid, roundingframe, setmat);
+		//curbone->RotBoneQReq(0, m_curmotinfo->motid, roundingframe, rotq, bvhbone, traanim, setmatflag1, &setmat);
 	}
 
 	return curbone->GetBoneNo();
@@ -12869,7 +12876,7 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 	if (!curmi)
 		return;
 
-
+	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	CBone* btbone = 0;
 	//if (srcbone->GetParent()) {
@@ -12912,11 +12919,11 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 
 
 		if (foundrecdata0 && foundrecdata) {
-			ChaMatrix worldmat0 = btbone->GetWorldMat(curmi->motid, g_motionbrush_applyframe);//or srcframe
+			ChaMatrix worldmat0 = btbone->GetWorldMat(curmi->motid, (double)((int)(g_motionbrush_applyframe + 0.0001)));//or srcframe
 			ChaMatrix btmat0 = recdata0.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間ゼロの姿勢
 			ChaMatrix btmat = recdata.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間カレントの姿勢
 
-			ChaMatrix curworldmat = btbone->GetWorldMat(curmi->motid, srcframe);
+			ChaMatrix curworldmat = btbone->GetWorldMat(curmi->motid, roundingframe);
 
 
 			//#######################################################################################
@@ -12984,20 +12991,20 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 			bool infooutflag = false;
 
 			g_wmatDirectSetFlag = true;
-			//srcbone->SetWorldMat(0, curmi->motid, srcframe, setmat);
+			//srcbone->SetWorldMat(0, curmi->motid, roundingframe, setmat);
 			if (btbone->GetChild()) {
-				btbone->SetWorldMat(infooutflag, 0, curmi->motid, srcframe, setmat);
+				btbone->SetWorldMat(infooutflag, 0, curmi->motid, roundingframe, setmat);
 			}
 			else if (btbone->GetParent()) {
 				//endjointでparentがある場合
-				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, srcframe);//limited????
-				btbone->SetWorldMat(infooutflag, 0, curmi->motid, srcframe, parsetmat);
-				//btbone->SetWorldMat(1, curmi->motid, srcframe, parsetmat);
+				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(curmi->motid, roundingframe);//limited????
+				btbone->SetWorldMat(infooutflag, 0, curmi->motid, roundingframe, parsetmat);
+				//btbone->SetWorldMat(1, curmi->motid, roundingframe, parsetmat);
 			}
 			g_wmatDirectSetFlag = false;
 
 
-			//CalcBoneEulReq(btbone, curmi->motid, srcframe);
+			//CalcBoneEulReq(btbone, curmi->motid, roundingframe);
 
 
 			//}
@@ -13005,10 +13012,10 @@ void CModel::ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectim
 	}
 
 	if (srcbone->GetChild()) {
-		ApplyPhysIkRecReq(srcbone->GetChild(), srcframe, srcrectime);
+		ApplyPhysIkRecReq(srcbone->GetChild(), roundingframe, srcrectime);
 	}
 	if (srcbone->GetBrother()) {
-		ApplyPhysIkRecReq(srcbone->GetBrother(), srcframe, srcrectime);
+		ApplyPhysIkRecReq(srcbone->GetBrother(), roundingframe, srcrectime);
 	}
 
 }

@@ -1100,6 +1100,8 @@ int CBtObject::Motion2Bt(CModel* srcmodel, int srcmotid, double srcframe)
 	if( curre ){
 		ChaMatrix newrotmat;
 		ChaVector3 newrigidpos;
+
+		//srcframe : ŽžŠÔ•âŠÔ—L‚è
 		GetBone()->CalcNewBtMat(srcmodel, srcmotid, srcframe, curre, GetEndBone(), &newrotmat, &newrigidpos);
 
 		SetPosture2Bt(newrotmat, newrigidpos);
