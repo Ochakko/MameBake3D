@@ -891,6 +891,14 @@ private:
 
 	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
 
+
+	int CalcQForRot(int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+		CBone* srcrotbone, CBone* srcaplybone, 
+		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
+	int IsMovableRot(int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+		CBone* srcrotbone, CBone* srcaplybone);
+
+
 	//int GetFreeThreadIndex();
 	//void WaitAllTheadOfGetFbxAnim();
 

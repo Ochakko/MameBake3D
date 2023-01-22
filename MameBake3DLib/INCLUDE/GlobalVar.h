@@ -54,7 +54,7 @@ class CInfoWindow;
 
 #ifdef MAMEBAKE3DLIBGLOBALVAR
 
-bool g_rotatetanim = true;
+bool g_rotatetanim = false;
 bool g_tpose = true;
 bool g_preciseOnPreviewToo = false;
 

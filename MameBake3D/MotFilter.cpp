@@ -26,6 +26,9 @@
 using namespace std;
 
 
+extern bool g_underIKRot;
+
+
 CMotFilter::CMotFilter()
 {
 	InitParams();
@@ -103,10 +106,13 @@ int CMotFilter::GetFilterType()
 	元のモーションの再現率が大きい。（といいなあ）
 						   　
 ***********************************************************/
-int CMotFilter::Filter(CModel* srcmodel, int srcmotid, int srcstartframe, int srcendframe)
+int CMotFilter::Filter(CModel* srcmodel, CBone* srcbone, int srcopekind, int srcmotid, int srcstartframe, int srcendframe)
 {
-	if (!srcmodel){
+	if (!srcmodel || !srcbone){
 		return 0;//!!!!!!!!!!
+	}
+	if ((srcopekind != 1) && (srcopekind != 2) && (srcopekind != 3)) {
+		return 0;
 	}
 
 	DestroyObjs();//!!!!!!!!!!
@@ -140,9 +146,34 @@ int CMotFilter::Filter(CModel* srcmodel, int srcmotid, int srcstartframe, int sr
 		return 1;
 	}
 
-	FilterReq(srcmodel, srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe);
 
-
+	if (srcopekind == 1) {
+		//all joints
+		g_underIKRot = true;
+		FilterReq(srcmodel, srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe);
+		g_underIKRot = false;
+	}
+	else if (srcopekind == 2) {
+		//selecting joint
+		g_underIKRot = true;
+		int result = FilterFunc(srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
+		g_underIKRot = false;
+		if (result != 0) {
+			_ASSERT(0);
+			return 1;//!!!!!!!!!!!!!
+		}
+	}
+	else if (srcopekind == 3) {
+		//selecting joint and deeper
+		g_underIKRot = true;
+		FilterReq(srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
+		g_underIKRot = false;
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+	
 	DestroyObjs();
 
 	::MessageBox(NULL, L"平滑化を実行しました。", L"処理終了", MB_OK);
@@ -150,8 +181,7 @@ int CMotFilter::Filter(CModel* srcmodel, int srcmotid, int srcstartframe, int sr
 	return 0;
 }
 
-
-void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
+int CMotFilter::FilterFunc(CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
 {
 	int frameleng = srcendframe - srcstartframe + 1;
 	int half_filtersize = m_filtersize / 2;
@@ -161,26 +191,29 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 
 	int frame;
 
-	if (curbone){
+	if (curbone) {
 		ZeroMemory(m_eul, sizeof(ChaVector3) * frameleng);
 		ZeroMemory(m_smootheul, sizeof(ChaVector3) * frameleng);
 		ZeroMemory(m_tra, sizeof(ChaVector3) * frameleng);
 		ZeroMemory(m_smoothtra, sizeof(ChaVector3) * frameleng);
 
-		ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
+		//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		//befeul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcstartframe + 0.0001)), BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitの座標系
+
+		for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
 			CMotionPoint curmp;
 			curbone->CalcLocalInfo(srcmotid, (double)frame, &curmp);
-			ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, &befeul);// axiskind = -1 --> m_anglelimitの座標系
+			ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitの座標系
+			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, &befeul);// axiskind = -1 --> m_anglelimitの座標系
 			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimitの座標系
 			ChaVector3 curtra = curbone->CalcLocalTraAnim(srcmotid, (double)frame);
 
 			*(m_eul + frame - (int)(srcstartframe + 0.0001)) = cureul;
 			*(m_tra + frame - (int)(srcstartframe + 0.0001)) = curtra;
 			//befeul = cureul;
-			if ((frame == (int)(srcstartframe + 0.0001)) || IsValidNewEul(cureul, befeul)) {
-				befeul = cureul;
-			}
+			//if ((frame == (int)(srcstartframe + 0.0001)) || IsValidNewEul(cureul, befeul)) {
+			//	befeul = cureul;
+			//}
 		}
 
 
@@ -192,16 +225,16 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 			break;
 		case AVGF_MOVING:					//移動平均
 			//平滑化処理
-			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
+			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
 				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
 				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
-				for (int k = -half_filtersize; k <= half_filtersize; k++){
+				for (int k = -half_filtersize; k <= half_filtersize; k++) {
 					int index = frame + k - (int)(srcstartframe + 0.0001);
-					if ((index < 0) || (index >= frameleng)){
+					if ((index < 0) || (index >= frameleng)) {
 						tmp_vec3 += m_eul[frame - (int)(srcstartframe + 0.0001)];
 						tmp_pos3 += m_tra[frame - (int)(srcstartframe + 0.0001)];
 					}
-					else{
+					else {
 						tmp_vec3 += m_eul[index];
 						tmp_pos3 += m_tra[index];
 					}
@@ -218,23 +251,23 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 
 			int sumd = 0;
 			int coef = 0;
-			for (int i = 1; i <= m_filtersize; i++){
+			for (int i = 1; i <= m_filtersize; i++) {
 				sumd += i;
 			}
 			denomVal = 1.0 / (double)sumd;
 
-			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
+			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
 				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
 				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
-				for (int k = -m_filtersize; k <= 0; k++){
+				for (int k = -m_filtersize; k <= 0; k++) {
 					int index = frame + k - (int)(srcstartframe + 0.0001);
 					coef = k + m_filtersize;
 					weightVal = (float)(denomVal * (double)coef);
-					if ((index < 0) || (index >= frameleng)){
+					if ((index < 0) || (index >= frameleng)) {
 						tmp_vec3 = tmp_vec3 + m_eul[frame - (int)(srcstartframe + 0.0001)] * weightVal;
 						tmp_pos3 = tmp_pos3 + m_tra[frame - (int)(srcstartframe + 0.0001)] * weightVal;
 					}
-					else{
+					else {
 						tmp_vec3 = tmp_vec3 + m_eul[index] * weightVal;
 						tmp_pos3 = tmp_pos3 + m_tra[index] * weightVal;
 					}
@@ -253,26 +286,26 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 			int N = m_filtersize - 1;
 			int sum = 0;
 			int r = 0;
-			for (int i = 0; i <= N; i++){
+			for (int i = 0; i <= N; i++) {
 				sum += Combi(N, i);
 			}
 			normalizeVal = 1.0 / (double)sum;
 
-			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++){
+			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
 				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
 				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
-				for (int k = -half_filtersize; k <= half_filtersize; k++){
+				for (int k = -half_filtersize; k <= half_filtersize; k++) {
 					int index = frame + k - (int)(srcstartframe + 0.0001);
 					r = k + half_filtersize;
-					if (r > N){
+					if (r > N) {
 						r = N;//!!!!!!!!!!!!!!!!!
 					}
 					normalDistVal = (float)(normalizeVal * (double)Combi(N, r));
-					if ((index < 0) || (index >= frameleng)){
+					if ((index < 0) || (index >= frameleng)) {
 						tmp_vec3 = tmp_vec3 + m_eul[frame - (int)(srcstartframe + 0.0001)] * normalDistVal;
 						tmp_pos3 = tmp_pos3 + m_tra[frame - (int)(srcstartframe + 0.0001)] * normalDistVal;
 					}
-					else{
+					else {
 						tmp_vec3 = tmp_vec3 + m_eul[index] * normalDistVal;
 						tmp_pos3 = tmp_pos3 + m_tra[index] * normalDistVal;
 					}
@@ -284,11 +317,25 @@ void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int s
 			break;
 		}
 
-		for (frame = srcstartframe; frame <= srcendframe; frame++){
+		for (frame = srcstartframe; frame <= srcendframe; frame++) {
 			ChaMatrix befwm = curbone->GetWorldMat(srcmotid, (double)frame);
 			curbone->SetWorldMatFromEulAndTra(1, befwm, m_smootheul[frame - srcstartframe], m_smoothtra[frame - srcstartframe], srcmotid, (double)frame);
 			//curbone->SetWorldMatFromEul(0, 1, m_smootheul[frame - srcstartframe], srcmotid, (double)frame);
 		}
+	}
+	return 0;
+}
+
+void CMotFilter::FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
+{
+	if (curbone) {
+
+		int result = FilterFunc(srcmodel, curbone, srcmotid, srcstartframe, srcendframe);
+		if (result != 0) {
+			_ASSERT(0);
+			return;//!!!!!!!!!!!!!
+		}
+
 
 		if (curbone->GetChild()){
 			FilterReq(srcmodel, curbone->GetChild(), srcmotid, srcstartframe, srcendframe);

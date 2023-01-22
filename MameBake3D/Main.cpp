@@ -232,6 +232,33 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2023/01/22
+* 1.1.0.11からhips以外のジョイントの回転時に移動アニメも回転していた
+* しかし
+* 移動の回転は　微妙な誤差を生じる
+* そして操作の度に　その誤差が蓄積していた
+* よって
+* 必要な時だけ　移動アニメを回転することにする
+* ３DウインドウのGUIのVSyncの隣に　TRotチェックボックスを追加
+* TRotにチェックを入れたときのみ　hips以外のジョイントの移動アニメを回転する
+* hipsの移動アニメは常に回転する
+* デフォルト状態でTRotチェックはオフ
+* 
+* 
+* LimitEulにチェックをしている状態で　限界を超えるようにIK回転をガチャガチャしていると
+* オイラーグラフがギザギザになる
+* 緩和策として
+* topposのフレームにおいて　先に可動チェックをして　無駄に動かさないようにした
+* 更なる対策としては
+* ToolWindowの平滑化ボタンを押すこと
+* 関係のないジョイントまで平滑化すると　動きが変わることがあるので
+* 平滑化ボタンを　all, Parent One, Parent Deeperの３種類に増やした
+* 平滑化機能で　ガウシアンを選び　フィルター数として１１を選ぶと　かなり効果がある
+* 
+* 
+*/
+
 
 #include "useatl.h"
 
@@ -1190,7 +1217,9 @@ static OWP_Button* s_toolMotPropB = 0;
 static OWP_Button* s_toolMarkB = 0;
 static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
-static OWP_Button* s_toolFilterB = 0;
+static OWP_Button* s_toolFilter1B = 0;
+static OWP_Button* s_toolFilter2B = 0;
+static OWP_Button* s_toolFilter3B = 0;
 static OWP_Button* s_toolInterpolate1B = 0;
 static OWP_Button* s_toolInterpolate2B = 0;
 static OWP_Button* s_toolInterpolate3B = 0;
@@ -1256,7 +1285,7 @@ static bool s_motpropFlag = false;
 static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
-static bool s_filterFlag = false;
+static int  s_filterState = 0;
 static bool s_delmodelFlag = false;
 static bool s_delallmodelFlag = false;
 static bool s_changeupdatethreadsFlag = false;
@@ -1502,6 +1531,7 @@ CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
 CDXUTCheckBox* s_IfMirrorVDiv2CheckBox = 0;
 CDXUTCheckBox* s_VSyncCheckBox = 0;
+CDXUTCheckBox* s_TraRotCheckBox = 0;
 CDXUTCheckBox* s_PreciseCheckBox = 0;
 CDXUTCheckBox* s_TPoseCheckBox = 0;
 
@@ -1550,6 +1580,7 @@ static CDXUTControl* s_ui_limiteul = 0;
 static CDXUTControl* s_ui_texspeed = 0;
 static CDXUTControl* s_ui_speed = 0;
 static CDXUTControl* s_ui_vsync = 0;
+static CDXUTControl* s_ui_trarot = 0;
 
 
 //Bullet
@@ -1768,6 +1799,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_VSYNC					81
 #define IDC_PRECISEONPREVIEWTOO		82
 #define IDC_TPOSE_MANIPULATOR		83
+
+#define IDC_TRAROT					84
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2817,6 +2850,7 @@ void InitApp()
 
 
 	g_VSync = false;
+	g_rotatetanim = false;
 	g_HighRpmMode = false;
 	g_UpdateMatrixThreads = 2;
 
@@ -2962,7 +2996,7 @@ void InitApp()
 	s_markFlag = false;
 	s_selboneFlag = false;
 	s_initmpFlag = false;
-	s_filterFlag = false;
+	s_filterState = 0;
 	s_interpolateState = 0;
 	s_skipJointMark = 0;
 	s_firstkeyFlag = false;
@@ -3111,6 +3145,7 @@ void InitApp()
 	s_BrushMirrorVCheckBox = 0;
 	s_IfMirrorVDiv2CheckBox = 0;
 	s_VSyncCheckBox = 0;
+	s_TraRotCheckBox = 0;
 	s_PreciseCheckBox = 0;
 	s_TPoseCheckBox = 0;
 
@@ -3155,6 +3190,7 @@ void InitApp()
 	s_ui_texspeed = 0;
 	s_ui_speed = 0;
 	s_ui_vsync = 0;
+	s_ui_trarot = 0;
 	s_ui_precise = 0;
 	s_ui_tpose = 0;
 
@@ -3250,7 +3286,9 @@ void InitApp()
 	s_toolMarkB = 0;
 	s_toolSelBoneB = 0;
 	s_toolInitMPB = 0;
-	s_toolFilterB = 0;
+	s_toolFilter1B = 0;
+	s_toolFilter2B = 0;
+	s_toolFilter3B = 0;
 	s_toolInterpolate1B = 0;
 	s_toolInterpolate2B = 0;
 	s_toolInterpolate3B = 0;
@@ -4798,9 +4836,17 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_toolInitMPB;
 		s_toolInitMPB = 0;
 	}
-	if (s_toolFilterB) {
-		delete s_toolFilterB;
-		s_toolFilterB = 0;
+	if (s_toolFilter1B) {
+		delete s_toolFilter1B;
+		s_toolFilter1B = 0;
+	}
+	if (s_toolFilter2B) {
+		delete s_toolFilter2B;
+		s_toolFilter2B = 0;
+	}
+	if (s_toolFilter3B) {
+		delete s_toolFilter3B;
+		s_toolFilter3B = 0;
 	}
 	if (s_toolInterpolate1B) {
 		delete s_toolInterpolate1B;
@@ -7703,6 +7749,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 			s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
 			break;
 		case IDC_VSYNC:
+			RollbackCurBoneNo();
+			break;
+		case IDC_TRAROT:
 			RollbackCurBoneNo();
 			break;
 
@@ -20176,6 +20225,9 @@ int OnFrameUtCheckBox()
 	if (s_VSyncCheckBox) {
 		g_VSync = (bool)s_VSyncCheckBox->GetChecked();
 	}
+	if (s_TraRotCheckBox) {
+		g_rotatetanim = (bool)s_TraRotCheckBox->GetChecked();
+	}
 	if (s_HighRpmCheckBox) {
 		g_HighRpmMode = (int)s_HighRpmCheckBox->GetChecked();
 	}
@@ -21691,44 +21743,72 @@ int OnFrameToolWnd()
 	}
 	*/
 
-	if (s_filterFlag == true){
+	if (s_filterState != 0){
 
-		//if (s_model){
-		//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
-		//}
-		if (s_model) {
-			PrepairUndo();
-		}
+		if ((s_filterState == 1) || (s_filterState == 2) || (s_filterState == 3)) {
+			//if (s_model){
+			//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+			//}
+			if (s_model) {
+				PrepairUndo();
+			}
 
-		s_editrange.Clear();
-		if (s_model && s_model->GetCurMotInfo()){
-			if (s_owpTimeline && s_owpLTimeline){
-				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-				CEditRange::SetApplyRate((double)g_applyrate);
-				int keynum;
-				double startframe, endframe, applyframe;
-				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+			s_editrange.Clear();
+			if (s_model && s_model->GetCurMotInfo()) {
+				if (s_owpTimeline && s_owpLTimeline) {
+					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+					CEditRange::SetApplyRate((double)g_applyrate);
+					int keynum;
+					double startframe, endframe, applyframe;
+					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 
-				if (keynum >= 2){
-					CMotFilter motfilter;
-					motfilter.Filter(s_model, s_model->GetCurMotInfo()->motid, (int)startframe, (int)endframe);
 
-					UpdateEditedEuler();
-
-					//if (s_model){
-					//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
-					//}
-					if (s_model) {
-						PrepairUndo();
+					CBone* curbone = 0;
+					if (s_curboneno >= 0) {
+						curbone = s_model->GetBoneByID(s_curboneno);
 					}
-				}
-				else{
-					::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
+					else {
+						curbone = 0;
+					}
+					CBone* opebone = 0;
+					if (curbone && curbone->GetParent()) {
+						opebone = curbone->GetParent();
+					}
+					else {
+						if (curbone) {
+							opebone = curbone;
+						}
+						else {
+							opebone = 0;
+						}
+					}
+
+					if (opebone) {
+						if (keynum >= 2) {
+							CMotFilter motfilter;
+							motfilter.Filter(s_model, opebone, s_filterState, s_model->GetCurMotInfo()->motid, (int)(startframe + 0.0001), (int)(endframe + 0.0001));
+
+							UpdateEditedEuler();
+
+							//if (s_model){
+							//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+							//}
+							if (s_model) {
+								PrepairUndo();
+							}
+						}
+						else {
+							::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
+						}
+					}
+					else {
+						::DSMessageBox(s_3dwnd, L"Retry After Selectiong target joint.", L"error!!!", MB_OK);
+					}
 				}
 			}
 		}
 
-		s_filterFlag = false;
+		s_filterState = 0;
 	}
 
 	if (s_btresetFlag == true) {
@@ -23039,11 +23119,19 @@ int CreateUtDialog()
 	}
 
 	{//Experimental新規
-		g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY += addh, checkboxxlen, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
+		g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY + addh, checkboxxlen / 2, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
 		s_ui_vsync = g_SampleUI.GetControl(IDC_VSYNC);
 		_ASSERT(s_ui_vsync);
 		s_dsutgui3.push_back(s_ui_vsync);
 		s_dsutguiid3.push_back(IDC_VSYNC);
+
+		g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", startx + checkboxxlen / 2 + 5, iY + addh, checkboxxlen / 2, 16, g_rotatetanim, 0U, false, &s_TraRotCheckBox);
+		s_ui_trarot = g_SampleUI.GetControl(IDC_TRAROT);
+		_ASSERT(s_ui_trarot);
+		s_dsutgui3.push_back(s_ui_trarot);
+		s_dsutguiid3.push_back(IDC_TRAROT);
+
+		iY += addh;
 	}
 
 	{//1-->Experimental
@@ -24832,7 +24920,9 @@ int CreateToolWnd()
 	//s_toolDeleteB = new OWP_Button(_T("削除"));
 	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
 	s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
-	s_toolFilterB = new OWP_Button(_T("平滑化 smoothing"));
+	s_toolFilter1B = new OWP_Button(_T("平滑化(all) smoothing"));
+	s_toolFilter2B = new OWP_Button(_T("平滑化(Parent One) smoothing"));
+	s_toolFilter3B = new OWP_Button(_T("平滑化(Parent Deeper) smoothing"));
 	s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
 	s_toolInterpolate2B = new OWP_Button(_T("補間(Parent One) interpolate"));
 	s_toolInterpolate3B = new OWP_Button(_T("補間(Parent Deeper) interpolate"));
@@ -24849,7 +24939,9 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolInitMPB);
 	//s_toolWnd->addParts(*s_toolMarkB);
 	s_toolWnd->addParts(*s_toolMotPropB);
-	s_toolWnd->addParts(*s_toolFilterB);
+	s_toolWnd->addParts(*s_toolFilter1B);
+	s_toolWnd->addParts(*s_toolFilter2B);
+	s_toolWnd->addParts(*s_toolFilter3B);
 	s_toolWnd->addParts(*s_toolInterpolate1B);
 	s_toolWnd->addParts(*s_toolInterpolate2B);
 	s_toolWnd->addParts(*s_toolInterpolate3B);
@@ -24865,7 +24957,9 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolInitMPB);
 	//s_dstoolctrls.push_back(s_toolMarkB);
 	s_dstoolctrls.push_back(s_toolMotPropB);
-	s_dstoolctrls.push_back(s_toolFilterB);
+	s_dstoolctrls.push_back(s_toolFilter1B);
+	s_dstoolctrls.push_back(s_toolFilter2B);
+	s_dstoolctrls.push_back(s_toolFilter3B);
 	s_dstoolctrls.push_back(s_toolInterpolate1B);
 	s_dstoolctrls.push_back(s_toolInterpolate2B);
 	s_dstoolctrls.push_back(s_toolInterpolate3B);
@@ -24929,12 +25023,28 @@ int CreateToolWnd()
 			s_initmpFlag = true;
 		}
 	});
-	s_toolFilterB->setButtonListener([](){ 
+	s_toolFilter1B->setButtonListener([](){ 
 		if (s_model) {
-			s_filterFlag = true;
+			if (s_filterState == 0) {
+				s_filterState = 1;
+			}
 		}
 	});
-	s_toolInterpolate1B->setButtonListener([]() { 
+	s_toolFilter2B->setButtonListener([]() {
+		if (s_model) {
+			if (s_filterState == 0) {
+				s_filterState = 2;
+			}
+		}
+	});
+	s_toolFilter3B->setButtonListener([]() {
+		if (s_model) {
+			if (s_filterState == 0) {
+				s_filterState = 3;
+			}
+		}
+	});
+	s_toolInterpolate1B->setButtonListener([]() {
 		if (s_model && (s_interpolateState == 0)) {
 			s_interpolateState = 1;//all
 		}

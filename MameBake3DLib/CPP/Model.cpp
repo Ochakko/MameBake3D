@@ -8780,56 +8780,33 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 
 					parentbone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
 
+
+					//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
+					//制限角度により　回転出来ない場合は　リターンする
+					if (g_limitdegflag != 0) {
+						int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, 
+							rotq0, parentbone, parentbone);
+						if (ismovable == 0) {
+							g_underIKRot = false;//2023/01/14 parent limited or not
+							if (editboneforret) {
+								return editboneforret->GetBoneNo();
+							}
+							else {
+								return srcboneno;
+							}
+						}
+					}
+
+
 					if (keynum >= 2) {
 						int keyno = 0;
 						double curframe;
 						for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
 
-							//CMotionPoint* curparmp;
-							//curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-							//CMotionPoint* aplyparmp;
-							//aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-							//if (curparmp && aplyparmp && (g_pseudolocalflag == 1)) {
 							if (g_pseudolocalflag == 1) {
-								//ChaMatrix curparrotmat = curparmp->GetWorldMat();
-								ChaMatrix curparrotmat = parentbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-								curparrotmat.data[MATI_41] = 0.0f;
-								curparrotmat.data[MATI_42] = 0.0f;
-								curparrotmat.data[MATI_43] = 0.0f;
-								//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
-								ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-								invcurparrotmat.data[MATI_41] = 0.0f;
-								invcurparrotmat.data[MATI_42] = 0.0f;
-								invcurparrotmat.data[MATI_43] = 0.0f;
-								//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
-								ChaMatrix aplyparrotmat = parentbone->GetLimitedWorldMat(m_curmotinfo->motid, applyframe);
-								aplyparrotmat.data[MATI_41] = 0.0f;
-								aplyparrotmat.data[MATI_42] = 0.0f;
-								aplyparrotmat.data[MATI_43] = 0.0f;
-								//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
-								ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-								invaplyparrotmat.data[MATI_41] = 0.0f;
-								invaplyparrotmat.data[MATI_42] = 0.0f;
-								invaplyparrotmat.data[MATI_43] = 0.0f;
-
-								CQuaternion invcurparrotq, aplyparrotq, invaplyparrotq, curparrotq;
-								invcurparrotq.RotationMatrix(invcurparrotmat);
-								aplyparrotq.RotationMatrix(aplyparrotmat);
-								invaplyparrotq.RotationMatrix(invaplyparrotmat);
-								curparrotq.RotationMatrix(curparrotmat);
-
-								//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
-								//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
-								ChaMatrix transmat2ForRot;
-								ChaMatrix transmat2ForHipsRot;
-								transmat2ForRot = invcurparrotmat * aplyparrotmat * rotq0.MakeRotMatX() * invaplyparrotmat * curparrotmat;
-								transmat2ForHipsRot = rotq0.MakeRotMatX();
-								//CMotionPoint transmp;
-								//transmp.CalcQandTra(transmat2, firstbone);
-								//rotq = transmp.GetQ();
-								qForRot.RotationMatrix(transmat2ForRot);
-								qForHipsRot.RotationMatrix(transmat2ForHipsRot);
-
+								CalcQForRot(m_curmotinfo->motid, curframe, applyframe, rotq0,
+									parentbone, parentbone,
+									&qForRot, &qForHipsRot);
 							}
 							else {
 								qForRot = rotq0;
@@ -8867,17 +8844,17 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 									qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 									qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
-									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+									parentbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 										infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
 								}
 								else {
-									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+									parentbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 								}
 							}
 							else {
 								if (keyno == 0) {
-									parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+									parentbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 										infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 								}
 								else {
@@ -8891,7 +8868,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 						bool infooutflag = true;
 						qForRot = rotq0;
 						qForHipsRot = rotq0;
-						parentbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+						parentbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 							infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 					}
 
@@ -10329,50 +10306,33 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 
 							curbone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
 
+
+							//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
+							//制限角度により　回転出来ない場合は　リターンする
+							if (g_limitdegflag != 0) {
+								int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, 
+									localq, curbone, aplybone);
+								if (ismovable == 0) {
+									g_underIKRot = false;//2023/01/14 parent limited or not
+									if (lastbone) {
+										return lastbone->GetBoneNo();
+									}
+									else {
+										return srcboneno;
+									}
+								}
+							}
+
+
 							if (keynum >= 2){
 								int keyno = 0;
 								double curframe;
 								for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 
-									//CMotionPoint* curparmp = 0;
-									//CMotionPoint* aplyparmp = 0;
-									//if (parentbone){
-									//	curparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, curframe);
-									//	aplyparmp = parentbone->GetMotionPoint(m_curmotinfo->motid, applyframe);
-									//}
-
-									//if (curparmp && aplyparmp && (g_pseudolocalflag == 1)){
 									if (aplybone && (g_pseudolocalflag == 1)) {
-										//ChaMatrix curparrotmat = curparmp->GetWorldMat();
-										ChaMatrix curparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);//curbone curframe
-										curparrotmat.data[MATI_41] = 0.0f;
-										curparrotmat.data[MATI_42] = 0.0f;
-										curparrotmat.data[MATI_43] = 0.0f;
-										//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
-										ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-										invcurparrotmat.data[MATI_41] = 0.0f;
-										invcurparrotmat.data[MATI_42] = 0.0f;
-										invcurparrotmat.data[MATI_43] = 0.0f;
-										//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
-										ChaMatrix aplyparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);//2023/01/14 体全体を１８０度回転しての指リグテスト：parent軸
-										//ChaMatrix aplyparrotmat = curbone->GetLimitedWorldMat(m_curmotinfo->motid, applyframe);//2022/11/06 curbone applyframe
-										aplyparrotmat.data[MATI_41] = 0.0f;
-										aplyparrotmat.data[MATI_42] = 0.0f;
-										aplyparrotmat.data[MATI_43] = 0.0f;
-										//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
-										ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-										invaplyparrotmat.data[MATI_41] = 0.0f;
-										invaplyparrotmat.data[MATI_42] = 0.0f;
-										invaplyparrotmat.data[MATI_43] = 0.0f;
-
-										//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
-										//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
-										ChaMatrix transmat2ForRot;
-										ChaMatrix transmat2ForHipsRot;
-										transmat2ForRot = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;
-										transmat2ForHipsRot = localq.MakeRotMatX();
-										qForRot.RotationMatrix(transmat2ForRot);
-										qForHipsRot.RotationMatrix(transmat2ForHipsRot);
+										CalcQForRot(m_curmotinfo->motid, curframe, applyframe, localq,
+											curbone, aplybone,
+											&qForRot, &qForHipsRot);
 									}
 									else{
 										qForRot = localq;
@@ -10409,17 +10369,17 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 											qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 											qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
-											curbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+											curbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 												infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
 										}
 										else{
-											curbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+											curbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 												infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 										}
 									}
 									else{
 										if (keyno == 0){
-											curbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+											curbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 												infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 										}
 										else{
@@ -10434,7 +10394,7 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 								bool infooutflag = true;
 								qForRot = localq;
 								qForHipsRot = localq;
-								curbone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+								curbone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 									infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 							}
 							if (g_applyendflag == 1){
@@ -10888,6 +10848,117 @@ void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe
 //
 //}
 
+int CModel::CalcQForRot(int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot, 
+	CBone* srcrotbone, CBone* srcaplybone, 
+	CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot)
+{
+	if ((!srcrotbone) || (!srcaplybone) || (!dstqForRot) || (!dstqForHipsRot)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingapplyframe = (double)((int)(srcapplyframe + 0.0001));
+
+	//ChaMatrix curparrotmat = curparmp->GetWorldMat();
+	ChaMatrix curparrotmat = srcrotbone->GetLimitedWorldMat(srcmotid, roundingframe);
+	curparrotmat.data[MATI_41] = 0.0f;
+	curparrotmat.data[MATI_42] = 0.0f;
+	curparrotmat.data[MATI_43] = 0.0f;
+	//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
+	ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
+	invcurparrotmat.data[MATI_41] = 0.0f;
+	invcurparrotmat.data[MATI_42] = 0.0f;
+	invcurparrotmat.data[MATI_43] = 0.0f;
+
+	//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
+	ChaMatrix aplyparrotmat = srcaplybone->GetLimitedWorldMat(srcmotid, roundingapplyframe);
+	aplyparrotmat.data[MATI_41] = 0.0f;
+	aplyparrotmat.data[MATI_42] = 0.0f;
+	aplyparrotmat.data[MATI_43] = 0.0f;
+	//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
+	ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
+	invaplyparrotmat.data[MATI_41] = 0.0f;
+	invaplyparrotmat.data[MATI_42] = 0.0f;
+	invaplyparrotmat.data[MATI_43] = 0.0f;
+
+	CQuaternion invcurparrotq, aplyparrotq, invaplyparrotq, curparrotq;
+	invcurparrotq.RotationMatrix(invcurparrotmat);
+	aplyparrotq.RotationMatrix(aplyparrotmat);
+	invaplyparrotq.RotationMatrix(invaplyparrotmat);
+	curparrotq.RotationMatrix(curparrotmat);
+
+
+	//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
+	//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
+	ChaMatrix transmat2ForRot;
+	ChaMatrix transmat2ForHipsRot;
+
+	//hisp移動はうまくいくが　回転がおかしい 　hips以外は良い
+	//transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
+
+	//hips回転はうまくいくが　移動がおかしい
+	//transmat2 = localq.MakeRotMatX();//for hips edit
+
+	//####################################################################
+	//ToDo : RotQBoneReq2()を作って　引数として上記２つの回転情報を渡す
+	//####################################################################
+
+
+	transmat2ForRot = invcurparrotmat * aplyparrotmat * srcaddrot.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
+	transmat2ForHipsRot = srcaddrot.MakeRotMatX();//for hips edit
+	dstqForRot->RotationMatrix(transmat2ForRot);
+	dstqForHipsRot->RotationMatrix(transmat2ForHipsRot);
+
+
+	return 0;
+}
+
+int CModel::IsMovableRot(int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+	CBone* srcrotbone, CBone* srcaplybone)
+{
+	//#############################################
+	//movable : return 1,  not movable : return 0
+	//#############################################
+	if (!srcrotbone || !srcaplybone) {
+		_ASSERT(0);
+		return 0;//not movable
+	}
+	if (g_limitdegflag == 0) {
+		return 1;//movable
+	}
+
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingapplyframe = (double)((int)(srcapplyframe + 0.0001));
+
+	CQuaternion qForRot;
+	CQuaternion qForHipsRot;
+	CalcQForRot(m_curmotinfo->motid, roundingframe, roundingapplyframe, srcaddrot,
+		srcrotbone, srcaplybone,
+		&qForRot, &qForHipsRot);
+
+	double changerate;
+	changerate = (double)(*(g_motionbrush_value + (int)roundingframe));
+
+	bool infooutflag = true;
+
+	CQuaternion endq;
+	CQuaternion curqForRot;
+	CQuaternion curqForHipsRot;
+	endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
+	qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
+
+	ChaMatrix dummyparentwm;
+	dummyparentwm.SetIdentity();
+	double dummystartframe = 0.0;
+	int onlycheckIsMovable = 0;
+	srcrotbone->RotAndTraBoneQReq(&onlycheckIsMovable, dummystartframe,
+		infooutflag, 0, srcmotid, roundingframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
+
+	return onlycheckIsMovable;
+}
+
 
 int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat)
 {
@@ -11049,66 +11120,32 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			aplybone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
 
 
+			//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
+			//制限角度により　回転出来ない場合は　リターンする
+			if (g_limitdegflag != 0) {
+				int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
+				if (ismovable == 0) {
+					g_underIKRot = false;//2023/01/14 parent limited or not
+					if (editboneforret) {
+						return editboneforret->GetBoneNo();
+					}
+					else {
+						return srcboneno;
+					}
+				}
+			}
+
 			if (keynum >= 2){
 				int keyno = 0;
 				double curframe;
 				for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0){
 
-
-					//ChaMatrix curparrotmat = curparmp->GetWorldMat();
-					ChaMatrix curparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, curframe);
-					curparrotmat.data[MATI_41] = 0.0f;
-					curparrotmat.data[MATI_42] = 0.0f;
-					curparrotmat.data[MATI_43] = 0.0f;
-					//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
-					ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-					invcurparrotmat.data[MATI_41] = 0.0f;
-					invcurparrotmat.data[MATI_42] = 0.0f;
-					invcurparrotmat.data[MATI_43] = 0.0f;
-
-					//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
-					ChaMatrix aplyparrotmat = aplybone->GetLimitedWorldMat(m_curmotinfo->motid, applyframe);
-					aplyparrotmat.data[MATI_41] = 0.0f;
-					aplyparrotmat.data[MATI_42] = 0.0f;
-					aplyparrotmat.data[MATI_43] = 0.0f;
-					//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
-					ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-					invaplyparrotmat.data[MATI_41] = 0.0f;
-					invaplyparrotmat.data[MATI_42] = 0.0f;
-					invaplyparrotmat.data[MATI_43] = 0.0f;
-
-					CQuaternion invcurparrotq, aplyparrotq, invaplyparrotq, curparrotq;
-					invcurparrotq.RotationMatrix(invcurparrotmat);
-					aplyparrotq.RotationMatrix(aplyparrotmat);
-					invaplyparrotq.RotationMatrix(invaplyparrotmat);
-					curparrotq.RotationMatrix(curparrotmat);
-
-
-					//意味：RotBoneQReq()にrotqを渡し　currentworldmatの後ろに　invpivot * rotq * pivotを掛ける
-					//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
-					ChaMatrix transmat2ForRot;
-					ChaMatrix transmat2ForHipsRot;
-
-					//hisp移動はうまくいくが　回転がおかしい 　hips以外は良い
-					//transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
-					
-					//hips回転はうまくいくが　移動がおかしい
-					//transmat2 = localq.MakeRotMatX();//for hips edit
-
-					//####################################################################
-					//ToDo : RotQBoneReq2()を作って　引数として上記２つの回転情報を渡す
-					//####################################################################
-
-
-					transmat2ForRot = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
-					transmat2ForHipsRot = localq.MakeRotMatX();//for hips edit
-					qForRot.RotationMatrix(transmat2ForRot);
-					qForHipsRot.RotationMatrix(transmat2ForHipsRot);
-
-
+					CalcQForRot(m_curmotinfo->motid, curframe, applyframe, localq,
+						aplybone, aplybone,
+						&qForRot, &qForHipsRot);
 
 					double changerate;
-					changerate = (double)(*(g_motionbrush_value + (int)curframe));
+					changerate = (double)(*(g_motionbrush_value + (int)(curframe + 0.0001)));
 
 					if (keyno == 0){
 						firstframe = curframe;
@@ -11131,17 +11168,17 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 							qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 							qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
-							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+							aplybone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 								infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
 						}
 						else{
-							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+							aplybone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 						}
 					}
 					else{
 						if (keyno == 0){
-							aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)), 
+							aplybone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 								infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 						}
 						else{
@@ -11159,7 +11196,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 				qForRot = localq;
 				qForHipsRot = localq;
 				bool infooutflag = true;
-				aplybone->RotAndTraBoneQReq((double)((int)(startframe + 0.0001)),
+				aplybone->RotAndTraBoneQReq(0, (double)((int)(startframe + 0.0001)),
 					infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 			}
 
