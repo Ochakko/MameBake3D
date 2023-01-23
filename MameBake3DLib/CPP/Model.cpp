@@ -8783,8 +8783,9 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 
 					//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
 					//制限角度により　回転出来ない場合は　リターンする
-					if (g_limitdegflag != 0) {
-						int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, 
+					//if (g_limitdegflag != 0) {
+					if ((g_limitdegflag != 0) && (g_wallscrapingikflag == 0)) {//2023/01/23
+						int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe,
 							rotq0, parentbone, parentbone);
 						if (ismovable == 0) {
 							g_underIKRot = false;//2023/01/14 parent limited or not
@@ -10307,21 +10308,23 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 							curbone->SaveSRT(m_curmotinfo->motid, startframe, endframe);
 
 
-							//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
-							//制限角度により　回転出来ない場合は　リターンする
-							if (g_limitdegflag != 0) {
-								int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, 
-									localq, curbone, aplybone);
-								if (ismovable == 0) {
-									g_underIKRot = false;//2023/01/14 parent limited or not
-									if (lastbone) {
-										return lastbone->GetBoneNo();
-									}
-									else {
-										return srcboneno;
-									}
-								}
-							}
+							//2023/01/23 : Rigの場合は　回転できなくても処理を継続
+							////2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
+							////制限角度により　回転出来ない場合は　リターンする
+							////if (g_limitdegflag != 0) {
+							//if ((g_limitdegflag != 0) && (g_wallscrapingikflag == 0)) {//2023/01/23
+							//	int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, 
+							//		localq, curbone, aplybone);
+							//	if (ismovable == 0) {
+							//		g_underIKRot = false;//2023/01/14 parent limited or not
+							//		if (lastbone) {
+							//			return lastbone->GetBoneNo();
+							//		}
+							//		else {
+							//			return srcboneno;
+							//		}
+							//	}
+							//}
 
 
 							if (keynum >= 2){
@@ -11122,7 +11125,8 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 
 			//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
 			//制限角度により　回転出来ない場合は　リターンする
-			if (g_limitdegflag != 0) {
+			//if (g_limitdegflag != 0) {
+			if ((g_limitdegflag != 0) && (g_wallscrapingikflag == 0)) {//2023/01/23
 				int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
 				if (ismovable == 0) {
 					g_underIKRot = false;//2023/01/14 parent limited or not
