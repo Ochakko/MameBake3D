@@ -2,6 +2,8 @@
 #include "SettingsDlg.h"
 #include "GetDlgParams.h"
 
+#include "SetDlgPos.h"
+
 #include <GlobalVar.h>
 
 
@@ -37,6 +39,8 @@ LRESULT CSettingsDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 	int ret;
 
 	InitCommonControls();
+
+	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
 
 	m_dlg_wnd = m_hWnd;
 
@@ -76,10 +80,15 @@ LRESULT CSettingsDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHand
 
 LRESULT CSettingsDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
-
 	EndDialog(wID);
 	return 0;
 }
+LRESULT CSettingsDlg::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	EndDialog(IDCANCEL);
+	return 0;
+}
+
 
 int CSettingsDlg::ParamsToDlg()
 {

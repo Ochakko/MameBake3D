@@ -360,6 +360,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 //#include <ThreadingUpdateTimeline.h>
 
+#include "SetDlgPos.h"
+
 
 //#include <uxtheme.h>
 //#pragma ( lib, "UxTheme.lib" )
@@ -427,6 +429,9 @@ typedef struct tag_spsw
 
 //#define FPSSAVENUM 100
 #define FPSSAVENUM 120
+
+static HWINEVENTHOOK s_hhook = NULL;
+
 static double s_fps100[FPSSAVENUM];
 static int s_fps100index = 0;
 static double s_avrgfps = 0.0;
@@ -2263,10 +2268,14 @@ std::wstring ReplaceString
 }
 
 
+
+
+
 LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
@@ -2279,6 +2288,9 @@ LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		default:
 			return FALSE;
 		}
+	case WM_CLOSE:
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
 	default:
 		DefWindowProc(hDlgWnd, msg, wp, lp);
 		return FALSE;
@@ -2679,7 +2691,7 @@ INT WINAPI wWinMain(
 	//// MessageBox provides the necessary mesage loop that SetWinEventHook requires.
 	//MessageBox.Show("Tracking focus, close message box to exit.");
 
-	//UnhookWinEvent(hhook);
+	////UnhookWinEvent(hhook);
 
 	//}
 
@@ -2690,6 +2702,9 @@ INT WINAPI wWinMain(
 	//if (s_mainhwnd) {
 	//	SetCapture(s_mainhwnd);
 	//}
+
+	s_hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 
 	// Pass control to DXUT for handling the message pump and 
     // dispatching render calls. DXUT will call your FrameMove 
@@ -2829,6 +2844,8 @@ int CheckResolution()
 
 void InitApp()
 {
+	s_hhook = NULL;
+
 	InitializeCriticalSection(&s_CritSection_LTimeline);
 	InitializeCriticalSection(&g_CritSection_GetGP);
 
@@ -4390,8 +4407,13 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_plugin = 0;
 	}
 
+	if (s_hhook) {
+		UnhookWinEvent(s_hhook);
+		s_hhook = NULL;
+	}
+
 	//if (s_eventhook) {
-		//UnhookWinEvent(s_eventhook);
+		////UnhookWinEvent(s_eventhook);
 		//s_eventhook = 0;
 		CoUninitialize();
 	//}
@@ -9074,14 +9096,14 @@ int RetargetBatch()
 
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
-	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	curlpidl = SHBrowseForFolder(&bi);
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-	UnhookWinEvent(hhook);
+	////UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
 
@@ -9309,14 +9331,14 @@ int BVH2FBXBatch()
 
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
-	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	curlpidl = SHBrowseForFolder(&bi);
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-	UnhookWinEvent(hhook);
+	//UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
 
@@ -12767,6 +12789,9 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	switch (msg) {
 		case WM_INITDIALOG: 
 			{
+
+			SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 			s_refokflag = false;
 			g_tmpmqomult = 1.0f;
 			ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
@@ -13043,30 +13068,19 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 
-					if (g_enableDS == true) {
-						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-							s_refokflag = true;
-						}
-
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-						UnhookWinEvent(hhook);
+					if (GetOpenFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+						s_refokflag = true;
 					}
-					else {
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-							s_refokflag = true;
-						}
-
-					}
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+					//UnhookWinEvent(hhook);
 
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -13135,11 +13149,19 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
+			break;
 		case WM_TIMER:
 			OnDSUpdate();
 			return FALSE;
 			break;
-        default:
+		case WM_CLOSE:
+			s_mqodlghwnd = 0;
+			g_tmpmqopath[0] = 0L;
+			KillTimer(hDlgWnd, s_openmqoproctimer);
+			EndDialog(hDlgWnd, IDCANCEL);
+			return TRUE;
+			break;
+		default:
 			DefWindowProc(hDlgWnd, msg, wp, lp);
             return FALSE;
     }
@@ -13184,6 +13206,9 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
 	case WM_INITDIALOG:
+
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 		g_tmpmqomult = 1.0f;
 		ZeroMemory(g_tmpmqopath, sizeof(WCHAR)* MULTIPATH);
 		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
@@ -13222,27 +13247,18 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
 
-			if (g_enableDS == true) {
-				HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-					WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
-				if (GetOpenFileNameW(&ofn) == IDOK) {
-					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-				}
-
-				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-				UnhookWinEvent(hhook);
+			if (GetOpenFileNameW(&ofn) == IDOK) {
+				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
 			}
-			else {
-				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 
-				if (GetOpenFileNameW(&ofn) == IDOK) {
-					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-				}
-			}
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
 
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
@@ -13251,9 +13267,16 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		default:
 			return FALSE;
 		}
+		break;
 	case WM_TIMER:
 		OnDSUpdate();
 		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_bvhdlghwnd = 0;
+		KillTimer(hDlgWnd, s_openbvhproctimer);
+
+		EndDialog(hDlgWnd, IDCANCEL);
 		break;
 	default:
 		DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -13288,6 +13311,10 @@ LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		default:
 			return FALSE;
 		}
+		break;
+	case WM_CLOSE:
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
 	default:
 		return FALSE;
 	}
@@ -13311,6 +13338,8 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	switch (msg) {
         case WM_INITDIALOG:
 		{
+			SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 			if (s_model && s_model->GetCurMotInfo()) {
 				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
 					s_model->GetCurMotInfo()->motname, 256, s_tmpmotname, 256);
@@ -13360,8 +13389,14 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
+			break;
 		case WM_TIMER:
 			OnDSUpdate();
+			break;
+		case WM_CLOSE:
+			KillTimer(hDlgWnd, s_motproptimerid);
+			s_motpropdlghwnd = 0;
+			EndDialog(hDlgWnd, IDCANCEL);
 			break;
         default:
 			DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -13378,6 +13413,8 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 
 	switch (msg) {
 	case WM_INITDIALOG:
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 		s_retargetbatchwnd = hDlgWnd;
 
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_retargetcnt + 1), s_retargetnum);
@@ -13443,6 +13480,8 @@ LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
 	case WM_INITDIALOG:
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 		s_progresswnd = hDlgWnd;
 
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_progresscnt + 1), s_progressnum);
@@ -13539,6 +13578,8 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 
 	switch (msg) {
 	case WM_INITDIALOG:
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 		s_bvh2fbxbatchwnd = hDlgWnd;
 
 		swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_bvh2fbxcnt + 1), s_bvh2fbxnum);
@@ -13630,6 +13671,9 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
         case WM_INITDIALOG:
+
+			SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 			if( s_model && s_model->GetTopBone() ){
 				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_Gconame );
 			}
@@ -13656,33 +13700,23 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					
 					EndDialog(hDlgWnd, IDCANCEL);
                     break;
-					break;
 				case IDC_REFFILE:
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 
-					if (g_enableDS == true) {
-						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-						}
-
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-						UnhookWinEvent(hhook);
+					if (GetOpenFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
-					else {
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-						}
-					}
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+					//UnhookWinEvent(hhook);
 
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -13691,9 +13725,16 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
+			break;
 		case WM_TIMER:
 			OnDSUpdate();
 			return FALSE;
+			break;
+		case WM_CLOSE:
+			s_savegcodlghwnd = 0;
+			KillTimer(hDlgWnd, s_savegcoproctimer);
+
+			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
 			DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -13741,6 +13782,8 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
         case WM_INITDIALOG:
+			SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 			if( s_model && s_model->GetTopBone() ){
 				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_Impname );
 			}
@@ -13766,32 +13809,23 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					
 					EndDialog(hDlgWnd, IDCANCEL);
                     break;
-					break;
 				case IDC_REFFILE:
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 
-					if (g_enableDS == true) {
-						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-						}
-
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-						UnhookWinEvent(hhook);
+					if (GetOpenFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
-					else {
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-						}
-					}
+
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+					//UnhookWinEvent(hhook);
 					
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -13800,9 +13834,16 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
+			break;
 		case WM_TIMER:
 			OnDSUpdate();
 			return FALSE;
+			break;
+		case WM_CLOSE:
+			s_saveimpdlghwnd = 0;
+			KillTimer(hDlgWnd, s_saveimpproctimer);
+
+			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
 			DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -13851,6 +13892,9 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
         case WM_INITDIALOG:
+
+			SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 			if( s_model && s_model->GetTopBone() ){
 				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_REname );
 			}
@@ -13876,32 +13920,23 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					
 					EndDialog(hDlgWnd, IDCANCEL);
                     break;
-					break;
 				case IDC_REFFILE:
 				{
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 
-					if (g_enableDS == true) {
-						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-						}
-
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-						UnhookWinEvent(hhook);
+					if (GetOpenFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
 					}
-					else {
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-						}
-					}
+
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+					//UnhookWinEvent(hhook);
 					
 					
 					s_getfilenamehwnd = 0;
@@ -13910,11 +13945,18 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 					break;
 				default:
-                    return FALSE;
+					return FALSE;
             }
+			break;
 		case WM_TIMER:
 			OnDSUpdate();
 			return FALSE;
+			break;
+		case WM_CLOSE:
+			s_saveredlghwnd = 0;
+			KillTimer(hDlgWnd, s_savereproctimer);
+
+			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
 			DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -13961,6 +14003,8 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
         case WM_INITDIALOG:
+			SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 			g_tmpmqomult = 1.0f;
 			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
@@ -13989,28 +14033,18 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
 
-					if (g_enableDS == true) {
-						HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-							WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
-						}
-
-						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-						UnhookWinEvent(hhook);
-					}
-					else {
-						ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
-
-						if (GetOpenFileNameW(&ofn) == IDOK) {
-							SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
-						}
+					if (GetOpenFileNameW(&ofn) == IDOK) {
+						SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
 					}
 
+					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+					//UnhookWinEvent(hhook);
 
 					s_getfilenamehwnd = 0;
 					s_getfilenametreeview = 0;
@@ -14019,9 +14053,15 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				default:
                     return FALSE;
             }
+			break;
 		case WM_TIMER:
 			OnDSUpdate();
 			return FALSE;
+			break;
+		case WM_CLOSE:
+			s_exportxdlghwnd = 0;
+			KillTimer(hDlgWnd, s_exportxproctimer);
+			EndDialog(hDlgWnd, IDCANCEL);
 			break;
 		default:
 			DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -15162,8 +15202,8 @@ int SaveMotionNameListFile()
 
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
-	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 
@@ -15180,7 +15220,7 @@ int SaveMotionNameListFile()
 	}
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-	UnhookWinEvent(hhook);
+	//UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
 
@@ -15225,8 +15265,8 @@ int SaveRetargetFile()
 
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
-	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 
@@ -15252,7 +15292,7 @@ int SaveRetargetFile()
 
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-	UnhookWinEvent(hhook);
+	//UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
 
@@ -15299,8 +15339,8 @@ int LoadRetargetFile(WCHAR* srcfilename)
 	if (srcfilename == 0) {
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
-		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		int dlgret;
@@ -15310,7 +15350,7 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		if ((dlgret != IDOK) || (g_tmpmqopath[0] == 0L)) {
 
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-			UnhookWinEvent(hhook);
+			//UnhookWinEvent(hhook);
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
 
@@ -15347,7 +15387,7 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		//}
 
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-		UnhookWinEvent(hhook);
+		//UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
 
@@ -15373,7 +15413,7 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		}
 
 		//InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-		//UnhookWinEvent(hhook);
+		////UnhookWinEvent(hhook);
 		//s_getfilenamehwnd = 0;
 		//s_getfilenametreeview = 0;
 	}
@@ -16326,6 +16366,9 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	switch (msg) {
 	case WM_INITDIALOG:
+
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 		if (s_model && s_model->GetCurMotInfo()) {
 			if (s_chasavename[0]) {
 				SetDlgItemText(hDlgWnd, IDC_PROJNAME, s_chasavename);
@@ -16424,14 +16467,14 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
-			HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-				WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 			curlpidl = SHBrowseForFolder(&bi);
 
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-			UnhookWinEvent(hhook);
+			//UnhookWinEvent(hhook);
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
 
@@ -16458,9 +16501,18 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		default:
 			return FALSE;
 		}
+		break;
 	case WM_TIMER:
 		OnDSUpdate();
 		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_savechadlghwnd = 0;
+		KillTimer(hDlgWnd, s_savechaproctimer);
+
+		s_projectname[0] = 0L;
+		s_projectdir[0] = 0L;
+		EndDialog(hDlgWnd, IDCANCEL);
 		break;
 	default:
 		DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -18479,16 +18531,18 @@ int ExportFBXFile()
 	{
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
-		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		if (GetOpenFileNameW(&ofn1) != IDOK) {
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
 			return 0;
 		}
 
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-		UnhookWinEvent(hhook);
+		//UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
 	}
@@ -18592,16 +18646,18 @@ int ExportBntFile()
 	{
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
-		HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-			WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+		//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+		//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 		if (GetOpenFileNameW(&ofn1) != IDOK) {
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
 			return 0;
 		}
 
 		InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-		UnhookWinEvent(hhook);
+		//UnhookWinEvent(hhook);
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
 	}
@@ -19892,6 +19948,8 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
+		SetDlgPosToDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
 		CheckRadioButton(hDlgWnd, IDC_RADIO1, IDC_RADIO3, IDC_RADIO1);
 		s_rotaxiskind = AXIS_X;
 		WCHAR strdeg[256];
@@ -19939,6 +19997,8 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		}
 		break;
 	case WM_CLOSE:
+		s_rotzisdlghwnd = 0;
+
 		if (s_rotaxisdlg){
 			DestroyWindow(s_rotaxisdlg);
 			s_rotaxisdlg = 0;
@@ -24971,56 +25031,74 @@ int CreateToolWnd()
 
 	s_toolWnd->setCloseListener([](){ 
 		if (s_model) {
-			s_closetoolFlag = true;
+			if (s_closetoolFlag == false) {
+				s_closetoolFlag = true;
+			}
 		}
 	});
 	//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
 	//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
 	s_toolSelectCopyFileName->setButtonListener([]() {
 		if (s_model) {
-			s_selCopyHisotryFlag = true;
+			if (s_selCopyHisotryFlag == false) {
+				s_selCopyHisotryFlag = true;
+			}
 		}
 	});
 	s_toolCopyB->setButtonListener([](){ 
 		if (s_model) {
-			s_copyFlag = true;
+			if (s_copyFlag == false) {
+				s_copyFlag = true;
+			}
 		}
 	});
 	s_toolZeroFrameB->setButtonListener([]() {
 		if (s_model) {
 			if (s_owpLTimeline) {
-				s_LstopFlag = true; 
-				g_previewFlag = 0;  
-				s_LcursorFlag = true; 
-				s_zeroFrameFlag = true;
+				if (s_zeroFrameFlag == false) {
+					s_LstopFlag = true;
+					g_previewFlag = 0;
+					s_LcursorFlag = true;
+					s_zeroFrameFlag = true;
+				}
 			}
 		}
 	});
 
 	s_toolSymCopyB->setButtonListener([](){ 
 		if (s_model) {
-			s_symcopyFlag = true;
+			if (s_symcopyFlag == false) {
+				s_symcopyFlag = true;
+			}
 		}
 	});
 	s_toolPasteB->setButtonListener([](){ 
 		if (s_model) {
-			s_pasteFlag = true;
+			if (s_pasteFlag == false) {
+				s_pasteFlag = true;
+			}
 		}
 	});
 	s_toolMotPropB->setButtonListener([](){ 
 		if (s_model) {
-			s_motpropFlag = true;
+			if (s_motpropFlag == false) {
+				s_motpropFlag = true;
+			}
 		}
 	});
 	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
 	s_toolSelBoneB->setButtonListener([](){ 
 		if (s_model) {
-			s_selboneFlag = true;
+			if (s_selboneFlag == false) {
+				s_selboneFlag = true;
+			}
 		}
 	});
 	s_toolInitMPB->setButtonListener([](){ 
 		if (s_model) {
-			s_initmpFlag = true;
+			if (s_initmpFlag == false) {
+				s_initmpFlag = true;
+			}
 		}
 	});
 	s_toolFilter1B->setButtonListener([](){ 
@@ -27943,7 +28021,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.12 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.13 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -33577,6 +33655,8 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 	//if ((event == EVENT_OBJECT_INVOKED) || (event == EVENT_OBJECT_SELECTION) || (event == EVENT_OBJECT_SELECTIONWITHIN) || (event == EVENT_OBJECT_STATECHANGE)) {
 	//if (event == EVENT_SYSTEM_DIALOGSTART) {
 	//if(event == EVENT_OBJECT_CREATE){
+
+	if (event == EVENT_SYSTEM_FOREGROUND) {
 		WCHAR classname[MAX_PATH] = { 0L };
 		WCHAR wintext[MAX_PATH] = { 0L };
 		::GetClassName(hwnd, classname, MAX_PATH);
@@ -33586,7 +33666,7 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 		HWND fgwnd = 0;
 
 		//if (wcscmp(L"error!!!", wintext) == 0) {
-		if(wcsstr(wintext, L"error!!!") != 0){
+		if (wcsstr(wintext, L"error!!!") != 0) {
 			//::SendMessage(hwnd, WM_COMMAND, IDOK, 0);
 			s_messageboxhwnd = hwnd;
 			fgwnd = hwnd;
@@ -33609,9 +33689,9 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 		}
 
 		if (fgwnd) {
-			RECT dlgrect;
-			GetWindowRect(fgwnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
+			SetDlgPosToDesktopCenter(fgwnd, HWND_TOPMOST);
+
 		}
 
 		//HWND hwndChild = FindWindowExA(hwnd, 0, "Button", "OK");
@@ -33626,6 +33706,9 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 		//		::SendMessage(hwndChild, WM_COMMAND, IDOK, 0);
 		//	}
 		//}
+
+	}
+
 	//}
 
 	return;
@@ -33947,7 +34030,7 @@ void DSOButtonSelectedPopupMenu()
 
 
 				//if(s_eventhook){
-				//	UnhookWinEvent(s_eventhook);
+				//	//UnhookWinEvent(s_eventhook);
 				//	s_eventhook = 0;
 				//}
 				//m_event = nullptr;
@@ -35349,14 +35432,14 @@ void DSMessageBox(HWND srcparenthwnd, const WCHAR* srcmessage, const WCHAR* srct
 
 	s_messageboxhwnd = 0;
 	s_messageboxpushcnt = 0;
-	HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+	//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+	//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 	::MessageBoxW(srcparenthwnd, srcmessage, srctitle, srcok);
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-	UnhookWinEvent(hhook);
+	//UnhookWinEvent(hhook);
 	s_messageboxhwnd = 0;
 	s_messageboxpushcnt = 0;
 }
@@ -35370,7 +35453,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.12 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.13 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -35990,7 +36073,7 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 			curelem.Init();
 			curelem = *itrhistoryelem;
 			int result = LoadCPIFile(&curelem);
-			_ASSERT(result == 0);
+			//_ASSERT(result == 0);
 			*itrhistoryelem = curelem;//失敗した時にはnewelem.hascpinfo = 0がセットされている
 		}
 	}
@@ -36788,7 +36871,7 @@ int LoadCPIFile(HISTORYELEM* srcdstelem)
 	hfile = CreateFile(cpifilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		srcdstelem->hascpinfo = 0;
 		return 1;
 	}

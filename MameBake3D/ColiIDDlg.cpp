@@ -2,6 +2,8 @@
 #include "ColiIDDlg.h"
 #include "GetDlgParams.h"
 
+#include "SetDlgPos.h"
+
 #include <RigidElem.h>
 
 #define DBGH
@@ -53,6 +55,8 @@ LRESULT CColiIDDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	int ret;
 
 	InitCommonControls();
+
+	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
 
 	m_dlg_wnd = m_hWnd;
 	m_combo_wnd = GetDlgItem( IDC_COMBO1 );
@@ -107,6 +111,14 @@ LRESULT CColiIDDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHa
 	EndDialog(wID);
 	return 0;
 }
+LRESULT CColiIDDlg::OnClose(UINT, WPARAM, LPARAM, BOOL&)
+{
+	EndTimer();
+
+	EndDialog(IDCANCEL);
+	return 0;
+}
+
 
 int CColiIDDlg::ParamsToDlg()
 {

@@ -4,6 +4,8 @@
 
 #include <RigidElem.h>
 
+#include "SetDlgPos.h"
+
 #define DBGH
 #include <dbg.h>
 #include <crtdbg.h>
@@ -53,6 +55,8 @@ LRESULT CGColiIDDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 
 	InitCommonControls();
 
+	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
+
 	m_dlg_wnd = m_hWnd;
 	m_combo2_wnd = GetDlgItem( IDC_COMBO2 );
 	m_list_wnd = GetDlgItem( IDC_LIST1 );
@@ -84,6 +88,15 @@ LRESULT CGColiIDDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bH
 	EndDialog(wID);
 	return 0;
 }
+LRESULT CGColiIDDlg::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	EndTimer();
+
+	EndDialog(IDCANCEL);
+	return 0;
+}
+
+
 
 int CGColiIDDlg::ParamsToDlg()
 {

@@ -6,6 +6,8 @@
 #include <Commdlg.h>
 #include "FilterType.h"
 
+#include "SetDlgPos.h"
+
 //extern
 extern void OnDSUpdate();
 extern HWND g_filterdlghwnd;
@@ -58,6 +60,8 @@ LRESULT CFilterDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	m_inittimerflag = false;
 	m_timerid = 346;
 
+	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
+
 	SetWnd();
 	SetCombo();
 	ParamsToDlg();
@@ -99,6 +103,15 @@ LRESULT CFilterDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHa
 	EndDialog(wID);
 	return 0;
 }
+
+LRESULT CFilterDlg::OnClose(UINT, WPARAM, LPARAM, BOOL&)
+{
+	EndTimer();
+
+	EndDialog(IDCANCEL);
+	return 0;
+}
+
 
 void CFilterDlg::SetWnd()
 {

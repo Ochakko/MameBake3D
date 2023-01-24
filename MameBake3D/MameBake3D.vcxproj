@@ -262,6 +262,7 @@
     <ClCompile Include="RegistDlg.cpp" />
     <ClCompile Include="RMenuMain.cpp" />
     <ClCompile Include="SelectLSDlg.cpp" />
+    <ClCompile Include="SetDlgPos.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="UndoSprite.cpp" />
@@ -343,6 +344,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="RMenuMain.h" />
     <ClInclude Include="SelectLSDlg.h" />
+    <ClInclude Include="SetDlgPos.h" />
     <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="UndoSprite.h" />

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "CpInfoDlg.h"
 #include "GetDlgParams.h"
+#include "SetDlgPos.h"
+
 
 #include <GlobalVar.h>
 
@@ -37,6 +39,8 @@ LRESULT CCpInfoDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	int ret;
 
 	InitCommonControls();
+
+	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
 
 	m_dlg_wnd = m_hWnd;
 
@@ -100,6 +104,13 @@ LRESULT CCpInfoDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHa
 	EndDialog(wID);
 	return 0;
 }
+LRESULT CCpInfoDlg::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	EndDialog(IDCANCEL);
+	return 0;
+}
+
+
 
 int CCpInfoDlg::ParamsToDlg()
 {

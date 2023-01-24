@@ -5,6 +5,8 @@
 #include <Bone.h>
 #include <GlobalVar.h>
 
+#include "SetDlgPos.h"
+
 #define DBGH
 #include <dbg.h>
 
@@ -173,6 +175,9 @@ int CFrameCopyDlg::SetupDlg( CModel* srcmodel )
 LRESULT CFrameCopyDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	//InitCommonControls();
+
+	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
+
 	SetupDlg( m_model );
 	StartTimer();
 	return 1;  // システムにフォーカスを設定させます
@@ -230,6 +235,15 @@ LRESULT CFrameCopyDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& 
 	EndDialog(wID);
 	return 0;
 }
+LRESULT CFrameCopyDlg::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	EndTimer();
+
+	EndDialog(IDCANCEL);
+	return 0;
+}
+
+
 
 int CFrameCopyDlg::FillTree()
 {
