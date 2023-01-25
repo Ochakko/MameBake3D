@@ -12,7 +12,7 @@
 using namespace std;
 
 
-int SetDlgPosToDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter)
+int SetDlgPosDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter)
 {
 	int posx = 0;
 	int posy = 0;
@@ -39,12 +39,20 @@ int SetDlgPosToDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter)
 	//RECT dlgrect;
 	//GetWindowRect(fgwnd, &dlgrect);
 	//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
-	SetCursorPos(posx + 25, posy + 10);
+	
+
+
+	//2023/01/25
+	//この関数は　指定しているウインドウがフォアグランドになったときにも呼ばれる
+	//機能のボタンを押した際　マウスがアップする前に呼ばれることがある
+	//マウスを動かすと　ボタンが機能しないことがあるので　SetCursorPosはコメントアウト
+	//SetCursorPos(posx + 25, posy + 10);
+
 
 	return 0;
 }
 
-int SetDlgPosToCursorPos(HWND hDlgWnd, HWND hWndInsertAfter)
+int SetDlgPosCursorPos(HWND hDlgWnd, HWND hWndInsertAfter)
 {
 	int posx = 0;
 	int posy = 0;

@@ -169,7 +169,7 @@ LRESULT CCopyHistoryDlg::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	
 	InitCommonControls();
 	
-	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
+	SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
 
 	//m_dlg_wnd = m_hWnd;
 	

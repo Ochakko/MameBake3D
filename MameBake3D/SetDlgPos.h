@@ -3,11 +3,11 @@
 
 
 #ifdef DECSETDLGPOSH
-int SetDlgPosToDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter);
-int SetDlgPosToCursorPos(HWND hDlgWnd, HWND hWndInsertAfter);
+int SetDlgPosDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter);
+int SetDlgPosCursorPos(HWND hDlgWnd, HWND hWndInsertAfter);
 #else
-extern int SetDlgPosToDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter);
-extern int SetDlgPosToCursorPos(HWND hDlgWnd, HWND hWndInsertAfter);
+extern int SetDlgPosDesktopCenter(HWND hDlgWnd, HWND hWndInsertAfter);
+extern int SetDlgPosCursorPos(HWND hDlgWnd, HWND hWndInsertAfter);
 #endif
 
 

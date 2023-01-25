@@ -176,7 +176,7 @@ LRESULT CFrameCopyDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 {
 	//InitCommonControls();
 
-	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
+	SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
 
 	SetupDlg( m_model );
 	StartTimer();

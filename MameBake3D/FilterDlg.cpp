@@ -60,7 +60,7 @@ LRESULT CFilterDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	m_inittimerflag = false;
 	m_timerid = 346;
 
-	SetDlgPosToDesktopCenter(m_hWnd, HWND_TOPMOST);
+	SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
 
 	SetWnd();
 	SetCombo();

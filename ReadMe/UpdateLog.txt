@@ -1,10 +1,23 @@
-2023/01/24
-	EditMot 1.1.0.13へ向けて
+2023/01/25
+	EditMot 1.1.0.13 RC1
 
 	機能のボタンを押した際に出るダイアログの位置をデスクトップのセンターへ
+		マウスをウインドウ位置へ移動する機能は限定的
+			マウスアップよりも先にマウスが移動すると　機能が実行されないことがあるため
 
 	ダイアログの xボタンを押して閉じた際に　プレートメニューが押せなくなる不具合修正
 
+	制限角度設定ウインドウに機能追加
+		LimitEulプレートメニュー選択時に右ペインに表示されるウインドウに機能追加
+		Upper, Lowerを適用するボタンを One, Deeper, Allの３種類に
+		不具合が直ったので　グレーアウトしていたCurrentBoneへの対応コピーボタンなどを復活
+	
+
+	YouTubeチャンネル
+		https://www.youtube.com/@ochakkolab
+
+	おちゃっこLAB
+		https://ochakkolab.jp/
 
 
 2023/01/23
@@ -71,13 +84,6 @@
 			ただし　BtCalcCntスライダーの値が小さすぎたり　Speedスライダーの値が大きすぎると　当たり判定で跳ね返しにくくなる
 
 	TroubleShootingドキュメント２つに追記
-
-
-	YouTubeチャンネル
-		https://www.youtube.com/@ochakkolab
-
-	おちゃっこLAB
-		https://ochakkolab.jp/
 
 
 2023/01/14
