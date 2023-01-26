@@ -42,6 +42,10 @@ LRESULT CSettingsDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 	SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
 
+	RECT dlgrect;
+	::GetWindowRect(m_hWnd, &dlgrect);
+	SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 	m_dlg_wnd = m_hWnd;
 
 	ret = ParamsToDlg();

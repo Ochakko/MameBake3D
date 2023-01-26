@@ -259,6 +259,32 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2023/01/26
+* 
+* 制限角度＋プレビュー --> OK
+* 制限角度＋hips IK のテスト
+* 	0_VRoid_Winter_B1読み込み-->hipsの回転を全部フレーム姿勢初期化-->
+* 	hipsをLinierブラシでtoppos100％でY軸２回転-->
+* 	LimitEulチェック-->１フレームだけ選択-->hipsを回転-->子ジョイントがねじれた-->
+* 	LimitEulチェックオンオフで直った
+* LimitWMの未更新が原因？！
+* 対策として　IK回転関数の呼び出し後に　LimitEulチェック時の処理 --> OK　
+* 
+* 更にテスト
+* LimitEulにチェックを入れて　IKRotする場合
+* 制限角度内に姿勢が収まる部分は　オリジナルの姿勢情報が上書きされる
+* 制限角度内に姿勢が収まらない部分は　オリジナルの姿勢情報のまま
+* 
+* よって　制限でこれ以上動かなくなっているのに　マウスドラッグを続けると
+* LimitEulチェックを外したときに　オイラー角には　段差が出来ている
+* これは上に説明した通りであり　現在の仕様
+* 
+* 制限でドラッグしても動かなくなったら　すぐにドラッグをやめるのがコツ？！
+* 
+* 
+*/
+
 
 #include "useatl.h"
 
@@ -2094,6 +2120,7 @@ static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//20
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
 static int UpdateWMandEul();
+static int UpdateWMandEulSelected();
 
 static int InitRotAxis();
 static int RotAxis(HWND hDlgWnd);
@@ -2282,6 +2309,9 @@ LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	switch (msg) {
 	case WM_INITDIALOG:
 		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+		RECT dlgrect;
+		::GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
@@ -6290,6 +6320,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	// Pass all remaining windows messages to camera so it can respond to user input
 	//g_Camera->HandleMessages(hWnd, uMsg, wParam, lParam);
 	CBone* curbone = 0;
+	CBone* opebone = 0;
 	CRigidElem* curre = 0;
 	//if (g_retargetbatchflag == 0) {
 	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
@@ -6302,6 +6333,15 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			curbone = 0;
 			curre = 0;
 		}
+
+		if (curbone && curbone->GetParent()) {
+			opebone = curbone->GetParent();
+		}
+		else {
+			opebone = curbone;
+		}
+
+
 
 		////if (g_retargetbatchflag == 0) {
 		//if (s_model && s_convbone_bvh) {
@@ -6430,22 +6470,20 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					}
 				}
 				else if (subid == 1) {
-					curbone = s_model->GetBoneByID(s_curboneno);
-					if (curbone) {
+					if (opebone) {
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 							double curframe = itrcp->time;
-							InitMpByEul(initmode, curbone, mi->motid, curframe);//curbone
+							InitMpByEul(initmode, opebone, mi->motid, curframe);//opebone
 						}
 					}
 				}
 				else if (subid == 2) {
-					curbone = s_model->GetBoneByID(s_curboneno);
-					if (curbone) {
+					if (opebone) {
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 							double curframe = itrcp->time;
-							InitMpByEulReq(initmode, curbone, mi->motid, curframe);//curbone req
+							InitMpByEulReq(initmode, opebone, mi->motid, curframe);//opebone req
 						}
 					}
 				}
@@ -6459,11 +6497,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		else if (menuid == (ID_RMENU_PHYSICSCONSTRAINT + MENUOFFSET_BONERCLICK)) {
 			//位置コンストレイントはMass0で実現する。
 			////toggle
-			//if (curbone->GetPosConstraint() == 0){
-			//	s_model->CreatePhysicsPosConstraint(curbone);
+			//if (opebone->GetPosConstraint() == 0){
+			//	s_model->CreatePhysicsPosConstraint(opebone);
 			//}
 			//else{
-			//	s_model->DestroyPhysicsPosConstraint(curbone);
+			//	s_model->DestroyPhysicsPosConstraint(opebone);
 			//}
 		}
 		else if (menuid == (ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK)) {
@@ -6835,6 +6873,17 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+
+				//2023/01/26 
+				//制限角度＋プレビュー --> OK
+				//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
+				//LimitWMの未更新が原因？！
+				//対策として　LimitEulチェック時の処理　
+				if (g_limitdegflag != 0) {
+					ClearLimitedWM();//これが無いと子がねじれる
+					UpdateWMandEulSelected();
+					refreshEulerGraph();
+				}
 			}
 		}
 
@@ -13434,6 +13483,11 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 			//現在位置を設定  
 			SendMessage(hProg, PBM_SETPOS, 0, 0);
 		}
+
+		RECT dlgrect;
+		::GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
@@ -13599,6 +13653,11 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 			//現在位置を設定  
 			SendMessage(hProg, PBM_SETPOS, 0, 0);
 		}
+
+		RECT dlgrect;
+		::GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
@@ -14015,6 +14074,10 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
 			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
 			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile." );
+
+			RECT dlgrect;
+			::GetWindowRect(hDlgWnd, &dlgrect);
+			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 
 			SetTimer(hDlgWnd, s_exportxproctimer, 20, NULL);
 			s_exportxdlghwnd = hDlgWnd;
@@ -19354,6 +19417,33 @@ int UpdateWMandEul()
 	return 0;
 }
 
+int UpdateWMandEulSelected()
+{
+	if (s_model) {
+		ChaMatrix tmpwm = s_model->GetWorldMat();
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+
+			int selectednum;
+			double startframe, endframe;
+			s_editrange.GetRange(&selectednum, &startframe, &endframe);
+
+			int curframe;
+			for (curframe = (int)(startframe + 0.0001); curframe <= (int)(endframe + 0.0001); curframe++) {
+				s_model->SetMotionFrame((double)curframe);
+				s_model->UpdateMatrix(&tmpwm, &s_matVP);
+			}
+		}
+
+		{
+			double curframe = s_owpLTimeline->getCurrentTime();
+			s_model->SetMotionFrame(curframe);
+			s_model->UpdateMatrix(&tmpwm, &s_matVP);
+		}
+	}
+
+	return 0;
+}
 
 int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default : setcursorflag = true
 {
@@ -20009,6 +20099,10 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			SetWindowText(GetDlgItem(hDlgWnd, IDC_BONENAME), curbone->GetWBoneName());
 		}
 		
+		RECT dlgrect;
+		::GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 		s_rotzisdlghwnd = hDlgWnd;
 
 		return FALSE;
@@ -27963,6 +28057,17 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+
+				//2023/01/26 
+				//制限角度＋プレビュー --> OK
+				//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
+				//LimitWMの未更新が原因？！
+				//対策として　LimitEulチェック時の処理　
+				if (g_limitdegflag != 0) {
+					ClearLimitedWM();//これが無いと子がねじれる
+					UpdateWMandEulSelected();
+					refreshEulerGraph();
+				}
 			}
 		}
 	}
@@ -28397,6 +28502,17 @@ int OnMouseMoveFunc()
 						CalcTargetPos(&targetpos);
 						if (s_ikkind == 0) {
 							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
+
+							//2023/01/26 
+							//制限角度＋プレビュー --> OK
+							//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
+							//LimitWMの未更新が原因？！
+							//対策として　LimitEulチェック時の処理　
+							if (g_limitdegflag != 0) {
+								ClearLimitedWM();//これが無いと子がねじれる
+								UpdateWMandEulSelected();
+								refreshEulerGraph();
+							}
 						}
 						else if (s_ikkind == 1) {
 							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
@@ -28461,6 +28577,17 @@ int OnMouseMoveFunc()
 					}
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+
+						//2023/01/26 
+						//制限角度＋プレビュー --> OK
+						//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
+						//LimitWMの未更新が原因？！
+						//対策として　LimitEulチェック時の処理　
+						if (g_limitdegflag != 0) {
+							ClearLimitedWM();//これが無いと子がねじれる
+							UpdateWMandEulSelected();
+							refreshEulerGraph();
+						}
 					}
 					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -28502,6 +28629,17 @@ int OnMouseMoveFunc()
 
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+
+						//2023/01/26 
+						//制限角度＋プレビュー --> OK
+						//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
+						//LimitWMの未更新が原因？！
+						//対策として　LimitEulチェック時の処理　
+						if (g_limitdegflag != 0) {
+							ClearLimitedWM();//これが無いと子がねじれる
+							UpdateWMandEulSelected();
+							refreshEulerGraph();
+						}
 					}
 					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag, deltax * 0.1f);
@@ -33740,6 +33878,12 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 
 			SetDlgPosDesktopCenter(fgwnd, HWND_TOPMOST);
 
+			//機能のボタンを押した際　マウスがアップする前に呼ばれることがある
+			//マウスを動かすと　ボタンが機能しないことがあるので　SetCursorPosはコメントアウト
+			//この関数の外で　ダイアログ表示時にSetCursorPosすることは大丈夫
+			//RECT dlgrect;
+			//GetWindowRect(fgwnd, &dlgrect);
+			//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 		}
 
 		//HWND hwndChild = FindWindowExA(hwnd, 0, "Button", "OK");
@@ -37618,6 +37762,7 @@ int ClearLimitedWM()
 
 	double curframe;
 	for (curframe = 0.0; curframe < frameleng; curframe += 1.0) {
+	//for (curframe = 1.0; curframe < frameleng; curframe += 1.0) {
 		s_model->ClearLimitedWM(curmi->motid, curframe);
 	}
 

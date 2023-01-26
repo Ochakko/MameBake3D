@@ -775,12 +775,22 @@ int CBVHElem::ConvXYZRot()
 		//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
 		//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 		int notmodify180flag = 1;
-		if (frameno <= 1) {
-			//0フレームと１フレームは　180度ずれチェックをしない
-			notmodify180flag = 1;
+		if (g_underIKRot == false) {
+			if (frameno <= 1) {
+				//0フレームと１フレームは　180度ずれチェックをしない
+				notmodify180flag = 1;
+			}
+			else {
+				notmodify180flag = 0;
+			}
 		}
 		else {
+			//2023/01/26
+			//IKRot中は　０フレームも１フレームも　180度チェックをする
 			notmodify180flag = 0;
+			if (frameno <= 1) {
+				befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			}
 		}
 
 		curq->CalcFBXEulXYZ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);

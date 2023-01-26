@@ -169,7 +169,13 @@ LRESULT CCopyHistoryDlg::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	
 	InitCommonControls();
 	
-	SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
+
+	//このダイアログは　右ペイン埋め込みなので　デスクトップ中央には動かさない
+	//SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
+	//RECT dlgrect;
+	//::GetWindowRect(m_hWnd, &dlgrect);
+	//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 
 	//m_dlg_wnd = m_hWnd;
 	

@@ -4011,14 +4011,23 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
 	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	int notmodify180flag = 1;
-	if (roundingframe <= 1.01) {
-		//0フレームと１フレームは　180度ずれチェックをしない
-		notmodify180flag = 1;
+	if (g_underIKRot == false) {
+		if (roundingframe <= 1.01) {
+			//0フレームと１フレームは　180度ずれチェックをしない
+			notmodify180flag = 1;
+		}
+		else {
+			notmodify180flag = 0;
+		}
 	}
 	else {
+		//2023/01/26
+		//IKRot中は　０フレームも１フレームも　180度チェックをする
 		notmodify180flag = 0;
+		if (roundingframe <= 1.01) {
+			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		}
 	}
-
 
 	CQuaternion axisq;
 	axisq.RotationMatrix(GetNodeMat());
@@ -4171,12 +4180,22 @@ ChaVector3 CBone::CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind
 	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
 	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	int notmodify180flag = 1;
-	if (curframe <= 1.01) {
-		//0フレームと１フレームは　180度ずれチェックをしない
-		notmodify180flag = 1;
+	if (g_underIKRot == false) {
+		if (curframe <= 1.01) {
+			//0フレームと１フレームは　180度ずれチェックをしない
+			notmodify180flag = 1;
+		}
+		else {
+			notmodify180flag = 0;
+		}
 	}
 	else {
+		//2023/01/26
+		//IKRot中は　０フレームも１フレームも　180度チェックをする
 		notmodify180flag = 0;
+		if (curframe <= 1.01) {
+			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		}
 	}
 
 	CQuaternion eulq;
@@ -4432,6 +4451,13 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaMatrix befwm
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newworldmat);
 		curmp->SetLocalEul(srceul);
+
+		//if (g_limitdegflag != 0) {
+		//	curmp->SetLimitedWM(newworldmat);
+		//	SetTempLocalEul(curmp->GetLocalEul(), srceul);
+		//	curmp->SetCalcLimitedWM(2);
+		//}
+
 
 		if (setchildflag == 1){
 			if (m_child){
@@ -4731,6 +4757,12 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 		curmp->SetWorldMat(newmat);
 		curmp->SetLocalEul(srceul);
 
+		//if (g_limitdegflag != 0) {
+		//	curmp->SetLimitedWM(newmat);
+		//	SetTempLocalEul(curmp->GetLocalEul(), srceul);
+		//	curmp->SetCalcLimitedWM(2);
+		//}
+
 		if (setchildflag == 1) {
 			if (m_child) {
 				bool infooutflag = false;
@@ -4814,6 +4846,13 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion
 		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 		curmp->SetLocalEul(neweul);
 
+		//if (g_limitdegflag != 0) {
+		//	curmp->SetLimitedWM(newmat);
+		//	SetTempLocalEul(curmp->GetLocalEul(), neweul);
+		//	curmp->SetCalcLimitedWM(2);
+		//}
+
+
 		if (setchildflag == 1){
 			if (m_child){
 				bool infooutflag = false;
@@ -4896,6 +4935,12 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		curmp->SetWorldMat(newmat);
 		curmp->SetLocalEul(srceul);
+
+		//if (g_limitdegflag != 0) {
+		//	curmp->SetLimitedWM(newmat);
+		//	SetTempLocalEul(curmp->GetLocalEul(), srceul);
+		//	curmp->SetCalcLimitedWM(2);
+		//}
 
 		if (setchildflag == 1) {
 			if (m_child) {
@@ -5038,26 +5083,19 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 
 		if (onlycheck == 0) {
 			if (ismovable == 1) {
-				if (IsSameEul(oldeul, neweul) == 0) {
+				//if (IsSameEul(oldeul, neweul) == 0) {
 					int inittraflag0 = 0;
 					SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
 						saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
-					//if(g_underRetargetFlag == true){
 						curmp->SetBefWorldMat(saveworldmat);
-					//}
 						curmp->SetLocalEul(neweul);
-				}
-				else {
-					//if (g_underRetargetFlag == false) {
-					//	curmp->SetBefWorldMat(curmp->GetWorldMat());
-					//}
-					//else {
-						//2022/12/22 : befとcurrent両方にsaveworldmatをセット
-						curmp->SetWorldMat(saveworldmat);
-						curmp->SetBefWorldMat(saveworldmat);
-						curmp->SetLocalEul(saveeul);
-					//}
-				}
+				//}
+				//else {
+				//	//2022/12/22 : befとcurrent両方にsaveworldmatをセット
+				//	curmp->SetWorldMat(saveworldmat);
+				//	curmp->SetBefWorldMat(saveworldmat);
+				//	curmp->SetLocalEul(saveeul);
+				//}
 			}
 			else {
 				if (g_wallscrapingikflag == 1) {
@@ -5066,36 +5104,36 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					//############################################
 					ChaVector3 limiteul;
 					limiteul = LimitEul(neweul);
-					if (IsSameEul(oldeul, neweul) == 0) {
+					//if (IsSameEul(oldeul, limiteul) == 0) {
 						int inittraflag0 = 0;
 						SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
 							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
-						//if (g_underRetargetFlag == true) {
-							curmp->SetBefWorldMat(saveworldmat);
-						//}
-							curmp->SetLocalEul(neweul);
-					}
-					else {
-						//if (g_underRetargetFlag == false) {
-						//	curmp->SetBefWorldMat(curmp->GetWorldMat());
-						//}
-						//else {
-							//2022/12/22 : befとcurrent両方にsaveworldmatをセット
-							curmp->SetWorldMat(saveworldmat);
-							curmp->SetBefWorldMat(saveworldmat);
-							curmp->SetLocalEul(saveeul);
-						//}
-					}
-				}
-				else {
-					//if (g_underRetargetFlag == false) {
-					//	curmp->SetBefWorldMat(curmp->GetWorldMat());
+
+						curmp->SetBefWorldMat(saveworldmat);
+						curmp->SetLocalEul(neweul);
 					//}
 					//else {
-						//2022/12/22 : befとcurrent両方にsaveworldmatをセット
-						curmp->SetWorldMat(saveworldmat);
-						curmp->SetBefWorldMat(saveworldmat);
-						curmp->SetLocalEul(saveeul);
+					//	//if (g_underRetargetFlag == false) {
+					//	//	curmp->SetBefWorldMat(curmp->GetWorldMat());
+					//	//}
+					//	//else {
+					//		//2022/12/22 : befとcurrent両方にsaveworldmatをセット
+					//		curmp->SetWorldMat(saveworldmat);
+					//		curmp->SetBefWorldMat(saveworldmat);
+					//		curmp->SetLocalEul(saveeul);
+					//	//}
+					//}
+				}
+				else {
+					//2022/12/22 : befとcurrent両方にsaveworldmatをセット
+					curmp->SetWorldMat(saveworldmat);
+					curmp->SetBefWorldMat(saveworldmat);
+					curmp->SetLocalEul(saveeul);
+
+					//if (g_limitdegflag != 0) {
+					//	curmp->SetLimitedWM(saveworldmat);
+					//	SetTempLocalEul(saveeul, saveeul);
+					//	curmp->SetCalcLimitedWM(2);
 					//}
 				}
 
@@ -5103,7 +5141,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 			}
 		}
 		else {
-			//only check
+			//only check : 仮セットしていたのを元に戻す
 			curmp->SetWorldMat(saveworldmat);
 			curmp->SetBefWorldMat(saveworldmat);
 			curmp->SetLocalEul(saveeul);
@@ -5118,14 +5156,22 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 			//ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_ZERO);
 			ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 			curmp->SetLocalEul(neweul);
+
+			//if (g_limitdegflag != 0) {
+			//	curmp->SetLimitedWM(srcmat);
+			//	SetTempLocalEul(saveeul, neweul);
+			//	curmp->SetCalcLimitedWM(2);
+			//}
 		}
 		else {
-			//only check
+			//only check : 仮セットしていたのを元に戻す
 			curmp->SetWorldMat(saveworldmat);
 			curmp->SetBefWorldMat(saveworldmat);
 			curmp->SetLocalEul(saveeul);
 		}
 	}
+
+
 	/*
 	if (setchildflag){
 		if (GetChild()){
@@ -6007,6 +6053,10 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 	CQuaternion fbxq;
 	fbxq.RotationMatrix(localfbxmat);
 
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	if (befeulptr) {
+		befeul = *befeulptr;
+	}
 
 	int isfirstbone;
 	if (GetParent()) {
@@ -6032,18 +6082,24 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
 	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	int notmodify180flag = 1;
-	if (roundingframe <= 1.01) {
-		//0フレームと１フレームは　180度ずれチェックをしない
-		notmodify180flag = 1;
+	if (g_underIKRot == false) {
+		if (roundingframe <= 1.01) {
+			//0フレームと１フレームは　180度ずれチェックをしない
+			notmodify180flag = 1;
+		}
+		else {
+			notmodify180flag = 0;
+		}
 	}
 	else {
+		//2023/01/26
+		//IKRot中は　０フレームも１フレームも　180度チェックをする
 		notmodify180flag = 0;
+		if (roundingframe <= 1.01) {
+			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		}
 	}
 
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-	if (befeulptr) {
-		befeul = *befeulptr;
-	}
 
 	fbxq.CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodify180flag);
 

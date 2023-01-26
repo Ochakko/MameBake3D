@@ -61,6 +61,10 @@ LRESULT CFilterDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	m_timerid = 346;
 
 	SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
+	RECT dlgrect;
+	::GetWindowRect(m_hWnd, &dlgrect);
+	SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
 
 	SetWnd();
 	SetCombo();
