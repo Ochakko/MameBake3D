@@ -8661,6 +8661,9 @@ int CModel::SetBefEditMatFK( CEditRange* erptr, CBone* curbone )
 int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel )
 {
 
+	if (g_underIKRot == true) {
+		return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
+	}
 	g_underIKRot = true;//2023/01/14 parent limited or not
 
 
@@ -10167,6 +10170,9 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 		return 0;
 	}
 
+	if (g_underIKRot == true) {
+		return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
+	}
 	g_underIKRot = true;//2023/01/14 parent limited or not
 
 
@@ -10978,6 +10984,9 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 		return 0;
 	}
 
+	if (g_underIKRot == true) {
+		return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
+	}
 
 	g_underIKRot = true;//2023/01/14 parent limited or not
 

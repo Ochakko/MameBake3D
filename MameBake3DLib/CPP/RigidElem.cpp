@@ -153,8 +153,14 @@ ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe, int multworld)//default o
 	//int calccapsuleflag = 1;
 	//m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 1, multworld, calczeroframe);
 	if (m_endbone && m_endbone->GetParent()) {
-		bool dir2xflag = false;
-		m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &m_capsulemat, calczeroframe);
+
+		//bool dir2xflag = false;
+		//m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &m_capsulemat, calczeroframe);
+
+		//2023/01/27 : 剛体のモーションの座標軸は　NodeMatであり　NodeMat * ParentAnim0ではない
+		//ただし　剛体の当たり判定の座標軸は　dir2xflag = trueの　CalcAxisMatX_RigidBody
+		m_capsulemat = m_endbone->GetParent()->GetNodeMat();
+
 	}
 	else {
 		m_capsulemat.SetIdentity();
