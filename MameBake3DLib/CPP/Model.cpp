@@ -7314,28 +7314,28 @@ void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat
 
 }
 
-void CModel::RecalcConstraintFrameABReq(CBtObject* curbto)
-{
-	if (curbto) {
-		CBone* curbone = curbto->GetBone();
-		if (curbone && curbone->GetParent()) {
-			if (g_previewFlag == 5) {
-				//if (curbto->GetParBt() && (curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1)) {
-					if (curbone->GetParent()->GetParent()) {
-						curbto->RecalcConstraintFrameAB();
-					}
-				//}
-			}
-		}
-		int chilno;
-		for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
-			CBtObject* chilbto = curbto->GetChildBt(chilno);
-			if (chilbto) {
-				RecalcConstraintFrameABReq(chilbto);
-			}
-		}
-	}
-}
+//void CModel::RecalcConstraintFrameABReq(CBtObject* curbto)
+//{
+//	if (curbto) {
+//		CBone* curbone = curbto->GetBone();
+//		if (curbone && curbone->GetParent()) {
+//			if (g_previewFlag == 5) {
+//				//if (curbto->GetParBt() && (curbone->GetBtFlag() == 1) && (curbone->GetParent()->GetBtFlag() == 1)) {
+//					if (curbone->GetParent()->GetParent()) {
+//						curbto->RecalcConstraintFrameAB();
+//					}
+//				//}
+//			}
+//		}
+//		int chilno;
+//		for (chilno = 0; chilno < curbto->GetChildBtSize(); chilno++) {
+//			CBtObject* chilbto = curbto->GetChildBt(chilno);
+//			if (chilbto) {
+//				RecalcConstraintFrameABReq(chilbto);
+//			}
+//		}
+//	}
+//}
 
 int CModel::CreateRigidElem()
 {

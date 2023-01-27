@@ -1765,6 +1765,71 @@ float CBone::CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix*
 	return retleng;
 }
 
+float CBone::CalcAxisMatX_NodeMat(CBone* childbone, ChaMatrix* dstmat)
+{
+	ChaVector3 aftbonepos;
+	ChaVector3 aftchildpos;
+
+	if (!dstmat) {
+		_ASSERT(0);
+		return 0.0f;
+	}
+	if (!childbone) {
+		_ASSERT(0);
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+
+	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	ChaVector3 tmpfpos = GetJointFPos();
+	ChaVector3 tmpchildfpos = childbone->GetJointFPos();
+	ChaMatrix convmat;
+	convmat.SetIdentity();
+
+	ChaMatrix tmpnodefm = GetNodeMat();
+	ChaMatrix tmpchildnodefm = childbone->GetNodeMat();
+	ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpnodefm);
+	ChaVector3TransformCoord(&aftchildpos, &zeropos, &tmpchildnodefm);
+	convmat = tmpnodefm;
+
+
+	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
+	if (aftbonepos == aftchildpos) {
+		//長さ０ボーン対策
+		*dstmat = retmat;
+		dstmat->data[MATI_41] = aftbonepos.x;
+		dstmat->data[MATI_42] = aftbonepos.y;
+		dstmat->data[MATI_43] = aftbonepos.z;
+		//_ASSERT(0);
+		return 0.0f;
+	}
+
+
+	//カレント変換したボーン軸
+	ChaVector3 bonevec;
+	bonevec = aftchildpos - aftbonepos;
+	ChaVector3Normalize(&bonevec, &bonevec);
+
+	//###########################################################################################
+	//convmatのvecxをbonevecにする　それに合わせて３軸が互いに垂直になるようにvecy, veczを求める
+	//###########################################################################################
+	//#########################################################
+	//位置は　ボーンの親の位置　つまりカレントジョイントの位置
+	//#########################################################
+
+	*dstmat = CalcAxisMatX(bonevec, aftbonepos, convmat);//ChaVecCalc.cpp
+
+	ChaVector3 diffvec = aftbonepos - aftchildpos;
+	float retleng = (float)ChaVector3LengthDbl(&diffvec);
+
+	return retleng;
+
+
+}
 
 float CBone::CalcAxisMatX_RigidBody(bool dir2xflag, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
@@ -2166,6 +2231,10 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 {
 	
 	//剛体の形状(m_coldisp)を複数の子供で使いまわしている。使用するたびにこの関数で大きさをセットしている。
+	if (!childbone) {
+		_ASSERT(0);
+		return 0;
+	}
 
 
 	CRigidElem* curre = GetRigidElem(childbone);
@@ -2182,16 +2251,22 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 
 
 
-	ChaMatrix bmmat;
-	ChaMatrixIdentity(&bmmat);
+	//ChaMatrix bmmat;
+	//ChaMatrixIdentity(&bmmat);
 	//CalcAxisMatZ( &aftbonepos, &aftchildpos );
 	//CalcAxisMatY( childbone, &bmmat );			
 	//float diffleng = CalcAxisMatX(0, childbone, &bmmat, 1);
 
-	ChaMatrix bindcapsulemat;
-	ChaMatrixIdentity(&bindcapsulemat);
-	bool dir2xflag = false;
-	float diffleng = CalcAxisMatX_RigidBody(dir2xflag, 1, childbone, &bindcapsulemat, 1);
+	//ChaMatrix bindcapsulemat;
+	//ChaMatrixIdentity(&bindcapsulemat);
+	//bool dir2xflag = false;
+	//float diffleng = CalcAxisMatX_RigidBody(dir2xflag, 1, childbone, &bindcapsulemat, 1);
+
+	ChaVector3 jointpos, childjointpos, diffvec;
+	jointpos = GetJointFPos();
+	childjointpos = childbone->GetJointFPos();
+	diffvec = jointpos - childjointpos;
+	float diffleng = (float)ChaVector3LengthDbl(&diffvec);
 
 
 	float cylileng = curre->GetCylileng();
@@ -2256,7 +2331,7 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 	//bmmat._42 = aftbonepos.y;
 	//bmmat._43 = aftbonepos.z;
 
-	curre->SetBindcapsulemat(bindcapsulemat);
+	//curre->SetBindcapsulemat(bindcapsulemat);
 	//bmmat = curre->GetEndbone()->CalcManipulatorPostureMatrix(0, 1, 1);
 
 	//curre->SetCapsulemat( bmmat );
@@ -2267,9 +2342,9 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 
 
 	if( setstartflag != 0 ){
-		bmmat = curre->GetCapsulemat(1);
-		curre->SetFirstcapsulemat( bmmat );
-		curre->SetFirstWorldmat(childbone->GetCurrentZeroFrameMat(0));
+		//bmmat = curre->GetCapsulemat(1);
+		//curre->SetFirstcapsulemat( bmmat );
+		//curre->SetFirstWorldmat(childbone->GetCurrentZeroFrameMat(0));
 		//curre->SetFirstWorldmat(GetCurMp().GetWorldMat());
 
 		//if (setstartflag == 2){

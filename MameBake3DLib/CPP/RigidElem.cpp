@@ -60,11 +60,6 @@ int CRigidElem::InitParams()
 	m_coltype = COL_CAPSULE_INDEX;
 	m_skipflag = 1;
 
-	ChaMatrixIdentity( &m_capsulemat );
-	ChaMatrixIdentity(&m_firstcapsulemat);
-	ChaMatrixIdentity(&m_firstworldmat);
-	ChaMatrixIdentity(&m_bindcapsulemat);
-
 	m_sphrate = 0.6f;
 	m_boxzrate = 0.6f;
 
@@ -147,29 +142,6 @@ float CRigidElem::GetBoneLeng()
 
 }
 
-
-ChaMatrix CRigidElem::GetCapsulemat(int calczeroframe, int multworld)//default of multworld = 1
-{
-	//int calccapsuleflag = 1;
-	//m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 1, multworld, calczeroframe);
-	if (m_endbone && m_endbone->GetParent()) {
-
-		//bool dir2xflag = false;
-		//m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &m_capsulemat, calczeroframe);
-
-		//2023/01/27 : 剛体のモーションの座標軸は　NodeMatであり　NodeMat * ParentAnim0ではない
-		//ただし　剛体の当たり判定の座標軸は　dir2xflag = trueの　CalcAxisMatX_RigidBody
-		m_capsulemat = m_endbone->GetParent()->GetNodeMat();
-
-	}
-	else {
-		m_capsulemat.SetIdentity();
-	}
-
-
-	return m_capsulemat;
-}
-
 ChaMatrix CRigidElem::GetCapsulematForColiShape(int calczeroframe, int multworld)//default of multworld = 1
 {
 	//######################################################################################
@@ -180,8 +152,6 @@ ChaMatrix CRigidElem::GetCapsulematForColiShape(int calczeroframe, int multworld
 	ChaMatrix retmat;
 	retmat.SetIdentity();
 
-	//int calccapsuleflag = 1;
-	//m_capsulemat = m_endbone->CalcManipulatorPostureMatrix(calccapsuleflag, 1, multworld, calczeroframe);
 	if (m_endbone && m_endbone->GetParent()) {
 		bool dir2xflag = true;
 		m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &retmat, calczeroframe);
