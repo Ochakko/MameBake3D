@@ -4452,11 +4452,11 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaMatrix befwm
 		curmp->SetWorldMat(newworldmat);
 		curmp->SetLocalEul(srceul);
 
-		//if (g_limitdegflag != 0) {
-		//	curmp->SetLimitedWM(newworldmat);
-		//	SetTempLocalEul(curmp->GetLocalEul(), srceul);
-		//	curmp->SetCalcLimitedWM(2);
-		//}
+		if (g_limitdegflag != 0) {
+			curmp->SetLimitedWM(newworldmat);
+			SetTempLocalEul(curmp->GetLocalEul(), srceul);
+			curmp->SetCalcLimitedWM(2);
+		}
 
 
 		if (setchildflag == 1){
@@ -4757,11 +4757,11 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 		curmp->SetWorldMat(newmat);
 		curmp->SetLocalEul(srceul);
 
-		//if (g_limitdegflag != 0) {
-		//	curmp->SetLimitedWM(newmat);
-		//	SetTempLocalEul(curmp->GetLocalEul(), srceul);
-		//	curmp->SetCalcLimitedWM(2);
-		//}
+		if (g_limitdegflag != 0) {
+			curmp->SetLimitedWM(newmat);
+			SetTempLocalEul(curmp->GetLocalEul(), srceul);
+			curmp->SetCalcLimitedWM(2);
+		}
 
 		if (setchildflag == 1) {
 			if (m_child) {
@@ -4846,11 +4846,11 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion
 		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 		curmp->SetLocalEul(neweul);
 
-		//if (g_limitdegflag != 0) {
-		//	curmp->SetLimitedWM(newmat);
-		//	SetTempLocalEul(curmp->GetLocalEul(), neweul);
-		//	curmp->SetCalcLimitedWM(2);
-		//}
+		if (g_limitdegflag != 0) {
+			curmp->SetLimitedWM(newmat);
+			SetTempLocalEul(curmp->GetLocalEul(), neweul);
+			curmp->SetCalcLimitedWM(2);
+		}
 
 
 		if (setchildflag == 1){
@@ -4936,11 +4936,11 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector
 		curmp->SetWorldMat(newmat);
 		curmp->SetLocalEul(srceul);
 
-		//if (g_limitdegflag != 0) {
-		//	curmp->SetLimitedWM(newmat);
-		//	SetTempLocalEul(curmp->GetLocalEul(), srceul);
-		//	curmp->SetCalcLimitedWM(2);
-		//}
+		if (g_limitdegflag != 0) {
+			curmp->SetLimitedWM(newmat);
+			SetTempLocalEul(curmp->GetLocalEul(), srceul);
+			curmp->SetCalcLimitedWM(2);
+		}
 
 		if (setchildflag == 1) {
 			if (m_child) {
@@ -5085,6 +5085,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 			if (ismovable == 1) {
 				//if (IsSameEul(oldeul, neweul) == 0) {
 					int inittraflag0 = 0;
+					//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 					SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
 						saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
 						curmp->SetBefWorldMat(saveworldmat);
@@ -5106,6 +5107,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					limiteul = LimitEul(neweul);
 					//if (IsSameEul(oldeul, limiteul) == 0) {
 						int inittraflag0 = 0;
+						//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 						SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
 							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
 
@@ -5125,16 +5127,27 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					//}
 				}
 				else {
-					//2022/12/22 : befとcurrent両方にsaveworldmatをセット
-					curmp->SetWorldMat(saveworldmat);
-					curmp->SetBefWorldMat(saveworldmat);
-					curmp->SetLocalEul(saveeul);
+					ChaVector3 limitedeul;
+					ChaMatrix limitedworldmat;
+					limitedworldmat = GetLimitedWorldMat(srcmotid, roundingframe, &limitedeul);
+		
+					curmp->SetWorldMat(limitedworldmat);
+					curmp->SetBefWorldMat(limitedworldmat);
+					curmp->SetLocalEul(limitedeul);
 
-					//if (g_limitdegflag != 0) {
-					//	curmp->SetLimitedWM(saveworldmat);
-					//	SetTempLocalEul(saveeul, saveeul);
-					//	curmp->SetCalcLimitedWM(2);
-					//}
+					if (g_limitdegflag != 0) {
+						curmp->SetLimitedWM(limitedworldmat);
+						SetTempLocalEul(saveeul, limitedeul);
+						curmp->SetCalcLimitedWM(2);
+					}
+					if (setchildflag) {
+						if (GetChild()) {
+							bool infooutflag2 = false;
+							CQuaternion dummyq;
+							GetChild()->RotBoneQReq(infooutflag2, this, srcmotid, roundingframe, 
+								dummyq, saveworldmat, limitedworldmat);
+						}
+					}
 				}
 
 				//curmp->SetBefWorldMat(curmp->GetWorldMat());
@@ -5157,10 +5170,21 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 			ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 			curmp->SetLocalEul(neweul);
 
-			//if (g_limitdegflag != 0) {
-			//	curmp->SetLimitedWM(srcmat);
-			//	SetTempLocalEul(saveeul, neweul);
-			//	curmp->SetCalcLimitedWM(2);
+			if (g_limitdegflag != 0) {
+				curmp->SetLimitedWM(srcmat);
+				SetTempLocalEul(saveeul, neweul);
+				curmp->SetCalcLimitedWM(2);
+			}
+
+			//RotBoneQReqからdirectflag = trueで呼ばれるため　ここでRotBoneQReqは呼べない
+			//directflag = true時の再帰は　RotBoneQReq側でする
+			//if (setchildflag) {
+			//	if (GetChild()) {
+			//		bool infooutflag2 = false;
+			//		CQuaternion dummyq;
+			//		GetChild()->RotBoneQReq(infooutflag2, this, srcmotid, roundingframe,
+			//			dummyq, saveworldmat, srcmat);
+			//	}
 			//}
 		}
 		else {

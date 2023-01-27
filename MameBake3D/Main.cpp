@@ -282,7 +282,14 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 * 制限でドラッグしても動かなくなったら　すぐにドラッグをやめるのがコツ？！
 * 
-* 
+* ###############
+* 2023/01/27追記
+* ###############
+* LimitEulチェック時の処理が重すぎたので　対策を最適化
+* CBone::SetWorldMat(), CBone::SetWorldMatFrom*() を修正して対応
+* CBone::SetWorldMat*()でLimitedWMの更新と　ismovable==0時の子ジョイントへの再帰処理を追加
+* 制限角度内に姿勢が収まらない場合の処理は　LimitedWMをセットすることにした
+*
 */
 
 
@@ -6874,16 +6881,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				//2023/01/26 
-				//制限角度＋プレビュー --> OK
-				//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
-				//LimitWMの未更新が原因？！
-				//対策として　LimitEulチェック時の処理　
-				if (g_limitdegflag != 0) {
-					ClearLimitedWM();//これが無いと子がねじれる
-					UpdateWMandEulSelected();
-					refreshEulerGraph();
-				}
+				ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+				UpdateEditedEuler();
 			}
 		}
 
@@ -28058,16 +28057,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				//2023/01/26 
-				//制限角度＋プレビュー --> OK
-				//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
-				//LimitWMの未更新が原因？！
-				//対策として　LimitEulチェック時の処理　
-				if (g_limitdegflag != 0) {
-					ClearLimitedWM();//これが無いと子がねじれる
-					UpdateWMandEulSelected();
-					refreshEulerGraph();
-				}
+				ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+				UpdateEditedEuler();
 			}
 		}
 	}
@@ -28503,16 +28494,8 @@ int OnMouseMoveFunc()
 						if (s_ikkind == 0) {
 							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
-							//2023/01/26 
-							//制限角度＋プレビュー --> OK
-							//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
-							//LimitWMの未更新が原因？！
-							//対策として　LimitEulチェック時の処理　
-							if (g_limitdegflag != 0) {
-								ClearLimitedWM();//これが無いと子がねじれる
-								UpdateWMandEulSelected();
-								refreshEulerGraph();
-							}
+							ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+							UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
 							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
@@ -28578,16 +28561,8 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						//2023/01/26 
-						//制限角度＋プレビュー --> OK
-						//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
-						//LimitWMの未更新が原因？！
-						//対策として　LimitEulチェック時の処理　
-						if (g_limitdegflag != 0) {
-							ClearLimitedWM();//これが無いと子がねじれる
-							UpdateWMandEulSelected();
-							refreshEulerGraph();
-						}
+						ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+						UpdateEditedEuler();
 					}
 					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -28630,16 +28605,8 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						//2023/01/26 
-						//制限角度＋プレビュー --> OK
-						//制限角度＋hips IK --> 子ジョイントがねじれた --> LimitEulチェックオンオフで直った
-						//LimitWMの未更新が原因？！
-						//対策として　LimitEulチェック時の処理　
-						if (g_limitdegflag != 0) {
-							ClearLimitedWM();//これが無いと子がねじれる
-							UpdateWMandEulSelected();
-							refreshEulerGraph();
-						}
+						ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+						UpdateEditedEuler();
 					}
 					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag, deltax * 0.1f);
