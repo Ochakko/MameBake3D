@@ -1128,7 +1128,6 @@ int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 	CQuaternion curlocalq;
 	curlocalq.RotationMatrix(xlocalrotmat);	
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	int ismovable = 1;
 	int notmodify180flag = 1;
 	ChaVector3 befeul = m_bone->GetBtEul();
 	CQuaternion axisq;

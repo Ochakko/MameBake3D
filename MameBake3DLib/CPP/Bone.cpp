@@ -3082,6 +3082,13 @@ CMotionPoint* CBone::RotAndTraBoneQReq(int* onlycheckptr,
 	//hips以外はtanimを qForRot　で回転する
 	//######################################
 
+	//###################################################################
+	//onlycheckptr != NULLの場合には
+	//SetWorldMatをonlycheckで呼び出して　回転可能かどうかだけを調べる
+	//初回呼び出し時のCBoneに対してだけチェックをして　直ちにリターンする
+	//###################################################################
+
+
 	int ismovable = 1;
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
@@ -3212,9 +3219,10 @@ CMotionPoint* CBone::RotAndTraBoneQReq(int* onlycheckptr,
 				int onlycheckflag = 1;
 				ismovable = SetWorldMat(infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
 				*onlycheckptr = ismovable;
-				if (ismovable == 0) {
-					return curmp;// not movableの場合は　印を付けて　直ちにリターンする
-				}
+				//if (ismovable == 0) {
+				//	return curmp;// not movableの場合は　印を付けて　直ちにリターンする
+				//}
+				return curmp;//onlycheckptr != NULLの場合は　初回呼び出しでmovableチェックして直ちにリターン
 			}
 			else {
 				int onlycheckflag = 0;
@@ -5145,7 +5153,8 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 		//	curmp->SetWorldMat(saveworldmat);
 		//}
 		
-		if (g_limitdegflag == 1) {
+		//if (g_limitdegflag == 1) {
+		if((g_limitdegflag == 1) && (GetBtForce() == 0)){//2023/01/28 物理シミュは　自前では制限しない
 			ismovable = ChkMovableEul(neweul);
 		}
 		else {
@@ -6219,9 +6228,14 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 			cureul = orgeul;
 		}
 
-		int ismovable = ChkMovableEul(cureul);
+		int ismovable;
+		if (GetBtForce() == 0) {//2023/01/28 物理シミュは　自前では制限しない
+			ismovable = ChkMovableEul(cureul);
+		}
+		else {
+			ismovable = 1;
+		}
 		if (ismovable != 1) {
-			//cureul = LimitEul(cureul);
 			cureul = befeul;//制限に引っ掛かった場合　壁すりせず　動かさず　befeulと同じ
 		}
 	}
@@ -7199,7 +7213,13 @@ ChaVector3 CBone::CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe)
 	ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	orgeul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
-	int ismovable = ChkMovableEul(orgeul);
+	int ismovable;
+	if (GetBtForce() == 0) {//2023/01/28 物理シミュは　自前では制限しない
+		ismovable = ChkMovableEul(orgeul);
+	}
+	else {
+		ismovable = 1;
+	}
 	if (ismovable == 1) {
 		neweul = orgeul;
 	}
@@ -7310,9 +7330,22 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 					}
 					else {
 						//未計算の場合
-						neweul = CalcLocalEulAndSetLimitedEul(srcmotid, roundingframe);
-						retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, roundingframe, 0);
-						curmp->SetLimitedWM(retmat);
+						if (GetBtForce() == 0) {
+							neweul = CalcLocalEulAndSetLimitedEul(srcmotid, roundingframe);
+							retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, roundingframe, 0);
+							curmp->SetLimitedWM(retmat);
+						}
+						else {
+							//2023/01/28
+							//btシミュボーンの場合
+							//物理のシミュにおける制限角度は　クランプではなく　行きすぎたら戻るやり方
+							//物理シミュをRecord機能でベイクしたモーションに対して　クランプすると　動きがカクカクになる
+							//よって　物理シミュボーンに対しては　自前では角度を制限しないことにする
+
+							retmat = GetWorldMat(srcmotid, roundingframe);
+							neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+							curmp->SetLimitedWM(retmat);
+						}
 					}
 
 					if (dstneweul) {
@@ -7400,9 +7433,15 @@ ChaMatrix CBone::GetCurrentLimitedWorldMat()
 //####################################################################
 //滑らかにするために、後でsrcframeと+1で２セット計算して補間計算するかもしれない
 //####################################################################
-		ChaVector3 neweul;
-		neweul = CalcLocalEulAndSetLimitedEul(srcmotid, (double)((int)(srcframe + 0.1)));
-		retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+		//ChaVector3 neweul;
+		//neweul = CalcLocalEulAndSetLimitedEul(srcmotid, (double)((int)(srcframe + 0.1)));
+		//retmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, (double)((int)(srcframe + 0.1)), 0);
+
+//#####################################
+//滑らかにするために　フレーム補間
+//#####################################
+		GetCalclatedLimitedWM(srcmotid, srcframe, &retmat);
+
 	}
 	else {
 		//制限角度無し

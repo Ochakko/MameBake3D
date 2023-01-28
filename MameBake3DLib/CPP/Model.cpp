@@ -8788,6 +8788,7 @@ int CModel::IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, in
 					//制限角度により　回転出来ない場合は　リターンする
 					//if (g_limitdegflag != 0) {
 					if ((g_limitdegflag != 0) && (g_wallscrapingikflag == 0)) {//2023/01/23
+						//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 						int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe,
 							rotq0, parentbone, parentbone);
 						if (ismovable == 0) {
@@ -11136,6 +11137,7 @@ int CModel::IKRotateAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, fl
 			//制限角度により　回転出来ない場合は　リターンする
 			//if (g_limitdegflag != 0) {
 			if ((g_limitdegflag != 0) && (g_wallscrapingikflag == 0)) {//2023/01/23
+				//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 				int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
 				if (ismovable == 0) {
 					g_underIKRot = false;//2023/01/14 parent limited or not
