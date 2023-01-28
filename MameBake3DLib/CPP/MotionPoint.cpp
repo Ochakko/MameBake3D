@@ -57,6 +57,8 @@ int CMotionPoint::InitParams()
 
 	m_calclimitedwm = 0;
 	ChaMatrixIdentity(&m_limitedwm);
+	m_limitedlocaleul = ChaVector3(0.0f, 0.0f, 0.0f);
+
 
 	m_savesmat.SetIdentity();
 	m_savermat.SetIdentity();

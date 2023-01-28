@@ -396,6 +396,8 @@ public:
 	int CalcBoneDepth();
 
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);
+	ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
 	ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	//ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	ChaMatrix CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, double srcframe);
@@ -914,6 +916,8 @@ public: //accesser
 
 	//補間無し
 	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
+	ChaVector3 GetLimitedLocalEul(int srcmotid, double srcframe);
+	int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
 
 	//補間有り : 覚え方メモ：　計算済(Calclated)のLimitedWMを補間する関数として始まり　その後　未計算時にも対応した
 	int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, int callingstate = 0);
@@ -1197,19 +1201,19 @@ public: //accesser
 		m_firstGlobalSRT = srcval;
 	}
 
-	void SetTempLocalEul(ChaVector3 srcorgeul, ChaVector3 srcneweul)
-	{
-		m_temporgeul = srcorgeul;
-		m_tempneweul = srcneweul;
-	}
-	void GetTempLocalEul(ChaVector3* dstorgeul, ChaVector3* dstneweul)
-	{
-		if (!dstorgeul || !dstneweul) {
-			return;
-		}
-		*dstorgeul = m_temporgeul;
-		*dstneweul = m_tempneweul;
-	}
+	//void SetTempLocalEul(ChaVector3 srcorgeul, ChaVector3 srcneweul)
+	//{
+	//	m_temporgeul = srcorgeul;
+	//	m_tempneweul = srcneweul;
+	//}
+	//void GetTempLocalEul(ChaVector3* dstorgeul, ChaVector3* dstneweul)
+	//{
+	//	if (!dstorgeul || !dstneweul) {
+	//		return;
+	//	}
+	//	*dstorgeul = m_temporgeul;
+	//	*dstneweul = m_tempneweul;
+	//}
 	void SetSkipRenderBoneMark(bool srcval)
 	{
 		m_skipRenderBoneMark = srcval;
@@ -1361,8 +1365,8 @@ private:
 	double m_befupdatetime;
 
 
-	ChaVector3 m_temporgeul;//制限角度有り、並列化の際の一時置き場
-	ChaVector3 m_tempneweul;//制限角度有り、並列化の際の一時置き場
+	//ChaVector3 m_temporgeul;//制限角度有り、並列化の際の一時置き場
+	//ChaVector3 m_tempneweul;//制限角度有り、並列化の際の一時置き場
 
 	bool m_skipRenderBoneMark;
 

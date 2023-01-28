@@ -1135,8 +1135,12 @@ int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 	curlocalq.Q2EulXYZusingQ(&axisq, befeul, &cureul, 0, 0, notmodify180flag);
 
 
-	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
-	//if (m_bone->GetBtFlag() == 0) {
+	//if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
+
+
+	//2023/01/28 GetBtKinFlagチェック追加
+	//GetBtKinFlag != 0の場合は　CModel::SetBtMotionReqでlimitedwmをSetBtMat()
+	if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetBtKinFlag() == 0) || (m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
 		////m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(setwm);
 		m_bone->SetBtEul(cureul);

@@ -339,6 +339,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2023/01/28
+* 
+* 上記で表現していたカクカクとは別のカクカクのこと
+* 
+* 物理シミュ時に　物理シミュを指定していないボーンの姿勢が　カクカクしていた
+* 原因は　Kinematic指定しているボーンの物理の姿勢を　モーションの姿勢に適用していたことだった
+* 
+* CBone::GetBtKinFlag() != 0の場合には
+* 物理の姿勢を適用せずに　モーションのGetLimitedWorldMatを適用した
+* 
+* 潜在的な角度制限時の問題にも対応
+* 角度制限時のオイラー角を　CBoneではなく　CMotionPointで時間情報と共に扱うことにした
+* GetLimitedLoalEul, SetLimitedLocalEul追加
+*
+*/
 
 
 #include "useatl.h"
@@ -19751,8 +19767,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
-					s_savelimitdegflag = g_limitdegflag;
-					ChangeLimitDegFlag(false, true, true);
+					//s_savelimitdegflag = g_limitdegflag;
+					//ChangeLimitDegFlag(false, true, true);
 					//g_limitdegflag = false;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -19777,11 +19793,13 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//	s_model->UpdateMatrix(&tmpwm, &s_matVP);
 					//	s_model->AdditiveCurrentToAngleLimit();
 					//}
+					
 
+					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
 					s_model->AdditiveCurrentToAngleLimit();//内部で全フレーム分処理
 
 
-					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
+					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
 					//g_limitdegflag = s_savelimitdegflag;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -19818,17 +19836,19 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
-					s_savelimitdegflag = g_limitdegflag;
-					ChangeLimitDegFlag(false, true, true);
+					//s_savelimitdegflag = g_limitdegflag;
+					//ChangeLimitDegFlag(false, true, true);
 					//g_limitdegflag = false;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
 					//}
 
+
+					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
 					s_model->AdditiveAllMotionsToAngleLimit();//内部で全モーション全フレーム分処理
 
 
-					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
+					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
 
 					bool setcursorflag = false;
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);

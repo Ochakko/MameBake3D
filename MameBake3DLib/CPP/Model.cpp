@@ -6809,11 +6809,17 @@ void CModel::SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpma
 			GetSRTandTraAnim(curlocalmat, curbone->GetNodeMat(), &smat, &rmat, &tmat, &curtraanim);
 
 			if (curbone) {
-				if (g_previewFlag == 4) {
-					curbto->SetBtMotion(curtraanim);
+				if (curbone->GetBtKinFlag() == 0) {//2023/01/28
+					if (g_previewFlag == 4) {
+						curbto->SetBtMotion(curtraanim);
+					}
+					else if (g_previewFlag == 5) {
+						curbto->SetBtMotion(curtraanim);
+					}
 				}
-				else if (g_previewFlag == 5) {
-					curbto->SetBtMotion(curtraanim);
+				else {
+					curbone->SetBtMat(curwm);
+					curbone->SetBtFlag(1);
 				}
 			}
 

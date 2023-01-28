@@ -166,6 +166,15 @@ public:
 		return m_limitedwm;
 	}
 
+	void SetLimitedLocalEul(ChaVector3 srceul)
+	{
+		m_limitedlocaleul = srceul;
+	};
+	ChaVector3 GetLimitedLocalEul()
+	{
+		return m_limitedlocaleul;
+	};
+
 	void SetSRT(ChaMatrix srcmat) 
 	{
 		m_SRT = srcmat;
@@ -268,6 +277,7 @@ private:
 
 	int m_calclimitedwm;
 	ChaMatrix m_limitedwm;
+	ChaVector3 m_limitedlocaleul;
 
 	ChaMatrix m_savesmat;
 	ChaMatrix m_savermat;
