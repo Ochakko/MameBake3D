@@ -10177,9 +10177,12 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 		return 0;
 	}
 
-	if (g_underIKRot == true) {
-		return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
-	}
+
+	//rigからrigを呼ぶので　再入禁止には別手段が必要
+	//if (g_underIKRot == true) {
+	//	return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
+	//}
+
 	g_underIKRot = true;//2023/01/14 parent limited or not
 
 
