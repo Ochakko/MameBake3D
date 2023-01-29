@@ -595,7 +595,7 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
-static int ClearLimitedWM();
+static int ClearLimitedWM(CModel* srcmodel);
 
 static float CalcSelectScale(CBone* curboneptr);
 static double CalcRefFrame();
@@ -2190,7 +2190,7 @@ static int AngleDlg2AngleLimit(HWND hDlgWnd);//2022/12/05
 static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//2022/12/05
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
-static int UpdateWMandEul();
+static int UpdateWMandEul(CModel* srcmodel);
 static int UpdateWMandEulSelected();
 
 static int InitRotAxis();
@@ -6945,7 +6945,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+				ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 				UpdateEditedEuler();
 			}
 		}
@@ -11597,6 +11597,14 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 				//s_model->CalcBoneEul(-1);
 				s_model->CalcBoneEul(selmotid);//2021/08/25
 			}
+
+
+			//2023/01/29 初回物理再生のために必要
+			s_savelimitdegflag = g_limitdegflag;
+			g_limitdegflag = true;
+			ClearLimitedWM(s_model);
+			UpdateWMandEul(s_model);
+			g_limitdegflag = s_savelimitdegflag;
 		}
 	}
 
@@ -19457,23 +19465,23 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 }
 
-int UpdateWMandEul()
+int UpdateWMandEul(CModel* srcmodel)
 {
-	if (s_model) {
-		ChaMatrix tmpwm = s_model->GetWorldMat();
-		MOTINFO* curmi = s_model->GetCurMotInfo();
+	if (srcmodel) {
+		ChaMatrix tmpwm = srcmodel->GetWorldMat();
+		MOTINFO* curmi = srcmodel->GetCurMotInfo();
 		if (curmi) {
 			double curframe;
 			for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
-				s_model->SetMotionFrame(curframe);
-				s_model->UpdateMatrix(&tmpwm, &s_matVP);
+				srcmodel->SetMotionFrame(curframe);
+				srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 			}
 		}
 
 		{
 			double curframe = s_owpLTimeline->getCurrentTime();
-			s_model->SetMotionFrame(curframe);
-			s_model->UpdateMatrix(&tmpwm, &s_matVP);
+			srcmodel->SetMotionFrame(curframe);
+			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 		}
 	}
 
@@ -19531,8 +19539,8 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 		break;
 	}
 	
-	ClearLimitedWM();
-	UpdateWMandEul();
+	ClearLimitedWM(s_model);
+	UpdateWMandEul(s_model);
 
 	//if (s_model && s_model->GetCurMotInfo()) {
 	//	int curmotid = s_model->GetCurMotInfo()->motid;
@@ -19567,7 +19575,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			Bone2AngleLimit();
 			bool updateonlycheckeul = false;
 			AngleLimit2Dlg(hDlgWnd, updateonlycheckeul);
-			ClearLimitedWM();//2022/12/06
+			ClearLimitedWM(s_model);//2022/12/06
 
 			//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESETLIM_CURRENT), FALSE);
 			//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESET0_CURRENT), FALSE);
@@ -20317,8 +20325,8 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 	}
 
 	if (updateeulflag) {
-		ClearLimitedWM();
-		UpdateWMandEul();
+		ClearLimitedWM(s_model);
+		UpdateWMandEul(s_model);
 		refreshEulerGraph();
 	}
 
@@ -22700,8 +22708,8 @@ int OnSpriteUndo()
 			//2022/12/06
 			//保存時とは制限角度が異なっている可能性があるので　制限角度のために再計算
 			//#########################################################################
-			ClearLimitedWM();
-			UpdateWMandEul();//2022/12/18
+			ClearLimitedWM(s_model);
+			UpdateWMandEul(s_model);//2022/12/18
 			refreshEulerGraph();
 
 
@@ -28125,7 +28133,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+				ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 				UpdateEditedEuler();
 			}
 		}
@@ -28562,7 +28570,7 @@ int OnMouseMoveFunc()
 						if (s_ikkind == 0) {
 							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
-							ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+							ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 							UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
@@ -28629,7 +28637,7 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+						ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 						UpdateEditedEuler();
 					}
 					else if (s_ikkind == 1) {
@@ -28673,7 +28681,7 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						ClearLimitedWM();//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+						ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 						UpdateEditedEuler();
 					}
 					else if (s_ikkind == 1) {
@@ -37783,24 +37791,26 @@ int SetTimelineHasRigFlag()
 }
 
 
-int ClearLimitedWM()
+int ClearLimitedWM(CModel* srcmodel)
 {
-	if (!s_model) {
-		return 0;
-	}
-	MOTINFO* curmi = s_model->GetCurMotInfo();
-	if (!curmi) {
+	if (!srcmodel) {
 		return 0;
 	}
 
-	double frameleng = curmi->frameleng;
+	if (srcmodel) {
+		MOTINFO* curmi = srcmodel->GetCurMotInfo();
+		if (!curmi) {
+			return 0;
+		}
 
-	double curframe;
-	for (curframe = 0.0; curframe < frameleng; curframe += 1.0) {
-	//for (curframe = 1.0; curframe < frameleng; curframe += 1.0) {
-		s_model->ClearLimitedWM(curmi->motid, curframe);
+		double frameleng = curmi->frameleng;
+
+		double curframe;
+		for (curframe = 0.0; curframe < frameleng; curframe += 1.0) {
+			//for (curframe = 1.0; curframe < frameleng; curframe += 1.0) {
+			srcmodel->ClearLimitedWM(curmi->motid, curframe);
+		}
 	}
-
 	return 0;
 }
 

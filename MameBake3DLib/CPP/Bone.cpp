@@ -7388,26 +7388,28 @@ ChaVector3 CBone::CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe)
 			if (befframe >= -0.0001) {
 				if (g_limitdegflag != 0) {
 					//角度制限ありの場合
-					GetLimitedLocalEul(srcmotid, befframe);//2023/01/28　１フレーム前は計算されていると仮定
+					befeul = GetLimitedLocalEul(srcmotid, befframe);//2023/01/28　１フレーム前は計算されていると仮定
 					neweul = befeul;
 				}
 				else {
 					//角度制限無しの場合
 					neweul = orgeul;
-					ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+					befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 					while (befframe >= 0.0) {
 						CMotionPoint* befmp = GetMotionPoint(srcmotid, befframe);
 						if (befmp) {
 							befeul = befmp->GetLocalEul();
+							neweul = befeul;
+							break;
 						}
 						else {
 							break;
 						}
-						int isbefmovable = ChkMovableEul(befeul);
-						if (isbefmovable == 1) {
-							neweul = befeul;
-							break;
-						}
+						//int isbefmovable = ChkMovableEul(befeul);
+						//if (isbefmovable == 1) {
+						//	neweul = befeul;
+						//	break;
+						//}
 						befframe -= 1.0;
 					}
 				}
@@ -7494,8 +7496,65 @@ ChaMatrix CBone::GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* d
 							//物理シミュをRecord機能でベイクしたモーションに対して　クランプすると　動きがカクカクになる
 							//よって　物理シミュボーンに対しては　自前では角度を制限しないことにする
 
-							retmat = GetWorldMat(srcmotid, roundingframe);
-							neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+							//2023/01/29
+							//ただし　kinematicの親が角度制限を受けるので　それを反映しなくてはならない
+							ChaMatrix curwm;
+							curwm = GetWorldMat(srcmotid, roundingframe);
+							ChaMatrix curparentwm, curlimitedparentwm;
+							if (GetParent()) {
+								curparentwm = GetParent()->GetWorldMat(srcmotid, roundingframe);
+								curlimitedparentwm = GetParent()->GetLimitedWorldMat(srcmotid, roundingframe);
+							}
+							else {
+								curparentwm.SetIdentity();
+								curlimitedparentwm.SetIdentity();
+							}
+							
+							ChaMatrix curlocalmat = curwm * ChaMatrixInv(curparentwm);
+							retmat = curlocalmat * curlimitedparentwm;
+							CQuaternion eulq;
+							eulq.RotationMatrix(curlocalmat);
+
+							ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+							double befframe;
+							befframe = roundingframe - 1.0;
+							if (befframe >= -0.0001) {
+								CMotionPoint* befmp;
+								befmp = GetMotionPoint(srcmotid, roundingframe);
+								if (befmp) {
+									if (g_limitdegflag == 1) {
+										befeul = befmp->GetLimitedLocalEul();
+									}
+									else {
+										befeul = befmp->GetLocalEul();
+									}
+								}
+							}
+
+							CQuaternion axisq;
+							axisq.RotationMatrix(GetNodeMat());
+							int isfirstbone = 0;
+							int isendbone = 0;
+							int notmodify180flag = 1;
+							if (g_underIKRot == false) {
+								if (roundingframe <= 1.01) {
+									//0フレームと１フレームは　180度ずれチェックをしない
+									notmodify180flag = 1;
+								}
+								else {
+									notmodify180flag = 0;
+								}
+							}
+							else {
+								//2023/01/26
+								//IKRot中は　０フレームも１フレームも　180度チェックをする
+								notmodify180flag = 0;
+								if (roundingframe <= 1.01) {
+									befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+								}
+							}
+							eulq.Q2EulXYZusingQ(&axisq, befeul, &neweul, isfirstbone, isendbone, notmodify180flag);
+
 						}
 						curmp->SetLimitedWM(retmat);
 						curmp->SetLimitedLocalEul(neweul);//2023/01/28
