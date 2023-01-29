@@ -1693,6 +1693,27 @@ void CModel::Motion2BtReq( CBtObject* srcbto )
 	}
 }
 
+void CModel::CalcLimitedEulAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe)
+{
+	//スレッド後処理用
+	//CalcWorldMatAfterThreadReqで計算した　limitedwmを元に
+	//limitedeulを計算する
+
+	if (srcbone) {
+		ChaVector3 limitedeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		limitedeul = srcbone->CalcLocalLimitedEulXYZ(srcmotid, srcframe);
+		srcbone->SetLimitedLocalEul(srcmotid, srcframe, limitedeul);
+
+		if (srcbone->GetBrother()) {
+			CalcLimitedEulAfterThreadReq(srcbone->GetBrother(), srcmotid, srcframe);
+		}
+		if (srcbone->GetChild()) {
+			CalcLimitedEulAfterThreadReq(srcbone->GetChild(), srcmotid, srcframe);
+		}
+	}
+}
+
+
 
 void CModel::CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat)
 {
@@ -1763,6 +1784,7 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 
 		if (g_limitdegflag == 1) {
 			CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);//curframe : 時間補間有り
+			//CalcLimitedEulAfterThreadReq(m_topbone, curmotid, curframe);
 		}
 	}
 	else {

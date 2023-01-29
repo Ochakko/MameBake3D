@@ -265,6 +265,7 @@ public:
 
 	void WaitUpdateMatrixFinished();
 	void CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void CalcLimitedEulAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe);
 
 /**
  * @fn
