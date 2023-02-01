@@ -66,7 +66,7 @@ public:
 	//void SetNewWorldMat(CBone* ownerbone, ChaMatrix srcmat);//after limit eul
 
 
-	ChaMatrix GetInvWorldMat(){ ChaMatrix invmat; ChaMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
+	//ChaMatrix GetInvWorldMat(){ ChaMatrix invmat; ChaMatrixInverse(&invmat, NULL, &m_worldmat); return invmat; };
 
 
 	ChaMatrix GetLocalMat() { return m_localmat; };

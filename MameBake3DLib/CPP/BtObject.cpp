@@ -332,7 +332,7 @@ int CBtObject::CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBo
 
 
 	ChaVector3 starteul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = m_bone->GetLocalEul(srcmotid, srcframe);
+	ChaVector3 befeul = m_bone->GetLocalEul(srcmotid, srcframe, 0);
 	CQuaternion axisq;
 	axisq.RotationMatrix(m_bone->GetNodeMat());
 	int notmodify180flag = 0;
@@ -911,7 +911,7 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 				dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 1.0 * (float)DEG2PAI), btScalar(currenty + 1.0 * (float)DEG2PAI), btScalar(currentz + 1.0 * (float)DEG2PAI)));
 			}
 			else {
-				if (g_limitdegflag != 0) {
+				if (g_limitdegflag != false) {
 					//limited rot
 					ChaMatrix eulaxismat;
 					CQuaternion eulaxisq;
@@ -1020,19 +1020,13 @@ int CBtObject::Motion2Bt(CModel* srcmodel, int srcmotid, double srcframe)
 	}
 
 
-	CRigidElem* curre = m_bone->GetRigidElem( m_endbone );
-	if( curre ){
-		ChaMatrix newrotmat;
-		ChaVector3 newrigidpos;
+	ChaMatrix newrotmat;
+	ChaVector3 newrigidpos;
 
-		//srcframe : ŽžŠÔ•âŠÔ—L‚è
-		GetBone()->CalcNewBtMat(srcmodel, srcmotid, srcframe, curre, GetEndBone(), &newrotmat, &newrigidpos);
+	//srcframe : ŽžŠÔ•âŠÔ—L‚è
+	GetBone()->CalcNewBtMat(srcmodel, GetEndBone(), &newrotmat, &newrigidpos);
+	SetPosture2Bt(newrotmat, newrigidpos);
 
-		SetPosture2Bt(newrotmat, newrigidpos);
-
-	}else{
-		_ASSERT( 0 );
-	}
 
 	return 0;
 }

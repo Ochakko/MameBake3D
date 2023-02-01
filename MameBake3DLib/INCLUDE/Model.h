@@ -258,14 +258,16 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
+	void UpdateMatrixReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int SwapCurrentMotionPoint();
 	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
-	int UpdateLimitedWM(int srcmotid, double srcframe);
+	//int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
+	void ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe);
 
 	void WaitUpdateMatrixFinished();
-	void CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
-	void CalcLimitedEulAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe);
+	//void CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	//void CalcLimitedEulAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe);
 
 /**
  * @fn
@@ -740,8 +742,8 @@ private:
 	int CreateLoadFbxAnim(FbxScene* pscene);
 	int DestroyLoadFbxAnim();
 	void WaitLoadFbxAnimFinished();
-	int PostLoadFbxAnim(int srcmotid, bool isfirstmot);
-	void PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone, bool isfirstmot);
+	int PostLoadFbxAnim(int srcmotid);
+	void PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone);
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
@@ -789,7 +791,7 @@ private:
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
 	void InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe);
-	int CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng);
+	//int CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng);
 
 
 	int DestroyFBXSDK();

@@ -399,6 +399,27 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+
+/*
+* 2023/02/01　1.1.0.14に向けて
+* 
+* WorldMatとLimitedWorldMatを別々に扱うように
+* 別々に扱うことにより　ローカル姿勢の計算が確定する
+* 1.1.0.13のときには出来なかった制限角度を既存モーションの角度よりも絞り込んで　子のIKが可能
+*
+* 切り替えはCBone::GetWorldMat, CBone::SetWorldMat内で　g_limitdegflagをみて　切換え
+* 呼び出す側は　CMotionPoint::SetCalcLimitedWMのセットを意識するくらい
+* 
+* 制限角度を変更した場合には
+* CBone::SetWorldMat内で　制限処理を行うので
+* CBone::GetWorldMatしたものを　CBone::SetWorldMatに渡すだけで良い
+* 
+* まだ途中
+* モーションの姿勢に　モデルの位置を　適用していない
+*
+*/
+
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -2167,7 +2188,6 @@ static int BVH2FBX();
 static void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& findext);
 static int BVH2FBXBatch();
 static int RetargetBatch();
-static int CalcLimitedWorldMat();
 static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
@@ -2232,8 +2252,8 @@ static int AngleDlg2AngleLimit(HWND hDlgWnd);//2022/12/05
 static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//2022/12/05
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
-static int UpdateWMandEul(CModel* srcmodel);
-static int UpdateWMandEulSelected();
+static int ApplyNewLimitsToWM(CModel* srcmodel);
+static int ApplyNewLimitsToWMSelected();
 
 static int InitRotAxis();
 static int RotAxis(HWND hDlgWnd);
@@ -9032,117 +9052,6 @@ int RetargetFile(char* fbxpath)
 }
 
 
-unsigned __stdcall ThreadFunc_CalcLimitedWM(LPVOID lpThreadParam)
-{
-	int modelcnt = 0;
-	int modelnum = (int)s_modelindex.size();
-
-
-	InterlockedExchange(&s_progressmodelnum, modelnum);
-	InterlockedExchange(&s_progressmodelcnt, 0);
-	InterlockedExchange(&s_befprogressmodelnum, 0);
-	InterlockedExchange(&s_befprogressmodelcnt, 0);
-
-
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		modelcnt++;
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			MOTINFO* curmi;
-			curmi = curmodel->GetCurMotInfo();
-			if (!curmi) {
-				continue;
-			}
-
-			InterlockedExchange(&s_progressmodelcnt, modelcnt);
-
-			double frameleng = curmi->frameleng;
-			InterlockedExchange(&s_progressnum, (LONG)frameleng);
-			InterlockedExchange(&s_progresscnt, 0);
-			if (s_progresswnd) {
-				HWND hProg;
-				hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
-				if (hProg) {
-					SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, 100));
-					SendMessage(hProg, PBM_SETPOS, (WPARAM)0, 0);
-					UpdateWindow(s_progresswnd);
-				}
-			}
-
-			int dbgcnt = 0;
-			double curframe;
-			for (curframe = 0.0; curframe < frameleng; curframe += 1.0) {
-				InterlockedExchange(&s_progresscnt, (LONG)curframe);
-
-				curmodel->UpdateLimitedWM(curmi->motid, curframe);
-			}
-
-		}
-	}
-
-	if (s_progresswnd) {
-		SendMessage(s_progresswnd, WM_CLOSE, 0, 0);
-	}
-
-	InterlockedExchange(&g_calclimitedwmflag, (LONG)2);//mark finished
-
-
-	//##########################################
-	//watch this thread at OnFrameStartPreview()
-	//##########################################
-
-
-	return 0;
-}
-
-int CalcLimitedWorldMat()
-{
-	if (!s_model) {
-		return 0;
-	}
-
-	if (g_limitdegflag == 1) {
-
-		if (InterlockedAdd(&g_calclimitedwmflag, 0) != 0) {//if already under calc, return 0.
-			return 0;
-		}
-
-
-		InterlockedExchange(&g_calclimitedwmflag, (LONG)1);//mark started
-
-
-		CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG3), NULL, (DLGPROC)ProgressDlgProc);
-		RECT rect;
-		GetWindowRect(s_LtimelineWnd->getHWnd(), &rect);
-		SetWindowPos(s_progresswnd, HWND_TOP, rect.left, rect.top, 0, 0, SWP_NOSIZE);
-		ShowWindow(s_progresswnd, SW_SHOW);
-		UpdateWindow(s_progresswnd);
-
-		unsigned int threadaddr1 = 0;
-		HANDLE hthread = (HANDLE)_beginthreadex(
-			NULL, 0, &ThreadFunc_CalcLimitedWM,
-			(void*)0,
-			0, &threadaddr1);
-
-		//WiatForしない場合には先に閉じてもOK
-		if (hthread && (hthread != INVALID_HANDLE_VALUE)) {
-			CloseHandle(hthread);
-		}
-
-	}
-	else {
-
-		InterlockedExchange(&g_calclimitedwmflag, (LONG)2);//mark finished
-	}
-
-	return 0;
-}
-
-
-
-
-
 unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
 {
 
@@ -10757,7 +10666,7 @@ int UpdateEditedEuler()
 				CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
 					if (s_ikkind == 0) {//回転
-						opebone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
+						opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
 					}
 					else if(s_ikkind == 1){//移動
 						cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
@@ -10939,7 +10848,7 @@ int refreshEulerGraph()
 						CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
 							if (s_ikkind == 0) {//回転
-								opebone->GetLimitedWorldMat(curmi->motid, (double)curtime, &cureul);
+								opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
 							}
 							else if (s_ikkind == 1) {//移動
 								cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
@@ -11642,11 +11551,11 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 
 			//2023/01/29 初回物理再生のために必要
-			s_savelimitdegflag = g_limitdegflag;
-			g_limitdegflag = true;
-			ClearLimitedWM(s_model);
-			UpdateWMandEul(s_model);
-			g_limitdegflag = s_savelimitdegflag;
+			//s_savelimitdegflag = g_limitdegflag;
+			//g_limitdegflag = true;
+			//ClearLimitedWM(s_model);
+			//ApplyNewLimitsToWM(s_model);
+			//g_limitdegflag = s_savelimitdegflag;
 		}
 	}
 
@@ -19507,7 +19416,7 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 }
 
-int UpdateWMandEul(CModel* srcmodel)
+int ApplyNewLimitsToWM(CModel* srcmodel)
 {
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
@@ -19516,7 +19425,8 @@ int UpdateWMandEul(CModel* srcmodel)
 			double curframe;
 			for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
 				srcmodel->SetMotionFrame(curframe);
-				srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
+				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(), curmi->motid, curframe);
+				//srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 			}
 		}
 
@@ -19530,7 +19440,7 @@ int UpdateWMandEul(CModel* srcmodel)
 	return 0;
 }
 
-int UpdateWMandEulSelected()
+int ApplyNewLimitsToWMSelected()
 {
 	if (s_model) {
 		ChaMatrix tmpwm = s_model->GetWorldMat();
@@ -19582,7 +19492,7 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	}
 	
 	ClearLimitedWM(s_model);
-	UpdateWMandEul(s_model);
+	ApplyNewLimitsToWM(s_model);
 
 	//if (s_model && s_model->GetCurMotInfo()) {
 	//	int curmotid = s_model->GetCurMotInfo()->motid;
@@ -20368,7 +20278,7 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 
 	if (updateeulflag) {
 		ClearLimitedWM(s_model);
-		UpdateWMandEul(s_model);
+		ApplyNewLimitsToWM(s_model);
 		refreshEulerGraph();
 	}
 
@@ -22751,7 +22661,7 @@ int OnSpriteUndo()
 			//保存時とは制限角度が異なっている可能性があるので　制限角度のために再計算
 			//#########################################################################
 			ClearLimitedWM(s_model);
-			UpdateWMandEul(s_model);//2022/12/18
+			ApplyNewLimitsToWM(s_model);//2022/12/18
 			refreshEulerGraph();
 
 
@@ -26308,14 +26218,14 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
 				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, roundingframe, initscaleflag1);
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
 				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
 			}
 			else if (initmode == INITMP_ROT){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag0 = 0;
 				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
 				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, befwm, cureul, srcmotid, roundingframe);
 			}
 			else if (initmode == INITMP_TRA){
@@ -26326,7 +26236,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
 				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe);
 			}
 			else if (initmode == INITMP_SCALE) {
@@ -26340,7 +26250,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				//int inittraflag1 = 0;
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe);
+				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
 				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
 			}
 		//}
@@ -28283,7 +28193,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.13 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.14 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -35730,7 +35640,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.13 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.14 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -37928,7 +37838,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 	g_brushmirrorUflag = srcbrushstate.brushmirrorUflag;
 	g_brushmirrorVflag = srcbrushstate.brushmirrorVflag;
 	g_ifmirrorVDiv2flag = srcbrushstate.ifmirrorVDiv2flag;
-	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false, false);//RollbackBrushState呼び出し元の下方にてUpdateWMandEul();を呼ぶので３番目の引数はfalse
+	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false, false);//RollbackBrushState呼び出し元の下方にてApplyNewLimitsToWM();を呼ぶので３番目の引数はfalse
 	//g_limitdegflag = srcbrushstate.limitdegflag;
 	g_motionbrush_method = srcbrushstate.motionbrush_method;
 	g_wallscrapingikflag = srcbrushstate.wallscrapingikflag;

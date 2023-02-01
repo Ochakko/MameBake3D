@@ -3754,6 +3754,14 @@ int CQuaternion::GetRound(float srcval)
 	else {
 		return (int)(srcval - 0.5);
 	}
+
+	//if (srcval > 0.0f) {
+	//	return (int)(srcval + 0.0001f);
+	//}
+	//else {
+	//	return (int)(srcval - 0.0001f);
+	//}
+
 }
 //
 int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)

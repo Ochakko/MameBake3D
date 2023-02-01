@@ -214,7 +214,7 @@ void CThreadingLoadFbx::LoadFbxAnim(int srcanimno, int srcmotid, double srcaniml
 
 
 	//####################################################################
-	//## g_limitdegflag == 1　の場合にはローカルの計算だけ並列化
+	//## g_limitdegflag == true　の場合にはローカルの計算だけ並列化
 	//####################################################################
 
 	if ((m_bonenum > 0) && (GetScene()) && (GetModel())) {

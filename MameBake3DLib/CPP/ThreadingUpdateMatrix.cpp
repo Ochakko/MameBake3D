@@ -130,36 +130,43 @@ int CThreadingUpdateMatrix::ThreadFunc()
 
 			DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
 			ResetEvent(m_hEvent);
-			switch (dwWaitResult)
-			{
-				// Event object was signaled
-			case WAIT_OBJECT_0:
-			{
-				EnterCriticalSection(&m_CritSection);
-				if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+			if (InterlockedAdd(&m_exit_state, 0) != 1) {//スレッドが終了していない場合
+				switch (dwWaitResult)
+				{
+					// Event object was signaled
+				case WAIT_OBJECT_0:
+				{
+					EnterCriticalSection(&m_CritSection);
+					if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
 
-					int bonecount;
-					for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-						CBone* curbone = m_bonelist[bonecount];
-						if (curbone) {
-							bool callingbythread = true;
-							curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+						int bonecount;
+						for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+							CBone* curbone = m_bonelist[bonecount];
+							if (curbone) {
+								bool callingbythread = true;
+								curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+							}
 						}
 					}
+
+					InterlockedExchange(&m_start_state, 0L);
+					LeaveCriticalSection(&m_CritSection);
+
 				}
-
-				InterlockedExchange(&m_start_state, 0L);
-				LeaveCriticalSection(&m_CritSection);
-
-			}
-			break;
-
-			// An error occurred
-			default:
-				//printf("Wait error (%d)\n", GetLastError());
-				//return 0;
 				break;
+
+				// An error occurred
+				default:
+					//printf("Wait error (%d)\n", GetLastError());
+					//return 0;
+					break;
+				}
 			}
+			else {
+				//スレッド終了フラグが立っていた場合
+				InterlockedExchange(&m_start_state, 0L);
+			}
+
 		}
 	}
 
@@ -201,7 +208,7 @@ void CThreadingUpdateMatrix::UpdateMatrix(int srcmotid, double srcframe, ChaMatr
 {
 
 	//####################################################################
-	//## g_limitdegflag == 1　の場合にはローカルの計算だけ並列化
+	//## g_limitdegflag == true　の場合にはローカルの計算だけ並列化
 	//####################################################################
 
 	if (m_bonenum > 0) {

@@ -533,14 +533,15 @@ namespace MameBake3DLibRetarget {
 					ChaMatrix bvhsmat, bvhrmat, bvhtmat, bvhtanimmat;
 					ChaMatrix bvhsmat0, bvhrmat0, bvhtmat0, bvhtanimmat0;
 
+					//GetWorldMat() : limitedflag‚ðƒ[ƒ‚É‚µ‚Ä‚¨‚­•K—v—L !!!!
 					if (bvhbone->GetParent()) {
-						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, roundingframe);
+						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, roundingframe, 0);
 						GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame
-						ChaMatrix parentwm0 = bvhbone->GetParent()->GetWorldMat(bvhmotid, 0.0);
-						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(), 
+						ChaMatrix parentwm0 = bvhbone->GetParent()->GetWorldMat(bvhmotid, 0.0, 0);
+						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0, 0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(), 
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
 					else {
@@ -548,7 +549,7 @@ namespace MameBake3DLibRetarget {
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame
-						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0), bvhbone->GetNodeMat(),
+						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0, 0), bvhbone->GetNodeMat(),
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
 					//traanim = ChaMatrixTraVec(bvhtanimmat);

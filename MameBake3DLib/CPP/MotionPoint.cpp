@@ -24,6 +24,13 @@ CMotionPoint::~CMotionPoint()
 
 int CMotionPoint::InitParams()
 {
+
+
+
+	//#####################################################
+	//メンバを追加した場合には　operator=　も更新すること
+	//#####################################################
+
 	//not use at allocated
 	m_useflag = 0;//0: not use, 1: in use
 	m_indexofpool = 0;
@@ -312,25 +319,55 @@ int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 
 CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 {
+	//m_localmatflag = mp.m_localmatflag;
+	//m_frame = mp.m_frame;
+	////m_eul = mp.m_eul;
+	//m_tra = mp.m_tra;
+	//m_q = mp.m_q;
+	//m_localeul = mp.m_localeul;
+	////SetWorldMat(mp.m_worldmat);
+	//m_worldmat = mp.m_worldmat;
+	//m_befworldmat = mp.m_befworldmat;//!!!!!!!!!!
+	//m_limitedwm = mp.m_limitedwm;
+	//m_calclimitedwm = mp.m_calclimitedwm;
+	//m_limitedlocaleul = mp.m_limitedlocaleul;
+	//m_prev = mp.m_prev;
+	//m_next = mp.m_next;
+	//m_befeditmat = mp.m_befeditmat;
+	//m_absmat = mp.m_absmat;
+
+
+	//####################
+	//2023/02/01
+	//InitParamsの順番で
+	//####################
+
+	m_useflag = mp.m_useflag;//0: not use, 1: in use
+	//m_indexofpool = 0;
+	//m_allocheadflag = 0;//1: head pointer at allocated
 	m_localmatflag = mp.m_localmatflag;
+	m_undovalidflag = mp.m_undovalidflag;
 	m_frame = mp.m_frame;
-	//m_eul = mp.m_eul;
-	m_tra = mp.m_tra;
-
 	m_q = mp.m_q;
+	m_tra = mp.m_tra;
+	m_firstframetra = mp.m_firstframetra;
 	m_localeul = mp.m_localeul;
-
-	//SetWorldMat(mp.m_worldmat);
 	m_worldmat = mp.m_worldmat;
-	m_befworldmat = mp.m_befworldmat;//!!!!!!!!!!
-	
-
+	m_localmat = mp.m_localmat;
+	m_absmat = mp.m_absmat;
+	m_befworldmat = mp.m_befworldmat;
+	m_befeditmat = mp.m_befeditmat;
+	m_SRT = mp.m_SRT;
+	m_setbefworldmatflag = mp.m_setbefworldmatflag;
+	m_calclimitedwm = mp.m_calclimitedwm;
+	m_limitedwm = mp.m_limitedwm;
+	m_limitedlocaleul = mp.m_limitedlocaleul;
+	m_savesmat = mp.m_savesmat;
+	m_savermat = mp.m_savermat;
+	m_savetmat = mp.m_savetmat;
+	m_savetanimmat = mp.m_savetanimmat;
 	m_prev = mp.m_prev;
 	m_next = mp.m_next;
-
-	m_befeditmat = mp.m_befeditmat;
-	m_absmat = mp.m_absmat;
-
 
 	return *this;
 }
