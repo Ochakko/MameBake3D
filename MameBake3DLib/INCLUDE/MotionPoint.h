@@ -211,6 +211,14 @@ public:
 		return 0;
 	}
 
+	void SetAnimMat(ChaMatrix srcmat)
+	{
+		m_animmat = srcmat;
+	};
+	ChaMatrix GetAnimMat()
+	{
+		return m_animmat;
+	};
 
 	//CBone* GetNewWMOwner()
 	//{
@@ -254,6 +262,11 @@ private:
 
 	ChaMatrix m_worldmat;//ワールド変換と親の影響を受けたマトリックス
 	ChaMatrix m_localmat;//local matrix
+	
+	//2023/02/02
+	//CBone::m_curmp,CBone::GetCurMp()用　モデルのworldmatが掛かっていないアニメ姿勢
+	//CBone::UpdateMatrix()でセットし　CBone::GetCurrent...やCBone::CalcCurrent...で使用
+	ChaMatrix m_animmat;
 
 
 	ChaMatrix m_befworldmat;

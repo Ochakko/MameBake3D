@@ -7144,6 +7144,9 @@ void CModel::SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatr
 				//if ((curbone->GetBtFlag() == 0) || ((curbone->GetMass0() == FALSE) && (curbone->GetTmpKinematic() == true))) {//mass0とkinematic併用の場合にはmass0を適用
 					if (kinematicadjustflag == 1) {
 						if (curbone->GetParent()) {
+
+							//2023/02/02 後で修正必要　btmatとGetCurMpには　モデルのworldmatが掛かっている
+
 							ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
 							ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
 							ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
@@ -7347,6 +7350,12 @@ void CModel::SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparent
 
 				//newcurmat = oldcurmat * ChaMatrixInv(oldparentmat) * newparentmat;//形状修正なしの場合
 
+
+				//2023/02/02 注意　後でチェック！！！　GetCurMpとBtMatにはモデルのwmが掛かっている
+				//そして　CurMpとBtMatには　モデルのwmをかけなければならない
+				//newparentmatには？？？
+
+
 				ChaMatrix curkinematicmat, parentkinematicmat;
 				curkinematicmat = curbone->GetCurMp().GetWorldMat();
 				parentkinematicmat = curbone->GetParent()->GetCurMp().GetWorldMat();
@@ -7382,6 +7391,11 @@ void CModel::BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat
 						ChaMatrix newparmat = curbone->GetParent()->GetBtMat();
 						ChaMatrix firstparmat = curbone->GetParent()->GetCurMp().GetWorldMat();
 						ChaMatrix newcurmat = curbone->GetCurMp().GetWorldMat() * ChaMatrixInv(firstparmat) * newparmat;
+
+						//2023/02/02 注意　後でチェック！！！　GetCurMpとBtMatにはモデルのwmが掛かっている
+						//そして　CurMpとBtMatには　モデルのwmをかけなければならない
+						//curbto->GetFirstTransformMatX()には？？？
+
 
 						ChaMatrix newbtmat;
 						newbtmat = curbto->GetFirstTransformMatX() * ChaMatrixInv(firstparmat) * newparmat;

@@ -213,6 +213,14 @@ namespace MameBake3DLibRetarget {
 			return 1;
 		}
 
+
+		//###################################################################
+		//2023/02/02
+		//GetCurMp().GetWorldMatには　例外的にモデルのworldmatが掛かっている
+		//アニメ姿勢の計算には　GetCurMp().GetAnimMat()を使用
+		//###################################################################
+
+
 		double roundingframe = (double)((int)(srcframe + 0.0001));
 
 		//static ChaMatrix s_firsthipmat;
@@ -341,7 +349,7 @@ namespace MameBake3DLibRetarget {
 					//式10033と前提条件を合わせる
 					//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
 					//#######################################################################################
-					firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetWorldMat();
+					firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetAnimMat();
 					firsthipbvhmat.data[MATI_41] = 0.0f;
 					firsthipbvhmat.data[MATI_42] = 0.0f;
 					firsthipbvhmat.data[MATI_43] = 0.0f;
@@ -478,7 +486,7 @@ namespace MameBake3DLibRetarget {
 					ChaMatrix bvhS, bvhR, bvhT;
 					CQuaternion bvhQ;
 					//bvhcurrentmat = bvhbone->GetNodeMat() * bvhmp.GetWorldMat();
-					bvhcurrentmat = offsetforbvhmat * bvhmp.GetWorldMat();
+					bvhcurrentmat = offsetforbvhmat * bvhmp.GetAnimMat();
 					invbvhcurrentmat = ChaMatrixInv(bvhcurrentmat);
 					GetSRTMatrix2(bvhcurrentmat, &bvhS, &bvhR, &bvhT);
 					bvhQ.RotationMatrix(bvhR);
@@ -536,7 +544,7 @@ namespace MameBake3DLibRetarget {
 					//GetWorldMat() : limitedflagをゼロにしておく必要有 !!!!
 					if (bvhbone->GetParent()) {
 						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, roundingframe, 0);
-						GetSRTandTraAnim(bvhmp.GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
+						GetSRTandTraAnim(bvhmp.GetAnimMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame
@@ -545,7 +553,7 @@ namespace MameBake3DLibRetarget {
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
 					else {
-						GetSRTandTraAnim(bvhmp.GetWorldMat(), bvhbone->GetNodeMat(), 
+						GetSRTandTraAnim(bvhmp.GetAnimMat(), bvhbone->GetNodeMat(), 
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame

@@ -95,10 +95,9 @@ public:
  */
 	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false );
 	int SwapCurrentMotionPoint();
-	int ApplyNewLimitsToWM(int srcmotid, double srcframe);
 
 
-	int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
+	//int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
 
 	//int UpdateLimitedWorldMat(int srcmotid, double srcframe);
 	int ClearLimitedWorldMat(int srcmotid, double srcframe);
@@ -396,13 +395,13 @@ public:
 	int CalcBoneDepth();
 
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-	ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);
-	ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
+	ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit用
+	//ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
 	//ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	//ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	ChaMatrix CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, double srcframe);
-	ChaMatrix CalcCurrentLocalRotMatFromEul(ChaVector3 srceul);
-	ChaVector3 CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe);
+	//ChaMatrix CalcCurrentLocalRotMatFromEul(ChaVector3 srceul);
+	//ChaVector3 CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe);
 
 	//manipulator行列の計算には　CalcAxisX_Manipulator()を使う
 	//ChaMatrix CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
@@ -412,7 +411,7 @@ public:
 	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
 	//補間無し
 	ChaMatrix GetWorldMat(int srcmotid, double srcframe, CMotionPoint* srcmp, ChaVector3* dsteul = 0);
-	ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
+	//ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
 	ChaVector3 GetLocalEul(int srcmotid, double srcframe, CMotionPoint* srcmp);
 	ChaVector3 GetLimitedLocalEul(int srcmotid, double srcframe);
 	int SetWorldMat(int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
@@ -422,7 +421,10 @@ public:
 	int SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp);
-	int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
+	//int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
+
+	int ApplyNewLimitsToWM(int srcmotid, double srcframe);//制限角度を変更した後の　Limited再計算
+
 
 
 	//補間有り : 覚え方メモ：　計算済(Calclated)のLimitedWMを補間する関数として始まり　その後　未計算時にも対応した
@@ -431,7 +433,7 @@ public:
 	//int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, int callingstate = 0);
 
 
-	ChaMatrix CalcLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul);
+	//ChaMatrix CalcLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul);
 	//int SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul);
 	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
 	//int CalcWorldMatAfterThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);

@@ -46,13 +46,13 @@ int CMotionPoint::InitParams()
 
 	m_localeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	ChaMatrixIdentity( &m_worldmat );
+	ChaMatrixIdentity(&m_worldmat);
 	ChaMatrixIdentity(&m_localmat);
-	ChaMatrixIdentity( &m_absmat );
-	ChaMatrixIdentity( &m_befworldmat );
-	ChaMatrixIdentity( &m_befeditmat );
+	ChaMatrixIdentity(&m_absmat);
+	ChaMatrixIdentity(&m_befworldmat);
+	ChaMatrixIdentity(&m_befeditmat);
 
-	
+	ChaMatrixIdentity(&m_animmat);
 
 
 	ChaMatrixIdentity(&m_SRT);
@@ -74,6 +74,10 @@ int CMotionPoint::InitParams()
 
 	m_prev = 0;
 	m_next = 0;
+
+	//#####################################################
+	//メンバを追加した場合には　operator=　も更新すること
+	//#####################################################
 
 	return 0;
 }
@@ -319,24 +323,6 @@ int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 
 CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 {
-	//m_localmatflag = mp.m_localmatflag;
-	//m_frame = mp.m_frame;
-	////m_eul = mp.m_eul;
-	//m_tra = mp.m_tra;
-	//m_q = mp.m_q;
-	//m_localeul = mp.m_localeul;
-	////SetWorldMat(mp.m_worldmat);
-	//m_worldmat = mp.m_worldmat;
-	//m_befworldmat = mp.m_befworldmat;//!!!!!!!!!!
-	//m_limitedwm = mp.m_limitedwm;
-	//m_calclimitedwm = mp.m_calclimitedwm;
-	//m_limitedlocaleul = mp.m_limitedlocaleul;
-	//m_prev = mp.m_prev;
-	//m_next = mp.m_next;
-	//m_befeditmat = mp.m_befeditmat;
-	//m_absmat = mp.m_absmat;
-
-
 	//####################
 	//2023/02/01
 	//InitParamsの順番で
@@ -357,6 +343,7 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	m_absmat = mp.m_absmat;
 	m_befworldmat = mp.m_befworldmat;
 	m_befeditmat = mp.m_befeditmat;
+	m_animmat = mp.m_animmat;
 	m_SRT = mp.m_SRT;
 	m_setbefworldmatflag = mp.m_setbefworldmatflag;
 	m_calclimitedwm = mp.m_calclimitedwm;
