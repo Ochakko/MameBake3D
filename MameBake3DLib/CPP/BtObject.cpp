@@ -924,9 +924,9 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 					//	_ASSERT(0);
 					//	ChaMatrixIdentity(&eulaxismat);
 					//}
+										
 					eulaxismat = childbto->m_bone->GetNodeMat();//!!!!!!!!!
 					eulaxisq.RotationMatrix(eulaxismat);
-
 
 					ChaVector3 lowereul, uppereul;
 					lowereul = ChaVector3(btScalar(anglelimit.lower[0]), btScalar(anglelimit.lower[1]), btScalar(anglelimit.lower[2]));

@@ -1775,19 +1775,18 @@ int CModel::UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinish
 		//WaitUpdateMatrixFinished();//needwaitfinishedがfalseのときにも必要
 		//SwapCurrentMotionPoint();//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
 
-		//if (g_limitdegflag == 0) {//limitdeg時には　CalcWorldMatAfterThreadReqで全て計算　階層順に計算する必要があるため
-		//	int updatecount;
-		//	for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
-		//		CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
-		//		curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
-		//	}
-		//}
-		//else {
-			UpdateMatrixReq(GetTopBone(), curmotid, curframe, wmat, vpmat);
-		//}
+
+		//2023/02/02
+		//limitdegflag == true時にも　UpdateMatrixは計算済を補間するだけなので　再帰呼び出ししなくてOKになった
+		//limitdegflag == true時にも　UpdateMatrixでオイラー角もセットされるようになった(スレッド後処理は不要)
+		int updatecount;
+		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
+			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
+			curupdate->UpdateMatrix(curmotid, curframe, wmat, vpmat);
+		}
 
 		////if (needwaitfinished) {//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
-		//	WaitUpdateMatrixFinished();
+			WaitUpdateMatrixFinished();
 		////}
 
 		//if (g_limitdegflag == true) {
@@ -6366,11 +6365,11 @@ int CModel::CreateBtObject( int onfirstcreate )
 	}
 
 
-	//for debug
-	DumpBtObjectReq(m_topbt, 0);
-	DbgOut(L"\r\n\r\n");
-	DumpBtConstraintReq(m_topbt, 0);
-	DbgOut(L"\r\n\r\n");
+	////for debug
+	//DumpBtObjectReq(m_topbt, 0);
+	//DbgOut(L"\r\n\r\n");
+	//DumpBtConstraintReq(m_topbt, 0);
+	//DbgOut(L"\r\n\r\n");
 
 
 	SetCreateBtFlag(true);

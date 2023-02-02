@@ -568,7 +568,9 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 				ChaMatrix wm = GetWorldMat(srcmotid, roundingframe, mpptr);
 				ChaVector3 cureul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 				SetLocalEul(srcmotid, roundingframe, cureul, mpptr);
-				mpptr->SetCalcLimitedWM(2);
+				if (g_limitdegflag == true) {
+					mpptr->SetCalcLimitedWM(2);
+				}
 			}
 			else {
 				_ASSERT(0);
@@ -647,11 +649,9 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 
 		curwm = GetWorldMat(srcmotid, roundingframe, curmp);
 		int infooutflag = 0;
-		SetWorldMat(infooutflag, 1, srcmotid, roundingframe, curwm);
-		if (g_limitdegflag == true) {
-			curmp->SetCalcLimitedWM(2);
-		}
-		
+		int setchildflag = 1;//<-- 必須 RootNodeの回転を絞り込めば分かる
+		SetWorldMat(infooutflag, setchildflag, srcmotid, roundingframe, curwm);
+
 		//curmp->SetLimitedWM(newwm);
 		//curmp->SetLimitedLocalEul(neweul);
 	}
@@ -2827,6 +2827,7 @@ CMotionPoint* CBone::RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmot
 			g_wmatDirectSetFlag = true;
 			SetWorldMat(infooutflag, 0, srcmotid, roundingframe, tmpmat);
 			g_wmatDirectSetFlag = false;
+
 		}
 		if (bvhbone){
 			if (m_child){
@@ -4577,6 +4578,9 @@ int CBone::SetWorldMatFromEul(int inittraflag, int setchildflag, ChaMatrix befwm
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		SetWorldMat(srcmotid, roundingframe, newworldmat, curmp);
 		SetLocalEul(srcmotid, roundingframe, srceul, curmp);
+		if (g_limitdegflag == true) {
+			curmp->SetCalcLimitedWM(2);
+		}
 
 		if (setchildflag == 1){
 			if (m_child){
@@ -4888,6 +4892,9 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, C
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		SetWorldMat(srcmotid, roundingframe, newmat, curmp);
 		SetLocalEul(srcmotid, roundingframe, srceul, curmp);
+		if (g_limitdegflag == true) {
+			curmp->SetCalcLimitedWM(2);
+		}
 
 		if (setchildflag == 1) {
 			if (m_child) {
@@ -4968,6 +4975,9 @@ int CBone::SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion
 		//ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_ZERO);
 		ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 		SetLocalEul(srcmotid, roundingframe, neweul, curmp);
+		if (g_limitdegflag == true) {
+			curmp->SetCalcLimitedWM(2);
+		}
 
 
 		if (setchildflag == 1){
@@ -5050,6 +5060,9 @@ int CBone::SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		SetWorldMat(srcmotid, roundingframe, newmat, curmp);
 		SetLocalEul(srcmotid, roundingframe, srceul, curmp);
+		if (g_limitdegflag == true) {
+			curmp->SetCalcLimitedWM(2);
+		}
 
 
 		if (setchildflag == 1) {
@@ -5251,24 +5264,6 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 				tmpX0 = neweul.x + 360.0f * this->GetRound((saveeul.x - neweul.x) / 360.0f);//オーバー１８０度
 				tmpY0 = neweul.y + 360.0f * this->GetRound((saveeul.y - neweul.y) / 360.0f);//オーバー１８０度
 				tmpZ0 = neweul.z + 360.0f * this->GetRound((saveeul.z - neweul.z) / 360.0f);//オーバー１８０度
-				//if ((tmpX0 - saveeul.x) >= thdeg) {
-				//	tmpX0 -= 180.0f;
-				//}
-				//if ((saveeul.x - tmpX0) >= thdeg) {
-				//	tmpX0 += 180.0f;
-				//}
-				//if ((tmpY0 - saveeul.y) >= thdeg) {
-				//	tmpY0 -= 180.0f;
-				//}
-				//if ((saveeul.y - tmpY0) >= thdeg) {
-				//	tmpY0 += 180.0f;
-				//}
-				//if ((tmpZ0 - saveeul.z) >= thdeg) {
-				//	tmpZ0 -= 180.0f;
-				//}
-				//if ((saveeul.z - tmpZ0) >= thdeg) {
-				//	tmpZ0 += 180.0f;
-				//}
 				neweul.x = tmpX0;
 				neweul.y = tmpY0;
 				neweul.z = tmpZ0;
@@ -5279,6 +5274,9 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
 					//curmp->SetBefWorldMat(saveworldmat);
 				SetLocalEul(srcmotid, roundingframe, neweul, curmp);
+				if (g_limitdegflag == true) {
+					curmp->SetCalcLimitedWM(2);
+				}
 			}
 			else {
 				if (g_wallscrapingikflag == 1) {
@@ -5292,6 +5290,9 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
 						saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
 					SetLocalEul(srcmotid, roundingframe, neweul, curmp);
+					if (g_limitdegflag == true) {
+						curmp->SetCalcLimitedWM(2);
+					}
 				}
 				else {
 					if (g_underIKRot == true) {
@@ -5306,6 +5307,9 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 									dummyq, saveworldmat, saveworldmat);
 							}
 						}
+						if (g_limitdegflag == true) {
+							curmp->SetCalcLimitedWM(2);
+						}
 
 					}
 					else {
@@ -5316,6 +5320,9 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 						SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag,
 							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
 						SetLocalEul(srcmotid, roundingframe, neweul, curmp);
+						if (g_limitdegflag == true) {
+							curmp->SetCalcLimitedWM(2);
+						}
 					}
 
 					//ChaVector3 limitedeul;
@@ -5353,6 +5360,9 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 			//ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_ZERO);
 			ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 			SetLocalEul(srcmotid, roundingframe, neweul, curmp);
+			if (g_limitdegflag == true) {
+				curmp->SetCalcLimitedWM(2);
+			}
 
 			//RotBoneQReqからdirectflag = trueで呼ばれるため　ここでRotBoneQReqは呼べない
 			//directflag = true時の再帰は　RotBoneQReq側でする
@@ -8359,6 +8369,11 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			curmp->SetWorldMat(globalmat);//anglelimit無し
 			curmp->SetLimitedWM(globalmat);//初期値はそのまま
 
+			//##############################################################################
+			//SetCalcLimitedWM(2)は　CModel::PostLoadFbxで　LimitedLocalEulをセットしてから
+			//##############################################################################
+
+
 			//##########
 			//FirstMot
 			//##########
@@ -8678,6 +8693,9 @@ int CBone::InitMP(int srcmotid, double srcframe)
 			ChaVector3 cureul = firstmp->GetLocalEul();
 			curmp->SetLocalEul(cureul);
 			curmp->SetLimitedLocalEul(cureul);
+			if (g_limitdegflag == true) {
+				curmp->SetCalcLimitedWM(2);
+			}
 		}
 	}
 	else {

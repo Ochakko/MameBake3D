@@ -426,12 +426,12 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 1.1.0.14の　#### 予定 (plans) ####
 * 
 * [ WorldMatとLimitedWorldMatを別々に扱うようになったことへの対応 ]
-* (対応できたら　このメモの該当項目に　済マークを付けていきます)
-* (このメモの項目に全部済が付いたら　バージョンは1.2.0.10にします)
+* (対応できたら　このメモの該当項目に　(済)マークを付けていきます)
+* (このメモの項目に全部(済)が付いたら　バージョンは1.2.0.10にします)
 * 
-* 0, モデルの位置を適用　(済)
+* 0, モデルの位置を適用　(済 2023/02/02)
 *
-* 1, UpdateMatrixのマルチスレッド復活(一時的にシングルスレッドにしている)
+* 1, UpdateMatrixのマルチスレッド復活(一時的にシングルスレッドにしている)　(済 2023/02/02)
 * 
 * 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加
 * 
@@ -15907,14 +15907,16 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					pmodel->SetMotionFrame(curframe);
 
-					vector<MODELELEM>::iterator itrmodel2;
-					for (itrmodel2 = s_modelindex.begin(); itrmodel2 != s_modelindex.end(); itrmodel2++) {
-						CModel* updatemodel = itrmodel2->modelptr;
-						if (updatemodel) {
-							ChaMatrix tmpwm = updatemodel->GetWorldMat();
-							updatemodel->UpdateMatrix(&tmpwm, &s_matVP);
-						}
-					}
+					//vector<MODELELEM>::iterator itrmodel2;
+					//for (itrmodel2 = s_modelindex.begin(); itrmodel2 != s_modelindex.end(); itrmodel2++) {
+					//	CModel* updatemodel = itrmodel2->modelptr;
+					//	if (updatemodel) {
+					//		ChaMatrix tmpwm = updatemodel->GetWorldMat();
+					//		updatemodel->UpdateMatrix(&tmpwm, &s_matVP);
+					//	}
+					//}
+					ChaMatrix tmpwm = pmodel->GetWorldMat();
+					pmodel->UpdateMatrix(&tmpwm, &s_matVP);
 
 					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！reの内容を変えてから呼ぶ
 					//s_curreindex = 1;
@@ -15960,14 +15962,16 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					pmodel->SetMotionFrame(curframe);
 
-					vector<MODELELEM>::iterator itrmodel3;
-					for (itrmodel3 = s_modelindex.begin(); itrmodel3 != s_modelindex.end(); itrmodel3++) {
-						CModel* updatemodel = itrmodel3->modelptr;
-						if (updatemodel) {
-							ChaMatrix tmpwm = updatemodel->GetWorldMat();
-							updatemodel->UpdateMatrix(&tmpwm, &s_matVP);
-						}
-					}
+					//vector<MODELELEM>::iterator itrmodel3;
+					//for (itrmodel3 = s_modelindex.begin(); itrmodel3 != s_modelindex.end(); itrmodel3++) {
+					//	CModel* updatemodel = itrmodel3->modelptr;
+					//	if (updatemodel) {
+					//		ChaMatrix tmpwm = updatemodel->GetWorldMat();
+					//		updatemodel->UpdateMatrix(&tmpwm, &s_matVP);
+					//	}
+					//}
+					ChaMatrix tmpwm = pmodel->GetWorldMat();
+					pmodel->UpdateMatrix(&tmpwm, &s_matVP);
 
 
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
@@ -16034,7 +16038,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 				//if( g_previewFlag == 4 ){
 
-				pmodel->BulletSimulationStart();
+				//pmodel->BulletSimulationStart();
 
 
 
@@ -16077,10 +16081,19 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		}
 	}
 
-
 	//curmodel : 引数で渡されたmodel
 	if (s_model && (curmodel == s_model)) {
 		PrepairUndo();//物理REC様に保存
+	}
+
+
+	//全モデルシミュ開始
+	vector<MODELELEM>::iterator itrmodel4;
+	for (itrmodel4 = s_modelindex.begin(); itrmodel4 != s_modelindex.end(); itrmodel4++) {
+		CModel* pmodel4 = itrmodel4->modelptr;
+		if (pmodel4) {
+			pmodel4->BulletSimulationStart();
+		}
 	}
 
 
@@ -20305,8 +20318,14 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 	}
 
 	if (updateeulflag) {
-		ClearLimitedWM(s_model);
-		ApplyNewLimitsToWM(s_model);
+		vector<MODELELEM>::iterator itrmodel;
+		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+			CModel* pmodel = itrmodel->modelptr;
+			if (pmodel) {
+				ClearLimitedWM(pmodel);
+				ApplyNewLimitsToWM(pmodel);
+			}
+		}
 		refreshEulerGraph();
 	}
 
