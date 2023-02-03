@@ -394,10 +394,11 @@ public:
 
 	int CalcBoneDepth();
 
-	ChaVector3 GetBefEul(int srcmotid, double srcframe); 
+	ChaVector3 GetBefEul(int srcmotid, double srcframe);
+	ChaVector3 GetUnlimitedBefEul(int srcmotid, double srcframe);
 	int GetNotModify180Flag(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-	ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit用
+	//ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit用
 	//ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
 	//ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	//ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
@@ -416,6 +417,7 @@ public:
 	//ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
 	ChaVector3 GetLocalEul(int srcmotid, double srcframe, CMotionPoint* srcmp);
 	ChaVector3 GetLimitedLocalEul(int srcmotid, double srcframe);
+	ChaVector3 GetUnlimitedLocalEul(int srcmotid, double srcframe);
 	int SetWorldMat(int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
 	int SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
 	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
@@ -425,6 +427,7 @@ public:
 	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp);
 	//int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
 
+	int CopyWorldToLimitedWorld(int srcmotid, double srcframe);//制限角度無しの姿勢を制限有りの姿勢にコピーする
 	int ApplyNewLimitsToWM(int srcmotid, double srcframe);//制限角度を変更した後の　Limited再計算
 
 

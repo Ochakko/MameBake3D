@@ -421,7 +421,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 
 /*
-* 2023/02/02
+* 2023/02/03
 * 
 * 1.1.0.14の　#### 予定 (plans) ####
 * 
@@ -434,7 +434,12 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 1, UpdateMatrixのマルチスレッド復活(一時的にシングルスレッドにしている)　(済 2023/02/02)
 * 
 * 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加
-* 
+*	制限角度を変更する際　または　LimitEulをオンにした際　自動的にWorldMat-->LimitedWorldMatを行い　そのうえで制限し直す(済 2023/02/03)
+*	
+*	WorldMat-->LimitedWorldMatのコピーを行うと　LimitedEulをオンにした状態で行ったIK結果が失われる
+*	その件に対しては　制限角度設定を変える前に　フレーム範囲を選択して　Limited-->Worldへコピーを行う
+*	Limited-->Worldへのコピーは　今あるコピーペーストボタンでやるのは手間なので　追加予定
+*
 * 3, コピーの際にtempに自動バックアップ
 * 
 * 4, バックアップからの復元ツールボタン
@@ -444,6 +449,33 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 6, コピーペーストのLimitedWorldMat対応
 * 
 * 7, プロジェクト保存時に　LimitedWorldMat用のファイルも保存　読み込み時にそれをロード
+* 
+* その他
+* 	オイラー角計算改善　(済 2023/02/03)
+* 		GetBefEul()関数化
+* 		0フレームと1フレームの計算を改善
+* 		無駄に180度変化して後のフレームのオイラー角がそのままになる不具合修正
+*
+* 	制限角度設定ボタンの改善　(済 2023/02/03)
+* 		FromCurrentMotionボタン, FromAllRetargetedMotionsボタンを押した際に
+* 		物理シミュボーンの設定は上書きしないように修正
+*
+* 	サンプル更新　(済 2023/02/03)
+* 		Test/0_VRoid_Winter_B2　追加
+* 			オイラー角計算改善により　オイラー角が変わったので制限角度をボタン１つで設定し直し
+*
+* 	LimitEulオン時の　モーションを正しくするための修正で　notmotidfy180flagは1になった
+* 		モーションは正しくなったが　オイラー角表現として　１フレーム目だけ　360度ずれる場合があるので　あとで対策を考える
+*
+*
+* 	１回目の物理シミュでLimitEulにチェックを入れても制限が効かない不具合は？
+* 		調査中
+* 		１回目２回目というよりも　モデルがモデルにタッチしてから　シミュをやり直すと直る？
+*
+*
+* 	制限角度の値のアンドゥリドゥを　するかしないか？
+* 		進み具合によっては　その次のバージョンで
+*
 * 
 */
 
@@ -2280,6 +2312,7 @@ static int AngleDlg2AngleLimit(HWND hDlgWnd);//2022/12/05
 static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//2022/12/05
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
+static int CopyWorldToLimitedWorld(CModel* srcmodel);
 static int ApplyNewLimitsToWM(CModel* srcmodel);
 static int ApplyNewLimitsToWMSelected();
 
@@ -10694,7 +10727,8 @@ int UpdateEditedEuler()
 				CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
 					if (s_ikkind == 0) {//回転
-						opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
+						//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
+						cureul = opebone->GetLocalEul(curmi->motid, (double)curtime, 0);
 					}
 					else if(s_ikkind == 1){//移動
 						cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
@@ -10876,7 +10910,8 @@ int refreshEulerGraph()
 						CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
 							if (s_ikkind == 0) {//回転
-								opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
+								//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
+								cureul = opebone->GetLocalEul(curmi->motid, (double)curtime, 0);
 							}
 							else if (s_ikkind == 1) {//移動
 								cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
@@ -19457,16 +19492,43 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 }
 
-int ApplyNewLimitsToWM(CModel* srcmodel)
+int CopyWorldToLimitedWorld(CModel* srcmodel)
 {
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
 		if (curmi) {
 			double curframe;
-			for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
+			//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
+			for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
 				srcmodel->SetMotionFrame(curframe);
-				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(), curmi->motid, curframe);
+				srcmodel->CopyWorldToLimitedWorldReq(srcmodel->GetTopBone(), curmi->motid, curframe);
+			}
+		}
+
+		{
+			double curframe = s_owpLTimeline->getCurrentTime();
+			srcmodel->SetMotionFrame(curframe);
+			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
+		}
+	}
+	return 0;
+}
+
+
+int ApplyNewLimitsToWM(CModel* srcmodel)
+{
+	CopyWorldToLimitedWorld(srcmodel);
+
+	if (srcmodel) {
+		ChaMatrix tmpwm = srcmodel->GetWorldMat();
+		MOTINFO* curmi = srcmodel->GetCurMotInfo();
+		if (curmi) {
+			double curframe2;
+			//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
+			for (curframe2 = 1.0; curframe2 < curmi->frameleng; curframe2 += 1.0) {
+				srcmodel->SetMotionFrame(curframe2);
+				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(), curmi->motid, curframe2);
 				//srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 			}
 		}
@@ -19534,6 +19596,7 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	
 	ClearLimitedWM(s_model);
 	ApplyNewLimitsToWM(s_model);
+
 
 	//if (s_model && s_model->GetCurMotInfo()) {
 	//	int curmotid = s_model->GetCurMotInfo()->motid;
@@ -20318,14 +20381,21 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 	}
 
 	if (updateeulflag) {
-		vector<MODELELEM>::iterator itrmodel;
-		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-			CModel* pmodel = itrmodel->modelptr;
-			if (pmodel) {
-				ClearLimitedWM(pmodel);
-				ApplyNewLimitsToWM(pmodel);
-			}
-		}
+
+		ClearLimitedWM(s_model);
+		ApplyNewLimitsToWM(s_model);
+
+		//if (g_limitdegflag == true) {
+		//	vector<MODELELEM>::iterator itrmodel;
+		//	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		//		CModel* pmodel = itrmodel->modelptr;
+		//		if (pmodel) {
+		//			ClearLimitedWM(pmodel);
+		//			ApplyNewLimitsToWM(pmodel);
+		//		}
+		//	}
+		//}
+
 		refreshEulerGraph();
 	}
 
@@ -22707,8 +22777,13 @@ int OnSpriteUndo()
 			//2022/12/06
 			//保存時とは制限角度が異なっている可能性があるので　制限角度のために再計算
 			//#########################################################################
-			ClearLimitedWM(s_model);
-			ApplyNewLimitsToWM(s_model);//2022/12/18
+
+			//if (g_limitdegflag == true) {
+			//	ClearLimitedWM(s_model);
+			//	ApplyNewLimitsToWM(s_model);//2022/12/18
+			//}
+
+
 			refreshEulerGraph();
 
 

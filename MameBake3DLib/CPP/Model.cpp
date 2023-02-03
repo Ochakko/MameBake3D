@@ -1891,8 +1891,28 @@ void CModel::UpdateMatrixReq(CBone* srcbone, int srcmotid, double srcframe, ChaM
 	}
 }
 
+void CModel::CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (srcbone) {
+
+		srcbone->CopyWorldToLimitedWorld(srcmotid, srcframe);
+
+		if (srcbone->GetChild()) {
+			CopyWorldToLimitedWorldReq(srcbone->GetChild(), srcmotid, srcframe);
+		}
+		if (srcbone->GetBrother()) {
+			CopyWorldToLimitedWorldReq(srcbone->GetBrother(), srcmotid, srcframe);
+		}
+	}
+}
+
+
 void CModel::ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe)
 {
+
+	//2023/02/03
+	//この関数を実行する前に　CopyWorldToLimitedWorldを実行しておく
+
 	if (srcbone) {
 
 		srcbone->ApplyNewLimitsToWM(srcmotid, srcframe);
@@ -13251,9 +13271,25 @@ int CModel::AngleLimitReplace180to170(CBone* srcbone)
 	return 0;
 }
 
+int CModel::CopyWorldToLimitedWorld()
+{
+	ChaMatrix tmpwm = GetWorldMat();
+	MOTINFO* curmi = GetCurMotInfo();
+	if (curmi) {
+		double curframe;
+		//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
+		for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
+			CopyWorldToLimitedWorldReq(GetTopBone(), curmi->motid, curframe);
+		}
+	}
+
+	return 0;
+}
+
 
 int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 {
+
 	if (!srcbone) {
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {

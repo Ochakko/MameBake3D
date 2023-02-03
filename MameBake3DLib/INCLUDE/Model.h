@@ -263,6 +263,7 @@ public:
 	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
+	void CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe);
 	void ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe);
 
 	void WaitUpdateMatrixFinished();
@@ -706,6 +707,7 @@ public:
 	int AngleLimitReplace180to170(CBone* srcbone = 0);
 	int AdditiveCurrentToAngleLimit(CBone* srcbone = 0);
 	int AdditiveAllMotionsToAngleLimit();
+	int CopyWorldToLimitedWorld();
 
 	bool ChkBoneHasRig(CBone* srcbone);
 
