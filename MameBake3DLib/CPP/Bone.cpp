@@ -3871,6 +3871,78 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 	m_oldjointfpos = srcpos;
 }
 
+ChaVector3 CBone::GetBefEul(int srcmotid, double srcframe)
+{
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	//1つ前のフレームのEULはすでに計算されていると仮定する。
+	double befframe;
+	befframe = roundingframe - 1.0;
+	if (befframe <= 1.01) {
+		//befframe が0.0または1.0の場合 
+		//roundingframeのオイラー角　つまり　currentのオイラー角をbefeulとする
+		CMotionPoint* curmp;
+		curmp = GetMotionPoint(srcmotid, roundingframe);
+		if (curmp) {
+			befeul = GetLocalEul(srcmotid, roundingframe, curmp);
+		}
+		else {
+			_ASSERT(0);
+			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		}
+	}
+	else {
+		CMotionPoint* befmp;
+		befmp = GetMotionPoint(srcmotid, befframe);
+		if (befmp) {
+			befeul = GetLocalEul(srcmotid, befframe, befmp);
+		}
+	}
+
+	//if (g_underIKRot == true) {
+	//	if (roundingframe <= 1.01) {
+	//		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//	}
+	//}
+
+	return befeul;
+}
+
+int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
+{
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/01/14
+	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
+	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
+	//int notmodify180flag = 1;
+	//if (g_underIKRot == false) {
+	//	if (roundingframe <= 1.01) {
+	//		//0フレームと１フレームは　180度ずれチェックをしない
+	//		notmodify180flag = 1;
+	//	}
+	//	else {
+	//		notmodify180flag = 0;
+	//	}
+	//}
+	//else {
+	//	//2023/01/26
+	//	//IKRot中は　０フレームも１フレームも　180度チェックをする
+	//	notmodify180flag = 0;
+	//}
+
+
+	//2023/02/03
+	//CalcLocalEulXYZに渡すbefeulを変更した
+	//カレントフレームが０フレームと１フレームのときには
+	//befeulをカレントフレームのオイラー角として modifyeul180チェックをすることにした
+	int notmodify180flag = 0;
+
+	return notmodify180flag;
+}
+
 
 ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
@@ -3882,6 +3954,12 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 	//###################################################################################################################
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+
+	//for debug
+	//if ((roundingframe == 2.0) && (g_limitdegflag == true) && (strstr(GetBoneName(), "Root") != 0)) {
+	//	_ASSERT(0);
+	//}
 
 
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
@@ -3896,15 +3974,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 
 	if (befeulkind == BEFEUL_BEFFRAME){
 		//1つ前のフレームのEULはすでに計算されていると仮定する。
-		double befframe;
-		befframe = roundingframe - 1.0;
-		if (befframe >= -0.0001){
-			CMotionPoint* befmp;
-			befmp = GetMotionPoint(srcmotid, befframe);
-			if (befmp){
-				befeul = befmp->GetLocalEul();
-			}
-		}
+		befeul = GetBefEul(srcmotid, roundingframe);
 	}
 	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
 		befeul = *directbefeul;
@@ -3967,29 +4037,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, t
 		eulq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-
-
-	//2023/01/14
-	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
-	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
-	int notmodify180flag = 1;
-	if (g_underIKRot == false) {
-		if (roundingframe <= 1.01) {
-			//0フレームと１フレームは　180度ずれチェックをしない
-			notmodify180flag = 1;
-		}
-		else {
-			notmodify180flag = 0;
-		}
-	}
-	else {
-		//2023/01/26
-		//IKRot中は　０フレームも１フレームも　180度チェックをする
-		notmodify180flag = 0;
-		if (roundingframe <= 1.01) {
-			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		}
-	}
+	int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
 
 	CQuaternion axisq;
 	axisq.RotationMatrix(GetNodeMat());
@@ -4131,28 +4179,11 @@ ChaVector3 CBone::CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe)
 		CMotionPoint* befmp;
 		befmp = GetMotionPoint(srcmotid, befframe);
 		if (befmp) {
-			befeul = GetLocalEul(srcmotid, befframe, befmp);
+			befeul = befmp->GetLocalEul();//need unlimited !!!
 		}
 	}
 
-	int notmodify180flag = 1;
-	if (g_underIKRot == false) {
-		if (roundingframe <= 1.01) {
-			//0フレームと１フレームは　180度ずれチェックをしない
-			notmodify180flag = 1;
-		}
-		else {
-			notmodify180flag = 0;
-		}
-	}
-	else {
-		//2023/01/26
-		//IKRot中は　０フレームも１フレームも　180度チェックをする
-		notmodify180flag = 0;
-		if (roundingframe <= 1.01) {
-			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		}
-	}
+	int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int isfirstbone = 0;
@@ -5259,14 +5290,14 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 
 		if (onlycheck == 0) {
 			if (ismovable == 1) {
-				const float thdeg = 165.0f;
-				float tmpX0, tmpY0, tmpZ0;
-				tmpX0 = neweul.x + 360.0f * this->GetRound((saveeul.x - neweul.x) / 360.0f);//オーバー１８０度
-				tmpY0 = neweul.y + 360.0f * this->GetRound((saveeul.y - neweul.y) / 360.0f);//オーバー１８０度
-				tmpZ0 = neweul.z + 360.0f * this->GetRound((saveeul.z - neweul.z) / 360.0f);//オーバー１８０度
-				neweul.x = tmpX0;
-				neweul.y = tmpY0;
-				neweul.z = tmpZ0;
+				//const float thdeg = 165.0f;
+				//float tmpX0, tmpY0, tmpZ0;
+				//tmpX0 = neweul.x + 360.0f * this->GetRound((saveeul.x - neweul.x) / 360.0f);//オーバー１８０度
+				//tmpY0 = neweul.y + 360.0f * this->GetRound((saveeul.y - neweul.y) / 360.0f);//オーバー１８０度
+				//tmpZ0 = neweul.z + 360.0f * this->GetRound((saveeul.z - neweul.z) / 360.0f);//オーバー１８０度
+				//neweul.x = tmpX0;
+				//neweul.y = tmpY0;
+				//neweul.z = tmpZ0;
 
 				int inittraflag0 = 0;
 				//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
@@ -5284,7 +5315,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					//　遊び付きリミテッドIK
 					//############################################
 					ChaVector3 limiteul;
-					limiteul = LimitEul(neweul, saveeul);
+					limiteul = LimitEul(neweul, GetBefEul(srcmotid, roundingframe));
 					int inittraflag0 = 0;
 					//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 					SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
@@ -5314,7 +5345,7 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 					}
 					else {
 						ChaVector3 limiteul;
-						limiteul = LimitEul(neweul, saveeul);
+						limiteul = LimitEul(neweul, GetBefEul(srcmotid, roundingframe));
 						int inittraflag0 = 0;
 						//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 						SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag,
@@ -6509,27 +6540,7 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 		isendbone = 1;
 	}
 
-	//2023/01/14
-	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
-	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
-	int notmodify180flag = 1;
-	if (g_underIKRot == false) {
-		if (roundingframe <= 1.01) {
-			//0フレームと１フレームは　180度ずれチェックをしない
-			notmodify180flag = 1;
-		}
-		else {
-			notmodify180flag = 0;
-		}
-	}
-	else {
-		//2023/01/26
-		//IKRot中は　０フレームも１フレームも　180度チェックをする
-		notmodify180flag = 0;
-		if (roundingframe <= 1.01) {
-			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		}
-	}
+	int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
 
 	fbxq.CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodify180flag);
 

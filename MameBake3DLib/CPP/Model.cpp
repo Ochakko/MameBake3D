@@ -4837,7 +4837,10 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 				ChaMatrix localmat = globalmat * ChaMatrixInv(parentglobalmat);
 				curmp->SetLocalMat(localmat);//anglelimit無し
 
-
+				////for debug
+				//if ((curframe <= 2.1) && (strstr(srcbone->GetBoneName(), "Root") != 0)) {
+				//	_ASSERT(0);
+				//}
 
 				//2023/01/31
 				ChaVector3 cureul = srcbone->CalcLocalEulXYZ(-1, srcmotid, curframe, BEFEUL_BEFFRAME);
@@ -13255,13 +13258,20 @@ int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone) {
+			//if (curbone) {
+	//物理シミュ用のボーンの制限角度は上書きしないことにした
+	//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
+			if (curbone && (curbone->GetBtForce() == 0)) {
 				curbone->AdditiveCurrentToAngleLimit();
 			}
 		}
 	}
 	else {
-		srcbone->AdditiveCurrentToAngleLimit();
+		//物理シミュ用のボーンの制限角度は上書きしないことにした
+		//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
+		if (srcbone && (srcbone->GetBtForce() == 0)) {
+			srcbone->AdditiveCurrentToAngleLimit();
+		}
 	}
 	return 0;
 }
@@ -13271,7 +13281,10 @@ int CModel::AdditiveAllMotionsToAngleLimit()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone) {
+		//if (curbone) {
+	//物理シミュ用のボーンの制限角度は上書きしないことにした
+	//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
+		if (curbone && (curbone->GetBtForce() == 0)) {
 			curbone->AdditiveAllMotionsToAngleLimit();
 		}
 	}

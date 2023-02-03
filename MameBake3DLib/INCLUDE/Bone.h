@@ -394,6 +394,8 @@ public:
 
 	int CalcBoneDepth();
 
+	ChaVector3 GetBefEul(int srcmotid, double srcframe); 
+	int GetNotModify180Flag(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit—p
 	//ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
