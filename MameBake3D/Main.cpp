@@ -460,12 +460,19 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 		FromCurrentMotionボタン, FromAllRetargetedMotionsボタンを押した際に
 * 		物理シミュボーンの設定は上書きしないように修正
 *
-* 	サンプル更新　(済 2023/02/03)
-* 		Test/0_VRoid_Winter_B2　追加
-* 			オイラー角計算改善により　オイラー角が変わったので制限角度をボタン１つで設定し直し
+* 	サンプル更新　
+* 		Test/0_VRoid_Winter_B3　追加(2023/02/04)
+* 			オイラー角計算改善
 *
-* 	LimitEulオン時の　モーションを正しくするための修正で　notmotidfy180flagは1になった
-* 		モーションは正しくなったが　オイラー角表現として　１フレーム目だけ　360度ずれる場合があるので　あとで対策を考える
+* 	オイラー角補正の修正(2023/02/04)
+* 		当たり前のことだが　XYZEul(180, 0, 180)とXYZEul(0, 0, 0)は違う姿勢
+* 		360度のプラスマイナスは有りだが　180度のプラスマイナスは　違う姿勢にすること
+* 		ノイズ対策として+-180度は有り得るが
+* 		同じ姿勢の別表現としての+-180度は　XYZEul(0, 90, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
+* 		360のプラスマイナスに戻して　Q2EulXYZusingQ()の後処理として補正を行う
+*
+* 　IKRotate, IKRotateAxisDeltaの後処理としての姿勢計算し直しをコメントアウト(2023/02/04)
+* 　	姿勢計算がうまく機能するようになったので必要なくなり　IK操作高速化
 *
 *
 * 	１回目の物理シミュでLimitEulにチェックを入れても制限が効かない不具合は？
@@ -7068,8 +7075,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-				UpdateEditedEuler();
+				//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+				//UpdateEditedEuler();
 			}
 		}
 
@@ -28207,8 +28214,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-				UpdateEditedEuler();
+				//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+				//UpdateEditedEuler();
 			}
 		}
 	}
@@ -28644,8 +28651,8 @@ int OnMouseMoveFunc()
 						if (s_ikkind == 0) {
 							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
-							ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-							UpdateEditedEuler();
+							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+							//UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
 							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
@@ -28711,8 +28718,8 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-						UpdateEditedEuler();
+						//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+						//UpdateEditedEuler();
 					}
 					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
@@ -28755,8 +28762,8 @@ int OnMouseMoveFunc()
 					if (s_ikkind == 0) {
 						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-						UpdateEditedEuler();
+						//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+						//UpdateEditedEuler();
 					}
 					else if (s_ikkind == 1) {
 						AddBoneTra(s_pickinfo.buttonflag, deltax * 0.1f);

@@ -504,9 +504,6 @@ public:
 
 private:
 
-	int GetRound(float srcval);
-
-
 /**
  * @fn
  * InitParams

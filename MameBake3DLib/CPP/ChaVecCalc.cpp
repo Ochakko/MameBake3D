@@ -325,15 +325,17 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 
 
 
-int GetRound(float srcval)
-{
-	if (srcval > 0.0f) {
-		return (int)(srcval + 0.5f);
-	}
-	else {
-		return (int)(srcval - 0.5f);
-	}
-}
+//int GetRound(float srcval)
+//{
+//	//if (srcval > 0.0f) {
+//	//	return (int)(srcval + 0.5f);
+//	//}
+//	//else {
+//	//	return (int)(srcval - 0.5f);
+//	//}
+//
+//
+//}
 
 //int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 //{
@@ -3176,7 +3178,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	ChaVector3 tmpVec;
 	double shadowLeng;
 	const float thdeg = 165.0f;
-	float tmpX0, tmpY0, tmpZ0;
+	//float tmpX0, tmpY0, tmpZ0;
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
@@ -3196,17 +3198,22 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
 	//	Euler.z = -Euler.z;
 	//}
-	tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//オーバー１８０度
-	if (notmodify180flag == 0) {
-		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-		if ((tmpZ0 - befeul.z) >= thdeg) {
-			tmpZ0 -= 180.0f;
-		}
-		if ((befeul.z - tmpZ0) >= thdeg) {
-			tmpZ0 += 180.0f;
-		}
-	}
-	Euler.z = tmpZ0;
+	//if (notmodify180flag == 0) {
+	//	tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//オーバー１８０度
+	//}
+	//else {
+	//	tmpZ0 = Euler.z;
+	//}
+	//if (notmodify180flag == 0) {
+	//	//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+	//	if ((tmpZ0 - befeul.z) >= thdeg) {
+	//		tmpZ0 -= 180.0f;
+	//	}
+	//	if ((befeul.z - tmpZ0) >= thdeg) {
+	//		tmpZ0 += 180.0f;
+	//	}
+	//}
+	//Euler.z = tmpZ0;
 
 
 	EinvZ = ChaVector3(0.0f, 0.0f, -Euler.z);
@@ -3236,17 +3243,22 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
 	//	Euler.y = -Euler.y;
 	//}
-	tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//オーバー１８０度
-	if (notmodify180flag == 0) {
-		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-		if ((tmpY0 - befeul.y) >= thdeg) {
-			tmpY0 -= 180.0f;
-		}
-		if ((befeul.y - tmpY0) >= thdeg) {
-			tmpY0 += 180.0f;
-		}
-	}
-	Euler.y = tmpY0;
+	//if (notmodify180flag == 0) {
+	//	tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//オーバー１８０度
+	//}
+	//else {
+	//	tmpY0 = Euler.y;
+	//}
+	//if (notmodify180flag == 0) {
+	//	//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+	//	if ((tmpY0 - befeul.y) >= thdeg) {
+	//		tmpY0 -= 180.0f;
+	//	}
+	//	if ((befeul.y - tmpY0) >= thdeg) {
+	//		tmpY0 += 180.0f;
+	//	}
+	//}
+	//Euler.y = tmpY0;
 
 
 	EinvY = ChaVector3(0.0f, -Euler.y, 0.0f);
@@ -3279,17 +3291,22 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
 	//}
-	tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//オーバー１８０度
-	if (notmodify180flag == 0) {
-		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-		if ((tmpX0 - befeul.x) >= thdeg) {
-			tmpX0 -= 180.0f;
-		}
-		if ((befeul.x - tmpX0) >= thdeg) {
-			tmpX0 += 180.0f;
-		}
-	}
-	Euler.x = tmpX0;
+	//if (notmodify180flag == 0) {
+	//	tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//オーバー１８０度
+	//}
+	//else {
+	//	tmpX0 = Euler.x;
+	//}
+	//if (notmodify180flag == 0) {
+	//	//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+	//	if ((tmpX0 - befeul.x) >= thdeg) {
+	//		tmpX0 -= 180.0f;
+	//	}
+	//	if ((befeul.x - tmpX0) >= thdeg) {
+	//		tmpX0 += 180.0f;
+	//	}
+	//}
+	//Euler.x = tmpX0;
 
 
 	//###################################################################################################################################
@@ -3303,6 +3320,19 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);//10027 CommentOut. 処理が重いわりにたまにしか役に立たないので。しばらくコメントアウト。
 	//ModifyEuler360(&Euler, &befeul, notmodify180flag);
 	//ModifyEuler360(&Euler, &befeul, 0);
+
+
+
+	//###########################################################################################
+	//2023/02/04
+	//当たり前のことだが　XYZEul(180, 0, 180)とXYZEul(0, 0, 0)は違う姿勢
+	//360度のプラスマイナスは有りだが　180度のプラスマイナスは　違う姿勢にすること
+	//ノイズ対策として+-180度は有り得るが
+	//同じ姿勢の別表現としての+-180度は　XYZEul(0, 90, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
+	//360のプラスマイナスに戻して　後処理として補正を行う
+	//###########################################################################################
+
+	ModifyEuler360(&Euler, &befeul, notmodify180flag);
 
 	*reteul = Euler;
 
@@ -3521,44 +3551,88 @@ int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 	//+-180dgreeに制限せずに　オイラー角を連続させるための関数
 	//#########################################################
 
+	//###########################################################################################
+	//2023/02/04
+	//当たり前のことだが　XYZEul(180, 0, 180)とXYZEul(0, 0, 0)は違う姿勢
+	//360度のプラスマイナスは有りだが　180度のプラスマイナスは　違う姿勢にすること
+	//ノイズ対策として+-180度は有り得るが
+	//同じ姿勢の別表現としての+-180度は　XYZEul(0, 90, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
+	//360のプラスマイナスに戻して　後処理として補正を行う
+	//###########################################################################################
+
+
 	float tmpX0, tmpY0, tmpZ0;
-	tmpX0 = eulerA->x + 360.0f * this->GetRound((eulerB->x - eulerA->x) / 360.0f);
-	tmpY0 = eulerA->y + 360.0f * this->GetRound((eulerB->y - eulerA->y) / 360.0f);
-	tmpZ0 = eulerA->z + 360.0f * this->GetRound((eulerB->z - eulerA->z) / 360.0f);
-
-
-	//############################################################################################
-	//Q2EulXYZにaxisqを指定して呼び出した場合
-	//invaxisq * *this * axisqによって　１８０度分オイラー角が回転することがあるので対策
-	// ただし　befframeが0フレームの場合には　１８０度分回転チェックはしない(１８０度回転を許す)
-	//############################################################################################
 	if (notmodify180flag == 0) {
-		float thdeg = 165.0f;
-		if ((tmpX0 - eulerB->x) >= thdeg) {
-			tmpX0 -= 180.0f;
+		if (eulerA->x >= 0.0f) {
+			tmpX0 = eulerA->x + 360.0f * this->GetRound((eulerB->x - eulerA->x) / 360.0f);
 		}
-		if ((eulerB->x - tmpX0) >= thdeg) {
-			tmpX0 += 180.0f;
+		else {
+			tmpX0 = eulerA->x - 360.0f * this->GetRound((eulerA->x - eulerB->x) / 360.0f);
+		}
+		if (eulerA->y >= 0.0f) {
+			tmpY0 = eulerA->y + 360.0f * this->GetRound((eulerB->y - eulerA->y) / 360.0f);
+		}
+		else {
+			tmpY0 = eulerA->y - 360.0f * this->GetRound((eulerA->y - eulerB->y) / 360.0f);
+		}
+		if (eulerA->z >= 0.0f) {
+			tmpZ0 = eulerA->z + 360.0f * this->GetRound((eulerB->z - eulerA->z) / 360.0f);
+		}
+		else {
+			tmpZ0 = eulerA->z - 360.0f * this->GetRound((eulerA->z - eulerB->z) / 360.0f);
+		}
+		
+		//角度変化の大きさ
+		double s0 = ((double)eulerB->x - eulerA->x) * ((double)eulerB->x - eulerA->x) + 
+					((double)eulerB->y - eulerA->y) * ((double)eulerB->y - eulerA->y) + 
+					((double)eulerB->z - eulerA->z) * ((double)eulerB->z - eulerA->z);
+		double s1 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) + 
+					((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) + 
+					((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
+
+		if (s0 <= s1) {
+			//そのまま
+		}
+		else {
+			eulerA->x = tmpX0;
+			eulerA->y = tmpY0;
+			eulerA->z = tmpZ0;
 		}
 
-		if ((tmpY0 - eulerB->y) >= thdeg) {
-			tmpY0 -= 180.0f;
-		}
-		if ((eulerB->y - tmpY0) >= thdeg) {
-			tmpY0 += 180.0f;
-		}
-
-		if ((tmpZ0 - eulerB->z) >= thdeg) {
-			tmpZ0 -= 180.0f;
-		}
-		if ((eulerB->z - tmpZ0) >= thdeg) {
-			tmpZ0 += 180.0f;
-		}
+	}
+	else {
+		//そのまま
 	}
 
-	eulerA->x = tmpX0;
-	eulerA->y = tmpY0;
-	eulerA->z = tmpZ0;
+	////############################################################################################
+	////Q2EulXYZにaxisqを指定して呼び出した場合
+	////invaxisq * *this * axisqによって　１８０度分オイラー角が回転することがあるので対策
+	//// ただし　befframeが0フレームの場合には　１８０度分回転チェックはしない(１８０度回転を許す)
+	////############################################################################################
+	//if (notmodify180flag == 0) {
+	//	float thdeg = 165.0f;
+	//	if ((tmpX0 - eulerB->x) >= thdeg) {
+	//		tmpX0 -= 180.0f;
+	//	}
+	//	if ((eulerB->x - tmpX0) >= thdeg) {
+	//		tmpX0 += 180.0f;
+	//	}
+
+	//	if ((tmpY0 - eulerB->y) >= thdeg) {
+	//		tmpY0 -= 180.0f;
+	//	}
+	//	if ((eulerB->y - tmpY0) >= thdeg) {
+	//		tmpY0 += 180.0f;
+	//	}
+
+	//	if ((tmpZ0 - eulerB->z) >= thdeg) {
+	//		tmpZ0 -= 180.0f;
+	//	}
+	//	if ((eulerB->z - tmpZ0) >= thdeg) {
+	//		tmpZ0 += 180.0f;
+	//	}
+	//}
+
 
 	return 0;
 }
@@ -3748,12 +3822,22 @@ return 0;
 */
 int CQuaternion::GetRound(float srcval)
 {
+	//2023/02/04
+	//-180度と+180度が入れ替わらないように0.5より少し小さくする
+
 	if (srcval > 0.0f) {
-		return (int)(srcval + 0.5);
+		return (int)(srcval + 0.490);
 	}
 	else {
-		return (int)(srcval - 0.5);
+		return (int)(srcval - 0.490);
 	}
+
+	//if (srcval > 0.0f) {
+	//	return (int)(srcval + 0.5);
+	//}
+	//else {
+	//	return (int)(srcval - 0.5);
+	//}
 
 	//if (srcval > 0.0f) {
 	//	return (int)(srcval + 0.0001f);

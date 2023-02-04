@@ -3908,17 +3908,13 @@ ChaVector3 CBone::GetBefEul(int srcmotid, double srcframe)
 	//1つ前のフレームのEULはすでに計算されていると仮定する。
 	double befframe;
 	befframe = roundingframe - 1.0;
-	if (befframe <= 1.01) {
-		//befframe が0.0または1.0の場合 
-		//roundingframeのオイラー角　つまり　currentのオイラー角をbefeulとする
+	if (roundingframe <= 1.01) {
+		//roundingframe が0.0または1.0の場合 
+		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		CMotionPoint* curmp;
 		curmp = GetMotionPoint(srcmotid, roundingframe);
 		if (curmp) {
 			befeul = GetLocalEul(srcmotid, roundingframe, curmp);
-		}
-		else {
-			_ASSERT(0);
-			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 	}
 	else {
@@ -3947,24 +3943,19 @@ ChaVector3 CBone::GetUnlimitedBefEul(int srcmotid, double srcframe)
 	//1つ前のフレームのEULはすでに計算されていると仮定する。
 	double befframe;
 	befframe = roundingframe - 1.0;
-	if (befframe <= 1.01) {
-		//befframe が0.0または1.0の場合 
-		//roundingframeのオイラー角　つまり　currentのオイラー角をbefeulとする
+	if (roundingframe <= 1.01) {
+		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		CMotionPoint* curmp;
 		curmp = GetMotionPoint(srcmotid, roundingframe);
 		if (curmp) {
-			befeul = GetLocalEul(srcmotid, roundingframe, curmp);
-		}
-		else {
-			_ASSERT(0);
-			befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			befeul = curmp->GetLocalEul();//unlimited !!!
 		}
 	}
 	else {
 		CMotionPoint* befmp;
 		befmp = GetMotionPoint(srcmotid, befframe);
 		if (befmp) {
-			befeul = GetLocalEul(srcmotid, befframe, befmp);
+			befeul = befmp->GetLocalEul();//unlimited !!!
 		}
 	}
 
@@ -3981,9 +3972,14 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	////2023/01/14
-	////rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
-	////しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
+	//2023/02/04
+	//ModifyEuler360()の内容を変えたので　全フレームmodifyする
+	int notmodify180flag = 0;
+
+
+	//2023/01/14
+	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
+	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	//int notmodify180flag = 1;
 	//if (g_underIKRot == false) {
 	//	if (roundingframe <= 1.01) {
@@ -4013,7 +4009,7 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 	//よって　notmodify180flagは1にしてみる
 	//notmodify180flagを1にすると
 	//LimitEulオン時に　１フレームだけオイラー角が360度違うことがある副作用があるが　対策は後で
-	int notmodify180flag = 1;
+	//int notmodify180flag = 1;
 
 
 	return notmodify180flag;
@@ -5381,15 +5377,6 @@ int CBone::SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double 
 
 		if (onlycheck == 0) {
 			if (ismovable == 1) {
-				//const float thdeg = 165.0f;
-				//float tmpX0, tmpY0, tmpZ0;
-				//tmpX0 = neweul.x + 360.0f * this->GetRound((saveeul.x - neweul.x) / 360.0f);//オーバー１８０度
-				//tmpY0 = neweul.y + 360.0f * this->GetRound((saveeul.y - neweul.y) / 360.0f);//オーバー１８０度
-				//tmpZ0 = neweul.z + 360.0f * this->GetRound((saveeul.z - neweul.z) / 360.0f);//オーバー１８０度
-				//neweul.x = tmpX0;
-				//neweul.y = tmpY0;
-				//neweul.z = tmpZ0;
-
 				int inittraflag0 = 0;
 				//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 				SetWorldMatFromEulAndScaleAndTra(inittraflag0, setchildflag, 
@@ -5573,20 +5560,6 @@ float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 	else{
 		float newval = srcval;
 
-		//float cmpval1;
-		//cmpval1 = srcval + 360.0f * this->GetRound((m_anglelimit.upper[srckind] - srcval) / 360.0f);//オーバー１８０度
-		//float cmpval2;
-		//cmpval2 = srcval + 360.0f * this->GetRound((m_anglelimit.lower[srckind] - srcval) / 360.0f);//オーバー１８０度
-		//float cmpvalupper, cmpvallower;
-		//if (cmpval1 > cmpval2) {
-		//	cmpvalupper = cmpval1;
-		//	cmpvallower = cmpval2;
-		//}
-		//else {
-		//	cmpvalupper = cmpval2;
-		//	cmpvallower = cmpval1;
-		//}
-
 		float cmpvalupper, cmpvallower;
 		cmpvalupper = srcval;
 		cmpvallower = srcval;
@@ -5616,24 +5589,6 @@ float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 	}
 }
 
-int CBone::GetRound(float srcval)
-{
-	if (srcval > 0.0f) {
-		return (int)(srcval + 0.5f);
-	}
-	else {
-		return (int)(srcval - 0.5f);
-	}
-
-	//if (srcval > 0.0f) {
-	//	return (int)(srcval + 0.0001f);
-	//}
-	//else {
-	//	return (int)(srcval - 0.0001f);
-	//}
-
-}
-
 
 ChaVector3 CBone::LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul)
 {
@@ -5642,47 +5597,15 @@ ChaVector3 CBone::LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul)
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 tmpeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	//float tmpX0, tmpY0, tmpZ0;
-	//tmpX0 = tmpeul.x + 360.0f * this->GetRound((srcbefeul.x - tmpeul.x) / 360.0f);//オーバー１８０度
-	//tmpY0 = tmpeul.y + 360.0f * this->GetRound((srcbefeul.y - tmpeul.y) / 360.0f);//オーバー１８０度
-	//tmpZ0 = tmpeul.z + 360.0f * this->GetRound((srcbefeul.z - tmpeul.z) / 360.0f);//オーバー１８０度
-	//tmpeul.x = LimitAngle(AXIS_X, tmpX0);
-	//tmpeul.y = LimitAngle(AXIS_Y, tmpY0);
-	//tmpeul.z = LimitAngle(AXIS_Z, tmpZ0);
-
 	tmpeul.x = LimitAngle(AXIS_X, srceul.x);
 	tmpeul.y = LimitAngle(AXIS_Y, srceul.y);
 	tmpeul.z = LimitAngle(AXIS_Z, srceul.z);
 
-	float tmpX0, tmpY0, tmpZ0;
-	tmpX0 = tmpeul.x + 360.0f * this->GetRound((srcbefeul.x - tmpeul.x) / 360.0f);//オーバー１８０度
-	tmpY0 = tmpeul.y + 360.0f * this->GetRound((srcbefeul.y - tmpeul.y) / 360.0f);//オーバー１８０度
-	tmpZ0 = tmpeul.z + 360.0f * this->GetRound((srcbefeul.z - tmpeul.z) / 360.0f);//オーバー１８０度
-	reteul.x = tmpX0;
-	reteul.y = tmpY0;
-	reteul.z = tmpZ0;
+	CQuaternion calcq;
+	calcq.ModifyEuler360(&tmpeul, &srcbefeul, 0);
 
-	//if ((tmpX0 - srcbefeul.x) >= thdeg) {
-	//	tmpX0 -= 180.0f;
-	//}
-	//if ((srcbefeul.x - tmpX0) >= thdeg) {
-	//	tmpX0 += 180.0f;
-	//}
-	//if ((tmpY0 - srcbefeul.y) >= thdeg) {
-	//	tmpY0 -= 180.0f;
-	//}
-	//if ((srcbefeul.y - tmpY0) >= thdeg) {
-	//	tmpY0 += 180.0f;
-	//}
-	//if ((tmpZ0 - srcbefeul.z) >= thdeg) {
-	//	tmpZ0 -= 180.0f;
-	//}
-	//if ((srcbefeul.z - tmpZ0) >= thdeg) {
-	//	tmpZ0 += 180.0f;
-	//}
-	//reteul.x = tmpX0;
-	//reteul.y = tmpY0;
-	//reteul.z = tmpZ0;
+	reteul = tmpeul;
+
 
 	return reteul;
 }
