@@ -264,6 +264,7 @@ public:
 	//int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
 	void CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe);
+	void CopyLimitedWorldToWorldReq(CBone* srcbone, int srcmotid, double srcframe);
 	void ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe);
 
 	void WaitUpdateMatrixFinished();

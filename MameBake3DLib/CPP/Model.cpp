@@ -1891,6 +1891,22 @@ void CModel::UpdateMatrixReq(CBone* srcbone, int srcmotid, double srcframe, ChaM
 	}
 }
 
+void CModel::CopyLimitedWorldToWorldReq(CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (srcbone) {
+
+		srcbone->CopyLimitedWorldToWorld(srcmotid, srcframe);
+
+		if (srcbone->GetChild()) {
+			CopyLimitedWorldToWorldReq(srcbone->GetChild(), srcmotid, srcframe);
+		}
+		if (srcbone->GetBrother()) {
+			CopyLimitedWorldToWorldReq(srcbone->GetBrother(), srcmotid, srcframe);
+		}
+	}
+}
+
+
 void CModel::CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe)
 {
 	if (srcbone) {

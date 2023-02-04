@@ -436,9 +436,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加
 *	制限角度を変更する際　または　LimitEulをオンにした際　自動的にWorldMat-->LimitedWorldMatを行い　そのうえで制限し直す(済 2023/02/03)
 *	
-*	WorldMat-->LimitedWorldMatのコピーを行うと　LimitedEulをオンにした状態で行ったIK結果が失われる
-*	その件に対しては　制限角度設定を変える前に　フレーム範囲を選択して　Limited-->Worldへコピーを行う
-*	Limited-->Worldへのコピーは　今あるコピーペーストボタンでやるのは手間なので　追加予定
+* 	LimitedWorldMat-->WorldMatのコピーも自動化
+* 		LimitEulにチェックを入れてのIK操作の結果は　編集部分を自動的に　角度制限無し姿勢にコピーする (2023/02/04)
+*
+* 	LimitedWorldMatの全フレームをWorldMatにコピーする機能については　ボタンを新規追加予定
 *
 * 3, コピーの際にtempに自動バックアップ
 * 
@@ -468,7 +469,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 		当たり前のことだが　XYZEul(180, 0, 180)とXYZEul(0, 0, 0)は違う姿勢
 * 		360度のプラスマイナスは有りだが　180度のプラスマイナスは　違う姿勢にすること
 * 		ノイズ対策として+-180度は有り得るが
-* 		同じ姿勢の別表現としての+-180度は　XYZEul(0, 90, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
+* 		同じ姿勢の別表現としての+-180度は　XYZEul(0, 180, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
 * 		360のプラスマイナスに戻して　Q2EulXYZusingQ()の後処理として補正を行う
 *
 * 　IKRotate, IKRotateAxisDeltaの後処理としての姿勢計算し直しをコメントアウト(2023/02/04)
@@ -2320,6 +2321,7 @@ static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//20
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
 static int CopyWorldToLimitedWorld(CModel* srcmodel);
+static int CopyLimitedWorldToWorld(CModel* srcmodel);
 static int ApplyNewLimitsToWM(CModel* srcmodel);
 static int ApplyNewLimitsToWMSelected();
 
@@ -7494,6 +7496,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
+
+			//2023/02/04
+			//LimitEulにチェックを入れて編集したモーション部分を　角度制限無しの姿勢にベイクする
+			if ((g_limitdegflag == true) && (s_editmotionflag >= 0)) {
+				CopyLimitedWorldToWorld(s_model);
+			}
+
+
 			UpdateEditedEuler();
 
 			s_pickinfo.buttonflag = 0;
@@ -19498,6 +19508,37 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 
 }
+
+int CopyLimitedWorldToWorld(CModel* srcmodel)
+{
+	if (srcmodel) {
+		ChaMatrix tmpwm = srcmodel->GetWorldMat();
+		MOTINFO* curmi = srcmodel->GetCurMotInfo();
+		if (curmi) {
+
+			int framenum;
+			double startframe, endframe;
+			s_editrange.GetRange(&framenum, &startframe, &endframe);
+			double roundingstartframe, roundingendframe;
+			roundingstartframe = (double)((int)(startframe + 0.0001));
+			roundingendframe = (double)((int)(endframe + 0.0001));
+
+			double curframe;
+			for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
+				srcmodel->SetMotionFrame(curframe);
+				srcmodel->CopyLimitedWorldToWorldReq(srcmodel->GetTopBone(), curmi->motid, curframe);
+			}
+		}
+
+		{
+			double curframe = s_owpLTimeline->getCurrentTime();
+			srcmodel->SetMotionFrame(curframe);
+			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
+		}
+	}
+	return 0;
+}
+
 
 int CopyWorldToLimitedWorld(CModel* srcmodel)
 {

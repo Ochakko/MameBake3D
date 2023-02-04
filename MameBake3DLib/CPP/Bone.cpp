@@ -634,6 +634,24 @@ int CBone::UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatr
 	return 0;
 }
 
+int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚ÌŽp¨‚ð§ŒÀ–³‚µ‚ÌŽp¨‚ÉƒRƒs[‚·‚é
+{
+	double roundingframe = (double)((int)srcframe + 0.0001);
+
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		curmp->SetWorldMat(curmp->GetLimitedWM());
+		curmp->SetLocalEul(curmp->GetLimitedLocalEul());
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+}
+
 int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚ÌŽp¨‚ð§ŒÀ—L‚è‚ÌŽp¨‚ÉƒRƒs[‚·‚é
 {
 	double roundingframe = (double)((int)srcframe + 0.0001);
@@ -643,7 +661,6 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 	if (curmp) {
 		curmp->SetLimitedWM(curmp->GetWorldMat());
 		curmp->SetLimitedLocalEul(curmp->GetLocalEul());
-
 	}
 	else {
 		_ASSERT(0);

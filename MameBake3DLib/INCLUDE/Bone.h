@@ -428,6 +428,7 @@ public:
 	//int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
 
 	int CopyWorldToLimitedWorld(int srcmotid, double srcframe);//制限角度無しの姿勢を制限有りの姿勢にコピーする
+	int CopyLimitedWorldToWorld(int srcmotid, double srcframe);//制限角度有りの姿勢を制限無しの姿勢にコピーする
 	int ApplyNewLimitsToWM(int srcmotid, double srcframe);//制限角度を変更した後の　Limited再計算
 
 
