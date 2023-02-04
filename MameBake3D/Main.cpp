@@ -421,7 +421,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 
 /*
-* 2023/02/03
+* 2023/02/04
 * 
 * 1.1.0.14の　#### 予定 (plans) ####
 * 
@@ -433,14 +433,16 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *
 * 1, UpdateMatrixのマルチスレッド復活(一時的にシングルスレッドにしている)　(済 2023/02/02)
 * 
-* 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加
+* 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加　(済 2023/02/04)
 *	制限角度を変更する際　または　LimitEulをオンにした際　自動的にWorldMat-->LimitedWorldMatを行い　そのうえで制限し直す(済 2023/02/03)
 *	
 * 	LimitedWorldMat-->WorldMatのコピーも自動化
 * 		LimitEulにチェックを入れてのIK操作の結果は　編集部分を自動的に　角度制限無し姿勢にコピーする (2023/02/04)
 *
-* 	LimitedWorldMatの全フレームをWorldMatにコピーする機能については　ボタンを新規追加予定
-*
+* 	LimitedWorldMatの全フレームをWorldMatにコピーする機能については　ボタンを新規追加　(2023/02/04)
+*		L2Wボタンを追加
+* 
+* 
 * 3, コピーの際にtempに自動バックアップ
 * 
 * 4, バックアップからの復元ツールボタン
@@ -1507,6 +1509,7 @@ static bool s_undoFlag = false;
 static bool s_redoFlag = false;
 static bool s_undoredoFromPlayerButton = false;
 static bool s_copyFlag = false;			// コピーフラグ
+static bool s_copyLW2WFlag = false;			//Limited2World ベイクフラグ
 static bool s_zeroFrameFlag = false;
 //static bool s_oneFrameFlag = false;
 static bool s_selCopyHisotryFlag = false;
@@ -1683,12 +1686,16 @@ enum {
 
 #define SPPLAYERBUTTONNUM	16
 
+static float s_spsize = 45.0f;
+static float s_sptopmargin = 35.0f;
+static float s_spsidemargin = 35.0f;
 static SPELEM s_spundo[2];
 static SPAXIS s_spaxis[SPAXISNUM];
 static SPCAM s_spcam[SPR_CAM_MAX];
 static SPELEM s_sprig[SPRIGMAX];//inactive, active
 //static SPELEM s_spbt;
 static SPELEM s_spret2prev;
+static SPELEM s_spcplw2w;
 static SPGUISW s_spguisw[SPGUISWNUM];
 static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
 static SPGUISW s_spretargetsw[SPRETARGETSWNUM];
@@ -2321,7 +2328,7 @@ static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//20
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
 static int CopyWorldToLimitedWorld(CModel* srcmodel);
-static int CopyLimitedWorldToWorld(CModel* srcmodel);
+static int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorflag);
 static int ApplyNewLimitsToWM(CModel* srcmodel);
 static int ApplyNewLimitsToWMSelected();
 
@@ -2408,6 +2415,8 @@ static int SetSpCamParams();
 static int PickSpCam(POINT srcpos);
 static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
+static int SetSpCpLW2WParams();
+static int PickSpCpLW2W(POINT srcpos);
 static int PickRigBone(UIPICKINFO* ppickinfo);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
 
@@ -2987,6 +2996,9 @@ int CheckResolution()
 				if (selectL == TRUE) {
 					g_4kresolution = true;//!!!!!!!!!!!!!!!!
 
+					s_spsize = 80.0f;
+					s_sptopmargin = 60.0f;
+					s_spsidemargin = 60.0f;
 
 					s_totalwndwidth = (1216 + 450) * 2;
 					s_totalwndheight = (950 - MAINMENUAIMBARH) * 2;
@@ -3041,6 +3053,10 @@ int CheckResolution()
 
 
 	if (!g_4kresolution) {
+
+		s_spsize = 45.0f;
+		s_sptopmargin = 35.0f;
+		s_spsidemargin = 35.0f;
 
 		s_totalwndwidth = (1216 + 450);
 		s_totalwndheight = 950;
@@ -3237,6 +3253,7 @@ void InitApp()
 	s_redoFlag = false;
 	s_undoredoFromPlayerButton = false;
 	s_copyFlag = false;			// コピーフラグ
+	s_copyLW2WFlag = false;
 	s_zeroFrameFlag = false;
 	//s_oneFrameFlag = false;
 	s_selCopyHisotryFlag = false;
@@ -3604,6 +3621,7 @@ void InitApp()
 	//ZeroMemory(&s_spbt, sizeof(SPELEM));
 	ZeroMemory(&s_spmousehere, sizeof(SPELEM));
 	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
+	ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
 	ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
 
 	{
@@ -4332,6 +4350,10 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spret2prev.sprite);
 	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return S_FALSE);
 
+	s_spcplw2w.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spcplw2w.sprite);
+	CallF(s_spcplw2w.sprite->Create(pd3dImmediateContext, mpath, L"BakeLW2W.png", 0, 0), return S_FALSE);
+
 	s_mousecenteron.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_mousecenteron.sprite);
 	CallF(s_mousecenteron.sprite->Create(pd3dImmediateContext, mpath, L"MouseCenterButtonON.png", 0, 0), return S_FALSE);
@@ -4555,6 +4577,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpRetargetSWParams();
 	SetSpCamParams();
 	SetSpRigParams();
+	SetSpCpLW2WParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
@@ -5786,6 +5809,11 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 	s_spret2prev.sprite = 0;
 
+	CMySprite* curspcplw2w = s_spcplw2w.sprite;
+	if (curspcplw2w) {
+		delete curspcplw2w;
+	}
+	s_spcplw2w.sprite = 0;
 
 	CMySprite* curspm = s_mousecenteron.sprite;
 	if (curspm) {
@@ -7228,6 +7256,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
+		//2023/02/04
+		//Bake LimitedWorld-->World : currentmotion fullframe
+		if (PickSpCpLW2W(ptCursor) != 0) {
+			if (s_copyLW2WFlag == false) {
+				s_copyLW2WFlag = true;
+			}
+		}
+
 		int oprigdoneflag = 0;
 		int pickrigflag = 0;
 		pickrigflag = PickSpRig(ptCursor);
@@ -7500,7 +7536,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			//2023/02/04
 			//LimitEulにチェックを入れて編集したモーション部分を　角度制限無しの姿勢にベイクする
 			if ((g_limitdegflag == true) && (s_editmotionflag >= 0)) {
-				CopyLimitedWorldToWorld(s_model);
+				bool allframeflag = false;
+				bool setcursorflag = true;
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
 			}
 
 
@@ -15874,6 +15912,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 		if (pmodel) {
+
 			//if ((flag == 0) && (g_previewFlag != 4)){
 				//F9キー
 			if (btcntzero == 1) {
@@ -16872,19 +16911,17 @@ int SetSpUndoParams()
 		return 0;
 	}
 
-	float spawidth = 50.0f;
-	float spaheight = 50.0f;
 	int spashift = 6;
 	//s_spundo[0].dispcenter.x = (int)( s_mainwidth * 0.57f );
 	//s_spundo[0].dispcenter.y = (int)( 30.0f * ( (float)s_mainheight / 620.0 ) );
 	//s_spundo[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 4;
 	//s_spundo[0].dispcenter.y = 16 + 10;
-	s_spundo[0].dispcenter.x = s_mainwidth - 35 - 50 - 10;
-	s_spundo[0].dispcenter.y = 35 + ((int)spaheight + spashift) * 3;
+	s_spundo[0].dispcenter.x = s_mainwidth - (int)s_spsidemargin - (int)s_spsize - 10;
+	s_spundo[0].dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 3;
 	//spashift = (int)( (float)spashift * ( (float)s_mainwidth / 600.0 ) );
 
 	s_spundo[1].dispcenter.x = s_spundo[0].dispcenter.x;
-	s_spundo[1].dispcenter.y = s_spundo[0].dispcenter.y + (int)spaheight + spashift;
+	s_spundo[1].dispcenter.y = s_spundo[0].dispcenter.y + (int)s_spsize + spashift;
 
 	int spacnt;
 	for (spacnt = 0; spacnt < 2; spacnt++) {
@@ -16892,7 +16929,7 @@ int SetSpUndoParams()
 		disppos.x = (float)(s_spundo[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spundo[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+		ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 		if (s_spundo[spacnt].sprite) {
 			CallF(s_spundo[spacnt].sprite->SetPos(disppos), return 1);
 			CallF(s_spundo[spacnt].sprite->SetSize(dispsize), return 1);
@@ -16913,22 +16950,20 @@ int SetSpAxisParams()
 		return 0;
 	}
 
-	float spawidth = 50.0f;
-	float spaheight = 50.0f;
 	int spashift = 6;
 	//s_spaxis[0].dispcenter.x = (int)( s_mainwidth * 0.57f );
 	//s_spaxis[0].dispcenter.y = (int)( 30.0f * ( (float)s_mainheight / 620.0 ) );
 	//s_spaxis[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 4;
 	//s_spaxis[0].dispcenter.y = 16 + 10;
-	s_spaxis[0].dispcenter.x = s_mainwidth - 35 - 50 - 10;
-	s_spaxis[0].dispcenter.y = 35;
+	s_spaxis[0].dispcenter.x = s_mainwidth - (int)s_spsidemargin - (int)s_spsize - 10;
+	s_spaxis[0].dispcenter.y = (int)s_sptopmargin;
 	//spashift = (int)( (float)spashift * ( (float)s_mainwidth / 600.0 ) );
 
 	s_spaxis[1].dispcenter.x = s_spaxis[0].dispcenter.x;
-	s_spaxis[1].dispcenter.y = s_spaxis[0].dispcenter.y + (int)spaheight + spashift;
+	s_spaxis[1].dispcenter.y = s_spaxis[0].dispcenter.y + (int)s_spsize + spashift;
 
 	s_spaxis[2].dispcenter.x = s_spaxis[0].dispcenter.x;
-	s_spaxis[2].dispcenter.y = s_spaxis[1].dispcenter.y + (int)spaheight + spashift;;
+	s_spaxis[2].dispcenter.y = s_spaxis[1].dispcenter.y + (int)s_spsize + spashift;;
 
 	int spacnt;
 	for( spacnt = 0; spacnt < SPAXISNUM; spacnt++ ){
@@ -16936,7 +16971,7 @@ int SetSpAxisParams()
 		disppos.x = (float)( s_spaxis[spacnt].dispcenter.x ) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)( s_spaxis[spacnt].dispcenter.y ) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2( spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f );
+		ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f );
 		if (s_spaxis[spacnt].sprite) {
 			CallF(s_spaxis[spacnt].sprite->SetPos(disppos), return 1);
 			CallF(s_spaxis[spacnt].sprite->SetSize(dispsize), return 1);
@@ -17212,8 +17247,8 @@ int SetSpMouseCenterParams()
 	//float spgheight = 145.0f;
 	//float spgwidth = 50;
 	//float spgheight = 67;
-	float spgwidth = 50.0f * 0.6f;
-	float spgheight = 67.0f * 0.6f;
+	//float spgwidth = 50.0f * 0.6f;
+	//float spgheight = 67.0f * 0.6f;
 	int spgshift = 6;
 
 	_ASSERT(s_3dwnd);
@@ -17226,7 +17261,7 @@ int SetSpMouseCenterParams()
 	//s_mousecenteron.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
 
 
-	s_mousecenteron.dispcenter.x = s_spcam[2].dispcenter.x + (int)spgwidth + spgshift + 25;
+	s_mousecenteron.dispcenter.x = s_spcam[2].dispcenter.x + (int)s_spsize + spgshift;// +(int)s_spsize / 2;
 	s_mousecenteron.dispcenter.y = s_spcam[2].dispcenter.y;
 	//s_spcam[2].dispcenter.x = s_spcam[1].dispcenter.x + (int)(spawidth)+spashift;
 	//s_spcam[2].dispcenter.y = s_spcam[0].dispcenter.y;
@@ -17235,7 +17270,7 @@ int SetSpMouseCenterParams()
 	disppos.x = (float)(s_mousecenteron.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_mousecenteron.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
-	ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 
 	if (s_mousecenteron.sprite) {
 		CallF(s_mousecenteron.sprite->SetPos(disppos), return 1);
@@ -17271,8 +17306,8 @@ int SetSpSel3DParams()
 
 	//float spgwidth = 91.0f;
 	//float spgheight = 145.0f;
-	float spgwidth = 91.0f * 0.25f;
-	float spgheight = 145.0f * 0.25f;
+	//float spgwidth = 91.0f * 0.25f;
+	//float spgheight = 145.0f * 0.25f;
 	int spgshift = 6;
 
 	_ASSERT(s_3dwnd);
@@ -17281,14 +17316,14 @@ int SetSpSel3DParams()
 
 	//s_spsel3d.dispcenter.x = (LONG)(clientrect.right - spgwidth / 2 - 20);
 	//s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
-	s_spsel3d.dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 7;
-	s_spsel3d.dispcenter.y = (LONG)(clientrect.top + spgheight / 2 + 20);
+	s_spsel3d.dispcenter.x = s_mainwidth - (int)s_spsize - 10 - (int)s_spsize - 6 - ((int)s_spsize + 6) * 7;
+	s_spsel3d.dispcenter.y = (LONG)(clientrect.top + (int)s_spsize / 2 + 20);
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_spsel3d.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_spsel3d.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
-	ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 
 	if (s_spsel3d.spriteON) {
 		CallF(s_spsel3d.spriteON->SetPos(disppos), return 1);
@@ -17317,17 +17352,15 @@ int SetSpIkModeSWParams()
 	}
 
 
-	float spgwidth = 50.0f;
-	float spgheight = 50.0f;
 	int spgshift = 6;
-	s_spikmodesw[0].dispcenter.x = s_mainwidth - 35;
-	s_spikmodesw[0].dispcenter.y = 35;
+	s_spikmodesw[0].dispcenter.x = s_mainwidth - (int)s_spsidemargin;
+	s_spikmodesw[0].dispcenter.y = (int)s_sptopmargin;
 
 	s_spikmodesw[1].dispcenter.x = s_spikmodesw[0].dispcenter.x;
-	s_spikmodesw[1].dispcenter.y = s_spikmodesw[0].dispcenter.y + (int)spgheight + spgshift;
+	s_spikmodesw[1].dispcenter.y = s_spikmodesw[0].dispcenter.y + (int)s_spsize + spgshift;
 
 	s_spikmodesw[2].dispcenter.x = s_spikmodesw[1].dispcenter.x;
-	s_spikmodesw[2].dispcenter.y = s_spikmodesw[1].dispcenter.y + (int)spgheight + spgshift;
+	s_spikmodesw[2].dispcenter.y = s_spikmodesw[1].dispcenter.y + (int)s_spsize + spgshift;
 
 	int spgcnt;
 	for (spgcnt = 0; spgcnt < 3; spgcnt++) {
@@ -17335,7 +17368,7 @@ int SetSpIkModeSWParams()
 		disppos.x = (float)(s_spikmodesw[spgcnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spikmodesw[spgcnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+		ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 
 		if (s_spikmodesw[spgcnt].spriteON) {
 			CallF(s_spikmodesw[spgcnt].spriteON->SetPos(disppos), return 1);
@@ -17365,17 +17398,15 @@ int SetSpRefPosSWParams()
 	}
 
 
-	float spgwidth = 50.0f;
-	float spgheight = 50.0f;
 	int spgshift = 6;
-	s_sprefpos.dispcenter.x = s_mainwidth - 35;
-	s_sprefpos.dispcenter.y = 35 + ((int)spgheight + spgshift) * 3;
+	s_sprefpos.dispcenter.x = s_mainwidth - (int)s_spsidemargin;
+	s_sprefpos.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spgshift) * 3;
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_sprefpos.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_sprefpos.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
-	ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 
 	if (s_sprefpos.spriteON) {
 		CallF(s_sprefpos.spriteON->SetPos(disppos), return 1);
@@ -17501,21 +17532,20 @@ int SetSpCamParams()
 		return 0;
 	}
 
-	float spawidth = 50.0f;
 	int spashift = 6;
 	//s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
 	//s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
 	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 3;
 	//s_spcam[0].dispcenter.y = 16 + 10 + (int(spawidth * 1.5f));
-	s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
-	s_spcam[0].dispcenter.y = 25 + 10;
+	s_spcam[0].dispcenter.x = s_mainwidth - (int)s_spsize - 10 - (int)s_spsize - 6 - ((int)s_spsize + 6) * 4;
+	s_spcam[0].dispcenter.y = (int)s_spsize / 2 + 10;
 
 	//spashift = (int)((float)spashift * ((float)s_mainwidth / 600.0));
 
-	s_spcam[1].dispcenter.x = s_spcam[0].dispcenter.x + (int)(spawidth)+spashift;
+	s_spcam[1].dispcenter.x = s_spcam[0].dispcenter.x + (int)s_spsize + spashift;
 	s_spcam[1].dispcenter.y = s_spcam[0].dispcenter.y;
 
-	s_spcam[2].dispcenter.x = s_spcam[1].dispcenter.x + (int)(spawidth)+spashift;
+	s_spcam[2].dispcenter.x = s_spcam[1].dispcenter.x + (int)s_spsize + spashift;
 	s_spcam[2].dispcenter.y = s_spcam[0].dispcenter.y;
 
 	int spacnt;
@@ -17524,7 +17554,7 @@ int SetSpCamParams()
 		disppos.x = (float)(s_spcam[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spcam[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+		ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 		if (s_spcam[spacnt].sprite) {
 			CallF(s_spcam[spacnt].sprite->SetPos(disppos), return 1);
 			CallF(s_spcam[spacnt].sprite->SetSize(dispsize), return 1);
@@ -17553,16 +17583,14 @@ int SetSpRigParams()
 	s_sprefpos.dispcenter.y = 35 + ((int)spgheight + spgshift) * 3;
 */
 
-	float spawidth = 50.0f;
-	float spaheight = 50.0f;
 	int spashift = 6;
 	//spashift = (int)((float)spashift * ((float)s_mainwidth / s_2ndposy));
 	//s_sprig[SPRIG_INACTIVE].dispcenter.x = (int)(s_mainwidth * 0.57f) + ((int)(spawidth)+spashift) * 3;
 	//s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0));// +(int(spawidth * 1.5f) * 2);
 	//s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - 50 - 6;
 	//s_sprig[SPRIG_INACTIVE].dispcenter.y = 25 + 10;
-	s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 35;
-	s_sprig[SPRIG_INACTIVE].dispcenter.y = 35 + ((int)spaheight + spashift) * 4;
+	s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - (int)s_spsidemargin;
+	s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 4;
 
 	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
 	//s_spcam[0].dispcenter.y = 25 + 10;
@@ -17575,7 +17603,7 @@ int SetSpRigParams()
 	disppos.x = (float)(s_sprig[0].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 	disppos.y = -((float)(s_sprig[0].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 	disppos.z = 0.0f;
-	ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 	if (s_sprig[SPRIG_INACTIVE].sprite) {
 		CallF(s_sprig[SPRIG_INACTIVE].sprite->SetPos(disppos), return 1);
 		CallF(s_sprig[SPRIG_INACTIVE].sprite->SetSize(dispsize), return 1);
@@ -17594,6 +17622,34 @@ int SetSpRigParams()
 	return 0;
 
 }
+
+int SetSpCpLW2WParams()
+{
+	if (!s_spcplw2w.sprite) {
+		return 0;
+	}
+
+	int spashift = 6;
+	s_spcplw2w.dispcenter.x = s_mainwidth - (int)s_spsidemargin;
+	s_spcplw2w.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spcplw2w.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spcplw2w.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+	if (s_spcplw2w.sprite) {
+		CallF(s_spcplw2w.sprite->SetPos(disppos), return 1);
+		CallF(s_spcplw2w.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
 
 int SetSpMouseHereParams()
 {
@@ -17667,14 +17723,14 @@ int PickSpUndo(POINT srcpos)
 
 
 
-	int startx = s_spundo[0].dispcenter.x - 25;
-	int endx = startx + 50;
+	int startx = s_spundo[0].dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
 
 	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 		int spacnt;
 		for (spacnt = 0; spacnt < 2; spacnt++) {
-			int starty = s_spundo[spacnt].dispcenter.y - 25;
-			int endy = starty + 50;
+			int starty = s_spundo[spacnt].dispcenter.y - (int)s_spsize / 2;
+			int endy = starty + (int)s_spsize;
 
 			if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 				switch (spacnt) {
@@ -17713,14 +17769,14 @@ int PickSpAxis( POINT srcpos )
 	//}
 
 
-	int startx = s_spaxis[0].dispcenter.x - 25;
-	int endx = startx + 50;
+	int startx = s_spaxis[0].dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
 
 	if( (srcpos.x >= startx) && (srcpos.x <= endx) ){
 		int spacnt;
 		for( spacnt = 0; spacnt < SPAXISNUM; spacnt++ ){
-			int starty = s_spaxis[spacnt].dispcenter.y - 25;
-			int endy = starty + 50;
+			int starty = s_spaxis[spacnt].dispcenter.y - (int)s_spsize / 2;
+			int endy = starty + (int)s_spsize;
 
 			if( (srcpos.y >= starty) && (srcpos.y <= endy) ){
 				switch( spacnt ){
@@ -17875,15 +17931,15 @@ int PickSpIkModeSW(POINT srcpos)
 
 	//spikmodesw
 	if (kind == 0) {
-		int startx = s_spikmodesw[0].dispcenter.x - 25;
-		int endx = startx + 50;
+		int startx = s_spikmodesw[0].dispcenter.x - (int)s_spsize / 2;
+		int endx = startx + (int)s_spsize;
 
 
 		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 			int spgcnt;
 			for (spgcnt = 0; spgcnt < 3; spgcnt++) {
-				int starty = s_spikmodesw[spgcnt].dispcenter.y - 25;
-				int endy = starty + 50 + 6;
+				int starty = s_spikmodesw[spgcnt].dispcenter.y - (int)s_spsize / 2;
+				int endy = starty + (int)s_spsize + 6;
 
 				if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 					switch (spgcnt) {
@@ -17925,12 +17981,12 @@ int PickSpRefPosSW(POINT srcpos)
 	//}
 
 	//sprefpos
-	int startx = s_sprefpos.dispcenter.x - 25;
-	int endx = startx + 50;
+	int startx = s_sprefpos.dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
 
 	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
-		int starty = s_sprefpos.dispcenter.y - 25;
-		int endy = starty + 50 + 6;
+		int starty = s_sprefpos.dispcenter.y - (int)s_spsize / 2;
+		int endy = starty + (int)s_spsize + 6;
 
 		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 			ispick = 1;
@@ -18021,14 +18077,14 @@ int PickSpCam(POINT srcpos)
 	//}
 
 
-	int starty = s_spcam[SPR_CAM_I].dispcenter.y - 25;
-	int endy = starty + 50;
+	int starty = s_spcam[SPR_CAM_I].dispcenter.y - (int)s_spsize / 2;
+	int endy = starty + (int)s_spsize;
 
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
 		int spacnt;
 		for (spacnt = 0; spacnt < SPR_CAM_MAX; spacnt++){
-			int startx = s_spcam[spacnt].dispcenter.x - 25;
-			int endx = startx + 50;
+			int startx = s_spcam[spacnt].dispcenter.x - (int)s_spsize / 2;
+			int endx = startx + (int)s_spsize;
 
 			if ((srcpos.x >= startx) && (srcpos.x <= endx)){
 				switch (spacnt){
@@ -18074,13 +18130,13 @@ int PickSpRig(POINT srcpos)
 		return 0;
 	}
 
-	int starty = s_sprig[SPRIG_INACTIVE].dispcenter.y - 25;
-	int endy = starty + 50;
+	int starty = s_sprig[SPRIG_INACTIVE].dispcenter.y - (int)s_spsize / 2;
+	int endy = starty + (int)s_spsize;
 
 	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
-		int startx = s_sprig[SPRIG_INACTIVE].dispcenter.x - 25;
-		int endx = startx + 50;
+		int startx = s_sprig[SPRIG_INACTIVE].dispcenter.x - (int)s_spsize / 2;
+		int endx = startx + (int)s_spsize;
 
 		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
 			pickflag = 1;
@@ -18090,6 +18146,29 @@ int PickSpRig(POINT srcpos)
 	return pickflag;
 }
 
+int PickSpCpLW2W(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spcplw2w.sprite == 0) {
+		return 0;
+	}
+
+	int starty = s_spcplw2w.dispcenter.y - (int)s_spsize / 2;
+	int endy = starty + (int)s_spsize;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spcplw2w.dispcenter.x - (int)s_spsize / 2;
+		int endx = startx + (int)s_spsize;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
 
 //int PickSpBt(POINT srcpos)
 //{
@@ -19509,19 +19588,31 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 }
 
-int CopyLimitedWorldToWorld(CModel* srcmodel)
+int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorflag)
 {
+	HCURSOR oldcursor = NULL;
+	if (setcursorflag) {
+		//refreshEUlerGraph処理は時間がかかることがあるので砂時計カーソルにする
+		oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+	}
+
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
 		if (curmi) {
 
-			int framenum;
-			double startframe, endframe;
-			s_editrange.GetRange(&framenum, &startframe, &endframe);
 			double roundingstartframe, roundingendframe;
-			roundingstartframe = (double)((int)(startframe + 0.0001));
-			roundingendframe = (double)((int)(endframe + 0.0001));
+			if (allframeflag == false) {
+				int framenum;
+				double startframe, endframe;
+				s_editrange.GetRange(&framenum, &startframe, &endframe);
+				roundingstartframe = (double)((int)(startframe + 0.0001));
+				roundingendframe = (double)((int)(endframe + 0.0001));
+			}
+			else {
+				roundingstartframe = 1.0;
+				roundingendframe = (double)((int)(curmi->frameleng + 0.0001) - 1);
+			}
 
 			double curframe;
 			for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
@@ -19536,12 +19627,21 @@ int CopyLimitedWorldToWorld(CModel* srcmodel)
 			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 		}
 	}
+
+	if (setcursorflag && (oldcursor != NULL)) {
+		//カーソルを元に戻す
+		SetCursor(oldcursor);
+	}
+
 	return 0;
 }
 
 
 int CopyWorldToLimitedWorld(CModel* srcmodel)
 {
+
+	//呼び出し元で SetCursor 砂時計している
+
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
@@ -19566,6 +19666,9 @@ int CopyWorldToLimitedWorld(CModel* srcmodel)
 
 int ApplyNewLimitsToWM(CModel* srcmodel)
 {
+
+	//呼び出し元で SetCursor 砂時計している
+
 	CopyWorldToLimitedWorld(srcmodel);
 
 	if (srcmodel) {
@@ -19660,7 +19763,6 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	refreshEulerGraph();//モーション全体
 
 	//s_underanglelimithscroll = 0;
-
 
 	if (setcursorflag && (oldcursor != NULL)) {
 		//カーソルを元に戻す
@@ -21948,7 +22050,14 @@ int OnFrameToolWnd()
 		s_selCopyHisotryFlag = false;
 	}
 
-
+	if (s_copyLW2WFlag) {
+		if (s_model) {
+			bool allframeflag = true;
+			bool setcursorflag = true;
+			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+		}
+		s_copyLW2WFlag = false;
+	}
 
 	if (s_copyFlag){
 
@@ -25861,6 +25970,14 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 	else {
 		_ASSERT(0);
 	}
+
+	if (s_spcplw2w.sprite) {
+		s_spcplw2w.sprite->OnRender(pd3dImmediateContext);
+	}
+	else {
+		_ASSERT(0);
+	}
+
 
 	if ((s_mbuttoncnt == 0) && (s_mousecenteron.sprite)) {
 		s_mousecenteron.sprite->OnRender(pd3dImmediateContext);

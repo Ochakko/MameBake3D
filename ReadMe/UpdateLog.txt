@@ -1,4 +1,4 @@
-2023/02/02
+2023/02/04
 	EditMot 1.2.0.10に向けて(現在は仮バージョンの1.1.0.14で開発中)
 
 	WorldMatとLimitedWorldMatを別々に扱うように
@@ -17,13 +17,15 @@
 		1, UpdateMatrixのマルチスレッド復活(一時的にシングルスレッドにしている)　(済 2023/02/02)
 
 
-		2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加
+		2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加　(済 2023/02/04)
 			制限角度を変更する際　または　LimitEulをオンにした際　自動的にWorldMat-->LimitedWorldMatを行い　そのうえで制限し直す(済 2023/02/03)
 
 			LimitedWorldMat-->WorldMatのコピーも自動化
 				LimitEulにチェックを入れてのIK操作の結果は　編集部分を自動的に　角度制限無し姿勢にコピーする (2023/02/04)
 			
-			LimitedWorldMatの全フレームをWorldMatにコピーする機能については　ボタンを新規追加予定
+			LimitedWorldMatの全フレームをWorldMatにコピーする機能については　ボタンを新規追加　(2023/02/04)
+				L2Wボタンを追加
+
 
 
 		3, コピーの際にtempに自動バックアップ
