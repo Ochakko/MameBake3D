@@ -6475,13 +6475,14 @@ int CBone::PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp)
 	CMotionPoint* newmp = 0;
 	newmp = GetMotionPoint(srcmotid, roundingframe);
 	if (newmp){
-		ChaMatrix setmat = GetWorldMat(srcmotid, roundingframe, &srcmp);
+		//ChaMatrix setmat = GetWorldMat(srcmotid, roundingframe, &srcmp);
+		ChaMatrix setmat = srcmp.GetWorldMat();//2023/02/05 コピー情報はunlimitedの方に入っている
 
 		CBone* parentbone = GetParent();
 		if (parentbone){
 			CMotionPoint* parmp = parentbone->GetMotionPoint(srcmotid, roundingframe);
 			if (parmp){
-				setmat = setmat * parentbone->GetWorldMat(srcmotid, roundingframe, parmp);
+				setmat = setmat * parentbone->GetWorldMat(srcmotid, roundingframe, parmp);//copy情報はローカルなのでグロバールにする
 			}
 		}
 

@@ -451,7 +451,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 * 5, アンドゥリドゥのLimitedWorldMat対応　(済 2023/02/05)
 * 
-* 6, コピーペーストのLimitedWorldMat対応
+* 6, コピーペーストのLimitedWorldMat対応　(済 2023/02/05)
+*		コピー時には　LimitEulのオンオフをみて　該当する方の姿勢をコピー
+*		ペースト時にも　LimitEulのオンオフをみて　該当する方へペースト
+*		ペースト時に　limitedの方へペーストした場合　unlimitedへもペースト　更に　limitedに制限を掛け直す
 * 
 * 7, プロジェクト保存時に　LimitedWorldMat用のファイルも保存　読み込み時にそれをロード
 * 
@@ -486,6 +489,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 	制限角度の値のアンドゥリドゥを　するかしないか？
 * 		必要だったので対応　(2023/02/05)
 *
+* 　limitedに対しての姿勢初期化、平滑化、補間についても　IK編集と同様に　結果をunlimitedへコピーする(2023/02/05)
 * 
 */
 
@@ -6694,47 +6698,56 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		//else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 3 + MENUOFFSET_INITMPFROMTOOL))) {
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 4 + MENUOFFSET_INITMPFROMTOOL))) {//### 2022/07/04
-			int subid = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) / 4;//4 * 3 / 4 --> 0, 1, 2
-			//int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) - subid * 4;//0, 1, 2, 3
-			int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) % 4;//0, 1, 2, 3 //### 2022/07/04
-			MOTINFO* mi = s_model->GetCurMotInfo();
-			if (mi) {
-				s_copymotvec.clear();
-				s_copyKeyInfoList.clear();
-				s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-				s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
-				CEditRange::SetApplyRate((double)g_applyrate);
+			if (s_model) {
+				int subid = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) / 4;//4 * 3 / 4 --> 0, 1, 2
+							//int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) - subid * 4;//0, 1, 2, 3
+				int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) % 4;//0, 1, 2, 3 //### 2022/07/04
+				MOTINFO* mi = s_model->GetCurMotInfo();
+				if (mi) {
+					s_copymotvec.clear();
+					s_copyKeyInfoList.clear();
+					s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+					s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+					CEditRange::SetApplyRate((double)g_applyrate);
 
-				if (subid == 0) {
-					list<KeyInfo>::iterator itrcp;
-					for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
-						double curframe = itrcp->time;
-						CBone* topbone = s_model->GetTopBone();
-						if (topbone) {
-							InitMpByEulReq(initmode, topbone, mi->motid, curframe);//topbone req
-						}
-					}
-				}
-				else if (subid == 1) {
-					if (opebone) {
+					if (subid == 0) {
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 							double curframe = itrcp->time;
-							InitMpByEul(initmode, opebone, mi->motid, curframe);//opebone
+							CBone* topbone = s_model->GetTopBone();
+							if (topbone) {
+								InitMpByEulReq(initmode, topbone, mi->motid, curframe);//topbone req
+							}
 						}
 					}
-				}
-				else if (subid == 2) {
-					if (opebone) {
-						list<KeyInfo>::iterator itrcp;
-						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
-							double curframe = itrcp->time;
-							InitMpByEulReq(initmode, opebone, mi->motid, curframe);//opebone req
+					else if (subid == 1) {
+						if (opebone) {
+							list<KeyInfo>::iterator itrcp;
+							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
+								double curframe = itrcp->time;
+								InitMpByEul(initmode, opebone, mi->motid, curframe);//opebone
+							}
 						}
 					}
+					else if (subid == 2) {
+						if (opebone) {
+							list<KeyInfo>::iterator itrcp;
+							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
+								double curframe = itrcp->time;
+								InitMpByEulReq(initmode, opebone, mi->motid, curframe);//opebone req
+							}
+						}
+					}
+
+					if (g_limitdegflag == true) {
+						bool allframeflag = false;
+						bool setcursorflag = false;
+						CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+					}
+					refreshEulerGraph();
+					PrepairUndo();
 				}
 			}
-			UpdateEditedEuler();
 		}
 
 
@@ -6751,47 +6764,47 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			//}
 		}
 		else if (menuid == (ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->SetKinematicTmpLower(curbone, true);
 			}
 		}
 		else if (menuid == (ID_RMENU_KINEMATIC_OFF_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->SetKinematicTmpLower(curbone, false);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->Mass0_All(true);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->Mass0_All(false);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0_ON_UPPER + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->Mass0_Upper(true, curbone);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0_OFF_UPPER + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->Mass0_Upper(false, curbone);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->Mass0_Lower(true, curbone);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				s_model->Mass0_Lower(false, curbone);
 			}
 		}
 		else if (menuid == (ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				//toggle
 				if (curbone->GetMass0() == 0) {
 					s_model->SetMass0(curbone);
@@ -6802,7 +6815,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 		else if (menuid == (ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK)) {
-			if (curbone) {
+			if (s_model && curbone) {
 				//toggle
 				if (curbone->GetExcludeMv() == 0) {
 					curbone->SetExcludeMv(1);
@@ -6813,22 +6826,22 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 		else if (menuid == (ID_RMENU_FORBIDROT_ONE + MENUOFFSET_BONERCLICK)) {
-			if (curre) {
+			if (s_model && curre) {
 				curre->SetForbidRotFlag(1);
 			}
 		}
 		else if (menuid == (ID_RMENU_ENABLEROT_ONE + MENUOFFSET_BONERCLICK)) {
-			if (curre) {
+			if (s_model && curre) {
 				curre->SetForbidRotFlag(0);
 			}
 		}
 		else if (menuid == (ID_RMENU_FORBIDROT_CHILDREN + MENUOFFSET_BONERCLICK)) {
-			if (curre) {
+			if (s_model && curre) {
 				s_model->EnableRotChildren(curbone, false);
 			}
 		}
 		else if (menuid == (ID_RMENU_ENABLEROT_CHILDREN + MENUOFFSET_BONERCLICK)) {
-			if (curre) {
+			if (s_model && curre) {
 				s_model->EnableRotChildren(curbone, true);
 			}
 		}
@@ -18727,7 +18740,13 @@ int SetLTimelineMark( int curboneno )
 
 					WCHAR markname[256] = { 0L };
 					////swprintf_s( markname, 256, L"Mark:%s", opebone->GetWBoneName() );
-					swprintf_s(markname, 256, L"%s", opebone->GetWBoneName());
+					if (g_limitdegflag == true) {
+						swprintf_s(markname, 256, L"[L] : %s", opebone->GetWBoneName());
+					}
+					else {
+						swprintf_s(markname, 256, L"[W] : %s", opebone->GetWBoneName());
+					}
+					
 					//s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
 
 					if (s_owpPlayerButton) {
@@ -19684,8 +19703,6 @@ int ApplyNewLimitsToWM(CModel* srcmodel)
 
 	//呼び出し元で SetCursor 砂時計している
 
-	CopyWorldToLimitedWorld(srcmodel);
-
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
@@ -19760,8 +19777,11 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 		break;
 	}
 	
-	ClearLimitedWM(s_model);
-	ApplyNewLimitsToWM(s_model);
+	if (s_model) {
+		ClearLimitedWM(s_model);
+		CopyWorldToLimitedWorld(s_model);
+		ApplyNewLimitsToWM(s_model);
+	}
 
 
 	//if (s_model && s_model->GetCurMotInfo()) {
@@ -20651,8 +20671,11 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 
 	if (updateeulflag) {
 
-		ClearLimitedWM(s_model);
-		ApplyNewLimitsToWM(s_model);
+		if (s_model) {
+			ClearLimitedWM(s_model);
+			CopyWorldToLimitedWorld(s_model);
+			ApplyNewLimitsToWM(s_model);
+		}
 
 		//if (g_limitdegflag == true) {
 		//	vector<MODELELEM>::iterator itrmodel;
@@ -22096,12 +22119,14 @@ int OnFrameToolWnd()
 
 			s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
 
-			UpdateEditedEuler();
-
-			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
-			if (s_model) {
-				PrepairUndo();
+			if (g_limitdegflag == true) {
+				bool allframeflag = false;
+				bool setcursorflag = false;
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
 			}
+			refreshEulerGraph();
+			PrepairUndo();
+
 		}
 
 		s_interpolateState = 0;
@@ -22317,7 +22342,9 @@ int OnFrameToolWnd()
 				}
 			}
 
-			UpdateEditedEuler();
+			//UpdateEditedEuler();
+			refreshEulerGraph();
+
 			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 			if (s_model) {
 				PrepairUndo();
@@ -22416,14 +22443,14 @@ int OnFrameToolWnd()
 							CMotFilter motfilter;
 							motfilter.Filter(s_model, opebone, s_filterState, s_model->GetCurMotInfo()->motid, (int)(startframe + 0.0001), (int)(endframe + 0.0001));
 
-							UpdateEditedEuler();
-
-							//if (s_model){
-							//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
-							//}
-							if (s_model) {
-								PrepairUndo();
+							if (g_limitdegflag == true) {
+								bool allframeflag = false;
+								bool setcursorflag = false;
+								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
 							}
+							refreshEulerGraph();
+							PrepairUndo();
+
 						}
 						else {
 							::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
@@ -22502,6 +22529,11 @@ int OnFrameToolWnd()
 
 int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 {
+	if (!s_model) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	int cpnum = (int)s_selbonedlg.m_cpvec.size();
 
 	int docopyflag = 0;
@@ -22553,6 +22585,12 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 
 int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 {
+	if (!s_model) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	int cpnum = (int)s_selbonedlg.m_cpvec.size();
 
 
@@ -22610,7 +22648,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 					CQuaternion dummyq;
 					ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
 
-					parmp->SetBefWorldMat(parmp->GetWorldMat());
+					//parmp->SetBefWorldMat(parmp->GetWorldMat());
 					bool infooutflag = false;
 					srcbone->RotBoneQReq(infooutflag, parentbone, curmotid, newframe, dummyq, parmp->GetWorldMat(), parmp->GetWorldMat(), 0, dummytra);
 					//_ASSERT(0);
@@ -22624,8 +22662,13 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe)
 {
-	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+	if (!s_model) {
+		_ASSERT(0);
+		return 1;
+	}
 
+
+	int cpnum = (int)s_selbonedlg.m_cpvec.size();
 
 	double srcleng;
 	double dstleng;
@@ -22665,6 +22708,19 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		}
 	}
 
+
+	//2023/02/05
+	//limitedにペーストした場合には　ペーストしたものと同じものをunlimitedにもペースト
+	//更に　limitedに　現在の制限角度を適用する
+	//
+	//ペースト範囲のオイラー角はPasteMotionPoint()-->SetWorldMat()-->CalcLocalEulXYZ()で計算済
+	//
+	if (g_limitdegflag == true) {
+		bool allframeflag = false;
+		bool setcursorflag = false;
+		CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+		ApplyNewLimitsToWM(s_model);
+	}
 
 	//vector<CPELEM>::iterator itrcp;
 	//for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
