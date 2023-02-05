@@ -456,7 +456,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *		ペースト時にも　LimitEulのオンオフをみて　該当する方へペースト
 *		ペースト時に　limitedの方へペーストした場合　unlimitedへもペースト　更に　limitedに制限を掛け直す
 * 
-* 7, プロジェクト保存時に　LimitedWorldMat用のファイルも保存　読み込み時にそれをロード
+* 7, プロジェクト保存時に　LimitedWorldMat用のファイルも保存　読み込み時にそれをロード　(済 2023/02/06)
+*		LimitedWorldへの編集結果をWorldへベイクする部分を自動化したので
+*		WorldMatを読み込んで　LimitEulをオンにすれば　LimitedWorldは復元される
+*		よって　LimitedWorldを　別ファイルとして保存する必要は無くなった
 * 
 * その他
 * 	オイラー角計算改善　(済 2023/02/03)
@@ -482,9 +485,11 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　IKRotate, IKRotateAxisDeltaの後処理としての姿勢計算し直しをコメントアウト(2023/02/04)
 * 　	姿勢計算がうまく機能するようになったので必要なくなり　IK操作高速化
 *
-* 	１回目の物理シミュでLimitEulにチェックを入れても制限が効かない不具合は？
+* 	１回目の物理シミュでLimitEulにチェックを入れても制限が効かない不具合修正(2023/02/06)
 * 		調査中
-*		複数モデル同時シミュ時　モーション無しfbx?
+*		複数モデル同時シミュ時
+*		物理の制限角度設定に関して　設定の前にしていた仮の設定(制限無し)をコメントアウトしたら直った
+* 
 * 
 * 	制限角度の値のアンドゥリドゥを　するかしないか？
 * 		必要だったので対応　(2023/02/05)
@@ -16211,6 +16216,9 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 	for (itrmodel4 = s_modelindex.begin(); itrmodel4 != s_modelindex.end(); itrmodel4++) {
 		CModel* pmodel4 = itrmodel4->modelptr;
 		if (pmodel4) {
+			pmodel4->BulletSimulationStop();
+			SetKinematicToHand(pmodel4, false);
+
 			pmodel4->BulletSimulationStart();
 		}
 	}
@@ -28661,7 +28669,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.1.0.14 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.10 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -36108,7 +36116,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.1.0.14 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.10 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

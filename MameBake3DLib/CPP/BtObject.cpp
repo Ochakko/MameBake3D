@@ -725,24 +725,26 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						}
 					}
 
-				dofC->setEquilibriumPoint();
-
-
-				if (forbidrotflag == 0) {
-					dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
-					dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
-				}
-				else {
-					//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-					//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
-					dofC->calculateTransforms();
-					btScalar currentx = dofC->getAngle(0);
-					btScalar currenty = dofC->getAngle(1);
-					btScalar currentz = dofC->getAngle(2);
-					dofC->setAngularLowerLimit(btVector3(btScalar(currentx - 0.5 * (float)DEG2PAI), btScalar(currenty - 0.5 * (float)DEG2PAI), btScalar(currentz - 0.5 * (float)DEG2PAI)));
-					dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 0.5 * (float)DEG2PAI), btScalar(currenty + 0.5 * (float)DEG2PAI), btScalar(currentz + 0.5 * (float)DEG2PAI)));
-
-				}
+				//2023/02/06
+				//この関数呼び出しより後で　
+				//CModel::CreateBtObject()から　制限角度を考慮したSetBtEquiliburiumPointが呼ばれる
+				//最初に　ここで仮の設定をして　すぐに　設定し直すと　角度制限が効かない症状が出た
+				//ここでの仮の設定をやめて　コメントアウト
+				//dofC->setEquilibriumPoint();
+				//if (forbidrotflag == 0) {
+				//	dofC->setAngularLowerLimit(btVector3(angPAI, angPAI2, angPAI));
+				//	dofC->setAngularUpperLimit(btVector3(-angPAI, -angPAI2, -angPAI));
+				//}
+				//else {
+				//	//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+				//	//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+				//	dofC->calculateTransforms();
+				//	btScalar currentx = dofC->getAngle(0);
+				//	btScalar currenty = dofC->getAngle(1);
+				//	btScalar currentz = dofC->getAngle(2);
+				//	dofC->setAngularLowerLimit(btVector3(btScalar(currentx - 0.5 * (float)DEG2PAI), btScalar(currenty - 0.5 * (float)DEG2PAI), btScalar(currentz - 0.5 * (float)DEG2PAI)));
+				//	dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 0.5 * (float)DEG2PAI), btScalar(currenty + 0.5 * (float)DEG2PAI), btScalar(currentz + 0.5 * (float)DEG2PAI)));
+				//}
 
 			}
 		}

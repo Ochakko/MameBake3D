@@ -25,6 +25,7 @@
 #include <FBXFile.h>
 #include <lmtFile.h>
 #include <RigFile.h>
+#include <LIMFIle.h>
 
 #define DBGH
 #include <dbg.h>

@@ -6572,7 +6572,11 @@ ChaVector3 CBone::CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeu
 		isendbone = 1;
 	}
 
-	int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
+	//int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
+	int notmodify180flag = 0;
+	if (roundingframe <= 1.01) {
+		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	}
 
 	fbxq.CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodify180flag);
 

@@ -201,6 +201,9 @@
     <ClCompile Include="..\DXUT\Optional\DXUTgui.cpp">
       <Filter>DXUT_WIC_DDS</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\LIMFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1267,6 +1270,9 @@
     </ClInclude>
     <ClInclude Include="..\DXUT\Optional\DXUTgui.h">
       <Filter>DXUT_WIC_DDS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\LIMFile.h">
+      <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
