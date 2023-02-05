@@ -261,27 +261,30 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 		return 1;
 	}
 
-	m_frame = srcmp->m_frame;
-	m_tra = srcmp->m_tra;
-	m_firstframetra = srcmp->m_firstframetra;
-	m_q = srcmp->m_q;
-	m_worldmat = srcmp->m_worldmat;
-	m_localeul = srcmp->m_localeul;
-	m_absmat = srcmp->m_absmat;
-	m_localmatflag = srcmp->m_localmatflag;
+	//2023/02/05
+	*this = *srcmp;
 
-	m_useflag = srcmp->m_useflag;//0: not use, 1: in use
-	//m_indexofpool = srcmp->m_indexofpool;//index of pool vector
-	//m_allocheadflag = srcmp->m_allocheadflag;//1: head pointer at allocated
-	m_undovalidflag = srcmp->m_undovalidflag;
 
-	m_localmat = srcmp->m_localmat;//local matrix
-	m_befworldmat = srcmp->m_befworldmat;
-	m_befeditmat = srcmp->m_befeditmat;
-	m_SRT = srcmp->m_SRT;
-
-	m_calclimitedwm = srcmp->m_calclimitedwm;
-	m_limitedwm = srcmp->m_limitedwm;
+	//m_frame = srcmp->m_frame;
+	//m_tra = srcmp->m_tra;
+	//m_firstframetra = srcmp->m_firstframetra;
+	//m_q = srcmp->m_q;
+	//m_worldmat = srcmp->m_worldmat;
+	//m_localeul = srcmp->m_localeul;
+	//m_absmat = srcmp->m_absmat;
+	//m_localmatflag = srcmp->m_localmatflag;
+	//m_useflag = srcmp->m_useflag;//0: not use, 1: in use
+	////m_indexofpool = srcmp->m_indexofpool;//index of pool vector
+	////m_allocheadflag = srcmp->m_allocheadflag;//1: head pointer at allocated
+	//m_undovalidflag = srcmp->m_undovalidflag;
+	//m_localmat = srcmp->m_localmat;//local matrix
+	//m_befworldmat = srcmp->m_befworldmat;
+	//m_befeditmat = srcmp->m_befeditmat;
+	//m_SRT = srcmp->m_SRT;
+	//m_calclimitedwm = srcmp->m_calclimitedwm;
+	//m_limitedwm = srcmp->m_limitedwm;
+	//m_limitedlocaleul = srcmp->m_limitedlocaleul;
+	//m_calclimitedwm = srcmp->m_calclimitedwm;
 
 	return 0;
 }
@@ -353,8 +356,12 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	m_savermat = mp.m_savermat;
 	m_savetmat = mp.m_savetmat;
 	m_savetanimmat = mp.m_savetanimmat;
-	m_prev = mp.m_prev;
-	m_next = mp.m_next;
+	
+
+	//2023/02/05 ƒ`ƒFƒCƒ“‚Í‚»‚Ì‚Ü‚Ü‚É
+	//m_prev = mp.m_prev;
+	//m_next = mp.m_next;
+
 
 	return *this;
 }

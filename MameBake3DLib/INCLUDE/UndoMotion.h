@@ -23,8 +23,10 @@ public:
 	~CUndoMotion();
 
 	int ClearData();
-	int SaveUndoMotion(CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate);
-	int RollBackMotion(CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate);
+	int SaveUndoMotion(CModel* pmodel, int curboneno, int curbaseno, 
+		CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag);
+	int RollBackMotion(CModel* pmodel, int* curboneno, int* curbaseno, 
+		double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate);
 
 private:
 	int InitParams();
@@ -49,6 +51,7 @@ private:
 	std::map<CBone*, CMotionPoint*> m_bone2mp;
 	std::map<CMQOObject*, CMorphKey*> m_base2mk;
 	std::map<CBone*, std::map<double, int>> m_bonemotmark;
+	std::map<CBone*, ANGLELIMIT> m_bone2limit;
 
 	int m_curboneno;
 	int m_curbaseno;

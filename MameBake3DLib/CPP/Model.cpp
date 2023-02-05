@@ -12022,31 +12022,30 @@ int CModel::InitUndoMotion( int saveflag )
 	int savewritepoint = m_undo_writepoint;
 	m_undo_writepoint = GetNewUndoID();
 
-	if( saveflag ){
-		BRUSHSTATE brushstate;
-		brushstate.Init();
-		brushstate.brushmirrorUflag = g_brushmirrorUflag;
-		brushstate.brushmirrorVflag = g_brushmirrorVflag;
-		brushstate.ifmirrorVDiv2flag = g_ifmirrorVDiv2flag;
-		brushstate.limitdegflag = g_limitdegflag;
-		brushstate.motionbrush_method = g_motionbrush_method;
-		brushstate.wallscrapingikflag = g_wallscrapingikflag;
-		brushstate.brushrepeats = g_brushrepeats;
-
-		int result = m_undomotion[m_undo_writepoint].SaveUndoMotion( this, -1, -1, 0, 50.0, brushstate );
-		if (result == 1) {
-			m_undo_writepoint = savewritepoint;
-		}
-		else {
-			m_undo_firstflag = false;
-		}
-	}
-
+	//if( saveflag ){
+	//	BRUSHSTATE brushstate;
+	//	brushstate.Init();
+	//	brushstate.brushmirrorUflag = g_brushmirrorUflag;
+	//	brushstate.brushmirrorVflag = g_brushmirrorVflag;
+	//	brushstate.ifmirrorVDiv2flag = g_ifmirrorVDiv2flag;
+	//	brushstate.limitdegflag = g_limitdegflag;
+	//	brushstate.motionbrush_method = g_motionbrush_method;
+	//	brushstate.wallscrapingikflag = g_wallscrapingikflag;
+	//	brushstate.brushrepeats = g_brushrepeats;
+	//	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion( this, -1, -1, 0, 50.0, brushstate );
+	//	if (result == 1) {
+	//		m_undo_writepoint = savewritepoint;
+	//	}
+	//	else {
+	//		m_undo_firstflag = false;
+	//	}
+	//}
 
 	return 0;
 }
 
-int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate)
+int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, 
+	double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag)
 {
 	//saveによって次回のundo位置は変わる
 	//undoによって次回のsave位置は変わらない
@@ -12059,7 +12058,7 @@ int CModel::SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, dou
 	int saveundoid = m_undo_writepoint;
 	m_undo_writepoint = GetNewUndoID();
 
-	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate, srcbrushstate);
+	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(this, curboneno, curbaseno, srcer, srcapplyrate, srcbrushstate, allframeflag);
 	if (result == 1) {//result == 2はエラーにしない
 		_ASSERT(0);
 

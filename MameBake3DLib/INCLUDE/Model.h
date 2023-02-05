@@ -657,7 +657,7 @@ public:
 	int ResetBt();
 
 	int InitUndoMotion( int saveflag );
-	int SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate );
+	int SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag );
 	int RollBackUndoMotion(HWND hmainwnd, int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyframe, BRUSHSTATE* dstbrushstate);
 
 	int AddBoneMotMark( OrgWinGUI::OWP_Timeline* owpTimeline, int curboneno, int curlineno, double startframe, double endframe, int flag );

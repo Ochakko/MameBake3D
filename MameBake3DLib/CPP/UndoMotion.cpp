@@ -56,6 +56,7 @@ int CUndoMotion::InitParams()
 
 	m_bone2mp.clear();
 	m_base2mk.clear();
+	m_bone2limit.clear();
 
 	m_curboneno = -1;
 	m_curbaseno = -1;
@@ -94,6 +95,9 @@ int CUndoMotion::DestroyObjs()
 	}
 	m_bone2mp.clear();
 
+
+	m_bone2limit.clear();
+
 /***
 	map<CMQOObject*, CMorphKey*>::iterator itrb2mk;
 	for( itrb2mk = m_base2mk.begin(); itrb2mk != m_base2mk.end(); itrb2mk++ ){
@@ -114,13 +118,15 @@ int CUndoMotion::DestroyObjs()
 }
 
 
-int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate)
+int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, 
+	CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag)
 {
 	if (!pmodel) {
 		return 2;
 	}
 
-	if( !pmodel->GetCurMotInfo() ){
+	MOTINFO* curmi = pmodel->GetCurMotInfo();
+	if( !curmi ){
 		return 2;
 	}
 
@@ -148,19 +154,36 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 
 	//ClearData();
 
-	int curmotid = pmodel->GetCurMotInfo()->motid;
+	int curmotid = curmi->motid;
 
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 		if (curbone){
+			
+			//####################
+			// ANGLELIMIT of bone
+			//####################
+
+			int getchkflag = 1;
+			m_bone2limit[curbone] = curbone->GetAngleLimit(getchkflag);
 
 			//###################
 			// first MotionPoint
 			//###################
+			double roundingstartframe, roundingendframe;
+			if (allframeflag == true) {
+				roundingstartframe = 1.0;
+				roundingendframe = (double)((int)(curmi->frameleng + 0.0001)) - 1.0;
+			}
+			else {
+				roundingstartframe = (double)((int)(srcer->GetStartFrame() + 0.0001));
+				roundingendframe = (double)((int)(srcer->GetEndFrame() + 0.0001));
+			}
 
-			CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, (double)((int)(srcer->GetStartFrame() + 0.1)));
+
+			CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, roundingstartframe);
 			//CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, 0.0);
 			if (!firstsrcmp) {
 				//_ASSERT(0);
@@ -193,7 +216,9 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, C
 			double currenttime;
 			CMotionPoint* srcmp = firstsrcmp;
 			CMotionPoint* undomp = firstundomp;
-			for (currenttime = (srcer->GetStartFrame() + 1.0); currenttime <= srcer->GetEndFrame(); currenttime += 1.0) {
+
+
+			for (currenttime = (roundingstartframe + 1.0); currenttime <= roundingendframe; currenttime += 1.0) {
 			//for (currenttime = 1.0; currenttime < (pmodel->GetCurMotInfo()->frameleng - 1.0); currenttime += 1.0) {
 				srcmp = curbone->GetMotionPoint(curmotid, (double)((int)(currenttime + 0.1)));
 				undomp = 0;
@@ -365,6 +390,22 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 		_ASSERT( curbone );
 
 		if (curbone) {
+
+			//######################
+			//2023/02/04
+			//ANGLELIMIT of CBone
+			//######################
+
+			map<CBone*, ANGLELIMIT>::iterator itrbone2limit;
+			itrbone2limit = m_bone2limit.find(curbone);
+			if (itrbone2limit != m_bone2limit.end()) {
+				curbone->SetAngleLimit(itrbone2limit->second);
+			}
+
+			//#######################
+			//CMotionPoint of CBone
+			//#######################
+
 			CMotionPoint* srcmp = m_bone2mp[curbone];
 			CMotionPoint* befdstmp = 0;
 			while (srcmp && (srcmp->GetUndoValidFlag() == 1)) {

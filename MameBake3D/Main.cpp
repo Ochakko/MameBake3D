@@ -421,7 +421,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 
 /*
-* 2023/02/04
+* 2023/02/05
 * 
 * 1.1.0.14の　#### 予定 (plans) ####
 * 
@@ -443,11 +443,13 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *		L2Wボタンを追加
 * 
 * 
-* 3, コピーの際にtempに自動バックアップ
+* 3, コピーの際にtempに自動バックアップ　(済 2023/02/05)
+*		アンドゥリドゥで対応
 * 
-* 4, バックアップからの復元ツールボタン
+* 4, バックアップからの復元ツールボタン　(済 2023/02/05)
+*		アンドゥリドゥで対応
 * 
-* 5, アンドゥリドゥのLimitedWorldMat対応
+* 5, アンドゥリドゥのLimitedWorldMat対応　(済 2023/02/05)
 * 
 * 6, コピーペーストのLimitedWorldMat対応
 * 
@@ -477,14 +479,12 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　IKRotate, IKRotateAxisDeltaの後処理としての姿勢計算し直しをコメントアウト(2023/02/04)
 * 　	姿勢計算がうまく機能するようになったので必要なくなり　IK操作高速化
 *
-*
 * 	１回目の物理シミュでLimitEulにチェックを入れても制限が効かない不具合は？
 * 		調査中
-* 		１回目２回目というよりも　モデルがモデルにタッチしてから　シミュをやり直すと直る？
-*
-*
+*		複数モデル同時シミュ時　モーション無しfbx?
+* 
 * 	制限角度の値のアンドゥリドゥを　するかしないか？
-* 		進み具合によっては　その次のバージョンで
+* 		必要だったので対応　(2023/02/05)
 *
 * 
 */
@@ -1510,6 +1510,7 @@ static bool s_redoFlag = false;
 static bool s_undoredoFromPlayerButton = false;
 static bool s_copyFlag = false;			// コピーフラグ
 static bool s_copyLW2WFlag = false;			//Limited2World ベイクフラグ
+static bool s_changelimitangleFlag = false;
 static bool s_zeroFrameFlag = false;
 //static bool s_oneFrameFlag = false;
 static bool s_selCopyHisotryFlag = false;
@@ -3254,6 +3255,7 @@ void InitApp()
 	s_undoredoFromPlayerButton = false;
 	s_copyFlag = false;			// コピーフラグ
 	s_copyLW2WFlag = false;
+	s_changelimitangleFlag = false;
 	s_zeroFrameFlag = false;
 	//s_oneFrameFlag = false;
 	s_selCopyHisotryFlag = false;
@@ -6458,11 +6460,16 @@ void RenderText( double fTime )
 
 void PrepairUndo()
 {
+	if (!s_model) {
+		return;
+	}
+
 	//リターゲットバッチ中はSaveUndoしない
 	//モデル削除時、モーション削除時はSaveUndoしない
 	//UndoRedoボタンを押した場合にはSaveUndoしない
 
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) && (s_underdelmotion == 0) && (s_undoFlag == false) && (s_redoFlag == false)) {
+	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) && 
+		(s_underdelmotion == 0) && (s_undoFlag == false) && (s_redoFlag == false)) {
 		//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
 		//その影響で選択範囲の未編集状態も保存する必要が生じた
 		//よって次のif文はコメントアウト
@@ -6484,7 +6491,15 @@ void PrepairUndo()
 
 			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//長いフレームの保存は数秒時間がかかることがあるので砂時計カーソルにする
 
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate, brushstate);
+			bool allframeflag;
+			if ((s_copyLW2WFlag == true) || (s_changelimitangleFlag == true)) {
+				allframeflag = true;
+			}
+			else {
+				allframeflag = false;
+			}
+			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, 
+				&s_editrange, (double)g_applyrate, brushstate, allframeflag);
 
 			SetCursor(oldcursor);//カーソルを元に戻す
 
@@ -17631,7 +17646,7 @@ int SetSpCpLW2WParams()
 
 	int spashift = 6;
 	s_spcplw2w.dispcenter.x = s_mainwidth - (int)s_spsidemargin;
-	s_spcplw2w.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5;
+	s_spcplw2w.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5 + 10;
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_spcplw2w.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
@@ -19817,29 +19832,47 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 		case IDC_APPLYONE:
 			{
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 				int result1 = 0;
 				result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
-				if(result1 == 0) {
+				if (result1 == 0) {
 					UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ONE);
 				}
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
 			}
 			break;
 		case IDC_APPLYDEEPER:
 			{
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 				int result1 = 0;
 				result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
 				if (result1 == 0) {
 					UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_DEEPER);
 				}
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
 			}
 			break;
 		case IDC_APPLYALL:
 			{
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 				int result1 = 0;
 				result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
 				if (result1 == 0) {
 					UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ALL);
 				}
+			
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
 			}
 			break;
 
@@ -19862,11 +19895,16 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 						MOTINFO* curmi;
 						curmi = s_model->GetCurMotInfo();
 						if (curmi) {
+							s_changelimitangleFlag = true;
+							PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 							symbone->SetAngleLimit(symanglelimit);
 
 							UpdateAfterEditAngleLimit(eLIM2BONE_NONE);
+
+							PrepairUndo();//全フレーム変更後に全フレーム保存
+							s_changelimitangleFlag = false;
 						}
-						
 					}
 				}
 			}
@@ -19885,6 +19923,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 						MOTINFO* curmi;
 						curmi = s_model->GetCurMotInfo();
 						if (curmi) {
+
+							s_changelimitangleFlag = true;
+							PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 							ANGLELIMIT anglelimit = symbone->GetAngleLimit(0);
 							ANGLELIMIT symanglelimit = anglelimit;
 							//symanglelimit.lower[1] *= -1;
@@ -19899,6 +19941,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 							bool updateonlycheckeul = false;
 							AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 							UpdateWindow(s_anglelimitdlg);
+
+							PrepairUndo();//全フレーム変更後に全フレーム保存
+							s_changelimitangleFlag = false;
 
 						}
 						
@@ -19919,11 +19964,18 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			//paste button
 			if (s_anglelimitbone && s_anglelimitdlg) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 				s_anglelimit = s_anglelimitcopy;
 				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ONE);
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 		}
 			break;
@@ -19933,6 +19985,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		case IDC_RESETLIM:
 		{
 			if (s_model && s_anglelimitdlg) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
+
 				s_model->ResetAngleLimit(180);
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -19940,12 +19996,19 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 		}
 			break;
 		case IDC_RESET0:
 		{
 			if (s_model && s_anglelimitdlg) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 				s_model->ResetAngleLimit(0);
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -19953,12 +20016,19 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 		}
 			break;
 		case IDC_REPLACE180TO170:
 		{
 			if (s_model && s_anglelimitdlg) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 				s_model->AngleLimitReplace180to170();
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -19966,6 +20036,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 
 		}
@@ -19976,6 +20050,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				MOTINFO* curmi;
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
+
+					s_changelimitangleFlag = true;
+					PrepairUndo();//全フレーム変更の前に全フレーム保存
 
 					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -20033,6 +20110,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 					//カーソルを元に戻す
 					SetCursor(oldcursor);
+
+					PrepairUndo();//全フレーム変更後に全フレーム保存
+					s_changelimitangleFlag = false;
+
 				}
 			}
 		}
@@ -20045,6 +20126,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				MOTINFO* curmi;
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
+					s_changelimitangleFlag = true;
+					PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 
 					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -20077,6 +20161,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 					//カーソルを元に戻す
 					SetCursor(oldcursor);
+
+					PrepairUndo();//全フレーム変更後に全フレーム保存
+					s_changelimitangleFlag = false;
+
 				}
 			}
 		}
@@ -20086,6 +20174,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		case IDC_RESETLIM_CURRENT:
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
+
 				s_model->ResetAngleLimit(180, s_anglelimitbone);//2022/12/05 curbone引数追加
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -20093,12 +20185,20 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 		}
 		break;
 		case IDC_RESET0_CURRENT:
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
+
 				s_model->ResetAngleLimit(0, s_anglelimitbone);//2022/12/05 curbone引数追加
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -20106,12 +20206,20 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 		}
 		break;
 		case IDC_REPLACE180TO170_CURRENT:
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
+				s_changelimitangleFlag = true;
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
+
 				s_model->AngleLimitReplace180to170(s_anglelimitbone);//2022/12/05 curbone引数追加
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -20119,6 +20227,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				bool updateonlycheckeul = false;
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+				s_changelimitangleFlag = false;
+
 			}
 
 		}
@@ -20129,6 +20241,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				MOTINFO* curmi;
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
+					s_changelimitangleFlag = true;
+					PrepairUndo();//全フレーム変更の前に全フレーム保存
+
 
 					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -20161,6 +20276,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 					//カーソルを元に戻す
 					SetCursor(oldcursor);
+
+					PrepairUndo();//全フレーム変更後に全フレーム保存
+					s_changelimitangleFlag = false;
+
 				}
 			}
 		}
@@ -22052,9 +22171,15 @@ int OnFrameToolWnd()
 
 	if (s_copyLW2WFlag) {
 		if (s_model) {
+			PrepairUndo();//全フレーム変更するので　変更前にも保存
+
 			bool allframeflag = true;
 			bool setcursorflag = true;
 			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+
+			PrepairUndo();//変更後を保存
+
+			refreshEulerGraph();
 		}
 		s_copyLW2WFlag = false;
 	}
@@ -22829,8 +22954,6 @@ int OnSpriteUndo()
 	brushstate.Init();
 
 
-
-
 	///////////// undo
 	if (s_model && (s_undoFlag == true)) {
 		//undo
@@ -22929,12 +23052,15 @@ int OnSpriteUndo()
 			SavePlayingStartEnd();
 
 
-
+			//##############################################
+			//2023/02/05
+			//制限角度値とCMotionPointを丸ごと復元するので
+			//limitedの計算し直しの必要なし
+			//##############################################
 			//#########################################################################
 			//2022/12/06
 			//保存時とは制限角度が異なっている可能性があるので　制限角度のために再計算
 			//#########################################################################
-
 			//if (g_limitdegflag == true) {
 			//	ClearLimitedWM(s_model);
 			//	ApplyNewLimitsToWM(s_model);//2022/12/18
@@ -22942,7 +23068,6 @@ int OnSpriteUndo()
 
 
 			refreshEulerGraph();
-
 
 			//s_selectFlag = true;
 			//s_LupFlag = true;
