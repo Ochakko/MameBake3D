@@ -21220,6 +21220,12 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 	//CModel* curmodel = s_model;
 
+
+	//安定のために　シミュ開始時の姿勢で　キネマティックしている回数
+	int initterm;
+	initterm = max(10, (int)(s_avrgfps * 0.1));
+
+
 	bool recstopflag = false;
 	vector<MODELELEM>::iterator itrmodel;
 	BOOL firstmodelflag = TRUE;
@@ -21227,7 +21233,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
 
-			if (curmodel->GetBtCnt() <= 10) {
+			if (curmodel->GetBtCnt() <= initterm) {
 				curmodel->SetKinematicFlag();
 				//!!curmodel->SetBtEquilibriumPoint();
 			}
@@ -21319,7 +21325,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
 					curmodel->SetBtMotion(0, 0, *pnextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
 
-					//60 x 30 frames limit : 30 sec limit
+					//60 x 60 frames limit : 60 sec limit
 					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
 						s_rectime = (double)((int)s_reccnt);
 						s_model->PhysIKRec(s_rectime);

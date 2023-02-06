@@ -1,5 +1,5 @@
 2023/02/06
-	EditMot 1.2.0.10 RC2
+	EditMot 1.2.0.10 RC3
 
 	制限角度のベイクの仕様を変更
 		制限無しと制限有とが混在することに起因する誤差を解決
@@ -18,6 +18,21 @@
 
 	オイラー角計算修正
 		
+
+	1000fpsで物理シミュをしたら　シミュ開始時に乱れるのを修正
+		ロングタイムラインをxボタンで閉じると　表示がすごく速くなります
+		1000fps以上出たのですが乱れました
+		初期化回数をfps依存にすることで解決
+
+
+	操作対象ボーン(target bone)ウインドウの幅を広く
+		ToolWindowの操作対象ボーンボタンを押したときのウインドウの幅を調整
+
+
+	TroubleShootingドキュメント追加
+		What_is_L2WButton.docx
+		BecomeJaggedEulerGraph_OnIK.docx
+
 
 	サンプル更新　
 		Test/0_VRoid_Winter_B3
