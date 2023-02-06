@@ -498,6 +498,40 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 
 */
 
+/*
+* 2023/02/06
+* EditMot 1.2.0.10 RC2
+*
+* 制限角度のベイクの仕様を変更
+*	制限無しと制限有とが混在することに起因する誤差を解決
+*	制限角度がより安定
+*	編集部分だけのベイク(LimitedWorld-- > World)が安定
+*
+* L2Wボタン追加
+*	LimitEulオン時に押すと　全フレーム制限角度付モーションをオリジナルモーションにベイク
+*	LimitEulオン時のIK編集、姿勢初期化、平滑化、補間操作に関しては　自動的に編集部分だけベイク
+*
+* 物理シミュ不具合修正
+*	複数モデルを読み込んでシミュする場合に　１回目のシミュ時に制限角度が効かないことがあったのを修正
+*
+* IK操作高速化
+*	制限角度の計算に誤差があったときの対策が無くなり高速化
+*
+* オイラー角計算修正
+*
+* サンプル更新　
+*	Test / 0_VRoid_Winter_B3
+*
+* YouTubeチャンネル
+*	https ://www.youtube.com/@ochakkolab
+*
+* おちゃっこLAB
+*	https ://ochakkolab.jp/
+*
+*
+*/
+
+
 
 #include "useatl.h"
 
@@ -2338,7 +2372,8 @@ static int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit);//20
 static int CheckStr_SInt(const WCHAR* srcstr);//2022/12/05
 static int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag = true);//2022/12/06
 static int CopyWorldToLimitedWorld(CModel* srcmodel);
-static int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorflag);
+static int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorflag,
+	int operatingjointno, bool onpasteflag);
 static int ApplyNewLimitsToWM(CModel* srcmodel);
 static int ApplyNewLimitsToWMSelected();
 
@@ -6715,6 +6750,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
 					CEditRange::SetApplyRate((double)g_applyrate);
 
+					int updatejointno = -1;
+
 					if (subid == 0) {
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
@@ -6722,6 +6759,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							CBone* topbone = s_model->GetTopBone();
 							if (topbone) {
 								InitMpByEulReq(initmode, topbone, mi->motid, curframe);//topbone req
+								updatejointno = topbone->GetBoneNo();
 							}
 						}
 					}
@@ -6731,6 +6769,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 								double curframe = itrcp->time;
 								InitMpByEul(initmode, opebone, mi->motid, curframe);//opebone
+								updatejointno = opebone->GetBoneNo();
 							}
 						}
 					}
@@ -6740,6 +6779,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 								double curframe = itrcp->time;
 								InitMpByEulReq(initmode, opebone, mi->motid, curframe);//opebone req
+								updatejointno = opebone->GetBoneNo();
 							}
 						}
 					}
@@ -6747,7 +6787,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 					if (g_limitdegflag == true) {
 						bool allframeflag = false;
 						bool setcursorflag = false;
-						CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+						bool onpasteflag = false;
+						CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, updatejointno, onpasteflag);
 					}
 					refreshEulerGraph();
 					PrepairUndo();
@@ -7571,7 +7612,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if ((g_limitdegflag == true) && (s_editmotionflag >= 0)) {
 				bool allframeflag = false;
 				bool setcursorflag = true;
-				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+				bool onpasteflag = false;
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
 			}
 
 
@@ -19630,7 +19672,7 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 エラー入力通知ダイアログも出す
 
 }
 
-int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorflag)
+int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorflag, int operatingjointno, bool onpasteflag)
 {
 	HCURSOR oldcursor = NULL;
 	if (setcursorflag) {
@@ -19642,26 +19684,59 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
 		if (curmi) {
+			if (onpasteflag == false) {
+				if (operatingjointno >= 0) {
+					CBone* opebone = srcmodel->GetBoneByID(operatingjointno);
+					if (opebone) {
+						double roundingstartframe, roundingendframe;
+						if (allframeflag == false) {
+							int framenum;
+							double startframe, endframe;
+							s_editrange.GetRange(&framenum, &startframe, &endframe);
+							roundingstartframe = (double)((int)(startframe + 0.0001));
+							roundingendframe = (double)((int)(endframe + 0.0001));
+						}
+						else {
+							roundingstartframe = 1.0;
+							roundingendframe = (double)((int)(curmi->frameleng + 0.0001) - 1);
+						}
 
-			double roundingstartframe, roundingendframe;
-			if (allframeflag == false) {
-				int framenum;
-				double startframe, endframe;
-				s_editrange.GetRange(&framenum, &startframe, &endframe);
-				roundingstartframe = (double)((int)(startframe + 0.0001));
-				roundingendframe = (double)((int)(endframe + 0.0001));
+						double curframe;
+						for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
+							srcmodel->SetMotionFrame(curframe);
+							srcmodel->CopyLimitedWorldToWorldReq(opebone, curmi->motid, curframe);
+						}
+					}
+				}
 			}
 			else {
-				roundingstartframe = 1.0;
-				roundingendframe = (double)((int)(curmi->frameleng + 0.0001) - 1);
-			}
+				vector<CPELEM2>::iterator itrcp;
+				for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+					CBone* srcbone = itrcp->bone;
+					if (srcbone) {
+						double roundingstartframe, roundingendframe;
+						if (allframeflag == false) {
+							int framenum;
+							double startframe, endframe;
+							s_editrange.GetRange(&framenum, &startframe, &endframe);
+							roundingstartframe = (double)((int)(startframe + 0.0001));
+							roundingendframe = (double)((int)(endframe + 0.0001));
+						}
+						else {
+							roundingstartframe = 1.0;
+							roundingendframe = (double)((int)(curmi->frameleng + 0.0001) - 1);
+						}
 
-			double curframe;
-			for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
-				srcmodel->SetMotionFrame(curframe);
-				srcmodel->CopyLimitedWorldToWorldReq(srcmodel->GetTopBone(), curmi->motid, curframe);
+						double curframe;
+						for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
+							srcmodel->SetMotionFrame(curframe);
+							srcmodel->CopyLimitedWorldToWorldOne(srcbone, curmi->motid, curframe);
+						}
+					}
+				}
 			}
 		}
+
 
 		{
 			double curframe = s_owpLTimeline->getCurrentTime();
@@ -22125,12 +22200,14 @@ int OnFrameToolWnd()
 				curbone = 0;
 			}
 
-			s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
+			int operatingjointno = -1;
+			operatingjointno = s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
 
 			if (g_limitdegflag == true) {
 				bool allframeflag = false;
 				bool setcursorflag = false;
-				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+				bool onpasteflag = false;
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 			}
 			refreshEulerGraph();
 			PrepairUndo();
@@ -22203,12 +22280,16 @@ int OnFrameToolWnd()
 	}
 
 	if (s_copyLW2WFlag) {
-		if (s_model) {
+		if (s_model && s_model->GetTopBone()) {
+
+			int operatingjointno = s_model->GetTopBone()->GetBoneNo();
+
 			PrepairUndo();//全フレーム変更するので　変更前にも保存
 
 			bool allframeflag = true;
 			bool setcursorflag = true;
-			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+			bool onpasteflag = false;
+			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 
 			PrepairUndo();//変更後を保存
 
@@ -22454,7 +22535,9 @@ int OnFrameToolWnd()
 							if (g_limitdegflag == true) {
 								bool allframeflag = false;
 								bool setcursorflag = false;
-								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+								int operatingjointno = opebone->GetBoneNo();
+								bool onpasteflag = false;
+								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 							}
 							refreshEulerGraph();
 							PrepairUndo();
@@ -22726,7 +22809,8 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	if (g_limitdegflag == true) {
 		bool allframeflag = false;
 		bool setcursorflag = false;
-		CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag);
+		bool onpasteflag = true;
+		CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, 0, onpasteflag);
 		ApplyNewLimitsToWM(s_model);
 	}
 

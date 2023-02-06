@@ -641,8 +641,43 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
-		curmp->SetWorldMat(curmp->GetLimitedWM());
-		curmp->SetLocalEul(curmp->GetLimitedLocalEul());
+		ChaMatrix limitedwm;
+		limitedwm = curmp->GetLimitedWM();
+
+		ChaMatrix newwm;
+		newwm.SetIdentity();
+		if (GetParent()) {
+			CMotionPoint* parentmp;
+			parentmp = GetParent()->GetMotionPoint(srcmotid, roundingframe);
+			if (parentmp) {
+				ChaMatrix limitedlocal;
+				ChaMatrix parentlimitedwm;
+				ChaMatrix parentunlimitedwm;
+				limitedlocal.SetIdentity();
+				parentunlimitedwm.SetIdentity();
+				parentlimitedwm.SetIdentity();
+
+				parentlimitedwm = parentmp->GetLimitedWM();
+				parentunlimitedwm = parentmp->GetWorldMat();
+
+				limitedlocal = limitedwm * ChaMatrixInv(parentlimitedwm);
+				newwm = limitedlocal * parentunlimitedwm;
+			}
+			else {
+				_ASSERT(0);
+				newwm = limitedwm;
+			}
+		}
+		else {
+			newwm = limitedwm;
+		}
+
+		bool tmplimitdegflag = g_limitdegflag;
+		g_limitdegflag = false;
+		bool infooutflag = false;
+		int setchildflag = 1;
+		SetWorldMat(infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+		g_limitdegflag = tmplimitdegflag;
 	}
 	else {
 		_ASSERT(0);
@@ -659,8 +694,45 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
-		curmp->SetLimitedWM(curmp->GetWorldMat());
-		curmp->SetLimitedLocalEul(curmp->GetLocalEul());
+		ChaMatrix currentwm;
+		currentwm = curmp->GetWorldMat();
+
+		ChaMatrix newwm;
+		newwm.SetIdentity();
+		if (GetParent()) {
+			CMotionPoint* parentmp;
+			parentmp = GetParent()->GetMotionPoint(srcmotid, roundingframe);
+			if (parentmp) {
+				ChaMatrix unlimitedlocal;
+				ChaMatrix parentunlimited;
+				ChaMatrix parentlimited;
+				unlimitedlocal.SetIdentity();
+				parentunlimited.SetIdentity();
+				parentlimited.SetIdentity();
+
+				parentunlimited = parentmp->GetWorldMat();
+				parentlimited = parentmp->GetLimitedWM();
+
+				unlimitedlocal = currentwm * ChaMatrixInv(parentunlimited);
+				newwm = unlimitedlocal * parentlimited;
+			}
+			else {
+				_ASSERT(0);
+				newwm = currentwm;
+			}
+		}
+		else {
+			newwm = currentwm;
+		}
+
+
+		bool tmplimitdegflag = g_limitdegflag;
+		g_limitdegflag = true;
+		bool infooutflag = false;
+		int setchildflag = 1;
+		SetWorldMat(infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+		g_limitdegflag = tmplimitdegflag;
+
 	}
 	else {
 		_ASSERT(0);

@@ -1891,6 +1891,14 @@ void CModel::UpdateMatrixReq(CBone* srcbone, int srcmotid, double srcframe, ChaM
 	}
 }
 
+int CModel::CopyLimitedWorldToWorldOne(CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (srcbone) {
+		srcbone->CopyLimitedWorldToWorld(srcmotid, srcframe);
+	}
+	return 0;
+}
+
 void CModel::CopyLimitedWorldToWorldReq(CBone* srcbone, int srcmotid, double srcframe)
 {
 	if (srcbone) {
@@ -10624,12 +10632,17 @@ int CModel::RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno,
 
 int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe, CBone* srcbone, int srckind)
 {
+	//2023/02/06
+	//return operationgJointNo
+
+	int operatingjointno = -1;
+
 	if (!GetCurMotInfo()){
-		return 0;
+		return operatingjointno;
 	}
 
 	if (!srcbone) {
-		return 0;
+		return operatingjointno;
 	}
 
 	CBone* parentone;
@@ -10644,17 +10657,19 @@ int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe
 		//all
 		bool oneflag = false;
 		InterpolateBetweenSelectionReq(GetTopBone(), srcstartframe, srcendframe, oneflag);
+		operatingjointno = GetTopBone()->GetBoneNo();
 	}
 	else if (srckind == 2) {
 		//parent one
 		bool oneflag = true;
 		InterpolateBetweenSelectionReq(parentone, srcstartframe, srcendframe, oneflag);
-
+		operatingjointno = parentone->GetBoneNo();
 	}
 	else if (srckind == 3) {
 		//parent deeper
 		bool oneflag = false;
 		InterpolateBetweenSelectionReq(parentone, srcstartframe, srcendframe, oneflag);
+		operatingjointno = parentone->GetBoneNo();
 	}
 	else {
 		//unknown
@@ -10663,7 +10678,7 @@ int CModel::InterpolateBetweenSelection(double srcstartframe, double srcendframe
 
 	UpdateMatrix(&m_matWorld, &m_matVP);
 
-	return 0;
+	return operatingjointno;
 }
 
 void CModel::InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe, bool oneflag)
