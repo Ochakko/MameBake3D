@@ -3177,8 +3177,10 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	ChaVector3 targetVec, shadowVec;
 	ChaVector3 tmpVec;
 	double shadowLeng;
+	
 	const float thdeg = 165.0f;
 	float tmpX0, tmpY0, tmpZ0;
+
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
@@ -3351,6 +3353,11 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	// 
 	//2023/02/04の変更は　LimitEul時にグラフが１８０度の変化を交互に繰り返す症状が出たから
 	//2023/02/07にテストしたところ　それは１８０度プラスマイナス補正が原因の不具合ではなかったようだ
+	//
+	//2023/02/08 am00:53
+	//GetBefEul()の内容の問題だった　unlimitedのオイラーをbefeulにすることで解決したようだ
+	//notmodify180flag関連をロールバックしてテスト　問題が出たテストデータ(bvh121)でざっとテスト　今のところOK
+	//  　もう寝ます
 	//###########################################################################################################
 
 	//if (g_underIKRot == false) {
