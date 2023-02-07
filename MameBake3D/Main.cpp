@@ -500,7 +500,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2023/02/07
-* EditMot 1.2.0.10 RC4
+* EditMot 1.2.0.10 RC7
 *
 * 制限角度のベイクの仕様を変更
 *	制限無しと制限有とが混在することに起因する誤差を解決
@@ -518,23 +518,28 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *	制限角度の計算に誤差があったときの対策が無くなり高速化
 *
 * オイラー角計算修正
-*
+* 　例えば
+* 　LimitEulオフで０度から８００度まで回転し　LimitEulオンで０度から４５０度(１回転後少し回転したところ)までに制限することも可能に
+* 　(テストジョイントの回転を姿勢初期化で初期化してからテストしました)
+* 
+* 
 * TroubleShootingドキュメント追加
 * 	Documtents/TroubleShooting/What_is_L2WButton.docx
 * 	Documtents/TroubleShooting/BecomeJaggedEulerGraph_OnIK.docx
-*
+*	Documents/Troubleshooting/ACaseThatTranslationOfResultOfRetargetDontMove.docx
+* 
 * リファクタリング (2023/02/07)
 * 　グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
 * 　タイミング依存(並列化もあり得る)の潜在的不具合を解消
 * 
 * サンプル更新　
-*	Test / 0_VRoid_Winter_B3
+*	Test/0_VRoid_Winter_B3
 *
 * YouTubeチャンネル
-*	https ://www.youtube.com/@ochakkolab
+*	https://www.youtube.com/@ochakkolab
 *
 * おちゃっこLAB
-*	https ://ochakkolab.jp/
+*	https://ochakkolab.jp/
 *
 *
 */

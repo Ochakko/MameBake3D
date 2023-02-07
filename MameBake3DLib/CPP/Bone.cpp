@@ -4133,7 +4133,8 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 
 	if (befeulkind == BEFEUL_BEFFRAME){
 		//1つ前のフレームのEULはすでに計算されていると仮定する。
-		befeul = GetBefEul(limitdegflag, srcmotid, roundingframe);
+		bool limitdegOnLimitEul = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
+		befeul = GetBefEul(limitdegOnLimitEul, srcmotid, roundingframe);
 	}
 	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
 		befeul = *directbefeul;
@@ -5485,7 +5486,8 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 					//　遊び付きリミテッドIK
 					//############################################
 					ChaVector3 limiteul;
-					limiteul = LimitEul(neweul, GetBefEul(limitdegflag, srcmotid, roundingframe));
+					bool limitdegOnLimitEul1 = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
+					limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul1, srcmotid, roundingframe));
 					int inittraflag0 = 0;
 					//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 					SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
@@ -5515,7 +5517,8 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 					}
 					else {
 						ChaVector3 limiteul;
-						limiteul = LimitEul(neweul, GetBefEul(limitdegflag, srcmotid, roundingframe));
+						bool limitdegOnLimitEul2 = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
+						limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul2, srcmotid, roundingframe));
 						int inittraflag0 = 0;
 						//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 						SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
@@ -5696,8 +5699,10 @@ ChaVector3 CBone::LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul)
 	tmpeul.y = LimitAngle(AXIS_Y, srceul.y);
 	tmpeul.z = LimitAngle(AXIS_Z, srceul.z);
 
-	CQuaternion calcq;
-	calcq.ModifyEuler360(&tmpeul, &srcbefeul, 0);
+
+	//何回転もする場合に　純粋に角度で制限するためにコメントアウト
+	//CQuaternion calcq;
+	//calcq.ModifyEuler360(&tmpeul, &srcbefeul, 0);
 
 	reteul = tmpeul;
 

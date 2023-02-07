@@ -46,7 +46,7 @@
 #include <crtdbg.h>
 
 //extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
-
+extern bool g_underIKRot;
 
 
 
@@ -3178,7 +3178,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	ChaVector3 tmpVec;
 	double shadowLeng;
 	const float thdeg = 165.0f;
-	//float tmpX0, tmpY0, tmpZ0;
+	float tmpX0, tmpY0, tmpZ0;
 
 	EQ.Rotate(&targetVec, axisXVec);
 	shadowVec.x = (float)vecDotVec(&targetVec, &axisXVec);
@@ -3198,22 +3198,26 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) > 0.0f) {
 	//	Euler.z = -Euler.z;
 	//}
-	//if (notmodify180flag == 0) {
-	//	tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//オーバー１８０度
-	//}
-	//else {
-	//	tmpZ0 = Euler.z;
-	//}
-	//if (notmodify180flag == 0) {
-	//	//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-	//	if ((tmpZ0 - befeul.z) >= thdeg) {
-	//		tmpZ0 -= 180.0f;
-	//	}
-	//	if ((befeul.z - tmpZ0) >= thdeg) {
-	//		tmpZ0 += 180.0f;
-	//	}
-	//}
-	//Euler.z = tmpZ0;
+
+	if (notmodify180flag == 0) {
+		if (Euler.z >= 0.0f) {
+			tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//オーバー１８０度
+		}
+		else {
+			tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//オーバー１８０度
+		}
+		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+		if ((tmpZ0 - befeul.z) >= thdeg) {
+			tmpZ0 -= 180.0f;
+		}
+		if ((befeul.z - tmpZ0) >= thdeg) {
+			tmpZ0 += 180.0f;
+		}
+	}
+	else {
+		tmpZ0 = Euler.z;
+	}
+	Euler.z = tmpZ0;
 
 
 	EinvZ = ChaVector3(0.0f, 0.0f, -Euler.z);
@@ -3243,22 +3247,26 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisZVec) < 0.0f) {
 	//	Euler.y = -Euler.y;
 	//}
-	//if (notmodify180flag == 0) {
-	//	tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//オーバー１８０度
-	//}
-	//else {
-	//	tmpY0 = Euler.y;
-	//}
-	//if (notmodify180flag == 0) {
-	//	//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-	//	if ((tmpY0 - befeul.y) >= thdeg) {
-	//		tmpY0 -= 180.0f;
-	//	}
-	//	if ((befeul.y - tmpY0) >= thdeg) {
-	//		tmpY0 += 180.0f;
-	//	}
-	//}
-	//Euler.y = tmpY0;
+
+	if (notmodify180flag == 0) {
+		if (Euler.y >= 0.0f) {
+			tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//オーバー１８０度
+		}
+		else {
+			tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//オーバー１８０度
+		}
+		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+		if ((tmpY0 - befeul.y) >= thdeg) {
+			tmpY0 -= 180.0f;
+		}
+		if ((befeul.y - tmpY0) >= thdeg) {
+			tmpY0 += 180.0f;
+		}
+	}
+	else {
+		tmpY0 = Euler.y;
+	}
+	Euler.y = tmpY0;
 
 
 	EinvY = ChaVector3(0.0f, -Euler.y, 0.0f);
@@ -3291,23 +3299,25 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
 	//}
-	//if (notmodify180flag == 0) {
-	//	tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//オーバー１８０度
-	//}
-	//else {
-	//	tmpX0 = Euler.x;
-	//}
-	//if (notmodify180flag == 0) {
-	//	//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-	//	if ((tmpX0 - befeul.x) >= thdeg) {
-	//		tmpX0 -= 180.0f;
-	//	}
-	//	if ((befeul.x - tmpX0) >= thdeg) {
-	//		tmpX0 += 180.0f;
-	//	}
-	//}
-	//Euler.x = tmpX0;
-
+	if (notmodify180flag == 0) {
+		if (Euler.x >= 0.0f) {
+			tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//オーバー１８０度
+		}
+		else {
+			tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//オーバー１８０度
+		}
+		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+		if ((tmpX0 - befeul.x) >= thdeg) {
+			tmpX0 -= 180.0f;
+		}
+		if ((befeul.x - tmpX0) >= thdeg) {
+			tmpX0 += 180.0f;
+		}
+	}
+	else {
+		tmpX0 = Euler.x;
+	}
+	Euler.x = tmpX0;
 
 	//###################################################################################################################################
 	//2023/01/12
@@ -3332,8 +3342,21 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//360のプラスマイナスに戻して　後処理として補正を行う
 	//###########################################################################################
 
-	ModifyEuler360(&Euler, &befeul, notmodify180flag);
+	//###########################################################################################################
+	//2023/02/07
+	//２軸が１８０度変化してY軸が０から９０度までしか動かないように変化しながら
+	//体が１回転するというのは　IKRotの際に起こったし　３６０度のプラスマイナスだけだと必ずそうなった
+	//１８０度のプラスマイナスは必要と認識し直し
+	//以前のようにXYZそれぞれを求めながら１８０度チェック
+	// 
+	//2023/02/04の変更は　LimitEul時にグラフが１８０度の変化を交互に繰り返す症状が出たから
+	//2023/02/07にテストしたところ　それは１８０度プラスマイナス補正が原因の不具合ではなかったようだ
+	//###########################################################################################################
 
+	//if (g_underIKRot == false) {
+	//	ModifyEuler360(&Euler, &befeul, notmodify180flag);
+	//}
+	
 	*reteul = Euler;
 
 	return 0;
