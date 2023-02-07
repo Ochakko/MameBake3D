@@ -30,11 +30,12 @@
 
 
 	TroubleShootingドキュメント追加
-		What_is_L2WButton.docx
-		BecomeJaggedEulerGraph_OnIK.docx
+		Documents/Troubleshooting/What_is_L2WButton.docx
+		Documents/Troubleshooting/BecomeJaggedEulerGraph_OnIK.docx
+		Documents/Troubleshooting/ACaseThatTranslationOfResultOfRetargetDontMove.docx
 
 
-	リファクタリング (2023/02/07)
+	リファクタリング
 		グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
 		タイミング依存(並列化もあり得る)の潜在的不具合を解消
 
