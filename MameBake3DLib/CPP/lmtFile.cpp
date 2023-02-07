@@ -153,7 +153,7 @@ int CLmtFile::WriteLmt(bool limitdegflag, CBone* srcbone )
 	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
 
 
-	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(limitdegflag, 0);
+	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(limitdegflag, 0);//limitdegflag‚Íchk’l‚É‚¾‚¯ŠÖŒW
 
 	char strboneaxistype[3][256] = {"Current", "Parent", "Global"};
 	if ((anglelimit.boneaxiskind >= 0) && (anglelimit.boneaxiskind <= 2)){

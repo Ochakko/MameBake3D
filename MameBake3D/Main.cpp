@@ -519,7 +519,11 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *
 * オイラー角計算修正
 *
-* リファクタリング
+* TroubleShootingドキュメント追加
+* 	Documtents/TroubleShooting/What_is_L2WButton.docx
+* 	Documtents/TroubleShooting/BecomeJaggedEulerGraph_OnIK.docx
+*
+* リファクタリング (2023/02/07)
 * 　グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
 * 　タイミング依存(並列化もあり得る)の潜在的不具合を解消
 * 

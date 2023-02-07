@@ -913,7 +913,7 @@ int CBtObject::SetEquilibriumPoint(bool limitdegflag, int lflag, int aflag)
 				dofC->setAngularUpperLimit(btVector3(btScalar(currentx + 1.0 * (float)DEG2PAI), btScalar(currenty + 1.0 * (float)DEG2PAI), btScalar(currentz + 1.0 * (float)DEG2PAI)));
 			}
 			else {
-				if (g_limitdegflag != false) {
+				if (limitdegflag != false) {
 					//limited rot
 					ChaMatrix eulaxismat;
 					CQuaternion eulaxisq;

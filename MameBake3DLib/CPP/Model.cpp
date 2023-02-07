@@ -8985,7 +8985,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVec
 					//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
 					//制限角度により　回転出来ない場合は　リターンする
 					//if (g_limitdegflag != 0) {
-					if ((g_limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
+					if ((limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
 						//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 						int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
 							rotq0, parentbone, parentbone);
@@ -11145,7 +11145,7 @@ int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, doubl
 		_ASSERT(0);
 		return 0;//not movable
 	}
-	if (g_limitdegflag == false) {
+	if (limitdegflag == false) {
 		return 1;//movable
 	}
 
@@ -11347,7 +11347,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
 			//制限角度により　回転出来ない場合は　リターンする
 			//if (g_limitdegflag != false) {
-			if ((g_limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
+			if ((limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
 				//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 				int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
 				if (ismovable == 0) {
