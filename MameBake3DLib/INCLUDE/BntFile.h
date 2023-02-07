@@ -92,7 +92,7 @@ public:
 	CBntFile();
 	virtual ~CBntFile();
 
-	int WriteBntFile( WCHAR* wfilename, MODELELEM wme );
+	int WriteBntFile(bool limitdegflag, WCHAR* wfilename, MODELELEM wme );
 
 private:
 	virtual int InitParams();
@@ -111,8 +111,8 @@ private:
 	int WriteBntVertex( PM3DISPV* srcpm3disp, PM3INF* srcpm3inf );
 	int WriteBntIndex( int* srcindex, int indexnum );
 
-	int WriteOneMotion( CModel* srcmodel );
-	void WriteMotionPointsReq( CBone* srcbone, int srcmotid, int frameleng, int* pcnt );
+	int WriteOneMotion(bool limitdegflag, CModel* srcmodel);
+	void WriteMotionPointsReq(bool limitdegflag, CBone* srcbone, int srcmotid, int frameleng, int* pcnt);
 	
 private:
 	MODELELEM m_me;

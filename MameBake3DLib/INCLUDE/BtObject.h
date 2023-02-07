@@ -52,7 +52,8 @@ public:
  * @param (CBone* childbone) IN 剛体の子供側のボーン。
  * @return 成功したら０。
  */
-	int CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone);
+	int CreateObject(bool limitdegflag, int srcmotid, double srcframe, 
+		CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone);
 
 /**
  * @fn
@@ -60,7 +61,7 @@ public:
  * @breaf この剛体と接続する剛体との間のコンストレイントを作成する。
  * @return 成功したら０。
  */
-	int CreateBtConstraint();
+	int CreateBtConstraint(bool limitdegflag);
 
 
 /**
@@ -69,7 +70,7 @@ public:
  * @breaf 剛体シミュレーションの行列からシミュレーション適用後の行列を計算する。
  * @return 成功したら０。
  */
-	int SetBtMotion(ChaMatrix curtraanim);
+	int SetBtMotion(bool limitdegflag, ChaMatrix curtraanim);
 
 	int SetCapsuleBtMotion(CRigidElem* srcre);
 
@@ -100,7 +101,7 @@ public:
 
 
 
-	int SetEquilibriumPoint( int lflag, int aflag );
+	int SetEquilibriumPoint(bool limitdegflag, int lflag, int aflag);
 	int EnableSpring(bool angleflag, bool linearflag);
 	int SetDofRotAxis(int srcaxiskind);
 

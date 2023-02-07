@@ -68,7 +68,8 @@ int CChaFile::DestroyObjs()
 	return 0;
 }
 
-int CChaFile::WriteChaFile( BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, std::vector<MODELELEM>& srcmodelindex, float srcmotspeed )
+int CChaFile::WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, 
+	std::vector<MODELELEM>& srcmodelindex, float srcmotspeed )
 {
 	m_modelindex = srcmodelindex;
 	m_mode = XMLIO_WRITE;
@@ -125,7 +126,7 @@ int CChaFile::WriteChaFile( BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, st
 	int modelcnt;
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		MODELELEM curme = m_modelindex[ modelcnt ];
-		CallF( WriteChara( &curme, projname ), return 1 );
+		CallF(WriteChara(limitdegflag, &curme, projname), return 1 );
 	}
 
 	CallF( Write2File( "</CHA>\r\n" ), return 1 );
@@ -145,7 +146,7 @@ int CChaFile::WriteFileInfo()
 	return 0;
 }
 
-int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
+int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
 {
 	char filename[MAX_PATH] = {0};
 	char modelfolder[MAX_PATH] = {0};
@@ -224,7 +225,7 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	char fbxpath[MAX_PATH] = { 0 };//UTF-8
 	swprintf_s(wcfbxfilename, MAX_PATH, L"%s\\%s", charafolder, curmodel->GetFileName());
 	WideCharToMultiByte(CP_UTF8, 0, wcfbxfilename, -1, fbxpath, MAX_PATH, NULL, NULL);
-	int ret1 = WriteFBXFile(curmodel->GetFBXSDK(), curmodel, fbxpath, fbxdate);
+	int ret1 = WriteFBXFile(limitdegflag, curmodel->GetFBXSDK(), curmodel, fbxpath, fbxdate);
 	if (ret1) {
 		_ASSERT(!ret1);
 		return 1;
@@ -342,8 +343,12 @@ int CChaFile::WriteChara( MODELELEM* srcme, WCHAR* projname )
 	return 0;
 }
 
-int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
-	int (*srcReMenu)( int selindex1, int callbymenu1 ), int (*srcRgdMenu)( int selindex2, int callbymenu2 ), int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) )
+int CChaFile::LoadChaFile(bool limitdegflag, WCHAR* strpath, 
+	CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), 
+	int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
+	int (*srcReMenu)( int selindex1, int callbymenu1 ), 
+	int (*srcRgdMenu)( int selindex2, int callbymenu2 ), 
+	int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) )
 {
 	m_mode = XMLIO_LOAD;
 	m_FbxFunc = srcfbxfunc;
@@ -410,7 +415,7 @@ int CChaFile::LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( bool dorefresh
 		XMLIOBUF charabuf;
 		ZeroMemory( &charabuf, sizeof( XMLIOBUF ) );
 		CallF( SetXmlIOBuf( &m_xmliobuf, "<Chara>", "</Chara>", &charabuf ), return 1 );
-		CallF( ReadChara( charanum, characnt, &charabuf ), return 1 );
+		CallF( ReadChara(limitdegflag, charanum, characnt, &charabuf), return 1 );
 	}
 
 	m_xmliobuf.pos = 0;
@@ -460,7 +465,7 @@ int CChaFile::ReadProjectInfo( XMLIOBUF* xmlbuf, int* charanumptr )
 
 	return 0;
 }
-int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
+int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF* xmlbuf)
 {
 /***
 	CallF( Write2File( "  <Chara>\r\n" ), return 1 );
@@ -609,7 +614,7 @@ int CChaFile::ReadChara( int charanum, int characnt, XMLIOBUF* xmlbuf )
 	CallF( (this->m_MorphMenu)( morphindex ), return 1 );
 	CallF( (this->m_ImpMenu)( 0 ), return 1 );
 
-	newmodel->CreateBtObject(1);//‰‰ñ
+	newmodel->CreateBtObject(limitdegflag, 1);//‰‰ñ
 	//newmodel->CalcBoneEul(-1);//
 
 

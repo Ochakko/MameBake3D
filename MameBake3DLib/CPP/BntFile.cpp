@@ -67,7 +67,7 @@ int CBntFile::DestroyObjs()
 	return 0;
 }
 
-int CBntFile::WriteBntFile( WCHAR* wfilename, MODELELEM wme )
+int CBntFile::WriteBntFile(bool limitdegflag, WCHAR* wfilename, MODELELEM wme )
 {
 	m_me = wme;
 	m_mode = XMLIO_WRITE;
@@ -88,7 +88,7 @@ int CBntFile::WriteBntFile( WCHAR* wfilename, MODELELEM wme )
 	CallF( WriteHeader(), return 1 );
 	CallF( WriteBone( wme.modelptr ), return 1 );
 	CallF( WriteObject( wme.modelptr ), return 1 );
-	CallF( WriteOneMotion( wme.modelptr ), return 1 );
+	CallF( WriteOneMotion(limitdegflag, wme.modelptr ), return 1 );
 
 	return 0;
 }
@@ -377,7 +377,7 @@ int CBntFile::WriteBntIndex( int* srcindex, int indexnum )
 }
 
 
-int CBntFile::WriteOneMotion( CModel* srcmodel )
+int CBntFile::WriteOneMotion(bool limitdegflag, CModel* srcmodel )
 {
 	if(	!srcmodel->GetCurMotInfo() ){
 		_ASSERT( 0 );
@@ -396,7 +396,8 @@ int CBntFile::WriteOneMotion( CModel* srcmodel )
 	CallF( WriteVoid2File( (void*)&motheader, sizeof( BNTMOTHEADER ) ), return 1 );
 
 	int bonecnt = 0;
-	WriteMotionPointsReq( srcmodel->GetTopBone(), srcmodel->GetCurMotInfo()->motid, motheader.frameleng, &bonecnt );
+	WriteMotionPointsReq(limitdegflag, 
+		srcmodel->GetTopBone(), srcmodel->GetCurMotInfo()->motid, motheader.frameleng, &bonecnt );
 	if( bonecnt != motheader.bonenum ){
 		_ASSERT( 0 );
 		return 1;
@@ -405,7 +406,7 @@ int CBntFile::WriteOneMotion( CModel* srcmodel )
 	return 0;
 }
 
-void CBntFile::WriteMotionPointsReq( CBone* srcbone, int srcmotid, int frameleng, int* pcnt )
+void CBntFile::WriteMotionPointsReq(bool limitdegflag, CBone* srcbone, int srcmotid, int frameleng, int* pcnt )
 {
 	if( !srcbone ){
 		_ASSERT( 0 );
@@ -421,8 +422,8 @@ void CBntFile::WriteMotionPointsReq( CBone* srcbone, int srcmotid, int frameleng
 		
 		CMotionPoint curmp;
 		int existflag = 0;
-		CallF( srcbone->CalcFBXMotion( srcmotid, (double)frameno, &curmp, &existflag ), return );
-		wmp.matrix = curmp.GetWorldMat();
+		CallF( srcbone->CalcFBXMotion(limitdegflag, srcmotid, (double)frameno, &curmp, &existflag ), return );
+		wmp.matrix = srcbone->GetWorldMat(limitdegflag, srcmotid, (double)frameno, &curmp);
 
 		CallF( WriteVoid2File( (void*)&wmp, sizeof( BNTMOTPOINT ) ), return );
 	}
@@ -431,10 +432,10 @@ void CBntFile::WriteMotionPointsReq( CBone* srcbone, int srcmotid, int frameleng
 	(*pcnt)++;
 
 	if( srcbone->GetChild() ){
-		WriteMotionPointsReq( srcbone->GetChild(), srcmotid, frameleng, pcnt );
+		WriteMotionPointsReq(limitdegflag, srcbone->GetChild(), srcmotid, frameleng, pcnt);
 	}
 	if( srcbone->GetBrother() ){
-		WriteMotionPointsReq( srcbone->GetBrother(), srcmotid, frameleng, pcnt );
+		WriteMotionPointsReq(limitdegflag, srcbone->GetBrother(), srcmotid, frameleng, pcnt);
 	}
 
 }

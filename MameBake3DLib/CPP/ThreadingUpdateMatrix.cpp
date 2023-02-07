@@ -57,6 +57,7 @@ int CThreadingUpdateMatrix::InitParams()
 	ChaMatrixIdentity(&wmat);
 	ChaMatrixIdentity(&vpmat);
 
+	m_limitdegflag = false;
 
 	return 0;
 }
@@ -97,7 +98,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 							CBone* curbone = m_bonelist[bonecount];
 							if (curbone) {
 								bool callingbythread = true;
-								curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+								curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
 							}
 						}
 					}
@@ -144,7 +145,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 							CBone* curbone = m_bonelist[bonecount];
 							if (curbone) {
 								bool callingbythread = true;
-								curbone->UpdateMatrix(motid, frame, &wmat, &vpmat, callingbythread);
+								curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
 							}
 						}
 					}
@@ -204,7 +205,7 @@ int CThreadingUpdateMatrix::SetBoneList(int srcindex, CBone* srcbone)
 	return m_bonenum;
 }
 
-void CThreadingUpdateMatrix::UpdateMatrix(int srcmotid, double srcframe, ChaMatrix* srcwmat, ChaMatrix* srcvpmat)
+void CThreadingUpdateMatrix::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* srcwmat, ChaMatrix* srcvpmat)
 {
 
 	//####################################################################
@@ -217,6 +218,7 @@ void CThreadingUpdateMatrix::UpdateMatrix(int srcmotid, double srcframe, ChaMatr
 		frame = srcframe;
 		wmat = *srcwmat;
 		vpmat = *srcvpmat;
+		m_limitdegflag = limitdegflag;
 		LeaveCriticalSection(&m_CritSection);
 		InterlockedExchange(&m_start_state, 1L);
 		SetEvent(m_hEvent);

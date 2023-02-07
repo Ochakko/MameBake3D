@@ -19,20 +19,25 @@ public:
 	CChaFile();
 	virtual ~CChaFile();
 
-	int WriteChaFile( BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, std::vector<MODELELEM>& srcmodelindex, float srcmotspeed );
-	int LoadChaFile( WCHAR* strpath, CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
-		int (*srcReMenu)( int selindex1, int callbymenu1 ), int (*srcRgdMenu)( int selindex2, int callbymenu2 ), int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) );
+	int WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, 
+		std::vector<MODELELEM>& srcmodelindex, float srcmotspeed );
+	int LoadChaFile(bool limitdegflag, WCHAR* strpath, 
+		CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), 
+		int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
+		int (*srcReMenu)( int selindex1, int callbymenu1 ), 
+		int (*srcRgdMenu)( int selindex2, int callbymenu2 ), 
+		int (*srcMorphMenu)( int selindex3 ), int (*srcImpMenu)( int selindex4 ) );
 
 private:
 	virtual int InitParams();
 	virtual int DestroyObjs();
 
 	int WriteFileInfo();
-	int WriteChara( MODELELEM* srcme, WCHAR* projname );
+	int WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname);
 
 	//int CheckFileVersion( XMLIOBUF* xmliobuf );
 	int ReadProjectInfo( XMLIOBUF* xmliobuf, int* charanumptr );
-	int ReadChara( int charanum, int characnt, XMLIOBUF* xmliobuf );
+	int ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF* xmliobuf);
 	//int ReadMotion( XMLIOBUF* xmliobuf, WCHAR* modelfolder, CModel* modelptr );
 	int ReadWall(XMLIOBUF* xmliobuf);
 

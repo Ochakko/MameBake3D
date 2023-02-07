@@ -24,7 +24,7 @@ public:
 
 	int ClearBoneList();
 	int SetBoneList(int srcindex, CBone* srcbone);
-	void UpdateMatrix(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//bool IsFinished();
 
 private:
@@ -48,6 +48,7 @@ private:
 	double frame;
 	ChaMatrix wmat;
 	ChaMatrix vpmat;
+	bool m_limitdegflag;
 };
 
 

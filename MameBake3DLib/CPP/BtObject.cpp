@@ -245,7 +245,7 @@ int CBtObject::AddChild( CBtObject* addbt )
 	return 0;
 }
 
-int CBtObject::CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone)
+int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CBtObject* parbt, CBone* parentbone, CBone* curbone, CBone* childbone)
 {
 
 	DestroyObjs();//2023/01/20
@@ -278,7 +278,7 @@ int CBtObject::CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBo
 	//}
 
 	ChaVector3 centerA, parentposA, childposA, aftparentposA, aftchildposA;
-	ChaMatrix tmpzerofm = m_bone->GetCurrentZeroFrameMat(0);
+	ChaMatrix tmpzerofm = m_bone->GetCurrentZeroFrameMat(limitdegflag, 0);
 	parentposA = m_bone->GetJointFPos();
 	ChaVector3TransformCoord(&aftparentposA, &parentposA, &tmpzerofm);
 	childposA = m_endbone->GetJointFPos();
@@ -332,7 +332,7 @@ int CBtObject::CreateObject(int srcmotid, double srcframe, CBtObject* parbt, CBo
 
 
 	ChaVector3 starteul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = m_bone->GetLocalEul(srcmotid, srcframe, 0);
+	ChaVector3 befeul = m_bone->GetLocalEul(limitdegflag, srcmotid, srcframe, 0);
 	CQuaternion axisq;
 	axisq.RotationMatrix(m_bone->GetNodeMat());
 	int notmodify180flag = 0;
@@ -539,7 +539,7 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 }
 
 
-int CBtObject::CreateBtConstraint()
+int CBtObject::CreateBtConstraint(bool limitdegflag)
 {
 	if( m_topflag == 1 ){
 		return 0;
@@ -615,7 +615,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 				int forbidrotflag = chilbto->m_bone->GetRigidElem(chilbto->m_endbone)->GetForbidRotFlag();
 
 				ANGLELIMIT anglelimit;
-				anglelimit = chilbto->m_bone->GetAngleLimit(0);
+				anglelimit = chilbto->m_bone->GetAngleLimit(limitdegflag, 0);
 
 
 				int dofid;
@@ -827,7 +827,7 @@ int CBtObject::SetDofRotAxis(int srcaxiskind)
 }
 
 
-int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
+int CBtObject::SetEquilibriumPoint(bool limitdegflag, int lflag, int aflag)
 {
 
 	size_t constraintnum = m_constraint.size();
@@ -889,7 +889,7 @@ int CBtObject::SetEquilibriumPoint(int lflag, int aflag)
 
 			ANGLELIMIT anglelimit;
 			ZeroMemory(&anglelimit, sizeof(ANGLELIMIT));
-			anglelimit = childbto->m_bone->GetAngleLimit(0);
+			anglelimit = childbto->m_bone->GetAngleLimit(limitdegflag, 0);
 			//ANGLELIMIT anglelimit = childbto->m_bone->GetAngleLimit();
 
 			int forbidrotflag = childbto->m_bone->GetRigidElem(childbto->m_endbone)->GetForbidRotFlag();
@@ -1059,7 +1059,7 @@ int CBtObject::SetPosture2Bt(ChaMatrix srcmat, ChaVector3 srcrigidcenter, int co
 
 //void CBtObject::RecalcConstraintFrameAB()
 
-int CBtObject::SetBtMotion(ChaMatrix curtraanim)
+int CBtObject::SetBtMotion(bool limitdegflag, ChaMatrix curtraanim)
 {
 	if (m_topflag == 1) {
 		return 0;
@@ -1076,7 +1076,7 @@ int CBtObject::SetBtMotion(ChaMatrix curtraanim)
 	ChaMatrix zerowm;
 	orgpos = m_bone->GetJointFPos();
 	orgchildpos = m_endbone->GetJointFPos();
-	zerowm = m_bone->GetCurrentZeroFrameMat(1);
+	zerowm = m_bone->GetCurrentZeroFrameMat(limitdegflag, 1);
 	ChaVector3TransformCoord(&aftpos, &orgpos, &zerowm);
 	ChaVector3TransformCoord(&aftchildpos, &orgchildpos, &zerowm);
 	ChaMatrix befpivotmat, aftpivotmat;

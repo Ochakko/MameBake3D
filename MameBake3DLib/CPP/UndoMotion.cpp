@@ -118,7 +118,7 @@ int CUndoMotion::DestroyObjs()
 }
 
 
-int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno, 
+int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno, int curbaseno,
 	CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag)
 {
 	if (!pmodel) {
@@ -167,7 +167,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno,
 			//####################
 
 			int getchkflag = 1;
-			m_bone2limit[curbone] = curbone->GetAngleLimit(getchkflag);
+			m_bone2limit[curbone] = curbone->GetAngleLimit(limitdegflag, getchkflag);
 
 			//###################
 			// first MotionPoint
@@ -320,7 +320,7 @@ int CUndoMotion::SaveUndoMotion( CModel* pmodel, int curboneno, int curbaseno,
 
 	return 0;
 }
-int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate)
+int CUndoMotion::RollBackMotion(bool limitdegflag, CModel* pmodel, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate)
 {
 	if( m_validflag != 1 ){
 		_ASSERT( 0 );
@@ -399,7 +399,7 @@ int CUndoMotion::RollBackMotion( CModel* pmodel, int* curboneno, int* curbaseno,
 			map<CBone*, ANGLELIMIT>::iterator itrbone2limit;
 			itrbone2limit = m_bone2limit.find(curbone);
 			if (itrbone2limit != m_bone2limit.end()) {
-				curbone->SetAngleLimit(itrbone2limit->second);
+				curbone->SetAngleLimit(limitdegflag, itrbone2limit->second);
 			}
 
 			//#######################

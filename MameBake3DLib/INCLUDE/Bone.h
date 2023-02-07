@@ -93,7 +93,7 @@ public:
  * @return 成功したら０。
  * @detail 指定モーションの指定時間の姿勢を計算する。グローバルな姿勢の計算である。
  */
-	int UpdateMatrix( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false );
+	int UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false);
 	int SwapCurrentMotionPoint();
 
 
@@ -130,7 +130,7 @@ public:
  * @param (int* existptr) OUT 指定時間ちょうどのデータがあれば１、なければ０。無い場合は前後から計算する。
  * @return 成功したら０。
  */
-	int CalcFBXMotion( int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr );
+	int CalcFBXMotion(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr);
 
 /**
  * @fn
@@ -144,7 +144,7 @@ public:
  * @return 成功したら０。
  * @detail 指定時間ちょうどにデータがあった場合はそれが結果になる。befptrがない場合はnextptrの姿勢が結果となる。nextptrが無い場合はbefptrの姿勢が結果となる。befとnextがある場合は線形補間する。
  */
-	int CalcFBXFrame( double srcframe, CMotionPoint* befptr, CMotionPoint* nextptr, int existflag, CMotionPoint* dstmpptr );
+	int CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr, CMotionPoint* nextptr, int existflag, CMotionPoint* dstmpptr);
 
 /**
  * @fn
@@ -204,8 +204,10 @@ public:
 	//int CalcAxisMat( int firstflag, float delta );
 	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
 	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ボーン軸がX軸
-	float CalcAxisMatX_Manipulator(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
-	float CalcAxisMatX_RigidBody(bool dir2xflag, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータX軸向き
+	float CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, 
+		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
+	float CalcAxisMatX_RigidBody(bool limitdegflag, bool dir2xflag, int bindflag, 
+		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータX軸向き
 	float CalcAxisMatX_NodeMat(CBone* childbone, ChaMatrix* dstmat);
 
 /**
@@ -257,10 +259,10 @@ public:
  * @return 計算した姿勢を格納したCMotionPointのポインタを返すが再帰関数であることに注意。ポインタはチェインにセットされたものである。
  * @detail 想定している使い方としては、外部からの呼び出し時にはparmpを０にする。この関数内での再帰呼び出し時にparmpに親をセットする。
  */
-	CMotionPoint* AddBoneTraReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm);
+	CMotionPoint* AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm);
 
 
-	CMotionPoint* AddBoneScaleReq(CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale, ChaMatrix befparentwm, ChaMatrix newparentwm);
+	CMotionPoint* AddBoneScaleReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale, ChaMatrix befparentwm, ChaMatrix newparentwm);
 
 /**
  * @fn
@@ -278,24 +280,26 @@ public:
  //引数rotqはグローバル回転　引数traanimはローカル移動アニメ
  //##########################################################
 
-	CMotionPoint* RotBoneQReq(bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, 
+	CMotionPoint* RotBoneQReq(bool limitdegflag, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, 
 		CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm, 
 		CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0, bool onretarget = false);
-	CMotionPoint* RotAndTraBoneQReq(int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
+	CMotionPoint* RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 		CQuaternion qForRot, CQuaternion qForHipsRot, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm);
 
-	ChaMatrix CalcNewLocalRotMatFromQofIK(int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat);
+	ChaMatrix CalcNewLocalRotMatFromQofIK(bool limitdegflag, 
+		int srcmotid, double srcframe, CQuaternion qForRot, 
+		ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat);
 	ChaMatrix CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat, 
 		ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, ChaVector3 oneframetraanim);
 
-	int SaveSRT(int srcmotid, double srcstartframe, double srcendframe);
+	int SaveSRT(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe);
 
 	//CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 
 /**
 
 */
-	CMotionPoint* RotBoneQOne(CBone* srcparentbone, CMotionPoint* parmp, int srcmotid, double srcframe, ChaMatrix srcmat);
+	CMotionPoint* RotBoneQOne(bool limitdegflag, CBone* srcparentbone, CMotionPoint* parmp, int srcmotid, double srcframe, ChaMatrix srcmat);
 
 /**
  * @fn
@@ -306,7 +310,7 @@ public:
  * @param (double dstframe) IN コピー先のフレームを指定する。
  * @return dstのCMotionPointのポインタを返す。ただし再帰的にである。
  */
-	CMotionPoint* PasteRotReq( int srcmotid, double srcframe, double dstframe );
+	CMotionPoint* PasteRotReq(bool limitdegflag, int srcmotid, double srcframe, double dstframe );
 
 
 /**
@@ -320,7 +324,7 @@ public:
  * @return 編集が適用されたボーンのCMotionPointのポインタが返される。ただし再帰的にである。
  * @detail この関数は絶対IK機能として呼ばれる。絶対IKと相対IKの説明はMain.cppの冒頭の説明を読むこと。
  */
-	CMotionPoint* SetAbsMatReq( int broflag, int srcmotid, double srcframe, double firstframe );
+	CMotionPoint* SetAbsMatReq(bool limitdegflag, int broflag, int srcmotid, double srcframe, double firstframe);
 
 
 /**
@@ -361,11 +365,11 @@ public:
  * @param (CMotionPoint* pdstmp) OUT 計算結果を受け取るCMotionPointのポインタを指定する。
  * @return 成功したら０。
  */
-	int CalcLocalInfo( int motid, double frameno, CMotionPoint* pdstmp );
+	int CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPoint* pdstmp);
 	int CalcCurrentLocalInfo(CMotionPoint* pdstmp);
 	int CalcBtLocalInfo(CMotionPoint* pdstmp);
 
-	int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
+	//int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);
 /**
  * @fn
  * GetBoneNum
@@ -394,10 +398,10 @@ public:
 
 	int CalcBoneDepth();
 
-	ChaVector3 GetBefEul(int srcmotid, double srcframe);
+	ChaVector3 GetBefEul(bool limitdegflag, int srcmotid, double srcframe);
 	ChaVector3 GetUnlimitedBefEul(int srcmotid, double srcframe);
 	int GetNotModify180Flag(int srcmotid, double srcframe);
-	ChaVector3 CalcLocalEulXYZ(int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	ChaVector3 CalcLocalEulXYZ(bool limitdegflag, int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	//ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit用
 	//ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
 	//ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
@@ -411,20 +415,20 @@ public:
 	//ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int settraflag, int multworld, int calczeroframe);
 
 
-	ChaVector3 GetWorldPos(int srcmotid, double srcframe);
+	ChaVector3 GetWorldPos(bool limitdegflag, int srcmotid, double srcframe);
 	//補間無し
-	ChaMatrix GetWorldMat(int srcmotid, double srcframe, CMotionPoint* srcmp, ChaVector3* dsteul = 0);
+	ChaMatrix GetWorldMat(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp, ChaVector3* dsteul = 0);
 	//ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
-	ChaVector3 GetLocalEul(int srcmotid, double srcframe, CMotionPoint* srcmp);
+	ChaVector3 GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp);
 	ChaVector3 GetLimitedLocalEul(int srcmotid, double srcframe);
 	ChaVector3 GetUnlimitedLocalEul(int srcmotid, double srcframe);
-	int SetWorldMat(int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
-	int SetWorldMat(bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
-	int SetWorldMatFromEul(int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
-	int SetWorldMatFromEulAndScaleAndTra(int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
-	int SetWorldMatFromEulAndTra(int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
-	int SetWorldMatFromQAndTra(int setchildflag, ChaMatrix befwm, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
-	int SetLocalEul(int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp);
+	int SetWorldMat(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
+	int SetWorldMat(bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
+	int SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
+	int SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
+	int SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
+	int SetWorldMatFromQAndTra(bool limitdegflag, int setchildflag, ChaMatrix befwm, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe);
+	int SetLocalEul(bool limitdegflag, int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp);
 	//int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
 
 	int CopyWorldToLimitedWorld(int srcmotid, double srcframe);//制限角度無しの姿勢を制限有りの姿勢にコピーする
@@ -441,22 +445,22 @@ public:
 
 	//ChaMatrix CalcLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul);
 	//int SetBtWorldMatFromEul(int setchildflag, ChaVector3 srceul);
-	ChaMatrix CalcWorldMatFromEul(int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
+	ChaMatrix CalcWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag);//initscaleflag = 1 : default
 	//int CalcWorldMatAfterThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
-	ChaVector3 CalcLocalTraAnim(int srcmotid, double srcframe);
-	ChaVector3 CalcLocalScaleAnim(int srcmotid, double srcframe);
-	ChaVector3 CalcFbxScaleAnim(int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
-	ChaMatrix CalcLocalScaleRotMat(int rotcenterflag, int srcmotid, double srcframe);
-	ChaMatrix CalcLocalSymScaleRotMat(int rotcenterflag, int srcmotid, double srcframe);
-	ChaVector3 CalcLocalSymScaleVec(int srcmotid, double srcframe);
-	ChaVector3 CalcLocalSymTraAnim(int srcmotid, double srcframe);
-	ChaMatrix CalcSymXMat(int srcmotid, double srcframe);
-	ChaMatrix CalcSymXMat2(int srcmotid, double srcframe, int symrootmode);
-	int PasteMotionPoint(int srcmotid, double srcframe, CMotionPoint srcmp);
+	ChaVector3 CalcLocalTraAnim(bool limitdegflag, int srcmotid, double srcframe);
+	ChaVector3 CalcLocalScaleAnim(bool limitdegflag, int srcmotid, double srcframe);
+	ChaVector3 CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
+	ChaMatrix CalcLocalScaleRotMat(bool limitdegflag, int rotcenterflag, int srcmotid, double srcframe);
+	ChaMatrix CalcLocalSymScaleRotMat(bool limitdegflag, int rotcenterflag, int srcmotid, double srcframe);
+	ChaVector3 CalcLocalSymScaleVec(bool limitdegflag, int srcmotid, double srcframe);
+	ChaVector3 CalcLocalSymTraAnim(bool limitdegflag, int srcmotid, double srcframe);
+	ChaMatrix CalcSymXMat(bool limitdegflag, int srcmotid, double srcframe);
+	ChaMatrix CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, int symrootmode);
+	int PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	ChaVector3 CalcFBXEulXYZ(int srcmotid, double srcframe, ChaVector3* befeulptr = 0);//2022/09/12 fbx書き出し専用
-	ChaVector3 CalcFBXTra(int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
-	int QuaternionInOrder(int srcmotid, double srcframe, CQuaternion* srcdstq);
+	ChaVector3 CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe, ChaVector3* befeulptr = 0);//2022/09/12 fbx書き出し専用
+	ChaVector3 CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
+	int QuaternionInOrder(bool limitdegflag, int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);
 
 	int LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext);
@@ -467,8 +471,8 @@ public:
 	int SetCurrentMotion(int srcmotid, double animleng);
 	void ResetMotionCache();
 
-	ChaMatrix GetCurrentZeroFrameMat(int updateflag);//current motionのframe 0のworldmat
-	ChaMatrix GetCurrentZeroFrameInvMat(int updateflag);
+	ChaMatrix GetCurrentZeroFrameMat(bool limitdegflag, int updateflag);//current motionのframe 0のworldmat
+	ChaMatrix GetCurrentZeroFrameInvMat(bool limitdegflag, int updateflag);
 
 
 	static CBone* GetNewBone(CModel* parmodel);
@@ -499,7 +503,7 @@ public:
 	int AdditiveAllMotionsToAngleLimit();
 	//int AdditiveToAngleLimit(ChaVector3 cureul);//フルフレーム計算して最大最小をセットするように変更したため　この関数は使用しない
 
-	int InitMP(int srcmotid, double srcframelen);
+	int InitMP(bool limitdegflag, int srcmotid, double srcframelen);
 
 	//int Adjust180Deg(int srcmotid, double srcleng);
 
@@ -546,7 +550,7 @@ private:
  * @param (ChaMatrix* dstmat) OUT 変換行列を格納するデータへのポインタ。
  * @return 成功したら０。
  */
-	int CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat );
+	//int CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat );
 
 /**
  * @fn
@@ -598,7 +602,7 @@ private:
  */
 	int DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe );
 
-	void SetStartMat2Req();
+	//void SetStartMat2Req();
 	//void CalcFirstAxisMatX();
 	void CalcFirstAxisMatZ();
 
@@ -608,7 +612,7 @@ private:
 	int InitCustomRig();
 	void CalcBtRootDiffMatFunc(CBone* srcbone);
 
-	ChaMatrix GetCurrentZeroFrameMatFunc(int updateflag, int inverseflag);
+	ChaMatrix GetCurrentZeroFrameMatFunc(bool limitdegflag, int updateflag, int inverseflag);
 
 	void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
 	void CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone);
@@ -692,13 +696,13 @@ public: //accesser
 		return invaxis;
 	};
 
-	ChaMatrix GetStartMat2(){ return m_startmat2; };
-	ChaMatrix GetInvStartMat2(){
-		ChaMatrix retmat;
-		ChaMatrixInverse(&retmat, NULL, &m_startmat2);
-		return retmat;
-	};
-	void SetStartMat2(ChaMatrix srcmat){ m_startmat2 = srcmat; };
+	//ChaMatrix GetStartMat2(){ return m_startmat2; };
+	//ChaMatrix GetInvStartMat2(){
+	//	ChaMatrix retmat;
+	//	ChaMatrixInverse(&retmat, NULL, &m_startmat2);
+	//	return retmat;
+	//};
+	//void SetStartMat2(ChaMatrix srcmat){ m_startmat2 = srcmat; };
 
 	int GetGetAnimFlag(){ return m_getanimflag; };
 	void SetGetAnimFlag( int srcflag ){ m_getanimflag = srcflag; };
@@ -1049,8 +1053,8 @@ public: //accesser
 		}
 	};
 
-	ANGLELIMIT GetAngleLimit(int getchkflag);
-	void SetAngleLimit(ANGLELIMIT srclimit);
+	ANGLELIMIT GetAngleLimit(bool limitdegflag, int getchkflag);
+	void SetAngleLimit(bool limitdegflag, ANGLELIMIT srclimit);
 
 	int GetFreeCustomRigNo();
 	CUSTOMRIG GetFreeCustomRig();
@@ -1307,7 +1311,7 @@ private:
 	ChaMatrix m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
 
 
-	ChaMatrix m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
+	//ChaMatrix m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
 
 	int m_getanimflag;//FBXファイルを読み込む際にアニメーションを読み込んだら１。
 	

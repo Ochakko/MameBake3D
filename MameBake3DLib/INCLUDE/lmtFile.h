@@ -92,7 +92,7 @@ private:
  * @return なし。
  * @detail それぞれのボーンについての書き出し関数はWriteImpである。
  */
-	void WriteLmtReq( CBone* srcbone );
+	void WriteLmtReq(bool limitdegflag, CBone* srcbone);
 
 /**
  * @fn
@@ -101,7 +101,7 @@ private:
  * @param (CBone* srcbone) IN 制限角度パラメータを持つボーン。
  * @return 成功したら０。
  */
-	int WriteLmt( CBone* srcbone );
+	int WriteLmt(bool limitdegflag, CBone* srcbone);
 
 
 /**
@@ -111,7 +111,7 @@ private:
  * @param (XMLIOBUF* xmliobuf) IN XMLのあるボーン１つ分のバッファ。
  * @return 成功したら０。
  */
-	int ReadBone( XMLIOBUF* xmliobuf );
+	int ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf);
 
 /**
  * @fn

@@ -45,7 +45,7 @@
 
 #include <crtdbg.h>
 
-extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
+//extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
 
 
 

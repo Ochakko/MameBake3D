@@ -122,7 +122,7 @@ static int DestroyFBXBoneReq( CFBXBone* fbxbone );
 static bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilename, int pFileFormat=-1, bool pEmbedMedia=false);
 
 
-static bool CreateScene(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate );
+static bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate );
 static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene, char* fbxdate );
 static FbxNode* CreateFbxMesh( FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj );
 static int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxMesh* lMesh, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj);
@@ -144,8 +144,8 @@ static void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose );
 
 
 
-static void AnimateSkeleton(FbxScene* pScene, CModel* pmodel);
-static void AnimateBoneReq(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax);
+static void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel);
+static void AnimateBoneReq(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax);
 static int AnimateMorph(FbxScene* pScene, CModel* pmodel);
 
 static void AnimateSkeletonOfBVH( FbxScene* pScene );
@@ -166,9 +166,9 @@ static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene*
 static int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat);//pNode = pmodel->GetBoneNode(curbone)を内部で使用
 static void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lMatrix);
 
-static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
-static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
-static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimTra(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimRot(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
+static int WriteFBXAnimScale(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
 static int WriteFBXAnimTraOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 static int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int axiskind, int zeroflag);
 
@@ -377,7 +377,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
 }
 
 
-int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate )
+int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate)
 {
 
 	s_bvhflag = 0;//ここは初期化の意味。CreateScene()でセット。
@@ -400,7 +400,7 @@ int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxda
     lScene = FbxScene::Create(s_pSdkManager,"");
 
     // Create the scene.
-    lResult = CreateScene( s_pSdkManager, lScene, pmodel, fbxdate );
+    lResult = CreateScene(limitdegflag, s_pSdkManager, lScene, pmodel, fbxdate);
 
     if(lResult == false)
     {
@@ -537,7 +537,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 
 
 
-bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate)
+bool CreateScene(bool limitdegflag, FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char* fbxdate)
 {
 	if (!pSdkManager || !pScene || !pmodel || !fbxdate) {
 		return 1;
@@ -682,7 +682,7 @@ bool CreateScene(FbxManager *pSdkManager, FbxScene* pScene, CModel* pmodel, char
 //    StoreRestPose(pScene, lSkeletonRoot);
 
 
-    AnimateSkeleton(pScene, pmodel);
+    AnimateSkeleton(limitdegflag, pScene, pmodel);
 	AnimateMorph(pScene, pmodel);
 
 	//if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
@@ -1618,7 +1618,7 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 }
 
 
-void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
+void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 {
 	static int s_dbgcnt = 0;
 
@@ -1691,7 +1691,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 		s_firstanimout = 1;
 		//AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
-		AnimateBoneReq(s_fbxbone, lAnimLayer, curmotid, maxframe);
+		AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
@@ -1703,7 +1703,7 @@ void AnimateSkeleton(FbxScene* pScene, CModel* pmodel)
 
 }
 
-void AnimateBoneReq(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe)
+void AnimateBoneReq(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe)
 {
 
 	static int s_dbgcnt = 0;
@@ -1741,27 +1741,27 @@ void AnimateBoneReq(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, i
 			s_dbgcnt++;
 
 
-			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimTra(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimTra(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimTra(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimTra(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimRot(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimRot(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimRot(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimRot(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
-			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-			WriteFBXAnimScale(fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			WriteFBXAnimScale(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			WriteFBXAnimScale(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			WriteFBXAnimScale(limitdegflag, fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
 
 
 		}
 	}
 
 	if( fbxbone->GetChild() ){
-		AnimateBoneReq(fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(limitdegflag, fbxbone->GetChild(), lAnimLayer, curmotid, maxframe );
 	}
 	if( fbxbone->GetBrother() ){
-		AnimateBoneReq(fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
+		AnimateBoneReq(limitdegflag, fbxbone->GetBrother(), lAnimLayer, curmotid, maxframe );
 	}
 }
 
@@ -3045,7 +3045,7 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 }
 
 
-static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+int WriteFBXAnimTra(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3086,7 +3086,7 @@ static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		lCurve = lSkel->LclTranslation.GetCurve(lAnimLayer, strChannel, true);
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			fbxtra = curbone->CalcFBXTra(curmotid, frameno);
+			fbxtra = curbone->CalcFBXTra(limitdegflag, curmotid, frameno);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 			switch (axiskind){
@@ -3116,7 +3116,7 @@ static int WriteFBXAnimTra(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 
 	return 0;
 }
-static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+int WriteFBXAnimRot(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3159,7 +3159,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 		lCurve->KeyModifyBegin();
 		
 		for (frameno = 0; frameno <= maxframe; frameno++){
-			cureul = curbone->CalcFBXEulXYZ(curmotid, frameno, &befeul);
+			cureul = curbone->CalcFBXEulXYZ(limitdegflag, curmotid, frameno, &befeul);
 					
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
@@ -3191,7 +3191,7 @@ static int WriteFBXAnimRot(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curm
 }
 
 
-static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
+int WriteFBXAnimScale(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind)
 {
 	FbxTime lTime;
 	int lKeyIndex = 0;
@@ -3235,7 +3235,7 @@ static int WriteFBXAnimScale(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int cu
 		lCurve->KeyModifyBegin();
 		for (frameno = 0; frameno <= maxframe; frameno++) {
 			//cureul = curbone->CalcFBXEul(curmotid, frameno, &befeul);
-			cureul = curbone->CalcFbxScaleAnim(curmotid, frameno);
+			cureul = curbone->CalcFbxScaleAnim(limitdegflag, curmotid, frameno);
 			lTime.SetSecondDouble((double)frameno / timescale);
 			lKeyIndex = lCurve->KeyAdd(lTime);
 

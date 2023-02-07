@@ -181,7 +181,8 @@ public:
  */
 	int OnRender(ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag = 0 );
 
-	int RenderRefArrow(ID3D11DeviceContext* pd3dImmediateContext, CBone* boneptr, ChaVector4 diffusemult, int refmult, std::vector<ChaVector3> vecbonepos);
+	int RenderRefArrow(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, 
+		CBone* boneptr, ChaVector4 diffusemult, int refmult, std::vector<ChaVector3> vecbonepos);
 /**
  * @fn
  * RenderBoneMark
@@ -193,10 +194,10 @@ public:
  * @param (int skiptopbonemark) IN 一番親からのボーンを表示しないフラグ。
  * @return 成功したら０。
  */
-	int RenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark = 0 );
+	int RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark = 0 );
 
 
-	void RenderCapsuleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto);
+	void RenderCapsuleReq(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto);
 
 	void RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto, CMySprite* bcircleptr);
 
@@ -257,10 +258,10 @@ public:
  * @param (ChaMatrix* vpmat) IN View * Projection変換行列。
  * @return 成功したら０。
  */
-	int UpdateMatrix( ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
-	void UpdateMatrixReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
+	void UpdateMatrixReq(bool limitdegflag, CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int SwapCurrentMotionPoint();
-	int HierarchyRouteUpdateMatrix(CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
+	int HierarchyRouteUpdateMatrix(bool limitdegflag, CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
 	void CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe);
@@ -395,11 +396,11 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータの中央の黄色をドラッグした時に呼ばれる。
  */
-	int IKRotate( CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel );
+	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
 
 
-	int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
-	int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
+	//int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
+	//int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
 
 	int CreatePhysicsPosConstraint(CBone* srcbone);
 	int DestroyPhysicsPosConstraint(CBone* srcbone);
@@ -433,11 +434,11 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータのリングまたは球をドラッグした時に呼ばれる。
  */
-	int IKRotateAxisDelta( CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat );
+	int IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
 	int TwistBoneAxisDelta(CEditRange* erptr, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
 
 
-	int PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
+	//int PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
 	int SetDofRotAxis(int srcaxiskind);
 
 
@@ -462,7 +463,9 @@ public:
  * @param (CQuaternion rotq) IN 回転を表すクォータニオン。
  * @return 成功したら０。
  */
-	int FKRotate(bool onretarget, int reqflag, CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, CQuaternion srcq, int setmatflag = 0, ChaMatrix* psetmat = 0);
+	int FKRotate(bool limitdegflag, bool onretarget, int reqflag, 
+		CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, 
+		CQuaternion srcq, int setmatflag = 0, ChaMatrix* psetmat = 0);
 	//int FKRotate(double srcframe, int srcboneno, ChaMatrix srcmat);
 
 /**
@@ -474,14 +477,17 @@ public:
  * @param (ChaVector3 addtra) IN 移動分のベクトル。
  * @return 成功したら０。
  */
-	int FKBoneTra( int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
+	int FKBoneTra(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
+		int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
 
-	int FKBoneTraAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float delta, ChaMatrix selectmat);
+	int FKBoneTraAxis(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
+		int srcboneno, int axiskind, float delta, ChaMatrix selectmat);
 
+	int FKBoneScale(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
+		int srcboneno, ChaVector3 scalevec);
 
-	int FKBoneScale(int onlyoneflag, CEditRange* erptr, int srcboneno, ChaVector3 scalevec);
-
-	int FKBoneScaleAxis(int onlyoneflag, CEditRange* erptr, int srcboneno, int axiskind, float scaleval);
+	int FKBoneScaleAxis(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
+		int srcboneno, int axiskind, float scaleval);
 
 
 /**
@@ -560,7 +566,7 @@ public:
  * @return 成功したら０。
  * @detail シミュレーション開始のたびに呼ぶ。一番最初の呼び出しだけonfirstcreateを１にする。
  */
-	int CreateBtObject( int onfirstcreate );
+	int CreateBtObject(bool limitdegflag, int onfirstcreate);
 
 /**
  * @fn
@@ -574,7 +580,8 @@ public:
  * @return 成功したら０。
  * @detail bulletシミュレーション時には、CModel::Motion2Bt-->BPWorld::clientMoveAndDisplay-->CModel::SetBtMotionという流れで呼び出す。
  */
-	int SetBtMotion(CBone* srcbone, int rgdollflag, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
+	int SetBtMotion(bool limitdegflag, CBone* srcbone, int rgdollflag, 
+		double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
 
 /**
  * @fn
@@ -616,7 +623,7 @@ public:
 	CBtObject* FindBtObject( int srcboneno );
 
 
-	int FillUpEmptyMotion(int motid);
+	//int FillUpEmptyMotion(int motid);
 
 
 	int SetAllSphrateData(int gid, int rgdindex, float srcval);
@@ -639,15 +646,16 @@ public:
 
 	int SetColTypeAll(int reindex, int srctype);
 
-	int Motion2Bt( int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix* mVP, int selectboneno );
+	int Motion2Bt(bool limitdegflag, int firstflag, double nextframe, 
+		ChaMatrix* mW, ChaMatrix* mVP, int selectboneno);
 	int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
 	int SetKinematicFlag();
 	int CreateRigidElem();
 	int SetCurrentRigidElem( int curindex );
 	REINFO GetCurrentRigidElemInfo(int* retindex);
 	void CreateRigidElemReq( CBone* curbone, int reflag, std::string rename, int impflag, std::string impname );
-	int SetBtEquilibriumPoint();
-	int SetBtEquilibriumPointReq( CBtObject* srcbto );
+	int SetBtEquilibriumPoint(bool limitdegflag);
+	int SetBtEquilibriumPointReq(bool limitdegflag, CBtObject* srcbto);
 	void SetDofRotAxisReq(CBtObject* srcbto, int srcaxiskind);
 
 
@@ -658,8 +666,11 @@ public:
 	int ResetBt();
 
 	int InitUndoMotion( int saveflag );
-	int SaveUndoMotion( int curboneno, int curbaseno, CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag );
-	int RollBackUndoMotion(HWND hmainwnd, int redoflag, int* curboneno, int* curbaseno, double* dststartframe, double* dstendframe, double* dstapplyframe, BRUSHSTATE* dstbrushstate);
+	int SaveUndoMotion(bool limitdegflag, int curboneno, int curbaseno,
+		CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag);
+	int RollBackUndoMotion(bool limitdegflag, HWND hmainwnd, int redoflag, 
+		int* curboneno, int* curbaseno, 
+		double* dststartframe, double* dstendframe, double* dstapplyframe, BRUSHSTATE* dstbrushstate);
 
 	int AddBoneMotMark( OrgWinGUI::OWP_Timeline* owpTimeline, int curboneno, int curlineno, double startframe, double endframe, int flag );
 
@@ -672,21 +683,23 @@ public:
 
 	int RecalcBoneAxisX(CBone* srcbone);
 
-	int CalcBoneEul(int srcmotid);
-	void CalcBoneEulReq(CBone* curbone, int srcmotid, double srcframe);
+	int CalcBoneEul(bool limitdegflag, int srcmotid);
+	void CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double srcframe);
 
-	int RigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);
-	int PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
+	int RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, 
+		int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);
+	//int PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();
 
 	CBone* GetSymPosBone(CBone* srcbone);
 
-	int InterpolateBetweenSelection(double srcstartframe, double srcendframe, CBone* srcbone, int srckind);
+	int InterpolateBetweenSelection(bool limitdegflag, double srcstartframe, double srcendframe, 
+		CBone* srcbone, int srckind);
 
 	int BulletSimulationStop();
 	int BulletSimulationStart();
-	int ApplyBtToMotion();
+	int ApplyBtToMotion(bool limitdegflag);
 	void CalcBtAxismat(int onfirstcreate);
 	void CalcRigidElem();
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
@@ -700,10 +713,10 @@ public:
 	void DestroyScene();
 
 
-	void PhysIKRec(double srcrectime);
-	void PhysIKRecReq(CBone* srcbone, double srcrectime);
-	void ApplyPhysIkRec();
-	void ApplyPhysIkRecReq(CBone* srcbone, double srcframe, double srcrectime);
+	void PhysIKRec(bool limitdegflag, double srcrectime);
+	void PhysIKRecReq(bool limitdegflag, CBone* srcbone, double srcrectime);
+	void ApplyPhysIkRec(bool limitdegflag);
+	void ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcframe, double srcrectime);
 
 	int ResetAngleLimit(int srcval, CBone* srcbone = 0);
 	int AngleLimitReplace180to170(CBone* srcbone = 0);
@@ -716,12 +729,12 @@ public:
 	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreads変更時にも呼ぶ
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxからも呼ぶ CBoneに移動
 
-	void InitMPReq(CBone* curbone, int srcmotid, double curframe);
-	int InitMP(CBone* curbone, int srcmotid, double curframe);
+	void InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
+	int InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
 
 	void Adjust180DegReq(CBone* srcbone);
 
-	void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
+	//void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
 
 	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);
 
@@ -754,8 +767,8 @@ private:
 	int SetShapeNoReq( CMQOFace** ppface, int facenum, int searchp, int shapeno, int* setfacenum);
 	int SetFaceOfShape( CMQOFace** ppface, int facenum, int shapeno, CMQOFace** ppface2, int setfacenum );
 
-	int CreateBtConstraint();
-	void CreateBtConstraintReq( CBtObject* curbto );
+	int CreateBtConstraint(bool limitdegflag);
+	void CreateBtConstraintReq(bool limitdegflag, CBtObject* curbto);
 	//void CreateBtConstraintReq(CBone* curbone);
 
 	//void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);//publicへ
@@ -794,7 +807,7 @@ private:
 	void CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
-	void InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe);
+	//void InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe);
 	//int CorrectFbxScaleAnim(int animno, FbxScene* pScene, FbxNode* pNode, FbxPose* pPose, FbxNodeAttribute* pAttrib, int motid, double animleng);
 
 
@@ -816,23 +829,23 @@ private:
 
 	int DestroyBtObject();
 	void DestroyBtObjectReq( CBtObject* curbt );
-	void CreateBtObjectReq( CBtObject* parbt, CBone* parentbone, CBone* curbone );
+	void CreateBtObjectReq(bool limitdegflag, CBtObject* parbt, CBone* parentbone, CBone* curbone);
 
 	void CalcBtAxismatReq( CBone* curbone, int onfirstcreate );
 	void CalcRigidElemReq(CBone* curbone);
-	void SetBtMotionReq( CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat );
-	void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag);
-	void SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
-	void SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
-	void FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
-	void SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparentmat, ChaMatrix newparentmat);
-	void AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot = 0);
-	void AdjustBtMatToCurrent(CBone* curbone);
-	void AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot = 0);
-	void InitBtMatTraAnimReq(CBtObject* curbto);
+	void SetBtMotionReq(bool limitdegflag, CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	//void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag);
+	//void SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	//void SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	//void FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);//Kinematicとそうでないところの境目を探してみつかったらLowerReqで親行列をセットする。
+	//void SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparentmat, ChaMatrix newparentmat);
+	//void AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot = 0);
+	//void AdjustBtMatToCurrent(CBone* curbone);
+	//void AdjustBtMatToChild(CBone* curbone, CBone* childbone, int adjustrot = 0);
+	//void InitBtMatTraAnimReq(CBtObject* curbto);
 
-	void BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
-	void RecalcConstraintFrameABReq(CBtObject* curbto);
+	//void BtMat2BtObjReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
+	//void RecalcConstraintFrameABReq(CBtObject* curbto);
 
 	void FindBtObjectReq( CBtObject* srcbto, int srcboneno, CBtObject** ppret );
 	void SetImpulseDataReq( int gid, CBone* srcbone, ChaVector3 srcimp );
@@ -870,13 +883,14 @@ private:
 	int GetValidUndoID();//undo用のid
 	int GetValidRedoID();//redo用のid
 
-	int SetBefEditMat( CEditRange* erptr, CBone* curbone, int maxlevel );
-	int SetBefEditMatFK( CEditRange* erptr, CBone* curbone );
+	int SetBefEditMat(bool limitdegflag, CEditRange* erptr, CBone* curbone, int maxlevel);
+	int SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone);
 
-	int AdjustBoneTra( CEditRange* erptr, CBone* lastpar );
+	int AdjustBoneTra(bool limitdegflag, CEditRange* erptr, CBone* lastpar);
 
 	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
-	void InterpolateBetweenSelectionReq(CBone* srcbone, double srcstartframe, double srcendframe, bool oneflag);
+	void InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone, 
+		double srcstartframe, double srcendframe, bool oneflag);
 
 
 	int DbgDumpBoneReq(CBone* boneptr, int broflag);
@@ -894,16 +908,17 @@ private:
 	int WithConstraint(CBone* srcbone);
 	void BulletSimulationStopReq(CBtObject* srcbto);
 	void BulletSimulationStartReq(CBtObject* srcbto);
-	void ApplyBtToMotionReq(CBone* srcbone);
+	void ApplyBtToMotionReq(bool limitdegflag, CBone* srcbone);
 
 	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
 
 
-	int CalcQForRot(int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+	int CalcQForRot(bool limitdegflag, 
+		int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
 		CBone* srcrotbone, CBone* srcaplybone, 
 		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
-	int IsMovableRot(int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
-		CBone* srcrotbone, CBone* srcaplybone);
+	int IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, double srcapplyframe, 
+		CQuaternion srcaddrot, CBone* srcrotbone, CBone* srcaplybone);
 
 
 	//int GetFreeThreadIndex();

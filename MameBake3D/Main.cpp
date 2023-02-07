@@ -499,8 +499,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 */
 
 /*
-* 2023/02/06
-* EditMot 1.2.0.10 RC2
+* 2023/02/07
+* EditMot 1.2.0.10 RC4
 *
 * 制限角度のベイクの仕様を変更
 *	制限無しと制限有とが混在することに起因する誤差を解決
@@ -519,6 +519,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *
 * オイラー角計算修正
 *
+* リファクタリング
+* 　グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
+* 　タイミング依存(並列化もあり得る)の潜在的不具合を解消
+* 
 * サンプル更新　
 *	Test / 0_VRoid_Winter_B3
 *
@@ -808,7 +812,7 @@ bool g_underselecttolast = false;
 bool g_undereditrange = false;
 
 bool g_limitdegflag = true;
-bool g_wmatDirectSetFlag = false;
+//bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 
 float g_impscale = 1.0f;
@@ -2246,8 +2250,8 @@ static int OnFrameUtCheckBox();
 static int OnFramePreviewStop();
 static int OnFramePreviewNormal(double* pnextframe, double* pdifftime);
 static int OnFramePreviewBt(double* pnextframe, double* pdifftime);
-int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel);
-static int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime);
+//int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel);
+//static int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime);
 static int OnFrameCloseFlag();
 static int OnFrameTimeLineWnd();
 static int OnFrameMouseButton();
@@ -2258,7 +2262,7 @@ static int OnFrameBatchThread();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
-static void UpdateBtSimu(double nextframe, CModel* curmodel);
+//static void UpdateBtSimu(double nextframe, CModel* curmodel);
 static void SetKinematicToHand(CModel* srcmodel, bool srcflag);
 static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag);
 static void DispProgressCalcLimitedWM();
@@ -2476,10 +2480,10 @@ static int PickSpRefPosSW(POINT srcpos);
 
 
 
-static int InsertCopyMP(CBone* curbone, double curframe);
-static void InsertCopyMPReq(CBone* curbone, double curframe);
-static int InsertSymMP(CBone* curbone, double curframe, int symrootmode);
-static void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode);
+static int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe);
+static void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe);
+static int InsertSymMP(bool limitdegflag, CBone* curbone, double curframe, int symrootmode);
+static void InsertSymMPReq(bool limitdegflag, CBone* curbone, double curframe, int symrootmode);
 
 static int InitMpFromTool();
 //static int InitMP( CBone* curbone, double curframe );
@@ -5996,7 +6000,12 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 					OnFramePreviewBt(&nextframe, &difftime);
 				}
 				else if (g_previewFlag == 5) {//ラグドール
-					OnFramePreviewRagdoll(&nextframe, &difftime);
+					//OnFramePreviewRagdoll(&nextframe, &difftime);
+
+
+					//ラグドール休止中
+					_ASSERT(0);
+					OnFramePreviewNormal(&nextframe, &difftime);
 				}
 				else {
 					OnTimeLineCursor();
@@ -6037,21 +6046,21 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	s_savepreviewFlag = g_previewFlag;
 }
 
-void InsertCopyMPReq(CBone* curbone, double curframe)
+void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe)
 {
 	if (curbone){
-		InsertCopyMP(curbone, curframe);
+		InsertCopyMP(limitdegflag, curbone, curframe);
 
 		if (curbone->GetChild()){
-			InsertCopyMPReq(curbone->GetChild(), curframe);
+			InsertCopyMPReq(limitdegflag, curbone->GetChild(), curframe);
 		}
 		if (curbone->GetBrother()){
-			InsertCopyMPReq(curbone->GetBrother(), curframe);
+			InsertCopyMPReq(limitdegflag, curbone->GetBrother(), curframe);
 		}
 	}
 }
 
-int InsertCopyMP( CBone* curbone, double curframe )
+int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 {
 	/*
 	CMotionPoint* pcurmp = 0;
@@ -6067,9 +6076,12 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	}
 	*/
 	int rotcenterflag1 = 1;
-	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
-	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(s_model->GetCurMotInfo()->motid, curframe);
-	ChaVector3 localscale = curbone->CalcLocalScaleAnim(s_model->GetCurMotInfo()->motid, curframe);
+	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(limitdegflag, 
+		rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
+	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(limitdegflag, 
+		s_model->GetCurMotInfo()->motid, curframe);
+	ChaVector3 localscale = curbone->CalcLocalScaleAnim(limitdegflag, 
+		s_model->GetCurMotInfo()->motid, curframe);
 	
 	localmat.data[MATI_41] += curanimtra.x;
 	localmat.data[MATI_42] += curanimtra.y;
@@ -6097,22 +6109,23 @@ int InsertCopyMP( CBone* curbone, double curframe )
 	return 0;
 }
 
-void InsertSymMPReq(CBone* curbone, double curframe, int symrootmode)
+void InsertSymMPReq(bool limitdegflag, CBone* curbone, double curframe, int symrootmode)
 {
 	if (curbone){
-		InsertSymMP(curbone, curframe, symrootmode);
+		InsertSymMP(limitdegflag, curbone, curframe, symrootmode);
 
 		if (curbone->GetChild()){
-			InsertSymMPReq(curbone->GetChild(), curframe, symrootmode);
+			InsertSymMPReq(limitdegflag, curbone->GetChild(), curframe, symrootmode);
 		}
 		if (curbone->GetBrother()){
-			InsertSymMPReq(curbone->GetBrother(), curframe, symrootmode);
+			InsertSymMPReq(limitdegflag, curbone->GetBrother(), curframe, symrootmode);
 		}
 	}
 }
-int InsertSymMP(CBone* curbone, double curframe, int symrootmode)
+int InsertSymMP(bool limitdegflag, CBone* curbone, double curframe, int symrootmode)
 {
-	ChaMatrix symmat = curbone->CalcSymXMat2(s_model->GetCurMotInfo()->motid, curframe, symrootmode);
+	ChaMatrix symmat = curbone->CalcSymXMat2(limitdegflag, 
+		s_model->GetCurMotInfo()->motid, curframe, symrootmode);
 
 	CPELEM2 cpelem;
 	ZeroMemory(&cpelem, sizeof(CPELEM2));
@@ -6542,7 +6555,7 @@ void PrepairUndo()
 			else {
 				allframeflag = false;
 			}
-			s_model->SaveUndoMotion(s_curboneno, s_curbaseno, 
+			s_model->SaveUndoMotion(g_limitdegflag, s_curboneno, s_curbaseno,
 				&s_editrange, (double)g_applyrate, brushstate, allframeflag);
 
 			SetCursor(oldcursor);//カーソルを元に戻す
@@ -7177,7 +7190,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
-				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
+					&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
 				//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 				//UpdateEditedEuler();
@@ -7599,10 +7613,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		if (s_model && (s_onragdollik != 0)){
 			//s_model->BulletSimulationStop();
 			//s_model->SetBtKinFlagReq(s_model->GetTopBt(), 1);
-			
 			s_model->BulletSimulationStop();
 			g_previewFlag = 0;
-			s_model->ApplyPhysIkRec();
+			s_model->ApplyPhysIkRec(g_limitdegflag);
 		}
 
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
@@ -10485,6 +10498,11 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 int InitCurMotion(int selectflag, double expandmotion)
 {
+
+	//モーション初期化はunlimitedに対して行う
+	bool limitdegflag = false;
+
+
 	if (s_model) {
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
@@ -10500,7 +10518,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 						double curframe = itrcp->time;
 						if (topbone) {
 							s_model->SetMotionFrame(curframe);
-							s_model->InitMPReq(topbone, curmi->motid, curframe);
+							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, curframe);
 						}
 					}
 				}
@@ -10515,7 +10533,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 					for (frame = oldframeleng; frame < motleng; frame += 1.0) {
 						if (topbone) {
 							s_model->SetMotionFrame(frame);
-							s_model->InitMPReq(topbone, curmi->motid, frame);
+							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
 						}
 					}
 					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), curmi->motid, motleng);
@@ -10525,11 +10543,21 @@ int InitCurMotion(int selectflag, double expandmotion)
 					for (frame = 0.0; frame < motleng; frame += 1.0) {
 						if (topbone) {
 							s_model->SetMotionFrame(frame);
-							s_model->InitMPReq(topbone, curmi->motid, frame);
+							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
 						}
 					}
 					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), curmi->motid, motleng);
 				}
+
+
+				//LimitEulを表示時には　worldへの変更をlimitedに反映させる
+				if (g_limitdegflag == true) {
+					bool allframeflag = true;//全フレーム
+					bool setcursorflag = false;
+					bool onpasteflag = false;
+					CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
+				}
+
 			}
 		}
 		else {
@@ -10858,13 +10886,13 @@ int UpdateEditedEuler()
 				if (curmp) {
 					if (s_ikkind == 0) {//回転
 						//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
-						cureul = opebone->GetLocalEul(curmi->motid, (double)curtime, 0);
+						cureul = opebone->GetLocalEul(g_limitdegflag, curmi->motid, (double)curtime, 0);
 					}
 					else if(s_ikkind == 1){//移動
-						cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+						cureul = opebone->CalcLocalTraAnim(g_limitdegflag, curmi->motid, (double)curtime);
 					}
 					else if (s_ikkind == 2) {//スケール
-						cureul = opebone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
+						cureul = opebone->CalcLocalScaleAnim(g_limitdegflag, curmi->motid, (double)curtime);
 					}
 				}
 				else {
@@ -11041,13 +11069,16 @@ int refreshEulerGraph()
 						if (curmp) {
 							if (s_ikkind == 0) {//回転
 								//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
-								cureul = opebone->GetLocalEul(curmi->motid, (double)curtime, 0);
+								cureul = opebone->GetLocalEul(g_limitdegflag, 
+									curmi->motid, (double)curtime, 0);
 							}
 							else if (s_ikkind == 1) {//移動
-								cureul = opebone->CalcLocalTraAnim(curmi->motid, (double)curtime);
+								cureul = opebone->CalcLocalTraAnim(g_limitdegflag, 
+									curmi->motid, (double)curtime);
 							}
 							else if (s_ikkind == 2) {//スケール
-								cureul = opebone->CalcLocalScaleAnim(curmi->motid, (double)curtime);
+								cureul = opebone->CalcLocalScaleAnim(g_limitdegflag, 
+									curmi->motid, (double)curtime);
 							}
 						}
 						else {
@@ -11232,7 +11263,7 @@ int AddBoneTra2( ChaVector3 diffvec )
 		return 0;
 	}
 
-	s_model->FKBoneTra( 0, &s_editrange, s_curboneno, diffvec );
+	s_model->FKBoneTra(g_limitdegflag, 0, &s_editrange, s_curboneno, diffvec);
 
 	s_editmotionflag = s_curboneno;
 
@@ -11272,7 +11303,8 @@ int AddBoneTra( int kind, float srctra )
 		return 0;
 	}
 
-	s_model->FKBoneTraAxis(0, &s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
+	s_model->FKBoneTraAxis(g_limitdegflag, 
+		0, &s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
 
 
 	s_editmotionflag = s_curboneno;
@@ -11345,7 +11377,7 @@ int AddBoneScale2(ChaVector3 diffvec)
 	scalevec.y = scaleval;
 	scalevec.z = scaleval;
 
-	s_model->FKBoneScale(0, &s_editrange, s_curboneno, scalevec);
+	s_model->FKBoneScale(g_limitdegflag, 0, &s_editrange, s_curboneno, scalevec);
 
 	s_editmotionflag = s_curboneno;
 
@@ -11376,7 +11408,8 @@ int AddBoneScale(int kind, float srcscale)
 		scaleval = downval;
 	}
 
-	s_model->FKBoneScaleAxis(0, &s_editrange, s_curboneno, kind, scaleval);
+	s_model->FKBoneScaleAxis(g_limitdegflag, 
+		0, &s_editrange, s_curboneno, kind, scaleval);
 
 
 	s_editmotionflag = s_curboneno;
@@ -11737,9 +11770,9 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 			s_curmotid = selmotid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 			if (dorefreshflag) {
-				s_model->CreateBtObject(1);
+				s_model->CreateBtObject(g_limitdegflag, 1);
 				//s_model->CalcBoneEul(-1);
-				s_model->CalcBoneEul(selmotid);//2021/08/25
+				s_model->CalcBoneEul(g_limitdegflag, selmotid);//2021/08/25
 			}
 
 
@@ -11806,9 +11839,9 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 		s_owpEulerGraph->setCurrentTime(0.0, false);
 		s_model->SetMotionFrame(0.0);
 		ChaMatrix tmpwm = s_model->GetWorldMat();
-		s_model->UpdateMatrix(&tmpwm, &s_matVP);
+		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		//ここでAxisMatXの初期化
-		s_model->CreateBtObject(1);
+		s_model->CreateBtObject(g_limitdegflag, 1);
 		s_model->CalcBtAxismat(2);//2
 		s_model->SetInitAxisMatX(1);
 	}
@@ -12519,7 +12552,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 			//s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, multworld, 0);
 
 			if (curboneptr && curboneptr->GetParent()) {
-				curboneptr->GetParent()->CalcAxisMatX_Manipulator(0, curboneptr, &s_selm, 0);
+				curboneptr->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curboneptr, &s_selm, 0);
 			}
 			else {
 				s_selm.SetIdentity();
@@ -12534,7 +12567,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		ChaMatrixIdentity( &scalemat );
 		ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
-		ChaVector3 bonepos = curboneptr->GetWorldPos(curmi->motid, curmi->curframe);
+		ChaVector3 bonepos = curboneptr->GetWorldPos(g_limitdegflag, curmi->motid, curmi->curframe);
 
 		//s_selectmat = scalemat * s_selm;
 		s_selectmat = s_selm;
@@ -12585,7 +12618,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 
 int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	s_select->UpdateMatrix(&s_selectmat, &s_matVP);
+	s_select->UpdateMatrix(g_limitdegflag, &s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect){
@@ -12602,7 +12635,7 @@ int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext)
 
 int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	s_select_posture->UpdateMatrix(&s_selectmat_posture, &s_matVP);
+	s_select_posture->UpdateMatrix(g_limitdegflag, &s_selectmat_posture, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect) {
@@ -12641,7 +12674,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
 					if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
 					//if (currig.rigboneno > 0) {
-						ChaVector3 curbonepos = curbone->GetWorldPos(curmotid, curframe);
+						ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
 						ChaMatrix rigmat;
 						ChaMatrixIdentity(&rigmat);
 						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
@@ -12660,7 +12693,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 
 						g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
 
-						s_rigmark->UpdateMatrix(&rigmat, &s_matVP);
+						s_rigmark->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
 						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 						pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 						int lightflag = 0;
@@ -15726,6 +15759,11 @@ int RetargetMotion()
 		return 1;
 	}
 
+	if (g_limitdegflag == true) {
+		CopyWorldToLimitedWorld(s_model);
+	}
+
+
 	return 0;
 
 }
@@ -16082,7 +16120,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//	}
 					//}
 					ChaMatrix tmpwm = pmodel->GetWorldMat();
-					pmodel->UpdateMatrix(&tmpwm, &s_matVP);
+					pmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
 					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexをmodelごとに持つ必要あり！！！reの内容を変えてから呼ぶ
 					//s_curreindex = 1;
@@ -16137,7 +16175,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//	}
 					//}
 					ChaMatrix tmpwm = pmodel->GetWorldMat();
-					pmodel->UpdateMatrix(&tmpwm, &s_matVP);
+					pmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
 
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
@@ -16199,7 +16237,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 				s_btstartframe = curframe;
 
 				//CallF(curmodel->CreateBtObject(s_coldisp, 0), return 1);
-				CallF(pmodel->CreateBtObject(1), return 1);
+				CallF(pmodel->CreateBtObject(g_limitdegflag, 1), return 1);
 
 
 				//if( g_previewFlag == 4 ){
@@ -16581,10 +16619,10 @@ int SaveProject()
 			s_owpEulerGraph->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(&tmpwm, &s_matVP);
+			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
 			//ここでAxisMatXの初期化
-			curmodel->CreateBtObject(1);
+			curmodel->CreateBtObject(g_limitdegflag, 1);
 			curmodel->CalcBtAxismat(2);//2
 			curmodel->SetInitAxisMatX(1);
 		}
@@ -16594,9 +16632,9 @@ int SaveProject()
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
 	swprintf_s(saveprojpath, MAX_PATH, L"%s\\%s\\%s.cha", s_projectdir, s_projectname, s_projectname);
 
-
 	CChaFile chafile;
-	int result = chafile.WriteChaFile(s_bpWorld, s_projectdir, s_projectname, s_modelindex, (float)g_dspeed);
+	int result = chafile.WriteChaFile(g_bakelimiteulonsave, s_bpWorld, s_projectdir, s_projectname, 
+		s_modelindex, (float)g_dspeed);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
 		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
@@ -16929,7 +16967,9 @@ int OpenChaFile()
 
 
 	CChaFile chafile;
-	int ret = chafile.LoadChaFile( g_tmpmqopath, OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu );
+	int ret = chafile.LoadChaFile(g_limitdegflag, g_tmpmqopath, 
+		OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, 
+		OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu );
 	if (ret == 1) {
 		_ASSERT(0);
 		SetCursor(oldcursor);
@@ -18845,7 +18885,7 @@ int ExportFBXFile()
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix( &tmpwm, &s_matVP );
+			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -18904,10 +18944,10 @@ int ExportFBXFile()
 		s_owpLTimeline->setCurrentTime(0.0, true);
 		s_model->SetMotionFrame(0.0);
 		ChaMatrix tmpwm = s_model->GetWorldMat();
-		s_model->UpdateMatrix(&tmpwm, &s_matVP);
+		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
 		//ここでAxisMatXの初期化
-		s_model->CreateBtObject(1);
+		s_model->CreateBtObject(g_limitdegflag, 1);
 		s_model->CalcBtAxismat(2);//2
 		s_model->SetInitAxisMatX(1);
 	}
@@ -18919,7 +18959,7 @@ int ExportFBXFile()
 	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
-	CallF( WriteFBXFile( s_psdk, s_model, fbxpath, fbxdate ), return 1 );
+	CallF(WriteFBXFile(g_limitdegflag, s_psdk, s_model, fbxpath, fbxdate), return 1);
 
 	if (s_model->GetOldAxisFlagAtLoading() == 0){
 		WCHAR lmtname[MAX_PATH] = { 0L };
@@ -18960,7 +19000,7 @@ int ExportBntFile()
 		CModel* curmodel = itrmodel->modelptr;
 		if( curmodel ){
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix( &tmpwm, &s_matVP );
+			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -19023,7 +19063,7 @@ int ExportBntFile()
 	}
 
 	CBntFile bntfile;
-	CallF( bntfile.WriteBntFile( filename, wme ), return 1 );
+	CallF( bntfile.WriteBntFile(g_limitdegflag, filename, wme), return 1 );
 
 	return 0;
 }
@@ -19157,7 +19197,7 @@ int DispAngleLimitDlg()
 
 	s_dseullimitctrls.clear();
 	ChaMatrix tmpwm = s_model->GetWorldMat();
-	s_model->UpdateMatrix(&tmpwm, &s_matVP);
+	s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 	Bone2AngleLimit();
 
 	/*
@@ -19247,7 +19287,7 @@ int Bone2AngleLimit()
 		MOTINFO* curmi;
 		curmi = s_model->GetCurMotInfo();
 		if (curmi) {
-			s_anglelimit = s_anglelimitbone->GetAngleLimit(1);
+			s_anglelimit = s_anglelimitbone->GetAngleLimit(g_limitdegflag, 1);
 
 			if (g_limitdegflag) {
 				s_anglelimit.chkeul[AXIS_X] = min(s_anglelimit.upper[AXIS_X], s_anglelimit.chkeul[AXIS_X]);
@@ -19285,7 +19325,7 @@ int AngleLimit2Bone_One(CBone* srcbone)
 	if (s_model && srcbone) {
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
-			srcbone->SetAngleLimit(s_anglelimit);
+			srcbone->SetAngleLimit(g_limitdegflag, s_anglelimit);
 		}
 		return 0;
 	}
@@ -19741,7 +19781,7 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 		{
 			double curframe = s_owpLTimeline->getCurrentTime();
 			srcmodel->SetMotionFrame(curframe);
-			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
+			srcmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -19774,7 +19814,7 @@ int CopyWorldToLimitedWorld(CModel* srcmodel)
 		{
 			double curframe = s_owpLTimeline->getCurrentTime();
 			srcmodel->SetMotionFrame(curframe);
-			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
+			srcmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 	return 0;
@@ -19802,7 +19842,7 @@ int ApplyNewLimitsToWM(CModel* srcmodel)
 		{
 			double curframe = s_owpLTimeline->getCurrentTime();
 			srcmodel->SetMotionFrame(curframe);
-			srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
+			srcmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -19823,14 +19863,14 @@ int ApplyNewLimitsToWMSelected()
 			int curframe;
 			for (curframe = (int)(startframe + 0.0001); curframe <= (int)(endframe + 0.0001); curframe++) {
 				s_model->SetMotionFrame((double)curframe);
-				s_model->UpdateMatrix(&tmpwm, &s_matVP);
+				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 			}
 		}
 
 		{
 			double curframe = s_owpLTimeline->getCurrentTime();
 			s_model->SetMotionFrame(curframe);
-			s_model->UpdateMatrix(&tmpwm, &s_matVP);
+			s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -20001,7 +20041,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 							s_changelimitangleFlag = true;
 							PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-							symbone->SetAngleLimit(symanglelimit);
+							symbone->SetAngleLimit(g_limitdegflag, symanglelimit);
 
 							UpdateAfterEditAngleLimit(eLIM2BONE_NONE);
 
@@ -20030,7 +20070,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 							s_changelimitangleFlag = true;
 							PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-							ANGLELIMIT anglelimit = symbone->GetAngleLimit(0);
+							ANGLELIMIT anglelimit = symbone->GetAngleLimit(g_limitdegflag, 0);
 							ANGLELIMIT symanglelimit = anglelimit;
 							//symanglelimit.lower[1] *= -1;
 							symanglelimit.lower[2] *= -1;
@@ -20363,7 +20403,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
 						s_model->SetMotionFrame(curframe);
 						ChaMatrix tmpwm = s_model->GetWorldMat();
-						s_model->UpdateMatrix(&tmpwm, &s_matVP);
+						s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 						s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curbone引数追加
 					}
 
@@ -20573,7 +20613,7 @@ int RotAxis(HWND hDlgWnd)
 
 			MOTINFO* mi = s_model->GetCurMotInfo();
 			if (mi){
-				s_model->CalcBoneEul(mi->motid);
+				s_model->CalcBoneEul(g_limitdegflag, mi->motid);
 			}
 			//WCHAR strmes[256];
 			//swprintf_s(strmes, 256, L"rotaxis %d, rotdeg %.3f", s_rotaxiskind, s_rotaxisdeg);
@@ -21094,7 +21134,7 @@ int OnFramePreviewStop()
 				curmodel->SetMotionFrame(currenttime);
 			}
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(&tmpwm, &s_matVP);
+			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -21146,7 +21186,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel){
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(&tmpwm, &s_matVP);
+			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -21245,7 +21285,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			if ((curmodel == s_model) && (s_model->GetBtCnt() == 0)) {
 				s_rectime = 0.0;
 				s_reccnt = 0;
-				s_model->PhysIKRec(s_rectime);
+				s_model->PhysIKRec(g_limitdegflag, s_rectime);
 			}
 
 			int endflag = 0;
@@ -21298,7 +21338,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				//UpdateBtSimu(*pnextframe, curmodel);
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->Motion2Bt(firstflag, *pnextframe, &tmpwm, &s_matVP, s_curboneno);
+					curmodel->Motion2Bt(g_limitdegflag, firstflag, *pnextframe, &tmpwm, &s_matVP, s_curboneno);
 				}
 				curmodel->PlusPlusBtCnt();
 			}
@@ -21309,7 +21349,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 	if (s_model && (recstopflag == true)) {
 		StopBt();
-		s_model->ApplyPhysIkRec();
+		s_model->ApplyPhysIkRec(g_limitdegflag);
 		PrepairUndo();//物理REC用保存
 		g_btsimurecflag = false;
 	}
@@ -21323,12 +21363,12 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->SetBtMotion(0, 0, *pnextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
+					curmodel->SetBtMotion(g_limitdegflag, 0, 0, *pnextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
 
 					//60 x 60 frames limit : 60 sec limit
 					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
 						s_rectime = (double)((int)s_reccnt);
-						s_model->PhysIKRec(s_rectime);
+						s_model->PhysIKRec(g_limitdegflag, s_rectime);
 						s_reccnt++;
 					}
 				}
@@ -21357,241 +21397,241 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	return 0;
 }
 
-int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel)
-{
-	if (curmodel && (curmodel->GetBtCnt() != 0)) {
-		if (curmodel && curmodel->GetCurMotInfo()) {
-			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, nextframe, &tmpwm, &s_matVP);
-
-			//60 x 30 frames limit : 30 sec limit
-			if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
-				s_rectime = (double)((int)s_reccnt);
-				s_model->PhysIKRec(s_rectime);
-				s_reccnt++;
-			}
-		}
-	}
-
-	return 0;
-}
-
-
-
-void UpdateBtSimu(double nextframe, CModel* curmodel)
-{
-	if (!curmodel){
-		return;
-	}
-	int firstflag = 0;
-	if (s_savepreviewFlag != g_previewFlag){
-		firstflag = 1;
-	}
-	if (curmodel && curmodel->GetCurMotInfo()){
-		ChaMatrix tmpwm = curmodel->GetWorldMat();
-		curmodel->Motion2Bt(firstflag, nextframe, &tmpwm, &s_matVP, s_curboneno);
-	}
-	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
-	s_bpWorld->clientMoveAndDisplay();
-	if (curmodel && curmodel->GetCurMotInfo()){
-		ChaMatrix tmpwm = curmodel->GetWorldMat();
-		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, nextframe, &tmpwm, &s_matVP);
-	}
-}
-
-int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
-{
-	static int s_underikflag = 0;
-	static int s_befunderikflag = 0;
-
-	int endflag = 0;
-
-	if (!s_model){
-		return 0;
-	}
-	CModel* curmodel = s_model;
-
-	//BOOL isstartframe = FALSE;
-	//double rangestart = 1.0;
-	//s_previewrange = s_editrange;
-	//if (s_previewrange.IsSameStartAndEnd()) {
-	//	rangestart = 1.0;
-	//}
-	//else {
-	//	rangestart = s_previewrange.GetStartFrame();
-	//}
-
-	//if (g_previewFlag != 0) {
-	//	if (s_savepreviewFlag == 0) {
-	//		//preview start frame
-	//		*pdifftime = 0.0;
-	//		*pnextframe = rangestart;
-	//		isstartframe = TRUE;
-	//	}
-	//}
-
-
-	//*pnextframe = s_previewrange.GetApplyFrame();
-	int tmpleng;
-	double tmpstart, tmpend;
-	s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
-	*pnextframe = s_previewrange.GetApplyFrame();
-	//*pnextframe = g_motionbrush_applyframe;
-
-	if (curmodel && curmodel->GetCurMotInfo()){
-		//if (s_onragdollik != 0){
-		//	if (s_underikflag == 0){
-		//		curmodel->BulletSimulationStop();
-		//		s_underikflag = 1;
-		//	}
-		//}
-
-
-		if (curmodel->GetBtCnt() <= g_prepcntonphysik) {
-			curmodel->SetKinematicFlag();
-			curmodel->SetMotionFrame(*pnextframe);
-
-			//UpdateBtSimu(*pnextframe, curmodel);
-			if (curmodel && curmodel->GetCurMotInfo()) {
-				int firstflag = 1;
-				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->Motion2Bt(firstflag, *pnextframe, &tmpwm, &s_matVP, s_curboneno);
-			}
-			curmodel->SetBtEquilibriumPoint();//必要
-
-			if (curmodel->GetBtCnt() == 0) {
-				s_rectime = 0.0;
-				s_reccnt = 0;
-				s_model->PhysIKRec(s_rectime);
-				SetKinematicToHand(curmodel, true);//指が変にならないように
-			}
-		}
-		else {
-			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-			curmodel->SetBtEquilibriumPoint();//
-		}
+//int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel)
+//{
+//	if (curmodel && (curmodel->GetBtCnt() != 0)) {
+//		if (curmodel && curmodel->GetCurMotInfo()) {
+//			ChaMatrix tmpwm = curmodel->GetWorldMat();
+//			curmodel->SetBtMotion(g_limitdegflag, curmodel->GetBoneByID(s_curboneno), 0, nextframe, &tmpwm, &s_matVP);
+//
+//			//60 x 30 frames limit : 30 sec limit
+//			if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+//				s_rectime = (double)((int)s_reccnt);
+//				s_model->PhysIKRec(s_rectime);
+//				s_reccnt++;
+//			}
+//		}
+//	}
+//
+//	return 0;
+//}
 
 
 
+//void UpdateBtSimu(double nextframe, CModel* curmodel)
+//{
+//	if (!curmodel){
+//		return;
+//	}
+//	int firstflag = 0;
+//	if (s_savepreviewFlag != g_previewFlag){
+//		firstflag = 1;
+//	}
+//	if (curmodel && curmodel->GetCurMotInfo()){
+//		ChaMatrix tmpwm = curmodel->GetWorldMat();
+//		curmodel->Motion2Bt(firstflag, nextframe, &tmpwm, &s_matVP, s_curboneno);
+//	}
+//	//s_bpWorld->setTimeStep(1.0f / 120.0f);// seconds
+//	s_bpWorld->clientMoveAndDisplay();
+//	if (curmodel && curmodel->GetCurMotInfo()){
+//		ChaMatrix tmpwm = curmodel->GetWorldMat();
+//		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, nextframe, &tmpwm, &s_matVP);
+//	}
+//}
 
-		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
-
-	}
-
-	//physics mvの場合、クリックしていないときには直下のif文内を呼ばない。
-	//physics rotの場合、クリックしていなくても直下のif文内を呼んだほうが剛体がゆらゆらしない。
-	if((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))){
-		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
-		POINT ptCursor;
-		GetCursorPos(&ptCursor);
-		::ScreenToClient(s_3dwnd, &ptCursor);
-		s_pickinfo.mousepos = ptCursor;
-
-		ChaVector3 tmpsc;
-		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
-
-		if (s_oprigflag == 0) {//Rig操作ではないとき
-			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
-			CallF(CalcTargetPos(&targetpos), return 1);
-
-			s_model->SetDofRotAxis(s_pickinfo.buttonflag);//!!!!!!!!!!!!!!!!!!!!!!!
-
-
-			if (s_physicskind == 0) {
-				if (s_onragdollik == 1) {
-					int ikmaxlevel = 0;
-					curmodel->PhysicsRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
-				}
-				else if ((s_onragdollik == 2) || (s_onragdollik == 3)) {
-					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.1f;
-					if (g_controlkey == true) {
-						deltax *= 0.250f;
-					}
-					//s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
-					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_curboneno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
-					s_ikcnt++;
-				}
-
-				//if (s_curboneno <= 0){
-				//	::MessageBoxA(NULL, "OnFramePreviewRagdoll : curboneno error", "check", MB_OK);
-				//}
-
-			}
-			else {
-				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				//少しずつ動かさないと壊れやすい
-				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				int ikmaxlevel = 0;
-				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.2;//PhysicsMV関数内でさらにg_physicsmvrateが掛けられる。
-				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
-			}
-		}
-
-
-		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone) {
-			CBone* parentbone = curbone->GetParent();
-			if (parentbone) {
-				s_editmotionflag = parentbone->GetBoneNo();
-			}
-			else {
-				s_editmotionflag = s_curboneno;
-			}
-			s_ikcnt++;
-		}
-
-
-	}
-
-
-	//curmodel->SetMotionFrame(s_editrange.GetStartFrame());
-	//*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
-	{
-		int tmpleng2;
-		double tmpstart2, tmpend2;
-		s_previewrange.GetRange(&tmpleng2, &tmpstart2, &tmpend2);
-		*pnextframe = s_previewrange.GetApplyFrame();
-		curmodel->SetMotionFrame(*pnextframe);
-	}
-
-#ifndef SKIP_EULERGRAPH__
-	s_owpLTimeline->setCurrentTime(*pnextframe, false);
-	s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
-#endif
-
-
-	s_bpWorld->clientMoveAndDisplay();
-
-	if (curmodel && curmodel->GetCurMotInfo()){
-		ChaMatrix tmpwm = curmodel->GetWorldMat();
-		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 1, *pnextframe, &tmpwm, &s_matVP);
-		curmodel->UpdateMatrix(&tmpwm, &s_matVP, true);
-		curmodel->PlusPlusBtCnt();
-
-		//ドラッグ中だけ記録
-		if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
-			//60 x 30 frames limit : 30 sec limit
-			if ((curmodel->GetBtCnt() > g_prepcntonphysik) && (s_reccnt < MAXPHYSIKRECCNT)) {
-				s_rectime = (double)((int)s_reccnt);
-				s_model->PhysIKRec(s_rectime);
-				s_reccnt++;
-			}
-		}
-	}
-
-	s_bpWorld->clientMoveAndDisplay();//tmpkinematic部分のbullet情報変更がSetBtMotion内で生じるので、もう一回シミュをまわす。
-
-
-	s_befunderikflag = s_underikflag;
-
-	//if (s_anglelimitdlg) {
-	//	UpdateEditedEuler();
-	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//非ブロッキング
-	//}
-
-
-	return 0;
-}
+//int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime)
+//{
+//	static int s_underikflag = 0;
+//	static int s_befunderikflag = 0;
+//
+//	int endflag = 0;
+//
+//	if (!s_model){
+//		return 0;
+//	}
+//	CModel* curmodel = s_model;
+//
+//	//BOOL isstartframe = FALSE;
+//	//double rangestart = 1.0;
+//	//s_previewrange = s_editrange;
+//	//if (s_previewrange.IsSameStartAndEnd()) {
+//	//	rangestart = 1.0;
+//	//}
+//	//else {
+//	//	rangestart = s_previewrange.GetStartFrame();
+//	//}
+//
+//	//if (g_previewFlag != 0) {
+//	//	if (s_savepreviewFlag == 0) {
+//	//		//preview start frame
+//	//		*pdifftime = 0.0;
+//	//		*pnextframe = rangestart;
+//	//		isstartframe = TRUE;
+//	//	}
+//	//}
+//
+//
+//	//*pnextframe = s_previewrange.GetApplyFrame();
+//	int tmpleng;
+//	double tmpstart, tmpend;
+//	s_previewrange.GetRange(&tmpleng, &tmpstart, &tmpend);
+//	*pnextframe = s_previewrange.GetApplyFrame();
+//	//*pnextframe = g_motionbrush_applyframe;
+//
+//	if (curmodel && curmodel->GetCurMotInfo()){
+//		//if (s_onragdollik != 0){
+//		//	if (s_underikflag == 0){
+//		//		curmodel->BulletSimulationStop();
+//		//		s_underikflag = 1;
+//		//	}
+//		//}
+//
+//
+//		if (curmodel->GetBtCnt() <= g_prepcntonphysik) {
+//			curmodel->SetKinematicFlag();
+//			curmodel->SetMotionFrame(*pnextframe);
+//
+//			//UpdateBtSimu(*pnextframe, curmodel);
+//			if (curmodel && curmodel->GetCurMotInfo()) {
+//				int firstflag = 1;
+//				ChaMatrix tmpwm = curmodel->GetWorldMat();
+//				curmodel->Motion2Bt(firstflag, *pnextframe, &tmpwm, &s_matVP, s_curboneno);
+//			}
+//			curmodel->SetBtEquilibriumPoint();//必要
+//
+//			if (curmodel->GetBtCnt() == 0) {
+//				s_rectime = 0.0;
+//				s_reccnt = 0;
+//				s_model->PhysIKRec(s_rectime);
+//				SetKinematicToHand(curmodel, true);//指が変にならないように
+//			}
+//		}
+//		else {
+//			curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
+//			curmodel->SetBtEquilibriumPoint();//
+//		}
+//
+//
+//
+//
+//		//curmodel->SetRagdollKinFlag(s_curboneno, s_physicskind);
+//
+//	}
+//
+//	//physics mvの場合、クリックしていないときには直下のif文内を呼ばない。
+//	//physics rotの場合、クリックしていなくても直下のif文内を呼んだほうが剛体がゆらゆらしない。
+//	if((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))){
+//		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+//		POINT ptCursor;
+//		GetCursorPos(&ptCursor);
+//		::ScreenToClient(s_3dwnd, &ptCursor);
+//		s_pickinfo.mousepos = ptCursor;
+//
+//		ChaVector3 tmpsc;
+//		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
+//
+//		if (s_oprigflag == 0) {//Rig操作ではないとき
+//			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
+//			CallF(CalcTargetPos(&targetpos), return 1);
+//
+//			s_model->SetDofRotAxis(s_pickinfo.buttonflag);//!!!!!!!!!!!!!!!!!!!!!!!
+//
+//
+//			if (s_physicskind == 0) {
+//				if (s_onragdollik == 1) {
+//					int ikmaxlevel = 0;
+//					curmodel->PhysicsRot(&s_editrange, s_pickinfo.pickobjno, targetpos, ikmaxlevel);
+//				}
+//				else if ((s_onragdollik == 2) || (s_onragdollik == 3)) {
+//					float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.1f;
+//					if (g_controlkey == true) {
+//						deltax *= 0.250f;
+//					}
+//					//s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+//					s_editmotionflag = s_model->PhysicsRotAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_curboneno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+//					s_ikcnt++;
+//				}
+//
+//				//if (s_curboneno <= 0){
+//				//	::MessageBoxA(NULL, "OnFramePreviewRagdoll : curboneno error", "check", MB_OK);
+//				//}
+//
+//			}
+//			else {
+//				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//				//少しずつ動かさないと壊れやすい
+//				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//				int ikmaxlevel = 0;
+//				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.2;//PhysicsMV関数内でさらにg_physicsmvrateが掛けられる。
+//				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
+//			}
+//		}
+//
+//
+//		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+//		if (curbone) {
+//			CBone* parentbone = curbone->GetParent();
+//			if (parentbone) {
+//				s_editmotionflag = parentbone->GetBoneNo();
+//			}
+//			else {
+//				s_editmotionflag = s_curboneno;
+//			}
+//			s_ikcnt++;
+//		}
+//
+//
+//	}
+//
+//
+//	//curmodel->SetMotionFrame(s_editrange.GetStartFrame());
+//	//*pnextframe = s_editrange.GetStartFrame();//!!!!!!!!!!!!!!!
+//	{
+//		int tmpleng2;
+//		double tmpstart2, tmpend2;
+//		s_previewrange.GetRange(&tmpleng2, &tmpstart2, &tmpend2);
+//		*pnextframe = s_previewrange.GetApplyFrame();
+//		curmodel->SetMotionFrame(*pnextframe);
+//	}
+//
+//#ifndef SKIP_EULERGRAPH__
+//	s_owpLTimeline->setCurrentTime(*pnextframe, false);
+//	s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+//#endif
+//
+//
+//	s_bpWorld->clientMoveAndDisplay();
+//
+//	if (curmodel && curmodel->GetCurMotInfo()){
+//		ChaMatrix tmpwm = curmodel->GetWorldMat();
+//		curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 1, *pnextframe, &tmpwm, &s_matVP);
+//		curmodel->UpdateMatrix(&tmpwm, &s_matVP, true);
+//		curmodel->PlusPlusBtCnt();
+//
+//		//ドラッグ中だけ記録
+//		if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
+//			//60 x 30 frames limit : 30 sec limit
+//			if ((curmodel->GetBtCnt() > g_prepcntonphysik) && (s_reccnt < MAXPHYSIKRECCNT)) {
+//				s_rectime = (double)((int)s_reccnt);
+//				s_model->PhysIKRec(s_rectime);
+//				s_reccnt++;
+//			}
+//		}
+//	}
+//
+//	s_bpWorld->clientMoveAndDisplay();//tmpkinematic部分のbullet情報変更がSetBtMotion内で生じるので、もう一回シミュをまわす。
+//
+//
+//	s_befunderikflag = s_underikflag;
+//
+//	//if (s_anglelimitdlg) {
+//	//	UpdateEditedEuler();
+//	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//非ブロッキング
+//	//}
+//
+//
+//	return 0;
+//}
 
 int OnFrameCloseFlag()
 {
@@ -21656,7 +21696,7 @@ int OnFrameCloseFlag()
 			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
 		if (s_model){
-			CallF(s_model->CreateBtObject(0), return 1);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return 1);
 		}
 	}
 	if (s_RcloseFlag){
@@ -21666,7 +21706,7 @@ int OnFrameCloseFlag()
 			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
 		if (s_model){
-			CallF(s_model->CreateBtObject(0), return 1);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return 1);
 		}
 	}
 	if (s_ScloseFlag) {
@@ -21680,7 +21720,7 @@ int OnFrameCloseFlag()
 			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
 		if (s_model){
-			CallF(s_model->CreateBtObject(0), return 1);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return 1);
 		}
 	}
 	if (s_GcloseFlag){
@@ -21867,7 +21907,7 @@ int OnFrameTimeLineWnd()
 				curmodel->SetMotionFrame(s_buttonselectstart);
 				//curmodel->UpdateMatrix(&s_matWorld, &s_matVP);
 				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->UpdateMatrix(&tmpwm, &s_matVP);//2021/12/21
+				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);//2021/12/21
 			}
 		}
 
@@ -22207,7 +22247,8 @@ int OnFrameToolWnd()
 			}
 
 			int operatingjointno = -1;
-			operatingjointno = s_model->InterpolateBetweenSelection(s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
+			operatingjointno = s_model->InterpolateBetweenSelection(g_limitdegflag, 
+				s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
 
 			if (g_limitdegflag == true) {
 				bool allframeflag = false;
@@ -22314,7 +22355,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
-				InsertCopyMPReq(s_model->GetTopBone(), curframe);
+				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(), curframe);
 			}
 
 			if (!s_copymotvec.empty()) {
@@ -22355,7 +22396,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
 				double curframe = itrcp->time;
-				InsertSymMPReq(s_model->GetTopBone(), curframe, symrootmode);
+				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(), curframe, symrootmode);
 			}
 
 			if (!s_copymotvec.empty()) {
@@ -22536,7 +22577,10 @@ int OnFrameToolWnd()
 					if (opebone) {
 						if (keynum >= 2) {
 							CMotFilter motfilter;
-							motfilter.Filter(s_model, opebone, s_filterState, s_model->GetCurMotInfo()->motid, (int)(startframe + 0.0001), (int)(endframe + 0.0001));
+							motfilter.Filter(g_limitdegflag, s_model, opebone, 
+								s_filterState, 
+								s_model->GetCurMotInfo()->motid, 
+								(int)(startframe + 0.0001), (int)(endframe + 0.0001));
 
 							if (g_limitdegflag == true) {
 								bool allframeflag = false;
@@ -22674,7 +22718,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	if (srcbone && (docopyflag == 1)){
 		_ASSERT(s_model->GetCurMotInfo());
 		int curmotid = s_model->GetCurMotInfo()->motid;
-		srcbone->PasteMotionPoint(curmotid, newframe, srcmp);
+		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, newframe, srcmp);
 	}
 
 	return 0;
@@ -22747,7 +22791,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 					//parmp->SetBefWorldMat(parmp->GetWorldMat());
 					bool infooutflag = false;
-					srcbone->RotBoneQReq(infooutflag, parentbone, curmotid, newframe, dummyq, parmp->GetWorldMat(), parmp->GetWorldMat(), 0, dummytra);
+					srcbone->RotBoneQReq(g_limitdegflag, infooutflag, parentbone, curmotid, newframe, dummyq, parmp->GetWorldMat(), parmp->GetWorldMat(), 0, dummytra);
 					//_ASSERT(0);
 				}
 			}
@@ -23112,7 +23156,9 @@ int OnSpriteUndo()
 	if (s_model && (s_undoFlag == true)) {
 		//undo
 		StopBt();
-		s_model->RollBackUndoMotion(s_mainhwnd, 0, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+		s_model->RollBackUndoMotion(g_limitdegflag, s_mainhwnd, 
+			0, &s_curboneno, &s_curbaseno, 
+			&tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
 		
 		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
@@ -23122,7 +23168,9 @@ int OnSpriteUndo()
 	{
 		//redo
 		StopBt();
-		s_model->RollBackUndoMotion(s_mainhwnd, 1, &s_curboneno, &s_curbaseno, &tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
+		s_model->RollBackUndoMotion(g_limitdegflag, s_mainhwnd,
+			1, &s_curboneno, &s_curbaseno, 
+			&tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
 		
 		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
@@ -23292,13 +23340,13 @@ int OnFrameUpdateGround()
 
 	if (s_ground){
 		ChaMatrix tmpwm = s_ground->GetWorldMat();
-		s_ground->UpdateMatrix(&tmpwm, &s_matVP);
+		s_ground->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 	}
 
 	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG){
 		ChaMatrix gpmat = s_inimat;
 		gpmat.data[MATI_42] = s_bpWorld->m_gplaneh;
-		s_gplane->UpdateMatrix(&gpmat, &s_matVP);
+		s_gplane->UpdateMatrix(g_limitdegflag, &gpmat, &s_matVP);
 	}
 	return 0;
 }
@@ -26069,7 +26117,7 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 								s_model->SetMotionFrame(insideframe);
 								//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 								ChaMatrix tmpwm = s_model->GetWorldMat();
-								s_model->HierarchyRouteUpdateMatrix(curbone, &tmpwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
+								s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &tmpwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
 								ChaVector3 tmpfpos = curbone->GetJointFPos();
 								ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat();
 								ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
@@ -26079,21 +26127,22 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							//refframeのポーズを表示
 							s_model->SetMotionFrame(refframe);
 							ChaMatrix tmpwm = s_model->GetWorldMat();
-							s_model->UpdateMatrix(&tmpwm, &s_matVP);
+							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 							ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
 							s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
 
 
 							//元のフレームに戻す
 							s_model->SetMotionFrame(saveframe);
-							s_model->UpdateMatrix(&tmpwm, &s_matVP);
+							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
 
 							//render arrow : selected bone : befpos --> aftpos arrow
 							CBone* childbone = curbone->GetChild();
 							if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
 								ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
-								curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
+								curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag, 
+									pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
 							}
 
 						}
@@ -26186,7 +26235,8 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 			//if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
 			if (s_model && s_model->GetModelDisp()) {
 				//if (s_ikkind >= 3){
-				s_model->RenderBoneMark(pd3dImmediateContext, s_bmark, s_bcircle, s_curboneno);
+				s_model->RenderBoneMark(g_limitdegflag, 
+					pd3dImmediateContext, s_bmark, s_bcircle, s_curboneno);
 				//}
 				//else{
 				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
@@ -26199,7 +26249,8 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++) {
 				MODELELEM curme = *itrme;
 				CModel* curmodel = curme.modelptr;
-				curmodel->RenderBoneMark(pd3dImmediateContext, s_bmark, s_bcircle, 0, s_curboneno);
+				curmodel->RenderBoneMark(g_limitdegflag, 
+					pd3dImmediateContext, s_bmark, s_bcircle, 0, s_curboneno);
 			}
 		}
 	}
@@ -26784,40 +26835,46 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
 				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, roundingframe, initscaleflag1);
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
+				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+				curbone->SetWorldMatFromEulAndTra(g_limitdegflag, 
+					setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
 			}
 			else if (initmode == INITMP_ROT){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int inittraflag0 = 0;
 				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEul(inittraflag0, setchildflag1, befwm, cureul, srcmotid, roundingframe);
+				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+				curbone->SetWorldMatFromEul(g_limitdegflag, 
+					inittraflag0, setchildflag1, befwm, cureul, srcmotid, roundingframe);
 			}
 			else if (initmode == INITMP_TRA){
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+				cureul = curbone->CalcLocalEulXYZ(g_limitdegflag, 
+					paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
 				int inittraflag1 = 1;
 				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe);
+				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+				curbone->SetWorldMatFromEul(g_limitdegflag, 
+					inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe);
 			}
 			else if (initmode == INITMP_SCALE) {
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				int paraxsiflag1 = 1;
 				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+				cureul = curbone->CalcLocalEulXYZ(g_limitdegflag, 
+					paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
-				ChaVector3 traanim = curbone->CalcLocalTraAnim(srcmotid, roundingframe);
+				ChaVector3 traanim = curbone->CalcLocalTraAnim(g_limitdegflag, srcmotid, roundingframe);
 
 				//int inittraflag1 = 0;
 				int setchildflag1 = 1;
 				//int initscaleflag1 = 1;//!!!!!!!
-				ChaMatrix befwm = curbone->GetWorldMat(srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEulAndTra(setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
+				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+				curbone->SetWorldMatFromEulAndTra(g_limitdegflag, 
+					setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
 			}
 		//}
 	}
@@ -28649,7 +28706,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
-				s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
+				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
+					&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
 				//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 				//UpdateEditedEuler();
@@ -29049,10 +29107,10 @@ void RecalcAxisX_All()
 		s_owpEulerGraph->setCurrentTime(0.0, false);
 		s_model->SetMotionFrame(0.0);
 		ChaMatrix tmpwm = s_model->GetWorldMat();
-		s_model->UpdateMatrix(&tmpwm, &s_matVP);
+		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
 		//ここでAxisMatXの初期化
-		s_model->CreateBtObject(1);
+		s_model->CreateBtObject(g_limitdegflag, 1);
 		s_model->CalcBtAxismat(2);//2
 		s_model->SetInitAxisMatX(1);
 	}
@@ -29086,7 +29144,8 @@ int OnMouseMoveFunc()
 						//CallF(CalcTargetPos(&targetpos), return 1);
 						CalcTargetPos(&targetpos);
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotate(&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
+							s_editmotionflag = s_model->IKRotate(g_limitdegflag, 
+								&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
 							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 							//UpdateEditedEuler();
@@ -29114,11 +29173,13 @@ int OnMouseMoveFunc()
 
 							s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
-							s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 0, deltau, s_ikcustomrig, s_pickinfo.buttonflag);
+							s_model->RigControl(g_limitdegflag, 
+								0, &s_editrange, s_pickinfo.pickobjno, 0, 
+								deltau, s_ikcustomrig, s_pickinfo.buttonflag);
 							ChaMatrix tmpwm = s_model->GetWorldMat();
-							s_model->UpdateMatrix(&tmpwm, &s_matVP);
-							s_model->RigControl(0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig, s_pickinfo.buttonflag);
-							s_model->UpdateMatrix(&tmpwm, &s_matVP);
+							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+							s_model->RigControl(g_limitdegflag, 0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig, s_pickinfo.buttonflag);
+							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 							s_editmotionflag = s_curboneno;
 							//s_editmotionflag = 0;//これを０にすると　oprigflag == 1の状態でアンドゥした時に　アンドゥ用の保存が走って　保存が増えて状態が戻らない
 						}
@@ -29153,7 +29214,9 @@ int OnMouseMoveFunc()
 						deltax *= 0.250f;
 					}
 					if (s_ikkind == 0) {
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+						s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
+							&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, 
+							deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
 						//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 						//UpdateEditedEuler();
@@ -29197,7 +29260,9 @@ int OnMouseMoveFunc()
 					}
 
 					if (s_ikkind == 0) {
-						s_editmotionflag = s_model->IKRotateAxisDelta(&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+						s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
+							&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, 
+							deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
 						//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
 						//UpdateEditedEuler();
@@ -29692,7 +29757,7 @@ void ShowRigidWnd(bool srcflag)
 			s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 
 			//CallF(s_model->CreateBtObject(0), return);
-			CallF(s_model->CreateBtObject(1), return);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 1), return);
 
 
 			//s_impWnd->setVisible(0);
@@ -29717,7 +29782,7 @@ void ShowImpulseWnd(bool srcflag)
 	//if (s_model && (s_curboneno >= 0)) {
 	if (s_model) {
 		if (s_bpWorld) {
-			CallF(s_model->CreateBtObject(0), return);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return);
 
 			//s_rigidWnd->setVisible(0);
 			//s_gpWnd->setVisible(0);
@@ -29742,7 +29807,7 @@ void ShowGroundWnd(bool srcflag)
 	//if (s_model && (s_curboneno >= 0)) {
 	if (s_model) {
 		if (s_bpWorld) {
-			CallF(s_model->CreateBtObject(0), return);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return);
 
 			//s_rigidWnd->setVisible(0);
 			//s_impWnd->setVisible(0);
@@ -29767,7 +29832,7 @@ void ShowDampAnimWnd(bool srcflag)
 	//if (s_model && (s_curboneno >= 0)) {
 	if (s_model) {
 		if (s_bpWorld) {
-			CallF(s_model->CreateBtObject(0), return);
+			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return);
 
 			//s_rigidWnd->setVisible(0);
 			//s_impWnd->setVisible(0);
@@ -38085,7 +38150,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, multworld, curmotid, curframe);
 	if (curbone && curbone->GetParent()) {
-		curbone->GetParent()->CalcAxisMatX_Manipulator(0, curbone, &selm, 0);
+		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curbone, &selm, 0);
 		//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
 	}
 	else {
@@ -38102,7 +38167,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	ChaMatrixIdentity(&scalemat);
 	ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
-	ChaVector3 curbonepos = curbone->GetWorldPos(curmotid, curframe);
+	ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
 
 	float rigorderoffset = 0.0f;
 	if (disporder == 0) {
@@ -38171,7 +38236,7 @@ int PickRigBone(UIPICKINFO* ppickinfo)
 
 
 						g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
-						s_rigmark->UpdateMatrix(&rigmat, &s_matVP);
+						s_rigmark->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
 
 
 						int chkboneno = curbone->GetBoneNo();

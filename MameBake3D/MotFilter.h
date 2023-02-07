@@ -8,7 +8,8 @@ public:
 	CMotFilter();
 	~CMotFilter();
 
-	int Filter(CModel* srcmodel, CBone* srcbone, int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
+	int Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone, 
+		int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
 
 private:
 	void InitParams();
@@ -17,8 +18,8 @@ private:
 	int GetFilterType();
 	int Combi(int N, int rp);
 
-	void FilterReq(CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
-	int FilterFunc(CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
+	void FilterReq(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
+	int FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
 
 private:
 	int m_filtertype;

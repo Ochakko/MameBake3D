@@ -18,6 +18,8 @@
 #include <mqoobject.h>
 #include <Bone.h>
 
+#include <GlobalVar.h>
+
 //#include <BoneProp.h>
 
 #define DBGH
@@ -62,6 +64,8 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	m_model = srcmodel;
 	m_mode = XMLIO_WRITE;
 
+
+
 	if( !m_model->GetTopBone() ){
 		return 0;
 	}
@@ -93,26 +97,26 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);//2022/12/18
 	CallF(Write2File("    <FileComment>%s</FileComment>\r\n", fbxcomment), return 1);//2021/06/08
 
-	WriteLmtReq( m_model->GetTopBone() );
+	WriteLmtReq(g_limitdegflag, m_model->GetTopBone());//g_limitdegflagはlimitangleのchk値用
 
 	CallF( Write2File( "</Lmt>\r\n" ), return 1 );
 
 	return 0;
 }
-void CLmtFile::WriteLmtReq( CBone* srcbone )
+void CLmtFile::WriteLmtReq(bool limitdegflag, CBone* srcbone)
 {
-	WriteLmt( srcbone );
+	WriteLmt(limitdegflag, srcbone);
 
 	if( srcbone->GetChild() ){
-		WriteLmtReq( srcbone->GetChild() );
+		WriteLmtReq(limitdegflag, srcbone->GetChild());
 	}
 	if( srcbone->GetBrother() ){
-		WriteLmtReq( srcbone->GetBrother() );
+		WriteLmtReq(limitdegflag, srcbone->GetBrother());
 	}
 }
 
 
-int CLmtFile::WriteLmt( CBone* srcbone )
+int CLmtFile::WriteLmt(bool limitdegflag, CBone* srcbone )
 {
 /***
   <Bone>
@@ -149,7 +153,7 @@ int CLmtFile::WriteLmt( CBone* srcbone )
 	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
 
 
-	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(0);
+	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(limitdegflag, 0);
 
 	char strboneaxistype[3][256] = {"Current", "Parent", "Global"};
 	if ((anglelimit.boneaxiskind >= 0) && (anglelimit.boneaxiskind <= 2)){
@@ -280,7 +284,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 		int ret;
 		ret = SetXmlIOBuf( &m_xmliobuf, "<Bone>", "</Bone>", &bonebuf );
 		if( ret == 0 ){
-			CallF( ReadBone( &bonebuf ), return 1 );
+			CallF( ReadBone(g_limitdegflag, &bonebuf ), return 1 );//g_limitdegflagはlimitangleのchk値用
 		}else{
 			findflag = 0;
 		}
@@ -290,7 +294,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 }
 
 
-int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
+int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf)
 {
 	/***
 	<Bone>
@@ -461,7 +465,7 @@ int CLmtFile::ReadBone( XMLIOBUF* xmliobuf )
 	m_anglelimit.chkeul[AXIS_Z] = 0.0f;
 
 
-	curbone->SetAngleLimit(m_anglelimit);
+	curbone->SetAngleLimit(limitdegflag, m_anglelimit);
 
 
 	return 0;

@@ -99,7 +99,7 @@ public: //accesser
 	float GetFriction(){ return m_friction; };
 	void SetFriction( float srcval ){ m_friction = srcval; };
 
-	ChaMatrix GetCapsulematForColiShape(int calczeroframe, int multworld = 1);
+	ChaMatrix GetCapsulematForColiShape(bool limitdegflag, int calczeroframe, int multworld = 1);
 
 	CBone* GetBone(){ return m_bone; };
 	void SetBone( CBone* srcbone ){ m_bone = srcbone; };

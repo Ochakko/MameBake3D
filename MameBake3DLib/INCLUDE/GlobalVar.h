@@ -114,7 +114,7 @@ bool g_undereditrange = false;
 
 //bool g_limitdegflag = true;
 bool g_limitdegflag = false;
-bool g_wmatDirectSetFlag = false;
+//bool g_wmatDirectSetFlag = false;
 bool g_underRetargetFlag = false;
 
 float g_impscale = 1.0f;
@@ -289,7 +289,7 @@ extern bool g_underselecttolast;
 extern bool g_undereditrange;
 
 extern bool g_limitdegflag;
-extern bool g_wmatDirectSetFlag;
+//extern bool g_wmatDirectSetFlag;
 extern bool g_underRetargetFlag;
 
 extern float g_impscale;

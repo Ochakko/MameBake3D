@@ -31,6 +31,10 @@ namespace MameBake3DLibRetarget {
 
 	int Retarget(CModel* srcmodel, CModel* srcbvhmodel, ChaMatrix smatVP, std::map<CBone*, CBone*>& sconvbonemap, int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
 	{
+
+		//retargetは　unlimitedに対して行い　unlimitedにセットする
+		bool limitdegflag = false;
+
 		if (!srcmodel || !srcbvhmodel || !srcAddMotionFunc || !srcInitCurMotionFunc) {
 			return 0;
 		}
@@ -124,9 +128,9 @@ namespace MameBake3DLibRetarget {
 				srcbvhmodel->SetMotionFrame(frame);
 				ChaMatrix tmpbvhwm = srcbvhmodel->GetWorldMat();
 				ChaMatrix tmpwm = srcmodel->GetWorldMat();
-				srcbvhmodel->UpdateMatrix(&tmpbvhwm, &dummyvpmat);
+				srcbvhmodel->UpdateMatrix(limitdegflag, &tmpbvhwm, &dummyvpmat);
 				srcmodel->SetMotionFrame(frame);
-				srcmodel->UpdateMatrix(&tmpwm, &dummyvpmat);
+				srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &dummyvpmat);
 
 				CBone* befbvhbone2 = srcbvhmodel->GetTopBone();
 
@@ -143,7 +147,7 @@ namespace MameBake3DLibRetarget {
 		}
 
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
-		srcmodel->UpdateMatrix(&tmpwm, &smatVP);
+		srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &smatVP);
 
 		g_underRetargetFlag = false;//!!!!!!!!!!!!
 
@@ -199,6 +203,12 @@ namespace MameBake3DLibRetarget {
 
 	int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat)
 	{
+
+		//retargetは　unlimitedに対して行い　unlimitedにセットする
+		bool limitdegflag = false;
+
+
+
 		if (selfflag && !bvhbone) {
 			_ASSERT(0);
 			return 1;
@@ -441,7 +451,7 @@ namespace MameBake3DLibRetarget {
 					ChaMatrix zeroframemodelmat;
 					CQuaternion zeroframemodelQ;
 					//zeroframemodelmat = srcbone->GetNodeMat() * srcbone->GetCurrentZeroFrameMat(1);
-					zeroframemodelmat = offsetformodelmat * srcbone->GetCurrentZeroFrameMat(1);
+					zeroframemodelmat = offsetformodelmat * srcbone->GetCurrentZeroFrameMat(limitdegflag, 1);
 					zeroframemodelQ.RotationMatrix(zeroframemodelmat);
 
 
@@ -476,7 +486,7 @@ namespace MameBake3DLibRetarget {
 					ChaMatrix zeroframebvhmat;
 					ChaMatrix invzeroframebvhmat;
 					CQuaternion invzeroframebvhQ;
-					zeroframebvhmat = offsetforbvhmat * bvhbone->GetCurrentZeroFrameMat(1);
+					zeroframebvhmat = offsetforbvhmat * bvhbone->GetCurrentZeroFrameMat(limitdegflag, 1);
 					//invzeroframebvhmat = ChaMatrixInv(bvhbone->GetNodeMat() * bvhbone->GetCurrentZeroFrameMat(1));
 					invzeroframebvhmat = ChaMatrixInv(zeroframebvhmat);
 					invzeroframebvhQ.RotationMatrix(invzeroframebvhmat);
@@ -543,13 +553,13 @@ namespace MameBake3DLibRetarget {
 
 					//GetWorldMat() : limitedflagをゼロにしておく必要有 !!!!
 					if (bvhbone->GetParent()) {
-						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(bvhmotid, roundingframe, 0);
+						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(limitdegflag, bvhmotid, roundingframe, 0);
 						GetSRTandTraAnim(bvhmp.GetAnimMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame
-						ChaMatrix parentwm0 = bvhbone->GetParent()->GetWorldMat(bvhmotid, 0.0, 0);
-						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0, 0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(), 
+						ChaMatrix parentwm0 = bvhbone->GetParent()->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0);
+						GetSRTandTraAnim(bvhbone->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(),
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
 					else {
@@ -557,7 +567,7 @@ namespace MameBake3DLibRetarget {
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame
-						GetSRTandTraAnim(bvhbone->GetWorldMat(bvhmotid, 0.0, 0), bvhbone->GetNodeMat(),
+						GetSRTandTraAnim(bvhbone->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0), bvhbone->GetNodeMat(),
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
 					//traanim = ChaMatrixTraVec(bvhtanimmat);
@@ -576,10 +586,10 @@ namespace MameBake3DLibRetarget {
 
 			bool onretarget = true;
 			if (bvhbone) {
-				srcmodel->FKRotate(onretarget, 1, bvhbone, 1, traanim, roundingframe, curboneno, rotq);
+				srcmodel->FKRotate(limitdegflag, onretarget, 1, bvhbone, 1, traanim, roundingframe, curboneno, rotq);
 			}
 			else {
-				srcmodel->FKRotate(onretarget, 0, befbvhbone, 0, traanim, roundingframe, curboneno, rotq);
+				srcmodel->FKRotate(limitdegflag, onretarget, 0, befbvhbone, 0, traanim, roundingframe, curboneno, rotq);
 			}
 		}
 

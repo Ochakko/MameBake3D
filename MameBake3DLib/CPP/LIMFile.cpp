@@ -433,18 +433,12 @@ bool LoadLIMFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno, in
 			return false;
 		}
 		
-		
-		bool tmplimitdegflag = g_limitdegflag;
-		g_limitdegflag = true;//!!!!!!!
-
-
 		for (frameno = 0; frameno < (unsigned int)limheader.framenum; frameno++) {
 			size_t limbufpos;
 			limbufpos = curheaderpos + sizeof(LIMJOINTHEADER) + frameno * sizeof(LIMELEM);
 			if ((limbufpos <= 0) || (limbufpos > ((size_t)bufleng - sizeof(LIMELEM)))) {
 				CloseHandle(hfile);
 				free(newbuf);
-				g_limitdegflag = tmplimitdegflag;//!!!!!!!
 				return false;
 			}
 
@@ -455,26 +449,23 @@ bool LoadLIMFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno, in
 			if (limelem.jointindex != jointindex) {
 				CloseHandle(hfile);
 				free(newbuf);
-				g_limitdegflag = tmplimitdegflag;//!!!!!!!
 				return false;
 			}
 
 			if (limelem.frameno != frameno) {
 				CloseHandle(hfile);
 				free(newbuf);
-				g_limitdegflag = tmplimitdegflag;//!!!!!!!
 				return false;
 			}
 
 			ChaMatrix curwm;
 			curwm = limelem.limitedworld;
 
-			//g_limitdegflag == trueで　SetWorldMat
-			curbone->SetWorldMat(motid, (double)frameno, curwm, 0);
+			//limitdegflag == trueで　SetWorldMat
+			bool limitdegflag = true;//limitedworldmatにセット
+			curbone->SetWorldMat(limitdegflag, motid, (double)frameno, curwm, 0);
 			
 		}
-
-		g_limitdegflag = tmplimitdegflag;//!!!!!!!
 
 	}
 

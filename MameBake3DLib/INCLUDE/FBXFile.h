@@ -37,7 +37,7 @@ class CBone;
  * @return 成功したら０。
  * @detail ボーン影響度やアニメーションも書き出す。
  */	
-	int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate );
+	int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate);
 
 /**
  * @fn
@@ -63,7 +63,7 @@ class CBone;
 #else
 	extern int InitializeSdkObjects();
 	extern int DestroySdkObjects();
-	extern int WriteFBXFile( FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate );
+	extern int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate);
 	extern int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbxdate);
 
 	extern FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScene, FbxNode* pNode, const FbxTime& pTime, int srcframe, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = 0);
