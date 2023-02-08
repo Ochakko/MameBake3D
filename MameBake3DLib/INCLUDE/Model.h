@@ -718,7 +718,7 @@ public:
 	void ApplyPhysIkRec(bool limitdegflag);
 	void ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcframe, double srcrectime);
 
-	int ResetAngleLimit(int srcval, CBone* srcbone = 0);
+	int ResetAngleLimit(bool excludebt, int srcval, CBone* srcbone = 0);
 	int AngleLimitReplace180to170(CBone* srcbone = 0);
 	int AdditiveCurrentToAngleLimit(CBone* srcbone = 0);
 	int AdditiveAllMotionsToAngleLimit();
@@ -736,7 +736,7 @@ public:
 
 	//void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );
 
-	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);
+	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng, int* perrorcount);
 
 private:
 	int InitParams();

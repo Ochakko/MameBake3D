@@ -500,7 +500,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2023/02/08
-* EditMot 1.2.0.10 RC10
+* EditMot 1.2.0.10 RC11
 *
 * 制限角度のベイクの仕様を変更
 *	制限無しと制限有とが混在することに起因する誤差を解決
@@ -543,6 +543,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 姿勢初期化ボタン修正(2023/02/08)
 * 　移動, スケールの初期化の際には　操作対象ジョイントとして選択しているジョイントそのものに処理
 * 　回転の初期化の際には　選択しているジョイントの１つ親のジョイントを処理
+* 
+* モーションを含まないfbxに関する修正
+* 　モーションを含まないfbxに　モーションをリターゲットしたときに　動きがおかしくなる不具合修正
+* 	一応対応しましたが　モーションを含まないfbxは　一度プロジェクト保存して　読み込んでから使うことを推奨
 * 
 * サンプル更新　
 *	Test/0_VRoid_Winter_B3
@@ -10559,7 +10563,12 @@ int InitCurMotion(int selectflag, double expandmotion)
 							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
 						}
 					}
-					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), curmi->motid, motleng);
+					int errorcount = 0;
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), 
+						curmi->motid, motleng, &errorcount);
+					if (errorcount != 0) {
+						_ASSERT(0);
+					}
 				}
 				else {
 					double frame;
@@ -10569,17 +10578,22 @@ int InitCurMotion(int selectflag, double expandmotion)
 							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
 						}
 					}
-					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), curmi->motid, motleng);
+					int errorcount = 0;
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), 
+						curmi->motid, motleng, &errorcount);
+					if (errorcount != 0) {
+						_ASSERT(0);
+					}
 				}
 
 
-				//LimitEulを表示時には　worldへの変更をlimitedに反映させる
-				if (g_limitdegflag == true) {
-					bool allframeflag = true;//全フレーム
-					bool setcursorflag = false;
-					bool onpasteflag = false;
-					CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
-				}
+				////LimitEulを表示時には　worldへの変更をlimitedに反映させる
+				//if (g_limitdegflag == true) {
+				//	bool allframeflag = true;//全フレーム
+				//	bool setcursorflag = false;
+				//	bool onpasteflag = false;
+				//	CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
+				//}
 
 			}
 		}
@@ -11805,6 +11819,16 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 			//ClearLimitedWM(s_model);
 			//ApplyNewLimitsToWM(s_model);
 			//g_limitdegflag = s_savelimitdegflag;
+
+
+			//2023/02/08
+			if (g_limitdegflag == true) {
+				ClearLimitedWM(s_model);
+				CopyWorldToLimitedWorld(s_model);
+				ApplyNewLimitsToWM(s_model);
+			}
+
+
 		}
 	}
 
@@ -20162,8 +20186,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				s_changelimitangleFlag = true;
 				PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-
-				s_model->ResetAngleLimit(180);
+				bool excludebt = false;
+				s_model->ResetAngleLimit(excludebt, 180);
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -20183,7 +20207,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				s_changelimitangleFlag = true;
 				PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-				s_model->ResetAngleLimit(0);
+				bool excludebt = false;
+				s_model->ResetAngleLimit(excludebt, 0);
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -20240,7 +20265,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 
 					//モーションからの設定の前に　まずはゼロ初期化する
-					s_model->ResetAngleLimit(0);
+					bool excludebt = true;
+					s_model->ResetAngleLimit(excludebt, 0);
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
 
@@ -20295,7 +20321,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//}
 
 					//モーションからの設定の前に　まずはゼロ初期化する
-					s_model->ResetAngleLimit(0);
+					bool excludebt = true;
+					s_model->ResetAngleLimit(excludebt, 0);
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
@@ -20333,8 +20360,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				s_changelimitangleFlag = true;
 				PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-
-				s_model->ResetAngleLimit(180, s_anglelimitbone);//2022/12/05 curbone引数追加
+				bool excludebt = false;
+				s_model->ResetAngleLimit(excludebt, 180, s_anglelimitbone);//2022/12/05 curbone引数追加
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -20354,8 +20381,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				s_changelimitangleFlag = true;
 				PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-
-				s_model->ResetAngleLimit(0, s_anglelimitbone);//2022/12/05 curbone引数追加
+				bool excludebt = false;
+				s_model->ResetAngleLimit(excludebt, 0, s_anglelimitbone);//2022/12/05 curbone引数追加
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -26367,7 +26394,9 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		s_spcplw2w.sprite->OnRender(pd3dImmediateContext);
 	}
 	else {
-		_ASSERT(0);
+		if (!s_spcplw2w.sprite) {
+			_ASSERT(0);
+		}
 	}
 
 

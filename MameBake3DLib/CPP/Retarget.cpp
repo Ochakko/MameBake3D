@@ -118,6 +118,12 @@ namespace MameBake3DLibRetarget {
 			_ASSERT(0);
 		}
 
+		//2023/02/08
+		if (fabs(hrate) <= 0.0001f) {
+			hrate = 1.0f;
+		}
+
+
 		double frame;
 		for (frame = 0.0; frame < motleng; frame += 1.0) {
 			//s_sethipstra = 0;
@@ -133,7 +139,6 @@ namespace MameBake3DLibRetarget {
 				srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &dummyvpmat);
 
 				CBone* befbvhbone2 = srcbvhmodel->GetTopBone();
-
 
 				ChaMatrix firsthipbvhmat;
 				ChaMatrix firsthipmodelmat;

@@ -2466,8 +2466,12 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 		InitMPReq(limitdegflagOnAddMotion, m_topbone, newid, framecnt);//motionpointが無い場合は作成も
 	}
 	
-	CreateIndexedMotionPointReq(m_topbone, newid, srcleng);//2022/10/30
-	
+	int errorcount = 0;
+	CreateIndexedMotionPointReq(m_topbone, newid, srcleng, &errorcount);//2022/10/30
+	if (errorcount != 0) {
+		_ASSERT(0);
+	}
+
 	*dstid = newid;
 
 	return 0;
@@ -4348,24 +4352,26 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 //}
 
 
-void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng) 
+void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng, int* perrorcount)
 {
-	if (!srcbone) {
+	if (!srcbone || !perrorcount) {
 		return;
 	}
 
 
 	int result;
 	result = srcbone->CreateIndexedMotionPoint(srcmotid, srcanimleng);
-	_ASSERT(result == 0);
-
-
+	//_ASSERT(result == 0);
+	if (result != 0) {
+		(*perrorcount)++;
+	}
 	if (srcbone->GetChild()) {
-		CreateIndexedMotionPointReq(srcbone->GetChild(), srcmotid, srcanimleng);
+		CreateIndexedMotionPointReq(srcbone->GetChild(), srcmotid, srcanimleng, perrorcount);
 	}
 	if (srcbone->GetBrother()) {
-		CreateIndexedMotionPointReq(srcbone->GetBrother(), srcmotid, srcanimleng);
+		CreateIndexedMotionPointReq(srcbone->GetBrother(), srcmotid, srcanimleng, perrorcount);
 	}
+
 }
 
 
@@ -12351,7 +12357,10 @@ void CModel::SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo
 
 		if (curmp){
 			//ChaMatrix firstmat = curmp->GetWorldMat();
-			ChaMatrix firstmat = srcbone->GetFirstMat();//2022/07/29
+			//ChaMatrix firstmat = srcbone->GetFirstMat();//2022/07/29
+
+			ChaMatrix firstmat = srcbone->GetNodeMat() * curmp->GetWorldMat();//2023/02/08
+
 
 			srcbone->CalcFirstFrameBonePos(firstmat);
 			ChaVector3 firstpos = srcbone->GetFirstFrameBonePos();
@@ -13300,19 +13309,22 @@ void CModel::ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcfram
 
 }
 
-int CModel::ResetAngleLimit(int srcval, CBone* srcbone)
+int CModel::ResetAngleLimit(bool excludebt, int srcval, CBone* srcbone)
 {
 	if (!srcbone) {
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone) {
+			if (curbone && 
+				((excludebt == false) || ((excludebt == true) && (curbone->GetBtForce() == 0)))) {
 				curbone->ResetAngleLimit(srcval);
 			}
 		}
 	}
 	else {
-		srcbone->ResetAngleLimit(srcval);
+		if ((excludebt == false) || ((excludebt == true) && (srcbone->GetBtForce() == 0))) {
+			srcbone->ResetAngleLimit(srcval);
+		}
 	}
 	return 0;
 }

@@ -8097,7 +8097,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 	//###############################################
 
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 1;
 	}
 	if (animleng < 1.0) {
@@ -8875,9 +8875,9 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 			ChaVector3 cureul = firstmp->GetLocalEul();
 			curmp->SetLocalEul(cureul);
 			curmp->SetLimitedLocalEul(cureul);
-			if (limitdegflag == true) {
+			//if (limitdegflag == true) {
 				curmp->SetCalcLimitedWM(2);
-			}
+			//}
 		}
 	}
 	else {
