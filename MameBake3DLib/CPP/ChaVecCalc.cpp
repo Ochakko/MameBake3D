@@ -3201,13 +3201,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//	Euler.z = -Euler.z;
 	//}
 
+	if (Euler.z >= 0.0f) {
+		tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+	}
+	else {
+		tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+	}
 	if (notmodify180flag == 0) {
-		if (Euler.z >= 0.0f) {
-			tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
-		}
-		else {
-			tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
-		}
 		//180“x(thdeg : 165“xˆÈã)‚Ì•Ï‰»‚Í@Ž²”½“]‚µ‚È‚¢‚æ‚¤‚È•\Œ»‚É•â³
 		if ((tmpZ0 - befeul.z) >= thdeg) {
 			tmpZ0 -= 180.0f;
@@ -3217,7 +3217,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		}
 	}
 	else {
-		tmpZ0 = Euler.z;
+		//tmpZ0‚»‚Ì‚Ü‚Ü
 	}
 	Euler.z = tmpZ0;
 
@@ -3250,13 +3250,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//	Euler.y = -Euler.y;
 	//}
 
+	if (Euler.y >= 0.0f) {
+		tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+	}
+	else {
+		tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+	}
 	if (notmodify180flag == 0) {
-		if (Euler.y >= 0.0f) {
-			tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
-		}
-		else {
-			tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
-		}
 		//180“x(thdeg : 165“xˆÈã)‚Ì•Ï‰»‚Í@Ž²”½“]‚µ‚È‚¢‚æ‚¤‚È•\Œ»‚É•â³
 		if ((tmpY0 - befeul.y) >= thdeg) {
 			tmpY0 -= 180.0f;
@@ -3266,7 +3266,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		}
 	}
 	else {
-		tmpY0 = Euler.y;
+		//tmpY0‚»‚Ì‚Ü‚Ü
 	}
 	Euler.y = tmpY0;
 
@@ -3301,13 +3301,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
 	//}
+	if (Euler.x >= 0.0f) {
+		tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+	}
+	else {
+		tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+	}
 	if (notmodify180flag == 0) {
-		if (Euler.x >= 0.0f) {
-			tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
-		}
-		else {
-			tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
-		}
 		//180“x(thdeg : 165“xˆÈã)‚Ì•Ï‰»‚Í@Ž²”½“]‚µ‚È‚¢‚æ‚¤‚È•\Œ»‚É•â³
 		if ((tmpX0 - befeul.x) >= thdeg) {
 			tmpX0 -= 180.0f;
@@ -3317,7 +3317,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		}
 	}
 	else {
-		tmpX0 = Euler.x;
+		//tmpX0‚»‚Ì‚Ü‚Ü
 	}
 	Euler.x = tmpX0;
 

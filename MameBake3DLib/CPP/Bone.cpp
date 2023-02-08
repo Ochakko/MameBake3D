@@ -673,7 +673,8 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 		}
 
 		bool limitdegflag = false;
-		bool directsetflag = false;
+		//bool directsetflag = false;
+		bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
 		bool infooutflag = false;
 		int setchildflag = 1;
 		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
@@ -726,7 +727,8 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 
 
 		bool limitdegflag = true;
-		bool directsetflag = false;
+		//bool directsetflag = false;
+		bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Åtrue. Šp“x§ŒÀ‚ÍŒã‚Å•ÊŠÖ”‚Å‚·‚é.
 		bool infooutflag = false;
 		int setchildflag = 1;
 		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
@@ -761,7 +763,6 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 		int infooutflag = 0;
 		int setchildflag = 1;//<-- •K{ RootNode‚Ì‰ñ“]‚ği‚è‚ß‚Î•ª‚©‚é
 		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm);
-
 		
 		//curmp->SetLimitedWM(newwm);
 		//curmp->SetLimitedLocalEul(neweul);
@@ -2844,10 +2845,18 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 {
 	//############# ˆø”traanim‚Íƒ[ƒJƒ‹p¨ ###########
 
+
+
+	//2023/02/08
+	//‚±‚ÌŠÖ”‚Í@RotAndTraBoneQReq‚©‚ç‚µ‚©ŒÄ‚Î‚ê‚Ä‚¢‚È‚¢
+	//ƒŠƒ^[ƒQƒbƒg‚É‚Í@RotBoneQReq‚ğŒÄ‚Ô‚Ì‚Å@‚±‚ÌŠÖ”‚ÍŒÄ‚Î‚ê‚È‚¢
+	//ƒOƒ[ƒoƒ‹•Ï”‚É‚æ‚é‹@”\‘I‘ğ‚Í”ğ‚¯‚é@•K—v‚Èê‡‚Íˆø”‚É‚·‚é
+
+
 	ChaMatrix newtanimmatrotated;
 	newtanimmatrotated.SetIdentity();
 
-	if (g_underRetargetFlag == false) {
+	//if (g_underRetargetFlag == false) {
 
 		//traanim‚ğƒ[ƒJƒ‹‰ñ“]‚·‚é@‚½‚¾‚µƒŠƒ^[ƒQƒbƒgˆÈŠO (IK‚È‚Ç‚É‰ñ“]‚·‚é)
 		//newtanimvec = traanim + ChaMatrixTraVec(srctanimmat);//Œ»İ‚Ìtanim‚Éˆø”‚ÅˆÚ“®•ª‚ğw’è‚·‚éê‡
@@ -2877,12 +2886,12 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 		newtanimmatrotated.SetIdentity();
 		newtanimmatrotated.SetTranslation(diffanimvecrotated + zeroframetanim);
 		//newtanimmatrotated.SetTranslation(diffanimvecrotated);
-	}
-	else {
-		//ƒŠƒ^[ƒQƒbƒg‚É‚Í@traanim‚ğ‚»‚Ì‚Ü‚ÜƒZƒbƒg‚·‚é‚Ì‚Å@traanim‚Ì‰ñ“]‚Í‚µ‚È‚¢
-		newtanimmatrotated.SetIdentity();
-		newtanimmatrotated.SetTranslation(ChaMatrixTraVec(srctanimmat));
-	}
+	//}
+	//else {
+	//	//ƒŠƒ^[ƒQƒbƒg‚É‚Í@traanim‚ğ‚»‚Ì‚Ü‚ÜƒZƒbƒg‚·‚é‚Ì‚Å@traanim‚Ì‰ñ“]‚Í‚µ‚È‚¢
+	//	newtanimmatrotated.SetIdentity();
+	//	newtanimmatrotated.SetTranslation(ChaMatrixTraVec(srctanimmat));
+	//}
 
 	return newtanimmatrotated;
 }
@@ -2986,6 +2995,9 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 			newwm = newlocalmat * parentwm;//global‚É‚·‚é
 
 			bool directsetflag = false;
+			if (g_underRetargetFlag == true) {
+				directsetflag = true;
+			}
 			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm);
 
 			if (bvhbone){
@@ -5402,7 +5414,8 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 	saveworldmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);//!!!!!!!!! •ÏX‘O‚ğ•Û‘¶
 	saveeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
 
-	if ((directsetflag == false) && (g_underRetargetFlag == false)){
+	//if ((directsetflag == false) && (g_underRetargetFlag == false)){
+	if (directsetflag == false) {
 		ChaMatrix befparentwm;
 		if (GetParent()) {
 			befparentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
@@ -6573,15 +6586,32 @@ int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CM
 			}
 		}
 
-		int setmatflag1 = 1;
+		int setmatflag1 = 1;//!!!!!!!!!!!!!!!!!!!!
 		CQuaternion dummyq;
 		ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
 		bool infooutflag = false;
-		g_underRetargetFlag = true;
+
+		////##################################################################################
+		////2023/02/08 ƒOƒ[ƒoƒ‹•Ï”‚Å‹²‚ñ‚Å‚Ì‹@”\‘I‘ğ‚Í‚â‚ß‚Ä@ˆø”‚É‚æ‚é‹@”\‘I‘ğ‚É‚·‚é‚×‚«
+		////Œã‚Åƒƒ“ƒe—\’è
+		////##################################################################################
+		//bool tmpunderRetarget = g_underRetargetFlag;
+		//g_underRetargetFlag = true;
+		
+
+		//setmatflag == 1‚Ìê‡‚É‚Í
+		//RotBoneQReq“à•”‚©‚ç@directsetflag = true‚Å@SetWorldMat‚ğŒÄ‚Ño‚· 
+		//‚æ‚Á‚Ä‚±‚±‚Å‚Ì@g_underRetargetFlag‘€ì‚Í•s—v
 		ChaMatrix dummyparentwm;
 		dummyparentwm.SetIdentity();
 		RotBoneQReq(limitdegflag, infooutflag, 0, srcmotid, roundingframe, dummyq, dummyparentwm, dummyparentwm, 0, dummytra, setmatflag1, &setmat);
-		g_underRetargetFlag = false;
+		
+		////##################################################################################
+		////2023/02/08 ƒOƒ[ƒoƒ‹•Ï”‚Å‹²‚ñ‚Å‚Ì‹@”\‘I‘ğ‚Í‚â‚ß‚Ä@ˆø”‚É‚æ‚é‹@”\‘I‘ğ‚É‚·‚é‚×‚«
+		////Œã‚Åƒƒ“ƒe—\’è
+		////##################################################################################
+		//g_underRetargetFlag = g_underRetargetFlag;
+
 
 		//ƒIƒCƒ‰[Šp‰Šú‰»
 		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);

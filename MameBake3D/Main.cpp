@@ -500,7 +500,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2023/02/08
-* EditMot 1.2.0.10 RC9
+* EditMot 1.2.0.10 RC10
 *
 * 制限角度のベイクの仕様を変更
 *	制限無しと制限有とが混在することに起因する誤差を解決
@@ -3189,7 +3189,7 @@ void InitApp()
 	g_preciseOnPreviewToo = false;
 
 	g_underIKRot = false;
-
+	g_underRetargetFlag = false;
 
 	g_VSync = false;
 	g_rotatetanim = false;
@@ -15779,11 +15779,15 @@ int RetargetMotion()
 	int result = MameBake3DLibRetarget::Retarget(s_convbone_model, s_convbone_bvh, s_matVP, s_convbonemap, AddMotion, InitCurMotion);//Retarget.h, Retarget.cpp
 	if (result) {
 		_ASSERT(0);
+		g_underRetargetFlag = false;
 		return 1;
 	}
+	g_underRetargetFlag = false;
+
 
 	if (g_limitdegflag == true) {
 		CopyWorldToLimitedWorld(s_model);
+		ApplyNewLimitsToWM(s_model);
 	}
 
 
@@ -18294,6 +18298,10 @@ int PickSpCpLW2W(POINT srcpos)
 	if (s_spcplw2w.sprite == 0) {
 		return 0;
 	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
 
 	int starty = s_spcplw2w.dispcenter.y - (int)s_spsize / 2;
 	int endy = starty + (int)s_spsize;
@@ -20223,7 +20231,6 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-
 					//s_savelimitdegflag = g_limitdegflag;
 					//ChangeLimitDegFlag(false, true, true);
 					//g_limitdegflag = false;
@@ -20232,25 +20239,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//}
 
 
-					//UINT checkadditive;
-					//checkadditive = IsDlgButtonChecked(s_anglelimitdlg, IDC_ADDITIVE);
-					//if (checkadditive != BST_CHECKED) {
-					//	SendMessage(s_anglelimitdlg, WM_COMMAND, IDC_RESETLIM, 0);
-					//}
+					//モーションからの設定の前に　まずはゼロ初期化する
+					s_model->ResetAngleLimit(0);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-					int curmotid;
-					double curmotleng;
-					curmotid = curmi->motid;
-					curmotleng = curmi->frameleng;
-
-					//double curframe;
-					//for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
-					//	s_model->SetMotionFrame(curframe);
-					//	ChaMatrix tmpwm = s_model->GetWorldMat();
-					//	s_model->UpdateMatrix(&tmpwm, &s_matVP);
-					//	s_model->AdditiveCurrentToAngleLimit();
-					//}
-					
 
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
 					s_model->AdditiveCurrentToAngleLimit();//内部で全フレーム分処理
@@ -20265,14 +20257,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					bool setcursorflag = false;
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
 
-					//s_model->SetMotionFrame(1.0);
-					//ChaMatrix tmpwm = s_model->GetWorldMat();
-					//s_model->UpdateMatrix(&tmpwm, &s_matVP);
-					
 					bool updateonlycheckeul = false;
 					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 					UpdateWindow(s_anglelimitdlg);
-
 
 					//カーソルを元に戻す
 					SetCursor(oldcursor);
@@ -20307,6 +20294,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
 					//}
 
+					//モーションからの設定の前に　まずはゼロ初期化する
+					s_model->ResetAngleLimit(0);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
 					s_model->AdditiveAllMotionsToAngleLimit();//内部で全モーション全フレーム分処理
@@ -26324,14 +26314,6 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		_ASSERT(0);
 	}
 
-	if (s_spcplw2w.sprite) {
-		s_spcplw2w.sprite->OnRender(pd3dImmediateContext);
-	}
-	else {
-		_ASSERT(0);
-	}
-
-
 	if ((s_mbuttoncnt == 0) && (s_mousecenteron.sprite)) {
 		s_mousecenteron.sprite->OnRender(pd3dImmediateContext);
 	}
@@ -26379,6 +26361,13 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				_ASSERT(0);
 			}
 		}
+	}
+
+	if ((g_previewFlag == 0) && s_spcplw2w.sprite) {//2023/02/08　プレビュー時は非表示
+		s_spcplw2w.sprite->OnRender(pd3dImmediateContext);
+	}
+	else {
+		_ASSERT(0);
 	}
 
 
