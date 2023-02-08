@@ -1,5 +1,5 @@
 2023/02/08
-	EditMot 1.2.0.10 RC8
+	EditMot 1.2.0.10 RC9
 
 	制限角度のベイクの仕様を変更
 		制限無しと制限有とが混在することに起因する誤差を解決
@@ -50,11 +50,16 @@
 		Documents/Troubleshooting/What_is_L2WButton.docx
 		Documents/Troubleshooting/BecomeJaggedEulerGraph_OnIK.docx
 		Documents/Troubleshooting/ACaseThatTranslationOfResultOfRetargetDontMove.docx
+		Documents/Troubleshooting/ACaseThatPhysicsHairTooFluffy.docx
 
 
 	リファクタリング
 		グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
 		タイミング依存(並列化もあり得る)の潜在的不具合を解消
+
+	姿勢初期化ボタン修正(2023/02/08)
+		移動, スケールの初期化の際には　操作対象ジョイントとして選択しているジョイントそのものに処理
+		回転の初期化の際には　選択しているジョイントの１つ親のジョイントを処理
 
 
 	サンプル更新　

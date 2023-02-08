@@ -499,8 +499,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 */
 
 /*
-* 2023/02/07
-* EditMot 1.2.0.10 RC7
+* 2023/02/08
+* EditMot 1.2.0.10 RC9
 *
 * 制限角度のベイクの仕様を変更
 *	制限無しと制限有とが混在することに起因する誤差を解決
@@ -522,15 +522,27 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　LimitEulオフで０度から８００度まで回転し　LimitEulオンで０度から４５０度(１回転後少し回転したところ)までに制限することも可能に
 * 　(テストジョイントの回転を姿勢初期化で初期化してからテストしました)
 * 
+* 1000fpsで物理シミュをしたら　シミュ開始時に乱れるのを修正
+* 	ロングタイムラインをxボタンで閉じると　表示がすごく速くなります
+* 	1000fps以上出たのですが乱れました
+* 	初期化回数をfps依存にすることで解決
+*
+* 操作対象ボーン(target bone)ウインドウの幅を広く
+* 	ToolWindowの操作対象ボーンボタンを押したときのウインドウの幅を調整 
 * 
 * TroubleShootingドキュメント追加
-* 	Documtents/TroubleShooting/What_is_L2WButton.docx
-* 	Documtents/TroubleShooting/BecomeJaggedEulerGraph_OnIK.docx
+* 	Documents/TroubleShooting/What_is_L2WButton.docx
+* 	Documents/TroubleShooting/BecomeJaggedEulerGraph_OnIK.docx
 *	Documents/Troubleshooting/ACaseThatTranslationOfResultOfRetargetDontMove.docx
+* 　Documents/Troubleshooting/ACaseThatPhysicsHairTooFluffy.docx
 * 
 * リファクタリング (2023/02/07)
 * 　グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
 * 　タイミング依存(並列化もあり得る)の潜在的不具合を解消
+* 
+* 姿勢初期化ボタン修正(2023/02/08)
+* 　移動, スケールの初期化の際には　操作対象ジョイントとして選択しているジョイントそのものに処理
+* 　回転の初期化の際には　選択しているジョイントの１つ親のジョイントを処理
 * 
 * サンプル更新　
 *	Test/0_VRoid_Winter_B3
@@ -6646,7 +6658,9 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			curre = 0;
 		}
 
-		if (curbone && curbone->GetParent()) {
+		//if (curbone && curbone->GetParent()) {
+		//2023/02/08 opeboneにparentをセットするのは　IKRotのときだけ
+		if (curbone && curbone->GetParent() && (s_ikkind == 0)) {
 			opebone = curbone->GetParent();
 		}
 		else {
