@@ -50,7 +50,7 @@ map<CModel*,int> g_bonecntmap;
 extern WCHAR g_basedir[MAX_PATH];
 extern int g_boneaxis;
 extern bool g_limitdegflag;
-//extern bool g_wmatDirectSetFlag;
+extern bool g_wmatDirectSetFlag;
 extern bool g_underRetargetFlag;
 extern int g_previewFlag;
 */
@@ -673,10 +673,10 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 		}
 
 		bool limitdegflag = false;
-		//bool directsetflag = false;
-		bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
+		bool directsetflag = false;
+		//bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
 		bool infooutflag = false;
-		int setchildflag = 1;
+		int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
 		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
 	}
 	else {
@@ -725,12 +725,11 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 			newwm = currentwm;
 		}
 
-
 		bool limitdegflag = true;
-		//bool directsetflag = false;
-		bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Åtrue. Šp“x§ŒÀ‚ÍŒã‚Å•ÊŠÖ”‚Å‚·‚é.
+		bool directsetflag = false;
+		//bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
 		bool infooutflag = false;
-		int setchildflag = 1;
+		int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
 		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
 	}
 	else {
@@ -2856,7 +2855,7 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 	ChaMatrix newtanimmatrotated;
 	newtanimmatrotated.SetIdentity();
 
-	//if (g_underRetargetFlag == false) {
+	if (g_underRetargetFlag == false) {
 
 		//traanim‚ğƒ[ƒJƒ‹‰ñ“]‚·‚é@‚½‚¾‚µƒŠƒ^[ƒQƒbƒgˆÈŠO (IK‚È‚Ç‚É‰ñ“]‚·‚é)
 		//newtanimvec = traanim + ChaMatrixTraVec(srctanimmat);//Œ»İ‚Ìtanim‚Éˆø”‚ÅˆÚ“®•ª‚ğw’è‚·‚éê‡
@@ -2886,12 +2885,12 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 		newtanimmatrotated.SetIdentity();
 		newtanimmatrotated.SetTranslation(diffanimvecrotated + zeroframetanim);
 		//newtanimmatrotated.SetTranslation(diffanimvecrotated);
-	//}
-	//else {
-	//	//ƒŠƒ^[ƒQƒbƒg‚É‚Í@traanim‚ğ‚»‚Ì‚Ü‚ÜƒZƒbƒg‚·‚é‚Ì‚Å@traanim‚Ì‰ñ“]‚Í‚µ‚È‚¢
-	//	newtanimmatrotated.SetIdentity();
-	//	newtanimmatrotated.SetTranslation(ChaMatrixTraVec(srctanimmat));
-	//}
+	}
+	else {
+		//ƒŠƒ^[ƒQƒbƒg‚É‚Í@traanim‚ğ‚»‚Ì‚Ü‚ÜƒZƒbƒg‚·‚é‚Ì‚Å@traanim‚Ì‰ñ“]‚Í‚µ‚È‚¢
+		newtanimmatrotated.SetIdentity();
+		newtanimmatrotated.SetTranslation(ChaMatrixTraVec(srctanimmat));
+	}
 
 	return newtanimmatrotated;
 }
@@ -2995,9 +2994,6 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 			newwm = newlocalmat * parentwm;//global‚É‚·‚é
 
 			bool directsetflag = false;
-			if (g_underRetargetFlag == true) {
-				directsetflag = true;
-			}
 			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm);
 
 			if (bvhbone){
@@ -3017,7 +3013,6 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		
 	}
-
 
 	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
@@ -5415,7 +5410,17 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 	saveeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
 
 	//if ((directsetflag == false) && (g_underRetargetFlag == false)){
-	if (directsetflag == false) {
+
+
+	//2023/02/08
+	//g_underRetargetFlagƒIƒ“ƒIƒt‚Å‚Ì‹@”\‘I‘ğ‚Í@‚Ü‚¾”p~‚Å‚«‚Ä‚¢‚È‚¢
+	//RotBoneQReq-->SetWorldMat-->RotBoneQReq-->SetWorldMat-->...‚Ì‚æ‚¤‚ÈŒÄ‚Ño‚µ‚É‚¨‚¢‚Ä
+	//‘±“I‚É@SetWorldMat‚Ìdirectsetflag‚ğw’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ä‚¢‚È‚¢‚©‚ç
+	//Œã‚Ìƒo[ƒWƒ‡ƒ“‚Ì‰Û‘è
+	//ver1.2.0.10RC11‚É‚¨‚¢‚Ä@(directsetflag == false)‚Ì”»’è‚¾‚¯‚Å‚Í
+	//ƒRƒs[ƒy[ƒXƒg‚Ìƒy[ƒXƒg‚Ì‚Æ‚«‚É•s‹ï‡‚ªo‚½
+	//‚µ‚å‚¤‚ª‚È‚­@g_underRetargetFlagƒIƒ“ƒIƒt‚É‚æ‚é‹@”\‘I‘ğ‚ğ•”•ª“I‚É•œŠˆ
+	if ((directsetflag == false) && (g_underRetargetFlag == false)) {
 		ChaMatrix befparentwm;
 		if (GetParent()) {
 			befparentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
@@ -6576,51 +6581,23 @@ int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CM
 	newmp = GetMotionPoint(srcmotid, roundingframe);
 	if (newmp){
 		//ChaMatrix setmat = GetWorldMat(srcmotid, roundingframe, &srcmp);
-		ChaMatrix setmat = srcmp.GetWorldMat();//2023/02/05 ƒRƒs[î•ñ‚Íunlimited‚Ì•û‚É“ü‚Á‚Ä‚¢‚é
+		ChaMatrix localmat = srcmp.GetWorldMat();//2023/02/05 ƒRƒs[î•ñ‚Íunlimited‚Ì•û‚É“ü‚Á‚Ä‚¢‚é
 
-		CBone* parentbone = GetParent();
-		if (parentbone){
-			CMotionPoint* parmp = parentbone->GetMotionPoint(limitdegflag, srcmotid, roundingframe);
-			if (parmp){
-				setmat = setmat * parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, parmp);//copyî•ñ‚Íƒ[ƒJƒ‹‚È‚Ì‚ÅƒOƒƒo[ƒ‹‚É‚·‚é
-			}
+		ChaMatrix setmat;
+		setmat.SetIdentity();
+		if (GetParent()){
+			ChaMatrix parentwm;
+			parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+			setmat = localmat * parentwm;//copyî•ñ‚Íƒ[ƒJƒ‹‚È‚Ì‚ÅƒOƒƒo[ƒ‹‚É‚·‚é
+		}
+		else {
+			setmat = localmat;
 		}
 
-		int setmatflag1 = 1;//!!!!!!!!!!!!!!!!!!!!
-		CQuaternion dummyq;
-		ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
+		bool directsetflag = false;
 		bool infooutflag = false;
-
-		////##################################################################################
-		////2023/02/08 ƒOƒ[ƒoƒ‹•Ï”‚Å‹²‚ñ‚Å‚Ì‹@”\‘I‘ğ‚Í‚â‚ß‚Ä@ˆø”‚É‚æ‚é‹@”\‘I‘ğ‚É‚·‚é‚×‚«
-		////Œã‚Åƒƒ“ƒe—\’è
-		////##################################################################################
-		//bool tmpunderRetarget = g_underRetargetFlag;
-		//g_underRetargetFlag = true;
-		
-
-		//setmatflag == 1‚Ìê‡‚É‚Í
-		//RotBoneQReq“à•”‚©‚ç@directsetflag = true‚Å@SetWorldMat‚ğŒÄ‚Ño‚· 
-		//‚æ‚Á‚Ä‚±‚±‚Å‚Ì@g_underRetargetFlag‘€ì‚Í•s—v
-		ChaMatrix dummyparentwm;
-		dummyparentwm.SetIdentity();
-		RotBoneQReq(limitdegflag, infooutflag, 0, srcmotid, roundingframe, dummyq, dummyparentwm, dummyparentwm, 0, dummytra, setmatflag1, &setmat);
-		
-		////##################################################################################
-		////2023/02/08 ƒOƒ[ƒoƒ‹•Ï”‚Å‹²‚ñ‚Å‚Ì‹@”\‘I‘ğ‚Í‚â‚ß‚Ä@ˆø”‚É‚æ‚é‹@”\‘I‘ğ‚É‚·‚é‚×‚«
-		////Œã‚Åƒƒ“ƒe—\’è
-		////##################################################################################
-		//g_underRetargetFlag = g_underRetargetFlag;
-
-
-		//ƒIƒCƒ‰[Šp‰Šú‰»
-		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		int paraxsiflag = 1;
-		//int isfirstbone = 0;
-		//cureul = CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
-		cureul = CalcLocalEulXYZ(limitdegflag, paraxsiflag, srcmotid, roundingframe, BEFEUL_BEFFRAME);
-		SetLocalEul(limitdegflag, srcmotid, roundingframe, cureul, 0);
-
+		int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, setmat);
 	}
 
 	return 0;

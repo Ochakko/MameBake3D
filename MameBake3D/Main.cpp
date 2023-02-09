@@ -3229,9 +3229,10 @@ void InitApp()
 	s_ikkind = 0;
 	
 
+	//g_wmatDirectSetFlag = false;
+	g_limitdegflag = false;
 	s_beflimitdegflag = g_limitdegflag;
 	s_savelimitdegflag = g_limitdegflag;
-
 
 
 	s_progressnum = 0;
@@ -6087,6 +6088,8 @@ void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe)
 
 int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 {
+	double roundingframe = (double)((int)(curframe + 0.0001));
+
 	/*
 	CMotionPoint* pcurmp = 0;
 	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
@@ -6100,6 +6103,7 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 		s_copymotvec.push_back(cpelem);
 	}
 	*/
+
 	int rotcenterflag1 = 1;
 	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(limitdegflag, 
 		rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
@@ -6112,16 +6116,33 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 	localmat.data[MATI_42] += curanimtra.y;
 	localmat.data[MATI_43] += curanimtra.z;
 
+	////localmat._11 *= localscale.x;
+	////localmat._12 *= localscale.x;
+	////localmat._13 *= localscale.x;
+	////localmat._21 *= localscale.y;
+	////localmat._22 *= localscale.y;
+	////localmat._23 *= localscale.y;
+	////localmat._31 *= localscale.z;
+	////localmat._32 *= localscale.z;
+	////localmat._33 *= localscale.z;
 
-	//localmat._11 *= localscale.x;
-	//localmat._12 *= localscale.x;
-	//localmat._13 *= localscale.x;
-	//localmat._21 *= localscale.y;
-	//localmat._22 *= localscale.y;
-	//localmat._23 *= localscale.y;
-	//localmat._31 *= localscale.z;
-	//localmat._32 *= localscale.z;
-	//localmat._33 *= localscale.z;
+	//ChaMatrix curmat;
+	//ChaMatrix localmat;
+	//curmat = curbone->GetWorldMat(limitdegflag,
+	//	s_model->GetCurMotInfo()->motid, roundingframe, 0);
+	//ChaMatrix parmat, invparmat;
+	//ChaMatrixIdentity(&parmat);
+	//ChaMatrixIdentity(&invparmat);
+	//if (curbone->GetParent()) {
+	//	parmat = curbone->GetParent()->GetWorldMat(limitdegflag, 
+	//		s_model->GetCurMotInfo()->motid, roundingframe, 0);
+	//	invparmat = ChaMatrixInv(parmat);
+	//	localmat = curmat * invparmat;
+	//}
+	//else {
+	//	localmat = curmat;
+	//}
+
 
 	CPELEM2 cpelem;
 	ZeroMemory(&cpelem, sizeof(CPELEM2));
@@ -22394,7 +22415,7 @@ int OnFrameToolWnd()
 
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-				double curframe = itrcp->time;
+				double curframe = (double)((int)(itrcp->time + 0.0001));
 				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(), curframe);
 			}
 
@@ -22435,7 +22456,7 @@ int OnFrameToolWnd()
 
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-				double curframe = itrcp->time;
+				double curframe = (double)((int)(itrcp->time + 0.0001));
 				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(), curframe, symrootmode);
 			}
 
@@ -22758,7 +22779,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	if (srcbone && (docopyflag == 1)){
 		_ASSERT(s_model->GetCurMotInfo());
 		int curmotid = s_model->GetCurMotInfo()->motid;
-		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, newframe, srcmp);
+		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, (double)((int)(newframe + 0.0001)), srcmp);
 	}
 
 	return 0;
@@ -22825,14 +22846,19 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 				CBone* parentbone = srcbone->GetParent();
 				if (parentbone){
 					CMotionPoint* parmp = parentbone->GetMotionPoint(curmotid, newframe);
-					int setmatflag1 = 1;
-					CQuaternion dummyq;
-					ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
+					if (parmp) {
+						ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
+							curmotid, newframe, parmp);
 
-					//parmp->SetBefWorldMat(parmp->GetWorldMat());
-					bool infooutflag = false;
-					srcbone->RotBoneQReq(g_limitdegflag, infooutflag, parentbone, curmotid, newframe, dummyq, parmp->GetWorldMat(), parmp->GetWorldMat(), 0, dummytra);
-					//_ASSERT(0);
+						//int setmatflag1 = 1;
+						CQuaternion dummyq;
+						ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
+
+						//parmp->SetBefWorldMat(parmp->GetWorldMat());
+						bool infooutflag = false;
+						srcbone->RotBoneQReq(g_limitdegflag, infooutflag, parentbone, curmotid, newframe, dummyq, parentwm, parentwm);
+						//_ASSERT(0);
+					}
 				}
 			}
 		}
@@ -22856,7 +22882,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	srcleng = copyEndTime - copyStartTime + 1;
 	dstleng = endframe - startframe + 1;
 	double dstframe;
-	for (dstframe = startframe; dstframe <= endframe; dstframe++) {
+	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe+=1.0) {
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
 		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
@@ -22865,24 +22891,24 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
-				if (srcmp.GetFrame() == srcframe) {
+				if ((double)((int)(srcmp.GetFrame() + 0.0001)) == srcframe) {
 					PasteMotionPoint(srcbone, srcmp, dstframe);
 				}
 			}
 		}
 	}
 
-	//移動しないボーンのための処理
-	for (dstframe = startframe; dstframe <= endframe; dstframe++) {
+	////移動しないボーンのための処理
+	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe+=1.0) {
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
-		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
+		srcframe = (double)((int)(copyStartTime + dstrate * srcleng + 0.0001));
 		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
-				if (srcmp.GetFrame() == srcframe) {
+				if ((double)((int)(srcmp.GetFrame() + 0.0001)) == srcframe) {
 					PasteNotMvParMotionPoint(srcbone, srcmp, dstframe);
 				}
 			}
