@@ -8074,7 +8074,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 	//###############################################
 
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
-		//_ASSERT(0);
+		_ASSERT(0);
 		return 1;
 	}
 	if (animleng < 1.0) {
@@ -8855,6 +8855,16 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 			//if (limitdegflag == true) {
 				curmp->SetCalcLimitedWM(2);
 			//}
+
+
+			//2023/02/11
+			//GetFbxAnimのif((animno == 0) && (srcframe == 0.0))を通らなかったRootジョイント用の初期化
+			if ((srcmotid == firstmotid) && (roundingframe == 0.0)) {
+				ChaMatrix firstmat;
+				firstmat = GetNodeMat() * firstanim;
+				SetFirstMat(firstmat);
+			}
+
 		}
 	}
 	else {

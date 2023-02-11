@@ -561,6 +561,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 */
 
 
+/*
+* 2023/02/11
+* EditMot 1.2.0.11へ向けて
+* 
+* モーションを持たないfbx対応
+* １回目の読み込み後　そのまま作業を続けても　OKになった
+* 
+* CreateIndexedMotionPointが　機能しなくなっていた？のを修正
+* 描画速度のボトルネックは　ロングタイムライン描画なので　fpsは変わらない？
+* モーション再生中に　ロングタイムラインウインドウをxボタンで閉じた場合　
+* 1.2.0.10は1000fps程だったのが　2000fps程になった
+* (こちらの環境にて)
+* 
+* 
+*/
+
 
 #include "useatl.h"
 
@@ -10066,7 +10082,6 @@ CModel* OpenMQOFile()
 
 
 	CallF( AddMotion( 0 ), return 0 );
-	InitCurMotion(0, 0);
 
 	s_modelindex[ mindex ].tlarray = s_tlarray;
 	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
@@ -10402,7 +10417,6 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
 		s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
 
-		InitCurMotion(0, 0);
 	}
 
 
@@ -11688,6 +11702,11 @@ int AddMotion( const WCHAR* wfilename, double srcmotleng )
 
 	CallF( AddTimeLine( newmotid, true ), return 1 );
 
+
+	//2023/02/11
+	//OnAnimMenuよりも前 : OnAnimMenu()-->CalcBoneEulよりも前
+	InitCurMotion(0, 0);
+
 	int selindex = (int)s_tlarray.size() - 1;
 	CallF( OnAnimMenu( true, selindex ), return 1 );
 
@@ -12305,7 +12324,6 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 	int newtlnum = (int)s_tlarray.size();
 	if( newtlnum == 0 ){
 		AddMotion(L"forempty", 100.0);
-		InitCurMotion(0, 0);
 	}
 	OnAnimMenu(true, 0);
 
@@ -28884,7 +28902,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.10 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.11 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -36338,7 +36356,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.10 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.11 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

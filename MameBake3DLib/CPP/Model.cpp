@@ -2459,17 +2459,33 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 	m_motinfo[(int)m_motinfo.size()] = newmi;//2021/08/26 eraseすることがあるのでindex = motid - 1とは限らない
 
 
+
+
 	//初期化　2022/08/28
 	SetCurrentMotion(newid);
-	double framecnt;
-	for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
-		InitMPReq(limitdegflagOnAddMotion, m_topbone, newid, framecnt);//motionpointが無い場合は作成も
-	}
 	
-	int errorcount = 0;
-	CreateIndexedMotionPointReq(m_topbone, newid, srcleng, &errorcount);//2022/10/30
-	if (errorcount != 0) {
-		_ASSERT(0);
+	
+	//2023/02/11
+	//この関数AddMotionにおいて
+	//InitMPReqとCreateIndexedMotionPointReqは
+	//fbxのモーションを読み込み済の場合に　新規モーション追加の際だけ意味がある
+	// 
+	//fbxAnim読み込み時は　姿勢データ読み込み後に　CreateIndexedMotionPointを呼ぶ(2023/02/11)
+	// 
+	//モーションを持たないfbxに対して　MotionPointを作成するのは　
+	//Main.cppのInitCurMotion()から呼ばれるInitMPReqとCreateIndexedMotionPointReq
+
+	if (GetLoadedFlag() == true) {
+		double framecnt;
+		for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
+			InitMPReq(limitdegflagOnAddMotion, m_topbone, newid, framecnt);//motionpointが無い場合は作成も
+		}
+
+		int errorcount = 0;
+		CreateIndexedMotionPointReq(m_topbone, newid, srcleng, &errorcount);//2022/10/30
+		if (errorcount != 0) {
+			_ASSERT(0);
+		}
 	}
 
 	*dstid = newid;
@@ -4150,7 +4166,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 	DbgOut( L"FBX anim num %d\r\n", lAnimStackCount );
 
 	if( lAnimStackCount <= 0 ){
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 0;
 	}
 	else {
@@ -4303,6 +4319,14 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//読み込み時にLocalEulとLimitedLocalEulの初期化をするべきなので　復活
 				//####################################################################################
 				PostLoadFbxAnim(curmotid);//並列化出来なかった計算をする
+
+
+				//2023/02/11
+				int errorcount = 0;
+				CreateIndexedMotionPointReq(GetTopBone(), curmotid, animleng, &errorcount);
+				if (errorcount != 0) {
+					_ASSERT(0);
+				}
 
 			}
 			else {
