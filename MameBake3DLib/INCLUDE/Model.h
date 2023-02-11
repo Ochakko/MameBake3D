@@ -463,9 +463,9 @@ public:
  * @param (CQuaternion rotq) IN 回転を表すクォータニオン。
  * @return 成功したら０。
  */
-	int FKRotate(bool limitdegflag, bool onretarget, int reqflag, 
-		CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, 
-		CQuaternion srcq, int setmatflag = 0, ChaMatrix* psetmat = 0);
+	int FKRotate(bool limitdegflag, bool onretarget, int reqflag,
+		CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno,
+		CQuaternion srcq);//, int setmatflag = 0, ChaMatrix* psetmat = 0);
 	//int FKRotate(double srcframe, int srcboneno, ChaMatrix srcmat);
 
 /**

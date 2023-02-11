@@ -279,12 +279,20 @@ public:
  //CBone::RotBoneQReq()
  //引数rotqはグローバル回転　引数traanimはローカル移動アニメ
  //##########################################################
-
 	CMotionPoint* RotBoneQReq(bool limitdegflag, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, 
 		CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm, 
-		CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0, bool onretarget = false);
+		CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f));// , int setmatflag = 0, ChaMatrix* psetmat = 0, bool onretarget = false);
 	CMotionPoint* RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 		CQuaternion qForRot, CQuaternion qForHipsRot, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm);
+
+	//directsetで　parentの姿勢を更新　再帰
+	void UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+		ChaMatrix oldparentwm, ChaMatrix newparentwm);
+	
+	//directsetで　ツリーの姿勢を更新　再帰
+	void UpdateCurrentWM(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+		ChaMatrix newwm);
+
 
 	ChaMatrix CalcNewLocalRotMatFromQofIK(bool limitdegflag, 
 		int srcmotid, double srcframe, CQuaternion qForRot, 

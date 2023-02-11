@@ -11,6 +11,18 @@
 		(こちらの環境にて)
 
 
+	リファクタリング
+	　RotBoneQReq, RotAndTraBoneQReqの再帰の仕方が分かりにくかったので修正
+	　　directset = trueで setchildflag = 1の関数が足りてなかったのが原因？！
+
+	　　UpdateCurrentWM, UpdateParentWMという２つのdirectsetで再帰処理する関数新規
+
+	　　directset = trueで setchildflag = 1処理部分を上記２つの関数で置き換え
+	  　CBone::SetWorldMat内のグローバル変数による機能選択を再び廃止
+
+	　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
+ 
+
 
 2023/02/09
 	EditMot 1.2.0.10 release

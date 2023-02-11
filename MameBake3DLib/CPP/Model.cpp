@@ -11636,7 +11636,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 //int CModel::FKRotate( double srcframe, int srcboneno, ChaMatrix srcmat )
 int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag, 
 	CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, 
-	CQuaternion rotq, int setmatflag, ChaMatrix* psetmat)
+	CQuaternion rotq)//, int setmatflag, ChaMatrix* psetmat)
 {
 
 	if( srcboneno < 0 ){
@@ -11644,8 +11644,8 @@ int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 		return 1;
 	}
 
-	CBone* firstbone = m_bonelist[ srcboneno ];
-	if( !firstbone ){
+	CBone* curbone = m_bonelist[ srcboneno ];
+	if( !curbone ){
 		_ASSERT( 0 );
 		return 1;
 	}
@@ -11653,8 +11653,6 @@ int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	bool onaddmotion = true;//for getbychain
-
-	CBone* curbone = firstbone;
 	CBone* parentbone = curbone->GetParent();
 	CMotionPoint* parmp = 0;
 	if (parentbone){
@@ -11666,13 +11664,11 @@ int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 		dummyparentwm.SetIdentity();
 		bool infooutflag = true;
 		curbone->RotBoneQReq(limitdegflag, infooutflag, 0, m_curmotinfo->motid, roundingframe, rotq, dummyparentwm, dummyparentwm,
-			bvhbone, traanim, setmatflag, psetmat, onretarget);
+			bvhbone, traanim);// , setmatflag, psetmat, onretarget);
 	}
 	else if(bvhbone){
 		ChaMatrix setmat = bvhbone->GetTmpMat();
-		//int setmatflag1 = 1;
 		curbone->RotBoneQOne(limitdegflag, parentbone, parmp, m_curmotinfo->motid, roundingframe, setmat);
-		//curbone->RotBoneQReq(0, m_curmotinfo->motid, roundingframe, rotq, bvhbone, traanim, setmatflag1, &setmat);
 	}
 
 	return curbone->GetBoneNo();

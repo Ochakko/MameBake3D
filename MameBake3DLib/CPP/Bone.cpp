@@ -672,12 +672,17 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 			newwm = limitedwm;
 		}
 
+		//bool limitdegflag = false;
+		//bool directsetflag = false;
+		////bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
+		//bool infooutflag = false;
+		//int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
+		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+
 		bool limitdegflag = false;
-		bool directsetflag = false;
-		//bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
-		bool infooutflag = false;
-		int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+		bool setbroflag = false;
+		UpdateCurrentWM(limitdegflag, setbroflag, srcmotid, roundingframe, newwm);
+
 	}
 	else {
 		_ASSERT(0);
@@ -725,12 +730,17 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 			newwm = currentwm;
 		}
 
+		//bool limitdegflag = true;
+		//bool directsetflag = false;
+		////bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
+		//bool infooutflag = false;
+		//int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
+		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+
 		bool limitdegflag = true;
-		bool directsetflag = false;
-		//bool directsetflag = true;//2023/02/08 copy‚È‚Ì‚Ådirectset.
-		bool infooutflag = false;
-		int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+		bool setbroflag = false;
+		UpdateCurrentWM(limitdegflag, setbroflag, srcmotid, roundingframe, newwm);
+
 	}
 	else {
 		_ASSERT(0);
@@ -2855,7 +2865,7 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 	ChaMatrix newtanimmatrotated;
 	newtanimmatrotated.SetIdentity();
 
-	if (g_underRetargetFlag == false) {
+	//if (g_underRetargetFlag == false) {
 
 		//traanim‚ðƒ[ƒJƒ‹‰ñ“]‚·‚é@‚½‚¾‚µƒŠƒ^[ƒQƒbƒgŽžˆÈŠO (IKŽž‚È‚Ç‚É‰ñ“]‚·‚é)
 		//newtanimvec = traanim + ChaMatrixTraVec(srctanimmat);//Œ»Ý‚Ìtanim‚Éˆø”‚ÅˆÚ“®•ª‚ðŽw’è‚·‚éê‡
@@ -2885,15 +2895,101 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 		newtanimmatrotated.SetIdentity();
 		newtanimmatrotated.SetTranslation(diffanimvecrotated + zeroframetanim);
 		//newtanimmatrotated.SetTranslation(diffanimvecrotated);
-	}
-	else {
-		//ƒŠƒ^[ƒQƒbƒgŽž‚É‚Í@traanim‚ð‚»‚Ì‚Ü‚ÜƒZƒbƒg‚·‚é‚Ì‚Å@traanim‚Ì‰ñ“]‚Í‚µ‚È‚¢
-		newtanimmatrotated.SetIdentity();
-		newtanimmatrotated.SetTranslation(ChaMatrixTraVec(srctanimmat));
-	}
+	//}
+	//else {
+	//	//ƒŠƒ^[ƒQƒbƒgŽž‚É‚Í@traanim‚ð‚»‚Ì‚Ü‚ÜƒZƒbƒg‚·‚é‚Ì‚Å@traanim‚Ì‰ñ“]‚Í‚µ‚È‚¢
+	//	newtanimmatrotated.SetIdentity();
+	//	newtanimmatrotated.SetTranslation(ChaMatrixTraVec(srctanimmat));
+	//}
 
 	return newtanimmatrotated;
 }
+
+void CBone::UpdateCurrentWM(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+	ChaMatrix newwm)
+{
+	//directset‚Å@ƒcƒŠ[‚ÌŽp¨‚ðXV@Ä‹A
+
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	ChaMatrix befwm;
+	befwm.SetIdentity();
+	befwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+	ChaMatrix befparentwm;
+	befparentwm.SetIdentity();
+	if (GetParent()) {
+		befparentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	}
+	else {
+		befparentwm.SetIdentity();
+	}
+
+	bool directsetflag = true;//directset !!!
+	bool infooutflag = false;
+	int setchildflag = 0;
+	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
+		srcmotid, roundingframe, newwm);
+
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
+	}
+	
+
+	if (GetChild()) {
+		bool setbroflag2 = true;
+		GetChild()->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
+			befwm, newwm);
+	}
+	if (GetBrother() && (setbroflag == true)) {
+		GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
+			befparentwm, befparentwm);
+	}
+}
+
+
+
+void CBone::UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe, 
+	ChaMatrix oldparentwm, ChaMatrix newparentwm)
+{
+	//directset‚Å@parent‚ÌŽp¨‚ðXV@Ä‹A
+
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	ChaMatrix currentbefwm;
+	ChaMatrix currentnewwm;
+	currentbefwm.SetIdentity();
+	currentnewwm.SetIdentity();
+	currentbefwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+
+	currentnewwm = currentbefwm * ChaMatrixInv(oldparentwm) * newparentwm;
+	
+
+	bool directsetflag = true;//directset !!!
+	bool infooutflag = false;
+	int setchildflag = 0;
+	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
+		srcmotid, roundingframe, currentnewwm);
+
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
+	}
+
+	if (GetChild()) {
+		bool setbroflag2 = true;
+		GetChild()->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe, 
+			currentbefwm, currentnewwm);
+	}
+	if (GetBrother() && (setbroflag == true)) {
+		GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
+			oldparentwm, newparentwm);
+	}
+}
+
+
 
 
 //##########################################################
@@ -2903,126 +2999,83 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag, 
 	CBone* parentbone, int srcmotid, double srcframe, 
 	CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm,
-	CBone* bvhbone, ChaVector3 traanim, int setmatflag, ChaMatrix* psetmat, bool onretarget)
+	CBone* bvhbone, ChaVector3 traanim)// , int setmatflag, ChaMatrix* psetmat, bool onretarget)
 {
-
 	//##############################################################
 	//Retargetê—p. IK—p‚É‚ÍRotAndTraBoneQReq()‚ðŽg—p
 	//##############################################################
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	bool onaddmotion = true;//for getbychain
-	int existflag = 0;
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (!curmp) {
 		_ASSERT( 0 );
 		return 0;
 	}
 	
-
 	ChaMatrix currentbefwm;
 	ChaMatrix currentnewwm;
 	currentbefwm.SetIdentity();
 	currentnewwm.SetIdentity();
 	currentbefwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
-	if (parentbone){
-		//Ä‹A‚©‚çŒÄ‚Ño‚µ
-		CMotionPoint* parmp = parentbone->GetMotionPoint(srcmotid, roundingframe);
-		//ChaMatrix befparmat;
-		//ChaMatrix newparmat;
-		//ChaMatrixIdentity(&befparmat);
-		//ChaMatrixIdentity(&newparmat);
-		if (parmp) {
-			//befparmat = parmp->GetBefWorldMat();
-			//newparmat = parmp->GetWorldMat();
-			ChaMatrix invbefpar;
-			ChaMatrixInverse(&invbefpar, NULL, &srcbefparentwm);
-			ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * invbefpar * srcnewparentwm;
-			//ChaMatrix tmpmat = limitedworldmat * invbefpar * newparmat;
-			bool directsetflag = true;
-			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
+	//‰‰ñŒÄ‚Ño‚µ
 
-		}
-		if (bvhbone){
-			if (m_child){
-				bvhbone->SetTmpMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
-				//bvhbone->SetTmpMat(limitedworldmat);
-			}
-			else{
-				//bvhbone->SetTmpMat(newparmat);
-				bvhbone->SetTmpMat(srcnewparentwm);
-			}
-		}
+	ChaMatrix newlocalrotmat;
+	ChaMatrix smat, rmat, tmat, tanimmat;
+	newlocalrotmat.SetIdentity();
+	smat.SetIdentity();
+	rmat.SetIdentity();
+	tmat.SetIdentity();
+	tanimmat.SetIdentity();
+	newlocalrotmat = CalcNewLocalRotMatFromQofIK(limitdegflag, srcmotid, roundingframe, rotq, &smat, &rmat, &tanimmat);
 
-		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	//ChaMatrix newtanimmatrotated;
+	//newtanimmatrotated.SetIdentity();
+	//newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, roundingframe, newlocalrotmat, smat, rmat, tanimmat, parentwm);
+
+	ChaMatrix bvhtraanim;
+	bvhtraanim.SetIdentity();
+	bvhtraanim.SetTranslation(ChaMatrixTraVec(tanimmat) + traanim);//Œ³‚Ìtanim + ˆø”traanim
+
+	//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚Ý—§‚Ä ####
+	ChaMatrix newlocalmat;
+	//newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &newtanimmatrotated);
+	newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &bvhtraanim);
+	ChaMatrix newwm, parentwm;
+	if (GetParent()) {
+		parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		//GetParent()->GetCalclatedLimitedWM(srcmotid, roundingframe, &parentwm);
 	}
-	else{		
-		//‰‰ñŒÄ‚Ño‚µ
+	else {
+		parentwm.SetIdentity();
+	}
+	newwm = newlocalmat * parentwm;//global‚É‚·‚é
 
-		if (setmatflag == 0){
-			ChaMatrix newlocalrotmat;
-			ChaMatrix smat, rmat, tmat, tanimmat;
-			newlocalrotmat.SetIdentity();
-			smat.SetIdentity();
-			rmat.SetIdentity();
-			tmat.SetIdentity();
-			tanimmat.SetIdentity();
-			newlocalrotmat = CalcNewLocalRotMatFromQofIK(limitdegflag, srcmotid, roundingframe, rotq, &smat, &rmat, &tanimmat);
+	bool directsetflag = false;
+	int setchildflag = 0;
+	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
 
-			//ChaMatrix newtanimmatrotated;
-			//newtanimmatrotated.SetIdentity();
-			//newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, roundingframe, newlocalrotmat, smat, rmat, tanimmat, parentwm);
+	if (bvhbone){
+		//bvhbone->SetTmpMat(tmpmat);
+		bvhbone->SetTmpMat(newwm);
+	}
 
-			ChaMatrix bvhtraanim;
-			bvhtraanim.SetIdentity();
-			bvhtraanim.SetTranslation(ChaMatrixTraVec(tanimmat) + traanim);//Œ³‚Ìtanim + ˆø”traanim
-
-			//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚Ý—§‚Ä ####
-			ChaMatrix newlocalmat;
-			//newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &newtanimmatrotated);
-			newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &bvhtraanim);
-			ChaMatrix newwm, parentwm;
-			if (GetParent()) {
-				parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-				//GetParent()->GetCalclatedLimitedWM(srcmotid, roundingframe, &parentwm);
-			}
-			else {
-				parentwm.SetIdentity();
-			}
-			newwm = newlocalmat * parentwm;//global‚É‚·‚é
-
-			bool directsetflag = false;
-			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm);
-
-			if (bvhbone){
-				//bvhbone->SetTmpMat(tmpmat);
-				bvhbone->SetTmpMat(newwm);
-			}
-		}
-		else{
-			ChaMatrix tmpmat = *psetmat;
-			bool directsetflag = true;
-			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
-			if (bvhbone){
-				bvhbone->SetTmpMat(tmpmat);
-			}
-		}
-
-		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		
-	}
 
 	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
+
 	if (m_child && curmp){
-		m_child->RotBoneQReq(limitdegflag, infooutflag,
-			this, srcmotid, roundingframe, rotq, currentbefwm, currentnewwm);//default param ??????
+		bool setbroflag2 = true;
+		m_child->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
+			currentbefwm, currentnewwm);
 	}
 	if (m_brother && parentbone){
-		m_brother->RotBoneQReq(limitdegflag, infooutflag, 
-			parentbone, srcmotid, roundingframe, rotq, srcbefparentwm, srcnewparentwm);//default param ??????
+		bool setbroflag3 = true;
+		m_child->UpdateParentWMReq(limitdegflag, setbroflag3, srcmotid, roundingframe,
+			srcbefparentwm, srcnewparentwm);
 	}
 	return curmp;
 }
@@ -3105,166 +3158,210 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	currentnewwm.SetIdentity();
 	currentbefwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
-	if (parentbone) {
-		//Ä‹A‚©‚çŒÄ‚Ño‚µ Ä‹A‚Ì‚Q‰ñ–ÚˆÈ~
-		CMotionPoint* parmp = parentbone->GetMotionPoint(srcmotid, roundingframe);
-		if (parmp) {
-			//befparmat = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 ˆø”‚É‚·‚é‚×‚«
-			//newparmat = parmp->GetWorldMat();
-			ChaMatrix invbefpar;
-			ChaMatrixInverse(&invbefpar, NULL, &srcbefparentwm);
-			ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * invbefpar * srcnewparentwm;
-			//ChaMatrix tmpmat = limitedworldmat * invbefpar * newparmat;
-			bool directsetflag = true;
-			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
-		}
+	//‰‰ñŒÄ‚Ño‚µ
+	bool ishipsjoint;
+	ishipsjoint = IsHipsBone();
 
-		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+	ChaMatrix currentwm;
+	//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//‚±‚±‚ðGetLimitedWorldMat‚É‚·‚é‚Æ‚P‰ñ–Ú‚ÌIK‚ª—‚ê‚éB‚Q‰ñ–Ú‚ÌIKˆÈ~‚ÍOKB
+	currentwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	ChaMatrix parentwm;
+	CQuaternion parentq;
+	CQuaternion invparentq;
+	if (GetParent()) {
+		parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		parentq.RotationMatrix(parentwm);
+		invparentq.RotationMatrix(ChaMatrixInv(parentwm));
 	}
 	else {
-		//‰‰ñŒÄ‚Ño‚µ
-		bool ishipsjoint;
-		ishipsjoint = IsHipsBone();
+		parentwm.SetIdentity();
+		parentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
 
-
-		ChaMatrix currentwm;
-		//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//‚±‚±‚ðGetLimitedWorldMat‚É‚·‚é‚Æ‚P‰ñ–Ú‚ÌIK‚ª—‚ê‚éB‚Q‰ñ–Ú‚ÌIKˆÈ~‚ÍOKB
-		currentwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		ChaMatrix parentwm;
-		CQuaternion parentq;
-		CQuaternion invparentq;
-		if (GetParent()) {
-			parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-			parentq.RotationMatrix(parentwm);
-			invparentq.RotationMatrix(ChaMatrixInv(parentwm));
+	//Get startframeframe traanim : SRT•Û‘¶‚ÍCModel::IKRotate* ‚©‚çŒÄ‚Ño‚·CBone::SaveSRT()‚Ås‚Á‚Ä‚¢‚é
+	//ChaVector3 startframetraanim = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaMatrix startframetraanimmat;
+	startframetraanimmat.SetIdentity();
+	{
+		//CMotionPoint* zeromp = GetMotionPoint(srcmotid, 0.0);
+		CMotionPoint* startframemp = GetMotionPoint(srcmotid, (double)((int)(srcstartframe + 0.0001)));
+		if (startframemp) {
+			ChaMatrix smat0, rmat0, tmat0, tanimmat0;
+			smat0.SetIdentity();
+			rmat0.SetIdentity();
+			tmat0.SetIdentity();
+			tanimmat0.SetIdentity();
+			//CModel::IKRotate* ‚©‚çŒÄ‚Ño‚µ‚½CBone::SaveSRT()‚Å•Û‘¶‚µ‚½SRT‚ðŽæ“¾
+			startframemp->GetSaveSRTandTraAnim(&smat0, &rmat0, &tmat0, &tanimmat0);
+			startframetraanimmat = tanimmat0;
 		}
 		else {
-			parentwm.SetIdentity();
-			parentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-			invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			startframetraanimmat.SetIdentity();
 		}
+	}
+	ChaMatrix currenttraanimmat;
+	curmp->GetSaveSRTandTraAnim(0, 0, 0, &currenttraanimmat);
 
-		//Get startframeframe traanim : SRT•Û‘¶‚ÍCModel::IKRotate* ‚©‚çŒÄ‚Ño‚·CBone::SaveSRT()‚Ås‚Á‚Ä‚¢‚é
-		//ChaVector3 startframetraanim = ChaVector3(0.0f, 0.0f, 0.0f);
-		ChaMatrix startframetraanimmat;
-		startframetraanimmat.SetIdentity();
-		{
-			//CMotionPoint* zeromp = GetMotionPoint(srcmotid, 0.0);
-			CMotionPoint* startframemp = GetMotionPoint(srcmotid, (double)((int)(srcstartframe + 0.0001)));
-			if (startframemp) {
-				ChaMatrix smat0, rmat0, tmat0, tanimmat0;
-				smat0.SetIdentity();
-				rmat0.SetIdentity();
-				tmat0.SetIdentity();
-				tanimmat0.SetIdentity();
-				//CModel::IKRotate* ‚©‚çŒÄ‚Ño‚µ‚½CBone::SaveSRT()‚Å•Û‘¶‚µ‚½SRT‚ðŽæ“¾
-				startframemp->GetSaveSRTandTraAnim(&smat0, &rmat0, &tmat0, &tanimmat0);
-				startframetraanimmat = tanimmat0;
-			}
-			else {
-				startframetraanimmat.SetIdentity();
-			}
+
+
+	ChaMatrix newwm;
+	newwm.SetIdentity();
+
+
+	//###########################################################################################################
+	//2022/12/29 Memo
+	//Hips‚Ì‚Æ‚«‚É‚Í@’Ç‰Á•ª‚Ì‰ñ“]‚ðŒã‚ë‚©‚çŠ|‚¯‚é
+	//‚»‚ÌÛ‚ÉTraAnim‚æ‚è‚àŒã‚ë‚©‚çŠ|‚¯‚é‚±‚Æ‚É‚æ‚è TraAnim‚ð‰ñ“]‚·‚é
+	// 
+	//HipsˆÈŠO‚ÌŽž‚É‚Í@qForRot‚Ì“à—e‚ÉƒgƒŠƒbƒN‚ª‚ ‚Á‚Ä@’Ç‰Á•ª‚Ì‰ñ“]‚ð "ŽÀŽ¿“I‚É‚Í"‘O‚©‚çŠ|‚¯‚Ä‚¢‚é
+	//‚±‚Ìê‡@TraAnim‚¾‚¯‚ð•Ê“r‰ñ“]‚µ‚ÄƒZƒbƒg‚·‚é•K—v‚ª‚ ‚é
+	// 
+	//‚È‚º@HipsˆÈŠO‚ÌŽž‚ÉHips‚Æ“¯‚¶ƒVƒ“ƒvƒ‹‚ÈŽ®‚ðŽg‚¦‚È‚¢‚©‚Æ‚¢‚¤‚Æ
+	//‘Ì‘S‘Ì‚ð‰ñ“]‚µ‚½Žž‚È‚Ç‚É@‘Ì‚É‘Î‚·‚é‰ñ“]‚ÌŒü‚«‚ðˆÛŽ‚·‚é•K—v‚ª‚ ‚é‚Ì‚Å@Œã‚ë‚©‚çŠ|‚¯‚é‚±‚Æ‚ªo—ˆ‚È‚¢‚½‚ß
+	//###########################################################################################################
+
+
+	if (ishipsjoint == true) {
+
+		//############
+		//Hips Joint
+		//############
+
+
+		//#############################################################################################################################
+		//2022/12/27
+		//hisp‚É‚Â‚¢‚Ä@ˆÚ“®‚à‰ñ“]‚·‚é‚É‚Í@‚É‚Â‚¢‚Ä
+		//InvCurNodeTra * curS * curR * CurNodeTra * TAnim * ParentWM ‚É‘Î‚µ‚Ä@‰ñ“]qForHipsRot‚ð‰Á‚¦@curTAnim‚à‰ñ“]‚·‚é‚É‚Í
+		//ƒCƒ[ƒW‚Æ‚µ‚Ä‚Í@curwm‚Ìe‚ÌˆÊ’u‚É@qForHipsRotˆ—‚ð‰Á‚¦‚éƒCƒ[ƒW
+		//ŽÀÛ‚É‚Í
+		//curTAnim‚ÆCurNodeTra‚Í—¼•û‚Æ‚àˆÚ“®¬•ª‚Ì‚Ý‚Å‚ ‚é‚©‚ç‰ÂŠ·‚Å‚ ‚é‚©‚ç
+		//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForHipsRot * CurNodeTra * ParentWM
+		//currentwm * InvCurNode * qForHipsRot * CurNodeTra * ParentWM
+		//#############################################################################################################################
+		//newwm = currentwm * ChaMatrixInv(parentwm) *
+		//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
+		//	parentwm;
+
+		newwm = currentwm * ChaMatrixInv(parentwm) *
+			ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat * 
+			parentwm;
+
+		if (onlycheckptr) {
+			bool directsetflag = false;
+			int onlycheckflag = 1;
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+			*onlycheckptr = ismovable;
+			//if (ismovable == 0) {
+			//	return curmp;// not movable‚Ìê‡‚Í@ˆó‚ð•t‚¯‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
+			//}
+			return curmp;//onlycheckptr != NULL‚Ìê‡‚Í@‰‰ñŒÄ‚Ño‚µ‚Åmovableƒ`ƒFƒbƒN‚µ‚Ä’¼‚¿‚ÉƒŠƒ^[ƒ“
 		}
-		ChaMatrix currenttraanimmat;
-		curmp->GetSaveSRTandTraAnim(0, 0, 0, &currenttraanimmat);
+		else {
+			bool directsetflag = false;
+			int onlycheckflag = 0;
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+		}		
+		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+	}
+	else {
+
+	//###############################################
+	//other joints !!!! traanim‚ð qForRot ‚Å‰ñ“]‚·‚é
+	//###############################################
+
+
+		////ˆÈ‰º‚Rs@hips‚Æ“¯‚¶‚æ‚¤‚É‚·‚é‚Æ@traanim‚ªÝ’è‚µ‚Ä‚ ‚éƒWƒ‡ƒCƒ“ƒg‚Å@‰ñ“]Ž²‚ªƒ}ƒjƒsƒ…ƒŒ[ƒ^‚Æ‡‚í‚È‚¢
+		//newwm = currentwm * ChaMatrixInv(parentwm) *
+		//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat *
+		//	parentwm;
 
 
 
-		ChaMatrix newwm;
-		newwm.SetIdentity();
+	//########################################################################
+	//2023/01/14
+	//Žw‚ÌRig‚ÅƒeƒXƒg‚µ‚½‚Æ‚±‚ë §ŒÀŠp“x—L‚è‚Ìê‡‚É@traanim‚ª•s³‚É‚È‚Á‚½
+	//‚Q’iŠK‚É•ª‚¯‚ÄŒvŽZ‚·‚é‚±‚Æ‚É‚æ‚è‰ðŒˆ
+	//########################################################################
+
+	//#############################################################
+	//‚Q’iŠKˆ—‚Ì‚P’i–ÚF‰ñ“]‚¾‚¯‚ð•ÏX‚µ‚ÄŠm’è‚·‚é‚½‚ß‚Ì@‚P’i–Ú
+	//#############################################################
+		////calc new local rot
+		ChaMatrix newlocalrotmatForRot;
+		ChaMatrix smatForRot, rmatForRot, tmatForRot, tanimmatForRot;
+		newlocalrotmatForRot.SetIdentity();
+		smatForRot.SetIdentity();
+		rmatForRot.SetIdentity();
+		tmatForRot.SetIdentity();
+		tanimmatForRot.SetIdentity();
+		newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(limitdegflag, srcmotid, roundingframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
+
+		ChaMatrix newtanimmatrotated;
+		newtanimmatrotated = tanimmatForRot;//‚P’i–Ú‚Å‚Í@traanim‚ð ‰ñ“]‚µ‚È‚¢
+
+		////	//traanim‚ð ‰ñ“]‚µ‚È‚¢‚Æ‚«
+		////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
+		////	newtanimmatrotated = tanimmatForRot;
 
 
-		//###########################################################################################################
-		//2022/12/29 Memo
-		//Hips‚Ì‚Æ‚«‚É‚Í@’Ç‰Á•ª‚Ì‰ñ“]‚ðŒã‚ë‚©‚çŠ|‚¯‚é
-		//‚»‚ÌÛ‚ÉTraAnim‚æ‚è‚àŒã‚ë‚©‚çŠ|‚¯‚é‚±‚Æ‚É‚æ‚è TraAnim‚ð‰ñ“]‚·‚é
-		// 
-		//HipsˆÈŠO‚ÌŽž‚É‚Í@qForRot‚Ì“à—e‚ÉƒgƒŠƒbƒN‚ª‚ ‚Á‚Ä@’Ç‰Á•ª‚Ì‰ñ“]‚ð "ŽÀŽ¿“I‚É‚Í"‘O‚©‚çŠ|‚¯‚Ä‚¢‚é
-		//‚±‚Ìê‡@TraAnim‚¾‚¯‚ð•Ê“r‰ñ“]‚µ‚ÄƒZƒbƒg‚·‚é•K—v‚ª‚ ‚é
-		// 
-		//‚È‚º@HipsˆÈŠO‚ÌŽž‚ÉHips‚Æ“¯‚¶ƒVƒ“ƒvƒ‹‚ÈŽ®‚ðŽg‚¦‚È‚¢‚©‚Æ‚¢‚¤‚Æ
-		//‘Ì‘S‘Ì‚ð‰ñ“]‚µ‚½Žž‚È‚Ç‚É@‘Ì‚É‘Î‚·‚é‰ñ“]‚ÌŒü‚«‚ðˆÛŽ‚·‚é•K—v‚ª‚ ‚é‚Ì‚Å@Œã‚ë‚©‚çŠ|‚¯‚é‚±‚Æ‚ªo—ˆ‚È‚¢‚½‚ß
-		//###########################################################################################################
+		//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚Ý—§‚Ä ####
+		ChaMatrix newlocalmat;
+		newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
+			&smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);//ForRot
+		//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
+		newwm = newlocalmat * parentwm;//global‚É‚·‚é
+
+		if (onlycheckptr) {
+			bool directsetflag = false;
+			int onlycheckflag = 1;
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+			*onlycheckptr = ismovable;
+			//if (ismovable == 0) {
+			//	return curmp;// not movable‚Ìê‡‚Í@ˆó‚ð•t‚¯‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
+			//}
 
 
-		if (ishipsjoint == true) {
-
-			//############
-			//Hips Joint
-			//############
-
-
-			//#############################################################################################################################
-			//2022/12/27
-			//hisp‚É‚Â‚¢‚Ä@ˆÚ“®‚à‰ñ“]‚·‚é‚É‚Í@‚É‚Â‚¢‚Ä
-			//InvCurNodeTra * curS * curR * CurNodeTra * TAnim * ParentWM ‚É‘Î‚µ‚Ä@‰ñ“]qForHipsRot‚ð‰Á‚¦@curTAnim‚à‰ñ“]‚·‚é‚É‚Í
-			//ƒCƒ[ƒW‚Æ‚µ‚Ä‚Í@curwm‚Ìe‚ÌˆÊ’u‚É@qForHipsRotˆ—‚ð‰Á‚¦‚éƒCƒ[ƒW
-			//ŽÀÛ‚É‚Í
-			//curTAnim‚ÆCurNodeTra‚Í—¼•û‚Æ‚àˆÚ“®¬•ª‚Ì‚Ý‚Å‚ ‚é‚©‚ç‰ÂŠ·‚Å‚ ‚é‚©‚ç
-			//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForHipsRot * CurNodeTra * ParentWM
-			//currentwm * InvCurNode * qForHipsRot * CurNodeTra * ParentWM
-			//#############################################################################################################################
-			//newwm = currentwm * ChaMatrixInv(parentwm) *
-			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) *
-			//	parentwm;
-
-			newwm = currentwm * ChaMatrixInv(parentwm) *
-				ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForHipsRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat * 
-				parentwm;
-
-			if (onlycheckptr) {
-				bool directsetflag = false;
-				int onlycheckflag = 1;
-				ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
-				*onlycheckptr = ismovable;
-				//if (ismovable == 0) {
-				//	return curmp;// not movable‚Ìê‡‚Í@ˆó‚ð•t‚¯‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
-				//}
-				return curmp;//onlycheckptr != NULL‚Ìê‡‚Í@‰‰ñŒÄ‚Ño‚µ‚Åmovableƒ`ƒFƒbƒN‚µ‚Ä’¼‚¿‚ÉƒŠƒ^[ƒ“
-			}
-			else {
-				bool directsetflag = false;
-				int onlycheckflag = 0;
-				ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
-			}		
-			currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+			//onlycheck‚Ìê‡‚Í@‚±‚±‚Ü‚Å
+			return curmp;
 
 		}
 		else {
+			bool directsetflag = false;
+			int onlycheckflag = 0;
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+		}
+		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
-		//###############################################
-		//other joints !!!! traanim‚ð qForRot ‚Å‰ñ“]‚·‚é
-		//###############################################
-
-
-			////ˆÈ‰º‚Rs@hips‚Æ“¯‚¶‚æ‚¤‚É‚·‚é‚Æ@traanim‚ªÝ’è‚µ‚Ä‚ ‚éƒWƒ‡ƒCƒ“ƒg‚Å@‰ñ“]Ž²‚ªƒ}ƒjƒsƒ…ƒŒ[ƒ^‚Æ‡‚í‚È‚¢
-			//newwm = currentwm * ChaMatrixInv(parentwm) *
-			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat *
-			//	parentwm;
-
+	////#####################################################################################################
+	////‚Q’iŠKˆ—‚Ì‚Q’i–ÚFŠp“x§ŒÀƒIƒ“ƒIƒt‚ðl—¶‚µ@‰ñ“]‚ðŠm’è‚³‚¹‚½Œã@ˆÚ“®ƒAƒjƒ‚ð‰ñ“]‚·‚é‚½‚ß‚Ì@‚Q’i–Ú
+	////#####################################################################################################
 
 
-		//########################################################################
-		//2023/01/14
-		//Žw‚ÌRig‚ÅƒeƒXƒg‚µ‚½‚Æ‚±‚ë §ŒÀŠp“x—L‚è‚Ìê‡‚É@traanim‚ª•s³‚É‚È‚Á‚½
-		//‚Q’iŠK‚É•ª‚¯‚ÄŒvŽZ‚·‚é‚±‚Æ‚É‚æ‚è‰ðŒˆ
-		//########################################################################
-
-		//#############################################################
-		//‚Q’iŠKˆ—‚Ì‚P’i–ÚF‰ñ“]‚¾‚¯‚ð•ÏX‚µ‚ÄŠm’è‚·‚é‚½‚ß‚Ì@‚P’i–Ú
-		//#############################################################
+		//2023/01/22 §ŒÀŠp“x‚Æˆê‚ÉŽg‚¤‚Æ@‘€ì‚²‚Æ‚ÉŒë·‚ª’~Ï‚·‚é‚Ì‚Å@ƒIƒvƒVƒ‡ƒ“‚É‚µ‚½
+		if (g_rotatetanim) {
 			////calc new local rot
-			ChaMatrix newlocalrotmatForRot;
-			ChaMatrix smatForRot, rmatForRot, tmatForRot, tanimmatForRot;
-			newlocalrotmatForRot.SetIdentity();
-			smatForRot.SetIdentity();
-			rmatForRot.SetIdentity();
-			tmatForRot.SetIdentity();
-			tanimmatForRot.SetIdentity();
-			newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(limitdegflag, srcmotid, roundingframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
+			ChaMatrix tmplocalmat;
+			tmplocalmat = currentnewwm * ChaMatrixInv(parentwm);
 
-			ChaMatrix newtanimmatrotated;
-			newtanimmatrotated = tanimmatForRot;//‚P’i–Ú‚Å‚Í@traanim‚ð ‰ñ“]‚µ‚È‚¢
+			//ChaMatrix newlocalrotmatForRot2;
+			ChaMatrix smatForRot2, rmatForRot2, tmatForRot2, tanimmatForRot2;
+			//newlocalrotmatForRot2.SetIdentity();
+			smatForRot2.SetIdentity();
+			rmatForRot2.SetIdentity();
+			tmatForRot2.SetIdentity();
+			tanimmatForRot2.SetIdentity();
+
+			//newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, roundingframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
+			GetSRTandTraAnim(tmplocalmat, GetNodeMat(), &smatForRot2, &rmatForRot2, &tmatForRot2, &tanimmatForRot2);
+
+
+			//‚Q’i–Ú‚Å‚Í@Šm’è‚µ‚½‰ñ“]‚É‚æ‚ètraanim‚ð‰ñ“]‚·‚é
+			ChaMatrix newtanimmatrotated2;
+			newtanimmatrotated2 = CalcNewLocalTAnimMatFromSRTraAnim(rmatForRot2,
+				smatForRot, rmatForRot, tanimmatForRot, ChaMatrixTraVec(startframetraanimmat));
 
 			////	//traanim‚ð ‰ñ“]‚µ‚È‚¢‚Æ‚«
 			////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
@@ -3272,90 +3369,32 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 
 
 			//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚Ý—§‚Ä ####
-			ChaMatrix newlocalmat;
-			newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
-				&smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);//ForRot
+			ChaMatrix newlocalmat2;
+			newlocalmat2 = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
+				&smatForRot, &rmatForRot2, &newtanimmatrotated2);//ForRot
 			//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
-			newwm = newlocalmat * parentwm;//global‚É‚·‚é
+			newwm = newlocalmat2 * parentwm;//global‚É‚·‚é
 
-			if (onlycheckptr) {
-				bool directsetflag = false;
-				int onlycheckflag = 1;
-				ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
-				*onlycheckptr = ismovable;
-				//if (ismovable == 0) {
-				//	return curmp;// not movable‚Ìê‡‚Í@ˆó‚ð•t‚¯‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
-				//}
-			}
-			else {
-				bool directsetflag = false;
-				int onlycheckflag = 0;
-				ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
-			}
+			bool directsetflag = true;
+			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm);
 			currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-
-		////#####################################################################################################
-		////‚Q’iŠKˆ—‚Ì‚Q’i–ÚFŠp“x§ŒÀƒIƒ“ƒIƒt‚ðl—¶‚µ@‰ñ“]‚ðŠm’è‚³‚¹‚½Œã@ˆÚ“®ƒAƒjƒ‚ð‰ñ“]‚·‚é‚½‚ß‚Ì@‚Q’i–Ú
-		////#####################################################################################################
-
-
-			//2023/01/22 §ŒÀŠp“x‚Æˆê‚ÉŽg‚¤‚Æ@‘€ì‚²‚Æ‚ÉŒë·‚ª’~Ï‚·‚é‚Ì‚Å@ƒIƒvƒVƒ‡ƒ“‚É‚µ‚½
-			if (g_rotatetanim) {
-				////calc new local rot
-				ChaMatrix tmplocalmat;
-				tmplocalmat = currentnewwm * ChaMatrixInv(parentwm);
-
-				//ChaMatrix newlocalrotmatForRot2;
-				ChaMatrix smatForRot2, rmatForRot2, tmatForRot2, tanimmatForRot2;
-				//newlocalrotmatForRot2.SetIdentity();
-				smatForRot2.SetIdentity();
-				rmatForRot2.SetIdentity();
-				tmatForRot2.SetIdentity();
-				tanimmatForRot2.SetIdentity();
-
-				//newlocalrotmatForRot = CalcNewLocalRotMatFromQofIK(srcmotid, roundingframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
-				GetSRTandTraAnim(tmplocalmat, GetNodeMat(), &smatForRot2, &rmatForRot2, &tmatForRot2, &tanimmatForRot2);
-
-
-				//‚Q’i–Ú‚Å‚Í@Šm’è‚µ‚½‰ñ“]‚É‚æ‚ètraanim‚ð‰ñ“]‚·‚é
-				ChaMatrix newtanimmatrotated2;
-				newtanimmatrotated2 = CalcNewLocalTAnimMatFromSRTraAnim(rmatForRot2,
-					smatForRot, rmatForRot, tanimmatForRot, ChaMatrixTraVec(startframetraanimmat));
-
-				////	//traanim‚ð ‰ñ“]‚µ‚È‚¢‚Æ‚«
-				////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
-				////	newtanimmatrotated = tanimmatForRot;
-
-
-				//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚Ý—§‚Ä ####
-				ChaMatrix newlocalmat2;
-				newlocalmat2 = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
-					&smatForRot, &rmatForRot2, &newtanimmatrotated2);//ForRot
-				//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
-				newwm = newlocalmat2 * parentwm;//global‚É‚·‚é
-
-				bool directsetflag = true;
-				SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm);
-				currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-			}
-
 		}
 
 	}
 
-
 	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
 	if (m_child && curmp) {
-		m_child->RotAndTraBoneQReq(limitdegflag, onlycheckptr, 
-			srcstartframe, infooutflag, this, srcmotid, roundingframe, qForRot, qForHipsRot, 
+		bool setbroflag2 = true;
+		m_child->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
 			currentbefwm, currentnewwm);
 	}
 	if (m_brother && parentbone) {
-		m_brother->RotAndTraBoneQReq(limitdegflag, onlycheckptr, 
-			srcstartframe, infooutflag, parentbone, srcmotid, roundingframe, qForRot, qForHipsRot, 
+		bool setbroflag3 = true;
+		m_child->UpdateParentWMReq(limitdegflag, setbroflag3, srcmotid, roundingframe,
 			srcbefparentwm, srcnewparentwm);
 	}
+
 	return curmp;
 }
 
@@ -4795,10 +4834,10 @@ int CBone::SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildfl
 		}
 
 		if (setchildflag == 1){
-			if (m_child){
-				bool infooutflag = false;
-				CQuaternion dummyq;
-				m_child->RotBoneQReq(limitdegflag, infooutflag, this, srcmotid, roundingframe, dummyq, befwm, newworldmat);
+			if (GetChild()){
+				bool setbroflag = true;
+				GetChild()->UpdateParentWMReq(limitdegflag, setbroflag,
+					srcmotid, roundingframe, befwm, newworldmat);
 			}
 		}
 	}
@@ -5110,10 +5149,10 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, 
 		}
 
 		if (setchildflag == 1) {
-			if (m_child) {
-				bool infooutflag = false;
-				CQuaternion dummyq;
-				m_child->RotBoneQReq(limitdegflag, infooutflag, this, srcmotid, roundingframe, dummyq, befwm, newmat);
+			if (GetChild()) {
+				bool setbroflag = true;
+				GetChild()->UpdateParentWMReq(limitdegflag, setbroflag,
+					srcmotid, roundingframe, befwm, newmat);
 			}
 		}
 	}
@@ -5194,11 +5233,11 @@ int CBone::SetWorldMatFromQAndTra(bool limitdegflag, int setchildflag,
 		}
 
 
-		if (setchildflag == 1){
-			if (m_child){
-				bool infooutflag = false;
-				CQuaternion dummyq;
-				m_child->RotBoneQReq(limitdegflag, infooutflag, this, srcmotid, roundingframe, dummyq, befwm, newmat);
+		if (setchildflag == 1) {
+			if (GetChild()) {
+				bool setbroflag = true;
+				GetChild()->UpdateParentWMReq(limitdegflag, setbroflag,
+					srcmotid, roundingframe, befwm, newmat);
 			}
 		}
 	}
@@ -5281,10 +5320,10 @@ int CBone::SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag,
 
 
 		if (setchildflag == 1) {
-			if (m_child) {
-				bool infooutflag = false;
-				CQuaternion dummyq;
-				m_child->RotBoneQReq(limitdegflag, infooutflag, this, srcmotid, roundingframe, dummyq, befwm, newmat);
+			if (GetChild()) {
+				bool setbroflag = true;
+				GetChild()->UpdateParentWMReq(limitdegflag, setbroflag,
+					srcmotid, roundingframe, befwm, newmat);
 			}
 		}
 	}
@@ -5411,16 +5450,7 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 
 	//if ((directsetflag == false) && (g_underRetargetFlag == false)){
 
-
-	//2023/02/08
-	//g_underRetargetFlagƒIƒ“ƒIƒt‚Å‚Ì‹@”\‘I‘ð‚Í@‚Ü‚¾”pŽ~‚Å‚«‚Ä‚¢‚È‚¢
-	//RotBoneQReq-->SetWorldMat-->RotBoneQReq-->SetWorldMat-->...‚Ì‚æ‚¤‚ÈŒÄ‚Ño‚µ‚É‚¨‚¢‚Ä
-	//Ž‘±“I‚É@SetWorldMat‚Ìdirectsetflag‚ðŽw’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ä‚¢‚È‚¢‚©‚ç
-	//Œã‚Ìƒo[ƒWƒ‡ƒ“‚Ì‰Û‘è
-	//ver1.2.0.10RC11‚É‚¨‚¢‚Ä@(directsetflag == false)‚Ì”»’è‚¾‚¯‚Å‚Í
-	//ƒRƒs[ƒy[ƒXƒg‚Ìƒy[ƒXƒg‚Ì‚Æ‚«‚É•s‹ï‡‚ªo‚½
-	//‚µ‚å‚¤‚ª‚È‚­@g_underRetargetFlagƒIƒ“ƒIƒt‚É‚æ‚é‹@”\‘I‘ð‚ð•”•ª“I‚É•œŠˆ
-	if ((directsetflag == false) && (g_underRetargetFlag == false)) {
+	if (directsetflag == false) {
 		ChaMatrix befparentwm;
 		if (GetParent()) {
 			befparentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
@@ -5520,12 +5550,11 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 						SetWorldMat(limitdegflag, srcmotid, roundingframe, saveworldmat, curmp);
 						//curmp->SetBefWorldMat(limitedworldmat);
 						SetLocalEul(limitdegflag, srcmotid, roundingframe, saveeul, curmp);
-						if (setchildflag) {
+						if (setchildflag == 1) {
 							if (GetChild()) {
-								bool infooutflag2 = false;
-								CQuaternion dummyq;
-								GetChild()->RotBoneQReq(limitdegflag, infooutflag2, this, srcmotid, roundingframe,
-									dummyq, saveworldmat, saveworldmat);
+								bool setbroflag = true;
+								GetChild()->UpdateParentWMReq(limitdegflag, setbroflag,
+									srcmotid, roundingframe, saveworldmat, saveworldmat);
 							}
 						}
 						if (limitdegflag == true) {
@@ -5546,30 +5575,12 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 							curmp->SetCalcLimitedWM(2);
 						}
 					}
-
-					//ChaVector3 limitedeul;
-					//ChaMatrix limitedworldmat;
-					//limitedworldmat = GetWorldMat(srcmotid, roundingframe, 0, &limitedeul);	
-					//SetWorldMat(srcmotid, roundingframe, limitedworldmat, curmp);
-					////curmp->SetBefWorldMat(limitedworldmat);
-					//SetLocalEul(srcmotid, roundingframe, limitedeul, curmp);
-					//if (setchildflag) {
-					//	if (GetChild()) {
-					//		bool infooutflag2 = false;
-					//		CQuaternion dummyq;
-					//		GetChild()->RotBoneQReq(infooutflag2, this, srcmotid, roundingframe, 
-					//			dummyq, saveworldmat, limitedworldmat);
-					//	}
-					//}
 				}
-
-				//curmp->SetBefWorldMat(curmp->GetWorldMat());
 			}
 		}
 		else {
 			//only check : ‰¼ƒZƒbƒg‚µ‚Ä‚¢‚½‚Ì‚ðŒ³‚É–ß‚·
 			SetWorldMat(limitdegflag, srcmotid, roundingframe, saveworldmat, curmp);
-			//curmp->SetBefWorldMat(saveworldmat);
 			SetLocalEul(limitdegflag, srcmotid, roundingframe, saveeul, curmp);
 		}
 	}
@@ -5579,44 +5590,26 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 
 		ismovable = 1;
 		if (onlycheck == 0) {
-			//curmp->SetBefWorldMat(curmp->GetWorldMat());
 			SetWorldMat(limitdegflag, srcmotid, roundingframe, srcmat, curmp);
 
-			//ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_ZERO);
 			ChaVector3 neweul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 			SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
 			if (limitdegflag == true) {
 				curmp->SetCalcLimitedWM(2);
 			}
-
-			//RotBoneQReq‚©‚çdirectflag = true‚ÅŒÄ‚Î‚ê‚é‚½‚ß@‚±‚±‚ÅRotBoneQReq‚ÍŒÄ‚×‚È‚¢
-			//directflag = trueŽž‚ÌÄ‹A‚Í@RotBoneQReq‘¤‚Å‚·‚é
-			//if (setchildflag) {
-			//	if (GetChild()) {
-			//		bool infooutflag2 = false;
-			//		CQuaternion dummyq;
-			//		GetChild()->RotBoneQReq(infooutflag2, this, srcmotid, roundingframe,
-			//			dummyq, saveworldmat, srcmat);
-			//	}
-			//}
+		
+			if (setchildflag == 1) {
+				bool setbroflag = false;
+				UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
+					saveworldmat, srcmat);
+			}
 		}
 		else {
 			//only check : ‰¼ƒZƒbƒg‚µ‚Ä‚¢‚½‚Ì‚ðŒ³‚É–ß‚·
 			SetWorldMat(limitdegflag, srcmotid, roundingframe, saveworldmat, curmp);
-			//curmp->SetBefWorldMat(saveworldmat);
 			SetLocalEul(limitdegflag, srcmotid, roundingframe, saveeul, curmp);
 		}
 	}
-
-
-	/*
-	if (setchildflag){
-		if (GetChild()){
-			CQuaternion dummyq;
-			GetChild()->RotBoneQReq(curmp, srcmotid, roundingframe, dummyq);
-		}
-	}
-	*/
 
 
 	return ismovable;
@@ -6594,10 +6587,14 @@ int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CM
 			setmat = localmat;
 		}
 
-		bool directsetflag = false;
-		bool infooutflag = false;
-		int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, setmat);
+		//bool directsetflag = false;
+		//bool infooutflag = false;
+		//int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
+		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, setmat);
+
+		bool setbroflag = false;
+		UpdateCurrentWM(limitdegflag, setbroflag, srcmotid, roundingframe, setmat);
+
 	}
 
 	return 0;

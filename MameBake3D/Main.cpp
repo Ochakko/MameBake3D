@@ -575,6 +575,18 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * (こちらの環境にて)
 * 
 * 
+* リファクタリング
+* 　RotBoneQReq, RotAndTraBoneQReqの再帰の仕方が分かりにくかったので修正
+* 　　directset = trueで setchildflag = 1の関数が足りてなかったのが原因？！
+*
+* 　　UpdateCurrentWM, UpdateParentWMという２つのdirectsetで再帰処理する関数新規
+*
+* 　　directset = trueで setchildflag = 1処理部分を上記２つの関数で置き換え
+*   　CBone::SetWorldMat内のグローバル変数による機能選択を再び廃止
+*
+* 　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
+* 
+* 
 */
 
 
@@ -22868,13 +22880,22 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 						ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
 							curmotid, newframe, parmp);
 
-						//int setmatflag1 = 1;
-						CQuaternion dummyq;
-						ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
+						////int setmatflag1 = 1;
+						//CQuaternion dummyq;
+						//ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
+						////parmp->SetBefWorldMat(parmp->GetWorldMat());
+						//bool infooutflag = false;
+						//srcbone->RotBoneQReq(g_limitdegflag, infooutflag, 
+						//	parentbone, curmotid, newframe, dummyq, parentwm, parentwm);
 
-						//parmp->SetBefWorldMat(parmp->GetWorldMat());
-						bool infooutflag = false;
-						srcbone->RotBoneQReq(g_limitdegflag, infooutflag, parentbone, curmotid, newframe, dummyq, parentwm, parentwm);
+
+						//編集ジョイントの内の
+						//一番ルートに近いジョイントの親のジョイントの行列を　子供に掛けるため
+						//再帰を掛ける
+						bool setbroflag = false;
+						srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
+							curmotid, newframe, parentwm, parentwm);
+
 						//_ASSERT(0);
 					}
 				}
