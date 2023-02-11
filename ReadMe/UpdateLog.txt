@@ -23,6 +23,15 @@
 	　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
  
 
+	計算精度？！
+	　IK時マウスを逆方向に行ったり来たりガチャガチャやると
+	　グラフがギザギザになるばかりではなく　軸がブレることまであった
+	　ChaVecCalc.cppのSSE2部分を　double計算に戻した
+	　精度としては少しは良くなった　が　まだ解決していない
+	　マウスの方向を変える前に　ドラッグをやめてから　反対方向へドラッグしてみると　また少し良くなった
+	　CModel::IKRotateAxisDeltaの　rotrad, rotrad2の値の制限を変えてみた　また少し良くなった？
+	　今後も気が付いた時に　試してみることにする
+
 
 2023/02/09
 	EditMot 1.2.0.10 release

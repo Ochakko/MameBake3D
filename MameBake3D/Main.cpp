@@ -586,6 +586,14 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *
 * 　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
 * 
+* 計算精度？！
+* 　IK時マウスを２方向に行ったり来たりガチャガチャやると
+* 　グラフがギザギザになるばかりではなく　軸がブレることまであった
+* 　ChaVecCalc.cppのSSE2部分を　double計算に戻した
+* 　精度としては少しは良くなった　が　まだ解決していない
+* 　マウスの方向を変える前に　ドラッグをやめてから　反対方向へドラッグしてみると　また少し良くなった
+* 　CModel::IKRotateAxisDeltaの　rotrad, rotrad2の値の制限を変えてみた　また少し良くなった？
+* 　今後も気が付いた時に　試してみることにする
 * 
 */
 
@@ -1226,6 +1234,7 @@ static bool s_savelimitdegflag = true;
 static HWND s_rotaxisdlg = 0;
 static int s_rotaxiskind = AXIS_X;
 static float s_rotaxisdeg = 0.0f;
+static float s_befdeltax = 0.0f;
 
 static HWND s_customrigdlg = 0;
 static CUSTOMRIG s_customrig;
@@ -3215,6 +3224,8 @@ void InitApp()
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
 	g_btcalccnt = 2.0;
+
+	s_befdeltax = 0.0f;
 
 	g_rotatetanim = true;
 	g_tpose = true;
@@ -7685,6 +7696,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//}
 		//ReleaseCapture();
 		s_wmlbuttonup = 1;//ゲームパッド用フラグ
+
+		s_befdeltax = 0.0f;
 
 		if (s_model && (s_onragdollik != 0)){
 			//s_model->BulletSimulationStop();
@@ -29319,22 +29332,27 @@ int OnMouseMoveFunc()
 					if (g_controlkey == true) {
 						deltax *= 0.250f;
 					}
-					if (s_ikkind == 0) {
-						s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
-							&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, 
-							deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-						//UpdateEditedEuler();
+					if ((s_befdeltax * deltax) > 0.0f) {
+						if (s_ikkind == 0) {
+							s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
+								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
+								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+
+							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+							//UpdateEditedEuler();
+						}
+						else if (s_ikkind == 1) {
+							AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
+							s_editmotionflag = s_curboneno;
+						}
+						else if (s_ikkind == 2) {
+							AddBoneScale(s_pickinfo.buttonflag - PICK_X, deltax);
+							s_editmotionflag = s_curboneno;
+						}
 					}
-					else if (s_ikkind == 1) {
-						AddBoneTra(s_pickinfo.buttonflag - PICK_X, deltax * 0.1f);
-						s_editmotionflag = s_curboneno;
-					}
-					else if (s_ikkind == 2) {
-						AddBoneScale(s_pickinfo.buttonflag - PICK_X, deltax);
-						s_editmotionflag = s_curboneno;
-					}
+					s_befdeltax = deltax;
+
 					s_ikcnt++;
 				}
 			}
@@ -29365,22 +29383,25 @@ int OnMouseMoveFunc()
 						deltax *= 0.250f;
 					}
 
-					if (s_ikkind == 0) {
-						s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
-							&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno, 
-							deltax, g_iklevel, s_ikcnt, s_ikselectmat);
+					if ((s_befdeltax * deltax) > 0.0f) {
+						if (s_ikkind == 0) {
+							s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
+								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
+								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-						//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
-						//UpdateEditedEuler();
+							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
+							//UpdateEditedEuler();
+						}
+						else if (s_ikkind == 1) {
+							AddBoneTra(s_pickinfo.buttonflag, deltax * 0.1f);
+							s_editmotionflag = s_curboneno;
+						}
+						else if (s_ikkind == 2) {
+							AddBoneScale(s_pickinfo.buttonflag, deltax);
+							s_editmotionflag = s_curboneno;
+						}
 					}
-					else if (s_ikkind == 1) {
-						AddBoneTra(s_pickinfo.buttonflag, deltax * 0.1f);
-						s_editmotionflag = s_curboneno;
-					}
-					else if (s_ikkind == 2) {
-						AddBoneScale(s_pickinfo.buttonflag, deltax);
-						s_editmotionflag = s_curboneno;
-					}
+					s_befdeltax = deltax;
 					s_ikcnt++;
 				}
 			}
