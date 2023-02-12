@@ -1020,7 +1020,7 @@ _ASSERT(m_bonelist[0]);
 			REINFO reinfo;
 			::ZeroMemory(&reinfo, sizeof(REINFO));
 			strcpy_s(reinfo.filename, MAX_PATH, m_defaultrename);
-			reinfo.btgscale = 9.07;
+			reinfo.btgscale = 9.07f;
 			m_rigideleminfo.push_back(reinfo);
 			m_impinfo.push_back(m_defaultimpname);
 

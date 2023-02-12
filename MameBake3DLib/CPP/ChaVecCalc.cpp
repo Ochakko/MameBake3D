@@ -791,23 +791,23 @@ ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 
 
 
-	if (((srcsvec.x - 1.0) > -0.00003) && ((srcsvec.x - 1.0) < 0.00003)) {
-		srcsvec.x = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
+	if (((srcsvec.x - 1.0f) > -0.00003f) && ((srcsvec.x - 1.0f) < 0.00003f)) {
+		srcsvec.x = 1.0f;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (srcsvec.x < 0.00003) {
-		srcsvec.x = 0.00003;//0scale‹ÖŽ~
+	if (srcsvec.x < 0.00003f) {
+		srcsvec.x = 0.000030f;//0scale‹ÖŽ~
 	}
-	if (((srcsvec.y - 1.0) > -0.00003) && ((srcsvec.y - 1.0) < 0.00003)) {
-		srcsvec.y = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
+	if (((srcsvec.y - 1.0f) > -0.00003f) && ((srcsvec.y - 1.0f) < 0.00003f)) {
+		srcsvec.y = 1.0f;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (srcsvec.y < 0.00003) {
-		srcsvec.y = 0.00003;//0scale‹ÖŽ~
+	if (srcsvec.y < 0.00003f) {
+		srcsvec.y = 0.000030f;//0scale‹ÖŽ~
 	}
-	if (((srcsvec.z - 1.0) > -0.00003) && ((srcsvec.z - 1.0) < 0.00003)) {
-		srcsvec.z = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
+	if (((srcsvec.z - 1.0f) > -0.00003f) && ((srcsvec.z - 1.0f) < 0.00003f)) {
+		srcsvec.z = 1.0f;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (srcsvec.z < 0.00003) {
-		srcsvec.z = 0.00003;//0scale‹ÖŽ~
+	if (srcsvec.z < 0.00003f) {
+		srcsvec.z = 0.000030f;//0scale‹ÖŽ~
 	}
 	keepvecx = vecx0 * srcsvec.x;
 	keepvecy = vecy0 * srcsvec.y;
@@ -1464,6 +1464,7 @@ ChaMatrix ChaMatrix::operator* (float srcw) const {
 ChaMatrix &ChaMatrix::operator*= (float srcw) { *this = *this * srcw; return *this; }
 ChaMatrix ChaMatrix::operator/ (float srcw) const {
 	ChaMatrix retmat;
+	ChaMatrixIdentity(&retmat);
 
 	////if (fabs(srcw) >= 1e-5) {
 	//if (fabs(srcw) >= FLT_MIN) {//2022/11/23
@@ -1488,7 +1489,6 @@ ChaMatrix ChaMatrix::operator/ (float srcw) const {
 			(float)((double)this->data[MATI_41] / (double)srcw), (float)((double)this->data[MATI_42] / (double)srcw), (float)((double)this->data[MATI_43] / (double)srcw), (float)((double)this->data[MATI_44] / (double)srcw));
 	}
 	else {
-		ChaMatrix retmat;
 		ChaMatrixIdentity(&retmat);
 		return retmat;
 	}

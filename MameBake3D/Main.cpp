@@ -562,7 +562,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 
 /*
-* 2023/02/12
+* 2023/02/13
 * EditMot 1.2.0.11へ向けて
 * 
 * モーションを持たないfbx対応
@@ -626,6 +626,12 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　そして　CBone::SetWorldMat()において　
 * 　ismoving == 0のときの処理を変えることで　波打ちの症状が変わるからである
 *  
+* 
+* LimitEulオンでのIKRot後に自動フィルター(2023/02/13)
+* 	IKRot終了時　LimitEulオンで　編集ボーンがあった場合
+* 	グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
+* 	自動で　フィルターを掛けて　滑らかに
+*
 * 
 * テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
 * 
@@ -1679,6 +1685,7 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static int  s_filterState = 0;
+static bool s_filternodlg = false;
 static bool s_delmodelFlag = false;
 static bool s_delallmodelFlag = false;
 static bool s_changeupdatethreadsFlag = false;
@@ -2330,6 +2337,8 @@ static int OnFrameUndo(bool fromds, int fromdskind);
 static int OnSpriteUndo();
 static void OnGUIEventSpeed();
 static int SetShowPosTime();
+static int FilterFunc();
+
 
 static void SavePlayingStartEnd();
 static void SetButtonStartEndFromPlaying();
@@ -3428,6 +3437,7 @@ void InitApp()
 	s_selboneFlag = false;
 	s_initmpFlag = false;
 	s_filterState = 0;
+	s_filternodlg = false;
 	s_interpolateState = 0;
 	s_skipJointMark = 0;
 	s_firstkeyFlag = false;
@@ -4706,7 +4716,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 //    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
 	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
 
 	g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
 	g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
@@ -7757,6 +7767,35 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			s_model->ApplyPhysIkRec(g_limitdegflag);
 		}
 
+
+
+		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+
+		//2023/02/13
+		//IKRot終了時　LimitEulオンで　編集ボーンがあった場合
+		//グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
+		//自動で　フィルターを掛けて　滑らかにする
+		if ((s_ikkind == 0) && (g_limitdegflag == true) && (s_editmotionflag >= 0)) {
+			if (g_iklevel == 1) {
+				s_filterState = 2;//one
+			}
+			else {
+				s_filterState = 3;//deeper
+			}
+			s_filternodlg = true;
+
+			const int callnum = 5;
+			int callcount;
+			for (callcount = 0; callcount < callnum; callcount++) {
+				FilterFunc();
+			}
+
+			s_filterState = 0;
+			s_filternodlg = false;
+		}
+
+
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
 
 			//2023/02/04
@@ -7771,6 +7810,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 			UpdateEditedEuler();
 
+
+			if (oldcursor != NULL) {
+				SetCursor(oldcursor);
+			}
+			
 			s_pickinfo.buttonflag = 0;
 			s_ikcnt = 0;
 			s_onragdollik = 0;
@@ -10207,7 +10251,7 @@ void CalcTotalBound()
 	s_projnear = fObjectRadius * 0.01f;
 	g_initcamdist = fObjectRadius * 3.0f;
 	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-	g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
 
 
 	for (int i = 0; i < MAX_LIGHTS; i++)
@@ -16257,7 +16301,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					pmodel->SetCurrentRigidElem(s_reindexmap[pmodel]);//s_curreindexをmodelごとに持つ必要あり！！！
 
 					//決め打ち
-					s_btWorld->setGravity(btVector3(0.0, -9.8, 0.0)); // 重力加速度の設定
+					s_btWorld->setGravity(btVector3(0.0f, -9.8f, 0.0f)); // 重力加速度の設定
 					
 																	  
 																	  
@@ -22725,75 +22769,10 @@ int OnFrameToolWnd()
 
 	if (s_filterState != 0){
 
-		if ((s_filterState == 1) || (s_filterState == 2) || (s_filterState == 3)) {
-			//if (s_model){
-			//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
-			//}
-			if (s_model) {
-				PrepairUndo();
-			}
-
-			s_editrange.Clear();
-			if (s_model && s_model->GetCurMotInfo()) {
-				if (s_owpTimeline && s_owpLTimeline) {
-					s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-					CEditRange::SetApplyRate((double)g_applyrate);
-					int keynum;
-					double startframe, endframe, applyframe;
-					s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-
-
-					CBone* curbone = 0;
-					if (s_curboneno >= 0) {
-						curbone = s_model->GetBoneByID(s_curboneno);
-					}
-					else {
-						curbone = 0;
-					}
-					CBone* opebone = 0;
-					if (curbone && curbone->GetParent()) {
-						opebone = curbone->GetParent();
-					}
-					else {
-						if (curbone) {
-							opebone = curbone;
-						}
-						else {
-							opebone = 0;
-						}
-					}
-
-					if (opebone) {
-						if (keynum >= 2) {
-							CMotFilter motfilter;
-							motfilter.Filter(g_limitdegflag, s_model, opebone, 
-								s_filterState, 
-								s_model->GetCurMotInfo()->motid, 
-								(int)(startframe + 0.0001), (int)(endframe + 0.0001));
-
-							if (g_limitdegflag == true) {
-								bool allframeflag = false;
-								bool setcursorflag = false;
-								int operatingjointno = opebone->GetBoneNo();
-								bool onpasteflag = false;
-								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
-							}
-							refreshEulerGraph();
-							PrepairUndo();
-
-						}
-						else {
-							::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
-						}
-					}
-					else {
-						::DSMessageBox(s_3dwnd, L"Retry After Selectiong target joint.", L"error!!!", MB_OK);
-					}
-				}
-			}
-		}
+		FilterFunc();
 
 		s_filterState = 0;
+		s_filternodlg = false;
 	}
 
 	if (s_btresetFlag == true) {
@@ -26086,6 +26065,7 @@ int CreateToolWnd()
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 1;
+				s_filternodlg = false;
 			}
 		}
 	});
@@ -26093,6 +26073,7 @@ int CreateToolWnd()
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 2;
+				s_filternodlg = false;
 			}
 		}
 	});
@@ -26100,6 +26081,7 @@ int CreateToolWnd()
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 3;
+				s_filternodlg = false;
 			}
 		}
 	});
@@ -35556,7 +35538,7 @@ HWND GetNearestEnumDist()
 	}
 	else {
 		bool isfirst = true;
-		float nearestdist = 1e20;
+		float nearestdist = 1e20f;
 		HWND nearesthwnd = 0;
 		std::vector<ENUMDIST>::iterator itrenumdist;
 		for (itrenumdist = s_enumdist.begin(); itrenumdist != s_enumdist.end(); itrenumdist++) {
@@ -38750,3 +38732,91 @@ int DisplayApplyRateText()
 
 	return 0;
 }
+
+int FilterFunc()
+{
+	if ((s_filterState == 1) || (s_filterState == 2) || (s_filterState == 3)) {
+		//if (s_model){
+		//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+		//}
+		if (s_model && (s_filternodlg == false)) {
+			PrepairUndo();
+		}
+
+		if (s_model && s_model->GetCurMotInfo()) {
+			if (s_owpTimeline && s_owpLTimeline) {
+				s_editrange.Clear();
+				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+				CEditRange::SetApplyRate((double)g_applyrate);
+				int keynum;
+				double startframe, endframe, applyframe;
+				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+
+				CBone* curbone = 0;
+				if (s_curboneno >= 0) {
+					curbone = s_model->GetBoneByID(s_curboneno);
+				}
+				else {
+					curbone = 0;
+				}
+				CBone* opebone = 0;
+				if (curbone && curbone->GetParent()) {
+					opebone = curbone->GetParent();
+				}
+				else {
+					if (curbone) {
+						opebone = curbone;
+					}
+					else {
+						opebone = 0;
+					}
+				}
+
+				if (opebone) {
+					if (keynum >= 2) {
+						CMotFilter motfilter;
+						if (s_filternodlg == false) {
+							motfilter.Filter(g_limitdegflag, s_model, opebone,
+								s_filterState,
+								s_model->GetCurMotInfo()->motid,
+								(int)(startframe + 0.0001), (int)(endframe + 0.0001));
+						}
+						else {
+							motfilter.FilterNoDlg(g_limitdegflag, s_model, opebone,
+								s_filterState,
+								s_model->GetCurMotInfo()->motid,
+								(int)(startframe + 0.0001), (int)(endframe + 0.0001));
+						}
+
+
+						if (s_filternodlg == false) {
+							if (g_limitdegflag == true) {
+								bool allframeflag = false;
+								bool setcursorflag = false;
+								int operatingjointno = opebone->GetBoneNo();
+								bool onpasteflag = false;
+								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+							}
+							refreshEulerGraph();
+							PrepairUndo();
+						}
+
+					}
+					else {
+						if (s_filternodlg == false) {
+							::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
+						}
+					}
+				}
+				else {
+					if (s_filternodlg == false) {
+						::DSMessageBox(s_3dwnd, L"Retry After Selectiong target joint.", L"error!!!", MB_OK);
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+

@@ -191,11 +191,11 @@ btRigidBody* CBtObject::localCreateRigidBody( CRigidElem* curre, const btTransfo
 		body->setRestitution(0.0);
 		body->setFriction(1.0);
 		if (g_previewFlag != 5){
-			body->setDamping(0.3, 0.6);
+			body->setDamping(0.3f, 0.6f);
 		}else{
 			//body->setDamping(0.3, 1.0);
 			//body->setDamping(1.0, 1.0);
-			body->setDamping(0.7, 0.7);
+			body->setDamping(0.7f, 0.7f);
 		}
 
 
@@ -639,7 +639,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						dofC->setDamping(dofid, l_damping);
 					}
 					else {
-						dofC->setDamping(dofid, 0.7);
+						dofC->setDamping(dofid, 0.7f);
 					}
 					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 					dofC->enableSpring(dofid, true);
@@ -657,7 +657,7 @@ DbgOut( L"CreateBtConstraint (bef) : curbto %s---%s, chilbto %s---%s\r\n",
 						dofC->setDamping(dofid, a_damping);
 					}
 					else {
-						dofC->setDamping(dofid, 0.7);
+						dofC->setDamping(dofid, 0.7f);
 					}
 					//dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
 					dofC->enableSpring(dofid, true);
@@ -1305,7 +1305,7 @@ int CBtObject::CreatePhysicsPosConstraint()
 		_ASSERT(0);
 		return 1;
 	}
-	m_gz_rigidbody->setDamping(0.7, 0.7);
+	m_gz_rigidbody->setDamping(0.7f, 0.7f);
 
 	CreatePhysicsPosConstraintCurrent();
 
@@ -1638,20 +1638,20 @@ int CBtObject::CreatePhysicsPosConstraintCurrent()
 			
 			if (dofcindex < 3) {
 				//位置
-				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
+				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.0f, dofcindex);//CFM 0 壊れにくい
 				//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0040, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 				//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
-				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010f, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 			}
 			else {
 				//回転
 				//dofC->setParam(BT_CONSTRAINT_STOP_CFM, 1.0, dofcindex);//CFM 0 壊れにくい
-				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.5, dofcindex);//CFM 0 壊れにくい
-				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.5f, dofcindex);//CFM 0 壊れにくい
+				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0f, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 				//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 			}
 
-			dofC->setDamping(dofcindex, 0.7);
+			dofC->setDamping(dofcindex, 0.7f);
 		}
 
 		dofC->setEquilibriumPoint();
@@ -1833,21 +1833,21 @@ int CBtObject::CreatePhysicsPosConstraintChild(CBtObject* childbto)
 
 			if (dofcindex < 3) {
 				//位置
-				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0, dofcindex);//CFM 0 壊れにくい
+				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.0f, dofcindex);//CFM 0 壊れにくい
 				//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0040, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 				//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
-				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.010f, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 			}
 			else {
 				//回転
 				//dofC->setParam(BT_CONSTRAINT_STOP_CFM, 1.0, dofcindex);//CFM 0 壊れにくい
-				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.5, dofcindex);//CFM 0 壊れにくい
-				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0, dofcindex);//ERP(0-1) 値大 --> エラー補正大
+				dofC->setParam(BT_CONSTRAINT_STOP_CFM, 0.5f, dofcindex);//CFM 0 壊れにくい
+				dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0f, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 				//dofC->setParam(BT_CONSTRAINT_STOP_ERP, 0.0080, dofcindex);//ERP(0-1) 値大 --> エラー補正大
 			}
 
 
-			dofC->setDamping(dofcindex, 0.7);
+			dofC->setDamping(dofcindex, 0.7f);
 		}
 
 		dofC->setEquilibriumPoint();

@@ -11,6 +11,9 @@ public:
 	int Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone, 
 		int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
 
+	int FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
+		int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
+
 private:
 	void InitParams();
 	void DestroyObjs();
