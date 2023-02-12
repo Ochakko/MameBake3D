@@ -586,14 +586,33 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *
 * 　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
 * 
-* 計算精度？！
-* 　IK時マウスを２方向に行ったり来たりガチャガチャやると
-* 　グラフがギザギザになるばかりではなく　軸がブレることまであった
-* 　ChaVecCalc.cppのSSE2部分を　double計算に戻した
-* 　精度としては少しは良くなった　が　まだ解決していない
-* 　マウスの方向を変える前に　ドラッグをやめてから　反対方向へドラッグしてみると　また少し良くなった
-* 　CModel::IKRotateAxisDeltaの　rotrad, rotrad2の値の制限を変えてみた　また少し良くなった？
-* 　今後も気が付いた時に　試してみることにする
+* 計算精度問題
+* 　症状
+* 　　IK時マウスを逆方向に行ったり来たり激しくガチャガチャやると
+* 　　グラフがギザギザになるばかりではなく　軸がブレることまであった
+* 
+* 　原因
+* 　　SSE2による計算で誤差が蓄積したためのようだ
+* 　　例えば　スケール編集していないのに　スケール値1.0であるべきところが　0.96になっていたりした
+* 
+* 　対策
+* 　　ChaVecCalc.cppのSSE2部分を　double計算に戻した
+* 　　編集の繰り返しにより　スケール値が狂っていくので　ワンタッチで初期化するボタンを追加
+* 　　ToolWindow-->"ScaleAllInit(ギザギザしたら押す)"ボタン
+* 　　このボタンは　全フレームを選択後　ToolWindow-->姿勢初期化 init-->AllBones-->InitScaleを実行するのと同じ機能を持つ
+* 　　ギザギザする前までUndoを実行してから　"ScaleAllInit(ギザギザしたら押す)"ボタンを押す
+* 
+* 　対策結果
+* 　　ToolWindow-->"ScaleAllInit(ギザギザしたら押す)"ボタン により　グラフのギザギザの件は解決
+* 
+* 
+* サンプル更新
+* 　Test/0_VRoid_Winter_B4
+* 
+* 
+* トラブルシューティング修正
+* 　BecomeJaggedEulerGraph_OnIK.docxを修正
+* 　ACaseThatTranslationOfResultOfRetargetDontMove.docxを削除
 * 
 */
 
@@ -1575,7 +1594,7 @@ static OWP_Button* s_toolSelectCopyFileName = 0;
 static OWP_Button* s_toolSkipRenderBoneMarkB = 0;
 static OWP_Button* s_toolSkipRenderBoneMarkB2 = 0;
 static OWP_Button* s_tool180deg = 0;
-
+static OWP_Button* s_toolScaleInitAllB = 0;
 
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
@@ -1644,7 +1663,7 @@ static bool s_delcurmotFlag = false;
 static int s_interpolateState = 0;
 static int s_skipJointMark = 0;
 static bool s_180DegFlag = false;
-
+static bool s_scaleAllInitFlag = false;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -3414,6 +3433,7 @@ void InitApp()
 	s_delcurmotFlag = false;
 	s_calclimitedwmState = 0;
 	s_180DegFlag = false;
+	s_scaleAllInitFlag = false;
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -3684,6 +3704,7 @@ void InitApp()
 	s_toolSkipRenderBoneMarkB = 0;
 	s_toolSkipRenderBoneMarkB2 = 0;
 	s_tool180deg = 0;
+	s_toolScaleInitAllB = 0;
 
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
@@ -5275,6 +5296,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_tool180deg;
 		s_tool180deg = 0;
 	}
+	if (s_toolScaleInitAllB) {
+		delete s_toolScaleInitAllB;
+		s_toolScaleInitAllB = 0;
+	}
 
 
 	if (s_owpTimeline) {
@@ -6634,7 +6659,8 @@ void PrepairUndo()
 			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//長いフレームの保存は数秒時間がかかることがあるので砂時計カーソルにする
 
 			bool allframeflag;
-			if ((s_copyLW2WFlag == true) || (s_changelimitangleFlag == true)) {
+			if ((s_copyLW2WFlag == true) || (s_changelimitangleFlag == true) || 
+				(s_scaleAllInitFlag == true)) {
 				allframeflag = true;
 			}
 			else {
@@ -22260,35 +22286,70 @@ int OnFrameToolWnd()
 		s_selboneFlag = false;
 	}
 
-	if (s_180DegFlag) {
-		//if (s_model && (s_curboneno >= 0)) {
-		//	CBone* curbone = 0;
-		//	CBone* adjustbone = 0;
-		//	if (s_curboneno >= 0) {
-		//		curbone = s_model->GetBoneByID(s_curboneno);
-		//	}
-		//	else {
-		//		curbone = 0;
-		//	}
-		//	if (curbone) {
-		//		if (curbone->GetParent()) {
-		//			adjustbone = curbone->GetParent();
-		//		}
-		//		else {
-		//			adjustbone = curbone;
-		//		}
-		//	}
+	//if (s_180DegFlag) {
+	//	//if (s_model && (s_curboneno >= 0)) {
+	//	//	CBone* curbone = 0;
+	//	//	CBone* adjustbone = 0;
+	//	//	if (s_curboneno >= 0) {
+	//	//		curbone = s_model->GetBoneByID(s_curboneno);
+	//	//	}
+	//	//	else {
+	//	//		curbone = 0;
+	//	//	}
+	//	//	if (curbone) {
+	//	//		if (curbone->GetParent()) {
+	//	//			adjustbone = curbone->GetParent();
+	//	//		}
+	//	//		else {
+	//	//			adjustbone = curbone;
+	//	//		}
+	//	//	}
 
-		//	if (adjustbone) {
-		//		s_model->Adjust180DegReq(adjustbone);
-		//		refreshEulerGraph();
-		//		PrepairUndo();//2022/10/27
-		//	}
-		//}
-		s_180DegFlag = false;
+	//	//	if (adjustbone) {
+	//	//		s_model->Adjust180DegReq(adjustbone);
+	//	//		refreshEulerGraph();
+	//	//		PrepairUndo();//2022/10/27
+	//	//	}
+	//	//}
+	//	s_180DegFlag = false;
+	//}
+
+	if (s_scaleAllInitFlag) {
+		if (s_model) {
+			MOTINFO* curmi = s_model->GetCurMotInfo();
+			if (curmi) {
+
+				PrepairUndo();//全フレーム変更の前に全フレーム保存
+
+				//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
+				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+				double motleng = curmi->frameleng;
+				double frame;
+				for (frame = 0.0; frame < motleng; frame += 1.0) {
+					if (s_model->GetTopBone()) {
+						s_model->SetMotionFrame(frame);
+						InitMpByEulReq(INITMP_SCALE, s_model->GetTopBone(), curmi->motid, frame);
+					}
+				}
+
+				if (g_limitdegflag == true) {
+					int updatejointno = s_model->GetTopBone()->GetBoneNo();
+					bool allframeflag = true;
+					bool setcursorflag = false;
+					bool onpasteflag = false;
+					CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, updatejointno, onpasteflag);
+				}
+				refreshEulerGraph();
+
+				//カーソルを元に戻す
+				SetCursor(oldcursor);
+
+				PrepairUndo();//全フレーム変更後に全フレーム保存
+			}
+		}
+		s_scaleAllInitFlag = false;
 	}
-
-
 
 
 	if (s_markFlag){
@@ -25883,6 +25944,7 @@ int CreateToolWnd()
 	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
 	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
 	//s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
+	s_toolScaleInitAllB = new OWP_Button(_T("ScaleAllInit(ギザギザしたら押す)"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -25902,6 +25964,7 @@ int CreateToolWnd()
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
 	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
 	//s_toolWnd->addParts(*s_tool180deg);
+	s_toolWnd->addParts(*s_toolScaleInitAllB);
 
 	s_dstoolctrls.push_back(s_toolSelBoneB);
 	s_dstoolctrls.push_back(s_toolCopyB);
@@ -25920,6 +25983,7 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
 	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
 	//s_dstoolctrls.push_back(s_tool180deg);
+	s_dstoolctrls.push_back(s_toolScaleInitAllB);
 
 
 	s_toolWnd->setCloseListener([](){ 
@@ -26045,6 +26109,11 @@ int CreateToolWnd()
 	//		s_180DegFlag = true;
 	//	}
 	//});
+	s_toolScaleInitAllB->setButtonListener([]() {
+		if (s_model && (s_scaleAllInitFlag == false)) {
+			s_scaleAllInitFlag = true;
+		}
+	});
 
 
 	s_rctoolwnd.top = 0;

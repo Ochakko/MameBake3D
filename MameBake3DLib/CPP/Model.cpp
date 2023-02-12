@@ -10412,7 +10412,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 
 	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
 	//if (fabs(rotrad) < (0.020 * DEG2PAI)){
-	if (fabs(rotrad) < (0.0250 * DEG2PAI)) {//2023/02/11
+	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
 		g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}	
@@ -10475,7 +10475,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 					float rotrad2 = rotrad * currigelem.transuv[uvno].applyrate;
 					if (currigelem.transuv[uvno].enable == 1){
 						//if (fabs(rotrad2) >= (0.020 * DEG2PAI)){
-						if (fabs(rotrad2) >= (0.0250 * DEG2PAI)) {//2023/02/11
+						if (fabs(rotrad2) >= (0.020 * DEG2PAI)) {//2023/02/11
 
 							if (fabs(rotrad2) > (0.0550 * DEG2PAI)) {//2023/02/11
 								rotrad2 = 0.0550f * fabs(rotrad2) / rotrad2;
@@ -11252,7 +11252,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 	//int calcnum = 4;//ctrlを押しながらドラッグでdelta * 0.25になっている.多フレーム選択時の重さを考えると処理を重くすることは出来ないのでゆっくりドラッグする他ない.
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
 	//if (fabs(rotrad) < (0.020 * DEG2PAI)) {
-	if (fabs(rotrad) < (0.0250 * DEG2PAI)) {//2023/02/11
+	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
 		g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
@@ -11318,7 +11318,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			float rotrad2 = currate * rotrad;
 			//float rotrad2 = rotrad;
 			//if (fabs(rotrad2) < (0.020 * DEG2PAI)){
-			if (fabs(rotrad2) < (0.0250 * DEG2PAI)) {
+			if (fabs(rotrad2) < (0.020 * DEG2PAI)) {
 				break;
 			}
 			if (fabs(rotrad2) > (0.0550 * DEG2PAI)) {//2023/02/11
