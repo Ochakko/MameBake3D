@@ -747,6 +747,83 @@ ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatr
 
 }
 
+ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
+{
+	ChaVector3 vecx, vecy, vecz;
+	double lenx, leny, lenz;
+	ChaVector3 vecx0, vecy0, vecz0;
+	ChaVector3 keepvecx, keepvecy, keepvecz;
+
+	vecx.x = srcmat.data[MATI_11];
+	vecx.y = srcmat.data[MATI_12];
+	vecx.z = srcmat.data[MATI_13];
+	vecy.x = srcmat.data[MATI_21];
+	vecy.y = srcmat.data[MATI_22];
+	vecy.z = srcmat.data[MATI_23];
+	vecz.x = srcmat.data[MATI_31];
+	vecz.y = srcmat.data[MATI_32];
+	vecz.z = srcmat.data[MATI_33];
+
+	lenx = ChaVector3LengthDbl(&vecx);
+	leny = ChaVector3LengthDbl(&vecy);
+	lenz = ChaVector3LengthDbl(&vecz);
+	if (lenx >= 0.000001f) {
+		vecx0 = vecx / lenx;
+	}
+	else {
+		vecx0 = ChaVector3(1.0f, 0.0f, 0.0f);//!!!
+	}
+	if (leny >= 0.000001f) {
+		vecy0 = vecy / leny;
+	}
+	else {
+		vecy0 = ChaVector3(0.0f, 1.0f, 0.0f);//!!!
+	}
+	if (lenz >= 0.000001f) {
+		vecz0 = vecz / lenz;
+	}
+	else {
+		vecz0 = ChaVector3(0.0f, 0.0f, 1.0f);//!!!
+	}
+
+
+
+	if (((srcsvec.x - 1.0) > 0.0) && ((srcsvec.x - 1.0) < 0.00001)) {
+		srcsvec.x = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+	}
+	if (srcsvec.x < 0.00001) {
+		srcsvec.x = 0.00001;//0scale‹Ö~
+	}
+	if (((srcsvec.y - 1.0) > 0.0) && ((srcsvec.y - 1.0) < 0.00001)) {
+		srcsvec.y = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+	}
+	if (srcsvec.y < 0.00001) {
+		srcsvec.y = 0.00001;//0scale‹Ö~
+	}
+	if (((srcsvec.z - 1.0) > 0.0) && ((srcsvec.z - 1.0) < 0.00001)) {
+		srcsvec.z = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+	}
+	if (srcsvec.z < 0.00001) {
+		srcsvec.z = 0.00001;//0scale‹Ö~
+	}
+	keepvecx = vecx0 * srcsvec.x;
+	keepvecy = vecy0 * srcsvec.y;
+	keepvecz = vecz0 * srcsvec.z;
+
+	ChaMatrix retmat;
+	retmat = srcmat;
+	retmat.data[MATI_11] = keepvecx.x;
+	retmat.data[MATI_12] = keepvecx.y;
+	retmat.data[MATI_13] = keepvecx.z;
+	retmat.data[MATI_21] = keepvecy.x;
+	retmat.data[MATI_22] = keepvecy.y;
+	retmat.data[MATI_23] = keepvecy.z;
+	retmat.data[MATI_31] = keepvecz.x;
+	retmat.data[MATI_32] = keepvecz.y;
+	retmat.data[MATI_33] = keepvecz.z;
+
+	return retmat;
+}
 
 ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
 {
@@ -781,20 +858,36 @@ ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodema
 
 	//calc local srt matrix
 	if (sflag == true) {
+		ChaMatrix tmpmat;
+		tmpmat.SetIdentity();
 		if (tanimflag == true) {
-			retmat = befrotmat * *srcsmat * *srcrmat * aftrotmat * *srctanimmat;
+			tmpmat = befrotmat * *srcsmat * *srcrmat* aftrotmat** srctanimmat;
 		}
 		else {
-			retmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;
+			tmpmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;
 		}
+
+		//2023/02/12 ƒXƒP[ƒ‹Œë·‚É‚æ‚éƒOƒ‰ƒtƒMƒUƒMƒU‘Îô
+		ChaVector3 keepscale;
+		keepscale.x = srcsmat->data[MATI_11];
+		keepscale.y = srcsmat->data[MATI_22];
+		keepscale.z = srcsmat->data[MATI_33];
+		retmat = ChaMatrixKeepScale(tmpmat, keepscale);
+
 	}
 	else {
+		ChaMatrix tmpmat;
+		tmpmat.SetIdentity();
 		if (tanimflag == true) {
-			retmat = befrotmat * *srcrmat * aftrotmat * *srctanimmat;
+			tmpmat = befrotmat * *srcrmat * aftrotmat * *srctanimmat;
 		}
 		else {
-			retmat = befrotmat * *srcrmat * aftrotmat;
+			tmpmat = befrotmat * *srcrmat * aftrotmat;
 		}
+
+		//2023/02/12 ƒXƒP[ƒ‹Œë·‚É‚æ‚éƒOƒ‰ƒtƒMƒUƒMƒU‘Îô
+		ChaVector3 keepscale = ChaVector3(1.0f, 1.0f, 1.0f);
+		retmat = ChaMatrixKeepScale(tmpmat, keepscale);
 	}
 
 	return retmat;

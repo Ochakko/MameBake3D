@@ -471,6 +471,7 @@ void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr
 ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat);//For Local Posture
 ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat);//For Local Posture
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//Šg‘åk¬‚ğ‰Šú‰»‚µ‚½RTs—ñ‚ğ•Ô‚·
+ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec);
 
 ChaMatrix TransZeroMat(ChaMatrix srcmat);
 ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3);
@@ -556,6 +557,7 @@ extern void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* 
 extern ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat);//For Local Posture
 extern ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat);//For Local Posture
 extern ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//Šg‘åk¬‚ğ‰Šú‰»‚µ‚½RTs—ñ‚ğ•Ô‚·
+extern ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec);
 
 extern ChaMatrix TransZeroMat(ChaMatrix srcmat);
 extern ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3);

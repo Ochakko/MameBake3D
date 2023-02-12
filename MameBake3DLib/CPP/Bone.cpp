@@ -2802,20 +2802,25 @@ ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(bool limitdegflag, int srcmotid, do
 	ChaMatrix currentwm;
 	//limitedworldmat = GetLimitedWorldMat(srcmotid, roundingframe);//‚±‚±‚ðGetLimitedWorldMat‚É‚·‚é‚Æ‚P‰ñ–Ú‚ÌIK‚ª—‚ê‚éB‚Q‰ñ–Ú‚ÌIKˆÈ~‚ÍOKB
 	currentwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	ChaMatrix localmat;
 	ChaMatrix parentwm;
+	localmat.SetIdentity();
+	parentwm.SetIdentity();
 	CQuaternion parentq;
 	CQuaternion invparentq;
 	if (GetParent()) {
 		parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		parentq.RotationMatrix(parentwm);
 		invparentq.RotationMatrix(ChaMatrixInv(parentwm));
+		localmat = currentwm * ChaMatrixInv(parentwm);
 	}
 	else {
 		parentwm.SetIdentity();
 		parentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		localmat = currentwm;
 	}
-	ChaMatrix localmat = currentwm * ChaMatrixInv(parentwm);
+	
 	ChaMatrix smat, rmat, tmat, tanimmat;
 	//ChaMatrix zeroposmat;
 	//zeroposmat.SetIdentity();
@@ -3042,15 +3047,16 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 	ChaMatrix newlocalmat;
 	//newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &newtanimmatrotated);
 	newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &bvhtraanim);
-	ChaMatrix newwm, parentwm;
+	ChaMatrix newwm;
 	if (GetParent()) {
+		ChaMatrix parentwm;
 		parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		//GetParent()->GetCalclatedLimitedWM(srcmotid, roundingframe, &parentwm);
+		newwm = newlocalmat * parentwm;//global‚É‚·‚é
 	}
 	else {
-		parentwm.SetIdentity();
+		newwm = newlocalmat;
 	}
-	newwm = newlocalmat * parentwm;//global‚É‚·‚é
+	
 
 	bool directsetflag = false;
 	int setchildflag = 0;
@@ -3312,7 +3318,12 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 		newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
 			&smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);//ForRot
 		//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
-		newwm = newlocalmat * parentwm;//global‚É‚·‚é
+		if (GetParent()) {
+			newwm = newlocalmat * parentwm;//global‚É‚·‚é
+		}
+		else {
+			newwm = newlocalmat;
+		}
 
 		if (onlycheckptr) {
 			bool directsetflag = false;
@@ -3373,8 +3384,13 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 			newlocalmat2 = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(),
 				&smatForRot, &rmatForRot2, &newtanimmatrotated2);//ForRot
 			//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
-			newwm = newlocalmat2 * parentwm;//global‚É‚·‚é
-
+			if (GetParent()) {
+				newwm = newlocalmat2 * parentwm;//global‚É‚·‚é
+			}
+			else {
+				newwm = newlocalmat2;
+			}
+			
 			bool directsetflag = true;
 			SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm);
 			currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);

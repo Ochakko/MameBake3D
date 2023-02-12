@@ -1,4 +1,4 @@
-2023/02/11
+2023/02/12
 	EditMot 1.2.0.11へ向けて
 
 	モーションを持たないfbx対応
@@ -23,14 +23,42 @@
 	　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
  
 
-	計算精度？！
-	　IK時マウスを逆方向に行ったり来たりガチャガチャやると
-	　グラフがギザギザになるばかりではなく　軸がブレることまであった
-	　ChaVecCalc.cppのSSE2部分を　double計算に戻した
-	　精度としては少しは良くなった　が　まだ解決していない
-	　マウスの方向を変える前に　ドラッグをやめてから　反対方向へドラッグしてみると　また少し良くなった
-	　CModel::IKRotateAxisDeltaの　rotrad, rotrad2の値の制限を変えてみた　また少し良くなった？
-	　今後も気が付いた時に　試してみることにする
+	計算精度問題対応
+	　症状
+	　　IK時マウスを逆方向に行ったり来たり激しくガチャガチャやると
+	　　グラフがギザギザになるばかりではなく　軸がブレることまであった
+
+	　原因
+	　　SSE2による計算で誤差が蓄積したためのようだ
+	　　例えば　スケール編集していないのに　スケール値1.0であるべきところが　0.96になっていたりした
+
+	　対策
+	　　ChaVecCalc.cppのSSE2部分を　double計算に戻した
+	　　編集の繰り返しにより　スケール値が狂っていくので　ワンタッチで初期化するボタンを追加
+	　　ToolWindow-->"ScaleAllInit(ギザギザしたら押す)"ボタン
+	　　このボタンは　全フレームを選択後　ToolWindow-->姿勢初期化 init-->AllBones-->InitScaleを実行するのと同じ機能を持つ
+	　　ギザギザする前までUndoを実行してから　"ScaleAllInit(ギザギザしたら押す)"ボタンを押す
+
+	　対策結果
+	　　ToolWindow-->"ScaleAllInit(ギザギザしたら押す)"ボタン により　グラフのギザギザの件は解決
+
+
+	  対策その２
+	　　スケール値の自動保持機能として　ローカルSRT組み立ての最後の段階で　スケールだけ計算し直すことにした
+	　　ChaVecCalc.cppの　ChaMatrixKeepScale()にて対応
+
+	　対策結果その２
+	　　更にギザギザになりにくくなった(が　完全ではないので　ScaleAllInitボタンは残しておく)
+　　
+
+	サンプル更新
+	　Test/0_VRoid_Winter_B4
+
+
+	トラブルシューティング修正
+	　BecomeJaggedEulerGraph_OnIK.docxを修正
+	　ACaseThatTranslationOfResultOfRetargetDontMove.docxを削除
+
 
 
 2023/02/09
