@@ -562,7 +562,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 
 /*
-* 2023/02/11
+* 2023/02/12
 * EditMot 1.2.0.11へ向けて
 * 
 * モーションを持たないfbx対応
@@ -613,6 +613,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　対策結果その２
 * 　　更にギザギザになりにくくなった(が　完全ではないので　ScaleAllInitボタンは残しておく)
 * 　　
+* 
+* ギザグラフに関する調査
+* 　上記の対策をしたところ　LimitEulオフまたはLimitEulとWallScrapingIKオンのときには
+* 　IK時のオイラーグラフはギザギザしなくなった
+* 　しかし　LimitEulオンでWallScrapingIKオフの時　グラフが小さく波打つ現象が出る
+* 　この波打ちは　計算誤差の蓄積ではなく　制限角度ぎりぎりで　止まったり動いたりすることによるようだ
+* 　IKにより　XYZのうちのどれかが制限に引っ掛かるとXYZ全てが動かないので　波打つのであろう
+* 　その根拠としては　
+* 　制限角度をオフにしたときには　波打たないこと
+* 　制限角度と壁すりIKを両方オンにした時にも　波打たないこと
+* 　そして　CBone::SetWorldMat()において　
+* 　ismoving == 0のときの処理を変えることで　波打ちの症状が変わるからである
+*  
+* 
+* テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
+* 
 * 
 * サンプル更新
 * 　Test/0_VRoid_Winter_B4
@@ -29616,6 +29632,10 @@ int OnMouseMoveFunc()
 
 
 			ChaMatrix befrotmat, rotmaty, rotmatxz, aftrotmat;
+			befrotmat.SetIdentity();//2023/02/12
+			aftrotmat.SetIdentity();//2023/02/12
+			rotmaty.SetIdentity();//2023/02/12
+			rotmatxz.SetIdentity();//2023/02/12
 			ChaMatrixTranslation(&befrotmat, -g_camtargetpos.x, -g_camtargetpos.y, -g_camtargetpos.z);
 			ChaMatrixTranslation(&aftrotmat, g_camtargetpos.x, g_camtargetpos.y, g_camtargetpos.z);
 			ChaMatrixRotationAxis(&rotmaty, &rotaxisy, rotxz * (float)DEG2PAI);

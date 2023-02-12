@@ -89,9 +89,9 @@ int CMotionPoint::DestroyObjs()
 
 void CMotionPoint::SetLocalEul(ChaVector3 neweul)
 {
-	if (IsSameEul(neweul, m_localeul) == 0){
+	//if (IsSameEul(neweul, m_localeul) == 0){
 		m_localeul = neweul;
-	}
+	//}
 };
 
 /*

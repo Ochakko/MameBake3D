@@ -11316,8 +11316,8 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			}
 
 			float rotrad2 = currate * rotrad;
-			//float rotrad2 = rotrad;
-			//if (fabs(rotrad2) < (0.020 * DEG2PAI)){
+			////float rotrad2 = rotrad;
+			////if (fabs(rotrad2) < (0.020 * DEG2PAI)){
 			if (fabs(rotrad2) < (0.020 * DEG2PAI)) {
 				break;
 			}
@@ -11396,13 +11396,20 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 				//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 				int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
 				if (ismovable == 0) {
-					g_underIKRot = false;//2023/01/14 parent limited or not
-					if (editboneforret) {
-						return editboneforret->GetBoneNo();
-					}
-					else {
-						return srcboneno;
-					}
+					//g_underIKRot = false;//2023/01/14 parent limited or not
+					//if (editboneforret) {
+					//	return editboneforret->GetBoneNo();
+					//}
+					//else {
+					//	return srcboneno;
+					//}
+
+
+					//2023/02/12 returnやめ　動くボーンは動かすことに
+					lastbone = curbone;
+					curbone = curbone->GetParent();
+					levelcnt++;
+					continue;
 				}
 			}
 

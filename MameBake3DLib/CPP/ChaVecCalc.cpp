@@ -438,7 +438,10 @@ int IsSameEul(ChaVector3 srceul1, ChaVector3 srceul2)
 	diffeul = srceul1 - srceul2;
 
 	//float dmin = 0.000015f;
-	float dmin = 0.00010f;//(degree)
+	//float dmin = 0.00010f;//(degree)
+	//float dmin = 0.00050f;//(degree)
+	//float dmin = 0.000010f;//(degree)
+	float dmin = 0.10f;//(degree)
 
 	if ((fabs(diffeul.x) <= dmin) && (fabs(diffeul.y) <= dmin) && (fabs(diffeul.z) <= dmin)) {
 		retval = 1;
@@ -788,23 +791,23 @@ ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 
 
 
-	if (((srcsvec.x - 1.0) > 0.0) && ((srcsvec.x - 1.0) < 0.00001)) {
+	if (((srcsvec.x - 1.0) > -0.00003) && ((srcsvec.x - 1.0) < 0.00003)) {
 		srcsvec.x = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (srcsvec.x < 0.00001) {
-		srcsvec.x = 0.00001;//0scale‹ÖŽ~
+	if (srcsvec.x < 0.00003) {
+		srcsvec.x = 0.00003;//0scale‹ÖŽ~
 	}
-	if (((srcsvec.y - 1.0) > 0.0) && ((srcsvec.y - 1.0) < 0.00001)) {
+	if (((srcsvec.y - 1.0) > -0.00003) && ((srcsvec.y - 1.0) < 0.00003)) {
 		srcsvec.y = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (srcsvec.y < 0.00001) {
-		srcsvec.y = 0.00001;//0scale‹ÖŽ~
+	if (srcsvec.y < 0.00003) {
+		srcsvec.y = 0.00003;//0scale‹ÖŽ~
 	}
-	if (((srcsvec.z - 1.0) > 0.0) && ((srcsvec.z - 1.0) < 0.00001)) {
+	if (((srcsvec.z - 1.0) > -0.00003) && ((srcsvec.z - 1.0) < 0.00003)) {
 		srcsvec.z = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ð–hŽ~
 	}
-	if (srcsvec.z < 0.00001) {
-		srcsvec.z = 0.00001;//0scale‹ÖŽ~
+	if (srcsvec.z < 0.00003) {
+		srcsvec.z = 0.00003;//0scale‹ÖŽ~
 	}
 	keepvecx = vecx0 * srcsvec.x;
 	keepvecy = vecy0 * srcsvec.y;

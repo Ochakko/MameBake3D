@@ -95,7 +95,7 @@
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ControlFlowGuard>false</ControlFlowGuard>
@@ -143,7 +143,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ControlFlowGuard>Guard</ControlFlowGuard>
