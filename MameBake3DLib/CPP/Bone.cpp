@@ -3276,7 +3276,8 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 		else {
 			bool directsetflag = false;
 			int onlycheckflag = 0;
-			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+			int setchildflag = 1;
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm, onlycheckflag);
 		}		
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
