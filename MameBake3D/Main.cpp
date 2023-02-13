@@ -633,6 +633,14 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 	自動で　フィルターを掛けて　滑らかに
 *
 * 
+* ScaleAllInit(ギザギザしたら押すボタン)押下時に
+*	滑らかにするためのフィルターも呼ぶことに(2023/02/13)
+* 
+* 
+* スプライトボタンとしてSmoothボタンを追加(2023/02/13)
+* 　ワンボタンで　選択フレーム　選択ジョイント(IK階層数２以上の場合はdeeper)　平滑化５回
+* 
+* 
 * テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
 * 
 * 
@@ -1685,6 +1693,7 @@ static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static int  s_filterState = 0;
+static bool s_smoothFlag = false;//s_spsmoothボタン用
 static bool s_filternodlg = false;
 static bool s_delmodelFlag = false;
 static bool s_delallmodelFlag = false;
@@ -1856,6 +1865,7 @@ static SPELEM s_sprig[SPRIGMAX];//inactive, active
 //static SPELEM s_spbt;
 static SPELEM s_spret2prev;
 static SPELEM s_spcplw2w;
+static SPELEM s_spsmooth;
 static SPGUISW s_spguisw[SPGUISWNUM];
 static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
 static SPGUISW s_spretargetsw[SPRETARGETSWNUM];
@@ -2338,6 +2348,7 @@ static int OnSpriteUndo();
 static void OnGUIEventSpeed();
 static int SetShowPosTime();
 static int FilterFunc();
+static int CallFilterFunc(int callnum);
 
 
 static void SavePlayingStartEnd();
@@ -2580,6 +2591,8 @@ static int SetSpRigParams();
 static int PickSpRig(POINT srcpos);
 static int SetSpCpLW2WParams();
 static int PickSpCpLW2W(POINT srcpos);
+static int SetSpSmoothParams();
+static int PickSpSmooth(POINT srcpos);
 static int PickRigBone(UIPICKINFO* ppickinfo);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
 
@@ -3437,6 +3450,7 @@ void InitApp()
 	s_selboneFlag = false;
 	s_initmpFlag = false;
 	s_filterState = 0;
+	s_smoothFlag = false;
 	s_filternodlg = false;
 	s_interpolateState = 0;
 	s_skipJointMark = 0;
@@ -3792,6 +3806,7 @@ void InitApp()
 	ZeroMemory(&s_spmousehere, sizeof(SPELEM));
 	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
 	ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
+	ZeroMemory(&s_spsmooth, sizeof(SPELEM));
 	ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
 
 	{
@@ -4524,6 +4539,11 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spcplw2w.sprite);
 	CallF(s_spcplw2w.sprite->Create(pd3dImmediateContext, mpath, L"BakeLW2W.png", 0, 0), return S_FALSE);
 
+	s_spsmooth.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spsmooth.sprite);
+	CallF(s_spsmooth.sprite->Create(pd3dImmediateContext, mpath, L"SmoothFilter.png", 0, 0), return S_FALSE);
+
+
 	s_mousecenteron.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_mousecenteron.sprite);
 	CallF(s_mousecenteron.sprite->Create(pd3dImmediateContext, mpath, L"MouseCenterButtonON.png", 0, 0), return S_FALSE);
@@ -4748,6 +4768,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpCamParams();
 	SetSpRigParams();
 	SetSpCpLW2WParams();
+	SetSpSmoothParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
@@ -5988,6 +6009,13 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete curspcplw2w;
 	}
 	s_spcplw2w.sprite = 0;
+
+	CMySprite* curspsmooth = s_spsmooth.sprite;
+	if (curspsmooth) {
+		delete curspsmooth;
+	}
+	s_spsmooth.sprite = 0;
+
 
 	CMySprite* curspm = s_mousecenteron.sprite;
 	if (curspm) {
@@ -7499,6 +7527,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			}
 		}
 
+		if (PickSpSmooth(ptCursor) != 0) {
+			if (s_smoothFlag == false) {
+				s_smoothFlag = true;
+			}
+		}
+
 		int oprigdoneflag = 0;
 		int pickrigflag = 0;
 		pickrigflag = PickSpRig(ptCursor);
@@ -7777,22 +7811,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		//グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
 		//自動で　フィルターを掛けて　滑らかにする
 		if ((s_ikkind == 0) && (g_limitdegflag == true) && (s_editmotionflag >= 0)) {
-			if (g_iklevel == 1) {
-				s_filterState = 2;//one
-			}
-			else {
-				s_filterState = 3;//deeper
-			}
-			s_filternodlg = true;
-
-			const int callnum = 5;
-			int callcount;
-			for (callcount = 0; callcount < callnum; callcount++) {
-				FilterFunc();
-			}
-
-			s_filterState = 0;
-			s_filternodlg = false;
+			int callnum = 1;
+			CallFilterFunc(callnum);
 		}
 
 
@@ -17977,6 +17997,32 @@ int SetSpCpLW2WParams()
 
 }
 
+int SetSpSmoothParams()
+{
+	if (!s_spsmooth.sprite) {
+		return 0;
+	}
+
+	int spashift = 6;
+	s_spsmooth.dispcenter.x = s_mainwidth - (int)s_spsidemargin - (int)s_spsize - 10;
+	s_spsmooth.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5 + 10;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spsmooth.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spsmooth.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+	if (s_spsmooth.sprite) {
+		CallF(s_spsmooth.sprite->SetPos(disppos), return 1);
+		CallF(s_spsmooth.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
 
 int SetSpMouseHereParams()
 {
@@ -18500,6 +18546,35 @@ int PickSpCpLW2W(POINT srcpos)
 
 	return pickflag;
 }
+
+int PickSpSmooth(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spsmooth.sprite == 0) {
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	int starty = s_spsmooth.dispcenter.y - (int)s_spsize / 2;
+	int endy = starty + (int)s_spsize;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spsmooth.dispcenter.x - (int)s_spsize / 2;
+		int endx = startx + (int)s_spsize;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+
 
 //int PickSpBt(POINT srcpos)
 //{
@@ -22401,6 +22476,13 @@ int OnFrameToolWnd()
 					}
 				}
 
+
+				//2023/02/13
+				//フィルターで滑らかに
+				int callnum = 1;
+				CallFilterFunc(callnum);
+
+
 				if (g_limitdegflag == true) {
 					int updatejointno = s_model->GetTopBone()->GetBoneNo();
 					bool allframeflag = true;
@@ -22767,13 +22849,21 @@ int OnFrameToolWnd()
 	}
 	*/
 
-	if (s_filterState != 0){
-
+	if (s_filterState != 0){//ToolWindowの平滑化ボタン用
 		FilterFunc();
-
 		s_filterState = 0;
 		s_filternodlg = false;
 	}
+	if (s_smoothFlag) {//s_spsmoothボタン用
+		if (s_model && s_model->GetCurMotInfo()) {
+			PrepairUndo();
+			int callnum = 1;
+			CallFilterFunc(callnum);
+			PrepairUndo();
+		}
+		s_smoothFlag = false;
+	}
+
 
 	if (s_btresetFlag == true) {
 		if (s_model) {
@@ -26757,6 +26847,15 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		//	_ASSERT(0);
 		//}
 
+
+		if ((g_previewFlag == 0) && s_spsmooth.sprite) {//プレビュー時は非表示
+			s_spsmooth.sprite->OnRender(pd3dImmediateContext);
+		}
+		else {
+			if (!s_spsmooth.sprite) {
+				_ASSERT(0);
+			}
+		}
 
 	}
 
@@ -38820,3 +38919,23 @@ int FilterFunc()
 	return 0;
 }
 
+int CallFilterFunc(int callnum) 
+{
+	if (g_iklevel == 1) {
+		s_filterState = 2;//one
+	}
+	else {
+		s_filterState = 3;//deeper
+	}
+	s_filternodlg = true;
+
+	int callcount;
+	for (callcount = 0; callcount < callnum; callcount++) {
+		FilterFunc();
+	}
+
+	s_filterState = 0;
+	s_filternodlg = false;
+
+	return 0;
+}

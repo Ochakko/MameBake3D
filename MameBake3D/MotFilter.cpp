@@ -199,9 +199,15 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 	//if (dlgret != IDOK) {
 	//	return 0;//!!!!!!!!!!!!!!!
 	//}
-	m_filtertype = AVGF_GAUSSIAN;
-	m_filtersize = 11;
+	m_filtertype = AVGF_WEIGHTED_MOVING;
+	//m_filtersize = 11;
 
+
+	int framenum = srcendframe - srcstartframe + 1;
+	if (framenum <= 3) {
+		return 0;
+	}
+	m_filtersize = max(3, (framenum / 4));
 
 
 	int frameleng = srcendframe - srcstartframe + 1;
