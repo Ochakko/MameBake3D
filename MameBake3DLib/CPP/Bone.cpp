@@ -5068,30 +5068,21 @@ ChaMatrix CBone::CalcWorldMatFromEul(bool limitdegflag, int inittraflag, int set
 	//	curwm = curmp->GetLimitedWM();
 	//}
 
-
-	ChaMatrix parmat;
-	ChaMatrixIdentity(&parmat);
+	ChaMatrix oldlocalmat;
+	oldlocalmat.SetIdentity();
 	if (GetParent()) {
-		//CMotionPoint* parentmp = GetParent()->GetMotionPoint(srcmotid, roundingframe);
-		//if (parentmp) {
-		//	if (g_limitdegflag == false) {
-		//		parmat = parentmp->GetWorldMat();
-		//	}
-		//	else {
-		//		parmat = parentmp->GetLimitedWM();
-		//	}
-		//}
-		//else {
-		//	parmat.SetIdentity();
-		//}
+		ChaMatrix parmat;
 		parmat = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		oldlocalmat = curwm * ChaMatrixInv(parmat);
 	}
+	else {
+		oldlocalmat = curwm;
+	}
+	ChaMatrix cursmat, currmat, curtmat, curtanimmat;
+	GetSRTandTraAnim(oldlocalmat, GetNodeMat(), &cursmat, &currmat, &curtmat, &curtanimmat);
+
 
 	ChaMatrix newlocalrotmat = CalcLocalRotMatFromEul(srceul, srcmotid, roundingframe);
-
-	ChaMatrix cursmat, currmat, curtmat, curtanimmat;
-	GetSRTandTraAnim((curwm * ChaMatrixInv(parmat)), GetNodeMat(), &cursmat, &currmat, &curtmat, &curtanimmat);
-
 	ChaMatrix newlocalmat;
 	bool sflag = (initscaleflag == 0);
 	bool tanimflag = (inittraflag == 0);

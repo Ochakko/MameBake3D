@@ -422,8 +422,31 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 
 		for (frame = srcstartframe; frame <= srcendframe; frame++) {
 			ChaMatrix befwm = curbone->GetWorldMat(limitdegflag, srcmotid, (double)frame, 0);
-			curbone->SetWorldMatFromEulAndTra(limitdegflag, 1, befwm, m_smootheul[frame - srcstartframe], m_smoothtra[frame - srcstartframe], srcmotid, (double)frame);
+			//curbone->SetWorldMatFromEulAndTra(limitdegflag, 1, befwm, m_smootheul[frame - srcstartframe], m_smoothtra[frame - srcstartframe], srcmotid, (double)frame);
 			//curbone->SetWorldMatFromEul(0, 1, m_smootheul[frame - srcstartframe], srcmotid, (double)frame);
+
+
+			//•ÏX‘O‚Ìscalevec‚ðŽæ“¾
+			ChaMatrix beflocalmat;
+			beflocalmat.SetIdentity();
+			if (curbone->GetParent()) {
+				ChaMatrix parmat;
+				parmat = curbone->GetParent()->GetWorldMat(limitdegflag, srcmotid, (double)frame, 0);
+				beflocalmat = befwm * ChaMatrixInv(parmat);
+			}
+			else {
+				beflocalmat = befwm;
+			}
+			ChaVector3 befsvec, beftvec;
+			ChaMatrix befrmat;
+			GetSRTMatrix(beflocalmat, &befsvec, &befrmat, &beftvec);
+
+			int inittraflag = 0;
+			int setchildflag = 1;//!!!
+			curbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag, setchildflag,
+				befwm, m_smootheul[frame - srcstartframe],
+				befsvec, m_smoothtra[frame - srcstartframe],
+				srcmotid, (double)frame);
 		}
 	}
 	return 0;
