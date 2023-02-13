@@ -641,6 +641,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　ワンボタンで　選択フレーム　選択ジョイント(IK階層数２以上の場合はdeeper)　平滑化５回
 * 
 * 
+* 平滑化機能のデバッグ(2023/02/13)
+* 　実行するたびにピークが後ろにずれたり　いろいろ変だったのを直しました
+* 
+* 
 * テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
 * 
 * 
@@ -22856,9 +22860,11 @@ int OnFrameToolWnd()
 	}
 	if (s_smoothFlag) {//s_spsmoothボタン用
 		if (s_model && s_model->GetCurMotInfo()) {
-			PrepairUndo();
+			//PrepairUndo();
+
 			int callnum = 1;
 			CallFilterFunc(callnum);
+
 			PrepairUndo();
 		}
 		s_smoothFlag = false;
@@ -22984,9 +22990,15 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 
 int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 {
+	//###########################
+	//return operatingjointno
+	//###########################
+
+	int operatingjointno = 0;
+
 	if (!s_model) {
 		_ASSERT(0);
-		return 1;
+		return operatingjointno;
 	}
 
 
@@ -23042,6 +23054,9 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 			if (hasNotMvParFlag == 1){
 				CBone* parentbone = srcbone->GetParent();
 				if (parentbone){
+
+					operatingjointno = parentbone->GetBoneNo();//!!!! For CopyLimitedWorldToWorld()
+
 					CMotionPoint* parmp = parentbone->GetMotionPoint(curmotid, newframe);
 					if (parmp) {
 						ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
@@ -23070,7 +23085,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 		}
 	}
 
-	return 0;
+	return operatingjointno;//!!!!!!!!!!
 }
 
 int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe)
@@ -23105,6 +23120,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	}
 
 	////移動しないボーンのための処理
+	int operatingjointno = 0;
 	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe+=1.0) {
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
@@ -23115,7 +23131,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
 				if ((double)((int)(srcmp.GetFrame() + 0.0001)) == srcframe) {
-					PasteNotMvParMotionPoint(srcbone, srcmp, dstframe);
+					operatingjointno = PasteNotMvParMotionPoint(srcbone, srcmp, dstframe);
 				}
 			}
 		}
@@ -23132,7 +23148,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		bool allframeflag = false;
 		bool setcursorflag = false;
 		bool onpasteflag = true;
-		CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, 0, onpasteflag);
+		CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 		ApplyNewLimitsToWM(s_model);
 	}
 
@@ -23415,6 +23431,9 @@ int OnSpriteUndo()
 	s_underoperation = true;
 
 
+	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+
 	bool undodoneflag = false;
 	double tmpselectstart = 1.0;
 	double tmpselectend = 1.0;
@@ -23540,6 +23559,17 @@ int OnSpriteUndo()
 			//	ApplyNewLimitsToWM(s_model);//2022/12/18
 			//}
 
+			//limitedへの変更を　worldに反映
+			if (g_limitdegflag == true) {
+				bool allframeflag = false;
+				bool setcursorflag = false;
+				bool onpasteflag = false;
+				int operatingjointno = 0;
+				if (s_model && s_model->GetTopBone()) {
+					operatingjointno = s_model->GetTopBone()->GetBoneNo();
+				}
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+			}
 
 			refreshEulerGraph();
 
@@ -23559,6 +23589,11 @@ int OnSpriteUndo()
 	s_redoFlag = false;
 
 	s_underoperation = false;
+
+
+	if (oldcursor != NULL) {
+		SetCursor(oldcursor);
+	}
 
 	return 0;
 
@@ -38838,9 +38873,10 @@ int FilterFunc()
 		//if (s_model){
 		//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		//}
-		if (s_model && (s_filternodlg == false)) {
-			PrepairUndo();
-		}
+
+		//if (s_model && (s_filternodlg == false)) {
+		//	PrepairUndo();
+		//}
 
 		if (s_model && s_model->GetCurMotInfo()) {
 			if (s_owpTimeline && s_owpLTimeline) {
@@ -38898,6 +38934,7 @@ int FilterFunc()
 								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 							}
 							refreshEulerGraph();
+
 							PrepairUndo();
 						}
 
@@ -38921,18 +38958,49 @@ int FilterFunc()
 
 int CallFilterFunc(int callnum) 
 {
-	if (g_iklevel == 1) {
-		s_filterState = 2;//one
-	}
-	else {
-		s_filterState = 3;//deeper
-	}
-	s_filternodlg = true;
+	if (s_model && s_model->GetCurMotInfo()) {
+		if (g_iklevel == 1) {
+			s_filterState = 2;//one
+		}
+		else {
+			s_filterState = 3;//deeper
+		}
+		s_filternodlg = true;
 
-	int callcount;
-	for (callcount = 0; callcount < callnum; callcount++) {
-		FilterFunc();
+		int callcount;
+		for (callcount = 0; callcount < callnum; callcount++) {
+			FilterFunc();
+		}
+
+
+		//limitedへの変更を　worldに反映
+		if (g_limitdegflag == true) {
+			bool allframeflag = false;
+			bool setcursorflag = false;
+			bool onpasteflag = false;
+
+			int operatingjointno = 0;
+			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+			if (curbone) {
+				if (curbone->GetParent()) {
+					operatingjointno = curbone->GetParent()->GetBoneNo();
+				}
+				else {
+					operatingjointno = curbone->GetBoneNo();
+				}
+			}
+			else {
+				if (s_model->GetTopBone()) {
+					operatingjointno = s_model->GetTopBone()->GetBoneNo();
+				}
+			}
+			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+		}
+
+
+		UpdateEditedEuler();
 	}
+
 
 	s_filterState = 0;
 	s_filternodlg = false;

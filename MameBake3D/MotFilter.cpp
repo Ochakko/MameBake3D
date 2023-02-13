@@ -199,15 +199,15 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 	//if (dlgret != IDOK) {
 	//	return 0;//!!!!!!!!!!!!!!!
 	//}
-	m_filtertype = AVGF_WEIGHTED_MOVING;
+	//m_filtertype = AVGF_WEIGHTED_MOVING;
 	//m_filtersize = 11;
 
-
+	m_filtertype = AVGF_GAUSSIAN;
 	int framenum = srcendframe - srcstartframe + 1;
 	if (framenum <= 3) {
 		return 0;
 	}
-	m_filtersize = max(3, (framenum / 4));
+	m_filtersize = max(3, (framenum / 10));
 
 
 	int frameleng = srcendframe - srcstartframe + 1;
@@ -290,16 +290,16 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 		//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 		//befeul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcstartframe + 0.0001)), BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitÇÃç¿ïWån
 
-		for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
-			CMotionPoint curmp;
-			curbone->CalcLocalInfo(limitdegflag, srcmotid, (double)frame, &curmp);
+		for (frame = srcstartframe; frame <= srcendframe; frame++) {
+			//CMotionPoint curmp;
+			//curbone->CalcLocalInfo(limitdegflag, srcmotid, (double)frame, &curmp);
 			ChaVector3 cureul = curbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, (double)frame, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitÇÃç¿ïWån
 			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, &befeul);// axiskind = -1 --> m_anglelimitÇÃç¿ïWån
 			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimitÇÃç¿ïWån
 			ChaVector3 curtra = curbone->CalcLocalTraAnim(limitdegflag, srcmotid, (double)frame);
 
-			*(m_eul + frame - (int)(srcstartframe + 0.0001)) = cureul;
-			*(m_tra + frame - (int)(srcstartframe + 0.0001)) = curtra;
+			*(m_eul + frame - srcstartframe) = cureul;
+			*(m_tra + frame - srcstartframe) = curtra;
 			//befeul = cureul;
 			//if ((frame == (int)(srcstartframe + 0.0001)) || IsValidNewEul(cureul, befeul)) {
 			//	befeul = cureul;
@@ -315,22 +315,27 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 			break;
 		case AVGF_MOVING:					//à⁄ìÆïΩãœ
 			//ïΩääâªèàóù
-			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
-				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
-				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
-				for (int k = -half_filtersize; k <= half_filtersize; k++) {
-					int index = frame + k - (int)(srcstartframe + 0.0001);
-					if ((index < 0) || (index >= frameleng)) {
-						tmp_vec3 += m_eul[frame - (int)(srcstartframe + 0.0001)];
-						tmp_pos3 += m_tra[frame - (int)(srcstartframe + 0.0001)];
-					}
-					else {
+			for (frame = srcstartframe; frame <= srcendframe; frame++) {
+				tmp_vec3 = ChaVector3(0.0f, 0.0f, 0.0f);
+				tmp_pos3 = ChaVector3(0.0f, 0.0f, 0.0f);
+				int addcount = 0;
+				for (int k = -m_filtersize; k <= m_filtersize; k++) {
+					int index = frame - srcstartframe + k;
+					if((index >= 0) && (index < frameleng)){
 						tmp_vec3 += m_eul[index];
 						tmp_pos3 += m_tra[index];
+						addcount++;
 					}
 				}
-				m_smootheul[frame - (int)(srcstartframe + 0.0001)] = tmp_vec3 / (float)m_filtersize;
-				m_smoothtra[frame - (int)(srcstartframe + 0.0001)] = tmp_pos3 / (float)m_filtersize;
+				if (addcount > 0) {
+					m_smootheul[frame - srcstartframe] = tmp_vec3 / (float)addcount;
+					m_smoothtra[frame - srcstartframe] = tmp_pos3 / (float)addcount;
+				}
+				else {
+					_ASSERT(0);
+					m_smootheul[frame - srcstartframe] = m_eul[frame - srcstartframe];
+					m_smoothtra[frame - srcstartframe] = m_tra[frame - srcstartframe];
+				}
 			}
 			break;
 
@@ -346,24 +351,29 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 			}
 			denomVal = 1.0 / (double)sumd;
 
-			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
-				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
-				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
-				for (int k = -m_filtersize; k <= 0; k++) {
-					int index = frame + k - (int)(srcstartframe + 0.0001);
-					coef = k + m_filtersize;
-					weightVal = (float)(denomVal * (double)coef);
-					if ((index < 0) || (index >= frameleng)) {
-						tmp_vec3 = tmp_vec3 + m_eul[frame - (int)(srcstartframe + 0.0001)] * weightVal;
-						tmp_pos3 = tmp_pos3 + m_tra[frame - (int)(srcstartframe + 0.0001)] * weightVal;
+			for (frame = srcstartframe; frame <= srcendframe; frame++) {
+				tmp_vec3 = ChaVector3(0.0f, 0.0f, 0.0f);
+				tmp_pos3 = ChaVector3(0.0f, 0.0f, 0.0f);
+				for (int k = -m_filtersize; k <= m_filtersize; k++) {
+					int index = frame - srcstartframe + k;
+					if (k <= 0) {
+						coef = k + m_filtersize;
 					}
 					else {
+						coef = m_filtersize - k;
+					}
+					weightVal = (float)((double)denomVal / 2.0 * (double)coef);
+					if ((index >= 0) && (index < frameleng)) {
 						tmp_vec3 = tmp_vec3 + m_eul[index] * weightVal;
 						tmp_pos3 = tmp_pos3 + m_tra[index] * weightVal;
 					}
+					else {
+						tmp_vec3 = tmp_vec3 + m_eul[frame - srcstartframe] * weightVal;
+						tmp_pos3 = tmp_pos3 + m_tra[frame - srcstartframe] * weightVal;
+					}
 				}
-				m_smootheul[frame - (int)(srcstartframe + 0.0001)] = tmp_vec3;
-				m_smoothtra[frame - (int)(srcstartframe + 0.0001)] = tmp_pos3;
+				m_smootheul[frame - srcstartframe] = tmp_vec3;
+				m_smoothtra[frame - srcstartframe] = tmp_pos3;
 			}
 			break;
 		}
@@ -373,35 +383,38 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 			double normalizeVal = 0.0;
 			float normalDistVal = 0.0;
 
-			int N = m_filtersize - 1;
+			//int N = m_filtersize - 1;
 			int sum = 0;
 			int r = 0;
-			for (int i = 0; i <= N; i++) {
-				sum += Combi(N, i);
+			for (int i = 0; i <= m_filtersize; i++) {
+				sum += Combi(m_filtersize, i);
 			}
 			normalizeVal = 1.0 / (double)sum;
 
-			for (frame = (int)(srcstartframe + 0.0001); frame <= srcendframe; frame++) {
-				tmp_vec3.x = tmp_vec3.y = tmp_vec3.z = 0.0f;
-				tmp_pos3.x = tmp_pos3.y = tmp_pos3.z = 0.0f;
-				for (int k = -half_filtersize; k <= half_filtersize; k++) {
-					int index = frame + k - (int)(srcstartframe + 0.0001);
-					r = k + half_filtersize;
-					if (r > N) {
-						r = N;//!!!!!!!!!!!!!!!!!
-					}
-					normalDistVal = (float)(normalizeVal * (double)Combi(N, r));
-					if ((index < 0) || (index >= frameleng)) {
-						tmp_vec3 = tmp_vec3 + m_eul[frame - (int)(srcstartframe + 0.0001)] * normalDistVal;
-						tmp_pos3 = tmp_pos3 + m_tra[frame - (int)(srcstartframe + 0.0001)] * normalDistVal;
+			for (frame = srcstartframe; frame <= srcendframe; frame++) {
+				tmp_vec3 = ChaVector3(0.0f, 0.0f, 0.0f);
+				tmp_pos3 = ChaVector3(0.0f, 0.0f, 0.0f);
+				for (int k = -m_filtersize; k <= m_filtersize; k++) {
+					int index = frame - srcstartframe + k;
+					if (k <= 0) {
+						r = k + m_filtersize;
 					}
 					else {
+						r = m_filtersize - k;
+					}
+					normalDistVal = (float)((double)normalizeVal / 2.0 *
+						(double)Combi(m_filtersize, r));
+					if ((index >= 0) && (index < frameleng)) {
 						tmp_vec3 = tmp_vec3 + m_eul[index] * normalDistVal;
 						tmp_pos3 = tmp_pos3 + m_tra[index] * normalDistVal;
 					}
+					else {
+						tmp_vec3 = tmp_vec3 + m_eul[frame - srcstartframe] * normalDistVal;
+						tmp_pos3 = tmp_pos3 + m_tra[frame - srcstartframe] * normalDistVal;
+					}
 				}
-				m_smootheul[frame - (int)(srcstartframe + 0.0001)] = tmp_vec3;
-				m_smoothtra[frame - (int)(srcstartframe + 0.0001)] = tmp_pos3;
+				m_smootheul[frame - srcstartframe] = tmp_vec3;
+				m_smoothtra[frame - srcstartframe] = tmp_pos3;
 			}
 
 			break;
