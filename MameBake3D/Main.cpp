@@ -50,7 +50,7 @@ previewflag 5 の再生時にはパラメータを決め打ちを止めた
 
 
 /*
-* 
+*
 * 2021/11/29
 3DウインドウのPseudoLocalのチェックボックスは画面に出なくなりました
 PseudoLocalIKは常にオンになります
@@ -92,25 +92,25 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2022/10/27
-* 
+*
 * タイムラインの選択範囲のスタートとエンドのための変数が何種類もあって分かりづらい件
-* 
+*
 * 次の１から５の５種類もある
 * 1, s_buttonselectstart, s_buttonselectend
 * 2, s_editrange
 * 3, g_motionbrush_startframe, g_motionbrush_endframe
 * 4, g_playingstart, g_playingend
 * 5, s_owpLTimeline->getShowPosTime(), s_owpLTimeline->getShowPosTime() + s_owpEulerGraph->getShowposWidth()
-* 
+*
 * １はロングタイムラインをマウスで選択中にセットする　プレビュー時にカーソルイベントが起きて１フレームだけの選択になったときに曖昧
 * ２も１とほぼ同じだが　タイミングが少し異なる　１と２は片方から片方へ相互にセットしあうことがある
 * ３はロングタイムラインをマウスで選択終了した時にMotionBrushを作成するときにセット　プレビュー中も保持していることが多いがタイムライン選択終了まで曖昧
 * ４はプレビュー時に１が保持されないことを回避するために　プレビューの開始時と終了時に保存とレストアをする
 * ５はタイムラインに実際に表示されている時間の範囲　getShowPosTime()は表示開始ぴったりの値　getShowPoseTime() + getShowposWidth()は実際の表示より少し後方
-* 
+*
 * １から５を用途により使い分ける
 * （こんなことになったのは　プレビュー時に　１フレームだけの選択状態になることが大きい）
-* 
+*
 */
 
 
@@ -119,14 +119,14 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * IKFK　と　オイラーグラフに表示する情報について
 * 回転操作はIK(子供ジョイントをドラッグして親ジョイント中心に回転)
 * 移動操作と拡大操作はFK(操作するジョイント自体をドラッグして　操作するジョイント自体の状態を編集)
-* 
+*
 * 上記のIKとFKの切り替えは　回転、移動、拡大に関する　直感的操作に基づくものと思っている
-* 
+*
 * 回転、移動、拡大を切り替えると　オイラーグラフに表示するジョイント情報も変わる
 * 回転の時には　選択しているジョイントの親のジョイントのオイラー角を表示
 * 移動、拡大時には　選択しているジョイント自身の　移動または拡大情報を表示
 * グラフ上段左側に　赤い字で　操作するジョイントの名前を表示
-* 
+*
 */
 
 /*
@@ -138,8 +138,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 本来は　同じ姿勢でも計算時の軸が異なるとオイラー角も異なる(だがオイラー角は１種類の表示にしている)
 * オイラー角計算時の軸はBONEAXIS_BINDPOSEと同等(GLOBAL以外の場合には　軸にカレントボーンの姿勢を掛けて表示)
 * 操作中、操作後にも各種軸はブレないことを確認
-* 
-* 
+*
+*
 * 2023/01/08追記
 * 何十回もIK時に軸がブレないテストをした
 * 非常にゆっくり動かすテストも何回もした
@@ -149,22 +149,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * Identity状態であるときには　計算せずにIdentityを返すようにした直後に起きた
 * よって　もし問題があるとすれば　IsInit, IsInitMat内における　同値とみなす差異の閾値に問題がある(と思う)
 * 今後　IsInit, IsInitMat内で使用する閾値は調整する可能性がある
-* 
+*
 */
 
 /*
 * 2023/01/10
 * 各種姿勢計算時のParentのLimited姿勢の使い方についてメモ
-* 
+*
 * currentworldmatとしてGetWorldMat(モーション元データ)を使用する場合
 * 親として掛かっているのは　Limitedではない普通のGetParent()->GetWorldMatであるから
 * ローカル行列は　通常通り　localmat = GetWorldMat() * ChaMatrixInv(GetParent()->GetWorldMat())となる
-* 
+*
 * 古いローカル行列において　古いscaleやtraanimを求める　
 * 別途求めたneweulに　制限を掛けて　古いscale, traanimとあわせて　新しいnewlocalmatを求める
-* 
+*
 * 新しいnewlocalをグローバルにするために掛ける親行列は　GetParent()->GetCalclatedLimitedWM()である
-* 
+*
 * そして新しいグローバル行列は　m_curmpにセットするかもしくは　SetLimitedWorldMatにセットする
 *
 * ただしIK操作時には元データに格納するので　parentwmにはLimitedを使う
@@ -178,11 +178,11 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 物理剛体の軸を　変更した通常モーションの軸と合わせることで　処理が簡単になった
 * 剛体の軸は　GetCapsulemat(内部でCalcAxisMatX_RigidBobdyのdir2xflag = false)によって求められる
 *  (2023/01/27修正 : GetCapsulematは GetNodeMatにした　BindPose有りデータでテストして修正した)
-* 
+*
 * 通常モーション-->物理モーション変換：Motion2Bt()
 * 物理モーション-->通常モーション変換：SetBtMotion()
 * 上記両方の変換において　軸を合わせたことにより回転情報がそのままの値で　やり取りできるようになった
-* 
+*
 * 変更により物理シミュがより安定したので　今までの設定のままだと　動きが硬くなった
 * 柔らかい動きにするために　
 * 　g_btcalccntの初期値を３から１　回転バネのスライダー範囲を[0, 1]　STOP_CFMの値を０から0.5　に変更
@@ -190,48 +190,48 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　サンプルの重力値も　大幅に小さく設定
 * 表示回数fps依存で動きが硬くなったり柔らかくなったりする
 * モーション再生スピードによっても　物理シミュ結果は大きく変わります　Speedスライダーで調整
-* 
+*
 * 2023/01/19
 * 修正
 * 剛体のモーションの軸は　dir2xflag=falseだが　剛体のコリジョン形状の軸はdir2xflag=trueにしないと　当たり判定がずれたので修正
 * コリジョン形状の向きも正常になった
 * boxingサンプルのBtCalcCntスライダーは１ではなく３にしないと　こちらでは棒がプルプルした
-* 
+*
 */
 
 /*
 * 2023/01/21
 * 物理シミュの動きが格段に柔らかく　かつ　制限角度が効くように
-* 
+*
 * なぜ私のbulletPhysicsだけ動きが硬いのかとずっとおかしいと思っていたのだが　原因判明＆解決
-* 
+*
 * CBtObject::SetEquilibriumPoint(剛体作成時に呼び出す関数)内にて　setAngularLowerLimitとsetAngularUpperLimitを呼び出している
 * このときのif文が　何年間にも渡って間違っていた
 * 現在の角度から動かないようにする部分が　通常のシミュ時に有効になっていた
 * 修正した
 * 回転バネのスライダー範囲は元に戻した　g_btcalccntの初期値は２にした
-* 
+*
 * 物理シミュの動きが格段に柔らかく　かつ　制限角度が効くようになった
 * と同時に
 * 物理シミュをする場合には　ヘアージョイントに制限角度(*.lmtファイル)を設定し　LimitEulチェックボックスにチェックを入れることが必要になった　
-* 
+*
 * サンプルの物理設定も更新
-* 
+*
 */
 
 /*
 * 2023/01/21
 * 計算されないフレームが出来る潜在的不具合を解決
-* 
+*
 * 時間はdoubleであるが　(int)に丸めた丁度のフレームにしかデータが無いものがいくつかある
 * CBone::GetMotionPoint()とCBone::GetWorldMat()とCBone::SetWorldMat()とCBone::GetLimitedWorldMat()は丁度のフレームにしかデータが無い
 * それらを呼び出す際には　丁度の時間を渡さなければならない
-* 
+*
 * 一方で　プレビュー時には
 * 小数の時間の前後のデータを補間して　滑らかに表示(Speedスライダーの値を小さくして再生しても補間して動く)する
 * 滑らかに表示するための関数には　小数の時間を渡す
 * それらは　CBone::UpdateMatrix()とCBone::GetCalclatedLimitedWM()である
-* 
+*
 */
 
 /*
@@ -246,8 +246,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * TRotにチェックを入れたときのみ　hips以外のジョイントの移動アニメを回転する
 * hipsの移動アニメは常に回転する
 * デフォルト状態でTRotチェックはオフ
-* 
-* 
+*
+*
 * LimitEulにチェックをしている状態で　限界を超えるようにIK回転をガチャガチャしていると
 * オイラーグラフがギザギザになる
 * 緩和策として
@@ -257,13 +257,13 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 関係のないジョイントまで平滑化すると　動きが変わることがあるので
 * 平滑化ボタンを　all, Parent One, Parent Deeperの３種類に増やした
 * 平滑化機能で　ガウシアンを選び　フィルター数として１１を選ぶと　かなり効果がある
-* 
-* 
+*
+*
 */
 
 /*
 * 2023/01/26
-* 
+*
 * 制限角度＋プレビュー --> OK
 * 制限角度＋hips IK のテスト
 * 	0_VRoid_Winter_B1読み込み-->hipsの回転を全部フレーム姿勢初期化-->
@@ -272,18 +272,18 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 	LimitEulチェックオンオフで直った
 * LimitWMの未更新が原因？！
 * 対策として　IK回転関数の呼び出し後に　LimitEulチェック時の処理 --> OK　
-* 
+*
 * 更にテスト
 * LimitEulにチェックを入れて　IKRotする場合
 * 制限角度内に姿勢が収まる部分は　オリジナルの姿勢情報が上書きされる
 * 制限角度内に姿勢が収まらない部分は　オリジナルの姿勢情報のまま
-* 
+*
 * よって　制限でこれ以上動かなくなっているのに　マウスドラッグを続けると
 * LimitEulチェックを外したときに　オイラー角には　段差が出来ている
 * これは上に説明した通りであり　現在の仕様
-* 
+*
 * 制限でドラッグしても動かなくなったら　すぐにドラッグをやめるのがコツ？！
-* 
+*
 * ###############
 * 2023/01/27追記
 * ###############
@@ -296,20 +296,20 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2021/01/27
-* 
+*
 * 物理の動きを改良しながらソースをいじっていたのですが
 * 同じプログラムでも　綺麗に柔らかく髪の毛が揺れる時と　ギクシャク揺れる時とありました
 * どうやら　fpsが100程度出ているときには　柔らかいですが　80程度の時にはもうギクシャクするようです
 * UpdateThreadsスライダとhigh rpmチェックボックスで　なんとか　１００fpsを出るようにしてテストしています
-* 
+*
 * 100fpsを出すために　工夫することとしては　上記のUpdateThreadsとhigh rpmの他に
 * 読み込みモデルの数を出来るだけ減らすことです
 * 読み込んでいるモデル分　再生物理処理が同時に走るからです
-* 
+*
 * モーションfbsを読み込むとモデルデータが作成されます
 * このモーションのモデルデータは　形状のモデルデータにリターゲットした後には削除することをお勧めします
 * そのようにすることで　同時に動くモデル数を減らすことが出来て　fpsが上昇します
-* 
+*
 * プログラムの改良の方は
 * 剛体とコリジョンに余計なモーションの姿勢が掛かっていたのを直しました
 * こちらの環境では　何もしていないのに　跳ね返ったりする現象が　激減しました
@@ -318,38 +318,38 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2023/01/28
-* 
+*
 * 物理の動きを柔らかくする修正をした後のバージョンにおいて
 * 物理シミュ時には　LimitEulチェックボックスにチェックを入れてから　シミュをすることが必須になった
-* 
+*
 * 物理シミュ時の角度制限は　LimitEulチェック時に働く
 * その際には　制限角度を設定するだけで　実際の処理は　bulletPhysicsに任せている
 * 物理シミュの角度制限の仕方は　角度クランプではなく　行きすぎたら戻る力が働くような制限のようだ
-* 
+*
 * そのような物理シミュの角度制限なので
 * BT RECボタンで　物理シミュをベイクした場合
 * LimitEulをチェックしての再生時に　動きがカクカクしていた(シミュ時には滑らかだったのに)
-* 
+*
 * ベイクした物理がカクカクしないように
 * 可動かどうかをチェックする部分において
 * GetBtForce() == 1の場合には　ismovable = 1として扱うようにした
-* 
+*
 * この修正によって
 * 物理シミュのベイク結果再生が　シミュ時と同じ動きになった
-* 
+*
 */
 
 /*
 * 2023/01/28
-* 
+*
 * 上記で表現していたカクカクとは別のカクカクのこと
-* 
+*
 * 物理シミュ時に　物理シミュを指定していないボーンの姿勢が　カクカクしていた
 * 原因は　Kinematic指定しているボーンの物理の姿勢を　モーションの姿勢に適用していたことだった
-* 
+*
 * CBone::GetBtKinFlag() != 0の場合には
 * 物理の姿勢を適用せずに　モーションのGetLimitedWorldMatを適用した
-* 
+*
 * 潜在的な角度制限時の問題にも対応
 * 角度制限時のオイラー角を　CBoneではなく　CMotionPointで時間情報と共に扱うことにした
 * GetLimitedLoalEul, SetLimitedLocalEul追加
@@ -358,9 +358,9 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2023/01/29
-* 
+*
 * 1.1.0.13の制限角度
-* 
+*
 * 1.1.0.13として出来ること
 * 既存のモーションの可動範囲を　ボタン１つで制限角度として設定
 * 可動範囲を越えないように　プレビューとIKを制限可能
@@ -375,19 +375,19 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * オリジナルモーションから　はみ出さないように　制限することは出来るが
 * オリジナルモーションよりも　絞り込むように　制限することが出来ない
 *
-* 
-* 
+*
+*
 * 1.1.0.13以降の課題について
-* 
+*
 * 現在の仕様として
 * オリジナルのモーションと角度制限を施したモーションの２種類保持している
 * 問題になっているのは
 * IK時に角度制限をしたモーションを　オリジナルのモーションにベイクする部分
-* 
+*
 * ローカル回転を求める時に
 * 親の姿勢として　オリジナルと角度制限とどちらが掛かっているか　どちらを掛けるかが難しくなっている
 * 操作が介入するので　余計に難しくなっている
-* 
+*
 * 解決案としては
 * オリジナルに角度制限をベイクするのはやめて
 * オリジナルと編集結果のように分ける
@@ -395,25 +395,25 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 編集結果には編集結果の親行列を掛ける
 * というように明確にする
 * (可能ならば)
-* 
-* 
+*
+*
 */
 
 
 /*
 * 2023/02/01　1.1.0.14に向けて
-* 
+*
 * WorldMatとLimitedWorldMatを別々に扱うように
 * 別々に扱うことにより　ローカル姿勢の計算が確定する
 * 1.1.0.13のときには出来なかった制限角度を既存モーションの角度よりも絞り込んで　子のIKが可能
 *
 * 切り替えはCBone::GetWorldMat, CBone::SetWorldMat内で　g_limitdegflagをみて　切換え
 * 呼び出す側は　CMotionPoint::SetCalcLimitedWMのセットを意識するくらい
-* 
+*
 * 制限角度を変更した場合には
 * CBone::SetWorldMat内で　制限処理を行うので
 * CBone::GetWorldMatしたものを　CBone::SetWorldMatに渡すだけで良い
-* 
+*
 * まだ途中
 * モーションの姿勢に　モデルの位置を　適用していない
 *
@@ -422,45 +422,45 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 /*
 * 2023/02/05
-* 
+*
 * 1.1.0.14の　#### 予定 (plans) ####
-* 
+*
 * [ WorldMatとLimitedWorldMatを別々に扱うようになったことへの対応 ]
 * (対応できたら　このメモの該当項目に　(済)マークを付けていきます)
 * (このメモの項目に全部(済)が付いたら　バージョンは1.2.0.10にします)
-* 
+*
 * 0, モデルの位置を適用　(済 2023/02/02)
 *
 * 1, UpdateMatrixのマルチスレッド復活(一時的にシングルスレッドにしている)　(済 2023/02/02)
-* 
+*
 * 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat のコピーのためのボタン追加　(済 2023/02/04)
 *	制限角度を変更する際　または　LimitEulをオンにした際　自動的にWorldMat-->LimitedWorldMatを行い　そのうえで制限し直す(済 2023/02/03)
-*	
+*
 * 	LimitedWorldMat-->WorldMatのコピーも自動化
 * 		LimitEulにチェックを入れてのIK操作の結果は　編集部分を自動的に　角度制限無し姿勢にコピーする (2023/02/04)
 *
 * 	LimitedWorldMatの全フレームをWorldMatにコピーする機能については　ボタンを新規追加　(2023/02/04)
 *		L2Wボタンを追加
-* 
-* 
+*
+*
 * 3, コピーの際にtempに自動バックアップ　(済 2023/02/05)
 *		アンドゥリドゥで対応
-* 
+*
 * 4, バックアップからの復元ツールボタン　(済 2023/02/05)
 *		アンドゥリドゥで対応
-* 
+*
 * 5, アンドゥリドゥのLimitedWorldMat対応　(済 2023/02/05)
-* 
+*
 * 6, コピーペーストのLimitedWorldMat対応　(済 2023/02/05)
 *		コピー時には　LimitEulのオンオフをみて　該当する方の姿勢をコピー
 *		ペースト時にも　LimitEulのオンオフをみて　該当する方へペースト
 *		ペースト時に　limitedの方へペーストした場合　unlimitedへもペースト　更に　limitedに制限を掛け直す
-* 
+*
 * 7, プロジェクト保存時に　LimitedWorldMat用のファイルも保存　読み込み時にそれをロード　(済 2023/02/06)
 *		LimitedWorldへの編集結果をWorldへベイクする部分を自動化したので
 *		WorldMatを読み込んで　LimitEulをオンにすれば　LimitedWorldは復元される
 *		よって　LimitedWorldを　別ファイルとして保存する必要は無くなった
-* 
+*
 * その他
 * 	オイラー角計算改善　(済 2023/02/03)
 * 		GetBefEul()関数化
@@ -489,13 +489,13 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 		調査中
 *		複数モデル同時シミュ時
 *		物理の制限角度設定に関して　設定の前にしていた仮の設定(制限無し)をコメントアウトしたら直った
-* 
-* 
+*
+*
 * 	制限角度の値のアンドゥリドゥを　するかしないか？
 * 		必要だったので対応　(2023/02/05)
 *
 * 　limitedに対しての姿勢初期化、平滑化、補間についても　IK編集と同様に　結果をunlimitedへコピーする(2023/02/05)
-* 
+*
 */
 
 /*
@@ -521,33 +521,33 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　例えば
 * 　LimitEulオフで０度から８００度まで回転し　LimitEulオンで０度から４５０度(１回転後少し回転したところ)までに制限することも可能に
 * 　(テストジョイントの回転を姿勢初期化で初期化してからテストしました)
-* 
+*
 * 1000fpsで物理シミュをしたら　シミュ開始時に乱れるのを修正
 * 	ロングタイムラインをxボタンで閉じると　表示がすごく速くなります
 * 	1000fps以上出たのですが乱れました
 * 	初期化回数をfps依存にすることで解決
 *
 * 操作対象ボーン(target bone)ウインドウの幅を広く
-* 	ToolWindowの操作対象ボーンボタンを押したときのウインドウの幅を調整 
-* 
+* 	ToolWindowの操作対象ボーンボタンを押したときのウインドウの幅を調整
+*
 * TroubleShootingドキュメント追加
 * 	Documents/TroubleShooting/What_is_L2WButton.docx
 * 	Documents/TroubleShooting/BecomeJaggedEulerGraph_OnIK.docx
 *	Documents/Troubleshooting/ACaseThatTranslationOfResultOfRetargetDontMove.docx
 * 　Documents/Troubleshooting/ACaseThatPhysicsHairTooFluffy.docx
-* 
+*
 * リファクタリング (2023/02/07)
 * 　グローバル変数のオンオフで挟んでの機能切り替えをやめて　引数として渡すことに
 * 　タイミング依存(並列化もあり得る)の潜在的不具合を解消
-* 
+*
 * 姿勢初期化ボタン修正(2023/02/08)
 * 　移動, スケールの初期化の際には　操作対象ジョイントとして選択しているジョイントそのものに処理
 * 　回転の初期化の際には　選択しているジョイントの１つ親のジョイントを処理
-* 
+*
 * モーションを含まないfbxに関する修正
 * 　モーションを含まないfbxに　モーションをリターゲットしたときに　動きがおかしくなる不具合修正
 * 	一応対応しましたが　モーションを含まないfbxは　一度プロジェクト保存して　読み込んでから使うことを推奨
-* 
+*
 * サンプル更新　
 *	Test/0_VRoid_Winter_B3
 *
@@ -562,19 +562,19 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 
 
 /*
-* 2023/02/13
+* 2023/02/14
 * EditMot 1.2.0.11へ向けて
-* 
+*
 * モーションを持たないfbx対応
 * １回目の読み込み後　そのまま作業を続けても　OKになった
-* 
+*
 * CreateIndexedMotionPointが　機能しなくなっていた？のを修正
 * 描画速度のボトルネックは　ロングタイムライン描画なので　fpsは変わらない？
 * モーション再生中に　ロングタイムラインウインドウをxボタンで閉じた場合　
 * 1.2.0.10は1000fps程だったのが　2000fps程になった
 * (こちらの環境にて)
-* 
-* 
+*
+*
 * リファクタリング
 * 　RotBoneQReq, RotAndTraBoneQReqの再帰の仕方が分かりにくかったので修正
 * 　　directset = trueで setchildflag = 1の関数が足りてなかったのが原因？！
@@ -585,35 +585,35 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *   　CBone::SetWorldMat内のグローバル変数による機能選択を再び廃止
 *
 * 　CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointについても上記と同様の修正
-* 
+*
 * 計算精度問題
 * 　症状
 * 　　IK時マウスを逆方向に行ったり来たり激しくガチャガチャやると
 * 　　グラフがギザギザになるばかりではなく　軸がブレることまであった
-* 
+*
 * 　原因
 * 　　SSE2による計算で誤差が蓄積したためのようだ
 * 　　例えば　スケール編集していないのに　スケール値1.0であるべきところが　0.96になっていたりした
-* 
+*
 * 　対策
 * 　　ChaVecCalc.cppのSSE2部分を　double計算に戻した
 * 　　編集の繰り返しにより　スケール値が狂っていくので　ワンタッチで初期化するボタンを追加
 * 　　ToolWindow-->"ScaleAllInit(ギザギザしたら押す)"ボタン
 * 　　このボタンは　全フレームを選択後　ToolWindow-->姿勢初期化 init-->AllBones-->InitScaleを実行するのと同じ機能を持つ
 * 　　ギザギザする前までUndoを実行してから　"ScaleAllInit(ギザギザしたら押す)"ボタンを押す
-* 
+*
 * 　対策結果
 * 　　ToolWindow-->"ScaleAllInit(ギザギザしたら押す)"ボタン により　グラフのギザギザの件は解決
-* 
-* 
+*
+*
 *   対策その２
 * 　　スケール値の自動保持機能として　ローカルSRT組み立ての最後の段階で　スケールだけ計算し直すことにした
 * 　　ChaVecCalc.cppの　ChaMatrixKeepScale()にて対応
-* 
+*
 * 　対策結果その２
 * 　　更にギザギザになりにくくなった(が　完全ではないので　ScaleAllInitボタンは残しておく)
 * 　　
-* 
+*
 * ギザグラフに関する調査
 * 　上記の対策をしたところ　LimitEulオフまたはLimitEulとWallScrapingIKオンのときには
 * 　IK時のオイラーグラフはギザギザしなくなった
@@ -625,37 +625,42 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　制限角度と壁すりIKを両方オンにした時にも　波打たないこと
 * 　そして　CBone::SetWorldMat()において　
 * 　ismoving == 0のときの処理を変えることで　波打ちの症状が変わるからである
-*  
-* 
+*
+*
 * LimitEulオンでのIKRot後に自動フィルター(2023/02/13)
 * 	IKRot終了時　LimitEulオンで　編集ボーンがあった場合
 * 	グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
 * 	自動で　フィルターを掛けて　滑らかに
 *
-* 
+*
 * ScaleAllInit(ギザギザしたら押すボタン)押下時に
 *	滑らかにするためのフィルターも呼ぶことに(2023/02/13)
-* 
-* 
+*
+*
 * スプライトボタンとしてSmoothボタンを追加(2023/02/13)
 * 　ワンボタンで　選択フレーム　選択ジョイント(IK階層数２以上の場合はdeeper)　平滑化1回
-* 
-* 
+*
+*
 * 平滑化機能のデバッグ(2023/02/13)
 * 　実行するたびにピークが後ろにずれたり　いろいろ変だったのを直しました
+*
 * 
+* よく使うチェックボックスをスプライトボタン化(2023/02/14)
+* 　LimitEulチェックボックスを　LimitEulスプライトボタンに
+* 　関連で　WallScrapingIKチェックボックスも　Scrapingスプライトボタンに
 * 
+*
 * テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
-* 
-* 
+*
+*
 * サンプル更新
 * 　Test/0_VRoid_Winter_B4
-* 
-* 
+*
+*
 * トラブルシューティング修正
 * 　BecomeJaggedEulerGraph_OnIK.docxを修正
 * 　ACaseThatTranslationOfResultOfRetargetDontMove.docxを削除
-* 
+*
 */
 
 
@@ -1226,7 +1231,7 @@ static int s_underanglelimithscroll = 0;
 static bool s_nowloading = true;
 static void OnRenderNowLoading();
 
-extern map<CModel*,int> g_bonecntmap;
+extern map<CModel*, int> g_bonecntmap;
 extern int gNumIslands;
 extern void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno);
 extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone);
@@ -1479,7 +1484,7 @@ static int s_curboneno = -1;
 static int s_saveboneno = -1;
 static int s_curbaseno = -1;
 static int s_ikcnt = 0;
-static ChaMatrix s_selm = ChaMatrix( 0.0f, 0.0f, 0.0f, 0.0f,
+static ChaMatrix s_selm = ChaMatrix(0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f
@@ -1614,7 +1619,7 @@ static OWP_Label* s_grestlabel = 0;
 static OWP_Slider* s_gfricSlider = 0;
 static OWP_Label* s_gfriclabel = 0;
 
-static OrgWindow* s_toolWnd = 0;		
+static OrgWindow* s_toolWnd = 0;
 static OWP_Separator* s_toolSeparator = 0;
 static OWP_Button* s_toolCopyB = 0;
 static OWP_Button* s_toolZeroFrameB = 0;
@@ -1881,6 +1886,8 @@ static SPGUISW s_spsel3d;
 static SPELEM s_spmousehere;
 static SPGUISW s_spikmodesw[3];
 static SPGUISW s_sprefpos;
+static SPGUISW s_splimiteul;
+static SPGUISW s_spscraping;
 static SPELEM s_mousecenteron;
 
 
@@ -1918,20 +1925,20 @@ static vector<MODELELEM> s_modelindex;
 static MODELBOUND	s_totalmb;
 static int s_curmodelmenuindex = -1;
 
-static WCHAR s_tmpmotname[256] = {0L};
+static WCHAR s_tmpmotname[256] = { 0L };
 static double s_tmpmotframeleng = 100.0f;
 //static double s_tmpmotframeleng = 5640.0f;
 static int s_tmpmotloop = 1;
 
-static WCHAR s_projectname[64] = {0L};
-static WCHAR s_projectdir[MAX_PATH] = {0L};
-static WCHAR s_chapath[MAX_PATH] = {0};
-static WCHAR s_chasavename[64] = {0};
-static WCHAR s_chasavedir[MAX_PATH] = {0};
+static WCHAR s_projectname[64] = { 0L };
+static WCHAR s_projectdir[MAX_PATH] = { 0L };
+static WCHAR s_chapath[MAX_PATH] = { 0 };
+static WCHAR s_chasavename[64] = { 0 };
+static WCHAR s_chasavedir[MAX_PATH] = { 0 };
 
-static WCHAR s_REname[MAX_PATH] = {0L};
-static WCHAR s_Impname[MAX_PATH] = {0L};
-static WCHAR s_Gconame[MAX_PATH] = {0L};
+static WCHAR s_REname[MAX_PATH] = { 0L };
+static WCHAR s_Impname[MAX_PATH] = { 0L };
+static WCHAR s_Gconame[MAX_PATH] = { 0L };
 
 static int s_camtargetflag = 0;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
@@ -2050,7 +2057,7 @@ static void ShowLimitEulerWnd(bool srcflag);
 
 bool g_4kresolution = false;
 
-ChaVector3 g_vCenter( 0.0f, 0.0f, 0.0f );
+ChaVector3 g_vCenter(0.0f, 0.0f, 0.0f);
 
 
 std::vector<void*> g_eulpool;//allocate EULPOOLBLKLEN EulKey at onse and pool 
@@ -2069,10 +2076,10 @@ static void CalcTotalBound();
 //--------------------------------------------------------------------------------------
 //ID3DX11Font*                  g_pFont = NULL;         // Font for drawing text
 //ID3DX11Sprite*                g_pSprite = NULL;       // Sprite for batching draw text calls
-CDXUTTextHelper*              g_pTxtHelper = NULL;
+CDXUTTextHelper* g_pTxtHelper = NULL;
 
 bool                        g_bShowHelp = true;     // If true, it renders the UI control text
-CModelViewerCamera*          g_Camera = 0;// A model viewing camera
+CModelViewerCamera* g_Camera = 0;// A model viewing camera
 //ID3DX11Effect*                g_pEffect = NULL;       // D3DX effect interface
 //ID3DXMesh*                  g_pMesh = NULL;         // Mesh object
 
@@ -2294,7 +2301,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 //void CALLBACK OnD3D9LostDevice(void* pUserContext);
 //void CALLBACK OnD3D9DestroyDevice(void* pUserContext);
 
-bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
+bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo* AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo* DeviceInfo,
 	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext);
 HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
 	void* pUserContext);
@@ -2338,7 +2345,7 @@ void InitApp();
 int CheckResolution();
 
 //HRESULT LoadMesh( ID3D11Device* pd3dDevice, WCHAR* strFileName, ID3DXMesh** ppMesh );
-void RenderText(double fTime );
+void RenderText(double fTime);
 static int RetargetFile(char* fbxpath);
 
 static int OnMouseMoveFunc();
@@ -2418,16 +2425,16 @@ static int InitCurMotion(int selectflag, double expandmotion);
 
 static int OpenChaFile();
 CModel* OpenMQOFile();
-CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag );
+CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag);
 static int OpenREFile();
 static int OpenImpFile();
 static int OpenGcoFile();
 static int OpenMNLFile();
 
-int OnDelMotion( int delindex, bool ondelbutton = false );
-int OnAddMotion( int srcmotid, bool dorefreshtl);
+int OnDelMotion(int delindex, bool ondelbutton = false);
+int OnAddMotion(int srcmotid, bool dorefreshtl);
 
-static int StartBt( CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero );
+static int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero);
 static int StopBt();
 static int GetShaderHandle();
 static int SetBaseDir();
@@ -2454,10 +2461,10 @@ static int SaveImpFile();
 static int SaveGcoFile();
 static int ExportFBXFile();
 
-static void refreshTimeline( OWP_Timeline& timeline ); 
+static void refreshTimeline(OWP_Timeline& timeline);
 static int refreshEulerGraph();
-static int AddBoneTra( int kind, float srctra );
-static int AddBoneTra2( ChaVector3 diffvec );
+static int AddBoneTra(int kind, float srctra);
+static int AddBoneTra2(ChaVector3 diffvec);
 //static int AddBoneTraPhysics(ChaVector3 diffvec);
 
 static int AddBoneScale(int kind, float srctra);
@@ -2514,20 +2521,20 @@ static int InitRotAxis();
 static int RotAxis(HWND hDlgWnd);
 
 static int EraseKeyList();
-static int DestroyTimeLine( int dellist );
-static int AddTimeLine( int newmotid, bool dorefreshtl );
-static int AddMotion( const WCHAR* wfilename, double srcleng = 0.0 );
-static int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag = 1 );
-static int OnRgdMorphMenu( int selindex );
-static int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb );
+static int DestroyTimeLine(int dellist);
+static int AddTimeLine(int newmotid, bool dorefreshtl);
+static int AddMotion(const WCHAR* wfilename, double srcleng = 0.0);
+static int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag = 1);
+static int OnRgdMorphMenu(int selindex);
+static int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb);
 static int OnSetMotSpeed();
 
-static int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu );
+static int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu);
 static int SetTimelineHasRigFlag();
-static int OnREMenu( int selindex, int callbymenu );
-static int OnRgdMenu( int selindex, int callbymenu );
-static int OnImpMenu( int selindex );
-static int OnDelModel( int delindex, bool ondelbutton = false );
+static int OnREMenu(int selindex, int callbymenu);
+static int OnRgdMenu(int selindex, int callbymenu);
+static int OnImpMenu(int selindex);
+static int OnDelModel(int delindex, bool ondelbutton = false);
 static int OnDelAllModel();
 static int refreshModelPanel();
 //static int refreshMotionPanel();
@@ -2546,7 +2553,7 @@ static int CreateConvBoneWnd();
 static int DestroyConvBoneWnd();
 static int SetConvBoneModel();
 static int SetConvBoneBvh();
-static int SetConvBone( int cbno );
+static int SetConvBone(int cbno);
 static int SaveRetargetFile();
 static int LoadRetargetFile(WCHAR* srcfilename);
 static int SaveMotionNameListFile();
@@ -2563,9 +2570,9 @@ static int RetargetMotion();
 //static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
 
-static int CalcTargetPos( ChaVector3* dstpos );
-static int CalcPickRay( ChaVector3* start3d, ChaVector3* end3d );
-static void ActivatePanel( int state );
+static int CalcTargetPos(ChaVector3* dstpos);
+static int CalcPickRay(ChaVector3* start3d, ChaVector3* end3d);
+static void ActivatePanel(int state);
 static int SetCamera6Angle();
 
 //static int SetSelectCol();
@@ -2581,7 +2588,7 @@ static int SetSpMenuAimBarParams();
 static int SetSpAxisParams();
 static int SetSpUndoParams();
 static int SetSpMouseCenterParams();
-static int PickSpAxis( POINT srcpos );
+static int PickSpAxis(POINT srcpos);
 static int PickSpUndo(POINT srcpos);
 static int SetSpGUISWParams();
 static int PickSpGUISW(POINT srcpos);
@@ -2597,6 +2604,11 @@ static int SetSpCpLW2WParams();
 static int PickSpCpLW2W(POINT srcpos);
 static int SetSpSmoothParams();
 static int PickSpSmooth(POINT srcpos);
+static int SetSpLimitEulSWParams();
+static int PickSpLimitEulSW(POINT srcpos);
+static int SetSpScrapingSWParams();
+static int PickSpScrapingSW(POINT srcpos);
+
 static int PickRigBone(UIPICKINFO* ppickinfo);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
 
@@ -2624,10 +2636,10 @@ static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double sr
 
 static void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag);
 
-static int AdjustBoneTra( CBone* curbone, double frame );
-static int CreateTimeLineMark( int topboneno = -1 );
-static void CreateMarkReq( int curboneno, int broflag );
-static int SetLTimelineMark( int curboneno );
+static int AdjustBoneTra(CBone* curbone, double frame);
+static int CreateTimeLineMark(int topboneno = -1);
+static void CreateMarkReq(int curboneno, int broflag);
+static int SetLTimelineMark(int curboneno);
 static int SetTimelineMark();
 static int CreateMotionBrush(double srcstart, double srcend, bool onrefresh);
 
@@ -2740,57 +2752,57 @@ void AboutMotionBrush()
 
 int RegistKey()
 {
-/*
-	CRegistDlg dlg;
-	dlg.DoModal();
+	/*
+		CRegistDlg dlg;
+		dlg.DoModal();
 
-	if( strcmp( s_appkey[ s_appindex ], dlg.m_regkey ) == 0 ){
-		if( s_registflag == 0 ){
-			LONG lret;
-			DWORD dwret;
-			lret = RegCreateKeyExA( HKEY_CURRENT_USER, "Software\\OchakkoLab\\MameBake3D_0003", 0, "",
-				REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &s_hkey, &dwret );
-			if( dwret == REG_CREATED_NEW_KEY ){
-				lret = RegSetValueExA( s_hkey, "registkey", 0, REG_SZ, (LPBYTE)(dlg.m_regkey), sizeof(char) * 36 );
-				if( lret != ERROR_SUCCESS ){
+		if( strcmp( s_appkey[ s_appindex ], dlg.m_regkey ) == 0 ){
+			if( s_registflag == 0 ){
+				LONG lret;
+				DWORD dwret;
+				lret = RegCreateKeyExA( HKEY_CURRENT_USER, "Software\\OchakkoLab\\MameBake3D_0003", 0, "",
+					REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &s_hkey, &dwret );
+				if( dwret == REG_CREATED_NEW_KEY ){
+					lret = RegSetValueExA( s_hkey, "registkey", 0, REG_SZ, (LPBYTE)(dlg.m_regkey), sizeof(char) * 36 );
+					if( lret != ERROR_SUCCESS ){
+						::MessageBoxA( NULL, "エラー　：　レジストに失敗しました。", "レジストエラー", MB_OK );
+					}
+					RegCloseKey( s_hkey );
+					::MessageBoxA( NULL, "成功　：　レジストに成功しました。", "レジスト成功", MB_OK );
+				}else{
 					::MessageBoxA( NULL, "エラー　：　レジストに失敗しました。", "レジストエラー", MB_OK );
 				}
-				RegCloseKey( s_hkey );
-				::MessageBoxA( NULL, "成功　：　レジストに成功しました。", "レジスト成功", MB_OK );
-			}else{
-				::MessageBoxA( NULL, "エラー　：　レジストに失敗しました。", "レジストエラー", MB_OK );
 			}
+		}else{
+			::MessageBoxA( NULL, "エラー　：　不正なレジストキーです。", "レジストエラー", MB_OK );
 		}
-	}else{
-		::MessageBoxA( NULL, "エラー　：　不正なレジストキーです。", "レジストエラー", MB_OK );
-	}
-*/
+	*/
 	return 0;
 }
 
 int IsRegist()
 {
 	s_registflag = 1;
-//	s_registflag = 0;
+	//	s_registflag = 0;
 
-/*
-	LONG lret;
-	lret = RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\OchakkoLab\\MameBake3D_0003", 0, KEY_ALL_ACCESS, &s_hkey );
-	if( lret == ERROR_SUCCESS ){
-		DWORD dwtype;
-		char strkey[37] = {0};
-		DWORD dwsize = 37;
-		lret = RegQueryValueExA( s_hkey, "registkey", NULL, &dwtype, (LPBYTE)strkey, &dwsize );
+	/*
+		LONG lret;
+		lret = RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\OchakkoLab\\MameBake3D_0003", 0, KEY_ALL_ACCESS, &s_hkey );
 		if( lret == ERROR_SUCCESS ){
-			if( dwtype == REG_SZ ){
-				if( strncmp( strkey, s_appkey[ s_appindex ], 36 ) == 0 ){
-					s_registflag = 1;
+			DWORD dwtype;
+			char strkey[37] = {0};
+			DWORD dwsize = 37;
+			lret = RegQueryValueExA( s_hkey, "registkey", NULL, &dwtype, (LPBYTE)strkey, &dwsize );
+			if( lret == ERROR_SUCCESS ){
+				if( dwtype == REG_SZ ){
+					if( strncmp( strkey, s_appkey[ s_appindex ], 36 ) == 0 ){
+						s_registflag = 1;
+					}
 				}
 			}
+			RegCloseKey( s_hkey );
 		}
-		RegCloseKey( s_hkey );
-	}
-*/
+	*/
 
 	return 0;
 }
@@ -2807,11 +2819,11 @@ INT WINAPI wWinMain(
 	_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR lpCmdLine,
-	_In_ int nShowCmd )//SAL付き
+	_In_ int nShowCmd)//SAL付き
 {
-    // Enable run-time memory check for debug builds.
+	// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
-    _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
 	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -2841,7 +2853,7 @@ INT WINAPI wWinMain(
 
 
 	SetBaseDir();
-	
+
 	LoadIniFile();
 
 
@@ -2864,14 +2876,16 @@ INT WINAPI wWinMain(
 				wcscpy_s(strprogno, MAX_PATH, lplpszArgs[i]);
 				s_appcnt = _wtoi(strprogno);
 			}
-		}else if(wcscmp(lplpszArgs[i], L"-diffx") == 0) {
+		}
+		else if (wcscmp(lplpszArgs[i], L"-diffx") == 0) {
 			if ((i + 1) < nArgs) {
 				i++;
 				WCHAR strdiffx[MAX_PATH] = { 0L };
 				wcscpy_s(strdiffx, MAX_PATH, lplpszArgs[i]);
 				s_launchc4diffx = _wtoi(strdiffx);
 			}
-		}else if (wcscmp(lplpszArgs[i], L"-diffy") == 0) {
+		}
+		else if (wcscmp(lplpszArgs[i], L"-diffy") == 0) {
 			if ((i + 1) < nArgs) {
 				i++;
 				WCHAR strdiffy[MAX_PATH] = { 0L };
@@ -2879,7 +2893,7 @@ INT WINAPI wWinMain(
 				s_launchc4diffy = _wtoi(strdiffy);
 			}
 		}
-}
+	}
 
 	LocalFree(lplpszArgs);
 
@@ -2960,8 +2974,8 @@ INT WINAPI wWinMain(
 
 
 	s_doneinit = 0;
-    InitApp();
-	if (s_doneinit != 1){
+	InitApp();
+	if (s_doneinit != 1) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -2972,9 +2986,9 @@ INT WINAPI wWinMain(
 
 
 
-    // Initialize DXUT and create the desired Win32 window and Direct3D 
-    // device for the application. Calling each of these functions is optional, but they
-    // allow you to set several options which control the behavior of the framework.
+	// Initialize DXUT and create the desired Win32 window and Direct3D 
+	// device for the application. Calling each of these functions is optional, but they
+	// allow you to set several options which control the behavior of the framework.
 	HRESULT hr;
 	// Initialize DXUT and create the desired Win32 window and Direct3D 
 	// device for the application. Calling each of these functions is optional, but they
@@ -3003,7 +3017,7 @@ INT WINAPI wWinMain(
 	//}
 
 
-	hr = DXUTInit( true, true ); // Parse the command line and show msgboxes
+	hr = DXUTInit(true, true); // Parse the command line and show msgboxes
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;
@@ -3060,7 +3074,7 @@ INT WINAPI wWinMain(
 	CreateLayerWnd();
 	CreateInfoWnd();
 	CreateSideMenuWnd();
-	CreateMainMenuAimBarWnd();	
+	CreateMainMenuAimBarWnd();
 
 
 
@@ -3073,7 +3087,7 @@ INT WINAPI wWinMain(
 		_ASSERT(0);
 		return 1;
 	}
-	FbxIOSettings * ios = FbxIOSettings::Create(s_psdk, IOSROOT);
+	FbxIOSettings* ios = FbxIOSettings::Create(s_psdk, IOSROOT);
 	s_psdk->SetIOSettings(ios);
 	// Load plugins from the executable directory
 	FbxString lPath = FbxGetApplicationDirectory();
@@ -3086,10 +3100,10 @@ INT WINAPI wWinMain(
 #endif
 	s_psdk->LoadPluginsDirectory(lPath.Buffer(), "dll");
 
-	
+
 	GUIMenuSetVisible(s_platemenukind, s_platemenuno);
 
-	
+
 	//if (!s_eventhook) {
 	HRESULT hr1 = CoInitialize(NULL);
 	if (FAILED(hr1)) {
@@ -3135,14 +3149,14 @@ INT WINAPI wWinMain(
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 
 	// Pass control to DXUT for handling the message pump and 
-    // dispatching render calls. DXUT will call your FrameMove 
-    // and FrameRender callback when there is idle time between handling window messages.
-    DXUTMainLoop();
+	// dispatching render calls. DXUT will call your FrameMove 
+	// and FrameRender callback when there is idle time between handling window messages.
+	DXUTMainLoop();
 
-    // Perform any application-level cleanup here. Direct3D device resources are released within the
-    // appropriate callback functions and therefore don't require any cleanup code here
+	// Perform any application-level cleanup here. Direct3D device resources are released within the
+	// appropriate callback functions and therefore don't require any cleanup code here
 
-    return DXUTGetExitCode();
+	return DXUTGetExitCode();
 }
 
 
@@ -3153,10 +3167,10 @@ int CheckResolution()
 {
 	g_4kresolution = false;
 
-/*
-//基準とする大きさ　mainwindowの大きさ
-(1216 + 450) * 2, (950 - MAINMENUAIMBARH) * 2
-*/
+	/*
+	//基準とする大きさ　mainwindowの大きさ
+	(1216 + 450) * 2, (950 - MAINMENUAIMBARH) * 2
+	*/
 
 	if ((s_appcnt == 0) && (s_launchbyc4 == 0)) {
 
@@ -3226,7 +3240,7 @@ int CheckResolution()
 				}
 				else {
 					g_4kresolution = false;
-				}			
+				}
 			}
 		}
 	}
@@ -3234,7 +3248,7 @@ int CheckResolution()
 
 	if (!g_4kresolution) {
 
-		s_spsize = 45.0f;
+		s_spsize = 38.0f;
 		s_sptopmargin = 35.0f;
 		s_spsidemargin = 35.0f;
 
@@ -3335,7 +3349,7 @@ void InitApp()
 	g_wallscrapingikflag = 0;
 
 	s_ikkind = 0;
-	
+
 
 	//g_wmatDirectSetFlag = false;
 	g_limitdegflag = false;
@@ -3670,7 +3684,7 @@ void InitApp()
 	s_ui_physikstop = 0;
 
 
-	
+
 	bool bsuccess1 = false;
 	bool bsuccess2 = false;
 	if ((s_appcnt == 0) && (s_launchbyc4 == 0)) {//C4から起動時にはゲームパッド未対応。//2021/08/30
@@ -3771,12 +3785,12 @@ void InitApp()
 	s_editrangehistoryno = 0;
 	s_editrangesetindex = 0;
 	s_editrangehistory = new CEditRange[EDITRANGEHISTORYNUM];
-	if (!s_editrangehistory){
+	if (!s_editrangehistory) {
 		_ASSERT(0);
 		return;
 	}
 	int erhno;
-	for (erhno = 0; erhno < EDITRANGEHISTORYNUM; erhno++){
+	for (erhno = 0; erhno < EDITRANGEHISTORYNUM; erhno++) {
 		(s_editrangehistory + erhno)->Clear();
 	}
 
@@ -3789,7 +3803,7 @@ void InitApp()
 	s_convbone_bvh = 0;
 	s_maxboneno = 0;
 	int cbno;
-	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
+	for (cbno = 0; cbno < CONVBONEMAX; cbno++) {
 		s_modelbone[cbno] = 0;
 		s_bvhbone[cbno] = 0;
 		s_modelbone_bone[cbno] = 0;
@@ -3803,7 +3817,7 @@ void InitApp()
 
 
 	ZeroMemory(s_spundo, sizeof(SPELEM) * 2);
-	ZeroMemory(s_spaxis, sizeof( SPAXIS ) * SPAXISNUM);
+	ZeroMemory(s_spaxis, sizeof(SPAXIS) * SPAXISNUM);
 	ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
 	ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
 	//ZeroMemory(&s_spbt, sizeof(SPELEM));
@@ -3845,6 +3859,16 @@ void InitApp()
 		s_sprefpos.state = false;//2021/11/22 ReferencePose Off by default
 	}
 	{
+		ZeroMemory(&s_splimiteul, sizeof(SPGUISW));
+		//s_splimiteul.state = true;
+		s_splimiteul.state = false;
+	}
+	{
+		ZeroMemory(&s_spscraping, sizeof(SPGUISW));
+		//s_spscraping.state = true;
+		s_spscraping.state = false;
+	}
+	{
 		ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
 		int spgno;
 		for (spgno = 0; spgno < SPGUISWNUM; spgno++) {
@@ -3867,20 +3891,20 @@ void InitApp()
 
 	g_bonecntmap.clear();
 
-	ChaMatrixIdentity( &s_inimat );
+	ChaMatrixIdentity(&s_inimat);
 
-    g_bEnablePreshader = true;
+	g_bEnablePreshader = true;
 
-    for( int i = 0; i < MAX_LIGHTS; i++ ){
-        g_LightControl[i].SetLightDirection( 
-			ChaVector3( (float)sin( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ),
-                        0.0f, 
-				        (float)-cos( PI * 2 * ( MAX_LIGHTS - i - 1 ) / MAX_LIGHTS - PI / 6 ) ).D3DX() );
+	for (int i = 0; i < MAX_LIGHTS; i++) {
+		g_LightControl[i].SetLightDirection(
+			ChaVector3((float)sin(PI * 2 * (MAX_LIGHTS - i - 1) / MAX_LIGHTS - PI / 6),
+				0.0f,
+				(float)-cos(PI * 2 * (MAX_LIGHTS - i - 1) / MAX_LIGHTS - PI / 6)).D3DX());
 	}
 
-    g_nActiveLight = 0;
+	g_nActiveLight = 0;
 	g_nNumActiveLights = 1;
-    g_fLightScale = 1.0f;
+	g_fLightScale = 1.0f;
 
 	//CreateUtDialog();
 
@@ -3979,7 +4003,7 @@ bool CALLBACK ModifyDeviceSettings(DXUTDeviceSettings* pDeviceSettings, void* pU
 // Called during device initialization, this code checks the device for some 
 // minimum set of capabilities, and rejects those that don't pass by returning E_FAIL.
 //------------------------------------------------
-bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
+bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo* AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo* DeviceInfo,
 	DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext)
 {
 	return true;
@@ -4116,13 +4140,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	//	NULL, &g_pEffect10, NULL, NULL);
 
 
-	ID3D10Blob*	l_pBlob_Errors = NULL;
+	ID3D10Blob* l_pBlob_Errors = NULL;
 	//hr = D3DX11CreateEffectFromFile(str, NULL, NULL,
 	//	"fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL, NULL,
 	//	&g_pEffect, &l_pBlob_Errors, NULL);
 	//hr = D3DX11CreateEffectFromFile(str, dwShaderFlags, pd3dDevice, &g_pEffect);
 	//HRESULT WINAPI D3DX11CreateEffectFromFile(LPCWSTR pFileName, UINT FXFlags, ID3D11Device *pDevice, ID3DX11Effect **ppEffect)
-	
+
 
 //	//compile shader
 //	ID3DBlob* errorBlob;
@@ -4307,7 +4331,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
 
 
-	
+
 	if (s_undosprite) {
 		delete s_undosprite;
 		s_undosprite = 0;
@@ -4357,6 +4381,23 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_sprefpos.spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_sprefpos.spriteOFF);
 	CallF(s_sprefpos.spriteOFF->Create(pd3dImmediateContext, mpath, L"RefPosOFF.gif", 0, 0), return S_FALSE);
+
+	//SpriteSwitch LimitEul
+	s_splimiteul.spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_splimiteul.spriteON);
+	CallF(s_splimiteul.spriteON->Create(pd3dImmediateContext, mpath, L"LimitEul_ON.png", 0, 0), return S_FALSE);
+	s_splimiteul.spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_splimiteul.spriteOFF);
+	CallF(s_splimiteul.spriteOFF->Create(pd3dImmediateContext, mpath, L"LimitEul_OFF.png", 0, 0), return S_FALSE);
+
+	//SpriteSwitch Scraping
+	s_spscraping.spriteON = new CMySprite(s_pdev);
+	_ASSERT(s_spscraping.spriteON);
+	CallF(s_spscraping.spriteON->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_ON.png", 0, 0), return S_FALSE);
+	s_spscraping.spriteOFF = new CMySprite(s_pdev);
+	_ASSERT(s_spscraping.spriteOFF);
+	CallF(s_spscraping.spriteOFF->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_OFF.png", 0, 0), return S_FALSE);
+
 
 	//SpriteSwitch IKMode
 	s_spikmodesw[0].spriteON = new CMySprite(s_pdev);
@@ -4511,7 +4552,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_spmousehere.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_spmousehere.sprite);
 	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return S_FALSE);
-	
+
 	{
 		WCHAR pngpath[MAX_PATH];
 		swprintf_s(pngpath, MAX_PATH, L"%simg_l105.png", mpath);
@@ -4736,19 +4777,19 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	//V_RETURN(g_SettingsDlg.OnD3D11ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
 
 	// Setup the camera's projection parameters
-	s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
-//    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
-	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-	//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	s_fAspectRatio = pBackBufferSurfaceDesc->Width / (FLOAT)pBackBufferSurfaceDesc->Height;
+	//    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
+		//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+		//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
 	g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
 
-	g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
-	g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
-	
+	g_Camera->SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
+	g_Camera->SetButtonMasks(MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON);
+
 	s_mainwidth = pBackBufferSurfaceDesc->Width;
 	s_mainheight = pBackBufferSurfaceDesc->Height;
-	
-	
+
+
 	g_SampleUI.SetLocation(0, 0);
 	g_SampleUI.SetSize(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
 
@@ -4773,6 +4814,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpRigParams();
 	SetSpCpLW2WParams();
 	SetSpSmoothParams();
+	SetSpLimitEulSWParams();
+	SetSpScrapingSWParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
@@ -4849,7 +4892,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	UNREFERENCED_PARAMETER(pUserContext);
 
 	OrgWindowListenMouse(false);
-	
+
 	SaveIniFile();
 
 	//if (s_updatetimeline) {
@@ -4872,7 +4915,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	//if (s_eventhook) {
 		////UnhookWinEvent(s_eventhook);
 		//s_eventhook = 0;
-		CoUninitialize();
+	CoUninitialize();
 	//}
 
 
@@ -5160,7 +5203,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
 	}
-	
+
 	if (s_copyhistorydlg.GetCreatedFlag() == true) {
 		s_copyhistorydlg.DestroyWindow();
 	}
@@ -5921,6 +5964,32 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_sprefpos.spriteOFF = 0;
 	}
 	{
+		CMySprite* curspgON = s_splimiteul.spriteON;
+		if (curspgON) {
+			delete curspgON;
+		}
+		s_splimiteul.spriteON = 0;
+
+		CMySprite* curspgOFF = s_splimiteul.spriteOFF;
+		if (curspgOFF) {
+			delete curspgOFF;
+		}
+		s_splimiteul.spriteOFF = 0;
+	}
+	{
+		CMySprite* curspgON = s_spscraping.spriteON;
+		if (curspgON) {
+			delete curspgON;
+		}
+		s_spscraping.spriteON = 0;
+
+		CMySprite* curspgOFF = s_spscraping.spriteOFF;
+		if (curspgOFF) {
+			delete curspgOFF;
+		}
+		s_spscraping.spriteOFF = 0;
+	}
+	{
 		int spgno;
 		for (spgno = 0; spgno < SPGUISWNUM; spgno++) {
 			CMySprite* curspgON = s_spguisw[spgno].spriteON;
@@ -6072,7 +6141,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 // intended to contain actual rendering calls, which should instead be placed in the 
 // OnFrameRender callback.  
 //--------------------------------------------------------------------------------------
-void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
+void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 {
 	int callfromik = 0;
 	OnUserFrameMove(fTime, fElapsedTime);
@@ -6166,7 +6235,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 				else {
 					OnTimeLineCursor();
 				}
-				
+
 			}
 			else {
 				g_previewFlag = 0;
@@ -6204,13 +6273,13 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe)
 {
-	if (curbone){
+	if (curbone) {
 		InsertCopyMP(limitdegflag, curbone, curframe);
 
-		if (curbone->GetChild()){
+		if (curbone->GetChild()) {
 			InsertCopyMPReq(limitdegflag, curbone->GetChild(), curframe);
 		}
-		if (curbone->GetBrother()){
+		if (curbone->GetBrother()) {
 			InsertCopyMPReq(limitdegflag, curbone->GetBrother(), curframe);
 		}
 	}
@@ -6235,13 +6304,13 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 	*/
 
 	int rotcenterflag1 = 1;
-	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(limitdegflag, 
+	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(limitdegflag,
 		rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
-	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(limitdegflag, 
+	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(limitdegflag,
 		s_model->GetCurMotInfo()->motid, curframe);
-	ChaVector3 localscale = curbone->CalcLocalScaleAnim(limitdegflag, 
+	ChaVector3 localscale = curbone->CalcLocalScaleAnim(limitdegflag,
 		s_model->GetCurMotInfo()->motid, curframe);
-	
+
 	localmat.data[MATI_41] += curanimtra.x;
 	localmat.data[MATI_42] += curanimtra.y;
 	localmat.data[MATI_43] += curanimtra.z;
@@ -6287,20 +6356,20 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 
 void InsertSymMPReq(bool limitdegflag, CBone* curbone, double curframe, int symrootmode)
 {
-	if (curbone){
+	if (curbone) {
 		InsertSymMP(limitdegflag, curbone, curframe, symrootmode);
 
-		if (curbone->GetChild()){
+		if (curbone->GetChild()) {
 			InsertSymMPReq(limitdegflag, curbone->GetChild(), curframe, symrootmode);
 		}
-		if (curbone->GetBrother()){
+		if (curbone->GetBrother()) {
 			InsertSymMPReq(limitdegflag, curbone->GetBrother(), curframe, symrootmode);
 		}
 	}
 }
 int InsertSymMP(bool limitdegflag, CBone* curbone, double curframe, int symrootmode)
 {
-	ChaMatrix symmat = curbone->CalcSymXMat2(limitdegflag, 
+	ChaMatrix symmat = curbone->CalcSymXMat2(limitdegflag,
 		s_model->GetCurMotInfo()->motid, curframe, symrootmode);
 
 	CPELEM2 cpelem;
@@ -6405,7 +6474,7 @@ void OnRenderNowLoading()
 	COLOR_MENUBAR	29	メニューバーの背景色。
 	 */
 
-	
+
 	HDC hdc;
 	RECT rect;
 	HBRUSH brush;
@@ -6418,7 +6487,7 @@ void OnRenderNowLoading()
 	::FillRect(hdc, &rect, brush);
 	::DeleteObject(brush);
 	::ReleaseDC(s_3dwnd, hdc);
-	
+
 	return;
 
 }
@@ -6441,19 +6510,19 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	//}
 
 
-    //HRESULT hr;
+	//HRESULT hr;
 
-    // If the settings dialog is being shown, then
-    // render it instead of rendering the app's scene
-    //if( g_SettingsDlg.IsActive() )
-    //{
-    //    g_SettingsDlg.OnRender( fElapsedTime );
-    //    return;
-    //}
+	// If the settings dialog is being shown, then
+	// render it instead of rendering the app's scene
+	//if( g_SettingsDlg.IsActive() )
+	//{
+	//    g_SettingsDlg.OnRender( fElapsedTime );
+	//    return;
+	//}
 
-    //// Clear the render target and the zbuffer 
-    //V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
-    //                      0 ) );
+	//// Clear the render target and the zbuffer 
+	//V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR( 0.0f, 0.25f, 0.25f, 0.55f ), 1.0f,
+	//                      0 ) );
 
 
 	// Clear the render target and depth stencil
@@ -6562,7 +6631,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 // efficient text rendering.
 //--------------------------------------------------------------------------------------
 
-void RenderText( double fTime )
+void RenderText(double fTime)
 {
 	static double s_savetime = 0.0;
 	//double g_calcfps;
@@ -6589,103 +6658,103 @@ void RenderText( double fTime )
 
 
 
- //   // The helper object simply helps keep track of text position, and color
- //   // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
- //   // If NULL is passed in as the sprite object, then it will work fine however the 
- //   // pFont->DrawText() will not be batched together.  Batching calls will improves perf.
- //   //CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 15 );
-	////CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 18 );
+	//   // The helper object simply helps keep track of text position, and color
+	//   // and then it calls pFont->DrawText( m_pSprite, strMsg, -1, &rc, DT_NOCLIP, m_clr );
+	//   // If NULL is passed in as the sprite object, then it will work fine however the 
+	//   // pFont->DrawText() will not be batched together.  Batching calls will improves perf.
+	//   //CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 15 );
+	   ////CDXUTTextHelper txtHelper( g_pFont, g_pSprite, 18 );
 
- //   // Output statistics
- //   g_pTxtHelper->Begin();
- //   //g_pTxtHelper->SetInsertionPos( 2, 0 );
-	//g_pTxtHelper->SetInsertionPos(175, 0);
- //   g_pTxtHelper->SetForegroundColor( DirectX::XMFLOAT4( 1.0f, 1.0f, 0.0f, 1.0f ) );
- //   //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
- //   //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
+	//   // Output statistics
+	//   g_pTxtHelper->Begin();
+	//   //g_pTxtHelper->SetInsertionPos( 2, 0 );
+	   //g_pTxtHelper->SetInsertionPos(175, 0);
+	//   g_pTxtHelper->SetForegroundColor( DirectX::XMFLOAT4( 1.0f, 1.0f, 0.0f, 1.0f ) );
+	//   //g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
+	//   //g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
- //   g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
- //   //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
-	////g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
-	////g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
+	//   g_pTxtHelper->SetForegroundColor(DirectX::XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
+	//   //g_pTxtHelper->DrawFormattedTextLine( L"fps : %0.2f fTime: %0.1f, preview %d, btcanccnt %.1f, ERP %.5f", g_calcfps, fTime, g_previewFlag, g_btcalccnt, g_erp );
+	   ////g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f fTime: %0.1f, preview %d", g_calcfps, fTime, g_previewFlag);
+	   ////g_pTxtHelper->DrawFormattedTextLine(L"fps : %0.2f preview : %d mbuttoncnt %d", g_calcfps, g_previewFlag, s_mbuttoncnt);
 
-	////int undoR = 0;
-	////int undoW = 0;
-	////int undo1st = 0;
-	////if (s_model) {
-	////	undoR = s_model->GetCurrentUndoR();
-	////	undoW = s_model->GetCurrentUndoW();
-	////	undo1st = s_model->GetCurrentUndo1st();
-	////}
-	////g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d undoR %d undoW %d undo1st %d", 
-	////	avrgfps, g_previewFlag, s_mbuttoncnt, undoR, undoW ,undo1st);
+	   ////int undoR = 0;
+	   ////int undoW = 0;
+	   ////int undo1st = 0;
+	   ////if (s_model) {
+	   ////	undoR = s_model->GetCurrentUndoR();
+	   ////	undoW = s_model->GetCurrentUndoW();
+	   ////	undo1st = s_model->GetCurrentUndo1st();
+	   ////}
+	   ////g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d undoR %d undoW %d undo1st %d", 
+	   ////	avrgfps, g_previewFlag, s_mbuttoncnt, undoR, undoW ,undo1st);
 
 
-	////g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
-	////	avrgfps, g_previewFlag, s_mbuttoncnt);
+	   ////g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f preview %d mbutton %d",
+	   ////	avrgfps, g_previewFlag, s_mbuttoncnt);
 
-	//g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f", avrgfps);
+	   //g_pTxtHelper->DrawFormattedTextLine(L"fps %0.1f", avrgfps);
 
-	//if (s_onefps == 1) {
-	//	g_pTxtHelper->DrawFormattedTextLine(L" ");
-	//	g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
-	//}
-	//else if (s_onefps == 2) {
-	//	g_pTxtHelper->DrawFormattedTextLine(L" ");
-	//	g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 2 fps");
-	//}
+	   //if (s_onefps == 1) {
+	   //	g_pTxtHelper->DrawFormattedTextLine(L" ");
+	   //	g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 1 fps");
+	   //}
+	   //else if (s_onefps == 2) {
+	   //	g_pTxtHelper->DrawFormattedTextLine(L" ");
+	   //	g_pTxtHelper->DrawFormattedTextLine(L"PlayerButton OneFpsMode : 2 fps");
+	   //}
 
-	////int tmpnum;
-	////double tmpstart, tmpend, tmpapply;
-	////s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
- //   //g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
- //   //g_pTxtHelper->DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
+	   ////int tmpnum;
+	   ////double tmpstart, tmpend, tmpapply;
+	   ////s_editrange.GetRange( &tmpnum, &tmpstart, &tmpend, &tmpapply );
+	//   //g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 0.0f, 1.0f ) );
+	//   //g_pTxtHelper->DrawFormattedTextLine( L"Select Frame : selnum %d, start %.3f, end %.3f, apply %.3f", tmpnum, tmpstart, tmpend, tmpapply );
 
-	////if (s_model && (s_curboneno >= 0)){
-	////	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	////	if (curbone){
-	////		MOTINFO* curmi = s_model->GetCurMotInfo();
-	////		if (curmi){
-	////			const WCHAR* wbonename = curbone->GetWBoneName();
-	////			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	////			int paraxsiflag = 1;
-	////			int isfirstbone = 0;
-	////			cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-	////			ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
-	////			curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
-	////			//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
-	////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone : %s", wbonename);
-	////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
-	////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
-	////		}
-	////	}
-	////}
+	   ////if (s_model && (s_curboneno >= 0)){
+	   ////	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	   ////	if (curbone){
+	   ////		MOTINFO* curmi = s_model->GetCurMotInfo();
+	   ////		if (curmi){
+	   ////			const WCHAR* wbonename = curbone->GetWBoneName();
+	   ////			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	   ////			int paraxsiflag = 1;
+	   ////			int isfirstbone = 0;
+	   ////			cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
+	   ////			ChaVector3 curtra = ChaVector3(0.0f, 0.0f, 0.0f);
+	   ////			curtra = curbone->CalcLocalTraAnim(curmi->motid, curmi->curframe);
+	   ////			//curbone->SetLocalEul(curmi->motid, curmi->curframe, cureul);
+	   ////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone : %s", wbonename);
+	   ////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone eul : (%.6f, %.6f, %.6f)",cureul.x, cureul.y, cureul.z);
+	   ////			g_pTxtHelper->DrawFormattedTextLine(L"selected bone tra : (%.6f, %.6f, %.6f)", curtra.x, curtra.y, curtra.z);
+	   ////		}
+	   ////	}
+	   ////}
 
- //   //// Draw help
- //   //if( g_bShowHelp )
- //   //{
- //   //    const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D11BackBufferSurfaceDesc();
- //   //    g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
- //   //    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
- //   //    g_pTxtHelper->DrawTextLine( L"Controls:" );
+	//   //// Draw help
+	//   //if( g_bShowHelp )
+	//   //{
+	//   //    const D3DSURFACE_DESC* pd3dsdBackBuffer = DXUTGetD3D11BackBufferSurfaceDesc();
+	//   //    g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height - 15 * 6 );
+	//   //    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 0.75f, 0.0f, 1.0f ) );
+	//   //    g_pTxtHelper->DrawTextLine( L"Controls:" );
 
- //   //    g_pTxtHelper->SetInsertionPos( 20, pd3dsdBackBuffer->Height - 15 * 5 );
- //   //    g_pTxtHelper->DrawTextLine( L"Rotate model: Left mouse button\n"
- //   //                            L"Rotate light: Right mouse button\n"
- //   //                            L"Rotate camera: Middle mouse button\n"
- //   //                            L"Zoom camera: Mouse wheel scroll\n" );
+	//   //    g_pTxtHelper->SetInsertionPos( 20, pd3dsdBackBuffer->Height - 15 * 5 );
+	//   //    g_pTxtHelper->DrawTextLine( L"Rotate model: Left mouse button\n"
+	//   //                            L"Rotate light: Right mouse button\n"
+	//   //                            L"Rotate camera: Middle mouse button\n"
+	//   //                            L"Zoom camera: Mouse wheel scroll\n" );
 
- //   //    g_pTxtHelper->SetInsertionPos( 250, pd3dsdBackBuffer->Height - 15 * 5 );
- //   //    g_pTxtHelper->DrawTextLine( L"Hide help: F1\n"
- //   //                            L"Quit: ESC\n" );
- //   //}
- //   //else
- //   //{
- //   //    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
- //   //    g_pTxtHelper->DrawTextLine( L"Press F1 for help" );
- //   //}
+	//   //    g_pTxtHelper->SetInsertionPos( 250, pd3dsdBackBuffer->Height - 15 * 5 );
+	//   //    g_pTxtHelper->DrawTextLine( L"Hide help: F1\n"
+	//   //                            L"Quit: ESC\n" );
+	//   //}
+	//   //else
+	//   //{
+	//   //    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+	//   //    g_pTxtHelper->DrawTextLine( L"Press F1 for help" );
+	//   //}
 
-	//g_pTxtHelper->End();
+	   //g_pTxtHelper->End();
 
 
 	s_savetime = fTime;
@@ -6701,7 +6770,7 @@ void PrepairUndo()
 	//モデル削除時、モーション削除時はSaveUndoしない
 	//UndoRedoボタンを押した場合にはSaveUndoしない
 
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) && 
+	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) &&
 		(s_underdelmotion == 0) && (s_undoFlag == false) && (s_redoFlag == false)) {
 		//2022/09/13 選択範囲だけをアンドゥリドゥするようにした
 		//その影響で選択範囲の未編集状態も保存する必要が生じた
@@ -6725,7 +6794,7 @@ void PrepairUndo()
 			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//長いフレームの保存は数秒時間がかかることがあるので砂時計カーソルにする
 
 			bool allframeflag;
-			if ((s_copyLW2WFlag == true) || (s_changelimitangleFlag == true) || 
+			if ((s_copyLW2WFlag == true) || (s_changelimitangleFlag == true) ||
 				(s_scaleAllInitFlag == true)) {
 				allframeflag = true;
 			}
@@ -6750,8 +6819,8 @@ void PrepairUndo()
 // messages to the application through this callback function. If the application sets 
 // *pbNoFurtherProcessing to TRUE, then DXUT will not process this message.
 //--------------------------------------------------------------------------------------
-LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing,
-                          void* pUserContext )
+LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing,
+	void* pUserContext)
 {
 	if (!s_sampleuihwnd && hWnd && IsWindow(hWnd)) {
 		s_sampleuihwnd = hWnd;
@@ -6777,7 +6846,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	// Always allow dialog resource manager calls to handle global messages
 	// so GUI state is updated correctly
 	//g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
-	*pbNoFurtherProcessing = g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
+	* pbNoFurtherProcessing = g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
 	if (*pbNoFurtherProcessing) {
 		//_ASSERT(0);
 		return 0;
@@ -6841,10 +6910,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		////}
 	}
 
-	if( uMsg == WM_COMMAND ){
+	if (uMsg == WM_COMMAND) {
 
 		WORD menuid;
-		menuid = LOWORD( wParam );
+		menuid = LOWORD(wParam);
 		int modelnum = (int)s_modelindex.size();
 
 		//if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEMODEL)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEMODEL))) {
@@ -7135,44 +7204,50 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 
-		else if( (menuid >= 59900) && (menuid <= (59900 + MAXMOTIONNUM)) ){
-			ActivatePanel( 0 );
+		else if ((menuid >= 59900) && (menuid <= (59900 + MAXMOTIONNUM))) {
+			ActivatePanel(0);
 			int selindex = menuid - 59900;
-			OnAnimMenu( true, selindex );
-			ActivatePanel( 1 );
+			OnAnimMenu(true, selindex);
+			ActivatePanel(1);
 			//return 0;
-		}else if( (menuid >= 61000) && (menuid <= (61000 + MAXMODELNUM)) ){
-			ActivatePanel( 0 );
+		}
+		else if ((menuid >= 61000) && (menuid <= (61000 + MAXMODELNUM))) {
+			ActivatePanel(0);
 			int selindex = menuid - 61000;
-			OnModelMenu( true, selindex, 1 );
-			ActivatePanel( 1 );
+			OnModelMenu(true, selindex, 1);
+			ActivatePanel(1);
 			//return 0;
-		}else if( (menuid >= 62000) && (menuid <= (62000 + MAXRENUM)) ){
-			ActivatePanel( 0 );
+		}
+		else if ((menuid >= 62000) && (menuid <= (62000 + MAXRENUM))) {
+			ActivatePanel(0);
 			int selindex = menuid - 62000;
-			OnREMenu( selindex, 1 );
-			ActivatePanel( 1 );
+			OnREMenu(selindex, 1);
+			ActivatePanel(1);
 			//return 0;
-		}else if( (menuid >= 63000) && (menuid <= (63000 + MAXRENUM)) ){
-			ActivatePanel( 0 );
+		}
+		else if ((menuid >= 63000) && (menuid <= (63000 + MAXRENUM))) {
+			ActivatePanel(0);
 			int selindex = menuid - 63000;
-			OnRgdMenu( selindex, 1 );
-			ActivatePanel( 1 );
+			OnRgdMenu(selindex, 1);
+			ActivatePanel(1);
 			//return 0;
-		}else if( (menuid >= 64000) && (menuid <= (64000 + MAXMOTIONNUM)) ){
-			ActivatePanel( 0 );
+		}
+		else if ((menuid >= 64000) && (menuid <= (64000 + MAXMOTIONNUM))) {
+			ActivatePanel(0);
 			int selindex = menuid - 64000;
-			OnRgdMorphMenu( selindex );
-			ActivatePanel( 1 );
+			OnRgdMorphMenu(selindex);
+			ActivatePanel(1);
 			//return 0;
-		}else if( (menuid >= 64500) && (menuid <= (64500 + MAXMOTIONNUM)) ){
-			ActivatePanel( 0 );
+		}
+		else if ((menuid >= 64500) && (menuid <= (64500 + MAXMOTIONNUM))) {
+			ActivatePanel(0);
 			int selindex = menuid - 64500;
-			OnImpMenu( selindex );
-			ActivatePanel( 1 );
+			OnImpMenu(selindex);
+			ActivatePanel(1);
 			//return 0;
-		}else{
-			switch( menuid ){
+		}
+		else {
+			switch (menuid) {
 			case ID_40047:
 				// "編集・変換"
 				// "ボーン軸をXに再計算"
@@ -7183,29 +7258,29 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//return 0;
 				break;
 			case 29800:
-				ActivatePanel( 0 );
+				ActivatePanel(0);
 				//RegistKey();
 				AboutMotionBrush();
-				ActivatePanel( 1 );
+				ActivatePanel(1);
 				//return 0;
 				break;
 			case ID_FILE_EXPORTBNT:
-				ActivatePanel( 0 );
+				ActivatePanel(0);
 				ExportBntFile();
-				ActivatePanel( 1 );
+				ActivatePanel(1);
 				//return 0;
 				break;
 			case ID_FILE_OPEN40001:
-				ActivatePanel( 0 );
+				ActivatePanel(0);
 				OpenFile();
-				ActivatePanel( 1 );
+				ActivatePanel(1);
 				//return 0;
 				break;
 			case ID_FILE_BVH2FBX:
-				if( s_registflag == 1 ){
-					ActivatePanel( 0 );
+				if (s_registflag == 1) {
+					ActivatePanel(0);
 					BVH2FBX();
-					ActivatePanel( 1 );
+					ActivatePanel(1);
 				}
 				//return 0;
 				break;
@@ -7226,43 +7301,43 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//return 0;
 				break;
 
-/***
-			case ID_SAVE_FBX40039:
-				if( s_registflag == 1 ){
-					ActivatePanel( 0 );
-					ExportFBXFile();
-					ActivatePanel( 1 );
-				}
-				break;
-***/
+				/***
+							case ID_SAVE_FBX40039:
+								if( s_registflag == 1 ){
+									ActivatePanel( 0 );
+									ExportFBXFile();
+									ActivatePanel( 1 );
+								}
+								break;
+				***/
 			case ID_SAVEPROJ_40035:
-				if( s_registflag == 1 ){
-					ActivatePanel( 0 );
+				if (s_registflag == 1) {
+					ActivatePanel(0);
 					SaveProject();
-					ActivatePanel( 1 );
+					ActivatePanel(1);
 				}
 				break;
 			case ID_RESAVE_40028:
-				if( s_registflag == 1 ){
-					ActivatePanel( 0 );
+				if (s_registflag == 1) {
+					ActivatePanel(0);
 					SaveREFile();
-					ActivatePanel( 1 );
+					ActivatePanel(1);
 				}
 				//return 0;
 				break;
 			case ID_IMPSAVE_40030:
-				if( s_registflag == 1 ){
-					ActivatePanel( 0 );
+				if (s_registflag == 1) {
+					ActivatePanel(0);
 					SaveImpFile();
-					ActivatePanel( 1 );
+					ActivatePanel(1);
 				}
 				//return 0;
 				break;
 			case ID_SAVEGCOLI_40033:
-				if( s_registflag == 1 ){
-					ActivatePanel( 0 );
+				if (s_registflag == 1) {
+					ActivatePanel(0);
 					SaveGcoFile();
-					ActivatePanel( 1 );
+					ActivatePanel(1);
 				}
 				//return 0;
 				break;
@@ -7289,7 +7364,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				DispObjPanel();
 				//return 0;
 			}
-				break;
+			break;
 			case ID_40048:
 				//DispConvBoneWindow();
 				s_platemenukind = 2;
@@ -7313,7 +7388,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				DispModelPanel();
 				//return 0;
 			}
-				break;
+			break;
 			case ID_MOTIONPANEL:
 			{
 				bool savedispflag = s_dispmotion;
@@ -7321,13 +7396,13 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				DispMotionPanel();
 				//return 0;
 			}
-				break;
+			break;
 			case ID_SETTINGS:
 			{
 				CSettingsDlg dlg;
 				dlg.DoModal();
 			}
-				break;
+			break;
 
 			case ID_DISPGROUND:
 				s_dispground = !s_dispground;
@@ -7360,7 +7435,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				break;
 			}
 		}
-	}else if( uMsg == WM_MOUSEWHEEL ){
+	}
+	else if (uMsg == WM_MOUSEWHEEL) {
 		if ((g_keybuf['T'] & 0x80) != 0) {
 			if (s_model && (s_curboneno > 0)) {
 				s_tkeyflag = 1;
@@ -7369,7 +7445,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
-				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
+				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
 					&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
 				//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
@@ -7407,9 +7483,10 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		*/
 
 
-	}else if( (uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK) ){
+	}
+	else if ((uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK)) {
 
-		if (s_curboneno >= 0){
+		if (s_curboneno >= 0) {
 			s_saveboneno = s_curboneno;
 		}
 		//s_curboneno = -1;
@@ -7424,14 +7501,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
-			SetCapture(s_3dwnd);
+		SetCapture(s_3dwnd);
 		//}
 		//SetCapture( s_3dwnd );
 
 
 		POINT ptCursor;
-		GetCursorPos( &ptCursor );
-		::ScreenToClient( s_3dwnd, &ptCursor );
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
 
 		{
 			//UndoRedo
@@ -7449,7 +7526,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			{
 				//RollbackCurBoneNo();
 				if ((s_undoFlag == false) && (s_redoFlag == false)) {
-					s_redoFlag = true;					
+					s_redoFlag = true;
 				}
 				//PostMessage(s_mainhwnd, WM_KEYDOWN, VK_CONTROL | VK_SHIFT | 'Z', 0);
 				//PostMessage(s_3dwnd, WM_KEYDOWN, VK_CONTROL | VK_SHIFT | 'Z', 0);
@@ -7460,8 +7537,8 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		s_pickinfo.clickpos = ptCursor;
 		s_pickinfo.mousepos = ptCursor;
 		s_pickinfo.mousebefpos = ptCursor;
-		s_pickinfo.diffmouse = ChaVector2( 0.0f, 0.0f );
-		s_pickinfo.firstdiff = ChaVector2( 0.0f, 0.0f );
+		s_pickinfo.diffmouse = ChaVector2(0.0f, 0.0f);
+		s_pickinfo.firstdiff = ChaVector2(0.0f, 0.0f);
 
 		s_pickinfo.winx = (int)DXUTGetWindowWidth();
 		s_pickinfo.winy = (int)DXUTGetWindowHeight();
@@ -7472,7 +7549,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		int platemenukind = s_platemenukind;
 		int nextplatemenukind = 0;
 		int nextplateno = 0;
-		
+
 
 		//if (s_dispmodel && s_modelpanel.panel && s_modelpanel.separator) {
 		//	
@@ -7522,6 +7599,24 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				s_sprefpos.state = !s_sprefpos.state;
 			}
 		}
+		{
+			//limiteul switch
+			int picklimiteulflag = 0;
+			picklimiteulflag = PickSpLimitEulSW(ptCursor);
+			if (picklimiteulflag == 1) {
+				s_splimiteul.state = !s_splimiteul.state;
+				g_limitdegflag = s_splimiteul.state;//!!!!!
+			}
+		}
+		{
+			//wallscraping switch
+			int pickscrapingflag = 0;
+			pickscrapingflag = PickSpScrapingSW(ptCursor);
+			if (pickscrapingflag == 1) {
+				s_spscraping.state = !s_spscraping.state;
+				g_wallscrapingikflag = (int)s_spscraping.state;//!!!!!!!
+			}
+		}
 
 		//2023/02/04
 		//Bake LimitedWorld-->World : currentmotion fullframe
@@ -7551,12 +7646,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 
 			if (s_oprigflag == 1) {
-				
+
 				//オンだったRigをオフにする
 				RollbackCurBoneNo();
 				ToggleRig();
 				oprigdoneflag = 1;
-				
+
 				s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
 			}
 			else {
@@ -7582,43 +7677,45 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 
 		//s_curboneno = -1;//Sprite Menuより後で。Rigid作成に選択済s_curbonenoが必要。
-		
+
 		int spckind = 0;
 		if (s_spguisw[SPGUISW_CAMERA_AND_IK].state && ((spckind = PickSpCam(ptCursor)) != 0)) {
 			s_pickinfo.buttonflag = spckind;
 			s_pickinfo.pickobjno = -1;
 			RollbackCurBoneNo();
-		}else if (s_model){
+		}
+		else if (s_model) {
 			int spakind = 0;
 			//int pickrigflag = 0;
 			if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 				spakind = PickSpAxis(ptCursor);
 				//pickrigflag = PickSpRig(ptCursor);
 			}
-			if ((spakind != 0) && (s_saveboneno >= 0)){
+			if ((spakind != 0) && (s_saveboneno >= 0)) {
 				RollbackCurBoneNo();
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 
-			//} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
-			//	RollbackCurBoneNo();
-			//	ToggleRig();
+				//} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
+				//	RollbackCurBoneNo();
+				//	ToggleRig();
 
-			}else{
-				if (s_oprigflag == 0){
-					if (g_shiftkey == false){
+			}
+			else {
+				if (s_oprigflag == 0) {
+					if (g_shiftkey == false) {
 						CallF(s_model->PickBone(&s_pickinfo), return 1);
 					}
-					if (s_pickinfo.pickobjno >= 0){
+					if (s_pickinfo.pickobjno >= 0) {
 						s_curboneno = s_pickinfo.pickobjno;//!!!!!!!
 
-						if (s_owpTimeline){
+						if (s_owpTimeline) {
 							s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
 						}
 
 						ChangeCurrentBone();
 
-						
+
 						//if (s_model->GetInitAxisMatX() == 0){//OnAnimMenuに移動
 						//	s_owpLTimeline->setCurrentTime(0.0, true);
 						//	s_owpEulerGraph->setCurrentTime(0.0, false);
@@ -7637,53 +7734,53 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 						//s_pickinfo.firstdiff.y = (float)s_pickinfo.clickpos.y - s_pickinfo.objscreen.y;
 
 					}
-					else{
+					else {
 						//if (g_previewFlag != 5){
-							if (s_dispselect){
-								int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
-								colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
-								colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY");
-								colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ");
-								if (s_ikkind == 0){
-									colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX");
-									colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY");
-									colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ");
-								}
-								else{
-									colliringx = 0;
-									colliringy = 0;
-									colliringz = 0;
-								}
-
-								if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz){
-									RollbackCurBoneNo();
-									s_pickinfo.pickobjno = s_curboneno;
-								}
-
-								if (colliobjx || colliringx){
-									s_pickinfo.buttonflag = PICK_X;
-								}
-								else if (colliobjy || colliringy){
-									s_pickinfo.buttonflag = PICK_Y;
-								}
-								else if (colliobjz || colliringz){
-									s_pickinfo.buttonflag = PICK_Z;
-								}
-								else{
-									ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
-								}
+						if (s_dispselect) {
+							int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
+							colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
+							colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY");
+							colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ");
+							if (s_ikkind == 0) {
+								colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX");
+								colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY");
+								colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ");
 							}
-							else{
+							else {
+								colliringx = 0;
+								colliringy = 0;
+								colliringz = 0;
+							}
+
+							if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz) {
+								RollbackCurBoneNo();
+								s_pickinfo.pickobjno = s_curboneno;
+							}
+
+							if (colliobjx || colliringx) {
+								s_pickinfo.buttonflag = PICK_X;
+							}
+							else if (colliobjy || colliringy) {
+								s_pickinfo.buttonflag = PICK_Y;
+							}
+							else if (colliobjz || colliringz) {
+								s_pickinfo.buttonflag = PICK_Z;
+							}
+							else {
 								ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
-								s_pickinfo.pickobjno = -1;
 							}
+						}
+						else {
+							ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
+							s_pickinfo.pickobjno = -1;
+						}
 						//}
 						//else{
 						//	ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 						//}
 					}
 				}
-				else{
+				else {
 					int pickrigboneno = PickRigBone(&s_pickinfo);
 					if (pickrigboneno < 0) {
 						s_curboneno = -1;
@@ -7700,24 +7797,25 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 				//	}
 				//}
 			}
-		}else{
-			ZeroMemory( &s_pickinfo, sizeof( UIPICKINFO ) );
+		}
+		else {
+			ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 			s_pickinfo.pickobjno = -1;
 		}
 
 		//ChaMatrixIdentity(&s_ikselectmat);
-		if( s_model && (s_curboneno >= 0) ){
-			curbone = s_model->GetBoneByID( s_curboneno );
-			_ASSERT( curbone );
-			if (curbone){
+		if (s_model && (s_curboneno >= 0)) {
+			curbone = s_model->GetBoneByID(s_curboneno);
+			_ASSERT(curbone);
+			if (curbone) {
 				s_saveboneno = s_curboneno;
 
-				if (s_camtargetflag){
+				if (s_camtargetflag) {
 					g_befcamtargetpos = g_camtargetpos;
 					g_camtargetpos = curbone->GetChildWorld();
 				}
 				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi){
+				if (curmi) {
 					//int multworld = 1;
 					//s_ikselectmat = curbone->CalcManipulatorMatrix(0, 0, multworld, curmi->motid, curmi->curframe);//curmotinfo!!!
 					s_ikselectmat = s_selm;
@@ -7744,12 +7842,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
-		s_camdist = (float)ChaVector3LengthDbl( &diffv );
+		s_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 
 		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
 		if (s_model && (g_previewFlag == 5)) {
-			if ((s_pickinfo.pickobjno >= 0)){// && 
+			if ((s_pickinfo.pickobjno >= 0)) {// && 
 				//((s_spguisw[SPGUISW_CAMERA_AND_IK].state == false)) || (PickSpBt(ptCursor) == 0))){//物理IK中でジョイントをクリックしていて、Applyボタンを押していないとき
 				StartBt(s_model, TRUE, 1, 1);
 				//s_model->BulletSimulationStart();
@@ -7757,21 +7855,23 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 		}
 
 
-		if (s_model && (s_curboneno >= 0)){
+		if (s_model && (s_curboneno >= 0)) {
 			SetRigidLeng();
 			SetImpWndParams();
 			SetDmpWndParams();
 			RigidElem2WndParam();
 		}
 
-	}else if( uMsg == WM_MBUTTONDOWN){
+	}
+	else if (uMsg == WM_MBUTTONDOWN) {
 
 	}
-	else if (uMsg == WM_MOUSEMOVE){
+	else if (uMsg == WM_MOUSEMOVE) {
 
 		OnMouseMoveFunc();
 
-	}else if( uMsg == WM_LBUTTONUP ){
+	}
+	else if (uMsg == WM_LBUTTONUP) {
 
 
 
@@ -7790,14 +7890,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
-			ReleaseCapture();
+		ReleaseCapture();
 		//}
 		//ReleaseCapture();
 		s_wmlbuttonup = 1;//ゲームパッド用フラグ
 
 		s_befdeltax = 0.0f;
 
-		if (s_model && (s_onragdollik != 0)){
+		if (s_model && (s_onragdollik != 0)) {
 			//s_model->BulletSimulationStop();
 			//s_model->SetBtKinFlagReq(s_model->GetTopBt(), 1);
 			s_model->BulletSimulationStop();
@@ -7838,7 +7938,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			if (oldcursor != NULL) {
 				SetCursor(oldcursor);
 			}
-			
+
 			s_pickinfo.buttonflag = 0;
 			s_ikcnt = 0;
 			s_onragdollik = 0;
@@ -7856,14 +7956,17 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 			OnSpriteUndo();
 		}
 
-	}else if( uMsg == WM_RBUTTONDOWN ){
-		
+	}
+	else if (uMsg == WM_RBUTTONDOWN) {
+
 		BoneRClick(-1);
 
-	}else if( uMsg == WM_RBUTTONUP ){
+	}
+	else if (uMsg == WM_RBUTTONUP) {
 		//ReleaseCapture();
 		s_pickinfo.buttonflag = 0;
-	}else if( uMsg == WM_MBUTTONUP ){
+	}
+	else if (uMsg == WM_MBUTTONUP) {
 		//ReleaseCapture();
 		s_pickinfo.buttonflag = 0;
 	}
@@ -7911,25 +8014,25 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	*/
 
 
-	if( uMsg == WM_ACTIVATE ){
-		if( wParam == 1 ){
-			DbgOut( L"%f, activate wparam 1\r\n", s_time );
-			ActivatePanel( 1 );
+	if (uMsg == WM_ACTIVATE) {
+		if (wParam == 1) {
+			DbgOut(L"%f, activate wparam 1\r\n", s_time);
+			ActivatePanel(1);
 		}
 	}
-	if( uMsg == WM_SYSCOMMAND ){
-		switch( wParam ){
+	if (uMsg == WM_SYSCOMMAND) {
+		switch (wParam) {
 		case SC_CLOSE:
-			DbgOut( L"%f, syscommand close\r\n", s_time );
+			DbgOut(L"%f, syscommand close\r\n", s_time);
 			break;
 		case SC_MINIMIZE:
-			DbgOut( L"%f, syscommand minimize\r\n", s_time );
-			ActivatePanel( 0 );
+			DbgOut(L"%f, syscommand minimize\r\n", s_time);
+			ActivatePanel(0);
 			break;
 		case SC_MAXIMIZE:
-			DbgOut( L"%f, syscommand maximize\r\n", s_time );
-			DefWindowProc( s_3dwnd, uMsg, wParam, lParam );
-			ActivatePanel( 1 );
+			DbgOut(L"%f, syscommand maximize\r\n", s_time);
+			DefWindowProc(s_3dwnd, uMsg, wParam, lParam);
+			ActivatePanel(1);
 			//return 1;//!!!!!!!!!!!!!
 			break;
 		}
@@ -7941,7 +8044,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	//}
 
 
-    return 0;
+	return 0;
 }
 
 
@@ -7954,19 +8057,19 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 //void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 void CALLBACK OnKeyboard(UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext)
 {
-    if( bKeyDown )
-    {
-        switch( nChar )
-        {
-            case VK_F1:
-                g_bShowHelp = !g_bShowHelp; break;
-        }
-    }
+	if (bKeyDown)
+	{
+		switch (nChar)
+		{
+		case VK_F1:
+			g_bShowHelp = !g_bShowHelp; break;
+		}
+	}
 }
 
 int RollbackCurBoneNo()
 {
-	if ((s_curboneno < 0) && (s_saveboneno >= 0)){
+	if ((s_curboneno < 0) && (s_saveboneno >= 0)) {
 		s_curboneno = s_saveboneno;
 	}
 	return 0;
@@ -7976,10 +8079,10 @@ int RollbackCurBoneNo()
 //--------------------------------------------------------------------------------------
 // Handles the GUI events
 //--------------------------------------------------------------------------------------
-void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext )
+void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext)
 {
 
-    CDXUTComboBox* pComboBox;
+	CDXUTComboBox* pComboBox;
 	ChaVector3 cureul, neweul;
 	//int tmpboneno;
 	//CBone* tmpbone;
@@ -7997,68 +8100,68 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
 
 
-    switch( nControlID )
-    {
-  //      case IDC_ACTIVE_LIGHT:
-  //          if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
-  //          {
-  //              g_nActiveLight++;
-  //              g_nActiveLight %= g_nNumActiveLights;
-  //          }
-  //          break;
-		//
-  //      case IDC_NUM_LIGHTS:
-  //          if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
-  //          {
-  //              WCHAR sz[100];
-  //              swprintf_s( sz, 100, L"# Lights: %d", g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue() );
-  //              g_SampleUI.GetStatic( IDC_NUM_LIGHTS_STATIC )->SetText( sz );
+	switch (nControlID)
+	{
+		//      case IDC_ACTIVE_LIGHT:
+		//          if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
+		//          {
+		//              g_nActiveLight++;
+		//              g_nActiveLight %= g_nNumActiveLights;
+		//          }
+		//          break;
+			  //
+		//      case IDC_NUM_LIGHTS:
+		//          if( !g_LightControl[g_nActiveLight].IsBeingDragged() )
+		//          {
+		//              WCHAR sz[100];
+		//              swprintf_s( sz, 100, L"# Lights: %d", g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue() );
+		//              g_SampleUI.GetStatic( IDC_NUM_LIGHTS_STATIC )->SetText( sz );
 
-  //              g_nNumActiveLights = g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue();
-  //              g_nActiveLight %= g_nNumActiveLights;
-  //          }
-  //          break;
-		case IDC_BTSTART:
-			s_calclimitedwmState = 101;
-			break;
-		case IDC_BTRECSTART:
-			{
-				if (g_motionbrush_numframe < 10) {
-					WCHAR strmes[1024] = {0L};
-					swprintf_s(strmes, 1024, L"複数フレームを選択してから再試行してください。\nRetry after selecting frames range.");
-					::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
-				}
-				else {
-					s_calclimitedwmState = 1001;
-				}
-			}
-			break;
-		case IDC_PHYSICS_IK:
-			s_physicskind = 0;
-			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false, true, true);
-			//g_limitdegflag = false;
-			//if (s_LimitDegCheckBox) {
-			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-			//}
-			StartBt(s_model, TRUE, 1, 1);
-			break;
-		case IDC_PHYSICS_MV_IK:
-			s_physicskind = 1;
-			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false, true, true);
-			//g_limitdegflag = false;
-			//if (s_LimitDegCheckBox) {
-			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-			//}
-			StartBt(s_model, TRUE, 1, 1);
-			break;
-		case IDC_PHYSICS_MV_SLIDER:
-			RollbackCurBoneNo();
-			g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
-			swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
-			g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
-			break;
+		//              g_nNumActiveLights = g_SampleUI.GetSlider( IDC_NUM_LIGHTS )->GetValue();
+		//              g_nActiveLight %= g_nNumActiveLights;
+		//          }
+		//          break;
+	case IDC_BTSTART:
+		s_calclimitedwmState = 101;
+		break;
+	case IDC_BTRECSTART:
+	{
+		if (g_motionbrush_numframe < 10) {
+			WCHAR strmes[1024] = { 0L };
+			swprintf_s(strmes, 1024, L"複数フレームを選択してから再試行してください。\nRetry after selecting frames range.");
+			::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
+		}
+		else {
+			s_calclimitedwmState = 1001;
+		}
+	}
+	break;
+	case IDC_PHYSICS_IK:
+		s_physicskind = 0;
+		s_savelimitdegflag = g_limitdegflag;
+		ChangeLimitDegFlag(false, true, true);
+		//g_limitdegflag = false;
+		//if (s_LimitDegCheckBox) {
+		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+		//}
+		StartBt(s_model, TRUE, 1, 1);
+		break;
+	case IDC_PHYSICS_MV_IK:
+		s_physicskind = 1;
+		s_savelimitdegflag = g_limitdegflag;
+		ChangeLimitDegFlag(false, true, true);
+		//g_limitdegflag = false;
+		//if (s_LimitDegCheckBox) {
+		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+		//}
+		StartBt(s_model, TRUE, 1, 1);
+		break;
+	case IDC_PHYSICS_MV_SLIDER:
+		RollbackCurBoneNo();
+		g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
+		swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
+		g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
+		break;
 		//case IDC_APPLY_BT:
 		//	if (s_model){
 		//		s_model->BulletSimulationStop();
@@ -8066,126 +8169,94 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		//		s_model->ApplyBtToMotion();
 		//	}
 		//	break;
-		case IDC_STOP_BT:
-		case IDC_PHYSICS_IK_STOP:
-			StopBt();
-			//g_limitdegflag = s_savelimitdegflag;//StopBt内で呼ぶ
-			break;
+	case IDC_STOP_BT:
+	case IDC_PHYSICS_IK_STOP:
+		StopBt();
+		//g_limitdegflag = s_savelimitdegflag;//StopBt内で呼ぶ
+		break;
 
-        case IDC_LIGHT_SCALE:
-			RollbackCurBoneNo();
-			g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
+	case IDC_LIGHT_SCALE:
+		RollbackCurBoneNo();
+		g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
 
-            swprintf_s( sz, 100, L"Light : %0.2f", g_fLightScale );
-            //g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
-            break;
+		swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
+		//g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
+		break;
 
-        case IDC_SL_IKFIRST:
-			//RollbackCurBoneNo();
-			//g_ikfirst = (float)(g_SampleUI.GetSlider(IDC_SL_IKFIRST)->GetValue()) * 0.04f;
-		 //   swprintf_s( sz, 100, L"IK Order : %f", g_ikfirst );
-   //         g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
-            break;
-   //     case IDC_SL_IKRATE:
-			//RollbackCurBoneNo();
-			//g_ikrate = (float)(g_SampleUI.GetSlider(IDC_SL_IKRATE)->GetValue()) * 0.01f;
-		 //   swprintf_s( sz, 100, L"IK Trans : %f", g_ikrate );
-   //         g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
-   //         break;
-		case IDC_SL_REFPOS:
-		{
-			RollbackCurBoneNo();
-			g_refpos = g_SampleUI.GetSlider(IDC_SL_REFPOS)->GetValue();
-			double refframe = CalcRefFrame();
-			if (refframe >= 0.0) {
-				swprintf_s(sz, 100, L"RefPos : %d%% : %d", g_refpos, (int)refframe);
-			}
-			else {
-				swprintf_s(sz, 100, L"RefPos : %d%%", g_refpos);
-			}
-			g_SampleUI.GetStatic(IDC_STATIC_REF)->SetText(sz);
-			//CEditRange::SetApplyRate((double)g_refpos);
-			//OnTimeLineSelectFromSelectedKey();
-			//if (s_editmotionflag < 0) {
-			//	int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			//	if (result) {
-			//		_ASSERT(0);
-			//	}
-			//}
+	case IDC_SL_IKFIRST:
+		//RollbackCurBoneNo();
+		//g_ikfirst = (float)(g_SampleUI.GetSlider(IDC_SL_IKFIRST)->GetValue()) * 0.04f;
+	 //   swprintf_s( sz, 100, L"IK Order : %f", g_ikfirst );
+//         g_SampleUI.GetStatic( IDC_STATIC_IKFIRST )->SetText( sz );
+		break;
+		//     case IDC_SL_IKRATE:
+				 //RollbackCurBoneNo();
+				 //g_ikrate = (float)(g_SampleUI.GetSlider(IDC_SL_IKRATE)->GetValue()) * 0.01f;
+			  //   swprintf_s( sz, 100, L"IK Trans : %f", g_ikrate );
+		//         g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
+		//         break;
+	case IDC_SL_REFPOS:
+	{
+		RollbackCurBoneNo();
+		g_refpos = g_SampleUI.GetSlider(IDC_SL_REFPOS)->GetValue();
+		double refframe = CalcRefFrame();
+		if (refframe >= 0.0) {
+			swprintf_s(sz, 100, L"RefPos : %d%% : %d", g_refpos, (int)refframe);
 		}
-			break;
-		case IDC_SL_REFMULT:
-		{
-			RollbackCurBoneNo();
-			g_refmult = g_SampleUI.GetSlider(IDC_SL_REFMULT)->GetValue();
+		else {
+			swprintf_s(sz, 100, L"RefPos : %d%%", g_refpos);
+		}
+		g_SampleUI.GetStatic(IDC_STATIC_REF)->SetText(sz);
+		//CEditRange::SetApplyRate((double)g_refpos);
+		//OnTimeLineSelectFromSelectedKey();
+		//if (s_editmotionflag < 0) {
+		//	int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+		//	if (result) {
+		//		_ASSERT(0);
+		//	}
+		//}
+	}
+	break;
+	case IDC_SL_REFMULT:
+	{
+		RollbackCurBoneNo();
+		g_refmult = g_SampleUI.GetSlider(IDC_SL_REFMULT)->GetValue();
+	}
+	break;
+	case IDC_SL_NUMTHREAD:
+		//RollbackCurBoneNo();
+		//g_numthread = (int)(g_SampleUI.GetSlider(IDC_SL_NUMTHREAD)->GetValue());
+		//swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
+		//g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
+		//s_bpWorld->setNumThread(g_numthread);
+		break;
+	case IDC_SL_UMTHREADS:
+		RollbackCurBoneNo();
+		g_UpdateMatrixThreads = (int)(g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->GetValue());
+		swprintf_s(sz, 100, L"UpdateThreads:%d", g_UpdateMatrixThreads);
+		g_SampleUI.GetStatic(IDC_STATIC_UMTHREADS)->SetText(sz);
+
+		s_changeupdatethreadsFlag = true;
+
+		break;
+	case IDC_BRUSH_MIRROR_U:
+		if (s_BrushMirrorUCheckBox) {
+			g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
+			if (s_editmotionflag < 0) {//IK中でないとき
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
+					_ASSERT(0);
+					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+					PostQuitMessage(result);
+				}
+				//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			}
+			s_BrushMirrorUCheckBoxFlag = true;//UTDialogの
 		}
 		break;
-		case IDC_SL_NUMTHREAD:
-			//RollbackCurBoneNo();
-			//g_numthread = (int)(g_SampleUI.GetSlider(IDC_SL_NUMTHREAD)->GetValue());
-			//swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
-			//g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
-			//s_bpWorld->setNumThread(g_numthread);
-			break;
-		case IDC_SL_UMTHREADS:
-			RollbackCurBoneNo();
-			g_UpdateMatrixThreads = (int)(g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->GetValue());
-			swprintf_s(sz, 100, L"UpdateThreads:%d", g_UpdateMatrixThreads);
-			g_SampleUI.GetStatic(IDC_STATIC_UMTHREADS)->SetText(sz);
-
-			s_changeupdatethreadsFlag = true;
-
-			break;
-		case IDC_BRUSH_MIRROR_U:
-			if (s_BrushMirrorUCheckBox) {
-				g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
-				if (s_editmotionflag < 0) {//IK中でないとき
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
-						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
-						PostQuitMessage(result);
-					}
-					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
-				}
-				s_BrushMirrorUCheckBoxFlag = true;//UTDialogの
-			}
-			break;
-		case IDC_BRUSH_MIRROR_V:
-			if (s_BrushMirrorVCheckBox) {
-				g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
-				if (s_editmotionflag < 0) {//IK中でないとき
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
-						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
-						PostQuitMessage(result);
-					}
-					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
-				}
-				s_BrushMirrorVCheckBoxFlag = true;//UTDialogの
-			}
-			break;
-		case IDC_BRUSH_MIRROR_V_DIV2:
-			if (s_IfMirrorVDiv2CheckBox) {
-				if (s_editmotionflag < 0) {//IK中でないとき
-					g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
-						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
-						PostQuitMessage(result);
-					}
-					//PrepairUndo();//保存はOnFrameUtCheckBoxにて
-				}
-				s_IfMirrorVDiv2CheckBoxFlag = true;//UTDialogの
-			}
-			break;
-		case IDC_SL_BRUSHREPEATS:
-			RollbackCurBoneNo();
-			g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
-			swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
-			g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
+	case IDC_BRUSH_MIRROR_V:
+		if (s_BrushMirrorVCheckBox) {
+			g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
 			if (s_editmotionflag < 0) {//IK中でないとき
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
@@ -8193,22 +8264,92 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
+				//PrepairUndo();//保存はOnFrameUtCheckBoxにて
 			}
-			if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
-			//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE) {
-				s_utBrushRepeatsFlag = true;//PrepairUndo();//保存はOnFrameUtCheckBoxにて
-			}
-			break;
-		case IDC_SL_APPLYRATE:
-			RollbackCurBoneNo();
-			g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
-			CEditRange::SetApplyRate((double)g_applyrate);
-			//swprintf_s( sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()) );
-			//g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
-			OnTimeLineSelectFromSelectedKey();
-			DisplayApplyRateText();
-			SetShowPosTime();//2022/10/22
+			s_BrushMirrorVCheckBoxFlag = true;//UTDialogの
+		}
+		break;
+	case IDC_BRUSH_MIRROR_V_DIV2:
+		if (s_IfMirrorVDiv2CheckBox) {
 			if (s_editmotionflag < 0) {//IK中でないとき
+				g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
+				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
+					_ASSERT(0);
+					::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+					PostQuitMessage(result);
+				}
+				//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			}
+			s_IfMirrorVDiv2CheckBoxFlag = true;//UTDialogの
+		}
+		break;
+	case IDC_SL_BRUSHREPEATS:
+		RollbackCurBoneNo();
+		g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
+		swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
+		g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
+		if (s_editmotionflag < 0) {//IK中でないとき
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
+				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
+			}
+		}
+		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
+		//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE) {
+			s_utBrushRepeatsFlag = true;//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+		}
+		break;
+	case IDC_SL_APPLYRATE:
+		RollbackCurBoneNo();
+		g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
+		CEditRange::SetApplyRate((double)g_applyrate);
+		//swprintf_s( sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()) );
+		//g_SampleUI.GetStatic( IDC_STATIC_APPLYRATE )->SetText( sz );
+		OnTimeLineSelectFromSelectedKey();
+		DisplayApplyRateText();
+		SetShowPosTime();//2022/10/22
+		if (s_editmotionflag < 0) {//IK中でないとき
+			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
+				_ASSERT(0);
+				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+				PostQuitMessage(result);
+			}
+		}
+		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
+		//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE){
+			s_utApplyRateFlag = true;//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+		}
+		break;
+
+	case IDC_SPEED:
+		OnGUIEventSpeed();
+		break;
+	case IDC_BTCALCCNT:
+		RollbackCurBoneNo();
+		g_btcalccnt = (double)(g_SampleUI.GetSlider(IDC_BTCALCCNT)->GetValue());
+
+		swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
+		g_SampleUI.GetStatic(IDC_STATIC_BTCALCCNT)->SetText(sz);
+		break;
+
+	case IDC_ERP:
+		RollbackCurBoneNo();
+		g_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.0002);
+
+		swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
+		g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
+		break;
+	case IDC_COMBO_MOTIONBRUSH_METHOD:
+		RollbackCurBoneNo();
+		if (s_model) {
+			int saveval = g_motionbrush_method;
+			pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
+			g_motionbrush_method = (int)PtrToUlong(pComboBox->GetSelectedData());
+			if (s_editmotionflag < 0) {
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
 				if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
 					_ASSERT(0);
@@ -8216,75 +8357,37 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 					PostQuitMessage(result);
 				}
 			}
-			if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
-			//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE){
-				s_utApplyRateFlag = true;//PrepairUndo();//保存はOnFrameUtCheckBoxにて
+			if (g_motionbrush_method != saveval) {
+				PrepairUndo();
 			}
-			break;
+		}
+		break;
+	case IDC_COMBO_BONEAXIS:
+		RollbackCurBoneNo();
+		if (s_model) {
+			pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
+			g_boneaxis = (int)PtrToUlong(pComboBox->GetSelectedData());
 
-        case IDC_SPEED:
-			OnGUIEventSpeed();
-			break;
-		case IDC_BTCALCCNT:
-			RollbackCurBoneNo();
-			g_btcalccnt = (double)(g_SampleUI.GetSlider(IDC_BTCALCCNT)->GetValue());
+		}
+		break;
+	case IDC_COMBO_BONE:
+		//RollbackCurBoneNo();
+		//if (s_model){
+		//	pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+		//	tmpboneno = (int)PtrToUlong( pComboBox->GetSelectedData() );
+		//	tmpbone = s_model->GetBoneByID( tmpboneno );
+		//	if( tmpbone ){
+		//		s_curboneno = tmpboneno;
+		//	}
 
-			swprintf_s(sz, 100, L"BT CalcCnt: %0.2f", g_btcalccnt);
-			g_SampleUI.GetStatic(IDC_STATIC_BTCALCCNT)->SetText(sz);
-			break;
-
-		case IDC_ERP:
-			RollbackCurBoneNo();
-			g_erp = (double)(g_SampleUI.GetSlider(IDC_ERP)->GetValue() * 0.0002);
-
-			swprintf_s(sz, 100, L"BT ERP: %0.5f", g_erp);
-			g_SampleUI.GetStatic(IDC_STATIC_ERP)->SetText(sz);
-			break;
-		case IDC_COMBO_MOTIONBRUSH_METHOD:
-			RollbackCurBoneNo();
-			if (s_model) {
-				int saveval = g_motionbrush_method;
-				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
-				g_motionbrush_method = (int)PtrToUlong(pComboBox->GetSelectedData());
-				if (s_editmotionflag < 0) {
-					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
-						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
-						PostQuitMessage(result);
-					}
-				}
-				if (g_motionbrush_method != saveval) {
-					PrepairUndo();
-				}
-			}
-			break;
-		case IDC_COMBO_BONEAXIS:
-			RollbackCurBoneNo();
-			if (s_model){
-				pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_BONEAXIS);
-				g_boneaxis = (int)PtrToUlong(pComboBox->GetSelectedData());
-
-			}
-			break;
-		case IDC_COMBO_BONE:
-			//RollbackCurBoneNo();
-			//if (s_model){
-			//	pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-			//	tmpboneno = (int)PtrToUlong( pComboBox->GetSelectedData() );
-			//	tmpbone = s_model->GetBoneByID( tmpboneno );
-			//	if( tmpbone ){
-			//		s_curboneno = tmpboneno;
-			//	}
-
-			//	if( s_curboneno >= 0 ){
-			//		int lineno = s_boneno2lineno[ s_curboneno ];
-			//		if( lineno >= 0 ){
-			//			s_owpTimeline->setCurrentLine( lineno, true );					
-			//		}
-			//	}
-			//}
-			break;
+		//	if( s_curboneno >= 0 ){
+		//		int lineno = s_boneno2lineno[ s_curboneno ];
+		//		if( lineno >= 0 ){
+		//			s_owpTimeline->setCurrentLine( lineno, true );					
+		//		}
+		//	}
+		//}
+		break;
 
 		//case IDC_COMBO_EDITMODE:
 		//	if( s_model ){
@@ -8330,47 +8433,47 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 		//	}
 		//	break;
 
-		case IDC_COMBO_IKLEVEL:
-			RollbackCurBoneNo();
-			pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
-			g_iklevel = (int)PtrToUlong( pComboBox->GetSelectedData() );
-			break;
-		case IDC_CAMTARGET:
-			RollbackCurBoneNo();
-			AutoCameraTarget();
+	case IDC_COMBO_IKLEVEL:
+		RollbackCurBoneNo();
+		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
+		g_iklevel = (int)PtrToUlong(pComboBox->GetSelectedData());
+		break;
+	case IDC_CAMTARGET:
+		RollbackCurBoneNo();
+		AutoCameraTarget();
 
-			break;
-		case IDC_APPLY_TO_THEEND:
-			RollbackCurBoneNo();
-			break;
-		case IDC_SLERP_OFF:
-			RollbackCurBoneNo();
-			break;
+		break;
+	case IDC_APPLY_TO_THEEND:
+		RollbackCurBoneNo();
+		break;
+	case IDC_SLERP_OFF:
+		RollbackCurBoneNo();
+		break;
 		//case IDC_ABS_IK:
-		case IDC_HIGHRPM:
-			RollbackCurBoneNo();
-			break;
-		case IDC_PSEUDOLOCAL:
-			RollbackCurBoneNo();
-			break;
-		case IDC_LIMITDEG:
-			RollbackCurBoneNo();
-			s_LimitDegCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
-			break;
-		case IDC_WALLSCRAPINGIK:
-			RollbackCurBoneNo();
-			s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
-			break;
-		case IDC_VSYNC:
-			RollbackCurBoneNo();
-			break;
-		case IDC_TRAROT:
-			RollbackCurBoneNo();
-			break;
+	case IDC_HIGHRPM:
+		RollbackCurBoneNo();
+		break;
+	case IDC_PSEUDOLOCAL:
+		RollbackCurBoneNo();
+		break;
+	case IDC_LIMITDEG:
+		RollbackCurBoneNo();
+		s_LimitDegCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
+		break;
+	case IDC_WALLSCRAPINGIK:
+		RollbackCurBoneNo();
+		s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
+		break;
+	case IDC_VSYNC:
+		RollbackCurBoneNo();
+		break;
+	case IDC_TRAROT:
+		RollbackCurBoneNo();
+		break;
 
-		default:
-			break;
-	
+	default:
+		break;
+
 	}
 
 }
@@ -8919,14 +9022,14 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 //	}
 //}
 
-int DestroyTimeLine( int dellist )
+int DestroyTimeLine(int dellist)
 {
-	if( dellist ){
+	if (dellist) {
 		EraseKeyList();
 	}
 
 	s_tlarray.clear();
-	
+
 	if (s_parentcheck) {
 		delete s_parentcheck;
 		s_parentcheck = 0;
@@ -8937,54 +9040,54 @@ int DestroyTimeLine( int dellist )
 
 int GetShaderHandle()
 {
-	if( !g_pEffect ){
-		_ASSERT( 0 );
+	if (!g_pEffect) {
+		_ASSERT(0);
 		return 1;
 	}
 
-	g_hRenderBoneL0 = g_pEffect->GetTechniqueByName( "RenderBoneL0" );
-	_ASSERT( g_hRenderBoneL0 );
-	g_hRenderBoneL1 = g_pEffect->GetTechniqueByName( "RenderBoneL1" );
-	_ASSERT( g_hRenderBoneL1 );
-	g_hRenderBoneL2 = g_pEffect->GetTechniqueByName( "RenderBoneL2" );
-	_ASSERT( g_hRenderBoneL2 );
-	g_hRenderBoneL3 = g_pEffect->GetTechniqueByName( "RenderBoneL3" );
-	_ASSERT( g_hRenderBoneL3 );
+	g_hRenderBoneL0 = g_pEffect->GetTechniqueByName("RenderBoneL0");
+	_ASSERT(g_hRenderBoneL0);
+	g_hRenderBoneL1 = g_pEffect->GetTechniqueByName("RenderBoneL1");
+	_ASSERT(g_hRenderBoneL1);
+	g_hRenderBoneL2 = g_pEffect->GetTechniqueByName("RenderBoneL2");
+	_ASSERT(g_hRenderBoneL2);
+	g_hRenderBoneL3 = g_pEffect->GetTechniqueByName("RenderBoneL3");
+	_ASSERT(g_hRenderBoneL3);
 
-	g_hRenderNoBoneL0 = g_pEffect->GetTechniqueByName( "RenderNoBoneL0" );
-	_ASSERT( g_hRenderNoBoneL0 );
-	g_hRenderNoBoneL1 = g_pEffect->GetTechniqueByName( "RenderNoBoneL1" );
-	_ASSERT( g_hRenderNoBoneL1 );
-	g_hRenderNoBoneL2 = g_pEffect->GetTechniqueByName( "RenderNoBoneL2" );
-	_ASSERT( g_hRenderNoBoneL2 );
-	g_hRenderNoBoneL3 = g_pEffect->GetTechniqueByName( "RenderNoBoneL3" );
-	_ASSERT( g_hRenderNoBoneL3 );
+	g_hRenderNoBoneL0 = g_pEffect->GetTechniqueByName("RenderNoBoneL0");
+	_ASSERT(g_hRenderNoBoneL0);
+	g_hRenderNoBoneL1 = g_pEffect->GetTechniqueByName("RenderNoBoneL1");
+	_ASSERT(g_hRenderNoBoneL1);
+	g_hRenderNoBoneL2 = g_pEffect->GetTechniqueByName("RenderNoBoneL2");
+	_ASSERT(g_hRenderNoBoneL2);
+	g_hRenderNoBoneL3 = g_pEffect->GetTechniqueByName("RenderNoBoneL3");
+	_ASSERT(g_hRenderNoBoneL3);
 
-	g_hRenderLine = g_pEffect->GetTechniqueByName( "RenderLine" );
-	_ASSERT( g_hRenderLine );
-	g_hRenderSprite = g_pEffect->GetTechniqueByName( "RenderSprite" );
-	_ASSERT( g_hRenderSprite );
+	g_hRenderLine = g_pEffect->GetTechniqueByName("RenderLine");
+	_ASSERT(g_hRenderLine);
+	g_hRenderSprite = g_pEffect->GetTechniqueByName("RenderSprite");
+	_ASSERT(g_hRenderSprite);
 
 
 
 	g_hm4x4Mat = g_pEffect->GetVariableByName("g_m4x4Mat")->AsMatrix();
-	_ASSERT( g_hm4x4Mat );
+	_ASSERT(g_hm4x4Mat);
 	g_hmWorld = g_pEffect->GetVariableByName("g_mWorld")->AsMatrix();
-	_ASSERT( g_hmWorld );
+	_ASSERT(g_hmWorld);
 	g_hmVP = g_pEffect->GetVariableByName("g_mVP")->AsMatrix();
-	_ASSERT( g_hmVP );
+	_ASSERT(g_hmVP);
 	g_hEyePos = g_pEffect->GetVariableByName("g_EyePos")->AsVector();
-	_ASSERT( g_hEyePos );
+	_ASSERT(g_hEyePos);
 
 
-//	g_hnNumLight = g_pEffect->GetVariableByName("g_nNumLights" );
-//	_ASSERT( g_hnNumLight );
+	//	g_hnNumLight = g_pEffect->GetVariableByName("g_nNumLights" );
+	//	_ASSERT( g_hnNumLight );
 	g_hLightDir = g_pEffect->GetVariableByName("g_LightDir")->AsVector();
-	_ASSERT( g_hLightDir );
+	_ASSERT(g_hLightDir);
 	g_hLightDiffuse = g_pEffect->GetVariableByName("g_LightDiffuse")->AsVector();
-	_ASSERT( g_hLightDiffuse );
-//	g_hLightAmbient = g_pEffect->GetVariableByName("g_LightAmbient" );
-//	_ASSERT( g_hLightAmbient );
+	_ASSERT(g_hLightDiffuse);
+	//	g_hLightAmbient = g_pEffect->GetVariableByName("g_LightAmbient" );
+	//	_ASSERT( g_hLightAmbient );
 	g_hSpriteOffset = g_pEffect->GetVariableByName("g_spriteoffset")->AsVector();
 	_ASSERT(g_hSpriteOffset);
 	g_hSpriteScale = g_pEffect->GetVariableByName("g_spritescale")->AsVector();
@@ -8996,54 +9099,54 @@ int GetShaderHandle()
 	_ASSERT(g_hPm3Scale);
 
 	g_hdiffuse = g_pEffect->GetVariableByName("g_diffuse")->AsVector();
-	_ASSERT( g_hdiffuse );
+	_ASSERT(g_hdiffuse);
 	g_hambient = g_pEffect->GetVariableByName("g_ambient")->AsVector();
-	_ASSERT( g_hambient );
+	_ASSERT(g_hambient);
 	g_hspecular = g_pEffect->GetVariableByName("g_specular")->AsVector();
-	_ASSERT( g_hspecular );
+	_ASSERT(g_hspecular);
 	g_hpower = g_pEffect->GetVariableByName("g_power")->AsScalar();
-	_ASSERT( g_hpower );
+	_ASSERT(g_hpower);
 	g_hemissive = g_pEffect->GetVariableByName("g_emissive")->AsVector();
-	_ASSERT( g_hemissive );
+	_ASSERT(g_hemissive);
 	g_hMeshTexture = g_pEffect->GetVariableByName("g_MeshTexture")->AsShaderResource();
-	_ASSERT( g_hMeshTexture );
+	_ASSERT(g_hMeshTexture);
 
 
-/*
-// Obtain variables
-g_ptxDiffuse = g_pEffect10->GetVariableByName("g_MeshTexture")->AsShaderResource();
-g_pLightDir = g_pEffect10->GetVariableByName("g_LightDir")->AsVector();
-g_pLightDiffuse = g_pEffect10->GetVariableByName("g_LightDiffuse")->AsVector();
-g_pmWorldViewProjection = g_pEffect10->GetVariableByName("g_mWorldViewProjection")->AsMatrix();
-g_pmWorld = g_pEffect10->GetVariableByName("g_mWorld")->AsMatrix();
-g_pfTime = g_pEffect10->GetVariableByName("g_fTime")->AsScalar();
-g_pMaterialAmbientColor = g_pEffect10->GetVariableByName("g_MaterialAmbientColor")->AsVector();
-g_pMaterialDiffuseColor = g_pEffect10->GetVariableByName("g_MaterialDiffuseColor")->AsVector();
-g_pnNumLights = g_pEffect10->GetVariableByName("g_nNumLights")->AsScalar();
+	/*
+	// Obtain variables
+	g_ptxDiffuse = g_pEffect10->GetVariableByName("g_MeshTexture")->AsShaderResource();
+	g_pLightDir = g_pEffect10->GetVariableByName("g_LightDir")->AsVector();
+	g_pLightDiffuse = g_pEffect10->GetVariableByName("g_LightDiffuse")->AsVector();
+	g_pmWorldViewProjection = g_pEffect10->GetVariableByName("g_mWorldViewProjection")->AsMatrix();
+	g_pmWorld = g_pEffect10->GetVariableByName("g_mWorld")->AsMatrix();
+	g_pfTime = g_pEffect10->GetVariableByName("g_fTime")->AsScalar();
+	g_pMaterialAmbientColor = g_pEffect10->GetVariableByName("g_MaterialAmbientColor")->AsVector();
+	g_pMaterialDiffuseColor = g_pEffect10->GetVariableByName("g_MaterialDiffuseColor")->AsVector();
+	g_pnNumLights = g_pEffect10->GetVariableByName("g_nNumLights")->AsScalar();
 
-// Create our vertex input layout
-const D3D11_INPUT_ELEMENT_DESC layout[] =
-{
-{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-{ "NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-};
+	// Create our vertex input layout
+	const D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+	{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
 
-D3DX11_PASS_DESC PassDesc;
-V_RETURN(g_pTechRenderSceneWithTexture1Light->GetPassByIndex(0)->GetDesc(&PassDesc));
-V_RETURN(pd3dDevice->CreateInputLayout(layout, 3, PassDesc.pIAInputSignature,
-PassDesc.IAInputSignatureSize, &g_pVertexLayout));
+	D3DX11_PASS_DESC PassDesc;
+	V_RETURN(g_pTechRenderSceneWithTexture1Light->GetPassByIndex(0)->GetDesc(&PassDesc));
+	V_RETURN(pd3dDevice->CreateInputLayout(layout, 3, PassDesc.pIAInputSignature,
+	PassDesc.IAInputSignatureSize, &g_pVertexLayout));
 
-// Load the mesh
-V_RETURN(g_Mesh10.Create(pd3dDevice, L"tiny\\tiny.sdkmesh", true));
+	// Load the mesh
+	V_RETURN(g_Mesh10.Create(pd3dDevice, L"tiny\\tiny.sdkmesh", true));
 
-// Set effect variables as needed
-D3DXCOLOR colorMtrlDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
-D3DXCOLOR colorMtrlAmbient(0.35f, 0.35f, 0.35f, 0);
-V_RETURN(g_pMaterialAmbientColor->SetFloatVector((float*)&colorMtrlAmbient));
-V_RETURN(g_pMaterialDiffuseColor->SetFloatVector((float*)&colorMtrlDiffuse));
+	// Set effect variables as needed
+	D3DXCOLOR colorMtrlDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+	D3DXCOLOR colorMtrlAmbient(0.35f, 0.35f, 0.35f, 0);
+	V_RETURN(g_pMaterialAmbientColor->SetFloatVector((float*)&colorMtrlAmbient));
+	V_RETURN(g_pMaterialDiffuseColor->SetFloatVector((float*)&colorMtrlDiffuse));
 
-*/
+	*/
 
 	return 0;
 }
@@ -9055,7 +9158,7 @@ int SetBaseDir()
 
 	int ret;
 	ret = GetModuleFileNameW(NULL, filename, MAX_PATH);
-	if (ret == 0){
+	if (ret == 0) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -9063,7 +9166,7 @@ int SetBaseDir()
 
 	WCHAR* lasten = NULL;
 	lasten = wcsrchr(filename, TEXT('\\'));
-	if (!lasten){
+	if (!lasten) {
 		_ASSERT(0);
 		DbgOut(L"SetMediaDir : strrchr error !!!\n");
 		return 1;
@@ -9076,34 +9179,34 @@ int SetBaseDir()
 	WCHAR* last3en = 0;
 	WCHAR* last4en = 0;
 	last2en = wcsrchr(filename, TEXT('\\'));//Release, Debugの頭の円かどうか調べる
-	if (last2en){
+	if (last2en) {
 		*last2en = 0;
 		last3en = wcsrchr(filename, TEXT('\\'));//Release, Debugかどうか調べるフォルダの前にフォルダがあるかどうか
-		if (last3en){
+		if (last3en) {
 			if ((wcscmp(last2en + 1, L"debug") == 0) ||
 				(wcscmp(last2en + 1, L"Debug") == 0) ||
 				(wcscmp(last2en + 1, L"DEBUG") == 0) ||
 				(wcscmp(last2en + 1, L"release") == 0) ||
 				(wcscmp(last2en + 1, L"Release") == 0) ||
 				(wcscmp(last2en + 1, L"RELEASE") == 0)
-				){
+				) {
 
 				*last3en = 0;
 				last4en = wcsrchr(filename, TEXT('\\'));//x64かどうか調べるフォルダの前にフォルダがあるかどうか
-				if (last4en){
-					if (wcscmp(last3en + 1, L"x64") != 0){
+				if (last4en) {
+					if (wcscmp(last3en + 1, L"x64") != 0) {
 						*last3en = TEXT('\\');
 					}
 				}
 			}
-			else{
+			else {
 				*last2en = TEXT('\\');
 			}
 		}
 	}
 
 	size_t leng;
-	ZeroMemory(g_basedir, sizeof(WCHAR)* MAX_PATH);
+	ZeroMemory(g_basedir, sizeof(WCHAR) * MAX_PATH);
 	wcscpy_s(g_basedir, MAX_PATH, filename);
 	g_basedir[MAX_PATH - 1] = 0L;
 	leng = wcslen(g_basedir);
@@ -9142,24 +9245,24 @@ int OpenMNLFile()
 
 int OpenGcoFile()
 {
-	if( !s_bpWorld ){
+	if (!s_bpWorld) {
 		return 0;
 	}
-	if( !s_gplane ){
+	if (!s_gplane) {
 		return 0;
 	}
 
-	if(g_tmpmqopath[0] == 0L){
+	if (g_tmpmqopath[0] == 0L) {
 		return 0;
 	}
 
 	CGColiFile gcofile;
-	CallF( gcofile.LoadGColiFile( s_gplane, g_tmpmqopath, s_bpWorld ), return 1 );
+	CallF(gcofile.LoadGColiFile(s_gplane, g_tmpmqopath, s_bpWorld), return 1);
 
 	s_bpWorld->RemakeG();
-	ChaVector3 tra( 0.0f, 0.0f, 0.0f );
-	ChaVector3 mult( s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y );
-	CallF( s_gplane->MultDispObj( mult, tra ), return 1 );
+	ChaVector3 tra(0.0f, 0.0f, 0.0f);
+	ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+	CallF(s_gplane->MultDispObj(mult, tra), return 1);
 
 	return 0;
 }
@@ -9167,25 +9270,26 @@ int OpenGcoFile()
 
 int OpenImpFile()
 {
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( !s_model->GetTopBone() ){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
-	if(g_tmpmqopath[0] == 0L){
+	if (g_tmpmqopath[0] == 0L) {
 		return 0;
 	}
 
 	CImpFile impfile;
-	CallF( impfile.LoadImpFile( g_tmpmqopath, s_model ), return 1 );
+	CallF(impfile.LoadImpFile(g_tmpmqopath, s_model), return 1);
 
 	int impnum = s_model->GetImpInfoSize();
-	if( impnum > 0 ){
-		OnImpMenu( impnum - 1 );
-	}else{
-		OnImpMenu( -1 );
+	if (impnum > 0) {
+		OnImpMenu(impnum - 1);
+	}
+	else {
+		OnImpMenu(-1);
 	}
 
 	return 0;
@@ -9194,29 +9298,29 @@ int OpenImpFile()
 
 int OpenREFile()
 {
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( !s_model->GetTopBone() ){
-		return 0;
-	}
-
-	if(g_tmpmqopath[0] == 0L){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
-	if( s_model->GetRigidElemInfoSize() >= (MAXRENUM - 1) ){
-		::DSMessageBox( s_3dwnd, L"Overflow Loading(Limit under 99 files)", L"warning!!!", MB_OK );
+	if (g_tmpmqopath[0] == 0L) {
+		return 0;
+	}
+
+	if (s_model->GetRigidElemInfoSize() >= (MAXRENUM - 1)) {
+		::DSMessageBox(s_3dwnd, L"Overflow Loading(Limit under 99 files)", L"warning!!!", MB_OK);
 		return 0;
 	}
 
 	CRigidElemFile refile;
-	CallF( refile.LoadRigidElemFile( g_tmpmqopath, s_model ), return 1 );
+	CallF(refile.LoadRigidElemFile(g_tmpmqopath, s_model), return 1);
 
 
 	int renum = s_model->GetRigidElemInfoSize();
-	if( renum > 0 ){
-		
+	if (renum > 0) {
+
 		//RgidElemFileのLoad時にしている
 		//if (s_model && (renum == 1)) {//初回のref読み込み後にRigidElemを作成
 		//	int chkret;
@@ -9224,11 +9328,12 @@ int OpenREFile()
 		//	_ASSERT(!chkret);
 		//}
 
-		OnREMenu( renum - 1, 0 );
-		OnRgdMenu( renum - 1, 0 );
-	}else{
-		OnREMenu( -1, 0 );
-		OnRgdMenu( -1, 0 );
+		OnREMenu(renum - 1, 0);
+		OnRgdMenu(renum - 1, 0);
+	}
+	else {
+		OnREMenu(-1, 0);
+		OnRgdMenu(-1, 0);
 	}
 
 	return 0;
@@ -9236,19 +9341,19 @@ int OpenREFile()
 
 int SaveGcoFile()
 {
-	if( !s_bpWorld ){
+	if (!s_bpWorld) {
 		return 0;
 	}
 
 	int dlgret;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVEGCODLG ), 
-		s_3dwnd, (DLGPROC)SaveGcoDlgProc );
-	if( (dlgret != IDOK) || !s_Gconame[0] ){
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SAVEGCODLG),
+		s_3dwnd, (DLGPROC)SaveGcoDlgProc);
+	if ((dlgret != IDOK) || !s_Gconame[0]) {
 		return 0;
 	}
 
 	CGColiFile gcofile;
-	CallF( gcofile.WriteGColiFile( s_Gconame, s_bpWorld ), return 1 );
+	CallF(gcofile.WriteGColiFile(s_Gconame, s_bpWorld), return 1);
 
 	return 0;
 
@@ -9257,33 +9362,34 @@ int SaveGcoFile()
 
 int SaveImpFile()
 {
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( !s_model->GetTopBone() ){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
-	if( s_rgdindexmap[s_model] < 0 ){
-		::DSMessageBox( s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"error!!!", MB_OK );
+	if (s_rgdindexmap[s_model] < 0) {
+		::DSMessageBox(s_3dwnd, L"Save Only RagdollImpulse.\nRetry after Setting of Ragdoll", L"error!!!", MB_OK);
 		return 0;
 	}
 
 
 	int dlgret;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVEIMPDLG ), 
-		s_3dwnd, (DLGPROC)SaveImpDlgProc );
-	if( (dlgret != IDOK) || !s_Impname[0] ){
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SAVEIMPDLG),
+		s_3dwnd, (DLGPROC)SaveImpDlgProc);
+	if ((dlgret != IDOK) || !s_Impname[0]) {
 		return 0;
 	}
 
 	CImpFile impfile;
-	CallF( impfile.WriteImpFile( s_Impname, s_model ), return 1 );
+	CallF(impfile.WriteImpFile(s_Impname, s_model), return 1);
 
 	int impnum = s_model->GetImpInfoSize();
-	if( impnum > 0 ){
-		OnImpMenu( impnum - 1 );
-	}else{
-		OnImpMenu( -1 );
+	if (impnum > 0) {
+		OnImpMenu(impnum - 1);
+	}
+	else {
+		OnImpMenu(-1);
 	}
 
 	return 0;
@@ -9293,22 +9399,22 @@ int SaveImpFile()
 
 int SaveREFile()
 {
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( !s_model->GetTopBone() ){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
 	int dlgret;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_SAVEREDLG ), 
-		s_3dwnd, (DLGPROC)SaveREDlgProc );
-	if( (dlgret != IDOK) || !s_REname[0] ){
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_SAVEREDLG),
+		s_3dwnd, (DLGPROC)SaveREDlgProc);
+	if ((dlgret != IDOK) || !s_REname[0]) {
 		return 0;
 	}
 
 	CRigidElemFile refile;
-	CallF( refile.WriteRigidElemFile( s_REname, s_model, s_model->GetCurReIndex() ), return 1 );
+	CallF(refile.WriteRigidElemFile(s_REname, s_model, s_model->GetCurReIndex()), return 1);
 
 	return 0;
 }
@@ -9373,7 +9479,7 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 }
 
 
-int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM lpData) 
+int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM lpData)
 {
 	WCHAR firstdir[MAX_PATH] = { 0L };
 
@@ -9383,7 +9489,7 @@ int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM 
 	case BFFM_INITIALIZED:
 		firstdir[0] = 0L;
 		GetBatchHistoryDir(firstdir, MAX_PATH);
-		if(firstdir[0] != 0L){
+		if (firstdir[0] != 0L) {
 			SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)firstdir);
 			SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)firstdir);
 		}
@@ -9418,7 +9524,7 @@ int RetargetFile(char* fbxpath)
 	char* pfind;
 	pfind = strrchr(fbxpath, '\\');
 	if (pfind) {
-		
+
 		if (s_modelindex.size() > 0) {
 			OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 		}
@@ -9495,7 +9601,7 @@ unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
 			break;
 		}
 	}
-	
+
 	InterlockedExchange(&g_retargetbatchflag, (LONG)3);
 
 
@@ -9859,7 +9965,7 @@ int BVH2FBXBatch()
 
 		if (outnum > 0)
 		{
-	
+
 			InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)1);//start thread
 
 
@@ -9906,24 +10012,24 @@ int BVH2FBX()
 	//bvhファイルを読み込む
 	CBVHFile bvhfile;
 	int ret;
-	ret = bvhfile.LoadBVHFile( s_3dwnd, g_tmpmqopath, g_tmpmqomult );
-	if( ret ){
-		_ASSERT( 0 );
+	ret = bvhfile.LoadBVHFile(s_3dwnd, g_tmpmqopath, g_tmpmqomult);
+	if (ret) {
+		_ASSERT(0);
 		return 1;
 	}
 
 	Savebvh2FBXHistory(savepath);
 
 	//FBXファイルに書き出す
-	char fbxpath[MAX_PATH] = {0};
-	WideCharToMultiByte( CP_UTF8, 0, g_tmpmqopath, -1, fbxpath, MAX_PATH, NULL, NULL );
-	strcat_s( fbxpath, MAX_PATH, ".fbx" );
+	char fbxpath[MAX_PATH] = { 0 };
+	WideCharToMultiByte(CP_UTF8, 0, g_tmpmqopath, -1, fbxpath, MAX_PATH, NULL, NULL);
+	strcat_s(fbxpath, MAX_PATH, ".fbx");
 	SYSTEMTIME localtime;
 	GetLocalTime(&localtime);
 	char fbxdate[MAX_PATH] = { 0L };
 	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
-	CallF( BVH2FBXFile( s_psdk, &bvhfile, fbxpath, fbxdate ), return 1 );
+	CallF(BVH2FBXFile(s_psdk, &bvhfile, fbxpath, fbxdate), return 1);
 
 
 	return 0;
@@ -9955,16 +10061,16 @@ int OpenFile()
 
 	int dlgret;
 	s_filterindex = 1;
-	dlgret = (int)DialogBoxW( (HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE( IDD_OPENMQODLG ), 
-		s_3dwnd, (DLGPROC)OpenMqoDlgProc );
-	if( (dlgret != IDOK) || (g_tmpmqopath[0] == 0L) ){
+	dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_OPENMQODLG),
+		s_3dwnd, (DLGPROC)OpenMqoDlgProc);
+	if ((dlgret != IDOK) || (g_tmpmqopath[0] == 0L)) {
 		s_nowloading = false;
 		return 0;
 	}
 
 	WCHAR savepath[MULTIPATH];
 	ZeroMemory(savepath, sizeof(WCHAR) * MULTIPATH);
-	MoveMemory( savepath, g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
+	MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 	size_t leng;
 	int namecnt = 0;
@@ -9977,31 +10083,32 @@ int OpenFile()
 	}
 
 	WCHAR* topchar = savepath + leng;
-	if( *topchar == TEXT( '\0' ) ){
+	if (*topchar == TEXT('\0')) {
 		WCHAR* extptr = 0;
-		extptr = wcsrchr( g_tmpmqopath, TEXT( '.' ) );
-		if( !extptr ){
+		extptr = wcsrchr(g_tmpmqopath, TEXT('.'));
+		if (!extptr) {
 			s_nowloading = false;
 			return 0;
 		}
 		int result = 0;
 		CModel* newmodel = 0;
 		int cmpcha, cmpfbx, cmpmqo, cmpref, cmpimp, cmpgco, cmpmnl;
-		cmpcha = wcscmp( extptr, L".cha" );
-		cmpfbx = wcscmp( extptr, L".fbx" );
-		cmpmqo = wcscmp( extptr, L".mqo" );
-		cmpref = wcscmp( extptr, L".ref" );
-		cmpimp = wcscmp( extptr, L".imp" );
-		cmpgco = wcscmp( extptr, L".gco" );
-		cmpmnl = wcscmp( extptr, L".mnl" );
-		if( cmpcha == 0 ){
+		cmpcha = wcscmp(extptr, L".cha");
+		cmpfbx = wcscmp(extptr, L".fbx");
+		cmpmqo = wcscmp(extptr, L".mqo");
+		cmpref = wcscmp(extptr, L".ref");
+		cmpimp = wcscmp(extptr, L".imp");
+		cmpgco = wcscmp(extptr, L".gco");
+		cmpmnl = wcscmp(extptr, L".mnl");
+		if (cmpcha == 0) {
 			result = OpenChaFile();
 			s_filterindex = 1;
-		}else if( cmpfbx == 0 ){
+		}
+		else if (cmpfbx == 0) {
 			if (s_modelindex.size() > 0) {
 				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 			}
-			newmodel = OpenFBXFile( true, 0, 1 );
+			newmodel = OpenFBXFile(true, 0, 1);
 			if (newmodel) {
 				result = 0;
 			}
@@ -10009,7 +10116,8 @@ int OpenFile()
 				result = 1;
 			}
 			s_filterindex = 1;
-		}else if( cmpmqo == 0 ){
+		}
+		else if (cmpmqo == 0) {
 			if (s_modelindex.size() > 0) {
 				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 			}
@@ -10021,13 +10129,16 @@ int OpenFile()
 				result = 1;
 			}
 			s_filterindex = 1;
-		}else if( cmpref == 0 ){
+		}
+		else if (cmpref == 0) {
 			result = OpenREFile();
 			s_filterindex = 2;
-		}else if( cmpimp == 0 ){
+		}
+		else if (cmpimp == 0) {
 			result = OpenImpFile();
 			s_filterindex = 3;
-		}else if( cmpgco == 0 ){
+		}
+		else if (cmpgco == 0) {
 			result = OpenGcoFile();
 			s_filterindex = 4;
 		}
@@ -10044,44 +10155,46 @@ int OpenFile()
 			return 1;
 		}
 
-	}else{
+	}
+	else {
 		size_t leng2;
-		while( *topchar != TEXT( '\0' ) ){
+		while (*topchar != TEXT('\0')) {
 			savepath[MULTIPATH - 1] = 0L;
 			//leng2 = wcslen(topchar);
 			swprintf_s(g_tmpmqopath, MULTIPATH, L"%s\\%s", savepath, topchar);
 
 			WCHAR* extptr = 0;
-			extptr = wcsrchr( g_tmpmqopath, TEXT( '.' ) );
-			if( !extptr ){
+			extptr = wcsrchr(g_tmpmqopath, TEXT('.'));
+			if (!extptr) {
 				s_nowloading = false;
 				return 0;
 			}
 			int result = 0;
 			CModel* newmodel = 0;
 			int cmpfbx, cmpmqo;
-			cmpfbx = wcscmp( extptr, L".fbx" );
-			cmpmqo = wcscmp( extptr, L".mqo" );
-			if( cmpfbx == 0 ){
+			cmpfbx = wcscmp(extptr, L".fbx");
+			cmpmqo = wcscmp(extptr, L".mqo");
+			if (cmpfbx == 0) {
 				//WCHAR* nexttopchar = topchar + leng2 + 1;
 				//if (*nexttopchar != TEXT('\0')) {
-					if (s_modelindex.size() > 0) {
-						OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
-					}
-					newmodel = OpenFBXFile(true, 0, 1);
-					if (newmodel) {
-						result = 0;
-					}
-					else {
-						result = 1;
-					}
+				if (s_modelindex.size() > 0) {
+					OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+				}
+				newmodel = OpenFBXFile(true, 0, 1);
+				if (newmodel) {
+					result = 0;
+				}
+				else {
+					result = 1;
+				}
 				//}
 				//else {
 				//	//最終のFBXに対してのみinittimelineをする
 				//	OpenFBXFile(0, 1);
 				//}
 				s_filterindex = 1;
-			}else if( cmpmqo == 0 ){
+			}
+			else if (cmpmqo == 0) {
 				if (s_modelindex.size() > 0) {
 					OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 				}
@@ -10104,7 +10217,7 @@ int OpenFile()
 			}
 
 			savepath[MULTIPATH - 1] = 0L;
-			leng2 = wcslen( topchar );
+			leng2 = wcslen(topchar);
 			if ((leng2 > 0) && (leng2 < MULTIPATH)) {
 				topchar = topchar + leng2 + 1;
 				namecnt++;
@@ -10136,101 +10249,102 @@ CModel* OpenMQOFile()
 
 
 	static int modelcnt = 0;
-	WCHAR modelname[MAX_PATH] = {0L};
+	WCHAR modelname[MAX_PATH] = { 0L };
 	WCHAR* lasten;
-	lasten = wcsrchr( g_tmpmqopath, TEXT('\\') );
-	if( !lasten ){
-		_ASSERT( 0 );
+	lasten = wcsrchr(g_tmpmqopath, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
 		return 0;
 	}
-	wcscpy_s( modelname, MAX_PATH, lasten + 1 );
+	wcscpy_s(modelname, MAX_PATH, lasten + 1);
 	WCHAR* extptr;
-	extptr = wcsrchr( modelname, TEXT('.') );
-	if( !extptr ){
-		_ASSERT( 0 );
+	extptr = wcsrchr(modelname, TEXT('.'));
+	if (!extptr) {
+		_ASSERT(0);
 		return 0;
 	}
 	*extptr = 0L;
-	WCHAR modelfolder[MAX_PATH] = {0L};
-	swprintf_s( modelfolder, MAX_PATH, L"%s_%d", modelname, modelcnt );
+	WCHAR modelfolder[MAX_PATH] = { 0L };
+	swprintf_s(modelfolder, MAX_PATH, L"%s_%d", modelname, modelcnt);
 	modelcnt++;
 
 
-	if( !g_texbank ){
-		g_texbank = new CTexBank( s_pdev );
-		if( !g_texbank ){
-			_ASSERT( 0 );
+	if (!g_texbank) {
+		g_texbank = new CTexBank(s_pdev);
+		if (!g_texbank) {
+			_ASSERT(0);
 			return 0;
 		}
 	}
-	if( s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0) ){
+	if (s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0)) {
 		s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
 		s_modelindex[s_curmodelmenuindex].lineno2boneno = s_lineno2boneno;
 		s_modelindex[s_curmodelmenuindex].boneno2lineno = s_boneno2lineno;
 	}
 
-	DestroyTimeLine( 1 );
+	DestroyTimeLine(1);
 
-    // Load the mesh
+	// Load the mesh
 	CModel* newmodel;
 	newmodel = new CModel();
-	if( !newmodel ){
-		_ASSERT( 0 );
+	if (!newmodel) {
+		_ASSERT(0);
 		return 0;
 	}
 	newmodel->SetLoadingMotionCount(0);//2022/11/01
 
 	int ret;
-	ret = newmodel->LoadMQO( s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, 0 );
-	if( ret ){
+	ret = newmodel->LoadMQO(s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, 0);
+	if (ret) {
 		delete newmodel;
-		if( s_owpTimeline ){
-			refreshTimeline( *s_owpTimeline );
+		if (s_owpTimeline) {
+			refreshTimeline(*s_owpTimeline);
 		}
 		return 0;
-	}else{
+	}
+	else {
 		s_model = newmodel;
 	}
-	CallF( s_model->MakeDispObj(), return 0 );
-	CallF( s_model->DbgDump(), return 0 );
+	CallF(s_model->MakeDispObj(), return 0);
+	CallF(s_model->DbgDump(), return 0);
 
 	int mindex;
 	mindex = (int)s_modelindex.size();
 	MODELELEM modelelem;
 	modelelem.modelptr = s_model;
 	modelelem.motmenuindex = 0;
-	s_modelindex.push_back( modelelem );
+	s_modelindex.push_back(modelelem);
 
- //   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-	//pComboBox->RemoveAllItems();
+	//   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+	   //pComboBox->RemoveAllItems();
 
-	//map<int, CBone*>::iterator itrbone;
-	//for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-	//	ULONG boneno = (ULONG)itrbone->first;
-	//	CBone* curbone = itrbone->second;
-	//	if( curbone && (boneno >= 0) ){
-	//		char* nameptr = (char*)curbone->GetBoneName();
-	//		WCHAR wname[256];
-	//		ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-	//		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
-	//		pComboBox->AddItem( wname, ULongToPtr( boneno ) );
-	//	}
-	//}
+	   //map<int, CBone*>::iterator itrbone;
+	   //for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	   //	ULONG boneno = (ULONG)itrbone->first;
+	   //	CBone* curbone = itrbone->second;
+	   //	if( curbone && (boneno >= 0) ){
+	   //		char* nameptr = (char*)curbone->GetBoneName();
+	   //		WCHAR wname[256];
+	   //		ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+	   //		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
+	   //		pComboBox->AddItem( wname, ULongToPtr( boneno ) );
+	   //	}
+	   //}
 
-	//s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
-	//s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
-	//s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
-	//s_totalmb.r = 0.0f;
+	   //s_totalmb.center = ChaVector3( 0.0f, 0.0f, 0.0f );
+	   //s_totalmb.max = ChaVector3( 0.0f, 0.0f, 0.0f );
+	   //s_totalmb.min = ChaVector3( 0.0f, 0.0f, 0.0f );
+	   //s_totalmb.r = 0.0f;
 	CalcTotalBound();
 
 
-	CallF( AddMotion( 0 ), return 0 );
+	CallF(AddMotion(0), return 0);
 
-	s_modelindex[ mindex ].tlarray = s_tlarray;
-	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
-	s_modelindex[ mindex ].boneno2lineno = s_boneno2lineno;
+	s_modelindex[mindex].tlarray = s_tlarray;
+	s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
+	s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
 
-//	CallF( OnModelMenu( mindex, 0 ), return 0 );
+	//	CallF( OnModelMenu( mindex, 0 ), return 0 );
 
 	DispModelPanel();
 
@@ -10302,7 +10416,7 @@ void CalcTotalBound()
 }
 
 
-CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
+CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
@@ -10326,7 +10440,7 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	//	return 0;
 	//}
 
-	g_camtargetpos = ChaVector3( 0.0f, 0.0f, 0.0f );
+	g_camtargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	g_befcamtargetpos = g_camtargetpos;
 
 
@@ -10335,34 +10449,34 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	WCHAR fbxpath0[MAX_PATH] = { 0L };
 	wcscpy_s(fbxpath0, MAX_PATH, g_tmpmqopath);
 
-	WCHAR modelname[MAX_PATH] = {0L};
+	WCHAR modelname[MAX_PATH] = { 0L };
 	WCHAR* lasten;
-	lasten = wcsrchr( g_tmpmqopath, TEXT('\\') );
-	if( !lasten ){
-		_ASSERT( 0 );
+	lasten = wcsrchr(g_tmpmqopath, TEXT('\\'));
+	if (!lasten) {
+		_ASSERT(0);
 		return 0;
 	}
-	wcscpy_s( modelname, MAX_PATH, lasten + 1 );
+	wcscpy_s(modelname, MAX_PATH, lasten + 1);
 	WCHAR* extptr;
-	extptr = wcsrchr( modelname, TEXT('.') );
-	if( !extptr ){
-		_ASSERT( 0 );
+	extptr = wcsrchr(modelname, TEXT('.'));
+	if (!extptr) {
+		_ASSERT(0);
 		return 0;
 	}
 	*extptr = 0L;
-	WCHAR modelfolder[MAX_PATH] = {0L};
-	swprintf_s( modelfolder, MAX_PATH, L"%s_%d", modelname, modelcnt );
+	WCHAR modelfolder[MAX_PATH] = { 0L };
+	swprintf_s(modelfolder, MAX_PATH, L"%s_%d", modelname, modelcnt);
 	modelcnt++;
 
 
-	if( !g_texbank ){
-		g_texbank = new CTexBank( s_pdev );
-		if( !g_texbank ){
-			_ASSERT( 0 );
+	if (!g_texbank) {
+		g_texbank = new CTexBank(s_pdev);
+		if (!g_texbank) {
+			_ASSERT(0);
 			return 0;
 		}
 	}
-	if( s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0) ){
+	if (s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0)) {
 		s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
 		s_modelindex[s_curmodelmenuindex].lineno2boneno = s_lineno2boneno;
 		s_modelindex[s_curmodelmenuindex].boneno2lineno = s_boneno2lineno;
@@ -10372,17 +10486,17 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		OnRenderNowLoading();
 	}
 
-	DestroyTimeLine( 1 );
+	DestroyTimeLine(1);
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
 
-    // Load the mesh
+	// Load the mesh
 	CModel* newmodel;
 	newmodel = new CModel();
-	if( !newmodel ){
-		_ASSERT( 0 );
+	if (!newmodel) {
+		_ASSERT(0);
 		return 0;
 	}
 	newmodel->SetLoadingMotionCount(0);//2022/11/01
@@ -10392,21 +10506,22 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	}
 
 	_ASSERT(s_btWorld);
-	newmodel->SetBtWorld( s_btWorld );
+	newmodel->SetBtWorld(s_btWorld);
 	FbxScene* pScene = 0;
 	FbxImporter* pImporter = 0;
 	//skipdefref FBX単体読み込みの場合にはdefault_ref.refは存在しない。その場合skipdefrefには０が代入され、CModel::LoadFBX内でdefault_ref.refの中でメモリからデフォルト値が設定される
 	int ret;
 	BOOL motioncachebatchflag = FALSE;
 	ret = newmodel->LoadFBX(skipdefref, s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene, s_forcenewaxis, motioncachebatchflag);
-	if( ret ){
-		_ASSERT( 0 );
+	if (ret) {
+		_ASSERT(0);
 		delete newmodel;
-		if( s_owpTimeline ){
-			refreshTimeline( *s_owpTimeline );
+		if (s_owpTimeline) {
+			refreshTimeline(*s_owpTimeline);
 		}
 		return 0;
-	}else{
+	}
+	else {
 		s_model = newmodel;
 	}
 
@@ -10414,7 +10529,7 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		OnRenderNowLoading();
 	}
 
-	CallF( s_model->MakeDispObj(), return 0 );
+	CallF(s_model->MakeDispObj(), return 0);
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -10425,22 +10540,22 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 	MODELELEM modelelem;
 	modelelem.modelptr = s_model;
 	modelelem.motmenuindex = 0;
-	s_modelindex.push_back( modelelem );
+	s_modelindex.push_back(modelelem);
 
- //   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
-	//pComboBox->RemoveAllItems();
+	//   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
+	   //pComboBox->RemoveAllItems();
 
-	//map<int, CBone*>::iterator itrbone;
-	//for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
-	//	ULONG boneno = (ULONG)itrbone->first;
-	//	CBone* curbone = itrbone->second;
-	//	if( curbone && (boneno >= 0) ){
-	//		char* nameptr = (char*)curbone->GetBoneName();
-	//		WCHAR wname[256];
-	//		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
-	//		pComboBox->AddItem( wname, ULongToPtr( boneno ) );
-	//	}
-	//}
+	   //map<int, CBone*>::iterator itrbone;
+	   //for( itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++ ){
+	   //	ULONG boneno = (ULONG)itrbone->first;
+	   //	CBone* curbone = itrbone->second;
+	   //	if( curbone && (boneno >= 0) ){
+	   //		char* nameptr = (char*)curbone->GetBoneName();
+	   //		WCHAR wname[256];
+	   //		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, nameptr, 256, wname, 256 );
+	   //		pComboBox->AddItem( wname, ULongToPtr( boneno ) );
+	   //	}
+	   //}
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -10449,9 +10564,9 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 	CalcTotalBound();
 
-	s_modelindex[ mindex ].tlarray = s_tlarray;
-	s_modelindex[ mindex ].lineno2boneno = s_lineno2boneno;
-	s_modelindex[ mindex ].boneno2lineno = s_boneno2lineno;
+	s_modelindex[mindex].tlarray = s_tlarray;
+	s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
+	s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -10517,19 +10632,19 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		}
 	}
 
-//::MessageBox(s_mainhwnd, L"check 3", L"check!!!", MB_OK);
+	//::MessageBox(s_mainhwnd, L"check 3", L"check!!!", MB_OK);
 
 
-	//if (inittimelineflag == 1)//inittimelineflag は 最後のキャラの時に１
+		//if (inittimelineflag == 1)//inittimelineflag は 最後のキャラの時に１
 	{
 		int lastmotid = -1;
 		int motnum = s_model->GetMotInfoSize();
 		int motno;
 		for (motno = 0; motno < motnum; motno++) {
 
-//WCHAR strchk[256] = { 0L };
-//swprintf_s(strchk, 256, L"check 3 : %d / %d", motno, motnum);
-//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
+			//WCHAR strchk[256] = { 0L };
+			//swprintf_s(strchk, 256, L"check 3 : %d / %d", motno, motnum);
+			//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
 
 			MOTINFO* curmi = s_model->GetMotInfo(motno + 1);
 			if (curmi) {
@@ -10554,7 +10669,7 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 	//Handle a model not has motion.
 	int motnum = s_model->GetMotInfoSize();
-	if (motnum == 0){
+	if (motnum == 0) {
 		CallF(AddMotion(0), return 0);
 		s_modelindex[mindex].tlarray = s_tlarray;
 		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
@@ -10569,12 +10684,12 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		OnRenderNowLoading();
 	}
 
-//::MessageBox(s_mainhwnd, L"check 5", L"check!!!", MB_OK);
+	//::MessageBox(s_mainhwnd, L"check 5", L"check!!!", MB_OK);
 
 
-	OnRgdMorphMenu( 0 );
+	OnRgdMorphMenu(0);
 
-//	SetCapture( s_3dwnd );
+	//	SetCapture( s_3dwnd );
 
 	if (s_model && s_model->GetCurMotInfo()) {
 		s_curmotid = s_model->GetCurMotInfo()->motid;
@@ -10583,13 +10698,13 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		_ASSERT(0);
 		s_curmotid = 0;
 	}
-	
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
 
-	if (s_model->GetOldAxisFlagAtLoading() == 0){
+	if (s_model->GetOldAxisFlagAtLoading() == 0) {
 		CLmtFile lmtfile;
 		WCHAR lmtname[MAX_PATH];
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
@@ -10609,7 +10724,7 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 		//_ASSERT(chkret2 == 0);
 	}
 
-//::MessageBox(s_mainhwnd, L"check 6", L"check!!!", MB_OK);
+	//::MessageBox(s_mainhwnd, L"check 6", L"check!!!", MB_OK);
 
 
 	s_model->SetMotionSpeed(g_dspeed);
@@ -10658,16 +10773,16 @@ CModel* OpenFBXFile( bool dorefreshtl, int skipdefref, int inittimelineflag )
 
 	OrgWindowListenMouse(true);
 
-//::MessageBox(s_mainhwnd, L"check 8", L"check!!!", MB_OK);
+	//::MessageBox(s_mainhwnd, L"check 8", L"check!!!", MB_OK);
 
 
 	SetTimelineHasRigFlag();
 
 
-//############################
-//############################
+	//############################
+	//############################
 
-	//読み込み処理が成功してから履歴を保存する。fbxファイル。
+		//読み込み処理が成功してから履歴を保存する。fbxファイル。
 	size_t savepathlen;
 	fbxpath0[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(fbxpath0);
@@ -10742,7 +10857,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 						}
 					}
 					int errorcount = 0;
-					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), 
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(),
 						curmi->motid, motleng, &errorcount);
 					if (errorcount != 0) {
 						_ASSERT(0);
@@ -10757,7 +10872,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 						}
 					}
 					int errorcount = 0;
-					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(), 
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(),
 						curmi->motid, motleng, &errorcount);
 					if (errorcount != 0) {
 						_ASSERT(0);
@@ -10786,7 +10901,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 	return 0;
 };
 
-int AddTimeLine( int newmotid, bool dorefreshtl )
+int AddTimeLine(int newmotid, bool dorefreshtl)
 {
 	EnterCriticalSection(&s_CritSection_LTimeline);
 
@@ -10802,11 +10917,11 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 
 			// カーソル移動時のイベントリスナーに
 			// カーソル移動フラグcursorFlagをオンにするラムダ関数を登録する
-			s_owpTimeline->setCursorListener([]() { 
+			s_owpTimeline->setCursorListener([]() {
 				if (s_model) {
 					s_cursorFlag = true;
 				}
-			});
+				});
 
 			// キー選択時のイベントリスナーに
 			// キー選択フラグselectFlagをオンにするラムダ関数を登録する
@@ -10816,7 +10931,7 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 				if (s_model) {
 					s_timelineRUpFlag = true;
 				}
-			});
+				});
 
 			//// キー移動時のイベントリスナーに
 			//// キー移動フラグkeyShiftFlagをオンにして、キー移動量をコピーするラムダ関数を登録する
@@ -10831,7 +10946,7 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 			//// 削除されたキー情報をスタックするラムダ関数を登録する
 			s_owpTimeline->setKeyDeleteListener([](const KeyInfo& keyInfo) {
 				//s_deletedKeyInfoList.push_back(keyInfo);
-			});
+				});
 
 
 			//ウィンドウにタイムラインを関連付ける
@@ -10881,16 +10996,16 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 				s_owpLTimeline->setDispKeyFlag(true);
 				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
 				s_LTSeparator->addParts1(*s_owpLTimeline);
-				s_owpLTimeline->setCursorListener([]() { 
+				s_owpLTimeline->setCursorListener([]() {
 					if (s_model) {
 						s_LcursorFlag = true;
 					}
-				});
-				s_owpLTimeline->setSelectListener([]() { 
+					});
+				s_owpLTimeline->setSelectListener([]() {
 					if (s_model) {
 						s_selectFlag = true;
 					}
-				});
+					});
 				s_owpLTimeline->setMouseMDownListener([]() {
 					if (s_model) {
 						s_timelinembuttonFlag = true;
@@ -10901,7 +11016,7 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 						//	s_mbuttoncnt = 0;
 						//}
 					}
-				});
+					});
 				s_owpLTimeline->setMouseWheelListener([]() {
 					if (s_model) {
 						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll の S
@@ -10912,13 +11027,13 @@ int AddTimeLine( int newmotid, bool dorefreshtl )
 							}
 						}
 						else {
-							if (s_timelineshowposFlag  == false) {
+							if (s_timelineshowposFlag == false) {
 								s_timelinewheelFlag = false;
 								s_timelineshowposFlag = true;
 							}
 						}
 					}
-				});
+					});
 
 
 				if (s_parentcheck) {
@@ -11079,7 +11194,7 @@ int UpdateEditedEuler()
 			frameleng = (int)(s_model->GetCurMotInfo()->frameleng + 0.0001);
 			startframe = (int)(s_owpLTimeline->getShowPosTime() + 0.0001);
 			endframe = (int)(min(frameleng, startframe + s_owpEulerGraph->getShowposWidth()));
-				
+
 			int firstframe;
 			firstframe = max((startframe - 1), 0);
 
@@ -11103,7 +11218,7 @@ int UpdateEditedEuler()
 						//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
 						cureul = opebone->GetLocalEul(g_limitdegflag, curmi->motid, (double)curtime, 0);
 					}
-					else if(s_ikkind == 1){//移動
+					else if (s_ikkind == 1) {//移動
 						cureul = opebone->CalcLocalTraAnim(g_limitdegflag, curmi->motid, (double)curtime);
 					}
 					else if (s_ikkind == 2) {//スケール
@@ -11220,12 +11335,12 @@ int refreshEulerGraph()
 		int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 
 		//if (!g_motionbrush_value || (g_motionbrush_frameleng != frameleng)) {
-			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
-				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
-				PostQuitMessage(result);
-			}
+		int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
+		if ((result != 0) && (result != 2)) {//result==2はマウス操作でフレームが範囲外に出たときなど通常使用で起きる
+			_ASSERT(0);
+			::MessageBox(s_mainhwnd, L"致命的なエラーが生じたので終了します。", L"CreateMotionBrush ERROR !!!", MB_OK);
+			PostQuitMessage(result);
+		}
 		//}
 
 		//int result = CreateMotionBrush(0, (double)(frameleng - 1), true);
@@ -11247,9 +11362,9 @@ int refreshEulerGraph()
 
 
 
-		if (s_model && (s_curboneno >= 0)){
+		if (s_model && (s_curboneno >= 0)) {
 			CBone* opebone = s_model->GetBoneByID(s_curboneno);
-			if (opebone){
+			if (opebone) {
 				CBone* parentbone = opebone->GetParent();
 				if (s_ikkind == 0) {
 					//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
@@ -11259,7 +11374,7 @@ int refreshEulerGraph()
 				}
 
 				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi){
+				if (curmi) {
 					int curtime;
 					float minval = 0.0;
 					float maxval = 0.0;
@@ -11284,15 +11399,15 @@ int refreshEulerGraph()
 						if (curmp) {
 							if (s_ikkind == 0) {//回転
 								//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
-								cureul = opebone->GetLocalEul(g_limitdegflag, 
+								cureul = opebone->GetLocalEul(g_limitdegflag,
 									curmi->motid, (double)curtime, 0);
 							}
 							else if (s_ikkind == 1) {//移動
-								cureul = opebone->CalcLocalTraAnim(g_limitdegflag, 
+								cureul = opebone->CalcLocalTraAnim(g_limitdegflag,
 									curmi->motid, (double)curtime);
 							}
 							else if (s_ikkind == 2) {//スケール
-								cureul = opebone->CalcLocalScaleAnim(g_limitdegflag, 
+								cureul = opebone->CalcLocalScaleAnim(g_limitdegflag,
 									curmi->motid, (double)curtime);
 							}
 						}
@@ -11311,7 +11426,7 @@ int refreshEulerGraph()
 						s_owpEulerGraph->newKey(needCallRewrite, _T("Y"), (double)curtime, cureul.y);
 						s_owpEulerGraph->newKey(needCallRewrite, _T("Z"), (double)curtime, cureul.z);
 						//s_owpEulerGraph->newKey(_T("S"), (double)curtime, 0.0);
-						
+
 
 						if (minfirstflag == 1) {
 							minval = min(cureul.z, min(cureul.x, cureul.y));
@@ -11359,13 +11474,13 @@ int refreshEulerGraph()
 							scalemax = maxval + 10.0;
 						}
 
-						
+
 						unsigned int scaleindex;
 						for (scaleindex = 0; scaleindex < (unsigned int)frameleng; scaleindex++) {
 							double curscalevalue;
 							//if ((scaleindex >= (unsigned int)g_motionbrush_startframe) && (scaleindex <= (unsigned int)g_motionbrush_endframe) && (scaleindex < (unsigned int)g_motionbrush_frameleng)) {
-								curscalevalue = (double)(*(g_motionbrush_value + scaleindex));// *(scalemax - scalemin) + scalemin;
-								curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
+							curscalevalue = (double)(*(g_motionbrush_value + scaleindex));// *(scalemax - scalemin) + scalemin;
+							curscalevalue = (curscalevalue * 0.5 + 0.5) * (scalemax - scalemin) + scalemin;
 							//}
 							//else {
 							//	curscalevalue = 0.0;// *(scalemax - scalemin) + scalemin;
@@ -11390,7 +11505,7 @@ int refreshEulerGraph()
 
 
 //タイムラインにモーションデータのキーを設定する
-void refreshTimeline(OWP_Timeline& timeline){
+void refreshTimeline(OWP_Timeline& timeline) {
 
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return;
@@ -11401,8 +11516,8 @@ void refreshTimeline(OWP_Timeline& timeline){
 	//}
 
 	//時刻幅を設定
-	if( s_model && (s_model->GetCurMotInfo()) ){
-		timeline.setMaxTime( s_model->GetCurMotInfo()->frameleng );
+	if (s_model && (s_model->GetCurMotInfo())) {
+		timeline.setMaxTime(s_model->GetCurMotInfo()->frameleng);
 
 		s_owpLTimeline->deleteKey();
 		s_owpLTimeline->deleteLine();
@@ -11414,12 +11529,12 @@ void refreshTimeline(OWP_Timeline& timeline){
 		//s_owpLTimeline->newKey( s_strmark, 0.0, 0 );
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
-		s_owpLTimeline->setMaxTime( s_model->GetCurMotInfo()->frameleng );//左端の１マスを選んだ状態がフレーム０を選んだ状態だから　-1 しない。
+		s_owpLTimeline->setMaxTime(s_model->GetCurMotInfo()->frameleng);//左端の１マスを選んだ状態がフレーム０を選んだ状態だから　-1 しない。
 
 
 		int itime;
-		for( itime = 0; itime < (int)s_model->GetCurMotInfo()->frameleng; itime++ ){
-			s_owpLTimeline->newKey( s_streditrange, (double)itime, 0 );
+		for (itime = 0; itime < (int)s_model->GetCurMotInfo()->frameleng; itime++) {
+			s_owpLTimeline->newKey(s_streditrange, (double)itime, 0);
 		}
 	}
 
@@ -11430,16 +11545,17 @@ void refreshTimeline(OWP_Timeline& timeline){
 	s_lineno2boneno.clear();
 	s_boneno2lineno.clear();
 
-	if( s_model && s_model->GetTopBone() ){
-		CallF( s_model->FillTimeLine( timeline, s_lineno2boneno, s_boneno2lineno ), return );
-	}else{
+	if (s_model && s_model->GetTopBone()) {
+		CallF(s_model->FillTimeLine(timeline, s_lineno2boneno, s_boneno2lineno), return);
+	}
+	else {
 		WCHAR label[256];
 		swprintf_s(label, 256, L"dummy%d", 0);
 		timeline.newLine(0, 0, label);
 	}
 
 	//選択時刻を設定
-	timeline.setCurrentLine( 0 );
+	timeline.setCurrentLine(0);
 	s_owpLTimeline->setCurrentTime(1.0, true);
 	//timeline.setCurrentTime(0.0);
 
@@ -11466,15 +11582,15 @@ void refreshTimeline(OWP_Timeline& timeline){
 
 
 
-int AddBoneTra2( ChaVector3 diffvec )
+int AddBoneTra2(ChaVector3 diffvec)
 {
-	if( !s_model || (s_curboneno < 0) && !s_model->GetTopBone() ){
+	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()) {
 		return 0;
 	}
 
-	CBone* curbone = s_model->GetBoneByID( s_curboneno  );
-	if( !curbone ){
-		_ASSERT( 0 );
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (!curbone) {
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -11506,19 +11622,19 @@ int ImpulseBonePhysics(ChaVector3 diffvec)
 }
 */
 
-int AddBoneTra( int kind, float srctra )
+int AddBoneTra(int kind, float srctra)
 {
-	if( !s_model || (s_curboneno < 0) && !s_model->GetTopBone() ){
+	if (!s_model || (s_curboneno < 0) && !s_model->GetTopBone()) {
 		return 0;
 	}
 
-	CBone* curbone = s_model->GetBoneByID( s_curboneno );
-	if( !curbone ){
-		_ASSERT( 0 );
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (!curbone) {
+		_ASSERT(0);
 		return 0;
 	}
 
-	s_model->FKBoneTraAxis(g_limitdegflag, 
+	s_model->FKBoneTraAxis(g_limitdegflag,
 		0, &s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
 
 
@@ -11623,7 +11739,7 @@ int AddBoneScale(int kind, float srcscale)
 		scaleval = downval;
 	}
 
-	s_model->FKBoneScaleAxis(g_limitdegflag, 
+	s_model->FKBoneScaleAxis(g_limitdegflag,
 		0, &s_editrange, s_curboneno, kind, scaleval);
 
 
@@ -11635,16 +11751,17 @@ int AddBoneScale(int kind, float srcscale)
 
 int DispMotionWindow()
 {
-	if( !s_timelineWnd ){
+	if (!s_timelineWnd) {
 		return 0;
 	}
 
-	if( s_dispmw ){
-		s_timelineWnd->setVisible( false );
+	if (s_dispmw) {
+		s_timelineWnd->setVisible(false);
 		s_LtimelineWnd->setVisible(false);
 		s_dispmw = false;
-	}else{
-		s_timelineWnd->setVisible( true );
+	}
+	else {
+		s_timelineWnd->setVisible(true);
 		s_LtimelineWnd->setVisible(true);
 		s_dispmw = true;
 	}
@@ -11653,15 +11770,16 @@ int DispMotionWindow()
 }
 int DispToolWindow()
 {
-	if( !s_toolWnd ){
+	if (!s_toolWnd) {
 		return 0;
 	}
 
-	if( s_disptool ){
-		s_toolWnd->setVisible( false );
+	if (s_disptool) {
+		s_toolWnd->setVisible(false);
 		s_disptool = false;
-	}else{
-		s_toolWnd->setVisible( true );
+	}
+	else {
+		s_toolWnd->setVisible(true);
 		s_disptool = true;
 	}
 
@@ -11680,13 +11798,14 @@ int DispObjPanel()
 		return 0;
 	}
 
-	if(!savedispobj){
+	if (!savedispobj) {
 		s_layerWnd->setListenMouse(false);
-		s_layerWnd->setVisible( false );
+		s_layerWnd->setVisible(false);
 		s_dispobj = false;
-	}else{
+	}
+	else {
 		s_layerWnd->setListenMouse(true);
-		s_layerWnd->setVisible( true );
+		s_layerWnd->setVisible(true);
 		s_dispobj = true;
 
 		//RECT dlgrect;
@@ -11709,13 +11828,14 @@ int DispModelPanel()
 		return 0;
 	}
 
-	if(!savedispmodel){
+	if (!savedispmodel) {
 		s_modelpanel.panel->setListenMouse(false);
-		s_modelpanel.panel->setVisible( false );
+		s_modelpanel.panel->setVisible(false);
 		s_dispmodel = false;
-	}else{
+	}
+	else {
 		s_modelpanel.panel->setListenMouse(true);
-		s_modelpanel.panel->setVisible( true );
+		s_modelpanel.panel->setVisible(true);
 		s_dispmodel = true;
 
 		//RECT dlgrect;
@@ -11797,20 +11917,20 @@ int EraseKeyList()
 	return 0;
 }
 
-int AddMotion( const WCHAR* wfilename, double srcmotleng )
+int AddMotion(const WCHAR* wfilename, double srcmotleng)
 {
 	int motnum = (int)s_tlarray.size();
-	if( motnum >= MAXMOTIONNUM ){
+	if (motnum >= MAXMOTIONNUM) {
 		::DSMessageBox(s_3dwnd, L"Can't Load More.", L"error!!!", MB_OK);
 		//DSMessageBox( s_3dwnd, L"これ以上モーションを読み込めません。", L"モーション数が多すぎます。", MB_OK );
 		return 0;
 	}
 
 	char motionname[256];
-	ZeroMemory( motionname, 256 );
+	ZeroMemory(motionname, 256);
 	SYSTEMTIME systime;
-	GetLocalTime( &systime );
-	sprintf_s( motionname, 256, "motion%u%u%u%u%u%u%u",
+	GetLocalTime(&systime);
+	sprintf_s(motionname, 256, "motion%u%u%u%u%u%u%u",
 		systime.wYear,
 		systime.wMonth,
 		systime.wDay,
@@ -11822,10 +11942,10 @@ int AddMotion( const WCHAR* wfilename, double srcmotleng )
 
 	int newmotid = -1;
 	double motleng;
-	if (srcmotleng == 0.0){
+	if (srcmotleng == 0.0) {
 		motleng = 100.0;
 	}
-	else{
+	else {
 		motleng = srcmotleng;
 	}
 
@@ -11838,12 +11958,12 @@ int AddMotion( const WCHAR* wfilename, double srcmotleng )
 		addwfilename = L"ForEmpty";
 	}
 	//CallF( s_model->AddMotion( motionname, wfilename, motleng, &newmotid ), return 1 );
-	CallF( s_model->AddMotion( motionname, addwfilename, motleng, &newmotid ), return 1 );
+	CallF(s_model->AddMotion(motionname, addwfilename, motleng, &newmotid), return 1);
 	//_ASSERT(0);
 
 
 
-	CallF( AddTimeLine( newmotid, true ), return 1 );
+	CallF(AddTimeLine(newmotid, true), return 1);
 
 
 	//2023/02/11
@@ -11851,49 +11971,49 @@ int AddMotion( const WCHAR* wfilename, double srcmotleng )
 	InitCurMotion(0, 0);
 
 	int selindex = (int)s_tlarray.size() - 1;
-	CallF( OnAnimMenu( true, selindex ), return 1 );
+	CallF(OnAnimMenu(true, selindex), return 1);
 
 
 	return 0;
 }
 
-int OnRgdMorphMenu( int selindex )
+int OnRgdMorphMenu(int selindex)
 {
-	s_model->SetRgdMorphIndex( selindex );
+	s_model->SetRgdMorphIndex(selindex);
 
-	if( selindex < 0 ){
+	if (selindex < 0) {
 		return 0;//!!!!!!!!!
 	}
 
-	_ASSERT( s_morphmenu );
+	_ASSERT(s_morphmenu);
 
 	int iAnimSet, cAnimSets;
-	cAnimSets = GetMenuItemCount( s_morphmenu );
+	cAnimSets = GetMenuItemCount(s_morphmenu);
 	for (iAnimSet = 0; iAnimSet < cAnimSets; iAnimSet++)
 	{
 		RemoveMenu(s_morphmenu, 0, MF_BYPOSITION);
 	}
 
-	if( !s_model || !s_owpTimeline ){
+	if (!s_model || !s_owpTimeline) {
 		return 0;//!!!!!!!!!!!!!!!!!!
 	}
 
 
 	cAnimSets = (int)s_tlarray.size();
 
-	if( cAnimSets <= 0 ){
+	if (cAnimSets <= 0) {
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
 	char* szName;
 	WCHAR wname[256];
-	for(iAnimSet = 0; iAnimSet < cAnimSets; iAnimSet++)
+	for (iAnimSet = 0; iAnimSet < cAnimSets; iAnimSet++)
 	{
 		int motid;
 		motid = s_tlarray[iAnimSet].motionid;
 
-		szName = s_model->GetMotInfo( motid )->motname;
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, szName, 256, wname, 256 );
+		szName = s_model->GetMotInfo(motid)->motname;
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szName, 256, wname, 256);
 
 		if (szName != NULL)
 			AppendMenu(s_morphmenu, MF_STRING, 64000 + iAnimSet, wname);
@@ -11901,7 +12021,7 @@ int OnRgdMorphMenu( int selindex )
 			AppendMenu(s_morphmenu, MF_STRING, 64000 + iAnimSet, L"<No Animation Name>");
 	}
 
-	if( cAnimSets > 0 ){
+	if (cAnimSets > 0) {
 		CheckMenuItem(s_mainmenu, 64000 + selindex, MF_CHECKED);
 	}
 
@@ -11909,7 +12029,7 @@ int OnRgdMorphMenu( int selindex )
 }
 
 
-int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
+int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 {
 
 	s_underselectmotion = true;
@@ -11926,23 +12046,23 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	s_motmenuindexmap[s_model] = selindex;
 
-	if( selindex < 0 ){
+	if (selindex < 0) {
 		SetMainWindowTitle();
 		s_underselectmotion = false;
 		return 0;//!!!!!!!!!
 	}
 
-	_ASSERT( s_animmenu );
+	_ASSERT(s_animmenu);
 
 	int iAnimSet, cAnimSets;
-	cAnimSets = GetMenuItemCount( s_animmenu );
+	cAnimSets = GetMenuItemCount(s_animmenu);
 	for (iAnimSet = 0; iAnimSet < cAnimSets; iAnimSet++)
 	{
 		RemoveMenu(s_animmenu, 0, MF_BYPOSITION);
 	}
 
 
-	if( !s_model || !s_owpTimeline ){
+	if (!s_model || !s_owpTimeline) {
 		s_curmotid = -1;
 		SetMainWindowTitle();
 		s_underselectmotion = false;
@@ -11951,8 +12071,8 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	cAnimSets = (int)s_tlarray.size();
 
-	if( cAnimSets <= 0 ){
-		if( s_owpTimeline && dorefreshflag){
+	if (cAnimSets <= 0) {
+		if (s_owpTimeline && dorefreshflag) {
 			refreshTimeline(*s_owpTimeline);
 		}
 		s_curmotid = -1;
@@ -11963,12 +12083,12 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 	char* szName;
 	WCHAR wname[256];
-	for(iAnimSet = 0; iAnimSet < cAnimSets; iAnimSet++)
+	for (iAnimSet = 0; iAnimSet < cAnimSets; iAnimSet++)
 	{
 		int motid;
 		motid = s_tlarray[iAnimSet].motionid;
-		szName = s_model->GetMotInfo( motid )->motname;
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, szName, 256, wname, 256 );
+		szName = s_model->GetMotInfo(motid)->motname;
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szName, 256, wname, 256);
 
 		if (szName != NULL)
 			AppendMenu(s_animmenu, MF_STRING, 59900 + iAnimSet, wname);
@@ -11976,15 +12096,15 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 			AppendMenu(s_animmenu, MF_STRING, 59900 + iAnimSet, L"<No Animation Name>");
 	}
 
-	if( cAnimSets > 0 ){
+	if (cAnimSets > 0) {
 		CheckMenuItem(s_mainmenu, 59900 + selindex, MF_CHECKED);
 
 		int selmotid;
-		selmotid = s_tlarray[ selindex ].motionid;
-		if( selmotid > 0 ){
-			CallF( s_model->SetCurrentMotion( selmotid ), return 1 );
+		selmotid = s_tlarray[selindex].motionid;
+		if (selmotid > 0) {
+			CallF(s_model->SetCurrentMotion(selmotid), return 1);
 			//EraseKeyList();
-			s_owpTimeline->setCurrentLine( 0 );
+			s_owpTimeline->setCurrentLine(0);
 			//s_owpTimeline->setCurrentTime( 0.0 );
 			s_owpTimeline->setCurrentTime(1.0);
 			s_curmotid = selmotid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -12015,7 +12135,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 		}
 	}
 
-	if( s_owpTimeline && dorefreshflag){
+	if (s_owpTimeline && dorefreshflag) {
 		//タイムラインのキーを設定
 		refreshTimeline(*s_owpTimeline);
 		//s_owpTimeline->setCurrentTime( 0.0 );
@@ -12031,18 +12151,19 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	//	OnAddMotion(curmi->motid);
 	//}
 
-	if( saveundoflag == 1 ){
+	if (saveundoflag == 1) {
 		//if( s_model ){
 		//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		//}
 		if (s_model) {
 			PrepairUndo();
 		}
-	}else{
-		if( s_model ){
+	}
+	else {
+		if (s_model) {
 			//double curframe = s_model->GetCurMotInfo()->curframe;
 			double curframe = 1.0;
-			s_owpLTimeline->setCurrentTime( curframe, true );
+			s_owpLTimeline->setCurrentTime(curframe, true);
 			s_owpEulerGraph->setCurrentTime(curframe, false);
 		}
 	}
@@ -12064,7 +12185,7 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 
 
 
-	if (s_model->GetInitAxisMatX() == 0){//OnAnimMenuに移動
+	if (s_model->GetInitAxisMatX() == 0) {//OnAnimMenuに移動
 		s_owpLTimeline->setCurrentTime(0.0, true);
 		s_owpEulerGraph->setCurrentTime(0.0, false);
 		s_model->SetMotionFrame(0.0);
@@ -12080,29 +12201,29 @@ int OnAnimMenu( bool dorefreshflag, int selindex, int saveundoflag )
 	return 0;
 }
 
-int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
+int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 {
 	s_underselectmodel = true;
 
 	s_customrigbone = 0;
-	
-	if (s_anglelimitdlg){
+
+	if (s_anglelimitdlg) {
 		s_underanglelimithscroll = 0;
 		DestroyWindow(s_anglelimitdlg);
 		s_anglelimitdlg = 0;
 	}
-	if (s_rotaxisdlg){
+	if (s_rotaxisdlg) {
 		DestroyWindow(s_rotaxisdlg);
 		s_rotaxisdlg = 0;
 	}
-	if (s_customrigdlg){
+	if (s_customrigdlg) {
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
 	}
 	s_oprigflag = 0;
 
-	if( callbymenu == 1 ){
-		if( s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0) ){
+	if (callbymenu == 1) {
+		if (s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0)) {
 			s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
 			s_modelindex[s_curmodelmenuindex].lineno2boneno = s_lineno2boneno;
 			s_modelindex[s_curmodelmenuindex].boneno2lineno = s_boneno2lineno;
@@ -12111,20 +12232,20 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 	s_curmodelmenuindex = selindex;
 
-	_ASSERT( s_modelmenu );
+	_ASSERT(s_modelmenu);
 	int iMdlSet, cMdlSets;
-	cMdlSets = GetMenuItemCount( s_modelmenu );
+	cMdlSets = GetMenuItemCount(s_modelmenu);
 	for (iMdlSet = 0; iMdlSet < cMdlSets; iMdlSet++)
 	{
 		RemoveMenu(s_modelmenu, 0, MF_BYPOSITION);
 	}
 
-	if( (selindex < 0) || !s_model ){
+	if ((selindex < 0) || !s_model) {
 		OrgWindowListenMouse(false);
 
 		s_model = 0;
 		s_curboneno = -1;
-		if( s_owpTimeline && dorefreshtl){
+		if (s_owpTimeline && dorefreshtl) {
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
@@ -12137,11 +12258,11 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	}
 
 	cMdlSets = (int)s_modelindex.size();
-	if( cMdlSets <= 0 ){
+	if (cMdlSets <= 0) {
 		OrgWindowListenMouse(false);
 
 		s_model = 0;
-		if( s_owpTimeline && dorefreshtl){
+		if (s_owpTimeline && dorefreshtl) {
 			refreshTimeline(*s_owpTimeline);
 		}
 		refreshModelPanel();
@@ -12154,11 +12275,11 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	}
 
 	WCHAR* wname;
-	for(iMdlSet = 0; iMdlSet < cMdlSets; iMdlSet++)
+	for (iMdlSet = 0; iMdlSet < cMdlSets; iMdlSet++)
 	{
 		wname = (WCHAR*)s_modelindex[iMdlSet].modelptr->GetFileName();
 
-		if( *wname != 0 )
+		if (*wname != 0)
 			AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, wname);
 		else
 			AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, L"<No Model Name>");
@@ -12168,10 +12289,10 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 
 
 
-	if( cMdlSets > 0 ){
-		CheckMenuItem( s_mainmenu, 61000 + selindex, MF_CHECKED );
+	if (cMdlSets > 0) {
+		CheckMenuItem(s_mainmenu, 61000 + selindex, MF_CHECKED);
 
-		s_model = s_modelindex[ selindex ].modelptr;
+		s_model = s_modelindex[selindex].modelptr;
 		if (s_model) {
 			s_tlarray = s_modelindex[selindex].tlarray;
 			s_motmenuindexmap[s_model] = s_modelindex[selindex].motmenuindex;
@@ -12185,28 +12306,29 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	}
 	//else {
 		//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
-		InitTimelineSelection();
+	InitTimelineSelection();
 	//}
 
 
-	if( s_model ){
-		if( s_model->GetRigidElemInfoSize() > 0 ){
-			int result1 = OnREMenu( 0, 0 );
+	if (s_model) {
+		if (s_model->GetRigidElemInfoSize() > 0) {
+			int result1 = OnREMenu(0, 0);
 			if (result1) {
 				s_underselectmodel = false;
 				return 0;
 			}
-			int result2 = OnRgdMenu( 0, 0 );
+			int result2 = OnRgdMenu(0, 0);
 			if (result2) {
 				s_underselectmodel = false;
 				return 0;
 			}
-			int result3 = OnImpMenu( 0 );
+			int result3 = OnImpMenu(0);
 			if (result3) {
 				s_underselectmodel = false;
 				return 0;
 			}
-		}else{
+		}
+		else {
 			int result1 = OnREMenu(-1, 0);
 			if (result1) {
 				s_underselectmodel = false;
@@ -12223,7 +12345,8 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 				return 0;
 			}
 		}
-	}else{
+	}
+	else {
 		int result1 = OnREMenu(-1, 0);
 		if (result1) {
 			s_underselectmodel = false;
@@ -12242,10 +12365,10 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	}
 
 
-	g_SampleUI.GetSlider( IDC_SPEED )->SetValue( (int)( g_dspeed * 100.0f ) );
+	g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
 	WCHAR sz[100];
-	swprintf_s( sz, 100, L"Speed: %0.4f", g_dspeed );
-    g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
+	swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
+	g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
 
 	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
 	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
@@ -12262,7 +12385,7 @@ int OnModelMenu( bool dorefreshtl, int selindex, int callbymenu )
 	return 0;
 }
 
-int OnREMenu( int selindex, int callbymenu )
+int OnREMenu(int selindex, int callbymenu)
 {
 	if (!s_model) {
 		_ASSERT(0);
@@ -12271,56 +12394,56 @@ int OnREMenu( int selindex, int callbymenu )
 	}
 	s_reindexmap[s_model] = selindex;
 
-	_ASSERT( s_remenu );
+	_ASSERT(s_remenu);
 	int iReSet, cReSets;
-	cReSets = GetMenuItemCount( s_remenu );
+	cReSets = GetMenuItemCount(s_remenu);
 	for (iReSet = 0; iReSet < cReSets; iReSet++)
 	{
 		RemoveMenu(s_remenu, 0, MF_BYPOSITION);
 	}
 
-	if( (selindex < 0) || !s_model ){
-		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
+	if ((selindex < 0) || !s_model) {
+		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded");
 		SetMainWindowTitle();
 		return 0;//!!!!!!!!!
 	}
 
 	cReSets = s_model->GetRigidElemInfoSize();
-	if( cReSets <= 0 ){
+	if (cReSets <= 0) {
 		if (s_model) {
 			s_reindexmap[s_model] = -1;
 		}
-		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded" );
+		AppendMenu(s_remenu, MF_STRING, 62000, L"NotLoaded");
 		SetMainWindowTitle();
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
 	WCHAR wname[MAX_PATH];
-	for(iReSet = 0; iReSet < cReSets; iReSet++)
+	for (iReSet = 0; iReSet < cReSets; iReSet++)
 	{
-		ZeroMemory( wname, sizeof( WCHAR ) * MAX_PATH );
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, s_model->GetRigidElemInfo( iReSet ).filename, MAX_PATH, wname, MAX_PATH );
+		ZeroMemory(wname, sizeof(WCHAR) * MAX_PATH);
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, s_model->GetRigidElemInfo(iReSet).filename, MAX_PATH, wname, MAX_PATH);
 		AppendMenu(s_remenu, MF_STRING, 62000 + iReSet, wname);
-DbgOut( L"OnREMenu : addmenu %s\r\n", wname );
+		DbgOut(L"OnREMenu : addmenu %s\r\n", wname);
 	}
 
-	if( cReSets > 0 ){
-		CheckMenuItem( s_mainmenu, 62000 + selindex, MF_CHECKED );
+	if (cReSets > 0) {
+		CheckMenuItem(s_mainmenu, 62000 + selindex, MF_CHECKED);
 	}
 
-	CallF( s_model->SetCurrentRigidElem( s_reindexmap[s_model] ), return 1 );
+	CallF(s_model->SetCurrentRigidElem(s_reindexmap[s_model]), return 1);
 
 	RigidElem2WndParam();
-	
+
 	SetMainWindowTitle();
 
 	return 0;
 }
 
-int OnRgdMenu( int selindex, int callbymenu )
+int OnRgdMenu(int selindex, int callbymenu)
 {
-	if( s_model ){
-		s_model->SetRgdIndex( selindex );
+	if (s_model) {
+		s_model->SetRgdIndex(selindex);
 	}
 	else {
 		_ASSERT(0);
@@ -12328,84 +12451,84 @@ int OnRgdMenu( int selindex, int callbymenu )
 	}
 	s_rgdindexmap[s_model] = selindex;
 
-	_ASSERT( s_rgdmenu );
+	_ASSERT(s_rgdmenu);
 	int iReSet, cReSets;
-	cReSets = GetMenuItemCount( s_rgdmenu );
+	cReSets = GetMenuItemCount(s_rgdmenu);
 	for (iReSet = 0; iReSet < cReSets; iReSet++)
 	{
 		RemoveMenu(s_rgdmenu, 0, MF_BYPOSITION);
 	}
 
-	if( (selindex < 0) || !s_model ){
-		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded" );
+	if ((selindex < 0) || !s_model) {
+		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded");
 		return 0;//!!!!!!!!!
 	}
 
 	cReSets = s_model->GetRigidElemInfoSize();
-	if( cReSets <= 0 ){
+	if (cReSets <= 0) {
 		s_rgdindexmap[s_model] = -1;
-		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded" );
+		AppendMenu(s_rgdmenu, MF_STRING, 63000, L"NotLoaded");
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
 	WCHAR wname[MAX_PATH];
-	for(iReSet = 0; iReSet < cReSets; iReSet++)
+	for (iReSet = 0; iReSet < cReSets; iReSet++)
 	{
-		ZeroMemory( wname, sizeof( WCHAR ) * MAX_PATH );
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, s_model->GetRigidElemInfo( iReSet ).filename, MAX_PATH, wname, MAX_PATH );
+		ZeroMemory(wname, sizeof(WCHAR) * MAX_PATH);
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, s_model->GetRigidElemInfo(iReSet).filename, MAX_PATH, wname, MAX_PATH);
 		AppendMenu(s_rgdmenu, MF_STRING, 63000 + iReSet, wname);
 	}
 
-	if( cReSets > 0 ){
-		CheckMenuItem( s_mainmenu, 63000 + selindex, MF_CHECKED );
+	if (cReSets > 0) {
+		CheckMenuItem(s_mainmenu, 63000 + selindex, MF_CHECKED);
 	}
 
-//	CallF( s_model->SetCurrentRigidElem( s_curreindex ), return 1 );
+	//	CallF( s_model->SetCurrentRigidElem( s_curreindex ), return 1 );
 
 	return 0;
 }
-int OnImpMenu( int selindex )
+int OnImpMenu(int selindex)
 {
-	if( s_model ){
-		s_model->SetCurImpIndex( selindex );
+	if (s_model) {
+		s_model->SetCurImpIndex(selindex);
 	}
 
-	_ASSERT( s_impmenu );
+	_ASSERT(s_impmenu);
 	int iReSet, cReSets;
-	cReSets = GetMenuItemCount( s_impmenu );
+	cReSets = GetMenuItemCount(s_impmenu);
 	for (iReSet = 0; iReSet < cReSets; iReSet++)
 	{
 		RemoveMenu(s_impmenu, 0, MF_BYPOSITION);
 	}
 
-	if( (selindex < 0) || !s_model ){
-		AppendMenu(s_impmenu, MF_STRING, 64500, L"NotLoaded" );
+	if ((selindex < 0) || !s_model) {
+		AppendMenu(s_impmenu, MF_STRING, 64500, L"NotLoaded");
 		return 0;//!!!!!!!!!
 	}
 
 	cReSets = s_model->GetImpInfoSize();
-	if( cReSets <= 0 ){
-		s_model->SetCurImpIndex( 0 );
-		AppendMenu(s_impmenu, MF_STRING, 64500, L"NotLoaded" );
+	if (cReSets <= 0) {
+		s_model->SetCurImpIndex(0);
+		AppendMenu(s_impmenu, MF_STRING, 64500, L"NotLoaded");
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
 	WCHAR wname[MAX_PATH];
-	for(iReSet = 0; iReSet < cReSets; iReSet++)
+	for (iReSet = 0; iReSet < cReSets; iReSet++)
 	{
-		ZeroMemory( wname, sizeof( WCHAR ) * MAX_PATH );
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, s_model->GetImpInfo( iReSet ).c_str(), -1, wname, MAX_PATH );
+		ZeroMemory(wname, sizeof(WCHAR) * MAX_PATH);
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, s_model->GetImpInfo(iReSet).c_str(), -1, wname, MAX_PATH);
 		AppendMenu(s_impmenu, MF_STRING, 64500 + iReSet, wname);
 	}
 
-	if( cReSets > 0 ){
-		CheckMenuItem( s_mainmenu, 64500 + selindex, MF_CHECKED );
+	if (cReSets > 0) {
+		CheckMenuItem(s_mainmenu, 64500 + selindex, MF_CHECKED);
 	}
 
 	return 0;
 }
 
-int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = false
+int OnDelMotion(int delmenuindex, bool ondelbutton)//default : ondelbutton = false
 {
 	//if (s_underdelmotion == true) {
 	//	//再入防止
@@ -12415,7 +12538,7 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 	//s_underdelmotion = true;
 
 	int tlnum = (int)s_tlarray.size();
-	if( (tlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= tlnum) ){
+	if ((tlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= tlnum)) {
 		//s_underdelmotion = false;
 		return 0;
 	}
@@ -12424,7 +12547,7 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 		return 0;
 	}
 
-	int delmotid = s_tlarray[ delmenuindex ].motionid;
+	int delmotid = s_tlarray[delmenuindex].motionid;
 	int result;
 	s_model->WaitUpdateMatrixFinished();//2022/08/18
 	result = s_model->DeleteMotion(delmotid);
@@ -12465,7 +12588,7 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 
 
 	int newtlnum = (int)s_tlarray.size();
-	if( newtlnum == 0 ){
+	if (newtlnum == 0) {
 		AddMotion(L"forempty", 100.0);
 	}
 	OnAnimMenu(true, 0);
@@ -12477,25 +12600,25 @@ int OnDelMotion( int delmenuindex, bool ondelbutton )//default : ondelbutton = f
 	return 0;
 }
 
-int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == false
+int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == false
 {
 	//s_underdelmodel = true;
 
 	int mdlnum = (int)s_modelindex.size();
-	if( (mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum) ){
+	if ((mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum)) {
 		//s_underdelmodel = false;
 		return 0;
 	}
 
-	if (mdlnum == 1){
+	if (mdlnum == 1) {
 		OnDelAllModel();//psdk rootnode初期化
 		//s_underdelmodel = false;
 		return 0;
 	}
 
 
-	CModel* delmodel = s_modelindex[ delmenuindex ].modelptr;
-	if( delmodel ){
+	CModel* delmodel = s_modelindex[delmenuindex].modelptr;
+	if (delmodel) {
 		//map<CModel*, int>::iterator itrbonecnt;
 		//itrbonecnt = g_bonecntmap.find(delmodel);
 		//if (itrbonecnt != g_bonecntmap.end()){
@@ -12514,7 +12637,7 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		delete delmodel;
 	}
 
-	
+
 	//vector<MODELELEM> tmpmodelindex;
 	//tmpmodelindex = s_modelindex;
 	//s_modelindex.clear();
@@ -12543,7 +12666,7 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 
 
 
-	if( s_modelindex.empty() ){
+	if (s_modelindex.empty()) {
 		s_curboneno = -1;
 		s_model = 0;
 		s_curmodelmenuindex = -1;
@@ -12552,9 +12675,9 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		s_lineno2boneno.clear();
 		s_boneno2lineno.clear();
 	}
-	else{
+	else {
 		s_curboneno = -1;
-		s_model = s_modelindex[ 0 ].modelptr;
+		s_model = s_modelindex[0].modelptr;
 		if (s_model) {
 			s_motmenuindexmap[s_model] = s_modelindex[0].motmenuindex;
 			//s_modelindex[0].motmenuindex = 0;
@@ -12565,7 +12688,7 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 		s_boneno2lineno = s_modelindex[0].boneno2lineno;
 	}
 
-	OnModelMenu( true, 0, 0 );
+	OnModelMenu(true, 0, 0);
 
 	DispModelPanel();
 
@@ -12581,16 +12704,16 @@ int OnDelModel( int delmenuindex, bool ondelbutton )//default : ondelbutton == f
 int OnDelAllModel()
 {
 	int mdlnum = (int)s_modelindex.size();
-	if( mdlnum <= 0 ){
+	if (mdlnum <= 0) {
 		return 0;
 	}
 
 	//g_bonecntmap.clear();
 
 	vector<MODELELEM>::iterator itrmodel;
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* delmodel = itrmodel->modelptr;
-		if( delmodel ){
+		if (delmodel) {
 			delmodel->WaitUpdateMatrixFinished();//2022/08/18
 			CBone::OnDelModel(delmodel);
 
@@ -12617,7 +12740,7 @@ int OnDelAllModel()
 	s_lineno2boneno.clear();
 	s_boneno2lineno.clear();
 
-	OnModelMenu( true, -1, 0 );
+	OnModelMenu(true, -1, 0);
 
 	DispModelPanel();
 
@@ -12626,38 +12749,38 @@ int OnDelAllModel()
 
 
 
-int AddModelBound( MODELBOUND* mb, MODELBOUND* addmb )
+int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb)
 {
 	ChaVector3 newmin = mb->min;
 	ChaVector3 newmax = mb->max;
 
-	if( newmin.x > addmb->min.x ){
+	if (newmin.x > addmb->min.x) {
 		newmin.x = addmb->min.x;
 	}
-	if( newmin.y > addmb->min.y ){
+	if (newmin.y > addmb->min.y) {
 		newmin.y = addmb->min.y;
 	}
-	if( newmin.z > addmb->min.z ){
+	if (newmin.z > addmb->min.z) {
 		newmin.z = addmb->min.z;
 	}
 
-	if( newmax.x < addmb->max.x ){
+	if (newmax.x < addmb->max.x) {
 		newmax.x = addmb->max.x;
 	}
-	if( newmax.y < addmb->max.y ){
+	if (newmax.y < addmb->max.y) {
 		newmax.y = addmb->max.y;
 	}
-	if( newmax.z < addmb->max.z ){
+	if (newmax.z < addmb->max.z) {
 		newmax.z = addmb->max.z;
 	}
 
-	mb->center = ( newmin + newmax ) * 0.5f;
+	mb->center = (newmin + newmax) * 0.5f;
 	mb->min = newmin;
 	mb->max = newmax;
 
 	ChaVector3 diff;
 	diff = mb->center - newmin;
-	mb->r = (float)ChaVector3LengthDbl( &diff );
+	mb->r = (float)ChaVector3LengthDbl(&diff);
 
 	return 0;
 }
@@ -12670,30 +12793,32 @@ int refreshModelPanel()
 	WCHAR label[256];
 	int objnum = 0;
 
-	if( s_model ){
+	if (s_model) {
 		objnum = s_model->GetMqoObjectSize();
-	}else{
+	}
+	else {
 		objnum = 0;
 	}
-	
-	if( objnum > 0 ){
+
+	if (objnum > 0) {
 		map<int, CMQOObject*>::iterator itrobj;
-		for( itrobj = s_model->GetMqoObjectBegin(); itrobj != s_model->GetMqoObjectEnd(); itrobj++ ){
+		for (itrobj = s_model->GetMqoObjectBegin(); itrobj != s_model->GetMqoObjectEnd(); itrobj++) {
 			CMQOObject* curobj = itrobj->second;
 			WCHAR wname[256];
-			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, (char*)curobj->GetName(), 256, wname, 256 );
-			s_owpLayerTable->newLine( wname, (void*)curobj );
-			s_owpLayerTable->setVisible( wname, (curobj->GetDispFlag() > 0), true );
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, (char*)curobj->GetName(), 256, wname, 256);
+			s_owpLayerTable->newLine(wname, (void*)curobj);
+			s_owpLayerTable->setVisible(wname, (curobj->GetDispFlag() > 0), true);
 		}
-	}else{
-		wcscpy_s( label, 256, L"dummy name" );
-		s_owpLayerTable->newLine( label, 0 );
+	}
+	else {
+		wcscpy_s(label, 256, L"dummy name");
+		s_owpLayerTable->newLine(label, 0);
 	}
 
-	if( s_modelpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0) ){
+	if (s_modelpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0)) {
 		//if( s_curmodelmenuindex >= 0 ){
-			s_modelpanel.modelindex = s_curmodelmenuindex;
-			s_modelpanel.radiobutton->setSelectIndex( s_modelpanel.modelindex );
+		s_modelpanel.modelindex = s_curmodelmenuindex;
+		s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
 		//}
 	}
 
@@ -12760,20 +12885,20 @@ float CalcSelectScale(CBone* curboneptr)
 
 int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 {
-	if( s_curboneno < 0 ){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
 	MOTINFO* curmi = s_model->GetCurMotInfo();
-	if (!curmi){
+	if (!curmi) {
 		return 0;
 	}
 
-	CBone* curboneptr = s_model->GetBoneByID( s_curboneno );
-	if (curboneptr){
-		if (s_onragdollik == 0){
+	CBone* curboneptr = s_model->GetBoneByID(s_curboneno);
+	if (curboneptr) {
+		if (s_onragdollik == 0) {
 			int multworld = 1;
 			//s_selm = curboneptr->CalcManipulatorMatrix(1, multworld, curmi->motid, curmi->curframe);
 			int calccapsuleflag = 0;
@@ -12793,7 +12918,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		CalcSelectScale(curboneptr);//s_selectscaleにセット
 
 		ChaMatrix scalemat;
-		ChaMatrixIdentity( &scalemat );
+		ChaMatrixIdentity(&scalemat);
 		ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
 		ChaVector3 bonepos = curboneptr->GetWorldPos(g_limitdegflag, curmi->motid, curmi->curframe);
@@ -12816,7 +12941,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		s_selectmat_posture.data[MATI_42] = bonepos.y;
 		s_selectmat_posture.data[MATI_43] = bonepos.z;
 
-		if (renderflag){
+		if (renderflag) {
 			g_hmVP->SetMatrix((float*)&(s_matVP.data[MATI_11]));
 
 			g_hmWorld->SetMatrix((float*)&(s_selectmat.data[MATI_11]));
@@ -12850,7 +12975,7 @@ int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext)
 	s_select->UpdateMatrix(g_limitdegflag, &s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
-	if (s_dispselect){
+	if (s_dispselect) {
 		int lightflag = 1;
 		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
@@ -12939,10 +13064,10 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 
 	return 0;
 }
-int CalcTargetPos( ChaVector3* dstpos )
+int CalcTargetPos(ChaVector3* dstpos)
 {
 	ChaVector3 start3d, end3d;
-	CalcPickRay( &start3d, &end3d );
+	CalcPickRay(&start3d, &end3d);
 
 	//カメラの面とレイとの交点(targetpos)を求める。
 	ChaVector3 sb, se, n;
@@ -12951,16 +13076,16 @@ int CalcTargetPos( ChaVector3* dstpos )
 	n = g_camtargetpos - g_camEye;
 
 	float t;
-	t = ChaVector3Dot( &sb, &n ) / ChaVector3Dot( &se, &n );
+	t = ChaVector3Dot(&sb, &n) / ChaVector3Dot(&se, &n);
 
 	*dstpos = start3d * (1.0f - t) + end3d * t;
 	return 0;
 }
 
-int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
+int CalcPickRay(ChaVector3* startptr, ChaVector3* endptr)
 {
-	s_pickinfo.diffmouse.x = (float)( s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x );
-	s_pickinfo.diffmouse.y = (float)( s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y );
+	s_pickinfo.diffmouse.x = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x);
+	s_pickinfo.diffmouse.y = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y);
 
 	ChaVector3 mousesc;
 	//以下2行。相対位置で動かすことができるが、マウスが可動でボーンが可動でないような位置への操作があると、その後の操作と結果の関係が不自然にみえる。
@@ -12977,19 +13102,19 @@ int CalcPickRay( ChaVector3* startptr, ChaVector3* endptr )
 	rayx = mousesc.x / (s_pickinfo.winx / 2.0f) - 1.0f;
 	rayy = 1.0f - mousesc.y / (s_pickinfo.winy / 2.0f);
 
-	startsc = ChaVector3( rayx, rayy, 0.0f );
-	endsc = ChaVector3( rayx, rayy, 1.0f );
-	
-    ChaMatrix mView;
-    ChaMatrix mProj;
-    mProj = g_Camera->GetProjMatrix();
-    mView = s_matView;
+	startsc = ChaVector3(rayx, rayy, 0.0f);
+	endsc = ChaVector3(rayx, rayy, 1.0f);
+
+	ChaMatrix mView;
+	ChaMatrix mProj;
+	mProj = g_Camera->GetProjMatrix();
+	mView = s_matView;
 	ChaMatrix mVP, invmVP;
 	mVP = mView * mProj;
-	ChaMatrixInverse( &invmVP, NULL, &mVP );
+	ChaMatrixInverse(&invmVP, NULL, &mVP);
 
-	ChaVector3TransformCoord( startptr, &startsc, &invmVP );
-	ChaVector3TransformCoord( endptr, &endsc, &invmVP );
+	ChaVector3TransformCoord(startptr, &startsc, &invmVP);
+	ChaVector3TransformCoord(endptr, &endsc, &invmVP);
 
 	return 0;
 }
@@ -13280,7 +13405,7 @@ void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
 
 LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
-	
+
 	OPENFILENAME ofn;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
@@ -13303,15 +13428,15 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
-	ofn.lpstrDefExt =NULL;
+	ofn.lpstrDefExt = NULL;
 	ofn.lCustData = NULL;
 	//ofn.lpfnHook = GetFileNameHook;
 	ofn.lpfnHook = NULL;
 	ofn.lpTemplateName = NULL;
 
 	WCHAR strmult[256];
-	wcscpy_s( strmult, 256, L"1.000" );
-	
+	wcscpy_s(strmult, 256, L"1.000");
+
 	static int s_openmqoproctimer = 336;
 	static bool s_refokflag = false;
 
@@ -13319,385 +13444,386 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 	switch (msg) {
-		case WM_INITDIALOG: 
-			{
+	case WM_INITDIALOG:
+	{
 
-			SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
-			s_refokflag = false;
-			g_tmpmqomult = 1.0f;
-			ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
-			SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
-			SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
-			
-			if (s_filterindex != 7) {
-				if (s_filter_cha == 1) {
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
-				}
-				else {
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
-					SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
-				}
+		s_refokflag = false;
+		g_tmpmqomult = 1.0f;
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
+		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
+
+		if (s_filterindex != 7) {
+			if (s_filter_cha == 1) {
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
 			}
 			else {
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
-				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
-				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
 			}
+		}
+		else {
+			SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+			SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+			SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
+		}
 
 
-			if (s_filterindex == 5) {
-				//bvh2FBXの単体ファイル履歴
-				std::vector<wstring> vecopenfilename;
-				GetbvhHistoryDir(vecopenfilename);
+		if (s_filterindex == 5) {
+			//bvh2FBXの単体ファイル履歴
+			std::vector<wstring> vecopenfilename;
+			GetbvhHistoryDir(vecopenfilename);
 
-				SetDlgHistory(hDlgWnd, vecopenfilename);
-			}
-			else if (s_filterindex == 7) {
-				//retarget fileの単体ファイル履歴
-				std::vector<wstring> vecopenfilename;
-				GetRtgHistoryDir(vecopenfilename);
+			SetDlgHistory(hDlgWnd, vecopenfilename);
+		}
+		else if (s_filterindex == 7) {
+			//retarget fileの単体ファイル履歴
+			std::vector<wstring> vecopenfilename;
+			GetRtgHistoryDir(vecopenfilename);
 
-				SetDlgHistory(hDlgWnd, vecopenfilename);
-			}else{
-				//cha, fbxファイル履歴
-				std::vector<wstring> vecopenfilename;
-				GetchaHistoryDir(vecopenfilename, s_filter_cha);
+			SetDlgHistory(hDlgWnd, vecopenfilename);
+		}
+		else {
+			//cha, fbxファイル履歴
+			std::vector<wstring> vecopenfilename;
+			GetchaHistoryDir(vecopenfilename, s_filter_cha);
 
-				SetDlgHistory(hDlgWnd, vecopenfilename);
-			}
+			SetDlgHistory(hDlgWnd, vecopenfilename);
+		}
 
-			RECT dlgrect;
-			GetWindowRect(hDlgWnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		RECT dlgrect;
+		GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 
-			SetTimer(hDlgWnd, s_openmqoproctimer, 20, NULL);
-			s_mqodlghwnd = hDlgWnd;
-			}
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					GetDlgItemText( hDlgWnd, IDC_MULT, strmult, 256 );
-					g_tmpmqomult = (float)_wtof( strmult );
-					if (s_refokflag == false) {
-						UINT ischecked1 = 0;
-						UINT ischecked2 = 0;
-						UINT ischecked3 = 0;
-						UINT ischecked4 = 0;
-						UINT ischecked5 = 0;
-						UINT ischecked6 = 0;
-						UINT ischecked7 = 0;
-						UINT ischecked8 = 0;
-						UINT ischecked9 = 0;
-						UINT ischecked10 = 0;
-						UINT ischecked11 = 0;
-						UINT ischecked12 = 0;
-						UINT ischecked13 = 0;
-						UINT ischecked14 = 0;
-						UINT ischecked15 = 0;
-						UINT ischecked16 = 0;
-						UINT ischecked17 = 0;
-						UINT ischecked18 = 0;
-						UINT ischecked19 = 0;
-						UINT ischecked20 = 0;
-						ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADI51);
-						ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADI52);
-						ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADI53);
-						ischecked4 = IsDlgButtonChecked(hDlgWnd, IDC_RADI54);
-						ischecked5 = IsDlgButtonChecked(hDlgWnd, IDC_RADI55);
-						ischecked6 = IsDlgButtonChecked(hDlgWnd, IDC_RADI56);
-						ischecked7 = IsDlgButtonChecked(hDlgWnd, IDC_RADI57);
-						ischecked8 = IsDlgButtonChecked(hDlgWnd, IDC_RADI58);
-						ischecked9 = IsDlgButtonChecked(hDlgWnd, IDC_RADI59);
-						ischecked10 = IsDlgButtonChecked(hDlgWnd, IDC_RADI60);
-						ischecked11 = IsDlgButtonChecked(hDlgWnd, IDC_RADI61);
-						ischecked12 = IsDlgButtonChecked(hDlgWnd, IDC_RADI62);
-						ischecked13 = IsDlgButtonChecked(hDlgWnd, IDC_RADI63);
-						ischecked14 = IsDlgButtonChecked(hDlgWnd, IDC_RADI64);
-						ischecked15 = IsDlgButtonChecked(hDlgWnd, IDC_RADI65);
-						ischecked16 = IsDlgButtonChecked(hDlgWnd, IDC_RADI66);
-						ischecked17 = IsDlgButtonChecked(hDlgWnd, IDC_RADI67);
-						ischecked18 = IsDlgButtonChecked(hDlgWnd, IDC_RADI68);
-						ischecked19 = IsDlgButtonChecked(hDlgWnd, IDC_RADI69);
-						ischecked20 = IsDlgButtonChecked(hDlgWnd, IDC_RADI70);
-						if (ischecked1 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI51, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-							else {
-								g_tmpmqopath[0] = 0L;
-							}
-						}
-						else if (ischecked2 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI52, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-							else {
-								g_tmpmqopath[0] = 0L;
-							}
-						}
-						else if (ischecked3 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI53, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked4 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI54, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked5 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI55, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked6 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI56, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked7 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI57, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked8 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI58, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked9 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI59, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked10 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI60, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked11 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI61, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-							else {
-								g_tmpmqopath[0] = 0L;
-							}
-						}
-						else if (ischecked12 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI62, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-							else {
-								g_tmpmqopath[0] = 0L;
-							}
-						}
-						else if (ischecked13 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI63, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked14 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI64, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked15 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI65, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked16 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI66, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked17 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI67, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked18 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI68, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked19 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI69, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else if (ischecked20 == BST_CHECKED) {
-							WCHAR checkedpath[MAX_PATH] = { 0L };
-							GetDlgItemTextW(hDlgWnd, IDC_RADI70, checkedpath, MAX_PATH);
-							if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
-								wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
-							}
-						}
-						else {
-							g_tmpmqopath[0] = 0L;
-						}
+		SetTimer(hDlgWnd, s_openmqoproctimer, 20, NULL);
+		s_mqodlghwnd = hDlgWnd;
+	}
+	return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			GetDlgItemText(hDlgWnd, IDC_MULT, strmult, 256);
+			g_tmpmqomult = (float)_wtof(strmult);
+			if (s_refokflag == false) {
+				UINT ischecked1 = 0;
+				UINT ischecked2 = 0;
+				UINT ischecked3 = 0;
+				UINT ischecked4 = 0;
+				UINT ischecked5 = 0;
+				UINT ischecked6 = 0;
+				UINT ischecked7 = 0;
+				UINT ischecked8 = 0;
+				UINT ischecked9 = 0;
+				UINT ischecked10 = 0;
+				UINT ischecked11 = 0;
+				UINT ischecked12 = 0;
+				UINT ischecked13 = 0;
+				UINT ischecked14 = 0;
+				UINT ischecked15 = 0;
+				UINT ischecked16 = 0;
+				UINT ischecked17 = 0;
+				UINT ischecked18 = 0;
+				UINT ischecked19 = 0;
+				UINT ischecked20 = 0;
+				ischecked1 = IsDlgButtonChecked(hDlgWnd, IDC_RADI51);
+				ischecked2 = IsDlgButtonChecked(hDlgWnd, IDC_RADI52);
+				ischecked3 = IsDlgButtonChecked(hDlgWnd, IDC_RADI53);
+				ischecked4 = IsDlgButtonChecked(hDlgWnd, IDC_RADI54);
+				ischecked5 = IsDlgButtonChecked(hDlgWnd, IDC_RADI55);
+				ischecked6 = IsDlgButtonChecked(hDlgWnd, IDC_RADI56);
+				ischecked7 = IsDlgButtonChecked(hDlgWnd, IDC_RADI57);
+				ischecked8 = IsDlgButtonChecked(hDlgWnd, IDC_RADI58);
+				ischecked9 = IsDlgButtonChecked(hDlgWnd, IDC_RADI59);
+				ischecked10 = IsDlgButtonChecked(hDlgWnd, IDC_RADI60);
+				ischecked11 = IsDlgButtonChecked(hDlgWnd, IDC_RADI61);
+				ischecked12 = IsDlgButtonChecked(hDlgWnd, IDC_RADI62);
+				ischecked13 = IsDlgButtonChecked(hDlgWnd, IDC_RADI63);
+				ischecked14 = IsDlgButtonChecked(hDlgWnd, IDC_RADI64);
+				ischecked15 = IsDlgButtonChecked(hDlgWnd, IDC_RADI65);
+				ischecked16 = IsDlgButtonChecked(hDlgWnd, IDC_RADI66);
+				ischecked17 = IsDlgButtonChecked(hDlgWnd, IDC_RADI67);
+				ischecked18 = IsDlgButtonChecked(hDlgWnd, IDC_RADI68);
+				ischecked19 = IsDlgButtonChecked(hDlgWnd, IDC_RADI69);
+				ischecked20 = IsDlgButtonChecked(hDlgWnd, IDC_RADI70);
+				if (ischecked1 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI51, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
-					if (g_tmpmqopath[0]) {
-						//GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
-						s_mqodlghwnd = 0;
-						KillTimer(hDlgWnd, s_openmqoproctimer);
-						EndDialog(hDlgWnd, IDOK);
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
-					return TRUE;
-                    break;
-                case IDCANCEL:
-					s_mqodlghwnd = 0;
-					g_tmpmqopath[0] = 0L;
-					KillTimer(hDlgWnd, s_openmqoproctimer);
-                    EndDialog(hDlgWnd, IDCANCEL);
-					return TRUE;
-                    break;
-				case IDC_REFMQO:
-				{
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-
-					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-
-					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-						s_refokflag = true;
-					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					//UnhookWinEvent(hhook);
-
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
 				}
-					break;
-
-
-				case IDC_FILTER_CHA:
-					if (s_filterindex != 7) {
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
-						s_filter_cha = 1;
-
-						if (s_filterindex == 5) {
-							//bvh2FBXの単体ファイル履歴
-							std::vector<wstring> vecopenfilename;
-							GetbvhHistoryDir(vecopenfilename);
-							SetDlgHistory(hDlgWnd, vecopenfilename);
-						}
-						else {
-							//cha, fbxファイル履歴
-							std::vector<wstring> vecopenfilename;
-							GetchaHistoryDir(vecopenfilename, s_filter_cha);
-							SetDlgHistory(hDlgWnd, vecopenfilename);
-						}
+				else if (ischecked2 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI52, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
-					break;
-
-
-				case IDC_FILTER_FBX:
-					if (s_filterindex != 7) {
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
-						s_filter_cha = 2;
-
-						if (s_filterindex == 5) {
-							//bvh2FBXの単体ファイル履歴
-							std::vector<wstring> vecopenfilename;
-							GetbvhHistoryDir(vecopenfilename);
-							SetDlgHistory(hDlgWnd, vecopenfilename);
-						}
-						else {
-							//cha, fbxファイル履歴
-							std::vector<wstring> vecopenfilename;
-							GetchaHistoryDir(vecopenfilename, s_filter_cha);
-							SetDlgHistory(hDlgWnd, vecopenfilename);
-						}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
-					break;
-
-				case IDC_FILTER_RTG:
-					if (s_filterindex == 7) {
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
-						SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
-
-						//Retarget fileの単体ファイル履歴
-						std::vector<wstring> vecopenfilename;
-						GetRtgHistoryDir(vecopenfilename);
-						SetDlgHistory(hDlgWnd, vecopenfilename);
+				}
+				else if (ischecked3 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI53, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
-					break;
-
-				default:
-                    return FALSE;
-            }
+				}
+				else if (ischecked4 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI54, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked5 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI55, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked6 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI56, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked7 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI57, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked8 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI58, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked9 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI59, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked10 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI60, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked11 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI61, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
+				}
+				else if (ischecked12 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI62, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
+				}
+				else if (ischecked13 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI63, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked14 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI64, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked15 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI65, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked16 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI66, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked17 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI67, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked18 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI68, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked19 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI69, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else if (ischecked20 == BST_CHECKED) {
+					WCHAR checkedpath[MAX_PATH] = { 0L };
+					GetDlgItemTextW(hDlgWnd, IDC_RADI70, checkedpath, MAX_PATH);
+					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
+						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+				}
+				else {
+					g_tmpmqopath[0] = 0L;
+				}
+			}
+			if (g_tmpmqopath[0]) {
+				//GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
+				s_mqodlghwnd = 0;
+				KillTimer(hDlgWnd, s_openmqoproctimer);
+				EndDialog(hDlgWnd, IDOK);
+			}
+			return TRUE;
 			break;
-		case WM_TIMER:
-			OnDSUpdate();
-			return FALSE;
-			break;
-		case WM_CLOSE:
+		case IDCANCEL:
 			s_mqodlghwnd = 0;
 			g_tmpmqopath[0] = 0L;
 			KillTimer(hDlgWnd, s_openmqoproctimer);
 			EndDialog(hDlgWnd, IDCANCEL);
 			return TRUE;
 			break;
+		case IDC_REFMQO:
+		{
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+			if (GetOpenFileNameW(&ofn) == IDOK) {
+				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+				s_refokflag = true;
+			}
+
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
+
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+		}
+		break;
+
+
+		case IDC_FILTER_CHA:
+			if (s_filterindex != 7) {
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
+				s_filter_cha = 1;
+
+				if (s_filterindex == 5) {
+					//bvh2FBXの単体ファイル履歴
+					std::vector<wstring> vecopenfilename;
+					GetbvhHistoryDir(vecopenfilename);
+					SetDlgHistory(hDlgWnd, vecopenfilename);
+				}
+				else {
+					//cha, fbxファイル履歴
+					std::vector<wstring> vecopenfilename;
+					GetchaHistoryDir(vecopenfilename, s_filter_cha);
+					SetDlgHistory(hDlgWnd, vecopenfilename);
+				}
+			}
+			break;
+
+
+		case IDC_FILTER_FBX:
+			if (s_filterindex != 7) {
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, FALSE, 0);
+				s_filter_cha = 2;
+
+				if (s_filterindex == 5) {
+					//bvh2FBXの単体ファイル履歴
+					std::vector<wstring> vecopenfilename;
+					GetbvhHistoryDir(vecopenfilename);
+					SetDlgHistory(hDlgWnd, vecopenfilename);
+				}
+				else {
+					//cha, fbxファイル履歴
+					std::vector<wstring> vecopenfilename;
+					GetchaHistoryDir(vecopenfilename, s_filter_cha);
+					SetDlgHistory(hDlgWnd, vecopenfilename);
+				}
+			}
+			break;
+
+		case IDC_FILTER_RTG:
+			if (s_filterindex == 7) {
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
+				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
+
+				//Retarget fileの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				GetRtgHistoryDir(vecopenfilename);
+				SetDlgHistory(hDlgWnd, vecopenfilename);
+			}
+			break;
+
 		default:
-			DefWindowProc(hDlgWnd, msg, wp, lp);
-            return FALSE;
-    }
-    return TRUE;
+			return FALSE;
+		}
+		break;
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_mqodlghwnd = 0;
+		g_tmpmqopath[0] = 0L;
+		KillTimer(hDlgWnd, s_openmqoproctimer);
+		EndDialog(hDlgWnd, IDCANCEL);
+		return TRUE;
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 
@@ -13742,7 +13868,7 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
 		g_tmpmqomult = 1.0f;
-		ZeroMemory(g_tmpmqopath, sizeof(WCHAR)* MULTIPATH);
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 		SetDlgItemText(hDlgWnd, IDC_EDITFILTER, strfilter);
 		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
@@ -13795,7 +13921,7 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_getfilenamehwnd = 0;
 			s_getfilenametreeview = 0;
 		}
-			break;
+		break;
 		default:
 			return FALSE;
 		}
@@ -13828,10 +13954,10 @@ LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
-			if (IsDlgButtonChecked(hDlgWnd, IDC_AXISCHECK1) == BST_CHECKED){
+			if (IsDlgButtonChecked(hDlgWnd, IDC_AXISCHECK1) == BST_CHECKED) {
 				s_forcenewaxis = 1;
 			}
-			else{
+			else {
 				s_forcenewaxis = 0;
 			}
 
@@ -13858,9 +13984,9 @@ LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 
-//static WCHAR s_tmpmotname[256] = {0L};
-//static double s_tmpmotframeleng = 100.0f;
-//static int s_tmpmotloop = 0;
+	//static WCHAR s_tmpmotname[256] = {0L};
+	//static double s_tmpmotframeleng = 100.0f;
+	//static int s_tmpmotloop = 0;
 
 	WCHAR strframeleng[256];
 
@@ -13868,73 +13994,74 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 	switch (msg) {
-        case WM_INITDIALOG:
-		{
-			SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+	case WM_INITDIALOG:
+	{
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
-			if (s_model && s_model->GetCurMotInfo()) {
-				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-					s_model->GetCurMotInfo()->motname, 256, s_tmpmotname, 256);
-				SetDlgItemText(hDlgWnd, IDC_MOTNAME, s_tmpmotname);
+		if (s_model && s_model->GetCurMotInfo()) {
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+				s_model->GetCurMotInfo()->motname, 256, s_tmpmotname, 256);
+			SetDlgItemText(hDlgWnd, IDC_MOTNAME, s_tmpmotname);
 
-				s_tmpmotframeleng = s_model->GetCurMotInfo()->frameleng;
-				swprintf_s(strframeleng, 256, L"%f", s_tmpmotframeleng);
-				SetDlgItemText(hDlgWnd, IDC_FRAMELENG, strframeleng);
+			s_tmpmotframeleng = s_model->GetCurMotInfo()->frameleng;
+			swprintf_s(strframeleng, 256, L"%f", s_tmpmotframeleng);
+			SetDlgItemText(hDlgWnd, IDC_FRAMELENG, strframeleng);
 
-				s_tmpmotloop = s_model->GetCurMotInfo()->loopflag;
-				SendMessage(GetDlgItem(hDlgWnd, IDC_LOOP), BM_SETCHECK, (WPARAM)s_tmpmotloop, 0L);
+			s_tmpmotloop = s_model->GetCurMotInfo()->loopflag;
+			SendMessage(GetDlgItem(hDlgWnd, IDC_LOOP), BM_SETCHECK, (WPARAM)s_tmpmotloop, 0L);
+		}
+
+
+		RECT dlgrect;
+		GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
+		s_motpropdlghwnd = hDlgWnd;
+		SetTimer(hDlgWnd, s_motproptimerid, 20, NULL);
+	}
+	//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
+	return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			GetDlgItemText(hDlgWnd, IDC_MOTNAME, s_tmpmotname, 256);
+
+			GetDlgItemText(hDlgWnd, IDC_FRAMELENG, strframeleng, 256);
+			s_tmpmotframeleng = (float)_wtof(strframeleng);
+
+			if (IsDlgButtonChecked(hDlgWnd, IDC_LOOP) == BST_CHECKED) {
+				s_tmpmotloop = 1;
+			}
+			else {
+				s_tmpmotloop = 0;
 			}
 
-
-			RECT dlgrect;
-			GetWindowRect(hDlgWnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
-
-			s_motpropdlghwnd = hDlgWnd;
-			SetTimer(hDlgWnd, s_motproptimerid, 20, NULL);
-		}
-			//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					GetDlgItemText( hDlgWnd, IDC_MOTNAME, s_tmpmotname, 256 );
-					
-					GetDlgItemText( hDlgWnd, IDC_FRAMELENG, strframeleng, 256 );
-					s_tmpmotframeleng = (float)_wtof( strframeleng );
-
-					if( IsDlgButtonChecked( hDlgWnd, IDC_LOOP ) == BST_CHECKED ){  
-                        s_tmpmotloop = 1;
-                    }else{ 
-						s_tmpmotloop = 0;
-					}
-
-					KillTimer(hDlgWnd, s_motproptimerid);
-					s_motpropdlghwnd = 0;
-                    EndDialog(hDlgWnd, IDOK);
-                    break;
-                case IDCANCEL:
-					KillTimer(hDlgWnd, s_motproptimerid);
-					s_motpropdlghwnd = 0;
-					EndDialog(hDlgWnd, IDCANCEL);
-                    break;
-				default:
-                    return FALSE;
-            }
+			KillTimer(hDlgWnd, s_motproptimerid);
+			s_motpropdlghwnd = 0;
+			EndDialog(hDlgWnd, IDOK);
 			break;
-		case WM_TIMER:
-			OnDSUpdate();
-			break;
-		case WM_CLOSE:
+		case IDCANCEL:
 			KillTimer(hDlgWnd, s_motproptimerid);
 			s_motpropdlghwnd = 0;
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
-        default:
-			DefWindowProc(hDlgWnd, msg, wp, lp);
-            return FALSE;
-    }
-    return TRUE;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_TIMER:
+		OnDSUpdate();
+		break;
+	case WM_CLOSE:
+		KillTimer(hDlgWnd, s_motproptimerid);
+		s_motpropdlghwnd = 0;
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
 
 }
 
@@ -14066,23 +14193,23 @@ LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		}
 		break;
 	case WM_USER_FOR_BATCH_PROGRESS:
-	//case WM_TIMER:
-	//	swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_progresscnt + 1), s_progressnum);
-	//	SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+		//case WM_TIMER:
+		//	swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (s_progresscnt + 1), s_progressnum);
+		//	SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 
-	//	if (s_progresswnd) {
-	//		//HWND hProg;
-	//		hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
-	//		if (hProg) {
-	//			//プログレスバーの範囲を0-300にする           
-	//			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_progressnum));
-	//			//現在位置を設定  
-	//			SendMessage(hProg, PBM_SETPOS, (s_progresscnt + 1), 0);
-	//			//ステップの範囲を設定 
-	//			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
-	//		}
-	//		UpdateWindow(s_progresswnd);
-	//	}
+		//	if (s_progresswnd) {
+		//		//HWND hProg;
+		//		hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
+		//		if (hProg) {
+		//			//プログレスバーの範囲を0-300にする           
+		//			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_progressnum));
+		//			//現在位置を設定  
+		//			SendMessage(hProg, PBM_SETPOS, (s_progresscnt + 1), 0);
+		//			//ステップの範囲を設定 
+		//			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
+		//		}
+		//		UpdateWindow(s_progresswnd);
+		//	}
 		break;
 	case WM_CLOSE:
 		if (s_progresswnd) {
@@ -14178,9 +14305,9 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	WCHAR buf[MAX_PATH];
-	ZeroMemory( buf, sizeof( WCHAR ) * MAX_PATH );
-	if( s_Gconame[0] != 0 ){
-		wcscpy_s( buf, MAX_PATH, s_Gconame );
+	ZeroMemory(buf, sizeof(WCHAR) * MAX_PATH);
+	if (s_Gconame[0] != 0) {
+		wcscpy_s(buf, MAX_PATH, s_Gconame);
 	}
 
 	OPENFILENAME ofn;
@@ -14212,87 +14339,87 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	static int s_savegcoproctimer = 356;
 
 	switch (msg) {
-        case WM_INITDIALOG:
+	case WM_INITDIALOG:
 
-			SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
-			if( s_model && s_model->GetTopBone() ){
-				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_Gconame );
-			}
+		if (s_model && s_model->GetTopBone()) {
+			SetDlgItemText(hDlgWnd, IDC_FILENAME, s_Gconame);
+		}
 
-			RECT dlgrect;
-			GetWindowRect(hDlgWnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
-			SetTimer(hDlgWnd, s_savegcoproctimer, 20, NULL);
-			s_savegcodlghwnd = hDlgWnd;
+		RECT dlgrect;
+		GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		SetTimer(hDlgWnd, s_savegcoproctimer, 20, NULL);
+		s_savegcodlghwnd = hDlgWnd;
 
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					s_savegcodlghwnd = 0;
-					KillTimer(hDlgWnd, s_savegcoproctimer);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			s_savegcodlghwnd = 0;
+			KillTimer(hDlgWnd, s_savegcoproctimer);
 
-					GetDlgItemText( hDlgWnd, IDC_FILENAME, s_Gconame, MAX_PATH );
-                    EndDialog(hDlgWnd, IDOK);
-                    break;
-                case IDCANCEL:
-					s_savegcodlghwnd = 0;
-					KillTimer(hDlgWnd, s_savegcoproctimer);
-					
-					EndDialog(hDlgWnd, IDCANCEL);
-                    break;
-				case IDC_REFFILE:
-				{
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-
-					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-
-					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					//UnhookWinEvent(hhook);
-
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-				}
-					break;
-				default:
-                    return FALSE;
-            }
+			GetDlgItemText(hDlgWnd, IDC_FILENAME, s_Gconame, MAX_PATH);
+			EndDialog(hDlgWnd, IDOK);
 			break;
-		case WM_TIMER:
-			OnDSUpdate();
-			return FALSE;
-			break;
-		case WM_CLOSE:
+		case IDCANCEL:
 			s_savegcodlghwnd = 0;
 			KillTimer(hDlgWnd, s_savegcoproctimer);
 
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
+		case IDC_REFFILE:
+		{
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+			if (GetOpenFileNameW(&ofn) == IDOK) {
+				SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+			}
+
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
+
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+		}
+		break;
 		default:
-			DefWindowProc(hDlgWnd, msg, wp, lp);
 			return FALSE;
-			break;
-    }
-    return TRUE;
+		}
+		break;
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_savegcodlghwnd = 0;
+		KillTimer(hDlgWnd, s_savegcoproctimer);
+
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
 
 }
 
 LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	WCHAR buf[MAX_PATH];
-	ZeroMemory( buf, sizeof( WCHAR ) * MAX_PATH );
-	if( s_Impname[0] != 0 ){
-		wcscpy_s( buf, MAX_PATH, s_Impname );
+	ZeroMemory(buf, sizeof(WCHAR) * MAX_PATH);
+	if (s_Impname[0] != 0) {
+		wcscpy_s(buf, MAX_PATH, s_Impname);
 	}
 
 	OPENFILENAME ofn;
@@ -14323,76 +14450,76 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	static int s_saveimpproctimer = 355;
 
 	switch (msg) {
-        case WM_INITDIALOG:
-			SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+	case WM_INITDIALOG:
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
-			if( s_model && s_model->GetTopBone() ){
-				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_Impname );
-			}
-			RECT dlgrect;
-			GetWindowRect(hDlgWnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
-			SetTimer(hDlgWnd, s_saveimpproctimer, 20, NULL);
-			s_saveimpdlghwnd = hDlgWnd;
+		if (s_model && s_model->GetTopBone()) {
+			SetDlgItemText(hDlgWnd, IDC_FILENAME, s_Impname);
+		}
+		RECT dlgrect;
+		GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		SetTimer(hDlgWnd, s_saveimpproctimer, 20, NULL);
+		s_saveimpdlghwnd = hDlgWnd;
 
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					s_saveimpdlghwnd = 0;
-					KillTimer(hDlgWnd, s_saveimpproctimer);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			s_saveimpdlghwnd = 0;
+			KillTimer(hDlgWnd, s_saveimpproctimer);
 
-					GetDlgItemText( hDlgWnd, IDC_FILENAME, s_Impname, MAX_PATH );
-                    EndDialog(hDlgWnd, IDOK);
-                    break;
-                case IDCANCEL:
-					s_saveimpdlghwnd = 0;
-					KillTimer(hDlgWnd, s_saveimpproctimer);
-					
-					EndDialog(hDlgWnd, IDCANCEL);
-                    break;
-				case IDC_REFFILE:
-				{
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-
-					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-
-					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					//UnhookWinEvent(hhook);
-					
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-				}
-					break;
-				default:
-                    return FALSE;
-            }
+			GetDlgItemText(hDlgWnd, IDC_FILENAME, s_Impname, MAX_PATH);
+			EndDialog(hDlgWnd, IDOK);
 			break;
-		case WM_TIMER:
-			OnDSUpdate();
-			return FALSE;
-			break;
-		case WM_CLOSE:
+		case IDCANCEL:
 			s_saveimpdlghwnd = 0;
 			KillTimer(hDlgWnd, s_saveimpproctimer);
 
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
+		case IDC_REFFILE:
+		{
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+			if (GetOpenFileNameW(&ofn) == IDOK) {
+				SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+			}
+
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
+
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+		}
+		break;
 		default:
-			DefWindowProc(hDlgWnd, msg, wp, lp);
 			return FALSE;
-			break;
-    }
-    return TRUE;
+		}
+		break;
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_saveimpdlghwnd = 0;
+		KillTimer(hDlgWnd, s_saveimpproctimer);
+
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
 
 }
 
@@ -14400,9 +14527,9 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	WCHAR buf[MAX_PATH];
-	ZeroMemory( buf, sizeof( WCHAR ) * MAX_PATH );
-	if( s_REname[0] != 0 ){
-		wcscpy_s( buf, MAX_PATH, s_REname );
+	ZeroMemory(buf, sizeof(WCHAR) * MAX_PATH);
+	if (s_REname[0] != 0) {
+		wcscpy_s(buf, MAX_PATH, s_REname);
 	}
 
 	OPENFILENAME ofn;
@@ -14433,79 +14560,79 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	static int s_savereproctimer = 354;
 
 	switch (msg) {
-        case WM_INITDIALOG:
+	case WM_INITDIALOG:
 
-			SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
-			if( s_model && s_model->GetTopBone() ){
-				SetDlgItemText( hDlgWnd, IDC_FILENAME, s_REname );
-			}
-			RECT dlgrect;
-			GetWindowRect(hDlgWnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
-			SetTimer(hDlgWnd, s_savereproctimer, 20, NULL);
-			s_saveredlghwnd = hDlgWnd;
+		if (s_model && s_model->GetTopBone()) {
+			SetDlgItemText(hDlgWnd, IDC_FILENAME, s_REname);
+		}
+		RECT dlgrect;
+		GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		SetTimer(hDlgWnd, s_savereproctimer, 20, NULL);
+		s_saveredlghwnd = hDlgWnd;
 
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					s_saveredlghwnd = 0;
-					KillTimer(hDlgWnd, s_savereproctimer);
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			s_saveredlghwnd = 0;
+			KillTimer(hDlgWnd, s_savereproctimer);
 
-					GetDlgItemText( hDlgWnd, IDC_FILENAME, s_REname, MAX_PATH );
-                    EndDialog(hDlgWnd, IDOK);
-                    break;
-                case IDCANCEL:
-					s_saveredlghwnd = 0;
-					KillTimer(hDlgWnd, s_savereproctimer);
-					
-					EndDialog(hDlgWnd, IDCANCEL);
-                    break;
-				case IDC_REFFILE:
-				{
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-
-					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-
-					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
-					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					//UnhookWinEvent(hhook);
-					
-					
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-				}
-
-					break;
-				default:
-					return FALSE;
-            }
+			GetDlgItemText(hDlgWnd, IDC_FILENAME, s_REname, MAX_PATH);
+			EndDialog(hDlgWnd, IDOK);
 			break;
-		case WM_TIMER:
-			OnDSUpdate();
-			return FALSE;
-			break;
-		case WM_CLOSE:
+		case IDCANCEL:
 			s_saveredlghwnd = 0;
 			KillTimer(hDlgWnd, s_savereproctimer);
 
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
+		case IDC_REFFILE:
+		{
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+			if (GetOpenFileNameW(&ofn) == IDOK) {
+				SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+			}
+
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
+
+
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+		}
+
+		break;
 		default:
-			DefWindowProc(hDlgWnd, msg, wp, lp);
 			return FALSE;
-			break;
-    }
-    return TRUE;
+		}
+		break;
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_saveredlghwnd = 0;
+		KillTimer(hDlgWnd, s_savereproctimer);
+
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+		break;
+	}
+	return TRUE;
 
 }
 
@@ -14533,111 +14660,112 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 	ofn.nFileOffset = 0;
 	ofn.nFileExtension = 0;
-	ofn.lpstrDefExt =NULL;
+	ofn.lpstrDefExt = NULL;
 	ofn.lCustData = NULL;
 	ofn.lpfnHook = NULL;
 	ofn.lpTemplateName = NULL;
 
 	WCHAR strmult[256];
-	wcscpy_s( strmult, 256, L"1.000" );
-	
+	wcscpy_s(strmult, 256, L"1.000");
+
 	static int s_exportxproctimer = 360;
 
 	switch (msg) {
-        case WM_INITDIALOG:
-			SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+	case WM_INITDIALOG:
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
-			g_tmpmqomult = 1.0f;
-			ZeroMemory( g_tmpmqopath, sizeof( WCHAR ) * MULTIPATH );
-			SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
-			SetDlgItemText( hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile." );
+		g_tmpmqomult = 1.0f;
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
+		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
 
-			RECT dlgrect;
-			::GetWindowRect(hDlgWnd, &dlgrect);
-			SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+		RECT dlgrect;
+		::GetWindowRect(hDlgWnd, &dlgrect);
+		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 
-			SetTimer(hDlgWnd, s_exportxproctimer, 20, NULL);
-			s_exportxdlghwnd = hDlgWnd;
-            return FALSE;
-        case WM_COMMAND:
-            switch (LOWORD(wp)) {
-                case IDOK:
-					s_exportxdlghwnd = 0;
-					KillTimer(hDlgWnd, s_exportxproctimer);
-					GetDlgItemText( hDlgWnd, IDC_MULT, strmult, 256 );
-					g_tmpmqomult = (float)_wtof( strmult );
-					GetDlgItemText( hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH );
-                    EndDialog(hDlgWnd, IDOK);
-                    break;
-                case IDCANCEL:
-					s_exportxdlghwnd = 0;
-					KillTimer(hDlgWnd, s_exportxproctimer);
-					EndDialog(hDlgWnd, IDCANCEL);
-                    break;
-				case IDC_REFX:
-				{
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-
-					//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-					//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-
-					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-
-					if (GetOpenFileNameW(&ofn) == IDOK) {
-						SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
-					}
-
-					InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-					//UnhookWinEvent(hhook);
-
-					s_getfilenamehwnd = 0;
-					s_getfilenametreeview = 0;
-				}
-					break;
-				default:
-                    return FALSE;
-            }
+		SetTimer(hDlgWnd, s_exportxproctimer, 20, NULL);
+		s_exportxdlghwnd = hDlgWnd;
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			s_exportxdlghwnd = 0;
+			KillTimer(hDlgWnd, s_exportxproctimer);
+			GetDlgItemText(hDlgWnd, IDC_MULT, strmult, 256);
+			g_tmpmqomult = (float)_wtof(strmult);
+			GetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath, MULTIPATH);
+			EndDialog(hDlgWnd, IDOK);
 			break;
-		case WM_TIMER:
-			OnDSUpdate();
-			return FALSE;
-			break;
-		case WM_CLOSE:
+		case IDCANCEL:
 			s_exportxdlghwnd = 0;
 			KillTimer(hDlgWnd, s_exportxproctimer);
 			EndDialog(hDlgWnd, IDCANCEL);
 			break;
-		default:
-			DefWindowProc(hDlgWnd, msg, wp, lp);
-			return FALSE;
+		case IDC_REFX:
+		{
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
 
-    }
-    return TRUE;
+			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+			if (GetOpenFileNameW(&ofn) == IDOK) {
+				SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
+			}
+
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			//UnhookWinEvent(hhook);
+
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+		}
+		break;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_TIMER:
+		OnDSUpdate();
+		return FALSE;
+		break;
+	case WM_CLOSE:
+		s_exportxdlghwnd = 0;
+		KillTimer(hDlgWnd, s_exportxproctimer);
+		EndDialog(hDlgWnd, IDCANCEL);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+
+	}
+	return TRUE;
 }
 
 
 
-void ActivatePanel( int state )
+void ActivatePanel(int state)
 {
 	if (!s_timelineWnd || !s_toolWnd || !s_layerWnd || !s_modelpanel.panel || !s_motionpanel.panel)
 		return;
 
 
-	if( state == 1 ){
-		if( s_dispmw && s_timelineWnd){
-			s_timelineWnd->setVisible( false );
-			s_timelineWnd->setVisible( true );
+	if (state == 1) {
+		if (s_dispmw && s_timelineWnd) {
+			s_timelineWnd->setVisible(false);
+			s_timelineWnd->setVisible(true);
 		}
-		if( s_disptool && s_toolWnd){
-			s_toolWnd->setVisible( true );
+		if (s_disptool && s_toolWnd) {
+			s_toolWnd->setVisible(true);
 		}
-		if( s_dispobj && s_layerWnd){
-			s_layerWnd->setVisible( true );
+		if (s_dispobj && s_layerWnd) {
+			s_layerWnd->setVisible(true);
 		}
-		
-	}else if( state == 0 ){
+
+	}
+	else if (state == 0) {
 		if (s_timelineWnd) {
 			s_timelineWnd->setVisible(false);
 		}
@@ -14657,16 +14785,16 @@ void ActivatePanel( int state )
 
 int DestroyModelPanel()
 {
-	if( s_modelpanel.panel ){
-		s_modelpanel.panel->setVisible( false );
+	if (s_modelpanel.panel) {
+		s_modelpanel.panel->setVisible(false);
 		delete s_modelpanel.panel;
 		s_modelpanel.panel = 0;
 	}
-	if( s_modelpanel.radiobutton ){
+	if (s_modelpanel.radiobutton) {
 		delete s_modelpanel.radiobutton;
 		s_modelpanel.radiobutton = 0;
 	}
-	if( s_modelpanel.separator ){
+	if (s_modelpanel.separator) {
 		delete s_modelpanel.separator;
 		s_modelpanel.separator = 0;
 	}
@@ -14674,10 +14802,10 @@ int DestroyModelPanel()
 		delete s_modelpanel.separator2;
 		s_modelpanel.separator2 = 0;
 	}
-	if( !(s_modelpanel.checkvec.empty()) ){
+	if (!(s_modelpanel.checkvec.empty())) {
 		int checknum = (int)s_modelpanel.checkvec.size();
 		int checkno;
-		for( checkno = 0; checkno < checknum; checkno++ ){
+		for (checkno = 0; checkno < checknum; checkno++) {
 			delete s_modelpanel.checkvec[checkno];
 		}
 	}
@@ -14717,20 +14845,20 @@ int CreateModelPanel()
 	DestroyModelPanel();
 
 	int modelnum = (int)s_modelindex.size();
-	if( modelnum <= 0 ){
+	if (modelnum <= 0) {
 		return 0;
 	}
-	
+
 	int classcnt = 0;
 	WCHAR clsname[256];
-	swprintf_s( clsname, 256, L"ModelPanel%d", classcnt );
+	swprintf_s(clsname, 256, L"ModelPanel%d", classcnt);
 
 	s_modelpanel.panel = new OrgWindow(
 		1,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
 		WindowPos(200, s_2ndposy),		//位置
-		WindowSize(400,460),	//サイズ
+		WindowSize(400, 460),	//サイズ
 		L"ModelPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
 		//false,
@@ -14746,22 +14874,23 @@ int CreateModelPanel()
 	}
 
 
-	s_modelpanel.panel->setSizeMin(WindowSize(150,150));		// 最小サイズを設定
+	s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
 	int modelcnt;
-	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
+	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
 		CModel* curmodel = s_modelindex[modelcnt].modelptr;
-		_ASSERT( curmodel );
+		_ASSERT(curmodel);
 
-		if( modelcnt == 0 ){
-			s_modelpanel.radiobutton = new OWP_RadioButton( curmodel->GetFileName() );
-		}else{
-			s_modelpanel.radiobutton->addLine( curmodel->GetFileName() );
+		if (modelcnt == 0) {
+			s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName());
+		}
+		else {
+			s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
 		}
 	}
 
 	//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-	s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
+	s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
 	if (!s_modelpanel.separator) {
 		_ASSERT(0);
 		return 1;
@@ -14776,41 +14905,41 @@ int CreateModelPanel()
 	s_modelpanel.separator2->setSize(WindowSize(200, 30));
 
 
-	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
+	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
 		CModel* curmodel = s_modelindex[modelcnt].modelptr;
-		OWP_CheckBoxA *owpCheckBox= new OWP_CheckBoxA( L"Show/Hide", curmodel->GetModelDisp() );
-		s_modelpanel.checkvec.push_back( owpCheckBox );
+		OWP_CheckBoxA* owpCheckBox = new OWP_CheckBoxA(L"Show/Hide", curmodel->GetModelDisp());
+		s_modelpanel.checkvec.push_back(owpCheckBox);
 		OWP_Button* owpButton = new OWP_Button(L"delete");
 		s_modelpanel.delbutton.push_back(owpButton);
 	}
 
-	s_modelpanel.panel->addParts( *(s_modelpanel.separator) );
+	s_modelpanel.panel->addParts(*(s_modelpanel.separator));
 
-	s_modelpanel.separator->addParts1( *(s_modelpanel.radiobutton) );
+	s_modelpanel.separator->addParts1(*(s_modelpanel.radiobutton));
 	s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
 
-	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
+	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
 		OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
-		s_modelpanel.separator2->addParts1( *curcb );
+		s_modelpanel.separator2->addParts1(*curcb);
 
 		OWP_Button* curbutton = s_modelpanel.delbutton[modelcnt];
 		s_modelpanel.separator2->addParts2(*curbutton);
 	}
 
 	s_modelpanel.modelindex = s_curmodelmenuindex;
-	s_modelpanel.radiobutton->setSelectIndex( s_modelpanel.modelindex );
+	s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
 
-	s_modelpanel.panel->setVisible( 0 );//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	s_modelpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ////////////
-	s_modelpanel.panel->setCloseListener( [](){ 
+	s_modelpanel.panel->setCloseListener([]() {
 		if (s_model) {
 			s_closemodelFlag = true;
 		}
-	});
+		});
 
-	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
-		s_modelpanel.checkvec[modelcnt]->setButtonListener( [modelcnt](){
+	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+		s_modelpanel.checkvec[modelcnt]->setButtonListener([modelcnt]() {
 			if (s_model) {
 				if (modelcnt < s_modelindex.size()) {
 					CModel* curmodel = s_modelindex[modelcnt].modelptr;
@@ -14821,7 +14950,7 @@ int CreateModelPanel()
 					}
 				}
 			}
-		} );
+			});
 
 		s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
 			if (s_model) {
@@ -14842,10 +14971,10 @@ int CreateModelPanel()
 					}
 				}
 			}
-		});
+			});
 	}
 
-	s_modelpanel.radiobutton->setSelectListener( [](){
+	s_modelpanel.radiobutton->setSelectListener([]() {
 		if (s_model) {
 			int curindex = s_modelpanel.radiobutton->getSelectIndex();
 			if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
@@ -14858,7 +14987,7 @@ int CreateModelPanel()
 				s_opeselectmodelcnt = curindex;
 			}
 		}
-	} );
+		});
 
 
 	if (s_firstmodelpanelpos) {
@@ -15059,7 +15188,7 @@ int CreateMotionPanel()
 	int delmenuindex = 0;
 	for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
 		s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-			if ((s_underdelmodel ==false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
+			if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
 				(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
 				s_opedelmotioncnt = delmenuindex;
 				s_underdelmotion = true;
@@ -15070,7 +15199,7 @@ int CreateMotionPanel()
 
 				Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
 			}
-		});
+			});
 	}
 
 	s_motionpanel.radiobutton->setSelectListener([]() {
@@ -15086,7 +15215,7 @@ int CreateMotionPanel()
 				//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
 			}
 		}
-	});
+		});
 
 
 	if (s_firstmotionpanelpos) {
@@ -15118,24 +15247,24 @@ int DestroyConvBoneWnd()
 	s_convbone_bvh = 0;
 	s_convbonemap.clear();
 
-	if (s_convboneWnd){
+	if (s_convboneWnd) {
 		s_convboneWnd->setListenMouse(false);
 		s_convboneWnd->setVisible(false);
 		delete s_convboneWnd;
 		s_convboneWnd = 0;
 	}
-	if (s_convboneSCWnd){
+	if (s_convboneSCWnd) {
 		delete s_convboneSCWnd;
 		s_convboneSCWnd = 0;
 	}
 
 	int cbno;
-	for (cbno = 0; cbno < CONVBONEMAX; cbno++){
-		if (s_modelbone[cbno]){
+	for (cbno = 0; cbno < CONVBONEMAX; cbno++) {
+		if (s_modelbone[cbno]) {
 			delete s_modelbone[cbno];
 			s_modelbone[cbno] = 0;
 		}
-		if (s_bvhbone[cbno]){
+		if (s_bvhbone[cbno]) {
 			delete s_bvhbone[cbno];
 			s_bvhbone[cbno] = 0;
 		}
@@ -15143,16 +15272,16 @@ int DestroyConvBoneWnd()
 		s_bvhbone_bone[cbno] = 0;
 	}
 
-	if (s_cbselmodel){
+	if (s_cbselmodel) {
 		delete s_cbselmodel;
 		s_cbselmodel = 0;
 	}
-	if (s_cbselbvh){
+	if (s_cbselbvh) {
 		delete s_cbselbvh;
 		s_cbselbvh = 0;
 	}
 
-	if (s_convboneconvert){
+	if (s_convboneconvert) {
 		delete s_convboneconvert;
 		s_convboneconvert = 0;
 	}
@@ -15165,16 +15294,16 @@ int DestroyConvBoneWnd()
 		s_rtgfileload = 0;
 	}
 
-	if (s_convbonesp){
+	if (s_convbonesp) {
 		delete s_convbonesp;
 		s_convbonesp = 0;
 	}
 
-	if (s_convbonemidashi[0]){
+	if (s_convbonemidashi[0]) {
 		delete s_convbonemidashi[0];
 		s_convbonemidashi[0] = 0;
 	}
-	if (s_convbonemidashi[1]){
+	if (s_convbonemidashi[1]) {
 		delete s_convbonemidashi[1];
 		s_convbonemidashi[1] = 0;
 	}
@@ -15200,7 +15329,7 @@ int CreateConvBoneWnd()
 
 
 	s_convbonenum = s_model->GetBoneListSize();
-	if (s_convbonenum >= CONVBONEMAX){
+	if (s_convbonenum >= CONVBONEMAX) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -15231,9 +15360,9 @@ int CreateConvBoneWnd()
 	WCHAR bvhbonename[MAX_PATH];
 	int cbno = 0;
 	map<int, CBone*>::iterator itrbone;
-	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++){
+	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone){
+		if (curbone) {
 			const WCHAR* wbonename = curbone->GetWBoneName();
 			_ASSERT(wbonename);
 			s_modelbone[cbno] = new OWP_Label(wbonename);
@@ -15313,11 +15442,11 @@ int CreateConvBoneWnd()
 	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	////////////
-	s_convboneWnd->setCloseListener([](){ 
+	s_convboneWnd->setCloseListener([]() {
 		if (s_model) {
 			s_closeconvboneFlag = true;
 		}
-	});
+		});
 
 
 	//s_cbselmodel->setButtonListener([](){
@@ -15326,7 +15455,7 @@ int CreateConvBoneWnd()
 	//		s_convboneWnd->callRewrite();
 	//	}
 	//});
-	s_cbselbvh->setButtonListener([](){
+	s_cbselbvh->setButtonListener([]() {
 		if (s_model) {
 			if (!s_convbone_model || (s_convbone_model != s_model)) {
 				::DSMessageBox(s_mainhwnd, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
@@ -15336,34 +15465,34 @@ int CreateConvBoneWnd()
 			}
 			s_convboneWnd->callRewrite();
 		}
-	});
-	for (cbno = 0; cbno < s_convbonenum; cbno++){
-		s_bvhbone[cbno]->setButtonListener([cbno](){
+		});
+	for (cbno = 0; cbno < s_convbonenum; cbno++) {
+		s_bvhbone[cbno]->setButtonListener([cbno]() {
 			if (s_model) {
 				SetConvBone(cbno);
 				//CModel* curmodel = s_modelindex[modelcnt].modelptr;
 				//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
 				s_convboneWnd->callRewrite();
 			}
-		});
+			});
 	}
-	s_convboneconvert->setButtonListener([](){
+	s_convboneconvert->setButtonListener([]() {
 		if (s_model) {
 			RetargetMotion();
 		}
-	});
+		});
 
 	s_rtgfilesave->setButtonListener([]() {
 		if (s_model) {
 			SaveRetargetFile();
 		}
-	});
+		});
 
 	s_rtgfileload->setButtonListener([]() {
 		if (s_model) {
 			LoadRetargetFile(0);
 		}
-	});
+		});
 
 	s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_convboneWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
@@ -15457,7 +15586,7 @@ int CreateConvBoneWnd()
 int SetConvBoneBvh()
 {
 	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0){
+	if (modelnum <= 0) {
 		return 0;
 	}
 
@@ -15474,12 +15603,12 @@ int SetConvBoneBvh()
 
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
-	if (!rmenu){
+	if (!rmenu) {
 		return 1;
 	}
 	int ret;
 	ret = rmenu->Create(parwnd, MENUOFFSET_SETCONVBONEBVH);
-	if (ret){
+	if (ret) {
 		return 1;
 	}
 
@@ -15494,11 +15623,11 @@ int SetConvBoneBvh()
 	}
 
 	int modelno;
-	for (modelno = 0; modelno < modelnum; modelno++){
+	for (modelno = 0; modelno < modelnum; modelno++) {
 		CModel* curmodel = s_modelindex[modelno].modelptr;
-		if (curmodel){
+		if (curmodel) {
 			const WCHAR* modelname = curmodel->GetFileName();
-			if (modelname){
+			if (modelname) {
 				int setmenuid = ID_RMENU_0 + modelno + MENUOFFSET_SETCONVBONEBVH;
 				AppendMenu(submenu, MF_STRING, setmenuid, modelname);
 			}
@@ -15537,16 +15666,16 @@ int SetConvBoneBvh()
 
 	return 0;
 }
-int SetConvBone( int cbno )
+int SetConvBone(int cbno)
 {
 	s_bvhbone_cbno = cbno;
 
 	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0){
+	if (modelnum <= 0) {
 		return 0;
 	}
 
-	if (!s_convbone_model || !s_convbone_bvh){
+	if (!s_convbone_model || !s_convbone_bvh) {
 		return 0;
 	}
 
@@ -15558,12 +15687,12 @@ int SetConvBone( int cbno )
 
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
-	if (!rmenu){
+	if (!rmenu) {
 		return 1;
 	}
 	int ret;
 	ret = rmenu->Create(parwnd, MENUOFFSET_SETCONVBONE);
-	if (ret){
+	if (ret) {
 		return 1;
 	}
 
@@ -15582,13 +15711,13 @@ int SetConvBone( int cbno )
 
 	int maxboneno = 0;
 	map<int, CBone*>::iterator itrbone;
-	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++){
+	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone){
+		if (curbone) {
 			int boneno = curbone->GetBoneNo();
 			int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
 			AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
-			if (boneno > maxboneno){
+			if (boneno > maxboneno) {
 				maxboneno = boneno;
 			}
 		}
@@ -16008,12 +16137,12 @@ int SetCamera6Angle()
 	ChaVector3 weye, wdiff;
 	weye = g_camEye;
 	wdiff = g_camtargetpos - weye;
-	float camdist = (float)ChaVector3LengthDbl( &wdiff );
+	float camdist = (float)ChaVector3LengthDbl(&wdiff);
 
 	ChaVector3 neweye;
 	float delta = 0.10f;
 
-	if( g_keybuf[ VK_F1 ] & 0x80 ){
+	if (g_keybuf[VK_F1] & 0x80) {
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z - camdist;
@@ -16027,7 +16156,8 @@ int SetCamera6Angle()
 		//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
-	}else if( g_keybuf[ VK_F2 ] & 0x80 ){
+	}
+	else if (g_keybuf[VK_F2] & 0x80) {
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z + camdist;
@@ -16041,7 +16171,7 @@ int SetCamera6Angle()
 		//!!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
-	else if (g_keybuf[VK_F3] & 0x80){
+	else if (g_keybuf[VK_F3] & 0x80) {
 		neweye.x = g_camtargetpos.x - camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
@@ -16055,11 +16185,11 @@ int SetCamera6Angle()
 		//!!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
-	else if (g_keybuf[VK_F4] & 0x80){
+	else if (g_keybuf[VK_F4] & 0x80) {
 		neweye.x = g_camtargetpos.x + camdist;
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
-		
+
 		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
@@ -16069,7 +16199,7 @@ int SetCamera6Angle()
 		//!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
-	else if (g_keybuf[VK_F5] & 0x80){
+	else if (g_keybuf[VK_F5] & 0x80) {
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y + camdist;
 		neweye.z = g_camtargetpos.z + delta;
@@ -16083,7 +16213,7 @@ int SetCamera6Angle()
 		//!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	}
-	else if (g_keybuf[VK_F6] & 0x80){
+	else if (g_keybuf[VK_F6] & 0x80) {
 		neweye.x = g_camtargetpos.x;
 		neweye.y = g_camtargetpos.y - camdist;
 		neweye.z = g_camtargetpos.z - delta;
@@ -16100,12 +16230,12 @@ int SetCamera6Angle()
 
 	ChaVector3 diffv;
 	diffv = g_camEye - g_camtargetpos;
-	s_camdist = (float)ChaVector3LengthDbl( &diffv );
+	s_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 	return 0;
 }
 
-int OnAddMotion( int srcmotid, bool dorefreshtl)
+int OnAddMotion(int srcmotid, bool dorefreshtl)
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
@@ -16116,16 +16246,16 @@ int OnAddMotion( int srcmotid, bool dorefreshtl)
 //swprintf_s(strchk, 256, L"check OnAddMotion : 1 : %d, %d", srcmotid, (int)dorefreshtl);
 //::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
 
-	CallF( AddTimeLine( srcmotid, dorefreshtl ), return 1 );
+	CallF(AddTimeLine(srcmotid, dorefreshtl), return 1);
 
-//swprintf_s(strchk, 256, L"check OnAddMotion : 2 : %d, %d", srcmotid, (int)dorefreshtl);
-//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
+	//swprintf_s(strchk, 256, L"check OnAddMotion : 2 : %d, %d", srcmotid, (int)dorefreshtl);
+	//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
 
 	int selindex = (int)s_tlarray.size() - 1;
-	CallF( OnAnimMenu( dorefreshtl, selindex ), return 1 );
+	CallF(OnAnimMenu(dorefreshtl, selindex), return 1);
 
-//swprintf_s(strchk, 256, L"check OnAddMotion : 3 : %d, %d", srcmotid, (int)dorefreshtl);
-//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
+	//swprintf_s(strchk, 256, L"check OnAddMotion : 3 : %d, %d", srcmotid, (int)dorefreshtl);
+	//::MessageBox(s_mainhwnd, strchk, L"check!!!", MB_OK);
 
 
 	return 0;
@@ -16163,7 +16293,7 @@ int StopBt()
 
 int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 {
-	if (!s_model || !curmodel){
+	if (!s_model || !curmodel) {
 		return 0;
 	}
 
@@ -16326,9 +16456,9 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					//決め打ち
 					s_btWorld->setGravity(btVector3(0.0f, -9.8f, 0.0f)); // 重力加速度の設定
-					
-																	  
-																	  
+
+
+
 					//s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // 重力加速度の設定
 					s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 
@@ -16415,7 +16545,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					//決め打ち
 					pmodel->SetAllKData(-1, s_rgdindexmap[pmodel], 3, 3, 1500.0, 30.0);
-										
+
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 
 /*
@@ -16458,9 +16588,9 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 */
-					//決め打ち
+//決め打ち
 					pmodel->SetAllMassDataByBoneLeng(-1, s_rgdindexmap[pmodel], 30.0);
-					
+
 					//curmodel->SetAllMassData(-1, s_rgdindex, 1.0);
 
 
@@ -16545,7 +16675,7 @@ int RigidElem2WndParam()
 	if (!s_model) {
 		return 0;
 	}
-	if( s_curboneno < 0 ){
+	if (s_curboneno < 0) {
 		return 0;
 	}
 
@@ -16554,17 +16684,17 @@ int RigidElem2WndParam()
 	s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 
 
-	CBone* curbone = s_model->GetBoneByID( s_curboneno );
-	if( curbone ){
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (curbone) {
 		//int kinflag = curbone->m_btforce;
 
 		CBone* parentbone = curbone->GetParent();
-		if( parentbone ){
+		if (parentbone) {
 			int kinflag = parentbone->GetBtForce();
-			s_btforce->setValue( (bool)kinflag );
-			
-			CRigidElem* curre = parentbone->GetRigidElem( curbone );
-			if( curre ){
+			s_btforce->setValue((bool)kinflag);
+
+			CRigidElem* curre = parentbone->GetRigidElem(curbone);
+			if (curre) {
 				float rate = (float)curre->GetSphrate();
 				float boxz = (float)curre->GetBoxzrate();
 				float mass = (float)curre->GetMass();
@@ -16581,23 +16711,23 @@ int RigidElem2WndParam()
 				float btg = curre->GetBtg();
 				int forbidrot = curre->GetForbidRotFlag();
 
-				s_sphrateSlider->setValue( rate );
-				s_boxzSlider->setValue( boxz );
-				s_massSlider->setValue( mass );
-				s_rigidskip->setValue( skipflag );
+				s_sphrateSlider->setValue(rate);
+				s_boxzSlider->setValue(boxz);
+				s_massSlider->setValue(mass);
+				s_rigidskip->setValue(skipflag);
 				s_forbidrot->setValue(forbidrot);
-				s_colradio->setSelectIndex( colindex );
-				s_lkradio->setSelectIndex( lkindex );
-				s_akradio->setSelectIndex( akindex );
-				s_ldmpSlider->setValue( ldmp );
-				s_admpSlider->setValue( admp );
-				s_lkSlider->setValue( cuslk );
-				s_akSlider->setValue( cusak );
-				s_restSlider->setValue( rest );
-				s_fricSlider->setValue( fric );
-				s_btgSlider->setValue( btg );
+				s_colradio->setSelectIndex(colindex);
+				s_lkradio->setSelectIndex(lkindex);
+				s_akradio->setSelectIndex(akindex);
+				s_ldmpSlider->setValue(ldmp);
+				s_admpSlider->setValue(admp);
+				s_lkSlider->setValue(cuslk);
+				s_akSlider->setValue(cusak);
+				s_restSlider->setValue(rest);
+				s_fricSlider->setValue(fric);
+				s_btgSlider->setValue(btg);
 			}
-			else{
+			else {
 				//rigid elemが作成されていないとき
 				s_sphrateSlider->setValue(1.0);
 				s_boxzSlider->setValue(1.0);
@@ -16616,7 +16746,7 @@ int RigidElem2WndParam()
 				s_btgSlider->setValue(9.0);
 			}
 		}
-		else{
+		else {
 			//rigid elemが作成されていないとき
 			s_sphrateSlider->setValue(1.0);
 			s_boxzSlider->setValue(1.0);
@@ -16634,14 +16764,15 @@ int RigidElem2WndParam()
 			s_fricSlider->setValue(0.0);
 			s_btgSlider->setValue(9.0);
 		}
-		s_namelabel->setName( (WCHAR*)curbone->GetWBoneName() );
-	}else{
-		WCHAR noname[256];
-		wcscpy_s( noname, 256, L"BoneName：not selected" );
-		s_namelabel->setName( noname );
+		s_namelabel->setName((WCHAR*)curbone->GetWBoneName());
 	}
-	if( s_model ){
-		s_btgscSlider->setValue( s_model->GetBtGScale(s_model->GetCurReIndex()) );
+	else {
+		WCHAR noname[256];
+		wcscpy_s(noname, 256, L"BoneName：not selected");
+		s_namelabel->setName(noname);
+	}
+	if (s_model) {
+		s_btgscSlider->setValue(s_model->GetBtGScale(s_model->GetCurReIndex()));
 	}
 
 	s_rigidWnd->callRewrite();
@@ -16649,10 +16780,10 @@ int RigidElem2WndParam()
 
 
 	//再生中、シミュレーション中への対応。元の状態に戻す。
-	if (g_previewFlag != 5){
+	if (g_previewFlag != 5) {
 		s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 	}
-	else{
+	else {
 		s_model->SetCurrentRigidElem(s_rgdindexmap[s_model]);
 	}
 
@@ -16663,40 +16794,41 @@ int RigidElem2WndParam()
 
 int SetRigidLeng()
 {
-	if( s_curboneno < 0 ){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( !s_model->GetTopBt() ){
+	if (!s_model->GetTopBt()) {
 		return 0;
 	}
 
-	CBtObject* curbto = s_model->FindBtObject( s_curboneno );
-	if( curbto ){
+	CBtObject* curbto = s_model->FindBtObject(s_curboneno);
+	if (curbto) {
 		WCHAR curlabel[512];
-		swprintf_s( curlabel, 512, L"BonaName：%s", curbto->GetEndBone()->GetWBoneName() );
-		if( s_namelabel ){
-			s_namelabel->setName( curlabel );
+		swprintf_s(curlabel, 512, L"BonaName：%s", curbto->GetEndBone()->GetWBoneName());
+		if (s_namelabel) {
+			s_namelabel->setName(curlabel);
 		}
 
 		WCHAR curlabel2[256];
-		swprintf_s( curlabel2, 256, L"BoneLength:%.3f[m]", curbto->GetBoneLeng() );
-		if( s_lenglabel ){
-			s_lenglabel->setName( curlabel2 );
+		swprintf_s(curlabel2, 256, L"BoneLength:%.3f[m]", curbto->GetBoneLeng());
+		if (s_lenglabel) {
+			s_lenglabel->setName(curlabel2);
 		}
-	}else{
+	}
+	else {
 		WCHAR curlabel[512];
-		wcscpy_s( curlabel, 512, L"BoneName：not selected" );
-		if( s_namelabel ){
-			s_namelabel->setName( curlabel );
+		wcscpy_s(curlabel, 512, L"BoneName：not selected");
+		if (s_namelabel) {
+			s_namelabel->setName(curlabel);
 		}
 
 		WCHAR curlabel2[256];
-		wcscpy_s( curlabel2, 256, L"BoneLength：not selected" );
-		if( s_lenglabel ){
-			s_lenglabel->setName( curlabel2 );
+		wcscpy_s(curlabel2, 256, L"BoneLength：not selected");
+		if (s_lenglabel) {
+			s_lenglabel->setName(curlabel2);
 		}
 	}
 	return 0;
@@ -16704,44 +16836,44 @@ int SetRigidLeng()
 
 int SetImpWndParams()
 {
-	if( s_curboneno < 0 ){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( s_rgdindexmap[s_model] < 0 ){
+	if (s_rgdindexmap[s_model] < 0) {
 		return 0;
 	}
 
 
-	CBone* curbone = s_model->GetBoneByID( s_curboneno );
-	if( curbone ){
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (curbone) {
 		CBone* parentbone = curbone->GetParent();
-		if( parentbone ){
-			ChaVector3 setimp( 0.0f, 0.0f, 0.0f );
+		if (parentbone) {
+			ChaVector3 setimp(0.0f, 0.0f, 0.0f);
 
 
 			int impnum = parentbone->GetImpMapSize();
-			if( (s_model->GetCurImpIndex() >= 0) && (s_model->GetCurImpIndex() < impnum) ){
-				string curimpname = s_model->GetImpInfo( s_model->GetCurImpIndex() );
-				setimp = parentbone->GetImpMap( curimpname, curbone );
+			if ((s_model->GetCurImpIndex() >= 0) && (s_model->GetCurImpIndex() < impnum)) {
+				string curimpname = s_model->GetImpInfo(s_model->GetCurImpIndex());
+				setimp = parentbone->GetImpMap(curimpname, curbone);
 			}
-			else{
+			else {
 				//_ASSERT(0);
 			}
 
-			if( s_impzSlider ){
-				s_impzSlider->setValue( setimp.z );
+			if (s_impzSlider) {
+				s_impzSlider->setValue(setimp.z);
 			}
-			if( s_impySlider ){
-				s_impySlider->setValue( setimp.y );
+			if (s_impySlider) {
+				s_impySlider->setValue(setimp.y);
 			}
-			if( s_impxSlider ){
-				s_impxSlider->setValue( setimp.x );
+			if (s_impxSlider) {
+				s_impxSlider->setValue(setimp.x);
 			}
-			if( s_impscaleSlider ){
-				s_impscaleSlider->setValue( g_impscale );
+			if (s_impscaleSlider) {
+				s_impscaleSlider->setValue(g_impscale);
 			}
 		}
 	}
@@ -16753,29 +16885,29 @@ int SetImpWndParams()
 
 int SetDmpWndParams()
 {
-	if( s_curboneno < 0 ){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if( !s_model ){
+	if (!s_model) {
 		return 0;
 	}
-	if( s_rgdindexmap[s_model] < 0 ){
+	if (s_rgdindexmap[s_model] < 0) {
 		return 0;
 	}
 
 
-	CBone* curbone = s_model->GetBoneByID( s_curboneno );
-	if( curbone ){
+	CBone* curbone = s_model->GetBoneByID(s_curboneno);
+	if (curbone) {
 		CBone* parentbone = curbone->GetParent();
-		if( parentbone ){
-			char* filename = s_model->GetRigidElemInfo( s_rgdindexmap[s_model] ).filename;
-			CRigidElem* curre = parentbone->GetRigidElemOfMap( filename, curbone );
-			if( curre ){
-				if( s_dmpanimLSlider ){
-					s_dmpanimLSlider->setValue( curre->GetDampanimL() );
+		if (parentbone) {
+			char* filename = s_model->GetRigidElemInfo(s_rgdindexmap[s_model]).filename;
+			CRigidElem* curre = parentbone->GetRigidElemOfMap(filename, curbone);
+			if (curre) {
+				if (s_dmpanimLSlider) {
+					s_dmpanimLSlider->setValue(curre->GetDampanimL());
 				}
-				if( s_dmpanimASlider ){
-					s_dmpanimASlider->setValue( curre->GetDampanimA() );
+				if (s_dmpanimASlider) {
+					s_dmpanimASlider->setValue(curre->GetDampanimA());
 				}
 			}
 		}
@@ -16789,28 +16921,28 @@ int SetDmpWndParams()
 
 int SetGpWndParams()
 {
-	if( !s_bpWorld ){
+	if (!s_bpWorld) {
 		return 0;
 	}
 
-	if( s_ghSlider ){
-		s_ghSlider->setValue( s_bpWorld->m_gplaneh );
+	if (s_ghSlider) {
+		s_ghSlider->setValue(s_bpWorld->m_gplaneh);
 	}
-	if( s_gsizexSlider ){
-		s_gsizexSlider->setValue( s_bpWorld->m_gplanesize.x );
+	if (s_gsizexSlider) {
+		s_gsizexSlider->setValue(s_bpWorld->m_gplanesize.x);
 	}
-	if( s_gsizezSlider ){
-		s_gsizezSlider->setValue( s_bpWorld->m_gplanesize.y );
+	if (s_gsizezSlider) {
+		s_gsizezSlider->setValue(s_bpWorld->m_gplanesize.y);
 	}
-	if( s_gpdisp ){
-		s_gpdisp->setValue( (bool)s_bpWorld->m_gplanedisp );
+	if (s_gpdisp) {
+		s_gpdisp->setValue((bool)s_bpWorld->m_gplanedisp);
 	}
 
-	if( s_grestSlider ){
-		s_grestSlider->setValue( s_bpWorld->m_restitution );
+	if (s_grestSlider) {
+		s_grestSlider->setValue(s_bpWorld->m_restitution);
 	}
-	if( s_gfricSlider ){
-		s_gfricSlider->setValue( s_bpWorld->m_friction );
+	if (s_gfricSlider) {
+		s_gfricSlider->setValue(s_bpWorld->m_friction);
 	}
 
 	s_gpWnd->callRewrite();
@@ -16866,7 +16998,7 @@ int SaveProject()
 	swprintf_s(saveprojpath, MAX_PATH, L"%s\\%s\\%s.cha", s_projectdir, s_projectname, s_projectname);
 
 	CChaFile chafile;
-	int result = chafile.WriteChaFile(g_bakelimiteulonsave, s_bpWorld, s_projectdir, s_projectname, 
+	int result = chafile.WriteChaFile(g_bakelimiteulonsave, s_bpWorld, s_projectdir, s_projectname,
 		s_modelindex, (float)g_dspeed);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
@@ -16957,15 +17089,15 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 					HWND hWnd = NULL;
 
-					IMalloc *pMalloc;
+					IMalloc* pMalloc;
 					if (SUCCEEDED(SHGetMalloc(&pMalloc))) {
 						if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
 						{
 							// パスに変換する
 							SHGetPathFromIDList(pidl, s_projectdir);
-								// 取得したIDLを解放する (CoTaskMemFreeでも可)
-								pMalloc->Free(pidl);
-								SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
+							// 取得したIDLを解放する (CoTaskMemFreeでも可)
+							pMalloc->Free(pidl);
+							SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 						}
 						pMalloc->Release();
 					}
@@ -16978,7 +17110,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			else {
 				CheckDlgButton(hDlgWnd, IDC_CHECK1, BST_UNCHECKED);
 			}
-			
+
 
 			RECT dlgrect;
 			GetWindowRect(hDlgWnd, &dlgrect);
@@ -17014,7 +17146,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 			EndDialog(hDlgWnd, IDOK);
 		}
-			break;
+		break;
 		case IDCANCEL:
 			s_savechadlghwnd = 0;
 			KillTimer(hDlgWnd, s_savechaproctimer);
@@ -17069,7 +17201,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 			}
 		}
-			break;
+		break;
 		default:
 			return FALSE;
 		}
@@ -17100,7 +17232,7 @@ int OpenChaFile()
 	//g_tmpmqopathはプロジェクト読み込み時にプロジェクトファイル内に記述されているファイル名に変わっていくので先に保存しておく。
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
 	wcscpy_s(saveprojpath, MAX_PATH, g_tmpmqopath);
-	
+
 	//先に履歴を保存する。chaファイルだけ。
 	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
@@ -17134,13 +17266,13 @@ int OpenChaFile()
 
 	WCHAR* lasten = 0;
 	g_tmpmqopath[MAX_PATH - 1] = 0L;
-	lasten = wcsrchr( g_tmpmqopath, TEXT( '\\' ) );
-	if( lasten && (*(lasten + 1) != 0L)){
-		size_t leng = wcslen( lasten + 1 );
-		if((leng > 0) && (leng < 64)){
+	lasten = wcsrchr(g_tmpmqopath, TEXT('\\'));
+	if (lasten && (*(lasten + 1) != 0L)) {
+		size_t leng = wcslen(lasten + 1);
+		if ((leng > 0) && (leng < 64)) {
 			wcscpy_s(s_chasavename, 64, lasten + 1);
-			WCHAR* peri = wcsrchr( s_chasavename, TEXT( '.' ) );
-			if( peri ){
+			WCHAR* peri = wcsrchr(s_chasavename, TEXT('.'));
+			if (peri) {
 				*peri = 0L;
 			}
 		}
@@ -17153,23 +17285,23 @@ int OpenChaFile()
 
 
 	WCHAR tmpdir[MAX_PATH];
-	wcscpy_s( tmpdir, MAX_PATH, g_tmpmqopath );
+	wcscpy_s(tmpdir, MAX_PATH, g_tmpmqopath);
 	WCHAR* lastend = 0;
-	lastend = wcsrchr( tmpdir, TEXT( '\\' ) );
-	if( lastend ){
+	lastend = wcsrchr(tmpdir, TEXT('\\'));
+	if (lastend) {
 		*lastend = 0L;
 		WCHAR* lastend2 = 0;
-		lastend2 = wcsrchr( tmpdir, TEXT( '\\' ) );
-		if( lastend2 ){
+		lastend2 = wcsrchr(tmpdir, TEXT('\\'));
+		if (lastend2) {
 			*lastend2 = 0L;
-			int dirleng = (int)( lastend2 - tmpdir );
-			if( dirleng < MAX_PATH ){
-				wcscpy_s( s_chasavedir, MAX_PATH, tmpdir );
+			int dirleng = (int)(lastend2 - tmpdir);
+			if (dirleng < MAX_PATH) {
+				wcscpy_s(s_chasavedir, MAX_PATH, tmpdir);
 			}
 		}
 	}
 
-	if( !s_bpWorld ){
+	if (!s_bpWorld) {
 		//ChaMatrix inimat;
 		//ChaMatrixIdentity( &inimat );
 		//s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ウィンドウのタイトル
@@ -17200,9 +17332,9 @@ int OpenChaFile()
 
 
 	CChaFile chafile;
-	int ret = chafile.LoadChaFile(g_limitdegflag, g_tmpmqopath, 
-		OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile, 
-		OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu );
+	int ret = chafile.LoadChaFile(g_limitdegflag, g_tmpmqopath,
+		OpenFBXFile, OpenREFile, OpenImpFile, OpenGcoFile,
+		OnREMenu, OnRgdMenu, OnRgdMorphMenu, OnImpMenu);
 	if (ret == 1) {
 		_ASSERT(0);
 		SetCursor(oldcursor);
@@ -17211,7 +17343,7 @@ int OpenChaFile()
 	//OnAddMotion(s_model->GetCurMotInfo()->motid);
 
 	SetCursor(oldcursor);
-	
+
 
 	//ChangeCurrentBone();
 
@@ -17248,10 +17380,10 @@ int OnSetMotSpeed()
 	}
 
 
-	g_SampleUI.GetSlider( IDC_SPEED )->SetValue( (int)( g_dspeed * 100.0f ) );
+	g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
 	WCHAR sz[100];
-	swprintf_s( sz, 100, L"Motion Speed: %0.4f", g_dspeed );
-    g_SampleUI.GetStatic( IDC_SPEED_STATIC )->SetText( sz );
+	swprintf_s(sz, 100, L"Motion Speed: %0.4f", g_dspeed);
+	g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
 
 	return 0;
 }
@@ -17297,7 +17429,7 @@ int SetSpUndoParams()
 
 int SetSpAxisParams()
 {
-	if( !(s_spaxis[0].sprite) ){
+	if (!(s_spaxis[0].sprite)) {
 		return 0;
 	}
 
@@ -17317,12 +17449,12 @@ int SetSpAxisParams()
 	s_spaxis[2].dispcenter.y = s_spaxis[1].dispcenter.y + (int)s_spsize + spashift;;
 
 	int spacnt;
-	for( spacnt = 0; spacnt < SPAXISNUM; spacnt++ ){
+	for (spacnt = 0; spacnt < SPAXISNUM; spacnt++) {
 		ChaVector3 disppos;
-		disppos.x = (float)( s_spaxis[spacnt].dispcenter.x ) / ((float)s_mainwidth / 2.0f) - 1.0f;
-		disppos.y = -((float)( s_spaxis[spacnt].dispcenter.y ) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.x = (float)(s_spaxis[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spaxis[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f );
+		ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
 		if (s_spaxis[spacnt].sprite) {
 			CallF(s_spaxis[spacnt].sprite->SetPos(disppos), return 1);
 			CallF(s_spaxis[spacnt].sprite->SetSize(dispsize), return 1);
@@ -17349,12 +17481,13 @@ int SetSpRigidSWParams()
 	int spgshift = 6;
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x = s_guibarX0;
 	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486;
-	
-	
+
+
 	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
 	if (g_4kresolution) {
 		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
-	}else{
+	}
+	else {
 		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
 	}
 
@@ -17409,8 +17542,8 @@ int SetSpRetargetSWParams()
 	float spgheight = 28.0f;
 	int spgshift = 6;
 	s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.x = s_guibarX0;
-	
-	
+
+
 	//s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 - MAINMENUAIMBARH;
 	if (g_4kresolution) {
 		s_spretargetsw[SPRETARGETSW_RETARGET].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
@@ -17535,8 +17668,8 @@ int SetSpAimBarParams()
 	int spgshift = 6;
 	s_spaimbar[SPAIMBAR_1].dispcenter.x = s_guibarX0;
 	//s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2);
-	
-	
+
+
 	//s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2) - MAINMENUAIMBARH;
 	if (g_4kresolution) {
 		s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32 + 16 + 4;
@@ -17545,7 +17678,7 @@ int SetSpAimBarParams()
 		s_spaimbar[SPAIMBAR_1].dispcenter.y = 486 + (28 / 2) + (6 / 2) - MAINMENUAIMBARH;
 	}
 
-	
+
 	s_spaimbar[SPAIMBAR_2].dispcenter.x = s_spaimbar[SPAIMBAR_1].dispcenter.x + (int)spgwidth + spgshift;
 	s_spaimbar[SPAIMBAR_2].dispcenter.y = s_spaimbar[SPAIMBAR_1].dispcenter.y;
 
@@ -17630,7 +17763,7 @@ int SetSpMouseCenterParams()
 	else {
 		_ASSERT(0);
 	}
-	
+
 	return 0;
 
 }
@@ -17643,16 +17776,16 @@ int SetSpSel3DParams()
 	}
 
 
-/*
-	float spawidth = 50.0f;
-	int spashift = 6;
-	//s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
-	//s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
-	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 3;
-	//s_spcam[0].dispcenter.y = 16 + 10 + (int(spawidth * 1.5f));
-	s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
-	s_spcam[0].dispcenter.y = 25 + 10;
-*/
+	/*
+		float spawidth = 50.0f;
+		int spashift = 6;
+		//s_spcam[0].dispcenter.x = (int)(s_mainwidth * 0.57f);
+		//s_spcam[0].dispcenter.y = (int)(30.0f * ((float)s_mainheight / 620.0)) + (int(spawidth * 1.5f));
+		//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - (32 + 12) * 3;
+		//s_spcam[0].dispcenter.y = 16 + 10 + (int(spawidth * 1.5f));
+		s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
+		s_spcam[0].dispcenter.y = 25 + 10;
+	*/
 
 
 	//float spgwidth = 91.0f;
@@ -17777,6 +17910,79 @@ int SetSpRefPosSWParams()
 	return 0;
 }
 
+int SetSpLimitEulSWParams()
+{
+	if (!(s_splimiteul.spriteON) || !(s_splimiteul.spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	int spgshift = 6;
+	s_splimiteul.dispcenter.x = s_mainwidth - (int)s_spsidemargin - (int)s_spsize - 10;
+	s_splimiteul.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spgshift) * 6 + spgshift;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_splimiteul.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_splimiteul.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+
+	if (s_splimiteul.spriteON) {
+		CallF(s_splimiteul.spriteON->SetPos(disppos), return 1);
+		CallF(s_splimiteul.spriteON->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_splimiteul.spriteOFF) {
+		CallF(s_splimiteul.spriteOFF->SetPos(disppos), return 1);
+		CallF(s_splimiteul.spriteOFF->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
+int SetSpScrapingSWParams()
+{
+	if (!(s_spscraping.spriteON) || !(s_spscraping.spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	int spgshift = 6;
+	s_spscraping.dispcenter.x = s_mainwidth - (int)s_spsidemargin;
+	s_spscraping.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spgshift) * 6 + spgshift;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spscraping.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spscraping.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+
+	if (s_spscraping.spriteON) {
+		CallF(s_spscraping.spriteON->SetPos(disppos), return 1);
+		CallF(s_spscraping.spriteON->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_spscraping.spriteOFF) {
+		CallF(s_spscraping.spriteOFF->SetPos(disppos), return 1);
+		CallF(s_spscraping.spriteOFF->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
+
 int SetSpGUISWParams()
 {
 	if (!(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) || !(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF)) {
@@ -17879,7 +18085,7 @@ int SetSpGUISWParams()
 
 int SetSpCamParams()
 {
-	if (!(s_spcam[SPR_CAM_I].sprite) || !(s_spcam[SPR_CAM_KAI].sprite) || !(s_spcam[SPR_CAM_KAKU].sprite)){
+	if (!(s_spcam[SPR_CAM_I].sprite) || !(s_spcam[SPR_CAM_KAI].sprite) || !(s_spcam[SPR_CAM_KAKU].sprite)) {
 		return 0;
 	}
 
@@ -17900,7 +18106,7 @@ int SetSpCamParams()
 	s_spcam[2].dispcenter.y = s_spcam[0].dispcenter.y;
 
 	int spacnt;
-	for (spacnt = 0; spacnt < SPR_CAM_MAX; spacnt++){
+	for (spacnt = 0; spacnt < SPR_CAM_MAX; spacnt++) {
 		ChaVector3 disppos;
 		disppos.x = (float)(s_spcam[spacnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spcam[spacnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
@@ -17921,18 +18127,18 @@ int SetSpCamParams()
 
 int SetSpRigParams()
 {
-	if (!(s_sprig[SPRIG_INACTIVE].sprite) || !(s_sprig[SPRIG_ACTIVE].sprite)){
+	if (!(s_sprig[SPRIG_INACTIVE].sprite) || !(s_sprig[SPRIG_ACTIVE].sprite)) {
 		return 0;
 	}
 
-/*
-	//sprefpos
-	float spgwidth = 50.0f;
-	float spgheight = 50.0f;
-	int spgshift = 6;
-	s_sprefpos.dispcenter.x = s_mainwidth - 35;
-	s_sprefpos.dispcenter.y = 35 + ((int)spgheight + spgshift) * 3;
-*/
+	/*
+		//sprefpos
+		float spgwidth = 50.0f;
+		float spgheight = 50.0f;
+		int spgshift = 6;
+		s_sprefpos.dispcenter.x = s_mainwidth - 35;
+		s_sprefpos.dispcenter.y = 35 + ((int)spgheight + spgshift) * 3;
+	*/
 
 	int spashift = 6;
 	//spashift = (int)((float)spashift * ((float)s_mainwidth / s_2ndposy));
@@ -17941,7 +18147,7 @@ int SetSpRigParams()
 	//s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - 50 - 6;
 	//s_sprig[SPRIG_INACTIVE].dispcenter.y = 25 + 10;
 	s_sprig[SPRIG_INACTIVE].dispcenter.x = s_mainwidth - (int)s_spsidemargin;
-	s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 4;
+	s_sprig[SPRIG_INACTIVE].dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 4 + spashift;
 
 	//s_spcam[0].dispcenter.x = s_mainwidth - 50 - 10 - 50 - 6 - (50 + 6) * 4;
 	//s_spcam[0].dispcenter.y = 25 + 10;
@@ -17982,7 +18188,7 @@ int SetSpCpLW2WParams()
 
 	int spashift = 6;
 	s_spcplw2w.dispcenter.x = s_mainwidth - (int)s_spsidemargin;
-	s_spcplw2w.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5 + 10;
+	s_spcplw2w.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5 + spashift;
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_spcplw2w.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
@@ -18009,7 +18215,7 @@ int SetSpSmoothParams()
 
 	int spashift = 6;
 	s_spsmooth.dispcenter.x = s_mainwidth - (int)s_spsidemargin - (int)s_spsize - 10;
-	s_spsmooth.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5 + 10;
+	s_spsmooth.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 5 + spashift;
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_spsmooth.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
@@ -18137,7 +18343,7 @@ int PickSpUndo(POINT srcpos)
 }
 
 
-int PickSpAxis( POINT srcpos )
+int PickSpAxis(POINT srcpos)
 {
 	int kind = 0;
 
@@ -18149,14 +18355,14 @@ int PickSpAxis( POINT srcpos )
 	int startx = s_spaxis[0].dispcenter.x - (int)s_spsize / 2;
 	int endx = startx + (int)s_spsize;
 
-	if( (srcpos.x >= startx) && (srcpos.x <= endx) ){
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 		int spacnt;
-		for( spacnt = 0; spacnt < SPAXISNUM; spacnt++ ){
+		for (spacnt = 0; spacnt < SPAXISNUM; spacnt++) {
 			int starty = s_spaxis[spacnt].dispcenter.y - (int)s_spsize / 2;
 			int endy = starty + (int)s_spsize;
 
-			if( (srcpos.y >= starty) && (srcpos.y <= endy) ){
-				switch( spacnt ){
+			if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+				switch (spacnt) {
 				case 0:
 					kind = PICK_SPA_X;
 					break;
@@ -18173,12 +18379,12 @@ int PickSpAxis( POINT srcpos )
 	}
 
 
-//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
-//	kind, srcpos.x, srcpos.y, starty, endy );
-//int spacnt;
-//for( spacnt = 0; spacnt < 3; spacnt++ ){
-//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spaxis[spacnt].dispcenter.x, s_spaxis[spacnt].dispcenter.x + 32 );
-//}
+	//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
+	//	kind, srcpos.x, srcpos.y, starty, endy );
+	//int spacnt;
+	//for( spacnt = 0; spacnt < 3; spacnt++ ){
+	//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spaxis[spacnt].dispcenter.x, s_spaxis[spacnt].dispcenter.x + 32 );
+	//}
 
 	return kind;
 }
@@ -18373,6 +18579,62 @@ int PickSpRefPosSW(POINT srcpos)
 	return ispick;
 }
 
+int PickSpLimitEulSW(POINT srcpos)
+{
+	int ispick = 0;
+
+	if (g_previewFlag != 0) {
+		return 0;
+	}
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	//sprefpos
+	int startx = s_splimiteul.dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
+
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+		int starty = s_splimiteul.dispcenter.y - (int)s_spsize / 2;
+		int endy = starty + (int)s_spsize + 6;
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			ispick = 1;
+		}
+	}
+
+	return ispick;
+}
+
+int PickSpScrapingSW(POINT srcpos)
+{
+	int ispick = 0;
+
+	if (g_previewFlag != 0) {
+		return 0;
+	}
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	//sprefpos
+	int startx = s_spscraping.dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
+
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+		int starty = s_spscraping.dispcenter.y - (int)s_spsize / 2;
+		int endy = starty + (int)s_spsize + 6;
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			ispick = 1;
+		}
+	}
+
+	return ispick;
+}
+
 
 int PickSpGUISW(POINT srcpos)
 {
@@ -18457,14 +18719,14 @@ int PickSpCam(POINT srcpos)
 	int starty = s_spcam[SPR_CAM_I].dispcenter.y - (int)s_spsize / 2;
 	int endy = starty + (int)s_spsize;
 
-	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int spacnt;
-		for (spacnt = 0; spacnt < SPR_CAM_MAX; spacnt++){
+		for (spacnt = 0; spacnt < SPR_CAM_MAX; spacnt++) {
 			int startx = s_spcam[spacnt].dispcenter.x - (int)s_spsize / 2;
 			int endx = startx + (int)s_spsize;
 
-			if ((srcpos.x >= startx) && (srcpos.x <= endx)){
-				switch (spacnt){
+			if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+				switch (spacnt) {
 				case 0:
 					kind = PICK_CAMROT;
 					break;
@@ -18503,7 +18765,7 @@ int PickSpRig(POINT srcpos)
 	//}
 
 
-	if (s_sprig[SPRIG_INACTIVE].sprite == 0){
+	if (s_sprig[SPRIG_INACTIVE].sprite == 0) {
 		return 0;
 	}
 
@@ -18511,11 +18773,11 @@ int PickSpRig(POINT srcpos)
 	int endy = starty + (int)s_spsize;
 
 	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
-	if ((srcpos.y >= starty) && (srcpos.y <= endy)){
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int startx = s_sprig[SPRIG_INACTIVE].dispcenter.x - (int)s_spsize / 2;
 		int endx = startx + (int)s_spsize;
 
-		if ((srcpos.x >= startx) && (srcpos.x <= endx)){
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 			pickflag = 1;
 		}
 	}
@@ -18616,29 +18878,30 @@ int SetSelectState()
 	}
 
 	//if( !s_select || !s_model || g_previewFlag ){
-	if (!s_select || !s_model || (g_previewFlag == 5)){
+	if (!s_select || !s_model || (g_previewFlag == 5)) {
 		return 0;
 	}
 
-	if( s_ikkind == 0 ){
-		s_select->SetDispFlag( "ringX", 1 );
-		s_select->SetDispFlag( "ringY", 1 );
-		s_select->SetDispFlag( "ringZ", 1 );
-	}else if( (s_ikkind == 1) || (s_ikkind == 2) ){
-		s_select->SetDispFlag( "ringX", 0 );
-		s_select->SetDispFlag( "ringY", 0 );
-		s_select->SetDispFlag( "ringZ", 0 );
+	if (s_ikkind == 0) {
+		s_select->SetDispFlag("ringX", 1);
+		s_select->SetDispFlag("ringY", 1);
+		s_select->SetDispFlag("ringZ", 1);
 	}
-////////
+	else if ((s_ikkind == 1) || (s_ikkind == 2)) {
+		s_select->SetDispFlag("ringX", 0);
+		s_select->SetDispFlag("ringY", 0);
+		s_select->SetDispFlag("ringZ", 0);
+	}
+	////////
 	UIPICKINFO pickinfo;
-	ZeroMemory( &pickinfo, sizeof( UIPICKINFO ) );
+	ZeroMemory(&pickinfo, sizeof(UIPICKINFO));
 	POINT ptCursor;
-	GetCursorPos( &ptCursor );
-	::ScreenToClient( s_3dwnd, &ptCursor );
+	GetCursorPos(&ptCursor);
+	::ScreenToClient(s_3dwnd, &ptCursor);
 	pickinfo.clickpos = ptCursor;
 	pickinfo.mousepos = ptCursor;
 	pickinfo.mousebefpos = ptCursor;
-	pickinfo.diffmouse = ChaVector2( 0.0f, 0.0f );
+	pickinfo.diffmouse = ChaVector2(0.0f, 0.0f);
 
 	pickinfo.winx = (int)DXUTGetWindowWidth();
 	pickinfo.winy = (int)DXUTGetWindowHeight();
@@ -18654,22 +18917,25 @@ int SetSelectState()
 		spakind = PickSpAxis(ptCursor);
 		spckind = PickSpCam(ptCursor);
 	}
-	if (spakind != 0){
+	if (spakind != 0) {
 		pickinfo.pickobjno = s_curboneno;
 		pickinfo.buttonflag = spakind;
-	} else if (spckind != 0){
+	}
+	else if (spckind != 0) {
 		pickinfo.pickobjno = s_curboneno;
 		pickinfo.buttonflag = spckind;
-	}else{
-	
-		if( g_shiftkey == false ){
-			CallF( s_model->PickBone( &pickinfo ), return 1 );
+	}
+	else {
+
+		if (g_shiftkey == false) {
+			CallF(s_model->PickBone(&pickinfo), return 1);
 		}
 
-		if( pickinfo.pickobjno >= 0 ){
+		if (pickinfo.pickobjno >= 0) {
 			pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
-		}else{
-			if( s_dispselect ){
+		}
+		else {
+			if (s_dispselect) {
 				int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
 				colliobjx = 0;
 				colliobjy = 0;
@@ -18677,42 +18943,46 @@ int SetSelectState()
 				colliringx = 0;
 				colliringy = 0;
 				colliringz = 0;
-						
-				colliobjx = s_select->CollisionNoBoneObj_Mouse( &pickinfo, "objX" );
-				colliobjy = s_select->CollisionNoBoneObj_Mouse( &pickinfo, "objY" );
-				colliobjz = s_select->CollisionNoBoneObj_Mouse( &pickinfo, "objZ" );
-				if( s_ikkind == 0 ){
-					colliringx = s_select->CollisionNoBoneObj_Mouse( &pickinfo, "ringX" );
-					colliringy = s_select->CollisionNoBoneObj_Mouse( &pickinfo, "ringY" );
-					colliringz = s_select->CollisionNoBoneObj_Mouse( &pickinfo, "ringZ" );
-				}else{
+
+				colliobjx = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objX");
+				colliobjy = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objY");
+				colliobjz = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objZ");
+				if (s_ikkind == 0) {
+					colliringx = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringX");
+					colliringy = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringY");
+					colliringz = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringZ");
+				}
+				else {
 					colliringx = 0;
 					colliringy = 0;
 					colliringz = 0;
 				}
-				if( colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz ){
+				if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz) {
 					pickinfo.pickobjno = s_curboneno;
 				}
 
-				if( colliobjx || colliringx ){
+				if (colliobjx || colliringx) {
 					pickinfo.buttonflag = PICK_X;
-				}else if( colliobjy || colliringy ){
+				}
+				else if (colliobjy || colliringy) {
 					pickinfo.buttonflag = PICK_Y;
 				}
-				else if (colliobjz || colliringz){
+				else if (colliobjz || colliringz) {
 					pickinfo.buttonflag = PICK_Z;
-				}else{
-					ZeroMemory( &pickinfo, sizeof( UIPICKINFO ) );
+				}
+				else {
+					ZeroMemory(&pickinfo, sizeof(UIPICKINFO));
 					pickinfo.pickobjno = -1;
 				}
-			}else{
-				ZeroMemory( &pickinfo, sizeof( UIPICKINFO ) );
+			}
+			else {
+				ZeroMemory(&pickinfo, sizeof(UIPICKINFO));
 				pickinfo.pickobjno = -1;
 			}
 		}
 	}
 
-	if( s_pickinfo.buttonflag != 0 ){
+	if (s_pickinfo.buttonflag != 0) {
 		return 0;//!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -18723,10 +18993,10 @@ int SetSelectState()
 	float hia = 0.7f;
 	float lowa = 0.3f;
 
-	if (s_matred && s_ringred && s_matblue && s_ringblue && s_matgreen && s_ringgreen && s_matyellow){
-		if( (pickinfo.pickobjno >= 0) && (s_curboneno == pickinfo.pickobjno) ){
-			
-			if( (pickinfo.buttonflag == PICK_X) || (pickinfo.buttonflag == PICK_SPA_X) ){//red
+	if (s_matred && s_ringred && s_matblue && s_ringblue && s_matgreen && s_ringgreen && s_matyellow) {
+		if ((pickinfo.pickobjno >= 0) && (s_curboneno == pickinfo.pickobjno)) {
+
+			if ((pickinfo.buttonflag == PICK_X) || (pickinfo.buttonflag == PICK_SPA_X)) {//red
 				s_matred->SetDif4F(s_matredmat * hirate);
 				s_ringred->SetDif4F(s_ringredmat * hirate);
 				s_matred->SetDif4FW(hia);
@@ -18744,7 +19014,8 @@ int SetSelectState()
 
 				s_matyellow->SetDif4F(s_matyellowmat * lowrate);
 				s_matyellow->SetDif4FW(lowa);
-			}else if( (pickinfo.buttonflag == PICK_Y) || (pickinfo.buttonflag == PICK_SPA_Y) ){//green
+			}
+			else if ((pickinfo.buttonflag == PICK_Y) || (pickinfo.buttonflag == PICK_SPA_Y)) {//green
 				s_matred->SetDif4F(s_matredmat * lowrate);
 				s_ringred->SetDif4F(s_ringredmat * lowrate);
 				s_matred->SetDif4FW(lowa);
@@ -18763,7 +19034,8 @@ int SetSelectState()
 				s_matyellow->SetDif4F(s_matyellowmat * lowrate);
 				s_matyellow->SetDif4FW(lowa);
 
-			}else if( (pickinfo.buttonflag == PICK_Z) || (pickinfo.buttonflag == PICK_SPA_Z) ){//blue
+			}
+			else if ((pickinfo.buttonflag == PICK_Z) || (pickinfo.buttonflag == PICK_SPA_Z)) {//blue
 				s_matred->SetDif4F(s_matredmat * lowrate);
 				s_ringred->SetDif4F(s_ringredmat * lowrate);
 				s_matred->SetDif4FW(lowa);
@@ -18782,7 +19054,8 @@ int SetSelectState()
 				s_matyellow->SetDif4F(s_matyellowmat * lowrate);
 				s_matyellow->SetDif4FW(lowa);
 
-			}else if( pickinfo.buttonflag == PICK_CENTER ){//yellow
+			}
+			else if (pickinfo.buttonflag == PICK_CENTER) {//yellow
 				s_matred->SetDif4F(s_matredmat * lowrate);
 				s_ringred->SetDif4F(s_ringredmat * lowrate);
 				s_matred->SetDif4FW(lowa);
@@ -18801,7 +19074,8 @@ int SetSelectState()
 				s_matyellow->SetDif4F(s_matyellowmat * hirate);
 				s_matyellow->SetDif4FW(hia);
 			}
-		}else{
+		}
+		else {
 			s_matred->SetDif4F(s_matredmat * lowrate);
 			s_ringred->SetDif4F(s_ringredmat * lowrate);
 			s_matred->SetDif4FW(lowa);
@@ -18825,17 +19099,18 @@ int SetSelectState()
 	return 0;
 }
 
-int CreateTimeLineMark( int topboneno )
+int CreateTimeLineMark(int topboneno)
 {
 	if (g_previewFlag != 0) {
 		return 0;
 	}
 
-	if( s_model && s_owpTimeline && s_owpLTimeline ){
-		if( topboneno < 0 ){
-			CreateMarkReq( s_editmotionflag, 0 );
-		}else{
-			CreateMarkReq( topboneno, 0 );
+	if (s_model && s_owpTimeline && s_owpLTimeline) {
+		if (topboneno < 0) {
+			CreateMarkReq(s_editmotionflag, 0);
+		}
+		else {
+			CreateMarkReq(topboneno, 0);
 		}
 
 		SetTimelineMark();
@@ -18904,7 +19179,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	else {
 		g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (g_applyrate / 100.0)));//editrangeと同じ式
 	}
-	
+
 
 	if ((g_motionbrush_applyframe < 0) || (g_motionbrush_applyframe > endframe)) {
 		//_ASSERT(0);
@@ -18934,7 +19209,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 
 		//このif文はプラグイン内にも推奨
-		if ((g_motionbrush_startframe >= 0.0) && (g_motionbrush_startframe < 1e5) && 
+		if ((g_motionbrush_startframe >= 0.0) && (g_motionbrush_startframe < 1e5) &&
 			(g_motionbrush_endframe >= g_motionbrush_startframe) && (g_motionbrush_endframe < 1e5) &&
 			(g_motionbrush_applyframe >= g_motionbrush_startframe) && (g_motionbrush_applyframe <= g_motionbrush_endframe) &&
 			(g_motionbrush_frameleng > g_motionbrush_endframe) && (g_motionbrush_frameleng < 1e5) &&
@@ -18990,16 +19265,16 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 	if (onrefreshflag == false) {//Refresh関数以外から呼び出したとき
 
-		if(s_owpTimeline)
+		if (s_owpTimeline)
 			s_owpTimeline->setMaxTime(frameleng);//!!!!!!!!!!!!!!!!!!!!!
-		if(s_owpLTimeline)
+		if (s_owpLTimeline)
 			s_owpLTimeline->setMaxTime(frameleng);//!!!!!!!!!!!!!!!!!!!!!
 
 		if (s_owpTimeline)
 			s_owpTimeline->setCurrentTime(g_motionbrush_applyframe, false);//!!!!!!!!!!!!!!!!!!!!!
 		if (s_owpLTimeline)
 			s_owpLTimeline->setCurrentTime(g_motionbrush_applyframe, false);//!!!!!!!!!!!!!!!!!!!!!
-		if(s_owpEulerGraph)
+		if (s_owpEulerGraph)
 			s_owpEulerGraph->setCurrentTime(g_motionbrush_applyframe, false);//!!!!!!!!!!!!!!!!!!!!!
 
 		UpdateEditedEuler();
@@ -19015,8 +19290,8 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 int SetTimelineMark()
 {
-	if( !s_model || !s_owpTimeline || !s_owpLTimeline ){
-		_ASSERT( 0 );
+	if (!s_model || !s_owpTimeline || !s_owpLTimeline) {
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -19073,39 +19348,39 @@ int SetTimelineMark()
 }
 
 
-void CreateMarkReq( int curboneno, int broflag )
+void CreateMarkReq(int curboneno, int broflag)
 {
-	if( curboneno < 0 ){
+	if (curboneno < 0) {
 		return;
 	}
-	CBone* curbone = s_model->GetBoneByID( curboneno );
-	if( curbone ){
-		int curlineno = s_boneno2lineno[ curboneno ];
-		if( curlineno >= 0 ){
+	CBone* curbone = s_model->GetBoneByID(curboneno);
+	if (curbone) {
+		int curlineno = s_boneno2lineno[curboneno];
+		if (curlineno >= 0) {
 			int keynum;
 			double startframe, endframe;
-			s_editrange.GetRange( &keynum, &startframe, &endframe );
-			s_model->AddBoneMotMark( s_owpTimeline, curboneno, curlineno, startframe, endframe, 1 );
+			s_editrange.GetRange(&keynum, &startframe, &endframe);
+			s_model->AddBoneMotMark(s_owpTimeline, curboneno, curlineno, startframe, endframe, 1);
 		}
 	}
 
-	if( curbone->GetChild() ){
-		CreateMarkReq( curbone->GetChild()->GetBoneNo(), 1 );
+	if (curbone->GetChild()) {
+		CreateMarkReq(curbone->GetChild()->GetBoneNo(), 1);
 	}
-	if( broflag && curbone->GetBrother() ){
-		CreateMarkReq( curbone->GetBrother()->GetBoneNo(), 1 );
+	if (broflag && curbone->GetBrother()) {
+		CreateMarkReq(curbone->GetBrother()->GetBoneNo(), 1);
 	}
 }
 
-int SetLTimelineMark( int curboneno )
+int SetLTimelineMark(int curboneno)
 {
-	if (g_previewFlag != 0){
+	if (g_previewFlag != 0) {
 		return 0;
 	}
 
-	if( (curboneno >= 0) && s_model && s_owpTimeline && s_owpLTimeline ){
-		CBone* opebone = s_model->GetBoneByID( curboneno );
-		if( opebone ){
+	if ((curboneno >= 0) && s_model && s_owpTimeline && s_owpLTimeline) {
+		CBone* opebone = s_model->GetBoneByID(curboneno);
+		if (opebone) {
 			CBone* parentbone = opebone->GetParent();
 			if (s_ikkind == 0) {
 				//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
@@ -19128,7 +19403,7 @@ int SetLTimelineMark( int curboneno )
 					else {
 						swprintf_s(markname, 256, L"[W] : %s", opebone->GetWBoneName());
 					}
-					
+
 					//s_owpLTimeline->newLine(0, 0, markname, RGB(168, 129, 129));
 
 					if (s_owpPlayerButton) {
@@ -19157,31 +19432,31 @@ int SetLTimelineMark( int curboneno )
 
 int ExportFBXFile()
 {
-	if( !s_model || !s_owpLTimeline ){
-		_ASSERT( 0 );
+	if (!s_model || !s_owpLTimeline) {
+		_ASSERT(0);
 		return 0;
 	}
 
-	g_previewFlag = 0; 
+	g_previewFlag = 0;
 	s_owpLTimeline->setCurrentTime(0.0, true);
 
 	vector<MODELELEM>::iterator itrmodel;
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if( curmodel && curmodel->GetCurMotInfo() ){
+		if (curmodel && curmodel->GetCurMotInfo()) {
 			curmodel->SetMotionFrame(0.0);
 		}
 	}
 
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if( curmodel ){
+		if (curmodel) {
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
 			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
-	WCHAR filename[MAX_PATH]={0L};
+	WCHAR filename[MAX_PATH] = { 0L };
 	OPENFILENAME ofn1;
 	ofn1.lStructSize = sizeof(OPENFILENAME);
 	//ofn1.hwndOwner = s_3dwnd;
@@ -19227,9 +19502,9 @@ int ExportFBXFile()
 	}
 
 
-	
-	char fbxpath[MAX_PATH] = {0};
-	WideCharToMultiByte( CP_UTF8, 0, filename, -1, fbxpath, MAX_PATH, NULL, NULL );	
+
+	char fbxpath[MAX_PATH] = { 0 };
+	WideCharToMultiByte(CP_UTF8, 0, filename, -1, fbxpath, MAX_PATH, NULL, NULL);
 
 
 	{
@@ -19253,7 +19528,7 @@ int ExportFBXFile()
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
 	CallF(WriteFBXFile(g_limitdegflag, s_psdk, s_model, fbxpath, fbxdate), return 1);
 
-	if (s_model->GetOldAxisFlagAtLoading() == 0){
+	if (s_model->GetOldAxisFlagAtLoading() == 0) {
 		WCHAR lmtname[MAX_PATH] = { 0L };
 		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", filename);
 		CLmtFile lmtfile;
@@ -19272,32 +19547,32 @@ int ExportFBXFile()
 
 int ExportBntFile()
 {
-	if( !s_model || !s_owpLTimeline ){
-		_ASSERT( 0 );
+	if (!s_model || !s_owpLTimeline) {
+		_ASSERT(0);
 		return 0;
 	}
 
-	g_previewFlag = 0; 
+	g_previewFlag = 0;
 	s_owpLTimeline->setCurrentTime(0.0, true);
 
 	vector<MODELELEM>::iterator itrmodel;
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if( curmodel && curmodel->GetCurMotInfo() ){
+		if (curmodel && curmodel->GetCurMotInfo()) {
 			curmodel->SetMotionFrame(0.0);
 		}
 	}
 
-	for( itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++ ){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if( curmodel ){
+		if (curmodel) {
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
 			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
 
-	WCHAR filename[MAX_PATH]={0L};
+	WCHAR filename[MAX_PATH] = { 0L };
 	OPENFILENAME ofn1;
 	ofn1.lStructSize = sizeof(OPENFILENAME);
 	ofn1.hwndOwner = s_3dwnd;
@@ -19340,22 +19615,22 @@ int ExportBntFile()
 		s_getfilenamehwnd = 0;
 		s_getfilenametreeview = 0;
 	}
-	
+
 	//char fbxpath[MAX_PATH] = {0};
 	//WideCharToMultiByte( CP_UTF8, 0, filename, -1, fbxpath, MAX_PATH, NULL, NULL );	
 
-	if( s_modelindex.empty() ){
-		_ASSERT( 0 );
+	if (s_modelindex.empty()) {
+		_ASSERT(0);
 		return 0;
 	}
 	MODELELEM wme = s_modelindex[0];
 	CModel* curmodel = wme.modelptr;
-	if( !curmodel ){
+	if (!curmodel) {
 		return 0;
 	}
 
 	CBntFile bntfile;
-	CallF( bntfile.WriteBntFile(g_limitdegflag, filename, wme), return 1 );
+	CallF(bntfile.WriteBntFile(g_limitdegflag, filename, wme), return 1);
 
 	return 0;
 }
@@ -19372,16 +19647,16 @@ int AddEditRangeHistory()
 		return 0;
 	}
 
-	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)){
+	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)) {
 		_ASSERT(0);
 		s_editrangehistoryno = 0;
 	}
-	if ((s_editrangesetindex < 0) || (s_editrangesetindex >= EDITRANGEHISTORYNUM)){
+	if ((s_editrangesetindex < 0) || (s_editrangesetindex >= EDITRANGEHISTORYNUM)) {
 		_ASSERT(0);
 		s_editrangesetindex = 0;
 	}
 
-	if (s_editrange.IsSameStartAndEnd()){
+	if (s_editrange.IsSameStartAndEnd()) {
 		//_ASSERT(0);
 		return 0;
 	}
@@ -19389,16 +19664,16 @@ int AddEditRangeHistory()
 
 	int findflag = 0;
 	int erhno;
-	for (erhno = 0; erhno < EDITRANGEHISTORYNUM; erhno++){
-		if (*(s_editrangehistory + erhno) == s_editrange){
+	for (erhno = 0; erhno < EDITRANGEHISTORYNUM; erhno++) {
+		if (*(s_editrangehistory + erhno) == s_editrange) {
 			findflag++;
 			break;
 		}
 	}
 
-	if (findflag == 0){
+	if (findflag == 0) {
 		s_editrangesetindex += 1;
-		if (s_editrangesetindex >= EDITRANGEHISTORYNUM){
+		if (s_editrangesetindex >= EDITRANGEHISTORYNUM) {
 			s_editrangesetindex = 0;
 		}
 
@@ -19414,7 +19689,7 @@ int AddEditRangeHistory()
 
 int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 {
-	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)){
+	if ((s_editrangehistoryno < 0) || (s_editrangehistoryno >= EDITRANGEHISTORYNUM)) {
 		_ASSERT(0);
 		s_editrangehistoryno = 0;
 	}
@@ -19423,38 +19698,38 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 	int erhcnt;
 	int curindex = s_editrangehistoryno;
 
-	if (prevrangeFlag && (s_editrange.IsSameStartAndEnd())){
+	if (prevrangeFlag && (s_editrange.IsSameStartAndEnd())) {
 		//prevボタンのとき　範囲が解除されている場合は現状復帰のためインデックスはそのまま
-		if ((s_editrangehistory + curindex)->GetSetFlag() == 1){
+		if ((s_editrangehistory + curindex)->GetSetFlag() == 1) {
 			findindex = curindex;
 		}
 	}
-	else{
-		for (erhcnt = 0; erhcnt < EDITRANGEHISTORYNUM; erhcnt++){
-			if (prevrangeFlag){
+	else {
+		for (erhcnt = 0; erhcnt < EDITRANGEHISTORYNUM; erhcnt++) {
+			if (prevrangeFlag) {
 				curindex -= 1;
 			}
-			else if (nextrangeFlag){
+			else if (nextrangeFlag) {
 				curindex += 1;
 			}
-			else{
+			else {
 				_ASSERT(0);
 				break;
 			}
-			if (curindex < 0){
+			if (curindex < 0) {
 				curindex = EDITRANGEHISTORYNUM - 1;
 			}
-			if (curindex >= EDITRANGEHISTORYNUM){
+			if (curindex >= EDITRANGEHISTORYNUM) {
 				curindex = 0;
 			}
-			if ((s_editrangehistory + curindex)->GetSetFlag() == 1){
+			if ((s_editrangehistory + curindex)->GetSetFlag() == 1) {
 				findindex = curindex;
 				break;
 			}
 		}
 	}
 
-	if (findindex >= 0){
+	if (findindex >= 0) {
 		s_editrange = *(s_editrangehistory + findindex);
 		s_editrangehistoryno = findindex;
 	}
@@ -19468,21 +19743,21 @@ int DispAngleLimitDlg()
 {
 	s_underanglelimithscroll = 0;
 
-	if (s_anglelimitdlg){
+	if (s_anglelimitdlg) {
 		//already opened
 		return 0;
 	}
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
-	if (s_model->GetOldAxisFlagAtLoading() == 1){
+	if (s_model->GetOldAxisFlagAtLoading() == 1) {
 		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry after Saving FBX file.", L"error!!!", MB_OK);
 		return 0;
 	}
@@ -19503,7 +19778,7 @@ int DispAngleLimitDlg()
 	//s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_3dwnd, (DLGPROC)AngleLimitDlgProc);
 	//s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_mainhwnd, (DLGPROC)AngleLimitDlgProc);
 	s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG2), s_mainhwnd, (DLGPROC)AngleLimitDlgProc2);
-	if (!s_anglelimitdlg){
+	if (!s_anglelimitdlg) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -19545,13 +19820,13 @@ int DispAngleLimitDlg()
 
 int Bone2AngleLimit()
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
@@ -19575,7 +19850,7 @@ int Bone2AngleLimit()
 		s_anglelimitbone = 0;
 	}
 
-	if (s_anglelimitbone){
+	if (s_anglelimitbone) {
 		MOTINFO* curmi;
 		curmi = s_model->GetCurMotInfo();
 		if (curmi) {
@@ -19592,7 +19867,7 @@ int Bone2AngleLimit()
 			}
 		}
 	}
-	else{
+	else {
 		_ASSERT(0);
 		InitAngleLimit(&s_anglelimit);
 	}
@@ -19642,37 +19917,37 @@ void AngleLimit2Bone_Req(CBone* srcbone, int setbroflag)
 
 int AngleLimit2Bone(int limit2boneflag)
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (!s_anglelimitbone){
+	if (!s_anglelimitbone) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
 	//if (g_previewFlag == 0) {
-		if (s_anglelimitbone) {
-			if (limit2boneflag == eLIM2BONE_LIM2BONE_ONE) {
-				AngleLimit2Bone_One(s_anglelimitbone);
-			}
-			else if (limit2boneflag == eLIM2BONE_LIM2BONE_DEEPER) {
-				int setbroflag = 0;
-				AngleLimit2Bone_Req(s_anglelimitbone, setbroflag);
-			}
-			else if (limit2boneflag == eLIM2BONE_LIM2BONE_ALL) {
-				int setbroflag = 0;
-				AngleLimit2Bone_Req(s_model->GetTopBone(), setbroflag);
-			}
-			else {
-				_ASSERT(0);
-				return 1;
-			}
+	if (s_anglelimitbone) {
+		if (limit2boneflag == eLIM2BONE_LIM2BONE_ONE) {
+			AngleLimit2Bone_One(s_anglelimitbone);
 		}
-			
-		//}
+		else if (limit2boneflag == eLIM2BONE_LIM2BONE_DEEPER) {
+			int setbroflag = 0;
+			AngleLimit2Bone_Req(s_anglelimitbone, setbroflag);
+		}
+		else if (limit2boneflag == eLIM2BONE_LIM2BONE_ALL) {
+			int setbroflag = 0;
+			AngleLimit2Bone_Req(s_model->GetTopBone(), setbroflag);
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+	}
+
 	//}
+//}
 
 	return 0;
 }
@@ -19724,14 +19999,14 @@ int InitAngleLimitSliderFloat(HWND hDlgWnd, int slresid, int txtresid, float src
 
 	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_CLEARTICS, 0, 0);
 	int tickcnt;
-	for (tickcnt = 0; tickcnt <= 36; tickcnt++){
+	for (tickcnt = 0; tickcnt <= 36; tickcnt++) {
 		int tickval = (-180 + 10 * tickcnt);
 		SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETTIC, 1, (LPARAM)(LONG)tickval);
 	}
 
 	SendMessage(GetDlgItem(hDlgWnd, slresid), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)((int)(srclimit + 0.1f)));
 
-	WCHAR strval[256] = {0L};
+	WCHAR strval[256] = { 0L };
 	swprintf_s(strval, 256, L"%.1f", srclimit);
 	SetDlgItemText(hDlgWnd, txtresid, (LPCWSTR)strval);
 
@@ -19808,7 +20083,7 @@ int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 	result1 = CheckStr_SInt(stredit);
 	if (result1 == 0) {
 		stredit[ANGLEDLGEDITLEN - 1] = 0L;
-		
+
 		SetLastError(0);
 		int tmpint = _wtoi(stredit);
 		DWORD dwresult = GetLastError();
@@ -19832,10 +20107,10 @@ int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 
 int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 {
-	if (s_anglelimitbone){
+	if (s_anglelimitbone) {
 
 		if (updateonlycheckeul == false) {
-			
+
 			SetDlgItemText(hDlgWnd, IDC_BONENAME, (LPCWSTR)s_anglelimitbone->GetWBoneName());
 
 			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_RESETCONTENT, 0, 0);
@@ -19919,7 +20194,7 @@ int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 		//}
 
 	}
-	else{
+	else {
 		_ASSERT(0);
 	}
 
@@ -20191,7 +20466,7 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	case eLIM2BONE_NONE:
 		break;
 	}
-	
+
 	if (s_model) {
 		ClearLimitedWM(s_model);
 		CopyWorldToLimitedWorld(s_model);
@@ -20227,20 +20502,20 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 {
 	switch (msg) {
 	case WM_INITDIALOG:
-		{
-			Bone2AngleLimit();
-			bool updateonlycheckeul = false;
-			AngleLimit2Dlg(hDlgWnd, updateonlycheckeul);
-			ClearLimitedWM(s_model);//2022/12/06
+	{
+		Bone2AngleLimit();
+		bool updateonlycheckeul = false;
+		AngleLimit2Dlg(hDlgWnd, updateonlycheckeul);
+		ClearLimitedWM(s_model);//2022/12/06
 
-			//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESETLIM_CURRENT), FALSE);
-			//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESET0_CURRENT), FALSE);
-			//EnableWindow(GetDlgItem(hDlgWnd, IDC_REPLACE180TO170_CURRENT), FALSE);
-			//EnableWindow(GetDlgItem(hDlgWnd, IDC_LIMITFROMMOTION_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESETLIM_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESET0_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_REPLACE180TO170_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_LIMITFROMMOTION_CURRENT), FALSE);
 
-			return FALSE;
-		}
-		break;
+		return FALSE;
+	}
+	break;
 
 	////for slider
 	//case WM_LBUTTONDOWN:
@@ -20266,50 +20541,50 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			break;
 
 		case IDC_APPLYONE:
-			{
-				s_changelimitangleFlag = true;
-				PrepairUndo();//全フレーム変更の前に全フレーム保存
+		{
+			s_changelimitangleFlag = true;
+			PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-				int result1 = 0;
-				result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
-				if (result1 == 0) {
-					UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ONE);
-				}
-
-				PrepairUndo();//全フレーム変更後に全フレーム保存
-				s_changelimitangleFlag = false;
+			int result1 = 0;
+			result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
+			if (result1 == 0) {
+				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ONE);
 			}
-			break;
+
+			PrepairUndo();//全フレーム変更後に全フレーム保存
+			s_changelimitangleFlag = false;
+		}
+		break;
 		case IDC_APPLYDEEPER:
-			{
-				s_changelimitangleFlag = true;
-				PrepairUndo();//全フレーム変更の前に全フレーム保存
+		{
+			s_changelimitangleFlag = true;
+			PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-				int result1 = 0;
-				result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
-				if (result1 == 0) {
-					UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_DEEPER);
-				}
-
-				PrepairUndo();//全フレーム変更後に全フレーム保存
-				s_changelimitangleFlag = false;
+			int result1 = 0;
+			result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
+			if (result1 == 0) {
+				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_DEEPER);
 			}
-			break;
+
+			PrepairUndo();//全フレーム変更後に全フレーム保存
+			s_changelimitangleFlag = false;
+		}
+		break;
 		case IDC_APPLYALL:
-			{
-				s_changelimitangleFlag = true;
-				PrepairUndo();//全フレーム変更の前に全フレーム保存
+		{
+			s_changelimitangleFlag = true;
+			PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-				int result1 = 0;
-				result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
-				if (result1 == 0) {
-					UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ALL);
-				}
-			
-				PrepairUndo();//全フレーム変更後に全フレーム保存
-				s_changelimitangleFlag = false;
+			int result1 = 0;
+			result1 = AngleDlg2AngleLimit(hDlgWnd);//エラー入力通知ダイアログも出す
+			if (result1 == 0) {
+				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ALL);
 			}
-			break;
+
+			PrepairUndo();//全フレーム変更後に全フレーム保存
+			s_changelimitangleFlag = false;
+		}
+		break;
 
 		case IDC_BUTTON1:
 		{
@@ -20344,7 +20619,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				}
 			}
 		}
-			break;
+		break;
 		case IDC_BUTTON2:
 		{
 			//CopyFromSymBone
@@ -20381,12 +20656,12 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 							s_changelimitangleFlag = false;
 
 						}
-						
+
 					}
 				}
 			}
 		}
-			break;
+		break;
 		case IDC_BUTTON3:
 		{
 			//copy button
@@ -20394,7 +20669,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				s_anglelimitcopy = s_anglelimit;
 			}
 		}
-			break;
+		break;
 		case IDC_BUTTON4:
 		{
 			//paste button
@@ -20413,10 +20688,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 			}
 		}
-			break;
+		break;
 
 
-	//To All Bone
+		//To All Bone
 		case IDC_RESETLIM:
 		{
 			if (s_model && s_anglelimitdlg) {
@@ -20437,7 +20712,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 			}
 		}
-			break;
+		break;
 		case IDC_RESET0:
 		{
 			if (s_model && s_anglelimitdlg) {
@@ -20458,7 +20733,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 			}
 		}
-			break;
+		break;
 		case IDC_REPLACE180TO170:
 		{
 			if (s_model && s_anglelimitdlg) {
@@ -20479,7 +20754,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			}
 
 		}
-			break;
+		break;
 		case IDC_LIMITFROMMOTION:
 		{
 			if (s_model && s_anglelimitdlg) {
@@ -20533,9 +20808,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				}
 			}
 		}
-			break;
+		break;
 
-	//To AllBones From AllMotions
+		//To AllBones From AllMotions
 		case IDC_LIMITFROMALLMOTIONS:
 		{
 			if (s_model && s_anglelimitdlg) {
@@ -20590,7 +20865,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		}
 		break;
 
-			
+
 		case IDC_RESETLIM_CURRENT:
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
@@ -20706,8 +20981,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		break;
 
 
-			
-			
+
+
 		//case IDOK:
 			//break;
 		case IDCANCEL:
@@ -20719,7 +20994,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		}
 		break;
 	case WM_CLOSE:
-		if (s_anglelimitdlg){
+		if (s_anglelimitdlg) {
 			s_underanglelimithscroll = 0;
 			DestroyWindow(s_anglelimitdlg);
 			s_anglelimitdlg = 0;
@@ -20735,21 +21010,21 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 int DispRotAxisDlg()
 {
-	if (s_rotaxisdlg){
+	if (s_rotaxisdlg) {
 		//already opened
 		return 0;
 	}
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
-	if (s_model->GetOldAxisFlagAtLoading() == 1){
+	if (s_model->GetOldAxisFlagAtLoading() == 1) {
 		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving FBX file.", L"error", MB_OK);
 		return 0;
 	}
@@ -20757,7 +21032,7 @@ int DispRotAxisDlg()
 
 	//s_rotaxisdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ROTAXISDLG), s_3dwnd, (DLGPROC)RotAxisDlgProc);
 	s_rotaxisdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ROTAXISDLG), s_mainhwnd, (DLGPROC)RotAxisDlgProc);
-	if (!s_rotaxisdlg){
+	if (!s_rotaxisdlg) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -20782,21 +21057,21 @@ int DispRotAxisDlg()
 
 int InitRotAxis()
 {
-	if (!s_rotaxisdlg){
+	if (!s_rotaxisdlg) {
 		return 0;
 	}
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	if (curbone){
+	if (curbone) {
 		RecalcBoneAxisX(curbone);
 	}
 
@@ -20805,39 +21080,39 @@ int InitRotAxis()
 
 int RotAxis(HWND hDlgWnd)
 {
-	if (!s_rotaxisdlg){
+	if (!s_rotaxisdlg) {
 		return 0;
 	}
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	if (!curbone){
+	if (!curbone) {
 		return 0;
 	}
 
 	UINT checkflagX;
 	checkflagX = IsDlgButtonChecked(hDlgWnd, IDC_RADIO1);
-	if (checkflagX == BST_CHECKED){
+	if (checkflagX == BST_CHECKED) {
 		s_rotaxiskind = AXIS_X;
 	}
-	else{
+	else {
 		UINT checkflagY;
 		checkflagY = IsDlgButtonChecked(hDlgWnd, IDC_RADIO2);
-		if (checkflagY == BST_CHECKED){
+		if (checkflagY == BST_CHECKED) {
 			s_rotaxiskind = AXIS_Y;
 		}
-		else{
+		else {
 			UINT checkflagZ;
 			checkflagZ = IsDlgButtonChecked(hDlgWnd, IDC_RADIO3);
-			if (checkflagZ == BST_CHECKED){
+			if (checkflagZ == BST_CHECKED) {
 				s_rotaxiskind = AXIS_Z;
 			}
 		}
@@ -20848,26 +21123,26 @@ int RotAxis(HWND hDlgWnd)
 	strdeg[256 - 1] = 0L;
 	size_t len = wcslen(strdeg);
 	//_ASSERT(0);
-	if ((len > 0) && (len < 256)){
+	if ((len > 0) && (len < 256)) {
 		s_rotaxisdeg = (float)_wtof(strdeg);
 		//_ASSERT(0);
-		if ((s_rotaxisdeg >= -360.0f) && (s_rotaxisdeg <= 360.0f)){
+		if ((s_rotaxisdeg >= -360.0f) && (s_rotaxisdeg <= 360.0f)) {
 			float rotrad = s_rotaxisdeg * (float)DEG2PAI;
 			ChaVector3 axis0;
 			CQuaternion rotq;
-			if (s_rotaxiskind == AXIS_X){
+			if (s_rotaxiskind == AXIS_X) {
 				axis0 = ChaVector3(1.0f, 0.0f, 0.0f);
 				rotq.SetAxisAndRot(axis0, rotrad);
 			}
-			else if (s_rotaxiskind == AXIS_Y){
+			else if (s_rotaxiskind == AXIS_Y) {
 				axis0 = ChaVector3(0.0f, 1.0f, 0.0f);
 				rotq.SetAxisAndRot(axis0, rotrad);
 			}
-			else if (s_rotaxiskind == AXIS_Z){
+			else if (s_rotaxiskind == AXIS_Z) {
 				axis0 = ChaVector3(0.0f, 0.0f, 1.0f);
 				rotq.SetAxisAndRot(axis0, rotrad);
 			}
-			else{
+			else {
 				_ASSERT(0);
 				return 1;
 			}
@@ -20889,7 +21164,7 @@ int RotAxis(HWND hDlgWnd)
 			curbone->SetNodeMat(newnodemat);
 
 			MOTINFO* mi = s_model->GetCurMotInfo();
-			if (mi){
+			if (mi) {
 				s_model->CalcBoneEul(g_limitdegflag, mi->motid);
 			}
 			//WCHAR strmes[256];
@@ -20915,10 +21190,10 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		SetWindowText(GetDlgItem(hDlgWnd, IDC_EDITDEG), strdeg);
 
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-		if (curbone){
+		if (curbone) {
 			SetWindowText(GetDlgItem(hDlgWnd, IDC_BONENAME), curbone->GetWBoneName());
 		}
-		
+
 		RECT dlgrect;
 		::GetWindowRect(hDlgWnd, &dlgrect);
 		SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
@@ -20934,7 +21209,7 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_rotzisdlghwnd = 0;
 
 			//EndDialog(hDlgWnd, IDOK);
-			if (s_rotaxisdlg){
+			if (s_rotaxisdlg) {
 				DestroyWindow(s_rotaxisdlg);
 				s_rotaxisdlg = 0;
 			}
@@ -20943,7 +21218,7 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_rotzisdlghwnd = 0;
 
 			//EndDialog(hDlgWnd, IDCANCEL);
-			if (s_rotaxisdlg){
+			if (s_rotaxisdlg) {
 				DestroyWindow(s_rotaxisdlg);
 				s_rotaxisdlg = 0;
 			}
@@ -20961,7 +21236,7 @@ LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_CLOSE:
 		s_rotzisdlghwnd = 0;
 
-		if (s_rotaxisdlg){
+		if (s_rotaxisdlg) {
 			DestroyWindow(s_rotaxisdlg);
 			s_rotaxisdlg = 0;
 		}
@@ -21033,7 +21308,7 @@ int ChangeCurrentBone()
 			if ((s_befbone != curbone) || (s_befmodel != s_model)) {
 				//if (s_owpTimeline) {
 					//refreshTimeline(*s_owpTimeline);
-				
+
 				refreshEulerGraph();
 				//s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
 
@@ -21372,7 +21647,7 @@ int OnFrameAngleLimit(bool updateonlycheckeul)
 	if (s_anglelimitdlg) {
 		if (s_model && (s_underanglelimithscroll == 0)) {//HScroll中に値を取得して設定するとスライダーが動かないから
 			//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);//commentout
-			
+
 
 			Bone2AngleLimit();
 			AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
@@ -21383,7 +21658,7 @@ int OnFrameAngleLimit(bool updateonlycheckeul)
 					AngleLimit2Bone(eLIM2BONE_LIM2BONE_ONE);
 				}
 			}
-			
+
 			UpdateWindow(s_anglelimitdlg);
 
 			//Bone2AngleLimit(setcheckflag);
@@ -21403,9 +21678,9 @@ int OnFramePreviewStop()
 	double currenttime = s_owpLTimeline->getCurrentTime();
 
 	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel){
+		if (curmodel) {
 
 			if (curmodel && curmodel->GetCurMotInfo()) {
 				curmodel->SetMotionFrame(currenttime);
@@ -21422,15 +21697,15 @@ int OnFramePreviewStop()
 
 int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 {
-	if (g_previewFlag != 0){
-		if (s_savepreviewFlag == 0){
+	if (g_previewFlag != 0) {
+		if (s_savepreviewFlag == 0) {
 			//preview start frame
 			s_previewrange = s_editrange;
 			double rangestart;
-			if (s_previewrange.IsSameStartAndEnd()){
+			if (s_previewrange.IsSameStartAndEnd()) {
 				rangestart = 1.0;
 			}
-			else{
+			else {
 				rangestart = s_previewrange.GetStartFrame();
 			}
 			s_model->SetMotionFrame(rangestart);
@@ -21441,14 +21716,14 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 	int endflag = 0;
 	int loopstartflag = 0;
 	s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
-	if (endflag == 1){
+	if (endflag == 1) {
 		g_previewFlag = 0;
 	}
 
 	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && curmodel->GetCurMotInfo()){
+		if (curmodel && curmodel->GetCurMotInfo()) {
 			curmodel->SetMotionFrame(*pnextframe);
 		}
 	}
@@ -21459,9 +21734,9 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 #endif
 
 
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel){
+		if (curmodel) {
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
 			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
@@ -21546,9 +21821,9 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	bool recstopflag = false;
 	vector<MODELELEM>::iterator itrmodel;
 	BOOL firstmodelflag = TRUE;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel){
+		if (curmodel) {
 
 			if (curmodel->GetBtCnt() <= initterm) {
 				curmodel->SetKinematicFlag();
@@ -21568,7 +21843,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			int endflag = 0;
 			int loopstartflag = 0;
 			//if (isstartframe == FALSE) {
-				curmodel->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+			curmodel->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
 			//}
 			//else {
 			//	loopstartflag = 1;
@@ -21636,7 +21911,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 			CModel* curmodel = itrmodel->modelptr;
 			//if (curmodel) {
-			if(curmodel && (curmodel->GetBtCnt() != 0)){
+			if (curmodel && (curmodel->GetBtCnt() != 0)) {
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
@@ -21914,40 +22189,40 @@ int OnFrameCloseFlag()
 {
 	// 終了フラグを確認
 
-	if (s_closeFlag){
+	if (s_closeFlag) {
 		s_closeFlag = false;
 		s_dispmw = false;
-		if (s_timelineWnd){
+		if (s_timelineWnd) {
 			s_timelineWnd->setVisible(0);
 		}
 
 	}
-	if (s_LcloseFlag){
+	if (s_LcloseFlag) {
 		s_LcloseFlag = false;
 		s_Ldispmw = false;
-		if (s_LtimelineWnd){
+		if (s_LtimelineWnd) {
 			s_LtimelineWnd->setVisible(0);
 		}
 
 	}
-	if (s_closetoolFlag){
+	if (s_closetoolFlag) {
 		s_closetoolFlag = false;
 		s_disptool = false;
-		if (s_toolWnd){
+		if (s_toolWnd) {
 			s_toolWnd->setVisible(0);
 		}
 	}
-	if (s_closeobjFlag){
+	if (s_closeobjFlag) {
 		s_closeobjFlag = false;
 		s_dispobj = false;
-		if (s_layerWnd){
+		if (s_layerWnd) {
 			s_layerWnd->setVisible(0);
 		}
 	}
-	if (s_closemodelFlag){
+	if (s_closemodelFlag) {
 		s_closemodelFlag = false;
 		s_dispmodel = false;
-		if (s_modelpanel.panel){
+		if (s_modelpanel.panel) {
 			s_modelpanel.panel->setVisible(0);
 		}
 	}
@@ -21958,31 +22233,31 @@ int OnFrameCloseFlag()
 			s_motionpanel.panel->setVisible(0);
 		}
 	}
-	if (s_closeconvboneFlag){
+	if (s_closeconvboneFlag) {
 		s_closeconvboneFlag = false;
 		s_dispconvbone = false;
-		if (s_convboneWnd){
+		if (s_convboneWnd) {
 			s_convboneWnd->setVisible(false);
 			s_convboneWnd->setListenMouse(false);
 		}
 	}
-	if (s_DcloseFlag){
+	if (s_DcloseFlag) {
 		s_DcloseFlag = false;
 		s_dmpanimWnd->setVisible(0);
-		if (s_bpWorld){
+		if (s_bpWorld) {
 			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
-		if (s_model){
+		if (s_model) {
 			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return 1);
 		}
 	}
-	if (s_RcloseFlag){
+	if (s_RcloseFlag) {
 		s_RcloseFlag = false;
 		s_rigidWnd->setVisible(0);
-		if (s_bpWorld){
+		if (s_bpWorld) {
 			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
-		if (s_model){
+		if (s_model) {
 			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return 1);
 		}
 	}
@@ -21990,17 +22265,17 @@ int OnFrameCloseFlag()
 		s_ScloseFlag = false;
 		s_sidemenuWnd->setVisible(0);
 	}
-	if (s_IcloseFlag){
+	if (s_IcloseFlag) {
 		s_IcloseFlag = false;
 		s_impWnd->setVisible(0);
-		if (s_bpWorld){
+		if (s_bpWorld) {
 			s_bpWorld->setGlobalERP(btScalar(g_erp));
 		}
-		if (s_model){
+		if (s_model) {
 			CallF(s_model->CreateBtObject(g_limitdegflag, 0), return 1);
 		}
 	}
-	if (s_GcloseFlag){
+	if (s_GcloseFlag) {
 		s_GcloseFlag = false;
 		s_gpWnd->setVisible(0);
 	}
@@ -22010,14 +22285,14 @@ int OnFrameCloseFlag()
 
 int GetCurrentBoneFromTimeline(int* dstboneno)
 {
-	if (s_model && s_owpTimeline){
+	if (s_model && s_owpTimeline) {
 		int curlineno = s_owpTimeline->getCurrentLine();// 選択行
-		if (curlineno >= 0){
+		if (curlineno >= 0) {
 			*dstboneno = s_lineno2boneno[curlineno];//*(&s_curboneno)
 			SetLTimelineMark(s_curboneno);
 			ChangeCurrentBone();
 		}
-		else{
+		else {
 			*dstboneno = -1;
 		}
 	}
@@ -22210,13 +22485,13 @@ int OnFrameTimeLineWnd()
 			CEditRange::SetApplyRate((double)g_applyrate);
 			s_buttonselectstart = s_editrange.GetStartFrame();
 			s_buttonselectend = s_editrange.GetEndFrame();
-			
+
 
 			if (s_mbuttoncnt != 0) {//2023/01/09 mbutton + wheelで選択を継続するため s_mbuttoncnt == 0のときには初期化しない
 				g_underselectingframe = 0;
 			}
-			
-			
+
+
 			//_ASSERT(0);
 
 			if (s_LupFlag) {//selectFlagとLupFlagは本来は別物　しかしLupのときだけ処理するものがある
@@ -22244,7 +22519,7 @@ int OnFrameTimeLineWnd()
 						//playerbuttonからのundoredo時には　SaveUndoMotionしない
 						s_undoredoFromPlayerButton = false;
 					}
-					
+
 				}
 			}
 		}
@@ -22370,7 +22645,7 @@ int OnFrameTimeLineWnd()
 
 	// キー移動フラグを確認 ///////////////////////////////////////////////////////////
 	//if (s_keyShiftFlag){
-		s_keyShiftFlag = false;
+	s_keyShiftFlag = false;
 	//}
 
 	return 0;
@@ -22378,13 +22653,13 @@ int OnFrameTimeLineWnd()
 
 int OnFrameMouseButton()
 {
-	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb){
+	if (s_timelinembuttonFlag || g_ctrlshiftkeyformb) {
 		s_timelinembuttonFlag = false;
 		OnTimeLineMButtonDown(g_ctrlshiftkeyformb);
 		g_ctrlshiftkeyformb = false;
 	}
-	if (s_timelinewheelFlag || (g_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))){
-	//if (s_timelinewheelFlag || (g_underselectingframe == 1) || (g_underselectingframe == 2)) {//wheeldeltaの値は取得後も消えない仕様のためこの条件だと止まらなくなる
+	if (s_timelinewheelFlag || (g_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))) {
+		//if (s_timelinewheelFlag || (g_underselectingframe == 1) || (g_underselectingframe == 2)) {//wheeldeltaの値は取得後も消えない仕様のためこの条件だと止まらなくなる
 		s_timelinewheelFlag = false;//OnTimeLineWheelの後ろにするとホイールしない？？？
 		OnTimeLineWheel();
 	}
@@ -22404,11 +22679,11 @@ int OnFrameMouseButton()
 	}
 
 
-	if (s_timelineRUpFlag){//s_timelineWnd
+	if (s_timelineRUpFlag) {//s_timelineWnd
 		s_timelineRUpFlag = false;
 
 		GetCurrentBoneFromTimeline(&s_curboneno);
-		if (s_curboneno > 0){
+		if (s_curboneno > 0) {
 			BoneRClick(s_curboneno);
 		}
 	}
@@ -22422,8 +22697,8 @@ int OnFrameToolWnd()
 
 	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
 
-	if (s_selboneFlag){
-		if (s_model && s_owpTimeline && s_owpLTimeline){
+	if (s_selboneFlag) {
+		if (s_model && s_owpTimeline && s_owpLTimeline) {
 			s_selbonedlg.SetModel(s_model);
 			s_underframecopydlg = true;
 			s_selbonedlg.DoModal();
@@ -22506,12 +22781,12 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_markFlag){
+	if (s_markFlag) {
 
-		if (s_model && s_owpTimeline && s_owpLTimeline){
+		if (s_model && s_owpTimeline && s_owpLTimeline) {
 			double curltime = s_owpLTimeline->getCurrentTime();
 			KeyInfo ki = s_owpLTimeline->ExistKey(2, curltime);
-			if (ki.lineIndex < 0){
+			if (ki.lineIndex < 0) {
 				s_owpLTimeline->newKey(s_strmark, curltime, 0);
 			}
 		}
@@ -22519,7 +22794,7 @@ int OnFrameToolWnd()
 		s_markFlag = false;
 	}
 
-	if (s_initmpFlag){
+	if (s_initmpFlag) {
 
 		InitMpFromTool();
 
@@ -22545,9 +22820,9 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_interpolateState != 0){
+	if (s_interpolateState != 0) {
 
-		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
 			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, (double)g_applyrate);
 
 			//int keynum;
@@ -22566,7 +22841,7 @@ int OnFrameToolWnd()
 			}
 
 			int operatingjointno = -1;
-			operatingjointno = s_model->InterpolateBetweenSelection(g_limitdegflag, 
+			operatingjointno = s_model->InterpolateBetweenSelection(g_limitdegflag,
 				s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
 
 			if (g_limitdegflag == true) {
@@ -22664,15 +22939,15 @@ int OnFrameToolWnd()
 		s_copyLW2WFlag = false;
 	}
 
-	if (s_copyFlag){
+	if (s_copyFlag) {
 
-		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
 			s_copymotvec.clear();
 			s_copyKeyInfoList.clear();
 			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 
 			list<KeyInfo>::iterator itrcp;
-			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 				double curframe = (double)((int)(itrcp->time + 0.0001));
 				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(), curframe);
 			}
@@ -22703,9 +22978,9 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_symcopyFlag){
+	if (s_symcopyFlag) {
 
-		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()){
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
 			int symrootmode = GetSymRootMode();
 
 			s_copymotvec.clear();
@@ -22713,7 +22988,7 @@ int OnFrameToolWnd()
 			s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
 
 			list<KeyInfo>::iterator itrcp;
-			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
+			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 				double curframe = (double)((int)(itrcp->time + 0.0001));
 				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(), curframe, symrootmode);
 			}
@@ -22738,7 +23013,7 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_pasteFlag){
+	if (s_pasteFlag) {
 
 		//添付ファイルを読み取ってs_pastemotvecに格納する
 		s_pastemotvec.clear();
@@ -22809,13 +23084,13 @@ int OnFrameToolWnd()
 		s_pasteFlag = false;
 	}
 
-	if (s_motpropFlag){
+	if (s_motpropFlag) {
 
-		if (s_model && s_model->GetCurMotInfo()){
+		if (s_model && s_model->GetCurMotInfo()) {
 			int dlgret;
 			dlgret = (int)DialogBoxW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_MOTPROPDLG),
 				s_3dwnd, (DLGPROC)MotPropDlgProc);
-			if ((dlgret == IDOK) && s_tmpmotname[0]){
+			if ((dlgret == IDOK) && s_tmpmotname[0]) {
 				WideCharToMultiByte(CP_ACP, 0, s_tmpmotname, -1, s_model->GetCurMotInfo()->motname, 256, NULL, NULL);
 				//s_model->m_curmotinfo->frameleng = s_tmpmotframeleng;
 				s_model->GetCurMotInfo()->loopflag = s_tmpmotloop;
@@ -22853,7 +23128,7 @@ int OnFrameToolWnd()
 	}
 	*/
 
-	if (s_filterState != 0){//ToolWindowの平滑化ボタン用
+	if (s_filterState != 0) {//ToolWindowの平滑化ボタン用
 		FilterFunc();
 		s_filterState = 0;
 		s_filternodlg = false;
@@ -22905,7 +23180,7 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_deleteFlag){
+	if (s_deleteFlag) {
 		s_deleteFlag = false;
 		/***
 		if( s_model && s_owpTimeline && s_model->m_curmotinfo){
@@ -22919,7 +23194,7 @@ int OnFrameToolWnd()
 
 	// 削除されたキー情報のスタックを確認 ////////////////////////////////////////////
 	for (; s_deletedKeyInfoList.begin() != s_deletedKeyInfoList.end();
-		s_deletedKeyInfoList.pop_front()){
+		s_deletedKeyInfoList.pop_front()) {
 		/***
 		CMotionPoint* mpptr = (CMotionPoint*)( s_deletedKeyInfoList.begin()->object );
 		CBone* boneptr = s_model->m_bonelist[ s_lineno2boneno[ s_deletedKeyInfoList.begin()->lineIndex ] ];
@@ -22945,41 +23220,41 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	int hasNotMvParFlag = 1;
 	ChaMatrix notmvparmat;
 	ChaMatrixIdentity(&notmvparmat);
-	if (cpnum != 0){
+	if (cpnum != 0) {
 		//selected bone at selbonedlg
 		int cpno;
-		for (cpno = 0; cpno < cpnum; cpno++){
+		for (cpno = 0; cpno < cpnum; cpno++) {
 			CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
-			if (chkbone == srcbone){
+			if (chkbone == srcbone) {
 				docopyflag = 1;
 
 				CBone* parentbone = srcbone->GetParent();
-				if (parentbone){
+				if (parentbone) {
 					int cpno2;
-					for (cpno2 = 0; cpno2 < cpnum; cpno2++){
+					for (cpno2 = 0; cpno2 < cpnum; cpno2++) {
 						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
-						if (chkparentbone == parentbone){
+						if (chkparentbone == parentbone) {
 							hasNotMvParFlag = 0;
 						}
 					}
 				}
-				else{
+				else {
 					hasNotMvParFlag = 0;
 				}
 
 				break;
 			}
-			else{
+			else {
 				hasNotMvParFlag = 0;
 			}
 		}
 	}
-	else{
+	else {
 		docopyflag = 1;// all bone
 		hasNotMvParFlag = 0;
 	}
 
-	if (srcbone && (docopyflag == 1)){
+	if (srcbone && (docopyflag == 1)) {
 		_ASSERT(s_model->GetCurMotInfo());
 		int curmotid = s_model->GetCurMotInfo()->motid;
 		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, (double)((int)(newframe + 0.0001)), srcmp);
@@ -23010,50 +23285,50 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 	ChaMatrix notmvparmat;
 	ChaMatrixIdentity(&notmvparmat);
 
-	if (cpnum != 0){
+	if (cpnum != 0) {
 		//selected bone at selbonedlg
 		int cpno;
-		for (cpno = 0; cpno < cpnum; cpno++){
+		for (cpno = 0; cpno < cpnum; cpno++) {
 			CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
-			if (chkbone == srcbone){
+			if (chkbone == srcbone) {
 				docopyflag = 1;
 
 				CBone* parentbone = srcbone->GetParent();
-				if (parentbone){
+				if (parentbone) {
 					int cpno2;
-					for (cpno2 = 0; cpno2 < cpnum; cpno2++){
+					for (cpno2 = 0; cpno2 < cpnum; cpno2++) {
 						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
-						if (chkparentbone == parentbone){
+						if (chkparentbone == parentbone) {
 							hasNotMvParFlag = 0;
 						}
 					}
 				}
-				else{
+				else {
 					hasNotMvParFlag = 0;
 				}
 
 				break;
 			}
-			else{
+			else {
 				hasNotMvParFlag = 0;
 			}
 		}
 	}
-	else{
+	else {
 		docopyflag = 1;// all bone
 		hasNotMvParFlag = 0;
 	}
 
 
-	if (srcbone && (docopyflag == 1)){
+	if (srcbone && (docopyflag == 1)) {
 		CMotionPoint* newmp = 0;
 		_ASSERT(s_model->GetCurMotInfo());
 		int curmotid = s_model->GetCurMotInfo()->motid;
 		newmp = srcbone->GetMotionPoint(curmotid, newframe);
-		if (newmp){
-			if (hasNotMvParFlag == 1){
+		if (newmp) {
+			if (hasNotMvParFlag == 1) {
 				CBone* parentbone = srcbone->GetParent();
-				if (parentbone){
+				if (parentbone) {
 
 					operatingjointno = parentbone->GetBoneNo();//!!!! For CopyLimitedWorldToWorld()
 
@@ -23103,7 +23378,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	srcleng = copyEndTime - copyStartTime + 1;
 	dstleng = endframe - startframe + 1;
 	double dstframe;
-	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe+=1.0) {
+	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe += 1.0) {
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
 		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
@@ -23121,7 +23396,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 
 	////移動しないボーンのための処理
 	int operatingjointno = 0;
-	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe+=1.0) {
+	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe += 1.0) {
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
 		srcframe = (double)((int)(copyStartTime + dstrate * srcleng + 0.0001));
@@ -23184,12 +23459,12 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 	vector<CPELEM2>::iterator itrcp;
 
 	double newframe;
-	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
-		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
+	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
+		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
-			if (srcbone){
+			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
-				if (itrcp->mp.GetFrame() == copyEndTime){
+				if (itrcp->mp.GetFrame() == copyEndTime) {
 					PasteMotionPoint(srcbone, srcmp, newframe);
 				}
 			}
@@ -23197,12 +23472,12 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 	}
 
 	//移動しないボーンのための処理
-	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0){
-		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
+	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
+		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
-			if (srcbone){
+			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
-				if (itrcp->mp.GetFrame() == copyEndTime){
+				if (itrcp->mp.GetFrame() == copyEndTime) {
 					PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
 				}
 			}
@@ -23224,29 +23499,29 @@ void DispProgressCalcLimitedWM()
 	LONG befmodelnum = InterlockedAdd(&s_befprogressmodelnum, 0);
 	LONG befmodelcnt = InterlockedAdd(&s_befprogressmodelcnt, 0);
 
-	if (( framenum != 0) && (modelnum != 0) && 
+	if ((framenum != 0) && (modelnum != 0) &&
 		((framenum != befframenum) || (curframe != befcurframe) || (modelnum != befmodelnum) || (modelcnt != befmodelcnt))) {//ちらつかないように変更があったときだけ
 		//if ((curframe % 25) == 0) {
-			if (s_progresswnd) {
-				HWND hProg2;
-				hProg2 = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
-				if (hProg2) {
-					//現在位置を設定 
-					int curpercent = (int)((double)curframe / (double)framenum * 100.0);
-					curpercent = min(100, curpercent);
-					curpercent = max(0, curpercent);
-					SendMessage(hProg2, PBM_SETPOS, (WPARAM)curpercent, 0);
-				}
+		if (s_progresswnd) {
+			HWND hProg2;
+			hProg2 = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
+			if (hProg2) {
+				//現在位置を設定 
+				int curpercent = (int)((double)curframe / (double)framenum * 100.0);
+				curpercent = min(100, curpercent);
+				curpercent = max(0, curpercent);
+				SendMessage(hProg2, PBM_SETPOS, (WPARAM)curpercent, 0);
 			}
-			if (s_progresswnd) {
-				WCHAR strnumcnt[1024] = { 0L };
-				swprintf_s(strnumcnt, 1024, L"%d / %d chara (cnt / num)", modelcnt, modelnum);
-				SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
+		}
+		if (s_progresswnd) {
+			WCHAR strnumcnt[1024] = { 0L };
+			swprintf_s(strnumcnt, 1024, L"%d / %d chara (cnt / num)", modelcnt, modelnum);
+			SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 
-				UpdateWindow(s_progresswnd);
-			}
-			//SleepEx(1, TRUE);
-		//}
+			UpdateWindow(s_progresswnd);
+		}
+		//SleepEx(1, TRUE);
+	//}
 	}
 
 	InterlockedExchange(&s_befprogressnum, framenum);
@@ -23254,16 +23529,16 @@ void DispProgressCalcLimitedWM()
 	InterlockedExchange(&s_befprogressmodelnum, modelnum);
 	InterlockedExchange(&s_befprogressmodelcnt, modelcnt);
 }
- 
+
 int OnFrameBatchThread()
 {
 	//bhv2fbx batch
-	if(InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 1){//under thread working
+	if (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 1) {//under thread working
 		LONG fbxnum = InterlockedAdd(&s_bvh2fbxnum, 0);
 		LONG fbxcnt = InterlockedAdd(&s_bvh2fbxcnt, 0);
 		LONG beffbxnum = InterlockedAdd(&s_befbvh2fbxnum, 0);
 		LONG beffbxcnt = InterlockedAdd(&s_befbvh2fbxcnt, 0);
-		if (s_bvh2fbxbatchwnd && (fbxnum > 0) && 
+		if (s_bvh2fbxbatchwnd && (fbxnum > 0) &&
 			((fbxnum != beffbxnum) || (fbxcnt != beffbxcnt))) {//ちらつかないように変更があったときだけ
 			WCHAR strnumcnt[1024] = { 0L };
 			swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (fbxcnt + 1), fbxnum);
@@ -23303,7 +23578,7 @@ int OnFrameBatchThread()
 		LONG retargetcnt = InterlockedAdd(&s_retargetcnt, 0);
 		LONG befretargetnum = InterlockedAdd(&s_befretargetnum, 0);
 		LONG befretargetcnt = InterlockedAdd(&s_befretargetcnt, 0);
-		if (s_retargetbatchwnd && (retargetnum > 0) && 
+		if (s_retargetbatchwnd && (retargetnum > 0) &&
 			((retargetnum != befretargetnum) || (retargetcnt != befretargetcnt))) {//ちらつかないように変更があったときだけ
 			WCHAR strnumcnt[1024] = { 0L };
 			swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", retargetcnt, retargetnum);
@@ -23352,9 +23627,9 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 		//	DispProgressCalcLimitedWM();
 		//}
 		//else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
-			s_calclimitedwmState = 0;
-			g_previewFlag = 1;//!!!!!!
-			InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
+		s_calclimitedwmState = 0;
+		g_previewFlag = 1;//!!!!!!
+		InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
 		//}
 		*psavetime = curtime;
 	}
@@ -23372,9 +23647,9 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 		//	DispProgressCalcLimitedWM();
 		//}
 		//else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
-			s_calclimitedwmState = 0;
-			g_previewFlag = -1;//!!!!!
-			InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
+		s_calclimitedwmState = 0;
+		g_previewFlag = -1;//!!!!!
+		InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
 		//}
 		*psavetime = curtime;
 	}
@@ -23393,7 +23668,7 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 	if ((s_calclimitedwmState >= 103) && (s_calclimitedwmState <= 106)) {
 		s_calclimitedwmState++;
 	}
-	if(s_calclimitedwmState == 102){
+	if (s_calclimitedwmState == 102) {
 
 		//2022/08/12 リアルタイム計算に変更
 
@@ -23401,8 +23676,8 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 		//	DispProgressCalcLimitedWM();
 		//}
 		//else if (InterlockedAdd(&g_calclimitedwmflag, 0) == 2) {//confirm threadfunc finished
-			s_calclimitedwmState = 103;
-			InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
+		s_calclimitedwmState = 103;
+		InterlockedExchange(&g_calclimitedwmflag, (LONG)0);
 		//}
 	}
 	if (s_calclimitedwmState == 101) {
@@ -23447,10 +23722,10 @@ int OnSpriteUndo()
 	if (s_model && (s_undoFlag == true)) {
 		//undo
 		StopBt();
-		s_model->RollBackUndoMotion(g_limitdegflag, s_mainhwnd, 
-			0, &s_curboneno, &s_curbaseno, 
+		s_model->RollBackUndoMotion(g_limitdegflag, s_mainhwnd,
+			0, &s_curboneno, &s_curbaseno,
 			&tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
-		
+
 		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
 		undodoneflag = true;
@@ -23460,9 +23735,9 @@ int OnSpriteUndo()
 		//redo
 		StopBt();
 		s_model->RollBackUndoMotion(g_limitdegflag, s_mainhwnd,
-			1, &s_curboneno, &s_curbaseno, 
+			1, &s_curboneno, &s_curbaseno,
 			&tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
-		
+
 		RollbackBrushState(brushstate);//ブラシパラメータ復元
 
 		undodoneflag = true;
@@ -23527,8 +23802,8 @@ int OnSpriteUndo()
 			//注意：applyrateはbrushstateには入っていない
 			g_applyrate = (int)tmpapplyrate;
 			CEditRange::SetApplyRate((double)g_applyrate);
-			
-			OnTimeLineButtonSelectFromSelectStartEnd(0);					
+
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
 			SetShowPosTime();//CreateMotionBrushより前で呼ばないと　TopPosを変えた後のUndoRedoで　描画がずれることがある
 
 			DisplayApplyRateText();
@@ -23645,12 +23920,12 @@ int OnFrameUndo(bool fromds, int fromdskind)
 int OnFrameUpdateGround()
 {
 
-	if (s_ground){
+	if (s_ground) {
 		ChaMatrix tmpwm = s_ground->GetWorldMat();
 		s_ground->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 	}
 
-	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG){
+	if (s_gplane && s_bpWorld && s_bpWorld->m_rigidbodyG) {
 		ChaMatrix gpmat = s_inimat;
 		gpmat.data[MATI_42] = s_bpWorld->m_gplaneh;
 		s_gplane->UpdateMatrix(g_limitdegflag, &gpmat, &s_matVP);
@@ -23660,7 +23935,7 @@ int OnFrameUpdateGround()
 
 int OnFrameInitBtWorld()
 {
-	if (!s_model || !s_btWorld){
+	if (!s_model || !s_btWorld) {
 		return 0;
 	}
 
@@ -23671,13 +23946,13 @@ int OnFrameInitBtWorld()
 	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
 		//CModel* curmodel = itrmodel->modelptr;
 		//if (curmodel && (curmodel->GetLoadedFlag() == true) && (curmodel->GetCreateBtFlag() == false)){
-			curmodel->SetBtWorld(s_btWorld);
-		//	CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
-		//}
-
-		//curmodel->PlusPlusBtCnt();
-
+	curmodel->SetBtWorld(s_btWorld);
+	//	CallF(curmodel->CreateBtObject(s_coldisp, 1), return 1);
 	//}
+
+	//curmodel->PlusPlusBtCnt();
+
+//}
 	return 0;
 }
 
@@ -23771,8 +24046,8 @@ int InitPluginMenu()
 	//s_dsutguiid0.push_back(IDC_COMBO_MOTIONBRUSH_METHOD);
 	CDXUTComboBox* pComboBox5 = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
 	pComboBox5->RemoveAllItems();
-	
-	
+
+
 	//pComboBox5->AddItem(L"Linear", ULongToPtr(0));
 	//pComboBox5->AddItem(L"Cos(x+PI)", ULongToPtr(1));
 	//pComboBox5->AddItem(L"Cos(x^2+PI)", ULongToPtr(2));
@@ -23805,7 +24080,7 @@ int CreateUtDialog()
 	g_SampleUI.Init(&g_DialogResourceManager);
 
 	int iY;
-	g_SampleUI.SetCallback(OnGUIEvent); 
+	g_SampleUI.SetCallback(OnGUIEvent);
 	//iY = 15;
 	iY = 0;
 
@@ -23816,10 +24091,10 @@ int CreateUtDialog()
 	int checkboxxlen = 120;
 
 	WCHAR sz[100];
-//################
-//utguikind == 0
-//################
-	//iY += 24;
+	//################
+	//utguikind == 0
+	//################
+		//iY += 24;
 
 	int iX0;
 
@@ -23829,12 +24104,14 @@ int CreateUtDialog()
 		//iY = s_mainheight - 210 - 10;
 
 		//iY = s_mainheight - 210 - 10 - 3 * addh;
-		iY = s_mainheight - 210 - 2 * addh - 10;
+		//iY = s_mainheight - 210 - 2 * addh - 10;
+		iY = s_mainheight - 210 - 10;
 		iX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
 	}
 	else {
 		//iY = 0;
-		iY = 0;
+		//iY = 0;
+		iY = 2 * addh;
 		iX0 = 0;
 	}
 
@@ -23844,7 +24121,7 @@ int CreateUtDialog()
 
 
 	if (g_4kresolution) {
-		
+
 		//2022/11/08
 		//4KTVでウインドウ大を選んだ場合　コンボボックスは見切れないように　一番上に配置
 
@@ -23984,9 +24261,10 @@ int CreateUtDialog()
 		//iY = s_mainheight - (520 - MAINMENUAIMBARH);
 		//iY = s_mainheight - 210 - 3 * addh - 10;
 		//iY = s_mainheight - 210 - 4 * addh - 10;
-		
+
 		//iY = s_mainheight - 210 - 2 * addh - 10;
-		iY = s_mainheight - 210 - 3 * addh - 10;
+		//iY = s_mainheight - 210 - 3 * addh - 10;
+		iY = s_mainheight - 210 - addh - 10;
 		iX0 = s_mainwidth / 2 - 180 - 180 - 40;
 	}
 	else {
@@ -24036,23 +24314,23 @@ int CreateUtDialog()
 		//s_dsutgui0.push_back(s_ui_pseudolocal);
 		//s_dsutguiid0.push_back(IDC_PSEUDOLOCAL);
 
-		//g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", iX0, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
-		g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", iX0 + 35, iY += addh, checkboxxlen, 16, g_limitdegflag, 0U, false, &s_LimitDegCheckBox);
-		s_ui_limiteul = g_SampleUI.GetControl(IDC_LIMITDEG);
-		_ASSERT(s_ui_limiteul);
-		s_dsutgui0.push_back(s_ui_limiteul);
-		s_dsutguiid0.push_back(IDC_LIMITDEG);
+		////g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", iX0, iY += addh, checkboxxlen, 16, true, 0U, false, &s_LimitDegCheckBox);
+		//g_SampleUI.AddCheckBox(IDC_LIMITDEG, L"LimitEul", iX0 + 35, iY += addh, checkboxxlen, 16, g_limitdegflag, 0U, false, &s_LimitDegCheckBox);
+		//s_ui_limiteul = g_SampleUI.GetControl(IDC_LIMITDEG);
+		//_ASSERT(s_ui_limiteul);
+		//s_dsutgui0.push_back(s_ui_limiteul);
+		//s_dsutguiid0.push_back(IDC_LIMITDEG);
 		//g_SampleUI.AddCheckBox(IDC_ABS_IK, L"AbsIKOn", iX0, iY += addh, checkboxxlen, 16, false, 0U, false, &s_AbsIKCheckBox);
 		//s_ui_absikon = g_SampleUI.GetControl(IDC_ABS_IK);
 		//_ASSERT(s_ui_absikon);
 		//s_dsutgui0.push_back(s_ui_absikon);
 		//s_dsutguiid0.push_back(IDC_ABS_IK);
 
-		g_SampleUI.AddCheckBox(IDC_WALLSCRAPINGIK, L"WallScrapingIK", iX0 + 35, iY += addh, checkboxxlen, 16, (g_wallscrapingikflag == 1), 0U, false, &s_WallScrapingIKCheckBox);
-		s_ui_wallscrapingik = g_SampleUI.GetControl(IDC_WALLSCRAPINGIK);
-		_ASSERT(s_ui_wallscrapingik);
-		s_dsutgui0.push_back(s_ui_wallscrapingik);
-		s_dsutguiid0.push_back(IDC_WALLSCRAPINGIK);
+		//g_SampleUI.AddCheckBox(IDC_WALLSCRAPINGIK, L"WallScrapingIK", iX0 + 35, iY += addh, checkboxxlen, 16, (g_wallscrapingikflag == 1), 0U, false, &s_WallScrapingIKCheckBox);
+		//s_ui_wallscrapingik = g_SampleUI.GetControl(IDC_WALLSCRAPINGIK);
+		//_ASSERT(s_ui_wallscrapingik);
+		//s_dsutgui0.push_back(s_ui_wallscrapingik);
+		//s_dsutguiid0.push_back(IDC_WALLSCRAPINGIK);
 
 	}
 
@@ -24074,17 +24352,17 @@ int CreateUtDialog()
 
 
 
-//################
-//utguikind == 1
-//################
-	//Left Bottom
+	//################
+	//utguikind == 1
+	//################
+		//Left Bottom
 	s_dsutgui1.clear();
 	s_dsutguiid1.clear();
 
 	//iY = s_mainheight - 210;
 	iY = s_mainheight - 190;
 	int startx = s_mainwidth / 2 - 180;
-	
+
 	int brushmethody;
 	if (g_4kresolution) {
 		brushmethody = 20;
@@ -24135,7 +24413,7 @@ int CreateUtDialog()
 		s_dsutgui1.push_back(s_ui_brushrepeats);
 		s_dsutguiid1.push_back(IDC_SL_BRUSHREPEATS);
 
-		g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_U, L"U", startx, iY += addh, checkboxxlen / 2 - 5 , 16, false, 0U, false, &s_BrushMirrorUCheckBox);
+		g_SampleUI.AddCheckBox(IDC_BRUSH_MIRROR_U, L"U", startx, iY += addh, checkboxxlen / 2 - 5, 16, false, 0U, false, &s_BrushMirrorUCheckBox);
 		s_ui_brushmirroru = g_SampleUI.GetControl(IDC_BRUSH_MIRROR_U);
 		_ASSERT(s_ui_brushmirroru);
 		s_dsutgui1.push_back(s_ui_brushmirroru);
@@ -24153,10 +24431,10 @@ int CreateUtDialog()
 
 
 
-//################
-//utguikind == 2
-//################
-	//CenterRight Bottom
+	//################
+	//utguikind == 2
+	//################
+		//CenterRight Bottom
 	s_dsutgui2.clear();
 	s_dsutguiid2.clear();
 
@@ -24189,7 +24467,7 @@ int CreateUtDialog()
 	s_dsutguiid2.push_back(IDC_STOP_BT);
 
 
-	
+
 
 
 	//iY = s_mainheight - 210;
@@ -24361,14 +24639,14 @@ int CreateTimelineWnd()
 		if (s_model) {
 			s_closeFlag = true;
 		}
-	});
+		});
 
 
 	// ウィンドウのキーボードイベントリスナーに
 	// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
 	// コピー等のキーボードを使用する処理はキーボードイベントリスナーを使用しなくても
 	// メインループ内でマイフレームキー状態を監視することで作成可能である。
-	s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent &e){
+	s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent& e) {
 		if (s_model) {
 			if (e.ctrlKey && !e.repeat && e.onDown) {
 				switch (e.keyCode) {
@@ -24399,7 +24677,7 @@ int CreateTimelineWnd()
 				}
 			}
 		}
-	});
+		});
 
 
 
@@ -24452,21 +24730,21 @@ int CreateLongTimelineWnd()
 	s_owpPlayerButton->setButtonSize(20);
 	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
 
-	s_owpPlayerButton->setFrontPlayButtonListener([]() { 
+	s_owpPlayerButton->setFrontPlayButtonListener([]() {
 		if (s_model) {
 			s_calclimitedwmState = 1; s_LstartFlag = true; s_LcursorFlag = true;
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
-	s_owpPlayerButton->setBackPlayButtonListener([](){  
+		});
+	s_owpPlayerButton->setBackPlayButtonListener([]() {
 		if (s_model) {
 			s_calclimitedwmState = 11; s_LstartFlag = true; s_LcursorFlag = true;
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
-	
+		});
 
-	s_owpPlayerButton->setFrontStepButtonListener([](){
+
+	s_owpPlayerButton->setFrontStepButtonListener([]() {
 		//##################################
 		//means to step to the last frame
 		//##################################
@@ -24479,7 +24757,7 @@ int CreateLongTimelineWnd()
 			s_LcursorFlag = true;
 			s_lastkeyFlag = true;
 		}
-	});
+		});
 	s_owpPlayerButton->setBackStepButtonListener([]() {
 		//##################################
 		//means to step to the first frame
@@ -24493,7 +24771,7 @@ int CreateLongTimelineWnd()
 			s_LcursorFlag = true;
 			s_firstkeyFlag = true;
 		}
-	});
+		});
 
 
 	s_owpPlayerButton->setOneFpsButtonListener([]() {
@@ -24516,14 +24794,14 @@ int CreateLongTimelineWnd()
 
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
-	s_owpPlayerButton->setStopButtonListener([]() {  		
+		});
+	s_owpPlayerButton->setStopButtonListener([]() {
 		if (s_model) {
 			s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
-	s_owpPlayerButton->setResetButtonListener([](){
+		});
+	s_owpPlayerButton->setResetButtonListener([]() {
 		//##############################################
 		// means to stop preview and step to first key 
 		//##############################################
@@ -24536,9 +24814,9 @@ int CreateLongTimelineWnd()
 				//s_LtimelineWnd->setDoneFlag(1);
 			}
 		}
-	});
+		});
 
-	s_owpPlayerButton->setSelectToLastButtonListener([](){  
+	s_owpPlayerButton->setSelectToLastButtonListener([]() {
 		if (s_model) {
 			//g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
 			//g_underselecttolast = false;  s_LcursorFlag = true; g_selecttolastFlag = true;
@@ -24552,15 +24830,15 @@ int CreateLongTimelineWnd()
 				//s_LtimelineWnd->setDoneFlag(1);
 			}
 		}
-	});
-	s_owpPlayerButton->setBtResetButtonListener([](){  
+		});
+	s_owpPlayerButton->setBtResetButtonListener([]() {
 		if (s_model) {
 			s_btresetFlag = true;
 			//StartBt(s_model, TRUE, 0, 1);
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
-	s_owpPlayerButton->setPrevRangeButtonListener([](){  
+		});
+	s_owpPlayerButton->setPrevRangeButtonListener([]() {
 		if (s_model) {
 			//g_undereditrange = true; s_prevrangeFlag = true;
 			////s_LtimelineWnd->setDoneFlag(1);
@@ -24572,8 +24850,8 @@ int CreateLongTimelineWnd()
 			//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
 			s_undoredoFromPlayerButton = true;
 		}
-	});
-	s_owpPlayerButton->setNextRangeButtonListener([](){  
+		});
+	s_owpPlayerButton->setNextRangeButtonListener([]() {
 		if (s_model) {
 			//g_undereditrange = true; s_nextrangeFlag = true;
 			////s_LtimelineWnd->setDoneFlag(1);
@@ -24585,7 +24863,7 @@ int CreateLongTimelineWnd()
 			//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
 			s_undoredoFromPlayerButton = true;
 		}
-	});
+		});
 	s_owpPlayerButton->setPlusDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->PlusDisp();
@@ -24595,7 +24873,7 @@ int CreateLongTimelineWnd()
 			//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
+		});
 	s_owpPlayerButton->setMinusDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->MinusDisp();
@@ -24605,25 +24883,25 @@ int CreateLongTimelineWnd()
 			//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
+		});
 	s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
+		});
 	s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
+		});
 	s_owpPlayerButton->setResetDispButtonListener([]() {
 		if (s_model && s_owpEulerGraph) {
 			s_owpEulerGraph->ResetScaleAndOffset();
 			//s_LtimelineWnd->setDoneFlag(1);
 		}
-	});
+		});
 
 
 	//###################################
@@ -24647,21 +24925,21 @@ int CreateLongTimelineWnd()
 	//####################################
 	//s_LtimelineWndのラムダ　s_owpLTimelineではない。
 	//####################################
-	s_LtimelineWnd->setCloseListener([](){ 
+	s_LtimelineWnd->setCloseListener([]() {
 		if (s_model) {
 			s_LcloseFlag = true;
 		}
-	});
-	s_LtimelineWnd->setLDownListener([]() { 
+		});
+	s_LtimelineWnd->setLDownListener([]() {
 		if (s_model) {
 			g_underselectingframe = 1;
 		}
-	});
-	s_LtimelineWnd->setLUpListener([](){
+		});
+	s_LtimelineWnd->setLUpListener([]() {
 		if (s_model) {
 			s_LupFlag = true;
 		}
-	});
+		});
 
 
 	s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
@@ -24721,13 +24999,13 @@ int CreateDmpAnimWnd()
 	s_dsdampctrls.push_back(s_dmpanimB);
 
 
-	s_dmpanimWnd->setCloseListener([](){ 
+	s_dmpanimWnd->setCloseListener([]() {
 		if (s_model) {
 			s_DcloseFlag = true;
 		}
-	});
+		});
 
-	s_dmpanimLSlider->setCursorListener([](){
+	s_dmpanimLSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
 			if (curre) {
@@ -24736,8 +25014,8 @@ int CreateDmpAnimWnd()
 			}
 			s_dmpanimWnd->callRewrite();						//再描画
 		}
-	});
-	s_dmpanimASlider->setCursorListener([](){
+		});
+	s_dmpanimASlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
 			if (curre) {
@@ -24746,25 +25024,25 @@ int CreateDmpAnimWnd()
 			}
 			s_dmpanimWnd->callRewrite();						//再描画
 		}
-	});
-	s_dmpanimB->setButtonListener([](){
-		if (s_model && (s_rgdindexmap[s_model] >= 0)){
+		});
+	s_dmpanimB->setButtonListener([]() {
+		if (s_model && (s_rgdindexmap[s_model] >= 0)) {
 			float valL = (float)s_dmpanimLSlider->getValue();
 			float valA = (float)s_dmpanimASlider->getValue();
 			int chkg = (int)s_dmpgroupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllDampAnimData(gid, s_rgdindexmap[s_model], valL, valA);
 		}
-	});
+		});
 
 	s_dmpanimWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_dmpanimWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
@@ -24876,11 +25154,11 @@ int CreateSideMenuWnd()
 	s_sidemenusp2->addParts2(*s_sidemenu_retarget);
 
 
-	s_sidemenuWnd->setCloseListener([]() { 
+	s_sidemenuWnd->setCloseListener([]() {
 		if (s_model) {
 			s_ScloseFlag = true;
 		}
-	});
+		});
 
 	s_sidemenu_rigid->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
@@ -24888,27 +25166,27 @@ int CreateSideMenuWnd()
 			GUIMenuSetVisible(s_platemenukind, 1);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
-	});
+		});
 	s_sidemenu_limiteul->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
 			s_platemenukind = 2;
 			GUIMenuSetVisible(s_platemenukind, 2);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
-	});
+		});
 	s_sidemenu_copyhistory->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
 			s_selCopyHisotryFlag = true;
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
-	});
+		});
 	s_sidemenu_retarget->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
 			s_platemenukind = 2;
 			GUIMenuSetVisible(s_platemenukind, 1);
 		}
 		s_sidemenuWnd->callRewrite();						//再描画
-	});
+		});
 
 
 
@@ -24955,8 +25233,8 @@ int CreatePlaceFolderWnd()
 	s_placefolderWnd->addParts(*s_placefolderlabel_2);
 	s_placefolderWnd->addParts(*s_placefolderlabel_3);
 
-	
-	
+
+
 	s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_placefolderWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
 
@@ -25161,7 +25439,7 @@ int CreateRigidWnd()
 	s_validSeparator->addParts1(*s_rigidskip);
 	s_validSeparator->addParts2(*s_skipB);
 	//s_rigidWnd->addParts(*s_rigidskip);
-	
+
 	s_rigidWnd->addParts(*s_forbidSeparator);
 	s_forbidSeparator->addParts1(*s_forbidrot);
 	s_forbidSeparator->addParts2(*s_forbidB);
@@ -25200,9 +25478,9 @@ int CreateRigidWnd()
 	s_rigidWnd->addParts(*s_btgSlider);
 	s_rigidWnd->addParts(*s_btgsclabel);
 	s_rigidWnd->addParts(*s_btgscSlider);
-	
+
 	s_rigidWnd->addParts(*s_btgB);
-	
+
 	//s_rigidWnd->addParts(*s_btforce);
 	s_rigidWnd->addParts(*s_btforceSeparator);
 	s_btforceSeparator->addParts1(*s_btforce);
@@ -25210,7 +25488,7 @@ int CreateRigidWnd()
 
 	s_rigidWnd->addParts(*s_groupB);
 	s_rigidWnd->addParts(*s_gcoliB);
-/////////
+	/////////
 	s_dsrigidctrls.push_back(s_namelabel);
 	s_dsrigidctrls.push_back(s_groupcheck);
 	s_dsrigidctrls.push_back(s_shplabel);
@@ -25266,13 +25544,13 @@ int CreateRigidWnd()
 	s_dsrigidctrls.push_back(s_gcoliB);
 
 
-	s_rigidWnd->setCloseListener([](){ 
+	s_rigidWnd->setCloseListener([]() {
 		if (s_model) {
 			s_RcloseFlag = true;
 		}
-	});
+		});
 
-	s_sphrateSlider->setCursorListener([](){
+	s_sphrateSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25281,8 +25559,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_boxzSlider->setCursorListener([](){
+		});
+	s_boxzSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25291,9 +25569,9 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 
-	s_massSlider->setCursorListener([](){
+	s_massSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25302,9 +25580,9 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 
-	s_ldmpSlider->setCursorListener([](){
+	s_ldmpSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25313,8 +25591,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_admpSlider->setCursorListener([](){
+		});
+	s_admpSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25323,9 +25601,9 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 
-	s_lkSlider->setCursorListener([](){
+	s_lkSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25334,8 +25612,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_akSlider->setCursorListener([](){
+		});
+	s_akSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25344,10 +25622,10 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 
 
-	s_restSlider->setCursorListener([](){
+	s_restSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25356,8 +25634,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_fricSlider->setCursorListener([](){
+		});
+	s_fricSlider->setCursorListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25366,8 +25644,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_rigidskip->setButtonListener([](){
+		});
+	s_rigidskip->setButtonListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25381,7 +25659,7 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 	s_skipB->setButtonListener([]() {
 		if (s_model) {
 			bool validflag = s_rigidskip->getValue();
@@ -25407,7 +25685,7 @@ int CreateRigidWnd()
 		}
 		});
 
-	s_forbidrot->setButtonListener([](){
+	s_forbidrot->setButtonListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25421,7 +25699,7 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 	s_forbidB->setButtonListener([]() {
 		if (s_model) {
 			bool validflag = s_forbidrot->getValue();
@@ -25454,26 +25732,26 @@ int CreateRigidWnd()
 	//});
 
 
-	s_btforce->setButtonListener([](){
-		if (s_model && (s_curboneno >= 0)){
+	s_btforce->setButtonListener([]() {
+		if (s_model && (s_curboneno >= 0)) {
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			if (curbone){
+			if (curbone) {
 				CBone* parentbone = curbone->GetParent();
-				if (parentbone){
+				if (parentbone) {
 					bool kinflag = s_btforce->getValue();
-					if (kinflag == false){
+					if (kinflag == false) {
 						parentbone->SetBtForce(0);
 					}
-					else{
+					else {
 						parentbone->SetBtForce(1);
 					}
 				}
 			}
 		}
 		s_rigidWnd->callRewrite();						//再描画
-	});
+		});
 
-	s_btgSlider->setCursorListener([](){
+	s_btgSlider->setCursorListener([]() {
 		if (s_model) {
 			float btg = (float)s_btgSlider->getValue();
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
@@ -25482,8 +25760,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_btgscSlider->setCursorListener([](){
+		});
+	s_btgscSlider->setCursorListener([]() {
 		if (s_model) {
 			float btgsc = (float)s_btgscSlider->getValue();
 			if (s_model && (s_reindexmap[s_model] >= 0)) {
@@ -25493,9 +25771,9 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 
-	s_colradio->setSelectListener([](){
+	s_colradio->setSelectListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25504,7 +25782,7 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 	s_colB->setButtonListener([]() {
 		if (s_model) {
 			int val = s_colradio->getSelectIndex();
@@ -25523,7 +25801,7 @@ int CreateRigidWnd()
 		}
 		});
 
-	s_lkradio->setSelectListener([](){
+	s_lkradio->setSelectListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25532,8 +25810,8 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
-	s_akradio->setSelectListener([](){
+		});
+	s_akradio->setSelectListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25542,66 +25820,66 @@ int CreateRigidWnd()
 			}
 			s_rigidWnd->callRewrite();						//再描画
 		}
-	});
+		});
 
-	s_kB->setButtonListener([](){
-		if (s_model){
+	s_kB->setButtonListener([]() {
+		if (s_model) {
 			int lindex = s_lkradio->getSelectIndex();
 			int aindex = s_akradio->getSelectIndex();
 			float cuslk = (float)s_lkSlider->getValue();
 			float cusak = (float)s_akSlider->getValue();
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllKData(gid, s_reindexmap[s_model], lindex, aindex, cuslk, cusak);
 		}
-	});
-	s_restB->setButtonListener([](){
-		if (s_model){
+		});
+	s_restB->setButtonListener([]() {
+		if (s_model) {
 			float rest = (float)s_restSlider->getValue();
 			float fric = (float)s_fricSlider->getValue();
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllRestData(gid, s_reindexmap[s_model], rest, fric);
 		}
-	});
-	s_dmpB->setButtonListener([](){
-		if (s_model){
+		});
+	s_dmpB->setButtonListener([]() {
+		if (s_model) {
 			float ldmp = (float)s_ldmpSlider->getValue();
 			float admp = (float)s_admpSlider->getValue();
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllDmpData(gid, s_reindexmap[s_model], ldmp, admp);
 		}
-	});
+		});
 
-	s_groupB->setButtonListener([](){
+	s_groupB->setButtonListener([]() {
 		if (s_model) {
 			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 			if (curre) {
@@ -25621,8 +25899,8 @@ int CreateRigidWnd()
 
 			}
 		}
-	});
-	s_gcoliB->setButtonListener([](){
+		});
+	s_gcoliB->setButtonListener([]() {
 		if (s_model) {
 			if (s_bpWorld) {
 				CGColiIDDlg dlg(s_bpWorld->m_coliids, s_bpWorld->m_myselfflag);
@@ -25640,26 +25918,26 @@ int CreateRigidWnd()
 				s_pgcolidlg = 0;
 			}
 		}
-	});
+		});
 
-	s_massB->setButtonListener([](){
-		if (s_model){
+	s_massB->setButtonListener([]() {
+		if (s_model) {
 			float mass = (float)s_massSlider->getValue();
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllMassData(gid, s_reindexmap[s_model], mass);
 		}
 		//		_ASSERT( 0 );
-	});
+		});
 	s_thicknessB->setButtonListener([]() {
 		if (s_model) {
 			float sphrate = (float)s_sphrateSlider->getValue();
@@ -25677,7 +25955,7 @@ int CreateRigidWnd()
 			s_model->SetAllSphrateData(gid, s_reindexmap[s_model], sphrate);
 		}
 		//		_ASSERT( 0 );
-	});
+		});
 	s_depthB->setButtonListener([]() {
 		if (s_model) {
 			float boxzrate = (float)s_boxzSlider->getValue();
@@ -25696,29 +25974,29 @@ int CreateRigidWnd()
 		}
 		//		_ASSERT( 0 );
 		});
-	s_btgB->setButtonListener([](){
-		if (s_model){
+	s_btgB->setButtonListener([]() {
+		if (s_model) {
 			float btg = (float)s_btgSlider->getValue();
 			int chkg = (int)s_groupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllBtgData(gid, s_reindexmap[s_model], btg);
 		}
-	});
+		});
 	s_btforceB->setButtonListener([]() {
 		if (s_model) {
 			bool kinflag = s_btforce->getValue();
 			s_model->SetAllBtforceData(s_reindexmap[s_model], kinflag);
 		}
-	});
+		});
 
 	s_rigidWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_rigidWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
@@ -25787,7 +26065,7 @@ int CreateImpulseWnd()
 	s_impWnd->addParts(*s_impscalelabel);
 	s_impWnd->addParts(*s_impscaleSlider);
 	s_impWnd->addParts(*s_impallB);
-/////////
+	/////////
 	s_dsimpulsectrls.push_back(s_impgroupcheck);
 	s_dsimpulsectrls.push_back(s_impxlabel);
 	s_dsimpulsectrls.push_back(s_impxSlider);
@@ -25800,13 +26078,13 @@ int CreateImpulseWnd()
 	s_dsimpulsectrls.push_back(s_impallB);
 
 
-	s_impWnd->setCloseListener([](){ 
+	s_impWnd->setCloseListener([]() {
 		if (s_model) {
 			s_IcloseFlag = true;
 		}
-	});
+		});
 
-	s_impzSlider->setCursorListener([](){
+	s_impzSlider->setCursorListener([]() {
 		if (s_model) {
 			float val = (float)s_impzSlider->getValue();
 			if (s_model) {
@@ -25814,8 +26092,8 @@ int CreateImpulseWnd()
 			}
 			s_impWnd->callRewrite();						//再描画
 		}
-	});
-	s_impySlider->setCursorListener([](){
+		});
+	s_impySlider->setCursorListener([]() {
 		if (s_model) {
 			float val = (float)s_impySlider->getValue();
 			if (s_model) {
@@ -25823,8 +26101,8 @@ int CreateImpulseWnd()
 			}
 			s_impWnd->callRewrite();						//再描画
 		}
-	});
-	s_impxSlider->setCursorListener([](){
+		});
+	s_impxSlider->setCursorListener([]() {
 		if (s_model) {
 			float val = (float)s_impxSlider->getValue();
 			if (s_model) {
@@ -25832,33 +26110,33 @@ int CreateImpulseWnd()
 			}
 			s_impWnd->callRewrite();						//再描画
 		}
-	});
-	s_impscaleSlider->setCursorListener([](){
+		});
+	s_impscaleSlider->setCursorListener([]() {
 		if (s_model) {
 			float scale = (float)s_impscaleSlider->getValue();
 			g_impscale = scale;
 			s_impWnd->callRewrite();						//再描画
 		}
-	});
-	s_impallB->setButtonListener([](){
-		if (s_model){
+		});
+	s_impallB->setButtonListener([]() {
+		if (s_model) {
 			float impx = (float)s_impxSlider->getValue();
 			float impy = (float)s_impySlider->getValue();
 			float impz = (float)s_impzSlider->getValue();
 			int chkg = (int)s_impgroupcheck->getValue();
 			int gid = -1;
-			if (chkg){
+			if (chkg) {
 				CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
-				if (curre){
+				if (curre) {
 					gid = curre->GetGroupid();
 				}
-				else{
+				else {
 					gid = -1;
 				}
 			}
 			s_model->SetAllImpulseData(gid, impx, impy, impz);
 		}
-	});
+		});
 	//////////
 
 
@@ -25927,7 +26205,7 @@ int CreateGPlaneWnd()
 	s_gpWnd->addParts(*s_grestSlider);
 	s_gpWnd->addParts(*s_gfriclabel);
 	s_gpWnd->addParts(*s_gfricSlider);
-/////////
+	/////////
 	s_dsgpctrls.push_back(s_ghlabel);
 	s_dsgpctrls.push_back(s_ghSlider);
 	s_dsgpctrls.push_back(s_gsizexlabel);
@@ -25941,13 +26219,13 @@ int CreateGPlaneWnd()
 	s_dsgpctrls.push_back(s_gfriclabel);
 	s_dsgpctrls.push_back(s_gfricSlider);
 
-	s_gpWnd->setCloseListener([](){ 
+	s_gpWnd->setCloseListener([]() {
 		if (s_model) {
 			s_GcloseFlag = true;
 		}
-	});
+		});
 
-	s_ghSlider->setCursorListener([](){
+	s_ghSlider->setCursorListener([]() {
 		if (s_model) {
 			if (s_bpWorld) {
 				s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
@@ -25960,8 +26238,8 @@ int CreateGPlaneWnd()
 				s_gpWnd->callRewrite();						//再描画
 			}
 		}
-	});
-	s_gsizexSlider->setCursorListener([](){
+		});
+	s_gsizexSlider->setCursorListener([]() {
 		if (s_model) {
 			if (s_bpWorld && s_gplane) {
 				s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
@@ -25972,8 +26250,8 @@ int CreateGPlaneWnd()
 				s_gpWnd->callRewrite();						//再描画
 			}
 		}
-	});
-	s_gsizezSlider->setCursorListener([](){
+		});
+	s_gsizezSlider->setCursorListener([]() {
 		if (s_model) {
 			if (s_bpWorld && s_gplane) {
 				s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
@@ -25984,8 +26262,8 @@ int CreateGPlaneWnd()
 				s_gpWnd->callRewrite();						//再描画
 			}
 		}
-	});
-	s_gpdisp->setButtonListener([](){
+		});
+	s_gpdisp->setButtonListener([]() {
 		if (s_model) {
 			if (s_bpWorld) {
 				bool dispflag = s_gpdisp->getValue();
@@ -25993,8 +26271,8 @@ int CreateGPlaneWnd()
 				s_gpWnd->callRewrite();						//再描画
 			}
 		}
-	});
-	s_grestSlider->setCursorListener([](){
+		});
+	s_grestSlider->setCursorListener([]() {
 		if (s_model) {
 			if (s_bpWorld && s_gplane) {
 				s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
@@ -26003,8 +26281,8 @@ int CreateGPlaneWnd()
 				s_gpWnd->callRewrite();						//再描画
 			}
 		}
-	});
-	s_gfricSlider->setCursorListener([](){
+		});
+	s_gfricSlider->setCursorListener([]() {
 		if (s_model) {
 			if (s_bpWorld && s_gplane) {
 				s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
@@ -26013,7 +26291,7 @@ int CreateGPlaneWnd()
 				s_gpWnd->callRewrite();						//再描画
 			}
 		}
-	});
+		});
 
 
 	s_gpWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
@@ -26114,13 +26392,13 @@ int CreateToolWnd()
 	s_dstoolctrls.push_back(s_toolScaleInitAllB);
 
 
-	s_toolWnd->setCloseListener([](){ 
+	s_toolWnd->setCloseListener([]() {
 		if (s_model) {
 			if (s_closetoolFlag == false) {
 				s_closetoolFlag = true;
 			}
 		}
-	});
+		});
 	//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
 	//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
 	s_toolSelectCopyFileName->setButtonListener([]() {
@@ -26129,14 +26407,14 @@ int CreateToolWnd()
 				s_selCopyHisotryFlag = true;
 			}
 		}
-	});
-	s_toolCopyB->setButtonListener([](){ 
+		});
+	s_toolCopyB->setButtonListener([]() {
 		if (s_model) {
 			if (s_copyFlag == false) {
 				s_copyFlag = true;
 			}
 		}
-	});
+		});
 	s_toolZeroFrameB->setButtonListener([]() {
 		if (s_model) {
 			if (s_owpLTimeline) {
@@ -26148,52 +26426,52 @@ int CreateToolWnd()
 				}
 			}
 		}
-	});
+		});
 
-	s_toolSymCopyB->setButtonListener([](){ 
+	s_toolSymCopyB->setButtonListener([]() {
 		if (s_model) {
 			if (s_symcopyFlag == false) {
 				s_symcopyFlag = true;
 			}
 		}
-	});
-	s_toolPasteB->setButtonListener([](){ 
+		});
+	s_toolPasteB->setButtonListener([]() {
 		if (s_model) {
 			if (s_pasteFlag == false) {
 				s_pasteFlag = true;
 			}
 		}
-	});
-	s_toolMotPropB->setButtonListener([](){ 
+		});
+	s_toolMotPropB->setButtonListener([]() {
 		if (s_model) {
 			if (s_motpropFlag == false) {
 				s_motpropFlag = true;
 			}
 		}
-	});
+		});
 	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
-	s_toolSelBoneB->setButtonListener([](){ 
+	s_toolSelBoneB->setButtonListener([]() {
 		if (s_model) {
 			if (s_selboneFlag == false) {
 				s_selboneFlag = true;
 			}
 		}
-	});
-	s_toolInitMPB->setButtonListener([](){ 
+		});
+	s_toolInitMPB->setButtonListener([]() {
 		if (s_model) {
 			if (s_initmpFlag == false) {
 				s_initmpFlag = true;
 			}
 		}
-	});
-	s_toolFilter1B->setButtonListener([](){ 
+		});
+	s_toolFilter1B->setButtonListener([]() {
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 1;
 				s_filternodlg = false;
 			}
 		}
-	});
+		});
 	s_toolFilter2B->setButtonListener([]() {
 		if (s_model) {
 			if (s_filterState == 0) {
@@ -26201,7 +26479,7 @@ int CreateToolWnd()
 				s_filternodlg = false;
 			}
 		}
-	});
+		});
 	s_toolFilter3B->setButtonListener([]() {
 		if (s_model) {
 			if (s_filterState == 0) {
@@ -26209,32 +26487,32 @@ int CreateToolWnd()
 				s_filternodlg = false;
 			}
 		}
-	});
+		});
 	s_toolInterpolate1B->setButtonListener([]() {
 		if (s_model && (s_interpolateState == 0)) {
 			s_interpolateState = 1;//all
 		}
-	});
+		});
 	s_toolInterpolate2B->setButtonListener([]() {
 		if (s_model && (s_interpolateState == 0)) {
 			s_interpolateState = 2;//parent one
 		}
-	});
+		});
 	s_toolInterpolate3B->setButtonListener([]() {
 		if (s_model && (s_interpolateState == 0)) {
 			s_interpolateState = 3;//parent deeper
 		}
-	});
+		});
 	s_toolSkipRenderBoneMarkB->setButtonListener([]() {
 		if (s_model && (s_skipJointMark == 0)) {
 			s_skipJointMark = 1;//deeper
 		}
-	});
+		});
 	s_toolSkipRenderBoneMarkB2->setButtonListener([]() {
 		if (s_model && (s_skipJointMark == 0)) {
 			s_skipJointMark = 2;//deeper
 		}
-	});
+		});
 	//s_tool180deg->setButtonListener([]() {
 	//	if (s_model && (s_180DegFlag == false)) {
 	//		s_180DegFlag = true;
@@ -26244,7 +26522,7 @@ int CreateToolWnd()
 		if (s_model && (s_scaleAllInitFlag == false)) {
 			s_scaleAllInitFlag = true;
 		}
-	});
+		});
 
 
 	s_rctoolwnd.top = 0;
@@ -26252,7 +26530,7 @@ int CreateToolWnd()
 	s_toolWnd->setPos(WindowPos(0, s_2ndposy));
 	s_rctoolwnd.bottom = s_toolheight;
 	s_rctoolwnd.right = s_toolwidth;
-	
+
 
 	s_toolWnd->autoResizeAllParts();
 	s_toolWnd->refreshPosAndSize();//これを呼ばないと1回目のクリック位置がずれることがある。
@@ -26331,41 +26609,41 @@ int CreateLayerWnd()
 	s_layerWnd->addParts(*s_owpLayerTable);
 
 
-	s_layerWnd->setCloseListener([](){ 
+	s_layerWnd->setCloseListener([]() {
 		if (s_model) {
 			s_closeobjFlag = true;
 		}
-	});
+		});
 
 	//レイヤーのカーソルリスナー
-	s_owpLayerTable->setCursorListener([](){
+	s_owpLayerTable->setCursorListener([]() {
 		//_tprintf_s( _T("CurrentLayer: Index=%3d Name=%s\n"),
 		//			owpLayerTable->getCurrentLine(),
 		//			owpLayerTable->getCurrentLineName().c_str() );
-	});
+		});
 
 	//レイヤーの移動リスナー
-	s_owpLayerTable->setLineShiftListener([](int from, int to){
+	s_owpLayerTable->setLineShiftListener([](int from, int to) {
 		//_tprintf_s( _T("ShiftLayer: fromIndex=%3d toIndex=%3d\n"), from, to );
-	});
+		});
 
 	//レイヤーの可視状態変更リスナー
-	s_owpLayerTable->setChangeVisibleListener([](int index){
-		if (s_model){
+	s_owpLayerTable->setChangeVisibleListener([](int index) {
+		if (s_model) {
 			CMQOObject* curobj = (CMQOObject*)(s_owpLayerTable->getObj(index));
-			if (curobj){
-				if (s_owpLayerTable->getVisible(index)){
+			if (curobj) {
+				if (s_owpLayerTable->getVisible(index)) {
 					curobj->SetDispFlag(1);
 				}
-				else{
+				else {
 					curobj->SetDispFlag(0);
 				}
 			}
 		}
-	});
+		});
 
 	//レイヤーのロック状態変更リスナー
-	s_owpLayerTable->setChangeLockListener([](int index){
+	s_owpLayerTable->setChangeLockListener([](int index) {
 		//if( owpLayerTable->getLock(index) ){
 		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='True'  Name=%s\n"),
 		//				index,
@@ -26375,14 +26653,14 @@ int CreateLayerWnd()
 		//				index,
 		//				owpLayerTable->getName(index).c_str() );
 		//}
-	});
+		});
 
 	//レイヤーのプロパティコールリスナー
-	s_owpLayerTable->setCallPropertyListener([](int index){
+	s_owpLayerTable->setCallPropertyListener([](int index) {
 		//_tprintf_s( _T("CallProperty: Index=%3d Name=%s\n"),
 		//			index,
 		//			owpLayerTable->getName(index).c_str() );
-	});
+		});
 
 	RECT wnd3drect;
 	if (s_mainhwnd) {
@@ -26459,7 +26737,7 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							CBone* childbone = curbone->GetChild();
 							if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
 								ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
-								curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag, 
+								curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag,
 									pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
 							}
 
@@ -26491,7 +26769,7 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 
 
 	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++){
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 
 		//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
@@ -26499,10 +26777,10 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 			int lightflag = 1;
 			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 			int btflag = 0;
-			if ((g_previewFlag != 4) && (g_previewFlag != 5)){
+			if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
 				btflag = 0;
 			}
-			else{
+			else {
 				if (g_previewFlag == 4) {
 					btflag = 1;
 				}
@@ -26525,14 +26803,14 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 
 int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	if (s_ground && s_dispground){
+	if (s_ground && s_dispground) {
 		g_hmWorld->SetMatrix((float*)&(s_matWorld.data[MATI_11]));
 		//g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		s_ground->OnRender(pd3dImmediateContext, 0, diffusemult);
 	}
-	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp){
+	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp) {
 		ChaMatrix gpmat = s_inimat;
 		gpmat.data[MATI_42] = s_bpWorld->m_gplaneh;
 		g_hmWorld->SetMatrix((float*)&(gpmat.data[MATI_11]));
@@ -26553,21 +26831,21 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 			//if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
 			if (s_model && s_model->GetModelDisp()) {
 				//if (s_ikkind >= 3){
-				s_model->RenderBoneMark(g_limitdegflag, 
+				s_model->RenderBoneMark(g_limitdegflag,
 					pd3dImmediateContext, s_bmark, s_bcircle, s_curboneno);
 				//}
 				//else{
 				//	s_model->RenderBoneMark(s_pdev, s_bmark, s_bcircle, 0, s_curboneno);
 				//}
 			}
-		//}
+			//}
 		}
 		else {
 			vector<MODELELEM>::iterator itrme;
 			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++) {
 				MODELELEM curme = *itrme;
 				CModel* curmodel = curme.modelptr;
-				curmodel->RenderBoneMark(g_limitdegflag, 
+				curmodel->RenderBoneMark(g_limitdegflag,
 					pd3dImmediateContext, s_bmark, s_bcircle, 0, s_curboneno);
 			}
 		}
@@ -26577,8 +26855,8 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 }
 int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	if ((g_previewFlag != 4) && (g_previewFlag != 5)){
-		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) && (g_bonemarkflag != 0)){//underchecking
+	if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+		if (s_select && (s_curboneno >= 0) && (g_previewFlag == 0) && (s_model && s_model->GetModelDisp()) && (g_bonemarkflag != 0)) {//underchecking
 			//SetSelectCol();
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);
@@ -26588,8 +26866,8 @@ int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 		}
 	}
 	//else if ((g_previewFlag == 5) && (s_oprigflag == 1)){
-	else if (g_previewFlag == 5){
-		if (s_select && (s_curboneno >= 0) && (s_model && s_model->GetModelDisp())){
+	else if (g_previewFlag == 5) {
+		if (s_select && (s_curboneno >= 0) && (s_model && s_model->GetModelDisp())) {
 			//SetSelectCol();
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);
@@ -26625,7 +26903,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 
 	//IK Mode
-	if(g_previewFlag == 0){
+	if (g_previewFlag == 0) {
 		int spgcnt;
 		for (spgcnt = 0; spgcnt < 3; spgcnt++) {
 			if (s_spikmodesw[spgcnt].state) {
@@ -26661,6 +26939,46 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		else {
 			if (s_sprefpos.spriteOFF) {
 				s_sprefpos.spriteOFF->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+	}
+
+	//limiteulsw
+	if (g_previewFlag == 0) {
+		if (s_splimiteul.state) {
+			if (s_splimiteul.spriteON) {
+				s_splimiteul.spriteON->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			if (s_splimiteul.spriteOFF) {
+				s_splimiteul.spriteOFF->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+	}
+
+	//scrapingsw
+	if (g_previewFlag == 0) {
+		if (s_spscraping.state) {
+			if (s_spscraping.spriteON) {
+				s_spscraping.spriteON->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			if (s_spscraping.spriteOFF) {
+				s_spscraping.spriteOFF->OnRender(pd3dImmediateContext);
 			}
 			else {
 				_ASSERT(0);
@@ -26845,15 +27163,28 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 
-		int spacnt;
-		for (spacnt = 0; spacnt < SPAXISNUM; spacnt++) {
-			if (s_spaxis[spacnt].sprite) {
-				s_spaxis[spacnt].sprite->OnRender(pd3dImmediateContext);
+		if (g_previewFlag == 0) {
+			int spacnt;
+			for (spacnt = 0; spacnt < SPAXISNUM; spacnt++) {
+				if (s_spaxis[spacnt].sprite) {
+					s_spaxis[spacnt].sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
 			}
-			else {
-				_ASSERT(0);
+
+			int spucnt;
+			for (spucnt = 0; spucnt < 2; spucnt++) {
+				if (s_spundo[spucnt].sprite) {
+					s_spundo[spucnt].sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
 			}
 		}
+
 		int spccnt;
 		for (spccnt = 0; spccnt < SPR_CAM_MAX; spccnt++) {
 			if (s_spcam[spccnt].sprite) {
@@ -26864,24 +27195,12 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 		}
 
-		int spucnt;
-		for (spucnt = 0; spucnt < 2; spucnt++) {
-			if (s_spundo[spucnt].sprite) {
-				s_spundo[spucnt].sprite->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-
-
 		//if (s_spbt.sprite) {
 		//	s_spbt.sprite->OnRender(pd3dImmediateContext);
 		//}
 		//else {
 		//	_ASSERT(0);
 		//}
-
 
 		if ((g_previewFlag == 0) && s_spsmooth.sprite) {//プレビュー時は非表示
 			s_spsmooth.sprite->OnRender(pd3dImmediateContext);
@@ -26896,12 +27215,12 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 	if ((g_previewFlag == 0) && (s_oprigflag >= 0) && (s_oprigflag < SPRIGMAX)) {
 		//if (s_customrigbone) {
-			if (s_sprig[s_oprigflag].sprite) {
-				s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
+		if (s_sprig[s_oprigflag].sprite) {
+			s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
+		}
+		else {
+			_ASSERT(0);
+		}
 		//}
 	}
 
@@ -26964,7 +27283,7 @@ int OnRenderSetShaderConst()
 
 int OnRenderUtDialog(ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTime)
 {
-	if (g_previewFlag != 3){
+	if (g_previewFlag != 3) {
 		//g_HUD.OnRender( fElapsedTime );
 		g_SampleUI.OnRender(fElapsedTime);
 	}
@@ -26982,7 +27301,7 @@ void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag)
 		else if (srcstate == 2) {
 			srcbone->SetSkipRenderBoneMark(false);
 		}
-		
+
 
 		if (setbrotherflag) {
 			if (srcbone->GetBrother()) {
@@ -27000,20 +27319,20 @@ void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag)
 int InitMpFromTool()
 {
 	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0){
+	if (modelnum <= 0) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (!s_owpTimeline || !s_owpLTimeline){
+	if (!s_owpTimeline || !s_owpLTimeline) {
 		return 0;
 	}
 	MOTINFO* mi = s_model->GetCurMotInfo();
-	if (!mi){
+	if (!mi) {
 		return 0;
 	}
 
@@ -27024,12 +27343,12 @@ int InitMpFromTool()
 
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
-	if (!rmenu){
+	if (!rmenu) {
 		return 1;
 	}
 	int ret;
 	ret = rmenu->Create(parwnd, MENUOFFSET_INITMPFROMTOOL);
-	if (ret){
+	if (ret) {
 		return 1;
 	}
 
@@ -27053,20 +27372,20 @@ int InitMpFromTool()
 	int subnum = 3;
 	int subsubnum = 3;
 	int setmenuid;
-	
+
 	WCHAR strinitmpsub[3][32] = { L"AllBones", L"OneSelectedBone", L"SelectedAndChildren" };
 	WCHAR strinitmpsubsub[4][32] = { L"InitRotAndPosAndScale", L"InitRot", L"InitPos", L"InitScale" };
 
 	int subno;
-	for (subno = 0; subno < 3; subno++){
+	for (subno = 0; subno < 3; subno++) {
 		setmenuid = ID_RMENU_0 + subno * 4 + MENUOFFSET_INITMPFROMTOOL;
 
 		rsubmenu[subno] = new CRMenuMain(IDR_RMENU);
-		if (!rsubmenu[subno]){
+		if (!rsubmenu[subno]) {
 			return 1;
 		}
 		ret = rsubmenu[subno]->CreatePopupMenu(parwnd, submenu, strinitmpsub[subno]);
-		if (ret){
+		if (ret) {
 			return 1;
 		}
 		HMENU subsubmenu = rsubmenu[subno]->GetSubMenu();
@@ -27079,14 +27398,14 @@ int InitMpFromTool()
 		}
 
 		int subsubno;
-		for (subsubno = 0; subsubno < 4; subsubno++){
+		for (subsubno = 0; subsubno < 4; subsubno++) {
 			int subsubid = setmenuid + subsubno;
 			AppendMenu(subsubmenu, MF_STRING, subsubid, strinitmpsubsub[subsubno]);
 
 		}
 	}
 
-/////////////
+	/////////////
 	s_cursubmenu = rmenu->GetSubMenu();
 
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
@@ -27136,9 +27455,9 @@ int InitMpFromTool()
 	//	UpdateEditedEuler();
 	//}
 
-	for (subno = 0; subno < 3; subno++){
+	for (subno = 0; subno < 3; subno++) {
 		CRMenuMain* delsubmenu = rsubmenu[subno];
-		if (delsubmenu){
+		if (delsubmenu) {
 			delete delsubmenu;
 		}
 	}
@@ -27154,56 +27473,56 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	if (curbone){
+	if (curbone) {
 		//if (curbone->GetChild()){//2022/11/23 CommentOut なぜこのif文があったのか？ 不具合によりエンドジョイントにモーションポイントが無かったから？
-			if (initmode == INITMP_ROTTRA){
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f);
-				//int inittraflag1 = 1;
-				int setchildflag1 = 1;
-				//int initscaleflag1 = 1;//!!!!!!!
-				//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, roundingframe, initscaleflag1);
-				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEulAndTra(g_limitdegflag, 
-					setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
-			}
-			else if (initmode == INITMP_ROT){
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int inittraflag0 = 0;
-				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEul(g_limitdegflag, 
-					inittraflag0, setchildflag1, befwm, cureul, srcmotid, roundingframe);
-			}
-			else if (initmode == INITMP_TRA){
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int paraxsiflag1 = 1;
-				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(g_limitdegflag, 
-					paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+		if (initmode == INITMP_ROTTRA) {
+			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+			//int inittraflag1 = 1;
+			int setchildflag1 = 1;
+			//int initscaleflag1 = 1;//!!!!!!!
+			//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, roundingframe, initscaleflag1);
+			ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+			curbone->SetWorldMatFromEulAndTra(g_limitdegflag,
+				setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
+		}
+		else if (initmode == INITMP_ROT) {
+			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			int inittraflag0 = 0;
+			int setchildflag1 = 1;
+			ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+			curbone->SetWorldMatFromEul(g_limitdegflag,
+				inittraflag0, setchildflag1, befwm, cureul, srcmotid, roundingframe);
+		}
+		else if (initmode == INITMP_TRA) {
+			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			int paraxsiflag1 = 1;
+			//int isfirstbone = 0;
+			cureul = curbone->CalcLocalEulXYZ(g_limitdegflag,
+				paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
-				int inittraflag1 = 1;
-				int setchildflag1 = 1;
-				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEul(g_limitdegflag, 
-					inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe);
-			}
-			else if (initmode == INITMP_SCALE) {
-				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-				int paraxsiflag1 = 1;
-				//int isfirstbone = 0;
-				cureul = curbone->CalcLocalEulXYZ(g_limitdegflag, 
-					paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+			int inittraflag1 = 1;
+			int setchildflag1 = 1;
+			ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+			curbone->SetWorldMatFromEul(g_limitdegflag,
+				inittraflag1, setchildflag1, befwm, cureul, srcmotid, roundingframe);
+		}
+		else if (initmode == INITMP_SCALE) {
+			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			int paraxsiflag1 = 1;
+			//int isfirstbone = 0;
+			cureul = curbone->CalcLocalEulXYZ(g_limitdegflag,
+				paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
-				ChaVector3 traanim = curbone->CalcLocalTraAnim(g_limitdegflag, srcmotid, roundingframe);
+			ChaVector3 traanim = curbone->CalcLocalTraAnim(g_limitdegflag, srcmotid, roundingframe);
 
-				//int inittraflag1 = 0;
-				int setchildflag1 = 1;
-				//int initscaleflag1 = 1;//!!!!!!!
-				ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
-				curbone->SetWorldMatFromEulAndTra(g_limitdegflag, 
-					setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
-			}
+			//int inittraflag1 = 0;
+			int setchildflag1 = 1;
+			//int initscaleflag1 = 1;//!!!!!!!
+			ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
+			curbone->SetWorldMatFromEulAndTra(g_limitdegflag,
+				setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scale計算無し
+		}
 		//}
 	}
 	return 0;
@@ -27211,16 +27530,16 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 
 void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
-	if (!curbone){
+	if (!curbone) {
 		return;
 	}
 
 	InitMpByEul(initmode, curbone, srcmotid, srcframe);
 
-	if (curbone->GetChild()){
+	if (curbone->GetChild()) {
 		InitMpByEulReq(initmode, curbone->GetChild(), srcmotid, srcframe);
 	}
-	if (curbone->GetBrother()){
+	if (curbone->GetBrother()) {
 		InitMpByEulReq(initmode, curbone->GetBrother(), srcmotid, srcframe);
 	}
 }
@@ -27228,16 +27547,16 @@ void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe)
 /// CustomRigDlg
 int DispCustomRigDlg(int rigno)
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
-	if (s_model->GetOldAxisFlagAtLoading() == 1){
+	if (s_model->GetOldAxisFlagAtLoading() == 1) {
 		::DSMessageBox(s_3dwnd, L"Work Only After Setting Of Axis.\nRetry After Saving Of FBX file.", L"error!!!", MB_OK);
 		return 0;
 	}
@@ -27250,18 +27569,18 @@ int DispCustomRigDlg(int rigno)
 
 	Bone2CustomRig(rigno);
 
-	if (!s_customrigdlg){
+	if (!s_customrigdlg) {
 		//s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_3dwnd, (DLGPROC)CustomRigDlgProc);
 		s_customrigdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CUSTOMRIGDLG), s_mainhwnd, (DLGPROC)CustomRigDlgProc);
-		if (!s_customrigdlg){
+		if (!s_customrigdlg) {
 			_ASSERT(0);
 			return 1;
 		}
 	}
-	else{
+	else {
 		CustomRig2Dlg(s_customrigdlg);
 	}
-	
+
 	SetParent(s_customrigdlg, s_mainhwnd);
 	SetWindowPos(
 		s_customrigdlg,
@@ -27276,7 +27595,7 @@ int DispCustomRigDlg(int rigno)
 
 	ShowWindow(s_customrigdlg, SW_SHOW);
 	UpdateWindow(s_customrigdlg);
-	
+
 	s_oprigflag = 1;
 
 	return 0;
@@ -27324,30 +27643,30 @@ int InvalidateCustomRig(int rigno)
 
 int Bone2CustomRig(int rigno)
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (s_curboneno < 0){
+	if (s_curboneno < 0) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
 	s_customrigbone = s_model->GetBoneByID(s_curboneno);
-	if (s_customrigbone){
-		if ((rigno >= 0) && (rigno < MAXRIGNUM)){
+	if (s_customrigbone) {
+		if ((rigno >= 0) && (rigno < MAXRIGNUM)) {
 			s_customrig = s_customrigbone->GetCustomRig(rigno);
 		}
-		else{
+		else {
 			s_customrig = s_customrigbone->GetFreeCustomRig();
 		}
-		if (s_customrig.rigboneno <= 0){
+		if (s_customrig.rigboneno <= 0) {
 			_ASSERT(0);
 		}
 		s_customrigno = s_customrig.rigno;
 	}
-	else{
+	else {
 		_ASSERT(0);
 		InitCustomRig(&s_customrig, 0, 0);
 	}
@@ -27357,25 +27676,25 @@ int Bone2CustomRig(int rigno)
 
 int CustomRig2Bone()
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (!s_customrigbone){
+	if (!s_customrigbone) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
-	if (s_customrigbone){
+	if (s_customrigbone) {
 		int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
-		if (isvalid == 0){
+		if (isvalid == 0) {
 			::DSMessageBox(s_3dwnd, L"Invalid Parameter", L"error!!!", MB_OK);
 			return 0;
 		}
 		s_customrigbone->SetCustomRig(s_customrig);
 	}
-	else{
+	else {
 		_ASSERT(0);
 	}
 
@@ -27388,7 +27707,7 @@ int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr)
 	GetDlgItemText(hDlgWnd, resid, strval, 256);
 	float tmpval;
 	tmpval = (float)_wtof(strval);
-	if ((tmpval < -100.0f) || (tmpval > 100.0f)){
+	if ((tmpval < -100.0f) || (tmpval > 100.0f)) {
 		::DSMessageBox(hDlgWnd, L"Limit Range From -100.0 to 100.", L"Out Of Limit Error", MB_OK);
 		*dstptr = 0.0f;
 		return 1;
@@ -27400,7 +27719,7 @@ int GetCustomRigRateVal(HWND hDlgWnd, int resid, float* dstptr)
 
 int CustomRig2Dlg(HWND hDlgWnd)
 {
-	if (s_customrigbone){
+	if (s_customrigbone) {
 		SetDlgItemText(hDlgWnd, IDC_RIGNAME, (LPCWSTR)s_customrig.rigname);
 		SetDlgItemText(hDlgWnd, IDC_RIGBONENAME, (LPCWSTR)s_customrigbone->GetWBoneName());
 
@@ -27447,11 +27766,11 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		WCHAR strval[256];
 
 		int elemno;
-		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++) {
 			swprintf_s(strcombo, 256, L"%d", elemno + 1);//from 1 to MAXRIGELEMNUM
 			SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_ADDSTRING, 0, (LPARAM)strcombo);
 		}
-		if (elemnum < 1){
+		if (elemnum < 1) {
 			_ASSERT(0);
 			elemnum = 1;
 			s_customrig.rigelem[0].boneno = s_customrigbone->GetBoneNo();
@@ -27459,37 +27778,37 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_SETCURSEL, elemnum - 1, 0);
 
 
-		int gpboxid[5] = {IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5};
-		int axisuid[5] = {IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5};
-		int axisvid[5] = {IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5};
-		int rateuid[5] = {IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5};
-		int ratevid[5] = {IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5};
-		int enableuid[5] = { IDC_ENABLEU1, IDC_ENABLEU2, IDC_ENABLEU3, IDC_ENABLEU4, IDC_ENABLEU5};
+		int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+		int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
+		int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
+		int rateuid[5] = { IDC_RATE_U1, IDC_RATE_U2, IDC_RATE_U3, IDC_RATE_U4, IDC_RATE_U5 };
+		int ratevid[5] = { IDC_RATE_V1, IDC_RATE_V2, IDC_RATE_V3, IDC_RATE_V4, IDC_RATE_V5 };
+		int enableuid[5] = { IDC_ENABLEU1, IDC_ENABLEU2, IDC_ENABLEU3, IDC_ENABLEU4, IDC_ENABLEU5 };
 		int enablevid[5] = { IDC_ENABLEV1, IDC_ENABLEV2, IDC_ENABLEV3, IDC_ENABLEV4, IDC_ENABLEV5 };
 		int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
 
 
-		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++) {
 			RIGELEM currigelem = s_customrig.rigelem[elemno];
 			CBone* curbone = 0;
-			if (elemno < elemnum){
+			if (elemno < elemnum) {
 				curbone = s_model->GetBoneByID(currigelem.boneno);
-				if (curbone){
+				if (curbone) {
 					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)curbone->GetWBoneName());
 				}
-				else{
+				else {
 					_ASSERT(0);
 					SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"None");
 					//return 1;
 				}
 			}
-			else{
+			else {
 				SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)L"None");
 			}
 
 			SetRigRigCombo(hDlgWnd, elemno);
 
-			
+
 			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_RESETCONTENT, 0, 0);
 			wcscpy_s(strcombo, 256, L"X");
 			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
@@ -27497,7 +27816,7 @@ int CustomRig2Dlg(HWND hDlgWnd)
 			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
 			wcscpy_s(strcombo, 256, L"Z");
 			SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
-			if ((currigelem.transuv[0].axiskind >= AXIS_X) && (currigelem.transuv[0].axiskind <= AXIS_Z)){
+			if ((currigelem.transuv[0].axiskind >= AXIS_X) && (currigelem.transuv[0].axiskind <= AXIS_Z)) {
 				SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_SETCURSEL, currigelem.transuv[0].axiskind, 0);
 			}
 			swprintf_s(strval, 256, L"%f", currigelem.transuv[0].applyrate);
@@ -27511,7 +27830,7 @@ int CustomRig2Dlg(HWND hDlgWnd)
 			SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
 			wcscpy_s(strcombo, 256, L"Z");
 			SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
-			if ((currigelem.transuv[0].axiskind >= AXIS_X) && (currigelem.transuv[0].axiskind <= AXIS_Z)){
+			if ((currigelem.transuv[0].axiskind >= AXIS_X) && (currigelem.transuv[0].axiskind <= AXIS_Z)) {
 				SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_SETCURSEL, currigelem.transuv[1].axiskind, 0);
 			}
 			swprintf_s(strval, 256, L"%f", currigelem.transuv[1].applyrate);
@@ -27519,24 +27838,24 @@ int CustomRig2Dlg(HWND hDlgWnd)
 
 			//int enableuid[5] = { IDC_ENABLEU1, IDC_ENABLEU2, IDC_ENABLEU3, IDC_ENABLEU4, IDC_ENABLEU5 };
 			//int enablevid[5] = { IDC_ENABLEV1, IDC_ENABLEV2, IDC_ENABLEV3, IDC_ENABLEV4, IDC_ENABLEV5 };
-			if (currigelem.transuv[0].enable == 1){
+			if (currigelem.transuv[0].enable == 1) {
 				CheckDlgButton(hDlgWnd, enableuid[elemno], BST_CHECKED);
 			}
-			else{
+			else {
 				CheckDlgButton(hDlgWnd, enableuid[elemno], BST_UNCHECKED);
 			}
 
-			if (currigelem.transuv[1].enable == 1){
+			if (currigelem.transuv[1].enable == 1) {
 				CheckDlgButton(hDlgWnd, enablevid[elemno], BST_CHECKED);
 			}
-			else{
+			else {
 				CheckDlgButton(hDlgWnd, enablevid[elemno], BST_UNCHECKED);
 			}
 
 		}
 		EnableRigAxisUV(hDlgWnd);
 	}
-	else{
+	else {
 		_ASSERT(0);
 	}
 
@@ -27552,10 +27871,10 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 	s_customrig.rigelem[elemno].rigrigboneno = -1;
 	s_customrig.rigelem[elemno].rigrigno = -1;
 	CBone* levelbone = s_model->GetBoneByID(s_customrig.rigelem[elemno].boneno);
-	if (levelbone){
+	if (levelbone) {
 		SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)levelbone->GetWBoneName());
 	}
-	else{
+	else {
 		SetDlgItemText(hDlgWnd, gpboxid[elemno], L"None");
 	}
 
@@ -27565,54 +27884,54 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 	combono = (int)SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_GETCURSEL, 0, 0);
 	s_customrig.rigelem[elemno].rigrigboneno = -1;
 	s_customrig.rigelem[elemno].rigrigno = -1;
-	if ((combono != 0) && (combono != CB_ERR)){
+	if ((combono != 0) && (combono != CB_ERR)) {
 		WCHAR combolabel[256];
 		ZeroMemory(combolabel, sizeof(WCHAR) * 256);
 		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_GETLBTEXT, combono, (LPARAM)combolabel);
-//{
-//	WCHAR strdbg[256];
-//	swprintf_s(strdbg, 256, L"elemno %d, combolabel %s", elemno, combolabel);
-//	::DSMessageBox(hDlgWnd, strdbg, L"combolabel", MB_OK);
-//}
+		//{
+		//	WCHAR strdbg[256];
+		//	swprintf_s(strdbg, 256, L"elemno %d, combolabel %s", elemno, combolabel);
+		//	::DSMessageBox(hDlgWnd, strdbg, L"combolabel", MB_OK);
+		//}
 		combolabel[256 - 1] = 0L;
 		size_t labellen = wcslen(combolabel);
-		if ((labellen > 0) && (labellen < 256)){
+		if ((labellen > 0) && (labellen < 256)) {
 			//format    [rigrigno]rigrigbonename[|]rigname
-			if (combolabel[0] == L'['){
+			if (combolabel[0] == L'[') {
 				WCHAR* prigrignoend = wcsstr(combolabel, L"]");
-				if (prigrignoend){
+				if (prigrignoend) {
 					WCHAR strrigrigno[256];
 					ZeroMemory(strrigrigno, sizeof(WCHAR) * 256);
 					wcsncpy_s(strrigrigno, 256, combolabel + 1, (size_t)(prigrignoend - (combolabel + 1)));
 					int rigrigno = _wtoi(strrigrigno);
-//{
-//	WCHAR strdbg[256];
-//	swprintf_s(strdbg, 256, L"rigrigno %d", rigrigno);
-//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigno", MB_OK);
-//}
-					if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)){
+					//{
+					//	WCHAR strdbg[256];
+					//	swprintf_s(strdbg, 256, L"rigrigno %d", rigrigno);
+					//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigno", MB_OK);
+					//}
+					if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)) {
 						s_customrig.rigelem[elemno].rigrigno = rigrigno;
 
 						WCHAR* pbonenameend = wcsstr(combolabel, L"[|]");
-						if (pbonenameend){
+						if (pbonenameend) {
 							WCHAR rigrigbonename[256];
 							ZeroMemory(rigrigbonename, sizeof(WCHAR) * 256);
 							wcsncpy_s(rigrigbonename, 256, prigrignoend + 1, (size_t)(pbonenameend - (prigrignoend + 1)));
-//{
-//	WCHAR strdbg[256];
-//	swprintf_s(strdbg, 256, L"rigrigbonename %s", rigrigbonename);
-//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigbonename", MB_OK);
-//}
+							//{
+							//	WCHAR strdbg[256];
+							//	swprintf_s(strdbg, 256, L"rigrigbonename %s", rigrigbonename);
+							//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigbonename", MB_OK);
+							//}
 							CBone* rigrigbone = s_model->GetBoneByWName(rigrigbonename);
-							if (rigrigbone){
+							if (rigrigbone) {
 								s_customrig.rigelem[elemno].rigrigboneno = rigrigbone->GetBoneNo();
 
-//{
-//	WCHAR strdbg[256];
-//	swprintf_s(strdbg, 256, L"rigrigboneno %d", s_customrig.rigelem[elemno].rigrigboneno);
-//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigboneno", MB_OK);
-//}
-								//int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
+								//{
+								//	WCHAR strdbg[256];
+								//	swprintf_s(strdbg, 256, L"rigrigboneno %d", s_customrig.rigelem[elemno].rigrigboneno);
+								//	::DSMessageBox(hDlgWnd, strdbg, L"rigrigboneno", MB_OK);
+								//}
+																//int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 								SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)rigrigbone->GetWBoneName());
 							}
 						}
@@ -27644,7 +27963,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 	break;
 	case WM_COMMAND:
-		if (HIWORD(wp) == CBN_SELCHANGE){
+		if (HIWORD(wp) == CBN_SELCHANGE) {
 			switch (LOWORD(wp)) {
 			case IDC_COMBO1:
 				CheckRigRigCombo(hDlgWnd, 0);
@@ -27664,7 +27983,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			case IDC_CHILNUM:
 			{
 				int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_CHILNUM), CB_GETCURSEL, 0, 0);
-				if ((combono >= 0) && (combono < MAXRIGELEMNUM)){
+				if ((combono >= 0) && (combono < MAXRIGELEMNUM)) {
 					SetCustomRigDlgLevel(hDlgWnd, combono + 1);
 				}
 			}
@@ -27673,7 +27992,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				break;
 			}
 		}
-		else{
+		else {
 			switch (LOWORD(wp)) {
 			case IDOK:
 			{
@@ -27708,48 +28027,48 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				int enablevid[5] = { IDC_ENABLEV1, IDC_ENABLEV2, IDC_ENABLEV3, IDC_ENABLEV4, IDC_ENABLEV5 };
 
 				int elemno;
-				for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
+				for (elemno = 0; elemno < s_customrig.elemnum; elemno++) {
 
 					CheckRigRigCombo(hDlgWnd, elemno);
 
 
 					int combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisuid[elemno]), CB_GETCURSEL, 0, 0);
-					if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
+					if ((combono >= AXIS_X) && (combono <= AXIS_Z)) {
 						s_customrig.rigelem[elemno].transuv[0].axiskind = combono;
 					}
 					combono = (int)SendMessage(GetDlgItem(hDlgWnd, axisvid[elemno]), CB_GETCURSEL, 0, 0);
-					if ((combono >= AXIS_X) && (combono <= AXIS_Z)){
+					if ((combono >= AXIS_X) && (combono <= AXIS_Z)) {
 						s_customrig.rigelem[elemno].transuv[1].axiskind = combono;
 					}
 
 					int ret;
 					float tmprate;
 					ret = GetCustomRigRateVal(hDlgWnd, rateuid[elemno], &tmprate);
-					if (ret){
+					if (ret) {
 						::DSMessageBox(hDlgWnd, L"Invalid VerticalScale. Limit From -100.0 to 100.0.", L"error!!!", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[0].applyrate = tmprate;
 
 					ret = GetCustomRigRateVal(hDlgWnd, ratevid[elemno], &tmprate);
-					if (ret){
+					if (ret) {
 						::DSMessageBox(hDlgWnd, L"Invalid HolizontalScale. Limit From -100.0 to 100.0.", L"error!!!", MB_OK);
 						return 0;
 					}
 					s_customrig.rigelem[elemno].transuv[1].applyrate = tmprate;
 
 
-					if (IsDlgButtonChecked(hDlgWnd, enableuid[elemno]) == BST_CHECKED){
+					if (IsDlgButtonChecked(hDlgWnd, enableuid[elemno]) == BST_CHECKED) {
 						s_customrig.rigelem[elemno].transuv[0].enable = 1;
 					}
-					else{
+					else {
 						s_customrig.rigelem[elemno].transuv[0].enable = 0;
 					}
 
-					if (IsDlgButtonChecked(hDlgWnd, enablevid[elemno]) == BST_CHECKED){
+					if (IsDlgButtonChecked(hDlgWnd, enablevid[elemno]) == BST_CHECKED) {
 						s_customrig.rigelem[elemno].transuv[1].enable = 1;
 					}
-					else{
+					else {
 						s_customrig.rigelem[elemno].transuv[1].enable = 0;
 					}
 
@@ -27757,7 +28076,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 				int isvalid = IsValidCustomRig(s_model, s_customrig, s_customrigbone);
-				if (isvalid == 0){
+				if (isvalid == 0) {
 					::DSMessageBox(hDlgWnd, L"Invalid Parameter", L"error!!!", MB_OK);
 					return 0;
 				}
@@ -27781,7 +28100,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		}
 		break;
 	case WM_CLOSE:
-		if (s_customrigdlg){
+		if (s_customrigdlg) {
 			DestroyWindow(s_customrigdlg);
 			s_customrigdlg = 0;
 		}
@@ -27798,14 +28117,14 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 int BoneRClick(int srcboneno)
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
 
-	if (srcboneno < 0){
+	if (srcboneno < 0) {
 		s_ikcnt = 0;
 		//SetCapture(s_3dwnd);
 		POINT ptCursor;
@@ -27824,33 +28143,33 @@ int BoneRClick(int srcboneno)
 		s_pickinfo.pickobjno = -1;
 
 		CallF(s_model->PickBone(&s_pickinfo), return 1);
-		if (s_pickinfo.pickobjno >= 0){
+		if (s_pickinfo.pickobjno >= 0) {
 			s_curboneno = s_pickinfo.pickobjno;
 		}
 	}
 
-	if (s_curboneno > 0){
-		if (s_owpTimeline){
+	if (s_curboneno > 0) {
+		if (s_owpTimeline) {
 			s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
 		}
 
 		ChangeCurrentBone();
 
-		if (s_curboneno >= 0){
+		if (s_curboneno >= 0) {
 			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			if (curbone){
+			if (curbone) {
 				HWND parwnd;
 				//parwnd = s_3dwnd;
 				parwnd = s_3dwnd;
 
 				CRMenuMain* rmenu;
 				rmenu = new CRMenuMain(IDR_RMENU);
-				if (!rmenu){
+				if (!rmenu) {
 					return 1;
 				}
 				int ret;
 				ret = rmenu->Create(parwnd, MENUOFFSET_BONERCLICK);
-				if (ret){
+				if (ret) {
 					return 1;
 				}
 
@@ -27884,17 +28203,17 @@ int BoneRClick(int srcboneno)
 				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 ON to LowerJoints");
 				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to LowerJoints");
 
-				if (curbone->GetMass0() == 0){
+				if (curbone->GetMass0() == 0) {
 					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Set");
 				}
-				else{
+				else {
 					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Unset");
 				}
 
-				if (curbone->GetExcludeMv() == 0){
+				if (curbone->GetExcludeMv() == 0) {
 					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Set");
 				}
-				else{
+				else {
 					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Unset");
 				}
 
@@ -27922,20 +28241,20 @@ int BoneRClick(int srcboneno)
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0 + MENUOFFSET_BONERCLICK, L"CreateNewRig");
 				int setmenuno = 1;
 				int rigno;
-				for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
-					if (currig.useflag == 2){
+					if (currig.useflag == 2) {
 						int setmenuid = ID_RMENU_0 + setmenuno + MENUOFFSET_BONERCLICK;
 
 						//AppendMenu(submenu, MF_STRING, setmenuid, currig.rigname);
 						s_customrigmenuindex[setmenuno] = rigno;
 
 						rsubmenu[rigno] = new CRMenuMain(IDR_RMENU);
-						if (!rsubmenu[rigno]){
+						if (!rsubmenu[rigno]) {
 							return 1;
 						}
 						ret = rsubmenu[rigno]->CreatePopupMenu(parwnd, submenu, currig.rigname);
-						if (ret){
+						if (ret) {
 							return 1;
 						}
 						HMENU subsubmenu = rsubmenu[rigno]->GetSubMenu();
@@ -28063,10 +28382,10 @@ int BoneRClick(int srcboneno)
 				//		s_oprigflag = 1;
 				//	}
 				//}
-				
-				for (rigno = 0; rigno < MAXRIGNUM; rigno++){
+
+				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CRMenuMain* curmenu = rsubmenu[rigno];
-					if (curmenu){
+					if (curmenu) {
 						curmenu->Destroy();
 						delete curmenu;
 					}
@@ -28089,13 +28408,13 @@ int EnableRigAxisUV(HWND hDlgWnd)
 	int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
 
 	int elemno;
-	for (elemno = 0; elemno < s_customrig.elemnum; elemno++){
+	for (elemno = 0; elemno < s_customrig.elemnum; elemno++) {
 		RIGELEM currigelem = s_customrig.rigelem[elemno];
-		if (currigelem.rigrigboneno >= 0){
+		if (currigelem.rigrigboneno >= 0) {
 			EnableWindow(GetDlgItem(hDlgWnd, axisuid[elemno]), false);
 			EnableWindow(GetDlgItem(hDlgWnd, axisvid[elemno]), false);
 		}
-		else{
+		else {
 			EnableWindow(GetDlgItem(hDlgWnd, axisuid[elemno]), true);
 			EnableWindow(GetDlgItem(hDlgWnd, axisvid[elemno]), true);
 		}
@@ -28118,7 +28437,7 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 	SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_SETCURSEL, 0, 0);
 
 
-	if (elemno < s_customrig.elemnum){
+	if (elemno < s_customrig.elemnum) {
 		RIGELEM currigelem = s_customrig.rigelem[elemno];
 		int selrigrigcombono = 0;
 		SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_RESETCONTENT, 0, 0);
@@ -28129,21 +28448,21 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 		CBone* rigrigbone = s_model->GetBoneByID(currigelem.rigrigboneno);
 		CBone* currigrigbone;
 		map<int, CBone*>::iterator itrcurrigrigbone;
-		for (itrcurrigrigbone = s_model->GetBoneListBegin(); itrcurrigrigbone != s_model->GetBoneListEnd(); itrcurrigrigbone++){
+		for (itrcurrigrigbone = s_model->GetBoneListBegin(); itrcurrigrigbone != s_model->GetBoneListEnd(); itrcurrigrigbone++) {
 			currigrigbone = itrcurrigrigbone->second;
-			if (currigrigbone){
+			if (currigrigbone) {
 				WCHAR rigrigbonename[256];
 				ZeroMemory(rigrigbonename, sizeof(WCHAR) * 256);
 				wcscpy_s(rigrigbonename, 256, currigrigbone->GetWBoneName());
 				int rigrigno;
-				for (rigrigno = 0; rigrigno < MAXRIGNUM; rigrigno++){
+				for (rigrigno = 0; rigrigno < MAXRIGNUM; rigrigno++) {
 					CUSTOMRIG rigrig = currigrigbone->GetCustomRig(rigrigno);
-					if (rigrig.useflag == 2){
+					if (rigrig.useflag == 2) {
 						int isvalid = IsValidCustomRig(s_model, rigrig, currigrigbone);
-						if (isvalid == 1){
+						if (isvalid == 1) {
 							swprintf_s(strcombo, 256, L"[%d]%s[|]%s", rigrigno, rigrigbonename, rigrig.rigname);
 							SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_ADDSTRING, 0, (LPARAM)strcombo);
-							if (rigrigbone && (currigrigbone == rigrigbone) && (rigrigno == currigelem.rigrigno)){
+							if (rigrigbone && (currigrigbone == rigrigbone) && (rigrigno == currigelem.rigrigno)) {
 								selrigrigcombono = setcombono;
 								SetDlgItemText(hDlgWnd, gpboxid[elemno], (LPCWSTR)rigrigbone->GetWBoneName());
 							}
@@ -28161,25 +28480,25 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 
 int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 {
-	if (!s_model){
+	if (!s_model) {
 		return 0;
 	}
-	if (!s_customrigbone){
+	if (!s_customrigbone) {
 		return 0;
 	}
-	if (!s_model->GetTopBone()){
+	if (!s_model->GetTopBone()) {
 		return 0;
 	}
-	if (!s_customrigdlg){
+	if (!s_customrigdlg) {
 		return 0;
 	}
 
-	if ((levelnum >= 1) && (levelnum <= MAXRIGELEMNUM)){
+	if ((levelnum >= 1) && (levelnum <= MAXRIGELEMNUM)) {
 		int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 
 		int parno = 1;
 		CBone* parentbone = s_customrigbone->GetParent();
-		while (parentbone && (parno < MAXRIGELEMNUM) && (parno < levelnum)){
+		while (parentbone && (parno < MAXRIGELEMNUM) && (parno < levelnum)) {
 			SetDlgItemText(s_customrigdlg, gpboxid[parno], (LPCWSTR)parentbone->GetWBoneName());
 			s_customrig.rigelem[parno].boneno = parentbone->GetBoneNo();
 			parentbone = parentbone->GetParent();
@@ -28192,7 +28511,7 @@ int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 		s_customrig.elemnum = levelnum;
 
 		int elemno;
-		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++){
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++) {
 			SetRigRigCombo(hDlgWnd, elemno);
 		}
 	}
@@ -28206,41 +28525,41 @@ int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 int ToggleRig()
 {
 	//if (s_customrigbone){
-		if (s_oprigflag == 0){
-			s_oprigflag = 1;
+	if (s_oprigflag == 0) {
+		s_oprigflag = 1;
 
-			if (s_BoneMarkCheckBox) {
-				s_savebonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
-				s_BoneMarkCheckBox->SetChecked(false);
-			}
-			if (s_RigidMarkCheckBox) {
-				s_saverigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
-				s_RigidMarkCheckBox->SetChecked(false);
-			}
-
-			//s_curboneno = s_customrigbone->GetBoneNo();
-			//s_pickinfo.buttonflag = PICK_CENTER;
+		if (s_BoneMarkCheckBox) {
+			s_savebonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
+			s_BoneMarkCheckBox->SetChecked(false);
 		}
-		else{
-			s_oprigflag = 0;
-			s_pickinfo.buttonflag = 0;
-
-			if (s_BoneMarkCheckBox) {
-				s_BoneMarkCheckBox->SetChecked(s_savebonemarkflag == 1);
-			}
-			if (s_RigidMarkCheckBox) {
-				s_RigidMarkCheckBox->SetChecked(s_saverigidmarkflag == 1);
-			}
-
-
-			//if (s_customrigdlg){
-			//	DestroyWindow(s_customrigdlg);
-			//	s_customrigdlg = 0;
-			//}
-
-			//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
-
+		if (s_RigidMarkCheckBox) {
+			s_saverigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
+			s_RigidMarkCheckBox->SetChecked(false);
 		}
+
+		//s_curboneno = s_customrigbone->GetBoneNo();
+		//s_pickinfo.buttonflag = PICK_CENTER;
+	}
+	else {
+		s_oprigflag = 0;
+		s_pickinfo.buttonflag = 0;
+
+		if (s_BoneMarkCheckBox) {
+			s_BoneMarkCheckBox->SetChecked(s_savebonemarkflag == 1);
+		}
+		if (s_RigidMarkCheckBox) {
+			s_RigidMarkCheckBox->SetChecked(s_saverigidmarkflag == 1);
+		}
+
+
+		//if (s_customrigdlg){
+		//	DestroyWindow(s_customrigdlg);
+		//	s_customrigdlg = 0;
+		//}
+
+		//GUIMenuSetVisible(s_platemenukind, s_platemenuno);
+
+	}
 	//}
 	//else{
 	//	s_oprigflag = 0;
@@ -28268,19 +28587,19 @@ int GetSymRootMode()
 	*/
 
 	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0){
+	if (modelnum <= 0) {
 		return 0;
 	}
 
 	CRMenuMain* rmenu;
 	rmenu = new CRMenuMain(IDR_RMENU);
-	if (!rmenu){
+	if (!rmenu) {
 		return 0;
 	}
 	int ret;
 	ret = rmenu->Create(s_3dwnd, MENUOFFSET_GETSYMROOTMODE);
 	//ret = rmenu->Create(s_mainhwnd);
-	if (ret){
+	if (ret) {
 		return 0;
 	}
 
@@ -28345,10 +28664,10 @@ int GetSymRootMode()
 void AutoCameraTarget()
 {
 	s_camtargetflag = (int)s_CamTargetCheckBox->GetChecked();
-	if (s_model && (s_curboneno >= 0) && s_camtargetflag){
+	if (s_model && (s_curboneno >= 0) && s_camtargetflag) {
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		_ASSERT(curbone);
-		if (curbone){
+		if (curbone) {
 			g_befcamtargetpos = g_camtargetpos;
 			g_camtargetpos = curbone->GetChildWorld();
 
@@ -28411,14 +28730,14 @@ int OnTimeLineSelectFromSelectedKey()
 
 			if (g_underselectingframe != 0) {
 				//if (s_buttonselecttothelast == 0) {//tothelastのときも同じ処理
-					if (s_buttonselectstart <= s_buttonselectend) {
-						s_owpLTimeline->setCurrentTime(endframe, true);
-						s_owpEulerGraph->setCurrentTime(endframe, false);
-					}
-					else {
-						s_owpLTimeline->setCurrentTime(startframe, true);
-						s_owpEulerGraph->setCurrentTime(startframe, false);
-					}
+				if (s_buttonselectstart <= s_buttonselectend) {
+					s_owpLTimeline->setCurrentTime(endframe, true);
+					s_owpEulerGraph->setCurrentTime(endframe, false);
+				}
+				else {
+					s_owpLTimeline->setCurrentTime(startframe, true);
+					s_owpEulerGraph->setCurrentTime(startframe, false);
+				}
 				//}
 				//else {
 				//	//to the last selectionの際にはカレントをアプライフレームへ
@@ -28451,10 +28770,10 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 		s_owpLTimeline->selectClear(false);//フレームに色付選択していない場合には呼ばれないので再帰ループしない
 		//if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastの際には　範囲を指定していなくても実行
 		//if ((s_buttonselectstart <= s_buttonselectend) || tothelastflag) {//2021/11/09
-			double tmpmaxselectionframe;
-			tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
-			s_buttonselectend = tmpmaxselectionframe;//tothelast対応
-		//}
+		double tmpmaxselectionframe;
+		tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
+		s_buttonselectend = tmpmaxselectionframe;//tothelast対応
+	//}
 	}
 
 	OnTimeLineSelectFromSelectedKey();
@@ -28665,7 +28984,7 @@ int OnTimeLineWheel()
 					s_buttonselectstart = s_buttonselectend;
 					s_buttonselectend = tmp;
 				}
-				
+
 				DbgOut(L"OnTimeLineWheel 0 : start %lf, end %lf, delta %lf\r\n", s_buttonselectstart, s_buttonselectend, delta2);
 
 				OnTimeLineButtonSelectFromSelectStartEnd(0);
@@ -28759,21 +29078,21 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	switch (uMsg)
 	{
-	//case WM_TIMER:
-	//	OnTimerFunc(wParam);
-	//	break;
+		//case WM_TIMER:
+		//	OnTimerFunc(wParam);
+		//	break;
 
-	//case WM_LBUTTONDOWN:
-	//case WM_RBUTTONDOWN:
-	//	SetCapture(s_mainhwnd);
-	//	break;
-	//case WM_LBUTTONUP:
-	//case WM_RBUTTONUP:
-	//	ReleaseCapture();
-	//	break;
-	//case WM_MOUSEMOVE:
-	//	OnMouseMoveFunc();
-	//	break;
+		//case WM_LBUTTONDOWN:
+		//case WM_RBUTTONDOWN:
+		//	SetCapture(s_mainhwnd);
+		//	break;
+		//case WM_LBUTTONUP:
+		//case WM_RBUTTONUP:
+		//	ReleaseCapture();
+		//	break;
+		//case WM_MOUSEMOVE:
+		//	OnMouseMoveFunc();
+		//	break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -28872,14 +29191,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				}
 				//return 0;
 				break;
-			//case ID_FILE_MOTIONCACHE:
-			//	if (s_registflag == 1) {
-			//		ActivatePanel(0);
-			//		MotionCacheBatch();
-			//		ActivatePanel(1);
-			//	}
-			//	//return 0;
-			//	break;
+				//case ID_FILE_MOTIONCACHE:
+				//	if (s_registflag == 1) {
+				//		ActivatePanel(0);
+				//		MotionCacheBatch();
+				//		ActivatePanel(1);
+				//	}
+				//	//return 0;
+				//	break;
 			case ID_FILE_RETARGETBATCH:
 				if (s_registflag == 1) {
 					ActivatePanel(0);
@@ -28950,7 +29269,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				DispObjPanel();
 				//return 0;
 			}
-				break;
+			break;
 			case ID_40048:
 				//DispConvBoneWindow();
 				s_platemenukind = 2;
@@ -28974,7 +29293,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				DispModelPanel();
 				//return 0;
 			}
-				break;
+			break;
 			case ID_MOTIONPANEL:
 			{
 				bool savedispflag = s_dispmotion;
@@ -28982,7 +29301,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				DispMotionPanel();
 				//return 0;
 			}
-				break;
+			break;
 			case ID_SETTINGS:
 			{
 				CSettingsDlg dlg;
@@ -29034,7 +29353,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				delta = GET_WHEEL_DELTA_WPARAM(wParam);
 				s_ikselectmat = s_selm;
 				//s_editmotionflag = s_model->TwistBoneAxisDelta(&s_editrange, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
-				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag, 
+				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
 					&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
 				//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
@@ -29046,7 +29365,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	default:
 		//if (uMsg != WM_SETCURSOR) {
-			lret = DefWindowProc(hwnd, uMsg, wParam, lParam);
+		lret = DefWindowProc(hwnd, uMsg, wParam, lParam);
 		//}
 		break;
 	}
@@ -29256,7 +29575,7 @@ HWND Create3DWnd()
 	//else {
 	//	hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, 450, 0);
 	//}
-	
+
 
 	if (g_4kresolution) {
 		hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, s_toolwidth, 0);
@@ -29323,7 +29642,7 @@ HWND Create3DWnd()
 	else {
 		::MoveWindow(s_3dwnd, s_timelinewidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
 	}
-	
+
 
 	s_rc3dwnd.top = MAINMENUAIMBARH;
 	s_rc3dwnd.left = 0;
@@ -29472,7 +29791,7 @@ int OnMouseMoveFunc()
 						//CallF(CalcTargetPos(&targetpos), return 1);
 						CalcTargetPos(&targetpos);
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotate(g_limitdegflag, 
+							s_editmotionflag = s_model->IKRotate(g_limitdegflag,
 								&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
 							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
@@ -29501,8 +29820,8 @@ int OnMouseMoveFunc()
 
 							s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
 
-							s_model->RigControl(g_limitdegflag, 
-								0, &s_editrange, s_pickinfo.pickobjno, 0, 
+							s_model->RigControl(g_limitdegflag,
+								0, &s_editrange, s_pickinfo.pickobjno, 0,
 								deltau, s_ikcustomrig, s_pickinfo.buttonflag);
 							ChaMatrix tmpwm = s_model->GetWorldMat();
 							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -29524,7 +29843,8 @@ int OnMouseMoveFunc()
 				}
 			}
 		}
-	}else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)) {
+	}
+	else if ((s_pickinfo.buttonflag == PICK_X) || (s_pickinfo.buttonflag == PICK_Y) || (s_pickinfo.buttonflag == PICK_Z)) {
 		if (s_model) {
 			if (g_previewFlag == 0) {
 				s_pickinfo.mousebefpos = s_pickinfo.mousepos;
@@ -29889,7 +30209,7 @@ void GUIRigidSetVisible(int srcplateno)
 		ShowGroundWnd(false);
 		ShowDampAnimWnd(true);
 	}
-	else if(srcplateno == -2){
+	else if (srcplateno == -2) {
 		ShowRigidWnd(false);
 		ShowImpulseWnd(false);
 		ShowGroundWnd(false);
@@ -30042,7 +30362,7 @@ void ShowRetargetWnd(bool srcflag)
 		if (s_bpWorld) {
 			if (srcflag == true) {
 				//if (!s_convboneWnd) {
-					CreateConvBoneWnd();
+				CreateConvBoneWnd();
 				//}
 				s_convboneWnd->setListenMouse(true);
 				s_convboneWnd->setVisible(true);
@@ -30092,7 +30412,7 @@ void ShowLimitEulerWnd(bool srcflag)
 void ShowRigidWnd(bool srcflag)
 {
 	if (s_model && (s_curboneno >= 0)) {
-	//if (s_model) {
+		//if (s_model) {
 		if (s_bpWorld) {
 			s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 
@@ -30214,7 +30534,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			s_customrigdlg = 0;
 		}
 
-		
+
 		//プレート
 		s_platemenukind = srcmenukind;
 
@@ -30681,7 +31001,8 @@ void DSColorAndVibration()
 		ChangeColor(s_dsdeviceid, 255, 0, 0);
 		//ChangeVibration(s_dsdeviceid, 200, 200);
 		//OutputToInfoWnd(L"Axis On %d", axisno);
-	}else if((existon == false) && (s_bef_existon == true)){
+	}
+	else if ((existon == false) && (s_bef_existon == true)) {
 		ChangeColor(s_dsdeviceid, 0, 0, 255);
 		//ChangeVibration(s_dsdeviceid, 0, 0);
 		//OutputToInfoWnd(L"Axis Off %d", axisno);
@@ -30728,7 +31049,7 @@ void DSR1ButtonSelectMotion()
 		int cAnimSets = (int)s_tlarray.size();
 		int nextmotionindex;
 		nextmotionindex = s_motmenuindexmap[s_model] + 1;
-	
+
 		if (nextmotionindex < 0) {
 			nextmotionindex = cAnimSets - 1;
 		}
@@ -30779,7 +31100,7 @@ void DSR1ButtonSelectCurrentBone()
 	accelbothflag = accelaxis1 && accelaxis2;
 
 	if ((accelflag == 0) && (curbuttonup >= 1)) {//アクセル無し
-		
+
 		::SetWindowPos(s_3dwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
 		if (s_mainmenuaimbarWnd) {
@@ -31189,10 +31510,10 @@ void DSSelectWindowAndCtrl()
 
 	//static HWND s_befactivehwnd = 0;
 
-	
+
 	bool doneflag = false;
 
-//ウインドウ選択ブロック
+	//ウインドウ選択ブロック
 	{
 		//static int s_currentwndid = 0;
 		//s_currentwndid = 0;
@@ -32081,255 +32402,255 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 						};
 						*/
 
-/* 
-//#####################################################################################################
-//プレート上で〇ボタンを押したときにマウスがコントロールへ飛ぶ。プレート上にマウスが残った方が便利だったのでコメントアウト
-//#####################################################################################################
-*
-* 
-						if (chkflag && changeflag && (s_curboneno >= 0)) {
-							if ((curdsutguikind >= SPGUISW_CAMERA_AND_IK) && (curdsutguikind <= SPGUISW_VSYNC_AND_REFPOS)) {
+						/*
+						//#####################################################################################################
+						//プレート上で〇ボタンを押したときにマウスがコントロールへ飛ぶ。プレート上にマウスが残った方が便利だったのでコメントアウト
+						//#####################################################################################################
+						*
+						*
+												if (chkflag && changeflag && (s_curboneno >= 0)) {
+													if ((curdsutguikind >= SPGUISW_CAMERA_AND_IK) && (curdsutguikind <= SPGUISW_VSYNC_AND_REFPOS)) {
 
-								s_curdsutguikind = curdsutguikind;
-								s_curdsutguino = curdsutguino;
-								int guigroupid = s_curdsutguikind;
-								switch (guigroupid) {
-								case SPGUISW_CAMERA_AND_IK:
-								{
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < SPR_CAM_MAX)) {
-										POINT ctrlpos;
-										ctrlpos.x = s_spcam[s_curdsutguino].dispcenter.x;
-										ctrlpos.y = s_spcam[s_curdsutguino].dispcenter.y;
+														s_curdsutguikind = curdsutguikind;
+														s_curdsutguino = curdsutguino;
+														int guigroupid = s_curdsutguikind;
+														switch (guigroupid) {
+														case SPGUISW_CAMERA_AND_IK:
+														{
+															if ((s_curdsutguino >= 0) && (s_curdsutguino < SPR_CAM_MAX)) {
+																POINT ctrlpos;
+																ctrlpos.x = s_spcam[s_curdsutguino].dispcenter.x;
+																ctrlpos.y = s_spcam[s_curdsutguino].dispcenter.y;
 
-										ClientToScreen(s_3dwnd, &ctrlpos);
-										::SetCursorPos(ctrlpos.x, ctrlpos.y);
-									}
-								}
-								break;
+																ClientToScreen(s_3dwnd, &ctrlpos);
+																::SetCursorPos(ctrlpos.x, ctrlpos.y);
+															}
+														}
+														break;
 
-								case SPGUISW_DISP_AND_LIMITS:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize0) && s_dsutgui0[s_curdsutguino]) {
-										//s_dsutgui0[s_curdsutguino]->SetTextColor(0xFF0000FF);
-										//s_dsutgui0[s_curdsutguino]->OnFocusIn();
-										POINT ctrlpos;
-										s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
-										//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
-										UINT type = s_dsutgui0[s_curdsutguino]->GetType();
-										switch (type) {
-										case DXUT_CONTROL_CHECKBOX:
-										case DXUT_CONTROL_RADIOBUTTON:
-											ctrlpos.x += 6;
-											ctrlpos.y += 6;
-											break;
-										case DXUT_CONTROL_BUTTON:
-										case DXUT_CONTROL_COMBOBOX:
-											ctrlpos.x += (100 / 2);
-											ctrlpos.y += (25 / 2);
-											break;
-										case DXUT_CONTROL_STATIC:
-											break;
+														case SPGUISW_DISP_AND_LIMITS:
+															if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize0) && s_dsutgui0[s_curdsutguino]) {
+																//s_dsutgui0[s_curdsutguino]->SetTextColor(0xFF0000FF);
+																//s_dsutgui0[s_curdsutguino]->OnFocusIn();
+																POINT ctrlpos;
+																s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+																//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
+																UINT type = s_dsutgui0[s_curdsutguino]->GetType();
+																switch (type) {
+																case DXUT_CONTROL_CHECKBOX:
+																case DXUT_CONTROL_RADIOBUTTON:
+																	ctrlpos.x += 6;
+																	ctrlpos.y += 6;
+																	break;
+																case DXUT_CONTROL_BUTTON:
+																case DXUT_CONTROL_COMBOBOX:
+																	ctrlpos.x += (100 / 2);
+																	ctrlpos.y += (25 / 2);
+																	break;
+																case DXUT_CONTROL_STATIC:
+																	break;
 
-										case DXUT_CONTROL_SLIDER:
-										{
-											int slmin = 0;
-											int slmax = 0;
-											int slvalue = 0;
-											((CDXUTSlider*)s_dsutgui0[s_curdsutguino])->GetRange(slmin, slmax);
-											slvalue = ((CDXUTSlider*)s_dsutgui0[s_curdsutguino])->GetValue();
-											float rate = 0.0f;
-											int length = slmax - slmin;
-											if (length != 0) {
-												rate = (float)(slvalue - slmin) / (float)length;
-											}
-											else {
-												rate = 0.0f;
-											}
+																case DXUT_CONTROL_SLIDER:
+																{
+																	int slmin = 0;
+																	int slmax = 0;
+																	int slvalue = 0;
+																	((CDXUTSlider*)s_dsutgui0[s_curdsutguino])->GetRange(slmin, slmax);
+																	slvalue = ((CDXUTSlider*)s_dsutgui0[s_curdsutguino])->GetValue();
+																	float rate = 0.0f;
+																	int length = slmax - slmin;
+																	if (length != 0) {
+																		rate = (float)(slvalue - slmin) / (float)length;
+																	}
+																	else {
+																		rate = 0.0f;
+																	}
 
-											ctrlpos.x += (int)(100.0f * rate);//100.0f : ctrl width
-											ctrlpos.y += (25 / 2);
-										}
-										break;
-										case DXUT_CONTROL_EDITBOX:
-										case DXUT_CONTROL_IMEEDITBOX:
-										case DXUT_CONTROL_LISTBOX:
-										case DXUT_CONTROL_SCROLLBAR:
-											break;
-										}
-										ClientToScreen(s_3dwnd, &ctrlpos);
-										::SetCursorPos(ctrlpos.x, ctrlpos.y);
-									}
-									break;
+																	ctrlpos.x += (int)(100.0f * rate);//100.0f : ctrl width
+																	ctrlpos.y += (25 / 2);
+																}
+																break;
+																case DXUT_CONTROL_EDITBOX:
+																case DXUT_CONTROL_IMEEDITBOX:
+																case DXUT_CONTROL_LISTBOX:
+																case DXUT_CONTROL_SCROLLBAR:
+																	break;
+																}
+																ClientToScreen(s_3dwnd, &ctrlpos);
+																::SetCursorPos(ctrlpos.x, ctrlpos.y);
+															}
+															break;
 
-								case SPGUISW_BRUSHPARAMS:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize1) && s_dsutgui1[s_curdsutguino]) {
-										//s_dsutgui1[s_curdsutguino]->SetTextColor(0xFF0000FF);
-										//s_dsutgui1[s_curdsutguino]->OnFocusIn();
-										POINT ctrlpos;
-										s_dsutgui1[s_curdsutguino]->GetLocation(&ctrlpos);
-										UINT type = s_dsutgui1[s_curdsutguino]->GetType();
-										switch (type) {
-										case DXUT_CONTROL_CHECKBOX:
-										case DXUT_CONTROL_RADIOBUTTON:
-											ctrlpos.x += 6;
-											ctrlpos.y += 6;
-											break;
-										case DXUT_CONTROL_BUTTON:
-										case DXUT_CONTROL_COMBOBOX:
-											ctrlpos.x += (100 / 2);
-											ctrlpos.y += (25 / 2);
-											break;
-										case DXUT_CONTROL_STATIC:
-											break;
+														case SPGUISW_BRUSHPARAMS:
+															if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize1) && s_dsutgui1[s_curdsutguino]) {
+																//s_dsutgui1[s_curdsutguino]->SetTextColor(0xFF0000FF);
+																//s_dsutgui1[s_curdsutguino]->OnFocusIn();
+																POINT ctrlpos;
+																s_dsutgui1[s_curdsutguino]->GetLocation(&ctrlpos);
+																UINT type = s_dsutgui1[s_curdsutguino]->GetType();
+																switch (type) {
+																case DXUT_CONTROL_CHECKBOX:
+																case DXUT_CONTROL_RADIOBUTTON:
+																	ctrlpos.x += 6;
+																	ctrlpos.y += 6;
+																	break;
+																case DXUT_CONTROL_BUTTON:
+																case DXUT_CONTROL_COMBOBOX:
+																	ctrlpos.x += (100 / 2);
+																	ctrlpos.y += (25 / 2);
+																	break;
+																case DXUT_CONTROL_STATIC:
+																	break;
 
-										case DXUT_CONTROL_SLIDER:
-										{
-											int slmin = 0;
-											int slmax = 0;
-											int slvalue = 0;
-											((CDXUTSlider*)s_dsutgui1[s_curdsutguino])->GetRange(slmin, slmax);
-											slvalue = ((CDXUTSlider*)s_dsutgui1[s_curdsutguino])->GetValue();
-											float rate = 0.0f;
-											int length = slmax - slmin;
-											if (length != 0) {
-												rate = (float)(slvalue - slmin) / (float)length;
-											}
-											else {
-												rate = 0.0f;
-											}
+																case DXUT_CONTROL_SLIDER:
+																{
+																	int slmin = 0;
+																	int slmax = 0;
+																	int slvalue = 0;
+																	((CDXUTSlider*)s_dsutgui1[s_curdsutguino])->GetRange(slmin, slmax);
+																	slvalue = ((CDXUTSlider*)s_dsutgui1[s_curdsutguino])->GetValue();
+																	float rate = 0.0f;
+																	int length = slmax - slmin;
+																	if (length != 0) {
+																		rate = (float)(slvalue - slmin) / (float)length;
+																	}
+																	else {
+																		rate = 0.0f;
+																	}
 
-											ctrlpos.x += (int)(100.0f * rate);
-											ctrlpos.y += (25 / 2);
-										}
-										break;
-										case DXUT_CONTROL_EDITBOX:
-										case DXUT_CONTROL_IMEEDITBOX:
-										case DXUT_CONTROL_LISTBOX:
-										case DXUT_CONTROL_SCROLLBAR:
-											break;
-										}
-										ClientToScreen(s_3dwnd, &ctrlpos);
-										::SetCursorPos(ctrlpos.x, ctrlpos.y);
-									}
-									break;
+																	ctrlpos.x += (int)(100.0f * rate);
+																	ctrlpos.y += (25 / 2);
+																}
+																break;
+																case DXUT_CONTROL_EDITBOX:
+																case DXUT_CONTROL_IMEEDITBOX:
+																case DXUT_CONTROL_LISTBOX:
+																case DXUT_CONTROL_SCROLLBAR:
+																	break;
+																}
+																ClientToScreen(s_3dwnd, &ctrlpos);
+																::SetCursorPos(ctrlpos.x, ctrlpos.y);
+															}
+															break;
 
-								case SPGUISW_BULLETPHYSICS:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize2) && s_dsutgui2[s_curdsutguino]) {
-										//s_dsutgui2[s_curdsutguino]->SetTextColor(0xFF0000FF);
-										//s_dsutgui2[s_curdsutguino]->OnFocusIn();
-										POINT ctrlpos;
-										s_dsutgui2[s_curdsutguino]->GetLocation(&ctrlpos);
-										UINT type = s_dsutgui2[s_curdsutguino]->GetType();
-										switch (type) {
-										case DXUT_CONTROL_CHECKBOX:
-										case DXUT_CONTROL_RADIOBUTTON:
-											ctrlpos.x += 6;
-											ctrlpos.y += 6;
-											break;
-										case DXUT_CONTROL_BUTTON:
-										case DXUT_CONTROL_COMBOBOX:
-											ctrlpos.x += (100 / 2);
-											ctrlpos.y += (25 / 2);
-											break;
-										case DXUT_CONTROL_STATIC:
-											break;
+														case SPGUISW_BULLETPHYSICS:
+															if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize2) && s_dsutgui2[s_curdsutguino]) {
+																//s_dsutgui2[s_curdsutguino]->SetTextColor(0xFF0000FF);
+																//s_dsutgui2[s_curdsutguino]->OnFocusIn();
+																POINT ctrlpos;
+																s_dsutgui2[s_curdsutguino]->GetLocation(&ctrlpos);
+																UINT type = s_dsutgui2[s_curdsutguino]->GetType();
+																switch (type) {
+																case DXUT_CONTROL_CHECKBOX:
+																case DXUT_CONTROL_RADIOBUTTON:
+																	ctrlpos.x += 6;
+																	ctrlpos.y += 6;
+																	break;
+																case DXUT_CONTROL_BUTTON:
+																case DXUT_CONTROL_COMBOBOX:
+																	ctrlpos.x += (100 / 2);
+																	ctrlpos.y += (25 / 2);
+																	break;
+																case DXUT_CONTROL_STATIC:
+																	break;
 
-										case DXUT_CONTROL_SLIDER:
-										{
-											int slmin = 0;
-											int slmax = 0;
-											int slvalue = 0;
-											((CDXUTSlider*)s_dsutgui2[s_curdsutguino])->GetRange(slmin, slmax);
-											slvalue = ((CDXUTSlider*)s_dsutgui2[s_curdsutguino])->GetValue();
-											float rate = 0.0f;
-											int length = slmax - slmin;
-											if (length != 0) {
-												rate = (float)(slvalue - slmin) / (float)length;
-											}
-											else {
-												rate = 0.0f;
-											}
+																case DXUT_CONTROL_SLIDER:
+																{
+																	int slmin = 0;
+																	int slmax = 0;
+																	int slvalue = 0;
+																	((CDXUTSlider*)s_dsutgui2[s_curdsutguino])->GetRange(slmin, slmax);
+																	slvalue = ((CDXUTSlider*)s_dsutgui2[s_curdsutguino])->GetValue();
+																	float rate = 0.0f;
+																	int length = slmax - slmin;
+																	if (length != 0) {
+																		rate = (float)(slvalue - slmin) / (float)length;
+																	}
+																	else {
+																		rate = 0.0f;
+																	}
 
-											ctrlpos.x += (int)(100.0f * rate);
-											ctrlpos.y += (25 / 2);
-										}
-										break;
-										case DXUT_CONTROL_EDITBOX:
-										case DXUT_CONTROL_IMEEDITBOX:
-										case DXUT_CONTROL_LISTBOX:
-										case DXUT_CONTROL_SCROLLBAR:
-											break;
-										}
-										ClientToScreen(s_3dwnd, &ctrlpos);
-										::SetCursorPos(ctrlpos.x, ctrlpos.y);
+																	ctrlpos.x += (int)(100.0f * rate);
+																	ctrlpos.y += (25 / 2);
+																}
+																break;
+																case DXUT_CONTROL_EDITBOX:
+																case DXUT_CONTROL_IMEEDITBOX:
+																case DXUT_CONTROL_LISTBOX:
+																case DXUT_CONTROL_SCROLLBAR:
+																	break;
+																}
+																ClientToScreen(s_3dwnd, &ctrlpos);
+																::SetCursorPos(ctrlpos.x, ctrlpos.y);
 
-									}
-									break;
+															}
+															break;
 
-								case SPGUISW_VSYNC_AND_REFPOS:
-									if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize3) && s_dsutgui3[s_curdsutguino]) {
-										//s_dsutgui3[s_curdsutguino]->SetTextColor(0xFF0000FF);
-										//s_dsutgui3[s_curdsutguino]->OnFocusIn();
-										POINT ctrlpos;
-										s_dsutgui3[s_curdsutguino]->GetLocation(&ctrlpos);
-										UINT type = s_dsutgui3[s_curdsutguino]->GetType();
-										switch (type) {
-										case DXUT_CONTROL_CHECKBOX:
-										case DXUT_CONTROL_RADIOBUTTON:
-											ctrlpos.x += 6;
-											ctrlpos.y += 6;
-											break;
-										case DXUT_CONTROL_BUTTON:
-										case DXUT_CONTROL_COMBOBOX:
-											ctrlpos.x += (100 / 2);
-											ctrlpos.y += (25 / 2);
-											break;
-										case DXUT_CONTROL_STATIC:
-											break;
+														case SPGUISW_VSYNC_AND_REFPOS:
+															if ((s_curdsutguino >= 0) && (s_curdsutguino < guisize3) && s_dsutgui3[s_curdsutguino]) {
+																//s_dsutgui3[s_curdsutguino]->SetTextColor(0xFF0000FF);
+																//s_dsutgui3[s_curdsutguino]->OnFocusIn();
+																POINT ctrlpos;
+																s_dsutgui3[s_curdsutguino]->GetLocation(&ctrlpos);
+																UINT type = s_dsutgui3[s_curdsutguino]->GetType();
+																switch (type) {
+																case DXUT_CONTROL_CHECKBOX:
+																case DXUT_CONTROL_RADIOBUTTON:
+																	ctrlpos.x += 6;
+																	ctrlpos.y += 6;
+																	break;
+																case DXUT_CONTROL_BUTTON:
+																case DXUT_CONTROL_COMBOBOX:
+																	ctrlpos.x += (100 / 2);
+																	ctrlpos.y += (25 / 2);
+																	break;
+																case DXUT_CONTROL_STATIC:
+																	break;
 
-										case DXUT_CONTROL_SLIDER:
-										{
-											int slmin = 0;
-											int slmax = 0;
-											int slvalue = 0;
-											((CDXUTSlider*)s_dsutgui3[s_curdsutguino])->GetRange(slmin, slmax);
-											slvalue = ((CDXUTSlider*)s_dsutgui3[s_curdsutguino])->GetValue();
-											float rate = 0.0f;
-											int length = slmax - slmin;
-											if (length != 0) {
-												rate = (float)(slvalue - slmin) / (float)length;
-											}
-											else {
-												rate = 0.0f;
-											}
+																case DXUT_CONTROL_SLIDER:
+																{
+																	int slmin = 0;
+																	int slmax = 0;
+																	int slvalue = 0;
+																	((CDXUTSlider*)s_dsutgui3[s_curdsutguino])->GetRange(slmin, slmax);
+																	slvalue = ((CDXUTSlider*)s_dsutgui3[s_curdsutguino])->GetValue();
+																	float rate = 0.0f;
+																	int length = slmax - slmin;
+																	if (length != 0) {
+																		rate = (float)(slvalue - slmin) / (float)length;
+																	}
+																	else {
+																		rate = 0.0f;
+																	}
 
-											ctrlpos.x += (int)(100.0f * rate);
-											ctrlpos.y += (25 / 2);
-										}
-										break;
-										case DXUT_CONTROL_EDITBOX:
-										case DXUT_CONTROL_IMEEDITBOX:
-										case DXUT_CONTROL_LISTBOX:
-										case DXUT_CONTROL_SCROLLBAR:
-											break;
-										}
-										ClientToScreen(s_3dwnd, &ctrlpos);
-										::SetCursorPos(ctrlpos.x, ctrlpos.y);
+																	ctrlpos.x += (int)(100.0f * rate);
+																	ctrlpos.y += (25 / 2);
+																}
+																break;
+																case DXUT_CONTROL_EDITBOX:
+																case DXUT_CONTROL_IMEEDITBOX:
+																case DXUT_CONTROL_LISTBOX:
+																case DXUT_CONTROL_SCROLLBAR:
+																	break;
+																}
+																ClientToScreen(s_3dwnd, &ctrlpos);
+																::SetCursorPos(ctrlpos.x, ctrlpos.y);
 
-									}
-									break;
+															}
+															break;
 
 
-								default:
-									break;
-								}
-							}
+														default:
+															break;
+														}
+													}
 
-							//if (s_owpTimeline) {
-							//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
-							//}
-							//ChangeCurrentBone();
-						}
-*/
+													//if (s_owpTimeline) {
+													//	s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+													//}
+													//ChangeCurrentBone();
+												}
+						*/
 					}
 				}
 			}
@@ -32468,7 +32789,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 								if (s_anglelimitdlg && IsWindow(s_anglelimitdlg) &&
 									(s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && (s_dseullimitctrls[s_curdseullimitctrlno])) {
 
-								
+
 									POINT ctrlpos;
 
 									HWND ctrlwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
@@ -32479,7 +32800,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 											ctrlpos.x = ctrlrect.left + 175;
 											ctrlpos.y = ctrlrect.top + 20 / 2;
 										}
-										else if(s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)){
+										else if (s_curdseullimitctrlno == (s_dseullimitctrls.size() - 1)) {
 											ctrlpos.x = ctrlrect.left + 100 / 2;
 											ctrlpos.y = ctrlrect.top + 20 / 2;
 										}
@@ -33414,7 +33735,7 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 
 								//s_dsutgui0[s_curdsutguino]->GetLocation(&ctrlpos);
 								//UINT type = s_dsutgui0[s_curdsutguino]->GetType();
-								if (s_rigidWnd && IsWindow(s_rigidWnd->getHWnd()) && 
+								if (s_rigidWnd && IsWindow(s_rigidWnd->getHWnd()) &&
 									(s_curdsrigidctrlno >= 0) && (s_curdsrigidctrlno < s_dsrigidctrls.size()) && (s_dsrigidctrls[s_curdsrigidctrlno])) {
 
 									bool isslider;
@@ -34077,55 +34398,55 @@ void DSAxisLSelectingPopupMenu()
 		currentsubmenuitemid = submenuitemnum - 1;//ring
 	}
 
-/*
-typedef struct tagMENUITEMINFO {
-	UINT    cbSize;
-	UINT    fMask;
-	UINT    fType;
-	UINT    fState;
-	UINT    wID;
-	HMENU   hSubMenu;
-	HBITMAP hbmpChecked;
-	HBITMAP hbmpUnchecked;
-	DWORD   dwItemData;
-	LPTSTR  dwTypeData;
-	UINT    cch;
-} MENUITEMINFO, FAR* LPMENUITEMINFO;
-cbSize は、この構造体のサイズをバイト単位
+	/*
+	typedef struct tagMENUITEMINFO {
+		UINT    cbSize;
+		UINT    fMask;
+		UINT    fType;
+		UINT    fState;
+		UINT    wID;
+		HMENU   hSubMenu;
+		HBITMAP hbmpChecked;
+		HBITMAP hbmpUnchecked;
+		DWORD   dwItemData;
+		LPTSTR  dwTypeData;
+		UINT    cch;
+	} MENUITEMINFO, FAR* LPMENUITEMINFO;
+	cbSize は、この構造体のサイズをバイト単位
 
 
-fState は、メニュー項目の状態を表す定数を組み合わせて指定します
-定数は、次のものを指定できます
-定数	解説
-MFS_CHECKED	項目をチェックする
-MFS_DEFAULT	項目はデフォルトである
-MFS_DISABLED	項目を無効状態にする
-MFS_ENABLED	項目を有効状態にする（デフォルト）
-MFS_GRAYED	項目をグレー状態にする
-MFS_HILITE	項目をハイライト状態にする//#################
-MFS_UNCHECKED	項目のチェックを外す
-MFS_UNHILITE	項目のハイライトを削除する
+	fState は、メニュー項目の状態を表す定数を組み合わせて指定します
+	定数は、次のものを指定できます
+	定数	解説
+	MFS_CHECKED	項目をチェックする
+	MFS_DEFAULT	項目はデフォルトである
+	MFS_DISABLED	項目を無効状態にする
+	MFS_ENABLED	項目を有効状態にする（デフォルト）
+	MFS_GRAYED	項目をグレー状態にする
+	MFS_HILITE	項目をハイライト状態にする//#################
+	MFS_UNCHECKED	項目のチェックを外す
+	MFS_UNHILITE	項目のハイライトを削除する
 
-fByPosition が TRUE ならば uItem はインデックスだと判断し
-FALSE ならば、uItem がメニューアイテムの ID であると判断されます
+	fByPosition が TRUE ならば uItem はインデックスだと判断し
+	FALSE ならば、uItem がメニューアイテムの ID であると判断されます
 
-BOOL SetMenuItemInfo(
-	HMENU hMenu , UINT uItem ,
-	BOOL fByPosition , LPMENUITEMINFO lpmii
-);
+	BOOL SetMenuItemInfo(
+		HMENU hMenu , UINT uItem ,
+		BOOL fByPosition , LPMENUITEMINFO lpmii
+	);
 
-BOOL GetMenuItemInfo(
-	HMENU hMenu , UINT uItem ,
-	BOOL fByPosition , LPMENUITEMINFO lpmii
-);
+	BOOL GetMenuItemInfo(
+		HMENU hMenu , UINT uItem ,
+		BOOL fByPosition , LPMENUITEMINFO lpmii
+	);
 
-UINT GetMenuState(
-  HMENU hMenu,
-  UINT  uId,
-  UINT  uFlags
-);
-*/
-	
+	UINT GetMenuState(
+	  HMENU hMenu,
+	  UINT  uId,
+	  UINT  uFlags
+	);
+	*/
+
 	//if (changeflag == true) {
 	//	if (g_undertrackingRMenu == 1) {
 	//		MENUITEMINFO menuiteminfo;
@@ -34303,205 +34624,205 @@ void DSAxisLMouseMove()
 	accelbothflag = accelaxis1 && accelaxis2;
 
 	//if (g_undertrackingRMenu == 0) {
-		bool changeflag = false;
+	bool changeflag = false;
 
-		float deltascale = 1.0f;
-		int deltax = 0;
-		int deltay = 0;
-		if (accelbothflag) {
-			deltascale = 10.0f;
-		}
-		else if (accelflag) {
-			deltascale = 4.0f;
-		}
-		else {
-			deltascale = 1.5f;
-		}
-
-
-
-		if (axisX != 0.0f) {
-			deltax = (int)(axisX * deltascale);
-			changeflag = true;
-		}
-		if (axisY != 0.0f) {
-			deltay = (int)(axisY * deltascale);
-			changeflag = true;
-		}
-
-
-		//if (upbutton >= 1) {
-		//	deltay = -deltascale;
-		//	changeflag = true;
-		//}
-		//if (downbutton >= 1) {
-		//	deltay = deltascale;
-		//	changeflag = true;
-		//}
-		//if (leftbutton >= 1) {
-		//	deltax = -deltascale;
-		//	changeflag = true;
-		//}
-		//if (rightbutton >= 1) {
-		//	deltax = deltascale;
-		//	changeflag = true;
-		//}
-
-
-		if (changeflag == true) {
-			LPARAM lparam;
-			lparam = (cursorpos.y << 16) | cursorpos.x;
-
-
-			HWND desktopwnd;
-			desktopwnd = ::GetDesktopWindow();
-			if (desktopwnd) {
-				RECT desktoprect;
-				//::GetClientRect(desktopwnd, &desktoprect);
-				::GetWindowRect(desktopwnd, &desktoprect);
-				::ClipCursor(&desktoprect);
-
-				//WM_MENUSELECT
-				//MF_MOUSESELECT(上位)
-				//下位はメニューID
-				//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 40026;
-				//WPARAM wparam = (MF_SYSMENU << 16) | 40026;
-				//WPARAM wparam = (MF_SYSMENU << 16) | 2;
-				//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 3;
-
-				//HMENU motmenu = GetSubMenu(s_mainmenu, 2);
-				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)motmenu);
-				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)s_mainmenu);
-				//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)40026);
-
-				
-				
-				//::SetCursorPos(cursorpos.x, cursorpos.y);
-				
-				::SetCursorPos(cursorpos.x + deltax, cursorpos.y + deltay);				
+	float deltascale = 1.0f;
+	int deltax = 0;
+	int deltay = 0;
+	if (accelbothflag) {
+		deltascale = 10.0f;
+	}
+	else if (accelflag) {
+		deltascale = 4.0f;
+	}
+	else {
+		deltascale = 1.5f;
+	}
 
 
 
-				//::SendMessage(s_mainhwnd, WM_KEYDOWN, VK_DOWN, 0);
+	if (axisX != 0.0f) {
+		deltax = (int)(axisX * deltascale);
+		changeflag = true;
+	}
+	if (axisY != 0.0f) {
+		deltay = (int)(axisY * deltascale);
+		changeflag = true;
+	}
 
 
-				//const double ScaleX = 0xffff / GetSystemMetrics(SM_CXSCREEN);
-				//const double ScaleY = 0xffff / GetSystemMetrics(SM_CYSCREEN);
-				//const double ScaleX = (double)0xffff / (double)GetSystemMetrics(SM_CXSCREEN);
-				//const double ScaleY = (double)0xffff / (double)GetSystemMetrics(SM_CYSCREEN);
-				//const double ScaleX = (double)0xffff / (double)(desktoprect.right - desktoprect.left);
-				//const double ScaleY = (double)0xffff / (double)(desktoprect.bottom - desktoprect.top);
+	//if (upbutton >= 1) {
+	//	deltay = -deltascale;
+	//	changeflag = true;
+	//}
+	//if (downbutton >= 1) {
+	//	deltay = deltascale;
+	//	changeflag = true;
+	//}
+	//if (leftbutton >= 1) {
+	//	deltax = -deltascale;
+	//	changeflag = true;
+	//}
+	//if (rightbutton >= 1) {
+	//	deltax = deltascale;
+	//	changeflag = true;
+	//}
+
+
+	if (changeflag == true) {
+		LPARAM lparam;
+		lparam = (cursorpos.y << 16) | cursorpos.x;
+
+
+		HWND desktopwnd;
+		desktopwnd = ::GetDesktopWindow();
+		if (desktopwnd) {
+			RECT desktoprect;
+			//::GetClientRect(desktopwnd, &desktoprect);
+			::GetWindowRect(desktopwnd, &desktoprect);
+			::ClipCursor(&desktoprect);
+
+			//WM_MENUSELECT
+			//MF_MOUSESELECT(上位)
+			//下位はメニューID
+			//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 40026;
+			//WPARAM wparam = (MF_SYSMENU << 16) | 40026;
+			//WPARAM wparam = (MF_SYSMENU << 16) | 2;
+			//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 3;
+
+			//HMENU motmenu = GetSubMenu(s_mainmenu, 2);
+			//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)motmenu);
+			//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)s_mainmenu);
+			//::SendMessage(s_mainhwnd, WM_MENUSELECT, wparam, (LPARAM)40026);
 
 
 
-				//WM_MOUSEMOVEはカメラ操作時などのときに画面が	MB3D_WND_3Dでドラッグする場合に必要
-				if (s_3dwnd) {
-					POINT client3dpoint;
-					client3dpoint = cursorpos;
-					::ScreenToClient(s_3dwnd, &client3dpoint);
-					LPARAM threelparam;
-					threelparam = (client3dpoint.y << 16) | client3dpoint.x;
-					::SendMessage(s_3dwnd, WM_MOUSEMOVE, 0, threelparam);
-				}
-				if (s_mainhwnd) {
-					POINT clientpoint;
-					clientpoint = cursorpos;
-					::ScreenToClient(s_mainhwnd, &clientpoint);
-					LPARAM mainlparam;
-					mainlparam = (clientpoint.y << 16) | clientpoint.x;
-					::SendMessage(s_mainhwnd, WM_MOUSEMOVE, 0, mainlparam);
-				}
-				HWND dlghwnd;
-				dlghwnd = g_SampleUI.GetHWnd();
-				if (dlghwnd) {
-					POINT clientpoint;
-					clientpoint = cursorpos;
-					::ScreenToClient(dlghwnd, &clientpoint);
-					LPARAM dlglparam;
-					dlglparam = (clientpoint.y << 16) | clientpoint.x;
-					::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
-				}
+			//::SetCursorPos(cursorpos.x, cursorpos.y);
+
+			::SetCursorPos(cursorpos.x + deltax, cursorpos.y + deltay);
 
 
-				//dialog ctrlのドラッグは　enter buttonを押している間だけ
-				if (s_dspushedOK >= 1) {
-					HWND ctrlwnd = GetOFWnd(cursorpos);
-					if (ctrlwnd) {
-						WCHAR wclassname[MAX_PATH] = { 0L };
-						::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
-						//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
-						if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
-							//Slider
-							RECT sliderloc;
-							::GetWindowRect(ctrlwnd, &sliderloc);
-							POINT cappoint = cursorpos;
-							::ScreenToClient(ctrlwnd, &cappoint);
 
-							float rangemin;
-							float rangemax;
-							rangemin = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMIN, 0, 0);
-							rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
-							
-							float thumblength;
-							thumblength = (float)::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+			//::SendMessage(s_mainhwnd, WM_KEYDOWN, VK_DOWN, 0);
 
-							//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
-							int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
 
-							::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
-							::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
-						}
-						//else if (wcsstr(wclassname, L"ListBox") != 0) {
-						else{
-							POINT clientpoint;
-							clientpoint = cursorpos;
-							::ScreenToClient(ctrlwnd, &clientpoint);
-							LPARAM dlglparam;
-							dlglparam = (clientpoint.y << 16) | clientpoint.x;
-							::SendMessage(ctrlwnd, WM_MOUSEMOVE, 0, dlglparam);
-							
-						}
-					}
-					else if (s_getfilenamehwnd) {
+			//const double ScaleX = 0xffff / GetSystemMetrics(SM_CXSCREEN);
+			//const double ScaleY = 0xffff / GetSystemMetrics(SM_CYSCREEN);
+			//const double ScaleX = (double)0xffff / (double)GetSystemMetrics(SM_CXSCREEN);
+			//const double ScaleY = (double)0xffff / (double)GetSystemMetrics(SM_CYSCREEN);
+			//const double ScaleX = (double)0xffff / (double)(desktoprect.right - desktoprect.left);
+			//const double ScaleY = (double)0xffff / (double)(desktoprect.bottom - desktoprect.top);
 
-						//###############################################################################################################################################
-						// GetOpenFileNameのダイアログの２つあるリストボックスの垂直スクロールバー(スクロールバーはFindWindowExで取得できず。EnumChildProcでもクライアントエリア内に入らなかった)
-						//###############################################################################################################################################
 
-						//ctrlwnd == 0
-						//scrollwnd = FindWindowEx(s_getfilenamehwnd, 0, L"ScrollBar", 0);//   scrollwnd == 0
-						//s_ofhwnd = 0;
-						s_enumdist.clear();
-						::EnumChildWindows(s_getfilenamehwnd, EnumTreeViewProc, (LPARAM)&ctrlwnd);
-						//ctrlwnd = GetNearestEnumDist();
-						std::vector<ENUMDIST>::iterator itrenumdist;
-						for (itrenumdist = s_enumdist.begin(); itrenumdist != s_enumdist.end(); itrenumdist++) {
-							HWND listboxwnd = itrenumdist->hwnd;
 
-							//POINT clientpoint;
-							//clientpoint = cursorpos;
-							//::ScreenToClient(listboxwnd, &clientpoint);
-							//LPARAM dlglparam;
-							//dlglparam = (clientpoint.y << 16) | clientpoint.x;
-							//::SendMessage(listboxwnd, WM_VSCROLL, SB_THUMBTRACK, (LPARAM)dlglparam);
-
-							if (deltay > 0) {
-								::SendMessage(listboxwnd, WM_VSCROLL, SB_LINEDOWN, (LPARAM)0);
-							}
-							else if (deltay < 0) {
-								::SendMessage(listboxwnd, WM_VSCROLL, SB_LINEUP, (LPARAM)0);
-							}
-						}
-
-					}
-				}
-
-				
-
-				//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
+			//WM_MOUSEMOVEはカメラ操作時などのときに画面が	MB3D_WND_3Dでドラッグする場合に必要
+			if (s_3dwnd) {
+				POINT client3dpoint;
+				client3dpoint = cursorpos;
+				::ScreenToClient(s_3dwnd, &client3dpoint);
+				LPARAM threelparam;
+				threelparam = (client3dpoint.y << 16) | client3dpoint.x;
+				::SendMessage(s_3dwnd, WM_MOUSEMOVE, 0, threelparam);
 			}
+			if (s_mainhwnd) {
+				POINT clientpoint;
+				clientpoint = cursorpos;
+				::ScreenToClient(s_mainhwnd, &clientpoint);
+				LPARAM mainlparam;
+				mainlparam = (clientpoint.y << 16) | clientpoint.x;
+				::SendMessage(s_mainhwnd, WM_MOUSEMOVE, 0, mainlparam);
+			}
+			HWND dlghwnd;
+			dlghwnd = g_SampleUI.GetHWnd();
+			if (dlghwnd) {
+				POINT clientpoint;
+				clientpoint = cursorpos;
+				::ScreenToClient(dlghwnd, &clientpoint);
+				LPARAM dlglparam;
+				dlglparam = (clientpoint.y << 16) | clientpoint.x;
+				::SendMessage(dlghwnd, WM_MOUSEMOVE, 0, dlglparam);
+			}
+
+
+			//dialog ctrlのドラッグは　enter buttonを押している間だけ
+			if (s_dspushedOK >= 1) {
+				HWND ctrlwnd = GetOFWnd(cursorpos);
+				if (ctrlwnd) {
+					WCHAR wclassname[MAX_PATH] = { 0L };
+					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
+					//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
+					if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
+						//Slider
+						RECT sliderloc;
+						::GetWindowRect(ctrlwnd, &sliderloc);
+						POINT cappoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &cappoint);
+
+						float rangemin;
+						float rangemax;
+						rangemin = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMIN, 0, 0);
+						rangemax = (float)::SendMessage(ctrlwnd, TBM_GETRANGEMAX, 0, 0);
+
+						float thumblength;
+						thumblength = (float)::SendMessage(ctrlwnd, TBM_GETTHUMBLENGTH, 0, 0);
+
+						//int sliderpos = (int)((float)(cappoint.x - 12 - 274 / 2) / 274.0f * 360.0f);
+						int sliderpos = (int)((float)(cappoint.x - thumblength / 2.0f) / (float)(sliderloc.right - sliderloc.left - thumblength) * (float)(rangemax - rangemin) + rangemin);
+
+						::SendMessage(ctrlwnd, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+						::SendMessage(s_ofhwnd, WM_HSCROLL, 0, (LPARAM)ctrlwnd);
+					}
+					//else if (wcsstr(wclassname, L"ListBox") != 0) {
+					else {
+						POINT clientpoint;
+						clientpoint = cursorpos;
+						::ScreenToClient(ctrlwnd, &clientpoint);
+						LPARAM dlglparam;
+						dlglparam = (clientpoint.y << 16) | clientpoint.x;
+						::SendMessage(ctrlwnd, WM_MOUSEMOVE, 0, dlglparam);
+
+					}
+				}
+				else if (s_getfilenamehwnd) {
+
+					//###############################################################################################################################################
+					// GetOpenFileNameのダイアログの２つあるリストボックスの垂直スクロールバー(スクロールバーはFindWindowExで取得できず。EnumChildProcでもクライアントエリア内に入らなかった)
+					//###############################################################################################################################################
+
+					//ctrlwnd == 0
+					//scrollwnd = FindWindowEx(s_getfilenamehwnd, 0, L"ScrollBar", 0);//   scrollwnd == 0
+					//s_ofhwnd = 0;
+					s_enumdist.clear();
+					::EnumChildWindows(s_getfilenamehwnd, EnumTreeViewProc, (LPARAM)&ctrlwnd);
+					//ctrlwnd = GetNearestEnumDist();
+					std::vector<ENUMDIST>::iterator itrenumdist;
+					for (itrenumdist = s_enumdist.begin(); itrenumdist != s_enumdist.end(); itrenumdist++) {
+						HWND listboxwnd = itrenumdist->hwnd;
+
+						//POINT clientpoint;
+						//clientpoint = cursorpos;
+						//::ScreenToClient(listboxwnd, &clientpoint);
+						//LPARAM dlglparam;
+						//dlglparam = (clientpoint.y << 16) | clientpoint.x;
+						//::SendMessage(listboxwnd, WM_VSCROLL, SB_THUMBTRACK, (LPARAM)dlglparam);
+
+						if (deltay > 0) {
+							::SendMessage(listboxwnd, WM_VSCROLL, SB_LINEDOWN, (LPARAM)0);
+						}
+						else if (deltay < 0) {
+							::SendMessage(listboxwnd, WM_VSCROLL, SB_LINEUP, (LPARAM)0);
+						}
+					}
+
+				}
+			}
+
+
+
+			//::SendMessage(desktopwnd, WM_MOUSEMOVE, 0, (LPARAM)lparam);
 		}
-	
+	}
+
 }
 
 void DSL3R3ButtonMouseHere()
@@ -34550,7 +34871,7 @@ void DSL3R3ButtonMouseHere()
 		if (s_gpWnd && s_gpWnd->getVisible()) {
 			s_gpWnd->callRewrite();
 		}
-		if (s_dmpanimWnd && s_dmpanimWnd->getVisible()){
+		if (s_dmpanimWnd && s_dmpanimWnd->getVisible()) {
 			s_dmpanimWnd->callRewrite();
 		}
 		if (s_convboneWnd && s_convboneWnd->getVisible()) {
@@ -34591,52 +34912,52 @@ void OnDSMouseHereApeal()
 	static int s_mouseheredir = 0;
 
 	//if (g_dsmousewait >= 1) {
-		POINT cursorpos;
-		::GetCursorPos(&cursorpos);
-		::ScreenToClient(s_3dwnd, &cursorpos);
+	POINT cursorpos;
+	::GetCursorPos(&cursorpos);
+	::ScreenToClient(s_3dwnd, &cursorpos);
+	if (s_spmousehere.sprite) {
+
+		float spawidth = 52.0f;
+		int spashift = 50;
+
+		s_spmousehere.dispcenter.x = cursorpos.x + 52 / 2;
+		s_spmousehere.dispcenter.y = cursorpos.y + 50 / 2;
+
+
+		ChaVector3 disppos;
+		disppos.x = (float)(s_spmousehere.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spmousehere.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.z = 0.0f;
+		ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
 		if (s_spmousehere.sprite) {
+			CallF(s_spmousehere.sprite->SetPos(disppos), return);
+			CallF(s_spmousehere.sprite->SetSize(dispsize), return);
 
-			float spawidth = 52.0f;
-			int spashift = 50;
-
-			s_spmousehere.dispcenter.x = cursorpos.x + 52 / 2;
-			s_spmousehere.dispcenter.y = cursorpos.y + 50 / 2;
-
-			
-			ChaVector3 disppos;
-			disppos.x = (float)(s_spmousehere.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
-			disppos.y = -((float)(s_spmousehere.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
-			disppos.z = 0.0f;
-			ChaVector2 dispsize = ChaVector2(spawidth / (float)s_mainwidth * 2.0f, spawidth / (float)s_mainheight * 2.0f);
-			if (s_spmousehere.sprite) {
-				CallF(s_spmousehere.sprite->SetPos(disppos), return);
-				CallF(s_spmousehere.sprite->SetSize(dispsize), return);
-
-				if (s_mouseheredir == 0) {
-					s_mousehereval += 0.08f;
-				}
-				else if (s_mouseheredir == 1) {
-					s_mousehereval -= 0.08f;
-				}
-
-				if (s_mousehereval >= 1.0f) {
-					s_mousehereval = 1.0;
-					s_mouseheredir = 1;
-				}
-				else if (s_mousehereval <= 0.0f) {
-					s_mousehereval = 0.0f;
-					s_mouseheredir = 0;
-				}
-				g_mouseherealpha = s_mousehereval * s_mousehereval;
-
-				ChaVector4 spritecol = ChaVector4(1.0f, 1.0f, 1.0f, g_mouseherealpha);
-				CallF(s_spmousehere.sprite->SetColor(spritecol), return);
+			if (s_mouseheredir == 0) {
+				s_mousehereval += 0.08f;
 			}
-			else {
-				_ASSERT(0);
+			else if (s_mouseheredir == 1) {
+				s_mousehereval -= 0.08f;
 			}
 
+			if (s_mousehereval >= 1.0f) {
+				s_mousehereval = 1.0;
+				s_mouseheredir = 1;
+			}
+			else if (s_mousehereval <= 0.0f) {
+				s_mousehereval = 0.0f;
+				s_mouseheredir = 0;
+			}
+			g_mouseherealpha = s_mousehereval * s_mousehereval;
+
+			ChaVector4 spritecol = ChaVector4(1.0f, 1.0f, 1.0f, g_mouseherealpha);
+			CallF(s_spmousehere.sprite->SetColor(spritecol), return);
 		}
+		else {
+			_ASSERT(0);
+		}
+
+	}
 	//}
 }
 
@@ -34925,8 +35246,8 @@ void DSOButtonSelectedPopupMenu()
 				//if (commandsubmenunum == 1) {
 					//メニュー項目が１つだけの場合にはポップアップを解除してからWM_COMMANDを呼んでみる
 					//TrackPopupMenuの前でSetForegrandWindow(s_mainhwnd)をしている場合に次の関数でpopupを閉じることが出来る。
-					PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
-					PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+				PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+				PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 				//}
 
 				int commandmenuid;
@@ -34935,8 +35256,8 @@ void DSOButtonSelectedPopupMenu()
 				//wparam = (selectedsubmenuitemno << 16) | selectedmenuid;
 				//wparam = (commandsubmenuno << 16) | commandmenuid;
 				wparam = commandmenuid;
-				
-				
+
+
 				//LPARAM lparam;
 				////lparam = (LPARAM)s_mainmenu;
 				//lparam = (LPARAM)commandsubmenu;
@@ -34976,7 +35297,7 @@ void DSOButtonSelectedPopupMenu()
 
 						int ctrlid;
 						ctrlid = GetDlgCtrlID(ctrlwnd);
-						
+
 						//::SendMessage(s_getfilenametreeview, WM_COMMAND, wparam, (LPARAM)ctrlwnd);
 
 						POINT dlgpoint;
@@ -35006,7 +35327,7 @@ void DSOButtonSelectedPopupMenu()
 						SendMessage(ctrlwnd, BM_CLICK, 0, 0);
 						//SendMessage(ctrlwnd, BM_CLICK, 0, 0);
 
-						
+
 						WCHAR ctrlclassname[MAX_PATH] = { 0L };
 						GetClassName(ctrlwnd, ctrlclassname, MAX_PATH);
 						if (wcsstr(L"ListBox", ctrlclassname) != 0) {
@@ -35043,8 +35364,8 @@ void DSOButtonSelectedPopupMenu()
 								//if (findindex == 0) {
 								//	::PostMessage(ctrlwnd, WM_KEYDOWN, VK_RETURN, 0);
 								//}
-								 
-								
+
+
 
 								//ディレクトリ指定用のListBoxのときにはエンターキーを押して展開表示する。
 								RECT ctrlrect;
@@ -35067,10 +35388,10 @@ void DSOButtonSelectedPopupMenu()
 
 								//SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
 								//SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)TRUE, (LPARAM)hitindex);
-								
-								
-								
-								
+
+
+
+
 								//SendMessage(ctrlwnd, LB_SETCURSEL, (WPARAM)hitindex, (LPARAM)0);
 
 								//::SendMessage(ctrlwnd, WM_LBUTTONDBLCLK, MK_LBUTTON, dlglparam2);//!!!!!!!!!
@@ -35096,7 +35417,7 @@ void DSOButtonSelectedPopupMenu()
 								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)TRUE, (LPARAM)hitindex);
 								//}
 
-								
+
 								//DWORD itemstate = ListView_GetItemState(ctrlwnd, hitindex, LVIS_SELECTED | LVIS_FOCUSED);
 								//if ((itemstate & LVIS_SELECTED) != 0) {
 								//	//ListView_SetItemState(ctrlwnd, hitindex, 0, LVIS_SELECTED);
@@ -35111,9 +35432,9 @@ void DSOButtonSelectedPopupMenu()
 							}
 						}
 						else if ((wcsstr(L"TreeView", ctrlclassname) != 0) || (wcsstr(L"SysTreeView32", ctrlclassname) != 0)) {
-						//for SHGetSpecialFolderLocation
-						//select : click text
-						//expand tree : click triangleMark
+							//for SHGetSpecialFolderLocation
+							//select : click text
+							//expand tree : click triangleMark
 
 							POINT tvpoint;
 							tvpoint = cursorpos;
@@ -35158,7 +35479,7 @@ void DSOButtonSelectedPopupMenu()
 						//	ListView_GetItem(hList, &item);
 						//	DSMessageBox(s_3dwnd, buf, L"選択したデータ", MB_OK);
 						//}
-						
+
 
 
 						//dHWND treeviewhwnd = 0;
@@ -35290,8 +35611,8 @@ void DSOButtonSelectedPopupMenu()
 					//::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
 					::SendMessage(ctrlwnd, WM_LBUTTONDOWN, MK_LBUTTON, dlglparam2);
 				}
-			
-		
+
+
 
 
 
@@ -35538,7 +35859,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 		&& (mousepoint.y >= ctrlrect.top) && (mousepoint.y <= ctrlrect.bottom)) {
 		//if ((mousepoint.x >= 0) && (mousepoint.x <= (ctrlrect.right - ctrlrect.left))
 		//	&& (mousepoint.y >= 0) && (mousepoint.y <= (ctrlrect.bottom - ctrlrect.top))) {
-		
+
 		//#################################################################################################################################################
 		//groupboxのclassnameもButton。groupboxの中のコントロールを押すためには距離で判定する必要があった。マウス位置に一番近いコントロールを探すための情報をs_enumdistにpush_back
 		//#################################################################################################################################################
@@ -35624,7 +35945,7 @@ BOOL CALLBACK EnumIDOKProc(HWND hwnd, LPARAM lParam)
 	WCHAR wintext[MAX_PATH] = { 0L };
 	::GetWindowText(hwnd, wintext, MAX_PATH);
 
-	if(wcscmp(L"OK", wintext) == 0){
+	if (wcscmp(L"OK", wintext) == 0) {
 		*rethwnd = hwnd;
 		return FALSE;//探索終了
 	}
@@ -35708,7 +36029,8 @@ HWND GetOFWnd(POINT srcpoint)
 			s_ofhwnd = s_getfilenamehwnd;
 			return retctrlwnd;
 		}
-	}else if (!retctrlwnd && s_mqodlghwnd) {
+	}
+	else if (!retctrlwnd && s_mqodlghwnd) {
 		::EnumChildWindows(s_mqodlghwnd, EnumChildProc, (LPARAM)&retctrlwnd);
 		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
@@ -35917,7 +36239,7 @@ void DSAimBarOK()
 				HWND ctrlwnd;
 				ctrlwnd = GetOFWnd(cursorpos);
 				if (ctrlwnd) {
-					
+
 					WCHAR wclassname[MAX_PATH] = { 0L };
 					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
 					//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
@@ -35973,7 +36295,7 @@ void DSAimBarOK()
 					if (s_dispmodel && s_modelpanel.panel && s_modelpanel.panel->getHWnd()) {
 						RECT panelrect;
 						GetWindowRect(s_modelpanel.panel->getHWnd(), &panelrect);
-						if ((cursorpos.x >= panelrect.left) && (cursorpos.x <= panelrect.right) && 
+						if ((cursorpos.x >= panelrect.left) && (cursorpos.x <= panelrect.right) &&
 							(cursorpos.y >= panelrect.top) && (cursorpos.y <= panelrect.bottom)) {
 							POINT cappoint;
 							cappoint = cursorpos;
@@ -35985,7 +36307,7 @@ void DSAimBarOK()
 							doneflag1 = true;
 						}
 					}
-					if(!doneflag1){
+					if (!doneflag1) {
 						if (s_dispobj && s_layerWnd && s_layerWnd->getHWnd()) {
 							RECT panelrect;
 							GetWindowRect(s_layerWnd->getHWnd(), &panelrect);
@@ -36053,8 +36375,8 @@ void DSAimBarOK()
 					::GetClassNameW(ctrlwnd, wclassname, MAX_PATH);
 					//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 					if (wcscmp(L"ComboBox", wclassname) == 0) {
-					//	//COMBOBOX
-					//	::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);//DOWNのときに処理する
+						//	//COMBOBOX
+						//	::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);//DOWNのときに処理する
 					}
 					else if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
 						//Slider
@@ -36132,7 +36454,7 @@ void DSAimBarOK()
 
 				}
 			}
-			else{
+			else {
 
 				bool doneflag1 = false;
 				if (s_dispmodel && s_modelpanel.panel && s_modelpanel.panel->getHWnd()) {
@@ -36392,114 +36714,114 @@ void ChangeMouseSetCapture()
 	//}
 	//if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0) || (g_undertrackingRMenu == 0)) {
 	//else if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0)) {
-	
+
 
 	if (dragbuttondown >= 1) {//〇ボタンを押したときにキャプチャーオン
 
 		//if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1)) {//常にではなく、〇ボタンを押したときだけ処理。同じウインドウでも必要なことがある。
-			switch (nextcapwndid) {
-			case 0:
-				if (s_mainhwnd) {
-					if (s_mainhwnd) {
-						SetCapture(s_mainhwnd);
-					}
-				}
-				break;
-
-			case 1:
-				if (s_3dwnd) {
-					//SetCapture(s_3dwnd);
-					HWND dlghwnd;
-					dlghwnd = g_SampleUI.GetHWnd();
-					if (dlghwnd) {
-						SetCapture(dlghwnd);
-					}
-				}
-				break;
-			case 2:
-				if (s_timelineWnd) {
-					SetCapture(s_timelineWnd->getHWnd());
-				}
-				break;
-			case 3:
-				if (s_toolWnd) {
-					SetCapture(s_toolWnd->getHWnd());
-				}
-				break;
-			case 4:
-				if (s_LtimelineWnd) {
-					SetCapture(s_LtimelineWnd->getHWnd());
-				}
-				break;
-			case 5:
-				if (s_sidemenuWnd) {
-					SetCapture(s_sidemenuWnd->getHWnd());
-				}
-				break;
-			case 6:
-				//plate menuで場合分け必要
-				if (s_platemenukind == SPPLATEMENUKIND_GUI) {
-					if (s_mainhwnd) {
-						SetCapture(s_mainhwnd);
-					}
-				}
-				else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
-					if (s_platemenuno == (SPRIGIDTSW_RIGIDPARAMS + 1)) {
-						if (s_rigidWnd) {
-							SetCapture(s_rigidWnd->getHWnd());
-						}
-					}
-					else if (s_platemenuno == (SPRIGIDSW_IMPULSE + 1)) {
-						if (s_impWnd) {
-							SetCapture(s_impWnd->getHWnd());
-						}
-					}
-					else if (s_platemenuno == (SPRIGIDSW_GROUNDPLANE + 1)) {
-						if (s_gpWnd) {
-							SetCapture(s_gpWnd->getHWnd());
-						}
-					}
-					else if (s_platemenuno == (SPRIGIDSW_DAMPANIM + 1)) {
-						if (s_dmpanimWnd) {
-							SetCapture(s_dmpanimWnd->getHWnd());
-						}
-					}
-				}
-				else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
-					if (s_platemenuno == (SPRETARGETSW_RETARGET + 1)) {
-						if (s_convboneWnd) {
-							SetCapture(s_convboneWnd->getHWnd());
-						}
-					}
-					else if (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1)) {
-						if (s_anglelimitdlg) {
-							SetCapture(s_anglelimitdlg);
-						}
-					}
-				}
-				break;
-			case 7:
-				if (g_infownd) {
-					SetCapture(g_infownd->GetHWnd());
-				}
-				break;
-
-			default:
+		switch (nextcapwndid) {
+		case 0:
+			if (s_mainhwnd) {
 				if (s_mainhwnd) {
 					SetCapture(s_mainhwnd);
 				}
-				//if (s_mainhwnd) {
-				//	if (!s_firstflag) {
-				//		ReleaseCapture();
-				//		s_firstflag = false;
-				//	}
-				//	SetCapture(s_mainhwnd);
-				//}
-				break;
 			}
+			break;
 
-			s_capwndid = nextcapwndid;
-			s_wmlbuttonup = 0;
+		case 1:
+			if (s_3dwnd) {
+				//SetCapture(s_3dwnd);
+				HWND dlghwnd;
+				dlghwnd = g_SampleUI.GetHWnd();
+				if (dlghwnd) {
+					SetCapture(dlghwnd);
+				}
+			}
+			break;
+		case 2:
+			if (s_timelineWnd) {
+				SetCapture(s_timelineWnd->getHWnd());
+			}
+			break;
+		case 3:
+			if (s_toolWnd) {
+				SetCapture(s_toolWnd->getHWnd());
+			}
+			break;
+		case 4:
+			if (s_LtimelineWnd) {
+				SetCapture(s_LtimelineWnd->getHWnd());
+			}
+			break;
+		case 5:
+			if (s_sidemenuWnd) {
+				SetCapture(s_sidemenuWnd->getHWnd());
+			}
+			break;
+		case 6:
+			//plate menuで場合分け必要
+			if (s_platemenukind == SPPLATEMENUKIND_GUI) {
+				if (s_mainhwnd) {
+					SetCapture(s_mainhwnd);
+				}
+			}
+			else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
+				if (s_platemenuno == (SPRIGIDTSW_RIGIDPARAMS + 1)) {
+					if (s_rigidWnd) {
+						SetCapture(s_rigidWnd->getHWnd());
+					}
+				}
+				else if (s_platemenuno == (SPRIGIDSW_IMPULSE + 1)) {
+					if (s_impWnd) {
+						SetCapture(s_impWnd->getHWnd());
+					}
+				}
+				else if (s_platemenuno == (SPRIGIDSW_GROUNDPLANE + 1)) {
+					if (s_gpWnd) {
+						SetCapture(s_gpWnd->getHWnd());
+					}
+				}
+				else if (s_platemenuno == (SPRIGIDSW_DAMPANIM + 1)) {
+					if (s_dmpanimWnd) {
+						SetCapture(s_dmpanimWnd->getHWnd());
+					}
+				}
+			}
+			else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
+				if (s_platemenuno == (SPRETARGETSW_RETARGET + 1)) {
+					if (s_convboneWnd) {
+						SetCapture(s_convboneWnd->getHWnd());
+					}
+				}
+				else if (s_platemenuno == (SPRETARGETSW_LIMITEULER + 1)) {
+					if (s_anglelimitdlg) {
+						SetCapture(s_anglelimitdlg);
+					}
+				}
+			}
+			break;
+		case 7:
+			if (g_infownd) {
+				SetCapture(g_infownd->GetHWnd());
+			}
+			break;
+
+		default:
+			if (s_mainhwnd) {
+				SetCapture(s_mainhwnd);
+			}
+			//if (s_mainhwnd) {
+			//	if (!s_firstflag) {
+			//		ReleaseCapture();
+			//		s_firstflag = false;
+			//	}
+			//	SetCapture(s_mainhwnd);
+			//}
+			break;
+		}
+
+		s_capwndid = nextcapwndid;
+		s_wmlbuttonup = 0;
 		//}
 	}
 }
@@ -36692,7 +37014,7 @@ void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag)
 	if (srcbone->GetChild()) {
 		SetKinematicToHandReq(srcmodel, srcbone->GetChild(), srcflag);
 	}
-	if(srcbone->GetBrother()){
+	if (srcbone->GetBrother()) {
 		SetKinematicToHandReq(srcmodel, srcbone->GetBrother(), srcflag);
 	}
 
@@ -37251,7 +37573,7 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 
 int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 {
-	
+
 	ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
 
 
@@ -37733,7 +38055,7 @@ int WriteCPTFile(WCHAR* dstfilename)
 				_ASSERT(0);
 				return 1;
 			}
-			
+
 			double curframe;
 			curframe = curcpelem.mp.GetFrame();
 			wleng = 0;
@@ -37761,12 +38083,12 @@ int WriteCPTFile(WCHAR* dstfilename)
 				return 1;
 			}
 		}
-/*
-	cpelem.bone = curbone;
-	cpelem.mp.SetFrame(curframe);
-	cpelem.mp.SetWorldMat(localmat);
-	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
-*/
+		/*
+			cpelem.bone = curbone;
+			cpelem.mp.SetFrame(curframe);
+			cpelem.mp.SetWorldMat(localmat);
+			cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
+		*/
 
 	}
 
@@ -38226,7 +38548,7 @@ bool LoadCPTFile()
 
 	DWORD curpos;
 	curpos = sizeof(char) * 256 + sizeof(int);
-	
+
 	int cpelemno;
 	for (cpelemno = 0; cpelemno < cpelemnum; cpelemno++) {
 		char curbonename[MAX_PATH] = { 0 };
@@ -38359,7 +38681,7 @@ void InitTimelineSelection()
 	if (s_owpLTimeline) {
 		s_owpLTimeline->setCurrentTime(1.0, false);
 	}
-	
+
 	//if (s_model) {
 	//	MOTINFO* curmi;
 	//	curmi = s_model->GetCurMotInfo();
@@ -38384,7 +38706,7 @@ void OnArrowKey()
 	::ScreenToClient(s_mainhwnd, &cursorpoint);
 	RECT appclientrect;
 	GetClientRect(s_mainhwnd, &appclientrect);
-	if ((cursorpoint.x < appclientrect.left) || (cursorpoint.x > appclientrect.right) || 
+	if ((cursorpoint.x < appclientrect.left) || (cursorpoint.x > appclientrect.right) ||
 		(cursorpoint.y < appclientrect.top) || (cursorpoint.y > appclientrect.bottom)) {
 		//MainWindow外につき処理しない
 		return;
@@ -38417,7 +38739,7 @@ void OnArrowKey()
 	s_dsbuttonup[sisterbuttonid] = 0;
 	s_dsbuttonup[childbuttonid] = 0;
 	s_dsbuttonup[brotherbuttonid] = 0;
-	
+
 	s_currentwndid = MB3D_WND_TREE;
 
 
@@ -38502,7 +38824,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 
 
 	CalcSelectScale(curbone);//s_selectscaleにセット
-	
+
 	ChaMatrix scalemat;
 	ChaMatrixIdentity(&scalemat);
 	ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
@@ -38837,7 +39159,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 	}
 
 	CDXUTSlider* pslider = g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS);
-	if(pslider){
+	if (pslider) {
 		pslider->SetValue(g_brushrepeats);
 		CDXUTStatic* pstatic = g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS);
 		if (pstatic) {
@@ -38956,7 +39278,7 @@ int FilterFunc()
 	return 0;
 }
 
-int CallFilterFunc(int callnum) 
+int CallFilterFunc(int callnum)
 {
 	if (s_model && s_model->GetCurMotInfo()) {
 		if (g_iklevel == 1) {

@@ -123,59 +123,7 @@ int CMotFilter::Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 		return 0;//!!!!!!!!!!!!!!!
 	}
 
-	int frameleng = srcendframe - srcstartframe + 1;
-
-	m_eul = new ChaVector3[frameleng];//frame番号でアクセスする
-	if (!m_eul){
-		_ASSERT(0);
-		return 1;
-	}
-	m_smootheul = new ChaVector3[frameleng];
-	if (!m_smootheul){
-		_ASSERT(0);
-		return 1;
-	}
-
-	m_tra = new ChaVector3[frameleng];
-	if (!m_tra){
-		_ASSERT(0);
-		return 1;
-	}
-	m_smoothtra = new ChaVector3[frameleng];
-	if (!m_smoothtra){
-		_ASSERT(0);
-		return 1;
-	}
-
-
-	if (srcopekind == 1) {
-		//all joints
-		g_underIKRot = true;
-		FilterReq(limitdegflag, srcmodel, srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe);
-		g_underIKRot = false;
-	}
-	else if (srcopekind == 2) {
-		//selecting joint
-		g_underIKRot = true;
-		int result = FilterFunc(limitdegflag, srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
-		g_underIKRot = false;
-		if (result != 0) {
-			_ASSERT(0);
-			return 1;//!!!!!!!!!!!!!
-		}
-	}
-	else if (srcopekind == 3) {
-		//selecting joint and deeper
-		g_underIKRot = true;
-		FilterReq(limitdegflag, srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
-		g_underIKRot = false;
-	}
-	else {
-		_ASSERT(0);
-		return 1;
-	}
-	
-	DestroyObjs();
+	CallFilterFunc(limitdegflag, srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
 
 	::MessageBox(NULL, L"平滑化を実行しました。", L"処理終了", MB_OK);
 
@@ -195,13 +143,7 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 
 	DestroyObjs();//!!!!!!!!!!
 
-	//int dlgret = GetFilterType();
-	//if (dlgret != IDOK) {
-	//	return 0;//!!!!!!!!!!!!!!!
-	//}
-	//m_filtertype = AVGF_WEIGHTED_MOVING;
-	//m_filtersize = 11;
-
+	
 	m_filtertype = AVGF_GAUSSIAN;
 	int framenum = srcendframe - srcstartframe + 1;
 	if (framenum <= 3) {
@@ -210,6 +152,14 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 	m_filtersize = max(3, (framenum / 10));
 
 
+	CallFilterFunc(limitdegflag, srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
+
+	return 0;
+}
+
+int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
+	int srcopekind, int srcmotid, int srcstartframe, int srcendframe)
+{
 	int frameleng = srcendframe - srcstartframe + 1;
 
 	m_eul = new ChaVector3[frameleng];//frame番号でアクセスする
@@ -264,11 +214,8 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 
 	DestroyObjs();
 
-	//::MessageBox(NULL, L"平滑化を実行しました。", L"処理終了", MB_OK);
-
 	return 0;
 }
-
 
 
 int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
