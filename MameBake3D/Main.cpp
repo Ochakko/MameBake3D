@@ -656,6 +656,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 	SaveRtgFileボタンは　設定し終わってから押すので　一番下のまま
 * 
 * 
+* 4KTV接続時　起動時に　ウインドウ大　を選んだ場合(2023/02/14)
+* 　モデルパネルとモーションパネルを　フレームに組み込んで表示
+* 
+* 
 * テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
 *
 *
@@ -1244,7 +1248,7 @@ extern int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone
 //void SetCustomRigBone(CUSTOMRIG* dstcr, CBone* childbone);
 extern int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem);
 
-//extern void DXUTSetOverrideSize(int srcw, int srch);
+extern int DXUTSetOverrideSize(int srcw, int srch);
 
 extern void OrgWinGUI::InitEulKeys();
 extern void OrgWinGUI::DestroyEulKeys();
@@ -1439,6 +1443,11 @@ static int s_longtimelineheight = s_totalwndheight - s_2ndposy - MAINMENUAIMBARH
 
 static int s_toolwidth = 230;
 static int s_toolheight = 290;
+
+static int s_modelwindowwidth = 400;
+static int s_modelwindowheight = 460;
+static int s_motionwindowwidth = 400;
+static int s_motionwindowheight = 700;
 
 static int s_infowinwidth = s_mainwidth;
 static int s_infowinheight = s_2ndposy - s_mainheight - MAINMENUAIMBARH;
@@ -2918,7 +2927,14 @@ INT WINAPI wWinMain(
 		return 0;
 	}
 
-
+	if (g_4kresolution) {
+		s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+		s_dispmotion = true;//!!!!!!!!!!!!!!!! motionpanelのdispflag
+	}
+	else {
+		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+		s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanelのdispflag
+	}
 
 	s_copyKeyInfoList.clear();	// コピーされたキー情報リスト
 	s_copymotvec.clear();
@@ -3048,7 +3064,7 @@ INT WINAPI wWinMain(
 	}
 
 
-	//DXUTSetOverrideSize(s_mainwidth, s_mainheight);//mac + VM Fusionの場合はここを実行する
+	DXUTSetOverrideSize(s_mainwidth, s_mainheight);
 
 	//GetDXUTState().SetOverrideWidth(s_mainwidth);
 	//GetDXUTState().SetOverrideHeight(s_mainwidth);
@@ -3086,9 +3102,6 @@ INT WINAPI wWinMain(
 	CreateInfoWnd();
 	CreateSideMenuWnd();
 	CreateMainMenuAimBarWnd();
-
-
-
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -3159,6 +3172,14 @@ INT WINAPI wWinMain(
 	s_hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
 		WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 
+
+	if (g_4kresolution) {
+		s_dispmodel = true;
+		DispModelPanel();
+		s_dispmotion = true;
+		DispMotionPanel();
+	}
+	
 	// Pass control to DXUT for handling the message pump and 
 	// dispatching render calls. DXUT will call your FrameMove 
 	// and FrameRender callback when there is idle time between handling window messages.
@@ -3201,6 +3222,10 @@ int CheckResolution()
 				if (selectL == TRUE) {
 					g_4kresolution = true;//!!!!!!!!!!!!!!!!
 
+					s_modelwindowwidth = 400;
+					s_motionwindowwidth = s_modelwindowwidth;
+
+
 					s_spsize = 80.0f;
 					s_sptopmargin = 60.0f;
 					s_spsidemargin = 60.0f;
@@ -3214,11 +3239,14 @@ int CheckResolution()
 					//s_toolheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
 					s_toolheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
-					s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60;
+					s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60 - s_modelwindowwidth;
 					s_mainheight = (520 * 2 - MAINMENUAIMBARH);
+					
+
+
 
 					//s_bufwidth = (800 * 2);
-					s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60;
+					s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60 - s_modelwindowwidth;
 					s_bufheight = (520 * 2 - MAINMENUAIMBARH);
 
 
@@ -3227,12 +3255,17 @@ int CheckResolution()
 					s_timelineheight = s_2ndposy - MAINMENUAIMBARH;
 
 					//s_longtimelinewidth = 970 * 2;
-					s_longtimelinewidth = s_mainwidth;
+					s_longtimelinewidth = s_mainwidth + s_modelwindowwidth;
 					//s_longtimelineheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
 					s_longtimelineheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
 					s_infowinwidth = s_mainwidth;
 					s_infowinheight = (s_2ndposy - s_mainheight - MAINMENUAIMBARH);
+
+
+					s_modelwindowheight = 460;
+					s_motionwindowheight = s_mainheight - s_modelwindowheight + s_infowinheight;
+
 
 					//s_sidemenuwidth = 450 * 2 + 16;
 					s_sidemenuwidth = 450 + 16 + 64 - 4;
@@ -3266,6 +3299,13 @@ int CheckResolution()
 		s_totalwndwidth = (1216 + 450);
 		s_totalwndheight = 950;
 		s_2ndposy = 600;
+
+		s_modelwindowwidth = 400;
+		s_motionwindowwidth = s_modelwindowwidth;
+		
+		s_modelwindowheight = 460;
+		s_motionwindowheight = 700;
+
 
 		s_toolwidth = 230;
 		//s_toolheight = 290;
@@ -11854,9 +11894,8 @@ int DispModelPanel()
 		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
 	}
 
-
-	DispMotionPanel();//!!!!!!!!!!!!!
-	DispObjPanel();//!!!!!!!!!!!!!!!!
+	//DispMotionPanel();//!!!!!!!!!!!!!
+	//DispObjPanel();//!!!!!!!!!!!!!!!!
 
 
 	return 0;
@@ -14843,37 +14882,41 @@ int CreateModelPanel()
 		return 0;
 	}
 
-	RECT panelrect;
-	if (s_modelpanel.panel && IsWindow(s_modelpanel.panel->getHWnd())) {
-		GetWindowRect(s_modelpanel.panel->getHWnd(), &panelrect);
-		s_modelpanelpos = WindowPos(panelrect.left, panelrect.top);
-	}
-	else {
-		s_modelpanelpos = WindowPos(200, s_2ndposy);
-	}
-
 
 	DestroyModelPanel();
 
 	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0) {
-		return 0;
-	}
+	//if (modelnum <= 0) {
+	//	return 0;
+	//}
 
 	int classcnt = 0;
 	WCHAR clsname[256];
 	swprintf_s(clsname, 256, L"ModelPanel%d", classcnt);
 
+	HWND parentwnd;
+	int istopmost;
+	if (g_4kresolution) {
+		parentwnd = s_mainhwnd;
+		istopmost = 0;
+	}
+	else {
+		parentwnd = NULL;
+		istopmost = 1;
+	}
+
+
+
 	s_modelpanel.panel = new OrgWindow(
-		1,
+		istopmost,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(200, s_2ndposy),		//位置
-		WindowSize(400, 460),	//サイズ
+		WindowPos(s_toolwidth, MAINMENUAIMBARH),		//位置
+		WindowSize(s_modelwindowwidth, s_modelwindowheight),	//サイズ
 		L"ModelPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
 		//false,
-		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+		parentwnd,
 		true,					//表示・非表示状態
 		//70,50,70,				//カラー
 		0, 0, 0,				//カラー
@@ -14884,70 +14927,76 @@ int CreateModelPanel()
 		return 1;
 	}
 
+	//s_modelpanel.panel->setVisible(false);//作成中
 
 	s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
 	int modelcnt;
-	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-		CModel* curmodel = s_modelindex[modelcnt].modelptr;
-		_ASSERT(curmodel);
 
-		if (modelcnt == 0) {
-			s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName());
+	if (modelnum > 0) {
+
+		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+			CModel* curmodel = s_modelindex[modelcnt].modelptr;
+			_ASSERT(curmodel);
+
+			if (modelcnt == 0) {
+				s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName());
+			}
+			else {
+				s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
+			}
 		}
-		else {
-			s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
+
+		//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+		s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
+		if (!s_modelpanel.separator) {
+			_ASSERT(0);
+			return 1;
 		}
+		s_modelpanel.separator->setSize(WindowSize(400, 30));
+		//s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, false);									// セパレータ2（境界線による横方向2分割）
+		s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
+		if (!s_modelpanel.separator2) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_modelpanel.separator2->setSize(WindowSize(200, 30));
+
+
+		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+			CModel* curmodel = s_modelindex[modelcnt].modelptr;
+			OWP_CheckBoxA* owpCheckBox = new OWP_CheckBoxA(L"Show/Hide", curmodel->GetModelDisp());
+			s_modelpanel.checkvec.push_back(owpCheckBox);
+			OWP_Button* owpButton = new OWP_Button(L"delete");
+			s_modelpanel.delbutton.push_back(owpButton);
+		}
+
+		s_modelpanel.panel->addParts(*(s_modelpanel.separator));
+
+		s_modelpanel.separator->addParts1(*(s_modelpanel.radiobutton));
+		s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
+
+		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+			OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
+			s_modelpanel.separator2->addParts1(*curcb);
+
+			OWP_Button* curbutton = s_modelpanel.delbutton[modelcnt];
+			s_modelpanel.separator2->addParts2(*curbutton);
+		}
+
+		s_modelpanel.modelindex = s_curmodelmenuindex;
+		s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
+
 	}
 
-	//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-	s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
-	if (!s_modelpanel.separator) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_modelpanel.separator->setSize(WindowSize(400, 30));
-	//s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, false);									// セパレータ2（境界線による横方向2分割）
-	s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
-	if (!s_modelpanel.separator2) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_modelpanel.separator2->setSize(WindowSize(200, 30));
-
-
-	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-		CModel* curmodel = s_modelindex[modelcnt].modelptr;
-		OWP_CheckBoxA* owpCheckBox = new OWP_CheckBoxA(L"Show/Hide", curmodel->GetModelDisp());
-		s_modelpanel.checkvec.push_back(owpCheckBox);
-		OWP_Button* owpButton = new OWP_Button(L"delete");
-		s_modelpanel.delbutton.push_back(owpButton);
-	}
-
-	s_modelpanel.panel->addParts(*(s_modelpanel.separator));
-
-	s_modelpanel.separator->addParts1(*(s_modelpanel.radiobutton));
-	s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
-
-	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-		OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
-		s_modelpanel.separator2->addParts1(*curcb);
-
-		OWP_Button* curbutton = s_modelpanel.delbutton[modelcnt];
-		s_modelpanel.separator2->addParts2(*curbutton);
-	}
-
-	s_modelpanel.modelindex = s_curmodelmenuindex;
-	s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
-
-	s_modelpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//s_modelpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ////////////
 	s_modelpanel.panel->setCloseListener([]() {
 		if (s_model) {
 			s_closemodelFlag = true;
 		}
-		});
+	});
 
 	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
 		s_modelpanel.checkvec[modelcnt]->setButtonListener([modelcnt]() {
@@ -14961,7 +15010,7 @@ int CreateModelPanel()
 					}
 				}
 			}
-			});
+		});
 
 		s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
 			if (s_model) {
@@ -14982,33 +15031,38 @@ int CreateModelPanel()
 					}
 				}
 			}
-			});
+		});
 	}
 
-	s_modelpanel.radiobutton->setSelectListener([]() {
-		if (s_model) {
-			int curindex = s_modelpanel.radiobutton->getSelectIndex();
-			if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
-				//s_modelpanel.modelindex = curindex;
-				//OnModelMenu(true, s_modelpanel.modelindex, 1);
-				//s_modelpanel.panel->callRewrite();
+	if (s_modelpanel.radiobutton) {
+		s_modelpanel.radiobutton->setSelectListener([]() {
+			if (s_model) {
+				int curindex = s_modelpanel.radiobutton->getSelectIndex();
+				if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
+					//s_modelpanel.modelindex = curindex;
+					//OnModelMenu(true, s_modelpanel.modelindex, 1);
+					//s_modelpanel.panel->callRewrite();
 
-				//ここでOnModelMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-				s_underselectmodel = true;
-				s_opeselectmodelcnt = curindex;
+					//ここでOnModelMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+					s_underselectmodel = true;
+					s_opeselectmodelcnt = curindex;
+				}
 			}
-		}
 		});
-
-
+	}
 	if (s_firstmodelpanelpos) {
-		RECT wnd3drect;
-		if (s_mainhwnd) {
-			GetWindowRect(s_mainhwnd, &wnd3drect);
-			s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
+		if (g_4kresolution) {
+			s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
 		}
 		else {
-			s_modelpanelpos = WindowPos(200, s_2ndposy);
+			RECT wnd3drect;
+			if (s_mainhwnd) {
+				GetWindowRect(s_mainhwnd, &wnd3drect);
+				s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
+			}
+			else {
+				s_modelpanelpos = WindowPos(200, s_2ndposy);
+			}
 		}
 		s_firstmodelpanelpos = false;
 	}
@@ -15016,11 +15070,17 @@ int CreateModelPanel()
 
 
 	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
-	s_modelpanel.panel->setSize(WindowSize(400, 460));//880
+	s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
 
-	s_modelpanel.panel->setVisible(false);
-	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
-
+	//if (g_4kresolution) {
+	//	//4K時は　フレーム組み込み表示
+	//	s_modelpanel.panel->setVisible(true);
+	//	s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+	//}
+	//else {
+		s_modelpanel.panel->setVisible(false);
+		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+	//}
 
 	return 0;
 }
@@ -15064,45 +15124,52 @@ int CreateMotionPanel()
 	}
 
 
-	RECT panelrect;
-	if (s_motionpanel.panel && IsWindow(s_motionpanel.panel->getHWnd())) {
-		GetWindowRect(s_motionpanel.panel->getHWnd(), &panelrect);
-		s_motionpanelpos = WindowPos(panelrect.left, panelrect.top);
-	}
-	else {
-		s_motionpanelpos = WindowPos(200, s_2ndposy);
-	}
-
-
-
 	DestroyMotionPanel();
 
 	int modelnum = (int)s_modelindex.size();
-	if (modelnum <= 0) {
-		return 0;
+	//if (modelnum <= 0) {
+	//	return 0;
+	//}
+	//if (!s_model) {
+	//	return 0;
+	//}
+	int motionnum;
+	if (s_model) {
+		motionnum = s_model->GetMotInfoSize();
 	}
-	if (!s_model) {
-		return 0;
+	else {
+		motionnum = 0;
 	}
-	int motionnum = s_model->GetMotInfoSize();
-	if (motionnum <= 0) {
-		return 0;
-	}
+	
+	//if (motionnum <= 0) {
+	//	return 0;
+	//}
 
 	int classcnt = 0;
 	WCHAR clsname[256];
 	swprintf_s(clsname, 256, L"MotionPanel%d", classcnt);
 
+	HWND parentwnd;
+	int istopmost;
+	if (g_4kresolution) {
+		parentwnd = s_mainhwnd;
+		istopmost = 0;
+	}
+	else {
+		parentwnd = NULL;
+		istopmost = 1;
+	}
+
 	s_motionpanel.panel = new OrgWindow(
-		1,
+		istopmost,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(600, s_2ndposy),		//位置
-		WindowSize(400, 700),	//サイズ
+		WindowPos(s_toolwidth, MAINMENUAIMBARH + s_modelwindowheight),		//位置
+		WindowSize(s_motionwindowwidth, s_motionwindowheight),	//サイズ
 		L"MotionPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
 		//false,
-		NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 他所をクリックしても隠れないように
+		parentwnd,
 		true,					//表示・非表示状態
 		//70, 50, 70,				//カラー
 		0, 0, 0,				//カラー
@@ -15125,49 +15192,52 @@ int CreateMotionPanel()
 
 	s_motionpanel.panel->addParts(*(s_motionpanel.separator));
 
-
-	int motioncnt = 0;
-	std::map<int, MOTINFO*>::iterator itrmi;
-	for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
-		MOTINFO* curmi = (MOTINFO*)(itrmi->second);
-		if (curmi) {
-			WCHAR wmotname[MAX_PATH] = { 0L };
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
-			if (motioncnt == 0) {
-				s_motionpanel.radiobutton = new OWP_RadioButton(wmotname);
-			}
-			else {
-				s_motionpanel.radiobutton->addLine(wmotname);
-			}
-
-			motioncnt++;
-		}
-	}
-
-	s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
-
-	std::map<int, MOTINFO*>::iterator itrmi2;
-	for (itrmi2 = s_model->GetMotInfoBegin(); itrmi2 != s_model->GetMotInfoEnd(); itrmi2++) {
-		MOTINFO* curmi = (MOTINFO*)(itrmi2->second);
-		if (curmi) {
-			OWP_Button* owpButton = new OWP_Button(L"delete");
-			s_motionpanel.delbutton.push_back(owpButton);
-			s_motionpanel.separator->addParts2(*owpButton);
-		}
-	}
-
-
-	s_motionpanel.modelindex = s_curmodelmenuindex;
-	//s_motionpanel.radiobutton->setSelectIndex(0);
 	if (s_model) {
-		s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);//!!!!
-	}
-	else {
-		_ASSERT(0);
-		return 1;
+		int motioncnt = 0;
+		std::map<int, MOTINFO*>::iterator itrmi;
+		for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+			MOTINFO* curmi = (MOTINFO*)(itrmi->second);
+			if (curmi) {
+				WCHAR wmotname[MAX_PATH] = { 0L };
+				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
+				if (motioncnt == 0) {
+					s_motionpanel.radiobutton = new OWP_RadioButton(wmotname);
+				}
+				else {
+					s_motionpanel.radiobutton->addLine(wmotname);
+				}
+
+				motioncnt++;
+			}
+		}
+
+		s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
+
+		std::map<int, MOTINFO*>::iterator itrmi2;
+		for (itrmi2 = s_model->GetMotInfoBegin(); itrmi2 != s_model->GetMotInfoEnd(); itrmi2++) {
+			MOTINFO* curmi = (MOTINFO*)(itrmi2->second);
+			if (curmi) {
+				OWP_Button* owpButton = new OWP_Button(L"delete");
+				s_motionpanel.delbutton.push_back(owpButton);
+				s_motionpanel.separator->addParts2(*owpButton);
+			}
+		}
+
+
+		s_motionpanel.modelindex = s_curmodelmenuindex;
+		//s_motionpanel.radiobutton->setSelectIndex(0);
+		if (s_model) {
+			s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);//!!!!
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+
 	}
 
-	s_motionpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	s_motionpanel.panel->setVisible(false);//作成中非表示
+	
 
 ////////////
 	s_motionpanel.panel->setCloseListener([]() {
@@ -15176,76 +15246,73 @@ int CreateMotionPanel()
 		}
 		});
 
-	//int delmenuindex = 0;
-	//for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
-	//	MOTINFO* curmi = (MOTINFO*)(itrmi->second);
-	//	if (curmi) {
-	//		s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-	//			if ((s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
-	//				s_opedelmotioncnt = delmenuindex;
-	//				//s_underdelmotion = true;//OnDelMotionでセット2022/08/18
-	//				//bool ondelbutton = true;
-	//				//OnDelMotion(delmenuindex, ondelbutton);
+	if (s_model) {
+		int delmenuindex = 0;
+		for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
+			s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
+				if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
+					(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+					s_opedelmotioncnt = delmenuindex;
+					s_underdelmotion = true;
+					//bool ondelbutton = true;
+					//OnDelMotion(delmenuindex, ondelbutton);
 
-	//				//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-	//			}
-	//		});
-	//		delmenuindex++;
-	//	}
-	//	else {
-	//		_ASSERT(0);
-	//	}
-	//}
-	int delmenuindex = 0;
-	for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
-		s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-			if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
-				(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
-				s_opedelmotioncnt = delmenuindex;
-				s_underdelmotion = true;
-				//bool ondelbutton = true;
-				//OnDelMotion(delmenuindex, ondelbutton);
+					//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
 
-				//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-
-				Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
-			}
-			});
+					Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
+				}
+				});
+		}
 	}
 
-	s_motionpanel.radiobutton->setSelectListener([]() {
-		if (s_model) {
-			int curindex = s_motionpanel.radiobutton->getSelectIndex();
-			if ((s_opeselectmotioncnt < 0) && !s_underselectmotion && (curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
-				s_opeselectmotioncnt = curindex;
-				s_underselectmotion = true;
-				//int motionindex = curindex;
-				//OnAnimMenu(true, motionindex, 1);
-				//s_motionpanel.panel->callRewrite();
+	if (s_motionpanel.radiobutton) {
+		s_motionpanel.radiobutton->setSelectListener([]() {
+			if (s_model) {
+				int curindex = s_motionpanel.radiobutton->getSelectIndex();
+				if ((s_opeselectmotioncnt < 0) && !s_underselectmotion && (curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
+					s_opeselectmotioncnt = curindex;
+					s_underselectmotion = true;
+					//int motionindex = curindex;
+					//OnAnimMenu(true, motionindex, 1);
+					//s_motionpanel.panel->callRewrite();
 
-				//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+					//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+				}
 			}
-		}
 		});
-
+	}
+	
 
 	if (s_firstmotionpanelpos) {
 		RECT wnd3drect;
-		if (s_mainhwnd) {
-			GetWindowRect(s_mainhwnd, &wnd3drect);
-			s_motionpanelpos = WindowPos(wnd3drect.left + 500, wnd3drect.top + 500);
+		if (g_4kresolution) {
+			s_motionpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH + s_modelwindowheight);
 		}
 		else {
-			s_motionpanelpos = WindowPos(600, s_2ndposy);
+			if (s_mainhwnd) {
+				GetWindowRect(s_mainhwnd, &wnd3drect);
+				s_motionpanelpos = WindowPos(wnd3drect.left + 500, wnd3drect.top + 500);
+			}
+			else {
+				s_motionpanelpos = WindowPos(600, s_2ndposy);
+			}
 		}
 		s_firstmotionpanelpos = false;
 	}
 	s_motionpanel.panel->setPos(s_motionpanelpos);
 
 	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
-	s_motionpanel.panel->setSize(WindowSize(400, 700));//880
-	s_motionpanel.panel->setVisible(false);
-	s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+	s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+
+	if (g_4kresolution) {
+		//4K時は　フレーム組み込み表示
+		s_motionpanel.panel->setVisible(true);
+		s_dispmotion = true;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+	}
+	else {
+		s_motionpanel.panel->setVisible(false);
+		s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+	}
 
 
 	return 0;
@@ -15365,11 +15432,19 @@ int CreateConvBoneWnd()
 		return 1;
 	}
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	s_convboneWnd = new OrgWindow(
 		0,
 		L"convbone0",		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight),		//位置
+		WindowPos(windowposx, s_sidemenuheight),		//位置
 		WindowSize(s_sidewidth, s_sideheight),	//サイズ
 		L"ConvBoneWnd",	//タイトル
 		s_mainhwnd,					//親ウィンドウハンドル
@@ -15556,7 +15631,7 @@ int CreateConvBoneWnd()
 	});
 
 	s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_convboneWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+	s_convboneWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
 	//１クリック目問題対応
 	s_convboneWnd->refreshPosAndSize();//2022/09/20
@@ -19844,11 +19919,19 @@ int DispAngleLimitDlg()
 		return 1;
 	}
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	SetParent(s_anglelimitdlg, s_mainhwnd);
 	SetWindowPos(
 		s_anglelimitdlg,
 		HWND_TOP,
-		s_timelinewidth + s_mainwidth + 16,
+		windowposx,
 		s_sidemenuheight,
 		s_sidewidth,
 		s_sideheight,
@@ -21098,11 +21181,19 @@ int DispRotAxisDlg()
 		return 1;
 	}
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	SetParent(s_rotaxisdlg, s_mainhwnd);
 	SetWindowPos(
 		s_rotaxisdlg,
 		HWND_TOP,
-		s_timelinewidth + s_mainwidth + 16,
+		windowposx,
 		s_sidemenuheight,
 		s_sidewidth,
 		s_sideheight,
@@ -22965,10 +23056,19 @@ int OnFrameToolWnd()
 		}
 		SetParent(s_copyhistorydlg.m_hWnd, s_mainhwnd);
 
+		int windowposx;
+		if (g_4kresolution) {
+			windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+		}
+		else {
+			windowposx = s_timelinewidth + s_mainwidth + 16;
+		}
+
+
 		SetWindowPos(
 			s_copyhistorydlg.m_hWnd,
 			HWND_TOP,
-			s_timelinewidth + s_mainwidth + 16,
+			windowposx,
 			s_sidemenuheight,
 			s_sidewidth,
 			s_sideheight,
@@ -25019,11 +25119,19 @@ int CreateDmpAnimWnd()
 
 	/////////
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	s_dmpanimWnd = new OrgWindow(
 		0,
 		_T("dampAnimWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_timelinewidth + s_mainwidth, s_sidemenuheight),
+		WindowPos(windowposx, s_sidemenuheight),
 		WindowSize(s_sidewidth, s_sideheight),		//サイズ
 		_T("AnimOfDumping"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -25106,7 +25214,7 @@ int CreateDmpAnimWnd()
 		});
 
 	s_dmpanimWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_dmpanimWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+	s_dmpanimWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
 	//１クリック目問題対応
 	s_dmpanimWnd->refreshPosAndSize();//2022/09/20
@@ -25118,6 +25226,16 @@ int CreateDmpAnimWnd()
 
 int CreateMainMenuAimBarWnd()
 {
+
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
+
 	s_mainmenuaimbarWnd = new OrgWindow(
 		0,
 		_T("MainMenuAimBarWnd"),		//ウィンドウクラス名
@@ -25127,7 +25245,7 @@ int CreateMainMenuAimBarWnd()
 		//WindowSize(450,880),		//サイズ
 		//WindowSize(450,680),		//サイズ
 		//WindowSize(450, 760),		//サイズ
-		WindowSize(s_mainwidth + s_timelinewidth + 16, MAINMENUAIMBARH),		//サイズ
+		WindowSize(windowposx, MAINMENUAIMBARH),		//サイズ
 		_T("MainMenuAimBarWnd"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
 		true,					//表示・非表示状態
@@ -25161,8 +25279,8 @@ int CreateMainMenuAimBarWnd()
 	//	s_mainmenuaimbarWnd->setSize(WindowSize(1200, MAINMENUAIMBARH));
 	//	s_rcmainmenuaimbarwnd.right = 1200;
 	//}
-	s_mainmenuaimbarWnd->setSize(WindowSize(s_mainwidth + s_timelinewidth + 16, MAINMENUAIMBARH));
-	s_rcmainmenuaimbarwnd.right = s_mainwidth + s_timelinewidth + 16;
+	s_mainmenuaimbarWnd->setSize(WindowSize(windowposx, MAINMENUAIMBARH));
+	s_rcmainmenuaimbarwnd.right = windowposx;
 
 	//１クリック目問題対応
 	s_mainmenuaimbarWnd->refreshPosAndSize();//2022/09/20
@@ -25250,8 +25368,15 @@ int CreateSideMenuWnd()
 		});
 
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
 
-	s_sidemenuWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, 0));
+	s_sidemenuWnd->setPos(WindowPos(windowposx, 0));
 
 	//450, 32
 	s_rcsidemenuwnd.top = 0;
@@ -25271,13 +25396,20 @@ int CreateSideMenuWnd()
 
 int CreatePlaceFolderWnd()
 {
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
 
 
 	s_placefolderWnd = new OrgWindow(
 		0,
 		_T("PlaceFolderWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight),
+		WindowPos(windowposx, s_sidemenuheight),
 		WindowSize(s_sidewidth, s_sideheight),		//サイズ
 		_T("PlaceFolderWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -25297,7 +25429,7 @@ int CreatePlaceFolderWnd()
 
 
 	s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_placefolderWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+	s_placefolderWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
 	//１クリック目問題対応
 	s_placefolderWnd->refreshPosAndSize();//2022/09/20
@@ -25334,11 +25466,19 @@ int CreateRigidWnd()
 
 	s_dsrigidctrls.clear();
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	s_rigidWnd = new OrgWindow(
 		0,
 		_T("RigidWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight),
+		WindowPos(windowposx, s_sidemenuheight),
 		WindowSize(s_sidewidth, s_sideheight),		//サイズ
 		_T("RigidWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -26060,7 +26200,7 @@ int CreateRigidWnd()
 		});
 
 	s_rigidWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_rigidWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+	s_rigidWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
 	//１クリック目問題対応
 	s_rigidWnd->refreshPosAndSize();//2022/09/20
@@ -26084,12 +26224,20 @@ int CreateImpulseWnd()
 
 	s_dsimpulsectrls.clear();
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	//////////
 	s_impWnd = new OrgWindow(
 		0,
 		_T("ImpulseWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight),
+		WindowPos(windowposx, s_sidemenuheight),
 		WindowSize(s_sidewidth, s_sideheight),		//サイズ
 		_T("ImpulseWindow"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -26202,7 +26350,7 @@ int CreateImpulseWnd()
 
 
 	s_impWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_impWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+	s_impWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
 	//１クリック目問題対応
 	s_impWnd->refreshPosAndSize();//2022/09/20
@@ -26217,12 +26365,21 @@ int CreateGPlaneWnd()
 
 	s_dsgpctrls.clear();
 
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
+
 	//////////
 	s_gpWnd = new OrgWindow(
 		0,
 		_T("GPlaneWindow"),		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight),		//位置
+		WindowPos(windowposx, s_sidemenuheight),		//位置
 		WindowSize(s_sidewidth, s_sideheight),		//サイズ
 		_T("GroudOfPhysics"),	//タイトル
 		s_mainhwnd,	//親ウィンドウハンドル
@@ -26356,7 +26513,7 @@ int CreateGPlaneWnd()
 
 
 	s_gpWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_gpWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
+	s_gpWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
 	//１クリック目問題対応
 	s_gpWnd->refreshPosAndSize();//2022/09/20
@@ -26659,6 +26816,8 @@ int CreateLayerWnd()
 			true,					//閉じられるか否か
 			true);					//サイズ変更の可否
 	}
+
+	s_layerWnd->setVisible(false);
 
 	// レイヤーウィンドウパーツを作成
 	s_owpLayerTable = new OWP_LayerTable(_T("レイヤーテーブル"));
@@ -27644,10 +27803,19 @@ int DispCustomRigDlg(int rigno)
 	}
 
 	SetParent(s_customrigdlg, s_mainhwnd);
+
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
 	SetWindowPos(
 		s_customrigdlg,
 		HWND_TOP,
-		s_timelinewidth + s_mainwidth + 16,
+		windowposx,
 		s_sidemenuheight,
 		s_sidewidth,
 		s_sideheight,
@@ -29639,11 +29807,20 @@ HWND Create3DWnd()
 	//}
 
 
+
 	if (g_4kresolution) {
-		hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, s_toolwidth, 0);
+		//hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, s_toolwidth + s_modelwindowwidth, 0);
+		hr = DXUTCreateWindow(L"MameBake3D", s_mainhwnd, (HINSTANCE)GetModuleHandle(NULL),
+			0, 0,
+			(s_toolwidth + s_modelwindowwidth), MAINMENUAIMBARH,
+			s_mainwidth, s_mainheight);
 	}
 	else {
-		hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, s_timelinewidth, 0);
+		//hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, s_timelinewidth, 0);
+		hr = DXUTCreateWindow(L"MameBake3D", s_mainhwnd, (HINSTANCE)GetModuleHandle(NULL),
+			0, 0, 
+			s_timelinewidth, MAINMENUAIMBARH,
+			s_mainwidth, s_mainheight);
 	}
 
 	if (FAILED(hr)) {
@@ -29653,14 +29830,15 @@ HWND Create3DWnd()
 
 	s_3dwnd = DXUTGetHWND();
 	_ASSERT(s_3dwnd);
-	RECT clientrect;
-	GetClientRect(s_3dwnd, &clientrect);
-	s_bufwidth = clientrect.right;
-	s_bufheight = clientrect.bottom;
+	//RECT clientrect;
+	//GetClientRect(s_3dwnd, &clientrect);
+	//s_bufwidth = clientrect.right;
+	//s_bufheight = clientrect.bottom;
 
 
 	LONG winstyle = ::GetWindowLong(s_3dwnd, GWL_STYLE);
 	winstyle &= ~WS_CAPTION;
+	winstyle |= WS_CHILD;//2023/02/14
 	::SetWindowLong(s_3dwnd, GWL_STYLE, winstyle);
 
 
@@ -29677,14 +29855,18 @@ HWND Create3DWnd()
 	//hr = DXUTCreateDevice(true, bufwidth, bufheight);
 	//hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_0, true, s_mainwidth, s_mainheight);
 	hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_1, true, s_mainwidth, s_mainheight);
+	//hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_1, true);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 0;
 	}
-	s_3dwnd = DXUTGetHWND();
-	_ASSERT(s_3dwnd);
+	//s_3dwnd = DXUTGetHWND();
+	//_ASSERT(s_3dwnd);
 	RECT clientrect2;
 	GetClientRect(s_3dwnd, &clientrect2);
+
+	s_bufwidth = clientrect2.right;
+	s_bufheight = clientrect2.bottom;
 
 
 	//RECT clientrect;
@@ -29699,12 +29881,15 @@ HWND Create3DWnd()
 	//::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
 	//::MoveWindow(s_3dwnd, 400, 0, s_mainwidth, s_mainheight, TRUE);
 	if (g_4kresolution) {
-		::MoveWindow(s_3dwnd, s_toolwidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+		::MoveWindow(s_3dwnd, s_toolwidth + s_modelwindowwidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+		//::SetWindowPos(s_3dwnd, HWND_NOTOPMOST, 
+		//	s_toolwidth + s_modelwindowwidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, SWP_NOSIZE);
 	}
 	else {
 		::MoveWindow(s_3dwnd, s_timelinewidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+		//::SetWindowPos(s_3dwnd, HWND_NOTOPMOST, 
+		//	s_timelinewidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, SWP_NOSIZE);
 	}
-
 
 	s_rc3dwnd.top = MAINMENUAIMBARH;
 	s_rc3dwnd.left = 0;
@@ -29760,7 +29945,7 @@ CInfoWindow* CreateInfoWnd()
 
 		if (g_4kresolution) {
 			ret = newinfownd->CreateInfoWindow(s_mainhwnd,
-				s_toolwidth, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
+				s_toolwidth + s_modelwindowwidth, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
 				s_infowinwidth, s_infowinheight + 2 * cyframe);
 
 			s_rcinfownd.left = s_toolwidth;

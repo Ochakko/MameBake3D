@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+Ôªø//--------------------------------------------------------------------------------------
 // File: DXUT.cpp
 //
 // Copyright (c) Microsoft Corporation.
@@ -15,7 +15,6 @@
 
 
 extern bool g_VSync;//GlobalVar.h
-
 
 #define DXUT_MIN_WINDOW_SIZE_X 200
 #define DXUT_MIN_WINDOW_SIZE_Y 200
@@ -294,7 +293,7 @@ public:
         m_state.m_OverrideAdapterOrdinal = -1;
         m_state.m_OverrideOutput = -1;
         //m_state.m_OverrideForceVsync = -1;//!!!!!! org
-		m_state.m_OverrideForceVsync = 1;//!!!!!! 1Ç≈ÉfÉoÉCÉXÇçÏê¨ÇµÇƒÇ®Ç¢Çƒg_VSyncÇ™falseÇ…Ç»Ç¡ÇΩÇÁPresent(0,0)Ç…êÿÇËë÷Ç¶ÇÈ
+		m_state.m_OverrideForceVsync = 1;//!!!!!! 1„Åß„Éá„Éê„Ç§„Çπ„Çí‰ΩúÊàê„Åó„Å¶„Åä„ÅÑ„Å¶g_VSync„Ååfalse„Å´„Å™„Å£„Åü„ÇâPresent(0,0)„Å´Âàá„ÇäÊõø„Åà„Çã
         //m_state.m_OverrideForceVsync = 0;//!!!!!!
         m_state.m_AutoChangeAdapter = true;
         m_state.m_ShowMsgBoxOnError = true;
@@ -1033,8 +1032,11 @@ bool DXUTGetCmdParam( WCHAR*& strCmdLine, WCHAR* strFlag, int cchDest )
 // call DXUTSetWindow() to use an existing window.  
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT WINAPI DXUTCreateWindow( const WCHAR* strWindowTitle, HINSTANCE hInstance,
-                                 HICON hIcon, HMENU hMenu, int x, int y )
+HRESULT WINAPI DXUTCreateWindow( 
+    const WCHAR* strWindowTitle,
+    const HWND srcparentwnd,
+    HINSTANCE hInstance,
+    HICON hIcon, HMENU hMenu, int x, int y, int srcsizex, int srcsizey )
 {
     HRESULT hr;
 
@@ -1107,17 +1109,31 @@ HRESULT WINAPI DXUTCreateWindow( const WCHAR* strWindowTitle, HINSTANCE hInstanc
         if( GetDXUTState().GetOverrideHeight() != 0 )
             nDefaultHeight = GetDXUTState().GetOverrideHeight();
 
+
+        LONG winstyle = WS_OVERLAPPEDWINDOW;
+        //winstyle &= ~WS_CAPTION;
+
+        //LONG winstyle = WS_CHILD | WS_BORDER;
+
+
         RECT rc;
-        SetRect( &rc, 0, 0, nDefaultWidth, nDefaultHeight );
-        AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, ( hMenu ) ? true : false );
+        //SetRect( &rc, 0, 0, nDefaultWidth, nDefaultHeight );
+        //AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, (hMenu) ? true : false);
+        SetRect(&rc, 0, 0, srcsizex, srcsizey);
+        //SetRect(&rc, x, y, (x + srcsizex), (y + srcsizey));
+        AdjustWindowRect(&rc, winstyle, (hMenu) ? true : false);
 
         WCHAR* strCachedWindowTitle = GetDXUTState().GetWindowTitle();
         wcscpy_s( strCachedWindowTitle, 256, strWindowTitle );
 
         // Create the render window
-        HWND hWnd = CreateWindow( L"Direct3DWindowClass", strWindowTitle, WS_OVERLAPPEDWINDOW,
-                                  x, y, ( rc.right - rc.left ), ( rc.bottom - rc.top ), 0,
+        HWND hWnd = CreateWindow( L"Direct3DWindowClass", strWindowTitle, winstyle, //WS_OVERLAPPEDWINDOW,
+                                  x, y, ( rc.right - rc.left ), ( rc.bottom - rc.top ), srcparentwnd,
                                   hMenu, hInstance, 0 );
+        //HWND hWnd = CreateWindow( L"Direct3DWindowClass", strWindowTitle, WS_CHILD | WS_BORDER,
+        //                          x, y, srcsizex, srcsizey,
+        //                          srcparentwnd,
+        //                          hMenu, hInstance, 0 );
         if( !hWnd )
         {
             DWORD dwError = GetLastError();
@@ -4567,3 +4583,13 @@ HRESULT DXUTSnapDeviceSettingsToEnumDevice( DXUTDeviceSettings* pDeviceSettings,
 
     return S_OK;
 }
+
+
+//custom : 2023/02/14
+int DXUTSetOverrideSize(int srcw, int srch)
+{
+    GetDXUTState().SetOverrideWidth(srcw);
+    GetDXUTState().SetOverrideHeight(srch);
+    return 0;
+}
+

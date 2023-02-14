@@ -143,6 +143,13 @@
 
 #define DXUT_VERSION 1130
 
+
+
+//custom 2023/02/14
+int DXUTSetOverrideSize(int srcw, int srch);
+
+
+
 //--------------------------------------------------------------------------------------
 // Structs
 //--------------------------------------------------------------------------------------
@@ -235,9 +242,12 @@ HRESULT WINAPI DXUTInit( _In_ bool bParseCommandLine = true,
                          _In_ bool bThreadSafeDXUT = false );
 
 // Choose either DXUTCreateWindow or DXUTSetWindow.  If using DXUTSetWindow, consider using DXUTStaticWndProc
-HRESULT WINAPI DXUTCreateWindow( _In_z_ const WCHAR* strWindowTitle = L"Direct3D Window", 
+HRESULT WINAPI DXUTCreateWindow( 
+                                 _In_z_ const WCHAR* strWindowTitle = L"Direct3D Window",
+                                 _In_opt_ const HWND srcparentwnd = 0,
                                  _In_opt_ HINSTANCE hInstance = nullptr, _In_opt_ HICON hIcon = nullptr, _In_opt_ HMENU hMenu = nullptr,
-                                 _In_ int x = CW_USEDEFAULT, _In_ int y = CW_USEDEFAULT );
+                                 _In_ int x = CW_USEDEFAULT, _In_ int y = CW_USEDEFAULT,
+                                 _In_ int srcsizex = 800, _In_ int srcsizey = 600);
 HRESULT WINAPI DXUTSetWindow( _In_ HWND hWndFocus, _In_ HWND hWndDeviceFullScreen, _In_ HWND hWndDeviceWindowed, _In_ bool bHandleMessages = true );
 LRESULT CALLBACK DXUTStaticWndProc( _In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam );
 
