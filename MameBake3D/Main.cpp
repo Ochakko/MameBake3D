@@ -649,7 +649,13 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 　LimitEulチェックボックスを　LimitEulスプライトボタンに
 * 　関連で　WallScrapingIKチェックボックスも　Scrapingスプライトボタンに
 * 
-*
+* 
+* リターゲットウインドウのよく使うボタンを上方に配置(2023/02/14)
+* 　convertボタン, LoadRtgFileボタンボタンを　上方に配置
+* 　rtgファイル使用時には　一番下までスクロールしなくても操作出来るように
+* 	SaveRtgFileボタンは　設定し終わってから押すので　一番下のまま
+* 
+* 
 * テストとしてプロジェクト設定の浮動小数点処理を　preciseにしてみているところ
 *
 *
@@ -1654,6 +1660,11 @@ static OWP_Label* s_modelbone[CONVBONEMAX];
 static OWP_Button* s_bvhbone[CONVBONEMAX];
 static OWP_Separator* s_convbonesp = 0;
 static OWP_Button* s_convboneconvert = 0;
+static OWP_Label* s_convbonespace1 = 0;
+static OWP_Label* s_convbonespace2 = 0;
+static OWP_Label* s_convbonespace3 = 0;
+static OWP_Label* s_convbonespace4 = 0;
+static OWP_Label* s_convbonespace5 = 0;
 static CModel* s_convbone_model = 0;
 static CModel* s_convbone_model_batch = 0;
 static CModel* s_convbone_bvh = 0;
@@ -15285,6 +15296,26 @@ int DestroyConvBoneWnd()
 		delete s_convboneconvert;
 		s_convboneconvert = 0;
 	}
+	if (s_convbonespace1) {
+		delete s_convbonespace1;
+		s_convbonespace1 = 0;
+	}
+	if (s_convbonespace2) {
+		delete s_convbonespace2;
+		s_convbonespace2 = 0;
+	}
+	if (s_convbonespace3) {
+		delete s_convbonespace3;
+		s_convbonespace3 = 0;
+	}
+	if (s_convbonespace4) {
+		delete s_convbonespace4;
+		s_convbonespace4 = 0;
+	}
+	if (s_convbonespace5) {
+		delete s_convbonespace5;
+		s_convbonespace5 = 0;
+	}
 	if (s_rtgfilesave) {
 		delete s_rtgfilesave;
 		s_rtgfilesave = 0;
@@ -15351,10 +15382,14 @@ int CreateConvBoneWnd()
 
 	s_convboneWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
+	//スクロールウインドウ
 	s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
-	s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
-
+	//s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
+	//2023/02/14
+	//要素数が変わったときには指定し忘れないように！！！
+	s_convboneSCWnd->setLineDataSize(s_convbonenum + 8);
 	s_convboneWnd->addParts(*s_convboneSCWnd);
+
 
 
 	WCHAR bvhbonename[MAX_PATH];
@@ -15394,18 +15429,28 @@ int CreateConvBoneWnd()
 
 	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
 	s_convboneconvert = new OWP_Button(L"ConvertButton");
+	s_convbonespace1 = new OWP_Label(L"--------------");
+	s_convbonespace2 = new OWP_Label(L"--------------");
+	s_convbonespace3 = new OWP_Label(L"--------------");
+	s_convbonespace4 = new OWP_Label(L"--------------");
+	s_convbonespace5 = new OWP_Label(L"              ");
 	s_rtgfilesave = new OWP_Button(L"Save RtgFile");
 	s_rtgfileload = new OWP_Button(L"Load RtgFile");
 	s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
 	s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
 
 
-	COLORREF importantcol = RGB(168, 129, 129);
-	s_convboneconvert->setTextColor(importantcol);
-	s_rtgfilesave->setTextColor(importantcol);
-	s_rtgfileload->setTextColor(importantcol);
-	s_cbselbvh->setTextColor(importantcol);
-	s_cbselmodel->setTextColor(importantcol);
+	COLORREF importantcolR = RGB(168, 129, 129);
+	COLORREF importantcolG = RGB(0, 240, 0);
+	COLORREF importantcolW = RGB(240, 240, 240);
+	s_convboneconvert->setTextColor(importantcolG);
+	s_rtgfilesave->setTextColor(importantcolG);
+	s_rtgfileload->setTextColor(importantcolG);
+	s_cbselbvh->setTextColor(importantcolR);
+	s_cbselmodel->setTextColor(importantcolR);
+	s_convbonespace1->setTextColor(importantcolW);
+	s_convbonespace2->setTextColor(importantcolW);
+	s_convbonespace3->setTextColor(importantcolW);
 
 
 	s_convboneSCWnd->addParts(*s_convbonesp);
@@ -15415,11 +15460,23 @@ int CreateConvBoneWnd()
 	s_convbonesp->addParts1(*s_cbselmodel);
 	s_convbonesp->addParts2(*s_convbonemidashi[1]);
 	s_convbonesp->addParts2(*s_cbselbvh);
-
-
 	s_dsretargetctrls.push_back(s_cbselmodel);
 	s_dsretargetctrls.push_back(s_cbselbvh);
 
+
+	//2023/02/14
+	//convert実行、rtgファイル読み込みボタンは
+	//ボーン名対応表よりも　上に配置
+	//一番下までスクロールしなくても　操作できることが多くなるように
+	s_convbonesp->addParts1(*s_convboneconvert);
+	s_dsretargetctrls.push_back(s_convboneconvert);
+	s_convbonesp->addParts2(*s_rtgfileload);
+	s_dsretargetctrls.push_back(s_rtgfileload);
+
+	//2023/02/14
+	//境目に　空白
+	s_convbonesp->addParts1(*s_convbonespace1);
+	s_convbonesp->addParts2(*s_convbonespace2);
 
 	for (cbno = 0; cbno < s_convbonenum; cbno++) {
 		s_convbonesp->addParts1(*s_modelbone[cbno]);
@@ -15429,14 +15486,16 @@ int CreateConvBoneWnd()
 		s_dsretargetctrls.push_back(s_bvhbone[cbno]);
 	}
 
-	s_convbonesp->addParts1(*s_convboneconvert);
-	s_dsretargetctrls.push_back(s_convboneconvert);
+	//2023/02/14
+	//境目に　空白
+	s_convbonesp->addParts1(*s_convbonespace3);
+	s_convbonesp->addParts2(*s_convbonespace4);
 
+	//Rtgファイル保存ボタンは　設定し終わってから押すので　一番下のまま
 	s_convbonesp->addParts1(*s_rtgfilesave);
 	s_dsretargetctrls.push_back(s_rtgfilesave);
+	s_convbonesp->addParts2(*s_convbonespace5);
 
-	s_convbonesp->addParts2(*s_rtgfileload);
-	s_dsretargetctrls.push_back(s_rtgfileload);
 
 	s_convboneWnd->setListenMouse(false);
 	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -15465,7 +15524,8 @@ int CreateConvBoneWnd()
 			}
 			s_convboneWnd->callRewrite();
 		}
-		});
+	});
+
 	for (cbno = 0; cbno < s_convbonenum; cbno++) {
 		s_bvhbone[cbno]->setButtonListener([cbno]() {
 			if (s_model) {
@@ -15474,25 +15534,26 @@ int CreateConvBoneWnd()
 				//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
 				s_convboneWnd->callRewrite();
 			}
-			});
+		});
 	}
+
 	s_convboneconvert->setButtonListener([]() {
 		if (s_model) {
 			RetargetMotion();
 		}
-		});
+	});
 
 	s_rtgfilesave->setButtonListener([]() {
 		if (s_model) {
 			SaveRetargetFile();
 		}
-		});
+	});
 
 	s_rtgfileload->setButtonListener([]() {
 		if (s_model) {
 			LoadRetargetFile(0);
 		}
-		});
+	});
 
 	s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_convboneWnd->setPos(WindowPos(s_timelinewidth + s_mainwidth + 16, s_sidemenuheight));
