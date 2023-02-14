@@ -26940,17 +26940,18 @@ int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 
 int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 {
-
-	//Undoの読み込みポイントと書き込みポイントを表示
-	if ((g_previewFlag == 0) && s_undosprite && s_model) {
-		s_undosprite->Render(pd3dImmediateContext, s_model->GetCurrentUndoR(), s_model->GetCurrentUndoW());
-	}
 	if (s_fpssprite && s_model) {
 		int dispfps = (int)(s_avrgfps + 0.5);
 		s_fpssprite->Render(pd3dImmediateContext, dispfps);
 	}
 
+	//Undoの読み込みポイントW と書き込みポイントR を表示
+	if (s_undosprite && s_model) {
+		s_undosprite->Render(pd3dImmediateContext, s_model->GetCurrentUndoR(), s_model->GetCurrentUndoW());
+	}
 
+
+	//frog
 	if (s_spret2prev.sprite) {
 		s_spret2prev.sprite->OnRender(pd3dImmediateContext);
 	}
@@ -26958,104 +26959,11 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		_ASSERT(0);
 	}
 
+
+	//Mouse Middle Button Mark
 	if ((s_mbuttoncnt == 0) && (s_mousecenteron.sprite)) {
 		s_mousecenteron.sprite->OnRender(pd3dImmediateContext);
 	}
-
-
-	//IK Mode
-	if (g_previewFlag == 0) {
-		int spgcnt;
-		for (spgcnt = 0; spgcnt < 3; spgcnt++) {
-			if (s_spikmodesw[spgcnt].state) {
-				if (s_spikmodesw[spgcnt].spriteON) {
-					s_spikmodesw[spgcnt].spriteON->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
-				}
-			}
-			else {
-				if (s_spikmodesw[spgcnt].spriteOFF) {
-					s_spikmodesw[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
-				}
-			}
-		}
-	}
-
-
-	//refpossw
-	if (g_previewFlag == 0) {
-		if (s_sprefpos.state) {
-			if (s_sprefpos.spriteON) {
-				s_sprefpos.spriteON->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-		else {
-			if (s_sprefpos.spriteOFF) {
-				s_sprefpos.spriteOFF->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-	}
-
-	//limiteulsw
-	if (g_previewFlag == 0) {
-		if (s_splimiteul.state) {
-			if (s_splimiteul.spriteON) {
-				s_splimiteul.spriteON->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-		else {
-			if (s_splimiteul.spriteOFF) {
-				s_splimiteul.spriteOFF->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-	}
-
-	//scrapingsw
-	if (g_previewFlag == 0) {
-		if (s_spscraping.state) {
-			if (s_spscraping.spriteON) {
-				s_spscraping.spriteON->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-		else {
-			if (s_spscraping.spriteOFF) {
-				s_spscraping.spriteOFF->OnRender(pd3dImmediateContext);
-			}
-			else {
-				_ASSERT(0);
-			}
-		}
-	}
-
-	if ((g_previewFlag == 0) && s_spcplw2w.sprite) {//2023/02/08　プレビュー時は非表示
-		s_spcplw2w.sprite->OnRender(pd3dImmediateContext);
-	}
-	else {
-		if (!s_spcplw2w.sprite) {
-			_ASSERT(0);
-		}
-	}
-
 
 	//aimbar
 	if (g_enableDS && (s_dsdeviceid >= 0)) {
@@ -27153,9 +27061,12 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 
 
-	if (s_platemenukind == SPPLATEMENUKIND_GUI) {
+	if (s_platemenukind == SPPLATEMENUKIND_GUI) 
+	{
 		//menu 0 : Select 3DWindow GUI
 		{
+
+			//Plate Menu 0
 			int spgcnt;
 			for (spgcnt = 0; spgcnt < SPGUISWNUM; spgcnt++) {
 				if (s_spguisw[spgcnt].state) {
@@ -27176,10 +27087,11 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				}
 			}
 		}
-
 	}
 	else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
 		//menu 1 : Select SideMenu 
+
+		//Plate Menu 1
 		int spgcnt;
 		for (spgcnt = 0; spgcnt < SPRIGIDSWNUM; spgcnt++) {
 			if (s_sprigidsw[spgcnt].state) {
@@ -27201,6 +27113,8 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		}
 	}
 	else if (s_platemenukind == SPPLATEMENUKIND_RETARGET) {
+
+		//Plate Menu 2
 		int sprcnt;
 		for (sprcnt = 0; sprcnt < SPRETARGETSWNUM; sprcnt++) {
 			if (s_spretargetsw[sprcnt].state) {
@@ -27222,9 +27136,12 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		}
 	}
 
+	//Sprites of Camera And IK Plate Menu Group
 	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 
 		if (g_previewFlag == 0) {
+
+			//Axis
 			int spacnt;
 			for (spacnt = 0; spacnt < SPAXISNUM; spacnt++) {
 				if (s_spaxis[spacnt].sprite) {
@@ -27235,6 +27152,92 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				}
 			}
 
+			//IK Mode
+			int spgcnt;
+			for (spgcnt = 0; spgcnt < 3; spgcnt++) {
+				if (s_spikmodesw[spgcnt].state) {
+					if (s_spikmodesw[spgcnt].spriteON) {
+						s_spikmodesw[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+					}
+					else {
+						_ASSERT(0);
+					}
+				}
+				else {
+					if (s_spikmodesw[spgcnt].spriteOFF) {
+						s_spikmodesw[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
+					}
+					else {
+						_ASSERT(0);
+					}
+				}
+			}
+
+			//refpossw
+			if (s_sprefpos.state) {
+				if (s_sprefpos.spriteON) {
+					s_sprefpos.spriteON->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				if (s_sprefpos.spriteOFF) {
+					s_sprefpos.spriteOFF->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+
+			//limiteulsw
+			if (s_splimiteul.state) {
+				if (s_splimiteul.spriteON) {
+					s_splimiteul.spriteON->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				if (s_splimiteul.spriteOFF) {
+					s_splimiteul.spriteOFF->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+
+			//scrapingsw
+			if (s_spscraping.state) {
+				if (s_spscraping.spriteON) {
+					s_spscraping.spriteON->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				if (s_spscraping.spriteOFF) {
+					s_spscraping.spriteOFF->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+
+			//L2W button
+			if (s_spcplw2w.sprite) {
+				s_spcplw2w.sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				if (!s_spcplw2w.sprite) {
+					_ASSERT(0);
+				}
+			}
+
+			//Undo Redo
 			int spucnt;
 			for (spucnt = 0; spucnt < 2; spucnt++) {
 				if (s_spundo[spucnt].sprite) {
@@ -27244,8 +27247,31 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 					_ASSERT(0);
 				}
 			}
+
+			//Rig switch
+			if ((s_oprigflag >= 0) && (s_oprigflag < SPRIGMAX)) {
+				//if (s_customrigbone) {
+				if (s_sprig[s_oprigflag].sprite) {
+					s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+				//}
+			}
+
+			//Smooth
+			if (s_spsmooth.sprite) {//プレビュー時は非表示
+				s_spsmooth.sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				if (!s_spsmooth.sprite) {
+					_ASSERT(0);
+				}
+			}
 		}
 
+		//カメラ操作スプライトは　プレビュー中も表示
 		int spccnt;
 		for (spccnt = 0; spccnt < SPR_CAM_MAX; spccnt++) {
 			if (s_spcam[spccnt].sprite) {
@@ -27256,36 +27282,11 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 		}
 
-		//if (s_spbt.sprite) {
-		//	s_spbt.sprite->OnRender(pd3dImmediateContext);
-		//}
-		//else {
-		//	_ASSERT(0);
-		//}
-
-		if ((g_previewFlag == 0) && s_spsmooth.sprite) {//プレビュー時は非表示
-			s_spsmooth.sprite->OnRender(pd3dImmediateContext);
-		}
-		else {
-			if (!s_spsmooth.sprite) {
-				_ASSERT(0);
-			}
-		}
-
-	}
-
-	if ((g_previewFlag == 0) && (s_oprigflag >= 0) && (s_oprigflag < SPRIGMAX)) {
-		//if (s_customrigbone) {
-		if (s_sprig[s_oprigflag].sprite) {
-			s_sprig[s_oprigflag].sprite->OnRender(pd3dImmediateContext);
-		}
-		else {
-			_ASSERT(0);
-		}
-		//}
 	}
 
 
+
+	//UFO
 	if (g_dsmousewait == 1) {
 		if (s_spmousehere.sprite) {
 			s_spmousehere.sprite->OnRender(pd3dImmediateContext);
