@@ -3403,17 +3403,24 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	else {
 		tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//オーバー１８０度
 	}
-	if (notmodify180flag == 0) {
-		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-		if ((tmpX0 - befeul.x) >= thdeg) {
-			tmpX0 -= 180.0f;
+
+	//2023/02/15
+	//X軸の角度を180度補正しても　後続の軸が無いので　他の軸の計算に反映出来ない
+	//しかし　補正を取り除いてしまうと　リターゲット結果がおかしいことがあるbvh121
+	//取り除くと　IK中に　キャラクターが逆立ちしなくなる
+	if (g_underIKRot == false) {
+		if (notmodify180flag == 0) {
+			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+			if ((tmpX0 - befeul.x) >= thdeg) {
+				tmpX0 -= 180.0f;
+			}
+			if ((befeul.x - tmpX0) >= thdeg) {
+				tmpX0 += 180.0f;
+			}
 		}
-		if ((befeul.x - tmpX0) >= thdeg) {
-			tmpX0 += 180.0f;
+		else {
+			//tmpX0そのまま
 		}
-	}
-	else {
-		//tmpX0そのまま
 	}
 	Euler.x = tmpX0;
 

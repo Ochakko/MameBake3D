@@ -894,7 +894,7 @@ LONG g_retargetbatchflag;
 HWND s_retargetbatchwnd;
 HANDLE s_retargethandle1;
 HANDLE s_retargethandle2;
-static void WaitRetargetThreads();
+//static void WaitRetargetThreads();
 static int s_convbone_model_batch_selindex;
 
 
@@ -1115,6 +1115,9 @@ static RECT s_rcsidemenuwnd;
 static RECT s_rcrigidwnd;
 static RECT s_rcinfownd;
 static RECT s_rcmainmenuaimbarwnd;
+static RECT s_rcmodelpanel;
+static RECT s_rcmotionpanel;
+
 static void ChangeMouseSetCapture();
 static void ChangeMouseReleaseCapture();
 
@@ -1746,6 +1749,8 @@ static bool s_LupFlag = false;
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
 //static int s_LstopDoneCount = 0;
+static bool s_retargetguiFlag = false;
+
 
 static int s_calclimitedwmState = 0;
 
@@ -3367,6 +3372,7 @@ void InitApp()
 
 	g_underIKRot = false;
 	g_underRetargetFlag = false;
+	s_retargetguiFlag = false;
 
 	g_VSync = false;
 	g_rotatetanim = false;
@@ -3653,6 +3659,14 @@ void InitApp()
 	s_rcmainmenuaimbarwnd.left = 0;
 	s_rcmainmenuaimbarwnd.bottom = 0;
 	s_rcmainmenuaimbarwnd.right = 0;
+	s_rcmodelpanel.top = 0;
+	s_rcmodelpanel.left = 0;
+	s_rcmodelpanel.bottom = 0;
+	s_rcmodelpanel.right = 0;
+	s_rcmotionpanel.top = 0;
+	s_rcmotionpanel.left = 0;
+	s_rcmotionpanel.bottom = 0;
+	s_rcmotionpanel.right = 0;
 
 
 	s_CamTargetCheckBox = 0;
@@ -9815,7 +9829,7 @@ int RetargetBatch()
 	//InterlockedExchange(&g_retargetbatchflag, 0);//スレッドを立ててすぐに出ていくのでここではフラグはそのまま
 
 
-	//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//WaitRetargetThreads()で行うので　ここでは呼ばない
+	//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//OnFrameBatchThread()で行うので　ここでは呼ばない
 
 
 	return 0;
@@ -11883,11 +11897,14 @@ int DispModelPanel()
 		s_modelpanel.panel->setListenMouse(false);
 		s_modelpanel.panel->setVisible(false);
 		s_dispmodel = false;
+		s_modelpanel.panel->setListenMouse(false);
 	}
 	else {
 		s_modelpanel.panel->setListenMouse(true);
 		s_modelpanel.panel->setVisible(true);
 		s_dispmodel = true;
+		s_modelpanel.panel->callRewrite();
+		s_modelpanel.panel->setListenMouse(true);
 
 		//RECT dlgrect;
 		//GetWindowRect(s_modelpanel.panel->getHWnd(), &dlgrect);
@@ -11918,11 +11935,14 @@ int DispMotionPanel()
 		s_motionpanel.panel->setListenMouse(false);
 		s_motionpanel.panel->setVisible(false);
 		s_dispmotion = false;
+		s_motionpanel.panel->setListenMouse(false);
 	}
 	else {
 		s_motionpanel.panel->setListenMouse(true);
 		s_motionpanel.panel->setVisible(true);
 		s_dispmotion = true;
+		s_motionpanel.panel->callRewrite();
+		s_motionpanel.panel->setListenMouse(true);
 
 		//RECT dlgrect;
 		//GetWindowRect(s_motionpanel.panel->getHWnd(), &dlgrect);
@@ -12221,7 +12241,8 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	s_owpLTimeline->selectClear();
 
 
-	//refreshMotionPanel();
+	DispModelPanel();
+	refreshModelPanel();
 	DispMotionPanel();
 
 	SetMainWindowTitle();
@@ -12231,8 +12252,6 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 
 	s_underselectmotion = false;
-
-
 
 
 	if (s_model->GetInitAxisMatX() == 0) {//OnAnimMenuに移動
@@ -12298,7 +12317,8 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		if (s_owpTimeline && dorefreshtl) {
 			refreshTimeline(*s_owpTimeline);
 		}
-		refreshModelPanel();
+		//refreshModelPanel();
+		DispModelPanel();
 		DispMotionPanel();
 
 		SetMainWindowTitle();
@@ -12315,7 +12335,8 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		if (s_owpTimeline && dorefreshtl) {
 			refreshTimeline(*s_owpTimeline);
 		}
-		refreshModelPanel();
+		//refreshModelPanel();
+		DispModelPanel();
 		DispMotionPanel();
 
 		SetMainWindowTitle();
@@ -12349,7 +12370,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			s_lineno2boneno = s_modelindex[selindex].lineno2boneno;
 			s_boneno2lineno = s_modelindex[selindex].boneno2lineno;
 
-			refreshModelPanel();
+			//refreshModelPanel();
 
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
@@ -12834,6 +12855,7 @@ int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb)
 
 	return 0;
 }
+
 
 int refreshModelPanel()
 {
@@ -14899,6 +14921,7 @@ int CreateModelPanel()
 	if (g_4kresolution) {
 		parentwnd = s_mainhwnd;
 		istopmost = 0;
+		//istopmost = 1;
 	}
 	else {
 		parentwnd = NULL;
@@ -15072,6 +15095,11 @@ int CreateModelPanel()
 	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
 	s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
 
+	s_rcmodelpanel.top = s_modelpanelpos.y;
+	s_rcmodelpanel.bottom = s_modelpanelpos.y + s_modelwindowheight;
+	s_rcmodelpanel.left = s_modelpanelpos.x;
+	s_rcmodelpanel.right = s_modelpanelpos.x + s_modelwindowwidth;
+
 	//if (g_4kresolution) {
 	//	//4K時は　フレーム組み込み表示
 	//	s_modelpanel.panel->setVisible(true);
@@ -15154,6 +15182,7 @@ int CreateMotionPanel()
 	if (g_4kresolution) {
 		parentwnd = s_mainhwnd;
 		istopmost = 0;
+		//istopmost = 1;
 	}
 	else {
 		parentwnd = NULL;
@@ -15303,6 +15332,11 @@ int CreateMotionPanel()
 
 	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
 	s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+
+	s_rcmotionpanel.top = s_motionpanelpos.y;
+	s_rcmotionpanel.bottom = s_motionpanelpos.y + s_motionwindowheight;
+	s_rcmotionpanel.left = s_motionpanelpos.x;
+	s_rcmotionpanel.right = s_motionpanelpos.x + s_motionwindowwidth;
 
 	if (g_4kresolution) {
 		//4K時は　フレーム組み込み表示
@@ -15614,7 +15648,9 @@ int CreateConvBoneWnd()
 
 	s_convboneconvert->setButtonListener([]() {
 		if (s_model) {
-			RetargetMotion();
+			if (s_retargetguiFlag == false) {
+				s_retargetguiFlag = true;
+			}
 		}
 	});
 
@@ -23269,6 +23305,23 @@ int OnFrameToolWnd()
 		s_motpropFlag = false;
 	}
 
+	if (s_retargetguiFlag) {
+		if (s_model && s_model->GetCurMotInfo()) {
+			s_savelimitdegflag = g_limitdegflag;
+			ChangeLimitDegFlag(false, true, true);
+			s_saveretargetmodel = s_curmodelmenuindex;//終了時にOnModelMenuを呼ぶために保存
+
+			RetargetMotion();
+
+			ChangeLimitDegFlag(s_savelimitdegflag, true, true);
+			OnModelMenu(true, s_saveretargetmodel, 1);
+		}
+
+		s_retargetguiFlag = false;
+	}
+
+
+
 	/*
 	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
 	if (s_model && (s_curboneno >= 0)){
@@ -23730,6 +23783,10 @@ int OnFrameBatchThread()
 		InterlockedExchange(&s_bvh2fbxnum, 0);
 		InterlockedExchange(&s_befbvh2fbxnum, 0);
 		InterlockedExchange(&s_befbvh2fbxcnt, 0);
+
+		if (s_modelindex.size() > 0) {
+			OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+		}
 	}
 
 
@@ -23770,6 +23827,11 @@ int OnFrameBatchThread()
 		InterlockedExchange(&s_retargetnum, 0);
 		InterlockedExchange(&s_befretargetnum, 0);
 		InterlockedExchange(&s_befretargetcnt, 0);
+
+
+		//2023/02/15
+		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
+		OnModelMenu(true, s_saveretargetmodel, 1);
 	}
 
 
@@ -36953,6 +37015,33 @@ void ChangeMouseSetCapture()
 		}
 	}
 
+	//check modelpanel
+	{
+		int wndtop = s_rcmodelpanel.top;
+		int wndleft = s_rcmodelpanel.left;
+		int wndbottom = s_rcmodelpanel.bottom;
+		int wndright = s_rcmodelpanel.right;
+
+		if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
+			nextcapwndid = 8;
+		}
+	}
+
+	//check motionpanel
+	{
+		int wndtop = s_rcmotionpanel.top;
+		int wndleft = s_rcmotionpanel.left;
+		int wndbottom = s_rcmotionpanel.bottom;
+		int wndright = s_rcmotionpanel.right;
+
+		if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
+			nextcapwndid = 9;
+		}
+	}
+
+
+
+
 	///////////////
 	///////////////
 
@@ -37050,6 +37139,16 @@ void ChangeMouseSetCapture()
 		case 7:
 			if (g_infownd) {
 				SetCapture(g_infownd->GetHWnd());
+			}
+			break;
+		case 8:
+			if (s_modelpanel.panel) {
+				SetCapture(s_modelpanel.panel->getHWnd());
+			}
+			break;
+		case 9:
+			if (s_motionpanel.panel) {
+				SetCapture(s_motionpanel.panel->getHWnd());
 			}
 			break;
 
@@ -37293,27 +37392,27 @@ void OnGUIEventSpeed()
 	g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
 }
 
-void WaitRetargetThreads()
-{
-	//if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2はダイアログでのキャンセル
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2はダイアログでのキャンセル
-		InterlockedExchange(&g_retargetbatchflag, (LONG)0);
-		if (s_retargetbatchwnd) {
-			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
-		}
-		s_retargetcnt = 0;
-		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
-
-		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
-		//g_limitdegflag = s_savelimitdegflag;
-		//if (s_LimitDegCheckBox) {
-		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-		//}
-
-		OnModelMenu(true, s_saveretargetmodel, 1);
-	}
-
-}
+//void WaitRetargetThreads()
+//{
+//	//if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2はダイアログでのキャンセル
+//	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2はダイアログでのキャンセル
+//		InterlockedExchange(&g_retargetbatchflag, (LONG)0);
+//		if (s_retargetbatchwnd) {
+//			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
+//		}
+//		s_retargetcnt = 0;
+//		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEで変わる可能性あり
+//
+//		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
+//		//g_limitdegflag = s_savelimitdegflag;
+//		//if (s_LimitDegCheckBox) {
+//		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+//		//}
+//
+//		OnModelMenu(true, s_saveretargetmodel, 1);
+//	}
+//
+//}
 
 //void WaitMotionCacheThreads()
 //{
