@@ -1975,8 +1975,8 @@ CDXUTCheckBox* s_HighRpmCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
 CDXUTCheckBox* s_RigidMarkCheckBox = 0;
 //CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
-CDXUTCheckBox* s_WallScrapingIKCheckBox = 0;
-CDXUTCheckBox* s_LimitDegCheckBox = 0;
+//CDXUTCheckBox* s_WallScrapingIKCheckBox = 0;
+//CDXUTCheckBox* s_LimitDegCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
 CDXUTCheckBox* s_IfMirrorVDiv2CheckBox = 0;
@@ -2445,6 +2445,7 @@ static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime
 
 static int ChangeCurrentBone();
 static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag);
+static int ChangeWallScrapingIKFlag(bool srcflag);
 
 static int InitCurMotion(int selectflag, double expandmotion);
 
@@ -3678,8 +3679,8 @@ void InitApp()
 	s_BoneMarkCheckBox = 0;
 	s_RigidMarkCheckBox = 0;
 	//s_PseudoLocalCheckBox = 0;
-	s_WallScrapingIKCheckBox = 0;
-	s_LimitDegCheckBox = 0;
+	//s_WallScrapingIKCheckBox = 0;
+	//s_LimitDegCheckBox = 0;
 	s_BrushMirrorUCheckBox = 0;
 	s_BrushMirrorVCheckBox = 0;
 	s_IfMirrorVDiv2CheckBox = 0;
@@ -7669,8 +7670,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			int picklimiteulflag = 0;
 			picklimiteulflag = PickSpLimitEulSW(ptCursor);
 			if (picklimiteulflag == 1) {
-				s_splimiteul.state = !s_splimiteul.state;
-				g_limitdegflag = s_splimiteul.state;//!!!!!
+				//2023/02/15
+				bool newstate = !s_splimiteul.state;
+				ChangeLimitDegFlag(newstate, true, true);
 			}
 		}
 		{
@@ -7678,8 +7680,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			int pickscrapingflag = 0;
 			pickscrapingflag = PickSpScrapingSW(ptCursor);
 			if (pickscrapingflag == 1) {
-				s_spscraping.state = !s_spscraping.state;
-				g_wallscrapingikflag = (int)s_spscraping.state;//!!!!!!!
+				bool newstate = !s_spscraping.state;
+				ChangeWallScrapingIKFlag(newstate);
 			}
 		}
 
@@ -7995,7 +7997,6 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				bool onpasteflag = false;
 				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
 			}
-
 
 			UpdateEditedEuler();
 
@@ -8521,14 +8522,14 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	case IDC_PSEUDOLOCAL:
 		RollbackCurBoneNo();
 		break;
-	case IDC_LIMITDEG:
-		RollbackCurBoneNo();
-		s_LimitDegCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
-		break;
-	case IDC_WALLSCRAPINGIK:
-		RollbackCurBoneNo();
-		s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
-		break;
+	//case IDC_LIMITDEG:
+	//	RollbackCurBoneNo();
+	//	s_LimitDegCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
+	//	break;
+	//case IDC_WALLSCRAPINGIK:
+	//	RollbackCurBoneNo();
+	//	s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
+	//	break;
 	case IDC_VSYNC:
 		RollbackCurBoneNo();
 		break;
@@ -21520,6 +21521,15 @@ int ChangeCurrentBone()
 	return 0;
 }
 
+int ChangeWallScrapingIKFlag(bool srcflag)
+{
+	g_wallscrapingikflag = srcflag;
+	s_spscraping.state = srcflag;
+	s_WallScrapingCheckBoxFlag = true;//!!!!! 副作用として　SaveUndoMotionが働く
+
+	return 0;
+}
+
 int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 {
 	//処理中にチェックボックスの状態を変えることが出来ないように　砂時計カーソルにする
@@ -21528,8 +21538,13 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 
 
 	g_limitdegflag = srcflag;
-	if (setcheckflag && s_LimitDegCheckBox) {
-		s_LimitDegCheckBox->SetChecked(g_limitdegflag);//!!!!! 副作用として　SaveUndoMotionが働く
+	//if (setcheckflag && s_LimitDegCheckBox) {
+	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);//!!!!! 副作用として　SaveUndoMotionが働く
+	//}
+
+	s_splimiteul.state = srcflag;
+	if (setcheckflag) {
+		s_LimitDegCheckBoxFlag = true;//!!!!! 副作用として　SaveUndoMotionが働く
 	}
 
 	if (updateeulflag) {
@@ -21744,28 +21759,33 @@ int OnFrameUtCheckBox()
 
 
 
-	if (s_WallScrapingIKCheckBox && s_WallScrapingCheckBoxFlag) {
-		g_wallscrapingikflag = (int)s_WallScrapingIKCheckBox->GetChecked();
+	//if (s_WallScrapingIKCheckBox && s_WallScrapingCheckBoxFlag) {
+	if (s_WallScrapingCheckBoxFlag) {
+		//g_wallscrapingikflag = (int)s_WallScrapingIKCheckBox->GetChecked();
 		if (s_model && (save_wallscrapingikflag != g_wallscrapingikflag)) {
 			PrepairUndo();
 		}
 		save_wallscrapingikflag = g_wallscrapingikflag;
 		s_WallScrapingCheckBoxFlag = false;
 	}
-	if (s_LimitDegCheckBox && s_LimitDegCheckBoxFlag) {
-		g_limitdegflag = s_LimitDegCheckBox->GetChecked();
-		//if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
-		if (s_model && s_model->GetCurMotInfo() && (g_limitdegflag != s_beflimitdegflag)) {
-			//s_model->CalcBoneEul(s_model->GetCurMotInfo()->motid);
-			//refreshEulerGraph();
-			////s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
 
-			ChangeLimitDegFlag(g_limitdegflag, false, true);
+
+	//if (s_LimitDegCheckBox && s_LimitDegCheckBoxFlag) {
+	if (s_LimitDegCheckBoxFlag) {
+		//g_limitdegflag = s_LimitDegCheckBox->GetChecked();
+		////if (s_model && s_model->GetCurMotInfo() && (s_curboneno >= 0) && (g_limitdegflag != s_beflimitdegflag)) {
+		if (s_model && s_model->GetCurMotInfo() && (g_limitdegflag != s_beflimitdegflag)) {
+			////s_model->CalcBoneEul(s_model->GetCurMotInfo()->motid);
+			////refreshEulerGraph();
+			//////s_tum.UpdateEditedEuler(refreshEulerGraph);//非ブロッキング
+
+			//ChangeLimitDegFlag(g_limitdegflag, false, true);
 			PrepairUndo();
 		}
 		s_beflimitdegflag = g_limitdegflag;
 		s_LimitDegCheckBoxFlag = false;
 	}
+
 
 	if (s_BrushMirrorUCheckBoxFlag) {
 		//g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
@@ -39492,12 +39512,15 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 	if (s_IfMirrorVDiv2CheckBox) {
 		s_IfMirrorVDiv2CheckBox->SetChecked((bool)g_ifmirrorVDiv2flag);
 	}
-	if (s_LimitDegCheckBox) {
-		s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-	}
-	if (s_WallScrapingIKCheckBox) {
-		s_WallScrapingIKCheckBox->SetChecked((bool)g_wallscrapingikflag);
-	}
+	//if (s_LimitDegCheckBox) {
+	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	//}
+	//if (s_WallScrapingIKCheckBox) {
+	//	s_WallScrapingIKCheckBox->SetChecked((bool)g_wallscrapingikflag);
+	//}
+	s_splimiteul.state = g_limitdegflag;
+	s_spscraping.state = (bool)g_wallscrapingikflag;
+
 
 	CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_MOTIONBRUSH_METHOD);
 	if (pComboBox) {

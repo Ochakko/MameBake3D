@@ -290,7 +290,7 @@ public:
 		ChaMatrix oldparentwm, ChaMatrix newparentwm);
 	
 	//directsetで　ツリーの姿勢を更新　再帰
-	void UpdateCurrentWM(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+	void UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 		ChaMatrix newwm);
 
 

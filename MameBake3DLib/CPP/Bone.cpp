@@ -685,8 +685,7 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
 
 		bool limitdegflag = false;
-		bool setbroflag = false;
-		UpdateCurrentWM(limitdegflag, setbroflag, srcmotid, roundingframe, newwm);
+		UpdateCurrentWM(limitdegflag, srcmotid, roundingframe, newwm);
 
 	}
 	else {
@@ -743,8 +742,7 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
 
 		bool limitdegflag = true;
-		bool setbroflag = false;
-		UpdateCurrentWM(limitdegflag, setbroflag, srcmotid, roundingframe, newwm);
+		UpdateCurrentWM(limitdegflag, srcmotid, roundingframe, newwm);
 
 	}
 	else {
@@ -2919,7 +2917,7 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 	return newtanimmatrotated;
 }
 
-void CBone::UpdateCurrentWM(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+void CBone::UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 	ChaMatrix newwm)
 {
 	//directset‚Å@ƒcƒŠ[‚ÌŽp¨‚ðXV@Ä‹A
@@ -2956,10 +2954,10 @@ void CBone::UpdateCurrentWM(bool limitdegflag, bool setbroflag, int srcmotid, do
 		GetChild()->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
 			befwm, newwm);
 	}
-	if (GetBrother() && (setbroflag == true)) {
-		GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
-			befparentwm, befparentwm);
-	}
+	//if (GetBrother() && (setbroflag == true)) {
+	//	GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
+	//		befparentwm, befparentwm);
+	//}
 }
 
 
@@ -6591,8 +6589,7 @@ int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CM
 		//int setchildflag = 1;//setchildflag‚Í directsetflag == false‚Ì‚Æ‚«‚µ‚©“­‚©‚È‚¢
 		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, setmat);
 
-		bool setbroflag = false;
-		UpdateCurrentWM(limitdegflag, setbroflag, srcmotid, roundingframe, setmat);
+		UpdateCurrentWM(limitdegflag, srcmotid, roundingframe, setmat);
 
 	}
 
