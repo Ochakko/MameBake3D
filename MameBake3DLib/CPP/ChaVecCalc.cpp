@@ -864,7 +864,7 @@ ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodema
 		ChaMatrix tmpmat;
 		tmpmat.SetIdentity();
 		if (tanimflag == true) {
-			tmpmat = befrotmat * *srcsmat * *srcrmat* aftrotmat** srctanimmat;
+			tmpmat = befrotmat * *srcsmat * *srcrmat * aftrotmat * *srctanimmat;
 		}
 		else {
 			tmpmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;

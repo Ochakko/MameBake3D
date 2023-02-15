@@ -5596,9 +5596,11 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 			}
 		
 			if (setchildflag == 1) {
-				bool setbroflag = false;
-				UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
-					saveworldmat, srcmat);
+				if (GetChild()) {
+					bool setbroflag = true;
+					GetChild()->UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
+						saveworldmat, srcmat);
+				}
 			}
 		}
 		else {
